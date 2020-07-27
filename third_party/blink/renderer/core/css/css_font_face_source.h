@@ -96,6 +96,12 @@ class CORE_EXPORT CSSFontFaceSource
       const FontSelectionCapabilities&) = 0;
   void PruneTable();
 
+  // Report the font lookup for metrics collection. Only used for local font
+  // face sources currently.
+  virtual void ReportFontLookup(const FontDescription& font_description,
+                                SimpleFontData* font_data,
+                                bool is_loading_fallback = false) {}
+
  private:
   void PruneOldestIfNeeded();
   using FontDataTable = HashMap<FontCacheKey, scoped_refptr<SimpleFontData>>;

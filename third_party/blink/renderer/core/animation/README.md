@@ -1061,8 +1061,8 @@ the current progress even if no longer transitioning the property.
 [target attribute]: https://cs.chromium.org/search/?q=function:blink::KeyframeEffect::(setT|t)arget$
 [pseudoElement attribute]: https://cs.chromium.org/search/?q=function:blink::KeyframeEffect::(setP|p)seudoElement$
 [composite attribute]: https://cs.chromium.org/search/?q=function:blink::KeyframeEffect::(setC|c)omposite$
-[getKefyrames method]: https://cs.chromium.org/search/?q=function:blink::KeyframeEffect::getKeyframes$
-[setKefyrames method]: https://cs.chromium.org/search/?q=function:blink::KeyframeEffect::setKeyframes$
+[getKeyframes method]: https://cs.chromium.org/search/?q=function:blink::KeyframeEffect::getKeyframes$
+[setKeyframes method]: https://cs.chromium.org/search/?q=function:blink::KeyframeEffect::setKeyframes$
 [KeyframeEffectOptions]: https://drafts.csswg.org/web-animations/#the-keyframeeffectoptions-dictionary
 [TransitionKeyframes]: https://cs.chromium.org/search/?q=class:blink::TransitionKeyframe$
 [StringKeyframes]: https://cs.chromium.org/search/?q=class:blink::StringKeyframe$
@@ -1070,7 +1070,7 @@ the current progress even if no longer transitioning the property.
 [CssKeyframeEffectModel]: https://cs.chromium.org/search/?q=class:blink::CssKeyframeEffectModel$
 [getComputedKeyframes]: https://cs.chromium.org/search/?q=function:blink::(CSS|)KeyframeEffectModel(Base|)::getComputedKeyframes$
 
-## AnimationTimeline / DocumentTimeline
+### AnimationTimeline / DocumentTimeline
 
 The [AnimationTimeline interface][] provides access to the current time and
 phase of a timeline. A timeline provides a real (DocumentTimeline) or abstract
@@ -1114,7 +1114,7 @@ currentTime.
 TODO: Document ScrollTimeline
 
 
-## Document extension
+### Document extension
 
 Each document has an associated DocumentTimeline, which is the default document
 timeline that will be used if an element is started via element.animate or
@@ -1126,7 +1126,7 @@ https://cs.chromium.org/search/?q=function:blink::Document::Timeline$)**: the
 default document timeline.
 
 
-## DocumentOrShadowRoot extension
+### DocumentOrShadowRoot extension
 
 Documents and ShadowRoots support an API call to retrieve all animations
 associated with the document or shadow root.
@@ -1139,6 +1139,214 @@ composite ordering. DocumentOrShadowRoot::getAnimations calls
 the document and extracts the active ones.
 
 [DocumentAnimations::getAnimations]: https://cs.chromium.org/search/?q=function:blink::DocumentAnimations::getAnimations$
+
+
+# The interpolation stack
+
+Animation keyframes serve as mileposts indicating property values at specific
+points through the progress of the animation. Most commonly, keyframes are
+provided for the start and end of the animation; however, an arbitrary number of
+keyframes can be added for intermediate points. In fact, the start and ending
+points for the animation are not strictly required and if missing neutral
+keyframe values (based on the underlying property values) are used. Optionally,
+the keyframe can specify the timing function used to indicate the path for
+connecting the dots between keyframes. Details for interpolating a scalar valued
+property are covered in the section titled 'web animation model'. This
+interpolation strategy extends to list valued properties. For example:
+
+   ```css
+   @keyframes pulse {
+     0%   { filter: brightness(100%),
+            animation-timing-function: cubic-bezier(0.2, 0.3, 0.7, 1.0) },
+     25%  { filter: brightness(150%)
+            animation-timing-function: cubic-bezier(0.2, 0.0, 0.8, 1.0) },
+     75%  { filter: brightness(50%)
+            animation-timing-function: cubic-bezier(0.3, 0.0, 0.8, 0.7) },
+     100% { filter: brightness(100%) },
+   }
+   button:hover {
+     animation: pulse 1s;
+   }
+   ```
+
+In this example, the brightness filter for the pulse animation follows roughly a
+sinusoidal path, approximated by piecewise cubic-bezier curves. Though the
+filter property supports a list of filter functions, the values are consistent
+between frames with only the brightness changing. Thus, the value can be
+interpolated following the same rules as for a scalar, i.e.:
+
+   ```
+   value = (1 - p) A + p B
+   ```
+
+Each property that can be interpolated has an associated
+[CSSInterpolationType][] that performs validation and constructs
+[InterpolableValue][]s. For our filter example, the [InterpolableFilter][]s are
+created via [CSSFilterListInterpolationType][], which requires a pairwise match
+between filter functions to be valid for continuous interpolation.
+
+Various fallback mechanisms are used for interpolation of list-valued properties
+that are not pairwise compatible. In some cases, discrete interpolation is used
+where the output switch from A to B at a progress value of 0.5.
+
+Transform lists are a particularly interesting example. If the lists are
+pairwise compatible between frames, they can be interpolated much like scalars.
+For example, transforming between 'scale(1)' and 'scale(2)'. The notion of
+pairwise compatibility is extended to classes of functions with similar
+geometric properties. For example, 'translateX' and 'translateY' are both
+special cases of 'translate' and thus considered pairwise compatible. An
+interpolation between 'translateX(100px)' and 'translateY(100px)' is internally
+converted to an  interpolation between 'translate(100px, 0)' and 'translate(0,
+100px)'. Now that the same transform function is being used, pairwise
+interpolation rules apply.
+
+In the general case, incompatible transform list fall back to matrix
+interpolation. Any series of transform operations can be expressed as a 4x4
+transformation matrix. Unfortunately, information is lost in the process as
+a no-op transform is indistinguishable from a 360 degree rotation once expressed
+in matrix form. For this reason, we use matrix interpolation as a last resort.
+
+Interpolation of matrices is not as simple as interpolating the matrix elements.
+Instead, each matrix is decomposed into a set of transformations that produces
+the same matrix representation. Algorithms for decomposing and interpolating
+2-D and 3-D matrices are covered in the spec. The
+2-D algorithm is covered in [css-transforms-1 - interpolations of matrices][].
+The 3-D algorithm is covered in
+[css-transforms-2 - interpolations of 3d matrices][]. Note that running the
+3D decomposition algorithm on a 2D transformation is not guaranteed to provide a
+consistent decomposition as applying the 2D algorithm. The decomposition
+process in Blink uses the 2D algorithm if both matrices are 2D and the 3D
+algorithm otherwise.
+
+To minimize the use of the matrix fallback, transform lists can be extended
+with neutral transform operations for the purpose of pairwise matching and the
+matrix fallback only applies to the residuals after pairwise matching. For
+example, interpolation between 'translateX(100px) scale(2)' and
+'translateY(100px)' is treated as 'translate(100px, 0) scale(2)' to
+'translate((0, 100px) scale(1)' establishing pairwise compatibility. An
+interpolation between 'scale(1) translateX(100px)' and 'scale(2) rotate(90deg)'
+is only partially pairwise compatible. The scale is interpolated pairwise, but
+the translate to rotate interpolation is handled via matrix decomposition.
+Rules for interpolations of transform lists are covered in
+[css-transforms-1 - interpolations of transforms][].
+
+Multiple animations can be applied to a single element. There are strict rules
+for how to combine these effects based on composite ordering as well as
+composite mode. CSS transitions are applied before CSS animations, which in
+turn are applied before animations created via element.animate. Within each
+class of animation, there are also ordering rules that depend on the type. For
+example,
+
+CSS transitions are ordered by 'transition generation', an index that increases
+with each style change. Within a single transition generation, transitions are
+sorted by property name.
+
+   ```javascript
+   div.style.top = '0px';
+   div.style.left = '0px';
+   div.style.transition = 'all 100ms';
+
+   div.style.top = '100px';
+   div.style.left = '100px';
+
+   // Styles are flushed when retrieving the list of animations. The left and
+   // top transitions are created within the same style update and thus sorted
+   // alphabetically.
+   const transitions = div.getAniamtions();
+   assert_equals(transitions[0].transitionProperty, 'left');
+   assert_equals(transitions[1].transitionProperty, 'top');
+
+   div.style.opacity = 0.5;
+
+   // The opacity transition is at the end since created in a separate style
+   // update cycle.
+   const updated_transitions = div.getAniamtions();
+   assert_equals(transitions[0].transitionProperty, 'left');
+   assert_equals(transitions[1].transitionProperty, 'top');
+   assert_equals(transitions[1].transitionProperty, 'opacity');
+   ```
+
+CSS animations that are applied to a single element are ordered by index within
+the animation-name property. Pseudo-element selectors have a strict ordering by
+selector name. CSS animations applying to different elements are sorted in DOM
+order. Note that the DOM order sort is only applied for getAniamtions calls as
+it is too expensive too apply in general and does not affect rendering if
+internally sorted for style calculations in creation order instead.
+
+   ```css
+     @keyframes fade { ... }
+     @keyframes shrink { ... }
+     @keyframes highlight { ... }
+     button.dismiss { animation: shrink 600ms linear, fade 600ms ease-out; }
+     button:hover::before { animation: highlight 300ms forwards; }
+   ```
+
+   ```javascript
+     button.onclick = (evt) => {
+       const target = evt.target;
+       target.classList.add('dismiss');
+       const animations = document.getAnimations();
+       // The fade and shrink animations are sorted by the ordering in which
+       // they appear in the animation property.
+       assert_equals(animations[0].animationName, 'shrink');
+       assert_equals(animations[1].animationName, 'fade');
+       // The pseudo-element animation appears after its parent.
+       assert_equals(animations[1].animationName, 'highlight');
+     };
+   ```
+
+It is also possible for a CSS transition or animation to get treated as a
+generic animation if it becomes disassociated from its owning element. The above
+example demonstrate that the getAnimations calls retrieve CSS animations and
+transitions as well as those generated via Element.animate. A finished CSS
+transition or animation is no longer associated with CSS rules that triggered
+the animation. If we retain a reference to one of these animations and replay
+it, it is treated like a generic animation, which in turn affects sort ordering.
+
+
+Within the Blink implementation, [EffectStack][] is used to store
+sampled effects and sort them for style update. These effects are collected as
+follows:
+
+* During each animation frame, [PageAnimator::ServiceScriptedAnimations][] is
+  called.
+    * The animation clock is updated and will hold its new value until the end
+      of the frame.
+    * [DocumentAnimations::UpdateAnimationTimingForAnimationFrame] is called
+      for each document associated with the main frame.
+      * This is turn calls [AnimationTimeline::ServiceAnimations][] for each
+        timeline associated with the document.
+        * Each timeline calls [Animation::Update][] for each of the
+          associated animations
+          * The animation update applies the web-animation model and calls
+            [KeyframeEffect::ApplyEffects][], which samples the animation and
+            adds it to the [EffectStack][]
+
+The method [EffectStack::ActiveInterpolations][] assembles a set of
+interpolations for an element applying the effects in the correct order. This
+method is called separately for CSS transitions and animations since
+transitions are to be applied before animations. Effects are grouped by
+property, and since multiple effects can target the same property, the effects
+need to be combined in some fashion. The composite mode property determines how
+effects are combined. The default mode is 'replace', whereby a new effect for a
+property flushes all previous effects for the property.  The other modes are
+'add' and 'accumulate'. If either of these options is used, both the old and
+new effect are included in the set.
+
+[CSSInterpolationType]: https://cs.chromium.org/search/?q=class:blink::CSSInterpolationType$
+[InterpolableValue]: https://cs.chromium.org/search/?q=class:blink::InterpolableValue$
+[InterpolableFilter]: https://cs.chromium.org/search/?q=class:blink::InterpolableFilter$
+[CSSFilterListInterpolationType]: https://cs.chromium.org/search/?q=class:blink::CSSFilterListInterpolationType$
+[EffectStack]: https://cs.chromium.org/search/?q=class:blink::EffectStack$
+[PageAnimator::ServiceScriptedAnimations]: https://cs.chromium.org/search/?q=function:blink::PageAnimator::ServiceScriptedAnimations$
+[DocumentAnimations::UpdateAnimationTimingForAnimationFrame]: https://cs.chromium.org/search/?q=function:blink::DocumentAnimations::UpdateAnimationTimingForAnimationFrame$
+[AnimationTimeline::ServiceAnimations]: https://cs.chromium.org/search/?q=function:blink::AnimationTimeline::ServiceAnimations$
+[Animation::Update]: https://cs.chromium.org/search/?q=function:blink::Animation::Update$
+[KeyframeEffect::ApplyEffect]: https://cs.chromium.org/search/?q=function:blink::KeyframeEffect::ApplyEffects$
+[EffectStack::ActiveInterpolations]: https://cs.chromium.org/search/?q=function:blink::EffectStack::ActiveInterpolations$
+[css-transforms-1 - interpolations of matrices]: https://www.w3.org/TR/css-transforms-1/#matrix-interpolation
+[css-transforms-2 - interpolations of 3d matrices]: https://www.w3.org/TR/css-transforms-2/#interpolation-of-3d-matrices
+[css-transforms-1 - interpolations of transforms]: https://www.w3.org/TR/css-transforms-1/#interpolation-of-transforms
 
 
 ## Integration with Chromium

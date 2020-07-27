@@ -2,6 +2,4 @@ AriaProperties changed on role=option, name=Apple
 AriaProperties changed on role=option, name=Orange
 AutomationFocusChanged on role=option, name=Orange
 AutomationFocusChanged on role=option, name=Orange
-SelectionItemIsSelected changed on role=option, name=Apple
-SelectionItemIsSelected changed on role=option, name=Orange
 SelectionItem_ElementSelected on role=option, name=Orange

@@ -70,6 +70,7 @@
 #include "content/browser/generic_sensor/sensor_provider_proxy_impl.h"
 #include "content/browser/geolocation/geolocation_service_impl.h"
 #include "content/browser/gpu/gpu_data_manager_impl.h"
+#include "content/browser/idle/idle_manager_impl.h"
 #include "content/browser/installedapp/installed_app_provider_impl.h"
 #include "content/browser/loader/file_url_loader_factory.h"
 #include "content/browser/loader/navigation_url_loader_impl.h"
@@ -812,7 +813,8 @@ RenderFrameHostImpl::RenderFrameHostImpl(
       has_selection_(false),
       is_audible_(false),
       should_virtual_keyboard_overlay_content_(false),
-      last_navigation_previews_state_(PREVIEWS_UNSPECIFIED),
+      last_navigation_previews_state_(
+          blink::PreviewsTypes::PREVIEWS_UNSPECIFIED),
       waiting_for_init_(renderer_initiated_creation),
       has_focused_editable_element_(false),
       push_messaging_manager_(
@@ -911,6 +913,11 @@ RenderFrameHostImpl::RenderFrameHostImpl(
   // 2) Their navigation in RenderFrameHostImpl::DidCommitNavigationInternal().
   virtual_browsing_context_group_ =
       CrossOriginOpenerPolicyReporter::NextVirtualBrowsingContextGroup();
+
+  // IdleManager should be unique per RenderFrame to provide proper isolation
+  // of overrides.
+  idle_manager_ =
+      std::make_unique<IdleManagerImpl>(GetProcess()->GetBrowserContext());
 }
 
 RenderFrameHostImpl::~RenderFrameHostImpl() {
@@ -7247,16 +7254,19 @@ void RenderFrameHostImpl::GetHidService(
 }
 #endif
 
+IdleManager* RenderFrameHostImpl::GetIdleManagerForTesting() {
+  return idle_manager_.get();
+}
+
 void RenderFrameHostImpl::GetIdleManager(
     mojo::PendingReceiver<blink::mojom::IdleManager> receiver) {
   if (!IsFeatureEnabled(blink::mojom::FeaturePolicyFeature::kIdleDetection)) {
     mojo::ReportBadMessage("Feature policy blocks access to IdleDetection.");
     return;
   }
-  static_cast<StoragePartitionImpl*>(GetProcess()->GetStoragePartition())
-      ->GetIdleManager()
-      ->CreateService(std::move(receiver),
-                      GetMainFrame()->GetLastCommittedOrigin());
+
+  idle_manager_->CreateService(std::move(receiver),
+                               GetMainFrame()->GetLastCommittedOrigin());
   OnSchedulerTrackedFeatureUsed(
       blink::scheduler::WebSchedulerTrackedFeature::kIdleManager);
 }

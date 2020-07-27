@@ -3249,7 +3249,8 @@ NavigationControllerImpl::CreateNavigationRequestFromLoadParams(
   }
 
   // Determine if Previews should be used for the navigation.
-  PreviewsState previews_state = PREVIEWS_UNSPECIFIED;
+  blink::PreviewsState previews_state =
+      blink::PreviewsTypes::PREVIEWS_UNSPECIFIED;
   if (!node->IsMainFrame()) {
     // For subframes, use the state of the top-level frame.
     previews_state = node->frame_tree()
@@ -3402,7 +3403,8 @@ NavigationControllerImpl::CreateNavigationRequestFromEntry(
   }
 
   // Determine if Previews should be used for the navigation.
-  PreviewsState previews_state = PREVIEWS_UNSPECIFIED;
+  blink::PreviewsState previews_state =
+      blink::PreviewsTypes::PREVIEWS_UNSPECIFIED;
   if (!frame_tree_node->IsMainFrame()) {
     // For subframes, use the state of the top-level frame.
     previews_state = frame_tree_node->frame_tree()

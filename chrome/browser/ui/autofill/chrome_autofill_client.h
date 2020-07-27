@@ -33,10 +33,6 @@
 #include "components/zoom/zoom_observer.h"
 #endif
 
-namespace content {
-class WebContents;
-}
-
 namespace autofill {
 
 class AutofillPopupControllerImpl;
@@ -67,6 +63,7 @@ class ChromeAutofillClient
   ukm::UkmRecorder* GetUkmRecorder() override;
   ukm::SourceId GetUkmSourceId() override;
   AddressNormalizer* GetAddressNormalizer() override;
+  const GURL& GetLastCommittedURL() override;
   security_state::SecurityLevel GetSecurityLevelForUmaHistograms() override;
   std::string GetPageLanguage() const override;
   std::string GetVariationConfigCountryCode() const override;

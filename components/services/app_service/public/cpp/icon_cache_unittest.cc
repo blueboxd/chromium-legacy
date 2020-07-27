@@ -81,7 +81,8 @@ class AppsIconCacheTest : public testing::Test {
     return releaser;
   }
 
-  void TestBasics(apps::IconCache::GarbageCollectionPolicy gc_policy) {
+  void TestBasics(apps::IconCache::GarbageCollectionPolicy gc_policy,
+                  bool remove_icon = false) {
     FakeIconLoader fake;
     apps::IconCache cache(&fake, gc_policy);
 
@@ -105,16 +106,27 @@ class AppsIconCacheTest : public testing::Test {
     UniqueReleaser c3 = LoadIcon(&cache, &fake, "cherry", kHit);
     c3.reset();
 
+    HitOrMiss expect_hom = kHit;
     if (gc_policy == apps::IconCache::GarbageCollectionPolicy::kExplicit) {
-      cache.SweepReleasedIcons();
+      if (remove_icon) {
+        cache.RemoveIcon(apps::mojom::AppType::kWeb, "cherry");
+        cache.RemoveIcon(apps::mojom::AppType::kWeb, "apricot");
+        expect_hom = kMiss;
+      } else {
+        cache.SweepReleasedIcons();
+      }
     }
 
-    UniqueReleaser c4 = LoadIcon(&cache, &fake, "cherry", kHit);
+    UniqueReleaser c4 = LoadIcon(&cache, &fake, "cherry", expect_hom);
     c4.reset();
     c0.reset();
 
     if (gc_policy == apps::IconCache::GarbageCollectionPolicy::kExplicit) {
-      cache.SweepReleasedIcons();
+      if (remove_icon) {
+        cache.RemoveIcon(apps::mojom::AppType::kWeb, "cherry");
+      } else {
+        cache.SweepReleasedIcons();
+      }
     }
 
     UniqueReleaser c5 = LoadIcon(&cache, &fake, "cherry", kMiss);
@@ -157,8 +169,8 @@ class AppsIconCacheTest : public testing::Test {
         LoadIcon(&cache, &fake, "fig", kHit, allow_placeholder_icon);
   }
 
-  void TestAfterZeroRefcount(
-      apps::IconCache::GarbageCollectionPolicy gc_policy) {
+  void TestAfterZeroRefcount(apps::IconCache::GarbageCollectionPolicy gc_policy,
+                             bool remove_icon = false) {
     FakeIconLoader fake;
     apps::IconCache cache(&fake, gc_policy);
 
@@ -186,7 +198,11 @@ class AppsIconCacheTest : public testing::Test {
     // get kMiss.
 
     if (gc_policy == apps::IconCache::GarbageCollectionPolicy::kExplicit) {
-      cache.SweepReleasedIcons();
+      if (remove_icon) {
+        cache.RemoveIcon(apps::mojom::AppType::kWeb, "watermelon");
+      } else {
+        cache.SweepReleasedIcons();
+      }
     }
 
     UniqueReleaser w2 = LoadIcon(&cache, &fake, "watermelon", kMiss);
@@ -203,11 +219,20 @@ TEST_F(AppsIconCacheTest, Eager) {
   TestAfterZeroRefcount(gc_policy);
 }
 
-TEST_F(AppsIconCacheTest, Explicit) {
+TEST_F(AppsIconCacheTest, ExplicitSweepReleasedIcons) {
   static constexpr apps::IconCache::GarbageCollectionPolicy gc_policy =
       apps::IconCache::GarbageCollectionPolicy::kExplicit;
 
   TestBasics(gc_policy);
   TestPlaceholder(gc_policy);
   TestAfterZeroRefcount(gc_policy);
+}
+
+TEST_F(AppsIconCacheTest, ExplicitRemoveIcons) {
+  static constexpr apps::IconCache::GarbageCollectionPolicy gc_policy =
+      apps::IconCache::GarbageCollectionPolicy::kExplicit;
+
+  TestBasics(gc_policy, true /* remove_icon */);
+  TestPlaceholder(gc_policy);
+  TestAfterZeroRefcount(gc_policy, true /* remove_icon */);
 }

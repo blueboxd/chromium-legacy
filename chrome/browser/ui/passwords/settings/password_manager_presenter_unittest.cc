@@ -31,7 +31,7 @@
 #endif
 #include "base/test/mock_callback.h"
 #include "build/build_config.h"
-#include "chrome/browser/password_manager/account_storage/account_password_store_factory.h"
+#include "chrome/browser/password_manager/account_password_store_factory.h"
 #include "chrome/browser/password_manager/password_store_factory.h"
 #include "chrome/browser/ui/passwords/settings/password_ui_view.h"
 #include "chrome/browser/ui/passwords/settings/password_ui_view_mock.h"

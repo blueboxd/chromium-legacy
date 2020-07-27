@@ -368,12 +368,11 @@ void WebURLRequest::SetFetchIntegrity(const WebString& integrity) {
   return resource_request_->SetFetchIntegrity(integrity);
 }
 
-WebURLRequest::PreviewsState WebURLRequest::GetPreviewsState() const {
+PreviewsState WebURLRequest::GetPreviewsState() const {
   return resource_request_->GetPreviewsState();
 }
 
-void WebURLRequest::SetPreviewsState(
-    WebURLRequest::PreviewsState previews_state) {
+void WebURLRequest::SetPreviewsState(PreviewsState previews_state) {
   return resource_request_->SetPreviewsState(previews_state);
 }
 

@@ -24,7 +24,10 @@ void TestPendingAppManagerImpl::InstallApps(
     const RepeatingInstallCallback& callback) {
   std::copy(install_options_list.begin(), install_options_list.end(),
             std::back_inserter(install_requests_));
-  PendingAppManagerImpl::InstallApps(install_options_list, std::move(callback));
+  if (!drop_requests_for_testing_) {
+    PendingAppManagerImpl::InstallApps(install_options_list,
+                                       std::move(callback));
+  }
 }
 
 void TestPendingAppManagerImpl::UninstallApps(

@@ -63,6 +63,7 @@
 #include "chrome/browser/chromeos/login/screens/encryption_migration_screen.h"
 #include "chrome/browser/chromeos/login/screens/error_screen.h"
 #include "chrome/browser/chromeos/login/screens/eula_screen.h"
+#include "chrome/browser/chromeos/login/screens/family_link_notice_screen.h"
 #include "chrome/browser/chromeos/login/screens/fingerprint_setup_screen.h"
 #include "chrome/browser/chromeos/login/screens/gaia_password_changed_screen.h"
 #include "chrome/browser/chromeos/login/screens/gesture_navigation_screen.h"
@@ -118,6 +119,7 @@
 #include "chrome/browser/ui/webui/chromeos/login/enrollment_screen_handler.h"
 #include "chrome/browser/ui/webui/chromeos/login/error_screen_handler.h"
 #include "chrome/browser/ui/webui/chromeos/login/eula_screen_handler.h"
+#include "chrome/browser/ui/webui/chromeos/login/family_link_notice_screen_handler.h"
 #include "chrome/browser/ui/webui/chromeos/login/fingerprint_setup_screen_handler.h"
 #include "chrome/browser/ui/webui/chromeos/login/gaia_password_changed_screen_handler.h"
 #include "chrome/browser/ui/webui/chromeos/login/gaia_screen_handler.h"
@@ -605,6 +607,11 @@ std::vector<std::unique_ptr<BaseScreen>> WizardController::CreateScreens() {
           &WizardController::OnActiveDirectoryPasswordChangeScreenExit,
           weak_factory_.GetWeakPtr())));
 
+  append(std::make_unique<FamilyLinkNoticeScreen>(
+      oobe_ui->GetView<FamilyLinkNoticeScreenHandler>(),
+      base::BindRepeating(&WizardController::OnFamilyLinkNoticeScreenExit,
+                          weak_factory_.GetWeakPtr())));
+
   return result;
 }
 
@@ -698,6 +705,10 @@ void WizardController::ShowEnableDebuggingScreen() {
 
 void WizardController::ShowTermsOfServiceScreen() {
   SetCurrentScreen(GetScreen(TermsOfServiceScreenView::kScreenId));
+}
+
+void WizardController::ShowFamilyLinkNoticeScreen() {
+  AdvanceToScreen(FamilyLinkNoticeView::kScreenId);
 }
 
 void WizardController::ShowSyncConsentScreen() {
@@ -1139,7 +1150,7 @@ void WizardController::OnTermsOfServiceScreenExit(
   switch (result) {
     case TermsOfServiceScreen::Result::ACCEPTED:
     case TermsOfServiceScreen::Result::NOT_APPLICABLE:
-      ShowSyncConsentScreen();
+      ShowFamilyLinkNoticeScreen();
       break;
     case TermsOfServiceScreen::Result::DECLINED:
       // End the session and return to the login screen.
@@ -1147,6 +1158,13 @@ void WizardController::OnTermsOfServiceScreenExit(
           login_manager::SessionStopReason::TERMS_DECLINED);
       break;
   }
+}
+
+void WizardController::OnFamilyLinkNoticeScreenExit(
+    FamilyLinkNoticeScreen::Result result) {
+  OnScreenExit(FamilyLinkNoticeView::kScreenId,
+               FamilyLinkNoticeScreen::GetResultString(result));
+  ShowSyncConsentScreen();
 }
 
 void WizardController::OnSyncConsentScreenExit(
@@ -1598,7 +1616,8 @@ void WizardController::AdvanceToScreen(OobeScreenId screen_id) {
     ShowSupervisionTransitionScreen();
   } else if (screen_id == TpmErrorView::kScreenId ||
              screen_id == GaiaPasswordChangedView::kScreenId ||
-             screen_id == ActiveDirectoryPasswordChangeView::kScreenId) {
+             screen_id == ActiveDirectoryPasswordChangeView::kScreenId ||
+             screen_id == FamilyLinkNoticeView::kScreenId) {
     SetCurrentScreen(GetScreen(screen_id));
   } else {
     if (is_out_of_box_) {
@@ -1734,6 +1753,7 @@ void WizardController::SkipPostLoginScreensForTesting() {
   const OobeScreenId current_screen_id =
       default_controller()->current_screen()->screen_id();
   if (current_screen_id == TermsOfServiceScreenView::kScreenId ||
+      current_screen_id == FamilyLinkNoticeView::kScreenId ||
       current_screen_id == SyncConsentScreenView::kScreenId ||
       current_screen_id == FingerprintSetupScreenView::kScreenId ||
       current_screen_id == ArcTermsOfServiceScreenView::kScreenId ||
@@ -1772,6 +1792,21 @@ void WizardController::OnLocalStateInitialized(bool /* succeeded */) {
   GetErrorScreen()->SetUIState(NetworkError::UI_STATE_LOCAL_STATE_ERROR);
   GetLoginDisplayHost()->SetStatusAreaVisible(false);
   ShowErrorScreen();
+}
+
+void WizardController::PrepareFirstRunPrefs() {
+  // Showoff starts in parallel to OOBE onboarding. We need to store the prefs
+  // early to make sure showoff has the correct data when launched.
+
+  // TODO(crbug.com/1101318): check difference between profile->IsChild(),
+  // user_manager->GetActiveUser()->IsChild() and
+  // user_manager->GetActiveUser()->GetType()
+
+  Profile* profile = ProfileManager::GetActiveUserProfile();
+  bool shouldShowParentalControl =
+      wizard_context_->sign_in_as_child && !profile->IsChild();
+  profile->GetPrefs()->SetBoolean(prefs::kHelpAppShouldShowParentalControl,
+                                  shouldShowParentalControl);
 }
 
 PrefService* WizardController::GetLocalState() {

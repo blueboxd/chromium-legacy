@@ -115,7 +115,7 @@ class ServiceConnectionImpl : public ServiceConnection {
   // Binds the factory interface |cros_healthd_service_factory_| to an
   // implementation in the cros_healthd daemon, if it is not already bound. The
   // binding is accomplished via D-Bus bootstrap.
-  void BindCrosHealthdServiceFactoryIfNeeded();
+  void EnsureCrosHealthdServiceFactoryIsBound();
 
   // Uses |cros_healthd_service_factory_| to bind the diagnostics service remote
   // to an implementation in the cros_healethd daemon, if it is not already
@@ -346,26 +346,30 @@ void ServiceConnectionImpl::ProbeProcessInfo(
 void ServiceConnectionImpl::GetDiagnosticsService(
     mojom::CrosHealthdDiagnosticsServiceRequest service) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  BindCrosHealthdServiceFactoryIfNeeded();
+  EnsureCrosHealthdServiceFactoryIsBound();
   cros_healthd_service_factory_->GetDiagnosticsService(std::move(service));
 }
 
 void ServiceConnectionImpl::GetProbeService(
     mojom::CrosHealthdProbeServiceRequest service) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  BindCrosHealthdServiceFactoryIfNeeded();
+  EnsureCrosHealthdServiceFactoryIsBound();
   cros_healthd_service_factory_->GetProbeService(std::move(service));
 }
 
-void ServiceConnectionImpl::BindCrosHealthdServiceFactoryIfNeeded() {
+void ServiceConnectionImpl::EnsureCrosHealthdServiceFactoryIsBound() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   if (cros_healthd_service_factory_.is_bound())
     return;
 
-  cros_healthd_service_factory_ =
-      CrosHealthdClient::Get()->BootstrapMojoConnection(base::BindOnce(
-          &ServiceConnectionImpl::OnBootstrapMojoConnectionResponse,
-          base::Unretained(this)));
+  auto* client = CrosHealthdClient::Get();
+  if (!client)
+    return;
+
+  cros_healthd_service_factory_ = client->BootstrapMojoConnection(
+      base::BindOnce(&ServiceConnectionImpl::OnBootstrapMojoConnectionResponse,
+                     base::Unretained(this)));
+
   cros_healthd_service_factory_.set_disconnect_handler(base::BindOnce(
       &ServiceConnectionImpl::OnDisconnect, base::Unretained(this)));
 }
@@ -375,7 +379,7 @@ void ServiceConnectionImpl::BindCrosHealthdDiagnosticsServiceIfNeeded() {
   if (cros_healthd_diagnostics_service_.is_bound())
     return;
 
-  BindCrosHealthdServiceFactoryIfNeeded();
+  EnsureCrosHealthdServiceFactoryIsBound();
   cros_healthd_service_factory_->GetDiagnosticsService(
       cros_healthd_diagnostics_service_.BindNewPipeAndPassReceiver());
   cros_healthd_diagnostics_service_.set_disconnect_handler(base::BindOnce(
@@ -387,7 +391,7 @@ void ServiceConnectionImpl::BindCrosHealthdEventServiceIfNeeded() {
   if (cros_healthd_event_service_.is_bound())
     return;
 
-  BindCrosHealthdServiceFactoryIfNeeded();
+  EnsureCrosHealthdServiceFactoryIsBound();
   cros_healthd_service_factory_->GetEventService(
       cros_healthd_event_service_.BindNewPipeAndPassReceiver());
   cros_healthd_event_service_.set_disconnect_handler(base::BindOnce(
@@ -399,7 +403,7 @@ void ServiceConnectionImpl::BindCrosHealthdProbeServiceIfNeeded() {
   if (cros_healthd_probe_service_.is_bound())
     return;
 
-  BindCrosHealthdServiceFactoryIfNeeded();
+  EnsureCrosHealthdServiceFactoryIsBound();
   cros_healthd_service_factory_->GetProbeService(
       cros_healthd_probe_service_.BindNewPipeAndPassReceiver());
   cros_healthd_probe_service_.set_disconnect_handler(base::BindOnce(
@@ -408,6 +412,7 @@ void ServiceConnectionImpl::BindCrosHealthdProbeServiceIfNeeded() {
 
 ServiceConnectionImpl::ServiceConnectionImpl() {
   DETACH_FROM_SEQUENCE(sequence_checker_);
+  EnsureCrosHealthdServiceFactoryIsBound();
 }
 
 void ServiceConnectionImpl::OnDisconnect() {
@@ -418,6 +423,8 @@ void ServiceConnectionImpl::OnDisconnect() {
   cros_healthd_probe_service_.reset();
   cros_healthd_diagnostics_service_.reset();
   cros_healthd_event_service_.reset();
+
+  EnsureCrosHealthdServiceFactoryIsBound();
 }
 
 void ServiceConnectionImpl::OnBootstrapMojoConnectionResponse(

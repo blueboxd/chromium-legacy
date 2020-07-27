@@ -11,7 +11,7 @@
 #include "content/public/browser/invalidate_type.h"
 #include "content/public/browser/navigation_controller.h"
 #include "content/public/browser/navigation_details.h"
-#include "content/public/common/previews_state.h"
+#include "third_party/blink/public/common/loader/previews_state.h"
 
 namespace content {
 

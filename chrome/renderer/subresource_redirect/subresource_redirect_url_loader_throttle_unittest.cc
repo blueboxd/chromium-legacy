@@ -7,10 +7,10 @@
 #include "base/test/scoped_feature_list.h"
 #include "chrome/renderer/subresource_redirect/subresource_redirect_hints_agent.h"
 #include "chrome/renderer/subresource_redirect/subresource_redirect_util.h"
-#include "content/public/common/previews_state.h"
 #include "services/network/public/mojom/fetch_api.mojom-shared.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/blink/public/common/features.h"
+#include "third_party/blink/public/common/loader/previews_state.h"
 #include "third_party/blink/public/platform/web_network_state_notifier.h"
 #include "third_party/blink/public/platform/web_url.h"
 #include "third_party/blink/public/platform/web_url_request.h"
@@ -57,7 +57,7 @@ CreateSubresourceRedirectURLLoaderThrottle(
 
   return std::make_unique<TestSubresourceRedirectURLLoaderThrottle>(
       public_image_urls,
-      previews_state & content::PreviewsTypes::SUBRESOURCE_REDIRECT_ON);
+      previews_state & blink::PreviewsTypes::SUBRESOURCE_REDIRECT_ON);
 }
 
 TEST(SubresourceRedirectURLLoaderThrottleTest, TestMaybeCreateThrottle) {
@@ -72,21 +72,21 @@ TEST(SubresourceRedirectURLLoaderThrottleTest, TestMaybeCreateThrottle) {
 
   const TestCase kTestCases[]{
       {true, true, network::mojom::RequestDestination::kImage,
-       content::PreviewsTypes::SUBRESOURCE_REDIRECT_ON,
+       blink::PreviewsTypes::SUBRESOURCE_REDIRECT_ON,
        "https://www.test.com/test.jpg", true},
 
       // Failure cases
       {false, true, network::mojom::RequestDestination::kImage,
-       content::PreviewsTypes::SUBRESOURCE_REDIRECT_ON,
+       blink::PreviewsTypes::SUBRESOURCE_REDIRECT_ON,
        "https://www.test.com/test.jpg", false},
       {true, false, network::mojom::RequestDestination::kImage,
-       content::PreviewsTypes::SUBRESOURCE_REDIRECT_ON,
+       blink::PreviewsTypes::SUBRESOURCE_REDIRECT_ON,
        "https://www.test.com/test.jpg", false},
       {true, true, network::mojom::RequestDestination::kScript,
-       content::PreviewsTypes::SUBRESOURCE_REDIRECT_ON,
+       blink::PreviewsTypes::SUBRESOURCE_REDIRECT_ON,
        "https://www.test.com/test.jpg", false},
       {true, true, network::mojom::RequestDestination::kImage,
-       content::PreviewsTypes::SUBRESOURCE_REDIRECT_ON,
+       blink::PreviewsTypes::SUBRESOURCE_REDIRECT_ON,
        "http://www.test.com/test.jpg", false},
   };
 
@@ -124,18 +124,18 @@ TEST(SubresourceRedirectURLLoaderThrottleTest, TestGetSubresourceURL) {
 
   const TestCase kTestCases[]{
       {
-          content::PreviewsTypes::SUBRESOURCE_REDIRECT_ON,
+          blink::PreviewsTypes::SUBRESOURCE_REDIRECT_ON,
           GURL("https://www.test.com/public_img.jpg"),
           GetSubresourceURLForURL(GURL("https://www.test.com/public_img.jpg")),
       },
       {
-          content::PreviewsTypes::SUBRESOURCE_REDIRECT_ON,
+          blink::PreviewsTypes::SUBRESOURCE_REDIRECT_ON,
           GURL("https://www.test.com/public_img.jpg#anchor"),
           GetSubresourceURLForURL(
               GURL("https://www.test.com/public_img.jpg#anchor")),
       },
       {
-          content::PreviewsTypes::SUBRESOURCE_REDIRECT_ON,
+          blink::PreviewsTypes::SUBRESOURCE_REDIRECT_ON,
           GURL("https://www.test.com/"
                "public_img.jpg?public_arg1=bar&public_arg2"),
           GetSubresourceURLForURL(
@@ -144,12 +144,12 @@ TEST(SubresourceRedirectURLLoaderThrottleTest, TestGetSubresourceURL) {
       },
       // Private images will not be redirected.
       {
-          content::PreviewsTypes::SUBRESOURCE_REDIRECT_ON,
+          blink::PreviewsTypes::SUBRESOURCE_REDIRECT_ON,
           GURL("https://www.test.com/private_img.jpg"),
           GURL(),
       },
       {
-          content::PreviewsTypes::SUBRESOURCE_REDIRECT_ON,
+          blink::PreviewsTypes::SUBRESOURCE_REDIRECT_ON,
           GURL("https://www.test.com/public_img.jpg&private_arg1=foo"),
           GURL(),
       },
@@ -195,12 +195,12 @@ TEST(SubresourceRedirectURLLoaderThrottleTest, DeferOverridenToFalse) {
   auto throttle = CreateSubresourceRedirectURLLoaderThrottle(
       GURL("https://www.test.com/test.jpg"),
       network::mojom::RequestDestination::kImage,
-      content::PreviewsTypes::SUBRESOURCE_REDIRECT_ON,
+      blink::PreviewsTypes::SUBRESOURCE_REDIRECT_ON,
       {"https://www.test.com/test.jpg"});
   network::ResourceRequest request;
   request.url = GURL("https://www.test.com/test.jpg");
   request.destination = network::mojom::RequestDestination::kImage;
-  request.previews_state = content::PreviewsTypes::SUBRESOURCE_REDIRECT_ON;
+  request.previews_state = blink::PreviewsTypes::SUBRESOURCE_REDIRECT_ON;
   bool defer = true;
 
   throttle->WillStartRequest(&request, &defer);

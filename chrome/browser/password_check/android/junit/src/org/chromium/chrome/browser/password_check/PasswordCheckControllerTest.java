@@ -60,7 +60,8 @@ public class PasswordCheckControllerTest {
 
     @Test
     public void testCreatesHeaderAndEntryForCredentials() {
-        mMediator.onCompromisedCredentialsAvailable(SUCCESS, Collections.singletonList(ANA));
+        mMediator.onPasswordCheckStatusChanged(SUCCESS);
+        mMediator.onCompromisedCredentialsAvailable(Collections.singletonList(ANA));
         ListModel<MVCListAdapter.ListItem> itemList = mModel.get(ITEMS);
         assertThat(itemList.get(0).type, is(ItemType.HEADER));
         assertThat(itemList.get(0).model.get(CHECK_STATUS), is(SUCCESS));

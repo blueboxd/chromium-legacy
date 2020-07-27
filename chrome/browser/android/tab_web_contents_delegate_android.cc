@@ -310,9 +310,9 @@ TabWebContentsDelegateAndroid::GetJavaScriptDialogManager(
 
 void TabWebContentsDelegateAndroid::AdjustPreviewsStateForNavigation(
     content::WebContents* web_contents,
-    content::PreviewsState* previews_state) {
+    blink::PreviewsState* previews_state) {
   if (GetDisplayMode(web_contents) != blink::mojom::DisplayMode::kBrowser) {
-    *previews_state = content::PREVIEWS_OFF;
+    *previews_state = blink::PreviewsTypes::PREVIEWS_OFF;
   }
 }
 

@@ -20,8 +20,6 @@
 
 namespace update_client {
 
-class NetworkFetcherFactory;
-
 // Defines a download interface for downloading components, with retrying on
 // fallback urls in case of errors. This class implements a chain of
 // responsibility design pattern. It can give successors in the chain a chance
@@ -76,23 +74,8 @@ class CrxDownloader : public base::RefCountedThreadSafe<CrxDownloader> {
       base::RepeatingCallback<void(int64_t downloaded_bytes,
                                    int64_t total_bytes)>;
 
-  using Factory =
-      scoped_refptr<CrxDownloader> (*)(bool,
-                                       scoped_refptr<NetworkFetcherFactory>);
-
   CrxDownloader(const CrxDownloader&) = delete;
   CrxDownloader& operator=(const CrxDownloader&) = delete;
-
-  // Factory method to create an instance of this class and build the
-  // chain of responsibility. |is_background_download| specifies that a
-  // background downloader be used, if the platform supports it.
-  // |task_runner| should be a task runner able to run blocking
-  // code such as file IO operations.
-  static scoped_refptr<CrxDownloader> Create(
-      bool is_background_download,
-      scoped_refptr<NetworkFetcherFactory> network_fetcher_factory);
-
-  void set_progress_callback(const ProgressCallback& progress_callback);
 
   // Starts the download. One instance of the class handles one download only.
   // One instance of CrxDownloader can only be started once, otherwise the
@@ -105,6 +88,8 @@ class CrxDownloader : public base::RefCountedThreadSafe<CrxDownloader> {
   void StartDownload(const std::vector<GURL>& urls,
                      const std::string& expected_hash,
                      DownloadCallback download_callback);
+
+  void set_progress_callback(const ProgressCallback& progress_callback);
 
   const std::vector<DownloadMetrics> download_metrics() const;
 

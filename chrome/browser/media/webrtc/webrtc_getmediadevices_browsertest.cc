@@ -72,10 +72,7 @@ class WebRtcGetMediaDevicesBrowserTest
 
   void EnumerateDevices(content::WebContents* tab,
                         std::vector<MediaDeviceInfo>* devices) {
-    std::string devices_as_json = ExecuteJavascript(
-        "navigator.mediaDevices.enumerateDevices().then(e => "
-        "window.domAutomationController.send(JSON.stringify(e)))",
-        tab);
+    std::string devices_as_json = ExecuteJavascript("enumerateDevices()", tab);
     EXPECT_FALSE(devices_as_json.empty());
 
     base::JSONReader::ValueWithError parsed_json =
@@ -117,6 +114,8 @@ class WebRtcGetMediaDevicesBrowserTest
       } else if (device.kind == kDeviceKindVideoInput) {
         found_video_input = true;
       }
+
+      EXPECT_FALSE(device.group_id.empty());
       devices->push_back(device);
     }
 
@@ -173,22 +172,6 @@ IN_PROC_BROWSER_TEST_F(WebRtcGetMediaDevicesBrowserTest,
 }
 
 IN_PROC_BROWSER_TEST_F(WebRtcGetMediaDevicesBrowserTest,
-                       EnumerateDevicesChromePrefix) {
-  ui_test_utils::NavigateToURL(browser(), GURL("chrome://version"));
-  content::WebContents* tab =
-      browser()->tab_strip_model()->GetActiveWebContents();
-
-  std::vector<MediaDeviceInfo> devices;
-  EnumerateDevices(tab, &devices);
-
-  // Labels should be not be empty since chrome:// URLs always have
-  // permission and do not require a previous getUserMedia() call.
-  for (const auto& device_info : devices) {
-    EXPECT_FALSE(device_info.label.empty());
-  }
-}
-
-IN_PROC_BROWSER_TEST_F(WebRtcGetMediaDevicesBrowserTest,
                        EnumerateDevicesWithAccess) {
   ASSERT_TRUE(embedded_test_server()->Start());
   GURL url(embedded_test_server()->GetURL(kMainWebrtcTestHtmlPage));
@@ -214,12 +197,10 @@ IN_PROC_BROWSER_TEST_F(WebRtcGetMediaDevicesBrowserTest,
   ui_test_utils::NavigateToURL(browser(), url);
   content::WebContents* tab =
       browser()->tab_strip_model()->GetActiveWebContents();
-  EXPECT_TRUE(GetUserMediaAndAcceptIfPrompted(tab));
   std::vector<MediaDeviceInfo> devices;
   EnumerateDevices(tab, &devices);
 
   ui_test_utils::NavigateToURL(browser(), url);
-  EXPECT_TRUE(GetUserMediaAndAcceptIfPrompted(tab));
   std::vector<MediaDeviceInfo> devices2;
   EnumerateDevices(tab, &devices2);
 
@@ -246,7 +227,6 @@ IN_PROC_BROWSER_TEST_F(WebRtcGetMediaDevicesBrowserTest,
   ui_test_utils::NavigateToURL(browser(), url);
   content::WebContents* tab1 =
       browser()->tab_strip_model()->GetActiveWebContents();
-  EXPECT_TRUE(GetUserMediaAndAcceptIfPrompted(tab1));
   std::vector<MediaDeviceInfo> devices;
   EnumerateDevices(tab1, &devices);
 
@@ -254,7 +234,6 @@ IN_PROC_BROWSER_TEST_F(WebRtcGetMediaDevicesBrowserTest,
   ui_test_utils::NavigateToURL(browser(), url);
   content::WebContents* tab2 =
       browser()->tab_strip_model()->GetActiveWebContents();
-  EXPECT_TRUE(GetUserMediaAndAcceptIfPrompted(tab2));
   std::vector<MediaDeviceInfo> devices2;
   EnumerateDevices(tab2, &devices2);
 
@@ -324,7 +303,6 @@ IN_PROC_BROWSER_TEST_F(WebRtcGetMediaDevicesBrowserTest,
   ui_test_utils::NavigateToURL(browser(), url);
   content::WebContents* tab2 =
       browser()->tab_strip_model()->GetActiveWebContents();
-  EXPECT_TRUE(GetUserMediaAndAcceptIfPrompted(tab2));
   std::vector<MediaDeviceInfo> devices2;
   EnumerateDevices(tab2, &devices2);
 
@@ -342,13 +320,14 @@ IN_PROC_BROWSER_TEST_F(WebRtcGetMediaDevicesBrowserTest,
       ->SetDefaultCookieSetting(CONTENT_SETTING_BLOCK);
   content::WebContents* tab =
       browser()->tab_strip_model()->GetActiveWebContents();
+
   EXPECT_TRUE(GetUserMediaAndAccept(tab));
+
   std::vector<MediaDeviceInfo> devices;
   EnumerateDevices(tab, &devices);
 
   ui_test_utils::NavigateToURL(browser(), url);
   tab = browser()->tab_strip_model()->GetActiveWebContents();
-  EXPECT_TRUE(GetUserMediaAndAcceptIfPrompted(tab));
   std::vector<MediaDeviceInfo> devices2;
   EnumerateDevices(tab, &devices2);
 

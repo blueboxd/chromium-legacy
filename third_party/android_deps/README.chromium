@@ -36,3 +36,7 @@ third_party/android_deps
 
 Instructions for adding/updating dependencies are in:
     //third_party/android_deps/README.md
+
+Vulnerability detection: fetch_all.py runs 'gradle dependencyCheckAnalyze' to look
+for known vulnerabilities each time the script is run. It is expected that Vomit
+(go/vomit) will absorb this responsibility in future.

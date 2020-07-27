@@ -243,7 +243,7 @@ IN_PROC_BROWSER_TEST_F(SystemNetworkContextManagerBrowsertest, AuthParams) {
   EXPECT_FALSE(dynamic_params->delegate_by_kdc_policy);
 
   const char kServerAllowList[] = "foo";
-  local_state->SetString(prefs::kAuthServerWhitelist, kServerAllowList);
+  local_state->SetString(prefs::kAuthServerAllowlist, kServerAllowList);
   dynamic_params =
       SystemNetworkContextManager::GetHttpAuthDynamicParamsForTesting();
   EXPECT_EQ(true, dynamic_params->negotiate_disable_cname_lookup);

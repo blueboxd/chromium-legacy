@@ -13,7 +13,6 @@
 #include "chrome/grit/local_ntp_resources.h"
 #include "chrome/test/base/testing_profile.h"
 #include "content/public/browser/browser_thread.h"
-#include "content/public/common/previews_state.h"
 #include "content/public/test/browser_task_environment.h"
 #include "ipc/ipc_message.h"
 #include "net/base/request_priority.h"
@@ -22,6 +21,7 @@
 #include "net/url_request/url_request_context.h"
 #include "net/url_request/url_request_test_util.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/blink/public/common/loader/previews_state.h"
 #include "url/gurl.h"
 
 const int kNonInstantRendererPID = 0;

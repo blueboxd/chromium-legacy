@@ -83,7 +83,6 @@ public class FeatureList {
     /**
      * @return Whether test feature values have been configured.
      */
-    @VisibleForTesting
     public static boolean hasTestFeatures() {
         return sTestFeatures != null;
     }
@@ -95,7 +94,6 @@ public class FeatureList {
      * @return The test value set for the feature, or null if no test value has been set.
      * @throws IllegalArgumentException if no test value was set and default values aren't allowed.
      */
-    @VisibleForTesting
     public static Boolean getTestValueForFeature(String featureName) {
         if (hasTestFeatures()) {
             if (sTestFeatures.containsKey(featureName)) {

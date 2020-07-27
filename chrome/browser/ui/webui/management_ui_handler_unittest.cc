@@ -57,6 +57,7 @@
 #include "chromeos/network/proxy/ui_proxy_config_service.h"
 #include "chromeos/system/fake_statistics_provider.h"
 #include "chromeos/tpm/stub_install_attributes.h"
+#include "components/enterprise/browser/reporting/common_pref_names.h"
 #include "components/onc/onc_pref_names.h"
 #include "components/policy/core/common/cloud/cloud_external_data_manager.h"
 #include "components/policy/core/common/cloud/mock_cloud_policy_client.h"
@@ -402,7 +403,7 @@ class ManagementUIHandlerTests : public TestingBaseClass {
     profile_->GetPrefs()->SetBoolean(
         crostini::prefs::kReportCrostiniUsageEnabled,
         GetTestConfig().crostini_report_usage);
-    local_state_.SetBoolean(prefs::kCloudReportingEnabled,
+    local_state_.SetBoolean(enterprise_reporting::kCloudReportingEnabled,
                             GetTestConfig().cloud_reporting_enabled);
     scoped_feature_list()->Reset();
     scoped_feature_list()->InitAndEnableFeature(

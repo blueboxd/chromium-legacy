@@ -76,7 +76,6 @@ class NativeFileSystemEntryFactory;
 class NativeFileSystemManagerImpl;
 class NativeIOContext;
 class QuotaContext;
-class IdleManager;
 
 class CONTENT_EXPORT StoragePartitionImpl
     : public StoragePartition,
@@ -134,7 +133,6 @@ class CONTENT_EXPORT StoragePartitionImpl
   storage::FileSystemContext* GetFileSystemContext() override;
   storage::DatabaseTracker* GetDatabaseTracker() override;
   DOMStorageContextWrapper* GetDOMStorageContext() override;
-  IdleManager* GetIdleManager() override;
   LockManager* GetLockManager();  // override; TODO: Add to interface
   storage::mojom::IndexedDBControl& GetIndexedDBControl() override;
   NativeFileSystemEntryFactory* GetNativeFileSystemEntryFactory() override;
@@ -478,7 +476,6 @@ class CONTENT_EXPORT StoragePartitionImpl
   scoped_refptr<storage::FileSystemContext> filesystem_context_;
   scoped_refptr<storage::DatabaseTracker> database_tracker_;
   scoped_refptr<DOMStorageContextWrapper> dom_storage_context_;
-  std::unique_ptr<IdleManager> idle_manager_;
   std::unique_ptr<LockManager> lock_manager_;
   std::unique_ptr<IndexedDBControlWrapper> indexed_db_control_wrapper_;
   scoped_refptr<CacheStorageContextImpl> cache_storage_context_;

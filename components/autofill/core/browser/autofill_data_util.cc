@@ -51,6 +51,7 @@ const PaymentRequestData kPaymentRequestData[]{
     {autofill::kMasterCard, "mastercard", IDR_AUTOFILL_CC_MASTERCARD,
      IDS_AUTOFILL_CC_MASTERCARD},
     {autofill::kMirCard, "mir", IDR_AUTOFILL_CC_MIR, IDS_AUTOFILL_CC_MIR},
+    {autofill::kTroyCard, "troy", IDR_AUTOFILL_CC_TROY, IDS_AUTOFILL_CC_TROY},
     {autofill::kUnionPay, "unionpay", IDR_AUTOFILL_CC_UNIONPAY,
      IDS_AUTOFILL_CC_UNION_PAY},
     {autofill::kVisaCard, "visa", IDR_AUTOFILL_CC_VISA, IDS_AUTOFILL_CC_VISA},

@@ -406,9 +406,6 @@ are declared in tools/grit/grit_rule.gni.
       <message name="IDS_HISTORY_SEARCH_PROMPT" desc="Placeholder text/label for the search input field in the history page">
         Search history
       </message>
-      <message name="IDS_HISTORY_CLEAR_SEARCH" desc="Tooltip text for the button that clears the search term on the history page">
-        Clear search
-      </message>
       <message name="IDS_HISTORY_DELETE" desc="Text for delete button contained in the history page toolbar">
         Delete
       </message>
@@ -446,6 +443,9 @@ are declared in tools/grit/grit_rule.gni.
       <!-- Generic terms -->
       <message name="IDS_EDIT" desc="Edit menu item">
         &amp;Edit
+      </message>
+      <message name="IDS_CLEAR_SEARCH" desc="Tooltip text for the button that clears the search term in search text input">
+        Clear search
       </message>
       <message name="IDS_CONFIRM" desc="A button that lets the user confirm something.">
         Confirm
@@ -1874,10 +1874,6 @@ are declared in tools/grit/grit_rule.gni.
       <message name="IDS_DOWNLOAD_SEARCH"
                desc="Placeholder text/label for the search input in the download page">
         Search downloads
-      </message>
-      <message name="IDS_DOWNLOAD_CLEAR_SEARCH"
-               desc="Tooltip text for the button that clears the search term on the downloads page.">
-        Clear search
       </message>
       <message name="IDS_DOWNLOAD_NO_DOWNLOADS" desc="A message shown when the user has no downloads to show on chrome://downloads.">
         Files you download appear here

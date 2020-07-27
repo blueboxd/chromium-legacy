@@ -4,7 +4,6 @@
 
 #include "base/bind.h"
 #include "base/files/file_path.h"
-#include "base/synchronization/waitable_event.h"
 #include "base/test/metrics/histogram_tester.h"
 #include "build/build_config.h"
 #include "chrome/browser/profiles/profile.h"
@@ -17,8 +16,6 @@
 #include "chrome/test/base/in_process_browser_test.h"
 #include "chrome/test/base/interactive_test_utils.h"
 #include "chrome/test/base/ui_test_utils.h"
-#include "content/public/browser/browser_task_traits.h"
-#include "content/public/browser/browser_thread.h"
 #include "content/public/browser/client_certificate_delegate.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/test/browser_test.h"
@@ -42,11 +39,7 @@ using ::testing::StrictMock;
 
 class SSLClientCertificateSelectorTest : public InProcessBrowserTest {
  public:
-  SSLClientCertificateSelectorTest()
-      : io_loop_finished_event_(
-            base::WaitableEvent::ResetPolicy::AUTOMATIC,
-            base::WaitableEvent::InitialState::NOT_SIGNALED),
-        selector_(nullptr) {}
+  SSLClientCertificateSelectorTest() = default;
 
   void SetUpInProcessBrowserTestFixture() override {
     base::FilePath certs_dir = net::GetTestCertsDirectory();
@@ -63,12 +56,8 @@ class SSLClientCertificateSelectorTest : public InProcessBrowserTest {
   }
 
   void SetUpOnMainThread() override {
-    content::GetIOThreadTaskRunner({})->PostTask(
-        FROM_HERE,
-        base::BindOnce(&SSLClientCertificateSelectorTest::SetUpOnIOThread,
-                       base::Unretained(this)));
-
-    io_loop_finished_event_.Wait();
+    auth_requestor_ =
+        new StrictMock<SSLClientAuthRequestorMock>(cert_request_info_);
 
     EXPECT_TRUE(content::WaitForLoadStop(
         browser()->tab_strip_model()->GetActiveWebContents()));
@@ -87,39 +76,19 @@ class SSLClientCertificateSelectorTest : public InProcessBrowserTest {
               selector_->GetSelectedCert()->certificate());
   }
 
-  virtual void SetUpOnIOThread() {
-    auth_requestor_ = new StrictMock<SSLClientAuthRequestorMock>(
-        cert_request_info_);
-
-    io_loop_finished_event_.Signal();
-  }
-
   // Have to release our reference to the auth handler during the test to allow
-  // it to be destroyed while the Browser and its IO thread still exist.
+  // it to be destroyed while the Browser still exists.
   void TearDownOnMainThread() override {
-    content::GetIOThreadTaskRunner({})->PostTask(
-        FROM_HERE,
-        base::BindOnce(&SSLClientCertificateSelectorTest::CleanUpOnIOThread,
-                       base::Unretained(this)));
-
-    io_loop_finished_event_.Wait();
-
     auth_requestor_.reset();
   }
 
-  virtual void CleanUpOnIOThread() {
-    io_loop_finished_event_.Signal();
-  }
-
  protected:
-  base::WaitableEvent io_loop_finished_event_;
-
   std::unique_ptr<net::FakeClientCertIdentity> cert_identity_1_;
   std::unique_ptr<net::FakeClientCertIdentity> cert_identity_2_;
   scoped_refptr<net::SSLCertRequestInfo> cert_request_info_;
-  scoped_refptr<StrictMock<SSLClientAuthRequestorMock> > auth_requestor_;
+  scoped_refptr<StrictMock<SSLClientAuthRequestorMock>> auth_requestor_;
   // The selector will be deleted when a cert is selected or the tab is closed.
-  SSLClientCertificateSelector* selector_;
+  SSLClientCertificateSelector* selector_ = nullptr;
 };
 
 class SSLClientCertificateSelectorMultiTabTest
@@ -136,8 +105,12 @@ class SSLClientCertificateSelectorMultiTabTest
   }
 
   void SetUpOnMainThread() override {
-    // Also calls SetUpOnIOThread.
     SSLClientCertificateSelectorTest::SetUpOnMainThread();
+
+    auth_requestor_1_ =
+        new StrictMock<SSLClientAuthRequestorMock>(cert_request_info_1_);
+    auth_requestor_2_ =
+        new StrictMock<SSLClientAuthRequestorMock>(cert_request_info_2_);
 
     AddTabAtIndex(1, GURL("about:blank"), ui::PAGE_TRANSITION_LINK);
     AddTabAtIndex(2, GURL("about:blank"), ui::PAGE_TRANSITION_LINK);
@@ -178,30 +151,17 @@ class SSLClientCertificateSelectorMultiTabTest
               selector_2_->GetSelectedCert()->certificate());
   }
 
-  void SetUpOnIOThread() override {
-    auth_requestor_1_ = new StrictMock<SSLClientAuthRequestorMock>(
-        cert_request_info_1_);
-    auth_requestor_2_ = new StrictMock<SSLClientAuthRequestorMock>(
-        cert_request_info_2_);
-
-    SSLClientCertificateSelectorTest::SetUpOnIOThread();
-  }
-
   void TearDownOnMainThread() override {
     auth_requestor_2_.reset();
     auth_requestor_1_.reset();
     SSLClientCertificateSelectorTest::TearDownOnMainThread();
   }
 
-  void CleanUpOnIOThread() override {
-    SSLClientCertificateSelectorTest::CleanUpOnIOThread();
-  }
-
  protected:
   scoped_refptr<net::SSLCertRequestInfo> cert_request_info_1_;
   scoped_refptr<net::SSLCertRequestInfo> cert_request_info_2_;
-  scoped_refptr<StrictMock<SSLClientAuthRequestorMock> > auth_requestor_1_;
-  scoped_refptr<StrictMock<SSLClientAuthRequestorMock> > auth_requestor_2_;
+  scoped_refptr<StrictMock<SSLClientAuthRequestorMock>> auth_requestor_1_;
+  scoped_refptr<StrictMock<SSLClientAuthRequestorMock>> auth_requestor_2_;
   SSLClientCertificateSelector* selector_1_;
   SSLClientCertificateSelector* selector_2_;
 };
@@ -222,8 +182,10 @@ class SSLClientCertificateSelectorMultiProfileTest
   void SetUpOnMainThread() override {
     browser_1_ = CreateIncognitoBrowser();
 
-    // Also calls SetUpOnIOThread.
     SSLClientCertificateSelectorTest::SetUpOnMainThread();
+
+    auth_requestor_1_ =
+        new StrictMock<SSLClientAuthRequestorMock>(cert_request_info_1_);
 
     net::ClientCertIdentityList cert_identity_list;
     cert_identity_list.push_back(cert_identity_1_->Copy());
@@ -246,20 +208,9 @@ class SSLClientCertificateSelectorMultiProfileTest
               selector_1_->GetSelectedCert()->certificate());
   }
 
-  void SetUpOnIOThread() override {
-    auth_requestor_1_ = new StrictMock<SSLClientAuthRequestorMock>(
-        cert_request_info_1_);
-
-    SSLClientCertificateSelectorTest::SetUpOnIOThread();
-  }
-
   void TearDownOnMainThread() override {
     auth_requestor_1_.reset();
     SSLClientCertificateSelectorTest::TearDownOnMainThread();
-  }
-
-  void CleanUpOnIOThread() override {
-    SSLClientCertificateSelectorTest::CleanUpOnIOThread();
   }
 
  protected:

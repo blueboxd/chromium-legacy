@@ -101,11 +101,11 @@ class TestModification(unittest.TestCase):
                       '/$W/app-entitlements.plist'),
             mock.call('/$I/Product Packaging/helper-gpu-entitlements.plist',
                       '/$W/helper-gpu-entitlements.plist'),
+            mock.call('/$I/Product Packaging/helper-plugin-entitlements.plist',
+                      '/$W/helper-plugin-entitlements.plist'),
             mock.call(
                 '/$I/Product Packaging/helper-renderer-entitlements.plist',
                 '/$W/helper-renderer-entitlements.plist'),
-            mock.call('/$I/Product Packaging/helper-plugin-entitlements.plist',
-                      '/$W/helper-plugin-entitlements.plist')
         ])
         self.assertEqual(0, kwargs['move_file'].call_count)
         self.assertEqual(0, kwargs['write_file'].call_count)
@@ -135,11 +135,11 @@ class TestModification(unittest.TestCase):
                       '/$W/app-entitlements.plist'),
             mock.call('/$I/Product Packaging/helper-gpu-entitlements.plist',
                       '/$W/helper-gpu-entitlements.plist'),
+            mock.call('/$I/Product Packaging/helper-plugin-entitlements.plist',
+                      '/$W/helper-plugin-entitlements.plist'),
             mock.call(
                 '/$I/Product Packaging/helper-renderer-entitlements.plist',
                 '/$W/helper-renderer-entitlements.plist'),
-            mock.call('/$I/Product Packaging/helper-plugin-entitlements.plist',
-                      '/$W/helper-plugin-entitlements.plist')
         ])
         self.assertEqual(0, kwargs['move_file'].call_count)
 
@@ -168,11 +168,11 @@ class TestModification(unittest.TestCase):
                       '/$W/app-entitlements.plist'),
             mock.call('/$I/Product Packaging/helper-gpu-entitlements.plist',
                       '/$W/helper-gpu-entitlements.plist'),
+            mock.call('/$I/Product Packaging/helper-plugin-entitlements.plist',
+                      '/$W/helper-plugin-entitlements.plist'),
             mock.call(
                 '/$I/Product Packaging/helper-renderer-entitlements.plist',
                 '/$W/helper-renderer-entitlements.plist'),
-            mock.call('/$I/Product Packaging/helper-plugin-entitlements.plist',
-                      '/$W/helper-plugin-entitlements.plist')
         ])
         self.assertEqual(0, kwargs['move_file'].call_count)
         self.assertEqual(0, kwargs['write_file'].call_count)
@@ -202,11 +202,11 @@ class TestModification(unittest.TestCase):
                       '/$W/app-entitlements.plist'),
             mock.call('/$I/Product Packaging/helper-gpu-entitlements.plist',
                       '/$W/helper-gpu-entitlements.plist'),
+            mock.call('/$I/Product Packaging/helper-plugin-entitlements.plist',
+                      '/$W/helper-plugin-entitlements.plist'),
             mock.call(
                 '/$I/Product Packaging/helper-renderer-entitlements.plist',
                 '/$W/helper-renderer-entitlements.plist'),
-            mock.call('/$I/Product Packaging/helper-plugin-entitlements.plist',
-                      '/$W/helper-plugin-entitlements.plist')
         ])
         self.assertEqual(0, kwargs['move_file'].call_count)
         self.assertEqual(0, kwargs['write_file'].call_count)
@@ -236,11 +236,11 @@ class TestModification(unittest.TestCase):
                       '/$W/app-entitlements.plist'),
             mock.call('/$I/Product Packaging/helper-gpu-entitlements.plist',
                       '/$W/helper-gpu-entitlements.plist'),
+            mock.call('/$I/Product Packaging/helper-plugin-entitlements.plist',
+                      '/$W/helper-plugin-entitlements.plist'),
             mock.call(
                 '/$I/Product Packaging/helper-renderer-entitlements.plist',
                 '/$W/helper-renderer-entitlements.plist'),
-            mock.call('/$I/Product Packaging/helper-plugin-entitlements.plist',
-                      '/$W/helper-plugin-entitlements.plist')
         ])
         kwargs['write_file'].assert_called_once_with(
             '/$W/App Product.app/Contents/PkgInfo', 'APPLMooo')
@@ -270,11 +270,11 @@ class TestModification(unittest.TestCase):
                       '/$W/app-entitlements.plist'),
             mock.call('/$I/Product Packaging/helper-gpu-entitlements.plist',
                       '/$W/helper-gpu-entitlements.plist'),
+            mock.call('/$I/Product Packaging/helper-plugin-entitlements.plist',
+                      '/$W/helper-plugin-entitlements.plist'),
             mock.call(
                 '/$I/Product Packaging/helper-renderer-entitlements.plist',
                 '/$W/helper-renderer-entitlements.plist'),
-            mock.call('/$I/Product Packaging/helper-plugin-entitlements.plist',
-                      '/$W/helper-plugin-entitlements.plist')
         ])
         self.assertEqual(0, kwargs['move_file'].call_count)
         self.assertEqual(0, kwargs['write_file'].call_count)
@@ -312,11 +312,11 @@ class TestModification(unittest.TestCase):
                       '/$W/app-entitlements.plist'),
             mock.call('/$I/Product Packaging/helper-gpu-entitlements.plist',
                       '/$W/helper-gpu-entitlements.plist'),
+            mock.call('/$I/Product Packaging/helper-plugin-entitlements.plist',
+                      '/$W/helper-plugin-entitlements.plist'),
             mock.call(
                 '/$I/Product Packaging/helper-renderer-entitlements.plist',
                 '/$W/helper-renderer-entitlements.plist'),
-            mock.call('/$I/Product Packaging/helper-plugin-entitlements.plist',
-                      '/$W/helper-plugin-entitlements.plist'),
             mock.call('/$I/Product Packaging/app_canary.icns',
                       '/$W/App Product Canary.app/Contents/Resources/app.icns'),
             mock.call(
@@ -351,8 +351,8 @@ class TestModification(unittest.TestCase):
                         'test.signing.bundle_id.canary'
                 }, '/$W/app-entitlements.plist'),
             mock.call({}, '/$W/helper-gpu-entitlements.plist'),
-            mock.call({}, '/$W/helper-renderer-entitlements.plist'),
             mock.call({}, '/$W/helper-plugin-entitlements.plist'),
+            mock.call({}, '/$W/helper-renderer-entitlements.plist'),
             mock.call({
                 'pfm_domain': 'test.signing.bundle_id.canary'
             }, '/$W/App Product Canary.app/Contents/Resources/test.signing.bundle_id.canary.manifest/Contents/Resources/test.signing.bundle_id.canary.manifest'

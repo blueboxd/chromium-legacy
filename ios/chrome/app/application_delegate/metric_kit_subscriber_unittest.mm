@@ -34,16 +34,22 @@ base::FilePath MetricKitReportDirectory() {
 
   return base::FilePath(base::SysNSStringToUTF8(metric_kit_report_directory));
 }
+
+NSString* const kEnableMetricKit = @"EnableMetricKit";
 }
 
 class MetricKitSubscriberTest : public PlatformTest {
  public:
   MetricKitSubscriberTest() {
     base::DeletePathRecursively(MetricKitReportDirectory());
+    NSUserDefaults* standard_defaults = [NSUserDefaults standardUserDefaults];
+    [standard_defaults setBool:YES forKey:kEnableMetricKit];
   }
 
   ~MetricKitSubscriberTest() override {
     base::DeletePathRecursively(MetricKitReportDirectory());
+    NSUserDefaults* standard_defaults = [NSUserDefaults standardUserDefaults];
+    [standard_defaults removeObjectForKey:kEnableMetricKit];
   }
 
  private:

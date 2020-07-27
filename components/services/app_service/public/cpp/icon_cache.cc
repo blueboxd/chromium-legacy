@@ -109,6 +109,23 @@ void IconCache::SweepReleasedIcons() {
   }
 }
 
+void IconCache::RemoveIcon(apps::mojom::AppType app_type,
+                           const std::string& app_id) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  if (gc_policy_ != GarbageCollectionPolicy::kExplicit) {
+    return;
+  }
+
+  auto iter = map_.begin();
+  while (iter != map_.end()) {
+    if (iter->first.app_type_ == app_type && iter->first.app_id_ == app_id) {
+      iter = map_.erase(iter);
+    } else {
+      ++iter;
+    }
+  }
+}
+
 void IconCache::Update(const IconLoader::Key& key,
                        const apps::mojom::IconValue& icon_value) {
   if (icon_value.icon_type != apps::mojom::IconType::kUncompressed &&
@@ -143,13 +160,13 @@ void IconCache::OnRelease(IconLoader::Key key) {
 
   auto iter = map_.find(key);
   if (iter == map_.end()) {
-    NOTREACHED();
     return;
   }
 
   auto n = iter->second.ref_count_;
-  CHECK(n > 0);
-  n--;
+  if (n > 0) {
+    n--;
+  }
   iter->second.ref_count_ = n;
 
   if ((n == 0) && (gc_policy_ == GarbageCollectionPolicy::kEager)) {

@@ -99,6 +99,8 @@ blink_modules_sources("webgl") {
     "webgl_extension.cc",
     "webgl_extension.h",
     "webgl_extension_name.h",
+    "webgl_fast_call.cc",
+    "webgl_fast_call.h",
     "webgl_fence_sync.cc",
     "webgl_fence_sync.h",
     "webgl_framebuffer.cc",

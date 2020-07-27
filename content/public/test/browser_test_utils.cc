@@ -2937,7 +2937,8 @@ void TestNavigationManager::DidStartNavigation(NavigationHandle* handle) {
 void TestNavigationManager::DidFinishNavigation(NavigationHandle* handle) {
   if (handle != request_)
     return;
-  was_successful_ = handle->HasCommitted() && !handle->IsErrorPage();
+  was_committed_ = handle->HasCommitted();
+  was_successful_ = was_committed_ && !handle->IsErrorPage();
   current_state_ = NavigationState::FINISHED;
   navigation_paused_ = false;
   request_ = nullptr;

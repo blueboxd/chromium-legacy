@@ -17,6 +17,7 @@ import androidx.appcompat.content.res.AppCompatResources;
 
 import org.chromium.base.Callback;
 import org.chromium.chrome.browser.native_page.NativePageFactory;
+import org.chromium.chrome.browser.ntp.NewTabPage;
 import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.chrome.browser.ui.favicon.FaviconHelper;
 import org.chromium.chrome.browser.ui.favicon.FaviconUtils;
@@ -153,7 +154,7 @@ public class TabListFaviconProvider {
      */
     public void getFaviconForUrlAsync(
             String url, boolean isIncognito, Callback<Drawable> faviconCallback) {
-        if (mFaviconHelper == null || NativePageFactory.isNativePageUrl(url, isIncognito)) {
+        if (mFaviconHelper == null || NewTabPage.isNTPUrl(url)) {
             faviconCallback.onResult(getRoundedChromeDrawable(isIncognito));
         } else {
             mFaviconHelper.getLocalFaviconImageForURL(

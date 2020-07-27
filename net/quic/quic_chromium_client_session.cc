@@ -976,11 +976,6 @@ QuicChromiumClientSession::~QuicChromiumClientSession() {
   // Sending one client_hello means we had zero handshake-round-trips.
   int round_trip_handshakes = crypto_stream_->num_sent_client_hellos() - 1;
 
-  // Don't bother with these histogram during tests, which mock out
-  // num_sent_client_hellos().
-  if (round_trip_handshakes < 0 || !stream_factory_)
-    return;
-
   SSLInfo ssl_info;
   // QUIC supports only secure urls.
   if (GetSSLInfo(&ssl_info) && ssl_info.cert.get()) {

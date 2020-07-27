@@ -23,6 +23,7 @@
 #include "chrome/test/base/testing_browser_process.h"
 #include "chrome/test/base/testing_profile_manager.h"
 #include "components/enterprise/browser/controller/fake_browser_dm_token_storage.h"
+#include "components/enterprise/browser/reporting/common_pref_names.h"
 #include "components/enterprise/browser/reporting/report_generator.h"
 #include "components/policy/core/common/cloud/mock_cloud_policy_client.h"
 #include "components/version_info/version_info.h"
@@ -128,7 +129,7 @@ class ReportSchedulerTest : public ::testing::Test {
   }
 
   void ToggleCloudReport(bool enabled) {
-    local_state_.Get()->SetManagedPref(prefs::kCloudReportingEnabled,
+    local_state_.Get()->SetManagedPref(kCloudReportingEnabled,
                                        std::make_unique<base::Value>(enabled));
   }
 

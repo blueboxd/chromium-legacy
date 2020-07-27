@@ -336,8 +336,7 @@ struct BLINK_EXPORT WebNavigationParams {
   // Whether the document should be able to access local file:// resources.
   bool grant_load_local_resources = false;
   // The previews state which should be used for this navigation.
-  WebURLRequest::PreviewsState previews_state =
-      WebURLRequest::kPreviewsUnspecified;
+  PreviewsState previews_state = PreviewsTypes::kPreviewsUnspecified;
   // The service worker network provider to be used in the new
   // document.
   std::unique_ptr<blink::WebServiceWorkerNetworkProvider>

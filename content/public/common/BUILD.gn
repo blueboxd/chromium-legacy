@@ -148,8 +148,6 @@ jumbo_source_set("common_sources") {
     "pepper_plugin_info.cc",
     "pepper_plugin_info.h",
     "persistent_notification_status.h",
-    "previews_state.cc",
-    "previews_state.h",
     "process_type.h",
     "profiling.cc",
     "profiling.h",

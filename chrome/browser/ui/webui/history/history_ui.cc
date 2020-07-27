@@ -69,7 +69,7 @@ content::WebUIDataSource* CreateHistoryUIHTMLSource(Profile* profile) {
       {"bookmarked", IDS_HISTORY_ENTRY_BOOKMARKED},
       {"cancel", IDS_CANCEL},
       {"clearBrowsingData", IDS_CLEAR_BROWSING_DATA_TITLE},
-      {"clearSearch", IDS_HISTORY_CLEAR_SEARCH},
+      {"clearSearch", IDS_CLEAR_SEARCH},
       {"closeMenuPromo", IDS_HISTORY_CLOSE_MENU_PROMO},
       {"collapseSessionButton", IDS_HISTORY_OTHER_SESSIONS_COLLAPSE_SESSION},
       {"delete", IDS_HISTORY_DELETE},

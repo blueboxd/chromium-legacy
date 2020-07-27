@@ -125,7 +125,7 @@ class CORE_EXPORT ContainerNode : public Node {
                                   const Node* old_child,
                                   ExceptionState&) const;
 
-  Element* getElementById(const StringView& id) const;
+  Element* getElementById(const AtomicString& id) const;
   HTMLCollection* getElementsByTagName(const AtomicString&);
   HTMLCollection* getElementsByTagNameNS(const AtomicString& namespace_uri,
                                          const AtomicString& local_name);

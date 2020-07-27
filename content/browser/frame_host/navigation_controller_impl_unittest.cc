@@ -39,7 +39,6 @@
 #include "content/public/common/bindings_policy.h"
 #include "content/public/common/page_state.h"
 #include "content/public/common/page_type.h"
-#include "content/public/common/previews_state.h"
 #include "content/public/common/url_constants.h"
 #include "content/public/test/mock_render_process_host.h"
 #include "content/public/test/navigation_simulator.h"
@@ -53,6 +52,7 @@
 #include "skia/ext/platform_canvas.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/blink/public/common/frame/frame_policy.h"
+#include "third_party/blink/public/common/loader/previews_state.h"
 #include "third_party/blink/public/mojom/frame/frame_owner_properties.mojom.h"
 #include "third_party/blink/public/mojom/frame/user_activation_update_types.mojom.h"
 
@@ -199,7 +199,7 @@ class NavigationControllerTest : public RenderViewHostImplTestHarness,
     return navigation_request->common_params().url;
   }
 
-  content::PreviewsState GetLastNavigationPreviewsState() {
+  blink::PreviewsState GetLastNavigationPreviewsState() {
     NavigationRequest* navigation_request =
         contents()->GetFrameTree()->root()->navigation_request();
     CHECK(navigation_request);

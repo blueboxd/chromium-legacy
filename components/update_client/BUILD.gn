@@ -73,6 +73,8 @@ static_library("update_client") {
     "configurator.h",
     "crx_downloader.cc",
     "crx_downloader.h",
+    "crx_downloader_factory.cc",
+    "crx_downloader_factory.h",
     "crx_update_item.h",
     "network.cc",
     "network.h",

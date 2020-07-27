@@ -185,15 +185,15 @@ TEST_F(BackgroundLoaderContentsTest, CheckMediaAccessPermissionFalse) {
 }
 
 TEST_F(BackgroundLoaderContentsTest, AdjustPreviewsState) {
-  content::PreviewsState previews_state;
+  blink::PreviewsState previews_state;
 
   // If the state starts out as off or disabled, it should stay that way.
-  previews_state = content::PREVIEWS_OFF;
+  previews_state = blink::PreviewsTypes::PREVIEWS_OFF;
   contents()->AdjustPreviewsStateForNavigation(nullptr, &previews_state);
-  EXPECT_EQ(previews_state, content::PREVIEWS_OFF);
-  previews_state = content::PREVIEWS_NO_TRANSFORM;
+  EXPECT_EQ(previews_state, blink::PreviewsTypes::PREVIEWS_OFF);
+  previews_state = blink::PreviewsTypes::PREVIEWS_NO_TRANSFORM;
   contents()->AdjustPreviewsStateForNavigation(nullptr, &previews_state);
-  EXPECT_EQ(previews_state, content::PREVIEWS_NO_TRANSFORM);
+  EXPECT_EQ(previews_state, blink::PreviewsTypes::PREVIEWS_NO_TRANSFORM);
 }
 
 }  // namespace background_loader

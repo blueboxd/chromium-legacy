@@ -33,7 +33,7 @@ def copy_dir_overwrite_and_count_changes(source, dest, dry_run=False):
     ]
     if dry_run:
         command.append('--dry-run')
-    output = subprocess.check_output(command)
+    output = subprocess.check_output(command).decode('utf-8')
 
     # --itemize-changes will print a '.' in the first column if the item is not
     # being updated, created, or deleted. This happens if only attributes

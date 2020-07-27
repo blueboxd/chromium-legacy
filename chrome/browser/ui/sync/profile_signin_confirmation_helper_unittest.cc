@@ -146,10 +146,11 @@ class ProfileSigninConfirmationHelperTest : public testing::Test {
     RegisterUserProfilePrefs(pref_service->registry());
     builder.SetPrefService(
         base::WrapUnique<sync_preferences::PrefServiceSyncable>(pref_service));
+    builder.AddTestingFactory(BookmarkModelFactory::GetInstance(),
+                              BookmarkModelFactory::GetDefaultFactory());
     profile_ = builder.Build();
 
     // Initialize the services we check.
-    profile_->CreateBookmarkModel(true);
     model_ = BookmarkModelFactory::GetForBrowserContext(profile_.get());
     bookmarks::test::WaitForBookmarkModelToLoad(model_);
     ASSERT_TRUE(profile_->CreateHistoryService(true, false));

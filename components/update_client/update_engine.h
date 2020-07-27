@@ -47,7 +47,6 @@ class UpdateEngine : public base::RefCountedThreadSafe<UpdateEngine> {
 
   UpdateEngine(scoped_refptr<Configurator> config,
                UpdateChecker::Factory update_checker_factory,
-               CrxDownloader::Factory crx_downloader_factory,
                scoped_refptr<PingManager> ping_manager,
                const NotifyObserversCallback& notify_observers_callback);
   UpdateEngine(const UpdateEngine&) = delete;
@@ -102,7 +101,6 @@ class UpdateEngine : public base::RefCountedThreadSafe<UpdateEngine> {
   base::ThreadChecker thread_checker_;
   scoped_refptr<Configurator> config_;
   UpdateChecker::Factory update_checker_factory_;
-  CrxDownloader::Factory crx_downloader_factory_;
   scoped_refptr<PingManager> ping_manager_;
   std::unique_ptr<PersistedData> metadata_;
 
@@ -129,7 +127,6 @@ struct UpdateContext : public base::RefCountedThreadSafe<UpdateContext> {
       UpdateClient::CrxStateChangeCallback crx_state_change_callback,
       const UpdateEngine::NotifyObserversCallback& notify_observers_callback,
       UpdateEngine::Callback callback,
-      CrxDownloader::Factory crx_downloader_factory,
       PersistedData* persisted_data);
   UpdateContext(const UpdateContext&) = delete;
   UpdateContext& operator=(const UpdateContext&) = delete;
@@ -160,9 +157,6 @@ struct UpdateContext : public base::RefCountedThreadSafe<UpdateContext> {
 
   // Called when the all updates associated with this context have completed.
   UpdateEngine::Callback callback;
-
-  // Creates instances of CrxDownloader;
-  CrxDownloader::Factory crx_downloader_factory;
 
   std::unique_ptr<UpdateChecker> update_checker;
 

@@ -1135,7 +1135,7 @@ export class DestinationStore extends EventTarget {
     clearTimeout(this.autoSelectTimeout_);
     this.autoSelectTimeout_ = setTimeout(
         this.selectDefaultDestination.bind(this),
-        DestinationStore.AUTO_SELECT_TIMEOUT_);
+        DestinationStore.AUTO_SELECT_TIMEOUT);
   }
 
   /**
@@ -1370,10 +1370,10 @@ DestinationStore.EventType = {
  * Delay in milliseconds before the destination store ignores the initial
  * destination ID and just selects any printer (since the initial destination
  * was not found).
- * @private {number}
- * @const
+ * Public and non-const so that it can be overridden in tests.
+ * @type {number}
  */
-DestinationStore.AUTO_SELECT_TIMEOUT_ = 15000;
+DestinationStore.AUTO_SELECT_TIMEOUT = 15000;
 
 /**
  * Maximum amount of time spent searching for extension destinations, in

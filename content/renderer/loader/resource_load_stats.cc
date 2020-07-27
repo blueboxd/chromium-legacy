@@ -35,7 +35,7 @@ void ResourceResponseReceived(int render_frame_id,
                               const GURL& response_url,
                               network::mojom::URLResponseHeadPtr response_head,
                               network::mojom::RequestDestination destination,
-                              PreviewsState previews_state) {
+                              blink::PreviewsState previews_state) {
   RenderFrameImpl* frame = RenderFrameImpl::FromRoutingID(render_frame_id);
   if (!frame)
     return;
@@ -135,7 +135,7 @@ void NotifyResourceResponseReceived(
     int render_frame_id,
     blink::mojom::ResourceLoadInfo* resource_load_info,
     network::mojom::URLResponseHeadPtr response_head,
-    PreviewsState previews_state) {
+    blink::PreviewsState previews_state) {
   if (response_head->network_accessed) {
     if (resource_load_info->request_destination ==
         network::mojom::RequestDestination::kDocument) {

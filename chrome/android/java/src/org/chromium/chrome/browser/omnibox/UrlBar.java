@@ -879,8 +879,13 @@ public abstract class UrlBar extends AutocompleteEditText {
 
     @Override
     public Editable getText() {
-        return mRequestingAutofillStructure ? new SpannableStringBuilder(mTextForAutofillServices)
-                                            : super.getText();
+        if (mRequestingAutofillStructure) {
+            // crbug.com/1109186: mTextForAutofillServices must not be null here, but Autofill
+            // requests can be triggered before it is initialized.
+            return new SpannableStringBuilder(
+                    mTextForAutofillServices != null ? mTextForAutofillServices : "");
+        }
+        return super.getText();
     }
 
     @Override

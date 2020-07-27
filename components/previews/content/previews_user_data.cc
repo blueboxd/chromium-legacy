@@ -95,25 +95,24 @@ previews::PreviewsType PreviewsUserData::CommittedPreviewsType() const {
   return committed_previews_type_without_holdback_;
 }
 
-content::PreviewsState PreviewsUserData::PreHoldbackAllowedPreviewsState()
-    const {
+blink::PreviewsState PreviewsUserData::PreHoldbackAllowedPreviewsState() const {
   return allowed_previews_state_without_holdback_;
 }
 
-content::PreviewsState PreviewsUserData::AllowedPreviewsState() const {
+blink::PreviewsState PreviewsUserData::AllowedPreviewsState() const {
   if (coin_flip_holdback_result_ == CoinFlipHoldbackResult::kHoldback)
-    return content::PREVIEWS_OFF;
+    return blink::PreviewsTypes::PREVIEWS_OFF;
   return allowed_previews_state_without_holdback_;
 }
 
-content::PreviewsState PreviewsUserData::PreHoldbackCommittedPreviewsState()
+blink::PreviewsState PreviewsUserData::PreHoldbackCommittedPreviewsState()
     const {
   return committed_previews_state_without_holdback_;
 }
 
-content::PreviewsState PreviewsUserData::CommittedPreviewsState() const {
+blink::PreviewsState PreviewsUserData::CommittedPreviewsState() const {
   if (coin_flip_holdback_result_ == CoinFlipHoldbackResult::kHoldback)
-    return content::PREVIEWS_OFF;
+    return blink::PreviewsTypes::PREVIEWS_OFF;
   return committed_previews_state_without_holdback_;
 }
 

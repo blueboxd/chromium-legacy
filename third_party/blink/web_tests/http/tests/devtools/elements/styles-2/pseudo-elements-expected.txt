@@ -48,6 +48,7 @@ element.style { ()
 [$::marker$] { (user agent stylesheet)
     unicode-bidi: isolate;
     font-variant-numeric: tabular-nums;
+    text-transform: none;
 
 
 Running: dumpBeforeStyles
@@ -71,6 +72,7 @@ Running: dumpMarkerStyles
 [$::marker$] { (user agent stylesheet)
     unicode-bidi: isolate;
     font-variant-numeric: tabular-nums;
+    text-transform: none;
 
 
 Running: removeAfter

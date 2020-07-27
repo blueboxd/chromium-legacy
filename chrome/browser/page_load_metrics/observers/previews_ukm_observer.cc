@@ -21,10 +21,10 @@
 #include "components/page_load_metrics/common/page_load_timing.h"
 #include "content/public/browser/navigation_handle.h"
 #include "content/public/browser/web_contents.h"
-#include "content/public/common/previews_state.h"
 #include "services/metrics/public/cpp/ukm_builders.h"
 #include "services/metrics/public/cpp/ukm_recorder.h"
 #include "services/metrics/public/cpp/ukm_source.h"
+#include "third_party/blink/public/common/loader/previews_state.h"
 
 namespace previews {
 
@@ -68,7 +68,7 @@ PreviewsUKMObserver::OnCommit(content::NavigationHandle* navigation_handle,
 
   // Only check for preview types that are decided before commit in the
   // |allowed_previews_state|.
-  content::PreviewsState previews_state =
+  blink::PreviewsState previews_state =
       previews_user_data->PreHoldbackCommittedPreviewsState();
 
   // Check all preview types in the |committed_previews_state|. In practice

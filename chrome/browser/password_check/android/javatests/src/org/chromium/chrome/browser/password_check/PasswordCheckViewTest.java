@@ -24,6 +24,7 @@ import static org.chromium.content_public.browser.test.util.CriteriaHelper.pollU
 import static org.chromium.content_public.browser.test.util.TestThreadUtils.runOnUiThreadBlocking;
 
 import android.view.View;
+import android.widget.ImageButton;
 import android.widget.TextView;
 
 import androidx.annotation.IdRes;
@@ -39,6 +40,7 @@ import org.mockito.MockitoAnnotations;
 
 import org.chromium.base.test.util.CommandLineFlags;
 import org.chromium.chrome.browser.flags.ChromeSwitches;
+import org.chromium.chrome.browser.password_check.PasswordCheckProperties.CheckStatus;
 import org.chromium.chrome.browser.password_check.PasswordCheckProperties.HeaderProperties;
 import org.chromium.chrome.browser.password_check.internal.R;
 import org.chromium.chrome.browser.settings.SettingsActivityTestRule;
@@ -92,14 +94,10 @@ public class PasswordCheckViewTest {
     @MediumTest
     public void testDisplaysHeaderAndCredential() {
         runOnUiThreadBlocking(() -> {
-            mModel.get(ITEMS).add(
-                    new MVCListAdapter.ListItem(PasswordCheckProperties.ItemType.HEADER,
-                            new PropertyModel.Builder(HeaderProperties.ALL_KEYS)
-                                    .with(CHECK_STATUS, PasswordCheckProperties.CheckStatus.SUCCESS)
-                                    .build()));
+            mModel.get(ITEMS).add(buildHeader(CheckStatus.SUCCESS));
             mModel.get(ITEMS).add(buildCredentialItem(ANA));
         });
-        pollUiThread(() -> Criteria.checkThat(getCredentials().getChildCount(), is(2)));
+        pollUiThread(() -> Criteria.checkThat(getPasswordCheckViewList().getChildCount(), is(2)));
         // Has a change passwords button.
         assertNotNull(getCredentialChangeButtonAt(1));
         // TODO(crbug.com/1092444): Ensure the button is visible as soon as it does something!
@@ -116,12 +114,28 @@ public class PasswordCheckViewTest {
 
     @Test
     @MediumTest
+    public void testStatusDisplaysRestartAction() {
+        runOnUiThreadBlocking(() -> { mModel.get(ITEMS).add(buildHeader(CheckStatus.SUCCESS)); });
+        pollUiThread(() -> Criteria.checkThat(getPasswordCheckViewList().getChildCount(), is(1)));
+        assertThat(getActionButton().getVisibility(), is(View.VISIBLE));
+    }
+
+    @Test
+    @MediumTest
+    public void testStatusNotDisplaysRestartAction() {
+        runOnUiThreadBlocking(() -> { mModel.get(ITEMS).add(buildHeader(CheckStatus.RUNNING)); });
+        pollUiThread(() -> Criteria.checkThat(getPasswordCheckViewList().getChildCount(), is(1)));
+        assertThat(getActionButton().getVisibility(), is(View.GONE));
+    }
+
+    @Test
+    @MediumTest
     public void testCrendentialDisplaysNameOriginAndReason() {
         runOnUiThreadBlocking(() -> {
             mModel.get(ITEMS).add(buildCredentialItem(PHISHED));
             mModel.get(ITEMS).add(buildCredentialItem(LEAKED));
         });
-        pollUiThread(() -> Criteria.checkThat(getCredentials().getChildCount(), is(2)));
+        pollUiThread(() -> Criteria.checkThat(getPasswordCheckViewList().getChildCount(), is(2)));
 
         // The phished credential is rendered first:
         assertThat(getCredentialOriginAt(0).getText(), is(PHISHED.getOriginUrl()));
@@ -140,7 +154,7 @@ public class PasswordCheckViewTest {
     @MediumTest
     public void testClickingDeleteInMoreMenuTriggersHandler() {
         runOnUiThreadBlocking(() -> mModel.get(ITEMS).add(buildCredentialItem(ANA)));
-        pollUiThread(() -> Criteria.checkThat(getCredentials().getChildCount(), is(1)));
+        pollUiThread(() -> Criteria.checkThat(getPasswordCheckViewList().getChildCount(), is(1)));
 
         TouchCommon.singleClickView(getCredentialMoreButtonAt(0));
 
@@ -152,6 +166,13 @@ public class PasswordCheckViewTest {
         verify(mMockHandler).onRemove(eq(ANA));
     }
 
+    private MVCListAdapter.ListItem buildHeader(@CheckStatus int status) {
+        return new MVCListAdapter.ListItem(PasswordCheckProperties.ItemType.HEADER,
+                new PropertyModel.Builder(HeaderProperties.ALL_KEYS)
+                        .with(CHECK_STATUS, status)
+                        .build());
+    }
+
     private MVCListAdapter.ListItem buildCredentialItem(CompromisedCredential credential) {
         return new MVCListAdapter.ListItem(PasswordCheckProperties.ItemType.COMPROMISED_CREDENTIAL,
                 new PropertyModel
@@ -161,28 +182,38 @@ public class PasswordCheckViewTest {
                         .build());
     }
 
-    private RecyclerView getCredentials() {
+    private View getStatus() {
+        return mPasswordCheckView.getListView().getChildAt(0);
+    }
+
+    private ImageButton getActionButton() {
+        return getStatus().findViewById(R.id.check_status_restart_button);
+    }
+
+    private RecyclerView getPasswordCheckViewList() {
         return mPasswordCheckView.getListView();
     }
 
     private TextView getCredentialOriginAt(int index) {
-        return getCredentials().getChildAt(index).findViewById(R.id.credential_origin);
+        return getPasswordCheckViewList().getChildAt(index).findViewById(R.id.credential_origin);
     }
 
     private TextView getCredentialUserAt(int index) {
-        return getCredentials().getChildAt(index).findViewById(R.id.compromised_username);
+        return getPasswordCheckViewList().getChildAt(index).findViewById(R.id.compromised_username);
     }
 
     private TextView getCredentialReasonAt(int index) {
-        return getCredentials().getChildAt(index).findViewById(R.id.compromised_reason);
+        return getPasswordCheckViewList().getChildAt(index).findViewById(R.id.compromised_reason);
     }
 
     private ButtonCompat getCredentialChangeButtonAt(int index) {
-        return getCredentials().getChildAt(index).findViewById(R.id.credential_change_button);
+        return getPasswordCheckViewList().getChildAt(index).findViewById(
+                R.id.credential_change_button);
     }
 
     private ListMenuButton getCredentialMoreButtonAt(int index) {
-        return getCredentials().getChildAt(index).findViewById(R.id.credential_menu_button);
+        return getPasswordCheckViewList().getChildAt(index).findViewById(
+                R.id.credential_menu_button);
     }
 
     private String getString(@IdRes int stringResource) {

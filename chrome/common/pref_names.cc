@@ -1900,6 +1900,26 @@ const char kSystemWebAppLastUpdateVersion[] =
 const char kSystemWebAppLastInstalledLocale[] =
     "web_apps.system_web_app_last_installed_language";
 
+// An int representing the number of failures to install SWAs for a given
+// version & locale pair. After 3 failures, we'll abandon this version to avoid
+// bootlooping, and wait for a new version to come along.
+const char kSystemWebAppInstallFailureCount[] =
+    "web_apps.system_web_app_failure_count";
+
+// A string representing the latest Chrome version where an attempt was made
+// to install. In the case of success, this and LastUpdateVersion will be the
+// same. If there is an installation failure, they will diverge until a
+// successful installation is made.
+extern const char kSystemWebAppLastAttemptedVersion[] =
+    "web_apps.system_web_app_last_attempted_update";
+
+// A string representing the most recent locale that was attempted to be
+// installed. In the case of success, this and LastUpdateVersion will be the
+// same. If there is an installation failure, they will diverge until a
+// successful installation is made.
+extern const char kSystemWebAppLastAttemptedLocale[] =
+    "web_apps.system_web_app_last_attempted_language";
+
 // The default audio capture device used by the Media content setting.
 const char kDefaultAudioCaptureDevice[] = "media.default_audio_capture_device";
 
@@ -1939,8 +1959,8 @@ const char kDisableAuthNegotiateCnameLookup[] =
 // SPN.
 const char kEnableAuthNegotiatePort[] = "auth.enable_negotiate_port";
 
-// Whitelist containing servers for which Integrated Authentication is enabled.
-const char kAuthServerWhitelist[] = "auth.server_whitelist";
+// Allowlist containing servers for which Integrated Authentication is enabled.
+const char kAuthServerAllowlist[] = "auth.server_whitelist";
 
 // Allowlist containing servers Chrome is allowed to do Kerberos delegation
 // with.
@@ -2195,6 +2215,11 @@ const char kEnrollmentRecoveryRequired[] = "EnrollmentRecoveryRequired";
 // Pref name for whether we should show the Getting Started module in the Help
 // app.
 const char kHelpAppShouldShowGetStarted[] = "help_app.should_show_get_started";
+
+// Pref name for whether we should show the Parental Control module in the Help
+// app.
+const char kHelpAppShouldShowParentalControl[] =
+    "help_app.should_show_parental_control";
 
 // Pref name for whether the device was in tablet mode when going through
 // the OOBE.
@@ -2642,10 +2667,6 @@ const char kRegisteredSupervisedUserWhitelists[] =
     "supervised_users.whitelists";
 
 #if !defined(OS_ANDROID)
-// Boolean that indicates whether Chrome enterprise cloud reporting is enabled
-// or not.
-const char kCloudReportingEnabled[] =
-    "enterprise_reporting.chrome_cloud_reporting";
 // Boolean that indicates whether Chrome enterprise extension request is enabled
 // or not.
 const char kCloudExtensionRequestEnabled[] =

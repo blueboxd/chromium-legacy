@@ -3351,6 +3351,7 @@ if (enable_java_templates) {
       android_lint(_android_lint_target) {
         forward_variables_from(invoker,
                                [
+                                 "lint_min_sdk_version",
                                  "lint_suppressions_dep",
                                  "lint_suppressions_file",
                                  "manifest_package",
@@ -3363,9 +3364,10 @@ if (enable_java_templates) {
     } else {
       not_needed(invoker,
                  [
-                   "manifest_package",
+                   "lint_min_sdk_version",
                    "lint_suppressions_dep",
                    "lint_suppressions_file",
+                   "manifest_package",
                  ])
     }
 
@@ -3474,6 +3476,7 @@ if (enable_java_templates) {
                                "keystore_name",
                                "keystore_password",
                                "keystore_path",
+                               "lint_min_sdk_version",
                                "lint_suppressions_dep",
                                "lint_suppressions_file",
                                "load_library_from_apk",
@@ -5007,6 +5010,7 @@ if (enable_java_templates) {
       android_lint(_android_lint_target) {
         forward_variables_from(invoker,
                                [
+                                 "lint_min_sdk_version",
                                  "lint_suppressions_dep",
                                  "lint_suppressions_file",
                                  "manifest_package",
@@ -5019,9 +5023,10 @@ if (enable_java_templates) {
     } else {
       not_needed(invoker,
                  [
-                   "manifest_package",
+                   "lint_min_sdk_version",
                    "lint_suppressions_dep",
                    "lint_suppressions_file",
+                   "manifest_package",
                  ])
     }
 

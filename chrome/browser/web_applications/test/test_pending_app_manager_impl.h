@@ -31,9 +31,14 @@ class TestPendingAppManagerImpl : public PendingAppManagerImpl {
     return uninstall_requests_;
   }
 
+  void SetDropRequestsForTesting(bool drop_requests_for_testing) {
+    drop_requests_for_testing_ = drop_requests_for_testing;
+  }
+
  private:
   std::vector<ExternalInstallOptions> install_requests_;
   std::vector<GURL> uninstall_requests_;
+  bool drop_requests_for_testing_ = false;
 };
 
 }  // namespace web_app

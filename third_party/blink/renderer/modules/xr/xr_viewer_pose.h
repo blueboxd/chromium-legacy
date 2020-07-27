@@ -11,14 +11,14 @@
 
 namespace blink {
 
-class XRSession;
+class XRFrame;
 class XRView;
 
 class XRViewerPose final : public XRPose {
   DEFINE_WRAPPERTYPEINFO();
 
  public:
-  XRViewerPose(XRSession*, const TransformationMatrix&);
+  XRViewerPose(XRFrame*, const TransformationMatrix&);
   ~XRViewerPose() override = default;
 
   const HeapVector<Member<XRView>>& views() const { return views_; }

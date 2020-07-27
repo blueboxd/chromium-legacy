@@ -11,7 +11,6 @@
 #include "chrome/renderer/subresource_redirect/subresource_redirect_params.h"
 #include "chrome/renderer/subresource_redirect/subresource_redirect_util.h"
 #include "components/data_reduction_proxy/core/common/data_reduction_proxy_headers.h"
-#include "content/public/common/previews_state.h"
 #include "content/public/renderer/render_frame.h"
 #include "net/base/escape.h"
 #include "net/base/load_flags.h"
@@ -19,6 +18,7 @@
 #include "services/network/public/mojom/fetch_api.mojom-shared.h"
 #include "services/network/public/mojom/url_response_head.mojom.h"
 #include "third_party/blink/public/common/features.h"
+#include "third_party/blink/public/common/loader/previews_state.h"
 #include "third_party/blink/public/platform/web_network_state_notifier.h"
 #include "third_party/blink/public/platform/web_url.h"
 #include "third_party/blink/public/platform/web_url_request.h"
@@ -61,7 +61,7 @@ SubresourceRedirectURLLoaderThrottle::MaybeCreateThrottle(
     return base::WrapUnique<SubresourceRedirectURLLoaderThrottle>(
         new SubresourceRedirectURLLoaderThrottle(
             render_frame_id, request.GetPreviewsState() &
-                                 blink::WebURLRequest::kSubresourceRedirectOn));
+                                 blink::PreviewsTypes::kSubresourceRedirectOn));
   }
   return nullptr;
 }
@@ -86,8 +86,7 @@ void SubresourceRedirectURLLoaderThrottle::WillStartRequest(
   DCHECK(base::FeatureList::IsEnabled(blink::features::kSubresourceRedirect));
   DCHECK_EQ(request->destination, network::mojom::RequestDestination::kImage);
   DCHECK(
-      request->previews_state &
-          content::PreviewsTypes::SUBRESOURCE_REDIRECT_ON ||
+      request->previews_state & blink::PreviewsTypes::SUBRESOURCE_REDIRECT_ON ||
       redirect_result_ ==
           SubresourceRedirectHintsAgent::RedirectResult::kIneligibleOtherImage);
   DCHECK(request->url.SchemeIs(url::kHttpsScheme));

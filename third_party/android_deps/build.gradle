@@ -4,11 +4,29 @@
 
 apply plugin: ChromiumPlugin
 
+buildscript {
+  repositories {
+    maven {
+      url "https://plugins.gradle.org/m2/"
+    }
+  }
+  dependencies {
+    classpath "org.owasp:dependency-check-gradle:5.3.2.1"
+  }
+}
+
+apply plugin: "org.owasp.dependencycheck"
+
 repositories {
     mavenCentral()
     maven {
         url 'https://maven.google.com'
     }
+}
+
+dependencyCheck {
+    // Any known vulnerability of any severity will cause the build to fail.
+    failBuildOnCVSS = 0
 }
 
 dependencies {

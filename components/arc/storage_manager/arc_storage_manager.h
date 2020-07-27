@@ -42,7 +42,7 @@ class ArcStorageManager : public KeyedService {
   bool GetApplicationsSize(GetApplicationsSizeCallback callback);
 
   // Deletes all applications' cache files.
-  bool DeleteApplicationsCache(const base::Callback<void()>& callback);
+  bool DeleteApplicationsCache(base::OnceCallback<void()> callback);
 
  private:
   ArcBridgeService* const arc_bridge_service_;

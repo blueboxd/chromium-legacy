@@ -181,6 +181,14 @@ class SafetyCheckViewBinder {
         }
     }
 
+    private static void displayTimestampText(
+            PropertyModel model, SafetyCheckSettingsFragment fragment) {
+        long lastRunTime = model.get(SafetyCheckProperties.LAST_RUN_TIMESTAMP);
+        long currentTime = System.currentTimeMillis();
+        fragment.getTimestampTextView().setText(
+                getLastRunTimestampText(fragment.getContext(), lastRunTime, currentTime));
+    }
+
     private static void clearTimestampText(SafetyCheckSettingsFragment fragment) {
         fragment.getTimestampTextView().setText("");
     }
@@ -201,6 +209,7 @@ class SafetyCheckViewBinder {
                 preference.showProgressBar();
                 preference.setEnabled(false);
             } else {
+                displayTimestampText(model, fragment);
                 preference.showStatusIcon(getStatusIconForPasswords(state));
                 preference.setEnabled(true);
             }
@@ -218,7 +227,8 @@ class SafetyCheckViewBinder {
                 preference.showProgressBar();
                 preference.setEnabled(false);
             } else {
-                preference.showStatusIcon(getStatusIconForPasswords(state));
+                displayTimestampText(model, fragment);
+                preference.showStatusIcon(getStatusIconForSafeBrowsing(state));
                 preference.setEnabled(true);
             }
         } else if (SafetyCheckProperties.UPDATES_STATE == propertyKey) {
@@ -235,7 +245,8 @@ class SafetyCheckViewBinder {
                 preference.showProgressBar();
                 preference.setEnabled(false);
             } else {
-                preference.showStatusIcon(getStatusIconForPasswords(state));
+                displayTimestampText(model, fragment);
+                preference.showStatusIcon(getStatusIconForUpdates(state));
                 preference.setEnabled(true);
             }
         } else if (SafetyCheckProperties.PASSWORDS_CLICK_LISTENER == propertyKey) {
@@ -254,10 +265,7 @@ class SafetyCheckViewBinder {
             fragment.getCheckButton().setOnClickListener((View.OnClickListener) model.get(
                     SafetyCheckProperties.SAFETY_CHECK_BUTTON_CLICK_LISTENER));
         } else if (SafetyCheckProperties.LAST_RUN_TIMESTAMP == propertyKey) {
-            long lastRunTime = model.get(SafetyCheckProperties.LAST_RUN_TIMESTAMP);
-            long currentTime = System.currentTimeMillis();
-            fragment.getTimestampTextView().setText(
-                    getLastRunTimestampText(fragment.getContext(), lastRunTime, currentTime));
+            displayTimestampText(model, fragment);
         } else {
             assert false : "Unhandled property detected in SafetyCheckViewBinder!";
         }

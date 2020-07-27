@@ -299,9 +299,9 @@ FrameFetchContext::GetPreviewsResourceLoadingHints() const {
   return document_loader_->GetPreviewsResourceLoadingHints();
 }
 
-WebURLRequest::PreviewsState FrameFetchContext::previews_state() const {
+PreviewsState FrameFetchContext::previews_state() const {
   if (GetResourceFetcherProperties().IsDetached())
-    return WebURLRequest::kPreviewsUnspecified;
+    return PreviewsTypes::kPreviewsUnspecified;
   return document_loader_->GetPreviewsState();
 }
 
@@ -380,11 +380,10 @@ void FrameFetchContext::PrepareRequest(
   if (document_loader_->ForceFetchCacheMode())
     request.SetCacheMode(*document_loader_->ForceFetchCacheMode());
 
-  if (request.GetPreviewsState() == WebURLRequest::kPreviewsUnspecified) {
-    WebURLRequest::PreviewsState request_previews_state =
-        document_loader_->GetPreviewsState();
-    if (request_previews_state == WebURLRequest::kPreviewsUnspecified)
-      request_previews_state = WebURLRequest::kPreviewsOff;
+  if (request.GetPreviewsState() == PreviewsTypes::kPreviewsUnspecified) {
+    PreviewsState request_previews_state = document_loader_->GetPreviewsState();
+    if (request_previews_state == PreviewsTypes::kPreviewsUnspecified)
+      request_previews_state = PreviewsTypes::kPreviewsOff;
     request.SetPreviewsState(request_previews_state);
   }
 

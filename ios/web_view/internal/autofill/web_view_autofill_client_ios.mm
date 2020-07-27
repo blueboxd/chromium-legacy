@@ -142,6 +142,10 @@ AddressNormalizer* WebViewAutofillClientIOS::GetAddressNormalizer() {
   return nullptr;
 }
 
+const GURL& WebViewAutofillClientIOS::GetLastCommittedURL() {
+  return web_state_->GetLastCommittedURL();
+}
+
 security_state::SecurityLevel
 WebViewAutofillClientIOS::GetSecurityLevelForUmaHistograms() {
   return security_state::GetSecurityLevelForWebState(web_state_);

@@ -1231,14 +1231,6 @@ bool ChromeContentRendererClient::ShouldSuppressErrorPage(
     content::RenderFrame* render_frame,
     const GURL& url,
     int error_code) {
-  // Unit tests for ChromeContentRendererClient pass a NULL RenderFrame here.
-  // Unfortunately it's very difficult to construct a mock RenderView, so skip
-  // this functionality in this case.
-  if (render_frame && NetErrorHelper::Get(render_frame)
-                          ->ShouldSuppressErrorPage(url, error_code)) {
-    return true;
-  }
-
   // Do not flash an error page if the Instant new tab page fails to load.
   bool is_instant_ntp = false;
 #if !defined(OS_ANDROID)

@@ -31,7 +31,7 @@ class CrosHealthdClientImpl : public CrosHealthdClient {
   // CrosHealthdClient overrides:
   mojo::Remote<cros_healthd::mojom::CrosHealthdServiceFactory>
   BootstrapMojoConnection(
-      base::OnceCallback<void(bool success)> result_callback) override {
+      BootstrapMojoConnectionCallback result_callback) override {
     mojo::PlatformChannel platform_channel;
 
     // Prepare a Mojo invitation to send through |platform_channel|.
@@ -79,7 +79,7 @@ class CrosHealthdClientImpl : public CrosHealthdClient {
 
   // Passes the success/failure of |dbus_response| on to |result_callback|.
   void OnBootstrapMojoConnectionResponse(
-      base::OnceCallback<void(bool success)> result_callback,
+      BootstrapMojoConnectionCallback result_callback,
       dbus::Response* const dbus_response) {
     const bool success = dbus_response != nullptr;
     std::move(result_callback).Run(success);

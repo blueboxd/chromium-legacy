@@ -14,6 +14,7 @@
 #include "chrome/browser/extensions/api/settings_private/generated_prefs_factory.h"
 #include "chrome/browser/extensions/settings_api_helpers.h"
 #include "chrome/browser/nearby_sharing/common/nearby_share_prefs.h"
+#include "chrome/browser/password_manager/generated_password_leak_detection_pref.h"
 #include "chrome/browser/prefs/session_startup_pref.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/safe_browsing/generated_safe_browsing_pref.h"
@@ -258,6 +259,8 @@ const PrefsUtil::TypedPrefMap& PrefsUtil::GetWhitelistedKeys() {
       settings_api::PrefType::PREF_TYPE_STRING;
 
   // Security page
+  (*s_whitelist)[::kGeneratedPasswordLeakDetectionPref] =
+      settings_api::PrefType::PREF_TYPE_BOOLEAN;
   (*s_whitelist)[::prefs::kSafeBrowsingEnabled] =
       settings_api::PrefType::PREF_TYPE_BOOLEAN;
   (*s_whitelist)[::prefs::kSafeBrowsingEnhanced] =

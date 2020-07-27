@@ -65,8 +65,10 @@ class CORE_EXPORT SelectionController final
   void UpdateSelectionForMouseDrag(const HitTestResult&,
                                    const PhysicalOffset&,
                                    const PhysicalOffset&);
-  void UpdateSelectionForContextMenuEvent(const MouseEventWithHitTestResults&,
-                                          const PhysicalOffset&);
+  template <typename MouseEventObject>
+  void UpdateSelectionForContextMenuEvent(const MouseEventObject* mouse_event,
+                                          const HitTestResult& hit_test_result,
+                                          const PhysicalOffset& position);
   void PassMousePressEventToSubframe(const MouseEventWithHitTestResults&);
 
   void InitializeSelectionState();
@@ -97,11 +99,17 @@ class CORE_EXPORT SelectionController final
   void SelectClosestMisspellingFromHitTestResult(const HitTestResult&,
                                                  AppendTrailingWhitespace);
   // Returns |true| if a word was selected.
-  bool SelectClosestWordFromMouseEvent(const MouseEventWithHitTestResults&);
+  template <typename MouseEventObject>
+  bool SelectClosestWordFromMouseEvent(const MouseEventObject* mouse_event,
+                                       const HitTestResult& result);
+  template <typename MouseEventObject>
   void SelectClosestMisspellingFromMouseEvent(
-      const MouseEventWithHitTestResults&);
+      const MouseEventObject* mouse_event,
+      const HitTestResult& hit_test_result);
+  template <typename MouseEventObject>
   void SelectClosestWordOrLinkFromMouseEvent(
-      const MouseEventWithHitTestResults&);
+      const MouseEventObject* mouse_event,
+      const HitTestResult& hit_test_result);
   void SetNonDirectionalSelectionIfNeeded(const SelectionInFlatTree&,
                                           const SetSelectionOptions&,
                                           EndPointsAdjustmentMode);

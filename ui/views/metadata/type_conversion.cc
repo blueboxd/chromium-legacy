@@ -317,6 +317,22 @@ DEFINE_ENUM_CONVERTERS(ui::TextInputType,
                        {ui::TextInputType::TEXT_INPUT_TYPE_MAX,
                         base::ASCIIToUTF16("TEXT_INPUT_TYPE_MAX")})
 
+DEFINE_ENUM_CONVERTERS(ui::MenuSeparatorType,
+                       {ui::MenuSeparatorType::NORMAL_SEPARATOR,
+                        base::ASCIIToUTF16("NORMAL_SEPARATOR")},
+                       {ui::MenuSeparatorType::DOUBLE_SEPARATOR,
+                        base::ASCIIToUTF16("DOUBLE_SEPARATOR")},
+                       {ui::MenuSeparatorType::UPPER_SEPARATOR,
+                        base::ASCIIToUTF16("UPPER_SEPARATOR")},
+                       {ui::MenuSeparatorType::LOWER_SEPARATOR,
+                        base::ASCIIToUTF16("LOWER_SEPARATOR")},
+                       {ui::MenuSeparatorType::SPACING_SEPARATOR,
+                        base::ASCIIToUTF16("SPACING_SEPARATOR")},
+                       {ui::MenuSeparatorType::VERTICAL_SEPARATOR,
+                        base::ASCIIToUTF16("VERTICAL_SEPARATOR")},
+                       {ui::MenuSeparatorType::PADDED_SEPARATOR,
+                        base::ASCIIToUTF16("PADDED_SEPARATOR")})
+
 #define OP(enum_name) \
   { ui::NativeTheme::enum_name, base::ASCIIToUTF16(#enum_name) }
 DEFINE_ENUM_CONVERTERS(ui::NativeTheme::ColorId, NATIVE_THEME_COLOR_IDS)

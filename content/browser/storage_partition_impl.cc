@@ -54,7 +54,6 @@
 #include "content/browser/devtools/devtools_url_loader_interceptor.h"
 #include "content/browser/file_system/browser_file_system_helper.h"
 #include "content/browser/gpu/shader_cache_factory.h"
-#include "content/browser/idle/idle_manager_impl.h"
 #include "content/browser/loader/prefetch_url_loader_service.h"
 #include "content/browser/native_file_system/native_file_system_manager_impl.h"
 #include "content/browser/native_io/native_io_context.h"
@@ -1247,7 +1246,6 @@ void StoragePartitionImpl::Initialize() {
   dom_storage_context_ = DOMStorageContextWrapper::Create(
       this, browser_context_->GetSpecialStoragePolicy());
 
-  idle_manager_ = std::make_unique<IdleManagerImpl>(browser_context_);
   lock_manager_ = std::make_unique<LockManager>();
 
   scoped_refptr<ChromeBlobStorageContext> blob_context =
@@ -1498,11 +1496,6 @@ storage::DatabaseTracker* StoragePartitionImpl::GetDatabaseTracker() {
 DOMStorageContextWrapper* StoragePartitionImpl::GetDOMStorageContext() {
   DCHECK(initialized_);
   return dom_storage_context_.get();
-}
-
-IdleManager* StoragePartitionImpl::GetIdleManager() {
-  DCHECK(initialized_);
-  return idle_manager_.get();
 }
 
 LockManager* StoragePartitionImpl::GetLockManager() {

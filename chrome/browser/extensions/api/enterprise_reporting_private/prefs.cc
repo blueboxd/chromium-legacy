@@ -5,6 +5,7 @@
 #include "chrome/browser/extensions/api/enterprise_reporting_private/prefs.h"
 
 #include "chrome/common/pref_names.h"
+#include "components/enterprise/browser/reporting/common_pref_names.h"
 #include "components/pref_registry/pref_registry_syncable.h"
 
 namespace extensions {
@@ -32,7 +33,8 @@ void RegisterProfilePrefs(user_prefs::PrefRegistrySyncable* registry) {
   registry->RegisterBooleanPref(kReportUserIDData, true);
   registry->RegisterBooleanPref(kReportExtensionsAndPluginsData, true);
   registry->RegisterBooleanPref(kReportSafeBrowsingData, false);
-  registry->RegisterBooleanPref(prefs::kCloudReportingEnabled, false);
+  registry->RegisterBooleanPref(::enterprise_reporting::kCloudReportingEnabled,
+                                false);
 }
 
 }  // namespace enterprise_reporting

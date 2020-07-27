@@ -93,6 +93,9 @@ NET_EXPORT GURL CookieDomainAndPathToURL(const std::string& domain,
 NET_EXPORT GURL CookieDomainAndPathToURL(const std::string& domain,
                                          const std::string& path,
                                          bool is_https);
+NET_EXPORT GURL CookieDomainAndPathToURL(const std::string& domain,
+                                         const std::string& path,
+                                         CookieSourceScheme source_scheme);
 
 // Convenience for converting a cookie origin (domain and https pair) to a URL.
 NET_EXPORT GURL CookieOriginToURL(const std::string& domain, bool is_https);

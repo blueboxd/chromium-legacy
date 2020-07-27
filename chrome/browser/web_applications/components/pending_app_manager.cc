@@ -24,8 +24,9 @@ PendingAppManager::SynchronizeRequest::SynchronizeRequest(
 
 PendingAppManager::SynchronizeRequest::~SynchronizeRequest() = default;
 
-PendingAppManager::SynchronizeRequest& PendingAppManager::SynchronizeRequest::
-operator=(PendingAppManager::SynchronizeRequest&&) = default;
+PendingAppManager::SynchronizeRequest&
+PendingAppManager::SynchronizeRequest::operator=(
+    PendingAppManager::SynchronizeRequest&&) = default;
 
 PendingAppManager::SynchronizeRequest::SynchronizeRequest(
     SynchronizeRequest&& other) = default;
@@ -164,6 +165,10 @@ void PendingAppManager::OnAppSynchronized(ExternalInstallSource source,
                                   std::move(request.uninstall_results)));
     synchronize_requests_.erase(source);
   }
+}
+void PendingAppManager::ClearSynchronizeRequestsForTesting() {
+  synchronize_requests_.erase(synchronize_requests_.begin(),
+                              synchronize_requests_.end());
 }
 
 }  // namespace web_app

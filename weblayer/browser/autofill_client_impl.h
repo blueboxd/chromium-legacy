@@ -35,6 +35,7 @@ class AutofillClientImpl
   ukm::UkmRecorder* GetUkmRecorder() override;
   ukm::SourceId GetUkmSourceId() override;
   autofill::AddressNormalizer* GetAddressNormalizer() override;
+  const GURL& GetLastCommittedURL() override;
   security_state::SecurityLevel GetSecurityLevelForUmaHistograms() override;
 
   void ShowAutofillSettings(bool show_credit_card_settings) override;

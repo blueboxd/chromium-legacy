@@ -21,8 +21,6 @@
 #include "base/test/bind_test_util.h"
 #include "base/test/metrics/histogram_tester.h"
 #include "base/test/task_environment.h"
-#include "base/timer/mock_timer.h"
-#include "base/timer/timer.h"
 #include "build/build_config.h"
 #include "chrome/common/available_offline_content.mojom.h"
 #include "chrome/renderer/net/available_offline_content_helper.h"
@@ -90,30 +88,18 @@ class NetErrorHelperCoreTest : public testing::Test,
                                public NetErrorHelperCore::Delegate {
  public:
   NetErrorHelperCoreTest()
-      : timer_(nullptr),
-        update_count_(0),
+      : update_count_(0),
         reload_count_(0),
         diagnose_error_count_(0),
         download_count_(0),
         list_visible_by_prefs_(true),
         enable_page_helper_functions_count_(0),
         default_url_(GURL(kFailedUrl)),
-        error_url_(GURL(content::kUnreachableWebDataURL)) {
-    SetUpCore(false, true);
-  }
+        error_url_(GURL(content::kUnreachableWebDataURL)) {}
 
   ~NetErrorHelperCoreTest() override = default;
 
-  void SetUpCore(bool auto_reload_enabled,
-                 bool visible) {
-    // The old value of timer_, if any, will be freed by the old core_ being
-    // destructed, since core_ takes ownership of the timer.
-    timer_ = new base::MockOneShotTimer();
-    core_.reset(new NetErrorHelperCore(this, auto_reload_enabled, visible));
-    core_->set_timer_for_testing(base::WrapUnique(timer_));
-  }
-
-  NetErrorHelperCore* core() { return core_.get(); }
+  NetErrorHelperCore* core() { return &core_; }
 
   int reload_count() const { return reload_count_; }
 
@@ -170,14 +156,10 @@ class NetErrorHelperCoreTest : public testing::Test,
   }
 #endif
 
-  base::MockOneShotTimer* timer() { return timer_; }
-
   base::test::TaskEnvironment* task_environment() { return &task_environment_; }
   content::MockRenderThread* render_thread() { return &render_thread_; }
 
   void DoErrorLoadOfURL(net::Error error, const GURL& url) {
-    core()->OnStartLoad(NetErrorHelperCore::MAIN_FRAME,
-                        NetErrorHelperCore::NON_ERROR_PAGE);
     std::string html;
     core()->PrepareErrorPage(NetErrorHelperCore::MAIN_FRAME,
                              NetErrorForURL(error, url),
@@ -185,8 +167,6 @@ class NetErrorHelperCoreTest : public testing::Test,
     EXPECT_FALSE(html.empty());
     EXPECT_EQ(NetErrorStringForURL(error, url), html);
 
-    core()->OnStartLoad(NetErrorHelperCore::MAIN_FRAME,
-                        NetErrorHelperCore::ERROR_PAGE);
     core()->OnCommitLoad(NetErrorHelperCore::MAIN_FRAME, error_url());
     core()->OnFinishLoad(NetErrorHelperCore::MAIN_FRAME);
   }
@@ -195,23 +175,7 @@ class NetErrorHelperCoreTest : public testing::Test,
     DoErrorLoadOfURL(error, GURL(kFailedUrl));
   }
 
-  void DoErrorLoadWithCustomErrorPage(net::Error error) {
-    core()->OnStartLoad(NetErrorHelperCore::MAIN_FRAME,
-                        NetErrorHelperCore::NON_ERROR_PAGE);
-    // Custom error pages pass nullptr to PrepareErrorPage, since they set the
-    // error HTML on their own.
-    core()->PrepareErrorPage(NetErrorHelperCore::MAIN_FRAME,
-                             NetErrorForURL(error, GURL(kFailedUrl)),
-                             false /* is_failed_post */, nullptr);
-    core()->OnStartLoad(NetErrorHelperCore::MAIN_FRAME,
-                        NetErrorHelperCore::ERROR_PAGE);
-    core()->OnCommitLoad(NetErrorHelperCore::MAIN_FRAME, error_url());
-    core()->OnFinishLoad(NetErrorHelperCore::MAIN_FRAME);
-  }
-
   void DoSuccessLoad() {
-    core()->OnStartLoad(NetErrorHelperCore::MAIN_FRAME,
-                        NetErrorHelperCore::NON_ERROR_PAGE);
     core()->OnCommitLoad(NetErrorHelperCore::MAIN_FRAME, default_url());
     core()->OnFinishLoad(NetErrorHelperCore::MAIN_FRAME);
   }
@@ -239,6 +203,8 @@ class NetErrorHelperCoreTest : public testing::Test,
       std::string* html) const override {
     last_can_show_network_diagnostics_dialog_ =
         can_show_network_diagnostics_dialog;
+
+    CHECK_NE(html, nullptr);
     *html = ErrorToString(error, is_failed_post);
 
     return GetPageState();
@@ -290,12 +256,10 @@ class NetErrorHelperCoreTest : public testing::Test,
 
   content::RenderFrame* GetRenderFrame() override { return nullptr; }
 
-  base::MockOneShotTimer* timer_;
-
   base::test::TaskEnvironment task_environment_;
   content::MockRenderThread render_thread_;
 
-  std::unique_ptr<NetErrorHelperCore> core_;
+  NetErrorHelperCore core_{this};
 
   // Contains the information passed to the last call to UpdateErrorPage, as a
   // string.
@@ -338,19 +302,13 @@ class NetErrorHelperCoreTest : public testing::Test,
 TEST_F(NetErrorHelperCoreTest, Null) {}
 
 TEST_F(NetErrorHelperCoreTest, SuccessfulPageLoad) {
-  core()->OnStartLoad(NetErrorHelperCore::MAIN_FRAME,
-                      NetErrorHelperCore::NON_ERROR_PAGE);
   core()->OnCommitLoad(NetErrorHelperCore::MAIN_FRAME, default_url());
   core()->OnFinishLoad(NetErrorHelperCore::MAIN_FRAME);
   EXPECT_EQ(0, update_count());
 }
 
 TEST_F(NetErrorHelperCoreTest, MainFrameNonDnsError) {
-  // Original page starts loading.
-  core()->OnStartLoad(NetErrorHelperCore::MAIN_FRAME,
-                      NetErrorHelperCore::NON_ERROR_PAGE);
-
-  // It fails, and an error page is requested.
+  // An error page is requested.
   std::string html;
   core()->PrepareErrorPage(NetErrorHelperCore::MAIN_FRAME,
                            NetError(net::ERR_CONNECTION_RESET),
@@ -361,8 +319,6 @@ TEST_F(NetErrorHelperCoreTest, MainFrameNonDnsError) {
 
   // Error page loads.
   EXPECT_EQ(0, enable_page_helper_functions_count());
-  core()->OnStartLoad(NetErrorHelperCore::MAIN_FRAME,
-                      NetErrorHelperCore::ERROR_PAGE);
   core()->OnCommitLoad(NetErrorHelperCore::MAIN_FRAME, error_url());
   core()->OnFinishLoad(NetErrorHelperCore::MAIN_FRAME);
   EXPECT_EQ(0, update_count());
@@ -372,13 +328,9 @@ TEST_F(NetErrorHelperCoreTest, MainFrameNonDnsError) {
 // Much like above tests, but with a bunch of spurious DNS status messages that
 // should have no effect.
 TEST_F(NetErrorHelperCoreTest, MainFrameNonDnsErrorSpuriousStatus) {
-  // Original page starts loading.
-  core()->OnStartLoad(NetErrorHelperCore::MAIN_FRAME,
-                      NetErrorHelperCore::NON_ERROR_PAGE);
-  core()->OnNetErrorInfo(error_page::DNS_PROBE_FINISHED_NXDOMAIN);
-
-  // It fails, and an error page is requested.
+  // Loading fails, and an error page is requested.
   std::string html;
+  core()->OnNetErrorInfo(error_page::DNS_PROBE_FINISHED_NXDOMAIN);
   core()->PrepareErrorPage(NetErrorHelperCore::MAIN_FRAME,
                            NetError(net::ERR_CONNECTION_RESET),
                            false /* is_failed_post */, &html);
@@ -390,8 +342,6 @@ TEST_F(NetErrorHelperCoreTest, MainFrameNonDnsErrorSpuriousStatus) {
 
   // Error page loads.
 
-  core()->OnStartLoad(NetErrorHelperCore::MAIN_FRAME,
-                      NetErrorHelperCore::ERROR_PAGE);
   core()->OnNetErrorInfo(error_page::DNS_PROBE_FINISHED_NXDOMAIN);
 
   core()->OnCommitLoad(NetErrorHelperCore::MAIN_FRAME, error_url());
@@ -403,12 +353,19 @@ TEST_F(NetErrorHelperCoreTest, MainFrameNonDnsErrorSpuriousStatus) {
   EXPECT_EQ(0, update_count());
 }
 
-TEST_F(NetErrorHelperCoreTest, SubFrameDnsError) {
-  // Original page starts loading.
-  core()->OnStartLoad(NetErrorHelperCore::SUB_FRAME,
-                      NetErrorHelperCore::NON_ERROR_PAGE);
+TEST_F(NetErrorHelperCoreTest, SubFrameErrorWithCustomErrorPage) {
+  // Loading fails, and an error page is requested. |error_html| is null
+  // indicating a custom error page. Calls below should not crash.
+  core()->PrepareErrorPage(
+      NetErrorHelperCore::SUB_FRAME, NetError(net::ERR_NAME_NOT_RESOLVED),
+      false /* is_failed_post */, nullptr /* error_html */);
+  core()->OnCommitLoad(NetErrorHelperCore::SUB_FRAME, error_url());
+  core()->OnFinishLoad(NetErrorHelperCore::SUB_FRAME);
+  EXPECT_EQ(0, update_count());
+}
 
-  // It fails, and an error page is requested.
+TEST_F(NetErrorHelperCoreTest, SubFrameDnsError) {
+  // Loading fails, and an error page is requested.
   std::string html;
   core()->PrepareErrorPage(NetErrorHelperCore::SUB_FRAME,
                            NetError(net::ERR_NAME_NOT_RESOLVED),
@@ -417,8 +374,6 @@ TEST_F(NetErrorHelperCoreTest, SubFrameDnsError) {
   EXPECT_EQ(NetErrorString(net::ERR_NAME_NOT_RESOLVED), html);
 
   // Error page loads.
-  core()->OnStartLoad(NetErrorHelperCore::SUB_FRAME,
-                      NetErrorHelperCore::ERROR_PAGE);
   core()->OnCommitLoad(NetErrorHelperCore::SUB_FRAME, error_url());
   core()->OnFinishLoad(NetErrorHelperCore::SUB_FRAME);
   EXPECT_EQ(0, update_count());
@@ -427,13 +382,9 @@ TEST_F(NetErrorHelperCoreTest, SubFrameDnsError) {
 // Much like above tests, but with a bunch of spurious DNS status messages that
 // should have no effect.
 TEST_F(NetErrorHelperCoreTest, SubFrameDnsErrorSpuriousStatus) {
-  // Original page starts loading.
-  core()->OnStartLoad(NetErrorHelperCore::SUB_FRAME,
-                      NetErrorHelperCore::NON_ERROR_PAGE);
-  core()->OnNetErrorInfo(error_page::DNS_PROBE_FINISHED_NXDOMAIN);
-
-  // It fails, and an error page is requested.
+  // Loading fails, and an error page is requested.
   std::string html;
+  core()->OnNetErrorInfo(error_page::DNS_PROBE_FINISHED_NXDOMAIN);
   core()->PrepareErrorPage(NetErrorHelperCore::SUB_FRAME,
                            NetError(net::ERR_NAME_NOT_RESOLVED),
                            false /* is_failed_post */, &html);
@@ -444,8 +395,6 @@ TEST_F(NetErrorHelperCoreTest, SubFrameDnsErrorSpuriousStatus) {
 
   // Error page loads.
 
-  core()->OnStartLoad(NetErrorHelperCore::SUB_FRAME,
-                      NetErrorHelperCore::ERROR_PAGE);
   core()->OnNetErrorInfo(error_page::DNS_PROBE_FINISHED_NXDOMAIN);
 
   core()->OnCommitLoad(NetErrorHelperCore::SUB_FRAME, error_url());
@@ -464,11 +413,7 @@ TEST_F(NetErrorHelperCoreTest, SubFrameDnsErrorSpuriousStatus) {
 // Test case where the error page finishes loading before receiving any DNS
 // probe messages.
 TEST_F(NetErrorHelperCoreTest, FinishedBeforeProbe) {
-  // Original page starts loading.
-  core()->OnStartLoad(NetErrorHelperCore::MAIN_FRAME,
-                      NetErrorHelperCore::NON_ERROR_PAGE);
-
-  // It fails, and an error page is requested.
+  // Loading fails, and an error page is requested.
   std::string html;
   core()->PrepareErrorPage(NetErrorHelperCore::MAIN_FRAME,
                            NetError(net::ERR_NAME_NOT_RESOLVED),
@@ -477,8 +422,6 @@ TEST_F(NetErrorHelperCoreTest, FinishedBeforeProbe) {
   EXPECT_EQ(ProbeErrorString(error_page::DNS_PROBE_POSSIBLE), html);
 
   // Error page loads.
-  core()->OnStartLoad(NetErrorHelperCore::MAIN_FRAME,
-                      NetErrorHelperCore::ERROR_PAGE);
   core()->OnCommitLoad(NetErrorHelperCore::MAIN_FRAME, error_url());
   core()->OnFinishLoad(NetErrorHelperCore::MAIN_FRAME);
   EXPECT_EQ(0, update_count());
@@ -500,11 +443,7 @@ TEST_F(NetErrorHelperCoreTest, FinishedBeforeProbe) {
 
 // Same as above, but the probe is not run.
 TEST_F(NetErrorHelperCoreTest, FinishedBeforeProbeNotRun) {
-  // Original page starts loading.
-  core()->OnStartLoad(NetErrorHelperCore::MAIN_FRAME,
-                      NetErrorHelperCore::NON_ERROR_PAGE);
-
-  // It fails, and an error page is requested.
+  // Loading fails, and an error page is requested.
   std::string html;
   core()->PrepareErrorPage(NetErrorHelperCore::MAIN_FRAME,
                            NetError(net::ERR_NAME_NOT_RESOLVED),
@@ -513,8 +452,6 @@ TEST_F(NetErrorHelperCoreTest, FinishedBeforeProbeNotRun) {
   EXPECT_EQ(ProbeErrorString(error_page::DNS_PROBE_POSSIBLE), html);
 
   // Error page loads.
-  core()->OnStartLoad(NetErrorHelperCore::MAIN_FRAME,
-                      NetErrorHelperCore::ERROR_PAGE);
   core()->OnCommitLoad(NetErrorHelperCore::MAIN_FRAME, error_url());
   core()->OnFinishLoad(NetErrorHelperCore::MAIN_FRAME);
   EXPECT_EQ(0, update_count());
@@ -533,11 +470,7 @@ TEST_F(NetErrorHelperCoreTest, FinishedBeforeProbeNotRun) {
 
 // Same as above, but the probe result is inconclusive.
 TEST_F(NetErrorHelperCoreTest, FinishedBeforeProbeInconclusive) {
-  // Original page starts loading.
-  core()->OnStartLoad(NetErrorHelperCore::MAIN_FRAME,
-                      NetErrorHelperCore::NON_ERROR_PAGE);
-
-  // It fails, and an error page is requested.
+  // Loading fails, and an error page is requested.
   std::string html;
   core()->PrepareErrorPage(NetErrorHelperCore::MAIN_FRAME,
                            NetError(net::ERR_NAME_NOT_RESOLVED),
@@ -546,8 +479,6 @@ TEST_F(NetErrorHelperCoreTest, FinishedBeforeProbeInconclusive) {
   EXPECT_EQ(ProbeErrorString(error_page::DNS_PROBE_POSSIBLE), html);
 
   // Error page loads.
-  core()->OnStartLoad(NetErrorHelperCore::MAIN_FRAME,
-                      NetErrorHelperCore::ERROR_PAGE);
   core()->OnCommitLoad(NetErrorHelperCore::MAIN_FRAME, error_url());
   core()->OnFinishLoad(NetErrorHelperCore::MAIN_FRAME);
   EXPECT_EQ(0, update_count());
@@ -571,11 +502,7 @@ TEST_F(NetErrorHelperCoreTest, FinishedBeforeProbeInconclusive) {
 TEST_F(NetErrorHelperCoreTest, FinishedBeforeProbeNoInternet) {
   base::HistogramTester histogram_tester_;
 
-  // Original page starts loading.
-  core()->OnStartLoad(NetErrorHelperCore::MAIN_FRAME,
-                      NetErrorHelperCore::NON_ERROR_PAGE);
-
-  // It fails, and an error page is requested.
+  // Loading fails, and an error page is requested.
   std::string html;
   core()->PrepareErrorPage(NetErrorHelperCore::MAIN_FRAME,
                            NetError(net::ERR_NAME_NOT_RESOLVED),
@@ -584,8 +511,6 @@ TEST_F(NetErrorHelperCoreTest, FinishedBeforeProbeNoInternet) {
   EXPECT_EQ(ProbeErrorString(error_page::DNS_PROBE_POSSIBLE), html);
 
   // Error page loads.
-  core()->OnStartLoad(NetErrorHelperCore::MAIN_FRAME,
-                      NetErrorHelperCore::ERROR_PAGE);
   core()->OnCommitLoad(NetErrorHelperCore::MAIN_FRAME, error_url());
   core()->OnFinishLoad(NetErrorHelperCore::MAIN_FRAME);
   EXPECT_EQ(0, update_count());
@@ -611,14 +536,10 @@ TEST_F(NetErrorHelperCoreTest, FinishedBeforeProbeNoInternet) {
 
   // Perform a second error page load, and confirm that the previous load
   // doesn't affect the result.
-  core()->OnStartLoad(NetErrorHelperCore::MAIN_FRAME,
-                      NetErrorHelperCore::NON_ERROR_PAGE);
   core()->PrepareErrorPage(NetErrorHelperCore::MAIN_FRAME,
                            NetError(net::ERR_NAME_NOT_RESOLVED),
                            false /* is_failed_post */, &html);
   EXPECT_EQ(ProbeErrorString(error_page::DNS_PROBE_POSSIBLE), html);
-  core()->OnStartLoad(NetErrorHelperCore::MAIN_FRAME,
-                      NetErrorHelperCore::ERROR_PAGE);
   core()->OnCommitLoad(NetErrorHelperCore::MAIN_FRAME, error_url());
   core()->OnFinishLoad(NetErrorHelperCore::MAIN_FRAME);
   core()->OnNetErrorInfo(error_page::DNS_PROBE_STARTED);
@@ -634,11 +555,7 @@ TEST_F(NetErrorHelperCoreTest, FinishedBeforeProbeNoInternet) {
 
 // Same as above, but the probe result is bad config.
 TEST_F(NetErrorHelperCoreTest, FinishedBeforeProbeBadConfig) {
-  // Original page starts loading.
-  core()->OnStartLoad(NetErrorHelperCore::MAIN_FRAME,
-                      NetErrorHelperCore::NON_ERROR_PAGE);
-
-  // It fails, and an error page is requested.
+  // Loading fails, and an error page is requested.
   std::string html;
   core()->PrepareErrorPage(NetErrorHelperCore::MAIN_FRAME,
                            NetError(net::ERR_NAME_NOT_RESOLVED),
@@ -647,8 +564,6 @@ TEST_F(NetErrorHelperCoreTest, FinishedBeforeProbeBadConfig) {
   EXPECT_EQ(ProbeErrorString(error_page::DNS_PROBE_POSSIBLE), html);
 
   // Error page loads.
-  core()->OnStartLoad(NetErrorHelperCore::MAIN_FRAME,
-                      NetErrorHelperCore::ERROR_PAGE);
   core()->OnCommitLoad(NetErrorHelperCore::MAIN_FRAME, error_url());
   core()->OnFinishLoad(NetErrorHelperCore::MAIN_FRAME);
   EXPECT_EQ(0, update_count());
@@ -672,11 +587,7 @@ TEST_F(NetErrorHelperCoreTest, FinishedBeforeProbeBadConfig) {
 // Test case where the error page finishes loading after receiving the start
 // DNS probe message.
 TEST_F(NetErrorHelperCoreTest, FinishedAfterStartProbe) {
-  // Original page starts loading.
-  core()->OnStartLoad(NetErrorHelperCore::MAIN_FRAME,
-                      NetErrorHelperCore::NON_ERROR_PAGE);
-
-  // It fails, and an error page is requested.
+  // Loading fails, and an error page is requested.
   std::string html;
   core()->PrepareErrorPage(NetErrorHelperCore::MAIN_FRAME,
                            NetError(net::ERR_NAME_NOT_RESOLVED),
@@ -685,8 +596,6 @@ TEST_F(NetErrorHelperCoreTest, FinishedAfterStartProbe) {
   EXPECT_EQ(ProbeErrorString(error_page::DNS_PROBE_POSSIBLE), html);
 
   // Error page loads.
-  core()->OnStartLoad(NetErrorHelperCore::MAIN_FRAME,
-                      NetErrorHelperCore::ERROR_PAGE);
   core()->OnCommitLoad(NetErrorHelperCore::MAIN_FRAME, error_url());
 
   // Nothing should be done when a probe status comes in before loading
@@ -714,11 +623,7 @@ TEST_F(NetErrorHelperCoreTest, FinishedAfterStartProbe) {
 // Test case where the error page finishes loading before receiving any DNS
 // probe messages and the request is a POST.
 TEST_F(NetErrorHelperCoreTest, FinishedBeforeProbePost) {
-  // Original page starts loading.
-  core()->OnStartLoad(NetErrorHelperCore::MAIN_FRAME,
-                      NetErrorHelperCore::NON_ERROR_PAGE);
-
-  // It fails, and an error page is requested.
+  // Loading fails, and an error page is requested.
   std::string html;
   core()->PrepareErrorPage(NetErrorHelperCore::MAIN_FRAME,
                            NetError(net::ERR_NAME_NOT_RESOLVED),
@@ -729,8 +634,6 @@ TEST_F(NetErrorHelperCoreTest, FinishedBeforeProbePost) {
 
   // Error page loads.
   EXPECT_EQ(0, enable_page_helper_functions_count());
-  core()->OnStartLoad(NetErrorHelperCore::MAIN_FRAME,
-                      NetErrorHelperCore::ERROR_PAGE);
   core()->OnCommitLoad(NetErrorHelperCore::MAIN_FRAME, error_url());
   core()->OnFinishLoad(NetErrorHelperCore::MAIN_FRAME);
   EXPECT_EQ(0, update_count());
@@ -750,11 +653,7 @@ TEST_F(NetErrorHelperCoreTest, FinishedBeforeProbePost) {
 
 // Test case where the probe finishes before the page is committed.
 TEST_F(NetErrorHelperCoreTest, ProbeFinishesEarly) {
-  // Original page starts loading.
-  core()->OnStartLoad(NetErrorHelperCore::MAIN_FRAME,
-                      NetErrorHelperCore::NON_ERROR_PAGE);
-
-  // It fails, and an error page is requested.
+  // Loading fails, and an error page is requested.
   std::string html;
   core()->PrepareErrorPage(NetErrorHelperCore::MAIN_FRAME,
                            NetError(net::ERR_NAME_NOT_RESOLVED),
@@ -762,12 +661,8 @@ TEST_F(NetErrorHelperCoreTest, ProbeFinishesEarly) {
   // Should have returned a local error page indicating a probe may run.
   EXPECT_EQ(ProbeErrorString(error_page::DNS_PROBE_POSSIBLE), html);
 
-  // Error page starts loading.
-  core()->OnStartLoad(NetErrorHelperCore::MAIN_FRAME,
-                      NetErrorHelperCore::ERROR_PAGE);
-
-  // Nothing should be done when the probe statuses come in before loading
-  // finishes.
+  // Error page starts loading. Nothing should be done when the probe statuses
+  // come in before loading finishes.
   core()->OnNetErrorInfo(error_page::DNS_PROBE_STARTED);
   core()->OnNetErrorInfo(error_page::DNS_PROBE_FINISHED_NXDOMAIN);
   EXPECT_EQ(0, update_count());
@@ -791,11 +686,7 @@ TEST_F(NetErrorHelperCoreTest, ProbeFinishesEarly) {
 // Test case where one error page loads completely before a new navigation
 // results in another error page.  Probes are run for both pages.
 TEST_F(NetErrorHelperCoreTest, TwoErrorsWithProbes) {
-  // Original page starts loading.
-  core()->OnStartLoad(NetErrorHelperCore::MAIN_FRAME,
-                      NetErrorHelperCore::NON_ERROR_PAGE);
-
-  // It fails, and an error page is requested.
+  // Loading fails, and an error page is requested.
   std::string html;
   core()->PrepareErrorPage(NetErrorHelperCore::MAIN_FRAME,
                            NetError(net::ERR_NAME_NOT_RESOLVED),
@@ -804,8 +695,6 @@ TEST_F(NetErrorHelperCoreTest, TwoErrorsWithProbes) {
   EXPECT_EQ(ProbeErrorString(error_page::DNS_PROBE_POSSIBLE), html);
 
   // Error page loads.
-  core()->OnStartLoad(NetErrorHelperCore::MAIN_FRAME,
-                      NetErrorHelperCore::ERROR_PAGE);
   core()->OnCommitLoad(NetErrorHelperCore::MAIN_FRAME, error_url());
   core()->OnFinishLoad(NetErrorHelperCore::MAIN_FRAME);
 
@@ -818,11 +707,7 @@ TEST_F(NetErrorHelperCoreTest, TwoErrorsWithProbes) {
 
   // The process starts again.
 
-  // Normal page starts loading.
-  core()->OnStartLoad(NetErrorHelperCore::MAIN_FRAME,
-                      NetErrorHelperCore::NON_ERROR_PAGE);
-
-  // It fails, and an error page is requested.
+  // Loading fails, and an error page is requested.
   core()->PrepareErrorPage(NetErrorHelperCore::MAIN_FRAME,
                            NetError(net::ERR_NAME_NOT_RESOLVED),
                            false /* is_failed_post */, &html);
@@ -830,8 +715,6 @@ TEST_F(NetErrorHelperCoreTest, TwoErrorsWithProbes) {
   EXPECT_EQ(ProbeErrorString(error_page::DNS_PROBE_POSSIBLE), html);
 
   // Error page loads.
-  core()->OnStartLoad(NetErrorHelperCore::MAIN_FRAME,
-                      NetErrorHelperCore::ERROR_PAGE);
   core()->OnCommitLoad(NetErrorHelperCore::MAIN_FRAME, error_url());
   core()->OnFinishLoad(NetErrorHelperCore::MAIN_FRAME);
   EXPECT_EQ(2, update_count());
@@ -851,11 +734,7 @@ TEST_F(NetErrorHelperCoreTest, TwoErrorsWithProbes) {
 // results in another error page.  Probe results for the first probe are only
 // received after the second load starts, but before it commits.
 TEST_F(NetErrorHelperCoreTest, TwoErrorsWithProbesAfterSecondStarts) {
-  // Original page starts loading.
-  core()->OnStartLoad(NetErrorHelperCore::MAIN_FRAME,
-                      NetErrorHelperCore::NON_ERROR_PAGE);
-
-  // It fails, and an error page is requested.
+  // Loading fails, and an error page is requested.
   std::string html;
   core()->PrepareErrorPage(NetErrorHelperCore::MAIN_FRAME,
                            NetError(net::ERR_NAME_NOT_RESOLVED),
@@ -864,29 +743,20 @@ TEST_F(NetErrorHelperCoreTest, TwoErrorsWithProbesAfterSecondStarts) {
   EXPECT_EQ(ProbeErrorString(error_page::DNS_PROBE_POSSIBLE), html);
 
   // Error page loads.
-  core()->OnStartLoad(NetErrorHelperCore::MAIN_FRAME,
-                      NetErrorHelperCore::ERROR_PAGE);
   core()->OnCommitLoad(NetErrorHelperCore::MAIN_FRAME, error_url());
   core()->OnFinishLoad(NetErrorHelperCore::MAIN_FRAME);
 
   // The process starts again.
 
-  // Normal page starts loading.
-  core()->OnStartLoad(NetErrorHelperCore::MAIN_FRAME,
-                      NetErrorHelperCore::NON_ERROR_PAGE);
-
-  // It fails, and an error page is requested.
+  // Loading fails, and an error page is requested.
   core()->PrepareErrorPage(NetErrorHelperCore::MAIN_FRAME,
                            NetError(net::ERR_NAME_NOT_RESOLVED),
                            false /* is_failed_post */, &html);
   // Should have returned a local error page indicating a probe may run.
   EXPECT_EQ(ProbeErrorString(error_page::DNS_PROBE_POSSIBLE), html);
 
-  // Error page starts to load.
-  core()->OnStartLoad(NetErrorHelperCore::MAIN_FRAME,
-                      NetErrorHelperCore::ERROR_PAGE);
-
-  // Probe results come in, and the first page is updated.
+  // Error page starts to load. Probe results come in, and the first page is
+  // updated.
   core()->OnNetErrorInfo(error_page::DNS_PROBE_STARTED);
   core()->OnNetErrorInfo(error_page::DNS_PROBE_FINISHED_NXDOMAIN);
   EXPECT_EQ(2, update_count());
@@ -907,11 +777,7 @@ TEST_F(NetErrorHelperCoreTest, TwoErrorsWithProbesAfterSecondStarts) {
 
 // Same as above, but a new page is loaded before the error page commits.
 TEST_F(NetErrorHelperCoreTest, ErrorPageLoadInterrupted) {
-  // Original page starts loading.
-  core()->OnStartLoad(NetErrorHelperCore::MAIN_FRAME,
-                      NetErrorHelperCore::NON_ERROR_PAGE);
-
-  // It fails, and an error page is requested.
+  // Loading fails, and an error page is requested.
   std::string html;
   core()->PrepareErrorPage(NetErrorHelperCore::MAIN_FRAME,
                            NetError(net::ERR_NAME_NOT_RESOLVED),
@@ -919,19 +785,12 @@ TEST_F(NetErrorHelperCoreTest, ErrorPageLoadInterrupted) {
   // Should have returned a local error page indicating a probe may run.
   EXPECT_EQ(ProbeErrorString(error_page::DNS_PROBE_POSSIBLE), html);
 
-  // Error page starts loading.
-  core()->OnStartLoad(NetErrorHelperCore::MAIN_FRAME,
-                      NetErrorHelperCore::ERROR_PAGE);
-  // Probe statuses come in, but should be ignored.
+  // Error page starts loading. Probe statuses come in, but should be ignored.
   core()->OnNetErrorInfo(error_page::DNS_PROBE_STARTED);
   core()->OnNetErrorInfo(error_page::DNS_PROBE_FINISHED_NXDOMAIN);
   EXPECT_EQ(0, update_count());
 
-  // A new navigation begins while the error page is loading.
-  core()->OnStartLoad(NetErrorHelperCore::MAIN_FRAME,
-                      NetErrorHelperCore::NON_ERROR_PAGE);
-
-  // And fails.
+  // A new navigation fails while the error page is loading.
   core()->PrepareErrorPage(NetErrorHelperCore::MAIN_FRAME,
                            NetError(net::ERR_NAME_NOT_RESOLVED),
                            false /* is_failed_post */, &html);
@@ -951,404 +810,6 @@ TEST_F(NetErrorHelperCoreTest, ErrorPageLoadInterrupted) {
   EXPECT_EQ(2, update_count());
   EXPECT_EQ(ProbeErrorString(error_page::DNS_PROBE_FINISHED_NO_INTERNET),
             last_error_html());
-}
-
-//------------------------------------------------------------------------------
-// Autoreload tests.
-//------------------------------------------------------------------------------
-
-TEST_F(NetErrorHelperCoreTest, AutoReloadDisabled) {
-  DoErrorLoad(net::ERR_CONNECTION_RESET);
-
-  EXPECT_FALSE(timer()->IsRunning());
-  EXPECT_EQ(0, reload_count());
-}
-
-class NetErrorHelperCoreAutoReloadTest : public NetErrorHelperCoreTest {
- public:
-  void SetUp() override {
-    NetErrorHelperCoreTest::SetUp();
-    SetUpCore(true, true);
-  }
-};
-
-TEST_F(NetErrorHelperCoreAutoReloadTest, Succeeds) {
-  DoErrorLoad(net::ERR_CONNECTION_RESET);
-
-  EXPECT_TRUE(timer()->IsRunning());
-  EXPECT_EQ(0, reload_count());
-
-  timer()->Fire();
-  EXPECT_FALSE(timer()->IsRunning());
-  EXPECT_EQ(1, reload_count());
-
-  DoSuccessLoad();
-
-  EXPECT_FALSE(timer()->IsRunning());
-}
-
-TEST_F(NetErrorHelperCoreAutoReloadTest, Retries) {
-  DoErrorLoad(net::ERR_CONNECTION_RESET);
-
-  EXPECT_TRUE(timer()->IsRunning());
-  base::TimeDelta first_delay = timer()->GetCurrentDelay();
-  EXPECT_EQ(0, reload_count());
-
-  timer()->Fire();
-  EXPECT_FALSE(timer()->IsRunning());
-  EXPECT_EQ(1, reload_count());
-
-  DoErrorLoad(net::ERR_CONNECTION_RESET);
-
-  EXPECT_TRUE(timer()->IsRunning());
-  EXPECT_GT(timer()->GetCurrentDelay(), first_delay);
-}
-
-TEST_F(NetErrorHelperCoreAutoReloadTest, StopsTimerOnStop) {
-  DoErrorLoad(net::ERR_CONNECTION_RESET);
-  EXPECT_TRUE(timer()->IsRunning());
-  core()->OnStop();
-  EXPECT_FALSE(timer()->IsRunning());
-}
-
-TEST_F(NetErrorHelperCoreAutoReloadTest, StopsLoadingOnStop) {
-  DoErrorLoad(net::ERR_CONNECTION_RESET);
-  EXPECT_EQ(0, core()->auto_reload_count());
-  timer()->Fire();
-  EXPECT_EQ(1, core()->auto_reload_count());
-  EXPECT_EQ(1, reload_count());
-  core()->OnStop();
-  EXPECT_FALSE(timer()->IsRunning());
-  EXPECT_EQ(0, core()->auto_reload_count());
-}
-
-TEST_F(NetErrorHelperCoreAutoReloadTest, StopsOnOtherLoadStart) {
-  DoErrorLoad(net::ERR_CONNECTION_RESET);
-  EXPECT_TRUE(timer()->IsRunning());
-  core()->OnStartLoad(NetErrorHelperCore::MAIN_FRAME,
-                      NetErrorHelperCore::NON_ERROR_PAGE);
-  EXPECT_FALSE(timer()->IsRunning());
-  EXPECT_EQ(0, core()->auto_reload_count());
-}
-
-// This is a regression test for http://crbug.com/881208.
-TEST_F(NetErrorHelperCoreAutoReloadTest, StopsOnErrorLoadCommit) {
-  DoErrorLoad(net::ERR_CONNECTION_RESET);
-  EXPECT_TRUE(timer()->IsRunning());
-
-  // Simulate manually reloading the error page while the timer is still
-  // running.
-  std::string html;
-  core()->PrepareErrorPage(
-      NetErrorHelperCore::MAIN_FRAME,
-      NetErrorForURL(net::ERR_CONNECTION_RESET, GURL(kFailedUrl)),
-      false /* is_failed_post */, &html);
-
-  core()->OnStartLoad(NetErrorHelperCore::MAIN_FRAME,
-                      NetErrorHelperCore::ERROR_PAGE);
-  EXPECT_FALSE(timer()->IsRunning());
-  core()->OnCommitLoad(NetErrorHelperCore::MAIN_FRAME, error_url());
-  core()->OnFinishLoad(NetErrorHelperCore::MAIN_FRAME);
-  EXPECT_TRUE(timer()->IsRunning());
-}
-
-TEST_F(NetErrorHelperCoreAutoReloadTest, ResetsCountOnSuccess) {
-  DoErrorLoad(net::ERR_CONNECTION_RESET);
-  base::TimeDelta delay = timer()->GetCurrentDelay();
-  EXPECT_EQ(0, core()->auto_reload_count());
-  timer()->Fire();
-  EXPECT_EQ(1, core()->auto_reload_count());
-  EXPECT_EQ(1, reload_count());
-  DoSuccessLoad();
-  DoErrorLoad(net::ERR_CONNECTION_RESET);
-  EXPECT_EQ(0, core()->auto_reload_count());
-  EXPECT_EQ(timer()->GetCurrentDelay(), delay);
-  timer()->Fire();
-  EXPECT_EQ(1, core()->auto_reload_count());
-  EXPECT_EQ(2, reload_count());
-  DoSuccessLoad();
-  EXPECT_EQ(0, core()->auto_reload_count());
-}
-
-TEST_F(NetErrorHelperCoreAutoReloadTest, RestartsOnOnline) {
-  DoErrorLoad(net::ERR_CONNECTION_RESET);
-  base::TimeDelta delay = timer()->GetCurrentDelay();
-  timer()->Fire();
-  DoErrorLoad(net::ERR_CONNECTION_RESET);
-  EXPECT_TRUE(timer()->IsRunning());
-  EXPECT_NE(delay, timer()->GetCurrentDelay());
-  core()->NetworkStateChanged(false);
-  EXPECT_FALSE(timer()->IsRunning());
-  core()->NetworkStateChanged(true);
-  EXPECT_TRUE(timer()->IsRunning());
-  EXPECT_EQ(delay, timer()->GetCurrentDelay());
-}
-
-TEST_F(NetErrorHelperCoreAutoReloadTest, DoesNotStartOnOnline) {
-  DoErrorLoad(net::ERR_CONNECTION_RESET);
-  timer()->Fire();
-  DoSuccessLoad();
-  EXPECT_FALSE(timer()->IsRunning());
-  core()->NetworkStateChanged(true);
-  EXPECT_FALSE(timer()->IsRunning());
-}
-
-TEST_F(NetErrorHelperCoreAutoReloadTest, DoesNotStartOffline) {
-  core()->NetworkStateChanged(false);
-  DoErrorLoad(net::ERR_CONNECTION_RESET);
-  EXPECT_FALSE(timer()->IsRunning());
-  core()->NetworkStateChanged(true);
-  EXPECT_TRUE(timer()->IsRunning());
-}
-
-TEST_F(NetErrorHelperCoreAutoReloadTest, DoesNotRestartOnOnlineAfterStop) {
-  DoErrorLoad(net::ERR_CONNECTION_RESET);
-  timer()->Fire();
-  core()->OnStop();
-  core()->NetworkStateChanged(true);
-  EXPECT_FALSE(timer()->IsRunning());
-}
-
-TEST_F(NetErrorHelperCoreAutoReloadTest, WithDnsProbes) {
-  DoErrorLoad(net::ERR_CONNECTION_RESET);
-  DoDnsProbe(error_page::DNS_PROBE_FINISHED_NXDOMAIN);
-  timer()->Fire();
-  EXPECT_EQ(1, reload_count());
-}
-
-TEST_F(NetErrorHelperCoreAutoReloadTest, ExponentialBackoffLevelsOff) {
-  base::TimeDelta previous = base::TimeDelta::FromMilliseconds(0);
-  const int kMaxTries = 50;
-  int tries = 0;
-  for (tries = 0; tries < kMaxTries; tries++) {
-    DoErrorLoad(net::ERR_CONNECTION_RESET);
-    EXPECT_TRUE(timer()->IsRunning());
-    if (previous == timer()->GetCurrentDelay())
-      break;
-    previous = timer()->GetCurrentDelay();
-    timer()->Fire();
-  }
-
-  EXPECT_LT(tries, kMaxTries);
-}
-
-TEST_F(NetErrorHelperCoreAutoReloadTest, SlowError) {
-  core()->OnStartLoad(NetErrorHelperCore::MAIN_FRAME,
-                      NetErrorHelperCore::NON_ERROR_PAGE);
-  std::string html;
-  core()->PrepareErrorPage(NetErrorHelperCore::MAIN_FRAME,
-                           NetError(net::ERR_CONNECTION_RESET),
-                           false /* is_failed_post */, &html);
-  core()->OnStartLoad(NetErrorHelperCore::MAIN_FRAME,
-                      NetErrorHelperCore::ERROR_PAGE);
-  core()->OnCommitLoad(NetErrorHelperCore::MAIN_FRAME, error_url());
-  EXPECT_FALSE(timer()->IsRunning());
-  // Start a new non-error page load.
-  core()->OnStartLoad(NetErrorHelperCore::MAIN_FRAME,
-                      NetErrorHelperCore::NON_ERROR_PAGE);
-  EXPECT_FALSE(timer()->IsRunning());
-  // Finish the error page load.
-  core()->OnFinishLoad(NetErrorHelperCore::MAIN_FRAME);
-  EXPECT_FALSE(timer()->IsRunning());
-  core()->OnCommitLoad(NetErrorHelperCore::MAIN_FRAME, error_url());
-  core()->OnFinishLoad(NetErrorHelperCore::MAIN_FRAME);
-  EXPECT_FALSE(timer()->IsRunning());
-}
-
-TEST_F(NetErrorHelperCoreAutoReloadTest, OnlineSlowError) {
-  core()->NetworkStateChanged(false);
-  core()->OnStartLoad(NetErrorHelperCore::MAIN_FRAME,
-                      NetErrorHelperCore::NON_ERROR_PAGE);
-  std::string html;
-  core()->PrepareErrorPage(NetErrorHelperCore::MAIN_FRAME,
-                           NetError(net::ERR_CONNECTION_RESET),
-                           false /* is_failed_post */, &html);
-  core()->OnStartLoad(NetErrorHelperCore::MAIN_FRAME,
-                      NetErrorHelperCore::ERROR_PAGE);
-  core()->OnCommitLoad(NetErrorHelperCore::MAIN_FRAME, error_url());
-  EXPECT_FALSE(timer()->IsRunning());
-  core()->NetworkStateChanged(true);
-  EXPECT_FALSE(timer()->IsRunning());
-  core()->NetworkStateChanged(false);
-  core()->OnFinishLoad(NetErrorHelperCore::MAIN_FRAME);
-  EXPECT_FALSE(timer()->IsRunning());
-  core()->NetworkStateChanged(true);
-  EXPECT_TRUE(timer()->IsRunning());
-}
-
-TEST_F(NetErrorHelperCoreAutoReloadTest, OnlinePendingError) {
-  core()->NetworkStateChanged(false);
-  core()->OnStartLoad(NetErrorHelperCore::MAIN_FRAME,
-                      NetErrorHelperCore::NON_ERROR_PAGE);
-  std::string html;
-  core()->PrepareErrorPage(NetErrorHelperCore::MAIN_FRAME,
-                           NetError(net::ERR_CONNECTION_RESET),
-                           false /* is_failed_post */, &html);
-  core()->OnStartLoad(NetErrorHelperCore::MAIN_FRAME,
-                      NetErrorHelperCore::ERROR_PAGE);
-  EXPECT_FALSE(timer()->IsRunning());
-  core()->NetworkStateChanged(true);
-  EXPECT_FALSE(timer()->IsRunning());
-  core()->NetworkStateChanged(false);
-  core()->OnCommitLoad(NetErrorHelperCore::MAIN_FRAME, error_url());
-  core()->OnFinishLoad(NetErrorHelperCore::MAIN_FRAME);
-  EXPECT_FALSE(timer()->IsRunning());
-  core()->NetworkStateChanged(true);
-  EXPECT_TRUE(timer()->IsRunning());
-}
-
-TEST_F(NetErrorHelperCoreAutoReloadTest, OnlinePartialErrorReplacement) {
-  core()->NetworkStateChanged(false);
-  core()->OnStartLoad(NetErrorHelperCore::MAIN_FRAME,
-                      NetErrorHelperCore::NON_ERROR_PAGE);
-  std::string html;
-  core()->PrepareErrorPage(NetErrorHelperCore::MAIN_FRAME,
-                           NetError(net::ERR_CONNECTION_RESET),
-                           false /* is_failed_post */, &html);
-  core()->OnStartLoad(NetErrorHelperCore::MAIN_FRAME,
-                      NetErrorHelperCore::ERROR_PAGE);
-  core()->OnCommitLoad(NetErrorHelperCore::MAIN_FRAME, error_url());
-  core()->OnFinishLoad(NetErrorHelperCore::MAIN_FRAME);
-  core()->OnStartLoad(NetErrorHelperCore::MAIN_FRAME,
-                      NetErrorHelperCore::NON_ERROR_PAGE);
-  core()->PrepareErrorPage(NetErrorHelperCore::MAIN_FRAME,
-                           NetError(net::ERR_CONNECTION_RESET),
-                           false /* is_failed_post */, &html);
-  core()->OnStartLoad(NetErrorHelperCore::MAIN_FRAME,
-                      NetErrorHelperCore::ERROR_PAGE);
-  EXPECT_FALSE(timer()->IsRunning());
-  core()->NetworkStateChanged(true);
-  EXPECT_FALSE(timer()->IsRunning());
-}
-
-TEST_F(NetErrorHelperCoreAutoReloadTest, ShouldSuppressNonReloadableErrorPage) {
-  DoErrorLoad(net::ERR_ABORTED);
-  EXPECT_FALSE(core()->ShouldSuppressErrorPage(
-      NetErrorHelperCore::MAIN_FRAME, GURL(kFailedUrl), net::ERR_ABORTED));
-
-  DoErrorLoad(net::ERR_UNKNOWN_URL_SCHEME);
-  EXPECT_FALSE(core()->ShouldSuppressErrorPage(NetErrorHelperCore::MAIN_FRAME,
-                                               GURL(kFailedUrl),
-                                               net::ERR_UNKNOWN_URL_SCHEME));
-}
-
-TEST_F(NetErrorHelperCoreAutoReloadTest,
-       ShouldSuppressErrorPageForDifferentError) {
-  DoErrorLoad(net::ERR_CERT_AUTHORITY_INVALID);
-  EXPECT_FALSE(core()->ShouldSuppressErrorPage(
-      NetErrorHelperCore::MAIN_FRAME, GURL(kFailedUrl),
-      net::ERR_INVALID_AUTH_CREDENTIALS));
-}
-
-TEST_F(NetErrorHelperCoreAutoReloadTest, DoesNotReload) {
-  DoErrorLoad(net::ERR_ABORTED);
-  EXPECT_FALSE(timer()->IsRunning());
-
-  DoErrorLoad(net::ERR_UNKNOWN_URL_SCHEME);
-  EXPECT_FALSE(timer()->IsRunning());
-
-  DoErrorLoad(net::ERR_SSL_PROTOCOL_ERROR);
-  EXPECT_FALSE(timer()->IsRunning());
-
-  DoErrorLoad(net::ERR_BLOCKED_BY_ADMINISTRATOR);
-  EXPECT_FALSE(timer()->IsRunning());
-
-  DoErrorLoad(net::ERR_BAD_SSL_CLIENT_AUTH_CERT);
-  EXPECT_FALSE(timer()->IsRunning());
-
-  DoErrorLoadOfURL(net::ERR_ACCESS_DENIED, GURL("data://some-data-here"));
-  EXPECT_FALSE(timer()->IsRunning());
-
-  DoErrorLoadOfURL(net::ERR_ACCESS_DENIED, GURL("chrome-extension://foo"));
-  EXPECT_FALSE(timer()->IsRunning());
-}
-
-TEST_F(NetErrorHelperCoreAutoReloadTest, ShouldSuppressErrorPage) {
-  // Set up the environment to test ShouldSuppressErrorPage: auto-reload is
-  // enabled, an error page is loaded, and the auto-reload callback is running.
-  DoErrorLoad(net::ERR_CONNECTION_RESET);
-  timer()->Fire();
-
-  // Sub-frame load.
-  EXPECT_FALSE(core()->ShouldSuppressErrorPage(NetErrorHelperCore::SUB_FRAME,
-                                               GURL(kFailedUrl),
-                                               net::ERR_CONNECTION_RESET));
-  EXPECT_TRUE(core()->ShouldSuppressErrorPage(NetErrorHelperCore::MAIN_FRAME,
-                                              GURL(kFailedUrl),
-                                              net::ERR_CONNECTION_RESET));
-  // No auto-reload attempt in flight.
-  EXPECT_FALSE(core()->ShouldSuppressErrorPage(NetErrorHelperCore::MAIN_FRAME,
-                                               GURL(kFailedUrl),
-                                               net::ERR_CONNECTION_RESET));
-}
-
-TEST_F(NetErrorHelperCoreAutoReloadTest, HiddenAndShown) {
-  SetUpCore(true, true);
-  DoErrorLoad(net::ERR_CONNECTION_RESET);
-  EXPECT_TRUE(timer()->IsRunning());
-  core()->OnWasHidden();
-  EXPECT_FALSE(timer()->IsRunning());
-  core()->OnWasShown();
-  EXPECT_TRUE(timer()->IsRunning());
-}
-
-TEST_F(NetErrorHelperCoreAutoReloadTest, HiddenWhileOnline) {
-  SetUpCore(true, true);
-  core()->NetworkStateChanged(false);
-  DoErrorLoad(net::ERR_CONNECTION_RESET);
-  EXPECT_FALSE(timer()->IsRunning());
-  core()->OnWasHidden();
-  core()->NetworkStateChanged(true);
-  EXPECT_FALSE(timer()->IsRunning());
-  core()->NetworkStateChanged(false);
-  core()->OnWasShown();
-  EXPECT_FALSE(timer()->IsRunning());
-  core()->NetworkStateChanged(true);
-  EXPECT_TRUE(timer()->IsRunning());
-  core()->NetworkStateChanged(false);
-  core()->OnWasHidden();
-  EXPECT_FALSE(timer()->IsRunning());
-  core()->NetworkStateChanged(true);
-  EXPECT_FALSE(timer()->IsRunning());
-  core()->OnWasShown();
-  EXPECT_TRUE(timer()->IsRunning());
-}
-
-TEST_F(NetErrorHelperCoreAutoReloadTest, ShownWhileNotReloading) {
-  SetUpCore(true, false);
-  DoErrorLoad(net::ERR_CONNECTION_RESET);
-  EXPECT_FALSE(timer()->IsRunning());
-  core()->OnWasShown();
-  EXPECT_TRUE(timer()->IsRunning());
-}
-
-TEST_F(NetErrorHelperCoreAutoReloadTest, ManualReloadShowsError) {
-  SetUpCore(true, true);
-  DoErrorLoad(net::ERR_CONNECTION_RESET);
-  core()->OnStartLoad(NetErrorHelperCore::MAIN_FRAME,
-                      NetErrorHelperCore::ERROR_PAGE);
-  EXPECT_FALSE(core()->ShouldSuppressErrorPage(NetErrorHelperCore::MAIN_FRAME,
-                                               GURL(kFailedUrl),
-                                               net::ERR_CONNECTION_RESET));
-}
-
-TEST_F(NetErrorHelperCoreAutoReloadTest,
-       AutoReloadDisabledForCustomErrorPages) {
-  // This error code would normally trigger auto-reloads, but shouldn't if we
-  // are showing a custom error page (e.g. an interstitial.).
-  DoErrorLoadWithCustomErrorPage(net::ERR_CONNECTION_RESET);
-
-  EXPECT_FALSE(timer()->IsRunning());
-  EXPECT_EQ(0, reload_count());
-}
-
-TEST_F(NetErrorHelperCoreAutoReloadTest,
-       AutoReloadEnabledAfterCustomErrorPage) {
-  DoErrorLoadWithCustomErrorPage(net::ERR_CONNECTION_RESET);
-  EXPECT_FALSE(timer()->IsRunning());
-  EXPECT_EQ(0, reload_count());
-  DoErrorLoad(net::ERR_CONNECTION_RESET);
-  EXPECT_TRUE(timer()->IsRunning());
 }
 
 TEST_F(NetErrorHelperCoreTest, ExplicitReloadSucceeds) {

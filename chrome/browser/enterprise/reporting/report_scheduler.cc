@@ -13,10 +13,9 @@
 #include "base/task/post_task.h"
 #include "base/time/time.h"
 #include "build/build_config.h"
-#include "chrome/browser/enterprise/reporting/prefs.h"
 #include "chrome/browser/enterprise/reporting/reporting_delegate_factory_desktop.h"
-#include "chrome/common/pref_names.h"
 #include "components/enterprise/browser/controller/browser_dm_token_storage.h"
+#include "components/enterprise/browser/reporting/common_pref_names.h"
 #include "components/policy/core/common/cloud/cloud_policy_client.h"
 #include "components/policy/core/common/cloud/device_management_service.h"
 #include "components/prefs/pref_service.h"
@@ -66,7 +65,7 @@ ReportScheduler::ReportScheduler(
 ReportScheduler::~ReportScheduler() = default;
 
 bool ReportScheduler::IsReportingEnabled() const {
-  return delegate_->GetLocalState()->GetBoolean(prefs::kCloudReportingEnabled);
+  return delegate_->GetLocalState()->GetBoolean(kCloudReportingEnabled);
 }
 
 bool ReportScheduler::IsNextReportScheduledForTesting() const {
@@ -85,7 +84,7 @@ void ReportScheduler::OnDMTokenUpdated() {
 void ReportScheduler::RegisterPrefObserver() {
   pref_change_registrar_.Init(delegate_->GetLocalState());
   pref_change_registrar_.Add(
-      prefs::kCloudReportingEnabled,
+      kCloudReportingEnabled,
       base::BindRepeating(&ReportScheduler::OnReportEnabledPrefChanged,
                           base::Unretained(this)));
   // Trigger first pref check during launch process.

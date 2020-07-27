@@ -59,6 +59,7 @@
 #include "chromeos/network/proxy/proxy_config_handler.h"
 #include "chromeos/network/proxy/ui_proxy_config_service.h"
 #include "chromeos/settings/cros_settings_names.h"
+#include "components/enterprise/browser/reporting/common_pref_names.h"
 #include "components/prefs/pref_service.h"
 #include "components/user_manager/user_manager.h"
 #include "ui/chromeos/devicetype_utils.h"
@@ -598,7 +599,7 @@ void ManagementUIHandler::AddDeviceReportingInfo(
   }
 
   if (g_browser_process->local_state()->GetBoolean(
-          prefs::kCloudReportingEnabled) &&
+          enterprise_reporting::kCloudReportingEnabled) &&
       base::FeatureList::IsEnabled(features::kEnterpriseReportingInChromeOS)) {
     AddDeviceReportingElement(report_sources,
                               kManagementExtensionReportUsername,

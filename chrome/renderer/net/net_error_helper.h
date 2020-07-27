@@ -23,7 +23,6 @@
 #include "components/security_interstitials/core/controller_client.h"
 #include "content/public/renderer/render_frame_observer.h"
 #include "content/public/renderer/render_frame_observer_tracker.h"
-#include "content/public/renderer/render_thread_observer.h"
 #include "mojo/public/cpp/bindings/associated_receiver_set.h"
 #include "mojo/public/cpp/bindings/associated_remote.h"
 #include "mojo/public/cpp/bindings/pending_associated_receiver.h"
@@ -44,7 +43,6 @@ struct ErrorPageParams;
 class NetErrorHelper
     : public content::RenderFrameObserver,
       public content::RenderFrameObserverTracker<NetErrorHelper>,
-      public content::RenderThreadObserver,
       public NetErrorHelperCore::Delegate,
       public NetErrorPageController::Delegate,
       public security_interstitials::SecurityInterstitialPageController::
@@ -71,18 +69,9 @@ class NetErrorHelper
   GetInterface() override;
 
   // RenderFrameObserver implementation.
-  void DidStartNavigation(
-      const GURL& url,
-      base::Optional<blink::WebNavigationType> navigation_type) override;
   void DidCommitProvisionalLoad(ui::PageTransition transition) override;
   void DidFinishLoad() override;
-  void OnStop() override;
-  void WasShown() override;
-  void WasHidden() override;
   void OnDestruct() override;
-
-  // RenderThreadObserver implementation.
-  void NetworkStateChanged(bool online) override;
 
   // Sets values in |pending_error_page_info_|. If |error_html| is not null, it
   // initializes |error_html| with the HTML of an error page in response to
@@ -91,10 +80,6 @@ class NetErrorHelper
   void PrepareErrorPage(const error_page::Error& error,
                         bool is_failed_post,
                         std::string* error_html);
-
-  // Returns whether a load for |url| with |error_code| in the |frame| the
-  // NetErrorHelper is attached to should have its error page suppressed.
-  bool ShouldSuppressErrorPage(const GURL& url, int error_code);
 
  private:
   // Returns ResourceRequest filled with |url|. It has request_initiator from

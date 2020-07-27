@@ -318,10 +318,8 @@ class PLATFORM_EXPORT ResourceRequestHead {
     fetch_integrity_ = integrity;
   }
 
-  WebURLRequest::PreviewsState GetPreviewsState() const {
-    return previews_state_;
-  }
-  void SetPreviewsState(WebURLRequest::PreviewsState previews_state) {
+  PreviewsState GetPreviewsState() const { return previews_state_; }
+  void SetPreviewsState(PreviewsState previews_state) {
     previews_state_ = previews_state;
   }
 
@@ -502,7 +500,7 @@ class PLATFORM_EXPORT ResourceRequestHead {
   ResourceLoadPriority priority_;
   int intra_priority_value_;
   int requestor_id_;
-  WebURLRequest::PreviewsState previews_state_;
+  PreviewsState previews_state_;
   scoped_refptr<WebURLRequest::ExtraData> extra_data_;
   mojom::RequestContextType request_context_;
   network::mojom::RequestDestination destination_;

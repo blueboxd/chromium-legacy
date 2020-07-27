@@ -40,7 +40,6 @@
 #include "content/public/common/content_client.h"
 #include "content/public/common/content_features.h"
 #include "content/public/common/content_switches.h"
-#include "content/public/common/previews_state.h"
 #include "content/public/common/url_constants.h"
 #include "content/public/test/browser_test.h"
 #include "content/public/test/browser_test_utils.h"
@@ -73,6 +72,7 @@
 #include "net/test/url_request/url_request_failed_job.h"
 #include "services/network/public/cpp/features.h"
 #include "services/network/public/mojom/url_loader.mojom.h"
+#include "third_party/blink/public/common/loader/previews_state.h"
 #include "third_party/blink/public/common/loader/url_loader_throttle.h"
 #include "url/gurl.h"
 #include "url/url_util.h"
@@ -1547,14 +1547,14 @@ class PreviewsStateContentBrowserClient : public ContentBrowserClient {
   explicit PreviewsStateContentBrowserClient(const GURL& main_frame_url)
       : main_frame_url_(main_frame_url),
         main_frame_url_seen_(false),
-        previews_state_(PREVIEWS_OFF),
+        previews_state_(blink::PreviewsTypes::PREVIEWS_OFF),
         determine_allowed_previews_called_(false),
         determine_committed_previews_called_(false) {}
 
   ~PreviewsStateContentBrowserClient() override {}
 
-  content::PreviewsState DetermineAllowedPreviews(
-      content::PreviewsState initial_state,
+  blink::PreviewsState DetermineAllowedPreviews(
+      blink::PreviewsState initial_state,
       content::NavigationHandle* navigation_handle,
       const GURL& current_navigation_url) override {
     DCHECK_CURRENTLY_ON(BrowserThread::UI);
@@ -1566,8 +1566,8 @@ class PreviewsStateContentBrowserClient : public ContentBrowserClient {
     return previews_state_;
   }
 
-  content::PreviewsState DetermineCommittedPreviews(
-      content::PreviewsState initial_state,
+  blink::PreviewsState DetermineCommittedPreviews(
+      blink::PreviewsState initial_state,
       content::NavigationHandle* navigation_handle,
       const net::HttpResponseHeaders* response_headers) override {
     DCHECK_CURRENTLY_ON(BrowserThread::UI);
@@ -1581,7 +1581,7 @@ class PreviewsStateContentBrowserClient : public ContentBrowserClient {
     content::SetBrowserClientForTesting(this);
   }
 
-  void Reset(PreviewsState previews_state) {
+  void Reset(blink::PreviewsState previews_state) {
     DCHECK_CURRENTLY_ON(BrowserThread::UI);
     main_frame_url_seen_ = false;
     previews_state_ = previews_state;
@@ -1599,7 +1599,7 @@ class PreviewsStateContentBrowserClient : public ContentBrowserClient {
   const GURL main_frame_url_;
 
   bool main_frame_url_seen_;
-  PreviewsState previews_state_;
+  blink::PreviewsState previews_state_;
   bool determine_allowed_previews_called_;
   bool determine_committed_previews_called_;
 
@@ -1624,7 +1624,9 @@ class PreviewsStateBrowserTest : public ContentBrowserTest {
     client_->SetClient();
   }
 
-  void Reset(PreviewsState previews_state) { client_->Reset(previews_state); }
+  void Reset(blink::PreviewsState previews_state) {
+    client_->Reset(previews_state);
+  }
 
   void CheckResourcesRequested() { client_->CheckResourcesRequested(); }
 

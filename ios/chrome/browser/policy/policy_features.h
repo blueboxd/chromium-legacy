@@ -15,6 +15,9 @@ extern const base::Feature kManagedBookmarksIOS;
 // Feature flag for supporting the URLBlocklist enterprise policy on iOS.
 extern const base::Feature kURLBlocklistIOS;
 
+// Returns true if the Chrome Browser Cloud Management flow is enabled.
+bool IsChromeBrowserCloudManagementEnabled();
+
 // Returns true if EditBookmarksEnabled enterprise policy is supported on iOS.
 bool IsEditBookmarksIOSEnabled();
 

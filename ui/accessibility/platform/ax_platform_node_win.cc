@@ -7588,10 +7588,6 @@ base::Optional<PROPERTYID> AXPlatformNodeWin::MojoEventToUIAProperty(
     case ax::mojom::Event::kRowCollapsed:
     case ax::mojom::Event::kRowExpanded:
       return UIA_ExpandCollapseExpandCollapseStatePropertyId;
-    case ax::mojom::Event::kSelection:
-    case ax::mojom::Event::kSelectionAdd:
-    case ax::mojom::Event::kSelectionRemove:
-      return UIA_SelectionItemIsSelectedPropertyId;
     default:
       return base::nullopt;
   }

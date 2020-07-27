@@ -31,25 +31,6 @@ CrxDownloader::DownloadMetrics::DownloadMetrics()
       total_bytes(-1),
       download_time_ms(0) {}
 
-// On Windows, the first downloader in the chain is a background downloader,
-// which uses the BITS service.
-scoped_refptr<CrxDownloader> CrxDownloader::Create(
-    bool is_background_download,
-    scoped_refptr<NetworkFetcherFactory> network_fetcher_factory) {
-  scoped_refptr<CrxDownloader> url_fetcher_downloader =
-      base::MakeRefCounted<UrlFetcherDownloader>(nullptr,
-                                                 network_fetcher_factory);
-
-#if defined(OS_WIN)
-  if (is_background_download) {
-    return base::MakeRefCounted<BackgroundDownloader>(
-        std::move(url_fetcher_downloader));
-  }
-#endif
-
-  return url_fetcher_downloader;
-}
-
 CrxDownloader::CrxDownloader(scoped_refptr<CrxDownloader> successor)
     : main_task_runner_(base::ThreadTaskRunnerHandle::Get()),
       successor_(std::move(successor)) {}

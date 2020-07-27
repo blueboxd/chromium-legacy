@@ -854,7 +854,7 @@ TEST_F(BackgroundLoaderOfflinerTest, OffliningPreviewsStatusOffHistogram) {
   PreviewsUITabHelper::FromWebContents(offliner()->web_contents())
       ->CreatePreviewsUserDataForNavigationHandle(&handle, 1u)
       ->set_committed_previews_state(
-          content::PreviewsTypes::PREVIEWS_NO_TRANSFORM);
+          blink::PreviewsTypes::PREVIEWS_NO_TRANSFORM);
   scoped_refptr<net::HttpResponseHeaders> header(
       new net::HttpResponseHeaders("HTTP/1.1 200 OK"));
   handle.set_response_headers(header.get());
@@ -882,7 +882,7 @@ TEST_F(BackgroundLoaderOfflinerTest, OffliningPreviewsStatusOnHistogram) {
   PreviewsUITabHelper::CreateForWebContents(offliner()->web_contents());
   PreviewsUITabHelper::FromWebContents(offliner()->web_contents())
       ->CreatePreviewsUserDataForNavigationHandle(&handle, 1u)
-      ->set_committed_previews_state(content::PreviewsTypes::NOSCRIPT_ON);
+      ->set_committed_previews_state(blink::PreviewsTypes::NOSCRIPT_ON);
   scoped_refptr<net::HttpResponseHeaders> header(
       new net::HttpResponseHeaders("HTTP/1.1 200 OK"));
   handle.set_response_headers(header.get());

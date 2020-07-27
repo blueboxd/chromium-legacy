@@ -333,7 +333,7 @@ config("cfi_flags") {
   if (is_cfi && current_toolchain == default_toolchain) {
     if (!defined(cfi_blacklist_path)) {
       cfi_blacklist_path =
-          rebase_path("//tools/cfi/blacklist.txt", root_build_dir)
+          rebase_path("//tools/cfi/ignores.txt", root_build_dir)
     }
     cflags += [
       "-fsanitize=cfi-vcall",

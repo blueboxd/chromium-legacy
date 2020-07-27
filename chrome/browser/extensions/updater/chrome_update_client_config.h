@@ -25,6 +25,7 @@ class BrowserContext;
 
 namespace update_client {
 class ActivityDataService;
+class CrxDownloaderFactory;
 class NetworkFetcherFactory;
 class ProtocolHandlerFactory;
 }
@@ -62,6 +63,8 @@ class ChromeUpdateClientConfig : public update_client::Configurator {
   std::string GetDownloadPreference() const override;
   scoped_refptr<update_client::NetworkFetcherFactory> GetNetworkFetcherFactory()
       override;
+  scoped_refptr<update_client::CrxDownloaderFactory> GetCrxDownloaderFactory()
+      override;
   scoped_refptr<update_client::UnzipperFactory> GetUnzipperFactory() override;
   scoped_refptr<update_client::PatcherFactory> GetPatcherFactory() override;
   bool EnabledDeltas() const override;
@@ -91,6 +94,7 @@ class ChromeUpdateClientConfig : public update_client::Configurator {
   PrefService* pref_service_;
   std::unique_ptr<update_client::ActivityDataService> activity_data_service_;
   scoped_refptr<update_client::NetworkFetcherFactory> network_fetcher_factory_;
+  scoped_refptr<update_client::CrxDownloaderFactory> crx_downloader_factory_;
   scoped_refptr<update_client::UnzipperFactory> unzip_factory_;
   scoped_refptr<update_client::PatcherFactory> patch_factory_;
   base::Optional<GURL> url_override_;

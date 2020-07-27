@@ -7,6 +7,7 @@
 #include "base/feature_list.h"
 #include "base/no_destructor.h"
 #include "base/strings/utf_string_conversions.h"
+#include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/webui/settings/chromeos/os_settings_features_util.h"
 #include "chrome/browser/ui/webui/settings/chromeos/search/search_tag_registry.h"
 #include "chrome/browser/ui/webui/settings/languages_handler.h"
@@ -14,6 +15,8 @@
 #include "chrome/common/url_constants.h"
 #include "chrome/grit/generated_resources.h"
 #include "chromeos/constants/chromeos_features.h"
+#include "chromeos/constants/chromeos_pref_names.h"
+#include "components/prefs/pref_service.h"
 #include "content/public/browser/web_ui_data_source.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/webui/web_ui_util.h"
@@ -96,12 +99,8 @@ bool IsAssistivePersonalInfoAllowed() {
              ::chromeos::features::kAssistPersonalInfo);
 }
 
-bool IsEmojiSuggestionAllowed() {
-  return base::FeatureList::IsEnabled(
-      ::chromeos::features::kEmojiSuggestAddition);
-}
-
-void AddSmartInputsStrings(content::WebUIDataSource* html_source) {
+void AddSmartInputsStrings(content::WebUIDataSource* html_source,
+                           bool is_emoji_suggestion_allowed) {
   static constexpr webui::LocalizedString kLocalizedStrings[] = {
       {"smartInputsTitle", IDS_SETTINGS_SMART_INPUTS_TITLE},
       {"personalInfoSuggestionTitle",
@@ -121,7 +120,7 @@ void AddSmartInputsStrings(content::WebUIDataSource* html_source) {
 
   html_source->AddBoolean("allowAssistivePersonalInfo",
                           IsAssistivePersonalInfoAllowed());
-  html_source->AddBoolean("allowEmojiSuggestion", IsEmojiSuggestionAllowed());
+  html_source->AddBoolean("allowEmojiSuggestion", is_emoji_suggestion_allowed);
 }
 
 void AddInputMethodOptionsStrings(content::WebUIDataSource* html_source) {
@@ -230,7 +229,7 @@ void LanguagesSection::AddLoadTimeData(content::WebUIDataSource* html_source) {
       {"moveUp", IDS_SETTINGS_LANGUAGES_LANGUAGES_LIST_MOVE_UP},
   };
   AddLocalizedStringsBulk(html_source, kLocalizedStrings);
-  AddSmartInputsStrings(html_source);
+  AddSmartInputsStrings(html_source, IsEmojiSuggestionAllowed());
   AddInputMethodOptionsStrings(html_source);
 
   html_source->AddString(
@@ -260,6 +259,13 @@ mojom::SearchResultIcon LanguagesSection::GetSectionIcon() const {
 
 std::string LanguagesSection::GetSectionPath() const {
   return mojom::kLanguagesAndInputSectionPath;
+}
+
+bool LanguagesSection::IsEmojiSuggestionAllowed() const {
+  return base::FeatureList::IsEnabled(
+             ::chromeos::features::kEmojiSuggestAddition) &&
+         profile()->GetPrefs()->GetBoolean(
+             ::chromeos::prefs::kEmojiSuggestionEnterpriseAllowed);
 }
 
 void LanguagesSection::RegisterHierarchy(HierarchyGenerator* generator) const {

@@ -10,6 +10,7 @@
 #include "base/system/sys_info.h"
 #include "chrome/common/channel_info.h"
 #include "chrome/common/chrome_paths.h"
+#include "components/prefs/pref_registry_simple.h"
 #include "components/user_manager/user.h"
 #include "components/user_manager/user_manager.h"
 #include "components/user_manager/user_type.h"
@@ -41,6 +42,12 @@ bool IsUserTypeAllowed(const User* user) {
 }
 
 }  // namespace
+
+const char kLaunchOnLoginPref[] = "lacros.launch_on_login";
+
+void RegisterProfilePrefs(PrefRegistrySimple* registry) {
+  registry->RegisterBooleanPref(kLaunchOnLoginPref, /*default_value=*/false);
+}
 
 base::FilePath GetUserDataDir() {
   base::FilePath base_path;

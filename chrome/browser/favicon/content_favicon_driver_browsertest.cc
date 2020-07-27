@@ -753,9 +753,8 @@ IN_PROC_BROWSER_TEST_F(ContentFaviconDriverTestWithAutoupgradesDisabled,
       "/favicon/page_with_favicon_by_url.html?url=" + favicon_url.spec());
 
   // Observe the message for a blocked favicon.
-  content::ConsoleObserverDelegate console_observer(web_contents(),
-                                                    "*icon.png*");
-  web_contents()->SetDelegate(&console_observer);
+  content::WebContentsConsoleObserver console_observer(web_contents());
+  console_observer.SetPattern("*icon.png*");
 
   // Observe if the favicon URL is requested.
   TestURLLoaderInterceptor url_interceptor;
@@ -765,9 +764,9 @@ IN_PROC_BROWSER_TEST_F(ContentFaviconDriverTestWithAutoupgradesDisabled,
   console_observer.Wait();
   waiter.Wait();
 
-  EXPECT_TRUE(
-      base::MatchPattern(console_observer.message(), "*insecure favicon*"));
-  EXPECT_TRUE(base::MatchPattern(console_observer.message(),
+  EXPECT_TRUE(base::MatchPattern(console_observer.GetMessageAt(0u),
+                                 "*insecure favicon*"));
+  EXPECT_TRUE(base::MatchPattern(console_observer.GetMessageAt(0u),
                                  "*request has been blocked*"));
   EXPECT_FALSE(url_interceptor.was_loaded(favicon_url));
 }

@@ -36,7 +36,6 @@
 #include "content/public/browser/peak_gpu_memory_tracker.h"
 #include "content/public/browser/render_process_host_observer.h"
 #include "content/public/common/impression.h"
-#include "content/public/common/previews_state.h"
 #include "mojo/public/cpp/bindings/associated_remote.h"
 #include "mojo/public/cpp/bindings/pending_associated_remote.h"
 #include "mojo/public/cpp/bindings/pending_remote.h"
@@ -47,6 +46,7 @@
 #include "services/network/public/cpp/origin_policy.h"
 #include "services/network/public/mojom/blocked_by_response_reason.mojom-shared.h"
 #include "services/network/public/mojom/web_sandbox_flags.mojom-shared.h"
+#include "third_party/blink/public/common/loader/previews_state.h"
 
 #if defined(OS_ANDROID)
 #include "base/android/scoped_java_ref.h"
@@ -294,6 +294,7 @@ class CONTENT_EXPORT NavigationRequest
   bool IsSameDocument() override;
   bool HasCommitted() override;
   bool IsErrorPage() override;
+  bool IsCustomErrorPage() override;
   bool HasSubframeNavigationEntryCommitted() override;
   bool DidReplaceEntry() override;
   bool ShouldUpdateHistory() override;
@@ -979,7 +980,12 @@ class CONTENT_EXPORT NavigationRequest
 
   // Called when the navigation is ready to be committed. This will update the
   // |state_| and inform the delegate.
-  void ReadyToCommitNavigation(bool is_error);
+  enum class CommitPageType {
+    kNonErrorPage,
+    kErrorPage,
+    kCustomErrorPage,
+  };
+  void ReadyToCommitNavigation(CommitPageType type);
 
   // Called if READY_TO_COMMIT -> COMMIT state transition takes an unusually
   // long time.
@@ -1118,6 +1124,9 @@ class CONTENT_EXPORT NavigationRequest
   bool is_view_source_;
   int bindings_;
   bool entry_overrides_ua_ = false;
+
+  // Indicates what type of error page is about to be committed, if any.
+  CommitPageType committed_page_type_ = CommitPageType::kNonErrorPage;
 
   // Set to true if SetIsOverridingUserAgent() is called.
   bool was_set_overriding_user_agent_called_ = false;

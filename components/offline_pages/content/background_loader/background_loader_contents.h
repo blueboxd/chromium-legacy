@@ -84,7 +84,7 @@ class BackgroundLoaderContents : public content::WebContentsDelegate {
                                   blink::mojom::MediaStreamType type) override;
   void AdjustPreviewsStateForNavigation(
       content::WebContents* web_contents,
-      content::PreviewsState* previews_state) override;
+      blink::PreviewsState* previews_state) override;
   bool ShouldAllowLazyLoad() override;
 
  private:

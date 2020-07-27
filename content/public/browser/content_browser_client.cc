@@ -978,18 +978,18 @@ bool ContentBrowserClient::ShouldSandboxAudioService() {
   return false;
 }
 
-content::PreviewsState ContentBrowserClient::DetermineAllowedPreviews(
-    content::PreviewsState initial_state,
+blink::PreviewsState ContentBrowserClient::DetermineAllowedPreviews(
+    blink::PreviewsState initial_state,
     content::NavigationHandle* navigation_handle,
     const GURL& current_navigation_url) {
-  return content::PREVIEWS_OFF;
+  return blink::PreviewsTypes::PREVIEWS_OFF;
 }
 
-content::PreviewsState ContentBrowserClient::DetermineCommittedPreviews(
-    content::PreviewsState initial_state,
+blink::PreviewsState ContentBrowserClient::DetermineCommittedPreviews(
+    blink::PreviewsState initial_state,
     content::NavigationHandle* navigation_handle,
     const net::HttpResponseHeaders* response_headers) {
-  return content::PREVIEWS_OFF;
+  return blink::PreviewsTypes::PREVIEWS_OFF;
 }
 
 std::string ContentBrowserClient::GetProduct() {

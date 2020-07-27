@@ -49,7 +49,7 @@
 
 #if defined(WAYLAND_GBM)
 #include "ui/base/ui_base_features.h"
-#include "ui/gfx/linux/gbm_wrapper.h"
+#include "ui/gfx/linux/gbm_wrapper.h"  // nogncheck
 #include "ui/ozone/platform/wayland/gpu/drm_render_node_handle.h"
 #endif
 

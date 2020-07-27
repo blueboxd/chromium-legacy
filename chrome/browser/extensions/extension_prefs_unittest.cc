@@ -1389,6 +1389,12 @@ TEST_F(ExtensionPrefsSimpleTest, ExtensionSpecificPrefsMapTest) {
                                         PrefScope::kExtensionSpecific};
   constexpr PrefMap kTestStringPref = {"test.string", PrefType::kString,
                                        PrefScope::kExtensionSpecific};
+  constexpr PrefMap kTestDictPref = {"test.dict", PrefType::kDictionary,
+                                     PrefScope::kExtensionSpecific};
+  constexpr PrefMap kTestListPref = {"test.list", PrefType::kList,
+                                     PrefScope::kExtensionSpecific};
+  constexpr PrefMap kTestTimePref = {"test.time", PrefType::kTime,
+                                     PrefScope::kExtensionSpecific};
 
   content::BrowserTaskEnvironment task_environment_;
   TestExtensionPrefs prefs(base::ThreadTaskRunnerHandle::Get());
@@ -1397,6 +1403,15 @@ TEST_F(ExtensionPrefsSimpleTest, ExtensionSpecificPrefsMapTest) {
   prefs.prefs()->SetBooleanPref(extension_id, kTestBooleanPref, true);
   prefs.prefs()->SetIntegerPref(extension_id, kTestIntegerPref, 1);
   prefs.prefs()->SetStringPref(extension_id, kTestStringPref, "foo");
+  auto dict = std::make_unique<base::DictionaryValue>();
+  dict->SetString("key", "val");
+  prefs.prefs()->SetDictionaryPref(extension_id, kTestDictPref,
+                                   std::move(dict));
+  auto list = base::ListValue();
+  list.AppendString("list_val");
+  prefs.prefs()->SetListPref(extension_id, kTestListPref, std::move(list));
+  base::Time time = base::Time::Now();
+  prefs.prefs()->SetTimePref(extension_id, kTestTimePref, time);
 
   bool bool_value = false;
   EXPECT_TRUE(prefs.prefs()->ReadPrefAsBoolean(extension_id, kTestBooleanPref,
@@ -1410,6 +1425,18 @@ TEST_F(ExtensionPrefsSimpleTest, ExtensionSpecificPrefsMapTest) {
   EXPECT_TRUE(prefs.prefs()->ReadPrefAsString(extension_id, kTestStringPref,
                                               &string_value));
   EXPECT_EQ(string_value, "foo");
+
+  const base::DictionaryValue* dict_val = nullptr;
+  prefs.prefs()->ReadPrefAsDictionary(extension_id, kTestDictPref, &dict_val);
+  dict_val->GetString("key", &string_value);
+  EXPECT_EQ(string_value, "val");
+
+  const base::ListValue* list_val = nullptr;
+  prefs.prefs()->ReadPrefAsList(extension_id, kTestListPref, &list_val);
+  EXPECT_TRUE(list_val->GetList()[0].is_string());
+  EXPECT_EQ(list_val->GetList()[0].GetString(), "list_val");
+
+  EXPECT_EQ(time, prefs.prefs()->ReadPrefAsTime(extension_id, kTestTimePref));
 }
 
 }  // namespace extensions

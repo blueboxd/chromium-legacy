@@ -74,6 +74,8 @@ base::string16 NetworkForFill(const std::string& network) {
     return l10n_util::GetStringUTF16(IDS_AUTOFILL_CC_MASTERCARD);
   if (network == kMirCard)
     return l10n_util::GetStringUTF16(IDS_AUTOFILL_CC_MIR);
+  if (network == kTroyCard)
+    return l10n_util::GetStringUTF16(IDS_AUTOFILL_CC_TROY);
   if (network == kUnionPay)
     return l10n_util::GetStringUTF16(IDS_AUTOFILL_CC_UNION_PAY);
   if (network == kVisaCard)
@@ -166,6 +168,8 @@ int CreditCard::IconResourceId(const std::string& network) {
     return IDR_AUTOFILL_CC_MASTERCARD;
   if (network == kMirCard)
     return IDR_AUTOFILL_CC_MIR;
+  if (network == kTroyCard)
+    return IDR_AUTOFILL_CC_TROY;
   if (network == kUnionPay)
     return IDR_AUTOFILL_CC_UNIONPAY;
   if (network == kVisaCard)
@@ -185,7 +189,7 @@ const char* CreditCard::GetCardNetwork(const base::string16& number) {
   // https://developer.ean.com/general-info/valid-card-types,
   // http://www.bincodes.com/, and
   // http://www.fraudpractice.com/FL-binCC.html.
-  // (Last updated: May 29, 2017)
+  // (Last updated: February 2020; added Troy)
   //
   // Card Type              Prefix(es)                                  Length
   // --------------------------------------------------------------------------
@@ -197,6 +201,7 @@ const char* CreditCard::GetCardNetwork(const base::string16& number) {
   // JCB                    3528-3589                                  16
   // Mastercard             2221-2720, 51-55                           16
   // MIR                    2200-2204                                  16
+  // Troy                   2205, 9792                                 16
   // UnionPay               62                                         16-19
 
   // Determine the network for the given |number| by going from the longest
@@ -222,6 +227,9 @@ const char* CreditCard::GetCardNetwork(const base::string16& number) {
 
     if (first_four_digits >= 2200 && first_four_digits <= 2204)
       return kMirCard;
+
+    if (first_four_digits == 2205 || first_four_digits == 9792)
+      return kTroyCard;
 
     if (first_four_digits >= 2221 && first_four_digits <= 2720)
       return kMasterCard;
@@ -1058,6 +1066,7 @@ const char kGoogleIssuedCard[] = "googleIssuedCC";
 const char kJCBCard[] = "jcbCC";
 const char kMasterCard[] = "masterCardCC";
 const char kMirCard[] = "mirCC";
+const char kTroyCard[] = "troyCC";
 const char kUnionPay[] = "unionPayCC";
 const char kVisaCard[] = "visaCC";
 

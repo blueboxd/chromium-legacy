@@ -79,6 +79,13 @@ action("precompile_templates") {
     "$mojom_generator_root/generators/js_templates/struct_definition.tmpl",
     "$mojom_generator_root/generators/js_templates/union_definition.tmpl",
     "$mojom_generator_root/generators/js_templates/validation_macros.tmpl",
+    "$mojom_generator_root/generators/mojolpm_templates/mojolpm.cc.tmpl",
+    "$mojom_generator_root/generators/mojolpm_templates/mojolpm.h.tmpl",
+    "$mojom_generator_root/generators/mojolpm_templates/mojolpm.proto.tmpl",
+    "$mojom_generator_root/generators/mojolpm_templates/mojolpm_from_proto_macros.tmpl",
+    "$mojom_generator_root/generators/mojolpm_templates/mojolpm_macros.tmpl",
+    "$mojom_generator_root/generators/mojolpm_templates/mojolpm_to_proto_macros.tmpl",
+    "$mojom_generator_root/generators/mojolpm_templates/mojolpm_traits_specialization_macros.tmpl",
     "$mojom_generator_root/generators/ts_templates/module_definition.tmpl",
     "$mojom_generator_root/generators/ts_templates/mojom.tmpl",
   ]
@@ -88,6 +95,7 @@ action("precompile_templates") {
   outputs = [
     "$target_gen_dir/cpp_templates.zip",
     "$target_gen_dir/java_templates.zip",
+    "$target_gen_dir/mojolpm_templates.zip",
     "$target_gen_dir/js_templates.zip",
     "$target_gen_dir/ts_templates.zip",
   ]

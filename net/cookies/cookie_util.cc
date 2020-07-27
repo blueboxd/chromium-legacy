@@ -351,6 +351,13 @@ GURL CookieDomainAndPathToURL(const std::string& domain,
       std::string(is_https ? url::kHttpsScheme : url::kHttpScheme));
 }
 
+GURL CookieDomainAndPathToURL(const std::string& domain,
+                              const std::string& path,
+                              CookieSourceScheme source_scheme) {
+  return CookieDomainAndPathToURL(domain, path,
+                                  source_scheme == CookieSourceScheme::kSecure);
+}
+
 GURL CookieOriginToURL(const std::string& domain, bool is_https) {
   return CookieDomainAndPathToURL(domain, "/", is_https);
 }

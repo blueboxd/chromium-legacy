@@ -83,11 +83,7 @@ WTF::Vector<Purpose> ParsePurpose(const WTF::String& purpose) {
   return results;
 }
 
-WTF::String ParseType(const base::Optional<WTF::String>& type_or_none) {
-  if (!type_or_none.has_value())
-    return "";
-
-  const WTF::String& type = type_or_none.value();
+WTF::String ParseType(const WTF::String& type) {
   if (type.IsNull() || type.IsEmpty())
     return "";
 
@@ -110,10 +106,8 @@ blink::mojom::blink::ManifestImageResourcePtr TypeConverter<
     image_resource_ptr->sizes = ParseSizes(image_resource->sizes());
   if (image_resource->hasPurpose())
     image_resource_ptr->purpose = ParsePurpose(image_resource->purpose());
-  base::Optional<WTF::String> resource_type;
   if (image_resource->hasType())
-    resource_type = image_resource->type();
-  image_resource_ptr->type = ParseType(resource_type);
+    image_resource_ptr->type = ParseType(image_resource->type());
   return image_resource_ptr;
 }
 
@@ -125,10 +119,8 @@ Manifest::ImageResource ConvertManifestImageResource(
     const ManifestImageResource* icon) {
   Manifest::ImageResource manifest_icon;
   manifest_icon.src = blink::KURL(icon->src());
-  base::Optional<String> icon_type;
   if (icon->hasType())
-    icon_type = icon->type();
-  manifest_icon.type = WebString(mojo::ParseType(icon_type)).Utf16();
+    manifest_icon.type = WebString(mojo::ParseType(icon->type())).Utf16();
 
   // Parse 'purpose'
   const auto purposes = mojo::ParsePurpose(icon->purpose());

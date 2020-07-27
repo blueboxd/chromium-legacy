@@ -2046,9 +2046,6 @@ WebInputEventResult EventHandler::SendContextMenuEvent(
   frame_->GetDocument()->UpdateStyleAndLayout(
       DocumentUpdateReason::kContextMenu);
 
-  GetSelectionController().UpdateSelectionForContextMenuEvent(
-      mev, position_in_contents);
-
   Element* target_element =
       override_target_element ? override_target_element : mev.InnerElement();
   return mouse_event_manager_->DispatchMouseEvent(

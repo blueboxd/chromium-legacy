@@ -63,14 +63,12 @@ CrxComponent::~CrxComponent() = default;
 UpdateClientImpl::UpdateClientImpl(
     scoped_refptr<Configurator> config,
     scoped_refptr<PingManager> ping_manager,
-    UpdateChecker::Factory update_checker_factory,
-    CrxDownloader::Factory crx_downloader_factory)
+    UpdateChecker::Factory update_checker_factory)
     : config_(config),
       ping_manager_(ping_manager),
       update_engine_(base::MakeRefCounted<UpdateEngine>(
           config,
           update_checker_factory,
-          crx_downloader_factory,
           ping_manager_.get(),
           base::BindRepeating(&UpdateClientImpl::NotifyObservers,
                               base::Unretained(this)))) {}
@@ -244,8 +242,8 @@ void UpdateClientImpl::SendUninstallPing(const std::string& id,
 scoped_refptr<UpdateClient> UpdateClientFactory(
     scoped_refptr<Configurator> config) {
   return base::MakeRefCounted<UpdateClientImpl>(
-      config, base::MakeRefCounted<PingManager>(config), &UpdateChecker::Create,
-      &CrxDownloader::Create);
+      config, base::MakeRefCounted<PingManager>(config),
+      &UpdateChecker::Create);
 }
 
 void RegisterPrefs(PrefRegistrySimple* registry) {

@@ -27,6 +27,7 @@ class SharedURLLoaderFactory;
 namespace update_client {
 
 class ActivityDataService;
+class CrxDownloaderFactory;
 class NetworkFetcherFactory;
 class PatchChromiumFactory;
 class ProtocolHandlerFactory;
@@ -88,6 +89,7 @@ class TestConfigurator : public Configurator {
   base::flat_map<std::string, std::string> ExtraRequestParams() const override;
   std::string GetDownloadPreference() const override;
   scoped_refptr<NetworkFetcherFactory> GetNetworkFetcherFactory() override;
+  scoped_refptr<CrxDownloaderFactory> GetCrxDownloaderFactory() override;
   scoped_refptr<UnzipperFactory> GetUnzipperFactory() override;
   scoped_refptr<PatcherFactory> GetPatcherFactory() override;
   bool EnabledDeltas() const override;
@@ -108,6 +110,9 @@ class TestConfigurator : public Configurator {
   void SetEnabledComponentUpdates(bool enabled_component_updates);
   void SetUpdateCheckUrl(const GURL& url);
   void SetPingUrl(const GURL& url);
+  void SetCrxDownloaderFactory(
+      scoped_refptr<CrxDownloaderFactory> crx_downloader_factory);
+
   network::TestURLLoaderFactory* test_url_loader_factory() {
     return &test_url_loader_factory_;
   }
@@ -134,6 +139,7 @@ class TestConfigurator : public Configurator {
   scoped_refptr<network::SharedURLLoaderFactory> test_shared_loader_factory_;
   network::TestURLLoaderFactory test_url_loader_factory_;
   scoped_refptr<NetworkFetcherFactory> network_fetcher_factory_;
+  scoped_refptr<CrxDownloaderFactory> crx_downloader_factory_;
 };
 
 }  // namespace update_client

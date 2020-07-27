@@ -14,7 +14,6 @@
 #include "chrome/browser/safe_browsing/incident_reporting/mock_incident_receiver.h"
 #include "components/safe_browsing/core/db/test_database_manager.h"
 #include "components/safe_browsing/core/proto/csd.pb.h"
-#include "content/public/common/previews_state.h"
 #include "content/public/test/browser_task_environment.h"
 #include "crypto/sha2.h"
 #include "ipc/ipc_message.h"
@@ -22,6 +21,7 @@
 #include "net/traffic_annotation/network_traffic_annotation_test_helper.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/blink/public/common/loader/previews_state.h"
 #include "third_party/blink/public/mojom/loader/resource_load_info.mojom-shared.h"
 #include "url/gurl.h"
 

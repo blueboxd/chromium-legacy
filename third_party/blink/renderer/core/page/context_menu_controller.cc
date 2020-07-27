@@ -43,6 +43,7 @@
 #include "third_party/blink/renderer/core/editing/editor.h"
 #include "third_party/blink/renderer/core/editing/frame_selection.h"
 #include "third_party/blink/renderer/core/editing/ime/input_method_controller.h"
+#include "third_party/blink/renderer/core/editing/selection_controller.h"
 #include "third_party/blink/renderer/core/editing/spellcheck/spell_checker.h"
 #include "third_party/blink/renderer/core/events/mouse_event.h"
 #include "third_party/blink/renderer/core/exported/web_plugin_container_impl.h"
@@ -102,7 +103,9 @@ void ContextMenuController::HandleContextMenuEvent(MouseEvent* mouse_event) {
   LocalFrame* frame = mouse_event->target()->ToNode()->GetDocument().GetFrame();
   PhysicalOffset location = PhysicalOffset::FromFloatPointRound(
       FloatPoint(mouse_event->AbsoluteLocation()));
-  if (ShowContextMenu(frame, location, mouse_event->GetMenuSourceType()))
+
+  if (ShowContextMenu(frame, location, mouse_event->GetMenuSourceType(),
+                      mouse_event))
     mouse_event->SetDefaultHandled();
 }
 
@@ -210,7 +213,8 @@ bool ContextMenuController::ShouldShowContextMenuFromTouch(
 
 bool ContextMenuController::ShowContextMenu(LocalFrame* frame,
                                             const PhysicalOffset& point,
-                                            WebMenuSourceType source_type) {
+                                            WebMenuSourceType source_type,
+                                            const MouseEvent* mouse_event) {
   // Displaying the context menu in this function is a big hack as we don't
   // have context, i.e. whether this is being invoked via a script or in
   // response to user input (Mouse event WM_RBUTTONDOWN,
@@ -233,6 +237,14 @@ bool ContextMenuController::ShowContextMenu(LocalFrame* frame,
   result.SetToShadowHostIfInRestrictedShadowRoot();
 
   LocalFrame* selected_frame = result.InnerNodeFrame();
+  // Tests that do not require selection pass mouse_event = nullptr
+  if (mouse_event) {
+    selected_frame->GetEventHandler()
+        .GetSelectionController()
+        .UpdateSelectionForContextMenuEvent(
+            mouse_event, hit_test_result_,
+            PhysicalOffset(FlooredIntPoint(point)));
+  }
 
   WebContextMenuData data;
   data.mouse_position = selected_frame->View()->FrameToViewport(

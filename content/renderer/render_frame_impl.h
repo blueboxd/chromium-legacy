@@ -41,7 +41,6 @@
 #include "content/common/web_ui.mojom.h"
 #include "content/public/common/browser_controls_state.h"
 #include "content/public/common/fullscreen_video_element.mojom.h"
-#include "content/public/common/previews_state.h"
 #include "content/public/common/referrer.h"
 #include "content/public/common/stop_find_action.h"
 #include "content/public/common/widget_type.h"
@@ -78,6 +77,7 @@
 #include "third_party/blink/public/common/browser_interface_broker_proxy.h"
 #include "third_party/blink/public/common/feature_policy/feature_policy.h"
 #include "third_party/blink/public/common/loader/loading_behavior_flag.h"
+#include "third_party/blink/public/common/loader/previews_state.h"
 #include "third_party/blink/public/common/navigation/triggering_event_info.h"
 #include "third_party/blink/public/mojom/autoplay/autoplay.mojom.h"
 #include "third_party/blink/public/mojom/choosers/file_chooser.mojom.h"
@@ -464,7 +464,7 @@ class CONTENT_EXPORT RenderFrameImpl
                        const gfx::Range& range) override;
   void AddMessageToConsole(blink::mojom::ConsoleMessageLevel level,
                            const std::string& message) override;
-  PreviewsState GetPreviewsState() override;
+  blink::PreviewsState GetPreviewsState() override;
   bool IsPasting() override;
   bool IsBrowserSideNavigationPending() override;
   void LoadHTMLString(const std::string& html,
@@ -870,7 +870,7 @@ class CONTENT_EXPORT RenderFrameImpl
                         int request_id,
                         network::mojom::URLResponseHeadPtr response_head,
                         network::mojom::RequestDestination request_destination,
-                        PreviewsState previews_state);
+                        blink::PreviewsState previews_state);
   void DidCompleteResponse(int request_id,
                            const network::URLLoaderCompletionStatus& status);
   void DidCancelResponse(int request_id);

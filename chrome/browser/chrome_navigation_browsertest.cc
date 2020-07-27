@@ -1276,10 +1276,9 @@ IN_PROC_BROWSER_TEST_F(ChromeNavigationBrowserTest,
   EXPECT_NE(popup, opener);
   EXPECT_TRUE(WaitForLoadStop(popup));
 
-  content::ConsoleObserverDelegate console_observer(
-      opener,
+  content::WebContentsConsoleObserver console_observer(opener);
+  console_observer.SetPattern(
       "Navigating a cross-origin opener to a download (*) is deprecated*");
-  opener->SetDelegate(&console_observer);
   EXPECT_TRUE(content::ExecuteScript(
       popup,
       "window.opener.location ='data:html/text;base64,'+btoa('payload');"));

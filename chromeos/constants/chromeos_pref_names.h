@@ -16,6 +16,8 @@ COMPONENT_EXPORT(CHROMEOS_CONSTANTS)
 extern const char kAssistPersonalInfoEnabled[];
 COMPONENT_EXPORT(CHROMEOS_CONSTANTS)
 extern const char kEmojiSuggestionEnabled[];
+COMPONENT_EXPORT(CHROMEOS_CONSTANTS)
+extern const char kEmojiSuggestionEnterpriseAllowed[];
 COMPONENT_EXPORT(CHROMEOS_CONSTANTS) extern const char kAudioDevicesMute[];
 COMPONENT_EXPORT(CHROMEOS_CONSTANTS)
 extern const char kAudioDevicesGainPercent[];

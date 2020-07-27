@@ -1,4 +1,4 @@
-#!/usr/bin/env python3
+#!/usr/bin/env vpython3
 # Copyright 2020 The Chromium Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
@@ -8,18 +8,18 @@
 
 Examples:
 # List GN target for bundles:
-build/android/list_java_targets.py --output-directory out/Default \
---type android_app_bundle --gn-labels
+build/android/list_java_targets.py -C out/Default --type android_app_bundle \
+--gn-labels
 
 # List all android targets with types:
-build/android/list_java_targets.py --output-directory out/Default --print-types
+build/android/list_java_targets.py -C out/Default --print-types
 
 # Build all apk targets:
-build/android/list_java_targets.py --output-directory out/Default \
---type android_apk | xargs autoninja -C out/Default
+build/android/list_java_targets.py -C out/Default --type android_apk | xargs \
+autoninja -C out/Default
 
 # Show how many of each target type exist:
-build/android/list_java_targets.py --output-directory out/Default --stats
+build/android/list_java_targets.py -C out/Default --stats
 
 """
 
@@ -79,22 +79,16 @@ def _query_for_build_config_targets(output_dir):
     ninja_target = line.rsplit(':', 1)[0]
     # Ignore root aliases by ensuring a : exists.
     if ':' in ninja_target and ninja_target.endswith(SUFFIX):
-      ret.append('//' + ninja_target[:-SUFFIX_LEN])
+      ret.append(f'//{ninja_target[:-SUFFIX_LEN]}')
   return ret
 
 
 class _TargetEntry(object):
-  _cached_entries = {}
-
   def __init__(self, gn_target):
-    assert gn_target.startswith('//'), gn_target
-    if ':' not in gn_target:
-      gn_target = '%s:%s' % (gn_target, os.path.basename(gn_target))
+    assert gn_target.startswith('//'), f'{gn_target} does not start with //'
+    assert ':' in gn_target, f'Non-root {gn_target} required'
     self.gn_target = gn_target
     self._build_config = None
-    self._java_files = None
-    self._all_entries = None
-    self.android_test_entries = []
 
   @property
   def ninja_target(self):
@@ -125,7 +119,9 @@ class _TargetEntry(object):
 def main():
   parser = argparse.ArgumentParser(
       description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
-  parser.add_argument('--output-directory')
+  parser.add_argument('-C',
+                      '--output-directory',
+                      help='If outdir is not provided, will attempt to guess.')
   parser.add_argument('--gn-labels',
                       action='store_true',
                       help='Print GN labels rather than ninja targets')
@@ -174,7 +170,7 @@ def main():
   if args.stats:
     counts = collections.Counter(e.get_type() for e in entries)
     for entry_type, count in sorted(counts.items()):
-      print('{}: {}'.format(entry_type, count))
+      print(f'{entry_type}: {count}')
   else:
     for e in entries:
       if args.gn_labels:
@@ -187,7 +183,7 @@ def main():
         to_print = to_print.replace('__test_apk__apk', '').replace('__apk', '')
 
       if args.print_types:
-        to_print = '{}: {}'.format(to_print, e.get_type())
+        to_print = f'{to_print}: {e.get_type()}'
 
       print(to_print)
 

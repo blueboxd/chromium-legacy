@@ -99,6 +99,24 @@ void OffscreenFontSelector::ReportSuccessfulLocalFontMatch(
 void OffscreenFontSelector::ReportFailedLocalFontMatch(
     const AtomicString& font_name) {}
 
+void OffscreenFontSelector::ReportFontLookupByUniqueOrFamilyName(
+    const AtomicString& name,
+    const FontDescription& font_description,
+    LocalFontLookupType check_type,
+    SimpleFontData* resulting_font_data,
+    bool is_loading_fallback) {}
+
+void OffscreenFontSelector::ReportFontLookupByFallbackCharacter(
+    UChar32 fallback_character,
+    const FontDescription& font_description,
+    LocalFontLookupType check_type,
+    SimpleFontData* resulting_font_data) {}
+
+void OffscreenFontSelector::ReportLastResortFallbackFontLookup(
+    const FontDescription& font_description,
+    LocalFontLookupType check_type,
+    SimpleFontData* resulting_font_data) {}
+
 void OffscreenFontSelector::FontCacheInvalidated() {
   font_face_cache_.IncrementVersion();
 }

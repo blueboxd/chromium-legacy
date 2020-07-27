@@ -995,9 +995,9 @@ std::unique_ptr<NavigationRequest> NavigationRequest::CreateForCommit(
           is_same_document ? mojom::NavigationType::SAME_DOCUMENT
                            : mojom::NavigationType::DIFFERENT_DOCUMENT,
           NavigationDownloadPolicy(), params.should_replace_current_entry,
-          params.base_url, params.base_url, PREVIEWS_UNSPECIFIED,
-          base::TimeTicks::Now(), params.method, nullptr,
-          network::mojom::SourceLocation::New(),
+          params.base_url, params.base_url,
+          blink::PreviewsTypes::PREVIEWS_UNSPECIFIED, base::TimeTicks::Now(),
+          params.method, nullptr, network::mojom::SourceLocation::New(),
           false /* started_from_context_menu */,
           params.gesture == NavigationGestureUser, CreateInitiatorCSPInfo(),
           std::vector<int>() /* initiator_origin_trial_features */,
@@ -1473,7 +1473,7 @@ void NavigationRequest::BeginNavigation() {
       base::debug::DumpWithoutCrashing();
     }
 
-    ReadyToCommitNavigation(false /* is_error */);
+    ReadyToCommitNavigation(CommitPageType::kNonErrorPage);
     CommitNavigation();
     return;
   }
@@ -2552,7 +2552,7 @@ void NavigationRequest::OnRequestFailedInternal(
   // anymore from now while the error page is being loaded.
   loader_.reset();
 
-  common_params_->previews_state = PREVIEWS_OFF;
+  common_params_->previews_state = blink::PreviewsTypes::PREVIEWS_OFF;
   if (status.ssl_info.has_value())
     ssl_info_ = status.ssl_info;
 
@@ -3100,7 +3100,8 @@ void NavigationRequest::CommitErrorPage(
   }
 
   sandbox_flags_to_commit_ = ComputeSandboxFlagsToCommit();
-  ReadyToCommitNavigation(true);
+  ReadyToCommitNavigation(error_page_content ? CommitPageType::kCustomErrorPage
+                                             : CommitPageType::kErrorPage);
   render_frame_host_->FailedNavigation(this, *common_params_, *commit_params_,
                                        has_stale_copy_in_cache_, net_error_,
                                        error_page_content);
@@ -3797,7 +3798,7 @@ void NavigationRequest::OnWillProcessResponseProcessed(
     // commit. Inform observers that the navigation is now ready to commit,
     // unless it is not set to commit (204/205s/downloads).
     if (render_frame_host_)
-      ReadyToCommitNavigation(false);
+      ReadyToCommitNavigation(CommitPageType::kNonErrorPage);
 
     // The call above might block on showing a user dialog. The interaction of
     // the user with this dialog might result in the WebContents owning this
@@ -4160,10 +4161,11 @@ bool NavigationRequest::NeedsUrlLoader() {
          !IsForMhtmlSubframe();
 }
 
-void NavigationRequest::ReadyToCommitNavigation(bool is_error) {
+void NavigationRequest::ReadyToCommitNavigation(CommitPageType type) {
   EnterChildTraceEvent("ReadyToCommitNavigation", this);
 
   SetState(READY_TO_COMMIT);
+  committed_page_type_ = type;
   ready_to_commit_time_ = base::TimeTicks::Now();
   RestartCommitTimeout();
 
@@ -4186,7 +4188,7 @@ void NavigationRequest::ReadyToCommitNavigation(bool is_error) {
 
   // Record metrics for the time it takes to get to this state from the
   // beginning of the navigation.
-  if (!IsSameDocument() && !is_error) {
+  if (!IsSameDocument() && type == CommitPageType::kNonErrorPage) {
     is_same_process_ =
         render_frame_host_->GetProcess()->GetID() ==
         frame_tree_node_->current_frame_host()->GetProcess()->GetID();
@@ -4406,6 +4408,11 @@ bool NavigationRequest::HasCommitted() {
 
 bool NavigationRequest::IsErrorPage() {
   return state_ == DID_COMMIT_ERROR_PAGE;
+}
+
+bool NavigationRequest::IsCustomErrorPage() {
+  return state_ == DID_COMMIT_ERROR_PAGE &&
+         committed_page_type_ == CommitPageType::kCustomErrorPage;
 }
 
 net::HttpResponseInfo::ConnectionInfo NavigationRequest::GetConnectionInfo() {

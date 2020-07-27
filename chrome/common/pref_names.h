@@ -644,6 +644,9 @@ extern const char kWebAppsExtensionIDs[];
 extern const char kWebAppsPreferences[];
 extern const char kSystemWebAppLastUpdateVersion[];
 extern const char kSystemWebAppLastInstalledLocale[];
+extern const char kSystemWebAppInstallFailureCount[];
+extern const char kSystemWebAppLastAttemptedVersion[];
+extern const char kSystemWebAppLastAttemptedLocale[];
 
 extern const char kDefaultAudioCaptureDevice[];
 extern const char kDefaultVideoCaptureDevice[];
@@ -709,6 +712,7 @@ extern const char kOobeMarketingOptInScreenFinished[];
 extern const char kDeviceRegistered[];
 extern const char kEnrollmentRecoveryRequired[];
 extern const char kHelpAppShouldShowGetStarted[];
+extern const char kHelpAppShouldShowParentalControl[];
 extern const char kHelpAppTabletModeDuringOobe[];
 extern const char kUsedPolicyCertificates[];
 extern const char kServerBackedDeviceState[];
@@ -762,7 +766,7 @@ extern const char kTotalMemoryLimitMb[];
 extern const char kAuthSchemes[];
 extern const char kDisableAuthNegotiateCnameLookup[];
 extern const char kEnableAuthNegotiatePort[];
-extern const char kAuthServerWhitelist[];
+extern const char kAuthServerAllowlist[];
 extern const char kAuthNegotiateDelegateAllowlist[];
 extern const char kGSSAPILibraryName[];
 extern const char kAuthAndroidNegotiateAccountType[];
@@ -896,7 +900,6 @@ extern const char kRecoveryComponentNeedsElevation[];
 extern const char kRegisteredSupervisedUserWhitelists[];
 
 #if !defined(OS_ANDROID)
-extern const char kCloudReportingEnabled[];
 extern const char kCloudExtensionRequestEnabled[];
 extern const char kCloudExtensionRequestIds[];
 #endif

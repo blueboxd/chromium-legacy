@@ -220,9 +220,7 @@ class CORE_EXPORT DocumentLoader : public GarbageCollected<DocumentLoader>,
     return application_cache_host_.Get();
   }
 
-  WebURLRequest::PreviewsState GetPreviewsState() const {
-    return previews_state_;
-  }
+  PreviewsState GetPreviewsState() const { return previews_state_; }
 
   struct InitialScrollState {
     DISALLOW_NEW();
@@ -434,7 +432,7 @@ class CORE_EXPORT DocumentLoader : public GarbageCollected<DocumentLoader>,
   Referrer referrer_;
   scoped_refptr<EncodedFormData> http_body_;
   AtomicString http_content_type_;
-  WebURLRequest::PreviewsState previews_state_;
+  PreviewsState previews_state_;
   base::Optional<WebOriginPolicy> origin_policy_;
   const scoped_refptr<const SecurityOrigin> requestor_origin_;
   const KURL unreachable_url_;

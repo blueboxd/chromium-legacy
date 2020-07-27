@@ -200,9 +200,12 @@ class TestWaitForResults(unittest.TestCase):
         with self.assertRaises(notarize.NotarizationError) as cm:
             list(notarize.wait_for_results(uuids, test_config.TestConfig()))
 
-        self.assertEqual(
-            "Timed out waiting for notarization requests: set(['0c652bb4-7d44-4904-8c59-1ee86a376ece'])",
-            str(cm.exception))
+        # Python 2 and 3 stringify set() differently.
+        self.assertIn(
+            str(cm.exception), [
+                "Timed out waiting for notarization requests: set(['0c652bb4-7d44-4904-8c59-1ee86a376ece'])",
+                "Timed out waiting for notarization requests: {'0c652bb4-7d44-4904-8c59-1ee86a376ece'}"
+            ])
 
         for call in kwargs['run_command_output'].mock_calls:
             self.assertEqual(

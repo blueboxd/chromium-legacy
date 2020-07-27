@@ -59,6 +59,24 @@ class CORE_EXPORT CSSFontSelector : public FontSelector {
 
   void ReportFailedLocalFontMatch(const AtomicString& font_name) override;
 
+  void ReportFontLookupByUniqueOrFamilyName(
+      const AtomicString& name,
+      const FontDescription& font_description,
+      LocalFontLookupType check_type,
+      SimpleFontData* resulting_font_data,
+      bool is_loading_fallback = false) override;
+
+  void ReportFontLookupByFallbackCharacter(
+      UChar32 fallback_character,
+      const FontDescription& font_description,
+      LocalFontLookupType check_type,
+      SimpleFontData* resulting_font_data) override;
+
+  void ReportLastResortFallbackFontLookup(
+      const FontDescription& font_description,
+      LocalFontLookupType check_type,
+      SimpleFontData* resulting_font_data) override;
+
   scoped_refptr<FontData> GetFontData(const FontDescription&,
                                       const AtomicString&) override;
   void WillUseFontData(const FontDescription&,

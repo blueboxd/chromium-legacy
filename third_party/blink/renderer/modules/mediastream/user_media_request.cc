@@ -330,7 +330,6 @@ UserMediaRequest* UserMediaRequest::Create(
     UserMediaRequest::MediaType media_type,
     const MediaStreamConstraints* options,
     Callbacks* callbacks,
-    base::OnceClosure success_update_callback,
     MediaErrorState& error_state) {
   MediaConstraints audio = ParseOptions(context, options->audio(), error_state);
   if (error_state.HadException())
@@ -395,9 +394,8 @@ UserMediaRequest* UserMediaRequest::Create(
   if (!video.IsNull())
     CountVideoConstraintUses(context, video);
 
-  return MakeGarbageCollected<UserMediaRequest>(
-      context, controller, media_type, audio, video, callbacks,
-      std::move(success_update_callback));
+  return MakeGarbageCollected<UserMediaRequest>(context, controller, media_type,
+                                                audio, video, callbacks);
 }
 
 UserMediaRequest* UserMediaRequest::Create(
@@ -406,12 +404,11 @@ UserMediaRequest* UserMediaRequest::Create(
     const MediaStreamConstraints* options,
     V8NavigatorUserMediaSuccessCallback* success_callback,
     V8NavigatorUserMediaErrorCallback* error_callback,
-    base::OnceClosure success_update_callback,
     MediaErrorState& error_state) {
   return Create(
       context, controller, UserMediaRequest::MediaType::kUserMedia, options,
       MakeGarbageCollected<V8Callbacks>(success_callback, error_callback),
-      std::move(success_update_callback), error_state);
+      error_state);
 }
 
 UserMediaRequest* UserMediaRequest::CreateForTesting(
@@ -419,7 +416,7 @@ UserMediaRequest* UserMediaRequest::CreateForTesting(
     const MediaConstraints& video) {
   return MakeGarbageCollected<UserMediaRequest>(
       nullptr, nullptr, UserMediaRequest::MediaType::kUserMedia, audio, video,
-      nullptr, base::OnceClosure());
+      nullptr);
 }
 
 UserMediaRequest::UserMediaRequest(ExecutionContext* context,
@@ -427,8 +424,7 @@ UserMediaRequest::UserMediaRequest(ExecutionContext* context,
                                    UserMediaRequest::MediaType media_type,
                                    MediaConstraints audio,
                                    MediaConstraints video,
-                                   Callbacks* callbacks,
-                                   base::OnceClosure success_update_callback)
+                                   Callbacks* callbacks)
     : ExecutionContextLifecycleObserver(context),
       media_type_(media_type),
       audio_(audio),
@@ -437,8 +433,7 @@ UserMediaRequest::UserMediaRequest(ExecutionContext* context,
           RuntimeEnabledFeatures::DisableHardwareNoiseSuppressionEnabled(
               context)),
       controller_(controller),
-      callbacks_(callbacks),
-      success_update_callback_(std::move(success_update_callback)) {
+      callbacks_(callbacks) {
   if (should_disable_hardware_noise_suppression_) {
     UseCounter::Count(context,
                       WebFeature::kUserMediaDisableHardwareNoiseSuppression);
@@ -538,8 +533,6 @@ void UserMediaRequest::OnMediaStreamInitialized(MediaStream* stream) {
   for (const auto& video_track : video_tracks)
     video_track->SetConstraints(video_);
 
-  if (success_update_callback_)
-    std::move(success_update_callback_).Run();
   callbacks_->OnSuccess(nullptr, stream);
   is_resolved_ = true;
 }

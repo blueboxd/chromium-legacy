@@ -9,8 +9,6 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
-#include "content/public/browser/browser_task_traits.h"
-#include "content/public/browser/browser_thread.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/test/browser_test_utils.h"
 #include "net/base/request_priority.h"
@@ -20,13 +18,12 @@
 
 using ::testing::Mock;
 using ::testing::StrictMock;
-SSLClientCertificateSelectorTestBase::SSLClientCertificateSelectorTestBase()
-    : io_loop_finished_event_(base::WaitableEvent::ResetPolicy::AUTOMATIC,
-                              base::WaitableEvent::InitialState::NOT_SIGNALED) {
-}
 
-SSLClientCertificateSelectorTestBase::~SSLClientCertificateSelectorTestBase() {
-}
+SSLClientCertificateSelectorTestBase::SSLClientCertificateSelectorTestBase() =
+    default;
+
+SSLClientCertificateSelectorTestBase::~SSLClientCertificateSelectorTestBase() =
+    default;
 
 void SSLClientCertificateSelectorTestBase::SetUpInProcessBrowserTestFixture() {
   cert_request_info_ = base::MakeRefCounted<net::SSLCertRequestInfo>();
@@ -34,37 +31,15 @@ void SSLClientCertificateSelectorTestBase::SetUpInProcessBrowserTestFixture() {
 }
 
 void SSLClientCertificateSelectorTestBase::SetUpOnMainThread() {
-  content::GetIOThreadTaskRunner({})->PostTask(
-      FROM_HERE,
-      base::BindOnce(&SSLClientCertificateSelectorTestBase::SetUpOnIOThread,
-                     base::Unretained(this)));
-
-  io_loop_finished_event_.Wait();
+  auth_requestor_ =
+      new StrictMock<SSLClientAuthRequestorMock>(cert_request_info_.get());
 
   EXPECT_TRUE(content::WaitForLoadStop(
       browser()->tab_strip_model()->GetActiveWebContents()));
 }
 
 // Have to release our reference to the auth handler during the test to allow
-// it to be destroyed while the Browser and its IO thread still exist.
+// it to be destroyed while the Browser still exists.
 void SSLClientCertificateSelectorTestBase::TearDownOnMainThread() {
-  content::GetIOThreadTaskRunner({})->PostTask(
-      FROM_HERE,
-      base::BindOnce(&SSLClientCertificateSelectorTestBase::TearDownOnIOThread,
-                     base::Unretained(this)));
-
-  io_loop_finished_event_.Wait();
-
   auth_requestor_.reset();
-}
-
-void SSLClientCertificateSelectorTestBase::SetUpOnIOThread() {
-  auth_requestor_ =
-      new StrictMock<SSLClientAuthRequestorMock>(cert_request_info_.get());
-
-  io_loop_finished_event_.Signal();
-}
-
-void SSLClientCertificateSelectorTestBase::TearDownOnIOThread() {
-  io_loop_finished_event_.Signal();
 }

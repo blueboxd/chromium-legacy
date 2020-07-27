@@ -12,12 +12,12 @@ namespace blink {
 
 class NonElementParentNode {
  public:
-  static Element* getElementById(Document& document, const StringView& id) {
+  static Element* getElementById(Document& document, const AtomicString& id) {
     return document.getElementById(id);
   }
 
   static Element* getElementById(DocumentFragment& fragment,
-                                 const StringView& id) {
+                                 const AtomicString& id) {
     return fragment.getElementById(id);
   }
 };

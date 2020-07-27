@@ -59,6 +59,10 @@ class BLINK_COMMON_EXPORT WebMouseEvent : public WebInputEvent,
     return (GetModifiers() & kIsCompatibilityEventForTouch) != 0;
   }
 
+  int ClickCount() const { return click_count; }
+
+  WebMenuSourceType GetMenuSourceType() const { return menu_source_type; }
+
   WebMouseEvent(Type type_param,
                 const WebGestureEvent&,
                 Button button_param,

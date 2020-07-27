@@ -340,6 +340,10 @@ cr.define('cr.ui.login.debug', function() {
       ],
     },
     {
+      id: 'family-link-notice',
+      kind: ScreenKind.NORMAL,
+    },
+    {
       id: 'packaged-license',
       kind: ScreenKind.NORMAL,
       suffix: 'E',

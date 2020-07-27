@@ -500,12 +500,9 @@ bool GLImageIOSurface::ValidFormat(gfx::BufferFormat format) {
     case gfx::BufferFormat::BGRX_8888:
     case gfx::BufferFormat::RGBA_8888:
     case gfx::BufferFormat::RGBA_F16:
+    case gfx::BufferFormat::BGRA_1010102:
     case gfx::BufferFormat::YUV_420_BIPLANAR:
       return true;
-    case gfx::BufferFormat::BGRA_1010102:
-      // TODO(https://crbug.com/1100599): Re-enable this format once ANGLE
-      // supports it.
-      return false;
     case gfx::BufferFormat::R_16:
     case gfx::BufferFormat::RG_88:
     case gfx::BufferFormat::BGR_565:

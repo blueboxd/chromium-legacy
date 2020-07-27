@@ -57,19 +57,20 @@ bool IsPrivateDomain(const GURL& url) {
   return false;
 }
 
-bool HasEnabledPreviews(content::PreviewsState previews_state) {
-  return previews_state != content::PREVIEWS_UNSPECIFIED &&
-         !(previews_state & content::PREVIEWS_OFF) &&
-         !(previews_state & content::PREVIEWS_NO_TRANSFORM);
+bool HasEnabledPreviews(blink::PreviewsState previews_state) {
+  return previews_state != blink::PreviewsTypes::PREVIEWS_UNSPECIFIED &&
+         !(previews_state & blink::PreviewsTypes::PREVIEWS_OFF) &&
+         !(previews_state & blink::PreviewsTypes::PREVIEWS_NO_TRANSFORM);
 }
 
-content::PreviewsState DetermineAllowedClientPreviewsState(
+blink::PreviewsState DetermineAllowedClientPreviewsState(
     previews::PreviewsUserData* previews_data,
     bool previews_triggering_logic_already_ran,
     bool is_data_saver_user,
     previews::PreviewsDecider* previews_decider,
     content::NavigationHandle* navigation_handle) {
-  content::PreviewsState previews_state = content::PREVIEWS_UNSPECIFIED;
+  blink::PreviewsState previews_state =
+      blink::PreviewsTypes::PREVIEWS_UNSPECIFIED;
 
   const GURL& url = navigation_handle->GetURL();
   bool is_reload =
@@ -96,19 +97,19 @@ content::PreviewsState DetermineAllowedClientPreviewsState(
   if (previews_decider->ShouldAllowPreviewAtNavigationStart(
           previews_data, navigation_handle, is_reload,
           previews::PreviewsType::DEFER_ALL_SCRIPT)) {
-    previews_state |= content::DEFER_ALL_SCRIPT_ON;
+    previews_state |= blink::PreviewsTypes::DEFER_ALL_SCRIPT_ON;
     allow_commit_time_previews = true;
   }
   if (previews_decider->ShouldAllowPreviewAtNavigationStart(
           previews_data, navigation_handle, is_reload,
           previews::PreviewsType::RESOURCE_LOADING_HINTS)) {
-    previews_state |= content::RESOURCE_LOADING_HINTS_ON;
+    previews_state |= blink::PreviewsTypes::RESOURCE_LOADING_HINTS_ON;
     allow_commit_time_previews = true;
   }
   if (previews_decider->ShouldAllowPreviewAtNavigationStart(
           previews_data, navigation_handle, is_reload,
           previews::PreviewsType::NOSCRIPT)) {
-    previews_state |= content::NOSCRIPT_ON;
+    previews_state |= blink::PreviewsTypes::NOSCRIPT_ON;
     allow_commit_time_previews = true;
   }
 
@@ -174,10 +175,10 @@ void UpdatePreviewsUserDataAndRecordCoinFlipResult(
   builder.Record(ukm::UkmRecorder::Get());
 }
 
-content::PreviewsState DetermineCommittedClientPreviewsState(
+blink::PreviewsState DetermineCommittedClientPreviewsState(
     previews::PreviewsUserData* previews_data,
     const GURL& url,
-    content::PreviewsState previews_state,
+    blink::PreviewsState previews_state,
     const previews::PreviewsDecider* previews_decider,
     content::NavigationHandle* navigation_handle) {
   if (previews_data && previews_data->cache_control_no_transform_directive()) {
@@ -187,14 +188,14 @@ content::PreviewsState DetermineCommittedClientPreviewsState(
           GetMainFramePreviewsType(previews_state),
           previews::PreviewsType::LAST);
     }
-    return content::PREVIEWS_OFF;
+    return blink::PreviewsTypes::PREVIEWS_OFF;
   }
 
   // Check if the URL is eligible for defer all script preview. A URL
   // may not be eligible for the preview if it's likely to cause a
   // client redirect loop.
   if ((previews::params::DetectDeferRedirectLoopsUsingCache()) &&
-      (previews_state & content::DEFER_ALL_SCRIPT_ON)) {
+      (previews_state & blink::PreviewsTypes::DEFER_ALL_SCRIPT_ON)) {
     content::WebContents* web_contents =
         navigation_handle ? navigation_handle->GetWebContents() : nullptr;
     if (web_contents) {
@@ -203,7 +204,7 @@ content::PreviewsState DetermineCommittedClientPreviewsState(
 
       if (previews_service &&
           !previews_service->IsUrlEligibleForDeferAllScriptPreview(url)) {
-        previews_state &= ~content::DEFER_ALL_SCRIPT_ON;
+        previews_state &= ~blink::PreviewsTypes::DEFER_ALL_SCRIPT_ON;
         UMA_HISTOGRAM_BOOLEAN(
             "Previews.DeferAllScript.RedirectLoopDetectedUsingCache", true);
         if (previews_service->previews_ui_service()) {
@@ -222,7 +223,7 @@ content::PreviewsState DetermineCommittedClientPreviewsState(
     }
   }
 
-  if (previews_state & content::DEFER_ALL_SCRIPT_ON) {
+  if (previews_state & blink::PreviewsTypes::DEFER_ALL_SCRIPT_ON) {
     content::WebContents* web_contents =
         navigation_handle ? navigation_handle->GetWebContents() : nullptr;
     if (web_contents) {
@@ -231,7 +232,7 @@ content::PreviewsState DetermineCommittedClientPreviewsState(
 
       if (previews_service &&
           previews_service->MatchesDeferAllScriptDenyListRegexp(url)) {
-        previews_state &= ~content::DEFER_ALL_SCRIPT_ON;
+        previews_state &= ~blink::PreviewsTypes::DEFER_ALL_SCRIPT_ON;
         UMA_HISTOGRAM_BOOLEAN("Previews.DeferAllScript.DenyListMatch", true);
         if (previews_service->previews_ui_service()) {
           previews::PreviewsDeciderImpl* previews_decider_impl =
@@ -252,21 +253,22 @@ content::PreviewsState DetermineCommittedClientPreviewsState(
   // Make priority decision among allowed client preview types that can be
   // decided at Commit time.
 
-  if (previews_state & content::DEFER_ALL_SCRIPT_ON) {
+  if (previews_state & blink::PreviewsTypes::DEFER_ALL_SCRIPT_ON) {
     // DeferAllScript was allowed for the original URL but only continue with it
     // if the committed URL has HTTPS scheme and is allowed by decider.
     if (previews_decider && previews_decider->ShouldCommitPreview(
                                 previews_data, navigation_handle,
                                 previews::PreviewsType::DEFER_ALL_SCRIPT)) {
       LogCommittedPreview(previews_data, PreviewsType::DEFER_ALL_SCRIPT);
-      return content::DEFER_ALL_SCRIPT_ON;
+      return blink::PreviewsTypes::DEFER_ALL_SCRIPT_ON;
     }
     // Remove DEFER_ALL_SCRIPT_ON from |previews_state| since we decided not to
     // commit to it.
-    previews_state = previews_state & ~content::DEFER_ALL_SCRIPT_ON;
+    previews_state =
+        previews_state & ~blink::PreviewsTypes::DEFER_ALL_SCRIPT_ON;
   }
 
-  if (previews_state & content::RESOURCE_LOADING_HINTS_ON) {
+  if (previews_state & blink::PreviewsTypes::RESOURCE_LOADING_HINTS_ON) {
     // Resource loading hints was chosen for the original URL but only continue
     // with it if the committed URL has HTTPS scheme and is allowed by decider.
     if (previews_decider &&
@@ -274,38 +276,39 @@ content::PreviewsState DetermineCommittedClientPreviewsState(
             previews_data, navigation_handle,
             previews::PreviewsType::RESOURCE_LOADING_HINTS)) {
       LogCommittedPreview(previews_data, PreviewsType::RESOURCE_LOADING_HINTS);
-      return content::RESOURCE_LOADING_HINTS_ON;
+      return blink::PreviewsTypes::RESOURCE_LOADING_HINTS_ON;
     }
     // Remove RESOURCE_LOADING_HINTS_ON from |previews_state| since we decided
     // not to commit to it.
-    previews_state = previews_state & ~content::RESOURCE_LOADING_HINTS_ON;
+    previews_state =
+        previews_state & ~blink::PreviewsTypes::RESOURCE_LOADING_HINTS_ON;
   }
 
-  if (previews_state & content::NOSCRIPT_ON) {
+  if (previews_state & blink::PreviewsTypes::NOSCRIPT_ON) {
     // NoScript was chosen for the original URL but only continue with it
     // if the committed URL has HTTPS scheme and is allowed by decider.
     if (previews_decider && previews_decider->ShouldCommitPreview(
                                 previews_data, navigation_handle,
                                 previews::PreviewsType::NOSCRIPT)) {
       LogCommittedPreview(previews_data, PreviewsType::NOSCRIPT);
-      return content::NOSCRIPT_ON;
+      return blink::PreviewsTypes::NOSCRIPT_ON;
     }
     // Remove NOSCRIPT_ON from |previews_state| since we decided not to
     // commit to it.
-    previews_state = previews_state & ~content::NOSCRIPT_ON;
+    previews_state = previews_state & ~blink::PreviewsTypes::NOSCRIPT_ON;
   }
 
   if (!previews_state) {
-    return content::PREVIEWS_OFF;
+    return blink::PreviewsTypes::PREVIEWS_OFF;
   }
 
-  DCHECK(previews_state == content::PREVIEWS_OFF ||
-         previews_state == content::PREVIEWS_UNSPECIFIED);
-  return content::PREVIEWS_OFF;
+  DCHECK(previews_state == blink::PreviewsTypes::PREVIEWS_OFF ||
+         previews_state == blink::PreviewsTypes::PREVIEWS_UNSPECIFIED);
+  return blink::PreviewsTypes::PREVIEWS_OFF;
 }
 
-content::PreviewsState MaybeCoinFlipHoldbackAfterCommit(
-    content::PreviewsState initial_state,
+blink::PreviewsState MaybeCoinFlipHoldbackAfterCommit(
+    blink::PreviewsState initial_state,
     content::NavigationHandle* navigation_handle) {
   if (!base::FeatureList::IsEnabled(features::kCoinFlipHoldback))
     return initial_state;
@@ -326,7 +329,7 @@ content::PreviewsState MaybeCoinFlipHoldbackAfterCommit(
   if (previews_data->CoinFlipForNavigation()) {
     UpdatePreviewsUserDataAndRecordCoinFlipResult(
         navigation_handle, previews_data, CoinFlipHoldbackResult::kHoldback);
-    return content::PREVIEWS_OFF;
+    return blink::PreviewsTypes::PREVIEWS_OFF;
   }
 
   UpdatePreviewsUserDataAndRecordCoinFlipResult(
@@ -335,18 +338,19 @@ content::PreviewsState MaybeCoinFlipHoldbackAfterCommit(
 }
 
 previews::PreviewsType GetMainFramePreviewsType(
-    content::PreviewsState previews_state) {
+    blink::PreviewsState previews_state) {
   // The order is important here.
-  if (previews_state & content::DEFER_ALL_SCRIPT_ON)
+  if (previews_state & blink::PreviewsTypes::DEFER_ALL_SCRIPT_ON)
     return previews::PreviewsType::DEFER_ALL_SCRIPT;
-  if (previews_state & content::RESOURCE_LOADING_HINTS_ON)
+  if (previews_state & blink::PreviewsTypes::RESOURCE_LOADING_HINTS_ON)
     return previews::PreviewsType::RESOURCE_LOADING_HINTS;
-  if (previews_state & content::NOSCRIPT_ON)
+  if (previews_state & blink::PreviewsTypes::NOSCRIPT_ON)
     return previews::PreviewsType::NOSCRIPT;
 
-  DCHECK_EQ(content::PREVIEWS_UNSPECIFIED,
-            previews_state & ~content::CLIENT_LOFI_AUTO_RELOAD &
-                ~content::PREVIEWS_NO_TRANSFORM & ~content::PREVIEWS_OFF);
+  DCHECK_EQ(blink::PreviewsTypes::PREVIEWS_UNSPECIFIED,
+            previews_state & ~blink::PreviewsTypes::CLIENT_LOFI_AUTO_RELOAD &
+                ~blink::PreviewsTypes::PREVIEWS_NO_TRANSFORM &
+                ~blink::PreviewsTypes::PREVIEWS_OFF);
   return previews::PreviewsType::NONE;
 }
 

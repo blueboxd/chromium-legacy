@@ -2903,18 +2903,6 @@ ci.linux_builder(
     os = os.LINUX_TRUSTY,
 )
 
-# TODO(crbug.com/1102997): remove this in favor of new "metadata-exporter"
-# builder.
-ci.linux_builder(
-    name = 'linux_chromium_component_updater',
-    executable = 'recipe:findit/chromium/update_components',
-    schedule = '0 0,6,12,18 * * *',
-    service_account = 'component-mapping-updater@chops-service-accounts.iam.gserviceaccount.com',
-    triggered_by = [],
-    notifies = ['metadata-mapping'],
-    tree_closing = False,
-)
-
 ci.linux_builder(
     name = 'metadata-exporter',
     executable = 'recipe:chromium_export_metadata',

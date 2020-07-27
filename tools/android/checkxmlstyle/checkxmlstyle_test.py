@@ -434,5 +434,48 @@ class UnfavoredWidgetsTest(unittest.TestCase):
                      result[0].items[1].splitlines()[0])
 
 
+class StringResourcesTest(unittest.TestCase):
+  def testInfavoredQuotations(self):
+    xmlChanges = (u'''<grit><release><messages>
+      <message name="IDS_TEST_0">
+          <ph><ex>Hi</ex></ph>, it\u0027s a good idea
+      </message>
+      <message name="IDS_TEST_1">
+          <ph><ex>Yes</ex></ph>, it\u2019s a good idea
+      </message>
+      <message name="IDS_TEST_2">
+        Go to \u0022Settings\u0022 and
+        \u0022Menus\u0022
+      </message>
+      <message name="IDS_TEST_3">
+        Go to \u201CSettings\u201D
+        \u0022Menus\u0023
+      </message>
+      <message name="IDS_TEST_4">
+        Go to \u201CSettings\u201D
+        \u201CMenus\u201D
+      </message>
+        <part file="site_settings.grdp" />
+          </messages></release></grit>'''.encode('utf-8')).splitlines()
+
+    mock_input_api = MockInputApi()
+    mock_input_api.files = [
+        MockFile('ui/android/string/chrome_android_string.grd', xmlChanges)
+    ]
+    result = checkxmlstyle._CheckStringResourcePunctuations(
+        mock_input_api, MockOutputApi())
+
+    self.assertEqual(1, len(result))
+    self.assertEqual(4, len(result[0].items))
+    self.assertEqual('  ui/android/string/chrome_android_string.grd:3',
+                     result[0].items[0].splitlines()[0])
+    self.assertEqual('  ui/android/string/chrome_android_string.grd:9',
+                     result[0].items[1].splitlines()[0])
+    self.assertEqual('  ui/android/string/chrome_android_string.grd:10',
+                     result[0].items[2].splitlines()[0])
+    self.assertEqual('  ui/android/string/chrome_android_string.grd:14',
+                     result[0].items[3].splitlines()[0])
+
+
 if __name__ == '__main__':
   unittest.main()

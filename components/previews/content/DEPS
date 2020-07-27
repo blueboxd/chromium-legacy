@@ -12,4 +12,5 @@ include_rules = [
   "+content/public/test",
   "+net",
   "+services/network",
+  "+third_party/blink/public/common",
 ]

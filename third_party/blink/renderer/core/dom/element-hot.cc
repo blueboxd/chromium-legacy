@@ -61,7 +61,7 @@ WTF::AtomicStringTable::WeakResult Element::WeakLowercaseIfNecessary(
 // referring to "style". A subsequent lookup will match itself correctly
 // without worry for UaF or false positives.
 void Element::SynchronizeAttributeHinted(
-    const StringView& local_name,
+    const AtomicString& local_name,
     WTF::AtomicStringTable::WeakResult hint) const {
   // This version of SynchronizeAttribute() is streamlined for the case where
   // you don't have a full QualifiedName, e.g when called from DOM API.
@@ -86,12 +86,12 @@ void Element::SynchronizeAttributeHinted(
     // svg_attributes_are_dirty_ remains true. This information is available in
     // the attribute->property map in SVGElement.
     To<SVGElement>(this)->SynchronizeSVGAttribute(
-        QualifiedName(g_null_atom, local_name.ToAtomicString(), g_null_atom));
+        QualifiedName(g_null_atom, local_name, g_null_atom));
   }
 }
 
 const AtomicString& Element::GetAttributeHinted(
-    const StringView& name,
+    const AtomicString& name,
     WTF::AtomicStringTable::WeakResult hint) const {
   if (!GetElementData())
     return g_null_atom;
@@ -103,13 +103,12 @@ const AtomicString& Element::GetAttributeHinted(
 }
 
 std::pair<wtf_size_t, const QualifiedName> Element::LookupAttributeQNameHinted(
-    const StringView& name,
+    const AtomicString& name,
     WTF::AtomicStringTable::WeakResult hint) const {
   if (!GetElementData()) {
     return std::make_pair(
         kNotFound,
-        QualifiedName(g_null_atom, LowercaseIfNecessary(name.ToAtomicString()),
-                      g_null_atom));
+        QualifiedName(g_null_atom, LowercaseIfNecessary(name), g_null_atom));
   }
 
   AttributeCollection attributes = GetElementData()->Attributes();
@@ -117,8 +116,7 @@ std::pair<wtf_size_t, const QualifiedName> Element::LookupAttributeQNameHinted(
   return std::make_pair(
       index, index != kNotFound
                  ? attributes[index].GetName()
-                 : QualifiedName(g_null_atom,
-                                 LowercaseIfNecessary(name.ToAtomicString()),
+                 : QualifiedName(g_null_atom, LowercaseIfNecessary(name),
                                  g_null_atom));
 }
 
@@ -158,7 +156,7 @@ void Element::SetSynchronizedLazyAttribute(const QualifiedName& name,
   SetAttributeInternal(index, name, value, kInSynchronizationOfLazyAttribute);
 }
 
-void Element::SetAttributeHinted(const StringView& local_name,
+void Element::SetAttributeHinted(const AtomicString& local_name,
                                  WTF::AtomicStringTable::WeakResult hint,
                                  const AtomicString& value,
                                  ExceptionState& exception_state) {
@@ -185,7 +183,7 @@ void Element::SetAttributeHinted(const StringView& local_name,
 }
 
 void Element::SetAttributeHinted(
-    const StringView& local_name,
+    const AtomicString& local_name,
     WTF::AtomicStringTable::WeakResult hint,
     const StringOrTrustedHTMLOrTrustedScriptOrTrustedScriptURL&
         string_or_trusted,
@@ -314,7 +312,7 @@ Attr* Element::setAttributeNode(Attr* attr_node,
   return old_attr_node;
 }
 
-void Element::RemoveAttributeHinted(const StringView& name,
+void Element::RemoveAttributeHinted(const AtomicString& name,
                                     WTF::AtomicStringTable::WeakResult hint) {
   if (!GetElementData())
     return;

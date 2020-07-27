@@ -84,6 +84,7 @@ template("chrome_bundle") {
                              "keystore_name",
                              "keystore_password",
                              "keystore_path",
+                             "lint_min_sdk_version",
                              "lint_suppressions_dep",
                              "lint_suppressions_file",
                              "manifest_package",

@@ -694,7 +694,7 @@ void NavigationURLLoaderImpl::FollowRedirectInternal(
     const std::vector<std::string>& removed_headers,
     const net::HttpRequestHeaders& modified_headers,
     const net::HttpRequestHeaders& modified_cors_exempt_headers,
-    PreviewsState new_previews_state,
+    blink::PreviewsState new_previews_state,
     base::Time ui_post_time) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   DCHECK(!redirect_info_.new_url.is_empty());
@@ -1260,7 +1260,7 @@ void NavigationURLLoaderImpl::FollowRedirect(
     const std::vector<std::string>& removed_headers,
     const net::HttpRequestHeaders& modified_headers,
     const net::HttpRequestHeaders& modified_cors_exempt_headers,
-    PreviewsState new_previews_state) {
+    blink::PreviewsState new_previews_state) {
   FollowRedirectInternal(removed_headers, modified_headers,
                          modified_cors_exempt_headers, new_previews_state,
                          base::Time::Now());

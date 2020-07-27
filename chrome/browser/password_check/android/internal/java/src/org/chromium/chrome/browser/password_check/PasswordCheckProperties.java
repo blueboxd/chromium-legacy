@@ -69,7 +69,9 @@ class PasswordCheckProperties {
         int COMPROMISED_CREDENTIAL = 2;
     }
 
-    @IntDef({CheckStatus.SUCCESS, CheckStatus.RUNNING})
+    @IntDef({CheckStatus.SUCCESS, CheckStatus.RUNNING, CheckStatus.ERROR_OFFLINE,
+            CheckStatus.ERROR_NO_PASSWORDS, CheckStatus.ERROR_SIGNED_OUT,
+            CheckStatus.ERROR_QUOTA_LIMIT, CheckStatus.ERROR_UNKNOWN})
     @Retention(RetentionPolicy.SOURCE)
     @interface CheckStatus {
         /** The check was completed without errors. */
@@ -85,7 +87,7 @@ class PasswordCheckProperties {
         /** The check is cannot run because the user has exceeded their quota. */
         int ERROR_QUOTA_LIMIT = 6;
         /** The check is cannot run for unknown reasons. */
-        int ERROR_UNKNOWN = 6;
+        int ERROR_UNKNOWN = 7;
     }
 
     /**

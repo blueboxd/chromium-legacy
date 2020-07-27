@@ -47,6 +47,7 @@
 #include "third_party/blink/renderer/core/typed_arrays/dom_typed_array.h"
 #include "third_party/blink/renderer/core/typed_arrays/typed_flexible_array_buffer_view.h"
 #include "third_party/blink/renderer/modules/webgl/webgl_extension_name.h"
+#include "third_party/blink/renderer/modules/webgl/webgl_fast_call.h"
 #include "third_party/blink/renderer/modules/webgl/webgl_texture.h"
 #include "third_party/blink/renderer/modules/webgl/webgl_vertex_array_object_base.h"
 #include "third_party/blink/renderer/platform/bindings/name_client.h"
@@ -106,8 +107,6 @@ class WebGLShader;
 class WebGLShaderPrecisionFormat;
 class WebGLUniformLocation;
 class WebGLVertexArrayObjectBase;
-
-class WebGLRenderingContextErrorMessageCallback;
 
 using GLenumHashSet = HashSet<GLenum,
                               WTF::AlreadyHashed,
@@ -630,7 +629,6 @@ class MODULES_EXPORT WebGLRenderingContextBase : public CanvasRenderingContext,
   friend class ScopedFramebufferRestorer;
   friend class ScopedTexture2DRestorer;
   friend class ScopedUnpackParametersResetRestore;
-  friend class WebGLRenderingContextErrorMessageCallback;
 
   // WebGL extensions.
   friend class EXTDisjointTimerQuery;
@@ -1408,6 +1406,12 @@ class MODULES_EXPORT WebGLRenderingContextBase : public CanvasRenderingContext,
   // used only to warn about use of obsolete functions.
   void PrintWarningToConsole(const String&);
 
+  // Wrap probe::DidFireWebGLErrorOrWarning and friends, but defer inside a
+  // FastCall.
+  void NotifyWebGLErrorOrWarning(const String& message);
+  void NotifyWebGLError(const String& error_type);
+  void NotifyWebGLWarning();
+
   // Helper function to validate the target for checkFramebufferStatus and
   // validateFramebufferFuncParameters.
   virtual bool ValidateFramebufferTarget(GLenum target);
@@ -1804,6 +1808,9 @@ class MODULES_EXPORT WebGLRenderingContextBase : public CanvasRenderingContext,
       feature_handle_for_scheduler_;
 
   int number_of_user_allocated_multisampled_renderbuffers_;
+
+  friend class WebGLFastCallHelper;
+  WebGLFastCallHelper fast_call_;
 
   DISALLOW_COPY_AND_ASSIGN(WebGLRenderingContextBase);
 };

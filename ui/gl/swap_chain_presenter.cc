@@ -929,15 +929,10 @@ void SwapChainPresenter::RecordPresentationStatistics() {
       base::UmaHistogramSparse("GPU.DirectComposition.CompositionMode",
                                stats.CompositionMode);
       if (frame_rate_ != 0) {
-        // [1ms, 100ms] covers the fps between [10hz, 1000hz], but we also
-        // need to include 0, because that indicates the custom duration
-        // isn't approved.
-        UMA_HISTOGRAM_CUSTOM_TIMES(
-            "GPU.DirectComposition.ApprovedPresentDuration",
-            base::TimeDelta::FromMilliseconds(stats.ApprovedPresentDuration /
-                                              10000),
-            base::TimeDelta::FromMilliseconds(0),
-            base::TimeDelta::FromMilliseconds(100), 50);
+        // [1ms, 10s] covers the fps between [0.1hz, 1000hz].
+        base::UmaHistogramTimes("GPU.DirectComposition.ApprovedPresentDuration",
+                                base::TimeDelta::FromMilliseconds(
+                                    stats.ApprovedPresentDuration / 10000));
       }
       presentation_history_.AddSample(stats.CompositionMode);
       mode = stats.CompositionMode;

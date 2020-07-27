@@ -1671,7 +1671,7 @@ bool LocalFrame::ShouldForceDeferScript() const {
   return RuntimeEnabledFeatures::ForceDeferScriptInterventionEnabled() ||
          (Loader().GetDocumentLoader() &&
           Loader().GetDocumentLoader()->GetPreviewsState() ==
-              WebURLRequest::kDeferAllScriptOn);
+              PreviewsTypes::kDeferAllScriptOn);
 }
 
 WebURLLoaderFactory* LocalFrame::GetURLLoaderFactory() {

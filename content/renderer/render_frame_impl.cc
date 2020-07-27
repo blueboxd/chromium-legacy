@@ -299,8 +299,9 @@ namespace {
 const int kExtraCharsBeforeAndAfterSelection = 100;
 const size_t kMaxURLLogChars = 1024;
 
-const PreviewsState kDisabledPreviewsBits =
-    PREVIEWS_OFF | PREVIEWS_NO_TRANSFORM;
+const blink::PreviewsState kDisabledPreviewsBits =
+    blink::PreviewsTypes::PREVIEWS_OFF |
+    blink::PreviewsTypes::PREVIEWS_NO_TRANSFORM;
 
 typedef std::map<int, RenderFrameImpl*> RoutingIDFrameMap;
 static base::LazyInstance<RoutingIDFrameMap>::DestructorAtExit
@@ -461,7 +462,7 @@ void FillNavigationParamsRequest(
         << common_params.previews_state;
   }
   navigation_params->previews_state =
-      static_cast<WebURLRequest::PreviewsState>(common_params.previews_state);
+      static_cast<blink::PreviewsState>(common_params.previews_state);
 
   // Set the request initiator origin, which is supplied by the browser
   // process. It is present in cases such as navigating a frame in a different
@@ -575,7 +576,8 @@ mojom::CommonNavigationParamsPtr MakeCommonNavigationParams(
       std::move(referrer), extra_data->transition_type(), navigation_type,
       download_policy,
       info->frame_load_type == WebFrameLoadType::kReplaceCurrentItem, GURL(),
-      GURL(), static_cast<PreviewsState>(info->url_request.GetPreviewsState()),
+      GURL(),
+      static_cast<blink::PreviewsState>(info->url_request.GetPreviewsState()),
       base::TimeTicks::Now(), info->url_request.HttpMethod().Latin1(),
       GetRequestBodyForWebURLRequest(info->url_request),
       std::move(source_location), false /* started_from_context_menu */,
@@ -2939,10 +2941,10 @@ void RenderFrameImpl::AddMessageToConsole(
   AddMessageToConsoleImpl(level, message, false /* discard_duplicates */);
 }
 
-PreviewsState RenderFrameImpl::GetPreviewsState() {
+blink::PreviewsState RenderFrameImpl::GetPreviewsState() {
   WebDocumentLoader* document_loader = frame_->GetDocumentLoader();
   return document_loader ? document_loader->GetPreviewsState()
-                         : PREVIEWS_UNSPECIFIED;
+                         : blink::PreviewsTypes::PREVIEWS_UNSPECIFIED;
 }
 
 bool RenderFrameImpl::IsPasting() {
@@ -4692,7 +4694,7 @@ void RenderFrameImpl::DidStartResponse(
     int request_id,
     network::mojom::URLResponseHeadPtr response_head,
     network::mojom::RequestDestination request_destination,
-    PreviewsState previews_state) {
+    blink::PreviewsState previews_state) {
   for (auto& observer : observers_) {
     observer.DidStartResponse(response_url, request_id, *response_head,
                               request_destination, previews_state);

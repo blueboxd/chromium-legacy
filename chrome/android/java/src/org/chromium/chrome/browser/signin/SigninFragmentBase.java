@@ -521,9 +521,6 @@ public abstract class SigninFragmentBase
     }
 
     @Override
-    public void goIncognitoMode() {}
-
-    @Override
     public void onActivityResult(int requestCode, int resultCode, Intent data) {
         if (requestCode == ADD_ACCOUNT_REQUEST_CODE && resultCode == Activity.RESULT_OK) {
             if (data == null) return;

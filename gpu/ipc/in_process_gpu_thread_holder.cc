@@ -91,11 +91,7 @@ void InProcessGpuThreadHolder::InitializeOnGpuThread(
 #if defined(OS_MACOSX)
   // Virtualize GpuPreference:::kLowPower contexts by default on OS X to prevent
   // performance regressions when enabling FCM. https://crbug.com/180463
-  // Do not enable virtualized contexts if the passthrough is enabled, because
-  // ANGLE already uses virtualized contexts.
-  if (!use_passthrough_cmd_decoder) {
-    use_virtualized_gl_context = true;
-  }
+  use_virtualized_gl_context = true;
 #endif
   use_virtualized_gl_context |=
       gpu_driver_bug_workarounds.use_virtualized_gl_contexts;

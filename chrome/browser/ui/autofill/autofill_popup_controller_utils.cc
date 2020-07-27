@@ -30,6 +30,7 @@ const struct {
     {kJCBCard, IDR_AUTOFILL_CC_JCB},
     {kMasterCard, IDR_AUTOFILL_CC_MASTERCARD},
     {kMirCard, IDR_AUTOFILL_CC_MIR},
+    {kTroyCard, IDR_AUTOFILL_CC_TROY},
     {kUnionPay, IDR_AUTOFILL_CC_UNIONPAY},
     {kVisaCard, IDR_AUTOFILL_CC_VISA},
     {kGoogleIssuedCard, IDR_AUTOFILL_GOOGLE_ISSUED_CARD},

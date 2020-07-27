@@ -58,6 +58,7 @@ import org.chromium.components.page_info.CertificateChainHelper;
 import org.chromium.components.payments.AbortReason;
 import org.chromium.components.payments.ComponentPaymentRequestImpl;
 import org.chromium.components.payments.ComponentPaymentRequestImpl.ComponentPaymentRequestDelegate;
+import org.chromium.components.payments.ComponentPaymentRequestImpl.NativeObserverForTest;
 import org.chromium.components.payments.CurrencyFormatter;
 import org.chromium.components.payments.ErrorMessageUtil;
 import org.chromium.components.payments.ErrorStrings;
@@ -235,26 +236,6 @@ public class PaymentRequestImpl
         void onRendererClosedMojoConnection();
     }
 
-    /**
-     * An observer interface injected when running tests to allow them to observe events.
-     * This interface holds events that should be passed back to the native C++ test
-     * harness and mirrors the C++ PaymentRequest::ObserverForTest() interface. Its methods
-     * should be called in the same places that the C++ PaymentRequest object will call its
-     * ObserverForTest.
-     */
-    public interface NativeObserverForTest {
-        void onCanMakePaymentCalled();
-        void onCanMakePaymentReturned();
-        void onHasEnrolledInstrumentCalled();
-        void onHasEnrolledInstrumentReturned();
-        void onAppListReady(@Nullable List<EditableOption> paymentApps, PaymentItem total);
-        void onNotSupportedError();
-        void onConnectionTerminated();
-        void onAbortCalled();
-        void onCompleteCalled();
-        void onMinimalUIReady();
-    }
-
     /** Limit in the number of suggested items in a section. */
     public static final int SUGGESTIONS_LIMIT = 4;
 
@@ -314,7 +295,7 @@ public class PaymentRequestImpl
     private final Handler mHandler = new Handler();
     private final RenderFrameHost mRenderFrameHost;
     private final Delegate mDelegate;
-    private final NativeObserverForTest mNativeObserverForTest;
+    private NativeObserverForTest mNativeObserverForTest;
     private final WebContents mWebContents;
     private final String mTopLevelOrigin;
     private final String mPaymentRequestOrigin;
@@ -454,13 +435,11 @@ public class PaymentRequestImpl
      *
      * @param renderFrameHost The host of the frame that has invoked the PaymentRequest API.
      */
-    public PaymentRequestImpl(RenderFrameHost renderFrameHost, Delegate delegate,
-            NativeObserverForTest nativeObserver) {
+    public PaymentRequestImpl(RenderFrameHost renderFrameHost, Delegate delegate) {
         assert renderFrameHost != null;
 
         mRenderFrameHost = renderFrameHost;
         mDelegate = delegate;
-        mNativeObserverForTest = nativeObserver;
         mWebContents = WebContentsStatics.fromRenderFrameHost(renderFrameHost);
 
         mPaymentRequestOrigin =
@@ -500,6 +479,12 @@ public class PaymentRequestImpl
         assert mComponentPaymentRequestImpl == null;
         assert componentPaymentRequestImpl != null;
         mComponentPaymentRequestImpl = componentPaymentRequestImpl;
+    }
+
+    // Implement ComponentPaymentRequestDelegate:
+    @Override
+    public void setNativeObserverForTest(NativeObserverForTest nativeObserverForTest) {
+        mNativeObserverForTest = nativeObserverForTest;
     }
 
     // Implement ComponentPaymentRequestDelegate:

@@ -61,6 +61,16 @@ class IdentifiableSurface {
     // CanvasRenderingContextType.
     kCanvasReadback = 2,
 
+    // Represents loading a font locally. Input is the combination of font style
+    // and either the family name, fallback character or neither (for a last-
+    // resort fallback).
+    kLocalFontLookup = 3,
+
+    // Represents looking up the family name of a generic font. Input is the
+    // combination of the generic font family name, script code and
+    // GenericFamilyType.
+    kGenericFontLookup = 4,
+
     // We can use values up to and including |kMax|.
     kMax = (1 << kTypeBits) - 1
   };

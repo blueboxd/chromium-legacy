@@ -27,7 +27,7 @@ namespace prefs {
 
 // Used for Kerberos authentication.
 extern const char kAuthAndroidNegotiateAccountType[];
-extern const char kAuthServerWhitelist[];
+extern const char kAuthServerAllowlist[];
 
 }  // namespace prefs
 

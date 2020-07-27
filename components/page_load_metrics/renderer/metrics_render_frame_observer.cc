@@ -173,7 +173,7 @@ void MetricsRenderFrameObserver::DidStartResponse(
     int request_id,
     const network::mojom::URLResponseHead& response_head,
     network::mojom::RequestDestination request_destination,
-    content::PreviewsState previews_state) {
+    blink::PreviewsState previews_state) {
   if (provisional_frame_resource_data_use_ &&
       blink::IsRequestDestinationFrame(request_destination)) {
     // TODO(rajendrant): This frame request might start before the provisional

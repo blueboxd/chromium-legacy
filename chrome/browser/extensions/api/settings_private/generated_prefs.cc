@@ -9,6 +9,7 @@
 #include "chrome/browser/content_settings/generated_cookie_prefs.h"
 #include "chrome/browser/extensions/api/settings_private/generated_pref.h"
 #include "chrome/browser/extensions/api/settings_private/prefs_util_enums.h"
+#include "chrome/browser/password_manager/generated_password_leak_detection_pref.h"
 #include "chrome/browser/safe_browsing/generated_safe_browsing_pref.h"
 #include "chrome/common/extensions/api/settings_private.h"
 #include "components/content_settings/core/common/pref_names.h"
@@ -34,6 +35,8 @@ GeneratedPrefs::GeneratedPrefs(Profile* profile) {
   prefs_[content_settings::kCookieSessionOnly] =
       std::make_unique<content_settings::GeneratedCookieSessionOnlyPref>(
           profile);
+  prefs_[kGeneratedPasswordLeakDetectionPref] =
+      std::make_unique<GeneratedPasswordLeakDetectionPref>(profile);
   prefs_[safe_browsing::kGeneratedSafeBrowsingPref] =
       std::make_unique<safe_browsing::GeneratedSafeBrowsingPref>(profile);
 }
@@ -77,6 +80,12 @@ void GeneratedPrefs::RemoveObserver(const std::string& pref_name,
     return;
 
   impl->RemoveObserver(observer);
+}
+
+void GeneratedPrefs::Shutdown() {
+  // Clear preference map so generated prefs are destroyed before services they
+  // may depend on are shutdown.
+  prefs_.clear();
 }
 
 GeneratedPref* GeneratedPrefs::FindPrefImpl(

@@ -464,15 +464,6 @@ BrowserContext::~BrowserContext() {
     base::debug::DumpWithoutCrashing();
   }
 
-  // Verify that there are no outstanding RenderProcessHosts that reference
-  // this context. Immediately crash if there are to avoid potential UAFs.
-  for (RenderProcessHost::iterator host_iterator =
-           RenderProcessHost::AllHostsIterator();
-       !host_iterator.IsAtEnd(); host_iterator.Advance()) {
-    RenderProcessHost* host = host_iterator.GetCurrentValue();
-    CHECK_NE(host->GetBrowserContext(), this);
-  }
-
   // Clean up any isolated origins and other security state associated with this
   // BrowserContext.
   ChildProcessSecurityPolicyImpl* policy =

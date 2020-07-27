@@ -16,10 +16,12 @@ import org.chromium.chrome.browser.native_page.NativePageNavigationDelegate;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.start_surface.R;
 import org.chromium.content_public.browser.LoadUrlParams;
+import org.chromium.ui.base.PageTransition;
 import org.chromium.ui.mojom.WindowOpenDisposition;
 
 /** Implementation of the {@link NativePageNavigationDelegate} for the explore surface. */
 class ExploreSurfaceNavigationDelegate implements NativePageNavigationDelegate {
+    private static final String NEW_TAB_URL_HELP = "https://support.google.com/chrome/?p=new_tab";
     private final Context mContext;
 
     ExploreSurfaceNavigationDelegate(Context context) {
@@ -49,5 +51,11 @@ class ExploreSurfaceNavigationDelegate implements NativePageNavigationDelegate {
         // TODO(crbug.com/982018): Return the opened tab and make sure it is opened in incoginito
         // mode accordingly (note that payment window supports incognito mode).
         return null;
+    }
+
+    @Override
+    public void navigateToHelpPage() {
+        openUrl(WindowOpenDisposition.CURRENT_TAB,
+                new LoadUrlParams(NEW_TAB_URL_HELP, PageTransition.AUTO_BOOKMARK));
     }
 }

@@ -3087,7 +3087,7 @@ void Document::Shutdown() {
   if (num_canvases_ > 0)
     UMA_HISTOGRAM_COUNTS_100("Blink.Canvas.NumCanvasesPerPage", num_canvases_);
 
-  GetFontMatchingMetrics()->PublishUkmMetrics();
+  GetFontMatchingMetrics()->PublishAllMetrics();
 
   GetViewportData().Shutdown();
 

@@ -1923,6 +1923,7 @@ template("chrome_public_apk_or_module_tmpl") {
                              "jni_registration_header",
                              "target_type",
                              "enable_multidex",
+                             "lint_min_sdk_version",
                              "lint_suppressions_dep",
                              "lint_suppressions_file",
                            ])

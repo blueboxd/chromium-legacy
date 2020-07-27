@@ -295,13 +295,13 @@ def compare_build_artifacts(first_dir, second_dir, ninja_path, target_platform,
   print('Epoch: %s' %
       ' '.join(epoch_hex[i:i+2] for i in xrange(0, len(epoch_hex), 2)))
 
-  with open(os.path.join(BASE_DIR, 'deterministic_build_whitelist.pyl')) as f:
-    raw_whitelist = ast.literal_eval(f.read())
-    whitelist_list = raw_whitelist[target_platform]
+  with open(os.path.join(BASE_DIR, 'deterministic_build_ignorelist.pyl')) as f:
+    raw_ignorelist = ast.literal_eval(f.read())
+    ignorelist_list = raw_ignorelist[target_platform]
     if re.search(r'\bis_component_build\s*=\s*true\b',
                  open(os.path.join(first_dir, 'args.gn')).read()):
-      whitelist_list += raw_whitelist.get(target_platform + '_component', [])
-    whitelist = frozenset(whitelist_list)
+      ignorelist_list += raw_ignorelist.get(target_platform + '_component', [])
+    ignorelist = frozenset(ignorelist_list)
 
   if use_isolate_files:
     first_list = get_files_to_compare_using_isolate(first_dir)
@@ -332,10 +332,10 @@ def compare_build_artifacts(first_dir, second_dir, ninja_path, target_platform,
     if not result:
       tag = 'equal'
       equals.append(f)
-      if f in whitelist:
+      if f in ignorelist:
         unexpected_equals.append(f)
     else:
-      if f in whitelist:
+      if f in ignorelist:
         expected_diffs.append(f)
         tag = 'expected'
       else:

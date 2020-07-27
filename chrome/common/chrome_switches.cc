@@ -77,8 +77,8 @@ const char kAppsGalleryUpdateURL[]          = "apps-gallery-update-url";
 // The URL to use for the gallery link in the app launcher.
 const char kAppsGalleryURL[]                = "apps-gallery-url";
 
-// Whitelist for Negotiate Auth servers
-const char kAuthServerWhitelist[]           = "auth-server-whitelist";
+// Allowlist for Negotiate Auth servers
+const char kAuthServerAllowlist[] = "auth-server-whitelist";
 
 // This flag makes Chrome auto-open DevTools window for each tab. It is
 // intended to be used by developers and automation to not require user

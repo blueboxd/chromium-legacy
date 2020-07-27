@@ -24,7 +24,7 @@
 #include "chrome/browser/engagement/site_engagement_service.h"
 #include "chrome/browser/favicon/favicon_service_factory.h"
 #include "chrome/browser/metrics/chrome_metrics_service_accessor.h"
-#include "chrome/browser/password_manager/account_storage/account_password_store_factory.h"
+#include "chrome/browser/password_manager/account_password_store_factory.h"
 #include "chrome/browser/password_manager/chrome_biometric_authenticator.h"
 #include "chrome/browser/password_manager/field_info_manager_factory.h"
 #include "chrome/browser/password_manager/password_store_factory.h"

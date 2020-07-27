@@ -90,6 +90,8 @@ class CreditCardAccessorySheetViewBinder {
                     return R.drawable.mc_card;
                 case "mirCC":
                     return R.drawable.mir_card;
+                case "troyCC":
+                    return R.drawable.troy_card;
                 case "unionPayCC":
                     return R.drawable.unionpay_card;
                 case "visaCC":

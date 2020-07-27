@@ -114,6 +114,7 @@ class PendingAppManager {
 
   void SetRegistrationCallbackForTesting(RegistrationCallback callback);
   void ClearRegistrationCallbackForTesting();
+  void ClearSynchronizeRequestsForTesting();
 
   virtual void Shutdown() = 0;
 

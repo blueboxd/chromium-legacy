@@ -1432,7 +1432,6 @@ public class TabPersistentStore extends TabPersister {
      * @param uniqueId The ID that uniquely identifies this state file.
      * @return The name of the state file.
      */
-    @VisibleForTesting
     public static String getStateFileName(String uniqueId) {
         return SAVED_STATE_FILE_PREFIX + uniqueId;
     }

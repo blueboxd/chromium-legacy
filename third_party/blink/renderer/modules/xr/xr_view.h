@@ -17,6 +17,7 @@
 
 namespace blink {
 
+class XRFrame;
 class XRSession;
 class XRViewData;
 
@@ -24,13 +25,14 @@ class MODULES_EXPORT XRView final : public ScriptWrappable {
   DEFINE_WRAPPERTYPEINFO();
 
  public:
-  XRView(XRSession*, const XRViewData&);
+  XRView(XRFrame*, const XRViewData&);
 
   enum XREye { kEyeNone = 0, kEyeLeft = 1, kEyeRight = 2 };
 
   const String& eye() const { return eye_string_; }
   XREye EyeValue() const { return eye_; }
 
+  XRFrame* frame() const;
   XRSession* session() const;
   DOMFloat32Array* projectionMatrix() const;
   XRRigidTransform* transform() const;
@@ -47,7 +49,7 @@ class MODULES_EXPORT XRView final : public ScriptWrappable {
  private:
   XREye eye_;
   String eye_string_;
-  Member<XRSession> session_;
+  Member<XRFrame> frame_;
   Member<XRRigidTransform> ref_space_from_eye_;
   Member<DOMFloat32Array> projection_matrix_;
 };

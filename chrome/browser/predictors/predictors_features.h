@@ -31,6 +31,8 @@ enum class PrefetchSubresourceType { kAll, kCss, kJsAndCss };
 extern const base::FeatureParam<PrefetchSubresourceType>
     kLoadingPredictorPrefetchSubresourceType;
 
+extern const base::Feature kLoadingPredictorInflightPredictiveActions;
+
 // Returns whether local predictions should be used to make preconnect
 // predictions.
 bool ShouldUseLocalPredictions();
@@ -42,6 +44,14 @@ bool ShouldUseLocalPredictions();
 // additionally check a feature parameter is specified to dictate if the
 // predictions should actually be used.
 bool ShouldUseOptimizationGuidePredictions();
+
+// Returns the maximum number of preresolves that can be inflight at any given
+// time.
+size_t GetMaxInflightPreresolves();
+
+// Returns the maximum number of prefetches that can be inflight at any given
+// time.
+size_t GetMaxInflightPrefetches();
 
 }  // namespace features
 

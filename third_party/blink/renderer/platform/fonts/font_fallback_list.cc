@@ -178,9 +178,17 @@ scoped_refptr<FontData> FontFallbackList::GetFontData(
       if (font_selector_)
         result = font_selector_->GetFontData(font_description,
                                              curr_family->Family());
-      if (!result)
+
+      if (!result) {
         result = FontCache::GetFontCache()->GetFontData(font_description,
                                                         curr_family->Family());
+        if (font_selector_) {
+          font_selector_->ReportFontLookupByUniqueOrFamilyName(
+              curr_family->Family(), font_description,
+              LocalFontLookupType::kLocalFontFamilyName,
+              DynamicTo<SimpleFontData>(result.get()));
+        }
+      }
       if (result) {
         if (font_selector_) {
           font_selector_->ReportSuccessfulFontFamilyMatch(
@@ -203,7 +211,14 @@ scoped_refptr<FontData> FontFallbackList::GetFontData(
   }
 
   // Still no result. Hand back our last resort fallback font.
-  return FontCache::GetFontCache()->GetLastResortFallbackFont(font_description);
+  auto last_resort =
+      FontCache::GetFontCache()->GetLastResortFallbackFont(font_description);
+  if (font_selector_) {
+    font_selector_->ReportLastResortFallbackFontLookup(
+        font_description, LocalFontLookupType::kLastResortInFontFallbackList,
+        last_resort.get());
+  }
+  return last_resort;
 }
 
 FallbackListCompositeKey FontFallbackList::CompositeKey(

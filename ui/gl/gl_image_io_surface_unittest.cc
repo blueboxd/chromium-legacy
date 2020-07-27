@@ -91,36 +91,33 @@ class GLImageIOSurfaceTestDelegate : public GLImageTestDelegateBase {
   }
 };
 
-// TODO(https://crbug.com/1100599): Re-add gfx::BufferFormat::BGRA_1010102 to
-// this list.
 using GLImageTestTypes = testing::Types<
     GLImageIOSurfaceTestDelegate<gfx::BufferFormat::RGBA_8888>,
     GLImageIOSurfaceTestDelegate<gfx::BufferFormat::BGRA_8888>,
     GLImageIOSurfaceTestDelegate<gfx::BufferFormat::BGRX_8888>,
     GLImageIOSurfaceTestDelegate<gfx::BufferFormat::RGBA_F16>,
-    GLImageIOSurfaceTestDelegate<gfx::BufferFormat::YUV_420_BIPLANAR>>;
+    GLImageIOSurfaceTestDelegate<gfx::BufferFormat::YUV_420_BIPLANAR>,
+    GLImageIOSurfaceTestDelegate<gfx::BufferFormat::BGRA_1010102>>;
 
 INSTANTIATE_TYPED_TEST_SUITE_P(GLImageIOSurface, GLImageTest, GLImageTestTypes);
 
-// TODO(https://crbug.com/1100599): Re-add gfx::BufferFormat::BGRA_1010102 to
-// this list.
-using GLImageRGBTestTypes =
-    testing::Types<GLImageIOSurfaceTestDelegate<gfx::BufferFormat::RGBA_8888>,
-                   GLImageIOSurfaceTestDelegate<gfx::BufferFormat::BGRA_8888>,
-                   GLImageIOSurfaceTestDelegate<gfx::BufferFormat::BGRX_8888>,
-                   GLImageIOSurfaceTestDelegate<gfx::BufferFormat::RGBA_F16>>;
+using GLImageRGBTestTypes = testing::Types<
+    GLImageIOSurfaceTestDelegate<gfx::BufferFormat::RGBA_8888>,
+    GLImageIOSurfaceTestDelegate<gfx::BufferFormat::BGRA_8888>,
+    GLImageIOSurfaceTestDelegate<gfx::BufferFormat::BGRX_8888>,
+    GLImageIOSurfaceTestDelegate<gfx::BufferFormat::RGBA_F16>,
+    GLImageIOSurfaceTestDelegate<gfx::BufferFormat::BGRA_1010102>>;
 
 INSTANTIATE_TYPED_TEST_SUITE_P(GLImageIOSurface,
                                GLImageZeroInitializeTest,
                                GLImageRGBTestTypes);
 
-// TODO(https://crbug.com/1100599): Re-add gfx::BufferFormat::BGRA_1010102 to
-// this list.
-using GLImageBindTestTypes =
-    testing::Types<GLImageIOSurfaceTestDelegate<gfx::BufferFormat::BGRA_8888>,
-                   GLImageIOSurfaceTestDelegate<gfx::BufferFormat::RGBA_8888>,
-                   GLImageIOSurfaceTestDelegate<gfx::BufferFormat::BGRX_8888>,
-                   GLImageIOSurfaceTestDelegate<gfx::BufferFormat::RGBA_F16>>;
+using GLImageBindTestTypes = testing::Types<
+    GLImageIOSurfaceTestDelegate<gfx::BufferFormat::BGRA_8888>,
+    GLImageIOSurfaceTestDelegate<gfx::BufferFormat::RGBA_8888>,
+    GLImageIOSurfaceTestDelegate<gfx::BufferFormat::BGRX_8888>,
+    GLImageIOSurfaceTestDelegate<gfx::BufferFormat::RGBA_F16>,
+    GLImageIOSurfaceTestDelegate<gfx::BufferFormat::BGRA_1010102>>;
 
 INSTANTIATE_TYPED_TEST_SUITE_P(GLImageIOSurface,
                                GLImageBindTest,

@@ -592,6 +592,7 @@ if (!is_ios && !is_fuchsia) {
       "//components/dom_distiller/content/browser",
       "//components/dom_distiller/core",
       "//components/dom_distiller/core:test_support",
+      "//components/error_page/content/browser:browser_tests",
       "//components/metrics:content",
       "//components/offline_pages/content/renovations",
       "//components/offline_pages/core/renovations",

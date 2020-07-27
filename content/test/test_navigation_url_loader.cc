@@ -34,7 +34,7 @@ void TestNavigationURLLoader::FollowRedirect(
     const std::vector<std::string>& removed_headers,
     const net::HttpRequestHeaders& modified_headers,
     const net::HttpRequestHeaders& modified_cors_exempt_headers,
-    PreviewsState new_previews_state) {
+    blink::PreviewsState new_previews_state) {
   DCHECK(!is_served_from_back_forward_cache_);
   redirect_count_++;
 }

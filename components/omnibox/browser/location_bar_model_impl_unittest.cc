@@ -334,4 +334,16 @@ TEST_F(LocationBarModelImplTest, GetVectorIcon_DangerWarning) {
 }
 #endif  // !defined(OS_IOS)
 
+#if defined(OS_IOS)
+
+// Test that blob:http://example.test/foobar is displayed as "example.test" on
+// iOS.
+TEST_F(LocationBarModelImplTest, BlobDisplayURLIOS) {
+  delegate()->SetURL(GURL("blob:http://example.test/foo"));
+  EXPECT_EQ(base::ASCIIToUTF16("example.test/TestSuffix"),
+            model()->GetURLForDisplay());
+}
+
+#endif  // defined(OS_IOS)
+
 }  // namespace

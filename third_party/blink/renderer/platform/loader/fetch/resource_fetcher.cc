@@ -89,8 +89,6 @@
 #include "third_party/blink/renderer/platform/wtf/text/wtf_string.h"
 #include "third_party/blink/renderer/platform/wtf/wtf.h"
 
-using blink::WebURLRequest;
-
 namespace blink {
 
 constexpr uint32_t ResourceFetcher::kKeepaliveInflightBytesQuota;
@@ -255,8 +253,7 @@ ResourceLoadPriority AdjustPriorityWithDeferScriptIntervention(
     return priority_so_far;
   }
 
-  WebURLRequest::PreviewsState context_previews_state =
-      fetch_context.previews_state();
+  PreviewsState context_previews_state = fetch_context.previews_state();
 
   if (type != ResourceType::kScript)
     return priority_so_far;
@@ -269,7 +266,7 @@ ResourceLoadPriority AdjustPriorityWithDeferScriptIntervention(
   // network::mojom::blink::RequestPriority::kLow which is considered delayable
   // by the resource scheduler on the browser side.
   if (RuntimeEnabledFeatures::ForceDeferScriptInterventionEnabled() ||
-      (context_previews_state & WebURLRequest::kDeferAllScriptOn)) {
+      (context_previews_state & PreviewsTypes::kDeferAllScriptOn)) {
     return std::min(priority_so_far, ResourceLoadPriority::kMedium);
   }
   return priority_so_far;

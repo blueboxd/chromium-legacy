@@ -6,8 +6,8 @@
 #define CONTENT_RENDERER_LOADER_RESOURCE_LOAD_STATS_H_
 
 #include "build/build_config.h"
-#include "content/public/common/previews_state.h"
 #include "services/network/public/mojom/url_response_head.mojom-forward.h"
+#include "third_party/blink/public/common/loader/previews_state.h"
 #include "third_party/blink/public/mojom/loader/resource_load_info.mojom.h"
 
 class GURL;
@@ -52,7 +52,7 @@ void NotifyResourceResponseReceived(
     int render_frame_id,
     blink::mojom::ResourceLoadInfo* resource_load_info,
     network::mojom::URLResponseHeadPtr response_head,
-    PreviewsState previews_state);
+    blink::PreviewsState previews_state);
 
 void NotifyResourceTransferSizeUpdated(
     int render_frame_id,

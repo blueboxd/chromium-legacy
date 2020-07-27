@@ -734,55 +734,60 @@ void SelectionController::SelectClosestMisspellingFromHitTestResult(
           .Build());
 }
 
+template <typename MouseEventObject>
 bool SelectionController::SelectClosestWordFromMouseEvent(
-    const MouseEventWithHitTestResults& result) {
+    const MouseEventObject* mouse_event,
+    const HitTestResult& result) {
   if (!mouse_down_may_start_select_)
     return false;
 
   AppendTrailingWhitespace append_trailing_whitespace =
-      (result.Event().click_count == 2 &&
+      (mouse_event->ClickCount() == 2 &&
        frame_->GetEditor().IsSelectTrailingWhitespaceEnabled())
           ? AppendTrailingWhitespace::kShouldAppend
           : AppendTrailingWhitespace::kDontAppend;
 
   DCHECK(!frame_->GetDocument()->NeedsLayoutTreeUpdate());
 
-  return SelectClosestWordFromHitTestResult(
-      result.GetHitTestResult(), append_trailing_whitespace,
-      result.Event().FromTouch() ? SelectInputEventType::kTouch
-                                 : SelectInputEventType::kMouse);
+  return SelectClosestWordFromHitTestResult(result, append_trailing_whitespace,
+                                            mouse_event->FromTouch()
+                                                ? SelectInputEventType::kTouch
+                                                : SelectInputEventType::kMouse);
 }
 
+template <typename MouseEventObject>
 void SelectionController::SelectClosestMisspellingFromMouseEvent(
-    const MouseEventWithHitTestResults& result) {
+    const MouseEventObject* mouse_event,
+    const HitTestResult& hit_test_result) {
   if (!mouse_down_may_start_select_)
     return;
 
   SelectClosestMisspellingFromHitTestResult(
-      result.GetHitTestResult(),
-      (result.Event().click_count == 2 &&
-       frame_->GetEditor().IsSelectTrailingWhitespaceEnabled())
-          ? AppendTrailingWhitespace::kShouldAppend
-          : AppendTrailingWhitespace::kDontAppend);
+      hit_test_result, (mouse_event->ClickCount() == 2 &&
+                        frame_->GetEditor().IsSelectTrailingWhitespaceEnabled())
+                           ? AppendTrailingWhitespace::kShouldAppend
+                           : AppendTrailingWhitespace::kDontAppend);
 }
 
+template <typename MouseEventObject>
 void SelectionController::SelectClosestWordOrLinkFromMouseEvent(
-    const MouseEventWithHitTestResults& result) {
-  if (!result.GetHitTestResult().IsLiveLink()) {
-    SelectClosestWordFromMouseEvent(result);
+    const MouseEventObject* mouse_event,
+    const HitTestResult& hit_test_result) {
+  if (!hit_test_result.IsLiveLink()) {
+    SelectClosestWordFromMouseEvent(mouse_event, hit_test_result);
     return;
   }
 
-  Node* const inner_node = result.InnerNode();
+  Node* const inner_node = hit_test_result.InnerNode();
 
   if (!inner_node || !inner_node->GetLayoutObject() ||
       !mouse_down_may_start_select_)
     return;
 
-  Element* url_element = result.GetHitTestResult().URLElement();
+  Element* url_element = hit_test_result.URLElement();
   const PositionInFlatTreeWithAffinity pos =
       CreateVisiblePosition(
-          PositionWithAffinityOfHitTestResult(result.GetHitTestResult()))
+          PositionWithAffinityOfHitTestResult(hit_test_result))
           .ToPositionWithAffinity();
   const SelectionInFlatTree& new_selection =
       pos.IsNotNull() && pos.AnchorNode()->IsDescendantOf(url_element)
@@ -925,7 +930,8 @@ bool SelectionController::HandleDoubleClick(
     selection_state_ = SelectionState::kExtendedSelection;
     return true;
   }
-  if (!SelectClosestWordFromMouseEvent(event))
+  if (!SelectClosestWordFromMouseEvent(&event.Event(),
+                                       event.GetHitTestResult()))
     return true;
   if (!Selection().IsHandleVisible())
     return true;
@@ -1205,12 +1211,14 @@ static bool HitTestResultIsMisspelled(const HitTestResult& result) {
                                     ToPositionInFlatTree(marker_position));
 }
 
+template <typename MouseEventObject>
 void SelectionController::UpdateSelectionForContextMenuEvent(
-    const MouseEventWithHitTestResults& mev,
+    const MouseEventObject* mouse_event,
+    const HitTestResult& hit_test_result,
     const PhysicalOffset& position) {
   if (!Selection().IsAvailable())
     return;
-  if (Selection().Contains(position) || mev.GetScrollbar() ||
+  if (Selection().Contains(position) || hit_test_result.GetScrollbar() ||
       // FIXME: In the editable case, word selection sometimes selects content
       // that isn't underneath the mouse.
       // If the selection is non-editable, we do word selection to make it
@@ -1219,21 +1227,23 @@ void SelectionController::UpdateSelectionForContextMenuEvent(
       !(Selection()
             .ComputeVisibleSelectionInDOMTreeDeprecated()
             .IsContentEditable() ||
-        (mev.InnerNode() && mev.InnerNode()->IsTextNode())))
+        (hit_test_result.InnerNode() &&
+         hit_test_result.InnerNode()->IsTextNode())))
     return;
 
   // Context menu events are always allowed to perform a selection.
   base::AutoReset<bool> mouse_down_may_start_select_change(
       &mouse_down_may_start_select_, true);
 
-  if (mev.Event().menu_source_type != kMenuSourceTouchHandle &&
-      HitTestResultIsMisspelled(mev.GetHitTestResult()))
-    return SelectClosestMisspellingFromMouseEvent(mev);
+  if (mouse_event->GetMenuSourceType() != kMenuSourceTouchHandle &&
+      HitTestResultIsMisspelled(hit_test_result)) {
+    return SelectClosestMisspellingFromMouseEvent(mouse_event, hit_test_result);
+  }
 
   if (!frame_->GetEditor().Behavior().ShouldSelectOnContextualMenuClick())
     return;
 
-  SelectClosestWordOrLinkFromMouseEvent(mev);
+  SelectClosestWordOrLinkFromMouseEvent(mouse_event, hit_test_result);
 }
 
 void SelectionController::PassMousePressEventToSubframe(
@@ -1334,5 +1344,8 @@ bool IsExtendingSelection(const MouseEventWithHitTestResults& event) {
              0 &&
          !is_mouse_down_on_link_or_image && !IsUserNodeDraggable(event);
 }
+
+template void SelectionController::UpdateSelectionForContextMenuEvent<
+    MouseEvent>(const MouseEvent*, const HitTestResult&, const PhysicalOffset&);
 
 }  // namespace blink

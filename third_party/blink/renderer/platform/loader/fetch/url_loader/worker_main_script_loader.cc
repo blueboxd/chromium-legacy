@@ -273,7 +273,7 @@ void WorkerMainScriptLoader::NotifyResponseReceived(
         response_head->remote_endpoint;
     resource_loader_info_notifier_->NotifyResourceResponseReceived(
         resource_load_info_.Clone(), std::move(response_head),
-        WebURLRequest::kPreviewsUnspecified);
+        PreviewsTypes::kPreviewsUnspecified);
   }
 }
 

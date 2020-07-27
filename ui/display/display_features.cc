@@ -10,7 +10,7 @@ namespace features {
 #if defined(OS_CHROMEOS)
 // Enables using HDR transfer function if the monitor says it supports it.
 const base::Feature kUseHDRTransferFunction{"UseHDRTransferFunction",
-                                            base::FEATURE_DISABLED_BY_DEFAULT};
+                                            base::FEATURE_ENABLED_BY_DEFAULT};
 #endif
 
 // This features allows listing all display modes of external displays in the

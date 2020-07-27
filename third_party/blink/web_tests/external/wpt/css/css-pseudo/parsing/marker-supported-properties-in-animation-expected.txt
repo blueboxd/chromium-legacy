@@ -1,5 +1,5 @@
 This is a testharness.js-based test.
-Found 60 tests; 54 PASS, 6 FAIL, 0 TIMEOUT, 0 NOTRUN.
+Found 62 tests; 56 PASS, 6 FAIL, 0 TIMEOUT, 0 NOTRUN.
 PASS Animation of font in ::marker
 PASS Animation of font-family in ::marker
 PASS Animation of font-feature-settings in ::marker
@@ -22,6 +22,7 @@ PASS Animation of text-combine-upright in ::marker
 PASS Animation of unicode-bidi in ::marker
 PASS Animation of direction in ::marker
 PASS Animation of content in ::marker
+PASS Animation of text-transform in ::marker
 PASS Animation of display in ::marker
 PASS Animation of position in ::marker
 PASS Animation of float in ::marker
@@ -52,6 +53,7 @@ PASS Transition of text-combine-upright in ::marker
 PASS Transition of unicode-bidi in ::marker
 PASS Transition of direction in ::marker
 PASS Transition of content in ::marker
+PASS Transition of text-transform in ::marker
 PASS Transition of display in ::marker
 PASS Transition of position in ::marker
 PASS Transition of float in ::marker

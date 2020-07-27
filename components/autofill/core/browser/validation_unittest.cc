@@ -374,8 +374,8 @@ TEST_P(AutofillCCNumberValidationTest, IsValidCreditCardNumber) {
 }
 
 static const std::set<std::string> kAllBasicCardNetworks{
-    "amex",       "discover", "diners",   "elo", "jcb",
-    "mastercard", "mir",      "unionpay", "visa"};
+    "amex",       "discover", "diners", "elo",      "jcb",
+    "mastercard", "mir",      "troy",   "unionpay", "visa"};
 
 INSTANTIATE_TEST_SUITE_P(
     CreditCardNumber,
@@ -471,6 +471,7 @@ INSTANTIATE_TEST_SUITE_P(
         GetCvcLengthForCardTypeCase{kJCBCard, GENERAL_CVC_LENGTH},
         GetCvcLengthForCardTypeCase{kMasterCard, GENERAL_CVC_LENGTH},
         GetCvcLengthForCardTypeCase{kMirCard, GENERAL_CVC_LENGTH},
+        GetCvcLengthForCardTypeCase{kTroyCard, GENERAL_CVC_LENGTH},
         GetCvcLengthForCardTypeCase{kUnionPay, GENERAL_CVC_LENGTH},
         GetCvcLengthForCardTypeCase{kVisaCard, GENERAL_CVC_LENGTH}));
 

@@ -5,7 +5,6 @@
 package org.chromium.content_public.browser;
 
 import androidx.annotation.Nullable;
-import androidx.annotation.VisibleForTesting;
 
 /**
  * The NavigationController Java wrapper to allow communicating with the native
@@ -144,7 +143,6 @@ public interface NavigationController {
      * @param index Index to retrieve the NavigationEntry for.
      * @return Entry containing info about the navigation, null if the index is out of bounds.
      */
-    @VisibleForTesting
     public NavigationEntry getEntryAtIndex(int index);
 
     /**

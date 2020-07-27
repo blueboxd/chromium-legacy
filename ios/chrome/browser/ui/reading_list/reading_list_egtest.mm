@@ -444,7 +444,14 @@ void AssertIsShowingDistillablePage(bool online, const GURL& distillable_url) {
 }
 
 // Tests that the Reading List view is accessible.
-- (void)testAccessibility {
+//
+// Disabled due to https://crbug.com/1109202.
+#if TARGET_IPHONE_SIMULATOR
+#define MAYBE_testAccessibility DISABLED_testAccessibility
+#else
+#define MAYBE_testAccessibility testAccessibility
+#endif
+- (void)MAYBE_testAccessibility {
   AddEntriesAndEnterEdit();
   // In edit mode.
   [ChromeEarlGrey verifyAccessibilityForCurrentScreen];

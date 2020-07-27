@@ -267,6 +267,15 @@ class ExtensionPrefs : public KeyedService {
   void SetStringPref(const std::string& id,
                      const PrefMap& pref,
                      const std::string value);
+  void SetListPref(const std::string& id,
+                   const PrefMap& pref,
+                   base::Value value);
+  void SetDictionaryPref(const std::string& id,
+                         const PrefMap& pref,
+                         std::unique_ptr<base::DictionaryValue> value);
+  void SetTimePref(const std::string& id,
+                   const PrefMap& pref,
+                   const base::Time value);
 
   void UpdateExtensionPref(const std::string& id,
                            base::StringPiece key,
@@ -285,6 +294,17 @@ class ExtensionPrefs : public KeyedService {
   bool ReadPrefAsString(const std::string& extension_id,
                         const PrefMap& pref,
                         std::string* out_value) const;
+
+  bool ReadPrefAsList(const std::string& extension_id,
+                      const PrefMap& pref,
+                      const base::ListValue** out_value) const;
+
+  bool ReadPrefAsDictionary(const std::string& extension_id,
+                            const PrefMap& pref,
+                            const base::DictionaryValue** out_value) const;
+
+  base::Time ReadPrefAsTime(const std::string& extension_id,
+                            const PrefMap& pref) const;
 
   bool ReadPrefAsBoolean(const std::string& extension_id,
                          base::StringPiece pref_key,

@@ -5,14 +5,13 @@
 #include "third_party/blink/renderer/modules/xr/xr_view.h"
 
 #include "third_party/blink/renderer/modules/xr/xr_frame.h"
-#include "third_party/blink/renderer/modules/xr/xr_session.h"
 #include "third_party/blink/renderer/modules/xr/xr_utils.h"
 #include "third_party/blink/renderer/platform/geometry/float_point_3d.h"
 
 namespace blink {
 
-XRView::XRView(XRSession* session, const XRViewData& view_data)
-    : eye_(view_data.Eye()), session_(session) {
+XRView::XRView(XRFrame* frame, const XRViewData& view_data)
+    : eye_(view_data.Eye()), frame_(frame) {
   switch (eye_) {
     case kEyeLeft:
       eye_string_ = "left";
@@ -29,8 +28,12 @@ XRView::XRView(XRSession* session, const XRViewData& view_data)
       transformationMatrixToDOMFloat32Array(view_data.ProjectionMatrix());
 }
 
+XRFrame* XRView::frame() const {
+  return frame_;
+}
+
 XRSession* XRView::session() const {
-  return session_;
+  return frame_->session();
 }
 
 DOMFloat32Array* XRView::projectionMatrix() const {
@@ -142,7 +145,7 @@ XRRigidTransform* XRView::transform() const {
 }
 
 void XRView::Trace(Visitor* visitor) const {
-  visitor->Trace(session_);
+  visitor->Trace(frame_);
   visitor->Trace(projection_matrix_);
   visitor->Trace(ref_space_from_eye_);
   ScriptWrappable::Trace(visitor);

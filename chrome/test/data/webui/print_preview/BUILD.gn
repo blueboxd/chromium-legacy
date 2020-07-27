@@ -27,10 +27,10 @@ js_type_check("closure_compile") {
     ":destination_item_test",
     ":destination_list_test",
     ":destination_settings_test",
+    ":destination_store_test",
+    ":dpi_settings_test",
+    ":duplex_settings_test",
 
-    #":destination_store_test",
-    #":dpi_settings_test",
-    #":duplex_settings_test",
     #":header_test",
     #":invalid_settings_browsertest",
     #":key_event_test",
@@ -300,4 +300,42 @@ if (is_chromeos) {
     ]
     externs_list = [ "$externs_path/mocha-2.5.js" ]
   }
+}
+
+js_library("destination_store_test") {
+  deps = [
+    ":cloud_print_interface_stub",
+    ":native_layer_stub",
+    ":print_preview_test_utils",
+    "..:chai_assert",
+    "..:test_util.m",
+    "//chrome/browser/resources/print_preview:print_preview",
+    "//ui/webui/resources/js:assert.m",
+    "//ui/webui/resources/js:cr.m",
+    "//ui/webui/resources/js:load_time_data.m",
+  ]
+  externs_list = [ "$externs_path/mocha-2.5.js" ]
+}
+
+js_library("dpi_settings_test") {
+  deps = [
+    ":print_preview_test_utils",
+    "..:chai_assert",
+    "..:test_util.m",
+    "//chrome/browser/resources/print_preview:print_preview",
+    "//ui/webui/resources/js:assert.m",
+  ]
+  externs_list = [ "$externs_path/mocha-2.5.js" ]
+}
+
+js_library("duplex_settings_test") {
+  deps = [
+    ":print_preview_test_utils",
+    "..:chai_assert",
+    "..:test_util.m",
+    "//chrome/browser/resources/print_preview:print_preview",
+    "//ui/webui/resources/js:assert.m",
+    "//ui/webui/resources/js:cr.m",
+  ]
+  externs_list = [ "$externs_path/mocha-2.5.js" ]
 }

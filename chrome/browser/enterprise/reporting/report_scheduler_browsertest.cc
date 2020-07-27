@@ -19,6 +19,7 @@
 #include "chrome/test/base/in_process_browser_test.h"
 #include "components/enterprise/browser/controller/browser_dm_token_storage.h"
 #include "components/enterprise/browser/controller/fake_browser_dm_token_storage.h"
+#include "components/enterprise/browser/reporting/common_pref_names.h"
 #include "components/prefs/pref_service.h"
 #include "content/public/test/browser_test.h"
 
@@ -49,8 +50,7 @@ class ReportSchedulerTest
   ~ReportSchedulerTest() override = default;
 
   void SetUpOnMainThread() override {
-    g_browser_process->local_state()->SetBoolean(prefs::kCloudReportingEnabled,
-                                                 true);
+    g_browser_process->local_state()->SetBoolean(kCloudReportingEnabled, true);
   }
 
   void CreatedBrowserMainParts(content::BrowserMainParts* parts) override {

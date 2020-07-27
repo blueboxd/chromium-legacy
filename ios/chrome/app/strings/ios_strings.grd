@@ -2491,6 +2491,9 @@ New Search
       <message name="IDS_IOS_LOCATION_BAR_SIGN_IN" desc="Text shown in the location bar while an HTTP authentication dialog is displayed.">
           Sign in to website
       </message>
+      <message name="IDS_IOS_SHARE_LINK_TO_TEXT" desc="Option that appears in the iOS Edit Menu when highlighting text (alongside options like Copy, Paste, and Share). When selected, this generates a special URL that will open the current page and jump to/highlight the user's current selection. The user will then have the chance to share this special URL through the normal iOS sharing menu.">
+          Link to Text
+      </message>
     </messages>
   </release>
 </grit>

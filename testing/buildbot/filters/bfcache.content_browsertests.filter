@@ -54,3 +54,7 @@
 -RenderFrameHostImplBrowserTest.CheckIsCurrentBeforeAndAfterUnload
 -RenderFrameHostImplBrowserTest.CheckLifecycleStateTransitionOnMainFrame
 -SecurityExploitBrowserTest.DidCommitInvalidURL
+
+# https://crbug.com/1109648
+# TODO(arthursonzogni): Fix COOP tests when BackForwardCache is enabled.
+-All/VirtualBrowsingContextGroupTest.HistoryNavigation/*

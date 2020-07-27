@@ -68,12 +68,12 @@ bool ArcStorageManager::GetApplicationsSize(
 }
 
 bool ArcStorageManager::DeleteApplicationsCache(
-    const base::Callback<void()>& callback) {
+    base::OnceCallback<void()> callback) {
   auto* storage_manager_instance = ARC_GET_INSTANCE_FOR_METHOD(
       arc_bridge_service_->storage_manager(), DeleteApplicationsCache);
   if (!storage_manager_instance)
     return false;
-  storage_manager_instance->DeleteApplicationsCache(callback);
+  storage_manager_instance->DeleteApplicationsCache(std::move(callback));
   return true;
 }
 

@@ -191,7 +191,7 @@ void NavigationBodyLoader::StartLoadingBody(
   base::Time response_head_response_time = response_head_->response_time;
   NotifyResourceResponseReceived(render_frame_id_, resource_load_info_.get(),
                                  std::move(response_head_),
-                                 content::PREVIEWS_OFF);
+                                 blink::PreviewsTypes::PREVIEWS_OFF);
 
   if (use_isolated_code_cache) {
     code_cache_loader_ = blink::WebCodeCacheLoader::Create();

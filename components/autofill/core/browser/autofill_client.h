@@ -274,6 +274,10 @@ class AutofillClient : public RiskDataLoader {
   // Gets an AddressNormalizer instance (can be null).
   virtual AddressNormalizer* GetAddressNormalizer() = 0;
 
+  // Gets the virtual URL of the last committed page of this client's
+  // associated WebContents.
+  virtual const GURL& GetLastCommittedURL() = 0;
+
   // Gets the security level used for recording histograms for the current
   // context if possible, SECURITY_LEVEL_COUNT otherwise.
   virtual security_state::SecurityLevel GetSecurityLevelForUmaHistograms() = 0;

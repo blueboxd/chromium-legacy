@@ -5,11 +5,6 @@
 import("//build/buildflag_header.gni")
 import("//ios/chrome/features.gni")
 
-buildflag_header("ios_enable_metrickit_buildflags") {
-  header = "ios_enable_metrickit_buildflags.h"
-  flags = [ "IOS_ENABLE_METRICKIT=$ios_enable_metrickit" ]
-}
-
 source_set("application_delegate") {
   sources = [
     "memory_warning_helper.h",
@@ -131,12 +126,9 @@ source_set("metric_kit_subscriber") {
   sources = [
     "metric_kit_subscriber.h",
     "metric_kit_subscriber.mm",
-    "metric_kit_subscribing_util.h",
-    "metric_kit_subscribing_util.mm",
   ]
   frameworks = [ "MetricKit.framework" ]
   deps = [
-    ":ios_enable_metrickit_buildflags",
     "//base",
     "//components/version_info",
   ]
@@ -159,7 +151,7 @@ source_set("application_delegate_internal") {
   ]
   deps = [
     ":application_delegate",
-    ":ios_enable_metrickit_buildflags",
+    ":metric_kit_subscriber",
     ":tab_opening",
     ":url_opener_params",
     "//base",
@@ -214,9 +206,6 @@ source_set("application_delegate_internal") {
   ]
   public_deps = [ "//ios/chrome/browser/ui/scoped_ui_blocker" ]
 
-  if (ios_enable_metrickit) {
-    deps += [ ":metric_kit_subscriber" ]
-  }
   frameworks = [
     "CoreSpotlight.framework",
     "UIKit.framework",

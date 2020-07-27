@@ -6,26 +6,31 @@ import {DuplexMode} from 'chrome://print/print_preview.js';
 import {assert} from 'chrome://resources/js/assert.m.js';
 import {isChromeOS} from 'chrome://resources/js/cr.m.js';
 import {flush} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
-import {selectOption} from 'chrome://test/print_preview/print_preview_test_utils.js';
-import {eventToPromise, fakeDataBind} from 'chrome://test/test_util.m.js';
+
+import {assertEquals, assertFalse, assertTrue} from '../chai_assert.js';
+import {eventToPromise, fakeDataBind} from '../test_util.m.js';
+
+import {selectOption} from './print_preview_test_utils.js';
 
 suite('DuplexSettingsTest', function() {
-  /** @type {?PrintPreviewDuplexSettingsElement} */
-  let duplexSection = null;
+  /** @type {!PrintPreviewDuplexSettingsElement} */
+  let duplexSection;
 
-  /** @type {?PrintPreviewModelElement} */
-  let model = null;
+  /** @type {!PrintPreviewModelElement} */
+  let model;
 
   /** @override */
   setup(function() {
-    PolymerTest.clearBody();
-    model = document.createElement('print-preview-model');
+    document.body.innerHTML = '';
+    model = /** @type {!PrintPreviewModelElement} */ (
+        document.createElement('print-preview-model'));
     document.body.appendChild(model);
     model.set('settings.duplex.available', true);
     model.set('settings.duplex.value', false);
     model.set('settings.duplexShortEdge.available', true);
 
-    duplexSection = document.createElement('print-preview-duplex-settings');
+    duplexSection = /** @type {!PrintPreviewDuplexSettingsElement} */ (
+        document.createElement('print-preview-duplex-settings'));
     duplexSection.settings = model.settings;
     duplexSection.disabled = false;
     fakeDataBind(model, duplexSection, 'settings');
@@ -36,7 +41,8 @@ suite('DuplexSettingsTest', function() {
   // Tests that making short edge unavailable prevents the collapse from
   // showing.
   test('short edge unavailable', function() {
-    const collapse = duplexSection.$$('iron-collapse');
+    const collapse =
+        /** @type {!IronCollapseElement} */ (duplexSection.$$('iron-collapse'));
     duplexSection.setSetting('duplex', true);
     assertTrue(collapse.opened);
 
@@ -48,8 +54,10 @@ suite('DuplexSettingsTest', function() {
 
   // Tests that setting the setting updates the UI.
   test('set setting', async () => {
-    const checkbox = duplexSection.$$('cr-checkbox');
-    const collapse = duplexSection.$$('iron-collapse');
+    const checkbox =
+        /** @type {!CrCheckboxElement} */ (duplexSection.$$('cr-checkbox'));
+    const collapse =
+        /** @type {!IronCollapseElement} */ (duplexSection.$$('iron-collapse'));
     assertFalse(checkbox.checked);
     assertFalse(collapse.opened);
 
@@ -72,16 +80,20 @@ suite('DuplexSettingsTest', function() {
     const collapse = duplexSection.$$('iron-collapse');
     assertFalse(checkbox.checked);
     assertFalse(collapse.opened);
-    assertFalse(duplexSection.getSettingValue('duplex'));
-    assertFalse(duplexSection.getSettingValue('duplexShortEdge'));
+    assertFalse(
+        /** @type {boolean} */ (duplexSection.getSettingValue('duplex')));
+    assertFalse(/** @type {boolean} */ (
+        duplexSection.getSettingValue('duplexShortEdge')));
     assertFalse(duplexSection.getSetting('duplex').setFromUi);
     assertFalse(duplexSection.getSetting('duplexShortEdge').setFromUi);
 
     checkbox.checked = true;
     checkbox.dispatchEvent(new CustomEvent('change'));
     assertTrue(collapse.opened);
-    assertTrue(duplexSection.getSettingValue('duplex'));
-    assertFalse(duplexSection.getSettingValue('duplexShortEdge'));
+    assertTrue(
+        /** @type {boolean} */ (duplexSection.getSettingValue('duplex')));
+    assertFalse(/** @type {boolean} */ (
+        duplexSection.getSettingValue('duplexShortEdge')));
     assertTrue(duplexSection.getSetting('duplex').setFromUi);
     assertFalse(duplexSection.getSetting('duplexShortEdge').setFromUi);
 
@@ -91,8 +103,10 @@ suite('DuplexSettingsTest', function() {
 
     // Verify that selecting an new option in the dropdown sets the setting.
     await selectOption(duplexSection, DuplexMode.SHORT_EDGE.toString());
-    assertTrue(duplexSection.getSettingValue('duplex'));
-    assertTrue(duplexSection.getSettingValue('duplexShortEdge'));
+    assertTrue(
+        /** @type {boolean} */ (duplexSection.getSettingValue('duplex')));
+    assertTrue(/** @type {boolean} */ (
+        duplexSection.getSettingValue('duplexShortEdge')));
     assertTrue(duplexSection.getSetting('duplex').setFromUi);
     assertTrue(duplexSection.getSetting('duplexShortEdge').setFromUi);
   });

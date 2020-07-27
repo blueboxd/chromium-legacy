@@ -51,6 +51,7 @@ class TestAutofillClient : public AutofillClient {
   ukm::UkmRecorder* GetUkmRecorder() override;
   ukm::SourceId GetUkmSourceId() override;
   AddressNormalizer* GetAddressNormalizer() override;
+  const GURL& GetLastCommittedURL() override;
   security_state::SecurityLevel GetSecurityLevelForUmaHistograms() override;
   std::string GetPageLanguage() const override;
 #if !defined(OS_IOS)
@@ -262,6 +263,9 @@ class TestAutofillClient : public AutofillClient {
 
   // The language that is returned by |GetPageLanguage()|.
   std::string page_language_;
+
+  // The last URL submitted by the user in the URL bar. Set in the constructor.
+  GURL last_committed_url_;
 
 #if !defined(OS_ANDROID) && !defined(OS_IOS)
   std::vector<std::string> allowed_merchants_;

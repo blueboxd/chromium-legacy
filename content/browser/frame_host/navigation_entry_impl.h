@@ -30,8 +30,8 @@
 #include "content/public/browser/restore_type.h"
 #include "content/public/browser/ssl_status.h"
 #include "content/public/common/page_state.h"
-#include "content/public/common/previews_state.h"
 #include "net/base/isolation_info.h"
+#include "third_party/blink/public/common/loader/previews_state.h"
 #include "url/origin.h"
 
 namespace content {
@@ -181,7 +181,7 @@ class CONTENT_EXPORT NavigationEntryImpl : public NavigationEntry {
       const GURL& dest_url,
       blink::mojom::ReferrerPtr dest_referrer,
       mojom::NavigationType navigation_type,
-      PreviewsState previews_state,
+      blink::PreviewsState previews_state,
       base::TimeTicks navigation_start,
       base::TimeTicks input_start);
   mojom::CommitNavigationParamsPtr ConstructCommitNavigationParams(

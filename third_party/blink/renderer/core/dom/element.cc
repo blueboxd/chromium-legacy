@@ -972,7 +972,7 @@ bool Element::hasAttribute(const QualifiedName& name) const {
 }
 
 bool Element::HasAttributeIgnoringNamespace(
-    const StringView& local_name) const {
+    const AtomicString& local_name) const {
   if (!GetElementData())
     return false;
   WTF::AtomicStringTable::WeakResult hint =
@@ -3814,7 +3814,7 @@ void Element::removeAttributeNS(const AtomicString& namespace_uri,
   removeAttribute(QualifiedName(g_null_atom, local_name, namespace_uri));
 }
 
-Attr* Element::getAttributeNode(const StringView& local_name) {
+Attr* Element::getAttributeNode(const AtomicString& local_name) {
   if (!GetElementData())
     return nullptr;
   WTF::AtomicStringTable::WeakResult hint =
@@ -3839,7 +3839,7 @@ Attr* Element::getAttributeNodeNS(const AtomicString& namespace_uri,
   return EnsureAttr(attribute->GetName());
 }
 
-bool Element::hasAttribute(const StringView& local_name) const {
+bool Element::hasAttribute(const AtomicString& local_name) const {
   if (!GetElementData())
     return false;
   WTF::AtomicStringTable::WeakResult hint =

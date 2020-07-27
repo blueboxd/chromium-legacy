@@ -2270,6 +2270,28 @@
             ]
         }
     ],
+    "DnsHttpssvc": [
+        {
+            "platforms": [
+                "windows",
+                "mac",
+                "chromeos",
+                "android"
+            ],
+            "experiments": [
+                {
+                    "name": "DnsHttpssvcStudy",
+                    "params": {
+                        "HttpssvcQueryHttpssvc": "false",
+                        "HttpssvcQueryIntegrity": "true"
+                    },
+                    "enable_features": [
+                        "DnsHttpssvc"
+                    ]
+                }
+            ]
+        }
+    ],
     "DnsOverHttps": [
         {
             "platforms": [

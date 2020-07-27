@@ -390,6 +390,7 @@ extern const char kGoogleIssuedCard[];
 extern const char kJCBCard[];
 extern const char kMasterCard[];
 extern const char kMirCard[];
+extern const char kTroyCard[];
 extern const char kUnionPay[];
 extern const char kVisaCard[];
 

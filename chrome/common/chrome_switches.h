@@ -43,7 +43,7 @@ extern const char kAppModeOAuth2Token[];
 extern const char kAppsGalleryDownloadURL[];
 extern const char kAppsGalleryUpdateURL[];
 extern const char kAppsGalleryURL[];
-extern const char kAuthServerWhitelist[];
+extern const char kAuthServerAllowlist[];
 extern const char kAutoOpenDevToolsForTabs[];
 extern const char kAutoSelectDesktopCaptureSource[];
 extern const char kBypassAppBannerEngagementChecks[];

@@ -378,11 +378,14 @@ class AppServiceDataSource : public AppSearchProvider::DataSource,
         profile(), app_id, list_controller, is_recommended, &icon_cache_);
   }
 
-  void ViewClosing() override { icon_cache_.SweepReleasedIcons(); }
-
  private:
   // apps::AppRegistryCache::Observer overrides:
   void OnAppUpdate(const apps::AppUpdate& update) override {
+    if (update.Readiness() == apps::mojom::Readiness::kUninstalledByUser ||
+        update.IconKeyChanged()) {
+      icon_cache_.RemoveIcon(update.AppType(), update.AppId());
+    }
+
     if (update.Readiness() == apps::mojom::Readiness::kReady) {
       owner()->RefreshAppsAndUpdateResultsDeferred();
     } else {

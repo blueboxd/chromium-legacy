@@ -963,7 +963,7 @@ void Resource::SetCachePolicyBypassingCache() {
   resource_request_.SetCacheMode(mojom::FetchCacheMode::kBypassCache);
 }
 
-void Resource::SetPreviewsState(WebURLRequest::PreviewsState previews_state) {
+void Resource::SetPreviewsState(PreviewsState previews_state) {
   resource_request_.SetPreviewsState(previews_state);
 }
 

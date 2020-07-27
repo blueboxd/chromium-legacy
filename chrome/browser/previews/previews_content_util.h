@@ -6,7 +6,7 @@
 #define CHROME_BROWSER_PREVIEWS_PREVIEWS_CONTENT_UTIL_H_
 
 #include "components/previews/content/previews_decider.h"
-#include "content/public/common/previews_state.h"
+#include "third_party/blink/public/common/loader/previews_state.h"
 
 namespace content {
 class NavigationHandle;
@@ -15,16 +15,16 @@ class NavigationHandle;
 namespace previews {
 
 // Returns whether |previews_state| has any enabled previews.
-bool HasEnabledPreviews(content::PreviewsState previews_state);
+bool HasEnabledPreviews(blink::PreviewsState previews_state);
 
 // Returns the bitmask of enabled client-side previews and the
 // current effective network connection given |previews_decider|.
 // This handles the mapping of previews::PreviewsType enum values to bitmask
-// definitions for content::PreviewsState.
+// definitions for blink::PreviewsState.
 // |previews_triggering_logic_already_ran| is used to prevent offline previews
 // from being updated if previews triggering logic has already run.
 // |previews_data| is populated with relevant information.
-content::PreviewsState DetermineAllowedClientPreviewsState(
+blink::PreviewsState DetermineAllowedClientPreviewsState(
     previews::PreviewsUserData* previews_data,
     bool previews_triggering_logic_already_ran,
     bool is_data_saver_user,
@@ -35,10 +35,10 @@ content::PreviewsState DetermineAllowedClientPreviewsState(
 // been updated wrt server previews. This should be called at Navigation Commit
 // time. It will defer to any server preview set, otherwise it chooses which
 // client preview bits to retain for processing the main frame response.
-content::PreviewsState DetermineCommittedClientPreviewsState(
+blink::PreviewsState DetermineCommittedClientPreviewsState(
     previews::PreviewsUserData* previews_data,
     const GURL& url,
-    content::PreviewsState previews_state,
+    blink::PreviewsState previews_state,
     const previews::PreviewsDecider* previews_decider,
     content::NavigationHandle* navigation_handle);
 
@@ -47,8 +47,8 @@ content::PreviewsState DetermineCommittedClientPreviewsState(
 // should only be called after commit and may impact all preview types. This
 // method assume |MaybeCoinFlipHoldbackBeforeCommit| has already been called
 // with the same |navigation_handle|.
-content::PreviewsState MaybeCoinFlipHoldbackAfterCommit(
-    content::PreviewsState initial_state,
+blink::PreviewsState MaybeCoinFlipHoldbackAfterCommit(
+    blink::PreviewsState initial_state,
     content::NavigationHandle* navigation_handle);
 
 // Returns the effective PreviewsType known on a main frame basis given the
@@ -57,7 +57,7 @@ content::PreviewsState MaybeCoinFlipHoldbackAfterCommit(
 // in case it is called on a PreviewsState value that has not been filtered
 // through that method.
 previews::PreviewsType GetMainFramePreviewsType(
-    content::PreviewsState previews_state);
+    blink::PreviewsState previews_state);
 
 }  // namespace previews
 

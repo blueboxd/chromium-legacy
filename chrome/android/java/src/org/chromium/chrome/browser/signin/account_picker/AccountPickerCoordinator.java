@@ -39,7 +39,7 @@ public class AccountPickerCoordinator {
         /**
          * Notifies when the user clicked the "Go incognito mode" button.
          */
-        void goIncognitoMode();
+        default void goIncognitoMode() {}
     }
 
     private final AccountPickerMediator mMediator;

@@ -24,6 +24,7 @@
 #include "components/update_client/action_runner.h"
 #include "components/update_client/component_unpacker.h"
 #include "components/update_client/configurator.h"
+#include "components/update_client/crx_downloader_factory.h"
 #include "components/update_client/network.h"
 #include "components/update_client/patcher.h"
 #include "components/update_client/persisted_data.h"
@@ -713,17 +714,14 @@ void Component::StateDownloadingDiff::DoHandle() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
   auto& component = Component::State::component();
-  const auto& update_context = component.update_context_;
-
   DCHECK(component.crx_component());
 
   component.downloaded_bytes_ = -1;
   component.total_bytes_ = -1;
 
-  crx_downloader_ = update_context.crx_downloader_factory(
-      component.CanDoBackgroundDownload(),
-      update_context.config->GetNetworkFetcherFactory());
-
+  crx_downloader_ =
+      component.config()->GetCrxDownloaderFactory()->MakeCrxDownloader(
+          component.CanDoBackgroundDownload());
   crx_downloader_->set_progress_callback(
       base::BindRepeating(&Component::StateDownloadingDiff::DownloadProgress,
                           base::Unretained(this)));
@@ -786,17 +784,14 @@ void Component::StateDownloading::DoHandle() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
   auto& component = Component::State::component();
-  const auto& update_context = component.update_context_;
-
   DCHECK(component.crx_component());
 
   component.downloaded_bytes_ = -1;
   component.total_bytes_ = -1;
 
-  crx_downloader_ = update_context.crx_downloader_factory(
-      component.CanDoBackgroundDownload(),
-      update_context.config->GetNetworkFetcherFactory());
-
+  crx_downloader_ =
+      component.config()->GetCrxDownloaderFactory()->MakeCrxDownloader(
+          component.CanDoBackgroundDownload());
   crx_downloader_->set_progress_callback(base::BindRepeating(
       &Component::StateDownloading::DownloadProgress, base::Unretained(this)));
   crx_downloader_->StartDownload(

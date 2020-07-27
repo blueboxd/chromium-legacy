@@ -4,6 +4,9 @@
      found in the LICENSE file. -->
 
 <resources>
+  <dimen name="check_status_restart_button_clickable_surface_size">48dp</dimen>
+  <dimen name="check_status_restart_button_margin_end">4dp</dimen>
+
   <dimen name="compromised_credential_row_button_margin_top">16dp</dimen>
   <dimen name="compromised_credential_row_more_padding_end">8dp</dimen>
   <dimen name="compromised_credential_row_more_padding_start">16dp</dimen>

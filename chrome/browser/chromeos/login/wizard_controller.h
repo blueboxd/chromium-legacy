@@ -30,6 +30,7 @@
 #include "chrome/browser/chromeos/login/screens/enable_adb_sideloading_screen.h"
 #include "chrome/browser/chromeos/login/screens/enable_debugging_screen.h"
 #include "chrome/browser/chromeos/login/screens/eula_screen.h"
+#include "chrome/browser/chromeos/login/screens/family_link_notice_screen.h"
 #include "chrome/browser/chromeos/login/screens/fingerprint_setup_screen.h"
 #include "chrome/browser/chromeos/login/screens/gesture_navigation_screen.h"
 #include "chrome/browser/chromeos/login/screens/hid_detection_screen.h"
@@ -158,6 +159,11 @@ class WizardController {
   // Returns the current ScreenManager instance.
   ScreenManager* screen_manager() const { return screen_manager_.get(); }
 
+  // Returns the current WizardContext instance.
+  WizardContext* get_wizard_context_for_testing() const {
+    return wizard_context_.get();
+  }
+
   // Volume percent at which spoken feedback is still audible.
   static const int kMinAudibleOutputVolumePercent;
 
@@ -175,6 +181,12 @@ class WizardController {
                                      bool has_error);
   // Configure and show active directory password change screen.
   void ShowActiveDirectoryPasswordChangeScreen(const std::string& username);
+
+  // Show Family Link notice screen.
+  void ShowFamilyLinkNoticeScreen();
+
+  // Set pref value for first run.
+  void PrepareFirstRunPrefs();
 
  private:
   // Create BaseScreen instances. These are owned by |screen_manager_|.
@@ -264,6 +276,7 @@ class WizardController {
   void OnOobeFlowFinished();
   void OnPackagedLicenseScreenExit(PackagedLicenseScreen::Result result);
   void OnActiveDirectoryPasswordChangeScreenExit();
+  void OnFamilyLinkNoticeScreenExit(FamilyLinkNoticeScreen::Result result);
 
   // Callback invoked once it has been determined whether the device is disabled
   // or not.

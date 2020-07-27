@@ -233,6 +233,10 @@ class SystemWebAppManager {
                           std::map<GURL, InstallResultCode> install_results,
                           std::map<GURL, bool> uninstall_results);
   bool NeedsUpdate() const;
+  void UpdateLastAttemptedInfo();
+  // Returns if we have exceeded the number of retry attempts allowed for this
+  // version.
+  bool CheckAndIncrementRetryAttempts();
 
   void RecordSystemWebAppInstallMetrics(
       const std::map<GURL, InstallResultCode>& install_results,

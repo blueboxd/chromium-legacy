@@ -74,8 +74,6 @@ class PrefetchManager {
     virtual void PrefetchFinished(std::unique_ptr<PrefetchStats> stats) = 0;
   };
 
-  static const size_t kMaxInflightJobs = 3;
-
   PrefetchManager(base::WeakPtr<Delegate> delegate, Profile* profile);
   ~PrefetchManager();
 

@@ -165,6 +165,7 @@
 #include "chromeos/network/network_cert_loader.h"
 #include "chromeos/network/network_handler.h"
 #include "chromeos/network/portal_detector/network_portal_detector_stub.h"
+#include "chromeos/services/cros_healthd/public/cpp/service_connection.h"
 #include "chromeos/system/statistics_provider.h"
 #include "chromeos/tpm/install_attributes.h"
 #include "chromeos/tpm/tpm_token_loader.h"
@@ -902,6 +903,11 @@ void ChromeBrowserMainPartsChromeos::PostProfileInit() {
   network_health::NetworkHealthService* network_health_service =
       network_health::NetworkHealthService::GetInstance();
   DCHECK(network_health_service);
+
+  // Create the service connection to cros_healthd.
+  cros_healthd::ServiceConnection* cros_healthd =
+      cros_healthd::ServiceConnection::GetInstance();
+  DCHECK(cros_healthd);
 
   // Initialize input methods.
   input_method::InputMethodManager* manager =

@@ -207,6 +207,7 @@
 #include "components/dom_distiller/core/url_constants.h"
 #include "components/embedder_support/switches.h"
 #include "components/error_page/common/error_page_switches.h"
+#include "components/error_page/content/browser/net_error_auto_reloader.h"
 #include "components/feature_engagement/public/feature_constants.h"
 #include "components/feature_engagement/public/feature_list.h"
 #include "components/google/core/common/google_switches.h"
@@ -1117,6 +1118,18 @@ void MaybeRecordSameSiteCookieEngagementHistogram(
         "CookieInsecureAndSameSiteNone",
         engagement_level);
   }
+}
+
+bool IsErrorPageAutoReloadEnabled() {
+  const base::CommandLine& command_line =
+      *base::CommandLine::ForCurrentProcess();
+  if (command_line.HasSwitch(switches::kEnableAutomation))
+    return false;
+  if (command_line.HasSwitch(switches::kEnableAutoReload))
+    return true;
+  if (command_line.HasSwitch(switches::kDisableAutoReload))
+    return false;
+  return true;
 }
 
 }  // namespace
@@ -2041,16 +2054,6 @@ bool ChromeContentBrowserClient::IsFileAccessAllowed(
 
 namespace {
 
-bool IsAutoReloadEnabled() {
-  const base::CommandLine& browser_command_line =
-      *base::CommandLine::ForCurrentProcess();
-  if (browser_command_line.HasSwitch(switches::kEnableAutoReload))
-    return true;
-  if (browser_command_line.HasSwitch(switches::kDisableAutoReload))
-    return false;
-  return true;
-}
-
 void MaybeAppendBlinkSettingsSwitchForFieldTrial(
     const base::CommandLine& browser_command_line,
     base::CommandLine* command_line) {
@@ -2301,9 +2304,6 @@ void ChromeContentBrowserClient::AppendExtraCommandLineSwitches(
             blink::switches::kUserAgentClientHintDisable);
       }
     }
-
-    if (IsAutoReloadEnabled())
-      command_line->AppendSwitch(switches::kEnableAutoReload);
 
     MaybeAppendBlinkSettingsSwitchForFieldTrial(browser_command_line,
                                                 command_line);
@@ -4111,6 +4111,12 @@ ChromeContentBrowserClient::CreateThrottlesForNavigation(
               handle, std::make_unique<ChromeSecurityBlockingPageFactory>()),
       &throttles);
 
+  if (IsErrorPageAutoReloadEnabled() && handle->IsInMainFrame()) {
+    MaybeAddThrottle(
+        error_page::NetErrorAutoReloader::MaybeCreateThrottleFor(handle),
+        &throttles);
+  }
+
   return throttles;
 }
 
@@ -5228,17 +5234,17 @@ bool ChromeContentBrowserClient::ShouldSandboxAudioService() {
   return IsAudioServiceSandboxEnabled();
 }
 
-content::PreviewsState ChromeContentBrowserClient::DetermineAllowedPreviews(
-    content::PreviewsState initial_state,
+blink::PreviewsState ChromeContentBrowserClient::DetermineAllowedPreviews(
+    blink::PreviewsState initial_state,
     content::NavigationHandle* navigation_handle,
     const GURL& current_navigation_url) {
   return DetermineAllowedPreviewsWithoutHoldback(
       initial_state, navigation_handle, current_navigation_url);
 }
 
-content::PreviewsState
+blink::PreviewsState
 ChromeContentBrowserClient::DetermineAllowedPreviewsWithoutHoldback(
-    content::PreviewsState initial_state,
+    blink::PreviewsState initial_state,
     content::NavigationHandle* navigation_handle,
     const GURL& current_navigation_url) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
@@ -5252,10 +5258,10 @@ ChromeContentBrowserClient::DetermineAllowedPreviewsWithoutHoldback(
   }
 
   if (!current_navigation_url.SchemeIsHTTPOrHTTPS())
-    return content::PREVIEWS_OFF;
+    return blink::PreviewsTypes::PREVIEWS_OFF;
 
   // Check if initial state specifies no previews should be considered.
-  if (initial_state == content::PREVIEWS_OFF)
+  if (initial_state == blink::PreviewsTypes::PREVIEWS_OFF)
     return initial_state;
 
   // Do not allow previews on POST navigations since the primary opt-out
@@ -5263,7 +5269,7 @@ ChromeContentBrowserClient::DetermineAllowedPreviewsWithoutHoldback(
   // idempotent, we do not want to show a preview on a POST navigation where
   // opting out would cause another navigation, i.e.: a reload.
   if (navigation_handle->IsPost())
-    return content::PREVIEWS_OFF;
+    return blink::PreviewsTypes::PREVIEWS_OFF;
 
   content::WebContents* web_contents = navigation_handle->GetWebContents();
   content::WebContentsDelegate* delegate = web_contents->GetDelegate();
@@ -5279,7 +5285,7 @@ ChromeContentBrowserClient::DetermineAllowedPreviewsWithoutHoldback(
   // Previews.
   if (!previews_service || !previews_service->previews_ui_service() ||
       !data_reduction_proxy_settings) {
-    return content::PREVIEWS_OFF;
+    return blink::PreviewsTypes::PREVIEWS_OFF;
   }
 
   PreviewsUITabHelper* ui_tab_helper =
@@ -5287,7 +5293,7 @@ ChromeContentBrowserClient::DetermineAllowedPreviewsWithoutHoldback(
   // If this tab does not have a PreviewsUITabHelper, no preview should be
   // served.
   if (!ui_tab_helper)
-    return content::PREVIEWS_OFF;
+    return blink::PreviewsTypes::PREVIEWS_OFF;
 
   DCHECK(!browser_context->IsOffTheRecord());
 
@@ -5298,7 +5304,8 @@ ChromeContentBrowserClient::DetermineAllowedPreviewsWithoutHoldback(
   DCHECK(previews_decider_impl);
 
   // Start with an unspecified state.
-  content::PreviewsState previews_state = content::PREVIEWS_UNSPECIFIED;
+  blink::PreviewsState previews_state =
+      blink::PreviewsTypes::PREVIEWS_UNSPECIFIED;
 
   previews::PreviewsUserData* previews_data =
       ui_tab_helper->GetPreviewsUserData(navigation_handle);
@@ -5319,7 +5326,7 @@ ChromeContentBrowserClient::DetermineAllowedPreviewsWithoutHoldback(
 
   if (base::CommandLine::ForCurrentProcess()->HasSwitch(
           previews::switches::kForceEnablePreviews)) {
-    return content::ALL_SUPPORTED_PREVIEWS;
+    return blink::ALL_SUPPORTED_PREVIEWS;
   }
 
   // Evaluate client-side previews.
@@ -5328,51 +5335,55 @@ ChromeContentBrowserClient::DetermineAllowedPreviewsWithoutHoldback(
       data_reduction_proxy_settings->IsDataReductionProxyEnabled(),
       previews_decider_impl, navigation_handle);
 
-  if (previews_state & content::PREVIEWS_OFF) {
-    previews_data->set_allowed_previews_state(content::PREVIEWS_OFF);
-    return content::PREVIEWS_OFF;
+  if (previews_state & blink::PreviewsTypes::PREVIEWS_OFF) {
+    previews_data->set_allowed_previews_state(
+        blink::PreviewsTypes::PREVIEWS_OFF);
+    return blink::PreviewsTypes::PREVIEWS_OFF;
   }
 
-  if (previews_state & content::PREVIEWS_NO_TRANSFORM) {
-    previews_data->set_allowed_previews_state(content::PREVIEWS_NO_TRANSFORM);
-    return content::PREVIEWS_NO_TRANSFORM;
+  if (previews_state & blink::PreviewsTypes::PREVIEWS_NO_TRANSFORM) {
+    previews_data->set_allowed_previews_state(
+        blink::PreviewsTypes::PREVIEWS_NO_TRANSFORM);
+    return blink::PreviewsTypes::PREVIEWS_NO_TRANSFORM;
   }
 
   // At this point, if no Preview is allowed, don't allow previews.
-  if (previews_state == content::PREVIEWS_UNSPECIFIED) {
-    previews_data->set_allowed_previews_state(content::PREVIEWS_OFF);
-    return content::PREVIEWS_OFF;
+  if (previews_state == blink::PreviewsTypes::PREVIEWS_UNSPECIFIED) {
+    previews_data->set_allowed_previews_state(
+        blink::PreviewsTypes::PREVIEWS_OFF);
+    return blink::PreviewsTypes::PREVIEWS_OFF;
   }
 
-  content::PreviewsState embedder_state = content::PREVIEWS_UNSPECIFIED;
+  blink::PreviewsState embedder_state =
+      blink::PreviewsTypes::PREVIEWS_UNSPECIFIED;
   if (delegate) {
     delegate->AdjustPreviewsStateForNavigation(web_contents, &embedder_state);
   }
 
   // If the allowed previews are limited by the embedder, ensure previews honors
   // those limits.
-  if (embedder_state != content::PREVIEWS_UNSPECIFIED) {
+  if (embedder_state != blink::PreviewsTypes::PREVIEWS_UNSPECIFIED) {
     previews_state = previews_state & embedder_state;
     // If no valid previews are left, set the state explicitly to PREVIEWS_OFF.
-    if (previews_state == content::PREVIEWS_UNSPECIFIED)
-      previews_state = content::PREVIEWS_OFF;
+    if (previews_state == blink::PreviewsTypes::PREVIEWS_UNSPECIFIED)
+      previews_state = blink::PreviewsTypes::PREVIEWS_OFF;
   }
   previews_data->set_allowed_previews_state(previews_state);
   return previews_state;
 }
 
 // static
-content::PreviewsState
+blink::PreviewsState
 ChromeContentBrowserClient::DetermineCommittedPreviewsForURL(
     const GURL& url,
     data_reduction_proxy::DataReductionProxyData* drp_data,
     previews::PreviewsUserData* previews_user_data,
     const previews::PreviewsDecider* previews_decider,
-    content::PreviewsState initial_state,
+    blink::PreviewsState initial_state,
     content::NavigationHandle* navigation_handle) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   if (!previews::HasEnabledPreviews(initial_state))
-    return content::PREVIEWS_OFF;
+    return blink::PreviewsTypes::PREVIEWS_OFF;
 
   // Check the various other client previews types.
   return previews::DetermineCommittedClientPreviewsState(
@@ -5380,19 +5391,19 @@ ChromeContentBrowserClient::DetermineCommittedPreviewsForURL(
       navigation_handle);
 }
 
-content::PreviewsState ChromeContentBrowserClient::DetermineCommittedPreviews(
-    content::PreviewsState initial_state,
+blink::PreviewsState ChromeContentBrowserClient::DetermineCommittedPreviews(
+    blink::PreviewsState initial_state,
     content::NavigationHandle* navigation_handle,
     const net::HttpResponseHeaders* response_headers) {
-  content::PreviewsState state = DetermineCommittedPreviewsWithoutHoldback(
+  blink::PreviewsState state = DetermineCommittedPreviewsWithoutHoldback(
       initial_state, navigation_handle, response_headers);
 
   return previews::MaybeCoinFlipHoldbackAfterCommit(state, navigation_handle);
 }
 
-content::PreviewsState
+blink::PreviewsState
 ChromeContentBrowserClient::DetermineCommittedPreviewsWithoutHoldback(
-    content::PreviewsState initial_state,
+    blink::PreviewsState initial_state,
     content::NavigationHandle* navigation_handle,
     const net::HttpResponseHeaders* response_headers) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
@@ -5400,7 +5411,7 @@ ChromeContentBrowserClient::DetermineCommittedPreviewsWithoutHoldback(
 
   // Only support HTTP and HTTPS.
   if (!navigation_handle->GetURL().SchemeIsHTTPOrHTTPS())
-    return content::PREVIEWS_OFF;
+    return blink::PreviewsTypes::PREVIEWS_OFF;
 
   // If this is not a main frame, return the initial state. If there are no
   // previews in the state, return the state as is.
@@ -5414,20 +5425,20 @@ ChromeContentBrowserClient::DetermineCommittedPreviewsWithoutHoldback(
   PreviewsUITabHelper* ui_tab_helper =
       PreviewsUITabHelper::FromWebContents(navigation_handle->GetWebContents());
   if (!ui_tab_helper)
-    return content::PREVIEWS_OFF;
+    return blink::PreviewsTypes::PREVIEWS_OFF;
 
   // If we did not previously create a PreviewsUserData, do not go any further.
   previews::PreviewsUserData* previews_user_data =
       ui_tab_helper->GetPreviewsUserData(navigation_handle);
   if (!previews_user_data)
-    return content::PREVIEWS_OFF;
+    return blink::PreviewsTypes::PREVIEWS_OFF;
 
   PreviewsService* previews_service =
       PreviewsServiceFactory::GetForProfile(Profile::FromBrowserContext(
           navigation_handle->GetWebContents()->GetBrowserContext()));
 
   if (!previews_service || !previews_service->previews_ui_service())
-    return content::PREVIEWS_OFF;
+    return blink::PreviewsTypes::PREVIEWS_OFF;
 
   // Annotate request if no-transform directive found in response headers.
   if (response_headers &&
@@ -5451,7 +5462,7 @@ ChromeContentBrowserClient::DetermineCommittedPreviewsWithoutHoldback(
   }
 
   // Determine effective PreviewsState for this committed main frame response.
-  content::PreviewsState committed_state = DetermineCommittedPreviewsForURL(
+  blink::PreviewsState committed_state = DetermineCommittedPreviewsForURL(
       navigation_handle->GetURL(), drp_data.get(), previews_user_data,
       previews_decider_impl, initial_state, navigation_handle);
 

@@ -88,7 +88,7 @@ class FrameFetchContextMockLocalFrameClient : public EmptyLocalFrameClient {
                void(const ResourceRequest&, const ResourceResponse&));
   MOCK_METHOD0(UserAgent, String());
   MOCK_METHOD0(MayUseClientLoFiForImageRequests, bool());
-  MOCK_CONST_METHOD0(GetPreviewsStateForFrame, WebURLRequest::PreviewsState());
+  MOCK_CONST_METHOD0(GetPreviewsStateForFrame, PreviewsState());
 };
 
 class FixedPolicySubresourceFilter : public WebDocumentSubresourceFilter {

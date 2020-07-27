@@ -1552,7 +1552,7 @@ RadioNodeList* ContainerNode::GetRadioNodeList(const AtomicString& name,
   return EnsureCachedCollection<RadioNodeList>(type, name);
 }
 
-Element* ContainerNode::getElementById(const StringView& id) const {
+Element* ContainerNode::getElementById(const AtomicString& id) const {
   // According to https://dom.spec.whatwg.org/#concept-id, empty IDs are
   // treated as equivalent to the lack of an id attribute.
   if (id.IsEmpty()) {

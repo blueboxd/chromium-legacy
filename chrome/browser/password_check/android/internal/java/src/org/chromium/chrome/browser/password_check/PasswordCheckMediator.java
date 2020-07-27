@@ -29,16 +29,10 @@ class PasswordCheckMediator implements PasswordCheckCoordinator.CredentialEventH
         mDelegate = delegate;
     }
 
-    void onCompromisedCredentialsAvailable(
-            @CheckStatus int status, List<CompromisedCredential> credentials) {
+    void onCompromisedCredentialsAvailable(List<CompromisedCredential> credentials) {
         assert credentials != null;
         ListModel<ListItem> items = mModel.get(ITEMS);
-        assert items.size() == 0;
-
-        items.add(new ListItem(PasswordCheckProperties.ItemType.HEADER,
-                new PropertyModel.Builder(PasswordCheckProperties.HeaderProperties.ALL_KEYS)
-                        .with(CHECK_STATUS, status)
-                        .build()));
+        assert items.size() == 1;
 
         for (CompromisedCredential credential : credentials) {
             items.add(new ListItem(PasswordCheckProperties.ItemType.COMPROMISED_CREDENTIAL,
@@ -48,6 +42,18 @@ class PasswordCheckMediator implements PasswordCheckCoordinator.CredentialEventH
                             .with(COMPROMISED_CREDENTIAL, credential)
                             .with(CREDENTIAL_HANDLER, this)
                             .build()));
+        }
+    }
+
+    void onPasswordCheckStatusChanged(@CheckStatus int status) {
+        ListModel<ListItem> items = mModel.get(ITEMS);
+        if (items.size() == 0) {
+            items.add(new ListItem(PasswordCheckProperties.ItemType.HEADER,
+                    new PropertyModel.Builder(PasswordCheckProperties.HeaderProperties.ALL_KEYS)
+                            .with(CHECK_STATUS, status)
+                            .build()));
+        } else {
+            items.get(0).model.set(CHECK_STATUS, status);
         }
     }
 

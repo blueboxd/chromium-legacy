@@ -13,7 +13,7 @@
 #include "base/optional.h"
 #include "content/browser/loader/navigation_loader_interceptor.h"
 #include "content/common/content_export.h"
-#include "content/public/common/previews_state.h"
+#include "third_party/blink/public/common/loader/previews_state.h"
 
 namespace net {
 class HttpRequestHeaders;
@@ -76,7 +76,7 @@ class CONTENT_EXPORT NavigationURLLoader {
       const std::vector<std::string>& removed_headers,
       const net::HttpRequestHeaders& modified_headers,
       const net::HttpRequestHeaders& modified_cors_exempt_headers,
-      PreviewsState new_previews_state) = 0;
+      blink::PreviewsState new_previews_state) = 0;
 
  protected:
   NavigationURLLoader() {}

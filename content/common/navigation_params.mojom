@@ -205,7 +205,7 @@ struct CommonNavigationParams {
 
   // Bitmask that has whether or not to request a Preview version of the
   // document for various preview types or let the browser decide.
-  // Defined in content/public/common/previews_state.h.
+  // Defined in third_party/blink/public/common/loader/previews_state.h.
   int32 previews_state;
 
   // The navigationStart time exposed through the Navigation Timing API to JS.

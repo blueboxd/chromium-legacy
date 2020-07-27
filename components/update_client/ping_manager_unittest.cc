@@ -105,7 +105,7 @@ scoped_refptr<UpdateContext> PingManagerTest::MakeMockUpdateContext() const {
       config_, false, std::vector<std::string>(),
       UpdateClient::CrxDataCallback(), UpdateClient::CrxStateChangeCallback(),
       UpdateEngine::NotifyObserversCallback(), UpdateEngine::Callback(),
-      nullptr, nullptr);
+      nullptr);
 }
 
 // This test is parameterized for using JSON or XML serialization. |true| means

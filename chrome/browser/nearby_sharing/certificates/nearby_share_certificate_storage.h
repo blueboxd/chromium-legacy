@@ -1,0 +1,87 @@
+// Copyright 2020 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
+#ifndef CHROME_BROWSER_NEARBY_SHARING_CERTIFICATES_NEARBY_SHARE_CERTIFICATE_STORAGE_H_
+#define CHROME_BROWSER_NEARBY_SHARING_CERTIFICATES_NEARBY_SHARE_CERTIFICATE_STORAGE_H_
+
+#include "base/callback.h"
+#include "base/optional.h"
+#include "base/time/time.h"
+#include "chrome/browser/nearby_sharing/certificates/nearby_share_private_certificate.h"
+#include "chrome/browser/nearby_sharing/proto/rpc_resources.pb.h"
+
+// Stores local-device private certificates and remote-device public
+// certificates. Provides methods to help manage certificate expiration. Due to
+// the potentially large number of public certificates, some methods are
+// asynchronous.
+class NearbyShareCertificateStorage {
+ public:
+  using ResultCallback = base::OnceCallback<void(bool)>;
+  using PublicCertificateCallback = base::OnceCallback<void(
+      bool,
+      std::unique_ptr<std::vector<nearbyshare::proto::PublicCertificate>>)>;
+
+  NearbyShareCertificateStorage() = default;
+  virtual ~NearbyShareCertificateStorage() = default;
+
+  // Initialize the LevelDB and Prefs databases. Must be called successfully
+  // before calling other methods.
+  virtual void Initialize(ResultCallback callback) = 0;
+
+  // Returns whether Initialize has been called and succeeded.
+  virtual bool IsInitialized() = 0;
+
+  // Returns the secret ids of all stored public certificates
+  virtual std::vector<std::string> GetPublicCertificateIds() const = 0;
+
+  // Returns all public certificates currently in storage. No RPC call is made.
+  virtual void GetPublicCertificates(
+      PublicCertificateCallback callback) const = 0;
+
+  // Returns all private certificates currently in storage. Will return
+  // base::nullopt if deserialization from prefs fails -- not expected to happen
+  // under normal circumstances.
+  virtual base::Optional<std::vector<NearbySharePrivateCertificate>>
+  GetPrivateCertificates() const = 0;
+
+  // Returns the next time a certificate expires or base::nullopt if no
+  // certificates are present.
+  virtual base::Optional<base::Time> NextPrivateCertificateExpirationTime()
+      const = 0;
+  virtual base::Optional<base::Time> NextPublicCertificateExpirationTime()
+      const = 0;
+
+  // Deletes existing private certificates and replaces them with
+  // |private_certificates|.
+  virtual void ReplacePrivateCertificates(
+      const std::vector<NearbySharePrivateCertificate>&
+          private_certificates) = 0;
+
+  // Deletes existing public certificates and replaces them with
+  // |public_certificates|.
+  virtual void ReplacePublicCertificates(
+      const std::vector<nearbyshare::proto::PublicCertificate>&
+          public_certificates,
+      ResultCallback callback) = 0;
+
+  // Adds public certificates, or replaces existing certificates
+  // by secret_id
+  virtual void AddPublicCertificates(
+      const std::vector<nearbyshare::proto::PublicCertificate>&
+          public_certificates,
+      ResultCallback callback) = 0;
+
+  // Removes all public certificates from storage with expiration date after
+  // |now|.
+  virtual void RemoveExpiredPublicCertificates(base::Time now,
+                                               ResultCallback callback) = 0;
+
+  // Delete all private certificates from memory and persistent storage.
+  virtual void ClearPrivateCertificates() = 0;
+
+  // Delete all public certificates from memory and persistent storage.
+  virtual void ClearPublicCertificates(ResultCallback callback) = 0;
+};
+
+#endif  // CHROME_BROWSER_NEARBY_SHARING_CERTIFICATES_NEARBY_SHARE_CERTIFICATE_STORAGE_H_

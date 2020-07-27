@@ -200,17 +200,6 @@
     </issue>
 
     <issue
-        id="CheckResult"
-        message="The result of `shouldTriggerHelpUI` is not used"
-        errorLine1="        mTracker.shouldTriggerHelpUI(FeatureConstants.TAB_GROUPS_DRAG_AND_DROP_FEATURE);"
-        errorLine2="        ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~">
-        <location
-            file="chrome/android/features/tab_ui/java/src/org/chromium/chrome/browser/tasks/tab_management/IphMessageService.java"
-            line="59"
-            column="9"/>
-    </issue>
-
-    <issue
         id="CutPasteId"
         message="The id `R.id.bottom_container` has already been looked up in this method; possible cut &amp; paste error?"
         errorLine1="            BottomContainer bottomContainer = (BottomContainer) findViewById(R.id.bottom_container);"
@@ -3330,61 +3319,6 @@
     <issue
         id="VisibleForTests"
         message="This method should only be accessed from tests or within private scope"
-        errorLine1="        Boolean testValue = FeatureList.getTestValueForFeature(featureName);"
-        errorLine2="                                        ~~~~~~~~~~~~~~~~~~~~~~">
-        <location
-            file="chrome/browser/flags/android/java/src/org/chromium/chrome/browser/flags/ChromeFeatureList.java"
-            line="108"
-            column="41"/>
-    </issue>
-
-    <issue
-        id="VisibleForTests"
-        message="This method should only be accessed from tests or within private scope"
-        errorLine1="        if (FeatureList.hasTestFeatures()) return &quot;&quot;;"
-        errorLine2="                        ~~~~~~~~~~~~~~~">
-        <location
-            file="chrome/browser/flags/android/java/src/org/chromium/chrome/browser/flags/ChromeFeatureList.java"
-            line="125"
-            column="25"/>
-    </issue>
-
-    <issue
-        id="VisibleForTests"
-        message="This method should only be accessed from tests or within private scope"
-        errorLine1="        if (FeatureList.hasTestFeatures()) return defaultValue;"
-        errorLine2="                        ~~~~~~~~~~~~~~~">
-        <location
-            file="chrome/browser/flags/android/java/src/org/chromium/chrome/browser/flags/ChromeFeatureList.java"
-            line="144"
-            column="25"/>
-    </issue>
-
-    <issue
-        id="VisibleForTests"
-        message="This method should only be accessed from tests or within private scope"
-        errorLine1="        if (FeatureList.hasTestFeatures()) return defaultValue;"
-        errorLine2="                        ~~~~~~~~~~~~~~~">
-        <location
-            file="chrome/browser/flags/android/java/src/org/chromium/chrome/browser/flags/ChromeFeatureList.java"
-            line="164"
-            column="25"/>
-    </issue>
-
-    <issue
-        id="VisibleForTests"
-        message="This method should only be accessed from tests or within private scope"
-        errorLine1="        if (FeatureList.hasTestFeatures()) return defaultValue;"
-        errorLine2="                        ~~~~~~~~~~~~~~~">
-        <location
-            file="chrome/browser/flags/android/java/src/org/chromium/chrome/browser/flags/ChromeFeatureList.java"
-            line="184"
-            column="25"/>
-    </issue>
-
-    <issue
-        id="VisibleForTests"
-        message="This method should only be accessed from tests or within private scope"
         errorLine1="            mOfflinePageUrl = offlinePage.getUrl();"
         errorLine2="            ~~~~~~~~~~~~~~~">
         <location
@@ -3572,17 +3506,6 @@
     <issue
         id="VisibleForTests"
         message="This method should only be accessed from tests or within private scope"
-        errorLine1="        Boolean testValue = FeatureList.getTestValueForFeature(featureName);"
-        errorLine2="                                        ~~~~~~~~~~~~~~~~~~~~~~">
-        <location
-            file="components/content_settings/android/java/src/org/chromium/components/content_settings/ContentSettingsFeatureList.java"
-            line="47"
-            column="41"/>
-    </issue>
-
-    <issue
-        id="VisibleForTests"
-        message="This method should only be accessed from tests or within private scope"
         errorLine1="                IconProvider.getIcon(context, R.drawable.infobar_autofill_cc),"
         errorLine2="                             ~~~~~~~">
         <location
@@ -3600,17 +3523,6 @@
             file="chrome/android/java/src/org/chromium/chrome/browser/customtabs/CustomTabDelegateFactory.java"
             line="258"
             column="36"/>
-    </issue>
-
-    <issue
-        id="VisibleForTests"
-        message="This method should only be accessed from tests or within private scope"
-        errorLine1="        return TabPersistentStore.getStateFileName(Integer.toString(mTaskId));"
-        errorLine2="                                  ~~~~~~~~~~~~~~~~">
-        <location
-            file="chrome/android/java/src/org/chromium/chrome/browser/customtabs/CustomTabTabPersistencePolicy.java"
-            line="105"
-            column="35"/>
     </issue>
 
     <issue
@@ -3699,17 +3611,6 @@
             file="base/android/java/src/org/chromium/base/task/DefaultTaskExecutor.java"
             line="66"
             column="28"/>
-    </issue>
-
-    <issue
-        id="VisibleForTests"
-        message="This method should only be accessed from tests or within private scope"
-        errorLine1="        Boolean testValue = FeatureList.getTestValueForFeature(featureName);"
-        errorLine2="                                        ~~~~~~~~~~~~~~~~~~~~~~">
-        <location
-            file="services/device/public/java/src/org/chromium/device/DeviceFeatureList.java"
-            line="33"
-            column="41"/>
     </issue>
 
     <issue
@@ -4084,17 +3985,6 @@
             file="chrome/android/java/src/org/chromium/chrome/browser/omnibox/suggestions/entity/EntitySuggestionProcessor.java"
             line="181"
             column="79"/>
-    </issue>
-
-    <issue
-        id="VisibleForTests"
-        message="This method should only be accessed from tests or within private scope"
-        errorLine1="        NavigationEntry entry = controller.getEntryAtIndex(index);"
-        errorLine2="                                           ~~~~~~~~~~~~~~~">
-        <location
-            file="chrome/android/java/src/org/chromium/chrome/browser/explore_sites/ExploreSitesPage.java"
-            line="401"
-            column="44"/>
     </issue>
 
     <issue
@@ -4848,17 +4738,6 @@
     <issue
         id="VisibleForTests"
         message="This method should only be accessed from tests or within private scope"
-        errorLine1="        Boolean testValue = FeatureList.getTestValueForFeature(featureName);"
-        errorLine2="                                        ~~~~~~~~~~~~~~~~~~~~~~">
-        <location
-            file="components/page_info/android/java/src/org/chromium/components/page_info/PageInfoFeatureList.java"
-            line="34"
-            column="41"/>
-    </issue>
-
-    <issue
-        id="VisibleForTests"
-        message="This method should only be accessed from tests or within private scope"
         errorLine1="        if (!browserCustomizations.isInitialized()) {"
         errorLine2="                                   ~~~~~~~~~~~~~">
         <location
@@ -5288,17 +5167,6 @@
     <issue
         id="VisibleForTests"
         message="This method should only be accessed from tests or within private scope"
-        errorLine1="                TabbedModeTabPersistencePolicy.getStateFileName(0));"
-        errorLine2="                                               ~~~~~~~~~~~~~~~~">
-        <location
-            file="chrome/android/features/tab_ui/java/src/org/chromium/chrome/browser/tasks/pseudotab/PseudoTab.java"
-            line="303"
-            column="48"/>
-    </issue>
-
-    <issue
-        id="VisibleForTests"
-        message="This method should only be accessed from tests or within private scope"
         errorLine1="            page = new OfflinePageItem(mPage.getUrl(), mPage.getOfflineId(),"
         errorLine2="                                             ~~~~~~">
         <location
@@ -5651,17 +5519,6 @@
     <issue
         id="VisibleForTests"
         message="This method should only be accessed from tests or within private scope"
-        errorLine1="        Boolean testValue = FeatureList.getTestValueForFeature(featureName);"
-        errorLine2="                                        ~~~~~~~~~~~~~~~~~~~~~~">
-        <location
-            file="components/browser_ui/site_settings/android/java/src/org/chromium/components/browser_ui/site_settings/SiteSettingsFeatureList.java"
-            line="34"
-            column="41"/>
-    </issue>
-
-    <issue
-        id="VisibleForTests"
-        message="This method should only be accessed from tests or within private scope"
         errorLine1="            SnackbarController controller = current.getController();"
         errorLine2="                                                    ~~~~~~~~~~~~~">
         <location
@@ -5844,83 +5701,6 @@
             file="chrome/android/java/src/org/chromium/chrome/browser/download/SystemDownloadNotifier.java"
             line="270"
             column="50"/>
-    </issue>
-
-    <issue
-        id="VisibleForTests"
-        message="This method should only be accessed from tests or within private scope"
-        errorLine1="                    tab.getWebContents().getNavigationController().getEntryAtIndex("
-        errorLine2="                                                                   ~~~~~~~~~~~~~~~">
-        <location
-            file="chrome/android/features/tab_ui/java/src/org/chromium/chrome/browser/tasks/tab_management/suggestions/TabContext.java"
-            line="121"
-            column="68"/>
-    </issue>
-
-    <issue
-        id="VisibleForTests"
-        message="This method should only be accessed from tests or within private scope"
-        errorLine1="                ConditionalTabStripUtils.setFeatureStatus(FeatureStatus.FORBIDDEN);"
-        errorLine2="                                         ~~~~~~~~~~~~~~~~">
-        <location
-            file="chrome/android/features/tab_ui/java/src/org/chromium/chrome/browser/tasks/tab_management/TabGroupUiMediator.java"
-            line="368"
-            column="42"/>
-    </issue>
-
-    <issue
-        id="VisibleForTests"
-        message="This method should only be accessed from tests or within private scope"
-        errorLine1="            ConditionalTabStripUtils.setFeatureStatus(FeatureStatus.ACTIVATED);"
-        errorLine2="                                     ~~~~~~~~~~~~~~~~">
-        <location
-            file="chrome/android/features/tab_ui/java/src/org/chromium/chrome/browser/tasks/tab_management/TabGroupUiMediator.java"
-            line="519"
-            column="38"/>
-    </issue>
-
-    <issue
-        id="VisibleForTests"
-        message="This method should only be accessed from tests or within private scope"
-        errorLine1="                    ConditionalTabStripUtils.setOptOutIndicator(true);"
-        errorLine2="                                             ~~~~~~~~~~~~~~~~~~">
-        <location
-            file="chrome/android/features/tab_ui/java/src/org/chromium/chrome/browser/tasks/tab_management/TabGroupUiMediator.java"
-            line="537"
-            column="46"/>
-    </issue>
-
-    <issue
-        id="VisibleForTests"
-        message="This method should only be accessed from tests or within private scope"
-        errorLine1="                ConditionalTabStripUtils.setContinuousDismissCount("
-        errorLine2="                                         ~~~~~~~~~~~~~~~~~~~~~~~~~">
-        <location
-            file="chrome/android/features/tab_ui/java/src/org/chromium/chrome/browser/tasks/tab_management/TabGroupUiMediator.java"
-            line="540"
-            column="42"/>
-    </issue>
-
-    <issue
-        id="VisibleForTests"
-        message="This method should only be accessed from tests or within private scope"
-        errorLine1="        ConditionalTabStripUtils.setFeatureStatus(FeatureStatus.ACTIVATED);"
-        errorLine2="                                 ~~~~~~~~~~~~~~~~">
-        <location
-            file="chrome/android/features/tab_ui/java/src/org/chromium/chrome/browser/tasks/tab_management/TabGroupUiMediator.java"
-            line="561"
-            column="34"/>
-    </issue>
-
-    <issue
-        id="VisibleForTests"
-        message="This method should only be accessed from tests or within private scope"
-        errorLine1="                &amp;&amp; !ConditionalTabStripUtils.getOptOutIndicator();"
-        errorLine2="                                             ~~~~~~~~~~~~~~~~~~">
-        <location
-            file="chrome/android/features/tab_ui/java/src/org/chromium/chrome/browser/tasks/tab_management/TabUiFeatureUtilities.java"
-            line="138"
-            column="46"/>
     </issue>
 
     <issue

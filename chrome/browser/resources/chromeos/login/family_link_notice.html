@@ -1,0 +1,32 @@
+<!-- Copyright 2020 The Chromium Authors. All rights reserved.
+Use of this source code is governed by a BSD-style license that can be
+found in the LICENSE file. -->
+
+<link rel="import" href="chrome://oobe/custom_elements.html">
+<link rel="import" href="chrome://resources/cr_elements/shared_vars_css.html">
+<link rel="import" href="chrome://resources/html/i18n_behavior.html">
+
+<dom-module id="family-link-notice">
+  <template>
+    <style include="oobe-dialog-host"></style>
+    <oobe-dialog id="familyLinkDialog" role="dialog" has-buttons
+        title-key="familyLinkDialogTitle"
+        subtitle-key="familyLinkDialogSubtitle">
+      <!-- TODO(crbug.com/1101318): replace with correct icon -->
+      <hd-iron-icon slot="oobe-icon"
+          icon1x="oobe-32:enterprise" icon2x="oobe-64:enterprise">
+      </hd-iron-icon>
+      <div slot="footer" class="flex layout vertical center center-justified">
+        <!-- TODO(crbug.com/1101318): replace with correct image -->
+        <img srcset="images/illustration_complete_1x.png 1x,
+            images/illustration_complete_2x.png 2x" class="oobe-illustration"
+            alt$="[[i18nDynamic(locale, 'oobePackagedLicenseTitle')]]">
+      </div>
+      <div slot="bottom-buttons" class="layout horizontal end-justified">
+        <oobe-next-button id="continueButton"
+            text-key="familyLinkContinueButton" class="focus-on-show"
+            inverse on-tap="onContinueButtonPressed_"></oobe-next-button>
+      </div>
+    </oobe-dialog>
+  </template>
+</dom-module>

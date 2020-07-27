@@ -105,8 +105,6 @@ void ResourceLoadingHintsWebContentsObserver::SendResourceLoadingHints(
       GetResourceLoadingHintsResourcePatternsToBlock(
           navigation_handle->GetURL());
 
-  UMA_HISTOGRAM_BOOLEAN(
-      "ResourceLoadingHints.ResourcePatternsAvailableAtCommit", !hints.empty());
   if (is_redirect) {
     UMA_HISTOGRAM_BOOLEAN(
         "ResourceLoadingHints.ResourcePatternsAvailableAtCommitForRedirect",

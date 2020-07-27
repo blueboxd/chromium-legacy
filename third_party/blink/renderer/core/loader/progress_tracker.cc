@@ -50,13 +50,6 @@ static const int kProgressItemDefaultEstimatedLength = 1024 * 1024;
 static const double kProgressNotificationInterval = 0.02;
 static const double kProgressNotificationTimeInterval = 0.1;
 
-struct ProgressItem {
-  USING_FAST_MALLOC(ProgressItem);
- public:
-  int64_t bytes_received = 0;
-  int64_t estimated_length = 0;
-};
-
 ProgressTracker::ProgressTracker(LocalFrame* frame)
     : frame_(frame),
       last_notified_progress_value_(0),

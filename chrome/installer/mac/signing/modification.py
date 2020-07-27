@@ -148,7 +148,7 @@ def _process_entitlements(paths, dist, config):
         for part in parts.get_parts(config).values()
         if part.entitlements
     ]
-    for entitlements_name in entitlements_names:
+    for entitlements_name in sorted(entitlements_names):
         entitlements_file = os.path.join(paths.work, entitlements_name)
         commands.copy_files(
             os.path.join(packaging_dir, entitlements_name), entitlements_file)

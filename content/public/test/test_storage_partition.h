@@ -26,7 +26,6 @@ class DOMStorageContext;
 class NativeFileSystemEntryFactory;
 class PlatformNotificationContext;
 class ServiceWorkerContext;
-class IdleManager;
 
 #if !defined(OS_ANDROID)
 class HostZoomLevelContext;
@@ -100,8 +99,6 @@ class TestStoragePartition : public StoragePartition {
     dom_storage_context_ = context;
   }
   DOMStorageContext* GetDOMStorageContext() override;
-
-  IdleManager* GetIdleManager() override;
 
   storage::mojom::IndexedDBControl& GetIndexedDBControl() override;
 

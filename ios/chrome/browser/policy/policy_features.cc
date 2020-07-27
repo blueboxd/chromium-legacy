@@ -4,6 +4,8 @@
 
 #include "ios/chrome/browser/policy/policy_features.h"
 
+#include <string>
+
 #include "base/command_line.h"
 #include "components/version_info/version_info.h"
 #include "ios/chrome/browser/chrome_switches.h"
@@ -21,17 +23,26 @@ const base::Feature kURLBlocklistIOS{"URLBlocklistIOS",
 
 namespace {
 
+bool HasSwitch(const std::string& switch_name) {
+  // Most policy features must be controlled via the command line because policy
+  // infrastructure must be initialized before about:flags or field trials.
+  // Using a command line flag is the only way to control these features at
+  // runtime.
+  base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();
+  return command_line->HasSwitch(switch_name);
+}
+
 // Returns true if the current command line contains the
 // |kDisableEnterprisePolicy| switch.
 bool IsDisableEnterprisePolicySwitchPresent() {
-  // This feature is controlled via the command line because policy must be
-  // initialized before about:flags or field trials. Using a command line flag
-  // is the only way to control this feature at runtime.
-  base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();
-  return command_line->HasSwitch(switches::kDisableEnterprisePolicy);
+  return HasSwitch(switches::kDisableEnterprisePolicy);
 }
 
 }  // namespace
+
+bool IsChromeBrowserCloudManagementEnabled() {
+  return HasSwitch(switches::kEnableChromeBrowserCloudManagement);
+}
 
 bool IsEditBookmarksIOSEnabled() {
   return base::FeatureList::IsEnabled(kEditBookmarksIOS);
@@ -46,11 +57,7 @@ bool ShouldInstallEnterprisePolicyHandlers() {
 }
 
 bool ShouldInstallManagedBookmarksPolicyHandler() {
-  // This feature is controlled via the command line because policy must be
-  // initialized before about:flags or field trials. Using a command line flag
-  // is the only way to control this feature at runtime.
-  base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();
-  return command_line->HasSwitch(switches::kInstallManagedBookmarksHandler);
+  return HasSwitch(switches::kInstallManagedBookmarksHandler);
 }
 
 bool IsManagedBookmarksEnabled() {
@@ -59,11 +66,7 @@ bool IsManagedBookmarksEnabled() {
 }
 
 bool ShouldInstallURLBlocklistPolicyHandlers() {
-  // This feature is controlled via the command line because policy must be
-  // initialized before about:flags or field trials. Using a command line flag
-  // is the only way to control this feature at runtime.
-  base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();
-  return command_line->HasSwitch(switches::kInstallURLBlocklistHandlers);
+  return HasSwitch(switches::kInstallURLBlocklistHandlers);
 }
 
 bool IsURLBlocklistEnabled() {

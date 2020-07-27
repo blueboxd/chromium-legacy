@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-import {FittingType} from 'chrome-extension://mhjfbmdgcfjbbpaeojofohoefgiehjai/constants.js';
+import {FittingType, TwoUpViewAction} from 'chrome-extension://mhjfbmdgcfjbbpaeojofohoefgiehjai/constants.js';
 import {ViewerPdfToolbarNewElement} from 'chrome-extension://mhjfbmdgcfjbbpaeojofohoefgiehjai/elements/viewer-pdf-toolbar-new.js';
 
 /** @return {!ViewerPdfToolbarNewElement} */
@@ -145,7 +145,43 @@ const tests = [
     });
     zoomField.value = '110%';
     zoomField.dispatchEvent(new CustomEvent('input'));
-  }
+  },
+
+  function testSinglePageView() {
+    const toolbar = createToolbar();
+    const singlePageViewButton =
+        toolbar.shadowRoot.querySelector('#single-page-view-button');
+    const twoPageViewButton =
+        toolbar.shadowRoot.querySelector('#two-page-view-button');
+
+    toolbar.addEventListener('two-up-view-changed', function(e) {
+      chrome.test.assertEq(TwoUpViewAction.TWO_UP_VIEW_DISABLE, e.detail);
+      chrome.test.assertFalse(
+          singlePageViewButton.querySelector('iron-icon').hidden);
+      chrome.test.assertTrue(
+          twoPageViewButton.querySelector('iron-icon').hidden);
+      chrome.test.succeed();
+    });
+    singlePageViewButton.click();
+  },
+
+  function testTwoPageView() {
+    const toolbar = createToolbar();
+    const singlePageViewButton =
+        toolbar.shadowRoot.querySelector('#single-page-view-button');
+    const twoPageViewButton =
+        toolbar.shadowRoot.querySelector('#two-page-view-button');
+
+    toolbar.addEventListener('two-up-view-changed', function(e) {
+      chrome.test.assertEq(TwoUpViewAction.TWO_UP_VIEW_ENABLE, e.detail);
+      chrome.test.assertFalse(
+          twoPageViewButton.querySelector('iron-icon').hidden);
+      chrome.test.assertTrue(
+          singlePageViewButton.querySelector('iron-icon').hidden);
+      chrome.test.succeed();
+    });
+    twoPageViewButton.click();
+  },
 ];
 
 chrome.test.runTests(tests);

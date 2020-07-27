@@ -9,6 +9,7 @@
 #include "base/optional.h"
 #include "base/test/scoped_feature_list.h"
 #include "base/test/task_environment.h"
+#include "build/build_config.h"
 #include "net/base/features.h"
 #include "net/base/host_port_pair.h"
 #include "net/base/net_errors.h"
@@ -30,9 +31,15 @@ namespace internal {
 
 namespace {
 
+#if defined(OS_IOS)
+// Flaky on iOS: crbug.com/672917.
+#define MAYBE_ReservedHost DISABLED_ReservedHost
+#else
+#define MAYBE_ReservedHost ReservedHost
+#endif
 // Verify that the cached network qualities from the prefs are not used if the
 // reading of the network quality prefs is not enabled..
-TEST(NetworkQualityEstimatorUtilTest, ReservedHost) {
+TEST(NetworkQualityEstimatorUtilTest, MAYBE_ReservedHost) {
   base::test::TaskEnvironment task_environment;
 
   MockCachingHostResolver mock_host_resolver;
@@ -84,10 +91,16 @@ TEST(NetworkQualityEstimatorUtilTest, ReservedHost) {
   EXPECT_EQ(2u, mock_host_resolver.num_non_local_resolves());
 }
 
+#if defined(OS_IOS)
+// Flaky on iOS: crbug.com/672917.
+#define MAYBE_ReservedHostUncached DISABLED_ReservedHostUncached
+#else
+#define MAYBE_ReservedHostUncached ReservedHostUncached
+#endif
 // Verify that IsPrivateHostForTesting() returns false for a hostname whose DNS
 // resolution is not cached. Further, once the resolution is cached, verify that
 // the cached entry is used.
-TEST(NetworkQualityEstimatorUtilTest, ReservedHostUncached) {
+TEST(NetworkQualityEstimatorUtilTest, MAYBE_ReservedHostUncached) {
   base::test::TaskEnvironment task_environment;
 
   MockCachingHostResolver mock_host_resolver;
@@ -118,10 +131,18 @@ TEST(NetworkQualityEstimatorUtilTest, ReservedHostUncached) {
   EXPECT_EQ(1u, mock_host_resolver.num_non_local_resolves());
 }
 
+#if defined(OS_IOS)
+// Flaky on iOS: crbug.com/672917.
+#define MAYBE_ReservedHostUncachedWithNetworkIsolationKey \
+  DISABLED_ReservedHostUncachedWithNetworkIsolationKey
+#else
+#define MAYBE_ReservedHostUncachedWithNetworkIsolationKey \
+  ReservedHostUncachedWithNetworkIsolationKey
+#endif
 // Make sure that IsPrivateHostForTesting() uses the NetworkIsolationKey
 // provided to it.
 TEST(NetworkQualityEstimatorUtilTest,
-     ReservedHostUncachedWithNetworkIsolationKey) {
+     MAYBE_ReservedHostUncachedWithNetworkIsolationKey) {
   const url::Origin kOrigin = url::Origin::Create(GURL("https://foo.test/"));
   const net::NetworkIsolationKey kNetworkIsolationKey(kOrigin, kOrigin);
 
@@ -165,9 +186,16 @@ TEST(NetworkQualityEstimatorUtilTest,
                                        NetworkIsolationKey()));
 }
 
+#if defined(OS_IOS)
+// Flaky on iOS: crbug.com/672917.
+#define MAYBE_Localhost DISABLED_Localhost
+#else
+#define MAYBE_Localhost Localhost
+#endif
+
 // Verify that IsPrivateHostForTesting() returns correct results for local
 // hosts.
-TEST(NetworkQualityEstimatorUtilTest, Localhost) {
+TEST(NetworkQualityEstimatorUtilTest, MAYBE_Localhost) {
   base::test::TaskEnvironment task_environment;
 
   std::unique_ptr<RecordingBoundTestNetLog> net_log =

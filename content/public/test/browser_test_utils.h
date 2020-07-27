@@ -1496,6 +1496,9 @@ class TestNavigationManager : public WebContentsObserver {
   NavigationHandle* GetNavigationHandle();
 
   // Whether the navigation successfully committed.
+  bool was_committed() const { return was_committed_; }
+
+  // Whether the navigation successfully committed and was not an error page.
   bool was_successful() const { return was_successful_; }
 
   // Allows nestable tasks when running a message loop in the Wait* functions.
@@ -1541,6 +1544,7 @@ class TestNavigationManager : public WebContentsObserver {
   bool navigation_paused_;
   NavigationState current_state_;
   NavigationState desired_state_;
+  bool was_committed_ = false;
   bool was_successful_ = false;
   base::OnceClosure quit_closure_;
   base::RunLoop::Type message_loop_type_ = base::RunLoop::Type::kDefault;

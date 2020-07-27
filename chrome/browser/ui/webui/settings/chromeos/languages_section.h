@@ -33,6 +33,8 @@ class LanguagesSection : public OsSettingsSection {
   mojom::SearchResultIcon GetSectionIcon() const override;
   std::string GetSectionPath() const override;
   void RegisterHierarchy(HierarchyGenerator* generator) const override;
+
+  bool IsEmojiSuggestionAllowed() const;
 };
 
 }  // namespace settings

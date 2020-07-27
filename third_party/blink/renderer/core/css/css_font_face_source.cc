@@ -50,8 +50,10 @@ scoped_refptr<SimpleFontData> CSSFontFaceSource::GetFontData(
     const FontDescription& font_description,
     const FontSelectionCapabilities& font_selection_capabilities) {
   // If the font hasn't loaded or an error occurred, then we've got nothing.
-  if (!IsValid())
+  if (!IsValid()) {
+    ReportFontLookup(font_description, nullptr);
     return nullptr;
+  }
 
   if (IsLocalNonBlocking()) {
     // We're local. Just return a SimpleFontData from the normal cache.

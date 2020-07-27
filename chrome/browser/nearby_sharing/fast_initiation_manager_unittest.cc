@@ -8,7 +8,9 @@
 #include <utility>
 #include <vector>
 
+#include "base/bind_helpers.h"
 #include "base/memory/ptr_util.h"
+#include "base/test/bind_test_util.h"
 #include "base/time/time.h"
 #include "build/build_config.h"
 #include "device/bluetooth/test/mock_bluetooth_adapter.h"
@@ -266,6 +268,20 @@ TEST_F(NearbySharingFastInitiationManagerTest, TestStartAdvertising_Error) {
   EXPECT_EQ(kFastInitAdvertisingInterval, last_advertising_interval_min());
   EXPECT_EQ(kFastInitAdvertisingInterval, last_advertising_interval_max());
 #endif
+}
+
+// Regression test for crbug.com/1109581.
+TEST_F(NearbySharingFastInitiationManagerTest,
+       TestStartAdvertising_DeleteInErrorCallback) {
+  fast_initiation_manager_->StartAdvertising(
+      FastInitiationManager::FastInitType::kNotify, base::DoNothing(),
+      base::BindLambdaForTesting([&]() { fast_initiation_manager_.reset(); }));
+
+  std::move(register_args_->error_callback)
+      .Run(device::BluetoothAdvertisement::ErrorCode::
+               INVALID_ADVERTISEMENT_ERROR_CODE);
+
+  EXPECT_FALSE(fast_initiation_manager_);
 }
 
 TEST_F(NearbySharingFastInitiationManagerTest, TestStopAdvertising) {

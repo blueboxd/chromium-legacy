@@ -8,6 +8,7 @@
 
 #include "base/bind.h"
 #include "base/trace_event/trace_event.h"
+#include "chrome/browser/predictors/predictors_features.h"
 #include "chrome/browser/predictors/resource_prefetch_predictor.h"
 #include "chrome/browser/profiles/profile.h"
 #include "content/public/browser/browser_task_traits.h"
@@ -214,7 +215,7 @@ void PreconnectManager::TryToLaunchPreresolveJobs() {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
 
   while (!queued_jobs_.empty() &&
-         inflight_preresolves_count_ < kMaxInflightPreresolves) {
+         inflight_preresolves_count_ < features::GetMaxInflightPreresolves()) {
     auto job_id = queued_jobs_.front();
     queued_jobs_.pop_front();
     PreresolveJob* job = preresolve_jobs_.Lookup(job_id);

@@ -81,6 +81,8 @@ bool HasCorrectLength(const base::string16& number) {
     return false;
   if (type == kMirCard && number.size() != 16)
     return false;
+  if (type == kTroyCard && number.size() != 16)
+    return false;
   if (type == kUnionPay && (number.size() < 16 || number.size() > 19))
     return false;
   if (type == kVisaCard && number.size() != 13 && number.size() != 16 &&

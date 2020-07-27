@@ -12,6 +12,7 @@
 #include "ash/public/cpp/ambient/ambient_client.h"
 #include "ash/public/cpp/image_downloader.h"
 #include "ash/shell.h"
+#include "base/base64.h"
 #include "base/base_paths.h"
 #include "base/bind.h"
 #include "base/callback.h"
@@ -22,6 +23,7 @@
 #include "base/optional.h"
 #include "base/path_service.h"
 #include "base/rand_util.h"
+#include "base/strings/string_util.h"
 #include "base/system/sys_info.h"
 #include "base/task/post_task.h"
 #include "base/task/task_traits.h"
@@ -85,7 +87,11 @@ void DeletePathRecursively(const base::FilePath& path) {
 }
 
 std::string ToPhotoFileName(const std::string& url) {
-  return base::SHA1HashString(url) + std::string(kPhotoFileExt);
+  std::string hash_tag;
+  base::Base64Encode(base::SHA1HashString(url), &hash_tag);
+  // Replace path divider.
+  base::ReplaceSubstringsAfterOffset(&hash_tag, 0, "/", "_");
+  return hash_tag + std::string(kPhotoFileExt);
 }
 
 void ToImageSkia(DownloadCallback callback, const SkBitmap& image) {

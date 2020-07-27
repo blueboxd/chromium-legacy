@@ -10,6 +10,7 @@
   <structure type="chrome_scaled_image" name="IDR_AUTOFILL_CC_MIR" file="autofill/mir.png" />
   <structure type="chrome_scaled_image" name="IDR_AUTOFILL_CC_UNIONPAY" file="autofill/unionpay.png" />
   <structure type="chrome_scaled_image" name="IDR_AUTOFILL_CC_VISA" file="autofill/visa.png" />
+  <structure type="chrome_scaled_image" name="IDR_AUTOFILL_CC_TROY" file="autofill/troy.png" />
   <if expr="_google_chrome">
     <then>
       <structure type="chrome_scaled_image" name="IDR_AUTOFILL_GOOGLE_ISSUED_CARD" file="autofill/cc-generic.png" />

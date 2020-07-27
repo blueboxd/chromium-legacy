@@ -17,7 +17,8 @@
 namespace autofill {
 
 TestAutofillClient::TestAutofillClient()
-    : form_origin_(GURL("https://example.test")), source_id_(-1) {}
+    : form_origin_(GURL("https://example.test")),
+      last_committed_url_(GURL("https://example.test")) {}
 
 TestAutofillClient::~TestAutofillClient() {}
 
@@ -68,6 +69,10 @@ ukm::SourceId TestAutofillClient::GetUkmSourceId() {
 
 AddressNormalizer* TestAutofillClient::GetAddressNormalizer() {
   return &test_address_normalizer_;
+}
+
+const GURL& TestAutofillClient::GetLastCommittedURL() {
+  return last_committed_url_;
 }
 
 security_state::SecurityLevel

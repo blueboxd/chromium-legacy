@@ -63,7 +63,7 @@ const base::Feature kHideArcMediaNotifications{
     "HideArcMediaNotifications", base::FEATURE_ENABLED_BY_DEFAULT};
 
 const base::Feature kManagedDeviceUIRedesign{"ManagedDeviceUIRedesign",
-                                             base::FEATURE_DISABLED_BY_DEFAULT};
+                                             base::FEATURE_ENABLED_BY_DEFAULT};
 
 const base::Feature kMediaSessionNotification{"MediaSessionNotification",
                                               base::FEATURE_ENABLED_BY_DEFAULT};

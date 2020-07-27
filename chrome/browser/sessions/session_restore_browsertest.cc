@@ -70,6 +70,7 @@
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/render_process_host.h"
 #include "content/public/browser/render_view_host.h"
+#include "content/public/browser/render_widget_host_view.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/common/bindings_policy.h"
 #include "content/public/test/browser_test.h"
@@ -913,6 +914,11 @@ IN_PROC_BROWSER_TEST_F(SessionRestoreTest, Basic) {
   ASSERT_EQ(1u, active_browser_list_->size());
   ASSERT_EQ(url2_,
             new_browser->tab_strip_model()->GetActiveWebContents()->GetURL());
+  // Ensure window has initial focus on launch.
+  EXPECT_TRUE(new_browser->tab_strip_model()
+                  ->GetActiveWebContents()
+                  ->GetRenderWidgetHostView()
+                  ->HasFocus());
   GoBack(new_browser);
   ASSERT_EQ(url1_,
             new_browser->tab_strip_model()->GetActiveWebContents()->GetURL());

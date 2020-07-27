@@ -19,7 +19,6 @@
 #include "base/single_thread_task_runner.h"
 #include "base/time/time.h"
 #include "content/common/content_export.h"
-#include "content/public/common/previews_state.h"
 #include "mojo/public/cpp/system/data_pipe.h"
 #include "net/base/host_port_pair.h"
 #include "net/base/net_errors.h"
@@ -29,6 +28,7 @@
 #include "services/network/public/mojom/fetch_api.mojom-forward.h"
 #include "services/network/public/mojom/url_loader.mojom-forward.h"
 #include "services/network/public/mojom/url_response_head.mojom-forward.h"
+#include "third_party/blink/public/common/loader/previews_state.h"
 #include "third_party/blink/public/common/loader/url_loader_throttle.h"
 #include "third_party/blink/public/mojom/blob/blob_registry.mojom-forward.h"
 #include "third_party/blink/public/mojom/loader/resource_load_info.mojom-shared.h"
@@ -211,7 +211,8 @@ class CONTENT_EXPORT ResourceDispatcher {
     // it's not completed. Used both to distinguish completion from
     // cancellation, and to log histograms.
     int net_error = net::ERR_IO_PENDING;
-    PreviewsState previews_state = PreviewsTypes::PREVIEWS_UNSPECIFIED;
+    blink::PreviewsState previews_state =
+        blink::PreviewsTypes::PREVIEWS_UNSPECIFIED;
 
     // These stats will be sent to the browser process.
     blink::mojom::ResourceLoadInfoPtr resource_load_info;

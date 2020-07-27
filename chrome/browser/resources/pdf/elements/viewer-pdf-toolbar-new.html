@@ -118,6 +118,16 @@
     border-radius: 50%;
   }
 </if>
+
+  .dropdown-item {
+    padding-inline-end: 16px;
+    padding-inline-start: 12px;
+  }
+
+  .check-container {
+    margin-inline-end: 12px;
+    width: 16px;
+  }
 </style>
 <!-- TODO(dpapad): Add aria-label and title for all buttons -->
 <div id="toolbar">
@@ -177,8 +187,20 @@
 </paper-progress>
 
 <cr-action-menu force-dark-mode>
-  <button class="dropdown-item">Single page view</button>
-  <button class="dropdown-item">Two page view</button>
+  <button id="single-page-view-button"
+      class="dropdown-item" on-click="onSinglePageViewClick_">
+    <span class="check-container">
+      <iron-icon icon="pdf:check" hidden="[[twoUpViewEnabled_]]"></iron-icon>
+    </span>
+    Single page view
+  </button>
+  <button id="two-page-view-button"
+      class="dropdown-item" on-click="onTwoPageViewClick_">
+    <span class="check-container">
+      <iron-icon icon="pdf:check" hidden="[[!twoUpViewEnabled_]]"></iron-icon>
+    </span>
+    Two page view
+  </button>
 </cr-action-menu>
 
 <if expr="chromeos">

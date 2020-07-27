@@ -77,6 +77,11 @@ base::Optional<CanonicalCookie> ToCanonicalCookie(
         "Cookie value cannot contain '=' if the name is empty");
     return base::nullopt;
   }
+  if (name.IsEmpty() && value.IsEmpty()) {
+    exception_state.ThrowTypeError(
+        "Cookie name and value both cannot be empty");
+    return base::nullopt;
+  }
 
   base::Time expires = options->hasExpiresNonNull()
                            ? base::Time::FromJavaTime(options->expiresNonNull())
@@ -307,7 +312,7 @@ ScriptPromise CookieStore::Delete(ScriptState* script_state,
 
   CookieInit* set_options = CookieInit::Create();
   set_options->setName(name);
-  set_options->setValue(g_empty_string);
+  set_options->setValue("deleted");
   set_options->setExpires(0);
   return DoWrite(script_state, set_options, exception_state);
 }
@@ -317,7 +322,7 @@ ScriptPromise CookieStore::Delete(ScriptState* script_state,
                                   ExceptionState& exception_state) {
   CookieInit* set_options = CookieInit::Create();
   set_options->setName(options->name());
-  set_options->setValue(g_empty_string);
+  set_options->setValue("deleted");
   set_options->setExpires(0);
   set_options->setDomain(options->domain());
   set_options->setPath(options->path());

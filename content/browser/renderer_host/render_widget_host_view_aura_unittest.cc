@@ -555,13 +555,8 @@ class RenderWidgetHostViewAuraTest : public testing::Test {
   void TearDownEnvironment() {
     sink_ = nullptr;
     process_host_ = nullptr;
-    if (view_) {
+    if (view_)
       DestroyView(view_);
-    } else if (widget_host_) {
-      // Delete |widget_host_| in cases where |view_| gets destroyed
-      // by its parent, but the host does not get destroyed.
-      delete widget_host_;
-    }
 
     parent_view_->Destroy();
     delete parent_host_;

@@ -4,7 +4,7 @@
 
 #include "chrome/browser/password_manager/password_store_utils.h"
 
-#include "chrome/browser/password_manager/account_storage/account_password_store_factory.h"
+#include "chrome/browser/password_manager/account_password_store_factory.h"
 #include "chrome/browser/password_manager/password_store_factory.h"
 #include "chrome/browser/profiles/profile.h"
 #include "components/autofill/core/common/password_form.h"

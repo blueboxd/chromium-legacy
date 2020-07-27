@@ -40,6 +40,7 @@
 #include "chrome/test/base/testing_profile_manager.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
 #include "chromeos/tpm/stub_install_attributes.h"
+#include "components/enterprise/browser/reporting/common_pref_names.h"
 #include "components/policy/core/common/cloud/cloud_external_data_manager.h"
 #include "components/policy/core/common/cloud/cloud_policy_core.h"
 #include "components/policy/core/common/cloud/cloud_policy_refresh_scheduler.h"
@@ -864,8 +865,8 @@ TEST_P(UserCloudPolicyManagerChromeOSTest, TestHasAppInstallEventLogUploader) {
 
 TEST_P(UserCloudPolicyManagerChromeOSTest, TestReportSchedulerCreation) {
   // Open policy and feature flag to enable report scheduler.
-  g_browser_process->local_state()->SetBoolean(prefs::kCloudReportingEnabled,
-                                               true);
+  g_browser_process->local_state()->SetBoolean(
+      enterprise_reporting::kCloudReportingEnabled, true);
   scoped_feature_list()->Reset();
   scoped_feature_list()->InitAndEnableFeature(
       features::kEnterpriseReportingInChromeOS);
@@ -898,8 +899,8 @@ TEST_P(UserCloudPolicyManagerChromeOSTest, TestReportSchedulerCreation) {
 
 TEST_P(UserCloudPolicyManagerChromeOSTest, TestReportSchedulerDelayedCreation) {
   // Open policy and feature flag to enable report scheduler.
-  g_browser_process->local_state()->SetBoolean(prefs::kCloudReportingEnabled,
-                                               true);
+  g_browser_process->local_state()->SetBoolean(
+      enterprise_reporting::kCloudReportingEnabled, true);
   scoped_feature_list()->Reset();
   scoped_feature_list()->InitAndEnableFeature(
       features::kEnterpriseReportingInChromeOS);
@@ -944,8 +945,8 @@ TEST_P(UserCloudPolicyManagerChromeOSTest, TestReportSchedulerDelayedCreation) {
 
 TEST_P(UserCloudPolicyManagerChromeOSTest, TestSkipReportSchedulerCreation) {
   // Open policy and feature flag to enable report scheduler.
-  g_browser_process->local_state()->SetBoolean(prefs::kCloudReportingEnabled,
-                                               true);
+  g_browser_process->local_state()->SetBoolean(
+      enterprise_reporting::kCloudReportingEnabled, true);
   scoped_feature_list()->Reset();
   scoped_feature_list()->InitAndEnableFeature(
       features::kEnterpriseReportingInChromeOS);
@@ -968,8 +969,8 @@ TEST_P(UserCloudPolicyManagerChromeOSTest,
        EnterpriseReportingInChromeOSDisabled) {
   // Open policy but close the feature flag for Chrome OS to disable report
   // scheduler.
-  g_browser_process->local_state()->SetBoolean(prefs::kCloudReportingEnabled,
-                                               true);
+  g_browser_process->local_state()->SetBoolean(
+      enterprise_reporting::kCloudReportingEnabled, true);
   scoped_feature_list()->Reset();
   scoped_feature_list()->InitAndDisableFeature(
       features::kEnterpriseReportingInChromeOS);

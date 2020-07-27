@@ -515,7 +515,7 @@ void ImageLoader::DoUpdateFromElement(
     ResourceRequest resource_request(url);
     if (update_behavior == kUpdateForcedReload) {
       resource_request.SetCacheMode(mojom::FetchCacheMode::kBypassCache);
-      resource_request.SetPreviewsState(WebURLRequest::kPreviewsNoTransform);
+      resource_request.SetPreviewsState(PreviewsTypes::kPreviewsNoTransform);
     }
 
     resource_request.SetReferrerPolicy(referrer_policy);
@@ -595,7 +595,7 @@ void ImageLoader::DoUpdateFromElement(
             DynamicTo<HTMLImageElement>(GetElement()), params.Url())) {
       auto& resource_request = params.MutableResourceRequest();
       resource_request.SetPreviewsState(resource_request.GetPreviewsState() |
-                                        WebURLRequest::kSubresourceRedirectOn);
+                                        PreviewsTypes::kSubresourceRedirectOn);
     }
 
     new_image_content = ImageResourceContent::Fetch(params, document.Fetcher());

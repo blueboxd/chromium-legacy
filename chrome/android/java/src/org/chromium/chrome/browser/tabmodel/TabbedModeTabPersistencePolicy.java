@@ -111,7 +111,6 @@ public class TabbedModeTabPersistencePolicy implements TabPersistencePolicy {
      * @param selectorIndex The index that represents which state file to pull and save state to.
      * @return The name of the state file.
      */
-    @VisibleForTesting
     public static String getStateFileName(int selectorIndex) {
         return TabPersistentStore.getStateFileName(Integer.toString(selectorIndex));
     }

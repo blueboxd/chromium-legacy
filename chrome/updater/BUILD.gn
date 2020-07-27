@@ -93,6 +93,7 @@ if (is_win || is_mac) {
       "configurator.h",
       "control_service_in_process.cc",
       "control_service_in_process.h",
+      "crx_downloader_factory.h",
       "dm_cached_policy_info.cc",
       "dm_cached_policy_info.h",
       "dm_client.cc",

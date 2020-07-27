@@ -235,6 +235,10 @@ void BrowserFrameMac::ValidateUserInterfaceItem(
       PrefService* prefs = browser->profile()->GetPrefs();
       result->new_toggle_state =
           prefs->GetBoolean(omnibox::kPreventUrlElisionsInOmnibox);
+      // Disable this menu option if the show full URLs pref is managed.
+      result->enable =
+          !prefs->FindPreference(omnibox::kPreventUrlElisionsInOmnibox)
+               ->IsManaged();
       break;
     }
     case IDC_TOGGLE_JAVASCRIPT_APPLE_EVENTS: {

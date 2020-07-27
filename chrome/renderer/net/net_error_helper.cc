@@ -81,12 +81,6 @@ using error_page::LocalizedError;
 
 namespace {
 
-NetErrorHelperCore::PageType GetLoadingPageType(const GURL& url) {
-  if (!url.is_valid() || url.spec() != kUnreachableWebDataURL)
-    return NetErrorHelperCore::NON_ERROR_PAGE;
-  return NetErrorHelperCore::ERROR_PAGE;
-}
-
 NetErrorHelperCore::FrameType GetFrameType(RenderFrame* render_frame) {
   if (render_frame->IsMainFrame())
     return NetErrorHelperCore::MAIN_FRAME;
@@ -123,24 +117,16 @@ bool IsRunningInForcedAppMode() {
 NetErrorHelper::NetErrorHelper(RenderFrame* render_frame)
     : RenderFrameObserver(render_frame),
       content::RenderFrameObserverTracker<NetErrorHelper>(render_frame) {
-  RenderThread::Get()->AddObserver(this);
-  base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();
-  bool auto_reload_enabled =
-      command_line->HasSwitch(switches::kEnableAutoReload);
   // TODO(mmenke): Consider only creating a NetErrorHelperCore for main frames.
   // subframes don't need any of the NetErrorHelperCore's extra logic.
-  core_.reset(new NetErrorHelperCore(this,
-                                     auto_reload_enabled,
-                                     !render_frame->IsHidden()));
+  core_ = std::make_unique<NetErrorHelperCore>(this);
 
   render_frame->GetAssociatedInterfaceRegistry()->AddInterface(
       base::BindRepeating(&NetErrorHelper::OnNetworkDiagnosticsClientRequest,
                           base::Unretained(this)));
 }
 
-NetErrorHelper::~NetErrorHelper() {
-  RenderThread::Get()->RemoveObserver(this);
-}
+NetErrorHelper::~NetErrorHelper() = default;
 
 void NetErrorHelper::ButtonPressed(NetErrorHelperCore::Button button) {
   core_->ExecuteButtonPress(button);
@@ -179,12 +165,6 @@ NetErrorHelper::GetInterface() {
   return interface;
 }
 
-void NetErrorHelper::DidStartNavigation(
-    const GURL& url,
-    base::Optional<blink::WebNavigationType> navigation_type) {
-  core_->OnStartLoad(GetFrameType(render_frame()), GetLoadingPageType(url));
-}
-
 void NetErrorHelper::DidCommitProvisionalLoad(ui::PageTransition transition) {
   // Invalidate weak pointers from old error page controllers. If loading a new
   // error page, the controller has not yet been attached, so this won't affect
@@ -200,24 +180,8 @@ void NetErrorHelper::DidFinishLoad() {
   core_->OnFinishLoad(GetFrameType(render_frame()));
 }
 
-void NetErrorHelper::OnStop() {
-  core_->OnStop();
-}
-
-void NetErrorHelper::WasShown() {
-  core_->OnWasShown();
-}
-
-void NetErrorHelper::WasHidden() {
-  core_->OnWasHidden();
-}
-
 void NetErrorHelper::OnDestruct() {
   delete this;
-}
-
-void NetErrorHelper::NetworkStateChanged(bool enabled) {
-  core_->NetworkStateChanged(enabled);
 }
 
 void NetErrorHelper::PrepareErrorPage(const error_page::Error& error,
@@ -225,11 +189,6 @@ void NetErrorHelper::PrepareErrorPage(const error_page::Error& error,
                                       std::string* error_html) {
   core_->PrepareErrorPage(GetFrameType(render_frame()), error, is_failed_post,
                           error_html);
-}
-
-bool NetErrorHelper::ShouldSuppressErrorPage(const GURL& url, int error_code) {
-  return core_->ShouldSuppressErrorPage(GetFrameType(render_frame()), url,
-                                        error_code);
 }
 
 std::unique_ptr<network::ResourceRequest> NetErrorHelper::CreatePostRequest(

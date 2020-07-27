@@ -510,17 +510,16 @@ IN_PROC_BROWSER_TEST_F(PDFExtensionTestWithTestGuestViewManager,
 IN_PROC_BROWSER_TEST_F(PDFExtensionTestWithTestGuestViewManager,
                        CSPFrameAncestorsCanBlockEmbedding) {
   WebContents* web_contents = GetActiveWebContents();
-  auto console_delegate = std::make_unique<content::ConsoleObserverDelegate>(
-      web_contents,
+  content::WebContentsConsoleObserver console_observer(web_contents);
+  console_observer.SetPattern(
       "*because an ancestor violates the following Content Security Policy "
       "directive: \"frame-ancestors 'none'*");
-  web_contents->SetDelegate(console_delegate.get());
 
   GURL main_url(embedded_test_server()->GetURL(
       "/pdf/frame-test-csp-frame-ancestors-none.html"));
   ui_test_utils::NavigateToURL(browser(), main_url);
 
-  console_delegate->Wait();
+  console_observer.Wait();
 
   // Didn't launch a PPAPI process.
   EXPECT_EQ(0, CountPDFProcesses());
@@ -1082,17 +1081,15 @@ IN_PROC_BROWSER_TEST_F(PDFExtensionTest, EnsureOpaqueOriginRepliesBlocked) {
 IN_PROC_BROWSER_TEST_F(PDFExtensionTest, BlockDirectAccess) {
   WebContents* web_contents = GetActiveWebContents();
 
-  std::unique_ptr<content::ConsoleObserverDelegate> console_delegate(
-      new content::ConsoleObserverDelegate(
-          web_contents,
-          "*Streams are only available from a mime handler view guest.*"));
-  web_contents->SetDelegate(console_delegate.get());
-  GURL forbiddenUrl(
+  content::WebContentsConsoleObserver console_observer(web_contents);
+  console_observer.SetPattern(
+      "*Streams are only available from a mime handler view guest.*");
+  GURL forbidden_url(
       "chrome-extension://mhjfbmdgcfjbbpaeojofohoefgiehjai/index.html?"
       "https://example.com/notrequested.pdf");
-  ui_test_utils::NavigateToURL(browser(), forbiddenUrl);
+  ui_test_utils::NavigateToURL(browser(), forbidden_url);
 
-  console_delegate->Wait();
+  console_observer.Wait();
 
   // Didn't launch a PPAPI process.
   EXPECT_EQ(0, CountPDFProcesses());

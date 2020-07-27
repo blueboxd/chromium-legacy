@@ -18,16 +18,11 @@
       window.addEventListener('click', runFunctionOnClick);
   });
 
-  async function getSources() {
-    try {
-      // Call getUserMedia() to allow exposing devices in enumerateDevices.
-      let stream = await navigator.mediaDevices.getUserMedia(
-          {audio:true, video:true});
-      stream.getTracks().forEach(track => track.stop());
-      let devices = await navigator.mediaDevices.enumerateDevices();
+  function getSources() {
+    navigator.mediaDevices.enumerateDevices().then(function(devices) {
       document.title = 'Media devices available';
-      let results = [];
-      for (let device, i = 0; device = devices[i]; ++i) {
+      var results = [];
+      for (var device, i = 0; device = devices[i]; ++i) {
         if (device.kind != "audioinput" && device.kind != "videoinput")
           continue;
         results.push({
@@ -38,9 +33,7 @@
         });
       }
       sendValueToTest(JSON.stringify(results));
-    } catch (e) {
-      failTest();
-    }
+    });
   }
 
   // Creates a MediaStream and renders it locally. When the video is detected to
@@ -453,18 +446,19 @@
     var detectorInterval = setInterval(detectorFunction, 50);
   }
 
-  async function getAudioSettingsDefault() {
-    try {
-      let stream = await navigator.mediaDevices.getUserMedia({audio:true});
-      assertEquals(stream.getAudioTracks().length, 1);
-      let settings = stream.getAudioTracks()[0].getSettings();
-      assertEquals(settings.deviceId, 'default');
-      assertTrue(settings.echoCancellation);
-      stream.getAudioTracks()[0].stop();
-      reportTestSuccess();
-    } catch (e) {
-        failTest("Error: " + e);
-    }
+  function getAudioSettingsDefault() {
+    navigator.mediaDevices.getUserMedia({audio:true})
+      .then(stream => {
+        assertEquals(stream.getAudioTracks().length, 1);
+        var settings = stream.getAudioTracks()[0].getSettings();
+        assertEquals(settings.deviceId, 'default');
+        assertTrue(settings.echoCancellation);
+        stream.getAudioTracks()[0].stop();
+        reportTestSuccess();
+      })
+      .catch(_ => {
+        failTest("getUserMedia failed")
+      });
   }
 
   function getAudioSettingsNoEchoCancellation() {
@@ -482,30 +476,28 @@
       });
   }
 
-  async function getAudioSettingsDeviceId() {
-    try {
-      // Plain getUserMedia() call to enable device enumeration.
-      let stream = await navigator.mediaDevices.getUserMedia({audio:true});
-      stream.getAudioTracks()[0].stop();
-      let devices = await navigator.mediaDevices.enumerateDevices();
-      let last_device_id;
-      for (let device, i = 0; device = devices[i]; ++i) {
-        if (device.kind != "audioinput")
-          continue;
-        last_device_id = device.deviceId;
-      }
-      stream = await navigator.mediaDevices.getUserMedia(
-          {audio:{deviceId: {exact: last_device_id}}});
-      assertEquals(stream.getAudioTracks().length, 1);
-      var settings = stream.getAudioTracks()[0].getSettings();
-      assertEquals(settings.deviceId, last_device_id);
-      assertNotEquals(settings.deviceId, 'default');
-      assertTrue(settings.echoCancellation);
-      stream.getAudioTracks()[0].stop();
-      reportTestSuccess();
-    } catch (e) {
-      failTest('Error: ' + e);
-    }
+  function getAudioSettingsDeviceId() {
+    navigator.mediaDevices.enumerateDevices()
+      .then(devices => {
+        var last_device_id;
+        for (var device, i = 0; device = devices[i]; ++i) {
+          if (device.kind != "audioinput")
+            continue;
+          last_device_id = device.deviceId;
+        }
+        navigator.mediaDevices.getUserMedia(
+          {audio:{deviceId: {exact: last_device_id}}})
+          .then(stream => {
+            assertEquals(stream.getAudioTracks().length, 1);
+            var settings = stream.getAudioTracks()[0].getSettings();
+            assertEquals(settings.deviceId, last_device_id);
+            assertNotEquals(settings.deviceId, 'default');
+            assertTrue(settings.echoCancellation);
+            stream.getAudioTracks()[0].stop();
+            reportTestSuccess();
+          })
+      })
+      .catch(failTest);
   }
 
   function srcObjectAddVideoTrack() {

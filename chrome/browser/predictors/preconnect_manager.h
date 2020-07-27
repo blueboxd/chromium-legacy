@@ -145,8 +145,6 @@ class PreconnectManager {
         bool success) {}
   };
 
-  static const size_t kMaxInflightPreresolves = 3;
-
   PreconnectManager(base::WeakPtr<Delegate> delegate, Profile* profile);
   virtual ~PreconnectManager();
 

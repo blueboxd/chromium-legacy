@@ -470,6 +470,7 @@ TtsBackground = class extends ChromeTtsBase {
         break;
       case 'error':
         this.onError_(event['errorMessage']);
+        this.currentUtterance_ = null;
         this.startSpeakingNextItemInQueue_();
         break;
     }

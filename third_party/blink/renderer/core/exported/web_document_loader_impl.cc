@@ -175,7 +175,7 @@ bool WebDocumentLoaderImpl::HasBeenLoadedAsWebArchive() const {
   return archive_ || (archive_load_result_ != mojom::MHTMLLoadResult::kSuccess);
 }
 
-WebURLRequest::PreviewsState WebDocumentLoaderImpl::GetPreviewsState() const {
+PreviewsState WebDocumentLoaderImpl::GetPreviewsState() const {
   return DocumentLoader::GetPreviewsState();
 }
 

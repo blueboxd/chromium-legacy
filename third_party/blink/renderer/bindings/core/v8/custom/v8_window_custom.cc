@@ -143,6 +143,7 @@ static void OpenerAttributeSet(v8::Local<v8::Value> value,
                                const CallbackInfo& info) {
   v8::Isolate* isolate = info.GetIsolate();
   DOMWindow* impl = V8Window::ToImpl(info.Holder());
+  impl->ReportCoopAccess(isolate, "opener");
   if (!impl->GetFrame())
     return;
 

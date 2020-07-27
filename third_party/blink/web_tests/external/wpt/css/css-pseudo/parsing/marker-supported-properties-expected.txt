@@ -35,6 +35,7 @@ PASS Property transition-delay value '1s' in ::marker
 PASS Property transition-duration value '2s' in ::marker
 PASS Property transition-property value 'display' in ::marker
 PASS Property transition-timing-function value 'linear' in ::marker
+PASS Property text-transform value 'uppercase' in ::marker
 PASS Property display value 'none' in ::marker
 PASS Property position value 'absolute' in ::marker
 PASS Property float value 'right' in ::marker

@@ -1526,7 +1526,7 @@ void WebGLRenderingContextBase::OnErrorMessage(const char* message,
                                                int32_t id) {
   if (synthesized_errors_to_console_)
     PrintGLErrorToConsole(message);
-  probe::DidFireWebGLErrorOrWarning(canvas(), message);
+  NotifyWebGLErrorOrWarning(message);
 }
 
 WebGLRenderingContextBase::HowToClear
@@ -7729,12 +7729,42 @@ void WebGLRenderingContextBase::PrintGLErrorToConsole(const String& message) {
 }
 
 void WebGLRenderingContextBase::PrintWarningToConsole(const String& message) {
+  if (fast_call_.InFastCall()) {
+    fast_call_.AddDeferredConsoleWarning(message);
+    return;
+  }
+
   blink::ExecutionContext* context = Host()->GetTopExecutionContext();
   if (context && !context->IsContextDestroyed()) {
     context->AddConsoleMessage(MakeGarbageCollected<ConsoleMessage>(
         mojom::ConsoleMessageSource::kRendering,
         mojom::ConsoleMessageLevel::kWarning, message));
   }
+}
+
+void WebGLRenderingContextBase::NotifyWebGLErrorOrWarning(
+    const String& message) {
+  if (fast_call_.InFastCall()) {
+    fast_call_.AddDeferredErrorOrWarningNotification(message);
+    return;
+  }
+  probe::DidFireWebGLErrorOrWarning(canvas(), message);
+}
+
+void WebGLRenderingContextBase::NotifyWebGLError(const String& error_type) {
+  if (fast_call_.InFastCall()) {
+    fast_call_.AddDeferredErrorNotification(error_type);
+    return;
+  }
+  probe::DidFireWebGLError(canvas(), error_type);
+}
+
+void WebGLRenderingContextBase::NotifyWebGLWarning() {
+  if (fast_call_.InFastCall()) {
+    fast_call_.AddDeferredWarningNotification();
+    return;
+  }
+  probe::DidFireWebGLWarning(canvas());
 }
 
 bool WebGLRenderingContextBase::ValidateFramebufferFuncParameters(
@@ -8275,7 +8305,7 @@ void WebGLRenderingContextBase::SynthesizeGLError(
     if (!lost_context_errors_.Contains(error))
       lost_context_errors_.push_back(error);
   }
-  probe::DidFireWebGLError(canvas(), error_type);
+  NotifyWebGLError(error_type);
 }
 
 void WebGLRenderingContextBase::EmitGLWarning(const char* function_name,
@@ -8285,7 +8315,7 @@ void WebGLRenderingContextBase::EmitGLWarning(const char* function_name,
         String("WebGL: ") + String(function_name) + ": " + String(description);
     PrintGLErrorToConsole(message);
   }
-  probe::DidFireWebGLWarning(canvas());
+  NotifyWebGLWarning();
 }
 
 void WebGLRenderingContextBase::ApplyStencilTest() {

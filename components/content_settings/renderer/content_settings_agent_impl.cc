@@ -17,7 +17,6 @@
 #include "components/content_settings/core/common/content_settings_utils.h"
 #include "content/public/child/child_thread.h"
 #include "content/public/common/origin_util.h"
-#include "content/public/common/previews_state.h"
 #include "content/public/common/url_constants.h"
 #include "content/public/renderer/document_state.h"
 #include "content/public/renderer/render_frame.h"
@@ -25,6 +24,7 @@
 #include "third_party/blink/public/common/associated_interfaces/associated_interface_provider.h"
 #include "third_party/blink/public/common/associated_interfaces/associated_interface_registry.h"
 #include "third_party/blink/public/common/browser_interface_broker_proxy.h"
+#include "third_party/blink/public/common/loader/previews_state.h"
 #include "third_party/blink/public/platform/url_conversion.h"
 #include "third_party/blink/public/platform/web_security_origin.h"
 #include "third_party/blink/public/platform/web_url.h"
@@ -61,7 +61,7 @@ GURL GetOriginOrURL(const WebFrame* frame) {
 }
 
 bool IsScriptDisabledForPreview(content::RenderFrame* render_frame) {
-  return render_frame->GetPreviewsState() & content::NOSCRIPT_ON;
+  return render_frame->GetPreviewsState() & blink::PreviewsTypes::NOSCRIPT_ON;
 }
 
 bool IsFrameWithOpaqueOrigin(WebFrame* frame) {

@@ -82,7 +82,7 @@ content::WebUIDataSource* CreateManagementUIHtmlSource(Profile* profile) {
     {"title", IDS_MANAGEMENT_TITLE},
     {"toolbarTitle", IDS_MANAGEMENT_TOOLBAR_TITLE},
     {"searchPrompt", IDS_SETTINGS_SEARCH_PROMPT},
-    {"clearSearch", IDS_DOWNLOAD_CLEAR_SEARCH},
+    {"clearSearch", IDS_CLEAR_SEARCH},
     {"backButton", IDS_ACCNAME_BACK},
     {kManagementExtensionReportMachineName,
      IDS_MANAGEMENT_EXTENSION_REPORT_MACHINE_NAME},

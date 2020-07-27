@@ -2833,6 +2833,26 @@
       },
     },
 
+    'gpu_webgl2_conformance_d3d11_passthrough_telemetry_tests': {
+      'webgl2_conformance_d3d11_passthrough_tests': {
+        'telemetry_test_name': 'webgl_conformance',
+        'args': [
+          '--webgl-conformance-version=2.0.1',
+          # The current working directory when run via isolate is
+          # out/Debug or out/Release. Reference this file relatively to
+          # it.
+          '--read-abbreviated-json-results-from=../../content/test/data/gpu/webgl2_conformance_tests_output.json',
+          # On dual-GPU devices we want the high-performance GPU to be active
+          '--extra-browser-args=--use-gl=angle --use-angle=d3d11 --use-cmd-decoder=passthrough --force_high_performance_gpu',
+        ],
+        'swarming': {
+          # These tests currently take about an hour and fifteen minutes
+          # to run. Split them into roughly 5-minute shards.
+          'shards': 20,
+        },
+      },
+    },
+
     'gpu_webgl2_conformance_gl_passthrough_telemetry_tests': {
       'webgl2_conformance_gl_passthrough_tests': {
         'telemetry_test_name': 'webgl_conformance',
@@ -2919,12 +2939,33 @@
       },
     },
 
+    'gpu_webgl_conformance_d3d11_passthrough_telemetry_tests': {
+      'webgl_conformance_d3d11_passthrough': {
+        'telemetry_test_name': 'webgl_conformance',
+        'args': [
+          # On dual-GPU devices we want the high-performance GPU to be active
+          '--extra-browser-args=--use-gl=angle --use-angle=d3d11 --use-cmd-decoder=passthrough --force_high_performance_gpu',
+          # The current working directory when run via isolate is
+          # out/Debug or out/Release. Reference this file relatively to
+          # it.
+          '--read-abbreviated-json-results-from=../../content/test/data/gpu/webgl_conformance_tests_output.json',
+        ],
+        'swarming': {
+          'shards': 2,
+        },
+      },
+    },
+
     'gpu_webgl_conformance_d3d9_passthrough_telemetry_tests': {
       'webgl_conformance_d3d9_passthrough': {
         'telemetry_test_name': 'webgl_conformance',
         'args': [
           # On dual-GPU devices we want the high-performance GPU to be active
-          '--extra-browser-args=--use-angle=d3d9 --use-cmd-decoder=passthrough --force_high_performance_gpu',
+          '--extra-browser-args=--use-gl=angle --use-angle=d3d9 --use-cmd-decoder=passthrough --force_high_performance_gpu',
+          # The current working directory when run via isolate is
+          # out/Debug or out/Release. Reference this file relatively to
+          # it.
+          '--read-abbreviated-json-results-from=../../content/test/data/gpu/webgl_conformance_tests_output.json',
         ],
         'swarming': {
           'shards': 2,
@@ -2938,6 +2979,10 @@
         'args': [
           # On dual-GPU devices we want the high-performance GPU to be active
           '--extra-browser-args=--use-gl=angle --use-angle=gl --use-cmd-decoder=passthrough --force_high_performance_gpu',
+          # The current working directory when run via isolate is
+          # out/Debug or out/Release. Reference this file relatively to
+          # it.
+          '--read-abbreviated-json-results-from=../../content/test/data/gpu/webgl_conformance_tests_output.json',
         ],
         'chromeos_args': [
           '$$MAGIC_SUBSTITUTION_ChromeOSTelemetryRemote',
@@ -5159,11 +5204,11 @@
 
     'gpu_angle_win_intel_nvidia_telemetry_tests': [
       'gpu_info_collection_telemetry_tests',
+      'gpu_webgl2_conformance_d3d11_passthrough_telemetry_tests',
       'gpu_webgl2_conformance_gl_passthrough_telemetry_tests',
-      'gpu_webgl2_conformance_telemetry_tests',
       'gpu_webgl_conformance_d3d9_passthrough_telemetry_tests',
+      'gpu_webgl_conformance_d3d11_passthrough_telemetry_tests',
       'gpu_webgl_conformance_gl_passthrough_telemetry_tests',
-      'gpu_webgl_conformance_telemetry_tests',
       'gpu_webgl_conformance_vulkan_passthrough_telemetry_tests',
     ],
 
@@ -5193,7 +5238,7 @@
     'gpu_common_win_telemetry_tests': [
       'gpu_common_and_optional_telemetry_tests',
       'gpu_passthrough_telemetry_tests',
-      'gpu_webgl_conformance_telemetry_tests',
+      'gpu_webgl_conformance_d3d11_passthrough_telemetry_tests',
       'gpu_gl_renderer_small_telemetry_tests',
     ],
 
@@ -5419,9 +5464,9 @@
     'gpu_fyi_win_debug_telemetry_tests': [
       'gpu_common_and_optional_telemetry_tests',
       'gpu_passthrough_telemetry_tests',
+      'gpu_webgl_conformance_d3d11_passthrough_telemetry_tests',
       'gpu_webgl_conformance_d3d9_passthrough_telemetry_tests',
       'gpu_webgl_conformance_gl_passthrough_telemetry_tests',
-      'gpu_webgl_conformance_telemetry_tests',
       'gpu_webgl_conformance_vulkan_passthrough_telemetry_tests',
     ],
 
@@ -5442,11 +5487,11 @@
     'gpu_fyi_win_intel_release_telemetry_tests': [
       'gpu_common_and_optional_telemetry_tests',
       'gpu_passthrough_telemetry_tests',
+      'gpu_webgl2_conformance_d3d11_passthrough_telemetry_tests',
       'gpu_webgl2_conformance_gl_passthrough_telemetry_tests',
-      'gpu_webgl2_conformance_telemetry_tests',
+      'gpu_webgl_conformance_d3d11_passthrough_telemetry_tests',
       'gpu_webgl_conformance_d3d9_passthrough_telemetry_tests',
       'gpu_webgl_conformance_gl_passthrough_telemetry_tests',
-      'gpu_webgl_conformance_telemetry_tests',
       'gpu_webgl_conformance_vulkan_passthrough_telemetry_tests',
       'gpu_win_intel_specific_telemetry_tests',
     ],
@@ -5454,10 +5499,10 @@
     'gpu_fyi_win_nvidia_amd_release_telemetry_tests': [
       'gpu_common_and_optional_telemetry_tests',
       'gpu_passthrough_telemetry_tests',
-      'gpu_webgl2_conformance_telemetry_tests',
+      'gpu_webgl2_conformance_d3d11_passthrough_telemetry_tests',
+      'gpu_webgl_conformance_d3d11_passthrough_telemetry_tests',
       'gpu_webgl_conformance_d3d9_passthrough_telemetry_tests',
       'gpu_webgl_conformance_gl_passthrough_telemetry_tests',
-      'gpu_webgl_conformance_telemetry_tests',
       'gpu_webgl_conformance_vulkan_passthrough_telemetry_tests',
     ],
 
@@ -5474,11 +5519,11 @@
     'gpu_fyi_win_release_telemetry_tests': [
       'gpu_common_and_optional_telemetry_tests',
       'gpu_passthrough_telemetry_tests',
+      'gpu_webgl2_conformance_d3d11_passthrough_telemetry_tests',
       'gpu_webgl2_conformance_gl_passthrough_telemetry_tests',
-      'gpu_webgl2_conformance_telemetry_tests',
+      'gpu_webgl_conformance_d3d11_passthrough_telemetry_tests',
       'gpu_webgl_conformance_d3d9_passthrough_telemetry_tests',
       'gpu_webgl_conformance_gl_passthrough_telemetry_tests',
-      'gpu_webgl_conformance_telemetry_tests',
       'gpu_webgl_conformance_vulkan_passthrough_telemetry_tests',
     ],
 
@@ -5498,20 +5543,20 @@
 
     'gpu_optional_win_intel_telemetry_tests': [
       'gpu_common_and_optional_telemetry_tests',
-      'gpu_webgl2_conformance_telemetry_tests',
+      'gpu_webgl2_conformance_d3d11_passthrough_telemetry_tests',
+      'gpu_webgl_conformance_d3d11_passthrough_telemetry_tests',
       'gpu_webgl_conformance_d3d9_passthrough_telemetry_tests',
       'gpu_webgl_conformance_gl_passthrough_telemetry_tests',
-      'gpu_webgl_conformance_telemetry_tests',
       'gpu_webgl_conformance_vulkan_passthrough_telemetry_tests',
       'gpu_win_intel_specific_telemetry_tests',
     ],
 
     'gpu_optional_win_telemetry_tests': [
       'gpu_common_and_optional_telemetry_tests',
-      'gpu_webgl2_conformance_telemetry_tests',
+      'gpu_webgl2_conformance_d3d11_passthrough_telemetry_tests',
+      'gpu_webgl_conformance_d3d11_passthrough_telemetry_tests',
       'gpu_webgl_conformance_d3d9_passthrough_telemetry_tests',
       'gpu_webgl_conformance_gl_passthrough_telemetry_tests',
-      'gpu_webgl_conformance_telemetry_tests',
       'gpu_webgl_conformance_vulkan_passthrough_telemetry_tests',
     ],
 
@@ -5546,8 +5591,8 @@
     ],
 
     'gpu_win_angle_amd_telemetry_tests': [
+      'gpu_webgl_conformance_d3d11_passthrough_telemetry_tests',
       'gpu_webgl_conformance_d3d9_passthrough_telemetry_tests',
-      'gpu_webgl_conformance_telemetry_tests',
       'gpu_webgl_conformance_vulkan_passthrough_telemetry_tests',
     ],
 

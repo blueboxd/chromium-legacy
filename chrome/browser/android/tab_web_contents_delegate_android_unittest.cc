@@ -37,27 +37,30 @@ TEST(TabWebContentsDelegateAndroidTest,
      AdjustPreviewsStateForNavigationAllowsPreviews) {
   TestTabWebContentsDelegateAndroid browser_display_delegate(
       blink::mojom::DisplayMode::kBrowser);
-  content::PreviewsState noscript_previews_state = content::NOSCRIPT_ON;
+  blink::PreviewsState noscript_previews_state =
+      blink::PreviewsTypes::NOSCRIPT_ON;
   browser_display_delegate.AdjustPreviewsStateForNavigation(
       nullptr, &noscript_previews_state);
-  EXPECT_EQ(content::NOSCRIPT_ON, noscript_previews_state);
+  EXPECT_EQ(blink::PreviewsTypes::NOSCRIPT_ON, noscript_previews_state);
 }
 
 TEST(TabWebContentsDelegateAndroidTest,
      AdjustPreviewsStateForNavigationBlocksPreviews) {
   TestTabWebContentsDelegateAndroid standalone_display_delegate(
       blink::mojom::DisplayMode::kStandalone);
-  content::PreviewsState noscript_previews_state = content::NOSCRIPT_ON;
+  blink::PreviewsState noscript_previews_state =
+      blink::PreviewsTypes::NOSCRIPT_ON;
   standalone_display_delegate.AdjustPreviewsStateForNavigation(
       nullptr, &noscript_previews_state);
-  EXPECT_EQ(content::PREVIEWS_OFF, noscript_previews_state);
+  EXPECT_EQ(blink::PreviewsTypes::PREVIEWS_OFF, noscript_previews_state);
 
   TestTabWebContentsDelegateAndroid minimal_ui_display_delegate(
       blink::mojom::DisplayMode::kMinimalUi);
-  content::PreviewsState litepage_previews_state = content::SERVER_LITE_PAGE_ON;
+  blink::PreviewsState litepage_previews_state =
+      blink::PreviewsTypes::SERVER_LITE_PAGE_ON;
   minimal_ui_display_delegate.AdjustPreviewsStateForNavigation(
       nullptr, &litepage_previews_state);
-  EXPECT_EQ(content::PREVIEWS_OFF, litepage_previews_state);
+  EXPECT_EQ(blink::PreviewsTypes::PREVIEWS_OFF, litepage_previews_state);
 }
 
 }  // namespace android

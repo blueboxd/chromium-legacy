@@ -108,10 +108,6 @@ void ResourceLoadingHintsAgent::SetResourceLoadingHints(
   if (!IsMainFrame())
     return;
 
-  UMA_HISTOGRAM_COUNTS_100(
-      "ResourceLoadingHints.CountBlockedSubresourcePatterns",
-      resource_loading_hints->subresources_to_block.size());
-
   ukm_source_id_ = resource_loading_hints->ukm_source_id;
 
   for (const auto& subresource :

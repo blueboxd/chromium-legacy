@@ -18,6 +18,7 @@
 #include "base/threading/thread_restrictions.h"
 #include "base/time/time.h"
 #include "base/time/time_override.h"
+#include "base/trace_event/base_tracing.h"
 
 // -----------------------------------------------------------------------------
 // A WaitableEvent on POSIX is implemented as a wait-list. Currently we don't
@@ -58,6 +59,8 @@ void WaitableEvent::Reset() {
 
 void WaitableEvent::Signal() {
   base::AutoLock locked(kernel_->lock_);
+  TRACE_EVENT_WITH_FLOW0("base", "WaitableEvent::Signal", this,
+                         TRACE_EVENT_FLAG_FLOW_OUT);
 
   if (kernel_->signaled_)
     return;
@@ -153,12 +156,7 @@ class SyncWaiter : public WaitableEvent::Waiter {
   base::ConditionVariable cv_;
 };
 
-void WaitableEvent::Wait() {
-  bool result = TimedWait(TimeDelta::Max());
-  DCHECK(result) << "TimedWait() should never fail with infinite timeout";
-}
-
-bool WaitableEvent::TimedWait(const TimeDelta& wait_delta) {
+bool WaitableEvent::TimedWaitImpl(const TimeDelta& wait_delta) {
   if (wait_delta <= TimeDelta())
     return IsSignaled();
 
@@ -300,7 +298,7 @@ size_t WaitableEvent::WaitMany(WaitableEvent** raw_waitables,
   sw.lock()->Release();
 
   // The address of the WaitableEvent which fired is stored in the SyncWaiter.
-  WaitableEvent *const signaled_event = sw.signaling_event();
+  WaitableEvent* const signaled_event = sw.signaling_event();
   // This will store the index of the raw_waitables which fired.
   size_t signaled_index = 0;
 

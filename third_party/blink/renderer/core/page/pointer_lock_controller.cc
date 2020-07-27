@@ -328,7 +328,7 @@ void PointerLockController::EnqueueEvent(const AtomicString& type,
                                          Document* document) {
   if (document && document->domWindow()) {
     document->domWindow()->EnqueueDocumentEvent(*Event::Create(type),
-                                                TaskType::kMiscPlatformAPI);
+                                                TaskType::kUserInteraction);
   }
 }
 

@@ -477,15 +477,16 @@ struct KeyValuePairHashTraits
   static bool IsDeletedValue(const TraitType& value) {
     return KeyTraits::IsDeletedValue(value.key);
   }
+
+  static constexpr bool kCanTraceConcurrently =
+      KeyTraitsArg::kCanTraceConcurrently &&
+      (ValueTraitsArg::kCanTraceConcurrently ||
+       !IsTraceable<typename ValueTraitsArg::TraitType>::value);
 };
 
 template <typename Key, typename Value>
 struct HashTraits<KeyValuePair<Key, Value>>
-    : public KeyValuePairHashTraits<HashTraits<Key>, HashTraits<Value>> {
-  static constexpr bool kCanTraceConcurrently =
-      HashTraits<Key>::kCanTraceConcurrently &&
-      (HashTraits<Value>::kCanTraceConcurrently || !IsTraceable<Value>::value);
-};
+    : public KeyValuePairHashTraits<HashTraits<Key>, HashTraits<Value>> {};
 
 template <typename T>
 struct NullableHashTraits : public HashTraits<T> {

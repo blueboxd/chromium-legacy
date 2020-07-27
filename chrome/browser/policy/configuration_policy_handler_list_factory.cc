@@ -55,6 +55,7 @@
 #include "components/content_settings/core/common/pref_names.h"
 #include "components/data_reduction_proxy/core/common/data_reduction_proxy_pref_names.h"
 #include "components/embedder_support/pref_names.h"
+#include "components/enterprise/browser/reporting/common_pref_names.h"
 #include "components/feed/core/shared_prefs/pref_names.h"
 #include "components/history/core/common/pref_names.h"
 #include "components/language/core/browser/pref_names.h"
@@ -319,9 +320,6 @@ const PolicyToPreferenceMapEntry kSimplePolicyMap[] = {
   { key::kEnableAuthNegotiatePort,
     prefs::kEnableAuthNegotiatePort,
     base::Value::Type::BOOLEAN },
-  { key::kAuthServerWhitelist,
-    prefs::kAuthServerWhitelist,
-    base::Value::Type::STRING },
   { key::kGSSAPILibraryName,
     prefs::kGSSAPILibraryName,
     base::Value::Type::STRING },
@@ -629,7 +627,7 @@ const PolicyToPreferenceMapEntry kSimplePolicyMap[] = {
     prefs::kWebRtcEventLogCollectionAllowed,
     base::Value::Type::BOOLEAN },
   { key::kCloudReportingEnabled,
-    prefs::kCloudReportingEnabled,
+    enterprise_reporting::kCloudReportingEnabled,
     base::Value::Type::BOOLEAN },
   { key::kSuppressUnsupportedOSWarning,
     prefs::kSuppressUnsupportedOSWarning,
@@ -698,7 +696,7 @@ const PolicyToPreferenceMapEntry kSimplePolicyMap[] = {
     drive::prefs::kDisableDriveOverCellular,
     base::Value::Type::BOOLEAN },
   { key::kEmojiSuggestionEnabled,
-    chromeos::prefs::kEmojiSuggestionEnabled,
+    chromeos::prefs::kEmojiSuggestionEnterpriseAllowed,
     base::Value::Type::BOOLEAN },
   { key::kExternalStorageDisabled,
     prefs::kExternalStorageDisabled,
@@ -1437,6 +1435,13 @@ std::unique_ptr<ConfigurationPolicyHandlerList> BuildHandlerList(
   handlers->AddHandler(std::make_unique<RestoreOnStartupPolicyHandler>());
   handlers->AddHandler(
       std::make_unique<safe_browsing::SafeBrowsingPolicyHandler>());
+  handlers->AddHandler(std::make_unique<SimpleDeprecatingPolicyHandler>(
+      std::make_unique<SimplePolicyHandler>(key::kAuthServerWhitelist,
+                                            prefs::kAuthServerAllowlist,
+                                            base::Value::Type::STRING),
+      std::make_unique<SimplePolicyHandler>(key::kAuthServerAllowlist,
+                                            prefs::kAuthServerAllowlist,
+                                            base::Value::Type::STRING)));
   handlers->AddHandler(std::make_unique<SimpleDeprecatingPolicyHandler>(
       std::make_unique<SimplePolicyHandler>(
           key::kAuthNegotiateDelegateWhitelist,

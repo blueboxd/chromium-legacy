@@ -15,7 +15,7 @@ enum PrefType {
   kInteger,
   // TODO(archanasimha): implement Get/SetAsX for the following PrefTypes.
   kGURL,
-  //  kList,
+  kList,
   kDictionary,
   //  kExtensionIdList,
   //  kPermissionSet,

@@ -24,9 +24,9 @@
 #include "components/previews/content/previews_user_data.h"
 #include "components/previews/core/previews_features.h"
 #include "content/public/browser/web_contents.h"
-#include "content/public/common/previews_state.h"
 #include "content/public/test/navigation_simulator.h"
 #include "content/public/test/web_contents_tester.h"
+#include "third_party/blink/public/common/loader/previews_state.h"
 
 namespace previews {
 
@@ -79,7 +79,7 @@ class PreviewsPageLoadMetricsObserverTest
   }
 
   content::GlobalRequestID NavigateAndCommitWithPreviewsState(
-      content::PreviewsState previews_state) {
+      blink::PreviewsState previews_state) {
     auto navigation_simulator =
         content::NavigationSimulator::CreateRendererInitiated(
             GURL(kDefaultTestUrl), main_rfh());
@@ -185,7 +185,7 @@ TEST_F(PreviewsPageLoadMetricsObserverTest, NoActivePreview) {
       previews::features::kNoScriptPreviews);
   ResetTest();
 
-  NavigateAndCommitWithPreviewsState(content::PREVIEWS_OFF);
+  NavigateAndCommitWithPreviewsState(blink::PreviewsTypes::PREVIEWS_OFF);
 
   auto resources =
       GetSampleResourceDataUpdateForTesting(10 * 1024 /* resource_size */);
@@ -209,7 +209,7 @@ TEST_F(PreviewsPageLoadMetricsObserverTest, NoScriptPreviewActive) {
       previews::features::kNoScriptPreviews);
   ResetTest();
 
-  NavigateAndCommitWithPreviewsState(content::NOSCRIPT_ON);
+  NavigateAndCommitWithPreviewsState(blink::PreviewsTypes::NOSCRIPT_ON);
 
   auto resources =
       GetSampleResourceDataUpdateForTesting(10 * 1024 /* resource_size */);
@@ -229,7 +229,8 @@ TEST_F(PreviewsPageLoadMetricsObserverTest, ResourceLoadingHintsPreviewActive) {
       previews::features::kResourceLoadingHints);
   ResetTest();
 
-  NavigateAndCommitWithPreviewsState(content::RESOURCE_LOADING_HINTS_ON);
+  NavigateAndCommitWithPreviewsState(
+      blink::PreviewsTypes::RESOURCE_LOADING_HINTS_ON);
 
   auto resources =
       GetSampleResourceDataUpdateForTesting(10 * 1024 /* resource_size */);
@@ -259,7 +260,7 @@ TEST_F(PreviewsPageLoadMetricsObserverTest, NoScriptDataSavings) {
   ResetTest();
 
   int64_t data_use = 0;
-  NavigateAndCommitWithPreviewsState(content::NOSCRIPT_ON);
+  NavigateAndCommitWithPreviewsState(blink::PreviewsTypes::NOSCRIPT_ON);
   std::vector<ResourceDataUpdatePtr> resources;
   auto resource_data_update = ResourceDataUpdate::New();
   resource_data_update->delta_bytes = 5 * 1024;
@@ -298,7 +299,8 @@ TEST_F(PreviewsPageLoadMetricsObserverTest, ResourceLoadingHintsDataSavings) {
   ResetTest();
 
   int64_t data_use = 0;
-  NavigateAndCommitWithPreviewsState(content::RESOURCE_LOADING_HINTS_ON);
+  NavigateAndCommitWithPreviewsState(
+      blink::PreviewsTypes::RESOURCE_LOADING_HINTS_ON);
   std::vector<ResourceDataUpdatePtr> resources;
   auto resource_data_update = ResourceDataUpdate::New();
   resource_data_update->delta_bytes = 5 * 1024;

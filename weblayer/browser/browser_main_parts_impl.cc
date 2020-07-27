@@ -54,6 +54,7 @@
 #include "ui/base/x/x11_util.h"  // nogncheck
 #endif
 #if defined(USE_AURA) && defined(USE_X11)
+#include "ui/base/ui_base_features.h"
 #include "ui/events/devices/x11/touch_factory_x11.h"  // nogncheck
 #endif
 #if !defined(OS_CHROMEOS) && defined(USE_AURA) && defined(OS_LINUX)
@@ -130,7 +131,8 @@ int BrowserMainPartsImpl::PreCreateThreads() {
 
 void BrowserMainPartsImpl::PreMainMessageLoopStart() {
 #if defined(USE_AURA) && defined(USE_X11)
-  ui::TouchFactory::SetTouchDeviceListFromCommandLine();
+  if (!features::IsUsingOzonePlatform())
+    ui::TouchFactory::SetTouchDeviceListFromCommandLine();
 #endif
 }
 
@@ -138,7 +140,8 @@ int BrowserMainPartsImpl::PreEarlyInitialization() {
   browser_process_ = std::make_unique<BrowserProcess>(std::move(local_state_));
 
 #if defined(USE_X11)
-  ui::SetDefaultX11ErrorHandlers();
+  if (!features::IsUsingOzonePlatform())
+    ui::SetDefaultX11ErrorHandlers();
 #endif
 #if defined(USE_AURA) && defined(OS_LINUX)
   ui::InitializeInputMethodForTesting();

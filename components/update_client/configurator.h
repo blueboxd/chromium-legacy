@@ -23,6 +23,7 @@ class Version;
 namespace update_client {
 
 class ActivityDataService;
+class CrxDownloaderFactory;
 class NetworkFetcherFactory;
 class PatcherFactory;
 class ProtocolHandlerFactory;
@@ -94,6 +95,8 @@ class Configurator : public base::RefCountedThreadSafe<Configurator> {
   virtual std::string GetDownloadPreference() const = 0;
 
   virtual scoped_refptr<NetworkFetcherFactory> GetNetworkFetcherFactory() = 0;
+
+  virtual scoped_refptr<CrxDownloaderFactory> GetCrxDownloaderFactory() = 0;
 
   virtual scoped_refptr<UnzipperFactory> GetUnzipperFactory() = 0;
 

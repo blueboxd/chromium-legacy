@@ -22,13 +22,13 @@
 #include "chrome/browser/startup_data.h"
 #include "content/public/browser/content_browser_client.h"
 #include "content/public/browser/web_contents.h"
-#include "content/public/common/previews_state.h"
 #include "extensions/buildflags/buildflags.h"
 #include "media/media_buildflags.h"
 #include "mojo/public/cpp/bindings/pending_receiver.h"
 #include "mojo/public/cpp/bindings/pending_remote.h"
 #include "ppapi/buildflags/buildflags.h"
 #include "services/network/public/mojom/network_context.mojom-forward.h"
+#include "third_party/blink/public/common/loader/previews_state.h"
 
 class ChromeContentBrowserClientParts;
 class PrefRegistrySimple;
@@ -576,13 +576,13 @@ class ChromeContentBrowserClient : public content::ContentBrowserClient {
                                      int64_t sent_bytes) override;
   base::FilePath GetSandboxedStorageServiceDataDirectory() override;
   bool ShouldSandboxAudioService() override;
-  content::PreviewsState DetermineAllowedPreviews(
-      content::PreviewsState initial_state,
+  blink::PreviewsState DetermineAllowedPreviews(
+      blink::PreviewsState initial_state,
       content::NavigationHandle* navigation_handle,
       const GURL& current_navigation_url) override;
 
-  content::PreviewsState DetermineCommittedPreviews(
-      content::PreviewsState initial_state,
+  blink::PreviewsState DetermineCommittedPreviews(
+      blink::PreviewsState initial_state,
       content::NavigationHandle* navigation_handle,
       const net::HttpResponseHeaders* response_headers) override;
 
@@ -634,23 +634,23 @@ class ChromeContentBrowserClient : public content::ContentBrowserClient {
       const GURL& site_for_cookies,
       const base::Optional<url::Origin>& top_frame_origin) override;
 
-  content::PreviewsState DetermineAllowedPreviewsWithoutHoldback(
-      content::PreviewsState initial_state,
+  blink::PreviewsState DetermineAllowedPreviewsWithoutHoldback(
+      blink::PreviewsState initial_state,
       content::NavigationHandle* navigation_handle,
       const GURL& current_navigation_url);
 
-  content::PreviewsState DetermineCommittedPreviewsWithoutHoldback(
-      content::PreviewsState initial_state,
+  blink::PreviewsState DetermineCommittedPreviewsWithoutHoldback(
+      blink::PreviewsState initial_state,
       content::NavigationHandle* navigation_handle,
       const net::HttpResponseHeaders* response_headers);
 
   // Determines the committed previews state for the passed in params.
-  static content::PreviewsState DetermineCommittedPreviewsForURL(
+  static blink::PreviewsState DetermineCommittedPreviewsForURL(
       const GURL& url,
       data_reduction_proxy::DataReductionProxyData* drp_data,
       previews::PreviewsUserData* previews_user_data,
       const previews::PreviewsDecider* previews_decider,
-      content::PreviewsState initial_state,
+      blink::PreviewsState initial_state,
       content::NavigationHandle* navigation_handle);
 
 #if !defined(OS_ANDROID)

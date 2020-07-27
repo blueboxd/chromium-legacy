@@ -98,6 +98,10 @@ autofill::AddressNormalizer* AwAutofillClient::GetAddressNormalizer() {
   return nullptr;
 }
 
+const GURL& AwAutofillClient::GetLastCommittedURL() {
+  return web_contents_->GetLastCommittedURL();
+}
+
 security_state::SecurityLevel
 AwAutofillClient::GetSecurityLevelForUmaHistograms() {
   // The metrics are not recorded for Android webview, so return the count value

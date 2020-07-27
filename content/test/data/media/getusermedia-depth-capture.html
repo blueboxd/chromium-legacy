@@ -21,18 +21,14 @@
   // run here because they require --use-fake-device-for-media-capture.
   function getDepthStreamAndCallCreateImageBitmap() {
     console.log('Calling getDepthStreamAndCallCreateImageBitmap');
-    // Call getUserMedia() to allow device enumerations.
-    navigator.mediaDevices.getUserMedia({video:true}).then(stream => {
-      stream.getTracks().forEach(track => track.stop());
-      getFake16bitStream().then(stream => {
-        detectVideoInLocalView1(stream).then(() => {
-          testVideoToImageBitmap('local-view-1', function() {
-            stream.getVideoTracks()[0].stop();
-            detectVideoStopped('local-view-1')
-                .then(reportTestSuccess);
-          }, failedCallback);
-        });
-      }, failedCallback);
+    getFake16bitStream().then((stream) => {
+      detectVideoInLocalView1(stream).then(() => {
+        testVideoToImageBitmap('local-view-1', function() {
+          stream.getVideoTracks()[0].stop();
+          detectVideoStopped('local-view-1')
+              .then(reportTestSuccess);
+        }, failedCallback);
+      });
     }, failedCallback);
   }
 
@@ -425,16 +421,12 @@
     var query = /query=(.*)/.exec(window.location.href);
     if (!query)
       return;
-    // Call getUserMedia() first to allow device enumerations.
-    navigator.mediaDevices.getUserMedia({video: true}).then(stream => {
-      stream.getTracks().forEach(track => track.stop());
-      if (query[1] == "RGBAUint8")
-        depthStreamToRGBAUint8Texture();
-      else if (query[1] == "RGBAFloat")
-        depthStreamToRGBAFloatTexture();
-      else if (query[1] == "R32Float")
-        depthStreamToR32FloatTexture();
-    }, failedCallback);
+    if (query[1] == "RGBAUint8")
+      depthStreamToRGBAUint8Texture();
+    else if (query[1] == "RGBAFloat")
+      depthStreamToRGBAFloatTexture();
+    else if (query[1] == "R32Float")
+      depthStreamToR32FloatTexture();
   }
   </script>
 </head>

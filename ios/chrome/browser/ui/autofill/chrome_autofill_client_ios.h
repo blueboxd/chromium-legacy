@@ -62,6 +62,7 @@ class ChromeAutofillClientIOS : public AutofillClient {
   ukm::UkmRecorder* GetUkmRecorder() override;
   ukm::SourceId GetUkmSourceId() override;
   AddressNormalizer* GetAddressNormalizer() override;
+  const GURL& GetLastCommittedURL() override;
   security_state::SecurityLevel GetSecurityLevelForUmaHistograms() override;
   std::string GetPageLanguage() const override;
   std::string GetVariationConfigCountryCode() const override;

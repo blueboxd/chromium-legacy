@@ -69,6 +69,11 @@ autofill::AddressNormalizer* AutofillClientImpl::GetAddressNormalizer() {
   return nullptr;
 }
 
+const GURL& AutofillClientImpl::GetLastCommittedURL() {
+  NOTREACHED();
+  return GURL::EmptyGURL();
+}
+
 security_state::SecurityLevel
 AutofillClientImpl::GetSecurityLevelForUmaHistograms() {
   NOTREACHED();

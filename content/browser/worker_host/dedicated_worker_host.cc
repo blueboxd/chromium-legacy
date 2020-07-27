@@ -432,12 +432,8 @@ void DedicatedWorkerHost::CreateIdleManager(
     mojo::ReportBadMessage("Feature policy blocks access to IdleDetection.");
     return;
   }
-  static_cast<StoragePartitionImpl*>(
-      ancestor_render_frame_host->GetProcess()->GetStoragePartition())
-      ->GetIdleManager()
-      ->CreateService(
-          std::move(receiver),
-          ancestor_render_frame_host->GetMainFrame()->GetLastCommittedOrigin());
+
+  ancestor_render_frame_host->GetIdleManager(std::move(receiver));
 }
 
 void DedicatedWorkerHost::BindSmsReceiverReceiver(

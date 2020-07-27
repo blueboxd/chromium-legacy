@@ -16,6 +16,7 @@
 #include "third_party/blink/renderer/core/inspector/dom_traversal_utils.h"
 #include "third_party/blink/renderer/core/inspector/inspector_dom_agent.h"
 #include "third_party/blink/renderer/core/layout/adjust_for_absolute_zoom.h"
+#include "third_party/blink/renderer/core/layout/geometry/physical_offset.h"
 #include "third_party/blink/renderer/core/layout/layout_box.h"
 #include "third_party/blink/renderer/core/layout/layout_grid.h"
 #include "third_party/blink/renderer/core/layout/layout_inline.h"
@@ -26,6 +27,7 @@
 #include "third_party/blink/renderer/core/page/page.h"
 #include "third_party/blink/renderer/core/style/computed_style_constants.h"
 #include "third_party/blink/renderer/core/style/grid_positions_resolver.h"
+#include "third_party/blink/renderer/platform/geometry/layout_unit.h"
 #include "third_party/blink/renderer/platform/graphics/path.h"
 #include "third_party/blink/renderer/platform/web_test_support.h"
 
@@ -409,28 +411,32 @@ std::unique_ptr<protocol::ListValue> BuildGridTrackSizes(
     float scale,
     LayoutUnit gap) {
   std::unique_ptr<protocol::ListValue> sizes = protocol::ListValue::create();
-
-  unsigned i = 0;
-  float start = 0;
-  for (LayoutUnit track : layout_grid->TrackSizesForComputedStyle(direction)) {
-    if (i > 0)
-      start += gap;
+  const Vector<LayoutUnit>& positions = direction == kForRows
+                                            ? layout_grid->RowPositions()
+                                            : layout_grid->ColumnPositions();
+  const Vector<LayoutUnit>& alt_positions = direction == kForRows
+                                                ? layout_grid->ColumnPositions()
+                                                : layout_grid->RowPositions();
+  LayoutUnit first_offset = alt_positions.front();
+  for (unsigned i = 1; i < positions.size(); i++) {
+    LayoutUnit current_position = positions.at(i);
+    LayoutUnit prev_position = positions.at(i - 1);
+    LayoutUnit gap_offset = i < positions.size() - 1 ? gap : LayoutUnit();
+    LayoutUnit width = current_position - prev_position - gap_offset;
+    LayoutUnit label_pos = prev_position + width / 2;
     std::unique_ptr<protocol::DictionaryValue> size_info =
         protocol::DictionaryValue::create();
     auto adjusted_size = AdjustForAbsoluteZoom::AdjustFloat(
-        track.ToFloat() * scale, layout_grid->StyleRef());
+        width * scale, layout_grid->StyleRef());
     size_info->setDouble("computedSize", adjusted_size);
-    // TODO (alexrudenko): Add authored sizes here
-    float offset = start + track / 2;
-    FloatPoint local_arrow_pos(direction == kForColumns ? offset : 0,
-                               direction == kForColumns ? 0 : offset);
-    FloatPoint abs_arrow_pos =
-        layout_grid->LocalToAbsoluteFloatPoint(local_arrow_pos);
-    size_info->setDouble("x", abs_arrow_pos.X() * scale);
-    size_info->setDouble("y", abs_arrow_pos.Y() * scale);
+    PhysicalOffset local_arrow_pos(
+        direction == kForColumns ? label_pos : first_offset,
+        direction == kForColumns ? first_offset : label_pos);
+    PhysicalOffset abs_arrow_pos =
+        layout_grid->LocalToAbsolutePoint(local_arrow_pos);
+    size_info->setDouble("x", abs_arrow_pos.left * scale);
+    size_info->setDouble("y", abs_arrow_pos.top * scale);
     sizes->pushValue(std::move(size_info));
-    start += track;
-    i++;
   }
 
   return sizes;
@@ -560,6 +566,7 @@ std::unique_ptr<protocol::ListValue> BuildGridLineNames(
       direction == kForColumns ? layout_grid->StyleRef().NamedGridColumnLines()
                                : layout_grid->StyleRef().NamedGridRowLines();
   LayoutUnit gap = layout_grid->GridGap(direction);
+  LayoutUnit firstOffset = tracks.front();
 
   for (const auto& item : named_lines_map) {
     const String& name = item.key;
@@ -574,7 +581,7 @@ std::unique_ptr<protocol::ListValue> BuildGridLineNames(
       LayoutUnit gap_offset =
           index > 0 && index < tracks.size() - 1 ? gap / 2 : LayoutUnit();
       line->setValue("offset", protocol::FundamentalValue::create(
-                                   (track - gap_offset) * scale));
+                                   (track - gap_offset - firstOffset) * scale));
 
       lines->pushValue(std::move(line));
     }

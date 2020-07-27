@@ -2045,8 +2045,8 @@ class CORE_EXPORT Document : public ContainerNode,
   const int64_t ukm_source_id_;
   bool needs_to_record_ukm_outlive_time_;
 
-  // Tracks and reports UKM metrics of the number of attempted font family match
-  // attempts (both successful and not successful) by the page.
+  // Tracks and reports metrics of attempted font match attempts (both
+  // successful and not successful) by the page.
   std::unique_ptr<FontMatchingMetrics> font_matching_metrics_;
 
 #if DCHECK_IS_ON()

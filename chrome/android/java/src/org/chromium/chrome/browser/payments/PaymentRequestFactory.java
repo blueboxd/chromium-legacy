@@ -40,7 +40,6 @@ import org.chromium.services.service_manager.InterfaceFactory;
 public class PaymentRequestFactory implements InterfaceFactory<PaymentRequest> {
     // Tests can inject behaviour on future PaymentRequests via these objects.
     public static PaymentRequestImpl.Delegate sDelegateForTest;
-    public static PaymentRequestImpl.NativeObserverForTest sNativeObserverForTest;
 
     private final RenderFrameHost mRenderFrameHost;
 
@@ -169,6 +168,7 @@ public class PaymentRequestFactory implements InterfaceFactory<PaymentRequest> {
 
     @Override
     public PaymentRequest createImpl() {
+        if (mRenderFrameHost == null) return new InvalidPaymentRequest();
         if (!mRenderFrameHost.isFeatureEnabled(FeaturePolicyFeature.PAYMENT)) {
             mRenderFrameHost.getRemoteInterfaces().onConnectionError(
                     new MojoException(MojoResult.PERMISSION_DENIED));
@@ -179,8 +179,6 @@ public class PaymentRequestFactory implements InterfaceFactory<PaymentRequest> {
             return new InvalidPaymentRequest();
         }
 
-        if (mRenderFrameHost == null) return new InvalidPaymentRequest();
-
         PaymentRequestImpl.Delegate delegate;
         if (sDelegateForTest != null) {
             delegate = sDelegateForTest;
@@ -188,11 +186,6 @@ public class PaymentRequestFactory implements InterfaceFactory<PaymentRequest> {
             delegate = new PaymentRequestDelegateImpl(mRenderFrameHost);
         }
 
-        return new ComponentPaymentRequestImpl(
-                new PaymentRequestImpl(mRenderFrameHost, delegate, sNativeObserverForTest));
-    }
-
-    private WebContents getWebContents() {
-        return WebContentsStatics.fromRenderFrameHost(mRenderFrameHost);
+        return new ComponentPaymentRequestImpl(new PaymentRequestImpl(mRenderFrameHost, delegate));
     }
 }

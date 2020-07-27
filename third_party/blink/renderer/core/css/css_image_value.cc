@@ -97,7 +97,7 @@ StyleImage* CSSImageValue::CacheImage(
         GetNetworkStateNotifier().SaveDataEnabled()) {
       auto& resource_request = params.MutableResourceRequest();
       resource_request.SetPreviewsState(resource_request.GetPreviewsState() |
-                                        WebURLRequest::kSubresourceRedirectOn);
+                                        PreviewsTypes::kSubresourceRedirectOn);
     }
 
     if (origin_clean_ != OriginClean::kTrue)

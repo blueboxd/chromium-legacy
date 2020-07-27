@@ -15,6 +15,7 @@
 #include "build/build_config.h"
 #include "content/common/content_export.h"
 #include "content/public/browser/global_routing_id.h"
+#include "content/public/browser/idle_manager.h"
 #include "content/public/common/browser_controls_state.h"
 #include "content/public/common/isolated_world_ids.h"
 #include "content/public/common/page_visibility_state.h"
@@ -602,6 +603,8 @@ class CONTENT_EXPORT RenderFrameHost : public IPC::Listener,
   virtual void ReportHeavyAdIssue(
       blink::mojom::HeavyAdResolutionStatus resolution,
       blink::mojom::HeavyAdReason reason) = 0;
+
+  virtual IdleManager* GetIdleManagerForTesting() = 0;
 
  private:
   // This interface should only be implemented inside content.

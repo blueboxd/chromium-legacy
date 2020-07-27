@@ -9,6 +9,7 @@
 #include "content/public/test/content_browser_test.h"
 #include "content/public/test/content_browser_test_utils.h"
 #include "content/shell/browser/shell.h"
+#include "testing/gmock/include/gmock/gmock.h"
 
 namespace content {
 
@@ -28,10 +29,13 @@ IN_PROC_BROWSER_TEST_F(ProcessInternalsWebUiBrowserTest, NoProcessBindings) {
   // Note: This requires using an isolated world in which to execute the
   // script because WebUI has a default CSP policy denying "eval()", which is
   // what EvalJs uses under the hood.
-  EXPECT_NE(-1,
-            EvalJs(shell()->web_contents()->GetMainFrame(),
-                   "document.body.innerHTML.search('Process Model Internals');",
-                   EXECUTE_SCRIPT_DEFAULT_OPTIONS, 1 /* world_id */));
+  std::string page_contents =
+      EvalJs(shell()->web_contents()->GetMainFrame(), "document.body.innerHTML",
+             EXECUTE_SCRIPT_DEFAULT_OPTIONS, 1 /* world_id */)
+          .ExtractString();
+
+  // Crude verification that the page had the right content.
+  EXPECT_THAT(page_contents, ::testing::HasSubstr("Process Internals"));
 }
 
 }  // namespace content

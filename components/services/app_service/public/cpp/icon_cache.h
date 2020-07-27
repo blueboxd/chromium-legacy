@@ -84,6 +84,8 @@ class IconCache : public IconLoader {
   // actively held.
   void SweepReleasedIcons();
 
+  void RemoveIcon(apps::mojom::AppType app_type, const std::string& app_id);
+
  private:
   class Value {
    public:

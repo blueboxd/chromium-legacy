@@ -305,8 +305,7 @@ bool LayoutListItem::UpdateMarkerLocation() {
     }
   }
 
-  if (!marker_parent ||
-      (marker_parent != line_box_parent && NormalChildNeedsLayout())) {
+  if (!marker_parent || marker_parent != line_box_parent) {
     marker->Remove();
     line_box_parent->AddChild(marker, FirstNonMarkerChild(line_box_parent));
     // TODO(rhogan): line_box_parent and marker_parent may be deleted by

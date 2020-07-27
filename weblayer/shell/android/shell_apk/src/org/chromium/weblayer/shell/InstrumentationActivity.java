@@ -14,6 +14,7 @@ import android.os.StrictMode.VmPolicy;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.ViewGroup.LayoutParams;
+import android.view.WindowManager;
 import android.widget.LinearLayout;
 import android.widget.RelativeLayout;
 
@@ -24,6 +25,7 @@ import androidx.fragment.app.FragmentTransaction;
 
 import org.chromium.base.ContextUtils;
 import org.chromium.weblayer.Browser;
+import org.chromium.weblayer.FullscreenCallback;
 import org.chromium.weblayer.NewTabCallback;
 import org.chromium.weblayer.NewTabType;
 import org.chromium.weblayer.Profile;
@@ -63,6 +65,7 @@ public class InstrumentationActivity extends FragmentActivity {
     private IntentInterceptor mIntentInterceptor;
     private Bundle mSavedInstanceState;
     private TabCallback mRendererCrashListener;
+    private Runnable mExitFullscreenRunnable;
     private boolean mIgnoreRendererCrashes;
     private TabListCallback mTabListCallback;
     private List<Tab> mPreviousTabList = new ArrayList<>();
@@ -257,7 +260,7 @@ public class InstrumentationActivity extends FragmentActivity {
                 if (mTab == null) {
                     setTab(tab);
                 }
-                tab.registerTabCallback(mRendererCrashListener);
+                setTabCallbacks(tab);
             }
 
             @Override
@@ -282,9 +285,50 @@ public class InstrumentationActivity extends FragmentActivity {
             // This happens with session restore enabled.
             assert mBrowser.getTabs().size() == 0;
         } else {
-            mBrowser.getActiveTab().registerTabCallback(mRendererCrashListener);
+            setTabCallbacks(mBrowser.getActiveTab());
             setTab(mBrowser.getActiveTab());
         }
+    }
+
+    private void setTabCallbacks(Tab tab) {
+        tab.registerTabCallback(mRendererCrashListener);
+
+        tab.setFullscreenCallback(new FullscreenCallback() {
+            private int mSystemVisibilityToRestore;
+
+            @Override
+            public void onEnterFullscreen(Runnable exitFullscreenRunnable) {
+                mExitFullscreenRunnable = exitFullscreenRunnable;
+                // This comes from Chrome code to avoid an extra resize.
+                final WindowManager.LayoutParams attrs = getWindow().getAttributes();
+                attrs.flags |= WindowManager.LayoutParams.FLAG_TRANSLUCENT_STATUS;
+                getWindow().setAttributes(attrs);
+
+                View decorView = getWindow().getDecorView();
+                // Caching the system ui visibility is ok for shell, but likely not ok for
+                // real code.
+                mSystemVisibilityToRestore = decorView.getSystemUiVisibility();
+                decorView.setSystemUiVisibility(View.SYSTEM_UI_FLAG_LAYOUT_STABLE
+                        | View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN
+                        | View.SYSTEM_UI_FLAG_LAYOUT_HIDE_NAVIGATION
+                        | View.SYSTEM_UI_FLAG_HIDE_NAVIGATION // hide nav bar
+                        | View.SYSTEM_UI_FLAG_FULLSCREEN // hide status bar
+                        | View.SYSTEM_UI_FLAG_LOW_PROFILE | View.SYSTEM_UI_FLAG_IMMERSIVE_STICKY);
+            }
+
+            @Override
+            public void onExitFullscreen() {
+                mExitFullscreenRunnable = null;
+                View decorView = getWindow().getDecorView();
+                decorView.setSystemUiVisibility(mSystemVisibilityToRestore);
+
+                final WindowManager.LayoutParams attrs = getWindow().getAttributes();
+                if ((attrs.flags & WindowManager.LayoutParams.FLAG_TRANSLUCENT_STATUS) != 0) {
+                    attrs.flags &= ~WindowManager.LayoutParams.FLAG_TRANSLUCENT_STATUS;
+                    getWindow().setAttributes(attrs);
+                }
+            }
+        });
     }
 
     private void createUrlBarView() {

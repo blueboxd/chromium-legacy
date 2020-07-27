@@ -158,8 +158,8 @@ class PLATFORM_EXPORT FetchContext : public GarbageCollected<FetchContext> {
     return false;
   }
 
-  virtual WebURLRequest::PreviewsState previews_state() const {
-    return WebURLRequest::kPreviewsUnspecified;
+  virtual PreviewsState previews_state() const {
+    return PreviewsTypes::kPreviewsUnspecified;
   }
 
   // Returns a receiver corresponding to a request with |request_id|.

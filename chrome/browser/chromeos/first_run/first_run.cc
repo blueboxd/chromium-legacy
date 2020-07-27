@@ -143,6 +143,8 @@ void RegisterProfilePrefs(user_prefs::PrefRegistrySyncable* registry) {
   // See crbug.com/752361
   registry->RegisterBooleanPref(prefs::kFirstRunTutorialShown, false);
   registry->RegisterBooleanPref(prefs::kHelpAppShouldShowGetStarted, false);
+  registry->RegisterBooleanPref(prefs::kHelpAppShouldShowParentalControl,
+                                false);
   registry->RegisterBooleanPref(prefs::kHelpAppTabletModeDuringOobe, false);
 }
 
@@ -155,6 +157,9 @@ bool ShouldLaunchHelpApp(Profile* profile) {
                                   ShouldShowGetStarted(profile, user_manager));
   profile->GetPrefs()->SetBoolean(prefs::kHelpAppTabletModeDuringOobe,
                                   ash::TabletMode::Get()->InTabletMode());
+
+  if (WizardController::default_controller())
+    WizardController::default_controller()->PrepareFirstRunPrefs();
 
   if (!IsRegularUserOrSupervisedChild(user_manager))
     return false;

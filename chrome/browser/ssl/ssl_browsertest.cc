@@ -6991,14 +6991,13 @@ IN_PROC_BROWSER_TEST_F(TLSLegacyVersionSSLUITest, NoWarningTLS12) {
   ASSERT_TRUE(https_server()->Start());
 
   GURL url(https_server()->GetURL("/ssl/google.html"));
-  WebContents* tab = browser()->tab_strip_model()->GetActiveWebContents();
-  content::ConsoleObserverDelegate console_observer(
-      tab, base::StringPrintf(
-               "*The connection used to load resources from https://%s:%s*",
-               url.host().c_str(), url.port().c_str()));
-  tab->SetDelegate(&console_observer);
+  content::WebContentsConsoleObserver console_observer(
+      browser()->tab_strip_model()->GetActiveWebContents());
+  console_observer.SetPattern(base::StringPrintf(
+      "*The connection used to load resources from https://%s:%s*",
+      url.host().c_str(), url.port().c_str()));
   ui_test_utils::NavigateToURL(browser(), url);
-  EXPECT_EQ(std::string(), console_observer.message());
+  EXPECT_EQ(0u, console_observer.messages().size());
 }
 
 // TLS 1.1 should trigger a warning.
@@ -7007,17 +7006,16 @@ IN_PROC_BROWSER_TEST_F(TLSLegacyVersionSSLUITest, WarningTLS11) {
   ASSERT_TRUE(https_server()->Start());
 
   GURL url(https_server()->GetURL("/ssl/google.html"));
-  WebContents* tab = browser()->tab_strip_model()->GetActiveWebContents();
-  content::ConsoleObserverDelegate console_observer(
-      tab, base::StringPrintf(
-               "*The connection used to load resources from https://%s:%s*",
-               url.host().c_str(), url.port().c_str()));
-  tab->SetDelegate(&console_observer);
+  content::WebContentsConsoleObserver console_observer(
+      browser()->tab_strip_model()->GetActiveWebContents());
+  console_observer.SetPattern(base::StringPrintf(
+      "*The connection used to load resources from https://%s:%s*",
+      url.host().c_str(), url.port().c_str()));
   ui_test_utils::NavigateToURL(browser(), url);
   console_observer.Wait();
-  EXPECT_TRUE(base::MatchPattern(console_observer.message(),
+  EXPECT_TRUE(base::MatchPattern(console_observer.GetMessageAt(0u),
                                  "*will be disabled in the future*"));
-  EXPECT_TRUE(base::MatchPattern(console_observer.message(),
+  EXPECT_TRUE(base::MatchPattern(console_observer.GetMessageAt(0u),
                                  "*should enable TLS 1.2 or later*"));
 }
 
@@ -7027,17 +7025,16 @@ IN_PROC_BROWSER_TEST_F(TLSLegacyVersionSSLUITest, WarningTLS1) {
   ASSERT_TRUE(https_server()->Start());
 
   GURL url(https_server()->GetURL("/ssl/google.html"));
-  WebContents* tab = browser()->tab_strip_model()->GetActiveWebContents();
-  content::ConsoleObserverDelegate console_observer(
-      tab, base::StringPrintf(
-               "*The connection used to load resources from https://%s:%s*",
-               url.host().c_str(), url.port().c_str()));
-  tab->SetDelegate(&console_observer);
+  content::WebContentsConsoleObserver console_observer(
+      browser()->tab_strip_model()->GetActiveWebContents());
+  console_observer.SetPattern(base::StringPrintf(
+      "*The connection used to load resources from https://%s:%s*",
+      url.host().c_str(), url.port().c_str()));
   ui_test_utils::NavigateToURL(browser(), url);
   console_observer.Wait();
-  EXPECT_TRUE(base::MatchPattern(console_observer.message(),
+  EXPECT_TRUE(base::MatchPattern(console_observer.GetMessageAt(0u),
                                  "*will be disabled in the future*"));
-  EXPECT_TRUE(base::MatchPattern(console_observer.message(),
+  EXPECT_TRUE(base::MatchPattern(console_observer.GetMessageAt(0u),
                                  "*should enable TLS 1.2 or later*"));
 }
 
@@ -7051,25 +7048,24 @@ IN_PROC_BROWSER_TEST_F(TLSLegacyVersionSSLUITest, ManySubresources) {
 
   // Observe the message for a cross-site subresource.
   {
-    content::ConsoleObserverDelegate console_observer(tab, "*https://a.test*");
-    tab->SetDelegate(&console_observer);
+    content::WebContentsConsoleObserver console_observer(tab);
+    console_observer.SetPattern("*https://a.test*");
     ui_test_utils::NavigateToURL(browser(), url);
     console_observer.Wait();
-    EXPECT_TRUE(base::MatchPattern(console_observer.message(),
+    EXPECT_TRUE(base::MatchPattern(console_observer.GetMessageAt(0u),
                                    "*will be disabled in the future*"));
-    EXPECT_TRUE(base::MatchPattern(console_observer.message(),
+    EXPECT_TRUE(base::MatchPattern(console_observer.GetMessageAt(0u),
                                    "*should enable TLS 1.2 or later*"));
   }
   // Observe that the message caps out after some number of subresources.
   {
-    content::ConsoleObserverDelegate console_observer(tab,
-                                                      "*Additional resources*");
-    tab->SetDelegate(&console_observer);
+    content::WebContentsConsoleObserver console_observer(tab);
+    console_observer.SetPattern("*Additional resources*");
     ui_test_utils::NavigateToURL(browser(), url);
     console_observer.Wait();
-    EXPECT_TRUE(base::MatchPattern(console_observer.message(),
+    EXPECT_TRUE(base::MatchPattern(console_observer.GetMessageAt(0u),
                                    "*will be disabled in the future*"));
-    EXPECT_TRUE(base::MatchPattern(console_observer.message(),
+    EXPECT_TRUE(base::MatchPattern(console_observer.GetMessageAt(0u),
                                    "*should enable TLS 1.2 or later*"));
   }
 }

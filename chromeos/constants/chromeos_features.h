@@ -48,6 +48,8 @@ extern const base::Feature kCameraSystemWebApp;
 COMPONENT_EXPORT(CHROMEOS_CONSTANTS)
 extern const base::Feature kCdmFactoryDaemon;
 COMPONENT_EXPORT(CHROMEOS_CONSTANTS)
+extern const base::Feature kChildSpecificSignin;
+COMPONENT_EXPORT(CHROMEOS_CONSTANTS)
 extern const base::Feature kCrostiniPortForwarding;
 COMPONENT_EXPORT(CHROMEOS_CONSTANTS)
 extern const base::Feature kCrostiniDiskResizing;
@@ -223,6 +225,7 @@ extern const base::Feature kImeMozcProto;
 COMPONENT_EXPORT(CHROMEOS_CONSTANTS) bool IsAmbientModeEnabled();
 COMPONENT_EXPORT(CHROMEOS_CONSTANTS) bool IsAssistantEnabled();
 COMPONENT_EXPORT(CHROMEOS_CONSTANTS) bool IsBetterUpdateEnabled();
+COMPONENT_EXPORT(CHROMEOS_CONSTANTS) bool IsChildSpecificSigninEnabled();
 COMPONENT_EXPORT(CHROMEOS_CONSTANTS) bool IsDeepLinkingEnabled();
 COMPONENT_EXPORT(CHROMEOS_CONSTANTS) bool IsEduCoexistenceEnabled();
 COMPONENT_EXPORT(CHROMEOS_CONSTANTS) bool IsImeSandboxEnabled();
@@ -236,6 +239,7 @@ COMPONENT_EXPORT(CHROMEOS_CONSTANTS) bool IsMinimumChromeVersionEnabled();
 COMPONENT_EXPORT(CHROMEOS_CONSTANTS) bool IsClipboardHistoryEnabled();
 COMPONENT_EXPORT(CHROMEOS_CONSTANTS) bool IsOobeScreensPriorityEnabled();
 COMPONENT_EXPORT(CHROMEOS_CONSTANTS) bool IsParentalControlsSettingsEnabled();
+COMPONENT_EXPORT(CHROMEOS_CONSTANTS) bool IsPhoneHubEnabled();
 COMPONENT_EXPORT(CHROMEOS_CONSTANTS) bool IsQuickAnswersDogfood();
 COMPONENT_EXPORT(CHROMEOS_CONSTANTS) bool IsQuickAnswersEnabled();
 COMPONENT_EXPORT(CHROMEOS_CONSTANTS) bool IsQuickAnswersRichUiEnabled();

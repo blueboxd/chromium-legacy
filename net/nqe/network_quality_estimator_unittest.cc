@@ -1392,9 +1392,16 @@ TEST_F(NetworkQualityEstimatorTest, TestGetMetricsSince) {
   }
 }
 
+#if defined(OS_IOS)
+// Flaky on iOS: crbug.com/672917.
+#define MAYBE_TestThroughputNoRequestOverlap \
+  DISABLED_TestThroughputNoRequestOverlap
+#else
+#define MAYBE_TestThroughputNoRequestOverlap TestThroughputNoRequestOverlap
+#endif
 // Tests if the throughput observation is taken correctly when local and network
 // requests do not overlap.
-TEST_F(NetworkQualityEstimatorTest, TestThroughputNoRequestOverlap) {
+TEST_F(NetworkQualityEstimatorTest, MAYBE_TestThroughputNoRequestOverlap) {
   base::HistogramTester histogram_tester;
   std::map<std::string, std::string> variation_params;
   variation_params["throughput_min_requests_in_flight"] = "1";

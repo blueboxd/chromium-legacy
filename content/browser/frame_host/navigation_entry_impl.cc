@@ -761,7 +761,7 @@ NavigationEntryImpl::ConstructCommonNavigationParams(
     const GURL& dest_url,
     blink::mojom::ReferrerPtr dest_referrer,
     mojom::NavigationType navigation_type,
-    PreviewsState previews_state,
+    blink::PreviewsState previews_state,
     base::TimeTicks navigation_start,
     base::TimeTicks input_start) {
   NavigationDownloadPolicy download_policy;

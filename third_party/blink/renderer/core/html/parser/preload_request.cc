@@ -84,7 +84,7 @@ Resource* PreloadRequest::Start(Document* document) {
       base::FeatureList::IsEnabled(blink::features::kSubresourceRedirect) &&
       blink::GetNetworkStateNotifier().SaveDataEnabled()) {
     resource_request.SetPreviewsState(resource_request.GetPreviewsState() |
-                                      WebURLRequest::kSubresourceRedirectOn);
+                                      PreviewsTypes::kSubresourceRedirectOn);
   }
 
   ResourceLoaderOptions options;

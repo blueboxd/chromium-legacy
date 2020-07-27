@@ -108,7 +108,7 @@
 #   |since_version| and is removed after |until_version|. |until_version|
 #   is optional.
 #
-#   The format of the 'futured_on' list entries is '<platform>'.
+#   The format of the 'future_on' list entries is '<platform>'.
 #   There is no version range attached to it and the policy is available in the
 #   Dev and Canary channel only unless it's listed in the
 #   EnableExperimentalPolicies policy.
@@ -418,6 +418,7 @@
         'AuthSchemes',
         'DisableAuthNegotiateCnameLookup',
         'EnableAuthNegotiatePort',
+        'AuthServerAllowlist',
         'AuthServerWhitelist',
         'AuthNegotiateDelegateAllowlist',
         'AuthNegotiateDelegateWhitelist',
@@ -4134,6 +4135,7 @@
       'type': 'string',
       'schema': { 'type': 'string' },
       'supported_on': ['chrome.*:9-','android:46-','webview_android:49-','chrome_os:62-'],
+      'deprecated': True,
       'features': {
         'dynamic_refresh': False,
         'per_profile': False,
@@ -4142,7 +4144,29 @@
       'id': 29,
       'caption': '''Authentication server whitelist''',
       'tags': [],
-      'desc': '''Specifies which servers should be whitelisted for integrated authentication. Integrated authentication is only enabled when <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> receives an authentication challenge from a proxy or from a server which is in this permitted list.
+      'desc': '''This policy is deprecated, please use the '<ph name="AUTH_SERVER_ALLOWLIST_POLICY_NAME">AuthServerAllowlist</ph>' policy instead.
+
+          Specifies which servers should be allowed for integrated authentication. Integrated authentication is only enabled when <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> receives an authentication challenge from a proxy or from a server which is in this permitted list.
+
+          Separate multiple server names with commas. Wildcards (*) are allowed.
+
+          If you leave this policy not set <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> will try to detect if a server is on the Intranet and only then will it respond to IWA requests.  If a server is detected as Internet then IWA requests from it will be ignored by <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph>.''',
+    },
+    {
+      'name': 'AuthServerAllowlist',
+      'owners': ['file://components/policy/resources/OWNERS'],
+      'type': 'string',
+      'schema': { 'type': 'string' },
+      'supported_on': ['chrome.*:86-','android:86-','webview_android:86-','chrome_os:86-'],
+      'features': {
+        'dynamic_refresh': False,
+        'per_profile': False,
+      },
+      'example_value': '*.example.com,example.com',
+      'id': 747,
+      'caption': '''Authentication server allowlist''',
+      'tags': [],
+      'desc': '''Specifies which servers should be allowed for integrated authentication. Integrated authentication is only enabled when <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> receives an authentication challenge from a proxy or from a server which is in this permitted list.
 
           Separate multiple server names with commas. Wildcards (*) are allowed.
 
@@ -18197,17 +18221,9 @@
       'supported_on': ['chrome.*:71-'],
       'caption': '''Alternative browser to launch for configured websites.''',
       'tags': [],
-      'desc': '''This policy controls which command to use to open URLs in an alternative browser.
+      'desc': '''Setting the policy controls which command to use to open URLs in an alternative browser. The policy can be set to one of <ph name="INTERNET_EXPLORER_VALUE_PLACEHOLDER">${ie}</ph>, <ph name="FIREFOX_VALUE_PLACEHOLDER">${firefox}</ph>, <ph name="SAFARI_VALUE_PLACEHOLDER">${safari}</ph>, <ph name="OPERA_VALUE_PLACEHOLDER">${opera}</ph> or a file path. When this policy is set to a file path, that file is used as an executable file. <ph name="INTERNET_EXPLORER_VALUE_PLACEHOLDER">${ie}</ph> is only available on <ph name="MS_WIN_NAME">Microsoft® Windows®</ph>, and <ph name="SAFARI_VALUE_PLACEHOLDER">${safari}</ph> is only available on <ph name="MS_WIN_NAME">Microsoft® Windows®</ph> and <ph name="MAC_OS_NAME">macOS</ph>.
 
-      When this policy is left unset, a platform-specific default is used: Internet Explorer for Windows, or Safari for Mac OS X. On Linux, launching an alternative browser will fail when this is unset.
-
-      When this policy is set to one of <ph name="INTERNET_EXPLORER_VALUE_PLACEHOLDER">${ie}</ph>, <ph name="FIREFOX_VALUE_PLACEHOLDER">${firefox}</ph>, <ph name="SAFARI_VALUE_PLACEHOLDER">${safari}</ph> or
-      <ph name="OPERA_VALUE_PLACEHOLDER">${opera}</ph>, that browser will launch if it is installed. <ph name="INTERNET_EXPLORER_VALUE_PLACEHOLDER">${ie}</ph> is only
-      available on Windows, and <ph name="SAFARI_VALUE_PLACEHOLDER">${safari}</ph> is only available on Windows and Mac
-      OS X.
-
-      When this policy is set to a file path, that file is used as an executable
-      file.''',
+      Leaving the policy unset puts a platform-specific default in use: <ph name="IE_PRODUCT_NAME">Internet Explorer®</ph> for <ph name="MS_WIN_NAME">Microsoft® Windows®</ph>, or <ph name="SAFARI_PRODUCT_NAME">Safari®</ph> for <ph name="MAC_OS_NAME">macOS</ph>. On <ph name="LINUX_OS_NAME">Linux®</ph>, launching an alternative browser will fail.''',
     },
     {
       'id': 495,
@@ -18232,17 +18248,13 @@
       'supported_on': ['chrome.*:71-'],
       'caption': '''Command-line parameters for the alternative browser.''',
       'tags': [],
-      'desc': '''This policy controls command-line parameters to launch to the alternative browser.
+      'desc': '''Setting the policy to a list of strings means each string is passed to the alternative browser as separate command-line parameters. On <ph name="MS_WIN_NAME">Microsoft® Windows®</ph>, the parameters are joined with spaces. On <ph name="MAC_OS_NAME">macOS</ph> and <ph name="LINUX_OS_NAME">Linux®</ph>, a parameter can have spaces and still be treated as a single parameter.
 
-      When this policy is left unset, only the URL is passed as a command-line parameters.
+      If an parameter contains <ph name="URL_PLACEHOLDER">${url}</ph>, <ph name="URL_PLACEHOLDER">${url}</ph> is replaced with the URL of the page to open. If no parameter contains <ph name="URL_PLACEHOLDER">${url}</ph>, the URL is appended at the end of the command line.
 
-      When this policy is set to a list of strings, each string is passed to the alternative browser as a separate command-line parameters. On Windows, the parameters are joined with spaces. On Mac OS X and Linux, a parameter may contain spaces, and still be treated as a single parameter.
+      Environment variables are expanded. On <ph name="MS_WIN_NAME">Microsoft® Windows®</ph>, <ph name="ENV_VARIABLE_WIN_EXAMPLE">%ABC%</ph> is replaced with the value of the <ph name="ENV_VARIABLE_VALUE">ABC</ph> environment variable. On <ph name="MAC_OS_NAME">macOS</ph> and <ph name="LINUX_OS_NAME">Linux®</ph>, <ph name="ENV_VARIABLE_UNIX_EXAMPLE">${ABC}</ph> is replaced with the value of the <ph name="ENV_VARIABLE_VALUE">ABC</ph> environment variable.
 
-      If an element contains <ph name="URL_PLACEHOLDER"> ${url}</ph>, it gets replaced with the URL of the page to open.
-
-      If no element contains <ph name="URL_PLACEHOLDER"> ${url}</ph>, the URL is appended at the end of the command line.
-
-      Environment variables are expanded. On Windows, <ph name="ENV_VARIABLE_WIN_EXAMPLE">%ABC%</ph> is replaced with the value of the <ph name="ENV_VARIABLE_VALUE">ABC</ph> environment variable. On Mac OS X and Linux, <ph name="ENV_VARIABLE_UNIX_EXAMPLE">${ABC}</ph> is replaced with the value of the <ph name="ENV_VARIABLE">ABC</ph> environment variable.''',
+      Leaving the policy unset means only the URL is passed as a command-line parameter.''',
     },
     {
       'id': 530,
@@ -18258,15 +18270,11 @@
       'supported_on': ['chrome.win:74-'],
       'caption': '''Path to Chrome for switching from the alternative browser.''',
       'tags': [],
-      'desc': '''This policy controls the command to use to open URLs in <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> when switching from Internet Explorer.
+      'desc': '''This policy controls the command to use to open URLs in <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> when switching from <ph name="IE_PRODUCT_NAME">Internet Explorer®</ph>. This policy can be set to an executable file path or <ph name="PRODUCT_NAME_PLACEHOLDER">${chrome}</ph> to autodetect the location of <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph>.
 
-      If the 'Legacy Browser Support' add-in for Internet Explorer is not installed, this policy has no effect.
+      Leaving the policy unset means <ph name="IE_PRODUCT_NAME">Internet Explorer®</ph> autodetects <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph>'s own executable path when launching <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> from Internet Explorer.
 
-      When this policy is left unset, Internet Explorer will auto-detect <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph>'s own executable path when launching <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> from Internet Explorer.
-
-      When this policy is set, it will be used to launch <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> when launching <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> from Internet Explorer.
-
-      This policy can be set to an executable file path, or <ph name="PRODUCT_NAME_PLACEHOLDER">${chrome}</ph> to auto-detect Chrome's install location.''',
+      Note: If the Legacy Browser Support add-in for <ph name="IE_PRODUCT_NAME">Internet Explorer®</ph> isn't installed, this policy has no effect.''',
     },
     {
       'id': 531,
@@ -18287,19 +18295,13 @@
       'supported_on': ['chrome.win:74-'],
       'caption': '''Command-line parameters for switching from the alternative browser.''',
       'tags': [],
-      'desc': '''This policy controls command-line parameters for Chrome from Internet Explorer.
+      'desc': '''Setting the policy to a list of strings means the strings are joined with spaces and passed from <ph name="IE_PRODUCT_NAME">Internet Explorer®</ph> to <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> as command-line parameters. If an parameter contains <ph name="URL_PLACEHOLDER">${url}</ph>, <ph name="URL_PLACEHOLDER">${url}</ph> is replaced with the URL of the page to open. If no parameter contains <ph name="URL_PLACEHOLDER">${url}</ph>, the URL is appended at the end of the command line.
 
-      If the 'Legacy Browser Support' add-in for Internet Explorer is not installed, this policy has no effect.
+      Environment variables are expanded. On <ph name="MS_WIN_NAME">Microsoft® Windows®</ph>, <ph name="ENV_VARIABLE_WIN_EXAMPLE">%ABC%</ph> is replaced with the value of the <ph name="ENV_VARIABLE_VALUE">ABC</ph> environment variable.
 
-      When this policy is left unset, Internet Explorer only passes the URL to Chrome as a command-line parameter.
+      Leaving the policy unset means <ph name="IE_PRODUCT_NAME">Internet Explorer®</ph> only passes the URL to <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> as a command-line parameter.
 
-      When this policy is set to a list of strings, the strings are joined with spaces and passed to Chrome as command-line parameters.
-
-      If an element contains <ph name="URL_PLACEHOLDER"> ${url}</ph>, it gets replaced with the URL of the page to open.
-
-      If no element contains <ph name="URL_PLACEHOLDER"> ${url}</ph>, the URL is appended at the end of the command line.
-
-      Environment variables are expanded. On Windows, <ph name="ENV_VARIABLE_WIN_EXAMPLE">%ABC%</ph> is replaced with the value of the ABC environment variable.''',
+      Note: If the Legacy Browser Support add-in for <ph name="IE_PRODUCT_NAME">Internet Explorer®</ph> isn't installed, this policy has no effect.''',
     },
     {
       'id': 496,
@@ -18322,17 +18324,11 @@
       'supported_on': ['chrome.*:71-'],
       'caption': '''Websites to open in alternative browser''',
       'tags': [],
-      'desc': '''This policy controls the list of websites to open in an alternative browser.
+      'desc': '''Setting the policy controls the list of websites to open in an alternative browser. Each item is treated as a rule for something to open in an alternative browser. <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> uses those rules when choosing if a URL should open in an alternative browser. When the <ph name="IE_PRODUCT_NAME">Internet Explorer®</ph> add-in is on, <ph name="IE_PRODUCT_NAME">Internet Explorer®</ph> switches back to <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> when the rules don't match. If rules contradict each other, <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> uses the most specific rule.
 
-      Note that elements can also be added to this list through the <ph name="USE_IE_SITELIST_POLICY_NAME">BrowserSwitcherUseIeSitelist</ph> and <ph name="EXTERNAL_SITELIST_URL_POLICY_NAME">BrowserSwitcherExternalSitelistUrl</ph> policies.
+      Leaving the policy unset adds no websites to the list.
 
-      When this policy is left unset, no websites are added to the list.
-
-      When this policy is set, each item is treated as a rule for something to open in an alternative browser. <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> uses those rules when choosing if a URL should open in an alternative browser.
-
-      When the Internet Explorer add-in is present and enabled, Internet Explorer switches back to <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> when the rules do not match.
-
-      If rules contradict eachother, <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> uses the most specific rule.''',
+      Note: Elements can also be added to this list through the <ph name="USE_IE_SITELIST_POLICY_NAME">BrowserSwitcherUseIeSitelist</ph> and <ph name="EXTERNAL_SITELIST_URL_POLICY_NAME">BrowserSwitcherExternalSitelistUrl</ph> policies.''',
     },
     {
       'id': 497,
@@ -18355,15 +18351,11 @@
       'supported_on': ['chrome.*:71-'],
       'caption': '''Websites that should never trigger a browser switch.''',
       'tags': [],
-      'desc': '''This policy controls the list of websites that will never cause a browser switch.
+      'desc': '''Setting the policy controls the list of websites that will never cause a browser switch. Each item is treated as a rule. Those rules that match won't open an alternative browser. Unlike the <ph name="URL_LIST_POLICY_NAME">BrowserSwitcherUrlList</ph> policy, rules apply to both directions. When the <ph name="IE_PRODUCT_NAME">Internet Explorer®</ph> add-in is on, it also controls whether <ph name="IE_PRODUCT_NAME">Internet Explorer®</ph> should open these URLs in <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph>.
 
-      Note that elements can also be added to this list through the <ph name="EXTERNAL_SITELIST_URL_POLICY_NAME">BrowserSwitcherExternalGreylistUrl</ph> policy.
+      Leaving the policy unset adds no websites to the list.
 
-      When this policy is left unset, no websites are added to the list.
-
-      When this policy is set, each item is treated as a rule, similar to the <ph name="URL_LIST_POLICY_NAME">BrowserSwitcherUrlList</ph> policy. However, the logic is reversed: rules that match will not open an alternative browser.
-
-      Unlike <ph name="URL_LIST_POLICY_NAME">BrowserSwitcherUrlList</ph>, rules apply to both directions. That is, when the Internet Explorer add-in is present and enabled, it also controls whether <ph name="IE_PRODUCT_NAME">Internet Explorer</ph> should open these URLs in <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph>.''',
+      Note: Elements can also be added to this list through the <ph name="EXTERNAL_SITELIST_URL_POLICY_NAME">BrowserSwitcherExternalGreylistUrl</ph> policy.''',
     },
     {
       'id': 498,
@@ -18379,11 +18371,11 @@
       'supported_on': ['chrome.win:71-'],
       'caption': '''Use Internet Explorer's SiteList policy for Legacy Browser Support.''',
       'tags': [],
-      'desc': '''This policy controls whether to load rules from Internet Explorer's SiteList policy.
+      'desc': '''This policy controls whether to load rules from <ph name="IE_PRODUCT_NAME">Internet Explorer®</ph>'s SiteList policy.
 
-      When this policy is left unset, or set to false, <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> does not use Internet Explorer's <ph name="IEEM_SITELIST_POLICY">SiteList</ph> policy as a source of rules for switching browsers.
+      When this policy is set to true, <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> reads <ph name="IE_PRODUCT_NAME">Internet Explorer®</ph>'s <ph name="IEEM_SITELIST_POLICY">SiteList</ph> to obtain the site list's URL. <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> then downloads the site list from that URL, and applies the rules as if they had been configured with the <ph name="BROWSER_SWITCHER_URL_LIST_POLICY_NAME">BrowserSwitcherUrlList</ph> policy.
 
-      When this policy is set to true, <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> reads Internet Explorer's <ph name="IEEM_SITELIST_POLICY">SiteList</ph> to obtain the site list's URL. <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> then downloads the site list from that URL, and applies the rules as if they had been configured with the <ph name="SITELIST_POLICY_NAME">BrowserSwitcherUrlList</ph> policy.
+      When this policy is false or unset, <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> does not use <ph name="IE_PRODUCT_NAME">Internet Explorer®</ph>'s <ph name="IEEM_SITELIST_POLICY">SiteList</ph> policy as a source of rules for switching browsers.
 
       For more information on Internet Explorer's <ph name="IEEM_SITELIST_POLICY">SiteList</ph> policy: https://docs.microsoft.com/internet-explorer/ie11-deploy-guide/what-is-enterprise-mode''',
     },
@@ -18401,13 +18393,11 @@
       'supported_on': ['chrome.*:72-'],
       'caption': '''URL of an XML file that contains URLs to load in an alternative browser.''',
       'tags': [],
-      'desc': '''This policy is a URL, that points to an XML file in the same format as Internet Explorer's <ph name="IEEM_SITELIST_POLICY">SiteList</ph> policy. This loads rules from an XML file, without sharing those rules with Internet Explorer.
+      'desc': '''Setting the policy to a valid URL has <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> download the site list from that URL and apply the rules as if they were set up with the <ph name="SITELIST_POLICY_NAME">BrowserSwitcherUrlList</ph> policy.
 
-      When this policy is left unset, or not set to a valid URL, <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> does not use it as a source of rules for switching browsers.
+      Leaving it unset (or set to a invalid URL) means <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> doesn't use the policy as a source of rules for switching browsers.
 
-      When this policy is set to a valid URL, <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> downloads the site list from that URL, and applies the rules as if they had been configured with the <ph name="SITELIST_POLICY_NAME">BrowserSwitcherUrlList</ph> policy.
-
-      For more information on Internet Explorer's <ph name="IEEM_SITELIST_POLICY">SiteList</ph> policy: https://docs.microsoft.com/internet-explorer/ie11-deploy-guide/what-is-enterprise-mode''',
+      Note: This policy points to an XML file in the same format as <ph name="IE_PRODUCT_NAME">Internet Explorer®</ph>'s <ph name="IEEM_SITELIST_POLICY">SiteList</ph> policy. This loads rules from an XML file, without sharing those rules with <ph name="IE_PRODUCT_NAME">Internet Explorer®</ph>. Read more on <ph name="IE_PRODUCT_NAME">Internet Explorer®</ph>'s <ph name="IEEM_SITELIST_POLICY">SiteList</ph> policy ( https://docs.microsoft.com/internet-explorer/ie11-deploy-guide/what-is-enterprise-mode)''',
     },
     {
       'id': 564,
@@ -18423,15 +18413,11 @@
       'supported_on': ['chrome.*:77-'],
       'caption': '''URL of an XML file that contains URLs that should never trigger a browser switch.''',
       'tags': [],
-      'desc': '''This policy is a URL, that points to an XML file in the same format as Internet Explorer's <ph name="IEEM_SITELIST_POLICY">SiteList</ph> policy. This loads rules from an XML file, without sharing those rules with Internet Explorer.
+      'desc': '''Setting the policy to a valid URL has <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> download the site list from that URL and apply the rules as if they were set up with the <ph name="BROWSER_SWITCHER_URL_GREYLIST_POLICY_NAME">BrowserSwitcherUrlGreylist</ph> policy. These policies prevent <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> and the alternative browser from opening one another.
 
-      The rules in this XML file apply in the same way as <ph name="GREYLIST_POLICY_NAME">BrowserSwitcherUrlGreylist</ph>. That is, these rules prevent <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> from opening the alternative browser, and also prevent the alternative browser from opening <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph>.
+      Leaving it unset (or set to a invalid URL) means <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> doesn't use the policy as a source of rules for not switching browsers.
 
-      When this policy is left unset, or not set to a valid URL, <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> does not use it as a source of rules that don't trigger a browser switch.
-
-      When this policy is set to a valid URL, <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> downloads the site list from that URL, and applies the rules as if they had been configured with the <ph name="SITELIST_POLICY_NAME">BrowserSwitcherUrlGreylist</ph> policy.
-
-      For more information on Internet Explorer's <ph name="IEEM_SITELIST_POLICY">SiteList</ph> policy: https://docs.microsoft.com/internet-explorer/ie11-deploy-guide/what-is-enterprise-mode''',
+      Note: This policy points to an XML file in the same format as <ph name="IE_PRODUCT_NAME">Internet Explorer®</ph>'s <ph name="IEEM_SITELIST_POLICY">SiteList</ph> policy. This loads rules from an XML file, without sharing those rules with <ph name="IE_PRODUCT_NAME">Internet Explorer®</ph>. Read more on <ph name="IE_PRODUCT_NAME">Internet Explorer®</ph>'s <ph name="IEEM_SITELIST_POLICY">SiteList</ph> policy ( https://docs.microsoft.com/internet-explorer/ie11-deploy-guide/what-is-enterprise-mode )''',
     },
     {
       'id': 524,
@@ -18447,11 +18433,9 @@
       'supported_on': ['chrome.*:74-'],
       'caption': '''Delay before launching alternative browser (milliseconds)''',
       'tags': [],
-      'desc': '''This policy controls how long to wait before launching an alternative browser, in milliseconds.
+      'desc': '''Setting the policy to a number has <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> show a message for that number of milliseconds, then it opens an alternative browser.
 
-      When this policy is left unset, or set to 0, navigating to a designated URL immediately opens it in an alternative browser.
-
-      When this policy is set to a number, Chrome shows a message for that many milliseconds, and then opens the alternative browser.''',
+      Leaving the policy unset or set to 0 means navigating to a designated URL immediately opens it in an alternative browser.''',
     },
     {
       'id': 517,
@@ -18467,13 +18451,9 @@
       'supported_on': ['chrome.*:73-'],
       'caption': '''Enable the Legacy Browser Support feature.''',
       'tags': [],
-      'desc': '''This policy controls whether to enable Legacy Browser Support.
+      'desc': '''Setting the policy to Enabled means <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> will try to launch some URLs in an alternate browser, such as <ph name="IE_PRODUCT_NAME">Internet Explorer®</ph>. This feature is set using the policies in the <ph name="LEGACY_BROWSER_SUPPORT_POLICY_GROUP">Legacy Browser support</ph> group.
 
-      When this policy is left unset, or is set to false, Chrome will not attempt to launch designated URLs in an alternate browser.
-
-      When this policy is set to true, Chrome will attempt to launch some URLs in an alternate browser (such as Internet Explorer). This feature is configured using the policies in the <ph name="LEGACY_BROWSER_SUPPORT_POLICY_GROUP">Legacy Browser support</ph> group.
-
-      This feature is a replacement for the <ph name="LEGACY_BROWSER_SUPPORT_EXTENSION_NAME">'Legacy Browser Support'</ph> extension. Configuration from the extension will carry over to this feature, but it is strongly advised to use the Chrome policies instead. This ensures better compatibility in the future.''',
+      Setting the policy to Disabled or leaving it unset means <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> won't try to launch designated URLs in an alternate browser.''',
     },
     {
       'id': 519,
@@ -18489,11 +18469,9 @@
       'supported_on': ['chrome.*:74-'],
       'caption': '''Keep last tab open in Chrome.''',
       'tags': [],
-      'desc': '''This policy controls whether to close Chrome completely when the last tab would switch to another browser.
+      'desc': '''Setting the policy to Enabled or leaving it unset has <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> keep at least one tab open, after switching to an alternate browser.
 
-      When this policy is left unset, or is set to true, Chrome will keep at least one tab open, after switching to an alternate browser.
-
-      When this policy is set to false, Chrome will close the tab after switching to an alternate browser, even if it was the last tab. This will cause Chrome to exit completely.''',
+      Setting the policy to Disabled has <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> close the tab after switching to an alternate browser, even if it was the last tab. This causes <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> to exit completely.''',
     },
     {
       'name': 'DeviceDisplayResolution',
@@ -22137,8 +22115,8 @@ If you disable this policy, web page scrolling to specific text fragments via UR
       'id': 721,
       'caption': '''Enable Emoji Suggestion''',
       'tags': [],
-      'desc': '''This feature gives emoji suggestion whenever a user types a word matched with the in-built emoji map.
-      If this policy is set to true, the feature will be force enabled, and users will not be able to override this.
+      'desc': '''This policy enables <ph name="PRODUCT_OS_NAME">$2<ex>Google Chrome OS</ex></ph> to suggest emojis when users type text with their virtual or physical keyboards.
+      If this policy is set to true, the feature will be enabled, and users will be able to change it.
       This policy is defaulted to false, no emoji will be suggested and users cannot override it.''',
     },
     {
@@ -23104,6 +23082,6 @@ The recommended way to configure policy on Windows is via GPO, although provisio
   ],
   'placeholders': [],
   'deleted_policy_ids': [412, 476, 546, 562, 569, 578],
-  'highest_id_currently_used': 746,
+  'highest_id_currently_used': 747,
   'highest_atomic_group_id_currently_used': 38
 }

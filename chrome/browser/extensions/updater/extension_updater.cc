@@ -108,27 +108,6 @@ ExtensionUpdater::CheckParams::CheckParams(
 ExtensionUpdater::CheckParams& ExtensionUpdater::CheckParams::operator=(
     ExtensionUpdater::CheckParams&& other) = default;
 
-ExtensionUpdater::FetchedCRXFile::FetchedCRXFile(
-    const CRXFileInfo& file,
-    bool file_ownership_passed,
-    const std::set<int>& request_ids,
-    InstallCallback callback)
-    : info(file),
-      file_ownership_passed(file_ownership_passed),
-      request_ids(request_ids),
-      callback(std::move(callback)) {}
-
-ExtensionUpdater::FetchedCRXFile::FetchedCRXFile()
-    : file_ownership_passed(true) {}
-
-ExtensionUpdater::FetchedCRXFile::FetchedCRXFile(FetchedCRXFile&& other) =
-    default;
-
-ExtensionUpdater::FetchedCRXFile& ExtensionUpdater::FetchedCRXFile::operator=(
-    FetchedCRXFile&& other) = default;
-
-ExtensionUpdater::FetchedCRXFile::~FetchedCRXFile() = default;
-
 ExtensionUpdater::InProgressCheck::InProgressCheck()
     : install_immediately(false), awaiting_update_service(false) {}
 

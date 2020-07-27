@@ -19,6 +19,7 @@
 #include "base/time/clock.h"
 #include "base/time/default_clock.h"
 #include "base/trace_event/trace_event.h"
+#include "base/util/values/values_util.h"
 #include "build/build_config.h"
 #include "components/crx_file/id_util.h"
 #include "components/pref_registry/pref_registry_syncable.h"
@@ -250,6 +251,8 @@ bool CheckPrefType(PrefType pref_type, const base::Value* value) {
       return value->is_int();
     case kDictionary:
       return value->is_dict();
+    case kList:
+      return value->is_list();
   }
 }
 
@@ -476,20 +479,49 @@ const base::DictionaryValue* ExtensionPrefs::GetExtensionPref(
 void ExtensionPrefs::SetIntegerPref(const std::string& id,
                                     const PrefMap& pref,
                                     int value) {
+  DCHECK_EQ(pref.type, PrefType::kInteger);
   UpdateExtensionPref(id, pref, std::make_unique<base::Value>(value));
 }
 
 void ExtensionPrefs::SetBooleanPref(const std::string& id,
                                     const PrefMap& pref,
                                     bool value) {
+  DCHECK_EQ(pref.type, PrefType::kBool);
   UpdateExtensionPref(id, pref, std::make_unique<base::Value>(value));
 }
 
 void ExtensionPrefs::SetStringPref(const std::string& id,
                                    const PrefMap& pref,
                                    const std::string value) {
+  DCHECK_EQ(pref.type, PrefType::kString);
   UpdateExtensionPref(id, pref,
                       std::make_unique<base::Value>(std::move(value)));
+}
+
+void ExtensionPrefs::SetListPref(const std::string& id,
+                                 const PrefMap& pref,
+                                 base::Value value) {
+  DCHECK_EQ(pref.type, PrefType::kList);
+  DCHECK_EQ(base::Value::Type::LIST, value.type());
+  UpdateExtensionPref(id, pref,
+                      std::make_unique<base::Value>(std::move(value)));
+}
+
+void ExtensionPrefs::SetDictionaryPref(
+    const std::string& id,
+    const PrefMap& pref,
+    std::unique_ptr<base::DictionaryValue> value) {
+  DCHECK_EQ(pref.type, PrefType::kDictionary);
+  DCHECK_EQ(base::Value::Type::DICTIONARY, value->type());
+  UpdateExtensionPref(id, pref, std::move(value));
+}
+
+void ExtensionPrefs::SetTimePref(const std::string& id,
+                                 const PrefMap& pref,
+                                 const base::Time value) {
+  DCHECK_EQ(pref.type, PrefType::kTime);
+  UpdateExtensionPref(
+      id, pref, std::make_unique<base::Value>(::util::TimeToValue(value)));
 }
 
 void ExtensionPrefs::UpdateExtensionPref(
@@ -529,8 +561,9 @@ void ExtensionPrefs::DeleteExtensionPrefs(const std::string& extension_id) {
 bool ExtensionPrefs::ReadPrefAsBoolean(const std::string& extension_id,
                                        const PrefMap& pref,
                                        bool* out_value) const {
-  DCHECK_EQ(pref.scope, PrefScope::kExtensionSpecific);
-  DCHECK_EQ(pref.type, PrefType::kBool);
+  DCHECK_EQ(PrefScope::kExtensionSpecific, pref.scope);
+  DCHECK_EQ(PrefType::kBool, pref.type);
+
   const base::DictionaryValue* ext = GetExtensionPref(extension_id);
   if (!ext || !ext->GetBoolean(pref.name, out_value))
     return false;
@@ -541,8 +574,8 @@ bool ExtensionPrefs::ReadPrefAsBoolean(const std::string& extension_id,
 bool ExtensionPrefs::ReadPrefAsInteger(const std::string& extension_id,
                                        const PrefMap& pref,
                                        int* out_value) const {
-  DCHECK_EQ(pref.scope, PrefScope::kExtensionSpecific);
-  DCHECK_EQ(pref.type, PrefType::kInteger);
+  DCHECK_EQ(PrefScope::kExtensionSpecific, pref.scope);
+  DCHECK_EQ(PrefType::kInteger, pref.type);
   const base::DictionaryValue* ext = GetExtensionPref(extension_id);
   if (!ext || !ext->GetInteger(pref.name, out_value))
     return false;
@@ -553,13 +586,51 @@ bool ExtensionPrefs::ReadPrefAsInteger(const std::string& extension_id,
 bool ExtensionPrefs::ReadPrefAsString(const std::string& extension_id,
                                       const PrefMap& pref,
                                       std::string* out_value) const {
-  DCHECK_EQ(pref.scope, PrefScope::kExtensionSpecific);
-  DCHECK_EQ(pref.type, PrefType::kString);
+  DCHECK_EQ(PrefScope::kExtensionSpecific, pref.scope);
+  DCHECK_EQ(PrefType::kString, pref.type);
   const base::DictionaryValue* ext = GetExtensionPref(extension_id);
   if (!ext || !ext->GetString(pref.name, out_value))
     return false;
 
   return true;
+}
+
+bool ExtensionPrefs::ReadPrefAsList(const std::string& extension_id,
+                                    const PrefMap& pref,
+                                    const base::ListValue** out_value) const {
+  DCHECK_EQ(PrefScope::kExtensionSpecific, pref.scope);
+  DCHECK_EQ(PrefType::kList, pref.type);
+  DCHECK(out_value);
+  const base::DictionaryValue* ext = GetExtensionPref(extension_id);
+  if (!ext || !ext->GetList(pref.name, out_value))
+    return false;
+  return true;
+}
+
+bool ExtensionPrefs::ReadPrefAsDictionary(
+    const std::string& extension_id,
+    const PrefMap& pref,
+    const base::DictionaryValue** out_value) const {
+  DCHECK_EQ(PrefScope::kExtensionSpecific, pref.scope);
+  DCHECK_EQ(PrefType::kDictionary, pref.type);
+  DCHECK(out_value);
+  const base::DictionaryValue* ext = GetExtensionPref(extension_id);
+  if (!ext || !ext->GetDictionary(pref.name, out_value))
+    return false;
+  return true;
+}
+
+base::Time ExtensionPrefs::ReadPrefAsTime(const std::string& extension_id,
+                                          const PrefMap& pref) const {
+  DCHECK_EQ(PrefScope::kExtensionSpecific, pref.scope);
+  DCHECK_EQ(PrefType::kTime, pref.type);
+  const base::DictionaryValue* ext = GetExtensionPref(extension_id);
+  const base::Value* value;
+  if (!ext || !ext->Get(pref.name, &value))
+    return base::Time();
+  base::Optional<base::Time> time = ::util::ValueToTime(value);
+  DCHECK(time);
+  return time.value_or(base::Time());
 }
 
 bool ExtensionPrefs::ReadPrefAsBoolean(const std::string& extension_id,

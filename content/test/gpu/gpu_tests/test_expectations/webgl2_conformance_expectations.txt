@@ -85,6 +85,7 @@ crbug.com/953120 conformance/programs/program-handling.html [ Failure ]
 
 crbug.com/949249 [ win passthrough opengl nvidia ] conformance2/extensions/ovr_multiview2.html [ Failure ]
 crbug.com/949249 [ win passthrough no-use-gl ] conformance2/extensions/ovr_multiview2.html [ Failure ]
+crbug.com/949249 [ win passthrough d3d11 ] conformance2/extensions/ovr_multiview2.html [ Failure ]
 crbug.com/949249 [ linux passthrough opengl ] conformance2/extensions/ovr_multiview2.html [ Failure ]
 
 # Failing new test
@@ -180,6 +181,7 @@ crbug.com/1000354 [ win opengles ] conformance2/extensions/ext-texture-norm16.ht
 crbug.com/736926 [ win ] conformance2/textures/svg_image/tex-2d-rgb565-rgb-unsigned_short_5_6_5.html [ RetryOnFailure ]
 crbug.com/angleproject/3033 [ win no-passthrough ] conformance2/textures/misc/generate-mipmap-with-large-base-level.html [ Failure ]
 crbug.com/angleproject/1465 [ win no-use-gl ] conformance2/glsl3/tricky-loop-conditions.html [ Failure ]
+crbug.com/angleproject/1465 [ win d3d11 ] conformance2/glsl3/tricky-loop-conditions.html [ Failure ]
 
 # Win / NVidia
 crbug.com/631317 [ d3d11 win nvidia ] deqp/functional/gles3/fbomultisample* [ RetryOnFailure ]

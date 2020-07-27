@@ -16,13 +16,13 @@
 #include "content/public/browser/content_browser_client.h"
 #include "content/public/browser/global_request_id.h"
 #include "content/public/browser/ssl_status.h"
-#include "content/public/common/previews_state.h"
 #include "mojo/public/cpp/bindings/pending_receiver.h"
 #include "mojo/public/cpp/bindings/pending_remote.h"
 #include "net/url_request/url_request.h"
 #include "services/network/public/mojom/url_loader.mojom.h"
 #include "services/network/public/mojom/url_loader_factory.mojom.h"
 #include "services/network/public/mojom/url_response_head.mojom.h"
+#include "third_party/blink/public/common/loader/previews_state.h"
 
 namespace net {
 struct RedirectInfo;
@@ -111,7 +111,7 @@ class CONTENT_EXPORT NavigationURLLoaderImpl
       const std::vector<std::string>& removed_headers,
       const net::HttpRequestHeaders& modified_headers,
       const net::HttpRequestHeaders& modified_cors_exempt_headers,
-      PreviewsState new_previews_state,
+      blink::PreviewsState new_previews_state,
       base::Time ui_post_time);
 
   // network::mojom::URLLoaderClient implementation:
@@ -159,7 +159,7 @@ class CONTENT_EXPORT NavigationURLLoaderImpl
       const std::vector<std::string>& removed_headers,
       const net::HttpRequestHeaders& modified_headers,
       const net::HttpRequestHeaders& modified_cors_exempt_headers,
-      PreviewsState new_previews_state) override;
+      blink::PreviewsState new_previews_state) override;
 
   void NotifyRequestStarted(base::TimeTicks timestamp);
   void NotifyResponseStarted(

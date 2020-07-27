@@ -13537,6 +13537,7 @@ to ensure that the crash string is shown properly on the user-facing crash UI.
   <int value="28" label="Cryptohome.DoubleMountRequest"/>
   <int value="29" label="SessionManager.SafeModeEnabled"/>
   <int value="30" label="Crash.Sender.FailedCrashRemoval"/>
+  <int value="31" label="Crash.Sender.AttemptedCrashRemoval"/>
 </enum>
 
 <enum name="CrosFirstRunTutorialCompletionType">
@@ -21285,6 +21286,7 @@ Called by update_document_policy_enum.py.-->
   <int value="744" label="NativeMessagingBlocklist"/>
   <int value="745" label="NativeMessagingAllowlist"/>
   <int value="746" label="AuthNegotiateDelegateAllowlist"/>
+  <int value="747" label="AuthServerAllowlist"/>
 </enum>
 
 <enum name="EnterprisePolicyDeviceIdValidity">

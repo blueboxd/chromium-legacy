@@ -36,10 +36,10 @@
 #include "base/time/time.h"
 #include "services/network/public/mojom/ip_address_space.mojom-shared.h"
 #include "services/network/public/mojom/referrer_policy.mojom-shared.h"
+#include "third_party/blink/public/common/loader/previews_state.h"
 #include "third_party/blink/public/platform/web_archive_info.h"
 #include "third_party/blink/public/platform/web_common.h"
 #include "third_party/blink/public/platform/web_source_location.h"
-#include "third_party/blink/public/platform/web_url_request.h"
 #include "third_party/blink/public/web/web_navigation_type.h"
 
 namespace blink {
@@ -153,7 +153,7 @@ class BLINK_EXPORT WebDocumentLoader {
   virtual bool HasBeenLoadedAsWebArchive() const = 0;
 
   // Returns the previews state for the document.
-  virtual WebURLRequest::PreviewsState GetPreviewsState() const = 0;
+  virtual PreviewsState GetPreviewsState() const = 0;
 
   // Returns archive info for the archive.
   virtual WebArchiveInfo GetArchiveInfo() const = 0;

@@ -13,7 +13,6 @@ class PrefRegistrySyncable;
 
 namespace enterprise_reporting {
 
-extern const char kLastUploadTimestamp[];
 extern const char kLastUploadVersion[];
 
 void RegisterLocalStatePrefs(PrefRegistrySimple* registry);

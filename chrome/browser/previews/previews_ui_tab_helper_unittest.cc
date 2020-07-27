@@ -39,11 +39,11 @@
 #include "components/sync_preferences/testing_pref_service_syncable.h"
 #include "content/public/browser/navigation_entry.h"
 #include "content/public/browser/navigation_handle.h"
-#include "content/public/common/previews_state.h"
 #include "content/public/test/mock_navigation_handle.h"
 #include "content/public/test/web_contents_tester.h"
 #include "net/http/http_util.h"
 #include "services/network/test/test_shared_url_loader_factory.h"
+#include "third_party/blink/public/common/loader/previews_state.h"
 
 namespace {
 const char kTestUrl[] = "http://www.test.com/";

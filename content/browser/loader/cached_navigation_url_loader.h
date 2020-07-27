@@ -28,7 +28,7 @@ class CachedNavigationURLLoader : public NavigationURLLoader {
       const std::vector<std::string>& removed_headers,
       const net::HttpRequestHeaders& modified_headers,
       const net::HttpRequestHeaders& modified_cors_exempt_headers,
-      PreviewsState new_previews_state) override;
+      blink::PreviewsState new_previews_state) override;
 
  private:
   void OnResponseStarted();

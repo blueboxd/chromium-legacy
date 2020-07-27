@@ -17,6 +17,7 @@
 #include "components/services/patch/in_process_file_patcher.h"
 #include "components/services/unzip/in_process_unzipper.h"
 #include "components/update_client/activity_data_service.h"
+#include "components/update_client/crx_downloader_factory.h"
 #include "components/update_client/net/network_chromium.h"
 #include "components/update_client/patch/patch_impl.h"
 #include "components/update_client/patcher.h"
@@ -54,6 +55,8 @@ class IOSConfigurator : public update_client::Configurator {
   std::string GetDownloadPreference() const override;
   scoped_refptr<update_client::NetworkFetcherFactory> GetNetworkFetcherFactory()
       override;
+  scoped_refptr<update_client::CrxDownloaderFactory> GetCrxDownloaderFactory()
+      override;
   scoped_refptr<update_client::UnzipperFactory> GetUnzipperFactory() override;
   scoped_refptr<update_client::PatcherFactory> GetPatcherFactory() override;
   bool EnabledDeltas() const override;
@@ -71,6 +74,7 @@ class IOSConfigurator : public update_client::Configurator {
 
   ConfiguratorImpl configurator_impl_;
   scoped_refptr<update_client::NetworkFetcherFactory> network_fetcher_factory_;
+  scoped_refptr<update_client::CrxDownloaderFactory> crx_downloader_factory_;
   scoped_refptr<update_client::UnzipperFactory> unzip_factory_;
   scoped_refptr<update_client::PatcherFactory> patch_factory_;
 
@@ -154,6 +158,15 @@ IOSConfigurator::GetNetworkFetcherFactory() {
             base::BindRepeating([](const GURL& url) { return false; }));
   }
   return network_fetcher_factory_;
+}
+
+scoped_refptr<update_client::CrxDownloaderFactory>
+IOSConfigurator::GetCrxDownloaderFactory() {
+  if (!crx_downloader_factory_) {
+    crx_downloader_factory_ =
+        update_client::MakeCrxDownloaderFactory(GetNetworkFetcherFactory());
+  }
+  return crx_downloader_factory_;
 }
 
 scoped_refptr<update_client::UnzipperFactory>

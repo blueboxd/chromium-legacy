@@ -77,9 +77,15 @@ LoginManagerMixin::LoginManagerMixin(InProcessBrowserTestMixinHost* host)
 
 LoginManagerMixin::LoginManagerMixin(InProcessBrowserTestMixinHost* host,
                                      const UserList& initial_users)
+    : LoginManagerMixin(host, initial_users, nullptr) {}
+
+LoginManagerMixin::LoginManagerMixin(InProcessBrowserTestMixinHost* host,
+                                     const UserList& initial_users,
+                                     FakeGaiaMixin* gaia_mixin)
     : InProcessBrowserTestMixin(host),
       initial_users_(initial_users),
-      local_state_mixin_(host, this) {
+      local_state_mixin_(host, this),
+      fake_gaia_mixin_(gaia_mixin) {
   DCHECK(!g_instance_created);
   g_instance_created = true;
 }
@@ -185,10 +191,24 @@ void LoginManagerMixin::LoginWithDefaultContext(const TestUserInfo& user_info) {
 
 void LoginManagerMixin::LoginAsNewRegularUser() {
   ASSERT_FALSE(session_manager::SessionManager::Get()->IsSessionStarted());
-  const std::string email = "test_user" + std::string(kGmailDomain);
-  const std::string gaia_id = "111111111";
-  TestUserInfo test_user(AccountId::FromUserEmailGaiaId(email, gaia_id));
+  TestUserInfo test_user(
+      AccountId::FromUserEmailGaiaId(test::kTestEmail, test::kTestGaiaId));
   UserContext user_context = CreateDefaultUserContext(test_user);
+  AttemptLoginUsingAuthenticator(
+      user_context, std::make_unique<StubAuthenticatorBuilder>(user_context));
+}
+
+void LoginManagerMixin::LoginAsNewChildUser() {
+  ASSERT_FALSE(session_manager::SessionManager::Get()->IsSessionStarted());
+  TestUserInfo test_child_user_(
+      AccountId::FromUserEmailGaiaId(test::kTestEmail, test::kTestGaiaId),
+      user_manager::USER_TYPE_CHILD);
+  UserContext user_context = CreateDefaultUserContext(test_child_user_);
+  user_context.SetRefreshToken(FakeGaiaMixin::kFakeRefreshToken);
+  fake_gaia_mixin_->SetupFakeGaiaForChildUser(
+      test_child_user_.account_id.GetUserEmail(),
+      test_child_user_.account_id.GetGaiaId(), FakeGaiaMixin::kFakeRefreshToken,
+      false /*issue_any_scope_token*/);
   AttemptLoginUsingAuthenticator(
       user_context, std::make_unique<StubAuthenticatorBuilder>(user_context));
 }

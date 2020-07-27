@@ -2032,19 +2032,19 @@ void DocumentLoader::ReportPreviewsIntervention() const {
     return;
 
   // Verify that certain types are not on main frame requests.
-  DCHECK_NE(WebURLRequest::kClientLoFiAutoReload, previews_state_);
-  DCHECK_NE(WebURLRequest::kSubresourceRedirectOn, previews_state_);
+  DCHECK_NE(PreviewsTypes::kClientLoFiAutoReload, previews_state_);
+  DCHECK_NE(PreviewsTypes::kSubresourceRedirectOn, previews_state_);
 
-  static_assert(WebURLRequest::kPreviewsStateLast ==
-                    WebURLRequest::kSubresourceRedirectOn,
+  static_assert(PreviewsTypes::kPreviewsStateLast ==
+                    PreviewsTypes::kSubresourceRedirectOn,
                 "If a new Preview type is added, verify that the Intervention "
                 "Report should be sent (or not sent) for that type.");
 
   // If the preview type is not unspecified, off, or no transform, it is a
   // preview that needs to be reported.
-  if (previews_state_ == WebURLRequest::kPreviewsUnspecified ||
-      previews_state_ & WebURLRequest::kPreviewsOff ||
-      previews_state_ & WebURLRequest::kPreviewsNoTransform) {
+  if (previews_state_ == PreviewsTypes::kPreviewsUnspecified ||
+      previews_state_ & PreviewsTypes::kPreviewsOff ||
+      previews_state_ & PreviewsTypes::kPreviewsNoTransform) {
     return;
   }
 

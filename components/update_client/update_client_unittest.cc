@@ -28,6 +28,7 @@
 #include "components/crx_file/crx_verifier.h"
 #include "components/prefs/testing_pref_service.h"
 #include "components/update_client/component_unpacker.h"
+#include "components/update_client/crx_downloader_factory.h"
 #include "components/update_client/crx_update_item.h"
 #include "components/update_client/network.h"
 #include "components/update_client/patcher.h"
@@ -104,6 +105,23 @@ class MockCrxStateChangeReceiver
   friend class base::RefCountedThreadSafe<MockCrxStateChangeReceiver>;
 
   ~MockCrxStateChangeReceiver() = default;
+};
+
+class MockCrxDownloaderFactory : public CrxDownloaderFactory {
+ public:
+  explicit MockCrxDownloaderFactory(scoped_refptr<CrxDownloader> crx_downloader)
+      : crx_downloader_(crx_downloader) {}
+
+ private:
+  ~MockCrxDownloaderFactory() override = default;
+
+  // Overrides for CrxDownloaderFactory.
+  scoped_refptr<CrxDownloader> MakeCrxDownloader(
+      bool /* background_download_enabled */) const override {
+    return crx_downloader_;
+  }
+
+  scoped_refptr<CrxDownloader> crx_downloader_;
 };
 
 }  // namespace
@@ -187,12 +205,13 @@ const std::vector<base::Value>& MockPingManagerImpl::events() const {
 
 class UpdateClientTest : public testing::Test {
  public:
-  UpdateClientTest();
   UpdateClientTest(const UpdateClientTest&) = delete;
   UpdateClientTest& operator=(const UpdateClientTest&) = delete;
-  ~UpdateClientTest() override;
 
  protected:
+  UpdateClientTest();
+  ~UpdateClientTest() override = default;
+
   void RunThreads();
 
   // Returns the full path to a test file.
@@ -202,6 +221,14 @@ class UpdateClientTest : public testing::Test {
   update_client::PersistedData* metadata() { return metadata_.get(); }
 
   base::OnceClosure quit_closure() { return runloop_.QuitClosure(); }
+
+  // Injects the CrxDownloaderFactory in the test fixture.
+  template <typename MockCrxDownloaderT>
+  void SetMockCrxDownloader() {
+    config()->SetCrxDownloaderFactory(
+        base::MakeRefCounted<MockCrxDownloaderFactory>(
+            base::MakeRefCounted<MockCrxDownloaderT>()));
+  }
 
  private:
   static constexpr int kNumWorkerThreads_ = 2;
@@ -222,8 +249,6 @@ constexpr int UpdateClientTest::kNumWorkerThreads_;
 UpdateClientTest::UpdateClientTest() {
   PersistedData::RegisterPrefs(pref_->registry());
 }
-
-UpdateClientTest::~UpdateClientTest() = default;
 
 void UpdateClientTest::RunThreads() {
   runloop_.Run();
@@ -307,12 +332,6 @@ TEST_F(UpdateClientTest, OneCrxNoUpdate) {
 
   class MockCrxDownloader : public CrxDownloader {
    public:
-    static scoped_refptr<CrxDownloader> Create(
-        bool is_background_download,
-        scoped_refptr<NetworkFetcherFactory> network_fetcher_factory) {
-      return base::MakeRefCounted<MockCrxDownloader>();
-    }
-
     MockCrxDownloader() : CrxDownloader(nullptr) {}
 
    private:
@@ -330,10 +349,11 @@ TEST_F(UpdateClientTest, OneCrxNoUpdate) {
     ~MockPingManager() override { EXPECT_TRUE(ping_data().empty()); }
   };
 
+  SetMockCrxDownloader<MockCrxDownloader>();
   scoped_refptr<UpdateClient> update_client =
       base::MakeRefCounted<UpdateClientImpl>(
           config(), base::MakeRefCounted<MockPingManager>(config()),
-          &MockUpdateChecker::Create, &MockCrxDownloader::Create);
+          &MockUpdateChecker::Create);
 
   MockObserver observer;
   {
@@ -489,12 +509,6 @@ TEST_F(UpdateClientTest, TwoCrxUpdateNoUpdate) {
 
   class MockCrxDownloader : public CrxDownloader {
    public:
-    static scoped_refptr<CrxDownloader> Create(
-        bool is_background_download,
-        scoped_refptr<NetworkFetcherFactory> network_fetcher_factory) {
-      return base::MakeRefCounted<MockCrxDownloader>();
-    }
-
     MockCrxDownloader() : CrxDownloader(nullptr) {}
 
    private:
@@ -553,10 +567,11 @@ TEST_F(UpdateClientTest, TwoCrxUpdateNoUpdate) {
     }
   };
 
+  SetMockCrxDownloader<MockCrxDownloader>();
   scoped_refptr<UpdateClient> update_client =
       base::MakeRefCounted<UpdateClientImpl>(
           config(), base::MakeRefCounted<MockPingManager>(config()),
-          &MockUpdateChecker::Create, &MockCrxDownloader::Create);
+          &MockUpdateChecker::Create);
 
   MockObserver observer;
   {
@@ -734,12 +749,6 @@ TEST_F(UpdateClientTest, TwoCrxUpdateFirstServerIgnoresSecond) {
 
   class MockCrxDownloader : public CrxDownloader {
    public:
-    static scoped_refptr<CrxDownloader> Create(
-        bool is_background_download,
-        scoped_refptr<NetworkFetcherFactory> network_fetcher_factory) {
-      return base::MakeRefCounted<MockCrxDownloader>();
-    }
-
     MockCrxDownloader() : CrxDownloader(nullptr) {}
 
    private:
@@ -792,10 +801,11 @@ TEST_F(UpdateClientTest, TwoCrxUpdateFirstServerIgnoresSecond) {
     }
   };
 
+  SetMockCrxDownloader<MockCrxDownloader>();
   scoped_refptr<UpdateClient> update_client =
       base::MakeRefCounted<UpdateClientImpl>(
           config(), base::MakeRefCounted<MockPingManager>(config()),
-          &MockUpdateChecker::Create, &MockCrxDownloader::Create);
+          &MockUpdateChecker::Create);
 
   MockObserver observer;
   {
@@ -969,12 +979,6 @@ TEST_F(UpdateClientTest, TwoCrxUpdateNoCrxComponentData) {
 
   class MockCrxDownloader : public CrxDownloader {
    public:
-    static scoped_refptr<CrxDownloader> Create(
-        bool is_background_download,
-        scoped_refptr<NetworkFetcherFactory> network_fetcher_factory) {
-      return base::MakeRefCounted<MockCrxDownloader>();
-    }
-
     MockCrxDownloader() : CrxDownloader(nullptr) {}
 
    private:
@@ -1031,10 +1035,11 @@ TEST_F(UpdateClientTest, TwoCrxUpdateNoCrxComponentData) {
     }
   };
 
+  SetMockCrxDownloader<MockCrxDownloader>();
   scoped_refptr<UpdateClient> update_client =
       base::MakeRefCounted<UpdateClientImpl>(
           config(), base::MakeRefCounted<MockPingManager>(config()),
-          &MockUpdateChecker::Create, &MockCrxDownloader::Create);
+          &MockUpdateChecker::Create);
 
   MockObserver observer;
   {
@@ -1133,12 +1138,6 @@ TEST_F(UpdateClientTest, TwoCrxUpdateNoCrxComponentDataAtAll) {
 
   class MockCrxDownloader : public CrxDownloader {
    public:
-    static scoped_refptr<CrxDownloader> Create(
-        bool is_background_download,
-        scoped_refptr<NetworkFetcherFactory> network_fetcher_factory) {
-      return base::MakeRefCounted<MockCrxDownloader>();
-    }
-
     MockCrxDownloader() : CrxDownloader(nullptr) {}
 
    private:
@@ -1158,10 +1157,11 @@ TEST_F(UpdateClientTest, TwoCrxUpdateNoCrxComponentDataAtAll) {
     }
   };
 
+  SetMockCrxDownloader<MockCrxDownloader>();
   scoped_refptr<UpdateClient> update_client =
       base::MakeRefCounted<UpdateClientImpl>(
           config(), base::MakeRefCounted<MockPingManager>(config()),
-          &MockUpdateChecker::Create, &MockCrxDownloader::Create);
+          &MockUpdateChecker::Create);
 
   MockObserver observer;
   {
@@ -1336,12 +1336,6 @@ TEST_F(UpdateClientTest, TwoCrxUpdateDownloadTimeout) {
 
   class MockCrxDownloader : public CrxDownloader {
    public:
-    static scoped_refptr<CrxDownloader> Create(
-        bool is_background_download,
-        scoped_refptr<NetworkFetcherFactory> network_fetcher_factory) {
-      return base::MakeRefCounted<MockCrxDownloader>();
-    }
-
     MockCrxDownloader() : CrxDownloader(nullptr) {}
 
    private:
@@ -1414,10 +1408,11 @@ TEST_F(UpdateClientTest, TwoCrxUpdateDownloadTimeout) {
     }
   };
 
+  SetMockCrxDownloader<MockCrxDownloader>();
   scoped_refptr<UpdateClient> update_client =
       base::MakeRefCounted<UpdateClientImpl>(
           config(), base::MakeRefCounted<MockPingManager>(config()),
-          &MockUpdateChecker::Create, &MockCrxDownloader::Create);
+          &MockUpdateChecker::Create);
 
   MockObserver observer;
   {
@@ -1660,12 +1655,6 @@ TEST_F(UpdateClientTest, OneCrxDiffUpdate) {
 
   class MockCrxDownloader : public CrxDownloader {
    public:
-    static scoped_refptr<CrxDownloader> Create(
-        bool is_background_download,
-        scoped_refptr<NetworkFetcherFactory> network_fetcher_factory) {
-      return base::MakeRefCounted<MockCrxDownloader>();
-    }
-
     MockCrxDownloader() : CrxDownloader(nullptr) {}
 
    private:
@@ -1750,10 +1739,11 @@ TEST_F(UpdateClientTest, OneCrxDiffUpdate) {
     }
   };
 
+  SetMockCrxDownloader<MockCrxDownloader>();
   scoped_refptr<UpdateClient> update_client =
       base::MakeRefCounted<UpdateClientImpl>(
           config(), base::MakeRefCounted<MockPingManager>(config()),
-          &MockUpdateChecker::Create, &MockCrxDownloader::Create);
+          &MockUpdateChecker::Create);
 
   MockObserver observer;
   {
@@ -2021,12 +2011,6 @@ TEST_F(UpdateClientTest, OneCrxInstallError) {
 
   class MockCrxDownloader : public CrxDownloader {
    public:
-    static scoped_refptr<CrxDownloader> Create(
-        bool is_background_download,
-        scoped_refptr<NetworkFetcherFactory> network_fetcher_factory) {
-      return base::MakeRefCounted<MockCrxDownloader>();
-    }
-
     MockCrxDownloader() : CrxDownloader(nullptr) {}
 
    private:
@@ -2079,10 +2063,11 @@ TEST_F(UpdateClientTest, OneCrxInstallError) {
     }
   };
 
+  SetMockCrxDownloader<MockCrxDownloader>();
   scoped_refptr<UpdateClient> update_client =
       base::MakeRefCounted<UpdateClientImpl>(
           config(), base::MakeRefCounted<MockPingManager>(config()),
-          &MockUpdateChecker::Create, &MockCrxDownloader::Create);
+          &MockUpdateChecker::Create);
 
   MockObserver observer;
   {
@@ -2292,12 +2277,6 @@ TEST_F(UpdateClientTest, OneCrxDiffUpdateFailsFullUpdateSucceeds) {
 
   class MockCrxDownloader : public CrxDownloader {
    public:
-    static scoped_refptr<CrxDownloader> Create(
-        bool is_background_download,
-        scoped_refptr<NetworkFetcherFactory> network_fetcher_factory) {
-      return base::MakeRefCounted<MockCrxDownloader>();
-    }
-
     MockCrxDownloader() : CrxDownloader(nullptr) {}
 
    private:
@@ -2386,10 +2365,11 @@ TEST_F(UpdateClientTest, OneCrxDiffUpdateFailsFullUpdateSucceeds) {
     }
   };
 
+  SetMockCrxDownloader<MockCrxDownloader>();
   scoped_refptr<UpdateClient> update_client =
       base::MakeRefCounted<UpdateClientImpl>(
           config(), base::MakeRefCounted<MockPingManager>(config()),
-          &MockUpdateChecker::Create, &MockCrxDownloader::Create);
+          &MockUpdateChecker::Create);
 
   MockObserver observer;
   {
@@ -2562,12 +2542,6 @@ TEST_F(UpdateClientTest, OneCrxNoUpdateQueuedCall) {
 
   class MockCrxDownloader : public CrxDownloader {
    public:
-    static scoped_refptr<CrxDownloader> Create(
-        bool is_background_download,
-        scoped_refptr<NetworkFetcherFactory> network_fetcher_factory) {
-      return base::MakeRefCounted<MockCrxDownloader>();
-    }
-
     MockCrxDownloader() : CrxDownloader(nullptr) {}
 
    private:
@@ -2585,10 +2559,11 @@ TEST_F(UpdateClientTest, OneCrxNoUpdateQueuedCall) {
     ~MockPingManager() override { EXPECT_TRUE(ping_data().empty()); }
   };
 
+  SetMockCrxDownloader<MockCrxDownloader>();
   scoped_refptr<UpdateClient> update_client =
       base::MakeRefCounted<UpdateClientImpl>(
           config(), base::MakeRefCounted<MockPingManager>(config()),
-          &MockUpdateChecker::Create, &MockCrxDownloader::Create);
+          &MockUpdateChecker::Create);
 
   MockObserver observer;
   {
@@ -2747,12 +2722,6 @@ TEST_F(UpdateClientTest, OneCrxInstall) {
 
   class MockCrxDownloader : public CrxDownloader {
    public:
-    static scoped_refptr<CrxDownloader> Create(
-        bool is_background_download,
-        scoped_refptr<NetworkFetcherFactory> network_fetcher_factory) {
-      return base::MakeRefCounted<MockCrxDownloader>();
-    }
-
     MockCrxDownloader() : CrxDownloader(nullptr) {}
 
    private:
@@ -2809,10 +2778,11 @@ TEST_F(UpdateClientTest, OneCrxInstall) {
     }
   };
 
+  SetMockCrxDownloader<MockCrxDownloader>();
   scoped_refptr<UpdateClient> update_client =
       base::MakeRefCounted<UpdateClientImpl>(
           config(), base::MakeRefCounted<MockPingManager>(config()),
-          &MockUpdateChecker::Create, &MockCrxDownloader::Create);
+          &MockUpdateChecker::Create);
   {
     EXPECT_FALSE(config()->GetPrefService()->FindPreference(
         "updateclientdata.apps.jebgalgnebhfojomionfpkfelancnnkf.pv"));
@@ -2931,12 +2901,6 @@ TEST_F(UpdateClientTest, OneCrxInstallNoCrxComponentData) {
 
   class MockCrxDownloader : public CrxDownloader {
    public:
-    static scoped_refptr<CrxDownloader> Create(
-        bool is_background_download,
-        scoped_refptr<NetworkFetcherFactory> network_fetcher_factory) {
-      return base::MakeRefCounted<MockCrxDownloader>();
-    }
-
     MockCrxDownloader() : CrxDownloader(nullptr) {}
 
    private:
@@ -2956,10 +2920,11 @@ TEST_F(UpdateClientTest, OneCrxInstallNoCrxComponentData) {
     }
   };
 
+  SetMockCrxDownloader<MockCrxDownloader>();
   scoped_refptr<UpdateClient> update_client =
       base::MakeRefCounted<UpdateClientImpl>(
           config(), base::MakeRefCounted<MockPingManager>(config()),
-          &MockUpdateChecker::Create, &MockCrxDownloader::Create);
+          &MockUpdateChecker::Create);
 
   MockObserver observer;
   {
@@ -3078,12 +3043,6 @@ TEST_F(UpdateClientTest, ConcurrentInstallSameCRX) {
 
   class MockCrxDownloader : public CrxDownloader {
    public:
-    static scoped_refptr<CrxDownloader> Create(
-        bool is_background_download,
-        scoped_refptr<NetworkFetcherFactory> network_fetcher_factory) {
-      return base::MakeRefCounted<MockCrxDownloader>();
-    }
-
     MockCrxDownloader() : CrxDownloader(nullptr) {}
 
    private:
@@ -3101,10 +3060,11 @@ TEST_F(UpdateClientTest, ConcurrentInstallSameCRX) {
     ~MockPingManager() override { EXPECT_TRUE(ping_data().empty()); }
   };
 
+  SetMockCrxDownloader<MockCrxDownloader>();
   scoped_refptr<UpdateClient> update_client =
       base::MakeRefCounted<UpdateClientImpl>(
           config(), base::MakeRefCounted<MockPingManager>(config()),
-          &MockUpdateChecker::Create, &MockCrxDownloader::Create);
+          &MockUpdateChecker::Create);
 
   MockObserver observer;
   EXPECT_CALL(observer, OnEvent(Events::COMPONENT_CHECKING_FOR_UPDATES,
@@ -3190,12 +3150,6 @@ TEST_F(UpdateClientTest, EmptyIdList) {
 
   class MockCrxDownloader : public CrxDownloader {
    public:
-    static scoped_refptr<CrxDownloader> Create(
-        bool is_background_download,
-        scoped_refptr<NetworkFetcherFactory> network_fetcher_factory) {
-      return base::MakeRefCounted<MockCrxDownloader>();
-    }
-
     MockCrxDownloader() : CrxDownloader(nullptr) {}
 
    private:
@@ -3213,10 +3167,11 @@ TEST_F(UpdateClientTest, EmptyIdList) {
     ~MockPingManager() override { EXPECT_TRUE(ping_data().empty()); }
   };
 
+  SetMockCrxDownloader<MockCrxDownloader>();
   scoped_refptr<UpdateClient> update_client =
       base::MakeRefCounted<UpdateClientImpl>(
           config(), base::MakeRefCounted<MockPingManager>(config()),
-          &MockUpdateChecker::Create, &MockCrxDownloader::Create);
+          &MockUpdateChecker::Create);
 
   const std::vector<std::string> empty_id_list;
   update_client->Update(
@@ -3284,10 +3239,11 @@ TEST_F(UpdateClientTest, SendUninstallPing) {
     }
   };
 
+  SetMockCrxDownloader<MockCrxDownloader>();
   scoped_refptr<UpdateClient> update_client =
       base::MakeRefCounted<UpdateClientImpl>(
           config(), base::MakeRefCounted<MockPingManager>(config()),
-          &MockUpdateChecker::Create, &MockCrxDownloader::Create);
+          &MockUpdateChecker::Create);
 
   update_client->SendUninstallPing(
       "jebgalgnebhfojomionfpkfelancnnkf", base::Version("1.2.3.4"), 10,
@@ -3387,12 +3343,6 @@ TEST_F(UpdateClientTest, RetryAfter) {
 
   class MockCrxDownloader : public CrxDownloader {
    public:
-    static scoped_refptr<CrxDownloader> Create(
-        bool is_background_download,
-        scoped_refptr<NetworkFetcherFactory> network_fetcher_factory) {
-      return base::MakeRefCounted<MockCrxDownloader>();
-    }
-
     MockCrxDownloader() : CrxDownloader(nullptr) {}
 
    private:
@@ -3410,10 +3360,11 @@ TEST_F(UpdateClientTest, RetryAfter) {
     ~MockPingManager() override { EXPECT_TRUE(ping_data().empty()); }
   };
 
+  SetMockCrxDownloader<MockCrxDownloader>();
   scoped_refptr<UpdateClient> update_client =
       base::MakeRefCounted<UpdateClientImpl>(
           config(), base::MakeRefCounted<MockPingManager>(config()),
-          &MockUpdateChecker::Create, &MockCrxDownloader::Create);
+          &MockUpdateChecker::Create);
 
   MockObserver observer;
 
@@ -3632,12 +3583,6 @@ TEST_F(UpdateClientTest, TwoCrxUpdateOneUpdateDisabled) {
 
   class MockCrxDownloader : public CrxDownloader {
    public:
-    static scoped_refptr<CrxDownloader> Create(
-        bool is_background_download,
-        scoped_refptr<NetworkFetcherFactory> network_fetcher_factory) {
-      return base::MakeRefCounted<MockCrxDownloader>();
-    }
-
     MockCrxDownloader() : CrxDownloader(nullptr) {}
 
    private:
@@ -3701,10 +3646,11 @@ TEST_F(UpdateClientTest, TwoCrxUpdateOneUpdateDisabled) {
 
   // Disables updates for the components declaring support for the group policy.
   config()->SetEnabledComponentUpdates(false);
+  SetMockCrxDownloader<MockCrxDownloader>();
   scoped_refptr<UpdateClient> update_client =
       base::MakeRefCounted<UpdateClientImpl>(
           config(), base::MakeRefCounted<MockPingManager>(config()),
-          &MockUpdateChecker::Create, &MockCrxDownloader::Create);
+          &MockUpdateChecker::Create);
 
   MockObserver observer;
   {
@@ -3830,12 +3776,6 @@ TEST_F(UpdateClientTest, OneCrxUpdateCheckFails) {
 
   class MockCrxDownloader : public CrxDownloader {
    public:
-    static scoped_refptr<CrxDownloader> Create(
-        bool is_background_download,
-        scoped_refptr<NetworkFetcherFactory> network_fetcher_factory) {
-      return base::MakeRefCounted<MockCrxDownloader>();
-    }
-
     MockCrxDownloader() : CrxDownloader(nullptr) {}
 
    private:
@@ -3853,10 +3793,11 @@ TEST_F(UpdateClientTest, OneCrxUpdateCheckFails) {
     ~MockPingManager() override { EXPECT_TRUE(ping_data().empty()); }
   };
 
+  SetMockCrxDownloader<MockCrxDownloader>();
   scoped_refptr<UpdateClient> update_client =
       base::MakeRefCounted<UpdateClientImpl>(
           config(), base::MakeRefCounted<MockPingManager>(config()),
-          &MockUpdateChecker::Create, &MockCrxDownloader::Create);
+          &MockUpdateChecker::Create);
 
   MockObserver observer;
   {
@@ -4002,12 +3943,6 @@ TEST_F(UpdateClientTest, OneCrxErrorUnknownApp) {
 
   class MockCrxDownloader : public CrxDownloader {
    public:
-    static scoped_refptr<CrxDownloader> Create(
-        bool is_background_download,
-        scoped_refptr<NetworkFetcherFactory> network_fetcher_factory) {
-      return base::MakeRefCounted<MockCrxDownloader>();
-    }
-
     MockCrxDownloader() : CrxDownloader(nullptr) {}
 
    private:
@@ -4025,10 +3960,11 @@ TEST_F(UpdateClientTest, OneCrxErrorUnknownApp) {
     ~MockPingManager() override { EXPECT_TRUE(ping_data().empty()); }
   };
 
+  SetMockCrxDownloader<MockCrxDownloader>();
   scoped_refptr<UpdateClient> update_client =
       base::MakeRefCounted<UpdateClientImpl>(
           config(), base::MakeRefCounted<MockPingManager>(config()),
-          &MockUpdateChecker::Create, &MockCrxDownloader::Create);
+          &MockUpdateChecker::Create);
 
   MockObserver observer;
   {
@@ -4187,12 +4123,6 @@ TEST_F(UpdateClientTest, ActionRun_Install) {
 
   class MockCrxDownloader : public CrxDownloader {
    public:
-    static scoped_refptr<CrxDownloader> Create(
-        bool is_background_download,
-        scoped_refptr<NetworkFetcherFactory> network_fetcher_factory) {
-      return base::MakeRefCounted<MockCrxDownloader>();
-    }
-
     MockCrxDownloader() : CrxDownloader(nullptr) {}
 
    private:
@@ -4270,10 +4200,11 @@ TEST_F(UpdateClientTest, ActionRun_Install) {
     }
   };
 
+  SetMockCrxDownloader<MockCrxDownloader>();
   scoped_refptr<UpdateClient> update_client =
       base::MakeRefCounted<UpdateClientImpl>(
           config(), base::MakeRefCounted<MockPingManager>(config()),
-          &MockUpdateChecker::Create, &MockCrxDownloader::Create);
+          &MockUpdateChecker::Create);
 
   update_client->Install(
       std::string("gjpmebpgbhcamgdgjcmnjfhggjpgcimm"),
@@ -4363,12 +4294,6 @@ TEST_F(UpdateClientTest, ActionRun_NoUpdate) {
 
   class MockCrxDownloader : public CrxDownloader {
    public:
-    static scoped_refptr<CrxDownloader> Create(
-        bool is_background_download,
-        scoped_refptr<NetworkFetcherFactory> network_fetcher_factory) {
-      return base::MakeRefCounted<MockCrxDownloader>();
-    }
-
     MockCrxDownloader() : CrxDownloader(nullptr) {}
 
    private:
@@ -4431,10 +4356,11 @@ TEST_F(UpdateClientTest, ActionRun_NoUpdate) {
   base::ScopedTempDir unpack_path_owner;
   EXPECT_TRUE(unpack_path_owner.Set(unpack_path));
 
+  SetMockCrxDownloader<MockCrxDownloader>();
   scoped_refptr<UpdateClient> update_client =
       base::MakeRefCounted<UpdateClientImpl>(
           config(), base::MakeRefCounted<MockPingManager>(config()),
-          &MockUpdateChecker::Create, &MockCrxDownloader::Create);
+          &MockUpdateChecker::Create);
 
   const std::vector<std::string> ids = {"gjpmebpgbhcamgdgjcmnjfhggjpgcimm"};
   update_client->Update(
@@ -4542,12 +4468,6 @@ TEST_F(UpdateClientTest, CustomAttributeNoUpdate) {
 
   class MockCrxDownloader : public CrxDownloader {
    public:
-    static scoped_refptr<CrxDownloader> Create(
-        bool is_background_download,
-        scoped_refptr<NetworkFetcherFactory> network_fetcher_factory) {
-      return base::MakeRefCounted<MockCrxDownloader>();
-    }
-
     MockCrxDownloader() : CrxDownloader(nullptr) {}
 
    private:
@@ -4565,10 +4485,11 @@ TEST_F(UpdateClientTest, CustomAttributeNoUpdate) {
     ~MockPingManager() override { EXPECT_TRUE(ping_data().empty()); }
   };
 
+  SetMockCrxDownloader<MockCrxDownloader>();
   scoped_refptr<UpdateClient> update_client =
       base::MakeRefCounted<UpdateClientImpl>(
           config(), base::MakeRefCounted<MockPingManager>(config()),
-          &MockUpdateChecker::Create, &MockCrxDownloader::Create);
+          &MockUpdateChecker::Create);
 
   class Observer : public UpdateClient::Observer {
    public:

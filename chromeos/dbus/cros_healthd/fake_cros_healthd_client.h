@@ -35,7 +35,7 @@ class COMPONENT_EXPORT(CROS_HEALTHD) FakeCrosHealthdClient
 
   // CrosHealthdClient overrides:
   mojo::Remote<mojom::CrosHealthdServiceFactory> BootstrapMojoConnection(
-      base::OnceCallback<void(bool success)> result_callback) override;
+      BootstrapMojoConnectionCallback result_callback) override;
 
   // Set the list of routines that will be used in the response to any
   // GetAvailableRoutines IPCs received.

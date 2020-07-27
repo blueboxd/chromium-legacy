@@ -5,7 +5,9 @@
 package org.chromium.components.payments;
 
 import androidx.annotation.Nullable;
+import androidx.annotation.VisibleForTesting;
 
+import org.chromium.components.autofill.EditableOption;
 import org.chromium.mojo.system.MojoException;
 import org.chromium.payments.mojom.PaymentDetails;
 import org.chromium.payments.mojom.PaymentMethodData;
@@ -13,6 +15,8 @@ import org.chromium.payments.mojom.PaymentOptions;
 import org.chromium.payments.mojom.PaymentRequest;
 import org.chromium.payments.mojom.PaymentRequestClient;
 import org.chromium.payments.mojom.PaymentValidationErrors;
+
+import java.util.List;
 
 /**
  * Android implementation of the PaymentRequest service defined in
@@ -22,6 +26,7 @@ import org.chromium.payments.mojom.PaymentValidationErrors;
  */
 public class ComponentPaymentRequestImpl implements PaymentRequest {
     private final ComponentPaymentRequestDelegate mDelegate;
+    private static NativeObserverForTest sNativeObserverForTest;
     private PaymentRequestClient mClient;
     private PaymentRequestLifecycleObserver mPaymentRequestLifecycleObserver;
 
@@ -51,6 +56,14 @@ public class ComponentPaymentRequestImpl implements PaymentRequest {
                 ComponentPaymentRequestImpl componentPaymentRequestImpl);
 
         /**
+         * Set a native side observer for the implementation of this interface, for testing purpose
+         * only.
+         * @param nativeObserverForTest The native side observer.
+         */
+        @VisibleForTesting
+        void setNativeObserverForTest(NativeObserverForTest nativeObserverForTest);
+
+        /**
          * @return The JourneyLogger of PaymentRequestImpl.
          */
         JourneyLogger getJourneyLogger();
@@ -62,12 +75,44 @@ public class ComponentPaymentRequestImpl implements PaymentRequest {
     }
 
     /**
+     * An observer interface injected when running tests to allow them to observe events.
+     * This interface holds events that should be passed back to the native C++ test
+     * harness and mirrors the C++ PaymentRequest::ObserverForTest() interface. Its methods
+     * should be called in the same places that the C++ PaymentRequest object will call its
+     * ObserverForTest.
+     */
+    public interface NativeObserverForTest {
+        void onCanMakePaymentCalled();
+        void onCanMakePaymentReturned();
+        void onHasEnrolledInstrumentCalled();
+        void onHasEnrolledInstrumentReturned();
+        void onAppListReady(@Nullable List<EditableOption> paymentApps,
+                org.chromium.payments.mojom.PaymentItem total);
+        void onNotSupportedError();
+        void onConnectionTerminated();
+        void onAbortCalled();
+        void onCompleteCalled();
+        void onMinimalUIReady();
+    }
+
+    /**
      * Build an instance of the PaymentRequest implementation.
      * @param delegate A delegate of the instance.
      */
     public ComponentPaymentRequestImpl(ComponentPaymentRequestDelegate delegate) {
         mDelegate = delegate;
         mDelegate.setComponentPaymentRequestImpl(this);
+        mDelegate.setNativeObserverForTest(sNativeObserverForTest);
+    }
+
+    /**
+     * Set a native-side observer for PaymentRequest implementations. This observer should be set
+     * before PaymentRequest implementations are instantiated.
+     * @param nativeObserverForTest The native-side observer.
+     */
+    @VisibleForTesting
+    public static void setNativeObserverForTest(NativeObserverForTest nativeObserverForTest) {
+        sNativeObserverForTest = nativeObserverForTest;
     }
 
     @Override

@@ -112,8 +112,24 @@ scoped_refptr<FontData> CSSFontSelector::GetFontData(
   if (settings_family_name.IsEmpty())
     return nullptr;
 
-  return FontCache::GetFontCache()->GetFontData(font_description,
-                                                settings_family_name);
+  document_->GetFontMatchingMetrics()->ReportFontFamilyLookupByGenericFamily(
+      family_name, font_description.GetScript(),
+      font_description.GenericFamily(), settings_family_name);
+
+  scoped_refptr<SimpleFontData> font_data =
+      FontCache::GetFontCache()->GetFontData(font_description,
+                                             settings_family_name);
+
+  // This does not distinguish between the family_name being "-webkit-standard"
+  // and falling back to the standard font.
+  LocalFontLookupType check_type =
+      family_name == font_family_names::kWebkitStandard
+          ? LocalFontLookupType::kPreferredStandardFont
+          : LocalFontLookupType::kGenericFontFamilyName;
+  document_->GetFontMatchingMetrics()->ReportFontLookupByUniqueOrFamilyName(
+      settings_family_name, font_description, check_type, font_data.get());
+
+  return font_data;
 }
 
 void CSSFontSelector::WillUseFontData(const FontDescription& font_description,
@@ -181,6 +197,37 @@ void CSSFontSelector::ReportFailedLocalFontMatch(
     const AtomicString& font_name) {
   DCHECK(document_);
   document_->GetFontMatchingMetrics()->ReportFailedLocalFontMatch(font_name);
+}
+
+void CSSFontSelector::ReportFontLookupByUniqueOrFamilyName(
+    const AtomicString& name,
+    const FontDescription& font_description,
+    LocalFontLookupType check_type,
+    SimpleFontData* resulting_font_data,
+    bool is_loading_fallback) {
+  DCHECK(document_);
+  document_->GetFontMatchingMetrics()->ReportFontLookupByUniqueOrFamilyName(
+      name, font_description, check_type, resulting_font_data,
+      is_loading_fallback);
+}
+
+void CSSFontSelector::ReportFontLookupByFallbackCharacter(
+    UChar32 fallback_character,
+    const FontDescription& font_description,
+    LocalFontLookupType check_type,
+    SimpleFontData* resulting_font_data) {
+  DCHECK(document_);
+  document_->GetFontMatchingMetrics()->ReportFontLookupByFallbackCharacter(
+      fallback_character, font_description, check_type, resulting_font_data);
+}
+
+void CSSFontSelector::ReportLastResortFallbackFontLookup(
+    const FontDescription& font_description,
+    LocalFontLookupType check_type,
+    SimpleFontData* resulting_font_data) {
+  DCHECK(document_);
+  document_->GetFontMatchingMetrics()->ReportLastResortFallbackFontLookup(
+      font_description, check_type, resulting_font_data);
 }
 
 void CSSFontSelector::Trace(Visitor* visitor) const {

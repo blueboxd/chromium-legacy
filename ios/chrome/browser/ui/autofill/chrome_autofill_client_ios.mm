@@ -185,6 +185,10 @@ AddressNormalizer* ChromeAutofillClientIOS::GetAddressNormalizer() {
   return nullptr;
 }
 
+const GURL& ChromeAutofillClientIOS::GetLastCommittedURL() {
+  return web_state_->GetLastCommittedURL();
+}
+
 security_state::SecurityLevel
 ChromeAutofillClientIOS::GetSecurityLevelForUmaHistograms() {
   return security_state::GetSecurityLevelForWebState(web_state_);

@@ -24,7 +24,6 @@
 #include "content/public/browser/native_web_keyboard_event.h"
 #include "content/public/common/content_client.h"
 #include "content/public/common/content_switches.h"
-#include "content/public/common/previews_state.h"
 #include "content/public/common/use_zoom_for_dsf_policy.h"
 #include "content/public/renderer/content_renderer_client.h"
 #include "content/public/renderer/render_view_visitor.h"
@@ -47,6 +46,7 @@
 #include "third_party/blink/public/common/input/web_gesture_event.h"
 #include "third_party/blink/public/common/input/web_input_event.h"
 #include "third_party/blink/public/common/input/web_mouse_event.h"
+#include "third_party/blink/public/common/loader/previews_state.h"
 #include "third_party/blink/public/common/widget/visual_properties.h"
 #include "third_party/blink/public/mojom/leak_detector/leak_detector.mojom.h"
 #include "third_party/blink/public/mojom/renderer_preferences.mojom.h"
@@ -709,9 +709,9 @@ void RenderViewTest::Reload(const GURL& url) {
   auto common_params = mojom::CommonNavigationParams::New(
       url, base::nullopt, blink::mojom::Referrer::New(),
       ui::PAGE_TRANSITION_LINK, mojom::NavigationType::RELOAD,
-      NavigationDownloadPolicy(), false, GURL(), GURL(), PREVIEWS_UNSPECIFIED,
-      base::TimeTicks::Now(), "GET", nullptr,
-      network::mojom::SourceLocation::New(),
+      NavigationDownloadPolicy(), false, GURL(), GURL(),
+      blink::PreviewsTypes::PREVIEWS_UNSPECIFIED, base::TimeTicks::Now(), "GET",
+      nullptr, network::mojom::SourceLocation::New(),
       false /* started_from_context_menu */, false /* has_user_gesture */,
       CreateInitiatorCSPInfo(), std::vector<int>(), std::string(),
       false /* is_history_navigation_in_new_child_frame */, base::TimeTicks());
@@ -863,9 +863,9 @@ void RenderViewTest::GoToOffset(int offset,
       url, base::nullopt, blink::mojom::Referrer::New(),
       ui::PAGE_TRANSITION_FORWARD_BACK,
       mojom::NavigationType::HISTORY_DIFFERENT_DOCUMENT,
-      NavigationDownloadPolicy(), false, GURL(), GURL(), PREVIEWS_UNSPECIFIED,
-      base::TimeTicks::Now(), "GET", nullptr,
-      network::mojom::SourceLocation::New(),
+      NavigationDownloadPolicy(), false, GURL(), GURL(),
+      blink::PreviewsTypes::PREVIEWS_UNSPECIFIED, base::TimeTicks::Now(), "GET",
+      nullptr, network::mojom::SourceLocation::New(),
       false /* started_from_context_menu */, false /* has_user_gesture */,
       CreateInitiatorCSPInfo(), std::vector<int>(), std::string(),
       false /* is_history_navigation_in_new_child_frame */, base::TimeTicks());

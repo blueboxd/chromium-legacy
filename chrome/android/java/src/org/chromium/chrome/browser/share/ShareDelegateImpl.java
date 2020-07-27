@@ -275,7 +275,7 @@ public class ShareDelegateImpl implements ShareDelegate {
     @Override
     public boolean isSharingHubV15Enabled() {
         return isSharingHubV1Enabled()
-                && ChromeFeatureList.isEnabled(ChromeFeatureList.CHROME_SHARING_HUB);
+                && ChromeFeatureList.isEnabled(ChromeFeatureList.CHROME_SHARING_HUB_V15);
     }
 
     /**

@@ -71,10 +71,8 @@ IN_PROC_BROWSER_TEST_F(IdleBrowserTest, Start) {
 
   content::RenderFrameHost* const frame =
       browser()->tab_strip_model()->GetActiveWebContents()->GetMainFrame();
-  content::RenderProcessHost* const process = frame->GetProcess();
 
-  content::IdleManager* idle_mgr =
-      process->GetStoragePartition()->GetIdleManager();
+  content::IdleManager* idle_mgr = frame->GetIdleManagerForTesting();
 
   // Test that statuses are updated after idleDetector.start().
   std::string script = R"(

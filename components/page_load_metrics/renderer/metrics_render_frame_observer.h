@@ -62,7 +62,7 @@ class MetricsRenderFrameObserver
                         int request_id,
                         const network::mojom::URLResponseHead& response_head,
                         network::mojom::RequestDestination request_destination,
-                        content::PreviewsState previews_state) override;
+                        blink::PreviewsState previews_state) override;
   void DidReceiveTransferSizeUpdate(int request_id,
                                     int received_data_length) override;
   void DidCompleteResponse(

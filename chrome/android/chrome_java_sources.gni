@@ -1590,7 +1590,6 @@ chrome_java_sources = [
   "java/src/org/chromium/chrome/browser/toolbar/bottom/BottomControlsProperties.java",
   "java/src/org/chromium/chrome/browser/toolbar/bottom/BottomControlsViewBinder.java",
   "java/src/org/chromium/chrome/browser/toolbar/bottom/BottomTabSwitcherActionMenuCoordinator.java",
-  "java/src/org/chromium/chrome/browser/toolbar/bottom/BottomToolbarAnimationCoordinator.java",
   "java/src/org/chromium/chrome/browser/toolbar/bottom/BottomToolbarConfiguration.java",
   "java/src/org/chromium/chrome/browser/toolbar/bottom/BottomToolbarCoordinator.java",
   "java/src/org/chromium/chrome/browser/toolbar/bottom/BottomToolbarNewTabButton.java",

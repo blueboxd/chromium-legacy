@@ -18,6 +18,7 @@
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "base/scoped_observer.h"
+#include "chrome/browser/extensions/updater/fetched_crx_file.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
 #include "extensions/browser/extension_registry_observer.h"
@@ -151,25 +152,6 @@ class ExtensionUpdater : public ExtensionDownloaderDelegate,
  private:
   friend class ExtensionUpdaterTest;
   friend class ExtensionUpdaterFileHandler;
-
-  // FetchedCRXFile holds information about a CRX file we fetched to disk,
-  // but have not yet installed.
-  struct FetchedCRXFile {
-    FetchedCRXFile();
-    FetchedCRXFile(const CRXFileInfo& file,
-                   bool file_ownership_passed,
-                   const std::set<int>& request_ids,
-                   InstallCallback callback);
-    FetchedCRXFile(FetchedCRXFile&& other);
-    FetchedCRXFile& operator=(FetchedCRXFile&& other);
-    ~FetchedCRXFile();
-
-    CRXFileInfo info;
-    GURL download_url;
-    bool file_ownership_passed;
-    std::set<int> request_ids;
-    InstallCallback callback;
-  };
 
   struct InProgressCheck {
     InProgressCheck();

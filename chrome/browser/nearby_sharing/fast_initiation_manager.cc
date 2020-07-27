@@ -112,6 +112,7 @@ void FastInitiationManager::StopAdvertising(
 
   if (!advertisement_) {
     std::move(stop_callback_).Run();
+    // |this| might be destroyed here, do not access local fields.
     return;
   }
 
@@ -181,8 +182,9 @@ void FastInitiationManager::OnRegisterAdvertisementError(
   NS_LOG(ERROR)
       << "FastInitiationManager::StartAdvertising() failed with error code = "
       << error_code;
-  std::move(start_error_callback_).Run();
   start_callback_.Reset();
+  std::move(start_error_callback_).Run();
+  // |this| might be destroyed here, do not access local fields.
 }
 
 void FastInitiationManager::OnRestoreAdvertisingInterval() {
@@ -208,6 +210,7 @@ void FastInitiationManager::UnregisterAdvertisement() {
 void FastInitiationManager::OnUnregisterAdvertisement() {
   advertisement_.reset();
   std::move(stop_callback_).Run();
+  // |this| might be destroyed here, do not access local fields.
 }
 
 void FastInitiationManager::OnUnregisterAdvertisementError(
@@ -217,6 +220,7 @@ void FastInitiationManager::OnUnregisterAdvertisementError(
       << error_code;
   advertisement_.reset();
   std::move(stop_callback_).Run();
+  // |this| might be destroyed here, do not access local fields.
 }
 
 std::vector<uint8_t> FastInitiationManager::GenerateFastInitV1Metadata(

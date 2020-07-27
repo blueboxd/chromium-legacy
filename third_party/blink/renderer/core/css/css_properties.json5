@@ -3735,6 +3735,7 @@
       typedom_types: ["Keyword"],
       default_value: "none",
       valid_for_first_letter: true,
+      valid_for_marker: true,
     },
     {
       name: "text-underline-offset",

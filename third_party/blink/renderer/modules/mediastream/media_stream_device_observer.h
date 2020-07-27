@@ -69,7 +69,12 @@ class MODULES_EXPORT MediaStreamDeviceObserver
 
   // Private class for keeping track of opened devices and who have
   // opened it.
-  struct Stream;
+  struct Stream {
+    WebMediaStreamDeviceObserver::OnDeviceStoppedCb on_device_stopped_cb;
+    WebMediaStreamDeviceObserver::OnDeviceChangedCb on_device_changed_cb;
+    MediaStreamDevices audio_devices;
+    MediaStreamDevices video_devices;
+  };
 
   // mojom::MediaStreamDeviceObserver implementation.
   void OnDeviceStopped(const String& label,

@@ -17,9 +17,11 @@ import androidx.preference.Preference;
 import org.chromium.base.BuildConfig;
 import org.chromium.base.Callback;
 import org.chromium.base.ContextUtils;
+import org.chromium.chrome.browser.flags.ChromeFeatureList;
 import org.chromium.chrome.browser.password_check.BulkLeakCheckServiceState;
 import org.chromium.chrome.browser.preferences.ChromePreferenceKeys;
 import org.chromium.chrome.browser.preferences.SharedPreferencesManager;
+import org.chromium.chrome.browser.safe_browsing.settings.SecuritySettingsFragment;
 import org.chromium.chrome.browser.safety_check.SafetyCheckBridge.SafetyCheckCommonObserver;
 import org.chromium.chrome.browser.safety_check.SafetyCheckProperties.PasswordsState;
 import org.chromium.chrome.browser.safety_check.SafetyCheckProperties.SafeBrowsingState;
@@ -106,13 +108,21 @@ class SafetyCheckMediator implements SafetyCheckCommonObserver {
         // Set the listener for clicking the Safe Browsing element.
         mModel.set(SafetyCheckProperties.SAFE_BROWSING_CLICK_LISTENER,
                 (Preference.OnPreferenceClickListener) (p) -> {
-                    // Open the Sync and Services settings.
-                    // TODO(crbug.com/1070620): replace the hardcoded class name with an import and
-                    // ".class.getName()" once SyncAndServicesSettings is moved out of
-                    // //chrome/android.
+                    String safeBrowsingSettingsClassName;
+                    if (ChromeFeatureList.isEnabled(
+                                ChromeFeatureList.SAFE_BROWSING_SECURITY_SECTION_UI)) {
+                        // Open the Security settings since the flag for them is enabled.
+                        safeBrowsingSettingsClassName = SecuritySettingsFragment.class.getName();
+                    } else {
+                        // Open the Sync and Services settings.
+                        // TODO(crbug.com/1070620): replace the hardcoded class name with an import
+                        // and ".class.getName()" once SyncAndServicesSettings is moved out of
+                        // //chrome/android.
+                        safeBrowsingSettingsClassName =
+                                "org.chromium.chrome.browser.sync.settings.SyncAndServicesSettings";
+                    }
                     p.getContext().startActivity(settingsLauncher.createSettingsActivityIntent(
-                            p.getContext(),
-                            "org.chromium.chrome.browser.sync.settings.SyncAndServicesSettings"));
+                            p.getContext(), safeBrowsingSettingsClassName));
                     return true;
                 });
         // Set the listener for clicking the passwords element.

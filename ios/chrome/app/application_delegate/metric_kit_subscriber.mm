@@ -44,6 +44,8 @@ enum MetricKitExitReason {
 
 namespace {
 
+NSString* const kEnableMetricKit = @"EnableMetricKit";
+
 #if defined(__IPHONE_14_0) && __IPHONE_OS_VERSION_MAX_ALLOWED >= __IPHONE_14_0
 void ReportExitReason(base::HistogramBase* histogram,
                       MetricKitExitReason bucket,
@@ -147,14 +149,29 @@ void WriteDiagnosticPayloads(NSArray<MXDiagnosticPayload*>* payloads)
   return instance;
 }
 
+- (void)setEnabled:(BOOL)enable {
+  if (enable == _enabled) {
+    return;
+  }
+  _enabled = enable;
+  if (enable) {
+    [[MXMetricManager sharedManager] addSubscriber:self];
+  } else {
+    [[MXMetricManager sharedManager] removeSubscriber:self];
+  }
+}
+
 - (void)didReceiveMetricPayloads:(NSArray<MXMetricPayload*>*)payloads
     API_AVAILABLE(ios(13.0)) {
-  base::ThreadPool::PostTask(
-      FROM_HERE,
-      {base::TaskPriority::BEST_EFFORT,
-       base::TaskShutdownBehavior::CONTINUE_ON_SHUTDOWN,
-       base::ThreadPolicy::PREFER_BACKGROUND, base::MayBlock()},
-      base::BindOnce(WriteMetricPayloads, payloads));
+  NSUserDefaults* standard_defaults = [NSUserDefaults standardUserDefaults];
+  if ([standard_defaults boolForKey:kEnableMetricKit]) {
+    base::ThreadPool::PostTask(
+        FROM_HERE,
+        {base::TaskPriority::BEST_EFFORT,
+         base::TaskShutdownBehavior::CONTINUE_ON_SHUTDOWN,
+         base::ThreadPolicy::PREFER_BACKGROUND, base::MayBlock()},
+        base::BindOnce(WriteMetricPayloads, payloads));
+  }
   for (MXMetricPayload* payload : payloads) {
     [self processPayload:payload];
   }
@@ -295,12 +312,15 @@ void WriteDiagnosticPayloads(NSArray<MXDiagnosticPayload*>* payloads)
 #if defined(__IPHONE_14_0) && __IPHONE_OS_VERSION_MAX_ALLOWED >= __IPHONE_14_0
 - (void)didReceiveDiagnosticPayloads:(NSArray<MXDiagnosticPayload*>*)payloads
     API_AVAILABLE(ios(14.0)) {
-  base::ThreadPool::PostTask(
-      FROM_HERE,
-      {base::TaskPriority::BEST_EFFORT,
-       base::TaskShutdownBehavior::CONTINUE_ON_SHUTDOWN,
-       base::ThreadPolicy::PREFER_BACKGROUND, base::MayBlock()},
-      base::BindOnce(WriteDiagnosticPayloads, payloads));
+  NSUserDefaults* standard_defaults = [NSUserDefaults standardUserDefaults];
+  if ([standard_defaults boolForKey:kEnableMetricKit]) {
+    base::ThreadPool::PostTask(
+        FROM_HERE,
+        {base::TaskPriority::BEST_EFFORT,
+         base::TaskShutdownBehavior::CONTINUE_ON_SHUTDOWN,
+         base::ThreadPolicy::PREFER_BACKGROUND, base::MayBlock()},
+        base::BindOnce(WriteDiagnosticPayloads, payloads));
+  }
 }
 #endif
 

@@ -26,6 +26,9 @@ namespace chromeos {
 // Mojo connection to the cros_healthd daemon.
 class COMPONENT_EXPORT(CROS_HEALTHD) CrosHealthdClient {
  public:
+  using BootstrapMojoConnectionCallback =
+      base::OnceCallback<void(bool success)>;
+
   // Creates and initializes the global instance. |bus| must not be null.
   static void Initialize(dbus::Bus* bus);
 
@@ -39,10 +42,9 @@ class COMPONENT_EXPORT(CROS_HEALTHD) CrosHealthdClient {
   static CrosHealthdClient* Get();
 
   // Uses D-Bus to bootstrap the Mojo connection between the cros_healthd daemon
-  // and the browser. Returns a bound remote
+  // and the browser. Returns a bound remote.
   virtual mojo::Remote<cros_healthd::mojom::CrosHealthdServiceFactory>
-  BootstrapMojoConnection(
-      base::OnceCallback<void(bool success)> result_callback) = 0;
+      BootstrapMojoConnection(BootstrapMojoConnectionCallback) = 0;
 
  protected:
   // Initialize/Shutdown should be used instead.

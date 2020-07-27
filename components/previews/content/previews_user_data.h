@@ -16,7 +16,7 @@
 #include "components/previews/core/previews_block_list.h"
 #include "components/previews/core/previews_experiments.h"
 #include "content/public/browser/render_document_host_user_data.h"
-#include "content/public/common/previews_state.h"
+#include "third_party/blink/public/common/loader/previews_state.h"
 
 namespace previews {
 
@@ -123,27 +123,26 @@ class PreviewsUserData {
 
   // The PreviewsState that was allowed for the navigation. This should be used
   // for metrics only since it does not respect the coin flip holdback.
-  content::PreviewsState PreHoldbackAllowedPreviewsState() const;
+  blink::PreviewsState PreHoldbackAllowedPreviewsState() const;
 
   // The PreviewsState that was allowed for the navigation. Returns PREVIEWS_OFF
   // if the coin flip holdback is kHoldback.
-  content::PreviewsState AllowedPreviewsState() const;
+  blink::PreviewsState AllowedPreviewsState() const;
 
-  void set_allowed_previews_state(
-      content::PreviewsState allowed_previews_state) {
+  void set_allowed_previews_state(blink::PreviewsState allowed_previews_state) {
     allowed_previews_state_without_holdback_ = allowed_previews_state;
   }
 
   // The PreviewsState that was committed for the navigation. This should be
   // used for metrics only since it does not respect the coin flip holdback.
-  content::PreviewsState PreHoldbackCommittedPreviewsState() const;
+  blink::PreviewsState PreHoldbackCommittedPreviewsState() const;
 
   // The PreviewsState that was committed for the navigation. Returns
   // PREVIEWS_OFF if the coin flip holdback is kHoldback.
-  content::PreviewsState CommittedPreviewsState() const;
+  blink::PreviewsState CommittedPreviewsState() const;
 
   void set_committed_previews_state(
-      content::PreviewsState committed_previews_state) {
+      blink::PreviewsState committed_previews_state) {
     committed_previews_state_without_holdback_ = committed_previews_state;
   }
 
@@ -216,13 +215,13 @@ class PreviewsUserData {
 
   // The PreviewsState that was allowed for the navigation. Is not influenced by
   // the coin flip holdback.
-  content::PreviewsState allowed_previews_state_without_holdback_ =
-      content::PREVIEWS_UNSPECIFIED;
+  blink::PreviewsState allowed_previews_state_without_holdback_ =
+      blink::PreviewsTypes::PREVIEWS_UNSPECIFIED;
 
   // The PreviewsState that was committed for the navigation. Is not influenced
   // by the coin flip holdback.
-  content::PreviewsState committed_previews_state_without_holdback_ =
-      content::PREVIEWS_OFF;
+  blink::PreviewsState committed_previews_state_without_holdback_ =
+      blink::PreviewsTypes::PREVIEWS_OFF;
 
   // The state of a random coin flip holdback, if any.
   CoinFlipHoldbackResult coin_flip_holdback_result_ =

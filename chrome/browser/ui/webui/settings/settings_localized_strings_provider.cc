@@ -1422,9 +1422,7 @@ void AddSearchInSettingsStrings(content::WebUIDataSource* html_source) {
       {"searchPrompt", IDS_SETTINGS_SEARCH_PROMPT},
       {"searchNoResults", IDS_SEARCH_NO_RESULTS},
       {"searchResults", IDS_SEARCH_RESULTS},
-      // TODO(dpapad): IDS_DOWNLOAD_CLEAR_SEARCH and IDS_HISTORY_CLEAR_SEARCH
-      // are identical, merge them to one and re-use here.
-      {"clearSearch", IDS_DOWNLOAD_CLEAR_SEARCH},
+      {"clearSearch", IDS_CLEAR_SEARCH},
   };
   AddLocalizedStringsBulk(html_source, kLocalizedStrings);
 

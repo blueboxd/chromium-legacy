@@ -71,10 +71,6 @@ DOMStorageContext* TestStoragePartition::GetDOMStorageContext() {
   return dom_storage_context_;
 }
 
-IdleManager* TestStoragePartition::GetIdleManager() {
-  return nullptr;
-}
-
 storage::mojom::IndexedDBControl& TestStoragePartition::GetIndexedDBControl() {
   // Bind and throw away the receiver. If testing is required, then add a method
   // to set the remote.

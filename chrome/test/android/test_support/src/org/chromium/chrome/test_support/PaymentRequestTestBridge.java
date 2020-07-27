@@ -16,6 +16,8 @@ import org.chromium.chrome.browser.ChromeActivity;
 import org.chromium.chrome.browser.payments.PaymentRequestFactory;
 import org.chromium.chrome.browser.payments.PaymentRequestImpl;
 import org.chromium.components.autofill.EditableOption;
+import org.chromium.components.payments.ComponentPaymentRequestImpl;
+import org.chromium.components.payments.ComponentPaymentRequestImpl.NativeObserverForTest;
 import org.chromium.content_public.browser.WebContents;
 import org.chromium.payments.mojom.PaymentItem;
 
@@ -36,17 +38,14 @@ public class PaymentRequestTestBridge {
         private final boolean mIsValidSsl;
         private final boolean mIsWebContentsActive;
         private final boolean mPrefsCanMakePayment;
-        private final boolean mSkipUiForBasicCard;
         private final String mTwaPackageName;
 
         PaymentRequestDelegateForTest(boolean isOffTheRecord, boolean isValidSsl,
-                boolean isWebContentsActive, boolean prefsCanMakePayment,
-                boolean skipUiForBasicCard, String twaPackageName) {
+                boolean isWebContentsActive, boolean prefsCanMakePayment, String twaPackageName) {
             mIsOffTheRecord = isOffTheRecord;
             mIsValidSsl = isValidSsl;
             mIsWebContentsActive = isWebContentsActive;
             mPrefsCanMakePayment = prefsCanMakePayment;
-            mSkipUiForBasicCard = skipUiForBasicCard;
             mTwaPackageName = twaPackageName;
         }
 
@@ -89,7 +88,7 @@ public class PaymentRequestTestBridge {
      * methods are called.
      */
     private static class PaymentRequestNativeObserverBridgeToNativeForTest
-            implements PaymentRequestImpl.NativeObserverForTest {
+            implements NativeObserverForTest {
         private final long mOnCanMakePaymentCalledPtr;
         private final long mOnCanMakePaymentReturnedPtr;
         private final long mOnHasEnrolledInstrumentCalledPtr;
@@ -199,9 +198,9 @@ public class PaymentRequestTestBridge {
             boolean isValidSsl, boolean isWebContentsActive, boolean prefsCanMakePayment,
             boolean skipUiForBasicCard, String twaPackageName) {
         if (useDelegate) {
-            PaymentRequestFactory.sDelegateForTest = new PaymentRequestDelegateForTest(
-                    isOffTheRecord, isValidSsl, isWebContentsActive, prefsCanMakePayment,
-                    skipUiForBasicCard, twaPackageName);
+            PaymentRequestFactory.sDelegateForTest =
+                    new PaymentRequestDelegateForTest(isOffTheRecord, isValidSsl,
+                            isWebContentsActive, prefsCanMakePayment, twaPackageName);
         } else {
             PaymentRequestFactory.sDelegateForTest = null;
         }
@@ -213,12 +212,12 @@ public class PaymentRequestTestBridge {
             long onHasEnrolledInstrumentReturnedPtr, long onAppListReadyPtr,
             long setAppDescriptionPtr, long onNotSupportedErrorPtr, long onConnectionTerminatedPtr,
             long onAbortCalledPtr, long onCompleteCalledPtr, long onMinimalUIReadyPtr) {
-        PaymentRequestFactory.sNativeObserverForTest =
+        ComponentPaymentRequestImpl.setNativeObserverForTest(
                 new PaymentRequestNativeObserverBridgeToNativeForTest(onCanMakePaymentCalledPtr,
                         onCanMakePaymentReturnedPtr, onHasEnrolledInstrumentCalledPtr,
                         onHasEnrolledInstrumentReturnedPtr, onAppListReadyPtr, setAppDescriptionPtr,
                         onNotSupportedErrorPtr, onConnectionTerminatedPtr, onAbortCalledPtr,
-                        onCompleteCalledPtr, onMinimalUIReadyPtr);
+                        onCompleteCalledPtr, onMinimalUIReadyPtr));
     }
 
     @CalledByNative

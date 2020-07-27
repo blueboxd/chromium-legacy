@@ -36,7 +36,6 @@ UpdateContext::UpdateContext(
     UpdateClient::CrxStateChangeCallback crx_state_change_callback,
     const UpdateEngine::NotifyObserversCallback& notify_observers_callback,
     UpdateEngine::Callback callback,
-    CrxDownloader::Factory crx_downloader_factory,
     PersistedData* persisted_data)
     : config(config),
       is_foreground(is_foreground),
@@ -46,7 +45,6 @@ UpdateContext::UpdateContext(
       crx_state_change_callback(crx_state_change_callback),
       notify_observers_callback(notify_observers_callback),
       callback(std::move(callback)),
-      crx_downloader_factory(crx_downloader_factory),
       session_id(base::StrCat({"{", base::GenerateGUID(), "}"})),
       persisted_data(persisted_data) {
   for (const auto& id : ids) {
@@ -60,12 +58,10 @@ UpdateContext::~UpdateContext() = default;
 UpdateEngine::UpdateEngine(
     scoped_refptr<Configurator> config,
     UpdateChecker::Factory update_checker_factory,
-    CrxDownloader::Factory crx_downloader_factory,
     scoped_refptr<PingManager> ping_manager,
     const NotifyObserversCallback& notify_observers_callback)
     : config_(config),
       update_checker_factory_(update_checker_factory),
-      crx_downloader_factory_(crx_downloader_factory),
       ping_manager_(ping_manager),
       metadata_(
           std::make_unique<PersistedData>(config->GetPrefService(),
@@ -100,7 +96,7 @@ void UpdateEngine::Update(
   const auto update_context = base::MakeRefCounted<UpdateContext>(
       config_, is_foreground, ids, std::move(crx_data_callback),
       crx_state_change_callback, notify_observers_callback_,
-      std::move(callback), crx_downloader_factory_, metadata_.get());
+      std::move(callback), metadata_.get());
   DCHECK(!update_context->session_id.empty());
 
   const auto result = update_contexts_.insert(
@@ -412,7 +408,7 @@ void UpdateEngine::SendUninstallPing(const std::string& id,
   const auto update_context = base::MakeRefCounted<UpdateContext>(
       config_, false, std::vector<std::string>{id},
       UpdateClient::CrxDataCallback(), UpdateClient::CrxStateChangeCallback(),
-      UpdateEngine::NotifyObserversCallback(), std::move(callback), nullptr,
+      UpdateEngine::NotifyObserversCallback(), std::move(callback),
       metadata_.get());
   DCHECK(!update_context->session_id.empty());
 

@@ -55,9 +55,13 @@ std::unique_ptr<policy::ConfigurationPolicyHandlerList> BuildHandlerList(
           policy::key::kURLBlocklist)));
 
   // HTTP Negotiate authentication
-  handlers->AddHandler(std::make_unique<policy::SimplePolicyHandler>(
-      policy::key::kAuthServerWhitelist, prefs::kAuthServerWhitelist,
-      base::Value::Type::STRING));
+  handlers->AddHandler(std::make_unique<policy::SimpleDeprecatingPolicyHandler>(
+      std::make_unique<policy::SimplePolicyHandler>(
+          policy::key::kAuthServerWhitelist, prefs::kAuthServerAllowlist,
+          base::Value::Type::STRING),
+      std::make_unique<policy::SimplePolicyHandler>(
+          policy::key::kAuthServerAllowlist, prefs::kAuthServerAllowlist,
+          base::Value::Type::STRING)));
   handlers->AddHandler(std::make_unique<policy::SimplePolicyHandler>(
       policy::key::kAuthAndroidNegotiateAccountType,
       prefs::kAuthAndroidNegotiateAccountType, base::Value::Type::STRING));

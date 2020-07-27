@@ -85,7 +85,7 @@ content::WebUIDataSource* CreateDownloadsUIHTMLSource(Profile* profile) {
       {"downloads", IDS_DOWNLOAD_TITLE},
       {"actionMenuDescription", IDS_DOWNLOAD_ACTION_MENU_DESCRIPTION},
       {"clearAll", IDS_DOWNLOAD_LINK_CLEAR_ALL},
-      {"clearSearch", IDS_DOWNLOAD_CLEAR_SEARCH},
+      {"clearSearch", IDS_CLEAR_SEARCH},
       {"openDownloadsFolder", IDS_DOWNLOAD_LINK_OPEN_DOWNLOADS_FOLDER},
       {"moreActions", IDS_DOWNLOAD_MORE_ACTIONS},
       {"search", IDS_DOWNLOAD_SEARCH},

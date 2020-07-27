@@ -66,7 +66,6 @@ class NativeFileSystemEntryFactory;
 class PlatformNotificationContext;
 class ServiceWorkerContext;
 class SharedWorkerService;
-class IdleManager;
 
 #if !defined(OS_ANDROID)
 class HostZoomLevelContext;
@@ -117,7 +116,6 @@ class CONTENT_EXPORT StoragePartition {
   virtual storage::FileSystemContext* GetFileSystemContext() = 0;
   virtual storage::DatabaseTracker* GetDatabaseTracker() = 0;
   virtual DOMStorageContext* GetDOMStorageContext() = 0;
-  virtual IdleManager* GetIdleManager() = 0;
   virtual storage::mojom::IndexedDBControl& GetIndexedDBControl() = 0;
   virtual NativeFileSystemEntryFactory* GetNativeFileSystemEntryFactory() = 0;
   virtual ServiceWorkerContext* GetServiceWorkerContext() = 0;

@@ -34,7 +34,7 @@ FakeCrosHealthdClient* FakeCrosHealthdClient::Get() {
 
 mojo::Remote<mojom::CrosHealthdServiceFactory>
 FakeCrosHealthdClient::BootstrapMojoConnection(
-    base::OnceCallback<void(bool success)> result_callback) {
+    BootstrapMojoConnectionCallback result_callback) {
   mojo::Remote<mojom::CrosHealthdServiceFactory> remote(
       receiver_.BindNewPipeAndPassRemote());
 

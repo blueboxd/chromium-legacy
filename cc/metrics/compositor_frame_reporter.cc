@@ -123,6 +123,22 @@ constexpr const char* GetStageName(int stage_type_index,
         kVizBreakdownInitialIndex:
       return "SubmitCompositorFrameToPresentationCompositorFrame."
              "SwapEndToPresentationCompositorFrame";
+    case static_cast<int>(VizBreakdown::kSwapStartToBufferAvailable) +
+        kVizBreakdownInitialIndex:
+      return "SubmitCompositorFrameToPresentationCompositorFrame."
+             "SwapStartToBufferAvailable";
+    case static_cast<int>(VizBreakdown::kBufferAvailableToBufferReady) +
+        kVizBreakdownInitialIndex:
+      return "SubmitCompositorFrameToPresentationCompositorFrame."
+             "BufferAvailableToBufferReady";
+    case static_cast<int>(VizBreakdown::kBufferReadyToLatch) +
+        kVizBreakdownInitialIndex:
+      return "SubmitCompositorFrameToPresentationCompositorFrame."
+             "BufferReadyToLatch";
+    case static_cast<int>(VizBreakdown::kLatchToSwapEnd) +
+        kVizBreakdownInitialIndex:
+      return "SubmitCompositorFrameToPresentationCompositorFrame."
+             "LatchToSwapEnd";
     case static_cast<int>(BlinkBreakdown::kHandleInputEvents) +
         kBlinkBreakdownInitialIndex:
       return "SendBeginMainFrameToCommit.HandleInputEvents";
@@ -156,6 +172,7 @@ constexpr const char* GetStageName(int stage_type_index,
         kBlinkBreakdownInitialIndex:
       return "SendBeginMainFrameToCommit.BeginMainSentToStarted";
     default:
+      NOTREACHED();
       return "";
   }
 }

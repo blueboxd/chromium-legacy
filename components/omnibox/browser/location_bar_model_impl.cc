@@ -30,6 +30,7 @@
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/gfx/text_elider.h"
 #include "ui/gfx/vector_icon_types.h"
+#include "url/origin.h"
 
 #if (!defined(OS_ANDROID) || BUILDFLAG(ENABLE_VR)) && !defined(OS_IOS)
 #include "components/omnibox/browser/vector_icons.h"  // nogncheck
@@ -105,6 +106,16 @@ base::string16 LocationBarModelImpl::GetFormattedURL(
   }
 
   GURL url(GetURL());
+
+#if defined(OS_IOS)
+  // On iOS, the blob: display URLs should be simply the domain name. However,
+  // url_formatter parses everything past blob: as path, not domain, so swap
+  // the url here to be just origin.
+  if (url.SchemeIsBlob()) {
+    url = url::Origin::Create(url).GetURL();
+  }
+#endif  // defined(OS_IOS)
+
   // Special handling for dom-distiller:. Instead of showing internal reader
   // mode URLs, show the original article URL in the omnibox.
   // Note that this does not disallow the user from seeing the distilled page

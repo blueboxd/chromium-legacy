@@ -43,6 +43,7 @@
 #include "components/arc/test/fake_app_instance.h"
 #include "components/crx_file/id_util.h"
 #include "components/services/app_service/public/cpp/stub_icon_loader.h"
+#include "components/services/app_service/public/mojom/types.mojom.h"
 #include "components/sessions/content/content_test_helper.h"
 #include "components/sessions/core/serialized_navigation_entry_test_helper.h"
 #include "components/sessions/core/session_id.h"
@@ -107,6 +108,23 @@ const base::Time kTestCurrentTime = base::Time::FromInternalValue(100000);
 bool MoreRelevant(const ChromeSearchResult* result1,
                   const ChromeSearchResult* result2) {
   return result1->relevance() > result2->relevance();
+}
+
+void UpdateIconKey(apps::AppServiceProxy& proxy, const std::string& app_id) {
+  apps::mojom::AppPtr app = apps::mojom::App::New();
+  app->app_id = app_id;
+  proxy.AppRegistryCache().ForOneApp(
+      app_id, [&app](const apps::AppUpdate& update) {
+        app->app_type = update.AppType();
+        app->icon_key = apps::mojom::IconKey::New(
+            update.IconKey()->timeline + 1, update.IconKey()->resource_id,
+            update.IconKey()->icon_effects);
+      });
+
+  std::vector<apps::mojom::AppPtr> apps;
+  apps.push_back(app.Clone());
+  proxy.AppRegistryCache().OnApps(std::move(apps));
+  proxy.FlushMojoCallsForTesting();
 }
 
 class AppSearchProviderTest : public AppListTestBase {
@@ -835,15 +853,23 @@ TEST_F(AppSearchProviderTest, AppServiceIconCache) {
   RunQuery("pa");
   EXPECT_EQ(2, stub_icon_loader.NumLoadIconFromIconKeyCalls());
 
-  // Hiding the UI (i.e. calling ViewClosing) should clear the icon cache. The
-  // number of LoadIconFromIconKey calls should not change.
+  // The number of LoadIconFromIconKey calls should not change, when hiding the
+  // UI (i.e. calling ViewClosing).
   CallViewClosing();
   EXPECT_EQ(2, stub_icon_loader.NumLoadIconFromIconKeyCalls());
 
-  // Issuing the same "pa" query should bypass the now-clear icon cache, with 2
-  // further calls to the wrapped stub_icon_loader, bringing the total to 4.
+  // The icon has been added to the map, so issuing the same "pa" query should
+  // not call the wrapped stub_icon_loader.
   RunQuery("pa");
-  EXPECT_EQ(4, stub_icon_loader.NumLoadIconFromIconKeyCalls());
+  EXPECT_EQ(2, stub_icon_loader.NumLoadIconFromIconKeyCalls());
+
+  // Update the icon key to remove the app icon from cache.
+  UpdateIconKey(*proxy, kPackagedApp2Id);
+
+  // The icon has been removed from the cache, so issuing the same "pa" query
+  // should call the wrapped stub_icon_loader.
+  RunQuery("pa");
+  EXPECT_EQ(3, stub_icon_loader.NumLoadIconFromIconKeyCalls());
 
   proxy->OverrideInnerIconLoaderForTesting(old_icon_loader);
 }

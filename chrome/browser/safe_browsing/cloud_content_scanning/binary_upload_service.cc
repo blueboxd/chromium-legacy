@@ -11,12 +11,15 @@
 #include "base/base64.h"
 #include "base/bind.h"
 #include "base/bind_helpers.h"
+#include "base/command_line.h"
 #include "base/metrics/histogram_functions.h"
+#include "base/optional.h"
 #include "base/rand_util.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/time/time.h"
 #include "base/timer/timer.h"
+#include "build/branding_buildflags.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/enterprise/connectors/connectors_manager.h"
 #include "chrome/browser/profiles/profile.h"
@@ -82,6 +85,24 @@ std::string ResultToString(BinaryUploadService::Result result) {
     case BinaryUploadService::Result::DLP_SCAN_UNSUPPORTED_FILE_TYPE:
       return "DLP_SCAN_UNSUPPORTED_FILE_TYPE";
   }
+}
+
+#if !BUILDFLAG(GOOGLE_CHROME_BRANDING)
+constexpr char kBinaryUploadServiceUrlFlag[] = "binary-upload-service-url";
+#endif
+
+base::Optional<GURL> GetUrlOverride() {
+#if !BUILDFLAG(GOOGLE_CHROME_BRANDING)
+  base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();
+  if (command_line->HasSwitch(kBinaryUploadServiceUrlFlag)) {
+    GURL url =
+        GURL(command_line->GetSwitchValueASCII(kBinaryUploadServiceUrlFlag));
+    if (url.is_valid())
+      return url;
+  }
+#endif
+
+  return base::nullopt;
 }
 
 }  // namespace
@@ -728,10 +749,10 @@ void BinaryUploadService::Request::SerializeToString(
 }
 
 GURL BinaryUploadService::Request::GetUrlWithParams() const {
-  if (use_legacy_proto_)
-    return url_;
+  GURL url = GetUrlOverride().value_or(url_);
 
-  GURL url(url_);
+  if (use_legacy_proto_)
+    return url;
 
   url = net::AppendQueryParameter(url, enterprise::kUrlParamDeviceToken,
                                   device_token());

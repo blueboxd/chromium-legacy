@@ -66,7 +66,6 @@
 #include "content/public/browser/web_ui_url_loader_factory.h"
 #include "content/public/common/content_client.h"
 #include "content/public/common/origin_util.h"
-#include "content/public/common/previews_state.h"
 #include "content/public/common/referrer.h"
 #include "content/public/common/url_utils.h"
 #include "mojo/public/cpp/bindings/pending_receiver.h"
@@ -81,6 +80,7 @@
 #include "services/network/public/cpp/features.h"
 #include "services/network/public/cpp/shared_url_loader_factory.h"
 #include "services/network/public/cpp/wrapper_shared_url_loader_factory.h"
+#include "third_party/blink/public/common/loader/previews_state.h"
 #include "third_party/blink/public/common/loader/throttling_url_loader.h"
 
 #if defined(USE_X11)

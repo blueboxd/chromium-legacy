@@ -27,6 +27,7 @@
 #include "base/threading/platform_thread.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/time/default_tick_clock.h"
+#include "build/build_config.h"
 #include "net/base/features.h"
 #include "net/base/isolation_info.h"
 #include "net/dns/mock_host_resolver.h"
@@ -117,7 +118,13 @@ class TestThroughputAnalyzer : public internal::ThroughputAnalyzer {
 
 using ThroughputAnalyzerTest = TestWithTaskEnvironment;
 
-TEST_F(ThroughputAnalyzerTest, MaximumRequests) {
+#if defined(OS_IOS)
+// Flaky on iOS: crbug.com/672917.
+#define MAYBE_MaximumRequests DISABLED_MaximumRequests
+#else
+#define MAYBE_MaximumRequests MaximumRequests
+#endif
+TEST_F(ThroughputAnalyzerTest, MAYBE_MaximumRequests) {
   const struct TestCase {
     GURL url;
     bool is_local;
@@ -163,9 +170,17 @@ TEST_F(ThroughputAnalyzerTest, MaximumRequests) {
   }
 }
 
+#if defined(OS_IOS)
+// Flaky on iOS: crbug.com/672917.
+#define MAYBE_MaximumRequestsWithNetworkIsolationKey \
+  DISABLED_MaximumRequestsWithNetworkIsolationKey
+#else
+#define MAYBE_MaximumRequestsWithNetworkIsolationKey \
+  MaximumRequestsWithNetworkIsolationKey
+#endif
 // Make sure that the NetworkIsolationKey is respected when resolving a host
 // from the cache.
-TEST_F(ThroughputAnalyzerTest, MaximumRequestsWithNetworkIsolationKey) {
+TEST_F(ThroughputAnalyzerTest, MAYBE_MaximumRequestsWithNetworkIsolationKey) {
   const url::Origin kOrigin = url::Origin::Create(GURL("https://foo.test/"));
   const net::NetworkIsolationKey kNetworkIsolationKey(kOrigin, kOrigin);
   const GURL kUrl = GURL("http://foo.test/test.html");
@@ -585,9 +600,18 @@ TEST_F(ThroughputAnalyzerTest, TestRequestDeletedImmediately) {
   EXPECT_EQ(0u, throughput_analyzer.CountActiveInFlightRequests());
 }
 
+#if defined(OS_IOS)
+// Flaky on iOS: crbug.com/672917.
+#define MAYBE_TestThroughputWithMultipleRequestsOverlap \
+  DISABLED_TestThroughputWithMultipleRequestsOverlap
+#else
+#define MAYBE_TestThroughputWithMultipleRequestsOverlap \
+  TestThroughputWithMultipleRequestsOverlap
+#endif
 // Tests if the throughput observation is taken correctly when local and network
 // requests overlap.
-TEST_F(ThroughputAnalyzerTest, TestThroughputWithMultipleRequestsOverlap) {
+TEST_F(ThroughputAnalyzerTest,
+       MAYBE_TestThroughputWithMultipleRequestsOverlap) {
   static const struct {
     bool start_local_request;
     bool local_request_completes_first;

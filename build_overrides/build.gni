@@ -32,8 +32,8 @@ declare_args() {
   gtest_enable_absl_printers = false
 }
 
-# Allows different projects to specify their own suppressions and blacklist
-# files for sanitizer tools.
+# Allows different projects to specify their own suppression/ignore lists for
+# sanitizer tools.
 # asan_suppressions_file = "path/to/asan_suppressions.cc"
 # asan_blacklist_path = "path/to/asan/blacklist.txt"
 # asan_win_blacklist_path = "path/to/asan/blacklist_win.txt"
@@ -44,7 +44,7 @@ declare_args() {
 # ubsan_blacklist_path = "path/to/ubsan/blacklist.txt"
 # ubsan_vptr_blacklist_path = "path/to/ubsan/vptr_blacklist.txt"
 # ubsan_security_blacklist_path = "path/to/ubsan/security_blacklist.txt"
-# cfi_blacklist_path = "path/to/cfi/blacklist.txt"
+# cfi_blacklist_path = "path/to/cfi/ignores.txt"
 
 declare_args() {
   # Android 32-bit non-component, non-clang builds cannot have symbol_level=2

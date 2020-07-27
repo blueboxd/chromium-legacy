@@ -7,7 +7,6 @@
 
 #include <memory>
 
-#include "base/synchronization/waitable_event.h"
 #include "chrome/browser/ssl/ssl_client_auth_requestor_mock.h"
 #include "chrome/test/base/in_process_browser_test.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -22,12 +21,7 @@ class SSLClientCertificateSelectorTestBase : public InProcessBrowserTest {
   void SetUpOnMainThread() override;
   void TearDownOnMainThread() override;
 
-  virtual void SetUpOnIOThread();
-  virtual void TearDownOnIOThread();
-
  protected:
-  base::WaitableEvent io_loop_finished_event_;
-
   scoped_refptr<net::SSLCertRequestInfo> cert_request_info_;
   scoped_refptr<testing::StrictMock<SSLClientAuthRequestorMock> >
       auth_requestor_;

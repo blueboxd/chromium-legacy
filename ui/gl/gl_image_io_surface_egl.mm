@@ -53,10 +53,7 @@ InternalFormatType BufferFormatToInternalFormatType(gfx::BufferFormat format,
     case gfx::BufferFormat::RGBA_F16:
       return {GL_RGBA, GL_HALF_FLOAT};
     case gfx::BufferFormat::BGRA_1010102:
-      // TODO(https://crbug.com/1100599): Change this to be
-      // {GL_BGRA_EXT, GL_UNSIGNED_INT_2_10_10_10_REV}.
-      NOTIMPLEMENTED();
-      return {GL_NONE, GL_NONE};
+      return {GL_RGB10_A2, GL_UNSIGNED_INT_2_10_10_10_REV};
     case gfx::BufferFormat::BGR_565:
     case gfx::BufferFormat::RGBA_4444:
     case gfx::BufferFormat::RGBX_8888:

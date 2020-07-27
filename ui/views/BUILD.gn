@@ -1072,6 +1072,7 @@ test("views_unittests") {
     "controls/menu/menu_item_view_unittest.cc",
     "controls/menu/menu_model_adapter_unittest.cc",
     "controls/menu/menu_runner_unittest.cc",
+    "controls/menu/menu_separator_unittest.cc",
     "controls/menu/submenu_view_unittest.cc",
     "controls/menu/test_menu_item_view.cc",
     "controls/menu/test_menu_item_view.h",

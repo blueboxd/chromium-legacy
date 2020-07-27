@@ -131,7 +131,7 @@ class CORE_EXPORT MouseEvent : public UIEventWithKeyState {
   bool IsMouseEvent() const override;
   unsigned which() const override;
 
-  int ClickCount() { return detail(); }
+  int ClickCount() const { return detail(); }
 
   enum class PositionType {
     kPosition,

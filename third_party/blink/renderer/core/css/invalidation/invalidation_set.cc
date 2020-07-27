@@ -234,7 +234,7 @@ StringImpl* InvalidationSet::FindAnyClass(Element& element) const {
 
 StringImpl* InvalidationSet::FindAnyAttribute(Element& element) const {
   if (StringImpl* string_impl = attributes_.GetStringImpl(backing_flags_)) {
-    if (element.HasAttributeIgnoringNamespace(string_impl))
+    if (element.HasAttributeIgnoringNamespace(AtomicString(string_impl)))
       return string_impl;
   }
   if (const HashSet<AtomicString>* set =

@@ -57,6 +57,9 @@ class GeneratedPrefs : public KeyedService {
   void RemoveObserver(const std::string& pref_name,
                       GeneratedPref::Observer* observer);
 
+  // KeyedService:
+  void Shutdown() override;
+
  private:
   // Returns preference implementation or nullptr if not found.
   GeneratedPref* FindPrefImpl(const std::string& pref_name) const;

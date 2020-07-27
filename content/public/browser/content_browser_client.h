@@ -31,7 +31,6 @@
 #include "content/public/browser/generated_code_cache_settings.h"
 #include "content/public/browser/storage_partition_config.h"
 #include "content/public/common/page_visibility_state.h"
-#include "content/public/common/previews_state.h"
 #include "content/public/common/window_container_type.mojom-forward.h"
 #include "device/vr/buildflags/buildflags.h"
 #include "media/base/video_codecs.h"
@@ -47,6 +46,7 @@
 #include "services/network/public/mojom/url_loader_factory.mojom-forward.h"
 #include "services/network/public/mojom/websocket.mojom-forward.h"
 #include "storage/browser/file_system/file_system_context.h"
+#include "third_party/blink/public/common/loader/previews_state.h"
 #include "third_party/blink/public/common/user_agent/user_agent_metadata.h"
 #include "ui/accessibility/ax_mode.h"
 #include "ui/base/page_transition_types.h"
@@ -1705,8 +1705,8 @@ class CONTENT_EXPORT ContentBrowserClient {
   // keep sub-frame navigation state consistent with main frame state.
   // |current_navigation_url| is the URL that is currently being navigated to,
   // and can differ from GetURL() in |navigation_handle| on redirects.
-  virtual content::PreviewsState DetermineAllowedPreviews(
-      content::PreviewsState initial_state,
+  virtual blink::PreviewsState DetermineAllowedPreviews(
+      blink::PreviewsState initial_state,
       content::NavigationHandle* navigation_handle,
       const GURL& current_navigation_url);
 
@@ -1714,8 +1714,8 @@ class CONTENT_EXPORT ContentBrowserClient {
   // renderer. |initial_state| was pre-determined by |DetermineAllowedPreviews|.
   // |navigation_handle| is the corresponding navigation object.
   // |response_headers| are the response headers related to this navigation.
-  virtual content::PreviewsState DetermineCommittedPreviews(
-      content::PreviewsState initial_state,
+  virtual blink::PreviewsState DetermineCommittedPreviews(
+      blink::PreviewsState initial_state,
       content::NavigationHandle* navigation_handle,
       const net::HttpResponseHeaders* response_headers);
 

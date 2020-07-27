@@ -25,8 +25,10 @@
 #include "chrome/browser/chromeos/crosapi/lacros_loader.h"
 #include "chrome/browser/chromeos/crosapi/lacros_util.h"
 #include "chrome/browser/component_updater/cros_component_manager.h"
+#include "chrome/browser/profiles/profile_manager.h"
 #include "chromeos/constants/chromeos_features.h"
 #include "chromeos/constants/chromeos_switches.h"
+#include "components/prefs/pref_service.h"
 #include "components/session_manager/core/session_manager.h"
 #include "google_apis/google_api_keys.h"
 #include "mojo/public/cpp/bindings/pending_remote.h"
@@ -74,6 +76,16 @@ void TerminateLacrosChrome(base::Process process) {
   // Terminate the lacros-chrome.
   bool success = process.Terminate(/*exit_code=*/0, /*wait=*/true);
   LOG_IF(ERROR, !success) << "Failed to terminate the lacros-chrome.";
+}
+
+void SetLaunchOnLoginPref(bool launch_on_login) {
+  ProfileManager::GetPrimaryUserProfile()->GetPrefs()->SetBoolean(
+      lacros_util::kLaunchOnLoginPref, launch_on_login);
+}
+
+bool GetLaunchOnLoginPref() {
+  return ProfileManager::GetPrimaryUserProfile()->GetPrefs()->GetBoolean(
+      lacros_util::kLaunchOnLoginPref);
 }
 
 }  // namespace
@@ -240,6 +252,10 @@ void LacrosManager::OnAshChromeServiceReceiverReceived(
   ash_chrome_service_ =
       std::make_unique<AshChromeServiceImpl>(std::move(pending_receiver));
   state_ = State::RUNNING;
+  // Set the launch-on-login pref every time lacros-chrome successfully starts,
+  // instead of once during ash-chrome shutdown, so we have the right value
+  // even if ash-chrome crashes.
+  SetLaunchOnLoginPref(true);
   LOG(WARNING) << "Connection to lacros-chrome is established.";
 }
 
@@ -262,6 +278,9 @@ void LacrosManager::OnLacrosChromeTerminated() {
   DCHECK_EQ(state_, State::TERMINATING);
   LOG(WARNING) << "Lacros-chrome is terminated";
   state_ = State::STOPPED;
+  // TODO(https://crbug.com/1109366): Restart lacros-chrome if it exits
+  // abnormally (e.g. crashes). For now, assume the user meant to close it.
+  SetLaunchOnLoginPref(false);
 }
 
 void LacrosManager::OnUserSessionStarted(bool is_primary_user) {
@@ -298,5 +317,9 @@ void LacrosManager::OnLoadComplete(const base::FilePath& path) {
   if (load_complete_callback_) {
     const bool success = !path.empty();
     std::move(load_complete_callback_).Run(success);
+  }
+
+  if (state_ == State::STOPPED && GetLaunchOnLoginPref()) {
+    Start();
   }
 }

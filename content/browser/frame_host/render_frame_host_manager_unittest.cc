@@ -47,7 +47,6 @@
 #include "content/public/common/bindings_policy.h"
 #include "content/public/common/content_features.h"
 #include "content/public/common/javascript_dialog_type.h"
-#include "content/public/common/previews_state.h"
 #include "content/public/common/url_constants.h"
 #include "content/public/common/url_utils.h"
 #include "content/public/test/fake_local_frame.h"
@@ -66,6 +65,7 @@
 #include "net/base/load_flags.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/blink/public/common/frame/frame_policy.h"
+#include "third_party/blink/public/common/loader/previews_state.h"
 #include "third_party/blink/public/mojom/favicon/favicon_url.mojom.h"
 #include "third_party/blink/public/mojom/frame/frame_owner_properties.mojom.h"
 #include "third_party/blink/public/mojom/security_context/insecure_request_policy.mojom.h"
@@ -408,8 +408,8 @@ class RenderFrameHostManagerTest
         entry->ConstructCommonNavigationParams(
             *frame_entry, request_body, frame_entry->url(),
             blink::mojom::Referrer::New(referrer.url, referrer.policy),
-            navigate_type, PREVIEWS_UNSPECIFIED, base::TimeTicks::Now(),
-            base::TimeTicks::Now());
+            navigate_type, blink::PreviewsTypes::PREVIEWS_UNSPECIFIED,
+            base::TimeTicks::Now(), base::TimeTicks::Now());
     mojom::CommitNavigationParamsPtr commit_params =
         entry->ConstructCommitNavigationParams(
             *frame_entry, common_params->url, frame_entry->committed_origin(),
@@ -2854,8 +2854,9 @@ TEST_P(RenderFrameHostManagerTest, NavigateFromDeadRendererToWebUI) {
       entry.ConstructCommonNavigationParams(
           *frame_entry, nullptr, frame_entry->url(),
           blink::mojom::Referrer::New(referrer.url, referrer.policy),
-          mojom::NavigationType::DIFFERENT_DOCUMENT, PREVIEWS_UNSPECIFIED,
-          base::TimeTicks::Now(), base::TimeTicks::Now());
+          mojom::NavigationType::DIFFERENT_DOCUMENT,
+          blink::PreviewsTypes::PREVIEWS_UNSPECIFIED, base::TimeTicks::Now(),
+          base::TimeTicks::Now());
   mojom::CommitNavigationParamsPtr commit_params =
       entry.ConstructCommitNavigationParams(
           *frame_entry, common_params->url, frame_entry->committed_origin(),

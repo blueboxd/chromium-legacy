@@ -45,7 +45,6 @@ import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
 import org.chromium.chrome.test.util.ActivityUtils;
 import org.chromium.chrome.test.util.BookmarkTestUtil;
 import org.chromium.chrome.test.util.browser.signin.AccountManagerTestRule;
-import org.chromium.components.signin.ChromeSigninController;
 import org.chromium.components.signin.GAIAServiceType;
 import org.chromium.components.signin.identitymanager.ConsentLevel;
 import org.chromium.components.signin.metrics.SigninAccessPoint;
@@ -229,8 +228,6 @@ public class SigninSignoutIntegrationTest {
         TestThreadUtils.runOnUiThreadBlocking(
                 () -> { mSigninManager.signIn(SigninAccessPoint.SETTINGS, account, null); });
         assertSignedIn();
-        // TODO(https://crbug.com/1041815): Usage of ChromeSigninController should be removed later
-        Assert.assertTrue(ChromeSigninController.get().isSignedIn());
     }
 
     private void assertSignedIn() {

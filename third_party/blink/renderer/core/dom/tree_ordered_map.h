@@ -51,19 +51,19 @@ class TreeOrderedMap : public GarbageCollected<TreeOrderedMap> {
   TreeOrderedMap();
 
   void Add(const AtomicString&, Element&);
-  void Remove(const StringView&, Element&);
+  void Remove(const AtomicString&, Element&);
 
   bool Contains(const AtomicString&) const;
   bool ContainsMultiple(const AtomicString&) const;
   // concrete instantiations of the get<>() method template
-  Element* GetElementById(const StringView&, const TreeScope&) const;
-  const HeapVector<Member<Element>>& GetAllElementsById(const StringView&,
+  Element* GetElementById(const AtomicString&, const TreeScope&) const;
+  const HeapVector<Member<Element>>& GetAllElementsById(const AtomicString&,
                                                         const TreeScope&) const;
-  Element* GetElementByMapName(const StringView&, const TreeScope&) const;
-  HTMLSlotElement* GetSlotByName(const StringView&, const TreeScope&) const;
+  Element* GetElementByMapName(const AtomicString&, const TreeScope&) const;
+  HTMLSlotElement* GetSlotByName(const AtomicString&, const TreeScope&) const;
   // Don't use this unless the caller can know the internal state of
   // TreeOrderedMap exactly.
-  Element* GetCachedFirstElementWithoutAccessingNodeTree(const StringView&);
+  Element* GetCachedFirstElementWithoutAccessingNodeTree(const AtomicString&);
 
   void Trace(Visitor*) const;
 
@@ -91,8 +91,8 @@ class TreeOrderedMap : public GarbageCollected<TreeOrderedMap> {
 #endif
 
  private:
-  template <bool keyMatches(const StringView&, const Element&)>
-  Element* Get(const StringView&, const TreeScope&) const;
+  template <bool keyMatches(const AtomicString&, const Element&)>
+  Element* Get(const AtomicString&, const TreeScope&) const;
 
   class MapEntry : public GarbageCollected<MapEntry> {
    public:

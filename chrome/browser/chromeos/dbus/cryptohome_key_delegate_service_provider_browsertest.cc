@@ -87,6 +87,10 @@ class CryptohomeKeyDelegateServiceProviderTest
     MixinBasedInProcessBrowserTest::TearDownOnMainThread();
   }
 
+  chromeos::ServiceProviderTestHelper* dbus_service_test_helper() {
+    return dbus_service_test_helper_.get();
+  }
+
   // Refreshes the browser's state from the current certificate providers.
   void RefreshCertsFromCertProviders() {
     chromeos::CertificateProviderService* cert_provider_service =
@@ -100,16 +104,8 @@ class CryptohomeKeyDelegateServiceProviderTest
     run_loop.Run();
   }
 
-  // Calls the tested ChallengeKey D-Bus method, requesting a signature
-  // challenge.
-  // Returns whether the D-Bus method succeeded, and on success fills
-  // |signature| with the data returned by the call.
-  bool CallSignatureChallengeKey(
-      cryptohome::ChallengeSignatureAlgorithm signature_algorithm,
-      std::vector<uint8_t>* signature) {
-    const cryptohome::AccountIdentifier account_identifier =
-        cryptohome::CreateAccountIdentifierFromAccountId(
-            user_manager::StubAccountId());
+  cryptohome::KeyChallengeRequest CreateKeyChallengeRequest(
+      cryptohome::ChallengeSignatureAlgorithm signature_algorithm) const {
     cryptohome::KeyChallengeRequest request;
     request.set_challenge_type(
         cryptohome::KeyChallengeRequest::CHALLENGE_TYPE_SIGNATURE);
@@ -118,17 +114,36 @@ class CryptohomeKeyDelegateServiceProviderTest
         cert_provider_extension()->GetCertificateSpki());
     request.mutable_signature_request_data()->set_signature_algorithm(
         signature_algorithm);
+    return request;
+  }
 
+  // Calls the tested ChallengeKey D-Bus method, requesting a signature
+  // challenge.
+  // Returns whether the D-Bus method succeeded, and on success fills
+  // |signature| with the data returned by the call.
+  bool CallSignatureChallengeKey(
+      cryptohome::ChallengeSignatureAlgorithm signature_algorithm,
+      std::vector<uint8_t>* signature) {
+    return CallSignatureChallengeKeyWithProto(
+        cryptohome::CreateAccountIdentifierFromAccountId(
+            user_manager::StubAccountId()),
+        CreateKeyChallengeRequest(signature_algorithm), signature);
+  }
+
+  // Same as CallSignatureChallengeKey(), but takes parameters in the protobuf
+  // format.
+  bool CallSignatureChallengeKeyWithProto(
+      const cryptohome::AccountIdentifier& account_identifier,
+      const cryptohome::KeyChallengeRequest& request,
+      std::vector<uint8_t>* signature) {
     dbus::MethodCall method_call(
         cryptohome::kCryptohomeKeyDelegateInterface,
         cryptohome::kCryptohomeKeyDelegateChallengeKey);
     dbus::MessageWriter writer(&method_call);
     writer.AppendProtoAsArrayOfBytes(account_identifier);
     writer.AppendProtoAsArrayOfBytes(request);
-
     std::unique_ptr<dbus::Response> dbus_response =
         dbus_service_test_helper_->CallMethod(&method_call);
-
     if (dbus_response->GetMessageType() == dbus::Message::MESSAGE_ERROR)
       return false;
     dbus::MessageReader reader(dbus_response.get());
@@ -230,4 +245,149 @@ IN_PROC_BROWSER_TEST_F(CryptohomeKeyDelegateServiceProviderTest,
   std::vector<uint8_t> signature;
   EXPECT_FALSE(CallSignatureChallengeKey(
       cryptohome::CHALLENGE_RSASSA_PKCS1_V1_5_SHA256, &signature));
+}
+
+// Verifies that the ChallengeKey request fails when no arguments are supplied.
+IN_PROC_BROWSER_TEST_F(CryptohomeKeyDelegateServiceProviderTest,
+                       SignatureErrorNoArgs) {
+  dbus::MethodCall method_call(cryptohome::kCryptohomeKeyDelegateInterface,
+                               cryptohome::kCryptohomeKeyDelegateChallengeKey);
+  std::unique_ptr<dbus::Response> dbus_response =
+      dbus_service_test_helper()->CallMethod(&method_call);
+  EXPECT_EQ(dbus_response->GetMessageType(), dbus::Message::MESSAGE_ERROR);
+}
+
+// Verifies that the ChallengeKey request fails when non-protobuf data is passed
+// for the "account_id" argument.
+IN_PROC_BROWSER_TEST_F(CryptohomeKeyDelegateServiceProviderTest,
+                       SignatureErrorMistypedAccountIdArg) {
+  dbus::MethodCall method_call(cryptohome::kCryptohomeKeyDelegateInterface,
+                               cryptohome::kCryptohomeKeyDelegateChallengeKey);
+  dbus::MessageWriter writer(&method_call);
+  writer.AppendByte(123);
+  writer.AppendProtoAsArrayOfBytes(CreateKeyChallengeRequest(
+      cryptohome::CHALLENGE_RSASSA_PKCS1_V1_5_SHA256));
+
+  std::unique_ptr<dbus::Response> dbus_response =
+      dbus_service_test_helper()->CallMethod(&method_call);
+  EXPECT_EQ(dbus_response->GetMessageType(), dbus::Message::MESSAGE_ERROR);
+}
+
+// Verifies that the ChallengeKey request fails when the "account_id" argument
+// has bad value.
+IN_PROC_BROWSER_TEST_F(CryptohomeKeyDelegateServiceProviderTest,
+                       SignatureErrorBadAccountIdArg) {
+  std::vector<uint8_t> signature;
+  EXPECT_FALSE(CallSignatureChallengeKeyWithProto(
+      cryptohome::CreateAccountIdentifierFromAccountId(AccountId()),
+      CreateKeyChallengeRequest(cryptohome::CHALLENGE_RSASSA_PKCS1_V1_5_SHA256),
+      &signature));
+}
+
+// Verifies that the ChallengeKey request fails when the "challenge_request"
+// argument is missing.
+IN_PROC_BROWSER_TEST_F(CryptohomeKeyDelegateServiceProviderTest,
+                       SignatureErrorNoRequestArg) {
+  dbus::MethodCall method_call(cryptohome::kCryptohomeKeyDelegateInterface,
+                               cryptohome::kCryptohomeKeyDelegateChallengeKey);
+  dbus::MessageWriter writer(&method_call);
+  writer.AppendProtoAsArrayOfBytes(
+      cryptohome::CreateAccountIdentifierFromAccountId(
+          user_manager::StubAccountId()));
+
+  std::unique_ptr<dbus::Response> dbus_response =
+      dbus_service_test_helper()->CallMethod(&method_call);
+  EXPECT_EQ(dbus_response->GetMessageType(), dbus::Message::MESSAGE_ERROR);
+}
+
+// Verifies that the ChallengeKey request fails when non-protobuf data is passed
+// for the "challenge_request" argument.
+IN_PROC_BROWSER_TEST_F(CryptohomeKeyDelegateServiceProviderTest,
+                       SignatureErrorMistypedRequestArg) {
+  dbus::MethodCall method_call(cryptohome::kCryptohomeKeyDelegateInterface,
+                               cryptohome::kCryptohomeKeyDelegateChallengeKey);
+  dbus::MessageWriter writer(&method_call);
+  writer.AppendProtoAsArrayOfBytes(
+      cryptohome::CreateAccountIdentifierFromAccountId(
+          user_manager::StubAccountId()));
+  writer.AppendByte(123);
+
+  std::unique_ptr<dbus::Response> dbus_response =
+      dbus_service_test_helper()->CallMethod(&method_call);
+  EXPECT_EQ(dbus_response->GetMessageType(), dbus::Message::MESSAGE_ERROR);
+}
+
+// Verifies that the ChallengeKey request fails when the "challenge_type" field
+// is unset.
+IN_PROC_BROWSER_TEST_F(CryptohomeKeyDelegateServiceProviderTest,
+                       SignatureErrorNoChallengeType) {
+  cryptohome::KeyChallengeRequest request =
+      CreateKeyChallengeRequest(cryptohome::CHALLENGE_RSASSA_PKCS1_V1_5_SHA256);
+  request.clear_challenge_type();
+
+  std::vector<uint8_t> signature;
+  EXPECT_FALSE(CallSignatureChallengeKeyWithProto(
+      cryptohome::CreateAccountIdentifierFromAccountId(
+          user_manager::StubAccountId()),
+      request, &signature));
+}
+
+// Verifies that the ChallengeKey request fails when the
+// "signature_request_data" field is unset.
+IN_PROC_BROWSER_TEST_F(CryptohomeKeyDelegateServiceProviderTest,
+                       SignatureErrorNoRequestData) {
+  cryptohome::KeyChallengeRequest request =
+      CreateKeyChallengeRequest(cryptohome::CHALLENGE_RSASSA_PKCS1_V1_5_SHA256);
+  request.clear_signature_request_data();
+
+  std::vector<uint8_t> signature;
+  EXPECT_FALSE(CallSignatureChallengeKeyWithProto(
+      cryptohome::CreateAccountIdentifierFromAccountId(
+          user_manager::StubAccountId()),
+      request, &signature));
+}
+
+// Verifies that the ChallengeKey request fails when the "data_to_sign" field is
+// unset.
+IN_PROC_BROWSER_TEST_F(CryptohomeKeyDelegateServiceProviderTest,
+                       SignatureErrorNoDataToSign) {
+  cryptohome::KeyChallengeRequest request =
+      CreateKeyChallengeRequest(cryptohome::CHALLENGE_RSASSA_PKCS1_V1_5_SHA256);
+  request.mutable_signature_request_data()->clear_data_to_sign();
+
+  std::vector<uint8_t> signature;
+  EXPECT_FALSE(CallSignatureChallengeKeyWithProto(
+      cryptohome::CreateAccountIdentifierFromAccountId(
+          user_manager::StubAccountId()),
+      request, &signature));
+}
+
+// Verifies that the ChallengeKey request fails when the "public_key_spki_der"
+// field is unset.
+IN_PROC_BROWSER_TEST_F(CryptohomeKeyDelegateServiceProviderTest,
+                       SignatureErrorNoPublicKey) {
+  cryptohome::KeyChallengeRequest request =
+      CreateKeyChallengeRequest(cryptohome::CHALLENGE_RSASSA_PKCS1_V1_5_SHA256);
+  request.mutable_signature_request_data()->clear_public_key_spki_der();
+
+  std::vector<uint8_t> signature;
+  EXPECT_FALSE(CallSignatureChallengeKeyWithProto(
+      cryptohome::CreateAccountIdentifierFromAccountId(
+          user_manager::StubAccountId()),
+      request, &signature));
+}
+
+// Verifies that the ChallengeKey request fails when the "signature_algorithm"
+// field is unset.
+IN_PROC_BROWSER_TEST_F(CryptohomeKeyDelegateServiceProviderTest,
+                       SignatureErrorNoAlgorithm) {
+  cryptohome::KeyChallengeRequest request =
+      CreateKeyChallengeRequest(cryptohome::CHALLENGE_RSASSA_PKCS1_V1_5_SHA256);
+  request.mutable_signature_request_data()->clear_signature_algorithm();
+
+  std::vector<uint8_t> signature;
+  EXPECT_FALSE(CallSignatureChallengeKeyWithProto(
+      cryptohome::CreateAccountIdentifierFromAccountId(
+          user_manager::StubAccountId()),
+      request, &signature));
 }

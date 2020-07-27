@@ -53,6 +53,10 @@ const base::FeatureParam<PrefetchSubresourceType>
         &kLoadingPredictorPrefetch, "subresource_type",
         PrefetchSubresourceType::kAll, &kPrefetchSubresourceTypeParamOptions};
 
+const base::Feature kLoadingPredictorInflightPredictiveActions{
+    "kLoadingPredictorInflightPredictiveActions",
+    base::FEATURE_ENABLED_BY_DEFAULT};
+
 bool ShouldUseLocalPredictions() {
   return base::FeatureList::IsEnabled(kLoadingPredictorUseLocalPredictions);
 }
@@ -63,6 +67,18 @@ bool ShouldUseOptimizationGuidePredictions() {
 
   return base::GetFieldTrialParamByFeatureAsBool(
       kLoadingPredictorUseOptimizationGuide, "use_predictions", true);
+}
+
+size_t GetMaxInflightPreresolves() {
+  return static_cast<size_t>(base::GetFieldTrialParamByFeatureAsInt(
+      kLoadingPredictorInflightPredictiveActions, "max_inflight_preresolves",
+      3));
+}
+
+size_t GetMaxInflightPrefetches() {
+  return static_cast<size_t>(base::GetFieldTrialParamByFeatureAsInt(
+      kLoadingPredictorInflightPredictiveActions, "max_inflight_prefetches",
+      3));
 }
 
 }  // namespace features

@@ -36,6 +36,7 @@
 #include "base/optional.h"
 #include "base/time/time.h"
 #include "base/unguessable_token.h"
+#include "third_party/blink/public/common/loader/previews_state.h"
 #include "third_party/blink/public/platform/web_common.h"
 #include "ui/base/page_transition_types.h"
 
@@ -85,43 +86,6 @@ class WebURLRequest {
     kVeryHigh,
     kLowest = kVeryLow,
     kHighest = kVeryHigh,
-  };
-
-  typedef int PreviewsState;
-
-  // The Previews types which determines whether to request a Preview version of
-  // the resource.
-  enum PreviewsTypes {
-    kPreviewsUnspecified = 0,  // Let the browser process decide whether or
-                               // not to request Preview types.
-    kServerLoFiOn_DEPRECATED =
-        1 << 0,  // Request a Lo-Fi version of the resource
-                 // from the server. Deprecated and should not be used.
-    kClientLoFiOn = 1 << 1,          // Request a Lo-Fi version of the resource
-                                     // from the client.
-    kClientLoFiAutoReload = 1 << 2,  // Request the original version of the
-                                     // resource after a decoding error occurred
-                                     // when attempting to use Client Lo-Fi.
-    kServerLitePageOn = 1 << 3,      // Request a Lite Page version of the
-                                     // resource from the server.
-    kPreviewsNoTransform = 1 << 4,   // Explicitly forbid Previews
-                                     // transformations.
-    kPreviewsOff = 1 << 5,  // Request a normal (non-Preview) version of
-                            // the resource. Server transformations may
-                            // still happen if the page is heavy.
-    kNoScriptOn = 1 << 6,   // Request that script be disabled for page load.
-    kResourceLoadingHintsOn = 1 << 7,  // Request that resource loading hints be
-                                       // used during pageload.
-    kOfflinePageOn = 1 << 8,
-    kLitePageRedirectOn_DEPRECATED =
-        1 << 9,  // Allow the browser to redirect the resource
-                 // to a Lite Page server. Deprecated and should not be used.
-    kDeferAllScriptOn = 1 << 10,  // Request that script execution be deferred
-                                  // until parsing completes.
-    kSubresourceRedirectOn =
-        1 << 11,  // Allow the subresources in the page to be redirected
-                  // to serve better optimized resources.
-    kPreviewsStateLast = kSubresourceRedirectOn
   };
 
   class ExtraData : public base::RefCounted<ExtraData> {

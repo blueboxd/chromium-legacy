@@ -45,6 +45,8 @@
 
 #if defined(OS_CHROMEOS)
 #include "chrome/browser/chromeos/profiles/profile_helper.h"
+#else
+#include "components/enterprise/browser/reporting/common_pref_names.h"
 #endif
 
 namespace extensions {
@@ -77,7 +79,7 @@ ExtensionManagement::ExtensionManagement(Profile* profile)
   pref_change_registrar_.Add(prefs::kCloudExtensionRequestEnabled,
                              pref_change_callback);
 #if !defined(OS_CHROMEOS)
-  pref_change_registrar_.Add(prefs::kCloudReportingEnabled,
+  pref_change_registrar_.Add(enterprise_reporting::kCloudReportingEnabled,
                              pref_change_callback);
 #endif
   // Note that both |global_settings_| and |default_settings_| will be null

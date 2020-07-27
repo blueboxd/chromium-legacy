@@ -23,6 +23,7 @@ import contextlib
 import fnmatch
 import logging
 import tempfile
+import textwrap
 import os
 import re
 import shutil
@@ -384,6 +385,9 @@ def main():
     parser.add_argument('--ignore-licenses',
                         help='Ignores licenses for these deps.',
                         action='store_true')
+    parser.add_argument('--ignore-vulnerabilities',
+                        help='Ignores vulnerabilities for these deps.',
+                        action='store_true')
     parser.add_argument('-v',
                         '--verbose',
                         dest='verbose_count',
@@ -403,8 +407,6 @@ def main():
         raise Exception('Not a directory: ' + abs_git_dir)
 
     build_gradle_path = os.path.join(args.git_dir, _ANDROID_DEPS_BUILD_GRADLE)
-    build_gradle_abs_path = os.path.join(abs_git_dir,
-                                         _ANDROID_DEPS_BUILD_GRADLE)
     # The list of files and dirs that are copied to the build directory by this
     # script. Should not include _UPDATED_GIT_FILES.
     copied_paths = {
@@ -443,6 +445,46 @@ def main():
         for path, dest in copied_paths.items():
             CopyFileOrDirectory(os.path.join(_CHROMIUM_SRC, path),
                                 os.path.join(build_dir, dest))
+
+        logging.info(
+            'Running Gradle dependencyCheckAnalyze. This may take a few minutes the first time.'
+        )
+        # Not run as part of the main gradle command below
+        # such that we can provide specific diagnostics in case
+        # of failure of this build stage.
+        gradle_cmd = [
+            gradle_wrapper_path,
+            '-b',
+            os.path.join(build_dir, build_gradle_path),
+            'dependencyCheckAnalyze',
+        ]
+        if debug:
+            gradle_cmd.append('--debug')
+
+        report_src = os.path.join(build_dir, _ANDROID_DEPS_SUBDIR, 'build',
+                                  'reports')
+        report_dst = os.path.join(_CHROMIUM_SRC, _ANDROID_DEPS_SUBDIR,
+                                  'vulnerability_reports')
+        if os.path.exists(report_dst):
+            shutil.rmtree(report_dst)
+
+        try:
+            subprocess.run(gradle_cmd, check=True)
+        except subprocess.CalledProcessError:
+            logging.error(
+                textwrap.dedent("""
+                   A package has a known vulnerability. It may not be in a package or packages
+                   which you just added, but you need to resolve the problem before proceeding.
+                   Please see the vulnerability information in %s. If you can't easily fix it by
+                   rolling the package to a fixed version now, please file a crbug of type=
+                   Bug-Security providing all relevant information, and then rerun this command
+                   with --ignore-vulnerabilities.
+                   """ % report_dst))
+            if not args.ignore_vulnerabilities:
+                raise
+        finally:
+            if os.path.exists(report_src):
+                CopyFileOrDirectory(report_src, report_dst)
 
         logging.info('Running Gradle.')
         # This gradle command generates the new DEPS and BUILD.gn files, it can

@@ -23,6 +23,9 @@ TEXT_APPEARANCE_STYLE_PATTERN = re.compile(r'^TextAppearance\.')
 INCLUDED_PATHS = [
     r'^(chrome|ui|components|content)[\\/](.*[\\/])?java[\\/]res.+\.xml$'
 ]
+INCLUDED_GRD_PATHS = [
+    r'^(chrome|ui|components|content)[\\/](.*[\\/])?android[\\/](.*)\.grd$'
+]
 # TODO(lazzzis): check color references in java source files
 COLOR_REFERENCE_PATTERN = re.compile('''
     @color/   # starts with '@color'

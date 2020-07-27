@@ -42,9 +42,9 @@
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_contents_user_data.h"
-#include "content/public/common/previews_state.h"
 #include "net/cert/cert_status_flags.h"
 #include "net/http/http_response_headers.h"
+#include "third_party/blink/public/common/loader/previews_state.h"
 
 namespace offline_pages {
 
@@ -73,10 +73,10 @@ void RecordErrorCauseUMA(const ClientId& client_id, int error_code) {
 }
 
 void RecordOffliningPreviewsUMA(const ClientId& client_id,
-                                content::PreviewsState previews_state) {
+                                blink::PreviewsState previews_state) {
   bool is_previews_enabled =
-      (previews_state != content::PreviewsTypes::PREVIEWS_OFF &&
-       previews_state != content::PreviewsTypes::PREVIEWS_NO_TRANSFORM);
+      (previews_state != blink::PreviewsTypes::PREVIEWS_OFF &&
+       previews_state != blink::PreviewsTypes::PREVIEWS_NO_TRANSFORM);
 
   base::UmaHistogramBoolean(
       AddHistogramSuffix(client_id,
@@ -353,7 +353,7 @@ void BackgroundLoaderOffliner::DidFinishNavigation(
 
   PreviewsUITabHelper* previews_tab_helper =
       PreviewsUITabHelper::FromWebContents(navigation_handle->GetWebContents());
-  content::PreviewsState previews_state = content::PREVIEWS_OFF;
+  blink::PreviewsState previews_state = blink::PreviewsTypes::PREVIEWS_OFF;
   if (previews_tab_helper) {
     previews::PreviewsUserData* previews_user_data =
         previews_tab_helper->GetPreviewsUserData(navigation_handle);

@@ -7,6 +7,7 @@
 
 #include <memory>
 #include "base/memory/scoped_refptr.h"
+#include "third_party/blink/public/mojom/blob/blob.mojom-blink-forward.h"
 #include "third_party/blink/renderer/core/core_export.h"
 #include "third_party/blink/renderer/platform/heap/handle.h"
 #include "third_party/blink/renderer/platform/loader/fetch/bytes_consumer.h"
@@ -40,8 +41,10 @@ class CORE_EXPORT BlobBytesConsumer final : public BytesConsumer {
   void Trace(Visitor*) const override;
 
  private:
+  class BlobClient;
   Member<ExecutionContext> execution_context_;
   scoped_refptr<BlobDataHandle> blob_data_handle_;
+  Member<BlobBytesConsumer::BlobClient> blob_client_;
   Member<BytesConsumer> nested_consumer_;
   Member<BytesConsumer::Client> client_;
 };

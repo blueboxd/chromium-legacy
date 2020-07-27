@@ -220,8 +220,7 @@ void AddPrintPreviewStrings(content::WebUIDataSource* source) {
      IDS_PRINT_PREVIEW_ADVANCED_SETTINGS_SEARCH_BOX_PLACEHOLDER},
     {"bottom", IDS_PRINT_PREVIEW_BOTTOM_MARGIN_LABEL},
     {"cancel", IDS_CANCEL},
-    // TODO(dpapad): Use a single merged string resource for "Clear search".
-    {"clearSearch", IDS_DOWNLOAD_CLEAR_SEARCH},
+    {"clearSearch", IDS_CLEAR_SEARCH},
     {"cloudPrintPromotion", IDS_PRINT_PREVIEW_CLOUD_PRINT_PROMOTION},
     {"copiesInstruction", IDS_PRINT_PREVIEW_COPIES_INSTRUCTION},
     {"copiesLabel", IDS_PRINT_PREVIEW_COPIES_LABEL},

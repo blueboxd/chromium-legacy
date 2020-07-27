@@ -59,6 +59,15 @@
   margin: 0;
 }
 
+#footerContainer ::slotted(*) {
+  color: var(--oobe-subheader-text-color);
+  line-height: var(--subtitle-line-height);
+}
+
+:host(:not([has-buttons])) #footerContainer {
+  margin-bottom: 40px;
+}
+
 #oobe-progress ::slotted(paper-progress) {
   --paper-progress-active-color: var(--google-blue-500);
   --paper-progress-container-color: var(--google-blue-100);

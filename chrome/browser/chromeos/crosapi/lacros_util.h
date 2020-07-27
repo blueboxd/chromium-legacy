@@ -5,6 +5,8 @@
 #ifndef CHROME_BROWSER_CHROMEOS_CROSAPI_LACROS_UTIL_H_
 #define CHROME_BROWSER_CHROMEOS_CROSAPI_LACROS_UTIL_H_
 
+class PrefRegistrySimple;
+
 namespace base {
 class FilePath;
 }  // namespace base
@@ -14,6 +16,12 @@ enum class Channel;
 }  // namespace version_info
 
 namespace lacros_util {
+
+// Boolean preference. Whether to launch lacros-chrome on login.
+extern const char kLaunchOnLoginPref[];
+
+// Registers user profile preferences related to the lacros-chrome binary.
+void RegisterProfilePrefs(PrefRegistrySimple* registry);
 
 // Returns the user directory for lacros-chrome.
 base::FilePath GetUserDataDir();

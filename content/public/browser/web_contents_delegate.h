@@ -24,8 +24,8 @@
 #include "content/public/browser/media_stream_request.h"
 #include "content/public/browser/serial_chooser.h"
 #include "content/public/browser/web_contents.h"
-#include "content/public/common/previews_state.h"
 #include "content/public/common/window_container_type.mojom-forward.h"
+#include "third_party/blink/public/common/loader/previews_state.h"
 #include "third_party/blink/public/common/mediastream/media_stream_request.h"
 #include "third_party/blink/public/common/page/web_drag_operation.h"
 #include "third_party/blink/public/common/security/security_style.h"
@@ -653,9 +653,9 @@ class CONTENT_EXPORT WebContentsDelegate {
   virtual void SetTopControlsGestureScrollInProgress(bool in_progress) {}
 
   // Give WebContentsDelegates the opportunity to adjust the previews state.
-  virtual void AdjustPreviewsStateForNavigation(WebContents* web_contents,
-                                                PreviewsState* previews_state) {
-  }
+  virtual void AdjustPreviewsStateForNavigation(
+      WebContents* web_contents,
+      blink::PreviewsState* previews_state) {}
 
   // Requests to print an out-of-process subframe for the specified WebContents.
   // |rect| is the rectangular area where its content resides in its parent

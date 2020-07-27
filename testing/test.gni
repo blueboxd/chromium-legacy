@@ -274,6 +274,10 @@ template("test") {
         "@WrappedPath(${_root_build_dir}/${_test_target}.app)",
       ]
 
+      if (enable_run_ios_unittests_with_xctest) {
+        executable_args += [ "--xctest" ]
+      }
+
       wrapper_output_name = "${_wrapper_output_name}"
     }
 

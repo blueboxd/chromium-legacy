@@ -88,8 +88,21 @@ gfx::Size MenuSeparator::CalculatePreferredSize() const {
                    height);
 }
 
+ui::MenuSeparatorType MenuSeparator::GetType() const {
+  return type_;
+}
+
+void MenuSeparator::SetType(ui::MenuSeparatorType type) {
+  if (type_ == type)
+    return;
+
+  type_ = type;
+  OnPropertyChanged(&type_, kPropertyEffectsPreferredSizeChanged);
+}
+
 BEGIN_METADATA(MenuSeparator)
 METADATA_PARENT_CLASS(View)
+ADD_PROPERTY_METADATA(MenuSeparator, ui::MenuSeparatorType, Type)
 END_METADATA()
 
 }  // namespace views

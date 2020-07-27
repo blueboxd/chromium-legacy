@@ -88,7 +88,9 @@ WebGLTexture* XRWebGLBinding::getCameraImage(XRFrame* frame, XRView* view) {
     return nullptr;
   }
 
-  // TODO(https://crbug.com/1100978): Verify view is in camera_views_.
+  if (frame != view->frame()) {
+    return nullptr;
+  }
 
   XRWebGLLayer* base_layer = view->session()->renderState()->baseLayer();
   DCHECK(base_layer);

@@ -11,6 +11,7 @@
 #include "base/callback.h"
 #include "base/run_loop.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/task/task_traits.h"
 #include "base/test/bind_test_util.h"
 #include "base/test/scoped_feature_list.h"
 #include "chrome/browser/web_applications/components/externally_installed_web_app_prefs.h"
@@ -666,6 +667,227 @@ TEST_F(SystemWebAppManagerTest, UpdateOnLocaleChange) {
 
   EXPECT_EQ(3u, install_requests.size());
   EXPECT_FALSE(install_requests[2].force_reinstall);
+}
+
+TEST_F(SystemWebAppManagerTest, AbandonFailedInstalls) {
+  const std::vector<ExternalInstallOptions>& install_requests =
+      pending_app_manager().install_requests();
+
+  system_web_app_manager().SetUpdatePolicy(
+      SystemWebAppManager::UpdatePolicy::kOnVersionChange);
+
+  InitEmptyRegistrar();
+
+  PrepareSystemAppDataToRetrieve({{AppUrl1(), AppIconUrl1()}});
+  PrepareLoadUrlResults({AppUrl1()});
+  base::flat_map<SystemAppType, SystemAppInfo> system_apps;
+  system_apps.emplace(SystemAppType::SETTINGS,
+                      SystemAppInfo(kSettingsAppNameForLogging, AppUrl1()));
+  system_web_app_manager().SetSystemAppsForTesting(system_apps);
+
+  system_web_app_manager().set_current_version(base::Version("1.0.0.0"));
+  StartAndWaitForAppsToSynchronize();
+
+  EXPECT_EQ(1u, install_requests.size());
+  EXPECT_TRUE(install_requests[0].force_reinstall);
+  EXPECT_TRUE(IsInstalled(AppUrl1()));
+
+  // Bump the version number, and an update will trigger, and force
+  // reinstallation of both apps.
+  PrepareSystemAppDataToRetrieve({{AppUrl1(), AppIconUrl1()}});
+  PrepareLoadUrlResults({AppUrl1()});
+  system_web_app_manager().set_current_version(base::Version("2.0.0.0"));
+  pending_app_manager().SetDropRequestsForTesting(true);
+  // Can't use the normal method because RunLoop::Run goes until
+  // on_app_synchronized is called, and this fails, never calling that.
+  system_web_app_manager().Start();
+  base::RunLoop().RunUntilIdle();
+  pending_app_manager().ClearSynchronizeRequestsForTesting();
+
+  system_web_app_manager().Start();
+  base::RunLoop().RunUntilIdle();
+  pending_app_manager().ClearSynchronizeRequestsForTesting();
+  system_web_app_manager().Start();
+  base::RunLoop().RunUntilIdle();
+  pending_app_manager().ClearSynchronizeRequestsForTesting();
+  system_web_app_manager().Start();
+  base::RunLoop().RunUntilIdle();
+  pending_app_manager().ClearSynchronizeRequestsForTesting();
+
+  // 1 successful, 1 abandoned, and 3 more abanonded retries is 5.
+  EXPECT_EQ(5u, install_requests.size());
+  EXPECT_TRUE(install_requests[1].force_reinstall);
+  EXPECT_TRUE(install_requests[2].force_reinstall);
+  EXPECT_TRUE(install_requests[3].force_reinstall);
+  EXPECT_TRUE(install_requests[4].force_reinstall);
+
+  EXPECT_TRUE(IsInstalled(AppUrl1()));
+
+  // If we don't abandon at the same version, it doesn't even attempt another
+  // request
+  pending_app_manager().SetDropRequestsForTesting(false);
+  system_web_app_manager().set_current_version(base::Version("2.0.0.0"));
+  system_web_app_manager().Start();
+  base::RunLoop().RunUntilIdle();
+  pending_app_manager().ClearSynchronizeRequestsForTesting();
+  EXPECT_EQ(5u, install_requests.size());
+
+  // Bump the version, and it works.
+  system_web_app_manager().set_current_version(base::Version("3.0.0.0"));
+  system_web_app_manager().Start();
+  base::RunLoop().RunUntilIdle();
+  pending_app_manager().ClearSynchronizeRequestsForTesting();
+
+  EXPECT_EQ(6u, install_requests.size());
+}
+
+// Same test, but for locale change.
+TEST_F(SystemWebAppManagerTest, AbandonFailedInstallsLocaleChange) {
+  const std::vector<ExternalInstallOptions>& install_requests =
+      pending_app_manager().install_requests();
+
+  system_web_app_manager().SetUpdatePolicy(
+      SystemWebAppManager::UpdatePolicy::kOnVersionChange);
+
+  InitEmptyRegistrar();
+
+  PrepareSystemAppDataToRetrieve({{AppUrl1(), AppIconUrl1()}});
+  PrepareLoadUrlResults({AppUrl1()});
+  base::flat_map<SystemAppType, SystemAppInfo> system_apps;
+  system_apps.emplace(SystemAppType::SETTINGS,
+                      SystemAppInfo(kSettingsAppNameForLogging, AppUrl1()));
+  system_web_app_manager().SetSystemAppsForTesting(system_apps);
+
+  system_web_app_manager().set_current_version(base::Version("1.0.0.0"));
+  system_web_app_manager().set_current_locale("en/us");
+  StartAndWaitForAppsToSynchronize();
+
+  EXPECT_EQ(1u, install_requests.size());
+  EXPECT_TRUE(install_requests[0].force_reinstall);
+  EXPECT_TRUE(IsInstalled(AppUrl1()));
+
+  // Bump the version number, and an update will trigger, and force
+  // reinstallation of both apps.
+  PrepareSystemAppDataToRetrieve({{AppUrl1(), AppIconUrl1()}});
+  PrepareLoadUrlResults({AppUrl1()});
+  system_web_app_manager().set_current_locale("en/au");
+  pending_app_manager().SetDropRequestsForTesting(true);
+  // Can't use the normal method because RunLoop::Run goes until
+  // on_app_synchronized is called, and this fails, never calling that.
+  system_web_app_manager().Start();
+  base::RunLoop().RunUntilIdle();
+  pending_app_manager().ClearSynchronizeRequestsForTesting();
+
+  system_web_app_manager().Start();
+  base::RunLoop().RunUntilIdle();
+  pending_app_manager().ClearSynchronizeRequestsForTesting();
+  system_web_app_manager().Start();
+  base::RunLoop().RunUntilIdle();
+  pending_app_manager().ClearSynchronizeRequestsForTesting();
+  system_web_app_manager().Start();
+  base::RunLoop().RunUntilIdle();
+  pending_app_manager().ClearSynchronizeRequestsForTesting();
+
+  // 1 successful, 1 abandoned, and 3 more abanonded retries is 5.
+  EXPECT_EQ(5u, install_requests.size());
+  EXPECT_TRUE(install_requests[1].force_reinstall);
+  EXPECT_TRUE(install_requests[2].force_reinstall);
+  EXPECT_TRUE(install_requests[3].force_reinstall);
+  EXPECT_TRUE(install_requests[4].force_reinstall);
+
+  EXPECT_TRUE(IsInstalled(AppUrl1()));
+
+  // If we don't abandon at the same version, it doesn't even attempt another
+  // request
+  pending_app_manager().SetDropRequestsForTesting(false);
+  system_web_app_manager().Start();
+  base::RunLoop().RunUntilIdle();
+  pending_app_manager().ClearSynchronizeRequestsForTesting();
+  EXPECT_EQ(5u, install_requests.size());
+
+  // Bump the version, and it works.
+  system_web_app_manager().set_current_locale("fr/fr");
+  system_web_app_manager().Start();
+  base::RunLoop().RunUntilIdle();
+  pending_app_manager().ClearSynchronizeRequestsForTesting();
+}
+
+TEST_F(SystemWebAppManagerTest, SucceedsAfterOneRetry) {
+  const std::vector<ExternalInstallOptions>& install_requests =
+      pending_app_manager().install_requests();
+
+  system_web_app_manager().SetUpdatePolicy(
+      SystemWebAppManager::UpdatePolicy::kOnVersionChange);
+
+  InitEmptyRegistrar();
+
+  PrepareSystemAppDataToRetrieve({{AppUrl1(), AppIconUrl1()}});
+  PrepareLoadUrlResults({AppUrl1()});
+  // Set up and install a baseline
+  base::flat_map<SystemAppType, SystemAppInfo> system_apps;
+  system_apps.emplace(SystemAppType::SETTINGS,
+                      SystemAppInfo(kSettingsAppNameForLogging, AppUrl1()));
+  system_web_app_manager().SetSystemAppsForTesting(system_apps);
+
+  system_web_app_manager().set_current_version(base::Version("1.0.0.0"));
+  StartAndWaitForAppsToSynchronize();
+  pending_app_manager().ClearSynchronizeRequestsForTesting();
+
+  EXPECT_EQ(1u, install_requests.size());
+  EXPECT_TRUE(install_requests[0].force_reinstall);
+  EXPECT_TRUE(IsInstalled(AppUrl1()));
+  // Bump the version number, and an update will trigger, and force
+  // reinstallation. But, this fails!
+  system_web_app_manager().set_current_version(base::Version("2.0.0.0"));
+  pending_app_manager().SetDropRequestsForTesting(true);
+
+  PrepareSystemAppDataToRetrieve({{AppUrl1(), AppIconUrl1()}});
+  PrepareLoadUrlResults({AppUrl1()});
+  system_web_app_manager().Start();
+  base::RunLoop().RunUntilIdle();
+  pending_app_manager().ClearSynchronizeRequestsForTesting();
+
+  EXPECT_EQ(2u, install_requests.size());
+  EXPECT_TRUE(install_requests[1].force_reinstall);
+  EXPECT_TRUE(IsInstalled(AppUrl1()));
+  system_web_app_manager().Start();
+  base::RunLoop().RunUntilIdle();
+  pending_app_manager().ClearSynchronizeRequestsForTesting();
+
+  // Retry a few times, but not until abandonment.
+  EXPECT_EQ(3u, install_requests.size());
+  EXPECT_TRUE(install_requests[0].force_reinstall);
+  EXPECT_TRUE(install_requests[1].force_reinstall);
+  EXPECT_TRUE(install_requests[2].force_reinstall);
+  EXPECT_TRUE(IsInstalled(AppUrl1()));
+
+  // Now we succeed at the same version
+  pending_app_manager().SetDropRequestsForTesting(false);
+  StartAndWaitForAppsToSynchronize();
+  pending_app_manager().ClearSynchronizeRequestsForTesting();
+  PrepareSystemAppDataToRetrieve({{AppUrl1(), AppIconUrl1()}});
+  PrepareLoadUrlResults({AppUrl1()});
+
+  StartAndWaitForAppsToSynchronize();
+  pending_app_manager().ClearSynchronizeRequestsForTesting();
+  EXPECT_EQ(5u, install_requests.size());
+  EXPECT_TRUE(install_requests[3].force_reinstall);
+  EXPECT_FALSE(install_requests[4].force_reinstall);
+
+  // Bump the version number, and an update will trigger, and force
+  // reinstallation of both apps. This succeeds, everything works.
+  system_web_app_manager().set_current_version(base::Version("3.0.0.0"));
+
+  StartAndWaitForAppsToSynchronize();
+  pending_app_manager().ClearSynchronizeRequestsForTesting();
+  EXPECT_EQ(6u, install_requests.size());
+  EXPECT_TRUE(install_requests[5].force_reinstall);
+
+  PrepareSystemAppDataToRetrieve({{AppUrl1(), AppIconUrl1()}});
+  PrepareLoadUrlResults({AppUrl1()});
+  StartAndWaitForAppsToSynchronize();
+  EXPECT_EQ(7u, install_requests.size());
+  EXPECT_FALSE(install_requests[6].force_reinstall);
 }
 
 }  // namespace web_app

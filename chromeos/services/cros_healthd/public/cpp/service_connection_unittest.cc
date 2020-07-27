@@ -451,6 +451,7 @@ TEST_F(CrosHealthdServiceConnectionTest, AddPowerObserver) {
   run_loop.Run();
 }
 
+// Test that we can probe telemetry info.
 TEST_F(CrosHealthdServiceConnectionTest, ProbeTelemetryInfo) {
   auto response = mojom::TelemetryInfo::New();
   FakeCrosHealthdClient::Get()->SetProbeTelemetryInfoResponseForTesting(

@@ -285,8 +285,10 @@ void PrefetchManager::OnPrefetchFinished(
 void PrefetchManager::TryToLaunchPrefetchJobs() {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
 
-  if (queued_jobs_.empty() || inflight_jobs_count_ >= kMaxInflightJobs)
+  if (queued_jobs_.empty() ||
+      inflight_jobs_count_ >= features::GetMaxInflightPrefetches()) {
     return;
+  }
 
   // TODO(falken): Is it ok to assume the default partition? Try to plumb the
   // partition here, e.g., from WebContentsObserver. And make a similar change
@@ -296,7 +298,8 @@ void PrefetchManager::TryToLaunchPrefetchJobs() {
   scoped_refptr<network::SharedURLLoaderFactory> factory =
       storage_partition->GetURLLoaderFactoryForBrowserProcess();
 
-  while (!queued_jobs_.empty() && inflight_jobs_count_ < kMaxInflightJobs) {
+  while (!queued_jobs_.empty() &&
+         inflight_jobs_count_ < features::GetMaxInflightPrefetches()) {
     std::unique_ptr<PrefetchJob> job = std::move(queued_jobs_.front());
     queued_jobs_.pop_front();
     base::WeakPtr<PrefetchInfo> info = job->info;

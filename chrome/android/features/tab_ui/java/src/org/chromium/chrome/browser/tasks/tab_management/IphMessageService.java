@@ -4,6 +4,8 @@
 
 package org.chromium.chrome.browser.tasks.tab_management;
 
+import android.annotation.SuppressLint;
+
 import org.chromium.chrome.browser.feature_engagement.TrackerFactory;
 import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.components.feature_engagement.FeatureConstants;
@@ -55,6 +57,7 @@ public class IphMessageService extends MessageService {
         mIphController.showIph();
     }
 
+    @SuppressLint("CheckResult")
     private void dismiss() {
         mTracker.shouldTriggerHelpUI(FeatureConstants.TAB_GROUPS_DRAG_AND_DROP_FEATURE);
         mTracker.dismissed(FeatureConstants.TAB_GROUPS_DRAG_AND_DROP_FEATURE);

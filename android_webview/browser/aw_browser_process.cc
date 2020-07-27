@@ -28,8 +28,8 @@ namespace prefs {
 const char kAuthAndroidNegotiateAccountType[] =
     "auth.android_negotiate_account_type";
 
-// Whitelist containing servers for which Integrated Authentication is enabled.
-const char kAuthServerWhitelist[] = "auth.server_whitelist";
+// Allowlist containing servers for which Integrated Authentication is enabled.
+const char kAuthServerAllowlist[] = "auth.server_allowlist";
 
 }  // namespace prefs
 
@@ -59,7 +59,7 @@ void AwBrowserProcess::PreMainMessageLoopRun() {
   pref_change_registrar_.Init(local_state());
   auto auth_pref_callback = base::BindRepeating(
       &AwBrowserProcess::OnAuthPrefsChanged, base::Unretained(this));
-  pref_change_registrar_.Add(prefs::kAuthServerWhitelist, auth_pref_callback);
+  pref_change_registrar_.Add(prefs::kAuthServerAllowlist, auth_pref_callback);
   pref_change_registrar_.Add(prefs::kAuthAndroidNegotiateAccountType,
                              auth_pref_callback);
 
@@ -171,7 +171,7 @@ AwSafeBrowsingUIManager* AwBrowserProcess::GetSafeBrowsingUIManager() const {
 // static
 void AwBrowserProcess::RegisterNetworkContextLocalStatePrefs(
     PrefRegistrySimple* pref_registry) {
-  pref_registry->RegisterStringPref(prefs::kAuthServerWhitelist, std::string());
+  pref_registry->RegisterStringPref(prefs::kAuthServerAllowlist, std::string());
   pref_registry->RegisterStringPref(prefs::kAuthAndroidNegotiateAccountType,
                                     std::string());
 }
@@ -182,7 +182,7 @@ AwBrowserProcess::CreateHttpAuthDynamicParams() {
       network::mojom::HttpAuthDynamicParams::New();
 
   auth_dynamic_params->server_allowlist =
-      local_state()->GetString(prefs::kAuthServerWhitelist);
+      local_state()->GetString(prefs::kAuthServerAllowlist);
   auth_dynamic_params->android_negotiate_account_type =
       local_state()->GetString(prefs::kAuthAndroidNegotiateAccountType);
 

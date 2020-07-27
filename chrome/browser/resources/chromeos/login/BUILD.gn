@@ -13,6 +13,7 @@ js_type_check("closure_compile") {
     ":demo_preferences",
     ":demo_setup",
     ":encryption_migration",
+    ":family_link_notice",
     ":fingerprint_setup",
     ":gaia_buttons",
     ":gaia_card",
@@ -115,6 +116,14 @@ js_library("demo_setup") {
 
 js_library("encryption_migration") {
   deps = [
+    "components:oobe_dialog_host_behavior",
+    "components:oobe_i18n_behavior",
+  ]
+}
+
+js_library("family_link_notice") {
+  deps = [
+    "components:login_screen_behavior",
     "components:oobe_dialog_host_behavior",
     "components:oobe_i18n_behavior",
   ]

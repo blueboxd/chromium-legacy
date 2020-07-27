@@ -93,7 +93,7 @@ TEST_P(SubresourceRedirectSimTest, CSSBackgroundImage) {
     image_resource.Complete(ReadTestImage());
   }
 
-  WebURLRequest::PreviewsState previews_state =
+  PreviewsState previews_state =
       GetDocument()
           .Fetcher()
           ->CachedResource(KURL("https://example.com/img.png"))
@@ -102,7 +102,7 @@ TEST_P(SubresourceRedirectSimTest, CSSBackgroundImage) {
   // Subresource redirect previews bit should be set only if SaveData and
   // SubresourceRedirect feature are enabled.
   EXPECT_EQ(is_save_data_enabled() && is_subresource_redirect_enabled(),
-            (previews_state & WebURLRequest::kSubresourceRedirectOn) != 0);
+            (previews_state & PreviewsTypes::kSubresourceRedirectOn) != 0);
 }
 
 INSTANTIATE_TEST_SUITE_P(

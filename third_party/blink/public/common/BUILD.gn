@@ -114,6 +114,7 @@ source_set("headers") {
     "loader/mime_sniffing_throttle.h",
     "loader/mime_sniffing_url_loader.h",
     "loader/network_utils.h",
+    "loader/previews_state.h",
     "loader/resource_type_util.h",
     "loader/url_loader_factory_bundle.h",
     "loader/url_loader_factory_bundle_mojom_traits.h",

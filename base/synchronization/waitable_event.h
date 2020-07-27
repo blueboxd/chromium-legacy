@@ -165,6 +165,11 @@ class BASE_EXPORT WaitableEvent {
  private:
   friend class WaitableEventWatcher;
 
+  // The platform specific implementation used by Wait()/TimedWait().
+  // Returns true if this call resolves because this WaitableEvent was signaled
+  // (false if it times out).
+  bool TimedWaitImpl(const TimeDelta& wait_delta);
+
 #if defined(OS_WIN)
   win::ScopedHandle handle_;
 #elif defined(OS_MACOSX)

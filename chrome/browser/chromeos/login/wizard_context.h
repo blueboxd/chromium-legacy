@@ -31,6 +31,9 @@ class WizardContext {
   // Set by Welcome, Network and EULA screens.
   // Used by Update screen and WizardController.
   bool enrollment_triggered_early = false;
+
+  // Indicates that user selects to sign in or create a new account for a child.
+  bool sign_in_as_child = false;
 };
 
 }  // namespace chromeos

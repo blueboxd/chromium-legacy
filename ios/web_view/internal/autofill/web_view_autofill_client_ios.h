@@ -57,6 +57,7 @@ class WebViewAutofillClientIOS : public AutofillClient {
   ukm::UkmRecorder* GetUkmRecorder() override;
   ukm::SourceId GetUkmSourceId() override;
   AddressNormalizer* GetAddressNormalizer() override;
+  const GURL& GetLastCommittedURL() override;
   security_state::SecurityLevel GetSecurityLevelForUmaHistograms() override;
   void ShowAutofillSettings(bool show_credit_card_settings) override;
   void ShowUnmaskPrompt(const CreditCard& card,

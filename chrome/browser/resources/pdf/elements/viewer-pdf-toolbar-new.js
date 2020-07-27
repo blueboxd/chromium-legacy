@@ -17,7 +17,7 @@ import './shared-css.js';
 import {AnchorAlignment} from 'chrome://resources/cr_elements/cr_action_menu/cr_action_menu.m.js';
 import {html, PolymerElement} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
 
-import {FittingType} from '../constants.js';
+import {FittingType, TwoUpViewAction} from '../constants.js';
 // <if expr="chromeos">
 import {InkController} from '../ink_controller.js';
 // </if>
@@ -71,6 +71,9 @@ export class ViewerPdfToolbarNewElement extends PolymerElement {
         observer: 'viewportZoomChanged_',
       },
 
+      /** @private {boolean} */
+      twoUpViewEnabled_: Boolean,
+
       fittingType_: Number,
 
       /** @private {string} */
@@ -98,6 +101,9 @@ export class ViewerPdfToolbarNewElement extends PolymerElement {
 
     /** @private {boolean} */
     this.loading_ = true;
+
+    /** @private {boolean} */
+    this.twoUpViewEnabled_ = false;
 
     /** @private {?number} */
     this.zoomTimeout_ = null;
@@ -152,6 +158,20 @@ export class ViewerPdfToolbarNewElement extends PolymerElement {
   /** @private */
   onRotateClick_() {
     this.dispatchEvent(new CustomEvent('rotate-left'));
+  }
+
+  /** @private */
+  onSinglePageViewClick_() {
+    this.twoUpViewEnabled_ = false;
+    this.dispatchEvent(new CustomEvent(
+        'two-up-view-changed', {detail: TwoUpViewAction.TWO_UP_VIEW_DISABLE}));
+  }
+
+  /** @private */
+  onTwoPageViewClick_() {
+    this.twoUpViewEnabled_ = true;
+    this.dispatchEvent(new CustomEvent(
+        'two-up-view-changed', {detail: TwoUpViewAction.TWO_UP_VIEW_ENABLE}));
   }
 
   /** @private */

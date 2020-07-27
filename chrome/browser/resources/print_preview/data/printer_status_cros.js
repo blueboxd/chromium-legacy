@@ -54,3 +54,22 @@ export const PrinterStatusSeverity = {
  * }}
  */
 export let PrinterStatus;
+
+/** @const {!Map<!PrinterStatusReason, string>} */
+export const ERROR_STRING_KEY_MAP = new Map([
+  [PrinterStatusReason.CONNECTING_TO_DEVICE, 'printerStatusConnectingToDevice'],
+  [PrinterStatusReason.DEVICE_ERROR, 'printerStatusDeviceError'],
+  [PrinterStatusReason.DOOR_OPEN, 'printerStatusDoorOpen'],
+  [PrinterStatusReason.LOW_ON_INK, 'printerStatusLowOnInk'],
+  [PrinterStatusReason.LOW_ON_PAPER, 'printerStatusLowOnPaper'],
+  [PrinterStatusReason.OUT_OF_INK, 'printerStatusOutOfInk'],
+  [PrinterStatusReason.OUT_OF_PAPER, 'printerStatusOutOfPaper'],
+  [PrinterStatusReason.OUTPUT_ALMOST_FULL, 'printerStatusOutputAlmostFull'],
+  [PrinterStatusReason.OUTPUT_FULL, 'printerStatusOutputFull'],
+  [PrinterStatusReason.PAPER_JAM, 'printerStatusPaperJam'],
+  [PrinterStatusReason.PAUSED, 'printerStatusPaused'],
+  [PrinterStatusReason.PRINTER_QUEUE_FULL, 'printerStatusPrinterQueueFull'],
+  [PrinterStatusReason.PRINTER_UNREACHABLE, 'printerStatusPrinterUnreachable'],
+  [PrinterStatusReason.STOPPED, 'printerStatusStopped'],
+  [PrinterStatusReason.TRAY_MISSING, 'printerStatusTrayMissing'],
+]);

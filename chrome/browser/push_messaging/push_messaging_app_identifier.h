@@ -12,6 +12,8 @@
 
 #include "base/check.h"
 #include "base/gtest_prod_util.h"
+#include "base/optional.h"
+#include "base/time/time.h"
 #include "url/gurl.h"
 
 class Profile;
@@ -41,7 +43,8 @@ class PushMessagingAppIdentifier {
   // Generates a new app identifier, with partially random app_id.
   static PushMessagingAppIdentifier Generate(
       const GURL& origin,
-      int64_t service_worker_registration_id);
+      int64_t service_worker_registration_id,
+      const base::Optional<base::Time>& expiration_time = base::nullopt);
 
   // Looks up an app identifier by app_id. If not found, is_null() will be true.
   static PushMessagingAppIdentifier FindByAppId(Profile* profile,
@@ -97,6 +100,14 @@ class PushMessagingAppIdentifier {
     return service_worker_registration_id_;
   }
 
+  base::Optional<base::Time> expiration_time() const {
+    DCHECK(!is_null());
+    return expiration_time_;
+  }
+
+  // Copy constructor
+  PushMessagingAppIdentifier(const PushMessagingAppIdentifier& other);
+
  private:
   friend class PushMessagingAppIdentifierTest;
   friend class PushMessagingBrowserTest;
@@ -105,19 +116,23 @@ class PushMessagingAppIdentifier {
   // Generates a new app identifier for legacy GCM (not modern InstanceID).
   static PushMessagingAppIdentifier LegacyGenerateForTesting(
       const GURL& origin,
-      int64_t service_worker_registration_id);
+      int64_t service_worker_registration_id,
+      const base::Optional<base::Time>& expiration_time = base::nullopt);
 
   static PushMessagingAppIdentifier GenerateInternal(
       const GURL& origin,
       int64_t service_worker_registration_id,
-      bool use_instance_id);
+      bool use_instance_id,
+      const base::Optional<base::Time>& expiration_time = base::nullopt);
 
   // Constructs an invalid app identifier.
   PushMessagingAppIdentifier();
   // Constructs a valid app identifier.
-  PushMessagingAppIdentifier(const std::string& app_id,
-                             const GURL& origin,
-                             int64_t service_worker_registration_id);
+  PushMessagingAppIdentifier(
+      const std::string& app_id,
+      const GURL& origin,
+      int64_t service_worker_registration_id,
+      const base::Optional<base::Time>& expiration_time = base::nullopt);
 
   // Validates that all the fields contain valid values.
   void DCheckValid() const;
@@ -125,6 +140,7 @@ class PushMessagingAppIdentifier {
   std::string app_id_;
   GURL origin_;
   int64_t service_worker_registration_id_;
+  base::Optional<base::Time> expiration_time_;
 };
 
 #endif  // CHROME_BROWSER_PUSH_MESSAGING_PUSH_MESSAGING_APP_IDENTIFIER_H_

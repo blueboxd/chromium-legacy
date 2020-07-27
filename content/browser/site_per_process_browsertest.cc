@@ -14828,9 +14828,7 @@ IN_PROC_BROWSER_TEST_P(SitePerProcessBrowserTest,
   RenderFrameHostImpl* rfh_b = rfh_a->child_at(0)->current_frame_host();
 
   // RFH B has an unload handler.
-  auto detach_filter_b = base::MakeRefCounted<DropMessageFilter>(
-      FrameMsgStart, FrameHostMsg_Detach::ID);
-  rfh_b->GetProcess()->AddFilter(detach_filter_b.get());
+  rfh_b->DoNotDeleteForTesting();
   EXPECT_TRUE(ExecJs(rfh_b, "onunload=function(){}"));
 
   // 2) Navigation from B to C. The server is slow to respond.
@@ -14864,7 +14862,7 @@ IN_PROC_BROWSER_TEST_P(SitePerProcessBrowserTest,
 
   // |rfh_b| will complete its deletion at some point:
   EXPECT_FALSE(delete_b.deleted());
-  rfh_b->OnDetach();
+  rfh_b->DetachForTesting();
   EXPECT_TRUE(delete_b.deleted());
 }
 
@@ -14925,8 +14923,7 @@ IN_PROC_BROWSER_TEST_P(SitePerProcessBrowserTest,
   // |rfh_b| and |rfh_c| will complete their deletion at some point:
   EXPECT_FALSE(delete_b.deleted());
   EXPECT_FALSE(delete_c.deleted());
-  rfh_c->ResumeDeletionForTesting();
-  rfh_c->OnDetach();
+  rfh_c->DetachForTesting();
   EXPECT_TRUE(delete_b.deleted());
   EXPECT_TRUE(delete_c.deleted());
 }

@@ -1899,8 +1899,7 @@ TEST_P(RenderFrameHostManagerTestWithSiteIsolation, DetachPendingChild) {
 
   // Detach the first child FrameTreeNode. This should kill the pending host but
   // not yet destroy proxies in |site_instance| since the other child remains.
-  iframe1->current_frame_host()->OnMessageReceived(
-      FrameHostMsg_Detach(iframe1->current_frame_host()->GetRoutingID()));
+  iframe1->current_frame_host()->Detach();
   iframe1 = nullptr;  // Was just destroyed.
 
   EXPECT_TRUE(delete_watcher1.deleted());
@@ -1914,8 +1913,7 @@ TEST_P(RenderFrameHostManagerTestWithSiteIsolation, DetachPendingChild) {
 
   // Detach the second child FrameTreeNode. This should trigger cleanup of
   // RenderFrameProxyHosts in |site_instance|.
-  iframe2->current_frame_host()->OnMessageReceived(
-      FrameHostMsg_Detach(iframe2->current_frame_host()->GetRoutingID()));
+  iframe2->current_frame_host()->Detach();
   iframe2 = nullptr;  // Was just destroyed.
 
   EXPECT_TRUE(delete_watcher1.deleted());

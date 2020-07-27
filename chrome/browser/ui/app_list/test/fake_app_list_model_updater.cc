@@ -223,10 +223,13 @@ void FakeAppListModelUpdater::UpdateAppItemFromSyncItem(
   }
 }
 
-void FakeAppListModelUpdater::OnFolderCreated(
-    std::unique_ptr<ash::AppListItemMetadata> folder) {
+void FakeAppListModelUpdater::OnItemAdded(
+    std::unique_ptr<ash::AppListItemMetadata> item) {
+  if (!item->is_folder)
+    return;
+
   std::unique_ptr<ChromeAppListItem> stub_folder =
-      std::make_unique<ChromeAppListItem>(profile_, folder->id, this);
+      std::make_unique<ChromeAppListItem>(profile_, item->id, this);
 
   for (AppListModelUpdaterObserver& observer : observers_)
     observer.OnAppListItemAdded(stub_folder.get());

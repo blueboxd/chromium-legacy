@@ -22,30 +22,11 @@ import {loadTimeData} from 'chrome://resources/js/load_time_data.m.js';
 import {Base, html, Polymer} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
 
 import {CloudOrigins, Destination, DestinationOrigin, PDF_DESTINATION_KEY, RecentDestination} from '../data/destination.js';
-import {PrinterStatus, PrinterStatusReason, PrinterStatusSeverity} from '../data/printer_status_cros.js';
+import {ERROR_STRING_KEY_MAP, PrinterStatus, PrinterStatusReason, PrinterStatusSeverity} from '../data/printer_status_cros.js';
 import {NativeLayer, NativeLayerImpl} from '../native_layer.js';
 import {getSelectDropdownBackground} from '../print_preview_utils.js';
 
 import {SelectBehavior} from './select_behavior.js';
-
-/** @const {!Map<!PrinterStatusReason, string>} */
-const ERROR_STRING_KEY_MAP = new Map([
-  [PrinterStatusReason.CONNECTING_TO_DEVICE, 'printerStatusConnectingToDevice'],
-  [PrinterStatusReason.DEVICE_ERROR, 'printerStatusDeviceError'],
-  [PrinterStatusReason.DOOR_OPEN, 'printerStatusDoorOpen'],
-  [PrinterStatusReason.LOW_ON_INK, 'printerStatusLowOnInk'],
-  [PrinterStatusReason.LOW_ON_PAPER, 'printerStatusLowOnPaper'],
-  [PrinterStatusReason.OUT_OF_INK, 'printerStatusOutOfInk'],
-  [PrinterStatusReason.OUT_OF_PAPER, 'printerStatusOutOfPaper'],
-  [PrinterStatusReason.OUTPUT_ALMOST_FULL, 'printerStatusOutputAlmostFull'],
-  [PrinterStatusReason.OUTPUT_FULL, 'printerStatusOutputFull'],
-  [PrinterStatusReason.PAPER_JAM, 'printerStatusPaperJam'],
-  [PrinterStatusReason.PAUSED, 'printerStatusPaused'],
-  [PrinterStatusReason.PRINTER_QUEUE_FULL, 'printerStatusPrinterQueueFull'],
-  [PrinterStatusReason.PRINTER_UNREACHABLE, 'printerStatusPrinterUnreachable'],
-  [PrinterStatusReason.STOPPED, 'printerStatusStopped'],
-  [PrinterStatusReason.TRAY_MISSING, 'printerStatusTrayMissing'],
-]);
 
 Polymer({
   is: 'print-preview-destination-select-cros',
@@ -391,8 +372,8 @@ Polymer({
    * @private
    */
   getErrorString_: function(printerStatusReason) {
-    const errorTextKey = ERROR_STRING_KEY_MAP.get(printerStatusReason);
-    return errorTextKey ? this.i18n(errorTextKey) : '';
+    const errorStringKey = ERROR_STRING_KEY_MAP.get(printerStatusReason);
+    return errorStringKey ? this.i18n(errorStringKey) : '';
   },
 
   /**

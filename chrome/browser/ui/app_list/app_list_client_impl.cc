@@ -247,24 +247,13 @@ void AppListClientImpl::OnAppListVisibilityChanged(bool visible) {
     search_controller_->AppListShown();
 }
 
-void AppListClientImpl::OnFolderCreated(
+void AppListClientImpl::OnItemAdded(
     int profile_id,
     std::unique_ptr<ash::AppListItemMetadata> item) {
   auto* requested_model_updater = profile_model_mappings_[profile_id];
   if (!requested_model_updater)
     return;
-  DCHECK(item->is_folder);
-  requested_model_updater->OnFolderCreated(std::move(item));
-}
-
-void AppListClientImpl::OnFolderDeleted(
-    int profile_id,
-    std::unique_ptr<ash::AppListItemMetadata> item) {
-  auto* requested_model_updater = profile_model_mappings_[profile_id];
-  if (!requested_model_updater)
-    return;
-  DCHECK(item->is_folder);
-  requested_model_updater->OnFolderDeleted(std::move(item));
+  requested_model_updater->OnItemAdded(std::move(item));
 }
 
 void AppListClientImpl::OnItemUpdated(
@@ -276,14 +265,14 @@ void AppListClientImpl::OnItemUpdated(
   requested_model_updater->OnItemUpdated(std::move(item));
 }
 
-void AppListClientImpl::OnPageBreakItemAdded(
+void AppListClientImpl::OnFolderDeleted(
     int profile_id,
-    const std::string& id,
-    const syncer::StringOrdinal& position) {
+    std::unique_ptr<ash::AppListItemMetadata> item) {
   auto* requested_model_updater = profile_model_mappings_[profile_id];
   if (!requested_model_updater)
     return;
-  requested_model_updater->OnPageBreakItemAdded(id, position);
+  DCHECK(item->is_folder);
+  requested_model_updater->OnFolderDeleted(std::move(item));
 }
 
 void AppListClientImpl::OnPageBreakItemDeleted(int profile_id,

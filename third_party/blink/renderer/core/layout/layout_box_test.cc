@@ -1491,4 +1491,17 @@ TEST_P(LayoutBoxTest,
   DCHECK(!GetLayoutObjectByElementId("target")->NeedsLayout());
 }
 
+// crbug.com/1108270
+TEST_P(LayoutBoxTest, MenuListIntrinsicBlockSize) {
+  SetBodyInnerHTML(R"HTML(
+<style>
+.hidden { content-visibility: hidden; }
+</style>
+<select id=container class=hidden>
+)HTML");
+  GetDocument().View()->UpdateAllLifecyclePhasesExceptPaint(
+      DocumentUpdateReason ::kTest);
+  // The test passes if no crash.
+}
+
 }  // namespace blink

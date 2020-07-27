@@ -23,4 +23,5 @@ blink_modules_sources("nfc") {
     "nfc_utils.cc",
     "nfc_utils.h",
   ]
+  deps = [ "//third_party/blink/renderer/modules/permissions" ]
 }

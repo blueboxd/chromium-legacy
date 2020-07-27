@@ -88,6 +88,8 @@ enum SearchResultType {
   PLUGIN_VM_APP,
   // LaCrOS binary.
   LACROS,
+  // A Remote App Result.
+  REMOTE_APP,
   // Boundary is always last.
   SEARCH_RESULT_TYPE_BOUNDARY
 };

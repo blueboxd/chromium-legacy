@@ -352,7 +352,7 @@ const base::Feature kPluginVmShowMicrophonePermissions{
 
 // Controls whether to show printer statuses.
 const base::Feature kPrinterStatus{"PrinterStatus",
-                                   base::FEATURE_DISABLED_BY_DEFAULT};
+                                   base::FEATURE_ENABLED_BY_DEFAULT};
 
 // Controls whether to enable the Print Job Management App.
 const base::Feature kPrintJobManagementApp{"PrintJobManagementApp",

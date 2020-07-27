@@ -10,6 +10,7 @@
 #include "chrome/browser/browsing_data/access_context_audit_service_factory.h"
 #include "chrome/browser/browsing_data/chrome_browsing_data_remover_delegate.h"
 #include "chrome/browser/content_settings/host_content_settings_map_factory.h"
+#include "chrome/browser/history/history_service_factory.h"
 #include "chrome/browser/prefs/session_startup_pref.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
@@ -19,6 +20,7 @@
 #include "chrome/test/base/ui_test_utils.h"
 #include "components/content_settings/core/browser/cookie_settings.h"
 #include "components/content_settings/core/browser/host_content_settings_map.h"
+#include "components/history/core/browser/history_service.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/browsing_data_remover.h"
 #include "content/public/browser/storage_partition.h"
@@ -238,6 +240,55 @@ IN_PROC_BROWSER_TEST_F(AccessContextAuditBrowserTest, CheckSessionOnly) {
   auto cookies = GetAllCookies();
   EXPECT_EQ(records.size(), 0u);
   EXPECT_EQ(cookies.size(), 0u);
+}
+
+IN_PROC_BROWSER_TEST_F(AccessContextAuditBrowserTest, RemoveHistory) {
+  // Check that removing all history entries for an origin also removes all
+  // records where that origin is the top frame origin.
+  std::string replacement_path = GetPathWithHostAndPortReplaced(
+      "/browsing_data/embeds_storage_accessor.html",
+      net::HostPortPair::FromURL(embedded_.GetURL(kEmbeddedHost, "/")));
+  GURL top_level_url = top_level_.GetURL(kTopLevelHost, replacement_path);
+  ui_test_utils::NavigateToURL(browser(), top_level_url);
+
+  ui_test_utils::NavigateToURL(
+      browser(),
+      embedded_.GetURL(kEmbeddedHost, "/browsing_data/storage_accessor.html"));
+  base::RunLoop().RunUntilIdle();
+
+  auto records = GetAllAccessRecords();
+  auto cookies = GetAllCookies();
+  EXPECT_EQ(records.size(), 5u);
+
+  // Remove the history entry for the navigation to the page which embeds
+  // storage_accessor.html.
+  auto* history_service = HistoryServiceFactory::GetForProfile(
+      browser()->profile(), ServiceAccessType::EXPLICIT_ACCESS);
+  history_service->DeleteURLs({top_level_url});
+  base::RunLoop run_loop;
+  history_service->FlushForTest(run_loop.QuitClosure());
+  run_loop.Run();
+
+  // Check that only records for accesses which occurred during the direct
+  // navigation to storage_accessor.html exist.
+  records = GetAllAccessRecords();
+  cookies = GetAllCookies();
+  EXPECT_EQ(records.size(), 2u);
+  CheckContainsCookieAndRecord(cookies, records, embedded_origin(),
+                               "persistent", kEmbeddedHost, "/");
+  CheckContainsCookieAndRecord(cookies, records, embedded_origin(),
+                               "session_only", kEmbeddedHost, "/");
+
+  // The actual cookie set by the top level page should remain present, as
+  // the history deletion should only affect the access record.
+  EXPECT_EQ(cookies.size(), 3u);
+  EXPECT_NE(std::find_if(cookies.begin(), cookies.end(),
+                         [=](const net::CanonicalCookie& cookie) {
+                           return cookie.Name() == "embedder" &&
+                                  cookie.Domain() == kTopLevelHost &&
+                                  cookie.Path() == "/";
+                         }),
+            cookies.end());
 }
 
 class AccessContextAuditSessionRestoreBrowserTest

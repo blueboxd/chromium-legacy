@@ -3791,6 +3791,18 @@ TEST_P(LCDTextTest, CanUseLCDText) {
   CheckCanUseLCDText(LCDTextDisallowedReason::kWillChangeTransform, child_);
   // TODO(wangxianzhu): Is this correct?
   CheckCanUseLCDText(LCDTextDisallowedReason::kNone, grand_child_);
+
+  // Case 12: Sanity check: restore will-change: transform.
+  child_->SetHasWillChangeTransformHint(false);
+  UpdateActiveTreeDrawProperties();
+  CheckCanUseLCDText(LCDTextDisallowedReason::kNone);
+
+  // Case 13: Normal filter.
+  FilterOperations blur_filter;
+  blur_filter.Append(FilterOperation::CreateBlurFilter(4.0f));
+  SetFilter(child_, blur_filter);
+  UpdateActiveTreeDrawProperties();
+  CheckCanUseLCDText(LCDTextDisallowedReason::kLayerHasFilterEffect, child_);
 }
 
 TEST_P(LCDTextTest, CanUseLCDTextWithContentsOpaqueForText) {

@@ -3999,21 +3999,18 @@ blink::WebFrame* RenderFrameImpl::FindFrame(const blink::WebString& name) {
                                                    name.Utf8());
 }
 
-void RenderFrameImpl::FrameDetached(DetachType type) {
+void RenderFrameImpl::WillDetach() {
   for (auto& observer : observers_)
-    observer.FrameDetached();
+    observer.WillDetach();
 
   if (auto* factory = AudioOutputIPCFactory::get())
     factory->MaybeDeregisterRemoteFactory(GetWebFrame()->GetFrameToken());
 
   // Send a state update before the frame is detached.
   SendUpdateState();
+}
 
-  // We only notify the browser process when the frame is being detached for
-  // removal, not after a swap.
-  if (type == DetachType::kRemove)
-    Send(new FrameHostMsg_Detach(routing_id_));
-
+void RenderFrameImpl::FrameDetached() {
   // Clean up the associated RenderWidget for the frame.
   GetLocalRootRenderWidget()->UnregisterRenderFrame(this);
 

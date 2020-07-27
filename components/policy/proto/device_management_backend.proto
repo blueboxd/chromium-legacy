@@ -1030,6 +1030,7 @@ message DiskLifetimeEstimation {
 }
 
 // Status of the single storage device
+// Next id: 26
 message DiskInfo {
   optional string serial = 1;
   optional string manufacturer = 2;
@@ -1052,6 +1053,38 @@ message DiskInfo {
   // Time spent discarding since last boot. Discarding is writing to clear
   // blocks which are no longer in use. Supported on kernels 4.18+.
   optional uint64 discard_time_seconds_since_last_boot = 13;
+
+  // The manufacturer of the block device.
+  oneof vendor_id {
+    // NVME vendors:
+    // https://pcisig.com/membership/member-companies
+    uint32 nvme_subsystem_vendor = 14;
+    // EMMC oemids
+    // https://screenshot.googleplex.com/eZWNnV8qGnc
+    uint32 emmc_oemid = 15;
+    uint32 other_vendor = 16;
+  }
+
+  // The manufacturer-specific product identifier.
+  oneof product_id {
+    uint32 nvme_subsystem_device = 17;
+    uint32 emmc_pnm = 18;
+    uint32 other_product = 19;
+  }
+
+  // The revision of the device's hardware.
+  oneof hardware_revision {
+    uint32 nvme_hardware_rev = 20;
+    uint32 emmc_hardware_rev = 21;
+    uint32 other_hardware_rev = 22;
+  }
+
+  // The revision of the device's firmware.
+  oneof firmware_revision {
+    uint64 nvme_firmware_rev = 23;
+    uint64 emmc_firmware_rev = 24;
+    uint32 other_firmware_rev = 25;
+  }
 }
 
 // Status of the storage subsystem.

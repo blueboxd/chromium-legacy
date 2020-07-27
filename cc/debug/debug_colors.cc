@@ -339,6 +339,8 @@ SkColor DebugColors::NonLCDTextHighlightColor(LCDTextDisallowedReason reason) {
       return SkColorSetARGB(96, 255, 0, 128);
     case LCDTextDisallowedReason::kWillChangeTransform:
       return SkColorSetARGB(96, 128, 0, 255);
+    case LCDTextDisallowedReason::kLayerHasFilterEffect:
+      return SkColorSetARGB(96, 0, 128, 0);
   }
   NOTREACHED();
   return SK_ColorTRANSPARENT;

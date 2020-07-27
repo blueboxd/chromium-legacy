@@ -673,7 +673,7 @@ void PrintRenderFrameHelper::PrintHeaderAndFooter(
     void BindToFrame(blink::WebNavigationControl* frame) override {
       frame_ = frame;
     }
-    void FrameDetached(DetachType detach_type) override {
+    void FrameDetached() override {
       frame_->FrameWidget()->Close();
       frame_->Close();
       frame_ = nullptr;
@@ -800,7 +800,7 @@ class PrepareFrameAndViewForPrint : public blink::WebViewClient,
       const blink::FramePolicy& frame_policy,
       const blink::WebFrameOwnerProperties& frame_owner_properties,
       blink::mojom::FrameOwnerElementType owner_type) override;
-  void FrameDetached(DetachType detach_type) override;
+  void FrameDetached() override;
   std::unique_ptr<blink::WebURLLoaderFactory> CreateURLLoaderFactory() override;
 
   void CallOnReady();
@@ -1002,7 +1002,7 @@ blink::WebLocalFrame* PrepareFrameAndViewForPrint::CreateChildFrame(
   return nullptr;
 }
 
-void PrepareFrameAndViewForPrint::FrameDetached(DetachType detach_type) {
+void PrepareFrameAndViewForPrint::FrameDetached() {
   blink::WebLocalFrame* frame = frame_.GetFrame();
   DCHECK(frame);
   frame->FrameWidget()->Close();

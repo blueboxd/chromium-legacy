@@ -8,6 +8,8 @@
 #include "chrome/browser/browsing_data/access_context_audit_database.h"
 #include "chrome/browser/profiles/profile.h"
 #include "components/browsing_data/content/local_shared_objects_container.h"
+#include "components/history/core/browser/history_service.h"
+#include "components/history/core/browser/history_service_observer.h"
 #include "components/keyed_service/core/keyed_service.h"
 #include "net/cookies/cookie_change_dispatcher.h"
 #include "services/network/public/mojom/cookie_manager.mojom.h"
@@ -17,17 +19,18 @@ typedef base::OnceCallback<void(
     std::vector<AccessContextAuditDatabase::AccessRecord>)>
     AccessContextRecordsCallback;
 
-class AccessContextAuditService
-    : public KeyedService,
-      public ::network::mojom::CookieChangeListener {
+class AccessContextAuditService : public KeyedService,
+                                  public ::network::mojom::CookieChangeListener,
+                                  public history::HistoryServiceObserver {
  public:
   explicit AccessContextAuditService(Profile* profile);
   ~AccessContextAuditService() override;
 
   // Initialises the Access Context Audit database in |database_dir|, and
-  // attaches listeners to |cookie_manager|.
+  // attaches listeners to |cookie_manager| and |history_service|.
   bool Init(const base::FilePath& database_dir,
-            network::mojom::CookieManager* cookie_manager);
+            network::mojom::CookieManager* cookie_manager,
+            history::HistoryService* history_service);
 
   // Records accesses for all cookies in |details| against |top_frame_origin|.
   void RecordCookieAccess(const net::CookieList& accessed_cookies,
@@ -49,6 +52,14 @@ class AccessContextAuditService
   // ::network::mojom::CookieChangeListener:
   void OnCookieChange(const net::CookieChangeInfo& change) override;
 
+  // history::HistoryServiceObserver:
+  void OnURLsDeleted(history::HistoryService* history_service,
+                     const history::DeletionInfo& deletion_info) override;
+
+  // Override the internal clock used to record storage API access timestamps
+  // and check for expired cookies.
+  void SetClockForTesting(base::Clock* clock);
+
   // Override internal task runner with provided task runner. Must be called
   // before Init().
   void SetTaskRunnerForTesting(
@@ -64,10 +75,13 @@ class AccessContextAuditService
   scoped_refptr<AccessContextAuditDatabase> database_;
   scoped_refptr<base::SequencedTaskRunner> database_task_runner_;
 
+  base::Clock* clock_;
   Profile* profile_;
 
   mojo::Receiver<network::mojom::CookieChangeListener>
       cookie_listener_receiver_{this};
+  ScopedObserver<history::HistoryService, history::HistoryServiceObserver>
+      history_observer_{this};
 
   DISALLOW_COPY_AND_ASSIGN(AccessContextAuditService);
 };

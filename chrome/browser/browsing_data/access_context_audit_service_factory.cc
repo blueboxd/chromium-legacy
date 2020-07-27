@@ -7,6 +7,7 @@
 #include "base/memory/singleton.h"
 #include "chrome/browser/browsing_data/access_context_audit_service.h"
 #include "chrome/browser/content_settings/host_content_settings_map_factory.h"
+#include "chrome/browser/history/history_service_factory.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/common/chrome_features.h"
 #include "components/keyed_service/content/browser_context_dependency_manager.h"
@@ -18,6 +19,7 @@ AccessContextAuditServiceFactory::AccessContextAuditServiceFactory()
           "AccessContextAuditService",
           BrowserContextDependencyManager::GetInstance()) {
   DependsOn(HostContentSettingsMapFactory::GetInstance());
+  DependsOn(HistoryServiceFactory::GetInstance());
 }
 
 AccessContextAuditServiceFactory*
@@ -38,17 +40,21 @@ KeyedService* AccessContextAuditServiceFactory::BuildServiceInstanceFor(
           features::kClientStorageAccessContextAuditing))
     return nullptr;
 
+  auto* profile = static_cast<Profile*>(context);
+
   // The service implementation will persist session cookies until next startup.
   // It is only used with regular profiles, which always persist session
   // cookies.
-  DCHECK(static_cast<Profile*>(context)->ShouldPersistSessionCookies());
+  DCHECK(profile->ShouldPersistSessionCookies());
 
   std::unique_ptr<AccessContextAuditService> context_audit_service(
-      new AccessContextAuditService(static_cast<Profile*>(context)));
+      new AccessContextAuditService(profile));
   if (!context_audit_service->Init(
           context->GetPath(),
           content::BrowserContext::GetDefaultStoragePartition(context)
-              ->GetCookieManagerForBrowserProcess())) {
+              ->GetCookieManagerForBrowserProcess(),
+          HistoryServiceFactory::GetForProfile(
+              profile, ServiceAccessType::EXPLICIT_ACCESS))) {
     return nullptr;
   }
 

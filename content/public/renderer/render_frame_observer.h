@@ -141,7 +141,7 @@ class CONTENT_EXPORT RenderFrameObserver : public IPC::Listener,
   // Called when this frame has been detached from the view. This *will* be
   // called for child frames when a parent frame is detached. Since the frame is
   // already detached from the DOM at this time, it should not be inspected.
-  virtual void FrameDetached() {}
+  virtual void WillDetach() {}
 
   // Called when we receive a console message from Blink for which we requested
   // extra details (like the stack trace). |message| is the error message,

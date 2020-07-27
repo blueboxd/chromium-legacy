@@ -315,6 +315,51 @@ TEST_F(ServiceConnectionTest,
   ASSERT_TRUE(infer_callback_done);
 }
 
+// Tests the fake ML service for text classifier language identification.
+TEST_F(ServiceConnectionTest,
+       FakeServiceConnectionForTextClassifierFindLanguages) {
+  mojo::Remote<mojom::TextClassifier> text_classifier;
+  bool callback_done = false;
+  FakeServiceConnectionImpl fake_service_connection;
+  ServiceConnection::UseFakeServiceConnectionForTesting(
+      &fake_service_connection);
+
+  std::vector<mojom::TextLanguagePtr> languages;
+  languages.emplace_back(mojom::TextLanguage::New("en", 0.9));
+  languages.emplace_back(mojom::TextLanguage::New("fr", 0.1));
+  fake_service_connection.SetOutputLanguages(languages);
+
+  ServiceConnection::GetInstance()->LoadTextClassifier(
+      text_classifier.BindNewPipeAndPassReceiver(),
+      base::BindOnce(
+          [](bool* callback_done, mojom::LoadModelResult result) {
+            EXPECT_EQ(result, mojom::LoadModelResult::OK);
+            *callback_done = true;
+          },
+          &callback_done));
+  base::RunLoop().RunUntilIdle();
+  ASSERT_TRUE(callback_done);
+  ASSERT_TRUE(text_classifier.is_bound());
+
+  std::string input_text = "dummy input text";
+  bool infer_callback_done = false;
+  text_classifier->FindLanguages(
+      input_text, base::Bind(
+                      [](bool* infer_callback_done,
+                         std::vector<mojom::TextLanguagePtr> languages) {
+                        *infer_callback_done = true;
+                        // Check if the suggestion is correct.
+                        ASSERT_EQ(languages.size(), 2ul);
+                        EXPECT_EQ(languages[0]->locale, "en");
+                        EXPECT_EQ(languages[0]->confidence, 0.9f);
+                        EXPECT_EQ(languages[1]->locale, "fr");
+                        EXPECT_EQ(languages[1]->confidence, 0.1f);
+                      },
+                      &infer_callback_done));
+  base::RunLoop().RunUntilIdle();
+  ASSERT_TRUE(infer_callback_done);
+}
+
 // Tests the fake ML service for handwriting.
 TEST_F(ServiceConnectionTest, FakeHandWritingRecognizerWithSpec) {
   mojo::Remote<mojom::HandwritingRecognizer> recognizer;

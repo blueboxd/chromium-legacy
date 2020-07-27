@@ -72,14 +72,6 @@ const base::FeatureParam<ChildProcessImportance> kChildProcessImportanceParam{
     ChildProcessImportance::MODERATE, &child_process_importance_options};
 #endif
 
-bool IsServiceWorkerSupported() {
-  if (!DeviceHasEnoughMemoryForBackForwardCache())
-    return false;
-  static constexpr base::FeatureParam<bool> service_worker_supported(
-      &features::kBackForwardCache, "service_worker_supported", false);
-  return service_worker_supported.Get();
-}
-
 bool IsGeolocationSupported() {
   if (!DeviceHasEnoughMemoryForBackForwardCache())
     return false;
@@ -162,11 +154,6 @@ uint64_t GetDisallowedFeatures(RenderFrameHostImpl* rfh) {
       FeatureToBit(WebSchedulerTrackedFeature::kWebXR);
 
   uint64_t result = kAlwaysDisallowedFeatures;
-
-  if (!IsServiceWorkerSupported()) {
-    result |=
-        FeatureToBit(WebSchedulerTrackedFeature::kServiceWorkerControlledPage);
-  }
 
   if (!IsGeolocationSupported()) {
     result |= FeatureToBit(

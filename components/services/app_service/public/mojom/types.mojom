@@ -95,6 +95,7 @@ enum AppType {
   kMacNative,  // Native Mac app.
   kPluginVm,   // Plugin VM app.
   kLacros,     // Lacros app.
+  kRemote,     // Remote app.
 };
 
 // Whether an app is ready to launch, i.e. installed.

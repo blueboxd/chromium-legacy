@@ -54,6 +54,7 @@ TaskType GetTaskType(apps::mojom::AppType app_type) {
     case apps::mojom::AppType::kMacNative:
     case apps::mojom::AppType::kPluginVm:
     case apps::mojom::AppType::kLacros:
+    case apps::mojom::AppType::kRemote:
       return TASK_TYPE_UNKNOWN;
   }
 }

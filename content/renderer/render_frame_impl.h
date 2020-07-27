@@ -667,7 +667,8 @@ class CONTENT_EXPORT RenderFrameImpl
       const base::UnguessableToken& portal_token,
       const blink::WebElement& portal_element) override;
   blink::WebFrame* FindFrame(const blink::WebString& name) override;
-  void FrameDetached(DetachType type) override;
+  void WillDetach() override;
+  void FrameDetached() override;
   void DidChangeName(const blink::WebString& name) override;
   void DidSetFramePolicyHeaders(
       network::mojom::WebSandboxFlags flags,

@@ -167,21 +167,41 @@ union NonRemovableBlockDeviceResult {
   ProbeError error;
 };
 
+// Unions for device-specific data fields. |other| is provided by the default
+// data adapter and filled with a default value for the unknown device type.
+
+// The manufacturer of the block device.
+union BlockDeviceVendor {
+  uint32 nvme_subsystem_vendor;
+  uint16 emmc_oemid;
+  uint16 other;
+};
+
+// The manufacturer-specific product identifier.
+union BlockDeviceProduct {
+  uint32 nvme_subsystem_device;
+  uint64 emmc_pnm;
+  uint16 other;
+};
+
+// The revision of the device's hardware.
+union BlockDeviceRevision {
+  uint8 nvme_pcie_rev;
+  uint8 emmc_prv;
+  uint16 other;
+};
+
+// The revision of the device's firmware.
+union BlockDeviceFirmware {
+  uint64 nvme_firmware_rev;
+  uint64 emmc_fwrev;
+  uint16 other;
+};
+
 // Information related to a specific non-removable block device.
 struct NonRemovableBlockDeviceInfo {
-  // The path of this storage on the system. It is useful if caller needs to
-  // correlate with other information.
-  string path;
-  // Exact size of this storage, reported in bytes
-  uint64 size;
-  // Storage type, could be MMC / NVMe / ATA, based on udev subsystem.
-  string type;
-  // Manufacturer ID, 8 bits.
-  uint8 manufacturer_id;
-  // PNM: Product name, ASCII characters for 6 bytes.
-  string name;
-  // PSN: Product serial number, 32 bits
-  uint32 serial;
+  // IO statistics
+
   // Bytes read since last boot.
   uint64 bytes_read_since_last_boot;
   // Bytes written since last boot.
@@ -197,6 +217,33 @@ struct NonRemovableBlockDeviceInfo {
   // Time spent discarding since last boot. Discarding is writing to clear
   // blocks which are no longer in use. Supported on kernels 4.18+.
   UInt64Value? discard_time_seconds_since_last_boot;
+
+  // Device identification.
+
+  // Device vendor identification.
+  BlockDeviceVendor vendor_id;
+  // Device product identification.
+  BlockDeviceProduct product_id;
+  // Device revision.
+  BlockDeviceRevision revision;
+  // Device model.
+  string name;
+  // Device size in bytes.
+  uint64 size;
+  // Firmware version.
+  BlockDeviceFirmware firmware_version;
+  // Storage type, could be MMC / NVMe / ATA, based on udev subsystem.
+  string type;
+
+  // Additional identification.
+
+  // The path of this storage on the system. It is useful if caller needs to
+  // correlate with other information.
+  string path;
+  // Manufacturer ID, 8 bits.
+  uint8 manufacturer_id;
+  // PSN: Product serial number, 32 bits
+  uint32 serial;
 };
 
 // CPU probe result. Can either be populated with the CpuInfo or an error

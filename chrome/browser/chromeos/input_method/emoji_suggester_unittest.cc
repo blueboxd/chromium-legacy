@@ -168,18 +168,8 @@ TEST_F(EmojiSuggesterTest, ReturnkBrowsingWhenPressingDown) {
             emoji_suggester_->HandleKeyEvent(event));
 }
 
-TEST_F(EmojiSuggesterTest, ReturnkNotHandledWhenPressingUp) {
+TEST_F(EmojiSuggesterTest, ReturnkBrowsingWhenPressingUp) {
   EXPECT_TRUE(emoji_suggester_->Suggest(base::UTF8ToUTF16("happy ")));
-  InputMethodEngineBase::KeyboardEvent event;
-  event.key = "Up";
-  EXPECT_EQ(SuggestionStatus::kNotHandled,
-            emoji_suggester_->HandleKeyEvent(event));
-}
-
-TEST_F(EmojiSuggesterTest, ReturnkBrowsingWhenPressingDownAndUp) {
-  EXPECT_TRUE(emoji_suggester_->Suggest(base::UTF8ToUTF16("happy ")));
-  // Go into the window.
-  Press("Down");
   InputMethodEngineBase::KeyboardEvent event;
   event.key = "Up";
   EXPECT_EQ(SuggestionStatus::kBrowsing,

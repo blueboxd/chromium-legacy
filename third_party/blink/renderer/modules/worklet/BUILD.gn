@@ -9,4 +9,8 @@ blink_modules_sources("worklet") {
     "animation_and_paint_worklet_thread.cc",
     "animation_and_paint_worklet_thread.h",
   ]
+  deps = [
+    "//third_party/blink/renderer/modules/animationworklet",
+    "//third_party/blink/renderer/modules/csspaint",
+  ]
 }

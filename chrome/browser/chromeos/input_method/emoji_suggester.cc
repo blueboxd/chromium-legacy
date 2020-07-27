@@ -150,8 +150,8 @@ SuggestionStatus EmojiSuggester::HandleKeyEvent(
     return SuggestionStatus::kDismiss;
   }
   if (highlighted_index_ == kNoneHighlighted && buttons_.size() > 0) {
-    if (event.key == "Down") {
-      highlighted_index_ = 0;
+    if (event.key == "Down" || event.key == "Up") {
+      highlighted_index_ = event.key == "Down" ? 0 : buttons_.size() - 1;
       ShowSuggestionWindowWithIndices(true);
       SetButtonHighlighted(buttons_[highlighted_index_], true);
       return SuggestionStatus::kBrowsing;

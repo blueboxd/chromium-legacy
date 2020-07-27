@@ -145,16 +145,9 @@ void TableSectionPainter::PaintCollapsedSectionBorders(
 
   CellSpan dirtied_rows;
   CellSpan dirtied_columns;
-  if (UNLIKELY(
-          layout_table_section_.Table()->ShouldPaintAllCollapsedBorders())) {
-    // Ignore paint cull rect to simplify paint invalidation in such rare case.
-    dirtied_rows = layout_table_section_.FullSectionRowSpan();
-    dirtied_columns = layout_table_section_.FullTableEffectiveColumnSpan();
-  } else {
-    layout_table_section_.DirtiedRowsAndEffectiveColumns(
-        TableAlignedRect(local_paint_info, paint_offset), dirtied_rows,
-        dirtied_columns);
-  }
+  layout_table_section_.DirtiedRowsAndEffectiveColumns(
+      TableAlignedRect(local_paint_info, paint_offset), dirtied_rows,
+      dirtied_columns);
 
   if (dirtied_columns.Start() >= dirtied_columns.End())
     return;

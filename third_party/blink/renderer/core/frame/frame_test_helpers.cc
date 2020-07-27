@@ -629,7 +629,7 @@ void TestWebFrameClient::BindWidgetClient(
   owned_widget_client_ = std::move(client);
 }
 
-void TestWebFrameClient::FrameDetached(DetachType type) {
+void TestWebFrameClient::FrameDetached() {
   if (frame_->FrameWidget())
     frame_->FrameWidget()->Close();
 

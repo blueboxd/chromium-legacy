@@ -126,14 +126,11 @@ class AppListModelUpdater {
   virtual bool SearchEngineIsGoogle() = 0;
 
   // Methods for handle model updates in ash:
-  virtual void OnFolderCreated(
+  virtual void OnItemAdded(std::unique_ptr<ash::AppListItemMetadata> item) = 0;
+  virtual void OnItemUpdated(
       std::unique_ptr<ash::AppListItemMetadata> item) = 0;
   virtual void OnFolderDeleted(
       std::unique_ptr<ash::AppListItemMetadata> item) = 0;
-  virtual void OnItemUpdated(
-      std::unique_ptr<ash::AppListItemMetadata> item) = 0;
-  virtual void OnPageBreakItemAdded(const std::string& id,
-                                    const syncer::StringOrdinal& position) = 0;
   virtual void OnPageBreakItemDeleted(const std::string& id) = 0;
 
   virtual void AddObserver(AppListModelUpdaterObserver* observer) = 0;

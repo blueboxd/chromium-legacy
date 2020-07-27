@@ -498,10 +498,7 @@ bool AppListControllerImpl::IsVisible(
 // AppListModelObserver:
 
 void AppListControllerImpl::OnAppListItemAdded(AppListItem* item) {
-  if (item->is_folder())
-    client_->OnFolderCreated(profile_id_, item->CloneMetadata());
-  else if (item->is_page_break())
-    client_->OnPageBreakItemAdded(profile_id_, item->id(), item->position());
+  client_->OnItemAdded(profile_id_, item->CloneMetadata());
 }
 
 void AppListControllerImpl::OnActiveUserPrefServiceChanged(

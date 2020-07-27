@@ -48,15 +48,12 @@ class TestAppListClient : public AppListClient {
                            GetContextMenuModelCallback callback) override;
   void OnAppListVisibilityWillChange(bool visible) override {}
   void OnAppListVisibilityChanged(bool visible) override {}
-  void OnFolderCreated(int profile_id,
-                       std::unique_ptr<AppListItemMetadata> item) override {}
-  void OnFolderDeleted(int profile_id,
-                       std::unique_ptr<AppListItemMetadata> item) override {}
+  void OnItemAdded(int profile_id,
+                   std::unique_ptr<AppListItemMetadata> item) override {}
   void OnItemUpdated(int profile_id,
                      std::unique_ptr<AppListItemMetadata> item) override {}
-  void OnPageBreakItemAdded(int profile_id,
-                            const std::string& id,
-                            const syncer::StringOrdinal& position) override {}
+  void OnFolderDeleted(int profile_id,
+                       std::unique_ptr<AppListItemMetadata> item) override {}
   void OnPageBreakItemDeleted(int profile_id, const std::string& id) override {}
   void GetNavigableContentsFactory(
       mojo::PendingReceiver<content::mojom::NavigableContentsFactory> receiver)

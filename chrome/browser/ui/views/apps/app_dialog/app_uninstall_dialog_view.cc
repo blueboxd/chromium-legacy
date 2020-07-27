@@ -148,6 +148,7 @@ void AppUninstallDialogView::InitializeView(Profile* profile,
     case apps::mojom::AppType::kBuiltIn:
     case apps::mojom::AppType::kMacNative:
     case apps::mojom::AppType::kLacros:
+    case apps::mojom::AppType::kRemote:
       NOTREACHED();
       break;
     case apps::mojom::AppType::kArc:

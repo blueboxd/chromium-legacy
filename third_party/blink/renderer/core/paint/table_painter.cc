@@ -90,17 +90,6 @@ void TablePainter::PaintMask(const PaintInfo& paint_info,
 
 void TablePainter::PaintCollapsedBorders(const PaintInfo& paint_info,
                                          const PhysicalOffset& paint_offset) {
-  base::Optional<BoxDrawingRecorder> recorder;
-  if (UNLIKELY(layout_table_.ShouldPaintAllCollapsedBorders())) {
-    if (DrawingRecorder::UseCachedDrawingIfPossible(
-            paint_info.context, layout_table_,
-            DisplayItem::kTableCollapsedBorders))
-      return;
-    recorder.emplace(paint_info.context, layout_table_,
-                     DisplayItem::kTableCollapsedBorders, paint_offset);
-  }
-  // Otherwise each rows will create its own recorder.
-
   for (LayoutTableSection* section = layout_table_.BottomSection(); section;
        section = layout_table_.SectionAbove(section)) {
     TableSectionPainter(*section).PaintCollapsedBorders(paint_info);

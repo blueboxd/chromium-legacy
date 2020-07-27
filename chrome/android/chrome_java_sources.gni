@@ -1477,7 +1477,6 @@ chrome_java_sources = [
   "java/src/org/chromium/chrome/browser/survey/ChromeSurveyController.java",
   "java/src/org/chromium/chrome/browser/survey/SurveyController.java",
   "java/src/org/chromium/chrome/browser/sync/AndroidSyncSettings.java",
-  "java/src/org/chromium/chrome/browser/sync/GoogleServiceAuthError.java",
   "java/src/org/chromium/chrome/browser/sync/ProfileSyncService.java",
   "java/src/org/chromium/chrome/browser/sync/SyncController.java",
   "java/src/org/chromium/chrome/browser/sync/SyncNotificationController.java",

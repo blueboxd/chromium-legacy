@@ -757,8 +757,8 @@ class CONTENT_EXPORT RenderFrameHostImpl
     // RenderFrameHost sends IPCs to the renderer process to execute unload
     // handlers and deletes the RenderFrame. The RenderFrameHost waits for an
     // ACK from the renderer process, either FrameHostMsg_Unload_ACK for a
-    // navigating frame or FrameHostMsg_Detach for its subframes, after which
-    // the RenderFrameHost transitions to kReadyToBeDeleted state.
+    // navigating frame or mojom::FrameHost::Detach for its subframes, after
+    // which the RenderFrameHost transitions to kReadyToBeDeleted state.
     //
     // Transition to this state happens only from kActive state. Note that
     // eviction from BackForwardCache does not run unload handlers, and
@@ -1603,6 +1603,7 @@ class CONTENT_EXPORT RenderFrameHostImpl
   void CapturePaintPreviewOfSubframe(
       const gfx::Rect& clip_rect,
       const base::UnguessableToken& guid) override;
+  void Detach() override;
 
   // blink::LocalMainFrameHost overrides:
   void ScaleFactorChanged(float scale) override;
@@ -1633,10 +1634,15 @@ class CONTENT_EXPORT RenderFrameHostImpl
 
   // This method will unset the flag |do_not_delete_for_testing_| to resume
   // deletion on the RenderFrameHost. Deletion will only be triggered if
-  // RenderFrameHostImpl::OnDetach() is called for the RenderFrameHost. This is
-  // a counterpart for DoNotDeleteForTesting() which sets the flag
+  // RenderFrameHostImpl::Detach() is called for the RenderFrameHost. This is a
+  // counterpart for DoNotDeleteForTesting() which sets the flag
   // |do_not_delete_for_testing_|.
   void ResumeDeletionForTesting();
+
+  // This method will detach forcely RenderFrameHost with setting the states,
+  // |do_not_delete_for_testing_| and |detach_state_|, to resume deletion on
+  // the RenderFrameHost.
+  void DetachForTesting();
 
   // Document-associated data. This is cleared whenever a new document is hosted
   // by this RenderFrameHost. Please refer to the description at
@@ -1868,7 +1874,6 @@ class CONTENT_EXPORT RenderFrameHostImpl
   void UpdateRenderProcessHostFramePriorities();
 
   // IPC Message handlers.
-  void OnDetach();
   void OnUnloadACK();
   void OnContextMenu(const UntrustworthyContextMenuParams& params);
   void OnVisualStateResponse(uint64_t id);
@@ -2304,7 +2309,7 @@ class CONTENT_EXPORT RenderFrameHostImpl
   // subframes have completed running unload handlers. If so, this function
   // destroys this frame. This will happen as soon as...
   // 1) The children in other processes have been deleted.
-  // 2) The ack (FrameHostMsg_Unload_ACK or FrameHostMsg_Detach) has been
+  // 2) The ack (FrameHostMsg_Unload_ACK or mojom::FrameHost::Detach) has been
   //    received. It means this frame in the renderer process is gone.
   void PendingDeletionCheckCompleted();
 

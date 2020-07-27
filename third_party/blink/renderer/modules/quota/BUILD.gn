@@ -23,4 +23,5 @@ blink_modules_sources("quota") {
     "worker_navigator_storage_quota.cc",
     "worker_navigator_storage_quota.h",
   ]
+  deps = [ "//third_party/blink/renderer/modules/permissions" ]
 }

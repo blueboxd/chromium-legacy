@@ -49,6 +49,8 @@ void FakeRemoteFrameHost::RouteMessageEvent(
 void FakeRemoteFrameHost::PrintCrossProcessSubframe(const gfx::Rect& rect,
                                                     int document_cookie) {}
 
+void FakeRemoteFrameHost::Detach() {}
+
 void FakeRemoteFrameHost::BindFrameHostReceiver(
     mojo::ScopedInterfaceEndpointHandle handle) {
   receiver_.Bind(mojo::PendingAssociatedReceiver<mojom::blink::RemoteFrameHost>(

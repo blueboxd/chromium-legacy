@@ -5,13 +5,13 @@
 #ifndef COMPONENTS_BOOKMARKS_BROWSER_BOOKMARK_CLIENT_H_
 #define COMPONENTS_BOOKMARKS_BROWSER_BOOKMARK_CLIENT_H_
 
+#include <cstdint>
 #include <map>
 #include <utility>
 
 #include "base/callback_forward.h"
 #include "base/task/cancelable_task_tracker.h"
 #include "components/bookmarks/browser/bookmark_node.h"
-#include "components/bookmarks/browser/bookmark_storage.h"
 #include "components/favicon_base/favicon_callback.h"
 #include "components/favicon_base/favicon_types.h"
 #include "components/keyed_service/core/keyed_service.h"
@@ -25,6 +25,13 @@ struct UserMetricsAction;
 namespace bookmarks {
 
 class BookmarkModel;
+class BookmarkPermanentNode;
+
+// A callback that generates a std::unique_ptr<BookmarkPermanentNode>, given a
+// max ID to use. The max ID argument will be updated after if a new node has
+// been created and assigned an ID.
+using LoadManagedNodeCallback =
+    base::OnceCallback<std::unique_ptr<BookmarkPermanentNode>(int64_t*)>;
 
 // This class abstracts operations that depends on the embedder's environment,
 // e.g. Chrome.

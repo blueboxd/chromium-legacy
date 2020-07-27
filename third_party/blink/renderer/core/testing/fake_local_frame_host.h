@@ -122,6 +122,7 @@ class FakeLocalFrameHost : public mojom::blink::LocalFrameHost {
   void CapturePaintPreviewOfSubframe(
       const gfx::Rect& clip_rect,
       const base::UnguessableToken& guid) override;
+  void Detach() override;
 
  private:
   void BindFrameHostReceiver(mojo::ScopedInterfaceEndpointHandle handle);

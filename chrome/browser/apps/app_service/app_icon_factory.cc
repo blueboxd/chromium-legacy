@@ -53,6 +53,7 @@
 #include "url/gurl.h"
 
 #if defined(OS_CHROMEOS)
+#include "chrome/browser/chromeos/arc/icon_decode_request.h"
 #include "chrome/browser/ui/app_list/md_icon_normalizer.h"
 #include "ui/chromeos/resources/grit/ui_chromeos_resources.h"
 #endif
@@ -204,16 +205,6 @@ gfx::ImageSkia LoadMaskImage(const gfx::Size& image_size) {
   return resized_mask_image;
 }
 
-void ApplyBackgroundAndMask(
-    int size_hint_in_dip,
-    base::OnceCallback<void(const gfx::ImageSkia& icon)> callback,
-    gfx::ImageSkia image) {
-  std::move(callback).Run(gfx::ImageSkiaOperations::CreateResizedImage(
-      gfx::ImageSkiaOperations::CreateButtonBackground(
-          SK_ColorWHITE, image, LoadMaskImage(image.size())),
-      skia::ImageOperations::RESIZE_BEST,
-      gfx::Size(size_hint_in_dip, size_hint_in_dip)));
-}
 #endif  // OS_CHROMEOS
 
 // This pipeline is meant to:
@@ -280,10 +271,16 @@ class IconLoadingPipeline : public base::RefCounted<IconLoadingPipeline> {
 
   void LoadIconFromResource(int icon_resource);
 
+#if defined(OS_CHROMEOS)
+  // For ARC icons, converts an icon png data to an ImageSkia using
+  // arc::IconDecodeRequest.
+  void LoadArcIconPngData(const std::vector<uint8_t>& icon_png_data);
+
   // For ARC icons, composite the foreground image and the background image,
   // then apply the mask.
-  void LoadCompositeImages(std::vector<uint8_t> foreground_data,
-                           std::vector<uint8_t> background_data);
+  void LoadCompositeImages(const std::vector<uint8_t>& foreground_data,
+                           const std::vector<uint8_t>& background_data);
+#endif  // OS_CHROMEOS
 
  private:
   friend class base::RefCounted<IconLoadingPipeline>;
@@ -294,7 +291,16 @@ class IconLoadingPipeline : public base::RefCounted<IconLoadingPipeline> {
     }
   }
 
-  void CompositeImagesAndApplyMask(bool is_foreground, gfx::ImageSkia image);
+#if defined(OS_CHROMEOS)
+  std::unique_ptr<arc::IconDecodeRequest> CreateArcIconDecodeRequest(
+      base::OnceCallback<void(const gfx::ImageSkia& icon)> callback,
+      const std::vector<uint8_t>& icon_png_data);
+
+  void ApplyBackgroundAndMask(const gfx::ImageSkia& image);
+
+  void CompositeImagesAndApplyMask(bool is_foreground,
+                                   const gfx::ImageSkia& image);
+#endif  // OS_CHROMEOS
 
   void MaybeApplyEffectsAndComplete(const gfx::ImageSkia image);
 
@@ -333,6 +339,12 @@ class IconLoadingPipeline : public base::RefCounted<IconLoadingPipeline> {
   bool foreground_is_set_ = false;
   bool background_is_set_ = false;
   base::OnceCallback<void(const gfx::ImageSkia& icon)> image_skia_callback_;
+
+#if defined(OS_CHROMEOS)
+  std::unique_ptr<arc::IconDecodeRequest> arc_icon_decode_request_;
+  std::unique_ptr<arc::IconDecodeRequest> arc_foreground_icon_decode_request_;
+  std::unique_ptr<arc::IconDecodeRequest> arc_background_icon_decode_request_;
+#endif  // OS_CHROMEOS
 };
 
 void IconLoadingPipeline::LoadWebAppIcon(
@@ -521,24 +533,52 @@ void IconLoadingPipeline::LoadIconFromResource(int icon_resource) {
   MaybeLoadFallbackOrCompleteEmpty();
 }
 
-void IconLoadingPipeline::LoadCompositeImages(
-    std::vector<uint8_t> foreground_data,
-    std::vector<uint8_t> background_data) {
 #if defined(OS_CHROMEOS)
-  apps::CompressedDataToImageSkiaCallback(
-      base::BindOnce(&IconLoadingPipeline::CompositeImagesAndApplyMask,
-                     base::WrapRefCounted(this), true /* is_foreground */))
-      .Run(std::move(foreground_data));
-  apps::CompressedDataToImageSkiaCallback(
-      base::BindOnce(&IconLoadingPipeline::CompositeImagesAndApplyMask,
-                     base::WrapRefCounted(this), false /* is_foreground */))
-      .Run(std::move(background_data));
-#endif  // OS_CHROMEOS
+void IconLoadingPipeline::LoadArcIconPngData(
+    const std::vector<uint8_t>& icon_png_data) {
+  arc_icon_decode_request_ = CreateArcIconDecodeRequest(
+      base::BindOnce(&IconLoadingPipeline::ApplyBackgroundAndMask,
+                     base::WrapRefCounted(this)),
+      icon_png_data);
 }
 
-void IconLoadingPipeline::CompositeImagesAndApplyMask(bool is_foreground,
-                                                      gfx::ImageSkia image) {
-#if defined(OS_CHROMEOS)
+void IconLoadingPipeline::LoadCompositeImages(
+    const std::vector<uint8_t>& foreground_data,
+    const std::vector<uint8_t>& background_data) {
+  arc_foreground_icon_decode_request_ = CreateArcIconDecodeRequest(
+      base::BindOnce(&IconLoadingPipeline::CompositeImagesAndApplyMask,
+                     base::WrapRefCounted(this), true /* is_foreground */),
+      foreground_data);
+
+  arc_background_icon_decode_request_ = CreateArcIconDecodeRequest(
+      base::BindOnce(&IconLoadingPipeline::CompositeImagesAndApplyMask,
+                     base::WrapRefCounted(this), false /* is_foreground */),
+      background_data);
+}
+
+std::unique_ptr<arc::IconDecodeRequest>
+IconLoadingPipeline::CreateArcIconDecodeRequest(
+    base::OnceCallback<void(const gfx::ImageSkia& icon)> callback,
+    const std::vector<uint8_t>& icon_png_data) {
+  std::unique_ptr<arc::IconDecodeRequest> arc_icon_decode_request =
+      std::make_unique<arc::IconDecodeRequest>(std::move(callback),
+                                               size_hint_in_dip_);
+  arc_icon_decode_request->StartWithOptions(icon_png_data);
+  return arc_icon_decode_request;
+}
+
+void IconLoadingPipeline::ApplyBackgroundAndMask(const gfx::ImageSkia& image) {
+  std::move(image_skia_callback_)
+      .Run(gfx::ImageSkiaOperations::CreateResizedImage(
+          gfx::ImageSkiaOperations::CreateButtonBackground(
+              SK_ColorWHITE, image, LoadMaskImage(image.size())),
+          skia::ImageOperations::RESIZE_LANCZOS3,
+          gfx::Size(size_hint_in_dip_, size_hint_in_dip_)));
+}
+
+void IconLoadingPipeline::CompositeImagesAndApplyMask(
+    bool is_foreground,
+    const gfx::ImageSkia& image) {
   if (is_foreground) {
     foreground_is_set_ = true;
     foreground_image_ = image;
@@ -564,8 +604,8 @@ void IconLoadingPipeline::CompositeImagesAndApplyMask(bool is_foreground,
               LoadMaskImage(image.size())),
           skia::ImageOperations::RESIZE_BEST,
           gfx::Size(size_hint_in_dip_, size_hint_in_dip_)));
-#endif  // OS_CHROMEOS
 }
+#endif  // OS_CHROMEOS
 
 void IconLoadingPipeline::MaybeApplyEffectsAndComplete(
     const gfx::ImageSkia image) {
@@ -761,10 +801,10 @@ void ArcRawIconPngDataToImageSkia(
       return;
     }
 
-    CompressedDataToImageSkiaCallback(base::BindOnce(&ApplyBackgroundAndMask,
-                                                     size_hint_in_dip,
-                                                     std::move(callback)))
-        .Run(std::move(icon->icon_png_data.value()));
+    scoped_refptr<IconLoadingPipeline> icon_loader =
+        base::MakeRefCounted<IconLoadingPipeline>(size_hint_in_dip,
+                                                  std::move(callback));
+    icon_loader->LoadArcIconPngData(icon->icon_png_data.value());
     return;
   }
 

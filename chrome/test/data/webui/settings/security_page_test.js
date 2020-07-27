@@ -33,6 +33,7 @@ suite('CrSettingsSecurityPageTestWithEnhanced', function() {
 
   suiteSetup(function() {
     loadTimeData.overrideValues({
+      enableSecurityKeysSubpage: true,
       safeBrowsingEnhancedEnabled: true,
     });
   });

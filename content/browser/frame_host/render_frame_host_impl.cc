@@ -1624,7 +1624,6 @@ bool RenderFrameHostImpl::OnMessageReceived(const IPC::Message& msg) {
 
   bool handled = true;
   IPC_BEGIN_MESSAGE_MAP(RenderFrameHostImpl, msg)
-    IPC_MESSAGE_HANDLER(FrameHostMsg_Detach, OnDetach)
     IPC_MESSAGE_HANDLER(FrameHostMsg_Unload_ACK, OnUnloadACK)
     IPC_MESSAGE_HANDLER(FrameHostMsg_ContextMenu, OnContextMenu)
     IPC_MESSAGE_HANDLER(FrameHostMsg_VisualStateResponse, OnVisualStateResponse)
@@ -2501,7 +2500,7 @@ void RenderFrameHostImpl::UpdateRenderProcessHostFramePriorities() {
   }
 }
 
-void RenderFrameHostImpl::OnDetach() {
+void RenderFrameHostImpl::Detach() {
   if (!parent_) {
     bad_message::ReceivedBadMessage(GetProcess(),
                                     bad_message::RFH_DETACH_MAIN_FRAME);
@@ -2516,16 +2515,16 @@ void RenderFrameHostImpl::OnDetach() {
     return;
   }
 
-  // Ignore FrameHostMsg_Detach IPC message, if the RenderFrameHost should be
-  // left in pending deletion state.
+  // Ignore Detach Mojo API, if the RenderFrameHost should be left in pending
+  // deletion state.
   if (do_not_delete_for_testing_)
     return;
 
   if (IsPendingDeletion()) {
-    // The frame is pending deletion. FrameHostMsg_Detach is used to confirm
-    // its unload handlers ran. Note that it is possible for a frame to already
-    // be in kReadyToBeDeleted. This happens when this RenderFrameHost is
-    // pending deletion and is waiting on one of its children to run its unload
+    // The frame is pending deletion. Detach Mojo API is used to confirm its
+    // unload handlers ran. Note that it is possible for a frame to already be
+    // in kReadyToBeDeleted. This happens when this RenderFrameHost is pending
+    // deletion and is waiting on one of its children to run its unload
     // handler. While running it, it can request its parent to detach itself.
     // See test: SitePerProcessBrowserTest.PartialUnloadHandler.
     if (lifecycle_state_ != LifecycleState::kReadyToBeDeleted)
@@ -3479,6 +3478,11 @@ void RenderFrameHostImpl::DoNotDeleteForTesting() {
 
 void RenderFrameHostImpl::ResumeDeletionForTesting() {
   do_not_delete_for_testing_ = false;
+}
+
+void RenderFrameHostImpl::DetachForTesting() {
+  do_not_delete_for_testing_ = false;
+  RenderFrameHostImpl::Detach();
 }
 
 bool RenderFrameHostImpl::IsFeatureEnabled(

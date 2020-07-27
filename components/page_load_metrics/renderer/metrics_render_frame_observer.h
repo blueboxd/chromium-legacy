@@ -83,7 +83,7 @@ class MetricsRenderFrameObserver
 
   // Invoked when a frame is going away. This is our last chance to send IPCs
   // before being destroyed.
-  void FrameDetached() override;
+  void WillDetach() override;
 
   // Set the ad resource tracker that |this| observes.
   void SetAdResourceTracker(

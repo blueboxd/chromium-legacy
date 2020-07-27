@@ -22,20 +22,6 @@ module chromeos.machine_learning.mojom;
 //       under mojo folder, that is, "mojo/public/mojom/base/time.mojom".
 import "mojo/public/mojom/base/time.mojom";
 
-// These values are persisted to logs. Entries should not be renumbered and
-// numeric values should never be reused.
-enum TextAnnotationResult {
-  OK = 0,
-  ERROR = 1,
-};
-
-// These values are persisted to logs. Entries should not be renumbered and
-// numeric values should never be reused.
-enum SuggestSelectionResult {
-  OK = 0,
-  ERROR = 1,
-};
-
 // Enum for specifying the annotation usecase.
 // Must be consistent with `AnnotationUsecase` in model.fb in libtextclassifier.
 enum AnnotationUsecase {
@@ -138,6 +124,14 @@ struct TextSuggestSelectionRequest {
   AnnotationUsecase annotation_usecase@4 = ANNOTATION_USECASE_SMART;
 };
 
+// Represent a language detection result.
+struct TextLanguage {
+  // The BCP-47 language code like "en", "fr", "zh" etc.
+  string locale;
+  // The confidence score of the language detected (range: 0~1).
+  float confidence;
+};
+
 // Used to annotate entities within text strings.
 interface TextClassifier {
   // Annotate a text string and returns the detected substrings and possible
@@ -151,4 +145,10 @@ interface TextClassifier {
   // UTF8 codepoints (not bytes).
   SuggestSelection@1(TextSuggestSelectionRequest request) =>
       (CodepointSpan outputs);
+  // Identify the languages the text is possibly written in.
+  // The returned results are sorted according to the confidence score, from the
+  // highest to the lowest.
+  // The maximum number of results returned is determined internally.
+  // Will return an empty array if the language can not be determined.
+  FindLanguages@2(string text) => (array<TextLanguage> outputs);
 };

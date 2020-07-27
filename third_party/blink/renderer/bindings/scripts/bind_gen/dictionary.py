@@ -372,9 +372,20 @@ def make_dict_member_get(cg_context):
     member = cg_context.dict_member
     blink_member_name = _blink_member_name(member)
     name = blink_member_name.get_api
-    blink_type = blink_type_info(member.idl_type)
+    idl_type = member.idl_type
+    blink_type = blink_type_info(idl_type)
     const_ref_t = blink_type.const_ref_t
     ref_t = blink_type.ref_t
+
+    # Since Blink conventionally prefers non-const references to const
+    # references for the certain types, makes const member's getters return a
+    # non-const reference.  For example, "Node* foo() const;" is preferable to
+    # "const Node* foo() const;".
+    if (idl_type.unwrap().is_interface
+            or idl_type.unwrap().is_callback_interface
+            or idl_type.unwrap().is_callback_function
+            or idl_type.unwrap().is_buffer_source_type):
+        const_ref_t = ref_t
 
     decls = ListNode()
     defs = ListNode()

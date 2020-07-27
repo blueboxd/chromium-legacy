@@ -72,8 +72,11 @@ class TestingProfileManager {
       base::Optional<std::unique_ptr<policy::PolicyService>> policy_service =
           base::nullopt);
 
-  // Small helper for creating testing profiles. Just forwards to above.
+  // Small helpers for creating testing profiles. Just forward to above.
   TestingProfile* CreateTestingProfile(const std::string& name);
+  TestingProfile* CreateTestingProfile(
+      const std::string& name,
+      TestingProfile::TestingFactories testing_factories);
 
   // Creates a new guest TestingProfile whose data lives in the guest profile
   // test environment directory, as specified by the profile manager.

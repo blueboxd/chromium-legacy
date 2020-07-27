@@ -187,7 +187,7 @@ class WebViewPlugin : public blink::WebPlugin,
     // WebLocalFrameClient methods:
     void BindToFrame(blink::WebNavigationControl* frame) override;
     void DidClearWindowObject() override;
-    void FrameDetached(DetachType) override;
+    void FrameDetached() override;
     std::unique_ptr<blink::WebURLLoaderFactory> CreateURLLoaderFactory()
         override;
 

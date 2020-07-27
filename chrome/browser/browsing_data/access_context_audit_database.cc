@@ -286,6 +286,58 @@ void AccessContextAuditDatabase::RemoveRecord(const AccessRecord& record) {
   remove_statement.Run();
 }
 
+void AccessContextAuditDatabase::RemoveAllRecords() {
+  // Perform deletions with the WHERE clause omitted to trigger the SQLite table
+  // truncation optimisation.
+  sql::Transaction transaction(&db_);
+  if (!transaction.Begin())
+    return;
+
+  std::string delete_cookies_table = "DELETE FROM ";
+  delete_cookies_table.append(kCookieTableName);
+  if (!db_.Execute(delete_cookies_table.c_str()))
+    return;
+
+  std::string delete_storage_api_table = "DELETE FROM ";
+  delete_storage_api_table.append(kStorageAPITableName);
+  if (!db_.Execute(delete_storage_api_table.c_str()))
+    return;
+
+  transaction.Commit();
+}
+
+void AccessContextAuditDatabase::RemoveAllRecordsForTimeRange(base::Time begin,
+                                                              base::Time end) {
+  sql::Transaction transaction(&db_);
+  if (!transaction.Begin())
+    return;
+
+  std::string remove = "DELETE FROM ";
+  remove.append(kCookieTableName);
+  remove.append(" WHERE access_utc BETWEEN ? AND ?");
+  sql::Statement remove_cookies(
+      db_.GetCachedStatement(SQL_FROM_HERE, remove.c_str()));
+  remove_cookies.BindInt64(0,
+                           begin.ToDeltaSinceWindowsEpoch().InMicroseconds());
+  remove_cookies.BindInt64(1, end.ToDeltaSinceWindowsEpoch().InMicroseconds());
+  if (!remove_cookies.Run())
+    return;
+
+  remove = "DELETE FROM ";
+  remove.append(kStorageAPITableName);
+  remove.append(" WHERE access_utc BETWEEN ? AND ?");
+  sql::Statement remove_storage_apis(
+      db_.GetCachedStatement(SQL_FROM_HERE, remove.c_str()));
+  remove_storage_apis.BindInt64(
+      0, begin.ToDeltaSinceWindowsEpoch().InMicroseconds());
+  remove_storage_apis.BindInt64(
+      1, end.ToDeltaSinceWindowsEpoch().InMicroseconds());
+  if (!remove_storage_apis.Run())
+    return;
+
+  transaction.Commit();
+}
+
 void AccessContextAuditDatabase::RemoveSessionOnlyRecords(
     scoped_refptr<content_settings::CookieSettings> cookie_settings,
     const ContentSettingsForOneType& content_settings) {
@@ -387,6 +439,41 @@ void AccessContextAuditDatabase::RemoveAllRecordsForOriginStorage(
   remove_statement.BindString(0, origin.Serialize());
   remove_statement.BindInt(1, static_cast<int>(type));
   remove_statement.Run();
+}
+
+void AccessContextAuditDatabase::RemoveAllRecordsForTopFrameOrigins(
+    const std::vector<url::Origin>& origins) {
+  sql::Transaction transaction(&db_);
+  if (!transaction.Begin())
+    return;
+
+  // Remove all records with a top frame origin present in |origins| from both
+  // the cookies and storage API tables.
+  std::string remove = "DELETE FROM ";
+  remove.append(kCookieTableName);
+  remove.append(" WHERE top_frame_origin = ?");
+  sql::Statement remove_cookies(
+      db_.GetCachedStatement(SQL_FROM_HERE, remove.c_str()));
+
+  remove = "DELETE FROM ";
+  remove.append(kStorageAPITableName);
+  remove.append(" WHERE top_frame_origin = ?");
+  sql::Statement remove_storage_apis(
+      db_.GetCachedStatement(SQL_FROM_HERE, remove.c_str()));
+
+  for (const auto& origin : origins) {
+    remove_storage_apis.BindString(0, origin.Serialize());
+    if (!remove_storage_apis.Run())
+      return;
+    remove_storage_apis.Reset(true);
+
+    remove_cookies.BindString(0, origin.Serialize());
+    if (!remove_cookies.Run())
+      return;
+    remove_cookies.Reset(true);
+  }
+
+  transaction.Commit();
 }
 
 std::vector<AccessContextAuditDatabase::AccessRecord>

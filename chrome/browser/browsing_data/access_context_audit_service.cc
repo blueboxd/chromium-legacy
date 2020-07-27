@@ -7,6 +7,7 @@
 #include "base/sequenced_task_runner.h"
 #include "base/task/post_task.h"
 #include "base/task/thread_pool.h"
+#include "base/time/default_clock.h"
 #include "base/time/time.h"
 #include "chrome/browser/browsing_data/access_context_audit_database.h"
 #include "chrome/browser/content_settings/cookie_settings_factory.h"
@@ -16,12 +17,13 @@
 #include "content/public/browser/storage_partition.h"
 
 AccessContextAuditService::AccessContextAuditService(Profile* profile)
-    : profile_(profile) {}
+    : clock_(base::DefaultClock::GetInstance()), profile_(profile) {}
 AccessContextAuditService::~AccessContextAuditService() = default;
 
 bool AccessContextAuditService::Init(
     const base::FilePath& database_dir,
-    network::mojom::CookieManager* cookie_manager) {
+    network::mojom::CookieManager* cookie_manager,
+    history::HistoryService* history_service) {
   database_ = base::MakeRefCounted<AccessContextAuditDatabase>(database_dir);
 
   // Tests may have provided a task runner already.
@@ -41,14 +43,14 @@ bool AccessContextAuditService::Init(
 
   cookie_manager->AddGlobalChangeListener(
       cookie_listener_receiver_.BindNewPipeAndPassRemote());
-
+  history_observer_.Add(history_service);
   return true;
 }
 
 void AccessContextAuditService::RecordCookieAccess(
     const net::CookieList& accessed_cookies,
     const url::Origin& top_frame_origin) {
-  auto now = base::Time::Now();
+  auto now = clock_->Now();
   std::vector<AccessContextAuditDatabase::AccessRecord> access_records;
   for (const auto& cookie : accessed_cookies) {
     // Do not record accesses to already expired cookies. This service is
@@ -70,8 +72,8 @@ void AccessContextAuditService::RecordStorageAPIAccess(
     AccessContextAuditDatabase::StorageAPIType type,
     const url::Origin& top_frame_origin) {
   std::vector<AccessContextAuditDatabase::AccessRecord> access_record = {
-      AccessContextAuditDatabase::AccessRecord(
-          top_frame_origin, type, storage_origin, base::Time::Now())};
+      AccessContextAuditDatabase::AccessRecord(top_frame_origin, type,
+                                               storage_origin, clock_->Now())};
   database_task_runner_->PostTask(
       FROM_HERE, base::BindOnce(&AccessContextAuditDatabase::AddRecords,
                                 database_, std::move(access_record)));
@@ -109,6 +111,53 @@ void AccessContextAuditService::OnCookieChange(
                          change.cookie.Domain(), change.cookie.Path()));
     }
   }
+}
+
+void AccessContextAuditService::OnURLsDeleted(
+    history::HistoryService* history_service,
+    const history::DeletionInfo& deletion_info) {
+  if (deletion_info.IsAllHistory()) {
+    database_task_runner_->PostTask(
+        FROM_HERE, base::BindOnce(&AccessContextAuditDatabase::RemoveAllRecords,
+                                  database_));
+    return;
+  }
+
+  if (deletion_info.time_range().IsValid()) {
+    // If a time range is specified, a time based deletion is performed as a
+    // first pass before origins without history entries are removed. A second
+    // pass based on origins is required as access record timestamps are not
+    // directly comparable to history timestamps. Only deleting based on
+    // timestamp may persist origins on disk for which no other trace exists.
+    database_task_runner_->PostTask(
+        FROM_HERE,
+        base::BindOnce(
+            &AccessContextAuditDatabase::RemoveAllRecordsForTimeRange,
+            database_, deletion_info.time_range().begin(),
+            deletion_info.time_range().end()));
+  }
+
+  std::vector<url::Origin> deleted_origins;
+  // Map is of type {Origin -> {Count, LastVisitTime}}.
+  for (const auto& origin_urls_remaining :
+       deletion_info.deleted_urls_origin_map()) {
+    if (origin_urls_remaining.second.first > 0)
+      continue;
+    deleted_origins.emplace_back(
+        url::Origin::Create(origin_urls_remaining.first));
+  }
+
+  if (deleted_origins.size() > 0) {
+    database_task_runner_->PostTask(
+        FROM_HERE,
+        base::BindOnce(
+            &AccessContextAuditDatabase::RemoveAllRecordsForTopFrameOrigins,
+            database_, std::move(deleted_origins)));
+  }
+}
+
+void AccessContextAuditService::SetClockForTesting(base::Clock* clock) {
+  clock_ = clock;
 }
 
 void AccessContextAuditService::SetTaskRunnerForTesting(

@@ -467,7 +467,14 @@ void LocalFrameClientImpl::Detached(FrameDetachType type) {
   // place at this point since we are no longer associated with the Page.
   web_frame_->SetClient(nullptr);
 
-  client->FrameDetached(static_cast<WebLocalFrameClient::DetachType>(type));
+  client->WillDetach();
+
+  // We only notify the browser process when the frame is being detached for
+  // removal, not after a swap.
+  if (type == FrameDetachType::kRemove)
+    web_frame_->GetFrame()->GetLocalFrameHostRemote().Detach();
+
+  client->FrameDetached();
 
   if (type == FrameDetachType::kRemove)
     web_frame_->DetachFromParent();

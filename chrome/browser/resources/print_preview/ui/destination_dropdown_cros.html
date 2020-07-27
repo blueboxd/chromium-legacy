@@ -101,7 +101,9 @@
   }
 </style>
 <div id="destination-dropdown" on-keydown="onKeyDown_" tabindex="0"
-    on-blur="onBlur_" on-click="onClick_" role="button" aria-haspopup="true">
+    on-blur="onBlur_" on-click="onClick_" role="button" aria-haspopup="true"
+    aria-label="$i18n{destinationLabel} [[value.displayName]]"
+    aria-description$="[[destinationStatusText]]">
   <div id="destination-display-container">
     <div id="destination-icon-box">
       <iron-icon icon="[[destinationIcon]]"
@@ -126,7 +128,9 @@
               on-click="onSelect_" on-blur="onBlur_" role="menuitem"
               aria-setsize$="[[dropdownLength_]]"
               class$="list-item [[getHighlightedClass_(item.key,
-                  highlightedIndex_)]]">
+                  highlightedIndex_)]]"
+              aria-description$="[[getPrinterStatusErrorString_(
+                  item.printerStatusReason)]]">
             <printer-status-icon-cros icon-location="[[IconLocation.DROPDOWN]]"
                 printer-state="[[computePrinterState_(
                     item.printerStatusReason)]]"
@@ -157,7 +161,7 @@
           $i18n{noDestinationsMessage}
         </button>
         <button on-click="onSelect_" tabindex="-1" value="seeMore"
-          aria-label$="[[i18n(seeMoreDestinationsLabel)]]" on-blur="onBlur_"
+          aria-label="$i18n{seeMoreDestinationsLabel}" on-blur="onBlur_"
           role="menuitem" aria-setsize$="[[dropdownLength_]]"
           class$="list-item [[getHighlightedClass_('seeMore',
               highlightedIndex_)]]">

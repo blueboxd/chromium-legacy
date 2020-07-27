@@ -10,10 +10,11 @@ import 'chrome://resources/polymer/v3_0/iron-icon/iron-icon.js';
 
 import './print_preview_vars_css.js';
 
+import {I18nBehavior} from 'chrome://resources/js/i18n_behavior.m.js';
 import {html, Polymer} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
 
 import {Destination, DestinationOrigin} from '../data/destination.js';
-import {PrinterStatusReason} from '../data/printer_status_cros.js';
+import {ERROR_STRING_KEY_MAP, PrinterStatusReason} from '../data/printer_status_cros.js';
 
 import {IconLocation, PrinterState} from './printer_status_icon_cros.js';
 
@@ -21,6 +22,8 @@ Polymer({
   is: 'print-preview-destination-dropdown-cros',
 
   _template: html`{__html_template__}`,
+
+  behaviors: [I18nBehavior],
 
   properties: {
     /** @type {!Destination} */
@@ -67,6 +70,8 @@ Polymer({
       computed:
           'computeDropdownLength_(itemList, pdfPrinterDisabled, driveDestinationKey, noDestinations, )',
     },
+
+    destinationStatusText: String,
   },
 
   listeners: {
@@ -332,5 +337,15 @@ Polymer({
       length++;
     }
     return length;
+  },
+
+  /**
+   * @param {!PrinterStatusReason} printerStatusReason
+   * @return {string}
+   * @private
+   */
+  getPrinterStatusErrorString_: function(printerStatusReason) {
+    const errorStringKey = ERROR_STRING_KEY_MAP.get(printerStatusReason);
+    return errorStringKey ? this.i18n(errorStringKey) : '';
   },
 });

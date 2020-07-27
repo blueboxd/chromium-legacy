@@ -1,3 +1,6 @@
+# TODO(crbug.com/1109635): Enable this.
+-AllSupportedProfilesAndTokensTypes/PlatformKeysServicePerUnavailableTokenBrowserTest.GenerateRsa/0
+
 # TODO(crbug.com/979355): Enable this.
 -AutotestPrivateWithPolicyApiTest.PolicyAPITest
 

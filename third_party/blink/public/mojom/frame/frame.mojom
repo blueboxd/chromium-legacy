@@ -418,6 +418,9 @@ interface LocalFrameHost {
   // requests in-flight.
   CapturePaintPreviewOfSubframe(
     gfx.mojom.Rect clip_rect, mojo_base.mojom.UnguessableToken guid);
+
+  // Notifies the browser that a child frame is detached from the DOM.
+  Detach();
 };
 
 // Implemented in Blink, this interface defines frame-specific methods that will
@@ -701,6 +704,9 @@ interface RemoteFrameHost {
   // parent frame.
   PrintCrossProcessSubframe(
       gfx.mojom.Rect frame_content_rect, int32 document_cookie);
+
+  // Notifies the browser that a child frame is detached from the DOM.
+  Detach();
 };
 
 // Implemented in Blink, this interface defines frame-specific methods that will

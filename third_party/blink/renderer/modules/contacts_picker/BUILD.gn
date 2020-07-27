@@ -13,4 +13,5 @@ blink_modules_sources("contacts_picker") {
     "navigator_contacts.cc",
     "navigator_contacts.h",
   ]
+  deps = [ "//third_party/blink/renderer/modules/payments" ]
 }

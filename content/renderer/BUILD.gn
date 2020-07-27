@@ -100,8 +100,6 @@ target(link_target_type, "renderer") {
     "java/gin_java_function_invocation_helper.h",
     "loader/child_url_loader_factory_bundle.cc",
     "loader/child_url_loader_factory_bundle.h",
-    "loader/internet_disconnected_web_url_loader.cc",
-    "loader/internet_disconnected_web_url_loader.h",
     "loader/navigation_body_loader.cc",
     "loader/navigation_body_loader.h",
     "loader/navigation_response_override_parameters.cc",

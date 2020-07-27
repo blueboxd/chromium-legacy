@@ -2,7 +2,7 @@
 
 :host([is-current-destination-cros-local_]) #statusText {
   color: var(--google-red-600);
-  font-weight: 500;
+  font-size: calc(10 / 13 * 1em);
   padding: 0;
 }
 
@@ -15,7 +15,7 @@
     </div>
     <template is="dom-if" if="[[!printerStatusFlagEnabled_]]">
       <select id="dropdown" class="md-select"
-          aria-label$="[[i18n(destinationLabel)]]" hidden$="[[!loaded]]"
+          aria-label="$i18n{destinationLabel}" hidden$="[[!loaded]]"
           style="background-image:[[backgroundImages_]];"
           disabled$="[[disabled]]"
           value="{{selectedValue::change}}">
@@ -34,7 +34,7 @@
           $i18n{noDestinationsMessage}
         </option>
         <option value="seeMore"
-            aria-label$="[[i18n(seeMoreDestinationsLabel)]]">
+            aria-label="$i18n{seeMoreDestinationsLabel}">
           $i18n{seeMore}
         </option>
       </select>
@@ -49,7 +49,8 @@
           pdf-printer-disabled="[[pdfPrinterDisabled]]"
           destination-icon="[[destinationIcon_]]" disabled="[[disabled]]"
           is-current-destination-cros-local="[[isCurrentDestinationCrosLocal_]]"
-          on-dropdown-value-selected="onDropdownValueSelected_">
+          on-dropdown-value-selected="onDropdownValueSelected_"
+          destination-status-text="[[statusText_]]">
       </print-preview-destination-dropdown-cros>
     </template>
   </div>
@@ -58,7 +59,8 @@
     hidden$="[[!statusText_]]">
   <div slot="title"></div>
   <div slot="controls">
-    <div id="statusText" class="destination-status" title="[[statusText_]]">
+    <div id="statusText" class="destination-status" title="[[statusText_]]"
+        aria-hidden="true">
         [[statusText_]]
     </div>
   </div>

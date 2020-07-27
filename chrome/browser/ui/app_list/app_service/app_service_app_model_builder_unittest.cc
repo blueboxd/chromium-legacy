@@ -697,7 +697,8 @@ TEST_P(CrostiniAppTest, CreatesFolder) {
   // (rather than use a full browser test).
   auto metadata = std::make_unique<ash::AppListItemMetadata>();
   metadata->id = crostini::kCrostiniFolderId;
-  GetModelUpdater()->OnFolderCreated(std::move(metadata));
+  metadata->is_folder = true;
+  GetModelUpdater()->OnItemAdded(std::move(metadata));
 
   EXPECT_THAT(GetAllApps(),
               testing::UnorderedElementsAre(

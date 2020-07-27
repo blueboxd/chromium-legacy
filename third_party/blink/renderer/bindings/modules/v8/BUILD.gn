@@ -236,8 +236,9 @@ blink_modules_sources("bindings_modules_impl") {
         get_target_outputs(":bindings_modules_v8_generated_init_partial") +
         get_target_outputs(":bindings_modules_origin_trial_features")
   }
-
-  sources += generated_modules_dictionary_files
+  if (use_v8_bind_gen_for_dictionary) {
+    sources += generated_dictionary_sources_in_modules
+  }
 
   deps = [
     ":bindings_modules_origin_trial_features",

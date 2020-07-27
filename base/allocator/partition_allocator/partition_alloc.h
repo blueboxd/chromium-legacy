@@ -74,7 +74,6 @@
 #include "base/no_destructor.h"
 #include "base/notreached.h"
 #include "base/partition_alloc_buildflags.h"
-#include "base/rand_util.h"
 #include "base/stl_util.h"
 #include "base/synchronization/lock.h"
 #include "base/sys_byteorder.h"
@@ -504,14 +503,6 @@ struct BASE_EXPORT PartitionRoot {
 
   internal::PartitionBucket<thread_safe>* SizeToBucket(size_t size) const;
 
- private:
-  ALWAYS_INLINE void* AllocFromBucket(Bucket* bucket, int flags, size_t size)
-      EXCLUSIVE_LOCKS_REQUIRED(lock_);
-  bool ReallocDirectMappedInPlace(internal::PartitionPage<thread_safe>* page,
-                                  size_t raw_size)
-      EXCLUSIVE_LOCKS_REQUIRED(lock_);
-  void DecommitEmptyPages() EXCLUSIVE_LOCKS_REQUIRED(lock_);
-
   ALWAYS_INLINE internal::PartitionTag GetNewPartitionTag()
       EXCLUSIVE_LOCKS_REQUIRED(lock_) {
 #if ENABLE_TAG_FOR_CHECKED_PTR2 || ENABLE_TAG_FOR_MTE_CHECKED_PTR
@@ -522,6 +513,14 @@ struct BASE_EXPORT PartitionRoot {
     return 0;
 #endif
   }
+
+ private:
+  ALWAYS_INLINE void* AllocFromBucket(Bucket* bucket, int flags, size_t size)
+      EXCLUSIVE_LOCKS_REQUIRED(lock_);
+  bool ReallocDirectMappedInPlace(internal::PartitionPage<thread_safe>* page,
+                                  size_t raw_size)
+      EXCLUSIVE_LOCKS_REQUIRED(lock_);
+  void DecommitEmptyPages() EXCLUSIVE_LOCKS_REQUIRED(lock_);
 };
 
 template <bool thread_safe>
@@ -604,12 +603,16 @@ ALWAYS_INLINE void* PartitionRoot<thread_safe>::AllocFromBucket(Bucket* bucket,
     memset(ret, 0, size_with_no_extras);
   }
 
+  // Do not set tag for MTECheckedPtr in the set-tag-at-free case.
+  // It is set only at Free() time and at slot span allocation time.
+#if !ENABLE_TAG_FOR_MTE_CHECKED_PTR || !MTE_CHECKED_PTR_SET_TAG_AT_FREE
   if (allow_extras && !bucket->is_direct_mapped()) {
     size_t slot_size_with_no_extras = internal::PartitionSizeAdjustSubtract(
         allow_extras, page->bucket->slot_size);
     internal::PartitionTagSetValue(ret, slot_size_with_no_extras,
                                    GetNewPartitionTag());
   }
+#endif
 
   return ret;
 }
@@ -636,8 +639,11 @@ ALWAYS_INLINE void PartitionRoot<thread_safe>::Free(void* ptr) {
   if (root->allow_extras && !page->bucket->is_direct_mapped()) {
     size_t size_with_no_extras = internal::PartitionSizeAdjustSubtract(
         root->allow_extras, page->bucket->slot_size);
-    // TODO(tasak): clear partition tag. Temporarily set the tag to be 0.
+#if ENABLE_TAG_FOR_MTE_CHECKED_PTR && MTE_CHECKED_PTR_SET_TAG_AT_FREE
+    internal::PartitionTagIncrementValue(ptr, size_with_no_extras);
+#else
     internal::PartitionTagClearValue(ptr, size_with_no_extras);
+#endif
   }
   ptr = internal::PartitionPointerAdjustSubtract(root->allow_extras, ptr);
   internal::DeferredUnmap deferred_unmap;

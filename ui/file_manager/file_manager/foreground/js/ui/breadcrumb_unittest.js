@@ -330,6 +330,40 @@ function testBreadcrumbMoreThanFourElementPathsElide() {
 }
 
 /**
+ * Tests rendering a path where the path parts have escaped characters. Again,
+ * the elider should be visible (not hidden and have display) because the path
+ * has more than four parts.
+ *
+ * The drop-down menu button should contain the elided path parts and can have
+ * display, but are invisible because the elider drop-down menu is closed.
+ */
+function testBreadcrumbRendersEscapedPathParts() {
+  const element = getBreadCrumb();
+
+  // Set path.
+  element.path = 'A%2FA/B%2FB/C %2F/%2FD /%2F%2FE/Nexus%2FPixel %28MTP%29';
+
+  // Elider button drop-down menu should be in the 'closed' state.
+  const elider = getBreadCrumbEliderButton();
+  assertEquals('false', elider.getAttribute('aria-expanded'));
+
+  // clang-format off
+  const expect = element.path +
+     ' 1: display:block id=first text=[A/A]' +
+     ' 2: display:flex elider[aria-expanded=false,aria-haspopup,aria-label]' +
+     ' dropdown-item: display:block text=[B/B]' +
+     ' dropdown-item: display:block text=[C /]' +
+     ' dropdown-item: display:block text=[/D ]' +
+     ' 3: display:none id=second hidden' +
+     ' 4: display:block id=third text=[//E]' +
+     ' 5: display:block id=fourth text=[Nexus/Pixel (MTP)]';
+  // clang-format on
+
+  const path = element.parts.join('/');
+  assertEquals(expect, path + ' ' + getBreadCrumbButtonState());
+}
+
+/**
  * Tests rendering a path of more than four parts. The elider button should be
  * visible and clicking it should 'open' and 'close' its drop-down menu.
  */

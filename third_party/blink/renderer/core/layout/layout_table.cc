@@ -60,7 +60,6 @@ LayoutTable::LayoutTable(Element* element)
       needs_adjust_collapsed_border_joints_(false),
       needs_invalidate_collapsed_borders_for_all_cells_(false),
       collapsed_outer_borders_valid_(false),
-      should_paint_all_collapsed_borders_(false),
       is_any_column_ever_collapsed_(false),
       has_col_elements_(false),
       needs_section_recalc_(false),
@@ -1675,13 +1674,11 @@ void LayoutTable::EnsureIsReadyForPaintInvalidation() {
   collapsed_borders_valid_ = true;
   has_collapsed_borders_ = false;
   needs_adjust_collapsed_border_joints_ = false;
-  should_paint_all_collapsed_borders_ = false;
   if (!ShouldCollapseBorders())
     return;
 
   CollapsedBorderValue first_border;
   for (auto* section = TopSection(); section; section = SectionBelow(section)) {
-    bool section_may_be_composited = section->IsPaintInvalidationContainer();
     for (auto* row = section->FirstRow(); row; row = row->NextRow()) {
       for (auto* cell = row->FirstCell(); cell; cell = cell->NextCell()) {
         DCHECK_EQ(cell->Table(), this);
@@ -1706,18 +1703,6 @@ void LayoutTable::EnsureIsReadyForPaintInvalidation() {
             break;
           }
         }
-      }
-
-      // Collapsed borders should always be painted on the table's backing.
-      // If any row is not on the same composited layer as the table, the table
-      // should paint all collapsed borders.
-      if (has_collapsed_borders_ &&
-          (section_may_be_composited || row->IsPaintInvalidationContainer())) {
-        // Pass the row's paint invalidation flag to the table in case that the
-        // flag was set for collapsed borders.
-        if (row->ShouldDoFullPaintInvalidation())
-          SetShouldDoFullPaintInvalidation(PaintInvalidationReason::kStyle);
-        should_paint_all_collapsed_borders_ = true;
       }
     }
   }

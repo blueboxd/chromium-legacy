@@ -42,9 +42,10 @@ DecoderTemplate<Traits>::DecoderTemplate(ScriptState* script_state,
                                          ExceptionState& exception_state)
     : script_state_(script_state) {
   DVLOG(1) << __func__;
+  // TODO(crbug.com/1070871): Use fooOr(nullptr).
   // TODO(sandersd): Is it an error to not provide all callbacks?
-  output_cb_ = init->output();
-  error_cb_ = init->error();
+  output_cb_ = init->hasOutput() ? init->output() : nullptr;
+  error_cb_ = init->hasError() ? init->error() : nullptr;
 }
 
 template <typename Traits>

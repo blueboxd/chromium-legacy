@@ -259,6 +259,10 @@ ALWAYS_INLINE void* PartitionBucket<thread_safe>::AllocNewSlotSpan(
                            PageReadWrite);
       root->next_tag_bitmap_page = next_tag_bitmap_page;
     }
+#if MTE_CHECKED_PTR_SET_TAG_AT_FREE
+    // TODO(tasak): Consider initializing each slot with a different tag.
+    PartitionTagSetValue(ret, total_size, root->GetNewPartitionTag());
+#endif
 #endif
     return ret;
   }
@@ -323,6 +327,10 @@ ALWAYS_INLINE void* PartitionBucket<thread_safe>::AllocNewSlotSpan(
   PA_DCHECK(next_tag_bitmap_page <= ret);
   SetSystemPagesAccess(next_tag_bitmap_page, ret - next_tag_bitmap_page,
                        PageInaccessible);
+#if MTE_CHECKED_PTR_SET_TAG_AT_FREE
+  // TODO(tasak): Consider initializing each slot with a different tag.
+  PartitionTagSetValue(ret, total_size, root->GetNewPartitionTag());
+#endif
   root->next_tag_bitmap_page = next_tag_bitmap_page;
 #endif
 

@@ -36,4 +36,9 @@ blink_modules_sources("push_messaging") {
     "service_worker_registration_push.cc",
     "service_worker_registration_push.h",
   ]
+  deps = [
+    "//third_party/blink/renderer/modules/manifest",
+    "//third_party/blink/renderer/modules/permissions",
+    "//third_party/blink/renderer/modules/service_worker",
+  ]
 }

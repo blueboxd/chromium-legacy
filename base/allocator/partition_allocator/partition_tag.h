@@ -147,6 +147,24 @@ ALWAYS_INLINE void PartitionTagClearValue(void* ptr, size_t size) {
   memset(PartitionTagPointer(ptr), 0, tag_region_size);
 }
 
+ALWAYS_INLINE void PartitionTagIncrementValue(void* ptr, size_t size) {
+  PartitionTag tag = PartitionTagGetValue(ptr);
+  PartitionTag new_tag = tag;
+  ++new_tag;
+  new_tag += !new_tag;  // Avoid 0.
+#if DCHECK_IS_ON()
+  // This verifies that tags for the entire slot have the same value and that
+  // |size| doesn't exceed the slot size.
+  size_t tag_count = size >> tag_bitmap::kBytesPerPartitionTagShift;
+  PartitionTag* tag_ptr = PartitionTagPointer(ptr);
+  while (tag_count-- > 0) {
+    PA_DCHECK(tag == *tag_ptr);
+    tag_ptr++;
+  }
+#endif
+  PartitionTagSetValue(ptr, size, new_tag);
+}
+
 #elif ENABLE_TAG_FOR_SINGLE_TAG_CHECKED_PTR
 
 using PartitionTag = uint8_t;

@@ -158,7 +158,7 @@ void FormTracker::DidStartNavigation(
   }
 }
 
-void FormTracker::FrameDetached() {
+void FormTracker::WillDetach() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(form_tracker_sequence_checker_);
   FireInferredFormSubmission(SubmissionSource::FRAME_DETACHED);
 }

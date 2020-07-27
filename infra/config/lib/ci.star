@@ -551,12 +551,12 @@ def chromium_builder(*, name, tree_closing=True, **kwargs):
   )
 
 
-def chromiumos_builder(*, name, **kwargs):
+def chromiumos_builder(*, name, tree_closing=True, **kwargs):
   return ci_builder(
       name = name,
       mastername = 'chromium.chromiumos',
       goma_backend = builders.goma.backend.RBE_PROD,
-      tree_closing = True,
+      tree_closing = tree_closing,
       **kwargs
   )
 
@@ -833,6 +833,7 @@ def mac_builder(
     cores=None,
     goma_backend=builders.goma.backend.RBE_PROD,
     os=builders.os.MAC_DEFAULT,
+    tree_closing=True,
     **kwargs):
   return ci.builder(
       name = name,
@@ -840,7 +841,7 @@ def mac_builder(
       goma_backend = goma_backend,
       mastername = 'chromium.mac',
       os = os,
-      tree_closing = True,
+      tree_closing = tree_closing,
       **kwargs
   )
 
@@ -945,13 +946,14 @@ def thin_tester(
     name,
     mastername,
     triggered_by,
+    tree_closing=True,
     **kwargs):
   return ci.builder(
       name = name,
       mastername = mastername,
       triggered_by = triggered_by,
       goma_backend = None,
-      tree_closing = True,
+      tree_closing = tree_closing,
       **kwargs
   )
 

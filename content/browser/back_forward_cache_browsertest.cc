@@ -3276,41 +3276,6 @@ std::unique_ptr<net::test_server::HttpResponse> RequestHandlerForUpdateWorker(
 
 }  // namespace
 
-IN_PROC_BROWSER_TEST_F(BackForwardCacheBrowserTest,
-                       DoesNotCachePagesWithServiceWorkers) {
-  ASSERT_TRUE(CreateHttpsServer()->Start());
-
-  // 1) Navigate to A.
-  EXPECT_TRUE(NavigateToURL(
-      shell(),
-      https_server()->GetURL("a.com", "/back_forward_cache/empty.html")));
-
-  // Register a service worker.
-  RegisterServiceWorker(current_frame_host());
-
-  RenderFrameHostImpl* rfh_a = current_frame_host();
-  RenderFrameDeletedObserver deleted(rfh_a);
-
-  // 2) Navigate away.
-  shell()->LoadURL(https_server()->GetURL("b.com", "/title1.html"));
-
-  // The page is controlled by a service worker, so it shouldn't have been
-  // cached.
-  deleted.WaitUntilDeleted();
-
-  ExpectOutcomeDidNotChange(FROM_HERE);
-
-  // 3) Go back to A.
-  web_contents()->GetController().GoBack();
-  EXPECT_TRUE(WaitForLoadStop(shell()->web_contents()));
-  ExpectNotRestored(
-      {BackForwardCacheMetrics::NotRestoredReason::kBlocklistedFeatures},
-      FROM_HERE);
-  ExpectBlocklistedFeature(blink::scheduler::WebSchedulerTrackedFeature::
-                               kServiceWorkerControlledPage,
-                           FROM_HERE);
-}
-
 class BackForwardCacheBrowserTestWithVibration
     : public BackForwardCacheBrowserTest,
       public device::mojom::VibrationManager {

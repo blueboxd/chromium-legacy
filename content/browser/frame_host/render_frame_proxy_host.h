@@ -171,6 +171,7 @@ class CONTENT_EXPORT RenderFrameProxyHost
       blink::TransferableMessage message) override;
   void PrintCrossProcessSubframe(const gfx::Rect& rect,
                                  int document_cookie) override;
+  void Detach() override;
 
   // blink::mojom::RemoteMainFrameHost overrides:
   void FocusPage() override;
@@ -199,9 +200,6 @@ class CONTENT_EXPORT RenderFrameProxyHost
  private:
   // The interceptor needs access to frame_host_receiver_for_testing().
   friend class RouteMessageEventInterceptor;
-
-  // IPC Message handlers.
-  void OnDetach();
 
   // IPC::Listener
   void OnAssociatedInterfaceRequest(

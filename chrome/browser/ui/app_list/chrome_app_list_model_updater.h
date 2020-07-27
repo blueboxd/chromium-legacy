@@ -96,11 +96,9 @@ class ChromeAppListModelUpdater : public AppListModelUpdater {
   void NotifyProcessSyncChangesFinished() override;
 
   // Methods to handle model update from ash:
-  void OnFolderCreated(std::unique_ptr<ash::AppListItemMetadata> item) override;
-  void OnFolderDeleted(std::unique_ptr<ash::AppListItemMetadata> item) override;
+  void OnItemAdded(std::unique_ptr<ash::AppListItemMetadata> item) override;
   void OnItemUpdated(std::unique_ptr<ash::AppListItemMetadata> item) override;
-  void OnPageBreakItemAdded(const std::string& id,
-                            const syncer::StringOrdinal& position) override;
+  void OnFolderDeleted(std::unique_ptr<ash::AppListItemMetadata> item) override;
   void OnPageBreakItemDeleted(const std::string& id) override;
 
   void AddObserver(AppListModelUpdaterObserver* observer) override;

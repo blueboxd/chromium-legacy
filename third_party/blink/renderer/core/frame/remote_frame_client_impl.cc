@@ -57,6 +57,11 @@ void RemoteFrameClientImpl::Detached(FrameDetachType type) {
   if (!client)
     return;
 
+  // We only notify the browser process when the frame is being detached for
+  // removal, not after a swap.
+  if (type == FrameDetachType::kRemove)
+    web_frame_->GetFrame()->GetRemoteFrameHostRemote().Detach();
+
   client->FrameDetached(static_cast<WebRemoteFrameClient::DetachType>(type));
 
   if (web_frame_->Parent()) {

@@ -7,6 +7,7 @@ package org.chromium.chrome.browser.sync;
 import androidx.annotation.AnyThread;
 
 import org.chromium.base.ThreadUtils;
+import org.chromium.components.signin.base.GoogleServiceAuthError;
 import org.chromium.content_public.browser.test.util.TestThreadUtils;
 
 import java.util.HashSet;

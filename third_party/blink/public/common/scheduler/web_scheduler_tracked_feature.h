@@ -43,9 +43,8 @@ enum class WebSchedulerTrackedFeature {
   // specific context types down below.
   kOutstandingNetworkRequestOthers = 15,
 
-  // TODO(altimin): This doesn't include service worker-controlled origins.
-  // We need to track them too.
-  kServiceWorkerControlledPage = 16,
+  // kServiceWorkerControlledPage = 16. Removed after implementing ServiceWorker
+  // support.
 
   kOutstandingIndexedDBTransaction = 17,
 

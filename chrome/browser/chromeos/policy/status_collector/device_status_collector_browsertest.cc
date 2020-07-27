@@ -184,6 +184,10 @@ constexpr uint64_t kFakeStorageReadTimeSeconds = 23570;
 constexpr uint64_t kFakeStorageWriteTimeSeconds = 5768;
 constexpr uint64_t kFakeStorageIoTimeSeconds = 709;
 constexpr uint64_t kFakeStorageDiscardTimeSeconds = 9869;
+constexpr uint16_t kFakeOemid = 274;
+constexpr uint64_t kFakePnm = 8321204;
+constexpr uint8_t kFakePrv = 5;
+constexpr uint64_t kFakeFwrev = 1704189236;
 // Timezone test values:
 constexpr char kPosixTimezone[] = "MST7MDT,M3.2.0,M11.1.0";
 constexpr char kTimezoneRegion[] = "America/Denver";
@@ -488,11 +492,17 @@ cros_healthd::BatteryResultPtr CreateBatteryResult() {
 cros_healthd::NonRemovableBlockDeviceResultPtr CreateBlockDeviceResult() {
   std::vector<cros_healthd::NonRemovableBlockDeviceInfoPtr> storage_vector;
   storage_vector.push_back(cros_healthd::NonRemovableBlockDeviceInfo::New(
-      kFakeStoragePath, kFakeStorageSize, kFakeStorageType, kFakeStorageManfid,
-      kFakeStorageName, kFakeStorageSerial, kFakeStorageBytesRead,
-      kFakeStorageBytesWritten, kFakeStorageReadTimeSeconds,
-      kFakeStorageWriteTimeSeconds, kFakeStorageIoTimeSeconds,
-      cros_healthd::UInt64Value::New(kFakeStorageDiscardTimeSeconds)));
+      kFakeStorageBytesRead, kFakeStorageBytesWritten,
+      kFakeStorageReadTimeSeconds, kFakeStorageWriteTimeSeconds,
+      kFakeStorageIoTimeSeconds,
+      cros_healthd::UInt64Value::New(kFakeStorageDiscardTimeSeconds),
+      cros_healthd::BlockDeviceVendor::NewEmmcOemid(kFakeOemid),
+      cros_healthd::BlockDeviceProduct::NewEmmcPnm(kFakePnm),
+      cros_healthd::BlockDeviceRevision::NewEmmcPrv(kFakePrv), kFakeStorageName,
+      kFakeStorageSize,
+      cros_healthd::BlockDeviceFirmware::NewEmmcFwrev(kFakeFwrev),
+      kFakeStorageType, kFakeStoragePath, kFakeStorageManfid,
+      kFakeStorageSerial));
   return cros_healthd::NonRemovableBlockDeviceResult::NewBlockDeviceInfo(
       std::move(storage_vector));
 }
@@ -3129,6 +3139,14 @@ TEST_F(DeviceStatusCollectorTest, TestCrosHealthdInfo) {
   EXPECT_EQ(disk.io_time_seconds_since_last_boot(), kFakeStorageIoTimeSeconds);
   EXPECT_EQ(disk.discard_time_seconds_since_last_boot(),
             kFakeStorageDiscardTimeSeconds);
+  ASSERT_TRUE(disk.has_emmc_oemid());
+  EXPECT_EQ(disk.emmc_oemid(), kFakeOemid);
+  ASSERT_TRUE(disk.has_emmc_pnm());
+  EXPECT_EQ(disk.emmc_pnm(), kFakePnm);
+  ASSERT_TRUE(disk.has_emmc_hardware_rev());
+  EXPECT_EQ(disk.emmc_hardware_rev(), kFakePrv);
+  ASSERT_TRUE(disk.has_emmc_firmware_rev());
+  EXPECT_EQ(disk.emmc_firmware_rev(), kFakeFwrev);
 
   // Verify the system info.
   ASSERT_TRUE(device_status_.has_system_status());

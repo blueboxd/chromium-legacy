@@ -13,4 +13,5 @@ blink_modules_sources("remoteplayback") {
     "remote_playback.cc",
     "remote_playback.h",
   ]
+  deps = [ "//third_party/blink/renderer/modules/presentation" ]
 }

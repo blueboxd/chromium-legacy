@@ -426,8 +426,8 @@ std::unique_ptr<protocol::ListValue> BuildGridTrackSizes(
                                direction == kForColumns ? 0 : offset);
     FloatPoint abs_arrow_pos =
         layout_grid->LocalToAbsoluteFloatPoint(local_arrow_pos);
-    size_info->setDouble("x", abs_arrow_pos.X());
-    size_info->setDouble("y", abs_arrow_pos.Y());
+    size_info->setDouble("x", abs_arrow_pos.X() * scale);
+    size_info->setDouble("y", abs_arrow_pos.Y() * scale);
     sizes->pushValue(std::move(size_info));
     start += track;
     i++;

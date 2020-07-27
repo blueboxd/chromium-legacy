@@ -16,6 +16,7 @@
 #include "base/task/cancelable_task_tracker.h"
 #include "base/time/time.h"
 #include "chrome/browser/bookmarks/bookmark_model_factory.h"
+#include "chrome/browser/history/history_service_factory.h"
 #include "chrome/common/chrome_constants.h"
 #include "chrome/test/base/testing_browser_process.h"
 #include "chrome/test/base/testing_profile.h"
@@ -54,12 +55,14 @@ class AndroidHistoryProviderServiceTest : public testing::Test {
     // It seems that the name has to be chrome::kInitialProfile, so it
     // could be found by ProfileManager::GetLastUsedProfile().
     testing_profile_ = profile_manager_.CreateTestingProfile(
-        chrome::kInitialProfile);
+        chrome::kInitialProfile,
+        {{BookmarkModelFactory::GetInstance(),
+          BookmarkModelFactory::GetDefaultFactory()},
+         {HistoryServiceFactory::GetInstance(),
+          HistoryServiceFactory::GetDefaultFactory()}});
 
-    testing_profile_->CreateBookmarkModel(true);
     bookmarks::test::WaitForBookmarkModelToLoad(
         BookmarkModelFactory::GetForBrowserContext(testing_profile_));
-    ASSERT_TRUE(testing_profile_->CreateHistoryService(true, false));
     service_.reset(new AndroidHistoryProviderService(testing_profile_));
   }
 

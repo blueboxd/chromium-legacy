@@ -45,9 +45,8 @@ class BookmarkModelSQLHandlerTest : public testing::Test {
     // It seems that the name has to be chrome::kInitialProfile, so it
     // could be found by ProfileManager::GetLastUsedProfile().
     TestingProfile* testing_profile = profile_manager_.CreateTestingProfile(
-        chrome::kInitialProfile);
-    // Create the BookmarkModel that doesn't need to invoke load().
-    testing_profile->CreateBookmarkModel(true);
+        chrome::kInitialProfile, {{BookmarkModelFactory::GetInstance(),
+                                   BookmarkModelFactory::GetDefaultFactory()}});
     bookmark_model_ =
         BookmarkModelFactory::GetForBrowserContext(testing_profile);
     bookmarks::test::WaitForBookmarkModelToLoad(bookmark_model_);

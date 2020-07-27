@@ -317,6 +317,8 @@ api::autotest_private::AppType GetAppType(apps::mojom::AppType type) {
       return api::autotest_private::AppType::APP_TYPE_MACNATIVE;
     case apps::mojom::AppType::kLacros:
       return api::autotest_private::AppType::APP_TYPE_LACROS;
+    case apps::mojom::AppType::kRemote:
+      return api::autotest_private::AppType::APP_TYPE_REMOTE;
   }
   NOTREACHED();
   return api::autotest_private::AppType::APP_TYPE_NONE;

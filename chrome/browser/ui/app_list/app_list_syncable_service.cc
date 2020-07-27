@@ -246,6 +246,9 @@ class AppListSyncableService::ModelUpdaterObserver
  private:
   // ChromeAppListModelUpdaterObserver
   void OnAppListItemAdded(ChromeAppListItem* item) override {
+    // Only sync folders and page breaks which are added from Ash.
+    if (!item->is_folder() && !item->is_page_break())
+      return;
     DCHECK(adding_item_id_.empty());
     adding_item_id_ = item->id();  // Ignore updates while adding an item.
     VLOG(2) << owner_ << " OnAppListItemAdded: " << item->ToDebugString();

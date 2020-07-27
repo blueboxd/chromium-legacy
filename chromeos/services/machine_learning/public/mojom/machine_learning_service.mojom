@@ -33,24 +33,29 @@ enum LoadModelResult {
 };
 
 // Top-level interface between Chromium and the ML Service daemon.
+// Next ordinal: 6
 interface MachineLearningService {
+  // Binds another pipe to this instance.
+  Clone@5(pending_receiver<MachineLearningService> receiver);
+
   // The BuiltinModelId inside BuiltinModelSpec is used to specify the model to
   // be loaded.
-  LoadBuiltinModel(BuiltinModelSpec spec, pending_receiver<Model> receiver)
+  LoadBuiltinModel@0(BuiltinModelSpec spec, pending_receiver<Model> receiver)
       => (LoadModelResult result);
   // The FlatbufferModelSpec contains both of the flatbuffer content and the
   // metadata.
-  LoadFlatBufferModel(FlatBufferModelSpec spec,
-                      pending_receiver<Model> receiver)
+  LoadFlatBufferModel@1(FlatBufferModelSpec spec,
+                        pending_receiver<Model> receiver)
       => (LoadModelResult result);
   // Create a new TextClassifier.
-  LoadTextClassifier(pending_receiver<TextClassifier> receiver)
+  LoadTextClassifier@2(pending_receiver<TextClassifier> receiver)
       => (LoadModelResult result);
   // Create and initialize a handwriting recognizer.
-  LoadHandwritingModel(pending_receiver<HandwritingRecognizer> receiver)
+  LoadHandwritingModel@3(pending_receiver<HandwritingRecognizer> receiver)
       => (LoadModelResult result);
-  // Create and initialize a handwriting recognizer with given |spec|.
-  LoadHandwritingModelWithSpec(HandwritingRecognizerSpec spec,
-                               pending_receiver<HandwritingRecognizer> receiver)
+  // Create and initialize a handwriting recognizer with given `spec`.
+  LoadHandwritingModelWithSpec@4(
+      HandwritingRecognizerSpec spec,
+      pending_receiver<HandwritingRecognizer> receiver)
       => (LoadModelResult result);
 };

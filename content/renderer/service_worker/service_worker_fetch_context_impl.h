@@ -16,8 +16,11 @@
 #include "third_party/blink/public/platform/modules/service_worker/web_service_worker_fetch_context.h"
 #include "url/gurl.h"
 
-namespace content {
+namespace blink {
 class InternetDisconnectedWebURLLoaderFactory;
+}
+
+namespace content {
 class ResourceDispatcher;
 class URLLoaderThrottleProvider;
 class WebSocketHandshakeThrottleProvider;
@@ -112,7 +115,7 @@ class CONTENT_EXPORT ServiceWorkerFetchContextImpl final
   std::unique_ptr<blink::WebURLLoaderFactory> web_url_loader_factory_;
   // Responsible for loads which always fail as INTERNET_DISCONNECTED
   // error, which is used in offline mode.
-  std::unique_ptr<InternetDisconnectedWebURLLoaderFactory>
+  std::unique_ptr<blink::InternetDisconnectedWebURLLoaderFactory>
       internet_disconnected_web_url_loader_factory_;
   // Responsible for script loads from the service worker (i.e., the
   // classic/module main script, module imported scripts, or importScripts()).

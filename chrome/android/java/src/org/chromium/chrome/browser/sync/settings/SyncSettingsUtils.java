@@ -14,6 +14,7 @@ import android.provider.Browser;
 
 import androidx.annotation.IntDef;
 import androidx.annotation.Nullable;
+import androidx.annotation.StringRes;
 import androidx.appcompat.content.res.AppCompatResources;
 import androidx.browser.customtabs.CustomTabsIntent;
 import androidx.fragment.app.Fragment;
@@ -34,10 +35,10 @@ import org.chromium.chrome.browser.flags.ChromeFeatureList;
 import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.chrome.browser.signin.IdentityServicesProvider;
 import org.chromium.chrome.browser.sync.AndroidSyncSettings;
-import org.chromium.chrome.browser.sync.GoogleServiceAuthError;
 import org.chromium.chrome.browser.sync.ProfileSyncService;
 import org.chromium.chrome.browser.sync.TrustedVaultClient;
 import org.chromium.components.signin.base.CoreAccountInfo;
+import org.chromium.components.signin.base.GoogleServiceAuthError;
 import org.chromium.components.sync.KeyRetrievalTriggerForUMA;
 import org.chromium.components.sync.StopSource;
 import org.chromium.ui.UiUtils;
@@ -149,6 +150,26 @@ public class SyncSettingsUtils {
     }
 
     /**
+     * Gets the corresponding message id of a given {@link GoogleServiceAuthError.State}.
+     */
+    public static @StringRes int getMessageID(@GoogleServiceAuthError.State int state) {
+        switch (state) {
+            case GoogleServiceAuthError.State.INVALID_GAIA_CREDENTIALS:
+                return R.string.sync_error_ga;
+            case GoogleServiceAuthError.State.CONNECTION_FAILED:
+                return R.string.sync_error_connection;
+            case GoogleServiceAuthError.State.SERVICE_UNAVAILABLE:
+                return R.string.sync_error_service_unavailable;
+            // case State.NONE:
+            // case State.REQUEST_CANCELED:
+            // case State.UNEXPECTED_SERVICE_RESPONSE:
+            // case State.SERVICE_ERROR:
+            default:
+                return R.string.sync_error_generic;
+        }
+    }
+
+    /**
      * Return a short summary of the current sync status.
      */
     public static String getSyncStatusSummary(Context context) {
@@ -178,8 +199,7 @@ public class SyncSettingsUtils {
         }
 
         if (profileSyncService.getAuthError() != GoogleServiceAuthError.State.NONE) {
-            return res.getString(
-                    GoogleServiceAuthError.getMessageID(profileSyncService.getAuthError()));
+            return res.getString(getMessageID(profileSyncService.getAuthError()));
         }
 
         if (profileSyncService.requiresClientUpgrade()) {

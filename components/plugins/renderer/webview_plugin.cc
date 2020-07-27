@@ -388,7 +388,7 @@ void WebViewPlugin::WebViewHelper::DidClearWindowObject() {
       .Check();
 }
 
-void WebViewPlugin::WebViewHelper::FrameDetached(DetachType type) {
+void WebViewPlugin::WebViewHelper::FrameDetached() {
   frame_->FrameWidget()->Close();
   frame_->Close();
   frame_ = nullptr;

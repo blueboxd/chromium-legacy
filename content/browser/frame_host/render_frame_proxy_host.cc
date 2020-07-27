@@ -197,12 +197,7 @@ bool RenderFrameProxyHost::OnMessageReceived(const IPC::Message& msg) {
       cross_process_frame_connector_->OnMessageReceived(msg))
     return true;
 
-  bool handled = true;
-  IPC_BEGIN_MESSAGE_MAP(RenderFrameProxyHost, msg)
-    IPC_MESSAGE_HANDLER(FrameHostMsg_Detach, OnDetach)
-    IPC_MESSAGE_UNHANDLED(handled = false)
-  IPC_END_MESSAGE_MAP()
-  return handled;
+  return false;
 }
 
 bool RenderFrameProxyHost::InitRenderFrameProxy() {
@@ -398,7 +393,7 @@ void RenderFrameProxyHost::ScrollRectToVisible(
                                                   std::move(params));
 }
 
-void RenderFrameProxyHost::OnDetach() {
+void RenderFrameProxyHost::Detach() {
   if (frame_tree_node_->render_manager()->IsMainFrameForInnerDelegate()) {
     frame_tree_node_->render_manager()->RemoveOuterDelegateFrame();
     return;

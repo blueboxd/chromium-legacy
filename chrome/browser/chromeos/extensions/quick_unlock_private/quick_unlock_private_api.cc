@@ -339,6 +339,78 @@ QuickUnlockPrivateSetLockScreenEnabledFunction::Run() {
       quick_unlock_private::SetLockScreenEnabled::Results::Create()));
 }
 
+// quickUnlockPrivate.setPinAutosubmitEnabled
+
+QuickUnlockPrivateSetPinAutosubmitEnabledFunction::
+    QuickUnlockPrivateSetPinAutosubmitEnabledFunction()
+    : chrome_details_(this) {}
+
+QuickUnlockPrivateSetPinAutosubmitEnabledFunction::
+    ~QuickUnlockPrivateSetPinAutosubmitEnabledFunction() = default;
+
+ExtensionFunction::ResponseAction
+QuickUnlockPrivateSetPinAutosubmitEnabledFunction::Run() {
+  auto params =
+      quick_unlock_private::SetPinAutosubmitEnabled::Params::Create(*args_);
+
+  AuthToken* auth_token = GetActiveProfileAuthToken(browser_context());
+  if (!auth_token)
+    return RespondNow(Error(kAuthTokenExpired));
+  if (params->token != auth_token->Identifier())
+    return RespondNow(Error(kAuthTokenInvalid));
+
+  Profile* profile = GetActiveProfile(browser_context());
+  user_manager::User* user =
+      chromeos::ProfileHelper::Get()->GetUserByProfile(profile);
+
+  chromeos::quick_unlock::PinBackend::GetInstance()->SetPinAutoSubmitEnabled(
+      user->GetAccountId(), params->pin, params->enabled,
+      base::BindOnce(&QuickUnlockPrivateSetPinAutosubmitEnabledFunction::
+                         HandleSetPinAutoSubmitResult,
+                     this));
+
+  return RespondLater();
+}
+
+void QuickUnlockPrivateSetPinAutosubmitEnabledFunction::
+    HandleSetPinAutoSubmitResult(bool result) {
+  Respond(ArgumentList(
+      quick_unlock_private::SetPinAutosubmitEnabled::Results::Create(result)));
+}
+
+// quickUnlockPrivate.canAuthenticatePin
+
+QuickUnlockPrivateCanAuthenticatePinFunction::
+    QuickUnlockPrivateCanAuthenticatePinFunction()
+    : chrome_details_(this) {}
+
+QuickUnlockPrivateCanAuthenticatePinFunction::
+    ~QuickUnlockPrivateCanAuthenticatePinFunction() = default;
+
+ExtensionFunction::ResponseAction
+QuickUnlockPrivateCanAuthenticatePinFunction::Run() {
+  AuthToken* auth_token = GetActiveProfileAuthToken(browser_context());
+  if (!auth_token)
+    return RespondNow(Error(kAuthTokenExpired));
+
+  Profile* profile = GetActiveProfile(browser_context());
+  user_manager::User* user =
+      chromeos::ProfileHelper::Get()->GetUserByProfile(profile);
+
+  chromeos::quick_unlock::PinBackend::GetInstance()->CanAuthenticate(
+      user->GetAccountId(),
+      base::BindOnce(&QuickUnlockPrivateCanAuthenticatePinFunction::
+                         HandleCanAuthenticateResult,
+                     this));
+  return RespondLater();
+}
+
+void QuickUnlockPrivateCanAuthenticatePinFunction::HandleCanAuthenticateResult(
+    bool result) {
+  Respond(ArgumentList(
+      quick_unlock_private::CanAuthenticatePin::Results::Create(result)));
+}
+
 // quickUnlockPrivate.getAvailableModes
 
 QuickUnlockPrivateGetAvailableModesFunction::

@@ -3479,9 +3479,7 @@ IN_PROC_BROWSER_TEST_F(RenderFrameHostImplBrowserTest,
   child_rfh->SuddenTerminationDisablerChanged(
       true, blink::mojom::SuddenTerminationDisablerType::kUnloadHandler);
   child_rfh->SetSubframeUnloadTimeoutForTesting(base::TimeDelta::FromDays(7));
-  auto filter_detach = base::MakeRefCounted<DropMessageFilter>(
-      FrameMsgStart, FrameHostMsg_Detach::ID);
-  child_rfh->GetProcess()->AddFilter(filter_detach.get());
+  child_rfh->DoNotDeleteForTesting();
 
   // Open a popup on a.com to keep the process alive.
   OpenPopup(shell(), embedded_test_server()->GetURL("a.com", "/title2.html"),
@@ -3604,8 +3602,7 @@ IN_PROC_BROWSER_TEST_F(RenderFrameHostImplBrowserTest,
 
   // 6) Resume deletion on rfh_b and run detach on rfh_b to delete its frame.
   EXPECT_FALSE(delete_rfh_b.deleted());
-  rfh_b->ResumeDeletionForTesting();
-  rfh_b->OnDetach();
+  rfh_b->DetachForTesting();
   EXPECT_TRUE(delete_rfh_b.deleted());
 }
 

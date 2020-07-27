@@ -221,12 +221,12 @@ jumbo_component("wtf") {
 
     # Inject Visual Studio debug visualizers for our types into all targets
     # that reference this.
-    all_dependent_configs = [ "//tools/win/DebugVisualizers:webkit" ]
+    all_dependent_configs = [ "//tools/win/DebugVisualizers:blink" ]
     inputs = [
-      # webkit.natvis listed as an input here instead of in
-      # //tools/win/DebugVisualizers:webkit to prevent unnecessary size increase
+      # blink.natvis listed as an input here instead of in
+      # //tools/win/DebugVisualizers:blink to prevent unnecessary size increase
       # in generated build files.
-      "//tools/win/DebugVisualizers/webkit.natvis",
+      "//tools/win/DebugVisualizers/blink.natvis",
     ]
   }
 

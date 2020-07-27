@@ -162,7 +162,7 @@ TestRenderFrameHost* TestRenderFrameHost::AppendChild(
 }
 
 void TestRenderFrameHost::Detach() {
-  OnDetach();
+  DetachForTesting();
 }
 
 void TestRenderFrameHost::SimulateNavigationStart(const GURL& url) {

@@ -134,10 +134,16 @@ TestingProfile* TestingProfileManager::CreateTestingProfile(
 TestingProfile* TestingProfileManager::CreateTestingProfile(
     const std::string& name) {
   DCHECK(called_set_up_);
+  return CreateTestingProfile(name, /*testing_factories=*/{});
+}
+
+TestingProfile* TestingProfileManager::CreateTestingProfile(
+    const std::string& name,
+    TestingProfile::TestingFactories testing_factories) {
+  DCHECK(called_set_up_);
   return CreateTestingProfile(
       name, std::unique_ptr<sync_preferences::PrefServiceSyncable>(),
-      base::UTF8ToUTF16(name), 0, std::string(),
-      TestingProfile::TestingFactories());
+      base::UTF8ToUTF16(name), 0, std::string(), std::move(testing_factories));
 }
 
 TestingProfile* TestingProfileManager::CreateGuestProfile() {

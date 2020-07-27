@@ -85,6 +85,12 @@ class AccessContextAuditDatabase
   // Removes a record from the database and from future calls to GetAllRecords.
   void RemoveRecord(const AccessRecord& record);
 
+  // Removes all records from the the database.
+  void RemoveAllRecords();
+
+  // Removes all records where |begin| <= record.last_access_time <= |end|.
+  void RemoveAllRecordsForTimeRange(base::Time begin, base::Time end);
+
   // Removes all records that match the provided cookie details.
   void RemoveAllRecordsForCookie(const std::string& name,
                                  const std::string& domain,
@@ -93,6 +99,10 @@ class AccessContextAuditDatabase
   // Remove all records of access to |origin|'s storage API of |type|.
   void RemoveAllRecordsForOriginStorage(const url::Origin& origin,
                                         StorageAPIType type);
+
+  // Remove all records with a top frame origin present in |origins|.
+  void RemoveAllRecordsForTopFrameOrigins(
+      const std::vector<url::Origin>& origins);
 
   // Removes all records for cookie domains and API origins that match session
   // only entries in |settings|

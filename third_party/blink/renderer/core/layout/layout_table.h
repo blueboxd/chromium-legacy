@@ -359,18 +359,6 @@ class CORE_EXPORT LayoutTable final : public LayoutBlock,
     return needs_adjust_collapsed_border_joints_;
   }
 
-  // Returns true if the table has collapsed borders and any row doesn't paint
-  // onto the same compositing layer as the table (which is rare), and the table
-  // will create one display item for all collapsed borders. Otherwise each row
-  // will create one display item for collapsed borders.
-  // It always returns false for CAP.
-  bool ShouldPaintAllCollapsedBorders() const {
-    DCHECK(collapsed_borders_valid_);
-    if (RuntimeEnabledFeatures::CompositeAfterPaintEnabled())
-      DCHECK(!should_paint_all_collapsed_borders_);
-    return should_paint_all_collapsed_borders_;
-  }
-
   bool HasSections() const { return Header() || Footer() || FirstBody(); }
 
   void RecalcSectionsIfNeeded() const final {
@@ -570,8 +558,6 @@ class CORE_EXPORT LayoutTable final : public LayoutBlock,
   bool needs_adjust_collapsed_border_joints_ : 1;
   bool needs_invalidate_collapsed_borders_for_all_cells_ : 1;
   mutable bool collapsed_outer_borders_valid_ : 1;
-
-  bool should_paint_all_collapsed_borders_ : 1;
 
   // Whether any column in the table section is or has been collapsed.
   bool is_any_column_ever_collapsed_ : 1;

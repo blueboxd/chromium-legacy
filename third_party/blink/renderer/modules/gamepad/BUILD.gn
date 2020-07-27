@@ -49,6 +49,7 @@ jumbo_source_set("unit_tests") {
   ]
 
   deps = [
+    "//device/gamepad/public/cpp:shared_with_blink",
     "//testing/gmock",
     "//testing/gtest",
     "//third_party/blink/renderer/modules",

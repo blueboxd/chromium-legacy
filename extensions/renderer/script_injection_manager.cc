@@ -77,7 +77,7 @@ class ScriptInjectionManager::RFOHelper : public content::RenderFrameObserver {
   void DidCreateDocumentElement() override;
   void DidFailProvisionalLoad() override;
   void DidFinishDocumentLoad() override;
-  void FrameDetached() override;
+  void WillDetach() override;
   void OnDestruct() override;
   void OnStop() override;
 
@@ -196,7 +196,7 @@ void ScriptInjectionManager::RFOHelper::DidFinishDocumentLoad() {
                      weak_factory_.GetWeakPtr()));
 }
 
-void ScriptInjectionManager::RFOHelper::FrameDetached() {
+void ScriptInjectionManager::RFOHelper::WillDetach() {
   // The frame is closing - invalidate.
   constexpr bool kForceReset = true;
   InvalidateAndResetFrame(kForceReset);

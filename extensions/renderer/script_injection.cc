@@ -129,7 +129,7 @@ class ScriptInjection::FrameWatcher : public content::RenderFrameObserver {
   ~FrameWatcher() override {}
 
  private:
-  void FrameDetached() override { injection_->invalidate_render_frame(); }
+  void WillDetach() override { injection_->invalidate_render_frame(); }
   void OnDestruct() override { injection_->invalidate_render_frame(); }
 
   ScriptInjection* injection_;

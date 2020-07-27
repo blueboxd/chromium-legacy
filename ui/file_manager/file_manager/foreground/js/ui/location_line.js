@@ -76,7 +76,7 @@ class LocationLine extends cr.EventTarget {
    * @private
    */
   updateNg_(components) {
-    this.components_ = components;
+    this.components_ = Array.from(components);
 
     let breadcrumbs = document.querySelector('bread-crumb');
     if (!breadcrumbs) {
@@ -86,9 +86,9 @@ class LocationLine extends cr.EventTarget {
       breadcrumbs.setSignalCallback(this.breadCrumbSignal_.bind(this));
     }
 
-    let path = components[0].name;
+    let path = components[0].name.replace(/\//g, '%2F');
     for (let i = 1; i < components.length; i++) {
-      path += '/' + components[i].name;
+      path += '/' + components[i].name.replace(/\//g, '%2F');
     }
 
     breadcrumbs.path = path;

@@ -453,7 +453,7 @@ IPC_MESSAGE_ROUTED1(FrameMsg_MixedContentFound,
 
 // Sent by the renderer when a child frame is created in the renderer.
 //
-// Each of these messages will have a corresponding FrameHostMsg_Detach message
+// Each of these messages will have a corresponding mojom::FrameHost::Detach API
 // sent when the frame is detached from the DOM.
 // Note that |params_reply| is an out parameter. Browser process defines it for
 // the renderer process.
@@ -462,10 +462,6 @@ IPC_SYNC_MESSAGE_CONTROL1_1(FrameHostMsg_CreateChildFrame,
                             FrameHostMsg_CreateChildFrame_Params,
                             // params_reply
                             FrameHostMsg_CreateChildFrame_Params_Reply)
-
-// Sent by the renderer to the parent RenderFrameHost when a child frame is
-// detached from the DOM.
-IPC_MESSAGE_ROUTED0(FrameHostMsg_Detach)
 
 #if BUILDFLAG(ENABLE_PLUGINS)
 // Notification sent from a renderer to the browser that a Pepper plugin

@@ -564,12 +564,6 @@ void RenderFrameProxy::SynchronizeVisualProperties() {
 }
 
 void RenderFrameProxy::FrameDetached(DetachType type) {
-  if (type == DetachType::kRemove) {
-    // Let the browser process know this subframe is removed, so that it is
-    // destroyed in its current process.
-    Send(new FrameHostMsg_Detach(routing_id_));
-  }
-
   web_frame_->Close();
 
   // If this proxy was associated with a provisional RenderFrame, and we're not

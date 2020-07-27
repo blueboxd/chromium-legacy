@@ -101,19 +101,15 @@ class ASH_PUBLIC_EXPORT AppListClient {
   virtual void GetContextMenuModel(int profile_id,
                                    const std::string& id,
                                    GetContextMenuModelCallback callback) = 0;
-  // Invoked when a folder is created in Ash (e.g. merge items into a folder).
-  virtual void OnFolderCreated(int profile_id,
-                               std::unique_ptr<AppListItemMetadata> folder) = 0;
-  // Invoked when a folder has only one item left and so gets removed.
-  virtual void OnFolderDeleted(int profile_id,
-                               std::unique_ptr<AppListItemMetadata> folder) = 0;
+  // Invoked when an item is added in Ash.
+  virtual void OnItemAdded(int profile_id,
+                           std::unique_ptr<AppListItemMetadata> item) = 0;
   // Invoked when user changes a folder's name or an item's position.
   virtual void OnItemUpdated(int profile_id,
                              std::unique_ptr<AppListItemMetadata> folder) = 0;
-  // Invoked when a "page break" item is added with |id| and |position|.
-  virtual void OnPageBreakItemAdded(int profile_id,
-                                    const std::string& id,
-                                    const syncer::StringOrdinal& position) = 0;
+  // Invoked when a folder has only one item left and so gets removed.
+  virtual void OnFolderDeleted(int profile_id,
+                               std::unique_ptr<AppListItemMetadata> folder) = 0;
   // Invoked when a "page break" item with |id| is deleted.
   virtual void OnPageBreakItemDeleted(int profile_id,
                                       const std::string& id) = 0;

@@ -1053,8 +1053,7 @@ void MediaCapabilities::GetPerfInfo(
   if (!execution_context || execution_context->IsContextDestroyed())
     return;
 
-  const VideoConfiguration* video_config = decoding_config->video();
-  if (!video_config) {
+  if (!decoding_config->hasVideo()) {
     // Audio-only is always smooth and power efficient.
     MediaCapabilitiesDecodingInfo* info = CreateDecodingInfoWith(true);
     info->setKeySystemAccess(access);
@@ -1062,6 +1061,7 @@ void MediaCapabilities::GetPerfInfo(
     return;
   }
 
+  const VideoConfiguration* video_config = decoding_config->video();
   String key_system = "";
   bool use_hw_secure_codecs = false;
 
@@ -1188,7 +1188,7 @@ void MediaCapabilities::GetGpuFactoriesSupport(
   // A few things aren't known until demuxing time. These include: coded size,
   // visible rect, and extra data. Make reasonable guesses below. Ideally the
   // differences won't be make/break GPU acceleration support.
-  VideoConfiguration* video_config = decoding_config->video();
+  const VideoConfiguration* video_config = decoding_config->video();
   gfx::Size natural_size(video_config->width(), video_config->height());
   media::VideoDecoderConfig config(
       video_codec, video_profile, alpha_mode, video_color_space,

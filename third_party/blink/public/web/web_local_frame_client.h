@@ -237,14 +237,13 @@ class BLINK_EXPORT WebLocalFrameClient {
   // from outside of the browsing instance.
   virtual WebFrame* FindFrame(const WebString& name) { return nullptr; }
 
-  // Specifies the reason for the detachment.
-  enum class DetachType { kRemove, kSwap };
+  // Notifies observers that the frame is being detached and sends the current
+  // frame's navigation state to the browser.
+  virtual void WillDetach() {}
 
   // This frame has been detached. Embedders should release any resources
-  // associated with this frame. If the DetachType is Remove, the frame should
-  // also be removed from the frame tree; otherwise, if the DetachType is
-  // Swap, the frame is being replaced in-place by WebFrame::swap().
-  virtual void FrameDetached(DetachType) {}
+  // associated with this frame.
+  virtual void FrameDetached() {}
 
   // This frame's name has changed.
   virtual void DidChangeName(const WebString& name) {}

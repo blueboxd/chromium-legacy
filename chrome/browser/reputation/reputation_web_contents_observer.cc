@@ -22,6 +22,10 @@
 
 namespace {
 
+// Whether to show tips on server-side-flagged sites included in the component.
+const base::FeatureParam<bool> kEnableSuspiciousSiteChecks{
+    &security_state::features::kSafetyTipUI, "suspicioussites", false};
+
 void RecordHeuristicsUKMData(ReputationCheckResult result,
                              ukm::SourceId navigation_source_id,
                              SafetyTipInteraction action) {
@@ -111,6 +115,17 @@ void OnSafetyTipClosed(ReputationCheckResult result,
 void RecordPostFlagCheckHistogram(security_state::SafetyTipStatus status) {
   UMA_HISTOGRAM_ENUMERATION("Security.SafetyTips.SafetyTipShown_AfterFlag",
                             status);
+}
+
+// Returns whether a safety tip should be shown, according to finch.
+bool IsSafetyTipEnabled(security_state::SafetyTipStatus status) {
+  if (!base::FeatureList::IsEnabled(security_state::features::kSafetyTipUI)) {
+    return false;
+  }
+  if (status == security_state::SafetyTipStatus::kBadReputation) {
+    return kEnableSuspiciousSiteChecks.Get();
+  }
+  return true;
 }
 
 }  // namespace
@@ -244,7 +259,7 @@ void ReputationWebContentsObserver::HandleReputationCheckResult(
     return;
   }
 
-  if (!base::FeatureList::IsEnabled(security_state::features::kSafetyTipUI)) {
+  if (!IsSafetyTipEnabled(result.safety_tip_status)) {
     // When the feature isn't enabled, we 'ignore' the UI after the first visit
     // to make it easier to disambiguate the control groups' first visit from
     // subsequent navigations to the flagged page in metrics. Since the user

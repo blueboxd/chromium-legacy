@@ -17,6 +17,7 @@
 #include "components/bookmarks/browser/titled_url_match.h"
 #include "components/bookmarks/test/bookmark_test_helpers.h"
 #include "components/bookmarks/test/test_bookmark_client.h"
+#include "components/query_parser/query_parser.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 using base::ASCIIToUTF16;
@@ -29,7 +30,7 @@ const char kAboutBlankURL[] = "about:blank";
 
 class BookmarkClientMock : public TestBookmarkClient {
  public:
-  BookmarkClientMock(const std::map<GURL, int>& typed_count_map)
+  explicit BookmarkClientMock(const std::map<GURL, int>& typed_count_map)
       : typed_count_map_(typed_count_map) {}
 
   bool SupportsTypedCountForUrls() override { return true; }

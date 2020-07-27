@@ -148,4 +148,8 @@ blink_modules_sources("webaudio") {
   if (current_cpu == "arm64" || (current_cpu == "arm" && arm_use_neon)) {
     sources += [ "cpu/arm/oscillator_kernel_neon.cc" ]
   }
+  deps = [
+    "//services/metrics/public/cpp:ukm_builders",
+    "//third_party/blink/renderer/modules/mediastream",
+  ]
 }

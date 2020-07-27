@@ -222,8 +222,10 @@ LayoutUnit MenuListIntrinsicBlockSize(const HTMLSelectElement& select,
     return kIndefiniteSize;
   const SimpleFontData* font_data = box.StyleRef().GetFont().PrimaryFont();
   DCHECK(font_data);
+  const LayoutBox* inner_box = select.InnerElement().GetLayoutBox();
   return (font_data ? font_data->GetFontMetrics().Height() : 0) +
-         select.InnerElement().GetLayoutBox()->BorderAndPaddingLogicalHeight();
+         (inner_box ? inner_box->BorderAndPaddingLogicalHeight()
+                    : LayoutUnit());
 }
 
 }  // anonymous namespace

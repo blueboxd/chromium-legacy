@@ -164,18 +164,12 @@ void AppServiceAppWindowArcTracker::OnTaskDescriptionChanged(
   if (it == task_id_to_arc_app_window_info_.end())
     return;
 
-  if (base::FeatureList::IsEnabled(features::kAppServiceAdaptiveIcon)) {
+  if (base::FeatureList::IsEnabled(features::kAppServiceAdaptiveIcon) ||
+      icon.icon_png_data.has_value()) {
     apps::ArcRawIconPngDataToImageSkia(
         icon.Clone(), kArcAppWindowIconSize,
         base::BindOnce(&AppServiceAppWindowArcTracker::OnIconLoaded,
                        weak_ptr_factory_.GetWeakPtr(), task_id, label));
-  } else {
-    if (icon.icon_png_data.has_value()) {
-      apps::CompressedDataToImageSkiaCallback(
-          base::BindOnce(&AppServiceAppWindowArcTracker::SetDescription,
-                         weak_ptr_factory_.GetWeakPtr(), task_id, label))
-          .Run(icon.icon_png_data.value());
-    }
   }
 }
 

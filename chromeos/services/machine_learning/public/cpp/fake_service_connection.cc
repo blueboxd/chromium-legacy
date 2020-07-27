@@ -211,6 +211,16 @@ void FakeServiceConnectionImpl::HandleSuggestSelectionCall(
   std::move(callback).Run(std::move(selection));
 }
 
+void FakeServiceConnectionImpl::HandleFindLanguagesCall(
+    std::string request,
+    mojom::TextClassifier::FindLanguagesCallback callback) {
+  std::vector<mojom::TextLanguagePtr> languages;
+  for (auto const& language : find_languages_result_) {
+    languages.emplace_back(language.Clone());
+  }
+  std::move(callback).Run(std::move(languages));
+}
+
 void FakeServiceConnectionImpl::SetOutputAnnotation(
     const std::vector<mojom::TextAnnotationPtr>& annotations) {
   annotate_result_.clear();
@@ -222,6 +232,14 @@ void FakeServiceConnectionImpl::SetOutputAnnotation(
 void FakeServiceConnectionImpl::SetOutputSelection(
     const mojom::CodepointSpanPtr& selection) {
   suggest_selection_result_ = selection.Clone();
+}
+
+void FakeServiceConnectionImpl::SetOutputLanguages(
+    const std::vector<mojom::TextLanguagePtr>& languages) {
+  find_languages_result_.clear();
+  for (auto const& language : languages) {
+    find_languages_result_.emplace_back(language.Clone());
+  }
 }
 
 void FakeServiceConnectionImpl::SetOutputHandwritingRecognizerResult(
@@ -243,6 +261,14 @@ void FakeServiceConnectionImpl::SuggestSelection(
   ScheduleCall(base::BindOnce(
       &FakeServiceConnectionImpl::HandleSuggestSelectionCall,
       base::Unretained(this), std::move(request), std::move(callback)));
+}
+
+void FakeServiceConnectionImpl::FindLanguages(
+    const std::string& text,
+    mojom::TextClassifier::FindLanguagesCallback callback) {
+  ScheduleCall(base::BindOnce(
+      &FakeServiceConnectionImpl::HandleFindLanguagesCall,
+      base::Unretained(this), text, std::move(callback)));
 }
 
 void FakeServiceConnectionImpl::Recognize(

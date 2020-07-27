@@ -269,51 +269,20 @@ no_check_targets = [
   "//third_party/blink/renderer/modules/accessibility:*",  # 7 errors
   "//third_party/blink/renderer/modules/animationworklet:*",  # 1 error
   "//third_party/blink/renderer/modules/background_fetch:*",  # 4 errors
-  "//third_party/blink/renderer/modules/background_sync:*",  # 6 errors
   "//third_party/blink/renderer/modules/cache_storage:*",  # 3 errors
   "//third_party/blink/renderer/modules/canvas:*",  # 1 error
-  "//third_party/blink/renderer/modules/clipboard:*",  # 1 error
-  "//third_party/blink/renderer/modules/contacts_picker:*",  # 1 error
-  "//third_party/blink/renderer/modules/content_index:*",  # 3 errors
-  "//third_party/blink/renderer/modules/cookie_store:*",  # 8 errors
-  "//third_party/blink/renderer/modules/credentialmanager:*",  # 1 error
   "//third_party/blink/renderer/modules/csspaint:*",  # 2 errors
-  "//third_party/blink/renderer/modules/device_orientation:*",  # 5 errors
-  "//third_party/blink/renderer/modules/encryptedmedia:*",  # 3 errors
-  "//third_party/blink/renderer/modules/exported:*",  # 16 errors
   "//third_party/blink/renderer/modules/font_access:*",  # 3 errors
-  "//third_party/blink/renderer/modules/gamepad:*",  # 1 error
   "//third_party/blink/renderer/modules/imagecapture:*",  # 2 errors
-  "//third_party/blink/renderer/modules/installedapp:*",  # 1 error
-  "//third_party/blink/renderer/modules/launch:*",  # 3 errors
   "//third_party/blink/renderer/modules/manifest:*",  # 2 errors
   "//third_party/blink/renderer/modules/media_capabilities:*",  # 5 errors
-  "//third_party/blink/renderer/modules/media_controls:*",  # 31 errors
-  "//third_party/blink/renderer/modules/mediacapturefromelement:*",  # 14 errors
-  "//third_party/blink/renderer/modules/mediarecorder:*",  # 1 error
   "//third_party/blink/renderer/modules/mediastream:*",  # 29 errors
-  "//third_party/blink/renderer/modules/native_file_system:*",  # 2 errors
-  "//third_party/blink/renderer/modules/nfc:*",  # 2 errors
-  "//third_party/blink/renderer/modules/notifications:*",  # 5 errors
-  "//third_party/blink/renderer/modules/payments/goods:*",  # 1 error
-  "//third_party/blink/renderer/modules/payments:*",  # 22 errors
   "//third_party/blink/renderer/modules/peerconnection:*",  # 43 errors
-  "//third_party/blink/renderer/modules/push_messaging:*",  # 12 errors
-  "//third_party/blink/renderer/modules/quota:*",  # 1 error
-  "//third_party/blink/renderer/modules/remoteplayback:*",  # 3 errors
   "//third_party/blink/renderer/modules/serial:*",  # 1 error
   "//third_party/blink/renderer/modules/service_worker:*",  # 23 errors
-  "//third_party/blink/renderer/modules/shapedetection:*",  # 4 errors
-  "//third_party/blink/renderer/modules/srcobject:*",  # 1 error
-  "//third_party/blink/renderer/modules/storage:*",  # 3 errors
-  "//third_party/blink/renderer/modules/wake_lock:*",  # 1 error
-  "//third_party/blink/renderer/modules/webaudio:*",  # 5 errors
   "//third_party/blink/renderer/modules/webcodecs:*",  # 13 errors
   "//third_party/blink/renderer/modules/webgl:*",  # 3 errors
-  "//third_party/blink/renderer/modules/webgpu:*",  # 6 errors
-  "//third_party/blink/renderer/modules/webmidi:*",  # 1 error
   "//third_party/blink/renderer/modules/webtransport:*",  # 16 errors
-  "//third_party/blink/renderer/modules/worklet:*",  # 2 errors
   "//third_party/blink/renderer/modules/xr:*",  # 13 errors
   "//third_party/blink/renderer/modules:*",  # 321 errors
   "//third_party/blink/renderer/platform/blob:*",  # 16 errors

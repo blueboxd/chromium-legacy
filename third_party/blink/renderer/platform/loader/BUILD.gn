@@ -125,6 +125,7 @@ blink_platform_sources("loader") {
     "frame_request_blocker.h",
     "ftp_directory_listing.cc",
     "ftp_directory_listing.h",
+    "internet_disconnected_web_url_loader.cc",
     "link_header.cc",
     "link_header.h",
     "mixed_content_autoupgrade_status.h",

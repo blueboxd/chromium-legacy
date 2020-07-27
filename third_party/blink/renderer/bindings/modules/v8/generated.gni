@@ -186,15 +186,3 @@ generated_modules_callback_function_files = [
 
 bindings_generated_v8_context_snapshot_external_references_file =
     "$bindings_modules_v8_output_dir/v8_context_snapshot_external_references.cc"
-
-generated_modules_dictionary_files = []
-
-if (use_v8_bind_gen_for_dictionary) {
-  generated_modules_dictionary_files +=
-      process_file_template(
-          modules_dictionary_idl_files,
-          [
-            "$bindings_modules_v8_output_dir/v8_{{source_name_part}}.cc",
-            "$bindings_modules_v8_output_dir/v8_{{source_name_part}}.h",
-          ])
-}

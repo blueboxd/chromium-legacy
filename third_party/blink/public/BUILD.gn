@@ -125,6 +125,7 @@ source_set("blink_headers") {
     "platform/input/synchronous_input_handler_proxy.h",
     "platform/input/synchronous_layer_tree_frame_sink.h",
     "platform/interface_registry.h",
+    "platform/internet_disconnected_web_url_loader.h",
     "platform/linux/web_sandbox_support.h",
     "platform/mac/web_sandbox_support.h",
     "platform/mac/web_scrollbar_theme.h",

@@ -85,6 +85,47 @@ class QuickUnlockPrivateSetLockScreenEnabledFunction
   DISALLOW_COPY_AND_ASSIGN(QuickUnlockPrivateSetLockScreenEnabledFunction);
 };
 
+class QuickUnlockPrivateSetPinAutosubmitEnabledFunction
+    : public ExtensionFunction {
+ public:
+  QuickUnlockPrivateSetPinAutosubmitEnabledFunction();
+  DECLARE_EXTENSION_FUNCTION("quickUnlockPrivate.setPinAutosubmitEnabled",
+                             QUICKUNLOCKPRIVATE_SETPINAUTOSUBMITENABLED)
+
+ protected:
+  ~QuickUnlockPrivateSetPinAutosubmitEnabledFunction() override;
+
+  // ExtensionFunction overrides.
+  ResponseAction Run() override;
+
+ private:
+  void HandleSetPinAutoSubmitResult(bool result);
+
+  ChromeExtensionFunctionDetails chrome_details_;
+
+  DISALLOW_COPY_AND_ASSIGN(QuickUnlockPrivateSetPinAutosubmitEnabledFunction);
+};
+
+class QuickUnlockPrivateCanAuthenticatePinFunction : public ExtensionFunction {
+ public:
+  QuickUnlockPrivateCanAuthenticatePinFunction();
+  DECLARE_EXTENSION_FUNCTION("quickUnlockPrivate.canAuthenticatePin",
+                             QUICKUNLOCKPRIVATE_CANAUTHENTICATEPIN)
+
+ protected:
+  ~QuickUnlockPrivateCanAuthenticatePinFunction() override;
+
+  // ExtensionFunction overrides.
+  ResponseAction Run() override;
+
+ private:
+  void HandleCanAuthenticateResult(bool result);
+
+  ChromeExtensionFunctionDetails chrome_details_;
+
+  DISALLOW_COPY_AND_ASSIGN(QuickUnlockPrivateCanAuthenticatePinFunction);
+};
+
 class QuickUnlockPrivateGetAvailableModesFunction : public ExtensionFunction {
  public:
   QuickUnlockPrivateGetAvailableModesFunction();

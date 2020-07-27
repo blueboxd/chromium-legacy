@@ -883,6 +883,78 @@ class DeviceStatusCollectorState : public StatusCollectorState {
               disk_info_out->set_discard_time_seconds_since_last_boot(
                   discard_time->value);
             }
+
+            // vendor_id
+            const auto& vendor_id = storage->vendor_id;
+            switch (vendor_id->which()) {
+              case chromeos::cros_healthd::mojom::BlockDeviceVendor::Tag::
+                  NVME_SUBSYSTEM_VENDOR:
+                disk_info_out->set_nvme_subsystem_vendor(
+                    vendor_id->get_nvme_subsystem_vendor());
+                break;
+              case chromeos::cros_healthd::mojom::BlockDeviceVendor::Tag::
+                  EMMC_OEMID:
+                disk_info_out->set_emmc_oemid(vendor_id->get_emmc_oemid());
+                break;
+              case chromeos::cros_healthd::mojom::BlockDeviceVendor::Tag::OTHER:
+                disk_info_out->set_other_vendor(vendor_id->get_other());
+                break;
+            }
+
+            // product_id
+            const auto& product_id = storage->product_id;
+            switch (product_id->which()) {
+              case chromeos::cros_healthd::mojom::BlockDeviceProduct::Tag::
+                  NVME_SUBSYSTEM_DEVICE:
+                disk_info_out->set_nvme_subsystem_device(
+                    product_id->get_nvme_subsystem_device());
+                break;
+              case chromeos::cros_healthd::mojom::BlockDeviceProduct::Tag::
+                  EMMC_PNM:
+                disk_info_out->set_emmc_pnm(product_id->get_emmc_pnm());
+                break;
+              case chromeos::cros_healthd::mojom::BlockDeviceProduct::Tag::
+                  OTHER:
+                disk_info_out->set_other_product(product_id->get_other());
+                break;
+            }
+
+            // revision
+            const auto& revision = storage->revision;
+            switch (revision->which()) {
+              case chromeos::cros_healthd::mojom::BlockDeviceRevision::Tag::
+                  NVME_PCIE_REV:
+                disk_info_out->set_nvme_hardware_rev(
+                    revision->get_nvme_pcie_rev());
+                break;
+              case chromeos::cros_healthd::mojom::BlockDeviceRevision::Tag::
+                  EMMC_PRV:
+                disk_info_out->set_emmc_hardware_rev(revision->get_emmc_prv());
+                break;
+              case chromeos::cros_healthd::mojom::BlockDeviceRevision::Tag::
+                  OTHER:
+                disk_info_out->set_other_hardware_rev(revision->get_other());
+                break;
+            }
+
+            // firmware version
+            const auto& fw_version = storage->firmware_version;
+            switch (fw_version->which()) {
+              case chromeos::cros_healthd::mojom::BlockDeviceFirmware::Tag::
+                  NVME_FIRMWARE_REV:
+                disk_info_out->set_nvme_firmware_rev(
+                    fw_version->get_nvme_firmware_rev());
+                break;
+              case chromeos::cros_healthd::mojom::BlockDeviceFirmware::Tag::
+                  EMMC_FWREV:
+                disk_info_out->set_emmc_firmware_rev(
+                    fw_version->get_emmc_fwrev());
+                break;
+              case chromeos::cros_healthd::mojom::BlockDeviceFirmware::Tag::
+                  OTHER:
+                disk_info_out->set_other_firmware_rev(fw_version->get_other());
+                break;
+            }
           }
           break;
         }

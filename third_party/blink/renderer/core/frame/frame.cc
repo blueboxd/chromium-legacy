@@ -438,10 +438,6 @@ void Frame::FocusPage(LocalFrame* originating_frame) {
 }
 
 STATIC_ASSERT_ENUM(FrameDetachType::kRemove,
-                   WebLocalFrameClient::DetachType::kRemove);
-STATIC_ASSERT_ENUM(FrameDetachType::kSwap,
-                   WebLocalFrameClient::DetachType::kSwap);
-STATIC_ASSERT_ENUM(FrameDetachType::kRemove,
                    WebRemoteFrameClient::DetachType::kRemove);
 STATIC_ASSERT_ENUM(FrameDetachType::kSwap,
                    WebRemoteFrameClient::DetachType::kSwap);

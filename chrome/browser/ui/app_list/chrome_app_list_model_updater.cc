@@ -468,36 +468,26 @@ void ChromeAppListModelUpdater::RemoveObserver(
 ////////////////////////////////////////////////////////////////////////////////
 // Methods called from Ash:
 
-void ChromeAppListModelUpdater::OnFolderCreated(
+void ChromeAppListModelUpdater::OnItemAdded(
     std::unique_ptr<ash::AppListItemMetadata> item) {
-  DCHECK(item->is_folder);
   ChromeAppListItem* chrome_item = FindItem(item->id);
   // If the item already exists, we should have set its information properly.
-  if (chrome_item)
-    return;
-  // Otherwise, we detect an item is created in Ash which is not added into our
-  // Chrome list yet. This only happens when a folder is created.
-  std::unique_ptr<ChromeAppListItem> new_item =
-      std::make_unique<ChromeAppListItem>(profile_, item->id, this);
-  chrome_item = AddChromeItem(std::move(new_item));
-  chrome_item->SetMetadata(std::move(item));
+  if (!chrome_item) {
+    // Otherwise, we detect an item is created in Ash which is not added into
+    // our Chrome list yet. This only happens when a folder is created or when a
+    // page break is added.
+    DCHECK(item->is_folder || item->is_page_break);
+    std::unique_ptr<ChromeAppListItem> new_item =
+        std::make_unique<ChromeAppListItem>(profile_, item->id, this);
+    chrome_item = AddChromeItem(std::move(new_item));
+    chrome_item->SetMetadata(std::move(item));
+  }
 
+  // Notify observers that an item is added to the AppListModel in ash.
+  // Note that items of apps are added from Chrome side so there would be an
+  // existing |chrome_item| when running here.
   for (AppListModelUpdaterObserver& observer : observers_)
     observer.OnAppListItemAdded(chrome_item);
-}
-
-void ChromeAppListModelUpdater::OnFolderDeleted(
-    std::unique_ptr<ash::AppListItemMetadata> item) {
-  DCHECK(item->is_folder);
-
-  ChromeAppListItem* chrome_item = FindItem(item->id);
-  if (!chrome_item)
-    return;
-
-  for (AppListModelUpdaterObserver& observer : observers_)
-    observer.OnAppListItemWillBeDeleted(chrome_item);
-
-  items_.erase(item->id);
 }
 
 void ChromeAppListModelUpdater::OnItemUpdated(
@@ -518,23 +508,18 @@ void ChromeAppListModelUpdater::OnItemUpdated(
     observer.OnAppListItemUpdated(chrome_item);
 }
 
-void ChromeAppListModelUpdater::OnPageBreakItemAdded(
-    const std::string& id,
-    const syncer::StringOrdinal& position) {
-  ChromeAppListItem* chrome_item = FindItem(id);
+void ChromeAppListModelUpdater::OnFolderDeleted(
+    std::unique_ptr<ash::AppListItemMetadata> item) {
+  DCHECK(item->is_folder);
 
-  // If the item already exists, we should have set its information properly.
-  if (chrome_item)
+  ChromeAppListItem* chrome_item = FindItem(item->id);
+  if (!chrome_item)
     return;
 
-  // Otherwise, create a new "page break" item.
-  auto new_item = std::make_unique<ChromeAppListItem>(profile_, id, this);
-  new_item->SetPosition(position);
-  new_item->SetIsPageBreak(true);
-  chrome_item = AddChromeItem(std::move(new_item));
-
   for (AppListModelUpdaterObserver& observer : observers_)
-    observer.OnAppListItemAdded(chrome_item);
+    observer.OnAppListItemWillBeDeleted(chrome_item);
+
+  items_.erase(item->id);
 }
 
 void ChromeAppListModelUpdater::OnPageBreakItemDeleted(const std::string& id) {

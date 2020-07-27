@@ -183,8 +183,9 @@ class AndroidProviderBackendTest : public testing::Test {
     // It seems that the name has to be chrome::kInitialProfile, so it
     // could be found by ProfileManager::GetLastUsedProfile().
     TestingProfile* testing_profile = profile_manager_.CreateTestingProfile(
-        chrome::kInitialProfile);
-    testing_profile->CreateBookmarkModel(true);
+        chrome::kInitialProfile, {{BookmarkModelFactory::GetInstance(),
+                                   BookmarkModelFactory::GetDefaultFactory()}});
+
     bookmark_model_ =
         BookmarkModelFactory::GetForBrowserContext(testing_profile);
     history_client_.reset(new ChromeHistoryClient(bookmark_model_));

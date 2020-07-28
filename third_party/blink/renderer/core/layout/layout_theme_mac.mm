@@ -362,13 +362,12 @@ Color LayoutThemeMacRefresh::FocusRingColor() const {
   // TODO(crbug.com/929098) Need to pass an appropriate color scheme here.
   WebColorScheme color_scheme = ComputedStyle::InitialStyle().UsedColorScheme();
 
-  Color keyboard_focus_indicator =
-      GetSystemColor(MacSystemColorID::kKeyboardFocusIndicator, color_scheme);
-  // Take the RGB values from the keyboard_focus_indicator color, but use a
-  // different alpha value to avoid having a color too light.
+  SkColor keyboard_focus_indicator = SkColor(
+      GetSystemColor(MacSystemColorID::kKeyboardFocusIndicator, color_scheme));
   Color focus_ring =
-      Color(keyboard_focus_indicator.Red(), keyboard_focus_indicator.Green(),
-            keyboard_focus_indicator.Blue(), /*alpha=*/166);
+      ui::NativeTheme::GetInstanceForWeb()->FocusRingColorForBaseColor(
+          keyboard_focus_indicator);
+
   if (!HasCustomFocusRingColor())
     return focus_ring;
   // Use the custom focus ring color when the system accent color wasn't

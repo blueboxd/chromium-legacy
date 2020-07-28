@@ -64,7 +64,7 @@ namespace {
 // static
 void WorkerScriptFetchInitiator::Start(
     int worker_process_id,
-    const blink::mojom::DedicatedWorkerToken& dedicated_worker_token,
+    const blink::DedicatedWorkerToken& dedicated_worker_token,
     SharedWorkerId shared_worker_id,
     const GURL& initial_request_url,
     RenderFrameHost* creator_render_frame_host,
@@ -281,7 +281,7 @@ void WorkerScriptFetchInitiator::AddAdditionalRequestHeaders(
 
 void WorkerScriptFetchInitiator::CreateScriptLoader(
     int worker_process_id,
-    const blink::mojom::DedicatedWorkerToken& dedicated_worker_token,
+    const blink::DedicatedWorkerToken& dedicated_worker_token,
     SharedWorkerId shared_worker_id,
     const GURL& initial_request_url,
     RenderFrameHost* creator_render_frame_host,

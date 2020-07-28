@@ -531,6 +531,21 @@ bool InputMethodEngineBase::SetCompositionRange(
                              static_cast<uint32_t>(selection_after),
                              text_spans);
 }
+const gfx::Rect InputMethodEngineBase::GetAutocorrectCharacterBounds(
+    int context_id,
+    std::string* error) {
+  if (!IsActive()) {
+    *error = kErrorNotActive;
+    return gfx::Rect();
+  }
+  if (context_id != context_id_ || context_id_ == -1) {
+    *error = base::StringPrintf(
+        "%s request context id = %d, current context id = %d",
+        kErrorWrongContext, context_id, context_id_);
+    return gfx::Rect();
+  }
+  return GetAutocorrectCharacterBounds();
+}
 
 bool InputMethodEngineBase::SetAutocorrectRange(
     int context_id,

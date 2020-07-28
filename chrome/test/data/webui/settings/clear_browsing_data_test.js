@@ -11,7 +11,7 @@ import {ClearBrowsingDataBrowserProxyImpl} from 'chrome://settings/lazy_load.js'
 import {Router, routes, StatusAction, SyncBrowserProxyImpl} from 'chrome://settings/settings.js';
 import {TestClearBrowsingDataBrowserProxy} from 'chrome://test/settings/test_clear_browsing_data_browser_proxy.js';
 import {TestSyncBrowserProxy} from 'chrome://test/settings/test_sync_browser_proxy.m.js';
-import {isChildVisible, isVisible, whenAttributeIs} from 'chrome://test/test_util.m.js';
+import {eventToPromise, isChildVisible, isVisible, whenAttributeIs} from 'chrome://test/test_util.m.js';
 
 // clang-format on
 
@@ -291,7 +291,8 @@ suite('ClearBrowsingDataAllPlatforms', function() {
           // Simulate signal from browser indicating that clearing has
           // completed.
           webUIListenerCallback('browsing-data-removing', false);
-          promiseResolver.resolve();
+          promiseResolver.resolve(
+              {showHistoryNotice: false, showPasswordsNotice: false});
           // Yields to the message loop to allow the callback chain of the
           // Promise that was just resolved to execute before the
           // assertions.
@@ -346,9 +347,11 @@ suite('ClearBrowsingDataAllPlatforms', function() {
 
     return testBrowserProxy.whenCalled('clearBrowsingData')
         .then(function() {
-          // Passing showNotice = true should trigger the notice about other
-          // forms of browsing history to open, and the dialog to stay open.
-          promiseResolver.resolve(true /* showNotice */);
+          // Passing showHistoryNotice = true should trigger the notice about
+          // other forms of browsing history to open, and the dialog to stay
+          // open.
+          promiseResolver.resolve(
+              {showHistoryNotice: true, showPasswordsNotice: false});
 
           // Yields to the message loop to allow the callback chain of the
           // Promise that was just resolved to execute before the
@@ -356,7 +359,7 @@ suite('ClearBrowsingDataAllPlatforms', function() {
         })
         .then(function() {
           flush();
-          const notice = element.$$('#notice');
+          const notice = element.$$('#historyNotice');
           assertTrue(!!notice);
           const noticeActionButton = notice.$$('.action-button');
           assertTrue(!!noticeActionButton);
@@ -364,20 +367,147 @@ suite('ClearBrowsingDataAllPlatforms', function() {
           assertTrue(element.$$('#clearBrowsingDataDialog').open);
           assertTrue(notice.$$('#dialog').open);
 
+          const whenNoticeClosed = eventToPromise('close', notice);
+
+          // Tapping the action button will close the notice. The parent dialog
+          // should subsequently close as well.
           noticeActionButton.click();
 
-          return new Promise(function(resolve, reject) {
-            // Tapping the action button will close the notice. Move to the
-            // end of the message loop to allow the closing event to
-            // propagate to the parent dialog. The parent dialog should
-            // subsequently close as well.
-            setTimeout(function() {
-              const notice = element.$$('#notice');
-              assertFalse(!!notice);
-              assertFalse(element.$$('#clearBrowsingDataDialog').open);
-              resolve();
-            }, 0);
-          });
+          return whenNoticeClosed;
+        })
+        .then(function() {
+          const notice = element.$$('#historyNotice');
+          assertFalse(!!notice);
+          assertFalse(element.$$('#clearBrowsingDataDialog').open);
+        });
+  });
+
+  test('showPasswordsDeletionDialog', function() {
+    assertTrue(element.$$('#clearBrowsingDataDialog').open);
+    const actionButton = element.$$('.action-button');
+    assertTrue(!!actionButton);
+
+    // Select a datatype for deletion to enable the clear button.
+    const cookieCheckbox = element.$$('#cookiesCheckboxBasic');
+    assertTrue(!!cookieCheckbox);
+    cookieCheckbox.$.checkbox.click();
+    assertFalse(actionButton.disabled);
+
+    const promiseResolver = new PromiseResolver();
+    testBrowserProxy.setClearBrowsingDataPromise(promiseResolver.promise);
+    actionButton.click();
+
+    return testBrowserProxy.whenCalled('clearBrowsingData')
+        .then(function() {
+          // Passing showPasswordsNotice = true should trigger the notice about
+          // incomplete password deletions to open, and the dialog to stay open.
+          promiseResolver.resolve(
+              {showHistoryNotice: false, showPasswordsNotice: true});
+
+          // Yields to the message loop to allow the callback chain of the
+          // Promise that was just resolved to execute before the
+          // assertions.
+        })
+        .then(function() {
+          flush();
+          const notice = element.$$('#passwordsNotice');
+          assertTrue(!!notice);
+          const noticeActionButton = notice.$$('.action-button');
+          assertTrue(!!noticeActionButton);
+
+          assertTrue(element.$$('#clearBrowsingDataDialog').open);
+          assertTrue(notice.$$('#dialog').open);
+
+          const whenNoticeClosed = eventToPromise('close', notice);
+
+          // Tapping the action button will close the notice. The parent dialog
+          // should subsequently close as well.
+          noticeActionButton.click();
+
+          return whenNoticeClosed;
+        })
+        .then(function() {
+          const notice = element.$$('#passwordsNotice');
+          assertFalse(!!notice);
+          assertFalse(element.$$('#clearBrowsingDataDialog').open);
+        });
+  });
+
+  test('showBothHistoryAndPasswordsDeletionDialog', function() {
+    assertTrue(element.$$('#clearBrowsingDataDialog').open);
+    const actionButton = element.$$('.action-button');
+    assertTrue(!!actionButton);
+
+    // Select a datatype for deletion to enable the clear button.
+    const cookieCheckbox = element.$$('#cookiesCheckboxBasic');
+    assertTrue(!!cookieCheckbox);
+    cookieCheckbox.$.checkbox.click();
+    assertFalse(actionButton.disabled);
+
+    const promiseResolver = new PromiseResolver();
+    testBrowserProxy.setClearBrowsingDataPromise(promiseResolver.promise);
+    actionButton.click();
+
+    return testBrowserProxy.whenCalled('clearBrowsingData')
+        .then(function() {
+          // Passing showHistoryNotice = true and showPasswordsNotice = true
+          // should first trigger the notice about other forms of browsing
+          // history to open, then once that is acknowledged, the notice about
+          // incomplete password deletions should open. The main CBD dialog
+          // should stay open during that whole time.
+          promiseResolver.resolve(
+              {showHistoryNotice: true, showPasswordsNotice: true});
+
+          // Yields to the message loop to allow the callback chain of the
+          // Promise that was just resolved to execute before the
+          // assertions.
+        })
+        .then(function() {
+          flush();
+          const notice = element.$$('#historyNotice');
+          assertTrue(!!notice);
+          const noticeActionButton = notice.$$('.action-button');
+          assertTrue(!!noticeActionButton);
+
+          assertTrue(element.$$('#clearBrowsingDataDialog').open);
+          assertTrue(notice.$$('#dialog').open);
+
+          const whenNoticeClosed = eventToPromise('close', notice);
+
+          // Tapping the action button will close the history notice, and
+          // display the passwords notice instead.
+          noticeActionButton.click();
+
+          return whenNoticeClosed;
+        })
+        .then(function() {
+          const historyNotice = element.$$('#historyNotice');
+          assertFalse(!!historyNotice);
+          const passwordsNotice = element.$$('#passwordsNotice');
+          assertTrue(!!passwordsNotice);
+        })
+        .then(function() {
+          flush();
+          const notice = element.$$('#passwordsNotice');
+          assertTrue(!!notice);
+          const noticeActionButton = notice.$$('.action-button');
+          assertTrue(!!noticeActionButton);
+
+          assertTrue(element.$$('#clearBrowsingDataDialog').open);
+          assertTrue(notice.$$('#dialog').open);
+
+          const whenNoticeClosed = eventToPromise('close', notice);
+
+          // Tapping the action button will close the notice.  The parent dialog
+          // should subsequently close as well.
+          noticeActionButton.click();
+
+          return whenNoticeClosed;
+        })
+        .then(function() {
+          const notice = element.$$('#passwordsNotice');
+          assertFalse(!!notice);
+          assertFalse(element.$$('#clearBrowsingDataDialog').open);
         });
   });
 

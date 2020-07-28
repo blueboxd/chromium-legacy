@@ -9,6 +9,7 @@
 #include "base/bind.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/strings/sys_string_conversions.h"
+#include "base/strings/utf_string_conversions.h"
 #include "base/values.h"
 #include "components/autofill/core/common/field_data_manager.h"
 #include "components/autofill/core/common/form_data.h"
@@ -30,7 +31,7 @@ using autofill::FormRendererId;
 using autofill::FieldRendererId;
 using autofill::PasswordFormFillData;
 using base::SysNSStringToUTF16;
-using base::SysUTF16ToNSString;
+using base::UTF16ToUTF8;
 using password_manager::FillData;
 using password_manager::GetPageURLAndCheckTrustLevel;
 using password_manager::SerializePasswordFormFillData;
@@ -313,8 +314,8 @@ constexpr char kCommandPrefix[] = "passwordForm";
   [self.jsPasswordManager
        fillPasswordForm:SerializePasswordFormFillData(formData)
                 inFrame:GetMainFrame(_webState)
-           withUsername:SysUTF16ToNSString(formData.username_field.value)
-               password:SysUTF16ToNSString(formData.password_field.value)
+           withUsername:UTF16ToUTF8(usernameValue)
+               password:UTF16ToUTF8(passwordValue)
       completionHandler:^(NSString* result) {
         BOOL success = [result isEqual:@"true"];
         if (success) {
@@ -375,8 +376,8 @@ constexpr char kCommandPrefix[] = "passwordForm";
   [self.jsPasswordManager
        fillPasswordForm:SerializeFillData(fillData)
                 inFrame:GetMainFrame(_webState)
-           withUsername:SysUTF16ToNSString(usernameValue)
-               password:SysUTF16ToNSString(passwordValue)
+           withUsername:UTF16ToUTF8(usernameValue)
+               password:UTF16ToUTF8(passwordValue)
       completionHandler:^(NSString* result) {
         BOOL success = [result isEqual:@"true"];
         if (success) {

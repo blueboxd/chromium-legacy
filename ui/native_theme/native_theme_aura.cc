@@ -100,6 +100,17 @@ NativeThemeAura* NativeThemeAura::web_instance() {
   return s_native_theme_for_web.get();
 }
 
+SkColor NativeThemeAura::FocusRingColorForBaseColor(SkColor base_color) const {
+#if defined(OS_MACOSX)
+  DCHECK(features::IsFormControlsRefreshEnabled());
+  // On Mac OSX, the system Accent Color setting is darkened a bit
+  // for better contrast.
+  return SkColorSetA(base_color, 166);
+#else
+  return base_color;
+#endif  // OS_MACOSX
+}
+
 void NativeThemeAura::PaintMenuPopupBackground(
     cc::PaintCanvas* canvas,
     const gfx::Size& size,

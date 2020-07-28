@@ -63,6 +63,8 @@ void TermsOfServiceScreenHandler::DeclareLocalizedValues(
                IDS_TERMS_OF_SERVICE_SCREEN_BACK_BUTTON);
   builder->Add("termsOfServiceAcceptButton",
                IDS_TERMS_OF_SERVICE_SCREEN_ACCEPT_BUTTON);
+  builder->Add("termsOfServiceRetryButton",
+               IDS_TERMS_OF_SERVICE_SCREEN_RETRY_BUTTON);
 }
 
 void TermsOfServiceScreenHandler::SetScreen(TermsOfServiceScreen* screen) {

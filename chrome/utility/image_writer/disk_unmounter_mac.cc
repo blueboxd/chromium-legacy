@@ -12,7 +12,7 @@
 #include "base/posix/eintr_wrapper.h"
 #include "base/single_thread_task_runner.h"
 #include "base/threading/thread_task_runner_handle.h"
-#include "chrome/utility/image_writer/error_messages.h"
+#include "chrome/utility/image_writer/error_message_strings.h"
 #include "chrome/utility/image_writer/image_writer.h"
 
 namespace image_writer {

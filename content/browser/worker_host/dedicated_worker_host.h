@@ -19,10 +19,10 @@
 #include "mojo/public/cpp/bindings/receiver.h"
 #include "mojo/public/cpp/bindings/remote.h"
 #include "services/network/public/cpp/cross_origin_embedder_policy.h"
+#include "third_party/blink/public/common/tokens/worker_tokens.h"
 #include "third_party/blink/public/mojom/idle/idle_manager.mojom-forward.h"
 #include "third_party/blink/public/mojom/loader/content_security_notifier.mojom.h"
 #include "third_party/blink/public/mojom/sms/sms_receiver.mojom-forward.h"
-#include "third_party/blink/public/mojom/tokens/worker_tokens.mojom.h"
 #include "third_party/blink/public/mojom/usb/web_usb_service.mojom-forward.h"
 #include "third_party/blink/public/mojom/wake_lock/wake_lock.mojom-forward.h"
 #include "third_party/blink/public/mojom/websockets/websocket_connector.mojom-forward.h"
@@ -50,7 +50,7 @@ class DedicatedWorkerHost final : public RenderProcessHostObserver {
  public:
   DedicatedWorkerHost(
       DedicatedWorkerServiceImpl* service,
-      const blink::mojom::DedicatedWorkerToken& token,
+      const blink::DedicatedWorkerToken& token,
       RenderProcessHost* worker_process_host,
       base::Optional<GlobalFrameRoutingId> creator_render_frame_host_id,
       GlobalFrameRoutingId ancestor_render_frame_host_id,
@@ -63,7 +63,7 @@ class DedicatedWorkerHost final : public RenderProcessHostObserver {
   void BindBrowserInterfaceBrokerReceiver(
       mojo::PendingReceiver<blink::mojom::BrowserInterfaceBroker> receiver);
 
-  const blink::mojom::DedicatedWorkerToken& GetToken() const { return token_; }
+  const blink::DedicatedWorkerToken& GetToken() const { return token_; }
   RenderProcessHost* GetProcessHost() const { return worker_process_host_; }
   const url::Origin& GetWorkerOrigin() const { return worker_origin_; }
 
@@ -158,7 +158,7 @@ class DedicatedWorkerHost final : public RenderProcessHostObserver {
   DedicatedWorkerServiceImpl* const service_;
 
   // The renderer generated ID of this worker, unique across all processes.
-  const blink::mojom::DedicatedWorkerToken token_;
+  const blink::DedicatedWorkerToken token_;
 
   // The RenderProcessHost that hosts this worker.
   RenderProcessHost* const worker_process_host_;

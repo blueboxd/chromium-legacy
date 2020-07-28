@@ -27,13 +27,24 @@ import {addSingletonGetter, sendWithPromise} from 'chrome://resources/js/cr.m.js
  */
 export let InstalledApp;
 
+/**
+ * ClearBrowsingDataResult contains any possible follow-up notices that should
+ * be shown to the user.
+ *
+ * @typedef {{
+ *   showHistoryNotice: boolean,
+ *   showPasswordsNotice: boolean
+ * }}
+ */
+export let ClearBrowsingDataResult;
+
 /** @interface */
 export class ClearBrowsingDataBrowserProxy {
   /**
    * @param {!Array<string>} dataTypes
    * @param {number} timePeriod
    * @param {Array<InstalledApp>} installedApps
-   * @return {!Promise<boolean>}
+   * @return {!Promise<!ClearBrowsingDataResult>}
    *     A promise resolved when data clearing has completed. The boolean
    *     indicates whether an additional dialog should be shown, informing the
    *     user about other forms of browsing history.

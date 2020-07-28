@@ -218,6 +218,10 @@
            file="${root_gen_dir}/chrome/browser/resources/settings/clear_browsing_data_dialog/installed_app_checkbox.js"
            use_base_dir="false"
            compress="false" type="BINDATA" />
+  <include name="IDR_SETTINGS_CLEAR_BROWSING_DATA_DIALOG_PASSWORDS_DELETION_DIALOG_JS"
+           file="${root_gen_dir}/chrome/browser/resources/settings/clear_browsing_data_dialog/passwords_deletion_dialog.js"
+           use_base_dir="false"
+           compress="false" type="BINDATA" />
   <include name="IDR_SETTINGS_CONTROLS_CONTROLLED_BUTTON_M_JS"
            file="${root_gen_dir}/chrome/browser/resources/settings/controls/controlled_button.m.js"
            use_base_dir="false"

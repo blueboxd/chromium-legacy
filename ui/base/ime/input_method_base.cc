@@ -234,6 +234,10 @@ bool InputMethodBase::SetCompositionRange(
   return false;
 }
 
+gfx::Rect InputMethodBase::GetAutocorrectCharacterBounds() {
+  return gfx::Rect();
+}
+
 bool InputMethodBase::SetAutocorrectRange(
     const base::string16& autocorrect_text,
     uint32_t start,

@@ -133,7 +133,8 @@ SkColor AccessibilityFocusHighlight::GetHighlightColor() {
   if (theme_color == SK_ColorTRANSPARENT || use_default_color_for_testing_)
     return default_color_;
 
-  return theme_color;
+  return browser_view_->GetNativeTheme()->FocusRingColorForBaseColor(
+      theme_color);
 }
 
 void AccessibilityFocusHighlight::CreateOrUpdateLayer(gfx::Rect node_bounds) {
@@ -256,10 +257,6 @@ void AccessibilityFocusHighlight::OnPaintLayer(
     const ui::PaintContext& context) {
   ui::PaintRecorder recorder(context, layer_->size());
   SkColor highlight_color = GetHighlightColor();
-#if defined(OS_MACOSX)
-  // Match blink::LayoutThemeMacRefresh::FocusRingColor()
-  highlight_color = SkColorSetA(highlight_color, 166);
-#endif
 
   cc::PaintFlags original_flags;
   original_flags.setAntiAlias(true);

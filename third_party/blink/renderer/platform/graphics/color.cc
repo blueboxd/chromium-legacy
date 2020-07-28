@@ -33,6 +33,7 @@
 #include "third_party/blink/renderer/platform/wtf/math_extras.h"
 #include "third_party/blink/renderer/platform/wtf/text/string_builder.h"
 #include "third_party/blink/renderer/platform/wtf/text/string_view.h"
+#include "third_party/skia/include/core/SkColor.h"
 
 namespace blink {
 
@@ -259,6 +260,10 @@ bool Color::SetNamedColor(const String& name) {
   const NamedColor* found_color = FindNamedColor(name);
   color_ = found_color ? found_color->argb_value : 0;
   return found_color;
+}
+
+Color::operator SkColor() const {
+  return SkColorSetARGB(Alpha(), Red(), Green(), Blue());
 }
 
 Color Color::Light() const {

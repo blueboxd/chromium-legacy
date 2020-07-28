@@ -21,6 +21,9 @@ Polymer({
     // Whether the back button is disabled.
     backButtonDisabled_: {type: Boolean, value: false},
 
+    // Whether the retry button is disabled.
+    retryButtonDisabled_: {type: Boolean, value: true},
+
     // Whether the accept button is disabled.
     acceptButtonDisabled_: {type: Boolean, value: true},
 
@@ -100,8 +103,24 @@ Polymer({
       return;
 
     this.backButtonDisabled_ = true;
+    this.retryButtonDisabled_ = true;
     this.acceptButtonDisabled_ = true;
     this.userActed('back');
+  },
+
+  /**
+   * The 'on-tap' event handler for the 'Back' button.
+   * @private
+   */
+  onTosRetryButtonPressed_() {
+    // Ignore on-tap events when disabled.
+    // TODO: Polymer Migration - Remove this when the migration is finished.
+    // See: https://github.com/Polymer/polymer/issues/4685
+    if (this.retryButtonDisabled_)
+      return;
+
+    this.retryButtonDisabled_ = true;
+    this.userActed('retry');
   },
 
   /**
@@ -118,11 +137,13 @@ Polymer({
    * download of the Terms of Service has failed.
    */
   setTermsOfServiceLoadError() {
-    // Disable the accept button, hide the iframe, show warning icon.
+    // Disable the accept button, hide the iframe, show warning icon and retry
+    // button.
     this.uiState = TermsOfServiceScreenState.ERROR;
 
     this.acceptButtonDisabled_ = true;
     this.backButtonDisabled_ = false;
+    this.retryButtonDisabled_ = false;
   },
 
   /**

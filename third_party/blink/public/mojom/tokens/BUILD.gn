@@ -14,6 +14,31 @@ mojom_component("tokens") {
     "worker_tokens.mojom",
   ]
 
+  shared_cpp_typemaps = [
+    {
+      types = [
+        {
+          mojom = "blink.mojom.DedicatedWorkerToken"
+          cpp = "::blink::DedicatedWorkerToken"
+        },
+        {
+          mojom = "blink.mojom.ServiceWorkerToken"
+          cpp = "::blink::ServiceWorkerToken"
+        },
+        {
+          mojom = "blink.mojom.SharedWorkerToken"
+          cpp = "::blink::SharedWorkerToken"
+        },
+      ]
+      traits_headers = [
+        "//third_party/blink/public/common/tokens/worker_tokens_mojom_traits.h",
+      ]
+    },
+  ]
+
+  cpp_typemaps = shared_cpp_typemaps
+  blink_cpp_typemaps = shared_cpp_typemaps
+
   public_deps = [ "//mojo/public/mojom/base" ]
 
   export_class_attribute = "BLINK_COMMON_EXPORT"

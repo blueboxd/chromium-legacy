@@ -18,6 +18,12 @@
     <include name="IDR_PROFILE_PICKER_RIGHT_BANNER_IMAGE"
                file="right_banner_image.svg"
                type="BINDATA" />
+    <include name="IDR_PROFILE_PICKER_PROFILE_CREATION_FLOW_IMAGES_BANNER_LIGHT_IMAGE"
+               file="profile_creation_flow/images/banner_light_image.svg"
+               type="BINDATA" />
+    <include name="IDR_PROFILE_PICKER_PROFILE_CREATION_FLOW_IMAGES_BANNER_DARK_IMAGE"
+               file="profile_creation_flow/images/banner_dark_image.svg"
+               type="BINDATA" />
     <!-- Generated Polymer 3 elements -->
       <include name="IDR_PROFILE_PICKER_PROFILE_PICKER_MAIN_VIEW_JS"
                file="${root_gen_dir}/chrome/browser/resources/signin/profile_picker/profile_picker_main_view.js"

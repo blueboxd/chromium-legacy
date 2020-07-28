@@ -56,7 +56,7 @@ UNTRUSTED_TEST('UntrustedCanSpawnWorkers', async () => {
 
 // Tests that TelemetryInfo can be successfully requested from
 // from chrome-untrusted://.
-UNTRUSTED_TEST('UntustedRequestTelemetryInfo', async () => {
+UNTRUSTED_TEST('UntrustedRequestTelemetryInfo', async () => {
   /** @type {!ProbeTelemetryInfoResponse} */
   const response = await requestTelemetryInfo();
   assertDeepEquals(response, {

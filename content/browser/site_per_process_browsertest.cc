@@ -13678,10 +13678,11 @@ class SitePerProcessBrowserTestWithSadFrameTabReload
 };
 
 // Verify the feature where hidden tabs with crashed subframes are marked for
-// reload.  This avoids showing crashed subframes if a hidden tab is eventually
-// shown.  See https://crbug.com/841572.
-// crbug.com/1010119, fails on win. crbug.com/1015971, fails on Linux.
-#if defined(OS_WIN) || defined(OS_LINUX)
+// reload. This avoids showing crashed subframes if a hidden tab is eventually
+// shown. See https://crbug.com/841572.
+// crbug.com/1010119, fails on Win. crbug.com/1015971, fails on Linux.
+// crbug.com/1049885, fails on Android.
+#if defined(OS_WIN) || defined(OS_LINUX) || defined(OS_ANDROID)
 #define MAYBE_ReloadHiddenTabWithCrashedSubframe \
   DISABLED_ReloadHiddenTabWithCrashedSubframe
 #else

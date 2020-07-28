@@ -10,7 +10,7 @@
 #include "base/files/file_path.h"
 #include "base/optional.h"
 #include "chrome/services/removable_storage_writer/public/mojom/removable_storage_writer.mojom.h"
-#include "chrome/utility/image_writer/error_messages.h"
+#include "chrome/utility/image_writer/error_message_strings.h"
 
 namespace {
 

@@ -148,6 +148,11 @@ class SystemWebAppManager {
 
   static bool IsEnabled();
 
+  // This call will instruct System Web App Manager to include all registered
+  // System Apps for installation. Must be called before SystemWebAppManager is
+  // constructed.
+  static void EnableAllSystemAppsForTesting();
+
   // The SystemWebAppManager is disabled in browser tests by default because it
   // pollutes the startup state (several tests expect the Extensions state to be
   // clean).

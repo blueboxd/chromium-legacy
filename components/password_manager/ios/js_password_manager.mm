@@ -86,30 +86,26 @@ std::unique_ptr<base::Value> SerializeFillData(
     completionHandler:(void (^)(NSString*))completionHandler {
   DCHECK(completionHandler);
   std::vector<base::Value> parameters;
-  parameters.push_back(base::Value(static_cast<int>(formIdentifier.value())));
+  parameters.emplace_back(static_cast<int>(formIdentifier.value()));
   autofill::ExecuteJavaScriptFunction("passwords.getPasswordFormDataAsString",
                                       parameters, frame,
                                       base::BindOnce(completionHandler));
 }
 
-// TODO(crbug.com/1075444): Receive strings as std::string as they are being
-// converted twice.
 - (void)fillPasswordForm:(std::unique_ptr<base::Value>)form
                  inFrame:(web::WebFrame*)frame
-            withUsername:(NSString*)username
-                password:(NSString*)password
+            withUsername:(std::string)username
+                password:(std::string)password
        completionHandler:(void (^)(NSString*))completionHandler {
   DCHECK(completionHandler);
   std::vector<base::Value> parameters;
   parameters.push_back(std::move(*form));
-  parameters.push_back(base::Value(SysNSStringToUTF8(username)));
-  parameters.push_back(base::Value(SysNSStringToUTF8(password)));
+  parameters.emplace_back(std::move(username));
+  parameters.emplace_back(std::move(password));
   autofill::ExecuteJavaScriptFunction("passwords.fillPasswordForm", parameters,
                                       frame, base::BindOnce(completionHandler));
 }
 
-// TODO(crbug.com/1075444): Receive strings as std::string as they are being
-// converted twice.
 - (void)fillPasswordForm:(FormRendererId)formIdentifier
                       inFrame:(web::WebFrame*)frame
         newPasswordIdentifier:(FieldRendererId)newPasswordIdentifier
@@ -118,11 +114,9 @@ std::unique_ptr<base::Value> SerializeFillData(
             completionHandler:(void (^)(NSString*))completionHandler {
   DCHECK(completionHandler);
   std::vector<base::Value> parameters;
-  parameters.push_back(base::Value(static_cast<int>(formIdentifier.value())));
-  parameters.push_back(
-      base::Value(static_cast<int>(newPasswordIdentifier.value())));
-  parameters.push_back(
-      base::Value(static_cast<int>(confirmPasswordIdentifier.value())));
+  parameters.emplace_back(static_cast<int>(formIdentifier.value()));
+  parameters.emplace_back(static_cast<int>(newPasswordIdentifier.value()));
+  parameters.emplace_back(static_cast<int>(confirmPasswordIdentifier.value()));
   parameters.push_back(base::Value(SysNSStringToUTF8(generatedPassword)));
   autofill::ExecuteJavaScriptFunction(
       "passwords.fillPasswordFormWithGeneratedPassword", parameters, frame,
@@ -132,7 +126,7 @@ std::unique_ptr<base::Value> SerializeFillData(
 - (void)setUpForUniqueIDsWithInitialState:(uint32_t)nextAvailableID
                                   inFrame:(web::WebFrame*)frame {
   std::vector<base::Value> parameters;
-  parameters.push_back(base::Value(static_cast<int>(nextAvailableID)));
+  parameters.emplace_back(static_cast<int>(nextAvailableID));
   autofill::ExecuteJavaScriptFunction("fill.setUpForUniqueIDs", parameters,
                                       frame,
                                       base::OnceCallback<void(NSString*)>());

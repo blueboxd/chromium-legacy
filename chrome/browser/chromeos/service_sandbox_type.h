@@ -13,18 +13,18 @@
 // require a non-utility sandbox can be added here.  See
 // ServiceProcessHost::Launch() for how these templates are consumed.
 
-// chromeos::ime::mojom::InputEngineManager
+// chromeos::ime::mojom::ImeService
 namespace chromeos {
 namespace ime {
 namespace mojom {
-class InputEngineManager;
+class ImeService;
 }  // namespace mojom
 }  // namespace ime
 }  // namespace chromeos
 
 template <>
 inline sandbox::policy::SandboxType
-content::GetServiceSandboxType<chromeos::ime::mojom::InputEngineManager>() {
+content::GetServiceSandboxType<chromeos::ime::mojom::ImeService>() {
   if (chromeos::features::IsImeSandboxEnabled())
     return sandbox::policy::SandboxType::kIme;
 

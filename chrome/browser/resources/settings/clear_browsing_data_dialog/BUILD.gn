@@ -14,6 +14,7 @@ js_type_check("closure_compile_module") {
     ":clear_browsing_data_dialog",
     ":history_deletion_dialog",
     ":installed_app_checkbox",
+    ":passwords_deletion_dialog",
   ]
 }
 
@@ -41,6 +42,13 @@ js_library("history_deletion_dialog") {
   ]
 }
 
+js_library("passwords_deletion_dialog") {
+  deps = [
+    "//third_party/polymer/v3_0/components-chromium/polymer:polymer_bundled",
+    "//ui/webui/resources/cr_elements/cr_dialog:cr_dialog.m",
+  ]
+}
+
 js_library("installed_app_checkbox") {
   deps = [
     ":clear_browsing_data_browser_proxy",
@@ -53,5 +61,6 @@ html_to_js("web_components") {
     "clear_browsing_data_dialog.js",
     "history_deletion_dialog.js",
     "installed_app_checkbox.js",
+    "passwords_deletion_dialog.js",
   ]
 }

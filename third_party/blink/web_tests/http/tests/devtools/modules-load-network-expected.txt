@@ -1,6 +1,7 @@
 This test validates set of loaded modules for Network panel.
 
 Loaded modules:
+    client_variations
     cm
     cookie_table
     data_grid

@@ -5,6 +5,7 @@
 #include "chrome/renderer/lite_video/lite_video_url_loader_throttle.h"
 
 #include "base/metrics/histogram_macros.h"
+#include "base/test/metrics/histogram_tester.h"
 #include "chrome/renderer/lite_video/lite_video_hint_agent.h"
 #include "chrome/renderer/lite_video/lite_video_util.h"
 #include "content/public/renderer/render_frame.h"
@@ -47,7 +48,16 @@ LiteVideoURLLoaderThrottle::LiteVideoURLLoaderThrottle(int render_frame_id)
   DCHECK(IsLiteVideoEnabled());
 }
 
-LiteVideoURLLoaderThrottle::~LiteVideoURLLoaderThrottle() = default;
+LiteVideoURLLoaderThrottle::~LiteVideoURLLoaderThrottle() {
+  // Existence of |response_delay_timer_| indicates throttling has been
+  // attempted on this media response. Remove the throttle on this case.
+  if (response_delay_timer_) {
+    DCHECK(render_frame_id_);
+    auto* lite_video_hint_agent = GetLiteVideoHintAgent(render_frame_id_);
+    if (lite_video_hint_agent)
+      lite_video_hint_agent->RemoveThrottle(this);
+  }
+}
 
 void LiteVideoURLLoaderThrottle::WillProcessResponse(
     const GURL& response_url,
@@ -87,9 +97,19 @@ void LiteVideoURLLoaderThrottle::WillProcessResponse(
       FROM_HERE, latency,
       base::BindOnce(&LiteVideoURLLoaderThrottle::ResumeThrottledMediaResponse,
                      base::Unretained(this)));
+
+  lite_video_hint_agent->AddThrottle(this);
+}
+
+void LiteVideoURLLoaderThrottle::ResumeIfThrottled() {
+  if (response_delay_timer_ && response_delay_timer_->IsRunning()) {
+    response_delay_timer_->Stop();
+    ResumeThrottledMediaResponse();
+  }
 }
 
 void LiteVideoURLLoaderThrottle::ResumeThrottledMediaResponse() {
+  DCHECK(!response_delay_timer_->IsRunning());
   delegate_->Resume();
 }
 

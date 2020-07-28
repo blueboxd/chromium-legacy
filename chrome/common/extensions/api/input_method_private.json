@@ -581,6 +581,51 @@
           }
         ]
       }, {
+        "name": "getAutocorrectCharacterBounds",
+        "type": "function",
+        "description": "Get the screen coordinates of the autocorrected word's bounds.",
+        "parameters": [
+          {
+            "name": "parameters",
+            "type": "object",
+            "properties": {
+              "contextID": {
+                "description": "ID of the autocorrected context.",
+                "type": "integer"
+              }
+            }
+          },
+          {
+            "type": "function",
+            "name": "callback",
+            "description": "Called with screen coordinates of the autocorrect word when the operation completes. On failure, $(ref:runtime.lastError) is set.",
+            "parameters": [
+              {
+                "name": "autocorrectCharacterBounds",
+                "type": "object",
+                "properties": {
+                  "x": {
+                    "description": "The x-coordinate of the autocorrected word's bounds.",
+                    "type": "integer"
+                  },
+                  "y": {
+                    "description": "The y-coordinate of the autocorrected word's bounds.",
+                    "type": "integer"
+                  },
+                  "width": {
+                    "description": "The width of the autocorrected word's bounds.",
+                    "type": "integer"
+                  },
+                  "height":{
+                    "description": "The height of the autocorrected word's bounds.",
+                    "type": "integer"
+                  }
+                }
+              }
+            ]
+          }
+        ]
+      }, {
         "name": "setAutocorrectRange",
         "type": "function",
         "description": "Set the autocorrect range and autocorrect word. If this extension does not own the active IME, this fails.",

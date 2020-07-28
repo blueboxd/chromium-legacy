@@ -159,6 +159,7 @@ gfx::Rect DummyTextInputClient::GetAutocorrectCharacterBounds() const {
   return gfx::Rect();
 }
 
+// TODO(crbug.com/1091088) Implement setAutocorrectRange
 bool DummyTextInputClient::SetAutocorrectRange(
     const base::string16& autocorrect_text,
     const gfx::Range& range) {

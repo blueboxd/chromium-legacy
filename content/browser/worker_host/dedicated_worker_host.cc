@@ -37,7 +37,7 @@ namespace content {
 
 DedicatedWorkerHost::DedicatedWorkerHost(
     DedicatedWorkerServiceImpl* service,
-    const blink::mojom::DedicatedWorkerToken& token,
+    const blink::DedicatedWorkerToken& token,
     RenderProcessHost* worker_process_host,
     base::Optional<GlobalFrameRoutingId> creator_render_frame_host_id,
     GlobalFrameRoutingId ancestor_render_frame_host_id,
@@ -58,7 +58,7 @@ DedicatedWorkerHost::DedicatedWorkerHost(
       cross_origin_embedder_policy_(cross_origin_embedder_policy),
       coep_reporter_(std::move(coep_reporter)) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
-  DCHECK(!token_.value.is_empty());
+  DCHECK(!token_.is_empty());
   DCHECK(worker_process_host_);
   DCHECK(worker_process_host_->IsInitializedAndNotDead());
   DCHECK(coep_reporter_);

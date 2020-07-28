@@ -21,7 +21,7 @@ namespace content {
 
 WorkerScriptLoader::WorkerScriptLoader(
     int process_id,
-    const blink::mojom::DedicatedWorkerToken& dedicated_worker_token,
+    const blink::DedicatedWorkerToken& dedicated_worker_token,
     SharedWorkerId shared_worker_id,
     int32_t routing_id,
     int32_t request_id,

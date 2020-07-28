@@ -76,8 +76,8 @@ TEST_F(
     });
 
 TEST_F(
-    'TelemetryExtensionUIBrowserTest', 'UntustedRequestTelemetryInfo',
+    'TelemetryExtensionUIBrowserTest', 'UntrustedRequestTelemetryInfo',
     async () => {
-      expectTrue(await runTestInUntrusted('UntustedRequestTelemetryInfo'));
+      expectTrue(await runTestInUntrusted('UntrustedRequestTelemetryInfo'));
       testDone();
     });

@@ -22,6 +22,17 @@ void LiteVideoHintAgent::OnDestruct() {
   delete this;
 }
 
+void LiteVideoHintAgent::AddThrottle(LiteVideoURLLoaderThrottle* throttle) {
+  DCHECK(HasLiteVideoHint());
+  active_throttles_.insert(throttle);
+  UMA_HISTOGRAM_COUNTS("LiteVideo.HintAgent.ActiveThrottleSize",
+                       active_throttles_.size());
+}
+
+void LiteVideoHintAgent::RemoveThrottle(LiteVideoURLLoaderThrottle* throttle) {
+  active_throttles_.erase(throttle);
+}
+
 base::TimeDelta LiteVideoHintAgent::CalculateLatencyForResourceResponse(
     const network::mojom::URLResponseHead& response_head) {
   if (!HasLiteVideoHint())
@@ -73,6 +84,16 @@ void LiteVideoHintAgent::SetLiteVideoHint(
   target_downlink_rtt_latency_ = lite_video_hint->target_downlink_rtt_latency;
   max_throttling_delay_ = lite_video_hint->max_throttling_delay;
   LOCAL_HISTOGRAM_BOOLEAN("LiteVideo.HintAgent.HasHint", true);
+}
+
+void LiteVideoHintAgent::StopThrottling() {
+  // TODO(rajendrant): Send the stop throttling signal to browser process, after
+  // some K rebuffer events had occurred.
+  DCHECK(HasLiteVideoHint());
+  for (auto* throttle : active_throttles_) {
+    throttle->ResumeIfThrottled();
+  }
+  kilobytes_buffered_before_throttle_ = 0;
 }
 
 }  // namespace lite_video

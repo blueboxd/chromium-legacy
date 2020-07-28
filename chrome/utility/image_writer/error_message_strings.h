@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_UTILITY_IMAGE_WRITER_ERROR_MESSAGES_H_
-#define CHROME_UTILITY_IMAGE_WRITER_ERROR_MESSAGES_H_
+#ifndef CHROME_UTILITY_IMAGE_WRITER_ERROR_MESSAGE_STRINGS_H_
+#define CHROME_UTILITY_IMAGE_WRITER_ERROR_MESSAGE_STRINGS_H_
 
 #include "build/build_config.h"
 
@@ -25,4 +25,4 @@ extern const char kVerificationFailed[];
 }  // namespace error
 }  // namespace image_writer
 
-#endif  // CHROME_UTILITY_IMAGE_WRITER_ERROR_MESSAGES_H_
+#endif  // CHROME_UTILITY_IMAGE_WRITER_ERROR_MESSAGE_STRINGS_H_

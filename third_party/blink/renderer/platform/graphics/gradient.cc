@@ -85,11 +85,6 @@ void Gradient::SortStopsIfNecessary() {
   std::stable_sort(stops_.begin(), stops_.end(), CompareStops);
 }
 
-// FIXME: This would be more at home as Color::operator SkColor.
-static inline SkColor MakeSkColor(const Color& c) {
-  return SkColorSetARGB(c.Alpha(), c.Red(), c.Green(), c.Blue());
-}
-
 // Collect sorted stop position and color information into the pos and colors
 // buffers, ensuring stops at both 0.0 and 1.0.
 // TODO(fmalita): theoretically Skia should provide the same 0.0/1.0 padding
@@ -108,18 +103,18 @@ void Gradient::FillSkiaStops(ColorBuffer& colors, OffsetBuffer& pos) const {
     pos.push_back(WebCoreDoubleToSkScalar(0));
     if (color_filter_) {
       colors.push_back(
-          color_filter_->filterColor(MakeSkColor(stops_.front().color)));
+          color_filter_->filterColor(SkColor(stops_.front().color)));
     } else {
-      colors.push_back(MakeSkColor(stops_.front().color));
+      colors.push_back(SkColor(stops_.front().color));
     }
   }
 
   for (const auto& stop : stops_) {
     pos.push_back(WebCoreDoubleToSkScalar(stop.stop));
     if (color_filter_)
-      colors.push_back(color_filter_->filterColor(MakeSkColor(stop.color)));
+      colors.push_back(color_filter_->filterColor(SkColor(stop.color)));
     else
-      colors.push_back(MakeSkColor(stop.color));
+      colors.push_back(SkColor(stop.color));
   }
 
   // Copy the last stop to 1.0 if needed. See comment above about this float

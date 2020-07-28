@@ -891,6 +891,16 @@ class SystemWebAppManagerFileHandlingOriginTrialsBrowserTest
   url::Origin GetOrigin(const GURL& url) { return url::Origin::Create(url); }
 };
 
+// Test that file handling works when the App is first installed.
+IN_PROC_BROWSER_TEST_P(SystemWebAppManagerFileHandlingOriginTrialsBrowserTest,
+                       PRE_FileHandlingWorks) {
+  WaitForTestSystemAppInstall();
+
+  content::WebContents* web_contents = LaunchWithTestFiles();
+  EXPECT_TRUE(WaitForLaunchParam(web_contents));
+}
+
+// Test that file handling works when after a version upgrade.
 IN_PROC_BROWSER_TEST_P(SystemWebAppManagerFileHandlingOriginTrialsBrowserTest,
                        FileHandlingWorks) {
   WaitForTestSystemAppInstall();
@@ -1014,6 +1024,41 @@ IN_PROC_BROWSER_TEST_P(SystemWebAppManagerUninstallBrowserTest, PRE_Uninstall) {
 IN_PROC_BROWSER_TEST_P(SystemWebAppManagerUninstallBrowserTest, Uninstall) {
   WaitForTestSystemAppInstall();
   EXPECT_TRUE(GetManager().GetAppIds().empty());
+}
+
+// Test that all registered System Apps can be re-installed.
+class SystemWebAppManagerUpgradeBrowserTest
+    : public SystemWebAppManagerBrowserTest {
+ public:
+  SystemWebAppManagerUpgradeBrowserTest()
+      : SystemWebAppManagerBrowserTest(/*install_mock=*/false) {
+    SystemWebAppManager::EnableAllSystemAppsForTesting();
+  }
+  ~SystemWebAppManagerUpgradeBrowserTest() override = default;
+};
+
+IN_PROC_BROWSER_TEST_P(SystemWebAppManagerUpgradeBrowserTest, PRE_Upgrade) {
+  WaitForTestSystemAppInstall();
+  EXPECT_GE(GetManager().GetAppIds().size(), 1U);
+}
+
+IN_PROC_BROWSER_TEST_P(SystemWebAppManagerUpgradeBrowserTest, Upgrade) {
+  WaitForTestSystemAppInstall();
+  const auto& app_ids = GetManager().GetAppIds();
+
+  EXPECT_GE(app_ids.size(), 1U);
+
+  for (const auto& app_id : app_ids) {
+    const auto type = GetManager().GetSystemAppTypeForAppId(app_id).value();
+
+    // We don't launch Terminal in browsertest, because it requires resources
+    // that are only available in Chrome OS images.
+    if (type == SystemAppType::TERMINAL)
+      continue;
+
+    // Launch other System Apps normally, and check the app's launch_url loads.
+    EXPECT_TRUE(LaunchApp(type));
+  }
 }
 
 // Tests that SWA-specific data is correctly migrated to Web Apps without
@@ -1486,5 +1531,14 @@ INSTANTIATE_TEST_SUITE_P(All,
                          ::testing::Values(ProviderType::kBookmarkApps,
                                            ProviderType::kWebApps),
                          ProviderTypeParamToString);
+
+// We only have concrete System Web Apps on Chrome OS.
+#if defined(OS_CHROMEOS)
+INSTANTIATE_TEST_SUITE_P(All,
+                         SystemWebAppManagerUpgradeBrowserTest,
+                         ::testing::Values(ProviderType::kBookmarkApps,
+                                           ProviderType::kWebApps),
+                         ProviderTypeParamToString);
+#endif
 
 }  // namespace web_app

@@ -2326,7 +2326,7 @@ HeapVector<Member<CSSStyleDeclaration>> InspectorCSSAgent::MatchingStyles(
   // This ensures that active stylesheets are up-to-date, such that
   // the subsequent collection of matching rules actually match against
   // the correct RuleSets.
-  element->GetDocument().UpdateStyleAndLayoutTreeForNode(element);
+  element->GetDocument().GetStyleEngine().UpdateActiveStyle();
 
   HeapVector<Member<CSSStyleRule>> rules =
       FilterDuplicateRules(style_resolver.PseudoCSSRulesForElement(

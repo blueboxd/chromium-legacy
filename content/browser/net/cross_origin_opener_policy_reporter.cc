@@ -66,10 +66,13 @@ RenderFrameHostImpl* GetSourceRfhForCoopReporting(
 
   // If this is a fresh popup we would consider the source RFH to be
   // our opener.
-  // TODO(arthursonzogni): There seems to be no guarantee that opener() is
-  // always set, do we need to be more cautious here?
-  if (!current_rfh->has_committed_any_navigation())
-    return current_rfh->frame_tree_node()->opener()->current_frame_host();
+  // TODO(arthursonzogni): This seems fragile. What if the opener has been
+  // removed in between the beginning of the navigation and now?
+  FrameTreeNode* opener = current_rfh->frame_tree_node()->opener();
+  // TODO(arthursonzogni): This seems fragile. What if the current_rfh was
+  // crashed and has_committed_any_navigation() returns false?
+  if (opener && !current_rfh->has_committed_any_navigation())
+    return opener->current_frame_host();
 
   // Otherwise this is simply the current RFH.
   return current_rfh;

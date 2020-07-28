@@ -30,6 +30,10 @@ class LiteVideoURLLoaderThrottle : public blink::URLLoaderThrottle {
       const blink::WebURLRequest& request,
       int render_frame_id);
 
+  // Resumes the media response if it was currently throttled. Otherwise its a
+  // no-op.
+  void ResumeIfThrottled();
+
   // blink::URLLoaderThrottle:
   void WillProcessResponse(const GURL& response_url,
                            network::mojom::URLResponseHead* response_head,

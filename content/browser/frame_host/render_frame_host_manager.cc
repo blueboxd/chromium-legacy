@@ -1538,26 +1538,6 @@ RenderFrameHostManager::GetSiteInstanceForNavigation(
     new_instance_impl->ReuseCurrentProcessIfPossible(
         current_instance->GetProcess());
   }
-
-  // If this is a same-site history navigation with different BrowsingInstances,
-  // the original navigation might have done a proactive BrowsingInstance swap,
-  // which means we should try to reuse the current process (because we did too
-  // on the original navigation).
-  bool is_history_navigation = !!dest_instance;
-  bool swapped_browsing_instance =
-      !new_instance->IsRelatedSiteInstance(current_instance);
-  if (IsProactivelySwapBrowsingInstanceOnSameSiteNavigationEnabled() &&
-      is_history_navigation && swapped_browsing_instance &&
-      frame_tree_node_->IsMainFrame() &&
-      IsCurrentlySameSite(
-          static_cast<RenderFrameHostImpl*>(render_frame_host_.get()),
-          dest_url)) {
-    // TODO(crbug.com/1107269): DCHECK for frame_tree_node_->IsMainFrame() once
-    // we can guarantee all cross-BrowsingInstance history navigations only
-    // happen on main frames.
-    new_instance_impl->ReuseCurrentProcessIfPossible(
-        current_instance->GetProcess());
-  }
   return new_instance;
 }
 

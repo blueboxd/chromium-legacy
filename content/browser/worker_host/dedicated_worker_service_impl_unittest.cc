@@ -20,16 +20,12 @@
 #include "mojo/public/cpp/bindings/remote.h"
 #include "mojo/public/cpp/bindings/self_owned_receiver.h"
 #include "third_party/blink/public/common/features.h"
-#include "third_party/blink/public/mojom/tokens/worker_tokens.mojom.h"
+#include "third_party/blink/public/common/tokens/worker_tokens.h"
+#include "third_party/blink/public/common/tokens/worker_tokens_mojom_traits.h"
 #include "third_party/blink/public/mojom/worker/dedicated_worker_host_factory.mojom.h"
 #include "third_party/blink/public/mojom/worker/worker_main_script_load_params.mojom.h"
 
 namespace content {
-
-blink::mojom::DedicatedWorkerTokenPtr CreateDedicatedWorkerTokenPtr() {
-  return blink::mojom::DedicatedWorkerToken::New(
-      base::UnguessableToken::Create());
-}
 
 // Mocks a dedicated worker living in a renderer process.
 class MockDedicatedWorker
@@ -52,14 +48,14 @@ class MockDedicatedWorker
 
     if (base::FeatureList::IsEnabled(blink::features::kPlzDedicatedWorker)) {
       factory_->CreateWorkerHostAndStartScriptLoad(
-          CreateDedicatedWorkerTokenPtr(),
+          blink::DedicatedWorkerToken::Create(),
           /*script_url=*/GURL(), network::mojom::CredentialsMode::kSameOrigin,
           blink::mojom::FetchClientSettingsObject::New(),
           mojo::PendingRemote<blink::mojom::BlobURLToken>(),
           receiver_.BindNewPipeAndPassRemote());
     } else {
       factory_->CreateWorkerHost(
-          CreateDedicatedWorkerTokenPtr(),
+          blink::DedicatedWorkerToken::Create(),
           browser_interface_broker_.BindNewPipeAndPassReceiver(),
           base::BindOnce([](const network::CrossOriginEmbedderPolicy&) {}));
     }
@@ -167,7 +163,7 @@ class TestDedicatedWorkerServiceObserver
 
   // DedicatedWorkerService::Observer:
   void OnWorkerCreated(
-      const blink::mojom::DedicatedWorkerToken& token,
+      const blink::DedicatedWorkerToken& token,
       int worker_process_id,
       GlobalFrameRoutingId ancestor_render_frame_host_id) override {
     bool inserted =
@@ -181,7 +177,7 @@ class TestDedicatedWorkerServiceObserver
       std::move(on_worker_event_callback_).Run();
   }
   void OnBeforeWorkerDestroyed(
-      const blink::mojom::DedicatedWorkerToken& token,
+      const blink::DedicatedWorkerToken& token,
       GlobalFrameRoutingId ancestor_render_frame_host_id) override {
     size_t removed = dedicated_worker_infos_.erase(token);
     DCHECK_EQ(removed, 1u);
@@ -189,9 +185,8 @@ class TestDedicatedWorkerServiceObserver
     if (on_worker_event_callback_)
       std::move(on_worker_event_callback_).Run();
   }
-  void OnFinalResponseURLDetermined(
-      const blink::mojom::DedicatedWorkerToken& token,
-      const GURL& url) override {}
+  void OnFinalResponseURLDetermined(const blink::DedicatedWorkerToken& token,
+                                    const GURL& url) override {}
 
   void RunUntilWorkerEvent() {
     base::RunLoop run_loop;
@@ -199,7 +194,7 @@ class TestDedicatedWorkerServiceObserver
     run_loop.Run();
   }
 
-  const base::flat_map<blink::mojom::DedicatedWorkerToken, DedicatedWorkerInfo>&
+  const base::flat_map<blink::DedicatedWorkerToken, DedicatedWorkerInfo>&
   dedicated_worker_infos() const {
     return dedicated_worker_infos_;
   }
@@ -209,7 +204,7 @@ class TestDedicatedWorkerServiceObserver
   // is called.
   base::OnceClosure on_worker_event_callback_;
 
-  base::flat_map<blink::mojom::DedicatedWorkerToken, DedicatedWorkerInfo>
+  base::flat_map<blink::DedicatedWorkerToken, DedicatedWorkerInfo>
       dedicated_worker_infos_;
 };
 

@@ -333,6 +333,22 @@ chrome.inputMethodPrivate.setSettings = function(engineID, settings, callback) {
 chrome.inputMethodPrivate.setCompositionRange = function(parameters, callback) {};
 
 /**
+ * Get the screen coordinates of the autocorrected word's bounds.
+ * @param {{
+ *   contextID: number
+ * }} parameters
+ * @param {function({
+ *   x: number,
+ *   y: number,
+ *   width: number,
+ *   height: number
+ * }): void=} callback Called with screen coordinates of the autocorrect word
+ *     when the operation completes. On failure, chrome.runtime.lastError is
+ *     set.
+ */
+chrome.inputMethodPrivate.getAutocorrectCharacterBounds = function(parameters, callback) {};
+
+/**
  * Set the autocorrect range and autocorrect word. If this extension does not
  * own the active IME, this fails.
  * @param {{

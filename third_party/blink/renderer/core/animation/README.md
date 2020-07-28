@@ -1,8 +1,10 @@
-# `Source/core/animation`
+# core/animation
 
 This directory contains the main thread animation engine. This implements the
 Web Animations timing model that drives CSS Animations, Transitions and exposes
 the Web Animations API (e.g. `element.animate()`) to Javascript.
+
+[TOC]
 
 ## Contacts
 

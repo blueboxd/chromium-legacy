@@ -63,8 +63,8 @@ std::unique_ptr<base::Value> SerializePasswordFormFillData(
 // |completionHandler| cannot be nil.
 - (void)fillPasswordForm:(std::unique_ptr<base::Value>)form
                  inFrame:(web::WebFrame*)frame
-            withUsername:(NSString*)username
-                password:(NSString*)password
+            withUsername:(std::string)username
+                password:(std::string)password
        completionHandler:(void (^)(NSString*))completionHandler;
 
 // Fills new password field for (optional) |newPasswordIdentifier| and for

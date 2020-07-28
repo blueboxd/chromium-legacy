@@ -389,6 +389,10 @@ void AddClearBrowsingDataStrings(content::WebUIDataSource* html_source,
       {"historyDeletionDialogTitle",
        IDS_CLEAR_BROWSING_DATA_HISTORY_NOTICE_TITLE},
       {"historyDeletionDialogOK", IDS_CLEAR_BROWSING_DATA_HISTORY_NOTICE_OK},
+      {"passwordsDeletionDialogTitle",
+       IDS_CLEAR_BROWSING_DATA_PASSWORDS_NOTICE_TITLE},
+      {"passwordsDeletionDialogOK",
+       IDS_CLEAR_BROWSING_DATA_PASSWORDS_NOTICE_OK},
       {"installedAppsConfirm", IDS_SETTINGS_CLEAR_INSTALLED_APPS_DATA_CONFIRM},
       {"installedAppsTitle", IDS_SETTINGS_CLEAR_INSTALLED_APPS_DATA_TITLE},
       {"notificationWarning", IDS_SETTINGS_NOTIFICATION_WARNING},
@@ -410,6 +414,11 @@ void AddClearBrowsingDataStrings(content::WebUIDataSource* html_source,
           IDS_CLEAR_BROWSING_DATA_HISTORY_NOTICE,
           l10n_util::GetStringUTF16(
               IDS_SETTINGS_CLEAR_DATA_MYACTIVITY_URL_IN_DIALOG)));
+  html_source->AddString(
+      "passwordsDeletionDialogBody",
+      l10n_util::GetStringFUTF16(
+          IDS_CLEAR_BROWSING_DATA_PASSWORDS_NOTICE,
+          l10n_util::GetStringUTF16(IDS_PASSWORDS_WEB_LINK)));
 
   AddLocalizedStringsBulk(html_source, kLocalizedStrings);
 }

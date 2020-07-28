@@ -25,25 +25,24 @@ class CONTENT_EXPORT DedicatedWorkerServiceImpl
   void EnumerateDedicatedWorkers(Observer* observer) override;
 
   // Notifies all observers about a new worker.
-  void NotifyWorkerCreated(
-      const blink::mojom::DedicatedWorkerToken& worker_token,
-      int worker_process_id,
-      GlobalFrameRoutingId ancestor_render_frame_host_id);
+  void NotifyWorkerCreated(const blink::DedicatedWorkerToken& worker_token,
+                           int worker_process_id,
+                           GlobalFrameRoutingId ancestor_render_frame_host_id);
 
   // Notifies all observers about a worker being destroyed.
   void NotifyBeforeWorkerDestroyed(
-      const blink::mojom::DedicatedWorkerToken& worker_token,
+      const blink::DedicatedWorkerToken& worker_token,
       GlobalFrameRoutingId ancestor_render_frame_host_id);
 
   // Notifies all observers that a worker's final response URL was determined.
   void NotifyWorkerFinalResponseURLDetermined(
-      const blink::mojom::DedicatedWorkerToken& worker_token,
+      const blink::DedicatedWorkerToken& worker_token,
       const GURL& url);
 
   // Returns true if a worker with the given token has already been registered
   // with the service. This allows for malformed messages with duplicated
   // tokens to be detected, and the offending renderer to be shutdown.
-  bool HasToken(const blink::mojom::DedicatedWorkerToken& worker_token) const;
+  bool HasToken(const blink::DedicatedWorkerToken& worker_token) const;
 
  private:
   base::ObserverList<Observer> observers_;
@@ -60,7 +59,7 @@ class CONTENT_EXPORT DedicatedWorkerServiceImpl
     GlobalFrameRoutingId ancestor_render_frame_host_id;
     base::Optional<GURL> final_response_url;
   };
-  base::flat_map<blink::mojom::DedicatedWorkerToken, DedicatedWorkerInfo>
+  base::flat_map<blink::DedicatedWorkerToken, DedicatedWorkerInfo>
       dedicated_worker_infos_;
 };
 

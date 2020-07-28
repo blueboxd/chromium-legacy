@@ -17,6 +17,8 @@
 #include "base/files/file_util.h"
 #include "base/message_loop/message_pump_type.h"
 #include "base/task/single_thread_task_executor.h"
+#include "base/test/task_environment.h"
+#include "base/test/test_timeouts.h"
 #include "mojo/core/embedder/embedder.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "ui/gfx/geometry/rect.h"
@@ -50,14 +52,27 @@ class MockPlatformWindowDelegate : public ui::PlatformWindowDelegate {
                void(gfx::AcceleratedWidget widget));
   MOCK_METHOD0(OnAcceleratedWidgetDestroyed, void());
   MOCK_METHOD1(OnActivationChanged, void(bool active));
+  MOCK_METHOD0(OnMouseEnter, void());
 
  private:
   DISALLOW_COPY_AND_ASSIGN(MockPlatformWindowDelegate);
 };
 
+struct Environment {
+  Environment()
+      : task_environment((base::CommandLine::Init(0, nullptr),
+                          TestTimeouts::Initialize(),
+                          base::test::TaskEnvironment::MainThreadType::UI)) {
+    logging::SetMinLogLevel(logging::LOG_FATAL);
+  }
+
+  base::test::TaskEnvironment task_environment;
+};
+
 }  // namespace
 
 extern "C" int LLVMFuzzerTestOneInput(const uint8_t* data, size_t size) {
+  static Environment env;
   FuzzedDataProvider data_provider(data, size);
 
   mojo::core::Init();
@@ -68,8 +83,6 @@ extern "C" int LLVMFuzzerTestOneInput(const uint8_t* data, size_t size) {
       DRM_FORMAT_XBGR8888,    DRM_FORMAT_ARGB8888,    DRM_FORMAT_XRGB8888,
       DRM_FORMAT_XRGB2101010, DRM_FORMAT_XBGR2101010, DRM_FORMAT_RGB565,
       DRM_FORMAT_NV12,        DRM_FORMAT_YVU420};
-
-  base::SingleThreadTaskExecutor main_task_executor(base::MessagePumpType::UI);
 
   wl::TestWaylandServerThread server;
   CHECK(server.Start(6));
@@ -82,8 +95,6 @@ extern "C" int LLVMFuzzerTestOneInput(const uint8_t* data, size_t size) {
       connection.get());
 
   MockPlatformWindowDelegate delegate;
-  std::unique_ptr<ui::WaylandWindow> window =
-      std::make_unique<ui::WaylandWindow>(&delegate, connection.get());
   gfx::AcceleratedWidget widget = gfx::kNullAcceleratedWidget;
 
   EXPECT_CALL(delegate, OnAcceleratedWidgetAvailable(_))
@@ -91,11 +102,13 @@ extern "C" int LLVMFuzzerTestOneInput(const uint8_t* data, size_t size) {
   ui::PlatformWindowInitProperties properties;
   properties.bounds = gfx::Rect(0, 0, 800, 600);
   properties.type = ui::PlatformWindowType::kWindow;
-  CHECK(window->Initialize(std::move(properties)));
+  std::unique_ptr<ui::WaylandWindow> window = ui::WaylandWindow::Create(
+      &delegate, connection.get(), std::move(properties));
+
   CHECK_NE(widget, gfx::kNullAcceleratedWidget);
 
   // Wait until everything is initialised.
-  base::RunLoop().RunUntilIdle();
+  env.task_environment.RunUntilIdle();
 
   base::FilePath temp_dir, temp_path;
   base::ScopedFD fd =
@@ -131,16 +144,16 @@ extern "C" int LLVMFuzzerTestOneInput(const uint8_t* data, size_t size) {
   EXPECT_CALL(*server.zwp_linux_dmabuf_v1(), CreateParams(_, _, _));
   auto* manager_host = connection->buffer_manager_host();
   manager_host->CreateDmabufBasedBuffer(
-      widget, mojo::PlatformHandle(std::move(fd)), buffer_size, strides,
-      offsets, modifiers, kFormat, kPlaneCount, kBufferId);
+      mojo::PlatformHandle(std::move(fd)), buffer_size, strides, offsets,
+      modifiers, kFormat, kPlaneCount, kBufferId);
 
   // Wait until the buffers are created.
-  base::RunLoop().RunUntilIdle();
+  env.task_environment.RunUntilIdle();
 
   manager_host->DestroyBuffer(widget, kBufferId);
 
   // Wait until the buffers are destroyed.
-  base::RunLoop().RunUntilIdle();
+  env.task_environment.RunUntilIdle();
 
   // Pause the server so it is not running when mock expectations are validated.
   server.Pause();

@@ -8,7 +8,7 @@
 #include "base/observer_list_types.h"
 #include "content/common/content_export.h"
 #include "content/public/browser/global_routing_id.h"
-#include "third_party/blink/public/mojom/tokens/worker_tokens.mojom.h"
+#include "third_party/blink/public/common/tokens/worker_tokens.h"
 
 class GURL;
 
@@ -24,11 +24,11 @@ class CONTENT_EXPORT DedicatedWorkerService {
     // yet started in the renderer since its script still has to be downloaded
     // and evaluated.
     virtual void OnWorkerCreated(
-        const blink::mojom::DedicatedWorkerToken& worker_token,
+        const blink::DedicatedWorkerToken& worker_token,
         int worker_process_id,
         GlobalFrameRoutingId ancestor_render_frame_host_id) = 0;
     virtual void OnBeforeWorkerDestroyed(
-        const blink::mojom::DedicatedWorkerToken& worker_token,
+        const blink::DedicatedWorkerToken& worker_token,
         GlobalFrameRoutingId ancestor_render_frame_host_id) = 0;
 
     // Called when the final response URL (the URL after redirects) was
@@ -36,7 +36,7 @@ class CONTENT_EXPORT DedicatedWorkerService {
     //
     // TODO(pmonette): Implement this in derived classes and make it pure.
     virtual void OnFinalResponseURLDetermined(
-        const blink::mojom::DedicatedWorkerToken& worker_token,
+        const blink::DedicatedWorkerToken& worker_token,
         const GURL& url) {}
   };
 

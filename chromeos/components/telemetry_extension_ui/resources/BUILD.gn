@@ -18,7 +18,6 @@ group("closure_compile") {
 
 js_type_check("trusted_closure_compile") {
   deps = [
-    ":message_pipe",
     ":message_types",
     ":trusted",
   ]
@@ -26,7 +25,6 @@ js_type_check("trusted_closure_compile") {
 
 js_type_check("untrusted_closure_compile") {
   deps = [
-    ":message_pipe",
     ":message_types",
     ":untrusted",
   ]
@@ -36,18 +34,19 @@ js_type_check("untrusted_worker_closure_compile") {
   deps = [ ":untrusted_worker" ]
 }
 
-js_library("message_pipe") {
-}
-
 js_library("message_types") {
   deps = [ "../mojom:mojom_js_library_for_compile" ]
 }
 
 js_library("trusted") {
-  deps = [ "../mojom:mojom_js_library_for_compile" ]
+  deps = [
+    "../mojom:mojom_js_library_for_compile",
+    "//chromeos/components/system_apps/public/js:message_pipe",
+  ]
 }
 
 js_library("untrusted") {
+  deps = [ "//chromeos/components/system_apps/public/js:message_pipe" ]
 }
 
 js_library("untrusted_worker") {

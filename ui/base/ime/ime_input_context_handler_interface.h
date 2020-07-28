@@ -32,7 +32,7 @@ class COMPONENT_EXPORT(UI_BASE_IME) IMEInputContextHandlerInterface {
       uint32_t before,
       uint32_t after,
       const std::vector<ui::ImeTextSpan>& text_spans) = 0;
-
+  virtual gfx::Rect GetAutocorrectCharacterBounds() = 0;
   // Set the autocorrect range with text.
   virtual bool SetAutocorrectRange(const base::string16& autocorrect_text,
                                    uint32_t start,

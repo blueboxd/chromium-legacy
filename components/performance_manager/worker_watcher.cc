@@ -145,7 +145,7 @@ void WorkerWatcher::TearDown() {
 }
 
 void WorkerWatcher::OnWorkerCreated(
-    const blink::mojom::DedicatedWorkerToken& dedicated_worker_token,
+    const blink::DedicatedWorkerToken& dedicated_worker_token,
     int worker_process_id,
     content::GlobalFrameRoutingId ancestor_render_frame_host_id) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
@@ -155,7 +155,7 @@ void WorkerWatcher::OnWorkerCreated(
   auto worker_node = PerformanceManagerImpl::CreateWorkerNode(
       browser_context_id_, WorkerNode::WorkerType::kDedicated,
       process_node_source_->GetProcessNode(worker_process_id),
-      dedicated_worker_token.value);
+      dedicated_worker_token.value());
   auto insertion_result = dedicated_worker_nodes_.emplace(
       dedicated_worker_token, std::move(worker_node));
   DCHECK(insertion_result.second);
@@ -165,7 +165,7 @@ void WorkerWatcher::OnWorkerCreated(
 }
 
 void WorkerWatcher::OnBeforeWorkerDestroyed(
-    const blink::mojom::DedicatedWorkerToken& dedicated_worker_token,
+    const blink::DedicatedWorkerToken& dedicated_worker_token,
     content::GlobalFrameRoutingId ancestor_render_frame_host_id) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
@@ -186,7 +186,7 @@ void WorkerWatcher::OnBeforeWorkerDestroyed(
 }
 
 void WorkerWatcher::OnFinalResponseURLDetermined(
-    const blink::mojom::DedicatedWorkerToken& dedicated_worker_token,
+    const blink::DedicatedWorkerToken& dedicated_worker_token,
     const GURL& url) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
@@ -415,7 +415,7 @@ bool WorkerWatcher::RemoveChildWorker(
 }
 
 WorkerNodeImpl* WorkerWatcher::GetDedicatedWorkerNode(
-    const blink::mojom::DedicatedWorkerToken& dedicated_worker_token) {
+    const blink::DedicatedWorkerToken& dedicated_worker_token) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
   auto it = dedicated_worker_nodes_.find(dedicated_worker_token);

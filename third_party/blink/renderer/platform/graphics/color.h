@@ -31,6 +31,8 @@
 #include "third_party/blink/renderer/platform/wtf/forward.h"
 #include "third_party/blink/renderer/platform/wtf/text/unicode.h"
 
+typedef uint32_t SkColor;
+
 namespace blink {
 
 class Color;
@@ -119,6 +121,8 @@ class PLATFORM_EXPORT Color {
   void GetRGBA(float& r, float& g, float& b, float& a) const;
   void GetRGBA(double& r, double& g, double& b, double& a) const;
   void GetHSL(double& h, double& s, double& l) const;
+
+  explicit operator SkColor() const;
 
   Color Light() const;
   Color Dark() const;

@@ -94,12 +94,14 @@ class MODULES_EXPORT UserMediaRequest final
                                   MediaType media_type,
                                   const MediaStreamConstraints* options,
                                   Callbacks*,
+                                  base::OnceClosure success_update_callback,
                                   MediaErrorState&);
   static UserMediaRequest* Create(ExecutionContext*,
                                   UserMediaController*,
                                   const MediaStreamConstraints* options,
                                   V8NavigatorUserMediaSuccessCallback*,
                                   V8NavigatorUserMediaErrorCallback*,
+                                  base::OnceClosure success_update_callback,
                                   MediaErrorState&);
   static UserMediaRequest* CreateForTesting(const MediaConstraints& audio,
                                             const MediaConstraints& video);
@@ -109,7 +111,8 @@ class MODULES_EXPORT UserMediaRequest final
                    MediaType media_type,
                    MediaConstraints audio,
                    MediaConstraints video,
-                   Callbacks*);
+                   Callbacks*,
+                   base::OnceClosure success_update_callback);
   virtual ~UserMediaRequest();
 
   LocalDOMWindow* GetWindow();
@@ -161,6 +164,7 @@ class MODULES_EXPORT UserMediaRequest final
   Member<UserMediaController> controller_;
 
   Member<Callbacks> callbacks_;
+  base::OnceClosure success_update_callback_;
   bool is_resolved_ = false;
 };
 

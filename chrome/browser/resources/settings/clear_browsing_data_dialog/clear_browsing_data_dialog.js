@@ -14,6 +14,7 @@ import 'chrome://resources/cr_elements/shared_vars_css.m.js';
 import 'chrome://resources/polymer/v3_0/iron-pages/iron-pages.js';
 import 'chrome://resources/polymer/v3_0/paper-spinner/paper-spinner-lite.js';
 import './history_deletion_dialog.js';
+import './passwords_deletion_dialog.js';
 import './installed_app_checkbox.js';
 import '../controls/settings_checkbox.js';
 import '../icons.m.js';
@@ -124,6 +125,18 @@ Polymer({
 
     /** @private */
     showHistoryDeletionDialog_: {
+      type: Boolean,
+      value: false,
+    },
+
+    /** @private */
+    showPasswordsDeletionDialogLater_: {
+      type: Boolean,
+      value: false,
+    },
+
+    /** @private */
+    showPasswordsDeletionDialog_: {
       type: Boolean,
       value: false,
     },
@@ -434,20 +447,28 @@ Polymer({
         .forEach(checkbox => checkbox.sendPrefChange());
 
     this.recordInstalledAppsInteractions_();
-    const shouldShowNotice = await this.browserProxy_.clearBrowsingData(
-        dataTypes, timePeriod, this.installedApps_);
+    const {showHistoryNotice, showPasswordsNotice} =
+        await this.browserProxy_.clearBrowsingData(
+            dataTypes, timePeriod, this.installedApps_);
     this.clearingInProgress_ = false;
-    this.showHistoryDeletionDialog_ = shouldShowNotice;
+    this.showHistoryDeletionDialog_ = showHistoryNotice;
+    // If both the history notice and the passwords notice should be shown, show
+    // the history notice first, and then show the passwords notice once the
+    // history notice gets closed.
+    this.showPasswordsDeletionDialog_ =
+        showPasswordsNotice && !showHistoryNotice;
+    this.showPasswordsDeletionDialogLater_ =
+        showPasswordsNotice && showHistoryNotice;
     chrome.metricsPrivate.recordMediumTime(
         'History.ClearBrowsingData.TimeSpentInDialog',
         Date.now() - this.dialogOpenedTime_);
-    if (!shouldShowNotice) {
+    if (!showPasswordsNotice && !showHistoryNotice) {
       this.closeDialogs_();
     }
   },
 
   /**
-   * Closes clear brtowsing data or installed app dialog if they are open.
+   * Closes clear browsing data or installed app dialog if they are open.
    * @private
    */
   closeDialogs_() {
@@ -466,10 +487,32 @@ Polymer({
 
   /**
    * Handles the closing of the notice about other forms of browsing history.
+   * @param {!Event} e
    * @private
    */
-  onHistoryDeletionDialogClose_() {
+  onHistoryDeletionDialogClose_(e) {
+    // Stop the close event from propagating further and also automatically
+    // closing the main CBD dialog. There's closeDialogs_() for that.
+    e.stopPropagation();
     this.showHistoryDeletionDialog_ = false;
+    if (this.showPasswordsDeletionDialogLater_) {
+      this.showPasswordsDeletionDialogLater_ = false;
+      this.showPasswordsDeletionDialog_ = true;
+    } else {
+      this.closeDialogs_();
+    }
+  },
+
+  /**
+   * Handles the closing of the notice about incomplete passwords deletion.
+   * @param {!Event} e
+   * @private
+   */
+  onPasswordsDeletionDialogClose_(e) {
+    // Stop the close event from propagating further and also automatically
+    // closing the main CBD dialog. There's closeDialogs_() for that.
+    e.stopPropagation();
+    this.showPasswordsDeletionDialog_ = false;
     this.closeDialogs_();
   },
 

@@ -150,6 +150,7 @@
 #include "chrome/browser/ui/login/login_handler.h"
 #include "chrome/browser/ui/login/login_navigation_throttle.h"
 #include "chrome/browser/ui/login/login_tab_helper.h"
+#include "chrome/browser/ui/passwords/well_known_change_password_navigation_throttle.h"
 #include "chrome/browser/ui/prefs/pref_watcher.h"
 #include "chrome/browser/ui/sync/sync_promo_ui.h"
 #include "chrome/browser/ui/tab_contents/chrome_web_contents_view_delegate.h"
@@ -465,7 +466,6 @@
 #include "chrome/browser/ui/browser_list.h"
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/passwords/google_password_manager_navigation_throttle.h"
-#include "chrome/browser/ui/passwords/well_known_change_password_navigation_throttle.h"
 #include "chrome/browser/ui/search/new_tab_page_navigation_throttle.h"
 #include "chrome/browser/webauthn/authenticator_request_scheduler.h"
 #include "chrome/browser/webauthn/chrome_authenticator_request_delegate.h"
@@ -4045,6 +4045,10 @@ ChromeContentBrowserClient::CreateThrottlesForNavigation(
 
   MaybeAddThrottle(TabUnderNavigationThrottle::MaybeCreate(handle), &throttles);
 
+  MaybeAddThrottle(
+      WellKnownChangePasswordNavigationThrottle::MaybeCreateThrottleFor(handle),
+      &throttles);
+
   throttles.push_back(std::make_unique<PolicyBlocklistNavigationThrottle>(
       handle, handle->GetWebContents()->GetBrowserContext()));
 
@@ -4070,9 +4074,6 @@ ChromeContentBrowserClient::CreateThrottlesForNavigation(
       GooglePasswordManagerNavigationThrottle::MaybeCreateThrottleFor(handle),
       &throttles);
 
-  MaybeAddThrottle(
-      WellKnownChangePasswordNavigationThrottle::MaybeCreateThrottleFor(handle),
-      &throttles);
 #endif
 
   throttles.push_back(

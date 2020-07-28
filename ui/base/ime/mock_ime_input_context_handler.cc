@@ -47,6 +47,10 @@ bool MockIMEInputContextHandler::SetCompositionRange(
   return true;
 }
 
+gfx::Rect MockIMEInputContextHandler::GetAutocorrectCharacterBounds() {
+  return gfx::Rect();
+}
+
 bool MockIMEInputContextHandler::SetAutocorrectRange(
     const base::string16& autocorrect_text,
     uint32_t start,

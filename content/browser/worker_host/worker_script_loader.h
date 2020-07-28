@@ -23,7 +23,7 @@
 #include "net/url_request/url_request.h"
 #include "services/network/public/cpp/resource_request.h"
 #include "services/network/public/mojom/url_loader.mojom.h"
-#include "third_party/blink/public/mojom/tokens/worker_tokens.mojom.h"
+#include "third_party/blink/public/common/tokens/worker_tokens.h"
 
 namespace blink {
 class ThrottlingURLLoader;
@@ -70,7 +70,7 @@ class WorkerScriptLoader : public network::mojom::URLLoader,
   // chrome-extension:// URL.
   WorkerScriptLoader(
       int process_id,
-      const blink::mojom::DedicatedWorkerToken& dedicated_worker_token,
+      const blink::DedicatedWorkerToken& dedicated_worker_token,
       SharedWorkerId shared_worker_id,
       int32_t routing_id,
       int32_t request_id,

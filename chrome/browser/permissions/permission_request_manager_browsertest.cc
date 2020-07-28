@@ -1014,4 +1014,87 @@ IN_PROC_BROWSER_TEST_F(PermissionDialogTest, MAYBE_InvokeUi_protected_media) {
   ShowAndVerifyUi();
 }
 
+IN_PROC_BROWSER_TEST_F(PermissionRequestManagerWithBackForwardCacheBrowserTest,
+                       NoPermissionBubbleShownForPagesInCache) {
+  ASSERT_TRUE(embedded_test_server()->Start());
+  GURL url_a = embedded_test_server()->GetURL("a.com", "/title1.html");
+  GURL url_b = embedded_test_server()->GetURL("b.com", "/title1.html");
+
+  ui_test_utils::NavigateToURL(browser(), url_a);
+  content::RenderFrameHost* rfh_a = GetActiveMainFrame();
+  content::RenderFrameDeletedObserver a_observer(rfh_a);
+
+  ui_test_utils::NavigateToURL(browser(), url_b);
+  ASSERT_FALSE(a_observer.deleted());
+  EXPECT_TRUE(rfh_a->IsInBackForwardCache());
+
+  permissions::MockPermissionRequest req;
+  GetPermissionRequestManager()->AddRequest(rfh_a, &req);
+
+  base::RunLoop().RunUntilIdle();
+
+  EXPECT_EQ(0, bubble_factory()->show_count());
+  EXPECT_EQ(0, bubble_factory()->TotalRequestCount());
+  // Page gets evicted if bubble would have been showed
+  EXPECT_TRUE(a_observer.deleted());
+}
+
+IN_PROC_BROWSER_TEST_F(PermissionRequestManagerWithBackForwardCacheBrowserTest,
+                       RequestsForPagesInCacheNotGrouped) {
+  ASSERT_TRUE(embedded_test_server()->Start());
+  GURL url_a = embedded_test_server()->GetURL("a.com", "/title1.html");
+  GURL url_b = embedded_test_server()->GetURL("b.com", "/title1.html");
+
+  ui_test_utils::NavigateToURL(browser(), url_a);
+  content::RenderFrameHost* rfh_a = GetActiveMainFrame();
+  content::RenderFrameDeletedObserver a_observer(rfh_a);
+
+  ui_test_utils::NavigateToURL(browser(), url_b);
+  ASSERT_FALSE(a_observer.deleted());
+  EXPECT_TRUE(rfh_a->IsInBackForwardCache());
+  content::RenderFrameHost* rfh_b = GetActiveMainFrame();
+
+  // PERMISSION_MEDIASTREAM_MIC, PERMISSION_MEDIASTREAM_CAMERA, and
+  // PERMISSION_CAMERA_PAN_TILT_ZOOM requests are grouped if they come from the
+  // same origin. Make sure this will not include requests from a cached frame.
+  // Note pages will not be cached when navigating within the same origin, so we
+  // have different urls in the navigations above but use the same url (default)
+  // for the MockPermissionRequest here.
+  permissions::MockPermissionRequest req_a_1(
+      "req_a_1",
+      permissions::PermissionRequestType::PERMISSION_CAMERA_PAN_TILT_ZOOM,
+      permissions::PermissionRequestGestureType::GESTURE);
+  permissions::MockPermissionRequest req_a_2(
+      "req_a_2",
+      permissions::PermissionRequestType::PERMISSION_CAMERA_PAN_TILT_ZOOM,
+      permissions::PermissionRequestGestureType::GESTURE);
+  permissions::MockPermissionRequest req_b_1(
+      "req_b_1",
+      permissions::PermissionRequestType::PERMISSION_MEDIASTREAM_CAMERA,
+      permissions::PermissionRequestGestureType::GESTURE);
+  permissions::MockPermissionRequest req_b_2(
+      "req_b_2", permissions::PermissionRequestType::PERMISSION_MEDIASTREAM_MIC,
+      permissions::PermissionRequestGestureType::GESTURE);
+  GetPermissionRequestManager()->AddRequest(rfh_a,
+                                            &req_a_1);  // Should be skipped
+  GetPermissionRequestManager()->AddRequest(rfh_b, &req_b_1);
+  GetPermissionRequestManager()->AddRequest(rfh_a,
+                                            &req_a_2);  // Should be skipped
+  GetPermissionRequestManager()->AddRequest(rfh_b, &req_b_2);
+
+  bubble_factory()->WaitForPermissionBubble();
+
+  // One bubble with the two grouped requests and none of the skipped ones.
+  EXPECT_EQ(1, bubble_factory()->show_count());
+  EXPECT_EQ(2, bubble_factory()->TotalRequestCount());
+  EXPECT_TRUE(req_a_1.cancelled());
+  EXPECT_TRUE(req_a_2.cancelled());
+
+  // Page gets evicted if bubble would have been showed.
+  EXPECT_TRUE(a_observer.deleted());
+
+  // Cleanup before we delete the requests.
+  GetPermissionRequestManager()->Closing();
+}
+
 }  // anonymous namespace

@@ -46,9 +46,23 @@ class LiteVideoHintAgent
   // has the parameters needed for calculating the throttling latency.
   bool HasLiteVideoHint() const;
 
+  void AddThrottle(LiteVideoURLLoaderThrottle* throttle);
+  void RemoveThrottle(LiteVideoURLLoaderThrottle* throttle);
+
+  const std::set<LiteVideoURLLoaderThrottle*>& GetActiveThrottlesForTesting()
+      const {
+    return active_throttles_;
+  }
+
  private:
+  friend class LiteVideoHintAgentTest;
+
   // content::RenderFrameObserver overrides
   void OnDestruct() override;
+
+  // Stop throttling and resume the current throttled media requests
+  // immediately. Throttling could start again for new requests
+  void StopThrottling();
 
   // The network downlink bandwidth target in kilobytes per second used to
   // calculate the throttling delay on media requests
@@ -69,6 +83,10 @@ class LiteVideoHintAgent
   // The number of media KB that have been left unthrottled before starting
   // to introduce a throttling delay.
   int kilobytes_buffered_before_throttle_ = 0;
+
+  // Set of media requests that are throttled currently. These are maintained
+  // here to resume them immediately upon StopThrottling()
+  std::set<LiteVideoURLLoaderThrottle*> active_throttles_;
 };
 
 }  // namespace lite_video

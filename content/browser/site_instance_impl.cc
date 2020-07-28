@@ -359,9 +359,6 @@ void SiteInstanceImpl::ReuseCurrentProcessIfPossible(
           current_process, GetIsolationContext(), site_info_, IsGuest())) {
     return;
   }
-
-  // TODO(crbug.com/1055779 ): Don't try to reuse process if either of the
-  // SiteInstances are cross-origin isolated (uses COOP/COEP).
   SetProcessInternal(current_process);
 }
 

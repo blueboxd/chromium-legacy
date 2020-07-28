@@ -55,7 +55,7 @@ DedicatedWorkerHostFactoryImpl::DedicatedWorkerHostFactoryImpl(
 DedicatedWorkerHostFactoryImpl::~DedicatedWorkerHostFactoryImpl() = default;
 
 void DedicatedWorkerHostFactoryImpl::CreateWorkerHost(
-    blink::mojom::DedicatedWorkerTokenPtr token,
+    const blink::DedicatedWorkerToken& token,
     mojo::PendingReceiver<blink::mojom::BrowserInterfaceBroker> broker_receiver,
     base::OnceCallback<void(const network::CrossOriginEmbedderPolicy&)>
         callback) {
@@ -79,7 +79,7 @@ void DedicatedWorkerHostFactoryImpl::CreateWorkerHost(
   if (!service)
     return;
 
-  if (service->HasToken(*token)) {
+  if (service->HasToken(token)) {
     mojo::ReportBadMessage("DWH_INVALID_WORKER_TOKEN");
     return;
   }
@@ -89,7 +89,7 @@ void DedicatedWorkerHostFactoryImpl::CreateWorkerHost(
   coep_reporter_->Clone(coep_reporter.InitWithNewPipeAndPassReceiver());
 
   auto* host = new DedicatedWorkerHost(
-      service, *token, worker_process_host, creator_render_frame_host_id_,
+      service, token, worker_process_host, creator_render_frame_host_id_,
       ancestor_render_frame_host_id_, creator_origin_,
       cross_origin_embedder_policy_, std::move(coep_reporter));
   host->BindBrowserInterfaceBrokerReceiver(std::move(broker_receiver));
@@ -97,7 +97,7 @@ void DedicatedWorkerHostFactoryImpl::CreateWorkerHost(
 
 // PlzDedicatedWorker:
 void DedicatedWorkerHostFactoryImpl::CreateWorkerHostAndStartScriptLoad(
-    blink::mojom::DedicatedWorkerTokenPtr token,
+    const blink::DedicatedWorkerToken& token,
     const GURL& script_url,
     network::mojom::CredentialsMode credentials_mode,
     blink::mojom::FetchClientSettingsObjectPtr
@@ -118,7 +118,7 @@ void DedicatedWorkerHostFactoryImpl::CreateWorkerHostAndStartScriptLoad(
   if (!service)
     return;
 
-  if (service->HasToken(*token)) {
+  if (service->HasToken(token)) {
     mojo::ReportBadMessage("DWH_INVALID_WORKER_TOKEN");
     return;
   }
@@ -131,7 +131,7 @@ void DedicatedWorkerHostFactoryImpl::CreateWorkerHostAndStartScriptLoad(
   coep_reporter_->Clone(coep_reporter.InitWithNewPipeAndPassReceiver());
 
   auto* host = new DedicatedWorkerHost(
-      service, *token, worker_process_host, creator_render_frame_host_id_,
+      service, token, worker_process_host, creator_render_frame_host_id_,
       ancestor_render_frame_host_id_, creator_origin_,
       cross_origin_embedder_policy_, std::move(coep_reporter));
   mojo::PendingRemote<blink::mojom::BrowserInterfaceBroker> broker;

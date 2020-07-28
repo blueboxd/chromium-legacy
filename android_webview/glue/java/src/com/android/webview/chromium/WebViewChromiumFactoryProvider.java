@@ -17,6 +17,7 @@ import android.provider.Settings;
 import android.view.ViewGroup;
 import android.webkit.CookieManager;
 import android.webkit.GeolocationPermissions;
+import android.webkit.PacProcessor;
 import android.webkit.ServiceWorkerController;
 import android.webkit.TokenBindingService;
 import android.webkit.TracingController;
@@ -714,5 +715,10 @@ public class WebViewChromiumFactoryProvider implements WebViewFactoryProvider {
         getSingleton().addTask(() -> {
             getSingleton().getBrowserContextOnUiThread().setWebLayerRunningInSameProcess();
         });
+    }
+
+    @Override
+    public PacProcessor getPacProcessor() {
+        return PacProcessorImpl.getInstance();
     }
 }

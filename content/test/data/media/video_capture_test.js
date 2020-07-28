@@ -10,7 +10,6 @@ var hasReceivedTrackEndedEvent = false;
 var hasReceivedDeviceChangeEventReceived = false;
 
 function startVideoCaptureAndVerifySize(video_width, video_height) {
-  console.log('Calling getUserMediaAndWaitForVideoRendering.');
   var constraints = {
     video: {
       width: {exact: video_width},
@@ -27,47 +26,56 @@ function startVideoCaptureAndVerifySize(video_width, video_height) {
 
 function startVideoCaptureFromVirtualDeviceAndVerifyUniformColorVideoWithSize(
     video_width, video_height) {
-  console.log('Trying to find device named "Virtual Device".');
-  navigator.mediaDevices.enumerateDevices().then(function(devices) {
-    var target_device;
-    devices.forEach(function(device) {
-      if (device.kind == 'videoinput') {
-        console.log('Found videoinput device with label ' + device.label);
-        if (device.label == 'Virtual Device') {
-          target_device = device;
+  navigator.mediaDevices.getUserMedia({video: true}).then(stream => {
+    stream.getTracks().forEach(track => track.stop());
+    navigator.mediaDevices.enumerateDevices().then(function(devices) {
+      var target_device;
+      devices.forEach(function(device) {
+        if (device.kind == 'videoinput') {
+          if (device.label == 'Virtual Device') {
+            target_device = device;
+          }
         }
+      });
+      if (target_device == null) {
+        failTest(
+            'No video input device was found with label = Virtual ' +
+            'Device');
+        return;
       }
+      var device_specific_constraints = {
+        video: {
+          width: {exact: video_width},
+          height: {exact: video_height},
+          deviceId: {exact: target_device.deviceId}
+        }
+      };
+      navigator.mediaDevices.getUserMedia(device_specific_constraints)
+          .then(function(stream) {
+            waitForVideoStreamToSatisfyRequirementFunction(
+                stream, detectUniformColorVideoWithDimensionPlaying,
+                video_width, video_height);
+          })
+          .catch(failedCallback);
     });
-    if (target_device == null) {
-      failTest(
-          'No video input device was found with label = Virtual ' +
-          'Device');
-      return;
-    }
-    var device_specific_constraints = {
-      video: {
-        width: {exact: video_width},
-        height: {exact: video_height},
-        deviceId: {exact: target_device.deviceId}
-      }
-    };
-    navigator.mediaDevices.getUserMedia(device_specific_constraints)
-        .then(function(stream) {
-          waitForVideoStreamToSatisfyRequirementFunction(
-              stream, detectUniformColorVideoWithDimensionPlaying, video_width,
-              video_height);
-        })
-        .catch(failedCallback);
+  }).catch(failedCallback);
+}
+
+function requestDevicePermission() {
+  navigator.mediaDevices.getUserMedia({video:true}).then(stream => {
+    stream.getTracks().forEach(track => track.stop());
+    reportTestSuccess();
+  },
+  e => {
+    failTest(e);
   });
 }
 
 function enumerateVideoCaptureDevicesAndVerifyCount(expected_count) {
-  console.log('Enumerating devices and verifying count.');
   navigator.mediaDevices.enumerateDevices().then(function(devices) {
     var actual_count = 0;
     devices.forEach(function(device) {
       if (device.kind == 'videoinput') {
-        console.log('Found videoinput device with label ' + device.label);
         actual_count = actual_count + 1;
       }
     });

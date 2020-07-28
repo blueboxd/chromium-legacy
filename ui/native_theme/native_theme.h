@@ -471,6 +471,9 @@ class NATIVE_THEME_EXPORT NativeTheme {
   // pressed states.
   virtual SkColor GetSystemButtonPressedColor(SkColor base_color) const;
 
+  // Assign the focus-ring-appropriate alpha value to the provided base_color.
+  virtual SkColor FocusRingColorForBaseColor(SkColor base_color) const;
+
  protected:
   explicit NativeTheme(bool should_only_use_dark_colors);
   virtual ~NativeTheme();

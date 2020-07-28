@@ -33,6 +33,7 @@ namespace {
 
 constexpr const char kAccept[] = "accept";
 constexpr const char kBack[] = "back";
+constexpr const char kRetry[] = "retry";
 
 }  // namespace
 
@@ -81,6 +82,18 @@ void TermsOfServiceScreen::OnAccept() {
   OnDecline();
 }
 
+void TermsOfServiceScreen::OnRetry() {
+  // If the Terms of Service have been successfully downloaded or are still
+  // being downloaded, this button should not be accessible. If the user managed
+  // to activate it somehow anyway, do not do anything.
+  if (view_ && view_->AreTermsLoaded())
+    return;
+  if (terms_of_service_loader_)
+    return;
+
+  StartDownload();
+}
+
 void TermsOfServiceScreen::OnViewDestroyed(TermsOfServiceScreenView* view) {
   if (view_ == view)
     view_ = nullptr;
@@ -126,6 +139,8 @@ void TermsOfServiceScreen::OnUserAction(const std::string& action_id) {
     OnDecline();
   else if (action_id == kAccept)
     OnAccept();
+  else if (action_id == kRetry)
+    OnRetry();
   else
     BaseScreen::OnUserAction(action_id);
 }

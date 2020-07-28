@@ -378,33 +378,39 @@ void ClearBrowsingDataHandler::OnClearingTaskFinished(
     std::unique_ptr<AccountReconcilor::ScopedSyncedDataDeletion> deletion,
     uint64_t failed_data_types) {
   PrefService* prefs = profile_->GetPrefs();
-  int notice_shown_times = prefs->GetInteger(
+  int history_notice_shown_times = prefs->GetInteger(
       browsing_data::prefs::kClearBrowsingDataHistoryNoticeShownTimes);
 
   // When the deletion is complete, we might show an additional dialog with
   // a notice about other forms of browsing history. This is the case if
-  const bool show_notice =
+  const bool show_history_notice =
       // 1. The dialog is relevant for the user.
       show_history_deletion_dialog_ &&
       // 2. The notice has been shown less than |kMaxTimesHistoryNoticeShown|.
-      notice_shown_times < kMaxTimesHistoryNoticeShown &&
+      history_notice_shown_times < kMaxTimesHistoryNoticeShown &&
       // 3. The selected data types contained browsing history.
       data_types.find(BrowsingDataType::HISTORY) != data_types.end();
-  // TODO(crbug.com/1099260): In case |failed_data_types| is non-empty, show a
-  // different notice!
 
-  if (show_notice) {
+  if (show_history_notice) {
     // Increment the preference.
     prefs->SetInteger(
         browsing_data::prefs::kClearBrowsingDataHistoryNoticeShownTimes,
-        notice_shown_times + 1);
+        history_notice_shown_times + 1);
   }
 
   UMA_HISTOGRAM_BOOLEAN(
-      "History.ClearBrowsingData.ShownHistoryNoticeAfterClearing", show_notice);
+      "History.ClearBrowsingData.ShownHistoryNoticeAfterClearing",
+      show_history_notice);
 
-  ResolveJavascriptCallback(base::Value(webui_callback_id),
-                            base::Value(show_notice));
+  bool show_passwords_notice =
+      (failed_data_types &
+       ChromeBrowsingDataRemoverDelegate::DATA_TYPE_PASSWORDS);
+
+  base::Value result(base::Value::Type::DICTIONARY);
+  result.SetBoolKey("showHistoryNotice", show_history_notice);
+  result.SetBoolKey("showPasswordsNotice", show_passwords_notice);
+
+  ResolveJavascriptCallback(base::Value(webui_callback_id), std::move(result));
 }
 
 void ClearBrowsingDataHandler::HandleInitialize(const base::ListValue* args) {

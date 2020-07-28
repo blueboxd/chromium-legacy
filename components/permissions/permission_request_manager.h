@@ -212,6 +212,8 @@ class PermissionRequestManager
 
   void DoAutoResponseForTesting();
 
+  int CountQueuedPermissionRequests(PermissionRequest* request);
+
   // Factory to be used to create views when needed.
   PermissionPrompt::Factory view_factory_;
 
@@ -227,7 +229,16 @@ class PermissionRequestManager
   // When this is non-empty, the |view_| is generally non-null as long as the
   // tab is visible.
   std::vector<PermissionRequest*> requests_;
-  base::circular_deque<PermissionRequest*> queued_requests_;
+
+  struct RequestAndSource {
+    int render_process_id;
+    int render_frame_id;
+    PermissionRequest* request;
+
+    bool IsSourceFrameInactiveAndDisallowReactivation() const;
+  };
+
+  base::circular_deque<RequestAndSource> queued_requests_;
   // Maps from the first request of a kind to subsequent requests that were
   // duped against it.
   std::unordered_multimap<PermissionRequest*, PermissionRequest*>

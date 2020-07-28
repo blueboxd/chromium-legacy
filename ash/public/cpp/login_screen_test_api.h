@@ -85,6 +85,7 @@ class ASH_PUBLIC_EXPORT LoginScreenTestApi {
 
   static void SetPinRequestWidgetShownCallback(
       base::RepeatingClosure on_pin_request_widget_shown);
+  static base::string16 GetPinRequestWidgetTitle();
   static void SubmitPinRequestWidget(const std::string& pin);
   static void CancelPinRequestWidget();
 

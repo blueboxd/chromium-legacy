@@ -1,16 +1,38 @@
 <style include="cr-icons">
-  cr-icon-button {
+  #backButton {
     --cr-icon-button-icon-size: 14px;
-    --cr-icon-button-size: 25px;
     --cr-icon-button-margin-start: 4px;
+    --cr-icon-button-size: 25px;
     margin-top: 4px;
+  }
+
+  #banner {
+    background-image: url(profile_creation_flow/images/banner_light_image.svg);
+    background-size: 100% 100%;
+    height: 100%;
+    position: absolute;
+    top: 0;
+    width: 100%;
+  }
+
+  @media (prefers-color-scheme: dark) {
+    #banner {
+      background-image:
+          url(profile_creation_flow/images/banner_dark_image.svg);
+    }
+  }
+
+  #bannerContainer {
+    height: 266px;
+    position: relative;
+    width: 100%;
   }
 </style>
 
-<cr-icon-button class="icon-arrow-back" id="backButton"
-    on-click="onTapBack_" aria-label="$i18n{backButtonLabel}">
-</cr-icon-button>
-
-<!-- TODO(crbug.com/1105865): Remove the debug info. -->
-<div style$="background-color:[[profileThemeInfo.themeColor]]; height:100px;">
+<div id="bannerContainer"
+    style$="background-color:[[profileThemeInfo.themeColor]];">
+    <cr-icon-button class="icon-arrow-back" id="backButton"
+        on-click="onTapBack_" aria-label="$i18n{backButtonLabel}">
+    </cr-icon-button>
+    <div id="banner"></div>
 </div>

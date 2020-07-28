@@ -20,7 +20,7 @@
 #include "content/public/browser/service_worker_context_observer.h"
 #include "content/public/browser/shared_worker_id.h"
 #include "content/public/browser/shared_worker_service.h"
-#include "third_party/blink/public/mojom/tokens/worker_tokens.mojom.h"
+#include "third_party/blink/public/common/tokens/worker_tokens.h"
 
 namespace performance_manager {
 
@@ -51,14 +51,14 @@ class WorkerWatcher : public content::DedicatedWorkerService::Observer,
 
   // content::DedicatedWorkerService::Observer:
   void OnWorkerCreated(
-      const blink::mojom::DedicatedWorkerToken& dedicated_worker_token,
+      const blink::DedicatedWorkerToken& dedicated_worker_token,
       int worker_process_id,
       content::GlobalFrameRoutingId ancestor_render_frame_host_id) override;
   void OnBeforeWorkerDestroyed(
-      const blink::mojom::DedicatedWorkerToken& dedicated_worker_token,
+      const blink::DedicatedWorkerToken& dedicated_worker_token,
       content::GlobalFrameRoutingId ancestor_render_frame_host_id) override;
   void OnFinalResponseURLDetermined(
-      const blink::mojom::DedicatedWorkerToken& dedicated_worker_token,
+      const blink::DedicatedWorkerToken& dedicated_worker_token,
       const GURL& url) override;
 
   // content::SharedWorkerService::Observer:
@@ -104,7 +104,7 @@ class WorkerWatcher : public content::DedicatedWorkerService::Observer,
 
   // Helper functions to retrieve an existing worker node.
   WorkerNodeImpl* GetDedicatedWorkerNode(
-      const blink::mojom::DedicatedWorkerToken& dedicated_worker_token);
+      const blink::DedicatedWorkerToken& dedicated_worker_token);
   WorkerNodeImpl* GetSharedWorkerNode(content::SharedWorkerId shared_worker_id);
   WorkerNodeImpl* GetServiceWorkerNode(int64_t version_id);
 
@@ -135,8 +135,7 @@ class WorkerWatcher : public content::DedicatedWorkerService::Observer,
   FrameNodeSource* const frame_node_source_;
 
   // Maps each dedicated worker ID to its worker node.
-  base::flat_map<blink::mojom::DedicatedWorkerToken,
-                 std::unique_ptr<WorkerNodeImpl>>
+  base::flat_map<blink::DedicatedWorkerToken, std::unique_ptr<WorkerNodeImpl>>
       dedicated_worker_nodes_;
 
   // Maps each shared worker ID to its worker node.

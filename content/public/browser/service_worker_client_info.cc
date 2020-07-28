@@ -10,7 +10,7 @@ ServiceWorkerClientInfo::ServiceWorkerClientInfo(int frame_tree_node_id)
     : type_(blink::mojom::ServiceWorkerClientType::kWindow),
       frame_tree_node_id_(frame_tree_node_id) {}
 ServiceWorkerClientInfo::ServiceWorkerClientInfo(
-    const blink::mojom::DedicatedWorkerToken& dedicated_worker_token)
+    const blink::DedicatedWorkerToken& dedicated_worker_token)
     : type_(blink::mojom::ServiceWorkerClientType::kDedicatedWorker),
       dedicated_worker_token_(dedicated_worker_token) {}
 ServiceWorkerClientInfo::ServiceWorkerClientInfo(
@@ -31,7 +31,7 @@ int ServiceWorkerClientInfo::GetFrameTreeNodeId() const {
   return frame_tree_node_id_;
 }
 
-const blink::mojom::DedicatedWorkerToken&
+const blink::DedicatedWorkerToken&
 ServiceWorkerClientInfo::GetDedicatedWorkerToken() const {
   DCHECK_EQ(type_, blink::mojom::ServiceWorkerClientType::kDedicatedWorker);
   return dedicated_worker_token_;

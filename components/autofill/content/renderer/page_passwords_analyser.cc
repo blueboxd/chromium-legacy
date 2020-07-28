@@ -256,17 +256,10 @@ std::vector<FormInputCollection> ExtractFormsForAnalysis(
     const std::vector<WebNode>& nodes = pair.second;
     if (nodes.size() <= 1)
       continue;
-    if (!id_attr.empty()) {
-      logger->Send(LinkDocumentation(base::StringPrintf(
-                       "Found %zu elements with non-unique id #%s:",
-                       nodes.size(), id_attr.c_str())),
-                   PageFormAnalyserLogger::kWarning, nodes);
-    } else {
-      logger->Send(LinkDocumentation(base::StringPrintf(
-                       "Found %zu elements with non-unique id #%s:",
-                       nodes.size(), id_attr.c_str())),
-                   PageFormAnalyserLogger::kWarning, nodes);
-    }
+    logger->Send(LinkDocumentation(base::StringPrintf(
+                     "Found %zu elements with non-unique id #%s:", nodes.size(),
+                     id_attr.c_str())),
+                 PageFormAnalyserLogger::kWarning, nodes);
   }
 
   return form_input_collections;

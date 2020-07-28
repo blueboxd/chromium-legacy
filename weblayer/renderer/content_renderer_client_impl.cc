@@ -124,6 +124,16 @@ bool ContentRendererClientImpl::HasErrorPage(int http_status_code) {
   return http_status_code >= 400;
 }
 
+bool ContentRendererClientImpl::ShouldSuppressErrorPage(
+    content::RenderFrame* render_frame,
+    const GURL& url,
+    int error_code) {
+  auto* error_page_helper = ErrorPageHelper::GetForFrame(render_frame);
+  if (error_page_helper)
+    return error_page_helper->ShouldSuppressErrorPage(error_code);
+  return false;
+}
+
 void ContentRendererClientImpl::PrepareErrorPage(
     content::RenderFrame* render_frame,
     const blink::WebURLError& error,
@@ -131,9 +141,11 @@ void ContentRendererClientImpl::PrepareErrorPage(
     std::string* error_html) {
   auto* error_page_helper = ErrorPageHelper::GetForFrame(render_frame);
   if (error_page_helper) {
-    error_page_helper->PrepareErrorPage(error_page::Error::NetError(
-        error.url(), error.reason(), error.resolve_error_info(),
-        error.has_copy_in_cache()));
+    error_page_helper->PrepareErrorPage(
+        error_page::Error::NetError(error.url(), error.reason(),
+                                    error.resolve_error_info(),
+                                    error.has_copy_in_cache()),
+        http_method == "POST");
   }
 
 #if defined(OS_ANDROID)

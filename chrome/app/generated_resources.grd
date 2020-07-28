@@ -6250,6 +6250,16 @@ the Bookmarks menu.">
       <message name="IDS_CLEAR_BROWSING_DATA_HISTORY_NOTICE_OK" desc="Button in a dialog that informs the user that the deletion of Chrome's browsing data has been completed.">
         Ok, got it
       </message>
+      <!-- TODO(crbug.com/1099260): Add proper strings and make them translateable. -->
+      <message name="IDS_CLEAR_BROWSING_DATA_PASSWORDS_NOTICE" desc="Body text of a dialog informing the user that some of their passwords were not successfully deleted." translateable="false">
+        We were not able to delete all passwords stored in your Google Account. Try again or visit <ph name="BEGIN_LINK">&lt;a target="_blank" href="$1"&gt;</ph>passwords.google.com<ph name="END_LINK">&lt;/a&gt;</ph>.
+      </message>
+      <message name="IDS_CLEAR_BROWSING_DATA_PASSWORDS_NOTICE_TITLE" desc="Title of a dialog informing the user that some of their passwords were not successfully deleted." translateable="false">
+        Some passwords were not deleted
+      </message>
+      <message name="IDS_CLEAR_BROWSING_DATA_PASSWORDS_NOTICE_OK" desc="Button in a dialog informing the user that some of their passwords were not successfully deleted." translateable="false">
+        Ok, got it
+      </message>
 
       <!-- Content Settings dialog data -->
       <message name="IDS_MEDIA_SELECTED_MIC_LABEL" desc="The label of the 'microphone device' select menu">

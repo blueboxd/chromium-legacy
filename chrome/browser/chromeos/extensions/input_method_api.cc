@@ -68,6 +68,8 @@ namespace GetSettings = extensions::api::input_method_private::GetSettings;
 namespace SetSettings = extensions::api::input_method_private::SetSettings;
 namespace SetCompositionRange =
     extensions::api::input_method_private::SetCompositionRange;
+namespace GetAutocorrectCharacterBounds =
+    extensions::api::input_method_private::GetAutocorrectCharacterBounds;
 namespace SetAutocorrectRange =
     extensions::api::input_method_private::SetAutocorrectRange;
 namespace SetSelectionRange =
@@ -448,6 +450,32 @@ InputMethodPrivateSetCompositionRangeFunction::Run() {
     return RespondNow(Error(InformativeError(error, function_name())));
   }
   return RespondNow(NoArguments());
+}
+
+ExtensionFunction::ResponseAction
+InputMethodPrivateGetAutocorrectCharacterBoundsFunction::Run() {
+  std::string error;
+  InputMethodEngineBase* engine =
+      GetEngineIfActive(browser_context(), extension_id(), &error);
+  if (!engine)
+    return RespondNow(Error(InformativeError(error, function_name())));
+
+  const auto parent_params =
+      GetAutocorrectCharacterBounds::Params::Create(*args_);
+  const auto& params = parent_params->parameters;
+  const gfx::Rect rect =
+      engine->GetAutocorrectCharacterBounds(params.context_id, &error);
+  if (rect.IsEmpty()) {
+    auto results = std::make_unique<base::ListValue>();
+    results->Append(std::make_unique<base::Value>(false));
+    return RespondNow(Error(InformativeError(error, function_name())));
+  }
+  auto ret = std::make_unique<base::DictionaryValue>();
+  ret->SetInteger("x", rect.x());
+  ret->SetInteger("y", rect.y());
+  ret->SetInteger("width", rect.width());
+  ret->SetInteger("height", rect.height());
+  return RespondNow(OneArgument(std::move(ret)));
 }
 
 ExtensionFunction::ResponseAction

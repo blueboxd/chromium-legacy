@@ -18,7 +18,6 @@ include_rules = [
   "+components/crash/core/common",
   "+components/download/public/common",
   "+components/embedder_support",
-  "+components/error_page/content/browser",
   "+components/find_in_page",
   "+components/infobars/android",
   "+components/infobars/content",

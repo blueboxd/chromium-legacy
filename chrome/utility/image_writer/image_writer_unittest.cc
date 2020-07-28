@@ -11,7 +11,7 @@
 #include "base/files/scoped_temp_dir.h"
 #include "base/run_loop.h"
 #include "base/test/task_environment.h"
-#include "chrome/utility/image_writer/error_messages.h"
+#include "chrome/utility/image_writer/error_message_strings.h"
 #include "chrome/utility/image_writer/image_writer.h"
 #include "chrome/utility/image_writer/image_writer_handler.h"
 #include "testing/gmock/include/gmock/gmock.h"

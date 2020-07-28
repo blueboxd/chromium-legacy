@@ -37,7 +37,7 @@ void DedicatedWorkerServiceImpl::RemoveObserver(Observer* observer) {
 
 void DedicatedWorkerServiceImpl::EnumerateDedicatedWorkers(Observer* observer) {
   for (const auto& kv : dedicated_worker_infos_) {
-    const blink::mojom::DedicatedWorkerToken& dedicated_worker_token = kv.first;
+    const blink::DedicatedWorkerToken& dedicated_worker_token = kv.first;
     const DedicatedWorkerInfo& dedicated_worker_info = kv.second;
 
     observer->OnWorkerCreated(
@@ -51,7 +51,7 @@ void DedicatedWorkerServiceImpl::EnumerateDedicatedWorkers(Observer* observer) {
 }
 
 void DedicatedWorkerServiceImpl::NotifyWorkerCreated(
-    const blink::mojom::DedicatedWorkerToken& worker_token,
+    const blink::DedicatedWorkerToken& worker_token,
     int worker_process_id,
     GlobalFrameRoutingId ancestor_render_frame_host_id) {
   bool inserted = dedicated_worker_infos_
@@ -68,7 +68,7 @@ void DedicatedWorkerServiceImpl::NotifyWorkerCreated(
 }
 
 void DedicatedWorkerServiceImpl::NotifyBeforeWorkerDestroyed(
-    const blink::mojom::DedicatedWorkerToken& dedicated_worker_token,
+    const blink::DedicatedWorkerToken& dedicated_worker_token,
     GlobalFrameRoutingId ancestor_render_frame_host_id) {
   size_t removed = dedicated_worker_infos_.erase(dedicated_worker_token);
   DCHECK_EQ(1u, removed);
@@ -80,7 +80,7 @@ void DedicatedWorkerServiceImpl::NotifyBeforeWorkerDestroyed(
 }
 
 void DedicatedWorkerServiceImpl::NotifyWorkerFinalResponseURLDetermined(
-    const blink::mojom::DedicatedWorkerToken& dedicated_worker_token,
+    const blink::DedicatedWorkerToken& dedicated_worker_token,
     const GURL& url) {
   auto it = dedicated_worker_infos_.find(dedicated_worker_token);
   DCHECK(it != dedicated_worker_infos_.end());
@@ -92,7 +92,7 @@ void DedicatedWorkerServiceImpl::NotifyWorkerFinalResponseURLDetermined(
 }
 
 bool DedicatedWorkerServiceImpl::HasToken(
-    const blink::mojom::DedicatedWorkerToken& worker_token) const {
+    const blink::DedicatedWorkerToken& worker_token) const {
   return dedicated_worker_infos_.count(worker_token);
 }
 

@@ -39,9 +39,9 @@
 #include "mojo/public/cpp/system/functions.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/blink/public/common/features.h"
+#include "third_party/blink/public/common/tokens/worker_tokens.h"
 #include "third_party/blink/public/mojom/service_worker/service_worker_object.mojom.h"
 #include "third_party/blink/public/mojom/service_worker/service_worker_registration.mojom.h"
-#include "third_party/blink/public/mojom/tokens/worker_tokens.mojom.h"
 #include "url/url_util.h"
 
 namespace content {
@@ -102,10 +102,6 @@ class ServiceWorkerTestContentBrowserClient : public TestContentBrowserClient {
  private:
   std::vector<AllowServiceWorkerCallLog> logs_;
 };
-
-blink::mojom::DedicatedWorkerToken CreateDedicatedWorkerToken() {
-  return blink::mojom::DedicatedWorkerToken(base::UnguessableToken::Create());
-}
 
 }  // namespace
 
@@ -1033,7 +1029,7 @@ TEST_F(ServiceWorkerContainerHostTestWithPlzDedicatedWorker,
   ASSERT_TRUE(
       base::FeatureList::IsEnabled(blink::features::kPlzDedicatedWorker));
   TestReservedClientsAreNotExposed(
-      ServiceWorkerClientInfo(CreateDedicatedWorkerToken()),
+      ServiceWorkerClientInfo(blink::DedicatedWorkerToken::Create()),
       GURL("https://www.example.com/dedicated_worker.js"));
 }
 
@@ -1104,7 +1100,7 @@ TEST_F(ServiceWorkerContainerHostTestWithPlzDedicatedWorker,
   ASSERT_TRUE(
       base::FeatureList::IsEnabled(blink::features::kPlzDedicatedWorker));
   TestClientPhaseTransition(
-      ServiceWorkerClientInfo(CreateDedicatedWorkerToken()),
+      ServiceWorkerClientInfo(blink::DedicatedWorkerToken::Create()),
       GURL("https://www.example.com/dedicated_worker.js"));
 }
 

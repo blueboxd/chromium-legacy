@@ -22,7 +22,7 @@ namespace content {
 
 WorkerScriptLoaderFactory::WorkerScriptLoaderFactory(
     int process_id,
-    const blink::mojom::DedicatedWorkerToken& dedicated_worker_token,
+    const blink::DedicatedWorkerToken& dedicated_worker_token,
     SharedWorkerId shared_worker_id,
     ServiceWorkerMainResourceHandle* service_worker_handle,
     base::WeakPtr<AppCacheHost> appcache_host,

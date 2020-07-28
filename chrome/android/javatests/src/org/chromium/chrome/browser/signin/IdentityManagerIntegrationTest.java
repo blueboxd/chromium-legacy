@@ -17,7 +17,6 @@ import org.chromium.base.test.BaseJUnit4ClassRunner;
 import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.chrome.test.util.browser.signin.AccountManagerTestRule;
 import org.chromium.components.signin.AccountManagerFacadeProvider;
-import org.chromium.components.signin.ChromeSigninController;
 import org.chromium.components.signin.base.CoreAccountId;
 import org.chromium.components.signin.base.CoreAccountInfo;
 import org.chromium.components.signin.identitymanager.IdentityManager;
@@ -54,9 +53,6 @@ public class IdentityManagerIntegrationTest {
 
         NativeLibraryTestUtils.loadNativeLibraryAndInitBrowserProcess();
 
-        // Make sure there is no account signed in yet.
-        ChromeSigninController.get().setSignedInAccountName(null);
-
         mAccountManagerTestRule.waitForSeeding();
         TestThreadUtils.runOnUiThreadBlocking(() -> {
             Profile profile = Profile.getLastUsedRegularProfile();
@@ -76,9 +72,6 @@ public class IdentityManagerIntegrationTest {
     public void tearDown() {
         TestThreadUtils.runOnUiThreadBlocking(
                 () -> { mIdentityMutator.reloadAllAccountsFromSystemWithPrimaryAccount(null); });
-
-        // TODO(https://crbug.com/1046412): Remove this.
-        ChromeSigninController.get().setSignedInAccountName(null);
     }
 
     @Test

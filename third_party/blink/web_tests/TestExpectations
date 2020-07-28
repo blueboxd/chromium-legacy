@@ -2688,6 +2688,21 @@ crbug.com/1018465 external/wpt/css/css-pseudo/active-selection-056.html [ Failur
 crbug.com/1105958 external/wpt/payment-request/payment-is-showing.https.html [ Timeout ]
 
 # ====== New tests from wpt-importer added here ======
+crbug.com/626703 [ Linux ] external/wpt/css/css-pseudo/selection-input-011.html [ Failure ]
+crbug.com/626703 [ Mac ] external/wpt/css/css-pseudo/selection-input-011.html [ Failure ]
+crbug.com/626703 [ Win ] external/wpt/css/css-pseudo/selection-input-011.html [ Failure ]
+crbug.com/626703 [ Linux ] external/wpt/css/css-pseudo/selection-intercharacter-011.html [ Failure ]
+crbug.com/626703 [ Mac ] external/wpt/css/css-pseudo/selection-intercharacter-011.html [ Failure ]
+crbug.com/626703 [ Win ] external/wpt/css/css-pseudo/selection-intercharacter-011.html [ Failure ]
+crbug.com/626703 [ Linux ] external/wpt/css/css-pseudo/selection-textarea-011.html [ Failure ]
+crbug.com/626703 [ Mac ] external/wpt/css/css-pseudo/selection-textarea-011.html [ Failure ]
+crbug.com/626703 [ Win ] external/wpt/css/css-pseudo/selection-textarea-011.html [ Failure ]
+crbug.com/626703 [ Linux ] external/wpt/css/css-pseudo/selection-intercharacter-012.html [ Failure ]
+crbug.com/626703 [ Mac ] external/wpt/css/css-pseudo/selection-intercharacter-012.html [ Failure ]
+crbug.com/626703 [ Win ] external/wpt/css/css-pseudo/selection-intercharacter-012.html [ Failure ]
+crbug.com/626703 [ Linux ] external/wpt/css/css-pseudo/selection-contenteditable-011.html [ Failure ]
+crbug.com/626703 [ Mac ] external/wpt/css/css-pseudo/selection-contenteditable-011.html [ Failure ]
+crbug.com/626703 [ Win ] external/wpt/css/css-pseudo/selection-contenteditable-011.html [ Failure ]
 crbug.com/626703 [ Linux ] external/wpt/css/css-grid/masonry/tentative/masonry-subgrid-002.html [ Failure ]
 crbug.com/626703 [ Mac ] external/wpt/css/css-grid/masonry/tentative/masonry-subgrid-002.html [ Failure ]
 crbug.com/626703 [ Win ] external/wpt/css/css-grid/masonry/tentative/masonry-subgrid-002.html [ Failure ]
@@ -5245,9 +5260,6 @@ crbug.com/856119 [ Win7 ] fast/js/regress/resolved-timezone-defined.html [ Pass 
 # Tests occasionaly timing out (flaky) on WebKit Win7 dbg builder
 crbug.com/757955 [ Win7 Debug ] http/tests/devtools/sources/debugger-pause/pause-on-elements-panel.js [ Pass Timeout ]
 crbug.com/757955 http/tests/devtools/tracing/timeline-paint/layer-tree.js [ Pass Failure Timeout ]
-
-# Temporarily disable test until DevTools roll happens.
-crbug.com/1103854 http/tests/devtools/modules-load-network.js [ Pass Failure ]
 
 # This test has a fixed number of time which can depend on performance.
 

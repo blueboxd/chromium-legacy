@@ -1,12 +1,12 @@
 <?xml version="1.0" ?>
 <manifest
     package="org.chromium.chrome.stable"
-    platformBuildVersionCode="29"
-    platformBuildVersionName="10"
+    platformBuildVersionCode="30"
+    platformBuildVersionName="11"
     tools:ignore="MissingVersion"
     xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools">
-  <uses-sdk android:minSdkVersion="24" android:targetSdkVersion="29"/>
+  <uses-sdk android:minSdkVersion="24" android:targetSdkVersion="30"/>
   <uses-permission-sdk-23 android:name="android.permission.USE_FINGERPRINT"/>
   <uses-permission-sdk-23 android:name="android.permission.USE_BIOMETRIC"/>
   <uses-permission-sdk-23 android:name="android.permission.REQUEST_INSTALL_PACKAGES"/>

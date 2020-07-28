@@ -58,6 +58,14 @@ class TestCertificateProviderExtension final
   // (By default, no PIN is requested.)
   void set_require_pin(const std::string& pin) { required_pin_ = pin; }
 
+  // Sets the number of remaining PIN attempts.
+  // Zero number means the lockout state, when no attempts are allowed anymore.
+  // A negative number denotes infinite number of attempts, which is the default
+  // behavior.
+  void set_remaining_pin_attempts(int remaining_pin_attempts) {
+    remaining_pin_attempts_ = remaining_pin_attempts;
+  }
+
   // Sets whether the extension should respond with a failure to the
   // onCertificatesRequested requests.
   void set_should_fail_certificate_requests(
@@ -94,6 +102,10 @@ class TestCertificateProviderExtension final
   // When non-empty, contains the expected PIN; the implementation will request
   // the PIN on every signature request in this case.
   base::Optional<std::string> required_pin_;
+  // The number of remaining PIN attempts.
+  // When equal to zero, signature requests will be failed immediately; when is
+  // negative, infinite number of attempts is allowed.
+  int remaining_pin_attempts_ = -1;
   bool should_fail_certificate_requests_ = false;
   bool should_fail_sign_digest_requests_ = false;
   content::NotificationRegistrar notification_registrar_;

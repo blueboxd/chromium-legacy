@@ -2,8 +2,9 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "chrome/utility/image_writer/error_message_strings.h"
+
 #include "build/build_config.h"
-#include "chrome/utility/image_writer/error_messages.h"
 
 namespace image_writer {
 namespace error {

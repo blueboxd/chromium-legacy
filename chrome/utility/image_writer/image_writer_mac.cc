@@ -23,7 +23,7 @@
 #include "base/strings/sys_string_conversions.h"
 #include "chrome/common/extensions/image_writer/image_writer_util_mac.h"
 #include "chrome/utility/image_writer/disk_unmounter_mac.h"
-#include "chrome/utility/image_writer/error_messages.h"
+#include "chrome/utility/image_writer/error_message_strings.h"
 #include "chrome/utility/image_writer/image_writer.h"
 
 namespace image_writer {

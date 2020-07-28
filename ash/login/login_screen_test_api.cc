@@ -706,6 +706,17 @@ void LoginScreenTestApi::SetPinRequestWidgetShownCallback(
 }
 
 // static
+base::string16 LoginScreenTestApi::GetPinRequestWidgetTitle() {
+  if (!PinRequestWidget::Get()) {
+    ADD_FAILURE() << "No PIN request widget is shown";
+    return base::string16();
+  }
+  PinRequestWidget::TestApi pin_widget_test(PinRequestWidget::Get());
+  PinRequestView::TestApi pin_view_test(pin_widget_test.pin_request_view());
+  return pin_view_test.title_label()->GetText();
+}
+
+// static
 void LoginScreenTestApi::SubmitPinRequestWidget(const std::string& pin) {
   if (!PinRequestWidget::Get())
     FAIL() << "No PIN request widget is shown";

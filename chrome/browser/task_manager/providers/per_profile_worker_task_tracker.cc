@@ -59,7 +59,7 @@ PerProfileWorkerTaskTracker::~PerProfileWorkerTaskTracker() {
 }
 
 void PerProfileWorkerTaskTracker::OnWorkerCreated(
-    const blink::mojom::DedicatedWorkerToken& worker_token,
+    const blink::DedicatedWorkerToken& worker_token,
     int worker_process_id,
     content::GlobalFrameRoutingId ancestor_render_frame_host_id) {
   CreateWorkerTask(worker_token, Task::Type::DEDICATED_WORKER,
@@ -67,13 +67,13 @@ void PerProfileWorkerTaskTracker::OnWorkerCreated(
 }
 
 void PerProfileWorkerTaskTracker::OnBeforeWorkerDestroyed(
-    const blink::mojom::DedicatedWorkerToken& worker_token,
+    const blink::DedicatedWorkerToken& worker_token,
     content::GlobalFrameRoutingId ancestor_render_frame_host_id) {
   DeleteWorkerTask(worker_token, &dedicated_worker_tasks_);
 }
 
 void PerProfileWorkerTaskTracker::OnFinalResponseURLDetermined(
-    const blink::mojom::DedicatedWorkerToken& worker_token,
+    const blink::DedicatedWorkerToken& worker_token,
     const GURL& url) {
   SetWorkerTaskScriptUrl(worker_token, url, &dedicated_worker_tasks_);
 }

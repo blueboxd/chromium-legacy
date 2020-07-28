@@ -45,6 +45,9 @@ class TermsOfServiceScreen : public BaseScreen {
   // Called when the user accepts the Terms of Service.
   void OnAccept();
 
+  // Called when the user retries to obtain the Terms of Service.
+  void OnRetry();
+
   // Called when view is destroyed so there is no dead reference to it.
   void OnViewDestroyed(TermsOfServiceScreenView* view);
 

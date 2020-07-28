@@ -66,19 +66,18 @@ class TestDedicatedWorkerService : public content::DedicatedWorkerService {
   void EnumerateDedicatedWorkers(Observer* observer) override;
 
   // Creates a new dedicated worker and returns its ID.
-  const blink::mojom::DedicatedWorkerToken& CreateDedicatedWorker(
+  const blink::DedicatedWorkerToken& CreateDedicatedWorker(
       int worker_process_id,
       content::GlobalFrameRoutingId client_render_frame_host_id);
 
   // Destroys an existing dedicated worker.
-  void DestroyDedicatedWorker(const blink::mojom::DedicatedWorkerToken& token);
+  void DestroyDedicatedWorker(const blink::DedicatedWorkerToken& token);
 
  private:
   base::ObserverList<Observer> observer_list_;
 
   // Maps each running worker to its client RenderFrameHost ID.
-  base::flat_map<blink::mojom::DedicatedWorkerToken,
-                 content::GlobalFrameRoutingId>
+  base::flat_map<blink::DedicatedWorkerToken, content::GlobalFrameRoutingId>
       dedicated_worker_client_frame_;
 
   DISALLOW_COPY_AND_ASSIGN(TestDedicatedWorkerService);
@@ -101,14 +100,14 @@ void TestDedicatedWorkerService::EnumerateDedicatedWorkers(Observer* observer) {
   ADD_FAILURE();
 }
 
-const blink::mojom::DedicatedWorkerToken&
+const blink::DedicatedWorkerToken&
 TestDedicatedWorkerService::CreateDedicatedWorker(
     int worker_process_id,
     content::GlobalFrameRoutingId client_render_frame_host_id) {
   // Create a new token for the worker and add it to the map, along with its
   // client ID.
-  const blink::mojom::DedicatedWorkerToken token(
-      base::UnguessableToken::Create());
+  const blink::DedicatedWorkerToken token(
+      blink::DedicatedWorkerToken::Create());
 
   auto result = dedicated_worker_client_frame_.emplace(
       token, client_render_frame_host_id);
@@ -124,7 +123,7 @@ TestDedicatedWorkerService::CreateDedicatedWorker(
 }
 
 void TestDedicatedWorkerService::DestroyDedicatedWorker(
-    const blink::mojom::DedicatedWorkerToken& token) {
+    const blink::DedicatedWorkerToken& token) {
   auto it = dedicated_worker_client_frame_.find(token);
   DCHECK(it != dedicated_worker_client_frame_.end());
 
@@ -605,7 +604,7 @@ class WorkerWatcherTest : public testing::Test {
 
   // Retrieves an existing worker node.
   WorkerNodeImpl* GetDedicatedWorkerNode(
-      const blink::mojom::DedicatedWorkerToken& token);
+      const blink::DedicatedWorkerToken& token);
   WorkerNodeImpl* GetSharedWorkerNode(content::SharedWorkerId shared_worker_id);
   WorkerNodeImpl* GetServiceWorkerNode(int64_t version_id);
 
@@ -687,7 +686,7 @@ void WorkerWatcherTest::CallOnGraphAndWait(
 }
 
 WorkerNodeImpl* WorkerWatcherTest::GetDedicatedWorkerNode(
-    const blink::mojom::DedicatedWorkerToken& token) {
+    const blink::DedicatedWorkerToken& token) {
   return worker_watcher_->GetDedicatedWorkerNode(token);
 }
 
@@ -711,7 +710,7 @@ TEST_F(WorkerWatcherTest, SimpleDedicatedWorker) {
           process_node_source()->GetProcessNode(render_process_id));
 
   // Create the worker.
-  const blink::mojom::DedicatedWorkerToken token =
+  const blink::DedicatedWorkerToken token =
       dedicated_worker_service()->CreateDedicatedWorker(render_process_id,
                                                         render_frame_host_id);
 
@@ -950,7 +949,7 @@ TEST_F(WorkerWatcherTest, FrameDestroyed) {
           process_node_source()->GetProcessNode(render_process_id));
 
   // Create a worker of each type.
-  const blink::mojom::DedicatedWorkerToken& token =
+  const blink::DedicatedWorkerToken& token =
       dedicated_worker_service()->CreateDedicatedWorker(render_process_id,
                                                         render_frame_host_id);
   content::SharedWorkerId shared_worker_id =

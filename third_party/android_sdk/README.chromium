@@ -1,11 +1,11 @@
 Name: Android SDK
 URL: http://developer.android.com/sdk/index.html
-Version: 29
-  Android SDK Build-tools 29.0.2
-  Android SDK Command-line Tools 1.0.0 rc1
-  Android SDK Emulator 29.1.12
-  Android SDK Platform-tools 29.0.5
-  Android SDK Platform API 29
+Version: 30
+  Android SDK Build-tools 30.0.1
+  Android SDK Command-line Tools 2.1
+  Android SDK Emulator 30.0.12
+  Android SDK Platform-tools 30.0.3
+  Android SDK Platform API 30
   Android SDK Sources 29
   Google Cloud Messaging 3
   SDK Patch Applier v4

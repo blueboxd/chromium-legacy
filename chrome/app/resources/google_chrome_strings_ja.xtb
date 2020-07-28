@@ -77,6 +77,7 @@
 <translation id="3089968997497233615">Google クロームブラウザがより速く、さらに便利に。いますぐトライ！</translation>
 <translation id="3127818369811890733">Chrome OS でデータを同期できませんでした。</translation>
 <translation id="3149510190863420837">Chrome アプリ</translation>
+<translation id="3351117925998652957">Chrome スペースを選択</translation>
 <translation id="3360895254066713204">Chrome Helper</translation>
 <translation id="3379938682270551431">{0,plural, =0{Chrome は今すぐ再起動されます}=1{Chrome は 1 秒後に再起動されます}other{Chrome は # 秒後に再起動されます}}</translation>
 <translation id="3395323229510056640">Chrome OS のヘルプを見る</translation>
@@ -205,6 +206,7 @@
 <translation id="7535429826459677826">Google Chrome Dev</translation>
 <translation id="7573289029918943991">デバイスが最新の状態かどうか確認するには、<ph name="LINK_BEGIN" />Chrome OS の設定<ph name="LINK_END" />をご覧ください</translation>
 <translation id="7589360514048265910">Mac OS X 10.9 はサポートされなくなったため、このパソコンでは今後 Google Chrome のアップデートは受信されません。</translation>
+<translation id="7591404275842302616">Chrome スペースを使用して、このデバイスでのブラウジングを管理できます</translation>
 <translation id="7592736734348559088">アカウントのログイン情報が最新ではないため、Google Chrome はデータを同期できませんでした。</translation>
 <translation id="7626032353295482388">Chrome へようこそ</translation>
 <translation id="7629695634924605473">Chrome では、特定のパスワードが侵害された事実の有無がわかります</translation>

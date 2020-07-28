@@ -41,9 +41,10 @@ enum Status {
   kAlreadyConnectedToEndpoint,
   // The remote endpoint is not connected; messages cannot be sent to it.
   kNotConnectedToEndpoint,
-  // There was an error trying to use the device's Bluetooth/WiFi/NFC
-  // capabilities.
-  kRadioError,
+  // There was an error trying to use the device's Bluetooth capabilities.
+  kBluetoothError,
+  // There was an error trying to use the device's WiFi capabilities.
+  kWifiLanError,
   // An attempt to interact with an in-flight Payload failed because it's
   // unknown to us.
   kPayloadUnknown,
@@ -70,12 +71,10 @@ struct ConnectionInfo {
 
 // Information about an endpoint when it's discovered.
 struct DiscoveredEndpointInfo {
-  // The ID of the service advertised by the remote endpoint.
-  string service_id;
-  // The human readable name of the remote endpoint.
-  string endpoint_name;
   // Information advertised by the remote endpoint.
   array<uint8> endpoint_info;
+  // The ID of the service advertised by the remote endpoint.
+  string service_id;
 };
 
 // The Strategy to be used when discovering or advertising to Nearby devices.

@@ -86,6 +86,26 @@ TEST_F(AppStartupParametersTest, ParseURLWithHttpsParsedURL) {
   EXPECT_EQ("https://www.google.com/", [params externalURL].spec());
 }
 
+// Tests that http url remains unchanged.
+TEST_F(AppStartupParametersTest, ParseURLWithHttpURL) {
+  NSURL* url = [NSURL URLWithString:@"http://www.google.com"];
+  ChromeAppStartupParameters* params =
+      [ChromeAppStartupParameters newChromeAppStartupParametersWithURL:url
+                                                 fromSourceApplication:nil];
+
+  EXPECT_EQ("http://www.google.com/", [params externalURL]);
+}
+
+// Tests that https url remains unchanged.
+TEST_F(AppStartupParametersTest, ParseURLWithHttpsURL) {
+  NSURL* url = [NSURL URLWithString:@"https://www.google.com"];
+  ChromeAppStartupParameters* params =
+      [ChromeAppStartupParameters newChromeAppStartupParametersWithURL:url
+                                                 fromSourceApplication:nil];
+
+  EXPECT_EQ("https://www.google.com/", [params externalURL]);
+}
+
 TEST_F(AppStartupParametersTest, ParseURLWithXCallbackURL) {
   NSURL* url = [NSURL URLWithString:
                           @"chromium-x-callback://x-callback-url/open?"

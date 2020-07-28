@@ -176,9 +176,9 @@ void NativeFileSystemFileWriterImpl::Write(
   RunWithWritePermission(
       base::BindOnce(&NativeFileSystemFileWriterImpl::WriteImpl,
                      weak_factory_.GetWeakPtr(), offset, std::move(data)),
-      base::BindOnce([](WriteCallback callback) {
-        std::move(callback).Run(native_file_system_error::FromStatus(
-                                    NativeFileSystemStatus::kPermissionDenied),
+      base::BindOnce([](blink::mojom::NativeFileSystemErrorPtr result,
+                        WriteCallback callback) {
+        std::move(callback).Run(std::move(result),
                                 /*bytes_written=*/0);
       }),
       std::move(callback));
@@ -193,9 +193,9 @@ void NativeFileSystemFileWriterImpl::WriteStream(
   RunWithWritePermission(
       base::BindOnce(&NativeFileSystemFileWriterImpl::WriteStreamImpl,
                      weak_factory_.GetWeakPtr(), offset, std::move(stream)),
-      base::BindOnce([](WriteStreamCallback callback) {
-        std::move(callback).Run(native_file_system_error::FromStatus(
-                                    NativeFileSystemStatus::kPermissionDenied),
+      base::BindOnce([](blink::mojom::NativeFileSystemErrorPtr result,
+                        WriteStreamCallback callback) {
+        std::move(callback).Run(std::move(result),
                                 /*bytes_written=*/0);
       }),
       std::move(callback));
@@ -208,9 +208,9 @@ void NativeFileSystemFileWriterImpl::Truncate(uint64_t length,
   RunWithWritePermission(
       base::BindOnce(&NativeFileSystemFileWriterImpl::TruncateImpl,
                      weak_factory_.GetWeakPtr(), length),
-      base::BindOnce([](TruncateCallback callback) {
-        std::move(callback).Run(native_file_system_error::FromStatus(
-            NativeFileSystemStatus::kPermissionDenied));
+      base::BindOnce([](blink::mojom::NativeFileSystemErrorPtr result,
+                        TruncateCallback callback) {
+        std::move(callback).Run(std::move(result));
       }),
       std::move(callback));
 }
@@ -221,9 +221,9 @@ void NativeFileSystemFileWriterImpl::Close(CloseCallback callback) {
   RunWithWritePermission(
       base::BindOnce(&NativeFileSystemFileWriterImpl::CloseImpl,
                      weak_factory_.GetWeakPtr()),
-      base::BindOnce([](CloseCallback callback) {
-        std::move(callback).Run(native_file_system_error::FromStatus(
-            NativeFileSystemStatus::kPermissionDenied));
+      base::BindOnce([](blink::mojom::NativeFileSystemErrorPtr result,
+                        CloseCallback callback) {
+        std::move(callback).Run(std::move(result));
       }),
       std::move(callback));
 }

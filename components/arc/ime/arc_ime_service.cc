@@ -431,7 +431,7 @@ void ArcImeService::SetCompositionText(
   ime_bridge_->SendSetCompositionText(composition);
 }
 
-void ArcImeService::ConfirmCompositionText(bool keep_selection) {
+uint32_t ArcImeService::ConfirmCompositionText(bool keep_selection) {
   if (!keep_selection) {
     InvalidateSurroundingTextAndSelectionRange();
   }
@@ -439,6 +439,7 @@ void ArcImeService::ConfirmCompositionText(bool keep_selection) {
   // Note: SendConfirmCompositonText() will commit the text and
   // keep the selection unchanged
   ime_bridge_->SendConfirmCompositionText();
+  return UINT32_MAX;
 }
 
 void ArcImeService::ClearCompositionText() {
@@ -626,6 +627,12 @@ bool ArcImeService::SetCompositionFromExistingText(
   // TODO(https://crbug.com/952757): Implement this method.
   NOTIMPLEMENTED_LOG_ONCE();
   return false;
+}
+
+gfx::Rect ArcImeService::GetAutocorrectCharacterBounds() const {
+  // TODO(https://crbug.com/952757): Implement this method.
+  NOTIMPLEMENTED_LOG_ONCE();
+  return gfx::Rect();
 }
 
 bool ArcImeService::SetAutocorrectRange(const base::string16& autocorrect_text,

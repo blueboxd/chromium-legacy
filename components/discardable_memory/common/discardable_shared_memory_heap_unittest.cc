@@ -4,12 +4,15 @@
 
 #include "components/discardable_memory/common/discardable_shared_memory_heap.h"
 
+#include <inttypes.h>
 #include <stddef.h>
 #include <utility>
 
 #include "base/bind.h"
 #include "base/memory/discardable_shared_memory.h"
 #include "base/process/process_metrics.h"
+#include "base/strings/stringprintf.h"
+#include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace discardable_memory {
@@ -19,7 +22,7 @@ void NullTask() {}
 
 TEST(DiscardableSharedMemoryHeapTest, Basic) {
   size_t block_size = base::GetPageSize();
-  DiscardableSharedMemoryHeap heap(block_size);
+  DiscardableSharedMemoryHeap heap;
 
   // Initial size should be 0.
   EXPECT_EQ(0u, heap.GetSize());
@@ -75,7 +78,7 @@ TEST(DiscardableSharedMemoryHeapTest, Basic) {
 
 TEST(DiscardableSharedMemoryHeapTest, SplitAndMerge) {
   size_t block_size = base::GetPageSize();
-  DiscardableSharedMemoryHeap heap(block_size);
+  DiscardableSharedMemoryHeap heap;
 
   const size_t kBlocks = 6;
   size_t memory_size = block_size * kBlocks;
@@ -132,7 +135,7 @@ TEST(DiscardableSharedMemoryHeapTest, SplitAndMerge) {
 
 TEST(DiscardableSharedMemoryHeapTest, MergeSingleBlockSpan) {
   size_t block_size = base::GetPageSize();
-  DiscardableSharedMemoryHeap heap(block_size);
+  DiscardableSharedMemoryHeap heap;
 
   const size_t kBlocks = 6;
   size_t memory_size = block_size * kBlocks;
@@ -159,7 +162,8 @@ TEST(DiscardableSharedMemoryHeapTest, MergeSingleBlockSpan) {
 
 TEST(DiscardableSharedMemoryHeapTest, Grow) {
   size_t block_size = base::GetPageSize();
-  DiscardableSharedMemoryHeap heap(block_size);
+  DiscardableSharedMemoryHeap heap;
+
   int next_discardable_shared_memory_id = 0;
 
   std::unique_ptr<base::DiscardableSharedMemory> memory1(
@@ -197,7 +201,8 @@ TEST(DiscardableSharedMemoryHeapTest, Grow) {
 
 TEST(DiscardableSharedMemoryHeapTest, ReleaseFreeMemory) {
   size_t block_size = base::GetPageSize();
-  DiscardableSharedMemoryHeap heap(block_size);
+  DiscardableSharedMemoryHeap heap;
+
   int next_discardable_shared_memory_id = 0;
 
   std::unique_ptr<base::DiscardableSharedMemory> memory(
@@ -225,7 +230,8 @@ TEST(DiscardableSharedMemoryHeapTest, ReleaseFreeMemory) {
 
 TEST(DiscardableSharedMemoryHeapTest, ReleasePurgedMemory) {
   size_t block_size = base::GetPageSize();
-  DiscardableSharedMemoryHeap heap(block_size);
+  DiscardableSharedMemoryHeap heap;
+
   int next_discardable_shared_memory_id = 0;
 
   std::unique_ptr<base::DiscardableSharedMemory> memory(
@@ -252,7 +258,7 @@ TEST(DiscardableSharedMemoryHeapTest, ReleasePurgedMemory) {
 
 TEST(DiscardableSharedMemoryHeapTest, Slack) {
   size_t block_size = base::GetPageSize();
-  DiscardableSharedMemoryHeap heap(block_size);
+  DiscardableSharedMemoryHeap heap;
 
   const size_t kBlocks = 6;
   size_t memory_size = block_size * kBlocks;
@@ -287,7 +293,8 @@ void OnDeleted(bool* deleted) {
 
 TEST(DiscardableSharedMemoryHeapTest, DeletedCallback) {
   size_t block_size = base::GetPageSize();
-  DiscardableSharedMemoryHeap heap(block_size);
+  DiscardableSharedMemoryHeap heap;
+
   int next_discardable_shared_memory_id = 0;
 
   std::unique_ptr<base::DiscardableSharedMemory> memory(
@@ -306,7 +313,8 @@ TEST(DiscardableSharedMemoryHeapTest, DeletedCallback) {
 
 TEST(DiscardableSharedMemoryHeapTest, CreateMemoryAllocatorDumpTest) {
   size_t block_size = base::GetPageSize();
-  DiscardableSharedMemoryHeap heap(block_size);
+  DiscardableSharedMemoryHeap heap;
+
   int next_discardable_shared_memory_id = 0;
 
   std::unique_ptr<base::DiscardableSharedMemory> memory(
@@ -334,5 +342,48 @@ TEST(DiscardableSharedMemoryHeapTest, CreateMemoryAllocatorDumpTest) {
                                              pmd.get()));
 }
 
+TEST(DiscardableSharedMemoryHeapTest, OnMemoryDumpTest) {
+  size_t block_size = base::GetPageSize();
+  using testing::ByRef;
+  using testing::Contains;
+  using testing::Eq;
+  DiscardableSharedMemoryHeap heap;
+
+  int next_discardable_shared_memory_id = 0;
+
+  base::trace_event::MemoryDumpArgs args = {
+      base::trace_event::MemoryDumpLevelOfDetail::BACKGROUND};
+  {
+    base::trace_event::ProcessMemoryDump pmd(args);
+    heap.OnMemoryDump(args, &pmd);
+    auto* dump = pmd.GetAllocatorDump(base::StringPrintf(
+        "discardable/child_0x%" PRIXPTR, reinterpret_cast<uintptr_t>(&heap)));
+    ASSERT_NE(nullptr, dump);
+
+    base::trace_event::MemoryAllocatorDump::Entry freelist("freelist_size",
+                                                           "bytes", 0);
+    EXPECT_THAT(dump->entries(), Contains(Eq(ByRef(freelist))));
+  }
+
+  {
+    std::unique_ptr<base::DiscardableSharedMemory> memory(
+        new base::DiscardableSharedMemory);
+    ASSERT_TRUE(memory->CreateAndMap(block_size));
+    std::unique_ptr<DiscardableSharedMemoryHeap::Span> span = heap.Grow(
+        std::move(memory), block_size, next_discardable_shared_memory_id++,
+        base::BindOnce(NullTask));
+    heap.MergeIntoFreeLists(std::move(span));
+    base::trace_event::ProcessMemoryDump pmd(args);
+    heap.OnMemoryDump(args, &pmd);
+    auto* dump = pmd.GetAllocatorDump(base::StringPrintf(
+        "discardable/child_0x%" PRIXPTR, reinterpret_cast<uintptr_t>(&heap)));
+    ASSERT_NE(nullptr, dump);
+
+    base::trace_event::MemoryAllocatorDump::Entry freelist("freelist_size",
+                                                           "bytes", block_size);
+    EXPECT_THAT(dump->entries(), Contains(Eq(ByRef(freelist))));
+  }
+}
+
 }  // namespace
-}  // namespace content
+}  // namespace discardable_memory

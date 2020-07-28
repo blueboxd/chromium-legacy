@@ -21,7 +21,7 @@ namespace util {
 namespace {
 
 struct Int {
-  Int(int value) : value(value) {}
+  constexpr Int(int value) : value(value) {}
 
   int value = 0;
 };
@@ -43,7 +43,7 @@ struct MoveOnlyInt {
   int value = 0;
 };
 
-bool is_even(int i) {
+constexpr bool is_even(int i) {
   return i % 2 == 0;
 }
 
@@ -54,41 +54,53 @@ bool is_odd(int i) {
 }  // namespace
 
 TEST(RangesTest, AllOf) {
-  auto is_non_zero = [](int i) { return i != 0; };
-  int array[] = {0, 1, 2, 3, 4, 5};
+  // Note: Lambdas don't have a constexpr call operator prior to C++17, thus we
+  // are providing our own anonyomous struct here.
+  constexpr struct {
+    constexpr bool operator()(int i) { return i != 0; }
+  } is_non_zero;
 
-  EXPECT_TRUE(ranges::all_of(array + 1, array + 6, is_non_zero));
-  EXPECT_FALSE(ranges::all_of(array, is_non_zero));
+  constexpr int array[] = {0, 1, 2, 3, 4, 5};
 
-  Int values[] = {{0}, {2}, {4}, {5}};
-  EXPECT_TRUE(ranges::all_of(values + 1, ranges::end(values), is_non_zero,
-                             &Int::value));
-  EXPECT_FALSE(ranges::all_of(values, is_non_zero, &Int::value));
+  static_assert(ranges::all_of(array + 1, array + 6, is_non_zero), "");
+  static_assert(!ranges::all_of(array, is_non_zero), "");
+
+  constexpr Int values[] = {0, 2, 4, 5};
+  static_assert(
+      ranges::all_of(values + 1, ranges::end(values), is_non_zero, &Int::value),
+      "");
+  static_assert(!ranges::all_of(values, is_non_zero, &Int::value), "");
 }
 
 TEST(RangesTest, AnyOf) {
-  int array[] = {0, 1, 2, 3, 4, 5};
+  constexpr int array[] = {0, 1, 2, 3, 4, 5};
 
-  EXPECT_FALSE(ranges::any_of(array + 5, array + 6, is_even));
-  EXPECT_TRUE(ranges::any_of(array, is_even));
+  static_assert(!ranges::any_of(array + 5, array + 6, is_even), "");
+  static_assert(ranges::any_of(array, is_even), "");
 
-  Int values[] = {{0}, {2}, {4}, {5}};
-  EXPECT_FALSE(
-      ranges::any_of(values + 3, ranges::end(values), is_even, &Int::value));
-  EXPECT_TRUE(ranges::any_of(values, is_even, &Int::value));
+  constexpr Int values[] = {{0}, {2}, {4}, {5}};
+  static_assert(
+      !ranges::any_of(values + 3, ranges::end(values), is_even, &Int::value),
+      "");
+  static_assert(ranges::any_of(values, is_even, &Int::value), "");
 }
 
 TEST(RangesTest, NoneOf) {
-  auto is_zero = [](int i) { return i == 0; };
-  int array[] = {0, 1, 2, 3, 4, 5};
+  // Note: Lambdas don't have a constexpr call operator prior to C++17, thus we
+  // are providing our own anonyomous struct here.
+  constexpr struct {
+    constexpr bool operator()(int i) { return i == 0; }
+  } is_zero;
+  constexpr int array[] = {0, 1, 2, 3, 4, 5};
 
-  EXPECT_TRUE(ranges::none_of(array + 1, array + 6, is_zero));
-  EXPECT_FALSE(ranges::none_of(array, is_zero));
+  static_assert(ranges::none_of(array + 1, array + 6, is_zero), "");
+  static_assert(!ranges::none_of(array, is_zero), "");
 
-  Int values[] = {{0}, {2}, {4}, {5}};
-  EXPECT_TRUE(
-      ranges::none_of(values + 1, ranges::end(values), is_zero, &Int::value));
-  EXPECT_FALSE(ranges::none_of(values, is_zero, &Int::value));
+  constexpr Int values[] = {{0}, {2}, {4}, {5}};
+  static_assert(
+      ranges::none_of(values + 1, ranges::end(values), is_zero, &Int::value),
+      "");
+  static_assert(!ranges::none_of(values, is_zero, &Int::value), "");
 }
 
 TEST(RangesTest, ForEach) {

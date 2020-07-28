@@ -2399,11 +2399,6 @@ void ShelfLayoutManager::CompleteDrag(const ui::LocatedEvent& event_in_screen) {
   else
     CancelDrag(window_drag_result);
 
-  // Dragged window is finalized after drag handling is completed so drag state
-  // does not interfere with updates on shelf state during window state changes.
-  if (window_drag_controller_.get())
-    window_drag_controller_->FinalizeDraggedWindow();
-
   // Hotseat gestures are meaningful only in tablet mode with hotseat enabled.
   if (chromeos::switches::ShouldShowShelfHotseat() &&
       Shell::Get()->IsInTabletMode()) {
@@ -2464,12 +2459,21 @@ void ShelfLayoutManager::CancelDrag(
     else
       Shell::Get()->app_list_controller()->DismissAppList();
   } else {
-    MaybeCancelWindowDrag();
     // Set |drag_status_| to kDragCancelInProgress to set the
     // auto hide state to |drag_auto_hide_state_|, which is the
     // visibility state before starting drag.
     drag_status_ = kDragCancelInProgress;
     UpdateVisibilityState();
+
+    // Dragged window is finalized after drag handling is completed so drag
+    // state does not interfere with updates on shelf state during window state
+    // changes.
+    if (window_drag_controller_.get()) {
+      if (window_drag_result.has_value())
+        window_drag_controller_->FinalizeDraggedWindow();
+      else
+        MaybeCancelWindowDrag();
+    }
   }
   if (hotseat_is_in_drag_) {
     // If the gesture started the overview session, the hotseat will be
@@ -2509,6 +2513,12 @@ void ShelfLayoutManager::CompleteDragWithChangedVisibility() {
   drag_status_ = kDragCompleteInProgress;
 
   UpdateVisibilityState();
+
+  // Dragged window is finalized after drag handling is completed so drag state
+  // does not interfere with updates on shelf state during window state changes.
+  if (window_drag_controller_.get())
+    window_drag_controller_->FinalizeDraggedWindow();
+
   drag_status_ = kDragNone;
   if (hotseat_is_in_drag_)
     hotseat_presentation_time_recorder_.reset();

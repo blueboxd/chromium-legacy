@@ -118,6 +118,7 @@ jumbo_component("shell_dialogs") {
       "//chromeos/crosapi/mojom",
       "//chromeos/lacros",
       "//mojo/public/cpp/bindings",
+      "//ui/platform_window",
     ]
   }
 }

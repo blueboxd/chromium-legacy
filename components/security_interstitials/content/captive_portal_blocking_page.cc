@@ -117,13 +117,6 @@ std::string CaptivePortalBlockingPage::GetWiFiSSID() const {
   return ssid;
 }
 
-bool CaptivePortalBlockingPage::ShouldCreateNewNavigation() const {
-  // Captive portal interstitials always create new navigation entries, as
-  // opposed to SafeBrowsing subresource interstitials which just block access
-  // to the current page and don't create a new entry.
-  return true;
-}
-
 void CaptivePortalBlockingPage::PopulateInterstitialStrings(
     base::DictionaryValue* load_time_data) {
   load_time_data->SetString("iconClass", "icon-offline");

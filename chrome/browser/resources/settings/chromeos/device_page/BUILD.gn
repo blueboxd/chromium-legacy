@@ -11,7 +11,6 @@ js_type_check("closure_compile") {
     ":display",
     ":display_layout",
     ":display_overscan_dialog",
-    ":dlc_subpage",
     ":drag_behavior",
     ":keyboard",
     ":layout_behavior",
@@ -109,10 +108,6 @@ js_library("display_overscan_dialog") {
   extra_sources = [ "$interfaces_path/system_display_interface.js" ]
 }
 
-js_library("dlc_subpage") {
-  deps = [ ":device_page_browser_proxy" ]
-}
-
 js_library("drag_behavior") {
   deps = [ "//ui/webui/resources/js:cr" ]
 }
@@ -165,7 +160,6 @@ js_library("storage") {
 #    ":display.m",
 #    ":display_layout.m",
 #    ":display_overscan_dialog.m",
-#    ":dlc_subpage.m",
 #    ":drag_behavior.m",
 #    ":keyboard.m",
 #    ":layout_behavior.m",
@@ -217,14 +211,6 @@ js_library("display_overscan_dialog.m") {
     # TODO: Fill those in.
   ]
   extra_deps = [ ":display_overscan_dialog_module" ]
-}
-
-js_library("dlc_subpage.m") {
-  sources = [ "$root_gen_dir/chrome/browser/resources/settings/chromeos/device_page/dlc_subpage.m.js" ]
-  deps = [
-    # TODO: Fill those in.
-  ]
-  extra_deps = [ ":dlc_subpage_module" ]
 }
 
 js_library("drag_behavior.m") {
@@ -315,7 +301,6 @@ group("polymer3_elements") {
     ":display_layout_module",
     ":display_module",
     ":display_overscan_dialog_module",
-    ":dlc_subpage_module",
     ":keyboard_module",
     ":modulize",
     ":night_light_slider_module",
@@ -349,12 +334,6 @@ polymer_modulizer("display_layout") {
 polymer_modulizer("display_overscan_dialog") {
   js_file = "display_overscan_dialog.js"
   html_file = "display_overscan_dialog.html"
-  html_type = "dom-module"
-}
-
-polymer_modulizer("dlc_subpage") {
-  js_file = "dlc_subpage.js"
-  html_file = "dlc_subpage.html"
   html_type = "dom-module"
 }
 

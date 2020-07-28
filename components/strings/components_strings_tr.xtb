@@ -360,7 +360,6 @@ Aksi halde bu işlem gizlilik ayarlarınız tarafından engellenecek. Buna izin 
 <translation id="2413528052993050574">Bu sunucu <ph name="DOMAIN" /> olduğunu kanıtlayamadı. Güvenlik sertifikası iptal edilmiş olabilir. Bu durum, bir yanlış yapılandırmadan veya bağlantıya müdahale eden bir saldırgandan kaynaklanıyor olabilir.</translation>
 <translation id="2438874542388153331">Sağda dörtlü delik</translation>
 <translation id="245044156129055925">Az önce şifrenizi yanıltıcı bir sitede girdiniz. Chromium, şifrenizi hemen değiştirmenizi önerir.</translation>
-<translation id="2463193859425327265">Ana Sayfayı değiştir</translation>
 <translation id="2463739503403862330">Doldur</translation>
 <translation id="2465402087343596252">Architecture-E</translation>
 <translation id="2465655957518002998">Teslimat Yöntemi Seç</translation>
@@ -1154,7 +1153,6 @@ Aksi halde bu işlem gizlilik ayarlarınız tarafından engellenecek. Buna izin 
 <translation id="5785756445106461925">Ayrıca, bu sayfa güvenli olmayan başka kaynaklar içeriyor. Bu kaynaklar, aktarım sırasında başkaları tarafından görülebilir ve bir saldırgan tarafından sayfanın görünüşünü değiştirmek üzere kullanılabilir.</translation>
 <translation id="5786044859038896871">Kart bilgilerinizin doldurulmasını istiyor musunuz?</translation>
 <translation id="5798290721819630480">Değişiklikler silinsin mi?</translation>
-<translation id="5798683403665926540">Ana sayfayı Chrome ayarlarından değiştirin</translation>
 <translation id="5803412860119678065"><ph name="CARD_DETAIL" /> kartınıza ait bilgilerin doldurulmasını istiyor musunuz?</translation>
 <translation id="5804241973901381774">İzinler</translation>
 <translation id="5804427196348435412">NFC cihazlarını kullanma</translation>
@@ -1603,7 +1601,6 @@ Ek ayrıntılar:
 <translation id="7669271284792375604">Bu sitedeki saldırganlar web'e göz atma deneyiminize zarar veren programlar yüklemeniz için sizi kandırmayı (örneğin ana sayfanızı değiştirerek ya da ziyaret ettiğiniz sitelerde ek reklamlar görüntüleyerek) deneyebilir.</translation>
 <translation id="7673278391011283842">Posta kutusu 6</translation>
 <translation id="7676643023259824263">Panoda metni (<ph name="TEXT" />) ara</translation>
-<translation id="7681101578153515023">Arama Motorunu değiştir</translation>
 <translation id="7682287625158474539">Sevkiyat</translation>
 <translation id="7687186412095877299">Ödeme formlarını kayıtlı ödeme yöntemlerinizle doldurur</translation>
 <translation id="7687305263118037187">Tekrar deneme zaman aşımı</translation>
@@ -1641,7 +1638,6 @@ Ek ayrıntılar:
 <translation id="7802523362929240268">Site meşrudur</translation>
 <translation id="780301667611848630">Hayır, teşekkürler</translation>
 <translation id="7805768142964895445">Durum</translation>
-<translation id="7806344367022510803">Chrome'da Arama Motoru ayarlarını değiştirin</translation>
 <translation id="7812922009395017822">Mir</translation>
 <translation id="7813600968533626083">Form önerisi Chrome'dan kaldırılsın mı?</translation>
 <translation id="781440967107097262">Pano paylaşılsın mı?</translation>
@@ -1783,7 +1779,6 @@ Ek ayrıntılar:
 Ek ayrıntılar:
 <ph name="DEBUG_INFO" /></translation>
 <translation id="8424582179843326029"><ph name="FIRST_LABEL" /> <ph name="SECOND_LABEL" /> <ph name="THIRD_LABEL" /></translation>
-<translation id="8425213833346101688">Değiştir</translation>
 <translation id="8428213095426709021">Ayarlar</translation>
 <translation id="8433057134996913067">Bu işlem, çoğu web sitesinden çıkış yapmanıza neden olacak.</translation>
 <translation id="8437238597147034694">Taşımayı &amp;geri al</translation>

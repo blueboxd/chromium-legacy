@@ -42,8 +42,8 @@ const uint8_t* StackCopier::CopyStackContentsAndRewritePointers(
   // values from this point to the end of the stack are possibly rewritten using
   // RewritePointerIfInOriginalStack(). Bytes before this cannot be a pointer
   // because they occupy less space than a pointer would.
-  const uint8_t* first_aligned_address = reinterpret_cast<uint8_t*>(
-      base::bits::Align(reinterpret_cast<size_t>(byte_src), sizeof(uintptr_t)));
+  const uint8_t* first_aligned_address =
+      bits::Align(byte_src, sizeof(uintptr_t));
 
   // The stack copy bottom, which is offset from |stack_buffer_bottom| by the
   // same alignment as in the original stack. This guarantees identical
@@ -52,7 +52,7 @@ const uint8_t* StackCopier::CopyStackContentsAndRewritePointers(
   // copy is aligned to platform expectations.
   uint8_t* stack_copy_bottom =
       reinterpret_cast<uint8_t*>(stack_buffer_bottom) +
-      (reinterpret_cast<uintptr_t>(byte_src) & (platform_stack_alignment - 1));
+      (byte_src - bits::AlignDown(byte_src, platform_stack_alignment));
   uint8_t* byte_dst = stack_copy_bottom;
 
   // Copy bytes verbatim up to the first aligned address.

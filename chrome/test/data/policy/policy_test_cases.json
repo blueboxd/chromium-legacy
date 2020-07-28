@@ -7760,5 +7760,14 @@
         "prefs": { "omnibox.prevent_url_elisions": {} }
       }
     ]
+  },
+  "InsecureFormsWarningsEnabled": {
+    "os": ["win", "linux", "mac", "chromeos", "android"],
+    "policy_pref_mapping_test": [
+      {
+        "policies": { "InsecureFormsWarningsEnabled": true },
+        "prefs": { "profile.mixed_forms_warnings": {} }
+      }
+    ]
   }
 }

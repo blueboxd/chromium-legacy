@@ -683,13 +683,14 @@ chrome.fileManagerPrivate.resolveIsolatedEntries = function(entries,
     callback) {};
 
 /**
- * Mount a resource or a file. |source| Mount point source. For compressed
- * files it is relative file path     within external file system |callback|
- * @param {string} source
- * @param {function(string): void} callback callback Callback with source path of
- *     the mount.
+ * Mounts a resource or a file.
+ * @param {string} source Mount point source. For compressed files it is
+ *     the relative file path within the external file system.
+ * @param {string|undefined} password Optional password to decrypt the file.
+ * @param {function(string): void} callback callback Callback called with the
+ *     source path of the mount.
  */
-chrome.fileManagerPrivate.addMount = function(source, callback) {};
+chrome.fileManagerPrivate.addMount = function(source, password, callback) {};
 
 /**
  * Unmounts a mounted resource. |volumeId| An ID of the volume.

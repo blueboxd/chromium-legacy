@@ -5,6 +5,7 @@
 #include "third_party/blink/renderer/core/css/media_values_initial_viewport.h"
 
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/blink/renderer/core/dom/document.h"
 #include "third_party/blink/renderer/core/frame/local_frame_view.h"
 #include "third_party/blink/renderer/core/testing/page_test_base.h"
 

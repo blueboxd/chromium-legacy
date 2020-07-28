@@ -240,6 +240,7 @@ base::Optional<ShelfWindowDragResult> DragWindowFromShelfController::EndDrag(
     return base::nullopt;
 
   drag_started_ = false;
+  previous_location_in_screen_ = location_in_screen;
   presentation_time_recorder_.reset();
   OverviewController* overview_controller = Shell::Get()->overview_controller();
   SplitViewController* split_view_controller =
@@ -248,8 +249,7 @@ base::Optional<ShelfWindowDragResult> DragWindowFromShelfController::EndDrag(
   const bool in_splitview = split_view_controller->InSplitViewMode();
   const bool drop_window_in_overview =
       ShouldDropWindowInOverview(location_in_screen, velocity_y);
-  SplitViewController::SnapPosition snap_position =
-      GetSnapPositionOnDragEnd(location_in_screen, velocity_y);
+  end_snap_position_ = GetSnapPositionOnDragEnd(location_in_screen, velocity_y);
 
   window_drag_result_ = base::nullopt;
   if (ShouldGoToHomeScreen(location_in_screen, velocity_y)) {
@@ -266,19 +266,18 @@ base::Optional<ShelfWindowDragResult> DragWindowFromShelfController::EndDrag(
   } else {
     if (drop_window_in_overview)
       window_drag_result_ = ShelfWindowDragResult::kGoToOverviewMode;
-    else if (snap_position != SplitViewController::NONE)
+    else if (end_snap_position_ != SplitViewController::NONE)
       window_drag_result_ = ShelfWindowDragResult::kGoToSplitviewMode;
     // For window that may drop in overview or snap in split screen, restore its
     // original backdrop mode.
     WindowBackdrop::Get(window_)->RestoreBackdrop();
   }
+  WindowState::Get(window_)->DeleteDragDetails();
 
   if (window_drag_result_.has_value()) {
     UMA_HISTOGRAM_ENUMERATION(kHandleDragWindowFromShelfHistogramName,
                               *window_drag_result_);
   }
-
-  OnDragEnded(location_in_screen, drop_window_in_overview, snap_position);
   return window_drag_result_;
 }
 
@@ -301,9 +300,11 @@ void DragWindowFromShelfController::CancelDrag() {
     overview_controller->EndOverview(OverviewEnterExitType::kImmediateExit);
   ReshowHiddenWindowsOnDragEnd();
 
+  window_drag_result_ = ShelfWindowDragResult::kDragCanceled;
   OnDragEnded(previous_location_in_screen_,
               /*should_drop_window_in_overview=*/false,
               /*snap_position=*/SplitViewController::NONE);
+  WindowState::Get(window_)->DeleteDragDetails();
 }
 
 bool DragWindowFromShelfController::IsDraggedWindowAnimating() const {
@@ -319,22 +320,9 @@ void DragWindowFromShelfController::FinalizeDraggedWindow() {
   DCHECK(!drag_started_);
   DCHECK(window_);
 
-  switch (*window_drag_result_) {
-    case ShelfWindowDragResult::kGoToHomeScreen:
-      ScaleDownWindowAfterDrag();
-      break;
-    case ShelfWindowDragResult::kRestoreToOriginalBounds:
-      ScaleUpToRestoreWindowAfterDrag();
-      break;
-    case ShelfWindowDragResult::kGoToOverviewMode:
-    case ShelfWindowDragResult::kGoToSplitviewMode:
-    case ShelfWindowDragResult::kDragCanceled:
-      // No action is needed.
-      break;
-  }
-
-  window_drag_result_.reset();
-  started_in_overview_ = false;
+  OnDragEnded(previous_location_in_screen_,
+              *window_drag_result_ == ShelfWindowDragResult::kGoToOverviewMode,
+              end_snap_position_);
 }
 
 void DragWindowFromShelfController::OnWindowDestroying(aura::Window* window) {
@@ -425,7 +413,22 @@ void DragWindowFromShelfController::OnDragEnded(
         ->SetWallpaperProperty(wallpaper_constants::kClear);
   }
 
-  WindowState::Get(window_)->DeleteDragDetails();
+  DCHECK(window_drag_result_.has_value());
+  switch (*window_drag_result_) {
+    case ShelfWindowDragResult::kGoToHomeScreen:
+      ScaleDownWindowAfterDrag();
+      break;
+    case ShelfWindowDragResult::kRestoreToOriginalBounds:
+      ScaleUpToRestoreWindowAfterDrag();
+      break;
+    case ShelfWindowDragResult::kGoToOverviewMode:
+    case ShelfWindowDragResult::kGoToSplitviewMode:
+    case ShelfWindowDragResult::kDragCanceled:
+      // No action is needed.
+      break;
+  }
+  window_drag_result_.reset();
+  started_in_overview_ = false;
 }
 
 void DragWindowFromShelfController::UpdateDraggedWindow(

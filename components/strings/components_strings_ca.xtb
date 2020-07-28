@@ -359,7 +359,6 @@ En cas contrari, la configuració de privadesa el bloquejarà. Això permetrà q
 <translation id="2413528052993050574">El servidor no ha pogut comprovar que sigui <ph name="DOMAIN" /> perquè és possible que el seu certificat de seguretat s'hagi revocat. Això pot ser a causa d'una configuració incorrecta o d'un atacant que intercepta la vostra connexió.</translation>
 <translation id="2438874542388153331">Encunyació quàdruple a la dreta</translation>
 <translation id="245044156129055925">Acabes d'introduir la contrasenya en un lloc web enganyós. Chromium et recomana que canviïs la contrasenya ara.</translation>
-<translation id="2463193859425327265">Canvia la pàgina d'inici</translation>
 <translation id="2463739503403862330">Emplena</translation>
 <translation id="2465402087343596252">Architecture-E</translation>
 <translation id="2465655957518002998">Tria el mètode d'entrega</translation>
@@ -1152,7 +1151,6 @@ En cas contrari, la configuració de privadesa el bloquejarà. Això permetrà q
 <translation id="5785756445106461925">A més, aquesta pàgina conté altres recursos que no són segurs. La resta d'usuaris poden visualitzar-los mentre estan en trànsit, i algun atacant podria modificar-los per canviar l'aparença de la pàgina.</translation>
 <translation id="5786044859038896871">Vols emplenar la informació de la teva targeta?</translation>
 <translation id="5798290721819630480">Vols descartar els canvis?</translation>
-<translation id="5798683403665926540">Canvia la pàgina d'inici a la configuració de Chrome</translation>
 <translation id="5803412860119678065">Vols emplenar la informació de la teva targeta <ph name="CARD_DETAIL" />?</translation>
 <translation id="5804241973901381774">Permisos</translation>
 <translation id="5804427196348435412">Utilitza dispositius amb NFC</translation>
@@ -1601,7 +1599,6 @@ Detalls addicionals:
 <translation id="7669271284792375604">És possible que els atacants d'aquest lloc intentin enganyar-te perquè instal·lis programes que perjudiquen la teva navegació (per exemple, et poden canviar la pàgina d'inici o mostrar anuncis addicionals als llocs que visites).</translation>
 <translation id="7673278391011283842">Bústia de correu 6</translation>
 <translation id="7676643023259824263">Cerca el text (<ph name="TEXT" />) del porta-retalls</translation>
-<translation id="7681101578153515023">Canvia el motor de cerca</translation>
 <translation id="7682287625158474539">Enviament</translation>
 <translation id="7687186412095877299">Emplena els formularis amb les formes de pagament desades</translation>
 <translation id="7687305263118037187">Temps d'espera de l'intent</translation>
@@ -1639,7 +1636,6 @@ Detalls addicionals:
 <translation id="7802523362929240268">El lloc web és legítim</translation>
 <translation id="780301667611848630">No, gràcies</translation>
 <translation id="7805768142964895445">Estat</translation>
-<translation id="7806344367022510803">Canvia la configuració del motor de cerca a Chrome</translation>
 <translation id="7812922009395017822">Mir</translation>
 <translation id="7813600968533626083">Voleu suprimir el suggeriment de formulari de Chrome?</translation>
 <translation id="781440967107097262">Vols compartir el porta-retalls?</translation>
@@ -1781,7 +1777,6 @@ Detalls addicionals:
 Detalls addicionals:
 <ph name="DEBUG_INFO" /></translation>
 <translation id="8424582179843326029"><ph name="FIRST_LABEL" /> <ph name="SECOND_LABEL" /> <ph name="THIRD_LABEL" /></translation>
-<translation id="8425213833346101688">Canvia</translation>
 <translation id="8428213095426709021">Configuració</translation>
 <translation id="8433057134996913067">Amb aquesta acció es tancarà la sessió a la majoria de llocs web.</translation>
 <translation id="8437238597147034694">&amp;Desfés el moviment</translation>

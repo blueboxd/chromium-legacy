@@ -645,18 +645,8 @@ const base::Feature kAllowClientHintsToThirdParty{
     "AllowClientHintsToThirdParty", base::FEATURE_DISABLED_BY_DEFAULT};
 #endif
 
-const char kScrollPredictorNameLsq[] = "lsq";
-const char kScrollPredictorNameKalman[] = "kalman";
-const char kScrollPredictorNameLinearFirst[] = "linear_first";
-const char kScrollPredictorNameLinearSecond[] = "linear_second";
-const char kScrollPredictorNameLinearResampling[] = "linear_resampling";
-const char kScrollPredictorNameEmpty[] = "empty";
-
 const base::Feature kFilteringScrollPrediction{
     "FilteringScrollPrediction", base::FEATURE_DISABLED_BY_DEFAULT};
-
-const char kFilterNameEmpty[] = "empty_filter";
-const char kFilterNameOneEuro[] = "one_euro_filter";
 
 const base::Feature kKalmanHeuristics{"KalmanHeuristics",
                                       base::FEATURE_DISABLED_BY_DEFAULT};

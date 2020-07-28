@@ -2360,6 +2360,7 @@ class MockOutputSurface : public OutputSurface {
                     bool use_stencil));
   MOCK_METHOD0(BindFramebuffer, void());
   MOCK_METHOD1(SetDrawRectangle, void(const gfx::Rect&));
+  MOCK_METHOD1(SetEnableDCLayers, void(bool));
   MOCK_METHOD0(GetFramebufferCopyTextureFormat, GLenum());
   MOCK_METHOD1(SwapBuffers_, void(OutputSurfaceFrame& frame));  // NOLINT
   void SwapBuffers(OutputSurfaceFrame frame) override { SwapBuffers_(frame); }
@@ -2479,8 +2480,8 @@ class MockDCLayerOverlayProcessor : public DCLayerOverlayProcessor {
 };
 class TestOverlayProcessor : public OverlayProcessorWin {
  public:
-  TestOverlayProcessor()
-      : OverlayProcessorWin(true /* enable_dc_overlay */,
+  explicit TestOverlayProcessor(OutputSurface* output_surface)
+      : OverlayProcessorWin(output_surface,
                             std::make_unique<MockDCLayerOverlayProcessor>()) {}
   ~TestOverlayProcessor() override = default;
 
@@ -2508,7 +2509,7 @@ class MockCALayerOverlayProcessor : public CALayerOverlayProcessor {
 
 class TestOverlayProcessor : public OverlayProcessorMac {
  public:
-  TestOverlayProcessor()
+  explicit TestOverlayProcessor(OutputSurface* output_surface)
       : OverlayProcessorMac(std::make_unique<MockCALayerOverlayProcessor>()) {}
   ~TestOverlayProcessor() override = default;
 
@@ -2558,7 +2559,8 @@ class TestOverlayProcessor : public OverlayProcessorUsingStrategy {
   }
 
   MOCK_CONST_METHOD0(NeedsSurfaceOccludingDamageRect, bool());
-  TestOverlayProcessor() : OverlayProcessorUsingStrategy() {
+  explicit TestOverlayProcessor(OutputSurface* output_surface)
+      : OverlayProcessorUsingStrategy() {
     strategies_.push_back(std::make_unique<Strategy>());
   }
   ~TestOverlayProcessor() override = default;
@@ -2566,7 +2568,8 @@ class TestOverlayProcessor : public OverlayProcessorUsingStrategy {
 #else  // Default to no overlay.
 class TestOverlayProcessor : public OverlayProcessorStub {
  public:
-  TestOverlayProcessor() : OverlayProcessorStub() {}
+  explicit TestOverlayProcessor(OutputSurface* output_surface)
+      : OverlayProcessorStub() {}
   ~TestOverlayProcessor() override = default;
 };
 #endif
@@ -2623,8 +2626,9 @@ TEST_F(GLRendererTest, DontOverlayWithCopyRequests) {
       parent_resource_provider->GetChildToParentMap(child_id);
   ResourceId parent_resource_id = resource_map[list[0].id];
 
+  auto processor = std::make_unique<TestOverlayProcessor>(output_surface.get());
+
   RendererSettings settings;
-  auto processor = std::make_unique<TestOverlayProcessor>();
   FakeRendererGL renderer(&settings, &debug_settings_, output_surface.get(),
                           parent_resource_provider.get(), processor.get(),
                           base::ThreadTaskRunnerHandle::Get());
@@ -3209,11 +3213,12 @@ TEST_F(GLRendererTest, DCLayerOverlaySwitch) {
       parent_resource_provider->GetChildToParentMap(child_id);
   ResourceId parent_resource_id = resource_map[list[0].id];
 
+  auto processor = std::make_unique<OverlayProcessorWin>(
+      output_surface.get(),
+      std::make_unique<DCLayerOverlayProcessor>(&debug_settings_, true));
+
   RendererSettings settings;
   settings.partial_swap_enabled = true;
-  auto processor = std::make_unique<OverlayProcessorWin>(
-      true /* enable_dc_overlay */,
-      std::make_unique<DCLayerOverlayProcessor>(&debug_settings_, true));
   FakeRendererGL renderer(&settings, &debug_settings_, output_surface.get(),
                           parent_resource_provider.get(), processor.get());
   renderer.Initialize();
@@ -3239,7 +3244,7 @@ TEST_F(GLRendererTest, DCLayerOverlaySwitch) {
       quad->SetNew(shared_state, rect, rect, needs_blending, tex_coord_rect,
                    tex_coord_rect, rect.size(), rect.size(), parent_resource_id,
                    parent_resource_id, parent_resource_id, parent_resource_id,
-                   gfx::ColorSpace::CreateREC601(), 0, 1.0, 8);
+                   gfx::ColorSpace(), 0, 1.0, 8);
     }
 
     // A bunch of initialization that happens.

@@ -341,6 +341,7 @@ jumbo_static_library("browser") {
     "//components/autofill/core/common",
     "//components/autofill/core/common/mojom:mojo_types",
     "//components/resources",
+    "//components/security_interstitials/core",
     "//components/security_state/core",
     "//skia",
     "//third_party/libaddressinput",

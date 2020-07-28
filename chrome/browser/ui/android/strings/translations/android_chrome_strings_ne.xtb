@@ -334,6 +334,7 @@
 <translation id="3658159451045945436">रिसेट गर्नुले हेरिएका साइटहरूको सूचीलगायत तपाईंको डेटा बचतको इतिहास मेटाउँछ।</translation>
 <translation id="3692944402865947621">भण्डारण स्थान पहुँचयोग्य नहुनाले <ph name="FILE_NAME" /> डाउनलोड गर्न सकिएन।</translation>
 <translation id="3701167022068948696">अहिले नै समाधान गर्नुहोस्</translation>
+<translation id="371230970611282515">खतरनाक घटनाहरू घट्नुअघि नै तिनको पूर्वानुमान गर्छ र तपाईंलाई सोबारे चेतावनी दिन्छ।</translation>
 <translation id="3714981814255182093">खोजको पट्टी खोल्नुहोस्</translation>
 <translation id="3716182511346448902">यस पृष्ठले अत्यधिक मेमोरी प्रयोग गर्ने भएकाले Chromium ले यसलाई पज गर्‍यो।</translation>
 <translation id="3721119614952978349">तपाईं र Google</translation>
@@ -708,6 +709,7 @@
 <translation id="6593061639179217415">डेस्कटप साइट</translation>
 <translation id="6597891566292541626">QR/बार कोडलाई यस फ्रेमभित्र पार्नुहोस्।</translation>
 <translation id="6600954340915313787">Chrome मा प्रतिलिपि गरियो</translation>
+<translation id="661266467055912436">तपाईं र वेब प्रयोग गर्ने सम्पूर्ण प्रयोगकर्ताहरूलाई झन् सुरक्षित पार्छ।</translation>
 <translation id="6627583120233659107">फोल्डर सम्पादन गर्नुहोस्</translation>
 <translation id="6643016212128521049">खालि गर्नुहोस्</translation>
 <translation id="6643649862576733715">बचत गरिएको डेटाको मात्राद्वारा क्रमबद्ध गर्नुहोस्</translation>
@@ -867,6 +869,7 @@
 <translation id="7925590027513907933">{FILE_COUNT,plural, =1{फाइल डाउनलोड गर्दै}other{ # फाइलहरू डाउनलोड गर्दै।}}</translation>
 <translation id="7926975587469166629">कार्डको उपनाम</translation>
 <translation id="7929962904089429003">मेनु खोल्नुहोस्</translation>
+<translation id="7930998711684428189">डेटा चोरीको घटनामा पासवर्डको खुलासा हुँदा तपाईंलाई चेतावनी दिन्छ।</translation>
 <translation id="7942131818088350342"><ph name="PRODUCT_NAME" /> को म्याद सकिएको छ।</translation>
 <translation id="7947953824732555851">स्वीकार र साइन इन गर्नुहोस्</translation>
 <translation id="7963646190083259054">विक्रेता:</translation>

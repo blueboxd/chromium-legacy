@@ -81,6 +81,7 @@ Maaaring hindi available ang ilang tampok at hindi mase-save ang mga pagbabago s
 <translation id="3089968997497233615">May available na bago, mas ligtas na bersyon ng Google Chrome.</translation>
 <translation id="3127818369811890733">Hindi ma-sync ng Chrome OS ang iyong data.</translation>
 <translation id="3149510190863420837">Chrome Apps</translation>
+<translation id="3351117925998652957">Pumili ng iyong Chrome Space</translation>
 <translation id="3360895254066713204">Chrome Helper</translation>
 <translation id="3379938682270551431">{0,plural, =0{Muli nang ilulunsad ang Chrome ngayon}=1{Muli nang ilulunsad ang Chrome sa loob ng 1 segundo}one{Muli nang ilulunsad ang Chrome sa loob ng # segundo}other{Muli nang ilulunsad ang Chrome sa loob ng # na segundo}}</translation>
 <translation id="3395323229510056640">Humingi ng tulong sa Chrome OS</translation>
@@ -213,6 +214,7 @@ Hindi magawang bawiin ng Google Chrome ang iyong mga setting.</translation>
 <translation id="7535429826459677826">Google Chrome Dev</translation>
 <translation id="7573289029918943991">Para makita kung up to date ang iyong device, pumunta sa <ph name="LINK_BEGIN" />Mga Setting ng Chrome OS<ph name="LINK_END" /></translation>
 <translation id="7589360514048265910">Hindi na makakatanggap ng mga update sa Google Chrome ang computer na ito dahil hindi na sinusuportahan ang Mac OS X 10.9.</translation>
+<translation id="7591404275842302616">Gumamit ng mga Chrome Space para mapanatiling maayos ang iyong pag-browse sa device na ito</translation>
 <translation id="7592736734348559088">Hindi mai-sync ng Google Chrome ang iyong data dahil hindi napapanahon ang mga detalye sa pag-sign in ng iyong account.</translation>
 <translation id="7626032353295482388">Welcome sa Chrome</translation>
 <translation id="7629695634924605473">Ipinapaalam sa iyo ng Chrome kung nakompromiso ang mga password mo</translation>

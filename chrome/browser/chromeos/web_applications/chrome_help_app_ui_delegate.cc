@@ -86,6 +86,9 @@ void ChromeHelpAppUIDelegate::PopulateLoadTimeData(
       "shouldShowGetStarted",
       pref_service->GetBoolean(prefs::kHelpAppShouldShowGetStarted));
   source->AddBoolean(
+      "shouldShowParentalControl",
+      pref_service->GetBoolean(prefs::kHelpAppShouldShowParentalControl));
+  source->AddBoolean(
       "tabletModeDuringOOBE",
       pref_service->GetBoolean(prefs::kHelpAppTabletModeDuringOobe));
   // Checks if any of the MultiDevice features (e.g. Instant Tethering,

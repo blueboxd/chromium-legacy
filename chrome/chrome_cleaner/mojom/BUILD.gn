@@ -32,6 +32,10 @@ chrome_cleaner_mojom("footprints_interface") {
   sources = [ "footprints.mojom" ]
 }
 
+chrome_cleaner_mojom("wstring") {
+  sources = [ "wstring.mojom" ]
+}
+
 chrome_cleaner_mojom("engine_sandbox_interface") {
   sources = [
     "cleaner_engine_requests.mojom",
@@ -39,18 +43,22 @@ chrome_cleaner_mojom("engine_sandbox_interface") {
     "engine_requests.mojom",
     "engine_sandbox.mojom",
     "pup.mojom",
-    "string16_embedded_nulls.mojom",
     "windows_handle.mojom",
+    "wstring_embedded_nulls.mojom",
   ]
   deps = [
     ":footprints_interface",
+    ":wstring",
     "//mojo/public/mojom/base",
   ]
 }
 
 chrome_cleaner_mojom("parser_interface") {
   sources = [ "parser_interface.mojom" ]
-  deps = [ "//mojo/public/mojom/base" ]
+  deps = [
+    ":wstring",
+    "//mojo/public/mojom/base",
+  ]
 }
 
 chrome_cleaner_mojom("zip_archiver_interface") {
@@ -62,7 +70,7 @@ chrome_cleaner_mojom("engine_sandbox_test_interface") {
 
   sources = [
     "test_pup_typemap.mojom",
-    "test_string16_embedded_nulls.mojom",
+    "test_wstring_embedded_nulls.mojom",
   ]
 
   deps = [ ":engine_sandbox_interface" ]

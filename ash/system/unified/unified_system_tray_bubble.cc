@@ -50,10 +50,7 @@ class ContainerView : public views::View {
     // Note that transforms are currently only supported when there are not
     // notifications, so we only consider the system tray height (excluding the
     // message center) for now.
-    return gfx::Size(kTrayMenuWidth,
-                     unified_view_->IsTransformEnabled()
-                         ? unified_view_->GetExpandedSystemTrayHeight()
-                         : unified_view_->GetCurrentHeight());
+    return gfx::Size(kTrayMenuWidth, unified_view_->GetCurrentHeight());
   }
 
   void ChildPreferredSizeChanged(views::View* child) override {
@@ -101,7 +98,7 @@ UnifiedSystemTrayBubble::UnifiedSystemTrayBubble(UnifiedSystemTray* tray,
   unified_view_->SetMaxHeight(max_height);
   bubble_view_->SetMaxHeight(max_height);
   controller_->ResetToCollapsedIfRequired();
-  bubble_view_->AddChildView(new ContainerView(unified_view_));
+  bubble_view_->AddChildView(unified_view_);
 
   bubble_widget_ = views::BubbleDialogDelegateView::CreateBubble(bubble_view_);
   bubble_widget_->AddObserver(this);
@@ -219,36 +216,6 @@ void UnifiedSystemTrayBubble::UpdateBubble() {
   DCHECK(bubble_view_);
 
   bubble_view_->UpdateBubble();
-}
-
-void UnifiedSystemTrayBubble::UpdateTransform() {
-  if (!bubble_widget_)
-    return;
-
-  DCHECK(unified_view_);
-
-  if (!unified_view_->IsTransformEnabled()) {
-    unified_view_->SetTransform(gfx::Transform());
-    OnAnimationFinished();
-    SetFrameVisible(true);
-    return;
-  }
-
-  SetFrameVisible(false);
-
-  // Note: currently transforms are only enabled when there are no
-  // notifications, so we can consider only the system tray height (excluding
-  // the message center) for now.
-  const int y_offset = unified_view_->GetExpandedSystemTrayHeight() -
-                       unified_view_->GetCurrentHeight();
-
-  gfx::Transform transform;
-  transform.Translate(0, y_offset);
-  unified_view_->SetTransform(transform);
-
-  gfx::Rect blur_bounds = bubble_view_->bounds();
-  blur_bounds.Inset(gfx::Insets(y_offset, 0, 0, 0));
-  bubble_view_->layer()->SetClipRect(blur_bounds);
 }
 
 TrayBackgroundView* UnifiedSystemTrayBubble::GetTray() const {

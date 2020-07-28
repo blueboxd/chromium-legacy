@@ -9,6 +9,7 @@
 
 #include "base/bind.h"
 #include "base/command_line.h"
+#include "base/compiler_specific.h"
 #include "base/feature_list.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/stl_util.h"
@@ -298,7 +299,35 @@ bool AppBannerManager::ShouldAllowWebAppReplacementInstall() {
   return false;
 }
 
+bool AppBannerManager::DidRetryInstallableManagerRequest(
+    const InstallableData& result) {
+  if (result.errors.empty())
+    return false;
+  if (result.errors[0] != MANIFEST_URL_CHANGED)
+    return false;
+  ReportStatus(MANIFEST_URL_CHANGED);
+  switch (state_) {
+    case State::FETCHING_MANIFEST:
+    case State::PENDING_INSTALLABLE_CHECK:
+      UpdateState(State::INACTIVE);
+      RequestAppBanner(validated_url_);
+      return true;
+    case State::INACTIVE:
+    case State::ACTIVE:
+    case State::FETCHING_NATIVE_DATA:
+    case State::PENDING_ENGAGEMENT:
+    case State::SENDING_EVENT:
+    case State::SENDING_EVENT_GOT_EARLY_PROMPT:
+    case State::PENDING_PROMPT:
+    case State::COMPLETE:
+      NOTREACHED();
+      return false;
+  }
+}
+
 void AppBannerManager::OnDidGetManifest(const InstallableData& data) {
+  if (DidRetryInstallableManagerRequest(data))
+    return;
   UpdateState(State::ACTIVE);
   if (!data.errors.empty()) {
     Stop(data.errors[0]);
@@ -342,6 +371,8 @@ void AppBannerManager::PerformInstallableWebAppCheck() {
 
 void AppBannerManager::OnDidPerformInstallableWebAppCheck(
     const InstallableData& data) {
+  if (DidRetryInstallableManagerRequest(data))
+    return;
   UpdateState(State::ACTIVE);
   if (data.has_worker && data.valid_manifest)
     TrackDisplayEvent(DISPLAY_EVENT_WEB_APP_BANNER_REQUESTED);
@@ -499,8 +530,9 @@ void AppBannerManager::Stop(InstallableStatusCode code) {
   ReportStatus(code);
 
   if (installable_web_app_check_result_ ==
-      InstallableWebAppCheckResult::kUnknown)
+      InstallableWebAppCheckResult::kUnknown) {
     SetInstallableWebAppCheckResult(InstallableWebAppCheckResult::kNo);
+  }
   InvalidateWeakPtrs();
   ResetBindings();
   UpdateState(State::COMPLETE);
@@ -562,7 +594,8 @@ void AppBannerManager::DidFinishLoad(
     content::RenderFrameHost* render_frame_host,
     const GURL& validated_url) {
   // Don't start the banner flow unless the main frame has finished loading.
-  if (render_frame_host->GetParent())
+  // |render_frame_host| can be null during retry attempts.
+  if (render_frame_host && render_frame_host->GetParent())
     return;
 
   load_finished_ = true;
@@ -591,6 +624,36 @@ void AppBannerManager::DidActivatePortal(
   if (!load_finished_ && !web_contents()->IsLoadingToDifferentDocument()) {
     DidFinishLoad(web_contents()->GetMainFrame(),
                   web_contents()->GetLastCommittedURL());
+  }
+}
+
+void AppBannerManager::DidUpdateWebManifestURL(
+    content::RenderFrameHost* target_frame,
+    const base::Optional<GURL>& manifest_url) {
+  GURL url = validated_url_;
+  switch (state_) {
+    case State::INACTIVE:
+    case State::FETCHING_MANIFEST:
+    case State::PENDING_INSTALLABLE_CHECK:
+      return;
+    case State::ACTIVE:
+    case State::FETCHING_NATIVE_DATA:
+    case State::PENDING_ENGAGEMENT:
+    case State::SENDING_EVENT:
+    case State::SENDING_EVENT_GOT_EARLY_PROMPT:
+    case State::PENDING_PROMPT:
+      Terminate();
+      FALLTHROUGH;
+    case State::COMPLETE:
+      if (manifest_url.has_value()) {
+        // This call resets has_sufficient_engagement_data_. In order to
+        // re-compute that, instead of calling RequestAppBanner, DidFinishLoad
+        // is called. That method will re-fetch the engagement data and re-set
+        // that field.
+        ResetCurrentPageData();
+        DidFinishLoad(nullptr, url);
+      }
+      return;
   }
 }
 

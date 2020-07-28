@@ -24,11 +24,14 @@
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/common/secure_origin_allowlist.h"
+#include "components/autofill/core/common/autofill_features.h"
 #include "components/omnibox/browser/omnibox_field_trial.h"
 #include "components/omnibox/common/omnibox_features.h"
 #include "components/password_manager/core/browser/password_manager_metrics_util.h"
 #include "components/prefs/pref_service.h"
 #include "components/safe_browsing/buildflags.h"
+#include "components/security_interstitials/core/features.h"
+#include "components/security_interstitials/core/pref_names.h"
 #include "components/security_state/content/content_utils.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/navigation_entry.h"
@@ -172,6 +175,21 @@ SecurityStateTabHelper::GetVisibleSecurityState() {
                 ->GetSafetyTipInfoForVisibleNavigation()
           : security_state::SafetyTipInfo(
                 {security_state::SafetyTipStatus::kUnknown, GURL()});
+
+  // If both the on-form warning and the on-submit warning are enabled for mixed
+  // forms (and they are not disabled by policy) we don't degrade the lock icon
+  // for sites with mixed forms present.
+  if (base::FeatureList::IsEnabled(
+          security_interstitials::kInsecureFormSubmissionInterstitial) &&
+      base::FeatureList::IsEnabled(
+          autofill::features::kAutofillPreventMixedFormsFilling)) {
+    Profile* profile =
+        Profile::FromBrowserContext(web_contents()->GetBrowserContext());
+    if (profile &&
+        profile->GetPrefs()->GetBoolean(prefs::kMixedFormsWarningsEnabled)) {
+      state->should_treat_displayed_mixed_forms_as_secure = true;
+    }
+  }
 
   return state;
 }

@@ -96,7 +96,7 @@ class CONTENT_EXPORT GpuDataManagerImpl : public GpuDataManager,
   void OnBrowserThreadsStarted();
   void TerminateInfoCollectionGpuProcess();
 #endif
-  // Update the GPU feature info. This updates the blacklist and enabled status
+  // Update the GPU feature info. This updates the blocklist and enabled status
   // of GPU rasterization. In the future this will be used for more features.
   void UpdateGpuFeatureInfo(const gpu::GpuFeatureInfo& gpu_feature_info,
                             const base::Optional<gpu::GpuFeatureInfo>&
@@ -117,7 +117,7 @@ class CONTENT_EXPORT GpuDataManagerImpl : public GpuDataManager,
   // software compositing.
   void SetGpuCompositingDisabled();
 
-  // Update GpuPreferences based on blacklisting decisions.
+  // Update GpuPreferences based on blocklisting decisions.
   void UpdateGpuPreferences(gpu::GpuPreferences* gpu_preferences,
                             GpuProcessKind kind) const;
 

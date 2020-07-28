@@ -233,14 +233,26 @@ class VIEWS_EXPORT TextfieldModel {
   // composition text.
   void SetCompositionText(const ui::CompositionText& composition);
 
+#if defined(OS_CHROMEOS)
+  // Return the text range corresponding to the autocorrected text.
+  const gfx::Range& autocorrect_range() const { return autocorrect_range_; }
+
+  // Replace the text in the specified range with the autocorrect text and
+  // store necessary metadata (The size of the new text + the original text)
+  // to be able to undo this change if needed.
+  bool SetAutocorrectRange(const base::string16& autocorrect_text,
+                           const gfx::Range& range);
+#endif
+
   // Puts the text in the specified range into composition mode.
   // This method should not be called with composition text or an invalid range.
   // The provided range is checked against the string's length, if |range| is
   // out of bounds, the composition will be cleared.
   void SetCompositionFromExistingText(const gfx::Range& range);
 
-  // Converts current composition text into final content.
-  void ConfirmCompositionText();
+  // Converts current composition text into final content and returns the
+  // length of the text committed.
+  uint32_t ConfirmCompositionText();
 
   // Removes current composition text.
   void CancelCompositionText();
@@ -321,8 +333,15 @@ class VIEWS_EXPORT TextfieldModel {
   // The stylized text, cursor, selection, and the visual layout model.
   std::unique_ptr<gfx::RenderText> render_text_;
 
-  // The composition range.
   gfx::Range composition_range_;
+
+#if defined(OS_CHROMEOS)
+  gfx::Range autocorrect_range_;
+  // Original text is the text that was replaced by the autocorrect feature.
+  // This should be restored if the Undo button corresponding to the Autocorrect
+  // window is pressed.
+  base::string16 original_text_;
+#endif
 
   // The list of Edits. The oldest Edits are at the front of the list, and the
   // newest ones are at the back of the list.

@@ -122,6 +122,24 @@ COMPONENT_EXPORT(UI_BASE_FEATURES) extern const base::Feature kUseOzonePlatform;
 COMPONENT_EXPORT(UI_BASE_FEATURES) bool IsUsingOzonePlatform();
 #endif
 
+// The type of predictor to use for the resampling events. These values are
+// used as the 'predictor' feature param for
+// |blink::features::kResamplingScrollEvents|.
+COMPONENT_EXPORT(UI_BASE_FEATURES) extern const char kPredictorNameLsq[];
+COMPONENT_EXPORT(UI_BASE_FEATURES) extern const char kPredictorNameKalman[];
+COMPONENT_EXPORT(UI_BASE_FEATURES)
+extern const char kPredictorNameLinearFirst[];
+COMPONENT_EXPORT(UI_BASE_FEATURES)
+extern const char kPredictorNameLinearSecond[];
+COMPONENT_EXPORT(UI_BASE_FEATURES)
+extern const char kPredictorNameLinearResampling[];
+COMPONENT_EXPORT(UI_BASE_FEATURES) extern const char kPredictorNameEmpty[];
+
+// The type of filter to use for filtering events. These values are used as the
+// 'filter' feature param for |blink::features::kFilteringScrollPrediction|.
+COMPONENT_EXPORT(UI_BASE_FEATURES) extern const char kFilterNameEmpty[];
+COMPONENT_EXPORT(UI_BASE_FEATURES) extern const char kFilterNameOneEuro[];
+
 }  // namespace features
 
 #endif  // UI_BASE_UI_BASE_FEATURES_H_

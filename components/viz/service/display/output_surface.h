@@ -157,8 +157,12 @@ class VIZ_SERVICE_EXPORT OutputSurface {
   virtual void BindFramebuffer() = 0;
 
   // Marks that the given rectangle will be drawn to on the default, bound
-  // framebuffer.
-  virtual void SetDrawRectangle(const gfx::Rect& rect) = 0;
+  // framebuffer. Only valid if |capabilities().supports_dc_layers| is true.
+  virtual void SetDrawRectangle(const gfx::Rect& rect);
+
+  // Enable or disable DC layers. Must be called before DC layers are scheduled.
+  // Only valid if |capabilities().supports_dc_layers| is true.
+  virtual void SetEnableDCLayers(bool enabled);
 
   // Returns true if a main image overlay plane should be scheduled.
   virtual bool IsDisplayedAsOverlayPlane() const = 0;

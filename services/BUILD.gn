@@ -94,7 +94,7 @@ if (!is_ios) {
 }
 
 if (is_android) {
-  junit_binary("service_junit_tests") {
+  junit_binary("services_junit_tests") {
     sources = [
       "device/generic_sensor/android/junit/src/org/chromium/device/sensors/PlatformSensorAndProviderTest.java",
       "device/geolocation/android/junit/src/org/chromium/device/geolocation/LocationProviderTest.java",
@@ -127,7 +127,7 @@ if (is_android) {
     ]
   }
 
-  android_library("service_javatests") {
+  android_library("services_javatests") {
     testonly = true
     sources = [
       "shape_detection/android/javatests/src/org/chromium/shape_detection/BarcodeDetectionImplTest.java",

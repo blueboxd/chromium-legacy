@@ -3,6 +3,8 @@
 // found in the LICENSE file.
 
 import {assert} from 'chrome://resources/js/assert.m.js';
+import {addSingletonGetter} from 'chrome://resources/js/cr.m.js';
+
 import {PDFCreateOutOfProcessPlugin} from '../pdf/pdf_scripting_api.js';
 
 /**
@@ -20,47 +22,17 @@ export let PDFPlugin;
 
 /**
  * An interface to the PDF plugin.
+ * @interface
  */
 export class PluginProxy {
-  /**
-   * Creates a new PluginProxy if the current instance is not set.
-   * @return {!PluginProxy} The singleton instance.
-   */
-  static getInstance() {
-    if (instance === null) {
-      instance = new PluginProxy();
-    }
-    return assert(instance);
-  }
-
-  /**
-   * @param {!PluginProxy} newInstance The PluginProxy
-   *     instance to set for print preview construction.
-   */
-  static setInstance(newInstance) {
-    instance = newInstance;
-  }
-
-  constructor() {
-    /** @private {?PDFPlugin} */
-    this.plugin_ = null;
-  }
-
   /**
    * @param {!Element} oopCompatObj The out of process compatibility element.
    * @return {boolean} Whether the plugin exists and is compatible.
    */
-  checkPluginCompatibility(oopCompatObj) {
-    const isOOPCompatible = oopCompatObj.postMessage;
-    oopCompatObj.parentElement.removeChild(oopCompatObj);
-
-    return isOOPCompatible;
-  }
+  checkPluginCompatibility(oopCompatObj) {}
 
   /** @return {boolean} Whether the plugin is ready. */
-  pluginReady() {
-    return !!this.plugin_;
-  }
+  pluginReady() {}
 
   /**
    * Creates the PDF plugin.
@@ -68,6 +40,75 @@ export class PluginProxy {
    * @param {number} index The preview index to load.
    * @return {!PDFPlugin} The created plugin.
    */
+  createPlugin(previewUid, index) {}
+
+  /**
+   * @param {number} previewUid Unique identifier of preview.
+   * @param {number} index Page index for plugin.
+   * @param {boolean} color Whether the preview should be color.
+   * @param {!Array<number>} pages Page indices to preview.
+   * @param {boolean} modifiable Whether the document is modifiable.
+   */
+  resetPrintPreviewMode(previewUid, index, color, pages, modifiable) {}
+
+  /**
+   * @param {number} scrollX The amount to horizontally scroll in pixels.
+   * @param {number} scrollY The amount to vertically scroll in pixels.
+   */
+  scrollPosition(scrollX, scrollY) {}
+
+  /** @param {!KeyboardEvent} e Keyboard event to forward to the plugin. */
+  sendKeyEvent(e) {}
+
+  hideToolbars() {}
+
+  /**
+   * @param {boolean} eventsEnabled Whether pointer events should be captured
+   *     by the plugin.
+   */
+  setPointerEvents(eventsEnabled) {}
+
+  /**
+   * @param {number} previewUid The unique ID of the preview UI.
+   * @param {number} pageIndex The page index to load.
+   * @param {number} index The preview index.
+   */
+  loadPreviewPage(previewUid, pageIndex, index) {}
+
+  /** @param {?Function} keyEventCallback */
+  setKeyEventCallback(keyEventCallback) {}
+
+  /** @param {?Function} loadCompleteCallback */
+  setLoadCompleteCallback(loadCompleteCallback) {}
+
+  /** @param {?Function} viewportChangedCallback */
+  setViewportChangedCallback(viewportChangedCallback) {}
+
+  /** @param {boolean} darkMode Whether the page is in dark mode. */
+  darkModeChanged(darkMode) {}
+}
+
+/** @implements {PluginProxy} */
+export class PluginProxyImpl {
+  constructor() {
+    /** @private {?PDFPlugin} */
+    this.plugin_ = null;
+  }
+
+  /** @override */
+  checkPluginCompatibility(oopCompatObj) {
+    const isOOPCompatible = oopCompatObj.postMessage;
+    oopCompatObj.parentElement.removeChild(oopCompatObj);
+
+    return isOOPCompatible;
+  }
+
+  /** @override */
+  pluginReady() {
+    return !!this.plugin_;
+  }
+
+  /** @override */
   createPlugin(previewUid, index) {
     assert(!this.plugin_);
     const srcUrl = this.getPreviewUrl_(previewUid, index);
@@ -94,73 +135,57 @@ export class PluginProxy {
     return `chrome://print/${previewUid}/${index}/print.pdf`;
   }
 
-  /**
-   * @param {number} previewUid Unique identifier of preview.
-   * @param {number} index Page index for plugin.
-   * @param {boolean} color Whether the preview should be color.
-   * @param {!Array<number>} pages Page indices to preview.
-   * @param {boolean} modifiable Whether the document is modifiable.
-   */
+  /** @override */
   resetPrintPreviewMode(previewUid, index, color, pages, modifiable) {
     this.plugin_.resetPrintPreviewMode(
         this.getPreviewUrl_(previewUid, index), color, pages, modifiable);
   }
 
-  /**
-   * @param {number} scrollX The amount to horizontally scroll in pixels.
-   * @param {number} scrollY The amount to vertically scroll in pixels.
-   */
+  /** @override */
   scrollPosition(scrollX, scrollY) {
     this.plugin_.scrollPosition(scrollX, scrollY);
   }
 
-  /** @param {!KeyboardEvent} e Keyboard event to forward to the plugin. */
+  /** @override */
   sendKeyEvent(e) {
     this.plugin_.sendKeyEvent(e);
   }
 
+  /** @override */
   hideToolbars() {
     this.plugin_.hideToolbars();
   }
 
-  /**
-   * @param {boolean} eventsEnabled Whether pointer events should be captured
-   *     by the plugin.
-   */
+  /** @override */
   setPointerEvents(eventsEnabled) {
     this.plugin_.style.pointerEvents = eventsEnabled ? 'auto' : 'none';
   }
 
-  /**
-   * @param {number} previewUid The unique ID of the preview UI.
-   * @param {number} pageIndex The page index to load.
-   * @param {number} index The preview index.
-   */
+  /** @override */
   loadPreviewPage(previewUid, pageIndex, index) {
     this.plugin_.loadPreviewPage(
         this.getPreviewUrl_(previewUid, pageIndex), index);
   }
 
-  /** @param {?Function} keyEventCallback */
+  /** @override */
   setKeyEventCallback(keyEventCallback) {
     this.plugin_.setKeyEventCallback(keyEventCallback);
   }
 
-  /** @param {?Function} loadCompleteCallback */
+  /** @override */
   setLoadCompleteCallback(loadCompleteCallback) {
     this.plugin_.setLoadCompleteCallback(loadCompleteCallback);
   }
 
-  /** @param {?Function} viewportChangedCallback */
+  /** @override */
   setViewportChangedCallback(viewportChangedCallback) {
     this.plugin_.setViewportChangedCallback(viewportChangedCallback);
   }
 
-  /** @param {boolean} darkMode Whether the page is in dark mode. */
+  /** @override */
   darkModeChanged(darkMode) {
     this.plugin_.darkModeChanged(darkMode);
   }
 }
 
-/** @type {?PluginProxy} */
-let instance = null;
+addSingletonGetter(PluginProxyImpl);

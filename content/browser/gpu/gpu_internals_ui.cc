@@ -821,7 +821,7 @@ void GpuMessageHandler::OnGpuInfoUpdate() {
       GpuDataManagerImpl::GetInstance()->GetGpuExtraInfo();
   auto gpu_info_val = GpuInfoAsDictionaryValue();
 
-  // Add in blacklisting features
+  // Add in blocklisting features
   auto feature_status = std::make_unique<base::DictionaryValue>();
   feature_status->Set("featureStatus", GetFeatureStatus());
   feature_status->Set("problems", GetProblems());

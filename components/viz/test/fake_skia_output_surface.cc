@@ -61,11 +61,6 @@ void FakeSkiaOutputSurface::BindFramebuffer() {
   // TODO(penghuang): remove this method when GLRenderer is removed.
 }
 
-void FakeSkiaOutputSurface::SetDrawRectangle(const gfx::Rect& draw_rectangle) {
-  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
-  NOTIMPLEMENTED();
-}
-
 void FakeSkiaOutputSurface::Reshape(const gfx::Size& size,
                                     float device_scale_factor,
                                     const gfx::ColorSpace& color_space,

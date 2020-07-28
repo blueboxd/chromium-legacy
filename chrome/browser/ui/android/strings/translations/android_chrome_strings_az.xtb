@@ -335,6 +335,7 @@ Axtarmaq üçün istənilən sözə toxunub saxlayın. Axtarışınızı dəqiql
 <translation id="3658159451045945436">Sıfırlamaq daxil olduğunuz saytlar daxil olmaqla, yadda saxlanılan data tarixçəsini silir.</translation>
 <translation id="3692944402865947621"><ph name="FILE_NAME" /> endirməsi alınmadı çünki yaddaş məkanı əlçatan deyil.</translation>
 <translation id="3701167022068948696">İndi düzəliş edin</translation>
+<translation id="371230970611282515">Təhlükəli hadisələr baş vermədən əvvəl onları proqnozlaşdırır və sizə xəbərdarlıq edir.</translation>
 <translation id="3714981814255182093">Tapma Barını açın</translation>
 <translation id="3716182511346448902">Bu səhifə həddindən çox yaddaş istifadə etdiyinə görə Chrome tərəfindən dayandırıldı.</translation>
 <translation id="3721119614952978349">Siz və Google</translation>
@@ -711,6 +712,7 @@ Ayarı dəyişmək üçün <ph name="BEGIN_LINK" />sinxronizasiyanı sıfırlay�
 <translation id="6593061639179217415">Masaüstü saytı</translation>
 <translation id="6597891566292541626">QR/ştrix-kodu bu çərçivəyə yerləşdirin.</translation>
 <translation id="6600954340915313787">Chrome'a kopYanlışır</translation>
+<translation id="661266467055912436">Siz və vebdəki hər kəs üçün təhlükəsizliyi artırır.</translation>
 <translation id="6627583120233659107">Qovluğa düzəliş edin</translation>
 <translation id="6643016212128521049">Silin</translation>
 <translation id="6643649862576733715">Yadda saxlanmış data həcminə görə çeşidləyin</translation>
@@ -870,6 +872,7 @@ Ayarı dəyişmək üçün <ph name="BEGIN_LINK" />sinxronizasiyanı sıfırlay�
 <translation id="7925590027513907933">{FILE_COUNT,plural, =1{Fayl endirilir.}other{# fayl endirilir.}}</translation>
 <translation id="7926975587469166629">Kart ləqəbi</translation>
 <translation id="7929962904089429003">Menyunu açın</translation>
+<translation id="7930998711684428189">Data aşkar edilərkən parolların ifşa olub-olmadığı barədə sizə xəbərdarlıq edir.</translation>
 <translation id="7942131818088350342"><ph name="PRODUCT_NAME" /> köhnədir.</translation>
 <translation id="7947953824732555851">Qəbul edin və daxil olun</translation>
 <translation id="7963646190083259054">Vendor:</translation>

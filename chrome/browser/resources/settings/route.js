@@ -233,7 +233,5 @@ window.addEventListener('popstate', function(event) {
       new URLSearchParams(window.location.search), true);
 });
 
-// TODO(dpapad): Change to 'get routes() {}' in export when we fix a bug in
-// ChromePass that limits the syntax of what can be returned from cr.define().
 export const routes =
     /** @type {!SettingsRoutes} */ (Router.getInstance().getRoutes());

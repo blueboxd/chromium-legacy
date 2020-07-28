@@ -2,12 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-import {BackgroundGraphicsModeRestriction, NativeLayer, NativeLayerImpl, PluginProxy, PrintPreviewPluralStringProxyImpl} from 'chrome://print/print_preview.js';
+import {BackgroundGraphicsModeRestriction, NativeLayer, NativeLayerImpl, PluginProxyImpl, PrintPreviewPluralStringProxyImpl} from 'chrome://print/print_preview.js';
 import {assert} from 'chrome://resources/js/assert.m.js';
 import {flush} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
 import {NativeLayerStub} from 'chrome://test/print_preview/native_layer_stub.js';
-import {PDFPluginStub} from 'chrome://test/print_preview/plugin_stub.js';
 import {getCddTemplate, getDefaultInitialSettings} from 'chrome://test/print_preview/print_preview_test_utils.js';
+import {TestPluginProxy} from 'chrome://test/print_preview/test_plugin_proxy.js';
 import {TestPluralStringProxy} from 'chrome://test/test_plural_string_proxy.js';
 
 window.policy_tests = {};
@@ -48,8 +48,8 @@ suite(policy_tests.suiteName, function() {
         getCddTemplate(initialSettings.printerName));
     nativeLayer.setPageCount(3);
     NativeLayerImpl.instance_ = nativeLayer;
-    const pluginProxy = new PDFPluginStub();
-    PluginProxy.setInstance(pluginProxy);
+    const pluginProxy = new TestPluginProxy();
+    PluginProxyImpl.instance_ = pluginProxy;
 
     page = document.createElement('print-preview-app');
     document.body.appendChild(page);

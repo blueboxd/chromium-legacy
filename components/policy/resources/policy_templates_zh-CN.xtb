@@ -769,9 +769,6 @@
       请勿将此政策用于公用设备。
 
       如果此政策设为 True 或未设置，系统则会将自动启动的受管理访客会话中的隐私权警告通知固定在屏幕上，直到用户关闭它为止。</translation>
-<translation id="2288338171390565087">每当用户输入与内置的表情符号映射相匹配的字词时，该功能就会显示表情符号建议。
-      如果此政策设为 true，系统会强制启用该功能，而且用户将无法覆盖此设置。
-      此政策默认设为 false，在这种情况下，系统将不会提供任何表情符号建议，而且用户无法覆盖它。</translation>
 <translation id="2289265947759479962">此政策旨在控制是否报告版本信息，例如操作系统版本、操作系统平台、操作系统架构、<ph name="PRODUCT_NAME" /> 版本号和 <ph name="PRODUCT_NAME" /> 版本类型。
 
       如果 <ph name="CLOUD_REPORTING_ENABLED_POLICY_NAME" /> 政策未设置或已停用，系统将忽略此政策。
@@ -1195,13 +1192,6 @@
       如果此政策设为 False，系统不会收集可用于识别设备的信息。
 
       对于 <ph name="PRODUCT_NAME" />，仅当已使用 <ph name="CLOUD_MANAGEMENT_ENROLLMENT_TOKEN" /> 注册相应设备后，此政策才有效。</translation>
-<translation id="2836621397261130126">控制是否遵循 KDC 政策的审批结果来决定是否委派 <ph name="KERBEROS" /> 凭单。
-
-          如果此政策设为 true，HTTP 身份验证机制会遵循 KDC 政策的审批结果，即 仅当 KDC 政策在服务凭单上设置 <ph name="OK_AS_DELEGATE" /> 后，Chrome 才会委派凭据。如需了解详情，请参阅 https://tools.ietf.org/html/rfc5896.html。服务还应遵循“AuthNegotiateDelegateWhitelist”政策。
-
-          如果此政策设为 false 或未设置，系统将在受支持的平台上忽略 KDC 政策，并仅遵循“AuthNegotiateDelegateWhitelist”政策。
-
-          在 Windows 上，始终会遵循 KDC 政策。</translation>
 <translation id="283695852388224413">如果设置了此政策，则强制实施配置的 PIN 码长度上限。如果值小于等于 0，即表示没有长度上限，用户可以随意设置任何长度的 PIN 码。如果此项设置小于 <ph name="PIN_UNLOCK_MINIMUM_LENGTH_POLICY_NAME" /> 但大于 0，则表示长度上限与下限相同。
 
           如果未设置此政策，则没有要强制实施的长度上限。</translation>
@@ -2382,13 +2372,6 @@
       如果选择“强制”，则只能以无痕模式打开网页。请注意，“强制”不适用于 Chrome 上的 Android 应用</translation>
 <translation id="4600786265870346112">启用大号光标</translation>
 <translation id="4604931264910482931">配置本地消息传递主机黑名单</translation>
-<translation id="4614701085541180174">让您能够指定一系列网址格式，从而指定要在 SAML 流程托管框架的登录屏幕上自动为哪些网站选择客户端证书（如果相应网站要求提供证书）。例如，配置一个要向 SAML IdP 出示的设备级证书。
-
-      此值必须是一个字符串化的 JSON 字典数组。每个字典都必须采用 <ph name="DEVICE_LOGIN_SCREEN_AUTO_SELECT_CERTIFICATE_FOR_URLS_EXAMPLE" /> 格式，其中 <ph name="URL_PATTERN_PLACEHOLDER" /> 是内容设置格式。<ph name="FILTER_PLACEHOLDER" /> 会限制浏览器可自动从哪些客户端证书中进行选择。无论是否设置了过滤器，系统都只会选择与服务器的证书请求相匹配的证书。如果 <ph name="FILTER_PLACEHOLDER" /> 采用 <ph name="JSON_DICTIONARY_EXAMPLE" /> 格式，系统便只会选择由 CommonName 为 <ph name="ISSUER_CN_PLACEHOLDER" /> 的证书颁发机构颁发的客户端证书。如果 <ph name="FILTER_PLACEHOLDER" /> 是空字典 {}，那么系统在选择客户端证书时便不会受到额外限制。
-
-      如果未设置此政策，系统将不会为任何网站自动选择证书。
-
-      要详细了解有效网址格式，请访问 https://cloud.google.com/docs/chrome-enterprise/policies/url-patterns。</translation>
 <translation id="4617338332148204752">跳过“<ph name="PRODUCT_FRAME_NAME" />”中的元标记检查</translation>
 <translation id="462134014569484584">此政策旨在为该设备指定 <ph name="PLUGIN_VM_NAME" /> 许可密钥。</translation>
 <translation id="4625915093043961294">配置扩展程序安装白名单</translation>
@@ -5355,19 +5338,6 @@
        此政策不会影响除音频、视频和图片之外的其他类型混合内容。
        从 <ph name="PRODUCT_NAME" /> 84 开始，此政策将失效。</translation>
 <translation id="9010080992450148617">允许已加入高级保护计划的用户将下载内容发送给 Google 进行深度扫描</translation>
-<translation id="90110062113213245">通过设置此政策，您可以创建一系列网址格式，从而指定 Chrome 可为哪些网站自动选择客户端证书。此政策的值是一个由字符串化的 JSON 字典组成的数组，每个字典条目都必须采用 <ph name="AUTO_SELECT_CERTIFICATE_FOR_URLS_EXAMPLE" /> 格式，其中 <ph name="URL_PATTERN_PLACEHOLDER" /> 是内容设置格式。<ph name="FILTER_PLACEHOLDER" /> 会限制浏览器可自动从哪些客户端证书中进行选择。无论是否设置了过滤器，系统都只会选择与服务器的证书请求相匹配的证书。
-
-      例如，如果 <ph name="FILTER_PLACEHOLDER" /> 指定了：
-
-      * <ph name="AUTO_SELECT_CERTIFICATE_FOR_URLS_FILTER_EXAMPLE" />，系统便只会选择由 CommonName 为 <ph name="ISSUER_CN_PLACEHOLDER" /> 的证书颁发机构颁发的客户端证书。
-
-      * <ph name="ISSUER_STRING_VALUE" /> 和 <ph name="SUBJECT_STRING_VALUE" /> 部分，系统便只会选择与这些部分匹配的客户端证书。
-
-      * ("O")，那么证书需要包含至少 1 个与指定值匹配的组织才会被选中。* ("OU")，那么证书需要包含至少 1 个与指定值匹配的组织单元才会被选中。
-
-      * <ph name="EMPTY_DICTIONARY" />，系统在选择客户端证书时便不会受到额外限制。
-
-      如果您未设置此政策，系统将不会为任何网站自动选择证书。</translation>
 <translation id="9013875414788074110">在用户登录期间，<ph name="PRODUCT_OS_NAME" />可根据服务器（在线）或使用缓存密码（离线）对用户进行身份验证。
 
       如果将此政策的值设为 -1，用户可以无限期地离线进行身份验证。将此政策设为任何其他值时，即指定了用户自最后一次使用在线身份验证起多长时间后必须再次使用在线身份验证。

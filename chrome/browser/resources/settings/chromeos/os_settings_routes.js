@@ -37,7 +37,6 @@
  *   DETAILED_BUILD_INFO: !settings.Route,
  *   DEVICE: !settings.Route,
  *   DISPLAY: !settings.Route,
- *   DOWNLOADED_CONTENT: !settings.Route,
  *   EXTERNAL_STORAGE_PREFERENCES: !settings.Route,
  *   FINGERPRINT: !settings.Route,
  *   FILES: !settings.Route,

@@ -70,7 +70,8 @@
             pref="[[prefs.generated.safe_browsing]]"
             label="$i18n{safeBrowsingEnhanced}"
             sub-label="$i18n{safeBrowsingEnhancedDesc}"
-            hidden="[[!safeBrowsingEnhancedEnabled_]]">
+            hidden="[[!safeBrowsingEnhancedEnabled_]]"
+            no-automatic-collapse>
           <div slot="collapse">
             <div class="bullet-line">
               <iron-icon icon="cr:security"></iron-icon>
@@ -109,7 +110,8 @@
             pref="[[prefs.generated.safe_browsing]]"
             label="$i18n{safeBrowsingStandard}"
             sub-label="$i18n{safeBrowsingStandardDesc}"
-            info-opened="{{infoOpened_}}">
+            info-opened="{{infoOpened_}}"
+            no-automatic-collapse>
           <div slot="collapse">
             <div class="bullet-line">
               <iron-icon icon="cr:security"></iron-icon>
@@ -146,7 +148,7 @@
             label="$i18n{safeBrowsingNone}"
             sub-label="$i18n{safeBrowsingNoneDesc}">
         </settings-collapse-radio-button>
-      </cr-radio-group>
+      </settings-radio-group>
     </div>
     <div class="cr-row first">
       <h2>$i18n{advancedPageTitle}</h2>

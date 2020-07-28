@@ -45,6 +45,14 @@ public class ScreenOrientationProviderImpl
     private ScreenOrientationDelegate mDelegate;
 
     /**
+     * The keys of the map are the activities for which screen orientation are
+     * trying to lock.
+     * The values of the map are the most recent default web screen orientation request for each
+     * activity.
+     */
+    private Map<Activity, Byte> mDefaultOrientationOverrides = new WeakHashMap<>();
+
+    /**
      * The keys of the map are the activities for which screen orientation requests are
      * delayed.
      * The values of the map are the most recent screen orientation request for each activity.
@@ -139,13 +147,17 @@ public class ScreenOrientationProviderImpl
         // Note that we can't just use the focused activity, as that would lead to bugs where
         // unlockOrientation unlocks a different activity to the one that was locked.
         if (activity == null) return;
+        byte mDefaultWebOrientation = (byte) ScreenOrientationLockType.DEFAULT;
+        if (mDefaultOrientationOverrides.containsKey(activity)) {
+            mDefaultWebOrientation = mDefaultOrientationOverrides.get(activity);
+        }
 
         int defaultOrientation = ActivityInfo.SCREEN_ORIENTATION_UNSPECIFIED;
 
         // Activities opened from a shortcut may have EXTRA_ORIENTATION set. In
         // which case, we want to use that as the default orientation.
         int orientation = activity.getIntent().getIntExtra(
-                ScreenOrientationConstants.EXTRA_ORIENTATION, ScreenOrientationLockType.DEFAULT);
+                ScreenOrientationConstants.EXTRA_ORIENTATION, mDefaultWebOrientation);
         defaultOrientation = getOrientationFromWebScreenOrientations(
                 (byte) orientation, window, activity);
 
@@ -197,6 +209,20 @@ public class ScreenOrientationProviderImpl
     @Override
     public void setOrientationDelegate(ScreenOrientationDelegate delegate) {
         mDelegate = delegate;
+    }
+
+    @Override
+    public void setOverrideDefaultOrientation(WindowAndroid window, byte defaultWebOrientation) {
+        if (window == null) return;
+        Activity activity = window.getActivity().get();
+
+        if (activity == null) return;
+
+        if (defaultWebOrientation != ScreenOrientationLockType.DEFAULT) {
+            mDefaultOrientationOverrides.put(activity, defaultWebOrientation);
+        } else {
+            mDefaultOrientationOverrides.remove(activity);
+        }
     }
 
     /** Returns whether screen orientation requests are delayed for the passed-in activity. */

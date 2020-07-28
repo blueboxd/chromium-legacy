@@ -24,7 +24,7 @@ class FakeNearbyConnectionsManager : public NearbyConnectionsManager {
     void Read(ReadCallback callback) override;
     void Write(std::vector<uint8_t> bytes, WriteCallback callback) override;
     void Close() override;
-    bool IsClosed() override;
+    bool IsClosed() const override;
     void RegisterForDisconnection(base::OnceClosure callback) override;
 
    private:
@@ -43,8 +43,7 @@ class FakeNearbyConnectionsManager : public NearbyConnectionsManager {
                         DataUsage data_usage,
                         ConnectionsCallback callback) override;
   void StopAdvertising() override;
-  void StartDiscovery(std::vector<uint8_t> endpoint_info,
-                      DiscoveryListener* listener,
+  void StartDiscovery(DiscoveryListener* listener,
                       ConnectionsCallback callback) override;
   void StopDiscovery() override;
   std::unique_ptr<NearbyConnection> Connect(

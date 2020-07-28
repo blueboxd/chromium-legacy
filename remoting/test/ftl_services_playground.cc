@@ -21,12 +21,16 @@
 #include "base/task/post_task.h"
 #include "remoting/base/grpc_support/grpc_async_unary_request.h"
 #include "remoting/base/oauth_token_getter_impl.h"
+#include "remoting/base/protobuf_http_status.h"
+#include "remoting/base/url_request_context_getter.h"
 #include "remoting/proto/ftl/v1/ftl_services.grpc.pb.h"
 #include "remoting/signaling/ftl_grpc_context.h"
 #include "remoting/test/cli_util.h"
 #include "remoting/test/test_device_id_provider.h"
 #include "remoting/test/test_oauth_token_getter.h"
 #include "remoting/test/test_token_storage.h"
+#include "services/network/public/cpp/shared_url_loader_factory.h"
+#include "services/network/transitional_url_loader_factory_owner.h"
 
 namespace {
 
@@ -65,7 +69,6 @@ void FtlServicesPlayground::PrintHelp() {
 void FtlServicesPlayground::StartAndAuthenticate() {
   DCHECK(!storage_);
   DCHECK(!token_getter_);
-  DCHECK(!executor_);
 
   base::CommandLine* cmd_line = base::CommandLine::ForCurrentProcess();
   std::string username = cmd_line->GetSwitchValueASCII(kSwitchNameUsername);
@@ -86,8 +89,6 @@ void FtlServicesPlayground::StartAndAuthenticate() {
 
 void FtlServicesPlayground::StartLoop() {
   std::vector<test::CommandOption> options{
-      {"GetIceServer", base::BindRepeating(&FtlServicesPlayground::GetIceServer,
-                                           weak_factory_.GetWeakPtr())},
       {"PullMessages", base::BindRepeating(&FtlServicesPlayground::PullMessages,
                                            weak_factory_.GetWeakPtr())},
       {"ReceiveMessages",
@@ -103,15 +104,19 @@ void FtlServicesPlayground::StartLoop() {
                                            weak_factory_.GetWeakPtr())});
   }
 
+  auto url_request_context_getter =
+      base::MakeRefCounted<URLRequestContextGetter>(
+          base::ThreadTaskRunnerHandle::Get());
+  url_loader_factory_owner_ =
+      std::make_unique<network::TransitionalURLLoaderFactoryOwner>(
+          url_request_context_getter);
+
   test::RunCommandOptionsLoop(options);
 }
 
 void FtlServicesPlayground::ResetServices(base::OnceClosure on_done) {
-  executor_ = std::make_unique<GrpcAuthenticatedExecutor>(token_getter_.get());
-  peer_to_peer_stub_ = PeerToPeer::NewStub(FtlGrpcContext::CreateChannel());
-
   registration_manager_ = std::make_unique<FtlRegistrationManager>(
-      token_getter_.get(),
+      token_getter_.get(), url_loader_factory_owner_->GetURLLoaderFactory(),
       std::make_unique<test::TestDeviceIdProvider>(storage_.get()));
 
   message_subscription_.reset();
@@ -128,48 +133,6 @@ void FtlServicesPlayground::ResetServices(base::OnceClosure on_done) {
   }
 }
 
-void FtlServicesPlayground::GetIceServer(base::OnceClosure on_done) {
-  DCHECK(peer_to_peer_stub_);
-  VLOG(0) << "Running GetIceServer...";
-  ftl::GetICEServerRequest request;
-  *request.mutable_header() = FtlGrpcContext::CreateRequestHeader();
-  auto grpc_request = CreateGrpcAsyncUnaryRequest(
-      base::BindOnce(&PeerToPeer::Stub::AsyncGetICEServer,
-                     base::Unretained(peer_to_peer_stub_.get())),
-      request,
-      base::BindOnce(&FtlServicesPlayground::OnGetIceServerResponse,
-                     weak_factory_.GetWeakPtr(), std::move(on_done)));
-  FtlGrpcContext::FillClientContext(grpc_request->context());
-  executor_->ExecuteRpc(std::move(grpc_request));
-}
-
-void FtlServicesPlayground::OnGetIceServerResponse(
-    base::OnceClosure on_done,
-    const grpc::Status& status,
-    const ftl::GetICEServerResponse& response) {
-  if (!status.ok()) {
-    HandleGrpcStatusError(std::move(on_done), status);
-    return;
-  }
-
-  printf("Ice transport policy: %s\n",
-         response.ice_config().ice_transport_policy().c_str());
-  for (const ftl::ICEServerList& server : response.ice_config().ice_servers()) {
-    printf(
-        "ICE server:\n"
-        "  hostname=%s\n"
-        "  username=%s\n"
-        "  credential=%s\n"
-        "  max_rate_kbps=%" PRId64 "\n",
-        server.hostname().c_str(), server.username().c_str(),
-        server.credential().c_str(), server.max_rate_kbps());
-    for (const std::string& url : server.urls()) {
-      printf("  url=%s\n", url.c_str());
-    }
-  }
-  std::move(on_done).Run();
-}
-
 void FtlServicesPlayground::SignInGaia(base::OnceClosure on_done) {
   DCHECK(registration_manager_);
   VLOG(0) << "Running SignInGaia...";
@@ -178,10 +141,15 @@ void FtlServicesPlayground::SignInGaia(base::OnceClosure on_done) {
                      weak_factory_.GetWeakPtr(), std::move(on_done)));
 }
 
-void FtlServicesPlayground::OnSignInGaiaResponse(base::OnceClosure on_done,
-                                                 const grpc::Status& status) {
+void FtlServicesPlayground::OnSignInGaiaResponse(
+    base::OnceClosure on_done,
+    const ProtobufHttpStatus& status) {
   if (!status.ok()) {
-    HandleGrpcStatusError(std::move(on_done), status);
+    // TODO(yuweih): Clean this up.
+    HandleGrpcStatusError(
+        std::move(on_done),
+        grpc::Status(static_cast<grpc::StatusCode>(status.error_code()),
+                     status.error_message()));
     return;
   }
 

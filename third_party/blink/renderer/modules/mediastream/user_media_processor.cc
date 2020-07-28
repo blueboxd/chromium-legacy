@@ -1755,6 +1755,12 @@ void UserMediaProcessor::StopAllProcessing() {
 
 void UserMediaProcessor::OnLocalSourceStopped(
     const blink::WebMediaStreamSource& source) {
+  // The client can be null if the frame is already detached.
+  // If it's already detached, dispatcher_host_ shouldn't be bound again.
+  // (ref: crbug.com/1105842)
+  if (!frame_->Client())
+    return;
+
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   blink::WebPlatformMediaStreamSource* source_impl = source.GetPlatformSource();
   SendLogMessage(base::StringPrintf(

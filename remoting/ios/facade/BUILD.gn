@@ -8,8 +8,6 @@ import("//remoting/build/config/remoting_build.gni")
 
 source_set("facade") {
   sources = [
-    "directory_client.cc",
-    "directory_client.h",
     "host_list_service.h",
     "host_list_service.mm",
     "ios_client_runtime_delegate.h",
@@ -30,7 +28,6 @@ source_set("facade") {
     "//remoting/client",
     "//remoting/ios/domain",
     "//remoting/ios/persistence",
-    "//remoting/proto/remoting/v1:directory_grpc_library",
     "//remoting/resources",
     "//remoting/signaling",
     "//ui/base",
@@ -51,8 +48,7 @@ source_set("unit_tests") {
   sources = [ "host_list_service_unittest.mm" ]
   deps = [
     ":facade",
-    "//remoting/base/grpc_test_support",
-    "//remoting/proto/remoting/v1:directory_grpc_library",
+    "//remoting/base:test_support",
     "//testing/gmock",
     "//testing/gtest",
     "//third_party/ocmock",

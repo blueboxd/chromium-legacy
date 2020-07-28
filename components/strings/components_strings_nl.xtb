@@ -360,7 +360,6 @@ Anders wordt dit geblokkeerd door je privacyinstellingen. Hierdoor werkt de cont
 <translation id="2413528052993050574">De server kan niet bewijzen dat dit <ph name="DOMAIN" /> is. Het beveiligingscertificaat van de server is mogelijk ingetrokken. Dit kan worden veroorzaakt door een verkeerde configuratie of een aanvaller die je verbinding onderschept.</translation>
 <translation id="2438874542388153331">Vier perforaties rechts</translation>
 <translation id="245044156129055925">Je hebt zojuist je wachtwoord opgegeven op een misleidende site. Chromium raadt je aan je wachtwoord nu te wijzigen.</translation>
-<translation id="2463193859425327265">Homepage wijzigen</translation>
 <translation id="2463739503403862330">Invullen</translation>
 <translation id="2465402087343596252">Architecture-E</translation>
 <translation id="2465655957518002998">Bezorgingsmethode kiezen</translation>
@@ -1153,7 +1152,6 @@ Anders wordt dit geblokkeerd door je privacyinstellingen. Hierdoor werkt de cont
 <translation id="5785756445106461925">Bovendien bevat deze pagina bronnen die niet beveiligd zijn. Deze bronnen kunnen tijdens verzending door anderen worden bekeken en kunnen door een aanvaller worden gewijzigd om het uiterlijk van de pagina aan te passen.</translation>
 <translation id="5786044859038896871">Wil je de gegevens van je creditcard laten invullen?</translation>
 <translation id="5798290721819630480">Wijzigingen niet opslaan?</translation>
-<translation id="5798683403665926540">De homepage wijzigen in de Chrome-instellingen</translation>
 <translation id="5803412860119678065">Wil je de gegevens van je <ph name="CARD_DETAIL" /> laten invullen?</translation>
 <translation id="5804241973901381774">Rechten</translation>
 <translation id="5804427196348435412">NFC-apparaten gebruiken</translation>
@@ -1601,7 +1599,6 @@ Aanvullende informatie:
 <translation id="7669271284792375604">Cybercriminelen op deze site proberen je mogelijk over te halen om programma's te installeren die schadelijk zijn voor de browsefunctionaliteit (door bijvoorbeeld je homepage te wijzigen of extra advertenties weer te geven op sites die je bezoekt).</translation>
 <translation id="7673278391011283842">Mailbox 6</translation>
 <translation id="7676643023259824263">Zoeken naar klembordtekst, <ph name="TEXT" /></translation>
-<translation id="7681101578153515023">Zoekmachine wijzigen</translation>
 <translation id="7682287625158474539">Verzendadres</translation>
 <translation id="7687186412095877299">Hiermee worden betalingsformulieren ingevuld met je opgeslagen betaalmethoden</translation>
 <translation id="7687305263118037187">Time-out voor nieuwe poging</translation>
@@ -1639,7 +1636,6 @@ Aanvullende informatie:
 <translation id="7802523362929240268">Site is legitiem</translation>
 <translation id="780301667611848630">Nee, bedankt</translation>
 <translation id="7805768142964895445">Status</translation>
-<translation id="7806344367022510803">De zoekmachine-instellingen wijzigen in Chrome</translation>
 <translation id="7812922009395017822">Mir</translation>
 <translation id="7813600968533626083">Formuliersuggestie verwijderen uit Chrome?</translation>
 <translation id="781440967107097262">Klembord delen?</translation>
@@ -1781,7 +1777,6 @@ Aanvullende informatie:
 Aanvullende informatie:
 <ph name="DEBUG_INFO" /></translation>
 <translation id="8424582179843326029"><ph name="FIRST_LABEL" /> <ph name="SECOND_LABEL" /> <ph name="THIRD_LABEL" /></translation>
-<translation id="8425213833346101688">Wijzigen</translation>
 <translation id="8428213095426709021">Instellingen</translation>
 <translation id="8433057134996913067">Hiermee word je uitgelogd van de meeste websites.</translation>
 <translation id="8437238597147034694">&amp;Verplaatsen ongedaan maken</translation>

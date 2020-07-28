@@ -330,6 +330,59 @@ TEST(ProxyServerTest, ComparatorAndEquality) {
   }
 }
 
+// Tests the various "is_*()" methods on ProxyServer.
+TEST(ProxyServerTest, Properties) {
+  // HTTP proxy.
+  {
+    auto proxy = ProxyServer::FromPacString("PROXY foo");
+    ASSERT_TRUE(proxy.is_valid());
+    EXPECT_TRUE(proxy.is_http());
+    EXPECT_FALSE(proxy.is_https());
+    EXPECT_TRUE(proxy.is_http_like());
+    EXPECT_FALSE(proxy.is_secure_http_like());
+  }
+
+  // HTTPS proxy.
+  {
+    auto proxy = ProxyServer::FromPacString("HTTPS foo");
+    ASSERT_TRUE(proxy.is_valid());
+    EXPECT_FALSE(proxy.is_http());
+    EXPECT_TRUE(proxy.is_https());
+    EXPECT_TRUE(proxy.is_http_like());
+    EXPECT_TRUE(proxy.is_secure_http_like());
+  }
+
+  // QUIC proxy.
+  {
+    auto proxy = ProxyServer::FromPacString("QUIC foo");
+    ASSERT_TRUE(proxy.is_valid());
+    EXPECT_FALSE(proxy.is_http());
+    EXPECT_FALSE(proxy.is_https());
+    EXPECT_TRUE(proxy.is_http_like());
+    EXPECT_TRUE(proxy.is_secure_http_like());
+  }
+
+  // SOCKS5 proxy.
+  {
+    auto proxy = ProxyServer::FromPacString("SOCKS5 foo");
+    ASSERT_TRUE(proxy.is_valid());
+    EXPECT_FALSE(proxy.is_http());
+    EXPECT_FALSE(proxy.is_https());
+    EXPECT_FALSE(proxy.is_http_like());
+    EXPECT_FALSE(proxy.is_secure_http_like());
+  }
+
+  // DIRECT
+  {
+    auto proxy = ProxyServer::FromPacString("DIRECT");
+    ASSERT_TRUE(proxy.is_valid());
+    EXPECT_FALSE(proxy.is_http());
+    EXPECT_FALSE(proxy.is_https());
+    EXPECT_FALSE(proxy.is_http_like());
+    EXPECT_FALSE(proxy.is_secure_http_like());
+  }
+}
+
 }  // namespace
 
 }  // namespace net

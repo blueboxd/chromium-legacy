@@ -60,12 +60,6 @@ void AddInternetStrings(content::WebUIDataSource* html_source) {
     html_source->AddLocalizedString(entry.name, entry.id);
 }
 
-base::string16 GetNetworkName16(const NetworkState& network) {
-  return network.Matches(NetworkTypePattern::Ethernet())
-             ? l10n_util::GetStringUTF16(IDS_NETWORK_TYPE_ETHERNET)
-             : base::UTF8ToUTF16(network.name());
-}
-
 std::string GetNetworkName8(const NetworkState& network) {
   return network.Matches(NetworkTypePattern::Ethernet())
              ? l10n_util::GetStringUTF8(IDS_NETWORK_TYPE_ETHERNET)
@@ -103,7 +97,7 @@ void InternetDetailDialog::ShowDialog(const std::string& network_id) {
 
 InternetDetailDialog::InternetDetailDialog(const NetworkState& network)
     : SystemWebDialogDelegate(GURL(chrome::kChromeUIIntenetDetailDialogURL),
-                              GetNetworkName16(network)),
+                              /* title= */ base::string16()),
       network_id_(network.guid()),
       network_type_(network_util::TranslateShillTypeToONC(network.type())),
       network_name_(GetNetworkName8(network)) {

@@ -75,6 +75,7 @@
 <translation id="1553358976309200471">Mettre à jour Chrome</translation>
 <translation id="1569387923882100876">Appareil connecté</translation>
 <translation id="1571304935088121812">Copier le nom d'utilisateur</translation>
+<translation id="1592864538817356322">Protection standard :</translation>
 <translation id="1612196535745283361">Chrome doit avoir accès aux données de localisation pour rechercher des appareils. Cette fonctionnalité est <ph name="BEGIN_LINK" />désactivée pour cet appareil<ph name="END_LINK" />.</translation>
 <translation id="1620510694547887537">Caméra</translation>
 <translation id="1628019612362412531">{NUM_SELECTED,plural, =1{Supprimer 1 élément sélectionné}one{Supprimer # élément sélectionné}other{Supprimer # éléments sélectionnés}}</translation>
@@ -334,6 +335,7 @@ Appuyez sur n'importe quel mot pour effectuer une recherche. Pour affiner la rec
 <translation id="3658159451045945436">Le processus de réinitialisation efface l'historique de l'économiseur de données, y compris la liste des sites consultés.</translation>
 <translation id="3692944402865947621">Échec du téléchargement du fichier "<ph name="FILE_NAME" />" en raison de l'espace de stockage indisponible.</translation>
 <translation id="3701167022068948696">Corriger maintenant</translation>
+<translation id="371230970611282515">Il prédit les événements dangereux et vous en informe avant qu'ils ne surviennent.</translation>
 <translation id="3714981814255182093">Ouvrir la barre de recherche</translation>
 <translation id="3716182511346448902">Cette page utilise trop de mémoire, Chrome a donc interrompu son chargement.</translation>
 <translation id="3721119614952978349">Google et vous</translation>
@@ -578,6 +580,7 @@ Pour modifier ce paramètre, <ph name="BEGIN_LINK" />réinitialisez la synchroni
 <translation id="5659593005791499971">E-mail</translation>
 <translation id="5665379678064389456">Créer un événement dans <ph name="APP_NAME" /></translation>
 <translation id="5668404140385795438">Ignore la demande d'un site d'empêcher les zooms avant</translation>
+<translation id="568275469169136466">pour vous connecter temporairement</translation>
 <translation id="5683547024293500885">Chrome ne parvient pas à rechercher les mises à jour</translation>
 <translation id="5686790454216892815">Nom de fichier trop long</translation>
 <translation id="5694049548840660018">Revenir facilement à l'accueil</translation>
@@ -589,9 +592,10 @@ Pour modifier ce paramètre, <ph name="BEGIN_LINK" />réinitialisez la synchroni
 <translation id="5723735397759933332">Le mode simplifié consomme maintenant moins de données en optimisant les images sur les pages HTTPS.</translation>
 <translation id="5726692708398506830">Agrandir tous les éléments de la page</translation>
 <translation id="5732819098735351888">Le téléchargement va être lancé via le réseau Wi-Fi.</translation>
+<translation id="5733983706093266635">Impossible de créer le code QR, car l'URL comporte plus de <ph name="CHARACTER_LIMIT" /> caractères.</translation>
 <translation id="5748802427693696783">Onglets standards sélectionnés</translation>
 <translation id="5749068826913805084">Pour télécharger des fichiers, Chrome a besoin d'accéder à l'espace de stockage.</translation>
-<translation id="5749237766298580851">Désactivée <ph name="SEPARATOR" /> Non recommandée</translation>
+<translation id="5749237766298580851">Désactivée <ph name="SEPARATOR" /> Non recommandé</translation>
 <translation id="5754350196967618083">Impossible d'actualiser Discover</translation>
 <translation id="5763382633136178763">Onglets de navigation privée</translation>
 <translation id="5763514718066511291">Appuyez pour copier l'URL pour cette application</translation>
@@ -641,6 +645,7 @@ Pour modifier ce paramètre, <ph name="BEGIN_LINK" />réinitialisez la synchroni
 <translation id="6111020039983847643">de données utilisées</translation>
 <translation id="6112702117600201073">Actualisation de la page</translation>
 <translation id="6127379762771434464">Élément supprimé</translation>
+<translation id="6140709049082532940">Protection renforcée :</translation>
 <translation id="6140912465461743537">Pays/Région</translation>
 <translation id="614940544461990577">Voici quelques conseils :</translation>
 <translation id="6154478581116148741">Activez le verrouillage de l'écran dans les paramètres pour exporter vos mots de passe à partir de cet appareil</translation>
@@ -709,6 +714,7 @@ Par exemple, certains sites Web peuvent répondre à cette demande en diffusant 
 <translation id="6593061639179217415">Version pour ordinateur</translation>
 <translation id="6597891566292541626">Positionnez le code-barres/code QR dans ce cadre.</translation>
 <translation id="6600954340915313787">Copiée dans Chrome</translation>
+<translation id="661266467055912436">Il renforce votre sécurité et celle de tous les utilisateurs sur le Web.</translation>
 <translation id="6627583120233659107">Modifier le dossier</translation>
 <translation id="6643016212128521049">Effacer</translation>
 <translation id="6643649862576733715">Trier en fonction de la quantité de données économisées</translation>
@@ -868,6 +874,7 @@ Par exemple, certains sites Web peuvent répondre à cette demande en diffusant 
 <translation id="7925590027513907933">{FILE_COUNT,plural, =1{Téléchargement du fichier…}one{Téléchargement de # fichier…}other{Téléchargement de # fichiers…}}</translation>
 <translation id="7926975587469166629">Pseudo associé à la carte</translation>
 <translation id="7929962904089429003">Ouvrir le menu</translation>
+<translation id="7930998711684428189">Il vous avertit en cas de divulgation de mots de passe suite à une violation des données.</translation>
 <translation id="7942131818088350342"><ph name="PRODUCT_NAME" /> est obsolète.</translation>
 <translation id="7947953824732555851">Accepter/Se connecter</translation>
 <translation id="7963646190083259054">Fournisseur :</translation>
@@ -1017,6 +1024,7 @@ Par exemple, certains sites Web peuvent répondre à cette demande en diffusant 
 <translation id="9100610230175265781">Veuillez saisir la phrase secrète.</translation>
 <translation id="9102803872260866941">L'onglet "Aperçu" est ouvert</translation>
 <translation id="9104217018994036254">Liste des appareils avec lesquels vous pouvez partager un onglet.</translation>
+<translation id="9104402662006063371">Utiliser le mode navigation privée</translation>
 <translation id="9108312223223904744">Clé de sécurité intégrée au téléphone</translation>
 <translation id="9108808586816295166">Il est possible que le DNS sécurisé ne soit pas disponible à tout moment</translation>
 <translation id="9133397713400217035">Consulter hors connexion</translation>

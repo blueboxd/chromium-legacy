@@ -17,7 +17,7 @@
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_refptr.h"
-#include "base/memory/weak_ptr.h"
+#include "base/time/time.h"
 #include "components/bookmarks/browser/bookmark_node.h"
 #include "components/bookmarks/browser/titled_url_index.h"
 
@@ -35,6 +35,10 @@ class BookmarkModel;
 // Internally BookmarkStorage uses BookmarkCodec to do the actual write.
 class BookmarkStorage : public base::ImportantFileWriter::DataSerializer {
  public:
+  // How often the file is saved at most.
+  static constexpr base::TimeDelta kSaveDelay =
+      base::TimeDelta::FromMilliseconds(2500);
+
   // Creates a BookmarkStorage for the specified model. The data will be loaded
   // from and saved to a location derived from |profile_path|. The IO code will
   // be executed as a task in |sequenced_task_runner|.
@@ -54,6 +58,9 @@ class BookmarkStorage : public base::ImportantFileWriter::DataSerializer {
   // ImportantFileWriter::DataSerializer implementation.
   bool SerializeData(std::string* output) override;
 
+  // Returns whether there is still a pending write.
+  bool HasScheduledSaveForTesting() const;
+
  private:
   // The state of the bookmark file backup. We lazily backup this file in order
   // to reduce disk writes until absolutely necessary. Will also leave the
@@ -72,9 +79,6 @@ class BookmarkStorage : public base::ImportantFileWriter::DataSerializer {
   // Returns true on successful serialization.
   bool SaveNow();
 
-  // Callback from backend after creation of backup file.
-  void OnBackupFinished();
-
   // The model. The model is NULL once BookmarkModelDeleted has been invoked.
   BookmarkModel* model_;
 
@@ -83,12 +87,10 @@ class BookmarkStorage : public base::ImportantFileWriter::DataSerializer {
 
   // The state of the backup file creation which is created lazily just before
   // the first scheduled save.
-  BackupState backup_state_ = BACKUP_NONE;
+  bool backup_triggered_ = false;
 
   // Sequenced task runner where file I/O operations will be performed at.
   scoped_refptr<base::SequencedTaskRunner> sequenced_task_runner_;
-
-  base::WeakPtrFactory<BookmarkStorage> weak_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(BookmarkStorage);
 };

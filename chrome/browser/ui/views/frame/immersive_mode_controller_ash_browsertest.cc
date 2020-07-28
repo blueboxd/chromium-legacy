@@ -26,6 +26,7 @@
 #include "chrome/browser/web_applications/test/web_app_test.h"
 #include "chrome/common/web_application_info.h"
 #include "chrome/test/base/ui_test_utils.h"
+#include "chrome/test/permissions/permission_request_manager_test_api.h"
 #include "content/public/test/browser_test.h"
 #include "content/public/test/content_mock_cert_verifier.h"
 #include "net/cert/mock_cert_verifier.h"
@@ -329,6 +330,57 @@ IN_PROC_BROWSER_TEST_P(ImmersiveModeControllerAshWebAppBrowserTest,
   // cover the other two buttons.
   ash::ShellTestApi().SetTabletModeEnabledForTest(false);
   VerifyButtonsInImmersiveMode(frame_view);
+}
+
+// Tests that the permissions bubble dialog is anchored to the correct location.
+// The dialog's anchor is normally the app menu button which is on the header.
+// In immersive mode but not revealed, the app menu button is placed off screen
+// but still drawn. In this case, we should have a null anchor view so that the
+// bubble gets placed in the default top left corner. Regression test for
+// https://crbug.com/1087143.
+IN_PROC_BROWSER_TEST_P(ImmersiveModeControllerAshWebAppBrowserTest,
+                       PermissionsBubbleAnchor) {
+  LaunchAppBrowser();
+  auto test_api =
+      std::make_unique<test::PermissionRequestManagerTestApi>(browser());
+  EXPECT_TRUE(test_api->manager());
+
+  // Add a permission bubble using the test api.
+  test_api->AddSimpleRequest(
+      browser()->tab_strip_model()->GetActiveWebContents()->GetMainFrame(),
+      ContentSettingsType::GEOLOCATION);
+
+  // The permission prompt is shown asynchronously. Without immersive mode
+  // enabled the anchor should exist.
+  base::RunLoop().RunUntilIdle();
+  views::Widget* prompt_window = test_api->GetPromptWindow();
+  views::BubbleDialogDelegate* bubble_dialog =
+      prompt_window->AsWidget()->widget_delegate()->AsBubbleDialogDelegate();
+  ASSERT_TRUE(bubble_dialog);
+  EXPECT_TRUE(bubble_dialog->GetAnchorView());
+
+  // Turn on immersive, but do not reveal. The app menu button is hidden from
+  // sight so the anchor should be null. The bubble will get placed in the top
+  // left corner of the app.
+  auto* immersive_mode_controller =
+      BrowserView::GetBrowserViewForBrowser(browser())
+          ->immersive_mode_controller();
+  immersive_mode_controller->SetEnabled(true);
+  EXPECT_FALSE(immersive_mode_controller->IsRevealed());
+  EXPECT_FALSE(bubble_dialog->GetAnchorView());
+
+  // Reveal the header. The anchor should exist since the app menu button is now
+  // visible.
+  {
+    std::unique_ptr<ImmersiveRevealedLock> focus_reveal_lock(
+        immersive_mode_controller->GetRevealedLock(
+            ImmersiveModeController::ANIMATE_REVEAL_YES));
+    EXPECT_TRUE(immersive_mode_controller->IsRevealed());
+    EXPECT_TRUE(bubble_dialog->GetAnchorView());
+  }
+
+  EXPECT_FALSE(immersive_mode_controller->IsRevealed());
+  EXPECT_FALSE(bubble_dialog->GetAnchorView());
 }
 
 INSTANTIATE_TEST_SUITE_P(All,

@@ -21,9 +21,6 @@ bool ShouldShowParentalControlSettings(const Profile* profile);
 // shown for |profile|.
 bool ShouldShowExternalStorageSettings(const Profile* profile);
 
-// Determines whether the DLC section of Storage settings should be shown.
-bool ShouldShowDlcSettings();
-
 }  // namespace features
 }  // namespace settings
 }  // namespace chromeos

@@ -215,7 +215,7 @@ class TextInputClientForTesting : public DummyTextInputClient {
 
   bool HasCompositionText() const override { return !composition_text.empty(); }
 
-  void ConfirmCompositionText(bool keep_selection) override {
+  uint32_t ConfirmCompositionText(bool keep_selection) override {
     // TODO(b/134473433) Modify this function so that when keep_selection is
     // true, the selection is not changed when text committed
     if (keep_selection) {
@@ -225,7 +225,10 @@ class TextInputClientForTesting : public DummyTextInputClient {
         base::ASCIIToUTF16("compositionend"));
     TestResult::GetInstance()->RecordAction(base::ASCIIToUTF16("textinput:") +
                                             composition_text);
+    const uint32_t composition_text_length =
+        static_cast<uint32_t>(composition_text.length());
     composition_text.clear();
+    return composition_text_length;
   }
 
   void ClearCompositionText() override {

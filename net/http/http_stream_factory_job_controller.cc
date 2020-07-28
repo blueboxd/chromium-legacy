@@ -1151,8 +1151,7 @@ bool HttpStreamFactory::JobController::ShouldCreateAlternativeProxyServerJob(
 
   DCHECK(alternative_proxy_info->proxy_server() != proxy_info.proxy_server());
 
-  if (!alternative_proxy_info->is_https() &&
-      !alternative_proxy_info->is_quic()) {
+  if (!alternative_proxy_info->is_secure_http_like()) {
     // Alternative proxy server should be a secure server.
     return false;
   }
@@ -1210,7 +1209,7 @@ int HttpStreamFactory::JobController::ReconsiderProxyAfterError(Job* job,
   if (request_info_.load_flags & LOAD_BYPASS_PROXY)
     return error;
 
-  if (proxy_info_.is_https()) {
+  if (proxy_info_.is_secure_http_like()) {
     session_->ssl_client_context()->ClearClientCertificate(
         proxy_info_.proxy_server().host_port_pair());
   }

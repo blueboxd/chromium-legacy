@@ -5,6 +5,8 @@
 #include "ui/ozone/platform/wayland/host/wayland_toplevel_window.h"
 
 #include "base/run_loop.h"
+#include "base/unguessable_token.h"
+#include "build/lacros_buildflags.h"
 #include "ui/base/dragdrop/drag_drop_types.h"
 #include "ui/base/dragdrop/os_exchange_data.h"
 #include "ui/base/hit_test.h"
@@ -48,7 +50,11 @@ bool WaylandToplevelWindow::CreateShellSurface() {
     return false;
   }
 
-  shell_surface_->SetAppId(app_id_);
+#if BUILDFLAG(IS_LACROS)
+  shell_surface_->SetAppId(window_unique_id_);
+#else
+  shell_surface_->SetAppId(wm_class_class_);
+#endif
   shell_surface_->SetTitle(window_title_);
   SetSizeConstraints();
   TriggerStateChanges();
@@ -200,6 +206,14 @@ void WaylandToplevelWindow::SizeConstraintsChanged() {
   SetSizeConstraints();
 }
 
+std::string WaylandToplevelWindow::GetWindowUniqueId() const {
+#if BUILDFLAG(IS_LACROS)
+  return window_unique_id_;
+#else
+  return std::string();
+#endif
+}
+
 void WaylandToplevelWindow::HandleSurfaceConfigure(int32_t width,
                                                    int32_t height,
                                                    bool is_maximized,
@@ -318,7 +332,12 @@ void WaylandToplevelWindow::OnDragSessionClose(uint32_t dnd_action) {
 
 bool WaylandToplevelWindow::OnInitialize(
     PlatformWindowInitProperties properties) {
-  app_id_ = properties.wm_class_class;
+#if BUILDFLAG(IS_LACROS)
+  auto token = base::UnguessableToken::Create();
+  window_unique_id_ = "org.chromium.lacros." + token.ToString();
+#else
+  wm_class_class_ = properties.wm_class_class;
+#endif
   SetWmMoveLoopHandler(this, static_cast<WmMoveLoopHandler*>(this));
   return true;
 }

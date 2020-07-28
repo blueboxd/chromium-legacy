@@ -21,6 +21,7 @@
 <translation id="1150565364351027703">ছানগ্লাছ</translation>
 <translation id="115443833402798225">Hangul Ahnmatae</translation>
 <translation id="1155759005174418845">কেটালান</translation>
+<translation id="1172970565351728681">প্ৰায় <ph name="REMAINING_TIME" /> বাকী আছে</translation>
 <translation id="1173894706177603556">নতুন নাম দিয়ক</translation>
 <translation id="117624967391683467"><ph name="FILE_NAME" /> প্ৰতিলিপি কৰি থকা হৈছে...</translation>
 <translation id="1178581264944972037">পজ কৰক</translation>
@@ -198,6 +199,7 @@
 <translation id="3236289833370040187"><ph name="DESTINATION_DOMAIN" />লৈ গৰাকীস্বত্ব স্থানান্তৰ কৰা হ’ব।</translation>
 <translation id="3241720467332021590">আইৰিশ্ব</translation>
 <translation id="3245321423178950146">অজ্ঞাত শিল্পী</translation>
+<translation id="3248185426436836442">বিবেচনাধীন</translation>
 <translation id="3252266817569339921">ফৰাচী</translation>
 <translation id="3254434849914415189"><ph name="FILE_TYPE" /> ফাইলৰ বাবে ডিফ'ল্ট এপ্ বাছনি কৰক:</translation>
 <translation id="3264582393905923483">প্ৰসংগ</translation>
@@ -243,6 +245,7 @@
 <translation id="3780536599611287598">আপোনাৰ ’<ph name="FOLDER_NAME" />’লৈ ফাইল স্থানান্তৰ কৰাৰ অনুমতি নাই।</translation>
 <translation id="3786301125658655746">আপুনি অফলাইন হৈ আছে</translation>
 <translation id="3789841737615482174">ইনষ্টল কৰক</translation>
+<translation id="3793469551756281394">প্ৰায় <ph name="REMAINING_TIME_HOUR" /> <ph name="REMAINING_TIME_MINUTE" /> বাকী আছে</translation>
 <translation id="3798449238516105146">সংস্কৰণ</translation>
 <translation id="3801082500826908679">Faroese</translation>
 <translation id="3809272675881623365">শহা</translation>

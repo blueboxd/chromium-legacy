@@ -21,6 +21,7 @@
 <translation id="1150565364351027703">Sunglasses</translation>
 <translation id="115443833402798225">Hangul Ahnmatae</translation>
 <translation id="1155759005174418845">Catalan</translation>
+<translation id="1172970565351728681">Humigit-kumulang <ph name="REMAINING_TIME" /> ang natitira</translation>
 <translation id="1173894706177603556">Pangalanang muli</translation>
 <translation id="117624967391683467">Kinokopya ang <ph name="FILE_NAME" />...</translation>
 <translation id="1178581264944972037">I-pause</translation>
@@ -198,6 +199,7 @@
 <translation id="3236289833370040187">Ililipat ang pagmamay-ari sa <ph name="DESTINATION_DOMAIN" />.</translation>
 <translation id="3241720467332021590">Irish</translation>
 <translation id="3245321423178950146">Hindi Kilalang Artist</translation>
+<translation id="3248185426436836442">Nakabinbin</translation>
 <translation id="3252266817569339921">Pranses</translation>
 <translation id="3254434849914415189">Piliin ang default na app para sa mga <ph name="FILE_TYPE" /> na file:</translation>
 <translation id="3264582393905923483">Konteksto</translation>
@@ -244,6 +246,7 @@
 <translation id="3780536599611287598">Wala kang pahintulot na maglipat ng mga file sa '<ph name="FOLDER_NAME" />'.</translation>
 <translation id="3786301125658655746">Naka-offline ka</translation>
 <translation id="3789841737615482174">Mag-install</translation>
+<translation id="3793469551756281394">Humigit-kumulang <ph name="REMAINING_TIME_HOUR" /> <ph name="REMAINING_TIME_MINUTE" /> ang natitira</translation>
 <translation id="3798449238516105146">Bersyon</translation>
 <translation id="3801082500826908679">Faroese</translation>
 <translation id="3809272675881623365">Kuneho</translation>

@@ -32,6 +32,9 @@ crbug.com/1083478 [ Linux ] wpt_internal/webgpu/webgpu/web-platform/reftests/can
 crbug.com/1083478 [ Win ] wpt_internal/webgpu/webgpu/web-platform/reftests/canvas_clear.html [ Failure ]
 crbug.com/1083478 [ Win ] wpt_internal/webgpu/webgpu/web-platform/reftests/canvas_complex_bgra8unorm.html [ Failure ]
 
+# Tests have already been updated upstream
+wpt_internal/webgpu/cts.html?q=webgpu:idl,constants,flags:* [ Failure ]
+
 #
 # Platform-independent failures
 #

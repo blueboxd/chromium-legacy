@@ -335,6 +335,7 @@
 <translation id="3658159451045945436">გადაყენების შემთხვევაში, წაიშლება მონაცემთა დაზოგვის ისტორია (მათ შორის, მონახულებული საიტების სია).</translation>
 <translation id="3692944402865947621"><ph name="FILE_NAME" /> ვერ ჩამოიტვირთა, რადგან ვერ მოხერხდა ჩამოტვირთვის მდებარეობაზე წვდომა.</translation>
 <translation id="3701167022068948696">ახლავე შესწორება</translation>
+<translation id="371230970611282515">პროგნოზირებს სახიფათო მოვლენებს და გაგაფრთხილებთ მათ შესახებ.</translation>
 <translation id="3714981814255182093">ძიების ზოლის გახსნა</translation>
 <translation id="3716182511346448902">ეს გვერდი იყენებს მეხსიერების მეტისმეტად დიდ მოცულობას, რის გამოც Chrome-მა ის დააპაუზა.</translation>
 <translation id="3721119614952978349">თქვენ და Google</translation>
@@ -713,6 +714,7 @@
 <translation id="6593061639179217415">დესკტოპის საიტი</translation>
 <translation id="6597891566292541626">მოათავსეთ QR/შტრიხკოდი ამ ჩარჩოში.</translation>
 <translation id="6600954340915313787">დაკოპირდა Chrome-ში</translation>
+<translation id="661266467055912436">უსაფრთხოების გაუმჯობესება თქვენთვის და ვების ყველა მომხმარებლისთვის.</translation>
 <translation id="6627583120233659107">საქაღალდის რედაქტირება</translation>
 <translation id="6643016212128521049">გასუფთავება</translation>
 <translation id="6643649862576733715">დალაგება დაზოგილი მონაცემების მიხედვით</translation>
@@ -872,6 +874,7 @@
 <translation id="7925590027513907933">{FILE_COUNT,plural, =1{მიმდინარეობს ფაილის ჩამოტვირთვა.}other{მიმდინარეობს # ფაილის ჩამოტვირთვა.}}</translation>
 <translation id="7926975587469166629">ბარათის მეტსახელი</translation>
 <translation id="7929962904089429003">მენიუს გახსნა</translation>
+<translation id="7930998711684428189">გაგაფრთხილებთ მონაცემთა გაჟონვისას პაროლების გამოაშკარავების შემთხვევაში.</translation>
 <translation id="7942131818088350342"><ph name="PRODUCT_NAME" /> მოძველდა.</translation>
 <translation id="7947953824732555851">მიღება და შესვლა</translation>
 <translation id="7963646190083259054">მომწოდებელი:</translation>

@@ -121,6 +121,8 @@ class ListContainer {
     this.element.addEventListener(
         'contextmenu', this.onContextMenu_.bind(this), /* useCapture */ true);
 
+    // Disables context menu by long-tap when at least one file/folder is
+    // selected, while still enabling two-finger tap.
     this.element.addEventListener('touchstart', function(e) {
       if (e.touches.length > 1) {
         this.allowContextMenuByTouch_ = true;

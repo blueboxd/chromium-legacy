@@ -938,11 +938,6 @@
     "expiry_milestone": 89
   },
   {
-    "name": "dlc-settings-ui",
-    "owners": [ "cros-customization@google.com", "hsuregan" ],
-    "expiry_milestone": 86
-  },
-  {
     "name": "dns-httpssvc",
     "owners": [ "dmcardle", "ericorth" ],
     "expiry_milestone": 88
@@ -2589,6 +2584,11 @@
     "expiry_milestone": 84
   },
   {
+    "name": "global-media-controls-cast-start-stop",
+    "owners": [ "jrw", "takumif" ],
+    "expiry_milestone": 93
+  },
+  {
     "name": "global-media-controls-for-cast",
     "owners": [ "takumif", "openscreen-eng@google.com" ],
     "expiry_milestone": 90
@@ -3721,6 +3721,11 @@
     "name": "request-unbuffered-dispatch",
     "owners": [ "bokan" ],
     "expiry_milestone": 80
+  },
+  {
+    "name": "restrict-gamepad-access",
+    "owners": [ "//device/gamepad/OWNERS", "jameshollyer@chromium.org" ],
+    "expiry_milestone": 89
   },
   {
     "name": "rewrite-leveldb-on-deletion",

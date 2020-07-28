@@ -26,6 +26,8 @@ source_set("base") {
     "compound_buffer.h",
     "constants.cc",
     "constants.h",
+    "directory_service_client.cc",
+    "directory_service_client.h",
     "leaky_bucket.cc",
     "leaky_bucket.h",
     "name_value_map.h",
@@ -57,6 +59,7 @@ source_set("base") {
     "session_options.h",
     "socket_reader.cc",
     "socket_reader.h",
+    "task_util.h",
     "telemetry_log_writer.cc",
     "telemetry_log_writer.h",
     "typed_buffer.h",
@@ -80,6 +83,7 @@ source_set("base") {
     "//base",
     "//net",
     "//remoting/proto",
+    "//remoting/proto/remoting/v1:directory_proto",
     "//remoting/proto/remoting/v1:telemetry_grpc_library",
     "//third_party/protobuf:protobuf_lite",
   ]
@@ -151,10 +155,16 @@ static_library("test_support") {
     "fake_oauth_token_getter.h",
     "mock_oauth_client.cc",
     "mock_oauth_client.h",
+    "protobuf_http_test_responder.cc",
+    "protobuf_http_test_responder.h",
     "test_rsa_key_pair.h",
   ]
 
-  deps = [ "//remoting/proto" ]
+  deps = [
+    ":protobuf_http_client_messages_proto",
+    "//remoting/proto",
+    "//services/network:test_support",
+  ]
   public_deps = [
     ":authorization",
     ":base",
@@ -167,7 +177,20 @@ static_library("test_support") {
 }
 
 proto_library("test_proto") {
+  testonly = true
+
   sources = [ "protobuf_http_client_test_messages.proto" ]
+}
+
+source_set("run_all_unittests") {
+  testonly = true
+
+  sources = [ "run_all_unittests.cc" ]
+  deps = [
+    "//base",
+    "//mojo/core/embedder",
+    "//testing/gtest",
+  ]
 }
 
 source_set("unit_tests") {
@@ -187,23 +210,19 @@ source_set("unit_tests") {
     "rate_counter_unittest.cc",
     "result_unittest.cc",
     "rsa_key_pair_unittest.cc",
-    "run_all_unittests.cc",
     "running_samples_unittest.cc",
     "session_options_unittest.cc",
-
-    # TODO(https://crbug.com/968640): Fix and reenable tests once we have some
-    # breathing room.
-    # "telemetry_log_writer_unittest.cc",
+    "telemetry_log_writer_unittest.cc",
     "typed_buffer_unittest.cc",
     "util_unittest.cc",
     "weighted_samples_unittest.cc",
   ]
 
   deps = [
+    ":run_all_unittests",
     ":test_proto",
     ":test_support",
     "//base",
-    "//mojo/core/embedder",
     "//net:test_support",
     "//third_party/libyuv",
     "//third_party/webrtc_overrides:webrtc_component",

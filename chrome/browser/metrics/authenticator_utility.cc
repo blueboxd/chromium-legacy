@@ -42,6 +42,10 @@ void ReportUVPlatformAuthenticatorAvailabilityWithConfig(
 
 void ReportUVPlatformAuthenticatorAvailabilityMainThreadMac() {
   DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
+  // Tests can shut down before this task is run.
+  if (!g_browser_process)
+    return;
+
   // Startup metrics are recording during PostBrowserStart() which is after
   // profile initialization. However some tests run PostBrowserStart() without
   // setting up profiles so there still needs to be a guard.

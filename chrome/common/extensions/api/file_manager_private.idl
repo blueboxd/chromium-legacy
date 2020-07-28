@@ -965,11 +965,13 @@ interface Functions {
       [instanceOf=Entry] object[] entries,
       ResolveEntriesCallback callback);
 
-  // Mount a resource or a file.
-  // |source| Mount point source. For compressed files it is relative file path
-  //     within external file system
-  // |callback|
-  static void addMount(DOMString source, AddMountCallback callback);
+  // Mounts a resource or a file.
+  // |source| Mount point source. For compressed files it is the relative file
+  //     path within the external file system.
+  // |password| Optional password to decrypt the file.
+  // |callback| Callback called with the source path of the mount.
+  static void addMount(DOMString source, optional DOMString password,
+                       AddMountCallback callback);
 
   // Unmounts a mounted resource.
   // |volumeId| An ID of the volume.

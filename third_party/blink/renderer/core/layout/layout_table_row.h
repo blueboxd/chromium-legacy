@@ -125,6 +125,9 @@ class CORE_EXPORT LayoutTableRow final : public LayoutTableBoxComponent,
   bool BackgroundIsKnownToBeOpaqueInRect(const PhysicalRect&) const override {
     return false;
   }
+
+  void InvalidatePaint(const PaintInvalidatorContext&) const final;
+
   // LayoutNGTableRowInterface methods start.
 
   const LayoutNGTableRowInterface* ToLayoutNGTableRowInterface() const final {

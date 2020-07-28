@@ -15,7 +15,6 @@
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/chromeos/login/demo_mode/demo_session.h"
 #include "chrome/browser/ui/webui/settings/chromeos/device_display_handler.h"
-#include "chrome/browser/ui/webui/settings/chromeos/device_dlc_handler.h"
 #include "chrome/browser/ui/webui/settings/chromeos/device_keyboard_handler.h"
 #include "chrome/browser/ui/webui/settings/chromeos/device_pointer_handler.h"
 #include "chrome/browser/ui/webui/settings/chromeos/device_power_handler.h"
@@ -399,30 +398,6 @@ const std::vector<SearchConcept>& GetDisplayNightLightOnSearchConcepts() {
   return *tags;
 }
 
-const std::vector<SearchConcept>& GetDlcSearchConcepts() {
-  static const base::NoDestructor<std::vector<SearchConcept>> tags({
-      {IDS_OS_SETTINGS_TAG_DOWNLOADED_CONTENT,
-       mojom::kDlcSubpagePath,
-       mojom::SearchResultIcon::kHardDrive,
-       mojom::SearchResultDefaultRank::kMedium,
-       mojom::SearchResultType::kSubpage,
-       {.subpage = mojom::Subpage::kDlc},
-       {IDS_OS_SETTINGS_TAG_DOWNLOADED_CONTENT_ALT1,
-        SearchConcept::kAltTagEnd}},
-      {IDS_OS_SETTINGS_TAG_REMOVE_DOWNLOADED_CONTENT,
-       mojom::kDlcSubpagePath,
-       mojom::SearchResultIcon::kHardDrive,
-       mojom::SearchResultDefaultRank::kMedium,
-       mojom::SearchResultType::kSetting,
-       {.setting = mojom::Setting::kRemoveDlc},
-       {IDS_OS_SETTINGS_TAG_REMOVE_DOWNLOADED_CONTENT_ALT1,
-        IDS_OS_SETTINGS_TAG_REMOVE_DOWNLOADED_CONTENT_ALT2,
-        IDS_OS_SETTINGS_TAG_REMOVE_DOWNLOADED_CONTENT_ALT3,
-        SearchConcept::kAltTagEnd}},
-  });
-  return *tags;
-}
-
 const std::vector<SearchConcept>& GetExternalStorageSearchConcepts() {
   static const base::NoDestructor<std::vector<SearchConcept>> tags({
       {IDS_OS_SETTINGS_TAG_EXTERNAL_STORAGE,
@@ -691,10 +666,7 @@ void AddDeviceStorageStrings(content::WebUIDataSource* html_source,
        IDS_SETTINGS_STORAGE_EXTERNAL_STORAGE_EMPTY_LIST_HEADER},
       {"storageExternalStorageListHeader",
        IDS_SETTINGS_STORAGE_EXTERNAL_STORAGE_LIST_HEADER},
-      {"storageManageDownloadedContentRowTitle",
-       IDS_SETTINGS_STORAGE_MANAGE_DOWNLOADED_CONTENT_ROW_TITLE},
-      {"storageOverviewAriaLabel", IDS_SETTINGS_STORAGE_OVERVIEW_ARIA_LABEL},
-  };
+      {"storageOverviewAriaLabel", IDS_SETTINGS_STORAGE_OVERVIEW_ARIA_LABEL}};
   AddLocalizedStringsBulk(html_source, kStorageStrings);
 
   html_source->AddBoolean("androidEnabled", is_external_storage_page_available);
@@ -704,17 +676,6 @@ void AddDeviceStorageStrings(content::WebUIDataSource* html_source,
       l10n_util::GetStringFUTF16(
           IDS_SETTINGS_STORAGE_ANDROID_APPS_ACCESS_EXTERNAL_DRIVES_NOTE,
           base::ASCIIToUTF16(chrome::kArcExternalStorageLearnMoreURL)));
-}
-
-void AddDeviceDlcSubpageStrings(content::WebUIDataSource* html_source) {
-  static constexpr webui::LocalizedString kDlcSubpageStrings[] = {
-      {"dlcSubpageTitle", IDS_SETTINGS_DLC_SUBPAGE_TITLE},
-      {"dlcSubpageDescription", IDS_SETTINGS_DLC_SUBPAGE_DESCRIPTION},
-      {"removeDlc", IDS_SETTINGS_DLC_REMOVE},
-  };
-  AddLocalizedStringsBulk(html_source, kDlcSubpageStrings);
-
-  html_source->AddBoolean("allowDlcSubpage", features::ShouldShowDlcSettings());
 }
 
 void AddDevicePowerStrings(content::WebUIDataSource* html_source) {
@@ -799,14 +760,6 @@ DeviceSection::DeviceSection(Profile* profile,
     OnNightLightEnabledChanged(
         ash::NightLightController::GetInstance()->GetEnabled());
   }
-
-  // DLC settings search tags are added/removed dynamically.
-  DlcserviceClient* dlcservice_client = DlcserviceClient::Get();
-  if (features::ShouldShowDlcSettings() && dlcservice_client) {
-    dlcservice_client->AddObserver(this);
-    dlcservice_client->GetExistingDlcs(base::BindOnce(
-        &DeviceSection::OnGetExistingDlcs, weak_ptr_factory_.GetWeakPtr()));
-  }
 }
 
 DeviceSection::~DeviceSection() {
@@ -821,10 +774,6 @@ DeviceSection::~DeviceSection() {
       ash::NightLightController::GetInstance();
   if (night_light_controller)
     night_light_controller->RemoveObserver(this);
-
-  DlcserviceClient* dlcservice_client = DlcserviceClient::Get();
-  if (features::ShouldShowDlcSettings() && dlcservice_client)
-    dlcservice_client->RemoveObserver(this);
 }
 
 void DeviceSection::AddLoadTimeData(content::WebUIDataSource* html_source) {
@@ -845,7 +794,6 @@ void DeviceSection::AddLoadTimeData(content::WebUIDataSource* html_source) {
   AddDeviceStorageStrings(
       html_source, features::ShouldShowExternalStorageSettings(profile()));
   AddDevicePowerStrings(html_source);
-  AddDeviceDlcSubpageStrings(html_source);
 }
 
 void DeviceSection::AddHandlers(content::WebUI* web_ui) {
@@ -853,11 +801,6 @@ void DeviceSection::AddHandlers(content::WebUI* web_ui) {
       ash::features::IsDisplayAlignmentAssistanceEnabled()) {
     web_ui->AddMessageHandler(
         std::make_unique<chromeos::settings::DisplayHandler>());
-  }
-
-  if (features::ShouldShowDlcSettings()) {
-    web_ui->AddMessageHandler(
-        std::make_unique<chromeos::settings::DlcHandler>());
   }
 
   web_ui->AddMessageHandler(
@@ -967,12 +910,6 @@ void DeviceSection::RegisterHierarchy(HierarchyGenerator* generator) const {
       mojom::Subpage::kStorage, mojom::SearchResultIcon::kHardDrive,
       mojom::SearchResultDefaultRank::kMedium,
       mojom::kExternalStorageSubpagePath);
-  generator->RegisterNestedSubpage(
-      IDS_SETTINGS_DLC_SUBPAGE_TITLE, mojom::Subpage::kDlc,
-      mojom::Subpage::kStorage, mojom::SearchResultIcon::kHardDrive,
-      mojom::SearchResultDefaultRank::kMedium, mojom::kDlcSubpagePath);
-  generator->RegisterNestedSetting(mojom::Setting::kRemoveDlc,
-                                   mojom::Subpage::kDlc);
 
   // Power.
   generator->RegisterTopLevelSubpage(
@@ -1029,24 +966,6 @@ void DeviceSection::PowerChanged(
       power_manager::PowerSupplyProperties_BatteryState_NOT_PRESENT) {
     updater.AddSearchTags(GetPowerWithBatterySearchConcepts());
   }
-}
-
-void DeviceSection::OnGetExistingDlcs(
-    const std::string& err,
-    const dlcservice::DlcsWithContent& dlcs_with_content) {
-  SearchTagRegistry::ScopedTagUpdater updater = registry()->StartUpdate();
-
-  if (err != dlcservice::kErrorNone ||
-      dlcs_with_content.dlc_infos_size() == 0) {
-    updater.RemoveSearchTags(GetDlcSearchConcepts());
-    return;
-  }
-  updater.AddSearchTags(GetDlcSearchConcepts());
-}
-
-void DeviceSection::OnDlcStateChanged(const dlcservice::DlcState& dlc_state) {
-  DlcserviceClient::Get()->GetExistingDlcs(base::BindOnce(
-      &DeviceSection::OnGetExistingDlcs, weak_ptr_factory_.GetWeakPtr()));
 }
 
 void DeviceSection::OnGetDisplayUnitInfoList(

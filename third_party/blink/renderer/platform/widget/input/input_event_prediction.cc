@@ -44,10 +44,10 @@ InputEventPrediction::InputEventPrediction(bool enable_resampling)
 
   if (predictor_name.empty()) {
     selected_predictor_type_ =
-        blink::input_prediction::PredictorType::kScrollPredictorTypeKalman;
+        input_prediction::PredictorType::kScrollPredictorTypeKalman;
   } else {
     selected_predictor_type_ =
-        blink::PredictorFactory::GetPredictorTypeFromName(predictor_name);
+        PredictorFactory::GetPredictorTypeFromName(predictor_name);
   }
 
   mouse_predictor_ = CreatePredictor();
@@ -81,9 +81,9 @@ void InputEventPrediction::HandleEvents(
   }
 }
 
-std::unique_ptr<blink::InputPredictor> InputEventPrediction::CreatePredictor()
+std::unique_ptr<ui::InputPredictor> InputEventPrediction::CreatePredictor()
     const {
-  return blink::PredictorFactory::GetPredictor(selected_predictor_type_);
+  return PredictorFactory::GetPredictor(selected_predictor_type_);
 }
 
 void InputEventPrediction::UpdatePrediction(const WebInputEvent& event) {
@@ -201,7 +201,7 @@ void InputEventPrediction::AddPredictedEvents(
   }
 }
 
-blink::InputPredictor* InputEventPrediction::GetPredictor(
+ui::InputPredictor* InputEventPrediction::GetPredictor(
     const WebPointerProperties& event) const {
   if (event.pointer_type == WebPointerProperties::PointerType::kMouse)
     return mouse_predictor_.get();
@@ -223,8 +223,7 @@ base::TimeDelta InputEventPrediction::GetPredictionTimeInterval(
 void InputEventPrediction::UpdateSinglePointer(
     const WebPointerProperties& event,
     base::TimeTicks event_time) {
-  blink::InputPredictor::InputData data = {event.PositionInWidget(),
-                                           event_time};
+  ui::InputPredictor::InputData data = {event.PositionInWidget(), event_time};
   if (auto* predictor = GetPredictor(event)) {
     predictor->Update(data);
   } else {

@@ -63,6 +63,7 @@
 #include "components/autofill/core/common/form_data.h"
 #include "components/autofill/core/common/form_field_data.h"
 #include "components/prefs/pref_service.h"
+#include "components/security_interstitials/core/pref_names.h"
 #include "components/security_state/core/security_state.h"
 #include "components/strings/grit/components_strings.h"
 #include "components/sync/driver/test_sync_service.h"
@@ -8447,6 +8448,28 @@ TEST_F(AutofillManagerTestWithMixedForms, GetSuggestions_MixedForm) {
       kDefaultPageID,
       Suggestion(l10n_util::GetStringUTF8(IDS_AUTOFILL_WARNING_MIXED_FORM), "",
                  "", POPUP_ITEM_ID_MIXED_FORM_MESSAGE));
+}
+
+// Test that if a form is mixed content we do not show a warning if the opt out
+// polcy is set.
+TEST_F(AutofillManagerTestWithMixedForms,
+       GetSuggestions_MixedFormOptoutPolicy) {
+  // Set pref to disabled.
+  autofill_client_.GetPrefs()->SetBoolean(::prefs::kMixedFormsWarningsEnabled,
+                                          false);
+
+  // Set up our form data.
+  FormData form;
+  form.name = ASCIIToUTF16("MyForm");
+  form.url = GURL("https://myform.com/form.html");
+  form.action = GURL("http://myform.com/submit.html");
+  FormFieldData field;
+  test::CreateTestFormField("Name on Card", "nameoncard", "", "text", &field);
+  form.fields.push_back(field);
+  GetAutofillSuggestions(form, form.fields[0]);
+
+  // Check there is no warning.
+  EXPECT_FALSE(external_delegate_->on_suggestions_returned_seen());
 }
 
 // Desktop only tests.

@@ -588,7 +588,7 @@
 <translation id="1701062906490865540">Отстрани го ова лице</translation>
 <translation id="1703331064825191675">Не грижете се за своите лозинки</translation>
 <translation id="1704970325597567340">Безбедносната проверка беше извршена на <ph name="DATE" /></translation>
-<translation id="1706391837335750954">Има DNS-пребарувач</translation>
+<translation id="1706391837335750954">Има DNS-одредувач</translation>
 <translation id="1706586824377653884">Додадено од вашиот администратор</translation>
 <translation id="1706625117072057435">Нивоа на зумирање</translation>
 <translation id="1708338024780164500">(Неактивна)</translation>
@@ -1161,7 +1161,7 @@
 <translation id="2408955596600435184">Внесете го вашиот PIN</translation>
 <translation id="241082044617551207">Непознат приклучок</translation>
 <translation id="2412593942846481727">Достапно е ажурирање</translation>
-<translation id="2414499877591062094">Овозможете автоматски испраќање со PIN</translation>
+<translation id="2414499877591062094">Овозможи користење PIN-код за автоматско испраќање</translation>
 <translation id="2416435988630956212">Функциски копчиња на тастатурата</translation>
 <translation id="241727068219398187">Податоците се шифрирани со вашата лозинка на Google од
           <ph name="TIME" />. Тоа не ги вклучува начините на плаќање и адресите од Google Pay.</translation>
@@ -2380,6 +2380,7 @@
 <translation id="3882165008614329320">Постојно видео од камера или датотека</translation>
 <translation id="3886446263141354045">Вашето барање за пристап на сајтов е испратено на <ph name="NAME" />.</translation>
 <translation id="3888550877729210209">Прибележување со <ph name="LOCK_SCREEN_APP_NAME" /></translation>
+<translation id="3891563564777705449">{0,plural, =1{Ажурирајте го уредот во рок од 1 седмица}one{Ажурирајте го уредот во рок од # седмица}other{Ажурирајте го уредот во рок од # седмици}}</translation>
 <translation id="3892414795099177503">Додајте OpenVPN / L2TP…</translation>
 <translation id="3893536212201235195">Прочитајте ги и променете ги поставките за пристапност</translation>
 <translation id="3893630138897523026">ChromeVox (говорни повратни информации)</translation>
@@ -4441,6 +4442,7 @@
 <translation id="6535331821390304775">Секогаш дозволувај <ph name="ORIGIN" /> да отвора линкови од овој тип во поврзаната апликација</translation>
 <translation id="654039047105555694"><ph name="BEGIN_BOLD" />Напомена:<ph name="END_BOLD" /> овозможете само ако знаете што правите или ако ви рекле да го направите тоа, затоа што собирањето податоци може да го намали учинокот.</translation>
 <translation id="6541638731489116978">Пристапот до сензорите за движење е блокиран за сајтов.</translation>
+<translation id="6545407738986370057">{0,plural, =1{Вратете го уредот во рок од 1 седмица}one{Вратете го уредот во рок од # седмица}other{Вратете го уредот во рок од # седмици}}</translation>
 <translation id="6545665334409411530">Стапка на повторување</translation>
 <translation id="6545864417968258051">Скенирање за Bluetooth</translation>
 <translation id="6545867563032584178">Микрофонот е исклучен во поставките за системот Mac</translation>
@@ -4557,7 +4559,7 @@
 <translation id="6701535245008341853">Не можеше да се добие профил.</translation>
 <translation id="6702639462873609204">&amp;Уреди...</translation>
 <translation id="6703966911896067184">Илустрација за грешка при регистрација</translation>
-<translation id="6704062477274546131">DNS-пребарување</translation>
+<translation id="6704062477274546131">Одредување со DNS</translation>
 <translation id="6706210727756204531">Опсег</translation>
 <translation id="6707389671160270963">Сертификат на SSL-клиент</translation>
 <translation id="6709002550153567782">{NUM_PAGES,plural, =0{<ph name="PAGE_TITLE" />}=1{<ph name="PAGE_TITLE" /> и уште 1 картичка}one{<ph name="PAGE_TITLE" /> и уште # картичка}other{<ph name="PAGE_TITLE" /> и уште # картички}}</translation>

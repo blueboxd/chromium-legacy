@@ -2380,6 +2380,7 @@ Je kunt de instellingen van dit account beheren door de Family Link-app op je ap
 <translation id="3882165008614329320">Bestaande video van camera of uit bestand</translation>
 <translation id="3886446263141354045">Je verzoek voor toegang tot deze website is verzonden naar <ph name="NAME" /></translation>
 <translation id="3888550877729210209">Notities maken met <ph name="LOCK_SCREEN_APP_NAME" /></translation>
+<translation id="3891563564777705449">{0,plural, =1{Apparaat binnen 1 week updaten}other{Apparaat binnen # weken updaten}}</translation>
 <translation id="3892414795099177503">OpenVPN/L2TP toevoegen...</translation>
 <translation id="3893536212201235195">Je toegankelijkheidsinstellingen lezen en wijzigen</translation>
 <translation id="3893630138897523026">ChromeVox (gesproken feedback)</translation>
@@ -4441,6 +4442,7 @@ Je kunt de instellingen van dit account beheren door de Family Link-app op je ap
 <translation id="6535331821390304775">Altijd toestaan dat <ph name="ORIGIN" /> links van dit type opent in de bijbehorende app</translation>
 <translation id="654039047105555694"><ph name="BEGIN_BOLD" />Opmerking:<ph name="END_BOLD" /> schakel dit alleen in als je weet wat je doet of als je bent gevraagd dit te doen, omdat het verzamelen van gegevens kan leiden tot verminderde prestaties.</translation>
 <translation id="6541638731489116978">Deze site heeft geen toegang tot je bewegingssensoren.</translation>
+<translation id="6545407738986370057">{0,plural, =1{Apparaat binnen 1 week terugsturen}other{Apparaat binnen # weken terugsturen}}</translation>
 <translation id="6545665334409411530">Herhalingssnelheid</translation>
 <translation id="6545864417968258051">Bluetooth-scannen</translation>
 <translation id="6545867563032584178">Microfoon is uitgeschakeld in Mac-systeemvoorkeuren</translation>

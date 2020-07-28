@@ -170,6 +170,15 @@ void SkiaOutputSurfaceImpl::SetDrawRectangle(const gfx::Rect& draw_rectangle) {
   has_set_draw_rectangle_for_frame_ = true;
 }
 
+void SkiaOutputSurfaceImpl::SetEnableDCLayers(bool enable) {
+  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
+  DCHECK(capabilities().supports_dc_layers);
+
+  auto task = base::BindOnce(&SkiaOutputSurfaceImplOnGpu::SetEnableDCLayers,
+                             base::Unretained(impl_on_gpu_.get()), enable);
+  ScheduleGpuTask(std::move(task), {});
+}
+
 void SkiaOutputSurfaceImpl::EnsureBackbuffer() {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   // impl_on_gpu_ is released on the GPU thread by a posted task from
@@ -648,14 +657,6 @@ void SkiaOutputSurfaceImpl::ScheduleOverlays(
                      base::Unretained(impl_on_gpu_.get()), std::move(overlays));
   ScheduleGpuTask(std::move(task), std::move(sync_tokens));
 }
-
-#if defined(OS_WIN)
-void SkiaOutputSurfaceImpl::SetEnableDCLayers(bool enable) {
-  auto task = base::BindOnce(&SkiaOutputSurfaceImplOnGpu::SetEnableDCLayers,
-                             base::Unretained(impl_on_gpu_.get()), enable);
-  ScheduleGpuTask(std::move(task), {});
-}
-#endif
 
 gpu::MemoryTracker* SkiaOutputSurfaceImpl::GetMemoryTracker() {
   // Should only be called after initialization.

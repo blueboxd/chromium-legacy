@@ -171,6 +171,10 @@ void GetMatchTypeAndExtendSubtypes(const AutocompleteMatch& match,
       subtypes->emplace(327);
       return;
     }
+    case AutocompleteMatchType::TILE_SUGGESTION: {
+      *type = 171;
+      return;
+    }
     default: {
       // This value indicates a native chrome suggestion with no named subtype
       // (yet).

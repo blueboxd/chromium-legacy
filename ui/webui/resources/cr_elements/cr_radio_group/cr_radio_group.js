@@ -32,7 +32,7 @@
 
       selectableElements: {
         type: String,
-        value: 'cr-radio-button, controlled-radio-button',
+        value: 'cr-radio-button, cr-card-radio-button, controlled-radio-button',
       },
 
       /**

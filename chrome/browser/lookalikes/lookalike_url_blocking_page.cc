@@ -52,10 +52,6 @@ LookalikeUrlBlockingPage::GetTypeForTesting() {
   return LookalikeUrlBlockingPage::kTypeForTesting;
 }
 
-bool LookalikeUrlBlockingPage::ShouldCreateNewNavigation() const {
-  return true;
-}
-
 void LookalikeUrlBlockingPage::PopulateInterstitialStrings(
     base::DictionaryValue* load_time_data) {
   CHECK(load_time_data);

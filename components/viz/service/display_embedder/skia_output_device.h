@@ -103,6 +103,9 @@ class SkiaOutputDevice {
   // Set the rectangle that will be drawn into on the surface.
   virtual bool SetDrawRectangle(const gfx::Rect& draw_rectangle);
 
+  // Enable or disable DC layers. Must be called before DC layers are scheduled.
+  virtual void SetEnableDCLayers(bool enabled);
+
   virtual void SetGpuVSyncEnabled(bool enabled);
 
   // Whether the output device's primary plane is an overlay. This returns true
@@ -119,10 +122,6 @@ class SkiaOutputDevice {
   // Schedule overlays which will be on screen when SwapBuffers() or
   // PostSubBuffer() is called.
   virtual void ScheduleOverlays(SkiaOutputSurface::OverlayList overlays);
-
-#if defined(OS_WIN)
-  virtual void SetEnableDCLayers(bool enabled);
-#endif
 
   const OutputSurface::Capabilities& capabilities() const {
     return capabilities_;

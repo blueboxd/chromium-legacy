@@ -168,9 +168,7 @@ class SkiaOutputSurfaceImplOnGpu
       uint64_t sync_fence_release);
   void ScheduleOverlays(SkiaOutputSurface::OverlayList overlays);
 
-#if defined(OS_WIN)
   void SetEnableDCLayers(bool enable);
-#endif
   void SetGpuVSyncEnabled(bool enabled);
 
   void SetFrameRate(float frame_rate);

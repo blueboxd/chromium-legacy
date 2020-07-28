@@ -335,6 +335,7 @@
 <translation id="3658159451045945436">การรีเซ็ตจะลบประวัติการประหยัดเน็ต รวมถึงรายการเว็บไซต์ที่เข้าชม</translation>
 <translation id="3692944402865947621">ดาวน์โหลด <ph name="FILE_NAME" /> ไม่สำเร็จเนื่องจากเข้าถึงตำแหน่งที่เก็บข้อมูลไม่ได้</translation>
 <translation id="3701167022068948696">แก้ไขเลย</translation>
+<translation id="371230970611282515">คาดการณ์และเตือนคุณก่อนเกิดเหตุการณ์อันตราย</translation>
 <translation id="3714981814255182093">เปิดแถบค้นหา</translation>
 <translation id="3716182511346448902">หน้านี้ใช้หน่วยความจำมากเกินไป Chrome จึงหยุดหน้าชั่วคราว</translation>
 <translation id="3721119614952978349">คุณและ Google</translation>
@@ -713,6 +714,7 @@
 <translation id="6593061639179217415">เว็บไซต์เวอร์ชันเดสก์ท็อป</translation>
 <translation id="6597891566292541626">จัดตำแหน่งคิวอาร์โค้ด/บาร์โค้ดให้อยู่ในกรอบนี้</translation>
 <translation id="6600954340915313787">คัดลอกไปยัง Chrome แล้ว</translation>
+<translation id="661266467055912436">ปรับปรุงความปลอดภัยให้คุณและทุกคนที่ใช้อินเทอร์เน็ต</translation>
 <translation id="6627583120233659107">แก้ไขโฟลเดอร์</translation>
 <translation id="6643016212128521049">ล้าง</translation>
 <translation id="6643649862576733715">จัดเรียงตามปริมาณเน็ตมือถือที่ประหยัดได้</translation>
@@ -872,6 +874,7 @@
 <translation id="7925590027513907933">{FILE_COUNT,plural, =1{กำลังดาวน์โหลดไฟล์}other{กำลังดาวน์โหลด # ไฟล์}}</translation>
 <translation id="7926975587469166629">ชื่อเล่นของบัตร</translation>
 <translation id="7929962904089429003">เปิดเมนู</translation>
+<translation id="7930998711684428189">เตือนคุณในกรณีที่รหัสผ่านรั่วไหลจากการละเมิดข้อมูล</translation>
 <translation id="7942131818088350342"><ph name="PRODUCT_NAME" /> ล้าสมัย</translation>
 <translation id="7947953824732555851">ยอมรับและลงชื่อเข้าใช้</translation>
 <translation id="7963646190083259054">ผู้ขาย:</translation>

@@ -22,12 +22,11 @@
 namespace remoting {
 
 template <typename RequestType, typename ResponseType>
-using GrpcAsyncServerStreamingRpcFunction =
-    base::OnceCallback<std::unique_ptr<grpc::ClientAsyncReader<ResponseType>>(
-        grpc::ClientContext*,
-        const RequestType&,
-        grpc_impl::CompletionQueue*,
-        void*)>;
+using GrpcAsyncServerStreamingRpcFunction = base::OnceCallback<std::unique_ptr<
+    grpc::ClientAsyncReaderInterface<ResponseType>>(grpc::ClientContext*,
+                                                    const RequestType&,
+                                                    grpc_impl::CompletionQueue*,
+                                                    void*)>;
 
 // GrpcAsyncRequest implementation for server streaming call. The object is
 // first enqueued for starting the stream, then kept being re-enqueued to
@@ -112,9 +111,8 @@ class GrpcAsyncServerStreamingRequest
   using OnIncomingMessageCallback =
       base::RepeatingCallback<void(const ResponseType&)>;
   using StartAndCreateReaderCallback =
-      base::OnceCallback<std::unique_ptr<grpc::ClientAsyncReader<ResponseType>>(
-          grpc_impl::CompletionQueue* cq,
-          void* event_tag)>;
+      base::OnceCallback<std::unique_ptr<grpc::ClientAsyncReaderInterface<
+          ResponseType>>(grpc_impl::CompletionQueue* cq, void* event_tag)>;
 
   ~GrpcAsyncServerStreamingRequest() override = default;
 
@@ -177,7 +175,7 @@ class GrpcAsyncServerStreamingRequest
 
   StartAndCreateReaderCallback create_reader_callback_;
   ResponseType response_;
-  std::unique_ptr<grpc::ClientAsyncReader<ResponseType>> reader_;
+  std::unique_ptr<grpc::ClientAsyncReaderInterface<ResponseType>> reader_;
   OnIncomingMessageCallback on_incoming_msg_;
 
   DISALLOW_COPY_AND_ASSIGN(GrpcAsyncServerStreamingRequest);

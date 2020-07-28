@@ -44,6 +44,7 @@ const PromoStringToIdsMapEntry kPromoStringToIdsMap[] = {
     {"testWhatsNewCommand", kTestWhatsNewMessage, 0},
     {"moveToDockTip", nullptr, IDS_IOS_MOVE_TO_DOCK_TIP},
     {"reviewChromeToS", nullptr, IDS_IOS_REVIEW_UPDATED_CHROME_TOS},
+    {"setChromeDefaultBrowser", nullptr, IDS_IOS_SET_DEFAULT_BROWSER},
 };
 
 // Returns a localized version of |promo_text| if it has an entry in the
@@ -66,6 +67,8 @@ std::string GetLocalizedPromoText(const std::string& promo_text) {
 const char kTestWhatsNewCommand[] = "testwhatsnew";
 const char kTestWhatsNewMessage[] =
     "What's New? BEGIN_LINKFind out hereEND_LINK";
+
+const char kSetDefaultBrowserCommand[] = "openSettings";
 
 NotificationPromoWhatsNew::NotificationPromoWhatsNew(PrefService* local_state)
     : local_state_(local_state),
@@ -94,6 +97,11 @@ bool NotificationPromoWhatsNew::Init() {
     case experimental_flags::WHATS_NEW_REVIEW_UPDATED_TOS:
       InjectFakePromo("3", "reviewChromeToS", "url", "", "chrome://terms",
                       "ReviewUpdatedChromeToS", "logoWithRoundedRectangle");
+      break;
+    case experimental_flags::WHATS_NEW_DEFAULT_BROWSER_TIP:
+      InjectFakePromo("4", "setChromeDefaultBrowser", "chrome_command",
+                      kSetDefaultBrowserCommand, "", "SetChromeDefaultBrowser",
+                      "logo");
       break;
     default:
       NOTREACHED();
@@ -220,9 +228,10 @@ bool NotificationPromoWhatsNew::InitFromNotificationPromo() {
     if (command)
       command_ = *command;
 
-    // There is only one valid command for NTP Promotions, and that is the
-    // test command itself.
-    if (command_ != kTestWhatsNewCommand) {
+    // There are only two valid commands for NTP Promotions, the test command
+    // and kSetDefaultBrowserCommand.
+    if (command_ != kTestWhatsNewCommand &&
+        command_ != kSetDefaultBrowserCommand) {
       return valid_;
     }
   } else {  // If |promo_type_| is not set to URL or Command, return early.

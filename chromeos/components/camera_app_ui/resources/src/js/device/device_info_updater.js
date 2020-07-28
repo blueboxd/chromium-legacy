@@ -2,12 +2,15 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+import {browserProxy} from '../browser_proxy/browser_proxy.js';
 import {DeviceOperator} from '../mojo/device_operator.js';
 // eslint-disable-next-line no-unused-vars
 import {ResolutionList} from '../type.js';
+
 import {Camera3DeviceInfo} from './camera3_device_info.js';
-import {PhotoConstraintsPreferrer,  // eslint-disable-line no-unused-vars
-        VideoConstraintsPreferrer,  // eslint-disable-line no-unused-vars
+import {
+  PhotoConstraintsPreferrer,  // eslint-disable-line no-unused-vars
+  VideoConstraintsPreferrer,  // eslint-disable-line no-unused-vars
 } from './constraints_preferrer.js';
 import {LegacyVCDError} from './error.js';
 
@@ -61,6 +64,13 @@ export class DeviceInfoUpdater {
      * @private
      */
     this.devicesInfo_ = this.enumerateDevices_();
+
+    /**
+     * Got the permission to run enumerateDevices() or not.
+     * @type {boolean}
+     * @private
+     */
+    this.canEnumerateDevices_ = false;
 
     /**
      * Camera3DeviceInfo of all available video devices. Is null on HALv1 device
@@ -137,6 +147,13 @@ export class DeviceInfoUpdater {
    * @private
    */
   async enumerateDevices_() {
+    if (!this.canEnumerateDevices_) {
+      this.canEnumerateDevices_ =
+          await browserProxy.requestEnumerateDevicesPermission();
+      if (!this.canEnumerateDevices_) {
+        throw new Error('Failed to get the permission for enumerateDevices()');
+      }
+    }
     const devices = (await navigator.mediaDevices.enumerateDevices())
                         .filter((device) => device.kind === 'videoinput');
     if (devices.length === 0) {
@@ -174,7 +191,7 @@ export class DeviceInfoUpdater {
    * Requests to lock update of device information. This function is preserved
    * for device information reader to lock the update capability so as to ensure
    * getting consistent data between all information providers.
-   * @param {!function(!DeviceInfoUpdater): Promise} callback Called after
+   * @param {!function(): Promise} callback Called after
    *     update capability is locked. Getting information from all providers in
    *     callback are guaranteed to be consistent.
    */
@@ -190,7 +207,7 @@ export class DeviceInfoUpdater {
     }
     this.lockingUpdate_ = (async () => {
       try {
-        await callback(this);
+        await callback();
       } finally {
         this.lockingUpdate_ = null;
       }

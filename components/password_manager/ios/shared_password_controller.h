@@ -63,12 +63,14 @@ class PasswordManagerDriver;
 // Helper contains common password form processing logic.
 @property(nonatomic, readonly) PasswordFormHelper* formHelper;
 
+// Delegate to receive callbacks from this class.
+@property(nonatomic, weak) id<SharedPasswordControllerDelegate> delegate;
+
 - (instancetype)initWithWebState:(web::WebState*)webState
                          manager:(password_manager::PasswordManagerInterface*)
                                      passwordManager
                       formHelper:(PasswordFormHelper*)formHelper
                 suggestionHelper:(PasswordSuggestionHelper*)suggestionHelper
-                        delegate:(id<SharedPasswordControllerDelegate>)delegate
     NS_DESIGNATED_INITIALIZER;
 
 - (instancetype)init NS_UNAVAILABLE;

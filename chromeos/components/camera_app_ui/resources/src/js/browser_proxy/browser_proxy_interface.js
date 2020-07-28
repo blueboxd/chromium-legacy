@@ -14,6 +14,12 @@ import {
  */
 export class BrowserProxy {
   /**
+   * @return {!Promise<boolean>}
+   * @abstract
+   */
+  async requestEnumerateDevicesPermission() {}
+
+  /**
    * @return {!Promise<?AbstractDirectoryEntry>}
    * @abstract
    */

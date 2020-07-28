@@ -4105,11 +4105,16 @@ ChromeContentBrowserClient::CreateThrottlesForNavigation(
         &throttles);
   }
 
-  MaybeAddThrottle(
-      security_interstitials::InsecureFormNavigationThrottle::
-          MaybeCreateNavigationThrottle(
-              handle, std::make_unique<ChromeSecurityBlockingPageFactory>()),
-      &throttles);
+  Profile* profile = Profile::FromBrowserContext(
+      handle->GetWebContents()->GetBrowserContext());
+  if (profile && profile->GetPrefs()) {
+    MaybeAddThrottle(
+        security_interstitials::InsecureFormNavigationThrottle::
+            MaybeCreateNavigationThrottle(
+                handle, std::make_unique<ChromeSecurityBlockingPageFactory>(),
+                profile->GetPrefs()),
+        &throttles);
+  }
 
   if (IsErrorPageAutoReloadEnabled() && handle->IsInMainFrame()) {
     MaybeAddThrottle(

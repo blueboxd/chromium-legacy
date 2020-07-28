@@ -535,20 +535,25 @@ void RTCQuicTransport::OnStats(uint32_t request_id,
                                const P2PQuicTransportStats& stats) {
   auto it = stats_promise_map_.find(request_id);
   DCHECK(it != stats_promise_map_.end());
+  ScriptPromiseResolver* resolver = it->value;
+  stats_promise_map_.erase(it);
+
   RTCQuicTransportStats* rtc_stats = CreateRTCQuicTransportStats(stats);
   rtc_stats->setNumReceivedDatagramsDropped(num_dropped_received_datagrams_);
-  it->value->Resolve(rtc_stats);
-  stats_promise_map_.erase(it);
+
+  // Resolving a promise can cause user code to run, so do this last.
+  // See crbug.com/1108472
+  resolver->Resolve(rtc_stats);
 }
 
 void RTCQuicTransport::OnDatagramSent() {
   num_buffered_sent_datagrams_--;
+  DCHECK_GE(num_buffered_sent_datagrams_, 0);
+
   // There may be a pending readyToSend promise that can now be resolved.
   if (ready_to_send_datagram_promise_) {
-    ready_to_send_datagram_promise_->Resolve();
-    ready_to_send_datagram_promise_.Clear();
+    ready_to_send_datagram_promise_.Release()->Resolve();
   }
-  DCHECK_GE(num_buffered_sent_datagrams_, 0);
 }
 
 void RTCQuicTransport::OnDatagramReceived(Vector<uint8_t> datagram) {
@@ -558,8 +563,7 @@ void RTCQuicTransport::OnDatagramReceived(Vector<uint8_t> datagram) {
     // We have an pending promise to resolve with received datagrams.
     HeapVector<Member<DOMArrayBuffer>> received_datagrams;
     received_datagrams.push_back(copied_datagram);
-    receive_datagrams_promise_->Resolve(received_datagrams);
-    receive_datagrams_promise_.Clear();
+    receive_datagrams_promise_.Release()->Resolve(received_datagrams);
     return;
   }
   if (received_datagrams_.size() == kMaxBufferedRecvDatagrams) {
@@ -677,12 +681,11 @@ void RTCQuicTransport::RejectPendingPromises() {
   }
   stats_promise_map_.clear();
   if (ready_to_send_datagram_promise_) {
-    RejectPromise(ready_to_send_datagram_promise_, "readyToSendDatagram");
-    ready_to_send_datagram_promise_.Clear();
+    RejectPromise(ready_to_send_datagram_promise_.Release(),
+                  "readyToSendDatagram");
   }
   if (receive_datagrams_promise_) {
-    RejectPromise(receive_datagrams_promise_, "receiveDatagrams");
-    receive_datagrams_promise_.Clear();
+    RejectPromise(receive_datagrams_promise_.Release(), "receiveDatagrams");
   }
 }
 

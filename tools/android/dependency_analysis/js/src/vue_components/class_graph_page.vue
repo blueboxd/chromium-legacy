@@ -20,10 +20,13 @@
       <GraphVisualization
           :graph-update-triggers="graphUpdateTriggers"
           :page-model="pageModel"
+          :get-node-group="getNodeGroup"
           @[CUSTOM_EVENTS.NODE_CLICKED]="graphNodeClicked"/>
       <div id="node-details-container">
         <GraphDisplaySettings
             :display-settings-data="pageModel.displaySettingsData"/>
+        <ClassGraphHullSettings
+            :selected-hull-display.sync="hullDisplay"/>
         <GraphSelectedNodeDetails
             :selected-node-details-data="pageModel.selectedNodeDetailsData"
             @[CUSTOM_EVENTS.ADD_TO_FILTER_CLICKED]="addNodeToFilter"
@@ -40,13 +43,15 @@
 
 <script>
 import {CUSTOM_EVENTS} from '../vue_custom_events.js';
+import {HullDisplay} from '../class_view_consts.js';
 import {PagePathName, generateFilterFromUrl} from '../url_processor.js';
 
-import {GraphNode} from '../graph_model.js';
+import {ClassNode, GraphNode} from '../graph_model.js';
 import {PageModel} from '../page_model.js';
 import {parseClassGraphModelFromJson} from '../process_graph_json.js';
 
 import ClassDetailsPanel from './class_details_panel.vue';
+import ClassGraphHullSettings from './class_graph_hull_settings.vue';
 import GraphDisplaySettings from './graph_display_settings.vue';
 import GraphFilterInput from './graph_filter_input.vue';
 import GraphFilterItems from './graph_filter_items.vue';
@@ -56,10 +61,23 @@ import GraphSelectedNodeDetails from './graph_selected_node_details.vue';
 import GraphVisualization from './graph_visualization.vue';
 import PageUrlGenerator from './page_url_generator.vue';
 
+/**
+ * @param {!ClassNode} node The node to get the build target of.
+ * @return {?string} The build target of the node.
+ */
+function getNodeBuildTarget(node) {
+  if (node.buildTargets.length > 0) {
+    // A few classes have multiple targets, just take the first one.
+    return node.buildTargets[0];
+  }
+  return null;
+}
+
 // @vue/component
 const ClassGraphPage = {
   components: {
     ClassDetailsPanel,
+    ClassGraphHullSettings,
     GraphDisplaySettings,
     GraphFilterInput,
     GraphFilterItems,
@@ -78,6 +96,7 @@ const ClassGraphPage = {
    * @typedef {Object} ClassPageData
    * @property {PageModel} pageModel The data store for the page.
    * @property {PagePathName} pagePathName The pathname for the page.
+   * @property {!HullDisplay} hullDisplay The display mode of the graph's hulls.
    */
 
   /**
@@ -90,12 +109,22 @@ const ClassGraphPage = {
     return {
       pageModel,
       pagePathName: PagePathName.CLASS,
+      hullDisplay: HullDisplay.NONE,
     };
   },
   computed: {
     CUSTOM_EVENTS: () => CUSTOM_EVENTS,
+    getNodeGroup: function() {
+      switch (this.hullDisplay) {
+        case HullDisplay.BUILD_TARGET:
+          return getNodeBuildTarget;
+        default:
+          return () => null;
+      }
+    },
     graphUpdateTriggers: function() {
       return [
+        this.getNodeGroup,
         this.pageModel.displaySettingsData,
         this.pageModel.nodeFilterData.nodeList,
         this.pageModel.inboundDepthData.inboundDepth,

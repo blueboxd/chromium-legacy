@@ -32,7 +32,7 @@ TEST(RangesTest, Begin) {
   S s;
 
   EXPECT_EQ(vec.begin(), ranges::begin(vec));
-  EXPECT_EQ(arr, ranges::begin(arr));
+  static_assert(arr == ranges::begin(arr), "");
   EXPECT_EQ(s.v.begin(), ranges::begin(s));
 }
 
@@ -42,7 +42,7 @@ TEST(RangesTest, End) {
   S s;
 
   EXPECT_EQ(vec.end(), ranges::end(vec));
-  EXPECT_EQ(arr + 1, ranges::end(arr));
+  static_assert(arr + 1 == ranges::end(arr), "");
   EXPECT_EQ(s.v.end(), ranges::end(s));
 }
 

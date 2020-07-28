@@ -1,0 +1,39 @@
+// Copyright 2020 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
+#ifndef CHROME_BROWSER_NEARBY_SHARING_MOCK_NEARBY_CONNECTIONS_H_
+#define CHROME_BROWSER_NEARBY_SHARING_MOCK_NEARBY_CONNECTIONS_H_
+
+#include "chrome/services/sharing/public/mojom/nearby_connections.mojom.h"
+
+#include "testing/gmock/include/gmock/gmock.h"
+
+using NearbyConnectionsMojom =
+    location::nearby::connections::mojom::NearbyConnections;
+using DiscoveryOptionsPtr =
+    location::nearby::connections::mojom::DiscoveryOptionsPtr;
+using EndpointDiscoveryListener =
+    location::nearby::connections::mojom::EndpointDiscoveryListener;
+
+class MockNearbyConnections : public NearbyConnectionsMojom {
+ public:
+  MockNearbyConnections();
+  MockNearbyConnections(const MockNearbyConnections&) = delete;
+  MockNearbyConnections& operator=(const MockNearbyConnections&) = delete;
+  ~MockNearbyConnections() override;
+
+  MOCK_METHOD(void,
+              StartDiscovery,
+              (const std::string& service_id,
+               DiscoveryOptionsPtr,
+               mojo::PendingRemote<EndpointDiscoveryListener>,
+               StartDiscoveryCallback callback),
+              (override));
+  MOCK_METHOD(void,
+              StopDiscovery,
+              (StopDiscoveryCallback callback),
+              (override));
+};
+
+#endif  // CHROME_BROWSER_NEARBY_SHARING_MOCK_NEARBY_CONNECTIONS_H_

@@ -167,12 +167,9 @@ void NavigationPredictorKeyedService::OnPredictionUpdatedByExternalAndroidApp(
     observer.OnPredictionUpdated(last_prediction_);
   }
 
-  LOCAL_HISTOGRAM_COUNTS_100(
+  UMA_HISTOGRAM_COUNTS_100(
       "NavigationPredictor.ExternalAndroidApp.CountPredictedURLs",
       sorted_predicted_urls.size());
-
-  // TODO(https://crbug.com/1014210): Notify the predicted URLs to the
-  // observers.
 }
 
 void NavigationPredictorKeyedService::AddObserver(Observer* observer) {

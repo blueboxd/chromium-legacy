@@ -13,7 +13,6 @@
 #include "base/optional.h"
 #include "chrome/browser/chromeos/system/pointer_device_observer.h"
 #include "chrome/browser/ui/webui/settings/chromeos/os_settings_section.h"
-#include "chromeos/dbus/dlcservice/dlcservice_client.h"
 #include "chromeos/dbus/power/power_manager_client.h"
 #include "mojo/public/cpp/bindings/associated_receiver.h"
 #include "mojo/public/cpp/bindings/remote.h"
@@ -24,10 +23,6 @@ class PrefService;
 namespace content {
 class WebUIDataSource;
 }  // namespace content
-
-namespace dlcservice {
-class DlcsWithContent;
-}  // namespace dlcservice
 
 namespace chromeos {
 namespace settings {
@@ -40,8 +35,7 @@ class DeviceSection : public OsSettingsSection,
                       public ui::InputDeviceEventObserver,
                       public ash::NightLightController::Observer,
                       public ash::mojom::CrosDisplayConfigObserver,
-                      public PowerManagerClient::Observer,
-                      public DlcserviceClient::Observer {
+                      public PowerManagerClient::Observer {
  public:
   DeviceSection(Profile* profile,
                 SearchTagRegistry* search_tag_registry,
@@ -74,9 +68,6 @@ class DeviceSection : public OsSettingsSection,
   // PowerManagerClient::Observer:
   void PowerChanged(const power_manager::PowerSupplyProperties& proto) override;
 
-  // DlcserviceClient::Observer:
-  void OnDlcStateChanged(const dlcservice::DlcState& dlc_state) override;
-
   void OnGotSwitchStates(
       base::Optional<PowerManagerClient::SwitchStates> result);
 
@@ -87,9 +78,6 @@ class DeviceSection : public OsSettingsSection,
   void OnGetDisplayLayoutInfo(
       std::vector<ash::mojom::DisplayUnitInfoPtr> display_unit_info_list,
       ash::mojom::DisplayLayoutInfoPtr display_layout_info);
-
-  void OnGetExistingDlcs(const std::string& err,
-                         const dlcservice::DlcsWithContent& dlcs_with_content);
 
   void AddDevicePointersStrings(content::WebUIDataSource* html_source);
 

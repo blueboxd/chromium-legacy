@@ -7,6 +7,12 @@ import {DisplaySettingsData, GraphEdgeColor} from './page_model.js';
 
 import * as d3 from 'd3';
 
+// Category10 colors pulled from https://observablehq.com/@d3/color-schemes.
+const HULL_COLORS = ['#1f77b4', '#ff7f0e', '#2ca02c', '#d62728', '#9467bd',
+  '#8c564b', '#e377c2', '#7f7f7f', '#bcbd22', '#17becf'];
+// The distance the hull should be expanded from the original nodes.
+const HULL_EXPANSION = 20;
+
 // The perpendicular distance from the center of an edge to place the control
 // point for a quadratic Bezier curve.
 const EDGE_CURVE_OFFSET = {
@@ -120,6 +126,38 @@ function addArrowMarkerDef(defs, id, color, length, width) {
 }
 
 /**
+ * Creates a polygon (array of [x, y] pairs) that can be converted into a
+ * valid convex hull. For a polygon to be valid for conversion, it must have
+ * at least 3 points.
+ * @param {!Array<!GraphNode>} nodes The nodes to generate a polygon for. This
+ *     array must have at least one element.
+ * @return {!Array<!Array<number>>} A valid polygon for the input nodes.
+ */
+function getValidHullPolygon(nodes) {
+  let nodePolygon = nodes.map(node => [node.x, node.y]);
+  if (nodePolygon.length === 1) {
+    // If there is only one point, replace it with four points in a square
+    // diamond surrounding the original point.
+    const [x0, y0] = nodePolygon[0];
+    nodePolygon = [[x0 + 1, y0], [x0 - 1, y0], [x0, y0 + 1], [x0, y0 - 1]];
+  } else if (nodePolygon.length === 2) {
+    // If there are two points, add another two slightly offset points
+    // parallel to the line created by the original two points.
+    const [x0, y0] = nodePolygon[0];
+    const [x1, y1] = nodePolygon[1];
+    const deltaX = x1 - x0;
+    const deltaY = y1 - y0;
+    const [offsetX, offsetY] = resizeVector(deltaX, deltaY, 1);
+    /* eslint-disable indent */
+    // Here, we rotate the offset vector 90deg by negating x and swapping x, y.
+    nodePolygon.push([x0 + offsetY, y0 - offsetX],
+                     [x1 + offsetY, y1 - offsetX]);
+  }
+  // If there are >= 3 points, it is already valid for convex hull conversion.
+  return nodePolygon;
+}
+
+/**
  * When we reheat the simulation, we'd like to know how many ticks it will take
  * to cool. Instead of finding an formula for our specific config, we just make
  * a throwaway simulation with our config and run it to completion.
@@ -136,6 +174,23 @@ function countNumReheatTicks() {
     reheatTicksCounter.tick();
   }
   return reheatTicks;
+}
+
+/**
+ * Helper to scale a vector to a given magnitude. If [x, y] is nearly the zero
+ * vector, then [newMagnitude, 0] is returned.
+ * @param {number} x The x-coordinate of the vector.
+ * @param {number} y The y-coordinate of the vector.
+ * @param {number} newMagnitude The magnitude to scale the vector to.
+ * @return {!Array<number>} The scaled vector in the form [x, y].
+ */
+function resizeVector(x, y, newMagnitude) {
+  const normalFactor = Math.hypot(x, y);
+  if (normalFactor < 1e-12) {
+    return [newMagnitude, 0];
+  }
+  const scaleFactor = newMagnitude / normalFactor;
+  return [x * scaleFactor, y * scaleFactor];
 }
 
 /**
@@ -172,9 +227,52 @@ class HoveredNodeManager {
 }
 
 /**
+ * Wrapper class around the logic to assign colors to convex hulls.
+ *
+ * Each hull should have a unique key that remains associated with the hull
+ * throughout its lifetime.
+ */
+class HullColorManager {
+  constructor() {
+    this.colorIndex_ = 0;
+    this.hullColors_ = new Map();
+  }
+  /**
+   * Gets the next color from the array of colors `HULL_COLORS`. When all the
+   * colors of the array are used, starts from the beginning again.
+   * @return {string} The next color to use.
+   */
+  getNextColor_() {
+    this.colorIndex_ = (this.colorIndex_ + 1) % HULL_COLORS.length;
+    return HULL_COLORS[this.colorIndex_];
+  }
+
+  /**
+   * Gets the color associated with a given hull, generating a color for it if
+   * there isn't one already.
+   * @param {string} hullKey A key uniquely identifying the hull.
+   * @return {string} The color associated with the hull's key.
+   */
+  getColorForHull(hullKey) {
+    if (!this.hullColors_.has(hullKey)) {
+      this.hullColors_.set(hullKey, this.getNextColor_());
+    }
+    return this.hullColors_.get(hullKey);
+  }
+}
+
+/**
  * A callback to be triggered whenever a node is clicked in the visualization.
  * @callback OnNodeClickedCallback
  * @param {!GraphNode} node The node that was clicked.
+ */
+
+/**
+ * Returns the group a node is in, or `null` if the node shouldn't be grouped.
+ * @callback GetNodeGroupCallback
+ * @param {!GraphNode} node The node to find the group for.
+ * @return {?string} The unique key identifying the node's group, or `null` if
+ *     the node shouldn't be grouped.
  */
 
 /** The view of the visualization, controlling display on the SVG. */
@@ -193,7 +291,11 @@ class GraphView {
     this.graphEdgeColor_ = GraphEdgeColor.DEFAULT;
     /** @private {!HoveredNodeManager} */
     this.hoveredNodeManager_ = new HoveredNodeManager();
+    /** @private {!HullColorManager} */
+    this.hullColorManager_ = new HullColorManager();
 
+    /** @private @type {?GetNodeGroupCallback} */
+    this.getNodeGroup_ = null;
     /** @private @type {?OnNodeClickedCallback} */
     this.onNodeClicked_ = null;
 
@@ -214,7 +316,12 @@ class GraphView {
         ));
 
     // The order of these groups decide the SVG paint order (since we append
-    // sequentially), we want edges below nodes below labels.
+    // sequentially), we want hulls below edges below nodes below labels.
+    /** @private {*} */
+    this.hullGroup_ = graphGroup.append('g')
+        .classed('graph-hull', true)
+        .attr('stroke-width', 1)
+        .attr('fill-opacity', 0.1);
     /** @private {*} */
     this.edgeGroup_ = graphGroup.append('g')
         .classed('graph-edges', true)
@@ -222,8 +329,7 @@ class GraphView {
         .attr('fill', 'transparent');
     /** @private {*} */
     this.nodeGroup_ = graphGroup.append('g')
-        .classed('graph-nodes', true)
-        .attr('fill', 'red');
+        .classed('graph-nodes', true);
     /** @private {*} */
     this.labelGroup_ = graphGroup.append('g')
         .classed('graph-labels', true)
@@ -284,6 +390,14 @@ class GraphView {
   }
 
   /**
+   * Assigns the node group accessor to a given function.
+   * @param {!GetNodeGroupCallback} getNodeGroup The function to assign to.
+   */
+  registerGetNodeGroup(getNodeGroup) {
+    this.getNodeGroup_ = getNodeGroup;
+  }
+
+  /**
    * Computes the velocityDecay for our current progress in the reheat process.
    *
    * See https://github.com/d3/d3-force#simulation_velocityDecay. We animate new
@@ -313,9 +427,10 @@ class GraphView {
           // To calculate the control point, consider the edge vector [dX, dY]:
           // * Flip over Y axis (since SVGs increase y downwards): [dX, -dY]
           // * Rotate 90 degrees clockwise: [-dY, -dX]
-          // * Normalize and multiply by curve offset: offset/norm * [-dY, -dX]
-          // * Flip over Y again to get SVG coords: offset/norm * [-dY, dX]
-          // * Add to midpoint: [midX, midY] + offset/norm * [-dY, dX]
+          // * Flip over Y again to get SVG coords: [-dY, dX]
+          // * Scale and add to midpoint: [midX, midY] + scaleFactor * [-dY, dX]
+          //   where `scaleFactor` rescales [-dY, dX] to have the length of
+          //   `this.edgeCurveOffset_`.
           const deltaX = edge.target.x - edge.source.x;
           const deltaY = edge.target.y - edge.source.y;
           if (deltaX === 0 && deltaY === 0) {
@@ -325,10 +440,10 @@ class GraphView {
           const midX = (edge.source.x + edge.target.x) / 2;
           const midY = (edge.source.y + edge.target.y) / 2;
 
-          const scaleFactor =
-            this.edgeCurveOffset_ / Math.hypot(deltaX, deltaY);
-          const controlPointX = midX - scaleFactor * deltaY;
-          const controlPointY = midY + scaleFactor * deltaX;
+          const [offsetX, offsetY] = resizeVector(
+              deltaX, deltaY, this.edgeCurveOffset_);
+          const controlPointX = midX - offsetY;
+          const controlPointY = midY + offsetX;
 
           const path = d3.path();
           path.moveTo(edge.source.x, edge.source.y);
@@ -397,6 +512,84 @@ class GraphView {
   }
 
   /**
+   * Groups nodes together by using the current group accessor function.
+   * @param {!Array<!GraphNode>} nodes The nodes to group.
+   * @return {!Map<string, !Array<!GraphNode>>} The map from group key to the
+   *     list of nodes included in that group.
+   */
+  getNodeGroups(nodes) {
+    const groups = new Map();
+    for (const node of nodes) {
+      const groupKey = this.getNodeGroup_(node);
+      // If the key is null, the node should not be grouped.
+      if (groupKey !== null) {
+        if (!groups.has(groupKey)) {
+          groups.set(groupKey, [node]);
+        } else {
+          groups.get(groupKey).push(node);
+        }
+      }
+    }
+    return groups;
+  }
+
+  /**
+   * Data representing a convex hull surrounding a certain group.
+   * @typedef {Object} HullData
+   * @property {string} key The unique key for the hull.
+   * @property {string} color The color to display the hull as.
+   * @property {!Array<!Array<number>>} points A list of [x, y] points making up
+   *     the hull.
+   */
+
+  /**
+   * Given the node grouping from `getNodeGroups`, constructs a list of convex
+   * hulls, one per node group.
+   * @param {!Map<string, !Array<!GraphNode>>} nodeGroups The node groupings.
+   * @return {!Array<!HullData>} A list of convex hulls to display.
+   */
+  getConvexHullData(nodeGroups) {
+    const resultHulls = [];
+    for (const [key, nodes] of nodeGroups.entries()) {
+      const nodePolygon = getValidHullPolygon(nodes);
+      const baseHull = d3.polygonHull(nodePolygon);
+      // To expand the hull, we move each point a set distance away from the
+      // hull's centroid (https://en.wikipedia.org/wiki/Centroid).
+      const [centroidX, centroidY] = d3.polygonCentroid(baseHull);
+      const expandedPolygon = baseHull.map(([nodeX, nodeY]) => {
+        const deltaX = nodeX - centroidX;
+        const deltaY = nodeY - centroidY;
+        const [expandX, expandY] = resizeVector(deltaX, deltaY, HULL_EXPANSION);
+        return [nodeX + expandX, nodeY + expandY];
+      });
+      resultHulls.push({
+        key,
+        color: this.hullColorManager_.getColorForHull(key),
+        points: expandedPolygon,
+      });
+    }
+    return resultHulls;
+  }
+
+  /**
+   * Synchronizes the color and position of all convex hulls with their
+   * underlying data.
+   * @param {!Array<!HullData>} hullData A list of convex hulls to display for
+   *     the current data.
+   */
+  updateHullData(hullData) {
+    // The SVG path generator for the hull outlines.
+    const getHullLine = d3.line().curve(d3.curveCatmullRomClosed.alpha(0.75));
+    this.hullGroup_.selectAll('path')
+        .data(hullData, hull => hull.key)
+        .join(enter => enter.append('path')
+            .attr('d', hull => getHullLine(hull.points))
+            .attr('stroke', hull => hull.color)
+            .attr('fill', hull => hull.color),
+        update => update.attr('d', hull => getHullLine(hull.points)));
+  }
+
+  /**
    * Reheats the simulation, allowing all nodes to move according to the physics
    * simulation until they cool down again.
    * @param {boolean} shouldEase Whether the node movement should be eased. This
@@ -419,6 +612,10 @@ class GraphView {
       this.labelGroup_.selectAll('text')
           .attr('x', label => label.x)
           .attr('y', label => label.y);
+
+      const hullData = this.getConvexHullData(
+          this.getNodeGroups(this.nodeGroup_.selectAll('circle').data()));
+      this.updateHullData(hullData);
 
       tickNum ++;
       if (shouldEase) {
@@ -466,6 +663,10 @@ class GraphView {
   updateGraphData(inputData) {
     const {nodes: inputNodes, edges: inputEdges} = inputData;
 
+    this.simulation_
+        .nodes(inputNodes)
+        .force('links', d3.forceLink(inputEdges).id(edge => edge.id));
+
     let nodesAddedOrRemoved = false;
     this.svgDefs_.selectAll('linearGradient')
         .data(inputEdges, edge => edge.id)
@@ -487,6 +688,7 @@ class GraphView {
           }
           return enter.append('circle')
               .attr('r', 5)
+              .attr('stroke', node => getNodeColor(node))
               .on('mousedown', node => this.onNodeClicked_(node))
               .on('mouseenter', node => {
                 this.hoveredNodeManager_.setHoveredNode(node);
@@ -524,21 +726,51 @@ class GraphView {
                 pageNode.classed('locked', !pageNode.classed('locked'));
               });
         },
-        update => update,
-        exit => {
-          if (!exit.empty()) {
-            nodesAddedOrRemoved = true;
+          update => update.attr('stroke', node => getNodeColor(node)),
+          exit => {
+            if (!exit.empty()) {
+              nodesAddedOrRemoved = true;
+            }
+            // When a node is removed from the SVG, it should lose all
+            // position-related data.
+            return exit.each(node => {
+              node.x = null;
+              node.y = null;
+              node.fx = null;
+              node.fy = null;
+            }).remove();
+          })
+        .attr('fill', node => {
+          const nodeGroup = this.getNodeGroup_(node);
+          if (nodeGroup === null) {
+            return '#fff';
           }
-          // When a node is removed from the SVG, it should lose all
-          // position-related data.
-          return exit.each(node => {
-            node.x = null;
-            node.y = null;
-            node.fx = null;
-            node.fy = null;
-          }).remove();
-        })
-        .attr('fill', node => getNodeColor(node));
+          return this.hullColorManager_.getColorForHull(nodeGroup);
+        });
+
+    const nodeGroupings = this.getNodeGroups(inputNodes);
+    this.updateHullData(this.getConvexHullData(nodeGroupings));
+
+    // Create a link force between every pair of nodes in a group, causing the
+    // nodes to group together in the visualization.
+    for (const [key, nodes] of nodeGroupings.entries()) {
+      const links = [];
+      // If performance is an issue, this can be replaced by picking a
+      // representative node and connecting all other group members to it. This
+      // has the downside of inconsistent node interactions: Dragging the
+      // representative node pulls the entire group with it, while dragging
+      // non-representative nodes doesn't affect the group as much.
+      for (let sourceIndex = 0; sourceIndex < nodes.length; sourceIndex++) {
+        for (let targetIndex = sourceIndex + 1;
+          targetIndex < nodes.length; targetIndex++) {
+          links.push({
+            source: nodes[sourceIndex],
+            target: nodes[targetIndex],
+          });
+        }
+      }
+      this.simulation_.force(key, d3.forceLink(links));
+    }
 
     this.labelGroup_.selectAll('text')
         .data(inputNodes, node => node.id)
@@ -549,9 +781,6 @@ class GraphView {
 
     // The graph should not be reheated on a no-op (eg. adding a visible node to
     // the filter which doesn't add/remove any new nodes).
-    this.simulation_
-        .nodes(inputNodes)
-        .force('links', d3.forceLink(inputEdges).id(edge => edge.id));
     if (nodesAddedOrRemoved) {
       this.simulation_.stop();
       this.reheatSimulation(/* shouldEase */ true);

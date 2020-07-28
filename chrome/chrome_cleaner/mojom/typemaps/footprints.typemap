@@ -9,12 +9,11 @@ public_headers = [
 ]
 traits_headers =
     [ "//chrome/chrome_cleaner/mojom/typemaps/footprints_mojom_traits.h" ]
-sources = [
-  "//chrome/chrome_cleaner/mojom/typemaps/footprints_mojom_traits.cc",
-]
+sources =
+    [ "//chrome/chrome_cleaner/mojom/typemaps/footprints_mojom_traits.cc" ]
 
 type_mappings = [
   "chrome_cleaner.mojom.FilePath=::base::FilePath",
-  "chrome_cleaner.mojom.RegistryKey=::base::string16",
-  "chrome_cleaner.mojom.ExtensionId=::base::string16",
+  "chrome_cleaner.mojom.RegistryKey=::std::wstring",
+  "chrome_cleaner.mojom.ExtensionId=::std::wstring",
 ]

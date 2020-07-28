@@ -45,6 +45,7 @@
 #include "chrome/common/pref_names.h"
 #include "chrome/test/base/in_process_browser_test.h"
 #include "chrome/test/base/ui_test_utils.h"
+#include "components/autofill/core/common/autofill_features.h"
 #include "components/password_manager/core/browser/password_manager_metrics_util.h"
 #include "components/prefs/pref_service.h"
 #include "components/safe_browsing/content/password_protection/metrics_util.h"
@@ -52,6 +53,8 @@
 #include "components/safe_browsing/core/proto/csd.pb.h"
 #include "components/security_interstitials/content/security_interstitial_tab_helper.h"
 #include "components/security_interstitials/content/ssl_blocking_page.h"
+#include "components/security_interstitials/core/features.h"
+#include "components/security_interstitials/core/pref_names.h"
 #include "components/security_state/content/ssl_status_input_event_data.h"
 #include "components/security_state/core/features.h"
 #include "components/security_state/core/security_state.h"
@@ -2377,6 +2380,73 @@ IN_PROC_BROWSER_TEST_F(SecurityStateTabHelperTest, SafetyTipFormHistogram) {
                   : security_state::SafetyTipStatus::kNone,
         1);
   }
+}
+
+class SecurityStateTabHelperTestWithMixedFormsWarnings
+    : public SecurityStateTabHelperTest {
+ public:
+  SecurityStateTabHelperTestWithMixedFormsWarnings() {
+    std::vector<base::Feature> enabled_features = {
+        security_interstitials::kInsecureFormSubmissionInterstitial,
+        autofill::features::kAutofillPreventMixedFormsFilling};
+    feature_list.InitWithFeatures(enabled_features, {});
+  }
+
+ private:
+  base::test::ScopedFeatureList feature_list;
+};
+
+IN_PROC_BROWSER_TEST_F(SecurityStateTabHelperTestWithMixedFormsWarnings,
+                       MixedFormsShowLockIfWarningsAreEnabled) {
+  SetUpMockCertVerifierForHttpsServer(0, net::OK);
+
+  ui_test_utils::NavigateToURL(
+      browser(), https_server_.GetURL("/ssl/page_displays_insecure_form.html"));
+  CheckSecurityInfoForSecure(
+      browser()->tab_strip_model()->GetActiveWebContents(),
+      security_state::SECURE, false, false, false,
+      false /* expect cert status error */);
+}
+
+IN_PROC_BROWSER_TEST_F(SecurityStateTabHelperTestWithMixedFormsWarnings,
+                       MixedFormsDontShowLockIfWarningsAreDisabledByPolicy) {
+  SetUpMockCertVerifierForHttpsServer(0, net::OK);
+
+  browser()->profile()->GetPrefs()->SetBoolean(
+      prefs::kMixedFormsWarningsEnabled, false);
+
+  ui_test_utils::NavigateToURL(
+      browser(), https_server_.GetURL("/ssl/page_displays_insecure_form.html"));
+  CheckSecurityInfoForSecure(
+      browser()->tab_strip_model()->GetActiveWebContents(),
+      security_state::NONE, false, false, false,
+      false /* expect cert status error */);
+}
+
+class SecurityStateTabHelperTestWithMixedFormsWarningsDisabled
+    : public SecurityStateTabHelperTest {
+ public:
+  SecurityStateTabHelperTestWithMixedFormsWarningsDisabled() {
+    std::vector<base::Feature> disabled_features = {
+        security_interstitials::kInsecureFormSubmissionInterstitial,
+        autofill::features::kAutofillPreventMixedFormsFilling};
+    feature_list.InitWithFeatures({}, disabled_features);
+  }
+
+ private:
+  base::test::ScopedFeatureList feature_list;
+};
+
+IN_PROC_BROWSER_TEST_F(SecurityStateTabHelperTestWithMixedFormsWarningsDisabled,
+                       MixedFormsDontShowLockIfWarningsAreDisabled) {
+  SetUpMockCertVerifierForHttpsServer(0, net::OK);
+
+  ui_test_utils::NavigateToURL(
+      browser(), https_server_.GetURL("/ssl/page_displays_insecure_form.html"));
+  CheckSecurityInfoForSecure(
+      browser()->tab_strip_model()->GetActiveWebContents(),
+      security_state::NONE, false, false, false,
+      false /* expect cert status error */);
 }
 
 class SignedExchangeSecurityStateTest

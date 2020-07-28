@@ -13,17 +13,14 @@
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "base/no_destructor.h"
+#include "base/threading/sequence_bound.h"
 #include "net/http/http_status_code.h"
 #include "remoting/proto/remoting/v1/directory_messages.pb.h"
 
-namespace grpc {
-class Status;
-}  // namespace grpc
-
 namespace remoting {
 
-class DirectoryClient;
-class OAuthTokenGetter;
+class DirectoryServiceClient;
+class ProtobufHttpStatus;
 
 // |HostListService| is the centralized place to retrieve the current signed in
 // user's host list.
@@ -87,16 +84,18 @@ class HostListService {
   HostListService();
 
   // For test.
-  explicit HostListService(std::unique_ptr<DirectoryClient> directory_client);
+  explicit HostListService(
+      base::SequenceBound<DirectoryServiceClient> directory_client);
 
   void Init();
 
   // Changes the host list state and notifies callbacks.
   void SetState(State state);
 
-  void HandleHostListResult(const grpc::Status& status,
-                            const apis::v1::GetHostListResponse& response);
-  void HandleFetchFailure(const grpc::Status& status);
+  void HandleHostListResult(
+      const ProtobufHttpStatus& status,
+      std::unique_ptr<apis::v1::GetHostListResponse> response);
+  void HandleFetchFailure(const ProtobufHttpStatus& status);
 
   void OnUserUpdated(bool is_user_signed_in);
 
@@ -105,14 +104,13 @@ class HostListService {
   base::CallbackList<void()> host_list_state_callbacks_;
   base::CallbackList<void()> fetch_failure_callbacks_;
 
-  std::unique_ptr<OAuthTokenGetter> token_getter_;
-  std::unique_ptr<DirectoryClient> directory_client_;
+  base::SequenceBound<DirectoryServiceClient> directory_client_;
 
   std::vector<apis::v1::HostInfo> hosts_;
   State state_ = State::NOT_FETCHED;
   std::unique_ptr<FetchFailureInfo> last_fetch_failure_;
 
-  base::WeakPtrFactory<HostListService> weak_factory_;
+  base::WeakPtrFactory<HostListService> weak_factory_{this};
   DISALLOW_COPY_AND_ASSIGN(HostListService);
 };
 

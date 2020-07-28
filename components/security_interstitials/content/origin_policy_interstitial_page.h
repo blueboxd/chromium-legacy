@@ -37,7 +37,6 @@ class OriginPolicyInterstitialPage : public SecurityInterstitialPage {
   void CommandReceived(const std::string& command) override;
 
  protected:
-  bool ShouldCreateNewNavigation() const override;
   void PopulateInterstitialStrings(base::DictionaryValue*) override;
 
  private:

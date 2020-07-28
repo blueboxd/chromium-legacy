@@ -3,13 +3,14 @@
 // found in the LICENSE file.
 
 // clang-format off
-// #import {FakeChromeEvent} from 'chrome://test/fake_chrome_event.m.js';
+// #import {assertEquals, assertNotEquals} from '../chai_assert.js';
+// #import {FakeChromeEvent} from '../fake_chrome_event.m.js';
 // clang-format on
 
 /** @fileoverview Fake implementation of chrome.settingsPrivate for testing. */
 cr.define('settings', function() {
   /**
-   * @type {Array<{key: string,
+   * @typedef {Array<{key: string,
    *               type: chrome.settingsPrivate.PrefType,
    *               values: !Array<*>}>}
    */
@@ -17,8 +18,8 @@ cr.define('settings', function() {
 
   /**
    * Creates a deep copy of the object.
-   * @param {!Object} obj
-   * @return {!Object}
+   * @param {*} obj
+   * @return {*}
    */
   function deepCopy(obj) {
     return JSON.parse(JSON.stringify(obj));
@@ -46,7 +47,7 @@ cr.define('settings', function() {
       }
 
       // chrome.settingsPrivate override.
-      this.onPrefsChanged = new FakeChromeEvent();
+      this.onPrefsChanged = /** @type {!ChromeEvent} */ (new FakeChromeEvent());
     }
 
     // chrome.settingsPrivate overrides.
@@ -88,7 +89,8 @@ cr.define('settings', function() {
     getPref(key, callback) {
       const pref = this.prefs[key];
       assertNotEquals(undefined, pref);
-      callback(deepCopy(pref));
+      callback(
+          /** @type {!chrome.settingsPrivate.PrefObject} */ (deepCopy(pref)));
     }
 
     // Functions used by tests.
@@ -109,7 +111,7 @@ cr.define('settings', function() {
 
     /**
      * Notifies the listeners of pref changes.
-     * @param {!Object<{key: string, value: *}>} changes
+     * @param {!Array<{key: string, value: *}>} changes
      */
     sendPrefChanges(changes) {
       const prefs = [];
@@ -119,8 +121,14 @@ cr.define('settings', function() {
         pref.value = change.value;
         prefs.push(deepCopy(pref));
       }
-      this.onPrefsChanged.callListeners(prefs);
+      /** @type {FakeChromeEvent} */ (this.onPrefsChanged).callListeners(prefs);
     }
+
+    /** @override */
+    getDefaultZoom() {}
+
+    /** @override */
+    setDefaultZoom() {}
 
     // Private methods for use by the fake API.
 

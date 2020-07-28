@@ -35,7 +35,9 @@ void DummyTextInputClient::SetCompositionText(
   composition_history_.push_back(composition);
 }
 
-void DummyTextInputClient::ConfirmCompositionText(bool keep_selection) {}
+uint32_t DummyTextInputClient::ConfirmCompositionText(bool keep_selection) {
+  return UINT32_MAX;
+}
 
 void DummyTextInputClient::ClearCompositionText() {
   SetCompositionText(CompositionText());
@@ -153,6 +155,10 @@ bool DummyTextInputClient::SetCompositionFromExistingText(
 #endif
 
 #if defined(OS_CHROMEOS)
+gfx::Rect DummyTextInputClient::GetAutocorrectCharacterBounds() const {
+  return gfx::Rect();
+}
+
 bool DummyTextInputClient::SetAutocorrectRange(
     const base::string16& autocorrect_text,
     const gfx::Range& range) {

@@ -64,6 +64,7 @@ class DISCARDABLE_MEMORY_EXPORT ClientDiscardableSharedMemoryManager
     size_t freelist_size;
   };
 
+  // Overridden from base::DiscardableMemoryAllocator:
   size_t GetBytesAllocated() const override;
   void SetBytesAllocatedLimitForTesting(size_t limit) {
     bytes_allocated_limit_for_testing_ = limit;

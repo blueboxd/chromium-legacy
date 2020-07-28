@@ -95,7 +95,7 @@ void TtsHandler::Speak(const std::string& text) {
   tts_controller->SpeakOrEnqueue(std::move(utterance));
 }
 
-AssistiveType ProposeAssistiveAction(const base::string16& text) {
+AssistiveType ProposePersonalInfoAssistiveAction(const base::string16& text) {
   AssistiveType action = AssistiveType::kGenericAction;
   if (base::EndsWith(text, base::UTF8ToUTF16(kAssistEmailPrefix),
                      base::CompareCase::INSENSITIVE_ASCII)) {
@@ -234,7 +234,7 @@ bool PersonalInfoSuggester::Suggest(const base::string16& text) {
 
 base::string16 PersonalInfoSuggester::GetSuggestion(
     const base::string16& text) {
-  proposed_action_type_ = ProposeAssistiveAction(text);
+  proposed_action_type_ = ProposePersonalInfoAssistiveAction(text);
 
   if (proposed_action_type_ == AssistiveType::kGenericAction)
     return base::EmptyString16();

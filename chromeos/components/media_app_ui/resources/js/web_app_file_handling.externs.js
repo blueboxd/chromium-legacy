@@ -65,7 +65,7 @@ class FileSystemWritableFileStream {
   async seek(offset) {}
 }
 
-/** @typedef {{writable: boolean}} */
+/** @typedef {{mode: string}} */
 let FileSystemHandlePermissionDescriptor;
 
 /** @interface */

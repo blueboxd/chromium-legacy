@@ -67,7 +67,6 @@ class CaptivePortalBlockingPage : public SSLBlockingPageBase {
   std::string GetWiFiSSID() const;
 
   // SecurityInterstitialPage methods:
-  bool ShouldCreateNewNavigation() const override;
   void PopulateInterstitialStrings(
       base::DictionaryValue* load_time_data) override;
 

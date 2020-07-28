@@ -363,7 +363,6 @@
 <translation id="2413528052993050574">Серверу не ўдалося даказаць, што гэта <ph name="DOMAIN" />; магчыма, яго сертыфікат бяспекі адкліканы. Прычынай могуць быць няправільныя налады або зламыснік, які спрабуе перахапіць падключэнне.</translation>
 <translation id="2438874542388153331">Чатыры дзіркі справа</translation>
 <translation id="245044156129055925">Вы толькі што ўвялі свой пароль на сайце, вядомым падманнымі паводзінамі. Chromium рэкамендуе змяніць пароль.</translation>
-<translation id="2463193859425327265">Змяніць галоўную старонку</translation>
 <translation id="2463739503403862330">Запоўніць</translation>
 <translation id="2465402087343596252">Architecture-E</translation>
 <translation id="2465655957518002998">Выбраць спосаб дастаўкі</translation>
@@ -1162,7 +1161,6 @@
 <translation id="5785756445106461925">Акрамя таго, на гэтай старонцы ёсць іншыя рэсурсы, якія не з'яўляюцца бяспечнымі: яны могуць быць прагледжаны іншымі падчас перадачы, а таксама могуць быць мадыфікаваны зламыснікам з мэтай змяніць выгляд старонкі.</translation>
 <translation id="5786044859038896871">Запоўніць даныя карткі?</translation>
 <translation id="5798290721819630480">Адхіліць змены?</translation>
-<translation id="5798683403665926540">Змяніць галоўную старонку ў наладах Chrome</translation>
 <translation id="5803412860119678065">Запоўніць наступныя даныя: <ph name="CARD_DETAIL" />?</translation>
 <translation id="5804241973901381774">Дазволы</translation>
 <translation id="5804427196348435412">выкарыстоўваць прылады NFC</translation>
@@ -1612,7 +1610,6 @@
 <translation id="7669271284792375604">Зламыснікі на гэтым сайце могуць падмануць вас і прымусіць усталяваць праграмы, якія пашкодзяць вашай працы ў інтэрнэце (напрыклад, зменай галоўнай старонкі або паказам дадатковай рэкламы на сайтах, якія вы наведваеце).</translation>
 <translation id="7673278391011283842">Паштовая скрынка 6</translation>
 <translation id="7676643023259824263">Пошук тэксту з буфера абмену: "<ph name="TEXT" />"</translation>
-<translation id="7681101578153515023">Змяніць пошукавую сістэму</translation>
 <translation id="7682287625158474539">Дастаўка</translation>
 <translation id="7687186412095877299">Запаўняе плацежныя формы звесткамі з захаваных спосабаў аплаты</translation>
 <translation id="7687305263118037187">Скончыўся час чакання паўтору</translation>
@@ -1650,7 +1647,6 @@
 <translation id="7802523362929240268">Сайт надзейны</translation>
 <translation id="780301667611848630">Не, дзякуй</translation>
 <translation id="7805768142964895445">Стан</translation>
-<translation id="7806344367022510803">Змяніце налады пошукавай сістэмы ў Chrome</translation>
 <translation id="7812922009395017822">Mir</translation>
 <translation id="7813600968533626083">Выдаліць прапанову аўтазапаўнення форм з Chrome?</translation>
 <translation id="781440967107097262">Абагуліць змесціва буфера абмену?</translation>
@@ -1792,7 +1788,6 @@
 Падрабязныя звесткі:
 <ph name="DEBUG_INFO" /></translation>
 <translation id="8424582179843326029"><ph name="FIRST_LABEL" /> <ph name="SECOND_LABEL" /> <ph name="THIRD_LABEL" /></translation>
-<translation id="8425213833346101688">Змяніць</translation>
 <translation id="8428213095426709021">Налады</translation>
 <translation id="8433057134996913067">Будзе выкананы выхад з большасці вэб-сайтаў.</translation>
 <translation id="8437238597147034694">&amp;Адрабіць перамяшчэнне</translation>

@@ -21,9 +21,9 @@
 
 namespace ios {
 
-namespace {
+const char kNTPPromoFinchExperiment[] = "IOSDefaultBrowerNTPPromotion";
 
-const char kNTPPromoFinchExperiment[] = "IOSNTPPromotion";
+namespace {
 
 // The name of the preference that stores the promotion object.
 const char kPrefPromoObject[] = "ios.ntppromo";

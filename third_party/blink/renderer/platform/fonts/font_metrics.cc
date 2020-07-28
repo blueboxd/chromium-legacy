@@ -50,12 +50,19 @@ void FontMetrics::AscentDescentWithHacks(
     unsigned& visual_overflow_inflation_for_descent,
     const FontPlatformData& platform_data,
     const SkFont& font,
-    bool subpixel_ascent_descent) {
+    bool subpixel_ascent_descent,
+    base::Optional<float> ascent_override,
+    base::Optional<float> descent_override) {
   SkTypeface* face = font.getTypeface();
   DCHECK(face);
 
   SkFontMetrics metrics;
   font.getMetrics(&metrics);
+
+  if (ascent_override)
+    metrics.fAscent = -platform_data.size() * ascent_override.value();
+  if (descent_override)
+    metrics.fDescent = platform_data.size() * descent_override.value();
 
   int vdmx_ascent = 0, vdmx_descent = 0;
   bool is_vdmx_valid = false;
@@ -66,7 +73,8 @@ void FontMetrics::AscentDescentWithHacks(
   // done.  This code should be pushed into FreeType (hinted font metrics).
   static const uint32_t kVdmxTag = SkSetFourByteTag('V', 'D', 'M', 'X');
   int pixel_size = platform_data.size() + 0.5;
-  if (!font.isForceAutoHinting() &&
+  // TODO(xiaochengh): How do we support ascent/descent override with VDMX?
+  if (!ascent_override && !descent_override && !font.isForceAutoHinting() &&
       (font.getHinting() == SkFontHinting::kFull ||
        font.getHinting() == SkFontHinting::kNormal)) {
     size_t vdmx_size = face->getTableSize(kVdmxTag);

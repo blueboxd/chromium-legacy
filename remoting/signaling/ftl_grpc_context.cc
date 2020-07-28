@@ -58,6 +58,11 @@ const net::BackoffEntry::Policy& FtlGrpcContext::GetBackoffPolicy() {
 }
 
 // static
+std::string FtlGrpcContext::GetServerEndpoint() {
+  return ServiceUrls::GetInstance()->ftl_server_endpoint();
+}
+
+// static
 std::string FtlGrpcContext::GetChromotingAppIdentifier() {
   return kChromotingAppIdentifier;
 }

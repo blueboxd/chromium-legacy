@@ -227,7 +227,8 @@ SecurityLevel GetSecurityLevel(
         visible_security_state.should_suppress_mixed_content_warning);
   }
 
-  if (visible_security_state.contained_mixed_form ||
+  if ((visible_security_state.contained_mixed_form &&
+       !visible_security_state.should_treat_displayed_mixed_forms_as_secure) ||
       visible_security_state.displayed_content_with_cert_errors) {
     return kDisplayedInsecureContentLevel;
   }
@@ -280,7 +281,8 @@ VisibleSecurityState::VisibleSecurityState()
       is_reader_mode(false),
       connection_used_legacy_tls(false),
       should_suppress_legacy_tls_warning(false),
-      should_suppress_mixed_content_warning(false) {}
+      should_suppress_mixed_content_warning(false),
+      should_treat_displayed_mixed_forms_as_secure(false) {}
 
 VisibleSecurityState::VisibleSecurityState(const VisibleSecurityState& other) =
     default;

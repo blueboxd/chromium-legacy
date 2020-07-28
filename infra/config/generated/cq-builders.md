@@ -152,16 +152,12 @@ builder.
   * [`//content/gpu/.+`](https://cs.chromium.org/chromium/src/content/gpu/)
   * [`//media/.+`](https://cs.chromium.org/chromium/src/media/)
 
-* [chromeos-kevin-compile-rel](https://ci.chromium.org/p/chromium/builders/try/chromeos-kevin-compile-rel) ([definition](https://cs.chromium.org/search?q=package:%5Echromium$+file:/cq.star$+-file:/beta/+-file:/stable/+chromeos-kevin-compile-rel)) ([matching builders](https://cs.chromium.org/search?q=+file:trybots.py+chromeos-kevin-compile-rel))
-
-  Path regular expressions:
-  * [`//chromeos/CHROMEOS_LKGM`](https://cs.chromium.org/chromium/src/chromeos/CHROMEOS_LKGM)
-
 * [chromeos-kevin-rel](https://ci.chromium.org/p/chromium/builders/try/chromeos-kevin-rel) ([definition](https://cs.chromium.org/search?q=package:%5Echromium$+file:/cq.star$+-file:/beta/+-file:/stable/+chromeos-kevin-rel)) ([matching builders](https://cs.chromium.org/search?q=+file:trybots.py+chromeos-kevin-rel))
 
   Path regular expressions:
   * [`//build/chromeos/.+`](https://cs.chromium.org/chromium/src/build/chromeos/)
   * [`//build/config/chromeos/.*`](https://cs.chromium.org/search?q=package:%5Echromium$+file:build/config/chromeos/.*)
+  * [`//chromeos/CHROMEOS_LKGM`](https://cs.chromium.org/chromium/src/chromeos/CHROMEOS_LKGM)
 
 * [closure_compilation](https://ci.chromium.org/p/chromium/builders/try/closure_compilation) ([definition](https://cs.chromium.org/search?q=package:%5Echromium$+file:/cq.star$+-file:/beta/+-file:/stable/+closure_compilation)) ([matching builders](https://cs.chromium.org/search?q=+file:trybots.py+closure_compilation))
 

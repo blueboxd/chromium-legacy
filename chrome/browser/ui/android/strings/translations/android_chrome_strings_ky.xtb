@@ -335,6 +335,7 @@
 <translation id="3658159451045945436">Баштапкы абалга келтирүү менен дайындарды сактоо таржымалы, анын ичинде баш баккан сайттардын тизмеси тазаланат.</translation>
 <translation id="3692944402865947621">Сактагыч жеткиликсиз болгондугуна байланыштуу, <ph name="FILE_NAME" /> жүктөлбөй калды.</translation>
 <translation id="3701167022068948696">Азыр оңдоо</translation>
+<translation id="371230970611282515">Кооптуу нерселер орун алганга чейин аларды аныктап, сизге кабарлап турат.</translation>
 <translation id="3714981814255182093">Издөө тилкесин ачуу</translation>
 <translation id="3716182511346448902">Бул барак өтө көп эстутум колдонгондуктан Chrome аны тындырды.</translation>
 <translation id="3721119614952978349">Сиз жана Google</translation>
@@ -713,6 +714,7 @@ Google аккаунтуңуздун башка Google кызматтарынан
 <translation id="6593061639179217415">Компьютер версиясы</translation>
 <translation id="6597891566292541626">QR/штрих кодду берилген алкакта жайгаштыруу.</translation>
 <translation id="6600954340915313787">Chrome'го көчүрүлдү</translation>
+<translation id="661266467055912436">Сиз жана башкалар үчүн Интернеттеги коопсуздукту арттырат.</translation>
 <translation id="6627583120233659107">Куржунду түзөтүү</translation>
 <translation id="6643016212128521049">Тазалоо</translation>
 <translation id="6643649862576733715">Үнөмдөлгөн трафик боюнча иргөө</translation>
@@ -872,6 +874,7 @@ Google аккаунтуңуздун башка Google кызматтарынан
 <translation id="7925590027513907933">{FILE_COUNT,plural, =1{Файл жүктөлүп алынууда.}other{# файл жүктөлүп алынууда.}}</translation>
 <translation id="7926975587469166629">Картанын ылакап аты</translation>
 <translation id="7929962904089429003">Менюну ачуу</translation>
+<translation id="7930998711684428189">Сырсөзүңүздү кимдир-бирөө билип алса, эскертүү жөнөтүлсүн.</translation>
 <translation id="7942131818088350342"><ph name="PRODUCT_NAME" /> эскирип калган.</translation>
 <translation id="7947953824732555851">Кабыл алуу жана кирүү</translation>
 <translation id="7963646190083259054">Жөнөтүүчү:</translation>

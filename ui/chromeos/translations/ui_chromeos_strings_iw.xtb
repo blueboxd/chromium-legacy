@@ -21,6 +21,7 @@
 <translation id="1150565364351027703">משקפי שמש</translation>
 <translation id="115443833402798225">Hangul Ahnmatae</translation>
 <translation id="1155759005174418845">קטלאנית</translation>
+<translation id="1172970565351728681">נותרו כ-<ph name="REMAINING_TIME" /></translation>
 <translation id="1173894706177603556">שנה שם</translation>
 <translation id="117624967391683467">מעתיק את <ph name="FILE_NAME" />...</translation>
 <translation id="1178581264944972037">השהה</translation>
@@ -198,6 +199,7 @@
 <translation id="3236289833370040187">הבעלות תועבר אל <ph name="DESTINATION_DOMAIN" />.</translation>
 <translation id="3241720467332021590">אירית</translation>
 <translation id="3245321423178950146">אמן לא ידוע</translation>
+<translation id="3248185426436836442">בהמתנה</translation>
 <translation id="3252266817569339921">צרפתית</translation>
 <translation id="3254434849914415189">בחר את יישום ברירת המחדל עבור קובצי <ph name="FILE_TYPE" />:</translation>
 <translation id="3264582393905923483">הקשר</translation>
@@ -244,6 +246,7 @@
 <translation id="3780536599611287598">אין לך הרשאה להעביר קבצים אל '<ph name="FOLDER_NAME" />'.</translation>
 <translation id="3786301125658655746">אינך מחובר לאינטרנט</translation>
 <translation id="3789841737615482174">התקן</translation>
+<translation id="3793469551756281394">נותרו כ-<ph name="REMAINING_TIME_HOUR" /> ו-<ph name="REMAINING_TIME_MINUTE" /></translation>
 <translation id="3798449238516105146">גרסה</translation>
 <translation id="3801082500826908679">פארואזית</translation>
 <translation id="3809272675881623365">ארנב</translation>

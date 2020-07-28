@@ -33,6 +33,7 @@
 #include "components/prefs/pref_service.h"
 #include "components/prefs/pref_service_factory.h"
 #include "components/prefs/testing_pref_store.h"
+#include "components/security_interstitials/core/pref_names.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/gfx/geometry/rect.h"
 
@@ -86,6 +87,7 @@ std::unique_ptr<PrefService> PrefServiceForTesting() {
       new user_prefs::PrefRegistrySyncable());
   registry->RegisterBooleanPref(
       RandomizedEncoder::kUrlKeyedAnonymizedDataCollectionEnabled, false);
+  registry->RegisterBooleanPref(::prefs::kMixedFormsWarningsEnabled, true);
   return PrefServiceForTesting(registry.get());
 }
 

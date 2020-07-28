@@ -9,6 +9,7 @@
 
 #import "base/ios/block_types.h"
 #import "ios/chrome/browser/ui/menu/menu_action_type.h"
+#import "ios/chrome/browser/ui/menu/menu_histograms.h"
 
 class GURL;
 
@@ -17,9 +18,9 @@ class GURL;
 API_AVAILABLE(ios(13.0))
 @interface ActionFactory : NSObject
 
-// Initializes a factory instance with the |histogram| name to be used during
-// actions' execution.
-- (instancetype)initWithHistogram:(const char*)histogram;
+// Initializes a factory instance to create action instances for the given
+// |scenario|.
+- (instancetype)initWithScenario:(MenuScenario)scenario;
 
 // Creates a UIAction instance configured with the given |title| and |image|.
 // Upon execution, the action's |type| will be recorded and the |block| will be

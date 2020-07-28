@@ -359,6 +359,16 @@ source_set("core_v2_internal") {
   configs += [ "//build/config/compiler:no_chromium_code" ]
 }
 
+source_set("core_v2_internal_test") {
+  testonly = true
+  public_configs = [ ":nearby_include_config" ]
+  public = [ "src/cpp/core_v2/internal/mock_service_controller.h" ]
+  deps = [
+    ":core_v2_internal",
+    "//third_party/googletest:gmock",
+  ]
+}
+
 # src/cpp/core_v2/internal/mediums
 source_set("core_v2_internal_mediums") {
   public_configs = [ ":nearby_include_config" ]

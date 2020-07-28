@@ -363,7 +363,6 @@ In caso contrario l'uso sarà bloccato dalle impostazioni sulla privacy. I conte
 <translation id="2413528052993050574">Questo server non è riuscito a dimostrare che si tratta di <ph name="DOMAIN" />; il relativo certificato di sicurezza potrebbe essere revocato. Il problema potrebbe essere dovuto a un'errata configurazione o a un malintenzionato che intercetta la connessione.</translation>
 <translation id="2438874542388153331">Perforatura quadrupla a destra</translation>
 <translation id="245044156129055925">Hai appena inserito la tua password su un sito ingannevole. Chromium consiglia di cambiare subito la password.</translation>
-<translation id="2463193859425327265">Cambia la pagina iniziale</translation>
 <translation id="2463739503403862330">Compila</translation>
 <translation id="2465402087343596252">Architecture-E</translation>
 <translation id="2465655957518002998">Scegli il metodo di consegna</translation>
@@ -450,7 +449,7 @@ In caso contrario l'uso sarà bloccato dalle impostazioni sulla privacy. I conte
 <translation id="2824775600643448204">Barra degli indirizzi e di ricerca</translation>
 <translation id="2826760142808435982">La connessione è stata criptata e autenticata utilizzando <ph name="CIPHER" /> e <ph name="KX" /> come meccanismo di scambio delle chiavi.</translation>
 <translation id="2835170189407361413">Cancella modulo</translation>
-<translation id="2839501879576190149">Sito falso in vista</translation>
+<translation id="2839501879576190149">Sito falso</translation>
 <translation id="2847118875340931228">Apri finestra di navigazione in incognito</translation>
 <translation id="2850739647070081192">Invite (Envelope)</translation>
 <translation id="2856444702002559011">Gli utenti malintenzionati potrebbero provare a carpire le tue informazioni da <ph name="BEGIN_BOLD" /><ph name="SITE" /><ph name="END_BOLD" /> (ad esempio, password, messaggi o carte di credito). <ph name="BEGIN_LEARN_MORE_LINK" />Ulteriori informazioni<ph name="END_LEARN_MORE_LINK" /></translation>
@@ -1160,7 +1159,6 @@ In caso contrario l'uso sarà bloccato dalle impostazioni sulla privacy. I conte
 <translation id="5785756445106461925">Inoltre, questa pagina include altre risorse che non sono sicure. Tali risorse possono essere visualizzate da altri durante il transito dei dati e possono essere modificate da un utente malintenzionato al fine di modificare l'aspetto della pagina.</translation>
 <translation id="5786044859038896871">Vuoi inserire automaticamente i dati della carta?</translation>
 <translation id="5798290721819630480">Vuoi annullare le modifiche?</translation>
-<translation id="5798683403665926540">Cambia la pagina iniziale nelle impostazioni di Chrome</translation>
 <translation id="5803412860119678065">Vuoi inserire automaticamente <ph name="CARD_DETAIL" />?</translation>
 <translation id="5804241973901381774">Autorizzazioni</translation>
 <translation id="5804427196348435412">Usare i dispositivi NFC</translation>
@@ -1608,7 +1606,6 @@ Ulteriori dettagli:
 <translation id="7669271284792375604">I malintenzionati su questo sito potrebbero cercare di indurti con l'inganno a installare programmi che danneggiano la tua navigazione (ad esempio cambiando la tua pagina iniziale o mostrando annunci extra sui siti che visiti).</translation>
 <translation id="7673278391011283842">Mailbox 6</translation>
 <translation id="7676643023259824263">Cerca testo negli appunti, <ph name="TEXT" /></translation>
-<translation id="7681101578153515023">Cambia motore di ricerca</translation>
 <translation id="7682287625158474539">Spedizione</translation>
 <translation id="7687186412095877299">Compila i moduli di pagamento con i metodi di pagamento salvati</translation>
 <translation id="7687305263118037187">Timeout tentativo</translation>
@@ -1646,7 +1643,6 @@ Ulteriori dettagli:
 <translation id="7802523362929240268">Il sito è legittimo</translation>
 <translation id="780301667611848630">No grazie</translation>
 <translation id="7805768142964895445">Stato</translation>
-<translation id="7806344367022510803">Cambia le impostazioni del motore di ricerca in Chrome</translation>
 <translation id="7812922009395017822">Mir</translation>
 <translation id="7813600968533626083">Rimuovere il suggerimento per i moduli da Chrome?</translation>
 <translation id="781440967107097262">Condividere gli appunti?</translation>
@@ -1788,7 +1784,6 @@ Ulteriori dettagli:
 Ulteriori dettagli:
 <ph name="DEBUG_INFO" /></translation>
 <translation id="8424582179843326029"><ph name="FIRST_LABEL" /> <ph name="SECOND_LABEL" /> <ph name="THIRD_LABEL" /></translation>
-<translation id="8425213833346101688">Cambia</translation>
 <translation id="8428213095426709021">Impostazioni</translation>
 <translation id="8433057134996913067">In questo modo uscirai dalla maggior parte dei siti web.</translation>
 <translation id="8437238597147034694">&amp;Annulla spostamento</translation>

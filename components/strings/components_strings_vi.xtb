@@ -363,7 +363,6 @@ Nếu bạn từ chối, các tùy chọn cài đặt quyền riêng tư của b
 <translation id="2413528052993050574">Máy chủ này không chứng minh được rằng đó là <ph name="DOMAIN" />; chứng chỉ bảo mật của máy chủ này có thể đã bị thu hồi. Điều này có thể do định cấu hình sai hoặc có kẻ tấn công chặn kết nối của bạn.</translation>
 <translation id="2438874542388153331">Đục 4 lỗ bên phải</translation>
 <translation id="245044156129055925">Bạn vừa nhập mật khẩu vào một trang web lừa đảo. Chromium khuyên bạn nên đổi mật khẩu ngay.</translation>
-<translation id="2463193859425327265">Thay đổi trang chủ</translation>
 <translation id="2463739503403862330">Điền</translation>
 <translation id="2465402087343596252">Architecture-E</translation>
 <translation id="2465655957518002998">Chọn cách giao hàng</translation>
@@ -1163,7 +1162,6 @@ Nếu bạn từ chối, các tùy chọn cài đặt quyền riêng tư của b
 <translation id="5785756445106461925">Ngoài ra, trang này bao gồm các tài nguyên khác không an toàn. Những tài nguyên này có thể bị người khác xem khi đang gửi và có thể bị kẻ tấn công sửa đổi nhằm thay đổi giao diện của trang.</translation>
 <translation id="5786044859038896871">Bạn có muốn điền thông tin thẻ của mình không?</translation>
 <translation id="5798290721819630480">Hủy thay đổi?</translation>
-<translation id="5798683403665926540">Thay đổi trang chủ trong mục cài đặt của Chrome</translation>
 <translation id="5803412860119678065">Bạn có muốn điền <ph name="CARD_DETAIL" /> của mình không?</translation>
 <translation id="5804241973901381774">Quyền</translation>
 <translation id="5804427196348435412">Sử dụng các thiết bị dùng công nghệ NFC</translation>
@@ -1612,7 +1610,6 @@ Thông tin chi tiết bổ sung:
 <translation id="7669271284792375604">Những kẻ tấn công trên trang web này có thể đánh lừa bạn cài đặt các chương trình ảnh hưởng đến trải nghiệm duyệt web của bạn (ví dụ: bằng cách thay đổi trang chủ của bạn hoặc hiển thị thêm quảng cáo trên các trang web bạn truy cập).</translation>
 <translation id="7673278391011283842">Hộp thư 6</translation>
 <translation id="7676643023259824263">Tìm kiếm văn bản trong khay nhớ tạm, <ph name="TEXT" /></translation>
-<translation id="7681101578153515023">Thay đổi công cụ tìm kiếm</translation>
 <translation id="7682287625158474539">Địa chỉ gửi hàng</translation>
 <translation id="7687186412095877299">Điền vào biểu mẫu thanh toán bằng phương thức thanh toán đã lưu</translation>
 <translation id="7687305263118037187">Hết giờ thử lại</translation>
@@ -1650,7 +1647,6 @@ Thông tin chi tiết bổ sung:
 <translation id="7802523362929240268">Trang web hợp pháp</translation>
 <translation id="780301667611848630">Không, cảm ơn</translation>
 <translation id="7805768142964895445">Trạng thái</translation>
-<translation id="7806344367022510803">Thay đổi tùy chọn cài đặt công cụ tìm kiếm trong Chrome</translation>
 <translation id="7812922009395017822">Mir</translation>
 <translation id="7813600968533626083">Xóa đề xuất biểu mẫu khỏi Chrome?</translation>
 <translation id="781440967107097262">Chia sẻ khay nhớ tạm?</translation>
@@ -1792,7 +1788,6 @@ Thông tin chi tiết bổ sung:
 Thông tin chi tiết bổ sung:
 <ph name="DEBUG_INFO" /></translation>
 <translation id="8424582179843326029"><ph name="FIRST_LABEL" /> <ph name="SECOND_LABEL" /> <ph name="THIRD_LABEL" /></translation>
-<translation id="8425213833346101688">Thay đổi</translation>
 <translation id="8428213095426709021">Cài đặt</translation>
 <translation id="8433057134996913067">Thao tác này sẽ đăng xuất bạn khỏi hầu hết các trang web.</translation>
 <translation id="8437238597147034694">&amp;Hoàn tác di chuyển</translation>

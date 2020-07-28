@@ -73,7 +73,10 @@ class COMPONENT_EXPORT(UI_BASE_IME) TextInputClient {
   // Converts current composition text into final content.
   // If keep_selection is true, keep the selected range unchanged
   // otherwise, set it to be after the newly committed text.
-  virtual void ConfirmCompositionText(bool keep_selection) = 0;
+  // If text was committed, return the number of characters committed.
+  // If we do not know what the number of characters committed is, return
+  // UINT32_MAX.
+  virtual uint32_t ConfirmCompositionText(bool keep_selection) = 0;
 
   // Removes current composition text.
   virtual void ClearCompositionText() = 0;
@@ -227,6 +230,12 @@ class COMPONENT_EXPORT(UI_BASE_IME) TextInputClient {
 #endif
 
 #if defined(OS_CHROMEOS)
+  // Return the location of the autocorrect range as a gfx::Rect object.
+  // If gfx::Rect is empty, then the autocorrect character bounds have not been
+  // set.
+  // These bounds are in screen coordinates.
+  virtual gfx::Rect GetAutocorrectCharacterBounds() const = 0;
+
   // Set the autocorrect range and return if it has been set correctly as a
   // boolean value.
   virtual bool SetAutocorrectRange(const base::string16& autocorrect_text,

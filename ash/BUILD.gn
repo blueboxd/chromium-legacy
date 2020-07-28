@@ -1629,6 +1629,7 @@ component("ash") {
     "//ui/base/ime/chromeos",
     "//ui/base/ime/init",
     "//ui/chromeos",
+    "//ui/chromeos/colors:cros_colors_views",
     "//ui/chromeos/events",
     "//ui/chromeos/resources",
     "//ui/compositor",
@@ -1650,7 +1651,6 @@ component("ash") {
     "//ui/platform_window/stub",
     "//ui/snapshot",
     "//ui/views/window/vector_icons",
-    "//ui/webui/resources/css:cros_colors_views",
     "//ui/wm/public",
     "//url",
   ]

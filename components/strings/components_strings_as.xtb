@@ -363,7 +363,6 @@
 <translation id="2413528052993050574">এই ছার্ভাৰে নিজকে <ph name="DOMAIN" /> বুলি প্ৰমাণ কৰিব নোৱাৰিলে আৰু ইয়াৰ সুৰক্ষা প্ৰমাণপত্ৰ হয়তো প্ৰত্যাহাৰ কৰা হৈছে। এয়া কোনো ভুল কনফিগাৰেশ্বনৰ বাবে বা কোনো আক্ৰমণকাৰীয়ে আপোনাৰ সংযোগ প্ৰতিৰোধ কৰাৰ বাবে হ‘ব পাৰে।</translation>
 <translation id="2438874542388153331">সোঁফালে চতুর্ভূজ আকাৰত পাঞ্চ কৰক</translation>
 <translation id="245044156129055925">আপুনি প্ৰবঞ্চনামূলক ছাইটটোত এইমাত্ৰ নিজৰ পাছৱৰ্ডটো দিছে। Chromiumএ আপোনাৰ পাছৱৰ্ডটো এতিয়াই সলনি কৰাটো চুপাৰিছ কৰিছে।</translation>
-<translation id="2463193859425327265">গৃহ পৃষ্ঠা সলনি কৰক</translation>
 <translation id="2463739503403862330">পুৰ কৰক</translation>
 <translation id="2465402087343596252">স্থাপত্য বিদ্যা-E</translation>
 <translation id="2465655957518002998">ডেলিভাৰীৰ পদ্ধতি বাছনি কৰক</translation>
@@ -561,6 +560,9 @@
 <translation id="3364869320075768271"><ph name="URL" />এ আপোনাৰ ভাৰ্চুৱেল ৰিয়েলিটি ডিভাইচ আৰু ডেটা ব্যৱহাৰ কৰিব বিচাৰিছে</translation>
 <translation id="3366477098757335611">কার্ড চাওক</translation>
 <translation id="3369192424181595722">ঘড়ীৰ আসোঁৱাহ</translation>
+<translation id="3371076217486966826"><ph name="URL" />এ:
+      • আপোনাৰ ওচৰ-পাজৰৰ ঠাইসমূহৰ এখন 3D মেপ সৃষ্টি কৰিবলৈ আৰু কেমেৰাৰ দিশ ট্ৰেক কৰিবলৈ বিচাৰে
+      • আপোনাৰ কেমেৰা ব্যৱহাৰ কৰিবলৈ বিচাৰে</translation>
 <translation id="337363190475750230">প্রৱন্ধন বন্ধ কৰা হৈছে</translation>
 <translation id="3377144306166885718">ছার্ভাৰটোৱে TLSৰ এটা অপ্ৰচলিত সংস্কৰণ ব্যৱহাৰ কৰিছে।</translation>
 <translation id="3377188786107721145">নীতি পার্ছৰ আসোঁৱাহ</translation>
@@ -1155,7 +1157,6 @@
 <translation id="5785756445106461925">তাৰোপৰি, এই পৃষ্ঠাত কিছুমান অসুৰক্ষিত সমল আছে। এই সমল পৰিবহণৰ সময়ত অন্য লোকসকলে চাব পাৰিব আৰু পৃষ্ঠাটোৰ ৰূপ সলনি কৰিবলৈ কোনো আক্ৰমণকাৰীয়ে এই সমল সংশোধন কৰিব পাৰে।</translation>
 <translation id="5786044859038896871">আপুনি আপোনাৰ কাৰ্ডৰ তথ্য ভৰাব খোজে নেকি?</translation>
 <translation id="5798290721819630480">সালসলনিসমূহ বাতিল কৰিবনে?</translation>
-<translation id="5798683403665926540">Chromeৰ ছেটিংসমূহত গৃহ পৃষ্ঠা সলনি কৰক</translation>
 <translation id="5803412860119678065">আপুনি নিজৰ <ph name="CARD_DETAIL" /> পুৰাব খোজেনে?</translation>
 <translation id="5804241973901381774">অনুমতি</translation>
 <translation id="5804427196348435412">NFC ডিভাইচসমূহ ব্যৱহাৰ কৰক</translation>
@@ -1553,6 +1554,7 @@
 <translation id="7518003948725431193">এই ৱেব ঠিকনাটোৰ বাবে কোনো ৱেবপৃষ্ঠা বিচাৰি পোৱা নাই: <ph name="URL" /></translation>
 <translation id="7520302887438682816">C8 (লেফাফা)</translation>
 <translation id="7521387064766892559">JavaScript</translation>
+<translation id="7521825010239864438">"<ph name="SECTION" />" শাখাটো লুকুওৱা হৈছে</translation>
 <translation id="7526934274050461096">এই ছাইটলৈ থকা আপোনাৰ সংযোগটো ব্যক্তিগত নহয়</translation>
 <translation id="7535087603100972091">মান</translation>
 <translation id="7537536606612762813">বাধ্যতামূলক</translation>
@@ -1598,7 +1600,6 @@
 <translation id="7669271284792375604">এই ছাইটৰ আক্ৰমণকাৰীয়ে আপোনাক ছল-চাতুৰিৰে কিছুমান প্ৰ’গ্ৰাম ইনষ্টল কৰাবলৈ বাধ্য কৰাব পাৰে, যিবোৰে আপোনাৰ ব্ৰাউজিং অভিজ্ঞতা ক্ষতিগ্ৰস্থ কৰিব পাৰে (উদাহৰণস্বৰূপে, আপোনাৰ গৃহপৃষ্ঠা সলনি কৰি বা আপুনি চোৱা ছাইটত অধিক বিজ্ঞাপন প্ৰদর্শন কৰি)।</translation>
 <translation id="7673278391011283842">মেইলবক্স ৬</translation>
 <translation id="7676643023259824263">ক্লিপব’ৰ্ডৰ পাঠ, <ph name="TEXT" /> সন্ধান কৰক</translation>
-<translation id="7681101578153515023">সন্ধান ইঞ্জিন সলনি কৰক</translation>
 <translation id="7682287625158474539">শ্বিপিং</translation>
 <translation id="7687186412095877299">আপোনাৰ ছেভ কৰি থোৱা পৰিশোধ পদ্ধতি ব্যৱহাৰ কৰি পৰিশোধৰ ফৰ্ম পূৰ কৰক</translation>
 <translation id="7687305263118037187">পুনঃচেষ্টাৰ সময় উকলা</translation>
@@ -1636,7 +1637,6 @@
 <translation id="7802523362929240268">ছাইটটো বৈধ</translation>
 <translation id="780301667611848630">নালাগে, ধন্যবাদ</translation>
 <translation id="7805768142964895445">স্থিতি</translation>
-<translation id="7806344367022510803">Chromeত সন্ধান ইঞ্জিনৰ ছেটিং সলনি কৰক</translation>
 <translation id="7812922009395017822">Mir</translation>
 <translation id="7813600968533626083">Chromeৰ পৰামৰ্শৰ পৰা আঁতৰাবনে?</translation>
 <translation id="781440967107097262">ক্লিপব’ৰ্ড শ্বেয়াৰ কৰিবনে?</translation>
@@ -1752,6 +1752,7 @@
 <translation id="8293206222192510085">বুকমাৰ্ক যোগ কৰক</translation>
 <translation id="8294431847097064396">উৎস</translation>
 <translation id="8298115750975731693">আপুনি ব্যৱহাৰ কৰি থকা ৱাই-ফাই (<ph name="WIFI_NAME" />)ৰ বাবে আপুনি <ph name="BEGIN_BOLD" /><ph name="LOGIN_URL" /><ph name="END_BOLD" />লৈ যাবলগীয়া হ'ব পাৰে।</translation>
+<translation id="8303854710873047864">"<ph name="SECTION" />" শাখাটো দেখুওৱা হৈছে</translation>
 <translation id="830498451218851433">আধা ফ'ল্ড কৰক</translation>
 <translation id="8307358339886459768">সৰু-ফট’</translation>
 <translation id="8307888238279532626">কি এপ্‌ ইনষ্টল কৰা হৈছে আৰু সেইবোৰ কিমান সঘনাই ব্যৱহাৰ কৰা হৈছে</translation>
@@ -1777,7 +1778,6 @@
 অতিৰিক্ত বিৱৰণ:
 <ph name="DEBUG_INFO" /></translation>
 <translation id="8424582179843326029"><ph name="FIRST_LABEL" /> <ph name="SECOND_LABEL" /> <ph name="THIRD_LABEL" /></translation>
-<translation id="8425213833346101688">সলনি কৰক</translation>
 <translation id="8428213095426709021">ছেটিংসমূহ</translation>
 <translation id="8433057134996913067">এইটোৱে আপোনাক বেছিভাগ ৱেবছাইটৰ পৰাই ছাইন আউট কৰাব।</translation>
 <translation id="8437238597147034694">স্থানান্তৰ কৰা কার্যটো &amp;আনডু কৰক</translation>
@@ -1871,6 +1871,7 @@
 <translation id="8931333241327730545">আপুনি এই কার্ড নিজৰ Google একাউণ্টত ছেভ কৰিব খোজেনে?</translation>
 <translation id="8932102934695377596">আপোনাৰ ঘড়ীৰ সময় পিছপৰি আছে</translation>
 <translation id="893332455753468063">নাম যোগ কৰক</translation>
+<translation id="8942355029279167844">প্ৰ’ডাক্ট ব্যৱহাৰৰ অভিজ্ঞতা উন্নত কৰিবলৈ আপোনাৰ প্ৰশাসকে <ph name="APP_NAME" />ক ডায়েগন’ষ্টিক্সৰ ডেটা সংগ্ৰহ কৰিবলৈ দিছে। অধিক তথ্যৰ বাবে <ph name="BEGIN_LINK" />https://www.parallels.com/pcep<ph name="END_LINK" /> চাওক।</translation>
 <translation id="8943282376843390568">নেমুৰঙী</translation>
 <translation id="8957210676456822347">কেপটিভ পর্টেল বিশ্বাসযোগ্যতাৰ প্ৰমাণীকৰণ</translation>
 <translation id="8962950042226115166">সন্দেহজনক ছাইট</translation>

@@ -907,13 +907,11 @@ void SkiaOutputSurfaceImplOnGpu::ScheduleOverlays(
   output_device_->ScheduleOverlays(std::move(overlays));
 }
 
-#if defined(OS_WIN)
 void SkiaOutputSurfaceImplOnGpu::SetEnableDCLayers(bool enable) {
   if (!MakeCurrent(false /* need_fbo0 */))
     return;
   output_device_->SetEnableDCLayers(enable);
 }
-#endif
 
 void SkiaOutputSurfaceImplOnGpu::SetGpuVSyncEnabled(bool enabled) {
   output_device_->SetGpuVSyncEnabled(enabled);

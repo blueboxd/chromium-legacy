@@ -8,6 +8,7 @@ include_rules = [
   "+components/metrics",
   "+components/policy",
   "+components/security_state",
+  "+components/security_interstitials/core/pref_names.h",
   "+components/signin/public",
   "+components/sync",
   "+components/variations",

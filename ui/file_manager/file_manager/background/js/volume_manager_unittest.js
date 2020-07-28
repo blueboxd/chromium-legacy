@@ -36,7 +36,9 @@ function setUp() {
       onDriveConnectionStatusChangedListeners_: [],
       driveConnectionState_: 'ONLINE',
       volumeMetadataList_: [],
-      addMount: function(fileUrl, callback) {
+      password: undefined,
+      addMount: function(fileUrl, password, callback) {
+        mockChrome.fileManagerPrivate.password = password;
         callback(mockChrome.fileManagerPrivate.mountSourcePath_);
       },
       removeMount: function(volumeId) {
@@ -205,9 +207,11 @@ function testMountArchiveAndUnmount(callback) {
     const numberOfVolumes = volumeManager.volumeInfoList.length;
 
     // Mount an archive
+    const password = 'My Password';
     const mounted = volumeManager.mountArchive(
         'filesystem:chrome-extension://extensionid/external/' +
-        'Downloads-test/foobar.zip');
+            'Downloads-test/foobar.zip',
+        password);
 
     mockChrome.fileManagerPrivate.onMountCompleted.dispatchEvent({
       eventType: 'mount',
@@ -228,6 +232,7 @@ function testMountArchiveAndUnmount(callback) {
     await mounted;
 
     assertEquals(numberOfVolumes + 1, volumeManager.volumeInfoList.length);
+    assertEquals(password, mockChrome.fileManagerPrivate.password);
 
     // Unmount the mounted archive
     const entry = MockFileEntry.create(

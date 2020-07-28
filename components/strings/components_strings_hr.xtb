@@ -363,7 +363,6 @@ To će u suprotnom biti onemogućeno na temelju vaših postavki privatnosti. To 
 <translation id="2413528052993050574">Poslužitelj nije mogao dokazati da je <ph name="DOMAIN" />; njegov sigurnosni certifikat možda je opozvan. To može biti uzrokovano pogrešnom konfiguracijom ili napadom na vašu vezu.</translation>
 <translation id="2438874542388153331">Četverostruko bušenje s desne strane</translation>
 <translation id="245044156129055925">Upravo ste unijeli zaporku na obmanjujućoj web-lokaciji. Chromium preporučuje da odmah promijenite zaporku.</translation>
-<translation id="2463193859425327265">Promijeni početnu stranicu</translation>
 <translation id="2463739503403862330">Ispuni</translation>
 <translation id="2465402087343596252">Architecture-E</translation>
 <translation id="2465655957518002998">Odaberite način isporuke</translation>
@@ -1163,7 +1162,6 @@ To će u suprotnom biti onemogućeno na temelju vaših postavki privatnosti. To 
 <translation id="5785756445106461925">Nadalje, ova stranica sadrži druge resurse koji nisu sigurni. Te resurse mogu vidjeti drugi tijekom prijenosa i napadač ih može izmijeniti kako bi promijenio izgled stranice.</translation>
 <translation id="5786044859038896871">Želite li ispuniti podatke o kartici?</translation>
 <translation id="5798290721819630480">Želite li odbaciti izmjene?</translation>
-<translation id="5798683403665926540">Promijenite početnu stranicu u postavkama Chromea</translation>
 <translation id="5803412860119678065">Želite li ispuniti podatke o kartici <ph name="CARD_DETAIL" />?</translation>
 <translation id="5804241973901381774">Dozvoljeno</translation>
 <translation id="5804427196348435412">koristiti NFC uređaje</translation>
@@ -1612,7 +1610,6 @@ Dodatne pojedinosti:
 <translation id="7669271284792375604">Napadači na ovoj web-lokaciji mogu vas pokušati navesti na instaliranje programa koji smanjuju kvalitetu pregledavanja interneta (npr. promjenom početne stranice ili prikazivanjem dodatnih oglasa na web-lokacijama koje posjetite).</translation>
 <translation id="7673278391011283842">Izlazni spremnik s odjeljcima 6</translation>
 <translation id="7676643023259824263">Traženje teksta u međuspremniku, <ph name="TEXT" /></translation>
-<translation id="7681101578153515023">Promijeni tražilicu</translation>
 <translation id="7682287625158474539">Dostava</translation>
 <translation id="7687186412095877299">Popunjava obrasce za plaćanje spremljenim načinima plaćanja</translation>
 <translation id="7687305263118037187">Isteklo je vrijeme ponovnog pokušaja</translation>
@@ -1650,7 +1647,6 @@ Dodatne pojedinosti:
 <translation id="7802523362929240268">Web-lokacija je legitimna</translation>
 <translation id="780301667611848630">Ne, hvala</translation>
 <translation id="7805768142964895445">Status</translation>
-<translation id="7806344367022510803">Promijenite postavke tražilice u Chromeu</translation>
 <translation id="7812922009395017822">Mir</translation>
 <translation id="7813600968533626083">Želite li s Chromea ukloniti prijedlog za obrasce?</translation>
 <translation id="781440967107097262">Dijeliti međuspremnik?</translation>
@@ -1792,7 +1788,6 @@ Dodatne pojedinosti:
 Dodatne pojedinosti:
 <ph name="DEBUG_INFO" /></translation>
 <translation id="8424582179843326029"><ph name="FIRST_LABEL" /> <ph name="SECOND_LABEL" /> <ph name="THIRD_LABEL" /></translation>
-<translation id="8425213833346101688">Promijeni</translation>
 <translation id="8428213095426709021">Postavke</translation>
 <translation id="8433057134996913067">Time ćete se odjaviti s većine web-lokacija.</translation>
 <translation id="8437238597147034694">&amp;Poništi premještanje</translation>

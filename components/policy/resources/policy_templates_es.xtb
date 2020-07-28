@@ -820,9 +820,6 @@ Si esta política se establece en True, <ph name="PRODUCT_OS_NAME" /> intentará
       Esta política no debería aplicarse en dispositivos utilizados por el público general.
 
       Si se le asigna el valor "True" o no se le asigna ningún valor, la notificación de advertencia de privacidad en la sesión de invitado administrada e iniciada automáticamente quedará fijada hasta que el usuario la cierre.</translation>
-<translation id="2288338171390565087">Esta función ofrece sugerencias de emojis cuando el usuario escribe una palabra que coincide con el mapa de emojis integrado.
-      Si se asigna el valor "verdadero" a esta política, se habilitará la función de forma forzosa y los usuarios no podrán anular esa acción.
-      De forma predeterminada, se le asignará el valor "falso", no se sugerirá ningún emoji y los usuarios no podrán anularla.</translation>
 <translation id="2289265947759479962">Esta política determina si se recoge información de versiones, como la versión, la plataforma o la arquitectura del SO, la versión de <ph name="PRODUCT_NAME" /> y el canal de <ph name="PRODUCT_NAME" />.
 
       Si no se establece la política <ph name="CLOUD_REPORTING_ENABLED_POLICY_NAME" /> o se inhabilita, esta se ignorará.
@@ -1249,13 +1246,6 @@ Si no se le asigna ningún valor, la pantalla de privacidad se inhabilitará ini
       Si se le asigna el valor "false", no se recogerá información que pueda usarse para identificar equipos.
 
       Esta política solo es efectiva cuando el equipo está registrado en <ph name="CLOUD_MANAGEMENT_ENROLLMENT_TOKEN" /> para <ph name="PRODUCT_NAME" />.</translation>
-<translation id="2836621397261130126">Controla si se debe respetar la aprobación por parte de la política del centro de distribución de llaves (KDC) para decidir si se delegan los tickets de <ph name="KERBEROS" />.
-
-          Si se le asigna el valor "True" a esta política, la autenticación de HTTP respetará la aprobación por parte de la política del KDC; es decir, Chrome solo delegará las credenciales si el KDC define el valor <ph name="OK_AS_DELEGATE" /> en un ticket del servicio. Consulta la página https://tools.ietf.org/html/rfc5896.html para obtener más información. El servicio debería coincidir con la política "AuthNegotiateDelegateWhitelist".
-
-          Si se le asigna el valor "False" a esta política o no se le asigna ninguno, se ignorará la política del KDC en las plataformas admitidas, y solo se respetará la política "AuthNegotiateDelegateWhitelist".
-
-          En Windows, la política del KDC se respeta siempre.</translation>
 <translation id="283695852388224413">Si se asigna un valor a esta política, se aplica la longitud máxima configurada del PIN. Si el valor de esta opción es 0 o inferior, significa que no hay una longitud máxima definida y que el usuario puede crear un PIN con el número de dígitos que quiera. Si se asigna a esta opción un valor inferior a <ph name="PIN_UNLOCK_MINIMUM_LENGTH_POLICY_NAME" /> pero superior a 0, la longitud máxima es la misma que la mínima.
 
           Si no se asigna ningún valor a esta política, no se aplica ninguna longitud máxima.</translation>
@@ -2460,13 +2450,6 @@ Si esta política se establece en False, el usuario no podrá canjear ofertas.</
       Si se asigna el valor "Forced" a esta política, las páginas solo se podrán abrir en modo de incógnito. Ten en cuenta que el valor "Forced" no funciona en dispositivos con Android en Chrome.</translation>
 <translation id="4600786265870346112">Habilitar cursor grande</translation>
 <translation id="4604931264910482931">Configurar la lista negra de mensajes nativos</translation>
-<translation id="4614701085541180174">Permite definir una lista de patrones de URL donde se especifican los sitios web para los que se selecciona automáticamente un certificado de cliente en la pantalla de inicio de sesión, en el marco que aloja el flujo SAML (si el sitio web solicita un certificado). Por ejemplo, se puede configurar un certificado que abarque todos los dispositivos para presentarlo al proveedor de identidad SAML.
-
-      El valor debe ser una matriz de diccionarios JSON de tipo string. Cada diccionario debe tener el formato <ph name="DEVICE_LOGIN_SCREEN_AUTO_SELECT_CERTIFICATE_FOR_URLS_EXAMPLE" /> (<ph name="URL_PATTERN_PLACEHOLDER" /> es un patrón de configuración de contenido). <ph name="FILTER_PLACEHOLDER" /> restringe los certificados de cliente que puede seleccionar automáticamente el navegador. Independientemente del filtro, solo se seleccionarán los certificados que coincidan con la solicitud de certificado del servidor. Si <ph name="FILTER_PLACEHOLDER" /> tiene el formato <ph name="JSON_DICTIONARY_EXAMPLE" />, solo se seleccionarán certificados de cliente emitidos por un certificado en el que CommonName tenga el valor <ph name="ISSUER_CN_PLACEHOLDER" />. Si <ph name="FILTER_PLACEHOLDER" /> es el diccionario vacío {}, no se aplicarán más restricciones a la selección de certificados de cliente.
-
-      Si no se establece esta política, no se aplicará la selección automática en ningún sitio web.
-
-      Para obtener información detallada sobre los patrones de URL válidos, consulta https://cloud.google.com/docs/chrome-enterprise/policies/url-patterns.</translation>
 <translation id="4617338332148204752">Saltarla comprobación de metaetiquetas en <ph name="PRODUCT_FRAME_NAME" /></translation>
 <translation id="462134014569484584">Esta política especifica la clave de licencia de <ph name="PLUGIN_VM_NAME" /> para este dispositivo.</translation>
 <translation id="4625915093043961294">Configurar lista de admisión de instalación de extensiones</translation>
@@ -3928,9 +3911,9 @@ Si la política está establecida en False, no se informará sobre los usuarios.
 
       Si se le asigna el valor "false" a esta política o no se le asigna ninguno, <ph name="PLUGIN_VM_NAME" /> no estará habilitado para el usuario.
       Si se le asigna el valor "true", <ph name="PLUGIN_VM_NAME" /> estará habilitado para el usuario (si los demás ajustes lo permiten). A <ph name="PLUGIN_VM_ALLOWED_POLICY_NAME" /> y <ph name="USER_PLUGIN_VM_ALLOWED_POLICY_NAME" /> se les debe haber asignado el valor "true", y <ph name="PLUGIN_VM_LICENSE_KEY_POLICY_NAME" /> o <ph name="PLUGIN_VM_USER_ID_POLICY_NAME" /> deben haberse configurado para que <ph name="PLUGIN_VM_NAME" /> pueda ejecutarse.</translation>
-<translation id="6741496055862838205">Proporciona opciones de configuración de impresoras empresariales vinculadas a dispositivos.
+<translation id="6741496055862838205">Proporciona opciones de configuración para impresoras empresariales vinculadas a dispositivos.
 
-      Esta política permite proporcionar opciones de configuración de impresoras a dispositivos <ph name="PRODUCT_OS_NAME" />.  El formato es el mismo que el del diccionario NativePrinters, con un campo id o guid obligatorio por impresora para incluirla en una lista blanca o negra.
+      Esta política permite proporcionar opciones de configuración de impresoras a dispositivos <ph name="PRODUCT_OS_NAME" />.  El formato es el mismo que el del diccionario NativePrinters, con un campo id o guid obligatorio por impresora para incluirla en una lista de permitidas o bloqueadas.
 
       El tamaño máximo del archivo es de 5 MB y se debe codificar con formato JSON.  Se estima que el tamaño de un archivo que contiene unas 21.000 impresoras es de 5 MB.  Se usará el hash criptográfico para comprobar la integridad de la descarga.
 
@@ -3938,7 +3921,7 @@ Si la política está establecida en False, no se informará sobre los usuarios.
 
       Si se establece esta política, <ph name="PRODUCT_OS_NAME" /> descargará el archivo con las configuraciones de las impresoras y estas estarán disponibles según lo especificado en las políticas <ph name="DEVICE_NATIVE_PRINTERS_ACCESS_MODE" />, <ph name="DEVICE_PRINTERS_ALLOWLIST" /> y <ph name="DEVICE_PRINTERS_BLOCKLIST" />.
 
-      Esta política no afecta a la capacidad de los usuarios de configurar impresoras en determinados dispositivos.  La política está pensada para servir de complemento de la configuración de impresoras que realizan los usuarios.
+      Esta política no afecta a la capacidad de los usuarios de configurar impresoras en determinados dispositivos.  La política está pensada para ser complementaria a la configuración de impresoras de los usuarios.
 
       Esta política sirve de complemento de la política <ph name="BULK_PRINTERS_POLICY" />.
 
@@ -5252,7 +5235,7 @@ Los usuarios no pueden cambiar ni anular esta opción.</translation>
 <translation id="8685024486845674965">La advertencia de protección de contraseña se activa al reutilizar la contraseña</translation>
 <translation id="8685680544554917389">Si se asigna el valor "True" a esta política, <ph name="PRODUCT_NAME" /> reproducirá automáticamente el contenido multimedia. Si se le asigna el valor "False", <ph name="PRODUCT_NAME" /> no podrá reproducir automáticamente el contenido multimedia.
 
-       <ph name="PRODUCT_NAME" /> no reproduce automáticamente el contenido multimedia de forma predeterminada. Sin embargo, en determinados patrones de URL, puedes usar la política <ph name="AUTOPLAY_ALLOWLIST_POLICY_NAME" /> para cambiar este ajuste.
+       De forma predeterminada, <ph name="PRODUCT_NAME" /> no reproduce automáticamente el contenido multimedia. Sin embargo, en determinados patrones de URL, puedes usar la política <ph name="AUTOPLAY_ALLOWLIST_POLICY_NAME" /> para cambiar este ajuste.
 
       Si se realizan cambios en esta política mientras <ph name="PRODUCT_NAME" /> está abierto, solo se aplicarán al abrir pestañas nuevas.</translation>
 <translation id="8687958770985542440">Volver a habilitar la API v0 de componentes web hasta M84.</translation>
@@ -5501,19 +5484,6 @@ Los usuarios no pueden cambiar ni anular esta opción.</translation>
        Esta política no afecta a otros tipos de contenido mixto que no sean de audio, vídeo o imágenes.
        Esta política dejará de tener efecto a partir de la versión 84 de <ph name="PRODUCT_NAME" />.</translation>
 <translation id="9010080992450148617">Permitir que los usuarios registrados en el Programa de Protección Avanzada envíen los archivos descargados a Google para realizar un análisis profundo</translation>
-<translation id="90110062113213245">Si configuras la política, podrás crear una lista de patrones de URL donde se especifique en qué sitios web podrá usar Chrome un certificado de cliente de forma automática. El valor debe ser un conjunto de diccionarios JSON de tipo string, cada uno con el formato <ph name="AUTO_SELECT_CERTIFICATE_FOR_URLS_EXAMPLE" />, donde<ph name="URL_PATTERN_PLACEHOLDER" /> es un patrón de configuración de contenido. <ph name="FILTER_PLACEHOLDER" /> restringe los certificados de cliente entre los que puede elegir automáticamente el navegador. Independientemente del filtro, solo se seleccionan los certificados que coinciden con la solicitud de certificado del servidor.
-
-      Por ejemplo, si <ph name="FILTER_PLACEHOLDER" /> contiene lo siguiente:
-
-      * <ph name="AUTO_SELECT_CERTIFICATE_FOR_URLS_FILTER_EXAMPLE" />: solo se seleccionan los certificados de cliente emitidos por un certificado en el que CommonName tenga el valor <ph name="ISSUER_CN_PLACEHOLDER" />.
-
-      * Las secciones <ph name="ISSUER_STRING_VALUE" /> y <ph name="SUBJECT_STRING_VALUE" />: solo se seleccionan los certificados de cliente que coincidan.
-
-      * ("O"): el certificado debe contener al menos una organización que coincida con el valor especificado para que se pueda seleccionar. * ("OU"): el certificado debe contener al menos una unidad organizativa que coincida con el valor especificado para que se pueda seleccionar.
-
-      * <ph name="EMPTY_DICTIONARY" />: no se aplicarán más restricciones a la selección de certificados de cliente.
-
-      Si no configura la política, no se realizará la autoselección en ningún sitio web.</translation>
 <translation id="9013875414788074110">Durante el inicio de sesión, <ph name="PRODUCT_OS_NAME" /> puede realizar la autenticación a través de un servidor (con conexión) o una contraseña almacenada en caché (sin conexión).
 
       Cuando se asigna el valor "-1" a esta política, el usuario puede autenticarse sin conexión indefinidamente. Cualquier otro valor que se asigne a esta política indicará el tiempo que debe transcurrir desde la última autenticación con conexión para que el usuario tenga que utilizar de nuevo la autenticación con conexión.

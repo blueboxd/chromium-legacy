@@ -5,8 +5,8 @@
 #ifndef THIRD_PARTY_BLINK_PUBLIC_PLATFORM_INPUT_PREDICTOR_FACTORY_H_
 #define THIRD_PARTY_BLINK_PUBLIC_PLATFORM_INPUT_PREDICTOR_FACTORY_H_
 
-#include "third_party/blink/public/platform/input/input_predictor.h"
 #include "third_party/blink/public/platform/web_common.h"
+#include "ui/base/prediction/input_predictor.h"
 
 namespace blink {
 
@@ -31,7 +31,7 @@ class BLINK_PLATFORM_EXPORT PredictorFactory {
 
   // Returns the predictor designed by its type if found, otherwise returns
   // PredictorEmpty
-  static std::unique_ptr<InputPredictor> GetPredictor(
+  static std::unique_ptr<ui::InputPredictor> GetPredictor(
       input_prediction::PredictorType predictor_type);
 
   // Returns the feature enabled kalman predictor options

@@ -66,6 +66,7 @@ public class AndroidPaymentApp
     private String mApplicationIdentifierToHide;
     private boolean mBypassIsReadyToPayServiceInTest;
     private final SupportedDelegations mSupportedDelegations;
+    private boolean mIsPreferred;
 
     // Set inside launchPaymentApp and used to validate the received response.
     @Nullable
@@ -221,6 +222,7 @@ public class AndroidPaymentApp
         mIsIncognito = isIncognito;
         mApplicationIdentifierToHide = appToHide;
         mSupportedDelegations = supportedDelegations;
+        mIsPreferred = false;
     }
 
     /**
@@ -428,6 +430,15 @@ public class AndroidPaymentApp
     @Override
     public @PaymentAppType int getPaymentAppType() {
         return PaymentAppType.NATIVE_MOBILE_APP;
+    }
+
+    @Override
+    public boolean isPreferred() {
+        return mIsPreferred;
+    }
+
+    public void setIsPreferred(boolean isPreferred) {
+        mIsPreferred = isPreferred;
     }
 
     /**

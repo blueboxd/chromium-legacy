@@ -34,6 +34,8 @@
 #include "third_party/blink/renderer/core/layout/layout_table_cell.h"
 #include "third_party/blink/renderer/core/layout/layout_view.h"
 #include "third_party/blink/renderer/core/layout/subtree_layout_scope.h"
+#include "third_party/blink/renderer/core/paint/paint_invalidator.h"
+#include "third_party/blink/renderer/core/paint/paint_layer.h"
 #include "third_party/blink/renderer/core/paint/table_row_painter.h"
 
 namespace blink {
@@ -121,6 +123,17 @@ void LayoutTableRow::StyleDidChange(StyleDifference diff,
           cell->SetCellChildrenNeedLayout();
       }
     }
+  }
+}
+
+void LayoutTableRow::InvalidatePaint(
+    const PaintInvalidatorContext& context) const {
+  LayoutTableBoxComponent::InvalidatePaint(context);
+  if (Table()->HasCollapsedBorders()) {
+    // Repaint the painting layer of the table. The table's composited backing
+    // always paints collapsed borders (even though it uses the row as a
+    // DisplayItemClient).
+    context.ParentContext()->ParentContext()->painting_layer->SetNeedsRepaint();
   }
 }
 

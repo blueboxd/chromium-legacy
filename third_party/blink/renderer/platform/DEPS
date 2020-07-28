@@ -74,6 +74,7 @@ include_rules = [
     "+third_party/khronos",
     "+third_party/skia",
     "+ui/base/cursor/cursor.h",
+    "+ui/base/prediction",
     "+ui/base/resource/scale_factor.h",
     "+ui/gfx",
     "+url",

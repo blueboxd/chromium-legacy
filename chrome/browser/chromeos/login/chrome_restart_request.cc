@@ -232,7 +232,6 @@ void DeriveCommandLine(const GURL& start_url,
 void DeriveEnabledFeatures(base::CommandLine* out_command_line) {
   static const base::Feature* kForwardEnabledFeatures[] = {
       &ash::features::kAutoNightLight,
-      &display::features::kUseHDRTransferFunction,
   };
 
   std::vector<std::string> enabled_features;

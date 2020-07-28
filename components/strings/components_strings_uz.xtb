@@ -362,7 +362,6 @@ Aks holda bu maxfiylik sozlamalaringiz tomonidan bloklanadi. Bunda siz ochgan sa
 <translation id="2413528052993050574">Bu <ph name="DOMAIN" /> serveri ekanligi tasdiqlanmadi. Uning havfsizlik sertifikati eskirgan. Server sozlamalari noto‘g‘ri moslangan yoki kimdir sizning shaxsiy ma’lumotlaringizni o‘g‘irlashga harakat qilmoqda.</translation>
 <translation id="2438874542388153331">Oʻngdan 4 ta teshik ochish</translation>
 <translation id="245044156129055925">Hozirgina shubhali saytda parol kiritdingiz. Chromimum parolingizni hoziroq oʻzgartirishni tavsiya etadi.</translation>
-<translation id="2463193859425327265">Bosh sahifani almashtirish</translation>
 <translation id="2463739503403862330">To‘ldirish</translation>
 <translation id="2465402087343596252">Architecture-E</translation>
 <translation id="2465655957518002998">Yetkazib berish usulini tanlang</translation>
@@ -1158,7 +1157,6 @@ Aks holda bu maxfiylik sozlamalaringiz tomonidan bloklanadi. Bunda siz ochgan sa
 <translation id="5785756445106461925">Bundan tashqari, ushbu sahifada xavfli kontent ham aniqlandi. Ma’lumotlarni uzatishda uchinchi tomon resurslarni ko‘rishi mumkin. Yovuz niyatli odamlar esa sahifaga kirishi va uning ko‘rinishini o‘zgartirishi mumkin.</translation>
 <translation id="5786044859038896871">Bank karta ma’lumotlari to‘ldirilsinmi?</translation>
 <translation id="5798290721819630480">Oʻzgarishlar bekor qilinsinmi?</translation>
-<translation id="5798683403665926540">Chrome sozlamalaridan bosh sahifani almashtirish</translation>
 <translation id="5803412860119678065"><ph name="CARD_DETAIL" /> kartangiz ma’lumotlari to‘ldirilsinmi?</translation>
 <translation id="5804241973901381774">Ruxsatlar</translation>
 <translation id="5804427196348435412">NFC qurilmalarni ishlatish</translation>
@@ -1606,7 +1604,6 @@ Batafsil axborot:
 <translation id="7669271284792375604">Bu sayt qurilmangizga brauzerning ishlashiga xalaqit qiluvchi (masalan, boshlang‘ich sahifani o‘zgartiruvchi yoki saytlarda qo‘shimcha reklamalarni ko‘rsatuvchi) xavfli dasturlarni o‘rnatishi mumkin.</translation>
 <translation id="7673278391011283842">Pochta qutisi 6</translation>
 <translation id="7676643023259824263">Klipborddagi matnni qidirish, <ph name="TEXT" /></translation>
-<translation id="7681101578153515023">Qidiruv tizimini almashtirish</translation>
 <translation id="7682287625158474539">Yetkazib berish manzili</translation>
 <translation id="7687186412095877299">Saqlangan toʻlov usullari maʼlumotlarini avtomatik tarzda toʻlov shakllariga kiritiladi</translation>
 <translation id="7687305263118037187">Urinish vaqti tugadi</translation>
@@ -1644,7 +1641,6 @@ Batafsil axborot:
 <translation id="7802523362929240268">Bu – xavfsiz sayt</translation>
 <translation id="780301667611848630">Kerak emas</translation>
 <translation id="7805768142964895445">Holat</translation>
-<translation id="7806344367022510803">Chrome brauzerida qidiruv tizimini almashtirish</translation>
 <translation id="7812922009395017822">Mir</translation>
 <translation id="7813600968533626083">Bu taklif Chrome’dan o‘chirib tashlansinmi?</translation>
 <translation id="781440967107097262">Klipbord ulashilsinmi?</translation>
@@ -1786,7 +1782,6 @@ Batafsil axborot:
 Batafsil axborot:
 <ph name="DEBUG_INFO" /></translation>
 <translation id="8424582179843326029"><ph name="FIRST_LABEL" /> <ph name="SECOND_LABEL" /> <ph name="THIRD_LABEL" /></translation>
-<translation id="8425213833346101688">O‘zgartirish</translation>
 <translation id="8428213095426709021">Sozlamalar</translation>
 <translation id="8433057134996913067">Bu amal sizni ko‘p saytlardagi hisoblaringizdan chiqarib yuboradi.</translation>
 <translation id="8437238597147034694">&amp;Ko‘chirib o‘tishni bekor qilish</translation>

@@ -30,7 +30,7 @@ const char kPersonalInfoSuggesterShowSettingCount[] =
     "personal_info_suggester_show_setting_count";
 const int kMaxShowSettingCount = 10;
 
-AssistiveType ProposeAssistiveAction(const base::string16& text);
+AssistiveType ProposePersonalInfoAssistiveAction(const base::string16& text);
 
 class TtsHandler : public content::UtteranceEventDelegate {
  public:

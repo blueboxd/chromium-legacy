@@ -75,6 +75,7 @@
 <translation id="1553358976309200471">‏כדאי לעדכן את Chrome</translation>
 <translation id="1569387923882100876">מכשיר מחובר</translation>
 <translation id="1571304935088121812">העתק שם משתמש</translation>
+<translation id="1592864538817356322">הגנה רגילה:</translation>
 <translation id="1612196535745283361">‏כדי לבצע סריקה לאיתור מכשירים, Chrome זקוק לגישה לנתוני מיקום. הגישה למיקום <ph name="BEGIN_LINK" />כבויה במכשיר הזה<ph name="END_LINK" />.</translation>
 <translation id="1620510694547887537">מצלמה</translation>
 <translation id="1628019612362412531">{NUM_SELECTED,plural, =1{הסר פריט אחד שנבחר}two{הסר # פריטים שנבחרו}many{הסר # פריטים שנבחרו}other{הסר # פריטים שנבחרו}}</translation>
@@ -334,6 +335,7 @@
 <translation id="3658159451045945436">האיפוס גורם למחיקת ההיסטוריה של החיסכון בנתונים, כולל רשימת האתרים שביקרת בהם.</translation>
 <translation id="3692944402865947621">ההורדה של <ph name="FILE_NAME" /> נכשלה כי מיקום האחסון לא נגיש.</translation>
 <translation id="3701167022068948696">לפתרון הבעיה עכשיו</translation>
+<translation id="371230970611282515">המערכת חוזה אירועים מסוכנים ומזהירה אותך לגביהם לפני שהם מתרחשים.</translation>
 <translation id="3714981814255182093">פתח את סרגל החיפוש</translation>
 <translation id="3716182511346448902">‏הדף הזה מנצל יותר מדי זיכרון, כך שהוא הושהה על-ידי Chrome.</translation>
 <translation id="3721119614952978349">‏ההגדרות שלך ב-Google</translation>
@@ -578,6 +580,7 @@
 <translation id="5659593005791499971">אימייל</translation>
 <translation id="5665379678064389456">צור אירוע ב-<ph name="APP_NAME" /></translation>
 <translation id="5668404140385795438">להתעלם מבקשה של אתר שנועדה למנוע את שינוי הזום</translation>
+<translation id="568275469169136466">לצורך כניסה זמנית לחשבון</translation>
 <translation id="5683547024293500885">‏מערכת Chrome לא יכולה לבדוק אם יש עדכונים</translation>
 <translation id="5686790454216892815">שם הקובץ ארוך מדי</translation>
 <translation id="5694049548840660018">חזרה לדף הבית בקלות</translation>
@@ -589,6 +592,7 @@
 <translation id="5723735397759933332">‏מצב הטעינה המהירה מאפשר לך לשפר את החיסכון בנתונים על ידי אופטימיזציה של התמונות בדפי HTTPS.</translation>
 <translation id="5726692708398506830">הגדל את כל מה שמופיע בדף</translation>
 <translation id="5732819098735351888">‏ההורדה תתחיל בחיבור Wi-Fi.</translation>
+<translation id="5733983706093266635">‏לא ניתן ליצור קוד אימות. כתובת ה-URL מכילה יותר מ-<ph name="CHARACTER_LIMIT" /> תווים.</translation>
 <translation id="5748802427693696783">הוחלף לכרטיסיות רגילות</translation>
 <translation id="5749068826913805084">‏לצורך הורדת קבצים, Chrome זקוק לגישה לאחסון.</translation>
 <translation id="5749237766298580851">כבויה <ph name="SEPARATOR" /> לא מומלץ</translation>
@@ -641,6 +645,7 @@
 <translation id="6111020039983847643">צרכת בפועל</translation>
 <translation id="6112702117600201073">מרענן את הדף</translation>
 <translation id="6127379762771434464">הפריט הוסר</translation>
+<translation id="6140709049082532940">הגנה משופרת:</translation>
 <translation id="6140912465461743537">ארץ/אזור</translation>
 <translation id="614940544461990577">כדאי לנסות:</translation>
 <translation id="6154478581116148741">יש להפעיל נעילת מסך ב'הגדרות' כדי לייצא את הסיסמאות מהמכשיר הזה</translation>
@@ -709,6 +714,7 @@
 <translation id="6593061639179217415">לגרסה במחשב</translation>
 <translation id="6597891566292541626">‏עליך למקם את קוד ה-QR או הברקוד בתוך המסגרת זו.</translation>
 <translation id="6600954340915313787">‏הועתק אל Chrome</translation>
+<translation id="661266467055912436">רמת אבטחה משופרת עבורך ועבור כל מי שמתחבר לאינטרנט.</translation>
 <translation id="6627583120233659107">ערוך תיקיה</translation>
 <translation id="6643016212128521049">ניקוי</translation>
 <translation id="6643649862576733715">מיון לפי כמות הנתונים שנחסכו</translation>
@@ -868,6 +874,7 @@
 <translation id="7925590027513907933">{FILE_COUNT,plural, =1{מתבצעת הורדה של הקובץ.}two{מתבצעת הורדה של # קבצים.}many{מתבצעת הורדה של # קבצים.}other{מתבצעת הורדה של # קבצים.}}</translation>
 <translation id="7926975587469166629">כינוי הכרטיס</translation>
 <translation id="7929962904089429003">פתח את התפריט</translation>
+<translation id="7930998711684428189">הצגת אזהרה אם סיסמאות נחשפות עקב פרצה באבטחת מידע.</translation>
 <translation id="7942131818088350342"><ph name="PRODUCT_NAME" /> אינו מעודכן.</translation>
 <translation id="7947953824732555851">קבל והיכנס</translation>
 <translation id="7963646190083259054">ספק:</translation>
@@ -1017,6 +1024,7 @@
 <translation id="9100610230175265781">יש להזין ביטוי סיסמה</translation>
 <translation id="9102803872260866941">כרטיסיית התצוגה המקדימה נפתחה</translation>
 <translation id="9104217018994036254">רשימת המכשירים שאפשר לשתף איתם כרטיסייה.</translation>
+<translation id="9104402662006063371">מעבר למצב אנונימי</translation>
 <translation id="9108312223223904744">תמיכה בטלפון כמפתח אבטחה</translation>
 <translation id="9108808586816295166">‏ה-DNS המאובטח לא יהיה בהכרח זמין תמיד</translation>
 <translation id="9133397713400217035">הצעות לתוכן במצב לא מקוון</translation>

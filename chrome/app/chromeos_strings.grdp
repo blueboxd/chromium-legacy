@@ -3935,6 +3935,27 @@
   <message name="IDS_ARC_SIGN_IN_CLOUD_PROVISION_FLOW_FAIL_ERROR" desc="Android sign-in error because of cloud provision flow failed">
     Provisioning flow was interrupted. Please try again or contact your device owner or administrator.
   </message>
+  <message name="IDS_ARC_SIGN_IN_CLOUD_PROVISION_FLOW_ACCOUNT_MISSING_ERROR" desc="Android permament sign-in error because of cloud provision flow failed">
+    Provisioning failed because your account details could not be retrieved. Please try again. Error code: <ph name="ERROR_CODE">$1<ex>7</ex></ph>.
+  </message>
+  <message name="IDS_ARC_SIGN_IN_CLOUD_PROVISION_FLOW_DOMAIN_JOIN_FAIL_ERROR" desc="Android permament sign-in error because of cloud provision flow failed">
+    Can't join the device to the domain. Please try again or contact your device owner or administrator. Error code: <ph name="ERROR_CODE">$1<ex>7</ex></ph>.
+  </message>
+  <message name="IDS_ARC_SIGN_IN_CLOUD_PROVISION_FLOW_ENROLLMENT_TOKEN_INVALID" desc="Android permament sign-in error because of cloud provision flow failed">
+    Device enrollment token is invalid. Please contact your device owner or administrator. Error code: <ph name="ERROR_CODE">$1<ex>7</ex></ph>.
+  </message>
+  <message name="IDS_ARC_SIGN_IN_CLOUD_PROVISION_FLOW_INTERRUPTED_ERROR" desc="Android permament sign-in error because of cloud provision flow failed">
+    Provisioning flow was interrupted. Please try again or contact your device owner or administrator. Error code: <ph name="ERROR_CODE">$1<ex>7</ex></ph>.
+  </message>
+  <message name="IDS_ARC_SIGN_IN_CLOUD_PROVISION_FLOW_NETWORK_ERROR" desc="Android permament sign-in error because of cloud provision flow failed">
+    Couldn’t connect with the server. Please check your network connection and try again. If the problem persists, restart your Chromebook. Error code: <ph name="ERROR_CODE">$1<ex>7</ex></ph>.
+  </message>
+  <message name="IDS_ARC_SIGN_IN_CLOUD_PROVISION_FLOW_PERMANENT_ERROR" desc="Android permament sign-in error because of cloud provision flow failed">
+    Something went wrong. Please contact your device owner or administrator. Error code: <ph name="ERROR_CODE">$1<ex>7</ex></ph>.
+  </message>
+  <message name="IDS_ARC_SIGN_IN_CLOUD_PROVISION_FLOW_TRANSIENT_ERROR" desc="Android transient sign-in error because of cloud provision flow failed">
+    Something went wrong. Please try again or contact your device owner or administrator. Error code: <ph name="ERROR_CODE">$1<ex>7</ex></ph>.
+  </message>
   <message name="IDS_ARC_SIGN_IN_UNKNOWN_ERROR" desc="Android sign-in error because of unknown error">
     Something went wrong
   </message>

@@ -363,7 +363,6 @@ V nasprotnem primeru bodo to blokirale nastavitve zasebnosti. S tem bo vsebina, 
 <translation id="2413528052993050574">Strežniku ni uspelo dokazati, da je <ph name="DOMAIN" />; njegovo varnostno potrdilo je bilo morda preklicano. Razlog za to je lahko napačna konfiguracija ali napadalčevo prestrezanje povezave.</translation>
 <translation id="2438874542388153331">Četverno luknjanje na desni</translation>
 <translation id="245044156129055925">Pravkar ste vnesli geslo na zavajajočem spletnem mestu. Chrome priporoča, da takoj spremenite geslo.</translation>
-<translation id="2463193859425327265">Spremeni domačo stran</translation>
 <translation id="2463739503403862330">Izpolni</translation>
 <translation id="2465402087343596252">Architecture-E</translation>
 <translation id="2465655957518002998">Izbira načina dostave</translation>
@@ -1163,7 +1162,6 @@ V nasprotnem primeru bodo to blokirale nastavitve zasebnosti. S tem bo vsebina, 
 <translation id="5785756445106461925">Poleg tega so na tej strani druga sredstva, ki niso varna. Ta sredstva lahko med prenosom pregledujejo drugi, morebitni napadalec pa jih lahko spremeni, tako da se spremeni videz strani.</translation>
 <translation id="5786044859038896871">Ali želite izpolniti podatke kreditne kartice?</translation>
 <translation id="5798290721819630480">Želite zavreči spremembe?</translation>
-<translation id="5798683403665926540">Spremenite domačo stran v Chromovih nastavitvah</translation>
 <translation id="5803412860119678065">Ali želite izpolniti podatke za kartico <ph name="CARD_DETAIL" />?</translation>
 <translation id="5804241973901381774">Dovoljenja</translation>
 <translation id="5804427196348435412">Uporaba naprav s tehnologijo NFC</translation>
@@ -1612,7 +1610,6 @@ Dodatne podrobnosti:
 <translation id="7669271284792375604">Napadalci na tem spletnem mestu vas bodo morda poskusili zavesti, da bi namestili programe, ki škodljivo vplivajo na brskanje (na primer tako, da spremenijo vašo domačo stran ali na spletnih mestih, ki jih obiščete, prikazujejo dodatne oglase).</translation>
 <translation id="7673278391011283842">Nabiralnik 6</translation>
 <translation id="7676643023259824263">Iskanje besedila v odložišču, <ph name="TEXT" /></translation>
-<translation id="7681101578153515023">Zamenjaj iskalnik</translation>
 <translation id="7682287625158474539">Pošiljanje</translation>
 <translation id="7687186412095877299">Izpolni obrazce za plačilo s shranjenimi podatki o plačilnih sredstvih</translation>
 <translation id="7687305263118037187">Potek časovne omejitve vnovičnega poskusa</translation>
@@ -1650,7 +1647,6 @@ Dodatne podrobnosti:
 <translation id="7802523362929240268">Spletno mesto je legitimno</translation>
 <translation id="780301667611848630">Ne, hvala</translation>
 <translation id="7805768142964895445">Stanje</translation>
-<translation id="7806344367022510803">Spremenite nastavitve iskalnika v Chromu</translation>
 <translation id="7812922009395017822">Mir</translation>
 <translation id="7813600968533626083">Želite odstraniti predlog obrazca iz Chroma?</translation>
 <translation id="781440967107097262">Želite odložišče deliti z drugimi?</translation>
@@ -1792,7 +1788,6 @@ Dodatne podrobnosti:
 Dodatne podrobnosti:
 <ph name="DEBUG_INFO" /></translation>
 <translation id="8424582179843326029"><ph name="FIRST_LABEL" />, <ph name="SECOND_LABEL" />, <ph name="THIRD_LABEL" /></translation>
-<translation id="8425213833346101688">Spremeni</translation>
 <translation id="8428213095426709021">Nastavitve</translation>
 <translation id="8433057134996913067">S tem boste odjavljeni z večine spletnih mest.</translation>
 <translation id="8437238597147034694">&amp;Razveljavi premik</translation>

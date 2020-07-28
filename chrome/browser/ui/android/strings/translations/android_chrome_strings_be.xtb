@@ -335,6 +335,7 @@
 <translation id="3658159451045945436">Скід прывядзе да выдалення захаваных даных, у тым ліку спіса наведаных сайтаў.</translation>
 <translation id="3692944402865947621">Не ўдалося спампаваць файл "<ph name="FILE_NAME" />": месца захоўвання недаступнае.</translation>
 <translation id="3701167022068948696">Выправіць</translation>
+<translation id="371230970611282515">Прадказвае небяспечныя падзеі і папярэджвае пра іх да таго, як яны здараюцца.</translation>
 <translation id="3714981814255182093">Адкрыць панэль пошуку</translation>
 <translation id="3716182511346448902">Гэта старонка выкарыстоўвае занадта многа памяці, таму Chrome прыпыніў яе.</translation>
 <translation id="3721119614952978349">Вы і Google</translation>
@@ -713,6 +714,7 @@
 <translation id="6593061639179217415">Версія для ПК</translation>
 <translation id="6597891566292541626">Змясціце QR-код або штрыхкод у гэтай рамцы.</translation>
 <translation id="6600954340915313787">Скапіравана ў Chrome</translation>
+<translation id="661266467055912436">Павышае бяспеку для вас і іншых карыстальнікаў у інтэрнэце.</translation>
 <translation id="6627583120233659107">Рэдагаваць папку</translation>
 <translation id="6643016212128521049">Ачысціць</translation>
 <translation id="6643649862576733715">Сартаваць па аб'ёме сэканомленага трафіка</translation>
@@ -872,6 +874,7 @@
 <translation id="7925590027513907933">{FILE_COUNT,plural, =1{Ідзе спампоўванне файла.}one{Ідзе спампоўванне # файла.}few{Ідзе спампоўванне # файлаў.}many{Ідзе спампоўванне # файлаў.}other{Ідзе спампоўванне # файла.}}</translation>
 <translation id="7926975587469166629">Псеўданім карткі</translation>
 <translation id="7929962904089429003">Адкрыць меню</translation>
+<translation id="7930998711684428189">Папярэджвае вас у выпадку, калі пры ўцечцы даных былі раскрыты вашы паролі.</translation>
 <translation id="7942131818088350342"><ph name="PRODUCT_NAME" /> – версія састарэла.</translation>
 <translation id="7947953824732555851">Прыняць і ўвайсці</translation>
 <translation id="7963646190083259054">Пастаўшчык:</translation>

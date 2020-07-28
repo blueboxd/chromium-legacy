@@ -1,0 +1,16 @@
+<style>
+  :host {
+    background-color: rgb(232, 240, 254);
+    border-radius: 50%;
+    display: flex;
+  }
+
+  #icon {
+    color: rgb(26, 115, 232);
+    height: var(--nearby-device-icon-size, 24px);
+    margin: auto;
+    width: var(--nearby-device-icon-size, 24px);
+  }
+</style>
+
+<iron-icon id="icon" icon="[[getShareTargetIcon_(shareTarget)]]"></iron-icon>

@@ -396,6 +396,7 @@ html element audio
     property playbackRate
     property played
     property preload
+    property preservesPitch
     property readyState
     property remote
     property seekable
@@ -1136,6 +1137,7 @@ html element video
     property playsInline
     property poster
     property preload
+    property preservesPitch
     property readyState
     property remote
     property requestPictureInPicture

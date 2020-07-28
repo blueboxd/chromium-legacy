@@ -54,7 +54,7 @@ int GetCurrentTid() {
 std::unique_ptr<SubmittableExecutor>
 ImplementationPlatform::CreateSingleThreadExecutor() {
   return std::make_unique<chrome::SubmittableExecutor>(
-      base::ThreadPool::CreateSingleThreadTaskRunner({base::MayBlock()}));
+      base::ThreadPool::CreateSequencedTaskRunner({base::MayBlock()}));
 }
 
 std::unique_ptr<SubmittableExecutor>

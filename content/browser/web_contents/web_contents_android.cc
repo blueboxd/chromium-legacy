@@ -832,9 +832,7 @@ void WebContentsAndroid::SetDisplayCutoutSafeArea(
 void WebContentsAndroid::NotifyRendererPreferenceUpdate(
     JNIEnv* env,
     const base::android::JavaParamRef<jobject>& obj) {
-  RenderViewHost* rvh = web_contents_->GetRenderViewHost();
-  DCHECK(rvh);
-  rvh->OnWebkitPreferencesChanged();
+  web_contents_->OnWebPreferencesChanged();
 }
 
 void WebContentsAndroid::NotifyBrowserControlsHeightChanged(

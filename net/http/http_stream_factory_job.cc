@@ -131,9 +131,10 @@ HttpStreamFactory::Job::Job(Delegate* delegate,
                                 session_->params().enable_websocket_over_http2),
       // Don't use IP connection pooling for HTTP over HTTPS proxies. It doesn't
       // get us much, and testing it is more effort than its worth.
-      enable_ip_based_pooling_(enable_ip_based_pooling &&
-                               !(proxy_info_.proxy_server().is_https() &&
-                                 origin_url_.SchemeIs(url::kHttpScheme))),
+      enable_ip_based_pooling_(
+          enable_ip_based_pooling &&
+          !(proxy_info_.proxy_server().is_secure_http_like() &&
+            origin_url_.SchemeIs(url::kHttpScheme))),
       delegate_(delegate),
       job_type_(job_type),
       using_ssl_(origin_url_.SchemeIs(url::kHttpsScheme) ||
@@ -715,7 +716,7 @@ int HttpStreamFactory::Job::DoInitConnectionImpl() {
   DCHECK(proxy_info_.proxy_server().is_valid());
   next_state_ = STATE_INIT_CONNECTION_COMPLETE;
 
-  if (proxy_info_.is_https() || proxy_info_.is_quic()) {
+  if (proxy_info_.is_secure_http_like()) {
     // Disable network fetches for HTTPS proxies, since the network requests
     // are probably going to need to go through the proxy too.
     proxy_ssl_config_.disable_cert_verification_network_fetches = true;
@@ -800,7 +801,7 @@ int HttpStreamFactory::Job::DoInitConnectionImpl() {
     }
   }
 
-  if (proxy_info_.is_http() || proxy_info_.is_https() || proxy_info_.is_quic())
+  if (proxy_info_.is_http_like())
     establishing_tunnel_ = using_ssl_;
 
   HttpServerProperties* http_server_properties =
@@ -959,7 +960,8 @@ int HttpStreamFactory::Job::DoInitConnectionComplete(int result) {
         }
       }
     }
-  } else if (proxy_info_.is_https() && connection_->socket() && result == OK) {
+  } else if (proxy_info_.is_secure_http_like() && connection_->socket() &&
+             result == OK) {
     ProxyClientSocket* proxy_socket =
         static_cast<ProxyClientSocket*>(connection_->socket());
     // http://crbug.com/642354
@@ -1092,8 +1094,7 @@ int HttpStreamFactory::Job::DoCreateStream() {
 
   if (!using_spdy_) {
     DCHECK(!expect_spdy_);
-    bool using_proxy = (proxy_info_.is_http() || proxy_info_.is_https() ||
-                        proxy_info_.is_quic()) &&
+    bool using_proxy = (proxy_info_.is_http_like()) &&
                        request_info_.url.SchemeIs(url::kHttpScheme);
     if (is_websocket_) {
       DCHECK_NE(job_type_, PRECONNECT);

@@ -8078,10 +8078,10 @@
         "test_id_prefix": "ninja://chrome/browser/password_check/android:password_check_junit_tests/"
       },
       {
-        "name": "service_junit_tests",
+        "name": "services_junit_tests",
         "swarming": {},
-        "test": "service_junit_tests",
-        "test_id_prefix": "ninja://services:service_junit_tests/"
+        "test": "services_junit_tests",
+        "test_id_prefix": "ninja://services:services_junit_tests/"
       },
       {
         "name": "touch_to_fill_junit_tests",

@@ -301,6 +301,10 @@ class InstallStageTracker : public KeyedService {
     base::Optional<base::Time> download_manifest_finish_time;
     // See InstallationStage enum.
     base::Optional<InstallationStage> installation_stage;
+    // Time at which the download of CRX is started.
+    base::Optional<base::Time> download_CRX_started_time;
+    // Time at which CRX is downloaded.
+    base::Optional<base::Time> download_CRX_finish_time;
   };
 
   class Observer : public base::CheckedObserver {

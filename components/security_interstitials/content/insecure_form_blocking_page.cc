@@ -7,7 +7,9 @@
 #include "base/notreached.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/values.h"
+#include "components/prefs/pref_registry_simple.h"
 #include "components/security_interstitials/content/security_interstitial_controller_client.h"
+#include "components/security_interstitials/core/pref_names.h"
 #include "components/strings/grit/components_strings.h"
 #include "ui/base/l10n/l10n_util.h"
 
@@ -28,12 +30,13 @@ InsecureFormBlockingPage::InsecureFormBlockingPage(
 
 InsecureFormBlockingPage::~InsecureFormBlockingPage() = default;
 
-SecurityInterstitialPage::TypeID InsecureFormBlockingPage::GetTypeForTesting() {
-  return InsecureFormBlockingPage::kTypeForTesting;
+void InsecureFormBlockingPage::RegisterProfilePrefs(
+    PrefRegistrySimple* registry) {
+  registry->RegisterBooleanPref(prefs::kMixedFormsWarningsEnabled, true);
 }
 
-bool InsecureFormBlockingPage::ShouldCreateNewNavigation() const {
-  return false;
+SecurityInterstitialPage::TypeID InsecureFormBlockingPage::GetTypeForTesting() {
+  return InsecureFormBlockingPage::kTypeForTesting;
 }
 
 void InsecureFormBlockingPage::CommandReceived(const std::string& command) {

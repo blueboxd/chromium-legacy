@@ -120,9 +120,6 @@ class VIZ_SERVICE_EXPORT GLRenderer : public DirectRenderer {
   void EnsureScissorTestDisabled() override;
   void CopyDrawnRenderPass(const copy_output::RenderPassGeometry& geometry,
                            std::unique_ptr<CopyOutputRequest> request) override;
-#if defined(OS_WIN)
-  void SetEnableDCLayers(bool enable) override;
-#endif
   void FinishDrawingQuadList() override;
   void GenerateMipmap() override;
 

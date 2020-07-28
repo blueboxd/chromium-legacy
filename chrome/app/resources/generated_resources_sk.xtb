@@ -2379,6 +2379,7 @@ Ak chcete spravovať nastavenia tohto účtu, nainštalujte si do zariadenia apl
 <translation id="3882165008614329320">Existujúce video z fotoaparátu alebo súboru</translation>
 <translation id="3886446263141354045">Vaša žiadosť o prístup na tento web sa odoslala správcovi <ph name="NAME" /></translation>
 <translation id="3888550877729210209">Písanie poznámok v aplikácii <ph name="LOCK_SCREEN_APP_NAME" /></translation>
+<translation id="3891563564777705449">{0,plural, =1{Zariadenie aktualizujte do týždňa}few{Zariadenie aktualizujte do # týždňov}many{Zariadenie aktualizujte do # týždňa}other{Zariadenie aktualizujte do # týždňov}}</translation>
 <translation id="3892414795099177503">Pridať OpenVPN / L2TP...</translation>
 <translation id="3893536212201235195">Čítať a zmeniť nastavenia zjednodušenia ovládania</translation>
 <translation id="3893630138897523026">ChromeVox (hlasová spätná väzba)</translation>
@@ -4440,6 +4441,7 @@ Ak chcete spravovať nastavenia tohto účtu, nainštalujte si do zariadenia apl
 <translation id="6535331821390304775">Vždy povoliť zdroju <ph name="ORIGIN" /> otvárať odkazy tohto typu v pridruženej aplikácii</translation>
 <translation id="654039047105555694"><ph name="BEGIN_BOLD" />Poznámka:<ph name="END_BOLD" /> Túto možnosť povoľte iba v prípade, ak viete, čo robíte, alebo ak vás o to niekto požiadal, pretože zhromažďovanie údajov môže znížiť výkonnosť.</translation>
 <translation id="6541638731489116978">Tomuto webu bol zablokovaný prístup k senzorom pohybu.</translation>
+<translation id="6545407738986370057">{0,plural, =1{Zariadenie vráťte do týždňa}few{Zariadenie vráťte do # týždňov}many{Zariadenie vráťte do # týždňa}other{Zariadenie vráťte do # týždňov}}</translation>
 <translation id="6545665334409411530">Rýchlosť opakovania</translation>
 <translation id="6545864417968258051">Vyhľadávanie zariadení Bluetooth</translation>
 <translation id="6545867563032584178">Mikrofón je vypnutý v predvoľbách systému Mac</translation>

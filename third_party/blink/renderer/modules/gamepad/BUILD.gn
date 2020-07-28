@@ -33,6 +33,7 @@ blink_modules_sources("gamepad") {
 
   deps = [
     "//device/gamepad/public/cpp:shared_with_blink",
+    "//device/gamepad/public/cpp:switches",
     "//device/gamepad/public/mojom:mojom_blink",
     "//third_party/blink/public:blink_headers",
   ]

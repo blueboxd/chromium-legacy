@@ -13,13 +13,14 @@
 #include "base/memory/ptr_util.h"
 #include "base/test/task_environment.h"
 #include "remoting/base/oauth_token_getter.h"
+#include "remoting/base/protobuf_http_status.h"
 #include "remoting/proto/ftl/v1/ftl_messages.pb.h"
 #include "remoting/signaling/messaging_client.h"
 #include "remoting/signaling/registration_manager.h"
 #include "remoting/signaling/signaling_address.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#include "third_party/grpc/src/include/grpc/status.h"
+#include "third_party/grpc/src/include/grpcpp/grpcpp.h"
 #include "third_party/libjingle_xmpp/xmllite/xmlelement.h"
 #include "third_party/libjingle_xmpp/xmpp/constants.h"
 
@@ -168,11 +169,11 @@ class FakeRegistrationManager : public RegistrationManager {
   void ExpectSignInGaiaSucceeds() {
     EXPECT_CALL(*this, SignInGaia(_)).WillOnce([&](DoneCallback callback) {
       is_signed_in_ = true;
-      std::move(callback).Run(grpc::Status::OK);
+      std::move(callback).Run(ProtobufHttpStatus::OK);
     });
   }
 
-  void ExpectSignInGaiaFails(const grpc::Status& status) {
+  void ExpectSignInGaiaFails(const ProtobufHttpStatus& status) {
     EXPECT_CALL(*this, SignInGaia(_)).WillOnce([status](DoneCallback callback) {
       std::move(callback).Run(status);
     });
@@ -285,8 +286,8 @@ TEST_F(FtlSignalStrategyTest, SignInGaiaAuthError_InvalidatesOAuthToken) {
   ASSERT_FALSE(signal_strategy_->IsSignInError());
 
   ExpectGetOAuthTokenSucceedsWithFakeCreds();
-  registration_manager_->ExpectSignInGaiaFails(
-      grpc::Status(grpc::StatusCode::UNAUTHENTICATED, "unauthenticated"));
+  registration_manager_->ExpectSignInGaiaFails(ProtobufHttpStatus(
+      ProtobufHttpStatus::Code::UNAUTHENTICATED, "unauthenticated"));
   EXPECT_CALL(*token_getter_, InvalidateCache()).WillOnce(Return());
 
   signal_strategy_->Connect();
@@ -296,8 +297,7 @@ TEST_F(FtlSignalStrategyTest, SignInGaiaAuthError_InvalidatesOAuthToken) {
   ASSERT_EQ(SignalStrategy::State::DISCONNECTED, state_history_[1]);
 
   ASSERT_EQ(SignalStrategy::State::DISCONNECTED, signal_strategy_->GetState());
-  ASSERT_EQ(SignalStrategy::Error::AUTHENTICATION_FAILED,
-            signal_strategy_->GetError());
+  ASSERT_EQ(SignalStrategy::Error::NETWORK_ERROR, signal_strategy_->GetError());
   ASSERT_TRUE(signal_strategy_->IsSignInError());
 }
 

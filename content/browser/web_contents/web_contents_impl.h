@@ -537,6 +537,7 @@ class CONTENT_EXPORT WebContentsImpl : public WebContents,
   const WebPreferences& GetOrCreateWebPreferences() override;
   void NotifyPreferencesChanged() override;
   void SetWebPreferences(const WebPreferences& prefs) override;
+  void OnWebPreferencesChanged() override;
 
   // RenderFrameHostDelegate ---------------------------------------------------
   bool OnMessageReceived(RenderFrameHostImpl* render_frame_host,
@@ -1227,6 +1228,12 @@ class CONTENT_EXPORT WebContentsImpl : public WebContents,
   std::vector<RenderFrameHost*> GetAllFramesIncludingPending();
   int SendToAllFramesIncludingPending(IPC::Message* message);
 
+  // Computes and returns the content specific preferences for this WebContents.
+  // Recomputes only the "fast" preferences (those not requiring slow
+  // platform/device polling); the remaining "slow" ones are recomputed only if
+  // the preference cache is empty.
+  const WebPreferences ComputeWebPreferences();
+
  private:
   friend class WebContentsObserver;
   friend class WebContents;  // To implement factory methods.
@@ -1670,6 +1677,11 @@ class CONTENT_EXPORT WebContentsImpl : public WebContents,
 
   std::set<RenderViewHostImpl*> GetRenderViewHostsIncludingBackForwardCached();
 
+  // Sets the hardware-related fields in |prefs| that are slow to compute.  The
+  // fields are set from cache if available, otherwise recomputed.
+  void SetSlowWebPreferences(const base::CommandLine& command_line,
+                             WebPreferences* prefs);
+
   // Data for core operation ---------------------------------------------------
 
   // Delegate for notifying our owner about stuff. Not owned by us.
@@ -1919,8 +1931,10 @@ class CONTENT_EXPORT WebContentsImpl : public WebContents,
 
   // The last set/computed value of WebPreferences for this WebContents, either
   // set directly through SetWebPreferences, or set after recomputing values
-  // from RenderViewHostImpl::ComputeWebPreferences.
+  // from ComputeWebPreferences.
   std::unique_ptr<WebPreferences> web_preferences_;
+
+  bool updating_web_preferences_ = false;
 
 #if defined(OS_ANDROID)
   std::unique_ptr<NFCHost> nfc_host_;

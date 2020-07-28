@@ -386,9 +386,9 @@ class FilteredVolumeManager extends cr.EventTarget {
   }
 
   /** @override */
-  async mountArchive(fileUrl) {
+  async mountArchive(fileUrl, password) {
     await this.initialized_;
-    return this.volumeManager_.mountArchive(fileUrl);
+    return this.volumeManager_.mountArchive(fileUrl, password);
   }
 
   /** @override */

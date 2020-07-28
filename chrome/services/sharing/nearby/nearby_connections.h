@@ -5,24 +5,22 @@
 #ifndef CHROME_SERVICES_SHARING_NEARBY_NEARBY_CONNECTIONS_H_
 #define CHROME_SERVICES_SHARING_NEARBY_NEARBY_CONNECTIONS_H_
 
+#include <memory>
+
 #include "base/callback_forward.h"
 #include "base/memory/weak_ptr.h"
-#include "base/run_loop.h"
 #include "chrome/services/sharing/public/mojom/nearby_connections.mojom.h"
 #include "chrome/services/sharing/public/mojom/webrtc_signaling_messenger.mojom.h"
 #include "device/bluetooth/public/mojom/adapter.mojom.h"
 #include "mojo/public/cpp/bindings/pending_receiver.h"
 #include "mojo/public/cpp/bindings/pending_remote.h"
 #include "mojo/public/cpp/bindings/receiver.h"
-#include "mojo/public/cpp/bindings/remote.h"
-
-#include <memory>
+#include "mojo/public/cpp/bindings/shared_remote.h"
+#include "third_party/nearby/src/cpp/core_v2/core.h"
 
 namespace location {
 namespace nearby {
 namespace connections {
-
-class Core;
 
 // Implementation of the NearbyConnections mojo interface.
 // This class acts as a bridge to the NearbyConnections library which is pulled
@@ -40,7 +38,9 @@ class NearbyConnections : public mojom::NearbyConnections {
   NearbyConnections(
       mojo::PendingReceiver<mojom::NearbyConnections> nearby_connections,
       mojom::NearbyConnectionsDependenciesPtr dependencies,
-      base::OnceClosure on_disconnect);
+      base::OnceClosure on_disconnect,
+      std::unique_ptr<Core> core = std::make_unique<Core>());
+
   NearbyConnections(const NearbyConnections&) = delete;
   NearbyConnections& operator=(const NearbyConnections&) = delete;
   ~NearbyConnections() override;
@@ -54,18 +54,27 @@ class NearbyConnections : public mojom::NearbyConnections {
   sharing::mojom::IceConfigFetcher* GetWebRtcIceConfigFetcher();
   sharing::mojom::WebRtcSignalingMessenger* GetWebRtcSignalingMessenger();
 
+  // mojom::NearbyConnections:
+  void StartDiscovery(
+      const std::string& service_id,
+      mojom::DiscoveryOptionsPtr options,
+      mojo::PendingRemote<mojom::EndpointDiscoveryListener> listener,
+      StartDiscoveryCallback callback) override;
+  void StopDiscovery(StopDiscoveryCallback callback) override;
+
  private:
   void OnDisconnect();
 
   mojo::Receiver<mojom::NearbyConnections> nearby_connections_;
   base::OnceClosure on_disconnect_;
 
-  // Medium dependencies:
-  mojo::Remote<bluetooth::mojom::Adapter> bluetooth_adapter_;
-  mojo::Remote<network::mojom::P2PSocketManager> socket_manager_;
-  mojo::Remote<network::mojom::MdnsResponder> mdns_responder_;
-  mojo::Remote<sharing::mojom::IceConfigFetcher> ice_config_fetcher_;
-  mojo::Remote<sharing::mojom::WebRtcSignalingMessenger>
+  // Medium dependencies. SharedRemote is used to ensure all calls are posted
+  // to sequence binding the Remote.
+  mojo::SharedRemote<bluetooth::mojom::Adapter> bluetooth_adapter_;
+  mojo::SharedRemote<network::mojom::P2PSocketManager> socket_manager_;
+  mojo::SharedRemote<network::mojom::MdnsResponder> mdns_responder_;
+  mojo::SharedRemote<sharing::mojom::IceConfigFetcher> ice_config_fetcher_;
+  mojo::SharedRemote<sharing::mojom::WebRtcSignalingMessenger>
       webrtc_signaling_messenger_;
 
   std::unique_ptr<Core> core_;

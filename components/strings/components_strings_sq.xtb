@@ -362,7 +362,6 @@ Ndryshe kjo do të bllokohet nga cilësimet e tua të privatësisë. Kjo do ta l
 <translation id="2413528052993050574">Ky server nuk mund të dëshmonte se është  <ph name="DOMAIN" />; certifikata e tij e sigurisë mund të jetë e revokuar. Kjo mund të shkaktohet nga një konfigurim i pasaktë ose nga ndërhyrja e një sulmuesi në lidhjen tënde.</translation>
 <translation id="2438874542388153331">Katër shpime djathtas</translation>
 <translation id="245044156129055925">Sapo fute fjalëkalimin tënd në një sajt mashtrues. Chromium rekomandon që ta ndryshosh fjalëkalimin tani.</translation>
-<translation id="2463193859425327265">Ndrysho faqen kryesore</translation>
 <translation id="2463739503403862330">Plotëso</translation>
 <translation id="2465402087343596252">Architecture-E</translation>
 <translation id="2465655957518002998">Zgjidh mënyrën e dorëzimit</translation>
@@ -1158,7 +1157,6 @@ Ndryshe kjo do të bllokohet nga cilësimet e tua të privatësisë. Kjo do ta l
 <translation id="5785756445106461925">Për më tepër, kjo faqe përfshin burime të tjera që nuk janë të sigurta. Këto burime mund të shikohen nga të tjerët kur janë në procesin e kalimit dhe mund të modifikohen nga ndonjë sulmues për të ndryshuar pamjen e faqes.</translation>
 <translation id="5786044859038896871">Dëshiron që të plotësosh informacionet e kartës?</translation>
 <translation id="5798290721819630480">Të injorohen ndryshimet?</translation>
-<translation id="5798683403665926540">Ndrysho faqen kryesore te cilësimet e Chrome</translation>
 <translation id="5803412860119678065">Dëshiron që të plotësosh informacionet për <ph name="CARD_DETAIL" />?</translation>
 <translation id="5804241973901381774">Lejet</translation>
 <translation id="5804427196348435412">Përdor pajisjet me NFC</translation>
@@ -1606,7 +1604,6 @@ Detaje shtesë:
 <translation id="7669271284792375604">Sulmuesit në këtë sajt mund të përpiqen të të mashtrojnë të instalosh programe që dëmtojnë përvojën tënde të shfletimit (për shembull, duke ndryshuar faqen kryesore ose duke shfaqur reklama shtesë në sajtet që viziton).</translation>
 <translation id="7673278391011283842">Kutia postare 6</translation>
 <translation id="7676643023259824263">Kërko për tekstin e kujtesës së fragmenteve, <ph name="TEXT" /></translation>
-<translation id="7681101578153515023">Ndrysho motorin e kërkimit</translation>
 <translation id="7682287625158474539">Transporti</translation>
 <translation id="7687186412095877299">Plotëson formularët e pagesës me mënyrat e ruajtura të pagesës</translation>
 <translation id="7687305263118037187">Skadimi i ripërpjekjes</translation>
@@ -1644,7 +1641,6 @@ Detaje shtesë:
 <translation id="7802523362929240268">Sajti është i ligjshëm</translation>
 <translation id="780301667611848630">Jo, faleminderit</translation>
 <translation id="7805768142964895445">Statusi</translation>
-<translation id="7806344367022510803">Ndrysho cilësimet e motorit të kërkimit në Chrome</translation>
 <translation id="7812922009395017822">Mir</translation>
 <translation id="7813600968533626083">Të hiqet sugjerimi i formularit nga Chrome?</translation>
 <translation id="781440967107097262">Të ndahet kujtesa e fragmenteve?</translation>
@@ -1786,7 +1782,6 @@ Detaje shtesë:
 Detaje shtesë:
 <ph name="DEBUG_INFO" /></translation>
 <translation id="8424582179843326029"><ph name="FIRST_LABEL" /> <ph name="SECOND_LABEL" /> <ph name="THIRD_LABEL" /></translation>
-<translation id="8425213833346101688">Ndrysho</translation>
 <translation id="8428213095426709021">Cilësimet</translation>
 <translation id="8433057134996913067">Kjo do të bëjë të dalësh nga shumica e sajteve të uebit.</translation>
 <translation id="8437238597147034694">&amp;Zhbëj zhvendosjen</translation>

@@ -19,8 +19,7 @@
 #include "chrome/browser/download/download_core_service_impl.h"
 #include "chrome/browser/offline_pages/offline_page_model_factory.h"
 #include "chrome/browser/profiles/profile_key.h"
-#include "chrome/test/base/testing_browser_process.h"
-#include "chrome/test/base/testing_profile_manager.h"
+#include "chrome/test/base/testing_profile.h"
 #include "components/bookmarks/browser/bookmark_model.h"
 #include "components/bookmarks/test/bookmark_test_helpers.h"
 #include "components/browsing_data/content/cache_storage_helper.h"
@@ -53,31 +52,34 @@ std::unique_ptr<KeyedService> BuildOfflinePageModel(SimpleFactoryKey* key) {
 
 class SigninManagerAndroidTest : public ::testing::Test {
  public:
-  SigninManagerAndroidTest()
-      : profile_manager_(TestingBrowserProcess::GetGlobal()) {}
-  ~SigninManagerAndroidTest() override {}
+  SigninManagerAndroidTest() = default;
+  ~SigninManagerAndroidTest() override = default;
 
   void SetUp() override {
-    ASSERT_TRUE(profile_manager_.SetUp());
-    profile_ = profile_manager_.CreateTestingProfile("Testing Profile");
-    // TODO(crbug.com/748484): Remove requirement for this delegate in
-    // unit_tests.
-    DownloadCoreServiceFactory::GetForBrowserContext(profile_)
-        ->SetDownloadManagerDelegateForTesting(
-            std::make_unique<ChromeDownloadManagerDelegate>(profile_));
-  }
+    TestingProfile::Builder profile_builder;
+    profile_builder.AddTestingFactory(
+        BookmarkModelFactory::GetInstance(),
+        BookmarkModelFactory::GetDefaultFactory());
+    profile_ = profile_builder.Build();
 
-  TestingProfile* profile() { return profile_; }
-
-  // Adds two testing bookmarks to |profile_|.
-  bookmarks::BookmarkModel* AddTestBookmarks() {
-    profile_->CreateBookmarkModel(true);
     // Creating a BookmarkModel also a creates a StubOfflinePageModel.
     // We need to replace this with a mock that responds to deletions.
     offline_pages::OfflinePageModelFactory::GetInstance()->SetTestingFactory(
         profile_->GetProfileKey(), base::BindRepeating(&BuildOfflinePageModel));
+
+    // TODO(crbug.com/748484): Remove requirement for this delegate in
+    // unit_tests.
+    DownloadCoreServiceFactory::GetForBrowserContext(profile_.get())
+        ->SetDownloadManagerDelegateForTesting(
+            std::make_unique<ChromeDownloadManagerDelegate>(profile_.get()));
+  }
+
+  TestingProfile* profile() { return profile_.get(); }
+
+  // Adds two testing bookmarks to |profile_|.
+  bookmarks::BookmarkModel* AddTestBookmarks() {
     bookmarks::BookmarkModel* bookmark_model =
-        BookmarkModelFactory::GetForBrowserContext(profile_);
+        BookmarkModelFactory::GetForBrowserContext(profile());
     bookmarks::test::WaitForBookmarkModelToLoad(bookmark_model);
 
     bookmark_model->AddURL(bookmark_model->bookmark_bar_node(), 0,
@@ -100,8 +102,7 @@ class SigninManagerAndroidTest : public ::testing::Test {
 
  private:
   content::BrowserTaskEnvironment task_environment_;
-  TestingProfileManager profile_manager_;
-  TestingProfile* profile_;  // Owned by |profile_manager_|.
+  std::unique_ptr<TestingProfile> profile_;
 
   DISALLOW_COPY_AND_ASSIGN(SigninManagerAndroidTest);
 };

@@ -32,7 +32,7 @@ namespace remoting {
 // unless otherwise noted.
 class TelemetryLogWriter : public ChromotingEventLogWriter {
  public:
-  TelemetryLogWriter(std::unique_ptr<OAuthTokenGetter> token_getter);
+  explicit TelemetryLogWriter(std::unique_ptr<OAuthTokenGetter> token_getter);
 
   ~TelemetryLogWriter() override;
 
@@ -40,15 +40,23 @@ class TelemetryLogWriter : public ChromotingEventLogWriter {
   void Log(const ChromotingEvent& entry) override;
 
  private:
+  // Used by unit tests to provide custom stub.
+  TelemetryLogWriter(
+      std::unique_ptr<OAuthTokenGetter> token_getter,
+      std::unique_ptr<apis::v1::RemotingTelemetryService::StubInterface> stub);
+
   void SendPendingEntries();
   void DoSend(apis::v1::CreateEventRequest request);
   void OnSendLogResult(const grpc::Status& status,
                        const apis::v1::CreateEventResponse& response);
 
+  // Returns true if there are no events sending or pending.
+  bool IsIdleForTesting();
+
   THREAD_CHECKER(thread_checker_);
 
   std::unique_ptr<OAuthTokenGetter> token_getter_;
-  std::unique_ptr<apis::v1::RemotingTelemetryService::Stub> stub_;
+  std::unique_ptr<apis::v1::RemotingTelemetryService::StubInterface> stub_;
   GrpcAuthenticatedExecutor executor_;
   net::BackoffEntry backoff_;
   base::OneShotTimer backoff_timer_;
@@ -60,6 +68,7 @@ class TelemetryLogWriter : public ChromotingEventLogWriter {
   // These will be pushed back to pending_entries if error occurs.
   base::circular_deque<ChromotingEvent> sending_entries_;
 
+  friend class TelemetryLogWriterTest;
   DISALLOW_COPY_AND_ASSIGN(TelemetryLogWriter);
 };
 

@@ -335,6 +335,7 @@ Dodirnite i držite bilo koju riječ da biste pokrenuli pretraživanje. Ako žel
 <translation id="3658159451045945436">Vraćanjem na zadano briše se povijest uštede podataka, uključujući popis posjećenih web-lokacija.</translation>
 <translation id="3692944402865947621">Preuzimanje datoteke <ph name="FILE_NAME" /> nije uspjelo jer lokacija pohrane nije dostupna.</translation>
 <translation id="3701167022068948696">Ispravi odmah</translation>
+<translation id="371230970611282515">Predviđa opasne događaje i upozorava vas na njih prije nego što se dogode.</translation>
 <translation id="3714981814255182093">Otvaranje Trake za traženje</translation>
 <translation id="3716182511346448902">Ova stranica upotrebljava previše memorije, pa ju je Chrome pauzirao.</translation>
 <translation id="3721119614952978349">Vi i Google</translation>
@@ -713,6 +714,7 @@ Na primjer, neke web-lokacije na taj zahtjev mogu odgovoriti tako da vam prikaž
 <translation id="6593061639179217415">Klasični prikaz</translation>
 <translation id="6597891566292541626">Postavite QR/crtični kôd u ovaj okvir.</translation>
 <translation id="6600954340915313787">Kopirano u Chrome</translation>
+<translation id="661266467055912436">Poboljšava sigurnost za vas i sve ostale na webu.</translation>
 <translation id="6627583120233659107">Uredi mapu</translation>
 <translation id="6643016212128521049">Izbriši</translation>
 <translation id="6643649862576733715">Poredaj po količini spremljenih podataka</translation>
@@ -872,6 +874,7 @@ Na primjer, neke web-lokacije na taj zahtjev mogu odgovoriti tako da vam prikaž
 <translation id="7925590027513907933">{FILE_COUNT,plural, =1{Preuzima se datoteka.}one{Preuzima se # datoteka.}few{Preuzimaju se # datoteke.}other{Preuzima se # datoteka.}}</translation>
 <translation id="7926975587469166629">Nadimak kartice</translation>
 <translation id="7929962904089429003">Otvaranje izbornika</translation>
+<translation id="7930998711684428189">Upozorava ako su zaporke ugrožene zbog povrede podataka.</translation>
 <translation id="7942131818088350342">Proizvod <ph name="PRODUCT_NAME" /> zastario je.</translation>
 <translation id="7947953824732555851">Prihv. i prijavi se</translation>
 <translation id="7963646190083259054">Dobavljač:</translation>

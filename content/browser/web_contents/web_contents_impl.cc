@@ -23,6 +23,7 @@
 #include "base/macros.h"
 #include "base/memory/ptr_util.h"
 #include "base/memory/ref_counted.h"
+#include "base/metrics/field_trial.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/metrics/user_metrics.h"
 #include "base/no_destructor.h"
@@ -35,6 +36,7 @@
 #include "base/strings/string_split.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/system/sys_info.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/time/time.h"
 #include "base/trace_event/trace_event.h"
@@ -92,6 +94,7 @@
 #include "content/browser/webui/web_ui_controller_factory_registry.h"
 #include "content/browser/webui/web_ui_impl.h"
 #include "content/common/browser_plugin/browser_plugin_constants.h"
+#include "content/common/content_switches_internal.h"
 #include "content/common/drag_messages.h"
 #include "content/common/frame_messages.h"
 #include "content/common/input_messages.h"
@@ -141,6 +144,7 @@
 #include "content/public/common/url_utils.h"
 #include "content/public/common/use_zoom_for_dsf_policy.h"
 #include "content/public/common/web_preferences.h"
+#include "media/base/media_switches.h"
 #include "media/base/user_input_monitor.h"
 #include "net/base/url_util.h"
 #include "net/http/http_cache.h"
@@ -163,9 +167,14 @@
 #include "third_party/blink/public/mojom/mediastream/media_stream.mojom-shared.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "ui/accessibility/ax_tree_combiner.h"
+#include "ui/base/device_form_factor.h"
 #include "ui/base/layout.h"
+#include "ui/base/ui_base_features.h"
+#include "ui/base/ui_base_switches.h"
+#include "ui/display/screen.h"
 #include "ui/events/base_event_utils.h"
 #include "ui/events/blink/web_input_event_traits.h"
+#include "ui/gfx/animation/animation.h"
 #include "ui/gl/gl_switches.h"
 
 #if defined(OS_WIN)
@@ -389,6 +398,25 @@ base::flat_set<WebContentsImpl*> GetAllOpeningWebContents(
 
   return result;
 }
+
+#if defined(OS_ANDROID)
+float GetDeviceScaleAdjustment(int min_width) {
+  static const float kMinFSM = 1.05f;
+  static const int kWidthForMinFSM = 320;
+  static const float kMaxFSM = 1.3f;
+  static const int kWidthForMaxFSM = 800;
+
+  if (min_width <= kWidthForMinFSM)
+    return kMinFSM;
+  if (min_width >= kWidthForMaxFSM)
+    return kMaxFSM;
+
+  // The font scale multiplier varies linearly between kMinFSM and kMaxFSM.
+  float ratio = static_cast<float>(min_width - kWidthForMinFSM) /
+                (kWidthForMaxFSM - kWidthForMinFSM);
+  return ratio * (kMaxFSM - kMinFSM) + kMinFSM;
+}
+#endif
 
 // Used to attach the "set of fullscreen contents" to a browser context. Storing
 // sets of WebContents on their browser context is done for two reasons. One,
@@ -2106,16 +2134,250 @@ void WebContentsImpl::DidChangeVisibleSecurityState() {
     observer.DidChangeVisibleSecurityState();
 }
 
+const WebPreferences WebContentsImpl::ComputeWebPreferences() {
+  TRACE_EVENT0("browser", "WebContentsImpl::ComputeWebPreferences");
+  WebPreferences prefs;
+
+  const base::CommandLine& command_line =
+      *base::CommandLine::ForCurrentProcess();
+
+  SetSlowWebPreferences(command_line, &prefs);
+
+  prefs.web_security_enabled =
+      !command_line.HasSwitch(switches::kDisableWebSecurity);
+
+  prefs.remote_fonts_enabled =
+      !command_line.HasSwitch(switches::kDisableRemoteFonts);
+  prefs.application_cache_enabled =
+      base::FeatureList::IsEnabled(blink::features::kAppCache);
+  prefs.local_storage_enabled =
+      !command_line.HasSwitch(switches::kDisableLocalStorage);
+  prefs.databases_enabled =
+      !command_line.HasSwitch(switches::kDisableDatabases);
+
+  prefs.webgl1_enabled = !command_line.HasSwitch(switches::kDisable3DAPIs) &&
+                         !command_line.HasSwitch(switches::kDisableWebGL);
+  prefs.webgl2_enabled = !command_line.HasSwitch(switches::kDisable3DAPIs) &&
+                         !command_line.HasSwitch(switches::kDisableWebGL) &&
+                         !command_line.HasSwitch(switches::kDisableWebGL2);
+
+  prefs.pepper_3d_enabled = !command_line.HasSwitch(switches::kDisablePepper3d);
+
+  prefs.flash_3d_enabled = !command_line.HasSwitch(switches::kDisableFlash3d);
+  prefs.flash_stage3d_enabled =
+      !command_line.HasSwitch(switches::kDisableFlashStage3d);
+  prefs.flash_stage3d_baseline_enabled =
+      !command_line.HasSwitch(switches::kDisableFlashStage3d);
+
+  prefs.allow_file_access_from_file_urls =
+      command_line.HasSwitch(switches::kAllowFileAccessFromFiles);
+
+  prefs.accelerated_2d_canvas_enabled =
+      !command_line.HasSwitch(switches::kDisableAccelerated2dCanvas);
+  prefs.new_canvas_2d_api_enabled =
+      command_line.HasSwitch(switches::kEnableNewCanvas2DAPI);
+  prefs.antialiased_2d_canvas_disabled =
+      command_line.HasSwitch(switches::kDisable2dCanvasAntialiasing);
+  prefs.antialiased_clips_2d_canvas_enabled =
+      !command_line.HasSwitch(switches::kDisable2dCanvasClipAntialiasing);
+
+  prefs.disable_ipc_flooding_protection =
+      command_line.HasSwitch(switches::kDisableIpcFloodingProtection) ||
+      command_line.HasSwitch(switches::kDisablePushStateThrottle);
+
+  prefs.accelerated_video_decode_enabled =
+      !command_line.HasSwitch(switches::kDisableAcceleratedVideoDecode);
+
+  std::string autoplay_policy = media::GetEffectiveAutoplayPolicy(command_line);
+  if (autoplay_policy == switches::autoplay::kNoUserGestureRequiredPolicy) {
+    prefs.autoplay_policy = AutoplayPolicy::kNoUserGestureRequired;
+  } else if (autoplay_policy ==
+             switches::autoplay::kUserGestureRequiredPolicy) {
+    prefs.autoplay_policy = AutoplayPolicy::kUserGestureRequired;
+  } else if (autoplay_policy ==
+             switches::autoplay::kDocumentUserActivationRequiredPolicy) {
+    prefs.autoplay_policy = AutoplayPolicy::kDocumentUserActivationRequired;
+  } else {
+    NOTREACHED();
+  }
+
+  prefs.dont_send_key_events_to_javascript =
+      base::FeatureList::IsEnabled(features::kDontSendKeyEventsToJavascript);
+
+// TODO(dtapuska): Enable barrel button selection drag support on Android.
+// crbug.com/758042
+#if defined(OS_WIN)
+  prefs.barrel_button_for_drag_enabled =
+      base::FeatureList::IsEnabled(features::kDirectManipulationStylus);
+#endif  // defined(OS_WIN)
+
+  prefs.touch_adjustment_enabled =
+      !command_line.HasSwitch(switches::kDisableTouchAdjustment);
+
+  prefs.enable_scroll_animator =
+      command_line.HasSwitch(switches::kEnableSmoothScrolling) ||
+      (!command_line.HasSwitch(switches::kDisableSmoothScrolling) &&
+       gfx::Animation::ScrollAnimationsEnabledBySystem());
+
+  prefs.prefers_reduced_motion = gfx::Animation::PrefersReducedMotion();
+
+  if (ChildProcessSecurityPolicyImpl::GetInstance()->HasWebUIBindings(
+          GetRenderViewHost()->GetProcess()->GetID())) {
+    prefs.loads_images_automatically = true;
+    prefs.javascript_enabled = true;
+  }
+
+  prefs.viewport_enabled = command_line.HasSwitch(switches::kEnableViewport);
+
+  if (IsOverridingUserAgent())
+    prefs.viewport_meta_enabled = false;
+
+  prefs.main_frame_resizes_are_orientation_changes =
+      command_line.HasSwitch(switches::kMainFrameResizesAreOrientationChanges);
+
+  prefs.spatial_navigation_enabled =
+      command_line.HasSwitch(switches::kEnableSpatialNavigation);
+
+  if (IsSpatialNavigationDisabled())
+    prefs.spatial_navigation_enabled = false;
+
+  prefs.caret_browsing_enabled =
+      command_line.HasSwitch(switches::kEnableCaretBrowsing);
+
+  prefs.disable_reading_from_canvas =
+      command_line.HasSwitch(switches::kDisableReadingFromCanvas);
+
+  prefs.strict_mixed_content_checking =
+      command_line.HasSwitch(switches::kEnableStrictMixedContentChecking);
+
+  prefs.strict_powerful_feature_restrictions = command_line.HasSwitch(
+      switches::kEnableStrictPowerfulFeatureRestrictions);
+
+  const std::string blockable_mixed_content_group =
+      base::FieldTrialList::FindFullName("BlockableMixedContent");
+  prefs.strictly_block_blockable_mixed_content =
+      blockable_mixed_content_group == "StrictlyBlockBlockableMixedContent";
+
+  const std::string plugin_mixed_content_status =
+      base::FieldTrialList::FindFullName("PluginMixedContentStatus");
+  prefs.block_mixed_plugin_content =
+      plugin_mixed_content_status == "BlockableMixedContent";
+
+  prefs.v8_cache_options = GetV8CacheOptions();
+
+  prefs.user_gesture_required_for_presentation = !command_line.HasSwitch(
+      switches::kDisableGestureRequirementForPresentation);
+
+  if (HideDownloadUI())
+    prefs.hide_download_ui = true;
+
+  // `media_controls_enabled` is `true` by default.
+  if (HasPersistentVideo())
+    prefs.media_controls_enabled = false;
+
+#if defined(OS_ANDROID)
+  display::Display display = display::Screen::GetScreen()->GetPrimaryDisplay();
+  gfx::Size size = display.GetSizeInPixel();
+  int min_width = size.width() < size.height() ? size.width() : size.height();
+  prefs.device_scale_adjustment = GetDeviceScaleAdjustment(
+      static_cast<int>(min_width / display.device_scale_factor()));
+#endif  // OS_ANDROID
+
+  GetContentClient()->browser()->OverrideWebkitPrefs(GetRenderViewHost(),
+                                                     &prefs);
+  return prefs;
+}
+
+void WebContentsImpl::SetSlowWebPreferences(
+    const base::CommandLine& command_line,
+    WebPreferences* prefs) {
+  if (web_preferences_.get()) {
+#define SET_FROM_CACHE(prefs, field) prefs->field = web_preferences_->field
+
+    SET_FROM_CACHE(prefs, touch_event_feature_detection_enabled);
+    SET_FROM_CACHE(prefs, available_pointer_types);
+    SET_FROM_CACHE(prefs, available_hover_types);
+    SET_FROM_CACHE(prefs, primary_pointer_type);
+    SET_FROM_CACHE(prefs, primary_hover_type);
+    SET_FROM_CACHE(prefs, pointer_events_max_touch_points);
+    SET_FROM_CACHE(prefs, number_of_cpu_cores);
+
+#if defined(OS_ANDROID)
+    SET_FROM_CACHE(prefs, video_fullscreen_orientation_lock_enabled);
+    SET_FROM_CACHE(prefs, video_rotate_to_fullscreen_enabled);
+#endif
+
+#undef SET_FROM_CACHE
+  } else {
+    // Every prefs->field modified below should have a SET_FROM_CACHE entry
+    // above.
+
+    // On Android, Touch event feature detection is enabled by default,
+    // Otherwise default is disabled.
+    std::string touch_enabled_default_switch =
+        switches::kTouchEventFeatureDetectionDisabled;
+#if defined(OS_ANDROID)
+    touch_enabled_default_switch = switches::kTouchEventFeatureDetectionEnabled;
+#endif  // defined(OS_ANDROID)
+    const std::string touch_enabled_switch =
+        command_line.HasSwitch(switches::kTouchEventFeatureDetection)
+            ? command_line.GetSwitchValueASCII(
+                  switches::kTouchEventFeatureDetection)
+            : touch_enabled_default_switch;
+
+    prefs->touch_event_feature_detection_enabled =
+        (touch_enabled_switch == switches::kTouchEventFeatureDetectionAuto)
+            ? (ui::GetTouchScreensAvailability() ==
+               ui::TouchScreensAvailability::ENABLED)
+            : (touch_enabled_switch.empty() ||
+               touch_enabled_switch ==
+                   switches::kTouchEventFeatureDetectionEnabled);
+
+    std::tie(prefs->available_pointer_types, prefs->available_hover_types) =
+        ui::GetAvailablePointerAndHoverTypes();
+    prefs->primary_pointer_type =
+        ui::GetPrimaryPointerType(prefs->available_pointer_types);
+    prefs->primary_hover_type =
+        ui::GetPrimaryHoverType(prefs->available_hover_types);
+
+    prefs->pointer_events_max_touch_points = ui::MaxTouchPoints();
+
+    prefs->number_of_cpu_cores = base::SysInfo::NumberOfProcessors();
+
+#if defined(OS_ANDROID)
+    const bool device_is_phone =
+        ui::GetDeviceFormFactor() == ui::DEVICE_FORM_FACTOR_PHONE;
+    prefs->video_fullscreen_orientation_lock_enabled = device_is_phone;
+    prefs->video_rotate_to_fullscreen_enabled = device_is_phone;
+#endif
+  }
+}
+
+void WebContentsImpl::OnWebPreferencesChanged() {
+  // This is defensive code to avoid infinite loops due to code run inside
+  // SetWebPreferences() accidentally updating more preferences and thus
+  // calling back into this code. See crbug.com/398751 for one past example.
+  if (updating_web_preferences_)
+    return;
+  updating_web_preferences_ = true;
+  SetWebPreferences(ComputeWebPreferences());
+#if defined(OS_ANDROID)
+  for (FrameTreeNode* node : frame_tree_.Nodes()) {
+    RenderFrameHostImpl* rfh = node->current_frame_host();
+    if (rfh->is_local_root()) {
+      if (auto* rwh = rfh->GetRenderWidgetHost())
+        rwh->SetForceEnableZoom(web_preferences_->force_enable_zoom);
+    }
+  }
+#endif
+  updating_web_preferences_ = false;
+}
+
 void WebContentsImpl::NotifyPreferencesChanged() {
   // Recompute the WebPreferences based on the current state of the WebContents,
-  // etc. Note that OnWebkitPreferencesChanged will update the WebPreferences
-  // of the WebContents, so it doesn't matter which RenderViewHost we're calling
-  // it on as long as it belongs to this WebContents. It will also call
-  // SetWebPreferences and send the updated WebPreferences to all RenderViews
-  // for this WebContents.
-  // TODO(rakina): Move OnWebkitPreferencesChanged to WebContents.
-  RenderViewHost* main_render_view_host = GetRenderViewHost();
-  main_render_view_host->OnWebkitPreferencesChanged();
+  // etc. Note that OnWebPreferencesChanged will also call SetWebPreferences and
+  // send the updated WebPreferences to all RenderViews for this WebContents.
+  OnWebPreferencesChanged();
 }
 
 void WebContentsImpl::SyncRendererPrefs() {
@@ -4906,7 +5168,7 @@ void WebContentsImpl::ResourceLoadComplete(
 const WebPreferences& WebContentsImpl::GetOrCreateWebPreferences() {
   // Compute WebPreferences based on the current state if it's null.
   if (!web_preferences_)
-    GetRenderViewHost()->OnWebkitPreferencesChanged();
+    OnWebPreferencesChanged();
   return *web_preferences_.get();
 }
 
@@ -4926,11 +5188,14 @@ void WebContentsImpl::SetWebPreferences(const WebPreferences& prefs) {
 }
 
 void WebContentsImpl::RecomputeWebPreferencesSlow() {
+  // OnWebPreferencesChanged is a no-op when this is true.
+  if (updating_web_preferences_)
+    return;
   // Resets |web_preferences_| so that we won't have any cached value for slow
   // attributes (which won't get recomputed if we have pre-existing values for
   // them).
   web_preferences_.reset();
-  GetRenderViewHost()->OnWebkitPreferencesChanged();
+  OnWebPreferencesChanged();
 }
 
 void WebContentsImpl::PrintCrossProcessSubframe(

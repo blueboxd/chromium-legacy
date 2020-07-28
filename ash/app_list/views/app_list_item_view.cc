@@ -886,7 +886,7 @@ void AppListItemView::AnimationProgressed(const gfx::Animation* animation) {
 
   preview_circle_radius_ = gfx::Tween::IntValueBetween(
       animation->GetCurrentValue(), 0,
-      GetAppListConfig().folder_dropping_circle_radius());
+      GetAppListConfig().folder_dropping_circle_radius() * icon_scale_);
   SchedulePaint();
 }
 

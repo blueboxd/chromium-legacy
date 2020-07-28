@@ -119,7 +119,6 @@ source_set("blink_headers") {
     "platform/file_path_conversion.h",
     "platform/input/input_handler_proxy.h",
     "platform/input/input_handler_proxy_client.h",
-    "platform/input/input_predictor.h",
     "platform/input/predictor_factory.h",
     "platform/input/synchronous_compositor_registry.h",
     "platform/input/synchronous_input_handler_proxy.h",
@@ -426,6 +425,7 @@ source_set("blink_headers") {
     "//ui/base/cursor:cursor_base",
     "//ui/base/ime",
     "//ui/base/ime/mojom",
+    "//ui/base/prediction:prediction",
     "//url",
   ]
 

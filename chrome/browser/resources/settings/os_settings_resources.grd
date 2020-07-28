@@ -540,12 +540,6 @@
       <structure name="IDR_OS_SETTINGS_DEVICE_DISPLAY_OVERSCAN_DIALOG_JS"
                  file="chromeos/device_page/display_overscan_dialog.js"
                  compress="false" type="chrome_html" />
-      <structure name="IDR_OS_SETTINGS_DEVICE_DLC_SUBPAGE_HTML"
-                 file="chromeos/device_page/dlc_subpage.html"
-                 compress="false" type="chrome_html" />
-      <structure name="IDR_OS_SETTINGS_DEVICE_DLC_SUBPAGE_JS"
-                 file="chromeos/device_page/dlc_subpage.js"
-                 compress="false" type="chrome_html" />
       <structure name="IDR_OS_SETTINGS_DEVICE_KEYBOARD_HTML"
                  file="chromeos/device_page/keyboard.html"
                  compress="false" type="chrome_html" />

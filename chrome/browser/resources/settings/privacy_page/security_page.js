@@ -140,9 +140,27 @@ Polymer({
 
   /** @override */
   ready() {
+    // Expand initial pref value manually because automatic
+    // expanding is disabled.
+    const prefValue = this.getPref('generated.safe_browsing').value;
+    if (prefValue === SafeBrowsingSetting.ENHANCED) {
+      this.$.safeBrowsingEnhanced.expanded = true;
+    } else if (prefValue === SafeBrowsingSetting.STANDARD) {
+      this.$.safeBrowsingStandard.expanded = true;
+    }
     this.browserProxy_ = PrivacyPageBrowserProxyImpl.getInstance();
 
     this.metricsBrowserProxy_ = MetricsBrowserProxyImpl.getInstance();
+  },
+
+  /**
+   * Updates the buttons' expanded status by propagating previous click
+   * events
+   * @private
+   */
+  updateCollapsedButtons_() {
+    this.$.safeBrowsingEnhanced.updateCollapsed();
+    this.$.safeBrowsingStandard.updateCollapsed();
   },
 
   /**
@@ -156,6 +174,7 @@ Polymer({
     if (selected === SafeBrowsingSetting.DISABLED) {
       this.showDisableSafebrowsingDialog_ = true;
     } else {
+      this.updateCollapsedButtons_();
       this.$.safeBrowsingRadioGroup.sendPrefChange();
     }
   },
@@ -208,6 +227,7 @@ Polymer({
     if (/** @type {!SettingsDisableSafebrowsingDialogElement} */
         (this.$$('settings-disable-safebrowsing-dialog')).wasConfirmed()) {
       this.$.safeBrowsingRadioGroup.sendPrefChange();
+      this.updateCollapsedButtons_();
     } else {
       this.$.safeBrowsingRadioGroup.resetToPrefValue();
     }

@@ -110,7 +110,6 @@ class CONTENT_EXPORT RenderViewHostImpl
   SiteInstanceImpl* GetSiteInstance() override;
   bool IsRenderViewLive() override;
   void NotifyMoveOrResizeStarted() override;
-  void OnWebkitPreferencesChanged() override;
 
   void SendWebPreferencesToRenderer();
 
@@ -192,8 +191,8 @@ class CONTENT_EXPORT RenderViewHostImpl
 
   // Passes current web preferences to the renderer after recomputing all of
   // them, including the slow-to-compute hardware preferences.
-  // (RenderViewHost::OnWebkitPreferencesChanged is a faster alternate that
-  // avoids slow recomputations.)
+  // (WebContents::OnWebPreferencesChanged is a faster alternate that avoids
+  // slow recomputations.)
   void OnHardwareConfigurationChanged();
 
   // Sets the routing id for the main frame. When set to MSG_ROUTING_NONE, the
@@ -326,21 +325,6 @@ class CONTENT_EXPORT RenderViewHostImpl
   // Delay to wait on closing the WebContents for a beforeunload/unload handler
   // to fire.
   static const int64_t kUnloadTimeoutMS;
-
-  // Returns the content specific preferences for this RenderViewHost.
-  // Recomputes only the "fast" preferences (those not requiring slow
-  // platform/device polling); the remaining "slow" ones are recomputed only if
-  // the preference cache is empty.
-  //
-  // TODO(creis): Move most of this method to RenderProcessHost, since it's
-  // mostly the same across all RVHs in a process.  Move the rest to RFH.
-  // See https://crbug.com/304341.
-  const WebPreferences ComputeWebPreferences();
-
-  // Sets the hardware-related fields in |prefs| that are slow to compute.  The
-  // fields are set from cache if available, otherwise recomputed.
-  void SetSlowWebPreferences(const base::CommandLine& command_line,
-                             WebPreferences* prefs);
 
   // The RenderWidgetHost.
   const std::unique_ptr<RenderWidgetHostImpl> render_widget_host_;

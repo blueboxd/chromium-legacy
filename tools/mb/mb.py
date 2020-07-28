@@ -48,8 +48,6 @@ def DefaultVals():
   """Default mixin values"""
   return {
       'args_file': '',
-      # TODO(crbug.com/937821): Get rid of 'cros_passthrough'.
-      'cros_passthrough': False,
       'gn_args': '',
   }
 
@@ -1197,8 +1195,7 @@ class MetaBuildWrapper(object):
     # https://crbug.com/912946
     is_android = 'target_os="android"' in vals['gn_args']
     is_cros = ('target_os="chromeos"' in vals['gn_args']
-               or 'is_chromeos_device=true' in vals['gn_args']
-               or vals.get('cros_passthrough', False))
+               or 'is_chromeos_device=true' in vals['gn_args'])
     is_mac = self.platform == 'darwin'
     is_msan = 'is_msan=true' in vals['gn_args']
     is_ios = 'target_os="ios"' in vals['gn_args']
@@ -1335,17 +1332,7 @@ class MetaBuildWrapper(object):
 
 
   def GNArgs(self, vals, expand_imports=False):
-    if vals['cros_passthrough']:
-      if not 'GN_ARGS' in os.environ:
-        raise MBErr('MB is expecting GN_ARGS to be in the environment')
-      gn_args = os.environ['GN_ARGS']
-      if not re.search('target_os.*=.*"chromeos"', gn_args):
-        raise MBErr('GN_ARGS is missing target_os = "chromeos": (GN_ARGS=%s)' %
-                    gn_args)
-      if vals['gn_args']:
-        gn_args += ' ' + vals['gn_args']
-    else:
-      gn_args = vals['gn_args']
+    gn_args = vals['gn_args']
 
     if self.args.goma_dir:
       gn_args += ' goma_dir="%s"' % self.args.goma_dir
@@ -1360,16 +1347,6 @@ class MetaBuildWrapper(object):
 
     args_gn_lines = []
     parsed_gn_args = {}
-
-    # If we're using the Simple Chrome SDK, add a comment at the top that
-    # points to the doc. This must happen after the gn_helpers.ToGNString()
-    # call above since gn_helpers strips comments.
-    if vals['cros_passthrough']:
-      args_gn_lines.extend([
-          '# These args are generated via the Simple Chrome SDK. See the link',
-          '# below for more details:',
-          '# https://chromium.googlesource.com/chromiumos/docs/+/master/simple_chrome_workflow.md',  # pylint: disable=line-too-long
-      ])
 
     args_file = vals.get('args_file', None)
     if args_file:
@@ -1393,10 +1370,8 @@ class MetaBuildWrapper(object):
     is_android = 'target_os="android"' in vals['gn_args']
     is_fuchsia = 'target_os="fuchsia"' in vals['gn_args']
     is_cros = ('target_os="chromeos"' in vals['gn_args']
-               or 'is_chromeos_device=true' in vals['gn_args']
-               or vals.get('cros_passthrough', False))
-    is_cros_device = ('is_chromeos_device=true' in vals['gn_args']
-                      or vals.get('cros_passthrough', False))
+               or 'is_chromeos_device=true' in vals['gn_args'])
+    is_cros_device = 'is_chromeos_device=true' in vals['gn_args']
     is_ios = 'target_os="ios"' in vals['gn_args']
     is_linux = ('target_os="linux"' in vals['gn_args']
                 or (self.platform in ('linux', 'linux2') and not is_android
@@ -1920,8 +1895,6 @@ def FlattenMixins(mixin_pool, mixins_to_flatten, vals, visited):
 
     mixin_vals = mixin_pool[m]
 
-    if 'cros_passthrough' in mixin_vals:
-      vals['cros_passthrough'] = mixin_vals['cros_passthrough']
     if 'args_file' in mixin_vals:
       if vals['args_file']:
         raise MBErr('args_file specified multiple times in mixins '

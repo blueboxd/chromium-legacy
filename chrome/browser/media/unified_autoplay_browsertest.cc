@@ -365,7 +365,7 @@ IN_PROC_BROWSER_TEST_F(UnifiedAutoplayBrowserTest,
   content::ContentBrowserClient* old_browser_client =
       content::SetBrowserClientForTesting(&browser_client);
 
-  GetWebContents()->GetRenderViewHost()->OnWebkitPreferencesChanged();
+  GetWebContents()->OnWebPreferencesChanged();
 
   ui_test_utils::NavigateToURL(browser(), kTestPageUrl);
   EXPECT_TRUE(content::WaitForLoadStop(GetWebContents()));
@@ -386,7 +386,7 @@ IN_PROC_BROWSER_TEST_F(UnifiedAutoplayBrowserTest,
   content::ContentBrowserClient* old_browser_client =
       content::SetBrowserClientForTesting(&browser_client);
 
-  GetWebContents()->GetRenderViewHost()->OnWebkitPreferencesChanged();
+  GetWebContents()->OnWebPreferencesChanged();
 
   ui_test_utils::NavigateToURL(browser(), kTestPageUrl);
   EXPECT_TRUE(content::WaitForLoadStop(GetWebContents()));
@@ -407,7 +407,7 @@ IN_PROC_BROWSER_TEST_F(UnifiedAutoplayBrowserTest,
   content::ContentBrowserClient* old_browser_client =
       content::SetBrowserClientForTesting(&browser_client);
 
-  GetWebContents()->GetRenderViewHost()->OnWebkitPreferencesChanged();
+  GetWebContents()->OnWebPreferencesChanged();
 
   ui_test_utils::NavigateToURL(browser(), kTestPageUrl);
   EXPECT_TRUE(content::WaitForLoadStop(GetWebContents()));

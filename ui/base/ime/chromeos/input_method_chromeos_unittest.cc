@@ -269,7 +269,7 @@ class InputMethodChromeOSTest : public internal::InputMethodDelegate,
   void SetCompositionText(const CompositionText& composition) override {
     composition_text_ = composition;
   }
-  void ConfirmCompositionText(bool keep_selection) override {
+  uint32_t ConfirmCompositionText(bool keep_selection) override {
     // TODO(b/134473433) Modify this function so that when keep_selection is
     // true, the selection is not changed when text committed
     if (keep_selection) {
@@ -277,6 +277,7 @@ class InputMethodChromeOSTest : public internal::InputMethodDelegate,
     }
     confirmed_text_ = composition_text_;
     composition_text_ = CompositionText();
+    return confirmed_text_.text.length();
   }
   void ClearCompositionText() override {
     composition_text_ = CompositionText();

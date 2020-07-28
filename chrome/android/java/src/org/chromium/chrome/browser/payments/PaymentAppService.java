@@ -129,6 +129,15 @@ public class PaymentAppService implements PaymentAppFactoryInterface {
 
         Set<PaymentApp> uniquePaymentApps = new HashSet<>(identifierToAppMapping.values());
         for (PaymentApp app : identifierToAppMapping.values()) {
+            // If a preferred payment app is present (e.g. Play Billing within a TWA), all other
+            // payment apps are ignored.
+            if (app.isPreferred()) {
+                uniquePaymentApps.clear();
+                uniquePaymentApps.add(app);
+
+                return uniquePaymentApps;
+            }
+
             // The list of native applications from the web app manifest's "related_applications"
             // section. If "prefer_related_applications" is true in the manifest and any one of the
             // related application is installed on the device, then the corresponding service worker

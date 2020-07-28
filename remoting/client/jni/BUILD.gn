@@ -21,7 +21,7 @@ shared_library("remoting_client_jni") {
     "//remoting/client",
     "//remoting/client/display",
     "//remoting/client/notification",
-    "//remoting/proto/remoting/v1:directory_grpc_library",
+    "//remoting/proto/remoting/v1:directory_proto",
     "//remoting/protocol",
     "//ui/gfx",
   ]

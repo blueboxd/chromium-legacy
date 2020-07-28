@@ -553,7 +553,7 @@ IN_PROC_BROWSER_TEST_F(ServiceWorkerBrowserTest, FetchPageWithSaveData) {
   content_browser_client.set_data_saver_enabled(true);
   ContentBrowserClient* old_client =
       SetBrowserClientForTesting(&content_browser_client);
-  shell()->web_contents()->GetRenderViewHost()->OnWebkitPreferencesChanged();
+  shell()->web_contents()->OnWebPreferencesChanged();
   auto observer = base::MakeRefCounted<WorkerStateObserver>(
       wrapper(), ServiceWorkerVersion::ACTIVATED);
   observer->Init();
@@ -598,7 +598,7 @@ IN_PROC_BROWSER_TEST_F(ServiceWorkerBrowserTest, CrossOriginFetchWithSaveData) {
   content_browser_client.set_data_saver_enabled(true);
   ContentBrowserClient* old_client =
       SetBrowserClientForTesting(&content_browser_client);
-  shell()->web_contents()->GetRenderViewHost()->OnWebkitPreferencesChanged();
+  shell()->web_contents()->OnWebPreferencesChanged();
   auto observer = base::MakeRefCounted<WorkerStateObserver>(
       wrapper(), ServiceWorkerVersion::ACTIVATED);
   observer->Init();
@@ -639,7 +639,7 @@ IN_PROC_BROWSER_TEST_F(ServiceWorkerBrowserTest,
   content_browser_client.set_data_saver_enabled(true);
   ContentBrowserClient* old_client =
       SetBrowserClientForTesting(&content_browser_client);
-  shell()->web_contents()->GetRenderViewHost()->OnWebkitPreferencesChanged();
+  shell()->web_contents()->OnWebPreferencesChanged();
   auto observer = base::MakeRefCounted<WorkerStateObserver>(
       wrapper(), ServiceWorkerVersion::ACTIVATED);
   observer->Init();

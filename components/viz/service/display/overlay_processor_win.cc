@@ -4,6 +4,7 @@
 
 #include "components/viz/service/display/overlay_processor_win.h"
 
+#include <utility>
 #include <vector>
 
 #include "base/trace_event/trace_event.h"
@@ -14,17 +15,24 @@
 #include "ui/gfx/geometry/rect_conversions.h"
 
 namespace viz {
+namespace {
+// Switching between enabling DC layers and not is expensive, so only
+// switch away after a large number of frames not needing DC layers have
+// been produced.
+constexpr int kNumberOfFramesBeforeDisablingDCLayers = 60;
+}  // anonymous namespace
 
 OverlayProcessorWin::OverlayProcessorWin(
-    bool enable_dc_overlay,
+    OutputSurface* output_surface,
     std::unique_ptr<DCLayerOverlayProcessor> dc_layer_overlay_processor)
-    : enable_dc_overlay_(enable_dc_overlay),
+    : output_surface_(output_surface),
+      supports_dc_layers_(output_surface->capabilities().supports_dc_layers),
       dc_layer_overlay_processor_(std::move(dc_layer_overlay_processor)) {}
 
 OverlayProcessorWin::~OverlayProcessorWin() = default;
 
 bool OverlayProcessorWin::IsOverlaySupported() const {
-  return enable_dc_overlay_;
+  return supports_dc_layers_;
 }
 
 gfx::Rect OverlayProcessorWin::GetPreviousFrameOverlaysBoundingRect() const {
@@ -67,12 +75,29 @@ void OverlayProcessorWin::ProcessForOverlays(
   if (root_render_pass->content_color_usage == gfx::ContentColorUsage::kHDR)
     return;
 
-  if (!enable_dc_overlay_)
+  if (!supports_dc_layers_)
     return;
 
   dc_layer_overlay_processor_->Process(
       resource_provider, gfx::RectF(root_render_pass->output_rect),
       render_passes, damage_rect, candidates);
+
+  bool was_using_dc_layers = using_dc_layers_;
+  if (!candidates->empty()) {
+    using_dc_layers_ = true;
+    frames_since_using_dc_layers_ = 0;
+  } else if (++frames_since_using_dc_layers_ >=
+             kNumberOfFramesBeforeDisablingDCLayers) {
+    using_dc_layers_ = false;
+  }
+
+  if (was_using_dc_layers != using_dc_layers_) {
+    output_surface_->SetEnableDCLayers(using_dc_layers_);
+    // The entire surface has to be redrawn if switching from or to direct
+    // composition layers, because the previous contents are discarded and some
+    // contents would otherwise be undefined.
+    *damage_rect = root_render_pass->output_rect;
+  }
 }
 
 bool OverlayProcessorWin::NeedsSurfaceOccludingDamageRect() const {

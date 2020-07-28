@@ -359,7 +359,6 @@ Se não fizer isso, a permissão será bloqueada pelas configurações de privac
 <translation id="2413528052993050574">Este servidor não conseguiu provar que é <ph name="DOMAIN" />. O certificado de segurança pode ter sido revogado. Isso pode ser causado por uma configuração incorreta ou pela interceptação da sua conexão por um invasor.</translation>
 <translation id="2438874542388153331">Perfuração quádrupla no lado direito</translation>
 <translation id="245044156129055925">Você acabou de digitar sua senha em um site suspeito. O Chromium recomenda que você a mude agora.</translation>
-<translation id="2463193859425327265">Alterar a página inicial</translation>
 <translation id="2463739503403862330">Preencher</translation>
 <translation id="2465402087343596252">Arch E</translation>
 <translation id="2465655957518002998">Escolher método de entrega</translation>
@@ -821,7 +820,7 @@ Se não fizer isso, a permissão será bloqueada pelas configurações de privac
 <translation id="4358461427845829800">Gerenciar formas de pagamento…</translation>
 <translation id="4359160567981085931">Você acabou de digitar sua senha em um site suspeito. O Chrome pode ajudar. Para mudar a senha e notificar o Google de que sua conta pode estar em risco, clique em "Proteger conta".</translation>
 <translation id="4367563149485757821">Nº 12 (Envelope)</translation>
-<translation id="4367839622597707614">{1,plural, =0{Sua senha para <ph name="ORIGIN" /> foi exposta em uma violação de dados em um site ou app acessado por você. Por recomendação do Chrome, mude a senha imediatamente em <ph name="ORIGIN" />.}=1{Sua senha para <ph name="ORIGIN" /> e um outro site foi exposta em uma violação de dados em um site ou app acessado por você. Por recomendação do Chrome, verifique as senhas salvas imediatamente.}one{Sua senha para <ph name="ORIGIN" /> e <ph name="SITES_COUNT" /> outro site foi exposta em uma violação de dados em um site ou app acessado por você. Por recomendação do Chrome, verifique as senhas salvas imediatamente.}other{Sua senha para <ph name="ORIGIN" /> e <ph name="SITES_COUNT" /> outros sites foi exposta em uma violação de dados em um site ou app acessado por você. Por recomendação do Chrome, verifique as senhas salvas imediatamente.}}</translation>
+<translation id="4367839622597707614">{1,plural, =0{Sua senha para <ph name="ORIGIN" /> foi exposta em uma violação de dados em um site ou app acessado por você. Por recomendação do Chrome, mude a senha imediatamente em <ph name="ORIGIN" />.}=1{Sua senha para <ph name="ORIGIN" /> e 1 outro site foi exposta em uma violação de dados em um site ou app acessado por você. Por recomendação do Chrome, verifique as senhas salvas imediatamente.}one{Sua senha para <ph name="ORIGIN" /> e <ph name="SITES_COUNT" /> outro site foi exposta em uma violação de dados em um site ou app acessado por você. Por recomendação do Chrome, verifique as senhas salvas imediatamente.}other{Sua senha para <ph name="ORIGIN" /> e <ph name="SITES_COUNT" /> outros sites foi exposta em uma violação de dados em um site ou app acessado por você. Por recomendação do Chrome, verifique as senhas salvas imediatamente.}}</translation>
 <translation id="437058704415269440">Saldo da conta</translation>
 <translation id="4372516964750095882">216 mm x 304 mm</translation>
 <translation id="4372948949327679948">Valor <ph name="VALUE_TYPE" /> esperado.</translation>
@@ -1152,7 +1151,6 @@ Se não fizer isso, a permissão será bloqueada pelas configurações de privac
 <translation id="5785756445106461925">Além disso, esta página inclui outros recursos que não são seguros. Esses recursos podem ser visualizados por outros usuários enquanto eles navegam e podem ser modificados por um invasor para alterar o comportamento da página.</translation>
 <translation id="5786044859038896871">Quer preencher as informações do cartão?</translation>
 <translation id="5798290721819630480">Descartar alterações?</translation>
-<translation id="5798683403665926540">Altere a página inicial nas configurações do Chrome</translation>
 <translation id="5803412860119678065">Quer preencher as informações do seu cartão <ph name="CARD_DETAIL" />?</translation>
 <translation id="5804241973901381774">Permissões</translation>
 <translation id="5804427196348435412">Usar dispositivos NFC</translation>
@@ -1601,7 +1599,6 @@ Mais detalhes:
 <translation id="7669271284792375604">Invasores nesse site podem tentar enganar você para que instale programas que prejudicam sua experiência de navegação (por exemplo, alterando sua página inicial ou mostrando mais anúncios nos sites que você visita).</translation>
 <translation id="7673278391011283842">Caixa de e-mails 6</translation>
 <translation id="7676643023259824263">Pesquisar um texto na área de transferência, <ph name="TEXT" /></translation>
-<translation id="7681101578153515023">Alterar mecanismo de pesquisa</translation>
 <translation id="7682287625158474539">Entrega</translation>
 <translation id="7687186412095877299">Preencher formulários com suas formas de pagamento salvas</translation>
 <translation id="7687305263118037187">Novas tentativas esgotadas</translation>
@@ -1639,7 +1636,6 @@ Mais detalhes:
 <translation id="7802523362929240268">O site é legítimo</translation>
 <translation id="780301667611848630">Não</translation>
 <translation id="7805768142964895445">Status</translation>
-<translation id="7806344367022510803">Altere as configurações de mecanismo de pesquisa no Chrome</translation>
 <translation id="7812922009395017822">Mir</translation>
 <translation id="7813600968533626083">Remover sugestão de formulário do Chrome?</translation>
 <translation id="781440967107097262">Compartilhar área de transferência?</translation>
@@ -1781,7 +1777,6 @@ Mais detalhes:
 Mais detalhes:
 <ph name="DEBUG_INFO" /></translation>
 <translation id="8424582179843326029"><ph name="FIRST_LABEL" /> <ph name="SECOND_LABEL" /> <ph name="THIRD_LABEL" /></translation>
-<translation id="8425213833346101688">Alterar</translation>
 <translation id="8428213095426709021">Configurações</translation>
 <translation id="8433057134996913067">Essa opção desconecta você da maioria dos websites.</translation>
 <translation id="8437238597147034694">&amp;Desfazer mover</translation>

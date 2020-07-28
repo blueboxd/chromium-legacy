@@ -29,6 +29,7 @@ class FtlGrpcContext final {
       base::TimeDelta::FromMinutes(1);
 
   static const net::BackoffEntry::Policy& GetBackoffPolicy();
+  static std::string GetServerEndpoint();
   static std::string GetChromotingAppIdentifier();
   static ftl::Id CreateIdFromString(const std::string& ftl_id);
   static GrpcChannelSharedPtr CreateChannel();

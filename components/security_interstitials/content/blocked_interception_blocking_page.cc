@@ -59,10 +59,6 @@ BlockedInterceptionBlockingPage::BlockedInterceptionBlockingPage(
 
 BlockedInterceptionBlockingPage::~BlockedInterceptionBlockingPage() = default;
 
-bool BlockedInterceptionBlockingPage::ShouldCreateNewNavigation() const {
-  return true;
-}
-
 security_interstitials::SecurityInterstitialPage::TypeID
 BlockedInterceptionBlockingPage::GetTypeForTesting() {
   return BlockedInterceptionBlockingPage::kTypeForTesting;

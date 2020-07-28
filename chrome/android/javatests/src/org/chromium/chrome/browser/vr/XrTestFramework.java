@@ -250,11 +250,23 @@ public abstract class XrTestFramework {
      * @param webContents The WebContents for the tab the JavaScript is in.
      */
     public static void executeStepAndWait(String stepFunction, WebContents webContents) {
+        executeStepAndWait(stepFunction, webContents, POLL_TIMEOUT_LONG_MS);
+    }
+
+    /**
+     * Executes a JavaScript step function using the given WebContents.
+     *
+     * @param stepFunction The JavaScript step function to call.
+     * @param webContents The WebContents for the tab the JavaScript is in.
+     * @param timeoutMs Timeout (in milliseconds) to wait for the JavaScript step.
+     */
+    public static void executeStepAndWait(
+            String stepFunction, WebContents webContents, int timeoutMs) {
         // Run the step and block
         if (DEBUG_LOGS) Log.i(TAG, "executeStepAndWait " + stepFunction);
         JavaScriptUtils.executeJavaScript(webContents, stepFunction);
         if (DEBUG_LOGS) Log.i(TAG, "executeStepAndWait ...wait");
-        waitOnJavaScriptStep(webContents);
+        waitOnJavaScriptStep(webContents, timeoutMs);
         if (DEBUG_LOGS) Log.i(TAG, "executeStepAndWait ...done");
     }
 
@@ -265,6 +277,17 @@ public abstract class XrTestFramework {
      * @param webContents The WebContents for the tab the JavaScript step is in.
      */
     public static void waitOnJavaScriptStep(WebContents webContents) {
+        waitOnJavaScriptStep(webContents, POLL_TIMEOUT_LONG_MS);
+    }
+
+    /**
+     * Waits for a JavaScript step to finish, asserting that the step finished instead of timing
+     * out.
+     *
+     * @param webContents The WebContents for the tab the JavaScript step is in.
+     * @param timeoutMs Timeout (in milliseconds) to wait for the JavaScript step.
+     */
+    public static void waitOnJavaScriptStep(WebContents webContents, int timeoutMs) {
         if (DEBUG_LOGS) Log.i(TAG, "waitOnJavaScriptStep");
         // Make sure we aren't trying to wait on a JavaScript test step without the code to do so.
         Assert.assertTrue("Attempted to wait on a JavaScript step without the code to do so. You "
@@ -274,8 +297,7 @@ public abstract class XrTestFramework {
                         POLL_TIMEOUT_SHORT_MS, webContents)));
 
         // Actually wait for the step to finish
-        boolean success =
-                pollJavaScriptBoolean("javascriptDone", POLL_TIMEOUT_LONG_MS, webContents);
+        boolean success = pollJavaScriptBoolean("javascriptDone", timeoutMs, webContents);
 
         // Check what state we're in to make sure javascriptDone wasn't called because the test
         // failed.
@@ -513,7 +535,17 @@ public abstract class XrTestFramework {
      * @param stepFunction The JavaScript step function to call.
      */
     public void executeStepAndWait(String stepFunction) {
-        executeStepAndWait(stepFunction, getCurrentWebContents());
+        executeStepAndWait(stepFunction, POLL_TIMEOUT_LONG_MS);
+    }
+
+    /**
+     * Helper function to run executeStepAndWait using the current tab's WebContents.
+     *
+     * @param stepFunction The JavaScript step function to call.
+     * @param timeoutMs Timeout (in milliseconds) to wait for the JavaScript step.
+     */
+    public void executeStepAndWait(String stepFunction, int timeoutMs) {
+        executeStepAndWait(stepFunction, getCurrentWebContents(), timeoutMs);
     }
 
     /**

@@ -29,9 +29,6 @@ namespace {
 // Extension used for backup files (copy of main file created during startup).
 const base::FilePath::CharType kBackupExtension[] = FILE_PATH_LITERAL("bak");
 
-// How often we save.
-const int kSaveDelayMS = 2500;
-
 void BackupCallback(const base::FilePath& path) {
   base::FilePath backup_path = path.ReplaceExtension(kBackupExtension);
   base::CopyFile(path, backup_path);
@@ -39,7 +36,8 @@ void BackupCallback(const base::FilePath& path) {
 
 }  // namespace
 
-// BookmarkStorage -------------------------------------------------------------
+// static
+constexpr base::TimeDelta BookmarkStorage::kSaveDelay;
 
 BookmarkStorage::BookmarkStorage(
     BookmarkModel* model,
@@ -48,7 +46,7 @@ BookmarkStorage::BookmarkStorage(
     : model_(model),
       writer_(profile_path.Append(kBookmarksFileName),
               sequenced_task_runner,
-              base::TimeDelta::FromMilliseconds(kSaveDelayMS),
+              kSaveDelay,
               "BookmarkStorage"),
       sequenced_task_runner_(sequenced_task_runner) {}
 
@@ -58,34 +56,25 @@ BookmarkStorage::~BookmarkStorage() {
 }
 
 void BookmarkStorage::ScheduleSave() {
-  switch (backup_state_) {
-    case BACKUP_NONE:
-      backup_state_ = BACKUP_DISPATCHED;
-      sequenced_task_runner_->PostTaskAndReply(
-          FROM_HERE, base::BindOnce(&BackupCallback, writer_.path()),
-          base::BindOnce(&BookmarkStorage::OnBackupFinished,
-                         weak_factory_.GetWeakPtr()));
-      return;
-    case BACKUP_DISPATCHED:
-      // Currently doing a backup which will call this function when done.
-      return;
-    case BACKUP_ATTEMPTED:
-      writer_.ScheduleWrite(this);
-      return;
+  // If this is the first scheduled save, create a backup before overwriting the
+  // JSON file.
+  if (!backup_triggered_) {
+    backup_triggered_ = true;
+    sequenced_task_runner_->PostTask(
+        FROM_HERE, base::BindOnce(&BackupCallback, writer_.path()));
   }
-  NOTREACHED();
-}
 
-void BookmarkStorage::OnBackupFinished() {
-  backup_state_ = BACKUP_ATTEMPTED;
-  ScheduleSave();
+  writer_.ScheduleWrite(this);
 }
 
 void BookmarkStorage::BookmarkModelDeleted() {
-  // We need to save now as otherwise by the time SaveNow is invoked
+  // We need to save now as otherwise by the time SerializeData() is invoked
   // the model is gone.
-  if (writer_.HasPendingWrite())
-    SaveNow();
+  if (writer_.HasPendingWrite()) {
+    writer_.DoScheduledWrite();
+    DCHECK(!writer_.HasPendingWrite());
+  }
+
   model_ = nullptr;
 }
 
@@ -98,19 +87,8 @@ bool BookmarkStorage::SerializeData(std::string* output) {
   return serializer.Serialize(*(value.get()));
 }
 
-bool BookmarkStorage::SaveNow() {
-  if (!model_ || !model_->loaded()) {
-    // We should only get here if we have a valid model and it's finished
-    // loading.
-    NOTREACHED();
-    return false;
-  }
-
-  std::unique_ptr<std::string> data(new std::string);
-  if (!SerializeData(data.get()))
-    return false;
-  writer_.WriteNow(std::move(data));
-  return true;
+bool BookmarkStorage::HasScheduledSaveForTesting() const {
+  return writer_.HasPendingWrite();
 }
 
 }  // namespace bookmarks

@@ -363,7 +363,6 @@ Par défaut, ce type d'accès est bloqué par vos paramètres de confidentialit�
 <translation id="2413528052993050574">Impossible de vérifier sur le serveur qu'il s'agit bien du domaine <ph name="DOMAIN" />. Il se peut que son certificat de sécurité ait été révoqué. Cela peut être dû à une mauvaise configuration ou bien à l'interception de votre connexion par un pirate informatique.</translation>
 <translation id="2438874542388153331">Quadruple perforation à droite</translation>
 <translation id="245044156129055925">Vous venez de saisir votre mot de passe sur un site trompeur. Chromium vous recommande de changer de mot de passe immédiatement.</translation>
-<translation id="2463193859425327265">Changer de page d'accueil</translation>
 <translation id="2463739503403862330">Remplir</translation>
 <translation id="2465402087343596252">Architecture-E</translation>
 <translation id="2465655957518002998">Sélectionner un mode d'expédition</translation>
@@ -561,6 +560,9 @@ Par défaut, ce type d'accès est bloqué par vos paramètres de confidentialit�
 <translation id="3364869320075768271">Le site <ph name="URL" /> souhaite utiliser vos données et votre appareil de réalité virtuelle</translation>
 <translation id="3366477098757335611">Afficher les cartes</translation>
 <translation id="3369192424181595722">Erreur de l'horloge</translation>
+<translation id="3371076217486966826"><ph name="URL" /> souhaite effectuer les opérations suivantes :
+      • Créer un plan 3D de votre environnement et suivre la position de votre caméra
+      • Utiliser votre caméra</translation>
 <translation id="337363190475750230">Révoqué</translation>
 <translation id="3377144306166885718">Le serveur utilisait une version obsolète de TLS.</translation>
 <translation id="3377188786107721145">Erreur d'analyse de la règle.</translation>
@@ -1158,7 +1160,6 @@ Par défaut, ce type d'accès est bloqué par vos paramètres de confidentialit�
 <translation id="5785756445106461925">De plus, cette page inclut d'autres ressources qui ne sont pas sécurisées. Ces ressources peuvent être consultées par des tiers pendant leur transfert, et modifiées par un pirate informatique dans le but de changer l'aspect de cette page.</translation>
 <translation id="5786044859038896871">Souhaitez-vous indiquer vos informations de carte de paiement ?</translation>
 <translation id="5798290721819630480">Supprimer les modifications ?</translation>
-<translation id="5798683403665926540">Modifier la page d'accueil dans les paramètres de Chrome</translation>
 <translation id="5803412860119678065">Souhaitez-vous indiquer les informations "<ph name="CARD_DETAIL" />" ?</translation>
 <translation id="5804241973901381774">Autorisations</translation>
 <translation id="5804427196348435412">Utiliser des appareils NFC</translation>
@@ -1298,7 +1299,7 @@ Par défaut, ce type d'accès est bloqué par vos paramètres de confidentialit�
 <translation id="6380497234672085559">A0</translation>
 <translation id="6383221683286411806">Des frais peuvent vous être facturés</translation>
 <translation id="6386120369904791316">{COUNT,plural, =1{1 autre suggestion}one{# autre suggestion}other{# autres suggestions}}</translation>
-<translation id="6387645831795005740">Les pirates informatiques copient parfois des sites en modifiant légèrement et de façon peu perceptible l'URL.</translation>
+<translation id="6387645831795005740">Les pirates informatiques tentent parfois d'imiter des sites en modifiant l'URL de façon subtile pour que le changement passe inaperçu.</translation>
 <translation id="6389470377220713856">Nom sur la carte</translation>
 <translation id="6390200185239044127">Demi-feuille de pli en Z</translation>
 <translation id="6390662030813198813">Engineering-E</translation>
@@ -1560,6 +1561,7 @@ Informations supplémentaires :
 <translation id="7518003948725431193">Aucune page Web trouvée à l'adresse :<ph name="URL" /></translation>
 <translation id="7520302887438682816">C8 (enveloppe)</translation>
 <translation id="7521387064766892559">JavaScript</translation>
+<translation id="7521825010239864438">Section "<ph name="SECTION" />" masquée</translation>
 <translation id="7526934274050461096">Votre connexion à ce site n'est pas privée</translation>
 <translation id="7535087603100972091">Valeur</translation>
 <translation id="7537536606612762813">Obligatoire</translation>
@@ -1606,7 +1608,6 @@ Informations supplémentaires :
 <translation id="7669271284792375604">Des individus malveillants à l'œuvre sur ce site pourraient vous inciter à installer des programmes qui nuisent à votre confort de navigation (par exemple, en changeant votre page d'accueil ou en affichant des annonces supplémentaires sur les sites que vous consultez.</translation>
 <translation id="7673278391011283842">Boîte aux lettres 6</translation>
 <translation id="7676643023259824263">Rechercher le texte du presse-papier "<ph name="TEXT" />"</translation>
-<translation id="7681101578153515023">Changer de moteur de recherche</translation>
 <translation id="7682287625158474539">Adresse de livraison</translation>
 <translation id="7687186412095877299">Saisit automatiquement les informations correspondant aux modes de paiement enregistrés</translation>
 <translation id="7687305263118037187">Délai de nouvelle tentative</translation>
@@ -1644,7 +1645,6 @@ Informations supplémentaires :
 <translation id="7802523362929240268">Ce site est légitime</translation>
 <translation id="780301667611848630">Non merci</translation>
 <translation id="7805768142964895445">État</translation>
-<translation id="7806344367022510803">Modifier les paramètres de moteur de recherche dans Chrome</translation>
 <translation id="7812922009395017822">Mir</translation>
 <translation id="7813600968533626083">Supprimer la suggestion de saisie de formulaire de Chrome ?</translation>
 <translation id="781440967107097262">Partager le presse-papiers ?</translation>
@@ -1760,6 +1760,7 @@ Informations supplémentaires :
 <translation id="8293206222192510085">Ajouter aux favoris</translation>
 <translation id="8294431847097064396">Source</translation>
 <translation id="8298115750975731693">Pour utiliser ce réseau Wi-Fi (<ph name="WIFI_NAME" />), il est possible que vous deviez vous rendre sur la page <ph name="BEGIN_BOLD" /><ph name="LOGIN_URL" /><ph name="END_BOLD" />.</translation>
+<translation id="8303854710873047864">Section "<ph name="SECTION" />" affichée</translation>
 <translation id="830498451218851433">Plier en deux</translation>
 <translation id="8307358339886459768">Small-Photo</translation>
 <translation id="8307888238279532626">Applications installées et leur fréquence d'utilisation</translation>
@@ -1785,7 +1786,6 @@ Informations supplémentaires :
 Informations supplémentaires :
 <ph name="DEBUG_INFO" /></translation>
 <translation id="8424582179843326029"><ph name="FIRST_LABEL" /> <ph name="SECOND_LABEL" /> <ph name="THIRD_LABEL" /></translation>
-<translation id="8425213833346101688">Modifier</translation>
 <translation id="8428213095426709021">Paramètres</translation>
 <translation id="8433057134996913067">Vous serez déconnecté de la plupart des sites.</translation>
 <translation id="8437238597147034694">&amp;Annuler le déplacement</translation>
@@ -1879,6 +1879,7 @@ Informations supplémentaires :
 <translation id="8931333241327730545">Voulez-vous enregistrer cette carte dans votre compte Google ?</translation>
 <translation id="8932102934695377596">Votre horloge est en retard</translation>
 <translation id="893332455753468063">Ajouter un nom</translation>
+<translation id="8942355029279167844">Votre administrateur a autorisé <ph name="APP_NAME" /> à recueillir des données de diagnostic pour améliorer votre expérience avec le produit. Pour en savoir plus, consultez la page <ph name="BEGIN_LINK" />https://www.parallels.com/pcep<ph name="END_LINK" />.</translation>
 <translation id="8943282376843390568">Citron vert</translation>
 <translation id="8957210676456822347">Autorisation du portail captif</translation>
 <translation id="8962950042226115166">Site suspect</translation>

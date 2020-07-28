@@ -32,7 +32,7 @@ popd > /dev/null
 
 pushd third_party/webgpu-cts/src > /dev/null
 
-  yarn install --frozen-lockfile
+  npm install --frozen-lockfile
   npx grunt prebuild
 
   # TODO(kainino): only run a few tests on worker

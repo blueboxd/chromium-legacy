@@ -37,10 +37,10 @@ void AddCommonStrings(base::Value* dict) {
       {"pageReload", IDS_PDF_PAGE_RELOAD_BUTTON},
       {"tooltipFitToPage", IDS_PDF_TOOLTIP_FIT_PAGE},
       {"tooltipFitToWidth", IDS_PDF_TOOLTIP_FIT_WIDTH},
-      {"tooltipTwoUpViewDisable", IDS_PDF_TOOLTIP_TWO_UP_VIEW_DISABLE},
-      {"tooltipTwoUpViewEnable", IDS_PDF_TOOLTIP_TWO_UP_VIEW_ENABLE},
       {"tooltipZoomIn", IDS_PDF_TOOLTIP_ZOOM_IN},
       {"tooltipZoomOut", IDS_PDF_TOOLTIP_ZOOM_OUT},
+      {"twoUpViewDisable", IDS_PDF_TWO_UP_VIEW_DISABLE},
+      {"twoUpViewEnable", IDS_PDF_TWO_UP_VIEW_ENABLE},
   };
   for (const auto& resource : kPdfResources)
     dict->SetStringKey(resource.name, l10n_util::GetStringUTF16(resource.id));

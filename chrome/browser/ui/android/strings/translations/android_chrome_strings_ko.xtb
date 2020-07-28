@@ -335,6 +335,7 @@
 <translation id="3658159451045945436">재설정하면 방문한 사이트 목록을 비롯한 데이터 절약 기록이 삭제됩니다.</translation>
 <translation id="3692944402865947621">저장 위치에 연결할 수 없어 <ph name="FILE_NAME" />을(를) 다운로드할 수 없습니다.</translation>
 <translation id="3701167022068948696">지금 해결하기</translation>
+<translation id="371230970611282515">위험한 이벤트가 발생하기 전에 이를 예측하여 알립니다.</translation>
 <translation id="3714981814255182093">찾기 창 열기</translation>
 <translation id="3716182511346448902">페이지에서 너무 많은 메모리를 사용하므로 Chrome에서 페이지를 일시중지했습니다.</translation>
 <translation id="3721119614952978349">나와 Google의 관계</translation>
@@ -713,6 +714,7 @@
 <translation id="6593061639179217415">데스크톱 사이트</translation>
 <translation id="6597891566292541626">프레임 안에 QR/바코드를 위치시키세요.</translation>
 <translation id="6600954340915313787">Chrome에 복사됨</translation>
+<translation id="661266467055912436">모든 웹 사용자를 위해 보안을 향상합니다.</translation>
 <translation id="6627583120233659107">폴더 수정</translation>
 <translation id="6643016212128521049">삭제</translation>
 <translation id="6643649862576733715">저장된 데이터 양에 따라 정렬</translation>
@@ -872,6 +874,7 @@
 <translation id="7925590027513907933">{FILE_COUNT,plural, =1{파일 다운로드 중}other{파일 #개 다운로드 중}}</translation>
 <translation id="7926975587469166629">카드 닉네임</translation>
 <translation id="7929962904089429003">메뉴 열기</translation>
+<translation id="7930998711684428189">데이터 유출로 인해 비밀번호가 노출된 경우 알립니다.</translation>
 <translation id="7942131818088350342"><ph name="PRODUCT_NAME" />이(가) 이전 버전입니다.</translation>
 <translation id="7947953824732555851">수락 및 로그인</translation>
 <translation id="7963646190083259054">공급업체:</translation>

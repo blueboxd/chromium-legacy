@@ -3,5 +3,6 @@
 # found in the LICENSE file.
 
 include_rules = [
+  "+chrome/browser/nearby_sharing/logging",
   "+third_party/nearby",
 ]

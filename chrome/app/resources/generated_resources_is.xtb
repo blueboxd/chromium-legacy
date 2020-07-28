@@ -2380,6 +2380,7 @@ Annars skaltu skrá þig út núna svo breytingarnar á þessum reikningi taki g
 <translation id="3882165008614329320">Fyrirliggjandi myndskeið úr myndavél eða skrá</translation>
 <translation id="3886446263141354045">Beiðni þín um aðgang að þessu vefsvæði hefur verið send til <ph name="NAME" /></translation>
 <translation id="3888550877729210209">Glósur með <ph name="LOCK_SCREEN_APP_NAME" /></translation>
+<translation id="3891563564777705449">{0,plural, =1{Uppfæra tæki innan 1 viku}one{Uppfæra tæki innan # viku}other{Uppfæra tæki innan # vikna}}</translation>
 <translation id="3892414795099177503">Bæta við OpenVPN / L2TP...</translation>
 <translation id="3893536212201235195">Lesa og breyta aðgengisstillingum</translation>
 <translation id="3893630138897523026">ChromeVox (raddsvörun)</translation>
@@ -4441,6 +4442,7 @@ Annars skaltu skrá þig út núna svo breytingarnar á þessum reikningi taki g
 <translation id="6535331821390304775">Leyfa <ph name="ORIGIN" /> alltaf að opna tengla af þessari tegund í tengdu forriti</translation>
 <translation id="654039047105555694"><ph name="BEGIN_BOLD" />Athugaðu:<ph name="END_BOLD" /> Kveiktu aðeins á þessu ef þú veist hvað þú ert að gera eða ef þér hefur verið sagt að gera þetta, þar sem gagnasöfnun kann að draga úr afköstum.</translation>
 <translation id="6541638731489116978">Lokað hefur verið á aðgang þessa vefsvæðis að hreyfiskynjurum þínum.</translation>
+<translation id="6545407738986370057">{0,plural, =1{Skila tæki innan 1 viku}one{Skila tæki innan # viku}other{Skila tæki innan # vikna}}</translation>
 <translation id="6545665334409411530">Tíðni endurtekninga</translation>
 <translation id="6545864417968258051">Bluetooth-leit</translation>
 <translation id="6545867563032584178">Slökkt er á hljóðnemanum í kerfisstillingum Mac</translation>

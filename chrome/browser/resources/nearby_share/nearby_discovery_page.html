@@ -92,9 +92,9 @@
     <div id="process-row">
       <nearby-preview title="Doggo.jpg"></nearby-preview>
       <div id="device-list">
-        <nearby-device name="Alyssa's Pixel"></nearby-device>
-        <nearby-device name="Shangela's Pixel 2XL"></nearby-device>
-        <nearby-device name="Mira's Chromebook"></nearby-device>
+        <template is="dom-repeat" items="[[shareTargets_]]">
+          <nearby-device share-target="[[item]]"></nearby-device>
+        </template>
       </div>
     </div>
 

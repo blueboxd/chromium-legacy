@@ -15,6 +15,7 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 
 import org.chromium.base.test.util.Feature;
+import org.chromium.base.test.util.Restriction;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ChromeActivity;
 import org.chromium.chrome.browser.compositor.bottombar.ephemeraltab.EphemeralTabCoordinator;
@@ -38,6 +39,7 @@ import org.chromium.net.test.EmbeddedTestServerRule;
  * FocusedEditableTextFieldZoomTest and TabsTest.
  */
 @RunWith(ChromeJUnit4ClassRunner.class)
+@Restriction(Restriction.RESTRICTION_TYPE_NON_LOW_END_DEVICE)
 @DisableFeatures({ChromeFeatureList.REVAMPED_CONTEXT_MENU})
 @EnableFeatures(ChromeFeatureList.EPHEMERAL_TAB_USING_BOTTOM_SHEET)
 public class PreviewTabTest {

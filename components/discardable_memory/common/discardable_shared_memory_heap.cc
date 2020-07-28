@@ -91,8 +91,8 @@ void DiscardableSharedMemoryHeap::ScopedMemorySegment::OnMemoryDump(
   heap_->OnMemoryDump(shared_memory_.get(), size_, id_, pmd);
 }
 
-DiscardableSharedMemoryHeap::DiscardableSharedMemoryHeap(size_t block_size)
-    : block_size_(block_size), num_blocks_(0), num_free_blocks_(0) {
+DiscardableSharedMemoryHeap::DiscardableSharedMemoryHeap()
+    : block_size_(base::GetPageSize()) {
   DCHECK_NE(block_size_, 0u);
   DCHECK(base::bits::IsPowerOfTwo(block_size_));
 }
@@ -251,7 +251,29 @@ size_t DiscardableSharedMemoryHeap::GetSizeOfFreeLists() const {
 }
 
 bool DiscardableSharedMemoryHeap::OnMemoryDump(
+    const base::trace_event::MemoryDumpArgs& args,
     base::trace_event::ProcessMemoryDump* pmd) {
+  // Keep track of some metrics that are specific to the
+  // DiscardableSharedMemoryHeap, which aren't covered by the individual dumps
+  // for each segment below.
+  auto* total_dump = pmd->CreateAllocatorDump(base::StringPrintf(
+      "discardable/child_0x%" PRIXPTR, reinterpret_cast<uintptr_t>(this)));
+  const size_t freelist_size = GetSizeOfFreeLists();
+  total_dump->AddScalar("freelist_size",
+                        base::trace_event::MemoryAllocatorDump::kUnitsBytes,
+                        freelist_size);
+  if (args.level_of_detail ==
+      base::trace_event::MemoryDumpLevelOfDetail::BACKGROUND) {
+    const size_t total_size = GetSize();
+    total_dump->AddScalar(base::trace_event::MemoryAllocatorDump::kNameSize,
+                          base::trace_event::MemoryAllocatorDump::kUnitsBytes,
+                          total_size - freelist_size);
+    return true;
+  }
+
+  // This iterates over all the memory allocated by the heap, and calls
+  // |OnMemoryDump| for each. It does not contain any information about the
+  // DiscardableSharedMemoryHeap itself.
   std::for_each(memory_segments_.begin(), memory_segments_.end(),
                 [pmd](const std::unique_ptr<ScopedMemorySegment>& segment) {
                   segment->OnMemoryDump(pmd);

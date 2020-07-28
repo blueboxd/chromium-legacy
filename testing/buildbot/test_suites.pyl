@@ -808,7 +808,7 @@
       'net_junit_tests': {},
       'paint_preview_junit_tests': {},
       'password_check_junit_tests': {},
-      'service_junit_tests': {},
+      'services_junit_tests': {},
       'touch_to_fill_junit_tests': {},
       'ui_junit_tests': {},
       'webapk_client_junit_tests': {},
@@ -3323,6 +3323,9 @@
         'experiment_percentage': 100,
       },
       'crypto_unittests': {},
+      'dbus_unittests': {
+        'experiment_percentage': 100,
+      },
       'device_unittests': {},
       'display_unittests': {},
       'events_unittests': {},
@@ -3349,7 +3352,9 @@
         'experiment_percentage': 100,
       },
       'midi_unittests': {},
+      'mojo_core_unittests': {},
       'mojo_unittests': {},
+      'nacl_helper_nonsfi_unittests': {},
       'nacl_loader_unittests': {},
       'native_theme_unittests': {},
       'net_unittests': {},
@@ -5646,7 +5651,7 @@
       #   - aura_gtests
       #   - storage_service_gtests
       #   - aura_gtests
-      'chromium_gtests_for_linux_and_chromeos_only',
+      #   - chromium_gtests_for_linux_and_chromeos_only
       'chromium_gtests_for_win_and_linux_only',
       'lacros_gtests',
       'linux_flavor_specific_chromium_gtests',

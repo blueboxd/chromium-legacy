@@ -34,12 +34,12 @@ class Autoclick {
     this.desktop_;
 
     /**
-     * @private {function(number, number)}
+     * @private {?function(number, number)}
      */
     this.scrollableBoundsListener_ = null;
 
     /**
-     * @private {function(AutomationEvent)}
+     * @private {?function(!chrome.automation.AutomationEvent)}
      */
     this.hitTestListener_ = null;
 
@@ -52,16 +52,18 @@ class Autoclick {
 
   /**
    * Destructor to remove any listeners.
-   * @public
    */
   onAutoclickDisabled() {
-    chrome.accessibilityPrivate.findScrollableBoundsForPoint.removeListener(
-        this.scrollableBoundsListener_);
-    this.scrollableBoundsListener_ = null;
+    if (this.scrollableBoundsListener_) {
+      chrome.accessibilityPrivate.findScrollableBoundsForPoint.removeListener(
+          this.scrollableBoundsListener_);
+      this.scrollableBoundsListener_ = null;
+    }
 
-    if (this.desktop_) {
+    if (this.desktop_ && this.hitTestListener_) {
       this.desktop_.removeEventListener(
-          chrome.automation.EventType.MOUSE_PRESSED, this.hitTestListener_);
+          chrome.automation.EventType.MOUSE_PRESSED, this.hitTestListener_,
+          true);
       this.hitTestListener_ = null;
     }
   }
@@ -71,12 +73,12 @@ class Autoclick {
    * @private
    */
   init_() {
-    this.hitTestListener_ = this.onAutomationHitTestResult_.bind(this);
     this.scrollableBoundsListener_ =
         this.findScrollingContainerForPoint_.bind(this);
 
     chrome.automation.getDesktop((desktop) => {
       this.desktop_ = desktop;
+      this.hitTestListener_ = this.onAutomationHitTestResult_.bind(this);
 
       // We use a hit test at a point to determine what automation node is
       // at that point, in order to find the scrollable area.
@@ -126,6 +128,7 @@ class Autoclick {
    * Processes an automation hit test result.
    * @param {!chrome.automation.AutomationEvent} event The hit test result
    *     event.
+   * @private
    */
   onAutomationHitTestResult_(event) {
     // Walk up to the nearest scrollale area containing the point.
@@ -170,6 +173,7 @@ class Autoclick {
    * Initiates finidng the nearest scrolling container for the given point.
    * @param {number} x
    * @param {number} y
+   * @private
    */
   findScrollingContainerForPoint_(x, y) {
     // The hit test will come back through onAutmoationHitTestResult_,

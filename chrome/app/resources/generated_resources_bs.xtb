@@ -2380,6 +2380,7 @@ Postavkama ovog računa možete upravljati instaliranjem aplikacije Family Link 
 <translation id="3882165008614329320">Postojeći videozapis s kamere ili fajla</translation>
 <translation id="3886446263141354045">Vaš zahtjev za pristup ovoj web lokaciji je poslan korisniku <ph name="NAME" /></translation>
 <translation id="3888550877729210209">Kreiranje bilježaka pomoću aplikacije <ph name="LOCK_SCREEN_APP_NAME" /></translation>
+<translation id="3891563564777705449">{0,plural, =1{Ažurirajte uređaj u roku od 1 sedmice}one{Ažurirajte uređaj u roku od # sedmice}few{Ažurirajte uređaj u roku od # sedmice}other{Ažurirajte uređaj u roku od # sedmica}}</translation>
 <translation id="3892414795099177503">Dodaj OpenVPN/L2TP...</translation>
 <translation id="3893536212201235195">Čitanje i mijenjanje postavki za pristupačnost</translation>
 <translation id="3893630138897523026">ChromeVox (govorne povratne informacije)</translation>
@@ -4441,6 +4442,7 @@ Postavkama ovog računa možete upravljati instaliranjem aplikacije Family Link 
 <translation id="6535331821390304775">Uvijek dozvolite web lokaciji <ph name="ORIGIN" /> da otvara linkove ove vrste u povezanoj aplikaciji</translation>
 <translation id="654039047105555694"><ph name="BEGIN_BOLD" />Napomena:<ph name="END_BOLD" /> Omogućite samo ako znate šta radite ili ako je to od vas zatraženo jer prikupljanje podataka može smanjiti performanse.</translation>
 <translation id="6541638731489116978">Ovoj web lokaciji je blokiran pristup vašim senzorima pokreta.</translation>
+<translation id="6545407738986370057">{0,plural, =1{Vratite uređaj u roku od 1 sedmice}one{Vratite uređaj u roku od # sedmice}few{Vratite uređaj u roku od # sedmice}other{Vratite uređaj u roku od # sedmica}}</translation>
 <translation id="6545665334409411530">Brzina ponavljanja</translation>
 <translation id="6545864417968258051">Skeniranje Bluetootha</translation>
 <translation id="6545867563032584178">Mikrofon je isključen u postavkama Mac sistema</translation>

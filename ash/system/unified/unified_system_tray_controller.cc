@@ -204,11 +204,6 @@ void UnifiedSystemTrayController::ToggleExpanded() {
   }
 }
 
-void UnifiedSystemTrayController::OnMessageCenterVisibilityUpdated() {
-  if (bubble_)
-    bubble_->UpdateTransform();
-}
-
 void UnifiedSystemTrayController::BeginDrag(const gfx::PointF& location) {
   UpdateDragThreshold();
   // Ignore swipe collapsing when a detailed view is shown as it's confusing.
@@ -468,9 +463,7 @@ void UnifiedSystemTrayController::ShowDetailedView(
 void UnifiedSystemTrayController::UpdateExpandedAmount() {
   double expanded_amount = animation_->GetCurrentValue();
   unified_view_->SetExpandedAmount(expanded_amount);
-  // Can be null in unit tests.
-  if (bubble_)
-    bubble_->UpdateTransform();
+
   if (expanded_amount == 0.0 || expanded_amount == 1.0)
     model_->set_expanded_on_open(
         expanded_amount == 1.0

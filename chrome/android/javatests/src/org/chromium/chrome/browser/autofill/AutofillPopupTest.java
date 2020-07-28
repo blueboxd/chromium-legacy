@@ -303,6 +303,7 @@ public class AutofillPopupTest {
     @MediumTest
     @ParameterAnnotations.UseMethodParameter(FeatureParamProvider.class)
     @Feature({"autofill"})
+    @DisabledTest(message = "https://crbug.com/1108241")
     public void testLoggingInitiatedElementFilled(@EnabledFeature int enabledFeature)
             throws TimeoutException {
         loadAndFillForm(INITIATING_ELEMENT_FILLED, "o", enabledFeature);

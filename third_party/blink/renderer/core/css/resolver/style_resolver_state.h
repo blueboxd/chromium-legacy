@@ -229,6 +229,9 @@ class CORE_EXPORT StyleResolverState {
     return dependencies_.size() <= kMaxDependencies;
   }
 
+  void SetCanCacheBaseStyle(bool state) { can_cache_base_style_ = state; }
+  bool CanCacheBaseStyle() const { return can_cache_base_style_; }
+
  private:
   enum class AnimatingElementType { kElement, kPseudoElement };
 
@@ -278,6 +281,10 @@ class CORE_EXPORT StyleResolverState {
   // True if there's an entry in 'dependencies_' which does not have the
   // CSSProperty::kComputedValueComparable flag set.
   bool has_incomparable_dependency_ = false;
+
+  // True if the base style can be cached to optimize style recalculations for
+  // animation updates or transition retargeting.
+  bool can_cache_base_style_ = false;
 
   DISALLOW_COPY_AND_ASSIGN(StyleResolverState);
 };

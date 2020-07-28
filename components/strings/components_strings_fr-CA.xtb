@@ -359,7 +359,6 @@ Souhaitez-vous autoriser <ph name="EMBEDDED_URL" /> à utiliser les témoins et 
 <translation id="2413528052993050574">Impossible de vérifier sur le serveur qu'il s'agit bien du domaine <ph name="DOMAIN" />. Il se peut que son certificat de sécurité ait été révoqué. Cela peut être dû à une mauvaise configuration ou bien à l'interception de votre connexion par un pirate informatique.</translation>
 <translation id="2438874542388153331">Quadruple perforation à droite</translation>
 <translation id="245044156129055925">Vous venez d'entrer votre mot de passe sur un site trompeur. Chromium vous recommande de modifier votre mot de passe maintenant.</translation>
-<translation id="2463193859425327265">Changer de page d'accueil</translation>
 <translation id="2463739503403862330">Remplir</translation>
 <translation id="2465402087343596252">Architecture E</translation>
 <translation id="2465655957518002998">Choisir un mode de livraison</translation>
@@ -557,6 +556,9 @@ Souhaitez-vous autoriser <ph name="EMBEDDED_URL" /> à utiliser les témoins et 
 <translation id="3364869320075768271"><ph name="URL" /> souhaite utiliser vos appareils et vos données de réalité virtuelle</translation>
 <translation id="3366477098757335611">Afficher les cartes</translation>
 <translation id="3369192424181595722">Erreur d'horloge</translation>
+<translation id="3371076217486966826"><ph name="URL" /> souhaite effectuer les actions suivantes :
+      • Créer une carte 3D de votre environnement ou à faire le suivi de la position de l'appareil photo
+      • Utiliser votre appareil photo</translation>
 <translation id="337363190475750230">Révoqué</translation>
 <translation id="3377144306166885718">Le serveur a utilisé une version obsolète de TLS.</translation>
 <translation id="3377188786107721145">Erreur d'analyse de la règle.</translation>
@@ -1149,7 +1151,6 @@ Souhaitez-vous autoriser <ph name="EMBEDDED_URL" /> à utiliser les témoins et 
 <translation id="5785756445106461925">De plus, cette page inclut d'autres ressources qui ne sont pas sécurisées. Ces ressources peuvent être consultées par des tiers pendant leur transfert, et modifiées par un pirate informatique dans le but de changer l’apparence de cette page.</translation>
 <translation id="5786044859038896871">Voulez-vous fournir les renseignements concernant votre carte de crédit?</translation>
 <translation id="5798290721819630480">Supprimer les modifications?</translation>
-<translation id="5798683403665926540">Changer la page d'accueil dans les paramètres de Chrome</translation>
 <translation id="5803412860119678065">Voulez-vous fournir les renseignements concernant votre carte <ph name="CARD_DETAIL" />?</translation>
 <translation id="5804241973901381774">Autorisations</translation>
 <translation id="5804427196348435412">Utiliser des appareils NFC</translation>
@@ -1551,6 +1552,7 @@ Détails supplémentaires :
 <translation id="7518003948725431193">Aucune page Web trouvée à l'adresse : <ph name="URL" /></translation>
 <translation id="7520302887438682816">Enveloppe C8</translation>
 <translation id="7521387064766892559">JavaScript</translation>
+<translation id="7521825010239864438">Section « <ph name="SECTION" /> » masquée</translation>
 <translation id="7526934274050461096">Votre connexion à ce site n'est pas privée</translation>
 <translation id="7535087603100972091">Valeur</translation>
 <translation id="7537536606612762813">Obligatoire</translation>
@@ -1597,7 +1599,6 @@ Détails supplémentaires :
 <translation id="7669271284792375604">Les cyberpirates sur ce site pourraient tenter de vous inciter à installer des programmes qui nuisent à votre expérience de navigation (par exemple en changeant votre page d'accueil ou en affichant des annonces supplémentaires sur les sites que vous consultez).</translation>
 <translation id="7673278391011283842">Boîte aux lettres 6</translation>
 <translation id="7676643023259824263">Recherche de texte du presse-papiers, <ph name="TEXT" /></translation>
-<translation id="7681101578153515023">Changer de moteur de recherche</translation>
 <translation id="7682287625158474539">Livraison</translation>
 <translation id="7687186412095877299">Remplit les formulaires de facturation avec les renseignements de vos modes de paiement enregistrés</translation>
 <translation id="7687305263118037187">Délai de nouvel essai</translation>
@@ -1635,7 +1636,6 @@ Détails supplémentaires :
 <translation id="7802523362929240268">Site officiel</translation>
 <translation id="780301667611848630">Non merci</translation>
 <translation id="7805768142964895445">État</translation>
-<translation id="7806344367022510803">Change les paramètres du moteur de recherche dans Chrome</translation>
 <translation id="7812922009395017822">Mir</translation>
 <translation id="7813600968533626083">Supprimer la suggestion de formulaire de Chrome?</translation>
 <translation id="781440967107097262">Partager le presse-papiers?</translation>
@@ -1751,6 +1751,7 @@ Détails supplémentaires :
 <translation id="8293206222192510085">Ajouter aux favoris</translation>
 <translation id="8294431847097064396">Source</translation>
 <translation id="8298115750975731693">Le réseau Wi-Fi que vous utilisez (<ph name="WIFI_NAME" />) peut vous demander de visiter <ph name="BEGIN_BOLD" /><ph name="LOGIN_URL" /><ph name="END_BOLD" />.</translation>
+<translation id="8303854710873047864">Section « <ph name="SECTION" /> » affichée</translation>
 <translation id="830498451218851433">Plier en deux</translation>
 <translation id="8307358339886459768">Petite photo</translation>
 <translation id="8307888238279532626">Les applications installées et leur fréquence d'utilisation</translation>
@@ -1776,7 +1777,6 @@ Détails supplémentaires :
 Détails supplémentaires :
 <ph name="DEBUG_INFO" /></translation>
 <translation id="8424582179843326029"><ph name="FIRST_LABEL" /> <ph name="SECOND_LABEL" /> <ph name="THIRD_LABEL" /></translation>
-<translation id="8425213833346101688">Modifier</translation>
 <translation id="8428213095426709021">Paramètres</translation>
 <translation id="8433057134996913067">Cette option vous déconnecte de la plupart des sites Web.</translation>
 <translation id="8437238597147034694">&amp;Annuler le déplacement</translation>
@@ -1870,6 +1870,7 @@ Détails supplémentaires :
 <translation id="8931333241327730545">Voulez-vous enregistrer cette carte sur votre compte Google?</translation>
 <translation id="8932102934695377596">Votre horloge retarde</translation>
 <translation id="893332455753468063">Ajouter un nom</translation>
+<translation id="8942355029279167844">Votre administrateur a autorisé <ph name="APP_NAME" /> à collecter des données de diagnostic afin d'améliorer l'expérience du produit. Pour en savoir plus, consultez la page <ph name="BEGIN_LINK" />https://www.parallels.com/pcep<ph name="END_LINK" />.</translation>
 <translation id="8943282376843390568">Vert lime</translation>
 <translation id="8957210676456822347">Autorisation du portail captif</translation>
 <translation id="8962950042226115166">Site suspect</translation>

@@ -170,7 +170,7 @@
 <translation id="1202596434010270079">Киоск-приложение обновлено. Извлеките USB-накопитель.</translation>
 <translation id="120368089816228251">Ноты</translation>
 <translation id="1203942045716040624">Shared Worker: <ph name="SCRIPT_URL" /></translation>
-<translation id="1204296502688602597">Время реакции DNS</translation>
+<translation id="1204296502688602597">Задержка DNS</translation>
 <translation id="1205489148908752564">Просмотр и изменение белого списка пользователей</translation>
 <translation id="1206407435587370571">Знакомство с Chromebook</translation>
 <translation id="1209796539517632982">Автоматические серверы имен</translation>
@@ -324,7 +324,7 @@
 <translation id="1396259464226642517">Считаете, что это произошло по ошибке? <ph name="BEGIN_LINK" />Отправьте нам отзыв<ph name="END_LINK" />.</translation>
 <translation id="1396963298126346194">Неправильное имя пользователя или пароль</translation>
 <translation id="1397500194120344683">Нет подходящих устройств. <ph name="LINK_BEGIN" />Подробнее…<ph name="LINK_END" /></translation>
-<translation id="1397738625398125236">Проверка шлюза</translation>
+<translation id="1397738625398125236">Запрос ping к шлюзу</translation>
 <translation id="1398853756734560583">Развернуть</translation>
 <translation id="139911022479327130">Разблокируйте телефон и подтвердите, что это вы</translation>
 <translation id="1399511500114202393">Не использовать сертификат пользователя</translation>
@@ -3468,7 +3468,7 @@
 <translation id="5315873049536339193">Идентификационные данные</translation>
 <translation id="5317780077021120954">Сохранить</translation>
 <translation id="5319359161174645648">Google рекомендует браузер Chrome</translation>
-<translation id="5320135788267874712">Название нового устройства</translation>
+<translation id="5320135788267874712">Введите название</translation>
 <translation id="532247166573571973">Сервер недоступен. Повторите попытку позже.</translation>
 <translation id="5324780743567488672">Автоматически определять часовой пояс на основе геоданных</translation>
 <translation id="5327248766486351172">Название</translation>
@@ -4516,7 +4516,7 @@
 <translation id="6648911618876616409">Доступно новое критическое обновление. Войдите, чтобы установить его.</translation>
 <translation id="6649018507441623493">Подождите...</translation>
 <translation id="6649563841575838401">Архив поврежден, или его формат не поддерживается.</translation>
-<translation id="6650234781371031356">Пароль для сайта <ph name="WEBSITE" /> сохранен на этом устройстве и в вашем аккаунте Google. Какой вариант нужно удалить?</translation>
+<translation id="6650234781371031356">Пароль для сайта <ph name="WEBSITE" /> сохранен на этом устройстве и в вашем аккаунте Google. Откуда вы хотите его удалить?</translation>
 <translation id="665061930738760572">Открыть в &amp;новом окне</translation>
 <translation id="6651237644330755633">Доверять этому сертификату при идентификации сайтов</translation>
 <translation id="665355505818177700">Интеграция Chrome <ph name="MS_AD_NAME" /> доступна только на платформах x86-64. Устройства Chromebook, разработанные на базе ARM или платформе x86, не поддерживают эту функцию.</translation>
@@ -4555,7 +4555,7 @@
 <translation id="6701535245008341853">Не удалось получить профиль.</translation>
 <translation id="6702639462873609204">&amp;Изменить</translation>
 <translation id="6703966911896067184">Пример ошибки при регистрации</translation>
-<translation id="6704062477274546131">Преобразование домена в адрес</translation>
+<translation id="6704062477274546131">Разрешение DNS</translation>
 <translation id="6706210727756204531">Область применения</translation>
 <translation id="6707389671160270963">Клиентский сертификат SSL</translation>
 <translation id="6709002550153567782">{NUM_PAGES,plural, =0{<ph name="PAGE_TITLE" />}=1{"<ph name="PAGE_TITLE" />" и ещё 1 вкладка}one{"<ph name="PAGE_TITLE" />" и ещё # вкладка}few{"<ph name="PAGE_TITLE" />" и ещё # вкладки}many{"<ph name="PAGE_TITLE" />" и ещё # вкладок}other{"<ph name="PAGE_TITLE" />" и ещё # вкладки}}</translation>
@@ -4613,7 +4613,7 @@
 <translation id="677965093459947883">Очень мелкий</translation>
 <translation id="6781284683813954823">Ссылка на дудл</translation>
 <translation id="6781978626986383437">Резервное копирование контейнера Linux отменено.</translation>
-<translation id="6782067259631821405">Неправильный PIN-код.</translation>
+<translation id="6782067259631821405">Неверный PIN-код.</translation>
 <translation id="6785915470941880363">Прокрутка в обратную сторону. <ph name="LINK_BEGIN" />Подробнее…<ph name="LINK_END" /></translation>
 <translation id="6786747875388722282">Расширения</translation>
 <translation id="6787839852456839824">Быстрые клавиши</translation>

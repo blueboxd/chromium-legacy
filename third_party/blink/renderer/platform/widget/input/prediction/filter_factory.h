@@ -8,7 +8,7 @@
 #include "base/feature_list.h"
 #include "third_party/blink/public/platform/input/predictor_factory.h"
 #include "third_party/blink/renderer/platform/platform_export.h"
-#include "third_party/blink/renderer/platform/widget/input/prediction/input_filter.h"
+#include "ui/base/prediction/input_filter.h"
 
 namespace blink {
 
@@ -66,7 +66,7 @@ class PLATFORM_EXPORT FilterFactory {
   // Returns the filter designed by its type.
   // Since filters can have different parameters in function of the current
   // predictor used, it also needs to be given as parameter.
-  std::unique_ptr<InputFilter> CreateFilter(
+  std::unique_ptr<ui::InputFilter> CreateFilter(
       const input_prediction::FilterType filter_type,
       const input_prediction::PredictorType predictor_type);
 

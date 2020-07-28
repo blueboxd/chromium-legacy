@@ -6,9 +6,9 @@ source_set("nearby") {
   sources = [
     "nearby_connections.cc",
     "nearby_connections.h",
+    "nearby_connections_conversions.cc",
+    "nearby_connections_conversions.h",
   ]
-
-  deps = [ "//third_party/nearby:core" ]
 
   public_deps = [
     "decoder",
@@ -16,5 +16,23 @@ source_set("nearby") {
     "//chrome/services/sharing/public/cpp",
     "//chrome/services/sharing/public/mojom",
     "//mojo/public/cpp/bindings",
+    "//third_party/nearby:core",
+  ]
+
+  deps = [ "//chrome/browser/nearby_sharing/logging" ]
+}
+
+source_set("unit_tests") {
+  testonly = true
+
+  sources = [ "nearby_connections_unittest.cc" ]
+
+  deps = [
+    ":nearby",
+    "test_support",
+    "//base/test:test_support",
+    "//testing/gmock",
+    "//testing/gtest",
+    "//third_party/nearby:core_v2_internal_test",
   ]
 }

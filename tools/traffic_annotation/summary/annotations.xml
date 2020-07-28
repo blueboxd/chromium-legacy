@@ -109,6 +109,7 @@ Refer to README.md for content description and update process.
  <item id="feed_image_fetcher" hash_code="87439531" type="0" deprecated="2019-01-04" content_hash_code="26756208" file_path=""/>
  <item id="floc_id_provider_impl" hash_code="103052331" type="1" second_id="13704791" content_hash_code="41421380" os_list="linux,windows" semantics_fields="2,3,4" policy_fields="3" file_path="chrome/browser/federated_learning/floc_id_provider_impl.cc"/>
  <item id="floc_remote_permission_service" hash_code="13704791" type="2" content_hash_code="86293622" os_list="linux,windows" semantics_fields="1,5" policy_fields="1,2,4" file_path="chrome/browser/federated_learning/floc_remote_permission_service.cc"/>
+ <item id="ftl_registration_manager" hash_code="38256901" type="0" content_hash_code="12581281" os_list="linux,windows" file_path="remoting/signaling/ftl_registration_manager.cc"/>
  <item id="gaia_auth_check_connection_info" hash_code="4598626" type="0" content_hash_code="57347000" os_list="linux,windows" file_path="google_apis/gaia/gaia_auth_fetcher.cc"/>
  <item id="gaia_auth_exchange_cookies" hash_code="134289752" type="0" deprecated="2018-09-11" content_hash_code="66433230" file_path=""/>
  <item id="gaia_auth_exchange_device_id" hash_code="39877119" type="0" content_hash_code="61857947" os_list="linux,windows" file_path="google_apis/gaia/gaia_auth_fetcher.cc"/>
@@ -253,6 +254,9 @@ Refer to README.md for content description and update process.
  <item id="refresh_token_annotation_request" hash_code="7433837" type="1" second_id="29188932" deprecated="2018-01-17" content_hash_code="137103383" file_path=""/>
  <item id="remote_copy_message_handler" hash_code="80255301" type="0" content_hash_code="117673331" os_list="linux,windows" file_path="chrome/browser/sharing/shared_clipboard/remote_copy_message_handler.cc"/>
  <item id="remote_suggestions_provider" hash_code="49544361" type="0" content_hash_code="126329742" os_list="linux,windows" file_path="components/ntp_snippets/remote/cached_image_fetcher.cc"/>
+ <item id="remoting_directory_delete_host" hash_code="89093734" type="0" content_hash_code="65893931" os_list="linux,windows" file_path="remoting/base/directory_service_client.cc"/>
+ <item id="remoting_directory_get_host_list" hash_code="93434368" type="0" content_hash_code="59980448" os_list="linux,windows" file_path="remoting/base/directory_service_client.cc"/>
+ <item id="remoting_directory_register_host" hash_code="117688925" type="0" content_hash_code="74224493" os_list="linux,windows" file_path="remoting/base/directory_service_client.cc"/>
  <item id="render_view_context_menu" hash_code="25844439" type="0" content_hash_code="69471170" os_list="linux,windows" file_path="chrome/browser/renderer_context_menu/render_view_context_menu.cc"/>
  <item id="renderer_initiated_download" hash_code="116443055" type="0" content_hash_code="37846436" os_list="linux,windows" file_path="content/browser/frame_host/render_frame_host_impl.cc"/>
  <item id="reporting" hash_code="109891200" type="0" content_hash_code="125758928" os_list="linux,windows" file_path="net/reporting/reporting_uploader.cc"/>

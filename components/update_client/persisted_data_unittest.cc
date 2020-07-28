@@ -23,12 +23,16 @@ TEST(PersistedDataTest, Simple) {
   EXPECT_EQ(-2, metadata->GetDateLastActive("someappid"));
   EXPECT_EQ(-2, metadata->GetDaysSinceLastRollCall("someappid"));
   EXPECT_EQ(-2, metadata->GetDaysSinceLastActive("someappid"));
+  EXPECT_EQ(-2, metadata->GetDaysSinceLastActive("someappid.withdot"));
   std::vector<std::string> items;
   items.push_back("someappid");
+  items.push_back("someappid.withdot");
   metadata->SetDateLastRollCall(items, 3383);
   metadata->SetDateLastActive(items, 3383);
   EXPECT_EQ(3383, metadata->GetDateLastRollCall("someappid"));
+  EXPECT_EQ(3383, metadata->GetDateLastRollCall("someappid.withdot"));
   EXPECT_EQ(-2, metadata->GetDateLastActive("someappid"));
+  EXPECT_EQ(-2, metadata->GetDateLastActive("someappid.withdot"));
   EXPECT_EQ(-2, metadata->GetDaysSinceLastRollCall("someappid"));
   EXPECT_EQ(-2, metadata->GetDaysSinceLastActive("someappid"));
   EXPECT_EQ(-2, metadata->GetDateLastRollCall("someotherappid"));

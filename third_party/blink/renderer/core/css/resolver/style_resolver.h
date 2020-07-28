@@ -243,10 +243,6 @@ class CORE_EXPORT StyleResolver final : public GarbageCollected<StyleResolver> {
 
   void ApplyCallbackSelectors(StyleResolverState&);
 
-  bool PseudoStyleForElementInternal(Element&,
-                                     const PseudoElementStyleRequest&,
-                                     StyleResolverState&);
-
   bool HasAuthorBorder(const StyleResolverState&);
   Document& GetDocument() const { return *document_; }
   bool WasViewportResized() const { return was_viewport_resized_; }

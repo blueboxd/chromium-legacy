@@ -42,7 +42,9 @@ bool PrefixSelector::ShouldContinueSelection() const {
 void PrefixSelector::SetCompositionText(
     const ui::CompositionText& composition) {}
 
-void PrefixSelector::ConfirmCompositionText(bool keep_selection) {}
+uint32_t PrefixSelector::ConfirmCompositionText(bool keep_selection) {
+  return UINT32_MAX;
+}
 
 void PrefixSelector::ClearCompositionText() {}
 
@@ -172,6 +174,11 @@ bool PrefixSelector::SetCompositionFromExistingText(
 #endif
 
 #if defined(OS_CHROMEOS)
+gfx::Rect PrefixSelector::GetAutocorrectCharacterBounds() const {
+  NOTIMPLEMENTED_LOG_ONCE();
+  return gfx::Rect();
+}
+
 bool PrefixSelector::SetAutocorrectRange(const base::string16& autocorrect_text,
                                          const gfx::Range& range) {
   // TODO(crbug.com/1091088) Implement setAutocorrectRange.

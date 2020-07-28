@@ -23,6 +23,7 @@
 #include <base/optional.h>
 
 #include "third_party/blink/renderer/platform/fonts/font_baseline.h"
+#include "third_party/blink/renderer/platform/fonts/font_metrics_override.h"
 #include "third_party/blink/renderer/platform/geometry/layout_unit.h"
 #include "third_party/blink/renderer/platform/wtf/allocator/allocator.h"
 #include "third_party/blink/renderer/platform/wtf/math_extras.h"
@@ -173,7 +174,9 @@ class FontMetrics {
       unsigned& visual_overflow_inflation_for_descent,
       const FontPlatformData&,
       const SkFont&,
-      bool subpixel_ascent_descent = false);
+      bool subpixel_ascent_descent = false,
+      base::Optional<float> ascent_override = base::nullopt,
+      base::Optional<float> descent_override = base::nullopt);
 
  private:
   friend class SimpleFontData;

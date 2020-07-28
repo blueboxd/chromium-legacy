@@ -71,11 +71,12 @@ class GuestOsRegistryService : public KeyedService {
 
   class Registration {
    public:
-    Registration(const base::Value* pref, bool is_terminal_app);
+    Registration(const std::string app_id, const base::Value* pref);
     Registration(Registration&& registration) = default;
     Registration& operator=(Registration&& registration) = default;
     ~Registration();
 
+    std::string app_id() const { return app_id_; }
     std::string DesktopFileId() const;
     VmType VmType() const;
     std::string VmName() const;
@@ -98,18 +99,12 @@ class GuestOsRegistryService : public KeyedService {
     bool IsScaled() const;
     bool CanUninstall() const;
 
-    // Whether this app is the default terminal app.
-    bool is_terminal_app() const { return is_terminal_app_; }
-
    private:
     std::string LocalizedString(base::StringPiece key) const;
     std::set<std::string> LocalizedList(base::StringPiece key) const;
 
-    // The pref can only be null when the registration is for the Terminal app.
-    // If we do have a pref for the Terminal app, it contains only the last
-    // launch time.
+    std::string app_id_;
     base::Value pref_;
-    bool is_terminal_app_;
 
     DISALLOW_COPY_AND_ASSIGN(Registration);
   };

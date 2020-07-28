@@ -26,6 +26,7 @@
 <translation id="1209206284964581585">Masquer pour l'instant</translation>
 <translation id="1219674500290482172">Échec de connexion à Internet.</translation>
 <translation id="122699739164161391">Fermer tous les onglets</translation>
+<translation id="1229222343402087523">Rechercher ${searchPhrase} dans Chrome</translation>
 <translation id="1231733316453485619">Activer la synchronisation?</translation>
 <translation id="1254117744268754948">Sélectionner un dossier</translation>
 <translation id="1265739287306757398">Découvrir comment</translation>
@@ -533,7 +534,7 @@ Les sites ne peuvent pas utiliser de témoins pour voir votre activité de navig
 <translation id="7189598951263744875">Partager…</translation>
 <translation id="7192050974311852563">Commencer la journalisation</translation>
 <translation id="7203585745079012652">Réponses vocales</translation>
-<translation id="721597782417389033">Le pseudo de la carte est incorrect</translation>
+<translation id="721597782417389033">Pseudo de carte incorrect</translation>
 <translation id="7265758999917665941">Jamais pour ce site</translation>
 <translation id="7272437679830969316">Impossible de vérifier votre identité. Le mot de passe n'a pas été copié.</translation>
 <translation id="7291368939935408496">Préparation des mots de passe en cours…</translation>
@@ -621,6 +622,7 @@ Les sites peuvent utiliser des témoins afin de voir votre activité de navigati
 <translation id="842017693807136194">Connecté avec</translation>
 <translation id="8428045167754449968">Ville</translation>
 <translation id="8428213095426709021">Paramètres</translation>
+<translation id="8446884382197647889">En savoir plus</translation>
 <translation id="8458397775385147834">1 élément supprimé</translation>
 <translation id="8459333855531264009">Pas sécuritaire</translation>
 <translation id="8487667956631253959">Activée</translation>

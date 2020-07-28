@@ -133,8 +133,6 @@ void TableRowPainter::PaintCollapsedBorders(const PaintInfo& paint_info,
                    DisplayItem::kTableCollapsedBorders,
                    paint_state.PaintOffset());
 
-  // Otherwise TablePainter should have created the drawing recorder.
-
   const auto* section = layout_table_row_.Section();
   unsigned row = layout_table_row_.RowIndex();
   for (unsigned c = std::min(dirtied_columns.End(), section->NumCols(row));

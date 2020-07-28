@@ -335,6 +335,7 @@
 <translation id="3658159451045945436">ዳግም ማስጀመር የተጎበኙ ጣቢያዎች ዝርዝር ጨምሮ የውሂብ ቁጠባዎን ታሪክ ይደመስሳል።</translation>
 <translation id="3692944402865947621">የማከማቻ ቦታው የማይገኝ ስለሆነ <ph name="FILE_NAME" />ን ማውረድ አልተሳካም።</translation>
 <translation id="3701167022068948696">አሁኑኑ ያስተካክሉ</translation>
+<translation id="371230970611282515">አደገኛ ክስተቶች ከመፈጠራቸው በፊት ይገምት እና እርስዎን ያስጠነቅቀዎታል።</translation>
 <translation id="3714981814255182093">የአግኝ አሞሌን ክፈት</translation>
 <translation id="3716182511346448902">ይህ ገጽ በጣም ብዙ ማህደረ ትውስታን ይጠቀማል፣ ስለዚህ Chrome ባለበት አቁሞታል።</translation>
 <translation id="3721119614952978349">እርስዎ እና Google</translation>
@@ -713,6 +714,7 @@
 <translation id="6593061639179217415">የዴስክቶፕ ጣቢያ</translation>
 <translation id="6597891566292541626">በዚህ ክፈፍ ውስጥ የኪውአር/አሞሌ ኮድ አቀማመጥ ያስተካክሉ።</translation>
 <translation id="6600954340915313787">ወደ Chrome ተቀድቷል</translation>
+<translation id="661266467055912436">ለእርስዎ እና ለማናቸውም በድር ላይ ያለ ሁሉም ሰው ደህንነትን ያሻሽላል።</translation>
 <translation id="6627583120233659107">አቃፊ አርትዕ</translation>
 <translation id="6643016212128521049">አጽዳ</translation>
 <translation id="6643649862576733715">በተቆጠበው የውሂብ መጠን ደርድር</translation>
@@ -872,6 +874,7 @@
 <translation id="7925590027513907933">{FILE_COUNT,plural, =1{ፋይልን በማውረድ ላይ።}one{# ፋይሎች በማውረድ ላይ።}other{# ፋይሎች በማውረድ ላይ።}}</translation>
 <translation id="7926975587469166629">የካርድ ቅጽል ስም</translation>
 <translation id="7929962904089429003">ምናሌውን ክፈት</translation>
+<translation id="7930998711684428189">የይለፍ ቃላት በውሂብ ደንብ ጥሰት ተጋላጭ ከሆነ ያስጠንቅቀዎታል።</translation>
 <translation id="7942131818088350342"><ph name="PRODUCT_NAME" /> ጊዜው ያለፈበት ነው።</translation>
 <translation id="7947953824732555851">ተቀበል እና ግባ</translation>
 <translation id="7963646190083259054">አቅራቢ፦</translation>

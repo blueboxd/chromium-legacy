@@ -8,6 +8,7 @@
 #include "mojo/public/cpp/test_support/test_utils.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/blink/public/common/user_agent/user_agent_mojom_traits.h"
+#include "third_party/blink/public/mojom/user_agent/user_agent_metadata.mojom.h"
 
 namespace blink {
 

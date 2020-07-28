@@ -188,6 +188,18 @@ SuggestionStatus EmojiSuggester::HandleKeyEvent(
   return SuggestionStatus::kNotHandled;
 }
 
+bool EmojiSuggester::ShouldShowSuggestion(const base::string16& text) {
+  if (text[text.length() - 1] != kSpaceChar)
+    return false;
+
+  std::string last_word =
+      base::ToLowerASCII(GetLastWord(base::UTF16ToUTF8(text)));
+  if (!last_word.empty() && emoji_map_.count(last_word)) {
+    return true;
+  }
+  return false;
+}
+
 bool EmojiSuggester::Suggest(const base::string16& text) {
   if (emoji_map_.empty() || text[text.length() - 1] != kSpaceChar)
     return false;

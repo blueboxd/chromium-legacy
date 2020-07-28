@@ -59,9 +59,6 @@ class ASH_EXPORT UnifiedSystemTrayController
   void HandleEnterpriseInfoAction();
   // Toggle expanded state of UnifiedSystemTrayView. Called from the view.
   void ToggleExpanded();
-  // Called when message center visibility is changed. Called from the
-  // view.
-  void OnMessageCenterVisibilityUpdated();
 
   // Handle finger dragging and expand/collapse the view. Called from view.
   void BeginDrag(const gfx::PointF& location);

@@ -335,6 +335,7 @@
 <translation id="3658159451045945436">Ако се ресетира, ќе се избрише историјата на заштеден интернет, заедно со списокот со посетени сајтови.</translation>
 <translation id="3692944402865947621">Преземањето на <ph name="FILE_NAME" /> не успеа бидејќи локацијата за складирање не е достапна.</translation>
 <translation id="3701167022068948696">Поправи сега</translation>
+<translation id="371230970611282515">Предвидува опасни настани и ве предупредува пред да се случат.</translation>
 <translation id="3714981814255182093">Отворете ја Лентата за пребарување</translation>
 <translation id="3716182511346448902">Страницава користи премногу меморија, па Chrome ја паузираше.</translation>
 <translation id="3721119614952978349">Вие и Google</translation>
@@ -713,6 +714,7 @@
 <translation id="6593061639179217415">Сајт за десктоп</translation>
 <translation id="6597891566292541626">Ставете го QR/линискиот код во оваа рамка.</translation>
 <translation id="6600954340915313787">Копирано на Chrome</translation>
+<translation id="661266467055912436">Ја подобрува безбедноста за вас и сите останати на интернет.</translation>
 <translation id="6627583120233659107">Уредувај папка</translation>
 <translation id="6643016212128521049">Исчисти</translation>
 <translation id="6643649862576733715">Подреди по количина на заштеден сообраќај</translation>
@@ -872,6 +874,7 @@
 <translation id="7925590027513907933">{FILE_COUNT,plural, =1{Се презема датотека.}one{Се презема # датотека.}other{Се преземаат # датотеки.}}</translation>
 <translation id="7926975587469166629">Прекар на картичката</translation>
 <translation id="7929962904089429003">Отворете го менито</translation>
+<translation id="7930998711684428189">Ве предупредува ако лозинките се откриени при упад во податоците.</translation>
 <translation id="7942131818088350342"><ph name="PRODUCT_NAME" /> е застарен.</translation>
 <translation id="7947953824732555851">Прифати и најави се</translation>
 <translation id="7963646190083259054">Продавач:</translation>

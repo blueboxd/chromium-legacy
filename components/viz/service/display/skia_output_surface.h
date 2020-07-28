@@ -153,12 +153,6 @@ class VIZ_SERVICE_EXPORT SkiaOutputSurface : public OutputSurface,
   virtual void ScheduleOverlays(OverlayList overlays,
                                 std::vector<gpu::SyncToken> sync_tokens) = 0;
 
-#if defined(OS_WIN)
-  // Enables/disables drawing with DC layers. Should be enabled before
-  // ScheduleDCLayers() will be called.
-  virtual void SetEnableDCLayers(bool enable) = 0;
-#endif
-
   // Add context lost observer.
   virtual void AddContextLostObserver(ContextLostObserver* observer) = 0;
 

@@ -55,6 +55,8 @@ const bodyContent = `
   <files-tooltip></files-tooltip>
 `;
 
+const windowEdgePadding = 6;
+
 function setUp() {
   /** @const {boolean} Assume files-ng in unittest. */
   const enableFilesNg = true;
@@ -108,7 +110,7 @@ function testFocus(callback) {
             assertEquals('Chocolate!', label.textContent.trim());
             assertTrue(tooltip.hasAttribute('visible'));
 
-            assertEquals('4px', tooltip.style.left);
+            assertEquals('6px', tooltip.style.left);
 
             if (window.isFilesNg()) {
               assertEquals('78px', tooltip.style.top);
@@ -124,8 +126,8 @@ function testFocus(callback) {
             assertEquals('Cherries!', label.textContent.trim());
             assertTrue(tooltip.hasAttribute('visible'));
 
-            const expectedLeft =
-                document.body.offsetWidth - tooltip.offsetWidth + 'px';
+            const expectedLeft = document.body.offsetWidth -
+                tooltip.offsetWidth - windowEdgePadding + 'px';
             assertEquals(expectedLeft, tooltip.style.left);
 
             if (window.isFilesNg()) {
@@ -154,7 +156,7 @@ function testHover(callback) {
             assertTrue(tooltip.hasAttribute('visible'));
             assertEquals(tooltip.getAttribute('aria-hidden'), 'false');
 
-            assertEquals('4px', tooltip.style.left);
+            assertEquals('6px', tooltip.style.left);
             if (window.isFilesNg()) {
               assertEquals('78px', tooltip.style.top);
             } else {
@@ -170,8 +172,8 @@ function testHover(callback) {
             assertEquals('Cherries!', label.textContent.trim());
             assertTrue(tooltip.hasAttribute('visible'));
 
-            const expectedLeft =
-                document.body.offsetWidth - tooltip.offsetWidth + 'px';
+            const expectedLeft = document.body.offsetWidth -
+                tooltip.offsetWidth - windowEdgePadding + 'px';
             assertEquals(expectedLeft, tooltip.style.left);
 
             if (window.isFilesNg()) {

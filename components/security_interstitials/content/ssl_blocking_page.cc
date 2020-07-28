@@ -36,10 +36,6 @@ using security_interstitials::SSLErrorUI;
 const security_interstitials::SecurityInterstitialPage::TypeID
     SSLBlockingPage::kTypeForTesting = &SSLBlockingPage::kTypeForTesting;
 
-bool SSLBlockingPage::ShouldCreateNewNavigation() const {
-  return true;
-}
-
 security_interstitials::SecurityInterstitialPage::TypeID
 SSLBlockingPage::GetTypeForTesting() {
   return SSLBlockingPage::kTypeForTesting;

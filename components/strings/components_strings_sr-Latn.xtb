@@ -363,7 +363,6 @@ To inače blokiraju podešavanja privatnosti. To omogućava da sadržaj sa koji
 <translation id="2413528052993050574">Ovaj server ne može da dokaže da je <ph name="DOMAIN" />; njegov bezbednosni sertifikat će možda biti opozvan. Uzrok tome je možda pogrešna konfiguracija ili napadač koji je prekinuo vezu.</translation>
 <translation id="2438874542388153331">Četvorostruko bušenje na desnoj strani</translation>
 <translation id="245044156129055925">Upravo ste uneli lozinku na obmanjujućem sajtu. Chromium preporučuje da odmah promenite lozinku.</translation>
-<translation id="2463193859425327265">Promenite početnu stranicu</translation>
 <translation id="2463739503403862330">Popuni</translation>
 <translation id="2465402087343596252">Architecture-E</translation>
 <translation id="2465655957518002998">Odaberite način dostave</translation>
@@ -1163,7 +1162,6 @@ To inače blokiraju podešavanja privatnosti. To omogućava da sadržaj sa koji
 <translation id="5785756445106461925">Pored toga, ova stranica sadrži i druge resurse koji nisu bezbedni. Ove resurse mogu da vide i drugi dok su u prolazu i napadač može da ih izmeni kako bi promenio izgled stranice.</translation>
 <translation id="5786044859038896871">Želite li da popunite informacije o kartici?</translation>
 <translation id="5798290721819630480">Želite li da odbacite promene?</translation>
-<translation id="5798683403665926540">Promenite početnu stranicu u podešavanjima Chrome-a</translation>
 <translation id="5803412860119678065">Želite li da popunite podacima <ph name="CARD_DETAIL" />?</translation>
 <translation id="5804241973901381774">Dozvole</translation>
 <translation id="5804427196348435412">koristi NFC uređaje</translation>
@@ -1611,7 +1609,6 @@ Dodatni detalji:
 <translation id="7669271284792375604">Napadači na ovom sajtu mogu da pokušaju da vas prevare da biste instalirali programe koji štete doživljaju pregledanja (na primer, tako što menjaju početnu stranicu ili prikazuju dodatne oglase na sajtovima koje posećujete).</translation>
 <translation id="7673278391011283842">6. poštansko sanduče</translation>
 <translation id="7676643023259824263">Potražite tekst u privremenoj memoriji, <ph name="TEXT" /></translation>
-<translation id="7681101578153515023">Promenite pretraživač</translation>
 <translation id="7682287625158474539">Isporuka</translation>
 <translation id="7687186412095877299">Popunjava obrasce za plaćanje informacijama o sačuvanim načinima plaćanja</translation>
 <translation id="7687305263118037187">Isteklo je vreme ponovnog pokušaja</translation>
@@ -1649,7 +1646,6 @@ Dodatni detalji:
 <translation id="7802523362929240268">Sajt je legitiman</translation>
 <translation id="780301667611848630">Ne, hvala</translation>
 <translation id="7805768142964895445">Status</translation>
-<translation id="7806344367022510803">Promenite podešavanja pretraživača u Chrome-u</translation>
 <translation id="7812922009395017822">Mir</translation>
 <translation id="7813600968533626083">Želite li da uklonite predlog iz Chrome-a?</translation>
 <translation id="781440967107097262">Dozvolićete deljenje privremene memorije?</translation>
@@ -1791,7 +1787,6 @@ Dodatni detalji:
 Dodatni detalji:
 <ph name="DEBUG_INFO" /></translation>
 <translation id="8424582179843326029"><ph name="FIRST_LABEL" /> <ph name="SECOND_LABEL" /> <ph name="THIRD_LABEL" /></translation>
-<translation id="8425213833346101688">Promeni</translation>
 <translation id="8428213095426709021">Podešavanja</translation>
 <translation id="8433057134996913067">Ovako ćete se odjaviti sa većine veb-sajtova.</translation>
 <translation id="8437238597147034694">&amp;Opozovi premeštanje</translation>

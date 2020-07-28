@@ -63,6 +63,7 @@
 #include "third_party/blink/renderer/platform/bindings/exception_state.h"
 #include "third_party/blink/renderer/platform/bindings/script_state.h"
 #include "third_party/blink/renderer/platform/font_family_names.h"
+#include "third_party/blink/renderer/platform/fonts/font_metrics_override.h"
 #include "third_party/blink/renderer/platform/heap/heap.h"
 #include "third_party/blink/renderer/platform/instrumentation/histogram.h"
 #include "third_party/blink/renderer/platform/instrumentation/use_counter.h"
@@ -190,6 +191,10 @@ FontFace* FontFace::Create(Document* document,
           properties, AtRuleDescriptorID::FontFeatureSettings) &&
       font_face->SetPropertyFromStyle(properties,
                                       AtRuleDescriptorID::FontDisplay) &&
+      font_face->SetPropertyFromStyle(properties,
+                                      AtRuleDescriptorID::AscentOverride) &&
+      font_face->SetPropertyFromStyle(properties,
+                                      AtRuleDescriptorID::DescentOverride) &&
       font_face->GetFontSelectionCapabilities().IsValid() &&
       !font_face->family().IsEmpty()) {
     font_face->InitCSSFontFace(document->GetExecutionContext(), *src);
@@ -219,6 +224,7 @@ FontFace::FontFace(ExecutionContext* context,
                         AtRuleDescriptorID::FontFeatureSettings);
   SetPropertyFromString(context, descriptors->display(),
                         AtRuleDescriptorID::FontDisplay);
+  // TODO(xiaochengh): Add override descriptors to FontFaceDescriptors
 }
 
 FontFace::~FontFace() = default;
@@ -350,6 +356,12 @@ bool FontFace::SetPropertyValue(const CSSValue* value,
       display_ = value;
       if (css_font_face_)
         css_font_face_->SetDisplay(CSSValueToFontDisplay(display_.Get()));
+      break;
+    case AtRuleDescriptorID::AscentOverride:
+      ascent_override_ = value;
+      break;
+    case AtRuleDescriptorID::DescentOverride:
+      descent_override_ = value;
       break;
     default:
       NOTREACHED();
@@ -792,6 +804,8 @@ void FontFace::Trace(Visitor* visitor) const {
   visitor->Trace(variant_);
   visitor->Trace(feature_settings_);
   visitor->Trace(display_);
+  visitor->Trace(ascent_override_);
+  visitor->Trace(descent_override_);
   visitor->Trace(error_);
   visitor->Trace(loaded_property_);
   visitor->Trace(css_font_face_);
@@ -817,6 +831,19 @@ void FontFace::DidBeginImperativeLoad() {
     return;
   DomWindow()->document()->GetFontPreloadManager().ImperativeFontLoadingStarted(
       this);
+}
+
+FontMetricsOverride FontFace::GetFontMetricsOverride() const {
+  FontMetricsOverride result;
+  if (ascent_override_) {
+    result.ascent_override =
+        To<CSSPrimitiveValue>(*ascent_override_).GetFloatValue() / 100;
+  }
+  if (descent_override_) {
+    result.descent_override =
+        To<CSSPrimitiveValue>(*descent_override_).GetFloatValue() / 100;
+  }
+  return result;
 }
 
 }  // namespace blink

@@ -363,7 +363,6 @@ De lo contrario, la configuración de privacidad bloqueará esta acción. Esto p
 <translation id="2413528052993050574">Este servidor no pudo probar que su dominio es <ph name="DOMAIN" /> y se podría revocar el certificado de seguridad. Es posible que esto se deba a una configuración incorrecta o a que un atacante interceptó la conexión.</translation>
 <translation id="2438874542388153331">Perforación cuádruple a la derecha</translation>
 <translation id="245044156129055925">Ingresaste tu contraseña en un sitio engañoso. Chromium recomienda que la cambies ahora.</translation>
-<translation id="2463193859425327265">Cambiar página principal</translation>
 <translation id="2463739503403862330">Llenar</translation>
 <translation id="2465402087343596252">Architecture-E</translation>
 <translation id="2465655957518002998">Elegir método de entrega</translation>
@@ -448,7 +447,7 @@ De lo contrario, la configuración de privacidad bloqueará esta acción. Esto p
 <translation id="2824775600643448204">Barra de direcciones y de búsqueda</translation>
 <translation id="2826760142808435982">La conexión se encriptó y autenticó con <ph name="CIPHER" />, y utiliza <ph name="KX" /> como el mecanismo de intercambio de claves.</translation>
 <translation id="2835170189407361413">Eliminar formulario</translation>
-<translation id="2839501879576190149">El sitio es falso</translation>
+<translation id="2839501879576190149">El sitio al que quieres acceder es falso</translation>
 <translation id="2847118875340931228">Abrir ventana de incógnito</translation>
 <translation id="2850739647070081192">Invite (Envelope)</translation>
 <translation id="2856444702002559011">Es posible que algunos atacantes intenten robar tu información de <ph name="BEGIN_BOLD" /><ph name="SITE" /><ph name="END_BOLD" /> (p. ej., contraseñas, mensajes o tarjetas de crédito). <ph name="BEGIN_LEARN_MORE_LINK" />Más información<ph name="END_LEARN_MORE_LINK" /></translation>
@@ -831,7 +830,7 @@ De lo contrario, la configuración de privacidad bloqueará esta acción. Esto p
 <translation id="4358461427845829800">Administrar formas de pago…</translation>
 <translation id="4359160567981085931">Ingresaste tu contraseña en un sitio engañoso. Chrome puede ayudarte. Para cambiar la contraseña y notificar a Google que tu cuenta podría estar en riesgo, haz clic en Proteger cuenta.</translation>
 <translation id="4367563149485757821">Number-12 (Envelope)</translation>
-<translation id="4367839622597707614">{1,plural, =0{La contraseña que guardaste para <ph name="ORIGIN" /> quedó expuesta debido a una violación de la seguridad de los datos que se produjo en un sitio o app. Chrome te recomienda cambiar ahora la contraseña que usas en <ph name="ORIGIN" />.}=1{Las contraseñas que guardaste para <ph name="ORIGIN" /> y un sitio más quedaron expuestas debido a una violación de la seguridad de los datos que se produjo en un sitio o app. Chrome te recomienda revisar ahora las contraseñas que tengas guardadas.}other{Las contraseñas que guardaste para <ph name="ORIGIN" /> y <ph name="SITES_COUNT" /> sitios más quedaron expuestas debido a una violación de la seguridad de los datos que se produjo en un sitio o app. Chrome te recomienda revisar ahora las contraseñas que tengas guardadas.}}</translation>
+<translation id="4367839622597707614">{1,plural, =0{La contraseña que guardaste para <ph name="ORIGIN" /> quedó expuesta debido a una violación de la seguridad de los datos que se produjo en un sitio o app. Chrome te recomienda cambiar ahora la contraseña que usas en <ph name="ORIGIN" />.}=1{La contraseña que guardaste para <ph name="ORIGIN" /> y un sitio más quedó expuesta debido a una violación de la seguridad de los datos que se produjo en un sitio o app. Chrome te recomienda revisar ahora en forma automática las contraseñas que tengas guardadas.}other{La contraseña que guardaste para <ph name="ORIGIN" /> y <ph name="SITES_COUNT" /> sitios más quedó expuesta debido a una violación de la seguridad de los datos que se produjo en un sitio o app. Chrome te recomienda revisar ahora en forma automática las contraseñas que tengas guardadas.}}</translation>
 <translation id="437058704415269440">Saldo de cuenta</translation>
 <translation id="4372516964750095882">Fanfold-Us</translation>
 <translation id="4372948949327679948">Valor <ph name="VALUE_TYPE" /> esperado.</translation>
@@ -1162,7 +1161,6 @@ De lo contrario, la configuración de privacidad bloqueará esta acción. Esto p
 <translation id="5785756445106461925">Además, esta página incluye otros recursos que no son seguros. Otras personas pueden ver estos recursos mientras se encuentran en tránsito, y un atacante puede modificarlos para cambiar la apariencia de la página.</translation>
 <translation id="5786044859038896871">¿Deseas llenar los campos con la información de tu tarjeta?</translation>
 <translation id="5798290721819630480">¿Descartas los cambios?</translation>
-<translation id="5798683403665926540">Cambia la página principal en la configuración de Chrome</translation>
 <translation id="5803412860119678065">¿Deseas llenar los campos con la información de tu tarjeta <ph name="CARD_DETAIL" />?</translation>
 <translation id="5804241973901381774">Permisos</translation>
 <translation id="5804427196348435412">Usar dispositivos con NFC</translation>
@@ -1302,7 +1300,7 @@ De lo contrario, la configuración de privacidad bloqueará esta acción. Esto p
 <translation id="6380497234672085559">A0</translation>
 <translation id="6383221683286411806">Es posible que se cobren cargos.</translation>
 <translation id="6386120369904791316">{COUNT,plural, =1{1 sugerencia más}other{# sugerencias más}}</translation>
-<translation id="6387645831795005740">A veces, los atacantes hacen cambios sutiles y difíciles de detectar en la URL para imitar sitios.</translation>
+<translation id="6387645831795005740">A veces, los atacantes hacen cambios sutiles y difíciles de detectar en la URL a fin de imitar otros sitios.</translation>
 <translation id="6389470377220713856">Nombre en tarj.</translation>
 <translation id="6390200185239044127">Plegado en Z a la mitad</translation>
 <translation id="6390662030813198813">Engineering-E</translation>
@@ -1611,7 +1609,6 @@ Detalles adicionales:
 <translation id="7669271284792375604">Es posible que los atacantes de este sitio intenten engañarte para que instales programas que pueden afectar tu experiencia de navegación (p. ej., podrían cambiar la página principal o mostrar más anuncios en los sitios que visitas).</translation>
 <translation id="7673278391011283842">Buzón 6</translation>
 <translation id="7676643023259824263">Buscar el texto <ph name="TEXT" /> en el portapapeles</translation>
-<translation id="7681101578153515023">Cambiar motor de búsqueda</translation>
 <translation id="7682287625158474539">Envío</translation>
 <translation id="7687186412095877299">Completa los formularios de pago con la información que tengas guardada</translation>
 <translation id="7687305263118037187">Se agotó el tiempo de espera para reintentar</translation>
@@ -1649,7 +1646,6 @@ Detalles adicionales:
 <translation id="7802523362929240268">El sitio es legítimo</translation>
 <translation id="780301667611848630">No, gracias</translation>
 <translation id="7805768142964895445">Estado</translation>
-<translation id="7806344367022510803">Cambia la configuración del motor de búsqueda en Chrome</translation>
 <translation id="7812922009395017822">Mir</translation>
 <translation id="7813600968533626083">¿Confirmas que quieres quitar la sugerencia de formulario de Chrome?</translation>
 <translation id="781440967107097262">¿Quieres compartir el portapapeles?</translation>
@@ -1791,7 +1787,6 @@ Detalles adicionales:
 Detalles adicionales:
 <ph name="DEBUG_INFO" /></translation>
 <translation id="8424582179843326029"><ph name="FIRST_LABEL" /> <ph name="SECOND_LABEL" /> <ph name="THIRD_LABEL" /></translation>
-<translation id="8425213833346101688">Cambiar</translation>
 <translation id="8428213095426709021">Configuración</translation>
 <translation id="8433057134996913067">Si realizas esta acción, saldrás de la mayoría de los sitios web.</translation>
 <translation id="8437238597147034694">&amp;Deshacer Mover</translation>

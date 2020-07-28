@@ -4,10 +4,13 @@
 
 import {Destination, DestinationConnectionStatus, DestinationOrigin, DestinationType, Error, PrintPreviewPluralStringProxyImpl, State} from 'chrome://print/print_preview.js';
 import {assert} from 'chrome://resources/js/assert.m.js';
-import {TestPluralStringProxy} from 'chrome://test/test_plural_string_proxy.js';
-import {fakeDataBind} from 'chrome://test/test_util.m.js';
+import {loadTimeData} from 'chrome://resources/js/load_time_data.m.js';
+import {assertEquals, assertFalse, assertTrue} from '../chai_assert.js';
+import {TestPluralStringProxy} from '../test_plural_string_proxy.js';
+import {fakeDataBind} from '../test_util.m.js';
 
 window.header_test = {};
+const header_test = window.header_test;
 header_test.suiteName = 'HeaderTest';
 /** @enum {string} */
 header_test.TestNames = {
@@ -17,24 +20,26 @@ header_test.TestNames = {
 };
 
 suite(header_test.suiteName, function() {
-  /** @type {?PrintPreviewHeaderElement} */
-  let header = null;
+  /** @type {!PrintPreviewHeaderElement} */
+  let header;
 
   /** @type {TestPluralStringProxy} */
   let pluralString = null;
 
   /** @override */
   setup(function() {
-    PolymerTest.clearBody();
+    document.body.innerHTML = '';
 
     pluralString = new TestPluralStringProxy();
     PrintPreviewPluralStringProxyImpl.instance_ = pluralString;
     pluralString.text = '1 sheet of paper';
 
-    const model = document.createElement('print-preview-model');
+    const model = /** @type {!PrintPreviewModelElement} */ (
+        document.createElement('print-preview-model'));
     document.body.appendChild(model);
 
-    header = document.createElement('print-preview-header');
+    header = /** @type {!PrintPreviewHeaderElement} */ (
+        document.createElement('print-preview-header'));
     header.settings = model.settings;
     model.set('settings.duplex.available', true);
     model.set('settings.duplex.value', false);

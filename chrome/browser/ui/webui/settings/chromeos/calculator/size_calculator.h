@@ -25,10 +25,6 @@
 
 class Profile;
 
-namespace dlcservice {
-class DlcsWithContent;
-}  // namespace dlcservice
-
 namespace chromeos {
 namespace settings {
 namespace calculator {
@@ -46,8 +42,7 @@ class SizeCalculator {
     kAppsExtensions,
     kCrostini,
     kOtherUsers,
-    kDlcs,
-    kLast = kDlcs,
+    kLast = kOtherUsers,
     kSystem,
   };
 
@@ -292,27 +287,6 @@ class OtherUsersSizeCalculator : public SizeCalculator {
   std::vector<int64_t> user_sizes_;
 
   base::WeakPtrFactory<OtherUsersSizeCalculator> weak_ptr_factory_{this};
-};
-
-// Class handling the calculation of all DLC size.
-class DlcsSizeCalculator : public SizeCalculator {
- public:
-  DlcsSizeCalculator();
-  ~DlcsSizeCalculator() override;
-
-  DlcsSizeCalculator(const DlcsSizeCalculator&) = delete;
-  DlcsSizeCalculator& operator=(const DlcsSizeCalculator&) = delete;
-
- private:
-  friend class DlcsSizeTestAPI;
-
-  void PerformCalculation() override;
-
-  // Callback to update the total size of existing DLCs.
-  void OnGetExistingDlcs(const std::string& err,
-                         const dlcservice::DlcsWithContent& dlcs_with_content);
-
-  base::WeakPtrFactory<DlcsSizeCalculator> weak_ptr_factory_{this};
 };
 
 }  // namespace calculator

@@ -244,6 +244,7 @@ _CONFIG = [
             'cc::PaintFlags',
             'cc::PaintImage',
             'cc::PaintImageBuilder',
+            'cc::PaintRecord',
             'cc::PaintShader',
             'cc::PaintWorkletInput',
             'cc::NodeId',

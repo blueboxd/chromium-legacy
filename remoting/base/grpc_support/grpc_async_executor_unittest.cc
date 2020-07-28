@@ -125,7 +125,7 @@ void GrpcAsyncExecutorTest::AsyncSendText(
   EchoRequest request;
   request.set_text(text);
   auto grpc_request = CreateGrpcAsyncUnaryRequest(
-      base::BindOnce(&GrpcAsyncExecutorTestService::Stub::AsyncEcho,
+      base::BindOnce(&GrpcAsyncExecutorTestService::StubInterface::AsyncEcho,
                      base::Unretained(stub_.get())),
       request, std::move(callback));
   executor_->ExecuteRpc(std::move(grpc_request));
@@ -143,8 +143,9 @@ GrpcAsyncExecutorTest::StartEchoStreamOnExecutor(
   request.set_text(request_text);
   std::unique_ptr<ScopedGrpcServerStream> scoped_stream;
   auto grpc_request = CreateGrpcAsyncServerStreamingRequest(
-      base::BindOnce(&GrpcAsyncExecutorTestService::Stub::AsyncStreamEcho,
-                     base::Unretained(stub_.get())),
+      base::BindOnce(
+          &GrpcAsyncExecutorTestService::StubInterface::AsyncStreamEcho,
+          base::Unretained(stub_.get())),
       request, std::move(on_channel_ready), on_incoming_msg,
       std::move(on_channel_closed), &scoped_stream);
   if (!deadline.is_null()) {
@@ -286,7 +287,7 @@ TEST_F(GrpcAsyncExecutorTest, UnaryRpcCanceledBeforeExecution) {
   EchoRequest request;
   request.set_text("Hello 1");
   auto grpc_request = CreateGrpcAsyncUnaryRequest(
-      base::BindOnce(&GrpcAsyncExecutorTestService::Stub::AsyncEcho,
+      base::BindOnce(&GrpcAsyncExecutorTestService::StubInterface::AsyncEcho,
                      base::Unretained(stub_.get())),
       request, base::BindOnce([](const grpc::Status&, const EchoResponse&) {
         NOTREACHED();
@@ -335,8 +336,9 @@ TEST_F(GrpcAsyncExecutorTest, ServerStreamingRpcCanceledBeforeExecution) {
   request.set_text("Hello 1");
   std::unique_ptr<ScopedGrpcServerStream> scoped_stream_1;
   auto grpc_request = CreateGrpcAsyncServerStreamingRequest(
-      base::BindOnce(&GrpcAsyncExecutorTestService::Stub::AsyncStreamEcho,
-                     base::Unretained(stub_.get())),
+      base::BindOnce(
+          &GrpcAsyncExecutorTestService::StubInterface::AsyncStreamEcho,
+          base::Unretained(stub_.get())),
       request, NotReachedClosure(), NotReachedStreamingCallback(),
       NotReachedStatusCallback(), &scoped_stream_1);
   scoped_stream_1.reset();
@@ -591,7 +593,7 @@ TEST_F(GrpcAsyncExecutorTest, StreamWithTwoExecutors_VerifyNoInterference) {
 TEST_F(GrpcAsyncExecutorTest, ExecuteWithoutDeadline_DefaultDeadlineSet) {
   EchoRequest request;
   auto grpc_request = CreateGrpcAsyncUnaryRequest(
-      base::BindOnce(&GrpcAsyncExecutorTestService::Stub::AsyncEcho,
+      base::BindOnce(&GrpcAsyncExecutorTestService::StubInterface::AsyncEcho,
                      base::Unretained(stub_.get())),
       request, base::BindOnce([](const grpc::Status&, const EchoResponse&) {
         NOTREACHED();
@@ -610,7 +612,7 @@ TEST_F(GrpcAsyncExecutorTest, ExecuteWithDeadline_DeadlineNotChanged) {
   constexpr base::TimeDelta kDeadlineEpsilon = base::TimeDelta::FromSeconds(1);
   EchoRequest request;
   auto grpc_request = CreateGrpcAsyncUnaryRequest(
-      base::BindOnce(&GrpcAsyncExecutorTestService::Stub::AsyncEcho,
+      base::BindOnce(&GrpcAsyncExecutorTestService::StubInterface::AsyncEcho,
                      base::Unretained(stub_.get())),
       request, base::BindOnce([](const grpc::Status&, const EchoResponse&) {
         NOTREACHED();

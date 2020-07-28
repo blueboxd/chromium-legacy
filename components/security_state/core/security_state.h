@@ -208,6 +208,10 @@ struct VisibleSecurityState {
   // content. If set to false, the page will receive a neutral (rather than
   // positively secure) UI treatment.
   bool should_suppress_mixed_content_warning;
+  // True if mixed forms should be treated as secure from the visible security
+  // state perspective (for example, if a different warning is being shown for
+  // them).
+  bool should_treat_displayed_mixed_forms_as_secure;
   // Contains information about input events that may impact the security
   // level of the page.
   InsecureInputEventData insecure_input_events;

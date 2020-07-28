@@ -58,18 +58,20 @@ const float kEmphasisMarkFontSizeMultiplier = 0.5f;
 
 SimpleFontData::SimpleFontData(const FontPlatformData& platform_data,
                                scoped_refptr<CustomFontData> custom_data,
-                               bool subpixel_ascent_descent)
+                               bool subpixel_ascent_descent,
+                               const FontMetricsOverride& metrics_override)
     : max_char_width_(-1),
       avg_char_width_(-1),
       platform_data_(platform_data),
       custom_font_data_(std::move(custom_data)),
       visual_overflow_inflation_for_ascent_(0),
       visual_overflow_inflation_for_descent_(0) {
-  PlatformInit(subpixel_ascent_descent);
+  PlatformInit(subpixel_ascent_descent, metrics_override);
   PlatformGlyphInit();
 }
 
-void SimpleFontData::PlatformInit(bool subpixel_ascent_descent) {
+void SimpleFontData::PlatformInit(bool subpixel_ascent_descent,
+                                  const FontMetricsOverride& metrics_override) {
   if (!platform_data_.size()) {
     font_metrics_.Reset();
     avg_char_width_ = 0;
@@ -89,7 +91,8 @@ void SimpleFontData::PlatformInit(bool subpixel_ascent_descent) {
   FontMetrics::AscentDescentWithHacks(
       ascent, descent, visual_overflow_inflation_for_ascent_,
       visual_overflow_inflation_for_descent_, platform_data_, font_,
-      subpixel_ascent_descent);
+      subpixel_ascent_descent, metrics_override.ascent_override,
+      metrics_override.descent_override);
 
   font_metrics_.SetAscent(ascent);
   font_metrics_.SetDescent(descent);
@@ -235,6 +238,13 @@ scoped_refptr<SimpleFontData> SimpleFontData::CreateScaledFontData(
   return SimpleFontData::Create(
       FontPlatformData(platform_data_, scaled_size),
       IsCustomFont() ? CustomFontData::Create() : nullptr);
+}
+
+scoped_refptr<SimpleFontData> SimpleFontData::MetricsOverriddenFontData(
+    const FontMetricsOverride& metrics_override) const {
+  return base::AdoptRef(new SimpleFontData(platform_data_, custom_font_data_,
+                                           false /* subpixel_ascent_descent */,
+                                           metrics_override));
 }
 
 // Internal leadings can be distributed to ascent and descent.

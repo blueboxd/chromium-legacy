@@ -1706,7 +1706,8 @@ bool AppsGridView::DragPointIsOverItem(const gfx::Point& point) {
       (point - GetExpectedTileBounds(nearest_tile_index).CenterPoint())
           .Length();
   if (distance_to_tile_center >
-      GetAppListConfig().folder_dropping_circle_radius()) {
+      (GetAppListConfig().folder_dropping_circle_radius() *
+       (cardified_state_ ? kCardifiedScale : 1.0f))) {
     return false;
   }
 
@@ -1744,7 +1745,8 @@ void AppsGridView::UpdateDropTargetForReorder(const gfx::Point& point) {
   // between apps.
   int x_offset =
       x_offset_direction * (total_tile_size.width() / 2 -
-                            GetAppListConfig().folder_dropping_circle_radius());
+                            GetAppListConfig().folder_dropping_circle_radius() *
+                                (cardified_state_ ? kCardifiedScale : 1.0f));
   int col = (point.x() - bounds.x() + x_offset) / total_tile_size.width();
   col = base::ClampToRange(col, 0, cols_ - 1);
   drop_target_ =
@@ -1781,7 +1783,8 @@ bool AppsGridView::DragIsCloseToItem() {
       (GetAppListConfig().grid_tile_width() + horizontal_tile_padding_ * 2) *
       0.4;
   const int double_icon_radius =
-      GetAppListConfig().folder_dropping_circle_radius() * 2;
+      GetAppListConfig().folder_dropping_circle_radius() * 2 *
+      (cardified_state_ ? kCardifiedScale : 1.0f);
   const int minimum_drag_distance_for_reorder =
       std::min(forty_percent_icon_spacing, double_icon_radius);
 

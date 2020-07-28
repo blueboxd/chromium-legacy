@@ -14,6 +14,7 @@ js_type_check("closure_compile") {
   deps = [
     ":fake_mojo_interfaces",
     ":nearby_confirmation_page_test",
+    ":nearby_device_icon_test",
     ":nearby_device_test",
     ":nearby_discovery_page_test",
     ":nearby_preview_test",
@@ -38,7 +39,18 @@ js_library("nearby_confirmation_page_test") {
 }
 
 js_library("nearby_device_test") {
-  deps = [ "//chrome/browser/resources/nearby_share:nearby_device" ]
+  deps = [
+    "//chrome/browser/resources/nearby_share:nearby_device",
+    "//chrome/browser/ui/webui/nearby_share:mojom_js_library_for_compile",
+  ]
+  externs_list = [ "$externs_path/mocha-2.5.js" ]
+}
+
+js_library("nearby_device_icon_test") {
+  deps = [
+    "//chrome/browser/resources/nearby_share:nearby_device_icon",
+    "//chrome/browser/ui/webui/nearby_share:mojom_js_library_for_compile",
+  ]
   externs_list = [ "$externs_path/mocha-2.5.js" ]
 }
 
@@ -56,7 +68,10 @@ js_library("nearby_preview_test") {
 }
 
 js_library("nearby_progress_test") {
-  deps = [ "//chrome/browser/resources/nearby_share:nearby_progress" ]
+  deps = [
+    "//chrome/browser/resources/nearby_share:nearby_progress",
+    "//chrome/browser/ui/webui/nearby_share:mojom_js_library_for_compile",
+  ]
   externs_list = [ "$externs_path/mocha-2.5.js" ]
 }
 

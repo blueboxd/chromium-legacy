@@ -12,5 +12,6 @@
     readonly attribute ScrollDirection orientation;
     readonly attribute (DOMString or ScrollTimelineElementBasedOffset) startScrollOffset;
     readonly attribute (DOMString or ScrollTimelineElementBasedOffset) endScrollOffset;
+    readonly attribute FrozenArray<(DOMString or ScrollTimelineElementBasedOffset)> scrollOffsets;
     readonly attribute (double or ScrollTimelineAutoKeyword) timeRange;
 };

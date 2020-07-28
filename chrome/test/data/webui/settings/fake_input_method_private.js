@@ -12,7 +12,6 @@ cr.define('settings', function() {
    * during testing have been implemented.
    *
    * @constructor
-   * @implements {InputMethodPrivate}
    */
   /* #export */ function FakeInputMethodPrivate() {}
 

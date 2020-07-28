@@ -816,9 +816,6 @@ Nếu bạn tắt chính sách này, thì việc cuộn trang web đến các ph
       Bạn không nên dùng chính sách này cho các thiết bị dùng chung.
 
       Nếu bạn đặt chính sách này thành True hoặc không đặt chính sách này, thì thông báo cảnh báo quyền riêng tư trong phiên khách được quản lý tự động chạy sẽ được ghim cho đến khi người dùng đóng thông báo này.</translation>
-<translation id="2288338171390565087">Tính năng này đưa ra biểu tượng cảm xúc đề xuất mỗi khi người dùng nhập một từ khớp với loạt biểu tượng cảm xúc có sẵn.
-      Nếu bạn đặt chính sách này thành true, thì tính năng này sẽ buộc phải bật và người dùng sẽ không thể ghi đè chính sách này.
-      Theo mặc định, chính sách này được đặt thành false, khi đó sẽ không có biểu tượng cảm xúc đề xuất và người dùng không thể ghi đè chính sách này.</translation>
 <translation id="2289265947759479962">Chính sách này kiểm soát xem có báo cáo thông tin phiên bản, chẳng hạn như phiên bản hệ điều hành, nền tảng hệ điều hành, cấu trúc hệ điều hành, phiên bản <ph name="PRODUCT_NAME" /> và kênh <ph name="PRODUCT_NAME" /> hay không.
 
       Khi bạn không đặt chính sách <ph name="CLOUD_REPORTING_ENABLED_POLICY_NAME" /> hoặc đặt thành tắt, thì chính sách này sẽ bị bỏ qua.
@@ -1241,13 +1238,6 @@ Khi chính sách này được đặt thành false hoặc không được địn
       Khi bạn đặt chính sách này thành False, thì những thông tin có thể dùng để nhận dạng máy sẽ không được thu thập.
 
       Chính sách này chỉ có hiệu lực khi máy đã đăng ký chính sách <ph name="CLOUD_MANAGEMENT_ENROLLMENT_TOKEN" /> đối với <ph name="PRODUCT_NAME" />.</translation>
-<translation id="2836621397261130126">Kiểm soát xem có áp dụng kết quả phê duyệt theo chính sách KDC để quyết định việc ủy quyền vé <ph name="KERBEROS" /> hay không.
-
-          Nếu bạn đặt chính sách này thành true, thì quá trình xác thực HTTP sẽ áp dụng kết quả phê duyệt theo chính sách KDC, tức là Chrome chỉ ủy quyền thông tin đăng nhập nếu KDC đặt <ph name="OK_AS_DELEGATE" /> trên một vé dịch vụ. Vui lòng truy cập vào https://tools.ietf.org/html/rfc5896.html để biết thêm thông tin. Dịch vụ cũng phải khớp với chính sách 'AuthNegotiateDelegateWhitelist'.
-
-          Nếu bạn không đặt hoặc đặt chính sách này thành false, thì các nền tảng được hỗ trợ sẽ bỏ qua chính sách KDC và chỉ áp dụng chính sách 'AuthNegotiateDelegateWhitelist'.
-
-          Chính sách KDC luôn áp dụng trên Windows.</translation>
 <translation id="283695852388224413">Nếu bạn đặt chính sách này, độ dài tối đa đã định cấu hình của mã PIN sẽ được thực thi. Giá trị bằng 0 hoặc nhỏ hơn có nghĩa là không có độ dài tối đa; trong trường hợp đó, người dùng có thể đặt mã PIN với độ dài tùy ý. Nếu tùy chọn cài đặt này nhỏ hơn <ph name="PIN_UNLOCK_MINIMUM_LENGTH_POLICY_NAME" /> nhưng lớn hơn 0 thì độ dài tối đa bằng độ dài tối thiểu.
 
           Nếu bạn không đặt chính sách này, thì sẽ không có độ dài tối đa nào được thực thi.</translation>
@@ -2450,13 +2440,6 @@ Nếu đặt thành False, thì <ph name="PRODUCT_NAME" /> sẽ không sử dụ
       Nếu bạn chọn 'Bắt buộc', người dùng CHỈ có thể mở trang ở chế độ ẩn danh. Xin lưu ý rằng tùy chọn 'Bắt buộc' không hoạt động trên Android-on-Chrome</translation>
 <translation id="4600786265870346112">Bật con trỏ lớn</translation>
 <translation id="4604931264910482931">Định cấu hình danh sách cấm nhắn tin gốc</translation>
-<translation id="4614701085541180174">Cho phép bạn chỉ định danh sách mẫu URL. Những mẫu URL này chỉ định các trang web có chứng chỉ máy khách được chọn tự động trên màn hình đăng nhập trong khung lưu trữ quy trình SAML nếu trang web yêu cầu chứng chỉ. Một ví dụ về cách sử dụng là định cấu hình một chứng chỉ cho toàn thiết bị sẽ hiển thị với SAML IdP.
-
-      Giá trị phải là một mảng từ điển JSON dạng chuỗi. Mỗi từ điển phải có dạng <ph name="DEVICE_LOGIN_SCREEN_AUTO_SELECT_CERTIFICATE_FOR_URLS_EXAMPLE" />, trong đó <ph name="URL_PATTERN_PLACEHOLDER" /> là mẫu tùy chọn cài đặt nội dung. <ph name="FILTER_PLACEHOLDER" /> giới hạn các chứng chỉ máy khách mà trình duyệt sẽ tự động chọn. Bất kể bộ lọc là gì, chỉ các chứng chỉ khớp với yêu cầu chứng chỉ của máy chủ mới được chọn. Nếu <ph name="FILTER_PLACEHOLDER" /> có dạng <ph name="JSON_DICTIONARY_EXAMPLE" />, thì chỉ các chứng chỉ máy khách do chứng chỉ có CommonName <ph name="ISSUER_CN_PLACEHOLDER" /> cấp mới được chọn. Nếu <ph name="FILTER_PLACEHOLDER" /> là từ điển trống {}, thì việc chọn chứng chỉ máy khách sẽ không có các hạn chế bổ sung.
-
-      Nếu bạn không đặt chính sách này, thì không có trang web nào sẽ được thực hiện thao tác tự động chọn.
-
-      Để biết thông tin chi tiết về mẫu URL hợp lệ, vui lòng xem tại https://cloud.google.com/docs/chrome-enterprise/policies/url-patterns.</translation>
 <translation id="4617338332148204752">Bỏ qua kiểm tra thẻ meta trong <ph name="PRODUCT_FRAME_NAME" /></translation>
 <translation id="462134014569484584">Chính sách này chỉ định khóa cấp phép <ph name="PLUGIN_VM_NAME" /> cho thiết bị này.</translation>
 <translation id="4625915093043961294">Định cấu hình danh sách trắng cài đặt tiện ích</translation>
@@ -5509,19 +5492,6 @@ Bạn nên định cấu hình chính sách trên Windows qua GPO, mặc dù vi�
        Chính sách này không ảnh hưởng đến các loại nội dung hỗn hợp khác ngoài âm thanh, video và hình ảnh.
        Chính sách này sẽ không còn hiệu lực kể từ <ph name="PRODUCT_NAME" /> phiên bản 84.</translation>
 <translation id="9010080992450148617">Cho phép người dùng đã đăng ký chương trình Bảo vệ nâng cao gửi các tệp đã tải xuống cho Google để quét sâu</translation>
-<translation id="90110062113213245">Khi đặt chính sách này, bạn có thể tạo danh sách các mẫu URL chỉ định trang web mà Chrome có thể tự động chọn chứng chỉ máy khách. Giá trị là một mảng từ điển JSON phân thành chuỗi, mỗi mảng có dạng <ph name="AUTO_SELECT_CERTIFICATE_FOR_URLS_EXAMPLE" />, trong đó <ph name="URL_PATTERN_PLACEHOLDER" /> là mẫu thông tin cài đặt nội dung. <ph name="FILTER_PLACEHOLDER" /> giới hạn các chứng chỉ máy khách mà trình duyệt sẽ tự động chọn. Bất kể bộ lọc là gì, chỉ các chứng chỉ khớp với yêu cầu chứng chỉ của máy chủ mới được chọn.
-
-      Ví dụ: nếu <ph name="FILTER_PLACEHOLDER" /> có dạng:
-
-      * <ph name="AUTO_SELECT_CERTIFICATE_FOR_URLS_FILTER_EXAMPLE" />, thì chỉ các chứng chỉ máy khách do chứng chỉ có CommonName <ph name="ISSUER_CN_PLACEHOLDER" /> cấp mới được chọn.
-
-      * Các mục <ph name="ISSUER_STRING_VALUE" /> và <ph name="SUBJECT_STRING_VALUE" />, chỉ các chứng chỉ khớp với chứng chỉ máy khách mới được chọn.
-
-      * ("O"), chứng chỉ phải có ít nhất một tổ chức khớp với giá trị đã chỉ định thì mới được chọn. * ("OU"), chứng chỉ phải có ít nhất một đơn vị tổ chức khớp với giá trị đã chỉ định thì mới được chọn.
-
-      * <ph name="EMPTY_DICTIONARY" />, việc chọn chứng chỉ máy khách sẽ không có các hạn chế bổ sung.
-
-      Nếu bạn không đặt chính sách này, thì trình duyệt sẽ không tự động chọn đối với mọi trang web.</translation>
 <translation id="9013875414788074110">Trong khi đăng nhập, <ph name="PRODUCT_OS_NAME" /> có thể xác thực với một máy chủ (trực tuyến) hoặc sử dụng mật khẩu đã lưu vào bộ nhớ đệm (ngoại tuyến).
 
       Khi bạn đặt giá trị -1 cho chính sách này, người dùng có thể xác thực ngoại tuyến một cách vô hạn định. Khi bạn đặt bất kỳ giá trị nào khác cho chính sách này, chính sách sẽ chỉ định khoảng thời gian kể từ lần xác thực trực tuyến cuối cùng, sau thời gian này người dùng phải xác thực trực tuyến lại.

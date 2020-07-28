@@ -15,8 +15,10 @@
 #include "content/browser/conversions/storable_impression.h"
 #include "content/browser/storage_partition_impl.h"
 #include "content/public/browser/browser_context.h"
+#include "content/public/browser/content_browser_client.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_ui.h"
+#include "content/public/common/content_client.h"
 
 namespace content {
 
@@ -71,8 +73,11 @@ ConversionInternalsHandlerImpl::~ConversionInternalsHandlerImpl() = default;
 void ConversionInternalsHandlerImpl::IsMeasurementEnabled(
     ::mojom::ConversionInternalsHandler::IsMeasurementEnabledCallback
         callback) {
+  content::WebContents* contents = web_ui_->GetWebContents();
   bool measurement_enabled =
-      manager_provider_->GetManager(web_ui_->GetWebContents());
+      manager_provider_->GetManager(contents) &&
+      GetContentClient()->browser()->AllowConversionMeasurement(
+          contents->GetBrowserContext());
   std::move(callback).Run(measurement_enabled);
 }
 

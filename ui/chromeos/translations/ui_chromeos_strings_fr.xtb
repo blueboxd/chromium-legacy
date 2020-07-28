@@ -21,6 +21,7 @@
 <translation id="1150565364351027703">Lunettes de soleil</translation>
 <translation id="115443833402798225">Hangûl ahnmatae</translation>
 <translation id="1155759005174418845">Catalan</translation>
+<translation id="1172970565351728681">Temps restant : environ <ph name="REMAINING_TIME" /></translation>
 <translation id="1173894706177603556">Renommer</translation>
 <translation id="117624967391683467">Copie de <ph name="FILE_NAME" /> en cours…</translation>
 <translation id="1178581264944972037">Suspendre</translation>
@@ -198,6 +199,7 @@
 <translation id="3236289833370040187">La propriété sera transférée à <ph name="DESTINATION_DOMAIN" />.</translation>
 <translation id="3241720467332021590">Irlandais</translation>
 <translation id="3245321423178950146">Artiste inconnu</translation>
+<translation id="3248185426436836442">En attente</translation>
 <translation id="3252266817569339921">Français</translation>
 <translation id="3254434849914415189">Sélectionnez l'application par défaut pour les fichiers <ph name="FILE_TYPE" /> :</translation>
 <translation id="3264582393905923483">Contexte</translation>
@@ -244,6 +246,7 @@
 <translation id="3780536599611287598">Vous n'êtes pas autorisé à déplacer des fichiers vers "<ph name="FOLDER_NAME" />".</translation>
 <translation id="3786301125658655746">Vous êtes actuellement hors connexion.</translation>
 <translation id="3789841737615482174">Installer</translation>
+<translation id="3793469551756281394">Temps restant : environ <ph name="REMAINING_TIME_HOUR" /> <ph name="REMAINING_TIME_MINUTE" /></translation>
 <translation id="3798449238516105146">Version</translation>
 <translation id="3801082500826908679">Féroïen</translation>
 <translation id="3809272675881623365">Lapin</translation>

@@ -423,7 +423,7 @@ void ArcNetHostImpl::OnConnectionReady() {
       default_network->GetVpnProviderType() == shill::kProviderArcVpn) {
     GetNetworkConnectionHandler()->DisconnectNetwork(
         default_network->path(), base::BindOnce(&ArcVpnSuccessCallback),
-        base::Bind(&ArcVpnErrorCallback, "disconnecting stale ARC VPN"));
+        base::BindOnce(&ArcVpnErrorCallback, "disconnecting stale ARC VPN"));
   }
 }
 
@@ -534,10 +534,10 @@ void ArcNetHostImpl::CreateNetwork(mojom::WifiConfigurationPtr cfg,
       base::AdaptCallbackForRepeating(std::move(callback));
   GetManagedConfigurationHandler()->CreateConfiguration(
       user_id_hash, *properties,
-      base::Bind(&ArcNetHostImpl::CreateNetworkSuccessCallback,
-                 weak_factory_.GetWeakPtr(), repeating_callback),
-      base::Bind(&ArcNetHostImpl::CreateNetworkFailureCallback,
-                 weak_factory_.GetWeakPtr(), repeating_callback));
+      base::BindOnce(&ArcNetHostImpl::CreateNetworkSuccessCallback,
+                     weak_factory_.GetWeakPtr(), repeating_callback),
+      base::BindOnce(&ArcNetHostImpl::CreateNetworkFailureCallback,
+                     weak_factory_.GetWeakPtr(), repeating_callback));
 }
 
 bool ArcNetHostImpl::GetNetworkPathFromGuid(const std::string& guid,
@@ -578,8 +578,8 @@ void ArcNetHostImpl::ForgetNetwork(const std::string& guid,
   auto repeating_callback =
       base::AdaptCallbackForRepeating(std::move(callback));
   GetManagedConfigurationHandler()->RemoveConfiguration(
-      path, base::Bind(&ForgetNetworkSuccessCallback, repeating_callback),
-      base::Bind(&ForgetNetworkFailureCallback, repeating_callback));
+      path, base::BindOnce(&ForgetNetworkSuccessCallback, repeating_callback),
+      base::BindOnce(&ForgetNetworkFailureCallback, repeating_callback));
 }
 
 void ArcNetHostImpl::StartConnect(const std::string& guid,
@@ -597,7 +597,7 @@ void ArcNetHostImpl::StartConnect(const std::string& guid,
       base::AdaptCallbackForRepeating(std::move(callback));
   GetNetworkConnectionHandler()->ConnectToNetwork(
       path, base::BindOnce(&StartConnectSuccessCallback, repeating_callback),
-      base::Bind(&StartConnectFailureCallback, repeating_callback),
+      base::BindOnce(&StartConnectFailureCallback, repeating_callback),
       false /* check_error_state */, chromeos::ConnectCallbackMode::ON_STARTED);
 }
 
@@ -616,7 +616,7 @@ void ArcNetHostImpl::StartDisconnect(const std::string& guid,
       base::AdaptCallbackForRepeating(std::move(callback));
   GetNetworkConnectionHandler()->DisconnectNetwork(
       path, base::BindOnce(&StartDisconnectSuccessCallback, repeating_callback),
-      base::Bind(&StartDisconnectFailureCallback, repeating_callback));
+      base::BindOnce(&StartDisconnectFailureCallback, repeating_callback));
 }
 
 void ArcNetHostImpl::GetWifiEnabledState(GetWifiEnabledStateCallback callback) {
@@ -692,7 +692,7 @@ void ArcNetHostImpl::ConnectArcVpn(const std::string& service_path,
 
   GetNetworkConnectionHandler()->ConnectToNetwork(
       service_path, base::BindOnce(&ArcVpnSuccessCallback),
-      base::Bind(&ArcVpnErrorCallback, "connecting ARC VPN"),
+      base::BindOnce(&ArcVpnErrorCallback, "connecting ARC VPN"),
       false /* check_error_state */,
       chromeos::ConnectCallbackMode::ON_COMPLETED);
 }
@@ -771,18 +771,19 @@ void ArcNetHostImpl::AndroidVpnConnected(
   if (!service_path.empty()) {
     GetManagedConfigurationHandler()->SetProperties(
         service_path, *properties,
-        base::Bind(&ArcNetHostImpl::ConnectArcVpn, weak_factory_.GetWeakPtr(),
-                   service_path, std::string()),
-        base::Bind(&ArcVpnErrorCallback,
-                   "reconnecting ARC VPN " + service_path));
+        base::BindOnce(&ArcNetHostImpl::ConnectArcVpn,
+                       weak_factory_.GetWeakPtr(), service_path, std::string()),
+        base::BindOnce(&ArcVpnErrorCallback,
+                       "reconnecting ARC VPN " + service_path));
     return;
   }
 
   std::string user_id_hash = chromeos::LoginState::Get()->primary_user_hash();
   GetManagedConfigurationHandler()->CreateConfiguration(
       user_id_hash, *properties,
-      base::Bind(&ArcNetHostImpl::ConnectArcVpn, weak_factory_.GetWeakPtr()),
-      base::Bind(&ArcVpnErrorCallback, "connecting new ARC VPN"));
+      base::BindOnce(&ArcNetHostImpl::ConnectArcVpn,
+                     weak_factory_.GetWeakPtr()),
+      base::BindOnce(&ArcVpnErrorCallback, "connecting new ARC VPN"));
 }
 
 void ArcNetHostImpl::AndroidVpnStateChanged(mojom::ConnectionStateType state) {
@@ -799,7 +800,7 @@ void ArcNetHostImpl::AndroidVpnStateChanged(mojom::ConnectionStateType state) {
 
   GetNetworkConnectionHandler()->DisconnectNetwork(
       service_path, base::BindOnce(&ArcVpnSuccessCallback),
-      base::Bind(&ArcVpnErrorCallback, "disconnecting ARC VPN"));
+      base::BindOnce(&ArcVpnErrorCallback, "disconnecting ARC VPN"));
 }
 
 void ArcNetHostImpl::SetAlwaysOnVpn(const std::string& vpn_package,

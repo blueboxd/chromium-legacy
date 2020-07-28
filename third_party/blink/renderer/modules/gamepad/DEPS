@@ -5,6 +5,7 @@ include_rules = [
     "+device/gamepad/public/cpp/gamepad.h",
     "+device/gamepad/public/cpp/gamepads.h",
 
+    "+device/gamepad/public/cpp/gamepad_features.h",
     "+device/gamepad/public/mojom/gamepad.mojom-blink.h",
     "+device/gamepad/public/mojom/gamepad.mojom-blink-forward.h",
     "+device/gamepad/public/mojom/gamepad_hardware_buffer.h",

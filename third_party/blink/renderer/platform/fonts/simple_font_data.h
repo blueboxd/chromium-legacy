@@ -33,6 +33,7 @@
 #include "third_party/blink/renderer/platform/fonts/font_baseline.h"
 #include "third_party/blink/renderer/platform/fonts/font_data.h"
 #include "third_party/blink/renderer/platform/fonts/font_metrics.h"
+#include "third_party/blink/renderer/platform/fonts/font_metrics_override.h"
 #include "third_party/blink/renderer/platform/fonts/font_platform_data.h"
 #include "third_party/blink/renderer/platform/fonts/font_vertical_position_type.h"
 #include "third_party/blink/renderer/platform/fonts/glyph.h"
@@ -83,6 +84,8 @@ class PLATFORM_EXPORT SimpleFontData : public FontData {
 
   scoped_refptr<SimpleFontData> SmallCapsFontData(const FontDescription&) const;
   scoped_refptr<SimpleFontData> EmphasisMarkFontData(const FontDescription&) const;
+  scoped_refptr<SimpleFontData> MetricsOverriddenFontData(
+      const FontMetricsOverride&) const;
 
   FontMetrics& GetFontMetrics() { return font_metrics_; }
   const FontMetrics& GetFontMetrics() const { return font_metrics_; }
@@ -151,12 +154,14 @@ class PLATFORM_EXPORT SimpleFontData : public FontData {
   }
 
  protected:
-  SimpleFontData(const FontPlatformData&,
-                 scoped_refptr<CustomFontData> custom_data,
-                 bool subpixel_ascent_descent = false);
+  SimpleFontData(
+      const FontPlatformData&,
+      scoped_refptr<CustomFontData> custom_data,
+      bool subpixel_ascent_descent = false,
+      const FontMetricsOverride& metrics_override = FontMetricsOverride());
 
  private:
-  void PlatformInit(bool subpixel_ascent_descent);
+  void PlatformInit(bool subpixel_ascent_descent, const FontMetricsOverride&);
   void PlatformGlyphInit();
 
   scoped_refptr<SimpleFontData> CreateScaledFontData(const FontDescription&,

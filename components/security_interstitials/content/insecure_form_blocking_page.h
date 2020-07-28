@@ -7,6 +7,8 @@
 
 #include "components/security_interstitials/content/security_interstitial_page.h"
 
+class PrefRegistrySimple;
+
 namespace security_interstitials {
 class SecurityInterstitialControllerClient;
 
@@ -22,6 +24,8 @@ class InsecureFormBlockingPage : public SecurityInterstitialPage {
   static const SecurityInterstitialPage::TypeID kTypeForTesting;
   ~InsecureFormBlockingPage() override;
 
+  static void RegisterProfilePrefs(PrefRegistrySimple* registry);
+
   // SecurityInterstitialPage::
   void OnInterstitialClosing() override {}
   SecurityInterstitialPage::TypeID GetTypeForTesting() override;
@@ -29,7 +33,6 @@ class InsecureFormBlockingPage : public SecurityInterstitialPage {
  protected:
   // SecurityInterstitialPage::
   void CommandReceived(const std::string& command) override;
-  bool ShouldCreateNewNavigation() const override;
   void PopulateInterstitialStrings(
       base::DictionaryValue* load_time_data) override;
 

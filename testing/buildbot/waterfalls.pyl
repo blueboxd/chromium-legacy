@@ -2132,7 +2132,7 @@
           'mac_10.15',
           'mac_toolchain',
           'out_dir_arg',
-          'xcode_12a6163b',
+          'xcode_12a8169g',
         ],
         'test_suites': {
           'isolated_scripts': 'ios14_beta_simulator_tests'
@@ -2149,7 +2149,7 @@
           'mac_10.15',
           'mac_toolchain',
           'out_dir_arg',
-          'xcode_12a6163b',
+          'xcode_12a8169g',
         ],
         'test_suites': {
           'isolated_scripts': 'ios14_sdk_simulator_tests'
@@ -3524,10 +3524,11 @@
           'limited_capacity_bot',
           'mac_mini_intel_gpu_experimental',
         ],
+        # When the experimental OS version is identical to the stable version,
+        # the gpu_noop_sleep_telemetry_test test should be used. Otherwise, this
+        # should have the same test_suites as 'Mac FYI Release (Intel)'.
         'test_suites': {
-          'gtest_tests': 'gpu_fyi_mac_release_gtests',
-          'gpu_telemetry_tests': 'gpu_fyi_mac_release_telemetry_tests',
-          'isolated_scripts': 'rendering_desktop_representative_perf_tests_isolated_scripts',
+          'gpu_telemetry_tests': 'gpu_noop_sleep_telemetry_test',
         },
       },
       'Mac FYI Experimental Retina Release (AMD)': {

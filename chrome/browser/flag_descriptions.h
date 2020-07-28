@@ -970,9 +970,6 @@ extern const char kNewOsSettingsSearchDescription[];
 extern const char kOsSettingsDeepLinkingName[];
 extern const char kOsSettingsDeepLinkingDescription[];
 
-extern const char kDlcSettingsUiName[];
-extern const char kDlcSettingsUiDescription[];
-
 extern const char kEnableDeJellyName[];
 extern const char kEnableDeJellyDescription[];
 
@@ -1100,6 +1097,9 @@ extern const char kRewriteLevelDBOnDeletionDescription[];
 
 extern const char kRequestUnbufferedDispatchName[];
 extern const char kRequestUnbufferedDispatchDescription[];
+
+extern const char kRestrictGamepadAccessName[];
+extern const char kRestrictGamepadAccessDescription[];
 
 extern const char kRequestTabletSiteName[];
 extern const char kRequestTabletSiteDescription[];
@@ -1770,6 +1770,9 @@ extern const char kEnableAccessibilityLiveCaptionsDescription[];
 
 extern const char kCastMediaRouteProviderName[];
 extern const char kCastMediaRouteProviderDescription[];
+
+extern const char kGlobalMediaControlsCastStartStopName[];
+extern const char kGlobalMediaControlsCastStartStopDescription[];
 
 extern const char kNtpDismissPromosName[];
 extern const char kNtpDismissPromosDescription[];

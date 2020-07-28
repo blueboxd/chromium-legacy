@@ -335,6 +335,7 @@ Mantén premida calquera palabra para buscala. Se queres refinar a busca, selecc
 <translation id="3658159451045945436">O restablecemento borra o historial de aforro de datos, incluída a lista de sitios visitados.</translation>
 <translation id="3692944402865947621">Produciuse un erro ao descargar <ph name="FILE_NAME" /> porque non se pode acceder á localización do almacenamento.</translation>
 <translation id="3701167022068948696">Corrixir agora</translation>
+<translation id="371230970611282515">Predí eventos perigosos antes de que se produzan e móstrache unha advertencia.</translation>
 <translation id="3714981814255182093">Abrir a barra de busca</translation>
 <translation id="3716182511346448902">Esta páxina utiliza demasiada memoria, así que Chrome pausouna.</translation>
 <translation id="3721119614952978349">Ti e Google</translation>
@@ -713,6 +714,7 @@ Por exemplo, algúns sitios web poden responder a esta solicitude mostrándoche 
 <translation id="6593061639179217415">Sitio para ordenadores</translation>
 <translation id="6597891566292541626">Coloca o código QR ou o código de barras neste marco.</translation>
 <translation id="6600954340915313787">Copiouse en Chrome</translation>
+<translation id="661266467055912436">Mellora a túa seguranza e a do resto dos usuarios da Web.</translation>
 <translation id="6627583120233659107">Editar cartafol</translation>
 <translation id="6643016212128521049">Borrar</translation>
 <translation id="6643649862576733715">Ordenar por cantidade de datos aforrados</translation>
@@ -872,6 +874,7 @@ Por exemplo, algúns sitios web poden responder a esta solicitude mostrándoche 
 <translation id="7925590027513907933">{FILE_COUNT,plural, =1{Descargando ficheiro.}other{Descargando # ficheiros.}}</translation>
 <translation id="7926975587469166629">Alcume da tarxeta</translation>
 <translation id="7929962904089429003">Abrir o menú</translation>
+<translation id="7930998711684428189">Móstrache unha advertencia se os teus contrasinais están en risco debido a unha violación da seguranza dos datos.</translation>
 <translation id="7942131818088350342"><ph name="PRODUCT_NAME" /> está desactualizado.</translation>
 <translation id="7947953824732555851">Acep. e iniciar ses.</translation>
 <translation id="7963646190083259054">Vendedor:</translation>

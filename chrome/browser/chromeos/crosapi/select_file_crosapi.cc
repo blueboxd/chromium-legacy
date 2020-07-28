@@ -9,7 +9,6 @@
 
 #include "ash/public/cpp/shell_window_ids.h"
 #include "ash/shell.h"
-#include "ash/wm/desks/desks_util.h"
 #include "base/files/file_path.h"
 #include "base/memory/ref_counted.h"
 #include "base/numerics/ranges.h"
@@ -19,13 +18,9 @@
 #include "ui/shell_dialogs/select_file_dialog.h"
 #include "ui/shell_dialogs/select_file_policy.h"
 #include "ui/shell_dialogs/selected_file_info.h"
-#include "ui/wm/public/activation_client.h"
 #include "url/gurl.h"
 
 namespace {
-
-// TODO(https://crbug.com/1090587): Replace with window ID from Wayland client.
-int g_next_window_id = 0;
 
 ui::SelectFileDialog::Type GetUiType(
     crosapi::mojom::SelectFileDialogType type) {
@@ -57,36 +52,50 @@ ui::SelectFileDialog::FileTypeInfo::AllowedPaths GetUiAllowedPaths(
   }
 }
 
-// TODO(https://crbug.com/1090587): Parent to the ShellSurface that spawned
-// the dialog. For now, parent to the active window, which in practice should be
-// the spawning window.
-aura::Window* GetOwnerWindow() {
-  aura::Window* root = ash::Shell::GetRootWindowForNewWindows();
-  aura::Window* active = ::wm::GetActivationClient(root)->GetActiveWindow();
-  // Check that the active window is still a ShellSurface window.
-  if (active && exo::GetShellSurfaceBaseForWindow(active))
-    return active;
-  // Fallback to the active virtual desk.
-  return ash::Shell::GetContainer(root,
-                                  ash::desks_util::GetActiveDeskContainerId());
+// Performs a depth-first search for a window with a given exo ShellSurface
+// |app_id| starting at |root|.
+aura::Window* FindWindowWithShellAppId(aura::Window* root,
+                                       const std::string& app_id) {
+  const std::string* id = exo::GetShellApplicationId(root);
+  if (id && *id == app_id)
+    return root;
+  for (aura::Window* child : root->children()) {
+    aura::Window* found = FindWindowWithShellAppId(child, app_id);
+    if (found)
+      return found;
+  }
+  return nullptr;
+}
+
+// Searches all displays for a ShellSurfaceBase with |app_id| and
+// returns its aura::Window. Returns null if no such shell surface exists.
+aura::Window* GetShellSurfaceWindow(const std::string& app_id) {
+  for (aura::Window* display_root : ash::Shell::GetAllRootWindows()) {
+    aura::Window* window = FindWindowWithShellAppId(display_root, app_id);
+    if (window)
+      return window;
+  }
+  return nullptr;
 }
 
 // Manages a single open/save dialog. There may be multiple dialogs showing at
 // the same time. Deletes itself when the dialog is closed.
 class SelectFileDialogHolder : public ui::SelectFileDialog::Listener {
  public:
-  SelectFileDialogHolder(crosapi::mojom::SelectFileOptionsPtr options,
+  SelectFileDialogHolder(aura::Window* shell_surface_window,
+                         crosapi::mojom::SelectFileOptionsPtr options,
                          crosapi::mojom::SelectFile::SelectCallback callback)
       : select_callback_(std::move(callback)) {
+    DCHECK(shell_surface_window);
     // Policy is null because showing the file-dialog-blocked infobar is handled
     // client-side in lacros-chrome.
     select_file_dialog_ =
         SelectFileDialogExtension::Create(this, /*policy=*/nullptr);
 
     SelectFileDialogExtension::Owner owner;
-    owner.window = GetOwnerWindow();
-    // TODO(https://crbug.com/1090587): Replace with ID from Wayland client.
-    owner.lacros_window_id = g_next_window_id++;
+    // Parent to the ShellSurface window that spawned the dialog.
+    owner.window = shell_surface_window;
+    owner.lacros_window_id = options->owning_shell_window_id;
 
     int file_type_index = 0;
     if (options->file_types) {
@@ -191,6 +200,15 @@ SelectFileCrosapi::~SelectFileCrosapi() = default;
 
 void SelectFileCrosapi::Select(crosapi::mojom::SelectFileOptionsPtr options,
                                SelectCallback callback) {
+  aura::Window* shell_surface_window =
+      GetShellSurfaceWindow(options->owning_shell_window_id);
+  // Bail out if the shell surface doesn't exist any more.
+  if (!shell_surface_window) {
+    std::move(callback).Run(
+        crosapi::mojom::SelectFileResult::kInvalidShellWindow, {}, 0);
+    return;
+  }
   // Deletes itself when the dialog closes.
-  new SelectFileDialogHolder(std::move(options), std::move(callback));
+  new SelectFileDialogHolder(shell_surface_window, std::move(options),
+                             std::move(callback));
 }

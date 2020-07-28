@@ -1,0 +1,55 @@
+<!--
+Tests that free-floating anchors can be created in an AR session.
+-->
+<html>
+  <head>
+    <link rel="stylesheet" type="text/css" href="../resources/webxr_e2e.css">
+  </head>
+  <body>
+    <canvas id="webgl-canvas"></canvas>
+    <script src="../../../../../../third_party/blink/web_tests/resources/testharness.js"></script>
+    <script src="../resources/webxr_e2e.js"></script>
+    <script>var shouldAutoCreateNonImmersiveSession = false;</script>
+    <script src="../resources/webxr_boilerplate.js"></script>
+    <script>
+      setup({single_test: true});
+
+      const TestState = Object.freeze({
+        "Initial":  0,
+        "AnchorRequested": 1,
+        });
+
+      let testState = TestState.Initial;
+
+      function stepStartTest() {
+        const sessionInfo = sessionInfos[sessionTypes.AR];
+        const referenceSpace = sessionInfo.currentRefSpace;
+
+        testState = TestState.Initial;
+
+        onARFrameCallback = (session, frame) => {
+          switch(testState) {
+            case TestState.Initial: {
+              // In initial state, we should attempt to create an anchor once viewer pose is available.
+              const viewerPose = frame.getViewerPose(referenceSpace);
+              if(viewerPose && !viewerPose.emulatedPosition) {
+                frame.createAnchor(new XRRigidTransform(), referenceSpace).then((anchor) => {
+                  done();
+                  return;
+                }).catch((err) => {
+                  // Fail the test.
+                  assert_unreached("XRFrame.createAnchor() promise rejected.");
+                });
+
+                testState = TestState.AnchorRequested;
+              }
+              return;
+            }
+            default:
+              return;
+          }
+        };
+      }
+    </script>
+  </body>
+</html>

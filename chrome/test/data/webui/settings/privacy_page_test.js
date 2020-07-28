@@ -7,6 +7,7 @@ import {isMac, isWindows, webUIListenerCallback} from 'chrome://resources/js/cr.
 import {loadTimeData} from 'chrome://resources/js/load_time_data.m.js';
 import {flush} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
 import {ClearBrowsingDataBrowserProxyImpl, CookieControlsMode, SiteSettingsPrefsBrowserProxyImpl} from 'chrome://settings/lazy_load.js';
+import {SafeBrowsingSetting} from 'chrome://settings/lazy_load.js';
 import {HatsBrowserProxyImpl, MetricsBrowserProxyImpl, PrivacyElementInteractions, PrivacyPageBrowserProxyImpl, Router, routes, SecureDnsMode, SyncBrowserProxyImpl} from 'chrome://settings/settings.js';
 import {TestClearBrowsingDataBrowserProxy} from 'chrome://test/settings/test_clear_browsing_data_browser_proxy.js';
 import {TestHatsBrowserProxy} from 'chrome://test/settings/test_hats_browser_proxy.js';
@@ -212,6 +213,27 @@ suite('HappinessTrackingSurveys', function() {
     HatsBrowserProxyImpl.instance_ = testHatsBrowserProxy;
     PolymerTest.clearBody();
     page = document.createElement('settings-privacy-page');
+    // Initialize the privacy page pref. Security page manually expands
+    // the initially selected safe browsing option so the pref object
+    // needs to be defined.
+    page.prefs = {
+      generated: {
+        safe_browsing: {
+          type: chrome.settingsPrivate.PrefType.NUMBER,
+          value: SafeBrowsingSetting.STANDARD,
+        },
+        cookie_session_only: {value: false},
+        cookie_primary_setting:
+            {type: chrome.settingsPrivate.PrefType.NUMBER, value: 0},
+      },
+      profile: {password_manager_leak_detection: {value: false}},
+      dns_over_https:
+          {mode: {value: SecureDnsMode.AUTOMATIC}, templates: {value: ''}},
+      signin: {
+        allowed_on_next_startup:
+            {type: chrome.settingsPrivate.PrefType.BOOLEAN, value: true}
+      },
+    };
     document.body.appendChild(page);
     return flushTasks();
   });

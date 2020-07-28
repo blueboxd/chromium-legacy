@@ -73,9 +73,9 @@ source_set("ios_core_unit_tests") {
 
 test("ios_remoting_unittests") {
   deps = [
-    "//base/test:run_all_unittests",
     "//base/test:test_support",
     "//ios/third_party/material_components_ios:material_components_ios+link",
+    "//remoting/base:run_all_unittests",
     "//remoting/ios/audio:unit_tests",
     "//remoting/ios/facade:unit_tests",
     "//remoting/ios/persistence:unit_tests",

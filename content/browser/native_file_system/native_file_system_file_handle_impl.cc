@@ -82,10 +82,9 @@ void NativeFileSystemFileHandleImpl::CreateFileWriter(
   RunWithWritePermission(
       base::BindOnce(&NativeFileSystemFileHandleImpl::CreateFileWriterImpl,
                      weak_factory_.GetWeakPtr(), keep_existing_data),
-      base::BindOnce([](CreateFileWriterCallback callback) {
-        std::move(callback).Run(native_file_system_error::FromStatus(
-                                    NativeFileSystemStatus::kPermissionDenied),
-                                mojo::NullRemote());
+      base::BindOnce([](blink::mojom::NativeFileSystemErrorPtr result,
+                        CreateFileWriterCallback callback) {
+        std::move(callback).Run(std::move(result), mojo::NullRemote());
       }),
       std::move(callback));
 }

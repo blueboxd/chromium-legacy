@@ -31,10 +31,16 @@ const GraphVisualization = {
      */
     graphUpdateTriggers: Array,
     pageModel: Object,
+    getNodeGroup: {
+      type: Function,
+      default: () => null,
+    },
+
   },
   watch: {
     graphUpdateTriggers: {
       handler: function() {
+        this.graphView.registerGetNodeGroup(this.getNodeGroup);
         this.graphView.updateGraphData(this.pageModel.getDataForD3());
         this.graphView.updateDisplaySettings(
             this.pageModel.displaySettingsData);
@@ -51,6 +57,7 @@ const GraphVisualization = {
     this.graphView = new GraphView();
     this.graphView.registerOnNodeClicked(
         node => this.$emit(CUSTOM_EVENTS.NODE_CLICKED, node));
+    this.graphView.registerGetNodeGroup(this.getNodeGroup);
   },
 };
 
@@ -63,7 +70,6 @@ export default GraphVisualization;
 }
 
 .graph-nodes circle {
-  stroke: #fff;
   stroke-width: 1.5px;
 }
 
@@ -77,8 +83,7 @@ export default GraphVisualization;
 }
 
 .graph-nodes circle.locked {
-  stroke: #000;
-  stroke-width: 3;
+  stroke-width: 3.5px;
 }
 </style>
 

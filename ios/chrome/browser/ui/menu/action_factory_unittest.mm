@@ -7,6 +7,7 @@
 #import "base/test/metrics/histogram_tester.h"
 #import "ios/chrome/browser/main/test_browser.h"
 #import "ios/chrome/browser/ui/menu/menu_action_type.h"
+#import "ios/chrome/browser/ui/menu/menu_histograms.h"
 #import "ios/chrome/grit/ios_strings.h"
 #import "ios/web/public/test/web_task_environment.h"
 #import "testing/gmock/include/gmock/gmock.h"
@@ -26,7 +27,7 @@
 #if defined(__IPHONE_13_0)
 
 namespace {
-const char kTestHistogramName[] = "TestHistogramName";
+MenuScenario kTestMenuScenario = MenuScenario::HistoryEntry;
 }  // namespace
 
 // Test fixture for the ActionFactory.
@@ -50,7 +51,7 @@ class ActionFactoryTest : public PlatformTest {
 TEST_F(ActionFactoryTest, CreateActionWithParameters) {
   if (@available(iOS 13.0, *)) {
     ActionFactory* factory =
-        [[ActionFactory alloc] initWithHistogram:kTestHistogramName];
+        [[ActionFactory alloc] initWithScenario:kTestMenuScenario];
 
     UIImage* mockImage = CreateMockImage();
 
@@ -69,7 +70,7 @@ TEST_F(ActionFactoryTest, CreateActionWithParameters) {
 TEST_F(ActionFactoryTest, CopyAction) {
   if (@available(iOS 13.0, *)) {
     ActionFactory* factory =
-        [[ActionFactory alloc] initWithHistogram:kTestHistogramName];
+        [[ActionFactory alloc] initWithScenario:kTestMenuScenario];
 
     UIImage* expectedImage = [UIImage systemImageNamed:@"doc.on.doc"];
     NSString* expectedTitle = l10n_util::GetNSString(IDS_IOS_COPY_ACTION_TITLE);

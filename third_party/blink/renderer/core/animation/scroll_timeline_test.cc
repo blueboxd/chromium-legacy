@@ -27,6 +27,24 @@ StringOrScrollTimelineElementBasedOffset OffsetFromString(const String& value) {
   return result;
 }
 
+HeapVector<Member<ScrollTimelineOffset>>* CreateScrollOffsets(
+    ScrollTimelineOffset* start_scroll_offset =
+        MakeGarbageCollected<ScrollTimelineOffset>(
+            CSSNumericLiteralValue::Create(
+                10.0,
+                CSSPrimitiveValue::UnitType::kPixels)),
+    ScrollTimelineOffset* end_scroll_offset =
+        MakeGarbageCollected<ScrollTimelineOffset>(
+            CSSNumericLiteralValue::Create(
+                90.0,
+                CSSPrimitiveValue::UnitType::kPixels))) {
+  HeapVector<Member<ScrollTimelineOffset>>* scroll_offsets =
+      MakeGarbageCollected<HeapVector<Member<ScrollTimelineOffset>>>();
+  scroll_offsets->push_back(start_scroll_offset);
+  scroll_offsets->push_back(end_scroll_offset);
+  return scroll_offsets;
+}
+
 }  // namespace
 
 class ScrollTimelineTest : public RenderingTest {
@@ -57,22 +75,12 @@ class TestScrollTimeline : public ScrollTimeline {
  public:
   TestScrollTimeline(Document* document,
                      Element* scroll_source,
-                     ScrollTimelineOffset* start_scroll_offset =
-                         MakeGarbageCollected<ScrollTimelineOffset>(
-                             CSSNumericLiteralValue::Create(
-                                 10.0,
-                                 CSSPrimitiveValue::UnitType::kPixels)),
-
-                     ScrollTimelineOffset* end_scroll_offset =
-                         MakeGarbageCollected<ScrollTimelineOffset>(
-                             CSSNumericLiteralValue::Create(
-                                 90.0,
-                                 CSSPrimitiveValue::UnitType::kPixels)))
+                     HeapVector<Member<ScrollTimelineOffset>>* scroll_offsets =
+                         CreateScrollOffsets())
       : ScrollTimeline(document,
                        scroll_source,
                        ScrollTimeline::Vertical,
-                       start_scroll_offset,
-                       end_scroll_offset,
+                       scroll_offsets,
                        100.0),
         next_service_scheduled_(false) {}
 
@@ -349,12 +357,10 @@ TEST_F(ScrollTimelineTest, AttachOrDetachAnimationWithNullScrollSource) {
   // scrollSource. The alternative approach would require us to remove the
   // documentElement from the document.
   Element* scroll_source = nullptr;
-  ScrollTimelineOffset* start_scroll_offset = nullptr;
-  ScrollTimelineOffset* end_scroll_offset = nullptr;
   Persistent<ScrollTimeline> scroll_timeline =
-      MakeGarbageCollected<ScrollTimeline>(
-          &GetDocument(), scroll_source, ScrollTimeline::Block,
-          start_scroll_offset, end_scroll_offset, 100);
+      MakeGarbageCollected<ScrollTimeline>(&GetDocument(), scroll_source,
+                                           ScrollTimeline::Block,
+                                           CreateScrollOffsets(), 100);
 
   // Sanity checks.
   ASSERT_EQ(scroll_timeline->scrollSource(), nullptr);
@@ -493,8 +499,8 @@ TEST_F(ScrollTimelineTest, ScheduleFrameWhenScrollerLayoutChanges) {
   TestScrollTimeline* scroll_timeline =
       MakeGarbageCollected<TestScrollTimeline>(
           &GetDocument(), scroller_element,
-          MakeGarbageCollected<ScrollTimelineOffset>(),
-          MakeGarbageCollected<ScrollTimelineOffset>());
+          CreateScrollOffsets(MakeGarbageCollected<ScrollTimelineOffset>(),
+                              MakeGarbageCollected<ScrollTimelineOffset>()));
   NonThrowableExceptionState exception_state;
   Timing timing;
   timing.iteration_duration = AnimationTimeDelta::FromSecondsD(30);
@@ -539,8 +545,8 @@ TEST_F(ScrollTimelineTest,
   TestScrollTimeline* scroll_timeline =
       MakeGarbageCollected<TestScrollTimeline>(
           &GetDocument(), scroller_element,
-          MakeGarbageCollected<ScrollTimelineOffset>(),
-          MakeGarbageCollected<ScrollTimelineOffset>());
+          CreateScrollOffsets(MakeGarbageCollected<ScrollTimelineOffset>(),
+                              MakeGarbageCollected<ScrollTimelineOffset>()));
   NonThrowableExceptionState exception_state;
   Timing timing;
   timing.iteration_duration = AnimationTimeDelta::FromSecondsD(30);

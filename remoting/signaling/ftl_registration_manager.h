@@ -10,13 +10,14 @@
 
 #include "base/callback_forward.h"
 #include "base/macros.h"
+#include "base/memory/scoped_refptr.h"
 #include "base/timer/timer.h"
 #include "net/base/backoff_entry.h"
 #include "remoting/signaling/registration_manager.h"
 
-namespace grpc {
-class Status;
-}  // namespace grpc
+namespace network {
+class SharedURLLoaderFactory;
+}  // namespace network
 
 namespace remoting {
 
@@ -31,12 +32,12 @@ class FtlDeviceIdProvider;
 class OAuthTokenGetter;
 
 // Class for registering the user with FTL service.
-// TODO(yuweih): Add unittest
 class FtlRegistrationManager final : public RegistrationManager {
  public:
   // |token_getter| must outlive |this|.
   FtlRegistrationManager(
       OAuthTokenGetter* token_getter,
+      scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory,
       std::unique_ptr<FtlDeviceIdProvider> device_id_provider);
   ~FtlRegistrationManager() override;
 
@@ -49,8 +50,8 @@ class FtlRegistrationManager final : public RegistrationManager {
 
  private:
   using SignInGaiaResponseCallback =
-      base::OnceCallback<void(const grpc::Status&,
-                              const ftl::SignInGaiaResponse&)>;
+      base::OnceCallback<void(const ProtobufHttpStatus&,
+                              std::unique_ptr<ftl::SignInGaiaResponse>)>;
 
   friend class FtlRegistrationManagerTest;
 
@@ -63,10 +64,14 @@ class FtlRegistrationManager final : public RegistrationManager {
   };
   class RegistrationClientImpl;
 
+  FtlRegistrationManager(
+      std::unique_ptr<RegistrationClient> registration_client,
+      std::unique_ptr<FtlDeviceIdProvider> device_id_provider);
+
   void DoSignInGaia(DoneCallback on_done);
   void OnSignInGaiaResponse(DoneCallback on_done,
-                            const grpc::Status& status,
-                            const ftl::SignInGaiaResponse& response);
+                            const ProtobufHttpStatus& status,
+                            std::unique_ptr<ftl::SignInGaiaResponse> response);
 
   std::unique_ptr<RegistrationClient> registration_client_;
   std::unique_ptr<FtlDeviceIdProvider> device_id_provider_;

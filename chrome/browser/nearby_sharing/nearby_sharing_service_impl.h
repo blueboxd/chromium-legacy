@@ -18,17 +18,19 @@
 #include "base/unguessable_token.h"
 #include "chrome/browser/nearby_sharing/client/nearby_share_http_notifier.h"
 #include "chrome/browser/nearby_sharing/common/nearby_share_enums.h"
+#include "chrome/browser/nearby_sharing/incoming_frames_reader.h"
 #include "chrome/browser/nearby_sharing/incoming_share_target_info.h"
 #include "chrome/browser/nearby_sharing/nearby_connections_manager.h"
 #include "chrome/browser/nearby_sharing/nearby_notification_manager.h"
 #include "chrome/browser/nearby_sharing/nearby_process_manager.h"
 #include "chrome/browser/nearby_sharing/nearby_sharing_service.h"
 #include "chrome/browser/nearby_sharing/outgoing_share_target_info.h"
+#include "chrome/browser/nearby_sharing/share_target.h"
+#include "chrome/services/sharing/public/mojom/nearby_decoder_types.mojom.h"
 #include "components/keyed_service/core/keyed_service.h"
 #include "components/prefs/pref_change_registrar.h"
 
 class FastInitiationManager;
-class NearbyConnectionsManager;
 class PrefService;
 class Profile;
 
@@ -109,6 +111,12 @@ class NearbySharingServiceImpl
   void StopAdvertising();
   void OnIncomingTransferUpdate(const ShareTarget& share_target,
                                 TransferMetadata metadata);
+  void ReceiveIntroduction(const ShareTarget& share_target,
+                           const std::string& token);
+  void OnReceivedIntroduction(
+      NearbyConnection* connection,
+      std::unique_ptr<IncomingFramesReader> frames_reader,
+      base::Optional<sharing::mojom::V1FramePtr> frame);
 
   IncomingShareTargetInfo& GetIncomingShareTargetInfo(
       const ShareTarget& share_target);

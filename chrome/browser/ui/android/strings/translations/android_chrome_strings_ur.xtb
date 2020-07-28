@@ -75,6 +75,7 @@
 <translation id="1553358976309200471">‏Chrome کو اپ ڈیٹ کریں</translation>
 <translation id="1569387923882100876">منسلک آلہ</translation>
 <translation id="1571304935088121812">صارف نام کاپی کریں</translation>
+<translation id="1592864538817356322">معیاری تحفظ:</translation>
 <translation id="1612196535745283361">‏Chrome کو آلات اسکین کرنے کیلئے مقام تک رسائی کی ضرورت ہے۔ مقام تک رسائی <ph name="BEGIN_LINK" />اس آلہ کیلئے آف<ph name="END_LINK" /> ہے۔</translation>
 <translation id="1620510694547887537">کیمرا</translation>
 <translation id="1628019612362412531">{NUM_SELECTED,plural, =1{1 منتخب آئٹم کو ہٹائیں}other{# منتخب آئٹمز کو ہٹائیں}}</translation>
@@ -334,6 +335,7 @@
 <translation id="3658159451045945436">ری سیٹ کرنے سے ملاحظہ کردہ سائٹس کی فہرست سمیت ڈیٹا بچت کی آپ کی سرگزشت صاف ہو جاتی ہے۔</translation>
 <translation id="3692944402865947621">اسٹوریج کا مقام ناقابل رسائی ہونے کے سبب <ph name="FILE_NAME" /> ڈاؤن لوڈ کرنا ناکام ہو گیا۔</translation>
 <translation id="3701167022068948696">ابھی درست کریں</translation>
+<translation id="371230970611282515">خطرناک ایونٹس ہونے سے پہلے ان کی پیشین گوئی کرتا ہے اور آپ کو ان کے بارے میں متنبہ کرتا ہے۔</translation>
 <translation id="3714981814255182093">تلاش کریں بار کھولیں</translation>
 <translation id="3716182511346448902">‏یہ صفحہ بہت زیادہ میموری استعمال کرتا ہے، لہذا Chrome نے اسے موقوف کر دیا۔</translation>
 <translation id="3721119614952978349">‏آپ اور Google</translation>
@@ -578,6 +580,7 @@
 <translation id="5659593005791499971">ای میل</translation>
 <translation id="5665379678064389456"><ph name="APP_NAME" /> میں ایونٹ بنائیں</translation>
 <translation id="5668404140385795438">زوم ان کرنے سے بچنے کیلئے کسی ویب سائٹ کی درخواست کو اوور رائیڈ کریں</translation>
+<translation id="568275469169136466">عارضی طور پر سائن ان کرنا</translation>
 <translation id="5683547024293500885">‏Chrome اپ ڈیٹس چیک نہیں کر سکتا ہے</translation>
 <translation id="5686790454216892815">فائل کا نام کافی بڑا ہے</translation>
 <translation id="5694049548840660018">آسانی سے ہوم پر واپس جائيں</translation>
@@ -589,6 +592,7 @@
 <translation id="5723735397759933332">‏لائٹ وضع اب HTTPS صفحات پر تصاویر کو بہتر بنا کر آپ کیلئے مزید ڈیٹا کی بچت کرتی ہے۔</translation>
 <translation id="5726692708398506830">صفحہ پر موجود ہر چیز کو اور بڑا کریں</translation>
 <translation id="5732819098735351888">‏ڈاؤن لوڈ Wi-Fi پر شروع ہوگا۔</translation>
+<translation id="5733983706093266635">‏QR کوڈ تخلیق نہیں کیا جا سکا۔ URL <ph name="CHARACTER_LIMIT" /> حروف سے زیادہ ہے۔</translation>
 <translation id="5748802427693696783">معیاری ٹیبز میں سوئچ کر دیا گیا</translation>
 <translation id="5749068826913805084">‏Chrome کو فائلیں ڈاؤن لوڈ کرنے کیلئے اسٹوریج تک رسائی درکار ہے۔</translation>
 <translation id="5749237766298580851">آف <ph name="SEPARATOR" /> تجاویز کردہ نہیں ہے</translation>
@@ -641,6 +645,7 @@
 <translation id="6111020039983847643">استعمال شدہ ڈیٹا</translation>
 <translation id="6112702117600201073">صفحہ کو ریفریش کرنا</translation>
 <translation id="6127379762771434464">آئٹم ہٹا دیا گیا</translation>
+<translation id="6140709049082532940">بہتر کردہ حفاظت:</translation>
 <translation id="6140912465461743537">ملک/علاقہ</translation>
 <translation id="614940544461990577">آزمائیں:</translation>
 <translation id="6154478581116148741">اس آلہ سے اپنے پاس ورڈز برآمد کرنے کے لئے ترتیبات میں اسکرین لاک آن کریں</translation>
@@ -709,6 +714,7 @@
 <translation id="6593061639179217415">ڈیسک ٹاپ سائٹ</translation>
 <translation id="6597891566292541626">‏QR/بار کوڈ کو اس فریم میں رکھیں۔</translation>
 <translation id="6600954340915313787">‏Chrome پر کاپی کر دیا گیا</translation>
+<translation id="661266467055912436">آپ کے لیے اور ویب پر ہر کسی کے لیے سیکیورٹی کو بہتر بناتا ہے۔</translation>
 <translation id="6627583120233659107">فولڈر میں ترمیم کریں</translation>
 <translation id="6643016212128521049">صاف کریں</translation>
 <translation id="6643649862576733715">بچت کردہ ڈیٹا کی مقدار کے لحاظ سے ترتیب دیں</translation>
@@ -868,6 +874,7 @@
 <translation id="7925590027513907933">{FILE_COUNT,plural, =1{فائل ڈاؤن لوڈ ہو رہی ہے۔}other{# فائلیں ڈاؤن لوڈ ہو رہی ہیں۔}}</translation>
 <translation id="7926975587469166629">کارڈ کا عرفی نام</translation>
 <translation id="7929962904089429003">مینو کھولیں</translation>
+<translation id="7930998711684428189">اگر پاس ورڈز ڈیٹا کی خلاف ورزی میں افشاء ہوتے ہیں تو آپ کو متنبہ کرتا ہے۔</translation>
 <translation id="7942131818088350342"><ph name="PRODUCT_NAME" /> پرانا ہے۔</translation>
 <translation id="7947953824732555851">قبول و سائن ان کریں</translation>
 <translation id="7963646190083259054">وینڈر:</translation>
@@ -1017,6 +1024,7 @@
 <translation id="9100610230175265781">پاس فریز درکار ہے</translation>
 <translation id="9102803872260866941">پیش منظر ٹیب کھلا ہے</translation>
 <translation id="9104217018994036254">ان آلات کی فہرست جن کے ساتھ ٹیب کا اشتراک کرنا ہے۔</translation>
+<translation id="9104402662006063371">پوشیدگی وضع میں جائیں</translation>
 <translation id="9108312223223904744">سیکیورٹی کلید سپورٹ کے بطور فون</translation>
 <translation id="9108808586816295166">‏ممکن ہے کہ محفوظ DNS ہر وقت دستیاب نہ ہو</translation>
 <translation id="9133397713400217035">آف لائن دریافت کریں</translation>

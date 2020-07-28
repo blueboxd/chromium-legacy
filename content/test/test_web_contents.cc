@@ -47,6 +47,7 @@ RenderProcessHostFactory* GetMockProcessFactory() {
 TestWebContents::TestWebContents(BrowserContext* browser_context)
     : WebContentsImpl(browser_context),
       delegate_view_override_(nullptr),
+      web_preferences_changed_counter_(nullptr),
       expect_set_history_offset_and_length_(false),
       expect_set_history_offset_and_length_history_length_(0),
       pause_subresource_loading_called_(false),
@@ -202,6 +203,12 @@ const base::string16& TestWebContents::GetSuggestedFileName() {
 
 bool TestWebContents::HasPendingDownloadImage(const GURL& url) {
   return !pending_image_downloads_[url].empty();
+}
+
+void TestWebContents::OnWebPreferencesChanged() {
+  WebContentsImpl::OnWebPreferencesChanged();
+  if (web_preferences_changed_counter_)
+    ++*web_preferences_changed_counter_;
 }
 
 bool TestWebContents::TestDidDownloadImage(

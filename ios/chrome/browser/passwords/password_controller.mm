@@ -195,8 +195,8 @@ constexpr int kNotifyAutoSigninDuration = 3;  // seconds
         initWithWebState:_webState
                  manager:_passwordManager.get()
               formHelper:formHelper
-        suggestionHelper:suggestionHelper
-                delegate:self];
+        suggestionHelper:suggestionHelper];
+    _sharedPasswordController.delegate = self;
     _passwordManagerDriver.reset(new IOSChromePasswordManagerDriver(
         _sharedPasswordController, _passwordManager.get()));
 

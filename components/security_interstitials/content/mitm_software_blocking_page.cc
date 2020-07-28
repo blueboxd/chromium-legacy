@@ -65,10 +65,6 @@ MITMSoftwareBlockingPage::MITMSoftwareBlockingPage(
 
 MITMSoftwareBlockingPage::~MITMSoftwareBlockingPage() = default;
 
-bool MITMSoftwareBlockingPage::ShouldCreateNewNavigation() const {
-  return true;
-}
-
 security_interstitials::SecurityInterstitialPage::TypeID
 MITMSoftwareBlockingPage::GetTypeForTesting() {
   return MITMSoftwareBlockingPage::kTypeForTesting;

@@ -40,8 +40,7 @@ MediaStreamAudioSourceHandler::MediaStreamAudioSourceHandler(
     : AudioHandler(kNodeTypeMediaStreamAudioSource,
                    node,
                    node.context()->sampleRate()),
-      audio_source_provider_(std::move(audio_source_provider)),
-      source_number_of_channels_(0) {
+      audio_source_provider_(std::move(audio_source_provider)) {
   // Default to stereo. This could change depending on the format of the
   // MediaStream's audio track.
   AddOutput(2);
@@ -63,6 +62,7 @@ MediaStreamAudioSourceHandler::~MediaStreamAudioSourceHandler() {
 
 void MediaStreamAudioSourceHandler::SetFormat(uint32_t number_of_channels,
                                               float source_sample_rate) {
+  MutexLocker locker(process_lock_);
   if (number_of_channels != source_number_of_channels_ ||
       source_sample_rate != Context()->sampleRate()) {
     // The sample-rate must be equal to the context's sample-rate.
@@ -75,9 +75,6 @@ void MediaStreamAudioSourceHandler::SetFormat(uint32_t number_of_channels,
       source_number_of_channels_ = 0;
       return;
     }
-
-    // Synchronize with process().
-    MutexLocker locker(process_lock_);
 
     source_number_of_channels_ = number_of_channels;
 
@@ -102,16 +99,15 @@ void MediaStreamAudioSourceHandler::Process(uint32_t number_of_frames) {
     return;
   }
 
-  if (source_number_of_channels_ != output_bus->NumberOfChannels()) {
-    output_bus->Zero();
-    return;
-  }
-
   // Use a tryLock() to avoid contention in the real-time audio thread.
   // If we fail to acquire the lock then the MediaStream must be in the middle
   // of a format change, so we output silence in this case.
   MutexTryLocker try_locker(process_lock_);
   if (try_locker.Locked()) {
+    if (source_number_of_channels_ != output_bus->NumberOfChannels()) {
+      output_bus->Zero();
+      return;
+    }
     GetAudioSourceProvider()->ProvideInput(output_bus, number_of_frames);
   } else {
     // We failed to acquire the lock.

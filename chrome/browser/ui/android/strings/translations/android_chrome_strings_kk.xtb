@@ -335,6 +335,7 @@
 <translation id="3658159451045945436">Бастапқы күйге қайтарылған кезде, деректерді үнемдеу тарихы, сонымен қатар кірген сайттардың тізімі өшіріледі.</translation>
 <translation id="3692944402865947621"><ph name="FILE_NAME" /> жүктеп алынбады, себебі оны сақтайтын орын жоқ.</translation>
 <translation id="3701167022068948696">Қазір түзету</translation>
+<translation id="371230970611282515">Қауіпті іс-шараларды болжайды және хабарлайды.</translation>
 <translation id="3714981814255182093">Іздеу жолағын ашу</translation>
 <translation id="3716182511346448902">Бұл парақша тым көп жадты пайдаланатындықтан, Chromе оны тоқтатып қойды.</translation>
 <translation id="3721119614952978349">Сіз және Google</translation>
@@ -713,6 +714,7 @@ Google есептік жазбасының шолу тарихы басқа Goog
 <translation id="6593061639179217415">Компьютерге арналған сайт</translation>
 <translation id="6597891566292541626">QR кодын/штрихкодты осы кадрға қойыңыз.</translation>
 <translation id="6600954340915313787">Chrome жүйесіне көшірілген</translation>
+<translation id="661266467055912436">Интернеттегі сіздің және басқалардың қауіпсіздігін күшейтеді.</translation>
 <translation id="6627583120233659107">Қалтаны өзгерту</translation>
 <translation id="6643016212128521049">Тазалау</translation>
 <translation id="6643649862576733715">Үнемделген деректер көлемі бойынша сұрыптау</translation>
@@ -872,6 +874,7 @@ Google есептік жазбасының шолу тарихы басқа Goog
 <translation id="7925590027513907933">{FILE_COUNT,plural, =1{Файл жүктеп алынуда.}other{# файл жүктеп алынуда.}}</translation>
 <translation id="7926975587469166629">Картаның қысқа аты</translation>
 <translation id="7929962904089429003">Мәзірді ашу</translation>
+<translation id="7930998711684428189">Құпия сөздер қолды болған жағдайда, сізге бұл туралы хабарлайды.</translation>
 <translation id="7942131818088350342"><ph name="PRODUCT_NAME" /> ескірген.</translation>
 <translation id="7947953824732555851">Қабылдау және кіру</translation>
 <translation id="7963646190083259054">Жеткізуші:</translation>

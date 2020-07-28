@@ -139,7 +139,6 @@ class UrlHidingInterstitialPage
   bool ShouldDisplayURL() const override { return false; }
 
  protected:
-  bool ShouldCreateNewNavigation() const override { return false; }
   void PopulateInterstitialStrings(
       base::DictionaryValue* load_time_data) override {}
 };

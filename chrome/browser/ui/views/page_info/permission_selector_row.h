@@ -16,6 +16,7 @@
 #include "components/content_settings/core/common/content_settings_types.h"
 #include "components/page_info/page_info_ui.h"
 
+class PermissionIcon;
 class Profile;
 
 namespace internal {
@@ -28,7 +29,6 @@ class PageInfoBubbleViewTestApi;
 
 namespace views {
 class GridLayout;
-class ImageView;
 class Label;
 class View;
 class Combobox;
@@ -79,9 +79,9 @@ class PermissionSelectorRow {
   std::unique_ptr<internal::ComboboxModelAdapter> combobox_model_adapter_;
 
   // These are all owned by the views hierarchy:
-  views::ImageView* icon_;
-  views::Label* label_;
-  views::Combobox* combobox_;
+  PermissionIcon* icon_ = nullptr;
+  views::Label* label_ = nullptr;
+  views::Combobox* combobox_ = nullptr;
 
   base::ObserverList<PermissionSelectorRowObserver, false>::Unchecked
       observer_list_;

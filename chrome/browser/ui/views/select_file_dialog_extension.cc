@@ -169,8 +169,9 @@ SelectFileDialogExtension::RoutingID GetRoutingID(
   if (owner.android_task_id.has_value())
     return base::StringPrintf("android.%d", *owner.android_task_id);
 
+  // Lacros ids are already prefixed with "lacros".
   if (owner.lacros_window_id.has_value())
-    return base::StringPrintf("lacros.%d", *owner.lacros_window_id);
+    return *owner.lacros_window_id;
 
   if (web_contents) {
     return base::StringPrintf(

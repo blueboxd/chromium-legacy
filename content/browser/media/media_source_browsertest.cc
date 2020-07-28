@@ -82,14 +82,8 @@ IN_PROC_BROWSER_TEST_F(MediaSourceTest, Playback_Type_Error) {
 }
 
 // Flaky test crbug.com/246308
-#if defined(OS_ANDROID)
-// Disabled on Android where it fails more frequently.
-#define MAYBE_ConfigChangeVideo DISABLED_ConfigChangeVideo
-#else
-#define MAYBE_ConfigChangeVideo ConfigChangeVideo
-#endif
 // Test changed to skip checks resulting in flakiness. Proper fix still needed.
-IN_PROC_BROWSER_TEST_F(MediaSourceTest, MAYBE_ConfigChangeVideo) {
+IN_PROC_BROWSER_TEST_F(MediaSourceTest, ConfigChangeVideo) {
   RunMediaTestPage("mse_config_change.html", base::StringPairs(), media::kEnded,
                    true);
 }

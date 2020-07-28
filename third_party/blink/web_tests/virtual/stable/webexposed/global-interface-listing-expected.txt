@@ -3149,6 +3149,7 @@ interface HTMLMediaElement : HTMLElement
     getter playbackRate
     getter played
     getter preload
+    getter preservesPitch
     getter readyState
     getter remote
     getter seekable
@@ -3183,6 +3184,7 @@ interface HTMLMediaElement : HTMLElement
     setter onwaitingforkey
     setter playbackRate
     setter preload
+    setter preservesPitch
     setter src
     setter srcObject
     setter volume

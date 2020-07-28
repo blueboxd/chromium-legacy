@@ -7,7 +7,7 @@
 
 #include "base/macros.h"
 #include "third_party/blink/public/common/common_export.h"
-#include "third_party/blink/public/mojom/feature_policy/policy_value.mojom-forward.h"
+#include "third_party/blink/public/mojom/feature_policy/policy_value.mojom-shared.h"
 
 namespace blink {
 

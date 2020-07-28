@@ -6,6 +6,12 @@
 # Script to release ChromeDriver, by copying it from chrome-unsigned bucket to
 # chromedriver bucket.
 
+if [[ $(uname -s) != Linux* ]]
+then
+  echo Please run release.sh on Linux
+  exit 1
+fi
+
 if [[ $# -ne 1 || -z $1 ]]
 then
   echo usage: $0 version

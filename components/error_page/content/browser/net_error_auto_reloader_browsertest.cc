@@ -495,8 +495,9 @@ IN_PROC_BROWSER_TEST_F(NetErrorAutoReloaderBrowserTest,
 }
 
 // Auto-reload is not scheduled when the WebContents are hidden.
+// TODO(crbug/1110259): The test is disabled due to flakiness on multiple platforms.
 IN_PROC_BROWSER_TEST_F(NetErrorAutoReloaderBrowserTest,
-                       NoAutoReloadWhenContentsHidden) {
+                       DISABLED_NoAutoReloadWhenContentsHidden) {
   shell()->web_contents()->WasHidden();
 
   // This would normally schedule an auto-reload, but we're offline.
@@ -507,8 +508,9 @@ IN_PROC_BROWSER_TEST_F(NetErrorAutoReloaderBrowserTest,
 
 // If the WebContents becomes visible while sitting at an error page that
 // supports auto-reload, a new auto-reload task should be scheduled.
+// TODO(crbug/1110259): The test is disabled due to flakiness on multiple platforms.
 IN_PROC_BROWSER_TEST_F(NetErrorAutoReloaderBrowserTest,
-                       AutoReloadWhenContentsBecomeVisible) {
+                       DISABLED_AutoReloadWhenContentsBecomeVisible) {
   shell()->web_contents()->WasHidden();
 
   // This would normally schedule an auto-reload, but we're offline.

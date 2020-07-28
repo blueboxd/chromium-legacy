@@ -15,6 +15,7 @@ import org.chromium.chrome.browser.browserservices.trustedwebactivityui.controll
 import org.chromium.chrome.browser.browserservices.ui.controller.CurrentPageVerifier;
 import org.chromium.chrome.browser.browserservices.ui.controller.CurrentPageVerifier.VerificationStatus;
 import org.chromium.chrome.browser.browserservices.ui.controller.Verifier;
+import org.chromium.chrome.browser.customtabs.CustomTabOrientationController;
 import org.chromium.chrome.browser.customtabs.CustomTabStatusBarColorProvider;
 import org.chromium.chrome.browser.customtabs.content.CustomTabActivityNavigationController;
 import org.chromium.chrome.browser.customtabs.features.ImmersiveModeController;
@@ -40,6 +41,7 @@ public class SharedActivityCoordinator implements InflationObserver {
     private final CustomTabToolbarColorController mToolbarColorController;
     private final CustomTabStatusBarColorProvider mStatusBarColorProvider;
     private final Lazy<ImmersiveModeController> mImmersiveModeController;
+    private final CustomTabOrientationController mCustomTabOrientationController;
 
     @Nullable
     private final ImmersiveMode mImmersiveDisplayMode;
@@ -54,7 +56,8 @@ public class SharedActivityCoordinator implements InflationObserver {
             CustomTabStatusBarColorProvider statusBarColorProvider,
             ActivityLifecycleDispatcher lifecycleDispatcher,
             TrustedWebActivityBrowserControlsVisibilityManager browserControlsVisibilityManager,
-            Lazy<ImmersiveModeController> immersiveModeController) {
+            Lazy<ImmersiveModeController> immersiveModeController,
+            CustomTabOrientationController customTabOrientationController) {
         mCurrentPageVerifier = currentPageVerifier;
         mIntentDataProvider = intentDataProvider;
         mBrowserControlsVisibilityManager = browserControlsVisibilityManager;
@@ -62,6 +65,7 @@ public class SharedActivityCoordinator implements InflationObserver {
         mStatusBarColorProvider = statusBarColorProvider;
         mImmersiveModeController = immersiveModeController;
         mImmersiveDisplayMode = computeImmersiveMode(intentDataProvider);
+        mCustomTabOrientationController = customTabOrientationController;
 
         navigationController.setLandingPageOnCloseCriterion(verifier::wasPreviouslyVerified);
 
@@ -105,6 +109,7 @@ public class SharedActivityCoordinator implements InflationObserver {
         mBrowserControlsVisibilityManager.updateIsInAppMode(useAppModeUi);
         mToolbarColorController.setUseTabThemeColor(useAppModeUi);
         mStatusBarColorProvider.setUseTabThemeColor(useAppModeUi);
+        mCustomTabOrientationController.setCanControlOrientation(useAppModeUi);
     }
 
     private void updateImmersiveMode(boolean inAppMode) {

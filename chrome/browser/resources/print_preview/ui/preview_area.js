@@ -29,7 +29,7 @@ import {NativeLayer, NativeLayerImpl} from '../native_layer.js';
 import {areRangesEqual} from '../print_preview_utils.js';
 
 import {MARGIN_KEY_MAP} from './margin_control_container.js';
-import {PluginProxy} from './plugin_proxy.js';
+import {PluginProxy, PluginProxyImpl} from './plugin_proxy.js';
 import {SettingsBehavior} from './settings_behavior.js';
 
 /**
@@ -153,7 +153,7 @@ Polymer({
 
   /** @override */
   created() {
-    this.pluginProxy_ = PluginProxy.getInstance();
+    this.pluginProxy_ = PluginProxyImpl.getInstance();
   },
 
   /**

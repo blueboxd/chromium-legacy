@@ -62,16 +62,15 @@ class FakeCameraBufferFactory : public CameraBufferFactory {
   }
   std::unique_ptr<gfx::GpuMemoryBuffer> CreateGpuMemoryBuffer(
       const gfx::Size& size,
-      gfx::BufferFormat format) override {
+      gfx::BufferFormat format,
+      gfx::BufferUsage usage) override {
     return unittest_internal::MockGpuMemoryBufferManager::
-        CreateFakeGpuMemoryBuffer(
-            size, format,
-            gfx::BufferUsage::SCANOUT_VEA_READ_CAMERA_AND_CPU_READ_WRITE,
-            gpu::kNullSurfaceHandle);
+        CreateFakeGpuMemoryBuffer(size, format, usage, gpu::kNullSurfaceHandle);
   }
 
   ChromiumPixelFormat ResolveStreamBufferFormat(
-      cros::mojom::HalPixelFormat hal_format) override {
+      cros::mojom::HalPixelFormat hal_format,
+      gfx::BufferUsage usage) override {
     return ChromiumPixelFormat{PIXEL_FORMAT_NV12,
                                gfx::BufferFormat::YUV_420_BIPLANAR};
   }

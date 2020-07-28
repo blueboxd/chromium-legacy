@@ -12,7 +12,7 @@
 namespace remoting {
 
 namespace {
-constexpr int kMaxResponseSizeKb = 512;
+constexpr int kMaxResponseSizeBytes = 512 * 1024;  // 512 KB
 }  // namespace
 
 ProtobufHttpRequest::ProtobufHttpRequest(
@@ -38,7 +38,7 @@ void ProtobufHttpRequest::StartRequestInternal(
   url_loader_->DownloadToString(
       loader_factory,
       base::BindOnce(&ProtobufHttpRequest::OnResponse, base::Unretained(this)),
-      kMaxResponseSizeKb);
+      kMaxResponseSizeBytes);
 }
 
 base::TimeDelta ProtobufHttpRequest::GetRequestTimeoutDuration() const {

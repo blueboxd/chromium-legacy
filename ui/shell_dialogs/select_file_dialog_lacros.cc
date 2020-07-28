@@ -10,6 +10,9 @@
 #include "base/notreached.h"
 #include "chromeos/crosapi/mojom/select_file.mojom.h"
 #include "chromeos/lacros/lacros_chrome_service_impl.h"
+#include "ui/aura/window.h"
+#include "ui/aura/window_tree_host_platform.h"
+#include "ui/platform_window/platform_window.h"
 #include "ui/shell_dialogs/select_file_policy.h"
 #include "ui/shell_dialogs/selected_file_info.h"
 
@@ -56,6 +59,18 @@ SelectedFileInfo ConvertSelectedFileInfo(
   file.display_name = std::move(mojo_file->display_name);
   file.url = std::move(mojo_file->url);
   return file;
+}
+
+// Returns the ID of the Wayland shell surface that contains |window|.
+std::string GetShellWindowUniqueId(aura::Window* window) {
+  // On desktop aura there is one WindowTreeHost per top-level window.
+  aura::WindowTreeHost* window_tree_host = window->GetRootWindow()->GetHost();
+  DCHECK(window_tree_host);
+  // Lacros is based on Ozone/Wayland, which uses PlatformWindow and
+  // aura::WindowTreeHostPlatform.
+  aura::WindowTreeHostPlatform* window_tree_host_platform =
+      static_cast<aura::WindowTreeHostPlatform*>(window_tree_host);
+  return window_tree_host_platform->platform_window()->GetWindowUniqueId();
 }
 
 }  // namespace
@@ -111,6 +126,7 @@ void SelectFileDialogLacros::SelectFileImpl(
     options->file_types->allowed_paths =
         GetMojoAllowedPaths(file_types->allowed_paths);
   }
+  options->owning_shell_window_id = GetShellWindowUniqueId(owning_window);
 
   // Send request to ash-chrome.
   chromeos::LacrosChromeServiceImpl::Get()->select_file_remote()->Select(

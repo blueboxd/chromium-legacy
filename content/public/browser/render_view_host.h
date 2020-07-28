@@ -95,17 +95,6 @@ class CONTENT_EXPORT RenderViewHost : public IPC::Sender {
   // started.
   virtual void NotifyMoveOrResizeStarted() = 0;
 
-  // TODO(mustaq): Replace "Webkit" from this method name.
-  // Passes current web preferences to all renderers in the WebContents
-  // associated with this RenderViewHost, after possibly recomputing
-  // them as follows: all "fast" preferences (those not requiring slow
-  // platform/device polling) are recomputed unconditionally; the remaining
-  // "slow" ones are recomputed only if they have not been computed before.
-  //
-  // This method must be called if any state that affects web preferences has
-  // changed.
-  virtual void OnWebkitPreferencesChanged() = 0;
-
  private:
   // This interface should only be implemented inside content.
   friend class RenderViewHostImpl;

@@ -1678,8 +1678,9 @@ class NoHostThresholdHeavyAdsBrowserTest
 
 // Verifies that the frame is navigated to the intervention page when a
 // heavy ad intervention triggers.
+// TODO(crbug.com/1109750): Test flakes on all platforms.
 IN_PROC_BROWSER_TEST_F(NoHostThresholdHeavyAdsBrowserTest,
-                       HeavyAdInterventionEnabled_ErrorPageLoaded) {
+                       DISABLED_HeavyAdInterventionEnabled_ErrorPageLoaded) {
   base::HistogramTester histogram_tester;
   auto incomplete_resource_response =
       std::make_unique<net::test_server::ControllableHttpResponse>(

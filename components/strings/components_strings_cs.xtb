@@ -359,7 +359,6 @@ Jinak to vaše nastavení ochrany soukromí bude blokovat. Povolením umožníte
 <translation id="2413528052993050574">Server nedokázal prokázat, že patří doméně <ph name="DOMAIN" />. Jeho bezpečnostní certifikát byl zřejmě zrušen. Může to být způsobeno nesprávnou konfigurací nebo tím, že vaše připojení zachytává útočník.</translation>
 <translation id="2438874542388153331">Čtyři otvory vpravo</translation>
 <translation id="245044156129055925">Právě jste své heslo zadali na klamavém webu. Chromium doporučuje okamžitě změnit heslo.</translation>
-<translation id="2463193859425327265">Změnit domovskou stránku</translation>
 <translation id="2463739503403862330">Vyplnit</translation>
 <translation id="2465402087343596252">Architecture-E</translation>
 <translation id="2465655957518002998">Vybrat způsob doručení</translation>
@@ -1148,7 +1147,6 @@ Kontaktujte administrátora systému.</translation>
 <translation id="5785756445106461925">Tato stránka obsahuje ještě další nezabezpečené zdroje. Tyto zdroje budou během přenosu moci zobrazit jiní uživatelé a případní útočníci je mohou upravit a změnit tak vzhled stránky.</translation>
 <translation id="5786044859038896871">Chcete vyplnit informace o kartě?</translation>
 <translation id="5798290721819630480">Zahodit změny?</translation>
-<translation id="5798683403665926540">Domovskou stránku změníte v nastavení Chromu</translation>
 <translation id="5803412860119678065">Chcete vyplnit informace o kartě <ph name="CARD_DETAIL" />?</translation>
 <translation id="5804241973901381774">Oprávnění</translation>
 <translation id="5804427196348435412">Používat zařízení NFC</translation>
@@ -1595,7 +1593,6 @@ Kontaktujte administrátora systému.</translation>
 <translation id="7669271284792375604">Útočníci na tomto webu by se mohli pokusit přimět vás k instalaci programů, které nepříznivě ovlivní procházení webu (například změní vaši domovskou stránku nebo na navštěvovaných stránkách budou zobrazovat další reklamy).</translation>
 <translation id="7673278391011283842">Schránka 6</translation>
 <translation id="7676643023259824263">Vyhledat text ve schránce (<ph name="TEXT" />)</translation>
-<translation id="7681101578153515023">Změnit vyhledávač</translation>
 <translation id="7682287625158474539">Doprava</translation>
 <translation id="7687186412095877299">Vyplní platební formuláře údaji pro uložené platební metody</translation>
 <translation id="7687305263118037187">Časový limit opakování</translation>
@@ -1633,7 +1630,6 @@ Kontaktujte administrátora systému.</translation>
 <translation id="7802523362929240268">Web je důvěryhodný</translation>
 <translation id="780301667611848630">Ne, děkuji</translation>
 <translation id="7805768142964895445">Stav</translation>
-<translation id="7806344367022510803">Změnit nastavení vyhledávače v Chromu</translation>
 <translation id="7812922009395017822">Mir</translation>
 <translation id="7813600968533626083">Odstranit návrh položky formuláře z Chromu?</translation>
 <translation id="781440967107097262">Sdílet schránku?</translation>
@@ -1775,7 +1771,6 @@ Kontaktujte administrátora systému.</translation>
 Další podrobnosti:
 <ph name="DEBUG_INFO" /></translation>
 <translation id="8424582179843326029"><ph name="FIRST_LABEL" /> <ph name="SECOND_LABEL" /> <ph name="THIRD_LABEL" /></translation>
-<translation id="8425213833346101688">Změnit</translation>
 <translation id="8428213095426709021">Nastavení</translation>
 <translation id="8433057134996913067">Budete odhlášeni z většiny webů.</translation>
 <translation id="8437238597147034694">&amp;Vrátit přesunutí zpět</translation>

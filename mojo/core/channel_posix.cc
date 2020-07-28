@@ -14,12 +14,15 @@
 #include "base/bind.h"
 #include "base/containers/queue.h"
 #include "base/location.h"
+#include "base/logging.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/message_loop/message_pump_for_io.h"
+#include "base/metrics/histogram_macros.h"
 #include "base/synchronization/lock.h"
 #include "base/task/current_thread.h"
 #include "base/task_runner.h"
+#include "base/time/time.h"
 #include "build/build_config.h"
 #include "mojo/core/core.h"
 #include "mojo/public/cpp/platform/socket_utils_posix.h"
@@ -51,7 +54,12 @@ class MessageView {
 
   MessageView& operator=(MessageView&& other) = default;
 
-  ~MessageView() = default;
+  ~MessageView() {
+    if (message_) {
+      UMA_HISTOGRAM_TIMES("Mojo.Channel.WriteMessageLatency",
+                          base::TimeTicks::Now() - start_time_);
+    }
+  }
 
   const void* data() const {
     return static_cast<const char*>(message_->data()) + offset_;
@@ -86,6 +94,8 @@ class MessageView {
   size_t offset_;
   std::vector<PlatformHandleInTransit> handles_;
   size_t num_handles_sent_ = 0;
+
+  base::TimeTicks start_time_ = base::TimeTicks::Now();
 
   DISALLOW_COPY_AND_ASSIGN(MessageView);
 };
@@ -125,7 +135,13 @@ class ChannelPosix : public Channel,
   }
 
   void Write(MessagePtr message) override {
+    UMA_HISTOGRAM_COUNTS_100000("Mojo.Channel.WriteMessageSize",
+                                message->data_num_bytes());
+    UMA_HISTOGRAM_COUNTS_100("Mojo.Channel.WriteMessageHandles",
+                             message->num_handles());
+
     bool write_error = false;
+    bool queued = false;
     {
       base::AutoLock lock(write_lock_);
       if (reject_writes_)
@@ -136,6 +152,7 @@ class ChannelPosix : public Channel,
       } else {
         outgoing_messages_.emplace_back(std::move(message), 0);
       }
+      queued = !outgoing_messages_.empty();
     }
     if (write_error) {
       // Invoke OnWriteError() asynchronously on the IO thread, in case Write()
@@ -144,6 +161,7 @@ class ChannelPosix : public Channel,
           FROM_HERE, base::BindOnce(&ChannelPosix::OnWriteError, this,
                                     Error::kDisconnected));
     }
+    UMA_HISTOGRAM_BOOLEAN("Mojo.Channel.WriteQueued", queued);
   }
 
   void LeakHandle() override {
@@ -431,6 +449,11 @@ class ChannelPosix : public Channel,
   bool FlushOutgoingMessagesNoLock() {
     base::circular_deque<MessageView> messages;
     std::swap(outgoing_messages_, messages);
+
+    if (!messages.empty()) {
+      UMA_HISTOGRAM_COUNTS_1000("Mojo.Channel.WriteQueuePendingMessages",
+                                messages.size());
+    }
 
     while (!messages.empty()) {
       if (!WriteNoLock(std::move(messages.front())))

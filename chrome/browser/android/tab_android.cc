@@ -374,14 +374,6 @@ TabAndroid::TabLoadStatus TabAndroid::LoadUrl(
   if (gurl.is_empty())
     return PAGE_LOAD_FAILED;
 
-  // If the page was prerendered, use it.
-  // Note in incognito mode, we don't have a PrerenderManager.
-  bool loaded;
-  if (prerender::PrerenderManager::MaybeUsePrerenderedPage(
-          GetProfile(), web_contents(), gurl, &loaded)) {
-    return loaded ? FULL_PRERENDERED_PAGE_LOAD : PARTIAL_PRERENDERED_PAGE_LOAD;
-  }
-
   GURL fixed_url(
       url_formatter::FixupURL(gurl.possibly_invalid_spec(), std::string()));
   if (!fixed_url.is_valid())

@@ -215,7 +215,7 @@
       如果未設定這項政策，系統會針對所有網站套用 <ph name="DEFAULT_JAVA_SCRIPT_SETTING_POLICY_NAME" /> 政策 (如果已設定)。否則系統會套用使用者的個人設定。
 
       如果想進一步瞭解有效的<ph name="URL_LABEL" />模式，請參閱 https://cloud.google.com/docs/chrome-enterprise/policies/url-patterns。</translation>
-<translation id="1428945832940687828">如果將這項政策設為啟用，系統會關閉 <ph name="PRODUCT_OS_NAME" />「檔案」應用程式中的 <ph name="GOOGLE_DRIVE_NAME" />同步功能，不會將任何資料上傳至雲端硬碟。
+<translation id="1428945832940687828">如果將這項政策設為啟用，系統會關閉 <ph name="PRODUCT_OS_NAME" />「檔案」應用程式中的 <ph name="GOOGLE_DRIVE_NAME" />同步功能，屆時沒有任何資料可以上傳至雲端硬碟。
 
       如果將這項政策設為停用或不設定，使用者可將檔案傳輸至雲端硬碟。</translation>
 <translation id="1435659902881071157">裝置層級網路設定</translation>
@@ -602,7 +602,7 @@
 <translation id="203096360153626918">這項政策對 Android 應用程式沒有影響。即使將這項政策設為 <ph name="FALSE" />，Android 應用程式仍可進入全螢幕模式。</translation>
 <translation id="2035306081270465868">如果將這項政策設為啟用，瀏覽器會在首次執行時，從先前的預設瀏覽器中匯入首頁。如果將這項政策設為停用或不設定，瀏覽器首次執行時不會匯入首頁。
 
-      使用者可以觸發匯入對話方塊，瀏覽器將根據這項政策的值，來勾選或取消勾選首頁的核取方塊。</translation>
+      使用者可以觸發匯入對話方塊，瀏覽器將根據這項政策的值，勾選或取消勾選首頁的核取方塊。</translation>
 <translation id="2040479044912658454">列印光柵化模式</translation>
 <translation id="2043749682619281558">在登入畫面上啟用游標醒目顯示功能</translation>
 <translation id="2043770014371753404">停用的企業印表機</translation>
@@ -766,9 +766,6 @@
       供一般大眾使用的裝置不應設定這項政策。
 
       如果將這項政策設為 True 或不予設定，系統會在自動啟動的受管理訪客工作階段中，持續顯示隱私權警告通知，直到使用者關閉為止。</translation>
-<translation id="2288338171390565087">這項功能可在使用者輸入符合內建表情符號圖的字詞時，提供表情符號建議。
-      如果將這項政策設為 True，系統會強制啟用這項功能，且使用者無法覆寫這項設定。
-      這項政策的預設值為 False，系統不會提供任何表情符號建議，且使用者無法覆寫這項設定。</translation>
 <translation id="2289265947759479962">這項政策可控管系統是否要回報版本資訊，例如 OS 版本、OS 平台、OS 架構、<ph name="PRODUCT_NAME" /> 版本和 <ph name="PRODUCT_NAME" /> 發布版本。
 
       如果不設定 <ph name="CLOUD_REPORTING_ENABLED_POLICY_NAME" /> 政策或設為停用，系統會忽略這項政策。
@@ -1139,11 +1136,11 @@
       如果這項設定已啟用或並未指定，網頁就能使用 JavaScript，但使用者可以變更這項設定。</translation>
 <translation id="2753637905605932878">限制 WebRTC 所使用的本機 UDP 通訊埠範圍</translation>
 <translation id="2757054304033424106">允許安裝的擴充功能/應用程式類型</translation>
-<translation id="2758689548159678032">啟用<ph name="PRODUCT_NAME" />功能時，系統會傳送詳細的要求標頭，提供與使用者的瀏覽器和環境有關的資訊。
+<translation id="2758689548159678032">啟用 <ph name="PRODUCT_NAME" /> 功能時，系統會傳送詳細的要求標頭，提供與使用者的瀏覽器和環境有關的資訊。
 
-      這是附加功能，但如果遇到對於要求的字元數設有限制的網站，新的標頭可能會導致這類網站無法正常運作。
+      這是附加功能，但因為有些網站會限制要求所包含的字元，新標頭有可能會導致這類網站無法正常運作。
 
-      如果啟用或不設定這項政策，系統會啟用<ph name="PRODUCT_NAME" />功能。如果停用這項政策，這項功能將無法使用。
+      如果啟用或不設定這項政策，系統會啟用 <ph name="PRODUCT_NAME" /> 功能。如果停用這項政策，這項功能將無法使用。
 
       這項企業政策只是暫時性措施，將在 Chrome 第 88 版中移除。</translation>
 <translation id="2759224876420453487">控制使用者在多重設定檔工作階段中的行為</translation>
@@ -1189,13 +1186,6 @@
       如果將這項政策設為 False，系統不會收集可用於辨識裝置的資訊。
 
       如果是 <ph name="PRODUCT_NAME" />，只有在已透過 <ph name="CLOUD_MANAGEMENT_ENROLLMENT_TOKEN" /> 註冊裝置的情況下，這項政策才會生效。</translation>
-<translation id="2836621397261130126">控管是否要按照 KDC 政策的核准結果來決定 <ph name="KERBEROS" /> 票證的委派設定。
-
-          如果這項政策的設定為 True，HTTP 驗證會遵循 KDC 政策的核准結果。只有在 KDC 為服務票證設定 <ph name="OK_AS_DELEGATE" /> 時，Chrome 才會委派憑證。詳情請見 https://tools.ietf.org/html/rfc5896.html。服務也必須符合「AuthNegotiateDelegateWhitelist」政策。
-
-          如果不設定這項政策或設為 False，支援平台會忽略 KDC 政策，只遵循「AuthNegotiateDelegateWhitelist」政策。
-
-          在 Windows 上，系統一律會遵循 KDC 政策。</translation>
 <translation id="283695852388224413">如果設定這項政策，系統會強制執行政策所設定的 PIN 碼長度上限。如果將值設為 0 以下的數字，表示 PIN 碼沒有長度上限；這時使用者可以設定任意長度的 PIN 碼。如果政策的值小於 <ph name="PIN_UNLOCK_MINIMUM_LENGTH_POLICY_NAME" /> 但大於 0，PIN 碼的長度上限與長度下限就會相同。
 
            如果不設定這項政策，系統就不會強制執行 PIN 碼長度上限。</translation>
@@ -2141,7 +2131,7 @@
       注意：目前只有在顯示登入畫面或 Kiosk 應用程式工作階段運作時，才能啟用自動重新啟動。這種情況會在日後變更，而且無論任何特定類型的工作階段是否正在運作，政策都會一律適用。
 
       指定政策值時需以秒為單位，並且必須大於 3600 (1 小時)。</translation>
-<translation id="4203643479966921607">如果將這項政策設為啟用或不設定，系統會開啟 <ph name="PRODUCT_NAME" />，使用者可以從應用程式選單、頁面內容選單、支援 Cast 的網站上的媒體控制項，以及 Cast 工具列圖示 (如有顯示) 中將其啟動。
+<translation id="4203643479966921607">如果將這項政策設為啟用或不設定，系統會開啟 <ph name="PRODUCT_NAME" />，使用者可以從應用程式選單、頁面內容選單、支援 Cast 網站的媒體控制項，以及 Cast 工具列圖示 (如有顯示) 中將其啟動。
 
       如果將這項政策設為停用，系統會關閉 <ph name="PRODUCT_NAME" />。</translation>
 <translation id="4203879074082863035">僅對使用者顯示許可清單中的印表機</translation>
@@ -2316,7 +2306,7 @@
 
       只有當 ARC 處於未執行狀態 (例如 Chrome 作業系統啟動期間) 時，這項政策的變更才會生效。</translation>
 <translation id="453031441196755904">這項政策已遭到淘汰。</translation>
-<translation id="4531482429171731618">你可以透過這項政策，設定 Chrome 用來下載檔案的目錄。不論使用者是否指定目錄或已啟用旗標，讓系統詢問每次的下載位置，Chrome 都會使用提供的目錄。
+<translation id="4531482429171731618">你可以透過這項政策，設定 Chrome 用來下載檔案的目錄。不論使用者是否指定目錄或已啟用旗標讓系統詢問每次的下載位置，Chrome 都會使用提供的目錄。
 
       如果未設定這項政策，Chrome 會使用預設的下載目錄，且使用者可以進行變更。
 
@@ -2374,13 +2364,6 @@
       如果設為「強制」，使用者只能以無痕模式開啟網頁。請注意，「強制」選項不適用於 Chrome Android 版。</translation>
 <translation id="4600786265870346112">啟用大型游標</translation>
 <translation id="4604931264910482931">設定內建訊息傳遞黑名單</translation>
-<translation id="4614701085541180174">你可以設定網址模式清單，指定在 SAML 流程代管架構的登入畫面中，系統要為哪些網站自動選取用戶端憑證 (如果網站要求憑證的話)。實際應用範例：設定要提供給 SAML IdP 的裝置通用憑證。
-
-      這個值必須是字串化的 JSON 字典陣列。每個字典的格式都必須為 <ph name="DEVICE_LOGIN_SCREEN_AUTO_SELECT_CERTIFICATE_FOR_URLS_EXAMPLE" />，其中 <ph name="URL_PATTERN_PLACEHOLDER" /> 是內容設定模式。<ph name="FILTER_PLACEHOLDER" /> 會限制瀏覽器可自動選取的用戶端憑證。無論是否設定篩選器，瀏覽器都只會選取符合伺服器憑證要求的憑證。如果 <ph name="FILTER_PLACEHOLDER" /> 的格式為 <ph name="JSON_DICTIONARY_EXAMPLE" />，瀏覽器只會選取由 CommonName <ph name="ISSUER_CN_PLACEHOLDER" /> 憑證所核發的用戶端憑證。如果 <ph name="FILTER_PLACEHOLDER" /> 是空白的字典 {}，則瀏覽器在選取用戶端憑證時不會受到額外限制。
-
-      如果不設定這項政策，系統不會為任何網站自動選取憑證。
-
-      如果想進一步瞭解有效的網址模式，請參閱 https://cloud.google.com/docs/chrome-enterprise/policies/url-patterns。</translation>
 <translation id="4617338332148204752">在 <ph name="PRODUCT_FRAME_NAME" /> 內略過中繼標記檢查</translation>
 <translation id="462134014569484584">這項政策會為這部裝置指定 <ph name="PLUGIN_VM_NAME" /> 授權金鑰。</translation>
 <translation id="4625915093043961294">設定擴充功能安裝許可清單</translation>
@@ -2968,9 +2951,9 @@
 
           這項政策僅適用於已加入 <ph name="MS_AD_NAME" /> 網域的 Windows 執行個體、或是已註冊裝置管理服務的 Windows 10 專業版或企業版執行個體，以及已透過行動裝置管理 (MDM) 所管理或已透過 MCX 加入某個網域的 macOS 執行個體。</translation>
 <translation id="5457065417344056871">在瀏覽器中啟用訪客模式</translation>
-<translation id="5457387982448145430">如果將這項政策設為啟用，瀏覽器會在首次執行時，從先前的預設瀏覽器中匯入已儲存的密碼。如果將這項政策設為啟用或不設定，瀏覽器首次執行時不會匯入任何已儲存的密碼。
+<translation id="5457387982448145430">如果將這項政策設為啟用，瀏覽器會在首次執行時，從先前的預設瀏覽器中匯入已儲存的密碼。如果將這項政策設為停用或不設定，瀏覽器首次執行時就不會匯入任何已儲存的密碼。
 
-      使用者可以觸發匯入對話方塊，瀏覽器將根據這項政策的值，來勾選或取消勾選已儲存密碼的核取方塊。</translation>
+      使用者可以觸發匯入對話方塊，瀏覽器將根據這項政策的值，勾選或取消勾選已儲存密碼的核取方塊。</translation>
 <translation id="5457924070961220141">允許你在安裝「<ph name="PRODUCT_FRAME_NAME" />」之後，設定預設的 HTML 算繪器。如果未設定這項政策，系統就會使用預設設定，允許主機瀏覽器進行算繪，但是你可以覆寫這項預設，改由「<ph name="PRODUCT_FRAME_NAME" />」算繪 HTML 網頁。</translation>
 <translation id="5464816904705580310">為管理化環境下的使用者調整設定。</translation>
 <translation id="5466596281866046569">回報應用程式資訊</translation>
@@ -3405,9 +3388,9 @@
 <translation id="6135398260575578389">已啟用強化模式中的安全瀏覽功能。這個模式可提供更完善的安全防護機制，但使用者必須提供更多瀏覽資訊給 Google。</translation>
 <translation id="6138636318340561140">即時檢查網址的安全瀏覽狀態</translation>
 <translation id="6141402445226505817">一律使用約略時區偵測功能</translation>
-<translation id="6144046700495610112">如果將這項政策設為啟用，瀏覽器會在首次執行時，從先前的預設瀏覽器中匯入自動填入表單資料。如果將這項政策設為停用或不設定，瀏覽器首次執行時不會匯入任何自動填入表單資料。
+<translation id="6144046700495610112">如果將這項政策設為啟用，瀏覽器會在首次執行時，從先前的預設瀏覽器中匯入自動填入表單資料。如果將這項政策設為停用或不設定，瀏覽器首次執行時就不會匯入任何自動填入表單資料。
 
-      使用者可以觸發匯入對話方塊，瀏覽器將根據這項政策的值，來勾選或取消勾選自動填入表單資料的核取方塊。</translation>
+      使用者可以觸發匯入對話方塊，瀏覽器將根據這項政策的值，勾選或取消勾選自動填入表單資料的核取方塊。</translation>
 <translation id="614616930188030377">系統會將這份清單中的模式與要求網址的安全性來源進行比對。
       如果找到相符的結果，或你已停用 chrome://flags/#enable-webrtc-hide-local-ips-with-mdns，系統就會在 WebRTC ICE 候選項目中顯示本機 IP 位址。
       否則系統會透過 mDNS 主機名稱隱藏本機 IP 位址。
@@ -3823,7 +3806,7 @@
 
       這項政策可讓你為 <ph name="PRODUCT_OS_NAME" />裝置提供印表機設定。格式與 NativePrinters 條目相符，每台印表機還有額外的「id」或「guid」必填欄位，用於將印表機加入許可清單或列入黑名單。
 
-      檔案大小不得超過 5MB，且必須使用 JSON 編碼。根據估計，一個 5 MB 的編碼檔案中可包含約 21,000 台印表機。系統會使用加密編譯雜湊碼驗證下載內容的完整性。
+      檔案大小不得超過 5 MB，且必須使用 JSON 編碼。根據估計，一個 5 MB 的編碼檔案中可包含約 21,000 台印表機。系統會使用加密編譯雜湊碼驗證下載內容的完整性。
 
       系統會下載並快取這個檔案，只要網址或雜湊碼有任何變更，系統就會重新下載檔案。
 
@@ -5359,19 +5342,6 @@
       這項政策只會影響類型為音訊、影片和圖片的複合型內容。
        這項政策將自 <ph name="PRODUCT_NAME" /> 第 84 版起失效。</translation>
 <translation id="9010080992450148617">加入進階保護計畫的使用者可以將下載內容傳送至 Google 進行深度掃描</translation>
-<translation id="90110062113213245">你可以透過這項政策建立網址模式清單，用於指定 Chrome 可自動選取用戶端憑證的網站。政策的值是字串化的 JSON 條目陣列，每個條目的格式都是 <ph name="AUTO_SELECT_CERTIFICATE_FOR_URLS_EXAMPLE" />，其中 <ph name="URL_PATTERN_PLACEHOLDER" /> 是內容設定格式。<ph name="FILTER_PLACEHOLDER" /> 會限制瀏覽器可自動選取的用戶端憑證。無論是否設定篩選器，瀏覽器都只會選取符合伺服器憑證要求的憑證。
-
-      以下列舉 <ph name="FILTER_PLACEHOLDER" /> 的格式：
-
-      * 如果是 <ph name="AUTO_SELECT_CERTIFICATE_FOR_URLS_FILTER_EXAMPLE" />，瀏覽器只會選取由 CommonName <ph name="ISSUER_CN_PLACEHOLDER" /> 憑證所核發的用戶端憑證。
-
-      * 如果含有 <ph name="ISSUER_STRING_VALUE" /> 和 <ph name="SUBJECT_STRING_VALUE" /> 部分，瀏覽器只會選取符合的用戶端憑證。
-
-      * 如果是「O」，憑證必須有至少一個機構與指定值相符，才會納入選取範圍。* 如果是「OU」，憑證必須有至少一個機構單位與指定值相符，才會納入選取範圍。
-
-      * 如果是 <ph name="EMPTY_DICTIONARY" />，則瀏覽器在選取用戶端憑證時不會受到額外限制。
-
-      如果未設定這項政策，Chrome 不會自動選取任何網站的用戶端憑證。</translation>
 <translation id="9013875414788074110">在登入時，<ph name="PRODUCT_OS_NAME" />可以透過伺服器進行線上驗證，或使用快取密碼進行離線驗證。
 
       當這項政策的值設為 -1 時，使用者可以無限期執行離線驗證。如果將這項政策設為任何其他值，使用者在上一次線上驗證後，必須於這個值指定的時限再次進行線上驗證。

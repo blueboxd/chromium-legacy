@@ -14,6 +14,7 @@
 #include "chrome/browser/ui/views/chrome_layout_provider.h"
 #include "chrome/browser/ui/views/chrome_typography.h"
 #include "chrome/browser/ui/views/page_info/page_info_bubble_view.h"
+#include "chrome/browser/ui/views/page_info/permission_icon.h"
 #include "components/page_info/page_info_ui.h"
 #include "components/strings/grit/components_strings.h"
 #include "ui/accessibility/ax_node_data.h"
@@ -160,7 +161,7 @@ PermissionSelectorRow::PermissionSelectorRow(
     const GURL& url,
     const PageInfoUI::PermissionInfo& permission,
     views::GridLayout* layout)
-    : profile_(profile), icon_(nullptr), combobox_(nullptr) {
+    : profile_(profile) {
   const int list_item_padding = ChromeLayoutProvider::Get()->GetDistanceMetric(
                                     DISTANCE_CONTROL_LIST_VERTICAL) /
                                 2;
@@ -168,13 +169,11 @@ PermissionSelectorRow::PermissionSelectorRow(
                               views::GridLayout::kFixedSize, list_item_padding);
 
   // Create the permission icon and label.
-  icon_ = layout->AddView(std::make_unique<NonAccessibleImageView>());
+  icon_ = layout->AddView(std::make_unique<PermissionIcon>(permission));
   // Create the label that displays the permission type.
   auto label = std::make_unique<views::Label>(
       PageInfoUI::PermissionTypeToUIString(permission.type),
       CONTEXT_BODY_TEXT_LARGE);
-  icon_->SetImage(
-      PageInfoUI::GetPermissionIcon(permission, label->GetEnabledColor()));
   label_ = layout->AddView(std::move(label));
   // Create the menu model.
   menu_model_ = std::make_unique<PermissionMenuModel>(
@@ -285,8 +284,7 @@ void PermissionSelectorRow::InitializeComboboxView(
 void PermissionSelectorRow::PermissionChanged(
     const PageInfoUI::PermissionInfo& permission) {
   // Change the permission icon to reflect the selected setting.
-  icon_->SetImage(
-      PageInfoUI::GetPermissionIcon(permission, label_->GetEnabledColor()));
+  icon_->OnPermissionChanged(permission);
 
   bool use_default = permission.setting == CONTENT_SETTING_DEFAULT;
   auto* combobox = static_cast<internal::PermissionCombobox*>(combobox_);

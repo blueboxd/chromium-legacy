@@ -395,9 +395,8 @@ void TabImpl::SetFullscreenDelegate(FullscreenDelegate* delegate) {
   // Whether fullscreen is enabled depends upon whether there is a delegate. If
   // having a delegate changed, then update the renderer (which is where
   // fullscreen enabled is tracked).
-  content::RenderViewHost* host = web_contents_->GetRenderViewHost();
-  if (had_delegate != has_delegate && host)
-    host->OnWebkitPreferencesChanged();
+  if (had_delegate != has_delegate)
+    web_contents_->OnWebPreferencesChanged();
 }
 
 void TabImpl::SetNewTabDelegate(NewTabDelegate* delegate) {
@@ -480,7 +479,7 @@ void TabImpl::AttachToView(views::WebView* web_view) {
 #endif
 
 void TabImpl::WebPreferencesChanged() {
-  web_contents_->GetRenderViewHost()->OnWebkitPreferencesChanged();
+  web_contents_->OnWebPreferencesChanged();
 }
 
 void TabImpl::SetWebPreferences(content::WebPreferences* prefs) {

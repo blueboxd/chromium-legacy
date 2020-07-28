@@ -44,6 +44,9 @@ static_library("core") {
 
 static_library("database") {
   sources = [
+    "favicon_backend.cc",
+    "favicon_backend.h",
+    "favicon_backend_delegate.h",
     "favicon_database.cc",
     "favicon_database.h",
     "favicon_types.cc",
@@ -84,6 +87,7 @@ source_set("unit_tests") {
   testonly = true
   sources = [
     "fallback_url_util_unittest.cc",
+    "favicon_backend_unittest.cc",
     "favicon_database_unittest.cc",
     "favicon_handler_unittest.cc",
     "favicon_service_impl_unittest.cc",

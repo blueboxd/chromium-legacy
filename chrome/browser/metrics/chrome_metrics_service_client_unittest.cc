@@ -176,10 +176,10 @@ TEST_F(ChromeMetricsServiceClientTest, TestRegisterMetricsServiceProviders) {
 #endif  // BUILDFLAG(ENABLE_PLUGINS)
 
 #if defined(OS_CHROMEOS)
-  // AssistantServiceMetricsProvider,
+  // AssistantServiceMetricsProvider, CrosHealthdMetricsProvider,
   // ChromeOSMetricsProvider, SigninStatusMetricsProviderChromeOS,
   // PrinterMetricsProvider, and HashedLoggingMetricsProvider.
-  expected_providers += 5;
+  expected_providers += 6;
 #endif  // defined(OS_CHROMEOS)
 
 #if !defined(OS_CHROMEOS)

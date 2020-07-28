@@ -363,7 +363,6 @@
 <translation id="2413528052993050574">Bu server <ph name="DOMAIN" /> domenini təsdiqləyə bilmir; təhlükəsizlik sertifikatı ləğv edilə bilər. Buna yanlış konfiqurasiya və ya hücumçu tərəfindən bağlantının ələ keçirilməsi səbəb ola bilər.</translation>
 <translation id="2438874542388153331">Sağdan dördlü deşik açın</translation>
 <translation id="245044156129055925">İndicə parolunuzu aldadıcı sayt içində yazdınız. Chromium parolunuzu indi dəyişməyi məsləhət görür.</translation>
-<translation id="2463193859425327265">Əsas Səhifəni dəyişin</translation>
 <translation id="2463739503403862330">Doldurun</translation>
 <translation id="2465402087343596252">Arxitektura-E</translation>
 <translation id="2465655957518002998">Çatdırılma Üsulu seçin</translation>
@@ -1158,7 +1157,6 @@
 <translation id="5785756445106461925">Bundan əlavə, bu səhifəyə təhlükəsiz olmayan başqa resurslar daxildir. Bu resurslar keçid zamanı başqaları tərəfindən görüntülən bilər və hücumçu tərəfindən səhifə görünüşünün dəyişdirilməsi üçün modifikasiya edilə bilər.</translation>
 <translation id="5786044859038896871">Kart məlumatlarını doldurmaq istəyirsiniz?</translation>
 <translation id="5798290721819630480">Dəyişikliklər ləğv edilsin?</translation>
-<translation id="5798683403665926540">Chrome ayarlarında əsas səhifəni dəyişin</translation>
 <translation id="5803412860119678065"><ph name="CARD_DETAIL" /> doldurmaq istəyirsiniz?</translation>
 <translation id="5804241973901381774">İcazələr</translation>
 <translation id="5804427196348435412">NFC cihazlarını istifadə edin</translation>
@@ -1607,7 +1605,6 @@
 <translation id="7669271284792375604">Saytdakı hücumçular işinizə zərər gətirəcək proqramları quraşdırmaq üçün Sizi aldatmağa cəhd edə bilər (məsələn, əsas səhifəni dəyişməklə və ya daxil olduğunuz saytlarda əlavə reklamlar göstərməklə).</translation>
 <translation id="7673278391011283842">Poçt qutusu 6</translation>
 <translation id="7676643023259824263">Mübadilə buferində mətni axtarın, <ph name="TEXT" /></translation>
-<translation id="7681101578153515023">Axtarış Sistemini dəyişin</translation>
 <translation id="7682287625158474539">Göndəriş</translation>
 <translation id="7687186412095877299">Ödəniş formalarına yadda saxladığınız ödəniş metodunu daxil edir</translation>
 <translation id="7687305263118037187">Təkrar cəhdin vaxtı bitdi</translation>
@@ -1645,7 +1642,6 @@
 <translation id="7802523362929240268">Sayt qanunidir</translation>
 <translation id="780301667611848630">Yox, çox sağ olun</translation>
 <translation id="7805768142964895445">Status</translation>
-<translation id="7806344367022510803">Chrome'da Axtarış Sistemləri üçün ayarları dəyişin</translation>
 <translation id="7812922009395017822">Mir</translation>
 <translation id="7813600968533626083">Təkliflər Chrome'dan silinsin?</translation>
 <translation id="781440967107097262">Mübadilə buferi paylaşılsın?</translation>
@@ -1787,7 +1783,6 @@
 Əlavə məlumat:
 <ph name="DEBUG_INFO" /></translation>
 <translation id="8424582179843326029"><ph name="FIRST_LABEL" /> <ph name="SECOND_LABEL" /> <ph name="THIRD_LABEL" /></translation>
-<translation id="8425213833346101688">Dəyişin</translation>
 <translation id="8428213095426709021">Ayarlar</translation>
 <translation id="8433057134996913067">Bu Sizi bir çox veb saytdan çıxaracaq.</translation>
 <translation id="8437238597147034694">&amp;Daşınmanı ləğv edin</translation>

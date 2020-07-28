@@ -2,14 +2,14 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-import {NativeLayer, NativeLayerImpl, PluginProxy} from 'chrome://print/print_preview.js';
+import {NativeLayer, NativeLayerImpl, PluginProxyImpl} from 'chrome://print/print_preview.js';
 import {assert} from 'chrome://resources/js/assert.m.js';
 import {isChromeOS, isMac, isWindows} from 'chrome://resources/js/cr.m.js';
 import {keyEventOn} from 'chrome://resources/polymer/v3_0/iron-test-helpers/mock-interactions.js';
 import {flush} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
 import {NativeLayerStub} from 'chrome://test/print_preview/native_layer_stub.js';
-import {PDFPluginStub} from 'chrome://test/print_preview/plugin_stub.js';
 import {getCddTemplateWithAdvancedSettings, getDefaultInitialSettings} from 'chrome://test/print_preview/print_preview_test_utils.js';
+import {TestPluginProxy} from 'chrome://test/print_preview/test_plugin_proxy.js';
 import {eventToPromise, flushTasks} from 'chrome://test/test_util.m.js';
 
 window.key_event_test = {};
@@ -44,8 +44,8 @@ suite(key_event_test.suiteName, function() {
         getCddTemplateWithAdvancedSettings(1, initialSettings.printerName));
     nativeLayer.setPageCount(3);
     NativeLayerImpl.instance_ = nativeLayer;
-    const pluginProxy = new PDFPluginStub();
-    PluginProxy.setInstance(pluginProxy);
+    const pluginProxy = new TestPluginProxy();
+    PluginProxyImpl.instance_ = pluginProxy;
 
     document.body.innerHTML = '';
     page = document.createElement('print-preview-app');

@@ -224,6 +224,7 @@ Chromium તમારી સેટિંગ્સને પુનઃપ્રા
 <translation id="8417404458978023919">{0,plural, =1{એક દિવસની અંદર Chromiumને ફરીથી લૉન્ચ કરો}one{# દિવસની અંદર Chromiumને ફરીથી લૉન્ચ કરો}other{# દિવસની અંદર Chromiumને ફરીથી લૉન્ચ કરો}}</translation>
 <translation id="8453117565092476964">ઇન્સ્ટૉલર આર્કાઇવ ખરાબ અથવા અમાન્ય છે. કૃપા કરીને Chromium ફરીથી ડાઉનલોડ કરો.</translation>
 <translation id="8493179195440786826">Chromium જૂનું થઈ ગયું છે</translation>
+<translation id="8545858702702650646">તમારું Chromium Space ચૂંટો</translation>
 <translation id="8558383651099478961">તમારા માતાપિતાએ Chromium માટે "સાઇટ, ઍપ અને એક્સ્ટેન્શન માટેની પરવાનગીઓ" બંધ કરી છે. આ <ph name="EXTENSION_TYPE_PARAMETER" /> ઉમેરવાની મંજૂરી નથી.</translation>
 <translation id="8568283329061645092">જ્યારે તમે તમારા Google એકાઉન્ટ વડે સાઇન ઇન કરો ત્યારે Chromium તમારા પાસવર્ડ ચેક કરી શકે છે</translation>
 <translation id="8586442755830160949">કોપિરાઇટ <ph name="YEAR" /> The Chromium Authors. સર્વાધિકાર સુરક્ષિત.</translation>
@@ -247,6 +248,7 @@ Chromium તમારી સેટિંગ્સને પુનઃપ્રા
 <translation id="911206726377975832">તમારો બ્રાઉઝિંગ ડેટા પણ ડિલીટ કરી દઈએ?</translation>
 <translation id="9158494823179993217">તમારા સિસ્ટમ વ્યવસ્થાપકે <ph name="TARGET_URL_HOSTNAME" />ને ઍક્સેસ કરવા Chromiumને વૈકલ્પિક બ્રાઉઝર ખોલવા માટે ગોઠવેલું છે.</translation>
 <translation id="9190841055450128916">Chromium (mDNS-In)</translation>
+<translation id="9191317372410544836">આ ડિવાઇસ પર તમારા બ્રાઉઝિંગને સુવ્યવસ્થિત રાખવા માટે Chromium Spacesનો ઉપયોગ કરો</translation>
 <translation id="93478295209880648">Chromium યોગ્ય રીતે કાર્ય ન કરે તેવું બની શકે કારણ કે તે હવેથી Windows XP અથવા Windows Vista પર સમર્થિત નથી</translation>
 <translation id="95514773681268843"><ph name="DOMAIN" /> માટે જરૂરી છે કે તમે આ ડિવાઇસનો ઉપયોગ કરતાં પહેલાં નીચેની સેવાની શરતોને વાંચો અને સ્વીકારો. આ શરતો Chromium OS શરતોને વિસ્તૃત, સંશોધિત અથવા મર્યાદિત કરતી નથી.</translation>
 <translation id="985602178874221306">Chromium લેખકો</translation>

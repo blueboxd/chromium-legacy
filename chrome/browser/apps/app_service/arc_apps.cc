@@ -105,8 +105,12 @@ void OnArcAppIconCompletelyLoaded(
       FALLTHROUGH;
     case apps::mojom::IconType::kStandard: {
       if (base::FeatureList::IsEnabled(features::kAppServiceAdaptiveIcon)) {
-        iv->uncompressed = gfx::ImageSkiaOperations::CreateSuperimposedImage(
-            icon->background_image_skia(), icon->foreground_image_skia());
+        iv->uncompressed =
+            icon->is_adaptive_icon()
+                ? gfx::ImageSkiaOperations::CreateSuperimposedImage(
+                      icon->background_image_skia(),
+                      icon->foreground_image_skia())
+                : icon->foreground_image_skia();
       } else {
         iv->uncompressed = icon->image_skia();
       }

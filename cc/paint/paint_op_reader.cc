@@ -704,8 +704,7 @@ void PaintOpReader::Read(scoped_refptr<SkottieWrapper>* skottie) {
 #endif  // !defined(OS_ANDROID)
 
 void PaintOpReader::AlignMemory(size_t alignment) {
-  size_t memory = reinterpret_cast<size_t>(memory_);
-  size_t padding = base::bits::Align(memory, alignment) - memory;
+  size_t padding = base::bits::Align(memory_, alignment) - memory_;
   if (padding > remaining_bytes_)
     SetInvalid();
 

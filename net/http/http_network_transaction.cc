@@ -405,8 +405,7 @@ int HttpNetworkTransaction::Read(IOBuffer* buf,
     // also don't worry about this for an HTTPS Proxy, because the
     // communication with the proxy is secure.
     // See http://crbug.com/8473.
-    DCHECK(proxy_info_.is_http() || proxy_info_.is_https() ||
-           proxy_info_.is_quic());
+    DCHECK(proxy_info_.is_http_like());
     DCHECK_EQ(headers->response_code(), HTTP_PROXY_AUTHENTICATION_REQUIRED);
     return ERR_TUNNEL_CONNECTION_FAILED;
   }
@@ -668,8 +667,7 @@ bool HttpNetworkTransaction::IsSecureRequest() const {
 }
 
 bool HttpNetworkTransaction::UsingHttpProxyWithoutTunnel() const {
-  return (proxy_info_.is_http() || proxy_info_.is_https() ||
-          proxy_info_.is_quic()) &&
+  return proxy_info_.is_http_like() &&
          !(request_->url.SchemeIs("https") || request_->url.SchemeIsWSOrWSS());
 }
 
@@ -1468,7 +1466,8 @@ int HttpNetworkTransaction::HandleSSLClientAuthError(int error) {
                 : proxy_info_.proxy_server().host_port_pair();
 
   if (error == ERR_SSL_PROTOCOL_ERROR || IsClientCertificateError(error)) {
-    DCHECK((is_server && IsSecureRequest()) || proxy_info_.is_https());
+    DCHECK((is_server && IsSecureRequest()) ||
+           proxy_info_.is_secure_http_like());
     if (session_->ssl_client_context()->ClearClientCertificate(
             host_port_pair)) {
       // The private key handle may have gone stale due to, e.g., the user
@@ -1728,7 +1727,10 @@ GURL HttpNetworkTransaction::AuthURL(HttpAuth::Target target) const {
           proxy_info_.proxy_server().is_direct()) {
         return GURL();  // There is no proxy server.
       }
-      const char* scheme = proxy_info_.is_https() ? "https://" : "http://";
+      // TODO(https://crbug.com/1103768): Mapping proxy addresses to
+      // URLs is a lossy conversion, shouldn't do this.
+      const char* scheme =
+          proxy_info_.is_secure_http_like() ? "https://" : "http://";
       return GURL(scheme +
                   proxy_info_.proxy_server().host_port_pair().ToString());
     }

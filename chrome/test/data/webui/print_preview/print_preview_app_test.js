@@ -2,13 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-import {CloudPrintInterface, CloudPrintInterfaceImpl, Destination, DuplexMode, NativeLayer, NativeLayerImpl, PluginProxy} from 'chrome://print/print_preview.js';
+import {CloudPrintInterface, CloudPrintInterfaceImpl, Destination, DuplexMode, NativeLayer, NativeLayerImpl, PluginProxyImpl} from 'chrome://print/print_preview.js';
 import {assert} from 'chrome://resources/js/assert.m.js';
 import {webUIListenerCallback} from 'chrome://resources/js/cr.m.js';
 import {CloudPrintInterfaceStub} from 'chrome://test/print_preview/cloud_print_interface_stub.js';
 import {NativeLayerStub} from 'chrome://test/print_preview/native_layer_stub.js';
-import {PDFPluginStub} from 'chrome://test/print_preview/plugin_stub.js';
 import {getCddTemplate, getGoogleDriveDestination} from 'chrome://test/print_preview/print_preview_test_utils.js';
+import {TestPluginProxy} from 'chrome://test/print_preview/test_plugin_proxy.js';
 
 window.print_preview_app_test = {};
 print_preview_app_test.suiteName = 'PrintPreviewAppTest';
@@ -32,7 +32,7 @@ suite(print_preview_app_test.suiteName, function() {
   /** @type {?CloudPrintInterface} */
   let cloudPrintInterface = null;
 
-  /** @type {?PluginProxy} */
+  /** @type {?TestPluginProxy} */
   let pluginProxy = null;
 
   /** @type {!NativeInitialSettings} */
@@ -78,8 +78,8 @@ suite(print_preview_app_test.suiteName, function() {
     NativeLayerImpl.instance_ = nativeLayer;
     cloudPrintInterface = new CloudPrintInterfaceStub();
     CloudPrintInterfaceImpl.instance_ = cloudPrintInterface;
-    pluginProxy = new PDFPluginStub();
-    PluginProxy.setInstance(pluginProxy);
+    pluginProxy = new TestPluginProxy();
+    PluginProxyImpl.instance_ = pluginProxy;
   });
 
   // Regression test for https://crbug.com/936029

@@ -21,6 +21,7 @@
 <translation id="1150565364351027703">ગોગલ્સ</translation>
 <translation id="115443833402798225">હંગુલ અહન્માતાએ</translation>
 <translation id="1155759005174418845">કતલાન</translation>
+<translation id="1172970565351728681">લગભગ <ph name="REMAINING_TIME" /> બાકી</translation>
 <translation id="1173894706177603556">નામ બદલો</translation>
 <translation id="117624967391683467"><ph name="FILE_NAME" /> કૉપિ કરી રહ્યું છે...</translation>
 <translation id="1178581264944972037">થોભો</translation>
@@ -170,7 +171,7 @@
 <translation id="2925966894897775835">Sheets</translation>
 <translation id="2938685643439809023">મોંગોલિયન</translation>
 <translation id="2942290791863759244">જર્મન નીઓ 2 કીબોર્ડ</translation>
-<translation id="2943400156390503548">સ્લાઇડ્સ</translation>
+<translation id="2943400156390503548">Slides</translation>
 <translation id="2943503720238418293">વધુ ટૂંકા નામનો ઉપયોગ કરો</translation>
 <translation id="2949781154072577687"><ph name="DRIVE_NAME" />ને ફોર્મેટ કરી રહ્યાં છીએ…</translation>
 <translation id="2951236788251446349">જેલીફીશ</translation>
@@ -198,6 +199,7 @@
 <translation id="3236289833370040187">માલિકીને <ph name="DESTINATION_DOMAIN" />માં સ્થાનાંતરિત કરવામાં આવશે.</translation>
 <translation id="3241720467332021590">આઇરિશ</translation>
 <translation id="3245321423178950146">અજ્ઞાત કલાકાર</translation>
+<translation id="3248185426436836442">બાકી</translation>
 <translation id="3252266817569339921">ફ્રેન્ચ</translation>
 <translation id="3254434849914415189"><ph name="FILE_TYPE" /> ફાઇલો માટે ડિફૉલ્ટ ઍપ્લિકેશન પસંદ કરો:</translation>
 <translation id="3264582393905923483">સંદર્ભ</translation>
@@ -244,6 +246,7 @@
 <translation id="3780536599611287598">તમને ફાઇલોને '<ph name="FOLDER_NAME" />'માં ખસેડવાની પરવાનગી નથી.</translation>
 <translation id="3786301125658655746">તમે ઑફલાઇન છો</translation>
 <translation id="3789841737615482174">ઇન્સ્ટોલ કરો</translation>
+<translation id="3793469551756281394">લગભગ <ph name="REMAINING_TIME_HOUR" /> <ph name="REMAINING_TIME_MINUTE" /> બાકી</translation>
 <translation id="3798449238516105146">વર્ઝન</translation>
 <translation id="3801082500826908679">ફોરિસ્ત</translation>
 <translation id="3809272675881623365">સસલું</translation>

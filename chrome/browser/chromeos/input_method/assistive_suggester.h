@@ -50,6 +50,10 @@ class AssistiveSuggester {
   // Accepts the suggestion at a given index if a suggester is currently active.
   void AcceptSuggestion(size_t index);
 
+  EmojiSuggester* get_emoji_suggester_for_testing() {
+    return &emoji_suggester_;
+  }
+
  private:
   // Returns if any suggestion text should be displayed according to the
   // surrounding text information.
@@ -63,6 +67,8 @@ class AssistiveSuggester {
   bool IsAssistPersonalInfoEnabled();
 
   bool IsEmojiSuggestAdditionEnabled();
+
+  void RecordAssistiveMatchMetricsForAction(AssistiveType action);
 
   bool IsActionEnabled(AssistiveType action);
 

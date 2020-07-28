@@ -21,7 +21,7 @@ namespace remoting {
 
 template <typename RequestType, typename ResponseType>
 using GrpcAsyncUnaryRpcFunction = base::OnceCallback<
-    std::unique_ptr<grpc::ClientAsyncResponseReader<ResponseType>>(
+    std::unique_ptr<grpc::ClientAsyncResponseReaderInterface<ResponseType>>(
         grpc::ClientContext*,
         const RequestType&,
         grpc_impl::CompletionQueue*)>;
@@ -36,7 +36,7 @@ template <typename ResponseType>
 class GrpcAsyncUnaryRequest : public GrpcAsyncRequest {
  public:
   using StartAndCreateReaderCallback = base::OnceCallback<
-      std::unique_ptr<grpc::ClientAsyncResponseReader<ResponseType>>(
+      std::unique_ptr<grpc::ClientAsyncResponseReaderInterface<ResponseType>>(
           grpc_impl::CompletionQueue*)>;
 
   ~GrpcAsyncUnaryRequest() override = default;
@@ -101,7 +101,7 @@ class GrpcAsyncUnaryRequest : public GrpcAsyncRequest {
 
   StartAndCreateReaderCallback create_reader_cb_;
   RunTaskCallback run_task_cb_;
-  std::unique_ptr<grpc::ClientAsyncResponseReader<ResponseType>>
+  std::unique_ptr<grpc::ClientAsyncResponseReaderInterface<ResponseType>>
       response_reader_;
   ResponseType response_;
   GrpcAsyncUnaryRpcCallback<ResponseType> callback_;

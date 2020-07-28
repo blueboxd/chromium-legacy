@@ -56,6 +56,7 @@ class FontFaceDescriptors;
 class StringOrArrayBufferOrArrayBufferView;
 class CSSPropertyValueSet;
 class StyleRuleFontFace;
+struct FontMetricsOverride;
 
 class CORE_EXPORT FontFace : public ScriptWrappable,
                              public ActiveScriptWrappable<FontFace>,
@@ -133,6 +134,11 @@ class CORE_EXPORT FontFace : public ScriptWrappable,
   // ScriptWrappable:
   bool HasPendingActivity() const final;
 
+  bool HasFontMetricsOverride() const {
+    return ascent_override_ || descent_override_;
+  }
+  FontMetricsOverride GetFontMetricsOverride() const;
+
  private:
   static FontFace* Create(ExecutionContext*,
                           const AtomicString& family,
@@ -171,6 +177,8 @@ class CORE_EXPORT FontFace : public ScriptWrappable,
   Member<const CSSValue> variant_;
   Member<const CSSValue> feature_settings_;
   Member<const CSSValue> display_;
+  Member<const CSSValue> ascent_override_;
+  Member<const CSSValue> descent_override_;
   LoadStatusType status_;
   Member<DOMException> error_;
 

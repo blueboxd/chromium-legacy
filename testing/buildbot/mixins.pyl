@@ -514,7 +514,7 @@
     'swarming': {
       'dimensions': {
         'gpu': '8086:0a2e',
-        'os': 'Mac-10.14.6|Mac-10.15.5',
+        'os': 'Mac-10.15.5',
       },
     },
   },
@@ -961,17 +961,17 @@
     },
   },
   # xcode 12
-  'xcode_12a6163b': {
+  'xcode_12a8169g': {
     '$mixin_append': {
       'args': [
         '--xcode-build-version',
-        '12a6163b'
+        '12a8169g'
       ],
     },
     'swarming': {
       'named_caches': [
         {
-          'name': 'xcode_ios_12a6163b',
+          'name': 'xcode_ios_12a8169g',
           'path': 'Xcode.app',
         },
       ],

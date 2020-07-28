@@ -44,6 +44,31 @@ IN_PROC_BROWSER_TEST_F(
       content::EvalJs(GetActiveWebContents(), "show()"));
 }
 
+// Test requesting app store billing method (e.g., google play store method)
+// in a Trusted Web Activity
+// TODO(crbug.com/1095827): This test should simulate being in a TWA such that
+// Play Billing is discovered as an app store payment app.
+IN_PROC_BROWSER_TEST_F(PaymentRequestAppStoreBillingTest,
+                       RequestAppStoreBillingInTwa) {
+  test_controller()->SetTwaPackageName("com.merchant.twa");
+
+  std::string expected = "success";
+  EXPECT_EQ(expected, content::EvalJs(GetActiveWebContents(), "install()"));
+  EXPECT_EQ(
+      expected,
+      content::EvalJs(GetActiveWebContents(),
+                      "addSupportedMethod('https://play.google.com/billing')"));
+  EXPECT_EQ(expected,
+            content::EvalJs(GetActiveWebContents(), "createPaymentRequest()"));
+
+  // We expect the standard NotSupportedError inside a TWA because Play Billing
+  // isn't supported yet.
+  EXPECT_EQ(
+      "NotSupportedError: The payment method "
+      "\"https://play.google.com/billing\" is not supported.",
+      content::EvalJs(GetActiveWebContents(), "show()"));
+}
+
 // Prove that requesting with a non-app-store method would not produce the same
 // error message as in test
 // "ErrorMessageActionableWhenRequestAppStoreBillingNotInTwa".

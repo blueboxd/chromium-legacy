@@ -103,7 +103,8 @@ enum Setting {
   kSleepWhenLaptopLidClosed = 424,
   kDisplayResolution = 425,
   kDisplayRefreshRate = 426,
-  kRemoveDlc = 427,
+  // Note: Value 427 was for deprecated Remove DLC - see
+  // https://crbug.com/1108093. Do not reuse.
   kDisplayMirroring = 428,
   kAllowWindowsToSpanDisplays = 429,
   kAmbientColors = 430,

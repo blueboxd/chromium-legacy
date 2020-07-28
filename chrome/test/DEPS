@@ -83,4 +83,5 @@ include_rules = [
   "+sandbox/win/tests",
   "+third_party/webrtc",
   "+third_party/re2",
+  "+ui/base",
 ]

@@ -128,4 +128,9 @@ public class WebappIntentDataProvider extends BrowserServicesIntentDataProvider 
     public WebApkExtras getWebApkExtras() {
         return mWebApkExtras;
     }
+
+    @Override
+    public int getDefaultOrientation() {
+        return mWebappExtras.orientation;
+    }
 }

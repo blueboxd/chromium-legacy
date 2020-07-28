@@ -1744,7 +1744,10 @@ void NetworkContext::LookupProxyAuthCredentials(
       url_request_context_->http_transaction_factory()
           ->GetSession()
           ->http_auth_cache();
-  const char* scheme = proxy_server.is_https() ? "https://" : "http://";
+  // TODO(https://crbug.com/1103768): Mapping proxy addresses to URLs is a
+  // lossy conversion, shouldn't do this.
+  const char* scheme =
+      proxy_server.is_secure_http_like() ? "https://" : "http://";
   GURL proxy_url(scheme + proxy_server.host_port_pair().ToString());
   if (!proxy_url.is_valid()) {
     std::move(callback).Run(base::nullopt);

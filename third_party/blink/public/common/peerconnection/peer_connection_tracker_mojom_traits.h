@@ -7,7 +7,7 @@
 
 #include "base/power_monitor/power_observer.h"
 #include "third_party/blink/public/common/common_export.h"
-#include "third_party/blink/public/mojom/peerconnection/peer_connection_tracker.mojom.h"
+#include "third_party/blink/public/mojom/peerconnection/peer_connection_tracker.mojom-shared.h"
 
 namespace mojo {
 

@@ -306,4 +306,12 @@ public abstract class PaymentApp extends EditableOption {
     public @PaymentAppType int getPaymentAppType() {
         return PaymentAppType.UNDEFINED;
     }
+
+    /**
+     * @return Whether this app should be chosen over other available payment apps. For example,
+     * when the Play Billing payment app is available in a TWA.
+     */
+    public boolean isPreferred() {
+        return false;
+    }
 }

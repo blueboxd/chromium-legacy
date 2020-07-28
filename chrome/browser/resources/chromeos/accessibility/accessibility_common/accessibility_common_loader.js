@@ -17,7 +17,7 @@ class AccessibilityCommon {
   }
 
   /**
-   * @public {Autoclick}
+   * @return {Autoclick}
    */
   getAutoclickForTest() {
     return this.autoclick_;

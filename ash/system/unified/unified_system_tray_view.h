@@ -122,12 +122,6 @@ class ASH_EXPORT UnifiedSystemTrayView : public views::View,
   // Get current height of the view (including the message center).
   int GetCurrentHeight() const;
 
-  // Return true if layer transform can be used against the view. During
-  // animation, the height of the view changes, but resizing of the bubble
-  // is performance bottleneck. If this method returns true, the embedder can
-  // call SetTransform() to move this view in order to avoid resizing.
-  bool IsTransformEnabled() const;
-
   // Returns the number of visible feature pods.
   int GetVisibleFeaturePodCount() const;
 
@@ -141,7 +135,7 @@ class ASH_EXPORT UnifiedSystemTrayView : public views::View,
   // views::View:
   gfx::Size CalculatePreferredSize() const override;
   void OnGestureEvent(ui::GestureEvent* event) override;
-  void ChildPreferredSizeChanged(views::View* child) override;
+  void Layout() override;
   const char* GetClassName() const override;
   views::FocusTraversable* GetFocusTraversable() override;
   void AddedToWidget() override;

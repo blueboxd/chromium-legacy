@@ -1416,7 +1416,7 @@ TEST_F(NavigationControllerTest, GoBackWithUserAgentOverrideChange) {
   // Test that OnWebkitPreferencesChanged is called when going back to propagate
   // change in viewport_meta WebSetting.
   int change_counter = 0;
-  test_rvh()->set_webkit_preferences_changed_counter(&change_counter);
+  contents()->set_web_preferences_changed_counter(&change_counter);
 
   auto back_navigation =
       NavigationSimulator::CreateHistoryNavigation(-1, contents());

@@ -132,7 +132,8 @@ class CallbackTester {
   void OnDidFinishInstallableCheck(const InstallableData& data) {
     errors_ = data.errors;
     manifest_url_ = data.manifest_url;
-    manifest_ = *data.manifest;
+    if (data.manifest)
+      manifest_ = *data.manifest;
     primary_icon_url_ = data.primary_icon_url;
     if (data.primary_icon)
       primary_icon_.reset(new SkBitmap(*data.primary_icon));
@@ -1815,4 +1816,23 @@ IN_PROC_BROWSER_TEST_F(InstallableManagerBrowserTest, CheckSplashIcon) {
     EXPECT_EQ(nullptr, tester->splash_icon());
     EXPECT_EQ(std::vector<InstallableStatusCode>{}, tester->errors());
   }
+}
+
+IN_PROC_BROWSER_TEST_F(InstallableManagerBrowserTest,
+                       ManifestLinkChangeReportsError) {
+  InstallableManager* manager = GetManager(browser());
+
+  base::RunLoop run_loop;
+  std::unique_ptr<CallbackTester> tester(
+      new CallbackTester(run_loop.QuitClosure()));
+
+  NavigateAndRunInstallableManager(browser(), tester.get(), GetManifestParams(),
+                                   "/banners/manifest_test_page.html");
+  // Simulate a manifest URL update by just calling the observer function.
+  static_cast<content::WebContentsObserver*>(manager)->DidUpdateWebManifestURL(
+      nullptr, base::nullopt);
+  run_loop.Run();
+
+  ASSERT_EQ(tester->errors().size(), 1u);
+  EXPECT_EQ(tester->errors()[0], MANIFEST_URL_CHANGED);
 }

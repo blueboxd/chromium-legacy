@@ -135,7 +135,7 @@ ClientDiscardableSharedMemoryManager::ClientDiscardableSharedMemoryManager(
     : io_task_runner_(std::move(io_task_runner)),
       manager_mojo_(std::make_unique<
                     mojo::Remote<mojom::DiscardableSharedMemoryManager>>()),
-      heap_(new DiscardableSharedMemoryHeap(base::GetPageSize())) {
+      heap_(std::make_unique<DiscardableSharedMemoryHeap>()) {
   base::trace_event::MemoryDumpManager::GetInstance()->RegisterDumpProvider(
       this, "ClientDiscardableSharedMemoryManager",
       base::ThreadTaskRunnerHandle::Get());
@@ -184,7 +184,7 @@ ClientDiscardableSharedMemoryManager::AllocateLockedDiscardableMemory(
                static_cast<size_t>(1));
 
   static const size_t allocation_size = GetDefaultAllocationSize();
-  DCHECK(allocation_size % base::GetPageSize() == 0);
+  DCHECK_EQ(allocation_size % base::GetPageSize(), 0u);
   // Default allocation size in pages.
   size_t allocation_pages = allocation_size / base::GetPageSize();
 
@@ -286,24 +286,7 @@ bool ClientDiscardableSharedMemoryManager::OnMemoryDump(
     const base::trace_event::MemoryDumpArgs& args,
     base::trace_event::ProcessMemoryDump* pmd) {
   base::AutoLock lock(lock_);
-  if (args.level_of_detail ==
-      base::trace_event::MemoryDumpLevelOfDetail::BACKGROUND) {
-    base::trace_event::MemoryAllocatorDump* total_dump =
-        pmd->CreateAllocatorDump(
-            base::StringPrintf("discardable/child_0x%" PRIXPTR,
-                               reinterpret_cast<uintptr_t>(this)));
-    const size_t total_size = heap_->GetSize();
-    const size_t freelist_size = heap_->GetSizeOfFreeLists();
-    total_dump->AddScalar(base::trace_event::MemoryAllocatorDump::kNameSize,
-                          base::trace_event::MemoryAllocatorDump::kUnitsBytes,
-                          total_size - freelist_size);
-    total_dump->AddScalar("freelist_size",
-                          base::trace_event::MemoryAllocatorDump::kUnitsBytes,
-                          freelist_size);
-    return true;
-  }
-
-  return heap_->OnMemoryDump(pmd);
+  return heap_->OnMemoryDump(args, pmd);
 }
 
 size_t ClientDiscardableSharedMemoryManager::GetBytesAllocated() const {

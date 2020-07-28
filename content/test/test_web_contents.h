@@ -165,6 +165,14 @@ class TestWebContents : public WebContentsImpl, public WebContentsTester {
       std::unique_ptr<WebContents> portal_web_contents) override;
   WebContents* GetPortalContents(const base::UnguessableToken&) override;
 
+  void OnWebPreferencesChanged() override;
+
+  // If set, *web_preferences_changed_counter_ is incremented when
+  // OnWebPreferencesChanged() is called.
+  void set_web_preferences_changed_counter(int* counter) {
+    web_preferences_changed_counter_ = counter;
+  }
+
  protected:
   // The deprecated WebContentsTester still needs to subclass this.
   explicit TestWebContents(BrowserContext* browser_context);
@@ -207,6 +215,8 @@ class TestWebContents : public WebContentsImpl, public WebContentsTester {
 
   RenderViewHostDelegateView* delegate_view_override_;
 
+  // See set_web_preferences_changed_counter() above. May be nullptr.
+  int* web_preferences_changed_counter_;
   // Expectations for arguments of |SetHistoryOffsetAndLength()|.
   bool expect_set_history_offset_and_length_;
   int expect_set_history_offset_and_length_history_offset_;

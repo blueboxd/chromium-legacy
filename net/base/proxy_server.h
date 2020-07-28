@@ -60,7 +60,11 @@ class NET_EXPORT ProxyServer {
   // Returns true if this ProxyServer is an HTTP proxy.
   bool is_http() const { return scheme_ == SCHEME_HTTP; }
 
-  // Returns true if this ProxyServer is an HTTPS proxy.
+  // Returns true if this ProxyServer is an HTTPS proxy. Note this
+  // does not include proxies matched by |is_quic()|.
+  //
+  // Generally one should test the more general concept of
+  // |is_secure_http_like()| to account for |is_quic()|.
   bool is_https() const { return scheme_ == SCHEME_HTTPS; }
 
   // Returns true if this ProxyServer is a SOCKS proxy.
@@ -71,9 +75,13 @@ class NET_EXPORT ProxyServer {
   // Returns true if this ProxyServer is a QUIC proxy.
   bool is_quic() const { return scheme_ == SCHEME_QUIC; }
 
-  // Returns true of the ProxyServer's scheme is HTTP compatible (uses HTTP
+  // Returns true if the ProxyServer's scheme is HTTP compatible (uses HTTP
   // headers, has a CONNECT method for establishing tunnels).
   bool is_http_like() const { return is_http() || is_https() || is_quic(); }
+
+  // Returns true if the proxy server has HTTP semantics, AND
+  // the channel between the client and proxy server is secure.
+  bool is_secure_http_like() const { return is_https() || is_quic(); }
 
   // Returns true if the proxy is trusted to push cross-origin resources from
   // HTTP hosts.

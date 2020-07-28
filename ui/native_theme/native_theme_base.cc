@@ -1649,13 +1649,13 @@ SkColor NativeThemeBase::GetDarkModeControlColor(
     ControlColorId color_id) const {
     switch (color_id) {
     case kAccent:
-      return SkColorSetRGB(0xC3, 0xC3, 0xC3);
+      return SkColorSetRGB(0x99, 0xC8, 0xFF);
     case kHoveredAccent:
-      return SkColorSetRGB(0xD8, 0xD8, 0xD8);
+      return SkColorSetRGB(0xD1, 0xE6, 0xFF);
     case kPressedAccent:
-      return SkColorSetRGB(0xB9, 0xB9, 0xB9);
+      return SkColorSetRGB(0x61, 0xA9, 0xFF);
     case kDisabledAccent:
-      return SkColorSetARGB(0x4D, 0xC3, 0xC3, 0xC3);
+      return SkColorSetRGB(0x75, 0x75, 0x75);
     case kProgressValue:
       return SkColorSetRGB(0x63, 0xAD, 0xE5);
     case kFill:
@@ -1676,11 +1676,11 @@ SkColor NativeThemeBase::GetDarkModeControlColor(
     case kDisabledBackground:
       return SkColorSetARGB(0x4D, 0x3B, 0x3B, 0x3B);
     case kHoveredBorder:
-      return SkColorSetRGB(0xEA, 0xEA, 0xEA);
-    case kPressedBorder:
       return SkColorSetRGB(0xAC, 0xAC, 0xAC);
+    case kPressedBorder:
+      return SkColorSetRGB(0x6E, 0x6E, 0x6E);
     case kDisabledBorder:
-      return SkColorSetARGB(0x4D ,0xC3, 0xC3, 0xC3);
+      return SkColorSetRGB(0x62, 0x62, 0x62);
     case kHoveredFill:
       return SkColorSetRGB(0x54, 0x54, 0x54);
     case kPressedFill:

@@ -63,7 +63,7 @@ class MODULES_EXPORT NavigatorGamepad final
   explicit NavigatorGamepad(Navigator&);
   ~NavigatorGamepad() override;
 
-  static GamepadList* getGamepads(Navigator&);
+  static GamepadList* getGamepads(Navigator&, ExceptionState&);
   GamepadList* Gamepads();
 
   void Trace(Visitor*) const override;

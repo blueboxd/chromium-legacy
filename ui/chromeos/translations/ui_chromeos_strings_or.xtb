@@ -21,6 +21,7 @@
 <translation id="1150565364351027703">ଖରା ପାଇଁ ଚଷମା</translation>
 <translation id="115443833402798225">ହଂଗୁଲ୍ Ahnmatae</translation>
 <translation id="1155759005174418845">କାଟାଲାନ୍</translation>
+<translation id="1172970565351728681">ପାଖାପାଖି <ph name="REMAINING_TIME" /> ସମୟ ବାକି ଅଛି</translation>
 <translation id="1173894706177603556">ରିନେମ୍ କରନ୍ତୁ</translation>
 <translation id="117624967391683467"><ph name="FILE_NAME" />.କପି ହେଉଛି…</translation>
 <translation id="1178581264944972037">ବିରତି</translation>
@@ -198,6 +199,7 @@
 <translation id="3236289833370040187"><ph name="DESTINATION_DOMAIN" />କୁ ମାଲିକାନା ସ୍ଥାନାନ୍ତର ହେବ।</translation>
 <translation id="3241720467332021590">ଇରିସ୍</translation>
 <translation id="3245321423178950146">ଅଜଣା କଳାକାର</translation>
+<translation id="3248185426436836442">ବାକି ଅଛି</translation>
 <translation id="3252266817569339921">ଫ୍ରେଞ୍ଚ</translation>
 <translation id="3254434849914415189"><ph name="FILE_TYPE" /> ଫାଇଲ୍‍ଗୁଡ଼ିକ ପାଇଁ ଡିଫଲ୍ଟ ଆପ୍‍ ବାଛନ୍ତୁ:</translation>
 <translation id="3264582393905923483">ପ୍ରସଙ୍ଗ</translation>
@@ -244,6 +246,7 @@
 <translation id="3780536599611287598">ଫାଇଲ୍‌ଗୁଡ଼ିକୁ '<ph name="FOLDER_NAME" />'କୁ ନେବା ପାଇଁ ଆପଣଙ୍କ ପାଖରେ ଅନୁମତି ନାହିଁ।</translation>
 <translation id="3786301125658655746">ଆପଣ ଅଫ୍‌ଲାଇନ୍ ଅଛନ୍ତି</translation>
 <translation id="3789841737615482174">ସଂସ୍ଥାପନ</translation>
+<translation id="3793469551756281394">ପାଖାପାଖି <ph name="REMAINING_TIME_HOUR" /> <ph name="REMAINING_TIME_MINUTE" /> ବାକି ଅଛି</translation>
 <translation id="3798449238516105146">ସଂସ୍କରଣ</translation>
 <translation id="3801082500826908679">ଫାରୋଏସେ</translation>
 <translation id="3809272675881623365">ଠେକୁଆ</translation>

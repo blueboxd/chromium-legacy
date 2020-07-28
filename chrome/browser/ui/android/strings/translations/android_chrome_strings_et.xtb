@@ -335,6 +335,7 @@ Puudutage pikalt mis tahes sõna, et seda otsida. Otsingu täpsustamiseks valige
 <translation id="3658159451045945436">Lähtestamisel kustutatakse säästetud andmemahu ajalugu, sh külastatud saitide loend.</translation>
 <translation id="3692944402865947621">Faili <ph name="FILE_NAME" /> allalaadimine nurjus, kuna salvestuskoht ei ole saadaval.</translation>
 <translation id="3701167022068948696">Paranda kohe</translation>
+<translation id="371230970611282515">Ennustab ohtlikke sündmusi ette ja hoiatab teid.</translation>
 <translation id="3714981814255182093">Leiuriba avamine</translation>
 <translation id="3716182511346448902">Chrome peatas selle lehe, kuna see kasutab liiga palju mälu.</translation>
 <translation id="3721119614952978349">Teie ja Google</translation>
@@ -713,6 +714,7 @@ Näiteks võivad mõned veebisaidid taotlusele reageerida nii, et näitavad teil
 <translation id="6593061639179217415">Arvutisait</translation>
 <translation id="6597891566292541626">Paigutage QR-/ribakood sellesse kaadrisse.</translation>
 <translation id="6600954340915313787">Chrome'i kopeeritud</translation>
+<translation id="661266467055912436">Täiendab turvalisust teie ja kõigi teiste veebikasutajate jaoks.</translation>
 <translation id="6627583120233659107">Muuda kausta</translation>
 <translation id="6643016212128521049">Tühjenda</translation>
 <translation id="6643649862576733715">Sordi säästetud andmemahu alusel</translation>
@@ -872,6 +874,7 @@ Näiteks võivad mõned veebisaidid taotlusele reageerida nii, et näitavad teil
 <translation id="7925590027513907933">{FILE_COUNT,plural, =1{Faili allalaadimine.}other{# faili allalaadimine.}}</translation>
 <translation id="7926975587469166629">Kaardi hüüdnimi</translation>
 <translation id="7929962904089429003">Menüü avamine</translation>
+<translation id="7930998711684428189">Teid hoiatatakse, kui paroolid andmetega seotud rikkumise käigus avalikustatakse.</translation>
 <translation id="7942131818088350342">Teenus <ph name="PRODUCT_NAME" /> on aegunud.</translation>
 <translation id="7947953824732555851">Nõustu ja logi sisse</translation>
 <translation id="7963646190083259054">Teenusepakkuja:</translation>

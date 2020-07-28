@@ -74,7 +74,8 @@ class CONTENT_EXPORT NativeFileSystemHandleBase : public WebContentsObserver {
   template <typename CallbackArgType>
   void RunWithWritePermission(
       base::OnceCallback<void(CallbackArgType)> callback,
-      base::OnceCallback<void(CallbackArgType)> no_permission_callback,
+      base::OnceCallback<void(blink::mojom::NativeFileSystemErrorPtr,
+                              CallbackArgType)> no_permission_callback,
       CallbackArgType callback_arg);
 
  protected:
@@ -205,14 +206,16 @@ class CONTENT_EXPORT NativeFileSystemHandleBase : public WebContentsObserver {
 template <typename CallbackArgType>
 void NativeFileSystemHandleBase::RunWithWritePermission(
     base::OnceCallback<void(CallbackArgType)> callback,
-    base::OnceCallback<void(CallbackArgType)> no_permission_callback,
+    base::OnceCallback<void(blink::mojom::NativeFileSystemErrorPtr,
+                            CallbackArgType)> no_permission_callback,
     CallbackArgType callback_arg) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   DoRequestPermission(
       /*writable=*/true,
       base::BindOnce(
           [](base::OnceCallback<void(CallbackArgType)> callback,
-             base::OnceCallback<void(CallbackArgType)> no_permission_callback,
+             base::OnceCallback<void(blink::mojom::NativeFileSystemErrorPtr,
+                                     CallbackArgType)> no_permission_callback,
              CallbackArgType callback_arg,
              blink::mojom::NativeFileSystemErrorPtr result,
              blink::mojom::PermissionStatus status) {
@@ -220,7 +223,12 @@ void NativeFileSystemHandleBase::RunWithWritePermission(
               std::move(callback).Run(std::move(callback_arg));
               return;
             }
-            std::move(no_permission_callback).Run(std::move(callback_arg));
+            if (result->status == blink::mojom::NativeFileSystemStatus::kOk) {
+              result->status =
+                  blink::mojom::NativeFileSystemStatus::kPermissionDenied;
+            }
+            std::move(no_permission_callback)
+                .Run(std::move(result), std::move(callback_arg));
           },
           std::move(callback), std::move(no_permission_callback),
           std::move(callback_arg)));

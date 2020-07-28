@@ -200,6 +200,14 @@ CSSValue* ConsumeDescriptor(StyleRule::RuleType rule_type,
   }
 }
 
+CSSValue* ConsumeFontMetricOverride(CSSParserTokenRange& range,
+                                    const CSSParserContext& context) {
+  if (!RuntimeEnabledFeatures::CSSFontMetricsOverrideEnabled())
+    return nullptr;
+  return css_parsing_utils::ConsumePercent(range, context,
+                                           kValueRangeNonNegative);
+}
+
 }  // namespace
 
 CSSValue* AtRuleDescriptorParser::ParseFontFaceDescriptor(
@@ -248,6 +256,10 @@ CSSValue* AtRuleDescriptorParser::ParseFontFaceDescriptor(
     case AtRuleDescriptorID::FontFeatureSettings:
       parsed_value =
           css_parsing_utils::ConsumeFontFeatureSettings(range, context);
+      break;
+    case AtRuleDescriptorID::AscentOverride:
+    case AtRuleDescriptorID::DescentOverride:
+      parsed_value = ConsumeFontMetricOverride(range, context);
       break;
     default:
       break;

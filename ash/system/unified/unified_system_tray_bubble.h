@@ -82,12 +82,6 @@ class ASH_EXPORT UnifiedSystemTrayBubble
   // Update bubble bounds and focus if necessary.
   void UpdateBubble();
 
-  // Update layer transform during expand / collapse animation. During
-  // animation, the height of the view changes, but resizing of the bubble is
-  // performance bottleneck. This method makes use of layer transform to avoid
-  // resizing of the bubble during animation.
-  void UpdateTransform();
-
   // Return the maximum height available for both the system tray and
   // the message center.
   int CalculateMaxHeight() const;

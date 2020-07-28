@@ -16,6 +16,7 @@ animationName
 animationPlayState
 animationTimingFunction
 appearance
+ascentOverride
 aspectRatio
 backdropFilter
 backfaceVisibility
@@ -133,6 +134,7 @@ cursor
 cx
 cy
 d
+descentOverride
 direction
 display
 dominantBaseline

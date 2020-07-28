@@ -37,7 +37,6 @@ Polymer({
 
     managed: Boolean,
 
-    /** @private {number} */
     sheetCount: Number,
 
     /** @private {?string} */

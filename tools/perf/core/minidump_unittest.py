@@ -33,11 +33,8 @@ class BrowserMinidumpTest(tab_test_case.TabTestCase):
   @decorators.Isolated
   # Minidump symbolization doesn't work in ChromeOS local mode if the rootfs is
   # still read-only, so skip the test in that case.
-  # TODO(crbug.com/1038043): Test is failing on chromeos-betty-chrome.
   @decorators.Disabled(
       'chromeos-local',
-      'chromeos-board-betty',
-      'chromeos-board-betty-pi-arc',
       'win'  # https://crbug.com/1084931
   )
   def testSymbolizeMinidump(self):
@@ -81,11 +78,8 @@ class BrowserMinidumpTest(tab_test_case.TabTestCase):
   @decorators.Isolated
   # Minidump symbolization doesn't work in ChromeOS local mode if the rootfs is
   # still read-only, so skip the test in that case.
-  # TODO(crbug.com/1038043): Test is failing on chromeos-betty-chrome.
   @decorators.Disabled(
       'chromeos-local',
-      'chromeos-board-betty',
-      'chromeos-board-betty-pi-arc',
       'win'  # https://crbug.com/1084931
   )
   def testMultipleCrashMinidumps(self):

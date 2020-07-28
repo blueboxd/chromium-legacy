@@ -89,9 +89,6 @@ class VIZ_SERVICE_EXPORT SkiaRenderer : public DirectRenderer {
   void EnsureScissorTestDisabled() override;
   void CopyDrawnRenderPass(const copy_output::RenderPassGeometry& geometry,
                            std::unique_ptr<CopyOutputRequest> request) override;
-#if defined(OS_WIN)
-  void SetEnableDCLayers(bool enable) override;
-#endif
   void DidChangeVisibility() override;
   void FinishDrawingQuadList() override;
   void GenerateMipmap() override;

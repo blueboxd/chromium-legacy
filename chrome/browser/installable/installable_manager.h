@@ -14,6 +14,7 @@
 #include "base/gtest_prod_util.h"
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
+#include "base/optional.h"
 #include "base/time/time.h"
 #include "chrome/browser/installable/installable_data.h"
 #include "chrome/browser/installable/installable_logging.h"
@@ -187,7 +188,8 @@ class InstallableManager
   // Resets members to empty and removes all queued tasks.
   // Called when navigating to a new page or if the WebContents is destroyed
   // whilst waiting for a callback.
-  void Reset();
+  // If populated, the given |error| is reported to all queued tasks.
+  void Reset(base::Optional<InstallableStatusCode> error = base::nullopt);
 
   // Sets the fetched bit on the installable and icon subtasks.
   // Called if no manifest (or an empty manifest) was fetched from the site.

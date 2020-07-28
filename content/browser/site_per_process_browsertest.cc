@@ -13110,7 +13110,7 @@ IN_PROC_BROWSER_TEST_P(SitePerProcessBrowserTouchActionTest,
   ContentBrowserClient* old_client = SetBrowserClientForTesting(&new_client);
   new_client.set_old_client(old_client);
 
-  web_contents()->GetRenderViewHost()->OnWebkitPreferencesChanged();
+  web_contents()->OnWebPreferencesChanged();
 
   EXPECT_TRUE(GetTouchActionForceEnableZoom(child_rwh));
 
@@ -14390,7 +14390,7 @@ IN_PROC_BROWSER_TEST_P(SitePerProcessBrowserTest,
   DoubleTapZoomContentBrowserClient content_browser_client;
   ContentBrowserClient* old_client =
       SetBrowserClientForTesting(&content_browser_client);
-  web_contents()->GetRenderViewHost()->OnWebkitPreferencesChanged();
+  web_contents()->OnWebPreferencesChanged();
 
   GURL main_url(embedded_test_server()->GetURL(
       "a.com", "/cross_site_iframe_factory.html?a(b)"));

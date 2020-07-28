@@ -2980,6 +2980,30 @@ TEST_F(TextfieldTest, OverflowInRTLTest) {
   base::i18n::SetICUDefaultLocale(locale);
 }
 
+TEST_F(TextfieldTest, CommitComposingTextTest) {
+  InitTextfield();
+  ui::CompositionText composition;
+  composition.text = UTF8ToUTF16("abc123");
+  ui::TextInputClient* client = textfield_;
+  client->SetCompositionText(composition);
+  uint32_t composed_text_length =
+      client->ConfirmCompositionText(/* keep_selection */ false);
+
+  EXPECT_EQ(composed_text_length, static_cast<uint32_t>(6));
+}
+
+TEST_F(TextfieldTest, CommitEmptyComposingTextTest) {
+  InitTextfield();
+  ui::CompositionText composition;
+  composition.text = UTF8ToUTF16("");
+  ui::TextInputClient* client = textfield_;
+  client->SetCompositionText(composition);
+  uint32_t composed_text_length =
+      client->ConfirmCompositionText(/* keep_selection */ false);
+
+  EXPECT_EQ(composed_text_length, static_cast<uint32_t>(0));
+}
+
 TEST_F(TextfieldTest, GetCompositionCharacterBoundsTest) {
   InitTextfield();
   ui::CompositionText composition;
@@ -3049,6 +3073,73 @@ TEST_F(TextfieldTest, GetCompositionCharacterBounds_ComplexText) {
   // - rects[3] == rects[4] == rects[5]
   // - rects[6] == rects[7]
 }
+
+#if defined(OS_CHROMEOS)
+TEST_F(TextfieldTest, SetAutocorrectRangeTextWithNoInitalText) {
+  InitTextfield();
+  ui::TextInputClient* client = textfield_;
+  client->SetAutocorrectRange(ASCIIToUTF16("text replacement"),
+                              gfx::Range(0, 0));
+  base::string16 text;
+  client->GetTextFromRange(gfx::Range(0, 16), &text);
+  EXPECT_EQ(text, UTF8ToUTF16("text replacement"));
+}
+
+TEST_F(TextfieldTest, SetAutocorrectRangeText) {
+  InitTextfield();
+  ui::TextInputClient* client = textfield_;
+
+  ui::CompositionText composition;
+  composition.text = UTF8ToUTF16("Initial txt");
+  client->SetCompositionText(composition);
+  client->SetAutocorrectRange(ASCIIToUTF16("text replacement"),
+                              gfx::Range(8, 11));
+  base::string16 text;
+  client->GetTextFromRange(gfx::Range(0, 24), &text);
+  EXPECT_EQ(text, UTF8ToUTF16("Initial text replacement"));
+}
+
+TEST_F(TextfieldTest, SetAutocorrectRangeExplicitlySet) {
+  InitTextfield();
+  ui::TextInputClient* client = textfield_;
+  client->InsertText(UTF8ToUTF16("Initial txt"));
+  client->SetAutocorrectRange(ASCIIToUTF16("text replacement"),
+                              gfx::Range(8, 11));
+  base::string16 text;
+  client->GetTextFromRange(gfx::Range(0, 24), &text);
+  EXPECT_EQ(text, UTF8ToUTF16("Initial text replacement"));
+}
+
+TEST_F(TextfieldTest, GetAutocorrectCharacterBoundsTest) {
+  InitTextfield();
+  ui::TextInputClient* client = textfield_;
+
+  client->InsertText(UTF8ToUTF16("hello placeholder text"));
+  client->SetAutocorrectRange(ASCIIToUTF16("longlonglongtext"),
+                              gfx::Range(3, 10));
+  gfx::Rect rectForLongText = client->GetAutocorrectCharacterBounds();
+
+  // Clear the text
+  client->DeleteRange(gfx::Range(0, 99));
+
+  client->InsertText(UTF8ToUTF16("hello placeholder text"));
+  client->SetAutocorrectRange(ASCIIToUTF16("short"), gfx::Range(3, 10));
+  gfx::Rect rectForShortText = client->GetAutocorrectCharacterBounds();
+
+  EXPECT_LT(rectForShortText.x(), rectForLongText.x());
+  EXPECT_EQ(rectForShortText.y(), rectForLongText.y());
+  EXPECT_EQ(rectForShortText.height(), rectForLongText.height());
+  // TODO(crbug.com/1108170): Investigate why the rectangle width is wrong.
+  // The value seems to be wrong due to the incorrect value being returned from
+  // RenderText::GetCursorBounds(). Unfortuantly, that is tricky to fix, since
+  // RenderText is used in other parts of the codebase.
+  // When fixed, the following EXPECT statement should pass.
+  // EXPECT_LT(rectForShortText.width(), rectForLongText.width());
+}
+
+// TODO(crbug.com/1108170): Add a test to check that when the composition /
+// surrounding text is updated, the AutocorrectRange is updated accordingly.
+#endif  // OS_CHROMEOS
 
 // The word we select by double clicking should remain selected regardless of
 // where we drag the mouse afterwards without releasing the left button.

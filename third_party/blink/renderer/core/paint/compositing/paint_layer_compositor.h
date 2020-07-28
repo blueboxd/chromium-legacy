@@ -32,6 +32,7 @@
 #include "third_party/blink/renderer/core/dom/document_lifecycle.h"
 #include "third_party/blink/renderer/core/paint/compositing/compositing_inputs_root.h"
 #include "third_party/blink/renderer/core/paint/compositing/compositing_reason_finder.h"
+#include "third_party/blink/renderer/core/paint/compositing/compositing_update_type.h"
 
 namespace blink {
 
@@ -42,13 +43,6 @@ class LayoutView;
 class Page;
 class Scrollbar;
 class ScrollingCoordinator;
-
-enum CompositingUpdateType {
-  kCompositingUpdateNone,
-  kCompositingUpdateAfterGeometryChange,
-  kCompositingUpdateAfterCompositingInputChange,
-  kCompositingUpdateRebuildTree,
-};
 
 enum CompositingStateTransitionType {
   kNoCompositingStateChange,

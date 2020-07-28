@@ -11,6 +11,7 @@ namespace switches {
 // alongside the definition of their values in the .cc file.
 extern const char kEnableGamepadButtonAxisEvents[];
 extern const char kGamepadPollingInterval[];
+extern const char kRestrictGamepadAccess[];
 
 }  // namespace switches
 

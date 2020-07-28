@@ -335,6 +335,7 @@
 <translation id="3658159451045945436">रीसेट केल्याने तुमचा डेटा सेव्हिंग इतिहास, भेट दिलेल्या साइटच्या सूचीसह, मिटवला जातो.</translation>
 <translation id="3692944402865947621"><ph name="FILE_NAME" /> download failed because storage location is not reachable.</translation>
 <translation id="3701167022068948696">आता निराकरण करा</translation>
+<translation id="371230970611282515">धोकादायक घटना घडण्याआधी त्यांचे पूर्वानुमान करतो आणि त्यांबद्दल तुम्हाला चेतावणी देतो.</translation>
 <translation id="3714981814255182093">शोध बार उघडा</translation>
 <translation id="3716182511346448902">हे पेज खूपच जास्त मेमरी वापरत असल्यामुळे Chrome ने ते थांबवून ठेवलेले आहे.</translation>
 <translation id="3721119614952978349">तुम्ही आणि Google</translation>
@@ -713,6 +714,7 @@
 <translation id="6593061639179217415">डेस्कटॉप साइट</translation>
 <translation id="6597891566292541626">या फ्रेममध्ये QR/बार कोडची स्थिती निश्चित करा.</translation>
 <translation id="6600954340915313787">Chrome वर कॉपी केले</translation>
+<translation id="661266467055912436">तुमच्यासाठी आणि वेबवरील प्रत्येकजणासाठी सुरक्षिततेत सुधारणा करते.</translation>
 <translation id="6627583120233659107">फोल्डर संपादित करा</translation>
 <translation id="6643016212128521049">साफ करा</translation>
 <translation id="6643649862576733715">वाचवलेल्या डेटानुसार क्रमाने लावा</translation>
@@ -872,6 +874,7 @@
 <translation id="7925590027513907933">{FILE_COUNT,plural, =1{फाइल डाऊनलोड करत आहे.}other{# फाइल डाउनलोड करत आहे.}}</translation>
 <translation id="7926975587469166629">कार्डावरील टोपणनाव</translation>
 <translation id="7929962904089429003">मेनू उघडा</translation>
+<translation id="7930998711684428189">डेटा भंगामध्ये पासवर्ड उघड झाल्यास, तुम्हाला चेतावणी देतो.</translation>
 <translation id="7942131818088350342"><ph name="PRODUCT_NAME" /> कालबाह्य झाले आहे.</translation>
 <translation id="7947953824732555851">स्वीकार करा आणि साइन इन करा</translation>
 <translation id="7963646190083259054">विक्रेता:</translation>

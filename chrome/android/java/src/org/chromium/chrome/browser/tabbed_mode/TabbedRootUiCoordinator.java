@@ -12,7 +12,6 @@ import org.chromium.base.TraceEvent;
 import org.chromium.base.supplier.ObservableSupplier;
 import org.chromium.base.supplier.ObservableSupplierImpl;
 import org.chromium.base.supplier.Supplier;
-import org.chromium.base.task.PostTask;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ActivityTabProvider;
 import org.chromium.chrome.browser.ChromeActivity;
@@ -51,7 +50,6 @@ import org.chromium.chrome.browser.ui.default_browser_promo.DefaultBrowserPromoU
 import org.chromium.chrome.browser.ui.tablet.emptybackground.EmptyBackgroundViewWrapper;
 import org.chromium.chrome.browser.vr.VrModuleProvider;
 import org.chromium.components.browser_ui.bottomsheet.EmptyBottomSheetObserver;
-import org.chromium.content_public.browser.UiThreadTaskTraits;
 import org.chromium.ui.base.DeviceFormFactor;
 import org.chromium.ui.base.WindowAndroid;
 
@@ -70,7 +68,8 @@ public class TabbedRootUiCoordinator extends RootUiCoordinator implements Native
     private OfflineIndicatorControllerV2 mOfflineIndicatorController;
     private UrlFocusChangeListener mUrlFocusChangeListener;
     private @Nullable ToolbarButtonInProductHelpController mToolbarButtonInProductHelpController;
-    private boolean mIntentWithEffect;
+    private ObservableSupplier<Boolean> mIntentWithEffect;
+    private Callback<Boolean> mIntentWithEffectObserver;
     private HistoryNavigationCoordinator mHistoryNavigationCoordinator;
     private NavigationSheet mNavigationSheet;
 
@@ -79,8 +78,8 @@ public class TabbedRootUiCoordinator extends RootUiCoordinator implements Native
      * @param activity The activity whose UI the coordinator is responsible for.
      * @param onOmniboxFocusChangedListener callback to invoke when Omnibox focus
      *         changes.
-     * @param intentWithEffect Whether or not {@code activity} was launched with an
-     *         intent to open a single tab.
+     * @param intentWithEffect Supplier of boolean saying whether or not {@code activity} was
+     *         launched with an intent to open a single tab.
      * @param shareDelegateSupplier
      * @param tabProvider The {@link ActivityTabProvider} to get current tab of the activity.
      * @param profileSupplier Supplier of the currently applicable profile.
@@ -89,7 +88,8 @@ public class TabbedRootUiCoordinator extends RootUiCoordinator implements Native
      * @param contextualSearchManagerSupplier Supplier of the {@link ContextualSearchManager}.
      */
     public TabbedRootUiCoordinator(ChromeActivity activity,
-            Callback<Boolean> onOmniboxFocusChangedListener, boolean intentWithEffect,
+            Callback<Boolean> onOmniboxFocusChangedListener,
+            ObservableSupplier<Boolean> intentWithEffect,
             ObservableSupplier<ShareDelegate> shareDelegateSupplier,
             ActivityTabProvider tabProvider,
             ObservableSupplierImpl<EphemeralTabCoordinator> ephemeralTabCoordinatorSupplier,
@@ -210,7 +210,8 @@ public class TabbedRootUiCoordinator extends RootUiCoordinator implements Native
                     getBottomSheetController(), true));
         }
 
-        PostTask.postTask(UiThreadTaskTraits.DEFAULT, this::initializeIPH);
+        mIntentWithEffectObserver = this::initializeIPH;
+        mIntentWithEffect.addObserver(mIntentWithEffectObserver);
     }
 
     // Protected class methods
@@ -251,12 +252,16 @@ public class TabbedRootUiCoordinator extends RootUiCoordinator implements Native
 
     // Private class methods
 
-    private void initializeIPH() {
+    private void initializeIPH(boolean intentWithEffect) {
+        assert mIntentWithEffectObserver != null;
+        mIntentWithEffect.removeObserver(mIntentWithEffectObserver);
+        mIntentWithEffectObserver = null;
+
         WindowAndroid window = mActivity.getWindowAndroid();
         mToolbarButtonInProductHelpController =
                 new ToolbarButtonInProductHelpController(mActivity, mAppMenuCoordinator,
                         mActivity.getLifecycleDispatcher(), mActivity.getActivityTabProvider());
-        if (!triggerPromo()) {
+        if (!triggerPromo(intentWithEffect)) {
             mToolbarButtonInProductHelpController.showColdStartIPH();
         }
     }
@@ -349,7 +354,7 @@ public class TabbedRootUiCoordinator extends RootUiCoordinator implements Native
      * Triggers the display of an appropriate promo, if any, returning true if a promo is actually
      * displayed.
      */
-    private boolean triggerPromo() {
+    private boolean triggerPromo(boolean intentWithEffect) {
         try (TraceEvent e = TraceEvent.scoped("TabbedRootUiCoordinator.triggerPromo")) {
             SharedPreferencesManager preferenceManager = SharedPreferencesManager.getInstance();
             // Promos can only be shown when we start with ACTION_MAIN intent and
@@ -366,7 +371,7 @@ public class TabbedRootUiCoordinator extends RootUiCoordinator implements Native
             // http://crbug.com/354696
             boolean isLegacyMultiWindow =
                     MultiWindowUtils.getInstance().isLegacyMultiWindow(mActivity);
-            if (!isShowingPromo && !mIntentWithEffect && FirstRunStatus.getFirstRunFlowComplete()
+            if (!isShowingPromo && !intentWithEffect && FirstRunStatus.getFirstRunFlowComplete()
                     && preferenceManager.readBoolean(
                             ChromePreferenceKeys.PROMOS_SKIPPED_ON_FIRST_START, false)
                     && !VrModuleProvider.getDelegate().isInVr()

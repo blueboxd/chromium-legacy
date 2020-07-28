@@ -21,6 +21,8 @@
 
 namespace {
 
+constexpr base::TimeDelta kReadFramesTimeout = base::TimeDelta::FromSeconds(15);
+
 std::string ReceiveSurfaceStateToString(
     NearbySharingService::ReceiveSurfaceState state) {
   switch (state) {
@@ -99,8 +101,10 @@ std::string ConnectionsStatusToString(
       return "ALREADY_CONNECTED_TO_ENDPOINT";
     case NearbyConnectionsManager::ConnectionsStatus::kNotConnectedToEndpoint:
       return "NOT_CONNECTED_TO_ENDPOINT";
-    case NearbyConnectionsManager::ConnectionsStatus::kRadioError:
-      return "RADIO_ERROR";
+    case NearbyConnectionsManager::ConnectionsStatus::kBluetoothError:
+      return "BLUETOOTH_ERROR";
+    case NearbyConnectionsManager::ConnectionsStatus::kWifiLanError:
+      return "WIFI_LAN_ERROR";
     case NearbyConnectionsManager::ConnectionsStatus::kPayloadUnknown:
       return "PAYLOAD_UNKNOWN";
   }
@@ -651,6 +655,45 @@ void NearbySharingServiceImpl::OnIncomingTransferUpdate(
     const ShareTarget& share_target,
     TransferMetadata metadata) {
   // TODO(himanshujaju) - Implement.
+}
+
+void NearbySharingServiceImpl::ReceiveIntroduction(
+    const ShareTarget& share_target,
+    const std::string& token) {
+  NS_LOG(INFO) << __func__ << ": Receiving introduction from "
+               << share_target.device_name;
+
+  NearbyConnection* connection = GetIncomingConnection(share_target);
+  if (!connection) {
+    NS_LOG(WARNING)
+        << __func__
+        << ": Ignore introduction, due to no connection established.";
+    return;
+  }
+
+  auto frames_reader = std::make_unique<IncomingFramesReader>(
+      &NearbyProcessManager::GetInstance(), profile_, connection);
+
+  frames_reader->ReadFrame(
+      sharing::mojom::V1Frame::Tag::INTRODUCTION,
+      base::BindOnce(&NearbySharingServiceImpl::OnReceivedIntroduction,
+                     weak_ptr_factory_.GetWeakPtr(), connection,
+                     std::move(frames_reader)),
+      kReadFramesTimeout);
+}
+
+void NearbySharingServiceImpl::OnReceivedIntroduction(
+    NearbyConnection* connection,
+    std::unique_ptr<IncomingFramesReader> frames_reader,
+    base::Optional<sharing::mojom::V1FramePtr> frame) {
+  if (!frame) {
+    connection->Close();
+    NS_LOG(WARNING) << __func__ << ": Invalid introduction frame";
+    return;
+  }
+
+  NS_LOG(INFO) << __func__ << ": Successfully read the introduction frame.";
+  // TODO(himanshujaju) - Implement OnReceiveIntroduction
 }
 
 IncomingShareTargetInfo& NearbySharingServiceImpl::GetIncomingShareTargetInfo(

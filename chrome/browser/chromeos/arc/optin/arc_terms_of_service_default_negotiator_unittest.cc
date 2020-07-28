@@ -456,7 +456,8 @@ TEST_F(ArcTermsOfServiceDefaultNegotiatorTest, Retry) {
 
   // Switch to error page.
   support_host()->ShowError(ArcSupportHost::Error::SIGN_IN_NETWORK_ERROR,
-                            false);
+                            0 /* error_code */,
+                            false /* should_show_send_feedback */);
 
   // The callback should not be called yet.
   EXPECT_EQ(status, Status::PENDING);

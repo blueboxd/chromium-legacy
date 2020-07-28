@@ -62,6 +62,8 @@ static const char kPreferRelatedApplications[] =
 static const char kPreferRelatedApplicationsSupportedOnlyBetaStable[] =
     "prefer_related_applications is only supported on Chrome Beta and Stable "
     "channels on Android.";
+static const char kManifestLocationChanged[] =
+    "Manifest location changed during fetch";
 
 static const char kNotInMainFrameId[] = "not-in-main-frame";
 static const char kNotFromSecureOriginId[] = "not-from-secure-origin";
@@ -93,6 +95,7 @@ static const char kPreferRelatedApplicationsId[] =
     "prefer-related-applications";
 static const char kPreferRelatedApplicationsSupportedOnlyBetaStableId[] =
     "prefer-related-applications-only-beta-stable";
+static const char kManifestLocationChangedId[] = "manifest-location-changed";
 
 const std::string& GetMessagePrefix() {
   static base::NoDestructor<std::string> message_prefix(
@@ -193,6 +196,9 @@ std::string GetErrorMessage(InstallableStatusCode code) {
       break;
     case PREFER_RELATED_APPLICATIONS_SUPPORTED_ONLY_BETA_STABLE:
       message = kPreferRelatedApplicationsSupportedOnlyBetaStable;
+      break;
+    case MANIFEST_URL_CHANGED:
+      message = kManifestLocationChanged;
       break;
   }
 
@@ -295,6 +301,9 @@ content::InstallabilityError GetInstallabilityError(
       break;
     case PREFER_RELATED_APPLICATIONS_SUPPORTED_ONLY_BETA_STABLE:
       error_id = kPreferRelatedApplicationsSupportedOnlyBetaStableId;
+      break;
+    case MANIFEST_URL_CHANGED:
+      error_id = kManifestLocationChangedId;
       break;
   }
   error.error_id = error_id;

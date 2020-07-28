@@ -356,7 +356,7 @@ group("gn_all") {
       "//device:device_junit_tests",
       "//media/gpu:video_decode_accelerator_unittest",
       "//net/android:net_junit_tests",
-      "//services:service_junit_tests",
+      "//services:services_junit_tests",
       "//testing/android/junit:junit_unit_tests",
       "//third_party/catapult/devil",
       "//third_party/smhasher:murmurhash3",

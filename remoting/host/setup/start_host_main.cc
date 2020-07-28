@@ -22,7 +22,6 @@
 #include "net/url_request/url_fetcher.h"
 #include "net/url_request/url_request_context_getter.h"
 #include "remoting/base/logging.h"
-#include "remoting/base/service_urls.h"
 #include "remoting/base/url_request_context_getter.h"
 #include "remoting/host/setup/host_starter.h"
 #include "remoting/host/setup/pin_validator.h"
@@ -232,7 +231,6 @@ int StartHostMain(int argc, char** argv) {
 
   // Start the host.
   std::unique_ptr<HostStarter> host_starter(HostStarter::Create(
-      remoting::ServiceUrls::GetInstance()->remoting_server_endpoint(),
       url_loader_factory_owner.GetURLLoaderFactory()));
   host_starter->StartHost(host_name, host_pin,
                           /*consent_to_data_collection=*/true, auth_code,

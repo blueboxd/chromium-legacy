@@ -74,8 +74,6 @@ ChosenObjectView::ChosenObjectView(
   // Create the label that displays the chosen object name.
   auto label =
       std::make_unique<views::Label>(display_name, CONTEXT_BODY_TEXT_LARGE);
-  icon_->SetImage(
-      PageInfoUI::GetChosenObjectIcon(*info_, false, label->GetEnabledColor()));
   layout->AddView(std::move(label));
 
   // Create the delete button.
@@ -138,10 +136,7 @@ ChosenObjectView::~ChosenObjectView() {}
 void ChosenObjectView::ButtonPressed(views::Button* sender,
                                      const ui::Event& event) {
   // Change the icon to reflect the selected setting.
-  icon_->SetImage(PageInfoUI::GetChosenObjectIcon(
-      *info_, true,
-      views::style::GetColor(*this, views::style::CONTEXT_LABEL,
-                             views::style::STYLE_PRIMARY)));
+  UpdateIconImage(/*is_deleted=*/true);
 
   DCHECK(delete_button_->GetVisible());
   delete_button_->SetVisible(false);
@@ -149,4 +144,17 @@ void ChosenObjectView::ButtonPressed(views::Button* sender,
   for (ChosenObjectViewObserver& observer : observer_list_) {
     observer.OnChosenObjectDeleted(*info_);
   }
+}
+
+void ChosenObjectView::OnThemeChanged() {
+  views::View::OnThemeChanged();
+  UpdateIconImage(/*is_deleted=*/false);
+}
+
+void ChosenObjectView::UpdateIconImage(bool is_deleted) const {
+  // TODO(crbug.com/1096944): Why are we using label color for an icon?
+  icon_->SetImage(PageInfoUI::GetChosenObjectIcon(
+      *info_, is_deleted,
+      views::style::GetColor(*this, views::style::CONTEXT_LABEL,
+                             views::style::STYLE_PRIMARY)));
 }

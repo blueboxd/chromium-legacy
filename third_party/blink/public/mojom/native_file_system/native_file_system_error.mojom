@@ -11,6 +11,8 @@ enum NativeFileSystemStatus {
   kOk,
   // The website doesn't/didn't have permission to do what it tried to do.
   kPermissionDenied,
+  // The website wasn't allowed to ask for permission in the current context.
+  kSecurityError,
   // The object being operated on was in an invalid state for the operation.
   kInvalidState,
   // An invalid argument was passed to a method.

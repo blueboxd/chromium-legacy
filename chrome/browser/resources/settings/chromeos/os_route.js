@@ -134,8 +134,6 @@ cr.define('settings', function() {
     r.EXTERNAL_STORAGE_PREFERENCES = createSubpage(
         r.STORAGE, mojom.EXTERNAL_STORAGE_SUBPAGE_PATH,
         Subpage.kExternalStorage);
-    r.DOWNLOADED_CONTENT =
-        createSubpage(r.STORAGE, mojom.DLC_SUBPAGE_PATH, Subpage.kStorage);
     r.POWER = createSubpage(r.DEVICE, mojom.POWER_SUBPAGE_PATH, Subpage.kPower);
 
     // Personalization section.

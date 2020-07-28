@@ -755,6 +755,7 @@
 <translation id="2197625019569762163">このポリシーを True に設定した場合、ログイン画面ではパスワード入力用に数字キーボードがデフォルトで表示されます。ユーザーはそこから通常のキーボードに切り替えることができます。
 
       このポリシーを設定した場合、ユーザーは設定を変更できません。このポリシーを未設定のままにするか False に設定した場合、このポリシーによる影響はありません。</translation>
+<translation id="2200698565850397198">ネイティブ メッセージングの拒否リストを設定する</translation>
 <translation id="2201555246697292490">ネイティブ メッセージングのホワイトリストを設定する</translation>
 <translation id="2204753382813641270">シェルフの自動非表示を指定する</translation>
 <translation id="2208976000652006649">POST を使用する検索 URL のパラメータ</translation>
@@ -797,9 +798,6 @@
       このポリシーは、一般ユーザー向けのデバイスでは使用しないでください。
 
       このポリシーを True に設定するか未設定のままにした場合、自動起動される管理対象のゲスト セッションでは、プライバシーに関する警告通知は固定され、ユーザーが閉じるまで表示されます。</translation>
-<translation id="2288338171390565087">この機能は、ユーザーが組み込みの絵文字マップに一致する単語を入力した際に、絵文字の候補を表示します。
-      ポリシーを true に設定した場合、この機能が強制的に有効になります（ユーザーによるオーバーライドはできません）。
-      このポリシーのデフォルトの設定は false で、絵文字の候補が表示されません（ユーザーによるオーバーライドはできません）。</translation>
 <translation id="2289265947759479962">このポリシーでは、バージョン情報（OS バージョン、OS プラットフォーム、OS アーキテクチャ、<ph name="PRODUCT_NAME" /> のバージョン、<ph name="PRODUCT_NAME" /> のチャンネルなど）について、レポートを作成するかどうかを管理します。
 
       ポリシー <ph name="CLOUD_REPORTING_ENABLED_POLICY_NAME" /> を未設定のままにするか無効にすると、このポリシーは無視されます。
@@ -1221,13 +1219,6 @@
       このポリシーを False にすると、マシンを識別できる情報は収集されません。
 
       <ph name="PRODUCT_NAME" /> の場合、このポリシーは <ph name="CLOUD_MANAGEMENT_ENROLLMENT_TOKEN" /> で登録されたマシンでのみ有効です。</translation>
-<translation id="2836621397261130126"><ph name="KERBEROS" /> チケットの委任の決定に KDC ポリシーによる承認を適用するかどうかを管理します。
-
-          このポリシーを true に設定した場合、HTTP 認証で KDC ポリシーによる承認が適用されます。つまり、KDC によりサービス チケットで <ph name="OK_AS_DELEGATE" /> が設定されている場合のみ、Chrome は認証情報を委任します。詳しくは、https://tools.ietf.org/html/rfc5896.html をご覧ください。また、サービスは「AuthNegotiateDelegateWhitelist」ポリシーにも準拠する必要があります。
-
-          このポリシーを設定していないか false に設定した場合、サポートされているプラットフォームで KDC ポリシーは無視され、「AuthNegotiateDelegateWhitelist」ポリシーのみが適用されます。
-
-          Windows では、KDC ポリシーが常に適用されます。</translation>
 <translation id="283695852388224413">このポリシーを設定した場合、設定された PIN の最大桁数が適用されます。0 以下に設定した場合、最大桁数はありません。ユーザーはどのような桁数の PIN でも設定できます。0 より大きく <ph name="PIN_UNLOCK_MINIMUM_LENGTH_POLICY_NAME" /> より小さい値に設定した場合、最大桁数は最小桁数と同じになります。
 
           このポリシーが未設定の場合、最大桁数は適用されません。</translation>
@@ -2415,13 +2406,6 @@ False に設定した場合、<ph name="PRODUCT_NAME" /> はネイティブ通�
       「Forced」を選択した場合は、シークレット モードでのみページを開くことができます。「Forced」は Android-on-Chrome では機能しません。</translation>
 <translation id="4600786265870346112">大きいカーソルを有効にする</translation>
 <translation id="4604931264910482931">ネイティブ メッセージングのブラックリストを設定する</translation>
-<translation id="4614701085541180174">SAML フローをホストするログイン画面のフレームで、サイトから証明書をリクエストされた場合に、どのサイトであればクライアント証明書を自動的に選択するかを URL パターンのリストで指定できます。使用例としては、SAML IdP に提示するデバイス全体の証明書を設定するケースが挙げられます。
-
-      値は文字列に変換した JSON 辞書の配列とする必要があります。各辞書は <ph name="DEVICE_LOGIN_SCREEN_AUTO_SELECT_CERTIFICATE_FOR_URLS_EXAMPLE" /> の形式とし、<ph name="URL_PATTERN_PLACEHOLDER" /> にはコンテンツ設定のパターン、<ph name="FILTER_PLACEHOLDER" /> には、ブラウザが自動的に選択するクライアント証明書の条件を指定します。フィルタの設定に関係なく、サーバーの証明書リクエストに一致する証明書のみが選択されます。<ph name="FILTER_PLACEHOLDER" /> を <ph name="JSON_DICTIONARY_EXAMPLE" /> の形式で指定した場合は、発行元の CommonName が <ph name="ISSUER_CN_PLACEHOLDER" /> のクライアント証明書のみが選択されます。<ph name="FILTER_PLACEHOLDER" /> が空の辞書「{}」の場合、クライアント証明書の選択に追加の条件は適用されません。
-
-      このポリシーを設定しない場合、どのサイトに対しても自動選択は行われません。
-
-      有効な URL パターンについて詳しくは、https://cloud.google.com/docs/chrome-enterprise/policies/url-patterns をご覧ください。</translation>
 <translation id="4617338332148204752"><ph name="PRODUCT_FRAME_NAME" /> でのメタ タグ チェックをスキップする</translation>
 <translation id="462134014569484584">このポリシーでは、このデバイスの <ph name="PLUGIN_VM_NAME" /> のライセンスキーを指定します。</translation>
 <translation id="4625915093043961294">拡張機能インストールのホワイトリストを設定する</translation>
@@ -2501,6 +2485,13 @@ False に設定した場合、<ph name="PRODUCT_NAME" /> はネイティブ通�
           このポリシーを設定した場合、ユーザーによる変更やオーバーライドはできません。
 
           このポリシーを未設定のままにした場合、モノラル音声が無効（初期設定）になりますが、ユーザーはいつでも有効にできます。</translation>
+<translation id="4764901562691611575">このポリシーはサポートが終了しています。代わりに <ph name="NATIVE_MESSAGING_BLOCKLIST_POLICY_NAME" /> ポリシーを使用してください。
+
+          読み込まないネイティブ メッセージング ホストを指定できます。
+
+          拒否リストに値「*」を指定した場合、明示的に許可リストに登録されていない限り、すべてのネイティブ メッセージング ホストがブロックされます。
+
+          このポリシーを未設定のままにした場合、<ph name="PRODUCT_NAME" /> ではインストールされたネイティブ メッセージング ホストがすべて読み込まれます。</translation>
 <translation id="4771144269610910963">このポリシーを使用すると、ユーザーのダウンロードに対してセーフ ブラウジングによる詳細なスキャンを行うかどうかを管理できます。このポリシーを設定しないか、デフォルトの「ファイルをスキャンしない」に設定した場合、ユーザーのダウンロードに対してセーフ ブラウジングによるスキャンは行われません。
 
       「ユーザーのダウンロードをスキャンに送信する」に設定した場合は、ユーザーのダウンロードがネットワークを介してセーフ ブラウジングに送信され、不正なソフトウェアのスキャンが行われます。
@@ -3209,6 +3200,11 @@ False に設定した場合、<ph name="PRODUCT_NAME" /> はネイティブ通�
           このポリシーが未設定の場合は、デフォルトの操作（停止）が行われます。
 
           停止操作の場合、<ph name="PRODUCT_OS_NAME" /> で停止前に画面をロックするかどうかを個別に設定できます。</translation>
+<translation id="5745980816926303222">このポリシーはサポートが終了しています。代わりに <ph name="AUTOPLAY_ALLOWLIST_POLICY_NAME" /> ポリシーを使用してください。
+
+      このポリシーでは、<ph name="PRODUCT_NAME" /> で動画とその音声を自動再生できるようにします（ユーザーの同意は確認されません）。<ph name="AUTOPLAY_ALLOWED_POLICY_NAME" /> ポリシーが True に設定されている場合、このポリシーは無視されます。<ph name="AUTOPLAY_ALLOWED_POLICY_NAME" /> ポリシーが False に設定されている場合、このポリシーで設定した URL パターンの動画に限り再生されます。<ph name="PRODUCT_NAME" /> の実行中にこのポリシーを変更した場合、変更内容は新しく開かれるタブにのみ適用されます。
+
+      有効な URL パターンについて詳しくは、https://cloud.google.com/docs/chrome-enterprise/policies/url-patterns をご覧ください。</translation>
 <translation id="574983287620584622">ログイン画面でユーザー補助機能のショートカットを有効にする</translation>
 <translation id="5755002458331714762"> Web Components v0 API（Shadow DOM v0、Custom Elements v0、HTML Imports）は 2018 年にサポートが終了し、M80 以降ではデフォルトで無効となっていますが、このポリシーにより M84 までこれらの機能を再度有効にできるようにしました。
 
@@ -3495,6 +3491,11 @@ False に設定した場合、<ph name="PRODUCT_NAME" /> はネイティブ通�
 
       注: このポリシーは、音声ユーザー補助機能を含むすべての音声出力に適用されます。スクリーン リーダーを必要とするユーザーに対しては、このポリシーをオフにしないでください。</translation>
 <translation id="6221175752766085998">ローカルの信頼済みアンカーが発行した、subjectAlternativeName 拡張がない証明書を許可する</translation>
+<translation id="6222839831045864769">読み込まないネイティブ メッセージング ホストを指定できます。
+
+          拒否リストに値「*」を指定した場合、明示的に許可リストに登録されていない限り、すべてのネイティブ メッセージング ホストがブロックされます。
+
+          このポリシーを未設定のままにした場合、<ph name="PRODUCT_NAME" /> ではインストールされたネイティブ メッセージング ホストがすべて読み込まれます。</translation>
 <translation id="6224304369267200483">直接のセキュリティ キー認証を自動的に許可する URL またはドメイン</translation>
 <translation id="6233173491898450179">ダウンロード ディレクトリを設定する</translation>
 <translation id="6234177445959386333">パスワード保護サービスでパスワードのソルトハッシュを取得する企業のログイン URL のリストを設定します。</translation>
@@ -3826,6 +3827,24 @@ False に設定した場合、<ph name="PRODUCT_NAME" /> はネイティブ通�
 
       このポリシーが false に設定されているか未設定の場合、<ph name="PLUGIN_VM_NAME" /> はユーザーに対して有効になりません。
       このポリシーが true に設定されている場合、<ph name="PLUGIN_VM_NAME" /> はユーザーに対して有効になります（ただし他の設定でも許可されている必要があります）。<ph name="PLUGIN_VM_NAME" /> を実行するには、<ph name="PLUGIN_VM_ALLOWED_POLICY_NAME" /> と <ph name="USER_PLUGIN_VM_ALLOWED_POLICY_NAME" /> を true に設定し、<ph name="PLUGIN_VM_LICENSE_KEY_POLICY_NAME" /> または <ph name="PLUGIN_VM_USER_ID_POLICY_NAME" /> のいずれかを設定する必要があります。</translation>
+<translation id="6741496055862838205">デバイスに接続された企業プリンタの設定を指定します。
+
+      このポリシーを使用すると、<ph name="PRODUCT_OS_NAME" /> デバイスのプリンタ設定を指定できます。フォーマットは NativePrinters ディクショナリと同じですが、ホワイトリストまたはブラックリストに登録するプリンタごとに「id」または「guid」フィールドを追加で指定する必要があります。
+
+      このファイルのサイズは 5 MB 以下で、JSON でエンコードされている必要があります。5 MB は、約 2,1000 台のプリンタを指定してエンコードしたファイルに相当します。ファイルが完全にダウンロードされたかどうかの確認には、暗号化ハッシュが使用されます。
+
+      ファイルはダウンロードされた後、キャッシュされます。URL またはハッシュに変更があった場合は再度ダウンロードされます。
+
+      このポリシーを設定した場合、<ph name="PRODUCT_OS_NAME" /> によってプリンタ設定ファイルがダウンロードされ、<ph name="DEVICE_NATIVE_PRINTERS_ACCESS_MODE" />、<ph name="DEVICE_PRINTERS_ALLOWLIST" />、<ph name="DEVICE_PRINTERS_BLOCKLIST" /> に沿ってプリンタが利用可能になります。
+
+      このポリシーでは、ユーザーが各自のデバイスでプリンタを設定できるかどうかは制御されません。このポリシーは、個々のユーザーのプリンタ設定をサポートすることを目的としたものです。
+
+      これは <ph name="BULK_PRINTERS_POLICY" /> の追加ポリシーです。
+
+      このポリシーを設定しない場合、デバイス プリンタは存在しないことになり、他の <ph name="DEVICE_NATIVE_PRINTERS_POLICY_PATTERN" /> ポリシーは無視されます。
+
+      このポリシーはサポートが終了しています。代わりに <ph name="DEVICE_PRINTERS" /> を使用してください。
+      </translation>
 <translation id="6752711782954612641"><ph name="DEFAULT_SEARCH_PROVIDER_ENABLED_POLICY_NAME" /> がオンの場合に、<ph name="DEFAULT_SEARCH_PROVIDER_SEARCH_URL_POST_PARAMS_POLICY_NAME" /> では、POST を使った URL の検索に使用するパラメータを指定できます。名前と値のペアをカンマで区切って指定します。テンプレート パラメータ（<ph name="SEARCH_TERM_MARKER" /> など）の値は、実際の検索キーワードのデータに置き換えられます。
 
       <ph name="DEFAULT_SEARCH_PROVIDER_SEARCH_URL_POST_PARAMS_POLICY_NAME" /> を未設定のままにした場合、検索リクエストは GET メソッドを使用して送信されます。</translation>
@@ -5119,6 +5138,11 @@ False に設定した場合、<ph name="PRODUCT_NAME" /> はネイティブ通�
       このポリシーを無効にした場合、スピード アンサーは選択したコンテンツにアクセスできません。
       このポリシーが設定されていない場合、スピード アンサーに選択したコンテンツへのアクセスを許可するかどうかをユーザーが指定できます。</translation>
 <translation id="8685024486845674965">パスワードが再使用されたときに、パスワード保護について警告する</translation>
+<translation id="8685680544554917389">このポリシーを True に設定した場合、<ph name="PRODUCT_NAME" /> でメディアの自動再生が可能になります。このポリシーを False に設定した場合、<ph name="PRODUCT_NAME" /> でメディアは自動再生されません。
+
+       デフォルトでは、<ph name="PRODUCT_NAME" /> でメディアは自動再生されません。ただし、特定の URL パターンについては、<ph name="AUTOPLAY_ALLOWLIST_POLICY_NAME" /> ポリシーを使ってこの設定を変更できます。
+
+      <ph name="PRODUCT_NAME" /> の実行中にこのポリシーを変更した場合、変更内容は新しく開かれるタブにのみ適用されます。</translation>
 <translation id="8687958770985542440">M84 まで Web Components v0 API を再度有効にします。</translation>
 <translation id="8693243869659262736">組み込みの DNS クライアントを使用する</translation>
 <translation id="8698286761337647563">パスワードの期限切れを SAML ユーザーに通知する際の事前通知日数</translation>
@@ -5358,19 +5382,6 @@ False に設定した場合、<ph name="PRODUCT_NAME" /> はネイティブ通�
        このポリシーは、音声、動画、画像以外の混合コンテンツには影響しません。
        このポリシーは、<ph name="PRODUCT_NAME" /> 84 以降では無効になります。</translation>
 <translation id="9010080992450148617">高度な保護機能プログラムに登録しているユーザーがダウンロードしたコンテンツを Google に送信して詳細なスキャンを行えるようにする</translation>
-<translation id="90110062113213245">このポリシーでは、Chrome でクライアント証明書を自動的に選択できるサイトを指定する URL パターンのリストを作成できます。値は文字列変換した JSON 辞書の配列で、それぞれ <ph name="AUTO_SELECT_CERTIFICATE_FOR_URLS_EXAMPLE" /> の形式で指定します。<ph name="URL_PATTERN_PLACEHOLDER" /> は、コンテンツを設定するパターンです。<ph name="FILTER_PLACEHOLDER" /> は、ブラウザで自動的に選択されるクライアント証明書の発行元を限定するフィルタです。なお、フィルタの設定にかかわらず、サーバーの証明書リクエストに一致する証明書のみが選択されます。
-
-      <ph name="FILTER_PLACEHOLDER" /> は次のような形式で指定します。
-
-      * <ph name="AUTO_SELECT_CERTIFICATE_FOR_URLS_FILTER_EXAMPLE" />: CommonName <ph name="ISSUER_CN_PLACEHOLDER" /> が発行したクライアント証明書のみが選択されます。
-
-      * <ph name="ISSUER_STRING_VALUE" /> と <ph name="SUBJECT_STRING_VALUE" /> のセクション: 一致するクライアント証明書のみが選択されます。
-
-      * ("O"): 指定した値に一致する組織を少なくとも 1 つ含む証明書が選択されます。* ("OU"): 指定した値に一致する組織部門を少なくとも 1 つ含む証明書が選択されます。
-
-      * <ph name="EMPTY_DICTIONARY" />: クライアント証明書の選択に追加の条件は適用されません。
-
-      このポリシーを未設定のままにした場合、どのサイトについても証明書の自動選択は行われません。</translation>
 <translation id="9013875414788074110">ログイン時に、<ph name="PRODUCT_OS_NAME" /> は、サーバーに対して（オンライン）またはキャッシュに保存されたパスワードを使用して（オフライン）、認証を行うことができます。
 
       このポリシーが -1 の値に設定されている場合、ユーザーは時間制限なくオフラインで認証を行うことができます。このポリシーが -1 以外の値に設定されている場合、その値は、ユーザーがオンライン認証を行ってから再度オンライン認証を行うことが必要になるまでの時間を表します。

@@ -91,6 +91,9 @@ struct SelectFileOptions {
   // Optional file type configuration. In the common case for file open (Ctrl-O)
   // this is null.
   SelectFileTypeInfo? file_types;
+
+  // Internal window ID for the top-level shell window that owns the dialog.
+  string owning_shell_window_id;
 };
 
 // Result of the select file dialog.
@@ -99,7 +102,8 @@ enum SelectFileResult {
   // Everything worked.
   kSuccess = 0,
 
-  // TODO(jamescook): Error handling.
+  // Failed because the dialog couldn't find the owning top-level window.
+  kInvalidShellWindow = 1,
 };
 
 // Information about the selected file or files.

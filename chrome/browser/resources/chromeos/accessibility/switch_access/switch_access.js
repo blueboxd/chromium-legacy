@@ -65,26 +65,35 @@ class SwitchAccess {
     }
     // If it's not currently in the tree, listen for changes to the desktop
     // tree.
-    const eventPredicate = (event) => {
+    const onDesktopChildrenChanged = (event) => {
       if (predicate(event.target)) {
-        return true;
+        // If the event target is the node we're looking for, we've found it.
+        desktop.removeEventListener(
+            chrome.automation.EventType.CHILDREN_CHANGED,
+            onDesktopChildrenChanged, false);
+        foundCallback(event.target);
       } else if (event.target.children.length > 0) {
-        // See if one of its children is the node we're looking for.
+        // Otherwise, see if one of its children is the node we're looking for.
         const treeWalker = new AutomationTreeWalker(
             event.target, constants.Dir.FORWARD,
             {visit: predicate, root: (node) => node == event.target});
         treeWalker.next();
-        return !!treeWalker.node;
-      } else {
-        return false;
+        if (treeWalker.node) {
+          desktop.removeEventListener(
+              chrome.automation.EventType.CHILDREN_CHANGED,
+              onDesktopChildrenChanged, false);
+          foundCallback(treeWalker.node);
+        }
       }
     };
 
-    new EventHandler(
-        desktop, chrome.automation.EventType.CHILDREN_CHANGED,
-        (event) => foundCallback(event.target),
-        {listenOnce: true, predicate: eventPredicate})
-        .start();
+    // Note: Cannot use an EventHandler here because in some cases we want
+    // to run foundCallback on the event.target, and in some cases we want to
+    // run foundCallback on one of the target's children. We would need to
+    // recalculate the interesting child twice to use EventHandler.
+    desktop.addEventListener(
+        chrome.automation.EventType.CHILDREN_CHANGED, onDesktopChildrenChanged,
+        false);
   }
 
   /*

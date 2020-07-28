@@ -40,7 +40,7 @@ void DataReductionProxyTabHelper::OnDataSaverEnabledChanged(bool enabled) {
 }
 
 void DataReductionProxyTabHelper::UpdateWebkitPreferencesNow() {
-  web_contents()->GetRenderViewHost()->OnWebkitPreferencesChanged();
+  web_contents()->OnWebPreferencesChanged();
 }
 
 WEB_CONTENTS_USER_DATA_KEY_IMPL(DataReductionProxyTabHelper)

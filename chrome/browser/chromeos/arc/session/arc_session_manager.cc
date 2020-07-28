@@ -291,6 +291,17 @@ bool ReadSaltOnDisk(const base::FilePath& salt_path, std::string* out_salt) {
   return true;
 }
 
+int GetSignInErrorCode(arc::mojom::ArcSignInErrorPtr signin_error) {
+  if (!signin_error)
+    return 0;
+
+  if (signin_error->is_cloud_provision_flow_error())
+    return static_cast<std::underlying_type_t<mojom::CloudProvisionFlowError>>(
+        signin_error->get_cloud_provision_flow_error());
+
+  return 0;
+}
+
 ArcSupportHost::Error GetCloudProvisionFlowError(
     base::Optional<mojom::CloudProvisionFlowError> cloud_provision_flow_error) {
   DCHECK(cloud_provision_flow_error);
@@ -541,7 +552,7 @@ void ArcSessionManager::OnProvisioningFinished(ProvisioningResult result) {
 
 void ArcSessionManager::OnProvisioningFinished(
     ProvisioningResult result,
-    mojom::ArcSignInErrorPtr provisioning_error) {
+    mojom::ArcSignInErrorPtr signin_error) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
 
   // If the Mojo message to notify finishing the provisioning is already sent
@@ -603,10 +614,9 @@ void ArcSessionManager::OnProvisioningFinished(
     UpdateProvisioningTiming(base::TimeTicks::Now() - sign_in_start_time_,
                              provisioning_successful, profile_);
     UpdateProvisioningResultUMA(result, profile_);
-    if (provisioning_error &&
-        provisioning_error->is_cloud_provision_flow_error()) {
+    if (signin_error && signin_error->is_cloud_provision_flow_error()) {
       cloud_provision_flow_error =
-          provisioning_error->get_cloud_provision_flow_error();
+          signin_error->get_cloud_provision_flow_error();
 
       UpdateCloudProvisionFlowErrorUMA(cloud_provision_flow_error.value(),
                                        profile_);
@@ -700,7 +710,7 @@ void ArcSessionManager::OnProvisioningFinished(
     if (profile_->GetPrefs()->HasPrefPath(prefs::kArcSignedIn))
       profile_->GetPrefs()->SetBoolean(prefs::kArcSignedIn, false);
     ShutdownSession();
-    ShowArcSupportHostError(error, true);
+    ShowArcSupportHostError(error, 0 /* error_code */, true);
     return;
   }
 
@@ -719,7 +729,9 @@ void ArcSessionManager::OnProvisioningFinished(
 
   // We'll delay shutting down the ARC instance in this case to allow people
   // to send feedback.
-  ShowArcSupportHostError(error, true /* = show send feedback button */);
+  int error_code = GetSignInErrorCode(std::move(signin_error));
+  ShowArcSupportHostError(error, error_code,
+                          true /* = show send feedback button */);
 }
 
 bool ArcSessionManager::IsAllowed() const {
@@ -1263,12 +1275,13 @@ void ArcSessionManager::OnAndroidManagementChecked(
       break;
     case policy::AndroidManagementClient::Result::MANAGED:
       ShowArcSupportHostError(
-          ArcSupportHost::Error::ANDROID_MANAGEMENT_REQUIRED_ERROR, false);
+          ArcSupportHost::Error::ANDROID_MANAGEMENT_REQUIRED_ERROR,
+          0 /* error_code */, false);
       UpdateOptInCancelUMA(OptInCancelReason::ANDROID_MANAGEMENT_REQUIRED);
       break;
     case policy::AndroidManagementClient::Result::ERROR:
       ShowArcSupportHostError(ArcSupportHost::Error::SERVER_COMMUNICATION_ERROR,
-                              true);
+                              0 /* error_code */, true);
       UpdateOptInCancelUMA(OptInCancelReason::NETWORK_ERROR);
       break;
   }
@@ -1526,9 +1539,10 @@ void ArcSessionManager::SetAttemptUserExitCallbackForTesting(
 
 void ArcSessionManager::ShowArcSupportHostError(
     ArcSupportHost::Error error,
+    int error_code,
     bool should_show_send_feedback) {
   if (support_host_)
-    support_host_->ShowError(error, should_show_send_feedback);
+    support_host_->ShowError(error, error_code, should_show_send_feedback);
   for (auto& observer : observer_list_)
     observer.OnArcErrorShowRequested(error);
 }

@@ -127,16 +127,9 @@ RootCompositorFrameSinkImpl::Create(
   auto* output_surface_ptr = output_surface.get();
 #endif
 
-  gpu::SharedImageInterface* sii = nullptr;
-  if (output_surface->context_provider())
-    sii = output_surface->context_provider()->SharedImageInterface();
-
   auto overlay_processor = OverlayProcessorInterface::CreateOverlayProcessor(
-      output_surface->GetSurfaceHandle(), output_surface->capabilities(),
-      params->renderer_settings, debug_settings,
-      output_surface_provider->GetSharedImageManager(),
-      output_surface->GetMemoryTracker(),
-      output_surface->GetGpuTaskSchedulerHelper(), sii);
+      output_surface.get(), output_surface_provider->GetSharedImageManager(),
+      params->renderer_settings, debug_settings);
 
   auto display = std::make_unique<Display>(
       frame_sink_manager->shared_bitmap_manager(), params->renderer_settings,

@@ -363,7 +363,6 @@
 <translation id="2413528052993050574">این سرور نتوانست اثبات کند که این <ph name="DOMAIN" /> است؛ ممکن است گواهی امنیتی آن باطل شده باشد. ممکن است علت این موضوع پیکربندی اشتباه باشد یا مهاجمی اتصال شما را قطع کرده است.</translation>
 <translation id="2438874542388153331">چهار سوراخ در راست</translation>
 <translation id="245044156129055925">‏اخیراً گذرواژه‌تان را در سایتی فریب‌کار وارد کرده‌اید. Chromium توصیه می‌کند هم‌اکنون گذرواژه‌تان را تغییر دهید.</translation>
-<translation id="2463193859425327265">صفحه اصلی را تغییر دهید</translation>
 <translation id="2463739503403862330">تکمیل</translation>
 <translation id="2465402087343596252">Architecture-E</translation>
 <translation id="2465655957518002998">انتخاب روش ارسال</translation>
@@ -1161,7 +1160,6 @@
 <translation id="5785756445106461925">علاوه بر این، این صفحه دارای منابع دیگری است که امن نیستند. دیگران می‌توانند در حین انتقال، این منابع را ببینند و این منابع می‌توانند برای تغییر قفل صفحه، توسط یک مهاجم تغییر داده شوند.</translation>
 <translation id="5786044859038896871">می‌خواهید اطلاعات کارتتان را وارد کنید؟</translation>
 <translation id="5798290721819630480">از تغییرات صرف‌‌نظر می‌کنید؟</translation>
-<translation id="5798683403665926540">‏صفحه اصلی را در تنظیمات Chrome تغییر دهید</translation>
 <translation id="5803412860119678065">می‌خواهید <ph name="CARD_DETAIL" /> خود را وارد کنید؟</translation>
 <translation id="5804241973901381774">مجوزها</translation>
 <translation id="5804427196348435412">‏استفاده از دستگاه‌های مجهز به NFC</translation>
@@ -1610,7 +1608,6 @@
 <translation id="7669271284792375604">مهاجمان در این سایت ممکن است تلاش کنند شما را با نصب برنامه‌هایی که به تجربه مرور شما آسیب می‌رساند، فریب دهند (مثلاً با تغییر دادن صفحه اصلی شما یا با نشان دادن آگهی‌های بیش از حد در سایت‌هایی که بازدید می‌کنید).</translation>
 <translation id="7673278391011283842">صندوق پست ۶</translation>
 <translation id="7676643023259824263">جستجوی نوشتار بریده‌دان، <ph name="TEXT" /></translation>
-<translation id="7681101578153515023">موتور جستجو را تغییر دهید</translation>
 <translation id="7682287625158474539">ارسال</translation>
 <translation id="7687186412095877299">فرم‌های پرداخت را با روش‌های پرداخت ذخیره‌شده‌تان پر می‌کند</translation>
 <translation id="7687305263118037187">پایان درنگ امتحان مجدد</translation>
@@ -1648,7 +1645,6 @@
 <translation id="7802523362929240268">سایت مجاز است</translation>
 <translation id="780301667611848630">نه متشکرم</translation>
 <translation id="7805768142964895445">وضعیت</translation>
-<translation id="7806344367022510803">‏تنظیمات «موتور جستجو» را در Chrome تغییر دهید</translation>
 <translation id="7812922009395017822">Mir</translation>
 <translation id="7813600968533626083">‏پیشنهاد فرم از Chrome پاک شود؟</translation>
 <translation id="781440967107097262">بریده‌دان هم‌رسانی شود؟</translation>
@@ -1790,7 +1786,6 @@
 توضیحات بیشتر:
 <ph name="DEBUG_INFO" /></translation>
 <translation id="8424582179843326029"><ph name="FIRST_LABEL" /> <ph name="SECOND_LABEL" /> <ph name="THIRD_LABEL" /></translation>
-<translation id="8425213833346101688">تغییر</translation>
 <translation id="8428213095426709021">تنظیمات</translation>
 <translation id="8433057134996913067">با این کار از سیستم بیشتر وب‌سایت‌ها خارج می‌شوید.</translation>
 <translation id="8437238597147034694">&amp;واگرد انتقال</translation>

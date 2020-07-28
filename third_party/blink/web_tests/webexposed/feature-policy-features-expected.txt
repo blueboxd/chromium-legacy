@@ -33,6 +33,7 @@ execution-while-out-of-viewport
 focus-without-user-activation
 forms
 fullscreen
+gamepad
 geolocation
 gyroscope
 hid

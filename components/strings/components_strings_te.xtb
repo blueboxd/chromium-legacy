@@ -365,7 +365,6 @@
 <translation id="2413528052993050574">ఈ సర్వర్ <ph name="DOMAIN" /> అని నిరూపించుకోలేకపోయింది; దీని భద్రతా ప్రమాణపత్రం ఉపసంహరించబడి ఉండవచ్చు. ఇది తప్పుగా కాన్ఫిగర్ చేయడం వలన లేదా దాడిచేసే వ్యక్తి మీ కనెక్షన్‌కు అంతరాయం కలిగించడం వలన జరిగి ఉండవచ్చు.</translation>
 <translation id="2438874542388153331">కుడివైపు నాలుగు రంధ్రాలు</translation>
 <translation id="245044156129055925">మీరు మోసపూరితమైన సైట్‌లో మీ పాస్‌వర్డ్‌ను నమోదు చేశారు. మీ పాస్‌వర్డ్‌ను ఇప్పుడే మార్చాల్సిందిగా Chromium సిఫార్సు చేస్తోంది.</translation>
-<translation id="2463193859425327265">హోమ్ పేజీని మార్చు</translation>
 <translation id="2463739503403862330">పూరించు</translation>
 <translation id="2465402087343596252">ఆర్కిటెక్చర్-E</translation>
 <translation id="2465655957518002998">బట్వాడా పద్ధతిని ఎంచుకోండి</translation>
@@ -563,6 +562,9 @@
 <translation id="3364869320075768271">'<ph name="URL" />', మీ వర్చువల్ రియాలిటీ పరికరాన్ని, డేటాను వినియోగించడానికి అనుమతి కోరుతోంది</translation>
 <translation id="3366477098757335611">కార్డ్‌లను చూడండి</translation>
 <translation id="3369192424181595722">గడియారం ఎర్రర్</translation>
+<translation id="3371076217486966826"><ph name="URL" />కు కింది వాటి కోసం అనుమతి అవసరం:
+      • మీ పరిసరాల 3D మ్యాప్‌ను క్రియేట్ చేయడానికి, కెమెరా స్థానాన్ని ట్రాక్ చేయడానికి
+      • మీ కెమెరాను ఉపయోగించడానికి</translation>
 <translation id="337363190475750230">కేటాయింపు తీసివేయబడింది</translation>
 <translation id="3377144306166885718">సర్వర్ వాడుకలో లేని TLS వెర్షన్‌ను ఉపయోగించింది.</translation>
 <translation id="3377188786107721145">విధాన అన్వయ ఎర్రర్</translation>
@@ -1160,7 +1162,6 @@
 <translation id="5785756445106461925">అలాగే, ఈ పేజీలో సురక్షితం కాని ఇతర వనరులు ఉన్నాయి. ఈ వనరులను బదిలీ చేస్తున్నప్పుడు ఇతరులు చూడగలరు మరియు దాడికి పాల్పడేవారు పేజీ రూపాన్ని మార్చేలా వీటిని సవరించగలరు.</translation>
 <translation id="5786044859038896871">మీరు మీ కార్డ్ సమాచారం పూరించాలనుకుంటున్నారా?</translation>
 <translation id="5798290721819630480">మార్పులను విస్మరించాలా?</translation>
-<translation id="5798683403665926540">Chrome సెట్టింగ్‌లలో హోమ్ పేజీని మార్చండి</translation>
 <translation id="5803412860119678065">మీరు మీ <ph name="CARD_DETAIL" /> కార్డ్ సమాచారం పూరించాలనుకుంటున్నారా?</translation>
 <translation id="5804241973901381774">అనుమతులు</translation>
 <translation id="5804427196348435412">NFC పరికరాలను ఉపయోగించండి</translation>
@@ -1562,6 +1563,7 @@
 <translation id="7518003948725431193">వెబ్ చిరునామాకు వెబ్‌పేజీ కనుగొనబడలేదు: <ph name="URL" /></translation>
 <translation id="7520302887438682816">C8 (ఎన్వలప్)</translation>
 <translation id="7521387064766892559">JavaScript</translation>
+<translation id="7521825010239864438">"<ph name="SECTION" />" విభాగం దాచబడింది</translation>
 <translation id="7526934274050461096">ఈ సైట్‌తో మీకున్న కనెక్షన్ ప్రైవేట్‌గా లేదు</translation>
 <translation id="7535087603100972091">విలువ</translation>
 <translation id="7537536606612762813">తప్పనిసరి</translation>
@@ -1608,7 +1610,6 @@
 <translation id="7669271284792375604">ఈ సైట్‌లోని దాడి చేసేవారు మీ బ్రౌజింగ్ అనుభవానికి (ఉదాహరణకు, మీ హోమ్ పేజీని మార్చడం లేదా మీరు సందర్శించే సైట్‌ల్లో అదనపు ప్రకటనలను చూపడం ద్వారా) హాని కలిగించే ప్రోగ్రామ్‌లను ఇన్‌స్టాల్ చేసే విధంగా మిమ్మల్ని మోసగించడానికి ప్రయత్నించవచ్చు.</translation>
 <translation id="7673278391011283842">మెయిల్‌బాక్స్ 6</translation>
 <translation id="7676643023259824263">క్లిప్‌బోర్డ్ వచనం, <ph name="TEXT" /> కోసం వెతకండి</translation>
-<translation id="7681101578153515023">శోధన ఇంజిన్‌ను మార్చు</translation>
 <translation id="7682287625158474539">ఓడ రవాణా</translation>
 <translation id="7687186412095877299">సేవ్ చేయబడిన మీ చెల్లింపు పద్ధతులతో చెల్లింపు ఫారమ్‌లను పూరిస్తుంది</translation>
 <translation id="7687305263118037187">పునఃప్రయత్న సమయం ముగిసింది</translation>
@@ -1646,7 +1647,6 @@
 <translation id="7802523362929240268">సైట్ చట్టబద్ధమైనది</translation>
 <translation id="780301667611848630">వద్దు , ధన్యవాదాలు</translation>
 <translation id="7805768142964895445">స్థితి</translation>
-<translation id="7806344367022510803">Chromeలో శోధన ఇంజిన్ సెట్టింగ్‌లను మార్చండి</translation>
 <translation id="7812922009395017822">Mir</translation>
 <translation id="7813600968533626083">Chrome నుండి ఫారమ్ సూచనను తీసివేయాలా?</translation>
 <translation id="781440967107097262">క్లిప్‌బోర్డ్‌కు షేర్ చేయాలా?</translation>
@@ -1762,6 +1762,7 @@
 <translation id="8293206222192510085">బుక్‌మార్క్‌లను జోడించు</translation>
 <translation id="8294431847097064396">మూలం</translation>
 <translation id="8298115750975731693">మీరు ఉపయోగిస్తున్న Wi-Fi (<ph name="WIFI_NAME" />)కు మీరు<ph name="BEGIN_BOLD" /><ph name="LOGIN_URL" /><ph name="END_BOLD" />ను సందర్శించడం అవసరం.</translation>
+<translation id="8303854710873047864">"<ph name="SECTION" />" విభాగం చూపబడింది</translation>
 <translation id="830498451218851433">సగం ఫోల్డ్</translation>
 <translation id="8307358339886459768">చిన్న-ఫోటో</translation>
 <translation id="8307888238279532626">ఇన్‌స్టాల్ చేయబడిన యాప్‌లు అలాగే వాటిని ఎంత తరచుగా ఉపయోగించినది తెలిపే వివరాలు</translation>
@@ -1787,7 +1788,6 @@
 అదనపు వివరాలు:
 <ph name="DEBUG_INFO" /></translation>
 <translation id="8424582179843326029"><ph name="FIRST_LABEL" /> <ph name="SECOND_LABEL" /> <ph name="THIRD_LABEL" /></translation>
-<translation id="8425213833346101688">మార్చు</translation>
 <translation id="8428213095426709021">సెట్టింగ్‌లు</translation>
 <translation id="8433057134996913067">దీని వలన మీరు చాలా వెబ్‌సైట్‌ల నుండి సైన్ అవుట్ చేయబడతారు.</translation>
 <translation id="8437238597147034694">&amp;తరలించడాన్ని రద్దు చేయి</translation>
@@ -1881,6 +1881,7 @@
 <translation id="8931333241327730545">మీరు ఈ కార్డ్‌ను మీ Google ఖాతాకు సేవ్ చేయాలనుకుంటున్నారా?</translation>
 <translation id="8932102934695377596">మీ గడియారం సమయం గతంలో ఉంది</translation>
 <translation id="893332455753468063">పేరుని జోడించండి</translation>
+<translation id="8942355029279167844">ప్రోడక్ట్ అనుభవాన్ని మెరుగుపరచడం కోసం, <ph name="APP_NAME" />కు సమస్య విశ్లేషణ డేటాను సేకరించడానికి మీ అడ్మినిస్ట్రేట‌ర్ అనుమతిచ్చారు. మరింత సమాచారం కోసం <ph name="BEGIN_LINK" />https://www.parallels.com/pcep<ph name="END_LINK" />ను చూడండి.</translation>
 <translation id="8943282376843390568">నిమ్మపండు రంగు</translation>
 <translation id="8957210676456822347">క్యాప్టివ్ పోర్టల్ ప్రామాణీకరణ</translation>
 <translation id="8962950042226115166">అనుమానాస్పద సైట్</translation>

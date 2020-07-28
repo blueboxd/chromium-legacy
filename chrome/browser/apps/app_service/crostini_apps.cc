@@ -331,7 +331,7 @@ apps::mojom::AppPtr CrostiniApps::Convert(
     show = apps::mojom::OptionalBool::kFalse;
   }
   auto show_in_search = show;
-  if (registration.is_terminal_app()) {
+  if (registration.app_id() == crostini::kCrostiniTerminalSystemAppId) {
     show = crostini_enabled_ ? apps::mojom::OptionalBool::kTrue
                              : apps::mojom::OptionalBool::kFalse;
     // The Crostini Terminal should appear in the app search, even when

@@ -364,7 +364,6 @@
 <translation id="2413528052993050574">এই সার্ভার প্রমাণ করতে পারেনি যে এটি <ph name="DOMAIN" />; এর নিরাপত্তা সার্টিফিকেট প্রত্যাহার করা হতে পারে। কোনো ভুল কনফিগারেশনের কারণে অথবা কোনো আক্রমণকারী আপনার সংযোগ মাঝপথে আটকে দিচ্ছে বলে এমনটা হতে পারে।</translation>
 <translation id="2438874542388153331">ডানদিকে কোয়াড পাঞ্চ</translation>
 <translation id="245044156129055925">আপনি এখনই প্রতারণামূলক একটি সাইটে আপনার পাসওয়ার্ড লিখেছেন। Chromium-এর সাজেশন অনুযায়ী এখনই আপনার পাসওয়ার্ড পরিবর্তন করা উচিত।</translation>
-<translation id="2463193859425327265">হোম পৃষ্ঠা পরিবর্তন করুন</translation>
 <translation id="2463739503403862330">পূরণ করুন</translation>
 <translation id="2465402087343596252">Architecture-E</translation>
 <translation id="2465655957518002998">ডেলিভারি পদ্ধতি বেছে নিন</translation>
@@ -564,6 +563,9 @@
 <translation id="3364869320075768271"><ph name="URL" /> আপনার ভার্চুয়াল রিয়েলিটি ডিভাইস ও ডেটা ব্যবহার করার অনুমতি চাইছে</translation>
 <translation id="3366477098757335611">কার্ড দেখুন</translation>
 <translation id="3369192424181595722">ঘড়ির ত্রুটি</translation>
+<translation id="3371076217486966826"><ph name="URL" /> এই কাজগুলি করতে চায়:
+      • আপনার আশেপাশের জায়গার একটি 3D ম্যাপ তৈরি করতে ও ক্যামেরার অবস্থান ট্র্যাক করতে চায়
+      • আপনার ক্যামেরা ব্যবহার করতে চায়</translation>
 <translation id="337363190475750230">প্রদান করবে না</translation>
 <translation id="3377144306166885718">সার্ভার TLS-এর এমন একটি ভার্সন ব্যবহার করছে যা এখন আর ব্যবহারে নেই।</translation>
 <translation id="3377188786107721145">নীতি বিশ্লেষণ ত্রুটি</translation>
@@ -1161,7 +1163,6 @@
 <translation id="5785756445106461925">উপরন্তু, এই পৃষ্ঠাতে অন্যান্য সংস্থান অন্তর্ভুক্ত রয়েছে যা নিরাপদ নয়৷ এই সংস্থানগুলি ট্রানজিটের সময় অন্যরা দেখতে পাবে এবং পৃষ্ঠাটির চেহারাটি পরিবর্তন করতে কোনও আক্রমণকারী এর পরিবর্তন করতে পারেন৷</translation>
 <translation id="5786044859038896871">আপনি কি আপনার কার্ডের তথ্য পূরণ করতে চান?</translation>
 <translation id="5798290721819630480">পরিবর্তনগুলি খারিজ করবেন?</translation>
-<translation id="5798683403665926540">Chrome সেটিংসে হোম পৃষ্ঠা পরিবর্তন করুন</translation>
 <translation id="5803412860119678065">আপনি কি আপনার <ph name="CARD_DETAIL" /> এর তথ্য পূরণ করতে চান?</translation>
 <translation id="5804241973901381774">অনুমতিগুলি</translation>
 <translation id="5804427196348435412">NFC ডিভাইস ব্যবহার করুন</translation>
@@ -1562,6 +1563,7 @@
 <translation id="7518003948725431193">No webpage was found for the web address: <ph name="URL" /></translation>
 <translation id="7520302887438682816">C8 (Envelope)</translation>
 <translation id="7521387064766892559">জাভাস্ক্রিপ্ট</translation>
+<translation id="7521825010239864438">"<ph name="SECTION" />" বিভাগটি লুকানো আছে</translation>
 <translation id="7526934274050461096">এই সাইটে আপনার সংযোগ ব্যক্তিগত নয়</translation>
 <translation id="7535087603100972091">মান</translation>
 <translation id="7537536606612762813">বাধ্যতামূলক</translation>
@@ -1608,7 +1610,6 @@
 <translation id="7669271284792375604">Attackers on this site might try to trick you into installing programs that harm your browsing experience (for example, by changing your homepage or showing extra ads on sites you visit).</translation>
 <translation id="7673278391011283842">মেলবক্স ৬</translation>
 <translation id="7676643023259824263">ক্লিপবোর্ড টেক্সট <ph name="TEXT" /> সার্চ করুন</translation>
-<translation id="7681101578153515023">সার্চ ইঞ্জিন পরিবর্তন করুন</translation>
 <translation id="7682287625158474539">শিপিং</translation>
 <translation id="7687186412095877299">আপনার সেভ করা পেমেন্ট পদ্ধতি দিয়ে পেমেন্ট ফর্ম পূরণ করে</translation>
 <translation id="7687305263118037187">আর চেষ্টা করতে পারবেন না</translation>
@@ -1646,7 +1647,6 @@
 <translation id="7802523362929240268">সাইটটি বৈধ</translation>
 <translation id="780301667611848630">না থাক</translation>
 <translation id="7805768142964895445">স্থিতি</translation>
-<translation id="7806344367022510803">Chrome-এ সার্চ ইঞ্জিন সেটিংস পরিবর্তন করুন</translation>
 <translation id="7812922009395017822">Mir</translation>
 <translation id="7813600968533626083">Chrome থেকে ফর্ম প্রস্তাবনা সরাবেন?</translation>
 <translation id="781440967107097262">ক্লিপবোর্ড শেয়ার করবেন?</translation>
@@ -1762,6 +1762,7 @@
 <translation id="8293206222192510085">বুকমার্ক যুক্ত করুন</translation>
 <translation id="8294431847097064396">উৎস</translation>
 <translation id="8298115750975731693">আপনি যে (<ph name="WIFI_NAME" />) Wi-Fiটি ব্যবহার করছেন সেটির জন্য অপনাকে <ph name="BEGIN_BOLD" /><ph name="LOGIN_URL" /><ph name="END_BOLD" /> তে যেতে হতে পারে৷</translation>
+<translation id="8303854710873047864">"<ph name="SECTION" />" বিভাগ দেখানো হয়েছে</translation>
 <translation id="830498451218851433">অর্ধেক ফোল্ড করুন</translation>
 <translation id="8307358339886459768">Small-Photo</translation>
 <translation id="8307888238279532626">কোন কোন অ্যাপ ইনস্টল করা আছে এবং কত ঘন ঘন সেগুলি ব্যবহার করা হয়েছে</translation>
@@ -1787,7 +1788,6 @@
 অতিরিক্ত বিবরণ:
 <ph name="DEBUG_INFO" /></translation>
 <translation id="8424582179843326029"><ph name="FIRST_LABEL" /> <ph name="SECOND_LABEL" /> <ph name="THIRD_LABEL" /></translation>
-<translation id="8425213833346101688">পরিবর্তন</translation>
 <translation id="8428213095426709021">সেটিংস</translation>
 <translation id="8433057134996913067">এটি বেশিরভাগ ওয়েবসাইট থেকে আপনাকে প্রস্থান করুন করবে।</translation>
 <translation id="8437238597147034694">&amp;সরানোকে পূর্বাবস্থায় ফেরান</translation>
@@ -1881,6 +1881,7 @@
 <translation id="8931333241327730545">আপনি কি আপনার Google অ্যাকাউন্টে এই কার্ড সেভ করতে চান?</translation>
 <translation id="8932102934695377596">আপনার ঘড়ির সময় পিছিয়ে রয়েছে</translation>
 <translation id="893332455753468063">নাম যোগ করুন</translation>
+<translation id="8942355029279167844">আপনার অ্যাডমিন প্রোডাক্ট ব্যবহারের অভিজ্ঞতাকে আরও উন্নত করার লক্ষ্যে <ph name="APP_NAME" />-কে ডায়াগনস্টিক সংক্রান্ত ডেটা একত্রিত করার অনুমতি দিয়েছে। আরও তথ্যের জন্য, <ph name="BEGIN_LINK" />https://www.parallels.com/pcep<ph name="END_LINK" /> লিঙ্কে গিয়ে দেখুন।</translation>
 <translation id="8943282376843390568">লাইম</translation>
 <translation id="8957210676456822347">ক্যাপটিভ পোর্টাল অনুমোদন</translation>
 <translation id="8962950042226115166">সন্দেহজনক সাইট</translation>
@@ -1911,7 +1912,7 @@
 <translation id="9045525010788763347"><ph name="RESULT_MODIFIED_DATE" /> - <ph name="RESULT_PRODUCT_SOURCE" /></translation>
 <translation id="9049981332609050619">আপনি <ph name="DOMAIN" />-এ পৌছানোর প্রয়াস করছেন, কিন্তু সার্ভার একটি ভুল সার্টিফিকেট উপস্থাপন করেছে|</translation>
 <translation id="9050666287014529139">পাসফ্রেজ</translation>
-<translation id="9062620674789239642">এটি হয়ত সরানো, এডিট বা মুছে ফেলা হয়েছে।</translation>
+<translation id="9062620674789239642">এটি হয়ত সরানো, এডিট করা বা মুছে ফেলা হয়েছে।</translation>
 <translation id="9065203028668620118">সম্পাদনা</translation>
 <translation id="9065745800631924235">ইতিহাসে <ph name="TEXT" /> সার্চ</translation>
 <translation id="9069693763241529744">একটি এক্সটেনশন ব্লক করেছে</translation>

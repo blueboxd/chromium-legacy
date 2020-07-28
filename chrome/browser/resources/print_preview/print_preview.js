@@ -27,7 +27,7 @@ export {BackgroundGraphicsModeRestriction, CapabilitiesResponse, LocalDestinatio
 export {getSelectDropdownBackground} from './print_preview_utils.js';
 export {DEFAULT_MAX_COPIES} from './ui/copies_settings.js';
 export {DestinationState} from './ui/destination_settings.js';
-export {PluginProxy} from './ui/plugin_proxy.js';
+export {PDFPlugin, PluginProxy, PluginProxyImpl} from './ui/plugin_proxy.js';
 export {PreviewAreaState} from './ui/preview_area.js';
 export {SelectBehavior} from './ui/select_behavior.js';
 export {SelectOption} from './ui/settings_select.js';

@@ -7,6 +7,9 @@
 
 #include <stddef.h>
 
+#include <memory>
+#include <utility>
+
 #include "base/callback.h"
 #include "base/memory/ptr_util.h"
 #include "base/time/time.h"
@@ -66,6 +69,7 @@ class FakeOutputSurface : public OutputSurface {
   void DiscardBackbuffer() override {}
   void BindFramebuffer() override;
   void SetDrawRectangle(const gfx::Rect& rect) override;
+  void SetEnableDCLayers(bool enabled) override;
   void Reshape(const gfx::Size& size,
                float device_scale_factor,
                const gfx::ColorSpace& color_space,

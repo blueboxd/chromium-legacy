@@ -98,6 +98,12 @@
   <structure name="IDR_CR_ELEMENTS_CR_RADIO_BUTTON_JS"
              file="cr_elements/cr_radio_button/cr_radio_button.js"
              type="chrome_html" />
+  <structure name="IDR_CR_ELEMENTS_CR_CARD_RADIO_BUTTON_HTML"
+             file="cr_elements/cr_radio_button/cr_card_radio_button.html"
+             type="chrome_html" />
+  <structure name="IDR_CR_ELEMENTS_CR_CARD_RADIO_BUTTON_JS"
+             file="cr_elements/cr_radio_button/cr_card_radio_button.js"
+             type="chrome_html" />
   <structure name="IDR_CR_ELEMENTS_CR_RADIO_BUTTON_BEHAVIOR_HTML"
              file="cr_elements/cr_radio_button/cr_radio_button_behavior.html"
              type="chrome_html" />

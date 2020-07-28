@@ -542,7 +542,7 @@ class InputHandlerProxyEventQueueTest : public testing::Test {
         enabled ? std::make_unique<ScrollPredictor>() : nullptr;
   }
 
-  std::unique_ptr<InputPredictor::InputData>
+  std::unique_ptr<ui::InputPredictor::InputData>
   GestureScrollEventPredictionAvailable() {
     return input_handler_proxy_.scroll_predictor_->predictor_
         ->GeneratePrediction(WebInputEvent::GetStaticTimeStampForTests());

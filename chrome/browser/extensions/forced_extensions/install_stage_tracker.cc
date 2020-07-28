@@ -147,6 +147,10 @@ void InstallStageTracker::ReportDownloadingStage(
     data.download_manifest_started_time = base::Time::Now();
   else if (stage == ExtensionDownloaderDelegate::Stage::MANIFEST_LOADED)
     data.download_manifest_finish_time = base::Time::Now();
+  else if (stage == ExtensionDownloaderDelegate::Stage::DOWNLOADING_CRX)
+    data.download_CRX_started_time = base::Time::Now();
+  else if (stage == ExtensionDownloaderDelegate::Stage::FINISHED)
+    data.download_CRX_finish_time = base::Time::Now();
   for (auto& observer : observers_) {
     observer.OnExtensionDataChangedForTesting(id, browser_context_, data);
   }

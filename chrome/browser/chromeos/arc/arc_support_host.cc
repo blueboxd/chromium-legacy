@@ -171,9 +171,6 @@ std::ostream& operator<<(std::ostream& os, ArcSupportHost::Error error) {
         SIGN_IN_CLOUD_PROVISION_FLOW_ACCOUNT_MISSING_ERROR:
       return os << "SIGN_IN_CLOUD_PROVISION_FLOW_ACCOUNT_MISSING_ERROR";
     case ArcSupportHost::Error::
-        SIGN_IN_CLOUD_PROVISION_FLOW_DEVICE_QUOTA_EXCEEDED:
-      return os << "SIGN_IN_CLOUD_PROVISION_FLOW_DEVICE_QUOTA_EXCEEDED";
-    case ArcSupportHost::Error::
         SIGN_IN_CLOUD_PROVISION_FLOW_DOMAIN_JOIN_FAIL_ERROR:
       return os << "SIGN_IN_CLOUD_PROVISION_FLOW_DOMAIN_JOIN_FAIL_ERROR";
     case ArcSupportHost::Error::
@@ -321,14 +318,18 @@ void ArcSupportHost::ShowPage(UIPage ui_page) {
   message_host_->SendMessage(message);
 }
 
-void ArcSupportHost::ShowError(Error error, bool should_show_send_feedback) {
+void ArcSupportHost::ShowError(Error error,
+                               int error_code,
+                               bool should_show_send_feedback) {
   ui_page_ = UIPage::ERROR;
   error_ = error;
+  error_code_ = error_code;
   should_show_send_feedback_ = should_show_send_feedback;
   if (!message_host_) {
     if (app_start_pending_) {
-      VLOG(2) << "ArcSupportHost::ShowError(" << error << ", "
-              << should_show_send_feedback << ") is called before connection "
+      VLOG(2) << "ArcSupportHost::ShowError(" << error << ", " << error_code
+              << ", " << should_show_send_feedback
+              << ") is called before connection "
               << "to ARC support Chrome app is established.";
       return;
     }
@@ -336,54 +337,85 @@ void ArcSupportHost::ShowError(Error error, bool should_show_send_feedback) {
     return;
   }
 
-  base::DictionaryValue message;
-  message.SetString(kAction, kActionShowErrorPage);
-  int message_id;
+  base::DictionaryValue message_args;
+  message_args.SetString(kAction, kActionShowErrorPage);
+  base::string16 message;
   switch (error) {
     case Error::SIGN_IN_NETWORK_ERROR:
-      message_id = IDS_ARC_SIGN_IN_NETWORK_ERROR;
+      message = l10n_util::GetStringUTF16(IDS_ARC_SIGN_IN_NETWORK_ERROR);
       break;
     case Error::SIGN_IN_SERVICE_UNAVAILABLE_ERROR:
-      message_id = IDS_ARC_SIGN_IN_SERVICE_UNAVAILABLE_ERROR;
+      message =
+          l10n_util::GetStringUTF16(IDS_ARC_SIGN_IN_SERVICE_UNAVAILABLE_ERROR);
       break;
     case Error::SIGN_IN_BAD_AUTHENTICATION_ERROR:
-      message_id = IDS_ARC_SIGN_IN_BAD_AUTHENTICATION_ERROR;
+      message =
+          l10n_util::GetStringUTF16(IDS_ARC_SIGN_IN_BAD_AUTHENTICATION_ERROR);
       break;
     case Error::SIGN_IN_GMS_NOT_AVAILABLE_ERROR:
-      message_id = IDS_ARC_SIGN_IN_GMS_NOT_AVAILABLE_ERROR;
+      message =
+          l10n_util::GetStringUTF16(IDS_ARC_SIGN_IN_GMS_NOT_AVAILABLE_ERROR);
       break;
-    // TODO(b/62613791) Show separate message for each error
     case ArcSupportHost::Error::
         SIGN_IN_CLOUD_PROVISION_FLOW_ACCOUNT_MISSING_ERROR:
-    case ArcSupportHost::Error::
-        SIGN_IN_CLOUD_PROVISION_FLOW_DEVICE_QUOTA_EXCEEDED:
+      message = l10n_util::GetStringFUTF16(
+          IDS_ARC_SIGN_IN_CLOUD_PROVISION_FLOW_ACCOUNT_MISSING_ERROR,
+          base::NumberToString16(error_code));
+      break;
     case ArcSupportHost::Error::
         SIGN_IN_CLOUD_PROVISION_FLOW_DOMAIN_JOIN_FAIL_ERROR:
+      message = l10n_util::GetStringFUTF16(
+          IDS_ARC_SIGN_IN_CLOUD_PROVISION_FLOW_DOMAIN_JOIN_FAIL_ERROR,
+          base::NumberToString16(error_code));
+      break;
     case ArcSupportHost::Error::
         SIGN_IN_CLOUD_PROVISION_FLOW_ENROLLMENT_TOKEN_INVALID:
+      message = l10n_util::GetStringFUTF16(
+          IDS_ARC_SIGN_IN_CLOUD_PROVISION_FLOW_ENROLLMENT_TOKEN_INVALID,
+          base::NumberToString16(error_code));
+      break;
     case ArcSupportHost::Error::SIGN_IN_CLOUD_PROVISION_FLOW_FAIL_ERROR:
+      message = l10n_util::GetStringFUTF16(
+          IDS_ARC_SIGN_IN_CLOUD_PROVISION_FLOW_FAIL_ERROR,
+          base::NumberToString16(error_code));
+      break;
     case ArcSupportHost::Error::SIGN_IN_CLOUD_PROVISION_FLOW_INTERRUPTED_ERROR:
+      message = l10n_util::GetStringFUTF16(
+          IDS_ARC_SIGN_IN_CLOUD_PROVISION_FLOW_INTERRUPTED_ERROR,
+          base::NumberToString16(error_code));
+      break;
     case ArcSupportHost::Error::SIGN_IN_CLOUD_PROVISION_FLOW_NETWORK_ERROR:
+      message = l10n_util::GetStringFUTF16(
+          IDS_ARC_SIGN_IN_CLOUD_PROVISION_FLOW_NETWORK_ERROR,
+          base::NumberToString16(error_code));
+      break;
     case ArcSupportHost::Error::SIGN_IN_CLOUD_PROVISION_FLOW_PERMANENT_ERROR:
+      message = l10n_util::GetStringFUTF16(
+          IDS_ARC_SIGN_IN_CLOUD_PROVISION_FLOW_PERMANENT_ERROR,
+          base::NumberToString16(error_code));
+      break;
     case ArcSupportHost::Error::SIGN_IN_CLOUD_PROVISION_FLOW_TRANSIENT_ERROR:
-      message_id = IDS_ARC_SIGN_IN_CLOUD_PROVISION_FLOW_FAIL_ERROR;
+      message = l10n_util::GetStringFUTF16(
+          IDS_ARC_SIGN_IN_CLOUD_PROVISION_FLOW_TRANSIENT_ERROR,
+          base::NumberToString16(error_code));
       break;
     case Error::SIGN_IN_UNKNOWN_ERROR:
-      message_id = IDS_ARC_SIGN_IN_UNKNOWN_ERROR;
+      message = l10n_util::GetStringUTF16(IDS_ARC_SIGN_IN_UNKNOWN_ERROR);
       break;
     case Error::SERVER_COMMUNICATION_ERROR:
-      message_id = IDS_ARC_SERVER_COMMUNICATION_ERROR;
+      message = l10n_util::GetStringUTF16(IDS_ARC_SERVER_COMMUNICATION_ERROR);
       break;
     case Error::ANDROID_MANAGEMENT_REQUIRED_ERROR:
-      message_id = IDS_ARC_ANDROID_MANAGEMENT_REQUIRED_ERROR;
+      message =
+          l10n_util::GetStringUTF16(IDS_ARC_ANDROID_MANAGEMENT_REQUIRED_ERROR);
       break;
     case Error::NETWORK_UNAVAILABLE_ERROR:
-      message_id = IDS_ARC_NETWORK_UNAVAILABLE_ERROR;
+      message = l10n_util::GetStringUTF16(IDS_ARC_NETWORK_UNAVAILABLE_ERROR);
       break;
   }
-  message.SetString(kErrorMessage, l10n_util::GetStringUTF16(message_id));
-  message.SetBoolean(kShouldShowSendFeedback, should_show_send_feedback);
-  message_host_->SendMessage(message);
+  message_args.SetString(kErrorMessage, message);
+  message_args.SetBoolean(kShouldShowSendFeedback, should_show_send_feedback);
+  message_host_->SendMessage(message_args);
 }
 
 void ArcSupportHost::SetMetricsPreferenceCheckbox(bool is_enabled,
@@ -450,7 +482,7 @@ void ArcSupportHost::SetMessageHost(arc::ArcSupportMessageHost* message_host) {
     // Close() is called before opening the window.
     Close();
   } else if (ui_page_ == UIPage::ERROR) {
-    ShowError(error_, should_show_send_feedback_);
+    ShowError(error_, error_code_, should_show_send_feedback_);
   } else {
     ShowPage(ui_page_);
   }

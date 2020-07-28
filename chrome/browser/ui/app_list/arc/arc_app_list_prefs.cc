@@ -154,8 +154,21 @@ bool InstallIconFromFileThread(const base::FilePath& icon_path,
   if (!WriteIconFile(icon_path, icon_png_data))
     return false;
 
-  if (!base::FeatureList::IsEnabled(features::kAppServiceAdaptiveIcon) ||
-      !icon->is_adaptive_icon) {
+  if (!base::FeatureList::IsEnabled(features::kAppServiceAdaptiveIcon))
+    return true;
+
+  if (!icon->is_adaptive_icon) {
+    // For non-adaptive icon, save the |icon_png_data| to the
+    // |foreground_icon_path|, to identify the difference between migrating to
+    // the adaptive icon feature enabled and the non-adaptive icon case. If
+    // there is a |foreground_icon_path| file without a |background_icon_path|
+    // file, that means the icon is a non-adaptive icon. Otherwise, if there is
+    // no |foreground_icon_path| file, that means we haven't fetched the
+    // adaptive icon yet, then we should request the icon.
+    if (!WriteIconFile(foreground_icon_path, icon->icon_png_data.value())) {
+      return false;
+    }
+
     return true;
   }
 

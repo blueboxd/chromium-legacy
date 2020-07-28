@@ -311,7 +311,7 @@
 
        정책 설정에 따른 효과는 다음과 같습니다.
 
-      * '위험한 다운로드 차단'을 선택하면 모든 다운로드가 허용되지만, 세이프 브라우징 경고가 포함된 다운로드는 제외됩니다.
+      * '위험한 다운로드 차단'을 선택하면 모든 다운로드가 허용되지만, 세이프 브라우징 경고가 표시된 다운로드는 제외됩니다.
 
       * '위험할 가능성이 있는 다운로드 차단'을 선택하면 모든 다운로드가 허용되지만, 위험할 가능성이 있다는 세이프 브라우징 경고가 표시된 다운로드는 허용되지 않습니다.
 
@@ -321,7 +321,7 @@
 
       * '특별한 제한 없음'을 선택하면 세이프 브라우징 분석 결과에 따른 일반적인 보안 제한이 다운로드에 적용됩니다.
 
-      참고: 이러한 제한은 웹페이지 콘텐츠에서 트리거되었거나 '링크 다운로드...' 메뉴 옵션을 통해 다운로드한 항목에 적용됩니다. 이러한 제한은 현재 표시된 페이지의 다운로드 또는 인쇄 옵션 중 'PDF로 저장'에는 적용되지 않습니다. https://developers.google.com/safe-browsing에서 세이프 브라우징에 관해 자세히 알아보세요.</translation>
+      참고: 이러한 제한은 웹페이지 콘텐츠에서 트리거되었거나 '링크 다운로드...' 메뉴 옵션을 통해 다운로드한 항목에 적용됩니다. 이러한 제한은 현재 표시된 페이지의 다운로드 또는 인쇄 옵션 중 'PDF로 저장'에는 적용되지 않습니다. 세이프 브라우징에 관해 자세히 알아보세요 ( https://developers.google.com/safe-browsing ).</translation>
 <translation id="1550222358325456797"><ph name="DEVICE_PRINTERS_POLICY" />에 명시된 프린터 중 어떤 프린터가 사용자에게 제공될지 관리합니다.
 
       일괄 프린터 설정에 사용할 액세스 정책을 지정합니다. <ph name="PRINTERS_ALLOW_ALL" />을 선택하면 모든 프린터가 표시됩니다. <ph name="PRINTERS_BLOCKLIST" />을 선택하면 <ph name="DEVICE_PRINTERS_BLOCKLIST" />가 사용되어 특정 프린터에 관한 액세스 권한이 제한됩니다. <ph name="PRINTERS_ALLOWLIST" />를 선택하면 <ph name="DEVICE_PRINTERS_ALLOWLIST" />가 사용되어 선택 가능한 프린터만 지정됩니다.
@@ -469,7 +469,7 @@
 <translation id="1767673020408652620">검색창이 0 상태일 때 앱 추천을 사용 설정합니다.</translation>
 <translation id="1780323582106687813">이 정책은 지원 중단되었으므로 '<ph name="EXTENSION_INSTALL_ALLOWLIST_POLICY_NAME" />' 정책을 대신 사용하세요.
 
-      정책을 설정하면 금지되는 확장 프로그램 목록에서 면제되는 확장 프로그램이 지정됩니다. <ph name="EXTENSION_INSTALL_BLACKLIST_POLICY_NAME" />에 <ph name="ALL_EXTENSIONS" /> 값을 사용하여 모든 확장 프로그램을 금지하면 사용자는 명시적으로 허용되는 확장 프로그램만 설치할 수 있습니다. 기본적으로 모든 확장 프로그램이 허용됩니다. 그러나 정책으로 확장 프로그램을 금지한 경우 정책을 변경하려면 허용되는 확장 프로그램 목록을 사용합니다.</translation>
+      정책을 설정하면 금지되는 확장 프로그램 목록에서 제외되는 확장 프로그램이 지정됩니다. <ph name="EXTENSION_INSTALL_BLACKLIST_POLICY_NAME" />에 <ph name="ALL_EXTENSIONS" /> 값을 사용하여 모든 확장 프로그램을 금지하면 사용자는 명시적으로 허용되는 확장 프로그램만 설치할 수 있습니다. 기본적으로 모든 확장 프로그램이 허용됩니다. 그러나 정책으로 확장 프로그램을 금지한 경우 정책을 변경하려면 허용되는 확장 프로그램 목록을 사용합니다.</translation>
 <translation id="1781356041596378058">이 정책은 Android 개발자 옵션 액세스 권한도 제어합니다. 이 정책을 true로 설정하는 경우 사용자는 개발자 옵션에 액세스할 수 없습니다. 이 정책을 false로 설정하거나 설정하지 않은 채로 두는 경우 Android 설정 앱에서 빌드 번호를 7번 탭하면 개발자 옵션에 액세스할 수 있습니다.</translation>
 <translation id="1793346220873697538">기본적으로 PIN 인쇄를 사용하지 않습니다.</translation>
 <translation id="1797233582739332495">사용자에게 재실행이 필요하다는 메시지를 반복하여 표시</translation>
@@ -814,9 +814,6 @@
       이 정책을 일반 대중이 사용하는 기기에 사용해서는 안 됩니다.
 
       정책을 True로 설정하거나 설정하지 않으면 사용자가 닫을 때까지 자동 실행 및 관리되는 게스트 세션의 개인정보 보호 경고 알림이 고정됩니다.</translation>
-<translation id="2288338171390565087">이 기능은 사용자가 내장된 그림 이모티콘 지도와 일치하는 단어를 입력할 때마다 추천 그림 이모티콘을 표시합니다.
-      이 정책이 true로 설정되면 기능이 강제 실행되고 사용자는 이를 재정의할 수 없습니다.
-      이 정책은 기본으로 false로 설정되어 있어 추천 그림 이모티콘이 표시되지 않으며 사용자는 이를 재정의할 수 없습니다.</translation>
 <translation id="2289265947759479962">이 정책은 OS 버전, OS 플랫폼, OS 아키텍처, <ph name="PRODUCT_NAME" /> 버전, <ph name="PRODUCT_NAME" /> 채널과 같은 버전 정보의 보고 여부를 제어합니다.
 
       <ph name="CLOUD_REPORTING_ENABLED_POLICY_NAME" /> 정책이 설정되지 않거나 사용 중지되면 정책이 무시됩니다.
@@ -1240,13 +1237,6 @@ False로 설정하면 개인정보 보호 화면은 항상 사용 중지됩니�
       False로 설정되면 기기 식별을 위해 사용할 수 있는 정보가 수집되지 않습니다.
 
       <ph name="PRODUCT_NAME" />의 경우 이 정책은 기기가 <ph name="CLOUD_MANAGEMENT_ENROLLMENT_TOKEN" />에 등록되어 있을 때만 적용됩니다.</translation>
-<translation id="2836621397261130126">KDC 정책에 의한 승인을 인정할지 지정하여 <ph name="KERBEROS" /> 티켓 위임 여부를 결정합니다.
-
-          이 정책이 true로 설정되면 HTTP 인증에서 KDC 정책에 의한 승인을 인정합니다. 즉, Chrome은 KDC가 서비스 티켓에 <ph name="OK_AS_DELEGATE" />를 설정하는 경우에만 사용자 인증 정보를 위임합니다. 자세한 내용은 https://tools.ietf.org/html/rfc5896.html을 참조하세요. 서비스는 'AuthNegotiateDelegateWhitelist' 정책과도 일치해야 합니다.
-
-          정책이 설정되지 않거나 false로 설정되면 지원되는 플랫폼에서 KDC 정책이 무시되고 'AuthNegotiateDelegateWhitelist' 정책만 인정됩니다.
-
-          Windows에서 KDC 정책은 항상 인정됩니다.</translation>
 <translation id="283695852388224413">이 정책이 설정되면 지정된 최대 PIN 길이가 설정됩니다. 값이 0 이하인 경우 최대 길이는 존재하지 않게 되며 사용자는 자신이 원하는 길이의 PIN을 설정할 수 있습니다. 이 설정이 <ph name="PIN_UNLOCK_MINIMUM_LENGTH_POLICY_NAME" /> 보다는 작지만 0보다 큰 경우 최대 길이는 최소 길이와 동일합니다.
 
           이 정책이 설정되지 않은 경우 최대 길이가 지정되지 않습니다.</translation>
@@ -2211,7 +2201,7 @@ False로 설정하면 <ph name="PRODUCT_NAME" />에서 기본 알림을 사용�
       정책 값은 초 단위로 지정되어야 하며 최솟값은 3600(1시간)으로 고정되어 있습니다.</translation>
 <translation id="4203643479966921607">정책을 '사용'으로 설정하거나 설정하지 않으면 <ph name="PRODUCT_NAME" />이(가) 사용 설정되며 사용자가 앱 메뉴, 페이지 컨텍스트 메뉴, Cast 지원 웹사이트의 미디어 컨트롤, Cast 툴바 아이콘(표시되는 경우)을 통해 실행할 수 있습니다.
 
-      이 정책을 '사용 안함'으로 설정하면 <ph name="PRODUCT_NAME" />이(가) 사용 중지됩니다.</translation>
+      정책을 '사용 안함'으로 설정하면 <ph name="PRODUCT_NAME" />이(가) 사용 중지됩니다.</translation>
 <translation id="4203879074082863035">허용 목록에 있는 프린터만 사용자에게 표시됨</translation>
 <translation id="420512303455129789">호스트 이름을 호스트에 액세스를 허용(true) 또는 차단(false)할지 지정하는 부울 플래그에 매핑합니다.
 
@@ -2394,7 +2384,7 @@ False로 설정하면 <ph name="PRODUCT_NAME" />에서 기본 알림을 사용�
 
       정책을 설정하지 않으면 Chrome에서 기본 다운로드 디렉터리를 사용하며 사용자가 이를 변경할 수 있습니다.
 
-      참고: https://www.chromium.org/administrators/policy-list-3/user-data-directory-variables에서 사용 가능한 변수를 확인해 보세요.</translation>
+      참고: 사용 가능한 변수를 확인해 보세요 ( https://www.chromium.org/administrators/policy-list-3/user-data-directory-variables ).</translation>
 <translation id="4531706050939927436">Google Play를 사용해 Google 관리 콘솔에서 Android 앱을 강제 설치할 수 있습니다. Android 앱은 이 정책을 사용하지 않습니다.</translation>
 <translation id="4534500438517478692">Android 제한 이름:</translation>
 <translation id="4541530620466526913">기기 로컬 계정</translation>
@@ -2448,13 +2438,6 @@ False로 설정하면 <ph name="PRODUCT_NAME" />에서 기본 알림을 사용�
       '강제 사용'이 선택되어 있으면 페이지가 시크릿 모드로만 열릴 수 있습니다. '강제 사용'은 Android-on-Chrome에서는 작동하지 않습니다.</translation>
 <translation id="4600786265870346112">큰 커서 사용</translation>
 <translation id="4604931264910482931">기본 메시지 차단 목록 설정</translation>
-<translation id="4614701085541180174">사이트에서 인증서를 요청하는 경우 SAML 플로를 호스팅하는 프레임의 로그인 화면에서 클라이언트 인증서가 자동으로 선택되는 사이트를 지정하는 URL 패턴 목록을 지정하도록 합니다. 예를 들어 SAML IdP에 제시될 기기 수준 인증서를 구성하는 데 사용할 수 있습니다.
-
-      이 값은 stringified JSON 사전의 배열이어야 합니다. 각 사전은 <ph name="DEVICE_LOGIN_SCREEN_AUTO_SELECT_CERTIFICATE_FOR_URLS_EXAMPLE" /> 형태여야 하며, 여기에서 <ph name="URL_PATTERN_PLACEHOLDER" />은(는) 콘텐츠 설정 패턴입니다. <ph name="FILTER_PLACEHOLDER" />에서는 브라우저에서 자동으로 선택할 클라이언트 인증서를 제한합니다. 필터와 관계없이 서버의 인증서 요청과 일치하는 인증서만이 선택됩니다. <ph name="FILTER_PLACEHOLDER" />이(가) <ph name="JSON_DICTIONARY_EXAMPLE" />인 경우 추가로 CommonName이 <ph name="ISSUER_CN_PLACEHOLDER" />인 인증서에서 발행된 클라이언트 인증서만 선택됩니다. <ph name="FILTER_PLACEHOLDER" />이(가) 빈 사전 {}인 경우 클라이언트 인증서 선택에 추가로 적용되는 제한은 없습니다.
-
-      이 정책이 설정되지 않으면 어떠한 사이트에서도 자동으로 선택되지 않습니다.
-
-      올바른 URL 패턴을 자세히 알아보려면 https://cloud.google.com/docs/chrome-enterprise/policies/url-patterns를 참조하세요.</translation>
 <translation id="4617338332148204752"><ph name="PRODUCT_FRAME_NAME" />에서 메타 태그 검사 건너뛰기</translation>
 <translation id="462134014569484584">이 정책은 이 기기의 <ph name="PLUGIN_VM_NAME" /> 라이선스 키를 지정합니다.</translation>
 <translation id="4625915093043961294">확장 프로그램 설치 허용목록 설정</translation>
@@ -3320,9 +3303,9 @@ False로 설정하면 <ph name="PRODUCT_NAME" />에서 기본 알림을 사용�
 
       https://example.com/some/path와 같은 URL은 example.com과 같은 U2F appID로만 일치합니다. example.com과 같은 도메인은 webauthn RP ID로만 일치합니다. 따라서 특정 사이트의 U2F 및 Webauthn API를 모두 처리하려면 appID URL과 도메인 모두 나열되어야 합니다.</translation>
 <translation id="5836064773277134605">원격 액세스 호스트에서 사용되는 UDP 포트 범위 제한</translation>
-<translation id="5845686745936515940">모든 쿠키를 기존 <ph name="ATTRIBUTE_SAMESITE_NAME" /> 동작으로 되돌릴 수 있습니다. 기존 동작으로 되돌리면 <ph name="ATTRIBUTE_SAMESITE_NAME" /> 속성을 지정하지 않은 쿠키가 '<ph name="ATTRIBUTE_VALUE_SAMESITE_NONE" />'인 것처럼 처리되고 '<ph name="ATTRIBUTE_VALUE_SAMESITE_NONE" />' 쿠키가 '<ph name="ATTRIBUTE_SECURE_NAME" />' 속성을 전달하지 않아도 되며, 두 사이트가 동일한 사이트인지 평가할 때 스키마 비교를 건너뜁니다. https://www.chromium.org/administrators/policy-list-3/cookie-legacy-samesite-policies에서 전체 설명을 확인하세요.
+<translation id="5845686745936515940">모든 쿠키를 기존 <ph name="ATTRIBUTE_SAMESITE_NAME" /> 동작으로 되돌릴 수 있습니다. 기존 동작으로 되돌리면 <ph name="ATTRIBUTE_SAMESITE_NAME" /> 속성을 지정하지 않은 쿠키가 '<ph name="ATTRIBUTE_VALUE_SAMESITE_NONE" />'인 것처럼 처리되고 '<ph name="ATTRIBUTE_VALUE_SAMESITE_NONE" />' 쿠키가 '<ph name="ATTRIBUTE_SECURE_NAME" />' 속성을 전달하지 않아도 되며, 두 사이트가 동일한 사이트인지 평가할 때 스킴 비교를 건너뜁니다. https://www.chromium.org/administrators/policy-list-3/cookie-legacy-samesite-policies에서 전체 설명을 확인하세요.
 
-          정책을 설정하지 않으면 쿠키의 기본 <ph name="ATTRIBUTE_SAMESITE_NAME" /> 동작은 <ph name="FEATURE_NAME_SAMESITE_BY_DEFAULT_COOKIES" /> 기능, <ph name="FEATURE_NAME_SAMESITE_NONE_MUST_BE_SECURE" /> 기능, <ph name="FEATURE_NAME_SCHEMEFUL_SAME_SITE" /> 기능의 사용자 개인 구성에 따라 달라지며, 이러한 설정은 필드 체험판에서 또는 <ph name="FLAG_NAME_SAMESITE_BY_DEFAULT_COOKIES" /> 플래그, <ph name="FLAG_NAME_SAMESITE_NONE_MUST_BE_SECURE" /> 플래그, <ph name="FLAG_NAME_SCHEMEFUL_SAME_SITE" /> 플래그를 각각 사용 설정 또는 사용 중지하여 설정할 수 있습니다.</translation>
+          정책을 설정하지 않으면 쿠키의 기본 <ph name="ATTRIBUTE_SAMESITE_NAME" /> 동작은 <ph name="FEATURE_NAME_SAMESITE_BY_DEFAULT_COOKIES" /> 기능, <ph name="FEATURE_NAME_SAMESITE_NONE_MUST_BE_SECURE" /> 기능, <ph name="FEATURE_NAME_SCHEMEFUL_SAME_SITE" /> 기능의 사용자 개인 구성에 따라 달라지며, 이러한 구성은 공개 실험에서 또는 <ph name="FLAG_NAME_SAMESITE_BY_DEFAULT_COOKIES" /> 플래그, <ph name="FLAG_NAME_SAMESITE_NONE_MUST_BE_SECURE" /> 플래그, <ph name="FLAG_NAME_SCHEMEFUL_SAME_SITE" /> 플래그를 각각 사용 설정 또는 사용 중지하여 설정할 수 있습니다.</translation>
 <translation id="585270638818921943">사용자가 신뢰할 수 없는 출처의 Android 앱을 사용하는 것을 방지</translation>
 <translation id="5855010364142818361">이 정책은 Internet Explorer에서 Chrome 명령줄 매개변수를 제어합니다.
 
@@ -3339,9 +3322,9 @@ False로 설정하면 <ph name="PRODUCT_NAME" />에서 기본 알림을 사용�
       환경 변수는 확장됩니다. Windows의 경우 <ph name="ENV_VARIABLE_WIN_EXAMPLE" />이(가) ABC 환경 변수의 값으로 대체됩니다.</translation>
 <translation id="5859344336338527083">정책을 설정하여 확장 프로그램, 앱, 테마를 설치할 수 있는 URL을 지정합니다. <ph name="PRODUCT_NAME" /> 21 이전에는 사용자가 *.crx 파일 링크를 클릭하면 <ph name="PRODUCT_NAME" />에서 몇 가지 경고 후 파일을 설치하도록 허용했습니다. 이후에는 파일을 다운로드하여 <ph name="PRODUCT_NAME" /> 설정 페이지로 드래그해야 합니다. 이 설정을 사용하면 특정 URL에서 더 간편한 기존의 설치 과정을 따를 수 있습니다.
 
-      이 목록에 있는 각 항목은 확장 프로그램 스타일의 일치 패턴입니다(https://developer.chrome.com/extensions/match_patterns 참고). 사용자는 이 목록의 항목과 일치하는 모든 URL에서 항목을 쉽게 설치할 수 있습니다. *.crx 파일과 다운로드 시작 페이지(예: 리퍼러) 위치는 이러한 패턴에 따라 허용되어야 합니다.
+      이 목록에 있는 각 항목은 확장 프로그램 스타일의 일치 패턴입니다(https://developer.chrome.com/extensions/match_patterns 참고). 사용자는 목록의 항목과 일치하는 모든 URL에서 항목을 쉽게 설치할 수 있습니다. *.crx 파일과 다운로드 시작 페이지(예: 리퍼러)의 위치는 이러한 패턴에 따라 허용되어야 합니다.
 
-      <ph name="EXTENSION_INSTALL_BLOCKLIST_POLICY_NAME" />가 이 정책보다 우선적으로 적용됩니다. 즉, 이 목록의 사이트에서 발생하더라도 차단 목록에 있는 확장 프로그램은 설치되지 않습니다.</translation>
+      <ph name="EXTENSION_INSTALL_BLOCKLIST_POLICY_NAME" />가 이 정책보다 우선적으로 적용됩니다. 즉, 이 목록의 사이트에서 설치하더라도 차단 목록에 있는 확장 프로그램은 설치되지 않습니다.</translation>
 <translation id="5861856285460256766">부모 액세스 코드 설정</translation>
 <translation id="5868414965372171132">사용자 수준 네트워크 설정</translation>
 <translation id="587242272905978723"><ph name="PLUGIN_VM_NAME" />에서 <ph name="PLUGIN_VM_NAME" /> 사용 데이터를 수집하도록 허용합니다.
@@ -3448,7 +3431,7 @@ False로 설정하면 <ph name="PRODUCT_NAME" />에서 기본 알림을 사용�
 <translation id="6048199181629830227">피크 시프트 전력 관리 사용</translation>
 <translation id="6066761914755798079"><ph name="DEFAULT_SEARCH_PROVIDER_ENABLED_POLICY_NAME" />가 사용 설정되어 있는 경우 <ph name="DEFAULT_SEARCH_PROVIDER_SUGGEST_URL_POLICY_NAME" />을 설정하여 추천 검색어를 제공할 때 사용할 검색엔진의 URL을 지정합니다. URL은 <ph name="SEARCH_TERM_MARKER" /> 문자열을 포함해야 하며, 이 문자열은 쿼리 시 사용자의 검색어로 대체됩니다.
 
-      Google 검색 URL인 <ph name="GOOGLE_SUGGEST_SEARCH_URL" />을 지정할 수 있습니다.</translation>
+      Google 검색 URL은 <ph name="GOOGLE_SUGGEST_SEARCH_URL" />로 지정할 수 있습니다.</translation>
 <translation id="6070667616071269965">기기 로그인 화면 키보드 레이아웃</translation>
 <translation id="6074963268421707432">모든 사이트에서 데스크톱 알림 표시 허용 안함</translation>
 <translation id="6074964551275531965">업데이트 알림 표시 기간 설정</translation>
@@ -3518,7 +3501,7 @@ False로 설정하면 <ph name="PRODUCT_NAME" />에서 기본 알림을 사용�
 
           자세한 예를 보려면 다음 페이지에 방문하세요.
           <ph name="PROXY_HELP_URL" /></translation>
-<translation id="6172896675583897796">정책을 '사용'으로 설정하면 Google 어시스턴트가 화면에 표시되는 콘텐츠에 액세스하고 이 데이터를 서버에 전송할 수 있습니다. 정책을 '사용 안함'으로 설정하면 Google 어시스턴트가 화면에 표시되는 콘텐츠에 액세스할 수 없습니다.
+<translation id="6172896675583897796">정책을 '사용'으로 설정하면 Google 어시스턴트가 화면 컨텍스트에 액세스하고 이 데이터를 서버에 전송할 수 있습니다. 정책을 '사용 안함'으로 설정하면 Google 어시스턴트가 화면 컨텍스트에 액세스할 수 없습니다.
 
       정책을 설정하지 않으면 사용자가 이 기능을 사용 또는 사용 중지할 수 있습니다.</translation>
 <translation id="6178075938488052838">이 정책은 누가 <ph name="PRODUCT_OS_NAME" /> 세션을 시작할지 제어합니다. 이 정책은 사용자가 Android 내에서 추가 Google 계정에 로그인하지 못하도록 막지 않습니다. 사용자가 추가 Google 계정으로 로그인하지 못하게 하려면 <ph name="ARC_POLICY_POLICY_NAME" />의 일환으로 Android <ph name="ACCOUNT_TYPES_WITH_MANAGEMENT_DISABLED_CLOUDDPC_POLICY_NAME" /> 정책을 구성하세요.</translation>
@@ -3568,7 +3551,7 @@ False로 설정하면 <ph name="PRODUCT_NAME" />에서 기본 알림을 사용�
 <translation id="6212868225782276239">차단 목록에 있는 프린터를 제외한 모든 프린터가 표시됨</translation>
 <translation id="6220835555850906733">정책을 사용으로 설정하거나 설정하지 않으면 사용자 기기에서 지원되는 모든 오디오 출력이 허용됩니다.
 
-      정책을 '사용 안함'으로 설정하면 사용자가 로그인했을 때 오디오 출력이 허용되지 않습니다.
+      정책을 사용 안함으로 설정하면 사용자가 로그인했을 때 오디오 출력이 허용되지 않습니다.
 
       참고: 이 정책은 오디오 접근성 기능을 포함한 모든 오디오 출력에 적용됩니다. 사용자에게 스크린 리더가 필요한 경우 정책을 사용 중지하지 마세요.</translation>
 <translation id="6221175752766085998">로컬 트러스트 앵커에서 발급되었으나 subjectAlternativeName 확장 프로그램이 없는 인증서를 허용합니다.</translation>
@@ -3811,7 +3794,7 @@ False로 설정하면 <ph name="PRODUCT_NAME" />에서 기본 알림을 사용�
       </translation>
 <translation id="6588522781970773591">정책을 설정하면 기존 확장 프로그램 관련 정책으로 제어되는 설정을 포함해 <ph name="PRODUCT_NAME" />의 확장 프로그램 관리 설정을 제어할 수 있습니다. 기존에 설정된 정책이 있을 경우 이 정책으로 대체됩니다.
 
-      이 정책은 확장 프로그램 ID 또는 업데이트 URL을 특정 설정에만 매핑합니다. 특수 ID <ph name="DEFAULT_SCOPE" />에 기본 구성을 설정할 수 있으며, 이 구성은 정책에서 맞춤 구성이 설정되지 않은 모든 확장 프로그램에 적용됩니다. 업데이트 URL이 있으면 구성은 확장 프로그램 매니페스트에 규정된 정확한 업데이트 URL을 포함하는 모든 확장 프로그램에 적용됩니다( http://support.google.com/chrome/a?p=Configure_ExtensionSettings_policy ).
+      이 정책은 확장 프로그램 ID 또는 업데이트 URL을 특정 설정에만 매핑합니다. 특수 ID <ph name="DEFAULT_SCOPE" />에 기본 구성을 설정할 수 있으며, 정책에서 맞춤 구성이 설정되지 않은 모든 확장 프로그램에 기본 구성이 적용됩니다. 업데이트 URL이 있으면 구성은 확장 프로그램 매니페스트에 규정된 정확한 업데이트 URL을 포함하는 모든 확장 프로그램에 적용됩니다( http://support.google.com/chrome/a?p=Configure_ExtensionSettings_policy ).
 
       참고: <ph name="MS_AD_NAME" /> 도메인에 연결되지 않은 Windows® 인스턴스의 경우 강제 설치는 Chrome 웹 스토어에 등록된 앱과 확장 프로그램으로 제한됩니다.</translation>
 <translation id="6598235178374410284">사용자 아바타 이미지</translation>
@@ -3890,7 +3873,7 @@ False로 설정하면 <ph name="PRODUCT_NAME" />에서 기본 알림을 사용�
 
       이 정책은 고급 보호 프로그램에 등록된 사용자가 Google에 다운로드 항목을 전송하여 멀웨어가 있는지 검사하도록 허용할지 결정합니다. 정책이 True로 설정되거나 설정되지 않으면 등록된 사용자에게 파일을 Google에 전송하여 심층 검사를 받으라는 메시지가 표시됩니다. 이때 사용자가 '검사'를 선택하면 다운로드 항목이 Google로 전송됩니다. False로 설정되면 사용자에게 메시지가 표시되지 않으며 다운로드한 파일이 Google에 전송되지 않습니다.</translation>
 <translation id="670597451099978576">로그인 화면에서 다음 사이트가 주어진 공급업체 및 제품 ID를 사용하여 USB 기기에 연결할 수 있는 권한을 자동으로 부여합니다.</translation>
-<translation id="6723472666969849951">이 정책을 설정하여 <ph name="PRODUCT_NAME" />에 설치할 수 있는 앱 및 확장 프로그램과 상호 작용 가능한 호스트를 관리하고 런타임 액세스를 제한합니다.
+<translation id="6723472666969849951">이 정책을 설정하여 <ph name="PRODUCT_NAME" />에 설치할 수 있는 앱 및 확장 프로그램과 상호작용 가능한 호스트를 관리하고 런타임 액세스를 제한합니다.
 
       정책을 설정하지 않으면 허용되는 확장 프로그램과 앱 유형에는 제한이 적용되지 않습니다.
 
@@ -3910,7 +3893,7 @@ False로 설정하면 <ph name="PRODUCT_NAME" />에서 기본 알림을 사용�
 
       이러한 유형에 관한 자세한 정보는 <ph name="PRODUCT_NAME" /> 확장 프로그램 문서를 참고하세요.
 
-      쉼표로 분리되는 확장 프로그램 ID를 여러 개 사용하는 75 이전 버전은 지원되지 않으며 건너뛰게 됩니다. 정책의 나머지 부분은 적용됩니다.
+      쉼표로 구분되는 확장 프로그램 ID를 여러 개 사용하는 75 이전 버전은 지원되지 않으며 건너뛰게 됩니다. 정책의 나머지 부분은 적용됩니다.
 
       참고: 이 정책은 <ph name="EXTENSION_INSTALL_FORCELIST_POLICY_NAME" />로 강제 설치되는 확장 프로그램과 앱에도 영향을 미칩니다.</translation>
 <translation id="672496466524161417">정책을 None으로 설정하거나 설정하지 않으면 사용자가 인증서를 관리할 수 있습니다. 정책을 2로 설정하면 사용자가 인증서를 볼 수만 있습니다(관리할 수 없음).
@@ -3988,7 +3971,7 @@ False로 설정하면 <ph name="PRODUCT_NAME" />에서 기본 알림을 사용�
 <translation id="685769593149966548">YouTube에 강력 제한 모드 사용</translation>
 <translation id="686079137349561371">Microsoft Windows 7 이상</translation>
 <translation id="6864244339257535116">비밀번호로 보호된 파일의 업로드 및 다운로드 허용</translation>
-<translation id="6870295914868104867">정책을 사용하면 사용자 상호 작용 없이 자동으로 설치되는 앱 및 확장 프로그램 목록이 지정되며, 사용자가 제거하거나 사용 중지할 수 없습니다. enterprise.deviceAttributes 및 enterprise.platformKeys 확장 API의 권한을 비롯한 권한은 암시적으로 부여됩니다. (이 2개의 API는 강제 설치되지 않은 앱과 확장 프로그램에서 사용 가능합니다.)
+<translation id="6870295914868104867">정책을 설정하면 사용자 상호작용 없이 자동으로 설치되는 앱 및 확장 프로그램 목록이 지정되며, 사용자가 제거하거나 사용 중지할 수 없습니다. enterprise.deviceAttributes 및 enterprise.platformKeys 확장 프로그램 API의 권한을 비롯한 권한은 암시적으로 부여됩니다. (이 2개의 API는 강제 설치되지 않은 앱과 확장 프로그램에서 사용 가능합니다.)
 
       정책을 설정하지 않으면 앱과 확장 프로그램이 자동 설치되지 않으며 사용자는 <ph name="PRODUCT_NAME" />에서 모든 앱 또는 확장 프로그램을 제거할 수 있습니다.
 
@@ -3998,7 +3981,7 @@ False로 설정하면 <ph name="PRODUCT_NAME" />에서 기본 알림을 사용�
 
       모든 확장 프로그램의 소스 코드는 사용자가 개발자 도구를 통해 변경할 수 있으며, 이 과정에서 확장 프로그램 오작동이 발생할 수 있습니다. 이 점이 우려된다면 <ph name="DEVELOPER_TOOLS_DISABLED_POLICY_NAME" /> 정책을 설정하세요.
 
-      이 정책의 각 목록 항목은 세미콜론(;)으로 구분된 확장 프로그램 ID 및 '업데이트' URL(선택사항)로 구성된 문자열입니다. 확장 프로그램 ID는 32자리 문자열로, 예를 들어 개발자 모드일 때 chrome://extensions에서 확인할 수 있습니다. '업데이트' URL을 지정하는 경우 업데이트 매니페스트 XML 문서(https://developer.chrome.com/extensions/autoupdate)로 연결되어야 합니다. 기본적으로 Chrome 웹 스토어의 업데이트 URL이 사용됩니다. 이 정책에 설정된 '업데이트' URL은 최초 설치 시에만 사용되며 향후 확장 프로그램 업데이트에서는 확장 프로그램 매니페스트에 있는 업데이트 URL이 사용됩니다.
+      정책의 각 목록 항목은 세미콜론(;)으로 구분된 확장 프로그램 ID 및 '업데이트' URL(선택사항)로 구성된 문자열입니다. 확장 프로그램 ID는 32자리 문자열로, 예를 들어 개발자 모드일 때 chrome://extensions에서 확인할 수 있습니다. '업데이트' URL을 지정하는 경우 업데이트 매니페스트 XML 문서( https://developer.chrome.com/extensions/autoupdate )로 연결되어야 합니다. 기본적으로 Chrome 웹 스토어의 업데이트 URL이 사용됩니다. 정책에 설정된 '업데이트' URL은 최초 설치 시에만 사용되며 향후 확장 프로그램 업데이트에서는 확장 프로그램 매니페스트에 있는 업데이트 URL이 사용됩니다.
 
        참고: 이 정책은 시크릿 모드에는 적용되지 않습니다. 확장 프로그램 호스팅에 관해 자세히 알아보세요(https://developer.chrome.com/extensions/hosting).</translation>
 <translation id="687046793986382807">이 정책은 <ph name="PRODUCT_NAME" /> 버전 35를 기준으로 지원이 중단되었습니다.
@@ -4707,9 +4690,9 @@ False로 설정하면 <ph name="PRODUCT_NAME" />에서 기본 알림을 사용�
           이 정책이 사용 설정되거나 설정되지 않으면 사용자가 사용자 설정 페이지의 Kerberos 계정 설정을 통해 Kerberos 계정을 추가할 수 있습니다. 사용자는 자신이 추가한 계정을 완전히 제어할 수 있으며 수정하거나 삭제할 수도 있습니다.
 
           이 정책이 사용 중지되면 사용자는 Kerberos 계정을 추가할 수 없습니다. 계정은 'Kerberos 계정 구성' 정책을 통해서만 추가할 수 있습니다. 계정을 잠그는 데 효과적인 방법입니다.</translation>
-<translation id="7891884447851425349"><ph name="DEFAULT_SEARCH_PROVIDER_ENABLED_POLICY_NAME" />가 사용 설정되어 있으면 <ph name="DEFAULT_SEARCH_PROVIDER_SEARCH_URL_POLICY_NAME" />을 설정할 경우 기본 검색에서 사용된 검색엔진의 URL을 지정합니다. URL은 <ph name="SEARCH_TERM_MARKER" /> 문자열을 포함해야 하며, 이 문자열은 쿼리 시 사용자의 검색어로 대체됩니다.
+<translation id="7891884447851425349"><ph name="DEFAULT_SEARCH_PROVIDER_ENABLED_POLICY_NAME" />가 사용 설정되어 있는 경우 <ph name="DEFAULT_SEARCH_PROVIDER_SEARCH_URL_POLICY_NAME" />을 설정하여 기본 검색에서 사용되는 검색엔진의 URL을 지정합니다. URL은 <ph name="SEARCH_TERM_MARKER" /> 문자열을 포함해야 하며, 이 문자열은 쿼리 시 사용자의 검색어로 대체됩니다.
 
-      Google 검색 URL인 <ph name="GOOGLE_SEARCH_URL" />을 지정할 수 있습니다.</translation>
+      Google 검색 URL은 <ph name="GOOGLE_SEARCH_URL" />으로 지정할 수 있습니다.</translation>
 <translation id="7895553628261067384">원격 액세스</translation>
 <translation id="7898879331506985900">이 기업 정책은 단기적인 적응을 위해 마련되었으며 M86에서는 삭제될 예정입니다.
 
@@ -5337,7 +5320,7 @@ Windows에서는 GPO를 통해 정책을 설정하는 것이 좋습니다. 하�
 
       정책을 설정하지 않으면 Chrome에서 플랫폼별 기본 디렉터리를 사용합니다.
 
-      참고: https://www.chromium.org/administrators/policy-list-3/user-data-directory-variables에서 사용 가능한 변수를 확인해 보세요.</translation>
+      참고: 사용 가능한 변수를 확인해 보세요 ( https://www.chromium.org/administrators/policy-list-3/user-data-directory-variables ).</translation>
 <translation id="8777369558049831576">외부 프로토콜 대화상자에 '항상 열기' 체크박스 표시</translation>
 <translation id="8779504970846195767">전력 피크 시프트 배터리 임계값을 퍼센트로 설정합니다.
 
@@ -5417,11 +5400,11 @@ Windows에서는 GPO를 통해 정책을 설정하는 것이 좋습니다. 하�
       설정하지 않거나 빈 문자열을 입력할 경우 기기는 현재 활성화된 시간대를 사용하지만 사용자가 변경할 수 있습니다.</translation>
 <translation id="8876188741456358123">기본 양면 인쇄 모드를 재정의합니다. 이 모드를 사용할 수 없는 경우 이 정책은 무시됩니다.</translation>
 <translation id="8882006618241293596">이 사이트에서 <ph name="FLASH_PLUGIN_NAME" /> 플러그인 차단</translation>
-<translation id="8887158351295718009">다음 패턴과 일치하는 도메인에 설정된 쿠키는 기존 <ph name="ATTRIBUTE_SAMESITE_NAME" /> 동작으로 되돌아갑니다. 기존 동작으로 되돌리면 <ph name="ATTRIBUTE_SAMESITE_NAME" /> 속성을 지정하지 않은 쿠키가 '<ph name="ATTRIBUTE_VALUE_SAMESITE_NONE" />'인 것처럼 처리되고 '<ph name="ATTRIBUTE_VALUE_SAMESITE_NONE" />' 쿠키가 '<ph name="ATTRIBUTE_SECURE_NAME" />' 속성을 전달하지 않아도 되며, 두 사이트가 동일한 사이트인지 평가할 때 스키마 비교를 건너뜁니다. https://www.chromium.org/administrators/policy-list-3/cookie-legacy-samesite-policies에서 전체 설명을 확인하세요.
+<translation id="8887158351295718009">다음 패턴과 일치하는 도메인에 설정된 쿠키는 기존 <ph name="ATTRIBUTE_SAMESITE_NAME" /> 동작으로 되돌아갑니다. 기존 동작으로 되돌리면 <ph name="ATTRIBUTE_SAMESITE_NAME" /> 속성을 지정하지 않은 쿠키가 '<ph name="ATTRIBUTE_VALUE_SAMESITE_NONE" />'인 것처럼 처리되고 '<ph name="ATTRIBUTE_VALUE_SAMESITE_NONE" />' 쿠키가 '<ph name="ATTRIBUTE_SECURE_NAME" />' 속성을 전달하지 않아도 되며, 두 사이트가 동일한 사이트인지 평가할 때 스킴 비교를 건너뜁니다. https://www.chromium.org/administrators/policy-list-3/cookie-legacy-samesite-policies에서 전체 설명을 확인하세요.
 
-          여기 명시된 패턴에 해당하지 않는 도메인의 쿠키 또는 이 정책을 설정하지 않은 경우의 모든 쿠키에 <ph name="LEGACY_SAMESITE_COOKIE_BEHAVIOR_ENABLED_POLICY_NAME" /> 정책(설정된 경우) 또는 사용자 개인 설정의 전역 기본값이 사용됩니다.
+          여기 명시된 패턴에 해당하지 않는 도메인의 쿠키 또는 이 정책을 설정하지 않은 경우의 모든 쿠키에 <ph name="LEGACY_SAMESITE_COOKIE_BEHAVIOR_ENABLED_POLICY_NAME" /> 정책(설정된 경우) 또는 사용자 개인 구성의 전역 기본값이 사용됩니다.
 
-          여기에 명시한 패턴은 URL이 아닌 도메인으로 취급되므로 스키마 또는 포트를 지정해서는 안 됩니다.</translation>
+          여기에 명시한 패턴은 URL이 아닌 도메인으로 취급되므로 스킴 또는 포트를 지정해서는 안 됩니다.</translation>
 <translation id="8892286064305622118"><ph name="PLUGIN_VM_NAME" />에 필요한 디스크 여유 공간</translation>
 <translation id="8906768759089290519">게스트 모드 사용</translation>
 <translation id="8908294717014659003">미디어 캡쳐 장치에 대한 웹사이트의 액세스 허용 여부를 설정할 수 있습니다. 미디어 캡쳐 장치에 대해 액세스를 기본적으로 허용하거나 웹사이트가 액세스하려고 할 때마다 확인하도록 설정할 수도 있습니다.
@@ -5513,19 +5496,6 @@ Windows에서는 GPO를 통해 정책을 설정하는 것이 좋습니다. 하�
        이 정책은 오디오, 동영상, 이미지가 아닌 다른 유형의 혼합 콘텐츠에 영향을 주지 않습니다.
        또한 <ph name="PRODUCT_NAME" /> 84부터 더 이상 효력이 없습니다.</translation>
 <translation id="9010080992450148617">고급 보호 프로그램에 등록된 사용자가 다운로드한 항목을 심층 검사를 위해 Google에 전송하도록 허용</translation>
-<translation id="90110062113213245">정책을 설정하면 Chrome에서 클라이언트 인증서를 자동으로 선택할 수 있는 사이트를 지정하는 URL 패턴 목록을 작성할 수 있습니다. 값은 각각 <ph name="AUTO_SELECT_CERTIFICATE_FOR_URLS_EXAMPLE" /> 형식의 stringified JSON 사전 배열이며, 여기에서 <ph name="URL_PATTERN_PLACEHOLDER" />은 콘텐츠 설정 패턴입니다. <ph name="FILTER_PLACEHOLDER" />는 브라우저에서 자동으로 선택할 클라이언트 인증서를 제한합니다. 필터와 관계없이 서버의 인증서 요청과 일치하는 인증서만 선택됩니다.
-
-      예를 들어 <ph name="FILTER_PLACEHOLDER" /> 형식이 다음과 같은 경우:
-
-      * <ph name="AUTO_SELECT_CERTIFICATE_FOR_URLS_FILTER_EXAMPLE" />: CommonName이 <ph name="ISSUER_CN_PLACEHOLDER" />인 인증서에서 발급된 클라이언트 인증서만 선택됩니다.
-
-      * <ph name="ISSUER_STRING_VALUE" />, <ph name="SUBJECT_STRING_VALUE" /> 섹션: 일치하는 클라이언트 인증서만 선택됩니다.
-
-      * ("O"): 인증서를 선택하려면 지정된 값과 일치하는 조직이 인증서에 하나 이상 있어야 합니다. * ("OU"): 인증서를 선택하려면 지정된 값과 일치하는 조직 단위가 인증서에 하나 이상 있어야 합니다.
-
-      * <ph name="EMPTY_DICTIONARY" />: 클라이언트 인증서 선택에 추가로 적용되는 제한은 없습니다.
-
-      정책을 설정하지 않으면 어느 사이트에서도 자동으로 선택되지 않습니다.</translation>
 <translation id="9013875414788074110">로그인하는 동안 <ph name="PRODUCT_OS_NAME" />은(는) 서버(온라인) 또는 캐시된 비밀번호(오프라인)를 사용하여 인증할 수 있습니다.
 
       이 정책의 값을 -1로 설정하면 사용자는 언제든지 오프라인에서 인증할 수 있습니다. 이 정책을 다른 값으로 설정하면 마지막 온라인 인증 후 오프라인에서 인증할 수 있는 기간(이 기간이 지나면 다시 온라인 인증을 사용해야 함)이 지정됩니다.

@@ -3,6 +3,7 @@
 # found in the LICENSE file.
 """Utility classes (and functions, in the future) for graph operations."""
 
+import functools
 from typing import Dict, List, Optional, Tuple
 
 
@@ -18,6 +19,7 @@ def sorted_edges_by_name(edges):
     return sorted(edges, key=lambda edge: (edge[0].name, edge[1].name))
 
 
+@functools.total_ordering
 class Node(object):  # pylint: disable=useless-object-inheritance
     """A node/vertex in a directed graph."""
     def __init__(self, unique_key: str):
@@ -32,6 +34,9 @@ class Node(object):  # pylint: disable=useless-object-inheritance
 
     def __eq__(self, other: 'Node'):  # pylint: disable=missing-function-docstring
         return self._unique_key == other._unique_key
+
+    def __lt__(self, other: 'Node'):  # pylint: disable=missing-function-docstring
+        return self._unique_key < other._unique_key
 
     def __hash__(self):  # pylint: disable=missing-function-docstring
         return hash(self._unique_key)

@@ -21,6 +21,7 @@
 <translation id="1150565364351027703">サングラス</translation>
 <translation id="115443833402798225">ハングル（Ahnmatae 式）</translation>
 <translation id="1155759005174418845">カタロニア語</translation>
+<translation id="1172970565351728681">残り約 <ph name="REMAINING_TIME" /></translation>
 <translation id="1173894706177603556">名前を変更</translation>
 <translation id="117624967391683467"><ph name="FILE_NAME" /> をコピーしています...</translation>
 <translation id="1178581264944972037">一時停止</translation>
@@ -198,6 +199,7 @@
 <translation id="3236289833370040187">所有権が <ph name="DESTINATION_DOMAIN" /> に移ります。</translation>
 <translation id="3241720467332021590">アイルランド語</translation>
 <translation id="3245321423178950146">不明なアーティスト</translation>
+<translation id="3248185426436836442">保留中</translation>
 <translation id="3252266817569339921">フランス語</translation>
 <translation id="3254434849914415189"><ph name="FILE_TYPE" /> ファイルのデフォルト アプリを選択:</translation>
 <translation id="3264582393905923483">コンテキスト</translation>
@@ -244,6 +246,7 @@
 <translation id="3780536599611287598">ファイルを「<ph name="FOLDER_NAME" />」に移動する権限がありません。</translation>
 <translation id="3786301125658655746">現在オフラインです</translation>
 <translation id="3789841737615482174">インストール</translation>
+<translation id="3793469551756281394">残り約 <ph name="REMAINING_TIME_HOUR" /> <ph name="REMAINING_TIME_MINUTE" /></translation>
 <translation id="3798449238516105146">バージョン</translation>
 <translation id="3801082500826908679">フェロー語</translation>
 <translation id="3809272675881623365">ウサギ</translation>

@@ -68,6 +68,11 @@ extern const char kSignInPasswordPromoRevive[];
 // dictionary of key-value pairs.
 extern const char kAccountStoragePerAccountSettings[];
 
+// A boolean that tracks whether the account-scoped password store exists on
+// disk. When the factory needs to delete the store from disk, it uses this pref
+// to only trigger the deletion if the store actually exists.
+extern const char kAccountStorageExists[];
+
 // String that represents the sync password hash.
 extern const char kSyncPasswordHash[];
 

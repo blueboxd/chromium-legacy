@@ -2377,6 +2377,7 @@ Cilësimet e kësaj llogarie mund t'i menaxhosh duke instaluar aplikacionin Fami
 <translation id="3882165008614329320">Video ekzistuese nga kamera ose skedari</translation>
 <translation id="3886446263141354045">Kërkesa jote për qasje te ky sajt është dërguar te <ph name="NAME" />.</translation>
 <translation id="3888550877729210209">Marrja e shënimeve me <ph name="LOCK_SCREEN_APP_NAME" /></translation>
+<translation id="3891563564777705449">{0,plural, =1{Përditësoje pajisjen brenda 1 jave}other{Përditësoje pajisjen brenda # javësh}}</translation>
 <translation id="3892414795099177503">Shto OpenVPN / L2TP...</translation>
 <translation id="3893536212201235195">Lexo dhe ndrysho cilësimet e qasjes</translation>
 <translation id="3893630138897523026">ChromeVox (komente të thëna me gojë)</translation>
@@ -4438,6 +4439,7 @@ Cilësimet e kësaj llogarie mund t'i menaxhosh duke instaluar aplikacionin Fami
 <translation id="6535331821390304775">Lejo gjithmonë që <ph name="ORIGIN" /> të hapë lidhjet e këtij lloji në aplikacionin përkatës</translation>
 <translation id="654039047105555694"><ph name="BEGIN_BOLD" />Shënim.<ph name="END_BOLD" /> Aktivizoje vetëm nëse e di e çfarë po bën ose nëse të është kërkuar ta bësh këtë, sepse grumbullimi të dhënave mund të ulë rendimentin.</translation>
 <translation id="6541638731489116978">Kjo faqe nuk lejohet të t'i hapë sensorët e lëvizjes.</translation>
+<translation id="6545407738986370057">{0,plural, =1{Ktheje pajisjen brenda 1 jave}other{Ktheje pajisjen brenda # javësh}}</translation>
 <translation id="6545665334409411530">Shpejtësia e përsëritjes</translation>
 <translation id="6545864417968258051">Skanimi për Bluetooth</translation>
 <translation id="6545867563032584178">Mikrofoni është çaktivizuar te Mac System Preferences</translation>

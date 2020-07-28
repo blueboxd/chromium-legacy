@@ -2378,6 +2378,7 @@ Ungaphatha izilungiselelo zale akhawunti ngokufaka uhlelo lokusebenza lwe-Family
 <translation id="3882165008614329320">Ividiyo ekhona kusuka kukhamera noma ifayela</translation>
 <translation id="3886446263141354045">Isicelo sakho sokufinyelela kule sayithi sithunyelwe ku-<ph name="NAME" /></translation>
 <translation id="3888550877729210209">Ukuthatha amanothi nge-<ph name="LOCK_SCREEN_APP_NAME" /></translation>
+<translation id="3891563564777705449">{0,plural, =1{Buyekeza idivayisi phakathi kweviki eli-1}one{Buyekeza idivayisi phakathi kwamaviki angu-#}other{Buyekeza idivayisi phakathi kwamaviki angu-#}}</translation>
 <translation id="3892414795099177503">Engeza i-OpenVPN / L2TP...</translation>
 <translation id="3893536212201235195">Funda futhi shintsha izilungiselelo zakho zokufinyeleleka</translation>
 <translation id="3893630138897523026">I-ChromeVox (impendulo ekhulunywayo)</translation>
@@ -4441,6 +4442,7 @@ Qiniseka ukuthi awuvezi noma yiluphi ulwazi olubucayi.</translation>
 <translation id="6535331821390304775">Njalo vumela i-<ph name="ORIGIN" /> ukuvula izixhumanisi zalolu hlobo kuhlelo lokusebenza oluhlobene</translation>
 <translation id="654039047105555694"><ph name="BEGIN_BOLD" />Yazi:<ph name="END_BOLD" /> Nika amandla kuphela uma wazi ukuthi wenzani noma uma uceliwe ukwenza njalo, njengoba ukuqoqwa kwedatha kungehlisa ukusebenza.</translation>
 <translation id="6541638731489116978">Leli sayithi livinjelwe kusukela ekufinyeleleni kuzinzwa zakho zokunyakaza.</translation>
+<translation id="6545407738986370057">{0,plural, =1{Buyisela idivayisi phakathi kweviki eli-1}one{Buyisela idivayisi phakathi kwamaviki angu-#}other{Buyisela idivayisi phakathi kwamaviki angu-#}}</translation>
 <translation id="6545665334409411530">Phinda ukulinganisela</translation>
 <translation id="6545864417968258051">Ukuskena kwe-Bluetooth</translation>
 <translation id="6545867563032584178">Imakrofoni ivaliwe kuzintandokazi zesistimu ye-Mac</translation>

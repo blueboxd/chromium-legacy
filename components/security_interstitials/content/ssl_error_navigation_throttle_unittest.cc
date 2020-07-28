@@ -72,7 +72,6 @@ class FakeSSLBlockingPage
 
   // SecurityInterstitialPage:
   void OnInterstitialClosing() override {}
-  bool ShouldCreateNewNavigation() const override { return false; }
   void PopulateInterstitialStrings(
       base::DictionaryValue* load_time_data) override {
     ssl_error_ui_.PopulateStringsForHTML(load_time_data);

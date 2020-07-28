@@ -6,6 +6,7 @@
 #define THIRD_PARTY_BLINK_PUBLIC_COMMON_INDEXEDDB_INDEXED_DB_DEFAULT_MOJOM_TRAITS_H_
 
 #include "base/containers/span.h"
+#include "mojo/public/cpp/bindings/array_traits_span.h"
 #include "third_party/blink/public/common/common_export.h"
 #include "third_party/blink/public/common/indexeddb/indexeddb_key.h"
 #include "third_party/blink/public/mojom/indexeddb/indexeddb.mojom-forward.h"

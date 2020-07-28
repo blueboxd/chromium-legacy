@@ -22,6 +22,7 @@ import org.chromium.chrome.browser.ui.messages.snackbar.SnackbarManagerProvider;
 import org.chromium.components.browser_ui.styles.ChromeColors;
 import org.chromium.components.paintpreview.player.PlayerManager;
 import org.chromium.content_public.browser.LoadUrlParams;
+import org.chromium.content_public.browser.NavigationHandle;
 import org.chromium.url.GURL;
 
 /**
@@ -42,6 +43,7 @@ public class TabbedPaintPreviewPlayer implements TabViewProvider, UserData {
     private boolean mHasUserInteraction;
     private EmptyTabObserver mTabObserver;
     private long mLastShownSnackBarTime;
+    private boolean mDidStartRestore;
 
     public static TabbedPaintPreviewPlayer get(Tab tab) {
         if (tab.getUserDataHost().getUserData(USER_DATA_KEY) == null) {
@@ -56,9 +58,7 @@ public class TabbedPaintPreviewPlayer implements TabViewProvider, UserData {
         mTabObserver = new EmptyTabObserver() {
             @Override
             public void didFirstVisuallyNonEmptyPaint(Tab tab) {
-                if (!mTab.getTabViewManager().isShowing(TabbedPaintPreviewPlayer.this)) {
-                    return;
-                }
+                if (!isShowingAndNeedsBadge()) return;
 
                 if (!mHasUserInteraction) {
                     removePaintPreview();
@@ -68,7 +68,25 @@ public class TabbedPaintPreviewPlayer implements TabViewProvider, UserData {
                 showSnackbar();
             }
 
+            @Override
+            public void onRestoreStarted(Tab tab) {
+                mDidStartRestore = true;
+            }
 
+            @Override
+            public void onDidStartNavigation(Tab tab, NavigationHandle navigationHandle) {
+                if (mPlayerManager == null || !isShowingAndNeedsBadge()) return;
+
+                // Ignore navigations from subframes. We should only remove the paint preview
+                // player when the user navigates to a new page.
+                if (!navigationHandle.isInMainFrame()) return;
+
+                // If we haven't started to restore, this is the navigation call to start the
+                // restoration. We shouldn't remove the paint preview player.
+                if (!mDidStartRestore) return;
+
+                removePaintPreview();
+            }
         };
         mTab.addObserver(mTabObserver);
     }

@@ -47,6 +47,7 @@
 #include "chrome/browser/net/profile_network_context_service.h"
 #include "chrome/browser/net/profile_network_context_service_factory.h"
 #include "chrome/browser/net/system_network_context_manager.h"
+#include "chrome/browser/policy/policy_test_utils.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/ssl/cert_verifier_browser_test.h"
@@ -84,6 +85,7 @@
 #include "components/policy/core/browser/browser_policy_connector.h"
 #include "components/policy/core/common/mock_configuration_policy_provider.h"
 #include "components/policy/core/common/policy_map.h"
+#include "components/policy/core/common/policy_types.h"
 #include "components/policy/policy_constants.h"
 #include "components/prefs/testing_pref_service.h"
 #include "components/safe_browsing/core/common/safe_browsing_prefs.h"
@@ -104,6 +106,7 @@
 #include "components/security_interstitials/core/controller_client.h"
 #include "components/security_interstitials/core/features.h"
 #include "components/security_interstitials/core/metrics_helper.h"
+#include "components/security_interstitials/core/pref_names.h"
 #include "components/security_state/core/features.h"
 #include "components/security_state/core/security_state.h"
 #include "components/ssl_errors/error_classification.h"
@@ -3481,7 +3484,7 @@ class SSLUIWorkerFetchTest
     browser_client->SetMixedContentSettings(
         allow_running_insecure_content, strict_mixed_content_checking,
         strictly_block_blockable_mixed_content);
-    tab->GetRenderViewHost()->OnWebkitPreferencesChanged();
+    tab->OnWebPreferencesChanged();
     CheckMixedContentSettings(allow_running_insecure_content,
                               strict_mixed_content_checking,
                               strictly_block_blockable_mixed_content);
@@ -3517,7 +3520,7 @@ class SSLUIWorkerFetchTest
       content::TitleWatcher watcher(tab, loaded_title);
       watcher.AlsoWaitForTitle(failed_title);
       SetAllowRunningInsecureContent();
-      tab->GetRenderViewHost()->OnWebkitPreferencesChanged();
+      tab->OnWebPreferencesChanged();
       EXPECT_EQ(expected_load_after_allow ? loaded_title : failed_title,
                 watcher.WaitAndGetTitle());
     }
@@ -6240,6 +6243,60 @@ IN_PROC_BROWSER_TEST_F(SSLUITestWithInsecureFormsWarningEnabled,
   DontProceedThroughInterstitial(tab);
   EXPECT_FALSE(helper->IsDisplayingInterstitial());
   EXPECT_EQ(tab->GetVisibleURL(), form_site_url);
+}
+
+class MixedFormsPolicyTest : public policy::PolicyTest {
+ public:
+  MixedFormsPolicyTest() {
+    feature_list_.InitAndEnableFeature(
+        security_interstitials::kInsecureFormSubmissionInterstitial);
+  }
+
+ private:
+  base::test::ScopedFeatureList feature_list_;
+};
+
+// Check no warning is shown if disabled by policy.
+IN_PROC_BROWSER_TEST_F(MixedFormsPolicyTest, NoWarningOptOutPolicy) {
+  ASSERT_TRUE(embedded_test_server()->Start());
+  net::EmbeddedTestServer https_server(net::EmbeddedTestServer::TYPE_HTTPS);
+  https_server.AddDefaultHandlers(GetChromeTestDataDir());
+  ASSERT_TRUE(https_server.Start());
+
+  // Check pref is set to true by default.
+  EXPECT_TRUE(browser()->profile()->GetPrefs()->GetBoolean(
+      prefs::kMixedFormsWarningsEnabled));
+  // Set policy to disable mixed form warnings.
+  policy::PolicyMap policies;
+  policies.Set(policy::key::kInsecureFormsWarningsEnabled,
+               policy::POLICY_LEVEL_MANDATORY, policy::POLICY_SCOPE_USER,
+               policy::POLICY_SOURCE_CLOUD,
+               std::make_unique<base::Value>(false), nullptr);
+  UpdateProviderPolicy(policies);
+  // Pref should now be set to false.
+  EXPECT_FALSE(browser()->profile()->GetPrefs()->GetBoolean(
+      prefs::kMixedFormsWarningsEnabled));
+
+  std::string replacement_path =
+      SSLUITestBase::GetFilePathWithHostAndPortReplacement(
+          "/ssl/page_displays_insecure_form.html",
+          embedded_test_server()->host_port_pair());
+  GURL form_site_url = https_server.GetURL(replacement_path);
+  GURL form_target_url("http://does-not-exist.test/ssl/google_files/logo.gif?");
+
+  // Navigate to site with insecure form and submit it.
+  ui_test_utils::NavigateToURL(browser(), form_site_url);
+  WebContents* tab = browser()->tab_strip_model()->GetActiveWebContents();
+  content::TestNavigationObserver nav_observer(tab, 1);
+  ASSERT_TRUE(content::ExecuteScript(tab, "submitForm();"));
+  nav_observer.Wait();
+
+  // No interstitial should be shown, and we should be in the form action URL.
+  security_interstitials::SecurityInterstitialTabHelper* helper =
+      security_interstitials::SecurityInterstitialTabHelper::FromWebContents(
+          tab);
+  EXPECT_TRUE(!helper || !helper->IsDisplayingInterstitial());
+  EXPECT_EQ(tab->GetVisibleURL(), form_target_url);
 }
 
 namespace {

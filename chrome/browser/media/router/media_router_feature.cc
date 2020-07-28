@@ -20,6 +20,7 @@
 #include "chrome/common/pref_names.h"
 #include "components/prefs/pref_service.h"
 #include "components/user_prefs/user_prefs.h"
+#include "media/base/media_switches.h"
 #endif  // defined(OS_ANDROID) || BUILDFLAG(ENABLE_EXTENSIONS)
 
 #if !defined(OS_ANDROID)
@@ -36,6 +37,8 @@ const base::Feature kCastMediaRouteProvider{"CastMediaRouteProvider",
                                             base::FEATURE_DISABLED_BY_DEFAULT};
 const base::Feature kCastAllowAllIPsFeature{"CastAllowAllIPs",
                                             base::FEATURE_DISABLED_BY_DEFAULT};
+const base::Feature kGlobalMediaControlsCastStartStop{
+    "GlobalMediaControlsCastStartStop", base::FEATURE_DISABLED_BY_DEFAULT};
 #endif
 
 #if defined(OS_ANDROID) || BUILDFLAG(ENABLE_EXTENSIONS)
@@ -111,6 +114,12 @@ bool DialMediaRouteProviderEnabled() {
 
 bool CastMediaRouteProviderEnabled() {
   return base::FeatureList::IsEnabled(kCastMediaRouteProvider);
+}
+
+bool GlobalMediaControlsCastStartStopEnabled() {
+  return base::FeatureList::IsEnabled(
+             media::kGlobalMediaControlsOverlayControls) &&
+         base::FeatureList::IsEnabled(kGlobalMediaControlsCastStartStop);
 }
 
 #endif  // !defined(OS_ANDROID)

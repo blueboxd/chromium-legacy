@@ -7,6 +7,7 @@
 
 #include <fuchsia/media/drm/cpp/fidl.h>
 
+#include "base/callback_forward.h"
 #include "base/containers/flat_map.h"
 #include "base/macros.h"
 #include "base/optional.h"
@@ -37,8 +38,10 @@ class FuchsiaCdm : public ContentDecryptionModule,
 
     DISALLOW_COPY_AND_ASSIGN(SessionCallbacks);
   };
+  using ReadyCB = base::OnceCallback<void(bool, const std::string&)>;
 
   FuchsiaCdm(fuchsia::media::drm::ContentDecryptionModulePtr cdm,
+             ReadyCB ready_cb,
              SessionCallbacks callbacks);
 
   // ContentDecryptionModule implementation:
@@ -76,6 +79,7 @@ class FuchsiaCdm : public ContentDecryptionModule,
 
   ~FuchsiaCdm() override;
 
+  void OnProvisioned();
   void OnCreateSession(std::unique_ptr<CdmSession> session,
                        uint32_t promise_id,
                        const std::string& session_id);
@@ -93,6 +97,7 @@ class FuchsiaCdm : public ContentDecryptionModule,
   base::flat_map<std::string, std::unique_ptr<CdmSession>> session_map_;
 
   fuchsia::media::drm::ContentDecryptionModulePtr cdm_;
+  ReadyCB ready_cb_;
   SessionCallbacks session_callbacks_;
 
   FuchsiaDecryptor decryptor_;

@@ -70,7 +70,7 @@ class FtlSignalStrategy::Core {
   void OnGetOAuthTokenResponse(OAuthTokenGetter::Status status,
                                const std::string& user_email,
                                const std::string& access_token);
-  void OnSignInGaiaResponse(const grpc::Status& status);
+  void OnSignInGaiaResponse(const ProtobufHttpStatus& status);
   void StartReceivingMessages();
   void OnReceiveMessagesStreamStarted();
   void OnReceiveMessagesStreamClosed(const grpc::Status& status);
@@ -282,11 +282,12 @@ void FtlSignalStrategy::Core::OnGetOAuthTokenResponse(
   StartReceivingMessages();
 }
 
-void FtlSignalStrategy::Core::OnSignInGaiaResponse(const grpc::Status& status) {
+void FtlSignalStrategy::Core::OnSignInGaiaResponse(
+    const ProtobufHttpStatus& status) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   if (!status.ok()) {
     is_sign_in_error_ = true;
-    HandleGrpcStatusError(FROM_HERE, status);
+    HandleProtobufHttpStatusError(FROM_HERE, status);
     return;
   }
   StartReceivingMessages();
@@ -504,7 +505,8 @@ FtlSignalStrategy::FtlSignalStrategy(
   // TODO(yuweih): Just make FtlMessagingClient own FtlRegistrationManager and
   // call SignInGaia() transparently.
   auto registration_manager = std::make_unique<FtlRegistrationManager>(
-      oauth_token_getter.get(), std::move(device_id_provider));
+      oauth_token_getter.get(), url_loader_factory,
+      std::move(device_id_provider));
   auto messaging_client = std::make_unique<FtlMessagingClient>(
       oauth_token_getter.get(), registration_manager.get(),
       &signaling_tracker_);

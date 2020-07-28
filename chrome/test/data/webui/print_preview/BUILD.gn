@@ -30,9 +30,9 @@ js_type_check("closure_compile") {
     ":destination_store_test",
     ":dpi_settings_test",
     ":duplex_settings_test",
+    ":header_test",
+    ":invalid_settings_browsertest",
 
-    #":header_test",
-    #":invalid_settings_browsertest",
     #":key_event_test",
     #":layout_settings_test",
     #":link_container_test",
@@ -50,7 +50,8 @@ js_type_check("closure_compile") {
     #":pages_settings_test",
     #":pdf_viewer_test",
     #":pin_settings_test",
-    #":plugin_stub",
+    ":test_plugin_proxy",
+
     #":policy_test",
     #":preview_area_test",
     #":preview_generation_test",
@@ -336,6 +337,42 @@ js_library("duplex_settings_test") {
     "//chrome/browser/resources/print_preview:print_preview",
     "//ui/webui/resources/js:assert.m",
     "//ui/webui/resources/js:cr.m",
+  ]
+  externs_list = [ "$externs_path/mocha-2.5.js" ]
+}
+
+js_library("header_test") {
+  deps = [
+    "..:chai_assert",
+    "..:test_plural_string_proxy",
+    "..:test_util.m",
+    "//chrome/browser/resources/print_preview:print_preview",
+    "//ui/webui/resources/js:assert.m",
+    "//ui/webui/resources/js:load_time_data.m",
+  ]
+  externs_list = [ "$externs_path/mocha-2.5.js" ]
+}
+
+js_library("test_plugin_proxy") {
+  deps = [
+    "..:test_browser_proxy.m",
+    "//chrome/browser/resources/print_preview:print_preview",
+    "//ui/webui/resources/js:assert.m",
+  ]
+}
+
+js_library("invalid_settings_browsertest") {
+  deps = [
+    ":cloud_print_interface_stub",
+    ":native_layer_stub",
+    ":print_preview_test_utils",
+    ":test_plugin_proxy",
+    "..:chai_assert",
+    "..:test_util.m",
+    "//chrome/browser/resources/print_preview:print_preview",
+    "//ui/webui/resources/js:assert.m",
+    "//ui/webui/resources/js:cr.m",
+    "//ui/webui/resources/js:load_time_data.m",
   ]
   externs_list = [ "$externs_path/mocha-2.5.js" ]
 }

@@ -87,13 +87,14 @@ class NearbyProcessManager : public ProfileManagerObserver {
   // stopped (via the OS or StopProcess()). That event can be observed via
   // Observer::OnNearbyProcessStopped() and a client can decide to restart the
   // process (e.g. via backoff timer) if it is still the active profile.
-  NearbyConnectionsMojom* GetOrStartNearbyConnections(Profile* profile);
+  virtual NearbyConnectionsMojom* GetOrStartNearbyConnections(Profile* profile);
 
   // Gets a pointer to the Nearby Decoder interface. Starts a new process if
   // there is none running already or reuses an existing one. The same
   // limitations around profiles and lifetime in GetOrStartNearbyConnections()
   // apply here as well.
-  NearbySharingDecoderMojom* GetOrStartNearbySharingDecoder(Profile* profile);
+  virtual NearbySharingDecoderMojom* GetOrStartNearbySharingDecoder(
+      Profile* profile);
 
   // Stops the Nearby process if the |profile| is the active profile. This may
   // be used to save resources or to force stop any communication of the
@@ -117,6 +118,7 @@ class NearbyProcessManager : public ProfileManagerObserver {
   FRIEND_TEST_ALL_PREFIXES(NearbySharingServiceImplTest,
                            RemovesNearbyProcessObserver);
   friend class base::NoDestructor<NearbyProcessManager>;
+  friend class MockNearbyProcessManager;
 
   // This class is a singleton.
   NearbyProcessManager();

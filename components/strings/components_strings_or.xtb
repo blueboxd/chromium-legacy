@@ -359,7 +359,6 @@
 <translation id="2413528052993050574">ଏହି ସର୍ଭର୍ ଏହା ପ୍ରମାଣ କରିପାରିଲା ନାହିଁ ଯେ, ଏହା ଏକ <ph name="DOMAIN" /> ଅଟେ; ଏହାର ସୁରକ୍ଷା ସାର୍ଟିଫିକେଟ୍ ପ୍ରତ୍ୟାହାର କରାଯାଇଥାଇପାରେ। ଏହା ଏକ ଭୁଲ୍ କନଫିଗ୍‍ରେସନ୍ କିମ୍ବା ଜଣେ ଆକ୍ରମଣକାରୀ ଆପଣଙ୍କର ସଂଯୋଗକୁ ପ୍ରତିରୋଧ କରୁଥିବା କାରଣରୁ ହୋଇପାରେ।</translation>
 <translation id="2438874542388153331">ଡାହାଣ ପଟରେ ଚାରୋଟି ପଞ୍ଚ୍</translation>
 <translation id="245044156129055925">ଆପଣ ବର୍ତ୍ତମାନ ଏକ ପ୍ରତାରଣାମୂଳକ ୱେବ୍‍ସାଇଟ୍‌ରେ ଆପଣଙ୍କର ପାସ୍‍ୱାର୍ଡ ଲେଖିଛନ୍ତି। Chromium ବର୍ତ୍ତମାନ ଆପଣଙ୍କର ପାସ୍‍ୱାର୍ଡକୁ ବଦଳାଇବା ପାଇଁ ସୁପାରିଶ କରୁଛି।</translation>
-<translation id="2463193859425327265">ମୂଳ ପୃଷ୍ଠା ପରିବର୍ତ୍ତନ କରନ୍ତୁ</translation>
 <translation id="2463739503403862330">ପୂରଣ କରନ୍ତୁ</translation>
 <translation id="2465402087343596252">ଆର୍କିଟେକ୍‌ଚର୍-E</translation>
 <translation id="2465655957518002998">ବିତରଣ ପଦ୍ଧତି ବାଛନ୍ତୁ</translation>
@@ -555,6 +554,9 @@
 <translation id="3364869320075768271"><ph name="URL" /> ଆପଣଙ୍କର ଭର୍ଚୁଆଲ୍ ରିଆଲିଟୀ ଡିଭାଇସ୍ ଏବଂ ଡାଟାକୁ ବ୍ୟବହାର କରିବାକୁ ଚାହୁଁଛି</translation>
 <translation id="3366477098757335611">କାର୍ଡଗୁଡ଼ିକ ଦେଖନ୍ତୁ</translation>
 <translation id="3369192424181595722">ଘଣ୍ଟାରେ ତ୍ରୁଟି</translation>
+<translation id="3371076217486966826"><ph name="URL" /> ଏହା କରିବାକୁ ଚାହୁଁଛି:
+      • ଆପଣଙ୍କ ପରିପାର୍ଶ୍ୱର ଏକ 3D ମ୍ୟାପ୍ ତିଆରି କରି କ୍ୟାମେରାର ସ୍ଥିତି ଟ୍ରାକ୍ କରିବାକୁ 
+      • ଆପଣଙ୍କ କ୍ୟାମେରା ବ୍ୟବହାର କରିବାକୁ</translation>
 <translation id="337363190475750230">ପ୍ରାବଧାନ କରାଯାଇନାହିଁ</translation>
 <translation id="3377144306166885718">ସର୍ଭରଟି TLSର ଏକ ଅପ୍ରଚଳିତ ସଂସ୍କରଣ ବ୍ୟବହାର କରିଛି।</translation>
 <translation id="3377188786107721145">ନୀତି ବିଶ୍ଳେଷଣ ତ୍ରୁଟି</translation>
@@ -1146,7 +1148,6 @@
 <translation id="5785756445106461925">ସେ ଯାହା ହେଉ, ଏହି ପୃଷ୍ଠା ସେହି ଅନ୍ୟ ଉତ୍ସଗୁଡିକ ଅନ୍ତର୍ଭୂକ୍ତ କରେ ଯେଉଁଗୁଡିକ ସୁରକ୍ଷିତ ନୁହେଁ । ପରିବହନରେ ଥିବାବେଳେ ଏହି ଉତ୍ସଗୁଡିକୁ ଅନ୍ୟମାନେ ଦେଖିପାରିବେ, ତଥା ପୃଷ୍ଠାଟିର ରୂପ ବା ଆଚରଣ ପରିବର୍ତ୍ତନ କରିବା ଲାଗି ଏକ ଆକ୍ରମଣକାରୀଙ୍କ ଦ୍ଵାରା ରୂପାନ୍ତରିତ କରାଯାଇପାରିବ।</translation>
 <translation id="5786044859038896871">ଆପଣଙ୍କର କାର୍ଡ ସୂଚନାକୁ ଆପଣ ପୁରଣ କରିବାକୁ ଚାହାନ୍ତି କି?</translation>
 <translation id="5798290721819630480">ପରିବର୍ତ୍ତନଗୁଡ଼ିକୁ ଖାରଜ କରିବେ?</translation>
-<translation id="5798683403665926540">Chrome ସେଟିଂସ୍‌ରେ ମୂଳ ପୃଷ୍ଠାକୁ ପରିବର୍ତ୍ତନ କରନ୍ତୁ</translation>
 <translation id="5803412860119678065">ଆପଣ ନିଜର <ph name="CARD_DETAIL" />କୁ ପୁରଣ କରିବାକୁ ଚାହାନ୍ତି କି?</translation>
 <translation id="5804241973901381774">ଅନୁମତିଗୁଡ଼ିକ</translation>
 <translation id="5804427196348435412">NFC ଡିଭାଇସ୍‌ଗୁଡ଼ିକୁ ବ୍ୟବହାର କରନ୍ତୁ</translation>
@@ -1547,6 +1548,7 @@
 <translation id="7518003948725431193">ଏହି ୱେବ୍ ଠିକଣା ପାଇଁ କୌଣସି ୱେବ୍‌ପୃଷ୍ଠା ମିଳିଲା ନାହିଁ: <ph name="URL" /></translation>
 <translation id="7520302887438682816">C8 (ଏନଭଲପ୍)</translation>
 <translation id="7521387064766892559">JavaScript</translation>
+<translation id="7521825010239864438">"<ph name="SECTION" />" ବିଭାଗ ଲୁଚାଯାଇଛି</translation>
 <translation id="7526934274050461096">ଏହି ସାଇଟ୍‌କୁ ଆପଣଙ୍କର ସଂଯୋଗ ବ୍ୟକ୍ତିଗତ ନୁହେଁ</translation>
 <translation id="7535087603100972091">ମୂଲ୍ୟ</translation>
 <translation id="7537536606612762813">ବାଧ୍ୟତାମୂଳକ</translation>
@@ -1593,7 +1595,6 @@
 <translation id="7669271284792375604">ଏହି ସାଇଟ୍‌ରେ ଥିବା ଆକ୍ରମଣକାରୀମାନେ କୌଶଳରେ ଆପଣଙ୍କ ଦ୍ଵାରା ଏପରି ପ୍ରୋଗ୍ରାମ୍ ଇନ୍‌ଷ୍ଟଲ୍ କରିବାକୁ ଚେଷ୍ଟା କରିପାରନ୍ତି ଆପଣଙ୍କର ବ୍ରାଉଜିଂ ଅଭିଜ୍ଞତାର କ୍ଷତି କରିପାରେ (ଉଦାହରଣ ସ୍ଵରୂପ, ଆପଣଙ୍କର ମୂଳପୃଷ୍ଠାରେ ପରିବର୍ତ୍ତନ କରିବା କିମ୍ବା ଆପଣ ଦେଖୁଥିବା ସାଇଟ୍‌ଗୁଡ଼ିକରେ ଅତିରିକ୍ତ ବିଜ୍ଞାପନ ପ୍ରଦର୍ଶନ କରିବା)।</translation>
 <translation id="7673278391011283842">ମେଲବକ୍ସ 6</translation>
 <translation id="7676643023259824263">କ୍ଲିପ୍‌ବୋର୍ଡ ଟେକ୍ସଟ୍ <ph name="TEXT" /> ଖୋଜନ୍ତୁ</translation>
-<translation id="7681101578153515023">ସନ୍ଧାନ ଇଞ୍ଜିନ୍ ପରିବର୍ତ୍ତନ କରନ୍ତୁ</translation>
 <translation id="7682287625158474539">ଶିପିଂ</translation>
 <translation id="7687186412095877299">ଆପଣଙ୍କ ଦ୍ୱାରା ସେଭ୍‍ କରାଯାଇଥିବା ପେମେଣ୍ଟ ପଦ୍ଧତିକୁ ବ୍ୟବହାର କରି ପେମେଣ୍ଟ ଫର୍ମ ପୂରଣ କରନ୍ତୁ</translation>
 <translation id="7687305263118037187">ପୁଣି ଚେଷ୍ଟା କରିବା ସମୟ ସରିଗଲା</translation>
@@ -1631,7 +1632,6 @@
 <translation id="7802523362929240268">ସାଇଟ୍‍ ଆଇନ୍‌ସଙ୍ଗତ ଅଟେ</translation>
 <translation id="780301667611848630">ନାଁ, ଥାଉ</translation>
 <translation id="7805768142964895445">ସ୍ଥିତି</translation>
-<translation id="7806344367022510803">Chromeରେ ସନ୍ଧାନ ଇଞ୍ଜିନ୍ ସେଟିଂସ୍‌କୁ ପରିବର୍ତ୍ତନ କରନ୍ତୁ</translation>
 <translation id="7812922009395017822">Mir</translation>
 <translation id="7813600968533626083">Chromeରୁ ଫର୍ମ ସମ୍ବନ୍ଧିତ ପରାମର୍ଶ କାଢ଼ିବେ?</translation>
 <translation id="781440967107097262">କ୍ଲିପବୋର୍ଡ ସେୟାର୍ କରିବେ?</translation>
@@ -1747,6 +1747,7 @@
 <translation id="8293206222192510085">ବୁକ୍‌ମାର୍କ ଯୋଗ କରନ୍ତୁ</translation>
 <translation id="8294431847097064396">ଉତ୍ସ</translation>
 <translation id="8298115750975731693">ଆପଣ ବ୍ୟବହାର କରୁଥିବା ୱାଇ-ଫାଇ(<ph name="WIFI_NAME" />) ପାଇଁ ଆପଣଙ୍କୁ <ph name="BEGIN_BOLD" /><ph name="LOGIN_URL" /><ph name="END_BOLD" />କୁ ଯିବାର ଆବଶ୍ୟକତା ହୋଇପାରେ।</translation>
+<translation id="8303854710873047864">"<ph name="SECTION" />" ବିଭାଗ ଦେଖାଯାଇଛି</translation>
 <translation id="830498451218851433">ଅଧା ଫୋଲ୍ଡ କରନ୍ତୁ</translation>
 <translation id="8307358339886459768">ଛୋଟ-ଫଟୋ</translation>
 <translation id="8307888238279532626">ଇନଷ୍ଟଲ୍ କରାଯାଇଥିବା ଆପଗୁଡ଼ିକ ଏବଂ ସେଗୁଡ଼ିକ କେତେ ଥର ବ୍ୟବହାର କରାଯାଇଛି</translation>
@@ -1772,7 +1773,6 @@
 ଅତିରିକ୍ତ ବିବରଣୀ:
 <ph name="DEBUG_INFO" /></translation>
 <translation id="8424582179843326029"><ph name="FIRST_LABEL" /> <ph name="SECOND_LABEL" /> <ph name="THIRD_LABEL" /></translation>
-<translation id="8425213833346101688">ପରିବର୍ତ୍ତନ କରନ୍ତୁ</translation>
 <translation id="8428213095426709021">ସେଟିଂସ୍</translation>
 <translation id="8433057134996913067">ଏହା ଆପଣଙ୍କୁ ଅଧିକାଂଶ ୱେବ୍‍ସାଇଟ୍‍ରୁ ସାଇନ୍ ଆଉଟ୍ କରିଦେବ।</translation>
 <translation id="8437238597147034694">&amp;ପୂର୍ବବତ୍‍ ଘୁଞ୍ଚାନ୍ତୁ</translation>
@@ -1866,6 +1866,7 @@
 <translation id="8931333241327730545">ଆପଣ ନିଜର Google ଆକାଉଣ୍ଟରେ ଏହି କାର୍ଡକୁ ସେଭ୍ କରିବାକୁ ଚାହୁଁଛନ୍ତି କି?</translation>
 <translation id="8932102934695377596">ଆପଣଙ୍କର ଘଣ୍ଟାର ସମୟ ପଛରେ ଅଛି</translation>
 <translation id="893332455753468063">ନାମ ଯୋଗ କରନ୍ତୁ</translation>
+<translation id="8942355029279167844">ଆପଣଙ୍କ ଆଡମିନିଷ୍ଟ୍ରେଟର୍ <ph name="APP_NAME" />କୁ ଉତ୍ପାଦ ବ୍ୟବହାରର ଅନୁଭୂତିକୁ ଉନ୍ନତ କରିବା ପାଇଁ ଡାଏଗ୍ନୋଷ୍ଟିକ୍ସ ଡାଟା ସଂଗ୍ରହ କରିବାକୁ ଅନୁମତି ଦେଇଛନ୍ତି। ଅଧିକ ସୂଚନା ପାଇଁ <ph name="BEGIN_LINK" />https://www.parallels.com/pcep<ph name="END_LINK" /> ଦେଖନ୍ତୁ।</translation>
 <translation id="8943282376843390568">ଲାଇମ୍‌</translation>
 <translation id="8957210676456822347">କେପଟିଭ୍ ପୋର୍ଟାଲ ପ୍ରାଧିକରଣ</translation>
 <translation id="8962950042226115166">ସନ୍ଦେଶଜନକ ସାଇଟ୍</translation>

@@ -12,6 +12,7 @@
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_ui.h"
 #include "content/public/browser/web_ui_controller.h"
+#include "content/public/common/content_client.h"
 #include "content/public/test/browser_test.h"
 #include "content/public/test/browser_test_utils.h"
 #include "content/public/test/content_browser_test.h"
@@ -71,6 +72,9 @@ class ConversionInternalsWebUiBrowserTest : public ContentBrowserTest {
     EXPECT_TRUE(
         ExecJsInWebUI(JsReplace(kObserveEmptyReportsTableScript, title)));
   }
+
+ protected:
+  ConversionDisallowingContentBrowserClient disallowed_browser_client_;
 };
 
 IN_PROC_BROWSER_TEST_F(ConversionInternalsWebUiBrowserTest,
@@ -109,6 +113,34 @@ IN_PROC_BROWSER_TEST_F(ConversionInternalsWebUiBrowserTest,
   TitleWatcher title_watcher(shell()->web_contents(), kCompleteTitle);
   ClickRefreshButton();
   EXPECT_EQ(kCompleteTitle, title_watcher.WaitAndGetTitle());
+}
+
+IN_PROC_BROWSER_TEST_F(ConversionInternalsWebUiBrowserTest,
+                       DisabledByEmbedder_MeasurementConsideredDisabled) {
+  ContentBrowserClient* old_browser_client =
+      SetBrowserClientForTesting(&disallowed_browser_client_);
+  EXPECT_TRUE(NavigateToURL(shell(), GURL(kConversionInternalsUrl)));
+
+  TestConversionManager manager;
+  OverrideWebUIConversionManager(&manager);
+
+  // Create a mutation observer to wait for the content to render to the dom.
+  // Waiting on calls to TestConversionManager is not sufficient because the
+  // results are returned in promises.
+  std::string wait_script = R"(
+    let status = document.getElementById("feature-status-content");
+    let obs = new MutationObserver(() => {
+      if (status.innerText.trim() === "disabled") {
+        document.title = $1;
+      }
+    });
+    obs.observe(status, {'childList': true, 'characterData': true});)";
+  EXPECT_TRUE(ExecJsInWebUI(JsReplace(wait_script, kCompleteTitle)));
+
+  TitleWatcher title_watcher(shell()->web_contents(), kCompleteTitle);
+  ClickRefreshButton();
+  EXPECT_EQ(kCompleteTitle, title_watcher.WaitAndGetTitle());
+  SetBrowserClientForTesting(old_browser_client);
 }
 
 IN_PROC_BROWSER_TEST_F(

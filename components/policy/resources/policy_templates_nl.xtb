@@ -652,6 +652,26 @@ Als je dit beleid uitschakelt, wordt op de webpagina naar specifieke tekstfragme
 <translation id="2082205219176343977">Configureer de minimaal toegestane Chrome-versie voor het apparaat.</translation>
 <translation id="209586405398070749">Stabiel kanaal</translation>
 <translation id="2098658257603918882">Rapportage van gebruiks- en crashgegevens inschakelen</translation>
+<translation id="210034539800365161">Hiermee configureer je de vereiste voor de minimaal toegestane versie van <ph name="PRODUCT_OS_NAME" />.
+
+      Als dit beleid is ingesteld op een niet-lege lijst:
+      Als geen van de items een <ph name="CHROMEOS_VERSION_PROPERTY_NAME" /> hoger dan de huidige versie van het apparaat heeft, worden er geen beperkingen toegepast en worden bestaande beperkingen ingetrokken.
+      Als ten minste één van de items een <ph name="CHROMEOS_VERSION_PROPERTY_NAME" /> hoger dan de huidige versie van het apparaat heeft, wordt het sterkste item gekozen waarvan de versie het dichtst in de buurt van de huidige versie komt.
+      In geval van een conflict wordt de voorkeur gegeven aan het item met de kortere <ph name="WARNING_PERIOD_PROPERTY_NAME" /> of <ph name="AUE_WARNING_PERIOD_PROPERTY_NAME" /> en wordt het beleid toegepast met dat item.
+
+      Als de huidige versie verouderd raakt tijdens een gebruikerssessie en automatische updates door het huidige netwerk worden beperkt, wordt er een melding op het scherm weergegeven dat de gebruiker het apparaat moet updaten binnen de <ph name="WARNING_PERIOD_PROPERTY_NAME" /> in de melding.
+      Er wordt geen melding weergegeven als automatische updates door het huidige netwerk zijn toegestaan en het apparaat moet worden geüpdatet binnen de <ph name="WARNING_PERIOD_PROPERTY_NAME" />.
+      De <ph name="WARNING_PERIOD_PROPERTY_NAME" /> start vanaf het moment dat het beleid wordt toegepast.
+      Als het apparaat niet wordt geüpdatet voordat de <ph name="WARNING_PERIOD_PROPERTY_NAME" /> is verlopen, wordt de gebruiker uitgelogd van de sessie.
+      Als blijkt dat de huidige versie verouderd is op het moment dat de gebruiker inlogt terwijl de <ph name="WARNING_PERIOD_PROPERTY_NAME" /> is verlopen, moet de gebruiker het apparaat updaten voordat hij of zij inlogt.
+
+      Als de huidige versie verouderd raakt tijdens een gebruikerssessie en het apparaat de vervaldatum voor automatische updates heeft bereikt, wordt er een melding op het scherm weergegeven dat de gebruiker het apparaat moet retourneren binnen de <ph name="AUE_WARNING_PERIOD_PROPERTY_NAME" />.
+      Als het apparaat de vervaldatum voor het controleren op automatische updates heeft bereikt op het moment dat de gebruiker inlogt en de <ph name="AUE_WARNING_PERIOD_PROPERTY_NAME" /> is verlopen, wordt het apparaat geblokkeerd zodat gebruikers niet kunnen inloggen.
+
+      Als dit beleid niet is ingesteld of is ingesteld op een lege waarde, worden er geen beperkingen toegepast, worden bestaande beperkingen ingetrokken en kan de gebruiker inloggen ongeacht de versie van <ph name="PRODUCT_OS_NAME" />.
+
+      <ph name="CHROMEOS_VERSION_PROPERTY_NAME" /> kan in dit geval een exacte versie zijn (zoals '13305.0.0') of een versievoorvoegsel (zoals '13305').
+      De <ph name="WARNING_PERIOD_PROPERTY_NAME" /> en <ph name="AUE_WARNING_PERIOD_PROPERTY_NAME" /> zijn optionele waarden die worden gespecificeerd als een aantal dagen. De standaardwaarde is 0 dagen, wat inhoudt dat er geen waarschuwingsperiode is.</translation>
 <translation id="2104418465060359056">Gegevens over extensies en plug-ins rapporteren</translation>
 <translation id="2106627642643925514">Hiermee wordt de standaardmodus voor afdrukken met pincode overschreven. Als de modus niet beschikbaar is, wordt dit beleid genegeerd.</translation>
 <translation id="2107601598727098402">
@@ -749,6 +769,11 @@ Als je dit beleid uitschakelt, wordt op de webpagina naar specifieke tekstfragme
 <translation id="2197625019569762163">Als je het beleid instelt op True, wordt het numerieke toetsenbord standaard weergegeven om het wachtwoord op te geven op het inlogscherm. Gebruikers kunnen overschakelen naar het normale toetsenbord.
 
       Als je het beleid instelt, kunnen gebruikers het niet wijzigen. Als het beleid niet is ingesteld of is ingesteld op False, heeft het geen effect.</translation>
+<translation id="2200041405904405884">Hiermee kun je opgeven welke hosts voor systeemeigen berichten niet onder de blokkeringslijst vallen.
+
+          De waarde * op de blokkeringslijst betekent dat alle hosts voor systeemeigen berichten worden geblokkeerd en dat alleen hosts voor systeemeigen berichten die op de toelatingslijst worden vermeld, worden geladen.
+
+          Standaard zijn alle hosts voor systeemeigen berichten toegestaan, maar als alle hosts voor systeemeigen berichten door een beleidsregel zijn geblokkeerd, kan de toelatingslijst worden gebruikt om die beleidsregel te overschrijven.</translation>
 <translation id="2200698565850397198">Blokkeringslijst voor systeemeigen berichten configureren</translation>
 <translation id="2201555246697292490">Witte lijst voor systeemeigen berichten configureren</translation>
 <translation id="2204753382813641270">Automatisch verbergen van archief beheren</translation>
@@ -796,9 +821,6 @@ Als je dit beleid uitschakelt, wordt op de webpagina naar specifieke tekstfragme
       Dit beleid mag niet worden gebruikt voor apparaten die openbaar worden gebruikt.
 
       Als dit beleid is ingesteld op True of niet is ingesteld, wordt de privacywaarschuwing in de melding voor automatisch starten van beheerde gastsessies vastgezet totdat de gebruiker deze sluit.</translation>
-<translation id="2288338171390565087">Deze functie geeft een suggestie voor een emoji als een gebruiker een woord typt dat overeenkomt met de ingebouwde emojikaart.
-      Als dit beleid is ingesteld op True, wordt de functie gedwongen ingeschakeld en kunnen gebruikers dit niet overschrijven.
-      Dit beleid is standaard ingesteld op False. Er worden geen suggesties voor emoji's weergegeven en gebruikers kunnen dit niet overschrijven.</translation>
 <translation id="2289265947759479962">Met dit beleid wordt bepaald of er versiegegevens moeten worden gerapporteerd, zoals OS-versie, OS-platform, OS-architectuur, <ph name="PRODUCT_NAME" />-versie en <ph name="PRODUCT_NAME" />-kanaal.
 
       Als het beleid <ph name="CLOUD_REPORTING_ENABLED_POLICY_NAME" /> niet is ingesteld of is uitgeschakeld, wordt dit beleid genegeerd.
@@ -1221,13 +1243,6 @@ Als dit beleid niet is ingesteld, is het privacyscherm in eerste instantie uitge
       Als dit beleid is ingesteld op False, worden er geen gegevens verzameld die kunnen worden gebruikt om machines te identificeren.
 
       Dit beleid is alleen van kracht als de machine is ingeschreven met <ph name="CLOUD_MANAGEMENT_ENROLLMENT_TOKEN" /> voor <ph name="PRODUCT_NAME" />.</translation>
-<translation id="2836621397261130126">Regelt of goedkeuring op basis van KDC-beleid wordt gerespecteerd om te bepalen of <ph name="KERBEROS" />-tickets worden gedelegeerd.
-
-          Als dit beleid is ingesteld op True, respecteert de HTTP-verificatie de goedkeuring op basis van KDC-beleid. Chrome delegeert gegevens alleen als het KDC-beleid <ph name="OK_AS_DELEGATE" /> instelt op een serviceticket. Zie https://tools.ietf.org/html/rfc5896.html voor meer informatie. De service moet ook overeenkomen met het beleid 'AuthNegotiateDelegateWhitelist'.
-
-          Als dit beleid niet is ingesteld of is ingesteld op False, wordt het KDC-beleid genegeerd op ondersteunde platforms en wordt alleen het beleid 'AuthNegotiateDelegateWhitelist' gerespecteerd.
-
-          Op Windows wordt het KDC-beleid altijd gerespecteerd.</translation>
 <translation id="283695852388224413">Als dit beleid is ingesteld, wordt de opgegeven maximale pincodelengte afgedwongen. Een waarde van nul of lager betekent dat er geen maximale lengte is. In dat geval kan de gebruiker een pincode van elke lengte instellen. Als deze instelling lager is dan <ph name="PIN_UNLOCK_MINIMUM_LENGTH_POLICY_NAME" /> maar hoger dan nul, is de maximale lengte hetzelfde als de minimale lengte.
 
           Als dit beleid niet is ingesteld, wordt er geen maximale lengte afgedwongen.</translation>
@@ -2426,13 +2441,6 @@ Als dit beleid is ingesteld op False, gebruikt <ph name="PRODUCT_NAME" /> geen n
       Als dit beleid wordt afgedwongen, kunnen pagina's UITSLUITEND worden geopend in de incognitomodus. De optie 'Afgedwongen' werkt niet voor Android in Chrome.</translation>
 <translation id="4600786265870346112">Grote muisaanwijzer inschakelen</translation>
 <translation id="4604931264910482931">Zwarte lijst voor systeemeigen berichten configureren</translation>
-<translation id="4614701085541180174">Hiermee kun je een lijst met URL-patronen opgeven om sites te specificeren. Hiervoor wordt automatisch een clientcertificaat geselecteerd op het inlogscherm in het frame waarin het SAML-proces wordt gehost als de site vraagt om een certificaat. Een gebruiksvoorbeeld is de configuratie van een certificaat voor het hele apparaat dat wordt gepresenteerd aan de SAML IdP.
-
-      De waarde moet een array van JSON-woordenboeken met tekenreeksen zijn. Elk woordenboek moet de indeling <ph name="DEVICE_LOGIN_SCREEN_AUTO_SELECT_CERTIFICATE_FOR_URLS_EXAMPLE" /> hebben, waarbij <ph name="URL_PATTERN_PLACEHOLDER" /> een patroon voor het instellen van content is. <ph name="FILTER_PLACEHOLDER" /> beperkt de clientcertificaten die de browser automatisch kan selecteren. Onafhankelijk van het filter worden alleen certificaten geselecteerd die overeenkomen met het certificaatverzoek van de server. Als <ph name="FILTER_PLACEHOLDER" /> de indeling <ph name="JSON_DICTIONARY_EXAMPLE" /> heeft, worden daarnaast alleen clientcertificaten geselecteerd die zijn uitgegeven door een certificaat met de CommonName <ph name="ISSUER_CN_PLACEHOLDER" />. Als <ph name="FILTER_PLACEHOLDER" /> het lege woordenboek {} is, wordt de selectie van clientcertificaten niet verder beperkt.
-
-      Als dit beleid niet wordt ingesteld, wordt voor geen enkele site automatische selectie uitgevoerd.
-
-      Ga naar https://cloud.google.com/docs/chrome-enterprise/policies/url-patterns voor gedetailleerde informatie over geldige URL-patronen.</translation>
 <translation id="4617338332148204752">De metatagcontrole in <ph name="PRODUCT_FRAME_NAME" /> overslaan</translation>
 <translation id="462134014569484584">Met dit beleid wordt de <ph name="PLUGIN_VM_NAME" />-licentiesleutel voor dit apparaat opgegeven.</translation>
 <translation id="4625915093043961294">Witte lijst voor het installeren van extensies configureren</translation>
@@ -2548,6 +2556,7 @@ Als dit beleid is ingesteld op False, gebruikt <ph name="PRODUCT_NAME" /> geen n
 <translation id="4812270373673968774">Als je het beleid instelt op 'Always', wordt de <ph name="PRODUCT_OS_NAME" />-plank automatisch verborgen. Als je het beleid instelt op 'Never', wordt de plank nooit automatisch verborgen.
 
       Als je het beleid instelt, kunnen gebruikers het niet wijzigen. Als je het beleid niet instelt, kunnen gebruikers zelf aangeven of de plank automatisch moet worden verborgen.</translation>
+<translation id="4812714598405913256">Bericht voor vervaldatum voor automatische updates configureren voor het beleid DeviceMinimumVersion policy</translation>
 <translation id="4816674326202173458">Toestaan dat Enterprise-gebruiker zowel primair als secundair is (standaardgedrag voor niet-beheerde gebruikers)</translation>
 <translation id="4826326557828204741">Actie die moet worden ondernomen wanneer de vertraging voor inactief wordt bereikt bij gebruik op accuvermogen</translation>
 <translation id="482803100714220060">Volledige URL's weergeven</translation>
@@ -2819,6 +2828,15 @@ Als dit beleid is ingesteld op False, gebruikt <ph name="PRODUCT_NAME" /> geen n
 
           Als dit beleid is ingesteld op 'false', voorkomt audioactiviteit niet dat de gebruiker als inactief wordt beschouwd.</translation>
 <translation id="5245671702326993331">Staat native meldingen toe</translation>
+<translation id="524637053580639111">Dit beleid is verwijderd in M82. Gebruik in plaats daarvan DeviceMinimumVersion.
+
+      Hiermee configureer je de vereiste voor de minimaal toegestane versie van <ph name="PRODUCT_NAME" />. Eerdere versies worden behandeld als verouderd en het apparaat staat niet toe dat een gebruiker inlogt zolang het besturingssysteem niet is geüpdatet.
+
+      Als de huidige versie verouderd raakt tijdens een sessie, wordt de gebruiker gedwongen uitgelogd.
+
+      Als dit beleid niet is ingesteld, worden er geen beperkingen toegepast en kan de gebruiker inloggen ongeacht de versie van <ph name="PRODUCT_NAME" />.
+
+      'Versie' kan in dit geval een exacte versie zijn (zoals '61.0.3163.120') of een versievoorvoegsel (zoals '61.0').  </translation>
 <translation id="5247006254130721952">Gevaarlijke downloads blokkeren</translation>
 <translation id="5248863213023520115">Hiermee worden versleutelingstypen ingesteld die zijn toegestaan wanneer Kerberos-tickets van een <ph name="MS_AD_NAME" />-server worden aangevraagd.
 
@@ -3000,6 +3018,14 @@ Als dit beleid is ingesteld op False, gebruikt <ph name="PRODUCT_NAME" /> geen n
       Als dit beleid niet is ingesteld of is ingesteld op 'Uploads en downloads toestaan', werkt <ph name="PRODUCT_NAME" /> in overeenstemming met de regels die worden beschreven onder 'Downloads toestaan' en 'Uploads toestaan'.
       </translation>
 <translation id="5442026853063570579">Met dit beleid wordt ook de toegang tot de ontwikkelaarsopties van Android beheerd. Als je dit beleid instelt op 'DeveloperToolsDisallowed' (waarde 2), hebben gebruikers geen toegang tot ontwikkelaarsopties. Als je dit beleid instelt op een andere waarde of niet instelt, hebben gebruikers toegang tot ontwikkelaarsopties door zeven keer op het buildnummer te tikken in de app Instellingen van Android.</translation>
+<translation id="5445596354079213552">Dit beleid is alleen van kracht als het apparaat de vervaldatum voor automatische updates heeft bereikt en niet voldoet aan de toegestane minimum versie van <ph name="PRODUCT_OS_NAME" /> die is ingesteld via het beleid <ph name="DEVICE_MINIMUM_VERSION_POLICY_NAME" />.
+
+      Als dit beleid is ingesteld op een niet-lege tekenreeks:
+      Als de waarschuwingstijd die wordt vermeld in het beleid <ph name="DEVICE_MINIMUM_VERSION_POLICY_NAME" /> is verstreken, wordt dit bericht weergegeven op het inlogscherm als het apparaat wordt geblokkeerd zodat gebruikers niet kunnen inloggen.
+      Als de waarschuwingstijd die wordt vermeld in het beleid <ph name="DEVICE_MINIMUM_VERSION_POLICY_NAME" /> niet is verstreken, wordt dit bericht weergegeven op de Chrome-beheerpagina nadat de gebruiker is ingelogd.
+
+      Als dit beleid niet is ingesteld of is ingesteld op een lege waarde, krijgt de gebruiker in beide van de bovenstaande gevallen het standaardbericht voor de vervaldatum voor automatische updates te zien.
+      Het bericht voor de vervaldatum voor automatische updates moet zijn opgesteld in platte tekst zonder opmaak. Opmaak is niet toegestaan.</translation>
 <translation id="5445719321399313760">Als je het beleid instelt op True of niet instelt, toont <ph name="PRODUCT_NAME" /> gebruikers productinformatie op een volledig tabblad.
 
       Als je het beleid instelt op False, kan <ph name="PRODUCT_NAME" /> geen productinformatie op een volledig tabblad weergeven.
@@ -4309,6 +4335,7 @@ Geheugengegevens worden in alle gevallen aan de pagina gerapporteerd, afgezien v
           Als deze instelling is uitgeschakeld, is deze functie niet beschikbaar.</translation>
 <translation id="7274077256421167535">Energie delen via USB inschakelen</translation>
 <translation id="7275334191706090484">Beheerde bookmarks</translation>
+<translation id="7278854311116092134">Namen van de hosts voor systeemeigen berichten die moeten worden vrijgesteld van de blokkeringslijst</translation>
 <translation id="7291084543582732020">Als je deze instelling inschakelt, mogen gebruikers Smart Lock gebruiken als aan de vereisten voor de functie wordt voldaan.
 
       Als je deze instelling uitschakelt, mogen gebruikers Smart Lock niet gebruiken.
@@ -4611,6 +4638,13 @@ Geheugengegevens worden in alle gevallen aan de pagina gerapporteerd, afgezien v
 <translation id="7777535871204167559">Externe opslagapparaten behandelen als alleen-lezen</translation>
 <translation id="7788511847830146438">Per profiel</translation>
 <translation id="7807139251387225825">Lijst met typen die moeten worden uitgesloten van synchronisatie</translation>
+<translation id="7815699949432723208">Dit beleid is beëindigd. Gebruik in plaats daarvan het beleid '<ph name="NATIVE_MESSAGING_ALLOWLIST_POLICY_NAME" />'.
+
+          Hiermee kun je opgeven welke hosts voor systeemeigen berichten niet onder de blokkeringslijst vallen.
+
+          De waarde * op de blokkeringslijst betekent dat alle hosts voor systeemeigen berichten worden geblokkeerd en dat alleen hosts voor systeemeigen berichten die op de toelatingslijst worden vermeld, worden geladen.
+
+          Standaard zijn alle hosts voor systeemeigen berichten toegestaan, maar als alle hosts voor systeemeigen berichten door een beleidsregel zijn geblokkeerd, kan de toelatingslijst worden gebruikt om die beleidsregel te overschrijven.</translation>
 <translation id="7818131573217430250">De standaardstatus van de modus voor hoog contrast op het inlogscherm instellen</translation>
 <translation id="7832907442895199611">Dit beleid is beëindigd in M83. Gebruik in plaats daarvan SafeBrowsingProtectionLevel.
 
@@ -4859,6 +4893,7 @@ Als dit beleid niet is ingesteld, wordt het privacyscherm in eerste instantie ui
           Als je dit beleid instelt, kunnen gebruikers het niet wijzigen of overschrijven.
 
           Als dit beleid niet is ingesteld, is de functie voor cursormarkering in eerste instantie uitgeschakeld, maar kan de gebruiker deze op elk gewenst moment inschakelen.</translation>
+<translation id="816783746144552109">Configureer de minimaal toegestane Chrome OS-versie voor het apparaat.</translation>
 <translation id="8171924760436219650">De rechtermuisknop instellen als de primaire muisknop op het inlogscherm</translation>
 <translation id="8176035528522326671">Toestaan dat Enterprise-gebruiker alleen primair gebruiker van meerdere profielen is (standaardgedrag voor beheerde Enterprise-gebruikers)</translation>
 <translation id="8183108371184777472">Lancering van browservenster onderdrukken</translation>
@@ -4877,6 +4912,7 @@ Als dit beleid niet is ingesteld, wordt het privacyscherm in eerste instantie ui
           Als de actie 'opschorten' is, kan <ph name="PRODUCT_OS_NAME" /> afzonderlijk worden geconfigureerd om het scherm wel of niet te vergrendelen voordat de opschorting wordt geactiveerd.</translation>
 <translation id="8214600119442850823">Hiermee wordt Wachtwoordmanager geconfigureerd.</translation>
 <translation id="8217516105848565518">Dit beleid is beëindigd. Gebruik in plaats daarvan RemoteAccessHostDomainList.</translation>
+<translation id="8220156281401380422">Toelatingslijst voor systeemeigen berichten configureren</translation>
 <translation id="8244171102276095471">RC4-coderingssuites in TLS inschakelen</translation>
 <translation id="8244525275280476362">Maximum vertraging voor ophalen na ongeldigverklaring voor beleid</translation>
 <translation id="8251411417369363637">Als je het beleid instelt op True, wordt alle <ph name="FLASH_PLUGIN_NAME" />-content ingesloten op websites waarop <ph name="FLASH_PLUGIN_NAME" /> is toegestaan, waaronder content van een andere herkomst of kleine content.
@@ -5449,19 +5485,6 @@ Dit beleid wordt verwijderd in M75.</translation>
        Dit beleid heeft geen effect op andere typen content dan audio, video en afbeeldingen.
        Dit beleid is niet meer van kracht vanaf <ph name="PRODUCT_NAME" /> 84.</translation>
 <translation id="9010080992450148617">Het sturen van downloads naar Google voor uitgebreide scans inschakelen voor gebruikers die zijn ingeschreven voor 'Geavanceerde beveiliging'</translation>
-<translation id="90110062113213245">Als je het beleid instelt, kun je een lijst met URL-patronen opgeven van sites waarvoor Chrome automatisch een clientcertificaat kan selecteren. De waarde is een matrix van JSON-woordenboeken met tekenreeksen, elk met de indeling <ph name="AUTO_SELECT_CERTIFICATE_FOR_URLS_EXAMPLE" />, waarbij <ph name="URL_PATTERN_PLACEHOLDER" /> een patroon voor het instellen van content is. <ph name="FILTER_PLACEHOLDER" /> beperkt de clientcertificaten waaruit de browser automatisch kan kiezen. Onafhankelijk van het filter worden alleen certificaten geselecteerd die overeenkomen met het certificaatverzoek van de server.
-
-      Als <ph name="FILTER_PLACEHOLDER" /> bijvoorbeeld het volgende heeft:
-
-      * <ph name="AUTO_SELECT_CERTIFICATE_FOR_URLS_FILTER_EXAMPLE" />: er worden alleen clientcertificaten geselecteerd die zijn uitgegeven door een certificaat met de CommonName <ph name="ISSUER_CN_PLACEHOLDER" />.
-
-      * de secties <ph name="ISSUER_STRING_VALUE" /> en <ph name="SUBJECT_STRING_VALUE" />: er worden alleen overeenkomende clientcertificaten geselecteerd.
-
-      * ('O'): een certificaat moet minimaal één organisatie hebben die overeenkomt met de opgegeven waarde om te worden geselecteerd. * ('OU'): een certificaat moet minimaal één organisatie-eenheid hebben die overeenkomt met de opgegeven waarde om te worden geselecteerd.
-
-      * <ph name="EMPTY_DICTIONARY" />: de selectie van clientcertificaten wordt niet verder beperkt.
-
-      Als je het beleid niet instelt, worden clientcertificaten voor geen enkele site automatisch geselecteerd.</translation>
 <translation id="9013875414788074110">Tijdens het inloggen kan <ph name="PRODUCT_OS_NAME" /> de verificatie uitvoeren met behulp van een server (online) of door gebruik te maken van een wachtwoord in het cachegeheugen (offline).
 
       Wanneer voor dit beleid de waarde -1 is ingesteld, kan de gebruiker zich offline oneindig verifiëren. Wanneer er een andere waarde voor dit beleid is opgegeven, wordt hiermee aangegeven na hoeveel tijd sinds de meest recente online verificatie de gebruiker opnieuw een online verificatie moet uitvoeren.

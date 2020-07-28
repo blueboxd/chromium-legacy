@@ -33,9 +33,6 @@ bool RarReader::Open(base::File rar_file, base::File temp_file) {
   if (!is_valid_archive)
     return false;
 
-  UMA_HISTOGRAM_BOOLEAN("SBClientDownload.RarHeadersEncrypted",
-                        archive_->Encrypted);
-
   command_ = std::make_unique<CommandData>();
   command_->ParseArg(const_cast<wchar_t*>(L"-p"));
   command_->ParseArg(const_cast<wchar_t*>(L"x"));

@@ -5,9 +5,11 @@
 #include "components/security_interstitials/content/insecure_form_navigation_throttle.h"
 
 #include "base/feature_list.h"
+#include "components/prefs/pref_service.h"
 #include "components/security_interstitials/content/insecure_form_blocking_page.h"
 #include "components/security_interstitials/content/security_interstitial_tab_helper.h"
 #include "components/security_interstitials/core/features.h"
+#include "components/security_interstitials/core/pref_names.h"
 #include "content/public/browser/navigation_handle.h"
 #include "content/public/browser/web_contents.h"
 #include "services/network/public/cpp/is_potentially_trustworthy.h"
@@ -69,8 +71,10 @@ const char* InsecureFormNavigationThrottle::GetNameForLogging() {
 std::unique_ptr<InsecureFormNavigationThrottle>
 InsecureFormNavigationThrottle::MaybeCreateNavigationThrottle(
     content::NavigationHandle* navigation_handle,
-    std::unique_ptr<SecurityBlockingPageFactory> blocking_page_factory) {
-  if (!base::FeatureList::IsEnabled(kInsecureFormSubmissionInterstitial))
+    std::unique_ptr<SecurityBlockingPageFactory> blocking_page_factory,
+    PrefService* prefs) {
+  if (!base::FeatureList::IsEnabled(kInsecureFormSubmissionInterstitial) ||
+      !prefs->GetBoolean(prefs::kMixedFormsWarningsEnabled))
     return nullptr;
   return std::make_unique<InsecureFormNavigationThrottle>(
       navigation_handle, std::move(blocking_page_factory));

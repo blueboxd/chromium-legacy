@@ -90,6 +90,21 @@ class NET_EXPORT ProxyInfo {
     return proxy_server().is_https();
   }
 
+  // Returns true if the first proxy server is an HTTP compatible proxy.
+  bool is_http_like() const {
+    if (is_empty())
+      return false;
+    return proxy_server().is_http_like();
+  }
+
+  // Returns true if the first proxy server is an HTTP compatible proxy over a
+  // secure connection.
+  bool is_secure_http_like() const {
+    if (is_empty())
+      return false;
+    return proxy_server().is_secure_http_like();
+  }
+
   // Returns true if the first valid proxy server is an http proxy.
   bool is_http() const {
     if (is_empty())

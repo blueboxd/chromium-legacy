@@ -234,9 +234,6 @@ class VIZ_SERVICE_EXPORT DirectRenderer {
   virtual void CopyDrawnRenderPass(
       const copy_output::RenderPassGeometry& geometry,
       std::unique_ptr<CopyOutputRequest> request) = 0;
-#if defined(OS_WIN)
-  virtual void SetEnableDCLayers(bool enable) = 0;
-#endif
   virtual void GenerateMipmap() = 0;
 
   gfx::Size surface_size_for_swap_buffers() const {
@@ -265,16 +262,6 @@ class VIZ_SERVICE_EXPORT DirectRenderer {
   bool use_partial_swap_ = false;
   // Whether overdraw feedback is enabled and can be used.
   bool overdraw_feedback_ = false;
-#if defined(OS_WIN)
-  // Whether the SetDrawRectangle and EnableDCLayers commands are in
-  // use.
-  bool supports_dc_layers_ = false;
-  // Whether the output surface is actually using DirectComposition.
-  bool using_dc_layers_ = false;
-  // This counts the number of draws since the last time
-  // DirectComposition layers needed to be used.
-  int frames_since_using_dc_layers_ = 0;
-#endif
 
   // A map from RenderPass id to the single quad present in and replacing the
   // RenderPass. The DrawQuads are owned by their RenderPasses, which outlive

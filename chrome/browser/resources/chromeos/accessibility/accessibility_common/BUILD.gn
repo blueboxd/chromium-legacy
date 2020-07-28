@@ -73,15 +73,25 @@ js2gtest("accessibility_common_extjs_tests") {
   ]
   defines = [ "HAS_OUT_OF_PROC_TEST_RUNNER" ]
 }
-#js_type_check("closure_compile") {
-#  deps = [ ":autoclick" ]
-#}
-#
-# Doesn't build. See https://crbug.com/1108171.
-#js_library("autoclick") {
-#  sources = [ "autoclick/autoclick.js" ]
-#  externs_list = [
-#    "$externs_path/accessibility_private.js",
-#    "$externs_path/automation.js",
-#  ]
-#}
+
+js_type_check("closure_compile") {
+  deps = [ ":accessibility_common" ]
+}
+
+js_library("accessibility_common") {
+  sources = [ "accessibility_common_loader.js" ]
+  deps = [ ":autoclick" ]
+  externs_list = [
+    "$externs_path/chrome_extensions.js",
+    "$externs_path/accessibility_private.js",
+    "$externs_path/automation.js",
+  ]
+}
+
+js_library("autoclick") {
+  sources = [ "autoclick/autoclick.js" ]
+  externs_list = [
+    "$externs_path/accessibility_private.js",
+    "$externs_path/automation.js",
+  ]
+}

@@ -14,6 +14,7 @@
 <translation id="1084365883616172403">የFacebook ልጥፍ ተጠናቅቋል።</translation>
 <translation id="1103523840287552314">ሁልጊዜ <ph name="LANGUAGE" />ን መተርጎም</translation>
 <translation id="1104948393051856124">ተቀበል እና ቀጥል</translation>
+<translation id="1105578556867525047">ድር ጣቢያ ላይ የይለፍ ቃል ይቀይሩ</translation>
 <translation id="1112015203684611006">ማተም አልተሳካም።</translation>
 <translation id="1125564390852150847">አዲስ ትር ፍጠር።</translation>
 <translation id="1145536944570833626">ነባሩን ውሂብ ይሰርዙ።</translation>
@@ -244,7 +245,7 @@
 <translation id="3783017676699494206">ምስሉን አስቀምጥ</translation>
 <translation id="3789841737615482174">ጫን  </translation>
 <translation id="3803696231112616155">ወደዚህ ጣቢያ ለመተርጎም ሐሳብ ያቅርቡ</translation>
-<translation id="3836313059960742452">{COUNT,plural, =0{ምንም የይለፍ ቃላት አልተጠለፈም}=1{{COUNT} የይለፍ ቃል ተጠልፏል}one{{COUNT} የይለፍ ቃላት ተጠልፏል}other{{COUNT} የይለፍ ቃላት ተጠልፏል}}</translation>
+<translation id="3836313059960742452">{COUNT,plural, =0{ምንም የይለፍ ቃላት አልተጠለፈም}=1{{COUNT} የይለፍ ቃል ተጠልፏል}one{{COUNT} የይለፍ ቃላት ተጠልፈዋል}other{{COUNT} የይለፍ ቃላት ተጠልፈዋል}}</translation>
 <translation id="385051799172605136">ተመለስ</translation>
 <translation id="3892144330757387737">ታሪክዎን እዚህ ያገኛሉ</translation>
 <translation id="3897092660631435901">ምናሌ</translation>
@@ -534,7 +535,7 @@ Handoff እንዲሁም በSettings ውስጥ ባለው የGeneral ክፍል ላ
 <translation id="7189598951263744875">አጋራ...</translation>
 <translation id="7192050974311852563">መግባት ይጀምሩ</translation>
 <translation id="7203585745079012652">መልሶችን ተመልሰህ ተናገር</translation>
-<translation id="721597782417389033">ልክ ያልኾነ ቅጽል ስም</translation>
+<translation id="721597782417389033">ልክ ያልሆነ ቅጽል ስም</translation>
 <translation id="7265758999917665941">ለዚህ ጣቢያ በጭራሽ</translation>
 <translation id="7272437679830969316">የእርስዎን ማንነት ማረጋገጥ አልተቻለም። የይለፍ ቃል አልተቀዳም።</translation>
 <translation id="7291368939935408496">የይለፍ ቃላትን በማዘጋጀት ላይ...</translation>
@@ -622,6 +623,7 @@ Handoff እንዲሁም በSettings ውስጥ ባለው የGeneral ክፍል ላ
 <translation id="842017693807136194">በሚከተለው በመለያ ተገብቷል፦</translation>
 <translation id="8428045167754449968">ከተማ / መለስተኛ ከተማ</translation>
 <translation id="8428213095426709021">ቅንብሮች</translation>
+<translation id="8446884382197647889">ተጨማሪ ለመረዳት</translation>
 <translation id="8458397775385147834">1 ንጥል ተሰርዟል</translation>
 <translation id="8459333855531264009">ደህንነቱ አልተጠበቀም</translation>
 <translation id="8487667956631253959">አብራ</translation>

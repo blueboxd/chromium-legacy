@@ -13,6 +13,7 @@
     [SameObject] readonly attribute GPUQueue defaultQueue;
 
     GPUBuffer createBuffer(GPUBufferDescriptor descriptor);
+    // TODO(crbug.com/1069302): Remove this deprecated entry point.
     [RaisesException] GPUMappedBuffer createBufferMapped(GPUBufferDescriptor descriptor);
     [RaisesException] GPUTexture createTexture(GPUTextureDescriptor descriptor);
     GPUSampler createSampler(optional GPUSamplerDescriptor descriptor = {});

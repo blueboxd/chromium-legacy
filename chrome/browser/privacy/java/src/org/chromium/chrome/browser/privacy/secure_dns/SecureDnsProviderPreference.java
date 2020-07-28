@@ -215,35 +215,42 @@ class SecureDnsProviderPreference extends Preference implements RadioGroup.OnChe
             mServerMenu.setSelection(position);
         }
 
-        // Position 0 is the custom server.  Other positions are actual server entries.
-        if (position > 0) {
-            // Selected server mode.
-            Entry entry = (Entry) mServerMenu.getSelectedItem();
-            String html = mPrivacyTemplate.replace("$1", entry.privacy);
-            mPrivacyPolicy.setText(Html.fromHtml(html));
+        if (mState.secure) {
+            mServerMenu.setVisibility(View.VISIBLE);
+            // Position 0 is the custom server.  Other positions are actual server entries.
+            if (position > 0) {
+                // Selected server mode.
+                Entry entry = (Entry) mServerMenu.getSelectedItem();
+                String html = mPrivacyTemplate.replace("$1", entry.privacy);
+                mPrivacyPolicy.setText(Html.fromHtml(html));
 
-            mPrivacyPolicy.setVisibility(View.VISIBLE);
-            mCustomServerLayout.setVisibility(View.GONE);
-        } else {
-            // Custom server mode.
-            if (!mCustomServer.getText().toString().equals(mState.template)) {
-                mCustomServer.setText(mState.template);
-                mCustomServer.removeCallbacks(mProbeRunner);
-                if (mState.secure) {
-                    mCustomServer.requestFocus();
+                mPrivacyPolicy.setVisibility(View.VISIBLE);
+                mCustomServerLayout.setVisibility(View.GONE);
+            } else {
+                // Custom server mode.
+                if (!mCustomServer.getText().toString().equals(mState.template)) {
+                    mCustomServer.setText(mState.template);
+                    mCustomServer.removeCallbacks(mProbeRunner);
+                    if (mState.secure) {
+                        mCustomServer.requestFocus();
 
-                    // If the custom server field is idle for one second, run a probe.
-                    // Any changes to the field will cancel this probe and start another.
-                    mCustomServer.postDelayed(mProbeRunner, 1000);
+                        // If the custom server field is idle for one second, run a probe.
+                        // Any changes to the field will cancel this probe and start another.
+                        mCustomServer.postDelayed(mProbeRunner, 1000);
+                    }
                 }
+
+                // Show a warning if the input is invalid and is not the start of a valid URL.
+                boolean showWarning = !mState.valid && !"https://".startsWith(mState.template);
+                mCustomServerLayout.setError(showWarning ? mInvalidWarning : null);
+
+                mCustomServerLayout.setVisibility(View.VISIBLE);
+                mPrivacyPolicy.setVisibility(View.GONE);
             }
-
-            // Show a warning if the input is invalid and is not the start of a valid URL.
-            boolean showWarning = !mState.valid && !"https://".startsWith(mState.template);
-            mCustomServerLayout.setError(showWarning ? mInvalidWarning : null);
-
-            mCustomServerLayout.setVisibility(mState.secure ? View.VISIBLE : View.INVISIBLE);
+        } else {
+            mServerMenu.setVisibility(View.GONE);
             mPrivacyPolicy.setVisibility(View.GONE);
+            mCustomServerLayout.setVisibility(View.GONE);
         }
 
         SecureDnsBridge.updateValidationHistogram(mState.valid);

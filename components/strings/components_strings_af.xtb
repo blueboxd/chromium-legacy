@@ -363,7 +363,6 @@ Dit sal andersins deur jou privaatheidinstellings geblokkeer word. Dit sal die i
 <translation id="2413528052993050574">Hierdie bediener kon nie bewys dat dit <ph name="DOMAIN" /> is nie; sy sekuriteitsertifikaat is dalk herroep. Dit kan veroorsaak word deur 'n wanopstelling of 'n aanvaller wat jou verbinding onderskep.</translation>
 <translation id="2438874542388153331">Vierpons regs</translation>
 <translation id="245044156129055925">Jy het sopas jou wagwoord op 'n misleidende werf ingevoer. Chromium beveel aan dat jy jou wagwoord nou verander.</translation>
-<translation id="2463193859425327265">Verander tuisblad</translation>
 <translation id="2463739503403862330">Vul in</translation>
 <translation id="2465402087343596252">Architecture-E</translation>
 <translation id="2465655957518002998">Kies afleweringmetode</translation>
@@ -1163,7 +1162,6 @@ Dit sal andersins deur jou privaatheidinstellings geblokkeer word. Dit sal die i
 <translation id="5785756445106461925">Hierdie bladsy sluit verder ander hulpbronne in wat nie veilig is nie. Hierdie hulpbronne kan deur ander mense bekyk word terwyl hulle op pad is, en kan deur 'n aanvaller aangepas word om die bladsy se voorkoms te verander.</translation>
 <translation id="5786044859038896871">Wil jy jou kaartinligting invul?</translation>
 <translation id="5798290721819630480">Gooi veranderinge weg?</translation>
-<translation id="5798683403665926540">Verander tuisblad in Chrome-instellings</translation>
 <translation id="5803412860119678065">Wil jy jou <ph name="CARD_DETAIL" /> invul?</translation>
 <translation id="5804241973901381774">Toestemmings</translation>
 <translation id="5804427196348435412">Gebruik NFC-toestelle</translation>
@@ -1612,7 +1610,6 @@ om uit te vind hoe om die sagteware permanent van jou rekenaar te verwyder&lt;/o
 <translation id="7669271284792375604">Aanvallers op hierdie werf kan probeer om jou te mislei om programme te installeer wat jou blaai-ervaring sal skaad (byvoorbeeld deur jou tuisblad te verander of ekstra advertensies te wys op werwe wat jy besoek).</translation>
 <translation id="7673278391011283842">Posbus 6</translation>
 <translation id="7676643023259824263">Soek vir knipbordteks, <ph name="TEXT" /></translation>
-<translation id="7681101578153515023">Verander soekenjin</translation>
 <translation id="7682287625158474539">Versending</translation>
 <translation id="7687186412095877299">Vul betaalvorms in met jou gestoorde betaalmetodes</translation>
 <translation id="7687305263118037187">Herprobeer uittelling</translation>
@@ -1650,7 +1647,6 @@ om uit te vind hoe om die sagteware permanent van jou rekenaar te verwyder&lt;/o
 <translation id="7802523362929240268">Werf is eg</translation>
 <translation id="780301667611848630">Nee, dankie</translation>
 <translation id="7805768142964895445">Status</translation>
-<translation id="7806344367022510803">Verander soekenjininstellings in Chrome</translation>
 <translation id="7812922009395017822">Mir</translation>
 <translation id="7813600968533626083">Verwyder vormvoorstel uit Chrome?</translation>
 <translation id="781440967107097262">Deel knipbord?</translation>
@@ -1792,7 +1788,6 @@ om uit te vind hoe om die sagteware permanent van jou rekenaar te verwyder&lt;/o
 Bykomende besonderhede:
 <ph name="DEBUG_INFO" /></translation>
 <translation id="8424582179843326029"><ph name="FIRST_LABEL" /> <ph name="SECOND_LABEL" /> <ph name="THIRD_LABEL" /></translation>
-<translation id="8425213833346101688">Verander</translation>
 <translation id="8428213095426709021">Instellings</translation>
 <translation id="8433057134996913067">Dit sal jou by die meeste webwerwe afmeld.</translation>
 <translation id="8437238597147034694">Ontdoen skuif</translation>

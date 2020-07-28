@@ -238,4 +238,14 @@ bool IsUsingOzonePlatform() {
 }
 #endif  // defined(USE_X11) || defined(USE_OZONE)
 
+const char kPredictorNameLsq[] = "lsq";
+const char kPredictorNameKalman[] = "kalman";
+const char kPredictorNameLinearFirst[] = "linear_first";
+const char kPredictorNameLinearSecond[] = "linear_second";
+const char kPredictorNameLinearResampling[] = "linear_resampling";
+const char kPredictorNameEmpty[] = "empty";
+
+const char kFilterNameEmpty[] = "empty_filter";
+const char kFilterNameOneEuro[] = "one_euro_filter";
+
 }  // namespace features

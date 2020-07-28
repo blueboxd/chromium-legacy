@@ -9,7 +9,16 @@
 
 namespace prefs {
 
+// Stores counts and timestamps of SSL certificate errors that have occurred.
+// When the same error recurs within some period of time, a message is added to
+// the SSL interstitial.
 extern const char kRecurrentSSLInterstitial[];
+
+// Boolean pref used to control whether mixed forms (forms on HTTPS sites that
+// submit over HTTPS) should trigger an on submit warning interstitial. If
+// enabled a warning bubble will also show below the form fields and autofill
+// will be disabled.
+extern const char kMixedFormsWarningsEnabled[];
 
 }  // namespace prefs
 

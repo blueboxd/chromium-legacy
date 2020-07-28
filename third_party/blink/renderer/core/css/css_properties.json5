@@ -5121,6 +5121,18 @@
       is_property: false,
       runtime_flag: "CSSScrollTimeline",
     },
+    {
+      name: "ascent-override",
+      is_descriptor: true,
+      is_property: false,
+      runtime_flag: "CSSFontMetricsOverride",
+    },
+    {
+      name: "descent-override",
+      is_descriptor: true,
+      is_property: false,
+      runtime_flag: "CSSFontMetricsOverride",
+    },
 
     // Shorthands
     {

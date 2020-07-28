@@ -335,6 +335,7 @@ Aby coś wyszukać, naciśnij i przytrzymaj dowolne słowo. Aby doprecyzować w
 <translation id="3658159451045945436">Resetowanie usuwa historię oszczędzania danych, w tym listę odwiedzonych stron.</translation>
 <translation id="3692944402865947621">Nie udało się pobrać pliku <ph name="FILE_NAME" /> z powodu niedostępności pamięci.</translation>
 <translation id="3701167022068948696">Napraw teraz</translation>
+<translation id="371230970611282515">Przewiduje niebezpieczne zdarzenia i ostrzega Cię przed nimi, zanim nastąpią.</translation>
 <translation id="3714981814255182093">Otwórz pasek wyszukiwania</translation>
 <translation id="3716182511346448902">Ta strona używa zbyt dużo pamięci, dlatego została wstrzymana w Chrome.</translation>
 <translation id="3721119614952978349">Ty i Google</translation>
@@ -713,6 +714,7 @@ Na przykład niektóre strony mogą na nie zareagować, wyświetlając reklamy b
 <translation id="6593061639179217415">Wersja na komputer</translation>
 <translation id="6597891566292541626">Umieść kod QR lub kod kreskowy w tej ramce.</translation>
 <translation id="6600954340915313787">Skopiowana do Chrome</translation>
+<translation id="661266467055912436">Zwiększa bezpieczeństwo Twoje i pozostałych użytkowników internetu.</translation>
 <translation id="6627583120233659107">Edytuj folder</translation>
 <translation id="6643016212128521049">Wyczyść</translation>
 <translation id="6643649862576733715">Sortuj według ilości zaoszczędzonych danych</translation>
@@ -872,6 +874,7 @@ Na przykład niektóre strony mogą na nie zareagować, wyświetlając reklamy b
 <translation id="7925590027513907933">{FILE_COUNT,plural, =1{Pobieram plik.}few{Pobieram # pliki.}many{Pobieram # plików.}other{Pobieram # pliku.}}</translation>
 <translation id="7926975587469166629">Nazwa karty</translation>
 <translation id="7929962904089429003">Otwórz menu</translation>
+<translation id="7930998711684428189">Ostrzega, jeśli wskutek naruszenia bezpieczeństwa danych doszło do ujawnienia haseł.</translation>
 <translation id="7942131818088350342">Przeglądarka <ph name="PRODUCT_NAME" /> jest nieaktualna.</translation>
 <translation id="7947953824732555851">Zaakceptuj i zaloguj się</translation>
 <translation id="7963646190083259054">Dostawca:</translation>

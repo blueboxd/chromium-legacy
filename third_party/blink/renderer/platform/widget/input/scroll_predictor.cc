@@ -9,6 +9,7 @@
 #include "base/trace_event/trace_event.h"
 #include "third_party/blink/public/common/features.h"
 #include "third_party/blink/public/platform/input/predictor_factory.h"
+#include "ui/base/ui_base_features.h"
 
 namespace blink {
 
@@ -18,7 +19,7 @@ ScrollPredictor::ScrollPredictor() {
       blink::features::kResamplingScrollEvents, "predictor");
 
   if (predictor_name.empty())
-    predictor_name = blink::features::kScrollPredictorNameLinearResampling;
+    predictor_name = ::features::kPredictorNameLinearResampling;
 
   input_prediction::PredictorType predictor_type =
       PredictorFactory::GetPredictorTypeFromName(predictor_name);
@@ -115,8 +116,8 @@ void ScrollPredictor::UpdatePrediction(const WebInputEvent& event,
   current_event_accumulated_delta_.Offset(
       gesture_event.data.scroll_update.delta_x,
       gesture_event.data.scroll_update.delta_y);
-  InputPredictor::InputData data = {current_event_accumulated_delta_,
-                                    gesture_event.TimeStamp()};
+  ui::InputPredictor::InputData data = {current_event_accumulated_delta_,
+                                        gesture_event.TimeStamp()};
 
   predictor_->Update(data);
 

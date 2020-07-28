@@ -32,31 +32,32 @@
 #include "third_party/blink/public/mojom/frame/lifecycle.mojom-blink-forward.h"
 #include "third_party/blink/public/mojom/scroll/scroll_into_view_params.mojom-blink-forward.h"
 #include "third_party/blink/renderer/core/core_export.h"
-#include "third_party/blink/renderer/core/dom/document.h"
+#include "third_party/blink/renderer/core/dom/document_lifecycle.h"
 #include "third_party/blink/renderer/core/frame/frame_view.h"
 #include "third_party/blink/renderer/core/frame/layout_subtree_root_list.h"
 #include "third_party/blink/renderer/core/frame/overlay_interstitial_ad_detector.h"
 #include "third_party/blink/renderer/core/frame/sticky_ad_detector.h"
 #include "third_party/blink/renderer/core/layout/depth_ordered_layout_object_list.h"
-#include "third_party/blink/renderer/core/paint/compositing/paint_layer_compositor.h"
+#include "third_party/blink/renderer/core/paint/compositing/compositing_update_type.h"
 #include "third_party/blink/renderer/core/paint/layout_object_counter.h"
 #include "third_party/blink/renderer/platform/geometry/int_rect.h"
 #include "third_party/blink/renderer/platform/geometry/layout_size.h"
 #include "third_party/blink/renderer/platform/graphics/color.h"
 #include "third_party/blink/renderer/platform/graphics/compositor_element_id.h"
 #include "third_party/blink/renderer/platform/graphics/paint/cull_rect.h"
-#include "third_party/blink/renderer/platform/graphics/paint/paint_record.h"
 #include "third_party/blink/renderer/platform/graphics/paint_invalidation_reason.h"
 #include "third_party/blink/renderer/platform/graphics/subtree_paint_property_update_reason.h"
 #include "third_party/blink/renderer/platform/timer.h"
 #include "third_party/blink/renderer/platform/wtf/allocator/allocator.h"
 #include "third_party/blink/renderer/platform/wtf/casting.h"
-#include "third_party/skia/include/core/SkColor.h"
 
 namespace cc {
 class AnimationHost;
 class Layer;
+class PaintOpBuffer;
 enum class PaintHoldingCommitTrigger;
+
+using PaintRecord = PaintOpBuffer;
 }
 
 namespace ui {
@@ -87,6 +88,7 @@ class LocalFrame;
 class Page;
 class PaintArtifactCompositor;
 class PaintController;
+class PaintLayer;
 class PaintLayerScrollableArea;
 class PaintTimingDetector;
 class RootFrameViewport;
@@ -525,7 +527,7 @@ class CORE_EXPORT LocalFrameView final
 
   // Get the PaintRecord based on the cached paint artifact generated during
   // the last paint in lifecycle update. For CompositeAfterPaint only.
-  sk_sp<PaintRecord> GetPaintRecord() const;
+  sk_sp<cc::PaintRecord> GetPaintRecord() const;
 
   void Show() override;
   void Hide() override;

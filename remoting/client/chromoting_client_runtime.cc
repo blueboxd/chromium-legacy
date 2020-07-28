@@ -15,6 +15,7 @@
 #include "build/build_config.h"
 #include "mojo/core/embedder/embedder.h"
 #include "remoting/base/chromium_url_request.h"
+#include "remoting/base/directory_service_client.h"
 #include "remoting/base/oauth_token_getter_proxy.h"
 #include "remoting/base/telemetry_log_writer.h"
 #include "remoting/base/url_request_context_getter.h"
@@ -87,6 +88,28 @@ std::unique_ptr<OAuthTokenGetter>
 ChromotingClientRuntime::CreateOAuthTokenGetter() {
   return std::make_unique<OAuthTokenGetterProxy>(
       delegate_->oauth_token_getter(), ui_task_runner());
+}
+
+base::SequenceBound<DirectoryServiceClient>
+ChromotingClientRuntime::CreateDirectoryServiceClient() {
+  // A DirectoryServiceClient subclass that calls url_loader_factory() in its
+  // constructor, as we can't call it on a non-network thread then pass it via
+  // base::SequenceBound.
+  class ClientDirectoryServiceClient : public DirectoryServiceClient {
+   public:
+    ClientDirectoryServiceClient(ChromotingClientRuntime* runtime,
+                                 std::unique_ptr<OAuthTokenGetter> token_getter)
+        : DirectoryServiceClient(token_getter.get(),
+                                 runtime->url_loader_factory()),
+          token_getter_(std::move(token_getter)) {}
+    ~ClientDirectoryServiceClient() override = default;
+
+   private:
+    std::unique_ptr<OAuthTokenGetter> token_getter_;
+  };
+
+  return base::SequenceBound<ClientDirectoryServiceClient>(
+      network_task_runner(), this, CreateOAuthTokenGetter());
 }
 
 scoped_refptr<network::SharedURLLoaderFactory>

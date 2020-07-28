@@ -89,22 +89,6 @@ constexpr base::TimeDelta kDeleteWithExtremePrejudice =
 // Length of prerender history, for display in chrome://net-internals
 constexpr int kHistoryLength = 100;
 
-// Check if |extra_headers| requested via chrome::NavigateParams::extra_headers
-// are the same as what the HTTP server saw when serving prerendered contents.
-// PrerenderContents::StartPrerendering doesn't specify any extra headers when
-// calling content::NavigationController::LoadURLWithParams, but in reality
-// Blink will always add an Upgrade-Insecure-Requests http request header, so
-// that HTTP request for prerendered contents always includes this header.
-// Because of this, it is okay to show prerendered contents even if
-// |extra_headers| contains "Upgrade-Insecure-Requests" header.
-bool AreExtraHeadersCompatibleWithPrerenderContents(
-    const std::string& extra_headers) {
-  net::HttpRequestHeaders parsed_headers;
-  parsed_headers.AddHeadersFromString(extra_headers);
-  parsed_headers.RemoveHeader("upgrade-insecure-requests");
-  return parsed_headers.IsEmpty();
-}
-
 }  // namespace
 
 class PrerenderManager::OnCloseWebContentsDeleter
@@ -148,35 +132,6 @@ PrerenderManagerObserver::~PrerenderManagerObserver() = default;
 // static
 PrerenderManager::PrerenderManagerMode PrerenderManager::mode_ =
     PRERENDER_MODE_NOSTATE_PREFETCH;
-
-// static
-bool PrerenderManager::MaybeUsePrerenderedPage(
-    Profile* profile,
-    content::WebContents* web_contents,
-    const GURL& url,
-    bool* loaded) {
-  DCHECK(loaded) << "|loaded| cannot be null";
-  auto* manager = PrerenderManagerFactory::GetForBrowserContext(profile);
-
-  // Getting the load status before MaybeUsePrerenderedPage() b/c it resets.
-  *loaded = false;
-  auto contents = manager->GetAllPrerenderingContents();
-  for (content::WebContents* content : contents) {
-    auto* prerender_contents = manager->GetPrerenderContents(content);
-    if (prerender_contents->prerender_url() == url &&
-        prerender_contents->has_finished_loading()) {
-      *loaded = true;
-      break;
-    }
-  }
-  if (!*loaded)
-    return false;
-
-  PrerenderManager::Params params(
-      /*uses_post=*/false, /*extra_headers=*/std::string(),
-      /*should_replace_current_entry=*/false, web_contents);
-  return manager->MaybeUsePrerenderedPage(url, &params);
-}
 
 struct PrerenderManager::NavigationRecord {
   NavigationRecord(const GURL& url, base::TimeTicks time, Origin origin)
@@ -260,12 +215,6 @@ std::unique_ptr<PrerenderHandle> PrerenderManager::AddPrerenderFromOmnibox(
     const GURL& url,
     SessionStorageNamespace* session_storage_namespace,
     const gfx::Size& size) {
-  // TODO(pasko): Remove DEPRECATED_PRERENDER_MODE_ENABLED allowance. It is only
-  // used for tests.
-  if (!IsNoStatePrefetchEnabled() &&
-      GetMode() != DEPRECATED_PRERENDER_MODE_ENABLED) {
-    return nullptr;
-  }
   return AddPrerenderWithPreconnectFallback(
       ORIGIN_OMNIBOX, url, content::Referrer(), base::nullopt, gfx::Rect(size),
       session_storage_namespace);
@@ -324,151 +273,6 @@ void PrerenderManager::CancelAllPrerenders() {
         active_prerenders_.front()->contents();
     prerender_contents->Destroy(FINAL_STATUS_CANCELLED);
   }
-}
-
-PrerenderManager::Params::Params(NavigateParams* params,
-                                 content::WebContents* contents_being_navigated)
-    : uses_post(!!params->post_data),
-      extra_headers(params->extra_headers),
-      should_replace_current_entry(params->should_replace_current_entry),
-      contents_being_navigated(contents_being_navigated) {}
-
-PrerenderManager::Params::Params(bool uses_post,
-                                 const std::string& extra_headers,
-                                 bool should_replace_current_entry,
-                                 content::WebContents* contents_being_navigated)
-    : uses_post(uses_post),
-      extra_headers(extra_headers),
-      should_replace_current_entry(should_replace_current_entry),
-      contents_being_navigated(contents_being_navigated) {}
-
-bool PrerenderManager::MaybeUsePrerenderedPage(const GURL& url,
-                                               Params* params) {
-  DCHECK_CURRENTLY_ON(BrowserThread::UI);
-
-  WebContents* web_contents = params->contents_being_navigated;
-  DCHECK(!IsWebContentsPrerendering(web_contents, nullptr));
-
-  // Don't prerender if the navigation involves some special parameters that
-  // are different from what was used by PrerenderContents::StartPrerendering
-  // (which always uses GET method and doesn't specify any extra headers when
-  // calling content::NavigationController::LoadURLWithParams).
-  if (params->uses_post ||
-      !AreExtraHeadersCompatibleWithPrerenderContents(params->extra_headers)) {
-    return false;
-  }
-
-  DeleteOldEntries();
-  DeleteToDeletePrerenders();
-
-  // First, try to find prerender data with the correct session storage
-  // namespace.
-  // TODO(ajwong): This doesn't handle isolated apps correctly.
-  PrerenderData* prerender_data = FindPrerenderData(
-      url, web_contents->GetController().GetDefaultSessionStorageNamespace());
-  if (!prerender_data)
-    return false;
-  DCHECK(prerender_data->contents());
-
-  if (prerender_data->contents()->prerender_mode() !=
-      prerender::mojom::PrerenderMode::kDeprecatedFullPrerender) {
-    return false;
-  }
-
-  WebContents* new_web_contents = SwapInternal(
-      url, web_contents, prerender_data, params->should_replace_current_entry);
-  if (!new_web_contents)
-    return false;
-
-  // Record the new target_contents for the callers.
-  params->replaced_contents = new_web_contents;
-  return true;
-}
-
-WebContents* PrerenderManager::SwapInternal(const GURL& url,
-                                            WebContents* web_contents,
-                                            PrerenderData* prerender_data,
-                                            bool should_replace_current_entry) {
-  DCHECK_CURRENTLY_ON(BrowserThread::UI);
-  DCHECK(!IsWebContentsPrerendering(web_contents, nullptr));
-
-  // Only swap if the target WebContents has a CoreTabHelper to swap out of it.
-  // For a normal WebContents, this is if it is in a TabStripModel.
-  CoreTabHelper* core_tab_helper = CoreTabHelper::FromWebContents(web_contents);
-  if (!core_tab_helper)
-    return nullptr;
-
-  PrerenderTabHelper* target_tab_helper =
-      PrerenderTabHelper::FromWebContents(web_contents);
-  if (!target_tab_helper) {
-    NOTREACHED();
-    return nullptr;
-  }
-
-  WebContents* prerender_web_contents =
-      prerender_data->contents()->prerender_contents();
-  if (prerender_web_contents && web_contents == prerender_web_contents)
-    return nullptr;  // Do not swap in to ourself.
-
-  DCHECK(prerender_data->contents()->prerendering_has_started());
-
-  // At this point, we've determined that we will use the prerender.
-  content::RenderProcessHost* process_host =
-      prerender_data->contents()->GetRenderViewHost()->GetProcess();
-  process_host->RemoveObserver(this);
-  prerender_process_hosts_.erase(process_host);
-
-  auto to_erase = FindIteratorForPrerenderContents(prerender_data->contents());
-  DCHECK(active_prerenders_.end() != to_erase);
-  DCHECK_EQ(prerender_data, to_erase->get());
-  std::unique_ptr<PrerenderContents> prerender_contents(
-      prerender_data->ReleaseContents());
-  active_prerenders_.erase(to_erase);
-
-  // Mark prerender as used.
-  prerender_contents->PrepareForUse();
-
-  std::unique_ptr<WebContents> new_web_contents =
-      prerender_contents->ReleasePrerenderContents();
-  DCHECK(new_web_contents);
-  DCHECK(web_contents);
-
-  // Merge the browsing history.
-  new_web_contents->GetController().CopyStateFromAndPrune(
-      &web_contents->GetController(), should_replace_current_entry);
-  WebContents* raw_new_web_contents = new_web_contents.get();
-  std::unique_ptr<content::WebContents> old_web_contents =
-      core_tab_helper->SwapWebContents(
-          std::move(new_web_contents), true,
-          prerender_contents->has_finished_loading());
-  prerender_contents->CommitHistory(raw_new_web_contents);
-
-  // Update PPLT metrics:
-  // If the tab has finished loading, record a PPLT of 0.
-  // If the tab is still loading, reset its start time to the current time.
-  PrerenderTabHelper* prerender_tab_helper =
-      PrerenderTabHelper::FromWebContents(raw_new_web_contents);
-  DCHECK(prerender_tab_helper);
-  prerender_tab_helper->PrerenderSwappedIn();
-
-  if (old_web_contents->NeedToFireBeforeUnloadOrUnload()) {
-    // Schedule the delete to occur after the tab has run its unload handlers.
-    // TODO(davidben): Honor the beforeunload event. http://crbug.com/304932
-    WebContents* old_web_contents_ptr = old_web_contents.get();
-    on_close_web_contents_deleters_.push_back(
-        std::make_unique<OnCloseWebContentsDeleter>(
-            this, std::move(old_web_contents)));
-    old_web_contents_ptr->DispatchBeforeUnload(false /* auto_cancel */);
-  } else {
-    // No unload handler to run, so delete asap.
-    ScheduleDeleteOldWebContents(std::move(old_web_contents), nullptr);
-  }
-
-  // TODO(cbentzel): Should |prerender_contents| move to the pending delete
-  //                 list, instead of deleting directly here?
-  AddToHistory(prerender_contents.get());
-  RecordNavigation(url);
-  return raw_new_web_contents;
 }
 
 void PrerenderManager::MoveEntryToPendingDelete(PrerenderContents* entry,
@@ -585,22 +389,6 @@ PrerenderContents* PrerenderManager::GetPrerenderContentsForProcess(
     }
   }
   return nullptr;
-}
-
-std::vector<WebContents*> PrerenderManager::GetAllPrerenderingContents() const {
-  DCHECK_CURRENTLY_ON(BrowserThread::UI);
-  std::vector<WebContents*> result;
-
-  for (const auto& prerender : active_prerenders_) {
-    WebContents* contents = prerender->contents()->prerender_contents();
-    if (contents &&
-        prerender->contents()->prerender_mode() ==
-            prerender::mojom::PrerenderMode::kDeprecatedFullPrerender) {
-      result.push_back(contents);
-    }
-  }
-
-  return result;
 }
 
 std::vector<WebContents*>

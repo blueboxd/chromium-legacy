@@ -185,6 +185,10 @@ class PaymentApp {
   // payment app is currently invoked.
   virtual void AbortPaymentApp(base::OnceCallback<void(bool)> abort_callback);
 
+  // Whether this app should be chosen over other available payment apps. For
+  // example, when the Play Billing payment app is available in a TWA.
+  bool IsPreferred() const;
+
  protected:
   PaymentApp(int icon_resource_id, Type type);
 

@@ -20,6 +20,7 @@
 #include "components/blocked_content/popup_blocker.h"
 #include "components/captive_portal/core/buildflags.h"
 #include "components/embedder_support/switches.h"
+#include "components/error_page/content/browser/net_error_auto_reloader.h"
 #include "components/network_time/network_time_tracker.h"
 #include "components/page_load_metrics/browser/metrics_navigation_throttle.h"
 #include "components/page_load_metrics/browser/metrics_web_contents_observer.h"
@@ -558,6 +559,11 @@ ContentBrowserClientImpl::CreateThrottlesForNavigation(
   std::vector<std::unique_ptr<content::NavigationThrottle>> throttles;
 
   if (handle->IsInMainFrame()) {
+    auto auto_reload_throttle =
+        error_page::NetErrorAutoReloader::MaybeCreateThrottleFor(handle);
+    if (auto_reload_throttle)
+      throttles.push_back(std::move(auto_reload_throttle));
+
     // MetricsNavigationThrottle requires that it runs before
     // NavigationThrottles that may delay or cancel navigations, so only
     // NavigationThrottles that don't delay or cancel navigations (e.g.

@@ -2,12 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-import {getInstance, MarginsType, NativeLayer, NativeLayerImpl, PluginProxy, ScalingType} from 'chrome://print/print_preview.js';
+import {getInstance, MarginsType, NativeLayer, NativeLayerImpl, PluginProxyImpl, ScalingType} from 'chrome://print/print_preview.js';
 import {assert} from 'chrome://resources/js/assert.m.js';
 import {isChromeOS} from 'chrome://resources/js/cr.m.js';
 import {NativeLayerStub} from 'chrome://test/print_preview/native_layer_stub.js';
-import {PDFPluginStub} from 'chrome://test/print_preview/plugin_stub.js';
 import {getCddTemplate, getCddTemplateWithAdvancedSettings, getDefaultInitialSettings} from 'chrome://test/print_preview/print_preview_test_utils.js';
+import {TestPluginProxy} from 'chrome://test/print_preview/test_plugin_proxy.js';
 
 window.restore_state_test = {};
 restore_state_test.suiteName = 'RestoreStateTest';
@@ -81,8 +81,8 @@ suite(restore_state_test.suiteName, function() {
     nativeLayer.setInitialSettings(initialSettings);
     nativeLayer.setLocalDestinationCapabilities(
         getCddTemplateWithAdvancedSettings(2, initialSettings.printerName));
-    const pluginProxy = new PDFPluginStub();
-    PluginProxy.setInstance(pluginProxy);
+    const pluginProxy = new TestPluginProxy();
+    PluginProxyImpl.instance_ = pluginProxy;
 
     page = document.createElement('print-preview-app');
     document.body.appendChild(page);
@@ -304,11 +304,11 @@ suite(restore_state_test.suiteName, function() {
     nativeLayer.setLocalDestinationCapabilities(
         getCddTemplate(initialSettings.printerName));
 
+    const pluginProxy = new TestPluginProxy();
+    PluginProxyImpl.instance_ = pluginProxy;
     page = document.createElement('print-preview-app');
     document.body.appendChild(page);
     const previewArea = page.$$('print-preview-preview-area');
-    previewArea.plugin_ =
-        new PDFPluginStub(previewArea.onPluginLoadComplete_.bind(previewArea));
 
     return nativeLayer.whenCalled('getInitialSettings')
         .then(function() {

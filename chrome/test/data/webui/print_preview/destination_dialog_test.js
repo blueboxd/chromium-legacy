@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-import {Destination, DestinationStore, InvitationStore, LocalDestinationInfo, makeRecentDestination, NativeLayerImpl, PluginProxy, RecentDestination} from 'chrome://print/print_preview.js';
+import {Destination, DestinationStore, InvitationStore, LocalDestinationInfo, makeRecentDestination, NativeLayerImpl, RecentDestination} from 'chrome://print/print_preview.js';
 import {assert} from 'chrome://resources/js/assert.m.js';
 import {keyEventOn} from 'chrome://resources/polymer/v3_0/iron-test-helpers/mock-interactions.js';
 import {flush} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
@@ -12,7 +12,6 @@ import {eventToPromise} from '../test_util.m.js';
 
 import {CloudPrintInterfaceStub} from './cloud_print_interface_stub.js';
 import {NativeLayerStub} from './native_layer_stub.js';
-import {PDFPluginStub} from './plugin_stub.js';
 import {createDestinationStore, getDestinations, getGoogleDriveDestination, setupTestListenerElement} from './print_preview_test_utils.js';
 
 window.destination_dialog_test = {};

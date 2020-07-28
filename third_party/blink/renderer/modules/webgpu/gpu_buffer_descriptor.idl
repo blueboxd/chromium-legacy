@@ -7,4 +7,5 @@
 dictionary GPUBufferDescriptor : GPUObjectDescriptorBase {
     required GPUSize64 size;
     required GPUBufferUsageFlags usage;
+    boolean mappedAtCreation = false;
 };

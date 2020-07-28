@@ -64,6 +64,7 @@ class VIZ_SERVICE_EXPORT SkiaOutputSurfaceImpl : public SkiaOutputSurface {
   void BindToClient(OutputSurfaceClient* client) override;
   void BindFramebuffer() override;
   void SetDrawRectangle(const gfx::Rect& draw_rectangle) override;
+  void SetEnableDCLayers(bool enable) override;
   void EnsureBackbuffer() override;
   void DiscardBackbuffer() override;
   void Reshape(const gfx::Size& size,
@@ -122,9 +123,6 @@ class VIZ_SERVICE_EXPORT SkiaOutputSurfaceImpl : public SkiaOutputSurface {
   void ScheduleOverlays(OverlayList overlays,
                         std::vector<gpu::SyncToken> sync_tokens) override;
 
-#if defined(OS_WIN)
-  void SetEnableDCLayers(bool enable) override;
-#endif
   void CopyOutput(RenderPassId id,
                   const copy_output::RenderPassGeometry& geometry,
                   const gfx::ColorSpace& color_space,

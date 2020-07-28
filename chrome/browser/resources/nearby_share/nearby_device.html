@@ -14,19 +14,9 @@
   }
 
   #icon {
-    color: rgb(26, 115, 232);
-    height: 15px;
-    width: 15px;
-  }
-
-  #icon-container {
-    align-items: center;
-    background-color: rgb(232, 240, 254);
-    border-radius: 13px;
-    display: flex;
+    --nearby-device-icon-size: 15px;
     flex-shrink: 0;
     height: 26px;
-    justify-content: center;
     width: 26px;
   }
 
@@ -42,7 +32,7 @@
     white-space: nowrap;
   }
 </style>
-<div id="icon-container">
-  <iron-icon id="icon" icon="nearby-share:smartphone"></iron-icon>
-</div>
-<div id="name">[[name]]</div>
+
+<nearby-device-icon id="icon" share-target="[[shareTarget]]">
+</nearby-device-icon>
+<div id="name">[[shareTarget.name]]</div>

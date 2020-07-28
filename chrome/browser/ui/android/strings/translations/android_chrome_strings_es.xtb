@@ -335,6 +335,7 @@ Mantén pulsada cualquier palabra para buscarla. Para acotar la búsqueda, selec
 <translation id="3658159451045945436">Restablecerlo borra tu historial de ahorro de datos, incluidas las listas de los sitios web que has visitado.</translation>
 <translation id="3692944402865947621">No se ha podido descargar <ph name="FILE_NAME" /> porque no se puede acceder a la ubicación del almacenamiento.</translation>
 <translation id="3701167022068948696">Corregir ahora</translation>
+<translation id="371230970611282515">Predice y te advierte sobre eventos peligrosos cuando ocurren.</translation>
 <translation id="3714981814255182093">Abre la barra de búsqueda</translation>
 <translation id="3716182511346448902">Esta página utiliza demasiada memoria y Chrome la ha pausado.</translation>
 <translation id="3721119614952978349">Google y tú</translation>
@@ -579,7 +580,7 @@ Para cambiar esta opción, <ph name="BEGIN_LINK" />restablece la sincronización
 <translation id="5659593005791499971">Correo electrónico</translation>
 <translation id="5665379678064389456">Crear evento en <ph name="APP_NAME" /></translation>
 <translation id="5668404140385795438">Ignorar la solicitud de un sitio web para no ampliar la imagen</translation>
-<translation id="568275469169136466">Iniciar sesión de forma temporal.</translation>
+<translation id="568275469169136466">Para iniciar sesión de forma temporal</translation>
 <translation id="5683547024293500885">Chrome no puede comprobar si hay actualizaciones</translation>
 <translation id="5686790454216892815">El nombre del archivo es demasiado largo</translation>
 <translation id="5694049548840660018">Vuelve al principio fácilmente</translation>
@@ -713,6 +714,7 @@ Por ejemplo, algunos sitios web pueden responder a la solicitud mostrándote anu
 <translation id="6593061639179217415">Versión para ordenador</translation>
 <translation id="6597891566292541626">Coloca el código QR o el código de barras dentro del marco.</translation>
 <translation id="6600954340915313787">Copiada a Chrome</translation>
+<translation id="661266467055912436">Mejora tu seguridad y la de todo el mundo en la Web.</translation>
 <translation id="6627583120233659107">Editar carpeta</translation>
 <translation id="6643016212128521049">Eliminar</translation>
 <translation id="6643649862576733715">Ordenar por cantidad de datos ahorrados</translation>
@@ -872,6 +874,7 @@ Por ejemplo, algunos sitios web pueden responder a la solicitud mostrándote anu
 <translation id="7925590027513907933">{FILE_COUNT,plural, =1{Descargando archivo.}other{Descargando # archivos.}}</translation>
 <translation id="7926975587469166629">Nombre de la tarjeta</translation>
 <translation id="7929962904089429003">Abre el menú</translation>
+<translation id="7930998711684428189">Te avisa si tus contraseñas se ven expuestas en una quiebra de seguridad de datos.</translation>
 <translation id="7942131818088350342"><ph name="PRODUCT_NAME" /> está obsoleto.</translation>
 <translation id="7947953824732555851">Aceptar y acceder</translation>
 <translation id="7963646190083259054">Proveedor:</translation>

@@ -17,4 +17,5 @@ typedef [EnforceRange] unsigned long GPUBufferUsageFlags;
     const unsigned long UNIFORM = 64;
     const unsigned long STORAGE = 128;
     const unsigned long INDIRECT = 256;
+    const unsigned long QUERY_RESOLVE = 512;
 };

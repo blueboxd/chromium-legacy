@@ -21,6 +21,7 @@
 <translation id="1150565364351027703">دھوپ کا چشمہ</translation>
 <translation id="115443833402798225">ہنگول اہنمیٹی</translation>
 <translation id="1155759005174418845">کاٹالانين</translation>
+<translation id="1172970565351728681">تقریباً <ph name="REMAINING_TIME" /> باقی</translation>
 <translation id="1173894706177603556">نام بدلیں</translation>
 <translation id="117624967391683467"><ph name="FILE_NAME" /> کو کاپی کیا جا رہا ہے…</translation>
 <translation id="1178581264944972037">موقوف کریں</translation>
@@ -198,6 +199,7 @@
 <translation id="3236289833370040187">ملکیت <ph name="DESTINATION_DOMAIN" /> کو منتقل کر دی جائے گی۔</translation>
 <translation id="3241720467332021590">آئيرِش</translation>
 <translation id="3245321423178950146">نامعلوم فنکار</translation>
+<translation id="3248185426436836442">زیر التوا</translation>
 <translation id="3252266817569339921">فرانسيسی</translation>
 <translation id="3254434849914415189"><ph name="FILE_TYPE" /> فائلوں کیلئے ڈیفالٹ ایپ منتخب کریں:</translation>
 <translation id="3264582393905923483">سیاق و سباق</translation>
@@ -244,6 +246,7 @@
 <translation id="3780536599611287598">آپ کو فائلوں کو '<ph name="FOLDER_NAME" />' میں منتقل کرنے کی اجازت نہیں ہے۔</translation>
 <translation id="3786301125658655746">آپ آف لائن ہیں</translation>
 <translation id="3789841737615482174">انسٹال کریں</translation>
+<translation id="3793469551756281394">تقریباً <ph name="REMAINING_TIME_HOUR" /> <ph name="REMAINING_TIME_MINUTE" /> باقی</translation>
 <translation id="3798449238516105146">ورژن</translation>
 <translation id="3801082500826908679">فیروئیز</translation>
 <translation id="3809272675881623365">خرگوش</translation>

@@ -250,6 +250,7 @@ class WebRuntimeFeatures {
   BLINK_PLATFORM_EXPORT static void EnableVideoWakeLockOptimisationHiddenMuted(
       bool);
   BLINK_PLATFORM_EXPORT static void EnableContentIndex(bool);
+  BLINK_PLATFORM_EXPORT static void EnableRestrictGamepadAccess(bool);
 
  private:
   WebRuntimeFeatures();

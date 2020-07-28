@@ -42,6 +42,40 @@ suite('CrCollapseRadioButton', function() {
     assertFalse(collapse.opened);
   });
 
+  // Button should remain closed when noAutomaticCollapse flag is set.
+  test('closedWhenInitiallyClosedAndNoAutomaticCollapse', function() {
+    const collapse = collapseRadioButton.$$('iron-collapse');
+    collapseRadioButton.checked = false;
+    flush();
+    assertFalse(collapse.opened);
+
+    collapseRadioButton.noAutomaticCollapse = true;
+    collapseRadioButton.checked = true;
+    flush();
+    assertFalse(collapse.opened);
+
+    collapseRadioButton.updateCollapsed();
+    flush();
+    assertTrue(collapse.opened);
+  });
+
+  // Button should remain opened when noAutomaticCollapse flag is set.
+  test('openedWhenInitiallyOpenedAndNoAutomaticCollapse', function() {
+    const collapse = collapseRadioButton.$$('iron-collapse');
+    collapseRadioButton.checked = true;
+    flush();
+    assertTrue(collapse.opened);
+
+    collapseRadioButton.noAutomaticCollapse = true;
+    collapseRadioButton.checked = false;
+    flush();
+    assertTrue(collapse.opened);
+
+    collapseRadioButton.updateCollapsed();
+    flush();
+    assertFalse(collapse.opened);
+  });
+
   // When the button is not selected clicking the expand icon should still
   // open the iron collapse.
   test('openOnExpandHit', function() {
@@ -61,6 +95,40 @@ suite('CrCollapseRadioButton', function() {
     collapseRadioButton.checked = true;
     flush();
     assertTrue(collapse.opened);
+    collapseRadioButton.$$('cr-expand-button').click();
+    flush();
+    assertFalse(collapse.opened);
+  });
+
+  // When the noAutomaticCollapse flag if set, the expand arrow should expand
+  // the radio button immediately.
+  test('openOnExpandHitWhenNoAutomaticCollapse', function() {
+    const collapse = collapseRadioButton.$$('iron-collapse');
+    collapseRadioButton.checked = false;
+    flush();
+    assertFalse(collapse.opened);
+
+    collapseRadioButton.noAutomaticCollapse = true;
+    flush();
+    assertFalse(collapse.opened);
+
+    collapseRadioButton.$$('cr-expand-button').click();
+    flush();
+    assertTrue(collapse.opened);
+  });
+
+  // When the noAutomaticCollapse flag if set, the expand arrow should collapse
+  // the radio button immediately.
+  test('closeOnExpandHitWhenSelectedWhenNoAutomaticCollapse', function() {
+    const collapse = collapseRadioButton.$$('iron-collapse');
+    collapseRadioButton.checked = true;
+    flush();
+    assertTrue(collapse.opened);
+
+    collapseRadioButton.noAutomaticCollapse = true;
+    flush();
+    assertTrue(collapse.opened);
+
     collapseRadioButton.$$('cr-expand-button').click();
     flush();
     assertFalse(collapse.opened);

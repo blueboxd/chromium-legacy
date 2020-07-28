@@ -58,17 +58,16 @@ import java.util.Enumeration;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 
 /**
- * A custom AndroidJUnitRunner that supports multidex installer and list out test information.
+ * A custom AndroidJUnitRunner that supports multidex installer and lists out test information.
+ * Also customizes various TestRunner and Instrumentation behaviors, like when Activities get
+ * finished, and adds a timeout to waitForIdleSync.
  *
- * This class is the equivalent of BaseChromiumInstrumentationTestRunner in JUnit3. Please
- * beware that is this not a class runner. It is declared in test apk AndroidManifest.xml
+ * Please beware that is this not a class runner. It is declared in test apk AndroidManifest.xml
  * <instrumentation>
- *
- * TODO(yolandyan): remove this class after all tests are converted to JUnit4. Use class runner
- * for test listing.
  */
 @MainDex
 public class BaseChromiumAndroidJUnitRunner extends AndroidJUnitRunner {
@@ -104,6 +103,8 @@ public class BaseChromiumAndroidJUnitRunner extends AndroidJUnitRunner {
     // The ID of the bundle value Instrumentation uses to report the crash stack, if the test
     // crashed.
     private static final String BUNDLE_STACK_ID = "stack";
+
+    private static final long WAIT_FOR_IDLE_TIMEOUT_MS = ScalableTimeout.scaleTimeout(10000L);
 
     private static final long FINISH_APP_TASKS_TIMEOUT_MS = ScalableTimeout.scaleTimeout(3000L);
     private static final long FINISH_APP_TASKS_POLL_INTERVAL_MS = 100;
@@ -190,6 +191,28 @@ public class BaseChromiumAndroidJUnitRunner extends AndroidJUnitRunner {
             checkOrDeleteOnDiskSharedPreferences(false);
             clearDataDirectory(sInMemorySharedPreferencesContext);
             super.onStart();
+        }
+    }
+
+    // The Instrumentation implementation of waitForIdleSync does not have a timeout and can wait
+    // indefinitely in the case of animations, etc.
+    //
+    // You should never use this function in new code, as waitForIdleSync hides underlying issues.
+    // There's almost always a better condition to wait on.
+    @Override
+    public void waitForIdleSync() {
+        final CallbackHelper idleCallback = new CallbackHelper();
+        runOnMainSync(() -> {
+            Looper.myQueue().addIdleHandler(() -> {
+                idleCallback.notifyCalled();
+                return false;
+            });
+        });
+
+        try {
+            idleCallback.waitForFirst((int) WAIT_FOR_IDLE_TIMEOUT_MS, TimeUnit.MILLISECONDS);
+        } catch (TimeoutException ex) {
+            Log.w(TAG, "Timeout while waiting for idle main thread.");
         }
     }
 

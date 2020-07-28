@@ -145,9 +145,12 @@ void* DawnClientMemoryTransferService::AllocateHandle(
   DCHECK(handle);
   handle->size = static_cast<uint32_t>(size);
 
+  // If size is zero, actually allocate a byte to prevent later failures
+  size_t alloc_size = size == 0 ? 1 : size;
+
   DCHECK(mapped_memory_);
   return mapped_memory_->Alloc(
-      handle->size, &handle->shm_id, &handle->shm_offset,
+      alloc_size, &handle->shm_id, &handle->shm_offset,
       TransferBufferAllocationOption::kReturnNullOnOOM);
 }
 

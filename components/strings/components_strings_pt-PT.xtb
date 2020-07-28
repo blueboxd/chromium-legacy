@@ -363,7 +363,6 @@ Se não permitir, isto será bloqueado pelas suas definições de privacidade. I
 <translation id="2413528052993050574">Este servidor não conseguiu provar que é o domínio <ph name="DOMAIN" />; o respetivo certificado de segurança poderá ser revogado. Isto pode ser o resultado de uma configuração incorreta ou de um invasor a intercetar a sua ligação.</translation>
 <translation id="2438874542388153331">Perfuração quádrupla à direita</translation>
 <translation id="245044156129055925">Acabou de introduzir a sua palavra-passe num site fraudulento. O Chromium recomenda a alteração da palavra-passe agora.</translation>
-<translation id="2463193859425327265">Alterar página inicial</translation>
 <translation id="2463739503403862330">Preencher</translation>
 <translation id="2465402087343596252">Architecture-E</translation>
 <translation id="2465655957518002998">Escolher método de fornecimento</translation>
@@ -1163,7 +1162,6 @@ Se não permitir, isto será bloqueado pelas suas definições de privacidade. I
 <translation id="5785756445106461925">Além disso, esta página inclui outros recursos que não são seguros. Estes recursos podem ser vistos por outros utilizadores em trânsito e modificados por um utilizador mal intencionado com o intuito de alterar o aspeto da página.</translation>
 <translation id="5786044859038896871">Pretende preencher as informações do cartão?</translation>
 <translation id="5798290721819630480">Pretende rejeitar as alterações?</translation>
-<translation id="5798683403665926540">Alterar página inicial nas definições do Chrome</translation>
 <translation id="5803412860119678065">Pretende preencher o seu cartão <ph name="CARD_DETAIL" />?</translation>
 <translation id="5804241973901381774">Permissões</translation>
 <translation id="5804427196348435412">Utilizar dispositivos NFC</translation>
@@ -1611,7 +1609,6 @@ Detalhes adicionais:
 <translation id="7669271284792375604">Os utilizadores mal intencionados neste site podem tentar enganá-lo para instalar programas que são prejudiciais para a sua experiência de navegação (por exemplo, ao alterar a sua página inicial ou ao mostrar anúncios adicionais em sites que visita).</translation>
 <translation id="7673278391011283842">Caixa de correio 6</translation>
 <translation id="7676643023259824263">Pesquisar texto da área de transferência, <ph name="TEXT" /></translation>
-<translation id="7681101578153515023">Alterar motor de pesquisa</translation>
 <translation id="7682287625158474539">Envio</translation>
 <translation id="7687186412095877299">Preenche os formulários de pagamento com os seus métodos de pagamento guardados</translation>
 <translation id="7687305263118037187">Tempo limite da tentativa</translation>
@@ -1649,7 +1646,6 @@ Detalhes adicionais:
 <translation id="7802523362929240268">O site é legítimo</translation>
 <translation id="780301667611848630">Não, obrigado</translation>
 <translation id="7805768142964895445">Estado</translation>
-<translation id="7806344367022510803">Alterar definições do motor de pesquisa no Chrome</translation>
 <translation id="7812922009395017822">Mir</translation>
 <translation id="7813600968533626083">Remover a sugestão do formulário do Chrome?</translation>
 <translation id="781440967107097262">Pretende partilhar a área de transferência?</translation>
@@ -1791,7 +1787,6 @@ Detalhes adicionais:
 Detalhes adicionais:
 <ph name="DEBUG_INFO" /></translation>
 <translation id="8424582179843326029"><ph name="FIRST_LABEL" /> <ph name="SECOND_LABEL" /> <ph name="THIRD_LABEL" /></translation>
-<translation id="8425213833346101688">Alterar</translation>
 <translation id="8428213095426709021">Definições</translation>
 <translation id="8433057134996913067">Esta opção termina a sessão na maioria dos Sites.</translation>
 <translation id="8437238597147034694">&amp;Anular movimentação</translation>

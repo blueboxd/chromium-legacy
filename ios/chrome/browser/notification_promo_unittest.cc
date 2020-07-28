@@ -107,9 +107,10 @@ class NotificationPromoTest : public PlatformTest {
           pair.second.is_string() ? pair.second.GetString() : std::string();
     }
 
-    variations::AssociateVariationParams("IOSNTPPromotion", "Group1",
-                                         field_trial_params);
-    base::FieldTrialList::CreateFieldTrial("IOSNTPPromotion", "Group1");
+    variations::AssociateVariationParams(ios::kNTPPromoFinchExperiment,
+                                         "Group1", field_trial_params);
+    base::FieldTrialList::CreateFieldTrial(ios::kNTPPromoFinchExperiment,
+                                           "Group1");
 
     promo_text_ = promo_text;
 

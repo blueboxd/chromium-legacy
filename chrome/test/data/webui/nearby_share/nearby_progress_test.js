@@ -4,8 +4,10 @@
 
 // So that mojo is defined.
 import 'chrome://resources/mojo/mojo/public/js/mojo_bindings_lite.js';
+import 'chrome://resources/mojo/mojo/public/mojom/base/unguessable_token.mojom-lite.js';
 
 import 'chrome://nearby/nearby_progress.js';
+import 'chrome://nearby/nearby_share.mojom-lite.js';
 
 import {assertEquals} from '../chai_assert.js';
 
@@ -27,11 +29,16 @@ suite('ProgressTest', function() {
     assertEquals('NEARBY-PROGRESS', progressElement.tagName);
   });
 
-  test('renders deviceName', function() {
-    const deviceName = 'Device Name';
-    progressElement.setAttribute('device-name', deviceName);
+  test('renders device name', function() {
+    const name = 'Device Name';
+    const shareTarget = /** @type {!nearbyShare.mojom.ShareTarget} */ ({
+      id: {high: 0, low: 0},
+      name,
+      type: nearbyShare.mojom.ShareTargetType.kPhone,
+    });
+    progressElement.shareTarget = shareTarget;
 
-    const renderedDeviceName = progressElement.$$('#device-name').textContent;
-    assertEquals(deviceName, renderedDeviceName);
+    const renderedName = progressElement.$$('#device-name').textContent;
+    assertEquals(name, renderedName);
   });
 });

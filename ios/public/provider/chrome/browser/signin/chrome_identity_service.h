@@ -26,6 +26,7 @@ class ChromeBrowserState;
 @class UIApplication;
 @class UIImage;
 @class UINavigationController;
+@class UIScene;
 @class UIViewController;
 
 namespace ios {
@@ -102,10 +103,21 @@ class ChromeIdentityService {
 
   // Handles open URL authentication callback. Returns whether the URL was
   // actually handled. This should be called within
-  // UIApplicationDelegate application:openURL:options:.
+  // -[<UIApplicationDelegate> application:openURL:options:].
   virtual bool HandleApplicationOpenURL(UIApplication* application,
                                         NSURL* url,
                                         NSDictionary* options);
+
+  // Handles open URL authentication callback. Returns whether the URL was
+  // actually handled. This should be called within
+  // -[<UISceneDelegate> application:openURLContexts:].
+  virtual bool HandleSessionOpenURLContexts(UIScene* scene, NSSet* url_contexts)
+      API_AVAILABLE(ios(13.0));
+
+  // Discards scene session data.This should be called within
+  // -[<UIApplicationDelegate> application:didDiscardSceneSessions:].
+  virtual void ApplicationDidDiscardSceneSessions(NSSet* scene_sessions)
+      API_AVAILABLE(ios(13.0));
 
   // Dismisses all the dialogs created by the abstracted flows.
   virtual void DismissDialogs();

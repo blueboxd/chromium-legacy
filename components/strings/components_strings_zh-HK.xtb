@@ -358,7 +358,6 @@
 <translation id="2413528052993050574">伺服器無法證明其屬於 <ph name="DOMAIN" /> 網域；其安全性憑證已被撤銷。這可能是因為設定錯誤，或有攻擊者攔截您的連線。</translation>
 <translation id="2438874542388153331">四孔 (右側)</translation>
 <translation id="245044156129055925">您剛才在欺詐網站上輸入了密碼。Chromium 建議您立即變更密碼。</translation>
-<translation id="2463193859425327265">變更首頁</translation>
 <translation id="2463739503403862330">填寫</translation>
 <translation id="2465402087343596252">Architecture-E</translation>
 <translation id="2465655957518002998">選擇速遞方式</translation>
@@ -1150,7 +1149,6 @@
 <translation id="5785756445106461925">而且，這個網頁含有其他不安全的資源。其他人可能會在資源傳輸期間檢視這些資源，攻擊者也可能會修改這些資源，繼而變更網頁外觀。</translation>
 <translation id="5786044859038896871">要填寫您的信用卡資料嗎？</translation>
 <translation id="5798290721819630480">要捨棄變更嗎？</translation>
-<translation id="5798683403665926540">在 Chrome 設定中變更首頁</translation>
 <translation id="5803412860119678065">要填寫 <ph name="CARD_DETAIL" /> 的資料嗎？</translation>
 <translation id="5804241973901381774">權限</translation>
 <translation id="5804427196348435412">使用 NFC 裝置</translation>
@@ -1599,7 +1597,6 @@
 <translation id="7669271284792375604">攻擊者可能會經由此網站，嘗試誘使您安裝妨礙瀏覽體驗的程式 (例如變更您的首頁，或在您瀏覽的網站上顯示多餘的廣告)。</translation>
 <translation id="7673278391011283842">出紙槽 6</translation>
 <translation id="7676643023259824263">搵剪貼簿文字：<ph name="TEXT" /></translation>
-<translation id="7681101578153515023">變更搜尋引擎</translation>
 <translation id="7682287625158474539">寄送地址</translation>
 <translation id="7687186412095877299">在付款表格中填入已儲存的付款方法</translation>
 <translation id="7687305263118037187">重試逾時</translation>
@@ -1637,7 +1634,6 @@
 <translation id="7802523362929240268">合法網站</translation>
 <translation id="780301667611848630">不用了，謝謝</translation>
 <translation id="7805768142964895445">狀態</translation>
-<translation id="7806344367022510803">在 Chrome 中變更搜尋引擎設定</translation>
 <translation id="7812922009395017822">Mir</translation>
 <translation id="7813600968533626083">要從 Chrome 中移除表格建議嗎？</translation>
 <translation id="781440967107097262">要分享剪貼簿嗎？</translation>
@@ -1779,7 +1775,6 @@
 其他詳細資料：
 <ph name="DEBUG_INFO" /></translation>
 <translation id="8424582179843326029"><ph name="FIRST_LABEL" /> <ph name="SECOND_LABEL" /> <ph name="THIRD_LABEL" /></translation>
-<translation id="8425213833346101688">變更</translation>
 <translation id="8428213095426709021">設定</translation>
 <translation id="8433057134996913067">您會因此登出大多數網站。</translation>
 <translation id="8437238597147034694">復原移動(&amp;U)</translation>

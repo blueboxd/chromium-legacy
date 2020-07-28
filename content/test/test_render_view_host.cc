@@ -231,8 +231,7 @@ TestRenderViewHost::TestRenderViewHost(
                          main_frame_routing_id,
                          swapped_out,
                          false /* has_initialized_audio_host */),
-      delete_counter_(nullptr),
-      webkit_preferences_changed_counter_(nullptr) {
+      delete_counter_(nullptr) {
   // TestRenderWidgetHostView installs itself into this->view_ in its
   // constructor, and deletes itself when TestRenderWidgetHostView::Destroy() is
   // called.
@@ -303,13 +302,8 @@ void TestRenderViewHost::SimulateWasShown() {
 }
 
 WebPreferences TestRenderViewHost::TestComputeWebPreferences() {
-  return ComputeWebPreferences();
-}
-
-void TestRenderViewHost::OnWebkitPreferencesChanged() {
-  RenderViewHostImpl::OnWebkitPreferencesChanged();
-  if (webkit_preferences_changed_counter_)
-    ++*webkit_preferences_changed_counter_;
+  return static_cast<WebContentsImpl*>(WebContents::FromRenderViewHost(this))
+      ->ComputeWebPreferences();
 }
 
 bool TestRenderViewHost::IsTestRenderViewHost() const {

@@ -12,6 +12,7 @@ js_type_check("closure_compile") {
     ":discovery_manager",
     ":nearby_confirmation_page",
     ":nearby_device",
+    ":nearby_device_icon",
     ":nearby_discovery_page",
     ":nearby_preview",
     ":nearby_progress",
@@ -46,6 +47,15 @@ js_library("nearby_confirmation_page") {
 
 js_library("nearby_device") {
   deps = [
+    ":nearby_device_icon",
+    "//chrome/browser/ui/webui/nearby_share:mojom_js_library_for_compile",
+    "//third_party/polymer/v3_0/components-chromium/polymer:polymer_bundled",
+  ]
+}
+
+js_library("nearby_device_icon") {
+  deps = [
+    "//chrome/browser/ui/webui/nearby_share:mojom_js_library_for_compile",
     "//third_party/polymer/v3_0/components-chromium/iron-icon",
     "//third_party/polymer/v3_0/components-chromium/polymer:polymer_bundled",
   ]
@@ -59,6 +69,7 @@ js_library("nearby_discovery_page") {
     "//chrome/browser/ui/webui/nearby_share:mojom_js_library_for_compile",
     "//third_party/polymer/v3_0/components-chromium/polymer:polymer_bundled",
     "//ui/webui/resources/cr_elements/cr_button:cr_button.m",
+    "//ui/webui/resources/js:assert.m",
   ]
 }
 
@@ -70,7 +81,8 @@ js_library("nearby_preview") {
 
 js_library("nearby_progress") {
   deps = [
-    "//third_party/polymer/v3_0/components-chromium/iron-icon",
+    ":nearby_device_icon",
+    "//chrome/browser/ui/webui/nearby_share:mojom_js_library_for_compile",
     "//third_party/polymer/v3_0/components-chromium/polymer:polymer_bundled",
   ]
 }
@@ -81,6 +93,7 @@ html_to_js("web_components") {
     "icons.js",
     "nearby_confirmation_page.js",
     "nearby_device.js",
+    "nearby_device_icon.js",
     "nearby_discovery_page.js",
     "nearby_preview.js",
     "nearby_progress.js",

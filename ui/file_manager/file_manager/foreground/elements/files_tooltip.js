@@ -171,6 +171,8 @@ const FilesTooltip = Polymer({
 
     const useCardTooltip = target.hasAttribute('show-card-tooltip');
 
+    const windowEdgePadding = 6;
+
     const label = target.getAttribute('aria-label');
     if (!label) {
       return;
@@ -222,11 +224,14 @@ const FilesTooltip = Polymer({
       this.cleanupCardTooltip_();
 
       left = rect.left + rect.width / 2 - this.offsetWidth / 2;
-      if (left < 0) {
-        left = 0;
+      if (left < windowEdgePadding) {
+        left = windowEdgePadding;
       }
-      if (left > document.body.offsetWidth - this.offsetWidth) {
-        left = document.body.offsetWidth - this.offsetWidth;
+
+      const maxLeft =
+          document.body.offsetWidth - this.offsetWidth - windowEdgePadding;
+      if (left > maxLeft) {
+        left = maxLeft;
       }
     }
 

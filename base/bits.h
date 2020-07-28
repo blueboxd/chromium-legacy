@@ -42,10 +42,25 @@ inline size_t Align(size_t size, size_t alignment) {
   return (size + alignment - 1) & ~(alignment - 1);
 }
 
+// Advance |ptr| to the next multiple of alignment, which must be a power of
+// two. Defined for types where sizeof(T) is one byte.
+template <typename T, typename = typename std::enable_if<sizeof(T) == 1>::type>
+inline T* Align(T* ptr, size_t alignment) {
+  return reinterpret_cast<T*>(Align(reinterpret_cast<size_t>(ptr), alignment));
+}
+
 // Round down |size| to a multiple of alignment, which must be a power of two.
 inline size_t AlignDown(size_t size, size_t alignment) {
   DCHECK(IsPowerOfTwo(alignment));
   return size & ~(alignment - 1);
+}
+
+// Move |ptr| back to the previous multiple of alignment, which must be a power
+// of two. Defined for types where sizeof(T) is one byte.
+template <typename T, typename = typename std::enable_if<sizeof(T) == 1>::type>
+inline T* AlignDown(T* ptr, size_t alignment) {
+  return reinterpret_cast<T*>(
+      AlignDown(reinterpret_cast<size_t>(ptr), alignment));
 }
 
 // CountLeadingZeroBits(value) returns the number of zero bits following the

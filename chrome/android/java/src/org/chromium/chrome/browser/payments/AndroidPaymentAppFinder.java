@@ -227,6 +227,11 @@ public class AndroidPaymentAppFinder implements ManifestVerifyCallback {
                 onValidPaymentAppForPaymentMethodName(twaApp, appStoreMethod);
             }
         }
+
+        String packageName = twaApp.activityInfo.packageName;
+        AndroidPaymentApp app = mValidApps.get(packageName);
+        assert app != null;
+        app.setIsPreferred(true);
     }
 
     private boolean paymentAppSupportsUriMethod(ResolveInfo app, GURL urlMethod) {

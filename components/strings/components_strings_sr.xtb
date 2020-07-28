@@ -363,7 +363,6 @@
 <translation id="2413528052993050574">Овај сервер не може да докаже да је <ph name="DOMAIN" />; његов безбедносни сертификат ће можда бити опозван. Узрок томе је можда погрешна конфигурација или нападач који је прекинуо везу.</translation>
 <translation id="2438874542388153331">Четвороструко бушење на десној страни</translation>
 <translation id="245044156129055925">Управо сте унели лозинку на обмањујућем сајту. Chromium препоручује да одмах промените лозинку.</translation>
-<translation id="2463193859425327265">Промените почетну страницу</translation>
 <translation id="2463739503403862330">Попуни</translation>
 <translation id="2465402087343596252">Architecture-E</translation>
 <translation id="2465655957518002998">Одаберите начин доставе</translation>
@@ -1163,7 +1162,6 @@
 <translation id="5785756445106461925">Поред тога, ова страница садржи и друге ресурсе који нису безбедни. Ове ресурсе могу да виде и други док су у пролазу и нападач може да их измени како би променио изглед странице.</translation>
 <translation id="5786044859038896871">Желите ли да попуните информације о картици?</translation>
 <translation id="5798290721819630480">Желите ли да одбаците промене?</translation>
-<translation id="5798683403665926540">Промените почетну страницу у подешавањима Chrome-а</translation>
 <translation id="5803412860119678065">Желите ли да попуните подацима <ph name="CARD_DETAIL" />?</translation>
 <translation id="5804241973901381774">Дозволе</translation>
 <translation id="5804427196348435412">користи NFC уређаје</translation>
@@ -1611,7 +1609,6 @@
 <translation id="7669271284792375604">Нападачи на овом сајту могу да покушају да вас преваре да бисте инсталирали програме који штете доживљају прегледања (на пример, тако што мењају почетну страницу или приказују додатне огласе на сајтовима које посећујете).</translation>
 <translation id="7673278391011283842">6. поштанско сандуче</translation>
 <translation id="7676643023259824263">Потражите текст у привременој меморији, <ph name="TEXT" /></translation>
-<translation id="7681101578153515023">Промените претраживач</translation>
 <translation id="7682287625158474539">Испорука</translation>
 <translation id="7687186412095877299">Попуњава обрасце за плаћање информацијама о сачуваним начинима плаћања</translation>
 <translation id="7687305263118037187">Истекло је време поновног покушаја</translation>
@@ -1649,7 +1646,6 @@
 <translation id="7802523362929240268">Сајт је легитиман</translation>
 <translation id="780301667611848630">Не, хвала</translation>
 <translation id="7805768142964895445">Статус</translation>
-<translation id="7806344367022510803">Промените подешавања претраживача у Chrome-у</translation>
 <translation id="7812922009395017822">Mir</translation>
 <translation id="7813600968533626083">Желите ли да уклоните предлог из Chrome-а?</translation>
 <translation id="781440967107097262">Дозволићете дељење привремене меморије?</translation>
@@ -1791,7 +1787,6 @@
 Додатни детаљи:
 <ph name="DEBUG_INFO" /></translation>
 <translation id="8424582179843326029"><ph name="FIRST_LABEL" /> <ph name="SECOND_LABEL" /> <ph name="THIRD_LABEL" /></translation>
-<translation id="8425213833346101688">Промени</translation>
 <translation id="8428213095426709021">Подешавања</translation>
 <translation id="8433057134996913067">Овако ћете се одјавити са већине веб-сајтова.</translation>
 <translation id="8437238597147034694">&amp;Опозови премештање</translation>

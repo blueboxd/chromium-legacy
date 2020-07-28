@@ -70,6 +70,9 @@ const std::map<std::string, std::string> CreatePathPrefixAliasesMap() {
     // more context: crbug.com/1020284.
     {"@out_folder@/android_clang_arm/gen/ui/webui/resources/", ""},
 #endif  // defined(OS_ANDROID)
+#if defined(OS_CHROMEOS)
+    {"@out_folder@/gen/ui/chromeos/", "chromeos/"},
+#endif  // defined(OS_CHROMEOS)
   };
 
 #if !defined(OS_ANDROID)

@@ -24,12 +24,55 @@ struct WebRtcDependencies {
   pending_remote<sharing.mojom.WebRtcSignalingMessenger> messenger;
 };
 
+// Listener invoked during endpoint discovery. This interface is used by the
+// browser process to listen for remote endpoints status during endpoint
+// discovery.
+interface EndpointDiscoveryListener {
+  // Called when a remote endpoint is discovered.
+  //
+  // endpoint_id - The ID of the remote endpoint that was discovered.
+  // info        - Further information about the remote endpoint which may
+  //               include the human readable name if it is advertising in high
+  //               visibility mode.
+  OnEndpointFound(string endpoint_id, DiscoveredEndpointInfo info);
+
+  // Called when a remote endpoint is no longer discoverable; only called for
+  // endpoints that previously had been passed to OnEndpointFound().
+  //
+  // endpoint_id - The ID of the remote endpoint that was lost.
+  OnEndpointLost(string endpoint_id);
+};
+
 // Main interface to control the NearbyConnections library. Implemented in a
 // sandboxed process. This interface is used by the browser process to connect
 // to remote devices and send / receive raw data packets. Parsing of those
 // packets is not part of the NearbyConnections library and is done in a
 // separate interface.
 interface NearbyConnections {
+  // Starts discovery for remote endpoints with the specified service ID.
+  //
+  // service_id - The ID for the service to be discovered, as specified in
+  //              the corresponding call to StartAdvertising.
+  // options    - The options for discovery.
+  // listener   - A callback notified when a remote endpoint is discovered.
+  // Possible status codes include:
+  //   Status::kSuccess if discovery started successfully.
+  //   Status::kAlreadyDiscovering if the app is already
+  //       discovering the specified service.
+  //   Status::kOutOfOrderApiCall if the app is currently
+  //       connected to remote endpoints; call StopAllEndpoints first.
+  StartDiscovery(string service_id, DiscoveryOptions options,
+                 pending_remote<EndpointDiscoveryListener> listener)
+      => (Status status);
+
+  // Stops discovery for remote endpoints, after a previous call to
+  // StartDiscovery, when the client no longer needs to discover endpoints or
+  // goes inactive. Payloads can still be sent to connected endpoints after
+  // discovery ends.
+  //
+  // Possible return values include:
+  //   Status::kSuccess returned after discovery got stopped.
+  StopDiscovery() => (Status status);
 };
 
 // Provide all the dependencies that NearbyConnections library requires.

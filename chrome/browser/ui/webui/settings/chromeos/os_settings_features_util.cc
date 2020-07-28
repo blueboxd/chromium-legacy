@@ -47,11 +47,6 @@ bool ShouldShowExternalStorageSettings(const Profile* profile) {
          arc::IsArcPlayStoreEnabledForProfile(profile);
 }
 
-bool ShouldShowDlcSettings() {
-  return !IsGuestModeActive() &&
-         base::FeatureList::IsEnabled(chromeos::features::kDlcSettingsUi);
-}
-
 }  // namespace features
 }  // namespace settings
 }  // namespace chromeos

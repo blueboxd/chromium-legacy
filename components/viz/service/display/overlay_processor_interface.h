@@ -6,6 +6,7 @@
 #define COMPONENTS_VIZ_SERVICE_DISPLAY_OVERLAY_PROCESSOR_INTERFACE_H_
 
 #include <memory>
+#include <vector>
 
 #include "base/containers/flat_map.h"
 #include "base/macros.h"
@@ -97,14 +98,10 @@ class VIZ_SERVICE_EXPORT OverlayProcessorInterface {
       const gpu::Mailbox& mailbox);
 
   static std::unique_ptr<OverlayProcessorInterface> CreateOverlayProcessor(
-      gpu::SurfaceHandle surface_handle,
-      const OutputSurface::Capabilities& capabilities,
-      const RendererSettings& renderer_settings,
-      const DebugRendererSettings* debug_settings,
+      OutputSurface* output_surface,
       gpu::SharedImageManager* shared_image_manager,
-      gpu::MemoryTracker* memory_tracker,
-      scoped_refptr<gpu::GpuTaskSchedulerHelper> gpu_task_scheduler,
-      gpu::SharedImageInterface* shared_image_interface);
+      const RendererSettings& renderer_settings,
+      const DebugRendererSettings* debug_settings);
 
   virtual ~OverlayProcessorInterface() {}
 
@@ -159,7 +156,8 @@ class VIZ_SERVICE_EXPORT OverlayProcessorInterface {
   // approximate signale for when the overlays are presented.
   virtual void OverlayPresentationComplete();
 
-  // These two functions are used by Android SurfaceControl.
+  // These two functions are used by Android SurfaceControl, and SetViewportSize
+  // is also used for Windows DC layers.
   virtual void SetDisplayTransformHint(gfx::OverlayTransform transform) {}
   virtual void SetViewportSize(const gfx::Size& size) {}
 

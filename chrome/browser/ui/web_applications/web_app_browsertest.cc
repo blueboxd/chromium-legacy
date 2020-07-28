@@ -270,17 +270,33 @@ IN_PROC_BROWSER_TEST_P(WebAppBrowserTest, HasMinimalUiButtons) {
     web_app_info->open_as_window = open_as_window;
     AppId app_id = InstallWebApp(std::move(web_app_info));
     Browser* app_browser = LaunchWebAppBrowser(app_id);
+    DCHECK(app_browser->app_controller());
     tester.ExpectUniqueSample(kLaunchWebAppDisplayModeHistogram, display_mode,
                               1);
 
-    return app_browser->app_controller()->HasMinimalUiButtons();
+    bool matches;
+    EXPECT_TRUE(ExecuteScriptAndExtractBool(
+        app_browser->tab_strip_model()->GetActiveWebContents(),
+        "window.domAutomationController.send(window.matchMedia('(display-mode: "
+        "minimal-ui)').matches)",
+        &matches));
+    EXPECT_EQ(app_browser->app_controller()->HasMinimalUiButtons(), matches);
+
+    return matches;
   };
 
+  EXPECT_TRUE(has_buttons(DisplayMode::kBrowser,
+                          /*open_as_window=*/true));
   EXPECT_TRUE(has_buttons(DisplayMode::kMinimalUi,
                           /*open_as_window=*/true));
   EXPECT_FALSE(has_buttons(DisplayMode::kStandalone,
                            /*open_as_window=*/true));
-  EXPECT_FALSE(has_buttons(DisplayMode::kMinimalUi,
+
+  EXPECT_TRUE(has_buttons(DisplayMode::kBrowser,
+                          /*open_as_window=*/false));
+  EXPECT_TRUE(has_buttons(DisplayMode::kMinimalUi,
+                          /*open_as_window=*/false));
+  EXPECT_FALSE(has_buttons(DisplayMode::kStandalone,
                            /*open_as_window=*/false));
 }
 
@@ -765,6 +781,38 @@ IN_PROC_BROWSER_TEST_P(WebAppBrowserTest, ReparentLastBrowserTab) {
 
   ASSERT_TRUE(IsBrowserOpen(browser()));
   EXPECT_EQ(browser()->tab_strip_model()->count(), 1);
+}
+
+// Tests that reparenting a shortcut app tab results in a minimal-ui app window.
+IN_PROC_BROWSER_TEST_P(WebAppBrowserTest, ReparentShortcutApp) {
+  const GURL app_url = GetSecureAppURL();
+  auto web_app_info = std::make_unique<WebApplicationInfo>();
+  web_app_info->app_url = app_url;
+  web_app_info->scope = app_url.GetWithoutFilename();
+  web_app_info->display_mode = DisplayMode::kBrowser;
+  web_app_info->open_as_window = false;
+  web_app_info->title = base::ASCIIToUTF16("A Shortcut App");
+  const AppId app_id = InstallWebApp(std::move(web_app_info));
+
+  NavigateToURLAndWait(browser(), app_url);
+  content::WebContents* tab_contents =
+      browser()->tab_strip_model()->GetActiveWebContents();
+  ASSERT_EQ(tab_contents->GetLastCommittedURL(), app_url);
+
+  EXPECT_EQ(GetAppMenuCommandState(IDC_OPEN_IN_PWA_WINDOW, browser()),
+            kEnabled);
+  EXPECT_TRUE(chrome::ExecuteCommand(browser(), IDC_OPEN_IN_PWA_WINDOW));
+
+  Browser* const app_browser = BrowserList::GetInstance()->GetLastActive();
+  ASSERT_EQ(app_browser->app_controller()->GetAppId(), app_id);
+  EXPECT_TRUE(app_browser->app_controller()->HasMinimalUiButtons());
+
+  // User preference remains unchanged. Future instances will open in tabs.
+  auto* provider = WebAppProvider::Get(profile());
+  EXPECT_EQ(provider->registrar().GetAppUserDisplayMode(app_id),
+            DisplayMode::kBrowser);
+  EXPECT_EQ(provider->registrar().GetAppEffectiveDisplayMode(app_id),
+            DisplayMode::kBrowser);
 }
 
 // Tests that the manifest name of the current installable site is used in the

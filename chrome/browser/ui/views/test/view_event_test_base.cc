@@ -19,12 +19,11 @@
 
 #if defined(USE_AURA) && !defined(OS_CHROMEOS)
 #include "ui/display/screen.h"
+#include "ui/views/widget/desktop_aura/desktop_screen.h"
 
 #if defined(USE_X11)
 #include "ui/views/test/test_desktop_screen_x11.h"
-#else
-#include "ui/views/widget/desktop_aura/desktop_screen.h"
-#endif
+#endif  // defined(USE_X11)
 #endif
 
 namespace {
@@ -97,9 +96,9 @@ ViewEventTestBase::ViewEventTestBase() {
 #if defined(USE_X11)
   if (!features::IsUsingOzonePlatform())
     views::test::TestDesktopScreenX11::GetInstance();
-#else
-  screen_.reset(views::CreateDesktopScreen());
-#endif
+#endif  // defined(USE_X11)
+  if (!display::Screen::GetScreen())
+    screen_.reset(views::CreateDesktopScreen());
 #endif
 }
 

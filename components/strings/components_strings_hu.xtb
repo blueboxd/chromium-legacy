@@ -363,7 +363,6 @@ Ezt egyéb esetben letiltják az adatvédelmi beállításai. Az engedélyezéss
 <translation id="2413528052993050574">A szerver nem tudta bizonyítani, hogy valóban a(z) <ph name="DOMAIN" /> domainbe tartozik; biztonsági tanúsítványát visszavonhatták. Ennek oka lehet konfigurációs hiba, vagy hogy egy támadó eltérítette az Ön kapcsolódását.</translation>
 <translation id="2438874542388153331">Négy lyuk a jobb oldalon</translation>
 <translation id="245044156129055925">Megtévesztő webhelyen adta meg jelszavát. A Chromium a jelszó azonnali módosítását javasolja.</translation>
-<translation id="2463193859425327265">Kezdőlap módosítása</translation>
 <translation id="2463739503403862330">Kitöltés</translation>
 <translation id="2465402087343596252">Architecture-E</translation>
 <translation id="2465655957518002998">Kézbesítési mód kiválasztása</translation>
@@ -1159,7 +1158,6 @@ Ezt egyéb esetben letiltják az adatvédelmi beállításai. Az engedélyezéss
 <translation id="5785756445106461925">Emellett az oldal azonban más forrásokat is tartalmaz, amelyek nem biztonságosak. Ezeket a forrásokat mások is megtekinthetik átvitel közben, és megváltoztatásukkal a támadók módosíthatják az oldal viselkedését.</translation>
 <translation id="5786044859038896871">Ki szeretné tölteni a kártyaadatait?</translation>
 <translation id="5798290721819630480">Elveti a módosításokat?</translation>
-<translation id="5798683403665926540">Kezdőlap módosítása a Chrome beállításaiban</translation>
 <translation id="5803412860119678065">Ki szeretné tölteni <ph name="CARD_DETAIL" /> kártyájának adataival?</translation>
 <translation id="5804241973901381774">Engedélyek</translation>
 <translation id="5804427196348435412">NFC-eszközök használata</translation>
@@ -1608,7 +1606,6 @@ További részletek:
 <translation id="7669271284792375604">A webhelyen lévő támadók megpróbálhatják csellel rávenni Önt olyan programok telepítésére, amelyek károsak a böngészési élmény szempontjából (például módosítják a kezdőlapot, vagy plusz hirdetéseket jelenítenek meg a felkeresett webhelyeken).</translation>
 <translation id="7673278391011283842">6. postaláda</translation>
 <translation id="7676643023259824263">Vágólapon lévő szöveg keresése, <ph name="TEXT" /></translation>
-<translation id="7681101578153515023">Keresőmotor megváltoztatása</translation>
 <translation id="7682287625158474539">Szállítási cím</translation>
 <translation id="7687186412095877299">Kitölti a fizetési űrlapokat az Ön mentett fizetési módjaival</translation>
 <translation id="7687305263118037187">Újrapróbálkozás időtúllépése</translation>
@@ -1646,7 +1643,6 @@ További részletek:
 <translation id="7802523362929240268">A webhely valódi</translation>
 <translation id="780301667611848630">Köszönöm, nem</translation>
 <translation id="7805768142964895445">Állapot</translation>
-<translation id="7806344367022510803">A keresőmotor beállításainak módosítása a Chrome-ban</translation>
 <translation id="7812922009395017822">Mir</translation>
 <translation id="7813600968533626083">Eltávolítja a javaslatot a Chrome-ból?</translation>
 <translation id="781440967107097262">Engedélyezi a vágólap megosztását?</translation>
@@ -1788,7 +1784,6 @@ További részletek:
 További részletek:
 <ph name="DEBUG_INFO" /></translation>
 <translation id="8424582179843326029"><ph name="FIRST_LABEL" /> <ph name="SECOND_LABEL" /> <ph name="THIRD_LABEL" /></translation>
-<translation id="8425213833346101688">Módosítás</translation>
 <translation id="8428213095426709021">Beállítások</translation>
 <translation id="8433057134996913067">Ezzel kijelentkezik a legtöbb webhelyről.</translation>
 <translation id="8437238597147034694">&amp;Áthelyezés visszavonása</translation>

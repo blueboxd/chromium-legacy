@@ -92,7 +92,10 @@ bool AccessibilityNodeInfoDataWrapper::IsImportantInAndroid() const {
 bool AccessibilityNodeInfoDataWrapper::CanBeAccessibilityFocused() const {
   if (!IsAccessibilityFocusableContainer() && !HasAccessibilityFocusableText())
     return false;
-  return !ComputeAXName(true).empty();
+
+  ui::AXNodeData data;
+  PopulateAXRole(&data);
+  return ui::IsControl(data.role) || !ComputeAXName(true).empty();
 }
 
 bool AccessibilityNodeInfoDataWrapper::IsAccessibilityFocusableContainer()
@@ -320,7 +323,7 @@ void AccessibilityNodeInfoDataWrapper::Serialize(
   bool is_node_tree_root = tree_source_->IsRootOfNodeTree(GetId());
   // String properties that doesn't belong to any of existing chrome
   // automation string properties are pushed into description.
-  // TODO: Refactor this to make clear the functionality(b/158633575).
+  // TODO (sahok): Refactor this to make clear the functionality(b/158633575).
   std::vector<std::string> descriptions;
 
   // String properties.

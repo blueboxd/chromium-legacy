@@ -188,11 +188,7 @@ void AwSettings::UpdateWebkitPreferencesLocked(
   if (!render_view_host_ext)
     return;
 
-  content::RenderViewHost* render_view_host =
-      web_contents()->GetRenderViewHost();
-  if (!render_view_host)
-    return;
-  render_view_host->OnWebkitPreferencesChanged();
+  web_contents()->OnWebPreferencesChanged();
 }
 
 void AwSettings::UpdateInitialPageScaleLocked(

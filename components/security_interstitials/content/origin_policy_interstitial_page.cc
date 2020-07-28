@@ -34,10 +34,6 @@ OriginPolicyInterstitialPage::~OriginPolicyInterstitialPage() = default;
 
 void OriginPolicyInterstitialPage::OnInterstitialClosing() {}
 
-bool OriginPolicyInterstitialPage::ShouldCreateNewNavigation() const {
-  return false;
-}
-
 void OriginPolicyInterstitialPage::PopulateInterstitialStrings(
     base::DictionaryValue* load_time_data) {
   load_time_data->SetString("type", "ORIGIN_POLICY");

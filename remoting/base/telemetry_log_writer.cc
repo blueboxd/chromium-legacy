@@ -52,12 +52,11 @@ const int kMaxSendAttempts = 5;
 
 TelemetryLogWriter::TelemetryLogWriter(
     std::unique_ptr<OAuthTokenGetter> token_getter)
-    : token_getter_(std::move(token_getter)),
-      stub_(apis::v1::RemotingTelemetryService::NewStub(
-          CreateSslChannelForEndpoint(
-              ServiceUrls::GetInstance()->remoting_server_endpoint()))),
-      executor_(token_getter_.get()),
-      backoff_(&kBackoffPolicy) {
+    : TelemetryLogWriter(
+          std::move(token_getter),
+          apis::v1::RemotingTelemetryService::NewStub(
+              CreateSslChannelForEndpoint(
+                  ServiceUrls::GetInstance()->remoting_server_endpoint()))) {
   DETACH_FROM_THREAD(thread_checker_);
   DCHECK(token_getter_);
 }
@@ -70,6 +69,18 @@ void TelemetryLogWriter::Log(const ChromotingEvent& entry) {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   pending_entries_.push_back(entry);
   SendPendingEntries();
+}
+
+TelemetryLogWriter::TelemetryLogWriter(
+    std::unique_ptr<OAuthTokenGetter> token_getter,
+    std::unique_ptr<apis::v1::RemotingTelemetryService::StubInterface> stub)
+    : token_getter_(std::move(token_getter)),
+      stub_(std::move(stub)),
+      executor_(token_getter_.get()),
+      backoff_(&kBackoffPolicy) {
+  DETACH_FROM_THREAD(thread_checker_);
+  DCHECK(token_getter_);
+  DCHECK(stub_);
 }
 
 void TelemetryLogWriter::SendPendingEntries() {
@@ -98,7 +109,7 @@ void TelemetryLogWriter::SendPendingEntries() {
 void TelemetryLogWriter::DoSend(apis::v1::CreateEventRequest request) {
   executor_.ExecuteRpc(CreateGrpcAsyncUnaryRequest(
       base::BindOnce(
-          &apis::v1::RemotingTelemetryService::Stub::AsyncCreateEvent,
+          &apis::v1::RemotingTelemetryService::StubInterface::AsyncCreateEvent,
           base::Unretained(stub_.get())),
       request,
       base::BindOnce(&TelemetryLogWriter::OnSendLogResult,
@@ -128,6 +139,10 @@ void TelemetryLogWriter::OnSendLogResult(
   }
   sending_entries_.clear();
   SendPendingEntries();
+}
+
+bool TelemetryLogWriter::IsIdleForTesting() {
+  return sending_entries_.empty() && pending_entries_.empty();
 }
 
 }  // namespace remoting

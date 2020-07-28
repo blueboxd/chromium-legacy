@@ -48,6 +48,7 @@ ScriptPromise XRHitTestResult::createAnchor(ScriptState* script_state,
   if (!session_->IsFeatureEnabled(device::mojom::XRSessionFeature::ANCHORS)) {
     exception_state.ThrowDOMException(DOMExceptionCode::kNotSupportedError,
                                       XRSession::kAnchorsFeatureNotSupported);
+    DVLOG(3) << __func__ << ": anchors not supported on the session";
     return {};
   }
 
@@ -65,6 +66,7 @@ ScriptPromise XRHitTestResult::createAnchor(ScriptState* script_state,
   if (!reference_space_information) {
     exception_state.ThrowDOMException(DOMExceptionCode::kInvalidStateError,
                                       XRSession::kUnableToRetrieveMatrix);
+    DVLOG(3) << __func__ << ": unable to obtain stationary reference space";
     return {};
   }
 

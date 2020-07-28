@@ -29,9 +29,16 @@ class ChosenObjectView : public views::View, public views::ButtonListener {
 
   void AddObserver(ChosenObjectViewObserver* observer);
 
- private:
+  // views:View:
+  void OnThemeChanged() override;
+
   // views::ButtonListener implementation.
   void ButtonPressed(views::Button* sender, const ui::Event& event) override;
+
+ private:
+  SkColor GetObjectIconColor() const;
+
+  void UpdateIconImage(bool is_deleted) const;
 
   views::ImageView* icon_;             // Owned by the views hierarchy.
   views::ImageButton* delete_button_;  // Owned by the views hierarchy.

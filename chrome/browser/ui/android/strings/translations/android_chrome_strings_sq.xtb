@@ -335,6 +335,7 @@ Prek dhe mbaj shtypur një fjalë për ta kërkuar. Për të përsosur kërkimin
 <translation id="3658159451045945436">Rivendosja spastron historikun e kursimit të të dhënave, duke përfshirë edhe listën e sajteve të vizituara.</translation>
 <translation id="3692944402865947621">Shkarkimi i skedarit <ph name="FILE_NAME" /> dështoi sepse vendndodhja e hapësirës ruajtëse nuk është e arritshme.</translation>
 <translation id="3701167022068948696">Rregullo tani</translation>
+<translation id="371230970611282515">Parashikon dhe të paralajmëron rreth ngjarjeve të rrezikshme përpara se ato të ndodhin.</translation>
 <translation id="3714981814255182093">Hap shiritin e gjetjes</translation>
 <translation id="3716182511346448902">Kjo faqe përdor shumë memorie, prandaj Chrome e ka vendosur atë në pauzë.</translation>
 <translation id="3721119614952978349">Ti dhe Google</translation>
@@ -713,6 +714,7 @@ Për shembull, disa sajte uebi mund t'i përgjigjen kësaj kërkese duke të tre
 <translation id="6593061639179217415">Sajti për desktop</translation>
 <translation id="6597891566292541626">Pozicionoje kodin QR/barkodin në këtë kornizë.</translation>
 <translation id="6600954340915313787">Kopjuar në Chrome</translation>
+<translation id="661266467055912436">Përmirëson sigurinë për ty dhe këdo në ueb.</translation>
 <translation id="6627583120233659107">Modifiko dosjen</translation>
 <translation id="6643016212128521049">Pastro</translation>
 <translation id="6643649862576733715">Rendit sipas sasisë së të dhënave të ruajtura</translation>
@@ -872,6 +874,7 @@ Për shembull, disa sajte uebi mund t'i përgjigjen kësaj kërkese duke të tre
 <translation id="7925590027513907933">{FILE_COUNT,plural, =1{Po shkarkohet skedari.}other{Po shkarkohen # skedarë.}}</translation>
 <translation id="7926975587469166629">Pseudonimi i kartës</translation>
 <translation id="7929962904089429003">Hap menynë</translation>
+<translation id="7930998711684428189">Të paralajmëron nëse fjalëkalimet janë ekspozuar në një nxjerrje të paautorizuar të të dhënave.</translation>
 <translation id="7942131818088350342"><ph name="PRODUCT_NAME" /> është i vjetruar.</translation>
 <translation id="7947953824732555851">Pranoje dhe identifikohu</translation>
 <translation id="7963646190083259054">Shitësi:</translation>

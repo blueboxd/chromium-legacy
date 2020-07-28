@@ -80,7 +80,7 @@ class SelectFileDialogExtension
     // Android task ID if the owner window is an Android app.
     base::Optional<int> android_task_id;
     // Lacros window ID if the owner window is a Lacros browser.
-    base::Optional<int> lacros_window_id;
+    base::Optional<std::string> lacros_window_id;
   };
   void SelectFileWithFileManagerParams(Type type,
                                        const base::string16& title,

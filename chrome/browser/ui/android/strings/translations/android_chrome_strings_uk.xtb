@@ -335,6 +335,7 @@
 <translation id="3658159451045945436">Буде скинуто історію заощадження трафіку, зокрема список відвіданих веб-сайтів.</translation>
 <translation id="3692944402865947621">Не вдалося завантажити файл <ph name="FILE_NAME" />. Місце зберігання недоступне.</translation>
 <translation id="3701167022068948696">Виправити зараз</translation>
+<translation id="371230970611282515">Передбачає небезпечні події та повідомляє про них ще до того, як вони відбудуться.</translation>
 <translation id="3714981814255182093">Відкрити рядок пошуку</translation>
 <translation id="3716182511346448902">Ця сторінка займає велику кількість пам’яті, тому Chrome призупинив її роботу.</translation>
 <translation id="3721119614952978349">Ви й Google</translation>
@@ -713,6 +714,7 @@
 <translation id="6593061639179217415">Версія для комп’ютера</translation>
 <translation id="6597891566292541626">Вставте QR-код або штрих-код у цю рамку.</translation>
 <translation id="6600954340915313787">Скопійовано в Chrome</translation>
+<translation id="661266467055912436">Покращує захист усіх користувачів в Інтернеті.</translation>
 <translation id="6627583120233659107">Редагувати папку</translation>
 <translation id="6643016212128521049">Очистити</translation>
 <translation id="6643649862576733715">Сортувати за кількістю заощадженого трафіку</translation>
@@ -872,6 +874,7 @@
 <translation id="7925590027513907933">{FILE_COUNT,plural, =1{Завантажується файл.}one{Завантажується # файл.}few{Завантажується # файли.}many{Завантажується # файлів.}other{Завантажується # файлу.}}</translation>
 <translation id="7926975587469166629">Псевдонім картки</translation>
 <translation id="7929962904089429003">Відкрити меню</translation>
+<translation id="7930998711684428189">Попереджає, якщо паролі розкрито через порушення безпеки даних.</translation>
 <translation id="7942131818088350342">Застаріла версія <ph name="PRODUCT_NAME" />.</translation>
 <translation id="7947953824732555851">Прийняти й увійти</translation>
 <translation id="7963646190083259054">Постачальник:</translation>

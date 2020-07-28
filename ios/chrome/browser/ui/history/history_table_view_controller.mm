@@ -28,6 +28,7 @@
 #include "ios/chrome/browser/ui/history/history_entry_inserter.h"
 #import "ios/chrome/browser/ui/history/history_entry_item.h"
 #import "ios/chrome/browser/ui/history/history_entry_item_delegate.h"
+#include "ios/chrome/browser/ui/history/history_menu_provider.h"
 #import "ios/chrome/browser/ui/history/history_ui_constants.h"
 #include "ios/chrome/browser/ui/history/history_ui_delegate.h"
 #include "ios/chrome/browser/ui/history/history_util.h"
@@ -38,7 +39,8 @@
 #import "ios/chrome/browser/ui/table_view/cells/table_view_url_item.h"
 #import "ios/chrome/browser/ui/table_view/table_view_favicon_data_source.h"
 #import "ios/chrome/browser/ui/table_view/table_view_navigation_controller_constants.h"
-#import "ios/chrome/browser/ui/ui_feature_flags.h"
+#include "ios/chrome/browser/ui/ui_feature_flags.h"
+#import "ios/chrome/browser/ui/util/menu_util.h"
 #import "ios/chrome/browser/ui/util/multi_window_support.h"
 #import "ios/chrome/browser/ui/util/pasteboard_util.h"
 #import "ios/chrome/browser/url_loading/url_loading_browser_agent.h"
@@ -183,13 +185,15 @@ const CGFloat kButtonHorizontalPadding = 30.0;
   // history content.
   self.tableView.tableFooterView = [[UIView alloc] init];
 
-  // Long-press gesture recognizer.
-  UILongPressGestureRecognizer* longPressRecognizer =
-      [[UILongPressGestureRecognizer alloc]
-          initWithTarget:self
-                  action:@selector
-                  (displayContextMenuInvokedByGestureRecognizer:)];
-  [self.tableView addGestureRecognizer:longPressRecognizer];
+  if (!IsNativeContextMenuEnabled()) {
+    // Long-press gesture recognizer.
+    UILongPressGestureRecognizer* longPressRecognizer =
+        [[UILongPressGestureRecognizer alloc]
+            initWithTarget:self
+                    action:@selector
+                    (displayContextMenuInvokedByGestureRecognizer:)];
+    [self.tableView addGestureRecognizer:longPressRecognizer];
+  }
 
   if (DragAndDropIsEnabled()) {
     self.dragDropHandler = [[TableViewURLDragDropHandler alloc] init];
@@ -611,6 +615,22 @@ const CGFloat kButtonHorizontalPadding = 30.0;
     canEditRowAtIndexPath:(NSIndexPath*)indexPath {
   TableViewItem* item = [self.tableViewModel itemAtIndexPath:indexPath];
   return (item.type == ItemTypeHistoryEntry);
+}
+
+- (UIContextMenuConfiguration*)tableView:(UITableView*)tableView
+    contextMenuConfigurationForRowAtIndexPath:(NSIndexPath*)indexPath
+                                        point:(CGPoint)point
+    API_AVAILABLE(ios(13.0)) {
+  if (!IsNativeContextMenuEnabled()) {
+    // Returning nil will allow the gesture to be captured and show the old
+    // context menus.
+    return nil;
+  }
+
+  HistoryEntryItem* entry = base::mac::ObjCCastStrict<HistoryEntryItem>(
+      [self.tableViewModel itemAtIndexPath:indexPath]);
+  UIView* cell = [self.tableView cellForRowAtIndexPath:indexPath];
+  return [self.menuProvider createConfigurationForItem:entry withView:cell];
 }
 
 #pragma mark - UITableViewDataSource

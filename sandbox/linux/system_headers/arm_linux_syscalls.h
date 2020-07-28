@@ -1385,6 +1385,62 @@
 #define __NR_memfd_create (__NR_SYSCALL_BASE+385)
 #endif
 
+#if !defined(__NR_bpf)
+#define __NR_bpf (__NR_SYSCALL_BASE+386)
+#endif
+
+#if !defined(__NR_execveat)
+#define __NR_execveat (__NR_SYSCALL_BASE+387)
+#endif
+
+#if !defined(__NR_userfaultfd)
+#define __NR_userfaultfd (__NR_SYSCALL_BASE+388)
+#endif
+
+#if !defined(__NR_membarrier)
+#define __NR_membarrier (__NR_SYSCALL_BASE+389)
+#endif
+
+#if !defined(__NR_mlock2)
+#define __NR_mlock2 (__NR_SYSCALL_BASE+390)
+#endif
+
+#if !defined(__NR_copy_file_range)
+#define __NR_copy_file_range (__NR_SYSCALL_BASE+391)
+#endif
+
+#if !defined(__NR_preadv2)
+#define __NR_preadv2 (__NR_SYSCALL_BASE+392)
+#endif
+
+#if !defined(__NR_pwritev2)
+#define __NR_pwritev2 (__NR_SYSCALL_BASE+393)
+#endif
+
+#if !defined(__NR_pkey_mprotect)
+#define __NR_pkey_mprotect (__NR_SYSCALL_BASE+394)
+#endif
+
+#if !defined(__NR_pkey_alloc)
+#define __NR_pkey_alloc (__NR_SYSCALL_BASE+395)
+#endif
+
+#if !defined(__NR_pkey_free)
+#define __NR_pkey_free (__NR_SYSCALL_BASE+396)
+#endif
+
+#if !defined(__NR_statx)
+#define __NR_statx (__NR_SYSCALL_BASE+397)
+#endif
+
+#if !defined(__NR_rseq)
+#define __NR_rseq (__NR_SYSCALL_BASE+398)
+#endif
+
+#if !defined(__NR_io_pgetevents)
+#define __NR_io_pgetevents (__NR_SYSCALL_BASE+399)
+#endif
+
 // ARM private syscalls.
 #if !defined(__ARM_NR_BASE)
 #define __ARM_NR_BASE (__NR_SYSCALL_BASE + 0xF0000)

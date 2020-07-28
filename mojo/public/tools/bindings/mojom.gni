@@ -140,15 +140,8 @@ if (enable_scrambled_message_ids) {
 }
 
 if (enable_mojom_typemapping) {
-  if (!is_ios) {
-    _bindings_configuration_files = [
-      "//mojo/public/tools/bindings/chromium_bindings_configuration.gni",
-      "//mojo/public/tools/bindings/blink_bindings_configuration.gni",
-    ]
-  } else {
-    _bindings_configuration_files =
-        [ "//mojo/public/tools/bindings/chromium_bindings_configuration.gni" ]
-  }
+  _bindings_configuration_files =
+      [ "//mojo/public/tools/bindings/chromium_bindings_configuration.gni" ]
   _bindings_configurations = []
   foreach(config_file, _bindings_configuration_files) {
     _bindings_configurations += [ read_file(config_file, "scope") ]
@@ -169,6 +162,11 @@ if (enable_mojom_typemapping) {
       typemaps = []
       component_macro_suffix = ""
     },
+  ]
+}
+
+if (!is_ios) {
+  _bindings_configurations += [
     {
       variant = "blink"
       component_macro_suffix = "_BLINK"

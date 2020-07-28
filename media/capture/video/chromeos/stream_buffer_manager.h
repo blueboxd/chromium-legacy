@@ -134,6 +134,8 @@ class CAPTURE_EXPORT StreamBufferManager final {
     cros::mojom::Camera3StreamPtr stream;
     // The dimension of the buffer layout.
     gfx::Size buffer_dimension;
+    // The usage of the buffer.
+    gfx::BufferUsage buffer_usage;
     // The allocated buffer pairs.
     std::map<int, BufferPair> buffers;
     // The free buffers of this stream.  The queue stores keys into the

@@ -84,8 +84,13 @@ struct ASH_PUBLIC_EXPORT PersonalAlbum {
   // UTF-8 encoded.
   std::string description;
 
+  int number_of_photos;
+
   // Preview image of this album.
   std::string banner_image_url;
+
+  // Preview images if this album is Recent highlights.
+  std::vector<std::string> preview_image_urls;
 };
 
 struct ASH_PUBLIC_EXPORT PersonalAlbums {

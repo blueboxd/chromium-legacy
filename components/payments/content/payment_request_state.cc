@@ -186,6 +186,25 @@ void PaymentRequestState::OnDoneCreatingPaymentApps() {
   if (--number_of_payment_app_factories_ > 0U)
     return;
 
+  if (IsInTwa()) {
+    // If a preferred payment app is present (e.g. Play Billing within a TWA),
+    // all other payment apps are ignored.
+    bool has_preferred_app =
+        std::any_of(available_apps_.begin(), available_apps_.end(),
+                    [](const auto& app) { return app->IsPreferred(); });
+    if (has_preferred_app) {
+      available_apps_.erase(
+          std::remove_if(available_apps_.begin(), available_apps_.end(),
+                         [](const auto& app) { return !app->IsPreferred(); }),
+          available_apps_.end());
+
+      // By design, only one payment app can be preferred.
+      DCHECK_EQ(available_apps_.size(), 1u);
+      if (available_apps_.size() > 1)
+        available_apps_.resize(1);
+    }
+  }
+
   SetDefaultProfileSelections();
 
   get_all_apps_finished_ = true;
@@ -310,11 +329,10 @@ void PaymentRequestState::CheckRequestedMethodsSupported(
     get_all_payment_apps_error_ = errors::kStrictBasicCardShowReject;
   }
 
-  bool is_in_twa = !payment_request_delegate_->GetTwaPackageName().empty();
   if (!supported && get_all_payment_apps_error_.empty() &&
       base::Contains(spec_->payment_method_identifiers_set(),
                      methods::kGooglePlayBilling) &&
-      !is_in_twa) {
+      !IsInTwa()) {
     get_all_payment_apps_error_ = errors::kAppStoreMethodOnlySupportedInTwa;
   }
 
@@ -709,6 +727,10 @@ void PaymentRequestState::OnAddressNormalized(
   delegate_->OnShippingAddressSelected(
       data_util::GetPaymentAddressFromAutofillProfile(normalized_profile,
                                                       app_locale_));
+}
+
+bool PaymentRequestState::IsInTwa() const {
+  return !payment_request_delegate_->GetTwaPackageName().empty();
 }
 
 }  // namespace payments

@@ -335,6 +335,7 @@ Tocca e tieni premuta una parola per eseguire una ricerca. Per perfezionare la r
 <translation id="3658159451045945436">La reimpostazione elimina la tua cronologia dei dati risparmiati, incluso l'elenco dei siti web visitati.</translation>
 <translation id="3692944402865947621">Download di <ph name="FILE_NAME" /> non riuscito perché non è possibile trovare il percorso di archiviazione.</translation>
 <translation id="3701167022068948696">Correggi subito</translation>
+<translation id="371230970611282515">Prevede e ti avvisa quando stanno per verificarsi eventi pericolosi.</translation>
 <translation id="3714981814255182093">Apri la barra Trova</translation>
 <translation id="3716182511346448902">Questa pagina è stata messa in pausa da Chromium perché utilizza troppa memoria.</translation>
 <translation id="3721119614952978349">Tu e Google</translation>
@@ -713,6 +714,7 @@ Ad esempio, alcuni siti web potrebbero rispondere alla richiesta mostrando annun
 <translation id="6593061639179217415">Sito desktop</translation>
 <translation id="6597891566292541626">Posiziona il codice a barre/QR all'interno di quest'area.</translation>
 <translation id="6600954340915313787">Copiata in Chrome</translation>
+<translation id="661266467055912436">Migliora il livello di sicurezza per te e per chiunque sul Web.</translation>
 <translation id="6627583120233659107">Modifica cartella</translation>
 <translation id="6643016212128521049">Cancella</translation>
 <translation id="6643649862576733715">Ordina per quantità di dati risparmiati</translation>
@@ -872,6 +874,7 @@ Ad esempio, alcuni siti web potrebbero rispondere alla richiesta mostrando annun
 <translation id="7925590027513907933">{FILE_COUNT,plural, =1{Download del file.}other{Download di # file.}}</translation>
 <translation id="7926975587469166629">Nickname carta</translation>
 <translation id="7929962904089429003">Apri il menu</translation>
+<translation id="7930998711684428189">Ricevi un avviso se le password sono esposte a una violazione dei dati.</translation>
 <translation id="7942131818088350342"><ph name="PRODUCT_NAME" /> è obsoleto.</translation>
 <translation id="7947953824732555851">Accetta e accedi</translation>
 <translation id="7963646190083259054">Fornitore:</translation>

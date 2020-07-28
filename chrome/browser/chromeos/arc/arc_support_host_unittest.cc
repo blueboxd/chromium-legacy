@@ -186,6 +186,7 @@ TEST_F(ArcSupportHostTest, AuthRetryOnError) {
   support_host()->SetErrorDelegate(error_delegate);
 
   support_host()->ShowError(ArcSupportHost::Error::NETWORK_UNAVAILABLE_ERROR,
+                            0 /* error_code */,
                             false /* should_show_send_feedback */);
 
   EXPECT_CALL(*auth_delegate, OnAuthRetryClicked());
@@ -232,6 +233,7 @@ TEST_F(ArcSupportHostTest, TermsOfServiceRetryOnError) {
   support_host()->SetErrorDelegate(error_delegate);
 
   support_host()->ShowError(ArcSupportHost::Error::NETWORK_UNAVAILABLE_ERROR,
+                            0 /* error_code */,
                             false /* should_show_send_feedback */);
 
   EXPECT_CALL(*tos_delegate, OnTermsRetryClicked());
@@ -269,6 +271,7 @@ TEST_F(ArcSupportHostTest, RetryOnGeneralError) {
   support_host()->SetErrorDelegate(error_delegate);
 
   support_host()->ShowError(ArcSupportHost::Error::NETWORK_UNAVAILABLE_ERROR,
+                            0 /* error_code */,
                             false /* should_show_send_feedback */);
 
   EXPECT_CALL(*error_delegate, OnRetryClicked());
@@ -280,6 +283,7 @@ TEST_F(ArcSupportHostTest, SendFeedbackOnError) {
   support_host()->SetErrorDelegate(error_delegate);
 
   support_host()->ShowError(ArcSupportHost::Error::NETWORK_UNAVAILABLE_ERROR,
+                            0 /* error_code */,
                             true /* should_show_send_feedback */);
 
   EXPECT_CALL(*error_delegate, OnSendFeedbackClicked());

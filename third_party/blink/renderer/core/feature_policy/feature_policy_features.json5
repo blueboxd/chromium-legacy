@@ -201,6 +201,11 @@
       depends_on: ["OriginTrialsSampleAPI"],
     },
     {
+      name: "Gamepad",
+      feature_policy_name: "gamepad",
+      depends_on: ["RestrictGamepadAccess"],
+    },
+    {
       name: "Geolocation",
       feature_policy_name: "geolocation",
     },

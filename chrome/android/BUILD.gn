@@ -1095,7 +1095,7 @@ android_library("chrome_test_java") {
     "//net/android:net_java",
     "//net/android:net_java_test_support",
     "//printing:printing_java",
-    "//services:service_javatests",
+    "//services:services_javatests",
     "//services/device/public/java:geolocation_java",
     "//services/device/public/java:geolocation_java_test_support",
     "//services/device/public/mojom:mojom_java",
@@ -1334,6 +1334,7 @@ if (enable_vr || enable_arcore) {
       testonly = true
 
       sources = [
+        "javatests/src/org/chromium/chrome/browser/vr/WebXrArAnchorsTest.java",
         "javatests/src/org/chromium/chrome/browser/vr/WebXrArHitTestTest.java",
         "javatests/src/org/chromium/chrome/browser/vr/WebXrArSessionTest.java",
         "javatests/src/org/chromium/chrome/browser/vr/WebXrArTestFramework.java",

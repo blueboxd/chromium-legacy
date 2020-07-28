@@ -81,6 +81,7 @@ Certaines fonctionnalités ne seront peut-être pas disponibles et les modificat
 <translation id="3089968997497233615">Une nouvelle version de Google Chrome encore plus sûre est maintenant offerte.</translation>
 <translation id="3127818369811890733">Chrome OS n'a pas pu synchroniser vos données.</translation>
 <translation id="3149510190863420837">Applications Chrome</translation>
+<translation id="3351117925998652957">Choisir votre espace Chrome</translation>
 <translation id="3360895254066713204">Aide de Chrome</translation>
 <translation id="3379938682270551431">{0,plural, =0{Chrome va maintenant redémarrer}=1{Chrome redémarrera dans 1 seconde}one{Chrome redémarrera dans # seconde}other{Chrome redémarrera dans # secondes}}</translation>
 <translation id="3395323229510056640">Obtenir de l'aide pour Chrome OS</translation>
@@ -212,6 +213,7 @@ Google Chrome ne peut pas récupérer vos paramètres.</translation>
 <translation id="7535429826459677826">Google Chrome Dev</translation>
 <translation id="7573289029918943991">Pour voir si votre appareil est à jour, sélectionnez les <ph name="LINK_BEGIN" />paramètres de Chrome OS<ph name="LINK_END" /></translation>
 <translation id="7589360514048265910">Cet ordinateur ne recevra plus de mises à jour de Google Chrome, car Mac OS X 10.9 n'est plus pris en charge.</translation>
+<translation id="7591404275842302616">Servez-vous des espaces Chrome pour organiser votre navigation sur cet appareil</translation>
 <translation id="7592736734348559088">Google Chrome n'a pas pu synchroniser vos données, car vos renseignements de connexion ne sont plus à jour.</translation>
 <translation id="7626032353295482388">Bienvenue dans Google Chrome</translation>
 <translation id="7629695634924605473">Chrome vous informera si jamais vos mots de passe sont compromis</translation>

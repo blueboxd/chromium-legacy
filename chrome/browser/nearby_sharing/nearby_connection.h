@@ -35,7 +35,7 @@ class NearbyConnection {
   virtual void Close() = 0;
 
   // Return True if the socket is closed, False otherwise.
-  virtual bool IsClosed() = 0;
+  virtual bool IsClosed() const = 0;
 
   // Listens to the socket being closed. Invoke |callback| when the socket is
   // closed.

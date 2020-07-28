@@ -167,18 +167,31 @@ void ForceInstalledMetrics::ReportMetrics() {
   InstallStageTracker* install_stage_tracker =
       InstallStageTracker::Get(profile_);
   for (const auto& extension : tracker_->extensions()) {
-    InstallStageTracker::InstallationData installation =
-        install_stage_tracker->Get(extension.first);
-    if (installation.download_manifest_finish_time) {
-      DCHECK(installation.download_manifest_started_time);
-      base::UmaHistogramLongTimes(
-          "Extensions.ForceInstalledTime.DownloadingStartTo."
-          "ManifestDownloadComplete",
-          installation.download_manifest_finish_time.value() -
-              installation.download_manifest_started_time.value());
-    }
-    if (!IsStatusGood(extension.second.status))
+    if (!IsStatusGood(extension.second.status)) {
       missing_forced_extensions.insert(extension.first);
+    } else {
+      InstallStageTracker::InstallationData installation =
+          install_stage_tracker->Get(extension.first);
+      if (installation.download_manifest_finish_time) {
+        DCHECK(installation.download_manifest_started_time);
+        base::UmaHistogramLongTimes(
+            "Extensions.ForceInstalledTime.DownloadingStartTo."
+            "ManifestDownloadComplete",
+            installation.download_manifest_finish_time.value() -
+                installation.download_manifest_started_time.value());
+      }
+      // Report the download time for CRX only when
+      // installation.download_CRX_started_time is set because in other case CRX
+      // is fetched from cache and the download was not started.
+      if (installation.download_CRX_finish_time &&
+          installation.download_CRX_started_time) {
+        base::UmaHistogramLongTimes(
+            "Extensions.ForceInstalledTime.ManifestDownloadCompleteTo."
+            "CRXDownloadComplete",
+            installation.download_CRX_finish_time.value() -
+                installation.download_CRX_started_time.value());
+      }
+    }
   }
   if (missing_forced_extensions.empty()) {
     base::UmaHistogramLongTimes("Extensions.ForceInstalledLoadTime",

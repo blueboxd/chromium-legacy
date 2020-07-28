@@ -36,8 +36,6 @@ class ListValue;
 class TickClock;
 }  // namespace base
 
-struct NavigateParams;
-
 namespace chrome_browser_net {
 enum class NetworkPredictionStatus;
 }
@@ -76,9 +74,6 @@ class PrerenderManager : public content::RenderProcessHostObserver,
                          public KeyedService {
  public:
   enum PrerenderManagerMode {
-    // Deprecated: Enables all types of prerendering for any origin.
-    DEPRECATED_PRERENDER_MODE_ENABLED,
-
     // For each request to prerender performs a NoStatePrefetch for the same URL
     // instead.
     PRERENDER_MODE_NOSTATE_PREFETCH,
@@ -95,22 +90,6 @@ class PrerenderManager : public content::RenderProcessHostObserver,
     CLEAR_PRERENDER_HISTORY = 0x1 << 1,
     CLEAR_MAX = 0x1 << 2
   };
-
-  // If |url| matches a valid prerendered page in one of the contents,
-  // try to swap it and merge browsing histories.
-  //
-  // Returns true if a prerendered page is swapped in. When this happens, the
-  // PrerenderManager has already swapped out |contents_being_navigated| with
-  // |replaced_contents| in the WebContents container [e.g. TabStripModel on
-  // desktop]. |loaded| is set to true if the page finished loading.
-  //
-  // Returns false if nothing is swapped.
-  //
-  // |loaded| cannot be null.
-  static bool MaybeUsePrerenderedPage(Profile* profile,
-                                      content::WebContents* web_contents,
-                                      const GURL& url,
-                                      bool* loaded);
 
   // Owned by a Profile object for the lifetime of the profile.
   explicit PrerenderManager(Profile* profile);
@@ -182,36 +161,6 @@ class PrerenderManager : public content::RenderProcessHostObserver,
 
   // Cancels all active prerenders.
   void CancelAllPrerenders();
-
-  // Wraps input and output parameters to MaybeUsePrerenderedPage.
-  struct Params {
-    Params(NavigateParams* params,
-           content::WebContents* contents_being_navigated);
-    Params(bool uses_post,
-           const std::string& extra_headers,
-           bool should_replace_current_entry,
-           content::WebContents* contents_being_navigated);
-
-    // Input parameters.
-    const bool uses_post;
-    const std::string extra_headers;
-    const bool should_replace_current_entry;
-    content::WebContents* const contents_being_navigated;
-
-    // Output parameters.
-    content::WebContents* replaced_contents = nullptr;
-  };
-
-  // If |url| matches a valid prerendered page and |params| are compatible, try
-  // to swap it and merge browsing histories.
-  //
-  // Returns true if a prerendered page is swapped in. When this happens, the
-  // PrerenderManager has already swapped out |contents_being_navigated| with
-  // |replaced_contents| in the WebContents container [e.g. TabStripModel on
-  // desktop].
-  //
-  // Returns false if nothing is swapped.
-  bool MaybeUsePrerenderedPage(const GURL& url, Params* params);
 
   // Moves a PrerenderContents to the pending delete list from the list of
   // active prerenders when prerendering should be cancelled.

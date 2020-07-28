@@ -2,11 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-import {NativeLayer, NativeLayerImpl, PluginProxy} from 'chrome://print/print_preview.js';
+import {NativeLayer, NativeLayerImpl, PluginProxyImpl} from 'chrome://print/print_preview.js';
 import {assert} from 'chrome://resources/js/assert.m.js';
 import {NativeLayerStub} from 'chrome://test/print_preview/native_layer_stub.js';
-import {PDFPluginStub} from 'chrome://test/print_preview/plugin_stub.js';
 import {getDefaultInitialSettings} from 'chrome://test/print_preview/print_preview_test_utils.js';
+import {TestPluginProxy} from 'chrome://test/print_preview/test_plugin_proxy.js';
 
 window.print_button_test = {};
 print_button_test.suiteName = 'PrintButtonTest';
@@ -43,9 +43,9 @@ suite(print_button_test.suiteName, function() {
     ];
     nativeLayer.setLocalDestinations(localDestinationInfos);
 
-    const pluginProxy = new PDFPluginStub();
+    const pluginProxy = new TestPluginProxy();
     pluginProxy.setPluginCompatible(true);
-    PluginProxy.setInstance(pluginProxy);
+    PluginProxyImpl.instance_ = pluginProxy;
 
     page = document.createElement('print-preview-app');
     document.body.appendChild(page);

@@ -13,6 +13,31 @@ import {BrowserProxy} from './browser_proxy_interface.js';
  */
 class ChromeAppBrowserProxy {
   /** @override */
+  async requestEnumerateDevicesPermission() {
+    // It's required to run getUserMedia() successfully once before running
+    // enumerateDevices(). Otherwise the deviceId and label fields would be
+    // empty. See https://crbug.com/1101860 for more details.
+    const doGetUserMedia = async (constraints) => {
+      try {
+        const stream = await navigator.mediaDevices.getUserMedia(constraints);
+        stream.getTracks().forEach((track) => track.stop());
+        return true;
+      } catch (e) {
+        return false;
+      }
+    };
+    // Try audio stream first since it's usually much faster to open an audio
+    // stream than a video stream. Note that in some form factors such as
+    // Chromebox there might be no internal microphone, so the audio request
+    // might fail and we would fall back to video. If no external camera
+    // connected in that case, the video request might also fail and we need to
+    // try again later.
+    return (
+        await doGetUserMedia({audio: true}) ||
+        await doGetUserMedia({video: true}));
+  }
+
+  /** @override */
   async getExternalDir() {
     let volumes;
     try {

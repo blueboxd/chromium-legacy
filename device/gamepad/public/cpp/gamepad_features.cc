@@ -46,6 +46,9 @@ const base::Feature kEnableWindowsGamingInputDataFetcher{
 const base::Feature kGamepadPollingInterval{"GamepadPollingInterval",
                                             base::FEATURE_DISABLED_BY_DEFAULT};
 
+const base::Feature kRestrictGamepadAccess{"RestrictGamepadAccess",
+                                           base::FEATURE_DISABLED_BY_DEFAULT};
+
 const char kGamepadPollingIntervalParamKey[] = "interval-ms";
 
 bool AreGamepadButtonAxisEventsEnabled() {

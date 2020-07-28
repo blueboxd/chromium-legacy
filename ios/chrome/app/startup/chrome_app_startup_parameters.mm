@@ -35,14 +35,30 @@ NSString* const kSmartAppBannerKey = @"safarisab";
 const CGFloat kAppGroupTriggersVoiceSearchTimeout = 15.0;
 
 // Values of the UMA Startup.MobileSessionStartAction histogram.
+// These values are persisted to logs. Entries should not be renumbered and
+// numeric values should never be reused.
 enum MobileSessionStartAction {
+  // Logged when an application passes an http URL to Chrome using the custom
+  // registered scheme (f.e. googlechrome).
   START_ACTION_OPEN_HTTP = 0,
-  START_ACTION_OPEN_HTTPS,
-  START_ACTION_OPEN_FILE,
-  START_ACTION_XCALLBACK_OPEN,
-  START_ACTION_XCALLBACK_OTHER,
-  START_ACTION_OTHER,
-  START_ACTION_XCALLBACK_APPGROUP_COMMAND,
+  // Logged when an application passes an https URL to Chrome using the custom
+  // registered scheme (f.e. googlechromes).
+  START_ACTION_OPEN_HTTPS = 1,
+  START_ACTION_OPEN_FILE = 2,
+  START_ACTION_XCALLBACK_OPEN = 3,
+  START_ACTION_XCALLBACK_OTHER = 4,
+  START_ACTION_OTHER = 5,
+  START_ACTION_XCALLBACK_APPGROUP_COMMAND = 6,
+  // Logged when any application passes an http URL to Chrome using the standard
+  // "http" scheme. This can happen when Chrome is set as the default browser
+  // on iOS 14+ as http openURL calls will be directed to Chrome by the system
+  // from all other apps.
+  START_ACTION_OPEN_HTTP_FROM_OS = 7,
+  // Logged when any application passes an https URL to Chrome using the
+  // standard "https" scheme. This can happen when Chrome is set as the default
+  // browser on iOS 14+ as http openURL calls will be directed to Chrome by the
+  // system from all other apps.
+  START_ACTION_OPEN_HTTPS_FROM_OS = 8,
   MOBILE_SESSION_START_ACTION_COUNT,
 };
 
@@ -147,19 +163,28 @@ enum SearchExtensionAction {
                                                    secureSourceApp:nil
                                                        completeURL:completeURL];
   } else {
-    // Replace the scheme with https or http depending on whether the input
-    // |url| scheme ends with an 's'.
-    BOOL useHttps = gurl.scheme()[gurl.scheme().length() - 1] == 's';
-    MobileSessionStartAction action =
-        useHttps ? START_ACTION_OPEN_HTTPS : START_ACTION_OPEN_HTTP;
+    GURL externalURL = gurl;
+    MobileSessionStartAction action = START_ACTION_OTHER;
+    if (gurl.SchemeIs(url::kHttpScheme)) {
+      action = START_ACTION_OPEN_HTTP_FROM_OS;
+    } else if (gurl.SchemeIs(url::kHttpsScheme)) {
+      action = START_ACTION_OPEN_HTTPS_FROM_OS;
+    } else {
+      // Replace the scheme with https or http depending on whether the input
+      // |url| scheme ends with an 's'.
+      BOOL useHttps = gurl.scheme()[gurl.scheme().length() - 1] == 's';
+      action = useHttps ? START_ACTION_OPEN_HTTPS : START_ACTION_OPEN_HTTP;
+
+      GURL::Replacements replace_scheme;
+      if (useHttps)
+        replace_scheme.SetSchemeStr(url::kHttpsScheme);
+      else
+        replace_scheme.SetSchemeStr(url::kHttpScheme);
+      externalURL = gurl.ReplaceComponents(replace_scheme);
+    }
     UMA_HISTOGRAM_ENUMERATION(kUMAMobileSessionStartActionHistogram, action,
                               MOBILE_SESSION_START_ACTION_COUNT);
-    GURL::Replacements replace_scheme;
-    if (useHttps)
-      replace_scheme.SetSchemeStr(url::kHttpsScheme);
-    else
-      replace_scheme.SetSchemeStr(url::kHttpScheme);
-    GURL externalURL = gurl.ReplaceComponents(replace_scheme);
+
     if (!externalURL.is_valid())
       return nil;
     return [[ChromeAppStartupParameters alloc] initWithExternalURL:externalURL
@@ -387,8 +412,17 @@ enum SearchExtensionAction {
           isEqualToString:app_group::kOpenCommandSourceShareExtension])
     return CALLER_APP_GOOGLE_CHROME_SHARE_EXTENSION;
 
-  if (![_declaredSourceApp length])
+  if (![_declaredSourceApp length]) {
+    if (self.completeURL.SchemeIs(url::kHttpScheme) ||
+        self.completeURL.SchemeIs(url::kHttpScheme)) {
+      // If Chrome is opened via the system default browser mechanism, the
+      // action should be differentiated from the case where the source is
+      // unknown.
+      return CALLER_APP_THIRD_PARTY;
+    }
     return CALLER_APP_NOT_AVAILABLE;
+  }
+
   if ([_declaredSourceApp
           isEqualToString:[[NSBundle mainBundle] bundleIdentifier]])
     return CALLER_APP_GOOGLE_CHROME;

@@ -622,4 +622,24 @@ TEST_F(AccessibilityNodeInfoDataWrapperTest, appendkDescription) {
             description);
 }
 
+TEST_F(AccessibilityNodeInfoDataWrapperTest, controlIsFocusable) {
+  AXNodeInfoData root;
+  root.id = 1;
+  SetProperty(&root, AXStringProperty::CLASS_NAME, ui::kAXSeekBarClassname);
+  SetProperty(&root, AXStringProperty::TEXT, "");
+  SetProperty(&root, AXBooleanProperty::FOCUSABLE, true);
+  SetProperty(&root, AXBooleanProperty::IMPORTANCE, true);
+  AccessibilityNodeInfoDataWrapper wrapper(tree_source(), &root);
+
+  // Check the pre conditions required, before checking whether this
+  // control is focusable.
+  ui::AXNodeData data = CallSerialize(wrapper);
+  std::string name;
+  ASSERT_FALSE(
+      data.GetStringAttribute(ax::mojom::StringAttribute::kName, &name));
+  ASSERT_EQ(ax::mojom::Role::kSlider, data.role);
+
+  ASSERT_TRUE(wrapper.CanBeAccessibilityFocused());
+}
+
 }  // namespace arc

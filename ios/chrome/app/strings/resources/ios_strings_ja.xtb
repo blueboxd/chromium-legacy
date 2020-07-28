@@ -26,6 +26,7 @@
 <translation id="1209206284964581585">今は表示しない</translation>
 <translation id="1219674500290482172">インターネットに接続できません。</translation>
 <translation id="122699739164161391">すべてのタブを閉じる</translation>
+<translation id="1229222343402087523">Chrome で ${searchPhrase} を検索</translation>
 <translation id="1231733316453485619">同期を有効にしますか？</translation>
 <translation id="1254117744268754948">フォルダの選択</translation>
 <translation id="1265739287306757398">詳細</translation>
@@ -621,6 +622,7 @@
 <translation id="842017693807136194">ログインに使用した ID プロバイダ</translation>
 <translation id="8428045167754449968">市区町村</translation>
 <translation id="8428213095426709021">設定</translation>
+<translation id="8446884382197647889">詳細</translation>
 <translation id="8458397775385147834">1件の項目を削除しました</translation>
 <translation id="8459333855531264009">この通信は保護されていません</translation>
 <translation id="8487667956631253959">オン</translation>

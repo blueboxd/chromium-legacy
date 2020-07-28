@@ -1507,6 +1507,25 @@ public class AndroidPaymentAppFinderTest
         Assert.assertFalse(mPaymentApps.get(0).handlesPayerPhone());
     }
 
+    /**
+     * Test that the Play Billing app store payment app is marked as preferred.
+     */
+    @Test
+    @Feature({"Payments"})
+    public void testPreferredPaymentApp() throws Throwable {
+        Set<String> methods = new HashSet<>();
+        methods.add("https://play.google.com/billing");
+        mPackageManager.installPaymentApp("MerchantTwaApp", "com.merchant.twa",
+                "https://play.google.com/billing", /*signature=*/"01020304050607080900");
+
+        setMockTrustedWebActivity("com.merchant.twa", "com.android.vending");
+        findApps(methods);
+
+        assertPaymentAppsCreated("com.merchant.twa");
+
+        Assert.assertTrue(mPaymentApps.get(0).isPreferred());
+    }
+
     private void findApps(Set<String> methodNames) throws Throwable {
         addAppStoreMethodAndFindApps(
                 /*appStorePackageName=*/null, /*appStorePaymentMethod=*/null, methodNames);

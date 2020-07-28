@@ -408,31 +408,34 @@ bool GPUQueue::CopyContentFromCPU(StaticBitmapImage* image,
       image_data_rect, dest_texture_format);
 
   // Create a mapped buffer to receive image bitmap contents
-  WGPUBufferDescriptor buffer_desc;
-  buffer_desc.nextInChain = nullptr;
-  buffer_desc.label = nullptr;
+  WGPUBufferDescriptor buffer_desc = {};
   buffer_desc.usage = WGPUBufferUsage_CopySrc;
   buffer_desc.size = info.size_in_bytes;
+  buffer_desc.mappedAtCreation = true;
 
-  WGPUCreateBufferMappedResult result =
-      GetProcs().deviceCreateBufferMapped(device_->GetHandle(), &buffer_desc);
+  if (buffer_desc.size > uint64_t(std::numeric_limits<size_t>::max())) {
+    return false;
+  }
+  size_t size = static_cast<size_t>(buffer_desc.size);
+
+  WGPUBuffer buffer =
+      GetProcs().deviceCreateBuffer(device_->GetHandle(), &buffer_desc);
+  void* data = GetProcs().bufferGetMappedRange(buffer, 0, size);
 
   if (!CopyBytesFromImageBitmapForWebGPU(
-          image,
-          base::span<uint8_t>(reinterpret_cast<uint8_t*>(result.data),
-                              static_cast<size_t>(result.dataLength)),
+          image, base::span<uint8_t>(static_cast<uint8_t*>(data), size),
           image_data_rect, color_params, dest_texture_format)) {
     // Release the buffer.
-    GetProcs().bufferRelease(result.buffer);
+    GetProcs().bufferRelease(buffer);
     return false;
   }
 
-  GetProcs().bufferUnmap(result.buffer);
+  GetProcs().bufferUnmap(buffer);
 
   // Start a B2T copy to move contents from buffer to destination texture
   WGPUBufferCopyView dawn_intermediate = {};
   dawn_intermediate.nextInChain = nullptr;
-  dawn_intermediate.buffer = result.buffer;
+  dawn_intermediate.buffer = buffer;
   dawn_intermediate.offset = 0;
   dawn_intermediate.bytesPerRow = info.wgpu_bytes_per_row;
   dawn_intermediate.rowsPerImage = image->height();
@@ -452,7 +455,7 @@ bool GPUQueue::CopyContentFromCPU(StaticBitmapImage* image,
   // Release intermediate resources.
   GetProcs().commandBufferRelease(commands);
   GetProcs().commandEncoderRelease(encoder);
-  GetProcs().bufferRelease(result.buffer);
+  GetProcs().bufferRelease(buffer);
 
   return true;
 }

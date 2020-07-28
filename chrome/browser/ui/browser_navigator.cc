@@ -457,22 +457,6 @@ std::unique_ptr<content::WebContents> CreateTargetContents(
   return target_contents;
 }
 
-// If a prerendered page exists for |url|, then replace
-// params.contents_being_navigated with it. When this occurs, the new page is
-// stored in params.replaced_contents.
-// This method updates the underlying storage mechanism as well. e.g. On
-// Desktop, |contents_being_navigated| is replaced in the tabstrip by
-// |replaced_contents|.
-bool SwapInPrerender(const GURL& url,
-                     prerender::PrerenderManager::Params* params) {
-  Profile* profile = Profile::FromBrowserContext(
-      params->contents_being_navigated->GetBrowserContext());
-  prerender::PrerenderManager* prerender_manager =
-      prerender::PrerenderManagerFactory::GetForBrowserContext(profile);
-  return prerender_manager &&
-         prerender_manager->MaybeUsePrerenderedPage(url, params);
-}
-
 }  // namespace
 
 void Navigate(NavigateParams* params) {
@@ -622,9 +606,6 @@ void Navigate(NavigateParams* params) {
       params->transition & ui::PAGE_TRANSITION_FROM_ADDRESS_BAR ||
       !ui::PageTransitionIsWebTriggerable(params->transition);
 
-  // Did we use a prerender?
-  bool swapped_in_prerender = false;
-
   // If no target WebContents was specified (and we didn't seek and find a
   // singleton), we need to construct one if we are supposed to target a new
   // tab.
@@ -638,26 +619,15 @@ void Navigate(NavigateParams* params) {
       // same as the source.
       DCHECK(params->source_contents);
       contents_to_navigate_or_insert = params->source_contents;
-
-      prerender::PrerenderManager::Params prerender_params(
-          params, params->source_contents);
-
-      // Prerender can only swap in CURRENT_TAB navigations; others have
-      // different sessionStorage namespaces.
-      swapped_in_prerender = SwapInPrerender(params->url, &prerender_params);
-      if (swapped_in_prerender)
-        contents_to_navigate_or_insert = prerender_params.replaced_contents;
     }
 
-    if (!swapped_in_prerender) {
-      // Try to handle non-navigational URLs that popup dialogs and such, these
-      // should not actually navigate.
-      if (!HandleNonNavigationAboutURL(params->url)) {
-        // Perform the actual navigation, tracking whether it came from the
-        // renderer.
+    // Try to handle non-navigational URLs that popup dialogs and such, these
+    // should not actually navigate.
+    if (!HandleNonNavigationAboutURL(params->url)) {
+      // Perform the actual navigation, tracking whether it came from the
+      // renderer.
 
-        LoadURLInContents(contents_to_navigate_or_insert, params->url, params);
-      }
+      LoadURLInContents(contents_to_navigate_or_insert, params->url, params);
     }
   } else {
     // |contents_to_navigate_or_insert| was specified non-NULL, and so we assume
@@ -674,9 +644,7 @@ void Navigate(NavigateParams* params) {
       (params->tabstrip_add_types & TabStripModel::ADD_INHERIT_OPENER))
     params->source_contents->Focus();
 
-  if (params->source_contents == contents_to_navigate_or_insert ||
-      (swapped_in_prerender &&
-       params->disposition == WindowOpenDisposition::CURRENT_TAB)) {
+  if (params->source_contents == contents_to_navigate_or_insert) {
     // The navigation occurred in the source tab.
     params->browser->UpdateUIForNavigationInTab(
         contents_to_navigate_or_insert, params->transition,

@@ -76,8 +76,9 @@ class VIZ_SERVICE_EXPORT DCLayerOverlayProcessor
  public:
   // When |skip_initialization_for_testing| is true, object will be isolated
   // for unit tests.
-  DCLayerOverlayProcessor(const DebugRendererSettings* debug_settings,
-                          bool skip_initialization_for_testing = false);
+  explicit DCLayerOverlayProcessor(
+      const DebugRendererSettings* debug_settings,
+      bool skip_initialization_for_testing = false);
   virtual ~DCLayerOverlayProcessor();
 
   // Virtual for testing.

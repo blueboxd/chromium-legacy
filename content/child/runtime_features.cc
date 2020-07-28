@@ -20,6 +20,7 @@
 #include "content/public/common/content_switches.h"
 #include "content/public/common/referrer.h"
 #include "device/fido/features.h"
+#include "device/gamepad/public/cpp/gamepad_features.h"
 #include "gpu/config/gpu_switches.h"
 #include "media/base/media_switches.h"
 #include "net/base/features.h"
@@ -338,6 +339,8 @@ void SetRuntimeFeaturesFromChromiumFeatures() {
     {wf::EnableVideoWakeLockOptimisationHiddenMuted,
      media::kWakeLockOptimisationHiddenMuted, kUseFeatureState},
     {wf::EnableMediaFeeds, media::kMediaFeeds, kUseFeatureState},
+    {wf::EnableRestrictGamepadAccess, features::kRestrictGamepadAccess,
+     kEnableOnly},
 
   };
   for (const auto& mapping : blinkFeatureToBaseFeatureMapping) {

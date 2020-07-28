@@ -2905,25 +2905,11 @@
   <message name="IDS_SETTINGS_STORAGE_EXTERNAL_STORAGE_LIST_HEADER" desc="Header of the list of external storage devices for the subpage for setting preferences for external storage. This is shown when the list is not empty.">
     Available devices
   </message>
-  <message name="IDS_SETTINGS_STORAGE_MANAGE_DOWNLOADED_CONTENT_ROW_TITLE" desc="Header of the list of manage downloaded content for the subpage for managing DLC.">
-    Manage downloaded content
-  </message>
   <message name="IDS_SETTINGS_STORAGE_OVERVIEW_ARIA_LABEL" desc="The label to be read aloud by ChromeVox to describe the storage usage progress bar on the Storage page">
     Storage Usage Overview
   </message>
   <message name="IDS_SETTINGS_STORAGE_ITEM_SYSTEM" desc="In Device Settings > Storage, label for the total system size, difference between the size of the filesystem and the size of all items listed on the storage page.">
     System
-  </message>
-
-  <!-- DLC Device Subpage -->
-  <message name="IDS_SETTINGS_DLC_SUBPAGE_TITLE" desc="Title for the DLC subpage.">
-    Downloaded Content
-  </message>
-  <message name="IDS_SETTINGS_DLC_REMOVE" desc="Label for a button that will remove a DLC from disk.">
-    Remove
-  </message>
-  <message name="IDS_SETTINGS_DLC_SUBPAGE_DESCRIPTION" desc="A description shown at the top of the subpage that informs users that if they modify any of the DLCs in the list, other users of the device may be impacted by those changes.">
-    These components are shared with other users on this device. Removing components may affect other users.
   </message>
 
   <!-- Privacy Page -->

@@ -3,10 +3,11 @@
 // found in the LICENSE file.
 
 // clang-format off
-// #import {FakeInputMethodPrivate} from 'chrome://test/settings/fake_input_method_private.m.js';
-// #import {FakeLanguageSettingsPrivate} from 'chrome://test/settings/fake_language_settings_private.m.js';
+// #import {FakeInputMethodPrivate} from './fake_input_method_private.m.js';
+// #import {FakeLanguageSettingsPrivate} from './fake_language_settings_private.m.js';
 // #import {isChromeOS, isWindows} from 'chrome://resources/js/cr.m.js';
-// #import {TestBrowserProxy} from 'chrome://test/test_browser_proxy.m.js';
+// #import {LanguagesBrowserProxy} from 'chrome://settings/lazy_load.js';
+// #import {TestBrowserProxy} from '../test_browser_proxy.m.js';
 // clang-format on
 
 cr.define('settings', function() {
@@ -26,17 +27,13 @@ cr.define('settings', function() {
           new settings.FakeLanguageSettingsPrivate();
 
       /** @private {!InputMethodPrivate} */
-      this.inputMethodPrivate_ = new settings.FakeInputMethodPrivate();
+      this.inputMethodPrivate_ = /** @type{!InputMethodPrivate} */ (
+          new settings.FakeInputMethodPrivate());
     }
 
     /** @override */
     getLanguageSettingsPrivate() {
       return this.languageSettingsPrivate_;
-    }
-
-    /** @override */
-    getInputMethodPrivate() {
-      return this.inputMethodPrivate_;
     }
 
     /** @param {!LanguageSettingsPrivate} languageSettingsPrivate */
@@ -56,6 +53,13 @@ cr.define('settings', function() {
     TestLanguagesBrowserProxy.prototype.setProspectiveUILanguage = function(
         language) {
       this.methodCalled('setProspectiveUILanguage', language);
+    };
+  }
+
+  if (cr.isChromeOS) {
+    /** @override */
+    TestLanguagesBrowserProxy.prototype.getInputMethodPrivate = function() {
+      return this.inputMethodPrivate_;
     };
   }
 

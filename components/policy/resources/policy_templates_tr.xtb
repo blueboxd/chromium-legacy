@@ -789,9 +789,6 @@ Bu politikayı devre dışı bırakırsanız web sayfasını URL yoluyla belirli
       Bu politika, erişimi herkese açık cihazlarda kullanılmamalıdır.
 
       Bu politika True (Doğru) değerine ayarlanır veya ayarlanmadan bırakılırsa otomatik olarak başlatılmış misafir oturumundayken gizlilik uyarısı bildirimi, kullanıcı kapayıncaya kadar görüntülenir.</translation>
-<translation id="2288338171390565087">Bu özellik, kullanıcı yerleşik emoji haritasında karşılığı olan bir kelime yazdığında emoji önerisinde bulunur.
-      Bu politika true (doğru) değerine ayarlanırsa özellik etkin olmaya zorlanır ve kullanıcılar bunu geçersiz kılamaz.
-      Bu politika varsayılan olarak false (yanlış) değerine ayarlıdır; hiçbir emoji önerisinde bulunulmaz ve kullanıcılar da bunu geçersiz kılamaz.</translation>
 <translation id="2289265947759479962">Bu politika OS sürümü, OS platformu, OS mimarisi, <ph name="PRODUCT_NAME" /> sürümü ve <ph name="PRODUCT_NAME" /> kanalı gibi sürüm bilgilerinin bildirilip bildirilmeyeceğini kontrol eder.
 
       <ph name="CLOUD_REPORTING_ENABLED_POLICY_NAME" /> politikası ayarlanmadan bırakıldığında veya devre dışı değerine ayarlandığında bu politika yok sayılır.
@@ -1215,13 +1212,6 @@ Bu politika ayarlanmazsa <ph name="PRODUCT_NAME" /> varsayılan 10.000 milisaniy
       Bu politika False (Yanlış) değerine ayarlandığında makineleri tanımlamak için kullanılabilecek bilgiler toplanmaz.
 
       Bu politika yalnızca <ph name="PRODUCT_NAME" /> için makinenin <ph name="CLOUD_MANAGEMENT_ENROLLMENT_TOKEN" /> kaydı yapıldığında geçerli olur.</translation>
-<translation id="2836621397261130126"><ph name="KERBEROS" /> biletlerine yetki verilip verilmeyeceğine karar verilirken KDC politikasının onayının dikkate alınıp alınmayacağını kontrol eder.
-
-          Bu politika true (doğru) değerine ayarlanırsa, HTTP kimlik doğrulama, KDC politikasının onayını dikkate alır. Yani, Chrome yalnızca KDC bir hizmet biletini <ph name="OK_AS_DELEGATE" /> olarak ayarlarsa kimlik bilgilerine yetki verir. Daha fazla bilgi için lütfen https://tools.ietf.org/html/rfc5896.html adresine bakın. Hizmetin de "AuthNegotiateDelegateWhitelist" politikasına uyması gerekir.
-
-          Bu politika ayarlanmazsa veya false (yanlış) değerine ayarlanırsa, KDC politikası, desteklenen platformlarda yoksayılır ve yalnızca "AuthNegotiateDelegateWhitelist" politikası dikkate alınır.
-
-          Windows'da KDC politikası her zaman dikkate alınır.</translation>
 <translation id="283695852388224413">Bu politika ayarlanırsa, yapılandırılmış maksimum PIN uzunluğu uygulanır. 0 veya daha küçük bir değer, maksimum uzunluk olmadığı anlamına gelir. Bu durumda kullanıcı istediği uzunlukta bir PIN belirleyebilir. Bu ayar <ph name="PIN_UNLOCK_MINIMUM_LENGTH_POLICY_NAME" /> değerinden küçük ama 0'dan büyükse, maksimum uzunluk ile minimum uzunluk aynı olur.
 
           Bu politika ayarlanmadan bırakılırsa, maksimum uzunluk uygulanmaz.</translation>
@@ -2422,13 +2412,6 @@ politikayı geçersiz kılamaz.
       "Zorlama" seçeneği belirlenirse sayfalar YALNIZCA Gizli modda açılabilir. "Zorlama" seçeneğinin yalnızca Android-on-Chrome'da çalıştığını unutmayın</translation>
 <translation id="4600786265870346112">Büyük imleci etkinleştir</translation>
 <translation id="4604931264910482931">Yerel mesajlaşma kara listesini yapılandır</translation>
-<translation id="4614701085541180174">URL kalıpları listesi belirtmenize olanak tanır. Bu liste, site sertifika isteğinde bulunursa SAML akışını barındıran çerçevedeki oturum açma ekranında bir istemci sertifikasının otomatik olarak seçileceği sitelerin belirtildiği bir listedir. SAML IdP'ye sunulması amacıyla cihaz genelinde bir sertifikanın yapılandırılması buna örnek olarak gösterilebilir.
-
-      Değer, dizeleştirilmiş JSON sözlüklerinden oluşan bir dizisi olmalıdır. Her sözlük <ph name="DEVICE_LOGIN_SCREEN_AUTO_SELECT_CERTIFICATE_FOR_URLS_EXAMPLE" /> biçiminde olmalıdır; burada <ph name="URL_PATTERN_PLACEHOLDER" />, içerik ayarı kalıbıdır. <ph name="FILTER_PLACEHOLDER" />, tarayıcının otomatik olarak seçim yapacağı istemci sertifikalarını kısıtlar. Filtreden bağımsız olarak, yalnızca sunucunun sertifika isteğiyle eşleşen sertifikalar seçilir. <ph name="FILTER_PLACEHOLDER" /> değeri <ph name="JSON_DICTIONARY_EXAMPLE" /> biçiminde olursa ek olarak yalnızca CommonName <ph name="ISSUER_CN_PLACEHOLDER" /> bilgisine sahip bir sertifika tarafından yayınlanan istemci sertifikaları seçilir. <ph name="FILTER_PLACEHOLDER" /> değeri boş sözlük {} olursa istemci sertifikalarının seçimi ayrıca kısıtlanmaz.
-
-      Bu politika ayarlanmadan bırakılırsa hiçbir site için otomatik seçim yapılmaz.
-
-      Geçerli URL kalıpları hakkında ayrıntılı bilgi için https://cloud.google.com/docs/chrome-enterprise/policies/url-patterns adresine bakabilirsiniz.</translation>
 <translation id="4617338332148204752"><ph name="PRODUCT_FRAME_NAME" /> cihazında meta etiket kontrolünü atla</translation>
 <translation id="462134014569484584">Bu politika, bu cihazla ilgili <ph name="PLUGIN_VM_NAME" /> lisans anahtarını belirtmektedir.</translation>
 <translation id="4625915093043961294">Uzantı yükleme beyaz listesini yapılandır</translation>
@@ -5437,19 +5420,6 @@ Bu politika "true" (doğru) olarak ayarlanırsa kullanıcının tarayıcıyı ku
        Bu politika ses, video ve görseller dışındaki diğer karma içerikleri etkilemez.
        Bu politika, <ph name="PRODUCT_NAME" /> 84 sürümünden itibaren geçerliliğini yitirecektir.</translation>
 <translation id="9010080992450148617">Gelişmiş Koruma programına kayıtlı kullanıcıların indirdikleri dosyaları ayrıntılı tarama için Google'a göndermelerine izin ver</translation>
-<translation id="90110062113213245">Politikayı ayarlayarak, Chrome'un istemci sertifikası seçebileceği siteleri otomatik belirten URL kalıplarının listesini çıkarabilirsiniz. <ph name="URL_PATTERN_PLACEHOLDER" /> içerik ayarı kalıbı olduğunda değer, her biri <ph name="AUTO_SELECT_CERTIFICATE_FOR_URLS_EXAMPLE" /> biçiminde dizili JSON sözlükleri dizisidir. <ph name="FILTER_PLACEHOLDER" />, tarayıcının otomatik seçtiği istemci sertifikalarını sınırlandırır. Filtreden bağımsız olarak, yalnızca sunucunun sertifika isteğiyle eşleşen sertifikalar seçilir.
-
-      Örneğin, <ph name="FILTER_PLACEHOLDER" /> lunu içersin:
-
-      * <ph name="AUTO_SELECT_CERTIFICATE_FOR_URLS_FILTER_EXAMPLE" />, bu durumda yalnızca CommonName <ph name="ISSUER_CN_PLACEHOLDER" /> olan bir sertifikanın verdiği istemci sertifikaları seçilir.
-
-      * <ph name="ISSUER_STRING_VALUE" /> ve <ph name="SUBJECT_STRING_VALUE" /> bölümleri, sadece eşleşmiş istemci sertifikaları seçilir.
-
-      * ("O"), sertifika, seçilecek belirli değerle eşleşen en az bir kuruluş gerektirir. * ("OU"), sertifika, seçilecek belirli değerle eşleşen en az bir kuruluş birimi gerektirir.
-
-      * <ph name="EMPTY_DICTIONARY" />, istemci sertifikalarının seçimi ayrıca kısıtlanmamıştır.
-
-      Politikayı ayarlamadan bırakırsanız hiçbir site için otomatik seçim gerçekleşmez.</translation>
 <translation id="9013875414788074110"><ph name="PRODUCT_OS_NAME" /> giriş yapılırken bir sunucu (online) veya önbelleğe alınmış bir şifre (çevrimdışı) ile kimlik doğrulaması yapabilir.
 
       Bu politika -1 değerine ayarlandığında, kullanıcı süresiz şekilde çevrimdışı olarak kimlik doğrulaması yapabilir. Bu politika başka herhangi bir değere ayarlandığında, kullanıcının online kimlik doğrulamayı tekrar kullanması gereken, en son online kimlik doğrulama işleminden beri geçen zamanı belirtir.

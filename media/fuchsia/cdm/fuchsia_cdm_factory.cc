@@ -43,7 +43,7 @@ void FuchsiaCdmFactory::Create(
   }
 
   fuchsia::media::drm::ContentDecryptionModulePtr cdm_ptr;
-  cdm_provider_->CreateCdmInterface(key_system, cdm_ptr.NewRequest());
+  auto cdm_request = cdm_ptr.NewRequest();
 
   FuchsiaCdm::SessionCallbacks callbacks;
   callbacks.message_cb = session_message_cb;
@@ -51,10 +51,28 @@ void FuchsiaCdmFactory::Create(
   callbacks.keys_change_cb = session_keys_change_cb;
   callbacks.expiration_update_cb = session_expiration_update_cb;
 
-  auto cdm = base::MakeRefCounted<FuchsiaCdm>(std::move(cdm_ptr),
-                                              std::move(callbacks));
+  uint32_t creation_id = creation_id_++;
 
-  std::move(bound_cdm_created_cb).Run(std::move(cdm), "");
+  auto cdm = base::MakeRefCounted<FuchsiaCdm>(
+      std::move(cdm_ptr),
+      base::BindOnce(&FuchsiaCdmFactory::OnCdmReady, weak_factory_.GetWeakPtr(),
+                     creation_id, std::move(bound_cdm_created_cb)),
+      std::move(callbacks));
+
+  cdm_provider_->CreateCdmInterface(key_system, std::move(cdm_request));
+  pending_cdms_.emplace(creation_id, std::move(cdm));
+}
+
+void FuchsiaCdmFactory::OnCdmReady(uint32_t creation_id,
+                                   CdmCreatedCB cdm_created_cb,
+                                   bool success,
+                                   const std::string& error_message) {
+  auto it = pending_cdms_.find(creation_id);
+  DCHECK(it != pending_cdms_.end());
+  scoped_refptr<ContentDecryptionModule> cdm = std::move(it->second);
+  pending_cdms_.erase(it);
+  std::move(cdm_created_cb)
+      .Run(success ? std::move(cdm) : nullptr, error_message);
 }
 
 }  // namespace media

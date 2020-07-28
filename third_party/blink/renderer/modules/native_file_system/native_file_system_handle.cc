@@ -49,6 +49,7 @@ String MojoPermissionStatusToString(mojom::blink::PermissionStatus status) {
   NOTREACHED();
   return "denied";
 }
+
 }  // namespace
 
 ScriptPromise NativeFileSystemHandle::queryPermission(
@@ -58,7 +59,7 @@ ScriptPromise NativeFileSystemHandle::queryPermission(
   ScriptPromise result = resolver->Promise();
 
   QueryPermissionImpl(
-      descriptor->writable(),
+      descriptor->mode() == "readwrite",
       WTF::Bind(
           [](ScriptPromiseResolver* resolver,
              mojom::blink::PermissionStatus result) {
@@ -76,7 +77,7 @@ ScriptPromise NativeFileSystemHandle::requestPermission(
   ScriptPromise result = resolver->Promise();
 
   RequestPermissionImpl(
-      descriptor->writable(),
+      descriptor->mode() == "readwrite",
       WTF::Bind(
           [](ScriptPromiseResolver* resolver, NativeFileSystemErrorPtr result,
              mojom::blink::PermissionStatus status) {

@@ -15,6 +15,12 @@
 
   data: [
     {
+      name: "ascent-override",
+    },
+    {
+      name: "descent-override",
+    },
+    {
       name: "end",
     },
     {

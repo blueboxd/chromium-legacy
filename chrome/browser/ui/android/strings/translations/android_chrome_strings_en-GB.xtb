@@ -335,6 +335,7 @@ Touch and hold any word to search. To refine your search, select more or fewer w
 <translation id="3658159451045945436">Resetting wipes your history of data savings, including the list of visited sites.</translation>
 <translation id="3692944402865947621"><ph name="FILE_NAME" /> download failed because storage location is not reachable.</translation>
 <translation id="3701167022068948696">Fix now</translation>
+<translation id="371230970611282515">Predicts and warns you about dangerous events before they happen.</translation>
 <translation id="3714981814255182093">Open the Find Bar</translation>
 <translation id="3716182511346448902">This page uses too much memory, so Chrome paused it.</translation>
 <translation id="3721119614952978349">You and Google</translation>
@@ -713,6 +714,7 @@ For example, some websites may respond to this request by showing you ads that a
 <translation id="6593061639179217415">Desktop site</translation>
 <translation id="6597891566292541626">Position QR/barcode in this frame.</translation>
 <translation id="6600954340915313787">Copied to Chrome</translation>
+<translation id="661266467055912436">Improves security for you and everyone on the web.</translation>
 <translation id="6627583120233659107">Edit folder</translation>
 <translation id="6643016212128521049">Clear</translation>
 <translation id="6643649862576733715">Sort by amount of data saved</translation>
@@ -872,6 +874,7 @@ For example, some websites may respond to this request by showing you ads that a
 <translation id="7925590027513907933">{FILE_COUNT,plural, =1{Downloading file.}other{Downloading # files.}}</translation>
 <translation id="7926975587469166629">Card nickname</translation>
 <translation id="7929962904089429003">Opening the menu</translation>
+<translation id="7930998711684428189">Warns you if passwords are exposed in a data breach.</translation>
 <translation id="7942131818088350342"><ph name="PRODUCT_NAME" /> is out of date.</translation>
 <translation id="7947953824732555851">Accept and sign in</translation>
 <translation id="7963646190083259054">Vendor:</translation>

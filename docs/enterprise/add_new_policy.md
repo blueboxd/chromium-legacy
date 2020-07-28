@@ -65,6 +65,9 @@ Usually you need a policy when
             traditionally, and we've seen requests from organizations to
             explicitly spell out the behavior for all possible values and for
             when the policy is unset.
+    -   See [description_guidelines.md](https://chromium.googlesource.com/chromium/src/+/refs/heads/master/docs/enterprise/description_guidelines.md)
+        for additional guidelines when creating a description, including how
+        various products should be referenced.
 3.  Create a preference and map the policy value to it.
     -   All policy values need to be mapped into a prefs value before being used
         unless the policy is needed before PrefService initialization.

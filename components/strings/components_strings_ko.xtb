@@ -359,7 +359,6 @@
 <translation id="2413528052993050574">이 서버가 <ph name="DOMAIN" />임을 입증할 수 없으며 서버의 보안 인증서가 취소될 수 있습니다. 서버를 잘못 설정했거나 불법 사용자가 연결을 가로채고 있기 때문일 수 있습니다.</translation>
 <translation id="2438874542388153331">오른쪽 4공 펀칭</translation>
 <translation id="245044156129055925">사기성 사이트에 비밀번호를 입력했습니다. 지금 바로 비밀번호를 변경하는 것이 좋습니다.</translation>
-<translation id="2463193859425327265">홈페이지 변경</translation>
 <translation id="2463739503403862330">입력</translation>
 <translation id="2465402087343596252">Architecture-E</translation>
 <translation id="2465655957518002998">배달 방법 선택</translation>
@@ -1152,7 +1151,6 @@
 <translation id="5785756445106461925">또한 이 페이지에는 안전하지 않은 다른 리소스가 포함되어 있습니다. 이러한 리소스는 전송 중에 다른 사람이 볼 수 있으며 페이지의 모양을 변경하기 위해 공격자가 수정할 수 있습니다.</translation>
 <translation id="5786044859038896871">카드 정보를 입력하시겠습니까?</translation>
 <translation id="5798290721819630480">변경사항을 삭제하시겠습니까?</translation>
-<translation id="5798683403665926540">Chrome 설정에서 홈페이지를 변경하세요.</translation>
 <translation id="5803412860119678065"><ph name="CARD_DETAIL" />을(를) 입력하시겠습니까?</translation>
 <translation id="5804241973901381774">권한</translation>
 <translation id="5804427196348435412">NFC 기기 사용</translation>
@@ -1600,7 +1598,6 @@
 <translation id="7669271284792375604">이 사이트의 공격자가 인터넷 사용 환경에 악영향을 미치는 프로그램을 설치하도록 속임수(예를 들어, 방문하는 사이트의 홈페이지를 변경하거나 추가로 광고를 표시)를 시도할 수 있습니다.</translation>
 <translation id="7673278391011283842">메일박스 6</translation>
 <translation id="7676643023259824263">클립보드 텍스트 <ph name="TEXT" /> 검색</translation>
-<translation id="7681101578153515023">검색엔진 변경</translation>
 <translation id="7682287625158474539">배송</translation>
 <translation id="7687186412095877299">저장된 결제 수단이 결제 양식에 자동으로 입력됩니다.</translation>
 <translation id="7687305263118037187">재시도 시간 초과</translation>
@@ -1638,7 +1635,6 @@
 <translation id="7802523362929240268">정상적인 사이트</translation>
 <translation id="780301667611848630">취소</translation>
 <translation id="7805768142964895445">상태</translation>
-<translation id="7806344367022510803">Chrome에서 검색엔진 설정을 변경하세요.</translation>
 <translation id="7812922009395017822">Mir</translation>
 <translation id="7813600968533626083">Chrome에서 추천검색어를 삭제하시겠습니까?</translation>
 <translation id="781440967107097262">클립보드를 공유하시겠습니까?</translation>
@@ -1780,7 +1776,6 @@
 추가 세부정보:
 <ph name="DEBUG_INFO" /></translation>
 <translation id="8424582179843326029"><ph name="FIRST_LABEL" /> <ph name="SECOND_LABEL" /> <ph name="THIRD_LABEL" /></translation>
-<translation id="8425213833346101688">변경</translation>
 <translation id="8428213095426709021">설정</translation>
 <translation id="8433057134996913067">이 작업을 수행하면 대부분의 웹사이트에서 로그아웃됩니다.</translation>
 <translation id="8437238597147034694">이동 실행 취소(&amp;U)</translation>

@@ -38,7 +38,6 @@
 #include "ui/views/border.h"
 #include "ui/views/focus/focus_search.h"
 #include "ui/views/layout/box_layout.h"
-#include "ui/views/layout/fill_layout.h"
 #include "ui/views/painter.h"
 
 namespace ash {
@@ -219,7 +218,6 @@ UnifiedSystemTrayView::UnifiedSystemTrayView(
           std::make_unique<InteractedByTapRecorder>(this)) {
   DCHECK(controller_);
 
-  SetLayoutManager(std::make_unique<views::FillLayout>());
   auto add_layered_child = [](views::View* parent, views::View* child) {
     parent->AddChildView(child);
     child->SetPaintToLayer();
@@ -333,18 +331,9 @@ void UnifiedSystemTrayView::SetExpandedAmount(double expanded_amount) {
   page_indicator_view_->SetExpandedAmount(expanded_amount);
   sliders_container_->SetExpandedAmount(expanded_amount);
 
-  if (!IsTransformEnabled()) {
-    PreferredSizeChanged();
-    // It is possible that the ratio between |message_center_view_| and others
-    // can change while the bubble size remain unchanged.
-    Layout();
-    return;
-  }
-
-  // Note: currently transforms are only enabled when there are no
-  // notifications, so we can consider only the system tray height.
-  if (height() != GetExpandedSystemTrayHeight())
-    PreferredSizeChanged();
+  PreferredSizeChanged();
+  // It is possible that the ratio between |message_center_view_| and others
+  // can change while the bubble size remain unchanged.
   Layout();
 }
 
@@ -379,14 +368,6 @@ int UnifiedSystemTrayView::GetCollapsedSystemTrayHeight() const {
 int UnifiedSystemTrayView::GetCurrentHeight() const {
   return GetPreferredSize().height();
 }
-
-bool UnifiedSystemTrayView::IsTransformEnabled() const {
-  // TODO(amehfooz): Remove transform code completely, the code does not work
-  // and isn't needed after Oshima's performance improvement changes for the
-  // tray.
-  return false;
-}
-
 
 int UnifiedSystemTrayView::GetVisibleFeaturePodCount() const {
   return feature_pods_container_->GetVisibleCount();
@@ -461,10 +442,11 @@ void UnifiedSystemTrayView::OnGestureEvent(ui::GestureEvent* event) {
   }
 }
 
-void UnifiedSystemTrayView::ChildPreferredSizeChanged(views::View* child) {
-  // The size change is not caused by SetExpandedAmount(), because they don't
-  // trigger PreferredSizeChanged().
-  PreferredSizeChanged();
+void UnifiedSystemTrayView::Layout() {
+  if (system_tray_container_->GetVisible())
+    system_tray_container_->SetBoundsRect(GetContentsBounds());
+  else if (detailed_view_container_->GetVisible())
+    detailed_view_container_->SetBoundsRect(GetContentsBounds());
 }
 
 const char* UnifiedSystemTrayView::GetClassName() const {

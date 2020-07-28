@@ -585,7 +585,7 @@
 <translation id="1701062906490865540">Eliminar a esta persona</translation>
 <translation id="1703331064825191675">Ya no tendrás que preocuparte por tus contraseñas</translation>
 <translation id="1704970325597567340">La verificación de seguridad se ejecutó el <ph name="DATE" /></translation>
-<translation id="1706391837335750954">Existencia de la resolución de DNS</translation>
+<translation id="1706391837335750954">Agente de resolución de DNS disponible</translation>
 <translation id="1706586824377653884">Agregado por el administrador</translation>
 <translation id="1706625117072057435">Niveles de zoom</translation>
 <translation id="1708338024780164500">(Inactiva)</translation>
@@ -2741,7 +2741,7 @@ Para administrar la configuración de esta cuenta, instala la app de Family Lin
 <translation id="4375035964737468845">Abrir archivos descargados</translation>
 <translation id="4377363674125277448">Se produjo un error con el certificado del servidor.</translation>
 <translation id="4378154925671717803">Teléfono</translation>
-<translation id="4378373042927530923">No se ejecutó</translation>
+<translation id="4378373042927530923">No se ejecutó la rutina</translation>
 <translation id="4378551569595875038">Conectando…</translation>
 <translation id="4378556263712303865">Solicitud del dispositivo</translation>
 <translation id="4379281552162875326">¿Deseas desinstalar "<ph name="APP_NAME" />"?</translation>
@@ -3467,7 +3467,7 @@ Para administrar la configuración de esta cuenta, instala la app de Family Lin
 <translation id="5315873049536339193">Identidad</translation>
 <translation id="5317780077021120954">Guardar</translation>
 <translation id="5319359161174645648">Google recomienda Chrome</translation>
-<translation id="5320135788267874712">Nuevo nombre del dispositivo</translation>
+<translation id="5320135788267874712">Nombre del nuevo dispositivo</translation>
 <translation id="532247166573571973">Es posible que no se pueda acceder al servidor. Vuelve a intentarlo más tarde.</translation>
 <translation id="5324780743567488672">Configurar la zona horaria automáticamente mediante la ubicación</translation>
 <translation id="5327248766486351172">Nombre</translation>
@@ -4362,7 +4362,7 @@ Para administrar la configuración de esta cuenta, instala la app de Family Lin
 <translation id="6438992844451964465"><ph name="WINDOW_TITLE" />: Reproducción de audio</translation>
 <translation id="6442187272350399447">Impresionante</translation>
 <translation id="6444070574980481588">Establecer fecha y hora</translation>
-<translation id="6444909401984215022"><ph name="WINDOW_TITLE" /> (búsqueda de Bluetooth activa)</translation>
+<translation id="6444909401984215022"><ph name="WINDOW_TITLE" /> - Búsqueda de Bluetooth activa</translation>
 <translation id="6445450263907939268">Si no querías realizar estos cambios, puedes restablecer la configuración previa.</translation>
 <translation id="6447842834002726250">Cookies</translation>
 <translation id="6450876761651513209">Cambiar la configuración relacionada con la privacidad</translation>
@@ -4515,7 +4515,7 @@ Para administrar la configuración de esta cuenta, instala la app de Family Lin
 <translation id="6648911618876616409">Hay una actualización fundamental lista para instalarse. Accede a tu cuenta para comenzar.</translation>
 <translation id="6649018507441623493">Un segundo…</translation>
 <translation id="6649563841575838401">El formato de archivo no es compatible o el archivo está dañado.</translation>
-<translation id="6650234781371031356">La contraseña para <ph name="WEBSITE" /> está almacenada en este dispositivo y en tu Cuenta de Google. ¿Cuál quieres borrar?</translation>
+<translation id="6650234781371031356">La contraseña para <ph name="WEBSITE" /> está guardada en este dispositivo y en tu Cuenta de Google. ¿Cuál quieres borrar?</translation>
 <translation id="665061930738760572">Abrir en una &amp;nueva ventana</translation>
 <translation id="6651237644330755633">Confía en este certificado para identificar sitios web</translation>
 <translation id="665355505818177700">La integración de <ph name="MS_AD_NAME" /> en Chrome solo es compatible en plataformas x86_64. Las Chromebooks creadas a partir de una plataforma ARM o x86 no son compatibles con esta funcionalidad.</translation>
@@ -4554,7 +4554,7 @@ Para administrar la configuración de esta cuenta, instala la app de Family Lin
 <translation id="6701535245008341853">No se pudo obtener el perfil.</translation>
 <translation id="6702639462873609204">&amp;Editar</translation>
 <translation id="6703966911896067184">Ilustración de error durante la inscripción</translation>
-<translation id="6704062477274546131">Resolución DNS</translation>
+<translation id="6704062477274546131">Resolución de DNS</translation>
 <translation id="6706210727756204531">Alcance</translation>
 <translation id="6707389671160270963">Certificado de cliente SSL</translation>
 <translation id="6709002550153567782">{NUM_PAGES,plural, =0{<ph name="PAGE_TITLE" />}=1{<ph name="PAGE_TITLE" /> y 1 pestaña más}other{<ph name="PAGE_TITLE" /> y # pestañas más}}</translation>

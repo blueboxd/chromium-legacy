@@ -14,6 +14,7 @@ enum class UrlLoadStrategy;
 
 @class ActionSheetCoordinator;
 @protocol TableViewFaviconDataSource;
+@protocol HistoryMenuProvider;
 @protocol HistoryUIDelegate;
 @protocol HistoryPresentationDelegate;
 
@@ -36,6 +37,9 @@ enum class UrlLoadStrategy;
 @property(nonatomic, weak) id<TableViewFaviconDataSource> imageDataSource;
 // Coordinator for displaying a context menu for history entries.
 @property(nonatomic, strong) ActionSheetCoordinator* contextMenuCoordinator;
+// Provider of menu configurations for the history component.
+@property(nonatomic, weak) id<HistoryMenuProvider> menuProvider API_AVAILABLE(
+    ios(13.0));
 
 // Initializers.
 - (instancetype)init NS_DESIGNATED_INITIALIZER;

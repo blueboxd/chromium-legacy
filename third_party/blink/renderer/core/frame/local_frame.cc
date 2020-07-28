@@ -666,24 +666,21 @@ bool LocalFrame::CanAccessEvent(
       if (!frame_document)
         return false;
 
-      // FIXME(acomminos): In the presence of a pointer lock, bail out. We
-      // currently do not propagate which frame had the lock at the time of
-      // event dispatch in the compositor. See https://crbug.com/1092617.
+      Document* target_document = nullptr;
       if (auto* page = frame_document->GetPage()) {
         auto& pointer_lock_controller = page->GetPointerLockController();
-        if (pointer_lock_controller.GetElement()) {
-          return false;
+        if (auto* element = pointer_lock_controller.GetElement()) {
+          // If a pointer lock is held, we can expect all events to be
+          // dispatched to the frame containing the locked element.
+          target_document = &element->GetDocument();
+        } else if (cc::ElementId element_id = attribution.target_frame_id()) {
+          DOMNodeId target_document_id =
+              DOMNodeIdFromCompositorElementId(element_id);
+          target_document =
+              DynamicTo<Document>(DOMNodeIds::NodeForId(target_document_id));
         }
       }
 
-      cc::ElementId element_id = attribution.target_frame_id();
-      if (!element_id)
-        return false;
-
-      DOMNodeId target_document_id =
-          DOMNodeIdFromCompositorElementId(element_id);
-      Document* target_document =
-          DynamicTo<Document>(DOMNodeIds::NodeForId(target_document_id));
       if (!target_document || !target_document->domWindow())
         return false;
 

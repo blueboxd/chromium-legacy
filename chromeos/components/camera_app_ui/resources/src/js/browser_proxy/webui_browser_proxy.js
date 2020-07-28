@@ -18,6 +18,13 @@ function NOTIMPLEMENTED() {
  */
 class WebUIBrowserProxy {
   /** @override */
+  async requestEnumerateDevicesPermission() {
+    // No operation here since the permission is automatically granted for
+    // the chrome:// scheme.
+    return true;
+  }
+
+  /** @override */
   async getExternalDir() {
     NOTIMPLEMENTED();
     return null;

@@ -335,6 +335,7 @@
 <translation id="3658159451045945436">Будет удалена вся информация о сэкономленных данных, в том числе список просмотренных сайтов.</translation>
 <translation id="3692944402865947621">Не удалось скачать файл <ph name="FILE_NAME" />, так как хранилище недоступно.</translation>
 <translation id="3701167022068948696">Исправить</translation>
+<translation id="371230970611282515">Предсказывает опасные события и предупреждает вас до того, как они происходят.</translation>
 <translation id="3714981814255182093">Открыть панель поиска</translation>
 <translation id="3716182511346448902">Эта страница расходовала слишком много памяти, поэтому работа ее скриптов была приостановлена.</translation>
 <translation id="3721119614952978349">Я и Google</translation>
@@ -713,6 +714,7 @@
 <translation id="6593061639179217415">Версия для ПК</translation>
 <translation id="6597891566292541626">Поместите QR-код или штрихкод в эту рамку.</translation>
 <translation id="6600954340915313787">Скопировано в Chrome</translation>
+<translation id="661266467055912436">Делает Интернет безопаснее для вас и других пользователей.</translation>
 <translation id="6627583120233659107">Изменить папку</translation>
 <translation id="6643016212128521049">Удалить</translation>
 <translation id="6643649862576733715">Сортировать по объему сохраненного трафика</translation>
@@ -872,6 +874,7 @@
 <translation id="7925590027513907933">{FILE_COUNT,plural, =1{Скачивание 1 файла…}one{Скачивание # файла…}few{Скачивание # файлов…}many{Скачивание # файлов…}other{Скачивание # файла…}}</translation>
 <translation id="7926975587469166629">Название карты</translation>
 <translation id="7929962904089429003">Открыть меню</translation>
+<translation id="7930998711684428189">Сообщает, если пароли были раскрыты в результате утечки данных.</translation>
 <translation id="7942131818088350342">Версия <ph name="PRODUCT_NAME" /> устарела.</translation>
 <translation id="7947953824732555851">Принять и войти</translation>
 <translation id="7963646190083259054">Поставщик:</translation>

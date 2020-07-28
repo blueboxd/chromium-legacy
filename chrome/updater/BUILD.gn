@@ -94,16 +94,6 @@ if (is_win || is_mac) {
       "control_service_in_process.cc",
       "control_service_in_process.h",
       "crx_downloader_factory.h",
-      "dm_cached_policy_info.cc",
-      "dm_cached_policy_info.h",
-      "dm_client.cc",
-      "dm_client.h",
-      "dm_message.cc",
-      "dm_message.h",
-      "dm_policy_manager.cc",
-      "dm_policy_manager.h",
-      "dm_storage.cc",
-      "dm_storage.h",
       "external_constants.cc",
       "external_constants.h",
       "external_constants_impl.h",
@@ -131,7 +121,6 @@ if (is_win || is_mac) {
         "app/server/mac/service_protocol.mm",
         "app/server/mac/update_service_wrappers.h",
         "app/server/mac/update_service_wrappers.mm",
-        "dm_storage_mac.mm",
         "external_constants_mac.mm",
         "installer_mac.cc",
         "lib_util_mac.mm",
@@ -155,7 +144,6 @@ if (is_win || is_mac) {
         "app/server/win/server.h",
         "app/server/win/service_main.cc",
         "app/server/win/service_main.h",
-        "dm_storage_win.cc",
         "external_constants_win.cc",
         "installer_win.cc",
         "lib_util_win.cc",
@@ -168,19 +156,14 @@ if (is_win || is_mac) {
       ":base",
       ":version_header",
       "//base",
-      "//chrome/updater/protos:omaha_proto",
+      "//chrome/updater/device_management",
       "//components/crash/core/common:crash_key",
       "//components/crx_file:crx_file",
       "//components/prefs",
       "//components/update_client",
       "//components/version_info",
-      "//crypto",
       "//third_party/boringssl",
       "//url",
-    ]
-    public_deps = [
-      "//components/policy/core/common:common",
-      "//components/policy/proto",
     ]
 
     if (is_win) {
@@ -240,12 +223,6 @@ if (is_win || is_mac) {
 
     sources = [
       "app/app_server_unittest.cc",
-      "dm_client_unittest.cc",
-      "dm_message_unittest.cc",
-      "dm_policy_builder_for_testing.cc",
-      "dm_policy_builder_for_testing.h",
-      "dm_policy_manager_unittest.cc",
-      "dm_storage_unittest.cc",
       "external_constants_unittest.cc",
       "external_constants_unittest.h",
       "lib_util_unittest.cc",
@@ -270,17 +247,14 @@ if (is_win || is_mac) {
       "//base",
       "//base/test:test_support",
       "//chrome/common:constants",
+      "//chrome/updater/device_management:unittest",
       "//chrome/updater/test/test_app",
       "//chrome/updater/tools:unittest",
       "//components/prefs:test_support",
       "//components/update_client",
-      "//crypto",
-      "//net:test_support",
       "//testing/gtest",
       "//url",
     ]
-
-    public_deps = [ "//chrome/updater/protos:omaha_proto" ]
 
     if (is_win) {
       sources += [

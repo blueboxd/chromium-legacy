@@ -2106,7 +2106,9 @@ void SkiaRenderer::DrawYUVVideoQuad(const YUVVideoDrawQuad* quad,
   // frame as overlay candidate. So it's unnecessary to worry about the
   // compositing-overlay switch here. In addition drawing a HDR video using sRGB
   // can cancel the advantages of HDR.
-  if (supports_dc_layers_ && !src_color_space.IsHDR() &&
+  const bool supports_dc_layers =
+      output_surface_->capabilities().supports_dc_layers;
+  if (supports_dc_layers && !src_color_space.IsHDR() &&
       resource_provider_->IsOverlayCandidate(quad->y_plane_resource_id())) {
     DCHECK(resource_provider_->IsOverlayCandidate(quad->u_plane_resource_id()));
     dst_color_space = gfx::ColorSpace::CreateSRGB();
@@ -2541,12 +2543,6 @@ void SkiaRenderer::CopyDrawnRenderPass(
     }
   }
 }
-
-#if defined(OS_WIN)
-void SkiaRenderer::SetEnableDCLayers(bool enable) {
-  skia_output_surface_->SetEnableDCLayers(enable);
-}
-#endif
 
 void SkiaRenderer::DidChangeVisibility() {
   if (visible_)

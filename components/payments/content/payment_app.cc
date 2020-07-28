@@ -99,6 +99,10 @@ void PaymentApp::AbortPaymentApp(
   std::move(abort_callback).Run(/*aborted=*/false);
 }
 
+bool PaymentApp::IsPreferred() const {
+  return false;
+}
+
 // static
 void PaymentApp::SortApps(std::vector<std::unique_ptr<PaymentApp>>* apps) {
   DCHECK(apps);

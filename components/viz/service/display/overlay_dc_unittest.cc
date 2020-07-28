@@ -55,7 +55,7 @@ class OverlayOutputSurface : public OutputSurface {
   explicit OverlayOutputSurface(
       scoped_refptr<TestContextProvider> context_provider)
       : OutputSurface(std::move(context_provider)) {
-    is_displayed_as_overlay_plane_ = true;
+    capabilities_.supports_dc_layers = true;
   }
 
   // OutputSurface implementation.
@@ -64,6 +64,7 @@ class OverlayOutputSurface : public OutputSurface {
   void DiscardBackbuffer() override {}
   void BindFramebuffer() override { bind_framebuffer_count_ += 1; }
   void SetDrawRectangle(const gfx::Rect& rect) override {}
+  MOCK_METHOD1(SetEnableDCLayers, void(bool));
   void Reshape(const gfx::Size& size,
                float device_scale_factor,
                const gfx::ColorSpace& color_space,
@@ -76,9 +77,7 @@ class OverlayOutputSurface : public OutputSurface {
   }
   bool HasExternalStencilTest() const override { return false; }
   void ApplyExternalStencil() override {}
-  bool IsDisplayedAsOverlayPlane() const override {
-    return is_displayed_as_overlay_plane_;
-  }
+  bool IsDisplayedAsOverlayPlane() const override { return false; }
   unsigned GetOverlayTextureId() const override { return 10000; }
   unsigned UpdateGpuFence() override { return 0; }
   void SetUpdateVSyncParametersCallback(
@@ -93,22 +92,17 @@ class OverlayOutputSurface : public OutputSurface {
   }
   gpu::MemoryTracker* GetMemoryTracker() override { return nullptr; }
 
-  void set_is_displayed_as_overlay_plane(bool value) {
-    is_displayed_as_overlay_plane_ = value;
-  }
-
   unsigned bind_framebuffer_count() const { return bind_framebuffer_count_; }
 
  private:
-  bool is_displayed_as_overlay_plane_;
   unsigned bind_framebuffer_count_ = 0;
 };
 
 class DCTestOverlayProcessor : public OverlayProcessorWin {
  public:
-  DCTestOverlayProcessor()
+  explicit DCTestOverlayProcessor(OutputSurface* output_surface)
       : OverlayProcessorWin(
-            true,
+            output_surface,
             std::make_unique<DCLayerOverlayProcessor>(&debug_settings_, true)) {
   }
   DebugRendererSettings debug_settings_;
@@ -237,7 +231,10 @@ class DCLayerOverlayTest : public testing::Test {
     child_provider_->BindToCurrentThread();
     child_resource_provider_ = std::make_unique<ClientResourceProvider>();
 
-    overlay_processor_ = std::make_unique<DCTestOverlayProcessor>();
+    overlay_processor_ =
+        std::make_unique<DCTestOverlayProcessor>(output_surface_.get());
+    overlay_processor_->set_using_dc_layers_for_testing(true);
+    EXPECT_TRUE(overlay_processor_->IsOverlaySupported());
   }
 
   void TearDown() override {
@@ -258,7 +255,7 @@ class DCLayerOverlayTest : public testing::Test {
   std::unique_ptr<DisplayResourceProvider> resource_provider_;
   scoped_refptr<TestContextProvider> child_provider_;
   std::unique_ptr<ClientResourceProvider> child_resource_provider_;
-  std::unique_ptr<DCTestOverlayProcessor> overlay_processor_;
+  std::unique_ptr<OverlayProcessorWin> overlay_processor_;
   gfx::Rect damage_rect_;
   std::vector<gfx::Rect> content_bounds_;
 };
@@ -638,6 +635,91 @@ TEST_F(DCLayerOverlayTest, DifferentOverlaySizes) {
 
     // The second video with a larger size should be prmoted to overlay.
     EXPECT_EQ(second_rect, dc_layer_list.front().quad_rect);
+  }
+}
+
+TEST_F(DCLayerOverlayTest, SetEnableDCLayers) {
+  // Start without DC layers.
+  overlay_processor_->set_using_dc_layers_for_testing(false);
+
+  // Draw 60 frames with overlay video quads.
+  for (int i = 0; i < 60; i++) {
+    std::unique_ptr<RenderPass> pass = CreateRenderPass();
+    CreateFullscreenCandidateYUVVideoQuad(
+        resource_provider_.get(), child_resource_provider_.get(),
+        child_provider_.get(), pass->shared_quad_state_list.back(), pass.get());
+
+    RenderPassList pass_list;
+    pass_list.push_back(std::move(pass));
+
+    DCLayerOverlayList dc_layer_list;
+    OverlayProcessorInterface::FilterOperationsMap render_pass_filters;
+    OverlayProcessorInterface::FilterOperationsMap render_pass_backdrop_filters;
+    damage_rect_ = gfx::Rect(1, 1, 10, 10);
+
+    // There will be full damage and SetEnableDCLayers(true) will be called on
+    // the first frame.
+    const gfx::Rect expected_damage =
+        (i == 0) ? pass_list.back()->output_rect : gfx::Rect();
+
+    if (i == 0)
+      EXPECT_CALL(*output_surface_.get(), SetEnableDCLayers(true)).Times(1);
+    else
+      EXPECT_CALL(*output_surface_.get(), SetEnableDCLayers(_)).Times(0);
+
+    overlay_processor_->ProcessForOverlays(
+        resource_provider_.get(), &pass_list, GetIdentityColorMatrix(),
+        render_pass_filters, render_pass_backdrop_filters, nullptr,
+        &dc_layer_list, &damage_rect_, &content_bounds_);
+
+    EXPECT_EQ(1U, dc_layer_list.size());
+    EXPECT_EQ(0U, output_surface_->bind_framebuffer_count());
+    EXPECT_EQ(1, dc_layer_list.back().z_order);
+    EXPECT_EQ(damage_rect_, expected_damage);
+
+    Mock::VerifyAndClearExpectations(output_surface_.get());
+  }
+
+  // Draw 65 frames without overlays.
+  for (int i = 0; i < 65; i++) {
+    std::unique_ptr<RenderPass> pass = CreateRenderPass();
+
+    damage_rect_ = gfx::Rect(1, 1, 10, 10);
+    auto* quad = pass->CreateAndAppendDrawQuad<SolidColorDrawQuad>();
+    quad->SetNew(pass->CreateAndAppendSharedQuadState(), damage_rect_,
+                 damage_rect_, SK_ColorRED, false);
+
+    DCLayerOverlayList dc_layer_list;
+    OverlayProcessorInterface::FilterOperationsMap render_pass_filters;
+    OverlayProcessorInterface::FilterOperationsMap render_pass_backdrop_filters;
+
+    RenderPassList pass_list;
+    pass_list.push_back(std::move(pass));
+
+    damage_rect_ = gfx::Rect(1, 1, 10, 10);
+
+    // There will be full damage and SetEnableDCLayers(false) will be called
+    // after 60 consecutive frames with no overlays. The first frame without
+    // overlays will also have full damage, but no call to SetEnableDCLayers.
+    const gfx::Rect expected_damage = (i == 0 || (i + 1) == 60)
+                                          ? pass_list.back()->output_rect
+                                          : damage_rect_;
+
+    if (i + 1 == 60)
+      EXPECT_CALL(*output_surface_.get(), SetEnableDCLayers(false)).Times(1);
+    else
+      EXPECT_CALL(*output_surface_.get(), SetEnableDCLayers(_)).Times(0);
+
+    overlay_processor_->ProcessForOverlays(
+        resource_provider_.get(), &pass_list, GetIdentityColorMatrix(),
+        render_pass_filters, render_pass_backdrop_filters, nullptr,
+        &dc_layer_list, &damage_rect_, &content_bounds_);
+
+    EXPECT_EQ(0u, dc_layer_list.size());
+    EXPECT_EQ(0u, output_surface_->bind_framebuffer_count());
+    EXPECT_EQ(damage_rect_, expected_damage);
+
+    Mock::VerifyAndClearExpectations(output_surface_.get());
   }
 }
 

@@ -50,13 +50,14 @@ namespace internal {
 
 using std::begin;
 template <typename Range>
-auto Begin(Range&& range) -> decltype(begin(std::forward<Range>(range))) {
+constexpr auto Begin(Range&& range)
+    -> decltype(begin(std::forward<Range>(range))) {
   return begin(std::forward<Range>(range));
 }
 
 using std::end;
 template <typename Range>
-auto End(Range&& range) -> decltype(end(std::forward<Range>(range))) {
+constexpr auto End(Range&& range) -> decltype(end(std::forward<Range>(range))) {
   return end(std::forward<Range>(range));
 }
 
@@ -72,7 +73,7 @@ auto End(Range&& range) -> decltype(end(std::forward<Range>(range))) {
 //
 // Reference: https://wg21.link/range.access.begin
 template <typename Range>
-auto begin(Range&& range)
+constexpr auto begin(Range&& range)
     -> decltype(internal::Begin(std::forward<Range>(range))) {
   return internal::Begin(std::forward<Range>(range));
 }
@@ -87,7 +88,8 @@ auto begin(Range&& range)
 //
 // Reference: - https://wg21.link/range.access.end
 template <typename Range>
-auto end(Range&& range) -> decltype(internal::End(std::forward<Range>(range))) {
+constexpr auto end(Range&& range)
+    -> decltype(internal::End(std::forward<Range>(range))) {
   return internal::End(std::forward<Range>(range));
 }
 

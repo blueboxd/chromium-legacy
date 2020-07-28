@@ -26,6 +26,7 @@
 <translation id="1209206284964581585">Vorerst ausblenden</translation>
 <translation id="1219674500290482172">Internetverbindung kann nicht hergestellt werden.</translation>
 <translation id="122699739164161391">Alle Tabs schließen</translation>
+<translation id="1229222343402087523">In Chrome nach ${searchPhrase} suchen</translation>
 <translation id="1231733316453485619">Synchronisierung aktivieren?</translation>
 <translation id="1254117744268754948">Ordner wählen</translation>
 <translation id="1265739287306757398">Weitere Informationen</translation>
@@ -621,6 +622,7 @@ Websites können Cookies verwenden, um Ihre Browseraktivitäten auf anderen Webs
 <translation id="842017693807136194">Angemeldet mit</translation>
 <translation id="8428045167754449968">Stadt/Ort</translation>
 <translation id="8428213095426709021">Einstellungen</translation>
+<translation id="8446884382197647889">Weitere Informationen</translation>
 <translation id="8458397775385147834">1 Lesezeichen gelöscht</translation>
 <translation id="8459333855531264009">Nicht sicher</translation>
 <translation id="8487667956631253959">An</translation>

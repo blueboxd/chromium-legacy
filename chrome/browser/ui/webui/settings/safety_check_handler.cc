@@ -17,7 +17,6 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/webui/version_ui.h"
 #include "chrome/common/channel_info.h"
-#include "chrome/common/chrome_features.h"
 #include "chrome/common/url_constants.h"
 #include "chrome/grit/chromium_strings.h"
 #include "chrome/grit/generated_resources.h"
@@ -231,9 +230,7 @@ void SafetyCheckHandler::PerformSafetyCheck() {
   CheckExtensions();
 
 #if defined(OS_WIN) && BUILDFLAG(GOOGLE_CHROME_BRANDING)
-  if (base::FeatureList::IsEnabled(features::kSafetyCheckChromeCleanerChild)) {
-    CheckChromeCleaner();
-  }
+  CheckChromeCleaner();
 #endif
 }
 
@@ -351,12 +348,9 @@ void SafetyCheckHandler::CheckExtensions() {
 void SafetyCheckHandler::CheckChromeCleaner() {
   if (safe_browsing::ChromeCleanerController::GetInstance()
           ->IsAllowedByPolicy()) {
-    safe_browsing::ChromeCleanerController::State state =
-        safe_browsing::ChromeCleanerController::GetInstance()->state();
-    safe_browsing::ChromeCleanerController::IdleReason idle_reason =
-        safe_browsing::ChromeCleanerController::GetInstance()->idle_reason();
-    OnChromeCleanerCheckResult(
-        ConvertToChromeCleanerStatus(state, idle_reason));
+    OnChromeCleanerCheckResult(ConvertToChromeCleanerStatus(
+        safe_browsing::ChromeCleanerController::GetInstance()->state(),
+        safe_browsing::ChromeCleanerController::GetInstance()->idle_reason()));
   } else {
     OnChromeCleanerCheckResult(ChromeCleanerStatus::kDisabledByAdmin);
   }
@@ -881,8 +875,7 @@ void SafetyCheckHandler::CompleteParentIfChildrenCompleted() {
     return;
   }
 #if defined(OS_WIN) && BUILDFLAG(GOOGLE_CHROME_BRANDING)
-  if (base::FeatureList::IsEnabled(features::kSafetyCheckChromeCleanerChild) &&
-      chrome_cleaner_status_ == ChromeCleanerStatus::kChecking) {
+  if (chrome_cleaner_status_ == ChromeCleanerStatus::kChecking) {
     return;
   }
 #endif

@@ -2380,6 +2380,7 @@ Du kan hantera inställningarna för det här kontot genom att installera Family
 <translation id="3882165008614329320">Befintlig video från kamera eller fil</translation>
 <translation id="3886446263141354045">Din begäran om att få tillgång till denna webbplats har skickats till <ph name="NAME" /></translation>
 <translation id="3888550877729210209">Antecknar med <ph name="LOCK_SCREEN_APP_NAME" /></translation>
+<translation id="3891563564777705449">{0,plural, =1{Uppdatera enheten inom 1 vecka}other{Uppdatera enheten inom # veckor}}</translation>
 <translation id="3892414795099177503">Lägg till OpenVPN/L2TP …</translation>
 <translation id="3893536212201235195">Läsa och ändra tillgänglighetsinställningarna</translation>
 <translation id="3893630138897523026">ChromeVox (talad feedback)</translation>
@@ -4441,6 +4442,7 @@ Du kan hantera inställningarna för det här kontot genom att installera Family
 <translation id="6535331821390304775">Tillåt alltid att <ph name="ORIGIN" /> öppnar den här typen av länkar i den kopplade appen</translation>
 <translation id="654039047105555694"><ph name="BEGIN_BOLD" />Obs!<ph name="END_BOLD" /> Aktivera endast om du vet vad du gör eller om du har blivit ombedd att göra det eftersom insamling av data kan försämra resultatet.</translation>
 <translation id="6541638731489116978">Den här webbplatsen har blockerats från att använda enhetens rörelsesensorer.</translation>
+<translation id="6545407738986370057">{0,plural, =1{Returnera enheten inom 1 vecka}other{Returnera enheten inom # veckor}}</translation>
 <translation id="6545665334409411530">Upprepningsintervall</translation>
 <translation id="6545864417968258051">Bluetooth-sökning</translation>
 <translation id="6545867563032584178">Mikrofon har inaktiverats i systeminställningarna för Mac.</translation>

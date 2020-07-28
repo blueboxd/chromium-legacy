@@ -289,7 +289,7 @@ NSString* ColumnIdentifier(int id) {
   [tableView setAllowsMultipleSelection:YES];
   [tableView setAutosaveTableColumns:NO];
   [tableView
-      setColumnAutoresizingStyle:NSTableViewUniformColumnAutoresizingStyle];
+      setColumnAutoresizingStyle:NSTableViewSequentialColumnAutoresizingStyle];
   [tableView setDoubleAction:@selector(tableWasDoubleClicked:)];
   [tableView setFocusRingType:NSFocusRingTypeNone];
   [tableView setIntercellSpacing:NSMakeSize(0, 0)];
@@ -337,10 +337,8 @@ NSString* ColumnIdentifier(int id) {
   [column.get() setSortDescriptorPrototype:sortDescriptor.get()];
 
   [column.get() setMinWidth:columnData.min_width];
-  int maxWidth = columnData.max_width;
-  if (maxWidth < 0)
-    maxWidth = 3 * columnData.min_width / 2;  // *1.5 for ints.
-  [column.get() setMaxWidth:maxWidth];
+  if (columnData.max_width > 0)
+    [column.get() setMaxWidth:columnData.max_width];
   [column.get() setResizingMask:NSTableColumnAutoresizingMask |
                                 NSTableColumnUserResizingMask];
 

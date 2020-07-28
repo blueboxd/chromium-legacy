@@ -804,9 +804,6 @@ Jika Anda menonaktifkan kebijakan ini, scroll halaman web ke fragmen teks terten
       Kebijakan ini tidak boleh digunakan untuk perangkat yang digunakan secara umum.
 
       Jika kebijakan disetel ke Benar (True) atau tidak disetel, notifikasi peringatan privasi di sesi tamu terkelola yang diluncurkan otomatis akan terus ditampilkan hingga pengguna menutupnya.</translation>
-<translation id="2288338171390565087">Fitur ini memberikan saran emoji saat pengguna mengetikkan kata yang cocok dengan peta emoji bawaan.
-      Jika kebijakan ini disetel ke benar (true), fitur akan diaktifkan secara paksa dan pengguna tidak akan dapat menggantinya.
-      Kebijakan ini disetel ke salah (false) secara default, tidak ada emoji yang akan disarankan dan pengguna tidak dapat menggantinya.</translation>
 <translation id="2289265947759479962">Kebijakan ini mengontrol apakah informasi versi akan dilaporkan atau tidak, misalnya versi OS, platform OS, arsitektur OS, versi <ph name="PRODUCT_NAME" />, dan saluran <ph name="PRODUCT_NAME" />.
 
       Jika kebijakan <ph name="CLOUD_REPORTING_ENABLED_POLICY_NAME" /> tidak disetel atau disetel ke nonaktif, kebijakan ini akan diabaikan.
@@ -1232,13 +1229,6 @@ Jika kebijakan ini tidak ditetapkan, layar privasi mula-mula akan dinonaktifkan 
       Jika kebijakan ini disetel ke Salah (False), informasi yang dapat digunakan untuk mengidentifikasi perangkat tidak akan dikumpulkan.
 
       Kebijakan ini hanya berlaku saat perangkat didaftarkan dengan <ph name="CLOUD_MANAGEMENT_ENROLLMENT_TOKEN" /> untuk <ph name="PRODUCT_NAME" />.</translation>
-<translation id="2836621397261130126">Mengontrol apakah persetujuan oleh kebijakan KDC dipatuhi untuk menentukan pendelegasian tiket <ph name="KERBEROS" />.
-
-          Jika kebijakan ini ditetapkan ke True, autentikasi HTTP akan mematuhi persetujuan oleh kebijakan KDC, artinya Chrome hanya akan mendelegasikan kredensial jika KDC menetapkan <ph name="OK_AS_DELEGATE" /> pada tiket layanan. Lihat https://tools.ietf.org/html/rfc5896.html untuk mengetahui informasi selengkapnya. Layanan juga harus cocok dengan kebijakan 'AuthNegotiateDelegateWhitelist'.
-
-          Jika kebijakan ini tidak ditetapkan, atau ditetapkan ke False, kebijakan KDC akan diabaikan pada platform yang didukung dan hanya kebijakan 'AuthNegotiateDelegateWhitelist' yang dipatuhi.
-
-          Di Windows, kebijakan KDC selalu dipatuhi.</translation>
 <translation id="283695852388224413">Jika kebijakan ini ditetapkan, panjang PIN maksimum yang dikonfigurasi akan diberlakukan. Nilai 0 atau lebih kecil berarti panjang maksimum tidak berlaku; dalam hal ini, pengguna dapat menetapkan panjang PIN sesuai yang diinginkan. Jika nilai setelan ini lebih kecil dari <ph name="PIN_UNLOCK_MINIMUM_LENGTH_POLICY_NAME" /> tetapi lebih besar dari 0, panjang maksimum sama dengan panjang minimum.
 
           Jika kebijakan ini tidak ditetapkan, tidak ada panjang maksimum yang diberlakukan.</translation>
@@ -2432,13 +2422,6 @@ Jika kebijakan ini tidak disetel, setelan default-nya tidak diizinkan bagi pengg
       Jika 'Forced' dipilih, halaman dapat dibuka HANYA dalam mode Samaran. Perhatikan bahwa 'Paksa' tidak berfungsi pada Android di Chrome</translation>
 <translation id="4600786265870346112">Aktifkan kursor besar</translation>
 <translation id="4604931264910482931">Konfigurasikan daftar hitam perpesanan asli</translation>
-<translation id="4614701085541180174">Memungkinkan Anda menetapkan daftar pola URL yang menentukan situs tempat sertifikat klien dipilih secara otomatis di layar login dalam frame yang menghosting alur SAML, jika situs tersebut meminta sertifikat. Contoh penggunaan adalah ketika mengonfigurasikan sertifikat di seluruh perangkat untuk ditampilkan ke SAML IdP.
-
-      Nilai harus berupa array kamus dengan string JSON. Setiap kamus harus memiliki bentuk <ph name="DEVICE_LOGIN_SCREEN_AUTO_SELECT_CERTIFICATE_FOR_URLS_EXAMPLE" />, dengan <ph name="URL_PATTERN_PLACEHOLDER" /> merupakan pola setelan konten. <ph name="FILTER_PLACEHOLDER" /> membatasi asal sertifikat klien yang akan dipilih secara otomatis oleh browser. Terlepas dari filter, hanya sertifikat yang cocok dengan permintaan sertifikat server yang akan dipilih. Jika <ph name="FILTER_PLACEHOLDER" /> memiliki bentuk <ph name="JSON_DICTIONARY_EXAMPLE" />, hanya sertifikat klien yang diterbitkan oleh sertifikat dengan CommonName <ph name="ISSUER_CN_PLACEHOLDER" /> yang akan dipilih. Jika <ph name="FILTER_PLACEHOLDER" /> berupa kamus kosong {}, pemilihan sertifikat klien tidak akan dibatasi lagi.
-
-      Jika kebijakan ini tidak ditetapkan, pemilihan otomatis tidak akan dilakukan untuk semua situs.
-
-      Untuk informasi mendetail tentang pola URL yang valid, lihat https://cloud.google.com/docs/chrome-enterprise/policies/url-patterns.</translation>
 <translation id="4617338332148204752">Lewati pemeriksaan tag meta pada <ph name="PRODUCT_FRAME_NAME" /></translation>
 <translation id="462134014569484584">Kebijakan ini menetapkan kunci lisensi <ph name="PLUGIN_VM_NAME" /> untuk perangkat ini.</translation>
 <translation id="4625915093043961294">Mengonfigurasi daftar putih pemasangan ekstensi</translation>
@@ -5438,19 +5421,6 @@ Pengguna tidak dapat mengubah atau mengganti setelan ini.</translation>
        Kebijakan ini tidak memengaruhi jenis konten campuran selain audio, video, dan gambar.
        Kebijakan ini tidak akan berpengaruh lagi mulai <ph name="PRODUCT_NAME" /> 84.</translation>
 <translation id="9010080992450148617">Mengaktifkan pengiriman download ke Google untuk pemindaian mendalam bagi pengguna yang terdaftar di Program Perlindungan Lanjutan</translation>
-<translation id="90110062113213245">Menyetel kebijakan memungkinkan Anda membuat daftar pola URL yang menentukan untuk situs mana Chrome dapat memilih sertifikat klien secara otomatis. Nilai berupa array kamus dengan string JSON, setiap kamus memiliki bentuk <ph name="AUTO_SELECT_CERTIFICATE_FOR_URLS_EXAMPLE" />, dan pola setelan kontennya berupa <ph name="URL_PATTERN_PLACEHOLDER" />. <ph name="FILTER_PLACEHOLDER" /> akan membatasi sertifikat klien yang dapat dipilih browser secara otomatis. Terlepas dari filter, hanya sertifikat yang cocok dengan permintaan sertifikat server yang akan dipilih.
-
-      Misalnya, jika <ph name="FILTER_PLACEHOLDER" /> memiliki:
-
-      * <ph name="AUTO_SELECT_CERTIFICATE_FOR_URLS_FILTER_EXAMPLE" />, hanya sertifikat klien yang diterbitkan oleh sertifikat dengan CommonName <ph name="ISSUER_CN_PLACEHOLDER" /> yang akan dipilih.
-
-      * bagian <ph name="ISSUER_STRING_VALUE" /> dan <ph name="SUBJECT_STRING_VALUE" />, hanya sertifikat klien yang cocok yang akan dipilih.
-
-      * ("O"), sertifikat perlu minimal satu organisasi yang cocok dengan nilai yang ditentukan agar dapat dipilih. * ("OU"), sertifikat perlu minimal satu unit organisasi yang cocok dengan nilai yang ditentukan agar dapat dipilih.
-
-      * <ph name="EMPTY_DICTIONARY" />, pemilihan sertifikat klien tidak akan dibatasi lebih lanjut.
-
-      Jika kebijakan tidak disetel, tidak akan ada pemilihan otomatis untuk situs apa pun.</translation>
 <translation id="9013875414788074110">Selama proses login, <ph name="PRODUCT_OS_NAME" /> dapat melakukan autentikasi terhadap server (online) atau menggunakan sandi yang tersimpan di cache (offline).
 
       Jika kebijakan ini ditetapkan ke nilai -1, pengguna dapat menjalankan autentikasi offline tanpa batas waktu. Jika ditetapkan ke nilai lain, kebijakan ini akan menentukan durasi waktu sejak autentikasi online terakhir, yang setelah itu pengguna harus menggunakan autentikasi online lagi.

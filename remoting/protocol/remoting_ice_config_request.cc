@@ -57,7 +57,7 @@ RemotingIceConfigRequest::NetworkTraversalClient::~NetworkTraversalClient() =
 void RemotingIceConfigRequest::NetworkTraversalClient::GetIceConfig(
     GetIceConfigCallback callback) {
   auto async_request = CreateGrpcAsyncUnaryRequest(
-      base::BindOnce(&NetworkTraversalService::Stub::AsyncGetIceConfig,
+      base::BindOnce(&NetworkTraversalService::StubInterface::AsyncGetIceConfig,
                      base::Unretained(network_traversal_.get())),
       apis::v1::GetIceConfigRequest(), std::move(callback));
 #if defined(OS_CHROMEOS)

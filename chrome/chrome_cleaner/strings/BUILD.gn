@@ -11,6 +11,7 @@ source_set("strings") {
     "string16_embedded_nulls.h",
     "string_util.cc",
     "string_util.h",
+    "wstring_embedded_nulls.h",
   ]
   deps = [
     "//base",

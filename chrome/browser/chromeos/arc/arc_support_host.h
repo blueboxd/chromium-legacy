@@ -47,7 +47,6 @@ class ArcSupportHost : public arc::ArcSupportMessageHost::Observer,
     SIGN_IN_CLOUD_PROVISION_FLOW_PERMANENT_ERROR,
     SIGN_IN_CLOUD_PROVISION_FLOW_INTERRUPTED_ERROR,
     SIGN_IN_CLOUD_PROVISION_FLOW_ENROLLMENT_TOKEN_INVALID,
-    SIGN_IN_CLOUD_PROVISION_FLOW_DEVICE_QUOTA_EXCEEDED,
     SIGN_IN_GMS_NOT_AVAILABLE_ERROR,
     SIGN_IN_NETWORK_ERROR,
     SIGN_IN_SERVICE_UNAVAILABLE_ERROR,
@@ -156,7 +155,7 @@ class ArcSupportHost : public arc::ArcSupportMessageHost::Observer,
                                const std::string& device_management_url_prefix);
 
   // Requests to show the error page
-  void ShowError(Error error, bool should_show_send_feedback);
+  void ShowError(Error error, int error_code, bool should_show_send_feedback);
 
   void SetMetricsPreferenceCheckbox(bool is_enabled, bool is_managed);
   void SetBackupAndRestorePreferenceCheckbox(bool is_enabled, bool is_managed);
@@ -229,6 +228,7 @@ class ArcSupportHost : public arc::ArcSupportMessageHost::Observer,
 
   // These have valid values iff ui_page_ == ERROR.
   Error error_;
+  int error_code_;
   bool should_show_send_feedback_;
 
   bool is_arc_managed_ = false;

@@ -59,6 +59,9 @@ class _CommonSystemHealthBenchmark(perf_benchmark.PerfBenchmark):
         'reportedByPageMetric',
         'tracingMetric',
         'umaMetric',
+        # Unless --experimentatil-tbmv3-metric flag is used, this metric does
+        # nothing.
+        'tbmv3:cpu_time_metric',
     ])
     loading_metrics_category.AugmentOptionsForLoadingMetrics(options)
     # The EQT metric depends on the same categories as the loading metric.

@@ -46,6 +46,7 @@
 #include "chrome/browser/chromeos/app_mode/kiosk_app_manager.h"
 #include "chrome/browser/chromeos/crostini/crostini_pref_names.h"
 #include "chrome/browser/chromeos/crostini/crostini_reporting_util.h"
+#include "chrome/browser/chromeos/crostini/crostini_util.h"
 #include "chrome/browser/chromeos/guest_os/guest_os_registry_service.h"
 #include "chrome/browser/chromeos/guest_os/guest_os_registry_service_factory.h"
 #include "chrome/browser/chromeos/login/users/chrome_user_manager.h"
@@ -531,7 +532,7 @@ bool AddCrostiniAppInfo(
         crostini::GetThreeDayWindowStart(last_launch_time).ToJavaTime());
   }
 
-  if (registration.is_terminal_app()) {
+  if (registration.app_id() == crostini::kCrostiniTerminalSystemAppId) {
     app->set_app_type(em::CROSTINI_APP_TYPE_TERMINAL);
     // We do not log package information if the App is the terminal:
     return true;

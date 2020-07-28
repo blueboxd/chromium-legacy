@@ -224,6 +224,7 @@ Chromiumএ আপোনাৰ ছেটিংসমূহ পুনৰুদ্
 <translation id="8417404458978023919">{0,plural, =1{এদিনৰ ভিতৰত Chromium পুনৰ লঞ্চ কৰক}one{# দিনৰ ভিতৰত Chromium পুনৰ লঞ্চ কৰক}other{# দিনৰ ভিতৰত Chromium পুনৰ লঞ্চ কৰক}}</translation>
 <translation id="8453117565092476964">ইনষ্টলাৰ আৰ্কাইভটো ব্যৱহাৰযোগ্য নহয় বা অমান্য। অনুগ্ৰহ কৰি Chromium আকৌ ডাউনল’ড কৰক।</translation>
 <translation id="8493179195440786826">Chromiumটো অতি পুৰণি</translation>
+<translation id="8545858702702650646">আপোনাৰ Chromium Space বাছনি কৰক</translation>
 <translation id="8558383651099478961">আপোনাৰ অভিভাৱকে Chromiumত "ছাইট, এপ্ আৰু এক্সটেনশ্বনসমূহৰ বাবে অনুমতি" অফ কৰিছে। এই <ph name="EXTENSION_TYPE_PARAMETER" />টো যোগ দিয়াৰ অনুমতি নাই।</translation>
 <translation id="8568283329061645092">আপুনি নিজৰ Google একাউণ্টটোৰ জৰিয়তে ছাইন ইন কৰোঁতে Chromiumএ আপোনাৰ পাছৱর্ডসমূহ পৰীক্ষা কৰিব পাৰে</translation>
 <translation id="8586442755830160949">স্বত্ত্বাধিকাৰ <ph name="YEAR" /> The Chromium Authors. সর্বস্বত্ব সংৰক্ষিত।</translation>
@@ -247,6 +248,7 @@ Chromiumএ আপোনাৰ ছেটিংসমূহ পুনৰুদ্
 <translation id="911206726377975832">লগতে আপোনাৰ ব্ৰাউজিং ডেটাও মচিবনে?</translation>
 <translation id="9158494823179993217">আপোনাৰ ছিষ্টেমৰ প্ৰশাসকে <ph name="TARGET_URL_HOSTNAME" /> এক্সেছ কৰিবলৈ Chromiumক এটা বিকল্প ব্ৰাউজাৰ খুলিবলৈ কনফিগাৰ কৰিছে।</translation>
 <translation id="9190841055450128916">Chromium (mDNS-In)</translation>
+<translation id="9191317372410544836">এই ডিভাইচটোত আপোনাৰ ব্ৰাউজিং শৃংখলাবদ্ধ কৰি ৰাখিবলৈ Chromium Spaces ব্যৱহাৰ কৰক</translation>
 <translation id="93478295209880648">Chromiumএ সঠিকভাৱে কাম নকৰিবও পাৰে কাৰণ এই সংস্কৰণটো Windows XP বা Windows Vistaত আৰু নচলে</translation>
 <translation id="95514773681268843">আপুনি এই ডিভাইচ ব্যৱহাৰ কৰাৰ পূর্বে আপুনি তলত উল্লেখ কৰা সেৱাৰ চর্তাৱলী পঢ়ি সন্মত হোৱাটো <ph name="DOMAIN" />এ বিচাৰে। এই চর্তাৱলীয়ে Chromium OSৰ চর্তাৱলী সম্প্ৰসাৰণ, সংশোধন বা সীমিত নকৰে।</translation>
 <translation id="985602178874221306">The Chromium Authors</translation>

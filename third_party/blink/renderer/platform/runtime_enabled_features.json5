@@ -433,6 +433,10 @@
       status: "experimental",
     },
     {
+      name: "CSSFontMetricsOverride",
+      status: "test",
+    },
+    {
       name: "CSSFontSizeAdjust",
       status: "experimental",
     },
@@ -1110,7 +1114,7 @@
     },
     {
       name: "MediaPreservesPitch",
-      status: "experimental",
+      status: "stable",
     },
     {
       name: "MediaQueryNavigationControls",
@@ -1566,6 +1570,10 @@
       name: "RestrictAutomaticLazyImageLoadingToDataSaver",
       depends_on: ["AutomaticLazyImageLoading"],
       status: "stable",
+    },
+    {
+      name: "RestrictGamepadAccess",
+      status: "experimental",
     },
     {
       name: "RTCAdaptivePtime",

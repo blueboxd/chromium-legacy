@@ -12,6 +12,13 @@
         [AllowShared, FlexibleArrayBufferView] ArrayBufferView src,
         optional GPUSize64 srcOffset = 0,
         optional GPUSize64 byteLength = 0);
+    [CallWith=ScriptState, RaisesException] Promise<void> mapAsync(
+        GPUMapModeFlags mode,
+        optional GPUSize64 offset = 0,
+        optional GPUSize64 size);
+    [RaisesException] ArrayBuffer getMappedRange(optional GPUSize64 offset = 0,
+                                                 optional GPUSize64 size);
+    // TODO(crbug.com/1069302): Remove these deprecated entry points.
     [CallWith=ScriptState, RaisesException] Promise<ArrayBuffer> mapReadAsync();
     [CallWith=ScriptState, RaisesException] Promise<ArrayBuffer> mapWriteAsync();
     [CallWith=ScriptState] void unmap();

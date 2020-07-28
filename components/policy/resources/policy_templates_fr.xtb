@@ -780,6 +780,7 @@ Si ce paramètre n'est pas défini, les utilisateurs peuvent ouvrir normalement 
 <translation id="2197625019569762163">Définissez cette règle sur "True" pour afficher le clavier numérique par défaut lors de la saisie du mot de passe sur l'écran de connexion. Les utilisateurs pourront toujours revenir au clavier normal.
 
       Si vous définissez cette règle, les utilisateurs ne peuvent pas modifier la configuration. Si vous ne la définissez pas ou si vous la définissez sur "False", elle est sans effet.</translation>
+<translation id="2200698565850397198">Configurer la liste de blocage de messagerie native</translation>
 <translation id="2201555246697292490">Configurer la liste blanche de messagerie native</translation>
 <translation id="2204753382813641270">Règle pour masquer automatiquement l'étagère</translation>
 <translation id="2208976000652006649">Paramètres pour l'URL de recherche utilisant POST</translation>
@@ -826,9 +827,6 @@ Si ce paramètre n'est pas défini, les utilisateurs peuvent ouvrir normalement 
       Notez que cette règle ne doit pas être appliquée aux appareils utilisés par le grand public.
 
       Si cette règle est définie sur "True" ou qu'elle n'est pas configurée, les avertissements liés à la confidentialité dans les sessions Invité gérées lancées automatiquement sont épinglés jusqu'à ce que les utilisateurs les ferment.</translation>
-<translation id="2288338171390565087">Permet de suggérer des emoji chaque fois qu'un utilisateur saisit un mot pour lequel une ou plusieurs correspondances existent dans la carte intégrée des emoji.
-      Si cette règle est définie sur "True", cette fonctionnalité est activée de manière forcée, et les utilisateurs ne peuvent pas ignorer ce paramètre.
-      Cette règle est définie par défaut sur "False". Aucun emoji n'est alors suggéré, et les utilisateurs ne peuvent pas ignorer ce paramètre.</translation>
 <translation id="2289265947759479962">Cette règle détermine si les informations de version doivent être enregistrées. Cela concerne, par exemple, la version, la plate-forme et l'architecture du système d'exploitation, la version de <ph name="PRODUCT_NAME" /> et le canal de <ph name="PRODUCT_NAME" />.
 
       Cette règle est ignorée si la règle <ph name="CLOUD_REPORTING_ENABLED_POLICY_NAME" /> n'est pas définie ou si elle est désactivée.
@@ -1252,13 +1250,6 @@ Si elle n'est pas définie, l'écran de confidentialité est désactivé initial
       Si cette règle est définie sur "False", aucune information pouvant servir à identifier les ordinateurs n'est recueillie.
 
       Cette règle n'est appliquée que si l'ordinateur est enregistré avec la règle <ph name="CLOUD_MANAGEMENT_ENROLLMENT_TOKEN" /> pour <ph name="PRODUCT_NAME" />.</translation>
-<translation id="2836621397261130126">Vérifie si l'approbation par la règle KDC est respectée pour décider si les tickets <ph name="KERBEROS" /> doivent être délégués.
-
-          Si cette règle est définie sur "True", l'authentification HTTP respecte l'approbation par la règle KDC. Autrement dit, Chrome ne doit déléguer les identifiants que si la règle KDC définit <ph name="OK_AS_DELEGATE" /> sur un ticket de service. Pour en savoir plus, veuillez consulter la page https://tools.ietf.org/html/rfc5896.html. Le service et la règle "AuthNegotiateDelegateWhitelist" doivent également correspondre.
-
-          Si cette règle n'est pas configurée ou si elle est définie sur "False", la règle KDC est ignorée sur les plates-formes compatibles, et seule la règle "AuthNegotiateDelegateWhitelist" est respectée.
-
-          Sous Windows, la règle KDC est toujours respectée.</translation>
 <translation id="283695852388224413">Si cette règle est définie, le nombre maximal de caractères que peut contenir un code ayant été configuré est appliqué. Une valeur égale ou inférieure à 0 signifie qu'il n'y a pas de longueur maximale. Dans ce cas, l'utilisateur peut définir un code sans limite de longueur. Si la valeur est inférieure à <ph name="PIN_UNLOCK_MINIMUM_LENGTH_POLICY_NAME" />, mais supérieure à 0, la longueur maximale est égale à la longueur minimale.
 
           Si cette règle n'est pas configurée, aucune longueur maximale n'est appliquée.</translation>
@@ -1416,7 +1407,7 @@ Si elle n'est pas définie, l'écran de confidentialité est désactivé initial
 <translation id="3023572080620427845">URL d'un fichier XML qui contient des URL à charger dans un navigateur secondaire.</translation>
 <translation id="3025855836862205995">Cette règle étant obsolète, veuillez utiliser à la place la règle <ph name="EXTENSION_INSTALL_BLOCKLIST_POLICY_NAME" />.
 
-       Celle-ci permet de déterminer quelles extensions les utilisateurs ne peuvent pas installer. Les extensions déjà installées, mais qui sont interdites, sont désactivées sans que les utilisateurs puissent les activer. Si une extension interdite est supprimée de la liste de blocage, elle est automatiquement réactivée. Saisissez la valeur "<ph name="ALL_EXTENSIONS" />" pour interdire toutes les extensions, sauf celles spécifiquement autorisées.
+       Celle-ci permet de déterminer quelles extensions les utilisateurs ne peuvent pas installer. Les extensions déjà installées, mais qui sont interdites, sont désactivées sans que les utilisateurs puissent les activer. Si une extension interdite est supprimée de la liste de blocage, elle est automatiquement réactivée. Utilisez la valeur "<ph name="ALL_EXTENSIONS" />" pour interdire toutes les extensions, sauf celles spécifiquement autorisées.
 
       Si cette règle n'est pas configurée, les utilisateurs peuvent installer n'importe quelle extension dans <ph name="PRODUCT_NAME" />.</translation>
 <translation id="3026740867910702435">Permet d'activer la fonctionnalité d'accessibilité de grand curseur sur l'écran de connexion.
@@ -2455,13 +2446,6 @@ Si cette règle n'est pas configurée, l'utilisateur peut décider d'afficher ou
       Si l'option "Forcé" est sélectionnée, l'utilisateur peut ouvrir des pages UNIQUEMENT en mode navigation privée. Sachez que l'option "Forcé" ne fonctionne pas avec un appareil Android sur Chrome.</translation>
 <translation id="4600786265870346112">Activer le grand curseur</translation>
 <translation id="4604931264910482931">Configurer la liste noire de messagerie native</translation>
-<translation id="4614701085541180174">Permet de définir une liste de formats d'URL indiquant les sites pour lesquels un certificat client est sélectionné automatiquement sur l'écran de connexion (dans le cadre où se trouve le flux SAML), si le site en demande un. Par exemple, vous pouvez configurer un certificat applicable à l'intégralité de l'appareil afin de le présenter au fournisseur d'identité SAML.
-
-      Cette valeur doit être un tableau de dictionnaires convertis en chaînes JSON. Chaque dictionnaire doit être au format <ph name="DEVICE_LOGIN_SCREEN_AUTO_SELECT_CERTIFICATE_FOR_URLS_EXAMPLE" />, où <ph name="URL_PATTERN_PLACEHOLDER" /> correspond à un schéma de paramètre de contenu. Le filtre <ph name="FILTER_PLACEHOLDER" /> limite les certificats client parmi lesquels le navigateur effectue une sélection automatique. Indépendamment du filtre, seuls les certificats correspondant à la demande de certificat du serveur sont sélectionnés. Par exemple, si le filtre <ph name="FILTER_PLACEHOLDER" /> est au format <ph name="JSON_DICTIONARY_EXAMPLE" />, seuls les certificats client émis par un certificat dont la valeur CommonName est <ph name="ISSUER_CN_PLACEHOLDER" /> sont sélectionnés. Si le filtre <ph name="FILTER_PLACEHOLDER" /> correspond à la valeur de dictionnaire vide {}, la sélection de certificats client ne fait pas l'objet de restrictions supplémentaires.
-
-      Si cette règle n'est pas configurée, la sélection automatique n'est effectuée pour aucun site.
-
-      Pour en savoir plus sur les formats d'URL valides, consultez cette page : https://cloud.google.com/docs/chrome-enterprise/policies/url-patterns.</translation>
 <translation id="4617338332148204752">Ignorer la vérification des balises Meta dans <ph name="PRODUCT_FRAME_NAME" /></translation>
 <translation id="462134014569484584">Cette règle définit la clé de licence <ph name="PLUGIN_VM_NAME" /> pour cet appareil.</translation>
 <translation id="4625915093043961294">Configurer la liste blanche d'installation des extensions</translation>
@@ -2541,6 +2525,13 @@ Si cette règle n'est pas configurée, l'utilisateur peut décider d'afficher ou
           Si vous configurez cette règle, les utilisateurs ne peuvent pas la modifier ni l'ignorer.
 
           Si cette règle n'est pas définie, l'audio mono est désactivé au départ, mais les utilisateurs peuvent l'activer à tout moment.</translation>
+<translation id="4764901562691611575">Cette règle étant obsolète, veuillez utiliser la règle <ph name="NATIVE_MESSAGING_BLOCKLIST_POLICY_NAME" /> à la place.
+
+          Celle-ci permet de déterminer quels hôtes de messagerie native ne doivent pas être chargés.
+
+          Si vous saisissez la valeur "*" dans la liste de blocage, tous les hôtes de messagerie native sont bloqués, sauf ceux spécifiquement répertoriés dans la liste d'autorisation.
+
+          Si cette règle n'est pas configurée, <ph name="PRODUCT_NAME" /> charge alors tous les hôtes de messagerie native installés.</translation>
 <translation id="4771144269610910963">Cette règle permet de contrôler l'analyse approfondie des téléchargements des utilisateurs à l'aide de la navigation sécurisée. Si cette règle n'est pas configurée ou si elle est définie sur le paramètre par défaut ("Ne pas analyser les fichiers"), les téléchargements des utilisateurs ne sont pas analysés par la navigation sécurisée.
 
       Si cette règle est définie sur "Envoyer les téléchargements des utilisateurs pour analyse", les téléchargements des utilisateurs sont envoyés sur le réseau à la navigation sécurisée afin d'y être analysés pour détecter les éventuels logiciels malveillants.
@@ -3259,6 +3250,11 @@ Lorsque cette règle n'est pas configurée, le paramètre par défaut utilisé c
           Si cette règle n'est pas définie, l'action par défaut est effectuée, à savoir l'arrêt.
 
           Dans ce cas, <ph name="PRODUCT_OS_NAME" /> peut être configuré séparément pour verrouiller ou non l'écran avant l'arrêt.</translation>
+<translation id="5745980816926303222">Cette règle est obsolète (veuillez utiliser la règle <ph name="AUTOPLAY_ALLOWLIST_POLICY_NAME" /> à la place).
+
+      Permet de lire automatiquement des vidéos et leur contenu audio dans <ph name="PRODUCT_NAME" /> (sans accord de l'utilisateur). Si la règle <ph name="AUTOPLAY_ALLOWED_POLICY_NAME" /> est définie sur "True", cette règle n'a aucune incidence. Si <ph name="AUTOPLAY_ALLOWED_POLICY_NAME" /> est définie sur "False", la lecture automatique reste activée pour les formats d'URL inclus dans cette règle. Si <ph name="PRODUCT_NAME" /> est en cours d'utilisation lorsque le paramètre de cette règle change, la modification ne s'applique qu'aux nouveaux onglets ouverts.
+
+      Pour en savoir plus sur les formats d'URL valides, veuillez consulter la page https://cloud.google.com/docs/chrome-enterprise/policies/url-patterns.</translation>
 <translation id="574983287620584622">Activer les raccourcis des fonctionnalités d'accessibilité sur l'écran de connexion</translation>
 <translation id="5755002458331714762"> Les API Web Components v0 (Shadow DOM v0, Custom Elements v0 et HTML Imports) sont obsolètes depuis 2018 et ont été désactivées par défaut à partir de la version M80. Cette règle offre la possibilité de réactiver ces fonctionnalités pour certains sites en particulier jusqu'à la version M84.
 
@@ -3557,6 +3553,11 @@ Lorsque cette règle n'est pas configurée, le paramètre par défaut utilisé c
 
       Remarque : cette règle concerne toutes les sorties audio, y compris les fonctionnalités d'accessibilité audio. Ne la désactivez pas si un utilisateur a besoin d'un lecteur d'écran.</translation>
 <translation id="6221175752766085998">Autoriser les certificats émis par les ancres d'approbation locales sans l'extension subjectAlternativeName</translation>
+<translation id="6222839831045864769">Permet de déterminer quels hôtes de messagerie native ne doivent pas être chargés.
+
+          Si vous saisissez la valeur "*" dans la liste de blocage, tous les hôtes de messagerie native sont bloqués, sauf ceux spécifiquement répertoriés dans la liste d'autorisation.
+
+          Si cette règle n'est pas configurée, <ph name="PRODUCT_NAME" /> charge alors tous les hôtes de messagerie native installés.</translation>
 <translation id="6224304369267200483">URL/domaines automatiquement autorisés à recevoir une attestation de clé de sécurité</translation>
 <translation id="6233173491898450179">Définir le répertoire de téléchargement</translation>
 <translation id="6234177445959386333">Configurez la liste des URL de connexion d'entreprise pour lesquelles le service de protection par mot de passe doit enregistrer une copie hachée et salée des mots de passe.</translation>
@@ -3899,6 +3900,24 @@ Si vous désactivez ce paramètre ou si vous ne le configurez pas, le SPN Kerber
 
       Si la règle est définie sur "False" ou n'est pas configurée, <ph name="PLUGIN_VM_NAME" /> n'est pas activé pour cet appareil.
       Si elle est définie sur "True", <ph name="PLUGIN_VM_NAME" /> est activé pour l'appareil à condition que les autres paramètres l'y autorisent aussi. Les règles <ph name="PLUGIN_VM_ALLOWED_POLICY_NAME" /> et <ph name="USER_PLUGIN_VM_ALLOWED_POLICY_NAME" /> doivent être définies sur "True", et <ph name="PLUGIN_VM_LICENSE_KEY_POLICY_NAME" /> ou <ph name="PLUGIN_VM_USER_ID_POLICY_NAME" /> doivent être configurés de sorte à permettre l'exécution de <ph name="PLUGIN_VM_NAME" />.</translation>
+<translation id="6741496055862838205">Fournit les configurations des imprimantes d'entreprise associées à des appareils.
+
+      Cette règle vous permet de communiquer les configurations des imprimantes aux appareils <ph name="PRODUCT_OS_NAME" />.  Le format est le même que celui du dictionnaire NativePrinters, à l'exception d'un champ supplémentaire "id" ou "guid" obligatoire pour chaque imprimante à ajouter à la liste blanche ou noire.
+
+      Le fichier, qui doit être encodé au format JSON, ne doit pas dépasser 5 Mo.  Habituellement, un fichier encodé de 5 Mo peut contenir environ 21 000 imprimantes.  Le hachage cryptographique permet de vérifier l'intégrité du fichier téléchargé.
+
+      Le fichier est téléchargé et mis en cache. Il sera de nouveau téléchargé chaque fois que l'URL ou le hachage seront modifiés.
+
+      Si cette règle est configurée, <ph name="PRODUCT_OS_NAME" /> télécharge le fichier des configurations d'imprimantes et rend les imprimantes accessibles conformément aux règles <ph name="DEVICE_NATIVE_PRINTERS_ACCESS_MODE" />, <ph name="DEVICE_PRINTERS_ALLOWLIST" /> et <ph name="DEVICE_PRINTERS_BLOCKLIST" />.
+
+      Cette règle n'a aucune incidence pour les utilisateurs en ce qui concerne la possibilité ou non de configurer des imprimantes sur différents appareils.  Elle est destinée à compléter la configuration des imprimantes effectuée par les différents utilisateurs.
+
+      Elle vient en complément de la règle <ph name="BULK_PRINTERS_POLICY" />.
+
+      Si cette règle n'est pas configurée, aucune imprimante associée à un appareil n'est affichée, et les autres règles <ph name="DEVICE_NATIVE_PRINTERS_POLICY_PATTERN" /> sont ignorées.
+
+      Cette règle étant obsolète, veuillez utiliser la règle <ph name="DEVICE_PRINTERS" /> à la place.
+      </translation>
 <translation id="6752711782954612641">Si la règle <ph name="DEFAULT_SEARCH_PROVIDER_ENABLED_POLICY_NAME" /> est activée, la règle <ph name="DEFAULT_SEARCH_PROVIDER_SEARCH_URL_POST_PARAMS_POLICY_NAME" /> vous permet de définir les paramètres d'une recherche d'URL à l'aide de la méthode POST. Il s'agit de paires de noms et de valeurs séparées par une virgule. Si une valeur correspond à un paramètre modèle, comme <ph name="SEARCH_TERM_MARKER" />, elle est remplacée par des termes de recherches réels.
 
       Si la règle <ph name="DEFAULT_SEARCH_PROVIDER_SEARCH_URL_POST_PARAMS_POLICY_NAME" /> n'est pas configurée, les requêtes de recherche sont envoyées à l'aide de la méthode GET.</translation>
@@ -3956,7 +3975,7 @@ Si vous désactivez ce paramètre ou si vous ne le configurez pas, le SPN Kerber
 
       Le code source de toute extension peut être modifié par les utilisateurs à l'aide des outils pour les développeurs, ce qui peut entraîner des dysfonctionnements. Si cela pose problème, configurez la règle <ph name="DEVELOPER_TOOLS_DISABLED_POLICY_NAME" />.
 
-      Chaque élément de la règle correspond à une chaîne constituée d'un ID d'extension et éventuellement d'une URL de mise à jour séparés par un point-virgule (;). L'ID d'extension est la chaîne de 32 lettres qui se trouve, par exemple, dans chrome://extensions en mode développeur. Si elle est indiquée, l'URL de mise à jour doit renvoyer à un fichier manifeste au format XML (voir https://developer.chrome.com/extensions/autoupdate). Par défaut, l'URL de mise à jour du Chrome Web Store est utilisée. L'URL de mise à jour spécifiée dans cette règle ne sert que pour l'installation initiale. Toute mise à jour ultérieure de l'extension est effectuée avec l'URL dans le fichier manifeste de l'extension.
+      Chaque élément de la règle correspond à une chaîne constituée d'un ID d'extension et éventuellement d'une URL de mise à jour séparés par un point-virgule (;). L'ID d'extension est la chaîne de 32 lettres qui se trouve, par exemple, dans chrome://extensions en mode développeur. Si elle est indiquée, l'URL de mise à jour doit renvoyer à un fichier manifeste au format XML (voir https://developer.chrome.com/extensions/autoupdate ). Par défaut, l'URL de mise à jour du Chrome Web Store est utilisée. L'URL de mise à jour spécifiée dans cette règle ne sert que pour l'installation initiale. Toute mise à jour ultérieure de l'extension est effectuée avec l'URL dans le fichier manifeste de l'extension.
 
        Remarque : cette règle ne s'applique pas en mode navigation privée. Pour en savoir plus sur l'hébergement des extensions, consultez la page https://developer.chrome.com/extensions/hosting.</translation>
 <translation id="687046793986382807">Cette règle a été supprimée de la version 35 de <ph name="PRODUCT_NAME" />.
@@ -5200,6 +5219,11 @@ Il est conseillé de configurer les règles sur Windows via GPO, même si la ges
       Si la règle est désactivée, cette option n'est pas autorisée à accéder à ce contenu.
       Si la règle n'est pas définie, les utilisateurs peuvent choisir d'autoriser ou non l'option Réponses rapides à accéder au contenu sélectionné.</translation>
 <translation id="8685024486845674965">L'avertissement de protection par mot de passe est déclenché en cas de réutilisation du mot de passe</translation>
+<translation id="8685680544554917389">Si cette règle est définie sur "True", <ph name="PRODUCT_NAME" /> est autorisé à lire automatiquement du contenu multimédia. Si elle est définie sur "False", <ph name="PRODUCT_NAME" /> n'est pas autorisé à lire automatiquement du contenu multimédia.
+
+       Par défaut, <ph name="PRODUCT_NAME" /> ne lit pas automatiquement ce type de contenu. Toutefois, pour certains formats d'URL, la règle <ph name="AUTOPLAY_ALLOWLIST_POLICY_NAME" /> permet de modifier ce paramètre.
+
+      Si <ph name="PRODUCT_NAME" /> est en cours d'utilisation lorsque le paramètre de cette règle change, la modification ne s'applique qu'aux nouveaux onglets ouverts.</translation>
 <translation id="8687958770985542440">Réactiver les API Web Components v0 jusqu'à la version M84.</translation>
 <translation id="8693243869659262736">Utiliser le client DNS intégré</translation>
 <translation id="8698286761337647563">Délai, en nombre de jours, pour informer à l'avance les utilisateurs SAML de l'expiration de leur mot de passe</translation>
@@ -5442,19 +5466,6 @@ Si vous activez ce paramètre, <ph name="PRODUCT_NAME" /> et les applications AR
        Cette règle n'influe pas sur les types de contenus mixtes autres que les images et les contenus audio/vidéo.
        Notez également qu'elle ne sera plus applicable à compter de la version 84 de <ph name="PRODUCT_NAME" />.</translation>
 <translation id="9010080992450148617">Autoriser les utilisateurs inscrits au Programme Protection Avancée à envoyer leurs téléchargements à Google pour une analyse approfondie</translation>
-<translation id="90110062113213245">Permet de définir une liste de formats d'URL indiquant les sites pour lesquels Chrome peut sélectionner automatiquement un certificat client. Cette valeur doit être un ensemble de dictionnaires convertis en chaînes JSON, chacun d'entre eux se présentant sous la forme <ph name="AUTO_SELECT_CERTIFICATE_FOR_URLS_EXAMPLE" />, où <ph name="URL_PATTERN_PLACEHOLDER" /> correspond à un schéma de paramètre de contenu. Le filtre <ph name="FILTER_PLACEHOLDER" /> limite les certificats client parmi lesquels le navigateur effectue une sélection automatique. Indépendamment du filtre, seuls les certificats correspondant à la demande de certificat du serveur sont sélectionnés.
-
-      Par exemple, si le filtre <ph name="FILTER_PLACEHOLDER" /> :
-
-      * est au format <ph name="AUTO_SELECT_CERTIFICATE_FOR_URLS_FILTER_EXAMPLE" />, seuls les certificats client émis par un certificat dont la valeur CommonName est <ph name="ISSUER_CN_PLACEHOLDER" /> sont sélectionnés ;
-
-      * contient les sections <ph name="ISSUER_STRING_VALUE" /> et <ph name="SUBJECT_STRING_VALUE" />, seuls les certificats client correspondants sont sélectionnés ;
-
-      * spécifie une organisation ("O"), le certificat doit contenir au moins une organisation correspondant à la valeur spécifiée pour être sélectionné ; * spécifie une unité organisationnelle ("OU"), le certificat doit contenir au moins une unité organisationnelle correspondant à la valeur spécifiée pour être sélectionné ;
-
-      * correspond à la valeur de dictionnaire vide <ph name="EMPTY_DICTIONARY" />, la sélection de certificats client ne fait pas l'objet de restrictions supplémentaires.
-
-      Si cette règle n'est pas configurée, aucune sélection automatique n'est effectuée pour aucun site.</translation>
 <translation id="9013875414788074110">Lors de la connexion, l'authentification dans <ph name="PRODUCT_OS_NAME" /> peut être effectuée sur un serveur (en ligne) ou à l'aide d'un mot de passe en cache (hors connexion).
 
       Si cette règle est définie sur la valeur -1, l'utilisateur peut s'authentifier hors connexion sans limite de temps. Si elle est définie sur une autre valeur, celle-ci indique le délai suite à une authentification en ligne après lequel l'utilisateur doit à nouveau procéder à cette authentification.

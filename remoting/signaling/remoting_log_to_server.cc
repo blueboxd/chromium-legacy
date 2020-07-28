@@ -76,7 +76,7 @@ void TelemetryClient::CreateLogEntry(
     const apis::v1::CreateLogEntryRequest& request,
     CreateLogEntryResponseCallback callback) {
   executor_.ExecuteRpc(CreateGrpcAsyncUnaryRequest(
-      base::BindOnce(&TelemetryService::Stub::AsyncCreateLogEntry,
+      base::BindOnce(&TelemetryService::StubInterface::AsyncCreateLogEntry,
                      base::Unretained(stub_.get())),
       request, std::move(callback)));
 }

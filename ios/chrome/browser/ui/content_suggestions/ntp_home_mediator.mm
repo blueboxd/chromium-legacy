@@ -372,6 +372,15 @@ const char kNTPHelpURL[] =
   if (notificationPromo->IsChromeCommandPromo()) {
     // "What's New" promo that runs a command can be added here by calling
     // self.dispatcher.
+    if (notificationPromo->command() == kSetDefaultBrowserCommand) {
+      [[UIApplication sharedApplication]
+                    openURL:
+                        [NSURL URLWithString:UIApplicationOpenSettingsURLString]
+                    options:{}
+          completionHandler:nil];
+      return;
+    }
+
     DCHECK_EQ(kTestWhatsNewCommand, notificationPromo->command())
         << "Promo command is not valid.";
     return;

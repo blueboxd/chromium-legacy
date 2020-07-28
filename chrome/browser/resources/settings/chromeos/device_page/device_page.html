@@ -4,7 +4,6 @@
 <link rel="import" href="chrome://resources/html/i18n_behavior.html">
 <link rel="import" href="chrome://resources/html/web_ui_listener_behavior.html">
 <link rel="import" href="device_page_browser_proxy.html">
-<link rel="import" href="dlc_subpage.html">
 <link rel="import" href="display.html">
 <link rel="import" href="keyboard.html">
 <link rel="import" href="pointers.html">
@@ -96,16 +95,6 @@
               page-title="$i18n{storageExternal}">
             <settings-storage-external prefs="{{prefs}}">
             </settings-storage-external>
-          </settings-subpage>
-        </template>
-      </template>
-      <template is="dom-if" if="[[allowDlcSubpage_]]">
-        <template is="dom-if" route-path="/storage/downloadedContent">
-          <settings-subpage
-              associated-control="[[$$('#storageRow')]]"
-              page-title="$i18n{dlcSubpageTitle}">
-            <os-settings-dlc-subpage>
-            </os-settings-dlc-subpage>
           </settings-subpage>
         </template>
       </template>

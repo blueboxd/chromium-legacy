@@ -26,6 +26,11 @@ Polymer({
       value: false,
     },
 
+    noAutomaticCollapse: {
+      type: Boolean,
+      value: false,
+    },
+
     noCollapse: Boolean,
 
     label: String,
@@ -53,9 +58,30 @@ Polymer({
     'onPrefChanged_(pref.*)',
   ],
 
+  /**
+   * Tracks if this button was clicked but wasn't expanded.
+   * @private
+   */
+  pendingUpdateCollapsed_: false,
+
+  /**
+   * Updates the collapsed status of this radio button to reflect
+   * the user selection actions.
+   * @public
+   */
+  updateCollapsed() {
+    if (this.pendingUpdateCollapsed_) {
+      this.pendingUpdateCollapsed_ = false;
+      this.expanded = this.checked;
+    }
+  },
+
   /** @private */
   onCheckedChanged_() {
-    this.expanded = this.checked;
+    this.pendingUpdateCollapsed_ = true;
+    if (!this.noAutomaticCollapse) {
+      this.updateCollapsed();
+    }
   },
 
   /** @private */

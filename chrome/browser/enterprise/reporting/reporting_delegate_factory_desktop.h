@@ -9,10 +9,10 @@
 
 #include <memory>
 
-#include "chrome/browser/enterprise/reporting/report_scheduler_desktop.h"
 #include "components/enterprise/browser/reporting/browser_report_generator.h"
 #include "components/enterprise/browser/reporting/profile_report_generator.h"
 #include "components/enterprise/browser/reporting/report_generator.h"
+#include "components/enterprise/browser/reporting/report_scheduler.h"
 
 namespace enterprise_reporting {
 
@@ -36,7 +36,8 @@ class ReportingDelegateFactoryDesktop : public ReportingDelegateFactory {
   std::unique_ptr<ReportGenerator::Delegate> GetReportGeneratorDelegate()
       override;
 
-  std::unique_ptr<ReportScheduler::Delegate> GetReportSchedulerDelegate();
+  std::unique_ptr<ReportScheduler::Delegate> GetReportSchedulerDelegate()
+      override;
 };
 
 }  // namespace enterprise_reporting

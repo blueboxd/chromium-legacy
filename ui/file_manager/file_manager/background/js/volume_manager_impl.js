@@ -249,9 +249,9 @@ class VolumeManagerImpl extends cr.EventTarget {
   }
 
   /** @override */
-  async mountArchive(fileUrl) {
+  async mountArchive(fileUrl, password) {
     const path = await new Promise(resolve => {
-      chrome.fileManagerPrivate.addMount(fileUrl, resolve);
+      chrome.fileManagerPrivate.addMount(fileUrl, password, resolve);
     });
     console.debug(`Mounting '${path}'`);
     const key = this.makeRequestKey_('mount', path);

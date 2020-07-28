@@ -75,6 +75,8 @@ class ArcAppIcon {
 
   const std::string& app_id() const { return app_id_; }
 
+  bool is_adaptive_icon() const { return is_adaptive_icon_; }
+
   // Returns |image_skia_| and valid if the |icon_type_| is
   // IconType::kUncompressed.
   const gfx::ImageSkia& image_skia() const {
@@ -190,6 +192,8 @@ class ArcAppIcon {
   // Only one form of app icons will be loaded, compressed or uncompressed, so
   // only one counter is needed.
   int icon_loaded_count_ = 0;
+
+  bool is_adaptive_icon_ = false;
 
   gfx::ImageSkia image_skia_;
   std::map<ui::ScaleFactor, std::string> compressed_images_;

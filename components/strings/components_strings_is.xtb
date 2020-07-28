@@ -364,7 +364,6 @@ Ef þú gerir það ekki loka persónuverndarstillingar þínar á þennan aðga
 <translation id="2413528052993050574">Þessi þjónn gat ekki sannað að hann væri <ph name="DOMAIN" />; öryggisvottorð hans gæti hafa verið afturkallað. Þetta kann að orsakast af vanstillingu eða tölvuþrjóti sem komist hefur inn í tenginguna.</translation>
 <translation id="2438874542388153331">Fjögur göt hægra megin</translation>
 <translation id="245044156129055925">Þú varst að slá aðgangsorðið þitt inn á villandi vefsvæði. Chromium mælir með því að þú skiptir um aðgangsorð núna.</translation>
-<translation id="2463193859425327265">Breyta heimasíðu</translation>
 <translation id="2463739503403862330">Fylla út</translation>
 <translation id="2465402087343596252">Architecture-E</translation>
 <translation id="2465655957518002998">Velja afhendingarmáta</translation>
@@ -1164,7 +1163,6 @@ Ef þú gerir það ekki loka persónuverndarstillingar þínar á þennan aðga
 <translation id="5785756445106461925">Aukinheldur inniheldur þessi síða önnir tilföng sem ekki er hægt að treysta. Þessi tilföng kunna að vera skoðuð af öðrum á meðan þau eru í umferð, og tölvuþrjótur gæti breytt þeim til þess að reyna að breyta útliti síðunnar.</translation>
 <translation id="5786044859038896871">Viltu fylla út upplýsingar um kortið?</translation>
 <translation id="5798290721819630480">Viltu hætta við breytingar?</translation>
-<translation id="5798683403665926540">Breyta heimasíðu í stillingum Chrome</translation>
 <translation id="5803412860119678065">Viltu fylla út <ph name="CARD_DETAIL" />?</translation>
 <translation id="5804241973901381774">Heimildir</translation>
 <translation id="5804427196348435412">Nota NFC-tæki</translation>
@@ -1613,7 +1611,6 @@ Ef þú gerir það ekki loka persónuverndarstillingar þínar á þennan aðga
 <translation id="7669271284792375604">Tölvuþrjótar á þessu vefsvæði gætu verið að reyna að ginna þig til að setja upp forrit sem gætu gert vefskoðun óþægilegri fyrir þig (til dæmis með því að breyta upphafssíðunni eða birta viðbótarauglýsingar á vefsvæðum sem þú heimsækir).</translation>
 <translation id="7673278391011283842">Pósthólf 6</translation>
 <translation id="7676643023259824263">Leita að texta á klippiborði, <ph name="TEXT" /></translation>
-<translation id="7681101578153515023">Breyta leitarvél</translation>
 <translation id="7682287625158474539">Sending</translation>
 <translation id="7687186412095877299">Fyllir inn greiðsluupplýsingar með vistuðum greiðslumátum</translation>
 <translation id="7687305263118037187">Reyna tímalokun aftur</translation>
@@ -1651,7 +1648,6 @@ Ef þú gerir það ekki loka persónuverndarstillingar þínar á þennan aðga
 <translation id="7802523362929240268">Vefsvæðið er traust</translation>
 <translation id="780301667611848630">Nei, takk</translation>
 <translation id="7805768142964895445">Staða</translation>
-<translation id="7806344367022510803">Breyta stillingum leitarvélar í Chrome</translation>
 <translation id="7812922009395017822">Mir</translation>
 <translation id="7813600968533626083">Fjarlægja eyðublaðstillögu úr Chrome?</translation>
 <translation id="781440967107097262">Deila klippiborði?</translation>
@@ -1793,7 +1789,6 @@ Ef þú gerir það ekki loka persónuverndarstillingar þínar á þennan aðga
 Ítarlegar upplýsingar:
 <ph name="DEBUG_INFO" /></translation>
 <translation id="8424582179843326029"><ph name="FIRST_LABEL" /> <ph name="SECOND_LABEL" /> <ph name="THIRD_LABEL" /></translation>
-<translation id="8425213833346101688">Breyta</translation>
 <translation id="8428213095426709021">Stillingar</translation>
 <translation id="8433057134996913067">Þetta skráir þig út af flestum vefsvæðum.</translation>
 <translation id="8437238597147034694">Aft&amp;urkalla flutning</translation>

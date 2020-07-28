@@ -21,6 +21,7 @@
 <translation id="1150565364351027703">সানগ্লাস</translation>
 <translation id="115443833402798225">হাঙ্গুল আনমাটে</translation>
 <translation id="1155759005174418845">ক্যাটালান</translation>
+<translation id="1172970565351728681">আরও প্রায় <ph name="REMAINING_TIME" /> সময় লাগবে</translation>
 <translation id="1173894706177603556">পুনঃনামকরণ</translation>
 <translation id="117624967391683467"><ph name="FILE_NAME" /> অনুলিপি করা হচ্ছে...</translation>
 <translation id="1178581264944972037">বিরতি</translation>
@@ -198,6 +199,7 @@
 <translation id="3236289833370040187">মালিকানা <ph name="DESTINATION_DOMAIN" /> এ স্থানান্তর করা হবে।</translation>
 <translation id="3241720467332021590">আইরিশ</translation>
 <translation id="3245321423178950146">অজানা শিল্পী</translation>
+<translation id="3248185426436836442">বাকি আছে</translation>
 <translation id="3252266817569339921">ফরাসী</translation>
 <translation id="3254434849914415189"><ph name="FILE_TYPE" /> ফাইলের জন্য ডিফল্ট অ্যাপ বেছে নিন:</translation>
 <translation id="3264582393905923483">প্রসঙ্গ</translation>
@@ -244,6 +246,7 @@
 <translation id="3780536599611287598">আপনার কাছে '<ph name="FOLDER_NAME" />'-এ ফাইলগুলি সরানোর অনুমতি নেই।</translation>
 <translation id="3786301125658655746">আপনি অফলাইন আছেন</translation>
 <translation id="3789841737615482174">ইনস্টল করুন</translation>
+<translation id="3793469551756281394">আরও প্রায় <ph name="REMAINING_TIME_HOUR" /> <ph name="REMAINING_TIME_MINUTE" /> সময় লাগবে</translation>
 <translation id="3798449238516105146">ভার্সন</translation>
 <translation id="3801082500826908679">ফেয়ারোইজ</translation>
 <translation id="3809272675881623365">খরগোশ</translation>

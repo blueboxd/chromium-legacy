@@ -335,6 +335,7 @@
 <translation id="3658159451045945436">ການຣີເຊັດຈະລຶບປະຫວັດການປະຢັດອິນເຕີເນັດຂອງທ່ານ ຮວມທັງລາຍການເວັບໄຊທີ່ທ່ານເຂົ້າເບິ່ງ.</translation>
 <translation id="3692944402865947621">ການດາວໂຫຼດ <ph name="FILE_NAME" /> ບໍ່ສຳເລັດ ເນື່ອງຈາກບໍ່ສາມາດຕິດຕໍ່ຫາບ່ອນຈັດເກັບຂໍ້ມູນໄດ້.</translation>
 <translation id="3701167022068948696">ແກ້ໄຂຕອນນີ້</translation>
+<translation id="371230970611282515">ຄາດເດົາ ແລະ ເຕືອນທ່ານກ່ຽວກັບເຫດການອັນຕະລາຍກ່ອນທີ່ພວກມັນຈະເກີດຂຶ້ນ.</translation>
 <translation id="3714981814255182093">ເປີດແຖບຊອກຫາ</translation>
 <translation id="3716182511346448902">ໜ້ານີ້ໃຊ້ຄວາມຈຳຫຼາຍເກີນໄປ, ສະນັ້ນ Chrome ໄດ້ຢຸດມັນໄວ້ແລ້ວ.</translation>
 <translation id="3721119614952978349">ທ່ານ ແລະ Google</translation>
@@ -713,6 +714,7 @@
 <translation id="6593061639179217415">ເວັບໄຊສຳລັບເດັສທັອບ</translation>
 <translation id="6597891566292541626">ປັບຕຳແໜ່ງ QR/ບາໂຄດໃນເຟຣມນີ້.</translation>
 <translation id="6600954340915313787">ອັດ​ສຳ​ເນົາ​ໃສ່ Chrome ແລ້ວ</translation>
+<translation id="661266467055912436">ປັບປຸງຄວາມປອດໄພສຳລັບທ່ານ ແລະ ທຸກຄົນໃນເວັບ.</translation>
 <translation id="6627583120233659107">ແກ້ໄຂໂຟລເດີ</translation>
 <translation id="6643016212128521049">ລຶບ</translation>
 <translation id="6643649862576733715">ຮຽງຕາມປະລິມານອິນເຕີເນັດທີ່ປະຢັດໄດ້</translation>
@@ -872,6 +874,7 @@
 <translation id="7925590027513907933">{FILE_COUNT,plural, =1{ກໍາລັງດາວໂຫຼດໄຟລ໌.}other{ກຳລັງດາວໂຫຼດ # ໄຟລ໌.}}</translation>
 <translation id="7926975587469166629">ຊື່ຫຼິ້ນບັດ</translation>
 <translation id="7929962904089429003">ເປີດເມນູ</translation>
+<translation id="7930998711684428189">ເຕືອນບອກທ່ານຖ້າລະຫັດຜ່ານຮົ່ວໄຫຼໃນການລະເມີດຂໍ້ມູນ.</translation>
 <translation id="7942131818088350342"><ph name="PRODUCT_NAME" /> ເກົ່າແລ້ວ.</translation>
 <translation id="7947953824732555851">ຍອມ​ຮັບ​ ແລະ​ລົງຊື່ເຂົ້າ​ໃຊ້</translation>
 <translation id="7963646190083259054">ຜູ້ຂາຍ:</translation>

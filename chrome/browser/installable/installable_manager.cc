@@ -293,6 +293,7 @@ bool InstallableManager::IsOriginConsideredSecure(const GURL& url) {
 void InstallableManager::GetData(const InstallableParams& params,
                                  InstallableCallback callback) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
+  DCHECK(callback);
 
   if (IsParamsForPwaCheck(params))
     has_pwa_check_ = true;
@@ -310,6 +311,7 @@ void InstallableManager::GetData(const InstallableParams& params,
 void InstallableManager::GetAllErrors(
     base::OnceCallback<void(std::vector<content::InstallabilityError>
                                 installability_errors)> callback) {
+  DCHECK(callback);
   InstallableParams params;
   params.check_eligibility = true;
   params.valid_manifest = true;
@@ -324,6 +326,7 @@ void InstallableManager::GetAllErrors(
 
 void InstallableManager::GetPrimaryIcon(
     base::OnceCallback<void(const SkBitmap*)> callback) {
+  DCHECK(callback);
   InstallableParams params;
   params.valid_primary_icon = true;
   GetData(params,
@@ -459,13 +462,17 @@ bool InstallableManager::IsComplete(const InstallableParams& params) const {
          (!params.valid_splash_icon || IsIconFetchComplete(IconUsage::kSplash));
 }
 
-void InstallableManager::Reset() {
+void InstallableManager::Reset(base::Optional<InstallableStatusCode> error) {
+  DCHECK(!error || error.value() != NO_ERROR_DETECTED);
   // Prevent any outstanding callbacks to or from this object from being called.
   weak_factory_.InvalidateWeakPtrs();
   icons_.clear();
 
   // If we have paused tasks, we are waiting for a service worker.
-  task_queue_.Reset();
+  if (error)
+    task_queue_.ResetWithError(error.value());
+  else
+    task_queue_.Reset();
   has_pwa_check_ = false;
 
   eligibility_ = std::make_unique<EligiblityProperty>();
@@ -828,7 +835,7 @@ void InstallableManager::DidFinishNavigation(
     content::NavigationHandle* handle) {
   if (handle->IsInMainFrame() && handle->HasCommitted() &&
       !handle->IsSameDocument()) {
-    Reset();
+    Reset(USER_NAVIGATED);
   }
 }
 
@@ -836,7 +843,7 @@ void InstallableManager::DidUpdateWebManifestURL(
     content::RenderFrameHost* rfh,
     const base::Optional<GURL>& manifest_url) {
   // A change in the manifest URL invalidates our entire internal state.
-  Reset();
+  Reset(MANIFEST_URL_CHANGED);
 }
 
 void InstallableManager::WebContentsDestroyed() {

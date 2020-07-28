@@ -2256,12 +2256,16 @@ bool NGBoxFragmentPainter::HitTestBlockChildren(
 
     const PhysicalOffset child_offset = accumulated_offset + child.offset;
 
-    bool hit_child =
-        block_child.IsPaintedAtomically()
-            ? HitTestAllPhasesInFragment(block_child, hit_test_location,
-                                         child_offset, &result)
-            : NodeAtPointInFragment(block_child, hit_test_location,
-                                    child_offset, action, &result);
+    bool hit_child = false;
+    if (block_child.IsPaintedAtomically()) {
+      if (action == kHitTestForeground) {
+        hit_child = HitTestAllPhasesInFragment(block_child, hit_test_location,
+                                               child_offset, &result);
+      }
+    } else {
+      hit_child = NodeAtPointInFragment(block_child, hit_test_location,
+                                        child_offset, action, &result);
+    }
 
     if (hit_child) {
       if (const LayoutObject* child_object = block_child.GetLayoutObject()) {

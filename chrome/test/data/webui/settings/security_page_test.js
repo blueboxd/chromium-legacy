@@ -69,6 +69,8 @@ suite('CrSettingsSecurityPageTestWithEnhanced', function() {
           {mode: {value: SecureDnsMode.AUTOMATIC}, templates: {value: ''}},
     };
     document.body.appendChild(page);
+    page.$$('#safeBrowsingEnhanced').updateCollapsed();
+    page.$$('#safeBrowsingStandard').updateCollapsed();
     flush();
   });
 
@@ -82,6 +84,12 @@ suite('CrSettingsSecurityPageTestWithEnhanced', function() {
       return testPrivacyBrowserProxy.whenCalled('showManageSSLCertificates');
     });
   }
+
+  // Initially specified pref option should be expanded
+  test('SafeBrowsingRadio_InitialPrefOptionIsExpanded', function() {
+    assertFalse(page.$$('#safeBrowsingEnhanced').expanded);
+    assertTrue(page.$$('#safeBrowsingStandard').expanded);
+  });
 
   test('LogManageCerfificatesClick', async function() {
     page.$$('#manageCertificates').click();
@@ -131,6 +139,66 @@ suite('CrSettingsSecurityPageTestWithEnhanced', function() {
     assertTrue(safeBrowsingReportingToggle.checked);
   });
 
+  test(
+      'SafeBrowsingRadio_ManuallyExpandedRemainExpandedOnRepeatSelection',
+      function() {
+        page.$$('#safeBrowsingStandard').click();
+        flush();
+        assertEquals(
+            SafeBrowsingSetting.STANDARD,
+            page.prefs.generated.safe_browsing.value);
+        assertTrue(page.$$('#safeBrowsingStandard').expanded);
+        assertFalse(page.$$('#safeBrowsingEnhanced').expanded);
+
+        // Expanding another radio button should not collapse already expanded
+        // option.
+        page.$$('#safeBrowsingEnhanced').$$('cr-expand-button').click();
+        flush();
+        assertTrue(page.$$('#safeBrowsingStandard').expanded);
+        assertTrue(page.$$('#safeBrowsingEnhanced').expanded);
+
+        // Clicking on already selected button should not collapse manually
+        // expanded option.
+        page.$$('#safeBrowsingStandard').click();
+        flush();
+        assertTrue(page.$$('#safeBrowsingStandard').expanded);
+        assertTrue(page.$$('#safeBrowsingEnhanced').expanded);
+      });
+
+  test(
+      'SafeBrowsingRadio_ManuallyExpandedRemainExpandedOnSelectedChanged',
+      async function() {
+        page.$$('#safeBrowsingStandard').click();
+        flush();
+        assertEquals(
+            SafeBrowsingSetting.STANDARD,
+            page.prefs.generated.safe_browsing.value);
+
+        page.$$('#safeBrowsingEnhanced').$$('cr-expand-button').click();
+        flush();
+        assertTrue(page.$$('#safeBrowsingStandard').expanded);
+        assertTrue(page.$$('#safeBrowsingEnhanced').expanded);
+
+        page.$$('#safeBrowsingDisabled').click();
+        flush();
+
+        // Previously selected option must remain opened.
+        assertTrue(page.$$('#safeBrowsingStandard').expanded);
+        assertTrue(page.$$('#safeBrowsingEnhanced').expanded);
+
+        page.$$('settings-disable-safebrowsing-dialog')
+            .$$('.action-button')
+            .click();
+        flush();
+
+        // Wait for onDisableSafebrowsingDialogClose_ to finish.
+        await flushTasks();
+
+        // The deselected option should become collapsed.
+        assertFalse(page.$$('#safeBrowsingStandard').expanded);
+        assertTrue(page.$$('#safeBrowsingEnhanced').expanded);
+      });
+
   test('DisableSafebrowsingDialog_Confirm', async function() {
     page.$$('#safeBrowsingStandard').click();
     assertEquals(
@@ -139,6 +207,9 @@ suite('CrSettingsSecurityPageTestWithEnhanced', function() {
 
     page.$$('#safeBrowsingDisabled').click();
     flush();
+
+    // Previously selected option must remain opened.
+    assertTrue(page.$$('#safeBrowsingStandard').expanded);
 
     page.$$('settings-disable-safebrowsing-dialog')
         .$$('.action-button')
@@ -166,6 +237,9 @@ suite('CrSettingsSecurityPageTestWithEnhanced', function() {
     page.$$('#safeBrowsingDisabled').click();
     flush();
 
+    // Previously selected option must remain opened.
+    assertTrue(page.$$('#safeBrowsingEnhanced').expanded);
+
     page.$$('settings-disable-safebrowsing-dialog')
         .$$('.cancel-button')
         .click();
@@ -191,6 +265,9 @@ suite('CrSettingsSecurityPageTestWithEnhanced', function() {
 
     page.$$('#safeBrowsingDisabled').click();
     flush();
+
+    // Previously selected option must remain opened.
+    assertTrue(page.$$('#safeBrowsingStandard').expanded);
 
     page.$$('settings-disable-safebrowsing-dialog')
         .$$('.cancel-button')
@@ -240,6 +317,9 @@ suite('CrSettingsSecurityPageTestWithEnhanced', function() {
     page.$$('#safeBrowsingDisabled').click();
     flush();
 
+    // Previously selected option must remain opened.
+    assertTrue(page.$$('#safeBrowsingStandard').expanded);
+
     page.$$('settings-disable-safebrowsing-dialog')
         .$$('.action-button')
         .click();
@@ -258,6 +338,9 @@ suite('CrSettingsSecurityPageTestWithEnhanced', function() {
 
     page.$$('#safeBrowsingDisabled').click();
     flush();
+
+    // Previously selected option must remain opened.
+    assertTrue(page.$$('#safeBrowsingStandard').expanded);
 
     page.$$('settings-disable-safebrowsing-dialog')
         .$$('.action-button')
@@ -290,6 +373,9 @@ suite('CrSettingsSecurityPageTestWithEnhanced', function() {
 
     page.$$('#safeBrowsingDisabled').click();
     flush();
+
+    // Previously selected option must remain opened.
+    assertTrue(page.$$('#safeBrowsingStandard').expanded);
 
     page.$$('settings-disable-safebrowsing-dialog')
         .$$('.action-button')

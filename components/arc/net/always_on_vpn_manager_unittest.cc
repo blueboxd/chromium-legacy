@@ -24,7 +24,7 @@ const base::Value kVpnPackageValue(kVpnPackage);
 
 void OnGetProperties(chromeos::DBusMethodCallStatus* call_status_out,
                      std::string* package_name_out,
-                     const base::Closure& callback,
+                     base::OnceClosure callback,
                      chromeos::DBusMethodCallStatus call_status,
                      base::Value result) {
   *call_status_out = call_status;
@@ -32,7 +32,7 @@ void OnGetProperties(chromeos::DBusMethodCallStatus* call_status_out,
       shill::kAlwaysOnVpnPackageProperty, base::Value::Type::STRING);
   if (value != nullptr)
     *package_name_out = value->GetString();
-  callback.Run();
+  std::move(callback).Run();
 }
 
 void CheckStatus(chromeos::DBusMethodCallStatus call_status) {

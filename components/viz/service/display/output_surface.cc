@@ -42,6 +42,14 @@ OutputSurface::OutputSurface(
 
 OutputSurface::~OutputSurface() = default;
 
+void OutputSurface::SetDrawRectangle(const gfx::Rect& rect) {
+  NOTREACHED();
+}
+
+void OutputSurface::SetEnableDCLayers(bool enabled) {
+  NOTREACHED();
+}
+
 gfx::Rect OutputSurface::GetCurrentFramebufferDamage() const {
   return gfx::Rect();
 }

@@ -15,6 +15,7 @@
 #include "components/prefs/pref_registry_simple.h"
 #include "components/prefs/testing_pref_service.h"
 #include "components/variations/variations_associated_data.h"
+#include "ios/chrome/browser/notification_promo.h"
 #include "ios/chrome/grit/ios_chromium_strings.h"
 #include "ios/public/provider/chrome/browser/images/branded_image_icon_types.h"
 #include "testing/platform_test.h"
@@ -76,9 +77,10 @@ class NotificationPromoWhatsNewTest : public PlatformTest {
     field_trial_params["seconds_since_install"] = seconds_since_install;
     field_trial_params["max_seconds_since_install"] = max_seconds_since_install;
 
-    variations::AssociateVariationParams("IOSNTPPromotion", "Group1",
-                                         field_trial_params);
-    base::FieldTrialList::CreateFieldTrial("IOSNTPPromotion", "Group1");
+    variations::AssociateVariationParams(ios::kNTPPromoFinchExperiment,
+                                         "Group1", field_trial_params);
+    base::FieldTrialList::CreateFieldTrial(ios::kNTPPromoFinchExperiment,
+                                           "Group1");
 
     promo_.Init();
   }

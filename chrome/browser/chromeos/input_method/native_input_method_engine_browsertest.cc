@@ -45,6 +45,8 @@ using chromeos::InputMethodEngineBase;
 
 namespace {
 
+constexpr char kEmojiData[] = "happy,😀;😃;😄";
+
 class TestObserver : public InputMethodEngineBase::Observer {
  public:
   TestObserver() = default;
@@ -136,7 +138,8 @@ class NativeInputMethodEngineTest : public InProcessBrowserTest,
  public:
   NativeInputMethodEngineTest() : input_method_(this) {
     feature_list_.InitWithFeatures({chromeos::features::kNativeRuleBasedTyping,
-                                    chromeos::features::kAssistPersonalInfo},
+                                    chromeos::features::kAssistPersonalInfo,
+                                    chromeos::features::kEmojiSuggestAddition},
                                    {});
   }
 
@@ -160,6 +163,9 @@ class NativeInputMethodEngineTest : public InProcessBrowserTest,
     prefs_->Set(prefs::kLanguageInputMethodSpecificSettings,
                 base::DictionaryValue());
     engine_.Initialize(std::move(observer), "", profile_);
+    engine_.get_assistive_suggester_for_testing()
+        ->get_emoji_suggester_for_testing()
+        ->LoadEmojiMapForTesting(kEmojiData);
     InProcessBrowserTest::SetUpOnMainThread();
   }
 
@@ -438,6 +444,32 @@ IN_PROC_BROWSER_TEST_F(NativeInputMethodEngineTest, SuggestUserName) {
   histogram_tester.ExpectUniqueSample("InputMethod.Assistive.Success",
                                       chromeos::AssistiveType::kPersonalName,
                                       1);
+
+  SetFocus(nullptr);
+}
+
+IN_PROC_BROWSER_TEST_F(NativeInputMethodEngineTest, SuggestEmoji) {
+  base::HistogramTester histogram_tester;
+  engine_.Enable(kEngineIdUs);
+  chromeos::TextInputTestHelper helper(GetBrowserInputMethod());
+  SetUpTextInput(helper);
+  const base::string16 prefix_text = base::UTF8ToUTF16("happy ");
+  const base::string16 expected_result_text = base::UTF8ToUTF16("happy 😀");
+
+  helper.GetTextInputClient()->InsertText(prefix_text);
+  helper.WaitForSurroundingTextChanged(prefix_text);
+  // Selects first emoji.
+  DispatchKeyPress(ui::VKEY_DOWN, false);
+  DispatchKeyPress(ui::VKEY_RETURN, false);
+  helper.WaitForSurroundingTextChanged(expected_result_text);
+
+  EXPECT_EQ(expected_result_text, helper.GetSurroundingText());
+  histogram_tester.ExpectUniqueSample("InputMethod.Assistive.Match",
+                                      chromeos::AssistiveType::kEmoji, 1);
+  histogram_tester.ExpectUniqueSample("InputMethod.Assistive.Coverage",
+                                      chromeos::AssistiveType::kEmoji, 1);
+  histogram_tester.ExpectUniqueSample("InputMethod.Assistive.Success",
+                                      chromeos::AssistiveType::kEmoji, 1);
 
   SetFocus(nullptr);
 }

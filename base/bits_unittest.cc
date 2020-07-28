@@ -62,6 +62,27 @@ TEST(BitsTest, Align) {
   EXPECT_EQ(kSizeTMax / 2 + 1, Align(1, kSizeTMax / 2 + 1));
 }
 
+TEST(BitsTest, AlignPointer) {
+  static constexpr uintptr_t kUintPtrTMax =
+      std::numeric_limits<uintptr_t>::max();
+  EXPECT_EQ(reinterpret_cast<uint8_t*>(0),
+            Align(reinterpret_cast<uint8_t*>(0), 4));
+  EXPECT_EQ(reinterpret_cast<uint8_t*>(4),
+            Align(reinterpret_cast<uint8_t*>(1), 4));
+  EXPECT_EQ(reinterpret_cast<uint8_t*>(4096),
+            Align(reinterpret_cast<uint8_t*>(1), 4096));
+  EXPECT_EQ(reinterpret_cast<uint8_t*>(4096),
+            Align(reinterpret_cast<uint8_t*>(4096), 4096));
+  EXPECT_EQ(reinterpret_cast<uint8_t*>(4096),
+            Align(reinterpret_cast<uint8_t*>(4095), 4096));
+  EXPECT_EQ(reinterpret_cast<uint8_t*>(8192),
+            Align(reinterpret_cast<uint8_t*>(4097), 4096));
+  EXPECT_EQ(reinterpret_cast<uint8_t*>(kUintPtrTMax - 31),
+            Align(reinterpret_cast<uint8_t*>(kUintPtrTMax - 62), 32));
+  EXPECT_EQ(reinterpret_cast<uint8_t*>(kUintPtrTMax / 2 + 1),
+            Align(reinterpret_cast<uint8_t*>(1), kUintPtrTMax / 2 + 1));
+}
+
 TEST(BitsTest, AlignDown) {
   static constexpr size_t kSizeTMax = std::numeric_limits<size_t>::max();
   EXPECT_EQ(0ul, AlignDown(0, 4));
@@ -73,6 +94,29 @@ TEST(BitsTest, AlignDown) {
   EXPECT_EQ(kSizeTMax - 63, AlignDown(kSizeTMax - 62, 32));
   EXPECT_EQ(kSizeTMax - 31, AlignDown(kSizeTMax, 32));
   EXPECT_EQ(0ul, AlignDown(1, kSizeTMax / 2 + 1));
+}
+
+TEST(BitsTest, AlignDownPointer) {
+  static constexpr uintptr_t kUintPtrTMax =
+      std::numeric_limits<uintptr_t>::max();
+  EXPECT_EQ(reinterpret_cast<uint8_t*>(0),
+            AlignDown(reinterpret_cast<uint8_t*>(0), 4));
+  EXPECT_EQ(reinterpret_cast<uint8_t*>(0),
+            AlignDown(reinterpret_cast<uint8_t*>(1), 4));
+  EXPECT_EQ(reinterpret_cast<uint8_t*>(0),
+            AlignDown(reinterpret_cast<uint8_t*>(1), 4096));
+  EXPECT_EQ(reinterpret_cast<uint8_t*>(4096),
+            AlignDown(reinterpret_cast<uint8_t*>(4096), 4096));
+  EXPECT_EQ(reinterpret_cast<uint8_t*>(0),
+            AlignDown(reinterpret_cast<uint8_t*>(4095), 4096));
+  EXPECT_EQ(reinterpret_cast<uint8_t*>(4096),
+            AlignDown(reinterpret_cast<uint8_t*>(4097), 4096));
+  EXPECT_EQ(reinterpret_cast<uint8_t*>(kUintPtrTMax - 63),
+            AlignDown(reinterpret_cast<uint8_t*>(kUintPtrTMax - 62), 32));
+  EXPECT_EQ(reinterpret_cast<uint8_t*>(kUintPtrTMax - 31),
+            AlignDown(reinterpret_cast<uint8_t*>(kUintPtrTMax), 32));
+  EXPECT_EQ(reinterpret_cast<uint8_t*>(0),
+            AlignDown(reinterpret_cast<uint8_t*>(1), kUintPtrTMax / 2 + 1));
 }
 
 TEST(BitsTest, CountLeadingZeroBits8) {

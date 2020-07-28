@@ -58,7 +58,6 @@ class BaseBlockingPage
       const BaseSafeBrowsingErrorUI::SBErrorDisplayOptions& display_options);
 
   // SecurityInterstitialPage methods:
-  bool ShouldCreateNewNavigation() const override;
   void PopulateInterstitialStrings(
       base::DictionaryValue* load_time_data) override;
   void OnInterstitialClosing() override {}

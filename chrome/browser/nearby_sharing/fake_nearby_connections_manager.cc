@@ -27,7 +27,7 @@ void FakeNearbyConnectionsManager::FakeNearbyConnection::Close() {
     std::move(disconnection_callback_).Run();
 }
 
-bool FakeNearbyConnectionsManager::FakeNearbyConnection::IsClosed() {
+bool FakeNearbyConnectionsManager::FakeNearbyConnection::IsClosed() const {
   return is_closed_;
 }
 
@@ -67,7 +67,6 @@ void FakeNearbyConnectionsManager::StopAdvertising() {
 }
 
 void FakeNearbyConnectionsManager::StartDiscovery(
-    std::vector<uint8_t> endpoint_info,
     DiscoveryListener* listener,
     ConnectionsCallback callback) {
   is_shutdown_ = false;

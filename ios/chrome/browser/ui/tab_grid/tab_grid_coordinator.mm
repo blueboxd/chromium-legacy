@@ -28,6 +28,7 @@
 #import "ios/chrome/browser/ui/tab_grid/tab_grid_view_controller.h"
 #import "ios/chrome/browser/ui/tab_grid/transitions/tab_grid_transition_handler.h"
 #include "ios/chrome/browser/ui/ui_feature_flags.h"
+#import "ios/chrome/browser/ui/util/uikit_ui_util.h"
 #import "ios/chrome/browser/url_loading/url_loading_params.h"
 #import "ios/chrome/browser/web_state_list/web_state_list.h"
 
@@ -363,7 +364,11 @@
     [self.tabSwitcher.delegate
         tabSwitcherDismissTransitionDidEnd:self.tabSwitcher];
     if (base::FeatureList::IsEnabled(kContainedBVC)) {
-      [self.bvcContainer.currentBVC becomeFirstResponder];
+      if (!GetFirstResponder()) {
+        // It is possible to already have a first responder (for example the
+        // omnibox). In that case, we don't want to mark BVC as first responder.
+        [self.bvcContainer.currentBVC becomeFirstResponder];
+      }
     }
     if (completion) {
       completion();

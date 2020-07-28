@@ -359,7 +359,6 @@ Bestela, pribatutasun-ezarpenek blokeatu egingo dute baimen hori. Baimen honekin
 <translation id="2413528052993050574">Zerbitzari honek ezin izan du egiaztatu <ph name="DOMAIN" /> domeinua denik. Bere segurtasun-ziurtagiria baliogabetuta egon liteke. Baliteke gaizki konfiguratuta dagoelako izatea edo erasotzaile batek zure konexioa atzeman duelako izatea.</translation>
 <translation id="2438874542388153331">Lau zulo eskuinean</translation>
 <translation id="245044156129055925">Webgune engainagarri batean idatzi duzu pasahitza. Pasahitza berehala aldatzea gomendatzen du Chromium-ek.</translation>
-<translation id="2463193859425327265">Aldatu orri nagusia</translation>
 <translation id="2463739503403862330">Bete</translation>
 <translation id="2465402087343596252">Architecture-E</translation>
 <translation id="2465655957518002998">Aukeratu entrega-metodoa</translation>
@@ -1148,7 +1147,6 @@ Bestela, pribatutasun-ezarpenek blokeatu egingo dute baimen hori. Baimen honekin
 <translation id="5785756445106461925">Gainera, orri honetan seguruak ez diren beste baliabide batzuk daude. Bidean dauden bitartean, beste pertsonek baliabide horiek ikus ditzakete eta erasotzaileek aldatu egin ditzakete orriaren portaera aldatzeko.</translation>
 <translation id="5786044859038896871">Txartelaren datuak betetzea nahi duzu?</translation>
 <translation id="5798290721819630480">Aldaketak baztertu nahi dituzu?</translation>
-<translation id="5798683403665926540">Aldatu orri nagusia Chrome-ren ezarpenetan</translation>
 <translation id="5803412860119678065"><ph name="CARD_DETAIL" /> txartelaren datuak betetzea nahi duzu?</translation>
 <translation id="5804241973901381774">Baimenak</translation>
 <translation id="5804427196348435412">Erabili NFC bidezko gailuak</translation>
@@ -1596,7 +1594,6 @@ Xehetasun gehiago:
 <translation id="7669271284792375604">Webgune honetako erasotzaileak zu engainatzen saia litezke, sarea arakatzea oztopatuko dizuten programak instala ditzazun. Besteak beste, hasierako orria alda lezakete edo ikusten dituzun webguneetan iragarki gehiago erakuts litzakete programok.</translation>
 <translation id="7673278391011283842">6. postontzia</translation>
 <translation id="7676643023259824263">Bilatu arbeleko testua (<ph name="TEXT" />)</translation>
-<translation id="7681101578153515023">Aldatu bilatzailea</translation>
 <translation id="7682287625158474539">Bidalketa</translation>
 <translation id="7687186412095877299">Gordetako ordainketa-metodoak erabiliz beteko dira ordainketa-inprimakiak</translation>
 <translation id="7687305263118037187">Saiakeraren denbora-muga</translation>
@@ -1634,7 +1631,6 @@ Xehetasun gehiago:
 <translation id="7802523362929240268">Fidagarria da webgunea</translation>
 <translation id="780301667611848630">Ez, eskerrik asko</translation>
 <translation id="7805768142964895445">Egoera</translation>
-<translation id="7806344367022510803">Aldatu bilatzailearen ezarpenak Chrome-n</translation>
 <translation id="7812922009395017822">Mir</translation>
 <translation id="7813600968533626083">Inprimaki-iradokizuna Chrome-tik kendu nahi duzu?</translation>
 <translation id="781440967107097262">Arbela partekatu nahi duzu?</translation>
@@ -1776,7 +1772,6 @@ Xehetasun gehiago:
 Xehetasun gehiago:
 <ph name="DEBUG_INFO" /></translation>
 <translation id="8424582179843326029"><ph name="FIRST_LABEL" />, <ph name="SECOND_LABEL" />, <ph name="THIRD_LABEL" /></translation>
-<translation id="8425213833346101688">Aldatu</translation>
 <translation id="8428213095426709021">Ezarpenak</translation>
 <translation id="8433057134996913067">Hori eginez gero, webgune gehienetako saioa amaituko duzu.</translation>
 <translation id="8437238597147034694">&amp;Desegin mugitzea</translation>

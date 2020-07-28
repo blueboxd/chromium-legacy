@@ -147,14 +147,14 @@ void NativeFileSystemHandleBase::DidRequestPermission(
     case Outcome::kThirdPartyContext:
       std::move(callback).Run(
           native_file_system_error::FromStatus(
-              blink::mojom::NativeFileSystemStatus::kPermissionDenied,
+              blink::mojom::NativeFileSystemStatus::kSecurityError,
               "Not allowed to request permissions in this context."),
           writable ? GetWritePermissionStatus() : GetReadPermissionStatus());
       return;
     case Outcome::kNoUserActivation:
       std::move(callback).Run(
           native_file_system_error::FromStatus(
-              blink::mojom::NativeFileSystemStatus::kPermissionDenied,
+              blink::mojom::NativeFileSystemStatus::kSecurityError,
               "User activation is required to request permissions."),
           writable ? GetWritePermissionStatus() : GetReadPermissionStatus());
       return;

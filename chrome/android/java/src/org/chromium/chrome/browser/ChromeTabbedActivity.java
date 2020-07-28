@@ -271,6 +271,8 @@ public class ChromeTabbedActivity extends ChromeActivity<ChromeActivityComponent
 
     // Whether or not chrome was launched with an intent to open a tab.
     private boolean mIntentWithEffect;
+    private ObservableSupplierImpl<Boolean> mIntentWithEffectSupplier =
+            new ObservableSupplierImpl<>();
 
     // Time at which an intent was received and handled.
     private long mIntentHandlingTimeMs;
@@ -1167,6 +1169,7 @@ public class ChromeTabbedActivity extends ChromeActivity<ChromeActivityComponent
             if (getSavedInstanceState() == null && intent != null) {
                 if (!mIntentHandler.shouldIgnoreIntent(intent)) {
                     mIntentWithEffect = mIntentHandler.onNewIntent(intent);
+                    mIntentWithEffectSupplier.set(mIntentWithEffect);
                 }
 
                 if (isMainIntentFromLauncher(intent)) {
@@ -1537,8 +1540,8 @@ public class ChromeTabbedActivity extends ChromeActivity<ChromeActivityComponent
 
     @Override
     protected RootUiCoordinator createRootUiCoordinator() {
-        return new TabbedRootUiCoordinator(this, this::onOmniboxFocusChanged, mIntentWithEffect,
-                getShareDelegateSupplier(), getActivityTabProvider(),
+        return new TabbedRootUiCoordinator(this, this::onOmniboxFocusChanged,
+                mIntentWithEffectSupplier, getShareDelegateSupplier(), getActivityTabProvider(),
                 mEphemeralTabCoordinatorSupplier, mTabModelProfileSupplier, mBookmarkBridgeSupplier,
                 getOverviewModeBehaviorSupplier(), this::getContextualSearchManager);
     }

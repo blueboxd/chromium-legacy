@@ -11,9 +11,11 @@
     android:orientation="vertical">
   <androidx.recyclerview.widget.RecyclerView
     android:id="@+id/share_sheet_chrome_apps"
+    android:clipToPadding="false"
     android:layout_width="wrap_content"
     android:layout_height="113dp"
     android:minHeight="@dimen/min_touch_target_size"
+    android:paddingEnd="16dp"
     android:visibility="gone" />
   <View
     android:id="@+id/share_sheet_divider"
@@ -25,8 +27,10 @@
     android:visibility="gone" />
   <androidx.recyclerview.widget.RecyclerView
     android:id="@+id/share_sheet_other_apps"
+    android:clipToPadding="false"
     android:layout_width="wrap_content"
     android:layout_height="113dp"
     android:minHeight="@dimen/min_touch_target_size"
-    android:orientation="horizontal" />
+    android:orientation="horizontal"
+    android:paddingEnd="16dp" />
 </LinearLayout>

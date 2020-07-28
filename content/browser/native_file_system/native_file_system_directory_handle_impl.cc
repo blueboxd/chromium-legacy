@@ -102,11 +102,9 @@ void NativeFileSystemDirectoryHandleImpl::GetFile(const std::string& basename,
         base::BindOnce(
             &NativeFileSystemDirectoryHandleImpl::GetFileWithWritePermission,
             weak_factory_.GetWeakPtr(), child_url),
-        base::BindOnce([](GetFileCallback callback) {
-          std::move(callback).Run(
-              native_file_system_error::FromStatus(
-                  NativeFileSystemStatus::kPermissionDenied),
-              mojo::NullRemote());
+        base::BindOnce([](blink::mojom::NativeFileSystemErrorPtr result,
+                          GetFileCallback callback) {
+          std::move(callback).Run(std::move(result), mojo::NullRemote());
         }),
         std::move(callback));
   } else {
@@ -149,11 +147,9 @@ void NativeFileSystemDirectoryHandleImpl::GetDirectory(
         base::BindOnce(&NativeFileSystemDirectoryHandleImpl::
                            GetDirectoryWithWritePermission,
                        weak_factory_.GetWeakPtr(), child_url),
-        base::BindOnce([](GetDirectoryCallback callback) {
-          std::move(callback).Run(
-              native_file_system_error::FromStatus(
-                  NativeFileSystemStatus::kPermissionDenied),
-              mojo::NullRemote());
+        base::BindOnce([](blink::mojom::NativeFileSystemErrorPtr result,
+                          GetDirectoryCallback callback) {
+          std::move(callback).Run(std::move(result), mojo::NullRemote());
         }),
         std::move(callback));
   } else {
@@ -206,9 +202,9 @@ void NativeFileSystemDirectoryHandleImpl::RemoveEntry(
   RunWithWritePermission(
       base::BindOnce(&NativeFileSystemDirectoryHandleImpl::RemoveEntryImpl,
                      weak_factory_.GetWeakPtr(), child_url, recurse),
-      base::BindOnce([](RemoveEntryCallback callback) {
-        std::move(callback).Run(native_file_system_error::FromStatus(
-            NativeFileSystemStatus::kPermissionDenied));
+      base::BindOnce([](blink::mojom::NativeFileSystemErrorPtr result,
+                        RemoveEntryCallback callback) {
+        std::move(callback).Run(std::move(result));
       }),
       std::move(callback));
 }

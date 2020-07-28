@@ -12,8 +12,9 @@
 #include "mojo/public/cpp/bindings/struct_traits.h"
 #include "skia/public/mojom/bitmap_skbitmap_mojom_traits.h"
 #include "third_party/blink/public/common/common_export.h"
+#include "third_party/blink/public/common/notifications/notification_resources.h"
 #include "third_party/blink/public/common/notifications/platform_notification_data.h"
-#include "third_party/blink/public/mojom/notifications/notification.mojom-forward.h"
+#include "third_party/blink/public/mojom/notifications/notification.mojom-shared.h"
 #include "url/gurl.h"
 #include "url/mojom/url_gurl_mojom_traits.h"
 

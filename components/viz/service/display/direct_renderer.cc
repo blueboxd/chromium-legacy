@@ -72,13 +72,6 @@ static gfx::Transform window_matrix(int x, int y, int width, int height) {
   return canvas;
 }
 
-#if defined(OS_WIN)
-// Switching between enabling DC layers and not is expensive, so only
-// switch away after a large number of frames not needing DC layers have
-// been produced.
-constexpr int kNumberOfFramesBeforeDisablingDCLayers = 60;
-#endif  // defined(OS_WIN)
-
 // Returns the bounding box that contains the specified rounded corner.
 gfx::RectF ComputeRoundedCornerBoundingBox(const gfx::RRectF& rrect,
                                            const gfx::RRectF::Corner corner) {
@@ -135,9 +128,6 @@ void DirectRenderer::Initialize() {
 
   use_partial_swap_ = settings_->partial_swap_enabled && CanPartialSwap();
   allow_empty_swap_ = use_partial_swap_;
-#if defined(OS_WIN)
-  supports_dc_layers_ = output_surface_->capabilities().supports_dc_layers;
-#endif
   if (context_provider) {
     if (context_provider->ContextCapabilities().commit_overlay_planes)
       allow_empty_swap_ = true;
@@ -324,8 +314,9 @@ void DirectRenderer::DrawFrame(
           current_frame()->root_render_pass->content_color_usage,
           frame_has_alpha);
   if (overlay_processor_) {
-    // Display transform is needed for overlay validator on Android
-    // SurfaceControl. This needs to called before ProcessForOverlays.
+    // Display transform and viewport size are needed for overlay validator on
+    // Android SurfaceControl, and viewport size is need on Windows. These need
+    // to be called before ProcessForOverlays.
     overlay_processor_->SetDisplayTransformHint(
         output_surface_->GetDisplayTransform());
     overlay_processor_->SetViewportSize(device_viewport_size);
@@ -397,26 +388,6 @@ void DirectRenderer::DrawFrame(
     needs_full_frame_redraw = true;
 #endif
   }
-
-#if defined(OS_WIN)
-  bool was_using_dc_layers = using_dc_layers_;
-  if (!current_frame()->overlay_list.empty()) {
-    DCHECK(supports_dc_layers_);
-    using_dc_layers_ = true;
-    frames_since_using_dc_layers_ = 0;
-  } else if (++frames_since_using_dc_layers_ >=
-             kNumberOfFramesBeforeDisablingDCLayers) {
-    using_dc_layers_ = false;
-  }
-
-  if (supports_dc_layers_ && (was_using_dc_layers != using_dc_layers_)) {
-    SetEnableDCLayers(using_dc_layers_);
-    // The entire surface has to be redrawn if switching from or to
-    // DirectComposition layers, because the previous contents are discarded
-    // and some contents would otherwise be undefined.
-    needs_full_frame_redraw = true;
-  }
-#endif
 
   // Draw all non-root render passes except for the root render pass.
   for (const auto& pass : *render_passes_in_draw_order) {
@@ -665,20 +636,21 @@ void DirectRenderer::DrawRenderPass(const RenderPass* render_pass) {
         ComputeScissorRectForRenderPass(current_frame()->current_render_pass));
   }
 
-  bool render_pass_is_clipped =
+  const bool render_pass_is_clipped =
       !render_pass_scissor_in_draw_space.Contains(surface_rect_in_draw_space);
 
   // The SetDrawRectangleCHROMIUM spec requires that the scissor bit is always
   // set on the root framebuffer or else the rendering may modify something
   // outside the damage rectangle, even if the damage rectangle is the size of
   // the full backbuffer.
-  bool render_pass_requires_scissor = render_pass_is_clipped;
-#if defined(OS_WIN)
-  render_pass_requires_scissor |= (supports_dc_layers_ && is_root_render_pass);
-#endif
-  bool has_external_stencil_test =
+  const bool supports_dc_layers =
+      output_surface_->capabilities().supports_dc_layers;
+  const bool render_pass_requires_scissor =
+      render_pass_is_clipped || (supports_dc_layers && is_root_render_pass);
+
+  const bool has_external_stencil_test =
       is_root_render_pass && output_surface_->HasExternalStencilTest();
-  bool should_clear_surface =
+  const bool should_clear_surface =
       !has_external_stencil_test &&
       (!is_root_render_pass || settings_->should_clear_root_render_pass);
 
@@ -786,10 +758,8 @@ void DirectRenderer::UseRenderPass(const RenderPass* render_pass) {
   current_frame()->current_render_pass = render_pass;
   if (render_pass == current_frame()->root_render_pass) {
     BindFramebufferToOutputSurface();
-#if defined(OS_WIN)
-    if (supports_dc_layers_)
+    if (output_surface_->capabilities().supports_dc_layers)
       output_surface_->SetDrawRectangle(current_frame()->root_damage_rect);
-#endif
     InitializeViewport(current_frame(), render_pass->output_rect,
                        gfx::Rect(current_frame()->device_viewport_size),
                        current_frame()->device_viewport_size);

@@ -12,6 +12,8 @@ namespace content {
 class NavigationHandle;
 }  // namespace content
 
+class PrefService;
+
 namespace security_interstitials {
 
 class InsecureFormNavigationThrottle : public content::NavigationThrottle {
@@ -29,7 +31,8 @@ class InsecureFormNavigationThrottle : public content::NavigationThrottle {
   static std::unique_ptr<InsecureFormNavigationThrottle>
   MaybeCreateNavigationThrottle(
       content::NavigationHandle* navigation_handle,
-      std::unique_ptr<SecurityBlockingPageFactory> blocking_page_factory);
+      std::unique_ptr<SecurityBlockingPageFactory> blocking_page_factory,
+      PrefService* prefs);
 
  private:
   std::unique_ptr<SecurityBlockingPageFactory> blocking_page_factory_;

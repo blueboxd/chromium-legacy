@@ -10,9 +10,9 @@
 
 #include "third_party/blink/public/common/input/pointer_id.h"
 #include "third_party/blink/public/common/input/web_coalesced_input_event.h"
-#include "third_party/blink/public/platform/input/input_predictor.h"
 #include "third_party/blink/public/platform/input/predictor_factory.h"
 #include "third_party/blink/renderer/platform/platform_export.h"
+#include "ui/base/prediction/input_predictor.h"
 
 namespace blink {
 
@@ -35,7 +35,7 @@ class PLATFORM_EXPORT InputEventPrediction {
                     base::TimeTicks frame_time);
 
   // Initialize predictor for different pointer.
-  std::unique_ptr<blink::InputPredictor> CreatePredictor() const;
+  std::unique_ptr<ui::InputPredictor> CreatePredictor() const;
 
  private:
   friend class InputEventPredictionTest;
@@ -64,7 +64,7 @@ class PLATFORM_EXPORT InputEventPrediction {
       const WebPointerProperties& event) const;
 
   // Returns a pointer to the predictor for given WebPointerProperties.
-  blink::InputPredictor* GetPredictor(const WebPointerProperties& event) const;
+  ui::InputPredictor* GetPredictor(const WebPointerProperties& event) const;
 
   // Get single predictor based on event id and type, and update the predictor
   // with new events coords.
@@ -81,13 +81,13 @@ class PLATFORM_EXPORT InputEventPrediction {
   // predictor, for other pointer type, remove it from mapping.
   void ResetSinglePredictor(const WebPointerProperties& event);
 
-  std::unordered_map<PointerId, std::unique_ptr<blink::InputPredictor>>
+  std::unordered_map<PointerId, std::unique_ptr<ui::InputPredictor>>
       pointer_id_predictor_map_;
-  std::unique_ptr<blink::InputPredictor> mouse_predictor_;
+  std::unique_ptr<ui::InputPredictor> mouse_predictor_;
 
   // Store the field trial parameter used for choosing different types of
   // predictor.
-  blink::input_prediction::PredictorType selected_predictor_type_;
+  input_prediction::PredictorType selected_predictor_type_;
 
   bool enable_resampling_ = false;
 

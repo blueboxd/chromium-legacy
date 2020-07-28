@@ -363,7 +363,6 @@
 <translation id="2413528052993050574">Цей сервер не зміг довести, що він – домен <ph name="DOMAIN" />. Можливо, його сертифікат безпеки відкликано. Імовірні причини: неправильна конфігурація або хтось намагається перехопити ваше з’єднання.</translation>
 <translation id="2438874542388153331">Пробити чотири отвори праворуч</translation>
 <translation id="245044156129055925">Щойно ви ввели пароль на оманливому сайті. Chromium радить змінити пароль.</translation>
-<translation id="2463193859425327265">Змінити домашню сторінку</translation>
 <translation id="2463739503403862330">Заповнити</translation>
 <translation id="2465402087343596252">Architecture-E</translation>
 <translation id="2465655957518002998">Вибрати спосіб доставки</translation>
@@ -1161,7 +1160,6 @@
 <translation id="5785756445106461925">Окрім цього, сторінка містить незахищені ресурси. Інші особи можуть переглядати їх під час передавання даних, а зловмисники можуть змінювати вигляд сторінки.</translation>
 <translation id="5786044859038896871">Ввести дані кредитної картки?</translation>
 <translation id="5798290721819630480">Відхилити зміни?</translation>
-<translation id="5798683403665926540">Змініть домашню сторінку в налаштуваннях Chrome</translation>
 <translation id="5803412860119678065">Ввести дані кредитної картки <ph name="CARD_DETAIL" />?</translation>
 <translation id="5804241973901381774">Дозволи</translation>
 <translation id="5804427196348435412">Використовувати пристрої NFC</translation>
@@ -1610,7 +1608,6 @@
 <translation id="7669271284792375604">Зловмисники на цьому сайті можуть обманом змусити вас установити програми, які погіршують роботу в Інтернеті (наприклад, змінюють вашу домашню сторінку або показують додаткову рекламу на сайтах, які ви відвідуєте).</translation>
 <translation id="7673278391011283842">Поштова скринька 6</translation>
 <translation id="7676643023259824263">Пошук тексту з буфера обміну: <ph name="TEXT" /></translation>
-<translation id="7681101578153515023">Змінити пошукову систему</translation>
 <translation id="7682287625158474539">Адреса для надсилання</translation>
 <translation id="7687186412095877299">Заповнює платіжні форми, використовуючи збережені способи оплати</translation>
 <translation id="7687305263118037187">Час для повторної спроби минув</translation>
@@ -1648,7 +1645,6 @@
 <translation id="7802523362929240268">Сайт законно зареєстрований</translation>
 <translation id="780301667611848630">Ні, дякую</translation>
 <translation id="7805768142964895445">Статус</translation>
-<translation id="7806344367022510803">Змініть налаштування пошукової системи в Chrome</translation>
 <translation id="7812922009395017822">Mir</translation>
 <translation id="7813600968533626083">Видалити дані для автозаповнення форм із Chrome?</translation>
 <translation id="781440967107097262">Надати доступ до буфера обміну?</translation>
@@ -1790,7 +1786,6 @@
 Додаткові відомості:
 <ph name="DEBUG_INFO" /></translation>
 <translation id="8424582179843326029"><ph name="FIRST_LABEL" /> <ph name="SECOND_LABEL" /> <ph name="THIRD_LABEL" /></translation>
-<translation id="8425213833346101688">Змінити</translation>
 <translation id="8428213095426709021">Налаштування</translation>
 <translation id="8433057134996913067">Ви вийдете з облікового запису на більшості веб-сайтів.</translation>
 <translation id="8437238597147034694">&amp;Відмінити переміщення</translation>

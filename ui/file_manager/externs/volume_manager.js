@@ -37,10 +37,11 @@ class VolumeManager {
 
   /**
    * @param {string} fileUrl File url to the archive file.
+   * @param {string=} password Password to decrypt archive file.
    * @return {!Promise<!VolumeInfo>} Fulfilled on success, otherwise rejected
    *     with a VolumeManagerCommon.VolumeError.
    */
-  mountArchive(fileUrl) {}
+  mountArchive(fileUrl, password) {}
 
   /**
    * Unmounts a volume.

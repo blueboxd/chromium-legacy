@@ -2390,6 +2390,7 @@ Unknown properties are collapsed to zero. -->
   <int value="37"
       label="prefer_related_applications is only supported on Chrome Beta
              &amp; Stable on Android"/>
+  <int value="38" label="Manifest URL was changed during fetch"/>
 </enum>
 
 <enum name="AppBannersInstallEvent">
@@ -21287,6 +21288,7 @@ Called by update_document_policy_enum.py.-->
   <int value="745" label="NativeMessagingAllowlist"/>
   <int value="746" label="AuthNegotiateDelegateAllowlist"/>
   <int value="747" label="AuthServerAllowlist"/>
+  <int value="748" label="InsecureFormsWarningsEnabled"/>
 </enum>
 
 <enum name="EnterprisePolicyDeviceIdValidity">
@@ -28647,6 +28649,7 @@ Called by update_feature_policy_enum.py.-->
   <int value="76" label="ClipboardRead"/>
   <int value="77" label="ClipboardWrite"/>
   <int value="78" label="WebShare"/>
+  <int value="79" label="Gamepad"/>
 </enum>
 
 <enum name="FeaturePolicyImageCompressionFormat">
@@ -37073,6 +37076,10 @@ Called by update_gpu_driver_bug_workaround_entries.py.-->
   <int value="0" label="Copy"/>
 </enum>
 
+<enum name="IOSMenuScenario">
+  <int value="0" label="History Entry"/>
+</enum>
+
 <enum name="IOSNTPImpression">
   <int value="0" label="Local suggestions"/>
   <int value="1" label="Remote suggestions"/>
@@ -39939,6 +39946,7 @@ from previous Chrome versions.
   <int value="-1896871201" label="CrossOriginOpenerPolicyReporting:enabled"/>
   <int value="-1896394207" label="PasswordChange:disabled"/>
   <int value="-1895719323" label="VrBrowsingTabsView:enabled"/>
+  <int value="-1895050832" label="GlobalMediaControlsCastStartStop:disabled"/>
   <int value="-1894699049" label="AudioFocusEnforcement:disabled"/>
   <int value="-1894054576" label="FontAccess:enabled"/>
   <int value="-1893668420"
@@ -40366,6 +40374,7 @@ from previous Chrome versions.
   <int value="-1453647118" label="PasswordLeakDetection:disabled"/>
   <int value="-1451644187" label="OverviewSwipeToClose:enabled"/>
   <int value="-1450576851" label="OmniboxUIExperimentVerticalLayout:enabled"/>
+  <int value="-1449590570" label="RestrictGamepadAccess:enabled"/>
   <int value="-1448511207" label="UseMessagesStagingUrl:disabled"/>
   <int value="-1447147245" label="VideoPlayerNativeControls:enabled"/>
   <int value="-1446625028" label="CrostiniUsbAllowUnsupported:enabled"/>
@@ -42164,6 +42173,7 @@ from previous Chrome versions.
   <int value="491334698" label="ConditionalTabStripAndroid:enabled"/>
   <int value="492113129" label="ExperimentalAppBanners:enabled"/>
   <int value="492985975" label="use-monitor-color-space"/>
+  <int value="493758709" label="RestrictGamepadAccess:disabled"/>
   <int value="493903641" label="disable-appcontainer"/>
   <int value="494733611" label="disable-drop-sync-credential"/>
   <int value="494939785" label="InsecureFormSubmissionInterstitial:disabled"/>
@@ -42218,6 +42228,7 @@ from previous Chrome versions.
   <int value="557200974" label="WebSocketHandshakeReuseConnection:disabled"/>
   <int value="557915559" label="CCTModuleCustomRequestHeader:enabled"/>
   <int value="558873715" label="SiteDetails:disabled"/>
+  <int value="561951500" label="GlobalMediaControlsCastStartStop:enabled"/>
   <int value="562979188" label="DesktopIOSPromotion:enabled"/>
   <int value="564355877" label="OopRasterizationDDL:disabled"/>
   <int value="564522013" label="Av1Decoder:disabled"/>
@@ -45122,6 +45133,8 @@ Called by update_use_counter_css.py.-->
   <int value="669" label="end"/>
   <int value="670" label="time-range"/>
   <int value="671" label="scrollbar-gutter"/>
+  <int value="672" label="ascent-override"/>
+  <int value="673" label="descent-override"/>
 </enum>
 
 <enum name="MappedEditingCommands">
@@ -46888,6 +46901,12 @@ Called by update_use_counter_css.py.-->
   <int value="14" label="Chrome Content Extension"/>
   <int value="15" label="Chrome Share Extension"/>
   <int value="16" label="Chrome"/>
+  <int value="17" label="Third Party">
+    A non-Google application (more precisely an app that doesn't share an app
+    group with Chrome) launched Chrome with an http or https URL. This can
+    happen on iOS 14+ when Chrome is set as the default browser and a system app
+    (f.e. Messages) or an app from a 3rd party developer opens a URL.
+  </int>
 </enum>
 
 <enum name="MobileSessionShutdownType">
@@ -46901,13 +46920,31 @@ Called by update_use_counter_css.py.-->
 </enum>
 
 <enum name="MobileSessionStartAction">
-  <int value="0" label="Open http"/>
-  <int value="1" label="Open https"/>
+  <int value="0" label="Open http">
+    Logged when an application passes an http URL to Chrome using the custom
+    registered scheme (f.e. googlechrome).
+  </int>
+  <int value="1" label="Open https">
+    Logged when an application passes an https URL to Chrome using the custom
+    registered scheme (f.e. googlechromes).
+  </int>
   <int value="2" label="Open file"/>
   <int value="3" label="x-callback-url open"/>
   <int value="4" label="x-callback-url other"/>
   <int value="5" label="Other"/>
   <int value="6" label="x-callback-url app-group-command"/>
+  <int value="7" label="OS opened http">
+    Logged when any application passes an http URL to Chrome using the standard
+    &quot;http&quot; scheme. This can happen when Chrome is set as the default
+    browser on iOS 14+ as http openURL calls will be directed to Chrome by the
+    system from all other apps.
+  </int>
+  <int value="8" label="OS opened https">
+    Logged when any application passes an https URL to Chrome using the standard
+    &quot;https&quot; scheme. This can happen when Chrome is set as the default
+    browser on iOS 14+ as http openURL calls will be directed to Chrome by the
+    system from all other apps.
+  </int>
 </enum>
 
 <enum name="MobileStartingAction">
@@ -52210,7 +52247,7 @@ Called by update_net_trust_anchors.py.-->
   <int value="424" label="Sleep When Laptop Lid is Closed"/>
   <int value="425" label="Display: Resolution"/>
   <int value="426" label="Display: Refresh Rate"/>
-  <int value="427" label="Remove DLC"/>
+  <int value="427" label="Remove DLC (Deprecated)"/>
   <int value="428" label="Display: Mirroring"/>
   <int value="429" label="Allow Windows To Span Displays"/>
   <int value="430" label="Ambient Colors"/>
@@ -52375,7 +52412,7 @@ Called by update_net_trust_anchors.py.-->
   <int value="403" label="Display"/>
   <int value="404" label="Storage"/>
   <int value="405" label="External Storage"/>
-  <int value="406" label="DLC"/>
+  <int value="406" label="DLC (Deprecated)"/>
   <int value="407" label="Power"/>
   <int value="500" label="Change Picture"/>
   <int value="501" label="Ambient Mode"/>

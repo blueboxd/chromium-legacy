@@ -125,6 +125,11 @@ scoped_refptr<SimpleFontData> CSSFontFace::GetFontData(
 
     if (scoped_refptr<SimpleFontData> result = source->GetFontData(
             font_description, font_face_->GetFontSelectionCapabilities())) {
+      if (font_face_->HasFontMetricsOverride()) {
+        // TODO(xiaochengh): Try not to create a temporary SimpleFontData.
+        result = result->MetricsOverriddenFontData(
+            font_face_->GetFontMetricsOverride());
+      }
       // The active source may already be loading or loaded. Adjust our
       // FontFace status accordingly.
       if (LoadStatus() == FontFace::kUnloaded &&

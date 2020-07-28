@@ -177,8 +177,12 @@ constexpr bool all_of(InputIterator first,
                       InputIterator last,
                       Pred pred,
                       Proj proj = {}) {
-  return std::all_of(first, last,
-                     internal::ProjectedUnaryPredicate(pred, proj));
+  for (; first != last; ++first) {
+    if (!invoke(pred, invoke(proj, *first)))
+      return false;
+  }
+
+  return true;
 }
 
 // Let `E(i)` be `invoke(pred, invoke(proj, *i))`.
@@ -219,8 +223,12 @@ constexpr bool any_of(InputIterator first,
                       InputIterator last,
                       Pred pred,
                       Proj proj = {}) {
-  return std::any_of(first, last,
-                     internal::ProjectedUnaryPredicate(pred, proj));
+  for (; first != last; ++first) {
+    if (invoke(pred, invoke(proj, *first)))
+      return true;
+  }
+
+  return false;
 }
 
 // Let `E(i)` be `invoke(pred, invoke(proj, *i))`.
@@ -261,8 +269,12 @@ constexpr bool none_of(InputIterator first,
                        InputIterator last,
                        Pred pred,
                        Proj proj = {}) {
-  return std::none_of(first, last,
-                      internal::ProjectedUnaryPredicate(pred, proj));
+  for (; first != last; ++first) {
+    if (invoke(pred, invoke(proj, *first)))
+      return false;
+  }
+
+  return true;
 }
 
 // Let `E(i)` be `invoke(pred, invoke(proj, *i))`.

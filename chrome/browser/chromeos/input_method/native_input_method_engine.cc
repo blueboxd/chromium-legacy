@@ -72,6 +72,7 @@ void NativeInputMethodEngine::Initialize(
       std::make_unique<AssistiveSuggester>(this, profile);
   // Wrap the given observer in our observer that will decide whether to call
   // Mojo directly or forward to the extension.
+  assistive_suggester_ = assistive_suggester.get();
   auto native_observer =
       std::make_unique<chromeos::NativeInputMethodEngine::ImeObserver>(
           std::move(observer), std::move(assistive_suggester));

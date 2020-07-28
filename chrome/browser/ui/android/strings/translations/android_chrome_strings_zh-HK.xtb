@@ -335,6 +335,7 @@
 <translation id="3658159451045945436">重設將會清除您儲存資料的記錄，包括瀏覽過的網站清單。</translation>
 <translation id="3692944402865947621">無法存取儲存位置，因此無法下載 <ph name="FILE_NAME" />。</translation>
 <translation id="3701167022068948696">立即修正</translation>
+<translation id="371230970611282515">在危險事件發生前進行預測並發出警告。</translation>
 <translation id="3714981814255182093">開啟搜尋列</translation>
 <translation id="3716182511346448902">這個網頁使用過多記憶體，因此 Chrome 已暫停顯示這個網頁。</translation>
 <translation id="3721119614952978349">您和 Google</translation>
@@ -713,6 +714,7 @@
 <translation id="6593061639179217415">桌面版網站</translation>
 <translation id="6597891566292541626">將二維條碼/條碼放在此方框中。</translation>
 <translation id="6600954340915313787">已複製至 Chrome</translation>
+<translation id="661266467055912436">為您和網絡上的所有使用者提高安全性。</translation>
 <translation id="6627583120233659107">編輯資料夾</translation>
 <translation id="6643016212128521049">清除</translation>
 <translation id="6643649862576733715">依節省數據量排序</translation>
@@ -872,6 +874,7 @@
 <translation id="7925590027513907933">{FILE_COUNT,plural, =1{正在下載檔案。}other{正在下載 # 個檔案。}}</translation>
 <translation id="7926975587469166629">信用卡暱稱</translation>
 <translation id="7929962904089429003">開啟選單</translation>
+<translation id="7930998711684428189">密碼因資料外洩而被洩露時接收警告</translation>
 <translation id="7942131818088350342"><ph name="PRODUCT_NAME" /> 版本過舊。</translation>
 <translation id="7947953824732555851">接受並登入</translation>
 <translation id="7963646190083259054">供應商：</translation>

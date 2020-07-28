@@ -617,14 +617,15 @@ test("headless_browsertests") {
     "test/headless_browser_test.cc",
     "test/headless_browser_test.h",
     "test/headless_client_browsertest.cc",
-
-    # TODO(https://crbug.com/1107396): These tests flakily timeout.
-    #"test/headless_protocol_browsertest.cc",
-
     "test/headless_test_launcher.cc",
     "test/test_network_interceptor.cc",
     "test/test_network_interceptor.h",
   ]
+
+  # TODO(https://crbug.com/1107396): These tests flakily timeout on fuchsia.
+  if (!is_fuchsia) {
+    sources += [ "test/headless_protocol_browsertest.cc" ]
+  }
 
   data = [
     "lib/dom_tree_extraction_expected_nodes.txt",

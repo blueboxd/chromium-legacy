@@ -49,6 +49,11 @@ class AURA_EXPORT WindowTreeHostPlatform : public WindowTreeHost,
       const gfx::Point& location_in_pixels) override;
   void OnCursorVisibilityChangedNative(bool show) override;
 
+  ui::PlatformWindow* platform_window() { return platform_window_.get(); }
+  const ui::PlatformWindow* platform_window() const {
+    return platform_window_.get();
+  }
+
  protected:
   // NOTE: this does not call CreateCompositor(); subclasses must call
   // CreateCompositor() at the appropriate time.
@@ -59,10 +64,6 @@ class AURA_EXPORT WindowTreeHostPlatform : public WindowTreeHost,
   void CreateAndSetPlatformWindow(ui::PlatformWindowInitProperties properties);
 
   void SetPlatformWindow(std::unique_ptr<ui::PlatformWindow> window);
-  ui::PlatformWindow* platform_window() { return platform_window_.get(); }
-  const ui::PlatformWindow* platform_window() const {
-    return platform_window_.get();
-  }
 
   // ui::PlatformWindowDelegate:
   void OnBoundsChanged(const gfx::Rect& new_bounds) override;

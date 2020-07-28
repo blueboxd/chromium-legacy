@@ -363,7 +363,6 @@ I motsatt fall blir dette blokkert av personverninnstillingene. Dette gjør at i
 <translation id="2413528052993050574">Denne tjeneren kunne ikke bevise at den er <ph name="DOMAIN" />. Tjenerens sikkerhetssertifikat kan være trukket tilbake. Dette kan være forårsaket av en feilkonfigurering eller en angriper som avskjærer tilkoblingen din.</translation>
 <translation id="2438874542388153331">Fire hull høyre</translation>
 <translation id="245044156129055925">Du har nettopp skrevet inn passordet ditt på et villedende nettsted. Chromium anbefaler deg å bytte passord nå.</translation>
-<translation id="2463193859425327265">Endre startsiden</translation>
 <translation id="2463739503403862330">Fyll ut</translation>
 <translation id="2465402087343596252">Architecture-E</translation>
 <translation id="2465655957518002998">Velg leveringsmåte</translation>
@@ -1163,7 +1162,6 @@ brukere av denne nettleseren.</translation>
 <translation id="5785756445106461925">Denne siden inneholder i tillegg andre ressurser som ikke er sikre. Disse ressursene er synlige for andre mens de sendes frem og tilbake, og eventuelle angripere kan modifisere dem for å endre på utseendet til siden.</translation>
 <translation id="5786044859038896871">Vil du fylle ut kortinformasjonen?</translation>
 <translation id="5798290721819630480">Vil du forkaste endringene?</translation>
-<translation id="5798683403665926540">Endre startsiden i Chrome-innstillingene</translation>
 <translation id="5803412860119678065">Vil du fylle ut informasjonen knyttet til <ph name="CARD_DETAIL" />?</translation>
 <translation id="5804241973901381774">Tillatelser</translation>
 <translation id="5804427196348435412">Bruk NFC-enheter</translation>
@@ -1611,7 +1609,6 @@ brukere av denne nettleseren.</translation>
 <translation id="7669271284792375604">Angripere på dette nettstedet kan forsøke å lure deg til å installere programmer som ødelegger surfeopplevelsen din (for eksempel ved å endre startsiden din eller vise ekstra annonser på nettstedene du besøker).</translation>
 <translation id="7673278391011283842">Postkasse 6</translation>
 <translation id="7676643023259824263">Søk etter teksten <ph name="TEXT" /> på utklippstavlen</translation>
-<translation id="7681101578153515023">Endre søkemotoren</translation>
 <translation id="7682287625158474539">Forsendelse</translation>
 <translation id="7687186412095877299">Fyll ut betalingsskjemaer med de lagrede betalingsmåtene dine</translation>
 <translation id="7687305263118037187">Tidsavbrudd for forsøk</translation>
@@ -1649,7 +1646,6 @@ brukere av denne nettleseren.</translation>
 <translation id="7802523362929240268">Nettstedet er legitimt</translation>
 <translation id="780301667611848630">Nei takk</translation>
 <translation id="7805768142964895445">Status</translation>
-<translation id="7806344367022510803">Endre innstillingene for søkemotor i Chrome</translation>
 <translation id="7812922009395017822">Mir</translation>
 <translation id="7813600968533626083">Vil du fjerne skjemaforslaget fra Chrome?</translation>
 <translation id="781440967107097262">Vil du dele utklippstavlen din?</translation>
@@ -1791,7 +1787,6 @@ brukere av denne nettleseren.</translation>
 Mer informasjon:
 <ph name="DEBUG_INFO" /></translation>
 <translation id="8424582179843326029"><ph name="FIRST_LABEL" /> <ph name="SECOND_LABEL" /> <ph name="THIRD_LABEL" /></translation>
-<translation id="8425213833346101688">Endre</translation>
 <translation id="8428213095426709021">Innstillinger</translation>
 <translation id="8433057134996913067">Dette logger deg av de fleste nettsteder.</translation>
 <translation id="8437238597147034694">&amp;Angre flyttingen</translation>

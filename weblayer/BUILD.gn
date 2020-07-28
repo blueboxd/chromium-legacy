@@ -337,6 +337,7 @@ source_set("weblayer_lib_base") {
     "//components/embedder_support",
     "//components/embedder_support/origin_trials",
     "//components/error_page/common",
+    "//components/error_page/content/browser",
     "//components/find_in_page",
     "//components/infobars/core",
     "//components/js_injection/browser",

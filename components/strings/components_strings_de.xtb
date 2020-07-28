@@ -359,7 +359,6 @@ Sie werden sonst gemäß Ihren Datenschutzeinstellungen blockiert. Wenn Cookies 
 <translation id="2413528052993050574">Dieser Server konnte nicht beweisen, dass er <ph name="DOMAIN" /> ist. Sein Sicherheitszertifikat wurde möglicherweise widerrufen. Mögliche Gründe sind eine fehlerhafte Konfiguration oder ein Angreifer, der Ihre Verbindung abfängt.</translation>
 <translation id="2438874542388153331">Vierfache Lochung rechts</translation>
 <translation id="245044156129055925">Sie haben Ihr Passwort gerade auf einer verdächtigen Seite eingegeben. Chromium empfiehlt, Ihr Passwort jetzt zu ändern.</translation>
-<translation id="2463193859425327265">Startseite ändern</translation>
 <translation id="2463739503403862330">Ausfüllen</translation>
 <translation id="2465402087343596252">Architecture-E</translation>
 <translation id="2465655957518002998">Lieferoption auswählen</translation>
@@ -557,6 +556,9 @@ Sie werden sonst gemäß Ihren Datenschutzeinstellungen blockiert. Wenn Cookies 
 <translation id="3364869320075768271"><ph name="URL" /> möchte Ihr Virtual-Reality-Gerät und Ihre Virtual-Reality-Daten verwenden</translation>
 <translation id="3366477098757335611">Karten ansehen</translation>
 <translation id="3369192424181595722">Fehler bei der Uhrzeit</translation>
+<translation id="3371076217486966826"><ph name="URL" /> möchte:
+      • eine dreidimensionale Karte Ihrer Umgebung erstellen und die Kameraposition verfolgen
+      • Ihre Kamera verwenden</translation>
 <translation id="337363190475750230">Bereitstellung aufgehoben</translation>
 <translation id="3377144306166885718">Der Server hat eine veraltete TLS-Version verwendet.</translation>
 <translation id="3377188786107721145">Fehler beim Parsen der Richtlinie</translation>
@@ -1147,7 +1149,6 @@ Sie werden sonst gemäß Ihren Datenschutzeinstellungen blockiert. Wenn Cookies 
 <translation id="5785756445106461925">Außerdem enthält diese Seite andere, nicht sichere Ressourcen. Diese Ressourcen können während der Übertragung von anderen Nutzern angezeigt und von Angreifern bearbeitet werden, die das Layout der Seite verändern.</translation>
 <translation id="5786044859038896871">Möchten Sie Ihre Kreditkarteninformationen eingeben?</translation>
 <translation id="5798290721819630480">Änderungen verwerfen?</translation>
-<translation id="5798683403665926540">Startseite in den Chrome-Einstellungen ändern</translation>
 <translation id="5803412860119678065">Möchten Sie die Daten Ihrer <ph name="CARD_DETAIL" /> eingeben?</translation>
 <translation id="5804241973901381774">Berechtigungen</translation>
 <translation id="5804427196348435412">NFC-Geräte verwenden</translation>
@@ -1549,6 +1550,7 @@ Weitere Details:
 <translation id="7518003948725431193">Für folgende Webadresse wurde keine Webseite gefunden: <ph name="URL" />.</translation>
 <translation id="7520302887438682816">C8 (Umschlag)</translation>
 <translation id="7521387064766892559">JavaScript</translation>
+<translation id="7521825010239864438">Abschnitt "<ph name="SECTION" />" ausgeblendet</translation>
 <translation id="7526934274050461096">Die Verbindung zu dieser Website ist nicht sicher</translation>
 <translation id="7535087603100972091">Wert</translation>
 <translation id="7537536606612762813">Verbindlich</translation>
@@ -1595,7 +1597,6 @@ Weitere Details:
 <translation id="7669271284792375604">Unbefugte Dritte auf dieser Website versuchen eventuell, Sie zur Installation von Programmen zu bewegen, die sich nachteilig auf Ihre Browsernutzung auswirken. Dabei kann zum Beispiel Ihre Startseite geändert werden oder es erscheinen zusätzliche Anzeigen auf von Ihnen besuchten Websites.</translation>
 <translation id="7673278391011283842">Ablage 6</translation>
 <translation id="7676643023259824263">Nach Text aus Zwischenablage suchen: <ph name="TEXT" /></translation>
-<translation id="7681101578153515023">Suchmaschine ändern</translation>
 <translation id="7682287625158474539">Versand</translation>
 <translation id="7687186412095877299">Zahlungsformulare werden mit Ihren gespeicherten Zahlungsmethoden ausgefüllt</translation>
 <translation id="7687305263118037187">Zeitüberschreitung bei Wiederholung</translation>
@@ -1633,7 +1634,6 @@ Weitere Details:
 <translation id="7802523362929240268">Website ist vertrauenswürdig</translation>
 <translation id="780301667611848630">Kein Interesse</translation>
 <translation id="7805768142964895445">Status</translation>
-<translation id="7806344367022510803">Suchmaschinen-Einstellungen in Chrome ändern</translation>
 <translation id="7812922009395017822">Mir</translation>
 <translation id="7813600968533626083">Vorschlag für das Formular aus Chrome entfernen?</translation>
 <translation id="781440967107097262">Zwischenablage teilen?</translation>
@@ -1749,6 +1749,7 @@ Weitere Details:
 <translation id="8293206222192510085">Lesezeichen hinzufügen</translation>
 <translation id="8294431847097064396">Quelle</translation>
 <translation id="8298115750975731693">Unter Umständen erfordert das verwendete WLAN (<ph name="WIFI_NAME" />), dass Sie <ph name="BEGIN_BOLD" /><ph name="LOGIN_URL" /><ph name="END_BOLD" /> aufrufen.</translation>
+<translation id="8303854710873047864">Abschnitt "<ph name="SECTION" />" eingeblendet</translation>
 <translation id="830498451218851433">Zur Hälfte falten</translation>
 <translation id="8307358339886459768">Small-Photo</translation>
 <translation id="8307888238279532626">Installierte Apps und Häufigkeit ihrer Verwendung</translation>
@@ -1774,7 +1775,6 @@ Weitere Details:
 Weitere Details:
 <ph name="DEBUG_INFO" /></translation>
 <translation id="8424582179843326029"><ph name="FIRST_LABEL" />, <ph name="SECOND_LABEL" />, <ph name="THIRD_LABEL" /></translation>
-<translation id="8425213833346101688">Ändern</translation>
 <translation id="8428213095426709021">Einstellungen</translation>
 <translation id="8433057134996913067">Dadurch werden Sie von den meisten Websites abgemeldet.</translation>
 <translation id="8437238597147034694">&amp;Verschieben rückgängig machen</translation>
@@ -1869,6 +1869,7 @@ Weitere Details:
 <translation id="8931333241327730545">Möchten Sie diese Karte in Ihrem Google-Konto speichern?</translation>
 <translation id="8932102934695377596">Ihre Uhr geht nach</translation>
 <translation id="893332455753468063">Namen hinzufügen</translation>
+<translation id="8942355029279167844">Ihr Administrator hat der App "<ph name="APP_NAME" />" erlaubt, Diagnosedaten zu erheben, um die Produktqualität zu verbessern. Weitere Informationen erhalten Sie unter <ph name="BEGIN_LINK" />https://www.parallels.com/pcep<ph name="END_LINK" />.</translation>
 <translation id="8943282376843390568">Limone</translation>
 <translation id="8957210676456822347">Erfassungsportal-Autorisierung</translation>
 <translation id="8962950042226115166">Verdächtige Website</translation>

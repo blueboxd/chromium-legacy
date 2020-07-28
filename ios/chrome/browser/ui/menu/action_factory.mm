@@ -22,9 +22,9 @@
 
 @implementation ActionFactory
 
-- (instancetype)initWithHistogram:(const char*)histogram {
+- (instancetype)initWithScenario:(MenuScenario)scenario {
   if (self = [super init]) {
-    _histogram = histogram;
+    _histogram = GetActionsHistogramName(scenario);
   }
   return self;
 }

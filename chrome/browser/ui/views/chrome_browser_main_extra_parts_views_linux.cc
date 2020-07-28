@@ -7,6 +7,7 @@
 #include "chrome/browser/themes/theme_service_aura_linux.h"
 #include "chrome/browser/ui/browser_list.h"
 #include "chrome/browser/ui/views/theme_profile_key.h"
+#include "ui/base/ui_base_features.h"
 #include "ui/display/screen.h"
 #include "ui/views/linux_ui/linux_ui.h"
 
@@ -20,7 +21,6 @@
 #endif
 
 #if defined(USE_X11)
-#include "ui/base/ui_base_features.h"
 #include "ui/gfx/x/connection.h"  // nogncheck
 #if BUILDFLAG(USE_GTK)
 #include "ui/gtk/x/gtk_ui_delegate_x11.h"  // nogncheck
@@ -87,7 +87,8 @@ void ChromeBrowserMainExtraPartsViewsLinux::ToolkitInitialized() {
   linux_ui->Initialize();
 
 #if defined(USE_OZONE)
-  ui::CursorFactory::GetInstance()->ObserveThemeChanges();
+  if (features::IsUsingOzonePlatform())
+    ui::CursorFactory::GetInstance()->ObserveThemeChanges();
 #endif
 
   DCHECK(ui::LinuxInputMethodContextFactory::instance())

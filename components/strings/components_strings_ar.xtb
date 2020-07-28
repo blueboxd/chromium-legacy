@@ -363,7 +363,6 @@
 <translation id="2413528052993050574">هذا الخادم لم يتمكن من إثبات أن ذلك <ph name="DOMAIN" />؛ بل إنه شهادة أمان ربما تم إلغاء صلاحيتها. وربما يكون السبب في ذلك خطأ في التكوين أو مهاجمًا يعترض اتصالك.</translation>
 <translation id="2438874542388153331">عمل أربعة ثقوب يمينًا</translation>
 <translation id="245044156129055925">‏لقد أدخلت للتو كلمة مرورك في موقع إلكتروني مريب، لذا يُوصي Chromium بتغيير كلمة مرورك الآن.</translation>
-<translation id="2463193859425327265">تغيير الصفحة الرئيسية</translation>
 <translation id="2463739503403862330">ملء</translation>
 <translation id="2465402087343596252">Architecture-E</translation>
 <translation id="2465655957518002998">اختيار طريقة التسليم للمستخدم</translation>
@@ -1163,7 +1162,6 @@
 <translation id="5785756445106461925">إضافة إلى ذلك، تتضمن هذه الصفحة موارد أخرى غير آمنة. ويستطيع الآخرون مشاهدة هذه الموارد أثناء نقلها، كما يستطيع أي مهاجم تعديلها لتغيير مظهر الصفحة.</translation>
 <translation id="5786044859038896871">هل تريد ملء معلومات بطاقتك؟</translation>
 <translation id="5798290721819630480">هل تريد تجاهل التغييرات؟</translation>
-<translation id="5798683403665926540">‏تغيير الصفحة الرئيسية في إعدادات Chrome</translation>
 <translation id="5803412860119678065">هل تريد ملء <ph name="CARD_DETAIL" />؟</translation>
 <translation id="5804241973901381774">الأذونات</translation>
 <translation id="5804427196348435412">‏استخدام أجهزة NFC</translation>
@@ -1612,7 +1610,6 @@
 <translation id="7669271284792375604">قد يحاول المهاجمون في هذا الموقع خداعك من خلال تثبيت برامج تضر بتجربة التصفح (على سبيل المثال، من خلال تغيير صفحتك الرئيسية أو عرض إعلانات إضافية على المواقع التي تزورها).</translation>
 <translation id="7673278391011283842">صندوق البريد الإلكتروني 6</translation>
 <translation id="7676643023259824263">البحث عن نص الحافظة،<ph name="TEXT" /></translation>
-<translation id="7681101578153515023">تغيير محرّك البحث</translation>
 <translation id="7682287625158474539">الشحن</translation>
 <translation id="7687186412095877299">تعبئة نماذج الدفع باستخدام طرق الدفع المحفوظة</translation>
 <translation id="7687305263118037187">انتهاء مهلة إعادة المحاولة</translation>
@@ -1650,7 +1647,6 @@
 <translation id="7802523362929240268">الموقع الإلكتروني مشروع</translation>
 <translation id="780301667611848630">لا، شكرًا</translation>
 <translation id="7805768142964895445">الحالة</translation>
-<translation id="7806344367022510803">‏تغيير إعدادات محرّك البحث في Chrome</translation>
 <translation id="7812922009395017822">Mir</translation>
 <translation id="7813600968533626083">‏هل تريد إزالة اقتراح النموذج من Chrome؟</translation>
 <translation id="781440967107097262">هل تريد مشاركة الحافظة؟</translation>
@@ -1792,7 +1788,6 @@
 التفاصيل الإضافية:
 <ph name="DEBUG_INFO" /></translation>
 <translation id="8424582179843326029"><ph name="FIRST_LABEL" /> <ph name="SECOND_LABEL" /> <ph name="THIRD_LABEL" /></translation>
-<translation id="8425213833346101688">تغيير</translation>
 <translation id="8428213095426709021">الإعدادات</translation>
 <translation id="8433057134996913067">سيؤدي هذا إلى خروجك من معظم المواقع الإلكترونية.</translation>
 <translation id="8437238597147034694">تراجع عن ال&amp;نقل</translation>

@@ -362,7 +362,6 @@ En caso contrario, a configuración de privacidade impedirao. Se o permites, o c
 <translation id="2413528052993050574">Este servidor non puido demostrar que é <ph name="DOMAIN" /> porque quizais se revogase o certificado de seguranza. É posible que isto se deba a un erro de configuración ou a que un atacante interceptase a túa conexión.</translation>
 <translation id="2438874542388153331">Catro perforacións na parte dereita</translation>
 <translation id="245044156129055925">Acabas de introducir o teu contrasinal nun sitio enganoso. Chromium recoméndache que cambies o contrasinal agora.</translation>
-<translation id="2463193859425327265">Cambiar páxina de inicio</translation>
 <translation id="2463739503403862330">Completar</translation>
 <translation id="2465402087343596252">Architecture-E</translation>
 <translation id="2465655957518002998">Escoller método de entrega</translation>
@@ -1160,7 +1159,6 @@ En caso contrario, a configuración de privacidade impedirao. Se o permites, o c
 <translation id="5785756445106461925">Ademais, esta páxina inclúe outros recursos que non son seguros. Outros usuarios poden ver estes recursos mentres se desprazan e un atacante pode cambiar o aspecto da páxina.</translation>
 <translation id="5786044859038896871">Queres completar a información da tarxeta de crédito?</translation>
 <translation id="5798290721819630480">Queres descartar os cambios?</translation>
-<translation id="5798683403665926540">Cambia a páxina de inicio na configuración de Chrome</translation>
 <translation id="5803412860119678065">Queres completar a información da tarxeta de crédito <ph name="CARD_DETAIL" />?</translation>
 <translation id="5804241973901381774">Permisos</translation>
 <translation id="5804427196348435412">Utilizar dispositivos con NFC</translation>
@@ -1609,7 +1607,6 @@ Detalles adicionais:
 <translation id="7669271284792375604">Os atacantes deste sitio poden tentar enganarte para que instales programas que afectan negativamente á túa experiencia de navegación (por exemplo, cambiando a páxina de inicio ou mostrando anuncios adicionais nos sitios que visitas).</translation>
 <translation id="7673278391011283842">Caixa de correo 6</translation>
 <translation id="7676643023259824263">Buscar texto do portapapeis, <ph name="TEXT" /></translation>
-<translation id="7681101578153515023">Cambiar motor de busca</translation>
 <translation id="7682287625158474539">Envío</translation>
 <translation id="7687186412095877299">Cubre os formularios de pago cos teus métodos de pago gardados</translation>
 <translation id="7687305263118037187">Tempo de espera dos reintentos</translation>
@@ -1647,7 +1644,6 @@ Detalles adicionais:
 <translation id="7802523362929240268">O sitio é lexítimo</translation>
 <translation id="780301667611848630">Non, grazas</translation>
 <translation id="7805768142964895445">Estado</translation>
-<translation id="7806344367022510803">Cambia a configuración do motor de busca en Chrome</translation>
 <translation id="7812922009395017822">Mir</translation>
 <translation id="7813600968533626083">Queres eliminar a suxestión de Chrome?</translation>
 <translation id="781440967107097262">Queres compartir o portapapeis?</translation>
@@ -1789,7 +1785,6 @@ Detalles adicionais:
 Detalles adicionais:
 <ph name="DEBUG_INFO" /></translation>
 <translation id="8424582179843326029"><ph name="FIRST_LABEL" /> <ph name="SECOND_LABEL" /> <ph name="THIRD_LABEL" /></translation>
-<translation id="8425213833346101688">Cambiar</translation>
 <translation id="8428213095426709021">Configuración</translation>
 <translation id="8433057134996913067">Ao realizar esta acción, pecharase sesión na maioría dos sitios web</translation>
 <translation id="8437238597147034694">&amp;Desfacer movemento</translation>

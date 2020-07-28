@@ -363,7 +363,6 @@ Jika tidak, ini akan disekat oleh tetapan privasi anda. Kebenaran ini akan membo
 <translation id="2413528052993050574">Pelayan ini tidak dapat membuktikan bahawa domainnya ialah <ph name="DOMAIN" />; sijil keselamatannya mungkin dibatalkan. Ini mungkin disebabkan oleh kesilapan konfigurasi atau penyerang yang memintasi sambungan anda.</translation>
 <translation id="2438874542388153331">Empat tebukan kanan</translation>
 <translation id="245044156129055925">Anda baru sahaja memasukkan kata laluan anda pada tapak yang menipu. Chromium mengesyorkan supaya kata laluan anda ditukar sekarang.</translation>
-<translation id="2463193859425327265">Tukar Halaman Utama</translation>
 <translation id="2463739503403862330">Isi</translation>
 <translation id="2465402087343596252">Seni Bina-E</translation>
 <translation id="2465655957518002998">Pilih Kaedah Penghantaran</translation>
@@ -1164,7 +1163,6 @@ Jika tidak, ini akan disekat oleh tetapan privasi anda. Kebenaran ini akan membo
 <translation id="5785756445106461925">Selain itu, halaman ini mengandungi sumber lain yang tidak selamat. Sumber ini boleh dilihat oleh orang lain semasa dalam transit dan boleh diubah oleh penyerang untuk menukar penampilan halaman.</translation>
 <translation id="5786044859038896871">Adakah anda ingin mengisi maklumat kad anda?</translation>
 <translation id="5798290721819630480">Buang perubahan?</translation>
-<translation id="5798683403665926540">Tukar halaman utama dalam tetapan Chrome</translation>
 <translation id="5803412860119678065">Adakah anda ingin mengisi <ph name="CARD_DETAIL" /> anda?</translation>
 <translation id="5804241973901381774">Kebenaran</translation>
 <translation id="5804427196348435412">Gunakan peranti NFC</translation>
@@ -1613,7 +1611,6 @@ Butiran tambahan:
 <translation id="7669271284792375604">Penyerang pada tapak ini mungkin cuba menipu dengan meminta anda memasang atur cara yang membahayakan pengalaman penyemakan imbas anda (contohnya, dengan menukar halaman utama anda atau menunjukkan iklan tambahan pada laman yang anda lawati).</translation>
 <translation id="7673278391011283842">Peti mel 6</translation>
 <translation id="7676643023259824263">Cari teks papan keratan, <ph name="TEXT" /></translation>
-<translation id="7681101578153515023">Tukar Enjin Carian</translation>
 <translation id="7682287625158474539">Penghantaran</translation>
 <translation id="7687186412095877299">Mengisi borang pembayaran dengan kaedah pembayaran yang disimpan</translation>
 <translation id="7687305263118037187">Cuba semula tamat masa</translation>
@@ -1651,7 +1648,6 @@ Butiran tambahan:
 <translation id="7802523362929240268">Tapak ini sah</translation>
 <translation id="780301667611848630">Tidak, terima kasih</translation>
 <translation id="7805768142964895445">Status</translation>
-<translation id="7806344367022510803">Tukar tetapan Enjin Carian dalam Chrome</translation>
 <translation id="7812922009395017822">Mir</translation>
 <translation id="7813600968533626083">Alih keluar cadangan borang daripada Chrome?</translation>
 <translation id="781440967107097262">Kongsi papan keratan?</translation>
@@ -1793,7 +1789,6 @@ Butiran tambahan:
 Butiran tambahan:
 <ph name="DEBUG_INFO" /></translation>
 <translation id="8424582179843326029"><ph name="FIRST_LABEL" /> <ph name="SECOND_LABEL" /> <ph name="THIRD_LABEL" /></translation>
-<translation id="8425213833346101688">Tukar</translation>
 <translation id="8428213095426709021">Tetapan</translation>
 <translation id="8433057134996913067">Pemadaman ini akan membuatkan anda dilog keluar daripada kebanyakan tapak web.</translation>
 <translation id="8437238597147034694">&amp;Buat asal pindahkan</translation>

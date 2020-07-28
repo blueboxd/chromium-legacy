@@ -344,6 +344,9 @@ class PaymentRequestState : public PaymentAppFactory::Delegate,
   void IncrementSelectionStatus(JourneyLogger::Section section,
                                 SectionSelectionStatus selection_status);
 
+  // Returns whether the browser is currently in a TWA.
+  bool IsInTwa() const;
+
   content::WebContents* web_contents_;
   content::RenderFrameHost* initiator_render_frame_host_;
   const GURL top_origin_;

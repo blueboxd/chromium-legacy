@@ -90,6 +90,11 @@ void GLOutputSurface::SetDrawRectangle(const gfx::Rect& rect) {
       rect.x(), rect.y(), rect.width(), rect.height());
 }
 
+void GLOutputSurface::SetEnableDCLayers(bool enable) {
+  DCHECK(capabilities_.supports_dc_layers);
+  context_provider()->ContextGL()->SetEnableDCLayersCHROMIUM(enable);
+}
+
 void GLOutputSurface::Reshape(const gfx::Size& size,
                               float device_scale_factor,
                               const gfx::ColorSpace& color_space,

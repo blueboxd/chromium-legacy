@@ -359,7 +359,6 @@
 <translation id="2413528052993050574">เซิร์ฟเวอร์นี้ไม่สามารถพิสูจน์ได้ว่าเป็น <ph name="DOMAIN" /> เพราะอาจมีการเพิกถอนใบรับรองความปลอดภัย โดยอาจเกิดจากการกำหนดค่าผิดหรือผู้บุกรุกที่ขัดขวางการเชื่อมต่อของคุณ</translation>
 <translation id="2438874542388153331">เจาะรูด้านขวา 4 รู</translation>
 <translation id="245044156129055925">คุณเพิ่งใส่รหัสผ่านในเว็บไซต์ที่มีการหลอกลวง Chromium ขอแนะนำให้เปลี่ยนรหัสผ่านตอนนี้เลย</translation>
-<translation id="2463193859425327265">เปลี่ยนหน้าแรก</translation>
 <translation id="2463739503403862330">กรอกข้อมูล</translation>
 <translation id="2465402087343596252">Architecture-E</translation>
 <translation id="2465655957518002998">เลือกวิธีนำส่งสินค้า</translation>
@@ -444,7 +443,7 @@
 <translation id="2824775600643448204">ที่อยู่และแถบค้นหา</translation>
 <translation id="2826760142808435982">การเชื่อมต่อถูกเข้ารหัสและรับรองความถูกต้องโดยใช้ <ph name="CIPHER" /> และใช้ <ph name="KX" /> เป็นกลไกการแลกเปลี่ยนคีย์</translation>
 <translation id="2835170189407361413">ล้างฟอร์ม</translation>
-<translation id="2839501879576190149">มีเว็บไซต์หลอกลวงอยู่ข้างหน้า</translation>
+<translation id="2839501879576190149">ระวังเว็บไซต์หลอกลวง</translation>
 <translation id="2847118875340931228">เปิดหน้าต่างที่ไม่ระบุตัวตน</translation>
 <translation id="2850739647070081192">Invite (ซองจดหมาย)</translation>
 <translation id="2856444702002559011">ผู้โจมตีอาจพยายามขโมยข้อมูลจาก <ph name="BEGIN_BOLD" /><ph name="SITE" /><ph name="END_BOLD" /> (ตัวอย่างเช่น รหัสผ่าน ข้อความ หรือบัตรเครดิต) <ph name="BEGIN_LEARN_MORE_LINK" />ดูข้อมูลเพิ่มเติม<ph name="END_LEARN_MORE_LINK" /></translation>
@@ -1151,7 +1150,6 @@
 <translation id="5785756445106461925">นอกจากนี้ หน้านี้ประกอบด้วยทรัพยากรอื่นๆ ซึ่งไม่ปลอดภัย ผู้อื่นสามารถดูทรัพยากรเหล่านี้ขณะถ่ายโอน และผู้บุกรุกสามารถแก้ไขเพื่อเปลี่ยนรูปลักษณ์ของหน้าได้</translation>
 <translation id="5786044859038896871">คุณต้องการกรอกข้อมูลบัตรไหม</translation>
 <translation id="5798290721819630480">ทิ้งการเปลี่ยนแปลงไหม</translation>
-<translation id="5798683403665926540">เปลี่ยนหน้าแรกในการตั้งค่า Chrome</translation>
 <translation id="5803412860119678065">คุณต้องการกรอกข้อมูล <ph name="CARD_DETAIL" /> ไหม</translation>
 <translation id="5804241973901381774">การอนุญาต</translation>
 <translation id="5804427196348435412">ใช้อุปกรณ์ NFC</translation>
@@ -1600,7 +1598,6 @@
 <translation id="7669271284792375604">ผู้โจมตีเว็บไซต์นี้อาจพยายามหลอกล่อให้คุณติดตั้งโปรแกรมที่เป็นอันตรายต่อประสบการณ์การท่องเว็บของคุณ (ตัวอย่างเช่น โดยการเปลี่ยนแปลงหน้าแรกหรือแสดงโฆษณาเพิ่มเติมในเว็บไซต์ที่คุณเข้าชม)</translation>
 <translation id="7673278391011283842">กล่องจดหมาย 6</translation>
 <translation id="7676643023259824263">ค้นหาข้อความในคลิปบอร์ด <ph name="TEXT" /></translation>
-<translation id="7681101578153515023">เปลี่ยนเครื่องมือค้นหา</translation>
 <translation id="7682287625158474539">จัดส่ง</translation>
 <translation id="7687186412095877299">กรอกฟอร์มการชำระเงินด้วยวิธีการชำระเงินที่คุณบันทึกไว้</translation>
 <translation id="7687305263118037187">การลองใหม่หมดเวลา</translation>
@@ -1638,7 +1635,6 @@
 <translation id="7802523362929240268">ไซต์ถูกต้อง</translation>
 <translation id="780301667611848630">ไม่ ขอบคุณ</translation>
 <translation id="7805768142964895445">สถานะ</translation>
-<translation id="7806344367022510803">เปลี่ยนการตั้งค่าเครื่องมือค้นหาใน Chrome</translation>
 <translation id="7812922009395017822">Mir</translation>
 <translation id="7813600968533626083">นำคำแนะนำสำหรับแบบฟอร์มออกจาก Chrome ไหม</translation>
 <translation id="781440967107097262">แชร์คลิปบอร์ดไหม</translation>
@@ -1780,7 +1776,6 @@
 รายละเอียดเพิ่มเติม:
 <ph name="DEBUG_INFO" /></translation>
 <translation id="8424582179843326029"><ph name="FIRST_LABEL" /> <ph name="SECOND_LABEL" /> <ph name="THIRD_LABEL" /></translation>
-<translation id="8425213833346101688">เปลี่ยน</translation>
 <translation id="8428213095426709021">การตั้งค่า</translation>
 <translation id="8433057134996913067">วิธีนี้จะทำให้คุณออกจากระบบของเว็บไซต์ส่วนใหญ่</translation>
 <translation id="8437238597147034694">&amp;เลิกทำการย้าย</translation>

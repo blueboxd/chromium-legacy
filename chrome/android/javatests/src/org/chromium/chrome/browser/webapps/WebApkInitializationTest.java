@@ -123,8 +123,6 @@ public class WebApkInitializationTest {
                 WebappDisclosureSnackbarController.class.getName()));
         assertTrue(registeredObserverClassNames.contains(
                 WebApkActivityLifecycleUmaTracker.class.getName()));
-        assertTrue(registeredObserverClassNames.contains(
-                CustomTabOrientationController.class.getName()));
         assertTrue(
                 registeredObserverClassNames.contains(SharedActivityCoordinator.class.getName()));
 

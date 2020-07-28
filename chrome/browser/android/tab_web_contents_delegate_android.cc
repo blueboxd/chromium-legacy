@@ -384,17 +384,6 @@ WebContents* TabWebContentsDelegateAndroid::OpenURLFromTab(
   }
 
   if (disposition == WindowOpenDisposition::CURRENT_TAB) {
-    // Only prerender for a current-tab navigation to avoid session storage
-    // namespace issues.
-    prerender::PrerenderManager::Params prerender_params(
-        popup_delegate->nav_params(), source);
-    prerender::PrerenderManager* prerender_manager =
-        prerender::PrerenderManagerFactory::GetForBrowserContext(profile);
-    if (prerender_manager && prerender_manager->MaybeUsePrerenderedPage(
-                                 params.url, &prerender_params)) {
-      return prerender_params.replaced_contents;
-    }
-
     // Ask the parent to handle in-place opening.
     return WebContentsDelegateAndroid::OpenURLFromTab(source, params);
   }

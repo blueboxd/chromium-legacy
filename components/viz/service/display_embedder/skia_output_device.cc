@@ -84,11 +84,16 @@ void SkiaOutputDevice::PostSubBuffer(
 }
 
 bool SkiaOutputDevice::SetDrawRectangle(const gfx::Rect& draw_rectangle) {
+  NOTREACHED();
   return false;
 }
 
+void SkiaOutputDevice::SetEnableDCLayers(bool enable) {
+  NOTREACHED();
+}
+
 void SkiaOutputDevice::SetGpuVSyncEnabled(bool enabled) {
-  NOTIMPLEMENTED();
+  NOTREACHED();
 }
 
 bool SkiaOutputDevice::IsPrimaryPlaneOverlay() const {
@@ -106,12 +111,6 @@ void SkiaOutputDevice::ScheduleOverlays(
     SkiaOutputSurface::OverlayList overlays) {
   NOTIMPLEMENTED();
 }
-
-#if defined(OS_WIN)
-void SkiaOutputDevice::SetEnableDCLayers(bool enable) {
-  NOTIMPLEMENTED();
-}
-#endif
 
 void SkiaOutputDevice::EnsureBackbuffer() {}
 void SkiaOutputDevice::DiscardBackbuffer() {}

@@ -362,7 +362,6 @@ This will otherwise be blocked by your privacy settings. This will allow the con
 <translation id="2413528052993050574">This server could not prove that it is <ph name="DOMAIN" />; its security certificate might be revoked. This may be caused by a misconfiguration or an attacker intercepting your connection.</translation>
 <translation id="2438874542388153331">Quad punch right</translation>
 <translation id="245044156129055925">You just entered your password on a deceptive site. Chromium recommends changing your password now.</translation>
-<translation id="2463193859425327265">Change home page</translation>
 <translation id="2463739503403862330">Fill in</translation>
 <translation id="2465402087343596252">Architecture-E</translation>
 <translation id="2465655957518002998">Choose delivery method</translation>
@@ -1162,7 +1161,6 @@ This will otherwise be blocked by your privacy settings. This will allow the con
 <translation id="5785756445106461925">Further, this page includes other resources which are not secure. These resources can be viewed by others while in transit, and can be modified by an attacker to change the look of the page.</translation>
 <translation id="5786044859038896871">Do you want to fill in your card info?</translation>
 <translation id="5798290721819630480">Discard changes?</translation>
-<translation id="5798683403665926540">Change home page in Chrome settings</translation>
 <translation id="5803412860119678065">Do you want to fill in your <ph name="CARD_DETAIL" />?</translation>
 <translation id="5804241973901381774">Permissions</translation>
 <translation id="5804427196348435412">Use NFC devices</translation>
@@ -1611,7 +1609,6 @@ Additional details:
 <translation id="7669271284792375604">Attackers on this site might try to trick you into installing programs that harm your browsing experience (for example, by changing your homepage or showing extra ads on sites that you visit).</translation>
 <translation id="7673278391011283842">Mailbox 6</translation>
 <translation id="7676643023259824263">Search for clipboard text, <ph name="TEXT" /></translation>
-<translation id="7681101578153515023">Change search engine</translation>
 <translation id="7682287625158474539">Shipping</translation>
 <translation id="7687186412095877299">Fills in payment forms with your saved payment methods</translation>
 <translation id="7687305263118037187">Retry time-out</translation>
@@ -1649,7 +1646,6 @@ Additional details:
 <translation id="7802523362929240268">Site is legitimate</translation>
 <translation id="780301667611848630">No, thanks</translation>
 <translation id="7805768142964895445">Status</translation>
-<translation id="7806344367022510803">Change search engine settings in Chrome</translation>
 <translation id="7812922009395017822">Mir</translation>
 <translation id="7813600968533626083">Remove form suggestion from Chrome?</translation>
 <translation id="781440967107097262">Share clipboard?</translation>
@@ -1791,7 +1787,6 @@ Additional details:
 Additional details:
 <ph name="DEBUG_INFO" /></translation>
 <translation id="8424582179843326029"><ph name="FIRST_LABEL" /> <ph name="SECOND_LABEL" /> <ph name="THIRD_LABEL" /></translation>
-<translation id="8425213833346101688">Change</translation>
 <translation id="8428213095426709021">Settings</translation>
 <translation id="8433057134996913067">This will sign you out of most websites.</translation>
 <translation id="8437238597147034694">&amp;Undo move</translation>

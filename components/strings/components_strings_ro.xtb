@@ -363,7 +363,6 @@ Permiți ca <ph name="EMBEDDED_URL" /> să folosească cookie-uri și date privi
 <translation id="2413528052993050574">Acest server nu a putut dovedi că este <ph name="DOMAIN" />; este posibil ca certificatul său de securitate să fie revocat. Cauza poate fi o configurare greșită sau interceptarea conexiunii de către un atacator.</translation>
 <translation id="2438874542388153331">Perforare cvadruplă în dreapta</translation>
 <translation id="245044156129055925">Ai introdus parola pe un site înșelător. Chrome recomandă să-ți schimbi acum parola.</translation>
-<translation id="2463193859425327265">Schimbă Pagina principală</translation>
 <translation id="2463739503403862330">Completează</translation>
 <translation id="2465402087343596252">Architecture-E</translation>
 <translation id="2465655957518002998">Alege metoda de livrare</translation>
@@ -1161,7 +1160,6 @@ Permiți ca <ph name="EMBEDDED_URL" /> să folosească cookie-uri și date privi
 <translation id="5785756445106461925">În plus, această pagină include alte resurse care nu sunt securizate. Aceste resurse sunt vizibile pentru alți utilizatori în cursul transferului și pot fi modificate de un atacator pentru a schimba aspectul paginii.</translation>
 <translation id="5786044859038896871">Dorești să completezi datele cardului de credit?</translation>
 <translation id="5798290721819630480">Renunți la modificări?</translation>
-<translation id="5798683403665926540">Schimbă Pagina principală în setările Chrome</translation>
 <translation id="5803412860119678065">Dorești să completezi datele <ph name="CARD_DETAIL" />?</translation>
 <translation id="5804241973901381774">Permisiuni</translation>
 <translation id="5804427196348435412">Folosește dispozitive NFC</translation>
@@ -1610,7 +1608,6 @@ Detalii suplimentare:
 <translation id="7669271284792375604">Atacatorii de pe acest site pot încerca să te înșele pentru a instala programe care dăunează experienței de navigare (de exemplu, schimbând pagina de pornire sau afișând anunțuri suplimentare pe site-urile pe care le accesezi).</translation>
 <translation id="7673278391011283842">Căsuța de e-mail 6</translation>
 <translation id="7676643023259824263">Caută text din clipboard, <ph name="TEXT" /></translation>
-<translation id="7681101578153515023">Schimbă motorul de căutare</translation>
 <translation id="7682287625158474539">Expediere</translation>
 <translation id="7687186412095877299">Completează formularele de plată cu metodele de plată salvate</translation>
 <translation id="7687305263118037187">Timpul de expirare a reîncercării</translation>
@@ -1648,7 +1645,6 @@ Detalii suplimentare:
 <translation id="7802523362929240268">Site-ul este legitim</translation>
 <translation id="780301667611848630">Nu, mulțumesc</translation>
 <translation id="7805768142964895445">Stare</translation>
-<translation id="7806344367022510803">Modifică setările motorului de căutare în Chrome</translation>
 <translation id="7812922009395017822">Mir</translation>
 <translation id="7813600968533626083">Elimini sugestia pentru formular din Chrome?</translation>
 <translation id="781440967107097262">Permiți accesul la clipboard?</translation>
@@ -1790,7 +1786,6 @@ Detalii suplimentare:
 Detalii suplimentare:
 <ph name="DEBUG_INFO" /></translation>
 <translation id="8424582179843326029"><ph name="FIRST_LABEL" /> <ph name="SECOND_LABEL" /> <ph name="THIRD_LABEL" /></translation>
-<translation id="8425213833346101688">Modificați</translation>
 <translation id="8428213095426709021">Setări</translation>
 <translation id="8433057134996913067">Astfel, te vei deconecta de pe majoritatea site-urilor.</translation>
 <translation id="8437238597147034694">&amp;Anulați mutarea</translation>

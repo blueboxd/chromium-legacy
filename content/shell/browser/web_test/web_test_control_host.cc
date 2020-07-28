@@ -1394,14 +1394,12 @@ void WebTestControlHost::OverridePreferences(const WebPreferences& prefs) {
   should_override_prefs_ = true;
   prefs_ = prefs;
 
-  // Notifies the main RenderViewHost that Blink preferences changed so
+  // Notifies the WebContents that Blink preferences changed so
   // immediately apply the new settings and to avoid re-usage of cached
-  // preferences that are now stale. RenderViewHost::UpdateWebkitPreferences is
+  // preferences that are now stale. WebContents::UpdateWebPreferences is
   // not used here because it would send an unneeded preferences update to the
   // renderer.
-  RenderViewHost* main_render_view_host =
-      main_window_->web_contents()->GetRenderViewHost();
-  main_render_view_host->OnWebkitPreferencesChanged();
+  main_window_->web_contents()->OnWebPreferencesChanged();
 }
 
 void WebTestControlHost::SetPopupBlockingEnabled(bool block_popups) {

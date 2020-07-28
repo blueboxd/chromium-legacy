@@ -71,6 +71,7 @@
 #include "content/public/test/test_navigation_observer.h"
 #include "extensions/buildflags/buildflags.h"
 #include "net/test/embedded_test_server/embedded_test_server.h"
+#include "ui/base/ui_base_features.h"
 
 #if defined(OS_MACOSX)
 #include "base/mac/scoped_nsautorelease_pool.h"
@@ -418,9 +419,11 @@ bool InProcessBrowserTest::SetUpUserDataDirectory() {
 
 void InProcessBrowserTest::SetScreenInstance() {
 #if defined(USE_X11) && !defined(OS_CHROMEOS)
-  DCHECK(!display::Screen::GetScreen());
-  display::Screen::SetScreenInstance(
-      views::test::TestDesktopScreenX11::GetInstance());
+  if (!features::IsUsingOzonePlatform()) {
+    DCHECK(!display::Screen::GetScreen());
+    display::Screen::SetScreenInstance(
+        views::test::TestDesktopScreenX11::GetInstance());
+  }
 #endif
 }
 

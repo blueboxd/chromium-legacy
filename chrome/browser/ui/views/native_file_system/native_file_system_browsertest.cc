@@ -537,10 +537,17 @@ IN_PROC_BROWSER_TEST_F(NativeFileSystemBrowserTest,
                             "  self.entry = e.data.entry;"
                             "  return self.entry.name; })()"));
 
+  // Try to request permission in iframe, should reject.
+  EXPECT_EQ("SecurityError",
+            content::EvalJs(third_party_iframe,
+                            "self.entry.requestPermission({mode: "
+                            "'readwrite'}).catch(e => e.name)"));
+
   // Have top-level page in first window request write permission.
-  EXPECT_EQ("granted",
-            content::EvalJs(first_party_web_contents,
-                            "self.entry.requestPermission({writable: true})"));
+  EXPECT_EQ(
+      "granted",
+      content::EvalJs(first_party_web_contents,
+                      "self.entry.requestPermission({mode: 'readwrite'})"));
 
   // And write to file from iframe.
   const std::string initial_file_contents = "file contents to write";
@@ -569,7 +576,7 @@ IN_PROC_BROWSER_TEST_F(NativeFileSystemBrowserTest,
   // Permission should still be granted in iframe.
   EXPECT_EQ("granted",
             content::EvalJs(third_party_iframe,
-                            "self.entry.queryPermission({writable: true})"));
+                            "self.entry.queryPermission({mode: 'readwrite'})"));
 
   // Even after triggering the timer in the permission context.
   static_cast<OriginScopedNativeFileSystemPermissionContext*>(
@@ -577,7 +584,7 @@ IN_PROC_BROWSER_TEST_F(NativeFileSystemBrowserTest,
       ->TriggerTimersForTesting();
   EXPECT_EQ("granted",
             content::EvalJs(third_party_iframe,
-                            "self.entry.queryPermission({writable: true})"));
+                            "self.entry.queryPermission({mode: 'readwrite'})"));
 
   // Now navigate away from b.com in third window as well.
   ui_test_utils::NavigateToURL(third_window,
@@ -586,7 +593,7 @@ IN_PROC_BROWSER_TEST_F(NativeFileSystemBrowserTest,
   // Permission should still be granted in iframe.
   EXPECT_EQ("granted",
             content::EvalJs(third_party_iframe,
-                            "self.entry.queryPermission({writable: true})"));
+                            "self.entry.queryPermission({mode: 'readwrite'})"));
 
   // But after triggering the timer in the permission context ...
   static_cast<OriginScopedNativeFileSystemPermissionContext*>(
@@ -596,10 +603,10 @@ IN_PROC_BROWSER_TEST_F(NativeFileSystemBrowserTest,
   // ... permission should have been revoked.
   EXPECT_EQ("prompt",
             content::EvalJs(third_party_iframe,
-                            "self.entry.queryPermission({writable: true})"));
+                            "self.entry.queryPermission({mode: 'readwrite'})"));
   EXPECT_EQ("prompt",
             content::EvalJs(third_party_iframe,
-                            "self.entry.queryPermission({writable: false})"));
+                            "self.entry.queryPermission({mode: 'read'})"));
 }
 
 // Tests that permissions are revoked after all top-level frames have been
@@ -671,15 +678,22 @@ IN_PROC_BROWSER_TEST_F(NativeFileSystemBrowserTest,
                             "  self.entry = e.data.entry;"
                             "  return self.entry.name; })()"));
 
+  // Try to request permission in iframe, should reject.
+  EXPECT_EQ("SecurityError",
+            content::EvalJs(third_party_iframe,
+                            "self.entry.requestPermission({mode: "
+                            "'readwrite'}).catch(e => e.name)"));
+
   // Have top-level page in first window request write permission.
-  EXPECT_EQ("granted",
-            content::EvalJs(first_party_web_contents,
-                            "self.entry.requestPermission({writable: true})"));
+  EXPECT_EQ(
+      "granted",
+      content::EvalJs(first_party_web_contents,
+                      "self.entry.requestPermission({mode: 'readwrite'})"));
 
   // Permission should also be granted in iframe.
   EXPECT_EQ("granted",
             content::EvalJs(third_party_iframe,
-                            "self.entry.queryPermission({writable: true})"));
+                            "self.entry.queryPermission({mode: 'readwrite'})"));
 
   // Now close first window.
   CloseBrowserSynchronously(browser());
@@ -687,7 +701,7 @@ IN_PROC_BROWSER_TEST_F(NativeFileSystemBrowserTest,
   // Permission should still be granted in iframe.
   EXPECT_EQ("granted",
             content::EvalJs(third_party_iframe,
-                            "self.entry.queryPermission({writable: true})"));
+                            "self.entry.queryPermission({mode: 'readwrite'})"));
 
   // But after triggering the timer in the permission context ...
   static_cast<OriginScopedNativeFileSystemPermissionContext*>(
@@ -697,10 +711,10 @@ IN_PROC_BROWSER_TEST_F(NativeFileSystemBrowserTest,
   // ... permission should have been revoked.
   EXPECT_EQ("prompt",
             content::EvalJs(third_party_iframe,
-                            "self.entry.queryPermission({writable: true})"));
+                            "self.entry.queryPermission({mode: 'readwrite'})"));
   EXPECT_EQ("prompt",
             content::EvalJs(third_party_iframe,
-                            "self.entry.queryPermission({writable: false})"));
+                            "self.entry.queryPermission({mode: 'read'})"));
 }
 
 // TODO(mek): Add more end-to-end test including other bits of UI.

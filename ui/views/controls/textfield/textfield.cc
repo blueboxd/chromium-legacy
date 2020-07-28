@@ -1486,21 +1486,21 @@ void Textfield::SetCompositionText(const ui::CompositionText& composition) {
   OnAfterUserAction();
 }
 
-void Textfield::ConfirmCompositionText(bool keep_selection) {
+uint32_t Textfield::ConfirmCompositionText(bool keep_selection) {
   // TODO(b/134473433) Modify this function so that when keep_selection is
   // true, the selection is not changed when text committed
   if (keep_selection) {
     NOTIMPLEMENTED_LOG_ONCE();
   }
   if (!model_->HasCompositionText())
-    return;
-
+    return 0;
   OnBeforeUserAction();
   skip_input_method_cancel_composition_ = true;
-  model_->ConfirmCompositionText();
+  const uint32_t confirmed_text_length = model_->ConfirmCompositionText();
   skip_input_method_cancel_composition_ = false;
   UpdateAfterChange(true, true);
   OnAfterUserAction();
+  return confirmed_text_length;
 }
 
 void Textfield::ClearCompositionText() {
@@ -1846,12 +1846,26 @@ bool Textfield::SetCompositionFromExistingText(
 #endif
 
 #if defined(OS_CHROMEOS)
+gfx::Rect Textfield::GetAutocorrectCharacterBounds() const {
+  gfx::Range autocorrect_range = model_->autocorrect_range();
+  if (autocorrect_range.is_empty())
+    return gfx::Rect();
+
+  gfx::RenderText* render_text = GetRenderText();
+  const gfx::SelectionModel caret(autocorrect_range, gfx::CURSOR_BACKWARD);
+  gfx::Rect rect;
+  rect = render_text->GetCursorBounds(caret, false);
+
+  ConvertRectToScreen(this, &rect);
+  return rect;
+}
+
 bool Textfield::SetAutocorrectRange(const base::string16& autocorrect_text,
                                     const gfx::Range& range) {
   base::UmaHistogramEnumeration("InputMethod.Assistive.Autocorrect.Count",
                                 TextInputClient::SubClass::kTextField);
-  // TODO(crbug.com/1091088) Implement autocorrect range textfield handling.
-  return false;
+  model_->SetAutocorrectRange(autocorrect_text, range);
+  return true;
 }
 #endif
 

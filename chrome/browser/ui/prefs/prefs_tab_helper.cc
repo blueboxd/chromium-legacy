@@ -498,7 +498,7 @@ void PrefsTabHelper::NotifyWebkitPreferencesChanged(
   OnFontFamilyPrefChanged(pref_name);
 #endif
 
-  web_contents_->GetRenderViewHost()->OnWebkitPreferencesChanged();
+  web_contents_->OnWebPreferencesChanged();
 }
 
 WEB_CONTENTS_USER_DATA_KEY_IMPL(PrefsTabHelper)

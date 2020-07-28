@@ -13,6 +13,7 @@
 #include "base/command_line.h"
 #include "base/stl_util.h"
 #include "base/strings/string_number_conversions.h"
+#include "ui/chromeos/colors/cros_colors.h"
 #include "ui/gfx/color_analysis.h"
 #include "ui/gfx/color_palette.h"
 #include "ui/gfx/color_utils.h"
@@ -20,7 +21,6 @@
 #include "ui/views/background.h"
 #include "ui/views/controls/button/image_button.h"
 #include "ui/views/controls/button/label_button.h"
-#include "ui/webui/resources/css/cros_colors.h"
 
 namespace ash {
 

@@ -739,6 +739,7 @@ Wenn diese Richtlinie verwendet wird, werden dem Nutzer alle Drucker mit Ausnahm
 <translation id="2197625019569762163">Wenn diese Richtlinie auf "true" gesetzt ist, wird standardmäßig die numerische Tastatur zur Eingabe des Passworts auf dem Anmeldebildschirm angezeigt. Nutzer haben jedoch die Möglichkeit, zur normalen Tastatur zu wechseln.
 
       Wenn Sie diese Richtlinie konfigurieren, kann sie von Nutzern nicht geändert werden. Wird sie nicht konfiguriert oder auf "false" gesetzt, hat sie keine Auswirkung.</translation>
+<translation id="2200698565850397198">Sperrliste für natives Messaging konfigurieren</translation>
 <translation id="2201555246697292490">Weiße Liste für natives Messaging konfigurieren</translation>
 <translation id="2204753382813641270">Automatisches Ausblenden der Ablage verwalten</translation>
 <translation id="2208976000652006649">Parameter für URL der Suche, die POST verwendet</translation>
@@ -785,9 +786,6 @@ Wenn diese Richtlinie verwendet wird, werden dem Nutzer alle Drucker mit Ausnahm
       Diese Richtlinie sollte nicht für Geräte verwendet werden, die öffentlich zugänglich sind.
 
       Wenn die Richtlinie auf "True" gesetzt oder nicht konfiguriert ist, bleibt die Datenschutzwarnung in der automatisch gestarteten verwalteten Gastsitzung angepinnt, bis der Nutzer sie schließt.</translation>
-<translation id="2288338171390565087">Wenn Nutzer ein Wort eingeben, das zur integrierten Emoji-Map passt, schlägt diese Funktion automatisch ein Emoji vor
-      Wenn diese Richtlinie auf "True" gesetzt ist, wird diese Funktion erzwungen. Nutzer können dann keine andere Einstellung vornehmen.
-      Standardmäßig ist diese Richtlinie auf "False" gesetzt. Es werden keine Emojis vorgeschlagen und Nutzer können keine andere Einstellung vornehmen.</translation>
 <translation id="2289265947759479962">Mit dieser Richtlinie wird festgelegt, ob Versionsinformationen wie die Betriebssystemversion, das Betriebssystem, die Architektur des Betriebssystems, die <ph name="PRODUCT_NAME" />-Version und der <ph name="PRODUCT_NAME" />-Release-Channel gesendet werden.
 
       Wenn die Richtlinie <ph name="CLOUD_REPORTING_ENABLED_POLICY_NAME" /> deaktiviert oder nicht konfiguriert ist, wird diese Richtlinie ignoriert.
@@ -1211,13 +1209,6 @@ Falls die Richtlinie auf "false" gesetzt wird, kann eine verzögerungsfreie auto
       Wenn diese Richtlinie auf "False" gesetzt ist, werden keine Daten zur Identifizierung von Geräten erhoben.
 
       Diese Richtlinie wird nur angewendet, wenn das Gerät für <ph name="PRODUCT_NAME" /> mit <ph name="CLOUD_MANAGEMENT_ENROLLMENT_TOKEN" /> registriert ist.</translation>
-<translation id="2836621397261130126">Diese Richtlinie legt fest, ob bei der Entscheidung über die Delegation von <ph name="KERBEROS" />-Tickets die Genehmigung durch die KDC-Richtlinie berücksichtigt wird.
-
-          Wenn diese Richtlinie auf "true" gesetzt ist, wird bei der HTTP-Authentifizierung die Genehmigung durch die KDC-Richtlinie berücksichtigt. Chrome delegiert also nur dann Anmeldedaten, wenn KDC "<ph name="OK_AS_DELEGATE" />" für ein Dienstticket festlegt. Weitere Informationen finden Sie unter https://tools.ietf.org/html/rfc5896.html. Der Dienst sollte auch der Richtlinie "AuthNegotiateDelegateWhitelist" entsprechen.
-
-          Falls die Richtlinie nicht konfiguriert oder auf "false" festgelegt ist, wird die KDC-Richtlinie auf unterstützten Plattformen ignoriert und nur die Richtlinie "AuthNegotiateDelegateWhitelist" berücksichtigt.
-
-          Unter Windows wird die KDC-Richtlinie immer umgesetzt.</translation>
 <translation id="283695852388224413">Wenn diese Richtlinie konfiguriert ist, wird die festgelegte maximale PIN-Länge erzwungen. Bei einem Wert von 0 oder kleiner gilt keine Obergrenze. In diesem Fall kann der Nutzer die Länge seiner PIN beliebig festlegen. Wenn für diese Einstellung ein Wert kleiner als "<ph name="PIN_UNLOCK_MINIMUM_LENGTH_POLICY_NAME" />", aber größer als 0 festgelegt ist, sind maximale und minimale Länge gleich.
 
           Ist die Richtlinie nicht konfiguriert, wird keine maximale Länge erzwungen.</translation>
@@ -2406,13 +2397,6 @@ Diese Richtlinie hat keine Auswirkungen darauf, ob die lokalen Nutzerdaten auf d
       Mit dem Wert "Forced" können Seiten ausschließlich im Inkognitomodus geöffnet werden. Der Wert "Forced" funktioniert nicht bei Android Apps, die auf Chrome ausgeführt werden.</translation>
 <translation id="4600786265870346112">Großen Cursor aktivieren</translation>
 <translation id="4604931264910482931">Schwarze Liste für natives Messaging konfigurieren</translation>
-<translation id="4614701085541180174">Mit dieser Richtlinie können Sie eine Liste mit URL-Mustern festlegen und so angeben, für welche Websites auf dem Anmeldebildschirm im Frame, in dem der SAML-Flow gehostet wird, automatisch ein Clientzertifikat ausgewählt wird, wenn die Website ein Zertifikat anfordert. Zum Beispiel kann damit ein geräteübergreifendes Zertifikat konfiguriert werden, das dem SAML-IdP präsentiert wird.
-
-      Der Wert muss ein Array von String-JSON-Wörterbüchern sein. Jedes Wörterbuch muss das Format <ph name="DEVICE_LOGIN_SCREEN_AUTO_SELECT_CERTIFICATE_FOR_URLS_EXAMPLE" /> haben, wobei <ph name="URL_PATTERN_PLACEHOLDER" /> ein Muster zum Festlegen der Inhalte ist. <ph name="FILTER_PLACEHOLDER" /> schränkt ein, aus welchen Clientzertifikaten der Browser automatisch auswählt. Unabhängig vom Filter werden nur Zertifikate ausgewählt, die mit der Zertifizierungsanforderung des Servers übereinstimmen. Wenn <ph name="FILTER_PLACEHOLDER" /> das Format <ph name="JSON_DICTIONARY_EXAMPLE" /> hat, werden außerdem nur Clientzertifikate ausgewählt, die über ein Zertifikat mit dem CommonName <ph name="ISSUER_CN_PLACEHOLDER" /> ausgestellt werden. Wenn <ph name="FILTER_PLACEHOLDER" /> das leere Wörterbuch {} ist, wird die Auswahl der Clientzertifikate nicht zusätzlich eingeschränkt.
-
-      Ist diese Richtlinie nicht konfiguriert, erfolgt keine automatische Auswahl für Websites.
-
-      Genaue Informationen zu gültigen URL-Mustern finden Sie unter https://cloud.google.com/docs/chrome-enterprise/policies/url-patterns.</translation>
 <translation id="4617338332148204752">Metatag-Überprüfung in <ph name="PRODUCT_FRAME_NAME" /> überspringen</translation>
 <translation id="462134014569484584">Mit dieser Richtlinie wird der <ph name="PLUGIN_VM_NAME" />-Lizenzschlüssel für dieses Gerät angegeben.</translation>
 <translation id="4625915093043961294">Weiße Liste für Installation von Erweiterungen konfigurieren</translation>
@@ -2492,6 +2476,13 @@ Diese Richtlinie hat keine Auswirkungen darauf, ob die lokalen Nutzerdaten auf d
           Wenn Sie diese Richtlinie konfigurieren, kann sie vom Nutzer nicht geändert oder überschrieben werden.
 
           Ist die Richtlinie nicht konfiguriert, ist "Mono-Audio" anfangs deaktiviert, kann jedoch vom Nutzer jederzeit aktiviert werden.</translation>
+<translation id="4764901562691611575">Diese Richtlinie wurde eingestellt. Bitte verwenden Sie stattdessen "<ph name="NATIVE_MESSAGING_BLOCKLIST_POLICY_NAME" />".
+
+          Mit dieser Richtlinie können Sie festlegen, welche Hosts für natives Messaging nicht geladen werden sollen.
+
+          Der Wert "*" in der Sperrliste gibt an, dass alle Hosts für natives Messaging gesperrt sind, sofern sie nicht ausdrücklich auf die Zulassungsliste gesetzt wurden.
+
+          Wenn diese Richtlinie nicht konfiguriert ist, wird <ph name="PRODUCT_NAME" /> alle installierten Hosts für natives Messaging laden.</translation>
 <translation id="4771144269610910963">Mit dieser Richtlinie können Sie den Tiefenscan von Nutzerdownloads mit Safe Browsing verwalten. Wenn sie nicht konfiguriert oder auf die Standardeinstellung "Dateien nicht scannen" festgelegt wird, werden Downloads von Nutzern nicht von Safe Browsing gescannt.
 
       Ist "Nutzerdownloads zum Scannen senden" festgelegt, werden die Downloads von Nutzern über das Netzwerk zum Scannen auf Malware an Safe Browsing gesendet.
@@ -3205,6 +3196,11 @@ Wenn diese Richtlinie zu "false" geändert wird, wirkt sich dies auf den Start n
           Wenn die Richtlinie nicht konfiguriert ist, wird das Gerät standardmäßig gesperrt.
 
           Falls das Gerät gesperrt werden soll, kann separat konfiguriert werden, ob <ph name="PRODUCT_OS_NAME" /> den Bildschirm vorher sperren soll oder nicht.</translation>
+<translation id="5745980816926303222">Diese Richtlinie wurde eingestellt. Bitte verwenden Sie stattdessen "<ph name="AUTOPLAY_ALLOWLIST_POLICY_NAME" />".
+
+      Wenn diese Richtlinie konfiguriert ist, können in <ph name="PRODUCT_NAME" /> ohne Zustimmung des Nutzers automatisch Videos mit Ton abgespielt werden. Wenn die Richtlinie "<ph name="AUTOPLAY_ALLOWED_POLICY_NAME" />" auf "True" gesetzt ist, hat diese Richtlinie keine Auswirkungen. Ist die Richtlinie "<ph name="AUTOPLAY_ALLOWED_POLICY_NAME" />" auf "False" gesetzt, können alle in dieser Richtlinie festgelegten URL-Muster weiterhin wiedergegeben werden. Wird die Richtlinie während der Ausführung von <ph name="PRODUCT_NAME" /> geändert, wird sie nur auf neu geöffnete Tabs angewendet.
+
+      Genaue Informationen zu gültigen URL-Mustern finden Sie unter https://cloud.google.com/docs/chrome-enterprise/policies/url-patterns.</translation>
 <translation id="574983287620584622">Tastenkombinationen für Bedienungshilfen auf dem Anmeldebildschirm aktivieren</translation>
 <translation id="5755002458331714762"> Die Web Components v0 APIs (Shadow DOM v0, Custom Elements v0 und HTML Imports) wurden 2018 eingestellt und ab M80 standardmäßig deaktiviert. Mit dieser Richtlinie lassen sich die Funktionen selektiv bis M84 wieder aktivieren.
 
@@ -3502,6 +3498,11 @@ Jedes Listenelement der Richtlinie ist ein Objekt, das aus der obligatorischen K
 
       Hinweis: Diese Richtlinie gilt für jegliche Form der Audioausgabe, auch für Audio-Bedienungshilfen. Deaktivieren Sie diese Richtlinie nicht, wenn ein Nutzer einen Screenreader benötigt.</translation>
 <translation id="6221175752766085998">Zertifikate zulassen, die von lokalen Vertrauensankern ausgestellt werden, bei denen die "subjectAlternativeName"-Erweiterung fehlt</translation>
+<translation id="6222839831045864769">Mit dieser Richtlinie können Sie festlegen, welche Hosts für natives Messaging nicht geladen werden sollen.
+
+          Der Wert "*" in der Sperrliste gibt an, dass alle Hosts für natives Messaging gesperrt sind, sofern sie nicht ausdrücklich auf die Zulassungsliste gesetzt wurden.
+
+          Wenn diese Richtlinie nicht konfiguriert ist, wird <ph name="PRODUCT_NAME" /> alle installierten Hosts für natives Messaging laden.</translation>
 <translation id="6224304369267200483">Automatischer Nachweis des Sicherheitsschlüssels durch URLs/Domains</translation>
 <translation id="6233173491898450179">Downloadverzeichnis festlegen</translation>
 <translation id="6234177445959386333">Hiermit wird die Liste der URLs für die Unternehmensanmeldung konfiguriert, auf denen der Passwortschutzdienst den Salted-Hash-Wert von Passwörtern erfassen soll.</translation>
@@ -3844,6 +3845,24 @@ Wenn diese Richtlinie verwendet wird, stehen dem Nutzer nur die Drucker zur Verf
 
       Wenn diese Richtlinie auf "false" gesetzt oder nicht konfiguriert ist, ist <ph name="PLUGIN_VM_NAME" /> für den Nutzer nicht aktiviert.
       Ist die Richtlinie auf "true" gesetzt, ist <ph name="PLUGIN_VM_NAME" /> für den Nutzer aktiviert, solange andere Einstellungen dies ebenfalls zulassen. <ph name="PLUGIN_VM_ALLOWED_POLICY_NAME" /> und <ph name="USER_PLUGIN_VM_ALLOWED_POLICY_NAME" /> müssen "true" sein und entweder <ph name="PLUGIN_VM_LICENSE_KEY_POLICY_NAME" /> oder <ph name="PLUGIN_VM_USER_ID_POLICY_NAME" /> müssen für <ph name="PLUGIN_VM_NAME" /> aktiviert sein.</translation>
+<translation id="6741496055862838205">Stellt Konfigurationen für gerätegebundene Unternehmensdrucker bereit.
+
+      Mit dieser Richtlinie können Druckerkonfigurationen für <ph name="PRODUCT_OS_NAME" />-Geräte bereitgestellt werden.  Das Format entspricht dem des "NativePrinters"-Wörterbuchs, erfordert jedoch zusätzlich ein "id"- oder "guid"-Feld pro Drucker für die Zulassungs- oder Sperrliste.
+
+      Die Datei darf nicht größer als 5 MB und muss in JSON codiert sein.  Eine Datei mit ungefähr 21.000 Druckern ergibt nach dem Codieren eine Datei mit schätzungsweise 5 MB.  Anhand des kryptografischen Hashs wird die Integrität des Downloads verifiziert.
+
+      Die Datei wird heruntergeladen und im Cache gespeichert. Sobald sich URL oder Hash ändern, wird sie noch einmal heruntergeladen.
+
+      Wenn diese Richtlinie konfiguriert ist, lädt <ph name="PRODUCT_OS_NAME" /> die Datei für Druckerkonfigurationen herunter und die Drucker werden gemäß <ph name="DEVICE_NATIVE_PRINTERS_ACCESS_MODE" />, <ph name="DEVICE_PRINTERS_ALLOWLIST" /> und <ph name="DEVICE_PRINTERS_BLOCKLIST" /> bereitgestellt.
+
+      Diese Richtlinie hat keinen Einfluss darauf, ob Nutzer auf einzelnen Geräten Drucker konfigurieren können.  Sie ist als Ergänzung zu den Druckerkonfigurationen der einzelnen Nutzer gedacht.
+
+      Diese Richtlinie ist ein Zusatz zu "<ph name="BULK_PRINTERS_POLICY" />".
+
+      Wenn diese Richtlinie nicht konfiguriert ist, gibt es keine gerätegebundenen Drucker und "<ph name="DEVICE_NATIVE_PRINTERS_POLICY_PATTERN" />"-Richtlinien werden ignoriert.
+
+      Diese Richtlinie wurde eingestellt. Bitte verwenden Sie stattdessen "<ph name="DEVICE_PRINTERS" />".
+      </translation>
 <translation id="6752711782954612641">Wenn "<ph name="DEFAULT_SEARCH_PROVIDER_ENABLED_POLICY_NAME" />" aktiviert ist, gibt "<ph name="DEFAULT_SEARCH_PROVIDER_SEARCH_URL_POST_PARAMS_POLICY_NAME" />" die Parameter für die Suche nach einer URL mit POST an. Die Richtlinie besteht aus kommagetrennten Name/Wert-Paaren. Wenn ein Wert ein Vorlagenparameter wie <ph name="SEARCH_TERM_MARKER" /> ist, wird er durch echte Suchbegriffsdaten ersetzt.
 
       Ist "<ph name="DEFAULT_SEARCH_PROVIDER_SEARCH_URL_POST_PARAMS_POLICY_NAME" />" nicht konfiguriert, werden Suchanfragen mithilfe der GET-Methode gesendet.</translation>
@@ -5135,6 +5154,11 @@ Nutzer können diese Einstellung weder ändern noch überschreiben.</translation
       Wenn die Richtlinie deaktiviert ist, kann sie es nicht.
       Ist die Richtlinie nicht festgelegt, können Nutzer entscheiden, ob die Funktion "Schnelle Antworten" auf ausgewählte Inhalte zugreifen darf oder nicht.</translation>
 <translation id="8685024486845674965">Die Passwortschutzwarnung wird durch die Wiederverwendung eines Passworts ausgelöst</translation>
+<translation id="8685680544554917389">Wenn die Richtlinie auf "True" gesetzt ist, kann <ph name="PRODUCT_NAME" /> Medien automatisch abspielen. Wenn die Richtlinie auf "False" gesetzt ist, kann <ph name="PRODUCT_NAME" /> Medien nicht mehr automatisch abspielen.
+
+       Standardmäßig spielt <ph name="PRODUCT_NAME" /> Medien nicht automatisch ab. Aber für bestimmte URL-Muster können Sie diese Einstellung über die Richtlinie "<ph name="AUTOPLAY_ALLOWLIST_POLICY_NAME" />" ändern.
+
+      Wird die Richtlinie während der Ausführung von <ph name="PRODUCT_NAME" /> geändert, wird sie nur auf neu geöffnete Tabs angewendet.</translation>
 <translation id="8687958770985542440">Damit wird die Web Components v0 API bis M84 wieder aktiviert.</translation>
 <translation id="8693243869659262736">Integrierten DNS-Client verwenden</translation>
 <translation id="8698286761337647563">Gibt an, wie viele Tage SAML-Nutzer vorab benachrichtigt werden, wenn ihr Passwort bald abläuft</translation>
@@ -5375,19 +5399,6 @@ Nutzer können diese Einstellung weder ändern noch überschreiben.</translation
        Diese Richtlinie wirkt sich nur auf Audio-, Video- und Bildinhalte aus, nicht auf andere Arten gemischter Inhalte.
        Ab <ph name="PRODUCT_NAME" /> 84 wird sie nicht mehr angewendet.</translation>
 <translation id="9010080992450148617">Teilnehmern des erweiterten Sicherheitsprogramms das Senden von Downloads für einen Tiefenscan an Google erlauben</translation>
-<translation id="90110062113213245">Mit dieser Richtlinie können Sie eine Liste von URL-Mustern erstellen, die Websites angeben, für die Chrome automatisch ein Clientzertifikat auswählen kann. Der Wert ist ein Array von String-JSON-Wörterbüchern. Jedes Wörterbuch muss das Format <ph name="AUTO_SELECT_CERTIFICATE_FOR_URLS_EXAMPLE" /> haben, wobei <ph name="URL_PATTERN_PLACEHOLDER" /> ein Muster zum Festlegen der Inhalte ist. <ph name="FILTER_PLACEHOLDER" /> schränkt ein, aus welchen Clientzertifikaten der Browser automatisch auswählt. Unabhängig vom Filter werden nur Zertifikate ausgewählt, die mit der Zertifizierungsanforderung des Servers übereinstimmen.
-
-      Wenn <ph name="FILTER_PLACEHOLDER" /> beispielsweise:
-
-* <ph name="AUTO_SELECT_CERTIFICATE_FOR_URLS_FILTER_EXAMPLE" /> hat, werden nur Clientzertifikate ausgewählt, die über ein Zertifikat mit dem CommonName <ph name="ISSUER_CN_PLACEHOLDER" /> ausgestellt wurden.
-
-      * die Abschnitte <ph name="ISSUER_STRING_VALUE" /> und <ph name="SUBJECT_STRING_VALUE" /> hat, werden nur passende Clientzertifikate ausgewählt.
-
-      * ("O") hat, muss ein Zertifikat mindestens eine Organisation haben, die mit dem angegebenen Wert übereinstimmt, um ausgewählt zu werden. * ("OU") hat, muss ein Zertifikat mindestens eine Organisationseinheit haben, die mit dem angegebenen Wert übereinstimmt, um ausgewählt zu werden.
-
-      * <ph name="EMPTY_DICTIONARY" /> hat, wird die Auswahl der Clientzertifikate nicht zusätzlich eingeschränkt.
-
-      Wenn die Richtlinie nicht konfiguriert ist, findet für keine Website eine automatische Auswahl statt.</translation>
 <translation id="9013875414788074110">Bei der Anmeldung kann <ph name="PRODUCT_OS_NAME" /> die Authentifizierung über einen Server (online) oder über ein Passwort im Cache (offline) ausführen.
 
       Wenn für diese Richtlinie der Wert -1 festgelegt ist, kann sich der Nutzer ohne Zeitlimit offline authentifizieren. Wird ein anderer Wert festgelegt, gibt dieser den Zeitraum ab der letzten Online-Authentifizierung an, nach dem der Nutzer sich noch einmal online authentifizieren muss.

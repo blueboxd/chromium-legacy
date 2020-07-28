@@ -57,9 +57,6 @@ class SecurityInterstitialPage {
   virtual TypeID GetTypeForTesting();
 
  protected:
-  // Returns true if the interstitial should create a new navigation entry.
-  virtual bool ShouldCreateNewNavigation() const = 0;
-
   // Populates the strings used to generate the HTML from the template.
   virtual void PopulateInterstitialStrings(
       base::DictionaryValue* load_time_data) = 0;

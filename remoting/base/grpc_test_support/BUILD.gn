@@ -6,6 +6,7 @@ source_set("grpc_test_support") {
   testonly = true
 
   sources = [
+    "fake_client_async_response_reader.h",
     "grpc_async_test_server.cc",
     "grpc_async_test_server.h",
     "grpc_test_server.h",

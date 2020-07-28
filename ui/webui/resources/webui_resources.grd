@@ -209,8 +209,9 @@ without changes to the corresponding grd file. -->
                  file="html/promise_resolver.html" type="chrome_html" />
 
       <if expr="chromeos">
-        <structure name="IDR_WEBUI_CSS_CROS_COLORS"
-                   file="${root_gen_dir}/ui/webui/resources/css/cros_colors.generated.css" type="chrome_html"
+        <structure name="IDR_WEBUI_CROS_COLORS_CSS"
+                   file="${root_gen_dir}/ui/chromeos/colors/cros_colors.generated.css"
+                   type="chrome_html"
                    use_base_dir="false" />
       </if>
 

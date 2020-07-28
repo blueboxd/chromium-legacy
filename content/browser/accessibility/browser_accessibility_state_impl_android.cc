@@ -56,7 +56,7 @@ void JNI_BrowserAccessibilityState_OnAnimatorDurationScaleChanged(JNIEnv* env) {
 
   gfx::Animation::UpdatePrefersReducedMotion();
   for (WebContentsImpl* wc : WebContentsImpl::GetAllWebContents()) {
-    wc->GetRenderViewHost()->OnWebkitPreferencesChanged();
+    wc->OnWebPreferencesChanged();
   }
 }
 

@@ -394,6 +394,132 @@ mojom("mojom_platform") {
       traits_headers = [ "//ui/base/mojom/clipboard_blink_mojom_traits.h" ]
       traits_public_deps = [ "//ui/base/clipboard:clipboard_types" ]
     },
+    {
+      types = [
+        {
+          mojom = "blink.mojom.FetchAPIDataElement"
+          cpp = "::network::DataElement"
+          move_only = true
+        },
+        {
+          mojom = "blink.mojom.FetchAPIRequestBody"
+          cpp = "::scoped_refptr<::network::ResourceRequestBody>"
+          nullable_is_same_type = true
+          copyable_pass_by_value = true
+        },
+      ]
+      traits_headers = [ "//third_party/blink/public/common/fetch/fetch_api_request_body_mojom_traits.h" ]
+      traits_public_deps = [
+        "//base",
+        "//services/network/public/cpp:cpp_base",
+      ]
+    },
+    {
+      types = [
+        {
+          mojom = "blink.mojom.FetchAPIRequestHeaders"
+          cpp = "::blink::FetchAPIRequestHeadersMap"
+          move_only = true
+        },
+      ]
+      traits_headers = [ "//third_party/blink/public/common/fetch/fetch_api_request_headers_mojom_traits.h" ]
+    },
+    {
+      types = [
+        {
+          mojom = "blink.mojom.Manifest"
+          cpp = "::blink::Manifest"
+          nullable_is_same_type = true
+        },
+
+        {
+          mojom = "blink.mojom.ManifestImageResource"
+          cpp = "::blink::Manifest::ImageResource"
+        },
+
+        {
+          mojom = "blink.mojom.ManifestRelatedApplication"
+          cpp = "::blink::Manifest::RelatedApplication"
+        },
+
+        {
+          mojom = "blink.mojom.ManifestShareTarget"
+          cpp = "::blink::Manifest::ShareTarget"
+        },
+
+        {
+          mojom = "blink.mojom.ManifestShortcutItem"
+          cpp = "::blink::Manifest::ShortcutItem"
+        },
+      ]
+      traits_headers = [
+        "//third_party/blink/public/common/manifest/manifest.h",
+        "//third_party/blink/public/common/common_export.h",
+      ]
+      traits_private_headers = [
+        "//third_party/blink/public/common/manifest/manifest_mojom_traits.h",
+      ]
+      traits_sources =
+          [ "//third_party/blink/common/manifest/manifest_mojom_traits.cc" ]
+      traits_deps = [ "//ui/gfx/geometry/mojom:mojom_traits" ]
+    },
+    {
+      types = [
+        {
+          mojom = "blink.mojom.NotificationData"
+          cpp = "::blink::PlatformNotificationData"
+        },
+
+        {
+          mojom = "blink.mojom.NotificationResources"
+          cpp = "::blink::NotificationResources"
+        },
+      ]
+      traits_headers = [ "//third_party/blink/public/common/notifications/notification_mojom_traits.h" ]
+    },
+    {
+      types = [
+        {
+          mojom = "blink.mojom.DeviceThermalState"
+          cpp = "::base::PowerObserver::DeviceThermalState"
+        },
+      ]
+      traits_headers = [ "//third_party/blink/public/common/peerconnection/peer_connection_tracker_mojom_traits.h" ]
+    },
+    {
+      types = [
+        {
+          mojom = "blink.mojom.PolicyValue"
+          cpp = "::blink::PolicyValue"
+        },
+      ]
+      traits_headers = [
+        "//third_party/blink/common/feature_policy/policy_value_mojom_traits.h",
+      ]
+      traits_sources = [ "//third_party/blink/common/feature_policy/policy_value_mojom_traits.cc" ]
+    },
+    {
+      types = [
+        {
+          mojom = "blink.mojom.UserAgentBrandVersion"
+          cpp = "::blink::UserAgentBrandVersion"
+        },
+
+        {
+          mojom = "blink.mojom.UserAgentMetadata"
+          cpp = "::blink::UserAgentMetadata"
+        },
+
+        {
+          mojom = "blink.mojom.UserAgentOverride"
+          cpp = "::blink::UserAgentOverride"
+        },
+      ]
+      traits_headers = [ "//third_party/blink/public/common/user_agent/user_agent_mojom_traits.h" ]
+
+      traits_sources =
+          [ "//third_party/blink/common/user_agent/user_agent_mojom_traits.cc" ]
+    },
   ]
   blink_cpp_typemaps = [
     {
@@ -620,7 +746,35 @@ mojom("mojom_core") {
     },
   ]
 
-  cpp_typemaps = shared_cpp_typemaps
+  cpp_typemaps = [
+    {
+      types = [
+        {
+          mojom = "blink.mojom.CloneableMessage"
+          cpp = "::blink::CloneableMessage"
+          move_only = true
+        },
+      ]
+      traits_headers =
+          [ "//third_party/blink/public/common/messaging/cloneable_message.h" ]
+      traits_private_headers = [ "//third_party/blink/public/common/messaging/cloneable_message_mojom_traits.h" ]
+    },
+    {
+      types = [
+        {
+          mojom = "blink.mojom.TransferableMessage"
+          cpp = "::blink::TransferableMessage"
+          move_only = true
+        },
+      ]
+      traits_headers = [
+        "//third_party/blink/public/common/messaging/transferable_message.h",
+        "//third_party/blink/public/common/messaging/message_port_channel.h",
+      ]
+      traits_private_headers = [ "//third_party/blink/public/common/messaging/transferable_message_mojom_traits.h" ]
+    },
+  ]
+  cpp_typemaps += shared_cpp_typemaps
 
   blink_cpp_typemaps = [
     {
@@ -697,6 +851,109 @@ mojom("mojom_modules") {
   export_class_attribute_blink = "MODULES_EXPORT"
   export_define_blink = "BLINK_MODULES_IMPLEMENTATION=1"
   export_header_blink = "third_party/blink/renderer/modules/modules_export.h"
+
+  blink_cpp_typemaps = [
+    {
+      types = [
+        {
+          mojom = "blink.mojom.IDBDatabaseMetadata"
+          cpp = "::blink::IDBDatabaseMetadata"
+        },
+
+        {
+          mojom = "blink.mojom.IDBIndexKeys"
+          cpp = "::blink::IDBIndexKeys"
+          move_only = true
+        },
+
+        {
+          mojom = "blink.mojom.IDBIndexMetadata"
+          cpp = "::scoped_refptr<::blink::IDBIndexMetadata>"
+        },
+
+        {
+          mojom = "blink.mojom.IDBKey"
+          cpp = "::std::unique_ptr<::blink::IDBKey>"
+          move_only = true
+        },
+
+        {
+          mojom = "blink.mojom.IDBKeyPath"
+          cpp = "::blink::IDBKeyPath"
+        },
+
+        {
+          mojom = "blink.mojom.IDBObjectStoreMetadata"
+          cpp = "::scoped_refptr<::blink::IDBObjectStoreMetadata>"
+        },
+
+        {
+          mojom = "blink.mojom.IDBValue"
+          cpp = "::std::unique_ptr<::blink::IDBValue>"
+          move_only = true
+        },
+      ]
+      traits_private_headers = [ "//third_party/blink/renderer/modules/indexeddb/indexed_db_blink_mojom_traits.h" ]
+      traits_headers = [
+        "//third_party/blink/public/common/indexeddb/web_idb_types.h",
+        "//third_party/blink/renderer/modules/indexeddb/idb_key_path.h",
+        "//third_party/blink/renderer/modules/indexeddb/idb_key_range.h",
+        "//third_party/blink/renderer/modules/indexeddb/idb_metadata.h",
+        "//third_party/blink/renderer/modules/indexeddb/idb_name_and_version.h",
+        "//third_party/blink/renderer/modules/indexeddb/idb_value.h",
+      ]
+      traits_deps = [ "//third_party/blink/renderer/platform/wtf" ]
+    },
+  ]
+
+  cpp_typemaps = [
+    {
+      types = [
+        {
+          mojom = "blink.mojom.IDBDatabaseMetadata"
+          cpp = "::blink::IndexedDBDatabaseMetadata"
+        },
+
+        {
+          mojom = "blink.mojom.IDBIndexKeys"
+          cpp = "::blink::IndexedDBIndexKeys"
+        },
+
+        {
+          mojom = "blink.mojom.IDBIndexMetadata"
+          cpp = "::blink::IndexedDBIndexMetadata"
+        },
+
+        {
+          mojom = "blink.mojom.IDBKey"
+          cpp = "::blink::IndexedDBKey"
+        },
+
+        {
+          mojom = "blink.mojom.IDBKeyPath"
+          cpp = "::blink::IndexedDBKeyPath"
+        },
+
+        {
+          mojom = "blink.mojom.IDBKeyRange"
+          cpp = "::blink::IndexedDBKeyRange"
+        },
+
+        {
+          mojom = "blink.mojom.IDBObjectStoreMetadata"
+          cpp = "::blink::IndexedDBObjectStoreMetadata"
+        },
+      ]
+      traits_headers = [
+        "//third_party/blink/public/common/indexeddb/indexeddb_key.h",
+        "//third_party/blink/public/common/indexeddb/indexeddb_key_path.h",
+        "//third_party/blink/public/common/indexeddb/indexeddb_key_range.h",
+        "//third_party/blink/public/common/indexeddb/indexeddb_metadata.h",
+        "//third_party/blink/public/common/indexeddb/web_idb_types.h",
+      ]
+      traits_private_headers = [ "//third_party/blink/public/common/indexeddb/indexed_db_default_mojom_traits.h" ]
+    },
+  ]
 }
 
 mojom("web_bluetooth_mojo_bindings") {
@@ -734,6 +991,18 @@ mojom("web_bluetooth_mojo_bindings") {
         "//third_party/blink/renderer/platform/mojo/bluetooth_mojom_traits.h",
       ]
       traits_public_deps = [ "//device/bluetooth" ]
+    },
+  ]
+
+  cpp_typemaps = [
+    {
+      types = [
+        {
+          mojom = "blink.mojom.WebBluetoothDeviceId"
+          cpp = "::blink::WebBluetoothDeviceId"
+        },
+      ]
+      traits_headers = [ "//third_party/blink/public/common/bluetooth/web_bluetooth_device_id_mojom_traits.h" ]
     },
   ]
 

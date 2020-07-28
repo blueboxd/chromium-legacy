@@ -219,6 +219,10 @@ void ChromeCleanerControllerDelegate::StartRebootPromptFlow(
   ChromeCleanerRebootDialogControllerImpl::Create(controller);
 }
 
+bool ChromeCleanerControllerDelegate::IsAllowedByPolicy() {
+  return safe_browsing::SwReporterIsAllowedByPolicy();
+}
+
 // static
 ChromeCleanerControllerImpl* ChromeCleanerControllerImpl::GetInstance() {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
@@ -279,6 +283,11 @@ void ChromeCleanerControllerImpl::SetStateForTesting(State state) {
   state_ = state;
   if (state_ == State::kIdle)
     idle_reason_ = IdleReason::kInitial;
+}
+
+void ChromeCleanerControllerImpl::SetIdleForTesting(IdleReason idle_reason) {
+  state_ = State::kIdle;
+  idle_reason_ = idle_reason;
 }
 
 // static
@@ -522,7 +531,7 @@ void ChromeCleanerControllerImpl::Reboot() {
 }
 
 bool ChromeCleanerControllerImpl::IsAllowedByPolicy() {
-  return safe_browsing::SwReporterIsAllowedByPolicy();
+  return delegate_->IsAllowedByPolicy();
 }
 
 bool ChromeCleanerControllerImpl::IsReportingManagedByPolicy(Profile* profile) {

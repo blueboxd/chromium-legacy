@@ -222,6 +222,7 @@
 <translation id="8417404458978023919">{0,plural, =1{ஒரு நாளுக்குள் Chromiumமை மீண்டும் தொடங்கவும்}other{# நாட்களுக்குள் Chromiumமை மீண்டும் தொடங்கவும்}}</translation>
 <translation id="8453117565092476964">நிறுவி காப்பகம் சிதைந்துள்ளது அல்லது தவறானது. Chromiumமை மீண்டும் பதிவிறக்கவும்.</translation>
 <translation id="8493179195440786826">Chromium காலாவதியானது</translation>
+<translation id="8545858702702650646">உங்கள் Chromium ஸ்பேஸைத் தேர்வுசெய்யுங்கள்</translation>
 <translation id="8558383651099478961">Chromiumமில் "தளங்கள், ஆப்ஸ், நீட்டிப்புகள் ஆகியவற்றுக்கான அனுமதிகளை" உங்கள் பெற்றோர் முடக்கிவிட்டார். இந்த <ph name="EXTENSION_TYPE_PARAMETER" /> ஐச் சேர்க்க அனுமதியில்லை.</translation>
 <translation id="8568283329061645092">Google கணக்கைப் பயன்படுத்தி நீங்கள் உள்நுழையும்போது Chromium உங்கள் கடவுச்சொற்களைச் சரிபார்க்க முடியும்</translation>
 <translation id="8586442755830160949">பதிப்புரிமை <ph name="YEAR" /> Chromium உருவாக்குநர்கள். அனைத்து உரிமைகளும் பாதுகாக்கப்பட்டவை.</translation>
@@ -245,6 +246,7 @@
 <translation id="911206726377975832">உங்கள் உலாவிய தரவையும் நீக்க வேண்டுமா?</translation>
 <translation id="9158494823179993217"><ph name="TARGET_URL_HOSTNAME" />ஐ அணுக Chromium அதை மாற்று உலாவியில் திறக்கும்படி உங்கள் சிஸ்டம் நிர்வாகி உள்ளமைத்துள்ளார்.</translation>
 <translation id="9190841055450128916">Chromium (mDNS-In)</translation>
+<translation id="9191317372410544836">இந்தச் சாதனத்தில் உங்கள் உலாவல் செயல்பாடுகளை ஒழுங்கமைக்க, Chromium ஸ்பேசஸைப் பயன்படுத்தலாம்</translation>
 <translation id="93478295209880648">Windows XP அல்லது Windows Vista ஆகியவற்றில் Chromium இனி ஆதரிக்கப்படாது என்பதால், அது சரியாகச் செயல்படாது</translation>
 <translation id="95514773681268843">இந்தச் சாதனத்தைப் பயன்படுத்துவதற்கு முன் பின்வரும் சேவை விதிமுறைகளைப் படித்து ஏற்றுக்கொள்வது <ph name="DOMAIN" /> க்கு அவசியமாகும். இந்த விதிமுறைகளானது Chromium OS விதிமுறைகளை விரிவாக்கவோ, மாற்றவோ அல்லது கட்டுப்படுத்தவோ செய்யாது.</translation>
 <translation id="985602178874221306">Chromium அங்கீகரிப்பாளர்கள்</translation>

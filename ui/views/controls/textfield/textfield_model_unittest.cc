@@ -1961,7 +1961,8 @@ TEST_F(TextfieldModelTest, UndoRedo_CompositionText) {
   EXPECT_STR_EQ("ABCDEabc", model.text());
 
   // Confirm the composition.
-  model.ConfirmCompositionText();
+  uint32_t composition_text_length = model.ConfirmCompositionText();
+  EXPECT_EQ(composition_text_length, static_cast<uint32_t>(3));
   EXPECT_STR_EQ("ABCDEabc", model.text());
   EXPECT_TRUE(model.Undo());
   EXPECT_STR_EQ("ABCDE", model.text());

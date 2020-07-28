@@ -51,6 +51,9 @@ class CORE_EXPORT ScrollTimelineOffset final
 
   StringOrScrollTimelineElementBasedOffset
   ToStringOrScrollTimelineElementBasedOffset() const;
+  bool IsDefaultValue() const {
+    return !length_based_offset_ && !element_based_offset_;
+  }
 
  private:
   // We either have an scroll or element based offset so at any time one of

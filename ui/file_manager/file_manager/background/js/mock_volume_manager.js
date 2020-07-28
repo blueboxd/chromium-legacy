@@ -192,7 +192,7 @@ class MockVolumeManager {
     return volumeInfo;
   }
 
-  async mountArchive(fileUrl) {
+  async mountArchive(fileUrl, password) {
     throw new Error('Not implemented');
   }
 

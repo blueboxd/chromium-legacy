@@ -36,6 +36,8 @@ class EmojiSuggester : public Suggester {
   void DismissSuggestion() override;
   AssistiveType GetProposeActionType() override;
 
+  bool ShouldShowSuggestion(const base::string16& text);
+
   void LoadEmojiMapForTesting(const std::string& emoji_data);
   bool GetSuggestionShownForTesting() const;
   size_t GetCandidatesSizeForTesting() const;

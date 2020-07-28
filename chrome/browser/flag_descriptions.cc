@@ -1384,11 +1384,6 @@ const char kNewOsSettingsSearchDescription[] =
     "Enables New OS Settings search with fuzzy matching, and disables the old "
     "OS settings search using exact string matching.";
 
-const char kDlcSettingsUiName[] = "DLC Settings UI";
-const char kDlcSettingsUiDescription[] =
-    "Enables DLC (Downloadable Content) Settings subpage in the Device section "
-    "of OS Settings.";
-
 const char kTextureLayerSkipWaitForActivationName[] = "Parallelize layers";
 const char kTextureLayerSkipWaitForActivationDescription[] =
     "Don't wait for layer activation before beginning new frame.";
@@ -1895,6 +1890,10 @@ const char kRequestUnbufferedDispatchName[] = "Use RequestUnbufferedDispatch";
 const char kRequestUnbufferedDispatchDescription[] =
     "Calls RequestUnbufferedDispatch in the Android API to disable buffering "
     "of input by the OS.";
+
+const char kRestrictGamepadAccessName[] = "Restrict gamepad access";
+const char kRestrictGamepadAccessDescription[] =
+    "Enables Feature Policy and Secure Context restrictions on the Gamepad API";
 
 const char kRequestTabletSiteName[] =
     "Request tablet site option in the settings menu";
@@ -3092,6 +3091,12 @@ const char kCastMediaRouteProviderName[] = "Cast Media Route Provider";
 const char kCastMediaRouteProviderDescription[] =
     "Enables the native Cast Media Route Provider implementation to be used "
     "instead of the implementation in the Media Router component extension.";
+
+const char kGlobalMediaControlsCastStartStopName[] =
+    "Global media controls control Cast start/stop";
+const char kGlobalMediaControlsCastStartStopDescription[] =
+    "Allows global media controls to control when a Cast session is started "
+    "or stopped instead of relying on the Cast dialog.";
 
 const char kNtpDismissPromosName[] = "Dismiss promos on the New Tab Page";
 const char kNtpDismissPromosDescription[] =

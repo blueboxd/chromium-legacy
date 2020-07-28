@@ -44,8 +44,7 @@ class CORE_EXPORT ScrollTimeline : public AnimationTimeline {
   ScrollTimeline(Document*,
                  Element*,
                  ScrollDirection,
-                 ScrollTimelineOffset*,
-                 ScrollTimelineOffset*,
+                 HeapVector<Member<ScrollTimelineOffset>>*,
                  double);
 
   // AnimationTimeline implementation.
@@ -63,9 +62,14 @@ class CORE_EXPORT ScrollTimeline : public AnimationTimeline {
   // IDL API implementation.
   Element* scrollSource();
   String orientation();
+  // TODO(crbug.com/1094014): scrollOffsets will replace start and end
+  // offsets once spec decision on multiple scroll offsets is finalized.
+  // https://github.com/w3c/csswg-drafts/issues/4912
   void startScrollOffset(
       StringOrScrollTimelineElementBasedOffset& result) const;
   void endScrollOffset(StringOrScrollTimelineElementBasedOffset& result) const;
+  const HeapVector<StringOrScrollTimelineElementBasedOffset> scrollOffsets()
+      const;
 
   void timeRange(DoubleOrScrollTimelineAutoKeyword&);
 
@@ -154,6 +158,8 @@ class CORE_EXPORT ScrollTimeline : public AnimationTimeline {
   };
 
   TimelineState ComputeTimelineState() const;
+  ScrollTimelineOffset* StartScrollOffset() const;
+  ScrollTimelineOffset* EndScrollOffset() const;
 
   // Use time_check true to request next service if time has changed.
   // false - regardless of time change.
@@ -164,11 +170,7 @@ class CORE_EXPORT ScrollTimeline : public AnimationTimeline {
   Member<Element> scroll_source_;
   Member<Node> resolved_scroll_source_;
   ScrollDirection orientation_;
-
-  // These define the total range of the scroller that the ScrollTimeline is
-  // active within.
-  Member<ScrollTimelineOffset> start_scroll_offset_;
-  Member<ScrollTimelineOffset> end_scroll_offset_;
+  Member<HeapVector<Member<ScrollTimelineOffset>>> scroll_offsets_;
 
   double time_range_;
 

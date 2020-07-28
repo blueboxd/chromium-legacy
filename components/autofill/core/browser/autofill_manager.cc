@@ -84,6 +84,7 @@
 #include "components/autofill/core/common/signatures.h"
 #include "components/pref_registry/pref_registry_syncable.h"
 #include "components/prefs/pref_service.h"
+#include "components/security_interstitials/core/pref_names.h"
 #include "components/security_state/core/security_state.h"
 #include "components/strings/grit/components_strings.h"
 #include "components/version_info/channel.h"
@@ -2575,7 +2576,8 @@ void AutofillManager::GetAvailableSuggestions(
   // there are no autofill suggestions available.
   if (IsFormMixedContent(client_, form) &&
       base::FeatureList::IsEnabled(
-          features::kAutofillPreventMixedFormsFilling)) {
+          features::kAutofillPreventMixedFormsFilling) &&
+      client_->GetPrefs()->GetBoolean(::prefs::kMixedFormsWarningsEnabled)) {
     suggestions->clear();
     Suggestion warning_suggestion(
         l10n_util::GetStringUTF16(IDS_AUTOFILL_WARNING_MIXED_FORM));

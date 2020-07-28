@@ -21,6 +21,16 @@ StringOrScrollTimelineElementBasedOffset OffsetFromString(const String& value) {
   return result;
 }
 
+HeapVector<Member<ScrollTimelineOffset>>* CreateScrollOffsets(
+    ScrollTimelineOffset* start_scroll_offset,
+    ScrollTimelineOffset* end_scroll_offset) {
+  HeapVector<Member<ScrollTimelineOffset>>* scroll_offsets =
+      MakeGarbageCollected<HeapVector<Member<ScrollTimelineOffset>>>();
+  scroll_offsets->push_back(start_scroll_offset);
+  scroll_offsets->push_back(end_scroll_offset);
+  return scroll_offsets;
+}
+
 }  // namespace
 
 namespace scroll_timeline_util {
@@ -95,8 +105,8 @@ TEST_F(ScrollTimelineUtilTest, ToCompositorScrollTimelineNullScrollSource) {
   ScrollTimelineOffset* end_scroll_offset =
       MakeGarbageCollected<ScrollTimelineOffset>();
   ScrollTimeline* timeline = MakeGarbageCollected<ScrollTimeline>(
-      &GetDocument(), scroll_source, ScrollTimeline::Block, start_scroll_offset,
-      end_scroll_offset, 100);
+      &GetDocument(), scroll_source, ScrollTimeline::Block,
+      CreateScrollOffsets(start_scroll_offset, end_scroll_offset), 100);
 
   scoped_refptr<CompositorScrollTimeline> compositor_timeline =
       ToCompositorScrollTimeline(timeline);

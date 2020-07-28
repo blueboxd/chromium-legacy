@@ -21,6 +21,9 @@ class Value;
 extern const char kTestWhatsNewCommand[];
 extern const char kTestWhatsNewMessage[];
 
+// The Set Default Browser promo command.
+extern const char kSetDefaultBrowserCommand[];
+
 // Helper class for NotificationPromo that deals with mobile_ntp promos.
 class NotificationPromoWhatsNew {
  public:

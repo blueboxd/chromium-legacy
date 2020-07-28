@@ -363,7 +363,6 @@ Kung ayaw mo, iba-block ito ng iyong mga setting ng privacy. Papayagan nito ang 
 <translation id="2413528052993050574">Hindi mapatunayan ng server na ito na ito ay <ph name="DOMAIN" />; maaaring binawi ang certificate ng seguridad nito. Maaaring dulot ito ng maling configuration o isang umaatake na hinahadlangan ang iyong koneksyon.</translation>
 <translation id="2438874542388153331">Quad punch right</translation>
 <translation id="245044156129055925">Kakalagay mo lang ng iyong password sa isang mapanlinang na site. Inirerekomenda ng Chromium na palitan mo ang iyong password ngayon.</translation>
-<translation id="2463193859425327265">Baguhin ang Home Page</translation>
 <translation id="2463739503403862330">Punan</translation>
 <translation id="2465402087343596252">Architecture-E</translation>
 <translation id="2465655957518002998">Pumili ng Paraan ng Paghahatid</translation>
@@ -563,6 +562,9 @@ Kung ayaw mo, iba-block ito ng iyong mga setting ng privacy. Papayagan nito ang 
 <translation id="3364869320075768271">Gustong gamitin ng <ph name="URL" /> ang iyong virtual reality device at data</translation>
 <translation id="3366477098757335611">Tingnan ang mga card</translation>
 <translation id="3369192424181595722">Error sa orasan</translation>
+<translation id="3371076217486966826">Gusto ng <ph name="URL" /> na:
+      • Gumawa ng 3D na mapa ng iyong kapaligiran at subaybayan ang posisyon ng camera
+      • Gamitin ang iyong camera</translation>
 <translation id="337363190475750230">Naalis sa pagkakaprobisyon</translation>
 <translation id="3377144306166885718">Gumamit ang server ng lumang bersyon ng TLS.</translation>
 <translation id="3377188786107721145">Error sa pag-parse ng patakaran</translation>
@@ -1160,7 +1162,6 @@ Kung ayaw mo, iba-block ito ng iyong mga setting ng privacy. Papayagan nito ang 
 <translation id="5785756445106461925">Bukod pa rito, ang page na ito ay may iba pang mga mapagkukunang hindi secure. Makikita ng iba ang mga mapagkukunang ito habang ipinadadala, at maaaring baguhin ng isang umaatake upang baguhin ang hitsura ng page.</translation>
 <translation id="5786044859038896871">Gusto mo bang ilagay ang impormasyon ng iyong card?</translation>
 <translation id="5798290721819630480">I-discard ang mga pagbabago?</translation>
-<translation id="5798683403665926540">Baguhin ang home page sa mga setting ng Chrome</translation>
 <translation id="5803412860119678065">Gusto mo bang ilagay ang iyong <ph name="CARD_DETAIL" />?</translation>
 <translation id="5804241973901381774">Mga Pahintulot</translation>
 <translation id="5804427196348435412">Gumamit ng mga NFC device</translation>
@@ -1562,6 +1563,7 @@ Mga karagdagang detalye:
 <translation id="7518003948725431193">Walang webpage na nahanap para sa web address:<ph name="URL" /></translation>
 <translation id="7520302887438682816">C8 (Envelope)</translation>
 <translation id="7521387064766892559">JavaScript</translation>
+<translation id="7521825010239864438">Nakatago ang seksyong "<ph name="SECTION" />"</translation>
 <translation id="7526934274050461096">Hindi pribado ang iyong koneksyon sa site na ito</translation>
 <translation id="7535087603100972091">Value</translation>
 <translation id="7537536606612762813">Kinakailangan</translation>
@@ -1608,7 +1610,6 @@ Mga karagdagang detalye:
 <translation id="7669271284792375604">Maaaring subukan ng mga attacker sa site na ito na linlangin ka upang mag-install ng mga program na makakasama sa iyong karanasan sa pag-browse (halimbawa, sa pamamagitan ng pagbabago ng iyong homepage o pagpapakita ng mga karagdagang ad sa mga site na binibisita mo).</translation>
 <translation id="7673278391011283842">Mailbox 6</translation>
 <translation id="7676643023259824263">Hanapin ang text sa clipboard, na <ph name="TEXT" /></translation>
-<translation id="7681101578153515023">Baguhin ang Search Engine</translation>
 <translation id="7682287625158474539">Pagpapadala</translation>
 <translation id="7687186412095877299">Pinupunan ang mga form sa pagbabayad ng iyong mga naka-save na paraan ng pagbabayad</translation>
 <translation id="7687305263118037187">Pag-time out ng pag-retry</translation>
@@ -1646,7 +1647,6 @@ Mga karagdagang detalye:
 <translation id="7802523362929240268">Lehitimo ang site</translation>
 <translation id="780301667611848630">Hindi salamat</translation>
 <translation id="7805768142964895445">Katayuan</translation>
-<translation id="7806344367022510803">Baguhin ang mga setting ng Search Engine sa Chrome</translation>
 <translation id="7812922009395017822">Mir</translation>
 <translation id="7813600968533626083">Alisin ang suhestyon sa Chrome?</translation>
 <translation id="781440967107097262">Ibahagi ang clipboard?</translation>
@@ -1762,6 +1762,7 @@ Mga karagdagang detalye:
 <translation id="8293206222192510085">Magdagdag ng Bookmark</translation>
 <translation id="8294431847097064396">Pinagmulan</translation>
 <translation id="8298115750975731693">Maaaring hilingin ng Wi-Fi na ginagamit mo (<ph name="WIFI_NAME" />) na bisitahin mo ang <ph name="BEGIN_BOLD" /><ph name="LOGIN_URL" /><ph name="END_BOLD" />.</translation>
+<translation id="8303854710873047864">Ipinapakita ang seksyong "<ph name="SECTION" />"</translation>
 <translation id="830498451218851433">Fold half</translation>
 <translation id="8307358339886459768">Small-Photo</translation>
 <translation id="8307888238279532626">Mga naka-install na app at kung gaano kadalas gamitin ang mga ito</translation>
@@ -1787,7 +1788,6 @@ Mga karagdagang detalye:
 Mga karagdagang detalye:
 <ph name="DEBUG_INFO" /></translation>
 <translation id="8424582179843326029"><ph name="FIRST_LABEL" /> <ph name="SECOND_LABEL" /> <ph name="THIRD_LABEL" /></translation>
-<translation id="8425213833346101688">Baguhin</translation>
 <translation id="8428213095426709021">Mga Setting</translation>
 <translation id="8433057134996913067">Masa-sign out ka sa karamihan ng mga website.</translation>
 <translation id="8437238597147034694">&amp;I-undo ang paglilipat</translation>
@@ -1881,6 +1881,7 @@ Mga karagdagang detalye:
 <translation id="8931333241327730545">Gusto mo bang i-save ang card na ito sa iyong Google Account?</translation>
 <translation id="8932102934695377596">Nahuhuli ang iyong orasan</translation>
 <translation id="893332455753468063">Magdagdag ng Pangalan</translation>
+<translation id="8942355029279167844">Pinayagan ng iyong administrator ang <ph name="APP_NAME" /> na mangolekta ng data ng mga diagnostic para mapahusay ang karanasan sa produkto. Tingnan ang <ph name="BEGIN_LINK" />https://www.parallels.com/pcep<ph name="END_LINK" /> para sa higit pang impormasyon.</translation>
 <translation id="8943282376843390568">Lime</translation>
 <translation id="8957210676456822347">Pagpapahintulot sa Captive Portal</translation>
 <translation id="8962950042226115166">Kahina-hinalang site</translation>

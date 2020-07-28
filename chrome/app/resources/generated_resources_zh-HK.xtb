@@ -2379,6 +2379,7 @@
 <translation id="3882165008614329320">相機或檔案中的現有影片</translation>
 <translation id="3886446263141354045">您想存取此網站的要求已傳送至<ph name="NAME" /></translation>
 <translation id="3888550877729210209">正在使用「<ph name="LOCK_SCREEN_APP_NAME" />」寫筆記</translation>
+<translation id="3891563564777705449">{0,plural, =1{請在 1 星期內更新裝置}other{請在 # 星期內更新裝置}}</translation>
 <translation id="3892414795099177503">新增 OpenVPN/L2TP…</translation>
 <translation id="3893536212201235195">讀取及變更您的協助工具設定</translation>
 <translation id="3893630138897523026">ChromeVox (互動朗讀)</translation>
@@ -4440,6 +4441,7 @@
 <translation id="6535331821390304775">永遠允許 <ph name="ORIGIN" /> 使用相關聯的應用程式開啟這類連結</translation>
 <translation id="654039047105555694"><ph name="BEGIN_BOLD" />注意：<ph name="END_BOLD" />除非您瞭解這項功能的用途或是收到相關指示，否則請不要啟用這項功能，因為收集數據可能會導致系統效能降低。</translation>
 <translation id="6541638731489116978">此網站被禁止存取您的動作感應器。</translation>
+<translation id="6545407738986370057">{0,plural, =1{請在 1 星期內歸還裝置}other{請在 # 星期內歸還裝置}}</translation>
 <translation id="6545665334409411530">重複頻率</translation>
 <translation id="6545864417968258051">藍牙掃瞄</translation>
 <translation id="6545867563032584178">已關閉 Mac 系統偏好設定中的麥克風</translation>

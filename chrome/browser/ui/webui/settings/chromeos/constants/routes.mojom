@@ -68,7 +68,8 @@ enum Subpage {
   kDisplay = 403,
   kStorage = 404,
   kExternalStorage = 405,
-  kDlc = 406,
+  // Note: Value 406 was for deprecated DLC Subpage - see
+  // https://crbug.com/1108093. Do not reuse.
   kPower = 407,
 
   // Personalization section.
@@ -165,7 +166,6 @@ const string kStylusSubpagePath = "stylus";
 const string kDisplaySubpagePath = "display";
 const string kStorageSubpagePath = "storage";
 const string kExternalStorageSubpagePath = "storage/externalStoragePreferences";
-const string kDlcSubpagePath = "storage/downloadedContent";
 const string kPowerSubpagePath = "power";
 
 // Personalization section.

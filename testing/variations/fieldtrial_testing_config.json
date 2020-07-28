@@ -3422,6 +3422,21 @@
             ]
         }
     ],
+    "IOSDragAndDrop": [
+        {
+            "platforms": [
+                "ios"
+            ],
+            "experiments": [
+                {
+                    "name": "Enabled",
+                    "enable_features": [
+                        "DragAndDrop"
+                    ]
+                }
+            ]
+        }
+    ],
     "IOSEnablePersistentDownloads": [
         {
             "platforms": [

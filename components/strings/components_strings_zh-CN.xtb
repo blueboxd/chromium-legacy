@@ -359,7 +359,6 @@
 <translation id="2413528052993050574">此服务器无法证明它是<ph name="DOMAIN" />；其安全证书可能已被撤消。出现此问题的原因可能是配置有误或您的连接被拦截了。</translation>
 <translation id="2438874542388153331">四孔（右侧）</translation>
 <translation id="245044156129055925">您刚刚在一个欺骗性网站中输入了密码。Chromium 建议您立即更改密码。</translation>
-<translation id="2463193859425327265">更改主页</translation>
 <translation id="2463739503403862330">填充</translation>
 <translation id="2465402087343596252">Architecture-E</translation>
 <translation id="2465655957518002998">选择速递方式</translation>
@@ -1148,7 +1147,6 @@
 <translation id="5785756445106461925">而且，此页中包含其他不安全的资源。他人能在这些资源传输过程中进行查看，攻击者也可以修改这些资源，从而改变此页的外观。</translation>
 <translation id="5786044859038896871">要填充您的信用卡信息吗？</translation>
 <translation id="5798290721819630480">舍弃更改？</translation>
-<translation id="5798683403665926540">在 Chrome 设置中更改主页</translation>
 <translation id="5803412860119678065">要填充您的“<ph name="CARD_DETAIL" />”吗？</translation>
 <translation id="5804241973901381774">权限</translation>
 <translation id="5804427196348435412">使用 NFC 设备</translation>
@@ -1596,7 +1594,6 @@
 <translation id="7669271284792375604">此网站上的攻击者可能会试图诱骗您安装有损浏览体验的程序（例如：通过更改您的主页或在您访问的网站上显示额外的广告）。</translation>
 <translation id="7673278391011283842">信箱 6</translation>
 <translation id="7676643023259824263">搜索剪贴板上的文字：<ph name="TEXT" /></translation>
-<translation id="7681101578153515023">更改搜索引擎</translation>
 <translation id="7682287625158474539">送货地址</translation>
 <translation id="7687186412095877299">在付款表单中填入已保存的付款方式</translation>
 <translation id="7687305263118037187">重试超时</translation>
@@ -1634,7 +1631,6 @@
 <translation id="7802523362929240268">网站是合规的</translation>
 <translation id="780301667611848630">不用了，谢谢</translation>
 <translation id="7805768142964895445">状态</translation>
-<translation id="7806344367022510803">在 Chrome 中更改搜索引擎设置</translation>
 <translation id="7812922009395017822">Mir</translation>
 <translation id="7813600968533626083">从 Chrome 中移除表单建议？</translation>
 <translation id="781440967107097262">分享剪贴板？</translation>
@@ -1776,7 +1772,6 @@
 更多详情：
 <ph name="DEBUG_INFO" /></translation>
 <translation id="8424582179843326029"><ph name="FIRST_LABEL" /> - <ph name="SECOND_LABEL" /> - <ph name="THIRD_LABEL" /></translation>
-<translation id="8425213833346101688">更改</translation>
 <translation id="8428213095426709021">设置</translation>
 <translation id="8433057134996913067">这将使您退出大多数网站。</translation>
 <translation id="8437238597147034694">撤消移动(&amp;U)</translation>

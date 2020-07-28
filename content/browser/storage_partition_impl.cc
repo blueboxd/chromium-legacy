@@ -1640,8 +1640,6 @@ NativeIOContext* StoragePartitionImpl::GetNativeIOContext() {
 
 leveldb_proto::ProtoDatabaseProvider*
 StoragePartitionImpl::GetProtoDatabaseProvider() {
-  if (is_in_memory_)
-    return nullptr;
   if (!proto_database_provider_) {
     proto_database_provider_ =
         std::make_unique<leveldb_proto::ProtoDatabaseProvider>(partition_path_);

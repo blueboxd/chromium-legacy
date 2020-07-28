@@ -7,10 +7,23 @@
 
 #include "chrome/browser/nearby_sharing/nearby_connections_manager.h"
 
+#include <set>
+
+#include "base/gtest_prod_util.h"
+#include "chrome/browser/nearby_sharing/nearby_process_manager.h"
+#include "chrome/services/sharing/public/mojom/nearby_connections.mojom.h"
+#include "mojo/public/cpp/bindings/receiver.h"
+
+class Profile;
+
 // Concrete NearbyConnectionsManager implementation.
-class NearbyConnectionsManagerImpl : public NearbyConnectionsManager {
+class NearbyConnectionsManagerImpl
+    : public NearbyConnectionsManager,
+      public NearbyProcessManager::Observer,
+      public location::nearby::connections::mojom::EndpointDiscoveryListener {
  public:
-  NearbyConnectionsManagerImpl();
+  NearbyConnectionsManagerImpl(NearbyProcessManager* process_manager,
+                               Profile* profile);
   ~NearbyConnectionsManagerImpl() override;
   NearbyConnectionsManagerImpl(const NearbyConnectionsManagerImpl&) = delete;
   NearbyConnectionsManagerImpl& operator=(const NearbyConnectionsManagerImpl&) =
@@ -24,8 +37,7 @@ class NearbyConnectionsManagerImpl : public NearbyConnectionsManager {
                         DataUsage data_usage,
                         ConnectionsCallback callback) override;
   void StopAdvertising() override;
-  void StartDiscovery(std::vector<uint8_t> endpoint_info,
-                      DiscoveryListener* listener,
+  void StartDiscovery(DiscoveryListener* listener,
                       ConnectionsCallback callback) override;
   void StopDiscovery() override;
   std::unique_ptr<NearbyConnection> Connect(
@@ -46,6 +58,41 @@ class NearbyConnectionsManagerImpl : public NearbyConnectionsManager {
   void ClearIncomingPayloads() override;
   base::Optional<std::vector<uint8_t>> GetRawAuthenticationToken(
       const std::string& endpoint_id) override;
+
+ private:
+  using DiscoveryOptions =
+      location::nearby::connections::mojom::DiscoveryOptions;
+  using EndpointDiscoveryListener =
+      location::nearby::connections::mojom::EndpointDiscoveryListener;
+  using DiscoveredEndpointInfoPtr =
+      location::nearby::connections::mojom::DiscoveredEndpointInfoPtr;
+  FRIEND_TEST_ALL_PREFIXES(NearbyConnectionsManagerImplTest,
+                           DiscoveryProcessStopped);
+
+  // NearbyProcessManager::Observer:
+  void OnNearbyProfileChanged(Profile* profile) override;
+  void OnNearbyProcessStarted() override;
+  void OnNearbyProcessStopped() override;
+
+  // mojom::EndpointDiscoveryListener:
+  void OnEndpointFound(const std::string& endpoint_id,
+                       DiscoveredEndpointInfoPtr info) override;
+  void OnEndpointLost(const std::string& endpoint_id) override;
+
+  bool BindNearbyConnections();
+  void Reset();
+
+  NearbyProcessManager* process_manager_;
+  Profile* profile_;
+  DiscoveryListener* discovery_listener_ = nullptr;
+  std::set<std::string> discovered_endpoints_;
+
+  ScopedObserver<NearbyProcessManager, NearbyProcessManager::Observer>
+      nearby_process_observer_{this};
+  mojo::Receiver<EndpointDiscoveryListener> endpoint_discovery_listener_{this};
+
+  location::nearby::connections::mojom::NearbyConnections* nearby_connections_ =
+      nullptr;
 };
 
 #endif  // CHROME_BROWSER_NEARBY_SHARING_NEARBY_CONNECTIONS_MANAGER_IMPL_H_

@@ -1144,13 +1144,16 @@ void RenderWidgetHostViewAura::SetCompositionText(
   has_composition_text_ = !composition.text.empty();
 }
 
-void RenderWidgetHostViewAura::ConfirmCompositionText(bool keep_selection) {
+uint32_t RenderWidgetHostViewAura::ConfirmCompositionText(bool keep_selection) {
   if (text_input_manager_ && text_input_manager_->GetActiveWidget() &&
       has_composition_text_) {
     text_input_manager_->GetActiveWidget()->ImeFinishComposingText(
         keep_selection);
   }
   has_composition_text_ = false;
+  // TODO(crbug/1109604): Return the number of characters committed by this
+  // function.
+  return UINT32_MAX;
 }
 
 void RenderWidgetHostViewAura::ClearCompositionText() {
@@ -1464,6 +1467,12 @@ bool RenderWidgetHostViewAura::SetCompositionFromExistingText(
 #endif
 
 #if defined(OS_CHROMEOS)
+gfx::Rect RenderWidgetHostViewAura::GetAutocorrectCharacterBounds() const {
+  // TODO(crbug.com/1108170): Implement this function, since we need this
+  // for autocorrect on websites to work.
+  return gfx::Rect();
+}
+
 bool RenderWidgetHostViewAura::SetAutocorrectRange(
     const base::string16& autocorrect_text,
     const gfx::Range& range) {

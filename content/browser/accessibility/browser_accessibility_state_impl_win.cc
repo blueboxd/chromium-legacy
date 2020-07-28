@@ -85,7 +85,7 @@ void OnWndProc(HWND hwnd, UINT message, WPARAM wparam, LPARAM lparam) {
   if (message == WM_SETTINGCHANGE && wparam == SPI_SETCLIENTAREAANIMATION) {
     gfx::Animation::UpdatePrefersReducedMotion();
     for (WebContentsImpl* wc : WebContentsImpl::GetAllWebContents()) {
-      wc->GetRenderViewHost()->OnWebkitPreferencesChanged();
+      wc->OnWebPreferencesChanged();
     }
   }
 }

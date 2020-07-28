@@ -2379,6 +2379,7 @@
 <translation id="3882165008614329320">ከካሜራ ወይም ፋይል ላይ ያለ ቪዲዮ</translation>
 <translation id="3886446263141354045">ይህን ጣቢያ የመድረስ ጥያቄዎ ለ<ph name="NAME" /> ተልኳል</translation>
 <translation id="3888550877729210209">ማስታወሻዎችን በ<ph name="LOCK_SCREEN_APP_NAME" /> በመውሰድ ላይ</translation>
+<translation id="3891563564777705449">{0,plural, =1{በ1 ሳምንት ውስጥ መሣሪያን ያዘምኑ}one{በ# ሳምንታት ውስጥ መሣሪያን ያዘምኑ}other{በ# ሳምንታት ውስጥ መሣሪያን ያዘምኑ}}</translation>
 <translation id="3892414795099177503">OpenVPN / L2TP ያክሉ...</translation>
 <translation id="3893536212201235195">የተደራሽነት ቅንብሮችዎን ያነብባል እና ይቀይራል</translation>
 <translation id="3893630138897523026">ChromeVox (የሚነገር ግብረመልስ)</translation>
@@ -4438,6 +4439,7 @@
 <translation id="6535331821390304775"><ph name="ORIGIN" /> የዚህ አይነት አገናኞችን በተጓዳኙ መተግበሪያ ውስጥ እንዲከፍት ሁልጊዜ ፍቀድ</translation>
 <translation id="654039047105555694"><ph name="BEGIN_BOLD" />ማስታወሻ፦<ph name="END_BOLD" /> የውሂብ መሰብሰብ አፈጻጸምን ስለሚቀንስ እያደረጉ ያሉትን ነገር የሚያውቁት ከሆነ ወይም እንዲያነቁ ከተጠየቁ ብቻ ያንቁ።</translation>
 <translation id="6541638731489116978">ይህ ጣቢያ የእንቅስቃሴ ዳሳሾችዎን እንዳይደርስ ታግዷል።</translation>
+<translation id="6545407738986370057">{0,plural, =1{መሣሪያን በ1 ሳምንት ውስጥ ይመልሱ}one{መሣሪያን በ# ሳምንታት ውስጥ ይመልሱ}other{መሣሪያን በ# ሳምንታት ውስጥ ይመልሱ}}</translation>
 <translation id="6545665334409411530">የድግግሞሽ ፍጥነት</translation>
 <translation id="6545864417968258051">የብሉቱዝ ቅኝት</translation>
 <translation id="6545867563032584178">ማይክሮፎን በMac System Preferences ውስጥ ጠፍቷል</translation>

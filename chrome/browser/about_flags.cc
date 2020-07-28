@@ -1398,44 +1398,41 @@ const FeatureEntry::FeatureVariation kLongpressResolveVariations[] = {
 #endif  // defined(OS_ANDROID)
 
 const FeatureEntry::FeatureParam kResamplingInputEventsLSQEnabled[] = {
-    {"predictor", blink::features::kScrollPredictorNameLsq}};
+    {"predictor", features::kPredictorNameLsq}};
 const FeatureEntry::FeatureParam kResamplingInputEventsKalmanEnabled[] = {
-    {"predictor", blink::features::kScrollPredictorNameKalman}};
+    {"predictor", features::kPredictorNameKalman}};
 const FeatureEntry::FeatureParam kResamplingInputEventsLinearFirstEnabled[] = {
-    {"predictor", blink::features::kScrollPredictorNameLinearFirst}};
+    {"predictor", features::kPredictorNameLinearFirst}};
 const FeatureEntry::FeatureParam kResamplingInputEventsLinearSecondEnabled[] = {
-    {"predictor", blink::features::kScrollPredictorNameLinearSecond}};
+    {"predictor", features::kPredictorNameLinearSecond}};
 const FeatureEntry::FeatureParam
     kResamplingInputEventsLinearResamplingEnabled[] = {
-        {"predictor", blink::features::kScrollPredictorNameLinearResampling}};
+        {"predictor", features::kPredictorNameLinearResampling}};
 
 const FeatureEntry::FeatureVariation kResamplingInputEventsFeatureVariations[] =
-    {{blink::features::kScrollPredictorNameLsq,
-      kResamplingInputEventsLSQEnabled,
+    {{features::kPredictorNameLsq, kResamplingInputEventsLSQEnabled,
       base::size(kResamplingInputEventsLSQEnabled), nullptr},
-     {blink::features::kScrollPredictorNameKalman,
-      kResamplingInputEventsKalmanEnabled,
+     {features::kPredictorNameKalman, kResamplingInputEventsKalmanEnabled,
       base::size(kResamplingInputEventsKalmanEnabled), nullptr},
-     {blink::features::kScrollPredictorNameLinearFirst,
+     {features::kPredictorNameLinearFirst,
       kResamplingInputEventsLinearFirstEnabled,
       base::size(kResamplingInputEventsLinearFirstEnabled), nullptr},
-     {blink::features::kScrollPredictorNameLinearSecond,
+     {features::kPredictorNameLinearSecond,
       kResamplingInputEventsLinearSecondEnabled,
       base::size(kResamplingInputEventsLinearSecondEnabled), nullptr},
-     {blink::features::kScrollPredictorNameLinearResampling,
+     {features::kPredictorNameLinearResampling,
       kResamplingInputEventsLinearResamplingEnabled,
       base::size(kResamplingInputEventsLinearResamplingEnabled), nullptr}};
 
 const FeatureEntry::FeatureParam kFilteringPredictionEmptyFilterEnabled[] = {
-    {"filter", blink::features::kFilterNameEmpty}};
+    {"filter", features::kFilterNameEmpty}};
 const FeatureEntry::FeatureParam kFilteringPredictionOneEuroFilterEnabled[] = {
-    {"filter", blink::features::kFilterNameOneEuro}};
+    {"filter", features::kFilterNameOneEuro}};
 
 const FeatureEntry::FeatureVariation kFilteringPredictionFeatureVariations[] = {
-    {blink::features::kFilterNameEmpty, kFilteringPredictionEmptyFilterEnabled,
+    {features::kFilterNameEmpty, kFilteringPredictionEmptyFilterEnabled,
      base::size(kFilteringPredictionEmptyFilterEnabled), nullptr},
-    {blink::features::kFilterNameOneEuro,
-     kFilteringPredictionOneEuroFilterEnabled,
+    {features::kFilterNameOneEuro, kFilteringPredictionOneEuroFilterEnabled,
      base::size(kFilteringPredictionOneEuroFilterEnabled), nullptr}};
 
 #if defined(OS_ANDROID)
@@ -3015,6 +3012,11 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kCastMediaRouteProviderName,
      flag_descriptions::kCastMediaRouteProviderDescription, kOsDesktop,
      FEATURE_VALUE_TYPE(media_router::kCastMediaRouteProvider)},
+    {"global-media-controls-cast-start-stop",
+     flag_descriptions::kGlobalMediaControlsCastStartStopName,
+     flag_descriptions::kGlobalMediaControlsCastStartStopDescription,
+     kOsWin | kOsMac | kOsLinux,
+     FEATURE_VALUE_TYPE(media_router::kGlobalMediaControlsCastStartStop)},
 #endif  // !OS_ANDROID
 #if defined(OS_ANDROID)
     {"autofill-keyboard-accessory-view",
@@ -4695,6 +4697,10 @@ const FeatureEntry kFeatureEntries[] = {
 #endif  // defined(OS_WIN) || defined(OS_MACOSX) || defined(OS_LINUX) ||
         // defined(OS_CHROMEOS)
 
+    {"restrict-gamepad-access", flag_descriptions::kRestrictGamepadAccessName,
+     flag_descriptions::kRestrictGamepadAccessDescription, kOsAll,
+     FEATURE_VALUE_TYPE(features::kRestrictGamepadAccess)},
+
     {"shared-clipboard-ui", flag_descriptions::kSharedClipboardUIName,
      flag_descriptions::kSharedClipboardUIDescription, kOsAll,
      FEATURE_VALUE_TYPE(kSharedClipboardUI)},
@@ -5707,9 +5713,6 @@ const FeatureEntry kFeatureEntries[] = {
     {"os-settings-deep-linking", flag_descriptions::kOsSettingsDeepLinkingName,
      flag_descriptions::kOsSettingsDeepLinkingDescription, kOsCrOS,
      FEATURE_VALUE_TYPE(chromeos::features::kOsSettingsDeepLinking)},
-    {"dlc-settings-ui", flag_descriptions::kDlcSettingsUiName,
-     flag_descriptions::kDlcSettingsUiDescription, kOsCrOS,
-     FEATURE_VALUE_TYPE(chromeos::features::kDlcSettingsUi)},
     {"help-app", flag_descriptions::kHelpAppName,
      flag_descriptions::kHelpAppDescription, kOsCrOS,
      FEATURE_VALUE_TYPE(chromeos::features::kHelpAppV2)},

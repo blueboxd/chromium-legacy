@@ -26,6 +26,7 @@
 #include "third_party/blink/renderer/modules/gamepad/navigator_gamepad.h"
 
 #include "base/auto_reset.h"
+#include "device/gamepad/public/cpp/gamepad_features.h"
 #include "device/gamepad/public/cpp/gamepads.h"
 #include "third_party/blink/public/platform/task_type.h"
 #include "third_party/blink/renderer/core/dom/events/event.h"
@@ -59,6 +60,10 @@ bool HasConnectionEventListeners(LocalDOMWindow* window) {
 
 // static
 const char NavigatorGamepad::kSupplementName[] = "NavigatorGamepad";
+const char kSecureContextBlocked[] =
+    "Access to the feature \"gamepad\" requires a secure context";
+const char kFeaturePolicyBlocked[] =
+    "Access to the feature \"gamepad\" is disallowed by feature policy.";
 
 NavigatorGamepad& NavigatorGamepad::From(Navigator& navigator) {
   NavigatorGamepad* supplement =
@@ -71,13 +76,31 @@ NavigatorGamepad& NavigatorGamepad::From(Navigator& navigator) {
 }
 
 // static
-GamepadList* NavigatorGamepad::getGamepads(Navigator& navigator) {
+GamepadList* NavigatorGamepad::getGamepads(Navigator& navigator,
+                                           ExceptionState& exception_state) {
   if (!navigator.DomWindow()) {
     // Using an existing NavigatorGamepad if one exists, but don't create one
     // for a detached window, as its subclasses depend on a non-null window.
     auto* gamepad = Supplement<Navigator>::From<NavigatorGamepad>(navigator);
     return gamepad ? gamepad->Gamepads() : nullptr;
   }
+
+  auto* navigator_gamepad = &NavigatorGamepad::From(navigator);
+
+  if (base::FeatureList::IsEnabled(features::kRestrictGamepadAccess)) {
+    ExecutionContext* context = navigator_gamepad->GetExecutionContext();
+    if (!context || !context->IsSecureContext()) {
+      exception_state.ThrowSecurityError(kSecureContextBlocked);
+      return nullptr;
+    }
+
+    if (!context->IsFeatureEnabled(
+            mojom::blink::FeaturePolicyFeature::kGamepad)) {
+      exception_state.ThrowSecurityError(kFeaturePolicyBlocked);
+      return nullptr;
+    }
+  }
+
   return NavigatorGamepad::From(navigator).Gamepads();
 }
 

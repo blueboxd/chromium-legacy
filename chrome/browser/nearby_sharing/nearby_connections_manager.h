@@ -29,6 +29,8 @@ class NearbyConnectionsManager {
    public:
     virtual ~IncomingConnectionListener() = default;
 
+    // |endpoint_info| is returned from remote devices and should be parsed in
+    // utilitiy process.
     virtual void OnIncomingConnection(
         const std::string& endpoint_id,
         const std::vector<uint8_t>& endpoint_info,
@@ -37,8 +39,11 @@ class NearbyConnectionsManager {
 
   // A callback for handling discovered devices while discovering.
   class DiscoveryListener {
+   public:
     virtual ~DiscoveryListener() = default;
 
+    // |endpoint_info| is returned from remote devices and should be parsed in
+    // utilitiy process.
     virtual void OnEndpointDiscovered(
         const std::string& endpoint_id,
         const std::vector<uint8_t>& endpoint_info) = 0;
@@ -75,8 +80,7 @@ class NearbyConnectionsManager {
 
   // Starts discovery through Nearby Connections. Caller is expected to ensure
   // |listener| remains valid until StopDiscovery is called.
-  virtual void StartDiscovery(std::vector<uint8_t> endpoint_info,
-                              DiscoveryListener* listener,
+  virtual void StartDiscovery(DiscoveryListener* listener,
                               ConnectionsCallback callback) = 0;
 
   // Stops discovery through Nearby Connections.

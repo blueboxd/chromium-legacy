@@ -18,6 +18,6 @@ dictionary ScrollTimelineOptions {
         ScrollDirection orientation = "block";
         (DOMString or ScrollTimelineElementBasedOffset) startScrollOffset = "auto";
         (DOMString or ScrollTimelineElementBasedOffset)  endScrollOffset = "auto";
-
+        sequence<(DOMString or ScrollTimelineElementBasedOffset)> scrollOffsets = [];
         (double or ScrollTimelineAutoKeyword) timeRange = "auto";
 };

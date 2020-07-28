@@ -2447,6 +2447,11 @@
       'Fuchsia x64' # https://crbug.com/1058255
     ],
   },
+  'ui_base_unittests': {
+    'remove_from': [
+      'linux-lacros-tester-rel', # https://crbug.com/1110072
+    ],
+  },
   'unit_tests': {
     'remove_from': [
       'android-code-coverage-native', # crbug/1018434

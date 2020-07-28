@@ -335,6 +335,7 @@ Atinge lung orice cuvânt pentru a-l căuta. Pentru a rafina căutarea, selectea
 <translation id="3658159451045945436">Prin resetare se șterge istoricul economisirii de date, inclusiv lista site-urilor vizitate.</translation>
 <translation id="3692944402865947621">Descărcarea fișierului <ph name="FILE_NAME" /> nu a reușit, deoarece nu se poate contacta locația de stocare.</translation>
 <translation id="3701167022068948696">Remediază acum</translation>
+<translation id="371230970611282515">Anticipează și te avertizează cu privire la evenimente periculoase înainte să aibă loc.</translation>
 <translation id="3714981814255182093">Deschide Bara de căutare</translation>
 <translation id="3716182511346448902">Această pagină folosește prea multă memorie, prin urmare Chrome a întrerupt-o.</translation>
 <translation id="3721119614952978349">Tu și Google</translation>
@@ -713,6 +714,7 @@ De exemplu, unele site-uri pot răspunde la această solicitare afișând anunț
 <translation id="6593061639179217415">Versiune site desktop</translation>
 <translation id="6597891566292541626">Poziționează codul QR/de bare în acest cadru.</translation>
 <translation id="6600954340915313787">Copiat în Chrome</translation>
+<translation id="661266467055912436">Îmbunătățește securitatea pe web pentru tine și toți ceilalți.</translation>
 <translation id="6627583120233659107">Editați dosarul</translation>
 <translation id="6643016212128521049">Șterge</translation>
 <translation id="6643649862576733715">Sortează după volumul de date salvate</translation>
@@ -872,6 +874,7 @@ De exemplu, unele site-uri pot răspunde la această solicitare afișând anunț
 <translation id="7925590027513907933">{FILE_COUNT,plural, =1{Fișierul se descarcă.}few{Se descarcă # fișiere.}other{Se descarcă # de fișiere.}}</translation>
 <translation id="7926975587469166629">Pseudonimul cardului</translation>
 <translation id="7929962904089429003">Deschide meniul</translation>
+<translation id="7930998711684428189">Te avertizează dacă parolele au fost expuse în urma încălcării securității datelor.</translation>
 <translation id="7942131818088350342"><ph name="PRODUCT_NAME" /> este învechit.</translation>
 <translation id="7947953824732555851">Accept și conectare</translation>
 <translation id="7963646190083259054">Producător:</translation>

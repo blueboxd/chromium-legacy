@@ -1954,8 +1954,11 @@ blink::mojom::DisplayMode Browser::GetDisplayMode(
   if (window_->IsFullscreen())
     return blink::mojom::DisplayMode::kFullscreen;
 
-  if (is_type_app() || is_type_devtools() || is_type_app_popup())
+  if (is_type_app() || is_type_devtools() || is_type_app_popup()) {
+    if (app_controller_ && app_controller_->HasMinimalUiButtons())
+      return blink::mojom::DisplayMode::kMinimalUi;
     return blink::mojom::DisplayMode::kStandalone;
+  }
 
   return blink::mojom::DisplayMode::kBrowser;
 }

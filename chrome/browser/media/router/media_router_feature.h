@@ -31,6 +31,10 @@ extern const base::Feature kCastMediaRouteProvider;
 // https://crbug.com/813974.
 extern const base::Feature kCastAllowAllIPsFeature;
 
+// Determine whether global media controls are used to start and stop casting.
+// Only relevant when media::kGlobalMediaControlsOverlayControls is enabled.
+extern const base::Feature kGlobalMediaControlsCastStartStop;
+
 namespace prefs {
 // Pref name for the enterprise policy for allowing Cast devices on all IPs.
 constexpr char kMediaRouterCastAllowAllIPs[] =
@@ -62,6 +66,9 @@ bool DialMediaRouteProviderEnabled();
 // Returns true if browser side Cast Media Route Provider and sink query are
 // enabled.
 bool CastMediaRouteProviderEnabled();
+
+// Returns true if global media controls are used to start and stop casting.
+bool GlobalMediaControlsCastStartStopEnabled();
 #endif  // !defined(OS_ANDROID)
 
 }  // namespace media_router

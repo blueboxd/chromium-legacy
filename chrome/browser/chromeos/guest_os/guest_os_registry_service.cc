@@ -27,6 +27,7 @@
 #include "chrome/browser/ui/app_list/app_list_syncable_service.h"
 #include "chrome/browser/ui/app_list/app_list_syncable_service_factory.h"
 #include "chrome/grit/generated_resources.h"
+#include "chromeos/dbus/vm_applications/apps.pb.h"
 #include "components/crx_file/id_util.h"
 #include "components/prefs/pref_registry_simple.h"
 #include "components/prefs/pref_service.h"
@@ -112,20 +113,20 @@ base::Value LocaleStringsProtoToDictionary(
 
 // Construct a registration based on the given App proto.
 // |name| should be |app.name()| in Dictionary form.
-base::Value AppPrefRegistrationFromApp(
-    const vm_tools::apps::App& app,
-    GuestOsRegistryService::VmType vm_type,
-    base::Value name,
-    const vm_tools::apps::ApplicationList& app_list) {
+base::Value AppPrefRegistrationFromApp(GuestOsRegistryService::VmType vm_type,
+                                       const std::string& vm_name,
+                                       const std::string& container_name,
+                                       const vm_tools::apps::App& app,
+                                       base::Value name) {
   base::Value pref_registration(base::Value::Type::DICTIONARY);
   pref_registration.SetKey(guest_os::prefs::kAppDesktopFileIdKey,
                            base::Value(app.desktop_file_id()));
   pref_registration.SetIntKey(guest_os::prefs::kAppVmTypeKey,
                               static_cast<int>(vm_type));
   pref_registration.SetKey(guest_os::prefs::kAppVmNameKey,
-                           base::Value(app_list.vm_name()));
+                           base::Value(vm_name));
   pref_registration.SetKey(guest_os::prefs::kAppContainerNameKey,
-                           base::Value(app_list.container_name()));
+                           base::Value(container_name));
   pref_registration.SetKey(guest_os::prefs::kAppNameKey, std::move(name));
   pref_registration.SetKey(guest_os::prefs::kAppCommentKey,
                            ProtoToDictionary(app.comment()));
@@ -286,21 +287,65 @@ static std::string Join(const List& list) {
   return joined;
 }
 
+void SetLocaleString(App::LocaleString* locale_string,
+                     const std::string& locale,
+                     const std::string& value) {
+  DCHECK(!locale.empty());
+  App::LocaleString::Entry* entry = locale_string->add_values();
+  // Add both specified locale, and empty default.
+  for (auto& l : {locale, std::string()}) {
+    entry->set_locale(l);
+    entry->set_value(value);
+  }
+}
+
+void SetLocaleStrings(App::LocaleStrings* locale_strings,
+                      const std::string& locale,
+                      std::vector<std::string> values) {
+  DCHECK(!locale.empty());
+  App::LocaleStrings::StringsWithLocale* strings = locale_strings->add_values();
+  // Add both specified locale, and empty default.
+  for (auto& l : {locale, std::string()}) {
+    strings->set_locale(l);
+    for (auto& v : values) {
+      strings->add_value(v);
+    }
+  }
+}
+
+GuestOsRegistryService::Registration GetTerminalRegistration() {
+  std::string locale =
+      l10n_util::NormalizeLocale(g_browser_process->GetApplicationLocale());
+  vm_tools::apps::App app;
+  SetLocaleString(app.mutable_name(), locale,
+                  l10n_util::GetStringUTF8(IDS_CROSTINI_TERMINAL_APP_NAME));
+  app.add_mime_types(
+      extensions::app_file_handler_util::kMimeTypeInodeDirectory);
+  SetLocaleStrings(
+      app.mutable_keywords(), locale,
+      {"linux", "terminal", "crostini",
+       l10n_util::GetStringUTF8(IDS_CROSTINI_TERMINAL_APP_SEARCH_TERMS)});
+
+  base::Value pref = AppPrefRegistrationFromApp(
+      GuestOsRegistryService::VmType::ApplicationList_VmType_TERMINA,
+      crostini::kCrostiniDefaultVmName, crostini::kCrostiniDefaultContainerName,
+      app, ProtoToDictionary(app.name()));
+  return GuestOsRegistryService::Registration(
+      crostini::kCrostiniTerminalSystemAppId, &pref);
+}
+
 }  // namespace
 
-GuestOsRegistryService::Registration::Registration(const base::Value* pref,
-                                                   bool is_terminal_app)
-    : is_terminal_app_(is_terminal_app) {
-  DCHECK(pref || is_terminal_app);
-  if (pref)
-    pref_ = pref->Clone();
+GuestOsRegistryService::Registration::Registration(std::string app_id,
+                                                   const base::Value* pref)
+    : app_id_(std::move(app_id)) {
+  DCHECK(pref);
+  pref_ = pref->Clone();
 }
 
 GuestOsRegistryService::Registration::~Registration() = default;
 
 std::string GuestOsRegistryService::Registration::DesktopFileId() const {
-  if (is_terminal_app_)
-    return std::string();
   return pref_
       .FindKeyOfType(guest_os::prefs::kAppDesktopFileIdKey,
                      base::Value::Type::STRING)
@@ -309,8 +354,6 @@ std::string GuestOsRegistryService::Registration::DesktopFileId() const {
 
 GuestOsRegistryService::VmType GuestOsRegistryService::Registration::VmType()
     const {
-  if (is_terminal_app_)
-    return GuestOsRegistryService::VmType::ApplicationList_VmType_TERMINA;
   base::Optional<int> vm_type =
       pref_.FindIntKey(guest_os::prefs::kAppVmTypeKey);
   // The VmType field is new, existing Apps that do not include it must be
@@ -322,16 +365,12 @@ GuestOsRegistryService::VmType GuestOsRegistryService::Registration::VmType()
 }
 
 std::string GuestOsRegistryService::Registration::VmName() const {
-  if (is_terminal_app_)
-    return crostini::kCrostiniDefaultVmName;
   return pref_
       .FindKeyOfType(guest_os::prefs::kAppVmNameKey, base::Value::Type::STRING)
       ->GetString();
 }
 
 std::string GuestOsRegistryService::Registration::ContainerName() const {
-  if (is_terminal_app_)
-    return crostini::kCrostiniDefaultContainerName;
   return pref_
       .FindKeyOfType(guest_os::prefs::kAppContainerNameKey,
                      base::Value::Type::STRING)
@@ -339,8 +378,6 @@ std::string GuestOsRegistryService::Registration::ContainerName() const {
 }
 
 std::string GuestOsRegistryService::Registration::Name() const {
-  if (is_terminal_app_)
-    return l10n_util::GetStringUTF8(IDS_CROSTINI_TERMINAL_APP_NAME);
   return LocalizedString(guest_os::prefs::kAppNameKey);
 }
 
@@ -366,9 +403,6 @@ std::set<std::string> GuestOsRegistryService::Registration::Extensions() const {
 }
 
 std::set<std::string> GuestOsRegistryService::Registration::MimeTypes() const {
-  if (is_terminal_app_)
-    return std::set<std::string>(
-        {extensions::app_file_handler_util::kMimeTypeInodeDirectory});
   if (pref_.is_none())
     return {};
   return ListToStringSet(pref_.FindKeyOfType(guest_os::prefs::kAppMimeTypesKey,
@@ -376,12 +410,6 @@ std::set<std::string> GuestOsRegistryService::Registration::MimeTypes() const {
 }
 
 std::set<std::string> GuestOsRegistryService::Registration::Keywords() const {
-  if (is_terminal_app_) {
-    std::set<std::string> result = {"linux", "terminal", "crostini"};
-    result.insert(
-        l10n_util::GetStringUTF8(IDS_CROSTINI_TERMINAL_APP_SEARCH_TERMS));
-    return result;
-  }
   return LocalizedList(guest_os::prefs::kAppKeywordsKey);
 }
 
@@ -396,8 +424,6 @@ bool GuestOsRegistryService::Registration::NoDisplay() const {
 }
 
 std::string GuestOsRegistryService::Registration::PackageId() const {
-  if (is_terminal_app_)
-    return std::string();
   if (pref_.is_none())
     return std::string();
   const base::Value* package_id = pref_.FindKeyOfType(
@@ -519,16 +545,13 @@ GuestOsRegistryService::GetAllRegisteredApps() const {
       prefs_->GetDictionary(guest_os::prefs::kGuestOsRegistry);
   std::map<std::string, GuestOsRegistryService::Registration> result;
   for (const auto& item : apps->DictItems()) {
-    result.emplace(item.first,
-                   Registration(&item.second,
-                                /*is_terminal_app=*/item.first ==
-                                    crostini::kCrostiniTerminalSystemAppId));
+    result.emplace(item.first, Registration(item.first, &item.second));
   }
   // TODO(crbug.com/1028898): Register Terminal as a System App rather than a
   // crostini app.
   if (!apps->FindKey(crostini::kCrostiniTerminalSystemAppId)) {
     result.emplace(crostini::kCrostiniTerminalSystemAppId,
-                   Registration(nullptr, /*is_terminal_app=*/true));
+                   GetTerminalRegistration());
   }
   return result;
 }
@@ -548,17 +571,18 @@ GuestOsRegistryService::GetRegisteredApps(VmType vm_type) const {
 
 base::Optional<GuestOsRegistryService::Registration>
 GuestOsRegistryService::GetRegistration(const std::string& app_id) const {
+  if (app_id == crostini::kCrostiniTerminalSystemAppId)
+    return GetTerminalRegistration();
+
   const base::DictionaryValue* apps =
       prefs_->GetDictionary(guest_os::prefs::kGuestOsRegistry);
   const base::Value* pref_registration =
       apps->FindKeyOfType(app_id, base::Value::Type::DICTIONARY);
 
-  if (app_id == crostini::kCrostiniTerminalSystemAppId)
-    return base::make_optional<Registration>(pref_registration, true);
 
   if (!pref_registration)
     return base::nullopt;
-  return base::make_optional<Registration>(pref_registration, false);
+  return base::make_optional<Registration>(app_id, pref_registration);
 }
 
 void GuestOsRegistryService::RecordStartupMetrics() {
@@ -683,7 +707,7 @@ void GuestOsRegistryService::ClearApplicationList(
     for (const auto& item : apps->DictItems()) {
       if (item.first == crostini::kCrostiniTerminalSystemAppId)
         continue;
-      Registration registration(&item.second, /*is_terminal_app=*/false);
+      Registration registration(item.first, &item.second);
       if (vm_type != registration.VmType())
         continue;
       if (vm_name != registration.VmName())
@@ -752,7 +776,8 @@ void GuestOsRegistryService::UpdateApplicationList(
       new_app_ids.insert(app_id);
 
       base::Value pref_registration = AppPrefRegistrationFromApp(
-          app, app_list.vm_type(), std::move(name), app_list);
+          app_list.vm_type(), app_list.vm_name(), app_list.container_name(),
+          app, std::move(name));
 
       base::Value* old_app = apps->FindKey(app_id);
       if (old_app && EqualsExcludingTimestamps(pref_registration, *old_app))

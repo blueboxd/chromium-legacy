@@ -135,8 +135,8 @@ class SharedPasswordControllerTest : public PlatformTest {
         [[SharedPasswordController alloc] initWithWebState:&web_state_
                                                    manager:&password_manager_
                                                 formHelper:form_helper_
-                                          suggestionHelper:suggestion_helper_
-                                                  delegate:delegate_];
+                                          suggestionHelper:suggestion_helper_];
+    controller_.delegate = delegate_;
     [suggestion_helper_ verify];
     [form_helper_ verify];
     UniqueIDTabHelper::CreateForWebState(&web_state_);

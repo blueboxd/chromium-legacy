@@ -335,6 +335,7 @@
 <translation id="3658159451045945436">تؤدي إعادة الضبط إلى محو سِجلّ البيانات المحفوظة، بما في ذلك قائمة المواقع الإلكترونية التي تمت زيارتها.</translation>
 <translation id="3692944402865947621">تعذّر تنزيل <ph name="FILE_NAME" /> نظرًا لعدم إمكانية الوصول إلى موقع مساحة التخزين.</translation>
 <translation id="3701167022068948696">إصلاح الخطأ الآن</translation>
+<translation id="371230970611282515">توقّع الأحداث الخطيرة قبل حدوثها والتحذير منها</translation>
 <translation id="3714981814255182093">فتح شريط البحث</translation>
 <translation id="3716182511346448902">‏تستهلك هذه الصفحة مساحة كبيرة من الذاكرة، لذلك أوقفها Chrome مؤقتًا.</translation>
 <translation id="3721119614952978349">‏علاقتك مع Google</translation>
@@ -713,6 +714,7 @@
 <translation id="6593061639179217415">العرض بإصدار سطح المكتب</translation>
 <translation id="6597891566292541626">ضَع رمز الاستجابة السريعة أو الرمز الشريطي في هذا الإطار.</translation>
 <translation id="6600954340915313787">‏تم النسخ إلى Chrome</translation>
+<translation id="661266467055912436">تحسين الأمان من أجلك ومن أجل جميع المستخدمين على الإنترنت</translation>
 <translation id="6627583120233659107">تعديل مجلد</translation>
 <translation id="6643016212128521049">محو</translation>
 <translation id="6643649862576733715">الترتيب حسب مقدار البيانات التي تم توفيرها</translation>
@@ -872,6 +874,7 @@
 <translation id="7925590027513907933">{FILE_COUNT,plural, =1{جارٍ تنزيل ملف واحد.}zero{جارٍ تنزيل # ملف}two{جارٍ تنزيل ملفين (#).}few{جارٍ تنزيل # ملفات.}many{جارٍ تنزيل # ملفًا.}other{جارٍ تنزيل # ملف.}}</translation>
 <translation id="7926975587469166629">لقب البطاقة</translation>
 <translation id="7929962904089429003">فتح القائمة</translation>
+<translation id="7930998711684428189">التحذير في حال الكشف عن كلمات المرور في عملية اختراق بيانات</translation>
 <translation id="7942131818088350342"><ph name="PRODUCT_NAME" /> قديم.</translation>
 <translation id="7947953824732555851">قبول وتسجيل الدخول</translation>
 <translation id="7963646190083259054">المورّد:</translation>

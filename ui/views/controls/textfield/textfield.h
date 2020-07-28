@@ -367,7 +367,7 @@ class VIEWS_EXPORT Textfield : public View,
 
   // ui::TextInputClient overrides:
   void SetCompositionText(const ui::CompositionText& composition) override;
-  void ConfirmCompositionText(bool keep_selection) override;
+  uint32_t ConfirmCompositionText(bool keep_selection) override;
   void ClearCompositionText() override;
   void InsertText(const base::string16& text) override;
   void InsertChar(const ui::KeyEvent& event) override;
@@ -408,6 +408,7 @@ class VIEWS_EXPORT Textfield : public View,
 #endif
 
 #if defined(OS_CHROMEOS)
+  gfx::Rect GetAutocorrectCharacterBounds() const override;
   bool SetAutocorrectRange(const base::string16& autocorrect_text,
                            const gfx::Range& range) override;
 #endif

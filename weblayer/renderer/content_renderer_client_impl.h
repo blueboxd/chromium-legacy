@@ -30,9 +30,6 @@ class ContentRendererClientImpl : public content::ContentRendererClient {
   SkBitmap* GetSadPluginBitmap() override;
   SkBitmap* GetSadWebViewBitmap() override;
   bool HasErrorPage(int http_status_code) override;
-  bool ShouldSuppressErrorPage(content::RenderFrame* render_frame,
-                               const GURL& url,
-                               int error_code) override;
   void PrepareErrorPage(content::RenderFrame* render_frame,
                         const blink::WebURLError& error,
                         const std::string& http_method,

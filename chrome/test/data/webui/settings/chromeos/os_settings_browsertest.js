@@ -583,7 +583,6 @@ var OSSettingsDevicePageTest = class extends OSSettingsBrowserTest {
     return {
       enabled: [
         'ash::features::kDisplayIdentification',
-        'chromeos::features::kDlcSettingsUi',
         'display::features::kListAllDisplayModes'
       ]
     };

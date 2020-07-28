@@ -10,9 +10,6 @@ import org.chromium.chrome.browser.browserservices.BrowserServicesIntentDataProv
 import org.chromium.chrome.browser.browserservices.ui.splashscreen.SplashController;
 import org.chromium.chrome.browser.browserservices.ui.splashscreen.SplashscreenObserver;
 import org.chromium.chrome.browser.dependency_injection.ActivityScope;
-import org.chromium.chrome.browser.lifecycle.ActivityLifecycleDispatcher;
-import org.chromium.chrome.browser.lifecycle.InflationObserver;
-import org.chromium.chrome.browser.webapps.WebappExtras;
 import org.chromium.content_public.browser.ScreenOrientationProvider;
 import org.chromium.device.mojom.ScreenOrientationLockType;
 import org.chromium.ui.base.ActivityWindowAndroid;
@@ -24,24 +21,16 @@ import javax.inject.Inject;
  * Delays all screen orientation requests till the activity translucency is removed.
  */
 @ActivityScope
-public class CustomTabOrientationController implements InflationObserver {
+public class CustomTabOrientationController {
     private final ActivityWindowAndroid mActivityWindowAndroid;
-    private final ActivityLifecycleDispatcher mLifecycleDispatcher;
-
-    private int mLockScreenOrientation = ScreenOrientationLockType.DEFAULT;
+    private int mLockScreenOrientation;
 
     @Inject
     public CustomTabOrientationController(ActivityWindowAndroid activityWindowAndroid,
-            BrowserServicesIntentDataProvider intentDataProvider,
-            ActivityLifecycleDispatcher lifecycleDispatcher) {
+            BrowserServicesIntentDataProvider intentDataProvider) {
         mActivityWindowAndroid = activityWindowAndroid;
-        mLifecycleDispatcher = lifecycleDispatcher;
 
-        WebappExtras webappExtras = intentDataProvider.getWebappExtras();
-        if (webappExtras != null) {
-            mLockScreenOrientation = webappExtras.orientation;
-            mLifecycleDispatcher.register(this);
-        }
+        mLockScreenOrientation = intentDataProvider.getDefaultOrientation();
     }
 
     /**
@@ -71,16 +60,12 @@ public class CustomTabOrientationController implements InflationObserver {
         });
     }
 
-    @Override
-    public void onPreInflationStartup() {
-        mLifecycleDispatcher.unregister(this);
+    public void setCanControlOrientation(boolean inAppMode) {
+        int defaultWebOrientation =
+                inAppMode ? mLockScreenOrientation : ScreenOrientationLockType.DEFAULT;
+        ScreenOrientationProvider.getInstance().setOverrideDefaultOrientation(
+                mActivityWindowAndroid, (byte) defaultWebOrientation);
 
-        // Queue up default screen orientation request now because the web page might change it via
-        // JavaScript.
-        ScreenOrientationProvider.getInstance().lockOrientation(
-                mActivityWindowAndroid, (byte) mLockScreenOrientation);
+        ScreenOrientationProvider.getInstance().unlockOrientation(mActivityWindowAndroid);
     }
-
-    @Override
-    public void onPostInflationStartup() {}
 }

@@ -45,6 +45,7 @@
 				<integer>1</integer>
 				<integer>2</integer>
 				<integer>3</integer>
+				<integer>4</integer>
 			</array>
 			<key>Titles</key>
 			<array>
@@ -52,6 +53,7 @@
 				<string>Tip Command Test</string>
 				<string>Tip Move to Dock Promo</string>
 				<string>Tip Review Updated ToS</string>
+				<string>Set Default Browser Promo</string>
 			</array>
 		</dict>
 		<dict>

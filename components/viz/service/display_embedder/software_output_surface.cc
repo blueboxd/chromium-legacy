@@ -49,8 +49,6 @@ void SoftwareOutputSurface::BindFramebuffer() {
   NOTREACHED();
 }
 
-void SoftwareOutputSurface::SetDrawRectangle(const gfx::Rect& draw_rectangle) {}
-
 void SoftwareOutputSurface::Reshape(const gfx::Size& size,
                                     float device_scale_factor,
                                     const gfx::ColorSpace& color_space,

@@ -325,6 +325,50 @@ TEST_F(StyleResolverTest,
             ComputedValue("font-size", *StyleForId("target")));
 }
 
+TEST_F(StyleResolverTest, NonCachableStyleCheckDoesNotAffectBaseComputedStyle) {
+  GetDocument().documentElement()->setInnerHTML(R"HTML(
+    <style>
+      .adjust { color: rgb(0, 0, 0); }
+    </style>
+    <div>
+      <div style="color: rgb(0, 128, 0)">
+        <div id="target" style="transition: color 1s linear"></div>
+      </div>
+    </div>
+  )HTML");
+  UpdateAllLifecyclePhasesForTest();
+
+  Element* target = GetDocument().getElementById("target");
+
+  EXPECT_EQ("rgb(0, 128, 0)", ComputedValue("color", *StyleForId("target")));
+
+  // Trigger a transition on an inherited property.
+  target->setAttribute(html_names::kClassAttr, "adjust");
+  UpdateAllLifecyclePhasesForTest();
+  ElementAnimations* element_animations = target->GetElementAnimations();
+  EXPECT_TRUE(element_animations);
+  Animation* transition = (*element_animations->Animations().begin()).key;
+  EXPECT_TRUE(transition);
+
+  // Advance to the midpoint of the transition.
+  transition->setCurrentTime(500);
+  UpdateAllLifecyclePhasesForTest();
+  EXPECT_EQ("rgb(0, 64, 0)", ComputedValue("color", *StyleForId("target")));
+  EXPECT_TRUE(element_animations->BaseComputedStyle());
+
+  element_animations->ClearBaseComputedStyle();
+
+  // Perform a non-cacheable style resolution, and ensure that the base computed
+  // style is not updated.
+  GetStyleEngine().GetStyleResolver().StyleForElement(
+      target, nullptr, nullptr, kMatchAllRulesExcludingSMIL);
+  EXPECT_FALSE(element_animations->BaseComputedStyle());
+
+  // Computing the style with default args updates the base computed style.
+  EXPECT_EQ("rgb(0, 64, 0)", ComputedValue("color", *StyleForId("target")));
+  EXPECT_TRUE(element_animations->BaseComputedStyle());
+}
+
 class StyleResolverFontRelativeUnitTest
     : public testing::WithParamInterface<const char*>,
       public StyleResolverTest {};

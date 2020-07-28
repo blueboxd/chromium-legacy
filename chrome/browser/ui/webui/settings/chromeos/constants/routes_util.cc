@@ -56,7 +56,6 @@ bool IsOSSettingsSubPage(const std::string& sub_page) {
       chromeos::settings::mojom::kDisplaySubpagePath,
       chromeos::settings::mojom::kStorageSubpagePath,
       chromeos::settings::mojom::kExternalStorageSubpagePath,
-      chromeos::settings::mojom::kDlcSubpagePath,
       chromeos::settings::mojom::kPowerSubpagePath,
 
       // Personalization section.

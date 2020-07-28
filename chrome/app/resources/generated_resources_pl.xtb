@@ -2376,6 +2376,7 @@ Możesz zarządzać ustawieniami konta, korzystając z aplikacji Family Link na
 <translation id="3882165008614329320">Istniejący film z aparatu lub pliku</translation>
 <translation id="3886446263141354045">Twoja prośba o dostęp to tej strony została wysłana do: <ph name="NAME" /></translation>
 <translation id="3888550877729210209">Robienie notatek w aplikacji <ph name="LOCK_SCREEN_APP_NAME" /></translation>
+<translation id="3891563564777705449">{0,plural, =1{Zaktualizuj urządzenie w ciągu tygodnia}few{Zaktualizuj urządzenie w ciągu # tygodni}many{Zaktualizuj urządzenie w ciągu # tygodni}other{Zaktualizuj urządzenie w ciągu # tygodnia}}</translation>
 <translation id="3892414795099177503">Dodaj OpenVPN/L2TP…</translation>
 <translation id="3893536212201235195">Odczytywanie i zmiana ustawień ułatwień dostępu</translation>
 <translation id="3893630138897523026">ChromeVox (komunikaty głosowe)</translation>
@@ -4437,6 +4438,7 @@ Możesz zarządzać ustawieniami konta, korzystając z aplikacji Family Link na
 <translation id="6535331821390304775">Zawsze zezwalaj stronie <ph name="ORIGIN" /> na otwieranie linków tego typu w powiązanej aplikacji</translation>
 <translation id="654039047105555694"><ph name="BEGIN_BOLD" />Uwaga:<ph name="END_BOLD" /> włącz tę opcję, tylko jeśli dokładnie wiesz, co robisz, lub ktoś Cię o to poprosił – zbieranie danych może obniżyć wydajność.</translation>
 <translation id="6541638731489116978">Tej stronie zablokowano dostęp do czujników ruchu.</translation>
+<translation id="6545407738986370057">{0,plural, =1{Zwróć urządzenie w ciągu tygodnia}few{Zwróć urządzenie w ciągu # tygodni}many{Zwróć urządzenie w ciągu # tygodni}other{Zwróć urządzenie w ciągu # tygodnia}}</translation>
 <translation id="6545665334409411530">Szybkość powtarzania</translation>
 <translation id="6545864417968258051">Skanowanie Bluetooth</translation>
 <translation id="6545867563032584178">Mikrofon jest wyłączony w Preferencjach systemowych Maca</translation>

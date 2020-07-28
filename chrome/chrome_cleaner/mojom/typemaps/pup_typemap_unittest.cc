@@ -211,7 +211,7 @@ MULTIPROCESS_TEST_MAIN(EchoPUP_ExtraData) {
   pup.expanded_scheduled_tasks.push_back(L"Scheduled task 3");
 
   pup.matched_extensions.push_back(ForceInstalledExtension(
-      *ExtensionID::Create(base::UTF16ToUTF8(kTestExtensionId1)),
+      *ExtensionID::Create(base::WideToUTF8(kTestExtensionId1)),
       POLICY_EXTENSION_FORCELIST, "https://test.com",
       "all_your_permission_are_belong_to_us"));
 

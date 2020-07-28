@@ -223,6 +223,8 @@ BLINK_COMMON_EXPORT extern const base::Feature kInputPredictorTypeChoice;
 BLINK_COMMON_EXPORT extern const base::Feature kResamplingInputEvents;
 
 // Enables resampling GestureScroll events on compositor thread.
+// Uses the kPredictorName* values in ui_base_features.h as the 'predictor'
+// feature param.
 BLINK_COMMON_EXPORT extern const base::Feature kResamplingScrollEvents;
 
 // Enables the device-memory, resource-width, viewport-width and DPR client
@@ -230,24 +232,10 @@ BLINK_COMMON_EXPORT extern const base::Feature kResamplingScrollEvents;
 // receiving client hints, regardless of Feature Policy.
 BLINK_COMMON_EXPORT extern const base::Feature kAllowClientHintsToThirdParty;
 
-// The type of scroll predictor to use for the resampling scroll events. These
-// values are used as the 'predictor' feature param for
-// |kResamplingScrollEvents|.
-BLINK_COMMON_EXPORT extern const char kScrollPredictorNameLsq[];
-BLINK_COMMON_EXPORT extern const char kScrollPredictorNameKalman[];
-BLINK_COMMON_EXPORT extern const char kScrollPredictorNameLinearFirst[];
-BLINK_COMMON_EXPORT extern const char kScrollPredictorNameLinearSecond[];
-BLINK_COMMON_EXPORT extern const char kScrollPredictorNameLinearResampling[];
-BLINK_COMMON_EXPORT extern const char kScrollPredictorNameEmpty[];
-
 // Enables filtering of predicted scroll events on compositor thread.
+// Uses the kFilterName* values in ui_base_features.h as the 'filter' feature
+// param.
 BLINK_COMMON_EXPORT extern const base::Feature kFilteringScrollPrediction;
-
-// The type of filter to use for the filtering scroll events. These
-// values are used as the 'filter' feature param for
-// |kFilteringScrollPrediction|.
-BLINK_COMMON_EXPORT extern const char kFilterNameEmpty[];
-BLINK_COMMON_EXPORT extern const char kFilterNameOneEuro[];
 
 // Enables changing the influence of acceleration based on change of direction.
 BLINK_COMMON_EXPORT extern const base::Feature kKalmanHeuristics;

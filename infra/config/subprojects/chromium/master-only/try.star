@@ -275,11 +275,6 @@ try_.chromium_chromiumos_builder(
 
 try_.chromium_chromiumos_builder(
     name = 'chromeos-kevin-compile-rel',
-    tryjob = try_.job(
-        location_regexp = [
-            '.+/[+]/chromeos/CHROMEOS_LKGM',
-        ],
-    ),
     main_list_view = 'try'
 )
 
@@ -289,6 +284,7 @@ try_.chromium_chromiumos_builder(
         location_regexp = [
             '.+/[+]/build/chromeos/.+',
             '.+/[+]/build/config/chromeos/.*',
+            '.+/[+]/chromeos/CHROMEOS_LKGM',
         ],
     ),
     main_list_view = 'try',
@@ -662,10 +658,10 @@ try_.chromium_mac_ios_builder(
 try_.chromium_mac_ios_builder(
     name = 'ios14-sdk-simulator',
     executable = 'recipe:chromium_trybot',
-    caches = [xcode_cache.x12a6163b],
+    caches = [xcode_cache.x12a8169g],
     os = os.MAC_10_15,
     properties = {
-        'xcode_build_version': '12a6163b'
+        'xcode_build_version': '12a8169g'
     }
 )
 

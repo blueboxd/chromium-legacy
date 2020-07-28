@@ -970,6 +970,13 @@ class WebContents : public PageNavigator,
   // recompute the current WebPreferences based on the current state of the
   // WebContents, etc. This will send an IPC to all the renderer processes
   // associated with this WebContents.
+  // Note that this will do this by creating a new WebPreferences with default
+  // values, then recomputing some of the attributes based on current states.
+  // This means if there's any value previously set through SetWebPreferences
+  // which does not have special recomputation logic in either
+  // WebContentsImpl::ComputeWebPreferences or
+  // ContentBrowserClient::OverrideWebkitPrefs, it will return back to its
+  // default value whenever this function is called.
   virtual void NotifyPreferencesChanged() = 0;
 
   // Sets the WebPreferences to |prefs|. This will send an IPC to all the
@@ -978,9 +985,26 @@ class WebContents : public PageNavigator,
   // the WebPreferences based on the current state of things. Instead, we're
   // setting this to a specific value. This also means that if we trigger a
   // recomputation of WebPreferences after this, the WebPreferences value will
-  // be overridden (and some attributes of |prefs| that are set here but not in
-  // RenderViewHostImpl::ComputeWebPreferences() will get overridden).
+  // be overridden. if there's any value previously set through
+  // SetWebPreferences which does not have special recomputation logic in either
+  // WebContentsImpl::ComputeWebPreferences or
+  // ContentBrowserClient::OverrideWebkitPrefs, it will return back to its
+  // default value, which might be different from the value we set it to here.
+  // If you want to use this function outside of tests, consider adding
+  // recomputation logic in either of those functions.
+  // TODO(rakina): Try to make values set through this function stick even after
+  // recomputations.
   virtual void SetWebPreferences(const WebPreferences& prefs) = 0;
+
+  // Passes current web preferences to all renderer in this WebContents after
+  // possibly recomputing them as follows: all "fast" preferences (those not
+  // requiring slow platform/device polling) are recomputed unconditionally; the
+  // remaining "slow" ones are recomputed only if they have not been computed
+  // before.
+  //
+  // This method must be called if any state that affects web preferences has
+  // changed so that it can be recomputed and sent to the renderer.
+  virtual void OnWebPreferencesChanged() = 0;
 
   // Requests the renderer to exit fullscreen.
   // |will_cause_resize| indicates whether the fullscreen change causes a

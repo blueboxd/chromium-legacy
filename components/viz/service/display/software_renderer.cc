@@ -660,12 +660,6 @@ void SoftwareRenderer::CopyDrawnRenderPass(
       result_format, geometry.result_selection, bitmap));
 }
 
-#if defined(OS_WIN)
-void SoftwareRenderer::SetEnableDCLayers(bool enable) {
-  NOTIMPLEMENTED();
-}
-#endif
-
 void SoftwareRenderer::DidChangeVisibility() {
   if (visible_)
     output_surface_->EnsureBackbuffer();

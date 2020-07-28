@@ -2378,6 +2378,7 @@ Oʻz qurilmangizda Family Link ilovasini oʻrnatib, bu hisob sozlamalarini boshq
 <translation id="3882165008614329320">Kamera yoki galereyadan olingan video</translation>
 <translation id="3886446263141354045">Bu saytni ochishga ruxsat so‘rovi <ph name="NAME" />ga yuborildi</translation>
 <translation id="3888550877729210209">Qaydlar <ph name="LOCK_SCREEN_APP_NAME" /> dasturida yoziladi</translation>
+<translation id="3891563564777705449">{0,plural, =1{Qurilmani 1 hafta ichida yangilang}other{Qurilmani # hafta ichida yangilang}}</translation>
 <translation id="3892414795099177503">OpenVPN yoki L2TP qo‘shish...</translation>
 <translation id="3893536212201235195">Maxsus imkoniyatlar sozlamarini o‘qish va o‘zgartirish</translation>
 <translation id="3893630138897523026">ChromeVox (ovozli ta’rif)</translation>
@@ -4439,6 +4440,7 @@ Ochiq eksponenta (<ph name="PUBLIC_EXPONENT_NUM_BITS" /> bit):
 <translation id="6535331821390304775">Bu turdagi havolalar har doim <ph name="ORIGIN" /> ilovasida ochilsin</translation>
 <translation id="654039047105555694"><ph name="BEGIN_BOLD" />Eslatma:<ph name="END_BOLD" /> Ushbu funksiya faqat zarurligida yoqilsin, chunki ma’lumotlarni yig‘ish jarayoni unumdorlikni pasaytirishi mumkin.</translation>
 <translation id="6541638731489116978">Bu sayt uchun harakat sensorlaridan foydalanish taqiqlandi</translation>
+<translation id="6545407738986370057">{0,plural, =1{Qurilmani 1 hafta ichida qaytaring}other{Qurilmani # hafta ichida qaytaring}}</translation>
 <translation id="6545665334409411530">Takrorlash tezligi</translation>
 <translation id="6545864417968258051">Bluetooth qurilmalarni qidirish</translation>
 <translation id="6545867563032584178">Mikrofon Mac tizim sozlamalaridan faolsizlantirilgan</translation>

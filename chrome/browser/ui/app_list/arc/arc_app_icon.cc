@@ -445,24 +445,37 @@ std::unique_ptr<ArcAppIcon::ReadResult> ArcAppIcon::ReadAdaptiveIconFiles(
 
   const base::FilePath& foreground_path = paths[0];
   const base::FilePath& background_path = paths[1];
-  if (!base::PathExists(foreground_path) ||
-      !base::PathExists(background_path)) {
+  if (!base::PathExists(foreground_path)) {
     DCHECK_EQ(2u, default_app_paths.size());
     const base::FilePath& default_app_foreground_path = default_app_paths[0];
     const base::FilePath& default_app_background_path = default_app_paths[1];
     if (default_app_foreground_path.empty() ||
-        !base::PathExists(default_app_foreground_path) ||
-        default_app_background_path.empty() ||
-        !base::PathExists(default_app_background_path)) {
+        !base::PathExists(default_app_foreground_path)) {
       return std::make_unique<ArcAppIcon::ReadResult>(
           false /* error */, true /* request_to_install */, scale_factor,
           false /* resize_allowed */,
           std::vector<std::string>() /* unsafe_icon_data */);
     }
 
+    if (default_app_background_path.empty() ||
+        !base::PathExists(default_app_background_path)) {
+      // For non-adaptive icon, there could be a |default_app_foreground_path|
+      // file only without a |default_app_background_path| file.
+      return ArcAppIcon::ReadFile(true /* request_to_install */, scale_factor,
+                                  true /* resize_allowed */,
+                                  default_app_foreground_path);
+    }
+
     return ArcAppIcon::ReadFiles(
         true /* request_to_install */, scale_factor, true /* resize_allowed */,
         default_app_foreground_path, default_app_background_path);
+  }
+
+  if (!base::PathExists(background_path)) {
+    // For non-adaptive icon, there could be a |foreground_icon_path| file
+    // only without a |background_icon_path| file.
+    return ArcAppIcon::ReadFile(false /* request_to_install */, scale_factor,
+                                false /* resize_allowed */, foreground_path);
   }
 
   return ArcAppIcon::ReadFiles(false /* request_to_install */, scale_factor,
@@ -570,6 +583,21 @@ void ArcAppIcon::OnIconRead(
       return;
     }
     case IconType::kAdaptive: {
+      // For non-adaptive icons, |foreground_icon_path| is used to save the icon
+      // without |background_icon_path|, so |unsafe_icon_data| could have one
+      // element for |foreground_icon_path| only.
+      if (read_result->unsafe_icon_data.size() == 1) {
+        is_adaptive_icon_ = false;
+        DecodeImage(read_result->unsafe_icon_data[0],
+                    ArcAppIconDescriptor(resource_size_in_dip_,
+                                         read_result->scale_factor),
+                    read_result->resize_allowed, foreground_image_skia_,
+                    foreground_incomplete_scale_factors_);
+        background_incomplete_scale_factors_.clear();
+        return;
+      }
+
+      is_adaptive_icon_ = true;
       DCHECK_EQ(2u, read_result->unsafe_icon_data.size());
       DecodeImage(read_result->unsafe_icon_data[0],
                   ArcAppIconDescriptor(resource_size_in_dip_,

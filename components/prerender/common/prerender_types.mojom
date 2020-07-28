@@ -8,9 +8,6 @@ enum PrerenderMode {
   // Neither prefetch nor prerender.
   kNoPrerender = 0,
 
-  // Only used in tests. Can be removed after http://crbug.com/898955 is fixed.
-  kDeprecatedFullPrerender = 1,
-
   // Prefetch some network resources to warm up the cache.
   kPrefetchOnly = 2,
 };

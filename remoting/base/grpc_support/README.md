@@ -22,7 +22,7 @@ class MyClass {
     // Requests will be silently dropped once the executor is destroyed, so it's
     // safe to bind with raw pointers.
     auto grpc_request = CreateGrpcAsyncUnaryRequest(
-        base::BindOnce(&HelloService::Stub::AsyncSayHello,
+        base::BindOnce(&HelloService::StubInterface::AsyncSayHello,
                        base::Unretained(stub_.get())),
         request,
         base::BindOnce(&MyClass::OnHelloResult,
@@ -37,7 +37,7 @@ class MyClass {
   void StartHelloStream() {
     StreamHelloRequest request;
     auto grpc_Request = CreateGrpcAsyncServerStreamingRequest(
-        base::BindOnce(&HelloService::Stub::AsyncStreamHello,
+        base::BindOnce(&HelloService::StubInterface::AsyncStreamHello,
                        base::Unretained(stub_.get())),
         request,
         base::BindRepeating(&MyClass::OnHelloStreamMessage,

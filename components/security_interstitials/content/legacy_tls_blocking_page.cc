@@ -55,10 +55,6 @@ LegacyTLSBlockingPage::LegacyTLSBlockingPage(
 
 LegacyTLSBlockingPage::~LegacyTLSBlockingPage() = default;
 
-bool LegacyTLSBlockingPage::ShouldCreateNewNavigation() const {
-  return true;
-}
-
 security_interstitials::SecurityInterstitialPage::TypeID
 LegacyTLSBlockingPage::GetTypeForTesting() {
   return LegacyTLSBlockingPage::kTypeForTesting;

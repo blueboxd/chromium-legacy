@@ -269,6 +269,13 @@ bool AssistiveSuggester::OnKeyEvent(
   return false;
 }
 
+void AssistiveSuggester::RecordAssistiveMatchMetricsForAction(
+    AssistiveType action) {
+  RecordAssistiveMatch(action);
+  if (!IsActionEnabled(action))
+    RecordAssistiveDisabled(action);
+}
+
 void AssistiveSuggester::RecordAssistiveMatchMetrics(const base::string16& text,
                                                      int cursor_pos,
                                                      int anchor_pos) {
@@ -278,11 +285,14 @@ void AssistiveSuggester::RecordAssistiveMatchMetrics(const base::string16& text,
     int start_pos = std::max(0, cursor_pos - kMaxTextBeforeCursorLength);
     base::string16 text_before_cursor =
         text.substr(start_pos, cursor_pos - start_pos);
-    AssistiveType action = ProposeAssistiveAction(text_before_cursor);
+    // Personal info suggestion match
+    AssistiveType action =
+        ProposePersonalInfoAssistiveAction(text_before_cursor);
     if (action != AssistiveType::kGenericAction) {
-      RecordAssistiveMatch(action);
-      if (!IsActionEnabled(action))
-        RecordAssistiveDisabled(action);
+      RecordAssistiveMatchMetricsForAction(action);
+      // Emoji suggestion match
+    } else if (emoji_suggester_.ShouldShowSuggestion(text_before_cursor)) {
+      RecordAssistiveMatchMetricsForAction(AssistiveType::kEmoji);
     }
   }
 }

@@ -75,6 +75,7 @@
 <translation id="1553358976309200471">Chrome আপডেট করুন</translation>
 <translation id="1569387923882100876">সংযুক্ত ডিভাইস</translation>
 <translation id="1571304935088121812">ইউজারনেম কপি করুন</translation>
+<translation id="1592864538817356322">স্ট্যান্ডার্ড সুরক্ষা:</translation>
 <translation id="1612196535745283361">ডিভাইস স্ক্যান করার জন্য Chrome এর অবস্থানের অ্যাক্সেস প্রয়োজন। অবস্থানের অ্যাক্সেস <ph name="BEGIN_LINK" />এই ডিভাইসের জন্য বন্ধ করা হয়েছে<ph name="END_LINK" />।</translation>
 <translation id="1620510694547887537">ক্যামেরা</translation>
 <translation id="1628019612362412531">{NUM_SELECTED,plural, =1{১ টি নির্বাচিত আইটেম সরান}one{#টি নির্বাচিত আইটেম সরান}other{#টি নির্বাচিত আইটেম সরান}}</translation>
@@ -334,6 +335,7 @@
 <translation id="3658159451045945436">রিসেট করলে আপনার ঘুরে দেখা সাইট সহ আপনার ডেটা সেভিংয়ের ইতিহাস মুছে দেয়।</translation>
 <translation id="3692944402865947621">স্টোর করার জায়গা খুঁজে না পাওয়ায় <ph name="FILE_NAME" /> ডাউনলোড করা যায়নি।</translation>
 <translation id="3701167022068948696">এখনই সমাধান করুন</translation>
+<translation id="371230970611282515">কোনও ঝুঁকিপূর্ণ ঘটনা ঘটলে সেটি অনুমান করে আপনাকে সতর্ক করা হয়।</translation>
 <translation id="3714981814255182093">খুঁজুন দণ্ডটি খুলুন</translation>
 <translation id="3716182511346448902">এই পৃষ্ঠাটি খুব বেশি মেমরি ব্যবহার করছে তাই Chrome এটি বিরত রেখেছে।</translation>
 <translation id="3721119614952978349">আপনি এবং Google</translation>
@@ -580,6 +582,7 @@
 <translation id="5659593005791499971">ইমেল আইডি</translation>
 <translation id="5665379678064389456"><ph name="APP_NAME" /> এ ইভেন্ট তৈরি করুন</translation>
 <translation id="5668404140385795438">কোনো ওয়েবসাইটের জুম ইন প্রতিরোধ করার অনুরোধ উপেক্ষা করুন</translation>
+<translation id="568275469169136466">অস্থায়ীভাবে সাইন-ইন করার জন্য</translation>
 <translation id="5683547024293500885">কোনও আপডেট আছে কিনা, Chrome তা চেক করে দেখতে পারছে না</translation>
 <translation id="5686790454216892815">ফাইলের নামটি খুব বড়</translation>
 <translation id="5694049548840660018">হোমে সহজেই ফিরে যান</translation>
@@ -591,6 +594,7 @@
 <translation id="5723735397759933332">লাইট মোড সেটিংয়ের মাধ্যমে আপনি HTTPS পৃষ্ঠাতে ছবি অপ্টিমাইজ করে এখন আরও ডেটা সেভ করতে পারেন।</translation>
 <translation id="5726692708398506830">পৃষ্ঠাতে থাকা সবকিছুকে বড় করুন</translation>
 <translation id="5732819098735351888">ওয়াই-ফাই নেটওয়ার্কে কানেক্ট হলেই ডাউনলোড শুরু হবে।</translation>
+<translation id="5733983706093266635">QR কোড তৈরি করা যায়নি। ইউআরএলটিতে <ph name="CHARACTER_LIMIT" />-এর বেশি অক্ষর আছে।</translation>
 <translation id="5748802427693696783">স্ট্যান্ডার্ড ট্যাবে পাল্টানো হয়েছে</translation>
 <translation id="5749068826913805084">ফাইল ডাউনলোড করতে Chrome-এর জন্য স্টোরেজ অ্যাক্সেস প্রয়োজন।</translation>
 <translation id="5749237766298580851"><ph name="SEPARATOR" /> বন্ধ করার বিষয়টি সাজেস্ট করা হয়নি</translation>
@@ -643,6 +647,7 @@
 <translation id="6111020039983847643">ব্যবহৃত ডেটা</translation>
 <translation id="6112702117600201073">রিফ্রেশ পৃষ্ঠা</translation>
 <translation id="6127379762771434464">আইটেম সরানো হয়েছে</translation>
+<translation id="6140709049082532940">উন্নত সুরক্ষা:</translation>
 <translation id="6140912465461743537">দেশ/অঞ্চল</translation>
 <translation id="614940544461990577">এটি করে দেখুন:</translation>
 <translation id="6154478581116148741">এই ডিভাইস থেকে আপনার পাসওয়ার্ড এক্সপোর্ট করতে সেটিংসে স্ক্রিন লক চালু করুন</translation>
@@ -711,6 +716,7 @@
 <translation id="6593061639179217415">ডেস্কটপ সাইট</translation>
 <translation id="6597891566292541626">এই ফ্রেমের মধ্যে QR/বার কোড বসান।</translation>
 <translation id="6600954340915313787">Chrome-এ প্রতিলিপি করা হয়েছে</translation>
+<translation id="661266467055912436">ওয়েবে আপনার এবং সকলের জন্য নিরাপত্তা আরও উন্নত করুন।</translation>
 <translation id="6627583120233659107">ফোল্ডার সম্পাদনা করুন</translation>
 <translation id="6643016212128521049">সাফ করুন</translation>
 <translation id="6643649862576733715">সেভ করা ডেটার পরিমাণ অনুযায়ী সাজান</translation>
@@ -870,6 +876,7 @@
 <translation id="7925590027513907933">{FILE_COUNT,plural, =1{ফাইলটি ডাউনলোড হচ্ছে।}one{#টি ফাইল ডাউনলোড হচ্ছে।}other{#টি ফাইল ডাউনলোড হচ্ছে।}}</translation>
 <translation id="7926975587469166629">কার্ডের বিশেষ নাম</translation>
 <translation id="7929962904089429003">মেনুটি খুলুন</translation>
+<translation id="7930998711684428189">আপনার পাসওয়ার্ড কোনও ডেটা নিরাপত্তা লঙ্ঘনের কারণে সর্বজনীনভাবে প্রকাশ হলে তা আপনাকে জানানো হবে।</translation>
 <translation id="7942131818088350342"><ph name="PRODUCT_NAME" /> পুরনো হয়ে গেছে।</translation>
 <translation id="7947953824732555851">সম্মত হয়ে সাইন-ইন করুন</translation>
 <translation id="7963646190083259054">বিক্রেতা:</translation>
@@ -1019,6 +1026,7 @@
 <translation id="9100610230175265781">পাসফ্রেজের প্রয়োজন</translation>
 <translation id="9102803872260866941">প্রিভিউ ট্যাব খোলা হয়েছে</translation>
 <translation id="9104217018994036254">ট্যাব শেয়ার করা যাবে এমন ডিভাইসের সূচি।</translation>
+<translation id="9104402662006063371">'ছদ্মবেশী মোডে' যান</translation>
 <translation id="9108312223223904744">নিরাপত্তা কী হিসেবে ফোনের ব্যবহার</translation>
 <translation id="9108808586816295166">নিরাপদ ডিএনএস সবসময় উপলভ্য নাও থাকতে পারে</translation>
 <translation id="9133397713400217035">অফলাইন কন্টেন্ট দেখুন</translation>

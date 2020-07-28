@@ -42,6 +42,10 @@ class NativeInputMethodEngine : public InputMethodEngine {
   // Returns whether this is connected to the input engine.
   bool IsConnectedForTesting() const;
 
+  AssistiveSuggester* get_assistive_suggester_for_testing() {
+    return assistive_suggester_;
+  }
+
  private:
   class ImeObserver : public InputMethodEngineBase::Observer,
                       public ime::mojom::InputChannel {
@@ -125,6 +129,7 @@ class NativeInputMethodEngine : public InputMethodEngine {
   };
 
   ImeObserver* GetNativeObserver() const;
+  AssistiveSuggester* assistive_suggester_;
 };
 
 }  // namespace chromeos

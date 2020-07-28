@@ -513,8 +513,12 @@ ScrollTimeline* CreateScrollTimeline(Element* element,
       ComputeScrollDirection(rule->GetOrientation());
   ScrollTimelineOffset* start = ComputeScrollOffset(rule->GetStart());
   ScrollTimelineOffset* end = ComputeScrollOffset(rule->GetEnd());
+  HeapVector<Member<ScrollTimelineOffset>>* scroll_offsets =
+      MakeGarbageCollected<HeapVector<Member<ScrollTimelineOffset>>>();
+  scroll_offsets->push_back(start);
+  scroll_offsets->push_back(end);
   auto* scroll_timeline = MakeGarbageCollected<ScrollTimeline>(
-      &element->GetDocument(), source, direction, start, end,
+      &element->GetDocument(), source, direction, scroll_offsets,
       *scroll_time_range);
   // It's is not allowed for a style resolve to create timelines that
   // needs timing updates (i.e. AnimationTimeline::NeedsAnimationTimingUpdate()

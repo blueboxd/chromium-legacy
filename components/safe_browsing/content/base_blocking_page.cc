@@ -129,10 +129,6 @@ void BaseBlockingPage::CommandReceived(const std::string& page_cmd) {
   sb_error_ui_->HandleCommand(interstitial_command);
 }
 
-bool BaseBlockingPage::ShouldCreateNewNavigation() const {
-  return sb_error_ui_->is_main_frame_load_blocked();
-}
-
 void BaseBlockingPage::PopulateInterstitialStrings(
     base::DictionaryValue* load_time_data) {
   sb_error_ui_->PopulateStringsForHtml(load_time_data);

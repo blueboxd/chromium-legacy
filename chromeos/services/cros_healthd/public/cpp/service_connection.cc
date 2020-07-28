@@ -6,6 +6,7 @@
 
 #include "base/bind.h"
 #include "base/macros.h"
+#include "base/memory/weak_ptr.h"
 #include "base/no_destructor.h"
 #include "base/sequence_checker.h"
 #include "chromeos/dbus/cros_healthd/cros_healthd_client.h"
@@ -144,6 +145,8 @@ class ServiceConnectionImpl : public ServiceConnection {
   mojo::Remote<mojom::CrosHealthdEventService> cros_healthd_event_service_;
 
   SEQUENCE_CHECKER(sequence_checker_);
+
+  base::WeakPtrFactory<ServiceConnectionImpl> weak_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(ServiceConnectionImpl);
 };
@@ -368,10 +371,10 @@ void ServiceConnectionImpl::EnsureCrosHealthdServiceFactoryIsBound() {
 
   cros_healthd_service_factory_ = client->BootstrapMojoConnection(
       base::BindOnce(&ServiceConnectionImpl::OnBootstrapMojoConnectionResponse,
-                     base::Unretained(this)));
+                     weak_factory_.GetWeakPtr()));
 
   cros_healthd_service_factory_.set_disconnect_handler(base::BindOnce(
-      &ServiceConnectionImpl::OnDisconnect, base::Unretained(this)));
+      &ServiceConnectionImpl::OnDisconnect, weak_factory_.GetWeakPtr()));
 }
 
 void ServiceConnectionImpl::BindCrosHealthdDiagnosticsServiceIfNeeded() {
@@ -383,7 +386,7 @@ void ServiceConnectionImpl::BindCrosHealthdDiagnosticsServiceIfNeeded() {
   cros_healthd_service_factory_->GetDiagnosticsService(
       cros_healthd_diagnostics_service_.BindNewPipeAndPassReceiver());
   cros_healthd_diagnostics_service_.set_disconnect_handler(base::BindOnce(
-      &ServiceConnectionImpl::OnDisconnect, base::Unretained(this)));
+      &ServiceConnectionImpl::OnDisconnect, weak_factory_.GetWeakPtr()));
 }
 
 void ServiceConnectionImpl::BindCrosHealthdEventServiceIfNeeded() {
@@ -395,7 +398,7 @@ void ServiceConnectionImpl::BindCrosHealthdEventServiceIfNeeded() {
   cros_healthd_service_factory_->GetEventService(
       cros_healthd_event_service_.BindNewPipeAndPassReceiver());
   cros_healthd_event_service_.set_disconnect_handler(base::BindOnce(
-      &ServiceConnectionImpl::OnDisconnect, base::Unretained(this)));
+      &ServiceConnectionImpl::OnDisconnect, weak_factory_.GetWeakPtr()));
 }
 
 void ServiceConnectionImpl::BindCrosHealthdProbeServiceIfNeeded() {
@@ -407,7 +410,7 @@ void ServiceConnectionImpl::BindCrosHealthdProbeServiceIfNeeded() {
   cros_healthd_service_factory_->GetProbeService(
       cros_healthd_probe_service_.BindNewPipeAndPassReceiver());
   cros_healthd_probe_service_.set_disconnect_handler(base::BindOnce(
-      &ServiceConnectionImpl::OnDisconnect, base::Unretained(this)));
+      &ServiceConnectionImpl::OnDisconnect, weak_factory_.GetWeakPtr()));
 }
 
 ServiceConnectionImpl::ServiceConnectionImpl() {

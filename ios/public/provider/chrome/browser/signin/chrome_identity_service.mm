@@ -30,6 +30,14 @@ bool ChromeIdentityService::HandleApplicationOpenURL(UIApplication* application,
   return false;
 }
 
+bool ChromeIdentityService::HandleSessionOpenURLContexts(UIScene* scene,
+                                                         NSSet* URLContexts) {
+  return false;
+}
+
+void ChromeIdentityService::ApplicationDidDiscardSceneSessions(
+    NSSet* scene_sessions) {}
+
 DismissASMViewControllerBlock
 ChromeIdentityService::PresentAccountDetailsController(
     ChromeIdentity* identity,

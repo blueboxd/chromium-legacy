@@ -7,6 +7,7 @@
 #include <utility>
 
 #include "base/bind_helpers.h"
+#include "build/build_config.h"
 #include "components/viz/common/gpu/context_lost_reason.h"
 #include "components/viz/service/display/dc_layer_overlay.h"
 #include "gpu/command_buffer/common/swap_buffers_complete_params.h"
@@ -262,13 +263,13 @@ void SkiaOutputDeviceGL::SetGpuVSyncEnabled(bool enabled) {
   gl_surface_->SetGpuVSyncEnabled(enabled);
 }
 
-#if defined(OS_WIN)
 void SkiaOutputDeviceGL::SetEnableDCLayers(bool enable) {
   gl_surface_->SetEnableDCLayers(enable);
 }
 
 void SkiaOutputDeviceGL::ScheduleOverlays(
     SkiaOutputSurface::OverlayList overlays) {
+#if defined(OS_WIN)
   for (auto& dc_layer : overlays) {
     ui::DCRendererLayerParams params;
 
@@ -306,8 +307,8 @@ void SkiaOutputDeviceGL::ScheduleOverlays(
     if (!gl_surface_->ScheduleDCLayer(params))
       DLOG(ERROR) << "ScheduleDCLayer failed";
   }
+#endif  // OS_WIN
 }
-#endif
 
 void SkiaOutputDeviceGL::EnsureBackbuffer() {
   gl_surface_->SetBackbufferAllocation(true);

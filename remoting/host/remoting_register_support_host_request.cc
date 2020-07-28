@@ -67,8 +67,9 @@ void RemotingRegisterSupportHostRequest::RegisterSupportHostClientImpl::
     RegisterSupportHost(const apis::v1::RegisterSupportHostRequest& request,
                         RegisterSupportHostResponseCallback callback) {
   auto grpc_request = CreateGrpcAsyncUnaryRequest(
-      base::BindOnce(&RemoteSupportService::Stub::AsyncRegisterSupportHost,
-                     base::Unretained(remote_support_.get())),
+      base::BindOnce(
+          &RemoteSupportService::StubInterface::AsyncRegisterSupportHost,
+          base::Unretained(remote_support_.get())),
       request, std::move(callback));
   grpc_executor_.ExecuteRpc(std::move(grpc_request));
 }

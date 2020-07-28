@@ -6,6 +6,7 @@
 #define COMPONENTS_VIZ_SERVICE_DISPLAY_OVERLAY_PROCESSOR_WIN_H_
 
 #include <memory>
+#include <vector>
 
 #include "base/containers/flat_map.h"
 #include "base/macros.h"
@@ -29,7 +30,7 @@ class VIZ_SERVICE_EXPORT OverlayProcessorWin
   using CandidateList = DCLayerOverlayList;
 
   OverlayProcessorWin(
-      bool enable_dc_overlay,
+      OutputSurface* output_surface,
       std::unique_ptr<DCLayerOverlayProcessor> dc_layer_overlay_processor);
   ~OverlayProcessorWin() override;
 
@@ -58,6 +59,8 @@ class VIZ_SERVICE_EXPORT OverlayProcessorWin
       gfx::Rect* damage_rect,
       std::vector<gfx::Rect>* content_bounds) override;
 
+  void set_using_dc_layers_for_testing(bool value) { using_dc_layers_ = value; }
+
  protected:
   // For testing.
   DCLayerOverlayProcessor* GetOverlayProcessor() {
@@ -65,7 +68,13 @@ class VIZ_SERVICE_EXPORT OverlayProcessorWin
   }
 
  private:
-  const bool enable_dc_overlay_;
+  OutputSurface* const output_surface_;
+  // Whether direct composition layers are supported by the output surface.
+  const bool supports_dc_layers_;
+  // Whether direct composition layers are being used with SetEnableDCLayers().
+  bool using_dc_layers_ = false;
+  // Number of frames since the last time direct composition layers were used.
+  int frames_since_using_dc_layers_ = 0;
   // TODO(weiliangc): Eventually fold DCLayerOverlayProcessor into this class.
   std::unique_ptr<DCLayerOverlayProcessor> dc_layer_overlay_processor_;
 

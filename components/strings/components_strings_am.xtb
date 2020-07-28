@@ -359,7 +359,6 @@
 <translation id="2413528052993050574">ይህ አገልጋይ <ph name="DOMAIN" /> መሆኑን ሊያረጋግጥ አልቻለም፤ የደህንነት እውቅና ማረጋገጫው ተሽሮ ሊሆን ይችላል። ይሄ በተሳሳተ አወቃቀር ወይም አንድ አጥቂ ግንኙነትዎን በመጥለፉ የተከሰተ ሊሆን ይችላል።</translation>
 <translation id="2438874542388153331">በቀኝ በኩል አራቴ ብሳ</translation>
 <translation id="245044156129055925">አሁን የይለፍ ቃልዎን በአንድ አታላይ ጣቢያ ላይ አስገብተዋል። Chromium የይለፍ ቃልዎን አሁኑኑ እንዲቀይሩ ይመክራል።</translation>
-<translation id="2463193859425327265">መነሻ ገጹን ቀይር</translation>
 <translation id="2463739503403862330">ሙላ</translation>
 <translation id="2465402087343596252">ስነ-ሕንጻ-E</translation>
 <translation id="2465655957518002998">የማድረሻ ዘዴ ይምረጡ</translation>
@@ -822,7 +821,7 @@
 <translation id="4358461427845829800">የመክፈያ ዘዴዎችን ያቀናብሩ...</translation>
 <translation id="4359160567981085931">አሁን የይለፍ ቃልዎን በአንድ አታላይ ጣቢያ ላይ አስገብተዋል። Chrome ሊያግዝ ይችላል። የእርስዎን የይለፍ ቃል ለመለወጥ እና የእርስዎ መለያ ስጋት ውስጥ እንዳለ ለGoogle ለማሳወቅ፣ መለያን ከጥቃት ተከላከል የሚለው ላይ ጠቅ ያድርጉ።</translation>
 <translation id="4367563149485757821">ቁጥር-12 (የደብዳቤ ፖስታ)</translation>
-<translation id="4367839622597707614">{1,plural, =0{በአንድ ጣቢያ ወይም መተግበሪያ ላይ ያለየውሂብ ጥሰት የእርስዎን የተቀመጠ የይለፍ ቃል ለ<ph name="ORIGIN" /> አጋልጦታል። Chrome <ph name="ORIGIN" /> ላይ የይለፍ ቃልዎን አሁኑኑ እንዲቀይሩት ይመክራል።}=1{በአንድ ጣቢያ ወይም መተግበሪያ ላይ ያለየውሂብ ጥሰት የእርስዎን የተቀመጠ የይለፍ ቃል ለ<ph name="ORIGIN" /> እና ሌላ ጣቢያ አጋልጦታል። Chrome የተቀመጡ ይለፍ ቃላትዎን አሁኑኑ መፈተሽ ይመክራል።}one{በአንድ ጣቢያ ወይም መተግበሪያ ላይ ያለየውሂብ ጥሰት የእርስዎን የተቀመጠ የይለፍ ቃል ለ<ph name="ORIGIN" /> እና <ph name="SITES_COUNT" /> አጋልጦታል። Chrome የተቀመጡ ይለፍ ቃላትዎን አሁኑኑ መፈተሽ ይመክራል።}other{በአንድ ጣቢያ ወይም መተግበሪያ ላይ ያለየውሂብ ጥሰት የእርስዎን የተቀመጠ የይለፍ ቃል ለ<ph name="ORIGIN" /> እና <ph name="SITES_COUNT" /> አጋልጦታል። Chrome የተቀመጡ ይለፍ ቃላትዎን አሁኑኑ መፈተሽ ይመክራል።}}</translation>
+<translation id="4367839622597707614">{1,plural, =0{በአንድ ጣቢያ ወይም መተግበሪያ ላይ ያለ የውሂብ ጥሰት የእርስዎን የተቀመጠ የይለፍ ቃል ለ<ph name="ORIGIN" /> አጋልጦታል። Chrome <ph name="ORIGIN" /> ላይ የይለፍ ቃልዎን አሁኑኑ እንዲቀይሩት ይመክራል።}=1{በአንድ ጣቢያ ወይም መተግበሪያ ላይ ያለ የውሂብ ጥሰት የእርስዎን የተቀመጠ የይለፍ ቃል ለ<ph name="ORIGIN" /> እና ሌላ ጣቢያ አጋልጦታል። Chrome የተቀመጡ ይለፍ ቃላትዎን አሁኑኑ መፈተሽ ይመክራል።}one{በአንድ ጣቢያ ወይም መተግበሪያ ላይ ያለ የውሂብ ጥሰት የእርስዎን የተቀመጠ የይለፍ ቃል ለ<ph name="ORIGIN" /> እና <ph name="SITES_COUNT" /> አጋልጦታል። Chrome የተቀመጡ ይለፍ ቃላትዎን አሁኑኑ መፈተሽ ይመክራል።}other{በአንድ ጣቢያ ወይም መተግበሪያ ላይ ያለ የውሂብ ጥሰት የእርስዎን የተቀመጠ የይለፍ ቃል ለ<ph name="ORIGIN" /> እና <ph name="SITES_COUNT" /> አጋልጦታል። Chrome የተቀመጡ ይለፍ ቃላትዎን አሁኑኑ መፈተሽ ይመክራል።}}</translation>
 <translation id="437058704415269440">የመለያ ቀሪ ሒሳብ</translation>
 <translation id="4372516964750095882">ፋንፎልድ-አሜሪካ</translation>
 <translation id="4372948949327679948">የተጠበቀው የ<ph name="VALUE_TYPE" /> ዋጋ ነው።</translation>
@@ -1153,7 +1152,6 @@
 <translation id="5785756445106461925">በተጨማሪ፣ ይህ ገጽ ደህንነታቸው ያልተጠበቀ ሌሎች ንብረቶችን አካትቷል። እነዚህ ንብረቶች በሽግግር ወቅት በሌሎች ሊታዩ ይችላሉ፣ እናም የገጹን መልክ ለመለወጥ በአጥቂዎች ሊቀየሩ ይችላሉ።</translation>
 <translation id="5786044859038896871">የካርድዎን መረጃ መሙላት ይፈልጋሉ?</translation>
 <translation id="5798290721819630480">ለውጦች ይወገዱ?</translation>
-<translation id="5798683403665926540">በChrome ቅንብሮች ውስጥ መነሻ ገጽን ይቀይሩ</translation>
 <translation id="5803412860119678065">የእርስዎን <ph name="CARD_DETAIL" /> መሙላት ይፈልጋሉ?</translation>
 <translation id="5804241973901381774">ፍቃዶች</translation>
 <translation id="5804427196348435412">የNFC መሣሪያዎችን ይጠቀሙ</translation>
@@ -1602,7 +1600,6 @@
 <translation id="7669271284792375604">በዚህ ጣቢያ ላይ ያሉ አጥቂዎች እርስዎ የአሰሳ ተሞክሮዎን ሊጎዱ (ለምሳሌ፦ መነሻ ገጽዎን በመቀየር ወይም በሚጎበኟቸው ጣቢያዎች ላይ ተጨማሪ ማስታወቂያዎችን በማሳየት) የሚችሉ ፕሮግራሞችን እንዲጭኑ ለማታለል ሊሞክሩ ይችላሉ።</translation>
 <translation id="7673278391011283842">የመልዕክት ሳጥን 6</translation>
 <translation id="7676643023259824263">የቅንጥብ ሰሌዳ ጽሑፍ <ph name="TEXT" /> ይፈልጉ</translation>
-<translation id="7681101578153515023">የፍለጋ ፕሮግራም ቀይር</translation>
 <translation id="7682287625158474539">ዕቃን የማጓጓዝ ስራ</translation>
 <translation id="7687186412095877299">የክፍያ ቅጾችን በተቀመጡ የመክፈያ ዘዴዎችዎ ይሞላቸዋል</translation>
 <translation id="7687305263118037187">እረፍት ጊዜን ዳግም ሞክር</translation>
@@ -1640,7 +1637,6 @@
 <translation id="7802523362929240268">ጣቢያው ህጋዊ ነው</translation>
 <translation id="780301667611848630">አይ፣ አመሰግናለሁ</translation>
 <translation id="7805768142964895445">ሁኔታ</translation>
-<translation id="7806344367022510803">በChrome ውስጥ የፍለጋ ፕሮግራም ቅንብሮችን ይቀይሩ</translation>
 <translation id="7812922009395017822">Mir</translation>
 <translation id="7813600968533626083">የአስተያየት ጥቆማ ከChrome ይወገድ?</translation>
 <translation id="781440967107097262">ቅንጥብ ሰሌዳ ይጋራ?</translation>
@@ -1782,7 +1778,6 @@
 ተጨማሪ ዝርዝሮች፦
 <ph name="DEBUG_INFO" /></translation>
 <translation id="8424582179843326029"><ph name="FIRST_LABEL" /> <ph name="SECOND_LABEL" /> <ph name="THIRD_LABEL" /></translation>
-<translation id="8425213833346101688">ለውጥ</translation>
 <translation id="8428213095426709021">ቅንብሮች</translation>
 <translation id="8433057134996913067">ይህ ከአብዛኛዎቹ የድር ጣቢያዎች ዘግቶ ያስወጣዎታል።</translation>
 <translation id="8437238597147034694">&amp;ውሰድን ቀልብስ</translation>

@@ -1538,7 +1538,7 @@ IN_PROC_BROWSER_TEST_F(ServiceWorkerVersionBrowserTest, FetchWithSaveData) {
   content_browser_client.set_data_saver_enabled(true);
   ContentBrowserClient* old_client =
       SetBrowserClientForTesting(&content_browser_client);
-  shell()->web_contents()->GetRenderViewHost()->OnWebkitPreferencesChanged();
+  shell()->web_contents()->OnWebPreferencesChanged();
   InstallTestHelper("/service_worker/fetch_in_install.js",
                     blink::ServiceWorkerStatusCode::kOk);
   SetBrowserClientForTesting(old_client);
@@ -1553,7 +1553,7 @@ IN_PROC_BROWSER_TEST_F(ServiceWorkerVersionBrowserTest,
   content_browser_client.set_data_saver_enabled(true);
   ContentBrowserClient* old_client =
       SetBrowserClientForTesting(&content_browser_client);
-  shell()->web_contents()->GetRenderViewHost()->OnWebkitPreferencesChanged();
+  shell()->web_contents()->OnWebPreferencesChanged();
   InstallTestHelper("/service_worker/generated_sw.js",
                     blink::ServiceWorkerStatusCode::kOk);
   SetBrowserClientForTesting(old_client);

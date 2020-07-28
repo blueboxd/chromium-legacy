@@ -55,8 +55,6 @@ class TestInterstitialPage : public SecurityInterstitialPage {
   void OnInterstitialClosing() override {}
 
  protected:
-  bool ShouldCreateNewNavigation() const override { return false; }
-
   void PopulateInterstitialStrings(
       base::DictionaryValue* load_time_data) override {}
 

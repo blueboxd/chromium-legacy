@@ -364,7 +364,6 @@
 <translation id="2413528052993050574">یہ سرور یہ ثابت نہیں کر سکا کہ یہ <ph name="DOMAIN" /> ہے؛ ممکن ہے کہ اس کا سیکیورٹی سرٹیفکیٹ کالعدم قرار دے دیا گیا ہو۔ یہ غلط کنفیگریشن یا آپ کے کنکشن کو قطع کرنے والے کسی حملہ آور کی وجہ سے ہو سکتا ہے۔</translation>
 <translation id="2438874542388153331">دائیں طرف مستطیل سوراخ</translation>
 <translation id="245044156129055925">‏آپ نے ابھی ایک پُرفریب سائٹ پر اپنا پاس ورڈ درج کیا ہے۔ Chromium آپ کو ابھی اپنا پاس ورڈ تبدیل کرنے کی تجویز دیتا ہے۔</translation>
-<translation id="2463193859425327265">ہوم صفحہ تبدیل کریں</translation>
 <translation id="2463739503403862330">پُر کریں</translation>
 <translation id="2465402087343596252">Architecture-E</translation>
 <translation id="2465655957518002998">ڈیلیوری کا طریقہ منتخب کریں</translation>
@@ -566,6 +565,9 @@
 <translation id="3364869320075768271"><ph name="URL" /> آپ کا ورچوئل ریئلٹی آلہ اور ڈیٹا استعمال کرنا چاہتا ہے</translation>
 <translation id="3366477098757335611">کارڈز دیکھیں</translation>
 <translation id="3369192424181595722">گھڑی کی خرابی</translation>
+<translation id="3371076217486966826">‏<ph name="URL" /> درج ذیل چیزیں کرنا چاہتا ہے:
+      • اپنے اطراف کا ایک 3D نقشہ تخلیق کرنا اور کیمرہ پوزیشن کو ٹریک کرنا
+      • اپنے کیمرے کا استعمال کرنا</translation>
 <translation id="337363190475750230">کالعدم کردہ</translation>
 <translation id="3377144306166885718">‏سرور نے TLS کا متروک ورژن استعمال کیا۔</translation>
 <translation id="3377188786107721145">پالیسی پارس کرنے کی خرابی</translation>
@@ -1163,7 +1165,6 @@
 <translation id="5785756445106461925">اس کے علاوہ، اس صفحہ میں دیگر ایسے وسائل شامل ہیں جو محفوظ نہیں ہیں۔ ان وسائل کو ٹرانزٹ کے دوران دیگر لوگ دیکھ سکتے ہیں اور صفحہ کی ہیئت تبدیل کرنے کیلئے حملہ آور اس میں ترمیم کر سکتے ہیں۔</translation>
 <translation id="5786044859038896871">کیا آپ اپنے کارڈ کی معلومات پُر کرنا چاہتے ہیں؟</translation>
 <translation id="5798290721819630480">تبدیلیاں مسترد کریں؟</translation>
-<translation id="5798683403665926540">‏Chrome کی ترتیبات میں ہوم صفحہ تبدیل کریں</translation>
 <translation id="5803412860119678065">کیا آپ اپنے <ph name="CARD_DETAIL" /> کو پُر کرنا چاہتے ہیں؟</translation>
 <translation id="5804241973901381774">اجازتیں</translation>
 <translation id="5804427196348435412">‏NFC آلات استعمال کریں</translation>
@@ -1566,6 +1567,7 @@
 <translation id="7518003948725431193">ویب پتہ کیلئے کوئی نیا ویب صفحہ نہیں ملا تھا: <ph name="URL" /></translation>
 <translation id="7520302887438682816">C8 ‎(Envelope‎)‎</translation>
 <translation id="7521387064766892559">JavaScript</translation>
+<translation id="7521825010239864438">"<ph name="SECTION" />" سیکشن پوشیدہ ہے</translation>
 <translation id="7526934274050461096">اس سائٹ سے آپ کا کنکشن نجی نہیں ہے</translation>
 <translation id="7535087603100972091">قدر</translation>
 <translation id="7537536606612762813">لازمی</translation>
@@ -1612,7 +1614,6 @@
 <translation id="7669271284792375604">اس سائٹ پر موجود حملہ آور آپ کو ایسے پروگرامز انسٹال کرنے کے جال میں پھنسانے کی کوشش کر سکتے ہیں جو آپ کے براؤزنگ کے تجربے کو نقصان پہنچا سکتے ہیں (مثلاً، آپ کا ہوم پیج تبدیل کر کے یا آپ جو سائٹس ملاحظہ کرتے ہیں ان پر اضافی اشتہارات دکھا کر)۔</translation>
 <translation id="7673278391011283842">میل باکس 6</translation>
 <translation id="7676643023259824263">کلپ بورڈ ٹیکسٹ تلاش کریں، <ph name="TEXT" /></translation>
-<translation id="7681101578153515023">سرچ انجن تبدیل کریں</translation>
 <translation id="7682287625158474539">ترسیل</translation>
 <translation id="7687186412095877299">آپ کے محفوظ کردہ ادائیگی کے طریقوں سے ادائیگی کے فارمز پُر کرتا ہے</translation>
 <translation id="7687305263118037187">دوبارہ کوشش ٹائم آؤٹ</translation>
@@ -1650,7 +1651,6 @@
 <translation id="7802523362929240268">سائٹ جائز ہے</translation>
 <translation id="780301667611848630">نہیں شکریہ</translation>
 <translation id="7805768142964895445">صورتحال</translation>
-<translation id="7806344367022510803">‏Chrome میں سرچ انجن کی ترتیبات تبدیل کریں</translation>
 <translation id="7812922009395017822">Mir</translation>
 <translation id="7813600968533626083">‏Chrome سے فارم کی تجویز ہٹائیں؟</translation>
 <translation id="781440967107097262">کلپ بورڈ کا اشتراک کریں؟</translation>
@@ -1766,6 +1766,7 @@
 <translation id="8293206222192510085">بُک مارک شامل کریں</translation>
 <translation id="8294431847097064396">ماخذ</translation>
 <translation id="8298115750975731693">‏آپ جو Wi-Fi استعمال کر رہے ہیں (<ph name="WIFI_NAME" />) وہ آپ سے <ph name="BEGIN_BOLD" /><ph name="LOGIN_URL" /><ph name="END_BOLD" /> ملاحظہ کرنے کا تقاضہ کر سکتا ہے۔</translation>
+<translation id="8303854710873047864">"<ph name="SECTION" />" دکھایا گیا سیکشن</translation>
 <translation id="830498451218851433">آدھا فولڈ کریں</translation>
 <translation id="8307358339886459768">Small-Photo</translation>
 <translation id="8307888238279532626">ایپس انسٹال ہو گئی ہیں اور کتنی بار استعمال ہوتی ہیں</translation>
@@ -1791,7 +1792,6 @@
 اضافی معلومات:
 <ph name="DEBUG_INFO" /></translation>
 <translation id="8424582179843326029"><ph name="FIRST_LABEL" /> <ph name="SECOND_LABEL" /> <ph name="THIRD_LABEL" /></translation>
-<translation id="8425213833346101688">تبدیل کریں</translation>
 <translation id="8428213095426709021">ترتیبات</translation>
 <translation id="8433057134996913067">یہ آپ کو بیشتر ویب سائٹس سے سائن آؤٹ کر دے گا۔</translation>
 <translation id="8437238597147034694">منتقلی کو &amp;کالعدم کریں</translation>
@@ -1885,6 +1885,7 @@
 <translation id="8931333241327730545">‏کیا آپ اس کارڈ کو اپنے Google اکاؤنٹ میں محفوظ کرنا چاہتے ہیں؟</translation>
 <translation id="8932102934695377596">آپ کی گھڑی پیچھے ہے</translation>
 <translation id="893332455753468063">نام شامل کریں</translation>
+<translation id="8942355029279167844">‏آپ کے منتظم نے <ph name="APP_NAME" /> کو پروڈکٹ کے تجربے کو بہتر بنانے کے لیے ڈائیگناسٹکس ڈیٹا جمع کرنے کی اجازت دے دی ہے۔ مزید معلومات کے لیے <ph name="BEGIN_LINK" />https://www.parallels.com/pcep<ph name="END_LINK" /> دیکھیں۔</translation>
 <translation id="8943282376843390568">لائم</translation>
 <translation id="8957210676456822347">کیپٹو پورٹل اجازت دہندگی</translation>
 <translation id="8962950042226115166">مشکوک سائٹ</translation>

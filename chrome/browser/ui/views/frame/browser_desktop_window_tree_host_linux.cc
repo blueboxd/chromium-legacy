@@ -24,12 +24,13 @@ namespace {
 #if defined(USE_DBUS_MENU)
 bool CreateGlobalMenuBar() {
 #if defined(USE_OZONE)
-  return ui::OzonePlatform::GetInstance()
-      ->GetPlatformProperties()
-      .supports_global_application_menus;
-#else
-  return true;
+  if (features::IsUsingOzonePlatform()) {
+    return ui::OzonePlatform::GetInstance()
+        ->GetPlatformProperties()
+        .supports_global_application_menus;
+  }
 #endif
+  return true;
 }
 #endif
 

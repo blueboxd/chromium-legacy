@@ -199,7 +199,7 @@ SoundContentSettingObserver::GetSiteMutedReason() {
 #if !defined(OS_ANDROID)
 void SoundContentSettingObserver::UpdateAutoplayPolicy() {
   // Force a WebkitPreferences update to update the autoplay policy.
-  web_contents()->GetRenderViewHost()->OnWebkitPreferencesChanged();
+  web_contents()->OnWebPreferencesChanged();
 }
 #endif
 

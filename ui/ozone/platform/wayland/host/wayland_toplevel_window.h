@@ -5,6 +5,7 @@
 #ifndef UI_OZONE_PLATFORM_WAYLAND_HOST_WAYLAND_TOPLEVEL_WINDOW_H_
 #define UI_OZONE_PLATFORM_WAYLAND_HOST_WAYLAND_TOPLEVEL_WINDOW_H_
 
+#include "build/lacros_buildflags.h"
 #include "ui/gfx/geometry/vector2d.h"
 #include "ui/ozone/platform/wayland/host/wayland_window.h"
 #include "ui/platform_window/platform_window_handler/wm_drag_handler.h"
@@ -56,6 +57,7 @@ class WaylandToplevelWindow : public WaylandWindow,
   void Restore() override;
   PlatformWindowState GetPlatformWindowState() const override;
   void SizeConstraintsChanged() override;
+  std::string GetWindowUniqueId() const override;
 
  private:
   // WaylandWindow overrides:
@@ -114,11 +116,17 @@ class WaylandToplevelWindow : public WaylandWindow,
 
   bool is_active_ = false;
 
+#if BUILDFLAG(IS_LACROS)
+  // Unique ID for this window. May be shared over non-Wayland IPC transports
+  // (e.g. mojo) to identify the window.
+  std::string window_unique_id_;
+#else
   // Id of the chromium app passed through
   // PlatformWindowInitProperties::wm_class_class. This is used by Wayland
   // compositor to identify the app, unite it's windows into the same stack of
   // windows and find *.desktop file to set various preferences including icons.
-  std::string app_id_;
+  std::string wm_class_class_;
+#endif
 
   // Title of the ShellSurface.
   base::string16 window_title_;

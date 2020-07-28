@@ -13,10 +13,13 @@
 #import "ios/chrome/browser/ui/alert_coordinator/action_sheet_coordinator.h"
 #import "ios/chrome/browser/ui/history/history_clear_browsing_data_coordinator.h"
 #import "ios/chrome/browser/ui/history/history_mediator.h"
+#include "ios/chrome/browser/ui/history/history_menu_provider.h"
 #include "ios/chrome/browser/ui/history/history_table_view_controller.h"
 #import "ios/chrome/browser/ui/history/history_transitioning_delegate.h"
 #include "ios/chrome/browser/ui/history/history_ui_delegate.h"
 #include "ios/chrome/browser/ui/history/ios_browsing_history_driver.h"
+#import "ios/chrome/browser/ui/menu/action_factory.h"
+#import "ios/chrome/browser/ui/menu/menu_histograms.h"
 #import "ios/chrome/browser/ui/table_view/feature_flags.h"
 #import "ios/chrome/browser/ui/table_view/table_view_navigation_controller.h"
 #include "ios/chrome/browser/ui/util/ui_util.h"
@@ -25,7 +28,7 @@
 #error "This file requires ARC support."
 #endif
 
-@interface HistoryCoordinator () <HistoryUIDelegate> {
+@interface HistoryCoordinator () <HistoryMenuProvider, HistoryUIDelegate> {
   // Provides dependencies and funnels callbacks from BrowsingHistoryService.
   std::unique_ptr<IOSBrowsingHistoryDriver> _browsingHistoryDriver;
   // Abstraction to communicate with HistoryService and WebHistoryService.
@@ -63,6 +66,10 @@
   self.historyTableViewController = [[HistoryTableViewController alloc] init];
   self.historyTableViewController.browser = self.browser;
   self.historyTableViewController.loadStrategy = self.loadStrategy;
+
+  if (@available(iOS 13.0, *)) {
+    self.historyTableViewController.menuProvider = self;
+  }
 
   // Initialize and set HistoryMediator
   self.mediator = [[HistoryMediator alloc]
@@ -164,6 +171,30 @@
       self.presentationDelegate;
   self.historyClearBrowsingDataCoordinator.loadStrategy = self.loadStrategy;
   [self.historyClearBrowsingDataCoordinator start];
+}
+
+#pragma mark - HistoryMenuProvider
+
+- (UIContextMenuConfiguration*)createConfigurationForItem:
+                                   (HistoryEntryItem*)item
+                                                 withView:(UIView*)view
+    API_AVAILABLE(ios(13.0)) {
+  return [UIContextMenuConfiguration
+      configurationWithIdentifier:nil
+                  previewProvider:nil
+                   actionProvider:^(NSArray<UIMenuElement*>* suggestedActions) {
+                     // Record that this context menu was shown to the user.
+                     RecordMenuShown(MenuScenario::HistoryEntry);
+
+                     ActionFactory* actionFactory = [[ActionFactory alloc]
+                         initWithScenario:MenuScenario::HistoryEntry];
+
+                     UIAction* copyAction =
+                         [actionFactory actionToCopyURL:item.URL];
+
+                     return [UIMenu menuWithTitle:[NSString string]
+                                         children:@[ copyAction ]];
+                   }];
 }
 
 @end

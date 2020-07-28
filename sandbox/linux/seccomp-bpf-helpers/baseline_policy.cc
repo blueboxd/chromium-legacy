@@ -148,6 +148,15 @@ ResultExpr EvaluateSyscallImpl(int fs_denied_errno,
     return Allow();
 #endif
 
+#if defined(__NR_rseq) && !defined(OS_ANDROID)
+  // See https://crbug.com/1104160. Rseq can only be disabled right before an
+  // execve, because glibc registers it with the kernel and so far it's unclear
+  // whether shared libraries (which, during initialization, may observe that
+  // rseq is already registered) should have to deal with deregistration.
+  if (sysno == __NR_rseq)
+    return Allow();
+#endif
+
   if (sysno == __NR_clock_gettime || sysno == __NR_clock_nanosleep) {
     return RestrictClockID();
   }

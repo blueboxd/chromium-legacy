@@ -223,6 +223,7 @@ Chromium ଆପଣଙ୍କ ସେଟିଂସ୍‌କୁ ପୁନରୁଦ୍
 <translation id="8417404458978023919">{0,plural, =1{ଗୋଟିଏ ଦିନ ମଧ୍ୟରେ Chromium ପୁଣି ଲଞ୍ଚ କରନ୍ତୁ}other{# ଦିନ ମଧ୍ୟରେ Chromium ପୁଣି ଲଞ୍ଚ କରନ୍ତୁ}}</translation>
 <translation id="8453117565092476964">ଇନ୍‌ଷ୍ଟଲର୍‌ ଆର୍କାଇଭ୍‍ ଖରାପ ହୋ‍ଇଯାଇଛି କିମ୍ବା ଅବୈଧ ଅଟେ। ଦୟାକରି Chromium ପୁଣି ଡାଉନ୍‌ଲୋଡ୍‌ କରନ୍ତୁ।</translation>
 <translation id="8493179195440786826">Chromiumର ସମୟସୀମା ଶେଷ ହୋଇଛି</translation>
+<translation id="8545858702702650646">ଆପଣଙ୍କ Chromium ସ୍ପେସ୍ ବାଛନ୍ତୁ</translation>
 <translation id="8558383651099478961">ଆପଣଙ୍କ ବାପାମା Chromium ପାଇଁ "ସାଇଟ୍, ଆପ୍ ଏବଂ ଏକ୍ସଟେନସନଗୁଡ଼ିକ ନିମନ୍ତେ ଅନୁମତିଗୁଡ଼ିକ" ବନ୍ଦ କରିଦେଇଛନ୍ତି। ଏହି <ph name="EXTENSION_TYPE_PARAMETER" />କୁ ଯୋଗ କରିବା ପାଇଁ ଅନୁମତି ନାହିଁ।</translation>
 <translation id="8568283329061645092">ଆପଣ ଆପଣଙ୍କର Google ଆକାଉଣ୍ଟ ମାଧ୍ୟମରେ ସାଇନ୍ ଇନ୍ କଲେ, Chromium ଆପଣଙ୍କର ପାସୱାର୍ଡ ଯାଞ୍ଚ କରିପାରିବ</translation>
 <translation id="8586442755830160949">କପିରାଇଟ୍ <ph name="YEAR" /> Chromium ଲେଖକ। ସମସ୍ତ ଅଧିକାର ସଂରକ୍ଷିତ ଅଛି।</translation>
@@ -246,6 +247,7 @@ Chromium ଆପଣଙ୍କ ସେଟିଂସ୍‌କୁ ପୁନରୁଦ୍
 <translation id="911206726377975832">ଆପଣଙ୍କ ବ୍ରାଉଜିଂ ଡାଟା ମଧ୍ୟ ବିଲୋପ କରିବେ?</translation>
 <translation id="9158494823179993217"><ph name="TARGET_URL_HOSTNAME" />କୁ ଆକ୍ସେସ୍‌ କରିବା ପାଇଁ ଏକ ବିକଳ୍ପ ବ୍ରାଉଜର୍‌ ଖୋଲିବାକୁ ଆପଣଙ୍କର ସିଷ୍ଟମ୍ ବ୍ୟବସ୍ଥାପକ Chromium କନ୍‌ଫିଗର୍‌ କରିଛନ୍ତି।</translation>
 <translation id="9190841055450128916">Chromium (mDNS-In)</translation>
+<translation id="9191317372410544836">ଏହି ଡିଭାଇସରେ ଆପଣଙ୍କ ବ୍ରାଉଜିଂକୁ ବ୍ୟବସ୍ଥିତ ରଖିବା ପାଇଁ Chromium ସ୍ପେସ୍ ବ୍ୟବହାର କରନ୍ତୁ</translation>
 <translation id="93478295209880648">Chromium ହୁଏତ ସଠିକ୍ ଭାବେ କାର୍ଯ୍ୟ କରି ନପାରେ କାରଣ ଏହା ଆଉ Windows XP କିମ୍ବା Windows Vistaରେ ସମର୍ଥିତ ନୁହେଁ</translation>
 <translation id="95514773681268843">ଏହି ଡିଭାଇସ୍‌କୁ ବ୍ୟବହାର କରିବା ପୂର୍ବରୁ ଆପଣ ନିମ୍ନୋକ୍ତ ସେବାର ସର୍ତ୍ତାବଳୀ ପଢ଼ନ୍ତୁ ଏବଂ ସେଗୁଡ଼ିକୁ ସ୍ଵୀକାର କରନ୍ତୁ ବୋଲି <ph name="DOMAIN" /> ଚାହେଁ। ଏହି ସର୍ତ୍ତଗୁଡ଼ିକ Chromium OS ସର୍ତ୍ତଗୁଡ଼ିକୁ ସମ୍ପ୍ରସାରିତ, ଆଂଶିକ ପରିବର୍ତ୍ତନ କିମ୍ବା ସୀମିତ କରେ ନାହିଁ।</translation>
 <translation id="985602178874221306">Chromium ଲେଖକ</translation>

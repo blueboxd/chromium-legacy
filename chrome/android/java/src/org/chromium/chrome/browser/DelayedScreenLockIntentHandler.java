@@ -5,6 +5,7 @@
 package org.chromium.chrome.browser;
 
 import android.app.Activity;
+import android.content.ActivityNotFoundException;
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
@@ -12,6 +13,7 @@ import android.content.IntentFilter;
 import android.os.Handler;
 
 import org.chromium.base.ContextUtils;
+import org.chromium.base.JavaExceptionReporter;
 
 import java.lang.ref.WeakReference;
 
@@ -44,7 +46,12 @@ public class DelayedScreenLockIntentHandler extends BroadcastReceiver {
         if (Intent.ACTION_USER_PRESENT.equals(intent.getAction()) && mDeferredIntent != null) {
             Activity activity = mActivity.get();
             if (activity != null) {
-                activity.startActivity(mDeferredIntent);
+                try {
+                    activity.startActivity(mDeferredIntent);
+                } catch (ActivityNotFoundException e) {
+                    // TODO(crbug.com/1099819): Figure out why this happens and fix properly.
+                    JavaExceptionReporter.reportException(e);
+                }
             }
             // Prevent the broadcast receiver from firing intent unexpectedly.
             updateDeferredIntent(null);

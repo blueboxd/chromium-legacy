@@ -34,7 +34,9 @@ namespace {
 
 DEFINE_UI_CLASS_PROPERTY_KEY(Surface*, kMainSurfaceKey, nullptr)
 
-// Application Id set by the client.
+// Application Id set by the client. For example:
+// "org.chromium.arc.<task-id>" for ARC++ shell surfaces.
+// "org.chromium.lacros.<window-id>" for Lacros browser shell surfaces.
 DEFINE_OWNED_UI_CLASS_PROPERTY_KEY(std::string, kApplicationIdKey, nullptr)
 
 // Startup Id set by the client.

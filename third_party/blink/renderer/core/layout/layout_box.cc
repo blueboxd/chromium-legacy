@@ -4535,11 +4535,14 @@ LayoutUnit LayoutBox::AvailableLogicalHeightUsing(
     } else if (HasOverrideLogicalHeight() &&
                IsOverrideLogicalHeightDefinite()) {
       return OverrideContentLogicalHeight();
-    } else if (const auto* previous_result = GetCachedLayoutResult()) {
-      const NGConstraintSpace& space =
-          previous_result->GetConstraintSpaceForCaching();
-      if (space.IsFixedBlockSize() && !space.IsFixedBlockSizeIndefinite())
-        return space.AvailableSize().block_size;
+    } else if (!GetBoxLayoutExtraInput()) {
+      // TODO(ikilpatrick): Remove this post M86.
+      if (const auto* previous_result = GetCachedLayoutResult()) {
+        const NGConstraintSpace& space =
+            previous_result->GetConstraintSpaceForCaching();
+        if (space.IsFixedBlockSize() && !space.IsFixedBlockSizeIndefinite())
+          return space.AvailableSize().block_size;
+      }
     }
   }
 

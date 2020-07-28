@@ -30,6 +30,7 @@ import androidx.browser.customtabs.CustomTabColorSchemeParams;
 import androidx.browser.customtabs.CustomTabsIntent;
 import androidx.browser.customtabs.CustomTabsSessionToken;
 import androidx.browser.customtabs.TrustedWebUtils;
+import androidx.browser.trusted.ScreenOrientation;
 import androidx.browser.trusted.TrustedWebActivityDisplayMode;
 import androidx.browser.trusted.TrustedWebActivityIntentBuilder;
 import androidx.browser.trusted.sharing.ShareData;
@@ -48,6 +49,7 @@ import org.chromium.chrome.browser.flags.ChromeFeatureList;
 import org.chromium.components.browser_ui.styles.ChromeColors;
 import org.chromium.components.browser_ui.widget.TintedDrawable;
 import org.chromium.components.embedder_support.util.UrlConstants;
+import org.chromium.device.mojom.ScreenOrientationLockType;
 import org.chromium.ui.util.ColorUtils;
 
 import java.lang.annotation.Retention;
@@ -205,6 +207,7 @@ public class CustomTabIntentDataProvider extends BrowserServicesIntentDataProvid
     /** ISO 639 language code */
     @Nullable
     private final String mTranslateLanguage;
+    private final int mDefaultOrientation;
 
     /**
      * Add extras to customize menu items for opening payment request UI custom tab from Chrome.
@@ -347,6 +350,10 @@ public class CustomTabIntentDataProvider extends BrowserServicesIntentDataProvid
 
         mTranslateLanguage = IntentUtils.safeGetStringExtra(intent, EXTRA_TRANSLATE_LANGUAGE);
         mFocusIntent = IntentUtils.safeGetParcelableExtra(intent, EXTRA_FOCUS_INTENT);
+        // Import the {@link ScreenOrientation}.
+        mDefaultOrientation = convertOrientationType(IntentUtils.safeGetIntExtra(intent,
+                TrustedWebActivityIntentBuilder.EXTRA_SCREEN_ORIENTATION,
+                ScreenOrientation.DEFAULT));
     }
 
     /**
@@ -533,6 +540,44 @@ public class CustomTabIntentDataProvider extends BrowserServicesIntentDataProvid
         } catch (Throwable e) {
             return null;
         }
+    }
+
+    /**
+     * Returns the {@link ScreenOrientationLockType} which matches {@link ScreenOrientation}.
+     * @param orientation {@link ScreenOrientation}
+     * @return The matching ScreenOrientationLockType. {@link ScreenOrientationLockType#DEFAULT} if
+     *         there is no match.
+     */
+    private static int convertOrientationType(@ScreenOrientation.LockType int orientation) {
+        switch (orientation) {
+            case ScreenOrientation.DEFAULT:
+                return ScreenOrientationLockType.DEFAULT;
+            case ScreenOrientation.PORTRAIT_PRIMARY:
+                return ScreenOrientationLockType.PORTRAIT_PRIMARY;
+            case ScreenOrientation.PORTRAIT_SECONDARY:
+                return ScreenOrientationLockType.PORTRAIT_SECONDARY;
+            case ScreenOrientation.LANDSCAPE_PRIMARY:
+                return ScreenOrientationLockType.LANDSCAPE_PRIMARY;
+            case ScreenOrientation.LANDSCAPE_SECONDARY:
+                return ScreenOrientationLockType.LANDSCAPE_SECONDARY;
+            case ScreenOrientation.ANY:
+                return ScreenOrientationLockType.ANY;
+            case ScreenOrientation.LANDSCAPE:
+                return ScreenOrientationLockType.LANDSCAPE;
+            case ScreenOrientation.PORTRAIT:
+                return ScreenOrientationLockType.PORTRAIT;
+            case ScreenOrientation.NATURAL:
+                return ScreenOrientationLockType.NATURAL;
+            default:
+                Log.w(TAG, "The provided orientaton is not supported, orientation = %d",
+                        orientation);
+                return ScreenOrientationLockType.DEFAULT;
+        }
+    }
+
+    @Override
+    public int getDefaultOrientation() {
+        return mDefaultOrientation;
     }
 
     @Override

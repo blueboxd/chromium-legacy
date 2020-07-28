@@ -881,7 +881,7 @@ Puoi gestire le impostazioni dell'account installando l'app Family Link su quest
 <translation id="2065405795449409761">Chrome è controllato da software di test automatizzato.</translation>
 <translation id="2071393345806050157">Nessun file di log locale.</translation>
 <translation id="2073148037220830746">{NUM_EXTENSIONS,plural, =1{Fai clic per installare l'estensione}other{Fai clic per installare queste estensioni}}</translation>
-<translation id="2073505299004274893">Utilizza <ph name="CHARACTER_LIMIT" /> caratteri o meno</translation>
+<translation id="2073505299004274893">Utilizza massimo <ph name="CHARACTER_LIMIT" /> caratteri</translation>
 <translation id="2075474481720804517">Batteria al <ph name="BATTERY_PERCENTAGE" />%</translation>
 <translation id="2075959085554270910">Consente di attivare/disattivare il tocco per fare clic e il trascinamento al tocco</translation>
 <translation id="2076269580855484719">Nascondi questo plug-in</translation>

@@ -121,17 +121,13 @@ NSString* const kSuggestionSuffix = @" ••••••••";
 
   FieldRendererId _lastTypedfieldIdentifier;
   NSString* _lastTypedValue;
-
-  __weak id<SharedPasswordControllerDelegate> _delegate;
 }
 
 - (instancetype)initWithWebState:(web::WebState*)webState
                          manager:(password_manager::PasswordManagerInterface*)
                                      passwordManager
                       formHelper:(PasswordFormHelper*)formHelper
-                suggestionHelper:(PasswordSuggestionHelper*)suggestionHelper
-                        delegate:
-                            (id<SharedPasswordControllerDelegate>)delegate {
+                suggestionHelper:(PasswordSuggestionHelper*)suggestionHelper {
   self = [super init];
   if (self) {
     DCHECK(webState);
@@ -146,8 +142,6 @@ NSString* const kSuggestionSuffix = @" ••••••••";
     _suggestionHelper = suggestionHelper;
     _suggestionHelper.delegate = self;
     _passwordManager = passwordManager;
-
-    _delegate = delegate;
   }
   return self;
 }

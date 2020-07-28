@@ -29,6 +29,7 @@ import shard_util
 import test_runner
 import wpr_runner
 import xcodebuild_runner
+import xcode_util as xcode
 
 
 class Runner():
@@ -69,17 +70,8 @@ class Runner():
       if not os.path.exists(xcode_app_path):
         raise test_runner.XcodePathNotFoundError(xcode_app_path)
 
-      subprocess.check_call([
-          mac_toolchain_cmd,
-          'install',
-          '-kind',
-          'ios',
-          '-xcode-version',
-          xcode_build_version.lower(),
-          '-output-dir',
-          xcode_app_path,
-      ])
-      self.xcode_select(xcode_app_path)
+      xcode.install(mac_toolchain_cmd, xcode_build_version, xcode_app_path)
+      xcode.select(xcode_app_path)
     except subprocess.CalledProcessError as e:
       # Flush buffers to ensure correct output ordering.
       sys.stdout.flush()
@@ -90,18 +82,6 @@ class Runner():
 
     return True
 
-  def xcode_select(self, xcode_app_path):
-    """Switch the default Xcode system-wide to `xcode_app_path`.
-
-    Raises subprocess.CalledProcessError on failure.
-    To be mocked in tests.
-    """
-    subprocess.check_call([
-        'sudo',
-        'xcode-select',
-        '-switch',
-        xcode_app_path,
-    ])
 
   def run(self, args):
     """
@@ -206,6 +186,7 @@ class Runner():
             xctest=self.args.xctest,
         )
 
+      logging.info("Using test runner %s" % type(tr).__name__)
       return 0 if tr.launch() else 1
     except test_runner.DeviceError as e:
       sys.stderr.write(traceback.format_exc())
@@ -469,6 +450,7 @@ def main(args):
   test_runner.defaults_delete('com.apple.CoreSimulator',
                               'FramebufferServerRendererPolicy')
   runner = Runner()
+  logging.debug("Arg values passed for this run: %s" % args)
   return runner.run(args)
 
 

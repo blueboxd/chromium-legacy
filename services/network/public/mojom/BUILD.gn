@@ -417,9 +417,20 @@ mojom("cookies_mojom") {
       traits_public_deps = [ "//net" ]
     },
   ]
-
   cpp_typemaps += shared_cpp_typemaps
-  blink_cpp_typemaps = shared_cpp_typemaps
+
+  blink_cpp_typemaps = [
+    {
+      types = [
+        {
+          mojom = "network.mojom.CanonicalCookie"
+          cpp = "::blink::CanonicalCookie"
+        },
+      ]
+      traits_headers = [ "//third_party/blink/renderer/platform/cookie/canonical_cookie_mojom_traits.h" ]
+    },
+  ]
+  blink_cpp_typemaps += shared_cpp_typemaps
 }
 
 mojom("mojom") {

@@ -1261,4 +1261,45 @@ TEST_F(AXTreeSourceArcTest, EnsureNodeIdMapCleared) {
   CallNotifyAccessibilityEvent(event.get());
 }
 
+TEST_F(AXTreeSourceArcTest, ControlReceivesFocus) {
+  auto event = AXEventData::New();
+  event->source_id = 1;
+  event->task_id = 1;
+  event->event_type = AXEventType::VIEW_FOCUSED;
+  event->window_data = std::vector<mojom::AccessibilityWindowInfoDataPtr>();
+  event->window_data->push_back(AXWindowInfoData::New());
+  AXWindowInfoData* root_window = event->window_data->back().get();
+  root_window->window_id = 100;
+  root_window->root_node_id = 10;
+
+  event->node_data.emplace_back(AXNodeInfoData::New());
+  AXNodeInfoData* root_node = event->node_data.back().get();
+  root_node->id = 10;
+  SetProperty(root_node, AXIntListProperty::CHILD_NODE_IDS,
+              std::vector<int>({1}));
+
+  event->node_data.push_back(AXNodeInfoData::New());
+  AXNodeInfoData* node = event->node_data.back().get();
+  node->id = 1;
+  SetProperty(node, AXStringProperty::CLASS_NAME, ui::kAXSeekBarClassname);
+  SetProperty(node, AXStringProperty::TEXT, "");
+  SetProperty(node, AXBooleanProperty::VISIBLE_TO_USER, true);
+  SetProperty(node, AXBooleanProperty::FOCUSABLE, true);
+  SetProperty(node, AXBooleanProperty::IMPORTANCE, true);
+
+  CallNotifyAccessibilityEvent(event.get());
+  EXPECT_EQ(1, GetDispatchedEventCount(ax::mojom::Event::kFocus));
+
+  ui::AXNodeData data;
+  std::string name;
+  data = GetSerializedNode(node->id);
+  ASSERT_FALSE(
+      data.GetStringAttribute(ax::mojom::StringAttribute::kName, &name));
+  EXPECT_EQ(ax::mojom::Role::kSlider, data.role);
+
+  ui::AXTreeData tree_data;
+  EXPECT_TRUE(CallGetTreeData(&tree_data));
+  EXPECT_EQ(node->id, tree_data.focus_id);
+}
+
 }  // namespace arc

@@ -220,6 +220,8 @@ void SearchResultRanker::InitializeRankers(
 }
 
 void SearchResultRanker::FetchRankings(const base::string16& query) {
+  last_query_ = query;
+
   // The search controller potentially calls SearchController::FetchResults
   // several times for each user's search, so we cache the results of querying
   // the models for a short time, to prevent unecessary queries.
@@ -227,7 +229,6 @@ void SearchResultRanker::FetchRankings(const base::string16& query) {
   if (now - time_of_last_fetch_ < kMinSecondsBetweenFetches)
     return;
   time_of_last_fetch_ = now;
-  last_query_ = query;
 
   if (query.empty() && zero_state_group_ranker_) {
     zero_state_group_ranks_.clear();

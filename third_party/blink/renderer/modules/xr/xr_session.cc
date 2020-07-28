@@ -1021,6 +1021,9 @@ void XRSession::ProcessAnchorsData(
       updated_anchors.insert(anchor->id, it->value);
       it->value->Update(*anchor);
     } else {
+      DVLOG(3) << __func__ << ": processing newly created anchor, anchor->id="
+               << anchor->id;
+
       auto resolver_it =
           anchor_ids_to_pending_anchor_promises_.find(anchor->id);
       if (resolver_it == anchor_ids_to_pending_anchor_promises_.end()) {
@@ -1087,7 +1090,7 @@ void XRSession::ProcessHitTestData(
     // We have received hit test results for hit test subscriptions - process
     // each result and notify its corresponding hit test source about new
     // results for the current frame.
-    DVLOG(3) << __func__ << "hit_test_subscriptions_data->results.size()="
+    DVLOG(3) << __func__ << ": hit_test_subscriptions_data->results.size()="
              << hit_test_subscriptions_data->results.size() << ", "
              << "hit_test_subscriptions_data->transient_input_results.size()="
              << hit_test_subscriptions_data->transient_input_results.size();

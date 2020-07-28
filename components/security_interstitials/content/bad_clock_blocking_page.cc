@@ -63,10 +63,6 @@ BadClockBlockingPage::BadClockBlockingPage(
 
 BadClockBlockingPage::~BadClockBlockingPage() = default;
 
-bool BadClockBlockingPage::ShouldCreateNewNavigation() const {
-  return true;
-}
-
 security_interstitials::SecurityInterstitialPage::TypeID
 BadClockBlockingPage::GetTypeForTesting() {
   return BadClockBlockingPage::kTypeForTesting;

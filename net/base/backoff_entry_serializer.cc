@@ -81,7 +81,15 @@ std::unique_ptr<BackoffEntry> BackoffEntrySerializer::DeserializeFromValue(
       base::TimeDelta::FromSecondsD(original_backoff_duration_double);
   base::Time absolute_release_time =
       base::Time::FromInternalValue(absolute_release_time_us);
-  base::TimeDelta backoff_duration = absolute_release_time - time_now;
+  // Before computing |backoff_duration|, throw out +/- infinity values for
+  // either operand. This way, we can use base::TimeDelta's saturated math.
+  if (absolute_release_time.is_min() || absolute_release_time.is_max() ||
+      time_now.is_min() || time_now.is_max()) {
+    return nullptr;
+  }
+  base::TimeDelta backoff_duration =
+      absolute_release_time.ToDeltaSinceWindowsEpoch() -
+      time_now.ToDeltaSinceWindowsEpoch();
   // In cases where the system wall clock is rewound, use the redundant
   // original_backoff_duration to ensure the backoff duration isn't longer
   // than it was before serializing (note that it's not possible to protect

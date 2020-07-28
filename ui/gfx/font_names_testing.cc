@@ -44,7 +44,7 @@ const char kSymbolFontName[] = "Symbol";
 const char kCJKFontName[] = "Noto Sans CJK JP";
 #elif defined(OS_ANDROID)
 const char kCJKFontName[] = "serif";
-#elif defined(OS_MACOSX)
+#elif defined(OS_APPLE)
 const char kCJKFontName[] = "Heiti SC";
 #else
 const char kCJKFontName[] = "SimSun";

@@ -14,7 +14,6 @@
 #include "base/callback_forward.h"
 #include "base/callback_helpers.h"
 #include "base/compiler_specific.h"
-#include "base/feature_list.h"
 #include "base/synchronization/lock.h"
 #include "base/thread_annotations.h"
 #include "base/threading/platform_thread.h"
@@ -87,7 +86,6 @@ class BASE_EXPORT HangWatchScope {
 // within a single process. This instance must outlive all monitored threads.
 class BASE_EXPORT HangWatcher : public DelegateSimpleThread::Delegate {
  public:
-  static const base::Feature kEnableHangWatcher;
 
   // The first invocation of the constructor will set the global instance
   // accessible through GetInstance(). This means that only one instance can
@@ -102,6 +100,16 @@ class BASE_EXPORT HangWatcher : public DelegateSimpleThread::Delegate {
 
   // Returns a non-owning pointer to the global HangWatcher instance.
   static HangWatcher* GetInstance();
+
+  // Initializes HangWatcher. Must be called once on the main thread during
+  // startup while single-threaded.
+  static void InitializeOnMainThread();
+
+  // Thread safe functions to verify if hang watching is activated. If called
+  // before InitializeOnMainThread returns the default value which is false.
+  static bool IsEnabled();
+  static bool IsThreadPoolHangWatchingEnabled();
+  static bool IsIOThreadHangWatchingEnabled();
 
   // Sets up the calling thread to be monitored for threads. Returns a
   // ScopedClosureRunner that unregisters the thread. This closure has to be

@@ -573,13 +573,13 @@ TEST_F(BubbleDialogDelegateViewTest, VisibleAnchorChanges) {
   Widget* bubble_widget =
       BubbleDialogDelegateView::CreateBubble(bubble_delegate);
   bubble_widget->Show();
-#if defined(OS_MACOSX)
+#if defined(OS_APPLE)
   // All child widgets make the parent paint as active on Mac.
   // See https://crbug.com/1046540
   EXPECT_TRUE(anchor_widget->ShouldPaintAsActive());
 #else
   EXPECT_FALSE(anchor_widget->ShouldPaintAsActive());
-#endif  // defined(OS_MACOSX)
+#endif  // defined(OS_APPLE)
   bubble_delegate->SetAnchorView(anchor_widget->GetContentsView());
   EXPECT_TRUE(anchor_widget->ShouldPaintAsActive());
 

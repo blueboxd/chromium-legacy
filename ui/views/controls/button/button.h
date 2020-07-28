@@ -137,7 +137,7 @@ class VIEWS_EXPORT Button : public InkDropHostView,
   void set_request_focus_on_press(bool value) {
 // On Mac, buttons should not request focus on a mouse press. Hence keep the
 // default value i.e. false.
-#if !defined(OS_MACOSX)
+#if !defined(OS_APPLE)
     request_focus_on_press_ = value;
 #endif
   }

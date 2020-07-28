@@ -2409,7 +2409,7 @@ TEST_F(LoginDatabaseUndecryptableLoginsTest, DeleteUndecryptableLoginsTest) {
   base::HistogramTester histogram_tester;
   ASSERT_TRUE(db.Init());
 
-#if defined(OS_MACOSX) && !defined(OS_IOS)
+#if defined(OS_MAC)
   testing_local_state().registry()->RegisterTimePref(prefs::kPasswordRecovery,
                                                      base::Time());
   db.InitPasswordRecoveryUtil(std::make_unique<PasswordRecoveryUtilMac>(
@@ -2434,7 +2434,7 @@ TEST_F(LoginDatabaseUndecryptableLoginsTest, DeleteUndecryptableLoginsTest) {
 #endif
 
 // Check histograms.
-#if defined(OS_MACOSX) && !defined(OS_IOS)
+#if defined(OS_MAC)
   histogram_tester.ExpectUniqueSample("PasswordManager.CleanedUpPasswords", 1,
                                       1);
   histogram_tester.ExpectUniqueSample(
@@ -2448,7 +2448,7 @@ TEST_F(LoginDatabaseUndecryptableLoginsTest, DeleteUndecryptableLoginsTest) {
 #endif
 }
 
-#if defined(OS_MACOSX) && !defined(OS_IOS)
+#if defined(OS_MAC)
 TEST_F(LoginDatabaseUndecryptableLoginsTest, PasswordRecoveryEnabledGetLogins) {
   base::test::ScopedFeatureList scoped_feature_list;
   scoped_feature_list.InitAndEnableFeature(features::kDeleteCorruptedPasswords);
@@ -2549,7 +2549,7 @@ TEST_F(LoginDatabaseUndecryptableLoginsTest, KeychainLockedTest) {
       "PasswordManager.DeleteUndecryptableLoginsReturnValue",
       metrics_util::DeleteCorruptedPasswordsResult::kEncryptionUnavailable, 1);
 }
-#endif  // defined(OS_MACOSX) && !defined(OS_IOS)
+#endif  // defined(OS_MAC)
 
 // Test retrieving password forms by supplied password.
 TEST_F(LoginDatabaseTest, GetLoginsByPassword) {

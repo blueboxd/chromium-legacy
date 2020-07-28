@@ -7,7 +7,6 @@
 
 #include "content/common/content_export.h"
 #include "content/public/browser/render_frame_host.h"
-#include "content/public/browser/shared_worker_id.h"
 #include "third_party/blink/public/common/tokens/worker_tokens.h"
 #include "third_party/blink/public/mojom/service_worker/service_worker_client.mojom.h"
 
@@ -20,7 +19,8 @@ class CONTENT_EXPORT ServiceWorkerClientInfo {
   explicit ServiceWorkerClientInfo(int frame_tree_node_id);
   explicit ServiceWorkerClientInfo(
       const blink::DedicatedWorkerToken& dedicated_worker_token);
-  explicit ServiceWorkerClientInfo(SharedWorkerId shared_worker_id);
+  explicit ServiceWorkerClientInfo(
+      const blink::SharedWorkerToken& shared_worker_token);
 
   ServiceWorkerClientInfo(const ServiceWorkerClientInfo& other);
   ServiceWorkerClientInfo& operator=(const ServiceWorkerClientInfo& other);
@@ -32,7 +32,7 @@ class CONTENT_EXPORT ServiceWorkerClientInfo {
 
   int GetFrameTreeNodeId() const;
   const blink::DedicatedWorkerToken& GetDedicatedWorkerToken() const;
-  SharedWorkerId GetSharedWorkerId() const;
+  const blink::SharedWorkerToken& GetSharedWorkerToken() const;
 
  private:
   // The client type.
@@ -45,7 +45,7 @@ class CONTENT_EXPORT ServiceWorkerClientInfo {
   blink::DedicatedWorkerToken dedicated_worker_token_;
 
   // The ID of the client, if this is a shared worker client.
-  SharedWorkerId shared_worker_id_;
+  blink::SharedWorkerToken shared_worker_token_;
 };
 
 }  // namespace content

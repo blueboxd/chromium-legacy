@@ -667,7 +667,7 @@ TEST_F(DownloadPathReservationTrackerTest, UpdatesToTargetPath) {
 
 // Tests for long name truncation. On other platforms automatic truncation
 // is not performed (yet).
-#if defined(OS_WIN) || defined(OS_MACOSX) || defined(OS_CHROMEOS)
+#if defined(OS_WIN) || defined(OS_APPLE) || defined(OS_CHROMEOS)
 
 TEST_F(DownloadPathReservationTrackerTest, BasicTruncation) {
   int real_max_length =

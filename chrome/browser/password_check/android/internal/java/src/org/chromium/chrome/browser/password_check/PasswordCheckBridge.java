@@ -11,7 +11,7 @@ import org.chromium.base.annotations.NativeMethods;
  * messages to and from its C++ counterpart.
  */
 class PasswordCheckBridge {
-    private final long mNativePasswordCheckBridge;
+    private long mNativePasswordCheckBridge;
     private final PasswordCheckObserver mPasswordCheckObserver;
 
     /**
@@ -86,6 +86,16 @@ class PasswordCheckBridge {
     void getCompromisedCredentials(CompromisedCredential[] credentials) {
         PasswordCheckBridgeJni.get().getCompromisedCredentials(
                 mNativePasswordCheckBridge, credentials);
+    }
+
+    /**
+     * Destroys its C++ counterpart.
+     */
+    void destroy() {
+        if (mNativePasswordCheckBridge != 0) {
+            mNativePasswordCheckBridge = 0;
+            PasswordCheckBridgeJni.get().destroy(mNativePasswordCheckBridge);
+        }
     }
 
     /**

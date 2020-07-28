@@ -10,11 +10,16 @@
 #include "base/feature_list.h"
 #include "base/optional.h"
 #include "base/threading/sequenced_task_runner_handle.h"
+#include "build/build_config.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/web_applications/components/app_shortcut_manager.h"
 #include "chrome/browser/web_applications/components/file_handler_manager.h"
 #include "chrome/browser/web_applications/components/web_app_ui_manager.h"
 #include "chrome/common/chrome_features.h"
+
+#if defined(OS_MACOSX)
+#include "chrome/browser/web_applications/components/app_shim_registry_mac.h"
+#endif
 
 namespace web_app {
 
@@ -38,7 +43,7 @@ class OsHooksBarrierInfo {
 
  private:
   OsHooksResults os_hooks_results_{false};
-  std::bitset<OsHookType::kMaxValue + 1> os_hooks_called_{false};
+  OsHooksResults os_hooks_called_{false};
   InstallOsHooksCallback done_callback_;
 };
 
@@ -72,6 +77,11 @@ void OsIntegrationManager::InstallOsHooks(
     std::move(callback).Run(os_hooks_results);
     return;
   }
+
+#if defined(OS_MACOSX)
+  AppShimRegistry::Get()->OnAppInstalledForProfile(app_id, profile_->GetPath());
+#endif
+
   // Note: This barrier protects against multiple calls on the same type, but
   // it doesn't protect against the case where we fail to call Run / create a
   // callback for every type. Developers should double check that Run is

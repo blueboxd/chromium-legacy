@@ -15,7 +15,11 @@ FakeCryptAuthGCMManager::FakeCryptAuthGCMManager(
 FakeCryptAuthGCMManager::~FakeCryptAuthGCMManager() = default;
 
 void FakeCryptAuthGCMManager::StartListening() {
-  has_started_listening_ = true;
+  is_listening_ = true;
+}
+
+bool FakeCryptAuthGCMManager::IsListening() {
+  return is_listening_;
 }
 
 void FakeCryptAuthGCMManager::RegisterWithGCM() {

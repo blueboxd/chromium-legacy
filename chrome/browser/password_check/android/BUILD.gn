@@ -39,6 +39,7 @@ android_library("public_java") {
     "java/src/org/chromium/chrome/browser/password_check/PasswordCheck.java",
     "java/src/org/chromium/chrome/browser/password_check/PasswordCheckFragmentView.java",
     "java/src/org/chromium/chrome/browser/password_check/PasswordCheckPreference.java",
+    "java/src/org/chromium/chrome/browser/password_check/PasswordCheckReferrer.java",
   ]
   resources_package = "org.chromium.chrome.browser.password_check"
 }
@@ -72,7 +73,10 @@ junit_binary("password_check_junit_tests") {
 android_library("test_java") {
   testonly = true
 
-  sources = [ "javatests/src/org/chromium/chrome/browser/password_check/PasswordCheckViewTest.java" ]
+  sources = [
+    "javatests/src/org/chromium/chrome/browser/password_check/PasswordCheckIntegrationTest.java",
+    "javatests/src/org/chromium/chrome/browser/password_check/PasswordCheckViewTest.java",
+  ]
 
   deps = [
     ":public_java",
@@ -85,6 +89,7 @@ android_library("test_java") {
     "//chrome/android:chrome_test_java",
     "//chrome/android:chrome_test_util_java",
     "//chrome/browser/flags:java",
+    "//chrome/browser/password_check/android/internal:public_factory_java",
     "//chrome/browser/settings:test_support_java",
     "//chrome/test/android:chrome_java_test_support",
     "//components/browser_ui/widget/android:java",
@@ -102,6 +107,7 @@ android_library("test_java") {
     "//ui/android:ui_utils_java",
   ]
 }
+
 android_resources("java_resources") {
   sources = [
     "java/res/drawable-night/password_check_neutral.xml",

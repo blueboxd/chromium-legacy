@@ -16201,7 +16201,7 @@
 
       If the <ph name="SPELLCHECK_ENABLED_POLICY_NAME">SpellcheckEnabled</ph> policy is set to false, this policy will have no effect.
 
-      If a language is included in both this policy and the <ph name="SPELLCHECK_LANGUAGE_BLACKLIST_POLICY_NAME">SpellcheckLanguageBlacklist</ph> policy, this policy is prioritized and the spellcheck language is enabled.
+      If a language is included in both this policy and the <ph name="SPELLCHECK_LANGUAGE_BLOCKLIST_POLICY_NAME">SpellcheckLanguageBlocklist</ph> policy, this policy is prioritized and the spellcheck language is enabled.
 
       The currently supported languages are: af, bg, ca, cs, da, de, el, en-AU, en-CA, en-GB, en-US, es, es-419, es-AR, es-ES, es-MX, es-US, et, fa, fo, fr, he, hi, hr, hu, id, it, ko, lt, lv, nb, nl, pl, pt-BR, pt-PT, ro, ru, sh, sk, sl, sq, sr, sv, ta, tg, tr, uk, vi.'''
     },
@@ -16215,6 +16215,7 @@
       },
       # Spell checking is provided by macOS, so can't be controlled on Mac.
       'supported_on': ['chrome.win:75-', 'chrome.linux:75-', 'chrome_os:75-'],
+      'deprecated': True,
       'features': {
         'can_be_recommended': False,
         'dynamic_refresh': True,
@@ -16222,6 +16223,39 @@
       },
       'example_value': ['fr', 'es'],
       'id': 536,
+      'caption': '''Force disable spellcheck languages''',
+      'tags': [],
+      'desc': '''This policy is deprecated, please use <ph name="SPELLCHECK_LANGUAGE_BLOCKLIST_POLICY_NAME">SpellcheckLanguageBlocklist</ph> instead.
+
+      Force-disables spellcheck languages. Unrecognized languages in that list will be ignored.
+
+      If you enable this policy, spellcheck will be disabled for the languages specified. The user can still enable or disable spellcheck for languages not in the list.
+
+      If you do not set this policy, or disable it, there will be no change to the user's spellcheck preferences.
+
+      If the <ph name="SPELLCHECK_ENABLED_POLICY_NAME">SpellcheckEnabled</ph> policy is set to false, this policy will have no effect.
+
+      If a language is included in both this policy and the <ph name="SPELLCHECK_LANGUAGE_POLICY_NAME">SpellcheckLanguage</ph> policy, the latter is prioritized and the spellcheck language will be enabled.
+
+      The currently supported languages are: af, bg, ca, cs, da, de, el, en-AU, en-CA, en-GB, en-US, es, es-419, es-AR, es-ES, es-MX, es-US, et, fa, fo, fr, he, hi, hr, hu, id, it, ko, lt, lv, nb, nl, pl, pt-BR, pt-PT, ro, ru, sh, sk, sl, sq, sr, sv, ta, tg, tr, uk, vi.'''
+    },
+    {
+      'name': 'SpellcheckLanguageBlocklist',
+      'owners': ['gujen@google.com'],
+      'type': 'list',
+      'schema': {
+        'type': 'array',
+        'items': { 'type': 'string' }
+      },
+      # Spell checking is provided by macOS, so can't be controlled on Mac.
+      'supported_on': ['chrome.win:86-', 'chrome.linux:86-', 'chrome_os:86-'],
+      'features': {
+        'can_be_recommended': False,
+        'dynamic_refresh': True,
+        'per_profile': True,
+      },
+      'example_value': ['fr', 'es'],
+      'id': 749,
       'caption': '''Force disable spellcheck languages''',
       'tags': [],
       'desc': '''Force-disables spellcheck languages. Unrecognized languages in that list will be ignored.
@@ -23104,6 +23138,6 @@ The recommended way to configure policy on Windows is via GPO, although provisio
   ],
   'placeholders': [],
   'deleted_policy_ids': [412, 476, 546, 562, 569, 578],
-  'highest_id_currently_used': 748,
+  'highest_id_currently_used': 749,
   'highest_atomic_group_id_currently_used': 38
 }

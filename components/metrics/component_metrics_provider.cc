@@ -62,7 +62,11 @@ SystemProfileProto_ComponentId CrxIdToComponentId(const std::string& app_id) {
           {"mjdmdobabdmfcbaakcaadileafkmifen",
            SystemProfileProto_ComponentId_RTANALYTICS_FULL},
           {"fhbeibbmaepakgdkkmjgldjajgpkkhfj",
-           SystemProfileProto_ComponentId_CELLULAR}};
+           SystemProfileProto_ComponentId_CELLULAR},
+          {"ojhpjlocmbogdgmfpkhlaaeamibhnphh",
+           SystemProfileProto_ComponentId_ZXCVBN_DATA},
+      };
+
   const auto result = component_map.find(app_id);
   if (result == component_map.end())
     return SystemProfileProto_ComponentId_UNKNOWN;

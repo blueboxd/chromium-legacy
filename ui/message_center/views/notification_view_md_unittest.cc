@@ -758,7 +758,7 @@ TEST_F(NotificationViewMDTest, TestInlineReplyActivateWithKeyPress) {
 
 // Synthetic scroll events are not supported on Mac in the views
 // test framework.
-#if defined(OS_MACOSX)
+#if defined(OS_APPLE)
 #define MAYBE_SlideOut DISABLED_SlideOut
 #else
 #define MAYBE_SlideOut SlideOut
@@ -785,7 +785,7 @@ TEST_F(NotificationViewMDTest, MAYBE_SlideOut) {
   EXPECT_TRUE(IsRemovedAfterIdle(kDefaultNotificationId));
 }
 
-#if defined(OS_MACOSX)
+#if defined(OS_APPLE)
 #define MAYBE_SlideOutNested DISABLED_SlideOutNested
 #else
 #define MAYBE_SlideOutNested SlideOutNested
@@ -811,7 +811,7 @@ TEST_F(NotificationViewMDTest, MAYBE_SlideOutNested) {
   EXPECT_TRUE(IsRemovedAfterIdle(kDefaultNotificationId));
 }
 
-#if defined(OS_MACOSX)
+#if defined(OS_APPLE)
 #define MAYBE_DisableSlideForcibly DISABLED_DisableSlideForcibly
 #else
 #define MAYBE_DisableSlideForcibly DisableSlideForcibly

@@ -76,6 +76,13 @@ dependencies {
     compile "androidx.viewpager:viewpager:${androidXSupportLibVersion}"
     compile "androidx.exifinterface:exifinterface:${androidXSupportLibVersion}"
 
+    // Those are for use by doubledown material design
+    compile "androidx.annotation:annotation-experimental:${androidXSupportLibVersion}"
+    compile "androidx.annotation:annotation:${androidXSupportLibVersion}"
+    compile "androidx.lifecycle:lifecycle-runtime:${androidXSupportLibVersion}"
+    compile "androidx.transition:transition:${androidXSupportLibVersion}"
+    compile "androidx.viewpager2:viewpager2:${androidXSupportLibVersion}"
+
     compile "androidx.multidex:multidex:2.0.0"
 
     // Replacement for com.android.support:design

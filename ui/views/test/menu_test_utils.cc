@@ -8,7 +8,7 @@
 #include "build/build_config.h"
 #include "ui/views/controls/menu/menu_controller.h"
 
-#if defined(OS_MACOSX)
+#if defined(OS_APPLE)
 #include "ui/views/controls/menu/menu_closure_animation_mac.h"
 #endif
 
@@ -78,13 +78,13 @@ void MenuControllerTestApi::SetShowing(bool showing) {
 }
 
 void DisableMenuClosureAnimations() {
-#if defined(OS_MACOSX)
+#if defined(OS_APPLE)
   MenuClosureAnimationMac::DisableAnimationsForTesting();
 #endif
 }
 
 void WaitForMenuClosureAnimation() {
-#if defined(OS_MACOSX)
+#if defined(OS_APPLE)
   // TODO(https://crbug.com/982815): Replace this with Quit+Run.
   base::RunLoop().RunUntilIdle();
 #endif

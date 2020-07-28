@@ -212,10 +212,10 @@ class PolicyWatcherTest : public testing::Test {
  protected:
   void StartWatching() {
     policy_watcher_->StartWatching(
-        base::Bind(&MockPolicyCallback::OnPolicyUpdate,
-                   base::Unretained(&mock_policy_callback_)),
-        base::Bind(&MockPolicyCallback::OnPolicyError,
-                   base::Unretained(&mock_policy_callback_)));
+        base::BindRepeating(&MockPolicyCallback::OnPolicyUpdate,
+                            base::Unretained(&mock_policy_callback_)),
+        base::BindRepeating(&MockPolicyCallback::OnPolicyError,
+                            base::Unretained(&mock_policy_callback_)));
     base::RunLoop().RunUntilIdle();
   }
 

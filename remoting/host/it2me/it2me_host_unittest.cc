@@ -339,8 +339,8 @@ void It2MeHostTest::RunValidationCallback(const std::string& remote_jid) {
       FROM_HERE,
       base::BindOnce(
           it2me_host_->GetValidationCallbackForTesting(), remote_jid,
-          base::Bind(&It2MeHostTest::OnValidationComplete,
-                     base::Unretained(this), run_loop.QuitClosure())));
+          base::BindOnce(&It2MeHostTest::OnValidationComplete,
+                         base::Unretained(this), run_loop.QuitClosure())));
 
   run_loop.Run();
 }
@@ -398,7 +398,7 @@ TEST_F(It2MeHostTest, IceConfig) {
 
   protocol::IceConfig ice_config;
   GetHost()->transport_context_for_tests()->GetIceConfig(
-      base::Bind(&ReceiveIceConfig, &ice_config));
+      base::BindOnce(&ReceiveIceConfig, &ice_config));
   EXPECT_EQ(ice_config.stun_servers[0].hostname(), kTestStunServer);
 
   ShutdownHost();

@@ -19,6 +19,10 @@
 
   /* Styles only applying when the pdfViewerUpdateEnabled flag is on. */
 
+  viewer-pdf-toolbar-new {
+    z-index: 1;
+  }
+
   :host-context([pdf-viewer-update-enabled]):host {
     display: flex;
     flex-direction: column;
@@ -33,7 +37,7 @@
   }
 
   #sidenav {
-    background-color: red;
+    background-color: var(--viewer-pdf-toolbar-background-color);
     min-width: 260px;
   }
 
@@ -117,7 +121,7 @@
 
 <template is="dom-if" if="[[pdfViewerUpdateEnabled_]]">
   <div id="container">
-    <div id="sidenav">sidenav</div>
+    <div id="sidenav"></div>
     <div id="main" on-scroll="onScroll_">
       <div id="sizer"></div>
       <div id="content"></div>

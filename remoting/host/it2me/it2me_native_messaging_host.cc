@@ -110,12 +110,13 @@ It2MeNativeMessagingHost::It2MeNativeMessagingHost(
   // The policy watcher runs on the |file_task_runner| but we want to run the
   // callbacks on |task_runner| so we use a shim to post them to it.
   PolicyWatcher::PolicyUpdatedCallback update_callback =
-      base::Bind(&It2MeNativeMessagingHost::OnPolicyUpdate, weak_ptr_);
+      base::BindRepeating(&It2MeNativeMessagingHost::OnPolicyUpdate, weak_ptr_);
   PolicyWatcher::PolicyErrorCallback error_callback =
-      base::Bind(&It2MeNativeMessagingHost::OnPolicyError, weak_ptr_);
+      base::BindRepeating(&It2MeNativeMessagingHost::OnPolicyError, weak_ptr_);
   policy_watcher_->StartWatching(
-      base::Bind(&PolicyUpdateCallback, task_runner(), update_callback),
-      base::Bind(&PolicyErrorCallback, task_runner(), error_callback));
+      base::BindRepeating(&PolicyUpdateCallback, task_runner(),
+                          update_callback),
+      base::BindRepeating(&PolicyErrorCallback, task_runner(), error_callback));
 }
 
 It2MeNativeMessagingHost::~It2MeNativeMessagingHost() {
@@ -175,10 +176,9 @@ void It2MeNativeMessagingHost::Start(Client* client) {
   DCHECK(task_runner()->BelongsToCurrentThread());
   client_ = client;
 #if !defined(OS_CHROMEOS)
-  log_message_handler_.reset(
-      new LogMessageHandler(
-          base::Bind(&It2MeNativeMessagingHost::SendMessageToClient,
-                     base::Unretained(this))));
+  log_message_handler_ = std::make_unique<LogMessageHandler>(
+      base::BindRepeating(&It2MeNativeMessagingHost::SendMessageToClient,
+                          base::Unretained(this)));
 #endif  // !defined(OS_CHROMEOS)
 }
 

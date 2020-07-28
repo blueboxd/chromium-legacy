@@ -19,12 +19,12 @@ namespace {
 
 #if defined(OS_CHROMEOS)
 const int kSystemKeyModifierMask = EF_ALT_DOWN | EF_COMMAND_DOWN;
-#elif defined(OS_MACOSX)
+#elif defined(OS_APPLE)
 // Alt modifier is used to input extended characters on Mac.
 const int kSystemKeyModifierMask = EF_COMMAND_DOWN;
 #else
 const int kSystemKeyModifierMask = EF_ALT_DOWN;
-#endif  // !defined(OS_CHROMEOS) && !defined(OS_MACOSX)
+#endif  // !defined(OS_CHROMEOS) && !defined(OS_APPLE)
 
 bool IsValidTimebase(base::TimeTicks now, base::TimeTicks timestamp) {
   int64_t delta = (now - timestamp).InMilliseconds();

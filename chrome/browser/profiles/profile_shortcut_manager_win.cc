@@ -29,6 +29,7 @@
 #include "base/threading/scoped_blocking_call.h"
 #include "base/win/shortcut.h"
 #include "chrome/browser/browser_process.h"
+#include "chrome/browser/policy/policy_path_parser.h"
 #include "chrome/browser/profiles/profile_attributes_entry.h"
 #include "chrome/browser/profiles/profile_attributes_storage.h"
 #include "chrome/browser/profiles/profile_avatar_icon_util.h"
@@ -714,13 +715,17 @@ bool ProfileShortcutManager::IsFeatureEnabled() {
   if (command_line->HasSwitch(switches::kEnableProfileShortcutManager))
     return true;
 
+  base::FilePath policy_user_data_dir;
+  policy::path_parser::CheckUserDataDirPolicy(&policy_user_data_dir);
+
   base::FilePath user_data_dir;
   bool success = base::PathService::Get(chrome::DIR_USER_DATA, &user_data_dir);
   DCHECK(success);
   base::FilePath default_user_data_dir;
   success = chrome::GetDefaultUserDataDirectory(&default_user_data_dir);
   DCHECK(success);
-  return user_data_dir == default_user_data_dir;
+  return user_data_dir == default_user_data_dir ||
+         user_data_dir == policy_user_data_dir;
 }
 
 // static

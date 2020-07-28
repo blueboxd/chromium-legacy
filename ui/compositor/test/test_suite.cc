@@ -20,7 +20,7 @@
 #include "ui/display/win/dpi.h"
 #endif
 
-#if defined(OS_MACOSX)
+#if defined(OS_APPLE)
 // gn check complains on other platforms, because //gpu/ipc/service:service
 // is added to dependencies only for mac.
 #include "gpu/ipc/service/image_transport_surface.h"  // nogncheck

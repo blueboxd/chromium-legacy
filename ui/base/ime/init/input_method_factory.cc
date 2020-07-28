@@ -16,7 +16,7 @@
 #if defined(OS_WIN)
 #include "ui/base/ime/win/input_method_win_imm32.h"
 #include "ui/base/ime/win/input_method_win_tsf.h"
-#elif defined(OS_MACOSX)
+#elif defined(OS_APPLE)
 #include "ui/base/ime/mac/input_method_mac.h"
 #elif defined(USE_X11) || defined(USE_OZONE)
 #if defined(USE_X11)
@@ -67,7 +67,7 @@ std::unique_ptr<InputMethod> CreateInputMethod(
     return std::make_unique<InputMethodWinTSF>(delegate, widget);
   }
   return std::make_unique<InputMethodWinImm32>(delegate, widget);
-#elif defined(OS_MACOSX)
+#elif defined(OS_APPLE)
   return std::make_unique<InputMethodMac>(delegate);
 #elif defined(USE_X11) || defined(USE_OZONE)
 #if defined(USE_OZONE)

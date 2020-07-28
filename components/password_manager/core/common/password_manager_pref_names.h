@@ -24,7 +24,7 @@ extern const char kCredentialsEnableAutosignin[];
 // passwords.
 extern const char kCredentialsEnableService[];
 
-#if !defined(OS_MACOSX) && !defined(OS_CHROMEOS) && defined(OS_POSIX)
+#if !defined(OS_APPLE) && !defined(OS_CHROMEOS) && defined(OS_POSIX)
 // The current state of the migration to LoginDB from Keyring/Kwallet on Linux.
 extern const char kMigrationToLoginDBStep[];
 #endif
@@ -38,7 +38,7 @@ extern const char kOsPasswordBlank[];
 extern const char kOsPasswordLastChanged[];
 #endif
 
-#if defined(OS_MACOSX)
+#if defined(OS_APPLE)
 // The current status of migrating the passwords from the Keychain to the
 // database. Stores a value from MigrationStatus.
 extern const char kKeychainMigrationStatus[];

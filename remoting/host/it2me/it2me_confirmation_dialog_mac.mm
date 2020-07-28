@@ -85,9 +85,10 @@ void It2MeConfirmationDialogMac::Show(const std::string& remote_user_email,
                                       ResultCallback callback) {
   result_callback_ = std::move(callback);
 
-  dialog_timer_.Start(FROM_HERE, kDialogTimeout,
-                      base::Bind(&It2MeConfirmationDialogMac::OnDialogAction,
-                                 base::Unretained(this), Result::CANCEL));
+  dialog_timer_.Start(
+      FROM_HERE, kDialogTimeout,
+      base::BindOnce(&It2MeConfirmationDialogMac::OnDialogAction,
+                     base::Unretained(this), Result::CANCEL));
 
   ResultCallback dialog_action_callback = base::BindOnce(
       &It2MeConfirmationDialogMac::OnDialogAction, base::Unretained(this));

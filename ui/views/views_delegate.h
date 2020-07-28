@@ -30,7 +30,7 @@ class Rect;
 }  // namespace gfx
 
 namespace ui {
-#if defined(OS_MACOSX)
+#if defined(OS_APPLE)
 class ContextFactory;
 #endif
 class TouchEditingControllerFactory;
@@ -161,7 +161,7 @@ class VIEWS_EXPORT ViewsDelegate {
   // maximized windows; otherwise to restored windows.
   virtual bool WindowManagerProvidesTitleBar(bool maximized);
 
-#if defined(OS_MACOSX)
+#if defined(OS_APPLE)
   // Returns the context factory for new windows.
   virtual ui::ContextFactory* GetContextFactory();
 #endif

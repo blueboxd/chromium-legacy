@@ -26,4 +26,9 @@ interface PasswordCheckComponentUi {
      * @param item A {@link MenuItem}.
      */
     boolean handleHelp(MenuItem item);
+
+    /**
+     * Tears down the component when it's no longer needed.
+     */
+    void destroy();
 }

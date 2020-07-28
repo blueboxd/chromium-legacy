@@ -21,7 +21,7 @@ android_resources("java_resources") {
   deps = [
     "//components/browser_ui/widget/android:java_resources",
     "//components/strings:components_strings_grd",
-    "//third_party/android_deps:com_google_android_material_material_java",
+    "//third_party/android_deps:material_design_java",
   ]
 }
 
@@ -40,7 +40,7 @@ android_library("java") {
     "//third_party/android_deps:androidx_annotation_annotation_java",
     "//third_party/android_deps:androidx_appcompat_appcompat_java",
     "//third_party/android_deps:androidx_core_core_java",
-    "//third_party/android_deps:com_google_android_material_material_java",
+    "//third_party/android_deps:material_design_java",
   ]
 }
 

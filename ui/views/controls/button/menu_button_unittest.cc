@@ -577,7 +577,7 @@ TEST_F(MenuButtonTest, DraggableMenuButtonDoesNotActivateOnDrag) {
 #endif  // USE_AURA
 
 // No touch on desktop Mac. Tracked in http://crbug.com/445520.
-#if !defined(OS_MACOSX) || defined(USE_AURA)
+#if !defined(OS_APPLE) || defined(USE_AURA)
 
 // Tests if the listener is notified correctly when a gesture tap happens on a
 // MenuButton that has a ButtonListener.
@@ -627,7 +627,7 @@ TEST_F(MenuButtonTest, TouchFeedbackDuringTapCancel) {
   EXPECT_EQ(nullptr, button_listener.last_sender());
 }
 
-#endif  // !defined(OS_MACOSX) || defined(USE_AURA)
+#endif  // !defined(OS_APPLE) || defined(USE_AURA)
 
 TEST_F(MenuButtonTest, InkDropHoverWhenShowingMenu) {
   PressStateButtonListener button_listener(false);

@@ -83,7 +83,7 @@ public class AndroidPaymentAppFinderUnitTest {
         Mockito.when(params.getTopLevelOrigin()).thenReturn("https://chromium.org");
         Mockito.when(params.getPaymentRequestOrigin()).thenReturn("https://chromium.org");
         Mockito.when(params.getCertificateChain()).thenReturn(null);
-        Mockito.when(params.getModifiers())
+        Mockito.when(params.getUnmodifiableModifiers())
                 .thenReturn(new HashMap<String, PaymentDetailsModifier>());
         Mockito.when(params.getMayCrawl()).thenReturn(false);
         PaymentAppFactoryDelegate delegate = Mockito.mock(PaymentAppFactoryDelegate.class);

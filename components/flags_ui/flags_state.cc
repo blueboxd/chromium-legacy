@@ -676,9 +676,9 @@ void FlagsState::GetFlagFeatureEntries(
 
 // static
 int FlagsState::GetCurrentPlatform() {
-#if defined(OS_IOS)  // Needs to be before the OS_MACOSX check.
+#if defined(OS_IOS)
   return kOsIos;
-#elif defined(OS_MACOSX)
+#elif defined(OS_MAC)
   return kOsMac;
 #elif defined(OS_WIN)
   return kOsWin;

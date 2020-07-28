@@ -11,6 +11,7 @@ import org.chromium.chrome.browser.AppHooks;
 import org.chromium.chrome.browser.ChromeActivity;
 import org.chromium.chrome.browser.flags.ChromeFeatureList;
 import org.chromium.chrome.browser.password_check.PasswordCheckFactory;
+import org.chromium.chrome.browser.password_check.PasswordCheckReferrer;
 import org.chromium.ui.base.WindowAndroid;
 
 /**
@@ -31,7 +32,8 @@ public class PasswordCheckupLauncher {
     private static void launchLocalCheckup(WindowAndroid windowAndroid) {
         assert ChromeFeatureList.isEnabled(ChromeFeatureList.PASSWORD_CHECK);
         if (windowAndroid.getContext().get() == null) return; // Window not available yet/anymore.
-        PasswordCheckFactory.create().showUi(windowAndroid.getContext().get());
+        PasswordCheckFactory.getOrCreate().showUi(
+                windowAndroid.getContext().get(), PasswordCheckReferrer.LEAK_DIALOG);
     }
 
     private static boolean tryLaunchingNativePasswordCheckup(ChromeActivity activity) {

@@ -89,11 +89,11 @@ extern const char kAutofillUseMobileLabelDisambiguationParameterShowAll[];
 // Returns whether the Autofill credit card assist infobar should be shown.
 bool IsAutofillCreditCardAssistEnabled();
 
-#if defined(OS_MACOSX)
+#if defined(OS_APPLE)
 // Returns true if whether the views autofill popup feature is enabled or the
 // we're using the views browser.
 bool IsMacViewsAutofillPopupExperimentEnabled();
-#endif  // defined(OS_MACOSX)
+#endif  // defined(OS_APPLE)
 
 }  // namespace features
 }  // namespace autofill

@@ -15,6 +15,7 @@
 #include "chrome/browser/chromeos/login/configuration_keys.h"
 #include "chrome/browser/chromeos/login/enrollment/enrollment_uma.h"
 #include "chrome/browser/chromeos/login/screen_manager.h"
+#include "chrome/browser/chromeos/login/screens/base_screen.h"
 #include "chrome/browser/chromeos/login/startup_utils.h"
 #include "chrome/browser/chromeos/login/ui/login_display_host.h"
 #include "chrome/browser/chromeos/login/wizard_context.h"
@@ -92,6 +93,8 @@ std::string EnrollmentScreen::GetResultString(Result result) {
       return "Completed";
     case Result::BACK:
       return "Back";
+    case Result::SKIPPED_FOR_TESTS:
+      return BaseScreen::kNotApplicable;
   }
 }
 
@@ -196,6 +199,14 @@ void EnrollmentScreen::ClearAuth(const base::Closure& callback) {
 void EnrollmentScreen::OnAuthCleared(const base::Closure& callback) {
   enrollment_helper_ = nullptr;
   callback.Run();
+}
+
+bool EnrollmentScreen::MaybeSkip(WizardContext* context) {
+  if (context->skip_non_forced_enrollment_for_tests && !config_.is_forced()) {
+    exit_callback_.Run(Result::SKIPPED_FOR_TESTS);
+    return true;
+  }
+  return false;
 }
 
 void EnrollmentScreen::ShowImpl() {

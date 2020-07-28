@@ -12,7 +12,7 @@
 
 #if defined(OS_ANDROID)
 #include "base/android/scoped_java_ref.h"
-#elif defined(OS_MACOSX)
+#elif defined(OS_APPLE)
 #include <objc/objc.h>
 #elif defined(OS_WIN)
 #include "base/win/windows_types.h"
@@ -73,7 +73,7 @@ class UIView;
 class UIWindow;
 class UITextField;
 #endif  // __OBJC__
-#elif defined(OS_MACOSX)
+#elif defined(OS_MAC)
 struct CGContext;
 #ifdef __OBJC__
 @class NSCursor;
@@ -126,7 +126,7 @@ typedef UIWindow* NativeWindow;
 typedef UIEvent* NativeEvent;
 constexpr NativeView kNullNativeView = nullptr;
 constexpr NativeWindow kNullNativeWindow = nullptr;
-#elif defined(OS_MACOSX)
+#elif defined(OS_MAC)
 typedef NSCursor* NativeCursor;
 typedef NSEvent* NativeEvent;
 // NativeViews and NativeWindows on macOS are not necessarily in the same
@@ -201,7 +201,7 @@ typedef IAccessible* NativeViewAccessible;
 #elif defined(OS_IOS)
 typedef UIFont* NativeFont;
 typedef id NativeViewAccessible;
-#elif defined(OS_MACOSX)
+#elif defined(OS_MAC)
 typedef NSFont* NativeFont;
 typedef id NativeViewAccessible;
 #elif defined(OS_LINUX) && !defined(OS_CHROMEOS)
@@ -236,7 +236,7 @@ constexpr AcceleratedWidget kNullAcceleratedWidget = nullptr;
 #elif defined(OS_IOS)
 typedef UIView* AcceleratedWidget;
 constexpr AcceleratedWidget kNullAcceleratedWidget = 0;
-#elif defined(OS_MACOSX)
+#elif defined(OS_MAC)
 typedef uint64_t AcceleratedWidget;
 constexpr AcceleratedWidget kNullAcceleratedWidget = 0;
 #elif defined(OS_ANDROID)

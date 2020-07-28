@@ -232,7 +232,7 @@ TEST_F(SliderTest, UpdateFromClickRTLHorizontal) {
 }
 
 // No touch on desktop Mac. Tracked in http://crbug.com/445520.
-#if !defined(OS_MACOSX) || defined(USE_AURA)
+#if !defined(OS_APPLE) || defined(USE_AURA)
 
 // Test the slider location after a tap gesture.
 TEST_F(SliderTest, SliderValueForTapGesture) {
@@ -392,6 +392,6 @@ TEST_F(SliderTest, SliderRaisesA11yEvents) {
   EXPECT_TRUE(observer.value_changed());
 }
 
-#endif  // !defined(OS_MACOSX) || defined(USE_AURA)
+#endif  // !defined(OS_APPLE) || defined(USE_AURA)
 
 }  // namespace views

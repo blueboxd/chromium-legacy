@@ -592,7 +592,7 @@ public class AndroidPaymentAppFinder implements ManifestVerifyCallback {
                     mFactoryDelegate.getParams().getTopLevelOrigin(),
                     mFactoryDelegate.getParams().getPaymentRequestOrigin(),
                     mFactoryDelegate.getParams().getCertificateChain(),
-                    filterModifiersForApp(mFactoryDelegate.getParams().getModifiers(),
+                    filterModifiersForApp(mFactoryDelegate.getParams().getUnmodifiableModifiers(),
                             app.getInstrumentMethodNames()),
                     this::onIsReadyToPayResponse);
         }

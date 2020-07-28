@@ -21,6 +21,7 @@
 #include "base/stl_util.h"
 #include "base/strings/string_util.h"
 #include "base/task/sequence_manager/thread_controller_power_monitor.h"
+#include "base/threading/hang_watcher.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/time/time.h"
 #include "base/trace_event/trace_event_impl.h"
@@ -633,6 +634,8 @@ void ChromeMainDelegate::PostFieldTrialInitialization() {
   base::sequence_manager::internal::ThreadControllerPowerMonitor::
       InitializeOnMainThread();
 #endif
+
+  base::HangWatcher::InitializeOnMainThread();
 }
 
 bool ChromeMainDelegate::BasicStartupComplete(int* exit_code) {

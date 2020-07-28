@@ -78,12 +78,13 @@ public class TabContext {
         public final String title;
         public final String originalUrl;
         public final String visibleUrl;
+        public final boolean isIncognito;
 
         /**
          * Constructs a new TabInfo object
          */
         protected TabInfo(int id, String title, String url, String originalUrl, String referrerUrl,
-                long timestampMillis, String visibleUrl) {
+                long timestampMillis, String visibleUrl, boolean isIncognito) {
             this.id = id;
             this.title = title;
             this.url = url;
@@ -91,6 +92,15 @@ public class TabContext {
             this.referrerUrl = referrerUrl;
             this.timestampMillis = timestampMillis;
             this.visibleUrl = visibleUrl;
+            this.isIncognito = isIncognito;
+        }
+
+        /**
+         * Constructs a new non-incognito TabInfo object
+         */
+        protected TabInfo(int id, String title, String url, String originalUrl, String referrerUrl,
+                long timestampMillis, String visibleUrl) {
+            this(id, title, url, originalUrl, referrerUrl, timestampMillis, visibleUrl, false);
         }
 
         /**
@@ -100,7 +110,7 @@ public class TabContext {
             String referrerUrl = getReferrerUrlFromTab(tab);
             return new TabInfo(tab.getId(), tab.getTitle(), tab.getUrlString(),
                     tab.getOriginalUrl(), referrerUrl != null ? referrerUrl : "",
-                    tab.getTimestampMillis(), tab.getUrlString());
+                    tab.getTimestampMillis(), tab.getUrlString(), tab.isIncognito());
         }
 
         public double getSiteEngagementScore() {
@@ -272,7 +282,8 @@ public class TabContext {
             tabs.add(new TabContext.TabInfo(Integer.parseInt(jsonTab.getString(ID_KEY)),
                     jsonTab.getString(TITLE_KEY), jsonTab.getString(URL_KEY), null,
                     jsonTab.getString(REFERRER_KEY),
-                    Long.parseLong(jsonTab.getString(TIMESTAMP_KEY)), null));
+                    Long.parseLong(jsonTab.getString(TIMESTAMP_KEY)), null,
+                    false /** Only support non-incognito for now*/));
         }
         return tabs;
     }

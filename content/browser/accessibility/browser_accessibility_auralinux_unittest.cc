@@ -305,6 +305,59 @@ TEST_F(BrowserAccessibilityAuraLinuxTest, TestComplexHypertext) {
   manager.reset();
 }
 
+TEST_F(BrowserAccessibilityAuraLinuxTest, TestTextAttributesInButtons) {
+  ui::AXNodeData root;
+  root.id = 1;
+  root.role = ax::mojom::Role::kRootWebArea;
+  root.AddState(ax::mojom::State::kFocusable);
+
+  ui::AXNodeData button;
+  button.id = 2;
+  button.role = ax::mojom::Role::kButton;
+  button.AddStringAttribute(ax::mojom::StringAttribute::kFontFamily, "Times");
+  root.child_ids.push_back(button.id);
+
+  ui::AXNodeData text;
+  text.id = 3;
+  text.role = ax::mojom::Role::kStaticText;
+  text.SetName("OK");
+  button.child_ids.push_back(text.id);
+
+  ui::AXNodeData empty_button;
+  empty_button.id = 4;
+  empty_button.role = ax::mojom::Role::kButton;
+  empty_button.AddStringAttribute(ax::mojom::StringAttribute::kFontFamily,
+                                  "Times");
+  root.child_ids.push_back(empty_button.id);
+
+  ui::AXTreeUpdate update = MakeAXTreeUpdate(root, button, text, empty_button);
+  std::unique_ptr<BrowserAccessibilityManager> manager(
+      BrowserAccessibilityManager::Create(
+          update, test_browser_accessibility_delegate_.get()));
+
+  BrowserAccessibilityAuraLinux* ax_root =
+      ToBrowserAccessibilityAuraLinux(manager->GetRoot());
+
+  BrowserAccessibilityAuraLinux* ax_button =
+      ToBrowserAccessibilityAuraLinux(ax_root->PlatformGetChild(0));
+  AtkObject* atk_button = ax_button->GetNode()->GetNativeViewAccessible();
+
+  int start_offset, end_offset;
+  AtkAttributeSet* attributes = atk_text_get_run_attributes(
+      ATK_TEXT(atk_button), 0, &start_offset, &end_offset);
+  ASSERT_EQ(1U, g_slist_length(attributes));
+  atk_attribute_set_free(attributes);
+
+  BrowserAccessibilityAuraLinux* ax_empty_button =
+      ToBrowserAccessibilityAuraLinux(ax_root->PlatformGetChild(1));
+  AtkObject* atk_empty_button =
+      ax_empty_button->GetNode()->GetNativeViewAccessible();
+  attributes = atk_text_get_run_attributes(ATK_TEXT(atk_empty_button), 0,
+                                           &start_offset, &end_offset);
+  ASSERT_EQ(1U, g_slist_length(attributes));
+  atk_attribute_set_free(attributes);
+}
+
 TEST_F(BrowserAccessibilityAuraLinuxTest,
        TestTextAttributesInContentEditables) {
   auto has_attribute = [](AtkAttributeSet* attributes,

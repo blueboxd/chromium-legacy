@@ -748,7 +748,7 @@ void WebFrameWidgetImpl::HandleMouseDown(LocalFrame& main_frame,
 
   // Dispatch the contextmenu event regardless of if the click was swallowed.
   if (!GetPage()->GetSettings().GetShowContextMenuOnMouseUp()) {
-#if defined(OS_MACOSX)
+#if defined(OS_APPLE)
     if (event.button == WebMouseEvent::Button::kRight ||
         (event.button == WebMouseEvent::Button::kLeft &&
          event.GetModifiers() & WebMouseEvent::kControlKey))
@@ -931,7 +931,7 @@ WebInputEventResult WebFrameWidgetImpl::HandleKeyEvent(
     return result;
   }
 
-#if !defined(OS_MACOSX)
+#if !defined(OS_APPLE)
   const WebInputEvent::Type kContextMenuKeyTriggeringEventType =
 #if defined(OS_WIN)
       WebInputEvent::Type::kKeyUp;
@@ -953,7 +953,7 @@ WebInputEventResult WebFrameWidgetImpl::HandleKeyEvent(
     View()->SendContextMenuEvent();
     return WebInputEventResult::kHandledSystem;
   }
-#endif  // !defined(OS_MACOSX)
+#endif  // !defined(OS_APPLE)
 
   return WebInputEventResult::kNotHandled;
 }

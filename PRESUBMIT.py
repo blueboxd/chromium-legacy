@@ -398,7 +398,6 @@ _NOT_CONVERTED_TO_MODERN_BIND_AND_CALLBACK = '|'.join((
   '^net/http/',
   '^net/url_request/',
   '^ppapi/proxy/',
-  '^remoting/host/',
   '^services/',
   '^third_party/blink/',
   '^tools/clang/base_bind_rewriters/',  # Intentional.

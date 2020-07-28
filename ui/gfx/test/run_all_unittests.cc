@@ -15,7 +15,7 @@
 #include "ui/base/ui_base_paths.h"
 #include "ui/gfx/font_util.h"
 
-#if defined(OS_MACOSX) && !defined(OS_IOS)
+#if defined(OS_MAC)
 #include "base/test/mock_chrome_application_mac.h"
 #endif
 
@@ -38,7 +38,7 @@ class GfxTestSuite : public base::TestSuite {
   void Initialize() override {
     base::TestSuite::Initialize();
 
-#if defined(OS_MACOSX) && !defined(OS_IOS)
+#if defined(OS_MAC)
     mock_cr_app::RegisterMockCrApp();
 #endif
 

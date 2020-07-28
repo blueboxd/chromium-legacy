@@ -1742,6 +1742,40 @@ TEST_F(AutoNightLightTest, Notification) {
   EXPECT_FALSE(controller->GetAutoNightLightNotificationForTesting());
 }
 
+TEST_F(AutoNightLightTest, DismissNotificationOnTurningOff) {
+  GetSessionControllerClient()->UnlockScreen();
+  NightLightControllerImpl* controller = GetController();
+  EXPECT_EQ(NightLightController::kSunsetToSunrise,
+            controller->GetScheduleType());
+
+  // Use a fake geoposition with sunset/sunrise times at 5pm/3am.
+  controller->SetCurrentGeoposition(NightLightController::SimpleGeoposition{
+      kFakePosition2_Latitude, kFakePosition2_Longitude});
+
+  // Simulate reaching sunset.
+  delegate()->SetFakeNow(TimeOfDay(17 * 60));  // Now is 5:00 PM.
+  controller->timer()->FireNow();
+  EXPECT_TRUE(controller->GetEnabled());
+  auto* notification = controller->GetAutoNightLightNotificationForTesting();
+  ASSERT_TRUE(notification);
+  ASSERT_TRUE(notification->delegate());
+
+  // Simulate receiving an updated geoposition with sunset/sunrise times at
+  // 8pm/4am, so now is before sunset. Night Light should turn off, and the
+  // stale notification from above should be removed. However, its removal
+  // should not affect kAutoNightLightNotificationDismissed.
+  controller->SetCurrentGeoposition(NightLightController::SimpleGeoposition{
+      kFakePosition1_Latitude, kFakePosition1_Longitude});
+  EXPECT_FALSE(controller->GetEnabled());
+  EXPECT_FALSE(controller->GetAutoNightLightNotificationForTesting());
+
+  // Simulate reaching next sunset. The notification should still show, since it
+  // was never dismissed by the user.
+  delegate()->SetFakeNow(TimeOfDay(20 * 60));  // Now is 8:00 PM.
+  controller->timer()->FireNow();
+  EXPECT_TRUE(controller->GetEnabled());
+  EXPECT_TRUE(controller->GetAutoNightLightNotificationForTesting());
+}
 TEST_F(AutoNightLightTest, CannotDisableNotificationWhenSessionIsBlocked) {
   EXPECT_TRUE(Shell::Get()->session_controller()->IsUserSessionBlocked());
 

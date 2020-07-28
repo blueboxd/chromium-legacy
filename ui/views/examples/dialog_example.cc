@@ -312,7 +312,7 @@ void DialogExample::ContentsChanged(Textfield* sender,
 
 void DialogExample::OnPerformAction(Combobox* combobox) {
   bool enable = bubble_->GetChecked() || GetModalType() != ui::MODAL_TYPE_CHILD;
-#if defined(OS_MACOSX)
+#if defined(OS_APPLE)
   enable = enable && GetModalType() != ui::MODAL_TYPE_SYSTEM;
 #endif
   show_->SetEnabled(enable);

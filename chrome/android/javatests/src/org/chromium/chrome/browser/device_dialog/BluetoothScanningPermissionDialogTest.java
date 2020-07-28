@@ -9,15 +9,17 @@ import android.view.View;
 import android.widget.Button;
 import android.widget.ListView;
 
-import androidx.test.filters.LargeTest;
+import androidx.test.filters.SmallTest;
 
 import org.hamcrest.Matchers;
 import org.junit.Assert;
 import org.junit.Before;
+import org.junit.ClassRule;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
+import org.chromium.base.test.util.Batch;
 import org.chromium.base.test.util.CommandLineFlags;
 import org.chromium.base.test.util.JniMocker;
 import org.chromium.chrome.R;
@@ -25,6 +27,7 @@ import org.chromium.chrome.browser.ChromeActivity;
 import org.chromium.chrome.browser.flags.ChromeSwitches;
 import org.chromium.chrome.test.ChromeActivityTestRule;
 import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
+import org.chromium.chrome.test.batch.BlankCTATabInitialStateRule;
 import org.chromium.components.security_state.ConnectionSecurityLevel;
 import org.chromium.content_public.browser.bluetooth_scanning.Event;
 import org.chromium.content_public.browser.test.util.Criteria;
@@ -37,10 +40,15 @@ import org.chromium.ui.base.ActivityWindowAndroid;
  */
 @RunWith(ChromeJUnit4ClassRunner.class)
 @CommandLineFlags.Add({ChromeSwitches.DISABLE_FIRST_RUN_EXPERIENCE})
+@Batch(BluetoothChooserDialogTest.DEVICE_DIALOG_BATCH_NAME)
 public class BluetoothScanningPermissionDialogTest {
-    @Rule
-    public ChromeActivityTestRule<ChromeActivity> mActivityTestRule =
+    @ClassRule
+    public static final ChromeActivityTestRule<ChromeActivity> sActivityTestRule =
             new ChromeActivityTestRule<>(ChromeActivity.class);
+
+    @Rule
+    public final BlankCTATabInitialStateRule mInitialStateRule =
+            new BlankCTATabInitialStateRule(sActivityTestRule, false);
 
     @Rule
     public JniMocker mocker = new JniMocker();
@@ -62,13 +70,12 @@ public class BluetoothScanningPermissionDialogTest {
     public void setUp() throws Exception {
         mocker.mock(BluetoothScanningPermissionDialogJni.TEST_HOOKS,
                 new TestBluetoothScanningPermissionDialogJni());
-        mActivityTestRule.startMainActivityOnBlankPage();
         mPermissionDialog = createDialog();
     }
 
     private BluetoothScanningPermissionDialog createDialog() {
         return TestThreadUtils.runOnUiThreadBlockingNoException(() -> {
-            mWindowAndroid = mActivityTestRule.getActivity().getWindowAndroid();
+            mWindowAndroid = sActivityTestRule.getActivity().getWindowAndroid();
             BluetoothScanningPermissionDialog dialog = new BluetoothScanningPermissionDialog(
                     mWindowAndroid, "https://origin.example.com/", ConnectionSecurityLevel.SECURE,
                     /*nativeBluetoothScanningPermissionDialogPtr=*/42);
@@ -77,7 +84,7 @@ public class BluetoothScanningPermissionDialogTest {
     }
 
     @Test
-    @LargeTest
+    @SmallTest
     public void testAddDevice() {
         Dialog dialog = mPermissionDialog.getDialogForTesting();
 
@@ -117,7 +124,7 @@ public class BluetoothScanningPermissionDialogTest {
     }
 
     @Test
-    @LargeTest
+    @SmallTest
     public void testCancelPermissionDialogWithoutClickingAnyButton() {
         Dialog dialog = mPermissionDialog.getDialogForTesting();
 

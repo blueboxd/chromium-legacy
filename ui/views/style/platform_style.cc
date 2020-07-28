@@ -33,7 +33,7 @@ const bool PlatformStyle::kIsOkButtonLeading = false;
 const float PlatformStyle::kFocusHaloThickness = 2.f;
 const float PlatformStyle::kFocusHaloInset = -1.f;
 
-#if !defined(OS_MACOSX)
+#if !defined(OS_APPLE)
 
 const int PlatformStyle::kMinLabelButtonWidth = 70;
 const int PlatformStyle::kMinLabelButtonHeight = 33;

@@ -56,13 +56,13 @@ TEST_F(MoveCommandsTest, CaretBrowsingPositionAndFocusUpdate_MoveDown) {
   VerifyCaretBrowsingPositionAndFocusUpdate(
       "<div>a|b</div><div><a href=\"foo\">cd</a></div>", "body",
       MoveCommands::ExecuteMoveDown,
-#if !defined(OS_MACOSX)
+#if !defined(OS_APPLE)
       "<div>ab</div><div><a href=\"foo\">c|d</a></div>", "a");
-#else   // defined(OS_MACOSX)
+#else   // defined(OS_APPLE)
         // MoveDown navigates visually, placing caret at different position for
         // macOS.
       "<div>ab</div><div><a href=\"foo\">|cd</a></div>", "a");
-#endif  // !defined(OS_MACOSX)
+#endif  // !defined(OS_APPLE)
 }
 
 TEST_F(MoveCommandsTest, CaretBrowsingPositionAndFocusUpdate_MoveForward) {
@@ -184,13 +184,13 @@ TEST_F(MoveCommandsTest, CaretBrowsingPositionAndFocusUpdate_MoveUp) {
   VerifyCaretBrowsingPositionAndFocusUpdate(
       "<div><a href=\"foo\">ab</a></div><div>c|d</div>", "body",
       MoveCommands::ExecuteMoveUp,
-#if !defined(OS_MACOSX)
+#if !defined(OS_APPLE)
       "<div><a href=\"foo\">a|b</a></div><div>cd</div>", "a");
-#else   // defined(OS_MACOSX)
+#else   // defined(OS_APPLE)
       // MoveUp navigates visually, placing caret at different position for
       // macOS.
       "<div><a href=\"foo\">|ab</a></div><div>cd</div>", "a");
-#endif  // !defined(OS_MACOSX)
+#endif  // !defined(OS_APPLE)
 }
 
 TEST_F(MoveCommandsTest, CaretBrowsingPositionAndFocusUpdate_MoveWordBackward) {

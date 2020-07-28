@@ -64,20 +64,37 @@ String ToCookieListItemSameSite(network::mojom::CookieSameSite same_site) {
   NOTREACHED();
 }
 
+String ToCookieListItemEffectiveSameSite(
+    network::mojom::CookieEffectiveSameSite effective_same_site) {
+  switch (effective_same_site) {
+    case network::mojom::CookieEffectiveSameSite::kStrictMode:
+      return "strict";
+    case network::mojom::CookieEffectiveSameSite::kLaxMode:
+    case network::mojom::CookieEffectiveSameSite::kLaxModeAllowUnsafe:
+      return "lax";
+    case network::mojom::CookieEffectiveSameSite::kNoRestriction:
+      return "none";
+    case network::mojom::CookieEffectiveSameSite::kUndefined:
+      return String();
+  }
+}
+
 }  // namespace
 
 // static
-// TODO(crbug.com/1092695): Update to take in CookieWithAccessResult so
-// CookieListItem can use EffectiveSameSite for SameSite.
 CookieListItem* CookieChangeEvent::ToCookieListItem(
     const CanonicalCookie& canonical_cookie,
+    const network::mojom::blink::CookieEffectiveSameSite& effective_same_site,
     bool is_deleted) {
   CookieListItem* list_item = CookieListItem::Create();
 
   list_item->setName(canonical_cookie.Name());
   list_item->setPath(canonical_cookie.Path());
   list_item->setSecure(canonical_cookie.IsSecure());
-  auto&& same_site = ToCookieListItemSameSite(canonical_cookie.SameSite());
+  // Use effective same site if available, otherwise use same site.
+  auto&& same_site = ToCookieListItemEffectiveSameSite(effective_same_site);
+  if (same_site.IsNull())
+    same_site = ToCookieListItemSameSite(canonical_cookie.SameSite());
   if (!same_site.IsNull())
     list_item->setSameSite(same_site);
 
@@ -104,14 +121,14 @@ CookieListItem* CookieChangeEvent::ToCookieListItem(
 
 // static
 void CookieChangeEvent::ToEventInfo(
-    const CanonicalCookie& backend_cookie,
-    ::network::mojom::CookieChangeCause change_cause,
+    const network::mojom::blink::CookieChangeInfoPtr& change_info,
     HeapVector<Member<CookieListItem>>& changed,
     HeapVector<Member<CookieListItem>>& deleted) {
-  switch (change_cause) {
+  switch (change_info->cause) {
     case ::network::mojom::CookieChangeCause::INSERTED: {
-      CookieListItem* cookie =
-          ToCookieListItem(backend_cookie, false /* is_deleted */);
+      CookieListItem* cookie = ToCookieListItem(
+          change_info->cookie, change_info->access_result->effective_same_site,
+          false /* is_deleted */);
       changed.push_back(cookie);
       break;
     }
@@ -120,8 +137,9 @@ void CookieChangeEvent::ToEventInfo(
     case ::network::mojom::CookieChangeCause::EXPIRED:
     case ::network::mojom::CookieChangeCause::EVICTED:
     case ::network::mojom::CookieChangeCause::EXPIRED_OVERWRITE: {
-      CookieListItem* cookie =
-          ToCookieListItem(backend_cookie, true /* is_deleted */);
+      CookieListItem* cookie = ToCookieListItem(
+          change_info->cookie, change_info->access_result->effective_same_site,
+          true /* is_deleted */);
       deleted.push_back(cookie);
       break;
     }

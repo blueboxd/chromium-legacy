@@ -50,7 +50,7 @@
 #include "ui/gfx/text_utils.h"
 #include "ui/gfx/utf16_indexing.h"
 
-#if defined(OS_MACOSX)
+#if defined(OS_APPLE)
 #include "base/mac/foundation_util.h"
 #include "base/mac/mac_util.h"
 #include "third_party/skia/include/ports/SkTypeface_mac.h"
@@ -813,7 +813,7 @@ namespace internal {
 sk_sp<SkTypeface> CreateSkiaTypeface(const Font& font,
                                      bool italic,
                                      Font::Weight weight) {
-#if defined(OS_MACOSX)
+#if defined(OS_APPLE)
   const Font::FontStyle style = italic ? Font::ITALIC : Font::NORMAL;
   Font font_with_style = font.Derive(0, style, weight);
   if (!font_with_style.GetNativeFont())

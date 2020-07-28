@@ -18,14 +18,14 @@
 #if defined(OS_IOS)
 #include "base/mac/foundation_util.h"
 #include "skia/ext/skia_utils_ios.h"
-#elif defined(OS_MACOSX)
+#elif defined(OS_APPLE)
 #include "base/mac/foundation_util.h"
 #include "skia/ext/skia_utils_mac.h"
 #endif
 
 namespace {
 
-#if defined(OS_IOS) || defined(OS_MACOSX)
+#if defined(OS_APPLE)
 const bool kUsesSkiaNatively = false;
 #else
 const bool kUsesSkiaNatively = true;
@@ -56,7 +56,7 @@ TEST_F(ImageTest, EmptyImage) {
 
 // Test constructing a gfx::Image from an empty PlatformImage.
 TEST_F(ImageTest, EmptyImageFromEmptyPlatformImage) {
-#if defined(OS_IOS) || defined(OS_MACOSX)
+#if defined(OS_APPLE)
   gfx::Image image1(nullptr);
   EXPECT_TRUE(image1.IsEmpty());
   EXPECT_EQ(0, image1.Width());

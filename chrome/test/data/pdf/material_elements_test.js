@@ -39,7 +39,8 @@ const tests = [
    */
   function testPageSelectorChange() {
     document.body.innerHTML = '';
-    const selector = document.createElement('viewer-page-selector');
+    const selector = /** @type {!ViewerPageSelectorElement} */ (
+        document.createElement('viewer-page-selector'));
     selector.docLength = 1234;
     document.body.appendChild(selector);
 
@@ -81,10 +82,11 @@ const tests = [
    */
   function testPageSelectorDocLength() {
     document.body.innerHTML = '';
-    const selector = document.createElement('viewer-page-selector');
+    const selector = /** @type {!ViewerPageSelectorElement} */ (
+        document.createElement('viewer-page-selector'));
     selector.docLength = 1234;
     document.body.appendChild(selector);
-    chrome.test.assertEq('1234', selector.$.pagelength.textContent);
+    chrome.test.assertEq('1234', selector.$$('#pagelength').textContent);
     chrome.test.assertEq(
         '4', selector.style.getPropertyValue('--page-length-digits'));
     chrome.test.succeed();
@@ -95,7 +97,8 @@ const tests = [
    */
   function testToolbarDropdownShowHide() {
     document.body.innerHTML = '';
-    const dropdown = document.createElement('viewer-toolbar-dropdown');
+    const dropdown = /** @type {!ViewerToolbarDropdownElement} */ (
+        document.createElement('viewer-toolbar-dropdown'));
     dropdown.header = 'Test Menu';
     dropdown.closedIcon = 'closedIcon';
     dropdown.openIcon = 'openIcon';
@@ -171,10 +174,13 @@ const tests = [
    */
   function testZoomToolbarToggle() {
     document.body.innerHTML = '';
-    const zoomToolbar = document.createElement('viewer-zoom-toolbar');
+    const zoomToolbar = /** @type {!ViewerZoomToolbarElement} */ (
+        document.createElement('viewer-zoom-toolbar'));
     document.body.appendChild(zoomToolbar);
-    const fitButton = zoomToolbar.$['fit-button'];
-    const button = fitButton.$$('cr-icon-button');
+    const fitButton =
+        /** @type {!ViewerZoomButtonElement} */ (zoomToolbar.$['fit-button']);
+    const button =
+        /** @type {!CrIconButtonElement} */ (fitButton.$$('cr-icon-button'));
 
     const fitWidthIcon = 'fullscreen';
     const fitPageIcon = 'fullscreen-exit';
@@ -189,33 +195,33 @@ const tests = [
 
     // Tap 1: Fire fit-to-changed(FIT_TO_PAGE), show fit-to-width.
     button.click();
-    fitToEventChecker.assertEvent(FittingType.FIT_TO_PAGE, true);
+    fitToEventChecker.assertEvent(FittingType.FIT_TO_PAGE);
     chrome.test.assertTrue(button.ironIcon.endsWith(fitWidthIcon));
 
     // Tap 2: Fire fit-to-changed(FIT_TO_WIDTH), show fit-to-page.
     button.click();
-    fitToEventChecker.assertEvent(FittingType.FIT_TO_WIDTH, true);
+    fitToEventChecker.assertEvent(FittingType.FIT_TO_WIDTH);
     chrome.test.assertTrue(button.ironIcon.endsWith(fitPageIcon));
 
     // Tap 3: Fire fit-to-changed(FIT_TO_PAGE) again.
     button.click();
-    fitToEventChecker.assertEvent(FittingType.FIT_TO_PAGE, true);
+    fitToEventChecker.assertEvent(FittingType.FIT_TO_PAGE);
     chrome.test.assertTrue(button.ironIcon.endsWith(fitWidthIcon));
 
     // Do the same as above, but with fitToggleFromHotKey().
     zoomToolbar.fitToggleFromHotKey();
-    fitToEventChecker.assertEvent(FittingType.FIT_TO_WIDTH, true);
+    fitToEventChecker.assertEvent(FittingType.FIT_TO_WIDTH);
     chrome.test.assertTrue(button.ironIcon.endsWith(fitPageIcon));
     zoomToolbar.fitToggleFromHotKey();
-    fitToEventChecker.assertEvent(FittingType.FIT_TO_PAGE, true);
+    fitToEventChecker.assertEvent(FittingType.FIT_TO_PAGE);
     chrome.test.assertTrue(button.ironIcon.endsWith(fitWidthIcon));
     zoomToolbar.fitToggleFromHotKey();
-    fitToEventChecker.assertEvent(FittingType.FIT_TO_WIDTH, true);
+    fitToEventChecker.assertEvent(FittingType.FIT_TO_WIDTH);
     chrome.test.assertTrue(button.ironIcon.endsWith(fitPageIcon));
 
     // Tap 4: Fire fit-to-changed(FIT_TO_PAGE) again.
     button.click();
-    fitToEventChecker.assertEvent(FittingType.FIT_TO_PAGE, true);
+    fitToEventChecker.assertEvent(FittingType.FIT_TO_PAGE);
     chrome.test.assertTrue(button.ironIcon.endsWith(fitWidthIcon));
 
     chrome.test.succeed();

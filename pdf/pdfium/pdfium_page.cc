@@ -90,7 +90,9 @@ pp::FloatRect GetFloatCharRectInPixels(FPDF_PAGE page,
   double right;
   double bottom;
   double top;
-  FPDFText_GetCharBox(text_page, index, &left, &right, &bottom, &top);
+  if (!FPDFText_GetCharBox(text_page, index, &left, &right, &bottom, &top))
+    return pp::FloatRect();
+
   if (right < left)
     std::swap(left, right);
   if (bottom < top)
@@ -921,7 +923,10 @@ int PDFiumPage::GetLink(int char_index, LinkTarget* target) {
   double right;
   double bottom;
   double top;
-  FPDFText_GetCharBox(GetTextPage(), char_index, &left, &right, &bottom, &top);
+  if (!FPDFText_GetCharBox(GetTextPage(), char_index, &left, &right, &bottom,
+                           &top)) {
+    return -1;
+  }
 
   pp::Point origin(PageToScreen(pp::Point(), 1.0, left, top, right, bottom,
                                 PageOrientation::kOriginal)

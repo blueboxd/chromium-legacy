@@ -45,7 +45,7 @@
 // The standard OpenGL native extension headers are also included.
 #if defined(OS_WIN)
 #include <GL/wglext.h>
-#elif defined(OS_MACOSX)
+#elif defined(OS_APPLE)
 #include <OpenGL/OpenGL.h>
 #elif defined(USE_GLX)
 #include <GL/glx.h>

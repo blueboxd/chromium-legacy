@@ -10,7 +10,7 @@ import("//third_party/blink/renderer/bindings/modules/v8/v8.gni")
 declare_args() {
   # If this variable is set true, we use a new code generator to generate code
   # of IDL dictionaries.  See https://crbug.com/839389 for the details.
-  use_v8_bind_gen_for_dictionary = false
+  use_blink_v8_binding_new_idl_dictionary = false
 }
 
 bindings_core_v8_files =

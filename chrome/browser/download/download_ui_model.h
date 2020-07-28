@@ -309,6 +309,9 @@ class DownloadUIModel {
   virtual void CompleteSafeBrowsingScan();
 #endif
 
+  // Whether the dropdown menu button should be shown or not.
+  virtual bool ShouldShowDropdown() const;
+
  protected:
   // Returns the MIME type of the download.
   virtual std::string GetMimeType() const;

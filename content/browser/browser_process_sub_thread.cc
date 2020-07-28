@@ -135,7 +135,7 @@ NOINLINE void BrowserProcessSubThread::IOThreadRun(base::RunLoop* run_loop) {
   // Register the IO thread for hang watching before it starts running and set
   // up a closure to automatically unregister it when Run() returns.
   base::ScopedClosureRunner unregister_thread_closure;
-  if (base::FeatureList::IsEnabled(base::HangWatcher::kEnableHangWatcher)) {
+  if (base::HangWatcher::IsIOThreadHangWatchingEnabled()) {
     unregister_thread_closure =
         base::HangWatcher::GetInstance()->RegisterThread();
   }

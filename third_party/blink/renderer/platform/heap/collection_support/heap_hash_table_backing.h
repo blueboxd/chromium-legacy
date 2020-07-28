@@ -111,7 +111,7 @@ struct TraceTrait<HeapHashTableBacking<Table>> {
   template <WTF::WeakHandlingFlag WeakHandling = WTF::kNoWeakHandling>
   static void Trace(Visitor* visitor, const void* self) {
     if (!Traits::kCanTraceConcurrently && self) {
-      if (visitor->DeferredTraceIfConcurrent({self, &Trace},
+      if (visitor->DeferredTraceIfConcurrent({self, &Trace<WeakHandling>},
                                              GetBackingStoreSize(self)))
         return;
     }

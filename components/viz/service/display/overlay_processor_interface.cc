@@ -12,7 +12,7 @@
 #include "components/viz/common/features.h"
 #include "components/viz/service/display/overlay_processor_stub.h"
 
-#if defined(OS_MACOSX)
+#if defined(OS_APPLE)
 #include "components/viz/service/display/overlay_processor_mac.h"
 #elif defined(OS_WIN)
 #include "components/viz/service/display/overlay_processor_win.h"
@@ -82,7 +82,7 @@ OverlayProcessorInterface::CreateOverlayProcessor(
     gpu::SharedImageManager* shared_image_manager,
     const RendererSettings& renderer_settings,
     const DebugRendererSettings* debug_settings) {
-#if defined(OS_MACOSX)
+#if defined(OS_APPLE)
   // TODO(https://crbug.com/1100728): Get RenderPass overlays working.
   bool allow_render_pass_overlays = !renderer_settings.use_skia_renderer;
   bool could_overlay =

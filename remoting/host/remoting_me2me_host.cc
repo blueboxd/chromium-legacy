@@ -694,8 +694,8 @@ void HostProcess::StartOnNetworkThread() {
 
 #if defined(OS_POSIX)
   remoting::RegisterSignalHandler(
-      SIGTERM,
-      base::Bind(&HostProcess::SigTermHandler, base::Unretained(this)));
+      SIGTERM, base::BindRepeating(&HostProcess::SigTermHandler,
+                                   base::Unretained(this)));
 #endif  // defined(OS_POSIX)
 }
 
@@ -755,9 +755,10 @@ void HostProcess::CreateAuthenticatorFactory() {
 
 #if defined(OS_LINUX)
     if (!cert_watcher_) {
-      cert_watcher_.reset(new CertificateWatcher(
-          base::Bind(&HostProcess::ShutdownHost, this, kSuccessExitCode),
-          context_->file_task_runner()));
+      cert_watcher_ = std::make_unique<CertificateWatcher>(
+          base::BindRepeating(&HostProcess::ShutdownHost, this,
+                              kSuccessExitCode),
+          context_->file_task_runner());
       cert_watcher_->Start();
     }
     cert_watcher_->SetMonitor(host_->status_monitor());
@@ -836,8 +837,8 @@ void HostProcess::StartOnUiThread() {
   policy_watcher_ =
       PolicyWatcher::CreateWithTaskRunner(context_->file_task_runner());
   policy_watcher_->StartWatching(
-      base::Bind(&HostProcess::OnPolicyUpdate, base::Unretained(this)),
-      base::Bind(&HostProcess::OnPolicyError, base::Unretained(this)));
+      base::BindRepeating(&HostProcess::OnPolicyUpdate, base::Unretained(this)),
+      base::BindRepeating(&HostProcess::OnPolicyError, base::Unretained(this)));
 
 #if defined(OS_LINUX)
   // If an audio pipe is specific on the command-line then initialize

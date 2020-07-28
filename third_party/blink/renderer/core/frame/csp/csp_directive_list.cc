@@ -675,7 +675,8 @@ bool CSPDirectiveList::AllowInline(
 }
 
 bool CSPDirectiveList::ShouldCheckEval() const {
-  return script_src_ && !script_src_->AllowEval();
+  return !CheckEval(
+      OperativeDirective(ContentSecurityPolicy::DirectiveType::kScriptSrc));
 }
 
 bool CSPDirectiveList::AllowEval(

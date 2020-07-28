@@ -1792,7 +1792,7 @@ TEST_F(CreditCardAccessManagerTest, IntentToOptOut_OptOutFailure) {
 }
 
 // TODO(crbug.com/1109296) Debug issues and re-enable this test on MacOS.
-#if !defined(OS_MACOSX)
+#if !defined(OS_APPLE)
 // Ensures that PrepareToFetchCreditCard() is properly rate limited.
 TEST_F(CreditCardAccessManagerTest, PreflightCallRateLimited) {
   // Create server card and set user as eligible for FIDO auth.
@@ -1829,7 +1829,7 @@ TEST_F(CreditCardAccessManagerTest, PreflightCallRateLimited) {
   // logged.
   histogram_tester.ExpectTotalCount(preflight_call_metric, 2);
 }
-#endif  // !defined(OS_MACOSX)
+#endif  // !defined(OS_APPLE)
 #endif  // !defined(OS_IOS)
 
 // Ensures that |is_authentication_in_progress_| is set correctly.

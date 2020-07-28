@@ -165,7 +165,7 @@ bool WebGPUSwapBufferProvider::PrepareTransferableResource(
   // eglBindTexImage (on ANGLE or system drivers) so they use the 2D texture
   // target.
   const uint32_t texture_target =
-#if defined(OS_MACOSX)
+#if defined(OS_APPLE)
       GL_TEXTURE_RECTANGLE_ARB
 #else
       GL_TEXTURE_2D

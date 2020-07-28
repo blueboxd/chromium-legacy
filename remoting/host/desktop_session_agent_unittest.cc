@@ -117,16 +117,14 @@ void DesktopSessionAgentTest::Shutdown() {
 TEST_F(DesktopSessionAgentTest, StartProcessStatsReport) {
   std::unique_ptr<FakeDelegate> delegate(new FakeDelegate(task_runner_));
   std::unique_ptr<IPC::ChannelProxy> proxy;
-  ProcessStatsListener listener(base::Bind([](
-          DesktopSessionAgentTest* test,
-          std::unique_ptr<FakeDelegate>* delegate,
-          std::unique_ptr<IPC::ChannelProxy>* proxy) {
+  ProcessStatsListener listener(base::BindRepeating(
+      [](DesktopSessionAgentTest* test, std::unique_ptr<FakeDelegate>* delegate,
+         std::unique_ptr<IPC::ChannelProxy>* proxy) {
         test->Shutdown();
         delegate->reset();
         proxy->reset();
       },
-      base::Unretained(this),
-      base::Unretained(&delegate),
+      base::Unretained(this), base::Unretained(&delegate),
       base::Unretained(&proxy)));
   proxy = IPC::ChannelProxy::Create(
       agent_->Start(delegate->GetWeakPtr()).release(),
@@ -202,18 +200,16 @@ TEST_F(DesktopSessionAgentTest, StartThenStopProcessStatsReport) {
 TEST_F(DesktopSessionAgentTest, SendAggregatedProcessResourceUsage) {
   std::unique_ptr<IPC::Channel> receiver;
   std::unique_ptr<IPC::Channel> sender;
-  ProcessStatsListener listener(base::Bind([](
-          DesktopSessionAgentTest* test,
-          std::unique_ptr<IPC::Channel>* receiver,
-          std::unique_ptr<IPC::Channel>* sender) {
+  ProcessStatsListener listener(base::BindRepeating(
+      [](DesktopSessionAgentTest* test, std::unique_ptr<IPC::Channel>* receiver,
+         std::unique_ptr<IPC::Channel>* sender) {
         test->Shutdown();
         base::ThreadTaskRunnerHandle::Get()->DeleteSoon(
             FROM_HERE, receiver->release());
         base::ThreadTaskRunnerHandle::Get()->DeleteSoon(
             FROM_HERE, sender->release());
       },
-      base::Unretained(this),
-      base::Unretained(&receiver),
+      base::Unretained(this), base::Unretained(&receiver),
       base::Unretained(&sender)));
   mojo::MessagePipe pipe;
   receiver = IPC::Channel::CreateServer(
@@ -238,18 +234,16 @@ TEST_F(DesktopSessionAgentTest, SendAggregatedProcessResourceUsage) {
 TEST_F(DesktopSessionAgentTest, SendEmptyAggregatedProcessResourceUsage) {
   std::unique_ptr<IPC::Channel> receiver;
   std::unique_ptr<IPC::Channel> sender;
-  ProcessStatsListener listener(base::Bind([](
-          DesktopSessionAgentTest* test,
-          std::unique_ptr<IPC::Channel>* receiver,
-          std::unique_ptr<IPC::Channel>* sender) {
+  ProcessStatsListener listener(base::BindRepeating(
+      [](DesktopSessionAgentTest* test, std::unique_ptr<IPC::Channel>* receiver,
+         std::unique_ptr<IPC::Channel>* sender) {
         test->Shutdown();
         base::ThreadTaskRunnerHandle::Get()->DeleteSoon(
             FROM_HERE, receiver->release());
         base::ThreadTaskRunnerHandle::Get()->DeleteSoon(
             FROM_HERE, sender->release());
       },
-      base::Unretained(this),
-      base::Unretained(&receiver),
+      base::Unretained(this), base::Unretained(&receiver),
       base::Unretained(&sender)));
   mojo::MessagePipe pipe;
   receiver = IPC::Channel::CreateServer(

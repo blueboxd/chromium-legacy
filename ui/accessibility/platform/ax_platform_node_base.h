@@ -91,7 +91,7 @@ class AX_EXPORT AXPlatformNodeBase : public AXPlatformNode {
   gfx::NativeViewAccessible GetNativeViewAccessible() override;
   void NotifyAccessibilityEvent(ax::mojom::Event event_type) override;
 
-#if defined(OS_MACOSX)
+#if defined(OS_APPLE)
   void AnnounceText(const base::string16& text) override;
 #endif
 

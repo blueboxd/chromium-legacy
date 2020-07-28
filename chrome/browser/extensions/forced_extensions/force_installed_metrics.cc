@@ -27,6 +27,7 @@
 namespace extensions {
 
 using ExtensionStatus = ForceInstalledTracker::ExtensionStatus;
+using FailureReason = InstallStageTracker::FailureReason;
 
 namespace {
 // Timeout to report UMA if not all force-installed extension were loaded.
@@ -124,14 +125,22 @@ bool ForceInstalledMetrics::IsMisconfiguration(
   // the device.
   if (profile_->GetPrefs()->IsManagedPreference(arc::prefs::kArcEnabled) &&
       profile_->GetPrefs()->GetBoolean(arc::prefs::kArcEnabled) &&
-      installation_data.failure_reason ==
-          InstallStageTracker::FailureReason::REPLACED_BY_ARC_APP)
+      installation_data.failure_reason == FailureReason::REPLACED_BY_ARC_APP) {
     return true;
+  }
 #endif  // defined(OS_CHROMEOS)
 
   if (installation_data.failure_reason ==
-      InstallStageTracker::FailureReason::NOT_PERFORMING_NEW_INSTALL)
+      FailureReason::NOT_PERFORMING_NEW_INSTALL) {
     return true;
+  }
+  if (installation_data.failure_reason == FailureReason::CRX_FETCH_URL_EMPTY) {
+    DCHECK(installation_data.no_updates_info);
+    if (installation_data.no_updates_info.value() ==
+        InstallStageTracker::NoUpdatesInfo::kEmpty) {
+      return true;
+    }
+  }
 
   return false;
 }
@@ -234,8 +243,7 @@ void ForceInstalledMetrics::ReportMetrics() {
         installation.downloading_cache_status.value_or(
             ExtensionDownloaderDelegate::CacheStatus::CACHE_UNKNOWN));
     if (!installation.failure_reason && installation.install_stage) {
-      installation.failure_reason =
-          InstallStageTracker::FailureReason::IN_PROGRESS;
+      installation.failure_reason = FailureReason::IN_PROGRESS;
       InstallStageTracker::Stage install_stage =
           installation.install_stage.value();
       base::UmaHistogramEnumeration("Extensions.ForceInstalledStage",
@@ -250,9 +258,8 @@ void ForceInstalledMetrics::ReportMetrics() {
     }
     if (IsMisconfiguration(installation, extension_id))
       misconfigured_extensions++;
-    InstallStageTracker::FailureReason failure_reason =
-        installation.failure_reason.value_or(
-            InstallStageTracker::FailureReason::UNKNOWN);
+    FailureReason failure_reason =
+        installation.failure_reason.value_or(FailureReason::UNKNOWN);
     base::UmaHistogramEnumeration("Extensions.ForceInstalledFailureReason3",
                                   failure_reason);
     if (tracker_->extensions().at(extension_id).is_from_store) {
@@ -265,8 +272,7 @@ void ForceInstalledMetrics::ReportMetrics() {
 
     // In case of CRX_FETCH_FAILURE, report the network error code, HTTP
     // error code and number of fetch tries made.
-    if (failure_reason ==
-        InstallStageTracker::FailureReason::CRX_FETCH_FAILED) {
+    if (failure_reason == FailureReason::CRX_FETCH_FAILED) {
       base::UmaHistogramSparse("Extensions.ForceInstalledNetworkErrorCode",
                                installation.network_error_code.value());
 
@@ -281,8 +287,7 @@ void ForceInstalledMetrics::ReportMetrics() {
 
     // In case of MANIFEST_FETCH_FAILURE, report the network error code,
     // HTTP error code and number of fetch tries made.
-    if (failure_reason ==
-        InstallStageTracker::FailureReason::MANIFEST_FETCH_FAILED) {
+    if (failure_reason == FailureReason::MANIFEST_FETCH_FAILED) {
       base::UmaHistogramSparse(
           "Extensions.ForceInstalledManifestFetchFailedNetworkErrorCode",
           installation.network_error_code.value());
@@ -320,8 +325,7 @@ void ForceInstalledMetrics::ReportMetrics() {
           installation.unpacker_failure_reason.value(),
           SandboxedUnpackerFailureReason::NUM_FAILURE_REASONS);
     }
-    if (failure_reason ==
-        InstallStageTracker::FailureReason::CRX_FETCH_URL_EMPTY) {
+    if (failure_reason == FailureReason::CRX_FETCH_URL_EMPTY) {
       if (installation.update_check_status) {
         base::UmaHistogramEnumeration(
             "Extensions.ForceInstalledFailureUpdateCheckStatus",
@@ -335,8 +339,7 @@ void ForceInstalledMetrics::ReportMetrics() {
           installation.no_updates_info.value());
     }
     if (installation.manifest_invalid_error) {
-      DCHECK_EQ(failure_reason,
-                InstallStageTracker::FailureReason::MANIFEST_INVALID);
+      DCHECK_EQ(failure_reason, FailureReason::MANIFEST_INVALID);
       base::UmaHistogramEnumeration(
           "Extensions.ForceInstalledFailureManifestInvalidErrorDetail2",
           installation.manifest_invalid_error.value());

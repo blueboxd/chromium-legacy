@@ -48,7 +48,7 @@ class PolicyDetailsMap {
 // current policies and returns false.
 bool PolicyServiceIsEmpty(const PolicyService* service);
 
-#if defined(OS_IOS) || defined(OS_MACOSX)
+#if defined(OS_APPLE)
 
 // Converts a base::Value to the equivalent CFPropertyListRef.
 // The returned value is owned by the caller.

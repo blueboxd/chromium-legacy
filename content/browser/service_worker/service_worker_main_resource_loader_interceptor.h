@@ -14,7 +14,6 @@
 #include "content/browser/navigation_subresource_loader_params.h"
 #include "content/common/content_export.h"
 #include "content/public/browser/browser_thread.h"
-#include "content/public/browser/shared_worker_id.h"
 #include "content/public/common/child_process_host.h"
 #include "mojo/public/cpp/bindings/pending_receiver.h"
 #include "mojo/public/cpp/bindings/pending_remote.h"
@@ -50,7 +49,7 @@ class CONTENT_EXPORT ServiceWorkerMainResourceLoaderInterceptor final
       const network::ResourceRequest& resource_request,
       int process_id,
       const blink::DedicatedWorkerToken& dedicated_worker_token,
-      SharedWorkerId shared_worker_id,
+      const blink::SharedWorkerToken& shared_worker_token,
       base::WeakPtr<ServiceWorkerMainResourceHandle> navigation_handle);
 
   ~ServiceWorkerMainResourceLoaderInterceptor() override;
@@ -91,7 +90,7 @@ class CONTENT_EXPORT ServiceWorkerMainResourceLoaderInterceptor final
       int frame_tree_node_id,
       int process_id,
       const blink::DedicatedWorkerToken& dedicated_worker_token,
-      SharedWorkerId shared_worker_id);
+      const blink::SharedWorkerToken& shared_worker_token);
 
   // Returns true if a ServiceWorkerMainResourceLoaderInterceptor should be
   // created for a navigation to |url|.
@@ -127,7 +126,7 @@ class CONTENT_EXPORT ServiceWorkerMainResourceLoaderInterceptor final
   // For web workers:
   const int process_id_;
   const blink::DedicatedWorkerToken dedicated_worker_token_;
-  const SharedWorkerId shared_worker_id_;
+  const blink::SharedWorkerToken shared_worker_token_;
 
   base::Optional<SubresourceLoaderParams> subresource_loader_params_;
 

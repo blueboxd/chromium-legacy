@@ -31,7 +31,7 @@ class ViewsTextServicesContextMenuBase : public ViewsTextServicesContextMenu {
   bool SupportsCommand(int command_id) const override;
 
  protected:
-#if defined(OS_MACOSX)
+#if defined(OS_APPLE)
   Textfield* client() { return client_; }
   const Textfield* client() const { return client_; }
 #endif

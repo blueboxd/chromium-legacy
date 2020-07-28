@@ -16,18 +16,18 @@
 #include <wincred.h>
 #endif
 
-#if defined(OS_LINUX) && !defined(OS_CHROMEOS) || defined(OS_MACOSX)
+#if defined(OS_LINUX) && !defined(OS_CHROMEOS) || defined(OS_APPLE)
 #include <pwd.h>
 #include <sys/types.h>
 #include <unistd.h>
 #endif
 
-#if defined(OS_MACOSX)
+#if defined(OS_APPLE)
 #include <stddef.h>
 #include <sys/sysctl.h>
 #endif
 
-#if defined(OS_MACOSX) && !defined(OS_IOS)
+#if defined(OS_MAC)
 #import <SystemConfiguration/SCDynamicStoreCopySpecific.h>
 #endif
 
@@ -58,7 +58,7 @@
 #include "base/win/windows_version.h"
 #endif
 
-#if defined(OS_MACOSX)
+#if defined(OS_APPLE)
 #include "base/mac/scoped_cftyperef.h"
 #include "base/strings/string_util.h"
 #include "base/strings/sys_string_conversions.h"
@@ -79,7 +79,7 @@ std::string GetMachineName() {
   if (gethostname(hostname, HOST_NAME_MAX) == 0)  // Success.
     return hostname;
   return std::string();
-#elif defined(OS_MACOSX)
+#elif defined(OS_APPLE)
 // TODO(crbug.com/1024115): Find a different replacement for -[NSHost
 // currentHost] on iOS.
 #if !defined(OS_IOS)
@@ -128,7 +128,7 @@ std::string GetMachineName() {
 }
 
 std::string GetOSVersion() {
-#if defined(OS_LINUX) || defined(OS_MACOSX)
+#if defined(OS_LINUX) || defined(OS_APPLE)
   return base::SysInfo::OperatingSystemVersion();
 #elif defined(OS_WIN)
   base::win::OSInfo::VersionNumber version_number =
@@ -151,7 +151,7 @@ std::string GetOSArchitecture() {
 }
 
 std::string GetOSUsername() {
-#if defined(OS_LINUX) && !defined(OS_CHROMEOS) || defined(OS_MACOSX)
+#if defined(OS_LINUX) && !defined(OS_CHROMEOS) || defined(OS_APPLE)
   struct passwd* creds = getpwuid(getuid());
   if (!creds || !creds->pw_name)
     return std::string();

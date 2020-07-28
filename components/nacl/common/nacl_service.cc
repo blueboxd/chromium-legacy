@@ -22,7 +22,7 @@
 #include "services/service_manager/embedder/descriptors.h"
 #endif
 
-#if defined(OS_MACOSX)
+#if defined(OS_APPLE)
 #include "base/mac/mach_port_rendezvous.h"
 #endif
 
@@ -33,7 +33,7 @@ mojo::IncomingInvitation GetMojoInvitation() {
 #if defined(OS_WIN)
   endpoint = mojo::PlatformChannel::RecoverPassedEndpointFromCommandLine(
       *base::CommandLine::ForCurrentProcess());
-#elif defined(OS_MACOSX)
+#elif defined(OS_APPLE)
   auto* client = base::MachPortRendezvousClient::GetInstance();
   if (client) {
     endpoint = mojo::PlatformChannelEndpoint(

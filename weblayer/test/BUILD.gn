@@ -159,12 +159,12 @@ test("weblayer_browsertests") {
 
   if (is_android) {
     sources += [
+      "../browser/android/metrics/metrics_browsertest.cc",
+      "../browser/android/metrics/metrics_test_helper.cc",
+      "../browser/android/metrics/metrics_test_helper.h",
+      "../browser/android/metrics/ukm_browsertest.cc",
       "../browser/safe_browsing/safe_browsing_browsertest.cc",
-      "../browser/ukm_browsertest.cc",
       "../browser/url_bar/page_info_browsertest.cc",
-      "../shell/android/browsertests_apk/metrics_browsertest.cc",
-      "../shell/android/browsertests_apk/metrics_test_helper.cc",
-      "../shell/android/browsertests_apk/metrics_test_helper.h",
       "../shell/android/browsertests_apk/translate_test_bridge.cc",
       "../shell/android/browsertests_apk/translate_test_bridge.h",
       "../shell/android/browsertests_apk/weblayer_browser_tests_jni_onload.cc",

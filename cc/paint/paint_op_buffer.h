@@ -187,6 +187,13 @@ class CC_PAINT_EXPORT PaintOp {
     // The flags to use when serializing this op. This can be used to override
     // the flags serialized with the op. Valid only for PaintOpWithFlags.
     const PaintFlags* flags_to_serialize = nullptr;
+
+    // TODO(crbug.com/1096123): Cleanup after study completion.
+    //
+    // If true, perform serializaion in a way that avoids serializing transient
+    // members, such as IDs, so that a stable digest can be calculated. This
+    // means that serialized output can't be deserialized correctly.
+    bool for_identifiability_study = false;
   };
 
   struct CC_PAINT_EXPORT DeserializeOptions {

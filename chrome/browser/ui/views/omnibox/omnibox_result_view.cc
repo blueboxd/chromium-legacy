@@ -86,9 +86,6 @@ OmniboxResultView::OmniboxResultView(
   if (OmniboxFieldTrial::IsSuggestionButtonRowEnabled()) {
     button_row_ = AddChildView(std::make_unique<OmniboxSuggestionButtonRowView>(
         popup_contents_view_, model_index));
-    // The button row shows itself during Layout when appropriate.
-    // TODO(orinj): Visibility should also be revisited when layout is reworked.
-    button_row_->SetVisible(false);
   }
 
   keyword_view_ = AddChildView(std::make_unique<OmniboxMatchCellView>(this));
@@ -145,7 +142,7 @@ void OmniboxResultView::SetMatch(const AutocompleteMatch& match) {
 
   // With button row, its keyword button is used instead of |keyword_view_|.
   if (OmniboxFieldTrial::IsSuggestionButtonRowEnabled()) {
-    button_row_->UpdateKeyword();
+    button_row_->UpdateFromModel();
   } else {
     AutocompleteMatch* keyword_match = match_.associated_keyword.get();
     keyword_view_->SetVisible(keyword_match != nullptr);

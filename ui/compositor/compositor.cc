@@ -172,7 +172,7 @@ Compositor::Compositor(const viz::FrameSinkId& frame_sink_id,
   settings.use_rgba_4444 =
       command_line->HasSwitch(switches::kUIEnableRGBA4444Textures);
 
-#if defined(OS_MACOSX)
+#if defined(OS_APPLE)
   // Using CoreAnimation to composite requires using GpuMemoryBuffers, which
   // require zero copy.
   settings.resource_settings.use_gpu_memory_buffer_resources =

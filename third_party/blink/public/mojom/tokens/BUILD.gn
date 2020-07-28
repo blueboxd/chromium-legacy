@@ -34,6 +34,17 @@ mojom_component("tokens") {
         "//third_party/blink/public/common/tokens/worker_tokens_mojom_traits.h",
       ]
     },
+    {
+      types = [
+        {
+          mojom = "blink.mojom.FrameToken"
+          cpp = "::blink::FrameToken"
+        },
+      ]
+      traits_headers = [
+        "//third_party/blink/public/common/tokens/frame_token_mojom_traits.h",
+      ]
+    },
   ]
 
   cpp_typemaps = shared_cpp_typemaps

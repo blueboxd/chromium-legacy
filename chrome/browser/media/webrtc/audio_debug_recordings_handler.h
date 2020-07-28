@@ -30,9 +30,10 @@ class AudioDebugRecordingSession;
 class AudioDebugRecordingsHandler
     : public base::RefCountedThreadSafe<AudioDebugRecordingsHandler> {
  public:
-  typedef base::Callback<void(bool, const std::string&)> GenericDoneCallback;
-  typedef base::Callback<void(const std::string&)> RecordingErrorCallback;
-  typedef base::Callback<void(const std::string&, bool, bool)>
+  typedef base::OnceCallback<void(bool, const std::string&)>
+      GenericDoneCallback;
+  typedef base::OnceCallback<void(const std::string&)> RecordingErrorCallback;
+  typedef base::OnceCallback<void(const std::string&, bool, bool)>
       RecordingDoneCallback;
 
   // Key used to attach the handler to the RenderProcessHost
@@ -50,15 +51,15 @@ class AudioDebugRecordingsHandler
   // of |callback|.
   void StartAudioDebugRecordings(content::RenderProcessHost* host,
                                  base::TimeDelta delay,
-                                 const RecordingDoneCallback& callback,
-                                 const RecordingErrorCallback& error_callback);
+                                 RecordingDoneCallback callback,
+                                 RecordingErrorCallback error_callback);
 
   // Stops an audio debug recording. |callback| is invoked once recording
   // stops. If no recording was in progress, |error_callback| is invoked instead
   // of |callback|.
   void StopAudioDebugRecordings(content::RenderProcessHost* host,
-                                const RecordingDoneCallback& callback,
-                                const RecordingErrorCallback& error_callback);
+                                RecordingDoneCallback callback,
+                                RecordingErrorCallback error_callback);
 
  private:
   friend class base::RefCountedThreadSafe<AudioDebugRecordingsHandler>;
@@ -68,16 +69,16 @@ class AudioDebugRecordingsHandler
   // Helper for starting audio debug recordings.
   void DoStartAudioDebugRecordings(content::RenderProcessHost* host,
                                    base::TimeDelta delay,
-                                   const RecordingDoneCallback& callback,
-                                   const RecordingErrorCallback& error_callback,
+                                   RecordingDoneCallback callback,
+                                   RecordingErrorCallback error_callback,
                                    const base::FilePath& log_directory);
 
   // Helper for stopping audio debug recordings.
   void DoStopAudioDebugRecordings(content::RenderProcessHost* host,
                                   bool is_manual_stop,
                                   uint64_t audio_debug_recordings_id,
-                                  const RecordingDoneCallback& callback,
-                                  const RecordingErrorCallback& error_callback,
+                                  RecordingDoneCallback callback,
+                                  RecordingErrorCallback error_callback,
                                   const base::FilePath& log_directory);
 
   // The browser context associated with our renderer process.

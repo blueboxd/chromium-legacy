@@ -34,7 +34,6 @@
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/extensions/extension_util.h"
-#include "chrome/browser/extensions/tab_helper.h"
 #include "chrome/browser/infobars/infobar_service.h"
 #include "chrome/browser/native_window_notification_source.h"
 #include "chrome/browser/platform_util.h"
@@ -3496,13 +3495,8 @@ bool BrowserView::CanTriggerOnMouse() const {
 
 ///////////////////////////////////////////////////////////////////////////////
 // BrowserView, extension::ExtensionKeybindingRegistry::Delegate implementation:
-extensions::ActiveTabPermissionGranter*
-BrowserView::GetActiveTabPermissionGranter() {
-  content::WebContents* web_contents = GetActiveWebContents();
-  if (!web_contents)
-    return nullptr;
-  return extensions::TabHelper::FromWebContents(web_contents)
-      ->active_tab_permission_granter();
+content::WebContents* BrowserView::GetWebContentsForExtension() {
+  return GetActiveWebContents();
 }
 
 ///////////////////////////////////////////////////////////////////////////////

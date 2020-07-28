@@ -118,7 +118,7 @@ void ScrollableArea::Dispose() {
 }
 
 void ScrollableArea::ClearScrollableArea() {
-#if defined(OS_MACOSX)
+#if defined(OS_APPLE)
   if (scroll_animator_)
     scroll_animator_->Dispose();
 #endif

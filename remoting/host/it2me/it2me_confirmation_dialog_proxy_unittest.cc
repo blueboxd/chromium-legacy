@@ -66,8 +66,8 @@ class ResultCallbackTarget {
   MOCK_METHOD1(OnDialogResult, void(It2MeConfirmationDialog::Result));
 
   It2MeConfirmationDialog::ResultCallback MakeCallback() {
-    return base::Bind(&ResultCallbackTarget::HandleDialogResult,
-                      base::Unretained(this));
+    return base::BindOnce(&ResultCallbackTarget::HandleDialogResult,
+                          base::Unretained(this));
   }
 
  private:

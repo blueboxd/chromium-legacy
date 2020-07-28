@@ -3193,7 +3193,11 @@ test("base_unittests") {
   }
 
   if (is_fuchsia || is_linux) {
-    sources += [ "debug/elf_reader_unittest.cc" ]
+    sources += [
+      "debug/elf_reader_unittest.cc",
+      "debug/test_elf_image_builder.cc",
+      "debug/test_elf_image_builder.h",
+    ]
 
     deps += [ "//base/test:malloc_wrapper" ]
     defines += [
@@ -3269,6 +3273,8 @@ test("base_unittests") {
     sources += [
       "debug/elf_reader_unittest.cc",
       "debug/proc_maps_linux_unittest.cc",
+      "debug/test_elf_image_builder.cc",
+      "debug/test_elf_image_builder.h",
     ]
   }
 

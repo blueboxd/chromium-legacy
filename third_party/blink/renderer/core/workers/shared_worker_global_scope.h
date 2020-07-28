@@ -34,6 +34,7 @@
 #include <memory>
 #include "services/metrics/public/cpp/ukm_source_id.h"
 #include "third_party/blink/public/common/messaging/message_port_channel.h"
+#include "third_party/blink/public/common/tokens/worker_tokens.h"
 #include "third_party/blink/renderer/core/core_export.h"
 #include "third_party/blink/renderer/core/workers/global_scope_creation_params.h"
 #include "third_party/blink/renderer/core/workers/worker_global_scope.h"
@@ -49,11 +50,13 @@ class CORE_EXPORT SharedWorkerGlobalScope final : public WorkerGlobalScope {
   DEFINE_WRAPPERTYPEINFO();
 
  public:
-  SharedWorkerGlobalScope(std::unique_ptr<GlobalScopeCreationParams>,
-                          SharedWorkerThread*,
-                          base::TimeTicks time_origin,
-                          const base::UnguessableToken& appcache_host_id,
-                          ukm::SourceId ukm_source_id);
+  SharedWorkerGlobalScope(
+      std::unique_ptr<GlobalScopeCreationParams> creation_params,
+      SharedWorkerThread* thread,
+      base::TimeTicks time_origin,
+      const SharedWorkerToken& token,
+      const base::UnguessableToken& appcache_host_id,
+      ukm::SourceId ukm_source_id);
 
   ~SharedWorkerGlobalScope() override;
 
@@ -95,6 +98,8 @@ class CORE_EXPORT SharedWorkerGlobalScope final : public WorkerGlobalScope {
 
   void Trace(Visitor*) const override;
 
+  const SharedWorkerToken& token() const { return token_; }
+
  private:
   void DidReceiveResponseForClassicScript(
       WorkerClassicScriptLoader* classic_script_loader);
@@ -103,6 +108,9 @@ class CORE_EXPORT SharedWorkerGlobalScope final : public WorkerGlobalScope {
 
   void ExceptionThrown(ErrorEvent*) override;
 
+  // TODO(chrisha): Lift this up to WorkerGlobalScope once all worker types
+  // have tokens.
+  const SharedWorkerToken token_;
   Member<ApplicationCacheHostForWorker> appcache_host_;
 };
 

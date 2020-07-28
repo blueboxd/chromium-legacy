@@ -115,6 +115,7 @@ class PaintPreviewBaseService : public KeyedService {
   void CapturePaintPreview(content::WebContents* web_contents,
                            const base::FilePath& root_dir,
                            gfx::Rect clip_rect,
+                           bool capture_links,
                            size_t max_per_capture_size,
                            OnCapturedCallback callback);
   // Same as above except |render_frame_host| is directly captured rather than
@@ -123,6 +124,7 @@ class PaintPreviewBaseService : public KeyedService {
                            content::RenderFrameHost* render_frame_host,
                            const base::FilePath& root_dir,
                            gfx::Rect clip_rect,
+                           bool capture_links,
                            size_t max_per_capture_size,
                            OnCapturedCallback callback);
 

@@ -118,7 +118,7 @@ void ColorChooserPopupUIController::WriteColorPickerDocument(
   AddProperty("zoomFactor", ScaledZoomFactor(), data);
   AddProperty("shouldShowColorSuggestionPicker", false, data);
   AddProperty("isEyeDropperEnabled", features::IsEyeDropperEnabled(), data);
-#if defined(OS_MACOSX)
+#if defined(OS_APPLE)
   AddProperty("isBorderTransparent", features::IsFormControlsRefreshEnabled(),
               data);
 #endif
@@ -188,7 +188,7 @@ void ColorChooserPopupUIController::WriteColorSuggestionPickerDocument(
   AddProperty("isFormControlsRefreshEnabled",
               features::IsFormControlsRefreshEnabled(), data);
   AddProperty("isEyeDropperEnabled", features::IsEyeDropperEnabled(), data);
-#if defined(OS_MACOSX)
+#if defined(OS_APPLE)
   AddProperty("isBorderTransparent", features::IsFormControlsRefreshEnabled(),
               data);
 #endif

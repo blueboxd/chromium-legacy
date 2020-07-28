@@ -115,7 +115,7 @@ void TestTableAPIs(const ui::AXNode* node) {
 
   ignore_result(node->IsTableRow());
   ignore_result(node->GetTableRowRowIndex());
-#if defined(OS_MACOSX)
+#if defined(OS_APPLE)
   ignore_result(node->IsTableColumn());
   ignore_result(node->GetTableColColIndex());
 #endif

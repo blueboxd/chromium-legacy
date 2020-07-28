@@ -540,15 +540,14 @@ TEST_F(ForceInstalledMetricsTest,
       1);
 }
 
-// Reporting SandboxedUnpackerFailureReason when the force installed extension
-// fails to install with error CRX_INSTALL_ERROR_SANDBOXED_UNPACKER_FAILURE.
+// Reporting update check status when the force installed extension
+// fails to install with error CRX_FETCH_URL_EMPTY.
 TEST_F(ForceInstalledMetricsTest, ExtensionsUpdateCheckStatusReporting) {
   SetupForceList();
 
-  install_stage_tracker_->ReportManifestUpdateCheckStatus(kExtensionId1, "ok");
-  install_stage_tracker_->ReportInfoOnNoUpdatesFailure(kExtensionId1, "");
-  install_stage_tracker_->ReportFailure(
-      kExtensionId1, InstallStageTracker::FailureReason::CRX_FETCH_URL_EMPTY);
+  auto extension =
+      ExtensionBuilder(kExtensionName1).SetID(kExtensionId1).Build();
+  tracker_->OnExtensionLoaded(profile_, extension.get());
 
   install_stage_tracker_->ReportManifestUpdateCheckStatus(kExtensionId2,
                                                           "noupdate");
@@ -558,10 +557,7 @@ TEST_F(ForceInstalledMetricsTest, ExtensionsUpdateCheckStatusReporting) {
   // ForceInstalledMetrics shuts down timer because all extension are either
   // loaded or failed.
   EXPECT_FALSE(fake_timer_->IsRunning());
-  histogram_tester_.ExpectTotalCount(kManifestUpdateCheckStatus, 2);
-  histogram_tester_.ExpectBucketCount(
-      kManifestUpdateCheckStatus, InstallStageTracker::UpdateCheckStatus::kOk,
-      1);
+  histogram_tester_.ExpectTotalCount(kManifestUpdateCheckStatus, 1);
   histogram_tester_.ExpectBucketCount(
       kManifestUpdateCheckStatus,
       InstallStageTracker::UpdateCheckStatus::kNoUpdate, 1);
@@ -996,6 +992,48 @@ TEST_F(ForceInstalledMetricsTest,
   EXPECT_FALSE(fake_timer_->IsRunning());
   histogram_tester_.ExpectBucketCount(kPossibleNonMisconfigurationFailures, 0,
                                       1);
+}
+
+// Session in which either all the extensions installed successfully, or all
+// failures are admin-side misconfigurations. This test verifies that failure
+// CRX_FETCH_URL_EMPTY with empty info field is considered as misconfiguration.
+TEST_F(ForceInstalledMetricsTest,
+       NonMisconfigurationFailureNotPresentCrxFetchUrlEmptyError) {
+  SetupForceList();
+  auto extension =
+      ExtensionBuilder(kExtensionName1).SetID(kExtensionId1).Build();
+  tracker_->OnExtensionLoaded(profile_, extension.get());
+  install_stage_tracker_->ReportManifestUpdateCheckStatus(kExtensionId2,
+                                                          "noupdate");
+  install_stage_tracker_->ReportInfoOnNoUpdatesFailure(kExtensionId2, "");
+  install_stage_tracker_->ReportFailure(
+      kExtensionId2, InstallStageTracker::FailureReason::CRX_FETCH_URL_EMPTY);
+  // ForceInstalledMetrics shuts down timer because all extension are either
+  // loaded or failed.
+  EXPECT_FALSE(fake_timer_->IsRunning());
+  histogram_tester_.ExpectBucketCount(kPossibleNonMisconfigurationFailures, 0,
+                                      1);
+}
+
+// This test verifies that failure CRX_FETCH_URL_EMPTY with non empty info field
+// is not considered as a misconfiguration.
+TEST_F(ForceInstalledMetricsTest,
+       NonMisconfigurationFailurePresentCrxFetchUrlEmptyError) {
+  SetupForceList();
+  auto extension =
+      ExtensionBuilder(kExtensionName1).SetID(kExtensionId1).Build();
+  tracker_->OnExtensionLoaded(profile_, extension.get());
+  install_stage_tracker_->ReportManifestUpdateCheckStatus(kExtensionId2,
+                                                          "noupdate");
+  install_stage_tracker_->ReportInfoOnNoUpdatesFailure(kExtensionId2,
+                                                       "rate limit");
+  install_stage_tracker_->ReportFailure(
+      kExtensionId2, InstallStageTracker::FailureReason::CRX_FETCH_URL_EMPTY);
+  // ForceInstalledMetrics shuts down timer because all extension are either
+  // loaded or failed.
+  EXPECT_FALSE(fake_timer_->IsRunning());
+  histogram_tester_.ExpectBucketCount(kPossibleNonMisconfigurationFailures, 0,
+                                      0);
 }
 
 TEST_F(ForceInstalledMetricsTest, NoExtensionsConfigured) {

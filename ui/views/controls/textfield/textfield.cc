@@ -80,7 +80,7 @@
 #include "ui/wm/core/ime_util_chromeos.h"
 #endif
 
-#if defined(OS_MACOSX)
+#if defined(OS_APPLE)
 #include "ui/base/cocoa/defaults_utils.h"
 #include "ui/base/cocoa/secure_password_input.h"
 #endif
@@ -102,7 +102,7 @@ enum TextfieldPropertyKey {
   kTextfieldSelectedRange,
 };
 
-#if defined(OS_MACOSX)
+#if defined(OS_APPLE)
 constexpr gfx::SelectionBehavior kLineSelectionBehavior = gfx::SELECTION_EXTEND;
 constexpr gfx::SelectionBehavior kWordSelectionBehavior = gfx::SELECTION_CARET;
 constexpr gfx::SelectionBehavior kMoveParagraphSelectionBehavior =
@@ -285,7 +285,7 @@ base::TimeDelta Textfield::GetCaretBlinkInterval() {
                ? base::TimeDelta()
                : base::TimeDelta::FromMilliseconds(system_value);
   }
-#elif defined(OS_MACOSX)
+#elif defined(OS_APPLE)
   base::TimeDelta system_value;
   if (ui::TextInsertionCaretBlinkPeriod(&system_value))
     return system_value;
@@ -317,7 +317,7 @@ Textfield::Textfield()
   if (use_focus_ring_)
     focus_ring_ = FocusRing::Install(this);
 
-#if !defined(OS_MACOSX)
+#if !defined(OS_APPLE)
   // Do not map accelerators on Mac. E.g. They might not reflect custom
   // keybindings that a user has set. But also on Mac, these commands dispatch
   // via the "responder chain" when the OS searches through menu items in the
@@ -1153,11 +1153,11 @@ void Textfield::OnFocus() {
   if (focus_reason_ == ui::TextInputClient::FOCUS_REASON_NONE)
     focus_reason_ = ui::TextInputClient::FOCUS_REASON_OTHER;
 
-#if defined(OS_MACOSX)
+#if defined(OS_APPLE)
   if (text_input_type_ == ui::TEXT_INPUT_TYPE_PASSWORD)
     password_input_enabler_ =
         std::make_unique<ui::ScopedPasswordInputEnabler>();
-#endif  // defined(OS_MACOSX)
+#endif  // defined(OS_APPLE)
 
   GetRenderText()->set_focused(true);
   if (ShouldShowCursor()) {
@@ -1198,9 +1198,9 @@ void Textfield::OnBlur() {
   SchedulePaint();
   View::OnBlur();
 
-#if defined(OS_MACOSX)
+#if defined(OS_APPLE)
   password_input_enabler_.reset();
-#endif  // defined(OS_MACOSX)
+#endif  // defined(OS_APPLE)
 }
 
 gfx::Point Textfield::GetKeyboardContextMenuLocation() {
@@ -1795,7 +1795,7 @@ bool Textfield::IsTextEditCommandEnabled(ui::TextEditCommand command) const {
     case ui::TextEditCommand::MOVE_UP_AND_MODIFY_SELECTION:
 // On Mac, the textfield should respond to Up/Down arrows keys and
 // PageUp/PageDown.
-#if defined(OS_MACOSX)
+#if defined(OS_APPLE)
       return true;
 #else
       return false;

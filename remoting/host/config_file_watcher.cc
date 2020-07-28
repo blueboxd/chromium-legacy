@@ -143,7 +143,7 @@ void ConfigFileWatcherImpl::WatchOnIoThread() {
   config_watcher_.reset(new base::FilePathWatcher());
   if (!config_watcher_->Watch(
           config_path_, false,
-          base::Bind(&ConfigFileWatcherImpl::OnConfigUpdated, this))) {
+          base::BindRepeating(&ConfigFileWatcherImpl::OnConfigUpdated, this))) {
     PLOG(ERROR) << "Couldn't watch file '" << config_path_.value() << "'";
     main_task_runner_->PostTask(
         FROM_HERE, base::BindOnce(&ConfigFileWatcherImpl::NotifyError,

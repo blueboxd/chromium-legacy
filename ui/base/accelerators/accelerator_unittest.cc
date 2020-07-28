@@ -52,7 +52,7 @@ TEST(AcceleratorTest, MAYBE_GetShortcutText) {
     {VKEY_A, EF_ALT_DOWN | EF_SHIFT_DOWN, "Alt+Shift+A", "\u2325\u21e7A"},
     // Regression test for https://crbug.com/867732:
     {VKEY_OEM_COMMA, EF_CONTROL_DOWN, "Ctrl+Comma", "\u2303,"},
-#if defined(OS_MACOSX)
+#if defined(OS_APPLE)
     {VKEY_T, EF_COMMAND_DOWN | EF_CONTROL_DOWN, nullptr, "\u2303\u2318T"},
 #endif
   };
@@ -60,7 +60,7 @@ TEST(AcceleratorTest, MAYBE_GetShortcutText) {
   for (const auto& key : keys) {
     base::string16 text =
         Accelerator(key.code, key.modifiers).GetShortcutText();
-#if defined(OS_MACOSX)
+#if defined(OS_APPLE)
     EXPECT_EQ(text, base::UTF8ToUTF16(key.expected_short));
 #else
     EXPECT_EQ(text, base::UTF8ToUTF16(key.expected_long));

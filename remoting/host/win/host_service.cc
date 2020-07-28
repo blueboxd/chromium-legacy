@@ -212,9 +212,8 @@ void HostService::CreateLauncher(
   }
 
   daemon_process_ = DaemonProcess::Create(
-      task_runner,
-      io_task_runner,
-      base::Bind(&HostService::StopDaemonProcess, weak_ptr_));
+      task_runner, io_task_runner,
+      base::BindOnce(&HostService::StopDaemonProcess, weak_ptr_));
 }
 
 int HostService::RunAsService() {
@@ -321,8 +320,8 @@ int HostService::RunInConsole() {
 
   // Create a window for receiving session change notifications.
   base::win::MessageWindow window;
-  if (!window.Create(base::Bind(&HostService::HandleMessage,
-                                base::Unretained(this)))) {
+  if (!window.Create(base::BindRepeating(&HostService::HandleMessage,
+                                         base::Unretained(this)))) {
     PLOG(ERROR) << "Failed to create the session notification window";
     goto cleanup;
   }

@@ -220,7 +220,7 @@ android_resources("chrome_app_java_resources") {
     "//third_party/android_deps:androidx_gridlayout_gridlayout_java",
     "//third_party/android_deps:androidx_preference_preference_java",
     "//third_party/android_deps:androidx_recyclerview_recyclerview_java",
-    "//third_party/android_deps:com_google_android_material_material_java",
+    "//third_party/android_deps:material_design_java",
   ]
   create_srcjar = false
 }
@@ -476,12 +476,12 @@ android_library("chrome_java") {
     "//third_party/android_deps:androidx_preference_preference_java",
     "//third_party/android_deps:androidx_recyclerview_recyclerview_java",
     "//third_party/android_deps:androidx_viewpager_viewpager_java",
-    "//third_party/android_deps:com_google_android_material_material_java",
     "//third_party/android_deps:com_google_code_findbugs_jsr305_java",
     "//third_party/android_deps:com_google_dagger_dagger_java",
     "//third_party/android_deps:com_google_guava_listenablefuture_java",
     "//third_party/android_deps:com_google_protobuf_protobuf_javalite_java",
     "//third_party/android_deps:javax_inject_javax_inject_java",
+    "//third_party/android_deps:material_design_java",
     "//third_party/android_media:android_media_java",
     "//third_party/android_sdk:android_gcm_java",
     "//third_party/android_sdk/androidx_browser:androidx_browser_java",
@@ -972,7 +972,7 @@ android_library("chrome_test_java") {
     "//chrome/browser/image_fetcher:java",
     "//chrome/browser/offline_pages/android:java",
     "//chrome/browser/paint_preview/android:java",
-    "//chrome/browser/password_check/android:public_java",
+    "//chrome/browser/password_check:public_java",
     "//chrome/browser/password_manager/android_test_helpers:test_support_java",
     "//chrome/browser/performance_hints/android:java",
     "//chrome/browser/preferences:java",
@@ -1116,10 +1116,10 @@ android_library("chrome_test_java") {
     # TODO (bjoyce): Remove recyclerview_v7 when espresso tests are migrated
     # to androidx.
     "//third_party/android_deps:com_android_support_recyclerview_v7_java",
-    "//third_party/android_deps:com_google_android_material_material_java",
     "//third_party/android_deps:com_google_code_findbugs_jsr305_java",
     "//third_party/android_deps:com_google_protobuf_protobuf_javalite_java",
     "//third_party/android_deps:espresso_java",
+    "//third_party/android_deps:material_design_java",
     "//third_party/android_sdk:android_test_base_java",
     "//third_party/android_sdk:android_test_mock_java",
     "//third_party/android_sdk:android_test_runner_java",

@@ -339,6 +339,7 @@ class TestModification(unittest.TestCase):
                 {
                     'CFBundleIdentifier': config.base_bundle_id,
                     'CFBundleExecutable': config.app_product,
+                    'CFBundleName': config.app_product,
                     'KSProductID': 'test.ksproduct.canary',
                     'KSChannelID': 'canary',
                     'KSChannelID-full': 'canary-full',

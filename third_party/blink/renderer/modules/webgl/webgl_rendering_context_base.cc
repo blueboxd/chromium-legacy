@@ -5349,7 +5349,7 @@ void WebGLRenderingContextBase::texImage2D(ExecutionContext* execution_context,
 
 bool WebGLRenderingContextBase::CanUseTexImageViaGPU(GLenum format,
                                                      GLenum type) {
-#if defined(OS_MACOSX)
+#if defined(OS_APPLE)
   // RGB5_A1 is not color-renderable on NVIDIA Mac, see crbug.com/676209.
   // Though, glCopyTextureCHROMIUM can handle RGB5_A1 internalformat by doing a
   // fallback path, but it doesn't know the type info. So, we still cannot do

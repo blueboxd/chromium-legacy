@@ -369,6 +369,20 @@ id<GREYMatcher> SearchIconButton() {
       assertWithMatcher:grey_sufficientlyVisible()];
 }
 
+- (void)verifyEmptyState {
+  [self verifyEmptyBackgroundAppears];
+
+  id<GREYInteraction> searchBar =
+      [EarlGrey selectElementWithMatcher:grey_accessibilityTrait(
+                                             UIAccessibilityTraitSearchField)];
+  if (base::FeatureList::IsEnabled(kIllustratedEmptyStates)) {
+    // With the illustrated empty state, the search bar should be hidden.
+    [searchBar assertWithMatcher:grey_nil()];
+  } else {
+    [searchBar assertWithMatcher:grey_notNil()];
+  }
+}
+
 - (void)verifyBookmarkFolderIsSeen:(NSString*)bookmarkFolder {
   [[EarlGrey
       selectElementWithMatcher:grey_allOf(

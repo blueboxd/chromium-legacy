@@ -2063,6 +2063,17 @@ class CONTENT_EXPORT RenderFrameHostImpl
       mojo::PendingReceiver<network::mojom::URLLoaderFactory>
           default_factory_receiver);
 
+  // Lets ContentBrowserClient and devtools_instrumentation wrap the subresource
+  // factories before they are sent to a renderer process.
+  void WillCreateURLLoaderFactory(
+      const url::Origin& request_initiator,
+      mojo::PendingReceiver<network::mojom::URLLoaderFactory>* factory_receiver,
+      mojo::PendingRemote<network::mojom::TrustedURLLoaderHeaderClient>*
+          header_client = nullptr,
+      bool* bypass_redirect_checks = nullptr,
+      bool* disable_secure_dns = nullptr,
+      network::mojom::URLLoaderFactoryOverridePtr* factory_override = nullptr);
+
   // Returns true if the ExecuteJavaScript() API can be used on this host.
   bool CanExecuteJavaScript();
 

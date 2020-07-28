@@ -62,7 +62,7 @@ std::unique_ptr<VizCompositorThreadType> CreateAndStartCompositorThread() {
   thread_options.message_pump_type = base::MessagePumpType::IO;
 #endif
 
-#if defined(OS_MACOSX)
+#if defined(OS_APPLE)
   // Increase the thread priority to get more reliable values in performance
   // test of macOS.
   thread_options.priority =
@@ -72,7 +72,7 @@ std::unique_ptr<VizCompositorThreadType> CreateAndStartCompositorThread() {
           : thread_priority;
 #else
   thread_options.priority = thread_priority;
-#endif  // !defined(OS_MACOSX)
+#endif  // !defined(OS_APPLE)
 
   CHECK(thread->StartWithOptions(thread_options));
 

@@ -12,6 +12,7 @@ import android.view.ViewConfiguration;
 import android.widget.OverScroller;
 
 import androidx.annotation.Nullable;
+import androidx.annotation.VisibleForTesting;
 
 import org.chromium.base.UnguessableToken;
 import org.chromium.components.paintpreview.player.OverscrollHandler;
@@ -82,5 +83,10 @@ public class PlayerFrameCoordinator {
      */
     public View getView() {
         return mView;
+    }
+
+    @VisibleForTesting
+    public boolean checkRequiredBitmapsLoadedForTest() {
+        return mMediator.checkRequiredBitmapsLoadedForTest();
     }
 }

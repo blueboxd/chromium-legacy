@@ -28,7 +28,7 @@
 
 #if defined(OS_LINUX) || defined(OS_ANDROID)
 #include <signal.h>
-#elif defined(OS_MACOSX)
+#elif defined(OS_APPLE)
 #include <mach/exception_types.h>
 #elif defined(OS_WIN)
 #include <windows.h>
@@ -84,7 +84,7 @@ crashpad::VMAddress CrashAnalyzer::GetAccessAddress(
 #if defined(OS_LINUX) || defined(OS_ANDROID)
   if (exception.Exception() == SIGSEGV || exception.Exception() == SIGBUS)
     return exception.ExceptionAddress();
-#elif defined(OS_MACOSX)
+#elif defined(OS_APPLE)
   if (exception.Exception() == EXC_BAD_ACCESS)
     return exception.ExceptionAddress();
 #elif defined(OS_WIN)

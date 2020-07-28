@@ -1258,3 +1258,108 @@ IN_PROC_BROWSER_TEST_F(TabRestoreTest,
   EXPECT_EQ(url1_,
             browser()->tab_strip_model()->GetActiveWebContents()->GetURL());
 }
+
+// Check that TabManager.TimeSinceTabClosedUntilRestored histogram is recorded
+// on tab restore.
+IN_PROC_BROWSER_TEST_F(TabRestoreTest, TimeSinceTabClosedRecorded) {
+  base::HistogramTester histogram_tester;
+  const char kTimeSinceTabClosedUntilRestored[] =
+      "TabManager.TimeSinceTabClosedUntilRestored";
+
+  int starting_tab_count = browser()->tab_strip_model()->count();
+  AddSomeTabs(browser(), 3);
+
+  // Close the tab in the middle.
+  int closed_tab_index = starting_tab_count + 1;
+  CloseTab(closed_tab_index);
+
+  EXPECT_EQ(
+      histogram_tester.GetAllSamples(kTimeSinceTabClosedUntilRestored).size(),
+      0U);
+
+  RestoreTab(0, closed_tab_index);
+
+  EXPECT_EQ(
+      histogram_tester.GetAllSamples(kTimeSinceTabClosedUntilRestored).size(),
+      1U);
+}
+
+// Check that TabManager.TimeSinceWindowClosedUntilRestored histogram is
+// recorded on window restore.
+IN_PROC_BROWSER_TEST_F(TabRestoreTest, TimeSinceWindowClosedRecorded) {
+  base::HistogramTester histogram_tester;
+  const char kTimeSinceWindowClosedUntilRestored[] =
+      "TabManager.TimeSinceWindowClosedUntilRestored";
+
+  // Create a new window.
+  ui_test_utils::NavigateToURLWithDisposition(
+      browser(), GURL(chrome::kChromeUINewTabURL),
+      WindowOpenDisposition::NEW_WINDOW,
+      ui_test_utils::BROWSER_TEST_WAIT_FOR_BROWSER);
+
+  // Create two more tabs, one with url1, the other url2.
+  ui_test_utils::NavigateToURLWithDisposition(
+      browser(), url1_, WindowOpenDisposition::NEW_FOREGROUND_TAB,
+      ui_test_utils::BROWSER_TEST_WAIT_FOR_LOAD_STOP);
+  ui_test_utils::NavigateToURLWithDisposition(
+      browser(), url2_, WindowOpenDisposition::NEW_FOREGROUND_TAB,
+      ui_test_utils::BROWSER_TEST_WAIT_FOR_LOAD_STOP);
+
+  // Close the window.
+  CloseBrowserSynchronously(browser());
+
+  EXPECT_EQ(histogram_tester.GetAllSamples(kTimeSinceWindowClosedUntilRestored)
+                .size(),
+            0U);
+
+  // Restore the window.
+  content::WindowedNotificationObserver load_stop_observer(
+      content::NOTIFICATION_LOAD_STOP,
+      content::NotificationService::AllSources());
+  chrome::RestoreTab(active_browser_list_->get(0));
+
+  EXPECT_EQ(histogram_tester.GetAllSamples(kTimeSinceWindowClosedUntilRestored)
+                .size(),
+            1U);
+}
+
+// Check that TabManager.TimeSinceTablosedUntilRestored histogram is not
+// recorded on window restore.
+IN_PROC_BROWSER_TEST_F(TabRestoreTest,
+                       TimeSinceTabClosedNotRecordedOnWindowRestore) {
+  base::HistogramTester histogram_tester;
+  const char kTimeSinceTabClosedUntilRestored[] =
+      "TabManager.TimeSinceTabClosedUntilRestored";
+
+  // Create a new window.
+  ui_test_utils::NavigateToURLWithDisposition(
+      browser(), GURL(chrome::kChromeUINewTabURL),
+      WindowOpenDisposition::NEW_WINDOW,
+      ui_test_utils::BROWSER_TEST_WAIT_FOR_BROWSER);
+
+  // Create two more tabs, one with url1, the other url2.
+  ui_test_utils::NavigateToURLWithDisposition(
+      browser(), url1_, WindowOpenDisposition::NEW_FOREGROUND_TAB,
+      ui_test_utils::BROWSER_TEST_WAIT_FOR_LOAD_STOP);
+  ui_test_utils::NavigateToURLWithDisposition(
+      browser(), url2_, WindowOpenDisposition::NEW_FOREGROUND_TAB,
+      ui_test_utils::BROWSER_TEST_WAIT_FOR_LOAD_STOP);
+
+  // Close the window.
+  CloseBrowserSynchronously(browser());
+
+  EXPECT_EQ(
+      histogram_tester.GetAllSamples(kTimeSinceTabClosedUntilRestored).size(),
+      0U);
+
+  // Restore the window.
+  content::WindowedNotificationObserver load_stop_observer(
+      content::NOTIFICATION_LOAD_STOP,
+      content::NotificationService::AllSources());
+  chrome::RestoreTab(active_browser_list_->get(0));
+
+  // Check that TabManager.TimeSinceTablosedUntilRestored was not recorded.
+  EXPECT_EQ(
+      histogram_tester.GetAllSamples(kTimeSinceTabClosedUntilRestored).size(),
+      0U);
+}

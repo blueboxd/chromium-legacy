@@ -80,10 +80,10 @@ void SecurityKeyMessageReaderImplTest::SetUp() {
   // base::Unretained is safe since no further tasks can run after
   // RunLoop::Run() returns.
   reader_->Start(
-      base::Bind(&SecurityKeyMessageReaderImplTest::OnMessage,
-                 base::Unretained(this)),
-      base::Bind(&SecurityKeyMessageReaderImplTest::OperationComplete,
-                 base::Unretained(this)));
+      base::BindRepeating(&SecurityKeyMessageReaderImplTest::OnMessage,
+                          base::Unretained(this)),
+      base::BindOnce(&SecurityKeyMessageReaderImplTest::OperationComplete,
+                     base::Unretained(this)));
 }
 
 void SecurityKeyMessageReaderImplTest::RunLoop() {

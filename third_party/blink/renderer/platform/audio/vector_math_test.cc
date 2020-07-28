@@ -399,7 +399,7 @@ TEST_F(VectorMathTest, Vsma) {
       // expect only mostly equal floats.
       for (size_t i = 0u; i < source.size(); ++i) {
         if (std::isfinite(expected_dest[i])) {
-#if defined(OS_MACOSX)
+#if defined(OS_APPLE)
           // On Mac, OS provided vectorized functions are used which may result
           // in bigger rounding errors than functions used on other OSes.
           EXPECT_NEAR(expected_dest[i], dest[i],
@@ -506,7 +506,7 @@ TEST_F(VectorMathTest, Zvmul) {
       // expect only mostly equal floats.
       for (size_t i = 0u; i < real1.size(); ++i) {
         if (std::isfinite(expected_dest_real[i])) {
-#if defined(OS_MACOSX)
+#if defined(OS_APPLE)
           // On Mac, OS provided vectorized functions are used which may result
           // in bigger rounding errors than functions used on other OSes.
           EXPECT_NEAR(expected_dest_real[i], dest_real[i],
@@ -515,7 +515,7 @@ TEST_F(VectorMathTest, Zvmul) {
           EXPECT_FLOAT_EQ(expected_dest_real[i], dest_real[i]);
 #endif
         } else {
-#if defined(OS_MACOSX)
+#if defined(OS_APPLE)
           // On Mac, OS provided vectorized functions are used which may result
           // in different NaN handling than functions used on other OSes.
           EXPECT_TRUE(!std::isfinite(dest_real[i]));
@@ -524,7 +524,7 @@ TEST_F(VectorMathTest, Zvmul) {
 #endif
         }
         if (std::isfinite(expected_dest_imag[i])) {
-#if defined(OS_MACOSX)
+#if defined(OS_APPLE)
           // On Mac, OS provided vectorized functions are used which may result
           // in bigger rounding errors than functions used on other OSes.
           EXPECT_NEAR(expected_dest_imag[i], dest_imag[i],
@@ -533,7 +533,7 @@ TEST_F(VectorMathTest, Zvmul) {
           EXPECT_FLOAT_EQ(expected_dest_imag[i], dest_imag[i]);
 #endif
         } else {
-#if defined(OS_MACOSX)
+#if defined(OS_APPLE)
           // On Mac, OS provided vectorized functions are used which may result
           // in different NaN handling than functions used on other OSes.
           EXPECT_TRUE(!std::isfinite(dest_imag[i]));

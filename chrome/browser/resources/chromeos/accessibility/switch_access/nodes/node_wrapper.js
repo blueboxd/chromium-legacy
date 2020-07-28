@@ -122,9 +122,13 @@ class NodeWrapper extends SAChildNode {
   onFocus() {
     super.onFocus();
     this.locationChangedHandler_ = new RepeatedEventHandler(
-        this.baseNode_, chrome.automation.EventType.LOCATION_CHANGED,
-        () => FocusRingManager.setFocusedNode(this),
-        {exactMatch: true, allAncestors: true});
+        this.baseNode_, chrome.automation.EventType.LOCATION_CHANGED, () => {
+          if (this.isValidAndVisible()) {
+            FocusRingManager.setFocusedNode(this);
+          } else {
+            NavigationManager.moveToValidNode();
+          }
+        }, {exactMatch: true, allAncestors: true});
   }
 
   /** @override */
@@ -354,9 +358,7 @@ class RootNodeWrapper extends SARootNode {
    * @return {!RootNodeWrapper}
    */
   static buildTree(rootNode) {
-    if (rootNode.role === chrome.automation.RoleType.WINDOW ||
-        (rootNode.role === chrome.automation.RoleType.CLIENT &&
-         rootNode.parent.role === chrome.automation.RoleType.WINDOW)) {
+    if (SwitchAccessPredicate.isWindow(rootNode)) {
       return WindowRootNode.buildTree(rootNode);
     }
     if (rootNode.role === chrome.automation.RoleType.KEYBOARD) {

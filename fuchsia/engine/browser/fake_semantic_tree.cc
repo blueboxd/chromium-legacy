@@ -13,8 +13,14 @@
 #include "base/test/bind_test_util.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
-FakeSemanticTree::FakeSemanticTree() = default;
+FakeSemanticTree::FakeSemanticTree() : semantic_tree_binding_(this) {}
 FakeSemanticTree::~FakeSemanticTree() = default;
+
+void FakeSemanticTree::Bind(
+    fidl::InterfaceRequest<fuchsia::accessibility::semantics::SemanticTree>
+        semantic_tree_request) {
+  semantic_tree_binding_.Bind(std::move(semantic_tree_request));
+}
 
 bool FakeSemanticTree::IsTreeValid(
     fuchsia::accessibility::semantics::Node* node,
@@ -32,6 +38,10 @@ bool FakeSemanticTree::IsTreeValid(
     is_valid &= IsTreeValid(child, tree_size);
   }
   return is_valid;
+}
+
+void FakeSemanticTree::Disconnect() {
+  semantic_tree_binding_.Close(ZX_ERR_INTERNAL);
 }
 
 void FakeSemanticTree::RunUntilNodeCountAtLeast(size_t count) {

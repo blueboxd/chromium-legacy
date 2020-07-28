@@ -32,6 +32,7 @@ import org.chromium.components.browser_ui.bottomsheet.BottomSheetObserver;
 import org.chromium.components.browser_ui.bottomsheet.EmptyBottomSheetObserver;
 import org.chromium.components.browser_ui.share.ShareParams;
 import org.chromium.components.user_prefs.UserPrefs;
+import org.chromium.ui.base.Clipboard;
 import org.chromium.ui.modelutil.PropertyModel;
 import org.chromium.ui.widget.Toast;
 
@@ -139,6 +140,9 @@ class ChromeProvidedSharingOptionsProvider {
         }
         mOrderedFirstPartyOptions.add(createCopyLinkFirstPartyOption());
         if (ChromeFeatureList.isEnabled(ChromeFeatureList.CHROME_SHARING_HUB_V15)) {
+            mOrderedFirstPartyOptions.add(createCopyImageFirstPartyOption());
+        }
+        if (ChromeFeatureList.isEnabled(ChromeFeatureList.CHROME_SHARING_HUB_V15)) {
             mOrderedFirstPartyOptions.add(createCopyTextFirstPartyOption());
         }
         mOrderedFirstPartyOptions.add(createSendTabToSelfFirstPartyOption());
@@ -213,6 +217,26 @@ class ChromeProvidedSharingOptionsProvider {
                 /*isFirstParty=*/true);
         return new FirstPartyOption(propertyModel,
                 Arrays.asList(ContentType.LINK_PAGE_VISIBLE, ContentType.LINK_PAGE_NOT_VISIBLE));
+    }
+
+    private FirstPartyOption createCopyImageFirstPartyOption() {
+        PropertyModel propertyModel = ShareSheetPropertyModelBuilder.createPropertyModel(
+                AppCompatResources.getDrawable(mActivity, R.drawable.ic_content_copy_black),
+                mActivity.getResources().getString(R.string.sharing_copy_image),
+                (view)
+                        -> {
+                    RecordUserAction.record("SharingHubAndroid.CopyImageSelected");
+                    RecordHistogram.recordMediumTimesHistogram(
+                            "Sharing.SharingHubAndroid.TimeToShare",
+                            System.currentTimeMillis() - mShareStartTime);
+                    mBottomSheetController.hideContent(mBottomSheetContent, true);
+                    if (!mShareParams.getFileUris().isEmpty()) {
+                        Clipboard.getInstance().setImageUri(mShareParams.getFileUris().get(0));
+                        Toast.makeText(mActivity, R.string.image_copied, Toast.LENGTH_SHORT).show();
+                    }
+                },
+                /*isFirstParty=*/true);
+        return new FirstPartyOption(propertyModel, Arrays.asList(ContentType.IMAGE));
     }
 
     private FirstPartyOption createCopyTextFirstPartyOption() {

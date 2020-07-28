@@ -2205,7 +2205,7 @@ void SkiaRenderer::ScheduleOverlays() {
   }
   skia_output_surface_->ScheduleOverlays(
       std::move(current_frame()->overlay_list), std::move(sync_tokens));
-#elif defined(OS_MACOSX)
+#elif defined(OS_APPLE)
   DCHECK(output_surface_->capabilities().supports_surfaceless);
   auto& locks = pending_overlay_locks_.back();
   std::vector<gpu::SyncToken> sync_tokens;

@@ -36,7 +36,7 @@ const base::Feature kTiclInvalidationsStartInvalidatorOnActiveHandler = {
 
 const base::Feature kSyncInstanceIDTokenTTL {
   "SyncInstanceIDTokenTTL",
-#if defined(OS_WIN) || (defined(OS_MACOSX) && !defined(OS_IOS)) || \
+#if defined(OS_WIN) || defined(OS_MAC) || \
     (defined(OS_LINUX) && !defined(OS_CHROMEOS))
       base::FEATURE_ENABLED_BY_DEFAULT
 #else

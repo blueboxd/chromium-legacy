@@ -71,7 +71,7 @@ void LaunchDateAndTimeSettings() {
   options.allow_new_privs = true;
   base::LaunchProcess(command, options);
 
-#elif defined(OS_MACOSX)
+#elif defined(OS_APPLE)
   base::CommandLine command(base::FilePath("/usr/bin/open"));
   command.AppendArg("/System/Library/PreferencePanes/DateAndTime.prefPane");
 

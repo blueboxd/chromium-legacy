@@ -46,15 +46,23 @@ struct PaintPropertyTreeBuilderFragmentContext {
     // fragmentation offsets. See FragmentContext for the fragmented version.
     PhysicalOffset paint_offset;
 
-    // The 2D translation root is the nearest transform node, inclusive of
-    // |transform|, that is one of:
+    // "Additional offset to layout shift root" is the accumulation of paint
+    // offsets encoded in PaintOffsetTranslations between the local transform
+    // space and the layout shift root. The layout shift root is the nearest
+    // transform node (not including the transform nodes for the current object)
+    // that is one of:
     //   * The transform property tree state of the containing LayoutView
-    //   * Not an identity or 2D translation
+    //   * A transform that is not identity or 2d translation
     //   * A scroll translation
-    // |offset_to_2d_translation_root| is the offset representation of the
-    // product of the the transforms starting at |transform| but not inclusive
-    // of the 2D translation root.
-    PhysicalOffset offset_to_2d_translation_root;
+    //   * A replaced contents transform
+    //   * A transform isolation node
+    // The offset plus paint_offset is the offset for layout shift tracking.
+    // It doesn't include transforms because we need to ignore transform changes
+    // for layout shift tracking, see
+    //    https://github.com/WICG/layout-instability#transform-changes
+    // This field is the diff between the new and the old additional offsets to
+    // layout shift root.
+    PhysicalOffset additional_offset_to_layout_shift_root_delta;
 
     // For paint invalidation optimization for subpixel movement under
     // composited layer. It's reset to zero if subpixel can't be propagated
@@ -73,6 +81,11 @@ struct PaintPropertyTreeBuilderFragmentContext {
     // True if any fixed-position children within this context are fixed to the
     // root of the FrameView (and hence above its scroll).
     bool fixed_position_children_fixed_to_root = false;
+
+    // True if the layout shift root (see
+    // additional_offset_to_layout_shift_root_delta for the definition) of this
+    // object has changed.
+    bool layout_shift_root_changed = false;
 
     // Rendering context for 3D sorting. See
     // TransformPaintPropertyNode::renderingContextId.
@@ -253,13 +266,15 @@ class PaintPropertyTreeBuilder {
   PaintPropertyChangeType UpdateForChildren();
 
  private:
-  ALWAYS_INLINE void InitFragmentPaintProperties(FragmentData&,
-                                                 bool needs_paint_properties);
+  ALWAYS_INLINE void InitFragmentPaintProperties(
+      FragmentData&,
+      bool needs_paint_properties,
+      PaintPropertyTreeBuilderFragmentContext&);
   ALWAYS_INLINE void InitFragmentPaintPropertiesForLegacy(
       FragmentData&,
       bool needs_paint_properties,
-      const PhysicalOffset& pagination_offset = PhysicalOffset(),
-      LayoutUnit logical_top_in_flow_thread = LayoutUnit());
+      const PhysicalOffset& pagination_offset,
+      PaintPropertyTreeBuilderFragmentContext&);
   ALWAYS_INLINE void InitFragmentPaintPropertiesForNG(
       bool needs_paint_properties);
   ALWAYS_INLINE void InitSingleFragmentFromParent(bool needs_paint_properties);

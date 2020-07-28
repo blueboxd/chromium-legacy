@@ -32,9 +32,6 @@ class PrerenderTabHelper
   void DidFinishNavigation(
       content::NavigationHandle* navigation_handle) override;
 
-  // Called when this prerendered WebContents has just been swapped in.
-  void PrerenderSwappedIn();
-
   base::TimeTicks swap_ticks() const { return swap_ticks_; }
 
  private:

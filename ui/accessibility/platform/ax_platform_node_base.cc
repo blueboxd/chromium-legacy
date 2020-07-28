@@ -308,7 +308,7 @@ void AXPlatformNodeBase::NotifyAccessibilityEvent(ax::mojom::Event event_type) {
   }
 }
 
-#if defined(OS_MACOSX)
+#if defined(OS_APPLE)
 void AXPlatformNodeBase::AnnounceText(const base::string16& text) {}
 #endif
 

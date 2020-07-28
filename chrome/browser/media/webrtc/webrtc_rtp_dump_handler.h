@@ -31,7 +31,8 @@ class WebRtcRtpDumpWriter;
 // Must be created/used/destroyed on the browser IO thread.
 class WebRtcRtpDumpHandler {
  public:
-  typedef base::Callback<void(bool, const std::string&)> GenericDoneCallback;
+  typedef base::OnceCallback<void(bool, const std::string&)>
+      GenericDoneCallback;
 
   struct ReleasedDumps {
     ReleasedDumps(const base::FilePath& incoming_dump,
@@ -61,7 +62,7 @@ class WebRtcRtpDumpHandler {
   // stopped separately. Returns asynchronously through |callback|, where
   // |success| is true if StopDump is called in a valid state. The callback is
   // called when the writer finishes writing the dumps.
-  void StopDump(RtpDumpType type, const GenericDoneCallback& callback);
+  void StopDump(RtpDumpType type, GenericDoneCallback callback);
 
   // Returns true if it's valid to call ReleaseDumps, i.e. no dumping is ongoing
   // or being stopped.
@@ -84,7 +85,7 @@ class WebRtcRtpDumpHandler {
                    bool incoming);
 
   // Stops all ongoing dumps and call |callback| when finished.
-  void StopOngoingDumps(const base::Closure& callback);
+  void StopOngoingDumps(base::OnceClosure callback);
 
  private:
   friend class WebRtcRtpDumpHandlerTest;
@@ -110,7 +111,7 @@ class WebRtcRtpDumpHandler {
 
   // Callback from the dump writer when ending dumps finishes. Calls |callback|
   // when finished.
-  void OnDumpEnded(const base::Closure& callback,
+  void OnDumpEnded(base::OnceClosure callback,
                    RtpDumpType ended_type,
                    bool incoming_succeeded,
                    bool outgoing_succeeded);

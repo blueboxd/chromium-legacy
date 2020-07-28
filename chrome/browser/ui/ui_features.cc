@@ -62,6 +62,10 @@ const base::Feature kTabGroups{"TabGroups", base::FEATURE_DISABLED_BY_DEFAULT};
 const base::Feature kTabGroupsCollapse{"TabGroupsCollapse",
                                        base::FEATURE_DISABLED_BY_DEFAULT};
 
+// Enables tabs to be frozen when collapsed. https://crbug.com/1110108
+const base::Feature kTabGroupsCollapseFreezing{
+    "TabGroupsCollapseFreezing", base::FEATURE_DISABLED_BY_DEFAULT};
+
 // Enables the feedback through the tab group editor bubble.
 // https://crbug.com/1067062
 const base::Feature kTabGroupsFeedback{"TabGroupsFeedback",

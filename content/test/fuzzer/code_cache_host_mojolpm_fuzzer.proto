@@ -30,7 +30,7 @@ message Action {
   oneof action {
     NewCodeCacheHost new_code_cache_host = 1;
     RunUntilIdle run_until_idle = 2;
-    mojolpm.blink.mojom.CodeCacheHost.RemoteMethodCall code_cache_host_call = 3;
+    mojolpm.blink.mojom.CodeCacheHost.RemoteCall code_cache_host_call = 3;
   }
 }
 

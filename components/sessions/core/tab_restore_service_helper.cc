@@ -16,10 +16,12 @@
 #include "base/check_op.h"
 #include "base/containers/flat_set.h"
 #include "base/metrics/histogram.h"
+#include "base/metrics/histogram_macros.h"
 #include "base/notreached.h"
 #include "base/stl_util.h"
 #include "base/strings/stringprintf.h"
 #include "base/threading/thread_task_runner_handle.h"
+#include "base/time/time.h"
 #include "base/trace_event/memory_dump_manager.h"
 #include "base/trace_event/memory_usage_estimator.h"
 #include "base/trace_event/process_memory_dump.h"
@@ -256,6 +258,26 @@ std::vector<LiveTab*> TabRestoreServiceHelper::RestoreMostRecentEntry(
     LiveTabContext* context) {
   if (entries_.empty())
     return std::vector<LiveTab*>();
+  auto& entry = *entries_.front();
+  switch (entry.type) {
+    case TabRestoreService::TAB: {
+      auto& tab = static_cast<const Tab&>(entry);
+      if (tab.timestamp != base::Time() &&
+          !tab.timestamp.ToDeltaSinceWindowsEpoch().is_zero())
+        UMA_HISTOGRAM_LONG_TIMES("TabManager.TimeSinceTabClosedUntilRestored",
+                                 TimeNow() - tab.timestamp);
+      break;
+    }
+    case TabRestoreService::WINDOW: {
+      auto& window = static_cast<Window&>(entry);
+      if (window.timestamp != base::Time() &&
+          !window.timestamp.ToDeltaSinceWindowsEpoch().is_zero())
+        UMA_HISTOGRAM_LONG_TIMES(
+            "TabManager.TimeSinceWindowClosedUntilRestored",
+            TimeNow() - window.timestamp);
+      break;
+    }
+  }
   return RestoreEntryById(context, entries_.front()->id,
                           WindowOpenDisposition::UNKNOWN);
 }

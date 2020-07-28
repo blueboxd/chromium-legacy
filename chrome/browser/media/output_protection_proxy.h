@@ -26,23 +26,23 @@
 // All methods except constructor should be invoked in UI thread.
 class OutputProtectionProxy {
  public:
-  typedef base::Callback<void(bool /* success */,
+  using QueryStatusCallback =
+      base::OnceCallback<void(bool /* success */,
                               uint32_t /* link_mask */,
-                              uint32_t /* protection_mask*/)>
-      QueryStatusCallback;
-  typedef base::Callback<void(bool /* success */)> EnableProtectionCallback;
+                              uint32_t /* protection_mask*/)>;
+  using EnableProtectionCallback = base::OnceCallback<void(bool /* success */)>;
 
   OutputProtectionProxy(int render_process_id, int render_frame_id);
   ~OutputProtectionProxy();
 
-  void QueryStatus(const QueryStatusCallback& callback);
+  void QueryStatus(QueryStatusCallback callback);
   void EnableProtection(uint32_t desired_method_mask,
-                        const EnableProtectionCallback& callback);
+                        EnableProtectionCallback callback);
 
  private:
   // Callbacks for QueryStatus(). It also checks the network link and adds it
   // to the |link_mask|.
-  void ProcessQueryStatusResult(const QueryStatusCallback& callback,
+  void ProcessQueryStatusResult(QueryStatusCallback callback,
                                 bool success,
                                 uint32_t link_mask,
                                 uint32_t protection_mask);

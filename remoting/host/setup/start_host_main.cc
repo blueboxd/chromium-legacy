@@ -234,7 +234,7 @@ int StartHostMain(int argc, char** argv) {
       url_loader_factory_owner.GetURLLoaderFactory()));
   host_starter->StartHost(host_name, host_pin,
                           /*consent_to_data_collection=*/true, auth_code,
-                          redirect_url, base::Bind(&OnDone));
+                          redirect_url, base::BindOnce(&OnDone));
 
   // Run the task executor until the StartHost completion callback.
   base::RunLoop run_loop;

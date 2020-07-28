@@ -44,7 +44,8 @@ class WebRtcTextLogHandler {
     STOPPED,          // Logging has been stopped, log still open in memory.
   };
 
-  typedef base::Callback<void(bool, const std::string&)> GenericDoneCallback;
+  typedef base::OnceCallback<void(bool, const std::string&)>
+      GenericDoneCallback;
 
   explicit WebRtcTextLogHandler(int render_process_id);
   ~WebRtcTextLogHandler();
@@ -60,16 +61,16 @@ class WebRtcTextLogHandler {
   // start is written to the beginning of the log. Meta data set after log start
   // is written to the log at that time.
   void SetMetaData(std::unique_ptr<WebRtcLogMetaDataMap> meta_data,
-                   const GenericDoneCallback& callback);
+                   GenericDoneCallback callback);
 
   // Opens a log and starts logging if allowed by the LogUploader.
   // Returns false if logging could not be started.
   bool StartLogging(WebRtcLogUploader* log_uploader,
-                    const GenericDoneCallback& callback);
+                    GenericDoneCallback callback);
 
   // Stops logging. Log will remain open until UploadLog or DiscardLog is
   // called.
-  bool StopLogging(const GenericDoneCallback& callback);
+  bool StopLogging(GenericDoneCallback callback);
 
   // Called by the WebRtcLoggingHandlerHost when logging has stopped in the
   // renderer. Should only be called in response to a
@@ -97,24 +98,24 @@ class WebRtcTextLogHandler {
 
   // Returns true if the logging state is CLOSED and fires an the callback
   // with an error message otherwise.
-  bool ExpectLoggingStateStopped(const GenericDoneCallback& callback);
+  bool ExpectLoggingStateStopped(GenericDoneCallback* callback);
 
-  void FireGenericDoneCallback(const GenericDoneCallback& callback,
+  void FireGenericDoneCallback(GenericDoneCallback callback,
                                bool success,
                                const std::string& error_message);
 
   void SetWebAppId(int web_app_id);
 
  private:
-  void StartDone(const GenericDoneCallback& callback);
+  void StartDone(GenericDoneCallback callback);
 
   void LogToCircularBuffer(const std::string& message);
 
   void OnGetNetworkInterfaceList(
-      const GenericDoneCallback& callback,
+      GenericDoneCallback callback,
       const base::Optional<net::NetworkInterfaceList>& networks);
   void OnGetNetworkInterfaceListFinish(
-      const GenericDoneCallback& callback,
+      GenericDoneCallback callback,
       const base::Optional<net::NetworkInterfaceList>& networks,
       const std::string& linux_distro);
 

@@ -194,7 +194,7 @@ void WorkerWatcher::OnFinalResponseURLDetermined(
 }
 
 void WorkerWatcher::OnWorkerCreated(
-    content::SharedWorkerId shared_worker_id,
+    const blink::SharedWorkerToken& shared_worker_token,
     int worker_process_id,
     const base::UnguessableToken& dev_tools_token) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
@@ -203,16 +203,16 @@ void WorkerWatcher::OnWorkerCreated(
       browser_context_id_, WorkerNode::WorkerType::kShared,
       process_node_source_->GetProcessNode(worker_process_id), dev_tools_token);
   bool inserted =
-      shared_worker_nodes_.emplace(shared_worker_id, std::move(worker_node))
+      shared_worker_nodes_.emplace(shared_worker_token, std::move(worker_node))
           .second;
   DCHECK(inserted);
 }
 
 void WorkerWatcher::OnBeforeWorkerDestroyed(
-    content::SharedWorkerId shared_worker_id) {
+    const blink::SharedWorkerToken& shared_worker_token) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
-  auto it = shared_worker_nodes_.find(shared_worker_id);
+  auto it = shared_worker_nodes_.find(shared_worker_token);
   DCHECK(it != shared_worker_nodes_.end());
 
   auto worker_node = std::move(it->second);
@@ -225,27 +225,28 @@ void WorkerWatcher::OnBeforeWorkerDestroyed(
 }
 
 void WorkerWatcher::OnFinalResponseURLDetermined(
-    content::SharedWorkerId shared_worker_id,
+    const blink::SharedWorkerToken& shared_worker_token,
     const GURL& url) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
-  SetFinalResponseURL(GetSharedWorkerNode(shared_worker_id), url);
+  SetFinalResponseURL(GetSharedWorkerNode(shared_worker_token), url);
 }
 
 void WorkerWatcher::OnClientAdded(
-    content::SharedWorkerId shared_worker_id,
+    const blink::SharedWorkerToken& shared_worker_token,
     content::GlobalFrameRoutingId render_frame_host_id) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
-  ConnectClient(GetSharedWorkerNode(shared_worker_id), render_frame_host_id);
+  ConnectClient(GetSharedWorkerNode(shared_worker_token), render_frame_host_id);
 }
 
 void WorkerWatcher::OnClientRemoved(
-    content::SharedWorkerId shared_worker_id,
+    const blink::SharedWorkerToken& shared_worker_token,
     content::GlobalFrameRoutingId render_frame_host_id) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
-  DisconnectClient(GetSharedWorkerNode(shared_worker_id), render_frame_host_id);
+  DisconnectClient(GetSharedWorkerNode(shared_worker_token),
+                   render_frame_host_id);
 }
 
 void WorkerWatcher::OnVersionStartedRunning(
@@ -427,10 +428,10 @@ WorkerNodeImpl* WorkerWatcher::GetDedicatedWorkerNode(
 }
 
 WorkerNodeImpl* WorkerWatcher::GetSharedWorkerNode(
-    content::SharedWorkerId shared_worker_id) {
+    const blink::SharedWorkerToken& shared_worker_token) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
-  auto it = shared_worker_nodes_.find(shared_worker_id);
+  auto it = shared_worker_nodes_.find(shared_worker_token);
   if (it == shared_worker_nodes_.end()) {
     NOTREACHED();
     return nullptr;

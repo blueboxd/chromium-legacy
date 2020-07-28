@@ -145,38 +145,38 @@ void PaintInvalidator::UpdateForPaintOffsetChange(
     const LayoutObject& object,
     FragmentData& fragment_data,
     PaintInvalidatorContext& context) {
-  DCHECK(context.tree_builder_context_);
-  DCHECK_EQ(context.tree_builder_context_->current.paint_offset,
-            fragment_data.PaintOffset());
+  const auto* tree_context = context.tree_builder_context_;
+  DCHECK(tree_context);
+  DCHECK_EQ(tree_context->current.paint_offset, fragment_data.PaintOffset());
 
   // LayoutShiftTracker doesn't track SVG children. Also the visual rect
   // calculation below works for non-SVG-child objects only.
   if (!object.IsSVGChild()) {
     PhysicalRect new_visual_rect = object.LocalVisualRect();
     new_visual_rect.Move(fragment_data.PaintOffset());
-    // Adjust old_visual_rect so that LayoutShiftTracker can see the change of
-    // offset caused by change of transforms below the 2d translation root.
-    PhysicalRect old_visual_rect =
-        fragment_data.VisualRectIn2DTranslationRoot();
-    old_visual_rect.Move(
-        -context.tree_builder_context_->current.offset_to_2d_translation_root);
-    object.GetFrameView()->GetLayoutShiftTracker().NotifyObjectPrePaint(
-        object,
-        PropertyTreeStateOrAlias(
-            *context.tree_builder_context_->current.transform,
-            *context.tree_builder_context_->current.clip,
-            *context.tree_builder_context_->current_effect),
-        old_visual_rect, PhysicalRect(new_visual_rect));
-
-    new_visual_rect.Move(
-        context.tree_builder_context_->current.offset_to_2d_translation_root);
-    fragment_data.SetVisualRectIn2DTranslationRoot(new_visual_rect);
+    // If the layout shift root has changed, LayoutShiftTracker can't use the
+    // current paint property tree to map the old visual rect.
+    if (!tree_context->current.layout_shift_root_changed) {
+      // Adjust old_visual_rect so that LayoutShiftTracker can see the change of
+      // offset caused by change of transforms below the 2d translation root.
+      PhysicalRect old_visual_rect =
+          fragment_data.VisualRectForLayoutShiftTracking();
+      old_visual_rect.Move(
+          -tree_context->current.additional_offset_to_layout_shift_root_delta);
+      object.GetFrameView()->GetLayoutShiftTracker().NotifyObjectPrePaint(
+          object,
+          PropertyTreeStateOrAlias(*tree_context->current.transform,
+                                   *tree_context->current.clip,
+                                   *tree_context->current_effect),
+          old_visual_rect, new_visual_rect);
+    }
+    fragment_data.SetVisualRectForLayoutShiftTracking(new_visual_rect);
   }
 
   // For performance, we ignore subpixel movement of composited layers for paint
   // invalidation. This will result in imperfect pixel-snapped painting.
   // See crbug.com/833083 for details.
-  if (context.tree_builder_context_->current
+  if (tree_context->current
           .directly_composited_container_paint_offset_subpixel_delta ==
       fragment_data.PaintOffset() - context.old_paint_offset)
     context.old_paint_offset = fragment_data.PaintOffset();

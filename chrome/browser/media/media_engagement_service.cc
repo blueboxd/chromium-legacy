@@ -142,8 +142,8 @@ void MediaEngagementService::ClearDataBetweenTime(
       ->ClearSettingsForOneTypeWithPredicate(
           ContentSettingsType::MEDIA_ENGAGEMENT, base::Time(),
           base::Time::Max(),
-          base::Bind(&MediaEngagementTimeFilterAdapter, this, delete_begin,
-                     delete_end));
+          base::BindRepeating(&MediaEngagementTimeFilterAdapter, this,
+                              delete_begin, delete_end));
 }
 
 void MediaEngagementService::Shutdown() {

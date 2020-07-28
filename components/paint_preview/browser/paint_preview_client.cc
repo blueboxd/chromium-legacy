@@ -107,6 +107,7 @@ mojom::PaintPreviewCaptureParamsPtr CreateRecordingRequestParams(
   mojom::PaintPreviewCaptureParamsPtr mojo_params =
       mojom::PaintPreviewCaptureParams::New();
   mojo_params->persistence = persistence;
+  mojo_params->capture_links = capture_params.capture_links;
   mojo_params->guid = capture_params.document_guid;
   mojo_params->clip_rect = capture_params.clip_rect;
   // For now treat all clip rects as hints only. This API should be exposed
@@ -114,7 +115,7 @@ mojom::PaintPreviewCaptureParamsPtr CreateRecordingRequestParams(
   mojo_params->clip_rect_is_hint = true;
   mojo_params->is_main_frame = capture_params.is_main_frame;
   mojo_params->file = std::move(file);
-  mojo_params->max_capture_size = capture_params.max_per_capture_size;
+  mojo_params->max_capture_size = capture_params.max_capture_size;
   return mojo_params;
 }
 
@@ -287,6 +288,8 @@ void PaintPreviewClient::CapturePaintPreview(
   document_data.source_id =
       ukm::GetSourceIdForWebContentsDocument(web_contents());
   document_data.accepted_tokens = CreateAcceptedTokenList(render_frame_host);
+  document_data.capture_links = params.inner.capture_links;
+  document_data.max_per_capture_size = params.inner.max_capture_size;
   all_document_data_.insert(
       {params.inner.document_guid, std::move(document_data)});
   TRACE_EVENT_NESTABLE_ASYNC_BEGIN0(
@@ -299,9 +302,15 @@ void PaintPreviewClient::CaptureSubframePaintPreview(
     const base::UnguessableToken& guid,
     const gfx::Rect& rect,
     content::RenderFrameHost* render_subframe_host) {
+  auto it = all_document_data_.find(guid);
+  if (it == all_document_data_.end())
+    return;
+
   RecordingParams params(guid);
   params.clip_rect = rect;
   params.is_main_frame = false;
+  params.capture_links = it->second.capture_links;
+  params.max_capture_size = it->second.max_per_capture_size;
   CapturePaintPreviewInternal(params, render_subframe_host);
 }
 
@@ -318,10 +327,12 @@ void PaintPreviewClient::RenderFrameDeleted(
   auto it = pending_previews_on_subframe_.find(frame_guid);
   if (it == pending_previews_on_subframe_.end())
     return;
+
   for (const auto& document_guid : it->second) {
     auto data_it = all_document_data_.find(document_guid);
     if (data_it == all_document_data_.end())
       continue;
+
     auto* document_data = &data_it->second;
     document_data->awaiting_subframes.erase(frame_guid);
     document_data->finished_subframes.insert(frame_guid);

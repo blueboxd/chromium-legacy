@@ -23,6 +23,7 @@
 #include "fuchsia/base/string_util.h"
 #include "fuchsia/base/test_navigation_listener.h"
 #include "fuchsia/base/url_request_rewrite_test_util.h"
+#include "fuchsia/engine/browser/fake_semantics_manager.h"
 #include "fuchsia/engine/browser/frame_impl.h"
 #include "fuchsia/engine/switches.h"
 #include "fuchsia/engine/test/test_data.h"
@@ -237,6 +238,17 @@ IN_PROC_BROWSER_TEST_F(FrameImplTest, ContextDeletedBeforeFrame) {
 IN_PROC_BROWSER_TEST_F(FrameImplTest, ContextDeletedBeforeFrameWithView) {
   fuchsia::web::FramePtr frame = CreateFrame();
   EXPECT_TRUE(frame);
+  FrameImpl* frame_impl = context_impl()->GetFrameImplForTest(&frame);
+
+  // Sets up a FakeSemanticsManager to be used when an AccessibilityBridge is
+  // created. This prevents the remote handle from being dropped, which causes
+  // the Frame to be torn down.
+  FakeSemanticsManager semantics_manager;
+  fidl::Binding<fuchsia::accessibility::semantics::SemanticsManager>
+      semantics_manager_binding(&semantics_manager);
+  fuchsia::accessibility::semantics::SemanticsManagerPtr semantics_manager_ptr;
+  semantics_manager_binding.Bind(semantics_manager_ptr.NewRequest());
+  frame_impl->set_semantics_manager_for_test(std::move(semantics_manager_ptr));
 
   auto view_tokens = scenic::ViewTokenPair::New();
 
@@ -1472,6 +1484,16 @@ IN_PROC_BROWSER_TEST_F(FrameImplTest, RecreateView) {
   fuchsia::web::NavigationControllerPtr controller;
   frame->GetNavigationController(controller.NewRequest());
 
+  // Sets up a FakeSemanticsManager to be used when an AccessibilityBridge is
+  // created. This prevents the remote handle from being dropped, which causes
+  // the Frame to be torn down.
+  FakeSemanticsManager semantics_manager;
+  fidl::Binding<fuchsia::accessibility::semantics::SemanticsManager>
+      semantics_manager_binding(&semantics_manager);
+  fuchsia::accessibility::semantics::SemanticsManagerPtr semantics_manager_ptr;
+  semantics_manager_binding.Bind(semantics_manager_ptr.NewRequest());
+  frame_impl->set_semantics_manager_for_test(std::move(semantics_manager_ptr));
+
   // Verify that the Frame can navigate, prior to the View being created.
   const GURL page1_url(embedded_test_server()->GetURL(kPage1Path));
   EXPECT_TRUE(cr_fuchsia::LoadUrlAndExpectResponse(
@@ -1492,6 +1514,11 @@ IN_PROC_BROWSER_TEST_F(FrameImplTest, RecreateView) {
   EXPECT_TRUE(cr_fuchsia::LoadUrlAndExpectResponse(
       controller.get(), fuchsia::web::LoadUrlParams(), page2_url.spec()));
   navigation_listener_.RunUntilUrlAndTitleEquals(page2_url, kPage2Title);
+
+  // Create another FakeSemanticsManager for a second call to CreateView.
+  fuchsia::accessibility::semantics::SemanticsManagerPtr semantics_manager_ptr2;
+  semantics_manager_binding.Bind(semantics_manager_ptr2.NewRequest());
+  frame_impl->set_semantics_manager_for_test(std::move(semantics_manager_ptr2));
 
   // Create new View tokens and request a new view.
   zx::eventpair owner_token2, frame_token2;

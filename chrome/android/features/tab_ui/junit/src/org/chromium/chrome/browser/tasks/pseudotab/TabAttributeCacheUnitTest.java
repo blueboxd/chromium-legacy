@@ -28,7 +28,6 @@ import org.robolectric.annotation.Config;
 import org.chromium.base.test.BaseRobolectricTestRunner;
 import org.chromium.chrome.browser.search_engines.TemplateUrlServiceFactory;
 import org.chromium.chrome.browser.tab.TabImpl;
-import org.chromium.chrome.browser.tab.TabObserver;
 import org.chromium.chrome.browser.tab.state.CriticalPersistedTabData;
 import org.chromium.chrome.browser.tabmodel.TabModel;
 import org.chromium.chrome.browser.tabmodel.TabModelFilter;
@@ -36,6 +35,7 @@ import org.chromium.chrome.browser.tabmodel.TabModelFilterProvider;
 import org.chromium.chrome.browser.tabmodel.TabModelObserver;
 import org.chromium.chrome.browser.tabmodel.TabModelSelectorImpl;
 import org.chromium.chrome.browser.tabmodel.TabModelSelectorObserver;
+import org.chromium.chrome.browser.tabmodel.TabModelSelectorTabObserver;
 import org.chromium.chrome.browser.tasks.pseudotab.TabAttributeCache.LastSearchTermProvider;
 import org.chromium.chrome.browser.tasks.tab_management.TabUiUnitTestUtils;
 import org.chromium.chrome.test.util.browser.Features;
@@ -81,7 +81,7 @@ public class TabAttributeCacheUnitTest {
     @Captor
     ArgumentCaptor<TabModelSelectorObserver> mTabModelSelectorObserverCaptor;
     @Captor
-    ArgumentCaptor<TabObserver> mTabObserverCaptor;
+    ArgumentCaptor<TabModelSelectorTabObserver> mTabObserverCaptor;
 
     private TabImpl mTab1;
     private TabImpl mTab2;

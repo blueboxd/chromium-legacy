@@ -147,8 +147,8 @@ class NET_EXPORT_PRIVATE BufferedSpdyFramer
   void set_debug_visitor(spdy::SpdyFramerDebugVisitorInterface* debug_visitor);
 
   // spdy::SpdyFramerVisitorInterface
-  void OnError(
-      http2::Http2DecoderAdapter::SpdyFramerError spdy_framer_error) override;
+  void OnError(http2::Http2DecoderAdapter::SpdyFramerError spdy_framer_error,
+               std::string detailed_error) override;
   void OnHeaders(spdy::SpdyStreamId stream_id,
                  bool has_priority,
                  int weight,

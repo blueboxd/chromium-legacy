@@ -198,7 +198,7 @@ if (is_win && is_official_build) {
 } else {
   _idl_files =
       core_buffer_source_type_idl_files + core_callback_interface_idl_files
-  if (!use_v8_bind_gen_for_dictionary) {
+  if (!use_blink_v8_binding_new_idl_dictionary) {
     _idl_files += core_dictionary_idl_files
   }
   if (!use_blink_v8_binding_new_idl_interface) {

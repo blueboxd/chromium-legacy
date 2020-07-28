@@ -383,7 +383,7 @@ class ChromePrintContext : public PrintContext {
         current_height += page_size_in_pixels.Width() + 1;
       }
 
-#if defined(OS_WIN) || defined(OS_MACOSX)
+#if defined(OS_WIN) || defined(OS_APPLE)
       // Account for the disabling of scaling in spoolPage. In the context of
       // SpoolAllPagesWithBoundariesForTesting the scale HAS NOT been
       // pre-applied.
@@ -411,7 +411,7 @@ class ChromePrintContext : public PrintContext {
     float scale = printed_page_width_ / page_rect.Width();
 
     AffineTransform transform;
-#if defined(OS_POSIX) && !defined(OS_MACOSX)
+#if defined(OS_POSIX) && !defined(OS_APPLE)
     transform.Scale(scale);
 #endif
     transform.Translate(static_cast<float>(-page_rect.X()),

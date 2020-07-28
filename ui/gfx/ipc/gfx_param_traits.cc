@@ -12,7 +12,7 @@
 #include "ui/gfx/ipc/geometry/gfx_param_traits.h"
 #include "ui/gfx/range/range.h"
 
-#if defined(OS_MACOSX)
+#if defined(OS_APPLE)
 #include "ipc/mach_port_mac.h"
 #endif
 
@@ -38,7 +38,7 @@ void ParamTraits<gfx::Range>::Log(const gfx::Range& r, std::string* l) {
   l->append(base::StringPrintf("(%d, %d)", r.start(), r.end()));
 }
 
-#if defined(OS_MACOSX) && !defined(OS_IOS)
+#if defined(OS_MAC)
 void ParamTraits<gfx::ScopedRefCountedIOSurfaceMachPort>::Write(
     base::Pickle* m,
     const param_type p) {
@@ -63,7 +63,7 @@ void ParamTraits<gfx::ScopedRefCountedIOSurfaceMachPort>::Log(
   l->append("IOSurface Mach send right: ");
   LogParam(p.get(), l);
 }
-#endif  // defined(OS_MACOSX) && !defined(OS_IOS)
+#endif  // defined(OS_MAC)
 
 void ParamTraits<gfx::SelectionBound>::Write(base::Pickle* m,
                                              const param_type& p) {

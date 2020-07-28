@@ -10,7 +10,7 @@
 
 #if defined(OS_WIN)
 #include <windows.h>
-#elif defined(OS_MACOSX) && !defined(OS_IOS)
+#elif defined(OS_MAC)
 #include <Carbon/Carbon.h>
 #include "base/mac/scoped_cftyperef.h"
 #elif defined(USE_OZONE)
@@ -33,11 +33,11 @@ enum KeyboardLayout {
 
 #if defined(OS_WIN)
 using PlatformKeyboardLayout = HKL;
-#elif defined(OS_MACOSX) && !defined(OS_IOS)
+#elif defined(OS_MAC)
 using PlatformKeyboardLayout = base::ScopedCFTypeRef<TISInputSourceRef>;
 #endif
 
-#if defined(OS_WIN) || (defined(OS_MACOSX) && !defined(OS_IOS))
+#if defined(OS_WIN) || defined(OS_MAC)
 PlatformKeyboardLayout GetPlatformKeyboardLayout(KeyboardLayout layout);
 #endif
 
@@ -51,7 +51,7 @@ class ScopedKeyboardLayout {
 #if defined(USE_OZONE)
   std::unique_ptr<ScopedKeyboardLayoutEngine> scoped_keyboard_layout_engine_;
 #endif
-#if defined(OS_WIN) || (defined(OS_MACOSX) && !defined(OS_IOS))
+#if defined(OS_WIN) || defined(OS_MAC)
   static PlatformKeyboardLayout GetActiveLayout();
   static void ActivateLayout(PlatformKeyboardLayout layout);
 

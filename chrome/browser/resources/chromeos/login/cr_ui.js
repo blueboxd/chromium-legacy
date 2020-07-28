@@ -267,7 +267,7 @@ cr.define('cr.ui', function() {
    */
   Oobe.guestLoginForTesting = function() {
     Oobe.skipToLoginForTesting();
-    chrome.send('launchIncognitoForTesting');
+    chrome.send('launchIncognito');
   };
 
   /**

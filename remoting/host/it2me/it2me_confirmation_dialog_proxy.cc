@@ -62,9 +62,10 @@ void It2MeConfirmationDialogProxy::Core::Show(
     const std::string& remote_user_email) {
   DCHECK(ui_task_runner_->BelongsToCurrentThread());
 
-  dialog_->Show(remote_user_email,
-                base::Bind(&It2MeConfirmationDialogProxy::Core::ReportResult,
-                           base::Unretained(this)));
+  dialog_->Show(
+      remote_user_email,
+      base::BindOnce(&It2MeConfirmationDialogProxy::Core::ReportResult,
+                     base::Unretained(this)));
 }
 
 void It2MeConfirmationDialogProxy::Core::ReportResult(

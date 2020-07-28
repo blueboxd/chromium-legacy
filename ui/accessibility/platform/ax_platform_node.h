@@ -81,7 +81,7 @@ class AX_EXPORT AXPlatformNode {
   // this object.
   virtual void NotifyAccessibilityEvent(ax::mojom::Event event_type) = 0;
 
-#if defined(OS_MACOSX)
+#if defined(OS_APPLE)
   // Fire a platform-specific notification to announce |text|.
   virtual void AnnounceText(const base::string16& text) = 0;
 #endif

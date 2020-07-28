@@ -33,7 +33,7 @@ class VIZ_HOST_EXPORT HostDisplayClient : public mojom::DisplayClient {
 
  private:
   // mojom::DisplayClient implementation:
-#if defined(OS_MACOSX)
+#if defined(OS_APPLE)
   void OnDisplayReceivedCALayerParams(
       const gfx::CALayerParams& ca_layer_params) override;
 #endif
@@ -48,7 +48,7 @@ class VIZ_HOST_EXPORT HostDisplayClient : public mojom::DisplayClient {
 #endif
 
   mojo::Receiver<mojom::DisplayClient> receiver_{this};
-#if defined(OS_MACOSX) || defined(OS_WIN)
+#if defined(OS_APPLE) || defined(OS_WIN)
   gfx::AcceleratedWidget widget_;
 #endif
 

@@ -15,7 +15,7 @@
 #include "components/pref_registry/pref_registry_syncable.h"  // nogncheck
 #endif
 
-#if defined(OS_MACOSX) && !defined(OS_IOS)
+#if defined(OS_MAC)
 #include "base/mac/mac_util.h"
 #endif
 
@@ -51,7 +51,7 @@
 - (instancetype)init {
   self = [super init];
   if (self) {
-#if defined(OS_MACOSX) && !defined(OS_IOS)
+#if defined(OS_MAC)
     _origin = handoff::ORIGIN_MAC;
 #elif defined(OS_IOS)
     _origin = handoff::ORIGIN_IOS;

@@ -192,10 +192,11 @@ void SecurityKeyAuthHandlerWin::StartIpcServerChannel() {
   std::unique_ptr<SecurityKeyIpcServer> ipc_server(SecurityKeyIpcServer::Create(
       new_connection_id, client_session_details_, disconnect_timeout_,
       send_message_callback_,
-      base::Bind(&SecurityKeyAuthHandlerWin::OnChannelConnected,
-                 base::Unretained(this)),
-      base::Bind(&SecurityKeyAuthHandlerWin::CloseSecurityKeyRequestIpcChannel,
-                 base::Unretained(this), new_connection_id)));
+      base::BindOnce(&SecurityKeyAuthHandlerWin::OnChannelConnected,
+                     base::Unretained(this)),
+      base::BindOnce(
+          &SecurityKeyAuthHandlerWin::CloseSecurityKeyRequestIpcChannel,
+          base::Unretained(this), new_connection_id)));
   ipc_server->CreateChannel(remoting::GetSecurityKeyIpcChannel(),
                             kSecurityKeyRequestTimeout);
   active_channels_[new_connection_id] = std::move(ipc_server);

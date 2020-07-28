@@ -108,8 +108,8 @@ void ComputeStorageId(const std::vector<uint8_t>& profile_salt,
       mojo::WrapCallbackWithDefaultInvokeIfNotRun(std::move(callback),
                                                   std::vector<uint8_t>());
   chromeos::SystemSaltGetter::Get()->GetSystemSalt(
-      base::Bind(&ComputeAndReturnStorageId, profile_salt, origin,
-                 base::Passed(&scoped_callback)));
+      base::BindOnce(&ComputeAndReturnStorageId, profile_salt, origin,
+                 std::move(scoped_callback));
 
 #else
 #error Storage ID enabled but not implemented for this platform.

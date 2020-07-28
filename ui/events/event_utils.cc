@@ -89,7 +89,7 @@ void ComputeEventLatencyOS(const PlatformEvent& native_event) {
 
   EventType type = EventTypeFromNative(native_event);
   switch (type) {
-#if defined(OS_MACOSX)
+#if defined(OS_APPLE)
     // On Mac, ET_SCROLL and ET_MOUSEWHEEL represent the same class of events.
     case ET_SCROLL:
 #endif

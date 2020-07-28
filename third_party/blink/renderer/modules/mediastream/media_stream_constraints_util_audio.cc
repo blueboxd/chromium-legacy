@@ -312,7 +312,7 @@ class EchoCancellationContainer {
         device_parameters_(device_parameters),
         is_device_capture_(is_device_capture) {
     if (!has_active_source) {
-#if defined(OS_MACOSX) || defined(OS_CHROMEOS)
+#if defined(OS_APPLE) || defined(OS_CHROMEOS)
       // If force system echo cancellation feature is enabled, only expose that
       // type if available; otherwise expose no type.
       if (base::FeatureList::IsEnabled(features::kForceEnableSystemAec)) {
@@ -321,7 +321,7 @@ class EchoCancellationContainer {
                 {EchoCancellationType::kEchoCancellationSystem,
                  EchoCancellationType::kEchoCancellationDisabled}));
       }
-#endif  // defined(OS_MACOSX) || defined(OS_CHROMEOS)
+#endif  // defined(OS_APPLE) || defined(OS_CHROMEOS)
       return;
     }
 
@@ -440,13 +440,13 @@ class EchoCancellationContainer {
 
   static bool ShouldUseExperimentalSystemEchoCanceller(
       const media::AudioParameters& parameters) {
-#if defined(OS_MACOSX) || defined(OS_CHROMEOS)
+#if defined(OS_APPLE) || defined(OS_CHROMEOS)
     if (base::FeatureList::IsEnabled(features::kForceEnableSystemAec) &&
         (parameters.effects() &
          media::AudioParameters::EXPERIMENTAL_ECHO_CANCELLER)) {
       return true;
     }
-#endif  // defined(OS_MACOSX) || defined(OS_CHROMEOS)
+#endif  // defined(OS_APPLE) || defined(OS_CHROMEOS)
     return false;
   }
 

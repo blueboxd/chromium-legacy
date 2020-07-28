@@ -176,7 +176,7 @@ class TestGpuService : public mojom::GpuService {
       base::MemoryPressureListener::MemoryPressureLevel level) override {}
 #endif
 
-#if defined(OS_MACOSX)
+#if defined(OS_APPLE)
   void BeginCATransaction() override {}
 
   void CommitCATransaction(CommitCATransactionCallback callback) override {}
@@ -251,7 +251,7 @@ class HostGpuMemoryBufferManagerTest : public ::testing::Test {
 #elif defined(OS_ANDROID)
     native_pixmap_supported =
         base::AndroidHardwareBufferCompat::IsSupportAvailable();
-#elif defined(OS_MACOSX) || defined(OS_WIN)
+#elif defined(OS_APPLE) || defined(OS_WIN)
     native_pixmap_supported = true;
 #endif
 

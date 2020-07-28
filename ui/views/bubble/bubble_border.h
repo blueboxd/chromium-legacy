@@ -69,7 +69,7 @@ class VIEWS_EXPORT BubbleBorder : public Border {
     NO_ASSETS,
     SHADOW_COUNT,
 
-#if defined(OS_MACOSX)
+#if defined(OS_APPLE)
     // On Mac, the native window server should provide its own shadow for
     // windows that could overlap the browser window.
     DIALOG_SHADOW = NO_ASSETS,

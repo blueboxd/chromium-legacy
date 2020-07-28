@@ -2,6 +2,7 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+import("//chromeos/components/web_applications/system_apps.gni")
 import("//third_party/closure_compiler/compile_js.gni")
 
 assert(is_chromeos, "Telemetry Extension is Chrome OS only")
@@ -17,6 +18,7 @@ group("closure_compile") {
 }
 
 js_type_check("trusted_closure_compile") {
+  closure_flags = system_app_closure_flags_strict
   deps = [
     ":message_types",
     ":trusted",
@@ -24,6 +26,7 @@ js_type_check("trusted_closure_compile") {
 }
 
 js_type_check("untrusted_closure_compile") {
+  closure_flags = system_app_closure_flags_strict
   deps = [
     ":message_types",
     ":untrusted",

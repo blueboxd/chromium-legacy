@@ -15,6 +15,12 @@ public interface PasswordCheck extends PasswordCheckComponentUi.Delegate {
     /**
      * Initializes the PasswordCheck UI and launches it.
      * @param context A {@link Context} to create views and retrieve resources.
+     * @param passwordCheckReferrer The place which launched the check UI.
      */
-    void showUi(Context context);
+    void showUi(Context context, @PasswordCheckReferrer int passwordCheckReferrer);
+
+    /**
+     * Cleans up the C++ part, thus removing the compromised credentials from memory.
+     */
+    void destroy();
 }

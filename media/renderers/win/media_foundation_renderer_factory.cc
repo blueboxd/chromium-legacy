@@ -28,10 +28,6 @@ std::unique_ptr<Renderer> MediaFoundationRendererFactory::CreateRenderer(
       /*muted=*/false, media_task_runner,
       /*force_dcomp_mode_for_testing=*/true);
 
-  auto playback_element_id = next_playback_element_id_++;
-  CHECK(playback_element_id);
-  renderer->SetPlaybackElementId(playback_element_id);
-
   return renderer;
 }
 

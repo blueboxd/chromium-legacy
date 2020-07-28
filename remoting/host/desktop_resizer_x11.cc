@@ -232,7 +232,7 @@ void DesktopResizerX11::SetResolution(const ScreenResolution& resolution) {
   // error, for example if xrandr has been used to add a mode with the same
   // name as our temporary mode, or to remove the "client resolution" mode. We
   // don't want to terminate the process if this happens.
-  ScopedXErrorHandler handler(ScopedXErrorHandler::Ignore());
+  ScopedXErrorHandler handler({});
 
   // Grab the X server while we're changing the display resolution. This ensures
   // that the display configuration doesn't change under our feet.

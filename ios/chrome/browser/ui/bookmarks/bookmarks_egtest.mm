@@ -849,16 +849,48 @@ using chrome_test_util::TappableBookmarkNodeWithLabel;
   [[EarlGrey selectElementWithMatcher:grey_accessibilityID(@"Folder 1.1")]
       performAction:grey_tap()];
 
-  // Empty TableView background should be visible
-  [BookmarkEarlGreyUI verifyEmptyBackgroundAppears];
-  id<GREYInteraction> searchBar =
-      [EarlGrey selectElementWithMatcher:grey_accessibilityTrait(
-                                             UIAccessibilityTraitSearchField)];
+  // Empty TableView background should be visible.
+  [BookmarkEarlGreyUI verifyEmptyState];
+}
+
+// Test to make sure the Mobile Bookmarks folder is not created if empty.
+- (void)testRootEmptyState {
+  [BookmarkEarlGreyUI openBookmarks];
+
   if (base::FeatureList::IsEnabled(kIllustratedEmptyStates)) {
-    // With the illustrated background, the search bar should not be visible
-    [searchBar assertWithMatcher:grey_nil()];
+    // When the user has no bookmarks, the root view should be an empty state.
+    [BookmarkEarlGreyUI verifyEmptyState];
   } else {
-    [searchBar assertWithMatcher:grey_notNil()];
+    // Mobile Bookmark should be visible, even when empty.
+    [BookmarkEarlGreyUI verifyBookmarkFolderIsSeen:@"Mobile Bookmarks"];
+  }
+}
+
+// When deleting the last bookmark, the root view should be empty when
+// navigating back.
+- (void)testRootEmptyStateAfterAllBookmarkDeleted {
+  [BookmarkEarlGrey setupStandardBookmarks];
+  [BookmarkEarlGreyUI openBookmarks];
+  [BookmarkEarlGreyUI openMobileBookmarks];
+
+  // Delete all bookmarks and folders under Mobile Bookmarks.
+  [BookmarkEarlGrey removeBookmarkWithTitle:@"Folder 1.1"];
+  [BookmarkEarlGrey removeBookmarkWithTitle:@"Folder 1"];
+  [BookmarkEarlGrey removeBookmarkWithTitle:@"French URL"];
+  [BookmarkEarlGrey removeBookmarkWithTitle:@"Second URL"];
+  [BookmarkEarlGrey removeBookmarkWithTitle:@"First URL"];
+
+  // Navigate back to the root view.
+  [[EarlGrey selectElementWithMatcher:chrome_test_util::
+                                          BookmarksNavigationBarBackButton()]
+      performAction:grey_tap()];
+
+  if (base::FeatureList::IsEnabled(kIllustratedEmptyStates)) {
+    // When the user has no bookmarks, the root view should be an empty state.
+    [BookmarkEarlGreyUI verifyEmptyState];
+  } else {
+    // Mobile Bookmark should be visible, even when empty.
+    [BookmarkEarlGreyUI verifyBookmarkFolderIsSeen:@"Mobile Bookmarks"];
   }
 }
 

@@ -12,6 +12,7 @@ import "third_party/blink/public/mojom/renderer_preference_watcher.mojom";
 import "third_party/blink/public/mojom/renderer_preferences.mojom";
 import "third_party/blink/public/mojom/service_worker/controller_service_worker.mojom";
 import "third_party/blink/public/mojom/service_worker/service_worker_container.mojom";
+import "third_party/blink/public/mojom/tokens/worker_tokens.mojom";
 import "third_party/blink/public/mojom/worker/shared_worker.mojom";
 import "third_party/blink/public/mojom/worker/shared_worker_host.mojom";
 import "third_party/blink/public/mojom/worker/shared_worker_info.mojom";
@@ -35,6 +36,11 @@ interface SharedWorkerFactory {
   // |browser_interface_broker| instead of receiving plumbing it here.
   CreateSharedWorker(
       SharedWorkerInfo info,
+
+      // The token that uniquely identifies this worker. Generated in the
+      // browser, and communicated to the worker in the renderer. This token
+      // should not be shared with any renderer except that hosting the worker.
+      SharedWorkerToken token,
 
       // The origin of the page where `new SharedWorker()` is called.
       // This origin must be able to access shared workers.

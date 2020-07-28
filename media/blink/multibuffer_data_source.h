@@ -17,6 +17,7 @@
 #include "base/synchronization/lock.h"
 #include "media/base/data_source.h"
 #include "media/base/ranges.h"
+#include "media/base/tuneable.h"
 #include "media/blink/media_blink_export.h"
 #include "media/blink/url_index.h"
 #include "url/gurl.h"
@@ -266,6 +267,14 @@ class MEDIA_BLINK_EXPORT MultibufferDataSource : public DataSource {
   BufferedDataSourceHost* host_;
 
   DownloadingCB downloading_cb_;
+
+  // Preload this many seconds of data by default.
+  media::Tuneable<int> preload_seconds_ = {"SrcMediaMultibufferPreloadSeconds",
+                                           0, 10, 60};
+
+  // Keep this many seconds of data for going back by default.
+  media::Tuneable<int> keep_after_playback_seconds_ = {
+      "SrcMediaMultibufferKeepAfterPlaybackSeconds", 0, 2, 60};
 
   // Disallow rebinding WeakReference ownership to a different thread by keeping
   // a persistent reference. This avoids problems with the thread-safety of

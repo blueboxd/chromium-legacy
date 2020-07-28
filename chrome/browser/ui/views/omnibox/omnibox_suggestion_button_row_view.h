@@ -23,18 +23,16 @@ class OmniboxSuggestionButtonRowView : public views::View,
                                           int model_index);
   ~OmniboxSuggestionButtonRowView() override;
 
-  // Gets keyword information and applies it to the keyword button label.
-  // TODO(orinj): This should eventually be made private after refactoring.
-  void UpdateKeyword();
-
   // Called when themes, styles, and visibility is refreshed in result view.
   void OnStyleRefresh();
+
+  // Updates the suggestion row buttons based on the model.
+  void UpdateFromModel();
 
   // views::ButtonListener:
   void ButtonPressed(views::Button* sender, const ui::Event& event) override;
 
   // views::View:
-  void Layout() override;
   void OnThemeChanged() override;
 
  private:

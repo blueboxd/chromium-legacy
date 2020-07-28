@@ -58,7 +58,7 @@ constexpr double kDefaultProcessSamplingProbability = 0.015;
 // we want to perform additional testing (e.g., on canary/dev builds).
 constexpr int kDefaultProcessSamplingBoost2 = 10;
 
-#if defined(OS_WIN) || defined(OS_MACOSX)
+#if defined(OS_WIN) || defined(OS_APPLE)
 constexpr base::FeatureState kDefaultEnabled = base::FEATURE_ENABLED_BY_DEFAULT;
 #else
 constexpr base::FeatureState kDefaultEnabled =

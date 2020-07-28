@@ -31,7 +31,7 @@
 
 #include "build/build_config.h"
 
-#if !defined(OS_MACOSX)
+#if !defined(OS_APPLE)
 #include <unicode/uset.h>
 #include "third_party/blink/renderer/platform/wtf/assertions.h"
 #include "third_party/blink/renderer/platform/wtf/text/wtf_string.h"
@@ -113,4 +113,4 @@ bool IsCharacterSmartReplaceExempt(UChar32 c, bool is_previous_character) {
 }
 }
 
-#endif  // !defined(OS_MACOSX)
+#endif  // !defined(OS_APPLE)

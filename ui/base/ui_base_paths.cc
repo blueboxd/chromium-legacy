@@ -26,7 +26,7 @@ bool PathProvider(int key, base::FilePath* result) {
     case DIR_LOCALES:
       if (!base::PathService::Get(base::DIR_MODULE, &cur))
         return false;
-#if defined(OS_MACOSX)
+#if defined(OS_APPLE)
       // On Mac, locale files are in Contents/Resources, a sibling of the
       // App dir.
       cur = cur.DirName();

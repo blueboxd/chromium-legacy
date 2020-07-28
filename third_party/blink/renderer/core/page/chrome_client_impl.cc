@@ -723,7 +723,7 @@ void ChromeClientImpl::SetCursorInternal(const ui::Cursor& cursor,
   if (cursor_overridden_)
     return;
 
-#if defined(OS_MACOSX)
+#if defined(OS_APPLE)
   // On Mac the mousemove event propagates to both the popup and main window.
   // If a popup is open we don't want the main window to change the cursor.
   if (web_view_->HasOpenedPopup())

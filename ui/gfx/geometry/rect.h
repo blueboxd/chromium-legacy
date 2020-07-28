@@ -25,7 +25,7 @@
 
 #if defined(OS_WIN)
 typedef struct tagRECT RECT;
-#elif defined(OS_MACOSX) || defined(OS_IOS)
+#elif defined(OS_APPLE)
 typedef struct CGRect CGRect;
 #endif
 
@@ -48,14 +48,14 @@ class GEOMETRY_EXPORT Rect {
 
 #if defined(OS_WIN)
   explicit Rect(const RECT& r);
-#elif defined(OS_MACOSX) || defined(OS_IOS)
+#elif defined(OS_APPLE)
   explicit Rect(const CGRect& r);
 #endif
 
 #if defined(OS_WIN)
   // Construct an equivalent Win32 RECT object.
   RECT ToRECT() const;
-#elif defined(OS_MACOSX) || defined(OS_IOS)
+#elif defined(OS_APPLE)
   // Construct an equivalent CoreGraphics object.
   CGRect ToCGRect() const;
 #endif

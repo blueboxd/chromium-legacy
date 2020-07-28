@@ -14,7 +14,7 @@
 #include "components/viz/service/display/dc_layer_overlay.h"
 #endif
 
-#if defined(OS_MACOSX)
+#if defined(OS_APPLE)
 #include "components/viz/service/display/ca_layer_overlay.h"
 #endif
 
@@ -31,7 +31,7 @@ namespace viz {
 // destroyed on the gpu thread.
 class VIZ_SERVICE_EXPORT OverlayProcessorOnGpu {
  public:
-#if defined(OS_MACOSX)
+#if defined(OS_APPLE)
   using CandidateList = CALayerOverlayList;
 #elif defined(OS_WIN)
   using CandidateList = DCLayerOverlayList;

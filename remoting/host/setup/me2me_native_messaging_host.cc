@@ -166,8 +166,9 @@ void Me2MeNativeMessagingHost::OnMessage(const std::string& message) {
 void Me2MeNativeMessagingHost::Start(Client* client) {
   DCHECK(task_runner()->BelongsToCurrentThread());
   client_ = client;
-  log_message_handler_.reset(new LogMessageHandler(
-      base::Bind(&Me2MeNativeMessagingHost::SendMessageToClient, weak_ptr_)));
+  log_message_handler_ =
+      std::make_unique<LogMessageHandler>(base::BindRepeating(
+          &Me2MeNativeMessagingHost::SendMessageToClient, weak_ptr_));
 }
 
 scoped_refptr<base::SingleThreadTaskRunner>
@@ -311,8 +312,8 @@ void Me2MeNativeMessagingHost::ProcessUpdateDaemonConfig(
 
   daemon_controller_->UpdateConfig(
       std::move(config_dict),
-      base::Bind(&Me2MeNativeMessagingHost::SendAsyncResult, weak_ptr_,
-                 base::Passed(&response)));
+      base::BindOnce(&Me2MeNativeMessagingHost::SendAsyncResult, weak_ptr_,
+                     base::Passed(&response)));
 }
 
 void Me2MeNativeMessagingHost::ProcessGetDaemonConfig(
@@ -321,8 +322,8 @@ void Me2MeNativeMessagingHost::ProcessGetDaemonConfig(
   DCHECK(task_runner()->BelongsToCurrentThread());
 
   daemon_controller_->GetConfig(
-      base::Bind(&Me2MeNativeMessagingHost::SendConfigResponse, weak_ptr_,
-                 base::Passed(&response)));
+      base::BindOnce(&Me2MeNativeMessagingHost::SendConfigResponse, weak_ptr_,
+                     base::Passed(&response)));
 }
 
 void Me2MeNativeMessagingHost::ProcessGetPairedClients(
@@ -347,8 +348,8 @@ void Me2MeNativeMessagingHost::ProcessGetUsageStatsConsent(
   DCHECK(task_runner()->BelongsToCurrentThread());
 
   daemon_controller_->GetUsageStatsConsent(
-      base::Bind(&Me2MeNativeMessagingHost::SendUsageStatsConsentResponse,
-                 weak_ptr_, base::Passed(&response)));
+      base::BindOnce(&Me2MeNativeMessagingHost::SendUsageStatsConsentResponse,
+                     weak_ptr_, base::Passed(&response)));
 }
 
 void Me2MeNativeMessagingHost::ProcessStartDaemon(
@@ -386,8 +387,8 @@ void Me2MeNativeMessagingHost::ProcessStartDaemon(
 
   daemon_controller_->SetConfigAndStart(
       std::move(config_dict), consent,
-      base::Bind(&Me2MeNativeMessagingHost::SendAsyncResult, weak_ptr_,
-                 base::Passed(&response)));
+      base::BindOnce(&Me2MeNativeMessagingHost::SendAsyncResult, weak_ptr_,
+                     base::Passed(&response)));
 }
 
 void Me2MeNativeMessagingHost::ProcessStopDaemon(
@@ -411,8 +412,8 @@ void Me2MeNativeMessagingHost::ProcessStopDaemon(
   }
 
   daemon_controller_->Stop(
-      base::Bind(&Me2MeNativeMessagingHost::SendAsyncResult, weak_ptr_,
-                 base::Passed(&response)));
+      base::BindOnce(&Me2MeNativeMessagingHost::SendAsyncResult, weak_ptr_,
+                     base::Passed(&response)));
 }
 
 void Me2MeNativeMessagingHost::ProcessGetDaemonState(

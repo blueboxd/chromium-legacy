@@ -20,6 +20,7 @@
 
 namespace content {
 class BrowserContext;
+class WebContents;
 }
 
 namespace ui {
@@ -28,7 +29,6 @@ class Accelerator;
 
 namespace extensions {
 
-class ActiveTabPermissionGranter;
 class Extension;
 
 // The ExtensionKeybindingRegistry is a class that handles the cross-platform
@@ -45,9 +45,8 @@ class ExtensionKeybindingRegistry : public CommandService::Observer,
 
   class Delegate {
    public:
-    // Gets the ActiveTabPermissionGranter for the active tab, if any.
-    // If there is no active tab then returns NULL.
-    virtual ActiveTabPermissionGranter* GetActiveTabPermissionGranter() = 0;
+    // Returns the currently active WebContents, or nullptr if there is none.
+    virtual content::WebContents* GetWebContentsForExtension() = 0;
   };
 
   // If |extension_filter| is not ALL_EXTENSIONS, only keybindings by

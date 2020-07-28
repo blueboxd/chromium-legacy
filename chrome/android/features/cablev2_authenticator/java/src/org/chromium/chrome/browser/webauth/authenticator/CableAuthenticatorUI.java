@@ -190,4 +190,9 @@ public class CableAuthenticatorUI extends Fragment
             getActivity().finish();
         });
     }
+
+    @Override
+    public void onComplete() {
+        getActivity().runOnUiThread(() -> { getActivity().finish(); });
+    }
 }

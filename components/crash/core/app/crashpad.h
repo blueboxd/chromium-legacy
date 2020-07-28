@@ -14,7 +14,7 @@
 #include "base/files/file_path.h"
 #include "build/build_config.h"
 
-#if defined(OS_MACOSX)
+#if defined(OS_APPLE)
 #include "base/mac/scoped_mach_port.h"
 #endif
 
@@ -175,7 +175,7 @@ base::FilePath::StringType::const_pointer GetCrashpadDatabasePathImpl();
 // The implementation function for ClearReportsBetween.
 void ClearReportsBetweenImpl(time_t begin, time_t end);
 
-#if defined(OS_MACOSX)
+#if defined(OS_APPLE)
 // Captures a minidump for the process named by its |task_port| and stores it
 // in the current crash report database.
 void DumpProcessWithoutCrashing(task_t task_port);

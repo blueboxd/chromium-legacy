@@ -123,7 +123,7 @@ RootCompositorFrameSinkImpl::Create(
       begin_frame_source, task_runner.get(), max_frames_pending,
       run_all_compositor_stages_before_draw);
 
-#if !defined(OS_MACOSX)
+#if !defined(OS_APPLE)
   auto* output_surface_ptr = output_surface.get();
 #endif
 
@@ -152,7 +152,7 @@ RootCompositorFrameSinkImpl::Create(
       hw_support_for_multiple_refresh_rates,
       params->num_of_frames_to_toggle_interval));
 
-#if !defined(OS_MACOSX)
+#if !defined(OS_APPLE)
   // On Mac vsync parameter updates come from the browser process. We don't need
   // to provide a callback to the OutputSurface since it should never use it.
   if (wants_vsync_updates || impl->synthetic_begin_frame_source_) {
@@ -432,7 +432,7 @@ base::ScopedClosureRunner RootCompositorFrameSinkImpl::GetCacheBackBufferCb() {
 
 void RootCompositorFrameSinkImpl::DisplayDidReceiveCALayerParams(
     const gfx::CALayerParams& ca_layer_params) {
-#if defined(OS_MACOSX)
+#if defined(OS_APPLE)
   // If |ca_layer_params| should have content only when there exists a client
   // to send it to.
   DCHECK(ca_layer_params.is_empty || display_client_);

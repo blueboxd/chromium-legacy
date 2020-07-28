@@ -47,9 +47,9 @@
 #include "third_party/skia/include/core/SkRefCnt.h"
 #include "third_party/skia/include/core/SkTypeface.h"
 
-#if defined(OS_MACOSX)
+#if defined(OS_APPLE)
 typedef const struct __CTFont* CTFontRef;
-#endif  // defined(OS_MACOSX)
+#endif  // defined(OS_APPLE)
 
 class SkFont;
 class SkTypeface;
@@ -85,7 +85,7 @@ class PLATFORM_EXPORT FontPlatformData {
                    FontOrientation = FontOrientation::kHorizontal);
   ~FontPlatformData();
 
-#if defined(OS_MACOSX)
+#if defined(OS_APPLE)
   // Returns nullptr for FreeType backed SkTypefaces, compare
   // FontCustomPlatformData, which are used for variable fonts on Mac OS
   // <10.12. It should not return nullptr otherwise. So it allows distinguishing
@@ -126,7 +126,7 @@ class PLATFORM_EXPORT FontPlatformData {
   bool IsHashTableDeletedValue() const { return is_hash_table_deleted_value_; }
   bool FontContainsCharacter(UChar32 character);
 
-#if !defined(OS_WIN) && !defined(OS_MACOSX)
+#if !defined(OS_WIN) && !defined(OS_APPLE)
   const WebFontRenderStyle& GetFontRenderStyle() const { return style_; }
 #endif
 
@@ -135,7 +135,7 @@ class PLATFORM_EXPORT FontPlatformData {
                    const Font* = nullptr) const;
 
  private:
-#if !defined(OS_WIN) && !defined(OS_MACOSX)
+#if !defined(OS_WIN) && !defined(OS_APPLE)
   WebFontRenderStyle QuerySystemRenderStyle(const std::string& family,
                                             float text_size,
                                             SkFontStyle);
@@ -147,7 +147,7 @@ class PLATFORM_EXPORT FontPlatformData {
 #endif
 
   sk_sp<SkTypeface> typeface_;
-#if !defined(OS_WIN) && !defined(OS_MACOSX)
+#if !defined(OS_WIN) && !defined(OS_APPLE)
   std::string family_;
 #endif
 
@@ -159,7 +159,7 @@ class PLATFORM_EXPORT FontPlatformData {
   FontOrientation orientation_;
 
  private:
-#if !defined(OS_MACOSX)
+#if !defined(OS_APPLE)
   WebFontRenderStyle style_;
 #endif
 

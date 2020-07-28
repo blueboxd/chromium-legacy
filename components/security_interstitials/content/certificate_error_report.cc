@@ -20,7 +20,7 @@
 #include "net/cert/cert_verify_proc_android.h"
 #endif
 
-#if defined(OS_MACOSX)
+#if defined(OS_APPLE)
 #include "net/cert/internal/trust_store_mac.h"
 #endif
 
@@ -105,7 +105,7 @@ void AddVerifyFlagsToReport(
   }
 }
 
-#if defined(OS_MACOSX)
+#if defined(OS_APPLE)
 void AddMacTrustFlagsToReport(
     int mac_trust_flags,
     ::google::protobuf::RepeatedField<int>* report_flags) {
@@ -147,7 +147,7 @@ void AddMacPlatformDebugInfoToReport(
       report_cert_info->add_status_codes(code);
   }
 }
-#endif  // defined(OS_MACOSX)
+#endif  // defined(OS_APPLE)
 #endif  // BUILDFLAG(TRIAL_COMPARISON_CERT_VERIFIER_SUPPORTED)
 
 bool CertificateChainToString(const net::X509Certificate& cert,
@@ -217,7 +217,7 @@ CertificateErrorReport::CertificateErrorReport(
   if (!sct_list.empty())
     trial_report->set_sct_list(sct_list);
 
-#if defined(OS_MACOSX)
+#if defined(OS_APPLE)
   AddMacPlatformDebugInfoToReport(debug_info->mac_platform_debug_info,
                                   trial_report);
   AddMacTrustFlagsToReport(

@@ -9,6 +9,7 @@
 #include "base/files/scoped_temp_dir.h"
 #include "base/path_service.h"
 #include "base/win/windows_version.h"
+#include "build/build_config.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace sandbox {
@@ -21,6 +22,16 @@ namespace sandbox {
 
 namespace {
 
+#if defined(ARCH_CPU_X86_FAMILY)
+// On x86/x64 systems, nop instructions are generally 1 byte.
+static constexpr int kNopInstructionSize = 1;
+#elif defined(ARCH_CPU_ARM64)
+// On Arm systems, all instructions are 4 bytes, fixed size.
+static constexpr int kNopInstructionSize = 4;
+#else
+#error "Unsupported architecture"
+#endif
+
 DWORD CALLBACK CopyProgressRoutine(LARGE_INTEGER total_file_size,
                                    LARGE_INTEGER total_bytes_transferred,
                                    LARGE_INTEGER stream_size,
@@ -30,11 +41,9 @@ DWORD CALLBACK CopyProgressRoutine(LARGE_INTEGER total_file_size,
                                    HANDLE source_file,
                                    HANDLE destination_file,
                                    LPVOID context) {
-  __asm {
-     nop
-     nop
-     ret
-  }
+  asm("nop\n"
+      "nop\n"
+      "ret\n");
   return PROGRESS_CONTINUE;
 }
 
@@ -57,7 +66,7 @@ TEST(CFGSupportTests, MsIndirectFailure) {
   // Create a bad callback pointer to midway into the callback function. This
   // should cause a CFG violation in MS code.
   auto bad_callback_func = reinterpret_cast<ProcessCallbackRoutineType>(
-      (reinterpret_cast<uintptr_t>(CopyProgressRoutine)) + 0x1);
+      (reinterpret_cast<uintptr_t>(CopyProgressRoutine)) + kNopInstructionSize);
 
   base::ScopedTempDir temp_dir;
   ASSERT_TRUE(temp_dir.CreateUniqueTempDir());

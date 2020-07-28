@@ -16,6 +16,12 @@ class NavigationManager {
     this.group_ = DesktopNode.build(this.desktop_);
 
     /** @private {!SAChildNode} */
+    // TODO(crbug.com/1106080): It is possible for the firstChild to be a
+    // window which is occluded, for example if Switch Access is turned on
+    // when the user has several browser windows opened. We should either
+    // dynamically pick this.node_'s initial value based on an occlusion check,
+    // or ensure that we move away from occluded children as quickly as soon
+    // as they are detected using an interval set in DesktopNode.
     this.node_ = this.group_.firstChild;
 
     /** @private {!FocusHistory} */
@@ -144,7 +150,8 @@ class NavigationManager {
   static moveBackward() {
     const navigator = NavigationManager.instance;
     if (navigator.node_.isValidAndVisible()) {
-      navigator.setNode_(navigator.node_.previous);
+      NavigationManager.tryMoving(
+          navigator.node_.previous, (node) => node.previous, navigator.node_);
     } else {
       NavigationManager.moveToValidNode();
     }
@@ -156,10 +163,65 @@ class NavigationManager {
   static moveForward() {
     const navigator = NavigationManager.instance;
     if (navigator.node_.isValidAndVisible()) {
-      navigator.setNode_(navigator.node_.next);
+      NavigationManager.tryMoving(
+          navigator.node_.next, (node) => node.next, navigator.node_);
     } else {
       NavigationManager.moveToValidNode();
     }
+  }
+
+  /**
+   * Tries to move to another node, |node|, but if |node| is a window that's not
+   * in the foreground it will use |getNext| to find the next node to try.
+   * Checks against |startingNode| to ensure we don't get stuck in an infinite
+   * loop.
+   * @param {!SAChildNode} node The node to try to move into.
+   * @param {function(!SAChildNode): !SAChildNode} getNext gets the next node to
+   *     try if we cannot move to |next|. Takes |next| as a parameter.
+   * @param {!SAChildNode} startingNode The first node in the sequence. If we
+   *     loop back to this node, stop trying to move, as there are no other
+   *     nodes we can move to.
+   */
+  static tryMoving(node, getNext, startingNode) {
+    if (node == startingNode) {
+      // This should only happen if the desktop contains exactly one interesting
+      // child and all other children are windows which are occluded.
+      // Unlikely to happen since we can always access the shelf.
+      return;
+    }
+    const navigator = NavigationManager.instance;
+    const baseNode = node.automationNode;
+    if (!(node instanceof NodeWrapper) || !baseNode) {
+      navigator.setNode_(node);
+      return;
+    }
+    if (!SwitchAccessPredicate.isWindow(baseNode)) {
+      navigator.setNode_(node);
+      return;
+    }
+    const location = node.location;
+    if (!location) {
+      // Closure compiler doesn't realize we already checked isValidAndVisible
+      // before calling tryMoving, so we need to explicitly check location here
+      // so that RectHelper.center does not cause a closure error.
+      NavigationManager.moveToValidNode();
+      return;
+    }
+    const center = RectHelper.center(location);
+    // Check if the top center is visible as a proxy for occlusion. It's
+    // possible that other parts of the window are occluded, but in Chrome we
+    // can't drag windows off the top of the screen.
+    navigator.desktop_.hitTestWithReply(center.x, location.top, (hitNode) => {
+      if (AutomationUtil.isDescendantOf(
+              hitNode,
+              /** @type {!AutomationNode} */ (baseNode))) {
+        navigator.setNode_(node);
+      } else if (node.isValidAndVisible()) {
+        NavigationManager.tryMoving(getNext(node), getNext, startingNode);
+      } else {
+        NavigationManager.moveToValidNode();
+      }
+    });
   }
 
   /**

@@ -16,7 +16,7 @@
 #if defined(USE_X11)
 #include "ui/base/dragdrop/os_exchange_data_provider_x11.h"
 #endif  // defined(USE_X11)
-#elif defined(OS_MACOSX)
+#elif defined(OS_APPLE)
 #include "ui/base/dragdrop/os_exchange_data_provider_builder_mac.h"
 #elif defined(OS_WIN)
 #include "ui/base/dragdrop/os_exchange_data_provider_win.h"
@@ -58,7 +58,7 @@ OSExchangeDataProviderFactory::CreateProvider() {
 #endif  // defined(USE_X11)
   NOTREACHED();
   return nullptr;
-#elif defined(OS_MACOSX)
+#elif defined(OS_APPLE)
   return BuildOSExchangeDataProviderMac();
 #elif defined(OS_WIN)
   return std::make_unique<OSExchangeDataProviderWin>();

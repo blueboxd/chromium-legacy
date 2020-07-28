@@ -72,7 +72,7 @@
 #include "ui/wm/core/ime_util_chromeos.h"
 #endif
 
-#if defined(OS_MACOSX)
+#if defined(OS_APPLE)
 #include "ui/base/cocoa/secure_password_input.h"
 #include "ui/base/cocoa/text_services_context_menu.h"
 #endif
@@ -157,7 +157,7 @@ ui::EventDispatchDetails MockInputMethod::DispatchKeyEvent(ui::KeyEvent* key) {
 // On Mac, emulate InputMethodMac behavior for character events. Composition
 // still needs to be mocked, since it's not possible to generate test events
 // which trigger the appropriate NSResponder action messages for composition.
-#if defined(OS_MACOSX)
+#if defined(OS_APPLE)
   if (key->is_char())
     return DispatchKeyEventPostIME(key);
 #endif
@@ -271,7 +271,7 @@ class TestTextfield : public views::Textfield {
   // ui::TextInputClient overrides:
   void InsertChar(const ui::KeyEvent& e) override {
     views::Textfield::InsertChar(e);
-#if defined(OS_MACOSX)
+#if defined(OS_APPLE)
     // On Mac, characters are inserted directly rather than attempting to get a
     // unicode character from the ui::KeyEvent (which isn't always possible).
     key_received_ = true;
@@ -494,7 +494,7 @@ class TextfieldTest : public ViewsTestBase, public TextfieldController {
 
   // True if native Mac keystrokes should be used (to avoid ifdef litter).
   bool TestingNativeMac() {
-#if defined(OS_MACOSX)
+#if defined(OS_APPLE)
     return true;
 #else
     return false;
@@ -569,7 +569,7 @@ class TextfieldTest : public ViewsTestBase, public TextfieldController {
             std::vector<uint8_t>(ui::kPropertyFromVKSize);
         event.SetProperties(properties);
       }
-#if defined(OS_MACOSX)
+#if defined(OS_APPLE)
       event_generator_->Dispatch(&event);
 #else
       input_method_->DispatchKeyEvent(&event);
@@ -714,7 +714,7 @@ class TextfieldTest : public ViewsTestBase, public TextfieldController {
 
     int menu_index = 0;
 
-#if defined(OS_MACOSX)
+#if defined(OS_APPLE)
     if (textfield_has_selection) {
       EXPECT_TRUE(menu->IsEnabledAt(menu_index++ /* Look Up "Selection" */));
       EXPECT_TRUE(menu->IsEnabledAt(menu_index++ /* Separator */));
@@ -1002,7 +1002,7 @@ TEST_F(TextfieldTest, KeyTestControlModifier) {
 }
 #endif
 
-#if defined(OS_WIN) || defined(OS_MACOSX)
+#if defined(OS_WIN) || defined(OS_APPLE)
 #define MAYBE_KeysWithModifiersTest KeysWithModifiersTest
 #else
 // TODO(crbug.com/645104): Implement keyboard layout changing for other
@@ -1086,7 +1086,7 @@ TEST_F(TextfieldTest, ControlAndSelectTest) {
   SendHomeEvent(true);
 
 // On Mac, the existing selection should be extended.
-#if defined(OS_MACOSX)
+#if defined(OS_APPLE)
   EXPECT_STR_EQ("ZERO two three", textfield_->GetSelectedText());
 #else
   EXPECT_STR_EQ("ZERO ", textfield_->GetSelectedText());
@@ -1117,7 +1117,7 @@ TEST_F(TextfieldTest, WordSelection) {
 
 // On Mac, the selection should reduce to a caret when the selection direction
 // changes for a word selection.
-#if defined(OS_MACOSX)
+#if defined(OS_APPLE)
   EXPECT_EQ(gfx::Range(6), textfield_->GetSelectedRange());
 #else
   EXPECT_STR_EQ("345", textfield_->GetSelectedText());
@@ -1125,7 +1125,7 @@ TEST_F(TextfieldTest, WordSelection) {
 #endif
 
   SendWordEvent(ui::VKEY_LEFT, true);
-#if defined(OS_MACOSX)
+#if defined(OS_APPLE)
   EXPECT_STR_EQ("345", textfield_->GetSelectedText());
 #else
   EXPECT_STR_EQ("12 345", textfield_->GetSelectedText());
@@ -1150,7 +1150,7 @@ TEST_F(TextfieldTest, LineSelection) {
   // Select line towards left. On Mac, the existing selection should be extended
   // to cover the whole line.
   SendHomeEvent(true);
-#if defined(OS_MACOSX)
+#if defined(OS_APPLE)
   EXPECT_EQ(textfield_->GetText(), textfield_->GetSelectedText());
 #else
   EXPECT_STR_EQ("12 345", textfield_->GetSelectedText());
@@ -1159,7 +1159,7 @@ TEST_F(TextfieldTest, LineSelection) {
 
   // Select line towards right.
   SendEndEvent(true);
-#if defined(OS_MACOSX)
+#if defined(OS_APPLE)
   EXPECT_EQ(textfield_->GetText(), textfield_->GetSelectedText());
 #else
   EXPECT_STR_EQ("67 89", textfield_->GetSelectedText());
@@ -1176,7 +1176,7 @@ TEST_F(TextfieldTest, MoveUpDownAndModifySelection) {
   // commands.
   SendKeyEvent(ui::VKEY_UP);
   EXPECT_TRUE(textfield_->key_received());
-#if defined(OS_MACOSX)
+#if defined(OS_APPLE)
   EXPECT_TRUE(textfield_->key_handled());
   EXPECT_EQ(gfx::Range(0), textfield_->GetSelectedRange());
 #else
@@ -1186,7 +1186,7 @@ TEST_F(TextfieldTest, MoveUpDownAndModifySelection) {
 
   SendKeyEvent(ui::VKEY_DOWN);
   EXPECT_TRUE(textfield_->key_received());
-#if defined(OS_MACOSX)
+#if defined(OS_APPLE)
   EXPECT_TRUE(textfield_->key_handled());
   EXPECT_EQ(gfx::Range(11), textfield_->GetSelectedRange());
 #else
@@ -1216,7 +1216,7 @@ TEST_F(TextfieldTest, MovePageUpDownAndModifySelection) {
 
 // MOVE_PAGE_[UP/DOWN] and the associated selection commands should only be
 // enabled on Mac.
-#if defined(OS_MACOSX)
+#if defined(OS_APPLE)
   textfield_->SetText(ASCIIToUTF16("12 34567 89"));
   textfield_->SetEditableSelectionRange(gfx::Range(6));
 
@@ -1268,7 +1268,7 @@ TEST_F(TextfieldTest, MoveParagraphForwardBackwardAndModifySelection) {
       ui::TextEditCommand::MOVE_PARAGRAPH_BACKWARD_AND_MODIFY_SELECTION);
 // On Mac, the selection should reduce to a caret when the selection direction
 // is reversed for MOVE_PARAGRAPH_[FORWARD/BACKWARD]_AND_MODIFY_SELECTION.
-#if defined(OS_MACOSX)
+#if defined(OS_APPLE)
   EXPECT_EQ(gfx::Range(6), textfield_->GetSelectedRange());
 #else
   EXPECT_EQ(gfx::Range(6, 0), textfield_->GetSelectedRange());
@@ -1280,7 +1280,7 @@ TEST_F(TextfieldTest, MoveParagraphForwardBackwardAndModifySelection) {
 
   test_api_->ExecuteTextEditCommand(
       ui::TextEditCommand::MOVE_PARAGRAPH_FORWARD_AND_MODIFY_SELECTION);
-#if defined(OS_MACOSX)
+#if defined(OS_APPLE)
   EXPECT_EQ(gfx::Range(6), textfield_->GetSelectedRange());
 #else
   EXPECT_EQ(gfx::Range(6, 11), textfield_->GetSelectedRange());
@@ -1490,7 +1490,7 @@ TEST_F(TextfieldTest, TextInputType_InsertionTest) {
   SendKeyEvent(ui::VKEY_A);
   EXPECT_EQ(-1, textfield_->GetPasswordCharRevealIndex());
   SendKeyEvent(kHebrewLetterSamekh, ui::EF_NONE, true /* from_vk */);
-#if !defined(OS_MACOSX)
+#if !defined(OS_APPLE)
   // Don't verifies the password character reveal on MacOS, because on MacOS,
   // the text insertion is not done through TextInputClient::InsertChar().
   EXPECT_EQ(1, textfield_->GetPasswordCharRevealIndex());
@@ -2435,7 +2435,7 @@ TEST_F(TextfieldTest, UndoRedoTest) {
 // Ctrl+Y is bound to "Yank" and Cmd+Y is bound to "Show full history". So, on
 // Mac, Cmd+Shift+Z is sent for the tests above and the Ctrl+Y test below is
 // skipped.
-#if !defined(OS_MACOSX)
+#if !defined(OS_APPLE)
 
 // Test that Ctrl+Y works for Redo, as well as Ctrl+Shift+Z.
 TEST_F(TextfieldTest, RedoWithCtrlY) {
@@ -2452,11 +2452,11 @@ TEST_F(TextfieldTest, RedoWithCtrlY) {
   EXPECT_STR_EQ("a", textfield_->GetText());
 }
 
-#endif  // !defined(OS_MACOSX)
+#endif  // !defined(OS_APPLE)
 
 // Non-Mac platforms don't have a key binding for Yank. Since this test is only
 // run on Mac, it uses some Mac specific key bindings.
-#if defined(OS_MACOSX)
+#if defined(OS_APPLE)
 
 TEST_F(TextfieldTest, Yank) {
   InitTextfields(2);
@@ -2515,7 +2515,7 @@ TEST_F(TextfieldTest, Yank) {
   EXPECT_STR_EQ("efabefeef", textfield_->GetText());
 }
 
-#endif  // defined(OS_MACOSX)
+#endif  // defined(OS_APPLE)
 
 TEST_F(TextfieldTest, CutCopyPaste) {
   InitTextfield();
@@ -3549,7 +3549,7 @@ TEST_F(TextfieldTouchSelectionTest, TouchSelectionInUnfocusableTextfield) {
 }
 
 // No touch on desktop Mac. Tracked in http://crbug.com/445520.
-#if defined(OS_MACOSX)
+#if defined(OS_APPLE)
 #define MAYBE_TapOnSelection DISABLED_TapOnSelection
 #else
 #define MAYBE_TapOnSelection TapOnSelection
@@ -3825,7 +3825,7 @@ TEST_F(TextfieldTest, EmojiItem_FieldWithText) {
   InitTextfield();
   EXPECT_TRUE(textfield_->context_menu_controller());
 
-#if defined(OS_MACOSX)
+#if defined(OS_APPLE)
   // On Mac, when there is text, the "Look up" item (+ separator) takes the top
   // position, and emoji comes after.
   constexpr int kExpectedEmojiIndex = 2;
@@ -3845,7 +3845,7 @@ TEST_F(TextfieldTest, EmojiItem_FieldWithText) {
                 l10n_util::GetStringUTF16(IDS_CONTENT_CONTEXT_EMOJI));
 }
 
-#if defined(OS_MACOSX)
+#if defined(OS_APPLE)
 // Tests to see if the BiDi submenu items are updated correctly when the
 // textfield's text direction is changed.
 TEST_F(TextfieldTest, TextServicesContextMenuTextDirectionTest) {
@@ -3912,7 +3912,7 @@ TEST_F(TextfieldTest, SecurePasswordInput) {
   textfield_->OnBlur();
   EXPECT_FALSE(ui::ScopedPasswordInputEnabler::IsPasswordInputEnabled());
 }
-#endif  // defined(OS_MACOSX)
+#endif  // defined(OS_APPLE)
 
 TEST_F(TextfieldTest, AccessibilitySelectionEvents) {
   const std::string& kText = "abcdef";

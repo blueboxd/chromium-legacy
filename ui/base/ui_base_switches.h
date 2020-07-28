@@ -12,7 +12,7 @@
 
 namespace switches {
 
-#if defined(OS_MACOSX) && !defined(OS_IOS)
+#if defined(OS_MAC)
 COMPONENT_EXPORT(UI_BASE) extern const char kDisableAVFoundationOverlays[];
 COMPONENT_EXPORT(UI_BASE) extern const char kDisableMacOverlays[];
 COMPONENT_EXPORT(UI_BASE) extern const char kDisableModalAnimations[];

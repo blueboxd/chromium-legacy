@@ -41,9 +41,9 @@
 
 #if BUILDFLAG(PRINT_MEDIA_L10N_ENABLED)
 #include "components/printing/browser/print_media_l10n.h"
-#if defined(OS_MACOSX)
+#if defined(OS_APPLE)
 #include "printing/printing_features.h"
-#endif  // defined(OS_MACOSX)
+#endif  // defined(OS_APPLE)
 #endif  // BUILDFLAG(PRINT_MEDIA_L10N_ENABLED)
 
 namespace printing {
@@ -115,7 +115,7 @@ base::Value GetPrinterCapabilitiesOnBlockingTaskRunner(
 
 #if BUILDFLAG(PRINT_MEDIA_L10N_ENABLED)
   bool populate_paper_display_names = true;
-#if defined(OS_MACOSX)
+#if defined(OS_APPLE)
   // Paper display name localization requires standardized vendor ID names
   // populated by CUPS IPP. If the CUPS IPP backend is not enabled, localization
   // will not properly occur.

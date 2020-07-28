@@ -346,7 +346,7 @@ int AdjustedFocusRingOffset(int offset) {
   // need to call this method.
   DCHECK(!::features::IsFormControlsRefreshEnabled());
 
-#if defined(OS_MACOSX)
+#if defined(OS_APPLE)
   return offset + 2;
 #else
   return 0;
@@ -441,7 +441,7 @@ void GraphicsContext::DrawFocusRing(const Vector<IntRect>& rects,
                                     float min_border_width,
                                     const Color& color,
                                     WebColorScheme color_scheme) {
-#if defined(OS_MACOSX)
+#if defined(OS_APPLE)
   const Color& inner_color = color_scheme == WebColorScheme::kDark
                                  ? SkColorSetRGB(0x99, 0xC8, 0xFF)
                                  : color;

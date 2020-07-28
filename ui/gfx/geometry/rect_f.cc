@@ -15,7 +15,7 @@
 
 #if defined(OS_IOS)
 #include <CoreGraphics/CoreGraphics.h>
-#elif defined(OS_MACOSX)
+#elif defined(OS_APPLE)
 #include <ApplicationServices/ApplicationServices.h>
 #endif
 
@@ -32,7 +32,7 @@ static void AdjustAlongAxis(float dst_origin,
     *origin = std::min(dst_origin + dst_size, *origin + *size) - *size;
 }
 
-#if defined(OS_MACOSX) || defined(OS_IOS)
+#if defined(OS_APPLE)
 RectF::RectF(const CGRect& r)
     : origin_(r.origin.x, r.origin.y), size_(r.size.width, r.size.height) {
 }

@@ -1549,7 +1549,7 @@ int ChromeBrowserMainParts::PreMainMessageLoopRunImpl() {
 
   // Two different types of hang detection cannot run at the same time or they
   // would interfere with each other.
-  if (!base::FeatureList::IsEnabled(base::HangWatcher::kEnableHangWatcher)) {
+  if (!base::HangWatcher::IsEnabled()) {
     // Start watching all browser threads for responsiveness.
     ThreadWatcherList::StartWatchingAll(parsed_command_line());
   }

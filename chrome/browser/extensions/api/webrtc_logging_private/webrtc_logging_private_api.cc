@@ -261,7 +261,8 @@ WebrtcLoggingPrivateSetMetaDataFunction::Run() {
   for (const MetaDataEntry& entry : params->meta_data)
     (*meta_data)[entry.key] = entry.value;
 
-  webrtc_logging_controller->SetMetaData(std::move(meta_data), callback);
+  webrtc_logging_controller->SetMetaData(std::move(meta_data),
+                                         std::move(callback));
   return RespondLater();
 }
 
@@ -276,7 +277,7 @@ ExtensionFunction::ResponseAction WebrtcLoggingPrivateStartFunction::Run() {
   if (!webrtc_logging_controller)
     return RespondNow(Error(std::move(error)));
 
-  webrtc_logging_controller->StartLogging(callback);
+  webrtc_logging_controller->StartLogging(std::move(callback));
   return RespondLater();
 }
 
@@ -310,7 +311,7 @@ ExtensionFunction::ResponseAction WebrtcLoggingPrivateStopFunction::Run() {
   if (!webrtc_logging_controller)
     return RespondNow(Error(std::move(error)));
 
-  webrtc_logging_controller->StopLogging(callback);
+  webrtc_logging_controller->StopLogging(std::move(callback));
   return RespondLater();
 }
 
@@ -328,7 +329,7 @@ ExtensionFunction::ResponseAction WebrtcLoggingPrivateStoreFunction::Run() {
   const std::string local_log_id(HashIdWithOrigin(params->security_origin,
                                                   params->log_id));
 
-  webrtc_logging_controller->StoreLog(local_log_id, callback);
+  webrtc_logging_controller->StoreLog(local_log_id, std::move(callback));
   return RespondLater();
 }
 
@@ -350,7 +351,7 @@ WebrtcLoggingPrivateUploadStoredFunction::Run() {
   const std::string local_log_id(HashIdWithOrigin(params->security_origin,
                                                   params->log_id));
 
-  logging_controller->UploadStoredLog(local_log_id, callback);
+  logging_controller->UploadStoredLog(local_log_id, std::move(callback));
   return RespondLater();
 }
 
@@ -367,7 +368,7 @@ ExtensionFunction::ResponseAction WebrtcLoggingPrivateUploadFunction::Run() {
   WebRtcLoggingController::UploadDoneCallback callback =
       base::Bind(&WebrtcLoggingPrivateUploadFunction::FireCallback, this);
 
-  logging_controller->UploadLog(callback);
+  logging_controller->UploadLog(std::move(callback));
   return RespondLater();
 }
 
@@ -382,7 +383,7 @@ ExtensionFunction::ResponseAction WebrtcLoggingPrivateDiscardFunction::Run() {
   if (!webrtc_logging_controller)
     return RespondNow(Error(std::move(error)));
 
-  webrtc_logging_controller->DiscardLog(callback);
+  webrtc_logging_controller->DiscardLog(std::move(callback));
   return RespondLater();
 }
 
@@ -415,7 +416,7 @@ WebrtcLoggingPrivateStartRtpDumpFunction::Run() {
   WebRtcLoggingController::GenericDoneCallback callback =
       base::Bind(&WebrtcLoggingPrivateStartRtpDumpFunction::FireCallback, this);
 
-  webrtc_logging_controller->StartRtpDump(type, callback);
+  webrtc_logging_controller->StartRtpDump(type, std::move(callback));
   return RespondLater();
 }
 
@@ -448,7 +449,7 @@ WebrtcLoggingPrivateStopRtpDumpFunction::Run() {
   WebRtcLoggingController::GenericDoneCallback callback =
       base::Bind(&WebrtcLoggingPrivateStopRtpDumpFunction::FireCallback, this);
 
-  webrtc_logging_controller->StopRtpDump(type, callback);
+  webrtc_logging_controller->StopRtpDump(type, std::move(callback));
   return RespondLater();
 }
 

@@ -2294,7 +2294,7 @@ TEST_F(ViewTest, HandleAccelerator) {
 // TODO(themblsha): Bring this up on non-Mac platforms. It currently fails
 // because TestView::AcceleratorPressed() is not called. See
 // http://crbug.com/667757.
-#if defined(OS_MACOSX)
+#if defined(OS_APPLE)
 // Test that BridgedContentView correctly handles Accelerator key events when
 // subject to OS event dispatch.
 TEST_F(ViewTest, ActivateAcceleratorOnMac) {
@@ -2341,7 +2341,7 @@ TEST_F(ViewTest, ActivateAcceleratorOnMac) {
 
 // TODO(crbug.com/667757): these tests were initially commented out when getting
 // aura to run. Figure out if still valuable and either nuke or fix.
-#if defined(OS_MACOSX)
+#if defined(OS_APPLE)
 TEST_F(ViewTest, ActivateAccelerator) {
   ui::Accelerator return_accelerator(ui::VKEY_RETURN, ui::EF_NONE);
   TestViewWidget test_widget(CreateParams(Widget::InitParams::TYPE_POPUP),

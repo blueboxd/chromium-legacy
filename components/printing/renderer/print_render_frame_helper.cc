@@ -118,7 +118,7 @@ void ExecuteScript(blink::WebLocalFrame* frame,
 }
 
 int GetDPI(const PrintMsg_Print_Params& print_params) {
-#if defined(OS_MACOSX)
+#if defined(OS_APPLE)
   // On Mac, the printable area is in points, don't do any scaling based on DPI.
   return kPointsPerInch;
 #else
@@ -126,7 +126,7 @@ int GetDPI(const PrintMsg_Print_Params& print_params) {
   // prevent bad quality print jobs on rectantular DPI printers.
   return static_cast<int>(
       std::max(print_params.dpi.width(), print_params.dpi.height()));
-#endif  // defined(OS_MACOSX)
+#endif  // defined(OS_APPLE)
 }
 
 bool PrintMsg_Print_Params_IsValid(const PrintMsg_Print_Params& params) {
@@ -316,7 +316,7 @@ void ComputeWebKitPrintParamsInDesiredDpi(
     webkit_print_params->scale_factor =
         static_cast<int>(print_params.scale_factor * 100);
 
-#if defined(OS_MACOSX)
+#if defined(OS_APPLE)
     // For Mac, GetDPI() returns a value that avoids DPI-based scaling. This is
     // correct except when rastering PDFs, which uses |printer_dpi|, and the
     // value for |printer_dpi| is too low. Adjust that here.
@@ -1959,7 +1959,7 @@ bool PrintRenderFrameHelper::PrintPagesNative(blink::WebLocalFrame* frame,
   PrintHostMsg_DidPrintDocument_Params page_params;
   gfx::Size* page_size_in_dpi;
   gfx::Rect* content_area_in_dpi;
-#if defined(OS_MACOSX) || defined(OS_WIN)
+#if defined(OS_APPLE) || defined(OS_WIN)
   page_size_in_dpi = &page_params.page_size;
   content_area_in_dpi = &page_params.content_area;
 #else
@@ -2229,7 +2229,7 @@ bool PrintRenderFrameHelper::RenderPagesForPrint(blink::WebLocalFrame* frame,
   return true;
 }
 
-#if !defined(OS_MACOSX)
+#if !defined(OS_APPLE)
 void PrintRenderFrameHelper::PrintPageInternal(
     const PrintMsg_Print_Params& params,
     int page_number,
@@ -2307,7 +2307,7 @@ void PrintRenderFrameHelper::PrintPageInternal(
   bool ret = metafile->FinishPage();
   DCHECK(ret);
 }
-#endif  // !defined(OS_MACOSX)
+#endif  // !defined(OS_APPLE)
 
 #if BUILDFLAG(ENABLE_PRINT_PREVIEW)
 void PrintRenderFrameHelper::ShowScriptedPrintPreview() {

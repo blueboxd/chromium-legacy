@@ -362,11 +362,11 @@ class AX_EXPORT AXNode final {
   // Get the node ids that represent rows in a table.
   std::vector<AXNode::AXID> GetTableRowNodeIds() const;
 
-#if defined(OS_MACOSX)
+#if defined(OS_APPLE)
   // Table column-like nodes. These nodes are only present on macOS.
   bool IsTableColumn() const;
   base::Optional<int> GetTableColColIndex() const;
-#endif  // defined(OS_MACOSX)
+#endif  // defined(OS_APPLE)
 
   // Table cell-like nodes.
   bool IsTableCellOrHeader() const;

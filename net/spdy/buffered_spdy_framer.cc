@@ -49,7 +49,8 @@ void BufferedSpdyFramer::set_debug_visitor(
 }
 
 void BufferedSpdyFramer::OnError(
-    http2::Http2DecoderAdapter::SpdyFramerError spdy_framer_error) {
+    http2::Http2DecoderAdapter::SpdyFramerError spdy_framer_error,
+    std::string /*detailed_error*/) {
   visitor_->OnError(spdy_framer_error);
 }
 

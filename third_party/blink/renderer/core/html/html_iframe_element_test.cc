@@ -403,4 +403,20 @@ TEST_F(HTMLIFrameElementSimTest, AllowAttributeParsingError) {
       << ConsoleMessages().front();
 }
 
+TEST_F(HTMLIFrameElementSimTest, CommaSeparatorIsCounted) {
+  EXPECT_FALSE(
+      GetDocument().Loader()->GetUseCounterHelper().HasRecordedMeasurement(
+          WebFeature::kCommaSeparatorInAllowAttribute));
+  SimRequest main_resource("https://example.com", "text/html");
+  LoadURL("https://example.com");
+  main_resource.Complete(R"(
+    <iframe
+      allow="fullscreen, geolocation"></iframe>
+  )");
+
+  EXPECT_TRUE(
+      GetDocument().Loader()->GetUseCounterHelper().HasRecordedMeasurement(
+          WebFeature::kCommaSeparatorInAllowAttribute));
+}
+
 }  // namespace blink

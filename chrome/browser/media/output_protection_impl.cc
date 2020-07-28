@@ -42,9 +42,9 @@ void OutputProtectionImpl::QueryStatus(QueryStatusCallback callback) {
   DVLOG(2) << __func__;
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
 
-  GetProxy()->QueryStatus(base::Bind(&OutputProtectionImpl::OnQueryStatusResult,
-                                     weak_factory_.GetWeakPtr(),
-                                     base::Passed(&callback)));
+  GetProxy()->QueryStatus(
+      base::BindOnce(&OutputProtectionImpl::OnQueryStatusResult,
+                     weak_factory_.GetWeakPtr(), base::Passed(&callback)));
 }
 
 void OutputProtectionImpl::EnableProtection(uint32_t desired_protection_mask,
@@ -54,8 +54,8 @@ void OutputProtectionImpl::EnableProtection(uint32_t desired_protection_mask,
 
   GetProxy()->EnableProtection(
       desired_protection_mask,
-      base::Bind(&OutputProtectionImpl::OnEnableProtectionResult,
-                 weak_factory_.GetWeakPtr(), base::Passed(&callback)));
+      base::BindOnce(&OutputProtectionImpl::OnEnableProtectionResult,
+                     weak_factory_.GetWeakPtr(), base::Passed(&callback)));
 }
 
 void OutputProtectionImpl::OnQueryStatusResult(QueryStatusCallback callback,

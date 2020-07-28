@@ -39,7 +39,7 @@ std::string GetSystemString() {
   system = "FREEBSD ";
 #elif defined(OS_OPENBSD)
   system = "OPENBSD ";
-#elif defined(OS_MACOSX)
+#elif defined(OS_APPLE)
   system = "MAC ";
 #endif
   return system;

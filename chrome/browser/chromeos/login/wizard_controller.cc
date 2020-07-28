@@ -640,6 +640,9 @@ void WizardController::ShowLoginScreen() {
   if (login_screen_started_)
     return;
 
+  // Landed on the login screen. No longer skipping enrollment for tests.
+  wizard_context_->skip_non_forced_enrollment_for_tests = false;
+
   if (!time_eula_accepted_.is_null()) {
     base::TimeDelta delta = base::TimeTicks::Now() - time_eula_accepted_;
     UMA_HISTOGRAM_MEDIUM_TIMES("OOBE.EULAToSignInTime", delta);
@@ -808,6 +811,7 @@ void WizardController::OnActiveDirectoryPasswordChangeScreenExit() {
 
 void WizardController::SkipToLoginForTesting() {
   VLOG(1) << "SkipToLoginForTesting.";
+  wizard_context_->skip_non_forced_enrollment_for_tests = true;
   StartupUtils::MarkEulaAccepted();
 
   PerformPostEulaActions();
@@ -1021,6 +1025,7 @@ void WizardController::OnEnrollmentScreenExit(EnrollmentScreen::Result result) {
 
   switch (result) {
     case EnrollmentScreen::Result::COMPLETED:
+    case EnrollmentScreen::Result::SKIPPED_FOR_TESTS:
       OnEnrollmentDone();
       break;
     case EnrollmentScreen::Result::BACK:

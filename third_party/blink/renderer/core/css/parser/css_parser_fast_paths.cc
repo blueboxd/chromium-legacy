@@ -882,7 +882,7 @@ bool CSSParserFastPaths::IsValidKeywordPropertyAndValue(
       return value_id == CSSValueID::kNowrap || value_id == CSSValueID::kWrap ||
              value_id == CSSValueID::kWrapReverse;
     case CSSPropertyID::kHyphens:
-#if defined(OS_ANDROID) || defined(OS_MACOSX)
+#if defined(OS_ANDROID) || defined(OS_APPLE)
       return value_id == CSSValueID::kAuto || value_id == CSSValueID::kNone ||
              value_id == CSSValueID::kManual;
 #else

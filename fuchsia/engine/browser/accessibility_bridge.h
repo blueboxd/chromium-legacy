@@ -31,6 +31,8 @@ class WebContents;
 // The lifetime of an instance of AccessibilityBridge is the same as that of a
 // View created by FrameImpl. This class refers to the View via the
 // caller-supplied ViewRef.
+// If |tree_ptr_| gets disconnected, it will cause the FrameImpl that owns
+// |this| to close, which will also destroy |this|.
 class WEB_ENGINE_EXPORT AccessibilityBridge
     : public content::WebContentsObserver,
       public fuchsia::accessibility::semantics::SemanticListener,
@@ -40,8 +42,12 @@ class WEB_ENGINE_EXPORT AccessibilityBridge
   AccessibilityBridge(
       fuchsia::accessibility::semantics::SemanticsManagerPtr semantics_manager,
       fuchsia::ui::views::ViewRef view_ref,
-      content::WebContents* web_contents);
+      content::WebContents* web_contents,
+      base::OnceCallback<void(zx_status_t)> on_disconnect_callback);
   ~AccessibilityBridge() final;
+
+  AccessibilityBridge(const AccessibilityBridge&) = delete;
+  AccessibilityBridge& operator=(const AccessibilityBridge&) = delete;
 
   void set_handle_actions_for_test(bool handle) {
     handle_actions_for_test_ = handle;
@@ -130,8 +136,6 @@ class WEB_ENGINE_EXPORT AccessibilityBridge
   int32_t root_id_ = 0;
 
   bool handle_actions_for_test_ = true;
-
-  DISALLOW_COPY_AND_ASSIGN(AccessibilityBridge);
 };
 
 #endif  // FUCHSIA_ENGINE_BROWSER_ACCESSIBILITY_BRIDGE_H_

@@ -734,22 +734,6 @@ public class TabImpl implements Tab, TabObscuringHandler.Observer {
     }
 
     /**
-     * This is used to change how this tab related to other tabs.
-     * @param rootId New relationship id to be set.
-     */
-    public void setRootId(int rootId) {
-        // TODO(crbug.com/1091802) - move setRootId() out of TabImpl as well and use
-        // CriticalPersistedTabData UserData interface
-        CriticalPersistedTabData criticalPersistedTabData = CriticalPersistedTabData.from(this);
-        if (rootId == criticalPersistedTabData.getRootId()) return;
-        criticalPersistedTabData.setRootId(rootId);
-        mIsTabStateDirty = true;
-        for (TabObserver observer : mObservers) {
-            observer.onRootIdChanged(this, rootId);
-        }
-    }
-
-    /**
      * @param tab {@link Tab} instance being checked.
      * @return Whether the tab is detached from any Activity and its {@link WindowAndroid}.
      * Certain functionalities will not work until it is attached to an activity
@@ -772,10 +756,7 @@ public class TabImpl implements Tab, TabObscuringHandler.Observer {
         return mIsTabStateDirty;
     }
 
-    /**
-     * Set whether the TabState representing this Tab has been updated.
-     * @param isDirty Whether the Tab's state has changed.
-     */
+    @Override
     public void setIsTabStateDirty(boolean isDirty) {
         mIsTabStateDirty = isDirty;
     }

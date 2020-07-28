@@ -39,7 +39,7 @@ namespace ui_controls {
 // tests.
 void EnableUIControls();
 
-#if defined(OS_MACOSX)
+#if defined(OS_APPLE)
 bool IsUIControlsEnabled();
 #endif
 
@@ -135,7 +135,7 @@ class UIControlsAura;
 void InstallUIControlsAura(UIControlsAura* instance);
 #endif
 
-#if defined(OS_MACOSX)
+#if defined(OS_APPLE)
 // Returns true when tests need to use extra Tab and Shift-Tab key events
 // to traverse to the desired item; because the application is configured to
 // traverse more elements for accessibility reasons.

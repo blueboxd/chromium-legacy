@@ -116,7 +116,7 @@ FontCache::FontCache()
 #endif
 }
 
-#if !defined(OS_MACOSX)
+#if !defined(OS_APPLE)
 FontPlatformData* FontCache::SystemFontPlatformData(
     const FontDescription& font_description) {
   const AtomicString& family = FontCache::SystemFontFamily();
@@ -142,7 +142,7 @@ FontPlatformData* FontCache::GetFontPlatformData(
     PlatformInit();
   }
 
-#if !defined(OS_MACOSX)
+#if !defined(OS_APPLE)
   if (creation_params.CreationType() == kCreateFontByFamily &&
       creation_params.Family() == font_family_names::kSystemUi) {
     return SystemFontPlatformData(font_description);
@@ -241,7 +241,7 @@ std::unique_ptr<FontPlatformData> FontCache::ScaleFontPlatformData(
     float font_size) {
   TRACE_EVENT0("fonts,ui", "FontCache::ScaleFontPlatformData");
 
-#if defined(OS_MACOSX)
+#if defined(OS_APPLE)
   return CreateFontPlatformData(font_description, creation_params, font_size);
 #else
   return std::make_unique<FontPlatformData>(font_platform_data, font_size);

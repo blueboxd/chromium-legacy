@@ -12,6 +12,8 @@ import org.chromium.chrome.browser.tab.EmptyTabObserver;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.tab.TabCreationState;
 import org.chromium.chrome.browser.tab.TabLaunchType;
+import org.chromium.chrome.browser.tab.state.CriticalPersistedTabData;
+import org.chromium.chrome.browser.tab.state.CriticalPersistedTabDataObserver;
 import org.chromium.content_public.browser.UiThreadTaskTraits;
 
 import java.util.ArrayList;
@@ -20,7 +22,8 @@ import java.util.List;
 /**
  * Observer of tab changes for all tabs owned by a {@link TabModelSelector}.
  */
-public class TabModelSelectorTabObserver extends EmptyTabObserver {
+public class TabModelSelectorTabObserver
+        extends EmptyTabObserver implements CriticalPersistedTabDataObserver {
     private final TabModelSelector mTabModelSelector;
     private final TabModelSelectorTabModelObserver mTabModelObserver;
     private final SparseArray<Tab> mTabsToClose = new SparseArray<>();
@@ -44,6 +47,7 @@ public class TabModelSelectorTabObserver extends EmptyTabObserver {
                     Tab tab, @TabLaunchType int type, @TabCreationState int creationState) {
                 // This observer is automatically removed by tab when it is destroyed.
                 tab.addObserver(TabModelSelectorTabObserver.this);
+                CriticalPersistedTabData.from(tab).addObserver(TabModelSelectorTabObserver.this);
                 onTabRegistered(tab);
             }
 
@@ -70,8 +74,11 @@ public class TabModelSelectorTabObserver extends EmptyTabObserver {
             public void tabRemoved(Tab tab) {
                 // Post the removal of the observer so that other tab events are notified
                 // before removing the tab observer (e.g. detach tab from activity).
-                PostTask.postTask(UiThreadTaskTraits.DEFAULT,
-                        () -> tab.removeObserver(TabModelSelectorTabObserver.this));
+                PostTask.postTask(UiThreadTaskTraits.DEFAULT, () -> {
+                    tab.removeObserver(TabModelSelectorTabObserver.this);
+                    CriticalPersistedTabData.from(tab).removeObserver(
+                            TabModelSelectorTabObserver.this);
+                });
                 onTabUnregistered(tab);
             }
 
@@ -85,6 +92,8 @@ public class TabModelSelectorTabObserver extends EmptyTabObserver {
                     for (int j = 0; j < comprehensiveTabList.getCount(); j++) {
                         Tab tab = comprehensiveTabList.getTabAt(j);
                         tab.addObserver(TabModelSelectorTabObserver.this);
+                        CriticalPersistedTabData.from(tab).addObserver(
+                                TabModelSelectorTabObserver.this);
                         tabs.add(tab);
                     }
                 }
@@ -128,6 +137,7 @@ public class TabModelSelectorTabObserver extends EmptyTabObserver {
             for (int j = 0; j < comprehensiveTabList.getCount(); j++) {
                 Tab tab = comprehensiveTabList.getTabAt(j);
                 tab.removeObserver(this);
+                CriticalPersistedTabData.from(tab).removeObserver(this);
                 onTabUnregistered(tab);
             }
         }

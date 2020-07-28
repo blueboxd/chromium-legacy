@@ -52,7 +52,7 @@ TEST_F(UpdaterStateTest, Serialize) {
 
   // The name of the Windows updater for Chrome.
   EXPECT_STREQ("Omaha", UpdaterState::GetState(false)->at("name").c_str());
-#elif defined(OS_MACOSX) && !defined(OS_IOS)
+#elif defined(OS_MAC)
   // MacOS does not serialize "ismachine".
   EXPECT_EQ(0UL, UpdaterState::GetState(false)->count("ismachine"));
   EXPECT_EQ(0UL, UpdaterState::GetState(true)->count("ismachine"));

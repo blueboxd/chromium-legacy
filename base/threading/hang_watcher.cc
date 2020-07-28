@@ -14,6 +14,7 @@
 #include "base/debug/crash_logging.h"
 #include "base/debug/dump_without_crashing.h"
 #include "base/feature_list.h"
+#include "base/metrics/field_trial_params.h"
 #include "base/no_destructor.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/synchronization/lock.h"
@@ -28,14 +29,21 @@
 namespace base {
 
 // static
-constexpr base::Feature HangWatcher::kEnableHangWatcher{
-    "EnableHangWatcher", base::FEATURE_DISABLED_BY_DEFAULT};
+constexpr base::Feature kEnableHangWatcher{"EnableHangWatcher",
+                                           base::FEATURE_DISABLED_BY_DEFAULT};
+constexpr base::FeatureParam<bool> kHangWatchIOThread{
+    &kEnableHangWatcher, "hang_watch_io_thread", false};
+constexpr base::FeatureParam<bool> kHangWatchThreadPool{
+    &kEnableHangWatcher, "hang_watch_threadpool", false};
 
 constexpr base::TimeDelta HangWatchScope::kDefaultHangWatchTime =
     base::TimeDelta::FromSeconds(10);
 
 namespace {
 HangWatcher* g_instance = nullptr;
+std::atomic<bool> g_use_hang_watcher{false};
+std::atomic<bool> g_hang_watch_workers{false};
+std::atomic<bool> g_hang_watch_io_thread{false};
 }
 
 constexpr const char* kThreadName = "HangWatcher";
@@ -104,6 +112,38 @@ HangWatchScope::~HangWatchScope() {
   current_hang_watch_state->SetDeadline(previous_deadline_);
   // TODO(crbug.com/1034046): Log when a HangWatchScope exits after its deadline
   // and that went undetected by the HangWatcher.
+}
+
+void HangWatcher::InitializeOnMainThread() {
+  DCHECK(!g_use_hang_watcher);
+  DCHECK(!g_hang_watch_workers);
+  DCHECK(!g_hang_watch_io_thread);
+
+  g_use_hang_watcher.store(base::FeatureList::IsEnabled(kEnableHangWatcher),
+                           std::memory_order_relaxed);
+
+  // If hang watching is disabled as a whole there is no need to read the
+  // params.
+  if (g_use_hang_watcher.load(std::memory_order_relaxed)) {
+    g_hang_watch_workers.store(kHangWatchThreadPool.Get(),
+                               std::memory_order_relaxed);
+    g_hang_watch_io_thread.store(kHangWatchIOThread.Get(),
+                                 std::memory_order_relaxed);
+  }
+}
+
+// static
+bool HangWatcher::IsEnabled() {
+  return g_use_hang_watcher.load(std::memory_order_relaxed);
+}
+
+// static
+bool HangWatcher::IsThreadPoolHangWatchingEnabled() {
+  return g_hang_watch_workers.load(std::memory_order_relaxed);
+}
+
+bool HangWatcher::IsIOThreadHangWatchingEnabled() {
+  return g_hang_watch_io_thread.load(std::memory_order_relaxed);
 }
 
 HangWatcher::HangWatcher()

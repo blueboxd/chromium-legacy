@@ -288,7 +288,7 @@ void NaClListener::OnAddPrefetchedResource(
 
 void NaClListener::OnStart(nacl::NaClStartParams params) {
   is_started_ = true;
-#if defined(OS_LINUX) || defined(OS_MACOSX)
+#if defined(OS_LINUX) || defined(OS_APPLE)
   int urandom_fd = HANDLE_EINTR(dup(base::GetUrandomFD()));
   if (urandom_fd < 0) {
     LOG(FATAL) << "Failed to dup() the urandom FD";

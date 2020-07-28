@@ -19,7 +19,7 @@
 class KeyStorageLinux;
 #endif  // defined(OS_LINUX) && !defined(OS_CHROMEOS)
 
-#if defined(OS_WIN) || (defined(OS_MACOSX) && !defined(OS_IOS))
+#if defined(OS_WIN) || defined(OS_MAC)
 class PrefRegistrySimple;
 class PrefService;
 #endif
@@ -40,7 +40,7 @@ class OSCrypt {
       std::unique_ptr<os_crypt::Config> config);
 #endif  // defined(OS_LINUX) && !defined(OS_CHROMEOS)
 
-#if defined(OS_MACOSX) || (defined(OS_LINUX) && !defined(OS_CHROMEOS))
+#if defined(OS_APPLE) || (defined(OS_LINUX) && !defined(OS_CHROMEOS))
   // On Linux returns true iff the real secret key (not hardcoded one) is
   // available. On MacOS returns true if Keychain is available (for mock
   // Keychain it returns true if not using locked Keychain, false if using
@@ -85,7 +85,7 @@ class OSCrypt {
   static COMPONENT_EXPORT(OS_CRYPT) bool Init(PrefService* local_state);
 #endif
 
-#if defined(OS_MACOSX)
+#if defined(OS_APPLE)
   // For unit testing purposes we instruct the Encryptor to use a mock Keychain
   // on the Mac. The default is to use the real Keychain. Use OSCryptMocker,
   // instead of calling this method directly.
@@ -99,7 +99,7 @@ class OSCrypt {
       bool use_locked);
 #endif
 
-#if defined(OS_WIN) || defined(OS_MACOSX)
+#if defined(OS_WIN) || defined(OS_APPLE)
   // Get the raw encryption key to be used for all AES encryption. Returns an
   // empty string in the case password access is denied or key generation error
   // occurs. This method is thread-safe.

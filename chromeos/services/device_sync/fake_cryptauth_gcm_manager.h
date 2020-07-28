@@ -27,7 +27,6 @@ class FakeCryptAuthGCMManager : public CryptAuthGCMManager {
   explicit FakeCryptAuthGCMManager(const std::string& registration_id);
   ~FakeCryptAuthGCMManager() override;
 
-  bool has_started_listening() { return has_started_listening_; }
   bool registration_in_progress() { return registration_in_progress_; }
 
   void set_registration_id(const std::string& registration_id) {
@@ -52,13 +51,14 @@ class FakeCryptAuthGCMManager : public CryptAuthGCMManager {
 
   // CryptAuthGCMManager:
   void StartListening() override;
+  bool IsListening() override;
   void RegisterWithGCM() override;
   std::string GetRegistrationId() override;
   void AddObserver(Observer* observer) override;
   void RemoveObserver(Observer* observer) override;
 
  private:
-  bool has_started_listening_ = false;
+  bool is_listening_ = false;
   bool registration_in_progress_ = false;
 
   // The registration id obtained from the last successful registration.

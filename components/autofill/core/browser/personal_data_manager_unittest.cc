@@ -6606,8 +6606,7 @@ TEST_F(PersonalDataManagerTest, ExcludeServerSideCards) {
 #endif  // !defined(OS_ANDROID)
 
 // Sync Transport mode is only for Win, Mac, and Linux.
-#if defined(OS_WIN) || (defined(OS_MACOSX) && !defined(OS_IOS)) || \
-    defined(OS_LINUX)
+#if defined(OS_WIN) || defined(OS_MAC) || defined(OS_LINUX)
 TEST_F(PersonalDataManagerTest, ServerCardsShowInTransportMode) {
   // Set up PersonalDataManager in transport mode.
   ResetPersonalDataManager(USER_MODE_NORMAL,
@@ -6669,7 +6668,7 @@ TEST_F(PersonalDataManagerTest, ServerCardsShowInTransportMode_NeedOptIn) {
   EXPECT_EQ(1U, personal_data_->GetLocalCreditCards().size());
   EXPECT_EQ(2U, personal_data_->GetServerCreditCards().size());
 }
-#endif  // defined(OS_WIN) || (defined(OS_MACOSX) && !defined(OS_IOS)) ||
+#endif  // defined(OS_WIN) || defined(OS_MAC) ||
         // defined(OS_LINUX)
 
 // Tests that all the non settings origins of autofill profiles are cleared but

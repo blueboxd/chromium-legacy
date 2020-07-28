@@ -156,7 +156,7 @@ std::string FixupHomedir(const std::string& text) {
 // user foobar's home directory.  Officially, we should use getpwent(),
 // but that is a nasty blocking call.
 
-#if defined(OS_MACOSX)
+#if defined(OS_APPLE)
   static const char kHome[] = "/Users/";
 #else
   static const char kHome[] = "/home/";

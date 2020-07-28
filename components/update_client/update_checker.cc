@@ -146,7 +146,7 @@ void UpdateCheckerImpl::ReadUpdaterStateAttributes() {
   // On Windows, the Chrome and the updater install modes are matched by design.
   updater_state_attributes_ =
       UpdaterState::GetState(!config_->IsPerUserInstall());
-#elif defined(OS_MACOSX) && !defined(OS_IOS)
+#elif defined(OS_MAC)
   // MacOS ignores this value in the current implementation but this may change.
   updater_state_attributes_ = UpdaterState::GetState(false);
 #else

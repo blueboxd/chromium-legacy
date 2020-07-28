@@ -41,8 +41,8 @@ void DisconnectWindowAura::Start(
   // completely retire Hangout Remote Desktop v1.
   base::string16 helper_name;
   ash::Shell::Get()->system_tray_notifier()->NotifyScreenShareStart(
-      base::Bind(&ClientSessionControl::DisconnectSession,
-                 client_session_control, protocol::OK),
+      base::BindRepeating(&ClientSessionControl::DisconnectSession,
+                          client_session_control, protocol::OK),
       helper_name);
 }
 

@@ -64,11 +64,6 @@ bool PrerenderTabHelper::IsPrerendering() {
   return prerender_manager->IsWebContentsPrerendering(web_contents(), nullptr);
 }
 
-void PrerenderTabHelper::PrerenderSwappedIn() {
-  DCHECK(!IsPrerendering());
-  swap_ticks_ = GetTimeTicksFromPrerenderManager();
-}
-
 WEB_CONTENTS_USER_DATA_KEY_IMPL(PrerenderTabHelper)
 
 }  // namespace prerender

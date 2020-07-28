@@ -9,10 +9,13 @@
 
 #include "base/values.h"
 #include "chrome/browser/extensions/active_tab_permission_granter.h"
+#include "chrome/browser/extensions/extension_tab_util.h"
+#include "chrome/browser/extensions/tab_helper.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/common/extensions/command.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/media_keys_listener_manager.h"
+#include "content/public/browser/web_contents.h"
 #include "extensions/browser/event_router.h"
 #include "extensions/common/extension_set.h"
 #include "extensions/common/manifest_constants.h"
@@ -137,17 +140,45 @@ void ExtensionKeybindingRegistry::CommandExecuted(
   if (!extension)
     return;
 
-  // Grant before sending the event so that the permission is granted before
-  // the extension acts on the command. NOTE: The Global Commands handler does
-  // not set the delegate as it deals only with named commands (not page/browser
-  // actions that are associated with the current page directly).
-  ActiveTabPermissionGranter* granter =
-      delegate_ ? delegate_->GetActiveTabPermissionGranter() : NULL;
-  if (granter)
-    granter->GrantIfRequested(extension);
-
   std::unique_ptr<base::ListValue> args(new base::ListValue());
   args->AppendString(command);
+
+  std::unique_ptr<base::Value> tab_value;
+  if (delegate_) {
+    content::WebContents* web_contents =
+        delegate_->GetWebContentsForExtension();
+    // Grant before sending the event so that the permission is granted before
+    // the extension acts on the command. NOTE: The Global Commands handler does
+    // not set the delegate as it deals only with named commands (not
+    // page/browser actions that are associated with the current page directly).
+    ActiveTabPermissionGranter* granter =
+        web_contents ? extensions::TabHelper::FromWebContents(web_contents)
+                           ->active_tab_permission_granter()
+                     : nullptr;
+    if (granter) {
+      granter->GrantIfRequested(extension);
+    }
+
+    if (web_contents) {
+      // The action APIs (browserAction, pageAction, action) are only available
+      // to blessed extension contexts. As such, we deterministically know that
+      // the right context type here is blessed.
+      constexpr Feature::Context context_type =
+          Feature::BLESSED_EXTENSION_CONTEXT;
+      ExtensionTabUtil::ScrubTabBehavior scrub_tab_behavior =
+          ExtensionTabUtil::GetScrubTabBehavior(extension, context_type,
+                                                web_contents);
+      tab_value = ExtensionTabUtil::CreateTabObject(
+                      web_contents, scrub_tab_behavior, extension)
+                      ->ToValue();
+    }
+  }
+
+  if (!tab_value) {
+    // No currently-active tab. Push a null value.
+    tab_value = std::make_unique<base::Value>();
+  }
+  args->Append(std::move(tab_value));
 
   auto event =
       std::make_unique<Event>(events::COMMANDS_ON_COMMAND, kOnCommandEventName,

@@ -71,7 +71,7 @@
 #include "third_party/blink/renderer/platform/scheduler/public/frame_scheduler.h"
 #include "third_party/blink/renderer/platform/supplementable.h"
 #include "third_party/blink/renderer/platform/wtf/hash_set.h"
-#if defined(OS_MACOSX)
+#if defined(OS_APPLE)
 #include "third_party/blink/public/mojom/input/text_input_host.mojom-blink.h"
 #endif
 #include "ui/gfx/transform.h"
@@ -84,7 +84,7 @@ namespace gfx {
 class Point;
 }
 
-#if defined(OS_MACOSX)
+#if defined(OS_APPLE)
 namespace gfx {
 class Range;
 }
@@ -607,7 +607,7 @@ class CORE_EXPORT LocalFrame final
   void SetInitialFocus(bool reverse) override;
   void EnablePreferredSizeChangedMode() override;
   void ZoomToFindInPageRect(const gfx::Rect& rect_in_root_frame) override;
-#if defined(OS_MACOSX)
+#if defined(OS_APPLE)
   void GetCharacterIndexAtPoint(const gfx::Point& point) final;
   void GetFirstRectForRange(const gfx::Range& range) final;
   void GetStringForRange(const gfx::Range& range,
@@ -690,7 +690,7 @@ class CORE_EXPORT LocalFrame final
 
   bool ShouldThrottleDownload();
 
-#if defined(OS_MACOSX)
+#if defined(OS_APPLE)
   mojom::blink::TextInputHost& GetTextInputHost();
 #endif
 
@@ -776,7 +776,7 @@ class CORE_EXPORT LocalFrame final
                          HeapMojoWrapperMode::kWithoutContextObserver>
       reporting_service_{nullptr};
 
-#if defined(OS_MACOSX)
+#if defined(OS_APPLE)
   // LocalFrame can be reused by multiple ExecutionContext.
   HeapMojoRemote<mojom::blink::TextInputHost,
                  HeapMojoWrapperMode::kWithoutContextObserver>

@@ -36,7 +36,7 @@ const char* kSkiaGoldInstance = "chrome";
 
 #if defined(OS_WIN)
 const wchar_t* kSkiaGoldCtl = L"tools/skia_goldctl/win/goldctl.exe";
-#elif defined(OS_MACOSX)
+#elif defined(OS_APPLE)
 const char* kSkiaGoldCtl = "tools/skia_goldctl/mac/goldctl";
 #else
 const char* kSkiaGoldCtl = "tools/skia_goldctl/linux/goldctl";
@@ -133,7 +133,7 @@ SkiaGoldPixelDiff::~SkiaGoldPixelDiff() = default;
 std::string SkiaGoldPixelDiff::GetPlatform() {
 #if defined(OS_WIN)
   return "windows";
-#elif defined(OS_MACOSX)
+#elif defined(OS_APPLE)
   return "macOS";
 #elif defined(OS_LINUX) && !defined(OS_CHROMEOS)
   return "linux";

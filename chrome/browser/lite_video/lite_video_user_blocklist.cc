@@ -12,37 +12,36 @@
 
 namespace {
 
-// Determine whether the provided navigation is valid and can be queried or
+// Determine whether the URL is valid and can be queried or
 // added to the blocklist.
-bool IsNavigationValidForBlocklist(
-    content::NavigationHandle* navigation_handle) {
-  GURL navigation_url = navigation_handle->GetURL();
-  return navigation_url.SchemeIsHTTPOrHTTPS() && navigation_url.has_host();
+bool IsURLValidForBlocklist(const GURL& url) {
+  return url.SchemeIsHTTPOrHTTPS() && url.has_host();
+}
+
+// Separator between hosts for the rebuffer blocklist type.
+constexpr char kLiteVideoBlocklistKeySeparator[] = "_";
+
+// Returns the key for a navigation used for the rebuffer blocklist type.
+// The key format is "mainframe.com_subframe.com", if the navigation is the
+// mainframe navigation, the key omits subframe.com, e.g., "mainframe.com_"
+base::Optional<std::string> GetRebufferBlocklistKey(
+    const GURL& mainframe_url,
+    base::Optional<GURL> subframe_url) {
+  if (!IsURLValidForBlocklist(mainframe_url))
+    return base::nullopt;
+
+  if (!subframe_url)
+    return mainframe_url.host() + kLiteVideoBlocklistKeySeparator;
+
+  if (!IsURLValidForBlocklist(*subframe_url))
+    return base::nullopt;
+  return mainframe_url.host() + kLiteVideoBlocklistKeySeparator +
+         subframe_url->host();
 }
 
 }  // namespace
 
 namespace lite_video {
-
-// Separator between hosts for the rebuffer blocklist type.
-constexpr char kLiteVideoBlocklistKeySeparator[] = "_";
-
-// static
-base::Optional<std::string> LiteVideoUserBlocklist::GetRebufferBlocklistKey(
-    content::NavigationHandle* navigation_handle) {
-  if (!IsNavigationValidForBlocklist(navigation_handle))
-    return base::nullopt;
-
-  const GURL url = navigation_handle->GetURL();
-  if (navigation_handle->IsInMainFrame())
-    return url.host() + kLiteVideoBlocklistKeySeparator;
-
-  const GURL mainframe_url =
-      navigation_handle->GetWebContents()->GetLastCommittedURL();
-  if (!mainframe_url.SchemeIsHTTPOrHTTPS() || !mainframe_url.has_host())
-    return base::nullopt;
-  return mainframe_url.host() + kLiteVideoBlocklistKeySeparator + url.host();
-}
 
 LiteVideoUserBlocklist::LiteVideoUserBlocklist(
     std::unique_ptr<blocklist::OptOutStore> opt_out_store,
@@ -57,19 +56,25 @@ LiteVideoUserBlocklist::~LiteVideoUserBlocklist() = default;
 LiteVideoBlocklistReason LiteVideoUserBlocklist::IsLiteVideoAllowedOnNavigation(
     content::NavigationHandle* navigation_handle) const {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  if (!IsNavigationValidForBlocklist(navigation_handle))
+  GURL navigation_url = navigation_handle->GetURL();
+  if (!IsURLValidForBlocklist(navigation_url))
     return LiteVideoBlocklistReason::kNavigationNotEligibile;
 
   std::vector<blocklist::BlocklistReason> passed_reasons;
   auto blocklist_reason = blocklist::OptOutBlocklist::IsLoadedAndAllowed(
-      navigation_handle->GetURL().host(),
+      navigation_url.host(),
       static_cast<int>(LiteVideoBlocklistType::kNavigationBlocklist),
       /*opt_out=*/false, &passed_reasons);
   if (blocklist_reason != blocklist::BlocklistReason::kAllowed)
     return LiteVideoBlocklistReason::kNavigationBlocklisted;
 
   base::Optional<std::string> rebuffer_key =
-      GetRebufferBlocklistKey(navigation_handle);
+      navigation_handle->IsInMainFrame()
+          ? GetRebufferBlocklistKey(navigation_url, base::nullopt)
+          : GetRebufferBlocklistKey(
+                navigation_handle->GetWebContents()->GetLastCommittedURL(),
+                navigation_url);
+
   if (!rebuffer_key)
     return LiteVideoBlocklistReason::kNavigationNotEligibile;
 
@@ -128,7 +133,7 @@ void LiteVideoUserBlocklist::AddNavigationToBlocklist(
     content::NavigationHandle* navigation_handle,
     bool opt_out) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  if (!IsNavigationValidForBlocklist(navigation_handle))
+  if (!IsURLValidForBlocklist(navigation_handle->GetURL()))
     return;
   AddEntry(navigation_handle->GetURL().host(), opt_out,
            static_cast<int>(LiteVideoBlocklistType::kNavigationBlocklist));

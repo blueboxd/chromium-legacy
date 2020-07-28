@@ -125,9 +125,6 @@ class StatusIndicatorSceneLayer extends SceneOverlayLayer implements SceneOverla
     public void getVirtualViews(List<VirtualView> views) {}
 
     @Override
-    public void onHideLayout() {}
-
-    @Override
     public void tabTitleChanged(int tabId, String title) {}
 
     @Override

@@ -25,7 +25,7 @@
 #if BUILDFLAG(ENABLE_DESKTOP_AURA)
 #include "ui/views/widget/desktop_aura/desktop_native_widget_aura.h"
 #endif
-#elif defined(OS_MACOSX)
+#elif defined(OS_APPLE)
 #include "ui/views/widget/native_widget_mac.h"
 #endif
 
@@ -153,7 +153,7 @@ gfx::NativeWindow ViewsTestBase::GetContext() {
 NativeWidget* ViewsTestBase::CreateNativeWidgetForTest(
     const Widget::InitParams& init_params,
     internal::NativeWidgetDelegate* delegate) {
-#if defined(OS_MACOSX)
+#if defined(OS_APPLE)
   return new test::TestPlatformNativeWidget<NativeWidgetMac>(delegate, false,
                                                              nullptr);
 #elif defined(USE_AURA)

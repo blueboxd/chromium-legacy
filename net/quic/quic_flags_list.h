@@ -78,10 +78,6 @@ QUIC_FLAG(int32_t, FLAGS_quic_lumpy_pacing_size, 2)
 // pacing.
 QUIC_FLAG(double, FLAGS_quic_lumpy_pacing_cwnd_fraction, 0.25f)
 
-// Default enables QUIC ack decimation and adds a connection option to disable
-// it.
-QUIC_FLAG(bool, FLAGS_quic_reloadable_flag_quic_enable_ack_decimation, true)
-
 // If true, QUIC offload pacing when using USPS as egress method.
 QUIC_FLAG(bool, FLAGS_quic_restart_flag_quic_offload_pacing_to_usps2, false)
 
@@ -267,7 +263,7 @@ QUIC_FLAG(bool,
           false)
 
 // If true, enables support for TLS resumption in QUIC.
-QUIC_FLAG(bool, FLAGS_quic_reloadable_flag_quic_enable_tls_resumption_v2, false)
+QUIC_FLAG(bool, FLAGS_quic_restart_flag_quic_enable_tls_resumption_v3, false)
 
 // When true, QUIC's BBRv2 ignores inflight_lo in PROBE_BW.
 QUIC_FLAG(bool, FLAGS_quic_reloadable_flag_quic_bbr2_ignore_inflight_lo, false)
@@ -284,16 +280,9 @@ QUIC_FLAG(bool,
           FLAGS_quic_restart_flag_quic_google_transport_param_omit_old,
           true)
 
-// If true, QUIC will free writer-allocated packet buffer if writer->WritePacket
-// is not called.
-QUIC_FLAG(bool, FLAGS_quic_reloadable_flag_quic_avoid_leak_writer_buffer, true)
-
 // If true, the B2HI connection option limits reduction of inflight_hi to
 // (1-Beta)*CWND.
 QUIC_FLAG(bool, FLAGS_quic_reloadable_flag_quic_bbr2_limit_inflight_hi, false)
-
-// If true, SendAllPendingAcks always send the earliest ACK.
-QUIC_FLAG(bool, FLAGS_quic_reloadable_flag_quic_always_send_earliest_ack, true)
 
 // If true, disable QUIC version h3-T050.
 QUIC_FLAG(bool, FLAGS_quic_reloadable_flag_quic_disable_version_t050, false)
@@ -345,10 +334,10 @@ QUIC_FLAG(bool, FLAGS_quic_reloadable_flag_quic_dont_pad_chlo, false)
 QUIC_FLAG(
     bool,
     FLAGS_quic_reloadable_flag_quic_dispatcher_legacy_version_encapsulation,
-    false)
+    true)
 
 // If true, update packet size when the first frame gets queued.
-QUIC_FLAG(bool, FLAGS_quic_reloadable_flag_quic_update_packet_size, false)
+QUIC_FLAG(bool, FLAGS_quic_reloadable_flag_quic_update_packet_size, true)
 
 // If true, consider frame expansion when calculating extra padding bytes to
 // meet minimum plaintext packet size required for header protection.
@@ -359,23 +348,23 @@ QUIC_FLAG(bool, FLAGS_quic_reloadable_flag_quic_fix_extra_padding_bytes, false)
 QUIC_FLAG(
     bool,
     FLAGS_quic_reloadable_flag_quic_do_not_close_stream_again_on_connection_close,
-    false)
+    true)
 
 // If true, determine a serialized packet's fate before the packet gets
 // serialized.
 QUIC_FLAG(
     bool,
     FLAGS_quic_reloadable_flag_quic_determine_serialized_packet_fate_early,
-    false)
+    true)
 
 // If true, take the largest acked packet into account when computing the sent
 // packet number length.
-QUIC_FLAG(bool, FLAGS_quic_reloadable_flag_quic_fix_packet_number_length, false)
+QUIC_FLAG(bool, FLAGS_quic_reloadable_flag_quic_fix_packet_number_length, true)
 
 // If true, retransmit unacked handshake data before PTO expiry.
 QUIC_FLAG(bool,
           FLAGS_quic_reloadable_flag_quic_retransmit_handshake_data_early,
-          false)
+          true)
 
 // If true, improve Bbr2Sender::AdjustNetworkParameters by 1) do not inject a
 // bandwidth sample to the bandwidth filter, and 2) re-calculate pacing rate
@@ -389,7 +378,7 @@ QUIC_FLAG(
 // mitigate RTT inflations.
 QUIC_FLAG(bool,
           FLAGS_quic_reloadable_flag_quic_coalesced_packet_of_higher_space,
-          false)
+          true)
 
 // If true, record the received min_ack_delay in transport parameters to QUIC
 // config.
@@ -420,3 +409,32 @@ QUIC_FLAG(bool,
 // If true, QUIC subclasses will no longer directly access stream_map for its
 // content.
 QUIC_FLAG(bool, FLAGS_quic_reloadable_flag_quic_do_not_use_stream_map, false)
+
+// If true,
+//   server accepts GOAWAY (draft-28 behavior),
+//   client receiving GOAWAY with stream ID that is not client-initiated
+//     bidirectional stream ID closes connection with H3_ID_ERROR (draft-28
+//     behavior).
+//   Also, receiving a GOAWAY with ID larger than previously received closes
+//     connection with H3_ID_ERROR.
+// If false,
+//   server receiving GOAWAY closes connection with H3_FRAME_UNEXPECTED
+//     (draft-27 behavior),
+//   client receiving GOAWAY with stream ID that is not client-initiated
+//     bidirectional stream ID closes connection with PROTOCOL_VIOLATION
+//     (draft-04 behavior),
+//   larger ID than previously received does not trigger connection close.
+QUIC_FLAG(bool,
+          FLAGS_quic_reloadable_flag_quic_http3_goaway_new_behavior,
+          false)
+
+// If true, QUIC connection will revert to a previously validated MTU (if
+// exists) after two PTOs.
+QUIC_FLAG(bool,
+          FLAGS_quic_reloadable_flag_quic_revert_mtu_after_two_ptos,
+          false)
+
+// Simplify the ACK code in quic_received_packet_manager.
+QUIC_FLAG(bool,
+          FLAGS_quic_reloadable_flag_quic_simplify_received_packet_manager_ack,
+          false)

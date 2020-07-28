@@ -14,11 +14,11 @@
 #include "ui/gl/gl_implementation.h"
 #include "ui/gl/gl_version_info.h"
 
-#if defined(OS_MACOSX)
+#if defined(OS_APPLE)
 #include "ui/gl/gl_fence_apple.h"
 #endif
 
-#if defined(USE_EGL) && defined(OS_POSIX) && !defined(OS_MACOSX)
+#if defined(USE_EGL) && defined(OS_POSIX) && !defined(OS_APPLE)
 #define USE_GL_FENCE_ANDROID_NATIVE_FENCE_SYNC
 #include "ui/gl/gl_fence_android_native_fence_sync.h"
 #include "ui/gl/gl_surface_egl.h"
@@ -37,7 +37,7 @@ bool GLFence::IsSupported() {
   return g_current_gl_driver->ext.b_GL_ARB_sync ||
          g_current_gl_version->is_es3 ||
          g_current_gl_version->is_desktop_core_profile ||
-#if defined(OS_MACOSX)
+#if defined(OS_APPLE)
          g_current_gl_driver->ext.b_GL_APPLE_fence ||
 #else
          g_driver_egl.ext.b_EGL_KHR_fence_sync ||
@@ -50,7 +50,7 @@ std::unique_ptr<GLFence> GLFence::Create() {
       << "Trying to create fence with no context";
 
   std::unique_ptr<GLFence> fence;
-#if !defined(OS_MACOSX)
+#if !defined(OS_APPLE)
   if (g_driver_egl.ext.b_EGL_KHR_fence_sync &&
       g_driver_egl.ext.b_EGL_KHR_wait_sync) {
     // Prefer GLFenceEGL which doesn't require GL context switching.
@@ -63,7 +63,7 @@ std::unique_ptr<GLFence> GLFence::Create() {
           g_current_gl_version->is_desktop_core_profile) {
     // Prefer ARB_sync which supports server-side wait.
     fence = std::make_unique<GLFenceARB>();
-#if defined(OS_MACOSX)
+#if defined(OS_APPLE)
   } else if (g_current_gl_driver->ext.b_GL_APPLE_fence) {
     fence = std::make_unique<GLFenceAPPLE>();
 #else

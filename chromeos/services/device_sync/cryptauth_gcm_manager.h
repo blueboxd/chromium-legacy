@@ -62,6 +62,9 @@ class CryptAuthGCMManager {
   // after this function is called, then messages will also be handled properly.
   virtual void StartListening() = 0;
 
+  // Returns true after StartListening() is called.
+  virtual bool IsListening() = 0;
+
   // Begins registration with GCM. The Observer::OnGCMRegistrationResult()
   // observer function will be called when registration completes.
   virtual void RegisterWithGCM() = 0;

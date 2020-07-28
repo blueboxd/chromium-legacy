@@ -238,7 +238,7 @@ void PasswordManager::RegisterProfilePrefs(
 
   registry->RegisterIntegerPref(prefs::kSettingsLaunchedPasswordChecks, 0);
 
-#if defined(OS_MACOSX)
+#if defined(OS_APPLE)
   registry->RegisterIntegerPref(prefs::kKeychainMigrationStatus,
                                 4 /* MIGRATED_DELETED */);
 #endif
@@ -256,7 +256,7 @@ void PasswordManager::RegisterLocalPrefs(PrefRegistrySimple* registry) {
   registry->RegisterBooleanPref(prefs::kOsPasswordBlank, false);
 #endif
 
-#if defined(OS_MACOSX) && !defined(OS_IOS)
+#if defined(OS_MAC)
   registry->RegisterTimePref(prefs::kPasswordRecovery, base::Time());
 #endif
 }

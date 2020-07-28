@@ -168,6 +168,8 @@ source_set("headers") {
     "sms/sms_receiver_destroyed_reason.h",
     "sms/sms_receiver_outcome.h",
     "switches.h",
+    "tokens/frame_token.h",
+    "tokens/frame_token_mojom_traits.h",
     "tokens/token_mojom_traits_helper.h",
     "tokens/worker_tokens.h",
     "tokens/worker_tokens_mojom_traits.h",

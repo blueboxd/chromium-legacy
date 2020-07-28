@@ -93,7 +93,7 @@ constexpr SkColor kHoveredButtonBackgroundColor = SkColorSetRGB(243, 243, 243);
 
 // Progress bar.
 const int kProgressBarTopPadding = 16;
-#if defined(OS_MACOSX)
+#if defined(OS_APPLE)
 const int kProgressBarThickness = 5;
 const int kProgressBarCornerRadius = 3;
 #endif

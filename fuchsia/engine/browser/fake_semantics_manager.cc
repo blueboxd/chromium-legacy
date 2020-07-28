@@ -8,8 +8,7 @@
 #include "base/notreached.h"
 #include "base/run_loop.h"
 
-FakeSemanticsManager::FakeSemanticsManager()
-    : semantic_tree_binding_(&semantic_tree_) {}
+FakeSemanticsManager::FakeSemanticsManager() = default;
 
 FakeSemanticsManager::~FakeSemanticsManager() = default;
 
@@ -81,8 +80,10 @@ void FakeSemanticsManager::RegisterViewForSemantics(
         semantic_tree_request) {
   view_ref_ = std::move(view_ref);
   listener_ = listener.Bind();
-  semantic_tree_binding_.Bind(std::move(semantic_tree_request));
-  std::move(on_view_registered_).Run();
+  semantic_tree_.Bind(std::move(semantic_tree_request));
+  if (on_view_registered_) {
+    std::move(on_view_registered_).Run();
+  }
 }
 
 void FakeSemanticsManager::NotImplemented_(const std::string& name) {

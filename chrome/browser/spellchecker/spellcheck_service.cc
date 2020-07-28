@@ -130,7 +130,7 @@ SpellcheckService::SpellcheckService(content::BrowserContext* context)
       base::BindRepeating(&SpellcheckService::OnSpellCheckDictionariesChanged,
                           base::Unretained(this)));
   pref_change_registrar_.Add(
-      spellcheck::prefs::kSpellCheckBlacklistedDictionaries,
+      spellcheck::prefs::kSpellCheckBlocklistedDictionaries,
       base::BindRepeating(&SpellcheckService::OnSpellCheckDictionariesChanged,
                           base::Unretained(this)));
   pref_change_registrar_.Add(
@@ -434,7 +434,7 @@ void SpellcheckService::LoadDictionaries() {
 
   // Build a lookup of blacklisted dictionaries to skip loading them.
   const base::ListValue* blacklisted_dictionaries =
-      prefs->GetList(spellcheck::prefs::kSpellCheckBlacklistedDictionaries);
+      prefs->GetList(spellcheck::prefs::kSpellCheckBlocklistedDictionaries);
   std::unordered_set<std::string> blacklisted_dictionaries_lookup;
   for (const auto& blacklisted_dict : blacklisted_dictionaries->GetList()) {
     blacklisted_dictionaries_lookup.insert(blacklisted_dict.GetString());

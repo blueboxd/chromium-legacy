@@ -194,6 +194,9 @@ crbug.com/907544 [ vulkan win passthrough nvidia ] conformance/uniforms/uniform-
 crbug.com/1106078 [ win nvidia-0x1cb3 no-use-gl ] deqp/functional/gles3/shadertexturefunction/texturesize.html [ Failure ]
 crbug.com/1106076 [ win nvidia-0x1cb3 no-use-gl ] conformance2/textures/misc/tex-3d-mipmap-levels-intel-bug.html [ Failure ]
 crbug.com/1106076 [ win nvidia-0x1cb3 no-use-gl ] conformance2/textures/misc/tex-mipmap-levels.html [ Failure ]
+crbug.com/1106078 [ d3d11 win nvidia-0x1cb3 ] deqp/functional/gles3/shadertexturefunction/texturesize.html [ Failure ]
+crbug.com/1106076 [ d3d11 win nvidia-0x1cb3 ] conformance2/textures/misc/tex-3d-mipmap-levels-intel-bug.html [ Failure ]
+crbug.com/1106076 [ d3d11 win nvidia-0x1cb3 ] conformance2/textures/misc/tex-mipmap-levels.html [ Failure ]
 
 # Win / NVIDIA Quadro P400 / D3D11 flaky failures
 crbug.com/680754 [ d3d11 win nvidia-0x1cb3 ] deqp/data/gles3/shaders/functions.html [ Failure ]

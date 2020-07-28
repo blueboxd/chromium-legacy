@@ -20,7 +20,7 @@
 #include "components/viz/service/display/dc_layer_overlay.h"
 #endif
 
-#if defined(OS_MACOSX)
+#if defined(OS_APPLE)
 #include "components/viz/service/display/ca_layer_overlay.h"
 #endif
 
@@ -50,7 +50,7 @@ class VIZ_SERVICE_EXPORT SkiaOutputSurface : public OutputSurface,
  public:
 #if defined(OS_ANDROID)
   using OverlayList = std::vector<OverlayCandidate>;
-#elif defined(OS_MACOSX)
+#elif defined(OS_APPLE)
   using OverlayList = CALayerOverlayList;
 #elif defined(OS_WIN)
   using OverlayList = DCLayerOverlayList;

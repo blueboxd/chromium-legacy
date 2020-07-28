@@ -27,7 +27,7 @@
 #include "build/build_config.h"
 #include "components/wifi/wifi_service.h"
 
-#if defined(OS_MACOSX)
+#if defined(OS_APPLE)
 #include "base/mac/scoped_nsautorelease_pool.h"
 #endif
 
@@ -72,7 +72,7 @@ class WiFiTest {
     VLOG(0) << "Network List Changed: " << network_guid_list.size();
   }
 
-#if defined(OS_MACOSX)
+#if defined(OS_APPLE)
   // Without this there will be a mem leak on osx.
   base::mac::ScopedNSAutoreleasePool scoped_pool_;
 #endif

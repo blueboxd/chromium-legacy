@@ -13,7 +13,7 @@ mojo::PendingRemote<mojom::DisplayClient> FakeDisplayClient::BindRemote() {
   return receiver_.BindNewPipeAndPassRemote();
 }
 
-#if defined(OS_MACOSX)
+#if defined(OS_APPLE)
 void FakeDisplayClient::OnDisplayReceivedCALayerParams(
     const gfx::CALayerParams& ca_layer_params) {}
 #endif

@@ -33,7 +33,7 @@ class COMPONENT_EXPORT(UI_BASE) DragDropTypes {
   static int DropEffectToDragOperation(uint32_t effect);
 #endif
 
-#if defined(OS_MACOSX)
+#if defined(OS_APPLE)
   static uint64_t DragOperationToNSDragOperation(int drag_operation);
   static int NSDragOperationToDragOperation(uint64_t ns_drag_operation);
 #endif

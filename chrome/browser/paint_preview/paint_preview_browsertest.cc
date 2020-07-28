@@ -132,7 +132,8 @@ class PaintPreviewBrowserTest
     PaintPreviewClient::PaintPreviewParams params(GetParam());
     params.inner.is_main_frame = true;
     params.root_dir = temp_dir_.GetPath();
-    params.inner.max_per_capture_size = 0;
+    params.inner.capture_links = true;
+    params.inner.max_capture_size = 0;
     return params;
   }
 

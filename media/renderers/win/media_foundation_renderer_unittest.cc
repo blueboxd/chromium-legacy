@@ -40,20 +40,16 @@ class MockMFCdmProxy
   // IMFCdmProxy.
   MOCK_STDCALL_METHOD2(GetPMPServer,
                        HRESULT(REFIID riid, void** object_result));
-  MOCK_STDCALL_METHOD7(GetInputTrustAuthority,
-                       HRESULT(uint64_t playback_element_id,
-                               uint32_t stream_id,
+  MOCK_STDCALL_METHOD6(GetInputTrustAuthority,
+                       HRESULT(uint32_t stream_id,
                                uint32_t stream_count,
                                const uint8_t* content_init_data,
                                uint32_t content_init_data_size,
                                REFIID riid,
                                IUnknown** object_result));
-  MOCK_STDCALL_METHOD1(RefreshTrustedInput,
-                       HRESULT(uint64_t playback_element_id));
-  MOCK_STDCALL_METHOD3(SetLastKeyIds,
-                       HRESULT(uint64_t playback_element_id,
-                               GUID* key_ids,
-                               uint32_t key_ids_count));
+  MOCK_STDCALL_METHOD2(SetLastKeyIds,
+                       HRESULT(GUID* key_ids, uint32_t key_ids_count));
+  MOCK_STDCALL_METHOD0(RefreshTrustedInput, HRESULT());
   MOCK_STDCALL_METHOD2(ProcessContentEnabler,
                        HRESULT(IUnknown* request, IMFAsyncResult* result));
 };
@@ -101,8 +97,6 @@ class MediaFoundationRendererTest : public testing::Test {
 
     mf_renderer_ = std::make_unique<MediaFoundationRenderer>(
         /*muted=*/false, task_environment_.GetMainThreadTaskRunner());
-    // It is required to invoke SetPlaybackElementId() before Initialize().
-    mf_renderer_->SetPlaybackElementId(9876543210);
 
     // Some default actions.
     ON_CALL(cdm_context_, GetMediaFoundationCdmProxy(_))

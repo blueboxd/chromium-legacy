@@ -68,6 +68,9 @@ struct PaintPreviewCaptureParams {
   // Used to identify if the capture request is for the main frame.
   bool is_main_frame;
 
+  // Indicates whether links should be captured and added to the response.
+  bool capture_links;
+
   // File to write the SkPicture to (write-only). A separate file should be
   // created for each RenderFrame.
   //

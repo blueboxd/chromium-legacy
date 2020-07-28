@@ -169,8 +169,8 @@ void WindowSizer::DetermineWindowBoundsAndShowState(
   *bounds = specified_bounds;
 
 #if defined(OS_CHROMEOS)
-  // See if ash should decide the window placement.
-  if (GetBrowserBoundsAsh(bounds, show_state))
+  // Check for custom window placement for Chrome OS.
+  if (GetBrowserBoundsChromeOS(bounds, show_state))
     return;
 #endif
 
@@ -234,7 +234,7 @@ void WindowSizer::GetDefaultWindowBounds(const display::Display& display,
                                          gfx::Rect* default_bounds) const {
   DCHECK(default_bounds);
 #if defined(OS_CHROMEOS)
-  *default_bounds = GetDefaultWindowBoundsAsh(browser_, display);
+  *default_bounds = GetDefaultWindowBoundsChromeOS(browser_, display);
 #else
   gfx::Rect work_area = display.work_area();
 

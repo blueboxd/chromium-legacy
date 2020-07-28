@@ -66,9 +66,6 @@ class MEDIA_EXPORT MediaFoundationRenderer
   void SetDCompMode(bool enabled, SetDCompModeCB callback) override;
   void GetDCompSurface(GetDCompSurfaceCB callback) override;
   void SetVideoStreamEnabled(bool enabled) override;
-  // SetPlaybackElementId() must be called before Initialize() as
-  // |playback_element_id| is used in Initialize().
-  void SetPlaybackElementId(uint64_t playback_element_id) override;
   void SetOutputParams(const gfx::Rect& output_rect) override;
 
  private:
@@ -136,12 +133,6 @@ class MEDIA_EXPORT MediaFoundationRenderer
   // Used for RendererClient::OnStatisticsUpdate().
   PipelineStatistics statistics_ = {};
   base::RepeatingTimer statistics_timer_;
-
-  // An identifier corresponds to a WebMediaPlayer. It allows MFMediaEngine
-  // to track the same playback session is running as Renderer can be destroyed
-  // after a period of inactivity by Chromium media pipeliine.
-  // Init it to an invalid ID.
-  uint64_t playback_element_id_ = 0;
 
   // A fake window handle passed to MF-based rendering pipeline for OPM.
   HWND virtual_video_window_ = nullptr;

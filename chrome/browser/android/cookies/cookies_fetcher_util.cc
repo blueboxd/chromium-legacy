@@ -120,7 +120,7 @@ static void JNI_CookiesFetcher_RestoreCookies(
   options.set_include_httponly();
   options.set_same_site_cookie_context(
       net::CookieOptions::SameSiteCookieContext::MakeInclusive());
-  // TODO(dylancutler) this updates the cookie's last_accessed_time.
+  options.set_do_not_update_access_time();
   GetCookieServiceClient()->SetCanonicalCookie(
       *cookie, url, options,
       network::mojom::CookieManager::SetCanonicalCookieCallback());

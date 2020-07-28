@@ -54,6 +54,10 @@ class RemoteObjectHostImpl implements RemoteObjectHost {
         mRegistry = new WeakReference<>(registry);
     }
 
+    public RemoteObjectRegistry getRegistry() {
+        return mRegistry.get();
+    }
+
     @Override
     public void getObject(int objectId, InterfaceRequest<RemoteObject> request) {
         try (InterfaceRequest<RemoteObject> autoClose = request) {

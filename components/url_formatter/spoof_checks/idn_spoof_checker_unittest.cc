@@ -878,7 +878,7 @@ const IDNTestCase kIdnCases[] = {
      kInvalid},
     // Hebrew Gershayim with Arabic is disallowed.
     {"xn--5eb7h.eg", L"\x0628\x05f4.eg", kUnsafe},
-#if defined(OS_MACOSX)
+#if defined(OS_APPLE)
     // These characters are blocked due to a font issue on Mac.
     // Tibetan transliteration characters.
     {"xn--com-lum.test.pl", L"com\u0f8c.test.pl", kUnsafe},

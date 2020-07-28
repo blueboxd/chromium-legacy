@@ -813,7 +813,7 @@ TEST_F(PasswordSyncBridgeTest,
                             mock_password_store_sync(), base::DoNothing());
 }
 
-#if defined(OS_MACOSX) && !defined(OS_IOS)
+#if defined(OS_MAC)
 // Tests that in case ReadAllLogins() during initial merge returns encryption
 // service failure, the bridge would try to do a DB clean up.
 TEST_F(PasswordSyncBridgeTest, ShouldDeleteUndecryptableLoginsDuringMerge) {

@@ -326,12 +326,6 @@ public interface TabObserver {
     void onFindMatchRectsAvailable(FindMatchRectsDetails result);
 
     /**
-     * Called when the root Id of tab is changed.
-     * @param newRootId New root ID to be set.
-     */
-    void onRootIdChanged(Tab tab, int newRootId);
-
-    /**
      * Called when offset values related with the browser controls have been changed by the
      * renderer.
      * @param topControlsOffsetY The Y offset of the top controls in physical pixels.

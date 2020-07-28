@@ -51,7 +51,7 @@
 
 #if defined(OS_WIN)
 #include "components/viz/service/display/overlay_processor_win.h"
-#elif defined(OS_MACOSX)
+#elif defined(OS_APPLE)
 #include "components/viz/service/display/overlay_processor_mac.h"
 #elif defined(OS_ANDROID) || defined(USE_OZONE)
 #include "components/viz/service/display/overlay_processor_using_strategy.h"
@@ -2489,7 +2489,7 @@ class TestOverlayProcessor : public OverlayProcessorWin {
     return static_cast<MockDCLayerOverlayProcessor*>(GetOverlayProcessor());
   }
 };
-#elif defined(OS_MACOSX)
+#elif defined(OS_APPLE)
 class MockCALayerOverlayProcessor : public CALayerOverlayProcessor {
  public:
   MockCALayerOverlayProcessor() = default;
@@ -2635,7 +2635,7 @@ TEST_F(GLRendererTest, DontOverlayWithCopyRequests) {
   renderer.Initialize();
   renderer.SetVisible(true);
 
-#if defined(OS_MACOSX)
+#if defined(OS_APPLE)
   const MockCALayerOverlayProcessor* mock_ca_processor =
       processor->GetTestProcessor();
 #elif defined(OS_WIN)
@@ -2671,7 +2671,7 @@ TEST_F(GLRendererTest, DontOverlayWithCopyRequests) {
   // list because the render pass is cleaned up by DrawFrame.
 #if defined(USE_OZONE) || defined(OS_ANDROID)
   EXPECT_CALL(processor->strategy(), Attempt(_, _, _, _, _, _, _)).Times(0);
-#elif defined(OS_MACOSX)
+#elif defined(OS_APPLE)
   EXPECT_CALL(*mock_ca_processor, ProcessForCALayerOverlays(_, _, _, _, _, _))
       .Times(0);
 #elif defined(OS_WIN)
@@ -2680,7 +2680,7 @@ TEST_F(GLRendererTest, DontOverlayWithCopyRequests) {
   DrawFrame(&renderer, viewport_size);
 #if defined(USE_OZONE) || defined(OS_ANDROID)
   Mock::VerifyAndClearExpectations(&processor->strategy());
-#elif defined(OS_MACOSX)
+#elif defined(OS_APPLE)
   Mock::VerifyAndClearExpectations(
       const_cast<MockCALayerOverlayProcessor*>(mock_ca_processor));
 #elif defined(OS_WIN)
@@ -2703,7 +2703,7 @@ TEST_F(GLRendererTest, DontOverlayWithCopyRequests) {
       /*secure_output_only=*/false, gfx::ProtectedVideoType::kClear);
 #if defined(USE_OZONE) || defined(OS_ANDROID)
   EXPECT_CALL(processor->strategy(), Attempt(_, _, _, _, _, _, _)).Times(1);
-#elif defined(OS_MACOSX)
+#elif defined(OS_APPLE)
   EXPECT_CALL(*mock_ca_processor, ProcessForCALayerOverlays(_, _, _, _, _, _))
       .Times(1);
 #elif defined(OS_WIN)
@@ -3446,7 +3446,7 @@ TEST_F(GLRendererSwapWithBoundsTest, NonEmpty) {
 }
 #endif  // defined(USE_OZONE) || defined(OS_ANDROID)
 
-#if defined(OS_MACOSX)
+#if defined(OS_APPLE)
 class MockCALayerGLES2Interface : public TestGLES2Interface {
  public:
   MOCK_METHOD6(ScheduleCALayerSharedStateCHROMIUM,

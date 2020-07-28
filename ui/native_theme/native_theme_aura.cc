@@ -47,7 +47,7 @@ const SkScalar kScrollRadius =
 ////////////////////////////////////////////////////////////////////////////////
 // NativeTheme:
 
-#if !defined(OS_MACOSX)
+#if !defined(OS_APPLE)
 // static
 NativeTheme* NativeTheme::GetInstanceForWeb() {
   return NativeThemeAura::web_instance();

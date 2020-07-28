@@ -22,9 +22,8 @@
 #include "components/strings/grit/components_strings.h"
 
 SpellcheckLanguageBlocklistPolicyHandler::
-    SpellcheckLanguageBlocklistPolicyHandler()
-    : TypeCheckingPolicyHandler(policy::key::kSpellcheckLanguageBlacklist,
-                                base::Value::Type::LIST) {}
+    SpellcheckLanguageBlocklistPolicyHandler(const char* policy_name)
+    : TypeCheckingPolicyHandler(policy_name, base::Value::Type::LIST) {}
 
 SpellcheckLanguageBlocklistPolicyHandler::
     ~SpellcheckLanguageBlocklistPolicyHandler() = default;
@@ -78,18 +77,18 @@ void SpellcheckLanguageBlocklistPolicyHandler::ApplyPolicySettings(
 
   for (const std::string& language : duplicates) {
     SYSLOG(WARNING)
-        << "SpellcheckLanguageBlacklist policy: an entry was also found in"
+        << "SpellcheckLanguageBlocklist policy: an entry was also found in"
            " the SpellcheckLanguage policy: \""
         << language << "\". Blocklist entry will be ignored.";
   }
 
   for (const std::string& language : unknown) {
-    SYSLOG(WARNING) << "SpellcheckLanguageBlacklist policy: Unknown or "
+    SYSLOG(WARNING) << "SpellcheckLanguageBlocklist policy: Unknown or "
                        "unsupported language \""
                     << language << "\"";
   }
 
-  prefs->SetValue(spellcheck::prefs::kSpellCheckBlacklistedDictionaries,
+  prefs->SetValue(spellcheck::prefs::kSpellCheckBlocklistedDictionaries,
                   base::Value(std::move(blocklisted)));
 }
 

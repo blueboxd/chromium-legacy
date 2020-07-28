@@ -44,8 +44,7 @@ class CdmProxyImpl
     return S_OK;
   }
 
-  STDMETHODIMP GetInputTrustAuthority(uint64_t playback_element_id,
-                                      uint32_t stream_id,
+  STDMETHODIMP GetInputTrustAuthority(uint32_t stream_id,
                                       uint32_t /*stream_count*/,
                                       const uint8_t* content_init_data,
                                       uint32_t content_init_data_size,
@@ -79,15 +78,13 @@ class CdmProxyImpl
   }
 
   // TODO(xhwang): Implement this.
-  STDMETHODIMP RefreshTrustedInput(uint64_t playback_element_id) override {
+  STDMETHODIMP SetLastKeyIds(GUID* key_ids, uint32_t key_ids_count) override {
     NOTIMPLEMENTED();
     return S_OK;
   }
 
   // TODO(xhwang): Implement this.
-  STDMETHODIMP SetLastKeyIds(uint64_t playback_element_id,
-                             GUID* key_ids,
-                             uint32_t key_ids_count) override {
+  STDMETHODIMP RefreshTrustedInput() override {
     NOTIMPLEMENTED();
     return S_OK;
   }

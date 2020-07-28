@@ -49,7 +49,7 @@ namespace views {
 
 namespace {
 
-#if defined(OS_MACOSX)
+#if defined(OS_APPLE)
 const int kControlCommandModifier = ui::EF_COMMAND_DOWN;
 #else
 const int kControlCommandModifier = ui::EF_CONTROL_DOWN;
@@ -720,8 +720,8 @@ TEST_F(LabelTest, MultiLineSizing) {
             required_size.width() + border.width());
 }
 
-#if !defined(OS_MACOSX)
-// TODO(warx): Remove !defined(OS_MACOSX) once SetMaxLines() is applied to MAC
+#if !defined(OS_APPLE)
+// TODO(warx): Remove !defined(OS_APPLE) once SetMaxLines() is applied to MAC
 // (crbug.com/758720).
 TEST_F(LabelTest, MultiLineSetMaxLines) {
   // Ensure SetMaxLines clamps the line count of a string with returns.

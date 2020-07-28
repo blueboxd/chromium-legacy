@@ -53,7 +53,7 @@ class COMPONENT_EXPORT(UI_BASE_CLIPBOARD) Clipboard
       case ClipboardBuffer::kCopyPaste:
         return true;
       case ClipboardBuffer::kSelection:
-#if !defined(OS_WIN) && !defined(OS_MACOSX) && !defined(OS_CHROMEOS)
+#if !defined(OS_WIN) && !defined(OS_APPLE) && !defined(OS_CHROMEOS)
         return true;
 #else
         return false;

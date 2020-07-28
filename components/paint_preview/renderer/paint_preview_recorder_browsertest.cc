@@ -88,6 +88,8 @@ TEST_F(PaintPreviewRecorderRenderViewTest, TestCaptureMainFrameAndClipping) {
   params->guid = token;
   params->clip_rect = gfx::Rect();
   params->is_main_frame = true;
+  params->capture_links = true;
+  params->max_capture_size = 0;
   base::File skp_file(skp_path,
                       base::File::FLAG_CREATE_ALWAYS | base::File::FLAG_WRITE);
   params->file = std::move(skp_file);
@@ -166,6 +168,8 @@ TEST_F(PaintPreviewRecorderRenderViewTest, TestCaptureMainFrameWithScroll) {
   params->guid = token;
   params->clip_rect = gfx::Rect();
   params->is_main_frame = true;
+  params->capture_links = true;
+  params->max_capture_size = 0;
   base::File skp_file(skp_path,
                       base::File::FLAG_CREATE_ALWAYS | base::File::FLAG_WRITE);
   params->file = std::move(skp_file);
@@ -224,6 +228,8 @@ TEST_F(PaintPreviewRecorderRenderViewTest, TestCaptureFragment) {
   params->guid = token;
   params->clip_rect = gfx::Rect();
   params->is_main_frame = true;
+  params->capture_links = true;
+  params->max_capture_size = 0;
   base::File skp_file(skp_path,
                       base::File::FLAG_CREATE_ALWAYS | base::File::FLAG_WRITE);
   params->file = std::move(skp_file);
@@ -259,6 +265,8 @@ TEST_F(PaintPreviewRecorderRenderViewTest, TestCaptureInvalidFile) {
   params->guid = token;
   params->clip_rect = gfx::Rect();
   params->is_main_frame = true;
+  params->capture_links = true;
+  params->max_capture_size = 0;
   base::File skp_file;  // Invalid file.
   params->file = std::move(skp_file);
 
@@ -286,6 +294,8 @@ TEST_F(PaintPreviewRecorderRenderViewTest, TestCaptureMainFrameAndLocalFrame) {
   params->guid = token;
   params->clip_rect = gfx::Rect();
   params->is_main_frame = true;
+  params->capture_links = true;
+  params->max_capture_size = 0;
   base::File skp_file(skp_path,
                       base::File::FLAG_CREATE_ALWAYS | base::File::FLAG_WRITE);
   params->file = std::move(skp_file);
@@ -320,6 +330,8 @@ TEST_F(PaintPreviewRecorderRenderViewTest, TestCaptureLocalFrame) {
   params->guid = token;
   params->clip_rect = gfx::Rect();
   params->is_main_frame = false;
+  params->capture_links = true;
+  params->max_capture_size = 0;
   base::File skp_file(skp_path,
                       base::File::FLAG_CREATE_ALWAYS | base::File::FLAG_WRITE);
   params->file = std::move(skp_file);

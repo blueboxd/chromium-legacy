@@ -8,7 +8,7 @@
 #include <windows.h>
 #elif defined(OS_IOS)
 #include <CoreGraphics/CoreGraphics.h>
-#elif defined(OS_MACOSX)
+#elif defined(OS_APPLE)
 #include <ApplicationServices/ApplicationServices.h>
 #endif
 
@@ -20,7 +20,7 @@
 
 namespace gfx {
 
-#if defined(OS_MACOSX) || defined(OS_IOS)
+#if defined(OS_APPLE)
 Size::Size(const CGSize& s)
     : width_(s.width < 0 ? 0 : s.width),
       height_(s.height < 0 ? 0 : s.height) {
@@ -48,7 +48,7 @@ SIZE Size::ToSIZE() const {
   s.cy = height();
   return s;
 }
-#elif defined(OS_MACOSX) || defined(OS_IOS)
+#elif defined(OS_APPLE)
 CGSize Size::ToCGSize() const {
   return CGSizeMake(width(), height());
 }

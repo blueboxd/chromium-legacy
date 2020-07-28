@@ -35,7 +35,7 @@ int NaClMain(const content::MainFunctionParams& parameters) {
       std::make_unique<base::PowerMonitorDeviceSource>());
   base::HighResolutionTimerManager hi_res_timer_manager;
 
-#if defined(OS_WIN) || defined(OS_MACOSX) || defined(OS_LINUX) || \
+#if defined(OS_WIN) || defined(OS_APPLE) || defined(OS_LINUX) || \
     defined(OS_ANDROID)
   NaClMainPlatformDelegate platform;
   bool no_sandbox =

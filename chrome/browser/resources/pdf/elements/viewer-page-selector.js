@@ -26,9 +26,9 @@ Polymer({
     },
   },
 
-  /** @return {!CrInputElement} */
+  /** @return {!HTMLInputElement} */
   get pageSelector() {
-    return /** @type {!CrInputElement} */ (this.$.pageselector);
+    return /** @type {!HTMLInputElement} */ (this.$.pageselector);
   },
 
   pageNoCommitted() {

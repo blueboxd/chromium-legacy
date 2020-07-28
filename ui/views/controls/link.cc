@@ -210,7 +210,7 @@ void Link::ConfigureFocus() {
   if (GetText().empty()) {
     SetFocusBehavior(FocusBehavior::NEVER);
   } else {
-#if defined(OS_MACOSX)
+#if defined(OS_APPLE)
     SetFocusBehavior(FocusBehavior::ACCESSIBLE_ONLY);
 #else
     SetFocusBehavior(FocusBehavior::ALWAYS);

@@ -43,7 +43,7 @@ namespace blink {
 // 99) MacEditingBehavior is used a fallback.
 static EditingBehaviorType EditingBehaviorTypeForPlatform() {
   return
-#if defined(OS_MACOSX)
+#if defined(OS_APPLE)
       kEditingMacBehavior
 #elif defined(OS_WIN)
       kEditingWindowsBehavior

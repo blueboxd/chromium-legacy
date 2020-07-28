@@ -70,6 +70,12 @@ class AssistiveSuggester {
 
   void RecordAssistiveMatchMetricsForAction(AssistiveType action);
 
+  // Only the first applicable reason in DisabledReason enum is returned.
+  DisabledReason GetDisabledReasonForEmoji();
+
+  // Only the first applicable reason in DisabledReason enum is returned.
+  DisabledReason GetDisabledReasonForPersonalInfo();
+
   bool IsActionEnabled(AssistiveType action);
 
   Profile* profile_;

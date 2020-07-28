@@ -34,6 +34,11 @@ class WizardContext {
 
   // Indicates that user selects to sign in or create a new account for a child.
   bool sign_in_as_child = false;
+
+  // Whether the enrollment screen should be skipped when enrollment isn't
+  // mandatory so that the normal gaia login is shown. Set by WizardController
+  // SkipToLoginForTesting and checked on EnrollmentScreen::MaybeSkip
+  bool skip_non_forced_enrollment_for_tests = false;
 };
 
 }  // namespace chromeos

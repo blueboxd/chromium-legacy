@@ -25,7 +25,7 @@ const char kUnknown[] = "unknown";
 // The request extra information is the OS and architecture, this helps
 // the server select the right package to be delivered.
 const char kOs[] =
-#if defined(OS_MACOSX)
+#if defined(OS_APPLE)
     "mac";
 #elif defined(OS_WIN)
     "win";

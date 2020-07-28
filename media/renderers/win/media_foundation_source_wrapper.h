@@ -44,7 +44,6 @@ class MediaFoundationSourceWrapper
   void DetachResource();
 
   HRESULT RuntimeClassInitialize(
-      uint64_t playback_element_id,
       MediaResource* media_resource,
       scoped_refptr<base::SequencedTaskRunner> task_runner);
 
@@ -126,11 +125,13 @@ class MediaFoundationSourceWrapper
   scoped_refptr<base::SequencedTaskRunner> task_runner_;
   std::vector<Microsoft::WRL::ComPtr<MediaFoundationStreamWrapper>>
       media_streams_;
+
   // |mf_media_event_queue_| is safe to be called on any thread.
   Microsoft::WRL::ComPtr<IMFMediaEventQueue> mf_media_event_queue_;
+
   // The proxy interface to communicate with MFCdm.
   Microsoft::WRL::ComPtr<IMFCdmProxy> cdm_proxy_;
-  uint64_t playback_element_id_ = 0;
+
   bool video_stream_enabled_ = true;
   float current_rate_ = 0.0f;
   bool presentation_ended_ = false;

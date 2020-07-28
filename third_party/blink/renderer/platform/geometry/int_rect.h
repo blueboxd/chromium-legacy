@@ -38,7 +38,7 @@
 #include "third_party/skia/include/core/SkRect.h"
 #include "ui/gfx/geometry/rect.h"
 
-#if defined(OS_MACOSX)
+#if defined(OS_APPLE)
 typedef struct CGRect CGRect;
 
 #ifdef __OBJC__
@@ -179,7 +179,7 @@ class PLATFORM_EXPORT IntRect {
     return IntRect(location_.TransposedPoint(), size_.TransposedSize());
   }
 
-#if defined(OS_MACOSX)
+#if defined(OS_APPLE)
   explicit operator CGRect() const;
 #endif
 

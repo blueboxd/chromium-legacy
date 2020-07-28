@@ -117,9 +117,9 @@ int LLVMFuzzerTestOneInput(const uint8_t* data, size_t data_size) {
 // Explicitly specify some attributes to avoid issues with the linker dead-
 // stripping the following function on macOS, as it is not called directly
 // by fuzz target. LibFuzzer runtime uses dlsym() to resolve that function.
-#if defined(OS_MACOSX)
+#if defined(OS_APPLE)
 __attribute__((used)) __attribute__((visibility("default")))
-#endif  // defined(OS_MACOSX)
+#endif  // defined(OS_APPLE)
 extern "C" int
 LLVMFuzzerInitialize(int* argc, char*** argv) {
   return blink::LLVMFuzzerInitialize(argc, argv);

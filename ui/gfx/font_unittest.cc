@@ -53,7 +53,7 @@ TEST_F(FontTest, DefaultFont) {
 
 TEST_F(FontTest, LoadArial) {
   Font cf(kTestFontName, 16);
-#if defined(OS_MACOSX) || defined(OS_IOS)
+#if defined(OS_APPLE)
   EXPECT_TRUE(cf.GetNativeFont());
 #endif
   EXPECT_EQ(cf.GetStyle(), Font::NORMAL);
@@ -66,7 +66,7 @@ TEST_F(FontTest, LoadArial) {
 TEST_F(FontTest, LoadArialBold) {
   Font cf(kTestFontName, 16);
   Font bold(cf.Derive(0, Font::NORMAL, Font::Weight::BOLD));
-#if defined(OS_MACOSX) || defined(OS_IOS)
+#if defined(OS_APPLE)
   EXPECT_TRUE(bold.GetNativeFont());
 #endif
   EXPECT_EQ(bold.GetStyle(), Font::NORMAL);

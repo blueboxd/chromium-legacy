@@ -210,7 +210,7 @@ void ApplyRenderParams(const FontRenderParams& params,
 // for rendering and translation between logical and visual data.
 class GFX_EXPORT RenderText {
  public:
-#if defined(OS_MACOSX)
+#if defined(OS_APPLE)
   // On Mac, while selecting text if the cursor is outside the vertical text
   // bounds, drag to the end of the text.
   static constexpr bool kDragToEndIfOutsideVerticalBounds = true;

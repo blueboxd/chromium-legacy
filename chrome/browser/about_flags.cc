@@ -3946,6 +3946,11 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kTabGroupsCollapseDescription, kOsDesktop,
      FEATURE_VALUE_TYPE(features::kTabGroupsCollapse)},
 
+    {"tab-groups-collapse-freezing",
+     flag_descriptions::kTabGroupsCollapseFreezingName,
+     flag_descriptions::kTabGroupsCollapseFreezingDescription, kOsDesktop,
+     FEATURE_VALUE_TYPE(features::kTabGroupsCollapseFreezing)},
+
     {"tab-groups-feedback", flag_descriptions::kTabGroupsFeedbackName,
      flag_descriptions::kTabGroupsFeedbackDescription, kOsDesktop,
      FEATURE_VALUE_TYPE(features::kTabGroupsFeedback)},

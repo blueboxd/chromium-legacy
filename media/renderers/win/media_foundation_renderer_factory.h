@@ -30,10 +30,6 @@ class MEDIA_EXPORT MediaFoundationRendererFactory : public RendererFactory {
       VideoRendererSink* video_renderer_sink,
       RequestOverlayInfoCB request_overlay_info_cb,
       const gfx::ColorSpace& target_color_space) final;
-
- private:
-  // Zero is treated as invalid playback element ID by MediaFoundationRenderer.
-  uint64_t next_playback_element_id_ = 1;
 };
 
 }  // namespace media

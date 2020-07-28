@@ -78,9 +78,9 @@ int DesktopProcessMain() {
   std::unique_ptr<DesktopEnvironmentFactory> desktop_environment_factory;
 #if defined(OS_WIN)
   // base::Unretained() is safe here: |desktop_process| outlives run_loop.Run().
-  auto inject_sas_closure = base::Bind(&DesktopProcess::InjectSas,
-                                       base::Unretained(&desktop_process));
-  auto lock_workstation_closure = base::Bind(
+  auto inject_sas_closure = base::BindRepeating(
+      &DesktopProcess::InjectSas, base::Unretained(&desktop_process));
+  auto lock_workstation_closure = base::BindRepeating(
       &DesktopProcess::LockWorkstation, base::Unretained(&desktop_process));
 
   desktop_environment_factory.reset(new SessionDesktopEnvironmentFactory(

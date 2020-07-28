@@ -50,6 +50,7 @@ class CryptAuthGCMManagerImpl : public CryptAuthGCMManager,
 
   // CryptAuthGCMManager:
   void StartListening() override;
+  bool IsListening() override;
   void RegisterWithGCM() override;
   std::string GetRegistrationId() override;
   void AddObserver(Observer* observer) override;

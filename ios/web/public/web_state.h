@@ -346,7 +346,6 @@ class WebState : public base::SupportsUserData {
   //      the security state (e.g. a non-secure form element is edited).
   virtual void DidChangeVisibleSecurityState() = 0;
 
- public:
   virtual InterfaceBinder* GetInterfaceBinderForMainFrame();
 
   // Whether this WebState was created with an opener.

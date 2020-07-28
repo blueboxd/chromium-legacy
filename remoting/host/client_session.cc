@@ -181,8 +181,8 @@ void ClientSession::SetCapabilities(
   if (HasCapability(capabilities_, protocol::kFileTransferCapability)) {
     data_channel_manager_.RegisterCreateHandlerCallback(
         kFileTransferDataChannelPrefix,
-        base::Bind(&ClientSession::CreateFileTransferMessageHandler,
-                   base::Unretained(this)));
+        base::BindRepeating(&ClientSession::CreateFileTransferMessageHandler,
+                            base::Unretained(this)));
   }
 
   std::vector<ActionRequest::Action> supported_actions;

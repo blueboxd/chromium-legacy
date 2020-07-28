@@ -49,7 +49,7 @@ void FireFocusAfterMenuClose(base::WeakPtr<Widget> widget) {
 
 namespace internal {
 
-#if !defined(OS_MACOSX)
+#if !defined(OS_APPLE)
 MenuRunnerImplInterface* MenuRunnerImplInterface::Create(
     ui::MenuModel* menu_model,
     int32_t run_types,
@@ -246,7 +246,7 @@ bool MenuRunnerImpl::ShouldShowMnemonics(int32_t run_types) {
   // TODO(https://crbug.com/1098203): fix mnemonics for Ozone/Linux.
   if (!features::IsUsingOzonePlatform())
     show_mnemonics |= ui::IsAltPressed();
-#elif defined(OS_MACOSX)
+#elif defined(OS_APPLE)
   show_mnemonics = false;
 #endif
   return show_mnemonics;

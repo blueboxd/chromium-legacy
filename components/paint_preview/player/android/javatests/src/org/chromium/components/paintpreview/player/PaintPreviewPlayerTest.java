@@ -9,6 +9,7 @@ import android.support.test.InstrumentationRegistry;
 import android.support.test.uiautomator.By;
 import android.support.test.uiautomator.UiDevice;
 import android.support.test.uiautomator.UiObject2;
+import android.util.Size;
 import android.view.View;
 import android.view.ViewGroup;
 
@@ -24,7 +25,6 @@ import org.junit.runner.RunWith;
 import org.chromium.base.task.PostTask;
 import org.chromium.base.test.BaseJUnit4ClassRunner;
 import org.chromium.base.test.util.CallbackHelper;
-import org.chromium.base.test.util.DisabledTest;
 import org.chromium.base.test.util.ScalableTimeout;
 import org.chromium.content_public.browser.UiThreadTaskTraits;
 import org.chromium.content_public.browser.test.util.Criteria;
@@ -85,13 +85,8 @@ public class PaintPreviewPlayerTest extends DummyUiActivityTestCase {
         destroyed.waitForFirst();
     }
 
-    /**
-     * Tests the the player correctly initializes and displays a sample paint preview with 1 frame.
-     */
-    @Test
-    @MediumTest
-    public void singleFrameDisplayTest() {
-        initPlayerManager();
+    private void displayTest(boolean multipleFrames) {
+        initPlayerManager(multipleFrames);
         final View playerHostView = mPlayerManager.getView();
         final View activityContentView = getActivity().findViewById(android.R.id.content);
 
@@ -107,12 +102,31 @@ public class PaintPreviewPlayerTest extends DummyUiActivityTestCase {
     }
 
     /**
+     * Tests the the player correctly initializes and displays a sample paint preview with 1 frame.
+     */
+    @Test
+    @MediumTest
+    public void singleFrameDisplayTest() {
+        displayTest(false);
+    }
+
+    /**
+     * Tests the player correctly initializes and displays a sample paint preview with multiple
+     * frames.
+     */
+    @Test
+    @MediumTest
+    public void multiFrameDisplayTest() {
+        displayTest(true);
+    }
+
+    /**
      * Tests that link clicks in the player work correctly.
      */
     @Test
     @MediumTest
     public void linkClickTest() {
-        initPlayerManager();
+        initPlayerManager(true);
         final View playerHostView = mPlayerManager.getView();
 
         // Click on a link that is visible in the default viewport.
@@ -129,9 +143,8 @@ public class PaintPreviewPlayerTest extends DummyUiActivityTestCase {
 
     @Test
     @MediumTest
-    @DisabledTest(message = "https://crbug.com/1093083")
     public void overscrollRefreshTest() throws Exception {
-        initPlayerManager();
+        initPlayerManager(true);
         UiDevice uiDevice = UiDevice.getInstance(InstrumentationRegistry.getInstrumentation());
         int deviceHeight = uiDevice.getDisplayHeight();
         int statusBarHeight = statusBarHeight();
@@ -174,7 +187,7 @@ public class PaintPreviewPlayerTest extends DummyUiActivityTestCase {
     @Test
     @MediumTest
     public void scaleSmokeTest() throws Exception {
-        initPlayerManager();
+        initPlayerManager(true);
         UiDevice device = UiDevice.getInstance(InstrumentationRegistry.getInstrumentation());
 
         // Query all FrameLayout objects as the PlayerFrameView isn't recognized.
@@ -239,7 +252,47 @@ public class PaintPreviewPlayerTest extends DummyUiActivityTestCase {
         uiDevice.swipe(50, fromY, 50, toY, swipeSteps);
     }
 
-    private void initPlayerManager() {
+    private void initSingleSkp(PaintPreviewTestService service) {
+        FrameData singleFrame = new FrameData(new Size(TEST_PAGE_WIDTH, TEST_PAGE_HEIGHT),
+                new Rect[] {mInViewportLinkRect, mOutOfViewportLinkRect},
+                new String[] {TEST_IN_VIEWPORT_LINK_URL, TEST_OUT_OF_VIEWPORT_LINK_URL},
+                new Rect[] {}, new FrameData[] {});
+        Assert.assertTrue(service.createFramesForKey(TEST_DIRECTORY_KEY, TEST_URL, singleFrame));
+    }
+
+    private void initMultiSkp(PaintPreviewTestService service) {
+        // This creates a frame tree of the form
+        //
+        //    Main
+        //    /  \
+        //   A    B
+        //   |    |
+        //   C    D
+        //
+        // A: Doesn't scroll contains a nested c
+        // B: Scrolls contains a nested d out of frame
+        // C: Doesn't scroll
+        // D: Scrolls
+
+        FrameData childD = new FrameData(new Size(300, 500), new Rect[] {}, new String[] {},
+                new Rect[] {}, new FrameData[] {});
+        FrameData childB = new FrameData(new Size(900, 3000), new Rect[] {}, new String[] {},
+                new Rect[] {new Rect(50, 2000, 150, 2100)}, new FrameData[] {childD});
+
+        FrameData childC = new FrameData(new Size(400, 200), new Rect[] {}, new String[] {},
+                new Rect[] {}, new FrameData[] {});
+        FrameData childA = new FrameData(new Size(500, 300), new Rect[] {}, new String[] {},
+                new Rect[] {new Rect(50, 50, 450, 250)}, new FrameData[] {childC});
+
+        FrameData rootFrame = new FrameData(new Size(TEST_PAGE_WIDTH, TEST_PAGE_HEIGHT),
+                new Rect[] {mInViewportLinkRect, mOutOfViewportLinkRect},
+                new String[] {TEST_IN_VIEWPORT_LINK_URL, TEST_OUT_OF_VIEWPORT_LINK_URL},
+                new Rect[] {new Rect(100, 100, 600, 400), new Rect(50, 1000, 700, 2000)},
+                new FrameData[] {childA, childB});
+        Assert.assertTrue(service.createFramesForKey(TEST_DIRECTORY_KEY, TEST_URL, rootFrame));
+    }
+
+    private void initPlayerManager(boolean multiSkp) {
         mLinkClickHandler = new TestLinkClickHandler();
         mRefreshedCallback = new CallbackHelper();
         CallbackHelper viewReady = new CallbackHelper();
@@ -248,17 +301,16 @@ public class PaintPreviewPlayerTest extends DummyUiActivityTestCase {
         PostTask.postTask(UiThreadTaskTraits.DEFAULT, () -> {
             PaintPreviewTestService service =
                     new PaintPreviewTestService(mTempFolder.getRoot().getPath());
-            Assert.assertTrue(service.createSingleSkpForKey(TEST_DIRECTORY_KEY, TEST_URL,
-                    TEST_PAGE_WIDTH, TEST_PAGE_HEIGHT,
-                    new Rect[] {mInViewportLinkRect, mOutOfViewportLinkRect},
-                    new String[] {TEST_IN_VIEWPORT_LINK_URL, TEST_OUT_OF_VIEWPORT_LINK_URL}));
+            if (multiSkp) {
+                initMultiSkp(service);
+            } else {
+                initSingleSkp(service);
+            }
+
             mPlayerManager = new PlayerManager(new GURL(TEST_URL), getActivity(), service,
-                    TEST_DIRECTORY_KEY, mLinkClickHandler,
-                    ()
-                            -> { mRefreshedCallback.notifyCalled(); },
-                    ()
-                            -> { viewReady.notifyCalled(); },
-                    null, 0xffffffff, () -> { mInitializationFailed = true; }, false);
+                    TEST_DIRECTORY_KEY, mLinkClickHandler, mRefreshedCallback::notifyCalled,
+                    viewReady::notifyCalled, null, 0xffffffff,
+                    () -> { mInitializationFailed = true; }, false);
             mPlayerManager.setCompressOnClose(false);
             getActivity().setContentView(mPlayerManager.getView());
         });
@@ -285,6 +337,14 @@ public class PaintPreviewPlayerTest extends DummyUiActivityTestCase {
                     ((ViewGroup) mPlayerManager.getView()).getChildCount(),
                     Matchers.greaterThan(0));
         }, TIMEOUT_MS, CriteriaHelper.DEFAULT_POLLING_INTERVAL);
+
+        CriteriaHelper.pollUiThread(() -> {
+            Criteria.checkThat("Required bitmaps were not loaded.",
+                    mPlayerManager.checkRequiredBitmapsLoadedForTest(), Matchers.is(true));
+        }, TIMEOUT_MS, CriteriaHelper.DEFAULT_POLLING_INTERVAL);
+        if (mInitializationFailed) {
+            Assert.fail("Compositor may have crashed.");
+        }
     }
 
     /*

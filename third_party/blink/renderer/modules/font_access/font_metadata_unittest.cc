@@ -18,7 +18,7 @@ namespace blink {
 
 TEST(FontMetadata, TestStrings8And16Bits) {
   std::vector<FontEnumerationEntry> expectations;
-#if defined(OS_MACOSX)
+#if defined(OS_APPLE)
   expectations.push_back(FontEnumerationEntry{"Monaco", "Monaco", "Monaco"});
   expectations.push_back(
       FontEnumerationEntry{"Menlo-Regular", "Menlo Regular", "Menlo"});

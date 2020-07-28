@@ -58,8 +58,7 @@ class MediaStreamDevicesControllerTest : public WebRtcTestBase {
     EXPECT_EQ(devices.empty(), !ui);
     media_stream_devices_ = devices;
     media_stream_result_ = result;
-    quit_closure_.Run();
-    quit_closure_ = base::Closure();
+    std::move(quit_closure_).Run();
   }
 
  protected:
@@ -252,7 +251,7 @@ class MediaStreamDevicesControllerTest : public WebRtcTestBase {
   blink::MediaStreamDevices media_stream_devices_;
   blink::mojom::MediaStreamRequestResult media_stream_result_;
 
-  base::Closure quit_closure_;
+  base::OnceClosure quit_closure_;
 
   std::unique_ptr<permissions::MockPermissionPromptFactory> prompt_factory_;
 

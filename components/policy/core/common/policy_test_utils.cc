@@ -15,7 +15,7 @@
 #include "build/build_config.h"
 #include "components/policy/core/common/policy_bundle.h"
 
-#if defined(OS_IOS) || defined(OS_MACOSX)
+#if defined(OS_APPLE)
 #include <CoreFoundation/CoreFoundation.h>
 
 #include "base/mac/scoped_cftyperef.h"
@@ -53,7 +53,7 @@ bool PolicyServiceIsEmpty(const PolicyService* service) {
   return map.empty();
 }
 
-#if defined(OS_IOS) || defined(OS_MACOSX)
+#if defined(OS_APPLE)
 CFPropertyListRef ValueToProperty(const base::Value& value) {
   switch (value.type()) {
     case base::Value::Type::NONE:
@@ -146,7 +146,7 @@ CFPropertyListRef ValueToProperty(const base::Value& value) {
 
   return NULL;
 }
-#endif  // defined(OS_IOS) || defined(OS_MACOSX)
+#endif  // defined(OS_APPLE)
 
 }  // namespace policy
 

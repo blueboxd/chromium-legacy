@@ -192,13 +192,8 @@ HRESULT MediaFoundationRenderer::CreateMediaEngine(
     return E_INVALIDARG;
   }
 
-  if (!playback_element_id_) {
-    DLOG(ERROR) << "Invalid playback_element_id_.";
-    return HRESULT_FROM_WIN32(ERROR_INVALID_STATE);
-  }
-
   RETURN_IF_FAILED(MakeAndInitialize<MediaFoundationSourceWrapper>(
-      &mf_source_, playback_element_id_, media_resource, task_runner_));
+      &mf_source_, media_resource, task_runner_));
 
   if (force_dcomp_mode_for_testing_)
     SetDCompMode(true, base::DoNothing());
@@ -443,13 +438,6 @@ void MediaFoundationRenderer::SetVideoStreamEnabled(bool enabled) {
     mf_media_engine_->Pause();
     mf_media_engine_->Play();
   }
-}
-
-void MediaFoundationRenderer::SetPlaybackElementId(
-    uint64_t playback_element_id) {
-  DVLOG_FUNC(1) << "playback_element_id=" << playback_element_id;
-
-  playback_element_id_ = playback_element_id;
 }
 
 void MediaFoundationRenderer::SetOutputParams(const gfx::Rect& output_rect) {

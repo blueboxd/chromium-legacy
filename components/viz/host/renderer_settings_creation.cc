@@ -17,7 +17,7 @@
 #include "components/viz/common/switches.h"
 #include "ui/base/ui_base_switches.h"
 
-#if defined(OS_MACOSX)
+#if defined(OS_APPLE)
 #include "ui/base/cocoa/remote_layer_api.h"
 #endif
 
@@ -55,7 +55,7 @@ RendererSettings CreateRendererSettings() {
   base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();
   renderer_settings.partial_swap_enabled =
       !command_line->HasSwitch(switches::kUIDisablePartialSwap);
-#if defined(OS_MACOSX)
+#if defined(OS_APPLE)
   renderer_settings.release_overlay_resources_after_gpu_query = true;
   renderer_settings.auto_resize_output_surface = false;
 #elif defined(OS_CHROMEOS)
@@ -64,7 +64,7 @@ RendererSettings CreateRendererSettings() {
   renderer_settings.allow_antialiasing =
       !command_line->HasSwitch(switches::kDisableCompositedAntialiasing);
   renderer_settings.use_skia_renderer = features::IsUsingSkiaRenderer();
-#if defined(OS_MACOSX)
+#if defined(OS_APPLE)
   renderer_settings.allow_overlays =
       ui::RemoteLayerAPISupported() &&
       !base::CommandLine::ForCurrentProcess()->HasSwitch(

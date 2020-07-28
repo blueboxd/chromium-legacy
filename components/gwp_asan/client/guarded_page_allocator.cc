@@ -26,7 +26,7 @@
 #include "components/crash/core/app/crashpad.h"  // nogncheck
 #endif
 
-#if defined(OS_MACOSX)
+#if defined(OS_APPLE)
 #include <pthread.h>
 #endif
 
@@ -54,7 +54,7 @@ size_t GetStackTrace(void** trace, size_t count) {
 // Report a tid that matches what crashpad collects which may differ from what
 // base::PlatformThread::CurrentId() returns.
 uint64_t ReportTid() {
-#if !defined(OS_MACOSX)
+#if !defined(OS_APPLE)
   return base::PlatformThread::CurrentId();
 #else
   uint64_t tid = base::kInvalidThreadId;
@@ -320,7 +320,7 @@ size_t GuardedPageAllocator::GetRequestedSize(const void* ptr) const {
   const uintptr_t addr = reinterpret_cast<uintptr_t>(ptr);
   AllocatorState::SlotIdx slot = state_.AddrToSlot(state_.GetPageAddr(addr));
   AllocatorState::MetadataIdx metadata_idx = slot_to_metadata_idx_[slot];
-#if !defined(OS_MACOSX)
+#if !defined(OS_APPLE)
   CHECK_LT(metadata_idx, state_.num_metadata);
   CHECK_EQ(addr, metadata_[metadata_idx].alloc_ptr);
 #else

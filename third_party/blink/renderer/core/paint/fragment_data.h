@@ -35,15 +35,12 @@ class CORE_EXPORT FragmentData {
     paint_offset_ = paint_offset;
   }
 
-  // This is for LayoutShiftTracker.
-  // See PaintPropertyTreeBuilderFragmentContext::
-  //    ContainingBlockContext::offset_to_2d_translation_root for definition
-  // of 2d translation root.
-  const PhysicalRect& VisualRectIn2DTranslationRoot() const {
-    return visual_rect_in_2d_translation_root_;
+  // Visual rect in the space of the the local transform space.
+  const PhysicalRect& VisualRectForLayoutShiftTracking() const {
+    return visual_rect_for_layout_shift_tracking_;
   }
-  void SetVisualRectIn2DTranslationRoot(const PhysicalRect& rect) {
-    visual_rect_in_2d_translation_root_ = rect;
+  void SetVisualRectForLayoutShiftTracking(const PhysicalRect& rect) {
+    visual_rect_for_layout_shift_tracking_ = rect;
   }
 
   // An id for this object that is unique for the lifetime of the WebView.
@@ -264,7 +261,7 @@ class CORE_EXPORT FragmentData {
   RareData& EnsureRareData();
 
   PhysicalOffset paint_offset_;
-  PhysicalRect visual_rect_in_2d_translation_root_;
+  PhysicalRect visual_rect_for_layout_shift_tracking_;
 
   std::unique_ptr<RareData> rare_data_;
 };

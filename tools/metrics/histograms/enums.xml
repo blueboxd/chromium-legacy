@@ -21289,6 +21289,7 @@ Called by update_document_policy_enum.py.-->
   <int value="746" label="AuthNegotiateDelegateAllowlist"/>
   <int value="747" label="AuthServerAllowlist"/>
   <int value="748" label="InsecureFormsWarningsEnabled"/>
+  <int value="749" label="SpellcheckLanguageBlocklist"/>
 </enum>
 
 <enum name="EnterprisePolicyDeviceIdValidity">
@@ -28552,6 +28553,7 @@ Called by update_use_counter_feature_enum.py.-->
   <int value="3353"
       label="CrossBrowsingContextGroupMainFrameNulledNonEmptyNameAccessed"/>
   <int value="3354" label="PositionSticky"/>
+  <int value="3355" label="CommaSeparatorInAllowAttribute"/>
 </enum>
 
 <enum name="FeaturePolicyAllowlistType">
@@ -35416,6 +35418,14 @@ Called by update_gpu_driver_bug_workaround_entries.py.-->
   <int value="9" label="PERSONAL_LAST_NAME"/>
 </enum>
 
+<enum name="IMEAssistiveDisabledReason">
+  <int value="0" label="None"/>
+  <int value="1" label="Feature flag off"/>
+  <int value="2" label="Enterprise settings off"/>
+  <int value="3" label="User settings off"/>
+  <int value="4" label="Url or App not allowed"/>
+</enum>
+
 <enum name="IMECommitType">
   <obsolete>
     Deprecated 03/2015, and replaced by IMECommitType2.
@@ -39754,6 +39764,7 @@ from previous Chrome versions.
   <int value="-2090484194" label="ContextualSearchUrlActions:disabled"/>
   <int value="-2088555929" label="EnableAppGridGhost:enabled"/>
   <int value="-2088472280" label="KeyboardShortcutViewerApp:disabled"/>
+  <int value="-2084849051" label="TabGroupsCollapseFreezing:disabled"/>
   <int value="-2083998415" label="VrLaunchIntent:enabled"/>
   <int value="-2083195884" label="enable-firewall-hole-punching"/>
   <int value="-2082462043" label="ViewPasswords:disabled"/>
@@ -40133,6 +40144,7 @@ from previous Chrome versions.
   <int value="-1703709912" label="enable-new-ntp"/>
   <int value="-1703308540" label="disable-webaudio"/>
   <int value="-1701123067" label="ShowManagedUi:enabled"/>
+  <int value="-1698438797" label="TabGroupsCollapseFreezing:enabled"/>
   <int value="-1696778023"
       label="HappinessTrackingSurveysForDesktopSettings:disabled"/>
   <int value="-1696619241" label="OmniboxWrapPopupPosition:disabled"/>

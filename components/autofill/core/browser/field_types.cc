@@ -133,6 +133,205 @@ bool IsFillableFieldType(ServerFieldType field_type) {
   return false;
 }
 
+base::StringPiece FieldTypeToStringPiece(ServerFieldType type) {
+  // You are free to add or remove the String representation of ServerFieldType,
+  // but don't change any existing values, Android WebView presents them to
+  // Autofill Service as part of APIs.
+  switch (type) {
+    case NO_SERVER_DATA:
+      return "NO_SERVER_DATA";
+    case UNKNOWN_TYPE:
+      return "UNKNOWN_TYPE";
+    case EMPTY_TYPE:
+      return "EMPTY_TYPE";
+    case NAME_HONORIFIC_PREFIX:
+      return "NAME_HONORIFIC_PREFIX";
+    case NAME_FIRST:
+      return "NAME_FIRST";
+    case NAME_MIDDLE:
+      return "NAME_MIDDLE";
+    case NAME_LAST:
+      return "NAME_LAST";
+    case NAME_LAST_FIRST:
+      return "NAME_LAST_FIRST";
+    case NAME_LAST_CONJUNCTION:
+      return "NAME_LAST_CONJUNCTION";
+    case NAME_LAST_SECOND:
+      return "NAME_LAST_SECOND";
+    case NAME_MIDDLE_INITIAL:
+      return "NAME_MIDDLE_INITIAL";
+    case NAME_FULL:
+      return "NAME_FULL";
+    case NAME_SUFFIX:
+      return "NAME_SUFFIX";
+    case NAME_BILLING_FIRST:
+      return "NAME_BILLING_FIRST";
+    case NAME_BILLING_MIDDLE:
+      return "NAME_BILLING_MIDDLE";
+    case NAME_BILLING_LAST:
+      return "NAME_BILLING_LAST";
+    case NAME_BILLING_MIDDLE_INITIAL:
+      return "NAME_BILLING_MIDDLE_INITIAL";
+    case NAME_BILLING_FULL:
+      return "NAME_BILLING_FULL";
+    case NAME_BILLING_SUFFIX:
+      return "NAME_BILLING_SUFFIX";
+    case EMAIL_ADDRESS:
+      return "EMAIL_ADDRESS";
+    case PHONE_HOME_NUMBER:
+      return "PHONE_HOME_NUMBER";
+    case PHONE_HOME_CITY_CODE:
+      return "PHONE_HOME_CITY_CODE";
+    case PHONE_HOME_COUNTRY_CODE:
+      return "PHONE_HOME_COUNTRY_CODE";
+    case PHONE_HOME_CITY_AND_NUMBER:
+      return "PHONE_HOME_CITY_AND_NUMBER";
+    case PHONE_HOME_WHOLE_NUMBER:
+      return "PHONE_HOME_WHOLE_NUMBER";
+    case PHONE_HOME_EXTENSION:
+      return "PHONE_HOME_EXTENSION";
+    case PHONE_FAX_NUMBER:
+      return "PHONE_FAX_NUMBER";
+    case PHONE_FAX_CITY_CODE:
+      return "PHONE_FAX_CITY_CODE";
+    case PHONE_FAX_COUNTRY_CODE:
+      return "PHONE_FAX_COUNTRY_CODE";
+    case PHONE_FAX_CITY_AND_NUMBER:
+      return "PHONE_FAX_CITY_AND_NUMBER";
+    case PHONE_FAX_WHOLE_NUMBER:
+      return "PHONE_FAX_WHOLE_NUMBER";
+    case ADDRESS_HOME_LINE1:
+      return "ADDRESS_HOME_LINE1";
+    case ADDRESS_HOME_LINE2:
+      return "ADDRESS_HOME_LINE2";
+    case ADDRESS_HOME_LINE3:
+      return "ADDRESS_HOME_LINE3";
+    case ADDRESS_HOME_APT_NUM:
+      return "ADDRESS_HOME_APT_NUM";
+    case ADDRESS_HOME_CITY:
+      return "ADDRESS_HOME_CITY";
+    case ADDRESS_HOME_STATE:
+      return "ADDRESS_HOME_STATE";
+    case ADDRESS_HOME_ZIP:
+      return "ADDRESS_HOME_ZIP";
+    case ADDRESS_HOME_COUNTRY:
+      return "ADDRESS_HOME_COUNTRY";
+    case ADDRESS_BILLING_LINE1:
+      return "ADDRESS_BILLING_LINE1";
+    case ADDRESS_BILLING_LINE2:
+      return "ADDRESS_BILLING_LINE2";
+    case ADDRESS_BILLING_LINE3:
+      return "ADDRESS_BILLING_LINE3";
+    case ADDRESS_BILLING_APT_NUM:
+      return "ADDRESS_BILLING_APT_NUM";
+    case ADDRESS_BILLING_CITY:
+      return "ADDRESS_BILLING_CITY";
+    case ADDRESS_BILLING_STATE:
+      return "ADDRESS_BILLING_STATE";
+    case ADDRESS_BILLING_ZIP:
+      return "ADDRESS_BILLING_ZIP";
+    case ADDRESS_BILLING_COUNTRY:
+      return "ADDRESS_BILLING_COUNTRY";
+    case CREDIT_CARD_NAME_FULL:
+      return "CREDIT_CARD_NAME_FULL";
+    case CREDIT_CARD_NAME_FIRST:
+      return "CREDIT_CARD_NAME_FIRST";
+    case CREDIT_CARD_NAME_LAST:
+      return "CREDIT_CARD_NAME_LAST";
+    case CREDIT_CARD_NUMBER:
+      return "CREDIT_CARD_NUMBER";
+    case CREDIT_CARD_EXP_MONTH:
+      return "CREDIT_CARD_EXP_MONTH";
+    case CREDIT_CARD_EXP_2_DIGIT_YEAR:
+      return "CREDIT_CARD_EXP_2_DIGIT_YEAR";
+    case CREDIT_CARD_EXP_4_DIGIT_YEAR:
+      return "CREDIT_CARD_EXP_4_DIGIT_YEAR";
+    case CREDIT_CARD_EXP_DATE_2_DIGIT_YEAR:
+      return "CREDIT_CARD_EXP_DATE_2_DIGIT_YEAR";
+    case CREDIT_CARD_EXP_DATE_4_DIGIT_YEAR:
+      return "CREDIT_CARD_EXP_DATE_4_DIGIT_YEAR";
+    case CREDIT_CARD_TYPE:
+      return "CREDIT_CARD_TYPE";
+    case CREDIT_CARD_VERIFICATION_CODE:
+      return "CREDIT_CARD_VERIFICATION_CODE";
+    case COMPANY_NAME:
+      return "COMPANY_NAME";
+    case FIELD_WITH_DEFAULT_VALUE:
+      return "FIELD_WITH_DEFAULT_VALUE";
+    case PHONE_BILLING_NUMBER:
+      return "PHONE_BILLING_NUMBER";
+    case PHONE_BILLING_CITY_CODE:
+      return "PHONE_BILLING_CITY_CODE";
+    case PHONE_BILLING_COUNTRY_CODE:
+      return "PHONE_BILLING_COUNTRY_CODE";
+    case PHONE_BILLING_CITY_AND_NUMBER:
+      return "PHONE_BILLING_CITY_AND_NUMBER";
+    case PHONE_BILLING_WHOLE_NUMBER:
+      return "PHONE_BILLING_WHOLE_NUMBER";
+    case MERCHANT_EMAIL_SIGNUP:
+      return "MERCHANT_EMAIL_SIGNUP";
+    case MERCHANT_PROMO_CODE:
+      return "MERCHANT_PROMO_CODE";
+    case PASSWORD:
+      return "PASSWORD";
+    case ACCOUNT_CREATION_PASSWORD:
+      return "ACCOUNT_CREATION_PASSWORD";
+    case ADDRESS_HOME_STREET_ADDRESS:
+      return "ADDRESS_HOME_STREET_ADDRESS";
+    case ADDRESS_BILLING_STREET_ADDRESS:
+      return "ADDRESS_BILLING_STREET_ADDRESS";
+    case ADDRESS_HOME_SORTING_CODE:
+      return "ADDRESS_HOME_SORTING_CODE";
+    case ADDRESS_BILLING_SORTING_CODE:
+      return "ADDRESS_BILLING_SORTING_CODE";
+    case ADDRESS_HOME_DEPENDENT_LOCALITY:
+      return "ADDRESS_HOME_DEPENDENT_LOCALITY";
+    case ADDRESS_BILLING_DEPENDENT_LOCALITY:
+      return "ADDRESS_BILLING_DEPENDENT_LOCALITY";
+    case NOT_ACCOUNT_CREATION_PASSWORD:
+      return "NOT_ACCOUNT_CREATION_PASSWORD";
+    case USERNAME:
+      return "USERNAME";
+    case USERNAME_AND_EMAIL_ADDRESS:
+      return "USERNAME_AND_EMAIL_ADDRESS";
+    case NEW_PASSWORD:
+      return "NEW_PASSWORD";
+    case PROBABLY_NEW_PASSWORD:
+      return "PROBABLY_NEW_PASSWORD";
+    case NOT_NEW_PASSWORD:
+      return "NOT_NEW_PASSWORD";
+    case CONFIRMATION_PASSWORD:
+      return "CONFIRMATION_PASSWORD";
+    case SEARCH_TERM:
+      return "SEARCH_TERM";
+    case PRICE:
+      return "PRICE";
+    case NOT_PASSWORD:
+      return "NOT_PASSWORD";
+    case SINGLE_USERNAME:
+      return "SINGLE_USERNAME";
+    case NOT_USERNAME:
+      return "NOT_USERNAME";
+    case UPI_VPA:
+      return "UPI_VPA";
+    case ADDRESS_HOME_STREET:
+      return "ADDRESS_HOME_STREET";
+    case ADDRESS_HOME_HOUSE_NUMBER:
+      return "ADDRESS_HOME_HOUSE_NUMBER";
+    case ADDRESS_HOME_FLOOR:
+      return "ADDRESS_HOME_FLOOR";
+    case ADDRESS_HOME_OTHER_SUBUNIT:
+      return "ADDRESS_HOME_OTHER_SUBUNIT";
+    case AMBIGUOUS_TYPE:
+      return "AMBIGUOUS_TYPE";
+    case MAX_VALID_FIELD_TYPE:
+      return "";
+  }
+
+  NOTREACHED();
+  return "";
+}
+
 base::StringPiece FieldTypeToStringPiece(HtmlFieldType type) {
   switch (type) {
     case HTML_TYPE_UNSPECIFIED:
@@ -226,6 +425,7 @@ base::StringPiece FieldTypeToStringPiece(HtmlFieldType type) {
     case HTML_TYPE_UNRECOGNIZED:
       return "HTML_TYPE_UNRECOGNIZED";
   }
+
   NOTREACHED();
   return "";
 }

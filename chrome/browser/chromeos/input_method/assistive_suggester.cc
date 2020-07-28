@@ -111,6 +111,15 @@ void RecordAssistiveDisabled(AssistiveType type) {
   base::UmaHistogramEnumeration("InputMethod.Assistive.Disabled", type);
 }
 
+void RecordAssistiveDisabledReasonForPersonalInfo(DisabledReason reason) {
+  base::UmaHistogramEnumeration("InputMethod.Assistive.Disabled.PersonalInfo",
+                                reason);
+}
+
+void RecordAssistiveDisabledReasonForEmoji(DisabledReason reason) {
+  base::UmaHistogramEnumeration("InputMethod.Assistive.Disabled.Emoji", reason);
+}
+
 void RecordAssistiveCoverage(AssistiveType type) {
   base::UmaHistogramEnumeration("InputMethod.Assistive.Coverage", type);
 }
@@ -183,6 +192,16 @@ bool IsAllowedApp(const char* (&allowedApps)[N]) {
   return false;
 }
 
+bool IsAllowedUrlOrAppForPersonalInfoSuggestion() {
+  return IsAllowedUrl(kAllowedDomainsForPersonalInfoSuggester) ||
+         IsAllowedApp(kAllowedAppsForPersonalInfoSuggester);
+}
+
+bool IsAllowedUrlOrAppForEmojiSuggestion() {
+  return IsAllowedUrl(kAllowedDomainsForEmojiSuggester) ||
+         IsAllowedApp(kAllowedAppsForEmojiSuggester);
+}
+
 }  // namespace
 
 AssistiveSuggester::AssistiveSuggester(InputMethodEngine* engine,
@@ -207,6 +226,37 @@ bool AssistiveSuggester::IsEmojiSuggestAdditionEnabled() {
          profile_->GetPrefs()->GetBoolean(
              prefs::kEmojiSuggestionEnterpriseAllowed) &&
          profile_->GetPrefs()->GetBoolean(prefs::kEmojiSuggestionEnabled);
+}
+
+DisabledReason AssistiveSuggester::GetDisabledReasonForPersonalInfo() {
+  if (!base::FeatureList::IsEnabled(chromeos::features::kAssistPersonalInfo)) {
+    return DisabledReason::kFeatureFlagOff;
+  }
+  if (!profile_->GetPrefs()->GetBoolean(prefs::kAssistPersonalInfoEnabled)) {
+    return DisabledReason::kUserSettingsOff;
+  }
+  if (!IsAllowedUrlOrAppForPersonalInfoSuggestion()) {
+    return DisabledReason::kUrlOrAppNotAllowed;
+  }
+  return DisabledReason::kNone;
+}
+
+DisabledReason AssistiveSuggester::GetDisabledReasonForEmoji() {
+  if (!base::FeatureList::IsEnabled(
+          chromeos::features::kEmojiSuggestAddition)) {
+    return DisabledReason::kFeatureFlagOff;
+  }
+  if (!profile_->GetPrefs()->GetBoolean(
+          prefs::kEmojiSuggestionEnterpriseAllowed)) {
+    return DisabledReason::kEnterpriseSettingsOff;
+  }
+  if (!profile_->GetPrefs()->GetBoolean(prefs::kEmojiSuggestionEnabled)) {
+    return DisabledReason::kUserSettingsOff;
+  }
+  if (!IsAllowedUrlOrAppForEmojiSuggestion()) {
+    return DisabledReason::kUrlOrAppNotAllowed;
+  }
+  return DisabledReason::kNone;
 }
 
 bool AssistiveSuggester::IsActionEnabled(AssistiveType action) {
@@ -290,9 +340,12 @@ void AssistiveSuggester::RecordAssistiveMatchMetrics(const base::string16& text,
         ProposePersonalInfoAssistiveAction(text_before_cursor);
     if (action != AssistiveType::kGenericAction) {
       RecordAssistiveMatchMetricsForAction(action);
+      RecordAssistiveDisabledReasonForPersonalInfo(
+          GetDisabledReasonForPersonalInfo());
       // Emoji suggestion match
     } else if (emoji_suggester_.ShouldShowSuggestion(text_before_cursor)) {
       RecordAssistiveMatchMetricsForAction(AssistiveType::kEmoji);
+      RecordAssistiveDisabledReasonForEmoji(GetDisabledReasonForEmoji());
     }
   }
 }
@@ -326,8 +379,7 @@ bool AssistiveSuggester::Suggest(const base::string16& text,
       return current_suggester_->Suggest(text_before_cursor);
     }
     if (IsAssistPersonalInfoEnabled() &&
-        (IsAllowedUrl(kAllowedDomainsForPersonalInfoSuggester) ||
-         IsAllowedApp(kAllowedAppsForPersonalInfoSuggester)) &&
+        IsAllowedUrlOrAppForPersonalInfoSuggestion() &&
         personal_info_suggester_.Suggest(text_before_cursor)) {
       current_suggester_ = &personal_info_suggester_;
       if (personal_info_suggester_.IsFirstShown()) {
@@ -335,8 +387,7 @@ bool AssistiveSuggester::Suggest(const base::string16& text,
       }
       return true;
     } else if (IsEmojiSuggestAdditionEnabled() &&
-               (IsAllowedUrl(kAllowedDomainsForEmojiSuggester) ||
-                IsAllowedApp(kAllowedAppsForEmojiSuggester)) &&
+               IsAllowedUrlOrAppForEmojiSuggestion() &&
                emoji_suggester_.Suggest(text_before_cursor)) {
       current_suggester_ = &emoji_suggester_;
       RecordAssistiveCoverage(current_suggester_->GetProposeActionType());

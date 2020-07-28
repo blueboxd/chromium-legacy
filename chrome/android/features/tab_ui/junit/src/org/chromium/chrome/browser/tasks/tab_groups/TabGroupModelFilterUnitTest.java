@@ -105,23 +105,22 @@ public class TabGroupModelFilterUnitTest {
 
     private TabImpl prepareTab(int tabId, int rootId, int parentTabId) {
         TabImpl tab = mock(TabImpl.class);
+        CriticalPersistedTabData criticalPersistedTabData = mock(CriticalPersistedTabData.class);
+        UserDataHost userDataHost = new UserDataHost();
+        userDataHost.setUserData(CriticalPersistedTabData.class, criticalPersistedTabData);
+        when(tab.getUserDataHost()).thenReturn(userDataHost);
 
         doAnswer(invocation -> {
             int newRootId = invocation.getArgument(0);
-            UserDataHost userDataHost = new UserDataHost();
-            userDataHost.setUserData(
-                    CriticalPersistedTabData.class, CriticalPersistedTabData.build(tab));
-            when(tab.getUserDataHost()).thenReturn(userDataHost);
-            CriticalPersistedTabData.from(tab).setRootId(newRootId);
+            doReturn(newRootId).when(criticalPersistedTabData).getRootId();
             return null;
         })
-                .when(tab)
+                .when(criticalPersistedTabData)
                 .setRootId(anyInt());
 
         doReturn(tabId).when(tab).getId();
         doReturn(parentTabId).when(tab).getParentId();
-        tab.setRootId(rootId);
-
+        CriticalPersistedTabData.from(tab).setRootId(rootId);
         return tab;
     }
 
@@ -329,7 +328,7 @@ public class TabGroupModelFilterUnitTest {
     @Test
     public void addTab_DuringResettingFilterState() {
         mTabGroupModelFilter.resetFilterState();
-        verify(mock(TabImpl.class), never()).setRootId(anyInt());
+        verify(mock(CriticalPersistedTabData.class), never()).setRootId(anyInt());
     }
 
     @Test(expected = IllegalStateException.class)
@@ -899,7 +898,7 @@ public class TabGroupModelFilterUnitTest {
         assertTrue(mTabGroupModelFilter.isTabModelRestored());
 
         // Simulate that tab3 is going to be moved out of group.
-        mTab3.setRootId(TAB3_ID);
+        CriticalPersistedTabData.from(mTab3).setRootId(TAB3_ID);
 
         mTabModelObserverCaptor.getValue().didMoveTab(mTab3, POSITION3, POSITION6);
 
@@ -934,7 +933,7 @@ public class TabGroupModelFilterUnitTest {
     @Test
     public void resetFilterStateTest() {
         assertThat(CriticalPersistedTabData.from(mTab3).getRootId(), equalTo(TAB2_ROOT_ID));
-        mTab3.setRootId(TAB1_ROOT_ID);
+        CriticalPersistedTabData.from(mTab3).setRootId(TAB1_ROOT_ID);
         mTabGroupModelFilter.resetFilterState();
         assertThat(CriticalPersistedTabData.from(mTab3).getRootId(), equalTo(TAB1_ROOT_ID));
     }

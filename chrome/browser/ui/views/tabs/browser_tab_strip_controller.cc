@@ -12,6 +12,7 @@
 #include "base/bind.h"
 #include "base/callback.h"
 #include "base/command_line.h"
+#include "base/feature_list.h"
 #include "base/macros.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/metrics/user_metrics.h"
@@ -36,6 +37,7 @@
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/browser/ui/tabs/tab_strip_model_delegate.h"
 #include "chrome/browser/ui/tabs/tab_utils.h"
+#include "chrome/browser/ui/ui_features.h"
 #include "chrome/browser/ui/views/tabs/tab.h"
 #include "chrome/browser/ui/views/tabs/tab_drag_controller.h"
 #include "chrome/browser/ui/views/tabs/tab_groups_iph_controller.h"
@@ -397,8 +399,11 @@ bool BrowserTabStripController::ToggleTabGroupCollapsedState(
   }
 
   std::vector<int> tabs_in_group = ListTabsInGroup(group);
-  for (int i : tabs_in_group)
+  for (int i : tabs_in_group) {
     tabstrip_->tab_at(i)->SetVisible(is_currently_collapsed);
+    if (base::FeatureList::IsEnabled(features::kTabGroupsCollapseFreezing))
+      model_->GetWebContentsAt(i)->SetPageFrozen(!is_currently_collapsed);
+  }
 
   tab_groups::TabGroupVisualData new_data(
       GetGroupTitle(group), GetGroupColorId(group), !is_currently_collapsed);

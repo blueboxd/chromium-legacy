@@ -66,9 +66,10 @@ void NativeMessagingReaderTest::SetUp() {
 
   // base::Unretained is safe since no further tasks can run after
   // RunLoop::Run() returns.
-  reader_->Start(
-      base::Bind(&NativeMessagingReaderTest::OnMessage, base::Unretained(this)),
-      base::Bind(&NativeMessagingReaderTest::OnError, base::Unretained(this)));
+  reader_->Start(base::BindRepeating(&NativeMessagingReaderTest::OnMessage,
+                                     base::Unretained(this)),
+                 base::BindOnce(&NativeMessagingReaderTest::OnError,
+                                base::Unretained(this)));
 }
 
 void NativeMessagingReaderTest::RunAndWaitForOperationComplete() {

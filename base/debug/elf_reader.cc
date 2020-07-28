@@ -168,9 +168,7 @@ Optional<StringPiece> ReadElfLibraryName(const void* elf_mapped_base) {
          ++dynamic_iter) {
       if (dynamic_iter->d_tag == DT_STRTAB) {
 #if defined(OS_FUCHSIA) || defined(OS_ANDROID)
-        // Fuchsia and Android executables are position-independent, so treat
-        // pointers in the ELF header as offsets into the address space instead
-        // of absolute addresses.
+        // Fuchsia and Android do not relocate the symtab pointer on ELF load.
         strtab_addr = (size_t)dynamic_iter->d_un.d_ptr + (const char*)elf_base;
 #else
         strtab_addr = (const char*)dynamic_iter->d_un.d_ptr;

@@ -34,7 +34,7 @@ void CRASH_EXPORT ZombieDisable();
 
 }  // namespace ObjcEvilDoers
 
-#if defined(OS_MACOSX)
+#if defined(OS_APPLE)
 #if defined(__OBJC__)
 
 #import <Foundation/Foundation.h>

@@ -7,10 +7,11 @@
 
 def _GetPythonUnitTests(input_api, output_api):
   return input_api.canned_checks.GetUnitTestsRecursively(
-      input_api, output_api,
+      input_api,
+      output_api,
       input_api.PresubmitLocalPath(),
-      whitelist=['.*_test\\.py$'],
-      blacklist=[])
+      files_to_check=['.*_test\\.py$'],
+      files_to_skip=[])
 
 
 def CommonChecks(input_api, output_api):

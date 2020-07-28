@@ -34,18 +34,15 @@ class CORE_EXPORT LayoutShiftTracker final
   ~LayoutShiftTracker() = default;
   // |old_visual_rect| and |new_visual_rect| are in the local transform space:
   // |property_tree_state.Transform()|. As we don't save the old property tree
-  // state, the caller should adjust |old_rect| as if the difference between the
-  // old and the new local and ancestor transforms [1] caused the difference
-  // between the locations of |old_visual_rect| and |new_visual_rect|, so that
-  // we can calculate the shift caused by the changed transforms, in addition to
-  // the shift in the local transform space, by comparing locations of
-  // |old_visual_rect| and |new_visual_rect|.
-  //
-  // [1] We may stop at a certain ancestor transform and ignore changes of all
-  // higher transforms. This is how we ignore scrolls in layout shift tracking.
-  // We also can't accumulate offsets across non-2d-translation transforms.
-  // See PaintPropertyTreeBuilderFragmentContext::
-  //    ContainingBlockContext::offset_to_2d_translation_root.
+  // state, the caller should adjust |old_visual_rect| as if the difference
+  // between the old and new additional offsets to the layout shift root[1]
+  // caused the difference between the locations of |old_visual_rect| and
+  // |new_visual_rect|, in addition to that caused by the difference between
+  // the old and new paint offsets in the local transform space, so that we can
+  // calculate the total shift from the layout shift root by comparing locations
+  // of |old_visual_rect| and |new_visual_rect|.
+  // [1] See PaintPropertyTreeBuilderFragmentContext::ContainingBlockContext
+  // ::additional_offset_to_layout_shift_root_delta.
   void NotifyObjectPrePaint(const LayoutObject& object,
                             const PropertyTreeStateOrAlias& property_tree_state,
                             const PhysicalRect& old_visual_rect,

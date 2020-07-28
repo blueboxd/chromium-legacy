@@ -99,11 +99,10 @@ class SharedWorkerHost::ScopedProcessHostRef {
 };
 
 SharedWorkerHost::SharedWorkerHost(SharedWorkerServiceImpl* service,
-                                   SharedWorkerId id,
                                    const SharedWorkerInstance& instance,
                                    RenderProcessHost* worker_process_host)
     : service_(service),
-      id_(id),
+      token_(blink::SharedWorkerToken::Create()),
       instance_(instance),
       worker_process_host_(worker_process_host),
       scoped_process_host_ref_(
@@ -123,7 +122,7 @@ SharedWorkerHost::SharedWorkerHost(SharedWorkerServiceImpl* service,
 
   scoped_process_host_observer_.Add(worker_process_host_);
 
-  service_->NotifyWorkerCreated(id_, worker_process_host_->GetID(),
+  service_->NotifyWorkerCreated(token_, worker_process_host_->GetID(),
                                 devtools_handle_->dev_tools_token());
 
   // TODO(crbug.com/1085645): Emit UKM event notifying of the creation of the
@@ -144,8 +143,8 @@ SharedWorkerHost::~SharedWorkerHost() {
   // Notify the service that each client still connected will be removed and
   // that the worker will terminate.
   for (const auto& client : clients_)
-    service_->NotifyClientRemoved(id_, client.render_frame_host_id);
-  service_->NotifyBeforeWorkerDestroyed(id_);
+    service_->NotifyClientRemoved(token_, client.render_frame_host_id);
+  service_->NotifyBeforeWorkerDestroyed(token_);
 }
 
 void SharedWorkerHost::Start(
@@ -223,7 +222,7 @@ void SharedWorkerHost::Start(
   // Send the CreateSharedWorker message.
   factory_.Bind(std::move(factory));
   factory_->CreateSharedWorker(
-      std::move(info), instance_.constructor_origin(),
+      std::move(info), token_, instance_.constructor_origin(),
       GetContentClient()->browser()->GetUserAgent(),
       GetContentClient()->browser()->GetUserAgentMetadata(),
       devtools_handle_->pause_on_start(), devtools_handle_->dev_tools_token(),
@@ -476,7 +475,7 @@ void SharedWorkerHost::AddClient(
   worker_->Connect(info.connection_request_id, port.ReleaseHandle());
 
   // Notify that a new client was added now.
-  service_->NotifyClientAdded(id_, client_render_frame_host_id);
+  service_->NotifyClientAdded(token_, client_render_frame_host_id);
 }
 
 void SharedWorkerHost::SetAppCacheHandle(
@@ -498,7 +497,7 @@ void SharedWorkerHost::PruneNonExistentClients() {
   auto end = clients_.end();
   while (it != end) {
     if (!RenderFrameHostImpl::FromID(it->render_frame_host_id)) {
-      service_->NotifyClientRemoved(id_, it->render_frame_host_id);
+      service_->NotifyClientRemoved(token_, it->render_frame_host_id);
       it = clients_.erase(it);
     } else {
       ++it;
@@ -532,7 +531,7 @@ void SharedWorkerHost::OnClientConnectionLost() {
   for (auto it = clients_.begin(); it != clients_.end(); ++it) {
     if (!it->client.is_connected()) {
       // Notify the service that the client is gone.
-      service_->NotifyClientRemoved(id_, it->render_frame_host_id);
+      service_->NotifyClientRemoved(token_, it->render_frame_host_id);
       clients_.erase(it);
       break;
     }

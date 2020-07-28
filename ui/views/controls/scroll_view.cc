@@ -377,7 +377,7 @@ void ScrollView::Layout() {
   // When horizontal scrollbar is disabled, it should not matter
   // if its OverlapsContent matches vertical bar's.
   if (!hide_horizontal_scrollbar_) {
-#if defined(OS_MACOSX)
+#if defined(OS_APPLE)
     // On Mac, scrollbars may update their style one at a time, so they may
     // temporarily be of different types. Refuse to lay out at this point.
     if (horiz_sb_->OverlapsContent() != vert_sb_->OverlapsContent())

@@ -23,6 +23,7 @@ import static org.chromium.chrome.browser.password_check.PasswordCheckProperties
 import static org.chromium.content_public.browser.test.util.CriteriaHelper.pollUiThread;
 import static org.chromium.content_public.browser.test.util.TestThreadUtils.runOnUiThreadBlocking;
 
+import android.os.Bundle;
 import android.view.View;
 import android.widget.ImageButton;
 import android.widget.TextView;
@@ -67,6 +68,7 @@ public class PasswordCheckViewTest {
 
     private PropertyModel mModel = PasswordCheckProperties.createDefaultModel();
     private PasswordCheckFragmentView mPasswordCheckView;
+
     @Mock
     private PasswordCheckComponentUi mComponentUi;
     @Mock
@@ -84,7 +86,7 @@ public class PasswordCheckViewTest {
             mPasswordCheckView.setComponentDelegate(mComponentUi);
             return mComponentUi;
         });
-        mTestRule.startSettingsActivity();
+        setUpUiLaunchedFromSettings();
         runOnUiThreadBlocking(() -> {
             PasswordCheckCoordinator.setUpModelChangeProcessors(mModel, mPasswordCheckView);
         });
@@ -180,6 +182,13 @@ public class PasswordCheckViewTest {
                         .with(COMPROMISED_CREDENTIAL, credential)
                         .with(CREDENTIAL_HANDLER, mMockHandler)
                         .build());
+    }
+
+    private void setUpUiLaunchedFromSettings() {
+        Bundle fragmentArgs = new Bundle();
+        fragmentArgs.putInt(PasswordCheckFragmentView.PASSWORD_CHECK_REFERRER,
+                PasswordCheckReferrer.PASSWORD_SETTINGS);
+        mTestRule.startSettingsActivity(fragmentArgs);
     }
 
     private View getStatus() {

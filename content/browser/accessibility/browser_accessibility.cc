@@ -1549,7 +1549,9 @@ bool BrowserAccessibility::IsLeaf() const {
   // children. The only exception to enforce leafiness is when the button has
   // a single text child and to prevent screen readers from double speak.
   if (GetRole() == ax::mojom::Role::kButton) {
-    return InternalChildCount() == 1 && InternalGetFirstChild()->IsText();
+    uint32_t child_count = InternalChildCount();
+    return !child_count ||
+           (child_count == 1 && InternalGetFirstChild()->IsText());
   }
   return node()->IsLeaf();
 }
@@ -2265,6 +2267,8 @@ ui::TextAttributeMap BrowserAccessibility::ComputeTextAttributeMap(
         spelling_attributes, 0 /* start_offset */, &attributes_map);
     return attributes_map;
   }
+
+  DCHECK(PlatformChildCount());
 
   int start_offset = 0;
   for (BrowserAccessibility::PlatformChildIterator it = PlatformChildrenBegin();

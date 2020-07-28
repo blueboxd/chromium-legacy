@@ -23,7 +23,7 @@ ScopedKeyboardLayout::ScopedKeyboardLayout(KeyboardLayout layout) {
         std::make_unique<ScopedKeyboardLayoutEngine>(
             std::move(keyboard_layout_engine));
   }
-#elif defined(OS_WIN) || (defined(OS_MACOSX) && !defined(OS_IOS))
+#elif defined(OS_WIN) || defined(OS_MAC)
   original_layout_ = GetActiveLayout();
   ActivateLayout(GetPlatformKeyboardLayout(layout));
 #else
@@ -32,7 +32,7 @@ ScopedKeyboardLayout::ScopedKeyboardLayout(KeyboardLayout layout) {
 }
 
 ScopedKeyboardLayout::~ScopedKeyboardLayout() {
-#if defined(OS_WIN) || (defined(OS_MACOSX) && !defined(OS_IOS))
+#if defined(OS_WIN) || defined(OS_MAC)
   ActivateLayout(original_layout_);
 #endif
 }

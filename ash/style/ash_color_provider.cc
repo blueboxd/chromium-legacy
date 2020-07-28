@@ -376,6 +376,13 @@ SkColor AshColorProvider::GetContentLayerColorImpl(
       light_color = gfx::kGoogleGrey200;
       dark_color = gfx::kGoogleGrey900;
       break;
+    case ContentLayerType::kAppStateIndicatorColor:
+      light_color = gfx::kGoogleGrey700;
+      dark_color = gfx::kGoogleGrey200;
+      break;
+    case ContentLayerType::kAppStateIndicatorColorInactive:
+      return GetDisabledColor(GetContentLayerColorImpl(
+          ContentLayerType::kAppStateIndicatorColor, color_mode));
   }
   return IsLightMode(color_mode) ? light_color : dark_color;
 }

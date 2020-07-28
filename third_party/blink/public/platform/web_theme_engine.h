@@ -176,7 +176,7 @@ class WebThemeEngine {
     bool right_to_left;
   };
 
-#if defined(OS_MACOSX)
+#if defined(OS_APPLE)
   enum ScrollbarOrientation {
     // Vertical scrollbar on the right side of content.
     kVerticalOnRight,
@@ -204,7 +204,7 @@ class WebThemeEngine {
     ProgressBarExtraParams progress_bar;
     ScrollbarThumbExtraParams scrollbar_thumb;
     ScrollbarButtonExtraParams scrollbar_button;
-#if defined(OS_MACOSX)
+#if defined(OS_APPLE)
     ScrollbarExtraParams scrollbar_extra;
 #endif
   };

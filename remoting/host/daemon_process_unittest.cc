@@ -167,10 +167,10 @@ void DaemonProcessTest::SetUp() {
       task_environment_.GetMainThreadTaskRunner(),
       base::BindOnce(&DaemonProcessTest::QuitMessageLoop,
                      base::Unretained(this)));
-  daemon_process_.reset(
-      new MockDaemonProcess(task_runner, task_runner,
-                            base::Bind(&DaemonProcessTest::DeleteDaemonProcess,
-                                       base::Unretained(this))));
+  daemon_process_.reset(new MockDaemonProcess(
+      task_runner, task_runner,
+      base::BindOnce(&DaemonProcessTest::DeleteDaemonProcess,
+                     base::Unretained(this))));
 
   // Set up daemon process mocks.
   EXPECT_CALL(*daemon_process_, DoCreateDesktopSessionPtr(_))

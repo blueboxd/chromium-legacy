@@ -11,7 +11,7 @@ bool GetClientCollectStatsConsent() {
   return GetCrashReporterClient()->GetCollectStatsConsent();
 }
 
-#if defined(OS_POSIX) && !defined(OS_MACOSX)
+#if defined(OS_POSIX) && !defined(OS_APPLE)
 void GetClientProductNameAndVersion(std::string* product,
                                     std::string* version,
                                     std::string* channel) {

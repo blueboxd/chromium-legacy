@@ -13,6 +13,7 @@ import com.google.protobuf.InvalidProtocolBufferException;
 
 import org.chromium.base.Callback;
 import org.chromium.base.Log;
+import org.chromium.base.ObserverList;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.tab.TabLaunchType;
 import org.chromium.chrome.browser.tab.proto.CriticalPersistedTabData.CriticalPersistedTabDataProto;
@@ -37,6 +38,9 @@ public class CriticalPersistedTabData extends PersistedTabData {
     private String mOpenerAppId;
     private int mThemeColor;
     private @TabLaunchType Integer mTabLaunchTypeAtCreation;
+
+    private ObserverList<CriticalPersistedTabDataObserver> mObservers =
+            new ObserverList<CriticalPersistedTabDataObserver>();
 
     private CriticalPersistedTabData(Tab tab) {
         super(tab,
@@ -261,6 +265,14 @@ public class CriticalPersistedTabData extends PersistedTabData {
     }
 
     @Override
+    public void save() {
+        mTab.setIsTabStateDirty(true);
+        // super.save() will be called when we start saving serialized CriticalPersistedTabData
+        // files. The first part of the migraiton is to move Tab fields to CriticalPersistedTabData
+        // without saving (i.e. as a regular UserData object).
+    }
+
+    @Override
     public void destroy() {}
 
     /**
@@ -281,8 +293,13 @@ public class CriticalPersistedTabData extends PersistedTabData {
      * Set root id
      */
     public void setRootId(int rootId) {
+        if (mRootId == rootId) return;
         // TODO(crbug.com/1059640) add in setters for all mutable fields
         mRootId = rootId;
+        for (CriticalPersistedTabDataObserver observer : mObservers) {
+            observer.onRootIdChanged(mTab, rootId);
+        }
+        save();
     }
 
     /**
@@ -332,5 +349,21 @@ public class CriticalPersistedTabData extends PersistedTabData {
      */
     public @TabLaunchType int getTabLaunchTypeAtCreation() {
         return mTabLaunchTypeAtCreation;
+    }
+
+    /**
+     * Add a {@link CriticalPersistedTabDataObserver}
+     * @param criticalPersistedTabDataObserver the observer
+     */
+    public void addObserver(CriticalPersistedTabDataObserver criticalPersistedTabDataObserver) {
+        mObservers.addObserver(criticalPersistedTabDataObserver);
+    }
+
+    /**
+     * Remove a {@link CriticalPersistedTabDataObserver}
+     * @param criticalPersistedTabDataObserver the observer
+     */
+    public void removeObserver(CriticalPersistedTabDataObserver criticalPersistedTabDataObserver) {
+        mObservers.removeObserver(criticalPersistedTabDataObserver);
     }
 }

@@ -44,6 +44,8 @@ extern const base::Feature kTabGroups;
 
 extern const base::Feature kTabGroupsCollapse;
 
+extern const base::Feature kTabGroupsCollapseFreezing;
+
 extern const base::Feature kTabGroupsFeedback;
 
 extern const base::Feature kTabHoverCards;

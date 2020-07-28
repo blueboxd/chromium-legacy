@@ -881,25 +881,25 @@ TEST_F(AutocompleteProviderTest, UpdateAssistedQueryStats) {
     // properly handled and reported as the same suggestion type.
     AssistedQueryStatsTestData test_data[] = {
         {AutocompleteMatchType::SEARCH_SUGGEST,
-         "chrome.0.0i13.22.99j46i27.31l2j46i27.31.42j46i27.31",
+         "chrome.0.0i13i22i99j46i27i31l2j46i27i31i42j46i27i31",
          {22, 99, 13, 99}},
         // The next two matches should be detected as the same type, despite
         // repeated subtype match.
         {AutocompleteMatchType::SEARCH_SUGGEST_ENTITY,
-         "chrome.1.0i13.22.99j46i27.31l2j46i27.31.42j46i27.31",
+         "chrome.1.0i13i22i99j46i27i31l2j46i27i31i42j46i27i31",
          {27, 31}},
         {AutocompleteMatchType::SEARCH_SUGGEST_ENTITY,
-         "chrome.2.0i13.22.99j46i27.31l2j46i27.31.42j46i27.31",
+         "chrome.2.0i13i22i99j46i27i31l2j46i27i31i42j46i27i31",
          {27, 31, 27}},
         // This match should not be bundled together with previous two, because
         // it comes with additional subtype information (42).
         {AutocompleteMatchType::SEARCH_SUGGEST_ENTITY,
-         "chrome.3.0i13.22.99j46i27.31l2j46i27.31.42j46i27.31",
+         "chrome.3.0i13i22i99j46i27i31l2j46i27i31i42j46i27i31",
          {27, 31, 42}},
         // This match should not be bundled together with the group before,
         // because these items are not adjacent.
         {AutocompleteMatchType::SEARCH_SUGGEST_ENTITY,
-         "chrome.4.0i13.22.99j46i27.31l2j46i27.31.42j46i27.31",
+         "chrome.4.0i13i22i99j46i27i31l2j46i27i31i42j46i27i31",
          {27, 31}},
     };
     SCOPED_TRACE("Complex set of matches with repetitive subtypes");

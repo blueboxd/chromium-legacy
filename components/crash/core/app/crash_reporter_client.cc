@@ -41,7 +41,7 @@ CrashReporterClient* GetCrashReporterClient() {
 CrashReporterClient::CrashReporterClient() {}
 CrashReporterClient::~CrashReporterClient() {}
 
-#if !defined(OS_MACOSX) && !defined(OS_WIN) && !defined(OS_ANDROID)
+#if !defined(OS_APPLE) && !defined(OS_WIN) && !defined(OS_ANDROID)
 void CrashReporterClient::SetCrashReporterClientIdFromGUID(
     const std::string& client_guid) {}
 #endif
@@ -88,7 +88,7 @@ int CrashReporterClient::GetResultCodeRespawnFailed() {
 }
 #endif
 
-#if defined(OS_POSIX) && !defined(OS_MACOSX) && !defined(OS_IOS)
+#if defined(OS_POSIX) && !defined(OS_MAC)
 void CrashReporterClient::GetProductNameAndVersion(const char** product_name,
                                                    const char** version) {
 }

@@ -108,7 +108,7 @@ class WebContentsModalDialogManagerTest
   gfx::NativeWindow MakeFakeDialog() {
     // WebContentsModalDialogManager treats the dialog window as an opaque
     // type, so creating fake dialog windows using reinterpret_cast is valid.
-#if defined(OS_MACOSX)
+#if defined(OS_APPLE)
     NSWindow* window = reinterpret_cast<NSWindow*>(next_dialog_id++);
     return gfx::NativeWindow(window);
 #else

@@ -163,9 +163,9 @@ public class AutofillPaymentAppFactory implements PaymentAppFactoryInterface {
             }
 
             @Override
-            public Map<String, PaymentDetailsModifier> getModifiers() {
+            public Map<String, PaymentDetailsModifier> getUnmodifiableModifiers() {
                 // AutofillPaymentAppFactory.Creator doesn't need modifiers.
-                assert false : "getModifiers() should not be called";
+                assert false : "getUnmodifiableModifiers() should not be called";
                 return null;
             }
         };

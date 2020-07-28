@@ -22,9 +22,9 @@ const char kSpellCheckDictionaries[] = "spellcheck.dictionaries";
 const char kSpellCheckForcedDictionaries[] = "spellcheck.forced_dictionaries";
 
 // List of strings representing the dictionary names for languages that are
-// force-disabled in our spell-checker due to the SpellcheckLanguageBlacklist
+// force-disabled in our spell-checker due to the SpellcheckLanguageBlocklist
 // policy.
-const char kSpellCheckBlacklistedDictionaries[] =
+const char kSpellCheckBlocklistedDictionaries[] =
     "spellcheck.blacklisted_dictionaries";
 
 // String which represents whether we use the spelling service.

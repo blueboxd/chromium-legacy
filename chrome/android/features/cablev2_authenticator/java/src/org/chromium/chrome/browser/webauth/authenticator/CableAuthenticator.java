@@ -87,8 +87,11 @@ class CableAuthenticator {
     public interface Callback {
         // Invoked when the authenticator has completed a handshake with a client device.
         void onAuthenticatorConnected();
-        // Invoked when the authenticator has finished. The UI should be dismissed at this point.
+        // Invoked when a transaction has completed. The response may still be transmitting and
+        // onComplete will follow.
         void onAuthenticatorResult(Result result);
+        // Invoked when the authenticator has finished. The UI should be dismissed at this point.
+        void onComplete();
     }
 
     public CableAuthenticator(Context context, CableAuthenticatorUI ui) {
@@ -143,6 +146,13 @@ class CableAuthenticator {
         return CableAuthenticatorJni.get().onBLEWrite(client, mtu, payload);
     }
 
+    /**
+     * Called by BLEHandler when transmission of a final reply is complete.
+     */
+    public void onComplete() {
+        mCallback.onComplete();
+    }
+
     // Calls from native code.
 
     /**
@@ -182,11 +192,11 @@ class CableAuthenticator {
      * Called by native code to send BLE data to a specified client.
      */
     @CalledByNative
-    public void sendNotification(long client, byte[][] fragments) {
+    public void sendNotification(long client, byte[][] fragments, boolean isTransactionEnd) {
         assert mTaskRunner.belongsToCurrentThread();
         assert mBleStarted;
 
-        mBleHandler.sendNotification(client, fragments);
+        mBleHandler.sendNotification(client, fragments, /*closeWhenDone=*/isTransactionEnd);
     }
 
     @CalledByNative

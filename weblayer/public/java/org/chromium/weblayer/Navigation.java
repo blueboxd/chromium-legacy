@@ -169,8 +169,8 @@ public class Navigation extends IClientNavigation.Stub {
      * Sets a header for a network request. If a header with the specified name exists it is
      * overwritten. This method can only be called at two times, from
      * {@link NavigationCallback.onNavigationStarted} and {@link
-     * NavigationCallback.onNavigationStarted}. When called during start, the header applies to both
-     * the initial network request as well as redirects.
+     * NavigationCallback.onNavigationRedirected}. When called during start, the header applies to
+     * both the initial network request as well as redirects.
      *
      * @param name The name of the header. The name must be rfc 2616 compliant.
      * @param value The value of the header. The value must not contain '\0', '\n' or '\r'.

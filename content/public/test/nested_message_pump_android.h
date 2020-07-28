@@ -5,7 +5,6 @@
 #ifndef CONTENT_PUBLIC_TEST_NESTED_MESSAGE_PUMP_ANDROID_H_
 #define CONTENT_PUBLIC_TEST_NESTED_MESSAGE_PUMP_ANDROID_H_
 
-#include "base/android/jni_android.h"
 #include "base/compiler_specific.h"
 #include "base/macros.h"
 #include "base/message_loop/message_pump_android.h"
@@ -19,19 +18,11 @@ class NestedMessagePumpAndroid : public base::MessagePumpForUI {
   NestedMessagePumpAndroid();
   ~NestedMessagePumpAndroid() override;
 
-  void Run(Delegate* delegate) override;
+  void Run(Delegate*) override;
   void Quit() override;
-  void ScheduleWork() override;
-  void ScheduleDelayedWork(const base::TimeTicks& delayed_work_time) override;
-  void Attach(Delegate* delegate) override;
+  void Attach(Delegate*) override;
 
  private:
-  // We may make recursive calls to Run, so we save state that needs to be
-  // separate between them in this structure type.
-  struct RunState;
-
-  RunState* state_;
-
   DISALLOW_COPY_AND_ASSIGN(NestedMessagePumpAndroid);
 };
 

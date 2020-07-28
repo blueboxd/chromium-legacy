@@ -858,7 +858,7 @@ void WidgetBase::CancelCompositionForPepper() {
           widget_input_handler_manager_->GetWidgetInputHandlerHost()) {
     host->ImeCancelComposition();
   }
-#if defined(OS_MACOSX) || defined(USE_AURA)
+#if defined(OS_APPLE) || defined(USE_AURA)
   UpdateCompositionInfo(false /* not an immediate request */);
 #endif
 }

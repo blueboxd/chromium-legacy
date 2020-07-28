@@ -47,7 +47,7 @@
 #include "ui/gl/gl_implementation.h"
 #include "ui/gl/test/gl_surface_test_support.h"
 
-#if defined(OS_MACOSX)
+#if defined(OS_APPLE)
 #include "ui/accelerated_widget_mac/ca_transaction_observer.h"
 #endif
 
@@ -258,7 +258,7 @@ InProcessContextFactory::InProcessContextFactory(
       << "gl::GLSurfaceTestSupport::InitializeOneOff()";
   if (use_skia_renderer)
     renderer_settings_.use_skia_renderer = true;
-#if defined(OS_MACOSX)
+#if defined(OS_APPLE)
   renderer_settings_.release_overlay_resources_after_gpu_query = true;
   // Ensure that tests don't wait for frames that will never come.
   ui::CATransactionCoordinator::Get().DisableForTesting();

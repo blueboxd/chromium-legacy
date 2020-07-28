@@ -201,7 +201,7 @@ bool ShouldRecoverPasswordsDuringMerge() {
   // 2. The more general feature kDeleteCorruptedPasswords is disabled.
   //    kDeleteCorruptedPasswords takes cares of deleting undecryptable entities
   //    for Sync and non-Sync users upon reading from the LoginDatabase.
-#if defined(OS_MACOSX) && !defined(OS_IOS)
+#if defined(OS_MAC)
   return !base::FeatureList::IsEnabled(features::kDeleteCorruptedPasswords);
 #else
   return false;

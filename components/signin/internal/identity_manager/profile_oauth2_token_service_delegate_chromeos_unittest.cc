@@ -16,6 +16,7 @@
 #include "base/stl_util.h"
 #include "base/test/task_environment.h"
 #include "chromeos/components/account_manager/account_manager.h"
+#include "chromeos/components/account_manager/tokens.pb.h"
 #include "components/signin/internal/identity_manager/account_tracker_service.h"
 #include "components/signin/internal/identity_manager/profile_oauth2_token_service_observer.h"
 #include "components/signin/public/base/signin_pref_names.h"
@@ -343,6 +344,20 @@ TEST_F(ProfileOAuth2TokenServiceDelegateChromeOSTest,
 
   // Update credentials. The delegate will check if see cached errors.
   delegate_->UpdateCredentials(account_info_.account_id, "new-token");
+}
+
+TEST_F(ProfileOAuth2TokenServiceDelegateChromeOSTest,
+       ObserversDoNotSeeCachedErrorsOnAccountRemoval) {
+  auto error =
+      GoogleServiceAuthError(GoogleServiceAuthError::State::SERVICE_ERROR);
+  delegate_->UpdateCredentials(account_info_.account_id, kGaiaToken);
+  // Deliberately add an error.
+  delegate_->UpdateAuthError(account_info_.account_id, error);
+  account_manager_.RemoveAccount(chromeos::AccountManager::AccountKey{
+      account_info_.gaia,
+      chromeos::account_manager::AccountType::ACCOUNT_TYPE_GAIA});
+  EXPECT_EQ(GoogleServiceAuthError::AuthErrorNone(),
+            delegate_->GetAuthError(account_info_.account_id));
 }
 
 TEST_F(ProfileOAuth2TokenServiceDelegateChromeOSTest,

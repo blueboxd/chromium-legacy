@@ -153,6 +153,10 @@ class BASE_EXPORT ThreadControllerWithMessagePumpImpl
     return main_thread_only_;
   }
 
+  // Instantiate a HangWatchScope to cover the current work if hang
+  // watching is activated via finch and the current loop is not nested.
+  void MaybeStartHangWatchScope();
+
   // TODO(altimin): Merge with the one in SequenceManager.
   scoped_refptr<AssociatedThreadId> associated_thread_;
   MainThreadOnly main_thread_only_;

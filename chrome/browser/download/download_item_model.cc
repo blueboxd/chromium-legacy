@@ -753,3 +753,24 @@ void DownloadItemModel::CompleteSafeBrowsingScan() {
   state->CompleteDownload();
 }
 #endif
+
+bool DownloadItemModel::ShouldShowDropdown() const {
+  // We don't show the dropdown for dangerous file types or for files
+  // blocked by enterprise policy.
+  if (IsDangerous() && GetState() != DownloadItem::CANCELLED &&
+      !MightBeMalicious()) {
+    return false;
+  }
+
+  if (GetDangerType() ==
+          download::DOWNLOAD_DANGER_TYPE_SENSITIVE_CONTENT_BLOCK ||
+      GetDangerType() ==
+          download::DOWNLOAD_DANGER_TYPE_BLOCKED_PASSWORD_PROTECTED ||
+      GetDangerType() == download::DOWNLOAD_DANGER_TYPE_BLOCKED_TOO_LARGE ||
+      GetDangerType() ==
+          download::DOWNLOAD_DANGER_TYPE_BLOCKED_UNSUPPORTED_FILETYPE) {
+    return false;
+  }
+
+  return true;
+}

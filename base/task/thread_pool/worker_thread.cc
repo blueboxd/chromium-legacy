@@ -304,7 +304,7 @@ void WorkerThread::RunWorker() {
   // Background threads can take an arbitrary amount of time to complete, do not
   // watch them for hangs. Ignore priority boosting for now.
   const bool watch_for_hangs =
-      base::HangWatcher::GetInstance() != nullptr &&
+      base::HangWatcher::IsThreadPoolHangWatchingEnabled() &&
       GetDesiredThreadPriority() != ThreadPriority::BACKGROUND;
 
   // If this process has a HangWatcher register this thread for watching.

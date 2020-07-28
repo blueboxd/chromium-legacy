@@ -17,13 +17,13 @@
 #include <objidl.h>
 #endif
 
-#if defined(OS_MACOSX)
+#if defined(OS_APPLE)
 #ifdef __OBJC__
 @class NSString;
 #else
 class NSString;
 #endif
-#endif  // defined(OS_MACOSX)
+#endif  // defined(OS_APPLE)
 
 namespace ui {
 
@@ -94,7 +94,7 @@ class COMPONENT_EXPORT(UI_BASE_CLIPBOARD_TYPES) ClipboardFormatType {
   std::string GetName() const;
 #if defined(OS_WIN)
   const FORMATETC& ToFormatEtc() const { return data_; }
-#elif defined(OS_MACOSX)
+#elif defined(OS_APPLE)
   NSString* ToNSString() const { return data_; }
   // Custom copy and assignment constructor to handle NSString.
   ClipboardFormatType(const ClipboardFormatType& other);
@@ -133,7 +133,7 @@ class COMPONENT_EXPORT(UI_BASE_CLIPBOARD_TYPES) ClipboardFormatType {
 #elif defined(USE_AURA) || defined(OS_ANDROID) || defined(OS_FUCHSIA)
   explicit ClipboardFormatType(const std::string& native_format);
   std::string data_;
-#elif defined(OS_MACOSX)
+#elif defined(OS_APPLE)
   explicit ClipboardFormatType(NSString* native_format);
   NSString* data_;
 #else

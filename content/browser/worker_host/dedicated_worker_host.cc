@@ -31,6 +31,7 @@
 #include "mojo/public/cpp/system/message_pipe.h"
 #include "net/base/isolation_info.h"
 #include "third_party/blink/public/common/features.h"
+#include "third_party/blink/public/common/tokens/worker_tokens.h"
 #include "third_party/blink/public/mojom/loader/fetch_client_settings_object.mojom.h"
 
 namespace content {
@@ -187,8 +188,8 @@ void DedicatedWorkerHost::StartScriptLoad(
           storage_partition_impl);
 
   WorkerScriptFetchInitiator::Start(
-      worker_process_host_->GetID(), token_, SharedWorkerId(), script_url,
-      creator_render_frame_host,
+      worker_process_host_->GetID(), token_, blink::SharedWorkerToken::Null(),
+      script_url, creator_render_frame_host,
       nearest_ancestor_render_frame_host->ComputeSiteForCookies(),
       creator_origin_,
       nearest_ancestor_render_frame_host->GetIsolationInfoForSubresources(),

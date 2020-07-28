@@ -10,6 +10,7 @@
 
 #include "base/check.h"
 #include "base/win/windows_version.h"
+#include "build/build_config.h"
 
 namespace base {
 namespace debug {
@@ -17,9 +18,21 @@ namespace win {
 
 namespace {
 
+#if defined(ARCH_CPU_X86_FAMILY)
+// On x86/x64 systems, nop instructions are generally 1 byte.
+static constexpr int kNopInstructionSize = 1;
+#elif defined(ARCH_CPU_ARM64)
+// On Arm systems, all instructions are 4 bytes, fixed size.
+static constexpr int kNopInstructionSize = 4;
+#else
+#error "Unsupported architecture"
+#endif
+
 // Function that can be jumped midway into safely.
 __attribute__((naked)) int nop_sled() {
-  asm("nop; nop; ret");
+  asm("nop\n"
+      "nop\n"
+      "ret\n");
 }
 
 using FuncType = decltype(&nop_sled);
@@ -66,8 +79,8 @@ void TerminateWithHeapCorruption() {
 
 void TerminateWithControlFlowViolation() {
   // Call into the middle of the NOP sled.
-  FuncType func =
-      reinterpret_cast<FuncType>((reinterpret_cast<uintptr_t>(nop_sled)) + 0x1);
+  FuncType func = reinterpret_cast<FuncType>(
+      (reinterpret_cast<uintptr_t>(nop_sled)) + kNopInstructionSize);
   __try {
     // Generates a STATUS_STACK_BUFFER_OVERRUN exception if CFG triggers.
     IndirectCall(&func);

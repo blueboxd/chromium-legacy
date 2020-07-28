@@ -33,7 +33,7 @@
 
 #if defined(OS_WIN)
 #include "content/public/child/dwrite_font_proxy_init_win.h"
-#elif defined(OS_MACOSX)
+#elif defined(OS_APPLE)
 #include "third_party/blink/public/platform/platform.h"
 #include "third_party/skia/include/core/SkFontMgr.h"
 #elif defined(OS_POSIX) && !defined(OS_ANDROID)
@@ -88,7 +88,7 @@ PrintCompositorImpl::PrintCompositorImpl(
   content::UtilityThread::Get()->EnsureBlinkInitialized();
 #endif
 
-#if defined(OS_MACOSX)
+#if defined(OS_APPLE)
   // Check that font access is granted.
   // This doesn't do comprehensive tests to make sure fonts can work properly.
   // It is just a quick and simple check to catch things like improper sandbox

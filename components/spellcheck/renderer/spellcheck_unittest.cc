@@ -76,7 +76,7 @@ class SpellCheckTest : public testing::Test {
                     base::File::FLAG_OPEN | base::File::FLAG_READ);
     EXPECT_TRUE(file.IsValid()) << hunspell_file_path << " is not valid"
                                 << file.ErrorToString(file.GetLastFileError());
-#if defined(OS_MACOSX)
+#if defined(OS_APPLE)
     // TODO(groby): Forcing spellcheck to use hunspell, even on OSX.
     // Instead, tests should exercise individual spelling engines.
     spell_check_->languages_.push_back(
@@ -109,7 +109,7 @@ class SpellCheckTest : public testing::Test {
     spellcheck::FillSuggestions(suggestions_list, optional_suggestions);
   }
 
-#if !defined(OS_MACOSX)
+#if !defined(OS_APPLE)
  protected:
   void TestSpellCheckParagraph(
       const base::string16& input,
@@ -483,365 +483,335 @@ TEST_F(SpellCheckTest, SpellCheckText) {
     const char* language;
     const wchar_t* input;
   } kTestCases[] = {
-    {
-      // Afrikaans
-      "af-ZA",
-      L"Google se missie is om die w\x00EAreld se inligting te organiseer en "
-      L"dit bruikbaar en toeganklik te maak."
-    }, {
-      // Bulgarian
-      "bg-BG",
-      L"\x041c\x0438\x0441\x0438\x044f\x0442\x0430 "
-      L"\x043d\x0430 Google \x0435 \x0434\x0430 \x043e"
-      L"\x0440\x0433\x0430\x043d\x0438\x0437\x0438\x0440"
-      L"\x0430 \x0441\x0432\x0435\x0442\x043e\x0432"
-      L"\x043d\x0430\x0442\x0430 \x0438\x043d\x0444"
-      L"\x043e\x0440\x043c\x0430\x0446\x0438\x044f "
-      L"\x0438 \x0434\x0430 \x044f \x043d"
-      L"\x0430\x043f\x0440\x0430\x0432\x0438 \x0443"
-      L"\x043d\x0438\x0432\x0435\x0440\x0441\x0430\x043b"
-      L"\x043d\x043e \x0434\x043e\x0441\x0442\x044a"
-      L"\x043f\x043d\x0430 \x0438 \x043f\x043e"
-      L"\x043b\x0435\x0437\x043d\x0430."
-    }, {
-      // Catalan
-      "ca-ES",
-      L"La missi\x00F3 de Google \x00E9s organitzar la informaci\x00F3 "
-      L"del m\x00F3n i fer que sigui \x00FAtil i accessible universalment."
-    }, {
-      // Czech
-      "cs-CZ",
-      L"Posl\x00E1n\x00EDm spole\x010Dnosti Google je "
-      L"uspo\x0159\x00E1\x0064\x0061t informace z cel\x00E9ho sv\x011Bta "
-      L"tak, aby byly v\x0161\x0065obecn\x011B p\x0159\x00EDstupn\x00E9 "
-      L"a u\x017Eite\x010Dn\x00E9."
-    }, {
-      // Welsh
-      "cy-GB",
-      L"Y genhadaeth yw trefnu gwybodaeth y byd a'i gwneud yn hygyrch ac yn "
-      L"ddefnyddiol i bawb."
-    }, {
-      // Danish
-      "da-DK",
-      L"Googles "
-      L"mission er at organisere verdens information og g\x00F8re den "
-      L"almindeligt tilg\x00E6ngelig og nyttig."
-    }, {
-      // German
-      "de-DE",
-      L"Das Ziel von Google besteht darin, die auf der Welt vorhandenen "
-      L"Informationen zu organisieren und allgemein zug\x00E4nglich und "
-      L"nutzbar zu machen."
-    }, {
-      // Greek
-      "el-GR",
-      L"\x0391\x03C0\x03BF\x03C3\x03C4\x03BF\x03BB\x03AE "
-      L"\x03C4\x03B7\x03C2 Google \x03B5\x03AF\x03BD\x03B1\x03B9 "
-      L"\x03BD\x03B1 \x03BF\x03C1\x03B3\x03B1\x03BD\x03CE\x03BD\x03B5\x03B9 "
-      L"\x03C4\x03B9\x03C2 "
-      L"\x03C0\x03BB\x03B7\x03C1\x03BF\x03C6\x03BF\x03C1\x03AF\x03B5\x03C2 "
-      L"\x03C4\x03BF\x03C5 \x03BA\x03CC\x03C3\x03BC\x03BF\x03C5 "
-      L"\x03BA\x03B1\x03B9 \x03BD\x03B1 \x03C4\x03B9\x03C2 "
-      L"\x03BA\x03B1\x03B8\x03B9\x03C3\x03C4\x03AC "
-      L"\x03C0\x03C1\x03BF\x03C3\x03B2\x03AC\x03C3\x03B9\x03BC\x03B5\x03C2 "
-      L"\x03BA\x03B1\x03B9 \x03C7\x03C1\x03AE\x03C3\x03B9\x03BC\x03B5\x03C2."
-    }, {
-      // English (Australia)
-      "en-AU",
-      L"Google's mission is to organise the world's information and make it "
-      L"universally accessible and useful."
-    }, {
-      // English (Canada)
-      "en-CA",
-      L"Google's mission is to organize the world's information and make it "
-      L"universally accessible and useful."
-    }, {
-      // English (United Kingdom)
-      "en-GB",
-      L"Google's mission is to organise the world's information and make it "
-      L"universally accessible and useful."
-    }, {
-      // English (United States)
-      "en-US",
-      L"Google's mission is to organize the world's information and make it "
-      L"universally accessible and useful."
-    }, {
-      // Spanish
-      "es-ES",
-      L"La misi\x00F3n de "
-      // L"Google" - to be added.
-      L" es organizar la informaci\x00F3n mundial "
-      L"para que resulte universalmente accesible y \x00FAtil."
-    }, {
-      // Estonian
-      "et-EE",
-      // L"Google'ile " - to be added.
-      L"\x00FClesanne on korraldada maailma teavet ja teeb selle "
-      L"k\x00F5igile k\x00E4ttesaadavaks ja kasulikuks.",
-    }, {
-      // Persian
-      "fa",
-      L"\x0686\x0647 \x0637\x0648\x0631 \x0622\x06cc\x0627 \x0634\x0645\x0627 "
-      L"\x0627\x06cc\x0631\x0627\x0646\x06cc \x0647\x0633\x062a\x06cc\x062f"
-    }, {
-      // Faroese
-      "fo-FO",
-      L"Google er at samskipa alla vitan \x00ED heiminum og gera hana alment "
-      L"atkomiliga og n\x00FDtiliga."
-    }, {
-      // French
-      "fr-FR",
-      L"Google a pour mission d'organiser les informations \x00E0 "
-      L"l'\x00E9\x0063helle mondiale dans le but de les rendre accessibles "
-      L"et utiles \x00E0 tous."
-    }, {
-      // Hebrew
-      "he-IL",
-      L"\x05D4\x05DE\x05E9\x05D9\x05DE\x05D4 \x05E9\x05DC Google "
-      L"\x05D4\x05D9\x05D0 \x05DC\x05D0\x05E8\x05D2\x05DF "
-      L"\x05D0\x05EA \x05D4\x05DE\x05D9\x05D3\x05E2 "
-      L"\x05D4\x05E2\x05D5\x05DC\x05DE\x05D9 "
-      L"\x05D5\x05DC\x05D4\x05E4\x05D5\x05DA \x05D0\x05D5\x05EA\x05D5 "
-      L"\x05DC\x05D6\x05DE\x05D9\x05DF "
-      L"\x05D5\x05E9\x05D9\x05DE\x05D5\x05E9\x05D9 \x05D1\x05DB\x05DC "
-      L"\x05D4\x05E2\x05D5\x05DC\x05DD. "
-      // Two words with ASCII double/single quoation marks.
-      L"\x05DE\x05E0\x05DB\x0022\x05DC \x05E6\x0027\x05D9\x05E4\x05E1"
-    }, {
-      // Hindi
-      "hi-IN",
-      L"Google \x0915\x093E \x092E\x093F\x0936\x0928 "
-      L"\x0926\x0941\x0928\x093F\x092F\x093E \x0915\x0940 "
-      L"\x091C\x093E\x0928\x0915\x093E\x0930\x0940 \x0915\x094B "
-      L"\x0935\x094D\x092F\x0935\x0938\x094D\x0925\x093F\x0924 "
-      L"\x0915\x0930\x0928\x093E \x0914\x0930 \x0909\x0938\x0947 "
-      L"\x0938\x093E\x0930\x094D\x0935\x092D\x094C\x092E\x093F\x0915 "
-      L"\x0930\x0942\x092A \x0938\x0947 \x092A\x0939\x0941\x0901\x091A "
-      L"\x092E\x0947\x0902 \x0914\x0930 \x0909\x092A\x092F\x094B\x0917\x0940 "
-      L"\x092C\x0928\x093E\x0928\x093E \x0939\x0948."
-    }, {
+      {// Afrikaans
+       "af-ZA",
+       L"Google se missie is om die w\x00EAreld se inligting te organiseer en "
+       L"dit bruikbaar en toeganklik te maak."},
+      {// Bulgarian
+       "bg-BG",
+       L"\x041c\x0438\x0441\x0438\x044f\x0442\x0430 "
+       L"\x043d\x0430 Google \x0435 \x0434\x0430 \x043e"
+       L"\x0440\x0433\x0430\x043d\x0438\x0437\x0438\x0440"
+       L"\x0430 \x0441\x0432\x0435\x0442\x043e\x0432"
+       L"\x043d\x0430\x0442\x0430 \x0438\x043d\x0444"
+       L"\x043e\x0440\x043c\x0430\x0446\x0438\x044f "
+       L"\x0438 \x0434\x0430 \x044f \x043d"
+       L"\x0430\x043f\x0440\x0430\x0432\x0438 \x0443"
+       L"\x043d\x0438\x0432\x0435\x0440\x0441\x0430\x043b"
+       L"\x043d\x043e \x0434\x043e\x0441\x0442\x044a"
+       L"\x043f\x043d\x0430 \x0438 \x043f\x043e"
+       L"\x043b\x0435\x0437\x043d\x0430."},
+      {// Catalan
+       "ca-ES",
+       L"La missi\x00F3 de Google \x00E9s organitzar la informaci\x00F3 "
+       L"del m\x00F3n i fer que sigui \x00FAtil i accessible universalment."},
+      {// Czech
+       "cs-CZ",
+       L"Posl\x00E1n\x00EDm spole\x010Dnosti Google je "
+       L"uspo\x0159\x00E1\x0064\x0061t informace z cel\x00E9ho sv\x011Bta "
+       L"tak, aby byly v\x0161\x0065obecn\x011B p\x0159\x00EDstupn\x00E9 "
+       L"a u\x017Eite\x010Dn\x00E9."},
+      {// Welsh
+       "cy-GB",
+       L"Y genhadaeth yw trefnu gwybodaeth y byd a'i gwneud yn hygyrch ac yn "
+       L"ddefnyddiol i bawb."},
+      {// Danish
+       "da-DK",
+       L"Googles "
+       L"mission er at organisere verdens information og g\x00F8re den "
+       L"almindeligt tilg\x00E6ngelig og nyttig."},
+      {// German
+       "de-DE",
+       L"Das Ziel von Google besteht darin, die auf der Welt vorhandenen "
+       L"Informationen zu organisieren und allgemein zug\x00E4nglich und "
+       L"nutzbar zu machen."},
+      {// Greek
+       "el-GR",
+       L"\x0391\x03C0\x03BF\x03C3\x03C4\x03BF\x03BB\x03AE "
+       L"\x03C4\x03B7\x03C2 Google \x03B5\x03AF\x03BD\x03B1\x03B9 "
+       L"\x03BD\x03B1 \x03BF\x03C1\x03B3\x03B1\x03BD\x03CE\x03BD\x03B5\x03B9 "
+       L"\x03C4\x03B9\x03C2 "
+       L"\x03C0\x03BB\x03B7\x03C1\x03BF\x03C6\x03BF\x03C1\x03AF\x03B5\x03C2 "
+       L"\x03C4\x03BF\x03C5 \x03BA\x03CC\x03C3\x03BC\x03BF\x03C5 "
+       L"\x03BA\x03B1\x03B9 \x03BD\x03B1 \x03C4\x03B9\x03C2 "
+       L"\x03BA\x03B1\x03B8\x03B9\x03C3\x03C4\x03AC "
+       L"\x03C0\x03C1\x03BF\x03C3\x03B2\x03AC\x03C3\x03B9\x03BC\x03B5\x03C2 "
+       L"\x03BA\x03B1\x03B9 \x03C7\x03C1\x03AE\x03C3\x03B9\x03BC\x03B5\x03C2."},
+      {// English (Australia)
+       "en-AU",
+       L"Google's mission is to organise the world's information and make it "
+       L"universally accessible and useful."},
+      {// English (Canada)
+       "en-CA",
+       L"Google's mission is to organize the world's information and make it "
+       L"universally accessible and useful."},
+      {// English (United Kingdom)
+       "en-GB",
+       L"Google's mission is to organise the world's information and make it "
+       L"universally accessible and useful."},
+      {// English (United States)
+       "en-US",
+       L"Google's mission is to organize the world's information and make it "
+       L"universally accessible and useful."},
+      {// Spanish
+       "es-ES",
+       L"La misi\x00F3n de "
+       // L"Google" - to be added.
+       L" es organizar la informaci\x00F3n mundial "
+       L"para que resulte universalmente accesible y \x00FAtil."},
+      {
+          // Estonian
+          "et-EE",
+          // L"Google'ile " - to be added.
+          L"\x00FClesanne on korraldada maailma teavet ja teeb selle "
+          L"k\x00F5igile k\x00E4ttesaadavaks ja kasulikuks.",
+      },
+      {// Persian
+       "fa",
+       L"\x0686\x0647 \x0637\x0648\x0631 \x0622\x06cc\x0627 \x0634\x0645\x0627 "
+       L"\x0627\x06cc\x0631\x0627\x0646\x06cc \x0647\x0633\x062a\x06cc\x062f"},
+      {// Faroese
+       "fo-FO",
+       L"Google er at samskipa alla vitan \x00ED heiminum og gera hana alment "
+       L"atkomiliga og n\x00FDtiliga."},
+      {// French
+       "fr-FR",
+       L"Google a pour mission d'organiser les informations \x00E0 "
+       L"l'\x00E9\x0063helle mondiale dans le but de les rendre accessibles "
+       L"et utiles \x00E0 tous."},
+      {// Hebrew
+       "he-IL",
+       L"\x05D4\x05DE\x05E9\x05D9\x05DE\x05D4 \x05E9\x05DC Google "
+       L"\x05D4\x05D9\x05D0 \x05DC\x05D0\x05E8\x05D2\x05DF "
+       L"\x05D0\x05EA \x05D4\x05DE\x05D9\x05D3\x05E2 "
+       L"\x05D4\x05E2\x05D5\x05DC\x05DE\x05D9 "
+       L"\x05D5\x05DC\x05D4\x05E4\x05D5\x05DA \x05D0\x05D5\x05EA\x05D5 "
+       L"\x05DC\x05D6\x05DE\x05D9\x05DF "
+       L"\x05D5\x05E9\x05D9\x05DE\x05D5\x05E9\x05D9 \x05D1\x05DB\x05DC "
+       L"\x05D4\x05E2\x05D5\x05DC\x05DD. "
+       // Two words with ASCII double/single quoation marks.
+       L"\x05DE\x05E0\x05DB\x0022\x05DC \x05E6\x0027\x05D9\x05E4\x05E1"},
+      {// Hindi
+       "hi-IN",
+       L"Google \x0915\x093E \x092E\x093F\x0936\x0928 "
+       L"\x0926\x0941\x0928\x093F\x092F\x093E \x0915\x0940 "
+       L"\x091C\x093E\x0928\x0915\x093E\x0930\x0940 \x0915\x094B "
+       L"\x0935\x094D\x092F\x0935\x0938\x094D\x0925\x093F\x0924 "
+       L"\x0915\x0930\x0928\x093E \x0914\x0930 \x0909\x0938\x0947 "
+       L"\x0938\x093E\x0930\x094D\x0935\x092D\x094C\x092E\x093F\x0915 "
+       L"\x0930\x0942\x092A \x0938\x0947 \x092A\x0939\x0941\x0901\x091A "
+       L"\x092E\x0947\x0902 \x0914\x0930 \x0909\x092A\x092F\x094B\x0917\x0940 "
+       L"\x092C\x0928\x093E\x0928\x093E \x0939\x0948."},
+      {
 #if !defined(OS_WIN)
-      // Hungarian
-      "hu-HU",
-      L"A Google azt a k\x00FCldet\x00E9st v\x00E1llalta mag\x00E1ra, "
-      L"hogy a vil\x00E1gon fellelhet\x0151 inform\x00E1\x0063i\x00F3kat "
-      L"rendszerezze \x00E9s \x00E1ltal\x00E1nosan el\x00E9rhet\x0151v\x00E9, "
-      L"illetve haszn\x00E1lhat\x00F3v\x00E1 tegye."
-    }, {
+          // Hungarian
+          "hu-HU",
+          L"A Google azt a k\x00FCldet\x00E9st v\x00E1llalta mag\x00E1ra, "
+          L"hogy a vil\x00E1gon fellelhet\x0151 inform\x00E1\x0063i\x00F3kat "
+          L"rendszerezze \x00E9s \x00E1ltal\x00E1nosan "
+          L"el\x00E9rhet\x0151v\x00E9, "
+          L"illetve haszn\x00E1lhat\x00F3v\x00E1 tegye."},
+      {
 #endif  // !defined(OS_WIN)
-      // Croatian
-      "hr-HR",
-      // L"Googleova " - to be added.
-      L"je misija organizirati svjetske informacije i u\x010Diniti ih "
-      // L"univerzalno " - to be added.
-      L"pristupa\x010Dnima i korisnima."
-    }, {
-      // Armenian
-      "hy",
-      L"Google- \x056B \x0561\x057C\x0561\x0584\x0565\x056C\x0578\x0582\x0569"
-      L"\x0575\x0578\x0582\x0576\x0576 \x0567 \x0570\x0561\x0574\x0561\x0577"
-      L"\x056D\x0561\x0580\x0570\x0561\x0575\x056B\x0576 \x057F\x0565\x0572"
-      L"\x0565\x056F\x0561\x057F\x057E\x0578\x0582\x0569\x0575\x0578\x0582"
-      L"\x0576\x0568 \x056F\x0561\x0566\x0574\x0561\x056F\x0565\x0580\x057A"
-      L"\x0565\x056C \x0565\x0582 \x0564\x0561\x0580\x0571\x0576\x0565\x056C "
-      L"\x0561\x0575\x0576 \x0570\x0561\x0574\x0568\x0576\x0564\x0570\x0561"
-      L"\x0576\x0578\x0582\x0580 \x0570\x0561\x057D\x0561\x0576\x0565\x056C"
-      L"\x056B \x0565\x0582 \x0585\x0563\x057F\x0561\x056F\x0561\x0580:"
-    }, {
-      // Indonesian
-      "id-ID",
-      L"Misi Google adalah untuk mengelola informasi dunia dan membuatnya "
-      L"dapat diakses dan bermanfaat secara universal."
-    }, {
-      // Italian
-      "it-IT",
-      L"La missione di Google \x00E8 organizzare le informazioni a livello "
-      L"mondiale e renderle universalmente accessibili e fruibili."
-    }, {
-      // Lithuanian
-      "lt-LT",
-      L"\x201EGoogle\x201C tikslas \x2013 rinkti ir sisteminti pasaulio "
-      L"informacij\x0105 bei padaryti j\x0105 prieinam\x0105 ir "
-      L"nauding\x0105 visiems."
-    }, {
-      // Latvian
-      "lv-LV",
-      L"Google uzdevums ir k\x0101rtot pasaules inform\x0101"
-      L"ciju un padar\x012Bt to univers\x0101li pieejamu un noder\x012Bgu."
-    }, {
-      // Norwegian
-      "nb-NO",
-      // L"Googles " - to be added.
-      L"m\x00E5l er \x00E5 organisere informasjonen i verden og "
-      L"gj\x00F8re den tilgjengelig og nyttig for alle."
-    }, {
-      // Dutch
-      "nl-NL",
-      L"Het doel van Google is om alle informatie wereldwijd toegankelijk "
-      L"en bruikbaar te maken."
-    }, {
-      // Polish
-      "pl-PL",
-      L"Misj\x0105 Google jest uporz\x0105" L"dkowanie \x015Bwiatowych "
-      L"zasob\x00F3w informacji, aby sta\x0142y si\x0119 one powszechnie "
-      L"dost\x0119pne i u\x017Cyteczne."
-    }, {
+          // Croatian
+          "hr-HR",
+          // L"Googleova " - to be added.
+          L"je misija organizirati svjetske informacije i u\x010Diniti ih "
+          // L"univerzalno " - to be added.
+          L"pristupa\x010Dnima i korisnima."},
+      {// Armenian
+       "hy",
+       L"Google- \x056B \x0561\x057C\x0561\x0584\x0565\x056C\x0578\x0582\x0569"
+       L"\x0575\x0578\x0582\x0576\x0576 \x0567 \x0570\x0561\x0574\x0561\x0577"
+       L"\x056D\x0561\x0580\x0570\x0561\x0575\x056B\x0576 \x057F\x0565\x0572"
+       L"\x0565\x056F\x0561\x057F\x057E\x0578\x0582\x0569\x0575\x0578\x0582"
+       L"\x0576\x0568 \x056F\x0561\x0566\x0574\x0561\x056F\x0565\x0580\x057A"
+       L"\x0565\x056C \x0565\x0582 \x0564\x0561\x0580\x0571\x0576\x0565\x056C "
+       L"\x0561\x0575\x0576 \x0570\x0561\x0574\x0568\x0576\x0564\x0570\x0561"
+       L"\x0576\x0578\x0582\x0580 \x0570\x0561\x057D\x0561\x0576\x0565\x056C"
+       L"\x056B \x0565\x0582 \x0585\x0563\x057F\x0561\x056F\x0561\x0580:"},
+      {// Indonesian
+       "id-ID",
+       L"Misi Google adalah untuk mengelola informasi dunia dan membuatnya "
+       L"dapat diakses dan bermanfaat secara universal."},
+      {// Italian
+       "it-IT",
+       L"La missione di Google \x00E8 organizzare le informazioni a livello "
+       L"mondiale e renderle universalmente accessibili e fruibili."},
+      {// Lithuanian
+       "lt-LT",
+       L"\x201EGoogle\x201C tikslas \x2013 rinkti ir sisteminti pasaulio "
+       L"informacij\x0105 bei padaryti j\x0105 prieinam\x0105 ir "
+       L"nauding\x0105 visiems."},
+      {// Latvian
+       "lv-LV",
+       L"Google uzdevums ir k\x0101rtot pasaules inform\x0101"
+       L"ciju un padar\x012Bt to univers\x0101li pieejamu un noder\x012Bgu."},
+      {// Norwegian
+       "nb-NO",
+       // L"Googles " - to be added.
+       L"m\x00E5l er \x00E5 organisere informasjonen i verden og "
+       L"gj\x00F8re den tilgjengelig og nyttig for alle."},
+      {// Dutch
+       "nl-NL",
+       L"Het doel van Google is om alle informatie wereldwijd toegankelijk "
+       L"en bruikbaar te maken."},
+      {// Polish
+       "pl-PL",
+       L"Misj\x0105 Google jest uporz\x0105"
+       L"dkowanie \x015Bwiatowych "
+       L"zasob\x00F3w informacji, aby sta\x0142y si\x0119 one powszechnie "
+       L"dost\x0119pne i u\x017Cyteczne."},
+      {
 #if !defined(OS_WIN)
-      // Portuguese (Brazil)
-      "pt-BR",
-      L"A miss\x00E3o do "
-#if !defined(OS_MACOSX)
-      L"Google "
+          // Portuguese (Brazil)
+          "pt-BR",
+          L"A miss\x00E3o do "
+#if !defined(OS_APPLE)
+          L"Google "
 #endif
-      L"\x00E9 organizar as informa\x00E7\x00F5"
-      L"es do mundo todo e "
-#if !defined(OS_MACOSX)
-      L"torn\x00E1-las "
+          L"\x00E9 organizar as informa\x00E7\x00F5"
+          L"es do mundo todo e "
+#if !defined(OS_APPLE)
+          L"torn\x00E1-las "
 #endif
-      L"acess\x00EDveis e \x00FAteis em car\x00E1ter universal."
-    }, {
+          L"acess\x00EDveis e \x00FAteis em car\x00E1ter universal."},
+      {
 #endif  // !defined(OS_WIN)
-      // Portuguese (Portugal)
-      "pt-PT",
-      L"O "
-#if !defined(OS_MACOSX)
-      L"Google "
+          // Portuguese (Portugal)
+          "pt-PT",
+          L"O "
+#if !defined(OS_APPLE)
+          L"Google "
 #endif
-      L"tem por miss\x00E3o organizar a informa\x00E7\x00E3o do "
-      L"mundo e "
-#if !defined(OS_MACOSX)
-      L"torn\x00E1-la "
+          L"tem por miss\x00E3o organizar a informa\x00E7\x00E3o do "
+          L"mundo e "
+#if !defined(OS_APPLE)
+          L"torn\x00E1-la "
 #endif
-      L"universalmente acess\x00EDvel e \x00FAtil"
-    }, {
-      // Romanian
-      "ro-RO",
-      L"Misiunea Google este de a organiza informa\x021B3iile lumii \x0219i de "
-      L"a le face accesibile \x0219i utile la nivel universal."
-    }, {
-      // Russian
-      "ru-RU",
-      L"\x041C\x0438\x0441\x0441\x0438\x044F Google "
-      L"\x0441\x043E\x0441\x0442\x043E\x0438\x0442 \x0432 "
-      L"\x043E\x0440\x0433\x0430\x043D\x0438\x0437\x0430\x0446\x0438\x0438 "
-      L"\x043C\x0438\x0440\x043E\x0432\x043E\x0439 "
-      L"\x0438\x043D\x0444\x043E\x0440\x043C\x0430\x0446\x0438\x0438, "
-      L"\x043E\x0431\x0435\x0441\x043F\x0435\x0447\x0435\x043D\x0438\x0438 "
-      L"\x0435\x0435 "
-      L"\x0434\x043E\x0441\x0442\x0443\x043F\x043D\x043E\x0441\x0442\x0438 "
-      L"\x0438 \x043F\x043E\x043B\x044C\x0437\x044B \x0434\x043B\x044F "
-      L"\x0432\x0441\x0435\x0445."
-      // A Russian word including U+0451. (Bug 15558 <http://crbug.com/15558>)
-      L"\x0451\x043B\x043A\x0430"
-    }, {
-      // Serbo-Croatian (Serbian Latin)
-      "sh",
-      L"Guglova misija je organizirati svjetske informacije i u\x010diniti ih "
-      L"univerzalno dostupnim i korisnim."
-    }, {
-      // Serbian
-      "sr",
-      L"\x0413\x0443\x0433\x043B\x043E\x0432\x0430 "
-      L"\x043C\x0438\x0441\x0438\x0458\x0430 \x0458\x0435 \x0434\x0430 "
-      L"\x043E\x0440\x0433\x0430\x043D\x0438\x0437\x0443\x0458\x0435 "
-      L"\x0441\x0432\x0435\x0442\x0441\x043A\x0435 "
-      L"\x0438\x043D\x0444\x043E\x0440\x043C\x0430\x0446\x0438\x0458\x0435 "
-      L"\x0438 \x0443\x0447\x0438\x043D\x0438 \x0438\x0445 "
-      L"\x0443\x043D\x0438\x0432\x0435\x0440\x0437\x0430\x043B\x043D\x0438"
-      L"\x043C \x0434\x043E\x0441\x0442\x0443\x043F\x043D\x0438\x043C \x0438 "
-      L"\x043A\x043E\x0440\x0438\x0441\x043D\x0438\x043C."
-    }, {
-      // Slovak
-      "sk-SK",
-      L"Spolo\x010Dnos\x0165 Google si dala za \x00FAlohu usporiada\x0165 "
-      L"inform\x00E1\x0063ie "
-      L"z cel\x00E9ho sveta a zabezpe\x010Di\x0165, "
-      L"aby boli v\x0161eobecne dostupn\x00E9 a u\x017Eito\x010Dn\x00E9."
-    }, {
-      // Slovenian
-      "sl-SI",
-      // L"Googlovo " - to be added.
-      L"poslanstvo je organizirati svetovne informacije in "
-      L"omogo\x010Diti njihovo dostopnost in s tem uporabnost za vse."
-    }, {
-      // Swedish
-      "sv-SE",
-      L"Googles m\x00E5ls\x00E4ttning \x00E4r att ordna v\x00E4rldens "
-      L"samlade information och g\x00F6ra den tillg\x00E4nglig f\x00F6r alla."
-    }, {
+          L"universalmente acess\x00EDvel e \x00FAtil"},
+      {// Romanian
+       "ro-RO",
+       L"Misiunea Google este de a organiza informa\x021B3iile lumii \x0219i "
+       L"de "
+       L"a le face accesibile \x0219i utile la nivel universal."},
+      {// Russian
+       "ru-RU",
+       L"\x041C\x0438\x0441\x0441\x0438\x044F Google "
+       L"\x0441\x043E\x0441\x0442\x043E\x0438\x0442 \x0432 "
+       L"\x043E\x0440\x0433\x0430\x043D\x0438\x0437\x0430\x0446\x0438\x0438 "
+       L"\x043C\x0438\x0440\x043E\x0432\x043E\x0439 "
+       L"\x0438\x043D\x0444\x043E\x0440\x043C\x0430\x0446\x0438\x0438, "
+       L"\x043E\x0431\x0435\x0441\x043F\x0435\x0447\x0435\x043D\x0438\x0438 "
+       L"\x0435\x0435 "
+       L"\x0434\x043E\x0441\x0442\x0443\x043F\x043D\x043E\x0441\x0442\x0438 "
+       L"\x0438 \x043F\x043E\x043B\x044C\x0437\x044B \x0434\x043B\x044F "
+       L"\x0432\x0441\x0435\x0445."
+       // A Russian word including U+0451. (Bug 15558 <http://crbug.com/15558>)
+       L"\x0451\x043B\x043A\x0430"},
+      {// Serbo-Croatian (Serbian Latin)
+       "sh",
+       L"Guglova misija je organizirati svjetske informacije i u\x010diniti ih "
+       L"univerzalno dostupnim i korisnim."},
+      {// Serbian
+       "sr",
+       L"\x0413\x0443\x0433\x043B\x043E\x0432\x0430 "
+       L"\x043C\x0438\x0441\x0438\x0458\x0430 \x0458\x0435 \x0434\x0430 "
+       L"\x043E\x0440\x0433\x0430\x043D\x0438\x0437\x0443\x0458\x0435 "
+       L"\x0441\x0432\x0435\x0442\x0441\x043A\x0435 "
+       L"\x0438\x043D\x0444\x043E\x0440\x043C\x0430\x0446\x0438\x0458\x0435 "
+       L"\x0438 \x0443\x0447\x0438\x043D\x0438 \x0438\x0445 "
+       L"\x0443\x043D\x0438\x0432\x0435\x0440\x0437\x0430\x043B\x043D\x0438"
+       L"\x043C \x0434\x043E\x0441\x0442\x0443\x043F\x043D\x0438\x043C \x0438 "
+       L"\x043A\x043E\x0440\x0438\x0441\x043D\x0438\x043C."},
+      {// Slovak
+       "sk-SK",
+       L"Spolo\x010Dnos\x0165 Google si dala za \x00FAlohu usporiada\x0165 "
+       L"inform\x00E1\x0063ie "
+       L"z cel\x00E9ho sveta a zabezpe\x010Di\x0165, "
+       L"aby boli v\x0161eobecne dostupn\x00E9 a u\x017Eito\x010Dn\x00E9."},
+      {// Slovenian
+       "sl-SI",
+       // L"Googlovo " - to be added.
+       L"poslanstvo je organizirati svetovne informacije in "
+       L"omogo\x010Diti njihovo dostopnost in s tem uporabnost za vse."},
+      {// Swedish
+       "sv-SE",
+       L"Googles m\x00E5ls\x00E4ttning \x00E4r att ordna v\x00E4rldens "
+       L"samlade information och g\x00F6ra den tillg\x00E4nglig f\x00F6r "
+       L"alla."},
+      {
 #if !defined(OS_WIN)
-      // Turkish
-      "tr-TR",
-      // L"Google\x2019\x0131n " - to be added.
-      L"misyonu, d\x00FCnyadaki t\x00FCm bilgileri "
-      L"organize etmek ve evrensel olarak eri\x015Filebilir ve "
-      L"kullan\x0131\x015Fl\x0131 k\x0131lmakt\x0131r."
-    }, {
+          // Turkish
+          "tr-TR",
+          // L"Google\x2019\x0131n " - to be added.
+          L"misyonu, d\x00FCnyadaki t\x00FCm bilgileri "
+          L"organize etmek ve evrensel olarak eri\x015Filebilir ve "
+          L"kullan\x0131\x015Fl\x0131 k\x0131lmakt\x0131r."},
+      {
 #endif  // !defined(OS_WIN)
-      // Ukranian
-      "uk-UA",
-      L"\x041c\x0456\x0441\x0456\x044f "
-      L"\x043a\x043e\x043c\x043f\x0430\x043d\x0456\x0457 Google "
-      L"\x043f\x043e\x043b\x044f\x0433\x0430\x0454 \x0432 "
-      L"\x0442\x043e\x043c\x0443, \x0449\x043e\x0431 "
-      L"\x0443\x043f\x043e\x0440\x044f\x0434\x043a\x0443\x0432\x0430\x0442"
-      L"\x0438 \x0456\x043d\x0444\x043e\x0440\x043c\x0430\x0446\x0456\x044e "
-      L"\x0437 \x0443\x0441\x044c\x043e\x0433\x043e "
-      L"\x0441\x0432\x0456\x0442\x0443 \x0442\x0430 "
-      L"\x0437\x0440\x043e\x0431\x0438\x0442\x0438 \x0457\x0457 "
-      L"\x0443\x043d\x0456\x0432\x0435\x0440\x0441\x0430\x043b\x044c\x043d"
-      L"\x043e \x0434\x043e\x0441\x0442\x0443\x043f\x043d\x043e\x044e "
-      L"\x0442\x0430 \x043a\x043e\x0440\x0438\x0441\x043d\x043e\x044e."
-    }, {
-      // Vietnamese
-      "vi-VN",
-      L"Nhi\x1EC7m v\x1EE5 c\x1EE7\x0061 "
-      L"Google la \x0111\x1EC3 t\x1ED5 ch\x1EE9\x0063 "
-      L"c\x00E1\x0063 th\x00F4ng tin c\x1EE7\x0061 "
-      L"th\x1EBF gi\x1EDBi va l\x00E0m cho n\x00F3 universal c\x00F3 "
-      L"th\x1EC3 truy c\x1EADp va h\x1EEFu d\x1EE5ng h\x01A1n."
-    }, {
+          // Ukranian
+          "uk-UA",
+          L"\x041c\x0456\x0441\x0456\x044f "
+          L"\x043a\x043e\x043c\x043f\x0430\x043d\x0456\x0457 Google "
+          L"\x043f\x043e\x043b\x044f\x0433\x0430\x0454 \x0432 "
+          L"\x0442\x043e\x043c\x0443, \x0449\x043e\x0431 "
+          L"\x0443\x043f\x043e\x0440\x044f\x0434\x043a\x0443\x0432\x0430\x0442"
+          L"\x0438 "
+          L"\x0456\x043d\x0444\x043e\x0440\x043c\x0430\x0446\x0456\x044e "
+          L"\x0437 \x0443\x0441\x044c\x043e\x0433\x043e "
+          L"\x0441\x0432\x0456\x0442\x0443 \x0442\x0430 "
+          L"\x0437\x0440\x043e\x0431\x0438\x0442\x0438 \x0457\x0457 "
+          L"\x0443\x043d\x0456\x0432\x0435\x0440\x0441\x0430\x043b\x044c\x043d"
+          L"\x043e \x0434\x043e\x0441\x0442\x0443\x043f\x043d\x043e\x044e "
+          L"\x0442\x0430 \x043a\x043e\x0440\x0438\x0441\x043d\x043e\x044e."},
+      {// Vietnamese
+       "vi-VN",
+       L"Nhi\x1EC7m v\x1EE5 c\x1EE7\x0061 "
+       L"Google la \x0111\x1EC3 t\x1ED5 ch\x1EE9\x0063 "
+       L"c\x00E1\x0063 th\x00F4ng tin c\x1EE7\x0061 "
+       L"th\x1EBF gi\x1EDBi va l\x00E0m cho n\x00F3 universal c\x00F3 "
+       L"th\x1EC3 truy c\x1EADp va h\x1EEFu d\x1EE5ng h\x01A1n."},
+      {
 #if !defined(OS_WIN)
-      // Korean
-      "ko",
-      L"Google\xC758 \xBAA9\xD45C\xB294 \xC804\xC138\xACC4\xC758 "
-      L"\xC815\xBCF4\xB97C \xCCB4\xACC4\xD654\xD558\xC5EC \xBAA8\xB450\xAC00 "
-      L"\xD3B8\xB9AC\xD558\xAC8C \xC774\xC6A9\xD560 \xC218 "
-      L"\xC788\xB3C4\xB85D \xD558\xB294 \xAC83\xC785\xB2C8\xB2E4."
-    }, {
+          // Korean
+          "ko",
+          L"Google\xC758 \xBAA9\xD45C\xB294 \xC804\xC138\xACC4\xC758 "
+          L"\xC815\xBCF4\xB97C \xCCB4\xACC4\xD654\xD558\xC5EC "
+          L"\xBAA8\xB450\xAC00 "
+          L"\xD3B8\xB9AC\xD558\xAC8C \xC774\xC6A9\xD560 \xC218 "
+          L"\xC788\xB3C4\xB85D \xD558\xB294 \xAC83\xC785\xB2C8\xB2E4."},
+      {
 #endif  // !defined(OS_WIN)
-      // Albanian
-      "sq",
-      L"Misioni i Google \x00EBsht\x00EB q\x00EB t\x00EB organizoj\x00EB "
-      L"informacionin e bot\x00EBs dhe t\x00EB b\x00EBjn\x00EB at\x00EB "
-      L"universalisht t\x00EB arritshme dhe t\x00EB dobishme."
-    }, {
-      // Tamil
-      "ta",
-      L"Google \x0B87\x0BA9\x0BCD "
-      L"\x0BA8\x0BC7\x0BBE\x0B95\x0BCD\x0B95\x0BAE\x0BCD "
-      L"\x0B89\x0BB2\x0B95\x0BBF\x0BA9\x0BCD \x0BA4\x0B95\x0BB5\x0BB2\x0BCD "
-      L"\x0B8F\x0BB1\x0BCD\x0BAA\x0BBE\x0B9F\x0BC1 \x0B87\x0BA4\x0BC1 "
-      L"\x0B89\x0BB2\x0B95\x0BB3\x0BBE\x0BB5\x0BBF\x0BAF "
-      L"\x0B85\x0BA3\x0BC1\x0B95\x0B95\x0BCD \x0B95\x0BC2\x0B9F\x0BBF\x0BAF "
-      L"\x0BAE\x0BB1\x0BCD\x0BB1\x0BC1\x0BAE\x0BCD "
-      L"\x0BAA\x0BAF\x0BA9\x0BC1\x0BB3\x0BCD\x0BB3 "
-      L"\x0B9A\x0BC6\x0BAF\x0BCD\x0BAF \x0B89\x0BB3\x0BCD\x0BB3\x0BA4\x0BC1."
-    }, {
-      // Tajik
-      "tg",
-      L"\x041c\x0438\x0441\x0441\x0438\x044f\x0438 Google \x0438\x043d "
-      L"\x043c\x0443\x0440\x0430\x0442\x0442\x0430\x0431 "
-      L"\x0441\x043e\x0445\x0442\x0430\x043d\x0438 "
-      L"\x043c\x0430\x044a\x043b\x0443\x043c\x043e\x0442\x04b3\x043e\x0438 "
-      L"\x043c\x0430\x0432\x04b7\x0443\x0434\x0430, \x043e\x0441\x043e\x043d "
-      L"\x043d\x0430\x043c\x0443\x0434\x0430\x043d\x0438 "
-      L"\x0438\x0441\x0442\x0438\x0444\x043e\x0434\x0430\x0431\x0430\x0440"
-      L"\x04e3 \x0432\x0430 \x0434\x0430\x0441\x0442\x0440\x0430\x0441\x0438 "
-      L"\x0443\x043c\x0443\x043c "
-      L"\x0433\x0430\x0440\x0434\x043e\x043d\x0438\x0434\x0430\x043d\x0438 "
-      L"\x043e\x043d\x04b3\x043e \x0430\x0441\x0442."
-    },
+          // Albanian
+          "sq",
+          L"Misioni i Google \x00EBsht\x00EB q\x00EB t\x00EB organizoj\x00EB "
+          L"informacionin e bot\x00EBs dhe t\x00EB b\x00EBjn\x00EB at\x00EB "
+          L"universalisht t\x00EB arritshme dhe t\x00EB dobishme."},
+      {// Tamil
+       "ta",
+       L"Google \x0B87\x0BA9\x0BCD "
+       L"\x0BA8\x0BC7\x0BBE\x0B95\x0BCD\x0B95\x0BAE\x0BCD "
+       L"\x0B89\x0BB2\x0B95\x0BBF\x0BA9\x0BCD \x0BA4\x0B95\x0BB5\x0BB2\x0BCD "
+       L"\x0B8F\x0BB1\x0BCD\x0BAA\x0BBE\x0B9F\x0BC1 \x0B87\x0BA4\x0BC1 "
+       L"\x0B89\x0BB2\x0B95\x0BB3\x0BBE\x0BB5\x0BBF\x0BAF "
+       L"\x0B85\x0BA3\x0BC1\x0B95\x0B95\x0BCD \x0B95\x0BC2\x0B9F\x0BBF\x0BAF "
+       L"\x0BAE\x0BB1\x0BCD\x0BB1\x0BC1\x0BAE\x0BCD "
+       L"\x0BAA\x0BAF\x0BA9\x0BC1\x0BB3\x0BCD\x0BB3 "
+       L"\x0B9A\x0BC6\x0BAF\x0BCD\x0BAF \x0B89\x0BB3\x0BCD\x0BB3\x0BA4\x0BC1."},
+      {// Tajik
+       "tg",
+       L"\x041c\x0438\x0441\x0441\x0438\x044f\x0438 Google \x0438\x043d "
+       L"\x043c\x0443\x0440\x0430\x0442\x0442\x0430\x0431 "
+       L"\x0441\x043e\x0445\x0442\x0430\x043d\x0438 "
+       L"\x043c\x0430\x044a\x043b\x0443\x043c\x043e\x0442\x04b3\x043e\x0438 "
+       L"\x043c\x0430\x0432\x04b7\x0443\x0434\x0430, \x043e\x0441\x043e\x043d "
+       L"\x043d\x0430\x043c\x0443\x0434\x0430\x043d\x0438 "
+       L"\x0438\x0441\x0442\x0438\x0444\x043e\x0434\x0430\x0431\x0430\x0440"
+       L"\x04e3 \x0432\x0430 \x0434\x0430\x0441\x0442\x0440\x0430\x0441\x0438 "
+       L"\x0443\x043c\x0443\x043c "
+       L"\x0433\x0430\x0440\x0434\x043e\x043d\x0438\x0434\x0430\x043d\x0438 "
+       L"\x043e\x043d\x04b3\x043e \x0430\x0441\x0442."},
   };
 
   for (size_t i = 0; i < base::size(kTestCases); ++i) {
@@ -920,7 +890,7 @@ TEST_F(SpellCheckTest, MisspelledWords) {
 
 // Since SpellCheck::SpellCheckParagraph is not implemented on Mac,
 // we skip these SpellCheckParagraph tests on Mac.
-#if !defined(OS_MACOSX)
+#if !defined(OS_APPLE)
 
 // Make sure SpellCheckParagraph does not crash if the input is empty.
 TEST_F(SpellCheckTest, SpellCheckParagraphEmptyParagraph) {

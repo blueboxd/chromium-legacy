@@ -257,7 +257,7 @@ TEST_F(MenuRunnerTest, PrefixSelect) {
 
 // This test is Mac-specific: Mac is the only platform where VKEY_SPACE
 // activates menu items.
-#if defined(OS_MACOSX)
+#if defined(OS_APPLE)
 TEST_F(MenuRunnerTest, SpaceActivatesItem) {
   if (!MenuConfig::instance().all_menus_use_prefix_selection)
     return;

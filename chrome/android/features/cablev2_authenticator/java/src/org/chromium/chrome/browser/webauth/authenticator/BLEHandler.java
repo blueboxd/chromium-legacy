@@ -90,6 +90,10 @@ class BLEHandler extends BluetoothGattServerCallback implements Closeable {
     private BluetoothGattDescriptor mCccd;
     private BluetoothGattCharacteristic mStatusChar;
     private Long mConnectedDevice;
+    // mCloseWhenDone indicates that |onComplete| should be called on
+    // |mAuthenticator| once the current series of notifications have been
+    // sent.
+    private boolean mCloseWhenDone;
 
     BLEHandler(CableAuthenticator authenticator, SingleThreadTaskRunner taskRunner) {
         mPendingFragments = new HashMap<Long, byte[][]>();
@@ -257,7 +261,9 @@ class BLEHandler extends BluetoothGattServerCallback implements Closeable {
     /**
      * Triggers a notification on the fidoStatus characteristic to the given device.
      */
-    public void sendNotification(BluetoothDevice device, byte[][] fragments) {
+    private void sendNotification(BluetoothDevice device, byte[][] fragments) {
+        assert mTaskRunner.belongsToCurrentThread();
+
         Log.i(TAG, "sendNotification sending " + fragments[0].length + ": " + hex(fragments[0]));
         Long client = addressToLong(device.getAddress());
         assert !mPendingFragments.containsKey(client);
@@ -273,7 +279,11 @@ class BLEHandler extends BluetoothGattServerCallback implements Closeable {
      * Like sendNotification(BluetoothDevice, byte[][]), but for a client ID passed from native
      * code.
      */
-    public void sendNotification(long client, byte[][] fragments) {
+    public void sendNotification(long client, byte[][] fragments, boolean closeWhenDone) {
+        assert mTaskRunner.belongsToCurrentThread();
+        // If the final reply has already been sent then no more should follow.
+        assert !mCloseWhenDone;
+
         String addr = longToAddress(client);
         Log.i(TAG, "sendNotification to " + addr);
         List<BluetoothDevice> devices = mManager.getConnectedDevices(BluetoothProfile.GATT);
@@ -288,6 +298,8 @@ class BLEHandler extends BluetoothGattServerCallback implements Closeable {
             Log.i(TAG, "can't find connected device " + addr);
             return;
         }
+
+        mCloseWhenDone = closeWhenDone;
         sendNotification(device, fragments);
     }
 
@@ -307,6 +319,9 @@ class BLEHandler extends BluetoothGattServerCallback implements Closeable {
 
             byte[][] remainingFragments = mPendingFragments.get(client);
             if (remainingFragments == null) {
+                if (mCloseWhenDone) {
+                    mAuthenticator.onComplete();
+                }
                 return;
             }
 

@@ -10,7 +10,7 @@
 #include "base/observer_list_types.h"
 #include "content/common/content_export.h"
 #include "content/public/browser/global_routing_id.h"
-#include "content/public/browser/shared_worker_id.h"
+#include "third_party/blink/public/common/tokens/worker_tokens.h"
 
 class GURL;
 
@@ -35,26 +35,28 @@ class CONTENT_EXPORT SharedWorkerService {
     // started in the renderer since its script still has to be downloaded and
     // evaluated.
     virtual void OnWorkerCreated(
-        SharedWorkerId shared_worker_id,
+        const blink::SharedWorkerToken& token,
         int worker_process_id,
         const base::UnguessableToken& dev_tools_token) = 0;
-    virtual void OnBeforeWorkerDestroyed(SharedWorkerId shared_worker_id) = 0;
+    virtual void OnBeforeWorkerDestroyed(
+        const blink::SharedWorkerToken& token) = 0;
 
     // Called when the final response URL (the URL after redirects) was
     // determined when fetching the worker's script.
     //
     // TODO(pmonette): Implement this in derived classes and make it pure.
-    virtual void OnFinalResponseURLDetermined(SharedWorkerId shared_worker_id,
-                                              const GURL& url) {}
+    virtual void OnFinalResponseURLDetermined(
+        const blink::SharedWorkerToken& token,
+        const GURL& url) {}
 
     // Called when a frame starts/stop being a client of a shared worker. It is
     // guaranteed that OnWorkerCreated() is called before receiving these
     // notifications.
     virtual void OnClientAdded(
-        SharedWorkerId shared_worker_id,
+        const blink::SharedWorkerToken& token,
         content::GlobalFrameRoutingId render_frame_host_id) = 0;
     virtual void OnClientRemoved(
-        SharedWorkerId shared_worker_id,
+        const blink::SharedWorkerToken& token,
         content::GlobalFrameRoutingId render_frame_host_id) = 0;
   };
 

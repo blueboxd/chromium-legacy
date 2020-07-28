@@ -4853,6 +4853,10 @@ const TextAttributeList& AXPlatformNodeAuraLinux::GetTextAttributes(
                               UTF16ToUnicodeOffsetInText(style_start));
   SetIntPointerValueIfNotNull(end_offset,
                               UTF16ToUnicodeOffsetInText(style_end));
+
+  if (iterator == offset_to_text_attributes_.end())
+    return default_text_attributes_;
+
   return iterator->second;
 }
 

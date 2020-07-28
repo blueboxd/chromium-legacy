@@ -145,7 +145,7 @@ const base::Feature kOmniboxDisableInstantExtendedLimit{
 // Show the search engine logo in the omnibox on Android (desktop already does
 // this).
 const base::Feature kOmniboxSearchEngineLogo{"OmniboxSearchEngineLogo",
-                                             base::FEATURE_DISABLED_BY_DEFAULT};
+                                             base::FEATURE_ENABLED_BY_DEFAULT};
 
 // Feature used to allow users to remove suggestions from clipboard.
 const base::Feature kOmniboxRemoveSuggestionsFromClipboard{

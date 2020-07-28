@@ -442,6 +442,21 @@
             ]
         }
     ],
+    "AndroidSwitchToTab": [
+        {
+            "platforms": [
+                "android"
+            ],
+            "experiments": [
+                {
+                    "name": "Enabled",
+                    "enable_features": [
+                        "OmniboxTabSwitchSuggestions"
+                    ]
+                }
+            ]
+        }
+    ],
     "AndroidSystemTracing": [
         {
             "platforms": [
@@ -4916,21 +4931,6 @@
                     "name": "Enabled",
                     "enable_features": [
                         "OmniboxSuggestionsRecyclerView"
-                    ]
-                }
-            ]
-        }
-    ],
-    "OmniboxTabSwitchSuggestions": [
-        {
-            "platforms": [
-                "android"
-            ],
-            "experiments": [
-                {
-                    "name": "Enabled",
-                    "enable_features": [
-                        "OmniboxTabSwitchSuggestions"
                     ]
                 }
             ]

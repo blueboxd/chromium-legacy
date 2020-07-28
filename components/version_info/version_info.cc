@@ -51,7 +51,7 @@ std::string GetOSType() {
   return "Windows";
 #elif defined(OS_IOS)
   return "iOS";
-#elif defined(OS_MACOSX)
+#elif defined(OS_APPLE)
   return "Mac OS X";
 #elif defined(OS_CHROMEOS)
 # if BUILDFLAG(GOOGLE_CHROME_BRANDING)

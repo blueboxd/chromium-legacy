@@ -23,7 +23,7 @@ namespace {
 #elif defined(OS_LINUX)
 #define DOM_CODE(usb, evdev, xkb, win, mac, code, id) \
   { usb, xkb, code }
-#elif defined(OS_MACOSX)
+#elif defined(OS_APPLE)
 #define DOM_CODE(usb, evdev, xkb, win, mac, code, id) \
   { usb, mac, code }
 #elif defined(OS_ANDROID)
@@ -269,7 +269,7 @@ int KeycodeConverter::UsbKeycodeToNativeKeycode(uint32_t usb_keycode) {
   // Deal with some special-cases that don't fit the 1:1 mapping.
   if (usb_keycode == 0x070032)  // non-US hash.
     usb_keycode = 0x070031;     // US backslash.
-#if defined(OS_MACOSX)
+#if defined(OS_APPLE)
   if (usb_keycode == 0x070046) // PrintScreen.
     usb_keycode = 0x070068; // F13.
 #endif

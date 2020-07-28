@@ -886,13 +886,6 @@ void ChromeMetricsServiceClient::RecordCommandLineMetrics() {
     ++common_commands;
     UMA_HISTOGRAM_COUNTS_100("Chrome.CommandLineAppModeCount", 1);
   }
-
-  // TODO(rohitrao): Should these be logged on iOS as well?
-  // http://crbug.com/375794
-  size_t switch_count = command_line->GetSwitches().size();
-  UMA_HISTOGRAM_COUNTS_100("Chrome.CommandLineFlagCount", switch_count);
-  UMA_HISTOGRAM_COUNTS_100("Chrome.CommandLineUncommonFlagCount",
-                           switch_count - common_commands);
 }
 
 bool ChromeMetricsServiceClient::RegisterForNotifications() {

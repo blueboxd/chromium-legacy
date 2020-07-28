@@ -1682,7 +1682,7 @@ TEST_P(ScrollbarAppearanceTest, NativeScrollbarChangeToMobileByEmulator) {
   EXPECT_FALSE(div_scrollable->VerticalScrollbar()->GetTheme().IsMockTheme());
 }
 
-#if !defined(OS_MACOSX)
+#if !defined(OS_APPLE)
 // Ensure that the minimum length for a scrollbar thumb comes from the
 // WebThemeEngine. Note, Mac scrollbars differ from all other platforms so this
 // test doesn't apply there. https://crbug.com/682209.
@@ -2946,7 +2946,7 @@ INSTANTIATE_TEST_SUITE_P(NonOverlay,
                          ScrollbarColorSchemeTest,
                          testing::Values(false));
 
-#if defined(OS_ANDROID) || defined(OS_MACOSX)
+#if defined(OS_ANDROID) || defined(OS_APPLE)
 // Not able to paint non-overlay scrollbars through ThemeEngine on Android or
 // Mac.
 #define MAYBE_ThemeEnginePaint DISABLED_ThemeEnginePaint

@@ -604,11 +604,16 @@ void Dispatcher::WillDestroyServiceWorkerContextOnWorkerThread(
 }
 
 void Dispatcher::DidCreateDocumentElement(blink::WebLocalFrame* frame) {
-  // Note: use GetEffectiveDocumentURL not just frame->document()->url()
-  // so that this also injects the stylesheet on about:blank frames that
-  // are hosted in the extension process.
-  GURL effective_document_url = ScriptContext::GetEffectiveDocumentURL(
-      frame, frame->GetDocument().Url(), true /* match_about_blank */);
+  // Note: use GetEffectiveDocumentURLForContext() and not just
+  // frame->document()->url() so that this also injects the stylesheet on
+  // about:blank frames that are hosted in the extension process. (Even though
+  // this is used to determine whether to inject a stylesheet, we don't use
+  // GetEffectiveDocumentURLForInjection() because we inject based on whether
+  // it is an extension context, rather than based on the extension's injection
+  // permissions.)
+  GURL effective_document_url =
+      ScriptContext::GetEffectiveDocumentURLForContext(
+          frame, frame->GetDocument().Url(), true /* match_about_blank */);
 
   const Extension* extension =
       RendererExtensionRegistry::Get()->GetExtensionOrAppByURL(

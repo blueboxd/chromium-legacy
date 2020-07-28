@@ -57,6 +57,8 @@ public class TabSuggestionsServerFetcherUnitTest {
             2, "Amazon.com", "https://www.amazon.com", "", "", 1588817215266L, "");
     private static final TabContext.TabInfo TAB_INFO_GOOGLE = new TabContext.TabInfo(
             3, "Google", "https://www.google.com", "", "", 1588817256727L, "");
+    private static final TabContext.TabInfo TAB_INFO_INCOGNITO = new TabContext.TabInfo(
+            4, "Incognito site", "https://www.incognito.com", "", "", 158881926727L, "");
     private static final TabContext TAB_CONTEXT_GROUP_ALL =
             new TabContext(Arrays.asList(TAB_INFO_YANDEX, TAB_INFO_BING, TAB_INFO_GOOGLE),
                     Collections.emptyList());
@@ -210,5 +212,14 @@ public class TabSuggestionsServerFetcherUnitTest {
                 }
             }
         }
+    }
+
+    @Test
+    public void testServerFetcherDisabledIncognito() throws InterruptedException {
+        TabContext tabContext =
+                new TabContext(Arrays.asList(TAB_INFO_INCOGNITO), Collections.emptyList());
+        mTabSuggestionsServerFetcher.fetch(tabContext, (fetcherResults) -> {
+            Assert.assertTrue(fetcherResults.tabSuggestions.isEmpty());
+        });
     }
 }

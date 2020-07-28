@@ -66,10 +66,12 @@ class InternetSection
   void OnActiveNetworks(
       std::vector<network_config::mojom::NetworkStatePropertiesPtr> networks);
 
+  // Null if no cellular network exists.
+  base::Optional<std::string> cellular_guid_;
+
   // Note: If not connected, the below fields are null.
   base::Optional<std::string> connected_ethernet_guid_;
   base::Optional<std::string> connected_wifi_guid_;
-  base::Optional<std::string> connected_cellular_guid_;
   base::Optional<std::string> connected_tether_guid_;
   base::Optional<std::string> connected_vpn_guid_;
 

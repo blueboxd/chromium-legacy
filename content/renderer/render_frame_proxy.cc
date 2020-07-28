@@ -413,6 +413,8 @@ void RenderFrameProxy::OnAssociatedInterfaceRequest(
     mojo::ScopedInterfaceEndpointHandle handle) {
   if (interface_name == blink::mojom::RemoteFrame::Name_) {
     associated_interfaces_.TryBindInterface(interface_name, &handle);
+  } else if (interface_name == blink::mojom::RemoteMainFrame::Name_) {
+    associated_interfaces_.TryBindInterface(interface_name, &handle);
   } else if (interface_name == content::mojom::RenderFrameProxy::Name_) {
     render_frame_proxy_receiver_.Bind(
         mojo::PendingAssociatedReceiver<mojom::RenderFrameProxy>(

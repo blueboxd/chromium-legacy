@@ -24,7 +24,6 @@ FORWARD_DECLARE_TEST(WebViewTest, NoPrerenderer);
 
 namespace prerender {
 
-class PrerenderContents;
 class PrerenderManager;
 
 // PrerenderLinkManager implements the API on Link elements for all documents
@@ -87,12 +86,6 @@ class PrerenderLinkManager : public KeyedService,
   // manager.
   void CancelPrerender(LinkPrerender* prerender);
 
-  // Called when |launcher| is swapped in.
-  void StartPendingPrerendersForLauncher(PrerenderContents* launcher);
-
-  // Called when |launcher| is aborted.
-  void CancelPendingPrerendersForLauncher(PrerenderContents* launcher);
-
   // From KeyedService:
   void Shutdown() override;
 
@@ -112,10 +105,6 @@ class PrerenderLinkManager : public KeyedService,
   // made at the back, so the oldest prerender is at the front, and the youngest
   // at the back. Using std::unique_ptr<> here as LinkPrerender is not copyable.
   std::list<std::unique_ptr<LinkPrerender>> prerenders_;
-
-  // Helper object to manage prerenders which are launched by other prerenders
-  // and must be deferred until the launcher is swapped in.
-  std::unique_ptr<PendingPrerenderManager> pending_prerender_manager_;
 
   DISALLOW_COPY_AND_ASSIGN(PrerenderLinkManager);
 };

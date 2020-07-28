@@ -9,15 +9,17 @@ import android.view.View;
 import android.widget.Button;
 import android.widget.ListView;
 
-import androidx.test.filters.LargeTest;
+import androidx.test.filters.SmallTest;
 
 import org.hamcrest.Matchers;
 import org.junit.Assert;
 import org.junit.Before;
+import org.junit.ClassRule;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
+import org.chromium.base.test.util.Batch;
 import org.chromium.base.test.util.CommandLineFlags;
 import org.chromium.base.test.util.JniMocker;
 import org.chromium.chrome.R;
@@ -25,6 +27,7 @@ import org.chromium.chrome.browser.ChromeActivity;
 import org.chromium.chrome.browser.flags.ChromeSwitches;
 import org.chromium.chrome.test.ChromeActivityTestRule;
 import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
+import org.chromium.chrome.test.batch.BlankCTATabInitialStateRule;
 import org.chromium.components.security_state.ConnectionSecurityLevel;
 import org.chromium.content_public.browser.test.util.Criteria;
 import org.chromium.content_public.browser.test.util.CriteriaHelper;
@@ -37,10 +40,15 @@ import org.chromium.ui.widget.TextViewWithClickableSpans;
  */
 @RunWith(ChromeJUnit4ClassRunner.class)
 @CommandLineFlags.Add({ChromeSwitches.DISABLE_FIRST_RUN_EXPERIENCE})
+@Batch(BluetoothChooserDialogTest.DEVICE_DIALOG_BATCH_NAME)
 public class UsbChooserDialogTest {
-    @Rule
-    public ChromeActivityTestRule<ChromeActivity> mActivityTestRule =
+    @ClassRule
+    public static final ChromeActivityTestRule<ChromeActivity> sActivityTestRule =
             new ChromeActivityTestRule<>(ChromeActivity.class);
+
+    @Rule
+    public final BlankCTATabInitialStateRule mInitialStateRule =
+            new BlankCTATabInitialStateRule(sActivityTestRule, false);
 
     @Rule
     public JniMocker mocker = new JniMocker();
@@ -65,14 +73,13 @@ public class UsbChooserDialogTest {
     @Before
     public void setUp() throws Exception {
         mocker.mock(UsbChooserDialogJni.TEST_HOOKS, new TestUsbChooserDialogJni());
-        mActivityTestRule.startMainActivityOnBlankPage();
         mChooserDialog = createDialog();
     }
 
     private UsbChooserDialog createDialog() {
         return TestThreadUtils.runOnUiThreadBlockingNoException(() -> {
             UsbChooserDialog dialog = new UsbChooserDialog(/*nativeUsbChooserDialogPtr=*/42);
-            dialog.show(mActivityTestRule.getActivity(), "https://origin.example.com/",
+            dialog.show(sActivityTestRule.getActivity(), "https://origin.example.com/",
                     ConnectionSecurityLevel.SECURE);
             return dialog;
         });
@@ -110,7 +117,7 @@ public class UsbChooserDialogTest {
     }
 
     @Test
-    @LargeTest
+    @SmallTest
     public void testCancel() {
         Dialog dialog = mChooserDialog.mItemChooserDialog.getDialogForTesting();
         Assert.assertTrue(dialog.isShowing());
@@ -129,7 +136,7 @@ public class UsbChooserDialogTest {
     }
 
     @Test
-    @LargeTest
+    @SmallTest
     public void testSelectItem() {
         Dialog dialog = mChooserDialog.mItemChooserDialog.getDialogForTesting();
 
@@ -151,7 +158,7 @@ public class UsbChooserDialogTest {
         // After adding items to the dialog, the help message should be showing,
         // the 'Connect' button should still be disabled (since nothing's selected),
         // and the list view should show.
-        Assert.assertEquals(removeLinkTags(mActivityTestRule.getActivity().getString(
+        Assert.assertEquals(removeLinkTags(sActivityTestRule.getActivity().getString(
                                     R.string.usb_chooser_dialog_footnote_text)),
                 statusView.getText().toString());
         Assert.assertFalse(button.isEnabled());

@@ -14,16 +14,19 @@ import android.widget.ListView;
 import android.widget.TextView;
 
 import androidx.core.util.ObjectsCompat;
-import androidx.test.filters.LargeTest;
+import androidx.test.filters.SmallTest;
 import androidx.vectordrawable.graphics.drawable.VectorDrawableCompat;
 
 import org.hamcrest.Matchers;
+import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
+import org.junit.ClassRule;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
+import org.chromium.base.test.util.Batch;
 import org.chromium.base.test.util.CommandLineFlags;
 import org.chromium.base.test.util.DisabledTest;
 import org.chromium.chrome.R;
@@ -31,6 +34,7 @@ import org.chromium.chrome.browser.ChromeActivity;
 import org.chromium.chrome.browser.flags.ChromeSwitches;
 import org.chromium.chrome.test.ChromeActivityTestRule;
 import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
+import org.chromium.chrome.test.batch.BlankCTATabInitialStateRule;
 import org.chromium.content_public.browser.test.util.Criteria;
 import org.chromium.content_public.browser.test.util.CriteriaHelper;
 import org.chromium.content_public.browser.test.util.TestThreadUtils;
@@ -42,10 +46,15 @@ import org.chromium.ui.widget.TextViewWithClickableSpans;
  */
 @RunWith(ChromeJUnit4ClassRunner.class)
 @CommandLineFlags.Add({ChromeSwitches.DISABLE_FIRST_RUN_EXPERIENCE})
+@Batch(BluetoothChooserDialogTest.DEVICE_DIALOG_BATCH_NAME)
 public class ItemChooserDialogTest implements ItemChooserDialog.ItemSelectedCallback {
-    @Rule
-    public ChromeActivityTestRule<ChromeActivity> mActivityTestRule =
+    @ClassRule
+    public static final ChromeActivityTestRule<ChromeActivity> sActivityTestRule =
             new ChromeActivityTestRule<>(ChromeActivity.class);
+
+    @Rule
+    public final BlankCTATabInitialStateRule mInitialStateRule =
+            new BlankCTATabInitialStateRule(sActivityTestRule, false);
 
     ItemChooserDialog mChooserDialog;
 
@@ -59,7 +68,6 @@ public class ItemChooserDialogTest implements ItemChooserDialog.ItemSelectedCall
 
     @Before
     public void setUp() throws Exception {
-        mActivityTestRule.startMainActivityOnBlankPage();
         mChooserDialog = createDialog();
 
         mTestDrawable1 = getNewTestDrawable();
@@ -71,6 +79,14 @@ public class ItemChooserDialogTest implements ItemChooserDialog.ItemSelectedCall
         Assert.assertFalse(ObjectsCompat.equals(mTestDrawable1, mTestDrawable2));
     }
 
+    @After
+    public void tearDown() {
+        TestThreadUtils.runOnUiThreadBlocking(() -> {
+            mChooserDialog.setIdleState();
+            mChooserDialog.dismiss();
+        });
+    }
+
     // ItemChooserDialog.ItemSelectedCallback:
 
     @Override
@@ -80,7 +96,7 @@ public class ItemChooserDialogTest implements ItemChooserDialog.ItemSelectedCall
 
     private Drawable getNewTestDrawable() {
         Drawable drawable =
-                VectorDrawableCompat.create(mActivityTestRule.getActivity().getResources(),
+                VectorDrawableCompat.create(sActivityTestRule.getActivity().getResources(),
                         R.drawable.ic_bluetooth_connected, null);
         // Calling mutate() on a Drawable should typically create a new ConstantState
         // for that Drawable. Ensure the new drawable doesn't share a state with other
@@ -101,7 +117,7 @@ public class ItemChooserDialogTest implements ItemChooserDialog.ItemSelectedCall
                         statusIdleNoneFound, statusIdleSomeFound, positiveButton);
         ItemChooserDialog dialog = TestThreadUtils.runOnUiThreadBlockingNoException(() -> {
             ItemChooserDialog dialog1 = new ItemChooserDialog(
-                    mActivityTestRule.getActivity(), ItemChooserDialogTest.this, labels);
+                    sActivityTestRule.getActivity(), ItemChooserDialogTest.this, labels);
             return dialog1;
         });
         return dialog;
@@ -152,7 +168,7 @@ public class ItemChooserDialogTest implements ItemChooserDialog.ItemSelectedCall
     }
 
     @Test
-    @LargeTest
+    @SmallTest
     public void testAddItemsWithNoIcons() {
         TestThreadUtils.runOnUiThreadBlocking(() -> {
             Dialog dialog = mChooserDialog.getDialogForTesting();
@@ -173,14 +189,11 @@ public class ItemChooserDialogTest implements ItemChooserDialog.ItemSelectedCall
                 Assert.assertEquals(View.GONE, icon2.getVisibility());
                 Assert.assertEquals(null, icon2.getDrawable());
             }
-
-            mChooserDialog.setIdleState();
-            mChooserDialog.dismiss();
         });
     }
 
     @Test
-    @LargeTest
+    @SmallTest
     public void testAddItemsWithIcons() {
         TestThreadUtils.runOnUiThreadBlocking(() -> {
             Dialog dialog = mChooserDialog.getDialogForTesting();
@@ -209,14 +222,11 @@ public class ItemChooserDialogTest implements ItemChooserDialog.ItemSelectedCall
                 Assert.assertEquals(mTestDrawable2, icon2.getDrawable());
                 Assert.assertEquals(mTestDrawableDescription2, icon2.getContentDescription());
             }
-
-            mChooserDialog.setIdleState();
-            mChooserDialog.dismiss();
         });
     }
 
     @Test
-    @LargeTest
+    @SmallTest
     public void testAddItemWithIconAfterItemWithNoIcon() {
         TestThreadUtils.runOnUiThreadBlocking(() -> {
             Dialog dialog = mChooserDialog.getDialogForTesting();
@@ -240,14 +250,11 @@ public class ItemChooserDialogTest implements ItemChooserDialog.ItemSelectedCall
                 Assert.assertEquals(View.VISIBLE, icon2.getVisibility());
                 Assert.assertEquals(mTestDrawable2, icon2.getDrawable());
             }
-
-            mChooserDialog.setIdleState();
-            mChooserDialog.dismiss();
         });
     }
 
     @Test
-    @LargeTest
+    @SmallTest
     public void testAddItemWithNoIconAfterItemWithIcon() {
         TestThreadUtils.runOnUiThreadBlocking(() -> {
             Dialog dialog = mChooserDialog.getDialogForTesting();
@@ -271,14 +278,11 @@ public class ItemChooserDialogTest implements ItemChooserDialog.ItemSelectedCall
                 Assert.assertEquals(mTestDrawable1, icon1.getDrawable());
                 Assert.assertEquals(View.INVISIBLE, icon2.getVisibility());
             }
-
-            mChooserDialog.setIdleState();
-            mChooserDialog.dismiss();
         });
     }
 
     @Test
-    @LargeTest
+    @SmallTest
     public void testRemoveItemWithIconNoItemsWithIconsLeft() {
         TestThreadUtils.runOnUiThreadBlocking(() -> {
             Dialog dialog = mChooserDialog.getDialogForTesting();
@@ -308,14 +312,11 @@ public class ItemChooserDialogTest implements ItemChooserDialog.ItemSelectedCall
                 ImageView icon2 = getIconImageView(dialog, 1);
                 Assert.assertEquals(View.GONE, icon2.getVisibility());
             }
-
-            mChooserDialog.setIdleState();
-            mChooserDialog.dismiss();
         });
     }
 
     @Test
-    @LargeTest
+    @SmallTest
     public void testRemoveItemWithIconOneItemWithIconLeft() {
         TestThreadUtils.runOnUiThreadBlocking(() -> {
             Dialog dialog = mChooserDialog.getDialogForTesting();
@@ -358,14 +359,11 @@ public class ItemChooserDialogTest implements ItemChooserDialog.ItemSelectedCall
                 Assert.assertEquals(mTestDrawable2, icon2.getDrawable());
                 Assert.assertEquals(View.INVISIBLE, icon3.getVisibility());
             }
-
-            mChooserDialog.setIdleState();
-            mChooserDialog.dismiss();
         });
     }
 
     @Test
-    @LargeTest
+    @SmallTest
     public void testUpdateItemWithIconToNoIcon() {
         TestThreadUtils.runOnUiThreadBlocking(() -> {
             Dialog dialog = mChooserDialog.getDialogForTesting();
@@ -392,14 +390,11 @@ public class ItemChooserDialogTest implements ItemChooserDialog.ItemSelectedCall
                 Assert.assertTrue(itemAdapter.getItem(0).hasSameContents(
                         "key1", "desc1", null /* icon */, null /* iconDescription */));
             }
-
-            mChooserDialog.setIdleState();
-            mChooserDialog.dismiss();
         });
     }
 
     @Test
-    @LargeTest
+    @SmallTest
     public void testUpdateItemWithNoIconToIcon() {
         TestThreadUtils.runOnUiThreadBlocking(() -> {
             Dialog dialog = mChooserDialog.getDialogForTesting();
@@ -426,14 +421,11 @@ public class ItemChooserDialogTest implements ItemChooserDialog.ItemSelectedCall
                 Assert.assertTrue(itemAdapter.getItem(0).hasSameContents(
                         "key1", "desc1", mTestDrawable1, mTestDrawableDescription1));
             }
-
-            mChooserDialog.setIdleState();
-            mChooserDialog.dismiss();
         });
     }
 
     @Test
-    @LargeTest
+    @SmallTest
     public void testUpdateItemIcon() {
         TestThreadUtils.runOnUiThreadBlocking(() -> {
             Dialog dialog = mChooserDialog.getDialogForTesting();
@@ -463,14 +455,11 @@ public class ItemChooserDialogTest implements ItemChooserDialog.ItemSelectedCall
                 Assert.assertTrue(itemAdapter.getItem(0).hasSameContents(
                         "key1", "desc1", mTestDrawable2, mTestDrawableDescription2));
             }
-
-            mChooserDialog.setIdleState();
-            mChooserDialog.dismiss();
         });
     }
 
     @Test
-    @LargeTest
+    @SmallTest
     @DisabledTest(message = "crbug.com/958558")
     public void testSimpleItemSelection() {
         Dialog dialog = mChooserDialog.getDialogForTesting();
@@ -512,12 +501,10 @@ public class ItemChooserDialogTest implements ItemChooserDialog.ItemSelectedCall
         // Select the first item and verify it got selected.
         selectItem(dialog, 1, "key1", true);
         Assert.assertTrue(getDescriptionTextView(dialog, 1).isSelected());
-
-        mChooserDialog.dismiss();
     }
 
     @Test
-    @LargeTest
+    @SmallTest
     public void testNoItemsAddedDiscoveryIdle() {
         Dialog dialog = mChooserDialog.getDialogForTesting();
         Assert.assertTrue(dialog.isShowing());
@@ -541,12 +528,10 @@ public class ItemChooserDialogTest implements ItemChooserDialog.ItemSelectedCall
         Assert.assertEquals(View.VISIBLE, items.getEmptyView().getVisibility());
         Assert.assertEquals("statusIdleNoneFound", statusView.getText().toString());
         Assert.assertFalse(button.isEnabled());
-
-        mChooserDialog.dismiss();
     }
 
     @Test
-    @LargeTest
+    @SmallTest
     public void testPairButtonDisabledAfterSelectedItemRemoved() throws Throwable {
         final Dialog dialog = TestThreadUtils.runOnUiThreadBlocking(() -> {
             Dialog dialog1 = mChooserDialog.getDialogForTesting();
@@ -566,13 +551,11 @@ public class ItemChooserDialogTest implements ItemChooserDialog.ItemSelectedCall
 
             mChooserDialog.removeItemFromList("key1");
             Assert.assertFalse(button.isEnabled());
-
-            mChooserDialog.dismiss();
         });
     }
 
     @Test
-    @LargeTest
+    @SmallTest
     public void testSelectAnItemAndRemoveAnotherItem() throws Throwable {
         final Dialog dialog = TestThreadUtils.runOnUiThreadBlocking(() -> {
             Dialog dialog1 = mChooserDialog.getDialogForTesting();
@@ -599,13 +582,11 @@ public class ItemChooserDialogTest implements ItemChooserDialog.ItemSelectedCall
             mChooserDialog.removeItemFromList("key3");
             Assert.assertTrue(button.isEnabled());
             Assert.assertEquals("key2", itemAdapter.getSelectedItemKey());
-
-            mChooserDialog.dismiss();
         });
     }
 
     @Test
-    @LargeTest
+    @SmallTest
     public void testSelectAnItemAndRemoveTheSelectedItem() throws Throwable {
         final Dialog dialog = TestThreadUtils.runOnUiThreadBlocking(() -> {
             Dialog dialog1 = mChooserDialog.getDialogForTesting();
@@ -627,13 +608,11 @@ public class ItemChooserDialogTest implements ItemChooserDialog.ItemSelectedCall
             mChooserDialog.removeItemFromList("key2");
             Assert.assertFalse(button.isEnabled());
             Assert.assertEquals("", itemAdapter.getSelectedItemKey());
-
-            mChooserDialog.dismiss();
         });
     }
 
     @Test
-    @LargeTest
+    @SmallTest
     public void testUpdateItemAndRemoveItemFromList() {
         TestThreadUtils.runOnUiThreadBlocking(() -> {
             Dialog dialog = mChooserDialog.getDialogForTesting();
@@ -679,13 +658,11 @@ public class ItemChooserDialogTest implements ItemChooserDialog.ItemSelectedCall
             Assert.assertEquals(View.VISIBLE, items.getEmptyView().getVisibility());
             Assert.assertEquals("statusIdleNoneFound", statusView.getText().toString());
             Assert.assertFalse(button.isEnabled());
-
-            mChooserDialog.dismiss();
         });
     }
 
     @Test
-    @LargeTest
+    @SmallTest
     public void testAddItemAndRemoveItemFromList() {
         TestThreadUtils.runOnUiThreadBlocking(() -> {
             Dialog dialog = mChooserDialog.getDialogForTesting();
@@ -751,13 +728,11 @@ public class ItemChooserDialogTest implements ItemChooserDialog.ItemSelectedCall
             Assert.assertEquals(View.VISIBLE, items.getEmptyView().getVisibility());
             Assert.assertEquals("statusIdleNoneFound", statusView.getText().toString());
             Assert.assertFalse(button.isEnabled());
-
-            mChooserDialog.dismiss();
         });
     }
 
     @Test
-    @LargeTest
+    @SmallTest
     public void testAddItemWithSameNameToListAndRemoveItemFromList() {
         TestThreadUtils.runOnUiThreadBlocking(() -> {
             Dialog dialog = mChooserDialog.getDialogForTesting();
@@ -807,13 +782,11 @@ public class ItemChooserDialogTest implements ItemChooserDialog.ItemSelectedCall
             // After removing item 1, item 3 is the only remaining item, so its display text
             // also changed to its original description.
             Assert.assertEquals("desc1", itemAdapter.getDisplayText(0));
-
-            mChooserDialog.dismiss();
         });
     }
 
     @Test
-    @LargeTest
+    @SmallTest
     public void testListHeight() {
         // 500 * .3 is 150, which is 48 * 3.125. 48 * 3.5 is 168.
         Assert.assertEquals(168, ItemChooserDialog.getListHeight(500, 1.0f));

@@ -11,7 +11,7 @@
 #include "base/test/test_suite.h"
 #include "build/build_config.h"
 
-#if defined(OS_MACOSX) && !defined(OS_IOS)
+#if defined(OS_MAC)
 #include "base/test/mock_chrome_application_mac.h"
 #endif
 
@@ -32,7 +32,7 @@ class GlTestSuite : public base::TestSuite {
   void Initialize() override {
     base::TestSuite::Initialize();
 
-#if defined(OS_MACOSX) && !defined(OS_IOS)
+#if defined(OS_MAC)
     // This registers a custom NSApplication. It must be done before
     // TaskEnvironment registers a regular NSApplication.
     mock_cr_app::RegisterMockCrApp();

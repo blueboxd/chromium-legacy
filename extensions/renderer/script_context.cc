@@ -33,6 +33,123 @@ namespace extensions {
 
 namespace {
 
+enum EffectiveUrlFlags {
+  // Allow frame traversal past inaccessible parent contexts, such as a parent
+  // of a sandboxed frame.
+  kAllowInaccessibleParents = 1 << 0,
+  // Allow matching on about:-scheme frames.
+  kAllowAboutFrames = 1 << 1,
+};
+
+GURL GetEffectiveDocumentURL(blink::WebLocalFrame* frame,
+                             const GURL& document_url,
+                             int flags) {
+  // Common scenario. If the frame is not an about:-page or we don't allow
+  // about:-scheme frames, just return |document_url| (supposedly the URL of the
+  // frame).
+  bool match_about_frames = (flags & kAllowAboutFrames) != 0;
+  if (!match_about_frames || !document_url.SchemeIs(url::kAboutScheme))
+    return document_url;
+
+  // For about: frames, the "security origin" is that of the controlling frame.
+  // e.g., an about:blank frame on https://example.com will have the security
+  // origin of https://example.com.
+  blink::WebSecurityOrigin web_frame_origin = frame->GetSecurityOrigin();
+  const url::Origin frame_origin = web_frame_origin;
+
+  // Check the origin of the frame, including whether it is an opaque origin
+  // (like about:blank) that has a non-opaque precursor.
+  // Unfortunately, we still have to traverse the frame tree, because match
+  // patterns are associated with paths as well, not just origins. For instance,
+  // if an extension wants to run on google.com/maps/* with match_about_frames
+  // true, then it should run on about:blank frames created by google.com/maps,
+  // but not about:blank frames created by google.com (which is what the
+  // precursor tuple origin would be).
+  const url::SchemeHostPort& tuple_or_precursor_tuple =
+      frame_origin.GetTupleOrPrecursorTupleIfOpaque();
+
+  // There is no valid tuple origin (which can happen in the case of e.g. a
+  // browser-initiated navigation to an opaque URL). Bail.
+  if (!tuple_or_precursor_tuple.IsValid())
+    return document_url;
+
+  const url::Origin origin_or_precursor_origin =
+      url::Origin::Create(tuple_or_precursor_tuple.GetURL());
+
+  // Check if the frame can access its precursor. It may not be allowed to in
+  // the case of a sandboxed iframe. We might still match on this, but we'll
+  // still check that the precursor tuple doesn't change.
+  bool allow_inaccessible_parents = (flags & kAllowInaccessibleParents) != 0;
+  if (!allow_inaccessible_parents &&
+      !web_frame_origin.CanAccess(
+          blink::WebSecurityOrigin(origin_or_precursor_origin))) {
+    // The frame can't access its precursor. Bail.
+    return document_url;
+  }
+
+  // Non-sandboxed about:-scheme frames inherit their security origin from
+  // their parent frame/window. So, traverse the frame/window hierarchy to find
+  // the closest non-about:-page and return its URL.
+  blink::WebFrame* parent = frame;
+  blink::WebDocument parent_document;
+  base::flat_set<blink::WebFrame*> already_visited_frames;
+  do {
+    already_visited_frames.insert(parent);
+    if (parent->Parent())
+      parent = parent->Parent();
+    else
+      parent = parent->Opener();
+
+    // Avoid an infinite loop - see https://crbug.com/568432 and
+    // https://crbug.com/883526.
+    if (base::Contains(already_visited_frames, parent))
+      return document_url;
+
+    parent_document = parent && parent->IsWebLocalFrame()
+                          ? parent->ToWebLocalFrame()->GetDocument()
+                          : blink::WebDocument();
+
+    // We reached the end of the ancestral chain without finding a valid parent.
+    // Bail and use the original URL.
+    if (parent_document.IsNull())
+      return document_url;
+
+    url::SchemeHostPort parent_tuple_or_precursor_tuple =
+        url::Origin(parent->GetSecurityOrigin())
+            .GetTupleOrPrecursorTupleIfOpaque();
+    if (!parent_tuple_or_precursor_tuple.IsValid() ||
+        parent_tuple_or_precursor_tuple != tuple_or_precursor_tuple) {
+      // The parent has a different tuple origin than frame; this could happen
+      // in edge cases where a parent navigates an iframe or popup of a child
+      // frame at a different origin. [1] In this case, bail, since we can't
+      // find a full URL (i.e., one including the path) with the same security
+      // origin to use for the frame in question.
+      // [1] Consider a frame tree like:
+      // <html> <!--example.com-->
+      //   <iframe id="a" src="a.com">
+      //     <iframe id="b" src="b.com"></iframe>
+      //   </iframe>
+      // </html>
+      // Frame "a" is cross-origin from the top-level frame, and so the
+      // example.com top-level frame can't directly access frame "b". However,
+      // it can navigate it through
+      // window.frames[0].frames[0].location.href = 'about:blank';
+      // In that case, the precursor origin tuple origin of frame "b" would be
+      // example.com, but the parent tuple origin is a.com.
+      return document_url;
+    }
+  } while (GURL(parent_document.Url()).SchemeIs(url::kAboutScheme));
+
+  DCHECK(!parent_document.IsNull());
+
+  // We should know that the frame can access the parent document (unless we
+  // explicitly allow it not to), since it has the same tuple origin as the
+  // frame, and we checked the frame access above.
+  DCHECK(allow_inaccessible_parents ||
+         web_frame_origin.CanAccess(parent_document.GetSecurityOrigin()));
+  return parent_document.Url();
+}
+
 std::string GetContextTypeDescriptionString(Feature::Context context_type) {
   switch (context_type) {
     case Feature::UNSPECIFIED_CONTEXT:
@@ -319,100 +436,33 @@ GURL ScriptContext::GetAccessCheckedFrameURL(
 }
 
 // static
-GURL ScriptContext::GetEffectiveDocumentURL(blink::WebLocalFrame* frame,
-                                            const GURL& document_url,
-                                            bool match_about_blank) {
-  // Common scenario. If |match_about_blank| is false (as is the case in most
-  // extensions), or if the frame is not an about:-page, just return
-  // |document_url| (supposedly the URL of the frame).
-  if (!match_about_blank || !document_url.SchemeIs(url::kAboutScheme))
-    return document_url;
-
-  blink::WebSecurityOrigin web_frame_origin = frame->GetSecurityOrigin();
-  url::Origin frame_origin = web_frame_origin;
-  // Check the origin of the frame, including whether it is an opaque origin
-  // (like about:blank) that has a non-opaque opener.
-  // Unfortunately, we still have to traverse the frame tree, because match
-  // patterns are associated with paths as well, not just origins. For instance,
-  // if an extension wants to run on google.com/maps/* with match_about_blank
-  // true, then it should run on about:blank frames created by google.com/maps,
-  // but not about:blank frames created by google.com (which is what the
-  // precursor tuple origin would be).
-  const url::SchemeHostPort& tuple_or_precursor_tuple_origin =
-      frame_origin.GetTupleOrPrecursorTupleIfOpaque();
-
-  // There is no valid tuple origin (which can happen in the case of e.g. a
-  // browser-initiated navigation to an opaque URL). Bail.
-  if (!tuple_or_precursor_tuple_origin.IsValid())
-    return document_url;
-
-  url::Origin precursor_origin =
-      url::Origin::Create(tuple_or_precursor_tuple_origin.GetURL());
-  // The frame can't access its precursor. Bail.
-  if (!web_frame_origin.CanAccess(blink::WebSecurityOrigin(precursor_origin)))
-    return document_url;
-
-  // Non-sandboxed about:blank and about:srcdoc pages inherit their security
-  // origin from their parent frame/window. So, traverse the frame/window
-  // hierarchy to find the closest non-about:-page and return its URL.
-  blink::WebFrame* parent = frame;
-  blink::WebDocument parent_document;
-  base::flat_set<blink::WebFrame*> already_visited_frames;
-  do {
-    already_visited_frames.insert(parent);
-    if (parent->Parent())
-      parent = parent->Parent();
-    else
-      parent = parent->Opener();
-
-    // Avoid an infinite loop - see https://crbug.com/568432 and
-    // https://crbug.com/883526.
-    if (base::Contains(already_visited_frames, parent))
-      return document_url;
-
-    parent_document = parent && parent->IsWebLocalFrame()
-                          ? parent->ToWebLocalFrame()->GetDocument()
-                          : blink::WebDocument();
-
-    // We reached the end of the ancestral chain without finding a valid parent.
-    // Bail and use the original URL.
-    if (parent_document.IsNull())
-      return document_url;
-
-    url::SchemeHostPort parent_tuple_origin =
-        url::Origin(parent->GetSecurityOrigin())
-            .GetTupleOrPrecursorTupleIfOpaque();
-    if (!parent_tuple_origin.IsValid() ||
-        parent_tuple_origin != tuple_or_precursor_tuple_origin) {
-      // The parent has a different tuple origin than frame; this could happen
-      // in edge cases where a parent navigates an iframe or popup of a child
-      // frame at a different origin. [1] In this case, bail, since we can't
-      // find a full URL (i.e., one including the path) with the same security
-      // origin to use for the frame in question.
-      // [1] Consider a frame tree like:
-      // <html> <!--example.com-->
-      //   <iframe id="a" src="a.com">
-      //     <iframe id="b" src="b.com"></iframe>
-      //   </iframe>
-      // </html>
-      // Frame "a" is cross-origin from the top-level frame, and so the
-      // example.com top-level frame can't directly access frame "b". However,
-      // it can navigate it through
-      // window.frames[0].frames[0].location.href = 'about:blank';
-      // In that case, the precursor origin tuple origin of frame "b" would be
-      // example.com, but the parent tuple origin is a.com.
-      return document_url;
-    }
-  } while (GURL(parent_document.Url()).SchemeIs(url::kAboutScheme));
-
-  DCHECK(!parent_document.IsNull());
-
-  // We should know that the frame can access the parent document, since it
-  // has the same tuple origin as the frame, and we checked the frame access
-  // above.
-  DCHECK(web_frame_origin.CanAccess(parent_document.GetSecurityOrigin()));
-  return parent_document.Url();
+GURL ScriptContext::GetEffectiveDocumentURLForContext(
+    blink::WebLocalFrame* frame,
+    const GURL& document_url,
+    bool match_about_blank) {
+  // Note: Do not allow matching inaccessible parent frames here; frames like
+  // sandboxed frames should not inherit the privilege of their parents.
+  int flags = 0;
+  if (match_about_blank)
+    flags |= kAllowAboutFrames;
+  return GetEffectiveDocumentURL(frame, document_url, flags);
 }
+
+// static
+GURL ScriptContext::GetEffectiveDocumentURLForInjection(
+    blink::WebLocalFrame* frame,
+    const GURL& document_url,
+    bool match_about_blank) {
+  // We explicitly allow inaccessible parents here. Extensions should still be
+  // able to inject into a sandboxed iframe if it has access to the embedding
+  // origin.
+  int flags = kAllowInaccessibleParents;
+  if (match_about_blank)
+    flags |= kAllowAboutFrames;
+  return GetEffectiveDocumentURL(frame, document_url, flags);
+}
+
+// Grants a set of content capabilities to this context.
 
 bool ScriptContext::HasAPIPermission(APIPermission::ID permission) const {
   DCHECK(thread_checker_.CalledOnValidThread());

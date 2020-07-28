@@ -34,7 +34,7 @@
 #include "net/cert/cert_verify_proc_android.h"
 #endif
 
-#if defined(OS_MACOSX)
+#if defined(OS_APPLE)
 #include "net/cert/internal/trust_store_mac.h"
 #endif
 
@@ -346,7 +346,7 @@ TEST(ErrorReportTest, TrialDebugInfo) {
 
   network::mojom::CertVerifierDebugInfoPtr debug_info =
       network::mojom::CertVerifierDebugInfo::New();
-#if defined(OS_MACOSX)
+#if defined(OS_APPLE)
   debug_info->mac_platform_debug_info =
       network::mojom::MacPlatformVerifierDebugInfo::New();
   debug_info->mac_platform_debug_info->trust_result = 1;
@@ -389,7 +389,7 @@ TEST(ErrorReportTest, TrialDebugInfo) {
   ASSERT_TRUE(trial_info.has_sct_list());
   EXPECT_EQ("sct", trial_info.sct_list());
 
-#if defined(OS_MACOSX)
+#if defined(OS_APPLE)
   ASSERT_TRUE(trial_info.has_mac_platform_debug_info());
   EXPECT_EQ(1U, trial_info.mac_platform_debug_info().trust_result());
   EXPECT_EQ(20, trial_info.mac_platform_debug_info().result_code());

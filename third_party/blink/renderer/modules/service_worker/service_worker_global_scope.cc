@@ -2336,8 +2336,7 @@ void ServiceWorkerGlobalScope::StartCookieChangeEvent(
 
   HeapVector<Member<CookieListItem>> changed;
   HeapVector<Member<CookieListItem>> deleted;
-  CookieChangeEvent::ToEventInfo(change->cookie, change->cause, changed,
-                                 deleted);
+  CookieChangeEvent::ToEventInfo(change, changed, deleted);
   Event* event = ExtendableCookieChangeEvent::Create(
       event_type_names::kCookiechange, std::move(changed), std::move(deleted),
       observer);

@@ -346,18 +346,10 @@ class Generator(CppGenerator):
         or mojom.IsUnionKind(kind)):
       return self._GetCppProtoNameForKind(
           kind, add_same_module_namespaces=add_same_module_namespaces)
-    elif mojom.IsPendingRemoteKind(kind):
-      return "%s::PendingRemote" % self._GetCppProtoNameForKind(
-          kind.kind, add_same_module_namespaces=add_same_module_namespaces)
-    elif mojom.IsPendingReceiverKind(kind):
-      return "%s::PendingReceiver" % self._GetCppProtoNameForKind(
-          kind.kind, add_same_module_namespaces=add_same_module_namespaces)
-    elif mojom.IsPendingAssociatedRemoteKind(kind):
-      return "%s::PendingAssociatedRemote" % self._GetCppProtoNameForKind(
-          kind.kind, add_same_module_namespaces=add_same_module_namespaces)
-    elif mojom.IsPendingAssociatedReceiverKind(kind):
-      return "%s::PendingAssociatedReceiver" % self._GetCppProtoNameForKind(
-          kind.kind, add_same_module_namespaces=add_same_module_namespaces)
+    elif (mojom.IsPendingRemoteKind(kind) or mojom.IsPendingReceiverKind(kind)
+          or mojom.IsPendingAssociatedRemoteKind(kind)
+          or mojom.IsPendingAssociatedReceiverKind(kind)):
+      return "uint32_t"
     elif mojom.IsStringKind(kind):
       return "std::string"
     elif mojom.IsGenericHandleKind(kind):
@@ -391,16 +383,10 @@ class Generator(CppGenerator):
       return ("map<%sKey, %sValue>" %
               (self._GetProtoFieldType(kind.key_kind, quantified=False),
                self._GetProtoFieldType(kind.value_kind, quantified=False)))
-    elif mojom.IsPendingRemoteKind(kind):
-      unquantified = "%s.PendingRemote" % self._GetProtoNameForKind(kind.kind)
-    elif mojom.IsPendingReceiverKind(kind):
-      unquantified = "%s.PendingReceiver" % self._GetProtoNameForKind(kind.kind)
-    elif mojom.IsPendingAssociatedRemoteKind(kind):
-      unquantified = ("%s.PendingAssociatedRemote" %
-                      self._GetProtoNameForKind(kind.kind))
-    elif mojom.IsPendingAssociatedReceiverKind(kind):
-      unquantified = ("%s.PendingAssociatedReceiver" %
-                      self._GetProtoNameForKind(kind.kind))
+    elif (mojom.IsPendingRemoteKind(kind) or mojom.IsPendingReceiverKind(kind)
+          or mojom.IsPendingAssociatedRemoteKind(kind)
+          or mojom.IsPendingAssociatedReceiverKind(kind)):
+      unquantified = "uint32"
     elif mojom.IsStringKind(kind):
       unquantified = "string"
     elif mojom.IsGenericHandleKind(kind):

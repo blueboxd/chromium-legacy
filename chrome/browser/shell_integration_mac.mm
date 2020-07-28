@@ -9,6 +9,7 @@
 #include "base/mac/mac_util.h"
 #include "base/mac/scoped_cftyperef.h"
 #include "base/strings/sys_string_conversions.h"
+#include "build/branding_buildflags.h"
 #include "chrome/common/channel_info.h"
 #include "components/version_info/version_info.h"
 #import "third_party/mozilla/NSWorkspace+Utils.h"
@@ -16,20 +17,6 @@
 namespace shell_integration {
 
 namespace {
-
-// Returns true if |identifier| is the bundle id of the default browser.
-bool IsIdentifierDefaultBrowser(NSString* identifier) {
-  NSString* default_browser =
-      [[NSWorkspace sharedWorkspace] defaultBrowserIdentifier];
-  if (!default_browser)
-    return false;
-
-  // We need to ensure we do the comparison case-insensitive as LS doesn't
-  // persist the case of our bundle id.
-  NSComparisonResult result =
-      [default_browser caseInsensitiveCompare:identifier];
-  return result == NSOrderedSame;
-}
 
 // Returns true if |identifier| is the bundle id of the default client
 // application for the given protocol.
@@ -40,8 +27,7 @@ bool IsIdentifierDefaultProtocolClient(NSString* identifier,
   if (!default_client)
     return false;
 
-  // We need to ensure we do the comparison case-insensitive as LS doesn't
-  // persist the case of our bundle id.
+  // Do the comparison case-insensitively as LS smashes the case.
   NSComparisonResult result =
       [base::mac::CFToNSCast(default_client) caseInsensitiveCompare:identifier];
   return result == NSOrderedSame;
@@ -130,12 +116,51 @@ DefaultWebClientState GetDefaultBrowser() {
   if (!my_identifier)
     return UNKNOWN_DEFAULT;
 
-  return IsIdentifierDefaultBrowser(my_identifier) ? IS_DEFAULT : NOT_DEFAULT;
+  base::ScopedCFTypeRef<CFStringRef> default_browser_cf(
+      LSCopyDefaultHandlerForURLScheme(CFSTR("http")));
+  if (!default_browser_cf)
+    return NOT_DEFAULT;
+  NSString* default_browser = base::mac::CFToNSCast(default_browser_cf);
+
+  // Do the comparison case-insensitively as LS smashes the case.
+  if ([default_browser caseInsensitiveCompare:my_identifier] == NSOrderedSame)
+    return IS_DEFAULT;
+
+#if BUILDFLAG(GOOGLE_CHROME_BRANDING)
+  // Flavors of Chrome are of the constructions "com.google.Chrome" and
+  // "com.google.Chrome.beta". If the first three components match, then these
+  // are variant flavors.
+  auto three_components_only_lopper = [](NSString* bundle_id) {
+    NSMutableArray<NSString*>* parts =
+        [[bundle_id componentsSeparatedByString:@"."] mutableCopy];
+    while ([parts count] > 3)
+      [parts removeLastObject];
+    return [parts componentsJoinedByString:@"."];
+  };
+
+  NSString* my_identifier_lopped = three_components_only_lopper(my_identifier);
+  NSString* default_browser_lopped =
+      three_components_only_lopper(default_browser);
+
+  // Do the comparisons case-insensitively as LS smashes the case.
+  if ([my_identifier_lopped caseInsensitiveCompare:default_browser_lopped] ==
+      NSOrderedSame) {
+    return OTHER_MODE_IS_DEFAULT;
+  }
+#endif  // BUILDFLAG(GOOGLE_CHROME_BRANDING)
+  return NOT_DEFAULT;
 }
 
 // Returns true if Firefox is the default browser for the current user.
 bool IsFirefoxDefaultBrowser() {
-  return IsIdentifierDefaultBrowser(@"org.mozilla.firefox");
+  base::ScopedCFTypeRef<CFStringRef> default_browser(
+      LSCopyDefaultHandlerForURLScheme(CFSTR("http")));
+  if (!default_browser)
+    return false;
+
+  // Do the comparison case-insensitively as LS smashes the case.
+  return CFStringCompare(default_browser, CFSTR("org.mozilla.firefox"),
+                         kCFCompareCaseInsensitive) == kCFCompareEqualTo;
 }
 
 // Attempt to determine if this instance of Chrome is the default client

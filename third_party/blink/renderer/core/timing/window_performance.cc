@@ -510,6 +510,10 @@ void WindowPerformance::MeasureMemoryExperimentTimerFired(TimerBase*) {
   v8::HandleScope handle_scope(isolate);
   v8::Local<v8::Context> context =
       ToV8Context(GetFrame(), DOMWrapperWorld::MainWorld());
+  if (context.IsEmpty()) {
+    // The frame has been detached in the meantime.
+    return;
+  }
   isolate->MeasureMemory(
       std::make_unique<MeasureMemoryDelegate>(isolate, context),
       v8::MeasureMemoryExecution::kDefault);

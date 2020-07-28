@@ -23,6 +23,8 @@
 			<true/>
 			<key>INIntentDescriptionID</key>
 			<string>MpiRFx</string>
+			<key>INIntentEligibleForWidgets</key>
+			<true/>
 			<key>INIntentIneligibleForSuggestions</key>
 			<true/>
 			<key>INIntentInput</key>
@@ -50,6 +52,8 @@
 			<key>INIntentParameters</key>
 			<array>
 				<dict>
+					<key>INIntentParameterConfigurable</key>
+					<true/>
 					<key>INIntentParameterDisplayName</key>
 					<string>URL</string>
 					<key>INIntentParameterDisplayNameID</key>
@@ -111,6 +115,8 @@
 			<true/>
 			<key>INIntentDescriptionID</key>
 			<string>k0Ho6W</string>
+			<key>INIntentEligibleForWidgets</key>
+			<true/>
 			<key>INIntentIneligibleForSuggestions</key>
 			<true/>
 			<key>INIntentInput</key>
@@ -136,6 +142,8 @@
 			<key>INIntentParameters</key>
 			<array>
 				<dict>
+					<key>INIntentParameterConfigurable</key>
+					<true/>
 					<key>INIntentParameterDisplayName</key>
 					<string>Search phrase</string>
 					<key>INIntentParameterDisplayNameID</key>

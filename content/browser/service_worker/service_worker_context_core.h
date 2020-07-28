@@ -27,7 +27,6 @@
 #include "content/common/content_export.h"
 #include "content/public/browser/global_routing_id.h"
 #include "content/public/browser/service_worker_context.h"
-#include "content/public/browser/shared_worker_id.h"
 #include "mojo/public/cpp/bindings/associated_receiver_set.h"
 #include "third_party/blink/public/mojom/service_worker/service_worker_registration.mojom.h"
 

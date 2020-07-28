@@ -138,50 +138,8 @@ PrerenderLinkManager::LinkPrerender::~LinkPrerender() {
       << "The PrerenderHandle should be destroyed before its Prerender.";
 }
 
-// Helper class to implement PrerenderContents::Observer and watch prerenders
-// which launch other prerenders.
-class PrerenderLinkManager::PendingPrerenderManager
-    : public PrerenderContents::Observer {
- public:
-  explicit PendingPrerenderManager(PrerenderLinkManager* link_manager)
-      : link_manager_(link_manager) {}
-
-  ~PendingPrerenderManager() override { CHECK(observed_launchers_.empty()); }
-
-  void ObserveLauncher(PrerenderContents* launcher) {
-    DCHECK_EQ(FINAL_STATUS_UNKNOWN, launcher->final_status());
-    bool inserted = observed_launchers_.insert(launcher).second;
-    if (inserted)
-      launcher->AddObserver(this);
-  }
-
-  void OnPrerenderStart(PrerenderContents* launcher) override {}
-
-  void OnPrerenderStop(PrerenderContents* launcher) override {
-    observed_launchers_.erase(launcher);
-    if (launcher->final_status() == FINAL_STATUS_USED) {
-      link_manager_->StartPendingPrerendersForLauncher(launcher);
-    } else {
-      link_manager_->CancelPendingPrerendersForLauncher(launcher);
-    }
-  }
-
-  void OnPrerenderNetworkBytesChanged(PrerenderContents* launcher) override {}
-
- private:
-  // A pointer to the parent PrerenderLinkManager.
-  PrerenderLinkManager* link_manager_;
-
-  // The set of PrerenderContentses being observed. Lifetimes are managed by
-  // OnPrerenderStop.
-  std::set<PrerenderContents*> observed_launchers_;
-};
-
 PrerenderLinkManager::PrerenderLinkManager(PrerenderManager* manager)
-    : has_shutdown_(false),
-      manager_(manager),
-      pending_prerender_manager_(
-          std::make_unique<PendingPrerenderManager>(this)) {}
+    : has_shutdown_(false), manager_(manager) {}
 
 PrerenderLinkManager::~PrerenderLinkManager() {
   for (auto& prerender : prerenders_) {
@@ -246,9 +204,7 @@ bool PrerenderLinkManager::OnAddPrerender(
 
   prerenders_.push_back(std::move(prerender));
 
-  if (prerender_contents)
-    pending_prerender_manager_->ObserveLauncher(prerender_contents);
-  else
+  if (!prerender_contents)
     StartPrerenders();
 
   // Check if the prerender we added is still at the end of the list. It
@@ -444,28 +400,6 @@ void PrerenderLinkManager::CancelPrerender(LinkPrerender* prerender) {
     }
   }
   NOTREACHED();
-}
-
-void PrerenderLinkManager::StartPendingPrerendersForLauncher(
-    PrerenderContents* launcher) {
-  for (auto& prerender : prerenders_) {
-    if (prerender->deferred_launcher == launcher)
-      prerender->deferred_launcher = nullptr;
-  }
-  StartPrerenders();
-}
-
-void PrerenderLinkManager::CancelPendingPrerendersForLauncher(
-    PrerenderContents* launcher) {
-  // Remove all pending prerenders for this launcher.
-  for (auto it = prerenders_.begin(); it != prerenders_.end();) {
-    if (it->get()->deferred_launcher == launcher) {
-      DCHECK(!it->get()->handle);
-      it = prerenders_.erase(it);
-    } else {
-      ++it;
-    }
-  }
 }
 
 void PrerenderLinkManager::Shutdown() {

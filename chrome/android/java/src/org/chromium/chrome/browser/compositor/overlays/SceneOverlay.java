@@ -78,11 +78,6 @@ public interface SceneOverlay {
     boolean onBackPressed();
 
     /**
-     * A notification to the overlay that the containing layout is being hidden.
-     */
-    void onHideLayout();
-
-    /**
      * @return True if this overlay handles tab creation.
      */
     boolean handlesTabCreating();

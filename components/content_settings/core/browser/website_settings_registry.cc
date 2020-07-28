@@ -69,7 +69,7 @@ const WebsiteSettingsInfo* WebsiteSettingsRegistry::Register(
 #elif defined(OS_LINUX) && !defined(OS_CHROMEOS)
   if (!(platform & PLATFORM_LINUX))
     return nullptr;
-#elif defined(OS_MACOSX) && !defined(OS_IOS)
+#elif defined(OS_MAC)
   if (!(platform & PLATFORM_MAC))
     return nullptr;
 #elif defined(OS_CHROMEOS)

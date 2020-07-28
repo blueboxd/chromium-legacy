@@ -438,7 +438,7 @@ TEST_F(MessagePopupCollectionTest, UpdateContents) {
 }
 
 // Failiing on MacOS 10.10. https://crbug.com/1047503
-#if defined(OS_MACOSX)
+#if defined(OS_APPLE)
 #define MAYBE_UpdateContentsCausesPopupClose \
   DISABLED_UpdateContentsCausesPopupClose
 #else

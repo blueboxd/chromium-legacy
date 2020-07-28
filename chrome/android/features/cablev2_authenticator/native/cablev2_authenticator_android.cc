@@ -295,9 +295,9 @@ class BLEClient {
         base::span<const uint8_t> message_bytes) = 0;
 
     // SendBLEMessages sends the given fragments to the target peer.
-    virtual void SendBLEMessages(
-        uint64_t target_addr,
-        std::vector<std::vector<uint8_t>> messages) = 0;
+    virtual void SendBLEMessages(uint64_t target_addr,
+                                 std::vector<std::vector<uint8_t>> messages,
+                                 bool is_transaction_complete) = 0;
   };
 
   BLEClient(uint64_t addr,
@@ -316,7 +316,7 @@ class BLEClient {
     return true;
   }
 
-  void Send(std::vector<uint8_t> data) {
+  void Send(std::vector<uint8_t> data, bool is_transaction_complete) {
     if (!crypter_->Encrypt(&data)) {
       FIDO_LOG(ERROR) << "Failed to encrypt response";
       return;
@@ -329,7 +329,8 @@ class BLEClient {
       return;
     }
 
-    delegate_->SendBLEMessages(addr_, std::move(fragments));
+    delegate_->SendBLEMessages(addr_, std::move(fragments),
+                               is_transaction_complete);
   }
 
   uint64_t addr() { return addr_; }
@@ -795,10 +796,11 @@ class CableInterface : public BLEClient::Delegate {
   }
 
   void SendBLEMessages(uint64_t target_addr,
-                       std::vector<std::vector<uint8_t>> messages) override {
+                       std::vector<std::vector<uint8_t>> messages,
+                       bool is_transaction_complete) override {
     Java_CableAuthenticator_sendNotification(
         env_, cable_authenticator_, target_addr,
-        ToJavaArrayOfByteArray(env_, messages));
+        ToJavaArrayOfByteArray(env_, messages), is_transaction_complete);
   }
 
   void OnMakeCredentialResponse(uint32_t ctap_status,
@@ -845,7 +847,7 @@ class CableInterface : public BLEClient::Delegate {
                       response_payload->end());
     }
 
-    ble_client_->Send(std::move(response));
+    ble_client_->Send(std::move(response), /*is_transaction_complete=*/true);
   }
 
   void OnGetAssertionResponse(uint32_t ctap_status,
@@ -886,7 +888,7 @@ class CableInterface : public BLEClient::Delegate {
                       response_payload->end());
     }
 
-    ble_client_->Send(std::move(response));
+    ble_client_->Send(std::move(response), /*is_transaction_complete=*/true);
   }
 
  private:

@@ -105,11 +105,6 @@ class LiteVideoUserBlocklist : public blocklist::OptOutBlocklist {
       const override;
 
  private:
-  // Returns the key for a navigation used for the rebuffer blocklist type.
-  // The key format is "mainframe.com_subframe.com", if the navigation is the
-  // mainframe navigation, the key omits subframe.com, e.g., "mainframe.com_".
-  static base::Optional<std::string> GetRebufferBlocklistKey(
-      content::NavigationHandle* navigation_handle);
 
   SEQUENCE_CHECKER(sequence_checker_);
 };

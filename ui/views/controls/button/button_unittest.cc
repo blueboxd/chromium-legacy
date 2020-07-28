@@ -305,7 +305,7 @@ TEST_F(ButtonTest, HoverStateOnVisibilityChange) {
 
 // Disabling cursor events occurs for touch events and the Ash magnifier. There
 // is no touch on desktop Mac. Tracked in http://crbug.com/445520.
-#if !defined(OS_MACOSX) || defined(USE_AURA)
+#if !defined(OS_APPLE) || defined(USE_AURA)
   aura::test::TestCursorClient cursor_client(GetRootWindow(widget()));
 
   // In Aura views, no new hover effects are invoked if mouse events
@@ -323,7 +323,7 @@ TEST_F(ButtonTest, HoverStateOnVisibilityChange) {
 
   button()->SetVisible(true);
   EXPECT_EQ(Button::STATE_NORMAL, button()->GetState());
-#endif  // !defined(OS_MACOSX) || defined(USE_AURA)
+#endif  // !defined(OS_APPLE) || defined(USE_AURA)
 }
 
 // Tests that the hover state is preserved during a view hierarchy update of a
@@ -409,7 +409,7 @@ TEST_F(ButtonTest, NotifyActionNoClick) {
 }
 
 // No touch on desktop Mac. Tracked in http://crbug.com/445520.
-#if !defined(OS_MACOSX) || defined(USE_AURA)
+#if !defined(OS_APPLE) || defined(USE_AURA)
 
 namespace {
 
@@ -449,7 +449,7 @@ TEST_F(ButtonTest, GestureEventsRespectDisabledState) {
   EXPECT_EQ(Button::STATE_DISABLED, button()->GetState());
 }
 
-#endif  // !defined(OS_MACOSX) || defined(USE_AURA)
+#endif  // !defined(OS_APPLE) || defined(USE_AURA)
 
 // Ensure subclasses of Button are correctly recognized as Button.
 TEST_F(ButtonTest, AsButton) {
@@ -805,7 +805,7 @@ TEST_F(ButtonTest, ActionOnSpace) {
   ui::KeyEvent space_press(ui::ET_KEY_PRESSED, ui::VKEY_SPACE, ui::EF_NONE);
   EXPECT_TRUE(button()->OnKeyPressed(space_press));
 
-#if defined(OS_MACOSX)
+#if defined(OS_APPLE)
   EXPECT_EQ(Button::STATE_NORMAL, button()->GetState());
   EXPECT_TRUE(button()->pressed());
 #else
@@ -815,7 +815,7 @@ TEST_F(ButtonTest, ActionOnSpace) {
 
   ui::KeyEvent space_release(ui::ET_KEY_RELEASED, ui::VKEY_SPACE, ui::EF_NONE);
 
-#if defined(OS_MACOSX)
+#if defined(OS_APPLE)
   EXPECT_FALSE(button()->OnKeyReleased(space_release));
 #else
   EXPECT_TRUE(button()->OnKeyReleased(space_release));
@@ -836,7 +836,7 @@ TEST_F(ButtonTest, ActionOnReturn) {
 
   ui::KeyEvent return_press(ui::ET_KEY_PRESSED, ui::VKEY_RETURN, ui::EF_NONE);
 
-#if defined(OS_MACOSX)
+#if defined(OS_APPLE)
   EXPECT_FALSE(button()->OnKeyPressed(return_press));
   EXPECT_EQ(Button::STATE_NORMAL, button()->GetState());
   EXPECT_FALSE(button()->pressed());

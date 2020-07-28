@@ -99,7 +99,7 @@ NativeThemeColorIdToColorIdMap() {
         {NTCID::kColorId_TabSelectedBorderColor, kColorTabSelectedBorder},
         {NTCID::kColorId_TabTitleColorActive, kColorTabSelectedForeground},
         {NTCID::kColorId_TableBackground, kColorTableBackground},
-#if defined(OS_MACOSX)
+#if defined(OS_APPLE)
         {NTCID::kColorId_TableBackgroundAlternate,
           kColorTableBackgroundAlternate},
 #endif
@@ -166,7 +166,7 @@ NativeTheme::ExtraParams::ExtraParams(const ExtraParams& other) {
   memcpy(this, &other, sizeof(*this));
 }
 
-#if !defined(OS_WIN) && !defined(OS_MACOSX)
+#if !defined(OS_WIN) && !defined(OS_APPLE)
 // static
 bool NativeTheme::SystemDarkModeSupported() {
   return false;

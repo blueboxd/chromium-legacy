@@ -89,7 +89,7 @@ void ResizeForNextOutput(std::string* compressed_log, z_stream* stream) {
 
 WebRtcLogUploader::UploadDoneData::UploadDoneData() = default;
 WebRtcLogUploader::UploadDoneData::UploadDoneData(
-    const WebRtcLogUploader::UploadDoneData& other) = default;
+    WebRtcLogUploader::UploadDoneData&& other) = default;
 WebRtcLogUploader::UploadDoneData::~UploadDoneData() = default;
 
 WebRtcLogUploader::WebRtcLogUploader()
@@ -119,7 +119,7 @@ void WebRtcLogUploader::LoggingStoppedDontUpload() {
 void WebRtcLogUploader::LoggingStoppedDoUpload(
     std::unique_ptr<WebRtcLogBuffer> log_buffer,
     std::unique_ptr<WebRtcLogMetaDataMap> meta_data,
-    const WebRtcLogUploader::UploadDoneData& upload_done_data) {
+    WebRtcLogUploader::UploadDoneData upload_done_data) {
   DCHECK(background_task_runner_->RunsTasksInCurrentSequence());
   DCHECK(log_buffer.get());
   DCHECK(meta_data.get());
@@ -144,16 +144,15 @@ void WebRtcLogUploader::LoggingStoppedDoUpload(
     AddLocallyStoredLogInfoToUploadListFile(log_list_path, local_log_id);
   }
 
-  UploadDoneData upload_done_data_with_log_id = upload_done_data;
-  upload_done_data_with_log_id.local_log_id = local_log_id;
+  upload_done_data.local_log_id = local_log_id;
   PrepareMultipartPostData(compressed_log, std::move(meta_data),
-                           upload_done_data_with_log_id);
+                           std::move(upload_done_data));
 }
 
 void WebRtcLogUploader::PrepareMultipartPostData(
     const std::string& compressed_log,
     std::unique_ptr<WebRtcLogMetaDataMap> meta_data,
-    const WebRtcLogUploader::UploadDoneData& upload_done_data) {
+    WebRtcLogUploader::UploadDoneData upload_done_data) {
   DCHECK(background_task_runner_->RunsTasksInCurrentSequence());
   DCHECK(!compressed_log.empty());
   DCHECK(meta_data.get());
@@ -170,18 +169,20 @@ void WebRtcLogUploader::PrepareMultipartPostData(
   // implemented according to the test plan. http://crbug.com/257329.
   if (post_data_) {
     *post_data_ = *post_data;
-    NotifyUploadDoneAndLogStats(net::HTTP_OK, net::OK, "", upload_done_data);
+    NotifyUploadDoneAndLogStats(net::HTTP_OK, net::OK, "",
+                                std::move(upload_done_data));
     return;
   }
 
   main_task_runner_->PostTask(
-      FROM_HERE, base::BindOnce(&WebRtcLogUploader::UploadCompressedLog,
-                                base::Unretained(this), upload_done_data,
-                                std::move(post_data)));
+      FROM_HERE,
+      base::BindOnce(&WebRtcLogUploader::UploadCompressedLog,
+                     base::Unretained(this), std::move(upload_done_data),
+                     std::move(post_data)));
 }
 
 void WebRtcLogUploader::UploadStoredLog(
-    const WebRtcLogUploader::UploadDoneData& upload_data) {
+    WebRtcLogUploader::UploadDoneData upload_data) {
   DCHECK(background_task_runner_->RunsTasksInCurrentSequence());
   DCHECK(!upload_data.local_log_id.empty());
   DCHECK(!upload_data.paths.directory.empty());
@@ -198,19 +199,17 @@ void WebRtcLogUploader::UploadStoredLog(
     base::UmaHistogramSparse("WebRtcTextLogging.UploadFailureReason",
                              WebRtcLogUploadFailureReason::kStoredLogNotFound);
     main_task_runner_->PostTask(
-        FROM_HERE,
-        base::BindOnce(upload_data.callback, false, "", "Log doesn't exist."));
+        FROM_HERE, base::BindOnce(std::move(upload_data).callback, false, "",
+                                  "Log doesn't exist."));
     return;
   }
 
-  UploadDoneData upload_data_with_rtp = upload_data;
-
   // Optimistically set the rtp paths to what they should be if they exist.
-  upload_data_with_rtp.paths.incoming_rtp_dump =
+  upload_data.paths.incoming_rtp_dump =
       upload_data.paths.directory.AppendASCII(upload_data.local_log_id)
           .AddExtension(FILE_PATH_LITERAL(".rtp_in"));
 
-  upload_data_with_rtp.paths.outgoing_rtp_dump =
+  upload_data.paths.outgoing_rtp_dump =
       upload_data.paths.directory.AppendASCII(upload_data.local_log_id)
           .AddExtension(FILE_PATH_LITERAL(".rtp_out"));
 
@@ -231,7 +230,7 @@ void WebRtcLogUploader::UploadStoredLog(
   }
 
   PrepareMultipartPostData(compressed_log, std::move(meta_data),
-                           upload_data_with_rtp);
+                           std::move(upload_data));
 }
 
 void WebRtcLogUploader::LoggingStoppedDoStore(
@@ -239,7 +238,7 @@ void WebRtcLogUploader::LoggingStoppedDoStore(
     const std::string& log_id,
     std::unique_ptr<WebRtcLogBuffer> log_buffer,
     std::unique_ptr<WebRtcLogMetaDataMap> meta_data,
-    const GenericDoneCallback& done_callback) {
+    GenericDoneCallback done_callback) {
   DCHECK(background_task_runner_->RunsTasksInCurrentSequence());
   DCHECK(!log_id.empty());
   DCHECK(log_buffer.get());
@@ -288,8 +287,8 @@ void WebRtcLogUploader::LoggingStoppedDoStore(
                     pickle.size());
   }
 
-  main_task_runner_->PostTask(FROM_HERE,
-                              base::BindOnce(done_callback, true, ""));
+  main_task_runner_->PostTask(
+      FROM_HERE, base::BindOnce(std::move(done_callback), true, ""));
 
   main_task_runner_->PostTask(
       FROM_HERE, base::BindOnce(&WebRtcLogUploader::DecreaseLogCount,
@@ -307,7 +306,7 @@ void WebRtcLogUploader::Shutdown() {
 
 void WebRtcLogUploader::OnSimpleLoaderComplete(
     SimpleURLLoaderList::iterator it,
-    const WebRtcLogUploader::UploadDoneData& upload_done_data,
+    WebRtcLogUploader::UploadDoneData upload_done_data,
     std::unique_ptr<std::string> response_body) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(main_sequence_checker_);
   DCHECK(!shutdown_);
@@ -335,7 +334,7 @@ void WebRtcLogUploader::OnSimpleLoaderComplete(
                        report_id));
   }
   NotifyUploadDoneAndLogStats(response_code, network_error_code, report_id,
-                              upload_done_data);
+                              std::move(upload_done_data));
 }
 
 void WebRtcLogUploader::SetupMultipart(
@@ -440,7 +439,7 @@ std::string WebRtcLogUploader::CompressLog(WebRtcLogBuffer* buffer) {
 }
 
 void WebRtcLogUploader::UploadCompressedLog(
-    const WebRtcLogUploader::UploadDoneData& upload_done_data,
+    WebRtcLogUploader::UploadDoneData upload_done_data,
     std::unique_ptr<std::string> post_data) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(main_sequence_checker_);
 
@@ -497,7 +496,8 @@ void WebRtcLogUploader::UploadCompressedLog(
   raw_loader->DownloadToStringOfUnboundedSizeUntilCrashAndDie(
       g_browser_process->shared_url_loader_factory().get(),
       base::BindOnce(&WebRtcLogUploader::OnSimpleLoaderComplete,
-                     base::Unretained(this), std::move(it), upload_done_data));
+                     base::Unretained(this), std::move(it),
+                     std::move(upload_done_data)));
 }
 
 void WebRtcLogUploader::DecreaseLogCount() {
@@ -600,7 +600,7 @@ void WebRtcLogUploader::NotifyUploadDoneAndLogStats(
     base::Optional<int> response_code,
     int network_error_code,
     const std::string& report_id,
-    const WebRtcLogUploader::UploadDoneData& upload_done_data) {
+    WebRtcLogUploader::UploadDoneData upload_done_data) {
   if (upload_done_data.callback.is_null())
     return;
 
@@ -628,6 +628,6 @@ void WebRtcLogUploader::NotifyUploadDoneAndLogStats(
                                    : "<no value>"});
   }
   main_task_runner_->PostTask(
-      FROM_HERE, base::BindOnce(upload_done_data.callback, success, report_id,
-                                error_message));
+      FROM_HERE, base::BindOnce(std::move(upload_done_data).callback, success,
+                                report_id, error_message));
 }

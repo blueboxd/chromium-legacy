@@ -44,6 +44,7 @@
 #include "base/strings/stringprintf.h"
 #include "base/task/post_task.h"
 #include "base/task/thread_pool/thread_pool_instance.h"
+#include "base/threading/hang_watcher.h"
 #include "base/trace_event/trace_event.h"
 #include "components/discardable_memory/service/discardable_shared_memory_manager.h"
 #include "components/download/public/common/download_task_runner.h"
@@ -928,7 +929,7 @@ int ContentMainRunnerImpl::RunServiceManager(MainFunctionParams& main_params,
 
     // The hang watcher needs to be started once the feature list is available
     // but before the IO thread is started.
-    if (base::FeatureList::IsEnabled(base::HangWatcher::kEnableHangWatcher)) {
+    if (base::HangWatcher::IsEnabled()) {
       hang_watcher_ = new base::HangWatcher();
       hang_watcher_->Start();
       ANNOTATE_LEAKING_OBJECT_PTR(hang_watcher_);

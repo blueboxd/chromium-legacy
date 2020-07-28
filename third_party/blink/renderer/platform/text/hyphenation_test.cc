@@ -34,7 +34,7 @@ class HyphenationTest : public testing::Test {
  protected:
   void TearDown() override { LayoutLocale::ClearForTesting(); }
 
-#if defined(USE_MINIKIN_HYPHENATION) || defined(OS_MACOSX)
+#if defined(USE_MINIKIN_HYPHENATION) || defined(OS_APPLE)
   // Get a |Hyphenation| instnace for the specified locale for testing.
   scoped_refptr<Hyphenation> GetHyphenation(const AtomicString& locale) {
 #if defined(USE_MINIKIN_HYPHENATION)
@@ -69,7 +69,7 @@ TEST_F(HyphenationTest, Get) {
   EXPECT_EQ(nullptr, LayoutLocale::Get("en-UK")->GetHyphenation());
 }
 
-#if defined(USE_MINIKIN_HYPHENATION) || defined(OS_MACOSX)
+#if defined(USE_MINIKIN_HYPHENATION) || defined(OS_APPLE)
 // TODO(crbug.com/851413): Reenable this test.
 #if defined(OS_ANDROID)
 #define MAYBE_HyphenLocations DISABLED_HyphenLocations

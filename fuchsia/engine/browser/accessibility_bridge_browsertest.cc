@@ -269,3 +269,14 @@ IN_PROC_BROWSER_TEST_F(AccessibilityBridgeTest, PerformUnsupportedAction) {
   EXPECT_EQ(1, semantics_manager_.num_actions_handled());
   EXPECT_EQ(1, semantics_manager_.num_actions_unhandled());
 }
+
+IN_PROC_BROWSER_TEST_F(AccessibilityBridgeTest, Disconnect) {
+  base::RunLoop run_loop;
+  frame_ptr_.set_error_handler([&run_loop](zx_status_t status) {
+    EXPECT_EQ(ZX_ERR_INTERNAL, status);
+    run_loop.Quit();
+  });
+
+  semantics_manager_.semantic_tree()->Disconnect();
+  run_loop.Run();
+}

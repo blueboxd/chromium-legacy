@@ -16,7 +16,7 @@ import org.chromium.chrome.browser.complex_tasks.endpoint_fetcher.EndpointFetche
 import org.chromium.chrome.browser.complex_tasks.endpoint_fetcher.EndpointResponse;
 import org.chromium.chrome.browser.flags.ChromeFeatureList;
 import org.chromium.chrome.browser.profiles.Profile;
-import org.chromium.components.signin.ChromeSigninController;
+import org.chromium.chrome.browser.signin.IdentityServicesProvider;
 
 import java.util.Collections;
 import java.util.LinkedList;
@@ -63,6 +63,13 @@ public class TabSuggestionsServerFetcher implements TabSuggestionsFetcher {
     @Override
     public void fetch(TabContext tabContext, Callback<TabSuggestionsFetcherResults> callback) {
         try {
+            for (TabContext.TabInfo tabInfo : tabContext.getUngroupedTabs()) {
+                if (tabInfo.isIncognito) {
+                    callback.onResult(
+                            new TabSuggestionsFetcherResults(Collections.emptyList(), tabContext));
+                    return;
+                }
+            }
             EndpointFetcher.fetchUsingChromeAPIKey(res
                     -> { fetchCallback(res, callback, tabContext); },
                     mProfileForTesting == null ? Profile.getLastUsedRegularProfile()
@@ -132,7 +139,9 @@ public class TabSuggestionsServerFetcher implements TabSuggestionsFetcher {
 
     @VisibleForTesting
     protected boolean isSignedIn() {
-        return ChromeSigninController.get().isSignedIn();
+        return IdentityServicesProvider.get()
+                .getIdentityManager(Profile.getLastUsedRegularProfile())
+                .hasPrimaryAccount();
     }
 
     @VisibleForTesting

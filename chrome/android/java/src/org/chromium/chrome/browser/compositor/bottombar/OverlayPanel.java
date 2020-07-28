@@ -20,7 +20,9 @@ import org.chromium.base.ApplicationStatus.ActivityStateListener;
 import org.chromium.chrome.browser.ChromeActivity;
 import org.chromium.chrome.browser.compositor.LayerTitleCache;
 import org.chromium.chrome.browser.compositor.bottombar.OverlayPanelManager.PanelPriority;
-import org.chromium.chrome.browser.compositor.layouts.LayoutUpdateHost;
+import org.chromium.chrome.browser.compositor.layouts.Layout;
+import org.chromium.chrome.browser.compositor.layouts.LayoutManager;
+import org.chromium.chrome.browser.compositor.layouts.SceneChangeObserver;
 import org.chromium.chrome.browser.compositor.layouts.components.VirtualView;
 import org.chromium.chrome.browser.compositor.layouts.eventfilter.EdgeSwipeHandler;
 import org.chromium.chrome.browser.compositor.layouts.eventfilter.EventFilter;
@@ -108,6 +110,12 @@ public class OverlayPanel extends OverlayPanelAnimation implements ActivityState
         int MAX_VALUE = 21;
     }
 
+    /** A layout manager for tracking changes in the active layout. */
+    private final LayoutManager mLayoutManager;
+
+    /** The observer that reacts to scene-change events. */
+    private final SceneChangeObserver mSceneChangeObserver;
+
     /** The activity this panel is in. */
     protected ChromeActivity mActivity;
 
@@ -154,17 +162,30 @@ public class OverlayPanel extends OverlayPanelAnimation implements ActivityState
 
     /**
      * @param context The current Android {@link Context}.
-     * @param updateHost The {@link LayoutUpdateHost} used to request updates in the Layout.
+     * @param layoutManager A {@link LayoutManager} for observing changes in the active layout.
      * @param panelManager The {@link OverlayPanelManager} responsible for showing panels.
      */
     public OverlayPanel(
-            Context context, LayoutUpdateHost updateHost, OverlayPanelManager panelManager) {
-        super(context, updateHost);
+            Context context, LayoutManager layoutManager, OverlayPanelManager panelManager) {
+        super(context, layoutManager);
+        mLayoutManager = layoutManager;
         mContentFactory = this;
 
         mPanelManager = panelManager;
         mPanelManager.registerPanel(this);
         mEventFilter = new OverlayPanelEventFilter(mContext, this);
+
+        mSceneChangeObserver = new SceneChangeObserver() {
+            @Override
+            public void onTabSelectionHinted(int tabId) {}
+
+            @Override
+            public void onSceneChange(Layout layout) {
+                closePanel(StateChangeReason.UNKNOWN, false);
+            }
+        };
+        // mLayoutManager will be null in testing.
+        if (mLayoutManager != null) mLayoutManager.addSceneChangeObserver(mSceneChangeObserver);
     }
 
     /**
@@ -172,6 +193,7 @@ public class OverlayPanel extends OverlayPanelAnimation implements ActivityState
      */
     public void destroy() {
         closePanel(StateChangeReason.UNKNOWN, false);
+        if (mLayoutManager != null) mLayoutManager.removeSceneChangeObserver(mSceneChangeObserver);
         ApplicationStatus.unregisterActivityStateListener(this);
     }
 
@@ -931,12 +953,6 @@ public class OverlayPanel extends OverlayPanelAnimation implements ActivityState
     public boolean updateOverlay(long time, long dt) {
         if (isPanelOpened()) setBasePageTextControlsVisibility(false);
         return true;
-    }
-
-    @Override
-    public void onHideLayout() {
-        if (!isShowing()) return;
-        closePanel(StateChangeReason.UNKNOWN, false);
     }
 
     @Override

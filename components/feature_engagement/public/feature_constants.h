@@ -16,7 +16,7 @@ extern const base::Feature kIPHDemoMode;
 // A feature to ensure all arrays can contain at least one feature.
 extern const base::Feature kIPHDummyFeature;
 
-#if defined(OS_WIN) || defined(OS_MACOSX) || defined(OS_LINUX) || \
+#if defined(OS_WIN) || defined(OS_APPLE) || defined(OS_LINUX) || \
     defined(OS_CHROMEOS)
 extern const base::Feature kIPHDesktopTabGroupsNewGroupFeature;
 extern const base::Feature kIPHFocusModeFeature;
@@ -24,7 +24,7 @@ extern const base::Feature kIPHGlobalMediaControlsFeature;
 extern const base::Feature kIPHPasswordsAccountStorageFeature;
 extern const base::Feature kIPHReopenTabFeature;
 extern const base::Feature kIPHWebUITabStripFeature;
-#endif  // defined(OS_WIN) || defined(OS_MACOSX) || defined(OS_LINUX) ||
+#endif  // defined(OS_WIN) || defined(OS_APPLE) || defined(OS_LINUX) ||
         // defined(OS_CHROMEOS)
 
 // All the features declared for Android below that are also used in Java,

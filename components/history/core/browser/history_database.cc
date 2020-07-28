@@ -27,7 +27,7 @@
 #include "sql/statement.h"
 #include "sql/transaction.h"
 
-#if defined(OS_MACOSX) && !defined(OS_IOS)
+#if defined(OS_MAC)
 #include "base/mac/mac_util.h"
 #endif
 
@@ -112,7 +112,7 @@ sql::InitStatus HistoryDatabase::Init(const base::FilePath& history_name) {
   if (!committer.Begin())
     return LogInitFailure(InitStep::TRANSACTION_BEGIN);
 
-#if defined(OS_MACOSX) && !defined(OS_IOS)
+#if defined(OS_MAC)
   // Exclude the history file from backups.
   base::mac::SetFileBackupExclusion(history_name);
 #endif

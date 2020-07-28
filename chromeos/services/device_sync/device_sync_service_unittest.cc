@@ -912,8 +912,7 @@ class DeviceSyncServiceTest
 
   void FinishInitialization() {
     // CryptAuth classes are expected to be created and initialized.
-    EXPECT_TRUE(fake_cryptauth_gcm_manager_factory_->instance()
-                    ->has_started_listening());
+    EXPECT_TRUE(fake_cryptauth_gcm_manager_factory_->instance()->IsListening());
     EXPECT_TRUE(fake_cryptauth_enrollment_manager()->has_started());
 
     // If the device was already enrolled in CryptAuth, initialization should

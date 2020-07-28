@@ -31,7 +31,7 @@
 #if defined(OS_ANDROID)
 #include "components/download/internal/background_service/android/battery_status_listener_android.h"
 #include "components/download/network/android/network_status_listener_android.h"
-#elif defined(OS_MACOSX)
+#elif defined(OS_APPLE)
 #include "components/download/internal/background_service/scheduler/battery_status_listener_mac.h"
 #include "components/download/network/network_status_listener_mac.h"
 #else
@@ -66,7 +66,7 @@ std::unique_ptr<DownloadService> CreateDownloadServiceInternal(
   auto battery_listener = std::make_unique<BatteryStatusListenerAndroid>(
       config->battery_query_interval);
   auto network_listener = std::make_unique<NetworkStatusListenerAndroid>();
-#elif defined(OS_MACOSX)
+#elif defined(OS_APPLE)
   auto battery_listener = std::make_unique<BatteryStatusListenerMac>();
   auto network_listener = std::make_unique<NetworkStatusListenerMac>();
 #else

@@ -30,7 +30,7 @@ class TestViewsDelegate : public ViewsDelegate {
     use_transparent_windows_ = transparent;
   }
 
-#if defined(OS_MACOSX)
+#if defined(OS_APPLE)
   // Allows tests to provide a ContextFactory via the ViewsDelegate interface.
   void set_context_factory(ui::ContextFactory* context_factory) {
     context_factory_ = context_factory;
@@ -50,12 +50,12 @@ class TestViewsDelegate : public ViewsDelegate {
 #endif
   void OnBeforeWidgetInit(Widget::InitParams* params,
                           internal::NativeWidgetDelegate* delegate) override;
-#if defined(OS_MACOSX)
+#if defined(OS_APPLE)
   ui::ContextFactory* GetContextFactory() override;
 #endif
 
  private:
-#if defined(OS_MACOSX)
+#if defined(OS_APPLE)
   ui::ContextFactory* context_factory_ = nullptr;
 #endif
   bool use_desktop_native_widgets_ = false;

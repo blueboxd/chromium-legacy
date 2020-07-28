@@ -102,11 +102,11 @@ SecurityKeyIpcServerTest::SecurityKeyIpcServerTest()
   security_key_ipc_server_ = remoting::SecurityKeyIpcServer::Create(
       kTestConnectionId, this,
       base::TimeDelta::FromMilliseconds(kInitialConnectTimeoutMs),
-      base::Bind(&SecurityKeyIpcServerTest::SendRequestToClient,
-                 base::Unretained(this)),
+      base::BindRepeating(&SecurityKeyIpcServerTest::SendRequestToClient,
+                          base::Unretained(this)),
       base::DoNothing(),
-      base::Bind(&SecurityKeyIpcServerTest::OperationComplete,
-                 base::Unretained(this)));
+      base::BindOnce(&SecurityKeyIpcServerTest::OperationComplete,
+                     base::Unretained(this)));
 }
 
 SecurityKeyIpcServerTest::~SecurityKeyIpcServerTest() = default;
@@ -152,7 +152,7 @@ TEST_F(SecurityKeyIpcServerTest, HandleSingleSecurityKeyRequest) {
       /*request_timeout=*/base::TimeDelta::FromMilliseconds(500)));
 
   // Create a fake client and connect to the IPC server channel.
-  FakeSecurityKeyIpcClient fake_ipc_client(base::Bind(
+  FakeSecurityKeyIpcClient fake_ipc_client(base::BindRepeating(
       &SecurityKeyIpcServerTest::OperationComplete, base::Unretained(this)));
   ASSERT_TRUE(fake_ipc_client.ConnectViaIpc(server_name));
   WaitForOperationComplete();
@@ -190,7 +190,7 @@ TEST_F(SecurityKeyIpcServerTest, HandleLargeSecurityKeyRequest) {
       /*request_timeout=*/base::TimeDelta::FromMilliseconds(500)));
 
   // Create a fake client and connect to the IPC server channel.
-  FakeSecurityKeyIpcClient fake_ipc_client(base::Bind(
+  FakeSecurityKeyIpcClient fake_ipc_client(base::BindRepeating(
       &SecurityKeyIpcServerTest::OperationComplete, base::Unretained(this)));
   ASSERT_TRUE(fake_ipc_client.ConnectViaIpc(server_name));
   WaitForOperationComplete();
@@ -228,7 +228,7 @@ TEST_F(SecurityKeyIpcServerTest, HandleReallyLargeSecurityKeyRequest) {
       /*request_timeout=*/base::TimeDelta::FromMilliseconds(500)));
 
   // Create a fake client and connect to the IPC server channel.
-  FakeSecurityKeyIpcClient fake_ipc_client(base::Bind(
+  FakeSecurityKeyIpcClient fake_ipc_client(base::BindRepeating(
       &SecurityKeyIpcServerTest::OperationComplete, base::Unretained(this)));
   ASSERT_TRUE(fake_ipc_client.ConnectViaIpc(server_name));
   WaitForOperationComplete();
@@ -266,7 +266,7 @@ TEST_F(SecurityKeyIpcServerTest, HandleMultipleSecurityKeyRequests) {
       /*request_timeout=*/base::TimeDelta::FromMilliseconds(500)));
 
   // Create a fake client and connect to the IPC server channel.
-  FakeSecurityKeyIpcClient fake_ipc_client(base::Bind(
+  FakeSecurityKeyIpcClient fake_ipc_client(base::BindRepeating(
       &SecurityKeyIpcServerTest::OperationComplete, base::Unretained(this)));
   ASSERT_TRUE(fake_ipc_client.ConnectViaIpc(server_name));
   WaitForOperationComplete();
@@ -372,7 +372,7 @@ TEST_F(SecurityKeyIpcServerTest, MAYBE_NoSecurityKeyRequestTimeout) {
       /*request_timeout=*/base::TimeDelta::FromMilliseconds(500)));
 
   // Create a fake client and connect to the IPC server channel.
-  FakeSecurityKeyIpcClient fake_ipc_client(base::Bind(
+  FakeSecurityKeyIpcClient fake_ipc_client(base::BindRepeating(
       &SecurityKeyIpcServerTest::OperationComplete, base::Unretained(this)));
   ASSERT_TRUE(fake_ipc_client.ConnectViaIpc(server_name));
   WaitForOperationComplete();
@@ -400,7 +400,7 @@ TEST_F(SecurityKeyIpcServerTest, SecurityKeyResponseTimeout) {
       security_key_ipc_server_->CreateChannel(server_name, request_timeout));
 
   // Create a fake client and connect to the IPC server channel.
-  FakeSecurityKeyIpcClient fake_ipc_client(base::Bind(
+  FakeSecurityKeyIpcClient fake_ipc_client(base::BindRepeating(
       &SecurityKeyIpcServerTest::OperationComplete, base::Unretained(this)));
   ASSERT_TRUE(fake_ipc_client.ConnectViaIpc(server_name));
   WaitForOperationComplete();
@@ -434,7 +434,7 @@ TEST_F(SecurityKeyIpcServerTest, SendResponseTimeout) {
       security_key_ipc_server_->CreateChannel(server_name, request_timeout));
 
   // Create a fake client and connect to the IPC server channel.
-  FakeSecurityKeyIpcClient fake_ipc_client(base::Bind(
+  FakeSecurityKeyIpcClient fake_ipc_client(base::BindRepeating(
       &SecurityKeyIpcServerTest::OperationComplete, base::Unretained(this)));
   ASSERT_TRUE(fake_ipc_client.ConnectViaIpc(server_name));
   WaitForOperationComplete();
@@ -479,11 +479,11 @@ TEST_F(SecurityKeyIpcServerTest, CleanupPendingConnection) {
     security_key_ipc_server_ = remoting::SecurityKeyIpcServer::Create(
         kTestConnectionId, this,
         base::TimeDelta::FromMilliseconds(kInitialConnectTimeoutMs),
-        base::Bind(&SecurityKeyIpcServerTest::SendRequestToClient,
-                   base::Unretained(this)),
+        base::BindRepeating(&SecurityKeyIpcServerTest::SendRequestToClient,
+                            base::Unretained(this)),
         base::DoNothing(),
-        base::Bind(&SecurityKeyIpcServerTest::OperationComplete,
-                   base::Unretained(this)));
+        base::BindOnce(&SecurityKeyIpcServerTest::OperationComplete,
+                       base::Unretained(this)));
     ASSERT_TRUE(security_key_ipc_server_->CreateChannel(
         server_name,
         /*request_timeout=*/base::TimeDelta::FromMilliseconds(500)));

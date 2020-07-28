@@ -183,6 +183,16 @@ const SwitchAccessPredicate = {
   isTextInput: (node) => !!node && !!node.state[StateType.EDITABLE],
 
   /**
+   * Returns true if |node| should be considered a window.
+   * @param {AutomationNode} node
+   * @return {boolean}
+   */
+  isWindow: (node) => !!node &&
+      (node.role === chrome.automation.RoleType.WINDOW ||
+       (node.role === chrome.automation.RoleType.CLIENT && !!node.parent &&
+        node.parent.role === chrome.automation.RoleType.WINDOW)),
+
+  /**
    * Returns a Restrictions object ready to be passed to AutomationTreeWalker.
    *
    * @param {!AutomationNode} scope

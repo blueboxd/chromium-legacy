@@ -623,7 +623,7 @@ gfx::Size DownloadItemView::CalculatePreferredSize() const {
             status_width + kEndPadding;
   }
 
-  if (mode_ != Mode::kDangerous)
+  if (model_->ShouldShowDropdown())
     width += dropdown_button_->GetPreferredSize().width();
 
   // The normal height of the item which may be exceeded if text is large.
@@ -906,7 +906,7 @@ void DownloadItemView::UpdateButtons() {
                               prompt_to_discard);
   scan_button_->SetVisible(prompt_to_scan);
 
-  dropdown_button_->SetVisible(mode_ != Mode::kDangerous);
+  dropdown_button_->SetVisible(model_->ShouldShowDropdown());
 }
 
 void DownloadItemView::UpdateAccessibleAlertAndTimersForNormalMode() {

@@ -3279,7 +3279,7 @@ TEST_P(
       .RectDrawing(IntRect(0, 0, 100, 100), Color::kBlack);
   Update(artifact.Build());
 
-#if defined(OS_MACOSX)
+#if defined(OS_APPLE)
   ASSERT_EQ(2u, LayerCount());
 #else
   ASSERT_EQ(1u, LayerCount());

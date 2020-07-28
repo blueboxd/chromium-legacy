@@ -47,7 +47,7 @@ namespace blink {
 
 void V8DevToolsHost::PlatformMethodCustom(
     const v8::FunctionCallbackInfo<v8::Value>& info) {
-#if defined(OS_MACOSX)
+#if defined(OS_APPLE)
   V8SetReturnValue(info, V8AtomicString(info.GetIsolate(), "mac"));
 #elif defined(OS_WIN)
   V8SetReturnValue(info, V8AtomicString(info.GetIsolate(), "windows"));

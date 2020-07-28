@@ -1007,6 +1007,7 @@ if (!is_android) {
       "../browser/net/chrome_network_service_browsertest.cc",
       "../browser/net/chrome_network_service_restart_browsertest.cc",
       "../browser/net/cookie_policy_browsertest.cc",
+      "../browser/net/cookie_store_samesite_browsertest.cc",
       "../browser/net/dns_over_https_browsertest.cc",
       "../browser/net/dns_probe_browsertest.cc",
       "../browser/net/errorpage_browsertest.cc",
@@ -2553,7 +2554,7 @@ if (!is_android) {
         "../browser/ui/webui/chromeos/system_web_dialog_browsertest.cc",
         "../browser/ui/webui/settings/chromeos/account_manager_handler_browsertest.cc",
         "../browser/ui/webui/settings/chromeos/device_power_handler_browsertest.cc",
-        "../browser/ui/window_sizer/window_sizer_ash_uitest.cc",
+        "../browser/ui/window_sizer/window_sizer_chromeos_uitest.cc",
         "base/interactive_test_utils.cc",
         "base/interactive_test_utils.h",
         "base/interactive_test_utils_aura.cc",
@@ -3171,6 +3172,7 @@ test("unit_tests") {
     "../browser/component_updater/subresource_filter_component_installer_unittest.cc",
     "../browser/component_updater/sw_reporter_installer_win_unittest.cc",
     "../browser/component_updater/trust_token_key_commitments_component_installer_unittest.cc",
+    "../browser/component_updater/zxcvbn_data_component_installer_unittest.cc",
     "../browser/content_index/content_index_provider_unittest.cc",
     "../browser/content_settings/content_settings_default_provider_unittest.cc",
     "../browser/content_settings/content_settings_mock_observer.cc",
@@ -3412,7 +3414,6 @@ test("unit_tests") {
     "../browser/prerender/isolated/isolated_prerender_proxy_configurator_unittest.cc",
     "../browser/prerender/isolated/isolated_prerender_tab_helper_unittest.cc",
     "../browser/prerender/isolated/isolated_prerender_url_loader_interceptor_unittest.cc",
-    "../browser/prerender/prerender_history_unittest.cc",
     "../browser/prerender/prerender_unittest.cc",
     "../browser/prerender/prerender_util_unittest.cc",
     "../browser/previews/previews_content_util_unittest.cc",
@@ -3902,6 +3903,7 @@ test("unit_tests") {
     "//third_party/re2",
     "//third_party/webrtc_overrides:webrtc_component",
     "//third_party/zlib/google:compression_utils",
+    "//third_party/zxcvbn-cpp",
     "//ui/base:test_support",
     "//ui/display:test_support",
     "//ui/gfx:test_support",
@@ -4535,7 +4537,7 @@ test("unit_tests") {
       "../browser/ui/passwords/account_storage_auth_helper_unittest.cc",
       "../browser/ui/webui/settings/settings_manage_profile_handler_unittest.cc",
 
-      # Chrome OS uses window_sizer_ash_unittest.cc
+      # Chrome OS uses window_sizer_chromeos_unittest.cc
       "../browser/ui/window_sizer/window_sizer_unittest.cc",
     ]
     sources += [
@@ -4635,7 +4637,7 @@ test("unit_tests") {
       "../browser/ui/webui/chromeos/login/fake_update_required_screen_handler.cc",
       "../browser/ui/webui/chromeos/login/fake_update_required_screen_handler.h",
       "../browser/ui/webui/chromeos/sync/os_sync_handler_unittest.cc",
-      "../browser/ui/window_sizer/window_sizer_ash_unittest.cc",
+      "../browser/ui/window_sizer/window_sizer_chromeos_unittest.cc",
     ]
     deps += [
       "//ash:test_support",

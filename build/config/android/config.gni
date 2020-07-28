@@ -124,6 +124,11 @@ if (is_android || is_chromeos) {
     }
   }
 
+  if (!defined(material_design_target)) {
+    material_design_target =
+        "//third_party/android_deps:com_google_android_material_material_java"
+  }
+
   webview_public_framework_dep =
       "//third_party/android_sdk:public_framework_system_java"
   if (!defined(webview_framework_dep)) {

@@ -294,7 +294,7 @@ TEST_F(BookmarkNodeDataTest, DISABLED_WriteToClipboardURL) {
   EXPECT_EQ(base::UTF8ToUTF16(url.spec()), clipboard_result);
 }
 
-#if defined(OS_MACOSX)
+#if defined(OS_APPLE)
 #define MAYBE_WriteToClipboardMultipleURLs DISABLED_WriteToClipboardMultipleURLs
 #else
 #define MAYBE_WriteToClipboardMultipleURLs WriteToClipboardMultipleURLs
@@ -330,7 +330,7 @@ TEST_F(BookmarkNodeDataTest, MAYBE_WriteToClipboardMultipleURLs) {
   EXPECT_EQ(combined_text, clipboard_result);
 }
 
-#if defined(OS_MACOSX)
+#if defined(OS_APPLE)
 #define MAYBE_WriteToClipboardEmptyFolder DISABLED_WriteToClipboardEmptyFolder
 #else
 #define MAYBE_WriteToClipboardEmptyFolder WriteToClipboardEmptyFolder
@@ -431,7 +431,7 @@ TEST_F(BookmarkNodeDataTest, MetaInfo) {
   EXPECT_EQ("someothervalue", meta_info_map["someotherkey"]);
 }
 
-#if !defined(OS_MACOSX)
+#if !defined(OS_APPLE)
 TEST_F(BookmarkNodeDataTest, ReadFromPickleTooManyNodes) {
   // Test case determined by a fuzzer. See https://crbug.com/956583.
   const char pickled_data[] = {0x08, 0x00, 0x00, 0x00, 0x00, 0x00,

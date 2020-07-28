@@ -129,6 +129,12 @@ bool ToProto(
   mojolpm_result = ToProto(input, value);
   output.set_value(value);
   return mojolpm_result;
+{%-     elif kind.kind|is_any_interface_kind %}
+  bool mojolpm_result;
+  {{kind.kind|cpp_wrapper_proto_type(add_same_module_namespaces=true)}} value;
+  mojolpm_result = ToProto(std::move(input), value);
+  output.set_value(value);
+  return mojolpm_result;
 {%-     elif kind.kind|is_move_only_kind %}
   return ToProto(std::move(input), *output.mutable_value());
 {%-     else %}
@@ -220,6 +226,12 @@ bool ToProto(
   mojolpm_result = ToProto(input, value);
   output.set_value(value);
   return mojolpm_result;
+{%-     elif kind.value_kind|is_any_interface_kind %}
+  bool mojolpm_result;
+  {{kind.value_kind|cpp_wrapper_proto_type(add_same_module_namespaces=true)}} value;
+  mojolpm_result = ToProto(std::move(input), value);
+  output.set_value(value);
+  return mojolpm_result;
 {%-     elif kind.value_kind|is_move_only_kind %}
   return ToProto(std::move(input), *output.mutable_value());
 {%-     else %}
@@ -289,6 +301,10 @@ bool ToProto(
   {{kind|cpp_wrapper_proto_type(add_same_module_namespaces=true)}} tmp_{{name}};
   mojolpm_result &= ToProto(input->{{raw_name}}, tmp_{{name}});
   new_instance->set_m_{{name}}(tmp_{{name}});
+{%-       elif kind|is_any_interface_kind %}
+  {{kind|cpp_wrapper_proto_type(add_same_module_namespaces=true)}} tmp_{{name}};
+  mojolpm_result &= ToProto(std::move(input->{{raw_name}}), tmp_{{name}});
+  new_instance->set_m_{{name}}(tmp_{{name}});
 {%-       elif kind|is_nullable_kind %}
   if ({{util.not_null(kind, 'input->' ~ raw_name)}}) {
 {%-         if kind|is_move_only_kind %}
@@ -332,25 +348,27 @@ bool ToProto(
 {%-       set name = field.name|camel_to_under %}
 {%-       set kind = field.kind %}
     case {{enum_name}}::{{field.name|upper}}: {
-{%-         if kind|is_move_only_kind and kind|is_nullable_kind %}
-      if ({{util.not_null(kind, 'input->get_' ~ raw_name ~ '()')}}) {
-        mojolpm_result &= ToProto(std::move({{util.value(kind, 'input->get_' ~ raw_name ~ '()')}}), *new_instance->mutable_m_{{name}}());
-      }
-{%-         elif kind|is_move_only_kind %}
-      mojolpm_result = ToProto(std::move(input->get_{{raw_name}}()),
-                               *(new_instance->mutable_m_{{name}}()));
-{%-         elif kind|is_nullable_kind %}
-      if ({{util.not_null(kind, 'input->get_' ~ raw_name ~ '()')}}) {
-        mojolpm_result &= ToProto({{util.value(kind, 'input->get_' ~ raw_name ~ '()')}}, *new_instance->mutable_m_{{name}}());
-      }
-{%-         elif kind|is_integral_kind or kind|is_enum_kind or kind|is_float_kind or kind|is_double_kind %}
-      {{kind|cpp_wrapper_proto_type(add_same_module_namespaces=true)}} tmp_{{name}};
-      mojolpm_result &= ToProto(input->get_{{raw_name}}(), tmp_{{name}});
-      new_instance->set_m_{{name}}(tmp_{{name}});
+{%-       if kind|is_integral_kind or kind|is_enum_kind or kind|is_float_kind or kind|is_double_kind %}
+  {{kind|cpp_wrapper_proto_type(add_same_module_namespaces=true)}} tmp_{{name}};
+  mojolpm_result &= ToProto(input->get_{{raw_name}}(), tmp_{{name}});
+  new_instance->set_m_{{name}}(tmp_{{name}});
+{%-       elif kind|is_any_interface_kind %}
+  {{kind|cpp_wrapper_proto_type(add_same_module_namespaces=true)}} tmp_{{name}};
+  mojolpm_result &= ToProto(std::move(input->get_{{raw_name}}()), tmp_{{name}});
+  new_instance->set_m_{{name}}(tmp_{{name}});
+{%-       elif kind|is_nullable_kind %}
+  if ({{util.not_null(kind, 'input->' ~ raw_name)}}) {
+{%-         if kind|is_move_only_kind %}
+    mojolpm_result &= ToProto(std::move({{util.value(kind, 'input->get_' ~ raw_name ~ '()')}}), *new_instance->mutable_m_{{name}}());
 {%-         else %}
-      mojolpm_result = ToProto(input->get_{{name}}(),
-                               *(new_instance->mutable_m_{{name}}()));
+    mojolpm_result &= ToProto({{util.value(kind, 'input->get_' ~ raw_name ~ '()')}}, *new_instance->mutable_m_{{name}}());
 {%-         endif %}
+  }
+{%-       elif kind|is_move_only_kind %}
+  mojolpm_result &= ToProto(std::move(input->get_{{raw_name}}()), *new_instance->mutable_m_{{name}}());
+{%-       else %}
+  mojolpm_result &= ToProto(input->get_{{raw_name}}(), *new_instance->mutable_m_{{name}}());
+{%-       endif %}
     } break;
 {%-     endfor %}
   }

@@ -190,4 +190,9 @@ public class PlayerManager {
     public View getView() {
         return mHostView;
     }
+
+    @VisibleForTesting
+    public boolean checkRequiredBitmapsLoadedForTest() {
+        return mRootFrameCoordinator.checkRequiredBitmapsLoadedForTest();
+    }
 }

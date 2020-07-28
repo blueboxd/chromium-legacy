@@ -23,7 +23,7 @@ class MockDisplayClient : public mojom::DisplayClient {
   mojo::PendingRemote<mojom::DisplayClient> BindRemote();
 
   // mojom::DisplayClient implementation.
-#if defined(OS_MACOSX)
+#if defined(OS_APPLE)
   MOCK_METHOD1(OnDisplayReceivedCALayerParams, void(const gfx::CALayerParams&));
 #endif
 #if defined(OS_WIN)

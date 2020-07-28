@@ -265,7 +265,7 @@ public class LocationBarLayoutTest {
         onView(withId(R.id.location_bar_status)).check((view, e) -> {
             Assert.assertEquals(iconView.getVisibility(), VISIBLE);
             Assert.assertEquals(R.drawable.omnibox_https_valid,
-                    locationBar.getStatusViewCoordinatorForTesting()
+                    locationBar.getStatusCoordinatorForTesting()
                             .getSecurityIconResourceIdForTesting());
         });
     }
@@ -286,7 +286,7 @@ public class LocationBarLayoutTest {
         onView(withId(R.id.location_bar_status)).check((view, e) -> {
             Assert.assertEquals(statusIconView.getVisibility(), VISIBLE);
             Assert.assertEquals(R.drawable.ic_logo_googleg_20dp,
-                    locationBar.getStatusViewCoordinatorForTesting()
+                    locationBar.getStatusCoordinatorForTesting()
                             .getSecurityIconResourceIdForTesting());
         });
     }

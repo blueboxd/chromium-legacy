@@ -102,6 +102,11 @@ class PaintPreviewClient
 
     base::UnguessableToken root_frame_token;
 
+    // Got from the first recording params. Whether to capture links and the
+    // size limit per capture respectively.
+    bool capture_links = true;
+    size_t max_per_capture_size = 0;
+
     // UKM Source ID of the WebContent.
     ukm::SourceId source_id;
 

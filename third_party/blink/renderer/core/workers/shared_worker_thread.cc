@@ -40,13 +40,17 @@ namespace blink {
 
 SharedWorkerThread::SharedWorkerThread(
     WorkerReportingProxy& worker_reporting_proxy,
+    const SharedWorkerToken& token,
     const base::UnguessableToken& appcache_host_id,
     ukm::SourceId ukm_source_id)
     : WorkerThread(worker_reporting_proxy),
       worker_backing_thread_(std::make_unique<WorkerBackingThread>(
           ThreadCreationParams(GetThreadType()))),
+      token_(token),
       appcache_host_id_(appcache_host_id),
-      ukm_source_id_(ukm_source_id) {}
+      ukm_source_id_(ukm_source_id) {
+  DCHECK(token);
+}
 
 SharedWorkerThread::~SharedWorkerThread() = default;
 
@@ -57,7 +61,7 @@ void SharedWorkerThread::ClearWorkerBackingThread() {
 WorkerOrWorkletGlobalScope* SharedWorkerThread::CreateWorkerGlobalScope(
     std::unique_ptr<GlobalScopeCreationParams> creation_params) {
   return MakeGarbageCollected<SharedWorkerGlobalScope>(
-      std::move(creation_params), this, time_origin_, appcache_host_id_,
+      std::move(creation_params), this, time_origin_, token_, appcache_host_id_,
       ukm_source_id_);
 }
 

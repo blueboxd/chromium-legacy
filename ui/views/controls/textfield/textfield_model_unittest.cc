@@ -250,7 +250,7 @@ TEST_F(TextfieldModelTest, EditString_ComplexScript) {
   model.SetText(base::WideToUTF16(L"ABC\xFF80\xFF9E"), 0);
   model.MoveCursorTo(model.text().length());
   model.Backspace();
-#if defined(OS_MACOSX)
+#if defined(OS_APPLE)
   // On Mac, the entire cluster should be deleted to match
   // NSTextField behavior.
   EXPECT_EQ(base::WideToUTF16(L"ABC"), model.text());
@@ -265,7 +265,7 @@ TEST_F(TextfieldModelTest, EditString_ComplexScript) {
   model.SetText(base::WideToUTF16(L"\U0001F466\U0001F3FE"), 0);
   model.MoveCursorTo(model.text().length());
   model.Backspace();
-#if defined(OS_MACOSX)
+#if defined(OS_APPLE)
   // On Mac, the entire emoji should be deleted to match NSTextField
   // behavior.
   EXPECT_EQ(base::WideToUTF16(L""), model.text());

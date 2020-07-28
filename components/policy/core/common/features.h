@@ -15,7 +15,7 @@ namespace features {
 // TODO(994227) Remove references to this now unused feature.
 POLICY_EXPORT extern const base::Feature kPolicyAtomicGroup;
 
-#if defined(OS_MACOSX)
+#if defined(OS_APPLE)
 // Feature that controls whether the browser ignores sensitive policies on an
 // unmanaged Mac.
 POLICY_EXPORT extern const base::Feature kIgnoreSensitivePoliciesOnUnmanagedMac;

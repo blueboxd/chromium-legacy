@@ -476,6 +476,7 @@ void FrameImpl::DestroyWindowTreeHost() {
   window_tree_host_->Hide();
   window_tree_host_->compositor()->SetVisible(false);
   window_tree_host_.reset();
+  accessibility_bridge_.reset();
 
   // Allows posted focus events to process before the FocusController is torn
   // down.
@@ -589,12 +590,19 @@ void FrameImpl::CreateViewWithViewRef(
   InitWindowTreeHost(std::move(view_token), std::move(view_ref_pair));
 
   fuchsia::accessibility::semantics::SemanticsManagerPtr semantics_manager =
-      base::ComponentContextForProcess()
-          ->svc()
-          ->Connect<fuchsia::accessibility::semantics::SemanticsManager>();
+      semantics_manager_for_test_
+          ? std::move(semantics_manager_for_test_)
+          : base::ComponentContextForProcess()
+                ->svc()
+                ->Connect<
+                    fuchsia::accessibility::semantics::SemanticsManager>();
+
+  // If the SemanticTree owned by |accessibility_bridge_| is disconnected, it
+  // will cause |this| to be closed.
   accessibility_bridge_ = std::make_unique<AccessibilityBridge>(
       std::move(semantics_manager), window_tree_host_->CreateViewRef(),
-      web_contents_.get());
+      web_contents_.get(),
+      base::BindOnce(&FrameImpl::CloseAndDestroyFrame, base::Unretained(this)));
 }
 
 void FrameImpl::GetMediaPlayer(
@@ -809,7 +817,9 @@ void FrameImpl::EnableHeadlessRendering() {
   if (semantics_manager_for_test_) {
     accessibility_bridge_ = std::make_unique<AccessibilityBridge>(
         std::move(semantics_manager_for_test_),
-        window_tree_host_->CreateViewRef(), web_contents_.get());
+        window_tree_host_->CreateViewRef(), web_contents_.get(),
+        base::BindOnce(&FrameImpl::CloseAndDestroyFrame,
+                       base::Unretained(this)));
 
     // Set bounds for testing hit testing.
     bounds.set_size(kSemanticsTestingWindowSize);

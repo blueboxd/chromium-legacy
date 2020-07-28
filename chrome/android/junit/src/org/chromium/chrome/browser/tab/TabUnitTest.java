@@ -27,6 +27,7 @@ import org.robolectric.annotation.Config;
 
 import org.chromium.base.test.BaseRobolectricTestRunner;
 import org.chromium.chrome.browser.tab.state.CriticalPersistedTabData;
+import org.chromium.chrome.browser.tab.state.CriticalPersistedTabDataObserver;
 import org.chromium.chrome.test.util.browser.Features;
 import org.chromium.content_public.browser.LoadUrlParams;
 import org.chromium.ui.base.WindowAndroid;
@@ -62,6 +63,8 @@ public class TabUnitTest {
     private Activity mActivity;
     @Mock
     private CriticalPersistedTabData mCriticalPersistedTabData;
+    @Mock
+    private CriticalPersistedTabDataObserver mCriticalPersistedTabDataObserver;
 
     private TabImpl mTab;
 
@@ -77,6 +80,7 @@ public class TabUnitTest {
 
         mTab = new TabImpl(TAB1_ID, null, false, null);
         mTab.addObserver(mObserver);
+        CriticalPersistedTabData.from(mTab).addObserver(mCriticalPersistedTabDataObserver);
     }
 
     @Test
@@ -84,9 +88,10 @@ public class TabUnitTest {
     public void testSetRootIdWithChange() {
         assertThat(CriticalPersistedTabData.from(mTab).getRootId(), equalTo(TAB1_ID));
 
-        mTab.setRootId(TAB2_ID);
+        CriticalPersistedTabData.from(mTab).setRootId(TAB2_ID);
 
-        verify(mObserver).onRootIdChanged(mTab, TAB2_ID);
+        verify(mCriticalPersistedTabDataObserver).onRootIdChanged(mTab, TAB2_ID);
+
         assertThat(CriticalPersistedTabData.from(mTab).getRootId(), equalTo(TAB2_ID));
         assertThat(mTab.isTabStateDirty(), equalTo(true));
     }
@@ -97,9 +102,10 @@ public class TabUnitTest {
         assertThat(CriticalPersistedTabData.from(mTab).getRootId(), equalTo(TAB1_ID));
         mTab.setIsTabStateDirty(false);
 
-        mTab.setRootId(TAB1_ID);
+        CriticalPersistedTabData.from(mTab).setRootId(TAB1_ID);
 
-        verify(mObserver, never()).onRootIdChanged(any(Tab.class), anyInt());
+        verify(mCriticalPersistedTabDataObserver, never())
+                .onRootIdChanged(any(Tab.class), anyInt());
         assertThat(CriticalPersistedTabData.from(mTab).getRootId(), equalTo(TAB1_ID));
         assertThat(mTab.isTabStateDirty(), equalTo(false));
     }

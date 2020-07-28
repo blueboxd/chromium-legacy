@@ -84,7 +84,7 @@ TreeView::TreeView()
       drawing_provider_(std::make_unique<TreeViewDrawingProvider>()) {
   // Always focusable, even on Mac (consistent with NSOutlineView).
   SetFocusBehavior(FocusBehavior::ALWAYS);
-#if defined(OS_MACOSX)
+#if defined(OS_APPLE)
   constexpr bool kUseMdIcons = true;
 #else
   constexpr bool kUseMdIcons = false;

@@ -623,7 +623,7 @@ TEST_F(FocusTraversalTest, NormalTraversal) {
   AdvanceEntireFocusLoop(kTraversalIDs, true);
 }
 
-#if defined(OS_MACOSX)
+#if defined(OS_APPLE)
 // Test focus traversal with full keyboard access off on Mac.
 TEST_F(FocusTraversalTest, NormalTraversalMac) {
   GetFocusManager()->SetKeyboardAccessible(false);

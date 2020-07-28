@@ -593,7 +593,7 @@ void ReattachHook::NotifyDetach(const Node& node) {
   auto& fragment = layout_object->GetMutableForPainting().FirstFragment();
 
   // Save the visual rect for restoration on future reattachment.
-  PhysicalRect visual_rect = fragment.VisualRectIn2DTranslationRoot();
+  PhysicalRect visual_rect = fragment.VisualRectForLayoutShiftTracking();
   if (visual_rect.IsEmpty())
     return;
   map.Set(&node, visual_rect);
@@ -613,7 +613,7 @@ void ReattachHook::NotifyAttach(const Node& node) {
   auto iter = map.find(&node);
   if (iter == map.end())
     return;
-  fragment.SetVisualRectIn2DTranslationRoot(iter->value);
+  fragment.SetVisualRectForLayoutShiftTracking(iter->value);
 }
 
 void ReattachHook::Trace(Visitor* visitor) const {

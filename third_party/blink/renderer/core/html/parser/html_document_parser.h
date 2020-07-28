@@ -101,6 +101,10 @@ class CORE_EXPORT HTMLDocumentParser : public ScriptableDocumentParser,
   HTMLParserScriptRunnerHost* AsHTMLParserScriptRunnerHostForTesting() {
     return this;
   }
+  // Returns true if any tokenizer pumps / end if delayed / asynchronous work is
+  // scheduled. Exposed so that tests can check that the parser's exited in a
+  // good state.
+  bool HasPendingWorkScheduledForTesting() const;
 
   HTMLTokenizer* Tokenizer() const { return tokenizer_.get(); }
 

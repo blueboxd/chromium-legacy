@@ -36,7 +36,7 @@
 #include "third_party/skia/include/core/SkFont.h"
 #include "third_party/skia/include/core/SkTypeface.h"
 
-#if defined(OS_MACOSX)
+#if defined(OS_APPLE)
 #include "third_party/skia/include/ports/SkTypeface_mac.h"
 #endif
 
@@ -77,7 +77,7 @@ FontPlatformData::FontPlatformData(float size,
 
 FontPlatformData::FontPlatformData(const FontPlatformData& source)
     : typeface_(source.typeface_),
-#if !defined(OS_WIN) && !defined(OS_MACOSX)
+#if !defined(OS_WIN) && !defined(OS_APPLE)
       family_(source.family_),
 #endif
       text_size_(source.text_size_),
@@ -85,17 +85,16 @@ FontPlatformData::FontPlatformData(const FontPlatformData& source)
       synthetic_italic_(source.synthetic_italic_),
       avoid_embedded_bitmaps_(source.avoid_embedded_bitmaps_),
       orientation_(source.orientation_),
-#if !defined(OS_MACOSX)
+#if !defined(OS_APPLE)
       style_(source.style_),
 #endif
       harfbuzz_face_(nullptr),
-      is_hash_table_deleted_value_(false)
-{
+      is_hash_table_deleted_value_(false) {
 }
 
 FontPlatformData::FontPlatformData(const FontPlatformData& src, float text_size)
     : FontPlatformData(src.typeface_,
-#if !defined(OS_WIN) && !defined(OS_MACOSX)
+#if !defined(OS_WIN) && !defined(OS_APPLE)
                        src.family_.data(),
 #else
                        std::string(),
@@ -113,7 +112,7 @@ FontPlatformData::FontPlatformData(sk_sp<SkTypeface> typeface,
                                    bool synthetic_italic,
                                    FontOrientation orientation)
     : typeface_(typeface),
-#if !defined(OS_WIN) && !defined(OS_MACOSX)
+#if !defined(OS_WIN) && !defined(OS_APPLE)
       family_(family),
 #endif
       text_size_(text_size),
@@ -121,9 +120,8 @@ FontPlatformData::FontPlatformData(sk_sp<SkTypeface> typeface,
       synthetic_italic_(synthetic_italic),
       avoid_embedded_bitmaps_(false),
       orientation_(orientation),
-      is_hash_table_deleted_value_(false)
-{
-#if !defined(OS_MACOSX)
+      is_hash_table_deleted_value_(false) {
+#if !defined(OS_APPLE)
   style_ = WebFontRenderStyle::GetDefault();
   auto system_style =
 #if !defined(OS_WIN)
@@ -146,7 +144,7 @@ FontPlatformData::FontPlatformData(sk_sp<SkTypeface> typeface,
 
 FontPlatformData::~FontPlatformData() = default;
 
-#if defined(OS_MACOSX)
+#if defined(OS_APPLE)
 CTFontRef FontPlatformData::CtFont() const {
   return SkTypeface_GetCTFontRef(typeface_.get());
 }
@@ -159,7 +157,7 @@ const FontPlatformData& FontPlatformData::operator=(
     return *this;
 
   typeface_ = other.typeface_;
-#if !defined(OS_WIN) && !defined(OS_MACOSX)
+#if !defined(OS_WIN) && !defined(OS_APPLE)
   family_ = other.family_;
 #endif
   text_size_ = other.text_size_;
@@ -168,7 +166,7 @@ const FontPlatformData& FontPlatformData::operator=(
   avoid_embedded_bitmaps_ = other.avoid_embedded_bitmaps_;
   harfbuzz_face_ = nullptr;
   orientation_ = other.orientation_;
-#if !defined(OS_MACOSX)
+#if !defined(OS_APPLE)
   style_ = other.style_;
 #endif
 
@@ -189,7 +187,7 @@ bool FontPlatformData::operator==(const FontPlatformData& a) const {
          synthetic_bold_ == a.synthetic_bold_ &&
          synthetic_italic_ == a.synthetic_italic_ &&
          avoid_embedded_bitmaps_ == a.avoid_embedded_bitmaps_
-#if !defined(OS_MACOSX)
+#if !defined(OS_APPLE)
          && style_ == a.style_
 #endif
          && orientation_ == a.orientation_;
@@ -250,7 +248,7 @@ unsigned FontPlatformData::GetHash() const {
   return h;
 }
 
-#if !defined(OS_MACOSX)
+#if !defined(OS_APPLE)
 bool FontPlatformData::FontContainsCharacter(UChar32 character) {
   SkFont font;
   SetupSkFont(&font);
@@ -258,7 +256,7 @@ bool FontPlatformData::FontContainsCharacter(UChar32 character) {
 }
 #endif
 
-#if !defined(OS_MACOSX) && !defined(OS_WIN)
+#if !defined(OS_APPLE) && !defined(OS_WIN)
 // static
 WebFontRenderStyle FontPlatformData::QuerySystemRenderStyle(
     const std::string& family,

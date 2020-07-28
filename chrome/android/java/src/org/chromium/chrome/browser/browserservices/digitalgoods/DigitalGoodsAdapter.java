@@ -47,7 +47,8 @@ public class DigitalGoodsAdapter {
                         convertGetDetailsParams(itemIds),
                         convertGetDetailsCallback(callback));
 
-                boolean success = result.getBoolean(KEY_SUCCESS, false);
+                boolean success = result != null &&
+                        result.getBoolean(KEY_SUCCESS, false);
                 if (!success) {
                     returnClientAppError(callback);
                 }
@@ -66,11 +67,12 @@ public class DigitalGoodsAdapter {
             @Override
             public void onConnected(Origin origin, TrustedWebActivityServiceConnection service)
                     throws RemoteException {
-                Bundle result = service.sendExtraCommand(COMMAND_GET_DETAILS,
+                Bundle result = service.sendExtraCommand(COMMAND_ACKNOWLEDGE,
                         convertAcknowledgeParams(purchaseToken, makeAvailableAgain),
                         convertAcknowledgeCallback(callback));
 
-                boolean success = result.getBoolean(KEY_SUCCESS, false);
+                boolean success = result != null &&
+                        result.getBoolean(KEY_SUCCESS, false);
                 if (!success) {
                     returnClientAppError(callback);
                 }

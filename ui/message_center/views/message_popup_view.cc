@@ -70,7 +70,7 @@ void MessagePopupView::UpdateContents(const Notification& notification) {
   }
 }
 
-#if !defined(OS_MACOSX)
+#if !defined(OS_APPLE)
 float MessagePopupView::GetOpacity() const {
   if (!IsWidgetValid())
     return 0.f;

@@ -27,6 +27,7 @@ import org.chromium.components.payments.SupportedDelegations;
 import org.chromium.components.payments.intent.IsReadyToPayServiceHelper;
 import org.chromium.components.payments.intent.WebPaymentIntentHelper;
 import org.chromium.components.payments.intent.WebPaymentIntentHelperType;
+import org.chromium.components.payments.intent.WebPaymentIntentHelperTypeConverter;
 import org.chromium.components.url_formatter.SchemeDisplay;
 import org.chromium.components.url_formatter.UrlFormatter;
 import org.chromium.content_public.browser.UiThreadTaskTraits;

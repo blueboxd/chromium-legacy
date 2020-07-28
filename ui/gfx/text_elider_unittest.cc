@@ -970,7 +970,7 @@ TEST(TextEliderTest, ElideRectangleTextLongWords) {
 // to wrap incorrectly.
 TEST(TextEliderTest, ElideRectangleTextCheckLineWidth) {
   FontList font_list;
-#if defined(OS_MACOSX) && !defined(OS_IOS)
+#if defined(OS_MAC)
   // Use a specific font to expose the line width exceeding problem.
   font_list = FontList(Font("LucidaGrande", 12));
 #endif

@@ -151,10 +151,10 @@ between events.  This class is only useful in browser tests.
 IN_PROC_BROWSER_TEST_F(...) {
   LoadExtension(...);
   GURL url = GetASpecialURL();
-  ExtensionTestMessageListener listener("clicked", /*will_reply*/=true);
+  ExtensionTestMessageListener listener("clicked", /*will_reply=*/true);
   ClickAction();
   ASSERT_TRUE(listener.WaitUntilSatisfied());
-  listener.reply(url.spec());
+  listener.Reply(url.spec());
   ...
 }
 ```

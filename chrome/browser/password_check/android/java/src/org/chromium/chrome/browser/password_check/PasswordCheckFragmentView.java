@@ -14,7 +14,13 @@ import androidx.preference.PreferenceFragmentCompat;
  * This class is responsible for rendering the check passwords view in the settings menu.
  */
 public class PasswordCheckFragmentView extends PreferenceFragmentCompat {
+    // Key for the argument with which the PasswordsCheck fragment will be launched. The value for
+    // this argument should be part of the PasswordCheckReferrer enum, which contains
+    // all points of entry to the password check UI.
+    public static final String PASSWORD_CHECK_REFERRER = "password-check-referrer";
+
     private PasswordCheckComponentUi mComponentDelegate;
+    private @PasswordCheckReferrer int mPasswordCheckReferrer;
 
     /**
      * Set the delegate that handles view events which affect the state of the component.
@@ -28,6 +34,24 @@ public class PasswordCheckFragmentView extends PreferenceFragmentCompat {
     public void onCreatePreferences(Bundle savedInstanceState, String rootKey) {
         getActivity().setTitle(R.string.passwords_check_title);
         setPreferenceScreen(getPreferenceManager().createPreferenceScreen(getStyledContext()));
+        Bundle extras = getArguments();
+        assert extras.containsKey(PASSWORD_CHECK_REFERRER)
+            : "PasswordCheckFragmentView"
+                + "must be launched with a password-check-referrer fragment argument, but none was"
+                + "provided.";
+        mPasswordCheckReferrer = extras.getInt(PASSWORD_CHECK_REFERRER);
+    }
+
+    @Override
+    public void onDestroy() {
+        super.onDestroy();
+        // The component should only be destroyed when the activity has been closed by the user
+        // (e.g. by pressing on the back button) and not when the activity is temporarily destroyed
+        // by the system.
+        if (getActivity().isFinishing()
+                && mPasswordCheckReferrer == PasswordCheckReferrer.LEAK_DIALOG) {
+            mComponentDelegate.destroy();
+        }
     }
 
     @Override

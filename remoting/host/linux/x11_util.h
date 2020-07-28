@@ -26,15 +26,13 @@ class ScopedXErrorHandler {
  public:
   typedef base::RepeatingCallback<void(Display*, XErrorEvent*)> Handler;
 
+  // |handler| may be empty, in which case errors are ignored.
   explicit ScopedXErrorHandler(const Handler& handler);
   ~ScopedXErrorHandler();
 
   // Return false if any X errors have been encountered in the scope of this
   // handler.
   bool ok() const { return ok_; }
-
-  // Basic handler that ignores X errors.
-  static Handler Ignore();
 
  private:
   static int HandleXErrors(Display* display, XErrorEvent* error);

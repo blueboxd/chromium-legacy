@@ -72,20 +72,17 @@ void SecurityKeyMessageHandlerTest::SetUp() {
   run_loop_.reset(new base::RunLoop());
   message_handler_.reset(new SecurityKeyMessageHandler());
 
-  std::unique_ptr<FakeSecurityKeyIpcClient> ipc_client(
-      new FakeSecurityKeyIpcClient(
-          base::Bind(&SecurityKeyMessageHandlerTest::OperationComplete,
-                     base::Unretained(this))));
+  auto ipc_client = std::make_unique<FakeSecurityKeyIpcClient>(
+      base::BindRepeating(&SecurityKeyMessageHandlerTest::OperationComplete,
+                          base::Unretained(this)));
   ipc_client_weak_ptr_ = ipc_client->AsWeakPtr();
 
-  std::unique_ptr<FakeSecurityKeyMessageReader> reader(
-      new FakeSecurityKeyMessageReader());
+  auto reader = std::make_unique<FakeSecurityKeyMessageReader>();
   reader_weak_ptr_ = reader->AsWeakPtr();
 
-  std::unique_ptr<FakeSecurityKeyMessageWriter> writer(
-      new FakeSecurityKeyMessageWriter(
-          base::Bind(&SecurityKeyMessageHandlerTest::OperationComplete,
-                     base::Unretained(this))));
+  auto writer = std::make_unique<FakeSecurityKeyMessageWriter>(
+      base::BindRepeating(&SecurityKeyMessageHandlerTest::OperationComplete,
+                          base::Unretained(this)));
   writer_weak_ptr_ = writer->AsWeakPtr();
 
   message_handler_->SetSecurityKeyMessageReaderForTest(std::move(reader));
@@ -97,8 +94,8 @@ void SecurityKeyMessageHandlerTest::SetUp() {
   ASSERT_TRUE(MakePipe(&read_file, &write_file));
   message_handler_->Start(
       std::move(read_file), std::move(write_file), std::move(ipc_client),
-      base::Bind(&SecurityKeyMessageHandlerTest::OperationComplete,
-                 base::Unretained(this)));
+      base::BindOnce(&SecurityKeyMessageHandlerTest::OperationComplete,
+                     base::Unretained(this)));
 }
 
 void SecurityKeyMessageHandlerTest::WaitForOperationComplete() {

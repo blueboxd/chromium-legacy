@@ -345,4 +345,19 @@ class PlayerFrameMediator implements PlayerFrameViewDelegate, PlayerFrameMediato
     private void adjustInitialScaleFactor(float width) {
         mInitialScaleFactor = width / ((float) mContentSize.getWidth());
     }
+
+    @VisibleForTesting
+    public boolean checkRequiredBitmapsLoadedForTest() {
+        PlayerFrameBitmapState state = mBitmapStateController.getBitmapState(false);
+        assert mBitmapStateController.isVisible(state);
+        boolean hasBitmaps = state.checkRequiredBitmapsLoadedForTest();
+        if (!hasBitmaps) return false;
+
+        for (int i = 0; i < mSubFrameViews.size(); i++) {
+            if (mSubFrameViews.get(i).getVisibility() != View.VISIBLE) continue;
+
+            hasBitmaps &= mSubFrameMediators.get(i).checkRequiredBitmapsLoadedForTest();
+        }
+        return hasBitmaps;
+    }
 }

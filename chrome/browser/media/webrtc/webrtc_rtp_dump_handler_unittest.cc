@@ -11,6 +11,7 @@
 #include <utility>
 
 #include "base/bind.h"
+#include "base/bind_helpers.h"
 #include "base/files/file_util.h"
 #include "base/files/scoped_temp_dir.h"
 #include "base/location.h"
@@ -29,12 +30,12 @@
 class FakeDumpWriter : public WebRtcRtpDumpWriter {
  public:
   FakeDumpWriter(size_t max_dump_size,
-                 const base::Closure& max_size_reached_callback,
+                 const base::RepeatingClosure& max_size_reached_callback,
                  bool end_dump_success)
       : WebRtcRtpDumpWriter(base::FilePath(),
                             base::FilePath(),
                             max_dump_size,
-                            base::Closure()),
+                            base::NullCallback()),
         max_dump_size_(max_dump_size),
         current_dump_size_(0),
         max_size_reached_callback_(max_size_reached_callback),
@@ -49,8 +50,7 @@ class FakeDumpWriter : public WebRtcRtpDumpWriter {
       max_size_reached_callback_.Run();
   }
 
-  void EndDump(RtpDumpType type,
-               const EndDumpCallback& finished_callback) override {
+  void EndDump(RtpDumpType type, EndDumpCallback finished_callback) override {
     bool incoming_success = end_dump_success_;
     bool outgoing_success = end_dump_success_;
 
@@ -60,14 +60,14 @@ class FakeDumpWriter : public WebRtcRtpDumpWriter {
       incoming_success = false;
 
     base::ThreadTaskRunnerHandle::Get()->PostTask(
-        FROM_HERE,
-        base::BindOnce(finished_callback, incoming_success, outgoing_success));
+        FROM_HERE, base::BindOnce(std::move(finished_callback),
+                                  incoming_success, outgoing_success));
   }
 
  private:
   size_t max_dump_size_;
   size_t current_dump_size_;
-  base::Closure max_size_reached_callback_;
+  base::RepeatingClosure max_size_reached_callback_;
   bool end_dump_success_;
 };
 
@@ -83,8 +83,9 @@ class WebRtcRtpDumpHandlerTest : public testing::Test {
         dir.empty() ? base::FilePath(FILE_PATH_LITERAL("dummy")) : dir));
 
     std::unique_ptr<WebRtcRtpDumpWriter> writer(new FakeDumpWriter(
-        10, base::Bind(&WebRtcRtpDumpHandler::OnMaxDumpSizeReached,
-                       base::Unretained(handler_.get())),
+        10,
+        base::BindRepeating(&WebRtcRtpDumpHandler::OnMaxDumpSizeReached,
+                            base::Unretained(handler_.get())),
         end_dump_success));
 
     handler_->SetDumpWriterForTesting(std::move(writer));
@@ -130,9 +131,9 @@ TEST_F(WebRtcRtpDumpHandlerTest, StateTransition) {
 
     // Only StartDump is allowed in STATE_NONE.
     EXPECT_CALL(*this, OnStopDumpFinished(false, testing::_));
-    handler_->StopDump(types[i],
-                       base::Bind(&WebRtcRtpDumpHandlerTest::OnStopDumpFinished,
-                                  base::Unretained(this)));
+    handler_->StopDump(
+        types[i], base::BindOnce(&WebRtcRtpDumpHandlerTest::OnStopDumpFinished,
+                                 base::Unretained(this)));
 
     WebRtcRtpDumpHandler::ReleasedDumps empty_dumps(handler_->ReleaseDumps());
     EXPECT_TRUE(empty_dumps.incoming_dump_path.empty());
@@ -145,18 +146,18 @@ TEST_F(WebRtcRtpDumpHandlerTest, StateTransition) {
     EXPECT_FALSE(handler_->ReadyToRelease());
 
     EXPECT_CALL(*this, OnStopDumpFinished(true, testing::_));
-    handler_->StopDump(types[i],
-                       base::Bind(&WebRtcRtpDumpHandlerTest::OnStopDumpFinished,
-                                  base::Unretained(this)));
+    handler_->StopDump(
+        types[i], base::BindOnce(&WebRtcRtpDumpHandlerTest::OnStopDumpFinished,
+                                 base::Unretained(this)));
     base::RunLoop().RunUntilIdle();
 
     // Only ReleaseDump is allowed in STATE_STOPPED.
     EXPECT_FALSE(handler_->StartDump(types[i], &error));
 
     EXPECT_CALL(*this, OnStopDumpFinished(false, testing::_));
-    handler_->StopDump(types[i],
-                       base::Bind(&WebRtcRtpDumpHandlerTest::OnStopDumpFinished,
-                                  base::Unretained(this)));
+    handler_->StopDump(
+        types[i], base::BindOnce(&WebRtcRtpDumpHandlerTest::OnStopDumpFinished,
+                                 base::Unretained(this)));
     EXPECT_TRUE(handler_->ReadyToRelease());
 
     WebRtcRtpDumpHandler::ReleasedDumps dumps(handler_->ReleaseDumps());
@@ -198,9 +199,10 @@ TEST_F(WebRtcRtpDumpHandlerTest, PacketIgnoredIfDumpingStopped) {
   EXPECT_TRUE(handler_->StartDump(RTP_DUMP_INCOMING, &error));
 
   EXPECT_CALL(*this, OnStopDumpFinished(true, testing::_));
-  handler_->StopDump(RTP_DUMP_INCOMING,
-                     base::Bind(&WebRtcRtpDumpHandlerTest::OnStopDumpFinished,
-                                base::Unretained(this)));
+  handler_->StopDump(
+      RTP_DUMP_INCOMING,
+      base::BindOnce(&WebRtcRtpDumpHandlerTest::OnStopDumpFinished,
+                     base::Unretained(this)));
 
   std::vector<uint8_t> buffer(100, 0);
   handler_->OnRtpPacket(&buffer[0], buffer.size(), buffer.size(), true);
@@ -231,14 +233,16 @@ TEST_F(WebRtcRtpDumpHandlerTest, StartStopIncomingThenStartStopOutgoing) {
   EXPECT_CALL(*this, OnStopDumpFinished(true, testing::_)).Times(2);
 
   EXPECT_TRUE(handler_->StartDump(RTP_DUMP_INCOMING, &error));
-  handler_->StopDump(RTP_DUMP_INCOMING,
-                     base::Bind(&WebRtcRtpDumpHandlerTest::OnStopDumpFinished,
-                                base::Unretained(this)));
+  handler_->StopDump(
+      RTP_DUMP_INCOMING,
+      base::BindOnce(&WebRtcRtpDumpHandlerTest::OnStopDumpFinished,
+                     base::Unretained(this)));
 
   EXPECT_TRUE(handler_->StartDump(RTP_DUMP_OUTGOING, &error));
-  handler_->StopDump(RTP_DUMP_OUTGOING,
-                     base::Bind(&WebRtcRtpDumpHandlerTest::OnStopDumpFinished,
-                                base::Unretained(this)));
+  handler_->StopDump(
+      RTP_DUMP_OUTGOING,
+      base::BindOnce(&WebRtcRtpDumpHandlerTest::OnStopDumpFinished,
+                     base::Unretained(this)));
 
   base::RunLoop().RunUntilIdle();
 }
@@ -251,9 +255,10 @@ TEST_F(WebRtcRtpDumpHandlerTest, StartIncomingStartOutgoingThenStopBoth) {
   EXPECT_TRUE(handler_->StartDump(RTP_DUMP_INCOMING, &error));
   EXPECT_TRUE(handler_->StartDump(RTP_DUMP_OUTGOING, &error));
 
-  handler_->StopDump(RTP_DUMP_INCOMING,
-                     base::Bind(&WebRtcRtpDumpHandlerTest::OnStopDumpFinished,
-                                base::Unretained(this)));
+  handler_->StopDump(
+      RTP_DUMP_INCOMING,
+      base::BindOnce(&WebRtcRtpDumpHandlerTest::OnStopDumpFinished,
+                     base::Unretained(this)));
 
   base::RunLoop().RunUntilIdle();
 }
@@ -265,12 +270,14 @@ TEST_F(WebRtcRtpDumpHandlerTest, StartBothThenStopIncomingStopOutgoing) {
 
   EXPECT_TRUE(handler_->StartDump(RTP_DUMP_BOTH, &error));
 
-  handler_->StopDump(RTP_DUMP_INCOMING,
-                     base::Bind(&WebRtcRtpDumpHandlerTest::OnStopDumpFinished,
-                                base::Unretained(this)));
-  handler_->StopDump(RTP_DUMP_OUTGOING,
-                     base::Bind(&WebRtcRtpDumpHandlerTest::OnStopDumpFinished,
-                                base::Unretained(this)));
+  handler_->StopDump(
+      RTP_DUMP_INCOMING,
+      base::BindOnce(&WebRtcRtpDumpHandlerTest::OnStopDumpFinished,
+                     base::Unretained(this)));
+  handler_->StopDump(
+      RTP_DUMP_OUTGOING,
+      base::BindOnce(&WebRtcRtpDumpHandlerTest::OnStopDumpFinished,
+                     base::Unretained(this)));
 
   base::RunLoop().RunUntilIdle();
 }
@@ -287,9 +294,10 @@ TEST_F(WebRtcRtpDumpHandlerTest, DumpsCleanedUpIfNotReleased) {
   EXPECT_TRUE(handler_->StartDump(RTP_DUMP_BOTH, &error));
 
   EXPECT_CALL(*this, OnStopDumpFinished(true, testing::_));
-  handler_->StopDump(RTP_DUMP_BOTH,
-                     base::Bind(&WebRtcRtpDumpHandlerTest::OnStopDumpFinished,
-                                base::Unretained(this)));
+  handler_->StopDump(
+      RTP_DUMP_BOTH,
+      base::BindOnce(&WebRtcRtpDumpHandlerTest::OnStopDumpFinished,
+                     base::Unretained(this)));
   base::RunLoop().RunUntilIdle();
   FlushTaskRunners();
 
@@ -314,18 +322,20 @@ TEST_F(WebRtcRtpDumpHandlerTest, DumpDeletedIfEndDumpFailed) {
   EXPECT_TRUE(handler_->StartDump(RTP_DUMP_BOTH, &error));
   EXPECT_CALL(*this, OnStopDumpFinished(true, testing::_)).Times(2);
 
-  handler_->StopDump(RTP_DUMP_INCOMING,
-                     base::Bind(&WebRtcRtpDumpHandlerTest::OnStopDumpFinished,
-                                base::Unretained(this)));
+  handler_->StopDump(
+      RTP_DUMP_INCOMING,
+      base::BindOnce(&WebRtcRtpDumpHandlerTest::OnStopDumpFinished,
+                     base::Unretained(this)));
   base::RunLoop().RunUntilIdle();
   FlushTaskRunners();
 
   EXPECT_FALSE(base::PathExists(incoming_dump));
   EXPECT_TRUE(base::PathExists(outgoing_dump));
 
-  handler_->StopDump(RTP_DUMP_OUTGOING,
-                     base::Bind(&WebRtcRtpDumpHandlerTest::OnStopDumpFinished,
-                                base::Unretained(this)));
+  handler_->StopDump(
+      RTP_DUMP_OUTGOING,
+      base::BindOnce(&WebRtcRtpDumpHandlerTest::OnStopDumpFinished,
+                     base::Unretained(this)));
   base::RunLoop().RunUntilIdle();
   FlushTaskRunners();
   EXPECT_FALSE(base::PathExists(outgoing_dump));
@@ -339,14 +349,15 @@ TEST_F(WebRtcRtpDumpHandlerTest, StopOngoingDumpsWhileStoppingDumps) {
   EXPECT_CALL(*this, OnStopDumpFinished(true, testing::_));
   EXPECT_CALL(*this, OnStopOngoingDumpsFinished());
 
-  handler_->StopDump(RTP_DUMP_BOTH,
-                     base::Bind(&WebRtcRtpDumpHandlerTest::OnStopDumpFinished,
-                                base::Unretained(this)));
+  handler_->StopDump(
+      RTP_DUMP_BOTH,
+      base::BindOnce(&WebRtcRtpDumpHandlerTest::OnStopDumpFinished,
+                     base::Unretained(this)));
   base::RunLoop().RunUntilIdle();
 
   handler_->StopOngoingDumps(
-      base::Bind(&WebRtcRtpDumpHandlerTest::OnStopOngoingDumpsFinished,
-                 base::Unretained(this)));
+      base::BindOnce(&WebRtcRtpDumpHandlerTest::OnStopOngoingDumpsFinished,
+                     base::Unretained(this)));
 
   FlushTaskRunners();
 
@@ -362,8 +373,8 @@ TEST_F(WebRtcRtpDumpHandlerTest, StopOngoingDumpsWhileDumping) {
   EXPECT_CALL(*this, OnStopOngoingDumpsFinished());
 
   handler_->StopOngoingDumps(
-      base::Bind(&WebRtcRtpDumpHandlerTest::OnStopOngoingDumpsFinished,
-                 base::Unretained(this)));
+      base::BindOnce(&WebRtcRtpDumpHandlerTest::OnStopOngoingDumpsFinished,
+                     base::Unretained(this)));
 
   FlushTaskRunners();
 
@@ -379,17 +390,18 @@ TEST_F(WebRtcRtpDumpHandlerTest, StopOngoingDumpsWhenAlreadyStopped) {
   {
     EXPECT_CALL(*this, OnStopDumpFinished(true, testing::_));
 
-    handler_->StopDump(RTP_DUMP_BOTH,
-                       base::Bind(&WebRtcRtpDumpHandlerTest::OnStopDumpFinished,
-                                  base::Unretained(this)));
+    handler_->StopDump(
+        RTP_DUMP_BOTH,
+        base::BindOnce(&WebRtcRtpDumpHandlerTest::OnStopDumpFinished,
+                       base::Unretained(this)));
     base::RunLoop().RunUntilIdle();
     FlushTaskRunners();
   }
 
   EXPECT_CALL(*this, OnStopOngoingDumpsFinished());
   handler_->StopOngoingDumps(
-      base::Bind(&WebRtcRtpDumpHandlerTest::OnStopOngoingDumpsFinished,
-                 base::Unretained(this)));
+      base::BindOnce(&WebRtcRtpDumpHandlerTest::OnStopOngoingDumpsFinished,
+                     base::Unretained(this)));
 }
 
 TEST_F(WebRtcRtpDumpHandlerTest, StopOngoingDumpsWhileStoppingOneDump) {
@@ -400,14 +412,15 @@ TEST_F(WebRtcRtpDumpHandlerTest, StopOngoingDumpsWhileStoppingOneDump) {
   EXPECT_CALL(*this, OnStopDumpFinished(true, testing::_));
   EXPECT_CALL(*this, OnStopOngoingDumpsFinished());
 
-  handler_->StopDump(RTP_DUMP_INCOMING,
-                     base::Bind(&WebRtcRtpDumpHandlerTest::OnStopDumpFinished,
-                                base::Unretained(this)));
+  handler_->StopDump(
+      RTP_DUMP_INCOMING,
+      base::BindOnce(&WebRtcRtpDumpHandlerTest::OnStopDumpFinished,
+                     base::Unretained(this)));
   base::RunLoop().RunUntilIdle();
 
   handler_->StopOngoingDumps(
-      base::Bind(&WebRtcRtpDumpHandlerTest::OnStopOngoingDumpsFinished,
-                 base::Unretained(this)));
+      base::BindOnce(&WebRtcRtpDumpHandlerTest::OnStopOngoingDumpsFinished,
+                     base::Unretained(this)));
 
   FlushTaskRunners();
 
@@ -426,8 +439,8 @@ TEST_F(WebRtcRtpDumpHandlerTest, DeleteHandlerBeforeStopCallback) {
   EXPECT_TRUE(handler_->StartDump(RTP_DUMP_BOTH, &error));
 
   handler_->StopOngoingDumps(
-      base::Bind(&WebRtcRtpDumpHandlerTest::OnStopOngoingDumpsFinished,
-                 base::Unretained(this)));
+      base::BindOnce(&WebRtcRtpDumpHandlerTest::OnStopOngoingDumpsFinished,
+                     base::Unretained(this)));
 
   base::RunLoop().RunUntilIdle();
 }

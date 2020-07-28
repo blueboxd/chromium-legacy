@@ -66,12 +66,6 @@ void AppShortcutManager::Shutdown() {
   app_registrar_observer_.RemoveAll();
 }
 
-void AppShortcutManager::OnWebAppInstalled(const AppId& app_id) {
-#if defined(OS_MACOSX)
-  AppShimRegistry::Get()->OnAppInstalledForProfile(app_id, profile_->GetPath());
-#endif
-}
-
 void AppShortcutManager::OnWebAppManifestUpdated(const AppId& app_id,
                                                  base::StringPiece old_name) {
   if (!CanCreateShortcuts())

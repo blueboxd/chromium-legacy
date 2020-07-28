@@ -6,7 +6,7 @@
 
 namespace switches {
 
-#if defined(OS_MACOSX) && !defined(OS_IOS)
+#if defined(OS_MAC)
 // Disable use of AVFoundation to draw video content.
 const char kDisableAVFoundationOverlays[] = "disable-avfoundation-overlays";
 

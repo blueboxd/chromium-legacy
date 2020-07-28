@@ -2687,6 +2687,7 @@ enum WebFeature {
   kV8PointerEvent_AltitudeAngle_AttributeGetter = 3352,
   kCrossBrowsingContextGroupMainFrameNulledNonEmptyNameAccessed = 3353,
   kPositionSticky = 3354,
+  kCommaSeparatorInAllowAttribute = 3355,
 
   // Add new features immediately above this line. Don't change assigned
   // numbers of any item, and don't reuse removed slots.

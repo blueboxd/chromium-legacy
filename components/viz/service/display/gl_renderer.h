@@ -31,7 +31,7 @@
 #include "ui/gfx/geometry/quad_f.h"
 #include "ui/latency/latency_info.h"
 
-#if defined(OS_MACOSX)
+#if defined(OS_APPLE)
 #include "components/viz/service/display/ca_layer_overlay.h"
 #endif
 
@@ -323,7 +323,7 @@ class VIZ_SERVICE_EXPORT GLRenderer : public DirectRenderer {
   // Schedule overlays sends overlay candidate to the GPU.
 #if defined(OS_ANDROID) || defined(USE_OZONE)
   void ScheduleOverlays();
-#elif defined(OS_MACOSX)
+#elif defined(OS_APPLE)
   void ScheduleCALayers();
 
   // Schedules the |ca_layer_overlay|, which is guaranteed to have a non-null

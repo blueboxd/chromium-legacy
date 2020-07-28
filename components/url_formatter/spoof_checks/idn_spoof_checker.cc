@@ -661,7 +661,7 @@ void IDNSpoofChecker::SetAllowedUnicodeSet(UErrorCode* status) {
   // No need to block U+144A (Canadian Syllabics West-Cree P) separately
   // because it's blocked from mixing with other scripts including Latin.
 
-#if defined(OS_MACOSX)
+#if defined(OS_APPLE)
   // The following characters are reported as present in the default macOS
   // system UI font, but they render as blank. Remove them from the allowed
   // set to prevent spoofing until the font issue is resolved.

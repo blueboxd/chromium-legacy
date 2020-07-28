@@ -184,6 +184,15 @@ void ThreadControllerWithMessagePumpImpl::InitializeThreadTaskRunnerHandle() {
   power_monitor_.BindToCurrentThread();
 }
 
+void ThreadControllerWithMessagePumpImpl::MaybeStartHangWatchScope() {
+  // Nested runloops are covered by the parent loop hang watch scope.
+  // TODO(crbug/1034046): Provide more granular scoping that reuses the parent
+  // scope deadline.
+  if (main_thread_only().runloop_count == 1 && base::HangWatcher::IsEnabled()) {
+    hang_watch_scope_.emplace(base::HangWatchScope::kDefaultHangWatchTime);
+  }
+}
+
 scoped_refptr<SingleThreadTaskRunner>
 ThreadControllerWithMessagePumpImpl::GetDefaultTaskRunner() {
   base::internal::CheckedAutoLock lock(task_runner_lock_);
@@ -216,13 +225,7 @@ ThreadControllerWithMessagePumpImpl::GetAssociatedThread() const {
 }
 
 void ThreadControllerWithMessagePumpImpl::BeforeDoInternalWork() {
-  // Nested runloops are covered by the parent loop hang watch scope.
-  // TODO(crbug/1034046): Provide more granular scoping that reuses the parent
-  // scope deadline.
-  if (main_thread_only().runloop_count == 1) {
-    hang_watch_scope_.emplace(base::HangWatchScope::kDefaultHangWatchTime);
-  }
-
+  MaybeStartHangWatchScope();
   work_id_provider_->IncrementWorkId();
 }
 
@@ -241,12 +244,7 @@ void ThreadControllerWithMessagePumpImpl::BeforeWait() {
 
 MessagePump::Delegate::NextWorkInfo
 ThreadControllerWithMessagePumpImpl::DoWork() {
-  // Nested runloops are covered by the parent loop hang watch scope.
-  // TODO(crbug/1034046): Provide more granular scoping that reuses the parent
-  // scope deadline.
-  if (main_thread_only().runloop_count == 1) {
-    hang_watch_scope_.emplace(base::HangWatchScope::kDefaultHangWatchTime);
-  }
+  MaybeStartHangWatchScope();
 
   work_deduplicator_.OnWorkStarted();
   LazyNow continuation_lazy_now(time_source_);
@@ -369,12 +367,7 @@ TimeDelta ThreadControllerWithMessagePumpImpl::DoWorkImpl(
 
 bool ThreadControllerWithMessagePumpImpl::DoIdleWork() {
   TRACE_EVENT0("sequence_manager", "SequenceManager::DoIdleWork");
-  // Nested runloops are covered by the parent loop hang watch scope.
-  // TODO(crbug/1034046): Provide more granular scoping that reuses the parent
-  // scope deadline.
-  if (main_thread_only().runloop_count == 1) {
-    hang_watch_scope_.emplace(base::HangWatchScope::kDefaultHangWatchTime);
-  }
+  MaybeStartHangWatchScope();
 
   work_id_provider_->IncrementWorkId();
 #if defined(OS_WIN)

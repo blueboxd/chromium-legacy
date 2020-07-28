@@ -29,7 +29,7 @@ base::Optional<CaptionStyle> CaptionStyle::FromSpec(const std::string& spec) {
   return style;
 }
 
-#if !defined(OS_WIN) && !defined(OS_MACOSX)
+#if !defined(OS_WIN) && !defined(OS_APPLE)
 base::Optional<CaptionStyle> CaptionStyle::FromSystemSettings() {
   return base::nullopt;
 }

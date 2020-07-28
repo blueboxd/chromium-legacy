@@ -163,7 +163,8 @@ class SharedMemoryFactoryImpl : public webrtc::SharedMemoryFactory {
   typedef base::RepeatingCallback<void(std::unique_ptr<IPC::Message> message)>
       SendMessageCallback;
 
-  SharedMemoryFactoryImpl(const SendMessageCallback& send_message_callback)
+  explicit SharedMemoryFactoryImpl(
+      const SendMessageCallback& send_message_callback)
       : send_message_callback_(send_message_callback) {}
 
   std::unique_ptr<webrtc::SharedMemory> CreateSharedMemory(
@@ -411,8 +412,8 @@ void DesktopSessionAgent::OnStartSessionAgent(
       desktop_environment_->CreateVideoCapturer());
   video_capturer_->Start(this);
   video_capturer_->SetSharedMemoryFactory(
-      std::unique_ptr<webrtc::SharedMemoryFactory>(new SharedMemoryFactoryImpl(
-          base::Bind(&DesktopSessionAgent::SendToNetwork, this))));
+      std::make_unique<SharedMemoryFactoryImpl>(
+          base::BindRepeating(&DesktopSessionAgent::SendToNetwork, this)));
   mouse_cursor_monitor_ = desktop_environment_->CreateMouseCursorMonitor();
   mouse_cursor_monitor_->Init(this,
                               webrtc::MouseCursorMonitor::SHAPE_AND_POSITION);
@@ -730,8 +731,8 @@ void DesktopSessionAgent::StartAudioCapturer() {
   DCHECK(audio_capture_task_runner_->BelongsToCurrentThread());
 
   if (audio_capturer_) {
-    audio_capturer_->Start(base::Bind(&DesktopSessionAgent::ProcessAudioPacket,
-                                      this));
+    audio_capturer_->Start(
+        base::BindRepeating(&DesktopSessionAgent::ProcessAudioPacket, this));
   }
 }
 

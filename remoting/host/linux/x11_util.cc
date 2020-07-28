@@ -28,19 +28,11 @@ ScopedXErrorHandler::~ScopedXErrorHandler() {
   XSetErrorHandler(previous_handler_);
 }
 
-namespace {
-void IgnoreXErrors(Display* display, XErrorEvent* error) {}
-}  // namespace
-
-// Static
-ScopedXErrorHandler::Handler ScopedXErrorHandler::Ignore() {
-  return base::Bind(IgnoreXErrors);
-}
-
 int ScopedXErrorHandler::HandleXErrors(Display* display, XErrorEvent* error) {
   DCHECK(g_handler != nullptr);
   g_handler->ok_ = false;
-  g_handler->handler_.Run(display, error);
+  if (g_handler->handler_)
+    g_handler->handler_.Run(display, error);
   return 0;
 }
 
@@ -54,7 +46,6 @@ ScopedXGrabServer::~ScopedXGrabServer() {
   XUngrabServer(display_);
   XFlush(display_);
 }
-
 
 bool IgnoreXServerGrabs(Display* display, bool ignore) {
   int test_event_base = 0;

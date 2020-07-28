@@ -26,9 +26,10 @@
 #include "ui/gfx/switches.h"
 
 #if defined(USE_X11)
-#include "ui/gfx/x/connection.h"   // nogncheck
-#include "ui/gfx/x/screensaver.h"  // nogncheck
-#include "ui/gfx/x/x11_types.h"    // nogncheck
+#include "ui/base/ui_base_features.h"  // nogncheck
+#include "ui/gfx/x/connection.h"       // nogncheck
+#include "ui/gfx/x/screensaver.h"      // nogncheck
+#include "ui/gfx/x/x11_types.h"        // nogncheck
 #endif
 
 namespace device {
@@ -242,8 +243,10 @@ void PowerSaveBlocker::Delegate::Init() {
   }
 
 #if defined(USE_X11)
-  ui_task_runner_->PostTask(FROM_HERE,
-                            base::BindOnce(X11ScreenSaverSuspendSet, true));
+  if (!features::IsUsingOzonePlatform()) {
+    ui_task_runner_->PostTask(FROM_HERE,
+                              base::BindOnce(X11ScreenSaverSuspendSet, true));
+  }
 #endif
 }
 
@@ -254,8 +257,10 @@ void PowerSaveBlocker::Delegate::CleanUp() {
   }
 
 #if defined(USE_X11)
-  ui_task_runner_->PostTask(FROM_HERE,
-                            base::BindOnce(X11ScreenSaverSuspendSet, false));
+  if (!features::IsUsingOzonePlatform()) {
+    ui_task_runner_->PostTask(FROM_HERE,
+                              base::BindOnce(X11ScreenSaverSuspendSet, false));
+  }
 #endif
 }
 

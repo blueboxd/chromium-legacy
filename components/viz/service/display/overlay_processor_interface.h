@@ -22,7 +22,7 @@
 #include "components/viz/service/display/dc_layer_overlay.h"
 #endif
 
-#if defined(OS_MACOSX)
+#if defined(OS_APPLE)
 #include "components/viz/service/display/ca_layer_overlay.h"
 #endif
 
@@ -42,7 +42,7 @@ class RendererSettings;
 // for overlay processing that each platform needs to implement.
 class VIZ_SERVICE_EXPORT OverlayProcessorInterface {
  public:
-#if defined(OS_MACOSX)
+#if defined(OS_APPLE)
   using CandidateList = CALayerOverlayList;
 #elif defined(OS_WIN)
   using CandidateList = DCLayerOverlayList;

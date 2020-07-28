@@ -31,28 +31,20 @@ IMFCdmProxy : public IUnknown {
   // |content_init_data| is optional initialization data as in
   // https://www.w3.org/TR/encrypted-media/#initialization-data
   virtual HRESULT STDMETHODCALLTYPE GetInputTrustAuthority(
-      _In_ uint64_t playback_element_id, _In_ uint32_t stream_id,
-      _In_ uint32_t stream_count,
+      _In_ uint32_t stream_id, _In_ uint32_t stream_count,
       _In_reads_bytes_opt_(content_init_data_size)
           const uint8_t* content_init_data,
       _In_ uint32_t content_init_data_size, _In_ REFIID riid,
       _COM_Outptr_ IUnknown** object_out) = 0;
 
-  // MediaFoundationSourceWrapper provides its last set of key ids
-  // associated with a playback element id using SetLastKeyIds when it is
-  // destructed.
-  // Another instance of MediaFoundationSourceWrapper could then invoke
-  // RefreshTrustedInput to let implementation to reuse those key ids
-  // information when it happens to have the same playback element id.
-  //
-  // |playback_element_id| is an ID corresponding to a particular instance of
-  // video playback element.
-  virtual HRESULT STDMETHODCALLTYPE RefreshTrustedInput(
-      _In_ uint64_t playback_element_id) = 0;
-
-  virtual HRESULT STDMETHODCALLTYPE SetLastKeyIds(
-      _In_ uint64_t playback_element_id, GUID * key_ids,
-      uint32_t key_ids_count) = 0;
+  // When the media Renderer is suspended, `MediaFoundationSourceWrapper`
+  // provides its last set of key IDs using `SetLastKeyIds()` when it is
+  // destructed. Then during resume, the new `MediaFoundationSourceWrapper`
+  // calls `RefreshTrustedInput()` to let the CDM use the key ID information to
+  // perform some optimization.
+  virtual HRESULT STDMETHODCALLTYPE SetLastKeyIds(GUID * key_ids,
+                                                  uint32_t key_ids_count) = 0;
+  virtual HRESULT STDMETHODCALLTYPE RefreshTrustedInput() = 0;
 
   // Used by MediaFoundationProtectionManager to implement
   // IMFContentProtectionManager::BeginEnableContent as in

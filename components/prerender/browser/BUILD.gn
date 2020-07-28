@@ -1,0 +1,31 @@
+# Copyright 2020 The Chromium Authors. All rights reserved.
+# Use of this source code is governed by a BSD-style license that can be
+# found in the LICENSE file.
+
+static_library("browser") {
+  sources = [
+    "prerender_config.cc",
+    "prerender_config.h",
+    "prerender_history.cc",
+    "prerender_history.h",
+  ]
+
+  deps = [
+    "//components/prerender/common",
+    "//components/prerender/common:mojo_bindings",
+    "//ui/gfx/geometry",
+  ]
+}
+
+source_set("unit_tests") {
+  testonly = true
+  sources = [ "prerender_history_unittest.cc" ]
+
+  deps = [
+    ":browser",
+    "//base",
+    "//base/test:test_support",
+    "//google_apis:google_apis",
+    "//testing/gtest",
+  ]
+}

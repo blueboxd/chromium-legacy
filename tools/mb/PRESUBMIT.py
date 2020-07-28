@@ -3,6 +3,23 @@
 # found in the LICENSE file.
 
 
+# TODO(crbug.com/1109980): Remove this once the production freeze is over, which
+# is expected to be on August 3rd.
+def EnforceProductionFreeze(input_api, output_api):
+  footers = input_api.change.GitFootersFromDescription()
+  if footers.get('Ignore-Cq-Freeze'):
+    return []
+
+  message = """
+  Your change is modifying files which may impact the Chromium CQ. The Chromium
+  CQ is currently in a production freeze. Please get a review from someone in
+  the //infra/OWNERS file (preferably a trooper), and then add the
+  'Ignore-CQ-Freeze' git footer to your CL. See https://crbug.com/1109980 for
+  more details.
+  """
+  return [output_api.PresubmitError(message)]
+
+
 def _CommonChecks(input_api, output_api):
   results = []
 
@@ -21,6 +38,7 @@ def _CommonChecks(input_api, output_api):
       input_api.Command(name='mb_validate',
                         cmd=cmd, kwargs=kwargs,
                         message=output_api.PresubmitError)]))
+  results.extend(EnforceProductionFreeze(input_api, output_api))
 
   return results
 

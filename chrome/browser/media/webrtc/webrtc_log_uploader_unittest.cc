@@ -303,7 +303,7 @@ TEST_F(WebRtcLogUploaderTest, AddRtpDumpsToPostedData) {
       base::BindOnce(&WebRtcLogUploader::LoggingStoppedDoUpload,
                      base::Unretained(webrtc_log_uploader.get()),
                      std::move(log), std::make_unique<WebRtcLogMetaDataMap>(),
-                     upload_done_data),
+                     std::move(upload_done_data)),
       run_loop.QuitClosure());
   run_loop.Run();
 

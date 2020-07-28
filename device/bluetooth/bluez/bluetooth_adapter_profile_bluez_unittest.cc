@@ -45,17 +45,13 @@ class BluetoothAdapterProfileBlueZTest : public testing::Test {
         bluez::BluezDBusManager::GetSetterForTesting();
 
     dbus_setter->SetBluetoothAdapterClient(
-        std::unique_ptr<bluez::BluetoothAdapterClient>(
-            new bluez::FakeBluetoothAdapterClient));
+        std::make_unique<bluez::FakeBluetoothAdapterClient>());
     dbus_setter->SetBluetoothAgentManagerClient(
-        std::unique_ptr<bluez::BluetoothAgentManagerClient>(
-            new bluez::FakeBluetoothAgentManagerClient));
+        std::make_unique<bluez::FakeBluetoothAgentManagerClient>());
     dbus_setter->SetBluetoothDeviceClient(
-        std::unique_ptr<bluez::BluetoothDeviceClient>(
-            new bluez::FakeBluetoothDeviceClient));
+        std::make_unique<bluez::FakeBluetoothDeviceClient>());
     dbus_setter->SetBluetoothProfileManagerClient(
-        std::unique_ptr<bluez::BluetoothProfileManagerClient>(
-            new bluez::FakeBluetoothProfileManagerClient));
+        std::make_unique<bluez::FakeBluetoothProfileManagerClient>());
 
     // Grab a pointer to the adapter.
     base::RunLoop run_loop;

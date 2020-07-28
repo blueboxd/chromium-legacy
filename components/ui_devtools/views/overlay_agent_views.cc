@@ -417,7 +417,7 @@ void OverlayAgentViews::ShowDistancesInHighlightOverlay(int pinned_id,
       element_r2->GetNodeWindowAndScreenBounds());
   const std::pair<gfx::NativeWindow, gfx::Rect> pair_r1(
       element_r1->GetNodeWindowAndScreenBounds());
-#if defined(OS_MACOSX)
+#if defined(OS_APPLE)
   // TODO(lgrey): Explain this
   if (pair_r1.first != pair_r2.first) {
     pinned_id_ = 0;
@@ -711,7 +711,7 @@ bool OverlayAgentViews::UpdateHighlight(
     return false;
   }
   ui::Layer* root_layer = nullptr;
-#if defined(OS_MACOSX)
+#if defined(OS_APPLE)
   views::Widget* widget =
       views::Widget::GetWidgetForNativeWindow(window_and_bounds.first);
   root_layer = widget->GetLayer();
@@ -722,7 +722,7 @@ bool OverlayAgentViews::UpdateHighlight(
   root_layer = root->layer();
   layer_for_highlighting_screen_offset_ =
       root->GetBoundsInScreen().OffsetFromOrigin();
-#endif  // defined(OS_MACOSX)
+#endif  // defined(OS_APPLE)
   DCHECK(root_layer);
 
   layer_for_highlighting_->SetBounds(root_layer->bounds());

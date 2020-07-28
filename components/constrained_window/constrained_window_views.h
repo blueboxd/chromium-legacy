@@ -58,7 +58,7 @@ views::Widget* ShowWebModalDialogViews(
     views::WidgetDelegate* dialog,
     content::WebContents* initiator_web_contents);
 
-#if defined(OS_MACOSX)
+#if defined(OS_APPLE)
 // Like ShowWebModalDialogViews, but used to show a native dialog "sheet" on
 // Mac. Sheets are always modal to their parent window. To make them tab-modal,
 // this provides an invisible tab-modal overlay window managed by

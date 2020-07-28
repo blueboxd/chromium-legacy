@@ -1609,10 +1609,13 @@ IN_PROC_BROWSER_TEST_F(SSLUITest, SHA1IsDefaultDisabled) {
 #if defined(OS_MACOSX)
   // On macOS 10.15 (and presumably later) SHA1 certs are considered prima
   // facie invalid by the system verifier.
-  // TODO(https://crbug.com/977767): Reconsider this when the built-in verifier
-  // is used on Mac.
-  if (base::mac::IsAtLeastOS10_15())
+  // TODO(https://crbug.com/977767): Remove this when CertVerifyProcMac is
+  // removed.
+  if (base::mac::IsAtLeastOS10_15() &&
+      !base::FeatureList::IsEnabled(
+          net::features::kCertVerifierBuiltinFeature)) {
     expected_error |= net::CERT_STATUS_INVALID;
+  }
 #endif
 
   ssl_test_util::CheckAuthenticationBrokenState(

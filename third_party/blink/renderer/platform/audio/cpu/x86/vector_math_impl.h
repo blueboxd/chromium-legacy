@@ -9,7 +9,7 @@
 
 #include "build/build_config.h"
 
-#if defined(ARCH_CPU_X86_FAMILY) && !defined(OS_MACOSX)
+#if defined(ARCH_CPU_X86_FAMILY) && !defined(OS_APPLE)
 
 #include <algorithm>
 #include <cmath>
@@ -422,4 +422,4 @@ void Zvmul(const float* real1p,
 }  // namespace vector_math
 }  // namespace blink
 
-#endif  // defined(ARCH_CPU_X86_FAMILY) && !defined(OS_MACOSX)
+#endif  // defined(ARCH_CPU_X86_FAMILY) && !defined(OS_APPLE)

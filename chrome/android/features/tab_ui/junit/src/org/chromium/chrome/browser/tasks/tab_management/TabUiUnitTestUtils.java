@@ -70,6 +70,7 @@ public class TabUiUnitTestUtils {
         UserDataHost userDataHost = new UserDataHost();
         CriticalPersistedTabData criticalPersistedTabData = mock(CriticalPersistedTabData.class);
         userDataHost.setUserData(CriticalPersistedTabData.class, criticalPersistedTabData);
+        doReturn(userDataHost).when(tab).getUserDataHost();
         doReturn(rootId).when(criticalPersistedTabData).getRootId();
         doReturn("").when(tab).getUrlString();
         return tab;

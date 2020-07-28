@@ -86,7 +86,7 @@ void MaybeCreateLoaderOnCoreThread(
     int frame_tree_node_id,
     int process_id,
     const blink::DedicatedWorkerToken& dedicated_worker_token,
-    SharedWorkerId shared_worker_id,
+    const blink::SharedWorkerToken& shared_worker_token,
     mojo::PendingAssociatedReceiver<blink::mojom::ServiceWorkerContainerHost>
         host_receiver,
     mojo::PendingAssociatedRemote<blink::mojom::ServiceWorkerContainer>
@@ -132,7 +132,7 @@ void MaybeCreateLoaderOnCoreThread(
       ServiceWorkerClientInfo client_info =
           resource_type == blink::mojom::ResourceType::kWorker
               ? ServiceWorkerClientInfo(dedicated_worker_token)
-              : ServiceWorkerClientInfo(shared_worker_id);
+              : ServiceWorkerClientInfo(shared_worker_token);
 
       container_host = context_core->CreateContainerHostForWorker(
           std::move(host_receiver), process_id, std::move(client_remote),
@@ -214,7 +214,7 @@ ServiceWorkerMainResourceLoaderInterceptor::CreateForNavigation(
       request_info.begin_params->skip_service_worker,
       request_info.are_ancestors_secure, request_info.frame_tree_node_id,
       ChildProcessHost::kInvalidUniqueID, blink::DedicatedWorkerToken::Null(),
-      SharedWorkerId()));
+      blink::SharedWorkerToken::Null()));
 }
 
 std::unique_ptr<NavigationLoaderInterceptor>
@@ -222,7 +222,7 @@ ServiceWorkerMainResourceLoaderInterceptor::CreateForWorker(
     const network::ResourceRequest& resource_request,
     int process_id,
     const blink::DedicatedWorkerToken& dedicated_worker_token,
-    SharedWorkerId shared_worker_id,
+    const blink::SharedWorkerToken& shared_worker_token,
     base::WeakPtr<ServiceWorkerMainResourceHandle> navigation_handle) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
@@ -241,7 +241,7 @@ ServiceWorkerMainResourceLoaderInterceptor::CreateForWorker(
       std::move(navigation_handle), resource_type,
       resource_request.skip_service_worker, /*are_ancestors_secure=*/false,
       FrameTreeNode::kFrameTreeNodeInvalidId, process_id,
-      dedicated_worker_token, shared_worker_id));
+      dedicated_worker_token, shared_worker_token));
 }
 
 ServiceWorkerMainResourceLoaderInterceptor::
@@ -296,7 +296,7 @@ void ServiceWorkerMainResourceLoaderInterceptor::MaybeCreateLoader(
       base::BindOnce(&MaybeCreateLoaderOnCoreThread, GetWeakPtr(),
                      handle_->core(), resource_type_, skip_service_worker_,
                      are_ancestors_secure_, frame_tree_node_id_, process_id_,
-                     dedicated_worker_token_, shared_worker_id_,
+                     dedicated_worker_token_, shared_worker_token_,
                      std::move(host_receiver), std::move(client_remote),
                      tentative_resource_request, browser_context,
                      std::move(loader_callback), std::move(fallback_callback),
@@ -367,7 +367,7 @@ ServiceWorkerMainResourceLoaderInterceptor::
         int frame_tree_node_id,
         int process_id,
         const blink::DedicatedWorkerToken& dedicated_worker_token,
-        SharedWorkerId shared_worker_id)
+        const blink::SharedWorkerToken& shared_worker_token)
     : handle_(std::move(handle)),
       resource_type_(resource_type),
       skip_service_worker_(skip_service_worker),
@@ -375,7 +375,7 @@ ServiceWorkerMainResourceLoaderInterceptor::
       frame_tree_node_id_(frame_tree_node_id),
       process_id_(process_id),
       dedicated_worker_token_(dedicated_worker_token),
-      shared_worker_id_(shared_worker_id) {
+      shared_worker_token_(shared_worker_token) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   DCHECK(handle_);
 }

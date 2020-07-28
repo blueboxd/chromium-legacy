@@ -72,7 +72,7 @@ class DisplaySettingsManagerImpl : public DisplaySettingsManager,
 
   void UpdateBrightness(base::TimeDelta duration);
 #if defined(USE_AURA)
-  void OnDisplayOn(bool status);
+  void OnDisplayOn(const base::flat_map<int64_t, bool>& statuses);
   void OnDisplayOnTimeoutCompleted();
   void OnDisplayOffTimeoutCompleted();
 #endif  // defined(USE_AURA)

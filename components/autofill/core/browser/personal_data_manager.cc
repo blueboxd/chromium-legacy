@@ -1916,7 +1916,7 @@ bool PersonalDataManager::IsServerCard(const CreditCard* credit_card) const {
 
 bool PersonalDataManager::ShouldShowCardsFromAccountOption() const {
 // The feature is only for Linux, Windows and Mac.
-#if (!defined(OS_LINUX) && !defined(OS_WIN) && !defined(OS_MACOSX)) || \
+#if (!defined(OS_LINUX) && !defined(OS_WIN) && !defined(OS_APPLE)) || \
     defined(OS_CHROMEOS)
   return false;
 #else
@@ -1940,7 +1940,7 @@ bool PersonalDataManager::ShouldShowCardsFromAccountOption() const {
 
   // The option should only be shown if the user has not already opted-in.
   return !is_opted_in;
-#endif  // (!defined(OS_LINUX) && !defined(OS_WIN) && !defined(OS_MACOSX)) ||
+#endif  // (!defined(OS_LINUX) && !defined(OS_WIN) && !defined(OS_APPLE)) ||
         // defined(OS_CHROMEOS)
 }
 

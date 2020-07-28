@@ -1928,6 +1928,7 @@ jumbo_source_set("blink_platform_unittests_sources") {
     "graphics/gpu/webgpu_image_bitmap_handler_test.cc",
     "graphics/gpu/webgpu_swap_buffer_provider_test.cc",
     "graphics/graphics_context_test.cc",
+    "graphics/identifiability_paint_op_digest_unittest.cc",
     "graphics/lab_color_space_test.cc",
     "graphics/paint/cull_rect_test.cc",
     "graphics/paint/display_item_client_test.cc",

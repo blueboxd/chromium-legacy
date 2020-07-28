@@ -23,11 +23,15 @@ namespace payments {
 namespace {
 
 content::DevToolsBackgroundServicesContext* GetDevTools(
-    content::BrowserContext* browser_context,
+    content::WebContents* web_contents,
     const url::Origin& sw_origin) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
+  if (!web_contents)
+    return nullptr;
+
   auto* storage_partition = content::BrowserContext::GetStoragePartitionForSite(
-      browser_context, sw_origin.GetURL(), /*can_create=*/true);
+      web_contents->GetBrowserContext(), sw_origin.GetURL(),
+      /*can_create=*/true);
   if (!storage_partition)
     return nullptr;
 
@@ -52,8 +56,8 @@ void RunCallbackWithError(const std::string& error,
 
 PaymentHandlerHost::PaymentHandlerHost(content::WebContents* web_contents,
                                        Delegate* delegate)
-    : web_contents_(web_contents), delegate_(delegate) {
-  DCHECK(web_contents_);
+    : WebContentsObserver(web_contents), delegate_(delegate) {
+  DCHECK(web_contents);
   DCHECK(delegate_);
 }
 
@@ -76,8 +80,7 @@ void PaymentHandlerHost::UpdateWith(
   if (!change_payment_request_details_callback_)
     return;
 
-  auto* dev_tools =
-      GetDevTools(web_contents_->GetBrowserContext(), sw_origin_for_logs_);
+  auto* dev_tools = GetDevTools(web_contents(), sw_origin_for_logs_);
   if (dev_tools) {
     std::map<std::string, std::string> data = {{"Error", response->error}};
 
@@ -195,8 +198,7 @@ void PaymentHandlerHost::ChangePaymentMethod(
     return;
   }
 
-  auto* dev_tools =
-      GetDevTools(web_contents_->GetBrowserContext(), sw_origin_for_logs_);
+  auto* dev_tools = GetDevTools(web_contents(), sw_origin_for_logs_);
   if (dev_tools) {
     dev_tools->LogBackgroundServiceEvent(
         registration_id_for_logs_, sw_origin_for_logs_,
@@ -226,8 +228,7 @@ void PaymentHandlerHost::ChangeShippingOption(
     return;
   }
 
-  auto* dev_tools =
-      GetDevTools(web_contents_->GetBrowserContext(), sw_origin_for_logs_);
+  auto* dev_tools = GetDevTools(web_contents(), sw_origin_for_logs_);
   if (dev_tools) {
     dev_tools->LogBackgroundServiceEvent(
         registration_id_for_logs_, sw_origin_for_logs_,
@@ -256,8 +257,7 @@ void PaymentHandlerHost::ChangeShippingAddress(
     return;
   }
 
-  auto* dev_tools =
-      GetDevTools(web_contents_->GetBrowserContext(), sw_origin_for_logs_);
+  auto* dev_tools = GetDevTools(web_contents(), sw_origin_for_logs_);
   if (dev_tools) {
     std::map<std::string, std::string> shipping_address_map;
     shipping_address_map.emplace("Country", shipping_address->country);

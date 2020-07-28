@@ -164,7 +164,7 @@ void SystemClipboard::WriteImageWithTag(Image* image,
   clipboard_->WriteImage(bitmap);
 
   if (url.IsValid() && !url.IsEmpty()) {
-#if !defined(OS_MACOSX)
+#if !defined(OS_APPLE)
     // See http://crbug.com/838808: Not writing text/plain on Mac for
     // consistency between platforms, and to help fix errors in applications
     // which prefer text/plain content over image content for compatibility with
@@ -228,7 +228,7 @@ void SystemClipboard::CommitWrite() {
 }
 
 void SystemClipboard::CopyToFindPboard(const String& text) {
-#if defined(OS_MACOSX)
+#if defined(OS_APPLE)
   clipboard_->WriteStringToFindPboard(text);
 #endif
 }

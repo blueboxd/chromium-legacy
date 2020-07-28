@@ -10,11 +10,11 @@
 #include "base/macros.h"
 #include "components/policy/core/browser/configuration_policy_handler.h"
 
-// ConfigurationPolicyHandler for the SpellcheckLanguageBlacklist policy.
+// ConfigurationPolicyHandler for the SpellcheckLanguageBlocklist policy.
 class SpellcheckLanguageBlocklistPolicyHandler
     : public policy::TypeCheckingPolicyHandler {
  public:
-  SpellcheckLanguageBlocklistPolicyHandler();
+  explicit SpellcheckLanguageBlocklistPolicyHandler(const char* policy_name);
   ~SpellcheckLanguageBlocklistPolicyHandler() override;
 
   // ConfigurationPolicyHandler:

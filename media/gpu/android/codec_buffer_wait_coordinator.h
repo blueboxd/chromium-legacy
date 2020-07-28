@@ -10,6 +10,7 @@
 #include "base/threading/thread_checker.h"
 #include "base/time/time.h"
 #include "gpu/command_buffer/service/texture_owner.h"
+#include "media/base/tuneable.h"
 #include "media/gpu/media_gpu_export.h"
 
 namespace media {
@@ -57,6 +58,13 @@ class MEDIA_GPU_EXPORT CodecBufferWaitCoordinator
   base::TimeTicks release_time_;
   scoped_refptr<FrameAvailableEvent> frame_available_event_;
   scoped_refptr<base::SingleThreadTaskRunner> task_runner_;
+
+  // 5msec covers >99.9% of cases, so just wait for up to that much before
+  // giving up. If an error occurs, we might not ever get a notification.
+  Tuneable<base::TimeDelta> max_wait_ = {"MediaCodecOutputBufferMaxWaitTime",
+                                         base::TimeDelta::FromMilliseconds(0),
+                                         base::TimeDelta::FromMilliseconds(5),
+                                         base::TimeDelta::FromMilliseconds(20)};
 
   DISALLOW_COPY_AND_ASSIGN(CodecBufferWaitCoordinator);
 };

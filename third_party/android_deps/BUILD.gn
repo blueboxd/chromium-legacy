@@ -79,6 +79,10 @@ java_group("android_support_v17_preference_java") {
   deps = [ ":androidx_leanback_leanback_preference_java" ]
 }
 
+java_group("material_design_java") {
+  deps = [ "$material_design_target" ]
+}
+
 java_annotation_processor("auto_service_processor") {
   main_class = "com.google.auto.service.processor.AutoServiceProcessor"
   deps = [ ":com_google_auto_service_auto_service_java" ]
@@ -162,6 +166,12 @@ java_prebuilt("androidx_annotation_annotation_java") {
 }
 
 # This is generated, do not edit. Update BuildConfigGenerator.groovy instead.
+android_aar_prebuilt("androidx_annotation_annotation_experimental_java") {
+  aar_path = "libs/androidx_annotation_annotation_experimental/annotation-experimental-1.0.0.aar"
+  info_path = "libs/androidx_annotation_annotation_experimental/androidx_annotation_annotation_experimental.info"
+}
+
+# This is generated, do not edit. Update BuildConfigGenerator.groovy instead.
 android_aar_prebuilt("androidx_appcompat_appcompat_java") {
   aar_path = "libs/androidx_appcompat_appcompat/appcompat-1.2.0-beta01.aar"
   info_path =
@@ -238,7 +248,7 @@ android_aar_prebuilt("androidx_coordinatorlayout_coordinatorlayout_java") {
     ":androidx_customview_customview_java",
   ]
 
-  # https:crbug.com/954584
+  # Reduce binary size. https:crbug.com/954584
   ignore_proguard_configs = true
 }
 
@@ -600,7 +610,7 @@ android_aar_prebuilt("androidx_test_espresso_espresso_contrib_java") {
     ":androidx_test_espresso_espresso_core_java",
     ":androidx_test_espresso_espresso_idling_resource_java",
     ":androidx_viewpager_viewpager_java",
-    ":com_google_android_material_material_java",
+    "$material_design_target",
     "//third_party/accessibility_test_framework:accessibility_test_framework_java",
   ]
 }
@@ -703,6 +713,19 @@ android_aar_prebuilt("androidx_test_uiautomator_uiautomator_java") {
 }
 
 # This is generated, do not edit. Update BuildConfigGenerator.groovy instead.
+android_aar_prebuilt("androidx_transition_transition_java") {
+  aar_path = "libs/androidx_transition_transition/transition-1.2.0.aar"
+  info_path =
+      "libs/androidx_transition_transition/androidx_transition_transition.info"
+  deps = [
+    ":androidx_annotation_annotation_java",
+    ":androidx_collection_collection_java",
+    ":androidx_core_core_java",
+  ]
+  deps += [ ":androidx_fragment_fragment_java" ]
+}
+
+# This is generated, do not edit. Update BuildConfigGenerator.groovy instead.
 android_aar_prebuilt("androidx_tvprovider_tvprovider_java") {
   aar_path = "libs/androidx_tvprovider_tvprovider/tvprovider-1.0.0.aar"
   info_path =
@@ -734,6 +757,20 @@ android_aar_prebuilt("androidx_vectordrawable_vectordrawable_animated_java") {
     ":androidx_collection_collection_java",
     ":androidx_interpolator_interpolator_java",
     ":androidx_vectordrawable_vectordrawable_java",
+  ]
+}
+
+# This is generated, do not edit. Update BuildConfigGenerator.groovy instead.
+android_aar_prebuilt("androidx_viewpager2_viewpager2_java") {
+  aar_path = "libs/androidx_viewpager2_viewpager2/viewpager2-1.0.0.aar"
+  info_path =
+      "libs/androidx_viewpager2_viewpager2/androidx_viewpager2_viewpager2.info"
+  deps = [
+    ":androidx_annotation_annotation_java",
+    ":androidx_collection_collection_java",
+    ":androidx_core_core_java",
+    ":androidx_fragment_fragment_java",
+    ":androidx_recyclerview_recyclerview_java",
   ]
 }
 
@@ -801,7 +838,7 @@ android_aar_prebuilt("com_android_support_coordinatorlayout_java") {
     ":com_android_support_support_compat_java",
   ]
 
-  # https:crbug.com/954584
+  # Reduce binary size. https:crbug.com/954584
   ignore_proguard_configs = true
 }
 
@@ -1755,16 +1792,6 @@ android_aar_prebuilt("android_arch_lifecycle_livedata_core_java") {
 }
 
 # This is generated, do not edit. Update BuildConfigGenerator.groovy instead.
-android_aar_prebuilt("androidx_annotation_annotation_experimental_java") {
-  aar_path = "libs/androidx_annotation_annotation_experimental/annotation-experimental-1.0.0.aar"
-  info_path = "libs/androidx_annotation_annotation_experimental/androidx_annotation_annotation_experimental.info"
-
-  # To remove visibility constraint, add this dependency to
-  # //third_party/android_deps/build.gradle.
-  visibility = [ ":*" ]
-}
-
-# This is generated, do not edit. Update BuildConfigGenerator.groovy instead.
 java_prebuilt("androidx_arch_core_core_common_java") {
   jar_path = "libs/androidx_arch_core_core_common/core-common-2.1.0.jar"
   output_name = "androidx_arch_core_core_common"
@@ -1940,23 +1967,6 @@ android_aar_prebuilt("androidx_test_espresso_espresso_idling_resource_java") {
 }
 
 # This is generated, do not edit. Update BuildConfigGenerator.groovy instead.
-android_aar_prebuilt("androidx_transition_transition_java") {
-  aar_path = "libs/androidx_transition_transition/transition-1.2.0.aar"
-  info_path =
-      "libs/androidx_transition_transition/androidx_transition_transition.info"
-
-  # To remove visibility constraint, add this dependency to
-  # //third_party/android_deps/build.gradle.
-  visibility = [ ":*" ]
-  deps = [
-    ":androidx_annotation_annotation_java",
-    ":androidx_collection_collection_java",
-    ":androidx_core_core_java",
-  ]
-  deps += [ ":androidx_fragment_fragment_java" ]
-}
-
-# This is generated, do not edit. Update BuildConfigGenerator.groovy instead.
 android_aar_prebuilt("androidx_versionedparcelable_versionedparcelable_java") {
   aar_path = "libs/androidx_versionedparcelable_versionedparcelable/versionedparcelable-1.1.0.aar"
   info_path = "libs/androidx_versionedparcelable_versionedparcelable/androidx_versionedparcelable_versionedparcelable.info"
@@ -1971,24 +1981,6 @@ android_aar_prebuilt("androidx_versionedparcelable_versionedparcelable_java") {
 
   # Target has AIDL, but we do not support it yet: http://crbug.com/644439
   ignore_aidl = true
-}
-
-# This is generated, do not edit. Update BuildConfigGenerator.groovy instead.
-android_aar_prebuilt("androidx_viewpager2_viewpager2_java") {
-  aar_path = "libs/androidx_viewpager2_viewpager2/viewpager2-1.0.0.aar"
-  info_path =
-      "libs/androidx_viewpager2_viewpager2/androidx_viewpager2_viewpager2.info"
-
-  # To remove visibility constraint, add this dependency to
-  # //third_party/android_deps/build.gradle.
-  visibility = [ ":*" ]
-  deps = [
-    ":androidx_annotation_annotation_java",
-    ":androidx_collection_collection_java",
-    ":androidx_core_core_java",
-    ":androidx_fragment_fragment_java",
-    ":androidx_recyclerview_recyclerview_java",
-  ]
 }
 
 # This is generated, do not edit. Update BuildConfigGenerator.groovy instead.

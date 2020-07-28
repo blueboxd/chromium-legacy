@@ -1008,6 +1008,23 @@ IN_PROC_BROWSER_TEST_F(CommandsApiTest, AddRemoveAddComponentExtension) {
   ASSERT_TRUE(RunComponentExtensionTest("keybinding/component")) << message_;
 }
 
+// Validate parameters sent along with an extension event, in response to
+// command being triggered.
+IN_PROC_BROWSER_TEST_F(CommandsApiTest, TabParameter) {
+  ASSERT_TRUE(embedded_test_server()->Start());
+  ASSERT_TRUE(RunExtensionTest("keybinding/tab_parameter")) << message_;
+  ui_test_utils::NavigateToURL(
+      browser(), embedded_test_server()->GetURL("/extensions/test_file.txt"));
+  const Extension* extension = GetSingleLoadedExtension();
+  ASSERT_TRUE(extension) << message_;
+  ResultCatcher catcher;
+  EXPECT_TRUE(content::WaitForLoadStop(
+      browser()->tab_strip_model()->GetActiveWebContents()));
+  ASSERT_TRUE(ui_test_utils::SendKeyPressSync(browser(), ui::VKEY_Y, true, true,
+                                              false, false));  // Ctrl+Shift+Y
+  EXPECT_TRUE(catcher.GetNextResult()) << catcher.message();
+}
+
 // Test Keybinding in incognito mode.
 IN_PROC_BROWSER_TEST_P(IncognitoCommandsApiTest, IncognitoMode) {
   ASSERT_TRUE(embedded_test_server()->Start());

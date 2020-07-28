@@ -70,13 +70,13 @@ void ClipboardX11::Start(
   }
   client_clipboard_.swap(client_clipboard);
 
-  x_server_clipboard_.Init(display_,
-                           base::Bind(&ClipboardX11::OnClipboardChanged,
-                                      base::Unretained(this)));
+  x_server_clipboard_.Init(
+      display_, base::BindRepeating(&ClipboardX11::OnClipboardChanged,
+                                    base::Unretained(this)));
 
   x_connection_watch_controller_ = base::FileDescriptorWatcher::WatchReadable(
       ConnectionNumber(display_),
-      base::Bind(&ClipboardX11::PumpXEvents, base::Unretained(this)));
+      base::BindRepeating(&ClipboardX11::PumpXEvents, base::Unretained(this)));
   PumpXEvents();
 }
 

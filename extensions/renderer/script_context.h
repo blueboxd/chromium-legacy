@@ -192,6 +192,10 @@ class ScriptContext {
     DISALLOW_COPY_AND_ASSIGN(ScopedFrameDocumentLoader);
   };
 
+  // TODO(devlin): Move all these Get*URL*() methods out of here? While they are
+  // vaguely ScriptContext related, there's enough here that they probably
+  // warrant another class or utility file.
+
   // Utility to get the URL we will match against for a frame. If the frame has
   // committed, this is the commited URL. Otherwise it is the provisional URL.
   // The returned URL may be invalid.
@@ -204,12 +208,28 @@ class ScriptContext {
   // this instead of GetDocumentLoaderURLForFrame.
   static GURL GetAccessCheckedFrameURL(const blink::WebLocalFrame* frame);
 
-  // Returns the first non-about:-URL in the document hierarchy above and
-  // including |frame|. The document hierarchy is only traversed if
-  // |document_url| is an about:-URL and if |match_about_blank| is true.
-  static GURL GetEffectiveDocumentURL(blink::WebLocalFrame* frame,
-                                      const GURL& document_url,
-                                      bool match_about_blank);
+  // Used to determine the "effective" URL in context classification, such as to
+  // associate an about:blank frame in an extension context with its extension.
+  // If |document_url| is an about: URL, returns the "owner" of the about:
+  // frame (i.e., the one that can access it). This may not be the immediate
+  // parent. Returns |document_url| if it is not an about: URL, if
+  // |match_about_blank| is false, or if a suitable parent cannot be found.
+  // Will not check parent contexts that cannot be accessed (as is the case
+  // for sandboxed frames).
+  static GURL GetEffectiveDocumentURLForContext(blink::WebLocalFrame* frame,
+                                                const GURL& document_url,
+                                                bool match_about_blank);
+
+  // Used to determine the "effective" URL for extension script injection.
+  // If |document_url| is an about: URL, returns the "owner" of the about:
+  // frame (i.e., the one that can access it). This may not be the immediate
+  // parent. Returns |document_url| if it is not an about: URL, if
+  // |match_about_blank| is false, or if a suitable parent cannot be found.
+  // Considers parent contexts that cannot be accessed (as is the case for
+  // sandboxed frames).
+  static GURL GetEffectiveDocumentURLForInjection(blink::WebLocalFrame* frame,
+                                                  const GURL& document_url,
+                                                  bool match_about_blank);
 
   // Grants a set of content capabilities to this context.
   void set_content_capabilities(APIPermissionSet capabilities) {

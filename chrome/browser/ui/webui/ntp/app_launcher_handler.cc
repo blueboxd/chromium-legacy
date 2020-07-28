@@ -979,7 +979,7 @@ void AppLauncherHandler::HandleInstallAppLocally(const base::ListValue* args) {
       app_id,
       base::BindOnce(&AppLauncherHandler::OnOsHooksInstalled,
                      weak_ptr_factory_.GetWeakPtr(), app_id),
-      nullptr, std::move(options));
+      /*web_application_info=*/nullptr, std::move(options));
 
   // Use the appAdded to update the app icon's color to no longer be
   // greyscale.

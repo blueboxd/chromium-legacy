@@ -115,7 +115,7 @@ class WebPluginContainerTest : public PageTestBase {
 
 namespace {
 
-#if defined(OS_MACOSX)
+#if defined(OS_APPLE)
 const WebInputEvent::Modifiers kEditingModifier = WebInputEvent::kMetaKey;
 #else
 const WebInputEvent::Modifiers kEditingModifier = WebInputEvent::kControlKey;

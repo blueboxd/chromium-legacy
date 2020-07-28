@@ -31,7 +31,7 @@
 static size_t GetAllocatedSize(void* mem) {
   return _msize(mem);
 }
-#elif defined(OS_MACOSX)
+#elif defined(OS_APPLE)
 #include <malloc/malloc.h>
 static size_t GetAllocatedSize(void* mem) {
   return malloc_size(mem);
@@ -61,9 +61,9 @@ constexpr int kFailure = 1;
 class SamplingMallocShimsTest : public base::MultiProcessTest {
  public:
   static void multiprocessTestSetup() {
-#if defined(OS_MACOSX)
+#if defined(OS_APPLE)
     base::allocator::InitializeAllocatorShim();
-#endif  // defined(OS_MACOSX)
+#endif  // defined(OS_APPLE)
     crash_reporter::InitializeCrashKeys();
     InstallMallocHooks(AllocatorState::kMaxMetadata,
                        AllocatorState::kMaxMetadata, AllocatorState::kMaxSlots,
@@ -168,7 +168,7 @@ MULTIPROCESS_TEST_MAIN_WITH_SETUP(
 }
 
 // Flaky on Mac: https://crbug.com/1087372
-#if defined(OS_MACOSX)
+#if defined(OS_APPLE)
 #define MAYBE_BasicFunctionality DISABLED_BasicFunctionality
 #else
 #define MAYBE_BasicFunctionality BasicFunctionality
@@ -295,7 +295,7 @@ TEST_F(SamplingMallocShimsTest, AlignedRealloc) {
 }
 #endif  // defined(OS_WIN)
 
-#if defined(OS_MACOSX)
+#if defined(OS_APPLE)
 MULTIPROCESS_TEST_MAIN_WITH_SETUP(
     BatchFree,
     SamplingMallocShimsTest::multiprocessTestSetup) {
@@ -323,7 +323,7 @@ MULTIPROCESS_TEST_MAIN_WITH_SETUP(
 TEST_F(SamplingMallocShimsTest, BatchFree) {
   runTest("BatchFree");
 }
-#endif  // defined(OS_MACOSX)
+#endif  // defined(OS_APPLE)
 
 }  // namespace
 

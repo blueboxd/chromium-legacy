@@ -1036,7 +1036,7 @@ TEST_F(ServiceWorkerContainerHostTestWithPlzDedicatedWorker,
 TEST_F(ServiceWorkerContainerHostTest,
        ReservedClientsAreNotExposedToClientsApiForSharedWorker) {
   TestReservedClientsAreNotExposed(
-      ServiceWorkerClientInfo(SharedWorkerId()),
+      ServiceWorkerClientInfo(blink::SharedWorkerToken::Create()),
       GURL("https://www.example.com/shared_worker.js"));
 }
 
@@ -1105,8 +1105,9 @@ TEST_F(ServiceWorkerContainerHostTestWithPlzDedicatedWorker,
 }
 
 TEST_F(ServiceWorkerContainerHostTest, ClientPhaseForSharedWorker) {
-  TestClientPhaseTransition(ServiceWorkerClientInfo(SharedWorkerId()),
-                            GURL("https://www.example.com/shared_worker.js"));
+  TestClientPhaseTransition(
+      ServiceWorkerClientInfo(blink::SharedWorkerToken::Create()),
+      GURL("https://www.example.com/shared_worker.js"));
 }
 
 // Run tests with BackForwardCache.

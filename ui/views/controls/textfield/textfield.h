@@ -51,11 +51,11 @@ namespace base {
 class TimeDelta;
 }
 
-#if defined(OS_MACOSX)
+#if defined(OS_APPLE)
 namespace ui {
 class ScopedPasswordInputEnabler;
 }
-#endif  // defined(OS_MACOSX)
+#endif  // defined(OS_APPLE)
 
 namespace views {
 
@@ -692,10 +692,10 @@ class VIEWS_EXPORT Textfield : public View,
   // View containing the text cursor.
   View* cursor_view_ = nullptr;
 
-#if defined(OS_MACOSX)
+#if defined(OS_APPLE)
   // Used to track active password input sessions.
   std::unique_ptr<ui::ScopedPasswordInputEnabler> password_input_enabler_;
-#endif  // defined(OS_MACOSX)
+#endif  // defined(OS_APPLE)
 
   // How this textfield was focused.
   ui::TextInputClient::FocusReason focus_reason_ =

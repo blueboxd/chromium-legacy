@@ -72,7 +72,7 @@ GLContext::GLContext(GLShareGroup* share_group) : share_group_(share_group) {
 }
 
 GLContext::~GLContext() {
-#if defined(OS_MACOSX)
+#if defined(OS_APPLE)
   DCHECK(!HasBackpressureFences());
 #endif
   share_group_->RemoveContext(this);
@@ -197,7 +197,7 @@ void GLContext::DirtyVirtualContextState() {
   current_virtual_context_ = nullptr;
 }
 
-#if defined(OS_MACOSX)
+#if defined(OS_APPLE)
 constexpr uint64_t kInvalidFenceId = 0;
 
 uint64_t GLContext::BackpressureFenceCreate() {

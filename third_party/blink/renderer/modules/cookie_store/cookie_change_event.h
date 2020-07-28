@@ -63,13 +63,14 @@ class CookieChangeEvent final : public Event {
 
   static CookieListItem* ToCookieListItem(
       const CanonicalCookie& canonical_cookie,
+      const network::mojom::blink::CookieEffectiveSameSite&,
       bool is_deleted);  // True for information from a cookie deletion event.
 
   // Helper for converting backend event information into a CookieChangeEvent.
-  static void ToEventInfo(const CanonicalCookie& cookie,
-                          ::network::mojom::CookieChangeCause cause,
-                          HeapVector<Member<CookieListItem>>& changed,
-                          HeapVector<Member<CookieListItem>>& deleted);
+  static void ToEventInfo(
+      const network::mojom::blink::CookieChangeInfoPtr& change_info,
+      HeapVector<Member<CookieListItem>>& changed,
+      HeapVector<Member<CookieListItem>>& deleted);
 
  private:
   HeapVector<Member<CookieListItem>> changed_;

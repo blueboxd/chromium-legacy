@@ -1866,8 +1866,11 @@ std::unique_ptr<ConfigurationPolicyHandlerList> BuildHandlerList(
 
 #if BUILDFLAG(ENABLE_SPELLCHECK)
   handlers->AddHandler(std::make_unique<SpellcheckLanguagePolicyHandler>());
-  handlers->AddHandler(
-      std::make_unique<SpellcheckLanguageBlocklistPolicyHandler>());
+  handlers->AddHandler(std::make_unique<SimpleDeprecatingPolicyHandler>(
+      std::make_unique<SpellcheckLanguageBlocklistPolicyHandler>(
+          policy::key::kSpellcheckLanguageBlacklist),
+      std::make_unique<SpellcheckLanguageBlocklistPolicyHandler>(
+          policy::key::kSpellcheckLanguageBlocklist)));
 #endif  // BUILDFLAG(ENABLE_SPELLCHECK)
 
 #if BUILDFLAG(ENABLE_PLUGINS)

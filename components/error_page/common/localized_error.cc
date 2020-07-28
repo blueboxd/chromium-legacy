@@ -749,8 +749,7 @@ void GetSuggestionsSummaryList(int error_code,
 
 // If the current platform has a directly accesible network diagnostics tool and
 // the URL is valid add a suggestion.
-#if defined(OS_CHROMEOS) || defined(OS_WIN) || \
-    (defined(OS_MACOSX) && !defined(OS_IOS))
+#if defined(OS_CHROMEOS) || defined(OS_WIN) || defined(OS_MAC)
   if (IsOnlySuggestion(suggestions, SUGGEST_DIAGNOSE_TOOL)) {
     AddSingleEntryDictionaryToList(suggestions_summary_list, "summary",
         IDS_ERRORPAGES_SUGGESTION_DIAGNOSE_STANDALONE, false);
@@ -763,7 +762,7 @@ void GetSuggestionsSummaryList(int error_code,
 #else
   DCHECK(!IsSuggested(suggestions, SUGGEST_DIAGNOSE_TOOL));
 #endif  // defined(OS_CHROMEOS) || defined(OS_WIN) ||
-        // (defined(OS_MACOSX) && !defined(OS_IOS))
+        // defined(OS_MAC)
 
   // Add list prefix header.
   error_strings->SetString("suggestionsSummaryListHeader",

@@ -17,6 +17,7 @@
 #include "mojo/public/cpp/bindings/remote.h"
 #include "services/metrics/public/cpp/ukm_source_id.h"
 #include "services/network/public/mojom/url_loader_factory.mojom-forward.h"
+#include "third_party/blink/public/common/tokens/worker_tokens.h"
 #include "third_party/blink/public/common/user_agent/user_agent_metadata.h"
 #include "third_party/blink/public/mojom/browser_interface_broker.mojom-forward.h"
 #include "third_party/blink/public/mojom/devtools/devtools_agent.mojom-forward.h"
@@ -58,6 +59,7 @@ class EmbeddedSharedWorkerStub : public blink::WebSharedWorkerClient,
  public:
   EmbeddedSharedWorkerStub(
       blink::mojom::SharedWorkerInfoPtr info,
+      const blink::SharedWorkerToken& token,
       const url::Origin& constructor_origin,
       const std::string& user_agent,
       const blink::UserAgentMetadata& ua_metadata,

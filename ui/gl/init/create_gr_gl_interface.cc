@@ -89,7 +89,7 @@ GLboolean glIsSyncEmulateEGL(GLsync sync) {
   return true;
 }
 
-#if defined(OS_MACOSX)
+#if defined(OS_APPLE)
 std::map<GLuint, base::TimeTicks>& GetProgramCreateTimesMap() {
   static base::NoDestructor<std::map<GLuint, base::TimeTicks>> instance;
   return *instance.get();
@@ -136,7 +136,7 @@ template <bool droppable_call = false, typename R, typename... Args>
 GrGLFunction<R GR_GL_FUNCTION_TYPE(Args...)> bind_slow_on_mac(
     R(GL_BINDING_CALL* func)(Args...),
     gl::ProgressReporter* progress_reporter) {
-#if defined(OS_MACOSX)
+#if defined(OS_APPLE)
   if (!progress_reporter) {
     return maybe_drop_call<droppable_call>(func);
   }
@@ -154,7 +154,7 @@ GrGLFunction<R GR_GL_FUNCTION_TYPE(Args...)> bind_slow_on_mac(
 template <bool droppable_call = false, typename R, typename... Args>
 GrGLFunction<R GR_GL_FUNCTION_TYPE(Args...)> bind_with_flush_on_mac(
     R(GL_BINDING_CALL* func)(Args...)) {
-#if defined(OS_MACOSX)
+#if defined(OS_APPLE)
   return [func](Args... args) {
     // Conditional may be optimized out because droppable_call is set at compile
     // time.
@@ -312,7 +312,7 @@ sk_sp<GrGLInterface> CreateGrGLInterface(
       bind_slow(gl->glCompressedTexSubImage2DFn, progress_reporter);
   functions->fCopyTexSubImage2D =
       bind_slow(gl->glCopyTexSubImage2DFn, progress_reporter);
-#if defined(OS_MACOSX)
+#if defined(OS_APPLE)
   functions->fCreateProgram = [func = gl->glCreateProgramFn]() {
     auto& program_create_times = GetProgramCreateTimesMap();
     GLuint program = func();
@@ -326,7 +326,7 @@ sk_sp<GrGLInterface> CreateGrGLInterface(
   functions->fCullFace = gl->glCullFaceFn;
   functions->fDeleteBuffers =
       bind_slow(gl->glDeleteBuffersARBFn, progress_reporter);
-#if defined(OS_MACOSX)
+#if defined(OS_APPLE)
   functions->fDeleteProgram = [func = gl->glDeleteProgramFn](GLuint program) {
     auto& program_create_times = GetProgramCreateTimesMap();
     program_create_times.erase(program);
@@ -396,7 +396,7 @@ sk_sp<GrGLInterface> CreateGrGLInterface(
   functions->fGetQueryiv = gl->glGetQueryivFn;
   functions->fGetProgramBinary = gl->glGetProgramBinaryFn;
   functions->fGetProgramInfoLog = gl->glGetProgramInfoLogFn;
-#if defined(OS_MACOSX)
+#if defined(OS_APPLE)
   functions->fGetProgramiv = [func = gl->glGetProgramivFn](
                                  GLuint program, GLenum pname, GLint* params) {
     func(program, pname, params);

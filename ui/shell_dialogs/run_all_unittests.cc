@@ -12,7 +12,7 @@
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/base/ui_base_paths.h"
 
-#if defined(OS_MACOSX)
+#if defined(OS_APPLE)
 #include "base/test/mock_chrome_application_mac.h"
 #endif
 
@@ -37,7 +37,7 @@ ShellDialogsTestSuite::ShellDialogsTestSuite(int argc, char** argv)
 void ShellDialogsTestSuite::Initialize() {
   base::TestSuite::Initialize();
 
-#if defined(OS_MACOSX)
+#if defined(OS_APPLE)
   mock_cr_app::RegisterMockCrApp();
 #endif
 

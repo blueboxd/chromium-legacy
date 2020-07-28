@@ -2418,7 +2418,7 @@ static_library("ui") {
       "webui/signin/inline_login_handler_modal_delegate.h",
       "webui/version_handler_chromeos.cc",
       "webui/version_handler_chromeos.h",
-      "window_sizer/window_sizer_ash.cc",
+      "window_sizer/window_sizer_chromeos.cc",
     ]
 
     deps += [

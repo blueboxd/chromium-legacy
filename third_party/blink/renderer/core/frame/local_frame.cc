@@ -182,7 +182,7 @@
 #include "ui/gfx/geometry/rect_f.h"
 #include "ui/gfx/transform.h"
 
-#if defined(OS_MACOSX)
+#if defined(OS_APPLE)
 #include "third_party/blink/renderer/core/editing/ephemeral_range.h"
 #include "third_party/blink/renderer/core/editing/substring_util.h"
 #include "third_party/blink/renderer/platform/fonts/mac/attributed_string_type_converter.h"
@@ -216,7 +216,7 @@ inline float ParentTextZoomFactor(LocalFrame* frame) {
   return parent_local_frame ? parent_local_frame->TextZoomFactor() : 1;
 }
 
-#if defined(OS_MACOSX)
+#if defined(OS_APPLE)
 uint32_t GetCurrentCursorPositionInFrame(LocalFrame* local_frame) {
   blink::WebRange range =
       WebLocalFrameImpl::FromFrame(local_frame)->SelectionRange();
@@ -434,7 +434,7 @@ void LocalFrame::Trace(Visitor* visitor) const {
   visitor->Trace(virtual_keyboard_overlay_changed_observers_);
   visitor->Trace(pause_handle_receivers_);
   visitor->Trace(reporting_service_);
-#if defined(OS_MACOSX)
+#if defined(OS_APPLE)
   visitor->Trace(text_input_host_);
 #endif
   visitor->Trace(local_frame_host_remote_);
@@ -1287,7 +1287,7 @@ LocalFrame::LocalFrame(LocalFrameClient* client,
   Initialize();
 
   probe::FrameAttachedToParent(this);
-#if defined(OS_MACOSX)
+#if defined(OS_APPLE)
   // It should be bound before accessing TextInputHost which is the interface to
   // respond to GetCharacterIndexAtPoint.
   GetBrowserInterfaceBroker().GetInterface(
@@ -2338,7 +2338,7 @@ void LocalFrame::ZoomToFindInPageRect(const gfx::Rect& rect_in_root_frame) {
       WebRect(rect_in_root_frame));
 }
 
-#if defined(OS_MACOSX)
+#if defined(OS_APPLE)
 void LocalFrame::GetCharacterIndexAtPoint(const gfx::Point& point) {
   HitTestLocation location(View()->ViewportToFrame(IntPoint(point)));
   HitTestResult result = GetEventHandler().HitTestResultAtLocation(
@@ -2969,7 +2969,7 @@ bool LocalFrame::ShouldThrottleDownload() {
   return false;
 }
 
-#if defined(OS_MACOSX)
+#if defined(OS_APPLE)
 mojom::blink::TextInputHost& LocalFrame::GetTextInputHost() {
   DCHECK(text_input_host_.is_bound());
   return *text_input_host_.get();

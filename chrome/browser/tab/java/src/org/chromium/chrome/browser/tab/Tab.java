@@ -271,4 +271,12 @@ public interface Tab extends TabLifecycle {
      * Goes to the navigation entry after the current one.
      */
     void goForward();
+
+    /**
+     * Set whether the TabState representing this Tab has been updated.
+     * This method will ultimately be deprecated when the migration
+     * to CriticalPersistedTabData is complete.
+     * @param isDirty Whether the Tab's state has changed.
+     */
+    void setIsTabStateDirty(boolean isTabStateDirty);
 }

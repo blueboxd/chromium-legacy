@@ -22,7 +22,7 @@ namespace content {
 WorkerScriptLoader::WorkerScriptLoader(
     int process_id,
     const blink::DedicatedWorkerToken& dedicated_worker_token,
-    SharedWorkerId shared_worker_id,
+    const blink::SharedWorkerToken& shared_worker_token,
     int32_t routing_id,
     int32_t request_id,
     uint32_t options,
@@ -52,7 +52,7 @@ WorkerScriptLoader::WorkerScriptLoader(
   auto service_worker_interceptor =
       ServiceWorkerMainResourceLoaderInterceptor::CreateForWorker(
           resource_request_, process_id, dedicated_worker_token,
-          shared_worker_id, service_worker_handle_);
+          shared_worker_token, service_worker_handle_);
 
   if (service_worker_interceptor)
     interceptors_.push_back(std::move(service_worker_interceptor));

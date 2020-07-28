@@ -528,7 +528,7 @@ TEST(URLFixerTest, FixupFile) {
   };
 #elif defined(OS_POSIX) || defined(OS_FUCHSIA)
 
-#if defined(OS_MACOSX)
+#if defined(OS_APPLE)
 #define HOME "/Users/"
 #else
 #define HOME "/home/"

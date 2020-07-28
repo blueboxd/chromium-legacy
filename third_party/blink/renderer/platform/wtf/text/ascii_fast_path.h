@@ -30,7 +30,7 @@
 #include "third_party/blink/renderer/platform/wtf/text/ascii_ctype.h"
 #include "third_party/blink/renderer/platform/wtf/text/unicode.h"
 
-#if defined(OS_MACOSX) && defined(ARCH_CPU_X86_FAMILY)
+#if defined(OS_APPLE) && defined(ARCH_CPU_X86_FAMILY)
 #include <emmintrin.h>
 #endif
 
@@ -194,7 +194,7 @@ ALWAYS_INLINE typename Allocator::ResultStringType ConvertASCIICase(
 inline void CopyLCharsFromUCharSource(LChar* destination,
                                       const UChar* source,
                                       size_t length) {
-#if defined(OS_MACOSX) && defined(ARCH_CPU_X86_FAMILY)
+#if defined(OS_APPLE) && defined(ARCH_CPU_X86_FAMILY)
   const uintptr_t kMemoryAccessSize =
       16;  // Memory accesses on 16 byte (128 bit) alignment
   const uintptr_t kMemoryAccessMask = kMemoryAccessSize - 1;

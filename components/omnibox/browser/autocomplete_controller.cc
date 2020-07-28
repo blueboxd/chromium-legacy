@@ -197,7 +197,7 @@ void AppendAvailableAutocompletion(size_t type,
   std::ostringstream subtype_str;
   for (auto subtype : subtypes) {
     if (subtype_str.tellp() > 0)
-      subtype_str << '.';
+      subtype_str << 'i';
     subtype_str << subtype;
   }
 

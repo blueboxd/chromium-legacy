@@ -692,17 +692,6 @@ Deque<T, inlineCapacity, Allocator>::Trace(VisitorDispatcher visitor) const {
                 "Garbage collector must be enabled.");
   const T* buffer = buffer_.BufferSafe();
 
-  // Bail out for concurrent marking.
-  if (!VectorTraits<T>::kCanTraceConcurrently && buffer) {
-    if (visitor->DeferredTraceIfConcurrent(
-            {this,
-             [](blink::Visitor* visitor, const void* object) {
-               reinterpret_cast<const Deque*>(object)->Trace(visitor);
-             }},
-            sizeof(Deque)))
-      return;
-  }
-
   DCHECK(!buffer || buffer_.IsOutOfLineBuffer(buffer));
   Allocator::TraceVectorBacking(visitor, buffer, buffer_.BufferSlot());
 }

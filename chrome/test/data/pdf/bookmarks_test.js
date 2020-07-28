@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 import {PDFScriptingAPI} from 'chrome-extension://mhjfbmdgcfjbbpaeojofohoefgiehjai/pdf_scripting_api.js';
+import {PDFViewerElement} from 'chrome-extension://mhjfbmdgcfjbbpaeojofohoefgiehjai/pdf_viewer.js';
 import {flush} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
 
 import {createBookmarksForTest} from './test_util.js';
@@ -13,6 +14,8 @@ const tests = [
    * test-bookmarks-with-zoom.pdf.
    */
   function testHasCorrectBookmarks() {
+    const viewer = /** @type {!PDFViewerElement} */ (
+        document.body.querySelector('#viewer'));
     const bookmarks = viewer.bookmarks;
 
     // Load all relevant bookmarks.
@@ -62,21 +65,23 @@ const tests = [
    * test-bookmarks-with-zoom.pdf.
    */
   function testFollowBookmark() {
+    const viewer = /** @type {!PDFViewerElement} */ (
+        document.body.querySelector('#viewer'));
     const bookmarkContent = createBookmarksForTest();
     bookmarkContent.bookmarks = viewer.bookmarks;
     document.body.appendChild(bookmarkContent);
 
     flush();
 
-    const rootBookmarks =
-        bookmarkContent.shadowRoot.querySelectorAll('viewer-bookmark');
+    const rootBookmarks = /** @type {!NodeList<!ViewerBookmarkElement>} */ (
+        bookmarkContent.shadowRoot.querySelectorAll('viewer-bookmark'));
     chrome.test.assertEq(3, rootBookmarks.length, 'three root bookmarks');
     rootBookmarks[0].$.expand.click();
 
     flush();
 
-    const subBookmarks =
-        rootBookmarks[0].shadowRoot.querySelectorAll('viewer-bookmark');
+    const subBookmarks = /** @type {!NodeList<!ViewerBookmarkElement>} */ (
+        rootBookmarks[0].shadowRoot.querySelectorAll('viewer-bookmark'));
     chrome.test.assertEq(1, subBookmarks.length, 'one sub bookmark');
 
     let lastPageChange;
@@ -106,6 +111,16 @@ const tests = [
       lastUriNavigation = e.detail.uri;
     });
 
+    /**
+     * @param {!HTMLElement} tapTarget
+     * @param {!{
+     *   page: (number|undefined),
+     *   uri: (string|undefined),
+     *   x: (number|undefined),
+     *   y: (number|undefined),
+     *   zoom: (number|undefined)
+     * }} expectedEvent
+     */
     function testTapTarget(tapTarget, expectedEvent) {
       lastPageChange = undefined;
       lastXChange = undefined;

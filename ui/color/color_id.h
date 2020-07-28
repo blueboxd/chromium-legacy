@@ -168,7 +168,7 @@
   E(kColorNativeWindowText, COLOR_WINDOWTEXT)
 #endif
 
-#if defined(OS_MACOSX)
+#if defined(OS_APPLE)
 #define MACOSX_COLOR_IDS \
   E(kColorTableBackgroundAlternate, \
     NativeTheme::kColorId_TableBackgroundAlternate)
@@ -178,7 +178,7 @@
 #define COLOR_IDS \
   CROSS_PLATFORM_COLOR_IDS \
   WIN_COLOR_IDS
-#elif defined(OS_MACOSX)
+#elif defined(OS_APPLE)
 #define COLOR_IDS \
   CROSS_PLATFORM_COLOR_IDS \
   MACOSX_COLOR_IDS

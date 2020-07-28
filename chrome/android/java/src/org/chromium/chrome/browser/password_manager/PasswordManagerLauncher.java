@@ -5,6 +5,7 @@
 package org.chromium.chrome.browser.password_manager;
 
 import android.app.Activity;
+import android.os.Bundle;
 
 import com.google.android.gms.common.ConnectionResult;
 
@@ -30,6 +31,11 @@ import java.lang.ref.WeakReference;
  * Bridge between Java and native PasswordManager code.
  */
 public class PasswordManagerLauncher {
+    // Key for the argument with which PasswordsSettings will be launched. The value for
+    // this argument should be part of the ManagePasswordsReferrer enum, which contains
+    // all points of entry to the passwords settings.
+    public static final String MANAGE_PASSWORDS_REFERRER = "manage-passwords-referrer";
+
     private static final String GOOGLE_ACCOUNT_PWM_UI = "google-password-manager";
 
     // Name of the parameter for the google-password-manager feature, used to override the default
@@ -63,7 +69,9 @@ public class PasswordManagerLauncher {
         }
 
         SettingsLauncher settingsLauncher = new SettingsLauncherImpl();
-        settingsLauncher.launchSettingsActivity(activity, PasswordSettings.class);
+        Bundle fragmentArgs = new Bundle();
+        fragmentArgs.putInt(MANAGE_PASSWORDS_REFERRER, referrer);
+        settingsLauncher.launchSettingsActivity(activity, PasswordSettings.class, fragmentArgs);
     }
 
     @CalledByNative

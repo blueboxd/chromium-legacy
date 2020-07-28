@@ -713,3 +713,7 @@ base::string16 DownloadUIModel::GetInProgressStatusString() const {
 #if BUILDFLAG(FULL_SAFE_BROWSING)
 void DownloadUIModel::CompleteSafeBrowsingScan() {}
 #endif
+
+bool DownloadUIModel::ShouldShowDropdown() const {
+  return true;
+}

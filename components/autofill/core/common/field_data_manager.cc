@@ -13,6 +13,7 @@ FieldDataManager::FieldDataManager() = default;
 
 void FieldDataManager::ClearData() {
   field_value_and_properties_map_.clear();
+  autofilled_values_map_.clear();
 }
 
 bool FieldDataManager::HasFieldData(FieldRendererId id) const {
@@ -94,6 +95,9 @@ void FieldDataManager::UpdateFieldDataWithAutofilledValue(
     FieldRendererId id,
     const base::string16& value,
     FieldPropertiesMask mask) {
+  // Typed value has no interest once it is rewritten with an autofilled value.
+  if (HasFieldData(id))
+    field_value_and_properties_map_.at(id).first.reset();
   UpdateFieldDataMapWithNullValue(id, mask);
   autofilled_values_map_[id] = value;
 }

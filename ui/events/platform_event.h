@@ -9,7 +9,7 @@
 
 #if defined(OS_WIN)
 #include <windows.h>
-#elif defined(OS_MACOSX)
+#elif defined(OS_APPLE)
 #if defined(__OBJC__)
 @class NSEvent;
 #else   // __OBJC__
@@ -28,7 +28,7 @@ namespace ui {
 using PlatformEvent = ui::Event*;
 #elif defined(OS_WIN)
 using PlatformEvent = MSG;
-#elif defined(OS_MACOSX)
+#elif defined(OS_APPLE)
 using PlatformEvent = NSEvent*;
 #else
 using PlatformEvent = void*;

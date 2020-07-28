@@ -289,4 +289,18 @@ public class PlayerFrameBitmapState {
             mPendingBitmapRequests[mRequestRow][mRequestCol] = false;
         }
     }
+
+    @VisibleForTesting
+    public boolean checkRequiredBitmapsLoadedForTest() {
+        if (mBitmapMatrix == null || mRequiredBitmaps == null) return false;
+
+        for (int row = 0; row < mBitmapMatrix.length; row++) {
+            for (int col = 0; col < mBitmapMatrix[0].length; col++) {
+                if (mRequiredBitmaps[row][col] && mBitmapMatrix[row][col] == null) {
+                    return false;
+                }
+            }
+        }
+        return true;
+    }
 }

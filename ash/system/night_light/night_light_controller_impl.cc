@@ -989,6 +989,14 @@ void NightLightControllerImpl::OnEnabledPrefChanged() {
   VLOG(1) << "Enable state changed. New state: " << enabled << ".";
   DCHECK(active_user_pref_service_);
 
+  // When there's no valid geolocation, the default sunset/sunrise times are
+  // used, which could lead to Auto Night Light turning on briefly until a valid
+  // geolocation is received. At that point, the Notification will be stale, and
+  // needs to be removed. It doesn't hurt to remove it always, before we update
+  // its state. https://crbug.com/1106586.
+  message_center::MessageCenter::Get()->RemoveNotification(kNotificationId,
+                                                           /*by_user=*/false);
+
   if (enabled && features::IsAutoNightLightEnabled() &&
       GetScheduleType() == kSunsetToSunrise &&
       (is_first_user_init_ ||

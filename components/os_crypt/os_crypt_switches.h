@@ -13,7 +13,7 @@
 namespace os_crypt {
 namespace switches {
 
-#if defined(OS_MACOSX)
+#if defined(OS_APPLE)
 
 // Uses mock keychain for testing purposes, which prevents blocking dialogs
 // from causing timeouts.

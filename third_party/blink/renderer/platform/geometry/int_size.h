@@ -37,7 +37,7 @@
 #include "ui/gfx/geometry/size.h"
 #include "ui/gfx/geometry/vector2d.h"
 
-#if defined(OS_MACOSX)
+#if defined(OS_APPLE)
 typedef struct CGSize CGSize;
 
 #ifdef __OBJC__
@@ -110,7 +110,7 @@ class PLATFORM_EXPORT IntSize {
 
   IntSize TransposedSize() const { return IntSize(height_, width_); }
 
-#if defined(OS_MACOSX)
+#if defined(OS_APPLE)
   explicit IntSize(const CGSize&);
   explicit operator CGSize() const;
 #endif

@@ -247,12 +247,12 @@ sk_sp<SkTypeface> FontCache::CreateTypeface(
       name.c_str(), font_description.SkiaFontStyle());
 }
 
-#if !defined(OS_MACOSX)
+#if !defined(OS_APPLE)
 std::vector<FontEnumerationEntry> FontCache::EnumeratePlatformAvailableFonts() {
   NOTIMPLEMENTED();
   return std::vector<FontEnumerationEntry>();
 }
-#endif  // !defined(OS_MACOSX)
+#endif  // !defined(OS_APPLE)
 
 #if !defined(OS_WIN)
 std::unique_ptr<FontPlatformData> FontCache::CreateFontPlatformData(

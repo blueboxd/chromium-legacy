@@ -51,12 +51,9 @@ bool CodecBufferWaitCoordinator::IsExpectingFrameAvailable() {
 void CodecBufferWaitCoordinator::WaitForFrameAvailable() {
   DCHECK(!release_time_.is_null());
 
-  // 5msec covers >99.9% of cases, so just wait for up to that much before
-  // giving up. If an error occurs, we might not ever get a notification.
-  const base::TimeDelta max_wait = base::TimeDelta::FromMilliseconds(5);
   const base::TimeTicks call_time = base::TimeTicks::Now();
   const base::TimeDelta elapsed = call_time - release_time_;
-  const base::TimeDelta remaining = max_wait - elapsed;
+  const base::TimeDelta remaining = max_wait_.value() - elapsed;
   release_time_ = base::TimeTicks();
   bool timed_out = false;
 
@@ -67,7 +64,7 @@ void CodecBufferWaitCoordinator::WaitForFrameAvailable() {
       timed_out = true;
     }
   } else {
-    DCHECK_LE(remaining, max_wait);
+    DCHECK_LE(remaining, max_wait_.value());
     SCOPED_UMA_HISTOGRAM_TIMER(
         "Media.CodecImage.CodecBufferWaitCoordinator.WaitTimeForFrame");
     if (!frame_available_event_->event.TimedWait(remaining)) {

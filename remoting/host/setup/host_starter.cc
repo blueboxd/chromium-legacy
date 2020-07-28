@@ -184,7 +184,7 @@ void HostStarter::StartHostProcess() {
   config->SetString("host_secret_hash", host_secret_hash);
   daemon_controller_->SetConfigAndStart(
       std::move(config), consent_to_data_collection_,
-      base::Bind(&HostStarter::OnHostStarted, base::Unretained(this)));
+      base::BindOnce(&HostStarter::OnHostStarted, base::Unretained(this)));
 }
 
 void HostStarter::OnHostStarted(DaemonController::AsyncResult result) {

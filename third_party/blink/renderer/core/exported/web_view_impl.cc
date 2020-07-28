@@ -434,7 +434,7 @@ void WebViewImpl::HandleMouseDown(LocalFrame& main_frame,
 
   // Dispatch the contextmenu event regardless of if the click was swallowed.
   if (!GetPage()->GetSettings().GetShowContextMenuOnMouseUp()) {
-#if defined(OS_MACOSX)
+#if defined(OS_APPLE)
     if (event.button == WebMouseEvent::Button::kRight ||
         (event.button == WebMouseEvent::Button::kLeft &&
          event.GetModifiers() & WebMouseEvent::kControlKey))
@@ -780,7 +780,7 @@ WebInputEventResult WebViewImpl::HandleKeyEvent(const WebKeyboardEvent& event) {
     return result;
   }
 
-#if !defined(OS_MACOSX)
+#if !defined(OS_APPLE)
   const WebInputEvent::Type kContextMenuKeyTriggeringEventType =
 #if defined(OS_WIN)
       WebInputEvent::Type::kKeyUp;
@@ -802,7 +802,7 @@ WebInputEventResult WebViewImpl::HandleKeyEvent(const WebKeyboardEvent& event) {
     SendContextMenuEvent();
     return WebInputEventResult::kHandledSystem;
   }
-#endif  // !defined(OS_MACOSX)
+#endif  // !defined(OS_APPLE)
 
   return WebInputEventResult::kNotHandled;
 }
@@ -1135,7 +1135,7 @@ void WebViewImpl::ZoomToFindInPageRect(const WebRect& rect_in_root_frame) {
   StartPageScaleAnimation(scroll, false, scale, kFindInPageAnimationDuration);
 }
 
-#if !defined(OS_MACOSX)
+#if !defined(OS_APPLE)
 // Mac has no way to open a context menu based on a keyboard event.
 WebInputEventResult WebViewImpl::SendContextMenuEvent() {
   // The contextMenuController() holds onto the last context menu that was
@@ -1166,21 +1166,6 @@ WebInputEventResult WebViewImpl::SendContextMenuEvent() {
   return WebInputEventResult::kNotHandled;
 }
 #endif
-
-void WebViewImpl::ShowContextMenuForElement(WebElement element) {
-  if (!GetPage())
-    return;
-
-  GetPage()->GetContextMenuController().ClearContextMenu();
-  {
-    ContextMenuAllowedScope scope;
-    if (LocalFrame* focused_frame = To<LocalFrame>(
-            GetPage()->GetFocusController().FocusedOrMainFrame())) {
-      focused_frame->GetEventHandler().ShowNonLocatedContextMenu(
-          element.Unwrap<Element>());
-    }
-  }
-}
 
 WebPagePopupImpl* WebViewImpl::OpenPagePopup(PagePopupClient* client) {
   DCHECK(client);

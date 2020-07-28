@@ -50,7 +50,7 @@ ScriptContext* ScriptContextSet::Register(
       extension, world_id, frame_url, frame->GetDocument().GetSecurityOrigin());
   Feature::Context effective_context_type = ClassifyJavaScriptContext(
       effective_extension, world_id,
-      ScriptContext::GetEffectiveDocumentURL(frame, frame_url, true),
+      ScriptContext::GetEffectiveDocumentURLForContext(frame, frame_url, true),
       frame->GetDocument().GetSecurityOrigin());
 
   ScriptContext* context =
@@ -154,8 +154,8 @@ const Extension* ScriptContextSet::GetExtensionFromFrameAndWorld(
     // an about:blank script context that is scriptable by their parent/opener
     // before they finish navigating.
     GURL frame_url = ScriptContext::GetAccessCheckedFrameURL(frame);
-    frame_url = ScriptContext::GetEffectiveDocumentURL(frame, frame_url,
-                                                       use_effective_url);
+    frame_url = ScriptContext::GetEffectiveDocumentURLForContext(
+        frame, frame_url, use_effective_url);
     extension_id =
         RendererExtensionRegistry::Get()->GetExtensionOrAppIDByURL(frame_url);
   }

@@ -69,13 +69,14 @@ class IssueManager {
   // will require adding support for delayed tasks to CancelableTaskTracker.
   struct Entry {
     Entry(const Issue& issue,
-          std::unique_ptr<base::CancelableClosure> cancelable_dismiss_callback);
+          std::unique_ptr<base::CancelableOnceClosure>
+              cancelable_dismiss_callback);
     ~Entry();
 
     Issue issue;
 
     // Set to non-null if |issue| can be auto-dismissed.
-    std::unique_ptr<base::CancelableClosure> cancelable_dismiss_callback;
+    std::unique_ptr<base::CancelableOnceClosure> cancelable_dismiss_callback;
 
    private:
     DISALLOW_COPY_AND_ASSIGN(Entry);

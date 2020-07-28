@@ -211,9 +211,6 @@ public class ToolbarSceneLayer extends SceneOverlayLayer implements SceneOverlay
     }
 
     @Override
-    public void onHideLayout() {}
-
-    @Override
     public boolean handlesTabCreating() {
         return false;
     }

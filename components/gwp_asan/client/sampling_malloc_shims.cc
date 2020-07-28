@@ -21,7 +21,7 @@
 #include "components/gwp_asan/client/sampling_state.h"
 #include "components/gwp_asan/common/crash_key_name.h"
 
-#if defined(OS_MACOSX)
+#if defined(OS_APPLE)
 #include <pthread.h>
 #endif
 

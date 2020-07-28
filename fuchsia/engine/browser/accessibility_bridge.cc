@@ -12,8 +12,6 @@
 #include "fuchsia/engine/browser/ax_tree_converter.h"
 #include "ui/accessibility/ax_action_data.h"
 
-using fuchsia::accessibility::semantics::SemanticTree;
-
 namespace {
 
 constexpr uint32_t kSemanticNodeRootId = 0;
@@ -27,7 +25,8 @@ constexpr size_t kMaxNodesPerUpdate = 16;
 AccessibilityBridge::AccessibilityBridge(
     fuchsia::accessibility::semantics::SemanticsManagerPtr semantics_manager,
     fuchsia::ui::views::ViewRef view_ref,
-    content::WebContents* web_contents)
+    content::WebContents* web_contents,
+    base::OnceCallback<void(zx_status_t)> on_disconnect_callback)
     : binding_(this), web_contents_(web_contents) {
   DCHECK(web_contents_);
   Observe(web_contents_);
@@ -35,10 +34,12 @@ AccessibilityBridge::AccessibilityBridge(
 
   semantics_manager->RegisterViewForSemantics(
       std::move(view_ref), binding_.NewBinding(), tree_ptr_.NewRequest());
-  tree_ptr_.set_error_handler([](zx_status_t status) {
-    ZX_LOG_IF(ERROR, status != ZX_ERR_PEER_CLOSED, status)
-        << "Semantic Tree disconnected.";
-  });
+  tree_ptr_.set_error_handler(
+      [disconnect_callback =
+           std::move(on_disconnect_callback)](zx_status_t status) mutable {
+        ZX_LOG(ERROR, status) << "SemanticTree disconnected";
+        std::move(disconnect_callback).Run(ZX_ERR_INTERNAL);
+      });
 }
 
 AccessibilityBridge::~AccessibilityBridge() {

@@ -53,7 +53,7 @@ Slider::Slider(SliderListener* listener)
       pending_accessibility_value_change_(false) {
   highlight_animation_.SetSlideDuration(base::TimeDelta::FromMilliseconds(150));
   EnableCanvasFlippingForRTLUI(true);
-#if defined(OS_MACOSX)
+#if defined(OS_APPLE)
   SetFocusBehavior(FocusBehavior::ACCESSIBLE_ONLY);
 #else
   SetFocusBehavior(FocusBehavior::ALWAYS);

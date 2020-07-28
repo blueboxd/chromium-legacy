@@ -23,7 +23,7 @@ namespace {
 GCMClient::ChromePlatform GetPlatform() {
 #if defined(OS_WIN)
   return GCMClient::PLATFORM_WIN;
-#elif defined(OS_MACOSX)
+#elif defined(OS_APPLE)
   return GCMClient::PLATFORM_MAC;
 #elif defined(OS_IOS)
   return GCMClient::PLATFORM_IOS;

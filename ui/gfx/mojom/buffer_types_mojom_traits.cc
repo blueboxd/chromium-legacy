@@ -40,7 +40,7 @@ gfx::mojom::GpuMemoryBufferPlatformHandlePtr StructTraits<
       break;
 #endif
     case gfx::IO_SURFACE_BUFFER:
-#if defined(OS_MACOSX) && !defined(OS_IOS)
+#if defined(OS_MAC)
       return gfx::mojom::GpuMemoryBufferPlatformHandle::NewMachPort(
           mojo::PlatformHandle(
               base::mac::RetainMachSendRight(handle.mach_port.get())));
@@ -116,7 +116,7 @@ bool StructTraits<gfx::mojom::GpuMemoryBufferHandleDataView,
       out->native_pixmap_handle =
           std::move(platform_handle->get_native_pixmap_handle());
       return true;
-#elif defined(OS_MACOSX) && !defined(OS_IOS)
+#elif defined(OS_MAC)
     case gfx::mojom::GpuMemoryBufferPlatformHandleDataView::Tag::MACH_PORT: {
       out->type = gfx::IO_SURFACE_BUFFER;
       if (!platform_handle->get_mach_port().is_mach_send())

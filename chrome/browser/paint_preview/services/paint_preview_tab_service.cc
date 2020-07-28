@@ -227,7 +227,7 @@ void PaintPreviewTabService::CaptureTabInternal(
     return;
   }
   CapturePaintPreview(
-      contents, file_path.value(), gfx::Rect(), kMaxPerCaptureSizeBytes,
+      contents, file_path.value(), gfx::Rect(), true, kMaxPerCaptureSizeBytes,
       base::BindOnce(&PaintPreviewTabService::OnCaptured,
                      weak_ptr_factory_.GetWeakPtr(), tab_id, key,
                      frame_tree_node_id, std::move(callback)));

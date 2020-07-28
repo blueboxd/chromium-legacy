@@ -154,7 +154,8 @@ class FragmentPaintPropertyTreeBuilder {
         full_context_(full_context),
         context_(context),
         fragment_data_(fragment_data),
-        properties_(fragment_data.PaintProperties()) {}
+        properties_(fragment_data.PaintProperties()),
+        was_layout_shift_root_(IsLayoutShiftRoot()) {}
 
   ~FragmentPaintPropertyTreeBuilder() {
     if (property_changed_ >= PaintPropertyChangeType::kNodeAddedOrRemoved) {
@@ -266,6 +267,17 @@ class FragmentPaintPropertyTreeBuilder {
                                                  namespace_id);
   }
 
+  bool IsLayoutShiftRoot() const {
+    if (!properties_)
+      return false;
+    return IsA<LayoutView>(object_) || properties_->Perspective() ||
+           (properties_->Transform() &&
+            !properties_->Transform()->IsIdentityOr2DTranslation()) ||
+           properties_->ScrollTranslation() ||
+           properties_->ReplacedContentTransform() ||
+           properties_->TransformIsolationNode();
+  }
+
   const LayoutObject& object_;
   NGPrePaintInfo* pre_paint_info_;
   // The tree builder context for the whole object.
@@ -277,6 +289,7 @@ class FragmentPaintPropertyTreeBuilder {
   ObjectPaintProperties* properties_;
   PaintPropertyChangeType property_changed_ =
       PaintPropertyChangeType::kUnchanged;
+  bool was_layout_shift_root_;
 };
 
 // True if a scroll translation is needed for static scroll offset (e.g.,
@@ -539,7 +552,7 @@ void FragmentPaintPropertyTreeBuilder::UpdatePaintOffsetTranslation(
       context_.fixed_position.transform = properties_->PaintOffsetTranslation();
     }
 
-    context_.current.offset_to_2d_translation_root +=
+    context_.current.additional_offset_to_layout_shift_root_delta +=
         PhysicalOffset(*paint_offset_translation);
   } else {
     OnClear(properties_->ClearPaintOffsetTranslation());
@@ -635,8 +648,6 @@ void FragmentPaintPropertyTreeBuilder::UpdateStickyTranslation() {
 
       OnUpdate(properties_->UpdateStickyTranslation(*context_.current.transform,
                                                     std::move(state)));
-      context_.current.offset_to_2d_translation_root +=
-          box_model.StickyPositionOffset();
     } else {
       OnClear(properties_->ClearStickyTranslation());
     }
@@ -817,10 +828,6 @@ void FragmentPaintPropertyTreeBuilder::UpdateTransform() {
   DCHECK(properties_);
 
   if (NeedsPaintPropertyUpdate()) {
-    bool was_identity_or_2d_translation = true;
-    if (auto* transform = properties_->Transform())
-      was_identity_or_2d_translation = transform->IsIdentityOr2DTranslation();
-
     const ComputedStyle& style = object_.StyleRef();
     // A transform node is allocated for transforms, preserves-3d and any
     // direct compositing reason. The latter is required because this is the
@@ -902,21 +909,6 @@ void FragmentPaintPropertyTreeBuilder::UpdateTransform() {
         }
       }
       OnUpdate(effective_change_type);
-      bool is_identity_or_2d_translation =
-          properties_->Transform()->IsIdentityOr2DTranslation();
-      if (is_identity_or_2d_translation) {
-        context_.current.offset_to_2d_translation_root +=
-            PhysicalOffset::FromFloatSizeRound(
-                properties_->Transform()->Translation2D());
-      } else {
-        context_.current.offset_to_2d_translation_root = PhysicalOffset();
-      }
-      if (was_identity_or_2d_translation != is_identity_or_2d_translation) {
-        // A change of identity or 2d translation affects
-        // offset_to_2d_translation_root for descendants also.
-        full_context_.force_subtree_update_reasons |=
-            PaintPropertyTreeBuilderContext::kSubtreeUpdateIsolationPiercing;
-      }
     } else {
       OnClear(properties_->ClearTransform());
     }
@@ -1790,7 +1782,6 @@ void FragmentPaintPropertyTreeBuilder::UpdatePerspective() {
       state.rendering_context_id = context_.current.rendering_context_id;
       OnUpdate(properties_->UpdatePerspective(*context_.current.transform,
                                               std::move(state)));
-      context_.current.offset_to_2d_translation_root = PhysicalOffset();
     } else {
       OnClear(properties_->ClearPerspective());
     }
@@ -1847,13 +1838,6 @@ void FragmentPaintPropertyTreeBuilder::UpdateReplacedContentTransform() {
           context_.current.should_flatten_inherited_transform;
       OnUpdate(properties_->UpdateReplacedContentTransform(
           *context_.current.transform, std::move(state)));
-      if (content_to_parent_space.IsIdentityOrTranslation()) {
-        context_.current.offset_to_2d_translation_root +=
-            PhysicalOffset::FromFloatSizeRound(
-                properties_->ReplacedContentTransform()->Translation2D());
-      } else {
-        context_.current.offset_to_2d_translation_root = PhysicalOffset();
-      }
     } else {
       OnClear(properties_->ClearReplacedContentTransform());
     }
@@ -2077,7 +2061,6 @@ void FragmentPaintPropertyTreeBuilder::UpdateScrollAndScrollTranslation() {
         }
       }
       OnUpdate(effective_change_type);
-      context_.current.offset_to_2d_translation_root = PhysicalOffset();
     } else {
       OnClear(properties_->ClearScrollTranslation());
     }
@@ -2690,8 +2673,14 @@ void FragmentPaintPropertyTreeBuilder::UpdateForSelf() {
   }
   UpdateLocalBorderBoxContext();
 
-  if (IsA<LayoutView>(object_))
-    context_.current.offset_to_2d_translation_root = PhysicalOffset();
+  // For LayoutView, additional_offset_to_layout_shift_root_delta applies to
+  // neither itself nor descendants. For other layout shift roots, we clear the
+  // delta at the end of UpdateForChildren() because the delta still applies to
+  // the object itself.
+  if (IsA<LayoutView>(object_)) {
+    context_.current.additional_offset_to_layout_shift_root_delta =
+        PhysicalOffset();
+  }
 }
 
 void FragmentPaintPropertyTreeBuilder::UpdateForChildren() {
@@ -2717,6 +2706,17 @@ void FragmentPaintPropertyTreeBuilder::UpdateForChildren() {
   }
   UpdateOutOfFlowContext();
 
+  bool is_layout_shift_root = IsLayoutShiftRoot();
+  if (was_layout_shift_root_ || is_layout_shift_root) {
+    context_.current.additional_offset_to_layout_shift_root_delta =
+        PhysicalOffset();
+  }
+
+  if (is_layout_shift_root != was_layout_shift_root_)
+    context_.current.layout_shift_root_changed = true;
+  else if (is_layout_shift_root && was_layout_shift_root_)
+    context_.current.layout_shift_root_changed = false;
+
 #if DCHECK_IS_ON()
   if (properties_)
     properties_->Validate();
@@ -2727,7 +2727,20 @@ void FragmentPaintPropertyTreeBuilder::UpdateForChildren() {
 
 void PaintPropertyTreeBuilder::InitFragmentPaintProperties(
     FragmentData& fragment,
-    bool needs_paint_properties) {
+    bool needs_paint_properties,
+    PaintPropertyTreeBuilderFragmentContext& context) {
+  if (const auto* properties = fragment.PaintProperties()) {
+    if (const auto* translation = properties->PaintOffsetTranslation()) {
+      auto* containing_block_context = &context.current;
+      if (object_.StyleRef().GetPosition() == EPosition::kAbsolute)
+        containing_block_context = &context.absolute_position;
+      else if (object_.StyleRef().GetPosition() == EPosition::kFixed)
+        containing_block_context = &context.fixed_position;
+      containing_block_context->additional_offset_to_layout_shift_root_delta -=
+          PhysicalOffset::FromFloatSizeRound(translation->Translation2D());
+    }
+  }
+
   if (needs_paint_properties) {
     fragment.EnsurePaintProperties();
   } else if (fragment.PaintProperties()) {
@@ -2742,21 +2755,21 @@ void PaintPropertyTreeBuilder::InitFragmentPaintPropertiesForLegacy(
     FragmentData& fragment,
     bool needs_paint_properties,
     const PhysicalOffset& pagination_offset,
-    LayoutUnit logical_top_in_flow_thread) {
+    PaintPropertyTreeBuilderFragmentContext& context) {
   DCHECK(!IsInNGFragmentTraversal());
-  InitFragmentPaintProperties(fragment, needs_paint_properties);
+  InitFragmentPaintProperties(fragment, needs_paint_properties, context);
   fragment.SetLegacyPaginationOffset(pagination_offset);
-  fragment.SetLogicalTopInFlowThread(logical_top_in_flow_thread);
+  fragment.SetLogicalTopInFlowThread(context.logical_top_in_flow_thread);
 }
 
 void PaintPropertyTreeBuilder::InitFragmentPaintPropertiesForNG(
     bool needs_paint_properties) {
-  InitFragmentPaintProperties(pre_paint_info_->fragment_data,
-                              needs_paint_properties);
   if (context_.fragments.IsEmpty())
     context_.fragments.push_back(PaintPropertyTreeBuilderFragmentContext());
   else
     context_.fragments.resize(1);
+  InitFragmentPaintProperties(pre_paint_info_->fragment_data,
+                              needs_paint_properties, context_.fragments[0]);
 }
 
 void PaintPropertyTreeBuilder::InitSingleFragmentFromParent(
@@ -2764,7 +2777,6 @@ void PaintPropertyTreeBuilder::InitSingleFragmentFromParent(
   FragmentData& first_fragment =
       object_.GetMutableForPainting().FirstFragment();
   first_fragment.ClearNextFragment();
-  InitFragmentPaintPropertiesForLegacy(first_fragment, needs_paint_properties);
   if (context_.fragments.IsEmpty()) {
     context_.fragments.push_back(PaintPropertyTreeBuilderFragmentContext());
   } else {
@@ -2772,6 +2784,8 @@ void PaintPropertyTreeBuilder::InitSingleFragmentFromParent(
     context_.fragments[0].fragment_clip.reset();
     context_.fragments[0].logical_top_in_flow_thread = LayoutUnit();
   }
+  InitFragmentPaintPropertiesForLegacy(first_fragment, needs_paint_properties,
+                                       PhysicalOffset(), context_.fragments[0]);
 
   // Column-span:all skips pagination container in the tree hierarchy, so it
   // should also skip any fragment clip created by the skipped pagination
@@ -3351,7 +3365,7 @@ void PaintPropertyTreeBuilder::CreateFragmentContextsInFlowThread(
     InitFragmentPaintPropertiesForLegacy(
         *current_fragment_data,
         needs_paint_properties || new_fragment_contexts.back().fragment_clip,
-        pagination_offset, logical_top_in_flow_thread);
+        pagination_offset, new_fragment_contexts.back());
   }
 
   if (!current_fragment_data) {
@@ -3466,9 +3480,8 @@ void PaintPropertyTreeBuilder::CreateFragmentDataForRepeatingInPagedMedia(
     fragment_data = fragment_data
                         ? &fragment_data->EnsureNextFragment()
                         : &object_.GetMutableForPainting().FirstFragment();
-    InitFragmentPaintPropertiesForLegacy(
-        *fragment_data, needs_paint_properties, PhysicalOffset(),
-        fragment_context.logical_top_in_flow_thread);
+    InitFragmentPaintPropertiesForLegacy(*fragment_data, needs_paint_properties,
+                                         PhysicalOffset(), fragment_context);
   }
   DCHECK(fragment_data);
   fragment_data->ClearNextFragment();

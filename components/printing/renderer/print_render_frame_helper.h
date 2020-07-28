@@ -149,10 +149,10 @@ class PrintRenderFrameHelper
                            BlockScriptInitiatedPrinting);
   FRIEND_TEST_ALL_PREFIXES(MAYBE_PrintRenderFrameHelperTest,
                            BlockScriptInitiatedPrintingFromPopup);
-#if defined(OS_WIN) || defined(OS_MACOSX)
+#if defined(OS_WIN) || defined(OS_APPLE)
   FRIEND_TEST_ALL_PREFIXES(MAYBE_PrintRenderFrameHelperTest, PrintLayoutTest);
   FRIEND_TEST_ALL_PREFIXES(MAYBE_PrintRenderFrameHelperTest, PrintWithIframe);
-#endif  // defined(OS_WIN) || defined(OS_MACOSX)
+#endif  // defined(OS_WIN) || defined(OS_APPLE)
 
   // CREATE_IN_PROGRESS signifies that the preview document is being rendered
   // asynchronously by a PrintRenderer.

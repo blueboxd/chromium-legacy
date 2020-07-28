@@ -45,7 +45,7 @@ class ViewAXPlatformNodeDelegate : public ViewAccessibility,
   // ViewAccessibility:
   gfx::NativeViewAccessible GetNativeObject() const override;
   void NotifyAccessibilityEvent(ax::mojom::Event event_type) override;
-#if defined(OS_MACOSX)
+#if defined(OS_APPLE)
   void AnnounceText(const base::string16& text) override;
 #endif
   void FireFocusAfterMenuClose() override;

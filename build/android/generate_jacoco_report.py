@@ -12,11 +12,17 @@ import argparse
 import fnmatch
 import json
 import os
+import shutil
 import sys
 
 import devil_chromium
 from devil.utils import cmd_helper
 from pylib.constants import host_paths
+
+_BUILD_UTILS_PATH = os.path.join(host_paths.DIR_SOURCE_ROOT, 'build', 'android',
+                                 'gyp')
+with host_paths.SysPath(_BUILD_UTILS_PATH, 0):
+  from util import build_utils
 
 # Source paths should be passed to Jacoco in a way that the relative file paths
 # reflect the class package name.
@@ -33,9 +39,47 @@ _PARTIAL_PACKAGE_NAMES = ['com/google', 'org/chromium']
 #   '$CHROMIUM_OUTPUT_DIR/\
 #    obj/chrome/android/features/tab_ui/java__process_prebuilt-filtered.jar'
 
-# TODO (crbug.com/1107004): Remove device when ready to combine host and device
-# __jacoco_sources.
-_SOURCES_JSON_FILES_SUFFIX = 'device__jacoco_sources.json'
+_SOURCES_JSON_FILES_SUFFIX = '__jacoco_sources.json'
+# These should match the jar class files generated in internal_rules.gni
+_DEVICE_CLASS_FILE_SUFFIX = 'device_filter.jar'
+_HOST_CLASS_FILE_SUFFIX = 'host_filter.jar'
+
+
+def _GenerateReportOutputArgs(args,
+                              class_files,
+                              class_jar_suffix,
+                              report_name=None,
+                              report_file=None):
+  cmd = _CreateClassfileArgs(class_files, class_jar_suffix)
+  if args.format == 'html':
+    report_dir = os.path.join(args.output_dir, report_name)
+    if not os.path.exists(report_dir):
+      os.makedirs(report_dir)
+    cmd += ['--html', report_dir]
+  elif args.format == 'xml':
+    cmd += ['--xml', report_file]
+  elif args.format == 'csv':
+    cmd += ['--csv', report_file]
+
+  return cmd
+
+
+def _CreateClassfileArgs(class_files, suffix):
+  """Returns a list of files that don't have a given suffix.
+
+  Args:
+    class_files: A list of class files.
+    suffix: Suffix to look for.
+
+  Returns:
+    A list of files that don't use the suffix.
+  """
+  result_class_files = []
+  for f in class_files:
+    if not f.endswith(suffix):
+      result_class_files += ['--classfiles', f]
+
+  return result_class_files
 
 
 def _GetFilesWithSuffix(root_dir, suffix):
@@ -71,7 +115,10 @@ def _ParseArguments(parser):
       choices=['html', 'xml', 'csv'],
       help='Output report format. Choose one from html, xml and csv.')
   parser.add_argument('--output-dir', help='html report output directory.')
-  parser.add_argument('--output-file', help='xml or csv report output file.')
+  parser.add_argument('--output-device-coverage-file',
+                      help='xml or csv file to write device coverage results.')
+  parser.add_argument('--output-junit-coverage-file',
+                      help='xml or csv file to write junit coverage results')
   parser.add_argument(
       '--coverage-dir',
       required=True,
@@ -105,8 +152,10 @@ def _ParseArguments(parser):
   if args.format == 'html':
     if not args.output_dir:
       parser.error('--output-dir needed for html report.')
-  elif not args.output_file:
-    parser.error('--output-file needed for xml or csv report.')
+  elif (not args.output_device_coverage_file
+        or not args.output_junit_coverage_file):
+    parser.error(('--output-junit-coverage-file/--output-device-coverage-file '
+                  'needed for xml/csv reports.'))
 
   if not (args.sources_json_dir or args.class_files):
     parser.error('At least either --sources-json-dir or --class-files needed.')
@@ -157,21 +206,29 @@ def main():
                    'jacococli.jar'), 'report'
   ] + coverage_files
 
-  for f in class_files:
-    cmd += ['--classfiles', f]
   for source in fixed_source_dirs:
     cmd += ['--sourcefiles', source]
 
-  if args.format == 'html':
-    out_cmd = ['--html', args.output_dir]
-  elif args.format == 'xml':
-    out_cmd = ['--xml', args.output_file]
-  else:
-    out_cmd = ['--csv', args.output_file]
+  with build_utils.TempDir() as temp_dir:
+    temp_device_file = os.path.join(temp_dir, 'temp_device')
+    temp_host_file = os.path.join(temp_dir, 'temp_host')
+    device_coverage_file = args.output_device_coverage_file
+    junit_coverage_file = args.output_junit_coverage_file
 
-  cmd += out_cmd
+    device_cmd = cmd + _GenerateReportOutputArgs(
+        args, class_files, _DEVICE_CLASS_FILE_SUFFIX, 'device_report',
+        temp_device_file)
+    host_cmd = cmd + _GenerateReportOutputArgs(
+        args, class_files, _HOST_CLASS_FILE_SUFFIX, 'host_report',
+        temp_host_file)
 
-  exit_code = cmd_helper.RunCmd(cmd)
+    device_exit_code = cmd_helper.RunCmd(device_cmd)
+    host_exit_code = cmd_helper.RunCmd(host_cmd)
+    exit_code = device_exit_code or host_exit_code
+
+    if args.format in ('xml', 'csv'):
+      shutil.copyfile(temp_device_file, device_coverage_file)
+      shutil.copyfile(temp_host_file, junit_coverage_file)
 
   if args.cleanup:
     for f in coverage_files:
@@ -183,9 +240,14 @@ def main():
       if not os.path.isdir(args.output_dir) or not os.listdir(args.output_dir):
         print('No report generated at %s' % args.output_dir)
         exit_code = 1
-    elif not os.path.isfile(args.output_file):
-      print('No report generated at %s' % args.output_file)
-      exit_code = 1
+    else:
+      if not os.path.isfile(device_coverage_file):
+        print('No device coverage report generated at %s' %
+              device_coverage_file)
+        exit_code = 1
+      if not os.path.isfile(junit_coverage_file):
+        print('No junit coverage report generated at %s' % junit_coverage_file)
+        exit_code = 1
 
   return exit_code
 

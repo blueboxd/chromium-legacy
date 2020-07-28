@@ -33,7 +33,7 @@ android_library("internal_java") {
     "//third_party/android_deps:androidx_appcompat_appcompat_resources_java",
     "//third_party/android_deps:androidx_recyclerview_recyclerview_java",
     "//third_party/android_deps:androidx_viewpager_viewpager_java",
-    "//third_party/android_deps:com_google_android_material_material_java",
+    "//third_party/android_deps:material_design_java",
     "//ui/android:ui_java",
     "//ui/android:ui_utils_java",
   ]

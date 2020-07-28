@@ -52,7 +52,7 @@ NavigationPolicy NavigationPolicyFromEventModifiers(int16_t button,
                                                     bool shift,
                                                     bool alt,
                                                     bool meta) {
-#if defined(OS_MACOSX)
+#if defined(OS_APPLE)
   const bool new_tab_modifier = (button == 1) || meta;
 #else
   const bool new_tab_modifier = (button == 1) || ctrl;

@@ -19,7 +19,7 @@ import org.chromium.chrome.browser.compositor.bottombar.OverlayPanelContent;
 import org.chromium.chrome.browser.compositor.bottombar.OverlayPanelManager;
 import org.chromium.chrome.browser.compositor.bottombar.OverlayPanelManager.PanelPriority;
 import org.chromium.chrome.browser.compositor.bottombar.contextualsearch.ContextualSearchPromoControl.ContextualSearchPromoHost;
-import org.chromium.chrome.browser.compositor.layouts.LayoutUpdateHost;
+import org.chromium.chrome.browser.compositor.layouts.LayoutManager;
 import org.chromium.chrome.browser.compositor.scene_layer.ContextualSearchSceneLayer;
 import org.chromium.chrome.browser.compositor.scene_layer.SceneOverlayLayer;
 import org.chromium.chrome.browser.contextualsearch.ContextualSearchManagementDelegate;
@@ -77,12 +77,12 @@ public class ContextualSearchPanel extends OverlayPanel {
 
     /**
      * @param context The current Android {@link Context}.
-     * @param updateHost The {@link LayoutUpdateHost} used to request updates in the Layout.
+     * @param layoutManager A layout manager for observing scene changes.
      * @param panelManager The object managing the how different panels are shown.
      */
     public ContextualSearchPanel(
-            Context context, LayoutUpdateHost updateHost, OverlayPanelManager panelManager) {
-        super(context, updateHost, panelManager);
+            Context context, LayoutManager layoutManager, OverlayPanelManager panelManager) {
+        super(context, layoutManager, panelManager);
         mSceneLayer = createNewContextualSearchSceneLayer();
         mPanelMetrics = new ContextualSearchPanelMetrics();
 

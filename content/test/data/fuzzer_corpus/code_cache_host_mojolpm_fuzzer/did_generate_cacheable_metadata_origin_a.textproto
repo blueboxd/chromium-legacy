@@ -7,9 +7,7 @@ actions {
 }
 actions {
   code_cache_host_call {
-    remote {
-      id: 1
-    }
+    id: 1
     m_did_generate_cacheable_metadata {
       m_cache_type: CodeCacheType_kJavascript
       m_url {

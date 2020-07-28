@@ -28,7 +28,7 @@ TEST(BackoffTimer, Basic) {
   int counter = 0;
   backoff_timer.Start(FROM_HERE, base::TimeDelta::FromMilliseconds(10),
                       base::TimeDelta::FromMilliseconds(50),
-                      base::Bind(&IncrementCounter, &counter));
+                      base::BindRepeating(&IncrementCounter, &counter));
   ASSERT_TRUE(backoff_timer.IsRunning());
   ASSERT_EQ(0, counter);
   ASSERT_NEAR(0, mock_timer->GetCurrentDelay().InMillisecondsF(), 1);

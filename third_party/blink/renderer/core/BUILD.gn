@@ -948,10 +948,7 @@ target("jumbo_" + core_generated_target_type, "core_generated") {
     sources += get_target_outputs(current)
   }
   deps = []
-  public_deps = [
-    ":all_generators",
-    "//third_party/blink/renderer/bindings/core/v8:bindings_core_impl",
-  ]
+  public_deps = [ ":all_generators" ]
 
   configs -= core_config_remove
   configs += core_config_add + [ "..:inside_blink" ]
@@ -961,6 +958,7 @@ target("jumbo_" + core_generated_target_type, "core_generated") {
     ":prerequisites",
     "//gin",
     "//skia",
+    "//third_party/blink/renderer/bindings/core/v8:bindings_core_impl",
     "//third_party/blink/renderer/bindings/core/v8:bindings_core_v8_generated",
     "//third_party/iccjpeg",
     "//third_party/libpng",

@@ -194,7 +194,7 @@ TEST(FilenameGenerationTest, TestBasicTruncation) {
 
 // The file path will only be truncated o the platforms that have known
 // encoding. Otherwise no truncation will be performed.
-#if defined(OS_WIN) || defined(OS_MACOSX) || defined(OS_CHROMEOS)
+#if defined(OS_WIN) || defined(OS_APPLE) || defined(OS_CHROMEOS)
   // The file name length is truncated to max_length.
   EXPECT_TRUE(TruncateFilename(&truncated_path, max_length));
   EXPECT_EQ(size_t(max_length), truncated_path.BaseName().value().size());

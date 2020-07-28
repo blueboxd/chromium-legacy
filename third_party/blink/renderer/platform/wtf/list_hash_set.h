@@ -1092,26 +1092,13 @@ template <typename T, size_t inlineCapacity, typename U, typename V>
 template <typename VisitorDispatcher, typename A>
 std::enable_if_t<A::kIsGarbageCollected>
 ListHashSet<T, inlineCapacity, U, V>::Trace(VisitorDispatcher visitor) const {
-  const auto* table =
-      AsAtomicPtr(&impl_.table_)->load(std::memory_order_relaxed);
-
-  if (!NodeTraits::kCanTraceConcurrently && table) {
-    if (visitor->DeferredTraceIfConcurrent(
-            {this,
-             [](blink::Visitor* visitor, const void* object) {
-               reinterpret_cast<const ListHashSet*>(object)->Trace(visitor);
-             }},
-            sizeof(ListHashSet)))
-      return;
-  }
-
   static_assert(!IsWeak<T>::value,
                 "HeapListHashSet does not support weakness, consider using "
                 "HeapLinkedHashSet instead.");
   // This marks all the nodes and their contents live that can be accessed
   // through the HashTable. That includes m_head and m_tail so we do not have
   // to explicitly trace them here.
-  impl_.TraceTable(visitor, table);
+  impl_.Trace(visitor);
 }
 
 }  // namespace WTF

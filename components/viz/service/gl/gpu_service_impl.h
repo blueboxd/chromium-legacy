@@ -183,7 +183,7 @@ class VIZ_SERVICE_EXPORT GpuServiceImpl : public gpu::GpuChannelManagerDelegate,
   void OnMemoryPressure(
       base::MemoryPressureListener::MemoryPressureLevel level) override;
 #endif
-#if defined(OS_MACOSX)
+#if defined(OS_APPLE)
   void BeginCATransaction() override;
   void CommitCATransaction(CommitCATransactionCallback callback) override;
 #endif

@@ -18,7 +18,6 @@
 #include "content/public/browser/global_routing_id.h"
 #include "content/public/browser/service_worker_context.h"
 #include "content/public/browser/service_worker_context_observer.h"
-#include "content/public/browser/shared_worker_id.h"
 #include "content/public/browser/shared_worker_service.h"
 #include "third_party/blink/public/common/tokens/worker_tokens.h"
 
@@ -62,18 +61,19 @@ class WorkerWatcher : public content::DedicatedWorkerService::Observer,
       const GURL& url) override;
 
   // content::SharedWorkerService::Observer:
-  void OnWorkerCreated(content::SharedWorkerId shared_worker_id,
+  void OnWorkerCreated(const blink::SharedWorkerToken& shared_worker_token,
                        int worker_process_id,
                        const base::UnguessableToken& dev_tools_token) override;
   void OnBeforeWorkerDestroyed(
-      content::SharedWorkerId shared_worker_id) override;
-  void OnFinalResponseURLDetermined(content::SharedWorkerId shared_worker_id,
-                                    const GURL& url) override;
+      const blink::SharedWorkerToken& shared_worker_token) override;
+  void OnFinalResponseURLDetermined(
+      const blink::SharedWorkerToken& shared_worker_token,
+      const GURL& url) override;
   void OnClientAdded(
-      content::SharedWorkerId shared_worker_id,
+      const blink::SharedWorkerToken& shared_worker_token,
       content::GlobalFrameRoutingId render_frame_host_id) override;
   void OnClientRemoved(
-      content::SharedWorkerId shared_worker_id,
+      const blink::SharedWorkerToken& shared_worker_token,
       content::GlobalFrameRoutingId render_frame_host_id) override;
 
   // content::ServiceWorkerContextObserver:
@@ -105,7 +105,8 @@ class WorkerWatcher : public content::DedicatedWorkerService::Observer,
   // Helper functions to retrieve an existing worker node.
   WorkerNodeImpl* GetDedicatedWorkerNode(
       const blink::DedicatedWorkerToken& dedicated_worker_token);
-  WorkerNodeImpl* GetSharedWorkerNode(content::SharedWorkerId shared_worker_id);
+  WorkerNodeImpl* GetSharedWorkerNode(
+      const blink::SharedWorkerToken& shared_worker_token);
   WorkerNodeImpl* GetServiceWorkerNode(int64_t version_id);
 
   SEQUENCE_CHECKER(sequence_checker_);
@@ -139,7 +140,7 @@ class WorkerWatcher : public content::DedicatedWorkerService::Observer,
       dedicated_worker_nodes_;
 
   // Maps each shared worker ID to its worker node.
-  base::flat_map<content::SharedWorkerId, std::unique_ptr<WorkerNodeImpl>>
+  base::flat_map<blink::SharedWorkerToken, std::unique_ptr<WorkerNodeImpl>>
       shared_worker_nodes_;
 
   // Maps each service worker version ID to its worker node.

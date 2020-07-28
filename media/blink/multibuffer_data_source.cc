@@ -34,7 +34,7 @@ const int64_t kMaxBufferPreload = 50 << 20;  // 50 Mb
 const int64_t kMetadataShift = 6;
 
 // Preload this much extra, then stop preloading until we fall below the
-// kTargetSecondsBufferedAhead.
+// preload_seconds_.value().
 const int64_t kPreloadHighExtra = 1 << 20;  // 1 Mb
 
 // Default pin region size.
@@ -49,12 +49,6 @@ const int64_t kMaxBitrate = 20 * 8 << 20;  // 20 Mbps.
 
 // Maximum playback rate for buffer calculations.
 const double kMaxPlaybackRate = 25.0;
-
-// Preload this many seconds of data by default.
-const int64_t kTargetSecondsBufferedAhead = 10;
-
-// Keep this many seconds of data for going back by default.
-const int64_t kTargetSecondsBufferedBehind = 2;
 
 // Extra buffer accumulation speed, in terms of download buffer.
 const int kSlowPreloadPercentage = 10;
@@ -721,7 +715,7 @@ void MultibufferDataSource::UpdateBufferSizes() {
 
   // Preload 10 seconds of data, clamped to some min/max value.
   int64_t preload =
-      base::ClampToRange(kTargetSecondsBufferedAhead * bytes_per_second,
+      base::ClampToRange(preload_seconds_.value() * bytes_per_second,
                          kMinBufferPreload, kMaxBufferPreload);
 
   // Increase buffering slowly at a rate of 10% of data downloaded so
@@ -736,9 +730,9 @@ void MultibufferDataSource::UpdateBufferSizes() {
   int64_t preload_high = preload + kPreloadHighExtra;
 
   // We pin a few seconds of data behind the current reading position.
-  int64_t pin_backward =
-      base::ClampToRange(kTargetSecondsBufferedBehind * bytes_per_second,
-                         kMinBufferPreload, kMaxBufferPreload);
+  int64_t pin_backward = base::ClampToRange(
+      keep_after_playback_seconds_.value() * bytes_per_second,
+      kMinBufferPreload, kMaxBufferPreload);
 
   // We always pin at least kDefaultPinSize ahead of the read position.
   // Normally, the extra space between preload_high and kDefaultPinSize will
@@ -750,11 +744,11 @@ void MultibufferDataSource::UpdateBufferSizes() {
   // to be thrown away. Most of the time we pin a region that is larger than
   // |buffer_size|, which only makes sense because most of the time, some of
   // the data in pinned region is not present in the cache.
-  int64_t buffer_size =
-      std::min((kTargetSecondsBufferedAhead + kTargetSecondsBufferedBehind) *
-                       bytes_per_second +
-                   extra_buffer * 3,
-               preload_high + pin_backward + extra_buffer);
+  int64_t buffer_size = std::min(
+      (preload_seconds_.value() + keep_after_playback_seconds_.value()) *
+              bytes_per_second +
+          extra_buffer * 3,
+      preload_high + pin_backward + extra_buffer);
 
   if (url_data_->FullyCached() ||
       (url_data_->length() != kPositionNotSpecified &&

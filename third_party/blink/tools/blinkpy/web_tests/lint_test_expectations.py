@@ -109,7 +109,7 @@ def lint(host, options):
             failures.append(str(error))
             _log.error('')
 
-    if any('Test does not exist' in f for f in failures):
+    if any('Test does not exist' in w for w in warnings):
         # TODO(rmhasan): Instead of hardcoding '--android-product=ANDROID_WEBLAYER'
         # add a general --android command line argument which will be used to
         # put wpt_update_expectations.py into Android mode.
@@ -152,6 +152,7 @@ def _check_expectations_file_content(content):
 
 def _check_test_existence(host, port, path, expectations, wpt_tests):
     failures = []
+    warnings = []
     is_android_path = path in PRODUCTS_TO_EXPECTATION_FILE_PATHS.values()
     for exp in expectations:
         if not exp.test:
@@ -164,13 +165,19 @@ def _check_test_existence(host, port, path, expectations, wpt_tests):
             test_name = exp.test[:-1]
         else:
             test_name = exp.test
-        if (is_android_path and test_name not in wpt_tests or
-                not is_android_path and not port.test_exists(test_name)):
-            error = "{}:{} Test does not exist: {}".format(
-                host.filesystem.basename(path), exp.lineno, exp.test)
-            _log.error(error)
-            failures.append(error)
-    return failures
+        possible_error = "{}:{} Test does not exist: {}".format(
+            host.filesystem.basename(path), exp.lineno, exp.test)
+        if is_android_path and test_name not in wpt_tests:
+            # TODO(crbug.com/1110003): Change this lint back into a failure
+            # after figuring out how to clean up renamed or deleted generated
+            # tests from expectations files when wpt_update_expectations.py is
+            # run with the --clean-up-affected-tests-only command line argument.
+            warnings.append(possible_error)
+            _log.warning(possible_error)
+        elif not is_android_path and not port.test_exists(test_name):
+            failures.append(possible_error)
+            _log.error(possible_error)
+    return failures, warnings
 
 
 def _check_directory_glob(host, port, path, expectations):
@@ -287,7 +294,8 @@ def _check_expectations(host, port, path, test_expectations, options, wpt_tests)
     # Check for original expectation lines (from get_updated_lines) instead of
     # expectations filtered for the current port (test_expectations).
     expectations = test_expectations.get_updated_lines(path)
-    failures = _check_test_existence(host, port, path, expectations, wpt_tests)
+    failures, warnings = _check_test_existence(
+        host, port, path, expectations, wpt_tests)
     failures.extend(_check_directory_glob(host, port, path, expectations))
     failures.extend(_check_never_fix_tests(host, port, path, expectations))
     if path in PRODUCTS_TO_EXPECTATION_FILE_PATHS.values():
@@ -295,7 +303,6 @@ def _check_expectations(host, port, path, test_expectations, options, wpt_tests)
             host, port, path, expectations))
     # TODO(crbug.com/1080691): Change this to failures once
     # wpt_expectations_updater is fixed.
-    warnings = []
     if not getattr(options, 'no_check_redundant_virtual_expectations', False):
         warnings.extend(
             _check_redundant_virtual_expectations(host, port, path,

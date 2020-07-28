@@ -946,7 +946,7 @@ GrBackendFormat SkiaOutputSurfaceImpl::GetGrBackendFormatForTexture(
     return GrBackendFormat::MakeDawn(format);
 #endif
   } else if (dependency_->IsUsingMetal()) {
-#if defined(OS_MACOSX)
+#if defined(OS_APPLE)
     return GrBackendFormat::MakeMtl(ToMTLPixelFormat(resource_format));
 #endif
   } else {

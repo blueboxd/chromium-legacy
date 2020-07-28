@@ -30,6 +30,16 @@ enum class SuggestionStatus {
   kOpenSettings = 4,
 };
 
+// Must match with IMEAssistiveDisabledReason in enums.xml
+enum class DisabledReason {
+  kNone = 0,
+  kFeatureFlagOff = 1,
+  kEnterpriseSettingsOff = 2,
+  kUserSettingsOff = 3,
+  kUrlOrAppNotAllowed = 4,
+  kMaxValue = kUrlOrAppNotAllowed,
+};
+
 }  // namespace chromeos
 
 #endif  // CHROME_BROWSER_CHROMEOS_INPUT_METHOD_SUGGESTION_ENUMS_H_

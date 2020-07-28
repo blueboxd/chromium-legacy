@@ -234,7 +234,7 @@ class WTF_EXPORT AtomicString {
     return AddSlowCase(r);
   }
   static scoped_refptr<StringImpl> AddSlowCase(StringImpl*);
-#if defined(OS_MACOSX)
+#if defined(OS_APPLE)
   static scoped_refptr<StringImpl> Add(CFStringRef);
 #endif
 };

@@ -2124,6 +2124,19 @@ inline bool operator!=(const Vector<T, inlineCapacityA, Allocator>& a,
   return !(a == b);
 }
 
+namespace internal {
+template <typename Allocator, typename VisitorDispatcher, typename T>
+void TraceInlinedBuffer(VisitorDispatcher visitor,
+                        const T* buffer_begin,
+                        size_t capacity) {
+  const T* buffer_end = buffer_begin + capacity;
+  for (const T* buffer_entry = buffer_begin; buffer_entry != buffer_end;
+       buffer_entry++) {
+    Allocator::template Trace<T, VectorTraits<T>>(visitor, *buffer_entry);
+  }
+}
+}  // namespace internal
+
 // Only defined for HeapAllocator. Used when visiting vector object.
 template <typename T, wtf_size_t inlineCapacity, typename Allocator>
 template <typename VisitorDispatcher, typename A>
@@ -2143,17 +2156,6 @@ Vector<T, inlineCapacity, Allocator>::Trace(VisitorDispatcher visitor) const {
     return;
   }
 
-  // Bail out for concurrent marking.
-  if (!VectorTraits<T>::kCanTraceConcurrently) {
-    if (visitor->DeferredTraceIfConcurrent(
-            {this,
-             [](blink::Visitor* visitor, const void* object) {
-               reinterpret_cast<const Vector*>(object)->Trace(visitor);
-             }},
-            sizeof(Vector)))
-      return;
-  }
-
   if (Base::IsOutOfLineBuffer(buffer)) {
     Allocator::TraceVectorBacking(visitor, buffer, Base::BufferSlot());
   } else {
@@ -2162,13 +2164,21 @@ Vector<T, inlineCapacity, Allocator>::Trace(VisitorDispatcher visitor) const {
     Allocator::TraceVectorBacking(visitor, static_cast<T*>(nullptr),
                                   Base::BufferSlot());
 
-    // Inline buffer requires tracing immediately.
-    const T* buffer_begin = buffer;
-    const T* buffer_end = buffer + inlineCapacity;
-    for (const T* buffer_entry = buffer_begin; buffer_entry != buffer_end;
-         buffer_entry++) {
-      Allocator::template Trace<T, VectorTraits<T>>(visitor, *buffer_entry);
+    // Bail out for concurrent marking.
+    if (!VectorTraits<T>::kCanTraceConcurrently) {
+      if (visitor->DeferredTraceIfConcurrent(
+              {buffer,
+               [](blink::Visitor* visitor, const void* object) {
+                 const T* buffer = reinterpret_cast<const T*>(object);
+                 internal::TraceInlinedBuffer<Allocator>(visitor, buffer,
+                                                         inlineCapacity);
+               }},
+              inlineCapacity * sizeof(T)))
+        return;
     }
+
+    // Inline buffer requires tracing immediately.
+    internal::TraceInlinedBuffer<Allocator>(visitor, buffer, inlineCapacity);
   }
 }
 

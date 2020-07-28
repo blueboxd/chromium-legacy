@@ -163,12 +163,16 @@ void DisplaySettingsManagerImpl::ResetBrightness() {
 }
 
 #if defined(USE_AURA)
-void DisplaySettingsManagerImpl::OnDisplayOn(bool status) {
-  if (!status) {
-    // Fatal since the user has no other way of turning the screen on if this
-    // failed.
-    LOG(FATAL) << "Failed to enable screen";
-    return;
+void DisplaySettingsManagerImpl::OnDisplayOn(
+    const base::flat_map<int64_t, bool>& statuses) {
+  for (const auto& status : statuses) {
+    bool display_success = status.second;
+    if (!display_success) {
+      // Fatal since the user has no other way of turning the screen on if this
+      // failed.
+      LOG(FATAL) << "Failed to enable screen";
+      return;
+    }
   }
   screen_power_on_ = true;
   base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
@@ -184,9 +188,13 @@ void DisplaySettingsManagerImpl::OnDisplayOnTimeoutCompleted() {
 }
 
 void DisplaySettingsManagerImpl::OnDisplayOffTimeoutCompleted() {
-  display_configurator_->DisableDisplay(base::BindOnce([](bool status) {
-    LOG_IF(FATAL, !status) << "Failed to disable display";
-  }));
+  display_configurator_->DisableDisplay(
+      base::BindOnce([](const base::flat_map<int64_t, bool>& statuses) {
+        for (const auto& status : statuses) {
+          bool display_success = status.second;
+          LOG_IF(FATAL, !display_success) << "Failed to disable display";
+        }
+      }));
   screen_power_on_ = false;
 }
 

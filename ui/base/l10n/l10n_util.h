@@ -18,7 +18,7 @@
 #include "base/strings/string16.h"
 #include "build/build_config.h"
 
-#if defined(OS_MACOSX)
+#if defined(OS_APPLE)
 #include "ui/base/l10n/l10n_util_mac.h"
 #endif  // OS_MACOSX
 

@@ -109,6 +109,9 @@ TEST_F(FieldDataManagerTest, UpdateFieldDataMapWithAutofilledValue) {
   const scoped_refptr<FieldDataManager> field_data_manager =
       base::MakeRefCounted<FieldDataManager>();
   const FieldRendererId id(control_elements_[0].unique_renderer_id);
+  // Add a typed value to make sure it will be cleared.
+  field_data_manager->UpdateFieldDataMap(id, ASCIIToUTF16("typedvalue"), 0);
+
   field_data_manager->UpdateFieldDataWithAutofilledValue(
       id, ASCIIToUTF16("autofilled"),
       FieldPropertiesFlags::kAutofilledOnPageLoad);

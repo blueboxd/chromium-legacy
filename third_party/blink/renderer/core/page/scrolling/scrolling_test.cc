@@ -1085,7 +1085,7 @@ TEST_P(ScrollingTest, setupScrollbarLayerShouldNotCrash) {
   // an empty document by javascript.
 }
 
-#if defined(OS_MACOSX) || defined(OS_ANDROID)
+#if defined(OS_APPLE) || defined(OS_ANDROID)
 TEST_P(ScrollingTest, DISABLED_setupScrollbarLayerShouldSetScrollLayerOpaque)
 #else
 TEST_P(ScrollingTest, setupScrollbarLayerShouldSetScrollLayerOpaque)

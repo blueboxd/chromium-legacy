@@ -541,7 +541,7 @@ TEST(OverlayTest, OverlaysProcessorHasStrategy) {
   EXPECT_GE(2U, overlay_processor->GetStrategyCount());
 }
 
-#if !defined(OS_MACOSX) && !defined(OS_WIN)
+#if !defined(OS_APPLE) && !defined(OS_WIN)
 TEST_F(FullscreenOverlayTest, SuccessfulOverlay) {
   std::unique_ptr<RenderPass> pass = CreateRenderPass();
   gfx::Rect output_rect = pass->output_rect;
@@ -2852,7 +2852,7 @@ TEST_F(GLRendererWithOverlaysTest, ResourcesExportedAndReturnedAfterGpuQuery) {
 }
 #endif
 
-#if defined(OS_MACOSX)
+#if defined(OS_APPLE)
 class CALayerOverlayRPDQTest : public CALayerOverlayTest {
  protected:
   void SetUp() override {

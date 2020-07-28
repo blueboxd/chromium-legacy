@@ -717,6 +717,11 @@ const base::Feature kMediaLearningFramework{"MediaLearningFramework",
 const base::Feature kMediaLearningSmoothnessExperiment{
     "MediaLearningSmoothnessExperiment", base::FEATURE_DISABLED_BY_DEFAULT};
 
+// Enable the prototype global optimization of tuneables via finch.  See
+// media/base/tuneable.h for how to create tuneable parameters.
+const base::Feature kMediaOptimizer{"JointMediaOptimizer",
+                                    base::FEATURE_DISABLED_BY_DEFAULT};
+
 // Enable aggregate power measurement for media playback.
 const base::Feature kMediaPowerExperiment{"MediaPowerExperiment",
                                           base::FEATURE_DISABLED_BY_DEFAULT};

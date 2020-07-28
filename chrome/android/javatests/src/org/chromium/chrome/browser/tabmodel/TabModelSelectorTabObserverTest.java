@@ -105,7 +105,7 @@ public class TabModelSelectorTabObserverTest {
         assertTabHasObserver(normalTab1, observer);
         assertTabHasObserver(incognitoTab1, observer);
 
-        observer.destroy();
+        ThreadUtils.runOnUiThreadBlocking(() -> observer.destroy());
         assertTabDoesNotHaveObserver(normalTab1, observer, true);
         assertTabDoesNotHaveObserver(incognitoTab1, observer, true);
     }

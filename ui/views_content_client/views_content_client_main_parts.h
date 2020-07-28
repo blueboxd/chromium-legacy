@@ -58,7 +58,7 @@ class ViewsContentClientMainParts : public content::BrowserMainParts {
       const content::MainFunctionParams& content_params,
       ViewsContentClient* views_content_client);
 
-#if defined(OS_MACOSX)
+#if defined(OS_APPLE)
   views::TestViewsDelegate* views_delegate() { return views_delegate_.get(); }
 #endif
 

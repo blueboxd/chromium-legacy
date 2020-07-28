@@ -44,7 +44,7 @@ GLOutputSurfaceBufferQueue::GLOutputSurfaceBufferQueue(
   capabilities_.max_frames_pending = 2;
   // GetCurrentFramebufferDamage will return an upper bound of the part of the
   // buffer that needs to be recomposited.
-#if defined(OS_MACOSX)
+#if defined(OS_APPLE)
   capabilities_.supports_target_damage = false;
 #else
   capabilities_.supports_target_damage = true;

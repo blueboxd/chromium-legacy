@@ -30,9 +30,6 @@
 
 namespace media {
 
-// See |video_underflow_threshold_|.
-static const int kDefaultVideoUnderflowThresholdMs = 3000;
-
 class RendererImpl::RendererClientInternal final : public RendererClient {
  public:
   RendererClientInternal(DemuxerStream::Type type,
@@ -105,23 +102,10 @@ RendererImpl::RendererImpl(
       cdm_context_(nullptr),
       underflow_disabled_for_testing_(false),
       clockless_video_playback_enabled_for_testing_(false),
-      video_underflow_threshold_(
-          base::TimeDelta::FromMilliseconds(kDefaultVideoUnderflowThresholdMs)),
       pending_audio_track_change_(false),
       pending_video_track_change_(false) {
   weak_this_ = weak_factory_.GetWeakPtr();
   DVLOG(1) << __func__;
-
-  // TODO(dalecurtis): Remove once experiments for http://crbug.com/470940 are
-  // complete.
-  int threshold_ms = 0;
-  std::string threshold_ms_str(
-      base::CommandLine::ForCurrentProcess()->GetSwitchValueASCII(
-          switches::kVideoUnderflowThresholdMs));
-  if (base::StringToInt(threshold_ms_str, &threshold_ms) && threshold_ms > 0) {
-    video_underflow_threshold_ =
-        base::TimeDelta::FromMilliseconds(threshold_ms);
-  }
 }
 
 RendererImpl::~RendererImpl() {
@@ -743,7 +727,7 @@ void RendererImpl::OnBufferingStateChange(DemuxerStream::Type type,
                               type, new_buffering_state, reason));
       task_runner_->PostDelayedTask(FROM_HERE,
                                     deferred_video_underflow_cb_.callback(),
-                                    video_underflow_threshold_);
+                                    video_underflow_threshold_.value());
       return;
     }
 

@@ -117,36 +117,36 @@ bool ToProto(
 {%-   set proto_type = "::mojolpm" ~ (interface|get_qualified_name_for_kind(flatten_nested_kind=True)) %}
 // interface {{interface.name}}
 bool FromProto(
-  const {{proto_type}}::PendingRemote& input,
+  uint32_t input,
   ::mojo::PendingRemote<{{mojom_type}}>& output);
 
 bool ToProto(
   ::mojo::PendingRemote<{{mojom_type}}>&& input,
-  {{proto_type}}::PendingRemote& output);
+  uint32_t& output);
 
 bool FromProto(
-  const {{proto_type}}::PendingReceiver& input,
+  uint32_t input,
   ::mojo::PendingReceiver<{{mojom_type}}>& output);
 
 bool ToProto(
   ::mojo::PendingReceiver<{{mojom_type}}>&& input,
-  {{proto_type}}::PendingReceiver& output);
+  uint32_t& output);
 
 bool FromProto(
-  const {{proto_type}}::PendingAssociatedRemote& input,
+  uint32_t input,
   ::mojo::PendingAssociatedRemote<{{mojom_type}}>& output);
 
 bool ToProto(
   ::mojo::PendingAssociatedRemote<{{mojom_type}}>&& input,
-  {{proto_type}}::PendingAssociatedRemote& output);
+  uint32_t& output);
 
 bool FromProto(
-  const {{proto_type}}::PendingAssociatedReceiver& input,
+  uint32_t input,
   ::mojo::PendingAssociatedReceiver<{{mojom_type}}>& output);
 
 bool ToProto(
   ::mojo::PendingAssociatedReceiver<{{mojom_type}}>&& input,
-  {{proto_type}}::PendingAssociatedReceiver& output);{{"\n"-}}
+  uint32_t& output);{{"\n"-}}
 {%-   for method in interface.methods %}
 {%-     set method_type = proto_type ~ "::" ~ interface.name ~ "_" ~ method.name %}
 {%-     for param in method.parameters %}
@@ -177,21 +177,21 @@ bool ToProto(
 {%-   set mojom_type = interface|get_qualified_name_for_kind(flatten_nested_kind=True) %}
 {%-   set proto_type = "::mojolpm" ~ (interface|get_qualified_name_for_kind(flatten_nested_kind=True)) %}
 {%-   if interface.methods %}
-bool HandleRemoteMethodCall(
-  const {{proto_type}}::RemoteMethodCall& input);
+bool HandleRemoteCall(
+  const {{proto_type}}::RemoteCall& input);
 
-bool HandleAssociatedRemoteMethodCall(
-  const {{proto_type}}::AssociatedRemoteMethodCall& input);
+bool HandleAssociatedRemoteCall(
+  const {{proto_type}}::AssociatedRemoteCall& input);
 
 bool AddResponse(
   const {{proto_type}}::ReceiverResponse& response);{{"\n"-}}
 {%-     for method in interface.methods %}
-bool HandleRemoteMethodCall(
-  ::mojo::Remote<{{mojom_type}}>& instance,
+bool HandleRemoteCall(
+  uint32_t instance_id,
   const {{proto_type}}::{{interface.name}}_{{method.name}}& input);
 
-bool HandleAssociatedRemoteMethodCall(
-  ::mojo::AssociatedRemote<{{mojom_type}}>& instance,
+bool HandleAssociatedRemoteCall(
+  uint32_t instance_id,
   const {{proto_type}}::{{interface.name}}_{{method.name}}& input);{{"\n"-}}
 {%-     endfor %}
 {%-   endif %}

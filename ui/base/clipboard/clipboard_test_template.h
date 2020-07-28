@@ -362,7 +362,7 @@ TYPED_TEST(ClipboardTest, UnicodeHTMLTest) {
 }
 
 // TODO(estade): Port the following test (decide what target we use for urls)
-#if !defined(OS_POSIX) || defined(OS_MACOSX)
+#if !defined(OS_POSIX) || defined(OS_APPLE)
 TYPED_TEST(ClipboardTest, BookmarkTest) {
   base::string16 title(ASCIIToUTF16("The Example Company")), title_result;
   std::string url("http://www.example.com/"), url_result;
@@ -380,7 +380,7 @@ TYPED_TEST(ClipboardTest, BookmarkTest) {
   EXPECT_EQ(title, title_result);
   EXPECT_EQ(url, url_result);
 }
-#endif  // !defined(OS_POSIX) || defined(OS_MACOSX)
+#endif  // !defined(OS_POSIX) || defined(OS_APPLE)
 
 TYPED_TEST(ClipboardTest, MultiFormatTest) {
   base::string16 text(ASCIIToUTF16("Hi!")), text_result;
@@ -461,7 +461,7 @@ TYPED_TEST(ClipboardTest, URLTest) {
 
 // TODO(tonikitoo, msisov): enable back for ClipboardOzone implements
 // selection support. https://crbug.com/911992
-#if defined(OS_POSIX) && !defined(OS_MACOSX) && !defined(OS_ANDROID) && \
+#if defined(OS_POSIX) && !defined(OS_APPLE) && !defined(OS_ANDROID) && \
     !defined(OS_CHROMEOS) && !defined(USE_OZONE)
   ascii_text.clear();
   this->clipboard().ReadAsciiText(ClipboardBuffer::kSelection,
@@ -783,7 +783,7 @@ TYPED_TEST(ClipboardTest, ReadAvailablePlatformSpecificFormatNamesTest) {
   const std::vector<base::string16> raw_types =
       this->clipboard().ReadAvailablePlatformSpecificFormatNames(
           ClipboardBuffer::kCopyPaste, /* data_dst = */ nullptr);
-#if defined(OS_MACOSX)
+#if defined(OS_APPLE)
   EXPECT_THAT(raw_types, Contains(ASCIIToUTF16("public.utf8-plain-text")));
   EXPECT_THAT(raw_types, Contains(ASCIIToUTF16("NSStringPboardType")));
   EXPECT_EQ(raw_types.size(), static_cast<uint64_t>(2));
@@ -880,7 +880,7 @@ TYPED_TEST(ClipboardTest, PlatformSpecificDataTest) {
 }
 #endif  // defined(OS_WIN) || defined(USE_X11)
 
-#if !defined(OS_MACOSX) && !defined(OS_ANDROID)
+#if !defined(OS_APPLE) && !defined(OS_ANDROID)
 TYPED_TEST(ClipboardTest, HyperlinkTest) {
   const std::string kTitle("The <Example> Company's \"home page\"");
   const std::string kUrl("http://www.example.com?x=3&lt=3#\"'<>");

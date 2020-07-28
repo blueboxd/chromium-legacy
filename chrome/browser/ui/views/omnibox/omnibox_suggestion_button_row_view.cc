@@ -130,12 +130,36 @@ OmniboxSuggestionButtonRowView::OmniboxSuggestionButtonRowView(
 
 OmniboxSuggestionButtonRowView::~OmniboxSuggestionButtonRowView() = default;
 
-void OmniboxSuggestionButtonRowView::UpdateKeyword() {
-  const OmniboxEditModel* edit_model = model()->edit_model();
-  const base::string16& keyword = edit_model->keyword();
-  const auto names = SelectedKeywordView::GetKeywordLabelNames(
-      keyword, edit_model->client()->GetTemplateURLService());
-  keyword_button_->SetText(names.full_name);
+void OmniboxSuggestionButtonRowView::UpdateFromModel() {
+  SetPillButtonVisibility(keyword_button_,
+                          OmniboxPopupModel::FOCUSED_BUTTON_KEYWORD);
+  if (keyword_button_->GetVisible()) {
+    const OmniboxEditModel* edit_model = model()->edit_model();
+    base::string16 keyword;
+    bool is_keyword_hint = false;
+    match().GetKeywordUIState(edit_model->client()->GetTemplateURLService(),
+                              &keyword, &is_keyword_hint);
+
+    const auto names = SelectedKeywordView::GetKeywordLabelNames(
+        keyword, edit_model->client()->GetTemplateURLService());
+    keyword_button_->SetText(names.full_name);
+  }
+
+  SetPillButtonVisibility(pedal_button_,
+                          OmniboxPopupModel::FOCUSED_BUTTON_PEDAL);
+  if (pedal_button_->GetVisible()) {
+    pedal_button_->SetText(match().pedal->GetLabelStrings().hint);
+    pedal_button_->SetTooltipText(
+        match().pedal->GetLabelStrings().suggestion_contents);
+  }
+
+  SetPillButtonVisibility(tab_switch_button_,
+                          OmniboxPopupModel::FOCUSED_BUTTON_TAB_SWITCH);
+
+  bool is_any_button_visible = keyword_button_->GetVisible() ||
+                               pedal_button_->GetVisible() ||
+                               tab_switch_button_->GetVisible();
+  SetVisible(is_any_button_visible);
 }
 
 void OmniboxSuggestionButtonRowView::OnStyleRefresh() {
@@ -194,31 +218,6 @@ void OmniboxSuggestionButtonRowView::ButtonPressed(views::Button* button,
                                      OmniboxPopupModel::FOCUSED_BUTTON_PEDAL),
         event.time_stamp());
   }
-}
-
-void OmniboxSuggestionButtonRowView::Layout() {
-  views::View::Layout();
-
-  SetPillButtonVisibility(keyword_button_,
-                          OmniboxPopupModel::FOCUSED_BUTTON_KEYWORD);
-  SetPillButtonVisibility(pedal_button_,
-                          OmniboxPopupModel::FOCUSED_BUTTON_PEDAL);
-  SetPillButtonVisibility(tab_switch_button_,
-                          OmniboxPopupModel::FOCUSED_BUTTON_TAB_SWITCH);
-
-  if (pedal_button_->GetVisible()) {
-    pedal_button_->SetText(match().pedal->GetLabelStrings().hint);
-    pedal_button_->SetTooltipText(
-        match().pedal->GetLabelStrings().suggestion_contents);
-  }
-
-  bool is_any_button_visible = keyword_button_->GetVisible() ||
-                               pedal_button_->GetVisible() ||
-                               tab_switch_button_->GetVisible();
-  SetVisible(is_any_button_visible);
-
-  // TODO(orinj): Migrate to BoxLayout or FlexLayout. Ideally we don't do any
-  // more layouts ourselves. Also, check visibility management in result view.
 }
 
 const OmniboxPopupModel* OmniboxSuggestionButtonRowView::model() const {

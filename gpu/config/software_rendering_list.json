@@ -1368,12 +1368,16 @@
     },
     {
       "id": 148,
-      "description": "VideoCore V has corrupt rendering with GPU Rasterization",
+      "description": "VideoCore V has corrupt rendering with GPU Rasterization on Android versions below N.",
       "cr_bugs": [710273],
       "os": {
-        "type": "android"
+        "type": "android",
+	"version": {
+          "op": "<",
+          "value": "7.0"
+        }
       },
-      "gl_renderer": ".*VideoCore V.*",
+      "gl_renderer": ".*VideoCore V HW.*",
       "features": [
         "gpu_rasterization"
       ]

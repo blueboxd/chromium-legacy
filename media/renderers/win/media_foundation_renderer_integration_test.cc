@@ -65,7 +65,6 @@ class MediaFoundationRendererIntegrationTest
     auto renderer = std::make_unique<MediaFoundationRenderer>(
         /*muted=*/false, task_environment_.GetMainThreadTaskRunner(),
         /*force_dcomp_mode_for_testing=*/true);
-    renderer->SetPlaybackElementId(1);  // Must be set before Initialize().
     return renderer;
   }
 

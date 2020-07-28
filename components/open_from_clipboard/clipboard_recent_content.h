@@ -48,20 +48,6 @@ class ClipboardRecentContent {
   // Return if system's clipboard contains an image.
   virtual bool HasRecentImageFromClipboard() = 0;
 
-  /*
-   On iOS, iOS 14 introduces new clipboard APIs that are async. The asynchronous
-   forms of clipboard access below should be preferred.
-   */
-  using HasDataCallback = base::OnceCallback<void(bool)>;
-  using GetRecentURLCallback = base::OnceCallback<void(base::Optional<GURL>)>;
-
-  // Returns whether the clipboard contains a URL to |HasDataCallback| if it
-  // is recent enough and has not been suppressed.
-  virtual void HasRecentURLFromClipboard(HasDataCallback callback) = 0;
-  // Returns clipboard content as URL to |GetRecentURLCallback|, if it has a
-  // compatible type, is recent enough and has not been suppressed.
-  virtual void GetRecentURLFromClipboard(GetRecentURLCallback callback) = 0;
-
   // Returns how old the content of the clipboard is.
   virtual base::TimeDelta GetClipboardContentAge() const = 0;
 

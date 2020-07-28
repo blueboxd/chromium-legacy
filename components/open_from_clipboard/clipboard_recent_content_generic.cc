@@ -118,16 +118,6 @@ bool ClipboardRecentContentGeneric::HasRecentImageFromClipboard() {
       /* data_dst = */ nullptr);
 }
 
-void ClipboardRecentContentGeneric::HasRecentURLFromClipboard(
-    HasDataCallback callback) {
-  std::move(callback).Run(GetRecentURLFromClipboard().has_value());
-}
-
-void ClipboardRecentContentGeneric::GetRecentURLFromClipboard(
-    GetRecentURLCallback callback) {
-  std::move(callback).Run(GetRecentURLFromClipboard());
-}
-
 base::TimeDelta ClipboardRecentContentGeneric::GetClipboardContentAge() const {
   const base::Time last_modified_time =
       ui::Clipboard::GetForCurrentThread()->GetLastModifiedTime();

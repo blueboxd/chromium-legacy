@@ -31,15 +31,6 @@ bool PathProvider(int key, base::FilePath* result) {
       *result = cur;
       return true;
     }
-    case DIR_MEDIA_LIBS: {
-#if defined(OS_MACOSX)
-      *result = base::mac::FrameworkBundlePath();
-      *result = result->Append("Libraries");
-      return true;
-#else
-      return base::PathService::Get(base::DIR_MODULE, result);
-#endif
-    }
     default:
       return false;
   }

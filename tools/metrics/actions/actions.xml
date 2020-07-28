@@ -7027,6 +7027,7 @@ should be able to be added at any place in this file.
 </action>
 
 <action name="GoogleNow.ButtonClicked0">
+  <obsolete>Feature removed March 2017.</obsolete>
   <owner>robliao@chromium.org</owner>
   <owner>skare@chromium.org</owner>
   <description>
@@ -7035,6 +7036,7 @@ should be able to be added at any place in this file.
 </action>
 
 <action name="GoogleNow.ButtonClicked1">
+  <obsolete>Feature removed March 2017.</obsolete>
   <owner>robliao@chromium.org</owner>
   <owner>skare@chromium.org</owner>
   <description>
@@ -7043,12 +7045,14 @@ should be able to be added at any place in this file.
 </action>
 
 <action name="GoogleNow.Dismissed">
+  <obsolete>Feature removed March 2017.</obsolete>
   <owner>robliao@chromium.org</owner>
   <owner>skare@chromium.org</owner>
   <description>User dismissed a Now Notification.</description>
 </action>
 
 <action name="GoogleNow.MessageCenter.NotificationPoppedUp">
+  <obsolete>Feature removed March 2017.</obsolete>
   <owner>robliao@chromium.org</owner>
   <owner>skare@chromium.org</owner>
   <description>
@@ -7057,6 +7061,7 @@ should be able to be added at any place in this file.
 </action>
 
 <action name="GoogleNow.MessageClicked">
+  <obsolete>Feature removed March 2017.</obsolete>
   <owner>robliao@chromium.org</owner>
   <owner>skare@chromium.org</owner>
   <description>
@@ -7065,6 +7070,7 @@ should be able to be added at any place in this file.
 </action>
 
 <action name="GoogleNow.WelcomeToastClickedNo">
+  <obsolete>Feature removed March 2017.</obsolete>
   <owner>robliao@chromium.org</owner>
   <owner>skare@chromium.org</owner>
   <description>
@@ -7074,6 +7080,7 @@ should be able to be added at any place in this file.
 </action>
 
 <action name="GoogleNow.WelcomeToastClickedYes">
+  <obsolete>Feature removed March 2017.</obsolete>
   <owner>robliao@chromium.org</owner>
   <owner>skare@chromium.org</owner>
   <description>
@@ -7082,6 +7089,7 @@ should be able to be added at any place in this file.
 </action>
 
 <action name="GoogleNow.WelcomeToastDismissed">
+  <obsolete>Feature removed March 2017.</obsolete>
   <owner>robliao@chromium.org</owner>
   <owner>skare@chromium.org</owner>
   <description>
@@ -20543,6 +20551,14 @@ should be able to be added at any place in this file.
   <description>
     The bottom row was horizontally scrolled. Recorded only once per open share
     sheet.
+  </description>
+</action>
+
+<action name="SharingHubAndroid.CopyImageSelected">
+  <owner>sophey@chromium.org</owner>
+  <owner>src/components/send_tab_to_self/OWNERS</owner>
+  <description>
+    The &quot;Copy Image&quot; option was selected in the sharing hub.
   </description>
 </action>
 

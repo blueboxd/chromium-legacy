@@ -72,8 +72,8 @@ SecurityKeyExtensionSession::SecurityKeyExtensionSession(
 
   security_key_auth_handler_ = remoting::SecurityKeyAuthHandler::Create(
       client_session_details,
-      base::Bind(&SecurityKeyExtensionSession::SendMessageToClient,
-                 base::Unretained(this)),
+      base::BindRepeating(&SecurityKeyExtensionSession::SendMessageToClient,
+                          base::Unretained(this)),
       file_task_runner);
 }
 
@@ -212,8 +212,8 @@ void SecurityKeyExtensionSession::SetSecurityKeyAuthHandlerForTesting(
 
   security_key_auth_handler_ = std::move(security_key_auth_handler);
   security_key_auth_handler_->SetSendMessageCallback(
-      base::Bind(&SecurityKeyExtensionSession::SendMessageToClient,
-                 base::Unretained(this)));
+      base::BindRepeating(&SecurityKeyExtensionSession::SendMessageToClient,
+                          base::Unretained(this)));
 }
 
 }  // namespace remoting

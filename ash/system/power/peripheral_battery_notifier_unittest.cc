@@ -30,10 +30,10 @@ namespace {
 // HID device.
 const char kTestBatteryPath[] =
     "/sys/class/power_supply/hid-AA:BB:CC:DD:EE:FF-battery";
-const char kTestBatteryAddress[] = "ff:ee:dd:cc:bb:aa";
+const char kTestBatteryAddress[] = "aa:bb:cc:dd:ee:ff";
 const char kTestDeviceName[] = "test device";
 const char kTestBatteryId[] =
-    "battery_notification_bluetooth-ff:ee:dd:cc:bb:aa";
+    "battery_notification_bluetooth-aa:bb:cc:dd:ee:ff";
 
 // Bluetooth devices.
 const char kBluetoothDeviceAddress1[] = "aa:bb:cc:dd:ee:ff";
@@ -218,9 +218,9 @@ TEST_F(PeripheralBatteryNotifierTest, InvalidBatteryInfo) {
 TEST_F(PeripheralBatteryNotifierTest, ExtractBluetoothAddress) {
   const std::string bluetooth_path =
       "/sys/class/power_supply/hid-A0:b1:C2:d3:E4:f5-battery";
-  const std::string expected_bluetooth_address = "f5:e4:d3:c2:b1:a0";
+  const std::string expected_bluetooth_address = "a0:b1:c2:d3:e4:f5";
   const std::string expected_bluetooth_id =
-      "battery_notification_bluetooth-f5:e4:d3:c2:b1:a0";
+      "battery_notification_bluetooth-a0:b1:c2:d3:e4:f5";
   const std::string non_bluetooth_path =
       "/sys/class/power_supply/hid-notbluetooth-battery";
 

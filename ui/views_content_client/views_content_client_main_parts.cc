@@ -24,7 +24,7 @@ ViewsContentClientMainParts::ViewsContentClientMainParts(
 ViewsContentClientMainParts::~ViewsContentClientMainParts() {
 }
 
-#if !defined(OS_MACOSX)
+#if !defined(OS_APPLE)
 void ViewsContentClientMainParts::PreCreateMainMessageLoop() {}
 #endif
 

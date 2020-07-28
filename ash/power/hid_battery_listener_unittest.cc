@@ -19,7 +19,7 @@ namespace ash {
 namespace {
 
 const char kPath[] = "/sys/class/power_supply/hid-AA:BB:CC:DD:EE:FF-battery";
-const char kAddress[] = "ff:ee:dd:cc:bb:aa";
+const char kAddress[] = "aa:bb:cc:dd:ee:ff";
 const char kDeviceName[] = "test device";
 
 }  // namespace

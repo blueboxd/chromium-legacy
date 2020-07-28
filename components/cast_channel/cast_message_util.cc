@@ -134,7 +134,7 @@ CastMessage CreateKeepAliveMessage(base::StringPiece keep_alive_type) {
 int GetVirtualConnectPlatformValue() {
 #if defined(OS_WIN)
   return 3;
-#elif defined(OS_MACOSX)
+#elif defined(OS_APPLE)
   return 4;
 #elif defined(OS_CHROMEOS)
   return 5;

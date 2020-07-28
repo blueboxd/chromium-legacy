@@ -690,8 +690,8 @@ void BluetoothDeviceBlueZ::ConnectToServiceInsecurely(
 
 std::unique_ptr<device::BluetoothGattConnection>
 BluetoothDeviceBlueZ::CreateBluetoothGattConnectionObject() {
-  return std::unique_ptr<device::BluetoothGattConnection>(
-      new BluetoothGattConnectionBlueZ(adapter_, GetAddress(), object_path_));
+  return std::make_unique<BluetoothGattConnectionBlueZ>(adapter_, GetAddress(),
+                                                        object_path_);
 }
 
 void BluetoothDeviceBlueZ::GetServiceRecords(

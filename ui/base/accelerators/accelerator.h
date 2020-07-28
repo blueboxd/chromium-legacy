@@ -87,7 +87,7 @@ class COMPONENT_EXPORT(UI_BASE) Accelerator {
   // Returns a string with the localized shortcut if any.
   base::string16 GetShortcutText() const;
 
-#if defined(OS_MACOSX)
+#if defined(OS_APPLE)
   base::string16 KeyCodeToMacSymbol() const;
 #endif
   base::string16 KeyCodeToName() const;

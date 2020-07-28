@@ -22,9 +22,9 @@ class ClipboardTestClient {
 
   void Init(Display* display) {
     display_ = display;
-    clipboard_.Init(display,
-                    base::Bind(&ClipboardTestClient::OnClipboardChanged,
-                               base::Unretained(this)));
+    clipboard_.Init(
+        display, base::BindRepeating(&ClipboardTestClient::OnClipboardChanged,
+                                     base::Unretained(this)));
   }
 
   void SetClipboardData(const std::string& clipboard_data) {

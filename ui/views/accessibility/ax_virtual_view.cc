@@ -284,7 +284,7 @@ gfx::NativeViewAccessible AXVirtualView::ChildAtIndex(int index) {
   return nullptr;
 }
 
-#if !defined(OS_MACOSX)
+#if !defined(OS_APPLE)
 gfx::NativeViewAccessible AXVirtualView::GetNSWindow() {
   NOTREACHED();
   return nullptr;

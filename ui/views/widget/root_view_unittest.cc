@@ -114,7 +114,7 @@ class TestContextMenuController : public ContextMenuController {
 // and VKEY_APPS) by the pre-target handler installed on RootView.
 TEST_F(RootViewTest, ContextMenuFromKeyEvent) {
   // This behavior is intentionally unsupported on macOS.
-#if !defined(OS_MACOSX)
+#if !defined(OS_APPLE)
   Widget widget;
   Widget::InitParams init_params =
       CreateParams(Widget::InitParams::TYPE_WINDOW_FRAMELESS);
@@ -766,7 +766,7 @@ TEST_F(RootViewDesktopNativeWidgetTest, SingleLayoutDuringInit) {
   widget->CloseNow();
 }
 
-#if !defined(OS_MACOSX)
+#if !defined(OS_APPLE)
 
 // Tests that AnnounceText sets up the correct text value on the hidden view,
 // and that the resulting hidden view actually stays hidden.
@@ -796,7 +796,7 @@ TEST_F(RootViewTest, AnnounceTextTest) {
             node_data.GetString16Attribute(ax::mojom::StringAttribute::kName));
 }
 
-#endif  // !defined(OS_MACOSX)
+#endif  // !defined(OS_APPLE)
 
 TEST_F(RootViewTest, MouseEventDispatchedToClosestEnabledView) {
   Widget widget;

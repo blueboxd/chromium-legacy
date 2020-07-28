@@ -33,6 +33,7 @@ namespace content {
 
 EmbeddedSharedWorkerStub::EmbeddedSharedWorkerStub(
     blink::mojom::SharedWorkerInfoPtr info,
+    const blink::SharedWorkerToken& token,
     const url::Origin& constructor_origin,
     const std::string& user_agent,
     const blink::UserAgentMetadata& ua_metadata,
@@ -57,6 +58,7 @@ EmbeddedSharedWorkerStub::EmbeddedSharedWorkerStub(
     ukm::SourceId ukm_source_id,
     const std::vector<std::string>& cors_exempt_header_list)
     : receiver_(this, std::move(receiver)) {
+  DCHECK(token);
   DCHECK(main_script_load_params);
   DCHECK(pending_subresource_loader_factory_bundle);
 
@@ -130,7 +132,7 @@ EmbeddedSharedWorkerStub::EmbeddedSharedWorkerStub(
                                std::move(response_override));
 
   impl_ = blink::WebSharedWorker::CreateAndStart(
-      info->url, info->options->type, info->options->credentials,
+      token, info->url, info->options->type, info->options->credentials,
       blink::WebString::FromUTF8(info->options->name),
       blink::WebSecurityOrigin(constructor_origin),
       blink::WebString::FromUTF8(user_agent), ua_metadata,

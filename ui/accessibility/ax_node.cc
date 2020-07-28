@@ -741,7 +741,7 @@ std::vector<AXNode::AXID> AXNode::GetTableRowNodeIds() const {
   return row_node_ids;
 }
 
-#if defined(OS_MACOSX)
+#if defined(OS_APPLE)
 
 //
 // Table column-like nodes. These nodes are only present on macOS.
@@ -768,7 +768,7 @@ base::Optional<int> AXNode::GetTableColColIndex() const {
   return index;
 }
 
-#endif  // defined(OS_MACOSX)
+#endif  // defined(OS_APPLE)
 
 //
 // Table cell-like nodes.

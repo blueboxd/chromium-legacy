@@ -213,7 +213,7 @@ void ViewAXPlatformNodeDelegate::NotifyAccessibilityEvent(
   ax_platform_node_->NotifyAccessibilityEvent(event_type);
 }
 
-#if defined(OS_MACOSX)
+#if defined(OS_APPLE)
 void ViewAXPlatformNodeDelegate::AnnounceText(const base::string16& text) {
   ax_platform_node_->AnnounceText(text);
 }

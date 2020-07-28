@@ -2184,7 +2184,7 @@ float ComputedStyle::GetOutlineStrokeWidthForFocusRing() const {
     return std::max(EffectiveZoom(), 3.f);
   }
 
-#if defined(OS_MACOSX)
+#if defined(OS_APPLE)
   return OutlineWidthInt();
 #else
   // Draw an outline with thickness in proportion to the zoom level, but never

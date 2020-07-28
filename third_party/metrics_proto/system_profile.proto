@@ -94,12 +94,16 @@ message SystemProfileProto {
   // Next tag: 8
   message OS {
     // The user's operating system. This should be one of:
-    // - Android
-    // - Windows NT
-    // - Linux (includes ChromeOS)
-    // - iOS (iOS versions >= 9)
-    // - iPhone OS (iOS versions <= 8)
-    // - Mac OS X
+    // - 'Android'
+    // - 'Windows NT'
+    // - 'CrOS' (as of 07/2020)
+    // - 'Lacros'  (the Lacros browser runs on Chrome OS, but reports a special
+    //              OS name to differentiate itself from the built-in ash
+    //              browser + window manager binary.)
+    // - 'Linux' (includes ChromeOS prior to 07/2020)
+    // - 'iOS' (iOS versions >= 9)
+    // - 'iPhone OS' (iOS versions <= 8)
+    // - 'Mac OS X'
     optional string name = 1;
 
     // The version of the OS.  The meaning of this field is OS-dependent.
@@ -944,6 +948,7 @@ message SystemProfileProto {
     DEMO_MODE_RESOURCES = 24;
     ON_DEVICE_HEAD_SUGGEST = 25;
     CROS_SMART_DIM = 26;
+    ZXCVBN_DATA = 27;
   }
 
   // Information about what Chrome components are registered and at which

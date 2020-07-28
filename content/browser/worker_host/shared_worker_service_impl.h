@@ -22,6 +22,7 @@
 #include "services/metrics/public/cpp/ukm_source_id.h"
 #include "services/network/public/mojom/url_loader_factory.mojom.h"
 #include "services/network/public/mojom/url_response_head.mojom.h"
+#include "third_party/blink/public/common/tokens/worker_tokens.h"
 #include "third_party/blink/public/mojom/loader/fetch_client_settings_object.mojom.h"
 #include "third_party/blink/public/mojom/worker/shared_worker_connector.mojom.h"
 #include "third_party/blink/public/mojom/worker/shared_worker_factory.mojom.h"
@@ -73,13 +74,14 @@ class CONTENT_EXPORT SharedWorkerServiceImpl : public SharedWorkerService {
   // Virtual for testing.
   virtual void DestroyHost(SharedWorkerHost* host);
 
-  void NotifyWorkerCreated(SharedWorkerId shared_worker_id,
+  void NotifyWorkerCreated(const blink::SharedWorkerToken& shared_worker_token,
                            int worker_process_id,
                            const base::UnguessableToken& dev_tools_token);
-  void NotifyBeforeWorkerDestroyed(SharedWorkerId shared_worker_id);
-  void NotifyClientAdded(SharedWorkerId shared_worker_id,
+  void NotifyBeforeWorkerDestroyed(
+      const blink::SharedWorkerToken& shared_worker_token);
+  void NotifyClientAdded(const blink::SharedWorkerToken& shared_worker_token,
                          GlobalFrameRoutingId render_frame_host_id);
-  void NotifyClientRemoved(SharedWorkerId shared_worker_id,
+  void NotifyClientRemoved(const blink::SharedWorkerToken& shared_worker_token,
                            GlobalFrameRoutingId render_frame_host_id);
 
   StoragePartitionImpl* storage_partition() { return storage_partition_; }
@@ -92,7 +94,6 @@ class CONTENT_EXPORT SharedWorkerServiceImpl : public SharedWorkerService {
 
   // Creates a new worker in the creator's renderer process.
   SharedWorkerHost* CreateWorker(
-      SharedWorkerId shared_worker_id,
       const SharedWorkerInstance& instance,
       blink::mojom::FetchClientSettingsObjectPtr
           outside_fetch_client_settings_object,
@@ -125,9 +126,6 @@ class CONTENT_EXPORT SharedWorkerServiceImpl : public SharedWorkerService {
       mojo::PendingRemote<blink::mojom::SharedWorkerClient> client,
       const std::string& error_message);
 
-  // Generates IDs for new shared workers.
-  SharedWorkerId::Generator shared_worker_id_generator_;
-
   std::set<std::unique_ptr<SharedWorkerHost>, base::UniquePtrComparator>
       worker_hosts_;
 
@@ -141,7 +139,7 @@ class CONTENT_EXPORT SharedWorkerServiceImpl : public SharedWorkerService {
   // duplicate OnClientAdded() notifications if the same frame connects multiple
   // times to the same shared worker. Note that this is a situation unique to
   // shared worker and cannot happen with dedicated workers and service workers.
-  base::flat_map<std::pair<SharedWorkerId, GlobalFrameRoutingId>, int>
+  base::flat_map<std::pair<blink::SharedWorkerToken, GlobalFrameRoutingId>, int>
       shared_worker_client_counts_;
 
   base::ObserverList<Observer> observers_;

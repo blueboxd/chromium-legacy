@@ -174,7 +174,8 @@ void PaintOpWriter::Write(const SkRRect& rect) {
 
 void PaintOpWriter::Write(const SkPath& path) {
   auto id = path.getGenerationID();
-  Write(id);
+  if (!options_.for_identifiability_study)
+    Write(id);
 
   if (options_.paint_cache->Get(PaintCacheDataType::kPath, id)) {
     Write(static_cast<uint32_t>(PaintCacheEntryState::kCached));
@@ -511,7 +512,8 @@ void PaintOpWriter::Write(const PaintShader* shader, SkFilterQuality quality) {
   if (shader->record_) {
     Write(true);
     DCHECK_NE(shader->id_, PaintShader::kInvalidRecordShaderId);
-    Write(shader->id_);
+    if (!options_.for_identifiability_study)
+      Write(shader->id_);
     const gfx::Rect playback_rect(
         gfx::ToEnclosingRect(gfx::SkRectToRectF(shader->tile())));
 

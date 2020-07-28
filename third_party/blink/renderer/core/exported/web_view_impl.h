@@ -87,7 +87,6 @@ class FullscreenController;
 class HTMLPlugInElement;
 class PageScaleConstraintsSet;
 class WebDevToolsAgentImpl;
-class WebElement;
 class WebInputMethodController;
 class WebLocalFrame;
 class WebLocalFrameImpl;
@@ -288,8 +287,6 @@ class CORE_EXPORT WebViewImpl final : public WebView,
   // significant change in this function is the code to convert from a
   // Keyboard event to the Right Mouse button down event.
   WebInputEventResult SendContextMenuEvent();
-
-  void ShowContextMenuForElement(WebElement);
 
   // Notifies the WebView that a load has been committed. isNewNavigation
   // will be true if a new session history item should be created for that

@@ -22,7 +22,7 @@
 #include "ui/views/widget/widget_observer.h"
 #include "ui/views/window/dialog_delegate.h"
 
-#if defined(OS_MACOSX)
+#if defined(OS_APPLE)
 #import "components/constrained_window/native_web_contents_modal_dialog_manager_views_mac.h"
 #endif
 
@@ -184,7 +184,7 @@ views::Widget* ShowWebModalDialogViews(
   return widget;
 }
 
-#if defined(OS_MACOSX)
+#if defined(OS_APPLE)
 views::Widget* ShowWebModalDialogWithOverlayViews(
     views::WidgetDelegate* dialog,
     content::WebContents* initiator_web_contents,
@@ -230,7 +230,7 @@ views::Widget* CreateBrowserModalDialogViews(views::DialogDelegate* dialog,
 
   bool requires_positioning = dialog->use_custom_frame();
 
-#if defined(OS_MACOSX)
+#if defined(OS_APPLE)
   // On Mac, window modal dialogs are displayed as sheets, so their position is
   // managed by the parent window.
   requires_positioning = false;

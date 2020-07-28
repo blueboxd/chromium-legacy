@@ -38,6 +38,11 @@
           {
             "name": "command",
             "type": "string"
+          },
+          {
+            "$ref": "tabs.Tab",
+            "name": "tab",
+            "optional": true
           }
         ]
       }

@@ -29,6 +29,7 @@ class SharedWorkerFactoryImpl : public blink::mojom::SharedWorkerFactory {
   // mojom::SharedWorkerFactory methods:
   void CreateSharedWorker(
       blink::mojom::SharedWorkerInfoPtr info,
+      const blink::SharedWorkerToken& token,
       const url::Origin& constructor_origin,
       const std::string& user_agent,
       const blink::UserAgentMetadata& ua_metadata,

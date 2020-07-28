@@ -144,6 +144,10 @@ class HTMLDocumentParserState
     }
   }
 
+  bool HasPendingWorkScheduled() const {
+    return IsScheduled() || IsScheduledToDelayEnd() || ShouldEndIfDelayed();
+  }
+
   void SetEndIfDelayed(bool value) { end_if_delayed_ = value; }
   void SetShouldComplete(bool value) { should_complete_ = value; }
   bool ShouldEndIfDelayed() const { return end_if_delayed_; }
@@ -351,9 +355,17 @@ void HTMLDocumentParser::Trace(Visitor* visitor) const {
   HTMLParserScriptRunnerHost::Trace(visitor);
 }
 
+bool HTMLDocumentParser::HasPendingWorkScheduledForTesting() const {
+  return task_runner_state_->HasPendingWorkScheduled();
+}
+
 void HTMLDocumentParser::Detach() {
   if (have_background_parser_)
     StopBackgroundParser();
+  // Deschedule any pending tokenizer pumps.
+  task_runner_state_->SetState(
+      HTMLDocumentParserState::DeferredParserState::kNotScheduled);
+  task_runner_state_->SetEndIfDelayed(false);
   DocumentParser::Detach();
   if (script_runner_)
     script_runner_->Detach();
@@ -382,6 +394,7 @@ void HTMLDocumentParser::StopParsing() {
   }
   task_runner_state_->SetState(
       HTMLDocumentParserState::DeferredParserState::kNotScheduled);
+  task_runner_state_->SetEndIfDelayed(false);
   if (have_background_parser_)
     StopBackgroundParser();
 }
@@ -431,13 +444,18 @@ void HTMLDocumentParser::DeferredPumpTokenizerIfPossible() {
   // This function should only be called when
   // --enable-blink-features=ForceSynchronousHTMLParsing is available.
   DCHECK(RuntimeEnabledFeatures::ForceSynchronousHTMLParsingEnabled());
+  // If we're scheduled for a tokenizer pump, then document should be attached
+  // and the parser should not be stopped, but sometimes a script completes
+  // loading (so we schedule a pump) but the Document is stopped in the meantime
+  // (e.g. fast/parser/iframe-onload-document-close-with-external-script.html).
+  DCHECK(task_runner_state_->GetState() ==
+             HTMLDocumentParserState::DeferredParserState::kNotScheduled ||
+         (!IsStopped() && !IsDetached()))
+      << "Document should be attached (" << !IsDetached()
+      << ") and not stopped (" << !IsStopped() << ")";
   TRACE_EVENT2("blink", "HTMLDocumentParser::DeferredPumpTokenizerIfPossible",
                "parser", (void*)this, "state",
                task_runner_state_->GetStateAsString());
-
-  if (IsDetached())
-    return;
-
   if (task_runner_state_->IsScheduled()) {
     HTMLDocumentParser::PumpTokenizerIfPossible();
   } else if (task_runner_state_->IsScheduledToDelayEnd()) {
@@ -456,7 +474,7 @@ void HTMLDocumentParser::PumpTokenizerIfPossible() {
   bool yielded = false;
   const bool should_call_delay_end = task_runner_state_->ShouldEndIfDelayed();
   CheckIfBlockingStylesheetAdded();
-  if ((!IsStopped() && !IsPaused()) || should_call_delay_end) {
+  if (!IsStopped() && (!IsPaused() || should_call_delay_end)) {
     yielded = PumpTokenizer();
   }
 
@@ -470,7 +488,7 @@ void HTMLDocumentParser::PumpTokenizerIfPossible() {
       if (task_runner_state_->ShouldComplete() ||
           task_runner_state_->GetMode() != kAllowDeferredParsing) {
         EndIfDelayed();  // Synchronous case
-      } else {
+      } else if (!IsStopped()) {
         ScheduleEndIfDelayed();  // async case
       }
     }
@@ -926,6 +944,7 @@ bool HTMLDocumentParser::PumpTokenizer() {
 void HTMLDocumentParser::SchedulePumpTokenizer() {
   TRACE_EVENT0("blink", "HTMLDocumentParser::SchedulePumpTokenizer");
   DCHECK(RuntimeEnabledFeatures::ForceSynchronousHTMLParsingEnabled());
+  DCHECK(!IsStopped());
   loading_task_runner_->PostTask(
       FROM_HERE, WTF::Bind(&HTMLDocumentParser::DeferredPumpTokenizerIfPossible,
                            WrapPersistent(this)));
@@ -936,6 +955,7 @@ void HTMLDocumentParser::SchedulePumpTokenizer() {
 void HTMLDocumentParser::ScheduleEndIfDelayed() {
   TRACE_EVENT0("blink", "HTMLDocumentParser::ScheduleEndIfDelayed");
   DCHECK(RuntimeEnabledFeatures::ForceSynchronousHTMLParsingEnabled());
+  DCHECK(!IsStopped());
   task_runner_state_->SetEndIfDelayed(true);
   task_runner_state_->SetState(
       HTMLDocumentParserState::DeferredParserState::kScheduledWithEndIfDelayed);

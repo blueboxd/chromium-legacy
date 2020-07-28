@@ -31,7 +31,7 @@ android_library("java") {
     "//third_party/android_deps:androidx_annotation_annotation_java",
     "//third_party/android_deps:androidx_fragment_fragment_java",
     "//third_party/android_deps:androidx_preference_preference_java",
-    "//third_party/android_deps:com_google_android_material_material_java",
+    "//third_party/android_deps:material_design_java",
   ]
   srcjar_deps = [
     "//chrome/browser/net:secure_dns_management_mode_generated_enum",
@@ -52,7 +52,7 @@ android_resources("java_resources") {
     "//components/browser_ui/strings/android:browser_ui_strings_grd",
     "//components/browser_ui/styles/android:java_resources",
     "//components/browser_ui/widget/android:java_resources",
-    "//third_party/android_deps:com_google_android_material_material_java",
+    "//third_party/android_deps:material_design_java",
   ]
 }
 

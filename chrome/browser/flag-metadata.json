@@ -4081,6 +4081,11 @@
     "expiry_milestone": 86
   },
   {
+    "name": "tab-groups-collapse-freezing",
+    "owners": [ "chrome-desktop-ui-seattle@google.com", "xialinyan" ],
+    "expiry_milestone": 87
+  },
+  {
     "name": "tab-groups-feedback",
     "owners": [ "chrome-desktop-ui-seattle@google.com", "xialinyan" ],
     "expiry_milestone": 86

@@ -173,6 +173,10 @@
                       selector:@selector(applicationDidEnterBackground:)
                           name:UIApplicationDidEnterBackgroundNotification
                         object:nil];
+    [defaultCenter addObserver:self
+                      selector:@selector(windowDidBecomeKey:)
+                          name:UIWindowDidBecomeKeyNotification
+                        object:nil];
 
     _keyboardObserver = [[KeyboardObserverHelper alloc] init];
     _keyboardObserver.consumer = self;
@@ -521,26 +525,41 @@
   [self.delegate mediatorDidDetectMovingToBackground:self];
 }
 
+- (void)windowDidBecomeKey:(NSNotification*)notification {
+  [self verifyFirstResponderAndUpdateCustomKeyboardView];
+}
+
 // Verifies that the first responder is a child of WKWebView and that is is not
 // a child of SSOSignInViewController. Pause or try to continue the keyboard
 // custom view depending on the validity of the first responder.
 - (void)verifyFirstResponderAndUpdateCustomKeyboardView {
-  UIResponder* firstResponder = GetFirstResponder();
+  if (!self.webState) {
+    self.firstResponderIsValid = NO;
+    [self pauseCustomKeyboardView];
+    return;
+  }
+
   BOOL ancestorIsSSOSignInViewController = NO;
   BOOL ancestorIsWkWebView = NO;
-  while (firstResponder) {
-    if ([firstResponder isKindOfClass:NSClassFromString(@"WKWebView")]) {
-      ancestorIsWkWebView = YES;
+
+  UIView* webStateContainerView = self.webState->GetView();
+  BOOL webStateInKeyWindow = webStateContainerView.window.isKeyWindow;
+  if (webStateInKeyWindow) {
+    UIResponder* firstResponder = GetFirstResponder();
+    while (firstResponder) {
+      if ([firstResponder isKindOfClass:NSClassFromString(@"WKWebView")]) {
+        ancestorIsWkWebView = YES;
+      }
+      if ([firstResponder
+              isKindOfClass:NSClassFromString(@"SSOSignInViewController")]) {
+        ancestorIsSSOSignInViewController = YES;
+        break;
+      }
+      firstResponder = firstResponder.nextResponder;
     }
-    if ([firstResponder
-            isKindOfClass:NSClassFromString(@"SSOSignInViewController")]) {
-      ancestorIsSSOSignInViewController = YES;
-      break;
-    }
-    firstResponder = firstResponder.nextResponder;
   }
-  self.firstResponderIsValid =
-      ancestorIsWkWebView && !ancestorIsSSOSignInViewController;
+  self.firstResponderIsValid = webStateInKeyWindow && ancestorIsWkWebView &&
+                               !ancestorIsSSOSignInViewController;
   if (self.firstResponderIsValid) {
     [self continueCustomKeyboardView];
   } else {

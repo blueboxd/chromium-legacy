@@ -43,7 +43,7 @@ struct RDFTContext;
 #elif defined(WTF_USE_WEBAUDIO_PFFFT)
 #include "third_party/blink/renderer/platform/wtf/vector.h"
 #include "third_party/pffft/src/pffft.h"
-#elif defined(OS_MACOSX)
+#elif defined(OS_APPLE)
 #include <Accelerate/Accelerate.h>
 #endif
 
@@ -144,7 +144,7 @@ class PLATFORM_EXPORT FFTFrame {
   AudioFloatArray real_data_;
   AudioFloatArray imag_data_;
 
-#if defined(OS_MACOSX) && !defined(WTF_USE_WEBAUDIO_PFFFT)
+#if defined(OS_APPLE) && !defined(WTF_USE_WEBAUDIO_PFFFT)
   // Thin wrapper around FFTSetup so we can call the appropriate routines to
   // construct or release the FFTSetup objects.
   class FFTSetupDatum {

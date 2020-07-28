@@ -24,6 +24,7 @@
 #include "media/base/media_export.h"
 #include "media/base/pipeline_status.h"
 #include "media/base/renderer.h"
+#include "media/base/tuneable.h"
 #include "media/base/video_decoder_config.h"
 #include "media/base/waiting.h"
 #include "ui/gfx/geometry/size.h"
@@ -78,7 +79,7 @@ class MEDIA_EXPORT RendererImpl : public Renderer {
     time_source_ = time_source;
   }
   void set_video_underflow_threshold_for_testing(base::TimeDelta threshold) {
-    video_underflow_threshold_ = threshold;
+    video_underflow_threshold_.set_for_testing(threshold);
   }
 
  private:
@@ -252,7 +253,10 @@ class MEDIA_EXPORT RendererImpl : public Renderer {
 
   // The amount of time to wait before declaring underflow if the video renderer
   // runs out of data but the audio renderer still has enough.
-  base::TimeDelta video_underflow_threshold_;
+  Tuneable<base::TimeDelta> video_underflow_threshold_ = {
+      "MediaVideoUnderflowThreshold", base::TimeDelta::FromMilliseconds(1000),
+      base::TimeDelta::FromMilliseconds(3000),
+      base::TimeDelta::FromMilliseconds(8000)};
 
   // Lock used to protect access to the |restarting_audio_| flag and
   // |restarting_audio_time_|.

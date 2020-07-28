@@ -49,7 +49,7 @@ class PasswordCheckCoordinator implements PasswordCheckComponentUi, LifecycleObs
             mModel = PasswordCheckProperties.createDefaultModel();
             PasswordCheckMediator mediator = new PasswordCheckMediator();
             PasswordCheckCoordinator.setUpModelChangeProcessors(mModel, mFragmentView);
-            mediator.initialize(mModel, PasswordCheckFactory.create());
+            mediator.initialize(mModel, PasswordCheckFactory.getOrCreate());
         }
     }
 
@@ -64,6 +64,11 @@ class PasswordCheckCoordinator implements PasswordCheckComponentUi, LifecycleObs
             return true;
         }
         return false;
+    }
+
+    @Override
+    public void destroy() {
+        PasswordCheckFactory.destroy();
     }
 
     /**

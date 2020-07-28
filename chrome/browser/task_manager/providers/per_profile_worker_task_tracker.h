@@ -13,7 +13,6 @@
 #include "content/public/browser/dedicated_worker_service.h"
 #include "content/public/browser/service_worker_context.h"
 #include "content/public/browser/service_worker_context_observer.h"
-#include "content/public/browser/shared_worker_id.h"
 #include "content/public/browser/shared_worker_service.h"
 #include "third_party/blink/public/common/tokens/worker_tokens.h"
 
@@ -54,18 +53,19 @@ class PerProfileWorkerTaskTracker
       const GURL& url) override;
 
   // content::SharedWorkerService::Observer:
-  void OnWorkerCreated(content::SharedWorkerId shared_worker_id,
+  void OnWorkerCreated(const blink::SharedWorkerToken& shared_worker_token,
                        int worker_process_id,
                        const base::UnguessableToken& dev_tools_token) override;
   void OnBeforeWorkerDestroyed(
-      content::SharedWorkerId shared_worker_id) override;
-  void OnFinalResponseURLDetermined(content::SharedWorkerId shared_worker_id,
-                                    const GURL& url) override;
+      const blink::SharedWorkerToken& shared_worker_token) override;
+  void OnFinalResponseURLDetermined(
+      const blink::SharedWorkerToken& shared_worker_token,
+      const GURL& url) override;
   void OnClientAdded(
-      content::SharedWorkerId shared_worker_id,
+      const blink::SharedWorkerToken& shared_worker_token,
       content::GlobalFrameRoutingId render_frame_host_id) override {}
   void OnClientRemoved(
-      content::SharedWorkerId shared_worker_id,
+      const blink::SharedWorkerToken& shared_worker_token,
       content::GlobalFrameRoutingId render_frame_host_id) override {}
 
   // content::ServiceWorkerContextObserver:
@@ -123,7 +123,7 @@ class PerProfileWorkerTaskTracker
                  content::SharedWorkerService::Observer>
       scoped_shared_worker_service_observer_{this};
 
-  base::flat_map<content::SharedWorkerId, std::unique_ptr<WorkerTask>>
+  base::flat_map<blink::SharedWorkerToken, std::unique_ptr<WorkerTask>>
       shared_worker_tasks_;
 
   // For service workers:

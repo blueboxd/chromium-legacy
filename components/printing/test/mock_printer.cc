@@ -15,7 +15,7 @@
 #include "printing/units.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
-#if defined(OS_MACOSX)
+#if defined(OS_APPLE)
 #include "printing/pdf_metafile_cg_mac.h"
 #endif
 
@@ -202,7 +202,7 @@ void MockPrinter::PrintPage(
   EXPECT_EQ(PRINTER_PRINTING, printer_status_);
   EXPECT_EQ(document_cookie_, params.document_cookie);
 
-#if defined(OS_WIN) || defined(OS_MACOSX)
+#if defined(OS_WIN) || defined(OS_APPLE)
   // Load the data sent from a RenderView object and create a PageData object.
   ASSERT_TRUE(params.content.metafile_data_region.IsValid());
   base::ReadOnlySharedMemoryMapping mapping =
@@ -210,7 +210,7 @@ void MockPrinter::PrintPage(
   ASSERT_TRUE(mapping.IsValid());
   EXPECT_GT(mapping.size(), 0U);
 
-#if defined(OS_MACOSX)
+#if defined(OS_APPLE)
   printing::PdfMetafileCg metafile;
 #else
   printing::MetafileSkia metafile;

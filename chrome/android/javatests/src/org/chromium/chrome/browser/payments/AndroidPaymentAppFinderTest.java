@@ -147,7 +147,7 @@ public class AndroidPaymentAppFinderTest
 
     // PaymentAppFactoryParams implementation.
     @Override
-    public Map<String, PaymentDetailsModifier> getModifiers() {
+    public Map<String, PaymentDetailsModifier> getUnmodifiableModifiers() {
         return Collections.unmodifiableMap(new HashMap<String, PaymentDetailsModifier>());
     }
 

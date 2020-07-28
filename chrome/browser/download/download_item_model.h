@@ -96,6 +96,8 @@ class DownloadItemModel : public DownloadUIModel,
   void CompleteSafeBrowsingScan() override;
 #endif
 
+  bool ShouldShowDropdown() const override;
+
   // download::DownloadItem::Observer implementation.
   void OnDownloadUpdated(download::DownloadItem* download) override;
   void OnDownloadOpened(download::DownloadItem* download) override;

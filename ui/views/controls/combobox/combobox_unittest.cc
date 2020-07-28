@@ -280,7 +280,7 @@ class ComboboxTest : public ViewsTestBase {
   DISALLOW_COPY_AND_ASSIGN(ComboboxTest);
 };
 
-#if defined(OS_MACOSX)
+#if defined(OS_APPLE)
 // Tests whether the various Mac specific keyboard shortcuts invoke the dropdown
 // menu or not.
 TEST_F(ComboboxTest, KeyTestMac) {
@@ -354,7 +354,7 @@ TEST_F(ComboboxTest, DisabilityTest) {
 
 // On Mac, key events can't change the currently selected index directly for a
 // combobox.
-#if !defined(OS_MACOSX)
+#if !defined(OS_APPLE)
 
 // Tests the behavior of various keyboard shortcuts on the currently selected
 // index.
@@ -802,7 +802,7 @@ TEST_F(ComboboxTest, MenuModel) {
   EXPECT_EQ(ui::MenuModel::TYPE_SEPARATOR,
             menu_model->GetTypeAt(kSeparatorIndex));
 
-#if defined(OS_MACOSX)
+#if defined(OS_APPLE)
   // Comboboxes on Mac should have checkmarks, with the selected item checked,
   EXPECT_EQ(ui::MenuModel::TYPE_CHECK, menu_model->GetTypeAt(0));
   EXPECT_EQ(ui::MenuModel::TYPE_CHECK, menu_model->GetTypeAt(1));

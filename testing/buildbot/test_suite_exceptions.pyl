@@ -2428,6 +2428,10 @@
       }
     },
     'remove_from': [
+      # TODO(crbug.com/1109999): Add back to the CQ once pending tasks are back
+      # down.
+      'chromeos-amd64-generic-rel',
+
       # crbug.com/936540
       'Mac10.10 Tests',
       'Mac10.11 Tests',

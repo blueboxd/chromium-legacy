@@ -1387,6 +1387,16 @@
     ]
   },
 
+  "SpellcheckLanguageBlocklist": {
+    "os": ["win", "linux", "chromeos"],
+    "policy_pref_mapping_test": [
+      {
+        "policies": { "SpellcheckLanguageBlocklist": ["fr"]},
+        "prefs": { "spellcheck.blacklisted_dictionaries": {} }
+      }
+    ]
+  },
+
   "ThirdPartyBlockingEnabled": {
     "os": ["win"],
     "official_only": true,

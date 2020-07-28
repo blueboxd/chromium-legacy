@@ -104,34 +104,38 @@ class BluetoothGattBlueZTest : public testing::Test {
   void SetUp() override {
     std::unique_ptr<bluez::BluezDBusManagerSetter> dbus_setter =
         bluez::BluezDBusManager::GetSetterForTesting();
-    fake_bluetooth_device_client_ = new bluez::FakeBluetoothDeviceClient;
+
+    auto fake_bluetooth_device_client =
+        std::make_unique<bluez::FakeBluetoothDeviceClient>();
+    auto fake_bluetooth_gatt_service_client =
+        std::make_unique<bluez::FakeBluetoothGattServiceClient>();
+    auto fake_bluetooth_gatt_characteristic_client =
+        std::make_unique<bluez::FakeBluetoothGattCharacteristicClient>();
+    auto fake_bluetooth_gatt_descriptor_client =
+        std::make_unique<bluez::FakeBluetoothGattDescriptorClient>();
+
+    fake_bluetooth_device_client_ = fake_bluetooth_device_client.get();
     fake_bluetooth_gatt_service_client_ =
-        new bluez::FakeBluetoothGattServiceClient;
+        fake_bluetooth_gatt_service_client.get();
     fake_bluetooth_gatt_characteristic_client_ =
-        new bluez::FakeBluetoothGattCharacteristicClient;
+        fake_bluetooth_gatt_characteristic_client.get();
     fake_bluetooth_gatt_descriptor_client_ =
-        new bluez::FakeBluetoothGattDescriptorClient;
+        fake_bluetooth_gatt_descriptor_client.get();
+
     dbus_setter->SetBluetoothDeviceClient(
-        std::unique_ptr<bluez::BluetoothDeviceClient>(
-            fake_bluetooth_device_client_));
+        std::move(fake_bluetooth_device_client));
     dbus_setter->SetBluetoothGattServiceClient(
-        std::unique_ptr<bluez::BluetoothGattServiceClient>(
-            fake_bluetooth_gatt_service_client_));
+        std::move(fake_bluetooth_gatt_service_client));
     dbus_setter->SetBluetoothGattCharacteristicClient(
-        std::unique_ptr<bluez::BluetoothGattCharacteristicClient>(
-            fake_bluetooth_gatt_characteristic_client_));
+        std::move(fake_bluetooth_gatt_characteristic_client));
     dbus_setter->SetBluetoothGattDescriptorClient(
-        std::unique_ptr<bluez::BluetoothGattDescriptorClient>(
-            fake_bluetooth_gatt_descriptor_client_));
+        std::move(fake_bluetooth_gatt_descriptor_client));
     dbus_setter->SetBluetoothAdapterClient(
-        std::unique_ptr<bluez::BluetoothAdapterClient>(
-            new bluez::FakeBluetoothAdapterClient));
+        std::make_unique<bluez::FakeBluetoothAdapterClient>());
     dbus_setter->SetBluetoothInputClient(
-        std::unique_ptr<bluez::BluetoothInputClient>(
-            new bluez::FakeBluetoothInputClient));
+        std::make_unique<bluez::FakeBluetoothInputClient>());
     dbus_setter->SetBluetoothAgentManagerClient(
-        std::unique_ptr<bluez::BluetoothAgentManagerClient>(
-            new bluez::FakeBluetoothAgentManagerClient));
+        std::make_unique<bluez::FakeBluetoothAgentManagerClient>());
 
     GetAdapter();
 

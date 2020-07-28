@@ -2,10 +2,9 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "third_party/blink/renderer/core/html/parser/html_document_parser.h"
-
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/blink/renderer/core/dom/document.h"
+#include "third_party/blink/renderer/core/html/parser/html_document_parser.h"
 #include "third_party/blink/renderer/core/testing/sim/sim_request.h"
 #include "third_party/blink/renderer/core/testing/sim/sim_test.h"
 #include "third_party/blink/renderer/platform/testing/unit_test_helpers.h"
@@ -20,23 +19,49 @@ class HTMLDocumentParserSimTest : public SimTest {
   }
 };
 
-class HTMLDocumentParserLoadingTest : public HTMLDocumentParserSimTest,
-                                      public testing::WithParamInterface<bool> {
+class HTMLDocumentParserLoadingTest
+    : public HTMLDocumentParserSimTest,
+      public testing::WithParamInterface<ParserSynchronizationPolicy> {
  protected:
   HTMLDocumentParserLoadingTest() {
-    Document::SetThreadedParsingEnabledForTesting(GetParam());
+    if (GetParam() == ParserSynchronizationPolicy::kForceSynchronousParsing) {
+      Document::SetThreadedParsingEnabledForTesting(false);
+    } else {
+      Document::SetThreadedParsingEnabledForTesting(true);
+    }
+
+    if (GetParam() == ParserSynchronizationPolicy::kAllowDeferredParsing) {
+      RuntimeEnabledFeatures::SetForceSynchronousHTMLParsingEnabled(true);
+    } else {
+      RuntimeEnabledFeatures::SetForceSynchronousHTMLParsingEnabled(false);
+    }
   }
   static bool SheetInHeadBlocksParser() {
     return RuntimeEnabledFeatures::BlockHTMLParserOnStyleSheetsEnabled();
   }
 };
 
-INSTANTIATE_TEST_SUITE_P(Threaded,
+INSTANTIATE_TEST_SUITE_P(HTMLDocumentParserLoadingTest,
                          HTMLDocumentParserLoadingTest,
-                         testing::Values(true));
-INSTANTIATE_TEST_SUITE_P(NotThreaded,
-                         HTMLDocumentParserLoadingTest,
-                         testing::Values(false));
+                         testing::Values(kAllowDeferredParsing,
+                                         kAllowAsynchronousParsing,
+                                         kForceSynchronousParsing));
+
+TEST_P(HTMLDocumentParserLoadingTest, IFrameDoesNotRenterParser) {
+  SimRequest main_resource("https://example.com/test.html", "text/html");
+  SimRequest::Params params;
+  params.response_http_status = 200;
+  SimSubresourceRequest js("https://example.com/non-existent.js",
+                           "application/javascript", params);
+  LoadURL("https://example.com/test.html");
+  main_resource.Complete(R"HTML(
+<script src="non-existent.js"></script>
+<iframe onload="document.write('This test passes if it does not crash'); document.close();"></iframe>
+  )HTML");
+  test::RunPendingTasks();
+  js.Complete("");
+  test::RunPendingTasks();
+}
 
 TEST_P(HTMLDocumentParserLoadingTest,
        PauseParsingForExternalStylesheetsInHead) {

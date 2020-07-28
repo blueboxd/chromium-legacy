@@ -109,8 +109,8 @@ void ChromotingHost::Start(const std::string& host_owner_email) {
   for (auto& observer : status_monitor_->observers())
     observer.OnStart(host_owner_email);
 
-  session_manager_->AcceptIncoming(
-      base::Bind(&ChromotingHost::OnIncomingSession, base::Unretained(this)));
+  session_manager_->AcceptIncoming(base::BindRepeating(
+      &ChromotingHost::OnIncomingSession, base::Unretained(this)));
 }
 
 void ChromotingHost::AddExtension(std::unique_ptr<HostExtension> extension) {

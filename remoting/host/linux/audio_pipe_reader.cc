@@ -68,9 +68,10 @@ void AudioPipeReader::RemoveObserver(StreamObserver* observer) {
 void AudioPipeReader::StartOnAudioThread() {
   DCHECK(task_runner_->BelongsToCurrentThread());
 
-  if (!file_watcher_.Watch(pipe_path_.DirName(), true,
-                           base::Bind(&AudioPipeReader::OnDirectoryChanged,
-                                      base::Unretained(this)))) {
+  if (!file_watcher_.Watch(
+          pipe_path_.DirName(), true,
+          base::BindRepeating(&AudioPipeReader::OnDirectoryChanged,
+                              base::Unretained(this)))) {
     LOG(ERROR) << "Failed to watch pulseaudio directory "
                << pipe_path_.DirName().value();
   }
@@ -199,8 +200,8 @@ void AudioPipeReader::WaitForPipeReadable() {
   timer_.Stop();
   DCHECK(!pipe_watch_controller_);
   pipe_watch_controller_ = base::FileDescriptorWatcher::WatchReadable(
-      pipe_.GetPlatformFile(),
-      base::Bind(&AudioPipeReader::StartTimer, base::Unretained(this)));
+      pipe_.GetPlatformFile(), base::BindRepeating(&AudioPipeReader::StartTimer,
+                                                   base::Unretained(this)));
 }
 
 // static

@@ -148,6 +148,13 @@ bool ProfileOAuth2TokenServiceDelegateChromeOS::RefreshTokenIsAvailable(
 void ProfileOAuth2TokenServiceDelegateChromeOS::UpdateAuthError(
     const CoreAccountId& account_id,
     const GoogleServiceAuthError& error) {
+  UpdateAuthErrorInternal(account_id, error, /*fire_auth_error_changed=*/true);
+}
+
+void ProfileOAuth2TokenServiceDelegateChromeOS::UpdateAuthErrorInternal(
+    const CoreAccountId& account_id,
+    const GoogleServiceAuthError& error,
+    bool fire_auth_error_changed) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
   backoff_entry_.InformOfRequest(!error.IsTransientError());
@@ -166,11 +173,15 @@ void ProfileOAuth2TokenServiceDelegateChromeOS::UpdateAuthError(
       errors_.erase(it);
     else
       it->second.last_auth_error = error;
-    FireAuthErrorChanged(account_id, error);
+    if (fire_auth_error_changed) {
+      FireAuthErrorChanged(account_id, error);
+    }
   } else if (error.state() != GoogleServiceAuthError::NONE) {
     // Add a new error.
     errors_.emplace(account_id, AccountErrorStatus{error});
-    FireAuthErrorChanged(account_id, error);
+    if (fire_auth_error_changed) {
+      FireAuthErrorChanged(account_id, error);
+    }
   }
 }
 
@@ -347,14 +358,12 @@ void ProfileOAuth2TokenServiceDelegateChromeOS::OnTokenUpserted(
       account.key.id /* gaia_id */, account.raw_email);
   DCHECK(!account_id.empty());
 
-  // Clear any previously cached errors for |account_id|.
-  // We cannot directly use |UpdateAuthError| because it does not invoke
-  // |FireAuthErrorChanged| if |account_id|'s error state was already
-  // |GoogleServiceAuthError::State::NONE|, but |FireAuthErrorChanged| must be
-  // invoked here, regardless. See the comment above |FireAuthErrorChanged| few
-  // lines down.
-  errors_.erase(account_id);
   GoogleServiceAuthError error(GoogleServiceAuthError::AuthErrorNone());
+  // Clear any previously cached errors for |account_id|.
+  // Don't call |FireAuthErrorChanged|, since we call it at the end of this
+  // function.
+  UpdateAuthErrorInternal(account_id, error,
+                          /*fire_auth_error_changed=*/false);
 
   // However, if we know that |account_key| has a dummy token, store a
   // persistent error against it, so that we can pre-emptively reject access
@@ -396,6 +405,8 @@ void ProfileOAuth2TokenServiceDelegateChromeOS::OnAccountRemoved(
           ->FindAccountInfoByGaiaId(account.key.id /* gaia_id */)
           .account_id;
   DCHECK(!account_id.empty());
+  UpdateAuthErrorInternal(account_id, GoogleServiceAuthError::AuthErrorNone(),
+                          /*fire_auth_error_changed=*/false);
 
   ScopedBatchChange batch(this);
 

@@ -4,4 +4,5 @@ include_rules = [
   "+services/device/public",
   "+ui/android",
   "+ui/gfx",
+  "+ui/base/ui_base_features.h",
 ]

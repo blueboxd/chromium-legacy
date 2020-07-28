@@ -972,7 +972,7 @@ IN_PROC_BROWSER_TEST_F(ContentScriptApiTest, ExecuteScriptBypassingSandbox) {
 IN_PROC_BROWSER_TEST_F(ContentScriptApiTest, InifiniteLoopInGetEffectiveURL) {
   // Create an extension that injects content scripts into about:blank frames
   // (and therefore has a chance to trigger an infinite loop in
-  // ScriptContext::GetEffectiveDocumentURL).
+  // ScriptContext::GetEffectiveDocumentURLForInjection()).
   TestExtensionDir test_dir;
   test_dir.WriteManifest(
       R"({

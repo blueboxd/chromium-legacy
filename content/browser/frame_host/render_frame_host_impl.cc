@@ -5991,17 +5991,8 @@ void RenderFrameHostImpl::CommitNavigation(
           pending_factory_proxy;
       mojo::PendingReceiver<network::mojom::URLLoaderFactory> factory_receiver =
           pending_factory_proxy.InitWithNewPipeAndPassReceiver();
-      GetContentClient()->browser()->WillCreateURLLoaderFactory(
-          browser_context, this, GetProcess()->GetID(),
-          ContentBrowserClient::URLLoaderFactoryType::kDocumentSubResource,
-          main_world_origin_for_url_loader_factory,
-          base::nullopt /* navigation_id */, &factory_receiver,
-          nullptr /* header_client */, nullptr /* bypass_redirect_checks */,
-          nullptr /* disable_secure_dns */, nullptr /* factory_override */);
-      // Keep DevTools proxy last, i.e. closest to the network.
-      devtools_instrumentation::WillCreateURLLoaderFactory(
-          this, false /* is_navigation */, false /* is_download */,
-          &factory_receiver, nullptr /* factory_override */);
+      WillCreateURLLoaderFactory(main_world_origin_for_url_loader_factory,
+                                 &factory_receiver);
       factory.second->Clone(std::move(factory_receiver));
       subresource_loader_factories->pending_scheme_specific_factories().emplace(
           factory.first, std::move(pending_factory_proxy));
@@ -6839,28 +6830,41 @@ bool RenderFrameHostImpl::CreateNetworkServiceDefaultFactoryInternal(
     network::mojom::URLLoaderFactoryParamsPtr params,
     mojo::PendingReceiver<network::mojom::URLLoaderFactory>
         default_factory_receiver) {
-  auto* context = GetSiteInstance()->GetBrowserContext();
-
   DCHECK(params->request_initiator_site_lock.has_value());
-  const url::Origin& origin = params->request_initiator_site_lock.value();
+  const url::Origin& request_initiator =
+      params->request_initiator_site_lock.value();
 
   bool bypass_redirect_checks = false;
-  GetContentClient()->browser()->WillCreateURLLoaderFactory(
-      context, this, GetProcess()->GetID(),
-      ContentBrowserClient::URLLoaderFactoryType::kDocumentSubResource, origin,
-      base::nullopt /* navigation_id */, &default_factory_receiver,
-      &params->header_client, &bypass_redirect_checks,
-      &params->disable_secure_dns, &params->factory_override);
-
-  // Keep DevTools proxy last, i.e. closest to the network.
-  devtools_instrumentation::WillCreateURLLoaderFactory(
-      this, false /* is_navigation */, false /* is_download */,
-      &default_factory_receiver, &params->factory_override);
+  WillCreateURLLoaderFactory(request_initiator, &default_factory_receiver,
+                             &params->header_client, &bypass_redirect_checks,
+                             &params->disable_secure_dns,
+                             &params->factory_override);
 
   GetProcess()->CreateURLLoaderFactory(std::move(default_factory_receiver),
                                        std::move(params));
 
   return bypass_redirect_checks;
+}
+
+void RenderFrameHostImpl::WillCreateURLLoaderFactory(
+    const url::Origin& request_initiator,
+    mojo::PendingReceiver<network::mojom::URLLoaderFactory>* factory_receiver,
+    mojo::PendingRemote<network::mojom::TrustedURLLoaderHeaderClient>*
+        header_client,
+    bool* bypass_redirect_checks,
+    bool* disable_secure_dns,
+    network::mojom::URLLoaderFactoryOverridePtr* factory_override) {
+  GetContentClient()->browser()->WillCreateURLLoaderFactory(
+      GetBrowserContext(), this, GetProcess()->GetID(),
+      ContentBrowserClient::URLLoaderFactoryType::kDocumentSubResource,
+      request_initiator, base::nullopt /* navigation_id */, factory_receiver,
+      header_client, bypass_redirect_checks, disable_secure_dns,
+      factory_override);
+
+  // Keep DevTools proxy last, i.e. closest to the network.
+  devtools_instrumentation::WillCreateURLLoaderFactory(
+      this, false /* is_navigation */, false /* is_download */,
+      factory_receiver, factory_override);
 }
 
 bool RenderFrameHostImpl::CanExecuteJavaScript() {

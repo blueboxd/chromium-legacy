@@ -245,7 +245,7 @@ std::unique_ptr<NaClDescWrapper> MakeShmRegionNaClDesc(
   base::subtle::PlatformSharedMemoryRegion::ScopedPlatformHandle handle =
       region.PassPlatformHandle();
   return std::make_unique<NaClDescWrapper>(
-#if defined(OS_MACOSX)
+#if defined(OS_APPLE)
       NaClDescImcShmMachMake(handle.release(),
 #elif defined(OS_WIN)
       NaClDescImcShmMake(handle.Take(),

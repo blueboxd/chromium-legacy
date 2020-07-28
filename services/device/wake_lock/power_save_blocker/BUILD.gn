@@ -47,7 +47,10 @@ source_set("power_save_blocker") {
       "//ui/gfx",
     ]
     if (use_x11) {
-      deps += [ "//ui/gfx/x" ]
+      deps += [
+        "//ui/base:features",
+        "//ui/gfx/x",
+      ]
     }
   } else if (is_mac) {
     sources += [ "power_save_blocker_mac.cc" ]

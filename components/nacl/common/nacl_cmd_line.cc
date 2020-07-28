@@ -27,7 +27,7 @@ void CopyNaClCommandLineArguments(base::CommandLine* cmd_line) {
     switches::kDisableLogging,
     switches::kLoggingLevel,
     switches::kNoErrorDialogs,
-#if defined(OS_MACOSX)
+#if defined(OS_APPLE)
     sandbox::policy::switches::kEnableSandboxLogging,
 #endif
 #if defined(OS_WIN)

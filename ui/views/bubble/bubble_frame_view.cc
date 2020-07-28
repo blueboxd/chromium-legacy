@@ -342,7 +342,7 @@ gfx::Size BubbleFrameView::GetMaximumSize() const {
   // the OS doesn't give the user controls to resize a bubble.
   return gfx::Size();
 #else
-#if defined(OS_MACOSX)
+#if defined(OS_APPLE)
   // Allow BubbleFrameView dialogs to be resizable on Mac.
   if (GetWidget()->widget_delegate()->CanResize()) {
     gfx::Size client_size = GetWidget()->client_view()->GetMaximumSize();

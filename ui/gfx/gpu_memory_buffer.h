@@ -17,7 +17,7 @@
 
 #if defined(USE_OZONE) || defined(OS_LINUX)
 #include "ui/gfx/native_pixmap_handle.h"
-#elif defined(OS_MACOSX) && !defined(OS_IOS)
+#elif defined(OS_MAC)
 #include "ui/gfx/mac/io_surface.h"
 #elif defined(OS_WIN)
 #include "base/win/scoped_handle.h"
@@ -71,7 +71,7 @@ struct GFX_EXPORT GpuMemoryBufferHandle {
   int32_t stride = 0;
 #if defined(OS_LINUX) || defined(OS_FUCHSIA)
   NativePixmapHandle native_pixmap_handle;
-#elif defined(OS_MACOSX) && !defined(OS_IOS)
+#elif defined(OS_MAC)
   ScopedRefCountedIOSurfaceMachPort mach_port;
 #elif defined(OS_WIN)
   base::win::ScopedHandle dxgi_handle;

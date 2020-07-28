@@ -1273,31 +1273,33 @@ class TestSharedWorkerServiceObserver : public SharedWorkerService::Observer {
   ~TestSharedWorkerServiceObserver() override = default;
 
   // SharedWorkerService::Observer:
-  void OnWorkerCreated(SharedWorkerId shared_worker_id,
+  void OnWorkerCreated(const blink::SharedWorkerToken& shared_worker_token,
                        int worker_process_id,
                        const base::UnguessableToken& dev_tools_token) override {
-    EXPECT_TRUE(shared_workers_.insert({shared_worker_id, {}}).second);
+    EXPECT_TRUE(shared_workers_.insert({shared_worker_token, {}}).second);
   }
-  void OnBeforeWorkerDestroyed(SharedWorkerId shared_worker_id) override {
-    auto it = shared_workers_.find(shared_worker_id);
+  void OnBeforeWorkerDestroyed(
+      const blink::SharedWorkerToken& shared_worker_token) override {
+    auto it = shared_workers_.find(shared_worker_token);
     EXPECT_TRUE(it != shared_workers_.end());
     EXPECT_EQ(0u, it->second.size());
     shared_workers_.erase(it);
   }
-  void OnFinalResponseURLDetermined(SharedWorkerId shared_worker_id,
-                                    const GURL& url) override {}
+  void OnFinalResponseURLDetermined(
+      const blink::SharedWorkerToken& shared_worker_token,
+      const GURL& url) override {}
   void OnClientAdded(
-      SharedWorkerId shared_worker_id,
+      const blink::SharedWorkerToken& shared_worker_token,
       GlobalFrameRoutingId client_render_frame_host_id) override {
-    auto it = shared_workers_.find(shared_worker_id);
+    auto it = shared_workers_.find(shared_worker_token);
     EXPECT_TRUE(it != shared_workers_.end());
     std::set<GlobalFrameRoutingId>& clients = it->second;
     EXPECT_TRUE(clients.insert(client_render_frame_host_id).second);
   }
   void OnClientRemoved(
-      SharedWorkerId shared_worker_id,
+      const blink::SharedWorkerToken& shared_worker_token,
       GlobalFrameRoutingId client_render_frame_host_id) override {
-    auto it = shared_workers_.find(shared_worker_id);
+    auto it = shared_workers_.find(shared_worker_token);
     EXPECT_TRUE(it != shared_workers_.end());
     std::set<GlobalFrameRoutingId>& clients = it->second;
     EXPECT_EQ(1u, clients.erase(client_render_frame_host_id));
@@ -1313,7 +1315,7 @@ class TestSharedWorkerServiceObserver : public SharedWorkerService::Observer {
   }
 
  private:
-  base::flat_map<SharedWorkerId, std::set<GlobalFrameRoutingId>>
+  base::flat_map<blink::SharedWorkerToken, std::set<GlobalFrameRoutingId>>
       shared_workers_;
 
   DISALLOW_COPY_AND_ASSIGN(TestSharedWorkerServiceObserver);

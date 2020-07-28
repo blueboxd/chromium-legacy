@@ -62,7 +62,7 @@ MediaRouterBase::AddPresentationConnectionStateChangedCallback(
   auto& callbacks = presentation_connection_state_callbacks_[route_id];
   if (!callbacks) {
     callbacks = std::make_unique<PresentationConnectionStateChangedCallbacks>();
-    callbacks->set_removal_callback(base::Bind(
+    callbacks->set_removal_callback(base::BindRepeating(
         &MediaRouterBase::OnPresentationConnectionStateCallbackRemoved,
         base::Unretained(this), route_id));
   }

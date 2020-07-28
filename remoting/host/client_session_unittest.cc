@@ -758,10 +758,10 @@ TEST_F(ClientSessionTest, DataChannelCallbackIsCalled) {
   CreateClientSession();
   client_session_->RegisterCreateHandlerCallbackForTesting(
       kTestDataChannelCallbackName,
-      base::Bind([](bool* callback_was_called, const std::string& name,
-                    std::unique_ptr<protocol::MessagePipe> pipe)
-                     -> void { *callback_was_called = true; },
-                 &callback_called));
+      base::BindRepeating([](bool* callback_was_called, const std::string& name,
+                             std::unique_ptr<protocol::MessagePipe> pipe)
+                              -> void { *callback_was_called = true; },
+                          &callback_called));
   ConnectClientSession();
 
   std::unique_ptr<protocol::MessagePipe> pipe =

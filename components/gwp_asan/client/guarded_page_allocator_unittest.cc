@@ -110,7 +110,7 @@ TEST_P(GuardedPageAllocatorTest, PointerIsMine) {
 TEST_P(GuardedPageAllocatorTest, GetRequestedSize) {
   void* buf = gpa_.Allocate(100);
   EXPECT_EQ(gpa_.GetRequestedSize(buf), 100U);
-#if !defined(OS_MACOSX)
+#if !defined(OS_APPLE)
   EXPECT_DEATH({ gpa_.GetRequestedSize((char*)buf + 1); }, "");
 #else
   EXPECT_EQ(gpa_.GetRequestedSize((char*)buf + 1), 0U);

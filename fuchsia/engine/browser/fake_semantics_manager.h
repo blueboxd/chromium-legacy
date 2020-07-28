@@ -64,9 +64,11 @@ class FakeSemanticsManager : public fuchsia::accessibility::semantics::testing::
  private:
   fuchsia::ui::views::ViewRef view_ref_;
   fuchsia::accessibility::semantics::SemanticListenerPtr listener_;
+
+  // This fake only supports one SemanticTree, unlike the real SemanticsManager
+  // which can support many.
   FakeSemanticTree semantic_tree_;
-  fidl::Binding<fuchsia::accessibility::semantics::SemanticTree>
-      semantic_tree_binding_;
+
   base::Optional<uint32_t> hit_test_result_;
   int32_t num_actions_handled_ = 0;
   int32_t num_actions_unhandled_ = 0;

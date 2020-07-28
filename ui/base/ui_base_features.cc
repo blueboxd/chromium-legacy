@@ -67,7 +67,7 @@ bool IsNotificationIndicatorEnabled() {
 
 // Enables GPU rasterization for all UI drawing (where not blacklisted).
 const base::Feature kUiGpuRasterization = {"UiGpuRasterization",
-#if defined(OS_MACOSX) || defined(OS_CHROMEOS) || defined(OS_FUCHSIA)
+#if defined(OS_APPLE) || defined(OS_CHROMEOS) || defined(OS_FUCHSIA)
                                            base::FEATURE_ENABLED_BY_DEFAULT
 #else
                                            base::FEATURE_DISABLED_BY_DEFAULT
@@ -82,7 +82,7 @@ bool IsUiGpuRasterizationEnabled() {
 const base::Feature kUiCompositorScrollWithLayers = {
     "UiCompositorScrollWithLayers",
 // TODO(https://crbug.com/615948): Use composited scrolling on all platforms.
-#if defined(OS_MACOSX)
+#if defined(OS_APPLE)
     base::FEATURE_ENABLED_BY_DEFAULT
 #else
     base::FEATURE_DISABLED_BY_DEFAULT
@@ -130,7 +130,7 @@ const base::Feature kPrecisionTouchpadLogging{
     "PrecisionTouchpadLogging", base::FEATURE_DISABLED_BY_DEFAULT};
 #endif  // defined(OS_WIN)
 
-#if defined(OS_WIN) || defined(OS_MACOSX) || defined(OS_LINUX)
+#if defined(OS_WIN) || defined(OS_APPLE) || defined(OS_LINUX)
 // Enables stylus appearing as touch when in contact with digitizer.
 const base::Feature kDirectManipulationStylus = {
     "DirectManipulationStylus",
@@ -140,7 +140,7 @@ const base::Feature kDirectManipulationStylus = {
     base::FEATURE_DISABLED_BY_DEFAULT
 #endif
 };
-#endif  // defined(OS_WIN) || defined(OS_MACOSX) || defined(OS_LINUX)
+#endif  // defined(OS_WIN) || defined(OS_APPLE) || defined(OS_LINUX)
 
 // Enables forced colors mode for web content.
 const base::Feature kForcedColors{"ForcedColors",
@@ -179,7 +179,7 @@ bool IsCSSColorSchemeUARenderingEnabled() {
 // Mac launch bug.
 const base::Feature kFormControlsRefresh = {"FormControlsRefresh",
 #if defined(OS_WIN) || defined(OS_CHROMEOS) || defined(OS_LINUX) || \
-    defined(OS_MACOSX)
+    defined(OS_APPLE)
                                             base::FEATURE_ENABLED_BY_DEFAULT
 #else
                                             base::FEATURE_DISABLED_BY_DEFAULT

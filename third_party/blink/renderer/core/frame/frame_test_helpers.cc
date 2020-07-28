@@ -125,7 +125,7 @@ cc::LayerTreeSettings GetSynchronousSingleThreadLayerTreeSettings() {
   // test makes progress.
   settings.single_thread_proxy_scheduler = false;
   settings.use_layer_lists = true;
-#if defined(OS_MACOSX)
+#if defined(OS_APPLE)
   settings.enable_elastic_overscroll = true;
 #endif
   return settings;

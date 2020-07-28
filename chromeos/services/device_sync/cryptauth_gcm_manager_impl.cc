@@ -230,17 +230,21 @@ CryptAuthGCMManagerImpl::CryptAuthGCMManagerImpl(gcm::GCMDriver* gcm_driver,
       registration_in_progress_(false) {}
 
 CryptAuthGCMManagerImpl::~CryptAuthGCMManagerImpl() {
-  if (gcm_driver_->GetAppHandler(kCryptAuthGcmAppId) == this)
+  if (IsListening())
     gcm_driver_->RemoveAppHandler(kCryptAuthGcmAppId);
 }
 
 void CryptAuthGCMManagerImpl::StartListening() {
-  if (gcm_driver_->GetAppHandler(kCryptAuthGcmAppId) == this) {
+  if (IsListening()) {
     PA_LOG(VERBOSE) << "GCM app handler already added";
     return;
   }
 
   gcm_driver_->AddAppHandler(kCryptAuthGcmAppId, this);
+}
+
+bool CryptAuthGCMManagerImpl::IsListening() {
+  return gcm_driver_->GetAppHandler(kCryptAuthGcmAppId) == this;
 }
 
 void CryptAuthGCMManagerImpl::RegisterWithGCM() {

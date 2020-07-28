@@ -46,7 +46,6 @@ class AppShortcutManager : public AppRegistrarObserver {
   void Shutdown();
 
   // AppRegistrarObserver:
-  void OnWebAppInstalled(const AppId& app_id) override;
   void OnWebAppManifestUpdated(const web_app::AppId& app_id,
                                base::StringPiece old_name) override;
   void OnWebAppProfileWillBeDeleted(const AppId& app_id) override;

@@ -36,7 +36,7 @@ class CrashReporterClient {
   CrashReporterClient();
   virtual ~CrashReporterClient();
 
-#if !defined(OS_MACOSX) && !defined(OS_WIN) && !defined(OS_ANDROID)
+#if !defined(OS_APPLE) && !defined(OS_WIN) && !defined(OS_ANDROID)
   // Sets the crash reporting client ID, a unique identifier for the client
   // that is sending crash reports. After it is set, it should not be changed.
   // |client_guid| may either be a full GUID or a GUID that was already stripped
@@ -88,7 +88,7 @@ class CrashReporterClient {
   virtual int GetResultCodeRespawnFailed();
 #endif
 
-#if defined(OS_POSIX) && !defined(OS_MACOSX) && !defined(OS_IOS)
+#if defined(OS_POSIX) && !defined(OS_MAC)
   // Returns a textual description of the product type and version to include
   // in the crash report. Neither out parameter should be set to NULL.
   // TODO(jperaza): Remove the 2-parameter overload of this method once all

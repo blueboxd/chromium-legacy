@@ -47,7 +47,7 @@
 #include "components/viz/service/display_embedder/gl_output_surface_android.h"
 #endif
 
-#if defined(OS_MACOSX)
+#if defined(OS_APPLE)
 #include "components/viz/service/display_embedder/software_output_device_mac.h"
 #include "ui/base/cocoa/remote_layer_api.h"
 #endif
@@ -179,7 +179,7 @@ std::unique_ptr<OutputSurface> OutputSurfaceProviderImpl::CreateOutputSurface(
       output_surface = std::make_unique<GLOutputSurfaceOffscreen>(
           std::move(context_provider));
     } else if (context_provider->ContextCapabilities().surfaceless) {
-#if defined(USE_OZONE) || defined(OS_MACOSX) || defined(OS_ANDROID)
+#if defined(USE_OZONE) || defined(OS_APPLE) || defined(OS_ANDROID)
 #if defined(USE_OZONE)
       if (!features::IsUsingOzonePlatform())
         NOTREACHED();
@@ -228,7 +228,7 @@ OutputSurfaceProviderImpl::CreateSoftwareOutputDeviceForPlatform(
 #if defined(OS_WIN)
   return CreateSoftwareOutputDeviceWin(surface_handle, &output_device_backing_,
                                        display_client);
-#elif defined(OS_MACOSX)
+#elif defined(OS_APPLE)
   return std::make_unique<SoftwareOutputDeviceMac>(task_runner_);
 #elif defined(OS_ANDROID)
   // Android does not do software compositing, so we can't get here.

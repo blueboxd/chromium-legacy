@@ -190,6 +190,10 @@ class BuildConfigGenerator extends DefaultTask {
                         depsStr += "\"${existingLib}\","
                     } else if (onlyPlayServices && !isPlayServicesTarget(dep.id)) {
                         depsStr += "\"//third_party/android_deps:${targetName}\","
+                    } else if (dep.id == "com_google_android_material_material") {
+                        // Material design is pulled in via doubledown, should
+                        // use the variable instead of the real target.
+                        depsStr += "\"\\\$material_design_target\","
                     } else {
                         depsStr += "\":${targetName}\","
                     }
@@ -244,13 +248,6 @@ class BuildConfigGenerator extends DefaultTask {
     public static String translateTargetName(String targetName) {
         if (isPlayServicesTarget(targetName)) {
             return targetName.replaceFirst("com_", "").replaceFirst("android_gms_", "")
-        }
-        // To avoid stale depfile issues, rename this. (due to recently removed
-        // alias from lite to javalite and the recently added alias from
-        // javalite to lite, causing a dep cycle because stale depfiles).
-        // Todo(mheikal): remove this after crbug.com/1093059 .
-        if (targetName.equals("com_google_protobuf_protobuf_lite")) {
-          return "com_google_protobuf_protobuf_lite_cr1"
         }
         return targetName
     }
@@ -338,11 +335,11 @@ class BuildConfigGenerator extends DefaultTask {
                 break
             case 'com_android_support_coordinatorlayout':
             case 'androidx_coordinatorlayout_coordinatorlayout':
+            case 'com_android_support_design':
                 sb.append('\n')
-                sb.append('  # https:crbug.com/954584\n')
+                sb.append('  # Reduce binary size. https:crbug.com/954584\n')
                 sb.append('  ignore_proguard_configs = true\n')
                 break
-            case 'com_android_support_design':
             case 'com_google_android_material_material':
                 sb.append('\n')
                 sb.append('  # Reduce binary size. https:crbug.com/954584\n')

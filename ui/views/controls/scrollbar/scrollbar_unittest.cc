@@ -221,7 +221,7 @@ TEST_F(ScrollBarViewsTest, RightClickOpensMenu) {
   EXPECT_NE(nullptr, scrollbar_->menu_runner_);
 }
 
-#if !defined(OS_MACOSX)
+#if !defined(OS_APPLE)
 TEST_F(ScrollBarViewsTest, TestPageScrollingByPress) {
   ui::test::EventGenerator generator(GetRootWindow(widget_.get()));
   EXPECT_EQ(0, scrollbar_->GetPosition());

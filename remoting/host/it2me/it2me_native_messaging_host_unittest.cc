@@ -571,11 +571,11 @@ void It2MeNativeMessagingHostTest::StartHost() {
       new It2MeNativeMessagingHost(
           /*needs_elevation=*/false, std::move(policy_watcher),
           std::move(context), std::move(factory)));
-  it2me_host->SetPolicyErrorClosureForTesting(
-      base::Bind(base::IgnoreResult(&base::TaskRunner::PostTask),
-                 task_environment_->GetMainThreadTaskRunner(), FROM_HERE,
-                 base::Bind(&It2MeNativeMessagingHostTest::ExitPolicyRunLoop,
-                            base::Unretained(this))));
+  it2me_host->SetPolicyErrorClosureForTesting(base::BindOnce(
+      base::IgnoreResult(&base::TaskRunner::PostTask),
+      task_environment_->GetMainThreadTaskRunner(), FROM_HERE,
+      base::BindOnce(&It2MeNativeMessagingHostTest::ExitPolicyRunLoop,
+                     base::Unretained(this))));
   it2me_host->Start(pipe_.get());
 
   pipe_->Start(std::move(it2me_host), std::move(channel));

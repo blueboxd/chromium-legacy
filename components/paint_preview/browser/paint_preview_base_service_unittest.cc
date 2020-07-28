@@ -189,7 +189,7 @@ TEST_F(PaintPreviewBaseServiceTest, CaptureMainFrame) {
 
   base::RunLoop loop;
   service->CapturePaintPreview(
-      web_contents(), path, gfx::Rect(0, 0, 0, 0), 50,
+      web_contents(), path, gfx::Rect(0, 0, 0, 0), true, 50,
       base::BindOnce(
           [](base::OnceClosure quit_closure,
              PaintPreviewBaseService::CaptureStatus expected_status,
@@ -243,7 +243,7 @@ TEST_F(PaintPreviewBaseServiceTest, CaptureFailed) {
 
   base::RunLoop loop;
   service->CapturePaintPreview(
-      web_contents(), path, gfx::Rect(0, 0, 0, 0), 0,
+      web_contents(), path, gfx::Rect(0, 0, 0, 0), true, 0,
       base::BindOnce(
           [](base::OnceClosure quit_closure,
              PaintPreviewBaseService::CaptureStatus expected_status,
@@ -278,7 +278,7 @@ TEST_F(PaintPreviewBaseServiceTest, CaptureDisallowed) {
 
   base::RunLoop loop;
   service->CapturePaintPreview(
-      web_contents(), path, gfx::Rect(0, 0, 0, 0), 0,
+      web_contents(), path, gfx::Rect(0, 0, 0, 0), true, 0,
       base::BindOnce(
           [](base::OnceClosure quit_closure,
              PaintPreviewBaseService::CaptureStatus expected_status,

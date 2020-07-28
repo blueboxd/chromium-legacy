@@ -13,7 +13,7 @@
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/base/ui_base_paths.h"
 
-#if defined(OS_MACOSX) && !defined(OS_IOS)
+#if defined(OS_MAC)
 #include "base/mac/bundle_locations.h"
 #include "base/test/mock_chrome_application_mac.h"
 #endif
@@ -49,7 +49,7 @@ void UIBaseTestSuite::Initialize() {
 
   ui::RegisterPathProvider();
 
-#if defined(OS_MACOSX) && !defined(OS_IOS)
+#if defined(OS_MAC)
   base::FilePath exe_path;
   base::PathService::Get(base::DIR_EXE, &exe_path);
 
@@ -88,7 +88,7 @@ void UIBaseTestSuite::Initialize() {
 #if defined(OS_ANDROID)
   result =
       base::PathService::Get(ui::DIR_RESOURCE_PAKS_ANDROID, &dir_resources);
-#elif defined(OS_MACOSX) || defined(OS_IOS)
+#elif defined(OS_APPLE)
   result = base::PathService::Get(base::DIR_MODULE, &dir_resources);
 #else
   dir_resources = assets_path;
@@ -104,7 +104,7 @@ void UIBaseTestSuite::Initialize() {
 void UIBaseTestSuite::Shutdown() {
   ui::ResourceBundle::CleanupSharedInstance();
 
-#if defined(OS_MACOSX) && !defined(OS_IOS)
+#if defined(OS_MAC)
   base::mac::SetOverrideFrameworkBundle(NULL);
 #endif
   base::TestSuite::Shutdown();

@@ -2160,24 +2160,9 @@ HashTable<Key, Value, Extractor, HashFunctions, Traits, KeyTraits, Allocator>::
   static_assert(WTF::IsWeak<ValueType>::value ||
                     IsTraceableInCollectionTrait<Traits>::value,
                 "Value should not be traced");
-  const ValueType* table =
-      AsAtomicPtr(&table_)->load(std::memory_order_relaxed);
-
-  // bail out for concurrent marking
-  if (!Traits::kCanTraceConcurrently && table) {
-    if (visitor->DeferredTraceIfConcurrent(
-            {this,
-             [](blink::Visitor* visitor, const void* object) {
-               reinterpret_cast<const HashTable*>(object)->Trace(visitor);
-             }},
-            sizeof(HashTable)))
-      return;
-  }
-
-  TraceTable(visitor, table);
+  TraceTable(visitor, AsAtomicPtr(&table_)->load(std::memory_order_relaxed));
 }
 
-// static
 template <typename Key,
           typename Value,
           typename Extractor,

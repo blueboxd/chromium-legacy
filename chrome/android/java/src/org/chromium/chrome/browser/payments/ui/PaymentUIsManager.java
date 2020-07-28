@@ -45,7 +45,6 @@ public class PaymentUIsManager
         implements SettingsAutofillAndPaymentsObserver.Observer, PaymentRequestLifecycleObserver {
     private SectionInformation mUiShippingOptions;
     private final Map<String, CurrencyFormatter> mCurrencyFormatterMap;
-    private final Delegate mDelegate;
     private final AddressEditor mAddressEditor;
     private final CardEditor mCardEditor;
     private final PaymentUisShowStateReconciler mPaymentUisShowStateReconciler;
@@ -61,12 +60,6 @@ public class PaymentUIsManager
     private AutofillPaymentAppCreator mAutofillPaymentAppCreator;
 
     private Boolean mCanUserAddCreditCard;
-
-    /** The delegate of this class. */
-    public interface Delegate {
-        /** Updates the modifiers for payment apps and order summary. */
-        void updateAppModifiedTotals();
-    }
 
     /**
      * This class is to coordinate the show state of a bottom sheet UI (either expandable payment
@@ -124,7 +117,6 @@ public class PaymentUIsManager
 
     /**
      * Create PaymentUIsManager.
-     * @param delegate The delegate of this class.
      * @param params The parameters of the payment request specified by the merchant.
      * @param addressEditor The AddressEditor of the PaymentRequest UI.
      * @param cardEditor The CardEditor of the PaymentRequest UI.
@@ -132,9 +124,8 @@ public class PaymentUIsManager
     // TODO(crbug.com/1107102): AddressEditor and CardEditor should be initialized in this
     // constructor instead of the caller of the constructor, once CardEditor's "ForTest" symbols
     // have been removed from the production code.
-    public PaymentUIsManager(Delegate delegate, PaymentRequestParams params,
-            AddressEditor addressEditor, CardEditor cardEditor) {
-        mDelegate = delegate;
+    public PaymentUIsManager(
+            PaymentRequestParams params, AddressEditor addressEditor, CardEditor cardEditor) {
         mParams = params;
         mAddressEditor = addressEditor;
         mCardEditor = cardEditor;
@@ -298,7 +289,7 @@ public class PaymentUIsManager
 
         mPaymentMethodsSection.addAndSelectOrUpdateItem(updatedAutofillCard);
 
-        mDelegate.updateAppModifiedTotals();
+        updateAppModifiedTotals();
 
         if (mPaymentRequestUI != null) {
             mPaymentRequestUI.updateSection(
@@ -314,7 +305,7 @@ public class PaymentUIsManager
 
         mPaymentMethodsSection.removeAndUnselectItem(guid);
 
-        mDelegate.updateAppModifiedTotals();
+        updateAppModifiedTotals();
 
         if (mPaymentRequestUI != null) {
             mPaymentRequestUI.updateSection(
@@ -364,21 +355,40 @@ public class PaymentUIsManager
 
     /** @return The first modifier that matches the given app, or null. */
     @Nullable
-    public PaymentDetailsModifier getModifier(@Nullable PaymentApp app) {
-        if (mParams.getModifiers() == null || app == null) return null;
+    private PaymentDetailsModifier getModifier(@Nullable PaymentApp app) {
+        Map<String, PaymentDetailsModifier> modifiers = mParams.getUnmodifiableModifiers();
+        if (modifiers.isEmpty() || app == null) return null;
         // Makes a copy to ensure it is modifiable.
         Set<String> methodNames = new HashSet<>(app.getInstrumentMethodNames());
-        methodNames.retainAll(mParams.getModifiers().keySet());
+        methodNames.retainAll(modifiers.keySet());
         if (methodNames.isEmpty()) return null;
 
         for (String methodName : methodNames) {
-            PaymentDetailsModifier modifier = mParams.getModifiers().get(methodName);
+            PaymentDetailsModifier modifier = modifiers.get(methodName);
             if (app.isValidForPaymentMethodData(methodName, modifier.methodData)) {
                 return modifier;
             }
         }
 
         return null;
+    }
+
+    /** Updates the modifiers for payment apps and order summary. */
+    public void updateAppModifiedTotals() {
+        if (!PaymentFeatureList.isEnabled(PaymentFeatureList.WEB_PAYMENTS_MODIFIERS)) return;
+        if (mParams.getMethodData().isEmpty()) return;
+        if (mPaymentMethodsSection == null) return;
+
+        for (int i = 0; i < mPaymentMethodsSection.getSize(); i++) {
+            PaymentApp app = (PaymentApp) mPaymentMethodsSection.getItem(i);
+            PaymentDetailsModifier modifier = getModifier(app);
+            app.setModifiedTotal(modifier == null || modifier.total == null
+                            ? null
+                            : getOrCreateCurrencyFormatter(modifier.total.amount)
+                                      .format(modifier.total.amount.value));
+        }
+
+        updateOrderSummary((PaymentApp) mPaymentMethodsSection.getSelectedItem());
     }
 
     /**

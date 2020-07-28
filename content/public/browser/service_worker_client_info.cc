@@ -14,9 +14,9 @@ ServiceWorkerClientInfo::ServiceWorkerClientInfo(
     : type_(blink::mojom::ServiceWorkerClientType::kDedicatedWorker),
       dedicated_worker_token_(dedicated_worker_token) {}
 ServiceWorkerClientInfo::ServiceWorkerClientInfo(
-    SharedWorkerId shared_worker_id)
+    const blink::SharedWorkerToken& shared_worker_token)
     : type_(blink::mojom::ServiceWorkerClientType::kSharedWorker),
-      shared_worker_id_(shared_worker_id) {}
+      shared_worker_token_(shared_worker_token) {}
 
 ServiceWorkerClientInfo::ServiceWorkerClientInfo(
     const ServiceWorkerClientInfo& other) = default;
@@ -37,9 +37,10 @@ ServiceWorkerClientInfo::GetDedicatedWorkerToken() const {
   return dedicated_worker_token_;
 }
 
-SharedWorkerId ServiceWorkerClientInfo::GetSharedWorkerId() const {
+const blink::SharedWorkerToken& ServiceWorkerClientInfo::GetSharedWorkerToken()
+    const {
   DCHECK_EQ(type_, blink::mojom::ServiceWorkerClientType::kSharedWorker);
-  return shared_worker_id_;
+  return shared_worker_token_;
 }
 
 }  // namespace content

@@ -229,22 +229,6 @@ message {{union_name}} {
 {%- for interface in interfaces %}
 
 message {{interface.name}} {
-  message PendingRemote {
-    required uint32 id = 1;
-  }
-
-  message PendingReceiver {
-    required uint32 id = 1;
-  }
-
-  message PendingAssociatedRemote {
-    required uint32 id = 1;
-  }
-
-  message PendingAssociatedReceiver {
-    required uint32 id = 1;
-  }
-
   message Reset {
   }
 
@@ -332,8 +316,8 @@ message {{interface.name}} {
 {%-   endfor%}
 
 {%-   if interface.methods|length %}
-  message RemoteMethodCall {
-    required {{interface.name}}.PendingRemote remote = 1;
+  message RemoteCall {
+    required uint32 id = 1;
 
     oneof method {
       Reset reset = 2;
@@ -343,8 +327,8 @@ message {{interface.name}} {
     }
   }
 
-  message AssociatedRemoteMethodCall {
-    required {{interface.name}}.PendingAssociatedRemote remote = 1;
+  message AssociatedRemoteCall {
+    required uint32 id = 1;
 
     oneof method {
       Reset reset = 2;

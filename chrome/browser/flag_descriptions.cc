@@ -2191,6 +2191,10 @@ const char kTabGroupsCollapseDescription[] =
     "Allows a tab group to be collapsible and expandable, if tab groups are "
     "enabled.";
 
+const char kTabGroupsCollapseFreezingName[] = "Tab Groups Collapse Freezing";
+const char kTabGroupsCollapseFreezingDescription[] =
+    "Experimental tab freezing upon collapsing a tab group.";
+
 const char kTabGroupsFeedbackName[] = "Tab Groups Feedback";
 const char kTabGroupsFeedbackDescription[] =
     "Enables the feedback app to appear in the tab group editor bubble, if tab "

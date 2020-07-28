@@ -4,6 +4,16 @@
 
 import {FittingType} from './constants.js';
 
+/**
+ * @typedef {{
+ *   url: (string|undefined),
+ *   zoom: (number|undefined),
+ *   view: (!FittingType|undefined),
+ *   viewPosition: ({x: number, y: number}|undefined)
+ * }}
+ */
+let OpenPdfParams;
+
 // Parses the open pdf parameters passed in the url to set initial viewport
 // settings for opening the pdf.
 export class OpenPdfParamsParser {
@@ -23,7 +33,7 @@ export class OpenPdfParamsParser {
    * Parse zoom parameter of open PDF parameters. The PDF should be opened at
    * the specified zoom level.
    * @param {string} paramValue zoom value.
-   * @return {Object} Map with zoom parameters (zoom and position).
+   * @return {!OpenPdfParams} Map with zoom parameters (zoom and position).
    * @private
    */
   parseZoomParam_(paramValue) {
@@ -55,7 +65,7 @@ export class OpenPdfParamsParser {
    * Parse view parameter of open PDF parameters. The PDF should be opened at
    * the specified fitting type mode and position.
    * @param {string} paramValue view value.
-   * @return {Object} Map with view parameters (view and viewPosition).
+   * @return {!OpenPdfParams} Map with view parameters (view and viewPosition).
    * @private
    */
   parseViewParam_(paramValue) {
@@ -128,7 +138,8 @@ export class OpenPdfParamsParser {
    * See http://www.adobe.com/content/dam/Adobe/en/devnet/acrobat/
    * pdfs/pdf_open_parameters.pdf for details.
    * @param {string} url that needs to be parsed.
-   * @param {Function} callback function to be called with viewport info.
+   * @param {function(!OpenPdfParams)} callback function to be called with
+   *     viewport info.
    */
   getViewportFromUrlParams(url, callback) {
     const params = {};

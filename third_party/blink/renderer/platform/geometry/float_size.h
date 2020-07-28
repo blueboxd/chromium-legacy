@@ -41,7 +41,7 @@
 #include "ui/gfx/geometry/size_f.h"
 #include "ui/gfx/geometry/vector2d_f.h"
 
-#if defined(OS_MACOSX)
+#if defined(OS_APPLE)
 typedef struct CGSize CGSize;
 
 #ifdef __OBJC__
@@ -133,7 +133,7 @@ class PLATFORM_EXPORT FloatSize {
     return FloatSize(width_ * scale_x, height_ * scale_y);
   }
 
-#if defined(OS_MACOSX)
+#if defined(OS_APPLE)
   explicit FloatSize(
       const CGSize&);  // don't do this implicitly since it's lossy
   operator CGSize() const;

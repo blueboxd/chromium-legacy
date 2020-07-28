@@ -15,7 +15,7 @@ class OSCryptMocker {
   // Inject mocking into OSCrypt.
   static void SetUp();
 
-#if defined(OS_MACOSX)
+#if defined(OS_APPLE)
   // Pretend that backend for storing keys is unavailable.
   static void SetBackendLocked(bool locked);
 #endif

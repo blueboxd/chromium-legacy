@@ -304,7 +304,7 @@ void CodeCacheHostTestcase::NextAction() {
 
         case content::fuzzing::code_cache_host::proto::Action::
             kCodeCacheHostCall: {
-          mojolpm::HandleRemoteMethodCall(action.code_cache_host_call());
+          mojolpm::HandleRemoteCall(action.code_cache_host_call());
         } break;
 
         case content::fuzzing::code_cache_host::proto::Action::ACTION_NOT_SET:

@@ -51,8 +51,8 @@ void ContinueWindowAura::ShowUi() {
       l10n_util::GetStringUTF16(IDS_CONTINUE_PROMPT),      // dialog label
       l10n_util::GetStringUTF16(IDS_CONTINUE_BUTTON),      // ok label
       l10n_util::GetStringUTF16(IDS_STOP_SHARING_BUTTON),  // cancel label
-      base::Bind(&ContinueWindowAura::OnMessageBoxResult,
-                 base::Unretained(this)));
+      base::BindOnce(&ContinueWindowAura::OnMessageBoxResult,
+                     base::Unretained(this)));
 }
 
 void ContinueWindowAura::HideUi() {

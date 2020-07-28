@@ -286,7 +286,7 @@ const PrefsUtil::TypedPrefMap& PrefsUtil::GetWhitelistedKeys() {
       settings_api::PrefType::PREF_TYPE_LIST;
   (*s_whitelist)[spellcheck::prefs::kSpellCheckForcedDictionaries] =
       settings_api::PrefType::PREF_TYPE_LIST;
-  (*s_whitelist)[spellcheck::prefs::kSpellCheckBlacklistedDictionaries] =
+  (*s_whitelist)[spellcheck::prefs::kSpellCheckBlocklistedDictionaries] =
       settings_api::PrefType::PREF_TYPE_LIST;
   (*s_whitelist)[spellcheck::prefs::kSpellCheckUseSpellingService] =
       settings_api::PrefType::PREF_TYPE_BOOLEAN;

@@ -18,7 +18,6 @@ import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.base.metrics.RecordUserAction;
 import org.chromium.base.task.AsyncTask;
 import org.chromium.chrome.browser.tab.Tab;
-import org.chromium.chrome.browser.tab.TabImpl;
 import org.chromium.chrome.browser.tab.TabLaunchType;
 import org.chromium.chrome.browser.tab.state.CriticalPersistedTabData;
 import org.chromium.chrome.browser.tabmodel.TabList;
@@ -729,7 +728,7 @@ public class TabGroupModelFilter extends TabModelFilter {
     }
 
     private static void setRootId(Tab tab, int id) {
-        ((TabImpl) tab).setRootId(id);
+        CriticalPersistedTabData.from(tab).setRootId(id);
     }
 
     private static int getRootId(Tab tab) {

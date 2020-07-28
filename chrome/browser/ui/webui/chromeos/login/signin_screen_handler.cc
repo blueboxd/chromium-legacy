@@ -407,8 +407,7 @@ void SigninScreenHandler::RegisterMessages() {
   AddCallback("authenticateUser", &SigninScreenHandler::HandleAuthenticateUser);
   AddCallback("completeOfflineAuthentication",
               &SigninScreenHandler::HandleCompleteOfflineAuthentication);
-  AddCallback("launchIncognitoForTesting",
-              &SigninScreenHandler::HandleLaunchIncognitoForTesting);
+  AddCallback("launchIncognito", &SigninScreenHandler::HandleLaunchIncognito);
   AddCallback("launchSAMLPublicSession",
               &SigninScreenHandler::HandleLaunchSAMLPublicSession);
   AddRawCallback("offlineLogin", &SigninScreenHandler::HandleOfflineLogin);
@@ -1031,7 +1030,7 @@ void SigninScreenHandler::HandleCompleteOfflineAuthentication(
                            false /* authenticated_by_pin */);
 }
 
-void SigninScreenHandler::HandleLaunchIncognitoForTesting() {
+void SigninScreenHandler::HandleLaunchIncognito() {
   UserContext context(user_manager::USER_TYPE_GUEST, EmptyAccountId());
   if (delegate_)
     delegate_->Login(context, SigninSpecifics());

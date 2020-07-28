@@ -44,6 +44,9 @@ class ProfileOAuth2TokenServiceDelegateChromeOS
   bool RefreshTokenIsAvailable(const CoreAccountId& account_id) const override;
   void UpdateAuthError(const CoreAccountId& account_id,
                        const GoogleServiceAuthError& error) override;
+  void UpdateAuthErrorInternal(const CoreAccountId& account_id,
+                               const GoogleServiceAuthError& error,
+                               bool fire_auth_error_changed = true);
   GoogleServiceAuthError GetAuthError(
       const CoreAccountId& account_id) const override;
   std::vector<CoreAccountId> GetAccounts() const override;

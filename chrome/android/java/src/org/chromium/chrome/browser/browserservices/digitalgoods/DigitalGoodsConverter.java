@@ -191,21 +191,21 @@ public class DigitalGoodsConverter {
     }
 
     public static void returnClientAppUnavailable(GetDetailsResponse callback) {
-        callback.call(BillingResponseCode.CLIENT_APP_ERROR,
-                new ItemDetails[0]);
-    }
-
-    public static void returnClientAppError(GetDetailsResponse callback) {
         callback.call(BillingResponseCode.CLIENT_APP_UNAVAILABLE,
                 new ItemDetails[0]);
     }
 
+    public static void returnClientAppError(GetDetailsResponse callback) {
+        callback.call(BillingResponseCode.CLIENT_APP_ERROR,
+                new ItemDetails[0]);
+    }
+
     public static void returnClientAppUnavailable(AcknowledgeResponse callback) {
-        callback.call(BillingResponseCode.CLIENT_APP_ERROR);
+        callback.call(BillingResponseCode.CLIENT_APP_UNAVAILABLE);
     }
 
     public static void returnClientAppError(AcknowledgeResponse callback) {
-        callback.call(BillingResponseCode.CLIENT_APP_UNAVAILABLE);
+        callback.call(BillingResponseCode.CLIENT_APP_ERROR);
     }
 
     /**

@@ -66,9 +66,8 @@ class SharedWorkerHostTest : public testing::Test {
         network::mojom::ContentSecurityPolicyType::kReport,
         network::mojom::IPAddressSpace::kPublic,
         blink::mojom::SharedWorkerCreationContextType::kSecure);
-    auto host = std::make_unique<SharedWorkerHost>(
-        &service_, service_.shared_worker_id_generator_.GenerateNextId(),
-        instance, &mock_render_process_host_);
+    auto host = std::make_unique<SharedWorkerHost>(&service_, instance,
+                                                   &mock_render_process_host_);
     auto weak_host = host->AsWeakPtr();
     service_.worker_hosts_.insert(std::move(host));
     return weak_host;
@@ -116,7 +115,7 @@ class SharedWorkerHostTest : public testing::Test {
 
     helper_->context()->CreateContainerHostForWorker(
         std::move(host_receiver), mock_render_process_host_.GetID(),
-        std::move(client_remote), ServiceWorkerClientInfo(host->id()));
+        std::move(client_remote), ServiceWorkerClientInfo(host->token()));
     service_worker_handle->OnCreatedContainerHost(std::move(container_info));
     host->SetServiceWorkerHandle(std::move(service_worker_handle));
 

@@ -253,6 +253,10 @@ void HTMLIFrameElement::ParseAttribute(
         UseCounter::Count(GetDocument(),
                           WebFeature::kFeaturePolicyAllowAttribute);
       }
+      if (value.Contains(',')) {
+        UseCounter::Count(GetDocument(),
+                          WebFeature::kCommaSeparatorInAllowAttribute);
+      }
     }
   } else if (name == html_names::kDisallowdocumentaccessAttr &&
              RuntimeEnabledFeatures::DisallowDocumentAccessEnabled()) {

@@ -243,7 +243,7 @@ class Browser : public TabStripModelObserver,
 
    private:
     friend class Browser;
-    friend class WindowSizerAshTest;
+    friend class WindowSizerChromeOSTest;
 
     static CreateParams CreateForAppBase(bool is_popup,
                                          const std::string& app_name,

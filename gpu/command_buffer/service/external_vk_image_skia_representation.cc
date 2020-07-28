@@ -156,12 +156,12 @@ sk_sp<SkPromiseImageTexture> ExternalVkImageSkiaRepresentation::BeginAccess(
   }
 
   for (auto& external_semaphore : begin_access_semaphores_) {
-    DCHECK(external_semaphore.is_valid());
+    DCHECK(external_semaphore);
     VkSemaphore semaphore = external_semaphore.TakeVkSemaphore();
     DCHECK(semaphore != VK_NULL_HANDLE);
     // The ownership of semaphore is passed to caller.
     begin_semaphores->emplace_back();
-    begin_semaphores->back().initVulkan(external_semaphore.TakeVkSemaphore());
+    begin_semaphores->back().initVulkan(semaphore);
   }
 
   if (backing_impl()->need_synchronization()) {

@@ -123,6 +123,17 @@ std::unique_ptr<ResourceRequest> CreatePreflightRequest(
       net::HttpRequestHeaders::kOrigin,
       (tainted ? url::Origin() : *request.request_initiator).Serialize());
 
+  // We normally set User-Agent down in the network stack, but the DevTools
+  // emulation override is applied on a higher level (renderer or browser),
+  // so copy User-Agent from the original request, if present.
+  // TODO(caseq, morlovich): do the same for client hints.
+  std::string user_agent;
+  if (request.headers.GetHeader(net::HttpRequestHeaders::kUserAgent,
+                                &user_agent)) {
+    preflight_request->headers.SetHeader(net::HttpRequestHeaders::kUserAgent,
+                                         user_agent);
+  }
+
   // Additional headers that the algorithm in the spec does not require, but
   // it's better that CORS preflight requests have them.
   preflight_request->headers.SetHeader("Sec-Fetch-Mode", "cors");

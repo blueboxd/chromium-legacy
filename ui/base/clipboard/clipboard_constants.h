@@ -10,13 +10,13 @@
 #include "base/component_export.h"
 #include "build/build_config.h"
 
-#if defined(OS_MACOSX)
+#if defined(OS_APPLE)
 #ifdef __OBJC__
 @class NSString;
 #else
 class NSString;
 #endif
-#endif  // defined(OS_MACOSX)
+#endif  // defined(OS_APPLE)
 
 namespace ui {
 
@@ -31,7 +31,7 @@ extern const char kMimeTypeMozillaURL[];
 COMPONENT_EXPORT(UI_BASE_CLIPBOARD_TYPES) extern const char kMimeTypeHTML[];
 COMPONENT_EXPORT(UI_BASE_CLIPBOARD_TYPES) extern const char kMimeTypeRTF[];
 COMPONENT_EXPORT(UI_BASE_CLIPBOARD_TYPES) extern const char kMimeTypePNG[];
-#if !defined(OS_MACOSX)
+#if !defined(OS_APPLE)
 COMPONENT_EXPORT(UI_BASE_CLIPBOARD_TYPES)
 extern const char kMimeTypeWebCustomData[];
 COMPONENT_EXPORT(UI_BASE_CLIPBOARD_TYPES)
@@ -58,7 +58,7 @@ extern NSString* const kPepperCustomDataPboardType;
 COMPONENT_EXPORT(UI_BASE_CLIPBOARD_TYPES)
 extern NSString* const kUTTypeConfidentialData;
 
-#endif  // defined(OS_MACOSX)
+#endif  // defined(OS_APPLE)
 
 #if defined(OS_ANDROID)
 COMPONENT_EXPORT(UI_BASE_CLIPBOARD_TYPES) extern const char kMimeTypeImageURI[];

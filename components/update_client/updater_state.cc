@@ -28,7 +28,7 @@ UpdaterState::~UpdaterState() = default;
 
 std::unique_ptr<UpdaterState::Attributes> UpdaterState::GetState(
     bool is_machine) {
-#if defined(OS_WIN) || (defined(OS_MACOSX) && !defined(OS_IOS))
+#if defined(OS_WIN) || defined(OS_MAC)
   UpdaterState updater_state(is_machine);
   updater_state.ReadState();
   return std::make_unique<Attributes>(updater_state.BuildAttributes());
@@ -37,7 +37,7 @@ std::unique_ptr<UpdaterState::Attributes> UpdaterState::GetState(
 #endif  // OS_WIN or Mac
 }
 
-#if defined(OS_WIN) || (defined(OS_MACOSX) && !defined(OS_IOS))
+#if defined(OS_WIN) || defined(OS_MAC)
 void UpdaterState::ReadState() {
   is_enterprise_managed_ = base::IsMachineExternallyManaged();
 

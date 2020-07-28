@@ -13,7 +13,7 @@ namespace metrics {
 TEST(MachineIdProviderNonWinTest, GetId) {
   const bool has_machine_name = !base::SysInfo::HardwareModelName().empty();
 
-#if defined(OS_ANDROID) || defined(OS_MACOSX) || defined(OS_IOS)
+#if defined(OS_ANDROID) || defined(OS_APPLE)
   DCHECK(has_machine_name);
 #endif
 

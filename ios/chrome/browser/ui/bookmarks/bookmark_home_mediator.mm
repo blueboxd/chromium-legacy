@@ -28,6 +28,7 @@
 #import "ios/chrome/browser/ui/bookmarks/synced_bookmarks_bridge.h"
 #import "ios/chrome/browser/ui/table_view/cells/table_view_text_item.h"
 #import "ios/chrome/browser/ui/table_view/table_view_model.h"
+#import "ios/chrome/browser/ui/ui_feature_flags.h"
 #import "ios/chrome/common/ui/colors/UIColor+cr_semantic_colors.h"
 #import "ios/public/provider/chrome/browser/signin/signin_presenter.h"
 
@@ -177,6 +178,12 @@ const int kMaxBookmarksSearchResults = 50;
 // Generate the table view data when the current root node is the outermost
 // root.
 - (void)generateTableViewDataForRootNode {
+  // If all the permanent nodes are empty, do not create items for any of them.
+  if (base::FeatureList::IsEnabled(kIllustratedEmptyStates) &&
+      ![self hasBookmarksOrFolders]) {
+    return;
+  }
+
   // Add "Mobile Bookmarks" to the table.
   const BookmarkNode* mobileNode =
       self.sharedState.bookmarkModel->mobile_node();
@@ -276,6 +283,10 @@ const int kMaxBookmarksSearchResults = 50;
         _syncedBookmarksObserver->IsPerformingInitialSync()) {
       [self.consumer
           updateTableViewBackgroundStyle:BookmarkHomeBackgroundStyleLoading];
+    } else if (base::FeatureList::IsEnabled(kIllustratedEmptyStates) &&
+               ![self hasBookmarksOrFolders]) {
+      [self.consumer
+          updateTableViewBackgroundStyle:BookmarkHomeBackgroundStyleEmpty];
     } else {
       [self.consumer
           updateTableViewBackgroundStyle:BookmarkHomeBackgroundStyleDefault];
@@ -336,6 +347,11 @@ const int kMaxBookmarksSearchResults = 50;
         removeSectionWithIdentifier:BookmarkHomeSectionIdentifierPromo];
   }
   [self.sharedState.tableView reloadData];
+  // Update the TabelView background to make sure the new state of the promo
+  // does not affect the background.
+  if (base::FeatureList::IsEnabled(kIllustratedEmptyStates)) {
+    [self updateTableViewBackground];
+  }
 }
 
 #pragma mark - BookmarkModelBridgeObserver Callbacks
@@ -504,6 +520,20 @@ const int kMaxBookmarksSearchResults = 50;
 #pragma mark - Private Helpers
 
 - (BOOL)hasBookmarksOrFolders {
+  if (base::FeatureList::IsEnabled(kIllustratedEmptyStates) &&
+      self.sharedState.tableViewDisplayedRootNode ==
+          self.sharedState.bookmarkModel->root_node()) {
+    // The root node always has its permanent nodes. If all the permanent nodes
+    // are empty, we treat it as if the root itself is empty.
+    const auto& childrenOfRootNode =
+        self.sharedState.tableViewDisplayedRootNode->children();
+    for (const auto& child : childrenOfRootNode) {
+      if (!child->children().empty()) {
+        return YES;
+      }
+    }
+    return NO;
+  }
   return self.sharedState.tableViewDisplayedRootNode &&
          !self.sharedState.tableViewDisplayedRootNode->children().empty();
 }

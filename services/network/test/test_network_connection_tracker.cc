@@ -15,7 +15,8 @@
 
 namespace network {
 
-static TestNetworkConnectionTracker* g_test_network_connection_tracker_instance;
+static TestNetworkConnectionTracker*
+    g_test_network_connection_tracker_instance = nullptr;
 
 namespace {
 
@@ -48,6 +49,11 @@ TestNetworkConnectionTracker::CreateInstance() {
 TestNetworkConnectionTracker* TestNetworkConnectionTracker::GetInstance() {
   DCHECK(g_test_network_connection_tracker_instance);
   return g_test_network_connection_tracker_instance;
+}
+
+// static
+bool TestNetworkConnectionTracker::HasInstance() {
+  return g_test_network_connection_tracker_instance != nullptr;
 }
 
 // static

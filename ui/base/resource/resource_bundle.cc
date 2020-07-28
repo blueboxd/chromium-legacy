@@ -72,7 +72,7 @@ const size_t kPngChunkMetadataSize = 12;  // length, type, crc32
 const unsigned char kPngScaleChunkType[4] = { 'c', 's', 'C', 'l' };
 const unsigned char kPngDataChunkType[4] = { 'I', 'D', 'A', 'T' };
 
-#if !defined(OS_MACOSX)
+#if !defined(OS_APPLE)
 const char kPakFileExtension[] = ".pak";
 #endif
 
@@ -375,7 +375,7 @@ void ResourceBundle::AddDataPackFromFileRegion(
   }
 }
 
-#if !defined(OS_MACOSX)
+#if !defined(OS_APPLE)
 // static
 base::FilePath ResourceBundle::GetLocaleFilePath(
     const std::string& app_locale) {
@@ -897,7 +897,7 @@ void ResourceBundle::InitSharedInstance(Delegate* delegate) {
   // On platforms other than iOS, 100P is always a supported scale factor.
   // For Windows we have a separate case in this function.
   supported_scale_factors.push_back(SCALE_FACTOR_100P);
-#if defined(OS_MACOSX) || defined(OS_LINUX) || defined(OS_WIN)
+#if defined(OS_APPLE) || defined(OS_LINUX) || defined(OS_WIN)
   supported_scale_factors.push_back(SCALE_FACTOR_200P);
 #endif
 #endif

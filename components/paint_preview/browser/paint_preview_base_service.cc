@@ -63,10 +63,12 @@ void PaintPreviewBaseService::CapturePaintPreview(
     content::WebContents* web_contents,
     const base::FilePath& root_dir,
     gfx::Rect clip_rect,
+    bool capture_links,
     size_t max_per_capture_size,
     OnCapturedCallback callback) {
   CapturePaintPreview(web_contents, web_contents->GetMainFrame(), root_dir,
-                      clip_rect, max_per_capture_size, std::move(callback));
+                      clip_rect, capture_links, max_per_capture_size,
+                      std::move(callback));
 }
 
 void PaintPreviewBaseService::CapturePaintPreview(
@@ -74,6 +76,7 @@ void PaintPreviewBaseService::CapturePaintPreview(
     content::RenderFrameHost* render_frame_host,
     const base::FilePath& root_dir,
     gfx::Rect clip_rect,
+    bool capture_links,
     size_t max_per_capture_size,
     OnCapturedCallback callback) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
@@ -95,7 +98,8 @@ void PaintPreviewBaseService::CapturePaintPreview(
   params.inner.clip_rect = clip_rect;
   params.inner.is_main_frame =
       (render_frame_host == web_contents->GetMainFrame());
-  params.inner.max_per_capture_size = max_per_capture_size;
+  params.inner.capture_links = capture_links;
+  params.inner.max_capture_size = max_per_capture_size;
 
   // TODO(crbug/1064253): Consider moving to client so that this always happens.
   // Although, it is harder to get this right in the client due to its

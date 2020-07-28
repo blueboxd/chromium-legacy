@@ -788,7 +788,7 @@ bool LoginDatabase::Init() {
   return true;
 }
 
-#if defined(OS_MACOSX) && !defined(OS_IOS)
+#if defined(OS_MAC)
 void LoginDatabase::InitPasswordRecoveryUtil(
     std::unique_ptr<PasswordRecoveryUtilMac> password_recovery_util) {
   password_recovery_util_ = std::move(password_recovery_util);
@@ -1684,7 +1684,7 @@ bool LoginDatabase::DeleteAndRecreateDatabaseFile() {
 }
 
 DatabaseCleanupResult LoginDatabase::DeleteUndecryptableLogins() {
-#if defined(OS_MACOSX) && !defined(OS_IOS)
+#if defined(OS_MAC)
   TRACE_EVENT0("passwords", "LoginDatabase::DeleteUndecryptableLogins");
   // If the Keychain is unavailable, don't delete any logins.
   if (!OSCrypt::IsEncryptionAvailable()) {
@@ -2018,7 +2018,7 @@ FormRetrievalResult LoginDatabase::StatementToForms(
     key_to_form_map->emplace(primary_key, std::move(new_form));
   }
 
-#if defined(OS_MACOSX) && !defined(OS_IOS)
+#if defined(OS_MAC)
   // Remove corrupted passwords.
   size_t count_removed_logins = 0;
   for (const auto& form : forms_to_be_deleted) {
@@ -2105,7 +2105,7 @@ void LoginDatabase::InitializeStatementStrings(const SQLTableBuilder& builder) {
 }
 
 bool LoginDatabase::IsUsingCleanupMechanism() const {
-#if defined(OS_MACOSX) && !defined(OS_IOS)
+#if defined(OS_MAC)
   return base::FeatureList::IsEnabled(features::kDeleteCorruptedPasswords);
 #else
   return false;

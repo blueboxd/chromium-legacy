@@ -5,12 +5,14 @@
 package org.chromium.chrome.browser.paint_preview;
 
 import android.content.res.Resources;
+import android.os.Handler;
 import android.view.View;
 
 import androidx.annotation.Nullable;
 
 import org.chromium.base.UserData;
 import org.chromium.base.metrics.RecordUserAction;
+import org.chromium.chrome.browser.flags.ChromeFeatureList;
 import org.chromium.chrome.browser.paint_preview.services.PaintPreviewTabService;
 import org.chromium.chrome.browser.paint_preview.services.PaintPreviewTabServiceFactory;
 import org.chromium.chrome.browser.tab.EmptyTabObserver;
@@ -33,7 +35,9 @@ public class TabbedPaintPreviewPlayer implements TabViewProvider, UserData {
     public static final Class<TabbedPaintPreviewPlayer> USER_DATA_KEY =
             TabbedPaintPreviewPlayer.class;
 
-    private static final int SNACKBAR_DURATION_MS = 5 * 1000;
+    private static final int SNACKBAR_DURATION_MS = 8 * 1000;
+    private static final int DEFAULT_INITIAL_REMOVE_DELAY_MS = 400;
+    private static final String INITIAL_REMOVE_DELAY_PARAM = "initial_remove_delay_ms";
 
     private Tab mTab;
     private PaintPreviewTabService mPaintPreviewTabService;
@@ -60,12 +64,23 @@ public class TabbedPaintPreviewPlayer implements TabViewProvider, UserData {
             public void didFirstVisuallyNonEmptyPaint(Tab tab) {
                 if (!isShowingAndNeedsBadge()) return;
 
-                if (!mHasUserInteraction) {
-                    removePaintPreview();
-                    return;
-                }
+                long delayMs = ChromeFeatureList.getFieldTrialParamByFeatureAsInt(
+                        ChromeFeatureList.PAINT_PREVIEW_SHOW_ON_STARTUP, INITIAL_REMOVE_DELAY_PARAM,
+                        DEFAULT_INITIAL_REMOVE_DELAY_MS);
+                // Delay removing paint preview after didFirstVisuallyNonEmptyPaint and no user
+                // interaction by |delayMs|. This is to account for 'heavy' pages that take a while
+                // to finish painting and avoid having flickers when switching from paint preview
+                // to the live page.
+                new Handler().postDelayed(() -> {
+                    if (!isShowingAndNeedsBadge()) return;
 
-                showSnackbar();
+                    if (!mHasUserInteraction) {
+                        removePaintPreview();
+                        return;
+                    }
+
+                    showSnackbar();
+                }, delayMs);
             }
 
             @Override

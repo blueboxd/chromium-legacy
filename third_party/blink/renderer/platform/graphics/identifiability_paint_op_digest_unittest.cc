@@ -1,0 +1,159 @@
+// Copyright 2020 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
+#include "third_party/blink/renderer/platform/graphics/identifiability_paint_op_digest.h"
+
+#include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/blink/public/common/privacy_budget/identifiability_study_settings.h"
+#include "third_party/blink/public/common/privacy_budget/identifiability_study_settings_provider.h"
+#include "third_party/skia/include/core/SkPath.h"
+#include "third_party/skia/include/core/SkTileMode.h"
+
+namespace blink {
+
+namespace {
+
+// A IdentifiabilityStudySettingsProvider implementation that opts-into study
+// participation.
+class ActiveSettingsProvider : public IdentifiabilityStudySettingsProvider {
+ public:
+  bool IsActive() const override { return true; }
+
+  // The following return values don't matter.
+  bool IsAnyTypeOrSurfaceBlocked() const override { return true; }
+  bool IsSurfaceAllowed(IdentifiableSurface surface) const override {
+    return false;
+  }
+  bool IsTypeAllowed(IdentifiableSurface::Type type) const override {
+    return false;
+  }
+};
+
+// An RAII class that opts into study participation using
+// ActiveSettingsProvider.
+class StudyParticipationRaii {
+ public:
+  StudyParticipationRaii() {
+    IdentifiabilityStudySettings::SetGlobalProvider(
+        std::make_unique<ActiveSettingsProvider>());
+  }
+  ~StudyParticipationRaii() {
+    IdentifiabilityStudySettings::ResetStateForTesting();
+  }
+};
+
+// Arbitrary non-zero size.
+constexpr IntSize kSize(10, 10);
+
+TEST(IdentifiabilityPaintOpDigestTest, Construct) {
+  IdentifiabilityPaintOpDigest identifiability_paintop_digest(kSize);
+}
+
+TEST(IdentifiabilityPaintOpDigestTest, Construct_InStudy) {
+  StudyParticipationRaii study_participation_raii;
+  IdentifiabilityPaintOpDigest identifiability_paintop_digest(kSize);
+}
+
+TEST(IdentifiabilityPaintOpDigestTest, InitialDigestIsZero) {
+  StudyParticipationRaii study_participation_raii;
+  IdentifiabilityPaintOpDigest identifiability_paintop_digest(kSize);
+  auto paint_record = sk_make_sp<cc::PaintRecord>();
+  identifiability_paintop_digest.MaybeUpdateDigest(paint_record,
+                                                   /*num_ops_to_visit=*/1);
+  EXPECT_EQ(UINT64_C(0), identifiability_paintop_digest.digest());
+}
+
+TEST(IdentifiabilityPaintOpDigestTest, SimpleDigest) {
+  StudyParticipationRaii study_participation_raii;
+  IdentifiabilityPaintOpDigest identifiability_paintop_digest(kSize);
+  auto paint_record = sk_make_sp<cc::PaintRecord>();
+  paint_record->push<cc::ScaleOp>(1.0f, 1.0f);
+  identifiability_paintop_digest.MaybeUpdateDigest(paint_record,
+                                                   /*num_ops_to_visit=*/1);
+  EXPECT_EQ(UINT64_C(5461154373811575393),
+            identifiability_paintop_digest.digest());
+}
+
+TEST(IdentifiabilityPaintOpDigestTest, DigestIsZeroIfNotInStudy) {
+  IdentifiabilityPaintOpDigest identifiability_paintop_digest(kSize);
+  auto paint_record = sk_make_sp<cc::PaintRecord>();
+  paint_record->push<cc::ScaleOp>(1.0f, 1.0f);
+  identifiability_paintop_digest.MaybeUpdateDigest(paint_record,
+                                                   /*num_ops_to_visit=*/1);
+  EXPECT_EQ(UINT64_C(0), identifiability_paintop_digest.digest());
+}
+
+TEST(IdentifiabilityPaintOpDigestTest, SkipsTextOps) {
+  StudyParticipationRaii study_participation_raii;
+  IdentifiabilityPaintOpDigest identifiability_paintop_digest(kSize);
+  auto paint_record = sk_make_sp<cc::PaintRecord>();
+  paint_record->push<cc::DrawTextBlobOp>(
+      SkTextBlob::MakeFromString("abc", SkFont(SkTypeface::MakeDefault())),
+      1.0f, 1.0f, cc::PaintFlags());
+  identifiability_paintop_digest.MaybeUpdateDigest(paint_record,
+                                                   /*num_ops_to_visit=*/1);
+  EXPECT_EQ(UINT64_C(0), identifiability_paintop_digest.digest());
+}
+
+TEST(IdentifiabilityPaintOpDigestTest, SkPathDigestStability) {
+  StudyParticipationRaii study_participation_raii;
+  // These 2 SkPath objects will have different internal generation IDs. We
+  // can't use empty paths as in that case the internal SkPathRefs (which holds
+  // the ID) for each SkPath would be the same global "empty" SkPathRef, so we
+  // make the SkPaths non-empty.
+  SkPath path1;
+  path1.rLineTo(1.0f, 0.0f);
+  SkPath path2;
+  path2.rLineTo(1.0f, 0.0f);
+  IdentifiabilityPaintOpDigest identifiability_paintop_digest1(kSize);
+  IdentifiabilityPaintOpDigest identifiability_paintop_digest2(kSize);
+  auto paint_record1 = sk_make_sp<cc::PaintRecord>();
+  auto paint_record2 = sk_make_sp<cc::PaintRecord>();
+  paint_record1->push<cc::DrawPathOp>(path1, cc::PaintFlags());
+  paint_record2->push<cc::DrawPathOp>(path2, cc::PaintFlags());
+  identifiability_paintop_digest1.MaybeUpdateDigest(paint_record1,
+                                                    /*num_ops_to_visit=*/1);
+  identifiability_paintop_digest2.MaybeUpdateDigest(paint_record2,
+                                                    /*num_ops_to_visit=*/1);
+  EXPECT_EQ(identifiability_paintop_digest1.digest(),
+            identifiability_paintop_digest2.digest());
+  EXPECT_EQ(UINT64_C(154630961637231072),
+            identifiability_paintop_digest1.digest());
+}
+
+TEST(IdentifiabilityPaintOpDigestTest, PaintShaderStability) {
+  StudyParticipationRaii study_participation_raii;
+  SkPath path;
+  path.rLineTo(1.0f, 0.0f);
+  IdentifiabilityPaintOpDigest identifiability_paintop_digest1(kSize);
+  IdentifiabilityPaintOpDigest identifiability_paintop_digest2(kSize);
+  auto paint_record1 = sk_make_sp<cc::PaintRecord>();
+  auto paint_record2 = sk_make_sp<cc::PaintRecord>();
+  auto paint_record_shader = sk_make_sp<cc::PaintRecord>();
+  paint_record_shader->push<cc::ScaleOp>(2.0f, 2.0f);
+  const SkRect tile = SkRect::MakeWH(100, 100);
+  // These 2 shaders will have different internal generation IDs.
+  cc::PaintFlags paint_flags1;
+  paint_flags1.setShader(cc::PaintShader::MakePaintRecord(
+      paint_record_shader, tile, SkTileMode::kClamp, SkTileMode::kClamp,
+      nullptr));
+  cc::PaintFlags paint_flags2;
+  paint_flags2.setShader(cc::PaintShader::MakePaintRecord(
+      paint_record_shader, tile, SkTileMode::kClamp, SkTileMode::kClamp,
+      nullptr));
+  paint_record1->push<cc::DrawPathOp>(path, paint_flags1);
+  paint_record2->push<cc::DrawPathOp>(path, paint_flags2);
+  identifiability_paintop_digest1.MaybeUpdateDigest(paint_record1,
+                                                    /*num_ops_to_visit=*/1);
+  identifiability_paintop_digest2.MaybeUpdateDigest(paint_record2,
+                                                    /*num_ops_to_visit=*/1);
+  EXPECT_EQ(identifiability_paintop_digest1.digest(),
+            identifiability_paintop_digest2.digest());
+  EXPECT_EQ(UINT64_C(4893847605848349986),
+            identifiability_paintop_digest1.digest());
+}
+
+}  // namespace
+
+}  // namespace blink

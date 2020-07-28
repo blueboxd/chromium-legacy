@@ -92,7 +92,7 @@ Widget::InitParams DialogDelegate::GetDialogWidgetInitParams(
   if (!dialog || dialog->use_custom_frame()) {
     params.opacity = Widget::InitParams::WindowOpacity::kTranslucent;
     params.remove_standard_frame = true;
-#if !defined(OS_MACOSX)
+#if !defined(OS_APPLE)
     // Except on Mac, the bubble frame includes its own shadow; remove any
     // native shadowing. On Mac, the window server provides the shadow.
     params.shadow_type = views::Widget::InitParams::ShadowType::kNone;
@@ -100,7 +100,7 @@ Widget::InitParams DialogDelegate::GetDialogWidgetInitParams(
   }
   params.context = context;
   params.parent = parent;
-#if !defined(OS_MACOSX)
+#if !defined(OS_APPLE)
   // Web-modal (ui::MODAL_TYPE_CHILD) dialogs with parents are marked as child
   // widgets to prevent top-level window behavior (independent movement, etc).
   // On Mac, however, the parent may be a native window (not a views::Widget),

@@ -20,11 +20,19 @@ class FakeSemanticTree
   FakeSemanticTree(const FakeSemanticTree&) = delete;
   FakeSemanticTree& operator=(const FakeSemanticTree&) = delete;
 
+  // Binds |semantic_tree_request| to |this|.
+  void Bind(
+      fidl::InterfaceRequest<fuchsia::accessibility::semantics::SemanticTree>
+          semantic_tree_request);
+
   // Checks that the tree is complete and that there are no dangling nodes by
   // traversing the tree starting at the root. Keeps track of how many nodes are
   // visited to make sure there aren't dangling nodes in |nodes_|.
   bool IsTreeValid(fuchsia::accessibility::semantics::Node* node,
                    size_t* tree_size);
+
+  // Disconnects the SemanticTree binding.
+  void Disconnect();
 
   void RunUntilNodeCountAtLeast(size_t count);
   fuchsia::accessibility::semantics::Node* GetNodeWithId(uint32_t id);
@@ -40,6 +48,8 @@ class FakeSemanticTree
   void NotImplemented_(const std::string& name) final;
 
  private:
+  fidl::Binding<fuchsia::accessibility::semantics::SemanticTree>
+      semantic_tree_binding_;
   std::vector<fuchsia::accessibility::semantics::Node> nodes_;
   base::RepeatingClosure on_commit_updates_;
 };

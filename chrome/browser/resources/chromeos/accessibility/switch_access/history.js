@@ -41,6 +41,10 @@ class FocusHistory {
    * @return {boolean} Whether the history was rebuilt from the given node.
    */
   buildFromAutomationNode(node) {
+    if (!node.parent) {
+      // No ancestors, cannot create stack.
+      return false;
+    }
     // Create a list of ancestors.
     const ancestorStack = [node];
     while (node.parent) {

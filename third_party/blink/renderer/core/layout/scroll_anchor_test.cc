@@ -999,7 +999,7 @@ TEST_P(ScrollAnchorTest, ClampAdjustsAnchorAnimation) {
   GetDocument().getElementById("hidden")->setAttribute(html_names::kStyleAttr,
                                                        "display:block");
   GetDocument().UpdateStyleAndLayout(DocumentUpdateReason::kTest);
-#if !defined(OS_MACOSX)
+#if !defined(OS_APPLE)
   EXPECT_EQ(IntSize(0, 200), LayoutViewport()
                                  ->GetScrollAnimator()
                                  .ImplOnlyAnimationAdjustmentForTesting());

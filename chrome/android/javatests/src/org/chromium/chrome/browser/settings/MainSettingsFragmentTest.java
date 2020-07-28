@@ -4,6 +4,7 @@
 
 package org.chromium.chrome.browser.settings;
 
+import android.app.Activity;
 import android.text.TextUtils;
 import android.view.View;
 
@@ -40,6 +41,8 @@ import org.chromium.chrome.browser.language.settings.LanguageSettings;
 import org.chromium.chrome.browser.night_mode.NightModeUtils;
 import org.chromium.chrome.browser.night_mode.settings.ThemeSettingsFragment;
 import org.chromium.chrome.browser.notifications.settings.NotificationSettings;
+import org.chromium.chrome.browser.password_check.PasswordCheck;
+import org.chromium.chrome.browser.password_check.PasswordCheckFactory;
 import org.chromium.chrome.browser.password_manager.settings.PasswordSettings;
 import org.chromium.chrome.browser.privacy.settings.PrivacySettings;
 import org.chromium.chrome.browser.safety_check.SafetyCheckSettingsFragment;
@@ -58,6 +61,7 @@ import org.chromium.chrome.test.util.browser.sync.SyncTestUtil;
 import org.chromium.components.browser_ui.site_settings.SiteSettings;
 import org.chromium.components.search_engines.TemplateUrl;
 import org.chromium.components.search_engines.TemplateUrlService;
+import org.chromium.content_public.browser.test.util.CriteriaHelper;
 import org.chromium.content_public.browser.test.util.TestThreadUtils;
 
 import java.io.IOException;
@@ -93,6 +97,9 @@ public class MainSettingsFragmentTest {
     @Mock
     public TemplateUrl mMockSearchEngine;
 
+    @Mock
+    private PasswordCheck mPasswordCheck;
+
     private @Nullable TemplateUrlService mActualTemplateUrlService;
 
     private MainSettings mMainSettings;
@@ -100,6 +107,7 @@ public class MainSettingsFragmentTest {
     @Before
     public void setup() {
         MockitoAnnotations.initMocks(this);
+        PasswordCheckFactory.setPasswordCheckForTesting(mPasswordCheck);
         DeveloperSettings.setIsEnabledForTests(true);
         NightModeUtils.setNightModeSupportedForTesting(true);
     }
@@ -363,6 +371,17 @@ public class MainSettingsFragmentTest {
                 mMainSettings.findPreference(MainSettings.PREF_UI_THEME));
         Assert.assertNull("Preference should be disabled: " + MainSettings.PREF_DEVELOPER,
                 mMainSettings.findPreference(MainSettings.PREF_DEVELOPER));
+    }
+
+    @Test
+    @SmallTest
+    @EnableFeatures({ChromeFeatureList.PASSWORD_CHECK})
+    public void testDestroysPasswordCheck() {
+        launchSettingsActivity();
+        Activity activity = mMainSettings.getActivity();
+        activity.finish();
+        CriteriaHelper.pollInstrumentationThread(() -> activity.isDestroyed());
+        Assert.assertNull(PasswordCheckFactory.getPasswordCheckInstance());
     }
 
     /**

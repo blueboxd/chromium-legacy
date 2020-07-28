@@ -151,7 +151,7 @@ const base::Feature kPreviewsResourceLoadingHintsSpecificResourceTypes{
 // https://crbug.com/926186
 const base::Feature kPurgeRendererMemoryWhenBackgrounded {
   "PurgeRendererMemoryWhenBackgrounded",
-#if defined(OS_MACOSX) || defined(OS_ANDROID)
+#if defined(OS_APPLE) || defined(OS_ANDROID)
       base::FEATURE_DISABLED_BY_DEFAULT
 #else
       base::FEATURE_ENABLED_BY_DEFAULT

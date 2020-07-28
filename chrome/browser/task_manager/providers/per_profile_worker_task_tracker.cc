@@ -79,22 +79,22 @@ void PerProfileWorkerTaskTracker::OnFinalResponseURLDetermined(
 }
 
 void PerProfileWorkerTaskTracker::OnWorkerCreated(
-    content::SharedWorkerId shared_worker_id,
+    const blink::SharedWorkerToken& shared_worker_token,
     int worker_process_id,
     const base::UnguessableToken& dev_tools_token) {
-  CreateWorkerTask(shared_worker_id, Task::Type::SHARED_WORKER,
+  CreateWorkerTask(shared_worker_token, Task::Type::SHARED_WORKER,
                    worker_process_id, &shared_worker_tasks_);
 }
 
 void PerProfileWorkerTaskTracker::OnBeforeWorkerDestroyed(
-    content::SharedWorkerId shared_worker_id) {
-  DeleteWorkerTask(shared_worker_id, &shared_worker_tasks_);
+    const blink::SharedWorkerToken& shared_worker_token) {
+  DeleteWorkerTask(shared_worker_token, &shared_worker_tasks_);
 }
 
 void PerProfileWorkerTaskTracker::OnFinalResponseURLDetermined(
-    content::SharedWorkerId shared_worker_id,
+    const blink::SharedWorkerToken& shared_worker_token,
     const GURL& url) {
-  SetWorkerTaskScriptUrl(shared_worker_id, url, &shared_worker_tasks_);
+  SetWorkerTaskScriptUrl(shared_worker_token, url, &shared_worker_tasks_);
 }
 
 void PerProfileWorkerTaskTracker::OnVersionStartedRunning(

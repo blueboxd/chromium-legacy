@@ -16,19 +16,18 @@ js_type_check("closure_compile") {
     ":basic_plugin_test",
     ":basic_test",
     ":beep_test",
-
-    #":bookmarks_test",
+    ":bookmarks_test",
     ":download_controls_test",
     ":gesture_detector_test",
     ":layout_test",
+    ":material_elements_test",
 
-    #":material_elements_test",
     #":metrics_test",
     #":navigator_test",
     ":nobeep_test",
     ":page_change_test",
+    ":params_parser_test",
 
-    #":params_parser_test",
     #":printing_icon_test",
     #":redirects_fail_test",
     ":test_util",
@@ -72,6 +71,16 @@ js_library("beep_test") {
   externs_list = [ "$externs_path/test.js" ]
 }
 
+js_library("bookmarks_test") {
+  deps = [
+    ":test_util",
+    "//chrome/browser/resources/pdf:pdf_scripting_api",
+    "//chrome/browser/resources/pdf:pdf_viewer",
+    "//third_party/polymer/v3_0/components-chromium/polymer:polymer_bundled",
+  ]
+  externs_list = [ "$externs_path/test.js" ]
+}
+
 js_library("gesture_detector_test") {
   deps = [
     "//chrome/browser/resources/pdf:gesture_detector",
@@ -84,6 +93,20 @@ js_library("layout_test") {
   deps = [
     "//chrome/browser/resources/pdf:pdf_scripting_api",
     "//chrome/browser/resources/pdf:pdf_viewer",
+  ]
+  externs_list = [ "$externs_path/test.js" ]
+}
+
+js_library("material_elements_test") {
+  deps = [
+    ":test_util",
+    "//chrome/browser/resources/pdf:constants",
+    "//chrome/browser/resources/pdf/elements:viewer-page-selector",
+    "//chrome/browser/resources/pdf/elements:viewer-toolbar-dropdown",
+    "//chrome/browser/resources/pdf/elements:viewer-zoom-button",
+    "//chrome/browser/resources/pdf/elements:viewer-zoom-toolbar",
+    "//third_party/polymer/v3_0/components-chromium/polymer:polymer_bundled",
+    "//ui/webui/resources/cr_elements/cr_icon_button:cr_icon_button.m",
   ]
   externs_list = [ "$externs_path/test.js" ]
 }
@@ -113,6 +136,14 @@ js_library("page_change_test") {
   deps = [
     "//chrome/browser/resources/pdf:pdf_viewer",
     "//third_party/polymer/v3_0/components-chromium/iron-test-helpers:mock-interactions",
+  ]
+  externs_list = [ "$externs_path/test.js" ]
+}
+
+js_library("params_parser_test") {
+  deps = [
+    "//chrome/browser/resources/pdf:open_pdf_params_parser",
+    "//chrome/browser/resources/pdf:pdf_scripting_api",
   ]
   externs_list = [ "$externs_path/test.js" ]
 }

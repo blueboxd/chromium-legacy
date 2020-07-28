@@ -160,6 +160,10 @@ void ChromeBrowserMainExtraPartsAsh::PreProfileInit() {
 #if BUILDFLAG(ENABLE_WAYLAND_SERVER)
   exo_parts_ = ExoParts::CreateIfNecessary();
 #endif
+
+  night_light_client_ = std::make_unique<NightLightClient>(
+      g_browser_process->shared_url_loader_factory());
+  night_light_client_->Start();
 }
 
 void ChromeBrowserMainExtraPartsAsh::PostProfileInit() {
@@ -199,10 +203,6 @@ void ChromeBrowserMainExtraPartsAsh::PostProfileInit() {
 
 void ChromeBrowserMainExtraPartsAsh::PostBrowserStart() {
   mobile_data_notifications_ = std::make_unique<MobileDataNotifications>();
-
-  night_light_client_ = std::make_unique<NightLightClient>(
-      g_browser_process->shared_url_loader_factory());
-  night_light_client_->Start();
 
   if (chromeos::features::IsAmbientModeEnabled())
     ambient_client_ = std::make_unique<AmbientClientImpl>();

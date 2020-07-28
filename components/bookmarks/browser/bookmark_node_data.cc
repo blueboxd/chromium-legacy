@@ -16,7 +16,7 @@
 
 namespace bookmarks {
 
-#if !defined(OS_MACOSX)
+#if !defined(OS_APPLE)
 namespace {
 constexpr size_t kMaxVectorPreallocateSize = 10000;
 }  // namespace
@@ -46,7 +46,7 @@ BookmarkNodeData::Element::Element(const Element& other) = default;
 BookmarkNodeData::Element::~Element() {
 }
 
-#if !defined(OS_MACOSX)
+#if !defined(OS_APPLE)
 void BookmarkNodeData::Element::WriteToPickle(base::Pickle* pickle) const {
   pickle->WriteBool(is_url);
   pickle->WriteString(url.spec());
@@ -135,7 +135,7 @@ BookmarkNodeData::BookmarkNodeData(
 BookmarkNodeData::~BookmarkNodeData() {
 }
 
-#if !defined(OS_MACOSX)
+#if !defined(OS_APPLE)
 // static
 bool BookmarkNodeData::ClipboardContainsBookmarks() {
   return ui::Clipboard::GetForCurrentThread()->IsFormatAvailable(
@@ -174,7 +174,7 @@ bool BookmarkNodeData::ReadFromTuple(const GURL& url,
   return true;
 }
 
-#if !defined(OS_MACOSX)
+#if !defined(OS_APPLE)
 void BookmarkNodeData::WriteToClipboard() {
   ui::ScopedClipboardWriter scw(ui::ClipboardBuffer::kCopyPaste);
 

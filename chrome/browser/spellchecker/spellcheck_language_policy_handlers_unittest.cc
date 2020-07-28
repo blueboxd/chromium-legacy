@@ -130,7 +130,7 @@ TEST_P(SpellcheckLanguagePolicyHandlersTest, ApplyPolicySettings) {
     forced_languages_list.Append(std::move(forced_language));
   }
 
-  policy.Set(policy::key::kSpellcheckLanguageBlacklist,
+  policy.Set(policy::key::kSpellcheckLanguageBlocklist,
              policy::POLICY_LEVEL_MANDATORY, policy::POLICY_SCOPE_USER,
              policy::POLICY_SOURCE_ENTERPRISE_DEFAULT,
              std::move(blocked_languages_list), nullptr);
@@ -150,7 +150,8 @@ TEST_P(SpellcheckLanguagePolicyHandlersTest, ApplyPolicySettings) {
   forced_languages_handler.ApplyPolicySettings(policy, &prefs);
 
   // Apply policy to the blocked languages handler.
-  SpellcheckLanguageBlocklistPolicyHandler blocked_languages_handler;
+  SpellcheckLanguageBlocklistPolicyHandler blocked_languages_handler(
+      policy::key::kSpellcheckLanguageBlocklist);
   blocked_languages_handler.ApplyPolicySettings(policy, &prefs);
 
   // Check if forced languages preferences are as expected.
@@ -158,7 +159,7 @@ TEST_P(SpellcheckLanguagePolicyHandlersTest, ApplyPolicySettings) {
              GetParam().expected_forced_languages);
 
   // Check if blocked languages preferences are as expected.
-  CheckPrefs(prefs, spellcheck::prefs::kSpellCheckBlacklistedDictionaries,
+  CheckPrefs(prefs, spellcheck::prefs::kSpellCheckBlocklistedDictionaries,
              GetParam().expected_blocked_languages);
 }
 

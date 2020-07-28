@@ -9,7 +9,8 @@ namespace paint_preview {
 RecordingParams::RecordingParams(const base::UnguessableToken& document_guid)
     : document_guid(document_guid),
       is_main_frame(false),
-      max_per_capture_size(0) {}
+      capture_links(true),
+      max_capture_size(0) {}
 
 CaptureResult::CaptureResult(mojom::Persistence persistence)
     : persistence(persistence) {}

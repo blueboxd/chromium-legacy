@@ -33,9 +33,6 @@ class MEDIA_EXPORT MediaFoundationRendererExtension {
   // Notify renderer whether video is enabled.
   virtual void SetVideoStreamEnabled(bool enabled) = 0;
 
-  // Provide a unique identifier which maps to a specific playback element.
-  virtual void SetPlaybackElementId(uint64_t playback_element_id) = 0;
-
   // Notify renderer of output composition parameters.
   virtual void SetOutputParams(const ::gfx::Rect& rect) = 0;
 };

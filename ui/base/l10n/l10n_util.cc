@@ -258,7 +258,7 @@ bool IsLocalePartiallyPopulated(const std::string& locale_name) {
   return !l10n_util::IsLocaleNameTranslated("en", locale_name);
 }
 
-#if !defined(OS_MACOSX)
+#if !defined(OS_APPLE)
 bool IsLocaleAvailable(const std::string& locale) {
   // If locale has any illegal characters in it, we don't want to try to
   // load it because it may be pointing outside the locale data file directory.
@@ -283,7 +283,7 @@ bool IsLocaleAvailable(const std::string& locale) {
 // if "foo bar" is RTL. So this function prepends the necessary RLM in such
 // cases.
 void AdjustParagraphDirectionality(base::string16* paragraph) {
-#if defined(OS_POSIX) && !defined(OS_MACOSX) && !defined(OS_ANDROID)
+#if defined(OS_POSIX) && !defined(OS_APPLE) && !defined(OS_ANDROID)
   if (base::i18n::IsRTL() &&
       base::i18n::StringContainsStrongRTLChars(*paragraph)) {
     paragraph->insert(0, 1,
@@ -344,7 +344,7 @@ std::string GetLanguage(const std::string& locale) {
 // and generic locale fallback based on ICU/CLDR.
 bool CheckAndResolveLocale(const std::string& locale,
                            std::string* resolved_locale) {
-#if !defined(OS_MACOSX)
+#if !defined(OS_APPLE)
   if (IsLocaleAvailable(locale)) {
     *resolved_locale = locale;
     return true;
@@ -421,12 +421,12 @@ bool CheckAndResolveLocale(const std::string& locale,
   }
 #else
   NOTIMPLEMENTED();
-#endif  // !defined(OS_MACOSX)
+#endif  // !defined(OS_APPLE)
 
   return false;
 }
 
-#if defined(OS_MACOSX)
+#if defined(OS_APPLE)
 std::string GetApplicationLocaleInternalMac(const std::string& pref_locale) {
   // Use any override (Cocoa for the browser), otherwise use the preference
   // passed to the function.
@@ -443,7 +443,7 @@ std::string GetApplicationLocaleInternalMac(const std::string& pref_locale) {
 }
 #endif
 
-#if !defined(OS_MACOSX)
+#if !defined(OS_APPLE)
 std::string GetApplicationLocaleInternalNonMac(const std::string& pref_locale) {
   std::string resolved_locale;
   std::vector<std::string> candidates;
@@ -510,10 +510,10 @@ std::string GetApplicationLocaleInternalNonMac(const std::string& pref_locale) {
 
   return std::string();
 }
-#endif  // !defined(OS_MACOSX)
+#endif  // !defined(OS_APPLE)
 
 std::string GetApplicationLocaleInternal(const std::string& pref_locale) {
-#if defined(OS_MACOSX)
+#if defined(OS_APPLE)
   return GetApplicationLocaleInternalMac(pref_locale);
 #else
   return GetApplicationLocaleInternalNonMac(pref_locale);

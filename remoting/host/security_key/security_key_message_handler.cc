@@ -136,10 +136,10 @@ void SecurityKeyMessageHandler::HandleConnectRequest(
   if (ipc_client_->CheckForSecurityKeyIpcServerChannel()) {
     // If we find an IPC server, then attempt to establish a connection.
     ipc_client_->EstablishIpcConnection(
-        base::Bind(&SecurityKeyMessageHandler::HandleIpcConnectionChange,
-                   base::Unretained(this)),
-        base::Bind(&SecurityKeyMessageHandler::HandleIpcConnectionError,
-                   base::Unretained(this)));
+        base::BindOnce(&SecurityKeyMessageHandler::HandleIpcConnectionChange,
+                       base::Unretained(this)),
+        base::BindOnce(&SecurityKeyMessageHandler::HandleIpcConnectionError,
+                       base::Unretained(this)));
   } else {
     SendMessageWithPayload(SecurityKeyMessageType::CONNECT_RESPONSE,
                            std::string(1, kConnectResponseNoSession));
@@ -157,8 +157,9 @@ void SecurityKeyMessageHandler::HandleSecurityKeyRequest(
 
   if (!ipc_client_->SendSecurityKeyRequest(
           message_payload,
-          base::Bind(&SecurityKeyMessageHandler::HandleSecurityKeyResponse,
-                     base::Unretained(this)))) {
+          base::BindRepeating(
+              &SecurityKeyMessageHandler::HandleSecurityKeyResponse,
+              base::Unretained(this)))) {
     SendMessageWithPayload(SecurityKeyMessageType::REQUEST_ERROR,
                            "Failed to send request data.");
   }

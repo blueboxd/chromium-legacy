@@ -99,7 +99,7 @@ std::string CaptivePortalBlockingPage::GetWiFiSSID() const {
   // currently associated WiFi access point. |WiFiService| isn't available on
   // Linux so |net::GetWifiSSID| is used instead.
   std::string ssid;
-#if defined(OS_WIN) || defined(OS_MACOSX)
+#if defined(OS_WIN) || defined(OS_APPLE)
   std::unique_ptr<wifi::WiFiService> wifi_service(wifi::WiFiService::Create());
   wifi_service->Initialize(nullptr);
   std::string error;

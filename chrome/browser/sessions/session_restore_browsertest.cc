@@ -2498,3 +2498,63 @@ IN_PROC_BROWSER_TEST_F(MultiOriginSessionRestoreTest,
   // just falls back to an opaque origin.
   EXPECT_TRUE(subframe->GetLastCommittedOrigin().opaque());
 }
+
+// Check that TabManager.TimeSinceTabClosedUntilRestored histogram is not
+// recorded on session restore.
+IN_PROC_BROWSER_TEST_F(SessionRestoreTest,
+                       TimeSinceTabClosedUntilRestoredNotRecorded) {
+  base::HistogramTester histogram_tester;
+  const char kTimeSinceTabClosedUntilRestored[] =
+      "TabManager.TimeSinceTabClosedUntilRestored";
+
+  // Add several tabs to the browser.
+  ui_test_utils::NavigateToURLWithDisposition(
+      browser(), GURL(url::kAboutBlankURL),
+      WindowOpenDisposition::NEW_FOREGROUND_TAB,
+      ui_test_utils::BROWSER_TEST_WAIT_FOR_LOAD_STOP);
+  ui_test_utils::NavigateToURLWithDisposition(
+      browser(), GURL(url::kAboutBlankURL),
+      WindowOpenDisposition::NEW_FOREGROUND_TAB,
+      ui_test_utils::BROWSER_TEST_WAIT_FOR_LOAD_STOP);
+
+  // Restart the browser and check that the metric is not recorded.
+  EXPECT_EQ(
+      histogram_tester.GetAllSamples(kTimeSinceTabClosedUntilRestored).size(),
+      0U);
+
+  QuitBrowserAndRestoreWithURL(browser(), 1, GURL(), true);
+
+  EXPECT_EQ(
+      histogram_tester.GetAllSamples(kTimeSinceTabClosedUntilRestored).size(),
+      0U);
+}
+
+// Check that TabManager.TimeSinceWindowClosedUntilRestored histogram is not
+// recorded on session restore.
+IN_PROC_BROWSER_TEST_F(SessionRestoreTest,
+                       TimeSinceWindowClosedUntilRestoredNotRecorded) {
+  base::HistogramTester histogram_tester;
+  const char kTimeSinceWindowClosedUntilRestored[] =
+      "TabManager.TimeSinceWindowClosedUntilRestored";
+
+  // Add several tabs to the browser.
+  ui_test_utils::NavigateToURLWithDisposition(
+      browser(), GURL(url::kAboutBlankURL),
+      WindowOpenDisposition::NEW_FOREGROUND_TAB,
+      ui_test_utils::BROWSER_TEST_WAIT_FOR_LOAD_STOP);
+  ui_test_utils::NavigateToURLWithDisposition(
+      browser(), GURL(url::kAboutBlankURL),
+      WindowOpenDisposition::NEW_FOREGROUND_TAB,
+      ui_test_utils::BROWSER_TEST_WAIT_FOR_LOAD_STOP);
+
+  // Restart the browser and check that the metric is not recorded.
+  EXPECT_EQ(histogram_tester.GetAllSamples(kTimeSinceWindowClosedUntilRestored)
+                .size(),
+            0U);
+
+  QuitBrowserAndRestoreWithURL(browser(), 1, GURL(), true);
+
+  EXPECT_EQ(histogram_tester.GetAllSamples(kTimeSinceWindowClosedUntilRestored)
+                .size(),
+            0U);
+}

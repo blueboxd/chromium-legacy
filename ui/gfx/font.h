@@ -60,7 +60,7 @@ class GFX_EXPORT Font {
   Font(const Font& other);
   Font& operator=(const Font& other);
 
-#if defined(OS_MACOSX) || defined(OS_IOS)
+#if defined(OS_APPLE)
   // Creates a font from the specified native font.
   explicit Font(NativeFont native_font);
 #endif
@@ -117,7 +117,7 @@ class GFX_EXPORT Font {
   // Returns an object describing how the font should be rendered.
   const FontRenderParams& GetFontRenderParams() const;
 
-#if defined(OS_MACOSX) || defined(OS_IOS)
+#if defined(OS_APPLE)
   // Returns the native font handle.
   // Lifetime lore:
   // Mac:     The object is owned by the system and should not be released.

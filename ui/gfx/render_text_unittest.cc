@@ -51,7 +51,7 @@
 #include "base/win/windows_version.h"
 #endif
 
-#if defined(OS_MACOSX)
+#if defined(OS_APPLE)
 #include "base/mac/mac_util.h"
 #endif
 
@@ -4403,7 +4403,7 @@ TEST_F(RenderTextTest, DefaultLineHeights) {
   render_text->SetText(
       UTF8ToUTF16("A quick brown fox jumped over the lazy dog!"));
 
-#if defined(OS_MACOSX)
+#if defined(OS_APPLE)
   const FontList body2_font = FontList().DeriveWithSizeDelta(-1);
 #else
   const FontList body2_font;
@@ -5550,7 +5550,7 @@ TEST_F(RenderTextTest, Multiline_SurrogatePairsOrCombiningChars) {
 TEST_F(RenderTextTest, Multiline_ZeroWidthChars) {
   RenderTextHarfBuzz* render_text = GetRenderText();
 
-#if defined(OS_MACOSX)
+#if defined(OS_APPLE)
   // Don't use Helvetica Neue on 10.10 - it has a buggy zero-width space that
   // actually gets some width. See http://crbug.com/799333.
   if (base::mac::IsOS10_10())
@@ -6015,7 +6015,7 @@ TEST_F(RenderTextTest, HarfBuzz_BreakRunsByEmojiVariationSelectors) {
   EXPECT_EQ(gfx::Range(1, 1), render_text->selection());
   EXPECT_EQ(1 * kGlyphWidth, render_text->GetUpdatedCursorBounds().x());
 
-#if defined(OS_MACOSX)
+#if defined(OS_APPLE)
   // Early versions of macOS provide a tofu glyph for the variation selector.
   // Bail out early except on 10.12 and above.
   if (base::mac::IsAtMostOS10_11())
@@ -6053,7 +6053,7 @@ TEST_F(RenderTextTest, HarfBuzz_OrphanedVariationSelector) {
 
 TEST_F(RenderTextTest, HarfBuzz_AsciiVariationSelector) {
   RenderTextHarfBuzz* render_text = GetRenderText();
-#if defined(OS_MACOSX)
+#if defined(OS_APPLE)
   // Don't use a system font on macOS - asking for a variation selector on
   // ASCII glyphs can tickle OS bugs. See http://crbug.com/785522.
   render_text->SetFontList(FontList("Arial, 12px"));
@@ -6144,7 +6144,7 @@ TEST_F(RenderTextTest, EmojiFlagGlyphCount) {
 
   const internal::TextRunList* run_list = GetHarfBuzzRunList();
   ASSERT_EQ(1U, run_list->runs().size());
-#if defined(OS_LINUX) || defined(OS_MACOSX)
+#if defined(OS_LINUX) || defined(OS_APPLE)
   // On Linux and macOS, the flags should be found, so two glyphs result.
   EXPECT_EQ(2u, run_list->runs()[0]->shape.glyph_count);
 #elif defined(OS_ANDROID)
@@ -6543,7 +6543,7 @@ const FallbackFontCase kCommonScriptCases[] = {
     {"common29", L"\u2517\u2297\u2762\u2460\u25bd\u24a9\u21a7\ufe64"},
     {"common30", L"\u2105\u2722\u275d\u249c\u21a2\u2590\u2260\uff5d"},
     {"common31", L"\u33ba\u21c6\u2706\u02cb\ufe64\u02e6\u0374\u2493"},
-#elif defined(OS_MACOSX)
+#elif defined(OS_APPLE)
     {"common00", L"\u2153\u24e0\u2109\u02f0\u2a8f\u25ed\u02c5\u2716"},
     {"common01", L"\u02f0\u208c\u2203\u2518\u2067\u2270\u21f1\ufe66"},
     {"common02", L"\u2686\u2585\u2b15\u246f\u23e3\u21b4\u2394\ufe31"},

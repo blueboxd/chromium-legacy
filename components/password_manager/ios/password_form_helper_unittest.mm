@@ -15,6 +15,7 @@
 #include "components/autofill/core/common/password_form_fill_data.h"
 #include "components/password_manager/ios/account_select_fill_data.h"
 #include "components/password_manager/ios/test_helpers.h"
+#import "ios/web/public/test/fakes/fake_navigation_context.h"
 #include "ios/web/public/test/fakes/test_web_client.h"
 #import "ios/web/public/test/web_test_with_web_state.h"
 #import "ios/web/public/web_state.h"
@@ -344,12 +345,21 @@ TEST_F(PasswordFormHelperTest, RefillFormFilledOnUserTrigger) {
   }));
 
   // Try to autofill the form.
-  FormData form_data;
-  SetFormData(base_url, 0, 1, "someacc@store.com", 2, "store!pw", &form_data);
+  PasswordFormFillData form_data;
+  SetPasswordFormFillData(BaseUrl(), "", 0, "", 1, "someacc@store.com", "", 2,
+                          "store!pw", "", "", NO, &form_data);
 
-  // Verify that the form has not been refilled.
-  id result = ExecuteJavaScript(kInputFieldValueVerificationScript);
-  EXPECT_NSEQ(@"u1=john.doe@gmail.com;p1=super!secret;", result);
+  __block bool called = NO;
+  __block bool success = NO;
+  [helper_ fillPasswordForm:form_data
+          completionHandler:^(BOOL res) {
+            called = YES;
+            success = res;
+          }];
+  EXPECT_TRUE(WaitUntilConditionOrTimeout(kWaitForJSCompletionTimeout, ^{
+    return called;
+  }));
+  EXPECT_EQ(success, NO);
 }
 
 // Tests that a form with credentials typed by user
@@ -371,12 +381,34 @@ TEST_F(PasswordFormHelperTest, RefillFormWithUserTypedInput) {
                            inputValue:@"super!secret"];
 
   // Try to autofill the form.
-  FormData form_data;
-  SetFormData(BaseUrl(), 0, 1, "someacc@store.com", 2, "store!pw", &form_data);
+  PasswordFormFillData form_data;
+  SetPasswordFormFillData(BaseUrl(), "", 0, "", 1, "someacc@store.com", "", 2,
+                          "store!pw", "", "", NO, &form_data);
 
-  // Verify that the form has not been refilled.
-  id result = ExecuteJavaScript(kInputFieldValueVerificationScript);
-  EXPECT_NSEQ(@"u1=john.doe@gmail.com;p1=super!secret;", result);
+  __block bool called = NO;
+  __block bool success = NO;
+  [helper_ fillPasswordForm:form_data
+          completionHandler:^(BOOL res) {
+            called = YES;
+            success = res;
+          }];
+  EXPECT_TRUE(WaitUntilConditionOrTimeout(kWaitForJSCompletionTimeout, ^{
+    return called;
+  }));
+  EXPECT_EQ(success, NO);
+
+  // Make sure that this form can be filled again after a navigation.
+  web::FakeNavigationContext context;
+  [helper_ webState:web_state() didFinishNavigation:&context];
+
+  success = NO;
+  [helper_ fillPasswordForm:form_data
+          completionHandler:^(BOOL res) {
+            success = res;
+          }];
+  EXPECT_TRUE(WaitUntilConditionOrTimeout(kWaitForJSCompletionTimeout, ^{
+    return success;
+  }));
 }
 
 }  // namespace

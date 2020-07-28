@@ -69,11 +69,11 @@ class WasRecentlyAudibleWatcher {
   // Waits until WasRecentlyAudible is true.
   void WaitForWasRecentlyAudible() {
     if (!audible_helper_->WasRecentlyAudible()) {
-      timer_.Start(
-          FROM_HERE, base::TimeDelta::FromMicroseconds(100),
-          base::Bind(&WasRecentlyAudibleWatcher::TestWasRecentlyAudible,
-                     base::Unretained(this)));
-      run_loop_.reset(new base::RunLoop());
+      timer_.Start(FROM_HERE, base::TimeDelta::FromMicroseconds(100),
+                   base::BindRepeating(
+                       &WasRecentlyAudibleWatcher::TestWasRecentlyAudible,
+                       base::Unretained(this)));
+      run_loop_ = std::make_unique<base::RunLoop>();
       run_loop_->Run();
     }
   }

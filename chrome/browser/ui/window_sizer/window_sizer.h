@@ -103,7 +103,7 @@ class WindowSizer {
   const StateProvider* state_provider() const { return state_provider_.get(); }
 
  private:
-  friend class WindowSizerAshTest;
+  friend class WindowSizerChromeOSTest;
   friend class WindowSizerTestUtil;
 
   // WindowSizer will use the platforms's display::Screen.
@@ -147,25 +147,26 @@ class WindowSizer {
                                         gfx::Rect* bounds) const;
 
 #if defined(OS_CHROMEOS)
-  // Ash specific logic for window placement. Returns true if |bounds| and
+  // Chrome OS specific logic for window placement. Returns true if |bounds| and
   // |show_state| have been fully determined, otherwise returns false (but
   // may still affect |show_state|).
   // If the window is too big to fit in the display work area then the |bounds|
   // are adjusted to default bounds and the |show_state| is adjusted to
   // SHOW_STATE_MAXIMIZED.
-  bool GetBrowserBoundsAsh(gfx::Rect* bounds,
-                           ui::WindowShowState* show_state) const;
+  bool GetBrowserBoundsChromeOS(gfx::Rect* bounds,
+                                ui::WindowShowState* show_state) const;
 
   // Determines the position and size for a tabbed browser window in
   // ash as it gets created. This will be called before other standard
   // placement logic. |show_state| will only be changed
   // if it was set to SHOW_STATE_DEFAULT.
-  void GetTabbedBrowserBoundsAsh(gfx::Rect* bounds,
-                                 ui::WindowShowState* show_state) const;
+  void GetTabbedBrowserBoundsChromeOS(gfx::Rect* bounds,
+                                      ui::WindowShowState* show_state) const;
 
   // Returns the default bounds for a |browser| window on |display|.
-  static gfx::Rect GetDefaultWindowBoundsAsh(const Browser* browser,
-                                             const display::Display& display);
+  static gfx::Rect GetDefaultWindowBoundsChromeOS(
+      const Browser* browser,
+      const display::Display& display);
 #endif
 
   // Determine the default show state for the window - not looking at other

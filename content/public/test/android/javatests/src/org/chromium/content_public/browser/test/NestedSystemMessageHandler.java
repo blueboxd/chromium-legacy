@@ -57,24 +57,18 @@ public class NestedSystemMessageHandler {
 
     /**
      * Runs a single nested task on the provided MessageQueue
-     *
-     * @return whether the current loop should quit.
      */
-    public static boolean runSingleNestedLooperTask(MessageQueue queue)
+    public static void runSingleNestedLooperTask(MessageQueue queue)
             throws IllegalArgumentException, IllegalAccessException, SecurityException,
                    InvocationTargetException {
-        boolean quitLoop = false;
+        // This call will block if there are no messages in the queue. It will
+        // also run or more pending C++ tasks as a side effect before returning
+        // |msg|.
         Message msg = (Message) sNextMethod.invoke(queue);
-        if (msg == null) return true;
-        if (msg.what == QUIT_MESSAGE) {
-            quitLoop = true;
-        }
+        if (msg == null) return;
         Handler target = (Handler) sMessageTargetField.get(msg);
 
-        if (target == null) {
-            // No target is a magic identifier for the quit message.
-            quitLoop = true;
-        } else {
+        if (target != null) {
             target.dispatchMessage(msg);
         }
 
@@ -83,32 +77,40 @@ public class NestedSystemMessageHandler {
         sMessageFlagsField.set(msg, oldFlags & ~(1 << 0 /* FLAG_IN_USE */));
 
         msg.recycle();
-        return quitLoop;
     }
 
     /**
-     * Processes messages from the current MessageQueue till the queue becomes idle.
+     * Dispatches the first message from the current MessageQueue, blocking
+     * until a task becomes available if the queue is empty. Callbacks for
+     * other event handlers registered to the thread's looper (e.g.,
+     * MessagePumpAndroid) may also be processed as a side-effect.
+     *
+     * Returns true if task dispatching succeeded, or false if an exception was
+     * thrown.
      */
     @SuppressWarnings("unused")
     @CalledByNative
-    private static boolean runNestedLoopTillIdle() {
+    private static boolean dispatchOneMessage() {
         MessageQueue queue = Looper.myQueue();
-        queue.addIdleHandler(new MessageQueue.IdleHandler() {
-            @Override
-            public boolean queueIdle() {
-                sHandler.sendMessage(sHandler.obtainMessage(QUIT_MESSAGE));
-                return false;
-            }
-        });
-
         try {
-            while (!runSingleNestedLooperTask(queue)) {
-            }
+            runSingleNestedLooperTask(queue);
         } catch (IllegalArgumentException | IllegalAccessException | SecurityException
                 | InvocationTargetException e) {
             e.printStackTrace();
             return false;
         }
         return true;
+    }
+
+    /*
+     * Causes a previous call to dispatchOneMessage() to stop blocking and
+     * return.
+     */
+    @SuppressWarnings("unused")
+    @CalledByNative
+    private static void postQuitMessage() {
+        // Causes MessageQueue.next() to return in case it was blocking waiting
+        // for more messages.
+        sHandler.sendMessage(sHandler.obtainMessage(QUIT_MESSAGE));
     }
 }

@@ -78,7 +78,7 @@ const char kMachineCertificate[] = "fake-machine-certificate";
 const char kEnrollmentCertificate[] = "fake-enrollment-certificate";
 const char kEnrollmentId[] = "fake-enrollment-id";
 
-#if defined(OS_WIN) || defined(OS_MACOSX) || \
+#if defined(OS_WIN) || defined(OS_APPLE) || \
     defined(OS_LINUX) && !defined(OS_CHROMEOS)
 const char kEnrollmentToken[] = "enrollment_token";
 #endif
@@ -223,7 +223,7 @@ class CloudPolicyClientTest : public testing::Test {
     failed_reregistration_response_.mutable_register_response()
         ->set_device_management_token(kDMToken2);
 
-#if defined(OS_WIN) || defined(OS_MACOSX) || \
+#if defined(OS_WIN) || defined(OS_APPLE) || \
     defined(OS_LINUX) && !defined(OS_CHROMEOS)
     em::RegisterBrowserRequest* enrollment_request =
         enrollment_token_request_.mutable_register_browser_request();
@@ -684,7 +684,7 @@ TEST_F(CloudPolicyClientTest, SetupRegistrationAndPolicyFetchWithOAuthToken) {
   CheckPolicyResponse();
 }
 
-#if defined(OS_WIN) || defined(OS_MACOSX) || \
+#if defined(OS_WIN) || defined(OS_APPLE) || \
     defined(OS_LINUX) && !defined(OS_CHROMEOS)
 TEST_F(CloudPolicyClientTest, RegistrationWithTokenAndPolicyFetch) {
   ExpectEnrollmentTokenBasedRegistration();
@@ -1505,7 +1505,7 @@ TEST_F(CloudPolicyClientTest, UploadChromeOsUserReport) {
   EXPECT_EQ(DM_STATUS_SUCCESS, client_->status());
 }
 
-#if defined(OS_WIN) || defined(OS_MACOSX) || defined(OS_LINUX)
+#if defined(OS_WIN) || defined(OS_APPLE) || defined(OS_LINUX)
 TEST_F(CloudPolicyClientTest, UploadRealtimeReport) {
   RegisterClient();
 

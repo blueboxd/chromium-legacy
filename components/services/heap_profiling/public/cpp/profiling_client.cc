@@ -42,7 +42,7 @@ void ProfilingClient::StartProfiling(mojom::ProfilingParamsPtr params,
   started_profiling_ = true;
   base::trace_event::MallocDumpProvider::GetInstance()->DisableMetrics();
 
-#if defined(OS_MACOSX)
+#if defined(OS_APPLE)
   // On macOS, this call is necessary to shim malloc zones that were created
   // after startup. This cannot be done during shim initialization because the
   // task scheduler has not yet been initialized.

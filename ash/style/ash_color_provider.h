@@ -117,6 +117,10 @@ class ASH_EXPORT AshColorProvider {
     // Color for sliders (volume, brightness etc.)
     kSliderThumbColorEnabled,
     kSliderThumbColorDisabled,
+
+    // Color for app state indicator.
+    kAppStateIndicatorColor,
+    kAppStateIndicatorColorInactive,
   };
 
   // Types of ash styled buttons.

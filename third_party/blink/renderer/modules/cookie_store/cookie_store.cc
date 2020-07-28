@@ -357,8 +357,7 @@ void CookieStore::RemoveAllEventListeners() {
 void CookieStore::OnCookieChange(
     network::mojom::blink::CookieChangeInfoPtr change) {
   HeapVector<Member<CookieListItem>> changed, deleted;
-  CookieChangeEvent::ToEventInfo(change->cookie, change->cause, changed,
-                                 deleted);
+  CookieChangeEvent::ToEventInfo(change, changed, deleted);
   if (changed.IsEmpty() && deleted.IsEmpty()) {
     // The backend only reported OVERWRITE events, which are dropped.
     return;
@@ -433,7 +432,9 @@ void CookieStore::GetAllForUrlToGetAllResult(
   cookies.ReserveInitialCapacity(backend_cookies.size());
   for (const auto& backend_cookie : backend_cookies) {
     cookies.push_back(CookieChangeEvent::ToCookieListItem(
-        backend_cookie->cookie, false /* is_deleted */));
+        backend_cookie->cookie,
+        backend_cookie->access_result->effective_same_site,
+        false /* is_deleted */));
   }
 
   resolver->Resolve(std::move(cookies));
@@ -456,7 +457,9 @@ void CookieStore::GetAllForUrlToGetResult(
 
   const auto& backend_cookie = backend_cookies.front();
   CookieListItem* cookie = CookieChangeEvent::ToCookieListItem(
-      backend_cookie->cookie, false /* is_deleted */);
+      backend_cookie->cookie,
+      backend_cookie->access_result->effective_same_site,
+      false /* is_deleted */);
   resolver->Resolve(cookie);
 }
 

@@ -156,9 +156,6 @@ public class ScrollingBottomViewSceneLayer extends SceneOverlayLayer implements 
             float width, float height, float visibleViewportOffsetY, int orientation) {}
 
     @Override
-    public void onHideLayout() {}
-
-    @Override
     public void getVirtualViews(List<VirtualView> views) {}
 
     @Override

@@ -1481,7 +1481,7 @@ void Widget::OnNativeThemeUpdated(ui::NativeTheme* observed_theme) {
 
   DCHECK(observer_manager_.IsObserving(observed_theme));
 
-#if defined(OS_MACOSX) || defined(OS_WIN)
+#if defined(OS_APPLE) || defined(OS_WIN)
   ui::NativeTheme* current_native_theme = observed_theme;
 #else
   ui::NativeTheme* current_native_theme = GetNativeTheme();

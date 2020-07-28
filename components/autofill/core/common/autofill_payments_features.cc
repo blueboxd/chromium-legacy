@@ -40,7 +40,7 @@ const base::Feature kAutofillCreditCardAblationExperiment{
 // credit cards from Google payments.
 const base::Feature kAutofillCreditCardAuthentication{
   "AutofillCreditCardAuthentication",
-#if defined(OS_WIN) || (defined(OS_MACOSX) && !defined(OS_IOS))
+#if defined(OS_WIN) || defined(OS_MAC)
       // Better Auth project is fully launched on Win/Mac.
       base::FEATURE_ENABLED_BY_DEFAULT
 #else
@@ -123,7 +123,7 @@ const base::Feature kAutofillUpstreamAllowAllEmailDomains{
     "AutofillUpstreamAllowAllEmailDomains", base::FEATURE_DISABLED_BY_DEFAULT};
 
 bool ShouldShowImprovedUserConsentForCreditCardSave() {
-#if defined(OS_WIN) || defined(OS_MACOSX) || \
+#if defined(OS_WIN) || defined(OS_APPLE) || \
     (defined(OS_LINUX) && !defined(OS_CHROMEOS))
   // The new user consent UI is fully launched on MacOS, Windows and Linux.
   return true;

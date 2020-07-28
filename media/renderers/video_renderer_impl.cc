@@ -18,7 +18,6 @@
 #include "base/time/default_tick_clock.h"
 #include "base/trace_event/trace_event.h"
 #include "media/base/bind_to_current_loop.h"
-#include "media/base/limits.h"
 #include "media/base/media_log.h"
 #include "media/base/media_switches.h"
 #include "media/base/pipeline_status.h"
@@ -73,8 +72,8 @@ VideoRendererImpl::VideoRendererImpl(
       have_renderered_frames_(false),
       last_frame_opaque_(false),
       painted_first_frame_(false),
-      min_buffered_frames_(limits::kMaxVideoFrames),
-      max_buffered_frames_(limits::kMaxVideoFrames) {
+      min_buffered_frames_(initial_buffering_size_.value()),
+      max_buffered_frames_(initial_buffering_size_.value()) {
   DCHECK(create_video_decoders_cb_);
 }
 
@@ -132,8 +131,10 @@ void VideoRendererImpl::Flush(base::OnceClosure callback) {
 
   // Reset preroll capacity so seek time is not penalized. |latency_hint_|
   // and |low_delay_| mode disable automatic preroll adjustments.
-  if (!latency_hint_.has_value() && !low_delay_)
-    min_buffered_frames_ = max_buffered_frames_ = limits::kMaxVideoFrames;
+  if (!latency_hint_.has_value() && !low_delay_) {
+    min_buffered_frames_ = max_buffered_frames_ =
+        initial_buffering_size_.value();
+  }
 }
 
 void VideoRendererImpl::StartPlayingFrom(base::TimeDelta timestamp) {
@@ -433,7 +434,7 @@ void VideoRendererImpl::OnTimeStopped() {
     // |low_delay_| mode disables automatic increases. In these cases the site
     // is expressing a desire to manually control/minimize the buffering
     // threshold for HAVE_ENOUGH.
-    const size_t kMaxUnderflowGrowth = 2 * limits::kMaxVideoFrames;
+    const size_t kMaxUnderflowGrowth = 2 * initial_buffering_size_.value();
     if (!latency_hint_.has_value() && !low_delay_) {
       DCHECK_EQ(min_buffered_frames_, max_buffered_frames_);
 
@@ -471,8 +472,9 @@ void VideoRendererImpl::SetLatencyHint(
 
   if (!latency_hint_.has_value()) {
     // Restore default values.
-    // NOTE kMaxVideoFrames the default max, not the max overall.
-    min_buffered_frames_ = max_buffered_frames_ = limits::kMaxVideoFrames;
+    // NOTE |initial_buffering_size_| the default max, not the max overall.
+    min_buffered_frames_ = max_buffered_frames_ =
+        initial_buffering_size_.value();
     MEDIA_LOG(DEBUG, media_log_)
         << "Video latency hint cleared. Default buffer size ("
         << min_buffered_frames_ << " frames) restored";
@@ -482,7 +484,7 @@ void VideoRendererImpl::SetLatencyHint(
     // to avoid needless churn since the "bare minimum" buffering doesn't
     // fluctuate with changes to FPS.
     min_buffered_frames_ = 1;
-    max_buffered_frames_ = limits::kMaxVideoFrames;
+    max_buffered_frames_ = initial_buffering_size_.value();
     MEDIA_LOG(DEBUG, media_log_)
         << "Video latency hint set:" << *latency_hint << ". "
         << "Effective buffering latency: 1 frame";
@@ -530,8 +532,8 @@ void VideoRendererImpl::UpdateLatencyHintBufferingCaps_Locked(
   }
 
   // Use initial capacity limit if possible. Increase if needed.
-  max_buffered_frames_ = std::max(min_buffered_frames_,
-                                  static_cast<size_t>(limits::kMaxVideoFrames));
+  max_buffered_frames_ =
+      std::max(min_buffered_frames_, initial_buffering_size_.value());
 
   if (!is_latency_hint_media_logged_) {
     is_latency_hint_media_logged_ = true;

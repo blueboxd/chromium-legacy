@@ -84,7 +84,7 @@ MULTIPROCESS_TEST_MAIN(CrashpadHandler) {
 
 // Child process that launches the crashpad handler and then crashes.
 MULTIPROCESS_TEST_MAIN(CrashingProcess) {
-#if defined(OS_MACOSX)
+#if defined(OS_APPLE)
   // Disable the system crash reporter from inspecting this crash (it is slow
   // and causes test timeouts.)
   crashpad::CrashpadInfo::GetCrashpadInfo()

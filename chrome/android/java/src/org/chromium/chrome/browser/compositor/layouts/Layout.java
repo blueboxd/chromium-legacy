@@ -456,9 +456,6 @@ public abstract class Layout implements TabContentManager.ThumbnailChangeListene
         mUpdateHost.startHiding(nextTabId, hintAtTabSelection);
         mIsHiding = true;
         mNextTabId = nextTabId;
-        for (int i = 0; i < mSceneOverlays.size(); i++) {
-            mSceneOverlays.get(i).onHideLayout();
-        }
     }
 
     /**

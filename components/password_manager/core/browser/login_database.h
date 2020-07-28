@@ -33,7 +33,7 @@
 #include "base/gtest_prod_util.h"
 #endif
 
-#if defined(OS_MACOSX) && !defined(OS_IOS)
+#if defined(OS_MAC)
 #include "components/password_manager/core/browser/password_recovery_util_mac.h"
 #endif
 
@@ -71,7 +71,7 @@ class LoginDatabase : public PasswordStoreSync::MetadataStore {
   // should be called.
   virtual bool Init();
 
-#if defined(OS_MACOSX) && !defined(OS_IOS)
+#if defined(OS_MAC)
   // Registers utility which is used to save password recovery status on MacOS.
   void InitPasswordRecoveryUtil(
       std::unique_ptr<PasswordRecoveryUtilMac> password_recovery_util);
@@ -213,11 +213,11 @@ class LoginDatabase : public PasswordStoreSync::MetadataStore {
 
   FieldInfoTable& field_info_table() { return field_info_table_; }
 
-#if defined(OS_POSIX) && !defined(OS_MACOSX)
+#if defined(OS_POSIX) && !defined(OS_APPLE)
   void enable_encryption() { use_encryption_ = true; }
   // This instance should not encrypt/decrypt password values using OSCrypt.
   void disable_encryption() { use_encryption_ = false; }
-#endif  // defined(OS_POSIX) && !defined(OS_MACOSX)
+#endif  // defined(OS_POSIX) && !defined(OS_APPLE)
 
  private:
   struct PrimaryKeyAndPassword;
@@ -361,11 +361,11 @@ class LoginDatabase : public PasswordStoreSync::MetadataStore {
   std::string encrypted_password_statement_by_id_;
   std::string id_and_password_statement_;
 
-#if defined(OS_MACOSX) && !defined(OS_IOS)
+#if defined(OS_MAC)
   std::unique_ptr<PasswordRecoveryUtilMac> password_recovery_util_;
 #endif
 
-#if defined(OS_POSIX) && !defined(OS_MACOSX)
+#if defined(OS_POSIX) && !defined(OS_APPLE)
   // Whether password values should be encrypted.
   // TODO(crbug.com/571003) Only linux doesn't use encryption. Remove this once
   // Linux is fully migrated into LoginDatabase.

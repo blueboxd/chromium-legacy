@@ -76,7 +76,6 @@ class WebContentsCloseHandler;
 class WebUITabStripContainerView;
 
 namespace extensions {
-class ActiveTabPermissionGranter;
 class Command;
 class Extension;
 }
@@ -541,8 +540,7 @@ class BrowserView : public BrowserWindow,
   bool CanTriggerOnMouse() const override;
 
   // extension::ExtensionKeybindingRegistry::Delegate:
-  extensions::ActiveTabPermissionGranter* GetActiveTabPermissionGranter()
-      override;
+  content::WebContents* GetWebContentsForExtension() override;
 
   // ImmersiveModeController::Observer:
   void OnImmersiveRevealStarted() override;

@@ -11,6 +11,7 @@ import android.os.Handler;
 import android.provider.Settings;
 import android.view.View;
 
+import androidx.annotation.Nullable;
 import androidx.annotation.VisibleForTesting;
 import androidx.preference.Preference;
 import androidx.preference.PreferenceFragmentCompat;
@@ -23,6 +24,8 @@ import org.chromium.chrome.browser.homepage.HomepageManager;
 import org.chromium.chrome.browser.net.spdyproxy.DataReductionProxySettings;
 import org.chromium.chrome.browser.night_mode.NightModeUtils;
 import org.chromium.chrome.browser.offlinepages.prefetch.PrefetchConfiguration;
+import org.chromium.chrome.browser.password_check.PasswordCheck;
+import org.chromium.chrome.browser.password_check.PasswordCheckFactory;
 import org.chromium.chrome.browser.password_manager.ManagePasswordsReferrer;
 import org.chromium.chrome.browser.password_manager.PasswordManagerLauncher;
 import org.chromium.chrome.browser.profiles.Profile;
@@ -75,6 +78,7 @@ public class MainSettings extends PreferenceFragmentCompat
     private final Map<String, Preference> mAllPreferences = new HashMap<>();
     private SignInPreference mSignInPreference;
     private ChromeBasePreference mManageSync;
+    private @Nullable PasswordCheck mPasswordCheck;
 
     public MainSettings() {
         setHasOptionsMenu(true);
@@ -84,6 +88,12 @@ public class MainSettings extends PreferenceFragmentCompat
     @Override
     public void onCreatePreferences(Bundle savedInstanceState, String rootKey) {
         createPreferences();
+    }
+
+    @Override
+    public void onCreate(Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+        mPasswordCheck = PasswordCheckFactory.getOrCreate();
     }
 
     @Override
@@ -98,6 +108,10 @@ public class MainSettings extends PreferenceFragmentCompat
     public void onDestroy() {
         super.onDestroy();
         mSignInPreference.onPreferenceFragmentDestroyed();
+        // The component should only be destroyed when the activity has been closed by the user
+        // (e.g. by pressing on the back button) and not when the activity is temporarily destroyed
+        // by the system.
+        if (getActivity().isFinishing() && mPasswordCheck != null) PasswordCheckFactory.destroy();
     }
 
     @Override

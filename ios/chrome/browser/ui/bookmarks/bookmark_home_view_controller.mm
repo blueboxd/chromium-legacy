@@ -266,7 +266,7 @@ std::vector<GURL> GetUrlsToOpen(const std::vector<const BookmarkNode*>& nodes) {
   // This method is only designed to be called for the view controller
   // associated with the root node.
   DCHECK(self.bookmarks->loaded());
-  DCHECK_EQ(_rootNode, self.bookmarks->root_node());
+  DCHECK([self isDisplayingBookmarkRoot]);
 
   NSMutableArray<BookmarkHomeViewController*>* stack = [NSMutableArray array];
   // Configure the root controller Navigationbar at this time when
@@ -391,11 +391,18 @@ std::vector<GURL> GetUrlsToOpen(const std::vector<const BookmarkNode*>& nodes) {
 
   // Hide the toolbar if we're displaying the root node.
   if (self.bookmarks->loaded() &&
-      (_rootNode != self.bookmarks->root_node() ||
+      (![self isDisplayingBookmarkRoot] ||
        self.sharedState.currentlyShowingSearchResults)) {
     self.navigationController.toolbarHidden = NO;
   } else {
     self.navigationController.toolbarHidden = YES;
+  }
+
+  // If we navigate back to the root level, we need to make sure the root level
+  // folders are created or deleted if needed.
+  if (base::FeatureList::IsEnabled(kIllustratedEmptyStates) &&
+      [self isDisplayingBookmarkRoot]) {
+    [self refreshContents];
   }
 
   // Center search bar's cancel button vertically so it looks centered.
@@ -766,7 +773,7 @@ std::vector<GURL> GetUrlsToOpen(const std::vector<const BookmarkNode*>& nodes) {
     // is set to regular size, which means the search bar is at same level at
     // beginning and end of animation. This controller will be replaced in
     // |stack| so there's no need to care about restoring this.
-    if (_rootNode == self.bookmarks->root_node()) {
+    if ([self isDisplayingBookmarkRoot]) {
       self.navigationItem.largeTitleDisplayMode =
           UINavigationItemLargeTitleDisplayModeNever;
     }
@@ -965,7 +972,12 @@ std::vector<GURL> GetUrlsToOpen(const std::vector<const BookmarkNode*>& nodes) {
           strongSelf.spinnerView.alpha = 0.0;
         }
         completion:^(BOOL finished) {
-          self.sharedState.tableView.backgroundView = nil;
+          // By the time completion block is called, the backgroundView could be
+          // another view, like the empty view background. Only clear the
+          // background if it is still the spinner.
+          if (self.sharedState.tableView.backgroundView == self.spinnerView) {
+            self.sharedState.tableView.backgroundView = nil;
+          }
           self.spinnerView = nil;
         }];
     [strongSelf loadBookmarkViews];
@@ -1007,6 +1019,10 @@ std::vector<GURL> GetUrlsToOpen(const std::vector<const BookmarkNode*>& nodes) {
 
 #pragma mark - private
 
+- (BOOL)isDisplayingBookmarkRoot {
+  return _rootNode == self.bookmarks->root_node();
+}
+
 // Check if any of our controller is presenting. We don't consider when this
 // controller is presenting the search controller.
 // Note that when adding a controller that can present, it should be added in
@@ -1029,7 +1045,7 @@ std::vector<GURL> GetUrlsToOpen(const std::vector<const BookmarkNode*>& nodes) {
 
 // Set up context bar for the new UI.
 - (void)setupContextBar {
-  if (_rootNode != self.bookmarks->root_node() ||
+  if (![self isDisplayingBookmarkRoot] ||
       self.sharedState.currentlyShowingSearchResults) {
     self.navigationController.toolbarHidden = NO;
     [self setContextBarState:BookmarksContextBarDefault];
@@ -1223,9 +1239,7 @@ std::vector<GURL> GetUrlsToOpen(const std::vector<const BookmarkNode*>& nodes) {
 
 - (int)topMostVisibleIndexPathRow {
   // If on root node screen, return 0.
-  if (self.sharedState.bookmarkModel &&
-      self.sharedState.tableViewDisplayedRootNode ==
-          self.sharedState.bookmarkModel->root_node()) {
+  if (self.sharedState.bookmarkModel && [self isDisplayingBookmarkRoot]) {
     return 0;
   }
 
@@ -1405,7 +1419,12 @@ std::vector<GURL> GetUrlsToOpen(const std::vector<const BookmarkNode*>& nodes) {
             self.spinnerView.alpha = 0.0;
           }
           completion:^(BOOL finished) {
-            self.sharedState.tableView.backgroundView = nil;
+            // By the time completion block is called, the backgroundView could
+            // be another view, like the empty view background. Only clear the
+            // background if it is still the spinner.
+            if (self.sharedState.tableView.backgroundView == self.spinnerView) {
+              self.sharedState.tableView.backgroundView = nil;
+            }
             self.spinnerView = nil;
           }];
     }];
@@ -1422,6 +1441,23 @@ std::vector<GURL> GetUrlsToOpen(const std::vector<const BookmarkNode*>& nodes) {
                   title:l10n_util::GetNSString(IDS_IOS_BOOKMARK_EMPTY_TITLE)
                subtitle:l10n_util::GetNSString(IDS_IOS_BOOKMARK_EMPTY_MESSAGE)];
     }
+    // If the Signin promo is visible on the root view, we have to shift the
+    // empty TableView background to make it fully visible on all devices.
+    if ([self isDisplayingBookmarkRoot]) {
+      self.navigationItem.largeTitleDisplayMode =
+          UINavigationItemLargeTitleDisplayModeNever;
+      if (self.sharedState.promoVisible &&
+          self.sharedState.tableView.visibleCells.count) {
+        CGFloat signinPromoHeight = self.sharedState.tableView.visibleCells
+                                        .firstObject.bounds.size.height;
+        self.emptyViewBackground.scrollViewContentInsets =
+            UIEdgeInsetsMake(signinPromoHeight, 0.0, 0.0, 0.0);
+      } else {
+        self.emptyViewBackground.scrollViewContentInsets =
+            self.view.safeAreaInsets;
+      }
+    }
+
     self.sharedState.tableView.backgroundView = self.emptyViewBackground;
     self.navigationItem.searchController = nil;
   } else {
@@ -1443,6 +1479,10 @@ std::vector<GURL> GetUrlsToOpen(const std::vector<const BookmarkNode*>& nodes) {
   if (base::FeatureList::IsEnabled(kIllustratedEmptyStates)) {
     if (self.sharedState.tableView.backgroundView == self.emptyViewBackground) {
       self.sharedState.tableView.backgroundView = nil;
+    }
+    if ([self isDisplayingBookmarkRoot]) {
+      self.navigationItem.largeTitleDisplayMode =
+          UINavigationItemLargeTitleDisplayModeAutomatic;
     }
     self.navigationItem.searchController = self.searchController;
   } else {
@@ -2013,7 +2053,7 @@ std::vector<GURL> GetUrlsToOpen(const std::vector<const BookmarkNode*>& nodes) {
   // No reorering with filtered results or when displaying the top-most
   // Bookmarks node.
   if (self.sharedState.currentlyShowingSearchResults ||
-      _rootNode == self.bookmarks->root_node() || !self.tableView.editing) {
+      [self isDisplayingBookmarkRoot] || !self.tableView.editing) {
     return NO;
   }
   TableViewItem* item =

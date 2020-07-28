@@ -52,7 +52,7 @@ void SpellcheckServiceFactory::RegisterProfilePrefs(
   user_prefs->RegisterListPref(
       spellcheck::prefs::kSpellCheckForcedDictionaries);
   user_prefs->RegisterListPref(
-      spellcheck::prefs::kSpellCheckBlacklistedDictionaries);
+      spellcheck::prefs::kSpellCheckBlocklistedDictionaries);
   // Continue registering kSpellCheckDictionary for preference migration.
   // TODO(estade): remove: crbug.com/751275
   user_prefs->RegisterStringPref(

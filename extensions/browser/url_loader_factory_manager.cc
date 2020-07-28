@@ -404,12 +404,12 @@ void MarkIsolatedWorldsAsRequiringSeparateURLLoaderFactory(
 // first non-about-scheme document and returns its url.  Otherwise, simply
 // returns |document_url|.
 //
-// This function approximates ScriptContext::GetEffectiveDocumentURL from the
-// renderer side.  Unlike the renderer version of this code (in
-// ScriptContext::GetEffectiveDocumentURL) the code below doesn't consider
-// whether security origin of |frame| can access |next_candidate|.  This is
-// okay, because our only caller (DoesContentScriptMatchNavigatingFrame) expects
-// false positives.
+// This function approximates
+// ScriptContext::GetEffectiveDocumentURLForInjection() from the renderer side.
+// Unlike the renderer code, this just iterates up frame tree, and doesn't look
+// at the effective or precursor origin of the frame. This is okay, because our
+// only caller (DoesContentScriptMatchNavigatingFrame()) expects false
+// positives.
 GURL GetEffectiveDocumentURL(content::RenderFrameHost* frame,
                              const GURL& document_url,
                              bool match_about_blank) {

@@ -343,16 +343,6 @@ class LinkedHashSet {
     const auto* table =
         AsAtomicPtr(&impl_.table_)->load(std::memory_order_relaxed);
 
-    if (!NodeHashTraits::kCanTraceConcurrently && table) {
-      if (visitor->DeferredTraceIfConcurrent(
-              {this,
-               [](blink::Visitor* visitor, const void* object) {
-                 reinterpret_cast<const LinkedHashSet*>(object)->Trace(visitor);
-               }},
-              sizeof(LinkedHashSet)))
-        return;
-    }
-
     impl_.TraceTable(visitor, table);
     if (table) {
       Allocator::RegisterBackingStoreCallback(

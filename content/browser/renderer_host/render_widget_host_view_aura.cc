@@ -1467,6 +1467,11 @@ bool RenderWidgetHostViewAura::SetCompositionFromExistingText(
 #endif
 
 #if defined(OS_CHROMEOS)
+gfx::Range RenderWidgetHostViewAura::GetAutocorrectRange() const {
+  // TODO(crbug.com/1108170): Implement this function, since we need this
+  // for autocorrect on websites to work.
+  return gfx::Range();
+}
 gfx::Rect RenderWidgetHostViewAura::GetAutocorrectCharacterBounds() const {
   // TODO(crbug.com/1108170): Implement this function, since we need this
   // for autocorrect on websites to work.

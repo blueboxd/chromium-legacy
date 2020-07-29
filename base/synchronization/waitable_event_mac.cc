@@ -20,7 +20,6 @@
 #include "base/threading/thread_restrictions.h"
 #include "base/time/time.h"
 #include "base/time/time_override.h"
-#include "base/trace_event/base_tracing.h"
 #include "build/build_config.h"
 
 namespace base {
@@ -64,8 +63,6 @@ void WaitableEvent::Reset() {
 
 // NO_THREAD_SAFETY_ANALYSIS: Runtime dependent locking.
 void WaitableEvent::Signal() NO_THREAD_SAFETY_ANALYSIS {
-  TRACE_EVENT_WITH_FLOW0("base", "WaitableEvent::Signal", this,
-                         TRACE_EVENT_FLAG_FLOW_OUT);
   // If using the slow watch-list, copy the watchers to a local. After
   // mach_msg(), the event object may be deleted by an awoken thread.
   const bool use_slow_path = UseSlowWatchList(policy_);
@@ -121,7 +118,12 @@ bool WaitableEvent::IsSignaled() {
   return PeekPort(receive_right_->Name(), policy_ == ResetPolicy::AUTOMATIC);
 }
 
-bool WaitableEvent::TimedWaitImpl(const TimeDelta& wait_delta) {
+void WaitableEvent::Wait() {
+  bool result = TimedWait(TimeDelta::Max());
+  DCHECK(result) << "TimedWait() should never fail with infinite timeout";
+}
+
+bool WaitableEvent::TimedWait(const TimeDelta& wait_delta) {
   if (wait_delta <= TimeDelta())
     return IsSignaled();
 

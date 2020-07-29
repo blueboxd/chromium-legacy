@@ -296,6 +296,10 @@ void BrowserAccessibilityManagerWin::FireGeneratedEvent(
       if (node->GetData().GetNameFrom() != ax::mojom::NameFrom::kContents)
         FireWinAccessibilityEvent(EVENT_OBJECT_NAMECHANGE, node);
       break;
+    case ui::AXEventGenerator::Event::OBJECT_ATTRIBUTE_CHANGED:
+      FireWinAccessibilityEvent(IA2_EVENT_OBJECT_ATTRIBUTE_CHANGED, node);
+      // TODO(crbug.com/1108871): Fire UIA event.
+      break;
     case ui::AXEventGenerator::Event::PLACEHOLDER_CHANGED:
       FireUiaPropertyChangedEvent(UIA_HelpTextPropertyId, node);
       break;

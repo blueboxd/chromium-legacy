@@ -12,10 +12,15 @@ class Profile;
 
 class PluginVmUninstallerNotification {
  public:
+  enum class FailedReason {
+    kUnknown,
+    kStopVmFailed,
+  };
+
   explicit PluginVmUninstallerNotification(Profile* profile);
   virtual ~PluginVmUninstallerNotification();
 
-  void SetFailed();
+  void SetFailed(FailedReason reason);
   void SetCompleted();
   // Will show the notification, even if it has been closed.
   void ForceRedisplay();

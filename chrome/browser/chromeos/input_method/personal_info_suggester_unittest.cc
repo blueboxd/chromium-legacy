@@ -188,6 +188,24 @@ TEST_F(PersonalInfoSuggesterTest, SuggestEmail) {
 
   suggester_->Suggest(base::UTF8ToUTF16("my email is "));
   suggestion_handler_->VerifySuggestion(email_, 0);
+  SendKeyboardEvent("Esc");
+
+  suggester_->Suggest(base::UTF8ToUTF16("My email is: "));
+  suggestion_handler_->VerifySuggestion(email_, 0);
+  SendKeyboardEvent("Esc");
+
+  suggester_->Suggest(base::UTF8ToUTF16("hi, my email: "));
+  suggestion_handler_->VerifySuggestion(email_, 0);
+}
+
+TEST_F(PersonalInfoSuggesterTest, DoNotSuggestEmail) {
+  profile_->set_profile_name(base::UTF16ToUTF8(email_));
+
+  suggester_->Suggest(base::UTF8ToUTF16("my email is John"));
+  suggestion_handler_->VerifySuggestion(base::EmptyString16(), 0);
+
+  suggester_->Suggest(base::UTF8ToUTF16("our email is: "));
+  suggestion_handler_->VerifySuggestion(base::EmptyString16(), 0);
 }
 
 TEST_F(PersonalInfoSuggesterTest, DoNotSuggestWhenVirtualKeyboardEnabled) {
@@ -219,16 +237,40 @@ TEST_F(PersonalInfoSuggesterTest, SuggestNames) {
 
   suggester_->Suggest(base::UTF8ToUTF16("my first name is "));
   suggestion_handler_->VerifySuggestion(first_name_, 0);
-  SendKeyboardEvent("Down");
-  SendKeyboardEvent("Enter");
+  SendKeyboardEvent("Esc");
 
-  suggester_->Suggest(base::UTF8ToUTF16("my last name is "));
+  suggester_->Suggest(base::UTF8ToUTF16("my last name is: "));
   suggestion_handler_->VerifySuggestion(last_name_, 0);
-  SendKeyboardEvent("Down");
-  SendKeyboardEvent("Enter");
+  SendKeyboardEvent("Esc");
 
   suggester_->Suggest(base::UTF8ToUTF16("my name is "));
   suggestion_handler_->VerifySuggestion(full_name_, 0);
+  SendKeyboardEvent("Esc");
+
+  suggester_->Suggest(base::UTF8ToUTF16("Hmm... my FULL name: "));
+  suggestion_handler_->VerifySuggestion(full_name_, 0);
+}
+
+TEST_F(PersonalInfoSuggesterTest, DoNotSuggestNames) {
+  autofill::AutofillProfile autofill_profile(base::GenerateGUID(),
+                                             autofill::test::kEmptyOrigin);
+  autofill_profile.SetRawInfo(autofill::ServerFieldType::NAME_FIRST,
+                              first_name_);
+  autofill_profile.SetRawInfo(autofill::ServerFieldType::NAME_LAST, last_name_);
+  autofill_profile.SetRawInfo(autofill::ServerFieldType::NAME_FULL, full_name_);
+  personal_data_->AddProfile(autofill_profile);
+
+  suggester_->Suggest(base::UTF8ToUTF16("our first name is "));
+  suggestion_handler_->VerifySuggestion(base::EmptyString16(), 0);
+
+  suggester_->Suggest(base::UTF8ToUTF16("our last name is: "));
+  suggestion_handler_->VerifySuggestion(base::EmptyString16(), 0);
+
+  suggester_->Suggest(base::UTF8ToUTF16("our name is "));
+  suggestion_handler_->VerifySuggestion(base::EmptyString16(), 0);
+
+  suggester_->Suggest(base::UTF8ToUTF16("our full name: "));
+  suggestion_handler_->VerifySuggestion(base::EmptyString16(), 0);
 }
 
 TEST_F(PersonalInfoSuggesterTest, SuggestAddress) {
@@ -249,6 +291,48 @@ TEST_F(PersonalInfoSuggesterTest, SuggestAddress) {
 
   suggester_->Suggest(base::UTF8ToUTF16("my address is "));
   suggestion_handler_->VerifySuggestion(address_, 0);
+  SendKeyboardEvent("Esc");
+
+  suggester_->Suggest(base::UTF8ToUTF16("our address is: "));
+  suggestion_handler_->VerifySuggestion(address_, 0);
+  SendKeyboardEvent("Esc");
+
+  suggester_->Suggest(base::UTF8ToUTF16("my shipping address: "));
+  suggestion_handler_->VerifySuggestion(address_, 0);
+  SendKeyboardEvent("Esc");
+
+  suggester_->Suggest(base::UTF8ToUTF16("our billing address is "));
+  suggestion_handler_->VerifySuggestion(address_, 0);
+  SendKeyboardEvent("Esc");
+
+  suggester_->Suggest(base::UTF8ToUTF16("my current address: "));
+  suggestion_handler_->VerifySuggestion(address_, 0);
+}
+
+TEST_F(PersonalInfoSuggesterTest, DoNotSuggestAddress) {
+  autofill::CountryNames::SetLocaleString("en-US");
+  autofill::AutofillProfile autofill_profile(base::GenerateGUID(),
+                                             autofill::test::kEmptyOrigin);
+  autofill_profile.SetRawInfo(autofill::ServerFieldType::ADDRESS_HOME_LINE1,
+                              base::UTF8ToUTF16("1 Dream Road"));
+  autofill_profile.SetRawInfo(autofill::ServerFieldType::ADDRESS_HOME_CITY,
+                              base::UTF8ToUTF16("Hollywood"));
+  autofill_profile.SetRawInfo(autofill::ServerFieldType::ADDRESS_HOME_ZIP,
+                              base::UTF8ToUTF16("12345"));
+  autofill_profile.SetRawInfo(autofill::ServerFieldType::ADDRESS_HOME_STATE,
+                              base::UTF8ToUTF16("CA"));
+  autofill_profile.SetRawInfo(autofill::ServerFieldType::ADDRESS_HOME_COUNTRY,
+                              base::UTF8ToUTF16("US"));
+  personal_data_->AddProfile(autofill_profile);
+
+  suggester_->Suggest(base::UTF8ToUTF16("my address "));
+  suggestion_handler_->VerifySuggestion(base::EmptyString16(), 0);
+
+  suggester_->Suggest(base::UTF8ToUTF16("my last address is: "));
+  suggestion_handler_->VerifySuggestion(base::EmptyString16(), 0);
+
+  suggester_->Suggest(base::UTF8ToUTF16("our address number is "));
+  suggestion_handler_->VerifySuggestion(base::EmptyString16(), 0);
 }
 
 TEST_F(PersonalInfoSuggesterTest, SuggestPhoneNumber) {
@@ -260,11 +344,42 @@ TEST_F(PersonalInfoSuggesterTest, SuggestPhoneNumber) {
 
   suggester_->Suggest(base::UTF8ToUTF16("my phone number is "));
   suggestion_handler_->VerifySuggestion(phone_number_, 0);
-  SendKeyboardEvent("Down");
-  SendKeyboardEvent("Enter");
+  SendKeyboardEvent("Esc");
 
   suggester_->Suggest(base::UTF8ToUTF16("my number is "));
   suggestion_handler_->VerifySuggestion(phone_number_, 0);
+  SendKeyboardEvent("Esc");
+
+  suggester_->Suggest(base::UTF8ToUTF16("my mobile number is: "));
+  suggestion_handler_->VerifySuggestion(phone_number_, 0);
+  SendKeyboardEvent("Esc");
+
+  suggester_->Suggest(base::UTF8ToUTF16("my number: "));
+  suggestion_handler_->VerifySuggestion(phone_number_, 0);
+  SendKeyboardEvent("Esc");
+
+  suggester_->Suggest(base::UTF8ToUTF16("my telephone number is "));
+  suggestion_handler_->VerifySuggestion(phone_number_, 0);
+}
+
+TEST_F(PersonalInfoSuggesterTest, DoNotSuggestPhoneNumber) {
+  autofill::AutofillProfile autofill_profile(base::GenerateGUID(),
+                                             autofill::test::kEmptyOrigin);
+  autofill_profile.SetRawInfo(
+      autofill::ServerFieldType::PHONE_HOME_WHOLE_NUMBER, phone_number_);
+  personal_data_->AddProfile(autofill_profile);
+
+  suggester_->Suggest(base::UTF8ToUTF16("our phone number is "));
+  suggestion_handler_->VerifySuggestion(base::EmptyString16(), 0);
+
+  suggester_->Suggest(base::UTF8ToUTF16("my number "));
+  suggestion_handler_->VerifySuggestion(base::EmptyString16(), 0);
+
+  suggester_->Suggest(base::UTF8ToUTF16("my number phone is: "));
+  suggestion_handler_->VerifySuggestion(base::EmptyString16(), 0);
+
+  suggester_->Suggest(base::UTF8ToUTF16("my phone phone: "));
+  suggestion_handler_->VerifySuggestion(base::EmptyString16(), 0);
 }
 
 TEST_F(PersonalInfoSuggesterTest, AcceptSuggestion) {

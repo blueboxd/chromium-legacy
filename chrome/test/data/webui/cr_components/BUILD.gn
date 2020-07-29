@@ -7,7 +7,10 @@ import("//ui/webui/resources/tools/js_modulizer.gni")
 import("../namespace_rewrites.gni")
 
 js_modulizer("modulize") {
-  input_files = [ "managed_footnote_test.js" ]
+  input_files = [
+    "managed_footnote_test.js",
+    "nearby_onboarding_page_test.js",
+  ]
   namespace_rewrites = test_namespace_rewrites
 }
 
@@ -19,7 +22,10 @@ js_type_check("closure_compile") {
                     "js_module_root=./gen/chrome/test/data/webui/",
                   ]
 
-  deps = [ ":certificate_manager_provisioning_test" ]
+  deps = [
+    ":certificate_manager_provisioning_test",
+    ":nearby_onboarding_page_test.m",
+  ]
 }
 
 js_library("certificate_manager_provisioning_test") {
@@ -30,5 +36,15 @@ js_library("certificate_manager_provisioning_test") {
     "//ui/webui/resources/cr_components/certificate_manager:certificate_provisioning_entry",
     "//ui/webui/resources/cr_components/certificate_manager:certificate_provisioning_list",
   ]
+  externs_list = [ "$externs_path/mocha-2.5.js" ]
+}
+
+js_library("nearby_onboarding_page_test.m") {
+  sources = [ "$root_gen_dir/chrome/test/data/webui/cr_components/nearby_onboarding_page_test.m.js" ]
+  deps = [
+    "..:chai_assert",
+    "//ui/webui/resources/cr_components/nearby_share/:nearby_onboarding_page.m",
+  ]
+  extra_deps = [ ":modulize" ]
   externs_list = [ "$externs_path/mocha-2.5.js" ]
 }

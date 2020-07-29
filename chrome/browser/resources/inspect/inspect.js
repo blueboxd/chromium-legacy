@@ -161,6 +161,8 @@ function populateLocalTargets(data) {
   removeChildren('service-workers-list');
   removeChildrenExceptAdditional('others-list');
 
+  data.sort((a, b) => a.name.localeCompare(b.name));
+
   for (let i = 0; i < data.length; i++) {
     if (data[i].type === 'page') {
       addToPagesList(data[i]);

@@ -99,11 +99,6 @@ public interface Tab extends TabLifecycle {
     int getId();
 
     /**
-     * @return The id of the tab that caused this tab to be opened.
-     */
-    int getParentId();
-
-    /**
      * @return The URL that is loaded in the current tab. This may not be the same as
      *         the last committed URL if a new navigation is in progress.
      *

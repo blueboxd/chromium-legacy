@@ -123,6 +123,7 @@
 <translation id="1430915738399379752">Drukuj</translation>
 <translation id="1442386063175183758">Składanie od dołu do środka</translation>
 <translation id="1442987760062738829">Otwór</translation>
+<translation id="1447067628680007684">(x86_64)</translation>
 <translation id="1453974140256777690">Wpisany lub dołączony test jest wysyłany do Google Cloud lub innych firm w celu przeanalizowania. Na przykład może zostać przeskanowany w poszukiwaniu danych wrażliwych.</translation>
 <translation id="1455413310270022028">Gumka</translation>
 <translation id="1462245070427461050">JIS B9</translation>
@@ -559,7 +560,7 @@ Jeśli się nie zgodzisz, zostaną one zablokowane ze względu na Twoje ustawien
 <translation id="3366477098757335611">Wyświetl karty</translation>
 <translation id="3369192424181595722">Błąd zegara</translation>
 <translation id="3371076217486966826"><ph name="URL" /> chce:
-      • tworzyć mapę 3D otoczenia lub śledzić pozycję kamery,
+      • utworzyć mapę 3D otoczenia i śledzić pozycję kamery,
       • używać Twojej kamery.</translation>
 <translation id="337363190475750230">Anulowano obsługę</translation>
 <translation id="3377144306166885718">Serwer użył przestarzałej wersji protokołu TLS.</translation>
@@ -1136,6 +1137,7 @@ Jeśli się nie zgodzisz, zostaną one zablokowane ze względu na Twoje ustawien
 <translation id="5705882733397021510">Wróć</translation>
 <translation id="57094364128775171">Zaproponuj silne hasło…</translation>
 <translation id="5710435578057952990">Tożsamość witryny nie została zweryfikowana.</translation>
+<translation id="571403275720188526">(arm64)</translation>
 <translation id="5720705177508910913">Bieżący użytkownik</translation>
 <translation id="5728056243719941842">C5 (koperta)</translation>
 <translation id="5730040223043577876">Chrome zaleca zresetowanie hasła, jeśli zostało użyte na innej stronie.</translation>
@@ -1185,6 +1187,7 @@ Jeśli się nie zgodzisz, zostaną one zablokowane ze względu na Twoje ustawien
 <translation id="5921639886840618607">Zapisać kartę na koncie Google?</translation>
 <translation id="5922853866070715753">Prawie gotowe</translation>
 <translation id="5932224571077948991">Na tej stronie wyświetlają się uciążliwe lub wprowadzające w błąd reklamy</translation>
+<translation id="5938793338444039872">Troy</translation>
 <translation id="5946937721014915347">Otwieram <ph name="SITE_NAME" />…</translation>
 <translation id="5951495562196540101">Nie można zarejestrować się przy użyciu konta klienta (w pakiecie dostępna jest licencja).</translation>
 <translation id="5967592137238574583">Edytuj dane kontaktowe</translation>
@@ -1352,6 +1355,7 @@ Jeśli się nie zgodzisz, zostaną one zablokowane ze względu na Twoje ustawien
 <translation id="6646269444027925224">{COUNT,plural, =0{Brak}=1{Z 1 witryny (nie spowoduje to wylogowania z konta Google)}few{Z # witryn (nie spowoduje to wylogowania z konta Google)}many{Z # witryn (nie spowoduje to wylogowania z konta Google)}other{Z # witryny (nie spowoduje to wylogowania z konta Google)}}</translation>
 <translation id="6652101503459149953">Używaj Windows Hello</translation>
 <translation id="6657585470893396449">Hasło</translation>
+<translation id="666259744093848177">(x86_64 przetłumaczone)</translation>
 <translation id="6665553082534466207">Trzy otwory po prawej</translation>
 <translation id="6671697161687535275">Usunąć tę podpowiedź do formularza z Chromium?</translation>
 <translation id="6685834062052613830">Wyloguj się i dokończ konfigurację</translation>

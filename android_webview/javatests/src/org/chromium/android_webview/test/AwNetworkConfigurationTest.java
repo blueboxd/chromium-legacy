@@ -6,6 +6,7 @@ package org.chromium.android_webview.test;
 
 import static org.chromium.android_webview.test.AwActivityTestRule.WAIT_TIMEOUT_MS;
 
+import android.os.Build.VERSION_CODES;
 import android.support.test.InstrumentationRegistry;
 import android.webkit.JavascriptInterface;
 
@@ -23,6 +24,7 @@ import org.chromium.android_webview.AwContents;
 import org.chromium.android_webview.AwContentsClient.AwWebResourceRequest;
 import org.chromium.base.BuildInfo;
 import org.chromium.base.test.util.CallbackHelper;
+import org.chromium.base.test.util.DisableIf;
 import org.chromium.base.test.util.Feature;
 import org.chromium.net.test.EmbeddedTestServer;
 import org.chromium.net.test.ServerCertificate;
@@ -57,7 +59,11 @@ public class AwNetworkConfigurationTest {
     @Test
     @SmallTest
     @Feature({"AndroidWebView", "Network"})
+    // clang-format off
+    @DisableIf.Build(sdk_is_greater_than = VERSION_CODES.LOLLIPOP_MR1,
+            sdk_is_less_than = VERSION_CODES.N, hardware_is = "flo")
     public void testSHA1LocalAnchorsAllowed() throws Throwable {
+        // clang-format on
         mTestServer = EmbeddedTestServer.createAndStartHTTPSServer(
                 InstrumentationRegistry.getInstrumentation().getContext(),
                 ServerCertificate.CERT_SHA1_LEAF);

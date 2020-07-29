@@ -9,8 +9,10 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
 import org.chromium.base.UserDataHost;
+import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.tab.TabImpl;
 import org.chromium.chrome.browser.tab.state.CriticalPersistedTabData;
+import org.chromium.chrome.browser.tab.state.PersistedTabData;
 import org.chromium.content_public.browser.WebContents;
 import org.chromium.url.GURL;
 
@@ -40,6 +42,13 @@ public class TabUiUnitTestUtils {
         TabImpl tab = prepareTab(id, rootId);
         doReturn(title).when(tab).getTitle();
         return tab;
+    }
+
+    public static <T extends PersistedTabData> void prepareTab(
+            Tab tab, Class<T> clazz, T persistedTabData) {
+        UserDataHost userDataHost = new UserDataHost();
+        userDataHost.setUserData(clazz, persistedTabData);
+        doReturn(userDataHost).when(tab).getUserDataHost();
     }
 
     public static TabImpl prepareTab(int id, String title, String urlString) {

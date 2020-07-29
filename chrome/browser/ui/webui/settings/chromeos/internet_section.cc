@@ -569,6 +569,7 @@ void InternetSection::AddLoadTimeData(content::WebUIDataSource* html_source) {
       {"networkIPAddress", IDS_SETTINGS_INTERNET_NETWORK_IP_ADDRESS},
       {"networkIPConfigAuto", IDS_SETTINGS_INTERNET_NETWORK_IP_CONFIG_AUTO},
       {"networkMetered", IDS_SETTINGS_INTERNET_NETWORK_METERED},
+      {"networkMeteredDesc", IDS_SETTINGS_INTERNET_NETWORK_METERED_DESC},
       {"networkNameserversLearnMore", IDS_LEARN_MORE},
       {"networkPrefer", IDS_SETTINGS_INTERNET_NETWORK_PREFER},
       {"networkPrimaryUserControlled",

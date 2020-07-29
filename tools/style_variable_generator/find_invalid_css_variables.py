@@ -9,21 +9,13 @@ import os
 import subprocess
 import sys
 from css_generator import CSSStyleGenerator
-
-
-def RunGit(command):
-    """Run a git subcommand, returning its output."""
-    command = ['git'] + command
-    proc = subprocess.Popen(command, stdout=subprocess.PIPE)
-    out = proc.communicate()[0].strip()
-    return out
+from presubmit_support import RunGit
 
 
 # TODO(calamity): extend this checker to find unused C++ variables
 def FindInvalidCSSVariables(json_string, input_file, git_runner=RunGit):
     style_generator = CSSStyleGenerator()
-    style_generator.AddJSONToModel(json_string, style_generator.GetName(),
-                                   input_file)
+    style_generator.AddJSONToModel(json_string, in_file=input_file)
 
     context = style_generator.in_file_to_context[input_file]
     if (not context or 'prefix' not in context):

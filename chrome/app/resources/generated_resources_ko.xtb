@@ -1925,7 +1925,6 @@
 <translation id="3371140690572404006">USB-C 기기(우측 전면 포트)</translation>
 <translation id="337286756654493126">애플리케이션에서 연 폴더 읽기</translation>
 <translation id="3378572629723696641">확장 프로그램이 손상되었을 수도 있습니다.</translation>
-<translation id="3379169026479470857">DLC 삭제</translation>
 <translation id="337920581046691015"><ph name="PRODUCT_NAME" />이(가) 설치됩니다.</translation>
 <translation id="3380365263193509176">알 수 없는 오류가 발생했습니다.</translation>
 <translation id="3382073616108123819">시스템에서 이 기기의 기기 식별자를 확인하지 못했습니다.</translation>
@@ -2380,6 +2379,7 @@
 <translation id="3882165008614329320">카메라 또는 파일의 기존 동영상</translation>
 <translation id="3886446263141354045">사용자의 사이트 액세스 요청이 <ph name="NAME" />님에게 전송되었습니다.</translation>
 <translation id="3888550877729210209"><ph name="LOCK_SCREEN_APP_NAME" />(으)로 메모 작성</translation>
+<translation id="3891563564777705449">{0,plural, =1{1주 이내로 기기를 업데이트하세요}other{#주 이내로 기기를 업데이트하세요}}</translation>
 <translation id="3892414795099177503">OpenVPN/L2TP... 추가</translation>
 <translation id="3893536212201235195">접근성 설정 확인 및 변경</translation>
 <translation id="3893630138897523026">ChromeVox(음성 피드백)</translation>
@@ -2609,14 +2609,12 @@
 <translation id="4175137578744761569">연한 보라색 및 흰색</translation>
 <translation id="4175737294868205930">영구 저장소</translation>
 <translation id="4176463684765177261">사용 중지됨</translation>
-<translation id="418031202593299965">이 기기에서 다른 사용자와 공유 중인 구성요소입니다. 구성요소를 삭제하면 다른 사용자에게 영향을 줄 수 있습니다.</translation>
 <translation id="4180788401304023883">CA 인증서 '<ph name="CERTIFICATE_NAME" />'을(를) 삭제하겠습니까?</translation>
 <translation id="4181602000363099176">20배</translation>
 <translation id="4181841719683918333">언어</translation>
 <translation id="4184885522552335684">디스플레이를 이동하려면 드래그하세요.</translation>
 <translation id="4187424053537113647"><ph name="APP_NAME" /> 설정 중…</translation>
 <translation id="4190828427319282529">키보드 포커스 강조표시</translation>
-<translation id="4191805472951276951">DLC</translation>
 <translation id="4194570336751258953">탭하여 클릭 사용</translation>
 <translation id="4195643157523330669">새 탭에서 열기</translation>
 <translation id="4195814663415092787">중단한 위치에서 계속하기</translation>
@@ -3035,7 +3033,6 @@
 <translation id="4756388243121344051">방문 기록(&amp;H)</translation>
 <translation id="4759238208242260848">다운로드</translation>
 <translation id="4761104368405085019">마이크 사용</translation>
-<translation id="4762055672525936226">다운로드한 콘텐츠 삭제</translation>
 <translation id="4762718786438001384">기기에 디스크 저장 공간 매우 부족</translation>
 <translation id="4763408175235639573">페이지를 열었을 때 다음 쿠키가 설정됨</translation>
 <translation id="4765582662863429759">Android 메시지가 휴대전화의 문자 메시지를 Chromebook으로 전달하도록 허용합니다.</translation>
@@ -3289,7 +3286,6 @@
 <translation id="5094721898978802975">협력 중인 기본 애플리케이션과 통신</translation>
 <translation id="5097002363526479830">'<ph name="NAME" />' 네트워크에 연결하지 못했습니다: <ph name="DETAILS" /></translation>
 <translation id="5097874180538493929">커서가 멈추면 자동 클릭</translation>
-<translation id="5098800418125334616">다운로드한 콘텐츠 관리</translation>
 <translation id="5101042277149003567">모든 북마크 열기</translation>
 <translation id="5101839224773798795">커서가 멈추면 자동으로 클릭</translation>
 <translation id="5107443654503185812">확장 프로그램이 세이프 브라우징을 사용 중지했습니다.</translation>
@@ -4167,7 +4163,6 @@
 <translation id="6198102561359457428">로그아웃한 후 다시 로그인...</translation>
 <translation id="6198252989419008588">PIN 변경</translation>
 <translation id="6202304368170870640">PIN을 사용하여 로그인하거나 기기를 잠금 해제할 수 있습니다.</translation>
-<translation id="6202517672944764518">다운로드한 콘텐츠</translation>
 <translation id="6206311232642889873">이미지 복사(&amp;Y)</translation>
 <translation id="6207200176136643843">기본 확대/축소 수준으로 재설정</translation>
 <translation id="6207937957461833379">국가/지역</translation>
@@ -4439,6 +4434,7 @@
 <translation id="6535331821390304775">항상 <ph name="ORIGIN" />에서 연결된 앱에 있는 이 유형의 링크를 열도록 허용</translation>
 <translation id="654039047105555694"><ph name="BEGIN_BOLD" />참고:<ph name="END_BOLD" /> 데이터 수집으로 인해 성능이 감소할 수 있으므로 확신이 있는 경우 또는 요청을 받은 경우에만 사용하도록 설정합니다.</translation>
 <translation id="6541638731489116978">움직임 감지 센서 액세스가 차단된 사이트입니다.</translation>
+<translation id="6545407738986370057">{0,plural, =1{1주 이내로 기기를 반납하세요}other{#주 이내로 기기를 반납하세요}}</translation>
 <translation id="6545665334409411530">반복 속도</translation>
 <translation id="6545864417968258051">블루투스 검색</translation>
 <translation id="6545867563032584178">Mac 시스템 환경설정에서 마이크가 사용 중지되었습니다</translation>
@@ -6126,7 +6122,6 @@
 <translation id="8652400352452647993">확장 프로그램 패키지 오류</translation>
 <translation id="8654151524613148204">파일이 너무 커서 컴퓨터에서 처리할 수 없습니다.</translation>
 <translation id="8655295600908251630">채널</translation>
-<translation id="8655319619291175901">문제가 발생했습니다.</translation>
 <translation id="8655972064210167941">비밀번호를 확인할 수 없어 로그인할 수 없습니다. 관리자에게 문의하거나 다시 시도해 주세요.</translation>
 <translation id="8656768832129462377">확인 안함</translation>
 <translation id="8658645149275195032"><ph name="APP_NAME" />에서 <ph name="TAB_NAME" />와(과) 내 화면 및 오디오를 공유 중입니다.</translation>
@@ -6215,7 +6210,6 @@
         &lt;p&gt;이 경우 명령줄을 사용하여 설정할 수 있습니다.  플래그와 환경 변수에 대한 자세한 내용은 &lt;code&gt;man <ph name="PRODUCT_BINARY_NAME" />&lt;/code&gt;을(를) 참조하세요.&lt;/p&gt;</translation>
 <translation id="8755175579224030324">기기에 저장된 인증서 및 키 관리와 같은 조직의 보안 관련 작업 실행</translation>
 <translation id="8755376271068075440">크게(&amp;L)</translation>
-<translation id="8756143264090841047">DLC 삭제</translation>
 <translation id="8756969031206844760">비밀번호를 업데이트하시겠습니까?</translation>
 <translation id="8757090071857742562">데스크톱을 전송할 수 없습니다. 화면 공유 시작 메시지를 확인했는지 알아보세요.</translation>
 <translation id="8757203080302669031">이 탭은 현재 블루투스 기기를 검사하고 있습니다.</translation>
@@ -6230,7 +6224,6 @@
 <translation id="8770406935328356739">확장 프로그램 루트 디렉터리</translation>
 <translation id="8770507190024617908">사용자 관리</translation>
 <translation id="8771300903067484968">시작 페이지 배경화면이 기본 배경화면으로 재설정되었습니다.</translation>
-<translation id="8771939407732945762">다운로드한 콘텐츠 삭제</translation>
 <translation id="8773302562181397928"><ph name="PRINTER_NAME" /> 저장</translation>
 <translation id="8774379074441005279">복원 확인</translation>
 <translation id="8774934320277480003">상단 여백</translation>

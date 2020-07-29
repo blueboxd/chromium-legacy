@@ -170,6 +170,8 @@ TEST_F(MetricsLogTest, BasicRecord) {
 
 #if BUILDFLAG(IS_LACROS)
   system_profile->mutable_os()->set_name("Lacros");
+#elif defined(OS_CHROMEOS)
+  system_profile->mutable_os()->set_name("CrOS");
 #else
   system_profile->mutable_os()->set_name(base::SysInfo::OperatingSystemName());
 #endif

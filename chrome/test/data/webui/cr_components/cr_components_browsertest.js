@@ -151,3 +151,30 @@ TEST_F('CrComponentsNetworkConfigTest', 'All', function() {
 });
 
 GEN('#endif');
+
+/**
+ * @constructor
+ * @extends {CrComponentsBrowserTest}
+ */
+function CrComponentsNearbyOnboardingPageTest() {}
+
+CrComponentsNearbyOnboardingPageTest.prototype = {
+  __proto__: CrComponentsBrowserTest.prototype,
+
+  /** @override */
+  browsePreload:
+      'chrome://resources/cr_components/nearby_share/nearby_onboarding_page.html',
+
+  /** @override */
+  featureList: {enabled: ['features::kNearbySharing']},
+
+  /** @override */
+  extraLibraries: CrComponentsBrowserTest.prototype.extraLibraries.concat([
+    '../test_util.js',
+    'nearby_onboarding_page_test.js',
+  ]),
+};
+
+TEST_F('CrComponentsNearbyOnboardingPageTest', 'All', function() {
+  mocha.run();
+});

@@ -941,7 +941,7 @@
       "sequence": {
         "cvoxModifier": true,
         "keys": {
-          "keyCode": [118]
+          "keyCode": [217]
         }
       }
     },
@@ -950,7 +950,7 @@
       "sequence": {
         "cvoxModifier": true,
         "keys": {
-          "keyCode": [119]
+          "keyCode": [173]
         }
       }
     },

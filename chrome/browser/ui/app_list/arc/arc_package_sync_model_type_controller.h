@@ -10,7 +10,7 @@
 #include "base/callback_forward.h"
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
-#include "chrome/browser/chromeos/arc/session/arc_session_manager.h"
+#include "chrome/browser/chromeos/arc/session/arc_session_manager_observer.h"
 #include "chrome/browser/ui/app_list/arc/arc_app_list_prefs.h"
 #include "components/prefs/pref_change_registrar.h"
 #include "components/sync/driver/model_type_controller.h"
@@ -30,7 +30,7 @@ class SyncService;
 class ArcPackageSyncModelTypeController
     : public syncer::ModelTypeController,
       public ArcAppListPrefs::Observer,
-      public arc::ArcSessionManager::Observer {
+      public arc::ArcSessionManagerObserver {
  public:
   // |dump_stack| is called when an unrecoverable error occurs.
   ArcPackageSyncModelTypeController(
@@ -48,7 +48,7 @@ class ArcPackageSyncModelTypeController
   // ArcAppListPrefs::Observer overrides.
   void OnPackageListInitialRefreshed() override;
 
-  // ArcSessionManager::Observer:
+  // ArcSessionManagerObserver:
   void OnArcPlayStoreEnabledChanged(bool enabled) override;
   void OnArcInitialStart() override;
 

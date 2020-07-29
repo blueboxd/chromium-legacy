@@ -12,6 +12,7 @@
 #include "base/metrics/histogram_macros.h"
 #include "base/one_shot_event.h"
 #include "chrome/browser/chromeos/arc/arc_util.h"
+#include "chrome/browser/chromeos/arc/session/arc_session_manager.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/ash/multi_user/multi_user_util.h"
 #include "chromeos/constants/chromeos_switches.h"

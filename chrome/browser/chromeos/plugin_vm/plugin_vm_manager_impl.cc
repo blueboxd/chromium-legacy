@@ -252,7 +252,8 @@ void PluginVmManagerImpl::UninstallPluginVm() {
       base::BindOnce(&PluginVmManagerImpl::OnListVmsForUninstall,
                      weak_ptr_factory_.GetWeakPtr()),
       base::BindOnce(&PluginVmManagerImpl::UninstallFailed,
-                     weak_ptr_factory_.GetWeakPtr()));
+                     weak_ptr_factory_.GetWeakPtr(),
+                     PluginVmUninstallerNotification::FailedReason::kUnknown));
 }
 
 uint64_t PluginVmManagerImpl::seneschal_server_handle() const {
@@ -650,7 +651,8 @@ void PluginVmManagerImpl::OnStopVmForUninstall(
     base::Optional<vm_tools::plugin_dispatcher::StopVmResponse> reply) {
   if (!reply || reply->error() != vm_tools::plugin_dispatcher::VM_SUCCESS) {
     LOG(ERROR) << "Failed to stop VM.";
-    UninstallFailed();
+    UninstallFailed(
+        PluginVmUninstallerNotification::FailedReason::kStopVmFailed);
     return;
   }
 
@@ -705,9 +707,10 @@ void PluginVmManagerImpl::UninstallSucceeded() {
   uninstaller_notification_.reset();
 }
 
-void PluginVmManagerImpl::UninstallFailed() {
+void PluginVmManagerImpl::UninstallFailed(
+    PluginVmUninstallerNotification::FailedReason reason) {
   DCHECK(uninstaller_notification_);
-  uninstaller_notification_->SetFailed();
+  uninstaller_notification_->SetFailed(reason);
   uninstaller_notification_.reset();
 }
 

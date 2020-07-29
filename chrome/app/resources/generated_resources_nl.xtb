@@ -1925,7 +1925,6 @@ Je kunt de instellingen van dit account beheren door de Family Link-app op je ap
 <translation id="3371140690572404006">USB-C-apparaat (poort rechts aan de voorkant)</translation>
 <translation id="337286756654493126">Mappen lezen die je opent in de app</translation>
 <translation id="3378572629723696641">Deze extensie is mogelijk beschadigd.</translation>
-<translation id="3379169026479470857">DLC verwijderen</translation>
 <translation id="337920581046691015"><ph name="PRODUCT_NAME" /> wordt geïnstalleerd.</translation>
 <translation id="3380365263193509176">Onbekende fout</translation>
 <translation id="3382073616108123819">Het systeem kan de apparaat-ID's voor dit apparaat niet bepalen.</translation>
@@ -2612,14 +2611,12 @@ Je kunt de instellingen van dit account beheren door de Family Link-app op je ap
 <translation id="4175137578744761569">Lichtpaars/wit</translation>
 <translation id="4175737294868205930">Permanente opslag</translation>
 <translation id="4176463684765177261">Uitgeschakeld</translation>
-<translation id="418031202593299965">Deze componenten worden gedeeld met andere gebruikers op dit apparaat. Als je componenten verwijdert, kan dit invloed hebben op andere gebruikers.</translation>
 <translation id="4180788401304023883">Certificaat '<ph name="CERTIFICATE_NAME" />' van certificeringsinstantie verwijderen?</translation>
 <translation id="4181602000363099176">20x</translation>
 <translation id="4181841719683918333">Talen</translation>
 <translation id="4184885522552335684">Slepen om een scherm te verplaatsen</translation>
 <translation id="4187424053537113647"><ph name="APP_NAME" /> instellen…</translation>
 <translation id="4190828427319282529">Toetsenbordfocus uitlichten</translation>
-<translation id="4191805472951276951">DLC</translation>
 <translation id="4194570336751258953">Tikken-voor-klikken inschakelen</translation>
 <translation id="4195643157523330669">Openen op nieuw tabblad</translation>
 <translation id="4195814663415092787">Doorgaan waar je gebleven was</translation>
@@ -3038,7 +3035,6 @@ Je kunt de instellingen van dit account beheren door de Family Link-app op je ap
 <translation id="4756388243121344051">Gesc&amp;hiedenis</translation>
 <translation id="4759238208242260848">Downloads</translation>
 <translation id="4761104368405085019">Je microfoon gebruiken</translation>
-<translation id="4762055672525936226">Gedownloade content verwijderen</translation>
 <translation id="4762718786438001384">Er is zeer weinig schijfruimte beschikbaar op het apparaat</translation>
 <translation id="4763408175235639573">De volgende cookies zijn opgeslagen toen je deze pagina bekeek</translation>
 <translation id="4765582662863429759">Hiermee kan Android Berichten sms'jes van je telefoon naar je Chromebook doorsturen</translation>
@@ -3292,7 +3288,6 @@ Je kunt de instellingen van dit account beheren door de Family Link-app op je ap
 <translation id="5094721898978802975">Communiceren met samenwerkende legitieme apps</translation>
 <translation id="5097002363526479830">Kan geen verbinding maken met het netwerk '<ph name="NAME" />': <ph name="DETAILS" /></translation>
 <translation id="5097874180538493929">Automatisch klikken als de cursor stopt</translation>
-<translation id="5098800418125334616">Gedownloade content beheren</translation>
 <translation id="5101042277149003567">Alle bookmarks openen</translation>
 <translation id="5101839224773798795">Automatisch klikken wanneer de muisaanwijzer stopt</translation>
 <translation id="5107443654503185812">Een extensie heeft Safe Browsing uitgeschakeld</translation>
@@ -4170,7 +4165,6 @@ Je kunt de instellingen van dit account beheren door de Family Link-app op je ap
 <translation id="6198102561359457428">Log uit en log daarna weer in...</translation>
 <translation id="6198252989419008588">Pincode wijzigen</translation>
 <translation id="6202304368170870640">Je kunt je pincode gebruiken om in te loggen of je apparaat te ontgrendelen.</translation>
-<translation id="6202517672944764518">Gedownloade content</translation>
 <translation id="6206311232642889873">A&amp;fbeelding kopiëren</translation>
 <translation id="6207200176136643843">Standaardzoomniveau resetten</translation>
 <translation id="6207937957461833379">Land/regio</translation>
@@ -6129,7 +6123,6 @@ Bewaar je sleutelbestand op een veilige plaats. Je hebt het bestand nodig om nie
 <translation id="8652400352452647993">Fout met pakketextensie</translation>
 <translation id="8654151524613148204">Je computer kan het bestand vanwege de grootte helaas niet verwerken.</translation>
 <translation id="8655295600908251630">Kanaal</translation>
-<translation id="8655319619291175901">Er is een fout opgetreden.</translation>
 <translation id="8655972064210167941">Het inloggen is mislukt omdat je wachtwoord niet kan worden geverifieerd. Neem contact op met je beheerder of probeer het opnieuw.</translation>
 <translation id="8656768832129462377">Niet controleren</translation>
 <translation id="8658645149275195032"><ph name="APP_NAME" /> deelt je scherm en audio met <ph name="TAB_NAME" />.</translation>
@@ -6219,7 +6212,6 @@ Bewaar je sleutelbestand op een veilige plaats. Je hebt het bestand nodig om nie
         &lt;p&gt;Je kunt je instellingen configureren via de opdrachtprompt. Zie &lt;code&gt;man <ph name="PRODUCT_BINARY_NAME" />&lt;/code&gt; voor meer informatie over markeringen en omgevingsvariabelen.&lt;/p&gt;</translation>
 <translation id="8755175579224030324">Aan beveiliging gerelateerde taken voor je organisatie uitvoeren, zoals certificaten en sleutels beheren die op het apparaat zijn opgeslagen</translation>
 <translation id="8755376271068075440">&amp;Groter</translation>
-<translation id="8756143264090841047">DLC verwijderen</translation>
 <translation id="8756969031206844760">Wachtwoord updaten?</translation>
 <translation id="8757090071857742562">Kan desktop niet casten. Controleer of je het bericht voor het delen van je scherm hebt bevestigd.</translation>
 <translation id="8757203080302669031">Dit tabblad scant momenteel naar bluetooth-apparaten.</translation>
@@ -6234,7 +6226,6 @@ Bewaar je sleutelbestand op een veilige plaats. Je hebt het bestand nodig om nie
 <translation id="8770406935328356739">Hoofddirectory van extensie</translation>
 <translation id="8770507190024617908">Mensen beheren</translation>
 <translation id="8771300903067484968">De achtergrond van de startpagina is gereset naar de standaardachtergrond.</translation>
-<translation id="8771939407732945762">Gedownloade content verwijderen</translation>
 <translation id="8773302562181397928"><ph name="PRINTER_NAME" /> opslaan</translation>
 <translation id="8774379074441005279">Herstel bevestigen</translation>
 <translation id="8774934320277480003">Marge bovenkant</translation>

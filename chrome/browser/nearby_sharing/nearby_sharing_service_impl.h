@@ -23,11 +23,9 @@
 #include "chrome/browser/nearby_sharing/nearby_connections_manager.h"
 #include "chrome/browser/nearby_sharing/nearby_notification_manager.h"
 #include "chrome/browser/nearby_sharing/nearby_process_manager.h"
-#include "chrome/browser/nearby_sharing/nearby_share_settings.h"
 #include "chrome/browser/nearby_sharing/nearby_sharing_service.h"
 #include "chrome/browser/nearby_sharing/outgoing_share_target_info.h"
 #include "chrome/browser/nearby_sharing/share_target.h"
-#include "chrome/browser/ui/webui/nearby_share/public/mojom/nearby_share_settings.mojom.h"
 #include "chrome/services/sharing/public/mojom/nearby_decoder_types.mojom.h"
 #include "components/keyed_service/core/keyed_service.h"
 #include "components/prefs/pref_change_registrar.h"
@@ -40,7 +38,6 @@ class Profile;
 class NearbySharingServiceImpl
     : public NearbySharingService,
       public KeyedService,
-      public nearby_share::mojom::NearbyShareSettingsObserver,
       public NearbyProcessManager::Observer,
       public device::BluetoothAdapter::Observer,
       public NearbyConnectionsManager::IncomingConnectionListener {
@@ -76,15 +73,6 @@ class NearbySharingServiceImpl
               StatusCodesCallback status_codes_callback) override;
   void Open(const ShareTarget& share_target,
             StatusCodesCallback status_codes_callback) override;
-  NearbyShareSettings* GetSettings() override;
-
-  // nearby_share::mojom::NearbyShareSettingsObserver:
-  void OnEnabledChanged(bool enabled) override;
-  void OnDeviceNameChanged(const std::string& device_name) override;
-  void OnDataUsageChanged(nearby_share::mojom::DataUsage data_usage) override;
-  void OnVisibilityChanged(nearby_share::mojom::Visibility visibility) override;
-  void OnAllowedContactsChanged(
-      const std::vector<std::string>& allowed_contacts) override;
 
   // NearbyProcessManager::Observer:
   void OnNearbyProfileChanged(Profile* profile) override;
@@ -97,11 +85,14 @@ class NearbySharingServiceImpl
       const std::vector<uint8_t>& endpoint_info,
       std::unique_ptr<NearbyConnection> connection) override;
 
-  // Test methods
-  void FlushMojoForTesting();
-
  private:
+  bool IsEnabled();
+  void OnEnabledPrefChanged();
+  Visibility GetVisibilityPref();
   bool IsVisibleInBackground(Visibility visibility);
+  void OnVisibilityPrefChanged();
+  DataUsage GetDataUsagePref();
+  void OnDataUsagePrefChanged();
   void StartFastInitiationAdvertising();
   void StopFastInitiationAdvertising();
   void GetBluetoothAdapter();
@@ -135,8 +126,8 @@ class NearbySharingServiceImpl
 
   PrefService* prefs_;
   Profile* profile_;
-  NearbyShareSettings settings_;
   std::unique_ptr<NearbyConnectionsManager> nearby_connections_manager_;
+  PrefChangeRegistrar pref_change_registrar_;
   ScopedObserver<NearbyProcessManager, NearbyProcessManager::Observer>
       nearby_process_observer_{this};
   scoped_refptr<device::BluetoothAdapter> bluetooth_adapter_;
@@ -171,16 +162,19 @@ class NearbySharingServiceImpl
   // The current advertising power level. PowerLevel::kUnknown while not
   // advertising.
   PowerLevel advertising_power_level_ = PowerLevel::kUnknown;
+  // The current advertising data usage preference. We need to restart scan
+  // (Fast Init) or advertise (Nearby Connections or Fast Init) when online
+  // preference changes. DataUsage::kUnknown while not advertising.
+  DataUsage advertising_data_usage_preference_ = DataUsage::kUnknown;
+  // The current visibility preference. We need to restart advertising if
+  // the visibility changes.
+  Visibility advertising_visibilty_preference_ = Visibility::kUnknown;
   // True if we are currently scanning for remote devices.
   bool is_scanning_ = false;
   // True if we're currently sending or receiving a file.
   bool is_transferring_files_ = false;
 
-  mojo::Receiver<nearby_share::mojom::NearbyShareSettingsObserver>
-      settings_receiver_{this};
-
   SEQUENCE_CHECKER(sequence_checker_);
-
   base::WeakPtrFactory<NearbySharingServiceImpl> weak_ptr_factory_{this};
 };
 

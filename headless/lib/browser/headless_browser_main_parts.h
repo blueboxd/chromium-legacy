@@ -29,7 +29,7 @@ class HeadlessBrowserMainParts : public content::BrowserMainParts {
   void PreDefaultMainMessageLoopRun(base::OnceClosure quit_closure) override;
   bool MainMessageLoopRun(int* result_code) override;
   void PostMainMessageLoopRun() override;
-#if defined(OS_MACOSX)
+#if defined(OS_MAC)
   void PreMainMessageLoopStart() override;
 #endif
 #if defined(OS_LINUX)

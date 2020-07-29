@@ -9,10 +9,9 @@
 
 #include <sddl.h>
 
-#include "base/bind.h"
-#include "base/callback_helpers.h"
 #include "base/debug/stack_trace.h"
 #include "base/strings/string_util.h"
+#include "base/win/scoped_handle.h"
 #include "base/win/win_util.h"
 #elif defined(OS_LINUX)
 // <syslog.h> defines LOG_INFO, LOG_WARNING macros that could conflict with
@@ -35,6 +34,29 @@ std::string* g_event_source_name = nullptr;
 uint16_t g_category = 0;
 uint32_t g_event_id = 0;
 std::wstring* g_user_sid = nullptr;
+
+class EventLogHandleTraits {
+ public:
+  using Handle = HANDLE;
+
+  // Closes the handle.
+  static bool CloseHandle(HANDLE handle) {
+    return ::DeregisterEventSource(handle) != FALSE;
+  }
+
+  // Returns true if the handle value is valid.
+  static bool IsHandleValid(HANDLE handle) { return handle != nullptr; }
+
+  // Returns null handle value.
+  static HANDLE NullHandle() { return nullptr; }
+
+ private:
+  DISALLOW_IMPLICIT_CONSTRUCTORS(EventLogHandleTraits);
+};
+
+using ScopedEventLogHandle =
+    base::win::GenericScopedHandle<EventLogHandleTraits,
+                                   base::win::DummyVerifierTraits>;
 
 }  // namespace
 
@@ -73,15 +95,14 @@ EventLogMessage::~EventLogMessage() {
   if (g_event_source_name == nullptr)
     return;
 
-  HANDLE event_log_handle =
-      RegisterEventSourceA(nullptr, g_event_source_name->c_str());
-  if (event_log_handle == nullptr) {
+  ScopedEventLogHandle event_log_handle(
+      RegisterEventSourceA(nullptr, g_event_source_name->c_str()));
+
+  if (!event_log_handle.IsValid()) {
     stream() << " !!NOT ADDED TO EVENTLOG!!";
     return;
   }
 
-  base::ScopedClosureRunner auto_deregister(base::BindOnce(
-      base::IgnoreResult(&DeregisterEventSource), event_log_handle));
   std::string message(log_message_.str());
   WORD log_type = EVENTLOG_ERROR_TYPE;
   switch (log_message_.severity()) {
@@ -106,7 +127,7 @@ EventLogMessage::~EventLogMessage() {
     stream() << " !!ERROR GETTING USER SID!!";
   }
 
-  if (!ReportEventA(event_log_handle, log_type, g_category, g_event_id,
+  if (!ReportEventA(event_log_handle.Get(), log_type, g_category, g_event_id,
                     user_sid, 1, 0, strings, nullptr)) {
     stream() << " !!NOT ADDED TO EVENTLOG!!";
   }

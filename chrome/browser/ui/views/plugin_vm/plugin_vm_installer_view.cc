@@ -114,12 +114,12 @@ PluginVmInstallerView::PluginVmInstallerView(Profile* profile)
   logo_image->SetHorizontalAlignment(views::ImageView::Alignment::kLeading);
   upper_container_view->AddChildView(logo_image);
 
-  big_message_label_ = new views::Label(GetBigMessage(), {kTitleFont});
-  big_message_label_->SetProperty(
+  title_label_ = new views::Label(GetTitle(), {kTitleFont});
+  title_label_->SetProperty(
       views::kMarginsKey, gfx::Insets(kTitleHeight - kTitleFontSize, 0, 0, 0));
-  big_message_label_->SetMultiLine(false);
-  big_message_label_->SetHorizontalAlignment(gfx::ALIGN_LEFT);
-  upper_container_view->AddChildView(big_message_label_);
+  title_label_->SetMultiLine(false);
+  title_label_->SetHorizontalAlignment(gfx::ALIGN_LEFT);
+  upper_container_view->AddChildView(title_label_);
 
   views::View* message_container_view = new views::View();
   message_container_view->SetLayoutManager(std::make_unique<views::BoxLayout>(
@@ -289,7 +289,7 @@ void PluginVmInstallerView::OnCancelFinished() {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
 }
 
-base::string16 PluginVmInstallerView::GetBigMessage() const {
+base::string16 PluginVmInstallerView::GetTitle() const {
   switch (state_) {
     case State::kConfirmInstall:
       return l10n_util::GetStringFUTF16(
@@ -484,7 +484,7 @@ void PluginVmInstallerView::AddedToWidget() {
 }
 
 void PluginVmInstallerView::OnStateUpdated() {
-  SetBigMessageLabel();
+  SetTitleLabel();
   SetMessageLabel();
   SetBigImage();
 
@@ -538,11 +538,10 @@ base::string16 PluginVmInstallerView::GetDownloadProgressMessage(
   }
 }
 
-void PluginVmInstallerView::SetBigMessageLabel() {
-  big_message_label_->SetText(GetBigMessage());
-  big_message_label_->SetVisible(true);
-  big_message_label_->NotifyAccessibilityEvent(ax::mojom::Event::kTextChanged,
-                                               true);
+void PluginVmInstallerView::SetTitleLabel() {
+  title_label_->SetText(GetTitle());
+  title_label_->SetVisible(true);
+  title_label_->NotifyAccessibilityEvent(ax::mojom::Event::kTextChanged, true);
 }
 
 void PluginVmInstallerView::SetMessageLabel() {

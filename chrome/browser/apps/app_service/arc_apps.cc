@@ -587,6 +587,10 @@ ArcApps::ArcApps(Profile* profile, apps::AppServiceProxy* proxy)
   auto* intent_helper_bridge =
       arc::ArcIntentHelperBridge::GetForBrowserContext(profile_);
   if (intent_helper_bridge) {
+    if (base::FeatureList::IsEnabled(features::kAppServiceAdaptiveIcon)) {
+      intent_helper_bridge->SetAdaptiveIconDelegate(
+          &arc_activity_adaptive_icon_impl_);
+    }
     arc_intent_helper_observer_.Add(intent_helper_bridge);
   }
 
@@ -632,6 +636,13 @@ void ArcApps::Shutdown() {
     prefs->RemoveObserver(this);
   }
   arc_icon_once_loader_.StopObserving(prefs);
+
+  auto* intent_helper_bridge =
+      arc::ArcIntentHelperBridge::GetForBrowserContext(profile_);
+  if (intent_helper_bridge &&
+      base::FeatureList::IsEnabled(features::kAppServiceAdaptiveIcon)) {
+    intent_helper_bridge->SetAdaptiveIconDelegate(nullptr);
+  }
 
   arc_intent_helper_observer_.RemoveAll();
 }

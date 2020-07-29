@@ -884,14 +884,14 @@ void ArcSessionManager::ResetArcState() {
   android_management_checker_.reset();
 }
 
-void ArcSessionManager::AddObserver(Observer* observer) {
+void ArcSessionManager::AddObserver(ArcSessionManagerObserver* observer) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   observer_list_.AddObserver(observer);
   if (property_files_expansion_result_)
     observer->OnPropertyFilesExpanded(*property_files_expansion_result_);
 }
 
-void ArcSessionManager::RemoveObserver(Observer* observer) {
+void ArcSessionManager::RemoveObserver(ArcSessionManagerObserver* observer) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   observer_list_.RemoveObserver(observer);
 }

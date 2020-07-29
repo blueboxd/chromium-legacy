@@ -104,6 +104,7 @@
 <translation id="1853692000353488670">Uus inkognito vaheleht</translation>
 <translation id="1856325424225101786">Kas lähtestada lihtsustatud režiim?</translation>
 <translation id="1868024384445905608">Chrome laadib nüüd faile kiiremini alla</translation>
+<translation id="1874760110381325409">Teid logitakse oma Google'i kontole sisse\n(see ei lülita Chrome'i sünkroonimist sisse)</translation>
 <translation id="1883903952484604915">Minu failid</translation>
 <translation id="1919950603503897840">Kontaktide valimine</translation>
 <translation id="1925021887439448749">Sisestage kohandatud veebiaadress</translation>
@@ -227,6 +228,7 @@ Puudutage pikalt mis tahes sõna, et seda otsida. Otsingu täpsustamiseks valige
 <translation id="281504910091592009">Vaadake ja hallake salvestatud paroole oma <ph name="BEGIN_LINK" />Google'i kontol<ph name="END_LINK" /></translation>
 <translation id="2818669890320396765">Järjehoidjate kõikidesse seadmetesse hankimiseks logige sisse ja lülitage sünkroonimine sisse</translation>
 <translation id="2827278682606527653">Voo kaardimenüü on poole kõrgusega</translation>
+<translation id="2841216154655874070">{NUM_DAYS,plural, =1{Kontrolliti 1 päev tagasi}other{Kontrolliti # päeva tagasi}}</translation>
 <translation id="2842985007712546952">Emakaust</translation>
 <translation id="2860954141821109167">Veenduge, et telefonirakendus oleks selles seadmes lubatud</translation>
 <translation id="2870560284913253234">Sait</translation>
@@ -242,7 +244,6 @@ Puudutage pikalt mis tahes sõna, et seda otsida. Otsingu täpsustamiseks valige
 <translation id="2905036901251765993">Lähedaste inimestega jagamiseks paluge neil skaneerida see QR-kood</translation>
 <translation id="2909615210195135082">Google'i märguannete platvorm</translation>
 <translation id="2923908459366352541">Nimi on sobimatu</translation>
-<translation id="2927707377793151377">Valige teine teenusepakkuja:</translation>
 <translation id="2932150158123903946">Rakenduse Google <ph name="APP_NAME" /> salvestusruum</translation>
 <translation id="2942036813789421260">Eelvaate vaheleht on suletud</translation>
 <translation id="2956410042958133412">Seda kontot haldavad <ph name="PARENT_NAME_1" /> ja <ph name="PARENT_NAME_2" />.</translation>
@@ -703,6 +704,7 @@ Näiteks võivad mõned veebisaidid taotlusele reageerida nii, et näitavad teil
 <translation id="6532866250404780454">Chrome'is külastatud saite ei kuvata. Kõik saitide taimerid kustutatakse.</translation>
 <translation id="6534565668554028783">Google'il kulus reageerimiseks liiga kaua aega</translation>
 <translation id="6539092367496845964">Midagi läks valesti. Proovige hiljem uuesti.</translation>
+<translation id="6541983376925655882">{NUM_HOURS,plural, =1{Kontrolliti 1 tund tagasi}other{Kontrolliti # tundi tagasi}}</translation>
 <translation id="6545017243486555795">Kustuta kõik andmed</translation>
 <translation id="6560414384669816528">Otsi teenusega Sogou</translation>
 <translation id="656065428026159829">Kuva rohkem</translation>
@@ -734,6 +736,7 @@ Näiteks võivad mõned veebisaidid taotlusele reageerida nii, et näitavad teil
 <translation id="6697492270171225480">Kui lehte ei leita, kuvatakse sarnaste lehtede soovitusi</translation>
 <translation id="6698801883190606802">Sünkroonitud andmete haldamine</translation>
 <translation id="6699370405921460408">Google'i serverid optimeerivad teie külastatavaid lehti.</translation>
+<translation id="670498945988402717">Kontrolliti eile</translation>
 <translation id="6710213216561001401">Eelmine</translation>
 <translation id="671481426037969117">Teie rakenduse <ph name="FQDN" /> taimeri aeg sai otsa. See alustab uuesti homme.</translation>
 <translation id="6738867403308150051">Allalaadimine ...</translation>
@@ -772,6 +775,7 @@ Näiteks võivad mõned veebisaidid taotlusele reageerida nii, et näitavad teil
 <translation id="7063006564040364415">Sünkroonimisserveriga ei saanud ühendust.</translation>
 <translation id="7071521146534760487">Konto haldamine</translation>
 <translation id="7077143737582773186">SD-kaart</translation>
+<translation id="7080806333218412752">Saadab URL-id kontrollimiseks teenusesse Google'i ohutu sirvimine. Saadab ka lehtede, allalaadimiste, laienduste tegevuse ja süsteemiteabe näidiseid, et aidata uusi ohte tuvastada. Kui olete sisse logitud, lingitakse andmed ajutiselt teie Google'i kontoga, et kaitsta teid kõigis Google'i rakendustes.</translation>
 <translation id="7121362699166175603">Kustutab aadressiribalt ajaloo ja automaatse täitmise andmed. Aadressil <ph name="BEGIN_LINK" />myactivity.google.com<ph name="END_LINK" /> võib teie Google'i kontol olla muus vormis sirvimisajalugu.</translation>
 <translation id="7128355412245153445">Näete avalehe nuppu puudutades oma sageli külastatud saite ja hiljutisi lugusid</translation>
 <translation id="7138678301420049075">Muu</translation>
@@ -781,6 +785,7 @@ Näiteks võivad mõned veebisaidid taotlusele reageerida nii, et näitavad teil
 <translation id="7173114856073700355">Ava seaded</translation>
 <translation id="7177466738963138057">Seda saate hiljem muuta jaotises Seaded</translation>
 <translation id="7180611975245234373">Värskenda</translation>
+<translation id="7187993566681480880">Kaitseb teid Chrome'is ja seda võidakse kasutada teie turvalisuse suurendamiseks muudes Google'i rakendustes, kui olete sisse logitud.</translation>
 <translation id="7189372733857464326">Google Play teenuste värskendamise lõpetamise ootamine</translation>
 <translation id="7191430249889272776">Taustal on avatud vaheleht.</translation>
 <translation id="723171743924126238">Kujutiste valimine</translation>
@@ -892,6 +897,7 @@ Näiteks võivad mõned veebisaidid taotlusele reageerida nii, et näitavad teil
 <translation id="8027863900915310177">Valige, kuhu alla laadida</translation>
 <translation id="8035133914807600019">Uus kaust …</translation>
 <translation id="8037750541064988519">Jäänud on <ph name="DAYS" /> päeva</translation>
+<translation id="8037801708772278989">Kontrolliti just praegu</translation>
 <translation id="804335162455518893">SD-kaarti ei leitud</translation>
 <translation id="805047784848435650">Teie sirvimisajaloo põhjal</translation>
 <translation id="8051695050440594747"><ph name="MEGABYTES" /> MB on saadaval</translation>
@@ -1032,6 +1038,7 @@ Näiteks võivad mõned veebisaidid taotlusele reageerida nii, et näitavad teil
 <translation id="9137013805542155359">Kuva originaal</translation>
 <translation id="9155898266292537608">Otsimiseks võite ka kiirelt sõna puudutada</translation>
 <translation id="9169507124922466868">Navigeerimisajalugu on pooleldi avatud</translation>
+<translation id="9199368092038462496">{NUM_MINS,plural, =1{Kontrolliti 1 minut tagasi}other{Kontrolliti # minutit tagasi}}</translation>
 <translation id="9204836675896933765">Üks fail on jäänud</translation>
 <translation id="9206873250291191720">A</translation>
 <translation id="9209888181064652401">Ei saa helistada</translation>

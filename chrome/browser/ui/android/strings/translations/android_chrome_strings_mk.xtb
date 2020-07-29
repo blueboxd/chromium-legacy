@@ -104,6 +104,7 @@
 <translation id="1853692000353488670">Нова картичка „Инкогнито“</translation>
 <translation id="1856325424225101786">Дали да се ресетира „Лесниот режим“?</translation>
 <translation id="1868024384445905608">Отсега Chrome побрзо презема датотеки</translation>
+<translation id="1874760110381325409">Ќе ве најавиме со вашата сметка на Google\n(ова нема да вклучи „Синхронизација на Chrome“)</translation>
 <translation id="1883903952484604915">Мои датотеки</translation>
 <translation id="1919950603503897840">Изберете контакти</translation>
 <translation id="1925021887439448749">Внесете приспособена веб-адреса</translation>
@@ -227,6 +228,7 @@
 <translation id="281504910091592009">Прегледајте ги и управувајте со зачуваните лозинки во вашата <ph name="BEGIN_LINK" />сметка на Google<ph name="END_LINK" /></translation>
 <translation id="2818669890320396765">За да ги добиете обележувачите на сите ваши уреди, најавете се и вклучете ја синхронизацијата</translation>
 <translation id="2827278682606527653">Менито на картичката за активност е отворено на половина екран</translation>
+<translation id="2841216154655874070">{NUM_DAYS,plural, =1{Проверено пред 1 ден}one{Проверено пред # ден}other{Проверено пред # дена}}</translation>
 <translation id="2842985007712546952">Надредена папка</translation>
 <translation id="2860954141821109167">Проверете дали е овозможена апликација за телефон на уредов</translation>
 <translation id="2870560284913253234">Локација</translation>
@@ -242,7 +244,6 @@
 <translation id="2905036901251765993">За да споделувате со луѓе во близина, дозволете им да го скенираат QR-кодов</translation>
 <translation id="2909615210195135082">Платформа за известувања на Google</translation>
 <translation id="2923908459366352541">Името е неважечко</translation>
-<translation id="2927707377793151377">Изберете друг оператор:</translation>
 <translation id="2932150158123903946">Достапен простор на Google <ph name="APP_NAME" /></translation>
 <translation id="2942036813789421260">Картичката за преглед е затворена</translation>
 <translation id="2956410042958133412"><ph name="PARENT_NAME_1" /> и <ph name="PARENT_NAME_2" /> управуваат со оваа сметка.</translation>
@@ -703,6 +704,7 @@
 <translation id="6532866250404780454">Сајтовите што ги посетувате во Chrome нема да се прикажуваат. Сите тајмери за сајтови ќе се избришат.</translation>
 <translation id="6534565668554028783">На Google му требаше премногу време да одговори</translation>
 <translation id="6539092367496845964">Нешто тргна наопаку. Обидете се повторно подоцна.</translation>
+<translation id="6541983376925655882">{NUM_HOURS,plural, =1{Проверено пред 1 час}one{Проверено пред # час}other{Проверено пред # часа}}</translation>
 <translation id="6545017243486555795">Избриши ги сите податоци</translation>
 <translation id="6560414384669816528">Пребарување со Sogou</translation>
 <translation id="656065428026159829">Прикажи повеќе</translation>
@@ -734,6 +736,7 @@
 <translation id="6697492270171225480">Прикажувај предлози за слични страници кога страницата не може да се најде</translation>
 <translation id="6698801883190606802">Управувајте со синхронизираните податоци</translation>
 <translation id="6699370405921460408">Серверите на Google ќе ги оптимизираат страниците што ги посетувате.</translation>
+<translation id="670498945988402717">Проверено вчера</translation>
 <translation id="6710213216561001401">Претходно</translation>
 <translation id="671481426037969117">Тајмерот за <ph name="FQDN" /> истече. Ќе започне одново утре.</translation>
 <translation id="6738867403308150051">Се презема…</translation>
@@ -772,6 +775,7 @@
 <translation id="7063006564040364415">Не можеше да се поврзе на серверот за синхронизација.</translation>
 <translation id="7071521146534760487">Управувајте со сметката</translation>
 <translation id="7077143737582773186">SD-картичка</translation>
+<translation id="7080806333218412752">Испраќа URL-адреси во „Безбедно прелистување“ за да се проверат. Испраќа и мал примерок од страници, преземања, активност на екстензиите и информации за системот за да помогне да се откријат нови закани. Привремено ги поврзува податоциве со вашата сметка на Google кога сте најавени за да ве заштити на апликациите на Google.</translation>
 <translation id="7121362699166175603">Ја чисти историјата и автоматските довршувања во лентата за адреси. Вашата сметка на Google можеби има други видови историја на прелистување на <ph name="BEGIN_LINK" />myactivity.google.com<ph name="END_LINK" />.</translation>
 <translation id="7128355412245153445">Гледајте ги најдобрите сајтови и неодамнешните приказни секојпат кога ќе го допрете копчето за почетен екран</translation>
 <translation id="7138678301420049075">Друго</translation>
@@ -781,6 +785,7 @@
 <translation id="7173114856073700355">Отвори „Поставки“</translation>
 <translation id="7177466738963138057">Може да го промените ова подоцна во „Поставки“</translation>
 <translation id="7180611975245234373">Освежи</translation>
+<translation id="7187993566681480880">Ја чува вашата безбедност на Chrome и може да се користи за да ја подобри безбедноста на други апликации на Google кога сте најавени.</translation>
 <translation id="7189372733857464326">Се чека да заврши ажурирањето на „Услугите на Google Play“</translation>
 <translation id="7191430249889272776">Отворена е картичка во заднина.</translation>
 <translation id="723171743924126238">Изберете слики</translation>
@@ -892,6 +897,7 @@
 <translation id="8027863900915310177">Изберете каде да се преземе</translation>
 <translation id="8035133914807600019">Нова папка…</translation>
 <translation id="8037750541064988519">Останаа <ph name="DAYS" /> дена</translation>
+<translation id="8037801708772278989">Тукушто проверено</translation>
 <translation id="804335162455518893">SD-картичката не е најдена</translation>
 <translation id="805047784848435650">Врз основа на вашата историја на прелистување</translation>
 <translation id="8051695050440594747">Достапни се <ph name="MEGABYTES" /> MB</translation>
@@ -1032,6 +1038,7 @@
 <translation id="9137013805542155359">Покажи оригинална страница</translation>
 <translation id="9155898266292537608">Може да пребарувате и со брзо допирање збор</translation>
 <translation id="9169507124922466868">Историјата на навигација е отворена до половина екран</translation>
+<translation id="9199368092038462496">{NUM_MINS,plural, =1{Проверено пред 1 минута}one{Проверено пред # минута}other{Проверено пред # минути}}</translation>
 <translation id="9204836675896933765">Преостанува 1 датотека</translation>
 <translation id="9206873250291191720">A</translation>
 <translation id="9209888181064652401">Не може да се упатуваат повици</translation>

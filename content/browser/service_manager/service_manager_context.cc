@@ -81,7 +81,8 @@ const service_manager::Manifest& GetContentBrowserManifest() {
                            .CanConnectToInstancesWithAnyId(true)
                            .CanRegisterOtherServiceInstances(true)
                            .Build())
-          .RequireCapability("chromecast", "*")
+          .RequireCapability("*", "app")
+          .RequireCapability("*", "multizone")
           .Build()};
   return *manifest;
 }

@@ -1924,7 +1924,6 @@ Puoi gestire le impostazioni dell'account installando l'app Family Link su quest
 <translation id="3371140690572404006">Dispositivo USB-C (porta anteriore destra)</translation>
 <translation id="337286756654493126">Lettura di cartelle aperte nell'applicazione</translation>
 <translation id="3378572629723696641">Questa estensione potrebbe essere stata danneggiata.</translation>
-<translation id="3379169026479470857">Rimuovi DLC</translation>
 <translation id="337920581046691015"><ph name="PRODUCT_NAME" /> verrà installato.</translation>
 <translation id="3380365263193509176">Errore sconosciuto</translation>
 <translation id="3382073616108123819">Spiacenti, il sistema non è riuscito a determinare gli identificatori di questo dispositivo.</translation>
@@ -2379,6 +2378,7 @@ Puoi gestire le impostazioni dell'account installando l'app Family Link su quest
 <translation id="3882165008614329320">Video esistente da fotocamera o file</translation>
 <translation id="3886446263141354045">La tua richiesta di accesso al sito è stata inviata a <ph name="NAME" /></translation>
 <translation id="3888550877729210209">Creazione di appunti con <ph name="LOCK_SCREEN_APP_NAME" /></translation>
+<translation id="3891563564777705449">{0,plural, =1{Aggiorna il dispositivo entro 1 settimana}other{Aggiorna il dispositivo entro # settimane}}</translation>
 <translation id="3892414795099177503">Aggiungi L2TP/OpenVPN</translation>
 <translation id="3893536212201235195">Leggere e modificare le impostazioni di accessibilità</translation>
 <translation id="3893630138897523026">ChromeVox (lettura vocale)</translation>
@@ -2610,14 +2610,12 @@ Puoi gestire le impostazioni dell'account installando l'app Family Link su quest
 <translation id="4175137578744761569">Lilla e bianco</translation>
 <translation id="4175737294868205930">Archiviazione persistente</translation>
 <translation id="4176463684765177261">Disattivato</translation>
-<translation id="418031202593299965">Questi componenti vengono condivisi con altri utenti su questo dispositivo. La rimozione di componenti potrebbe incidere sugli altri utenti.</translation>
 <translation id="4180788401304023883">Eliminare il certificato CA "<ph name="CERTIFICATE_NAME" />"?</translation>
 <translation id="4181602000363099176">20x</translation>
 <translation id="4181841719683918333">Lingue</translation>
 <translation id="4184885522552335684">Trascina per spostare un display</translation>
 <translation id="4187424053537113647">Configurazione di <ph name="APP_NAME" />…</translation>
 <translation id="4190828427319282529">Evidenziazione con stato attivo della tastiera</translation>
-<translation id="4191805472951276951">Contenuti scaricati</translation>
 <translation id="4194570336751258953">Attiva tocco per fare clic</translation>
 <translation id="4195643157523330669">Apri in un'altra scheda</translation>
 <translation id="4195814663415092787">Continuare dal punto in cui avevi interrotto</translation>
@@ -3036,7 +3034,6 @@ Puoi gestire le impostazioni dell'account installando l'app Family Link su quest
 <translation id="4756388243121344051">&amp;Cronologia</translation>
 <translation id="4759238208242260848">Download</translation>
 <translation id="4761104368405085019">Utilizzare il microfono</translation>
-<translation id="4762055672525936226">Elimina contenuti scaricati</translation>
 <translation id="4762718786438001384">Lo spazio sul disco del dispositivo sta per esaurirsi</translation>
 <translation id="4763408175235639573">Durante la visualizzazione della pagina sono stati impostati i seguenti cookie</translation>
 <translation id="4765582662863429759">Consenti ad Android Messaggi di trasmettere gli SMS dal telefono al Chromebook</translation>
@@ -3290,7 +3287,6 @@ Puoi gestire le impostazioni dell'account installando l'app Family Link su quest
 <translation id="5094721898978802975">Comunicazione con applicazioni native interoperative</translation>
 <translation id="5097002363526479830">Connessione alla rete "<ph name="NAME" />" non riuscita: <ph name="DETAILS" /></translation>
 <translation id="5097874180538493929">Fare clic automaticamente quando il puntatore si ferma</translation>
-<translation id="5098800418125334616">Gestisci i contenuti scaricati</translation>
 <translation id="5101042277149003567">Apri tutti i Preferiti</translation>
 <translation id="5101839224773798795">Clic automatico all'arresto del puntatore del cursore</translation>
 <translation id="5107443654503185812">Un'estensione ha disattivato Navigazione sicura</translation>
@@ -4168,7 +4164,6 @@ Puoi gestire le impostazioni dell'account installando l'app Family Link su quest
 <translation id="6198102561359457428">Esci e accedi di nuovo...</translation>
 <translation id="6198252989419008588">Modifica PIN</translation>
 <translation id="6202304368170870640">Puoi utilizzare il PIN per accedere al tuo dispositivo o per sbloccarlo.</translation>
-<translation id="6202517672944764518">Contenuti scaricati</translation>
 <translation id="6206311232642889873">Cop&amp;ia immagine</translation>
 <translation id="6207200176136643843">Ripristina il livello di zoom predefinito</translation>
 <translation id="6207937957461833379">Paese/Regione</translation>
@@ -4440,6 +4435,7 @@ Puoi gestire le impostazioni dell'account installando l'app Family Link su quest
 <translation id="6535331821390304775">Consenti sempre a <ph name="ORIGIN" /> di aprire link di questo tipo nell'app associata</translation>
 <translation id="654039047105555694"><ph name="BEGIN_BOLD" />Nota.<ph name="END_BOLD" /> Attiva questa opzione soltanto se sei sicuro di ciò che fai o se ti è stato chiesto di farlo perché la raccolta di dati potrebbe peggiorare il rendimento.</translation>
 <translation id="6541638731489116978">A questo sito è stato impedito l'accesso ai sensori di movimento.</translation>
+<translation id="6545407738986370057">{0,plural, =1{Restituisci il dispositivo entro 1 settimana}other{Restituisci il dispositivo entro # settimane}}</translation>
 <translation id="6545665334409411530">Frequenza ripetizione</translation>
 <translation id="6545864417968258051">Scansione Bluetooth</translation>
 <translation id="6545867563032584178">Il microfono è disattivato nelle Preferenze di Sistema del Mac</translation>
@@ -6126,7 +6122,6 @@ Conserva il file di chiave in un luogo sicuro. Ti servirà per creare nuove vers
 <translation id="8652400352452647993">Errore nel pacchetto estensione</translation>
 <translation id="8654151524613148204">Il file è troppo grande. Il computer non è in grado di gestirlo. Spiacenti.</translation>
 <translation id="8655295600908251630">Canale</translation>
-<translation id="8655319619291175901">Spiacenti, qualcosa è andato storto.</translation>
 <translation id="8655972064210167941">Accesso non riuscito perché non è stato possibile verificare la password. Contatta l'amministratore o riprova.</translation>
 <translation id="8656768832129462377">Non verificare</translation>
 <translation id="8658645149275195032"><ph name="APP_NAME" /> condivide l'audio e il tuo schermo con <ph name="TAB_NAME" />.</translation>
@@ -6215,7 +6210,6 @@ Conserva il file di chiave in un luogo sicuro. Ti servirà per creare nuove vers
           &lt;p&gt;Puoi comunque eseguire la configurazione tramite la riga di comando. Consulta &lt;code&gt;man <ph name="PRODUCT_BINARY_NAME" />&lt;/code&gt; per avere ulteriori informazioni su contrassegni e variabili di ambiente.&lt;/p&gt;</translation>
 <translation id="8755175579224030324">Svolgimento di attività relative alla sicurezza per la tua organizzazione, ad esempio gestire le chiavi e i certificati memorizzati sul dispositivo</translation>
 <translation id="8755376271068075440">Più &amp;grande</translation>
-<translation id="8756143264090841047">Elimina DLC</translation>
 <translation id="8756969031206844760">Aggiornare la password?</translation>
 <translation id="8757090071857742562">Impossibile trasmettere il desktop. Verifica di avere confermato la richiesta di avvio della condivisione dello schermo.</translation>
 <translation id="8757203080302669031">Questa scheda sta eseguendo attivamente la ricerca dei dispositivi Bluetooth.</translation>
@@ -6230,7 +6224,6 @@ Conserva il file di chiave in un luogo sicuro. Ti servirà per creare nuove vers
 <translation id="8770406935328356739">Directory principale dell'estensione</translation>
 <translation id="8770507190024617908">Gestisci utenti</translation>
 <translation id="8771300903067484968">Lo sfondo della pagina iniziale è stato reimpostato allo sfondo predefinito.</translation>
-<translation id="8771939407732945762">Rimuovi contenuti scaricati</translation>
 <translation id="8773302562181397928">Salva <ph name="PRINTER_NAME" /></translation>
 <translation id="8774379074441005279">Conferma il ripristino</translation>
 <translation id="8774934320277480003">Margine superiore</translation>

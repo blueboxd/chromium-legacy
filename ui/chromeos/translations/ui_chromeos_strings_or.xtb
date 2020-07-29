@@ -21,7 +21,7 @@
 <translation id="1150565364351027703">ଖରା ପାଇଁ ଚଷମା</translation>
 <translation id="115443833402798225">ହଂଗୁଲ୍ Ahnmatae</translation>
 <translation id="1155759005174418845">କାଟାଲାନ୍</translation>
-<translation id="1172970565351728681">ପାଖାପାଖି <ph name="REMAINING_TIME" /> ସମୟ ବାକି ଅଛି</translation>
+<translation id="1172970565351728681">ପ୍ରାୟ <ph name="REMAINING_TIME" /> ସମୟ ବାକି ଅଛି</translation>
 <translation id="1173894706177603556">ରିନେମ୍ କରନ୍ତୁ</translation>
 <translation id="117624967391683467"><ph name="FILE_NAME" />.କପି ହେଉଛି…</translation>
 <translation id="1178581264944972037">ବିରତି</translation>
@@ -171,7 +171,7 @@
 <translation id="2925966894897775835">Sheets</translation>
 <translation id="2938685643439809023">ମଙ୍ଗୋଲିଆ</translation>
 <translation id="2942290791863759244">ଜର୍ମାନ୍‌ NEO 2 କୀବୋର୍ଡ</translation>
-<translation id="2943400156390503548">ସ୍ଲାଇଡ୍‌</translation>
+<translation id="2943400156390503548">Slides</translation>
 <translation id="2943503720238418293">ଟିକେ ଛୋଟ ନାମର ବ୍ୟବହାର କରନ୍ତୁ</translation>
 <translation id="2949781154072577687"><ph name="DRIVE_NAME" /> ଫର୍ମାଟ୍ କରାଯାଉଛି...</translation>
 <translation id="2951236788251446349">ଜେଲିଫିସ୍</translation>
@@ -246,7 +246,7 @@
 <translation id="3780536599611287598">ଫାଇଲ୍‌ଗୁଡ଼ିକୁ '<ph name="FOLDER_NAME" />'କୁ ନେବା ପାଇଁ ଆପଣଙ୍କ ପାଖରେ ଅନୁମତି ନାହିଁ।</translation>
 <translation id="3786301125658655746">ଆପଣ ଅଫ୍‌ଲାଇନ୍ ଅଛନ୍ତି</translation>
 <translation id="3789841737615482174">ସଂସ୍ଥାପନ</translation>
-<translation id="3793469551756281394">ପାଖାପାଖି <ph name="REMAINING_TIME_HOUR" /> <ph name="REMAINING_TIME_MINUTE" /> ବାକି ଅଛି</translation>
+<translation id="3793469551756281394">ପ୍ରାୟ <ph name="REMAINING_TIME_HOUR" /> <ph name="REMAINING_TIME_MINUTE" /> ବାକି ଅଛି</translation>
 <translation id="3798449238516105146">ସଂସ୍କରଣ</translation>
 <translation id="3801082500826908679">ଫାରୋଏସେ</translation>
 <translation id="3809272675881623365">ଠେକୁଆ</translation>

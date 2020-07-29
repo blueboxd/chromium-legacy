@@ -1728,6 +1728,9 @@
   <message name="IDS_ONC_WIFI_SSID" desc="ONC Property label for WiFi.SSID">
     SSID
   </message>
+  <message name="IDS_ONC_WIFI_BSSID" desc="Settings > Network > Wifi Network Detail Page > label for BSSID property. BSSID is a a unique 48 bit identifier for a wireless access point.">
+    BSSID
+  </message>
 
   <!-- Settings Internet Page-->
   <message name="IDS_SETTINGS_INTERNET_CONFIG" desc="Title for the network configuration dialog.">
@@ -5248,6 +5251,9 @@
   </message>
   <message name="IDS_PLUGIN_VM_REMOVING_NOTIFICATION_FAILED_MESSAGE" desc="Message in the notification shown when removing the 'Plugin VM' app failed.">
     Couldn't uninstall <ph name="APP_NAME">$1<ex>Plugin VM</ex></ph>
+  </message>
+  <message name="IDS_PLUGIN_VM_SHUTDOWN_WINDOWS_TO_UNINSTALL_MESSAGE" desc="Message in the notification shown when uninstalling Parallels Desktop failed because the Windows VM failed to shut down.">
+    Shut down Windows to uninstall <ph name="PARALLELS_DESKTOP">$1<ex>Parallels Desktop</ex></ph>.
   </message>
   <message name="IDS_PLUGIN_VM_DLC_INTERNAL_FAILED_MESSAGE" desc="Error message shown if Plugin VM installation fails because an internal error indicates the device needs to be updated.">
     Your device needs to be updated before you can use <ph name="APP_NAME">$1<ex>Plugin VM</ex></ph>.

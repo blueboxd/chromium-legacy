@@ -17,7 +17,7 @@ Hier sind ein paar Dinge, die du tun kannst, um loszulegen.</translation>
 <translation id="112308213915226829">Ablage autom. ausblenden</translation>
 <translation id="1153356358378277386">Gekoppelte Geräte</translation>
 <translation id="1175572348579024023">Scrollen</translation>
-<translation id="1178581264944972037">Anhalten</translation>
+<translation id="1178581264944972037">Pause</translation>
 <translation id="1190609913194133056">Benachrichtigungscenter</translation>
 <translation id="1195412055398077112">Overscan</translation>
 <translation id="119944043368869598">Alle löschen</translation>
@@ -121,7 +121,7 @@ Hier sind ein paar Dinge, die du tun kannst, um loszulegen.</translation>
 <translation id="2303600792989757991">Fensterübersicht umschalten</translation>
 <translation id="2322173485024759474">Zurück um einen Buchstaben</translation>
 <translation id="2339073806695260576">Tippen Sie auf die Eingabestift-Schaltfläche in der Ablage, um Notizen oder Screenshots zu erstellen, den Laserpointer oder die Vergrößerungsfunktion zu verwenden.</translation>
-<translation id="2341729377289034582">Nur vertikale Ausrichtung</translation>
+<translation id="2341729377289034582">Vertikale Ausrichtung aktiv</translation>
 <translation id="2352467521400612932">Eingabestift-Einstellungen</translation>
 <translation id="2354174487190027830"><ph name="NAME" /> wird aktiviert</translation>
 <translation id="2359808026110333948">Weiter</translation>
@@ -241,7 +241,7 @@ Hier sind ein paar Dinge, die du tun kannst, um loszulegen.</translation>
 <translation id="3621202678540785336">Eingang</translation>
 <translation id="3621712662352432595">Audioeinstellungen</translation>
 <translation id="3626281679859535460">Helligkeit</translation>
-<translation id="3631369015426612114">Alle Benachrichtigungen zulassen von:</translation>
+<translation id="3631369015426612114">Benachrichtigungen zulassen von:</translation>
 <translation id="3638400994746983214">Der Datenschutzbildschirm kann aktiviert oder deaktiviert werden. <ph name="STATE_TEXT" />.</translation>
 <translation id="366222428570480733"><ph name="USER_EMAIL_ADDRESS" /> Verwalteter Nutzer</translation>
 <translation id="3702846122927433391">Einwohnerzahl von Nigeria</translation>
@@ -251,7 +251,7 @@ Hier sind ein paar Dinge, die du tun kannst, um loszulegen.</translation>
 <translation id="3771549900096082774">Modus mit hohem Kontrast</translation>
 <translation id="3773700760453577392">Ein Administrator hat die Mehrfachanmeldung für <ph name="USER_EMAIL" /> deaktiviert. Alle Nutzer müssen sich abmelden, um fortfahren zu können.</translation>
 <translation id="3783640748446814672">Alt</translation>
-<translation id="3784455785234192852">Sperren</translation>
+<translation id="3784455785234192852">Sperre</translation>
 <translation id="3798670284305777884">Lautsprecher (intern)</translation>
 <translation id="3799080171973636491">Sie haben die Tastenkombination für den Modus "Vollbildlupe" gedrückt. Möchten Sie ihn aktivieren?</translation>
 <translation id="380165613292957338">Hallo, wie kann ich dir helfen?</translation>
@@ -443,7 +443,7 @@ Hier sind ein paar Dinge, die du tun kannst, um loszulegen.</translation>
 <translation id="622484624075952240">Abwärts</translation>
 <translation id="6236290670123303279">Einstellungen verwalten</translation>
 <translation id="6237231532760393653">1X</translation>
-<translation id="6254629735336163724">Nur horizontale Ausrichtung</translation>
+<translation id="6254629735336163724">Horizontale Ausrichtung aktiv</translation>
 <translation id="6259254695169772643">Verwenden Sie den Eingabestift, um Ihre Auswahl zu treffen</translation>
 <translation id="6267036997247669271"><ph name="NAME" />: Wird aktiviert...</translation>
 <translation id="6283712521836204486">"Bitte nicht stören" ist deaktiviert.</translation>
@@ -489,7 +489,7 @@ Hier sind ein paar Dinge, die du tun kannst, um loszulegen.</translation>
 <translation id="6700713906295497288">IME-Menüschaltfläche</translation>
 <translation id="6713285437468012787">Das Bluetooth-Gerät "<ph name="DEVICE_NAME" />" wurde gekoppelt und ist nun für alle Nutzer verfügbar. Sie können die Kopplung in "Einstellungen" wieder entfernen.</translation>
 <translation id="6715542151869432661">Keine Mobilgeräte gefunden.</translation>
-<translation id="6723839937902243910">Akkuleistung</translation>
+<translation id="6723839937902243910">Leistung</translation>
 <translation id="6727969043791803658">Verbunden, Akkustand bei <ph name="BATTERY_PERCENTAGE" /> %</translation>
 <translation id="6751052314767925245">Von Ihrem Administrator erzwungen</translation>
 <translation id="6751826523481687655">Leistungsverfolgung ist aktiviert</translation>
@@ -666,10 +666,10 @@ Hier sind ein paar Dinge, die du tun kannst, um loszulegen.</translation>
 <translation id="8785070478575117577">Mit <ph name="NETWORK_NAME" /> verbinden</translation>
 <translation id="8788027118671217603"><ph name="STATE_TEXT" />. <ph name="ENTERPRISE_TEXT" /></translation>
 <translation id="8814190375133053267">WLAN</translation>
-<translation id="8825863694328519386">Vom linken Bildschirmrand aus wischen, um zurückzugehen</translation>
+<translation id="8825863694328519386">Von links nach rechts wischen, um zurückzugehen</translation>
 <translation id="8828714802988429505">90°</translation>
 <translation id="8841375032071747811">Schaltfläche "Zurück"</translation>
-<translation id="8843682306134542540">Rotationssperre aktivieren/deaktivieren. <ph name="STATE_TEXT" /></translation>
+<translation id="8843682306134542540">Rotationssperre an/aus. <ph name="STATE_TEXT" /></translation>
 <translation id="8850991929411075241">Suche + Esc</translation>
 <translation id="8870509716567206129">Das Teilen des Bildschirms wird in dieser App nicht unterstützt.</translation>
 <translation id="8874184842967597500">Nicht verbun.</translation>

@@ -242,7 +242,6 @@
 <translation id="2905036901251765993">ອະນຸຍາດໃຫ້ເຂົາເຈົ້າສະແກນລະຫັດ QR ນີ້ເພື່ອແບ່ງປັນກັບຄົນທີ່ຢູ່ໃກ້ຄຽງ</translation>
 <translation id="2909615210195135082">ແພລດຟອມການແຈ້ງເຕືອນຂອງ Google</translation>
 <translation id="2923908459366352541">ຊື່ໃຊ້ບໍ່ໄດ້</translation>
-<translation id="2927707377793151377">ເລືອກຜູ້ໃຫ້ບໍລິການອື່ນ:</translation>
 <translation id="2932150158123903946">ບ່ອນເກັບຂໍ້ມູນ Google <ph name="APP_NAME" /></translation>
 <translation id="2942036813789421260">ແຖບສະແດງຕົວຢ່າງປິດຢູ່</translation>
 <translation id="2956410042958133412">ບັນ​ຊີ​ນີ້​ຖືກ​ຈັດ​ການ​ໂດຍ <ph name="PARENT_NAME_1" /> ແລະ <ph name="PARENT_NAME_2" />.</translation>
@@ -592,7 +591,7 @@
 <translation id="5723735397759933332">ດຽວນີ້ໂໝດ Lite ຊ່ວຍທ່ານປະຢັດອິນເຕີເນັດຫຼາຍຂຶ້ນໂດຍການປັບຮູບໃນໜ້າ HTTPS ໃຫ້ເໝາະສົມ.</translation>
 <translation id="5726692708398506830">ເຮັດໃຫ້ທຸກຢ່າງໃນໜ້າໃຫຍ່ຂຶ້ນ</translation>
 <translation id="5732819098735351888">ການດາວໂຫຼດຈະເລີ່ມຕົ້ນເມື່ອເຊື່ອມຕໍ່ Wi-Fi.</translation>
-<translation id="5733983706093266635">ບໍ່ສາມາດສ້າງລະຫັດ QR ໄດ້ URL ຫຼາຍກວ່າ <ph name="CHARACTER_LIMIT" /> ຕົວອັກສອນ.</translation>
+<translation id="5733983706093266635">ບໍ່ສາມາດສ້າງລະຫັດ QR ໄດ້. URL ຫຼາຍກວ່າ <ph name="CHARACTER_LIMIT" /> ຕົວອັກສອນ.</translation>
 <translation id="5748802427693696783">ປ່ຽນເປັນແຖບມາດຕະຖານ</translation>
 <translation id="5749068826913805084">Chrome ຕ້ອງ​ການ​ໃຫ້​ມີ​ການ​ເຂົ້າ​ຫາ​ບ່ອນ​ຈັດ​ເກັບ​ຂໍ້​ມູນ​ເພື່ອ​ດາວ​ໂຫຼດ​ໄຟ​ລ໌.</translation>
 <translation id="5749237766298580851">ປິດ <ph name="SEPARATOR" /> ບໍ່ແນະນຳ</translation>
@@ -1024,7 +1023,7 @@
 <translation id="9100610230175265781">ຕ້ອງມີລະຫັດຜ່ານ</translation>
 <translation id="9102803872260866941">ແຖບສະແດງຕົວຢ່າງເປີດຢູ່</translation>
 <translation id="9104217018994036254">ລາຍການອຸປະກອນທີ່ຈະແບ່ງປັນແຖບນຳ.</translation>
-<translation id="9104402662006063371">ໃຊ້ໂໝດບໍ່ເປິດເຜີຍຕົວຕົນ</translation>
+<translation id="9104402662006063371">ໃຊ້ໂໝດບໍ່ເປີດເຜີຍຕົວຕົນ</translation>
 <translation id="9108312223223904744">ການຮອງຮັບໂທລະສັບເປັນກະແຈຄວາມປອດໄພ</translation>
 <translation id="9108808586816295166">DNS ທີ່ປອດໄພອາດຈະບໍ່ສາມາດໃຊ້ໄດ້ຕະຫຼອດເວລາ</translation>
 <translation id="9133397713400217035">ສຳຫຼວດອອບລາຍ</translation>

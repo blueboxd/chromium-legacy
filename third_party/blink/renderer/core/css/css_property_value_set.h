@@ -72,7 +72,6 @@ class CORE_EXPORT CSSPropertyValueSet
     CSSPropertyName Name() const;
 
     bool IsImportant() const { return PropertyMetadata().important_; }
-    bool IsInherited() const { return PropertyMetadata().inherited_; }
     bool IsImplicit() const { return PropertyMetadata().implicit_; }
 
     const CSSValue& Value() const { return PropertyValue(); }

@@ -123,6 +123,7 @@
 <translation id="1430915738399379752">Nyomtatás</translation>
 <translation id="1442386063175183758">Jobb oldalon kihajtható</translation>
 <translation id="1442987760062738829">Lyukasztás</translation>
+<translation id="1447067628680007684">(x86_64)</translation>
 <translation id="1453974140256777690">A böngésző elemzés céljából a Google Cloudnak vagy harmadik feleknek továbbítja a beillesztett és a csatolt szövegeket. A Google Cloud vagy a harmadik fél például bizalmas adatokat kereshet a szövegekben.</translation>
 <translation id="1455413310270022028">Radír</translation>
 <translation id="1462245070427461050">JIS B9</translation>
@@ -1141,6 +1142,7 @@ Ezt egyéb esetben letiltják az adatvédelmi beállításai. Az engedélyezéss
 <translation id="5705882733397021510">Visszalépés</translation>
 <translation id="57094364128775171">Erős jelszó ajánlása…</translation>
 <translation id="5710435578057952990">A webhely valódiságát nem ellenőriztük.</translation>
+<translation id="571403275720188526">(arm64)</translation>
 <translation id="5720705177508910913">Jelenlegi felhasználó</translation>
 <translation id="5728056243719941842">C5 (boríték)</translation>
 <translation id="5730040223043577876">A Chrome azt javasolja, hogy adjon meg új jelszót a régi helyett, ha azt más webhelyeken is használta.</translation>
@@ -1190,6 +1192,7 @@ Ezt egyéb esetben letiltják az adatvédelmi beállításai. Az engedélyezéss
 <translation id="5921639886840618607">Menti a kártyát a Google-fiókjába?</translation>
 <translation id="5922853866070715753">Majdnem kész</translation>
 <translation id="5932224571077948991">A webhely tolakodó vagy félrevezető hirdetéseket jelenít meg</translation>
+<translation id="5938793338444039872">Troy</translation>
 <translation id="5946937721014915347">A(z) <ph name="SITE_NAME" /> megnyitása…</translation>
 <translation id="5951495562196540101">Fogyasztói fiókkal nem lehet regisztrálni (a csomaghoz tartozik licenc is).</translation>
 <translation id="5967592137238574583">Kapcsolattartási adatok szerkesztése</translation>
@@ -1357,6 +1360,7 @@ Ezt egyéb esetben letiltják az adatvédelmi beállításai. Az engedélyezéss
 <translation id="6646269444027925224">{COUNT,plural, =0{Nincs}=1{1 webhelyről (a böngésző nem jelentkezteti ki Google-fiókjából)}other{# webhelyről (a böngésző nem jelentkezteti ki Google-fiókjából)}}</translation>
 <translation id="6652101503459149953">Windows Hello használata</translation>
 <translation id="6657585470893396449">Jelszó</translation>
+<translation id="666259744093848177">(x86_64 – lefordítva)</translation>
 <translation id="6665553082534466207">Három lyuk a jobb oldalon</translation>
 <translation id="6671697161687535275">Eltávolítja az űrlapjavaslatot a Chromiumból?</translation>
 <translation id="6685834062052613830">Kijelentkezés és a beállítás befejezése</translation>

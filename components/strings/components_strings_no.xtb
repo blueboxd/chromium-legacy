@@ -123,6 +123,7 @@
 <translation id="1430915738399379752">Skriv ut</translation>
 <translation id="1442386063175183758">Høyre vindusfals</translation>
 <translation id="1442987760062738829">Hull</translation>
+<translation id="1447067628680007684">(x86_64)</translation>
 <translation id="1453974140256777690">Tekst du limer inn eller legger ved, sendes til Google Cloud eller tredjeparter for analyse. Den kan for eksempel bli skannet for sensitive data.</translation>
 <translation id="1455413310270022028">Viskelær</translation>
 <translation id="1462245070427461050">JIS B9</translation>
@@ -1145,6 +1146,7 @@ brukere av denne nettleseren.</translation>
 <translation id="5705882733397021510">Tilbake</translation>
 <translation id="57094364128775171">Foreslå et sterkt passord…</translation>
 <translation id="5710435578057952990">Identiteten til dette nettstedet er ikke verifisert.</translation>
+<translation id="571403275720188526">(arm64)</translation>
 <translation id="5720705177508910913">Gjeldende bruker</translation>
 <translation id="5728056243719941842">C5 (konvolutt)</translation>
 <translation id="5730040223043577876">Chrome anbefaler at du tilbakestiller passordet ditt hvis du også har brukt det på andre nettsteder.</translation>
@@ -1194,6 +1196,7 @@ brukere av denne nettleseren.</translation>
 <translation id="5921639886840618607">Vil du lagre kortet i Google-kontoen?</translation>
 <translation id="5922853866070715753">Nesten ferdig</translation>
 <translation id="5932224571077948991">Nettstedet viser forstyrrende eller villedende annonser</translation>
+<translation id="5938793338444039872">Troy</translation>
 <translation id="5946937721014915347">Åpner <ph name="SITE_NAME" /> …</translation>
 <translation id="5951495562196540101">Kan ikke registrere med en forbrukerkonto (medfølgende lisens er tilgjengelig).</translation>
 <translation id="5967592137238574583">Endre kontaktinformasjonen</translation>
@@ -1361,6 +1364,7 @@ brukere av denne nettleseren.</translation>
 <translation id="6646269444027925224">{COUNT,plural, =0{Ingen}=1{Fra 1 nettsted (du blir ikke logget av Google-kontoen din)}other{Fra # nettsteder (du blir ikke logget av Google-kontoen din)}}</translation>
 <translation id="6652101503459149953">Bruk Windows Hello</translation>
 <translation id="6657585470893396449">Passord</translation>
+<translation id="666259744093848177">(x86_64 oversatt)</translation>
 <translation id="6665553082534466207">Tre hull høyre</translation>
 <translation id="6671697161687535275">Vil du fjerne forslaget fra Chromium?</translation>
 <translation id="6685834062052613830">Logg av og fullfør konfigurasjonen</translation>

@@ -1924,7 +1924,6 @@ Instala a aplicación Family Link no teu dispositivo e poderás xestionar a conf
 <translation id="3371140690572404006">Dispositivo USB-C (porto dereito frontal)</translation>
 <translation id="337286756654493126">Ler cartafoles que abres na aplicación</translation>
 <translation id="3378572629723696641">É posible que esta extensión se danase.</translation>
-<translation id="3379169026479470857">Quitar contido descargado</translation>
 <translation id="337920581046691015">Instalarase <ph name="PRODUCT_NAME" />.</translation>
 <translation id="3380365263193509176">Erro descoñecido</translation>
 <translation id="3382073616108123819">O sistema non logrou determinar os identificadores deste dispositivo.</translation>
@@ -2379,6 +2378,7 @@ Instala a aplicación Family Link no teu dispositivo e poderás xestionar a conf
 <translation id="3882165008614329320">Vídeo existente da cámara ou do ficheiro</translation>
 <translation id="3886446263141354045">Enviouse a túa solicitude para acceder a este sitio a <ph name="NAME" /></translation>
 <translation id="3888550877729210209">Tomar notas con <ph name="LOCK_SCREEN_APP_NAME" /></translation>
+<translation id="3891563564777705449">{0,plural, =1{Actualiza o dispositivo en 1 semana}other{Actualiza o dispositivo en # semanas}}</translation>
 <translation id="3892414795099177503">Engadir OpenVPN/L2TP...</translation>
 <translation id="3893536212201235195">Ler e cambiar a configuración de accesibilidade</translation>
 <translation id="3893630138897523026">ChromeVox (comentarios orais)</translation>
@@ -2610,14 +2610,12 @@ Instala a aplicación Family Link no teu dispositivo e poderás xestionar a conf
 <translation id="4175137578744761569">Púrpura claro e branco</translation>
 <translation id="4175737294868205930">Almacenamento persistente</translation>
 <translation id="4176463684765177261">Desactivado</translation>
-<translation id="418031202593299965">Estes compoñentes compártense con outros usuarios deste dispositivo. A eliminación de compoñentes pode afectar a outros usuarios.</translation>
 <translation id="4180788401304023883">Queres eliminar o certificado de CA "<ph name="CERTIFICATE_NAME" />"?</translation>
 <translation id="4181602000363099176">20x</translation>
 <translation id="4181841719683918333">Idiomas</translation>
 <translation id="4184885522552335684">Para mover unha pantalla, arrástraa</translation>
 <translation id="4187424053537113647">Configurando <ph name="APP_NAME" />…</translation>
 <translation id="4190828427319282529">Destacar enfoque do teclado</translation>
-<translation id="4191805472951276951">Contido descargado</translation>
 <translation id="4194570336751258953">Activar a función de tocar para facer clic</translation>
 <translation id="4195643157523330669">Abrir en pestana nova</translation>
 <translation id="4195814663415092787">Continuar onde o deixaches</translation>
@@ -3036,7 +3034,6 @@ Instala a aplicación Family Link no teu dispositivo e poderás xestionar a conf
 <translation id="4756388243121344051">&amp;Historial</translation>
 <translation id="4759238208242260848">Descargas</translation>
 <translation id="4761104368405085019">Utilizar o micrófono</translation>
-<translation id="4762055672525936226">Eliminar contido descargado</translation>
 <translation id="4762718786438001384">O dispositivo ten pouquísimo espazo restante en disco</translation>
 <translation id="4763408175235639573">Establecéronse as seguintes cookies cando visualizaches esta páxina</translation>
 <translation id="4765582662863429759">Permite que a aplicación Mensaxes Android transmita as mensaxes do teu teléfono ao Chromebook</translation>
@@ -3290,7 +3287,6 @@ Instala a aplicación Family Link no teu dispositivo e poderás xestionar a conf
 <translation id="5094721898978802975">Comunicarse con aplicacións nativas de cooperación</translation>
 <translation id="5097002363526479830">Erro ao conectar coa rede "<ph name="NAME" />": <ph name="DETAILS" /></translation>
 <translation id="5097874180538493929">Facer clic automaticamente cando se detén o cursor</translation>
-<translation id="5098800418125334616">Xestionar o contido descargado</translation>
 <translation id="5101042277149003567">Abrir todos os marcadores</translation>
 <translation id="5101839224773798795">Facer clic automaticamente cando se deteña o cursor</translation>
 <translation id="5107443654503185812">Unha extensión desactivou a opción Navegación segura</translation>
@@ -4168,7 +4164,6 @@ Instala a aplicación Family Link no teu dispositivo e poderás xestionar a conf
 <translation id="6198102561359457428">Pechar sesión e iniciala de novo...</translation>
 <translation id="6198252989419008588">Cambiar PIN</translation>
 <translation id="6202304368170870640">Podes usar o teu PIN para iniciar sesión ou desbloquear o dispositivo.</translation>
-<translation id="6202517672944764518">Contido descargado</translation>
 <translation id="6206311232642889873">Cop&amp;iar imaxe</translation>
 <translation id="6207200176136643843">Restablecer ao nivel de zoom predeterminado</translation>
 <translation id="6207937957461833379">País/rexión</translation>
@@ -4440,6 +4435,7 @@ Instala a aplicación Family Link no teu dispositivo e poderás xestionar a conf
 <translation id="6535331821390304775">Permitir sempre que <ph name="ORIGIN" /> abra as ligazóns deste tipo na aplicación asociada</translation>
 <translation id="654039047105555694"><ph name="BEGIN_BOLD" />Nota:<ph name="END_BOLD" /> Activar só se sabes o que estás facendo ou se se che solicitou facelo, xa que é posible que a recompilación de datos reduza o rendemento.</translation>
 <translation id="6541638731489116978">Bloqueouse o acceso deste sitio aos teus sensores de movemento.</translation>
+<translation id="6545407738986370057">{0,plural, =1{Devolve o dispositivo en 1 semana}other{Devolve o dispositivo en # semanas}}</translation>
 <translation id="6545665334409411530">Índice de repetición</translation>
 <translation id="6545864417968258051">Busca de dispositivos Bluetooth</translation>
 <translation id="6545867563032584178">O micrófono está desactivado nas preferencias do sistema de Mac</translation>
@@ -6126,7 +6122,6 @@ Mantén o ficheiro de clave nun lugar seguro, xa que o precisarás para crear no
 <translation id="8652400352452647993">Produciuse un erro na extensión do paquete</translation>
 <translation id="8654151524613148204">O ficheiro é demasiado grande para o ordenador o poida manexar.</translation>
 <translation id="8655295600908251630">Canle</translation>
-<translation id="8655319619291175901">Vaia, produciuse un erro…</translation>
 <translation id="8655972064210167941">Produciuse un erro no inicio de sesión porque o teu contrasinal non se puido verificar. Contacta co administrador ou téntao de novo.</translation>
 <translation id="8656768832129462377">Non comprobar</translation>
 <translation id="8658645149275195032"><ph name="APP_NAME" /> está compartindo a túa pantalla e o teu audio con <ph name="TAB_NAME" />.</translation>
@@ -6215,7 +6210,6 @@ Mantén o ficheiro de clave nun lugar seguro, xa que o precisarás para crear no
         &lt;p&gt;Pero aínda así podes efectuar a configuración a través da liña de comandos. Consulta &lt;code&gt;man <ph name="PRODUCT_BINARY_NAME" />&lt;/code&gt; para obter máis información acerca das marcas e das variables do contorno.&lt;/p&gt;</translation>
 <translation id="8755175579224030324">Realizar tarefas relacionadas coa seguranza para a túa organización, como a xestión de certificados e claves almacenados no dispositivo</translation>
 <translation id="8755376271068075440">&amp;Máis grande</translation>
-<translation id="8756143264090841047">Eliminar contido descargado</translation>
 <translation id="8756969031206844760">Queres actualizar o contrasinal?</translation>
 <translation id="8757090071857742562">Non se puido emitir o escritorio. Comproba se confirmaches a solicitude para empezar a compartir a pantalla.</translation>
 <translation id="8757203080302669031">Esta pestana está buscando dispositivos Bluetooth de maneira activa.</translation>
@@ -6230,7 +6224,6 @@ Mantén o ficheiro de clave nun lugar seguro, xa que o precisarás para crear no
 <translation id="8770406935328356739">Directorio raíz da extensión</translation>
 <translation id="8770507190024617908">Xestionar persoas</translation>
 <translation id="8771300903067484968">Restableceuse o fondo predeterminado da pantalla de inicio.</translation>
-<translation id="8771939407732945762">Quitar contido descargado</translation>
 <translation id="8773302562181397928">Gardar <ph name="PRINTER_NAME" /></translation>
 <translation id="8774379074441005279">Confirmar restauración</translation>
 <translation id="8774934320277480003">Marxe superior</translation>

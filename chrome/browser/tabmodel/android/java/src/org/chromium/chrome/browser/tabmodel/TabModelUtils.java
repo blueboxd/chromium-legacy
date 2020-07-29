@@ -6,6 +6,7 @@ package org.chromium.chrome.browser.tabmodel;
 
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.tab.TabSelectionType;
+import org.chromium.chrome.browser.tab.state.CriticalPersistedTabData;
 import org.chromium.content_public.browser.WebContents;
 
 import java.util.ArrayList;
@@ -165,7 +166,7 @@ public class TabModelUtils {
 
         ArrayList<Tab> childTabs = new ArrayList<Tab>();
         for (int i = 0; i < model.getCount(); i++) {
-            if (model.getTabAt(i).getParentId() == tabId) {
+            if (CriticalPersistedTabData.from(model.getTabAt(i)).getParentId() == tabId) {
                 childTabs.add(model.getTabAt(i));
             }
         }

@@ -518,7 +518,8 @@ public class TabGroupModelFilter extends TabModelFilter {
         }
 
         if (isTabModelRestored() && !mIsResetting) {
-            Tab parentTab = TabModelUtils.getTabById(getTabModel(), tab.getParentId());
+            Tab parentTab = TabModelUtils.getTabById(
+                    getTabModel(), CriticalPersistedTabData.from(tab).getParentId());
             if (parentTab != null) {
                 setRootId(tab, getRootId(parentTab));
             }

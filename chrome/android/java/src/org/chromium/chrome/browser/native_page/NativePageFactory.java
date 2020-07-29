@@ -29,6 +29,7 @@ import org.chromium.chrome.browser.ntp.RecentTabsPage;
 import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.tab.TabLaunchType;
+import org.chromium.chrome.browser.tab.state.CriticalPersistedTabData;
 import org.chromium.chrome.browser.tabmodel.TabModelSelector;
 import org.chromium.chrome.browser.ui.native_page.NativePage;
 import org.chromium.chrome.browser.ui.native_page.NativePageHost;
@@ -266,7 +267,7 @@ public class NativePageFactory {
 
         @Override
         public int getParentId() {
-            return mTab.getParentId();
+            return CriticalPersistedTabData.from(mTab).getParentId();
         }
 
         @Override

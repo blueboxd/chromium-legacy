@@ -32,6 +32,8 @@ import org.chromium.chrome.browser.customtabs.content.CustomTabActivityTabContro
 import org.chromium.chrome.browser.customtabs.content.CustomTabActivityTabProvider;
 import org.chromium.chrome.browser.flags.ActivityType;
 import org.chromium.chrome.browser.tab.Tab;
+import org.chromium.chrome.browser.tab.state.CriticalPersistedTabData;
+import org.chromium.chrome.browser.tasks.tab_management.TabUiUnitTestUtils;
 import org.chromium.chrome.browser.webapps.WebappExtras;
 import org.chromium.content_public.browser.NavigationController;
 import org.chromium.content_public.browser.NavigationEntry;
@@ -121,7 +123,11 @@ public class CloseButtonNavigatorTest {
     }
 
     private void setParentTabId(Tab childTab, int parentTabId) {
-        when(childTab.getParentId()).thenReturn(parentTabId);
+        CriticalPersistedTabData criticalPersistedTabData =
+                CriticalPersistedTabData.build(childTab);
+        criticalPersistedTabData.setParentId(parentTabId);
+        TabUiUnitTestUtils.prepareTab(
+                childTab, CriticalPersistedTabData.class, criticalPersistedTabData);
     }
 
     private NavigationController currentTabsNavigationController() {

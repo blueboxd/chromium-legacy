@@ -160,6 +160,7 @@ void InputMethodEngineBase::Initialize(
   profile_ = profile;
 
   if (profile_ && profile->GetPrefs()) {
+    profile_observer_.Add(profile);
     input_method_settings_snapshot_ =
         profile->GetPrefs()
             ->GetDictionary(prefs::kLanguageInputMethodSpecificSettings)
@@ -191,6 +192,14 @@ void InputMethodEngineBase::OnInputMethodOptionsChanged() {
     }
   }
   input_method_settings_snapshot_ = new_settings->Clone();
+}
+
+void InputMethodEngineBase::OnProfileWillBeDestroyed(Profile* profile) {
+  if (profile == profile_) {
+    pref_change_registrar_.reset();
+    profile_observer_.Remove(profile_);
+    profile_ = nullptr;
+  }
 }
 
 void InputMethodEngineBase::FocusIn(

@@ -119,7 +119,7 @@ class PluginVmInstallerViewBrowserTest : public DialogBrowserTest {
     EXPECT_TRUE(HasCancelButton());
     EXPECT_EQ(view_->GetDialogButtonLabel(ui::DIALOG_BUTTON_OK),
               l10n_util::GetStringUTF16(IDS_PLUGIN_VM_INSTALLER_RETRY_BUTTON));
-    EXPECT_EQ(view_->GetBigMessage(),
+    EXPECT_EQ(view_->GetTitle(),
               l10n_util::GetStringUTF16(IDS_PLUGIN_VM_INSTALLER_ERROR_TITLE));
   }
 
@@ -130,9 +130,8 @@ class PluginVmInstallerViewBrowserTest : public DialogBrowserTest {
               l10n_util::GetStringUTF16(IDS_APP_CLOSE));
     EXPECT_EQ(view_->GetDialogButtonLabel(ui::DIALOG_BUTTON_OK),
               l10n_util::GetStringUTF16(IDS_PLUGIN_VM_INSTALLER_LAUNCH_BUTTON));
-    EXPECT_EQ(
-        view_->GetBigMessage(),
-        l10n_util::GetStringUTF16(IDS_PLUGIN_VM_INSTALLER_FINISHED_TITLE));
+    EXPECT_EQ(view_->GetTitle(), l10n_util::GetStringUTF16(
+                                     IDS_PLUGIN_VM_INSTALLER_FINISHED_TITLE));
   }
 
   chromeos::ScopedTestingCrosSettings scoped_testing_cros_settings_;
@@ -280,7 +279,7 @@ IN_PROC_BROWSER_TEST_F(
   base::string16 app_name = l10n_util::GetStringUTF16(IDS_PLUGIN_VM_APP_NAME);
   EXPECT_FALSE(HasAcceptButton());
   EXPECT_TRUE(HasCancelButton());
-  EXPECT_EQ(view_->GetBigMessage(),
+  EXPECT_EQ(view_->GetTitle(),
             l10n_util::GetStringFUTF16(
                 IDS_PLUGIN_VM_INSTALLER_NOT_ALLOWED_TITLE, app_name));
   EXPECT_EQ(

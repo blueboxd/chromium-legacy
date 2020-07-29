@@ -20,7 +20,7 @@ const base::Feature kCupsIppPrintingBackend{"CupsIppPrintingBackend",
                                             base::FEATURE_DISABLED_BY_DEFAULT};
 
 const base::Feature kEnableCustomMacPaperSizes{
-    "EnableCustomMacPaperSizes", base::FEATURE_DISABLED_BY_DEFAULT};
+    "EnableCustomMacPaperSizes", base::FEATURE_ENABLED_BY_DEFAULT};
 #endif  // defined(OS_MACOSX)
 
 #if defined(OS_WIN)

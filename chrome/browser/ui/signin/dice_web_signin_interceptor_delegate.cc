@@ -31,5 +31,6 @@ void DiceWebSigninInterceptorDelegate::ShowSigninInterceptionBubble(
   }
 
   ShowSigninInterceptionBubbleInternal(
-      chrome::FindBrowserWithWebContents(web_contents), std::move(callback));
+      chrome::FindBrowserWithWebContents(web_contents), account_info,
+      std::move(callback));
 }

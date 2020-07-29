@@ -1925,7 +1925,6 @@
 <translation id="3371140690572404006">USB-C սարք (առջևի ձախակողմյան միացք)</translation>
 <translation id="337286756654493126">Կարդալ հավելվածում բացված պանակները</translation>
 <translation id="3378572629723696641">Այս ընդլայնումը հավանաբար վնասված է:</translation>
-<translation id="3379169026479470857">Հեռացնել DLC-ն</translation>
 <translation id="337920581046691015">Կտեղադրվի <ph name="PRODUCT_NAME" />-ը:</translation>
 <translation id="3380365263193509176">Անհայտ սխալ</translation>
 <translation id="3382073616108123819">Համակարգը չճանաչեց սարքի նույնացուցիչները:</translation>
@@ -2612,14 +2611,12 @@
 <translation id="4175137578744761569">Բաց մանուշակագույն և սպիտակ</translation>
 <translation id="4175737294868205930">Հիմնական հիշողություն</translation>
 <translation id="4176463684765177261">Անջատված է</translation>
-<translation id="418031202593299965">Այս բաղադրիչները հասանելի են սարքի մյուս օգտատերերին: Բաղադրիչների հեռացումը կարող է ազդել մյուս օգտատերերի աշխատանքի վրա։</translation>
 <translation id="4180788401304023883">Ջնջե՞լ հավաստագրման կենտրոնի «<ph name="CERTIFICATE_NAME" />» վկայագիրը:</translation>
 <translation id="4181602000363099176">20x</translation>
 <translation id="4181841719683918333">Լեզուներ</translation>
 <translation id="4184885522552335684">Քաշեք՝ էկրանը տեղաշարժելու համար</translation>
 <translation id="4187424053537113647"><ph name="APP_NAME" /> հավելվածը կարգավորվում է…</translation>
 <translation id="4190828427319282529">Ստեղնաշարի միջոցով ընտրված տարրերի ընդգծում</translation>
-<translation id="4191805472951276951">DLC</translation>
 <translation id="4194570336751258953">Միացնել tap-to-click գործառույթը</translation>
 <translation id="4195643157523330669">Բացել նոր ներդիրով</translation>
 <translation id="4195814663415092787">Շարունակել աշխատանքը նույն տեղից</translation>
@@ -3038,7 +3035,6 @@
 <translation id="4756388243121344051">&amp;Պատմություն</translation>
 <translation id="4759238208242260848">Ներբեռնումներ</translation>
 <translation id="4761104368405085019">Օգտագործել խոսափողը</translation>
-<translation id="4762055672525936226">Ջնջել ներբեռնված բովանդակությունը</translation>
 <translation id="4762718786438001384">Սարքի սկավառակում տարածքը ծայրահեղ քիչ է</translation>
 <translation id="4763408175235639573">Այս էջը դիտելիս տեղակայվել են հետևյալ քուքիները</translation>
 <translation id="4765582662863429759">Թույլ է տալիս Android Messages հավելվածին հեռարձակել ձեր հեռախոսի հաղորդագրությունները Chromebook-ին</translation>
@@ -3293,7 +3289,6 @@
 <translation id="5094721898978802975">Կապվել հարակից native հավելվածների հետ</translation>
 <translation id="5097002363526479830">Չհաջողվեց կապակցվել «<ph name="NAME" />» ցանցին: <ph name="DETAILS" /></translation>
 <translation id="5097874180538493929">Ավտոմատ սեղմել, երբ նշորդը կանգնում է</translation>
-<translation id="5098800418125334616">Ներբեռնված բովանդակության կառավարում</translation>
 <translation id="5101042277149003567">Բացել բոլոր էջանիշները</translation>
 <translation id="5101839224773798795">Ավտոմատ սեղմել, երբ մկնիկի նշորդը կանգնում է</translation>
 <translation id="5107443654503185812">Անվտանգ դիտարկումն անջատվել է ընդլայնման կողմից</translation>
@@ -4173,7 +4168,6 @@
 <translation id="6198102561359457428">Դուրս գրվել և նորից մուտք գործել…</translation>
 <translation id="6198252989419008588">Փոխել PIN-ը</translation>
 <translation id="6202304368170870640">Դուք կարող եք օգտագործել ձեր PIN կոդը՝ ձեր սարք մտնելու կամ այն ապակողպելու համար:</translation>
-<translation id="6202517672944764518">Ներբեռնված բովանդակություն</translation>
 <translation id="6206311232642889873">Պատ&amp;ճենել պատկերը</translation>
 <translation id="6207200176136643843">Վերակայել կանխադրված մասշտաբը</translation>
 <translation id="6207937957461833379">Երկիր/տարածաշրջան</translation>
@@ -4491,6 +4485,7 @@
 <translation id="6602956230557165253">Նավարկման համար օգտագործեք ձախ և աջ սլաքաստեղները:</translation>
 <translation id="6605847144724004692">Գնահատականներ չկան։</translation>
 <translation id="6607831829715835317">Լրացուցիչ գոր&amp;ծիքներ</translation>
+<translation id="6608012008902909398">Ցուցադրել սարքի ծրագրերի ստուգման տվյալները</translation>
 <translation id="6611972847767394631">Ձեր ներդիրներն այստեղ են</translation>
 <translation id="6612358246767739896">Պաշտպանված բովանդակություն</translation>
 <translation id="6615455863669487791">Ցույց տալ</translation>
@@ -6131,7 +6126,6 @@
 <translation id="8652400352452647993">Ընդլայնման փաթեթավորման սխալ կա</translation>
 <translation id="8654151524613148204">Ֆայլը չափազանց մեծ է ձեր համակարգչի համար:</translation>
 <translation id="8655295600908251630">Վարկած</translation>
-<translation id="8655319619291175901">Ինչ-որ սխալ տեղի ունեցավ:</translation>
 <translation id="8655972064210167941">Մուտքը չհաջողվեց, քանի որ ձեր գաղտնաբառը չհաջողվեց հաստատել: Կապվեք ադմինիստրատորի հետ կամ նորից փորձեք:</translation>
 <translation id="8656768832129462377">Չստուգել</translation>
 <translation id="8658645149275195032"><ph name="APP_NAME" /> հավելվածը կիսվում է ձեր էկրանով և ձայնով <ph name="TAB_NAME" />-ի հետ:</translation>
@@ -6220,7 +6214,6 @@
           &lt;p&gt;Այնուամենայնիվ, դուք կարող եք կատարել կազմաձևումը հրամանատողի միջոցով: Դրոշների և միջավայրի փոփոխականների մասին լրացուցիչ տեղեկությունների համար ծանոթացեք &lt;code&gt;man <ph name="PRODUCT_BINARY_NAME" />&lt;/code&gt; կոդին:&lt;/p&gt;</translation>
 <translation id="8755175579224030324">Ձեր կազմակերպության համար կատարել անվտանգությանն առնչվող առաջադրանքներ, օրինակ՝ հավաստագրերի և սարքում պահված բանալիների կառավարում</translation>
 <translation id="8755376271068075440">&amp;Ավելի մեծ</translation>
-<translation id="8756143264090841047">Ջնջել DLC-ն</translation>
 <translation id="8756969031206844760">Թարմացնե՞լ գաղտնաբառը</translation>
 <translation id="8757090071857742562">Չհաջողվեց հեռարձակել աշխատասեղանը: Համոզվեք, որ հաստատել եք ձեր էկրանով կիսվելու հրավերը:</translation>
 <translation id="8757203080302669031">Այս ներդիրն ակտիվորեն որոնում է Bluetooth սարքեր։</translation>
@@ -6235,7 +6228,6 @@
 <translation id="8770406935328356739">Ընդլայնման արմատային գրացուցակ</translation>
 <translation id="8770507190024617908">Օգտատերերի կառավարում</translation>
 <translation id="8771300903067484968">Գլխավոր էջը վերակայվել է կանխադրված ֆոնով։</translation>
-<translation id="8771939407732945762">Հեռացնել ներբեռնված բովանդակությունը</translation>
 <translation id="8773302562181397928">Պահել «<ph name="PRINTER_NAME" />» տպիչը</translation>
 <translation id="8774379074441005279">Հաստատեք վերականգնումը</translation>
 <translation id="8774934320277480003">Վերին լուսանցք</translation>

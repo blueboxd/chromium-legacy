@@ -54636,6 +54636,21 @@ Called by update_net_trust_anchors.py.-->
   <int value="1" label="Has password field"/>
 </enum>
 
+<enum name="PasswordScriptsFetcherCacheState">
+  <int value="0" label="Cache is ready"/>
+  <int value="1" label="Cache is stale. Re-fetch needed"/>
+  <int value="2" label="Cache was never set"/>
+  <int value="3" label="Request is in flight"/>
+</enum>
+
+<enum name="PasswordScriptsFetcherParsingResult">
+  <int value="0" label="No response from server"/>
+  <int value="1" label="Invalid JSON string"/>
+  <int value="2" label="Not a JSON dictionary"/>
+  <int value="3" label="Invalid URLs found"/>
+  <int value="4" label="OK"/>
+</enum>
+
 <enum name="PasswordStoreChange">
   <int value="0" label="Add - If the PasswordForm login was added."/>
   <int value="1" label="Update - If the PasswordForm login was updated."/>
@@ -68440,6 +68455,16 @@ would be helpful to identify which type is being sent.
   <int value="0" label="Loaded on creation and shown"/>
   <int value="1" label="Loaded on creation and lost"/>
   <int value="2" label="Not loaded on creation"/>
+</enum>
+
+<enum name="TabbedPaintPreviewExitCause">
+  <int value="0" label="Pull to Refresh"/>
+  <int value="1" label="Actionbar Action"/>
+  <int value="2" label="Compositor Failed to Load"/>
+  <int value="3" label="Tab Finished Loading"/>
+  <int value="4" label="Link Clicked"/>
+  <int value="5" label="Navigation Started"/>
+  <int value="6" label="Tab Destroyed"/>
 </enum>
 
 <enum name="TabDiscardingEvents">

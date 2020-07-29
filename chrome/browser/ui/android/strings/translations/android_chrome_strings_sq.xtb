@@ -104,6 +104,7 @@
 <translation id="1853692000353488670">Skedë e re e fshehtë</translation>
 <translation id="1856325424225101786">Të rivendoset "Modaliteti i lehtë"?</translation>
 <translation id="1868024384445905608">Chrome tani i shkarkon skedarët më shpejt</translation>
+<translation id="1874760110381325409">Do të identifikohesh me "Llogarinë tënde të Google"\n(kjo nuk do të aktivizojë "Sinkronizimin e Chrome")</translation>
 <translation id="1883903952484604915">Skedarët e mi</translation>
 <translation id="1919950603503897840">Zgjidh kontaktet</translation>
 <translation id="1925021887439448749">Fut adresën e personalizuar të uebit</translation>
@@ -227,6 +228,7 @@ Prek dhe mbaj shtypur një fjalë për ta kërkuar. Për të përsosur kërkimin
 <translation id="281504910091592009">Shfaq dhe menaxho fjalëkalimet e ruajtura në <ph name="BEGIN_LINK" />llogarinë tënde të Google<ph name="END_LINK" /></translation>
 <translation id="2818669890320396765">Për të marrë faqeshënuesit në të gjitha pajisjet e tua, identifikohu dhe aktivizo sinkronizimin</translation>
 <translation id="2827278682606527653">Menyja e kartave të furnizimit në gjysmë lartësi</translation>
+<translation id="2841216154655874070">{NUM_DAYS,plural, =1{Kontrolluar 1 ditë më parë}other{Kontrolluar # ditë më parë}}</translation>
 <translation id="2842985007712546952">Dosja mëmë</translation>
 <translation id="2860954141821109167">Sigurohu që një aplikacion i telefonit të jetë i aktivizuar në këtë pajisje</translation>
 <translation id="2870560284913253234">Sajti</translation>
@@ -242,7 +244,6 @@ Prek dhe mbaj shtypur një fjalë për ta kërkuar. Për të përsosur kërkimin
 <translation id="2905036901251765993">Për të ndarë me personat në afërsi, lejoji të skanojnë këtë kod QR</translation>
 <translation id="2909615210195135082">Platforma e njoftimeve të Google</translation>
 <translation id="2923908459366352541">Emri është i pavlefshëm</translation>
-<translation id="2927707377793151377">Zgjidh një ofrues tjetër:</translation>
 <translation id="2932150158123903946">Hapësira ruajtëse e Google <ph name="APP_NAME" /></translation>
 <translation id="2942036813789421260">Skeda e shikimit paraprak është e mbyllur</translation>
 <translation id="2956410042958133412">Kjo llogari menaxhohet nga <ph name="PARENT_NAME_1" /> dhe <ph name="PARENT_NAME_2" />.</translation>
@@ -703,6 +704,7 @@ Për shembull, disa sajte uebi mund t'i përgjigjen kësaj kërkese duke të tre
 <translation id="6532866250404780454">Sajtet që viziton në Chrome nuk do të shfaqen. Të gjithë kohëmatësit e sajtit do të fshihen.</translation>
 <translation id="6534565668554028783">Google kërkoi shumë kohë për t'u përgjigjur</translation>
 <translation id="6539092367496845964">Ndodhi një gabim. Provo përsëri më vonë.</translation>
+<translation id="6541983376925655882">{NUM_HOURS,plural, =1{Kontrolluar 1 orë më parë}other{Kontrolluar # orë më parë}}</translation>
 <translation id="6545017243486555795">Pastro të gjitha të dhënat</translation>
 <translation id="6560414384669816528">Kërko me Sogou</translation>
 <translation id="656065428026159829">Shiko më shumë</translation>
@@ -734,6 +736,7 @@ Për shembull, disa sajte uebi mund t'i përgjigjen kësaj kërkese duke të tre
 <translation id="6697492270171225480">Lejo sugjerimet për faqet e ngjashme kur nuk mund të gjendet një faqe</translation>
 <translation id="6698801883190606802">Menaxho të dhënat e sinkronizuara</translation>
 <translation id="6699370405921460408">Serverët e Google do të optimizojnë faqet që viziton.</translation>
+<translation id="670498945988402717">Kontrolluar dje</translation>
 <translation id="6710213216561001401">Prapa</translation>
 <translation id="671481426037969117">Kohëmatësi <ph name="FQDN" /> përfundoi. Do të fillojë përsëri nesër.</translation>
 <translation id="6738867403308150051">Po shkarkon...</translation>
@@ -772,6 +775,7 @@ Për shembull, disa sajte uebi mund t'i përgjigjen kësaj kërkese duke të tre
 <translation id="7063006564040364415">Nuk mund të lidhej me serverin e sinkronizimit.</translation>
 <translation id="7071521146534760487">Menaxho llogarinë</translation>
 <translation id="7077143737582773186">Karta SD</translation>
+<translation id="7080806333218412752">I dërgon URL-të te "Shfletimi i sigurt" për t'i kontrolluar. Dërgon gjithashtu një shembull të vogël të faqeve, shkarkimeve, aktivitetit të shtesave dhe informacionit të sistemit për të ndihmuar në zbulimin e kërcënimeve të reja. I lidh përkohësisht këto të dhëna me "Llogarinë e Google" kur je i identifikuar, për të të mbrojtur nëpër aplikacionet e Google.</translation>
 <translation id="7121362699166175603">Pastron historikun dhe plotësimet automatike në shiritin e adresës. Llogaria jote e Google mund të ketë forma të tjera të historikut të shfletimit në <ph name="BEGIN_LINK" />myactivity.google.com<ph name="END_LINK" />.</translation>
 <translation id="7128355412245153445">Shiko sajtet kryesore dhe historitë e fundit sa herë që troket te butoni "Kreu"</translation>
 <translation id="7138678301420049075">Tjetër</translation>
@@ -781,6 +785,7 @@ Për shembull, disa sajte uebi mund t'i përgjigjen kësaj kërkese duke të tre
 <translation id="7173114856073700355">Hap cilësimet</translation>
 <translation id="7177466738963138057">Këtë mund ta ndryshosh më vonë te "Cilësimet"</translation>
 <translation id="7180611975245234373">Rifresko</translation>
+<translation id="7187993566681480880">Të mban të sigurt në Chrome dhe mund të përdoret për të përmirësuar sigurinë tënde në aplikacionet e tjera të Google kur je i identifikuar.</translation>
 <translation id="7189372733857464326">Në pritje që Shërbimet e "Google Play" të përfundojnë përditësimin</translation>
 <translation id="7191430249889272776">Skeda u hap në sfond.</translation>
 <translation id="723171743924126238">Zgjidh imazhet</translation>
@@ -892,6 +897,7 @@ Për shembull, disa sajte uebi mund t'i përgjigjen kësaj kërkese duke të tre
 <translation id="8027863900915310177">Zgjidh ku do ta shkarkosh</translation>
 <translation id="8035133914807600019">Dosje e re...</translation>
 <translation id="8037750541064988519"><ph name="DAYS" /> ditë të mbetura</translation>
+<translation id="8037801708772278989">Kontrolluar pikërisht tani</translation>
 <translation id="804335162455518893">Karta SD nuk u gjet</translation>
 <translation id="805047784848435650">Bazuar në historikun tënd të shfletimit</translation>
 <translation id="8051695050440594747"><ph name="MEGABYTES" /> MB në dispozicion</translation>
@@ -1032,6 +1038,7 @@ Për shembull, disa sajte uebi mund t'i përgjigjen kësaj kërkese duke të tre
 <translation id="9137013805542155359">Shfaq origjinalin</translation>
 <translation id="9155898266292537608">Mund të kërkosh po ashtu me një trokitje të shpejtë te një fjalë</translation>
 <translation id="9169507124922466868">Historiku i navigimit është gjysmë i hapur</translation>
+<translation id="9199368092038462496">{NUM_MINS,plural, =1{Kontrolluar 1 minutë më parë}other{Kontrolluar # minuta më parë}}</translation>
 <translation id="9204836675896933765">1 skedar i mbetur</translation>
 <translation id="9206873250291191720">A</translation>
 <translation id="9209888181064652401">Telefonatat nuk mund të kryhen</translation>

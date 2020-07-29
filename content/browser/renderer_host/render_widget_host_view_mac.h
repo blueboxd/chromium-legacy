@@ -115,6 +115,7 @@ class CONTENT_EXPORT RenderWidgetHostViewMac
   void SetActive(bool active) override;
   void ShowDefinitionForSelection() override;
   void SpeakSelection() override;
+  void SetWindowFrameInScreen(const gfx::Rect& rect) override;
   void GetScreenInfo(blink::ScreenInfo* screen_info) override;
   void TakeFallbackContentFrom(RenderWidgetHostView* view) override;
 

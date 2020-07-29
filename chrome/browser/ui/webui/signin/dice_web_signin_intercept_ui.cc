@@ -5,6 +5,7 @@
 #include "chrome/browser/ui/webui/signin/dice_web_signin_intercept_ui.h"
 
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/profiles/profile_avatar_icon_util.h"
 #include "chrome/browser/ui/webui/signin/dice_web_signin_intercept_handler.h"
 #include "chrome/browser/ui/webui/webui_util.h"
 #include "chrome/common/webui_url_constants.h"
@@ -26,7 +27,9 @@ DiceWebSigninInterceptUI::DiceWebSigninInterceptUI(content::WebUI* web_ui)
                           IDR_SIGNIN_DICE_WEB_INTERCEPT_APP_JS);
   source->AddResourcePath("dice_web_signin_intercept_browser_proxy.js",
                           IDR_SIGNIN_DICE_WEB_INTERCEPT_BROWSER_PROXY_JS);
+  source->AddResourcePath("signin_icons.js", IDR_SIGNIN_ICONS_JS);
   source->AddResourcePath("signin_shared_css.js", IDR_SIGNIN_SHARED_CSS_JS);
+  source->AddResourcePath("signin_vars_css.js", IDR_SIGNIN_VARS_CSS_JS);
 
   // Localized strings.
   source->UseStringsJs();
@@ -56,9 +59,10 @@ DiceWebSigninInterceptUI::DiceWebSigninInterceptUI(content::WebUI* web_ui)
 DiceWebSigninInterceptUI::~DiceWebSigninInterceptUI() = default;
 
 void DiceWebSigninInterceptUI::Initialize(
+    const AccountInfo& account_info,
     base::OnceCallback<void(bool)> callback) {
-  web_ui()->AddMessageHandler(
-      std::make_unique<DiceWebSigninInterceptHandler>(std::move(callback)));
+  web_ui()->AddMessageHandler(std::make_unique<DiceWebSigninInterceptHandler>(
+      account_info, std::move(callback)));
 }
 
 WEB_UI_CONTROLLER_TYPE_IMPL(DiceWebSigninInterceptUI)

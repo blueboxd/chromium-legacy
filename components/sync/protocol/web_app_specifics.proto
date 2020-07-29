@@ -13,10 +13,21 @@ package sync_pb;
 
 // Sync & local data: Information about web app icon.
 message WebAppIconInfo {
+  enum Purpose {
+    UNSPECIFIED = 0;
+    // Suitable for any purpose.
+    ANY = 1;
+    // Designed for masking.
+    MASKABLE = 2;
+    // MONOCHROME; is never serialized.
+  }
+
   // The size of the square app icon, in raw pixels.
   optional int32 size_in_px = 1;
   // The URL of the app icon.
   optional string url = 2;
+  // The purpose or context in which the icon should be used.
+  optional Purpose purpose = 3;
 }
 
 // WebApp data. This is a synced part of

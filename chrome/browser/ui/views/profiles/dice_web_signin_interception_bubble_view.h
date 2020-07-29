@@ -18,6 +18,8 @@ namespace views {
 class View;
 }  // namespace views
 
+struct AccountInfo;
+
 // Bubble shown as part of Dice web signin interception. This bubble is
 // implemented as a WebUI page rendered inside a native bubble.
 class DiceWebSigninInterceptionBubbleView
@@ -32,6 +34,7 @@ class DiceWebSigninInterceptionBubbleView
 
   static void CreateBubble(content::BrowserContext* browser_context,
                            views::View* anchor_view,
+                           const AccountInfo& account_info,
                            base::OnceCallback<void(bool)> callback);
 
  private:
@@ -40,6 +43,7 @@ class DiceWebSigninInterceptionBubbleView
 
   DiceWebSigninInterceptionBubbleView(content::BrowserContext* browser_context,
                                       views::View* anchor_view,
+                                      const AccountInfo& account_info,
                                       base::OnceCallback<void(bool)> callback);
 
   // This bubble has no native buttons. The user accepts or cancels through this

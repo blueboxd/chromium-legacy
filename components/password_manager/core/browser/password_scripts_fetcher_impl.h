@@ -32,12 +32,39 @@ extern const char kChangePasswordScriptsListUrl[];
 class PasswordScriptsFetcherImpl
     : public password_manager::PasswordScriptsFetcher {
  public:
+  // These enums are used in histograms. Do not change or reuse values.
+  enum class CacheState {
+    // Cache is ready.
+    kReady = 0,
+    // Cache was set but it is stale. Re-fetch needed.
+    kStale = 1,
+    // Cache was never set,
+    kNeverSet = 2,
+    // Cache is waiting for an in-flight request.
+    kWaiting = 3,
+    kMaxValue = kWaiting,
+  };
+  enum class ParsingResult {
+    // No response from the server.
+    kNoResponse = 0,
+    // Response is not a properly formed JSON string.
+    kNotJsonString = 1,
+    // Parsing result is not a dictionary.
+    kNotDictionary = 2,
+    // There was at least one invalid URL.
+    kInvalidUrl = 3,
+    // No errors occurred.
+    kOk = 4,
+    kMaxValue = kOk,
+  };
+
   explicit PasswordScriptsFetcherImpl(
       scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory);
   ~PasswordScriptsFetcherImpl() override;
 
   // PasswordScriptsFetcher:
   void PrewarmCache() override;
+  void ReportCacheReadinessMetric() const override;
   void GetPasswordScriptAvailability(const url::Origin& origin,
                                      ResponseCallback callback) override;
 
@@ -52,7 +79,12 @@ class PasswordScriptsFetcherImpl
   // Sends new request to gstatic.
   void StartFetch();
   // Callback for the request to gstatic.
-  void OnFetchComplete(std::unique_ptr<std::string> response_body);
+  void OnFetchComplete(base::TimeTicks request_start_timestamp,
+                       std::unique_ptr<std::string> response_body);
+  // Parses |response_body| and stores the result in |password_change_domains_|
+  // (always overwrites the old list). Sets an empty list if |response_body| is
+  // invalid. Returns a parsing result for a histogram.
+  ParsingResult ParseResponse(std::unique_ptr<std::string> response_body);
   // Returns whether a re-fetch is needed.
   bool IsCacheStale() const;
   // Runs |callback| immediately with the script availability for |origin|.

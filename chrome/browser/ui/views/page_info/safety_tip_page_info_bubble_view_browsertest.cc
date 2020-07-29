@@ -207,6 +207,23 @@ void TriggerWarningFromBlocklist(Browser* browser,
   NavigateToURL(browser, url, disposition);
 }
 
+// Switches the tab at |tab_index| to the foreground, and waits for the
+// OnVisibilityChanged reputation check to complete.
+void SwitchToTabAndWait(const Browser* browser, int tab_index) {
+  base::RunLoop loop;
+  auto* tab_strip = browser->tab_strip_model();
+  auto* bg_tab = tab_strip->GetWebContentsAt(tab_index);
+  EXPECT_NE(browser->tab_strip_model()->active_index(), tab_index);
+  ReputationWebContentsObserver* rep_observer =
+      ReputationWebContentsObserver::FromWebContents(bg_tab);
+
+  rep_observer->RegisterReputationCheckCallbackForTesting(loop.QuitClosure());
+  tab_strip->ActivateTabAt(tab_index);
+  if (rep_observer->reputation_check_pending_for_testing()) {
+    loop.Run();
+  }
+}
+
 }  // namespace
 
 class SafetyTipPageInfoBubbleViewBrowserTest
@@ -487,6 +504,18 @@ IN_PROC_BROWSER_TEST_P(SafetyTipPageInfoBubbleViewBrowserTest, ShowOnBlock) {
       browser(), security_state::SafetyTipStatus::kBadReputation, GURL()));
 }
 
+// Ensure blocked sites that don't load don't get blocked.
+IN_PROC_BROWSER_TEST_P(SafetyTipPageInfoBubbleViewBrowserTest, NoShowOnError) {
+  auto kNavigatedUrl =
+      embedded_test_server()->GetURL("site1.com", "/close-socket");
+  SetSafetyTipBadRepPatterns({"site1.com/"});
+
+  NavigateToURL(browser(), kNavigatedUrl, WindowOpenDisposition::CURRENT_TAB);
+  EXPECT_FALSE(IsUIShowing());
+
+  ASSERT_NO_FATAL_FAILURE(CheckPageInfoDoesNotShowSafetyTipInfo(browser()));
+}
+
 // Ensure blocked sites get blocked in incognito.
 IN_PROC_BROWSER_TEST_P(SafetyTipPageInfoBubbleViewBrowserTest,
                        ShowOnBlockIncognito) {
@@ -679,10 +708,25 @@ IN_PROC_BROWSER_TEST_P(SafetyTipPageInfoBubbleViewBrowserTest,
                               WindowOpenDisposition::NEW_BACKGROUND_TAB);
   EXPECT_FALSE(IsUIShowing());
 
-  auto* tab_strip = browser()->tab_strip_model();
-  tab_strip->ActivateTabAt(tab_strip->active_index() + 1);
-
+  SwitchToTabAndWait(browser(),
+                     browser()->tab_strip_model()->active_index() + 1);
   EXPECT_TRUE(IsUIShowingOrSuspiciousSitesDisabled());
+}
+
+// Background tabs that are errors shouldn't open a tip initially, and shouldn't
+// open when they become visible, either.  Test for crbug.com/1019228.
+IN_PROC_BROWSER_TEST_P(SafetyTipPageInfoBubbleViewBrowserTest,
+                       NoBubbleOnErrorEvenAfterVisible) {
+  auto kFlaggedUrl =
+      embedded_test_server()->GetURL("site1.com", "/close-socket");
+
+  TriggerWarningFromBlocklist(browser(), kFlaggedUrl,
+                              WindowOpenDisposition::NEW_BACKGROUND_TAB);
+  EXPECT_FALSE(IsUIShowing());
+
+  SwitchToTabAndWait(browser(),
+                     browser()->tab_strip_model()->active_index() + 1);
+  EXPECT_FALSE(IsUIShowing());
 }
 
 // Tests that Safety Tips do NOT trigger on lookalike domains that trigger an

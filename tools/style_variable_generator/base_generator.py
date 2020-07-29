@@ -73,6 +73,10 @@ class BaseGenerator:
     globals to render their output.
     '''
 
+    @staticmethod
+    def GetName():
+        return None
+
     def __init__(self):
         self.out_file_path = None
         # A map of input filepaths to their context object.
@@ -139,6 +143,8 @@ class BaseGenerator:
         # rolled.
         data = json5.loads(json_string,
                            object_pairs_hook=collections.OrderedDict)
+        if generator_name is None:
+            generator_name = self.GetName()
         generator_context = data.get('options', {}).get(generator_name, None)
         self.in_file_to_context[in_file] = generator_context
 

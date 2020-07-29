@@ -242,7 +242,6 @@
 <translation id="2905036901251765993">للمشاركة مع المستخدمين القريبين، اسمح لهم بمسح رمز الاستجابة السريعة ضوئيًا</translation>
 <translation id="2909615210195135082">‏النظام الأساسي لإشعارات Google</translation>
 <translation id="2923908459366352541">الاسم غير صحيح</translation>
-<translation id="2927707377793151377">اختَر مقدِّم خدمة آخر:</translation>
 <translation id="2932150158123903946">‏مساحة تخزين <ph name="APP_NAME" /> Google</translation>
 <translation id="2942036813789421260">علامة تبويب المعاينة مغلقة</translation>
 <translation id="2956410042958133412">تتم إدارة هذا الحساب بواسطة <ph name="PARENT_NAME_1" /> و <ph name="PARENT_NAME_2" />.</translation>
@@ -592,7 +591,7 @@
 <translation id="5723735397759933332">‏يوفّر "الوضع البسيط" الآن المزيد من البيانات من خلال تحسين الصور على صفحات HTTPS.</translation>
 <translation id="5726692708398506830">تكبير كامل محتوى الصفحة</translation>
 <translation id="5732819098735351888">‏سيبدأ التنزيل عند الاتصال بشبكة Wi-Fi</translation>
-<translation id="5733983706093266635">‏يتعذّر إنشاء رمز الاستجابة السريعة. يجب ألّا يزيد عدد أحرف عنوان URL عن <ph name="CHARACTER_LIMIT" /> حرف.</translation>
+<translation id="5733983706093266635">‏يتعذّر إنشاء رمز الاستجابة السريعة. يجب ألّا يزيد عدد أحرف عنوان URL عن <ph name="CHARACTER_LIMIT" />.</translation>
 <translation id="5748802427693696783">تم التبديل إلى علامات التبويب القياسية</translation>
 <translation id="5749068826913805084">‏يحتاج Chrome للوصول إلى مساحة التخزين لتنزيل الملفات.</translation>
 <translation id="5749237766298580851">غير مفعّل <ph name="SEPARATOR" /> (غير مستحسَن)</translation>
@@ -1024,7 +1023,7 @@
 <translation id="9100610230175265781">عبارة المرور مطلوبة</translation>
 <translation id="9102803872260866941">علامة تبويب المعاينة مفتوحة</translation>
 <translation id="9104217018994036254">قائمة الأجهزة التي يمكن مشاركة علامة تبويب معها.</translation>
-<translation id="9104402662006063371">الانتقال إلى وضع التصفُّح المتخفي</translation>
+<translation id="9104402662006063371">دخول وضع التصفُّح المتخفي</translation>
 <translation id="9108312223223904744">إتاحة استخدام الهاتف كمفتاح أمان</translation>
 <translation id="9108808586816295166">قد لا يكون نظام أسماء النطاقات الآمن متاحًا طوال الوقت.</translation>
 <translation id="9133397713400217035">الاطّلاع بلا اتصال بالإنترنت</translation>

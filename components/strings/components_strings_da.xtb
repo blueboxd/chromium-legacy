@@ -123,6 +123,7 @@
 <translation id="1430915738399379752">Udskriv</translation>
 <translation id="1442386063175183758">Portfals i højre side</translation>
 <translation id="1442987760062738829">Hul</translation>
+<translation id="1447067628680007684">(x86_64)</translation>
 <translation id="1453974140256777690">Tekst, du indsætter eller vedhæfter, sendes til Google Cloud eller tredjeparter, hvor den analyseres. Tekst kan f.eks. blive scannet for følsomme oplysninger.</translation>
 <translation id="1455413310270022028">Viskelæder</translation>
 <translation id="1462245070427461050">JIS B9</translation>
@@ -562,7 +563,7 @@ Ellers vil det blive blokeret af dine privatlivsindstillinger. Det giver det ind
 <translation id="3364869320075768271"><ph name="URL" /> vil gerne anvende din virtual reality-enhed og dine VR-data</translation>
 <translation id="3366477098757335611">Se kort</translation>
 <translation id="3369192424181595722">Urfejl</translation>
-<translation id="3371076217486966826"><ph name="URL" /> ønsker at:
+<translation id="3371076217486966826"><ph name="URL" /> vil gerne:
       • Oprette et 3D-kort over dine omgivelser og registrere kamerapositionen
       • Anvende dit kamera</translation>
 <translation id="337363190475750230">Deprovisioneret</translation>
@@ -1145,6 +1146,7 @@ Ellers vil det blive blokeret af dine privatlivsindstillinger. Det giver det ind
 <translation id="5705882733397021510">Gå tilbage</translation>
 <translation id="57094364128775171">Foreslå stærk adgangskode…</translation>
 <translation id="5710435578057952990">Dette websites identitet er ikke blevet bekræftet.</translation>
+<translation id="571403275720188526">(arm64)</translation>
 <translation id="5720705177508910913">Aktuel bruger</translation>
 <translation id="5728056243719941842">C5 (Envelope)</translation>
 <translation id="5730040223043577876">Chrome anbefaler, at du nulstiller din adgangskode, hvis du har brugt den på andre websites.</translation>
@@ -1194,6 +1196,7 @@ Ellers vil det blive blokeret af dine privatlivsindstillinger. Det giver det ind
 <translation id="5921639886840618607">Vil du gemme kortet på din Google-konto?</translation>
 <translation id="5922853866070715753">Næsten færdig</translation>
 <translation id="5932224571077948991">Websitet viser påtrængende eller vildledende annoncer</translation>
+<translation id="5938793338444039872">Troy</translation>
 <translation id="5946937721014915347">Åbner <ph name="SITE_NAME" />…</translation>
 <translation id="5951495562196540101">Det er ikke muligt at tilmelde sig med en forbrugerkonto (mulighed for tilknyttet licens ).</translation>
 <translation id="5967592137238574583">Rediger kontaktoplysninger</translation>
@@ -1361,6 +1364,7 @@ Ellers vil det blive blokeret af dine privatlivsindstillinger. Det giver det ind
 <translation id="6646269444027925224">{COUNT,plural, =0{Ingen}=1{Fra 1 website (du logges ikke ud af din Google-konto)}one{Fra # website (du logges ikke ud af din Google-konto)}other{Fra # websites (du logges ikke ud af din Google-konto)}}</translation>
 <translation id="6652101503459149953">Brug Windows Hello</translation>
 <translation id="6657585470893396449">Adgangskode</translation>
+<translation id="666259744093848177">(x86_64 oversat)</translation>
 <translation id="6665553082534466207">Tre huller i højre side</translation>
 <translation id="6671697161687535275">Vil du fjerne formularforslag fra Chromium?</translation>
 <translation id="6685834062052613830">Log ud, og fuldfør konfigurationen</translation>

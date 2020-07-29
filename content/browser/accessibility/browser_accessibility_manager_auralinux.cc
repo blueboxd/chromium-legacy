@@ -203,6 +203,9 @@ void BrowserAccessibilityManagerAuraLinux::FireGeneratedEvent(
     case ui::AXEventGenerator::Event::INVALID_STATUS_CHANGED:
       FireEvent(node, ax::mojom::Event::kInvalidStatusChanged);
       break;
+    case ui::AXEventGenerator::Event::OBJECT_ATTRIBUTE_CHANGED:
+      // TODO(1108872): Fire event.
+      break;
     case ui::AXEventGenerator::Event::TEXT_ATTRIBUTE_CHANGED:
       FireTextAttributesChangedEvent(node);
       break;

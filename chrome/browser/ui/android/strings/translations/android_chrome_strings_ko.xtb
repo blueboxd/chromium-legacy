@@ -242,7 +242,6 @@
 <translation id="2905036901251765993">근처에 있는 사람과 공유하려면 상대방이 QR 코드를 스캔하도록 하세요.</translation>
 <translation id="2909615210195135082">Google 알림 플랫폼</translation>
 <translation id="2923908459366352541">잘못된 이름</translation>
-<translation id="2927707377793151377">다른 제공업체 선택:</translation>
 <translation id="2932150158123903946">Google <ph name="APP_NAME" /> 저장공간</translation>
 <translation id="2942036813789421260">미리보기 탭 닫힘</translation>
 <translation id="2956410042958133412"><ph name="PARENT_NAME_1" />님과 <ph name="PARENT_NAME_2" />님이 관리하는 계정입니다.</translation>
@@ -592,7 +591,7 @@
 <translation id="5723735397759933332">라이트 모드에서는 HTTPS 페이지의 이미지를 최적화하여 더 많은 데이터를 절약할 수 있습니다.</translation>
 <translation id="5726692708398506830">페이지의 모든 항목 확대</translation>
 <translation id="5732819098735351888">Wi-Fi에 연결되면 다운로드가 시작됩니다.</translation>
-<translation id="5733983706093266635">QR 코드를 만들 수 없습니다. URL이 <ph name="CHARACTER_LIMIT" />자 이상입니다.</translation>
+<translation id="5733983706093266635">QR 코드를 만들 수 없습니다. URL이 <ph name="CHARACTER_LIMIT" />자(영문 기준)를 초과합니다.</translation>
 <translation id="5748802427693696783">일반 탭으로 전환됨</translation>
 <translation id="5749068826913805084">Chrome에서 파일을 다운로드하려면 저장소 액세스 권한이 있어야 합니다.</translation>
 <translation id="5749237766298580851">사용 안함 <ph name="SEPARATOR" /> 권장하지 않음</translation>

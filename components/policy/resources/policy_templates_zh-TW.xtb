@@ -454,13 +454,6 @@
       指定政策時，請務必使用 JSON 格式的字串來表示網址和雜湊。</translation>
 <translation id="1819272352048746487">啟用或停用螢幕小鍵盤上的多項功能</translation>
 <translation id="1827523283178827583">使用固定的 Proxy 伺服器</translation>
-<translation id="1831495419375964631">這項政策是一組網址，會指向和 Internet Explorer 的 <ph name="IEEM_SITELIST_POLICY" /> 政策採用相同格式的 XML 檔案；這樣一來，系統就會從 XML 檔案載入規則，但不會與 Internet Explorer 共用這些規則。
-
-      如未設定這項政策，或是將此政策設為無效的網址，<ph name="PRODUCT_NAME" /> 不會將其當做切換瀏覽器的規則來源。
-
-      如將這項政策設為有效的網址，<ph name="PRODUCT_NAME" /> 就會從該網址下載網站清單，然後按照 <ph name="SITELIST_POLICY_NAME" /> 政策中的設定套用規則。
-
-      如要進一步瞭解 Internet Explorer 的 <ph name="IEEM_SITELIST_POLICY" /> 政策，請參閱：https://docs.microsoft.com/internet-explorer/ie11-deploy-guide/what-is-enterprise-mode</translation>
 <translation id="1839278886947586809">
       這項政策已在 M80 版中遭到移除，因為 WebDriver 現階段與所有現有政策相容，因此不再需要使用這項政策。
 
@@ -624,18 +617,31 @@
 <translation id="2082205219176343977">設定裝置的最低 Chrome 版本限制。</translation>
 <translation id="209586405398070749">穩定版</translation>
 <translation id="2098658257603918882">啟用使用量和當機相關資料的報告功能</translation>
+<translation id="210034539800365161">設定 <ph name="PRODUCT_OS_NAME" />的最低版本限制。
+
+      將這項政策設為非空白的清單時：
+      如果沒有任何項目的 <ph name="CHROMEOS_VERSION_PROPERTY_NAME" /> 高於裝置的目前版本，則系統不會套用任何限制，並會撤銷現有限制。
+      如果至少有一個項目的 <ph name="CHROMEOS_VERSION_PROPERTY_NAME" /> 高於目前版本，系統會選擇其版本最接近目前版本 (且高於目前版本) 的項目。
+      如果發生衝突，系統會優先選擇 <ph name="WARNING_PERIOD_PROPERTY_NAME" /> 或 <ph name="AUE_WARNING_PERIOD_PROPERTY_NAME" /> 值較小的項目，並使用該項目套用政策。
+
+      如果目前版本在使用者工作階段期間成為過時版本，且目前的網路限制自動更新，系統會在畫面上顯示通知，要求使用者在通知中顯示的 <ph name="WARNING_PERIOD_PROPERTY_NAME" /> 期限內更新裝置。
+      如果目前的網路允許自動更新，系統不會顯示通知，且使用者必須在 <ph name="WARNING_PERIOD_PROPERTY_NAME" /> 期限內更新裝置。
+      <ph name="WARNING_PERIOD_PROPERTY_NAME" /> 自系統套用政策時起算。
+      如果使用者未在 <ph name="WARNING_PERIOD_PROPERTY_NAME" /> 到期前更新裝置，系統會將使用者登出工作階段。
+      如果使用者登入時 <ph name="WARNING_PERIOD_PROPERTY_NAME" /> 已過期，且目前版本已過時，則使用者必須先更新裝置才能登入。
+
+      如果目前版本在使用者工作階段期間成為過時版本，且裝置的自動更新期限已結束，系統會在畫面上顯示通知，要求使用者在 <ph name="AUE_WARNING_PERIOD_PROPERTY_NAME" /> 期限內退還裝置。
+      如果使用者登入時 <ph name="AUE_WARNING_PERIOD_PROPERTY_NAME" /> 已過期，且裝置的自動更新期限已結束，則系統會禁止任何使用者登入裝置。
+
+      如果不設定這項政策或設為空白，系統不會套用任何限制，並會撤銷現有限制；不論使用哪種 <ph name="PRODUCT_OS_NAME" />版本，使用者皆可登入。
+
+      此處的 <ph name="CHROMEOS_VERSION_PROPERTY_NAME" /> 可以指確切版本 (例如「13305.0.0」)，也可以指版本前置字元 (例如「13305」)。
+      <ph name="WARNING_PERIOD_PROPERTY_NAME" /> 和 <ph name="AUE_WARNING_PERIOD_PROPERTY_NAME" /> 是選用值，以天數為單位。這兩個期間的預設值是 0 天，表示沒有任何警告期間。</translation>
 <translation id="2104418465060359056">回報擴充功能和外掛程式資訊</translation>
 <translation id="2106627642643925514">覆寫預設的 PIN 碼列印模式。如果設定的模式不適用，系統會忽略這項政策。</translation>
 <translation id="2107601598727098402">
         這項政策已於 M72 淘汰。請改用 CloudManagementEnrollmentToken。
         </translation>
-<translation id="2108169571875569435">這項政策可控管在替代瀏覽器中開啟網址時，系統所使用的指令。
-
-      如果不設定這項政策，系統會使用平台專屬的預設值：Windows 使用 Internet Explorer、Mac OS X 使用 Safari。Linux 在未設定這項政策的情況下，將無法啟動替代瀏覽器。
-
-      如果將這項政策設為 <ph name="INTERNET_EXPLORER_VALUE_PLACEHOLDER" />、<ph name="FIREFOX_VALUE_PLACEHOLDER" />、<ph name="SAFARI_VALUE_PLACEHOLDER" /> 或 <ph name="OPERA_VALUE_PLACEHOLDER" /> 的其中一項，系統會啟動指定瀏覽器 (如有安裝)。<ph name="INTERNET_EXPLORER_VALUE_PLACEHOLDER" /> 只適用於 Windows，而 <ph name="SAFARI_VALUE_PLACEHOLDER" /> 只適用於 Windows 和 Mac OS X。
-
-      如果將這項政策設為檔案路徑，系統會將該檔案做為執行檔使用。</translation>
 <translation id="2113068765175018713">透過自動重新啟動的方式限制裝置的正常運作時間</translation>
 <translation id="2124881675920287921">這項政策自 M82 版起遭到淘汰，並在 M85 版中移除，請改用 <ph name="SAFE_BROWSING_EXTENDED_REPORTING_ENABLED_POLICY_NAME" />。停用 <ph name="SAFE_BROWSING_EXTENDED_REPORTING_OPT_IN_ALLOWED_POLICY_NAME" /> 等同於停用 <ph name="SAFE_BROWSING_EXTENDED_REPORTING_ENABLED_POLICY_NAME" />。啟用 <ph name="SAFE_BROWSING_EXTENDED_REPORTING_OPT_IN_ALLOWED_POLICY_NAME" /> 或未設定這項政策等同於未設定 <ph name="SAFE_BROWSING_EXTENDED_REPORTING_ENABLED_POLICY_NAME" />。
 
@@ -720,6 +726,11 @@
 <translation id="2197625019569762163">將這項政策設為 True 時，系統預設會在登入畫面顯示數字鍵盤，方便使用者輸入密碼。使用者仍可切換為普通鍵盤。
 
       如果設定這項政策，使用者將無法變更。如果不設定或將其設為 False，這項政策將不會生效。</translation>
+<translation id="2200041405904405884">這項政策可讓你指定不受封鎖清單影響的內建訊息傳遞主機。
+
+          如果將封鎖清單的值設為「*」，系統會封鎖所有內建訊息傳遞主機，只會載入允許清單中列出的內建訊息傳遞主機。
+
+          根據預設，系統會允許所有內建訊息傳遞主機，但如果政策封鎖了所有內建訊息傳遞主機，你可以使用允許清單覆寫該政策。</translation>
 <translation id="2200698565850397198">設定內建訊息傳遞封鎖清單</translation>
 <translation id="2201555246697292490">設定內建訊息傳遞許可清單</translation>
 <translation id="2204753382813641270">控制檔案櫃自動隱藏功能</translation>
@@ -954,17 +965,6 @@
 
       如果這項政策已設定或設為 False，則會顯示錯誤訊息，而不是網路設定提示。</translation>
 <translation id="2498238926436517902">一律自動隱藏檔案櫃</translation>
-<translation id="2505805702054675476">這項政策可控管用於啟動替代瀏覽器的指令行參數。
-
-      如果不設定這項政策，系統只會將網址以指令行參數的形式傳送。
-
-      如果將這項政策設定為字串清單，系統會將每個字串以個別指令行參數的形式傳送到替代瀏覽器。在 Windows 上，這些參數會以空格連接起來。在 Mac OS X 和 Linux 上，參數可能會包含空格，但仍會被視為單一參數。
-
-      如果有元素包含 <ph name="URL_PLACEHOLDER" />，系統會將該元素替換成要開啟的網頁網址。
-
-      如果沒有元素包含 <ph name="URL_PLACEHOLDER" />，則網址會附加在指令列結尾。
-
-      系統會展開環境變數。在 Windows 上，系統會將 <ph name="ENV_VARIABLE_WIN_EXAMPLE" /> 替換為 <ph name="ENV_VARIABLE_VALUE" /> 環境變數的值。在 Mac OS X 和 Linux 上，系統會將 <ph name="ENV_VARIABLE_UNIX_EXAMPLE" /> 替換為 <ph name="ENV_VARIABLE" /> 環境變數的值。</translation>
 <translation id="250670737672448119">啟用插入點醒目顯示無障礙功能。
 
           這項功能會在使用者編輯時，醒目顯示插入點周圍的區域。
@@ -1397,15 +1397,6 @@
 <translation id="3096595567015595053">啟用的外掛程式清單</translation>
 <translation id="3101501961102569744">選擇如何指定 Proxy 伺服器設定</translation>
 <translation id="3101709781009526431">日期與時間</translation>
-<translation id="3114411414586006215">這項政策可控管一律不觸發瀏覽器切換的網站清單。
-
-      請注意，系統也可以透過 <ph name="EXTERNAL_SITELIST_URL_POLICY_NAME" /> 政策將元素加入這份清單。
-
-      如果不設定這項政策，系統就不會將任何網站加入清單。
-
-      如果設定這項政策，系統會像 <ph name="URL_LIST_POLICY_NAME" /> 政策一樣，將每個項目視為規則，但套用的邏輯恰恰相反，相符的規則不會開啟替代瀏覽器。
-
-      這項政策與 <ph name="URL_LIST_POLICY_NAME" /> 的不同之處在於，規則為雙向適用。換句話說，如果 Internet Explorer 已安裝並啟用增益集，這項政策也會控管 <ph name="IE_PRODUCT_NAME" /> 是否要在 <ph name="PRODUCT_NAME" /> 中開啟這些網址。</translation>
 <translation id="3117676313396757089">警告：自 <ph name="PRODUCT_NAME" /> 57 版 (將於 2017 年 3 月左右推出) 起，系統將全面移除 DHE，屆時這項政策將停止運作。
 
       如果未設定這項政策或將其設為 false，系統就不會在 TLS 中啟用 DHE 加密套件。如要啟用 DHE 加密套件並維持與過舊伺服器的相容性，您也可以將這項政策設為 true。這種方法是權宜之計，正確的做法是重新設定伺服器。
@@ -1973,7 +1964,6 @@
 <translation id="3973371701361892765">永不自動隱藏檔案櫃</translation>
 <translation id="3979738908158213640">可在 SAML 驗證期間取得執行裝置認證存取權的網址</translation>
 <translation id="3984028218719007910">決定登出後 <ph name="PRODUCT_OS_NAME" /> 是否要保留本機帳戶資料。如果設為 True，<ph name="PRODUCT_OS_NAME" /> 不會保留任何永久帳戶，並且在登出後會刪除使用者工作階段的所有資料。如果這項政策設為 False 或未設定，裝置會保留 (加密) 本機使用者資料。</translation>
-<translation id="398475542699441679">這項政策可控管是否要啟用「舊版瀏覽器支援」功能。如果不設定這項政策，或將這項政策設為 False，Chrome 不會嘗試在替代瀏覽器中啟動指定網址。如果將這項政策設為 True，則 Chrome 會嘗試在替代瀏覽器 (例如 Internet Explorer) 中啟動部分網址。系統會使用 <ph name="LEGACY_BROWSER_SUPPORT_POLICY_GROUP" /> 群組中的政策設定這項功能。這項功能是用於取代「<ph name="LEGACY_BROWSER_SUPPORT_EXTENSION_NAME" />」擴充功能，並會沿用該擴充功能的設定，但我們強烈建議你改用 Chrome 政策，以確保日後有更好的相容性。</translation>
 <translation id="398884292557092447">如果將這項政策設為 True 或不設定，使用者將可控管 UI 中的信用卡自動填入建議。
 
       如果將這項政策設為 False，自動填入功能一律不會建議或填入信用卡資訊，也不會在使用者瀏覽網頁時儲存其提交的其他信用卡資訊。</translation>
@@ -2479,6 +2469,7 @@
 <translation id="4812270373673968774">如果將這項政策設為 Always，系統會自動隱藏 <ph name="PRODUCT_OS_NAME" />檔案櫃。如果將這項政策設為 Never，系統一律不會自動隱藏檔案櫃。
 
       如果設定這項政策，使用者將無法變更。如果未設定，使用者可自行決定是否要自動隱藏檔案櫃。</translation>
+<translation id="4812714598405913256">設定 DeviceMinimumVersion 政策的自動更新期限訊息</translation>
 <translation id="4816674326202173458">允許企業使用者成為主要或次要使用者 (非管理化環境中使用者的預設行為)</translation>
 <translation id="4826326557828204741">使用電池電源的情況下，系統在達到閒置延遲時間時所採取的動作</translation>
 <translation id="482803100714220060">顯示完整網址</translation>
@@ -2653,11 +2644,6 @@
          如果不設定這項政策，可封鎖的混合內容將遭到封鎖，且系統會升級選擇性可封鎖混合內容。但使用者可以設定例外網站，允許特定網站顯示可封鎖的混合內容。
 
           如果想進一步瞭解有效的網址模式，請參閱 https://cloud.google.com/docs/chrome-enterprise/policies/url-patterns。</translation>
-<translation id="510196893779239086">這項政策可控管是否要在最後一個 Chrome 分頁改以其他瀏覽器開啟後，完全關閉 Chrome。
-
-      如果將這項政策設為 True 或不設定這項政策，當 Chrome 分頁改以其他瀏覽器開啟後，Chrome 中仍會有至少一個分頁保持開啟。
-
-      如果將這項政策設為 False，當 Chrome 分頁改以其他瀏覽器開啟後，Chrome 將關閉該分頁，即使該分頁是最後一個分頁也一樣。這會導致 Chrome 完全關閉。</translation>
 <translation id="5102203758995933166">這項政策可依使用者將網路設定強制套用至 <ph name="PRODUCT_OS_NAME" />裝置。這個網路設定是根據「開放式網路設定」格式所定義的 JSON 格式字串。</translation>
 <translation id="5105313908130842249">在電池供電環境下執行時的螢幕鎖定延遲時間</translation>
 <translation id="5108031557082757679">已停用企業裝置印表機</translation>
@@ -2750,6 +2736,15 @@
 
           如果將這項政策設為 False，系統會將使用者的音訊活動依閒置狀態處理。</translation>
 <translation id="5245671702326993331">允許原生通知</translation>
+<translation id="524637053580639111">這項政策已在 M82 版中移除，請改用 DeviceMinimumVersion。
+
+      設定 <ph name="PRODUCT_NAME" /> 的最低版本限制。系統會將低於設定值的版本視為過時版本，使用者必須先更新 OS，才能登入裝置。
+
+      如果目前版本在使用者工作階段期間成為過時版本，系統會將使用者強制登出。
+
+      如果不設定這項政策，系統不會套用任何限制；不論使用哪種 <ph name="PRODUCT_NAME" /> 版本，使用者皆可登入。
+
+      此處的「版本」可以指確切版本 (例如「61.0.3163.120」)，也可以指版本前置字元 (例如「61.0」)。  </translation>
 <translation id="5247006254130721952">封鎖危險下載作業</translation>
 <translation id="5248863213023520115">設定可使用哪些類型的加密從 <ph name="MS_AD_NAME" /> 伺服器提出 Kerberos 票證要求。
 
@@ -2931,6 +2926,14 @@
       如果不設定這項政策或設為「允許上傳及下載」，<ph name="PRODUCT_NAME" /> 會依照「允許下載」和「允許上傳」設定的規則執行作業。
       </translation>
 <translation id="5442026853063570579">這項政策也可以控制 Android 開發人員選項的存取權。如果將這項政策設為「DeveloperToolsDisallowed」(值 2)，使用者將無法存取開發人員選項。如果將這項政策設為其他值或不予設定，使用者只要在 Android 設定應用程式中輕觸版本號碼七次，即可存取開發人員選項。</translation>
+<translation id="5445596354079213552">只有在裝置的自動更新期限已結束，且裝置不符合透過 <ph name="DEVICE_MINIMUM_VERSION_POLICY_NAME" /> 政策設定的 <ph name="PRODUCT_OS_NAME" />最低版本限制時，這項政策才會生效。
+
+      將這項政策設為非空白的字串時：
+      如果 <ph name="DEVICE_MINIMUM_VERSION_POLICY_NAME" /> 政策中提及的警告時間已過，且系統已禁止任何使用者登入裝置，登入畫面上即會顯示這則訊息。
+      如果 <ph name="DEVICE_MINIMUM_VERSION_POLICY_NAME" /> 政策中提及的警告時間還沒到，系統會在使用者登入後，於 Chrome 管理頁面上顯示這則訊息。
+
+      如果不設定這項政策或設為空白，系統會在以上兩種情況中，向使用者顯示預設的自動更新期限訊息。
+      自動更新期限訊息必須是不包含任何格式設定的純文字，而且不可有任何標記。</translation>
 <translation id="5445719321399313760">如果將這項政策設為 True 或不設定，<ph name="PRODUCT_NAME" /> 將能以整個分頁向使用者顯示產品資訊。
 
       如果將這項政策設為 False，<ph name="PRODUCT_NAME" /> 無法以整個分頁顯示產品資訊。
@@ -2960,17 +2963,6 @@
 <translation id="546726650689747237">在 AC 供電環境下執行時的螢幕調暗延遲時間</translation>
 <translation id="5469143988693423708">已允許使用者執行 Crostini</translation>
 <translation id="5469825884154817306">封鎖這些網站的圖片</translation>
-<translation id="5472668698895343595">這項政策可控管要在替代瀏覽器中開啟的網站清單。
-
-      請注意，系統也可以透過 <ph name="USE_IE_SITELIST_POLICY_NAME" /> 和 <ph name="EXTERNAL_SITELIST_URL_POLICY_NAME" /> 政策將元素加入這個清單。
-
-      如果不設定這項政策，系統就不會將任何網站加入清單。
-
-      如果設定這項政策，系統會將每個項目視為規則，據此透過替代瀏覽器開啟網站。<ph name="PRODUCT_NAME" /> 會運用這些規則，決定是否該以替代瀏覽器開啟某個網址。
-
-      如果 Internet Explorer 已安裝並啟用增益集，當規則不相符時，Internet Explorer 就會切換回 <ph name="PRODUCT_NAME" />。
-
-      如果規則互相衝突，<ph name="PRODUCT_NAME" /> 會使用最精確的規則。</translation>
 <translation id="5475361623548884387">啟用列印功能</translation>
 <translation id="547601067149622666">禁止含侵入式廣告的網站顯示廣告</translation>
 <translation id="5483065054530244863">允許本機信任錨點核發的 SHA-1 簽署憑證</translation>
@@ -3212,19 +3204,6 @@
 
           如果不設定這項政策，系統對於 Cookie 所採取的預設 <ph name="ATTRIBUTE_SAMESITE_NAME" /> 行為會取決於使用者對於 <ph name="FEATURE_NAME_SAMESITE_BY_DEFAULT_COOKIES" />、<ph name="FEATURE_NAME_SAMESITE_NONE_MUST_BE_SECURE" /> 和 <ph name="FEATURE_NAME_SCHEMEFUL_SAME_SITE" /> 功能的個人配置。使用者可以透過實際測試，或是分別啟用或停用 <ph name="FLAG_NAME_SAMESITE_BY_DEFAULT_COOKIES" />、<ph name="FLAG_NAME_SAMESITE_NONE_MUST_BE_SECURE" /> 或 <ph name="FLAG_NAME_SCHEMEFUL_SAME_SITE" /> 旗標，來設定這項功能的個人配置。</translation>
 <translation id="585270638818921943">禁止使用者使用來源不受信任的 Android 應用程式</translation>
-<translation id="5855010364142818361">這項政策可控管從 Internet Explorer 切換至 Chrome 時使用的指令列參數。
-
-      如果 Internet Explorer 未安裝「舊版瀏覽器支援」增益集，這項政策將不會生效。
-
-      如果不設定這項政策，Internet Explorer 僅會將網址傳送至 Chrome 做為指令列參數。
-
-      如果將這項政策設為字串清單，系統會使用空格連接字串，並傳送至 Chrome 做為指令列參數。
-
-      如果有元素包含 <ph name="URL_PLACEHOLDER" />，系統會將該元素替換成要開啟的網頁網址。
-
-      如果沒有元素包含 <ph name="URL_PLACEHOLDER" />，則網址會附加在指令列結尾。
-
-      系統會展開環境變數。在 Windows 上，系統會將 <ph name="ENV_VARIABLE_WIN_EXAMPLE" /> 替換為 ABC 環境變數的值。</translation>
 <translation id="5859344336338527083">你可以透過這項政策，指定可安裝擴充功能、應用程式和主題的網址。在 <ph name="PRODUCT_NAME" /> 21 以前的版本中，使用者只要點選 *.crx 檔案的連結，<ph name="PRODUCT_NAME" /> 就會在顯示幾則警告訊息後，詢問使用者是否要安裝該檔案。在後續版本中，使用者則必須先下載這類檔案，再將檔案拖曳至 <ph name="PRODUCT_NAME" /> 設定頁面中。透過這項設定，你可以允許特定網址使用較簡易的舊式安裝流程。
 
           這份清單中的每個項目皆為擴充功能形式的比對模式 (請參閱 https://developer.chrome.com/extensions/match_patterns)。任何網址只要與這份清單中的任意項目相符，使用者便可輕鬆安裝該網址提供的檔案。*.crx 檔案位置和下載來源網頁 (參照網址) 都必須與這份清單中的模式相符。
@@ -3637,15 +3616,6 @@
 
       如果未設定、設為讓使用者決定或設為 None，使用者將可透過 chrome://settings 中的一般控制項來控制自動偵測時區的功能。</translation>
 <translation id="6532769014584932288">允許使用 Wake Lock</translation>
-<translation id="653645667373317432">這項政策可控管從 Internet Explorer 切換到 Chrome 時，在 <ph name="PRODUCT_NAME" /> 中開啟網址時使用的指令。
-
-      如果 Internet Explorer 未安裝「舊版瀏覽器支援」增益集，這項政策將不會生效。
-
-      如果不設定這項政策，從 Internet Explorer 啟動 <ph name="PRODUCT_NAME" /> 時，Internet Explorer 會自動偵測 <ph name="PRODUCT_NAME" /> 專屬的執行檔路徑。
-
-      如果設定這項政策，從 Internet Explorer 啟動 <ph name="PRODUCT_NAME" /> 時，系統會使用指定的指令啟動 <ph name="PRODUCT_NAME" />。
-
-      你可以將這項政策設為執行檔路徑，或是設為 <ph name="PRODUCT_NAME_PLACEHOLDER" />，讓系統自動偵測 Chrome 的安裝位置。</translation>
 <translation id="6536600139108165863">裝置關機時自動重新啟動</translation>
 <translation id="6539246272469751178">這項政策對 Android 應用程式沒有影響。Android 應用程式會一律使用預設的下載目錄，無法存取任何由 <ph name="PRODUCT_OS_NAME" />下載到非預設下載目錄的檔案。</translation>
 <translation id="654303922206238013">eCryptfs 遷移策略</translation>
@@ -4065,15 +4035,6 @@
       系統會下載並快取這個設定檔。只要網址或雜湊碼有任何變更，系統就會重新下載檔案。
 
       如果設定這項政策，使用者將無法變更。如果未設定，且政策允許使用 Crostini 容器，則使用者在目前的配置中可繼續使用預設的 Crostini 容器。</translation>
-<translation id="713121532817834879">這項政策是一個網址，指向和 Internet Explorer 的 <ph name="IEEM_SITELIST_POLICY" /> 政策採用相同格式的 XML 檔案。因此，系統會從 XML 檔案載入規則，但不會與 Internet Explorer 共用這些規則。
-
-      系統套用這個 XML 檔案中所含規則的方式與 <ph name="GREYLIST_POLICY_NAME" /> 相同。也就是說，這些規則會禁止 <ph name="PRODUCT_NAME" /> 開啟替代瀏覽器，並禁止替代瀏覽器開啟 <ph name="PRODUCT_NAME" />。
-
-      如果未設定這項政策，或是設為無效網址，<ph name="PRODUCT_NAME" /> 就不會將政策當做「不觸發瀏覽器切換」的規則來源。
-
-      如果將這項政策設為有效的網址，<ph name="PRODUCT_NAME" /> 會從該網址下載網站清單，然後按照 <ph name="SITELIST_POLICY_NAME" /> 政策中的設定套用規則。
-
-      如要進一步瞭解 Internet Explorer 的 <ph name="IEEM_SITELIST_POLICY" /> 政策，請參閱：https://docs.microsoft.com/internet-explorer/ie11-deploy-guide/what-is-enterprise-mode</translation>
 <translation id="7132877481099023201">系統會直接授權存取視訊擷取裝置而不需提示的網址</translation>
 <translation id="7134420220355750019">將滑鼠的主要按鈕切換為右鍵。
 
@@ -4226,6 +4187,7 @@
           如果你停用這項設定，使用者就無法使用這項功能。</translation>
 <translation id="7274077256421167535">啟用 USB 電力共享功能</translation>
 <translation id="7275334191706090484">受管理書籤</translation>
+<translation id="7278854311116092134">要從封鎖清單中排除的內建訊息傳遞主機名稱</translation>
 <translation id="7291084543582732020">如果啟用這項設定，只要滿足 Smart Lock 的使用條件，使用者即可使用這項功能。
 
       如果停用這項設定，使用者將無法使用 Smart Lock 登入功能。
@@ -4362,11 +4324,6 @@
       請注意，這項政策取決於允許 SHA-1 簽名的作業系統憑證驗證堆疊。如果作業系統更新變更了作業系統的 SHA-1 憑證處理方式，這項政策可能就會失效。此外，這項政策是暫時性的解決方案，目的是讓使用 SHA-1 憑證的企業有更多時間尋找其他解決方案。我們將於 2019 年 1 月 1 日左右移除這項政策。
 
       如果未設定這項政策，或是將這項政策設為 false，<ph name="PRODUCT_NAME" /> 將會遵循公開宣佈的 SHA-1 淘汰時間表。</translation>
-<translation id="7578049687634719313">這項政策可控管替代瀏覽器啟動前的等待時間長度 (以毫秒為單位)。
-
-      如果不設定這項政策或設為 0，當使用者前往指定網址時，系統會立即在替代瀏覽器中開啟該網址。
-
-      如果將這項政策設為零以外的數值，Chrome 在開啟替代瀏覽器前會先顯示一則等待訊息，並依據該數值 (以毫秒為單位) 來設定這則訊息要顯示多久的時間。</translation>
 <translation id="7590188804371204512">控管是否能安裝外部擴充功能。
 
       啟用這項設定會禁止安裝外部擴充功能。
@@ -4520,6 +4477,13 @@
 <translation id="7777535871204167559">以唯讀模式處理外部儲存裝置</translation>
 <translation id="7788511847830146438">根據設定檔</translation>
 <translation id="7807139251387225825">要從同步處理作業中排除的類型清單</translation>
+<translation id="7815699949432723208">這項政策已遭淘汰，請改用「<ph name="NATIVE_MESSAGING_ALLOWLIST_POLICY_NAME" />」政策。
+
+          這項政策可讓你指定不受封鎖清單影響的內建訊息傳遞主機。
+
+          如果將封鎖清單的值設為「*」，系統會封鎖所有內建訊息傳遞主機，只會載入允許清單中列出的內建訊息傳遞主機。
+
+          根據預設，系統會允許所有內建訊息傳遞主機，但如果政策封鎖了所有內建訊息傳遞主機，你可以使用允許清單覆寫該政策。</translation>
 <translation id="7818131573217430250">設定高反差模式在登入畫面的預設狀態</translation>
 <translation id="7832907442895199611">自 M83 版起，我們已淘汰這項政策，請改用 SafeBrowsingProtectionLevel。
 
@@ -4762,6 +4726,7 @@
           設定這項政策後，使用者即無法變更或覆寫。
 
           如果不設定這項政策，系統預設會停用游標醒目顯示功能，但使用者隨時可以啟用這項功能。</translation>
+<translation id="816783746144552109">設定裝置的 Chrome 作業系統最低版本限制。</translation>
 <translation id="8171924760436219650">在登入畫面上將滑鼠的主要按鈕切換為右鍵</translation>
 <translation id="8176035528522326671">僅允許企業使用者成為多重設定檔的主要使用者 (受企業管理的使用者的預設行為)</translation>
 <translation id="8183108371184777472">禁止啟動瀏覽器視窗</translation>
@@ -4780,6 +4745,7 @@
          如果將動作設為暫停，你可以另行設定 <ph name="PRODUCT_OS_NAME" />在暫停前是否要鎖定螢幕。</translation>
 <translation id="8214600119442850823">設定密碼管理員</translation>
 <translation id="8217516105848565518">這項政策已遭到淘汰，請改用 RemoteAccessHostDomainList。</translation>
+<translation id="8220156281401380422">設定內建訊息傳遞允許清單</translation>
 <translation id="8244171102276095471">在傳輸層安全標準 (TLS) 中啟用 RC4 加密套件</translation>
 <translation id="8244525275280476362">政策失效後的最大擷取延遲</translation>
 <translation id="8251411417369363637">如果將這項政策設為 True，系統會在允許 <ph name="FLASH_PLUGIN_NAME" /> 的網站上執行所有內嵌的 <ph name="FLASH_PLUGIN_NAME" /> 內容，包括來自其他來源的內容或檔案較小的內容。
@@ -4916,13 +4882,6 @@
 <translation id="838870586332499308">啟用數據漫遊</translation>
 <translation id="8393850527597048037">僅限平台</translation>
 <translation id="8395749934754392549">控管 Android 容器 (ARC) 和 Android 應用程式的設定。</translation>
-<translation id="8396145449084377015">這項政策可控管是否要從 Internet Explorer 的 SiteList 政策載入規則。
-
-      如果不設定這項政策或設為 False，<ph name="PRODUCT_NAME" /> 不會使用 Internet Explorer 的 <ph name="IEEM_SITELIST_POLICY" /> 政策做為切換瀏覽器的規則來源。
- 
-      如果將這項政策設為 True，<ph name="PRODUCT_NAME" /> 會讀取 Internet Explorer 的 <ph name="IEEM_SITELIST_POLICY" /> 來取得網站清單的網址。<ph name="PRODUCT_NAME" /> 接著會從該網址下載網站清單，並假設這些規則已透過 <ph name="SITELIST_POLICY_NAME" /> 政策完成設定加以套用。
-
-      如要進一步瞭解 Internet Explorer 的 <ph name="IEEM_SITELIST_POLICY" /> 政策，請參閱：https://docs.microsoft.com/internet-explorer/ie11-deploy-guide/what-is-enterprise-mode</translation>
 <translation id="8398952282584132331">啟用隱私保護畫面</translation>
 <translation id="8402079500086185021">一律使用外部應用程式開啟 PDF 檔案</translation>
 <translation id="8405691014775178834">允許這位使用者擁有 Crostini 容器的 Root 權限。
@@ -5095,11 +5054,6 @@
 <translation id="8653561013005884087">將這項政策設為 True 時，系統會讓互動朗讀功能保持在啟用狀態。將這項政策設為 False 時，系統會讓互動朗讀功能保持在停用狀態。
 
       如果設定這項政策，使用者將無法變更。如果未設定，系統會先停用互動朗讀功能，但使用者隨時可以啟用。</translation>
-<translation id="8654286232573430130">指定要將哪些伺服器加入整合驗證許可清單。只有在 <ph name="PRODUCT_NAME" /> 收到允許清單中的 Proxy 或伺服器傳來的驗證要求時，系統才會啟用整合驗證。
-
-          請以逗號分隔多個伺服器名稱。可允許萬用字元 (*)。
-
-          如果未設定這項政策，<ph name="PRODUCT_NAME" /> 會嘗試偵測伺服器是否位於內部網路，然後回應伺服器傳來的 IWA 要求。如果伺服器位於網際網路，<ph name="PRODUCT_NAME" /> 就會忽略伺服器傳來的 IWA 要求。</translation>
 <translation id="8656110680728938054">啟用隨選朗讀功能</translation>
 <translation id="8661297125441579970">不允許資料遷移功能和 ARC。</translation>
 <translation id="8665314828727504286">安全瀏覽功能防護等級</translation>

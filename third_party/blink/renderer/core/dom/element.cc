@@ -1903,6 +1903,33 @@ IntRect Element::BoundsInViewport() const {
   return view->FrameToViewport(result);
 }
 
+Vector<IntRect> Element::OutlineRectsInVisualViewport(
+    DocumentUpdateReason reason) const {
+  Vector<IntRect> rects;
+
+  LocalFrameView* view = GetDocument().View();
+  if (!view)
+    return rects;
+
+  GetDocument().EnsurePaintLocationDataValidForNode(this, reason);
+
+  LayoutBoxModelObject* layout_object = GetLayoutBoxModelObject();
+  if (!layout_object)
+    return rects;
+
+  Vector<PhysicalRect> outline_rects = layout_object->OutlineRects(
+      PhysicalOffset(),
+      layout_object->OutlineRectsShouldIncludeBlockVisualOverflow());
+  for (auto& r : outline_rects) {
+    PhysicalRect physical_rect = layout_object->LocalToAbsoluteRect(r);
+    IntRect absolute_rect =
+        view->FrameToViewport(PixelSnappedIntRect(physical_rect));
+    rects.push_back(absolute_rect);
+  }
+
+  return rects;
+}
+
 IntRect Element::VisibleBoundsInVisualViewport() const {
   if (!GetLayoutObject() || !GetDocument().GetPage() ||
       !GetDocument().GetFrame())

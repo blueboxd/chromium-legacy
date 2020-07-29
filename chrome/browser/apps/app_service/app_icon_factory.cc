@@ -7,7 +7,6 @@
 #include <map>
 #include <memory>
 #include <utility>
-#include <vector>
 
 #include "base/bind.h"
 #include "base/callback.h"
@@ -257,6 +256,11 @@ class IconLoadingPipeline : public base::RefCounted<IconLoadingPipeline> {
       : size_hint_in_dip_(size_hint_in_dip),
         image_skia_callback_(std::move(callback)) {}
 
+  explicit IconLoadingPipeline(
+      base::OnceCallback<void(const std::vector<gfx::ImageSkia>& icons)>
+          callback)
+      : arc_activity_icons_callback_(std::move(callback)) {}
+
   void LoadWebAppIcon(const std::string& web_app_id,
                       const GURL& launch_url,
                       const web_app::AppIconManager& icon_manager,
@@ -280,6 +284,10 @@ class IconLoadingPipeline : public base::RefCounted<IconLoadingPipeline> {
   // then apply the mask.
   void LoadCompositeImages(const std::vector<uint8_t>& foreground_data,
                            const std::vector<uint8_t>& background_data);
+
+  // Loads icons for ARC activities.
+  void LoadArcActivityIcons(
+      const std::vector<arc::mojom::ActivityIconPtr>& icons);
 #endif  // OS_CHROMEOS
 
  private:
@@ -288,6 +296,13 @@ class IconLoadingPipeline : public base::RefCounted<IconLoadingPipeline> {
   ~IconLoadingPipeline() {
     if (!callback_.is_null()) {
       std::move(callback_).Run(apps::mojom::IconValue::New());
+    }
+    if (!image_skia_callback_.is_null()) {
+      std::move(image_skia_callback_).Run(gfx::ImageSkia());
+    }
+    if (!arc_activity_icons_callback_.is_null()) {
+      std::move(arc_activity_icons_callback_)
+          .Run(std::vector<gfx::ImageSkia>());
     }
   }
 
@@ -300,6 +315,9 @@ class IconLoadingPipeline : public base::RefCounted<IconLoadingPipeline> {
 
   void CompositeImagesAndApplyMask(bool is_foreground,
                                    const gfx::ImageSkia& image);
+
+  void OnArcActivityIconLoaded(gfx::ImageSkia* arc_activity_icon,
+                               const gfx::ImageSkia& icon);
 #endif  // OS_CHROMEOS
 
   void MaybeApplyEffectsAndComplete(const gfx::ImageSkia image);
@@ -339,6 +357,11 @@ class IconLoadingPipeline : public base::RefCounted<IconLoadingPipeline> {
   bool foreground_is_set_ = false;
   bool background_is_set_ = false;
   base::OnceCallback<void(const gfx::ImageSkia& icon)> image_skia_callback_;
+
+  std::vector<gfx::ImageSkia> arc_activity_icons_;
+  size_t count_ = 0;
+  base::OnceCallback<void(const std::vector<gfx::ImageSkia>& icon)>
+      arc_activity_icons_callback_;
 
 #if defined(OS_CHROMEOS)
   std::unique_ptr<arc::IconDecodeRequest> arc_icon_decode_request_;
@@ -556,6 +579,35 @@ void IconLoadingPipeline::LoadCompositeImages(
       background_data);
 }
 
+void IconLoadingPipeline::LoadArcActivityIcons(
+    const std::vector<arc::mojom::ActivityIconPtr>& icons) {
+  arc_activity_icons_.resize(icons.size());
+  DCHECK_EQ(0U, count_);
+  for (size_t i = 0; i < icons.size(); i++) {
+    if (!icons[i] || !icons[i]->icon_png_data) {
+      ++count_;
+      continue;
+    }
+
+    constexpr size_t kMaxIconSizeInPx = 200;
+    if (icons[i]->width > kMaxIconSizeInPx ||
+        icons[i]->height > kMaxIconSizeInPx || icons[i]->width == 0 ||
+        icons[i]->height == 0) {
+      ++count_;
+      continue;
+    }
+
+    apps::ArcRawIconPngDataToImageSkia(
+        std::move(icons[i]->icon_png_data), icons[i]->width,
+        base::BindOnce(&IconLoadingPipeline::OnArcActivityIconLoaded,
+                       base::WrapRefCounted(this), &arc_activity_icons_[i]));
+  }
+
+  if (count_ == arc_activity_icons_.size() && !image_skia_callback_.is_null()) {
+    std::move(arc_activity_icons_callback_).Run(arc_activity_icons_);
+  }
+}
+
 std::unique_ptr<arc::IconDecodeRequest>
 IconLoadingPipeline::CreateArcIconDecodeRequest(
     base::OnceCallback<void(const gfx::ImageSkia& icon)> callback,
@@ -587,7 +639,8 @@ void IconLoadingPipeline::CompositeImagesAndApplyMask(
     background_image_ = image;
   }
 
-  if (!foreground_is_set_ || !background_is_set_ || callback_.is_null()) {
+  if (!foreground_is_set_ || !background_is_set_ ||
+      image_skia_callback_.is_null()) {
     return;
   }
 
@@ -604,6 +657,19 @@ void IconLoadingPipeline::CompositeImagesAndApplyMask(
               LoadMaskImage(image.size())),
           skia::ImageOperations::RESIZE_BEST,
           gfx::Size(size_hint_in_dip_, size_hint_in_dip_)));
+}
+
+void IconLoadingPipeline::OnArcActivityIconLoaded(
+    gfx::ImageSkia* arc_activity_icon,
+    const gfx::ImageSkia& icon) {
+  DCHECK(arc_activity_icon);
+  ++count_;
+  *arc_activity_icon = icon;
+
+  if (count_ == arc_activity_icons_.size() &&
+      !arc_activity_icons_callback_.is_null()) {
+    std::move(arc_activity_icons_callback_).Run(arc_activity_icons_);
+  }
 }
 #endif  // OS_CHROMEOS
 
@@ -824,6 +890,20 @@ void ArcRawIconPngDataToImageSkia(
   icon_loader->LoadCompositeImages(
       std::move(icon->foreground_icon_png_data.value()),
       std::move(icon->background_icon_png_data.value()));
+}
+
+void ArcActivityIconsToImageSkias(
+    const std::vector<arc::mojom::ActivityIconPtr>& icons,
+    base::OnceCallback<void(const std::vector<gfx::ImageSkia>& icons)>
+        callback) {
+  if (icons.empty()) {
+    std::move(callback).Run(std::vector<gfx::ImageSkia>{});
+    return;
+  }
+
+  scoped_refptr<IconLoadingPipeline> icon_loader =
+      base::MakeRefCounted<IconLoadingPipeline>(std::move(callback));
+  icon_loader->LoadArcActivityIcons(icons);
 }
 #endif  // OS_CHROMEOS
 

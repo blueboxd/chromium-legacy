@@ -22,7 +22,7 @@ namespace policy {
 // to a single user mount, if the policy forces it.
 class LockToSingleUserManager final
     : public user_manager::UserManager::UserSessionStateObserver,
-      public arc::ArcSessionManager::Observer,
+      public arc::ArcSessionManagerObserver,
       public chromeos::ConciergeClient::VmObserver,
       public chromeos::VmStartingObserver {
  public:
@@ -38,7 +38,7 @@ class LockToSingleUserManager final
   // user_manager::UserManager::UserSessionStateObserver:
   void ActiveUserChanged(user_manager::User* user) override;
 
-  // arc::ArcSessionManager::Observer:
+  // arc::ArcSessionManagerObserver:
   void OnArcStarted() override;
 
   // ConciergeClient::VmObserver:
@@ -64,7 +64,7 @@ class LockToSingleUserManager final
   // true if it is expected that the device is already locked to a single user
   bool expect_to_be_locked_ = false;
 
-  ScopedObserver<arc::ArcSessionManager, arc::ArcSessionManager::Observer>
+  ScopedObserver<arc::ArcSessionManager, arc::ArcSessionManagerObserver>
       arc_session_observer_{this};
 
   base::WeakPtrFactory<LockToSingleUserManager> weak_factory_{this};

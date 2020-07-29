@@ -1924,7 +1924,6 @@
 <translation id="3371140690572404006">USB-C მოწყობილობა (მარჯვენა წინა პორტი)</translation>
 <translation id="337286756654493126">პროგრამაში გახსნილი საქაღალდეების წაკითხვა</translation>
 <translation id="3378572629723696641">შესაძლოა, ეს გაფართოება დაზიანებულია.</translation>
-<translation id="3379169026479470857">DLC-ის ამოშლა</translation>
 <translation id="337920581046691015"><ph name="PRODUCT_NAME" /> დაინსტალირდება.</translation>
 <translation id="3380365263193509176">უცნობი შეცდომა</translation>
 <translation id="3382073616108123819">უი! სისტემამ ვერ დაადგინა მოწყობილობის იდენტიფიკატორები ამ მოწყობილობისთვის.</translation>
@@ -2379,6 +2378,7 @@
 <translation id="3882165008614329320">არსებული ვიდეო კამერიდან ან ფაილიდან</translation>
 <translation id="3886446263141354045">ამ საიტზე წვდომის მოთხოვნა გაეგზავნა <ph name="NAME" />-ს</translation>
 <translation id="3888550877729210209">ჩანიშვნა <ph name="LOCK_SCREEN_APP_NAME" />-ის მეშვეობით</translation>
+<translation id="3891563564777705449">{0,plural, =1{განაახლეთ მოწყობილობა 1 კვირის განმავლობაში}other{განაახლეთ მოწყობილობა # კვირის განმავლობაში}}</translation>
 <translation id="3892414795099177503">OpenVPN/L2TP-ის დამატება…</translation>
 <translation id="3893536212201235195">სპეციალური შესაძლებლობების პარამეტრების წაკითხვა და შეცვლა</translation>
 <translation id="3893630138897523026">ChromeVox (ხმოვანი შეფასება)</translation>
@@ -2610,14 +2610,12 @@
 <translation id="4175137578744761569">ღია მეწამული და თეთრი</translation>
 <translation id="4175737294868205930">მუდმივი მეხსიერება</translation>
 <translation id="4176463684765177261">გამორთული</translation>
-<translation id="418031202593299965">ეს კომპონენტები გაზიარებულია მოწყობილობის სხვა მომხმარებლებთან. კომპონენტების ამოშლა შეიძლება აისახოს მათზე.</translation>
 <translation id="4180788401304023883">წავშალოთ CA სერტიფიკატი „<ph name="CERTIFICATE_NAME" />“?</translation>
 <translation id="4181602000363099176">20x</translation>
 <translation id="4181841719683918333">ენები</translation>
 <translation id="4184885522552335684">ეკრანის გადაადგილება ჩავლებით შეგიძლიათ</translation>
 <translation id="4187424053537113647">მიმდინარეობს <ph name="APP_NAME" />-ის დაყენება...</translation>
 <translation id="4190828427319282529">კლავიატურით ფოკუსირების გამოყოფა</translation>
-<translation id="4191805472951276951">DLC</translation>
 <translation id="4194570336751258953">ჩართე დაჭერა, რათა დააწკაპუნო</translation>
 <translation id="4195643157523330669">ახალ ჩანართში გახსნა</translation>
 <translation id="4195814663415092787">გააგრძელეთ იქიდან, სადაც შეჩერდით</translation>
@@ -3036,7 +3034,6 @@
 <translation id="4756388243121344051">&amp;ისტორია</translation>
 <translation id="4759238208242260848">ჩამოტვირთვები</translation>
 <translation id="4761104368405085019">გამოიყენეთ თქვენი მიკროფონი</translation>
-<translation id="4762055672525936226">ჩამოტვირთული კონტენტის წაშლა</translation>
 <translation id="4762718786438001384">მოწყობილობის დისკზე ხელმისაწვდომი მეხსიერება კრიტიკულად არასაკმარისია</translation>
 <translation id="4763408175235639573">ამ გვერდის დათვალიერებისას შეიქმნა შემდეგი ქუქი-ჩანაწერები</translation>
 <translation id="4765582662863429759">საშუალებას აძლევს Android Messages-ს, მოახდინოს ტექსტური შეტყობინებების რეტრანსლირება ტელეფონიდან თქვენს Chromebook-ში</translation>
@@ -3290,7 +3287,6 @@
 <translation id="5094721898978802975">მოთანამშრომლე ძირითად პროგრამებთან კომუნიკაცია</translation>
 <translation id="5097002363526479830">ქსელთან დაკავშირება ვერ მოხერხდა „<ph name="NAME" />“: <ph name="DETAILS" /></translation>
 <translation id="5097874180538493929">ავტომატურად დაწკაპუნება კურსორის გაჩერებისას</translation>
-<translation id="5098800418125334616">ჩამოტვირთული კონტენტის მართვა</translation>
 <translation id="5101042277149003567">ყველა სანიშნის გახსნა</translation>
 <translation id="5101839224773798795">ავტომატური დაწკაპუნება კურსორის გაჩერებისას</translation>
 <translation id="5107443654503185812">გაფართოებამ გამორთო Safe Browsing</translation>
@@ -4168,7 +4164,6 @@
 <translation id="6198102561359457428">გამოდით, შემდეგ ისევ შედით…</translation>
 <translation id="6198252989419008588">შეცვალეთ PIN-ი</translation>
 <translation id="6202304368170870640">PIN-კოდის მეშვეობით შეგიძლიათ თქვენს მოწყობილობაში შესვლა ან მისი განბლოკვა.</translation>
-<translation id="6202517672944764518">ჩამოტვირთული კონტენტი</translation>
 <translation id="6206311232642889873">გამოსახულების &amp;კოპირება</translation>
 <translation id="6207200176136643843">მასშტაბირების ნაგულისხმევ დონეზე გადაყენება</translation>
 <translation id="6207937957461833379">ქვეყანა/რეგიონი</translation>
@@ -4440,6 +4435,7 @@
 <translation id="6535331821390304775">ამ ტიპის ბმულების ყოველთვის დაკავშირებულ აპში გახსნის დაშვება <ph name="ORIGIN" />-ისთვის</translation>
 <translation id="654039047105555694"><ph name="BEGIN_BOLD" />შენიშვნა:<ph name="END_BOLD" /> ჩართეთ მხოლოდ იმ შემთხვევაში, თუ ზუსტად იცით, რას აკეთებთ, ან თუ სისტემამ მოითხოვა ეს მოქმედება, რადგან მონაცემების შეგროვებამ შეიძლება შეამციროს ეფექტურობა.</translation>
 <translation id="6541638731489116978">ამ საიტს აეკრძალა მოძრაობის სენსორებზე წვდომა.</translation>
+<translation id="6545407738986370057">{0,plural, =1{დააბრუნეთ მოწყობილობა 1 კვირის განმავლობაში}other{დააბრუნეთ მოწყობილობა # კვირის განმავლობაში}}</translation>
 <translation id="6545665334409411530">გამეორების სიხშირე</translation>
 <translation id="6545864417968258051">Bluetooth სკანირება</translation>
 <translation id="6545867563032584178">მიკროფონი გამორთულია Mac-ის სისტემის პარამეტრებში</translation>
@@ -6125,7 +6121,6 @@
 <translation id="8652400352452647993">პაკეტის გაფართოების შეცდომა</translation>
 <translation id="8654151524613148204">ფაილი ძალიან დიდია თქვენს კომპიუტერში დასამუშავებლად. ბოდიშს გიხდით.</translation>
 <translation id="8655295600908251630">არხი</translation>
-<translation id="8655319619291175901">შეცდომა მოხდა.</translation>
 <translation id="8655972064210167941">შესვლა ვერ მოხერხდა, რადგან თქვენი პაროლის დადასტურება შეუძლებელია. გთხოვთ, დაუკავშირდეთ ადმინისტრატორს ან სცადოთ ხელახლა.</translation>
 <translation id="8656768832129462377">არ შეამოწმოთ</translation>
 <translation id="8658645149275195032"><ph name="APP_NAME" /> თქვენს ეკრანსა და აუდიოს <ph name="TAB_NAME" />-ს უზიარებს.</translation>
@@ -6214,7 +6209,6 @@
        &lt;p&gt;მიუხედავად ამისა თქვენ მაინც შეძლებთ ბრძანებათა სტრიქონიდან სისტემის კონფიგურაციას. იხილეთ &lt;code&gt;man <ph name="PRODUCT_BINARY_NAME" />&lt;/code&gt; ალმებსა და გარემოს ცვლილებებზე დამატებითი ინფორმაციისთვის.&lt;/p&gt;</translation>
 <translation id="8755175579224030324">თქვენი ორგანიზაციისთვის უსაფრთხოებასთან დაკავშირებული ამოცანების შესრულება, როგორიცაა მოწყობილობაზე შენახული სერტიფიკატებისა და გასაღებების მართვა</translation>
 <translation id="8755376271068075440">&amp;უფრო დიდი</translation>
-<translation id="8756143264090841047">DLC-ის წაშლა</translation>
 <translation id="8756969031206844760">გსურთ პაროლის განახლება?</translation>
 <translation id="8757090071857742562">დესკტოპის ტრანსლირება შეუძლებელია. შეამოწმეთ, დადასტურებული გაქვთ თუ არა თქვენი ეკრანის გაზიარების დაწყების შესახებ მოთხოვნა.</translation>
 <translation id="8757203080302669031">ეს ჩანართი აქტიურად ასკანირებს Bluetooth მოწყობილობებს.</translation>
@@ -6229,7 +6223,6 @@
 <translation id="8770406935328356739">გაფართოების ძირეული დირექტორია</translation>
 <translation id="8770507190024617908">ადამიანების მართვა</translation>
 <translation id="8771300903067484968">საწყისი გვერდის ფონი გადაყენებულია ნაგულისხმევ ფონზე.</translation>
-<translation id="8771939407732945762">ჩამოტვირთული კონტენტის ამოშლა</translation>
 <translation id="8773302562181397928"><ph name="PRINTER_NAME" />-ის შენახვა</translation>
 <translation id="8774379074441005279">დაადასტურეთ აღდგენა</translation>
 <translation id="8774934320277480003">ზედა მინდორი</translation>

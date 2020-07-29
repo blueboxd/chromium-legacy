@@ -147,7 +147,7 @@ class CppBundleGenerator(object):
       elif platform == Platforms.LINUX:
         ifdefs.append('(defined(OS_LINUX) && !defined(OS_CHROMEOS))')
       elif platform == Platforms.MAC:
-        ifdefs.append('defined(OS_MACOSX)')
+        ifdefs.append('defined(OS_MAC)')
       elif platform == Platforms.WIN:
         ifdefs.append('defined(OS_WIN)')
       else:

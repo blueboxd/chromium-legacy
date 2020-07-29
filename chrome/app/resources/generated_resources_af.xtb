@@ -1925,7 +1925,6 @@ Jy kan hierdie rekening se instellings bestuur deur die Family Link-program op j
 <translation id="3371140690572404006">USB C-toestel (voorste poort aan regterkant)</translation>
 <translation id="337286756654493126">Lees vouers wat jy in die program oopmaak</translation>
 <translation id="3378572629723696641">Hierdie uitbreiding kon dalk gekorrupteer gewees het.</translation>
-<translation id="3379169026479470857">Verwyder DLC</translation>
 <translation id="337920581046691015"><ph name="PRODUCT_NAME" /> sal geïnstalleer word.</translation>
 <translation id="3380365263193509176">Onbekende fout</translation>
 <translation id="3382073616108123819">Oeps! Die stelsel kon nie toestelidentifiseerders vir hierdie toestel bepaal nie.</translation>
@@ -2612,14 +2611,12 @@ Jy kan hierdie rekening se instellings bestuur deur die Family Link-program op j
 <translation id="4175137578744761569">Ligpers en wit</translation>
 <translation id="4175737294868205930">Aanhoudende berging</translation>
 <translation id="4176463684765177261">Gedeaktiveer</translation>
-<translation id="418031202593299965">Hierdie komponente word met ander gebruikers op hierdie toestel gedeel. As jy komponente verwyder, kan dit ander gebruikers raak.</translation>
 <translation id="4180788401304023883">Vee CA-sertifikaat "<ph name="CERTIFICATE_NAME" />" uit?</translation>
 <translation id="4181602000363099176">20x</translation>
 <translation id="4181841719683918333">Tale</translation>
 <translation id="4184885522552335684">Sleep om 'n skerm te skuif</translation>
 <translation id="4187424053537113647">Stel tans <ph name="APP_NAME" /> op …</translation>
 <translation id="4190828427319282529">Merk sleutelbordfokus</translation>
-<translation id="4191805472951276951">DLC</translation>
 <translation id="4194570336751258953">Aktiveer tik-om-te-klik</translation>
 <translation id="4195643157523330669">Maak in nuwe oortjie oop</translation>
 <translation id="4195814663415092787">Gaan voort waar jy opgehou het</translation>
@@ -3038,7 +3035,6 @@ Jy kan hierdie rekening se instellings bestuur deur die Family Link-program op j
 <translation id="4756388243121344051">Geskiedenis</translation>
 <translation id="4759238208242260848">Aflaaie</translation>
 <translation id="4761104368405085019">Gebruik jou mikrofoon</translation>
-<translation id="4762055672525936226">Vee afgelaaide inhoud uit</translation>
 <translation id="4762718786438001384">Toestel se skyfspasie is gevaarlik laag</translation>
 <translation id="4763408175235639573">Die volgende webkoekies is gestel toe jy hierdie bladsy bekyk het</translation>
 <translation id="4765582662863429759">Laat Android Boodskappe toe om SMS'e van jou foon af na jou Chromebook toe oor te dra</translation>
@@ -3292,7 +3288,6 @@ Jy kan hierdie rekening se instellings bestuur deur die Family Link-program op j
 <translation id="5094721898978802975">Kommunikeer met plaaslike programme wat saamwerk</translation>
 <translation id="5097002363526479830">Kon nie aan "<ph name="NAME" />"-netwerk koppel nie: <ph name="DETAILS" /></translation>
 <translation id="5097874180538493929">Klik outomaties wanneer skermpyltjie stop</translation>
-<translation id="5098800418125334616">Bestuur afgelaaide inhoud</translation>
 <translation id="5101042277149003567">Maak alle boekmerke oop</translation>
 <translation id="5101839224773798795">Klik outomaties wanneer die merker stop</translation>
 <translation id="5107443654503185812">'n Uitbreiding het Veiligblaai afgeskakel</translation>
@@ -4171,7 +4166,6 @@ Maak seker jy wys nie enige sensitiewe inligting nie.</translation>
 <translation id="6198102561359457428">Meld af en meld dan weer aan …</translation>
 <translation id="6198252989419008588">Verander PIN</translation>
 <translation id="6202304368170870640">Jy kan jou PIN gebruik om aan te meld of jou toestel te ontsluit.</translation>
-<translation id="6202517672944764518">Afgelaaide inhoud</translation>
 <translation id="6206311232642889873">Kopieer prent</translation>
 <translation id="6207200176136643843">Stel terug na verstek-zoemvlak</translation>
 <translation id="6207937957461833379">Land/Streek</translation>
@@ -4489,6 +4483,7 @@ Maak seker jy wys nie enige sensitiewe inligting nie.</translation>
 <translation id="6602956230557165253">Gebruik links- en regspyltjiesleutels om te navigeer.</translation>
 <translation id="6605847144724004692">Nog nie deur enige gebruikers gegradeer nie.</translation>
 <translation id="6607831829715835317">Meer nutsgoed</translation>
+<translation id="6608012008902909398">Wys besonderhede van die toestelsagtewarekontrole</translation>
 <translation id="6611972847767394631">Vind jou oortjies hier</translation>
 <translation id="6612358246767739896">Beskermde inhoud</translation>
 <translation id="6615455863669487791">Wys my</translation>
@@ -6130,7 +6125,6 @@ Hou jou sleutellêer op 'n veilige plek. Jy gaan dit nodig hê om nuwe weergawes
 <translation id="8652400352452647993">Pakketuitbreidingfout</translation>
 <translation id="8654151524613148204">Die lêer is te groot vir jou rekenaar om te hanteer. Jammer.</translation>
 <translation id="8655295600908251630">Kanaal</translation>
-<translation id="8655319619291175901">Oeps, iets het verkeerd gegaan.</translation>
 <translation id="8655972064210167941">Kon nie aanmeld nie omdat jou wagwoord nie geverifieer kon word nie. Kontak jou administrateur of probeer weer.</translation>
 <translation id="8656768832129462377">Moenie nagaan nie</translation>
 <translation id="8658645149275195032"><ph name="APP_NAME" /> deel tans jou skerm en oudio met <ph name="TAB_NAME" />.</translation>
@@ -6219,7 +6213,6 @@ Hou jou sleutellêer op 'n veilige plek. Jy gaan dit nodig hê om nuwe weergawes
         &lt;p&gt;Jy kan egter steeds via die bevellyn opstel. Sien asseblief &lt;code&gt;man <ph name="PRODUCT_BINARY_NAME" />&lt;/code&gt; vir meer inligting oor vlae en omgewingsveranderlikes.&lt;/p&gt;</translation>
 <translation id="8755175579224030324">Voer sekuriteitverwante take vir jou organisasie uit, soos om sertifikate en sleutels wat op die toestel geberg is, te bestuur</translation>
 <translation id="8755376271068075440">Groter</translation>
-<translation id="8756143264090841047">Vee DLC uit</translation>
 <translation id="8756969031206844760">Dateer wagwoord op?</translation>
 <translation id="8757090071857742562">Kan nie die werkskerm uitsaai nie. Kyk of jy die aanporboodskap om jou skerm te begin deel, bevestig het.</translation>
 <translation id="8757203080302669031">Hierdie oortjie soek tans aktief na Bluetooth-toestelle</translation>
@@ -6234,7 +6227,6 @@ Hou jou sleutellêer op 'n veilige plek. Jy gaan dit nodig hê om nuwe weergawes
 <translation id="8770406935328356739">Uitbreidingwortelgids</translation>
 <translation id="8770507190024617908">Bestuur mense</translation>
 <translation id="8771300903067484968">Beginbladsy se agtergrond is na die verstekagtergrond toe teruggestel.</translation>
-<translation id="8771939407732945762">Verwyder afgelaaide inhoud</translation>
 <translation id="8773302562181397928">Bespaar <ph name="PRINTER_NAME" /></translation>
 <translation id="8774379074441005279">Bevestig terugstelling</translation>
 <translation id="8774934320277480003">Boonste kantlyn</translation>

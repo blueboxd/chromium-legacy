@@ -529,6 +529,20 @@ Polymer({
     return 'images/linux_illustration.png';
   },
 
+  /**
+   * @param {State} state
+   * @return {boolean}
+   * @private
+   */
+  hideIllustration_(state) {
+    switch (state) {
+      case State.BACKUP:
+      case State.UPGRADING:
+        return true;
+    }
+    return false;
+  },
+
   /** @private */
   updateProgressLine_() {
     if (this.progressLineNumber_ < this.upgradeProgress_) {

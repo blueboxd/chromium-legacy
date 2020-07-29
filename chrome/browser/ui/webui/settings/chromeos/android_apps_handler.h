@@ -12,6 +12,7 @@
 #include "base/memory/weak_ptr.h"
 #include "base/scoped_observer.h"
 #include "chrome/browser/chromeos/arc/session/arc_session_manager.h"
+#include "chrome/browser/chromeos/arc/session/arc_session_manager_observer.h"
 #include "chrome/browser/ui/app_list/arc/arc_app_list_prefs.h"
 #include "chrome/browser/ui/webui/settings/settings_page_ui_handler.h"
 
@@ -26,7 +27,7 @@ namespace settings {
 
 class AndroidAppsHandler : public ::settings::SettingsPageUIHandler,
                            public ArcAppListPrefs::Observer,
-                           public arc::ArcSessionManager::Observer {
+                           public arc::ArcSessionManagerObserver {
  public:
   explicit AndroidAppsHandler(Profile* profile);
   ~AndroidAppsHandler() override;
@@ -43,7 +44,7 @@ class AndroidAppsHandler : public ::settings::SettingsPageUIHandler,
                           const ArcAppListPrefs::AppInfo& app_info) override;
   void OnAppRemoved(const std::string& app_id) override;
 
-  // arc::ArcSessionManager::Observer:
+  // arc::ArcSessionManagerObserver:
   void OnArcPlayStoreEnabledChanged(bool enabled) override;
 
  private:
@@ -57,7 +58,7 @@ class AndroidAppsHandler : public ::settings::SettingsPageUIHandler,
 
   ScopedObserver<ArcAppListPrefs, ArcAppListPrefs::Observer>
       arc_prefs_observer_;
-  ScopedObserver<arc::ArcSessionManager, arc::ArcSessionManager::Observer>
+  ScopedObserver<arc::ArcSessionManager, arc::ArcSessionManagerObserver>
       arc_session_manager_observer_;
   Profile* profile_;  // unowned
   base::WeakPtrFactory<AndroidAppsHandler> weak_ptr_factory_{this};

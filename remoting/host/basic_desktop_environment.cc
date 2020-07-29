@@ -30,6 +30,7 @@
 
 #if defined(USE_X11)
 #include "remoting/host/linux/x11_util.h"
+#include "ui/base/ui_base_features.h"
 #endif
 
 namespace remoting {
@@ -130,7 +131,8 @@ BasicDesktopEnvironment::BasicDesktopEnvironment(
       options_(options) {
   DCHECK(caller_task_runner_->BelongsToCurrentThread());
 #if defined(USE_X11)
-  IgnoreXServerGrabs(desktop_capture_options().x_display()->display(), true);
+  if (!features::IsUsingOzonePlatform())
+    IgnoreXServerGrabs(desktop_capture_options().x_display()->display(), true);
 #elif defined(OS_WIN)
   // The options passed to this instance are determined by a process running in
   // Session 0.  Access to DirectX functions in Session 0 is limited so the

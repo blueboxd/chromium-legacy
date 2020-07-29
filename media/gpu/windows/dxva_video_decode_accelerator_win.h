@@ -586,7 +586,8 @@ class MEDIA_GPU_EXPORT DXVAVideoDecodeAccelerator
   const bool enable_accelerated_av1_decode_;
 
   // Enables hardware acceleration for VP8/VP9 video decoding.
-  const bool enable_accelerated_vpx_decode_;
+  const bool enable_accelerated_vp8_decode_;
+  const bool enable_accelerated_vp9_decode_;
 
   // The media foundation H.264 decoder has problems handling changes like
   // resolution change, bitrate change etc. If we reinitialize the decoder

@@ -1552,7 +1552,7 @@
 <translation id="7518003948725431193">次の URL のウェブページは見つかりませんでした:<ph name="URL" /></translation>
 <translation id="7520302887438682816">C8（封筒）</translation>
 <translation id="7521387064766892559">JavaScript</translation>
-<translation id="7521825010239864438">「<ph name="SECTION" />」セクションを非表示にしています</translation>
+<translation id="7521825010239864438">「<ph name="SECTION" />」セクションを非表示にしました</translation>
 <translation id="7526934274050461096">このサイトへの接続ではプライバシーが保護されません</translation>
 <translation id="7535087603100972091">値</translation>
 <translation id="7537536606612762813">必須</translation>
@@ -1871,7 +1871,7 @@
 <translation id="8931333241327730545">このカードを Google アカウントに保存しますか？</translation>
 <translation id="8932102934695377596">時計が遅れています</translation>
 <translation id="893332455753468063">名前の追加</translation>
-<translation id="8942355029279167844">管理者は、<ph name="APP_NAME" /> でサービスを改善するため、診断データを収集することを許可しています。詳しくは、<ph name="BEGIN_LINK" />https://www.parallels.com/pcep<ph name="END_LINK" /> をご覧ください。</translation>
+<translation id="8942355029279167844">管理者は、<ph name="APP_NAME" /> がサービス改善のために診断データを収集することを許可しています。詳しくは、<ph name="BEGIN_LINK" />https://www.parallels.com/pcep<ph name="END_LINK" /> をご覧ください。</translation>
 <translation id="8943282376843390568">ライム</translation>
 <translation id="8957210676456822347">キャプティブ ポータル認証</translation>
 <translation id="8962950042226115166">不審なサイト</translation>

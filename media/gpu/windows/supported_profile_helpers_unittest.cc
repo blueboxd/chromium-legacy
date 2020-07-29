@@ -187,7 +187,8 @@ TEST_F(SupportedResolutionResolverTest, HasH264SupportByDefault) {
 TEST_F(SupportedResolutionResolverTest, WorkaroundsDisableVpx) {
   DONT_RUN_ON_WIN_7();
 
-  gpu_workarounds_.disable_accelerated_vpx_decode = true;
+  gpu_workarounds_.disable_accelerated_vp8_decode = true;
+  gpu_workarounds_.disable_accelerated_vp9_decode = true;
   EnableDecoders({D3D11_DECODER_PROFILE_VP8_VLD,
                   D3D11_DECODER_PROFILE_VP9_VLD_PROFILE0,
                   D3D11_DECODER_PROFILE_VP9_VLD_10BIT_PROFILE2});

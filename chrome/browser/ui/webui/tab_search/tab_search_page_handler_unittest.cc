@@ -5,10 +5,13 @@
 #include "chrome/browser/ui/webui/tab_search/tab_search_page_handler.h"
 
 #include "base/test/bind_test_util.h"
+#include "base/timer/mock_timer.h"
 #include "chrome/browser/ui/browser_commands.h"
 #include "chrome/browser/ui/browser_list.h"
 #include "chrome/test/base/browser_with_test_window_test.h"
 #include "chrome/test/base/test_browser_window.h"
+#include "chrome/test/base/testing_profile_manager.h"
+#include "components/sync_preferences/pref_service_syncable.h"
 #include "content/public/test/test_web_ui.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "ui/gfx/color_utils.h"
@@ -19,11 +22,13 @@ constexpr char kTabUrl1[] = "http://foo/1";
 constexpr char kTabUrl2[] = "http://foo/2";
 constexpr char kTabUrl3[] = "http://foo/3";
 constexpr char kTabUrl4[] = "http://foo/4";
+constexpr char kTabUrl5[] = "http://foo/5";
 
 constexpr char kTabName1[] = "Tab 1";
 constexpr char kTabName2[] = "Tab 2";
 constexpr char kTabName3[] = "Tab 3";
 constexpr char kTabName4[] = "Tab 4";
+constexpr char kTabName5[] = "Tab 5";
 
 class MockPage : public tab_search::mojom::Page {
  public:
@@ -35,6 +40,8 @@ class MockPage : public tab_search::mojom::Page {
     return receiver_.BindNewPipeAndPassRemote();
   }
   mojo::Receiver<tab_search::mojom::Page> receiver_{this};
+
+  MOCK_METHOD0(TabsChanged, void());
 };
 
 void ExpectNewTab(const tab_search::mojom::Tab* tab,
@@ -70,15 +77,29 @@ class TestTabSearchPageHandler : public TabSearchPageHandler {
       : TabSearchPageHandler(
             mojo::PendingReceiver<tab_search::mojom::PageHandler>(),
             std::move(page),
-            web_ui) {}
+            web_ui) {
+    mock_debounce_timer_ = new base::MockRetainingOneShotTimer();
+    SetTimerForTesting(base::WrapUnique(mock_debounce_timer_));
+  }
+  base::MockRetainingOneShotTimer* mock_debounce_timer() {
+    return mock_debounce_timer_;
+  }
+
+ private:
+  base::MockRetainingOneShotTimer* mock_debounce_timer_;
 };
 
 class TabSearchPageHandlerTest : public BrowserWithTestWindowTest {
  public:
   void SetUp() override {
     BrowserWithTestWindowTest::SetUp();
-    browser2_ = CreateTestBrowser(false, false);
-    browser3_ = CreateTestBrowser(true, false);
+    profile2_ = profile_manager()->CreateTestingProfile(
+        "testing_profile2", nullptr, base::string16(), 0, std::string(),
+        GetTestingFactories());
+    browser2_ = CreateTestBrowser(profile1(), false);
+    browser3_ =
+        CreateTestBrowser(browser()->profile()->GetPrimaryOTRProfile(), false);
+    browser4_ = CreateTestBrowser(profile2(), false);
     BrowserList::SetLastActive(browser1());
     handler_ = std::make_unique<TestTabSearchPageHandler>(
         page_.BindAndGetRemote(), web_ui());
@@ -88,16 +109,32 @@ class TabSearchPageHandlerTest : public BrowserWithTestWindowTest {
     browser1()->tab_strip_model()->CloseAllTabs();
     browser2()->tab_strip_model()->CloseAllTabs();
     browser3()->tab_strip_model()->CloseAllTabs();
+    browser4()->tab_strip_model()->CloseAllTabs();
     browser2_.reset();
     browser3_.reset();
+    browser4_.reset();
     BrowserWithTestWindowTest::TearDown();
   }
 
   content::TestWebUI* web_ui() { return &web_ui_; }
+  Profile* profile1() { return browser()->profile(); }
+  Profile* profile2() { return profile2_; }
+
+  // The default browser.
   Browser* browser1() { return browser(); }
+
+  // Browser with the same profile of the default browser.
   Browser* browser2() { return browser2_.get(); }
+
+  // Browser with incognito profile.
   Browser* browser3() { return browser3_.get(); }
+
+  // Browser with a different profile of the default browser.
+  Browser* browser4() { return browser4_.get(); }
+
   TestTabSearchPageHandler* handler() { return handler_.get(); }
+  void FireTimer() { handler_->mock_debounce_timer()->Fire(); }
+  bool IsTimerRunning() { return handler_->mock_debounce_timer()->IsRunning(); }
 
  protected:
   void AddTabWithTitle(Browser* browser,
@@ -108,11 +145,11 @@ class TabSearchPageHandlerTest : public BrowserWithTestWindowTest {
                                         base::ASCIIToUTF16(title));
   }
 
+  testing::StrictMock<MockPage> page_;
+
  private:
-  std::unique_ptr<Browser> CreateTestBrowser(bool incognito, bool popup) {
+  std::unique_ptr<Browser> CreateTestBrowser(Profile* profile, bool popup) {
     auto window = std::make_unique<TestBrowserWindow>();
-    Profile* profile = incognito ? browser()->profile()->GetPrimaryOTRProfile()
-                                 : browser()->profile();
     Browser::Type type = popup ? Browser::TYPE_POPUP : Browser::TYPE_NORMAL;
 
     std::unique_ptr<Browser> browser =
@@ -122,19 +159,25 @@ class TabSearchPageHandlerTest : public BrowserWithTestWindowTest {
     return browser;
   }
 
-  testing::StrictMock<MockPage> page_;
   content::TestWebUI web_ui_;
+  Profile* profile2_;
   std::unique_ptr<Browser> browser2_;
   std::unique_ptr<Browser> browser3_;
+  std::unique_ptr<Browser> browser4_;
   std::unique_ptr<TestTabSearchPageHandler> handler_;
 };
 
 TEST_F(TabSearchPageHandlerTest, GetTabs) {
-  // Browser3 is in incognito mode, thus its tab should not be accessible.
+  // Browser3 and browser4 are using different profiles, thus their tabs should
+  // not be accessible.
+  AddTabWithTitle(browser4(), GURL(kTabUrl5), kTabName5);
   AddTabWithTitle(browser3(), GURL(kTabUrl4), kTabName4);
   AddTabWithTitle(browser2(), GURL(kTabUrl3), kTabName3);
   AddTabWithTitle(browser1(), GURL(kTabUrl2), kTabName2);
   AddTabWithTitle(browser1(), GURL(kTabUrl1), kTabName1);
+
+  EXPECT_CALL(page_, TabsChanged()).Times(1);
+  handler()->mock_debounce_timer()->Fire();
 
   int32_t tab_id2 = 0;
   int32_t tab_id3 = 0;
@@ -194,6 +237,51 @@ TEST_F(TabSearchPageHandlerTest, GetTabs) {
             ExpectProfileTabs(profile_tabs.get());
           });
   handler()->GetProfileTabs(std::move(callback3));
+}
+
+// Ensure that repeated tab model changes do not result in repeated calls to
+// TabsChanged() and TabsChanged() is only called when the page handler's
+// timer fires.
+TEST_F(TabSearchPageHandlerTest, TabsChanged) {
+  EXPECT_CALL(page_, TabsChanged()).Times(4);
+  FireTimer();  // Will call TabsChanged().
+
+  // Add 2 tabs in browser1.
+  ASSERT_FALSE(IsTimerRunning());
+  AddTabWithTitle(browser1(), GURL(kTabUrl1),
+                  kTabName1);  // Will kick off timer.
+  ASSERT_TRUE(IsTimerRunning());
+  AddTabWithTitle(browser1(), GURL(kTabUrl2), kTabName2);
+  // Subsequent tabs change will not change the state of the timer.
+  ASSERT_TRUE(IsTimerRunning());
+  FireTimer();  // Will call TabsChanged().
+
+  // Add 1 tab in browser2.
+  ASSERT_FALSE(IsTimerRunning());
+  AddTabWithTitle(browser2(), GURL(kTabUrl3), kTabName3);
+  ASSERT_TRUE(IsTimerRunning());
+  FireTimer();  // Will call TabsChanged().
+
+  // Close a tab in browser 1.
+  ASSERT_FALSE(IsTimerRunning());
+  browser1()->tab_strip_model()->CloseWebContentsAt(
+      0, TabStripModel::CLOSE_CREATE_HISTORICAL_TAB);
+  ASSERT_TRUE(IsTimerRunning());
+  FireTimer();  // Will call TabsChanged().
+}
+
+// Ensure that tab model changes in a browser with a different profile
+// will not call TabsChanged().
+TEST_F(TabSearchPageHandlerTest, TabsNotChanged) {
+  EXPECT_CALL(page_, TabsChanged()).Times(1);
+  FireTimer();  // Will call TabsChanged().
+  ASSERT_FALSE(IsTimerRunning());
+  AddTabWithTitle(browser3(), GURL(kTabUrl1),
+                  kTabName1);  // Will not kick off timer.
+  ASSERT_FALSE(IsTimerRunning());
+  AddTabWithTitle(browser4(), GURL(kTabUrl2),
+                  kTabName2);  // Will not kick off timer.
+  ASSERT_FALSE(IsTimerRunning());
 }
 
 }  // namespace

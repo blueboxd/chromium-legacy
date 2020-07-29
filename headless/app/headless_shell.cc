@@ -56,7 +56,7 @@
 #include "sandbox/win/src/sandbox_types.h"
 #endif
 
-#if defined(OS_MACOSX)
+#if defined(OS_MAC)
 #include "components/os_crypt/os_crypt_switches.h"
 #endif
 
@@ -676,7 +676,7 @@ int HeadlessShellMain(int argc, const char** argv) {
   builder.SetCrashDumpsDir(dumps_path);
 #endif
 
-#if defined(OS_MACOSX)
+#if defined(OS_MAC)
   command_line.AppendSwitch(os_crypt::switches::kUseMockKeychain);
 #endif
 

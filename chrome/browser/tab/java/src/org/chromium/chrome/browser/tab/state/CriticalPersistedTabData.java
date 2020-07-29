@@ -131,7 +131,7 @@ public class CriticalPersistedTabData extends PersistedTabData {
                 CriticalPersistedTabData.class, tab.isIncognito());
         // CriticalPersistedTabData is initialized with default values
         CriticalPersistedTabData criticalPersistedTabData =
-                new CriticalPersistedTabData(tab, tab.getParentId(), tab.getId(),
+                new CriticalPersistedTabData(tab, Tab.INVALID_TAB_ID, tab.getId(),
                         tab.getTimestampMillis(), null, -1, "", UNSPECIFIED_THEME_COLOR,
                         tab.getLaunchTypeAtInitialTabCreation() == null
                                 ? TabLaunchType.FROM_LINK
@@ -307,6 +307,13 @@ public class CriticalPersistedTabData extends PersistedTabData {
      */
     public int getParentId() {
         return mParentId;
+    }
+
+    /**
+     * Set parent identifier for the {@link Tab}
+     */
+    public void setParentId(int parentId) {
+        mParentId = parentId;
     }
 
     /**

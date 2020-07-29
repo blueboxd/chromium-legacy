@@ -6663,9 +6663,22 @@
             ],
             "experiments": [
                 {
-                    "name": "Enabled_20200609",
+                    "name": "EnabledWithExperimentalVersion_20200728",
+                    "params": {
+                        "smart_dim_experimental_version": "20200601.1"
+                    },
+                    "enable_features": [
+                        "SmartDimExperimentalComponent",
+                        "SmartDimNewMlAgent"
+                    ]
+                },
+                {
+                    "name": "EnabledWithDefaultVersion_20200728",
                     "enable_features": [
                         "SmartDimNewMlAgent"
+                    ],
+                    "disable_features": [
+                        "SmartDimExperimentalComponent"
                     ]
                 }
             ]
@@ -6794,6 +6807,26 @@
                     },
                     "enable_features": [
                         "PulseInterval"
+                    ]
+                }
+            ]
+        }
+    ],
+    "SyncReuploadBookmarkFullTitles": [
+        {
+            "platforms": [
+                "android",
+                "chromeos",
+                "ios",
+                "linux",
+                "mac",
+                "windows"
+            ],
+            "experiments": [
+                {
+                    "name": "Enabled",
+                    "enable_features": [
+                        "SyncReuploadBookmarkFullTitles"
                     ]
                 }
             ]

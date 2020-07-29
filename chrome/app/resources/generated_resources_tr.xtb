@@ -1925,7 +1925,6 @@ Sunucunun mesajı: <ph name="SERVER_MSG" /></translation>
 <translation id="3371140690572404006">USB-C cihaz (sağ ön bağlantı noktası)</translation>
 <translation id="337286756654493126">Uygulamada açtığınız klasörleri okuma</translation>
 <translation id="3378572629723696641">Bu uzantı bozuk olabilir.</translation>
-<translation id="3379169026479470857">DLC'yi kaldır</translation>
 <translation id="337920581046691015"><ph name="PRODUCT_NAME" /> yüklenecek.</translation>
 <translation id="3380365263193509176">Bilinmeyen hata</translation>
 <translation id="3382073616108123819">Hata! Sistem, bu cihaz için cihaz tanıtıcılarını belirleyemedi.</translation>
@@ -2380,6 +2379,7 @@ Sunucunun mesajı: <ph name="SERVER_MSG" /></translation>
 <translation id="3882165008614329320">Kameradan veya dosyadan mevcut video</translation>
 <translation id="3886446263141354045">Bu siteye erişim isteğiniz şu kişiye gönderildi: <ph name="NAME" /></translation>
 <translation id="3888550877729210209"><ph name="LOCK_SCREEN_APP_NAME" /> ile not alınıyor</translation>
+<translation id="3891563564777705449">{0,plural, =1{Cihazı 1 hafta içinde güncelleyin}other{Cihazı # hafta içinde güncelleyin}}</translation>
 <translation id="3892414795099177503">OpenVPN / L2TP Ekle...</translation>
 <translation id="3893536212201235195">Erişilebilirlik ayarlarınızı okuma ve değiştirme</translation>
 <translation id="3893630138897523026">ChromeVox (sesli geri bildirim)</translation>
@@ -2611,14 +2611,12 @@ Sunucunun mesajı: <ph name="SERVER_MSG" /></translation>
 <translation id="4175137578744761569">Açık mor ve beyaz</translation>
 <translation id="4175737294868205930">Kalıcı depolama</translation>
 <translation id="4176463684765177261">Devre dışı</translation>
-<translation id="418031202593299965">Bu bileşenler bu cihazda diğer kullanıcılarla paylaşılıyor. Bileşenlerin kaldırılması diğer kullanıcıları etkileyebilir.</translation>
 <translation id="4180788401304023883">"<ph name="CERTIFICATE_NAME" />" CA sertifikası silinsin mi?</translation>
 <translation id="4181602000363099176">20x</translation>
 <translation id="4181841719683918333">Diller</translation>
 <translation id="4184885522552335684">Ekranı taşımak için sürükleyin</translation>
 <translation id="4187424053537113647"><ph name="APP_NAME" /> kuruluyor...</translation>
 <translation id="4190828427319282529">Klavye odağını vurgula</translation>
-<translation id="4191805472951276951">DLC</translation>
 <translation id="4194570336751258953">Tıklamak için hafifçe vur'u etkinleştir</translation>
 <translation id="4195643157523330669">Yeni sekmede aç</translation>
 <translation id="4195814663415092787">Kaldığım yerden devam et</translation>
@@ -3037,7 +3035,6 @@ Sunucunun mesajı: <ph name="SERVER_MSG" /></translation>
 <translation id="4756388243121344051">&amp;Geçmiş</translation>
 <translation id="4759238208242260848">İndirilenler</translation>
 <translation id="4761104368405085019">Mikrofonunuzu kullanma</translation>
-<translation id="4762055672525936226">İndirilen İçeriği Sil</translation>
 <translation id="4762718786438001384">Cihazdaki boş disk alanı kritik düzeyde</translation>
 <translation id="4763408175235639573">Bu sayfayı görüntülediğinizde aşağıdaki çerezler ayarlandı</translation>
 <translation id="4765582662863429759">Android Mesajlar'ın telefonunuzdan Chromebook'unuza kısa mesaj aktarmasını sağlar</translation>
@@ -3291,7 +3288,6 @@ Sunucunun mesajı: <ph name="SERVER_MSG" /></translation>
 <translation id="5094721898978802975">İşbirliği yapan yerel uygulamalarla iletişim kurma</translation>
 <translation id="5097002363526479830">'<ph name="NAME" />' ağına bağlanamadı: <ph name="DETAILS" /></translation>
 <translation id="5097874180538493929">İmleç durduğunda otomatik olarak tıkla</translation>
-<translation id="5098800418125334616">İndirilen içeriği yönetin</translation>
 <translation id="5101042277149003567">Tüm yer işaretlerini aç</translation>
 <translation id="5101839224773798795">İmleç durduğunda otomatik olarak tıkla</translation>
 <translation id="5107443654503185812">Bir uzantı Güvenli Tarama'yı kapattı</translation>
@@ -4170,7 +4166,6 @@ Hassas bilgileri vermediğinizden emin olun.</translation>
 <translation id="6198102561359457428">Oturumu kapatıp tekrar açın...</translation>
 <translation id="6198252989419008588">PIN'i değiştir</translation>
 <translation id="6202304368170870640">Cihazınızda oturum açmak veya cihazınızın kilidini açmak için PIN'inizi kullanabilirsiniz.</translation>
-<translation id="6202517672944764518">İndirilen İçerik</translation>
 <translation id="6206311232642889873">Resmi Kop&amp;yala</translation>
 <translation id="6207200176136643843">Varsayılan yakınlaştırma seviyesine sıfırla</translation>
 <translation id="6207937957461833379">Ülke/Bölge</translation>
@@ -4442,6 +4437,7 @@ Hassas bilgileri vermediğinizden emin olun.</translation>
 <translation id="6535331821390304775">Bu tür bağlantıları ilişkilendirilmiş uygulamada açması için <ph name="ORIGIN" /> sitesine her zaman izin ver</translation>
 <translation id="654039047105555694"><ph name="BEGIN_BOLD" />Not:<ph name="END_BOLD" /> Veri toplama işlemi performansı düşürebileceğinden sadece etkinleştirmenin sonuçlarını biliyorsanız veya etkinleştirmeniz istenmişse bunu yapın.</translation>
 <translation id="6541638731489116978">Bu sitenin, hareket sensörlerinize erişimi engellenmiştir.</translation>
+<translation id="6545407738986370057">{0,plural, =1{Cihazı 1 hafta içinde iade edin}other{Cihazı # hafta içinde iade edin}}</translation>
 <translation id="6545665334409411530">Yineleme hızı</translation>
 <translation id="6545864417968258051">Bluetooth taraması</translation>
 <translation id="6545867563032584178">Mikrofon, Mac Sistem Tercihleri'nde kapatıldı</translation>
@@ -6128,7 +6124,6 @@ Anahtar dosyanızı güvenli bir yerde saklayın. Uzantınızın yeni sürümler
 <translation id="8652400352452647993">Uzantı paketleme hatası</translation>
 <translation id="8654151524613148204">Maalesef dosya bilgisayarınız için çok büyük.</translation>
 <translation id="8655295600908251630">Kanal</translation>
-<translation id="8655319619291175901">Hata, bir sorun var.</translation>
 <translation id="8655972064210167941">Şifreniz doğrulanamadığı için oturum açma işlemi başarısız oldu. Lütfen yöneticinizle iletişime geçin veya tekrar deneyin.</translation>
 <translation id="8656768832129462377">Kontrol etme</translation>
 <translation id="8658645149275195032"><ph name="APP_NAME" />, ekranınızı ve sesinizi <ph name="TAB_NAME" /> ile paylaşıyor.</translation>
@@ -6217,7 +6212,6 @@ Anahtar dosyanızı güvenli bir yerde saklayın. Uzantınızın yeni sürümler
         &lt;p&gt;Yine de, yapılandırmayı komut satırını kullanarak yapabilirsiniz. Bayraklar ve ortam değişkenleri için lütfen &lt;code&gt;man <ph name="PRODUCT_BINARY_NAME" />&lt;/code&gt; içeriğine bakın.&lt;/p&gt;</translation>
 <translation id="8755175579224030324">Kuruluşunuz için, cihazda depolanan anahtarları ve sertifikaları yönetmek gibi güvenlik görevleri gerçekleştirin</translation>
 <translation id="8755376271068075440">Daha &amp;büyük</translation>
-<translation id="8756143264090841047">DLC'yi sil</translation>
 <translation id="8756969031206844760">Şifre güncellensin mi?</translation>
 <translation id="8757090071857742562">Masaüstü yayınlanamıyor. Ekranınızı paylaşmaya başlama istemini onaylayıp onaylamadığınızı kontrol edin.</translation>
 <translation id="8757203080302669031">Bu sekme, aktif olarak Bluetooth cihazlarını tarıyor.</translation>
@@ -6232,7 +6226,6 @@ Anahtar dosyanızı güvenli bir yerde saklayın. Uzantınızın yeni sürümler
 <translation id="8770406935328356739">Uzantı kök dizini</translation>
 <translation id="8770507190024617908">Kişileri Yönet</translation>
 <translation id="8771300903067484968">Başlangıç sayfası arka planı, varsayılan arka plana sıfırlandı.</translation>
-<translation id="8771939407732945762">İndirilen İçeriği Kaldır</translation>
 <translation id="8773302562181397928"><ph name="PRINTER_NAME" /> cihazını kaydet</translation>
 <translation id="8774379074441005279">Geri Yüklemeyi Onaylayın</translation>
 <translation id="8774934320277480003">Üst kenar boşluğu</translation>

@@ -16,12 +16,12 @@ NetworkHealthService::NetworkHealthService() {
           chromeos::DBusThreadManager::Get()->GetDebugDaemonClient());
 }
 
-void NetworkHealthService::BindRemote(
+void NetworkHealthService::BindHealthReceiver(
     mojo::PendingReceiver<mojom::NetworkHealthService> receiver) {
-  network_health_.BindRemote(std::move(receiver));
+  network_health_.BindReceiver(std::move(receiver));
 }
 
-void NetworkHealthService::BindDiagnosticsRemote(
+void NetworkHealthService::BindDiagnosticsReceiver(
     mojo::PendingReceiver<
         network_diagnostics::mojom::NetworkDiagnosticsRoutines> receiver) {
   network_diagnostics_->BindReceiver(std::move(receiver));

@@ -104,6 +104,7 @@
 <translation id="1853692000353488670">Nuwe incognito-oortjie</translation>
 <translation id="1856325424225101786">Stel Ligte Modus terug?</translation>
 <translation id="1868024384445905608">Chrome laai lêers nou vinniger af</translation>
+<translation id="1874760110381325409">Jy sal met jou Google-rekening aangemeld word\n(dit sal nie Chrome-sinkronisering aanskakel nie)</translation>
 <translation id="1883903952484604915">My lêers</translation>
 <translation id="1919950603503897840">Kies kontakte</translation>
 <translation id="1925021887439448749">Voer gepasmaakte webadres in</translation>
@@ -227,6 +228,7 @@ Raak en hou enige woord om te soek. Kies meer of minder woorde as jy jou soektog
 <translation id="281504910091592009">Bekyk en bestuur gestoorde wagwoorde in jou <ph name="BEGIN_LINK" />Google-rekening<ph name="END_LINK" /></translation>
 <translation id="2818669890320396765">Meld aan en skakel sinkronisering aan om jou boekmerke op al jou toestelle te kry</translation>
 <translation id="2827278682606527653">Stroomkaartkieslys teen halwe hoogte</translation>
+<translation id="2841216154655874070">{NUM_DAYS,plural, =1{1 dag gelede nagegaan}other{# dae gelede nagegaan}}</translation>
 <translation id="2842985007712546952">Moedervouer</translation>
 <translation id="2860954141821109167">Maak seker dat 'n foonprogram op hierdie toestel geaktiveer is</translation>
 <translation id="2870560284913253234">Werf</translation>
@@ -242,7 +244,6 @@ Raak en hou enige woord om te soek. Kies meer of minder woorde as jy jou soektog
 <translation id="2905036901251765993">Om met mense naby te deel, moet hulle hierdie QR-kode skandeer</translation>
 <translation id="2909615210195135082">Google-kennisgewingsplatform</translation>
 <translation id="2923908459366352541">Naam is ongeldig</translation>
-<translation id="2927707377793151377">Kies 'n ander verskaffer:</translation>
 <translation id="2932150158123903946">Google <ph name="APP_NAME" />-berging</translation>
 <translation id="2942036813789421260">Voorskou-oortjie is toegemaak</translation>
 <translation id="2956410042958133412">Hierdie rekening word bestuur deur <ph name="PARENT_NAME_1" /> en <ph name="PARENT_NAME_2" />.</translation>
@@ -703,6 +704,7 @@ Byvoorbeeld, sommige webwerwe kan op hierdie versoek reageer deur vir jou advert
 <translation id="6532866250404780454">Werwe wat jy in Chrome besoek, sal nie wys nie. Alle werftydtellers sal uitgevee word.</translation>
 <translation id="6534565668554028783">Google het te lank gevat om te reageer</translation>
 <translation id="6539092367496845964">Iets is fout. Probeer later weer.</translation>
+<translation id="6541983376925655882">{NUM_HOURS,plural, =1{1 uur gelede nagegaan}other{# uur gelede nagegaan}}</translation>
 <translation id="6545017243486555795">Vee alle data uit</translation>
 <translation id="6560414384669816528">Soek met Sogou</translation>
 <translation id="656065428026159829">Sien meer</translation>
@@ -734,6 +736,7 @@ Byvoorbeeld, sommige webwerwe kan op hierdie versoek reageer deur vir jou advert
 <translation id="6697492270171225480">Wys voorstelle vir soortgelyke bladsye wanneer 'n bladsy nie gevind kan word nie</translation>
 <translation id="6698801883190606802">Bestuur gesinkroniseerde data</translation>
 <translation id="6699370405921460408">Google-bedieners sal die bladsye wat jy besoek, optimeer.</translation>
+<translation id="670498945988402717">Gister nagegaan</translation>
 <translation id="6710213216561001401">Vorige</translation>
 <translation id="671481426037969117">Jou <ph name="FQDN" />-tydteller het uitgetel. Dit sal môre weer begin.</translation>
 <translation id="6738867403308150051">Laai tans af …</translation>
@@ -772,6 +775,7 @@ Byvoorbeeld, sommige webwerwe kan op hierdie versoek reageer deur vir jou advert
 <translation id="7063006564040364415">Kon nie aan die sinkroniseringbediener koppel nie.</translation>
 <translation id="7071521146534760487">Bestuur rekening</translation>
 <translation id="7077143737582773186">SD-kaart</translation>
+<translation id="7080806333218412752">Stuur URL'e na Veiligblaai toe om hulle na te gaan. Stuur ook 'n klein voorbeeld van bladsye, aflaaie, uitbreidingaktiwiteit en stelselinligting om te help om nuwe bedreigings te ontdek. Koppel hierdie data tydelik aan jou Google-rekening wanneer jy aangemeld is om jou oral in Google-programme te beskerm.</translation>
 <translation id="7121362699166175603">Vee geskiedenis en outovoltooide items in die adresbalk uit. Jou Google-rekening kan dalk ander vorme van blaaigeskiedenis hê by <ph name="BEGIN_LINK" />myactivity.google.com<ph name="END_LINK" />.</translation>
 <translation id="7128355412245153445">Sien jou topwerwe en onlangse berigte wanneer jy op die Tuisknoppie tik</translation>
 <translation id="7138678301420049075">Ander</translation>
@@ -781,6 +785,7 @@ Byvoorbeeld, sommige webwerwe kan op hierdie versoek reageer deur vir jou advert
 <translation id="7173114856073700355">Maak Instellings oop</translation>
 <translation id="7177466738963138057">Jy kan dit later verander in Instellings</translation>
 <translation id="7180611975245234373">Herlaai</translation>
+<translation id="7187993566681480880">Hou jou veilig op Chrome en kan gebruik word om jou sekuriteit in ander Google-programme te verbeter wanneer jy aangemeld is.</translation>
 <translation id="7189372733857464326">Wag tans dat Google Play Dienste klaar opdateer</translation>
 <translation id="7191430249889272776">Oortjie is op die agtergrond oopgemaak.</translation>
 <translation id="723171743924126238">Kies prente</translation>
@@ -892,6 +897,7 @@ Byvoorbeeld, sommige webwerwe kan op hierdie versoek reageer deur vir jou advert
 <translation id="8027863900915310177">Kies waarheen om af te laai</translation>
 <translation id="8035133914807600019">Nuwe vouer …</translation>
 <translation id="8037750541064988519"><ph name="DAYS" /> dae oor</translation>
+<translation id="8037801708772278989">Sopas nagegaan</translation>
 <translation id="804335162455518893">Kon nie SD-kaart kry nie</translation>
 <translation id="805047784848435650">Gegrond op jou blaaigeskiedenis</translation>
 <translation id="8051695050440594747"><ph name="MEGABYTES" /> MB beskikbaar</translation>
@@ -1032,6 +1038,7 @@ Byvoorbeeld, sommige webwerwe kan op hierdie versoek reageer deur vir jou advert
 <translation id="9137013805542155359">Wys oorspronklike</translation>
 <translation id="9155898266292537608">Jy kan ook soek met 'n vinnige tik op 'n woord</translation>
 <translation id="9169507124922466868">Navigasiegeskiedenis is half oopgemaak</translation>
+<translation id="9199368092038462496">{NUM_MINS,plural, =1{1 minuut gelede nagegaan}other{# minute gelede nagegaan}}</translation>
 <translation id="9204836675896933765">1 lêer oor</translation>
 <translation id="9206873250291191720">A</translation>
 <translation id="9209888181064652401">Kan nie oproepe maak nie</translation>

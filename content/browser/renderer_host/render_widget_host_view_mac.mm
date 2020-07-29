@@ -816,6 +816,12 @@ void RenderWidgetHostViewMac::SpeakSelection() {
   GetPageTextForSpeech(base::BindOnce(ui::TextServicesContextMenu::SpeakText));
 }
 
+void RenderWidgetHostViewMac::SetWindowFrameInScreen(const gfx::Rect& rect) {
+  DCHECK(GetInProcessNSView() && ![GetInProcessNSView() window])
+      << "This method should only be called in headless browser!";
+  OnWindowFrameInScreenChanged(rect);
+}
+
 //
 // RenderWidgetHostViewCocoa uses the stored selection text,
 // which implements NSServicesRequests protocol.

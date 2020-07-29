@@ -8,8 +8,8 @@
  * of the ChromeOS share sheet.
  */
 
+import 'chrome://resources/cr_components/nearby_share/nearby_onboarding_page.m.js';
 import 'chrome://resources/cr_elements/cr_view_manager/cr_view_manager.m.js';
-import './shared/nearby_onboarding_page.m.js';
 import './nearby_confirmation_page.js';
 import './nearby_discovery_page.js';
 import './strings.m.js';

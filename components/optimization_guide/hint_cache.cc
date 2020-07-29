@@ -294,6 +294,7 @@ bool HintCache::ProcessAndCacheHints(
               std::make_unique<MemoryHint>(expiry_time, std::move(hint)));
         }
         break;
+      case proto::HOST:
       case proto::REPRESENTATION_UNSPECIFIED:
         NOTREACHED();
         break;

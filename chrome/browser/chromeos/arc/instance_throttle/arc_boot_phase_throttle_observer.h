@@ -7,7 +7,7 @@
 
 #include "base/macros.h"
 #include "chrome/browser/chromeos/arc/boot_phase_monitor/arc_boot_phase_monitor_bridge.h"
-#include "chrome/browser/chromeos/arc/session/arc_session_manager.h"
+#include "chrome/browser/chromeos/arc/session/arc_session_manager_observer.h"
 #include "chrome/browser/chromeos/throttle_observer.h"
 #include "chrome/browser/sessions/session_restore_observer.h"
 
@@ -20,7 +20,7 @@ namespace arc {
 // This class observes phases of ARC boot and unthrottles the container
 // when ARC is booting or restarting.
 class ArcBootPhaseThrottleObserver : public chromeos::ThrottleObserver,
-                                     public ArcSessionManager::Observer,
+                                     public ArcSessionManagerObserver,
                                      public ArcBootPhaseMonitorBridge::Observer,
                                      public SessionRestoreObserver {
  public:
@@ -32,7 +32,7 @@ class ArcBootPhaseThrottleObserver : public chromeos::ThrottleObserver,
                       const ObserverStateChangedCallback& callback) override;
   void StopObserving() override;
 
-  // ArcSessionManager::Observer:
+  // ArcSessionManagerObserver:
   void OnArcStarted() override;
   void OnArcInitialStart() override;
   void OnArcSessionRestarting() override;

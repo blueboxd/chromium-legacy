@@ -140,6 +140,7 @@ class TextInput : public ui::TextInputClient,
   bool SetCompositionFromExistingText(
       const gfx::Range& range,
       const std::vector<ui::ImeTextSpan>& ui_ime_text_spans) override;
+  gfx::Range GetAutocorrectRange() const override;
   gfx::Rect GetAutocorrectCharacterBounds() const override;
   bool SetAutocorrectRange(const base::string16& autocorrect_text,
                            const gfx::Range& range) override;

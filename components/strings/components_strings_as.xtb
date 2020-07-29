@@ -123,6 +123,7 @@
 <translation id="1430915738399379752">প্ৰিণ্ট কৰক</translation>
 <translation id="1442386063175183758">সোঁফালে গে'ট ফ'ল্ড কৰক</translation>
 <translation id="1442987760062738829">পাঞ্চ</translation>
+<translation id="1447067628680007684">(x86_64)</translation>
 <translation id="1453974140256777690">আপুনি পে’ষ্ট অথবা সংলগ্ন কৰা পাঠ বিশ্লেষণৰ বাবে Google Cloud অথবা তৃতীয় পক্ষলৈ পঠিওৱা হয়। উদাহৰণস্বৰূপে, সেইসমূহ সংবেদনশীল ডেটাৰ বাবে স্কেন কৰা হ’ব পাৰে।</translation>
 <translation id="1455413310270022028">ইৰেজাৰ</translation>
 <translation id="1462245070427461050">JIS B9</translation>
@@ -1140,6 +1141,7 @@
 <translation id="5705882733397021510">উভতি যাওক</translation>
 <translation id="57094364128775171">জটিল পাছৱৰ্ডৰ পৰামৰ্শ দিয়ক…</translation>
 <translation id="5710435578057952990">এই ৱেবছাইটটোৰ পৰিচয় সত্যাপন কৰা হোৱা নাই।</translation>
+<translation id="571403275720188526">(arm64)</translation>
 <translation id="5720705177508910913">বর্তমানৰ ব্যৱহাৰকাৰী</translation>
 <translation id="5728056243719941842">C5 (লেফাফা)</translation>
 <translation id="5730040223043577876">আপুনি যদি নিজৰ পাছৱৰ্ডটো অন্য ছাইটত পুনৰ ব্যৱহাৰ কৰিছিল Chromeএ আপোনাৰ পাছৱর্ডটো ৰিছেট কৰিবলৈ চুপাৰিছ কৰে।</translation>
@@ -1188,6 +1190,7 @@
 <translation id="5921185718311485855">অন</translation>
 <translation id="5921639886840618607">কাৰ্ডখন Google একাউণ্টত ছেভ কৰিবনে?</translation>
 <translation id="5922853866070715753">প্ৰায় সম্পূর্ণ হৈছেই</translation>
+<translation id="5938793338444039872">Troy</translation>
 <translation id="5946937721014915347"><ph name="SITE_NAME" /> খুলি থকা হৈছে…</translation>
 <translation id="5951495562196540101">উপভোক্তাৰ একাউণ্টৰ সৈতে পঞ্জীয়ন কৰিব নোৱাৰি (পেকেজ অনুজ্ঞাপত্ৰ উপলব্ধ)।</translation>
 <translation id="5967592137238574583">সম্পর্কৰ তথ্য সম্পাদনা কৰক</translation>
@@ -1354,6 +1357,7 @@
 <translation id="6646269444027925224">{COUNT,plural, =0{এটাৰ পৰাও নহয়}=1{১টা ছাইটৰ পৰা (আপুনি নিজৰ Google Accountৰ পৰা ছাইন আউট হৈ নাযায়)}one{#টা ছাইটৰ পৰা (আপুনি নিজৰ Google Accountৰ পৰা ছাইন আউট হৈ নাযায়)}other{#টা ছাইটৰ পৰা (আপুনি নিজৰ Google Accountৰ পৰা ছাইন আউট হৈ নাযায়)}}</translation>
 <translation id="6652101503459149953">Windows Hello ব্যৱহাৰ কৰক</translation>
 <translation id="6657585470893396449">পাছৱৰ্ড</translation>
+<translation id="666259744093848177">(x86_64 অনুবাদ কৰা হৈছে)</translation>
 <translation id="6665553082534466207">সোঁফালে তিনিবাৰ পাঞ্চ কৰক</translation>
 <translation id="6671697161687535275">Chromiumৰ পৰা ফ’ৰ্মৰ পৰামৰ্শ আঁতৰাবনে?</translation>
 <translation id="6685834062052613830">ছাইন আউট কৰি ছেট আপ সম্পূৰ্ণ কৰক</translation>

@@ -27,6 +27,7 @@ import org.chromium.chrome.browser.download.ChromeDownloadDelegate;
 import org.chromium.chrome.browser.incognito.IncognitoUtils;
 import org.chromium.chrome.browser.multiwindow.MultiWindowUtils;
 import org.chromium.chrome.browser.net.spdyproxy.DataReductionProxySettings;
+import org.chromium.chrome.browser.tab.state.CriticalPersistedTabData;
 import org.chromium.chrome.browser.tabmodel.TabModelSelector;
 import org.chromium.chrome.browser.tabmodel.document.TabDelegate;
 import org.chromium.components.embedder_support.util.UrlConstants;
@@ -185,8 +186,8 @@ public class TabContextMenuItemDelegate implements ContextMenuItemDelegate {
         TabDelegate tabDelegate = new TabDelegate(mTab.isIncognito());
         LoadUrlParams loadUrlParams = new LoadUrlParams(url);
         loadUrlParams.setReferrer(referrer);
-        tabDelegate.createTabInOtherWindow(
-                loadUrlParams, TabUtils.getActivity(mTab), mTab.getParentId());
+        tabDelegate.createTabInOtherWindow(loadUrlParams, TabUtils.getActivity(mTab),
+                CriticalPersistedTabData.from(mTab).getParentId());
     }
 
     @Override

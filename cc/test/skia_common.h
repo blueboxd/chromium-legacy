@@ -6,6 +6,7 @@
 #define CC_TEST_SKIA_COMMON_H_
 
 #include <memory>
+#include <vector>
 
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_refptr.h"
@@ -42,8 +43,9 @@ sk_sp<PaintImageGenerator> CreatePaintImageGenerator(const gfx::Size& size);
 
 PaintImage CreatePaintWorkletPaintImage(scoped_refptr<PaintWorkletInput> input);
 
-SkYUVASizeInfo GetYUV420SizeInfo(const gfx::Size& image_size,
-                                 bool has_alpha = false);
+SkYUVASizeInfo GetYUVASizeInfo(const gfx::Size& image_size,
+                               YUVSubsampling yuv_format,
+                               bool has_alpha = false);
 
 PaintImage CreateDiscardablePaintImage(
     const gfx::Size& size,
@@ -51,7 +53,7 @@ PaintImage CreateDiscardablePaintImage(
     bool allocate_encoded_memory = true,
     PaintImage::Id id = PaintImage::kInvalidId,
     SkColorType color_type = kN32_SkColorType,
-    bool is_yuv = false);
+    base::Optional<YUVSubsampling> yuv_format = base::nullopt);
 
 DrawImage CreateDiscardableDrawImage(const gfx::Size& size,
                                      sk_sp<SkColorSpace> color_space,

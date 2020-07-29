@@ -149,6 +149,7 @@ class CONTENT_EXPORT RenderWidgetHostViewChildFrame
   void SetActive(bool active) override;
   void ShowDefinitionForSelection() override;
   void SpeakSelection() override;
+  void SetWindowFrameInScreen(const gfx::Rect& rect) override;
 #endif  // defined(OS_MACOSX)
 
   blink::mojom::InputEventResultState FilterInputEvent(

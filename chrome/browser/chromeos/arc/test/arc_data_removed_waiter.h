@@ -8,7 +8,7 @@
 #include <memory>
 
 #include "base/macros.h"
-#include "chrome/browser/chromeos/arc/session/arc_session_manager.h"
+#include "chrome/browser/chromeos/arc/session/arc_session_manager_observer.h"
 
 namespace base {
 class RunLoop;
@@ -17,7 +17,7 @@ class RunLoop;
 namespace arc {
 
 // Waits for ARC data has been removed.
-class ArcDataRemovedWaiter : public ArcSessionManager::Observer {
+class ArcDataRemovedWaiter : public ArcSessionManagerObserver {
  public:
   ArcDataRemovedWaiter();
   ~ArcDataRemovedWaiter() override;
@@ -27,7 +27,7 @@ class ArcDataRemovedWaiter : public ArcSessionManager::Observer {
   void Wait();
 
  private:
-  // ArcSessionManager::Observer:
+  // ArcSessionManagerObserver:
   void OnArcDataRemoved() override;
 
   std::unique_ptr<base::RunLoop> run_loop_;

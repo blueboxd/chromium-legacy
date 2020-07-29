@@ -77,7 +77,7 @@
 <translation id="3089968997497233615">Google Chrome 浏览器现已推出更安全的新版本。</translation>
 <translation id="3127818369811890733">Chrome 操作系统无法同步您的数据。</translation>
 <translation id="3149510190863420837">Chrome 应用</translation>
-<translation id="3351117925998652957">请选择您的专属 Chrome 空间</translation>
+<translation id="3351117925998652957">请选择您的专属 Chrome Space</translation>
 <translation id="3360895254066713204">Chrome 浏览器帮助应用</translation>
 <translation id="3379938682270551431">{0,plural, =0{Chrome 将立即重新启动}=1{Chrome 将在 1 秒后重新启动}other{Chrome 将在 # 秒后重新启动}}</translation>
 <translation id="3395323229510056640">获取有关 Chrome 操作系统的帮助</translation>
@@ -206,7 +206,7 @@
 <translation id="7535429826459677826">Google Chrome 开发者版</translation>
 <translation id="7573289029918943991">若想确认您设备上的操作系统是否是最新版本，请前往 <ph name="LINK_BEGIN" />Chrome 操作系统设置<ph name="LINK_END" /></translation>
 <translation id="7589360514048265910">此计算机将不会再收到 Google Chrome 更新，因为 Mac OS X 10.9 不再受支持。</translation>
-<translation id="7591404275842302616">使用 Chrome 空间整理您在此设备上的浏览活动数据</translation>
+<translation id="7591404275842302616">使用 Chrome Space 整理您在此设备上的浏览活动数据</translation>
 <translation id="7592736734348559088">由于您的帐号登录详细信息已过期，Google Chrome无法同步您的数据。</translation>
 <translation id="7626032353295482388">欢迎使用 Chrome</translation>
 <translation id="7629695634924605473">Chrome 会让您知道您的密码是否曾被泄露</translation>

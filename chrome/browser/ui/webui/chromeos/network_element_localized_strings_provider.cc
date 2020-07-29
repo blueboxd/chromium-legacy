@@ -191,6 +191,7 @@ void AddOncLocalizedStrings(content::WebUIDataSource* html_source) {
       {"OncWiFi-Frequency", IDS_ONC_WIFI_FREQUENCY},
       {"OncWiFi-Passphrase", IDS_ONC_WIFI_PASSWORD},
       {"OncWiFi-SSID", IDS_ONC_WIFI_SSID},
+      {"OncWiFi-BSSID", IDS_ONC_WIFI_BSSID},
       {"OncWiFi-Security", IDS_ONC_WIFI_SECURITY},
       {"OncWiFi-Security_None", IDS_ONC_WIFI_SECURITY_NONE},
       {"OncWiFi-Security_WEP-PSK", IDS_ONC_WIFI_SECURITY_WEP},

@@ -161,6 +161,8 @@ void TestRenderWidgetHostView::SetActive(bool active) {
 
 void TestRenderWidgetHostView::SpeakSelection() {
 }
+
+void TestRenderWidgetHostView::SetWindowFrameInScreen(const gfx::Rect& rect) {}
 #endif
 
 gfx::Rect TestRenderWidgetHostView::GetBoundsInRootWindow() {

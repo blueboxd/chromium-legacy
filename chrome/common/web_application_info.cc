@@ -74,8 +74,10 @@ WebApplicationInfo::~WebApplicationInfo() = default;
 
 bool operator==(const WebApplicationIconInfo& icon_info1,
                 const WebApplicationIconInfo& icon_info2) {
-  return std::tie(icon_info1.url, icon_info1.square_size_px) ==
-         std::tie(icon_info2.url, icon_info2.square_size_px);
+  return std::tie(icon_info1.url, icon_info1.square_size_px,
+                  icon_info1.purpose) == std::tie(icon_info2.url,
+                                                  icon_info2.square_size_px,
+                                                  icon_info2.purpose);
 }
 
 std::ostream& operator<<(std::ostream& out,
@@ -85,6 +87,18 @@ std::ostream& operator<<(std::ostream& out,
     out << *icon_info.square_size_px;
   else
     out << "none";
+  out << " purpose: ";
+  switch (icon_info.purpose) {
+    case blink::Manifest::ImageResource::Purpose::ANY:
+      out << "any";
+      break;
+    case blink::Manifest::ImageResource::Purpose::MONOCHROME:
+      out << "monochrome";
+      break;
+    case blink::Manifest::ImageResource::Purpose::MASKABLE:
+      out << "maskable";
+      break;
+  }
   return out;
 }
 

@@ -193,12 +193,24 @@ class WebAppDatabaseTest : public WebAppTest {
     display_mode_override.push_back(display_modes[(suffix + 2) & 3]);
     app->SetDisplayModeOverride(display_mode_override);
 
-    WebApplicationIconInfo icon;
-    icon.url = GURL(base_url + "/icon" + base::NumberToString(suffix));
     const SquareSizePx size = 256;
-    if (suffix % 2 == 0)
-      icon.square_size_px = size;
-    app->SetIconInfos({std::move(icon)});
+    const int num_icons = suffix % 10;
+    std::vector<WebApplicationIconInfo> icon_infos(num_icons);
+    for (int i = 0; i < num_icons; i++) {
+      WebApplicationIconInfo icon;
+      icon.url = GURL(base_url + "/icon" + base::NumberToString(suffix));
+      if (suffix % 2 == 0)
+        icon.square_size_px = size;
+
+      if (i % 3 == 0)
+        icon.purpose = blink::Manifest::ImageResource::Purpose::ANY;
+      if (i % 3 == 1)
+        icon.purpose = blink::Manifest::ImageResource::Purpose::MASKABLE;
+      // if (i % 3 == 2), leave purpose unset. Should default to ANY.
+
+      icon_infos[i] = icon;
+    }
+    app->SetIconInfos(icon_infos);
     app->SetDownloadedIconSizes({size});
     app->SetIsGeneratedIcon(suffix & 1);
 

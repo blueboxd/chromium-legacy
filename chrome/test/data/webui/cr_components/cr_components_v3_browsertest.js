@@ -98,3 +98,25 @@ TEST_F('CrComponentsCertificateManagerProvisioningV3Test', 'All', function() {
 });
 
 GEN('#endif  // defined(USE_NSS_CERTS) && defined(OS_CHROMEOS)');
+
+// Test fixture for the nearby-onboarding-page component.
+// eslint-disable-next-line no-var
+var CrComponentsNearbyOnboardingPageV3Test =
+    class extends CrComponentsV3BrowserTest {
+  /** @override */
+  get browsePreload() {
+    return 'chrome://test/test_loader.html?module=cr_components/nearby_onboarding_page_test.m.js';
+  }
+
+  /** @override */
+  get featureList() {
+    return {
+      enabled: ['features::kNearbySharing'],
+      disabled: [],
+    };
+  }
+};
+
+TEST_F('CrComponentsNearbyOnboardingPageV3Test', 'All', function() {
+  mocha.run();
+});

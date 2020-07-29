@@ -282,7 +282,7 @@ TEST_F(D3D11VideoDecoderTest, DoesNotSupportVP9WithLegacyGPU) {
 }
 
 TEST_F(D3D11VideoDecoderTest, DoesNotSupportVP9WithGPUWorkaroundDisableVPX) {
-  gpu_workarounds_.disable_accelerated_vpx_decode = true;
+  gpu_workarounds_.disable_accelerated_vp9_decode = true;
   VideoDecoderConfig configuration =
       TestVideoConfig::NormalCodecProfile(kCodecVP9, VP9PROFILE_PROFILE0);
 

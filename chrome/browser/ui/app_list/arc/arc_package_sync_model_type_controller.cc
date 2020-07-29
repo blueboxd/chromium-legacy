@@ -9,6 +9,7 @@
 
 #include "base/memory/ptr_util.h"
 #include "chrome/browser/chromeos/arc/arc_util.h"
+#include "chrome/browser/chromeos/arc/session/arc_session_manager.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chromeos/constants/chromeos_features.h"
 #include "components/prefs/pref_service.h"

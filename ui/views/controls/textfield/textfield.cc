@@ -1846,6 +1846,10 @@ bool Textfield::SetCompositionFromExistingText(
 #endif
 
 #if defined(OS_CHROMEOS)
+gfx::Range Textfield::GetAutocorrectRange() const {
+  return model_->autocorrect_range();
+}
+
 gfx::Rect Textfield::GetAutocorrectCharacterBounds() const {
   gfx::Range autocorrect_range = model_->autocorrect_range();
   if (autocorrect_range.is_empty())

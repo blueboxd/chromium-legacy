@@ -21,6 +21,7 @@
 <translation id="1150565364351027703">शीतल चस्मा</translation>
 <translation id="115443833402798225">हंगुल Ahnmatae</translation>
 <translation id="1155759005174418845">क्याटालान</translation>
+<translation id="1172970565351728681">लगभग <ph name="REMAINING_TIME" /> बाँकी</translation>
 <translation id="1173894706177603556">पुन: नामाकरण गर्नुहोस्</translation>
 <translation id="117624967391683467"><ph name="FILE_NAME" /> प्रतिलिपि बनाउँदै...</translation>
 <translation id="1178581264944972037">पज गर्नुहोस्</translation>
@@ -198,6 +199,7 @@
 <translation id="3236289833370040187">स्वामित्वलाई <ph name="DESTINATION_DOMAIN" /> मा स्थानान्तरण गरिनेछ।</translation>
 <translation id="3241720467332021590">आइरिस</translation>
 <translation id="3245321423178950146">अज्ञात कलाकार</translation>
+<translation id="3248185426436836442">सुरु भएको छैन</translation>
 <translation id="3252266817569339921">फ्रेन्च</translation>
 <translation id="3254434849914415189"><ph name="FILE_TYPE" /> फाइलहरूको लागि पूर्वनिर्धारित एप छान्नुहोस्:</translation>
 <translation id="3264582393905923483">सन्दर्भ</translation>
@@ -244,6 +246,7 @@
 <translation id="3780536599611287598">तपाईंसँग '<ph name="FOLDER_NAME" />' मा फाइलहरू सार्ने अनुमति छैन।</translation>
 <translation id="3786301125658655746">तपाईं अफलाइन हुनुहुन्छ</translation>
 <translation id="3789841737615482174">स्थापना गर्नुहोस्</translation>
+<translation id="3793469551756281394">लगभग <ph name="REMAINING_TIME_HOUR" /> <ph name="REMAINING_TIME_MINUTE" /> बाँकी</translation>
 <translation id="3798449238516105146">संस्करण</translation>
 <translation id="3801082500826908679">फारोइज</translation>
 <translation id="3809272675881623365">खरायो</translation>

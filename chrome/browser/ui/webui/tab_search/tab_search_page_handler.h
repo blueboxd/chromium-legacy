@@ -5,9 +5,12 @@
 #ifndef CHROME_BROWSER_UI_WEBUI_TAB_SEARCH_TAB_SEARCH_PAGE_HANDLER_H_
 #define CHROME_BROWSER_UI_WEBUI_TAB_SEARCH_TAB_SEARCH_PAGE_HANDLER_H_
 
+#include "chrome/browser/ui/browser_tab_strip_tracker.h"
+#include "chrome/browser/ui/browser_tab_strip_tracker_delegate.h"
 #include "chrome/browser/ui/tabs/tab_group.h"
 #include "chrome/browser/ui/tabs/tab_group_model.h"
 #include "chrome/browser/ui/tabs/tab_group_theme.h"
+#include "chrome/browser/ui/tabs/tab_strip_model_observer.h"
 #include "chrome/browser/ui/webui/tab_search/tab_search.mojom.h"
 #include "mojo/public/cpp/bindings/pending_receiver.h"
 #include "mojo/public/cpp/bindings/pending_remote.h"
@@ -17,7 +20,9 @@
 
 class Browser;
 
-class TabSearchPageHandler : public tab_search::mojom::PageHandler {
+class TabSearchPageHandler : public tab_search::mojom::PageHandler,
+                             public TabStripModelObserver,
+                             public BrowserTabStripTrackerDelegate {
  public:
   TabSearchPageHandler(
       mojo::PendingReceiver<tab_search::mojom::PageHandler> receiver,
@@ -33,15 +38,39 @@ class TabSearchPageHandler : public tab_search::mojom::PageHandler {
   void SwitchToTab(
       tab_search::mojom::SwitchToTabInfoPtr switch_to_tab_info) override;
 
+  // TabStripModelObserver:
+  void OnTabStripModelChanged(
+      TabStripModel* tab_strip_model,
+      const TabStripModelChange& change,
+      const TabStripSelectionChange& selection) override;
+  void TabChangedAt(content::WebContents* contents,
+                    int index,
+                    TabChangeType change_type) override;
+
+  // BrowserTabStripTrackerDelegate:
+  bool ShouldTrackBrowser(Browser* browser) override;
+
+ protected:
+  void SetTimerForTesting(std::unique_ptr<base::RetainingOneShotTimer> timer);
+
  private:
-  tab_search::mojom::TabPtr GetTabData(Browser* browser,
+  tab_search::mojom::TabPtr GetTabData(TabStripModel* tab_strip_model,
                                        content::WebContents* contents,
                                        int index);
+
+  // Schedule a timer to call TabsChanged() when it times out
+  // in order to reduce numbers of RPC.
+  void ScheduleDebounce();
+
+  // Call TabsChanged() and stop the timer if it's running.
+  void NotifyTabsChanged();
 
   mojo::Receiver<tab_search::mojom::PageHandler> receiver_;
   mojo::Remote<tab_search::mojom::Page> page_;
   Browser* const browser_;
   content::WebUI* const web_ui_;
+  BrowserTabStripTracker browser_tab_strip_tracker_{this, this};
+  std::unique_ptr<base::RetainingOneShotTimer> debounce_timer_;
 };
 
 #endif  // CHROME_BROWSER_UI_WEBUI_TAB_SEARCH_TAB_SEARCH_PAGE_HANDLER_H_

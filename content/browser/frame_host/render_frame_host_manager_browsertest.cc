@@ -7558,13 +7558,22 @@ class CommitMessageDelayer : public DidCommitNavigationInterceptor {
 
 }  // namespace
 
+// TODO(crbug.com/1110497): flaky on Android builders since 2020-07-28.
+#if defined(OS_ANDROID)
+#define MAYBE_NavigationRacesWithCommitInUnassignedSiteInstance \
+  DISABLED_NavigationRacesWithCommitInUnassignedSiteInstance
+#else
+#define MAYBE_NavigationRacesWithCommitInUnassignedSiteInstance \
+  NavigationRacesWithCommitInUnassignedSiteInstance
+#endif
 // Check that when a navigation to a URL that doesn't require assigning a site
 // URL is in progress, another navigation can't reuse the same process in the
 // meantime.  Such reuse previously led to a renderer kill when the siteless
 // URL later committed; a real-world example of the siteless URL was
 // chrome-native://newtab.  See https://crbug.com/970046.
-IN_PROC_BROWSER_TEST_P(RenderFrameHostManagerTest,
-                       NavigationRacesWithCommitInUnassignedSiteInstance) {
+IN_PROC_BROWSER_TEST_P(
+    RenderFrameHostManagerTest,
+    MAYBE_NavigationRacesWithCommitInUnassignedSiteInstance) {
   ASSERT_TRUE(embedded_test_server()->Start());
 
   // Set up a URL for which ShouldAssignSiteForURL will return false.  The
@@ -7735,6 +7744,14 @@ class RenderFrameHostManagerDefaultProcessTest
   DISALLOW_COPY_AND_ASSIGN(RenderFrameHostManagerDefaultProcessTest);
 };
 
+// TODO(crbug.com/1110497): flaky on Android builders since 2020-07-28.
+#if defined(OS_ANDROID)
+#define MAYBE_NavigationRacesWithSitelessCommitInDefaultProcess \
+  DISABLED_NavigationRacesWithSitelessCommitInDefaultProcess
+#else
+#define MAYBE_NavigationRacesWithSitelessCommitInDefaultProcess \
+  NavigationRacesWithSitelessCommitInDefaultProcess
+#endif
 // Ensure that the default process can be used for URLs that don't assign a site
 // to the SiteInstance, when Site Isolation is not enabled.
 // 1. Visit foo.com.
@@ -7744,8 +7761,9 @@ class RenderFrameHostManagerDefaultProcessTest
 // https://crbug.com/838348.)
 // All navigations should use the default process, and we should not crash.
 // See https://crbug.com/977956.
-IN_PROC_BROWSER_TEST_P(RenderFrameHostManagerDefaultProcessTest,
-                       NavigationRacesWithSitelessCommitInDefaultProcess) {
+IN_PROC_BROWSER_TEST_P(
+    RenderFrameHostManagerDefaultProcessTest,
+    MAYBE_NavigationRacesWithSitelessCommitInDefaultProcess) {
   // This test is designed to run without strict site isolation.
   if (AreAllSitesIsolatedForTesting())
     return;

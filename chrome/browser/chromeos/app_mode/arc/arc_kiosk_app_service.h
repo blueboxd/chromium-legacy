@@ -13,7 +13,7 @@
 #include "chrome/browser/chromeos/app_mode/kiosk_app_manager_observer.h"
 #include "chrome/browser/chromeos/arc/kiosk/arc_kiosk_bridge.h"
 #include "chrome/browser/chromeos/arc/policy/arc_policy_bridge.h"
-#include "chrome/browser/chromeos/arc/session/arc_session_manager.h"
+#include "chrome/browser/chromeos/arc/session/arc_session_manager_observer.h"
 #include "chrome/browser/ui/app_list/arc/arc_app_icon.h"
 #include "chrome/browser/ui/app_list/arc/arc_app_list_prefs.h"
 #include "components/keyed_service/core/keyed_service.h"
@@ -40,7 +40,7 @@ class ArcKioskAppService : public KeyedService,
                            public arc::ArcKioskBridge::Delegate,
                            public ArcKioskAppLauncher::Delegate,
                            public ArcAppIcon::Observer,
-                           public arc::ArcSessionManager::Observer,
+                           public arc::ArcSessionManagerObserver,
                            public arc::ArcPolicyBridge::Observer,
                            public KioskAppLauncher {
  public:
@@ -75,7 +75,7 @@ class ArcKioskAppService : public KeyedService,
   // ArcAppIcon::Observer overrides
   void OnIconUpdated(ArcAppIcon* icon) override;
 
-  // ArcSessionManager::Observer overrides
+  // ArcSessionManagerObserver overrides
   void OnArcSessionRestarting() override;
   void OnArcSessionStopped(arc::ArcStopReason reason) override;
 

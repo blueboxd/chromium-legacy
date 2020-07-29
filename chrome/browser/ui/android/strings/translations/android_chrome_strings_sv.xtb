@@ -104,6 +104,7 @@
 <translation id="1853692000353488670">Ny inkognitoflik</translation>
 <translation id="1856325424225101786">Vill du återställa begränsat läge?</translation>
 <translation id="1868024384445905608">Nu laddas filer ned snabbare i Chrome</translation>
+<translation id="1874760110381325409">Du loggas in med Google-kontot\n(detta aktiverar inte Chrome Sync)</translation>
 <translation id="1883903952484604915">Mina filer</translation>
 <translation id="1919950603503897840">Välj kontakter</translation>
 <translation id="1925021887439448749">Ange en anpassad webbadress</translation>
@@ -227,6 +228,7 @@ Sök genom att trycka länge på ett ord. Du kan förfina sökningen genom att v
 <translation id="281504910091592009">Visa och hantera sparade lösenord i <ph name="BEGIN_LINK" />Google-kontot<ph name="END_LINK" /></translation>
 <translation id="2818669890320396765">Logga in och aktivera synkronisering om du vill ha dina bokmärken tillgängliga på alla enheter</translation>
 <translation id="2827278682606527653">Menyn med flödeskort är öppen och tar upp halva skärmen</translation>
+<translation id="2841216154655874070">{NUM_DAYS,plural, =1{Genomsöktes för 1 dag sedan}other{Genomsöktes för # dagar sedan}}</translation>
 <translation id="2842985007712546952">Överordnad mapp</translation>
 <translation id="2860954141821109167">Kontrollera att en telefonapp har aktiverats på enheten</translation>
 <translation id="2870560284913253234">Webbplats</translation>
@@ -242,7 +244,6 @@ Sök genom att trycka länge på ett ord. Du kan förfina sökningen genom att v
 <translation id="2905036901251765993">Be andra att skanna QR-koden om du vill dela med personer i närheten</translation>
 <translation id="2909615210195135082">Googles aviseringsplattform</translation>
 <translation id="2923908459366352541">Namnet är ogiltigt</translation>
-<translation id="2927707377793151377">Välj en annan leverantör:</translation>
 <translation id="2932150158123903946">Lagring för Google <ph name="APP_NAME" /></translation>
 <translation id="2942036813789421260">Fliken Förhandsgranskning har stängts</translation>
 <translation id="2956410042958133412">Det här kontot hanteras av <ph name="PARENT_NAME_1" /> och <ph name="PARENT_NAME_2" />.</translation>
@@ -703,6 +704,7 @@ Vissa webbplatser kan till exempel svara på begäran genom att visa annonser so
 <translation id="6532866250404780454">Webbplatser som du besöker i Chrome visas inte. Alla timer för webbplatser raderas.</translation>
 <translation id="6534565668554028783">Google tog för lång tid på sig att svara</translation>
 <translation id="6539092367496845964">Något gick fel. Försök igen senare.</translation>
+<translation id="6541983376925655882">{NUM_HOURS,plural, =1{Genomsöktes för 1 timme sedan}other{Genomsöktes för # timmar sedan}}</translation>
 <translation id="6545017243486555795">Rensa all data</translation>
 <translation id="6560414384669816528">Sök med Sogou</translation>
 <translation id="656065428026159829">Visa fler</translation>
@@ -734,6 +736,7 @@ Vissa webbplatser kan till exempel svara på begäran genom att visa annonser so
 <translation id="6697492270171225480">Visa förslag på liknande sidor om en sida inte hittas</translation>
 <translation id="6698801883190606802">Hantera synkroniserad data</translation>
 <translation id="6699370405921460408">Googles servrar optimerar sidor du besöker.</translation>
+<translation id="670498945988402717">Genomsöktes i går</translation>
 <translation id="6710213216561001401">Föregående</translation>
 <translation id="671481426037969117">Timern för <ph name="FQDN" /> har löpt ut. Den börjar om igen i morgon.</translation>
 <translation id="6738867403308150051">Laddar ned …</translation>
@@ -772,6 +775,7 @@ Vissa webbplatser kan till exempel svara på begäran genom att visa annonser so
 <translation id="7063006564040364415">Det gick inte att ansluta till synkroniseringsservern.</translation>
 <translation id="7071521146534760487">Hantera konto</translation>
 <translation id="7077143737582773186">SD-kort</translation>
+<translation id="7080806333218412752">Webbadresser skickas till Säker webbsökning för kontroll. Ett litet urval av sidor, nedladdning, tilläggsaktivitet och systeminformation skickas även för att upptäcka nya hot. Denna data länkas tillfälligt till Google-kontot när du loggar in för att skydda dig i Googles appar.</translation>
 <translation id="7121362699166175603">Historik och autoslutföranden i adressfältet rensas. Det kan finnas andra former av webbhistorik i Google-kontot på <ph name="BEGIN_LINK" />myactivity.google.com<ph name="END_LINK" />.</translation>
 <translation id="7128355412245153445">Se dina mest besökta webbplatser och dina senaste artiklar när du trycker på hemknappen</translation>
 <translation id="7138678301420049075">Övrigt</translation>
@@ -781,6 +785,7 @@ Vissa webbplatser kan till exempel svara på begäran genom att visa annonser so
 <translation id="7173114856073700355">Inställningar</translation>
 <translation id="7177466738963138057">Du kan ändra detta senare i inställningarna</translation>
 <translation id="7180611975245234373">Uppdatera</translation>
+<translation id="7187993566681480880">Skyddar dig i Chrome och kan användas för förbättrad säkerhet i andra Google-appar där du är inloggad.</translation>
 <translation id="7189372733857464326">Väntar på Google Play-tjänster ska avsluta uppdateringen</translation>
 <translation id="7191430249889272776">Fliken öppnades i bakgrunden.</translation>
 <translation id="723171743924126238">Välj bilder</translation>
@@ -892,6 +897,7 @@ Vissa webbplatser kan till exempel svara på begäran genom att visa annonser so
 <translation id="8027863900915310177">Välj plats för nedladdningen</translation>
 <translation id="8035133914807600019">Ny mapp …</translation>
 <translation id="8037750541064988519"><ph name="DAYS" /> dagar kvar</translation>
+<translation id="8037801708772278989">Genomsöktes alldeles nyss</translation>
 <translation id="804335162455518893">Det gick inte att hitta SD-kortet</translation>
 <translation id="805047784848435650">Utifrån din webbhistorik</translation>
 <translation id="8051695050440594747"><ph name="MEGABYTES" /> MB tillgängliga</translation>
@@ -1032,6 +1038,7 @@ Vissa webbplatser kan till exempel svara på begäran genom att visa annonser so
 <translation id="9137013805542155359">Visa original</translation>
 <translation id="9155898266292537608">Du kan även söka med ett snabbt tryck eller ett ord</translation>
 <translation id="9169507124922466868">Navigeringshistoriken visas på halva skärmen</translation>
+<translation id="9199368092038462496">{NUM_MINS,plural, =1{Genomsöktes för 1 minut sedan}other{Genomsöktes för # minuter sedan}}</translation>
 <translation id="9204836675896933765">1 fil återstår</translation>
 <translation id="9206873250291191720">A</translation>
 <translation id="9209888181064652401">Det går inte att ringa</translation>

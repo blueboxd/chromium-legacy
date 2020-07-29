@@ -110,13 +110,6 @@ public class TabImpl implements Tab, TabObscuringHandler.Observer {
     private TabWebContentsDelegateAndroidImpl mWebContentsDelegate;
 
     /**
-     * If this tab was opened from another tab, store the id of the tab that
-     * caused it to be opened so that we can activate it when this tab gets
-     * closed.
-     */
-    private final int mParentId;
-
-    /**
      * Tab id to be used as a source tab in SyncedTabDelegate.
      */
     private final int mSourceTabId;
@@ -240,11 +233,10 @@ public class TabImpl implements Tab, TabObscuringHandler.Observer {
         mId = TabIdManager.getInstance().generateValidId(id);
         mIncognito = incognito;
         if (parent == null) {
-            mParentId = INVALID_TAB_ID;
             mSourceTabId = INVALID_TAB_ID;
         } else {
-            mParentId = parent.getId();
-            mSourceTabId = parent.isIncognito() == incognito ? mParentId : INVALID_TAB_ID;
+            CriticalPersistedTabData.from(this).setParentId(parent.getId());
+            mSourceTabId = parent.isIncognito() == incognito ? parent.getId() : INVALID_TAB_ID;
         }
 
         // Override the configuration for night mode to always stay in light mode until all UIs in
@@ -364,11 +356,6 @@ public class TabImpl implements Tab, TabObscuringHandler.Observer {
     @CalledByNative
     public int getId() {
         return mId;
-    }
-
-    @Override
-    public int getParentId() {
-        return mParentId;
     }
 
     @Override

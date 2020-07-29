@@ -24,6 +24,7 @@
 #include "chrome/test/base/ui_test_utils.h"
 #include "content/public/test/browser_test.h"
 #include "content/public/test/test_utils.h"
+#include "third_party/blink/public/common/manifest/manifest.h"
 
 namespace web_app {
 
@@ -413,6 +414,7 @@ IN_PROC_BROWSER_TEST_P(TwoClientWebAppsSyncTest, SyncUsingIconUrlFallback) {
   WebApplicationIconInfo icon_info;
   icon_info.square_size_px = 192;
   icon_info.url = embedded_test_server()->GetURL("/web_apps/blue-192.png");
+  icon_info.purpose = blink::Manifest::ImageResource::Purpose::ANY;
   info.icon_infos.push_back(icon_info);
   AppId app_id = InstallApp(info, GetProfile(0));
   EXPECT_EQ(GetRegistrar(source_profile).GetAppShortName(app_id), "Blue icon");

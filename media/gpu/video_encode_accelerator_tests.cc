@@ -257,6 +257,21 @@ TEST_F(VideoEncoderTest, DestroyBeforeInitialize) {
   EXPECT_NE(video_encoder, nullptr);
 }
 
+// Encode video from start to end. Multiple buffer encodes will be queued in the
+// encoder, without waiting for the result of the previous encode requests.
+TEST_F(VideoEncoderTest, FlushAtEndOfStream_MultipleOutstandingDecodes) {
+  VideoEncoderClientConfig config(g_env->Video(), g_env->Profile());
+  config.max_outstanding_encode_requests = 4;
+  auto encoder = CreateVideoEncoder(g_env->Video(), config);
+
+  encoder->Encode();
+  EXPECT_TRUE(encoder->WaitForFlushDone());
+
+  EXPECT_EQ(encoder->GetFlushDoneCount(), 1u);
+  EXPECT_EQ(encoder->GetFrameReleasedCount(), g_env->Video()->NumFrames());
+  EXPECT_TRUE(encoder->WaitForBitstreamProcessors());
+}
+
 // Encode multiple videos simultaneously from start to finish.
 TEST_F(VideoEncoderTest, FlushAtEndOfStream_MultipleConcurrentEncodes) {
   // The minimal number of concurrent encoders we expect to be supported.

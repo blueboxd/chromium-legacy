@@ -24,7 +24,7 @@
 #include "base/time/time.h"
 #include "base/timer/timer.h"
 #include "chrome/browser/chromeos/arc/policy/arc_policy_bridge.h"
-#include "chrome/browser/chromeos/arc/session/arc_session_manager.h"
+#include "chrome/browser/chromeos/arc/session/arc_session_manager_observer.h"
 #include "chrome/browser/ui/app_list/arc/arc_app_icon_descriptor.h"
 #include "components/arc/mojom/app.mojom.h"
 #include "components/arc/session/connection_observer.h"
@@ -65,7 +65,7 @@ class ArcAppShortcutsSearchProviderTest;
 class ArcAppListPrefs : public KeyedService,
                         public arc::mojom::AppHost,
                         public arc::ConnectionObserver<arc::mojom::AppInstance>,
-                        public arc::ArcSessionManager::Observer,
+                        public arc::ArcSessionManagerObserver,
                         public arc::ArcPolicyBridge::Observer {
  public:
   struct AppInfo {
@@ -326,7 +326,7 @@ class ArcAppListPrefs : public KeyedService,
   base::RepeatingCallback<std::string(const std::string&)>
   GetAppIdByPackageNameCallback();
 
-  // arc::ArcSessionManager::Observer:
+  // arc::ArcSessionManagerObserver:
   void OnArcPlayStoreEnabledChanged(bool enabled) override;
 
   // arc::ArcPolicyBridge::Observer:

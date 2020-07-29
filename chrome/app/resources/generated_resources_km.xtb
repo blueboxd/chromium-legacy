@@ -1925,7 +1925,6 @@
 <translation id="3371140690572404006">ឧបករណ៍ USB-C (រន្ធមុខផ្នែកខាងស្តាំ)</translation>
 <translation id="337286756654493126">អានថតឯកសារដែលអ្នកបើកនៅក្នុងកម្មវិធីនេះ</translation>
 <translation id="3378572629723696641">កម្មវិធីបន្ថែមនេះអាចមានបញ្ហា។</translation>
-<translation id="3379169026479470857">លុប DLC</translation>
 <translation id="337920581046691015"><ph name="PRODUCT_NAME" /> នឹងត្រូវបានតំឡើង។</translation>
 <translation id="3380365263193509176">កំហុសឆ្គងមិនស្គាល់</translation>
 <translation id="3382073616108123819">អូ! ប្រព័ន្ធបានបរាជ័យក្នុងការកំណត់អត្តសញ្ញាណឧបករណ៍សម្រាប់ឧបករណ៍នេះ។</translation>
@@ -2612,14 +2611,12 @@
 <translation id="4175137578744761569">ស្វាយខ្ចី និងស</translation>
 <translation id="4175737294868205930">ទំហំផ្ទុកអចិន្ត្រៃយ៍</translation>
 <translation id="4176463684765177261">បានបិទដំណើរការ</translation>
-<translation id="418031202593299965">សមាសភាពទាំងនេះ​ត្រូវបានចែករំលែកជាមួយ​អ្នកប្រើប្រាស់​ផ្សេងទៀត​នៅលើ​ឧបករណ៍នេះ។ ការលុបសមាសភាព​អាចនឹងប៉ះពាល់​ដល់អ្នកប្រើប្រាស់​ផ្សេងទៀត។</translation>
 <translation id="4180788401304023883">លុបវិញ្ញាបនប័ត្រ CA "<ph name="CERTIFICATE_NAME" />"?</translation>
 <translation id="4181602000363099176">20x</translation>
 <translation id="4181841719683918333">ភាសា</translation>
 <translation id="4184885522552335684">អូសដើម្បីផ្លាស់ទីអេក្រង់</translation>
 <translation id="4187424053537113647">កំពុងរៀបចំ <ph name="APP_NAME" />...</translation>
 <translation id="4190828427319282529">រំលេច​ការផ្ដោត​ក្ដារចុច</translation>
-<translation id="4191805472951276951">DLC</translation>
 <translation id="4194570336751258953">បើកដំណើរការ ប៉ះ ដើម្បី ចុច</translation>
 <translation id="4195643157523330669">បើកនៅក្នុងផ្ទាំងថ្មី</translation>
 <translation id="4195814663415092787">បន្តកន្លែងដែលអ្នកបានចាកចេញ</translation>
@@ -3038,7 +3035,6 @@
 <translation id="4756388243121344051">ប្រវត្តិ</translation>
 <translation id="4759238208242260848">ទាញយក</translation>
 <translation id="4761104368405085019">ប្រើម៉ៃក្រូហ្វូនរបស់អ្នក</translation>
-<translation id="4762055672525936226">លុប​ខ្លឹមសារ​ដែលបានទាញយក</translation>
 <translation id="4762718786438001384">ទំហំផ្ទុកក្នុងឧបករណ៍សល់តិចណាស់</translation>
 <translation id="4763408175235639573">ខូគីខាងក្រោមត្រូវបានកំណត់ នៅពេលដែលអ្នកបានមើលទំព័រនេះ</translation>
 <translation id="4765582662863429759">អនុញ្ញាត​ឱ្យកម្មវិធី Android Messages បញ្ជូន​សារបន្ត​ពីទូរសព្ទទៅ​ Chromebook របស់អ្នក</translation>
@@ -3292,7 +3288,6 @@
 <translation id="5094721898978802975">ទំនាក់ទំនងជាមួយកម្មវិធីដើមសហប្រតិបត្តិការ</translation>
 <translation id="5097002363526479830">បានបរាជ័យក្នុងការភ្ជាប់ទៅបណ្តាញ៖ '<ph name="NAME" />': <ph name="DETAILS" /></translation>
 <translation id="5097874180538493929">ចុចដោយស្វ័យប្រវត្តិ នៅពេល​ទស្សន៍ទ្រនិច​ឈប់</translation>
-<translation id="5098800418125334616">គ្រប់គ្រងខ្លឹមសារដែលបានទាញយក</translation>
 <translation id="5101042277149003567">បើក​ចំណាំ​ទាំងអស់</translation>
 <translation id="5101839224773798795">ចុច​ដោយស្វ័យប្រវត្តិ នៅពេលសញ្ញាព្រួញឈប់</translation>
 <translation id="5107443654503185812">កម្មវិធីបន្ថែមមួយបានបិទការរុករកដោយសុវត្ថិភាព</translation>
@@ -4171,7 +4166,6 @@
 <translation id="6198102561359457428">ចាកចេញ បន្ទាប់មកចូលម្តងទៀត...</translation>
 <translation id="6198252989419008588">ប្តូរលេខសម្គាល់</translation>
 <translation id="6202304368170870640">អ្នកអាច​ប្រើកូដ PIN របស់អ្នក ដើម្បីចូល ឬដោះសោ​ឧបករណ៍របស់អ្នក។</translation>
-<translation id="6202517672944764518">ខ្លឹមសារដែលបានទាញយក</translation>
 <translation id="6206311232642889873">ចម្លងរូបភាព</translation>
 <translation id="6207200176136643843">កំណត់ទៅ​កម្រិតពង្រីក/បង្រួម​លំនាំដើម​ឡើងវិញ</translation>
 <translation id="6207937957461833379">ប្រទេស/តំបន់៖</translation>
@@ -6130,7 +6124,6 @@
 <translation id="8652400352452647993">បញ្ហា​ក្នុងការខ្ចប់​កម្មវិធី​បន្ថែម</translation>
 <translation id="8654151524613148204">ឯកសារនេះធំពេកសម្រាប់កុំព្យូទ័ររបស់ដើម្បីដំណើរការ។ សូមទោស។</translation>
 <translation id="8655295600908251630">បណ្តាញ</translation>
-<translation id="8655319619291175901">អូ មានបញ្ហាអ្វីមួយកើតឡើង។</translation>
 <translation id="8655972064210167941">បានបរាជ័យក្នុងការចូលពីព្រោះពាក្យសម្ងាត់របស់អ្នកមិនអាចផ្ទៀងផ្ទាត់បានទេ។ សូមទាក់ទងអ្នកគ្រប់គ្រងរបស់អ្នក ឬព្យាយាមម្តងទៀត។</translation>
 <translation id="8656768832129462377">កុំពិនិត្យ</translation>
 <translation id="8658645149275195032"><ph name="APP_NAME" /> កំពុងចែករំលែកអេក្រង់ និងសម្លេងរបស់អ្នកជាមូួយ <ph name="TAB_NAME" />។</translation>
@@ -6219,7 +6212,6 @@
         &lt;p&gt;ប៉ុន្តែអ្នកអាចនៅតែកំណត់តាមរយៈពាក្យបញ្ជា។ សូមមើល &lt;code&gt;man <ph name="PRODUCT_BINARY_NAME" />&lt;/code&gt; សម្រាប់ព័ត៌មានបន្ថែមអំពីទង់ និងបំរែបំរួលបរិស្ថាន។&lt;/p&gt;</translation>
 <translation id="8755175579224030324">ធ្វើកិច្ចការពាក់ព័ន្ធនឹងសុវត្ថិភាពសម្រាប់ស្ថាប័នរបស់អ្នក ដូចជាគ្រប់គ្រងវិញ្ញាបនបត្រ និងកូដសម្ងាត់ដែលរក្សាទុកនៅលើឧបករណ៍ជាដើម</translation>
 <translation id="8755376271068075440">ធំជាង</translation>
-<translation id="8756143264090841047">លុប DLC</translation>
 <translation id="8756969031206844760">ធ្វើ​បច្ចុប្បន្នភាព​ពាក្យសម្ងាត់?</translation>
 <translation id="8757090071857742562">មិនអាចខាសដេស៍ថបបានទេ។ ពិនិត្យថាតើអ្នកបានបញ្ជាក់ក្នុងសារជម្រុញដើម្បីចាប់ផ្តើមចែករំលែកអេក្រង់របស់អ្នកឬទេ។</translation>
 <translation id="8757203080302669031">ផ្ទាំងនេះ​កំពុងស្កេនរក​ឧបករណ៍ប៊្លូធូស​យ៉ាងសកម្ម។</translation>
@@ -6234,7 +6226,6 @@
 <translation id="8770406935328356739">ថត root ផ្នែកបន្ថែម</translation>
 <translation id="8770507190024617908">គ្រប់គ្រងមនុស្ស</translation>
 <translation id="8771300903067484968">ផ្ទៃខាងក្រោយ​នៃទំព័រចាប់​ផ្ដើមត្រូវបាន​កំណត់ទៅផ្ទៃខាងក្រោយ​លំនាំដើមឡើងវិញ។</translation>
-<translation id="8771939407732945762">លុប​ខ្លឹមសារ​ដែលបានទាញយក</translation>
 <translation id="8773302562181397928">រក្សាទុក <ph name="PRINTER_NAME" /></translation>
 <translation id="8774379074441005279">បញ្ជាក់ការស្ដារ</translation>
 <translation id="8774934320277480003">ចន្លោះគែមខាងលើ</translation>

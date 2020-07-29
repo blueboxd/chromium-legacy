@@ -36,7 +36,7 @@ source_set("common") {
 
   deps = [
     "//media",
-    "//media/gpu:common",
+    "//media/gpu:gpu",
     "//mojo/public/cpp/system:system",
     "//ui/gfx:memory_buffer",
   ]

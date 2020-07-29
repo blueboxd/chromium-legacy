@@ -681,16 +681,12 @@
     // Style adjustment for appearance is disabled when certain properties are set.
     {
       name: "HasAuthorBackground",
-      field_template: "primitive",
-      type_name: "bool",
-      field_group: "*",
+      field_template: "monotonic_flag",
       default_value: "false",
     },
     {
       name: "HasAuthorBorder",
-      field_template: "primitive",
-      type_name: "bool",
-      field_group: "*",
+      field_template: "monotonic_flag",
       default_value: "false",
     },
     {

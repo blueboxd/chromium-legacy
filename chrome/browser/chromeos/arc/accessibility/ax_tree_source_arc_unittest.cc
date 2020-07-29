@@ -617,17 +617,17 @@ TEST_F(AXTreeSourceArcTest, OnViewSelectedEvent) {
   event->event_type = AXEventType::VIEW_SELECTED;
 
   event->window_data = std::vector<mojom::AccessibilityWindowInfoDataPtr>();
-  event->window_data->emplace_back(AXWindowInfoData::New());
+  event->window_data->push_back(AXWindowInfoData::New());
   AXWindowInfoData* root_window = event->window_data->back().get();
   root_window->window_id = 100;
   root_window->root_node_id = 10;
 
-  event->node_data.emplace_back(AXNodeInfoData::New());
+  event->node_data.push_back(AXNodeInfoData::New());
   AXNodeInfoData* root = event->node_data.back().get();
   root->id = 10;
   SetProperty(root, AXIntListProperty::CHILD_NODE_IDS, std::vector<int>({1}));
 
-  event->node_data.emplace_back(AXNodeInfoData::New());
+  event->node_data.push_back(AXNodeInfoData::New());
   AXNodeInfoData* list = event->node_data.back().get();
   list->id = 1;
   SetProperty(list, AXBooleanProperty::FOCUSABLE, true);
@@ -637,7 +637,7 @@ TEST_F(AXTreeSourceArcTest, OnViewSelectedEvent) {
               std::vector<int>({2, 3, 4}));
 
   // Slider.
-  event->node_data.emplace_back(AXNodeInfoData::New());
+  event->node_data.push_back(AXNodeInfoData::New());
   AXNodeInfoData* slider = event->node_data.back().get();
   slider->id = 2;
   SetProperty(slider, AXBooleanProperty::FOCUSABLE, true);
@@ -645,7 +645,7 @@ TEST_F(AXTreeSourceArcTest, OnViewSelectedEvent) {
   slider->range_info = AXRangeInfoData::New();
 
   // Simple list item.
-  event->node_data.emplace_back(AXNodeInfoData::New());
+  event->node_data.push_back(AXNodeInfoData::New());
   AXNodeInfoData* simple_item = event->node_data.back().get();
   simple_item->id = 3;
   SetProperty(simple_item, AXBooleanProperty::FOCUSABLE, true);
@@ -654,7 +654,7 @@ TEST_F(AXTreeSourceArcTest, OnViewSelectedEvent) {
   simple_item->collection_item_info = AXCollectionItemInfoData::New();
 
   // This node is not focusable.
-  event->node_data.emplace_back(AXNodeInfoData::New());
+  event->node_data.push_back(AXNodeInfoData::New());
   AXNodeInfoData* wrap_node = event->node_data.back().get();
   wrap_node->id = 4;
   SetProperty(wrap_node, AXBooleanProperty::IMPORTANCE, true);
@@ -664,7 +664,7 @@ TEST_F(AXTreeSourceArcTest, OnViewSelectedEvent) {
   wrap_node->collection_item_info = AXCollectionItemInfoData::New();
 
   // A list item expected to get the focus.
-  event->node_data.emplace_back(AXNodeInfoData::New());
+  event->node_data.push_back(AXNodeInfoData::New());
   AXNodeInfoData* item = event->node_data.back().get();
   item->id = 5;
   SetProperty(item, AXBooleanProperty::FOCUSABLE, true);
@@ -720,26 +720,26 @@ TEST_F(AXTreeSourceArcTest, OnWindowStateChangedEvent) {
   event->event_type = AXEventType::WINDOW_STATE_CHANGED;
 
   event->window_data = std::vector<mojom::AccessibilityWindowInfoDataPtr>();
-  event->window_data->emplace_back(AXWindowInfoData::New());
+  event->window_data->push_back(AXWindowInfoData::New());
   AXWindowInfoData* root_window = event->window_data->back().get();
   root_window->window_id = 100;
   root_window->root_node_id = 10;
 
-  event->node_data.emplace_back(AXNodeInfoData::New());
+  event->node_data.push_back(AXNodeInfoData::New());
   AXNodeInfoData* root = event->node_data.back().get();
   root->id = 10;
 
   SetProperty(root, AXIntListProperty::CHILD_NODE_IDS, std::vector<int>({1}));
   SetProperty(root, AXBooleanProperty::IMPORTANCE, true);
 
-  event->node_data.emplace_back(AXNodeInfoData::New());
+  event->node_data.push_back(AXNodeInfoData::New());
   AXNodeInfoData* node1 = event->node_data.back().get();
   node1->id = 1;
   SetProperty(node1, AXIntListProperty::CHILD_NODE_IDS, std::vector<int>({2}));
   SetProperty(node1, AXBooleanProperty::IMPORTANCE, true);
   SetProperty(node1, AXBooleanProperty::VISIBLE_TO_USER, true);
 
-  event->node_data.emplace_back(AXNodeInfoData::New());
+  event->node_data.push_back(AXNodeInfoData::New());
   AXNodeInfoData* node2 = event->node_data.back().get();
   node2->id = 2;
   SetProperty(node2, AXBooleanProperty::IMPORTANCE, true);
@@ -762,12 +762,12 @@ TEST_F(AXTreeSourceArcTest, OnFocusEvent) {
   event->event_type = AXEventType::VIEW_FOCUSED;
 
   event->window_data = std::vector<mojom::AccessibilityWindowInfoDataPtr>();
-  event->window_data->emplace_back(AXWindowInfoData::New());
+  event->window_data->push_back(AXWindowInfoData::New());
   AXWindowInfoData* root_window = event->window_data->back().get();
   root_window->window_id = 100;
   root_window->root_node_id = 10;
 
-  event->node_data.emplace_back(AXNodeInfoData::New());
+  event->node_data.push_back(AXNodeInfoData::New());
   AXNodeInfoData* root = event->node_data.back().get();
   root->id = 10;
   SetProperty(root, AXIntListProperty::CHILD_NODE_IDS,
@@ -778,7 +778,7 @@ TEST_F(AXTreeSourceArcTest, OnFocusEvent) {
   root->collection_info->row_count = 2;
   root->collection_info->column_count = 1;
 
-  event->node_data.emplace_back(AXNodeInfoData::New());
+  event->node_data.push_back(AXNodeInfoData::New());
   AXNodeInfoData* node1 = event->node_data.back().get();
   node1->id = 1;
   SetProperty(node1, AXBooleanProperty::IMPORTANCE, true);
@@ -786,7 +786,7 @@ TEST_F(AXTreeSourceArcTest, OnFocusEvent) {
   SetProperty(node1, AXBooleanProperty::VISIBLE_TO_USER, true);
   SetProperty(node1, AXStringProperty::TEXT, "sample string1.");
 
-  event->node_data.emplace_back(AXNodeInfoData::New());
+  event->node_data.push_back(AXNodeInfoData::New());
   AXNodeInfoData* node2 = event->node_data.back().get();
   node2->id = 2;
   SetProperty(node2, AXBooleanProperty::IMPORTANCE, true);
@@ -819,7 +819,7 @@ TEST_F(AXTreeSourceArcTest, OnDrawerOpened) {
   event->event_text = std::vector<std::string>({"Navigation"});
 
   event->window_data = std::vector<mojom::AccessibilityWindowInfoDataPtr>();
-  event->window_data->emplace_back(AXWindowInfoData::New());
+  event->window_data->push_back(AXWindowInfoData::New());
   AXWindowInfoData* root_window = event->window_data->back().get();
   root_window->window_id = 100;
   root_window->root_node_id = 10;
@@ -830,7 +830,7 @@ TEST_F(AXTreeSourceArcTest, OnDrawerOpened) {
     --[2] node2 visible node
     ----[3] node3 node with text
   */
-  event->node_data.emplace_back(AXNodeInfoData::New());
+  event->node_data.push_back(AXNodeInfoData::New());
   AXNodeInfoData* root = event->node_data.back().get();
   root->id = 10;
   SetProperty(root, AXIntListProperty::CHILD_NODE_IDS,
@@ -839,19 +839,19 @@ TEST_F(AXTreeSourceArcTest, OnDrawerOpened) {
   SetProperty(root, AXStringProperty::CLASS_NAME,
               "androidx.drawerlayout.widget.DrawerLayout");
 
-  event->node_data.emplace_back(AXNodeInfoData::New());
+  event->node_data.push_back(AXNodeInfoData::New());
   AXNodeInfoData* node1 = event->node_data.back().get();
   node1->id = 1;
   SetProperty(node1, AXBooleanProperty::VISIBLE_TO_USER, true);
 
-  event->node_data.emplace_back(AXNodeInfoData::New());
+  event->node_data.push_back(AXNodeInfoData::New());
   AXNodeInfoData* node2 = event->node_data.back().get();
   node2->id = 2;
   SetProperty(node2, AXIntListProperty::CHILD_NODE_IDS, std::vector<int>({3}));
   SetProperty(node2, AXBooleanProperty::IMPORTANCE, true);
   SetProperty(node2, AXBooleanProperty::VISIBLE_TO_USER, true);
 
-  event->node_data.emplace_back(AXNodeInfoData::New());
+  event->node_data.push_back(AXNodeInfoData::New());
   AXNodeInfoData* node3 = event->node_data.back().get();
   node3->id = 3;
   SetProperty(node3, AXBooleanProperty::IMPORTANCE, true);
@@ -888,24 +888,24 @@ TEST_F(AXTreeSourceArcTest, SerializeAndUnserialize) {
   event->event_type = AXEventType::VIEW_FOCUSED;
 
   event->window_data = std::vector<mojom::AccessibilityWindowInfoDataPtr>();
-  event->window_data->emplace_back(AXWindowInfoData::New());
+  event->window_data->push_back(AXWindowInfoData::New());
   AXWindowInfoData* root_window = event->window_data->back().get();
   root_window->window_id = 100;
   root_window->root_node_id = 10;
 
-  event->node_data.emplace_back(AXNodeInfoData::New());
+  event->node_data.push_back(AXNodeInfoData::New());
   AXNodeInfoData* root = event->node_data.back().get();
   root->id = 10;
   SetProperty(root, AXIntListProperty::CHILD_NODE_IDS, std::vector<int>({1}));
   SetProperty(root, AXBooleanProperty::IMPORTANCE, true);
 
-  event->node_data.emplace_back(AXNodeInfoData::New());
+  event->node_data.push_back(AXNodeInfoData::New());
   AXNodeInfoData* node1 = event->node_data.back().get();
   node1->id = 1;
   SetProperty(node1, AXIntListProperty::CHILD_NODE_IDS, std::vector<int>({2}));
 
   // An ignored node.
-  event->node_data.emplace_back(AXNodeInfoData::New());
+  event->node_data.push_back(AXNodeInfoData::New());
   AXNodeInfoData* node2 = event->node_data.back().get();
   node2->id = 2;
 
@@ -928,7 +928,7 @@ TEST_F(AXTreeSourceArcTest, SerializeAndUnserialize) {
   EXPECT_EQ(0U, tree()->GetFromId(10)->GetUnignoredChildCount());
 
   // An unignored node.
-  event->node_data.emplace_back(AXNodeInfoData::New());
+  event->node_data.push_back(AXNodeInfoData::New());
   AXNodeInfoData* node3 = event->node_data.back().get();
   node3->id = 3;
   SetProperty(node3, AXStringProperty::CONTENT_DESCRIPTION, "some text");
@@ -958,19 +958,19 @@ TEST_F(AXTreeSourceArcTest, SerializeVirtualNode) {
   event->event_type = AXEventType::VIEW_FOCUSED;
 
   event->window_data = std::vector<mojom::AccessibilityWindowInfoDataPtr>();
-  event->window_data->emplace_back(AXWindowInfoData::New());
+  event->window_data->push_back(AXWindowInfoData::New());
   AXWindowInfoData* root_window = event->window_data->back().get();
   root_window->window_id = 100;
   root_window->root_node_id = 10;
 
-  event->node_data.emplace_back(AXNodeInfoData::New());
+  event->node_data.push_back(AXNodeInfoData::New());
   AXNodeInfoData* root = event->node_data.back().get();
   root->id = 10;
   SetProperty(root, AXIntListProperty::CHILD_NODE_IDS, std::vector<int>({1}));
   SetProperty(root, AXBooleanProperty::IMPORTANCE, true);
 
   // Add a webview node.
-  event->node_data.emplace_back(AXNodeInfoData::New());
+  event->node_data.push_back(AXNodeInfoData::New());
   AXNodeInfoData* webview = event->node_data.back().get();
   webview->id = 1;
   SetProperty(webview, AXBooleanProperty::VISIBLE_TO_USER, true);
@@ -978,7 +978,7 @@ TEST_F(AXTreeSourceArcTest, SerializeVirtualNode) {
               std::vector<int>({2, 3}));
   SetProperty(webview, AXStringProperty::CHROME_ROLE, "rootWebArea");
 
-  event->node_data.emplace_back(AXNodeInfoData::New());
+  event->node_data.push_back(AXNodeInfoData::New());
   AXNodeInfoData* button1 = event->node_data.back().get();
   button1->id = 2;
   button1->bounds_in_screen = gfx::Rect(0, 0, 50, 50);
@@ -991,7 +991,7 @@ TEST_F(AXTreeSourceArcTest, SerializeVirtualNode) {
                         static_cast<int>(AXActionType::FOCUS)}));
   SetProperty(button1, AXStringProperty::CONTENT_DESCRIPTION, "button1");
 
-  event->node_data.emplace_back(AXNodeInfoData::New());
+  event->node_data.push_back(AXNodeInfoData::New());
   AXNodeInfoData* button2 = event->node_data.back().get();
   button2->id = 3;
   button2->bounds_in_screen = gfx::Rect(0, 0, 100, 100);
@@ -1032,19 +1032,19 @@ TEST_F(AXTreeSourceArcTest, SyncFocus) {
   event->event_type = AXEventType::VIEW_FOCUSED;
 
   event->window_data = std::vector<mojom::AccessibilityWindowInfoDataPtr>();
-  event->window_data->emplace_back(AXWindowInfoData::New());
+  event->window_data->push_back(AXWindowInfoData::New());
   AXWindowInfoData* root_window = event->window_data->back().get();
   root_window->window_id = 100;
   root_window->root_node_id = 10;
 
-  event->node_data.emplace_back(AXNodeInfoData::New());
+  event->node_data.push_back(AXNodeInfoData::New());
   AXNodeInfoData* root = event->node_data.back().get();
   root->id = 10;
   SetProperty(root, AXIntListProperty::CHILD_NODE_IDS,
               std::vector<int>({1, 2}));
 
   // Add child nodes.
-  event->node_data.emplace_back(AXNodeInfoData::New());
+  event->node_data.push_back(AXNodeInfoData::New());
   AXNodeInfoData* node1 = event->node_data.back().get();
   node1->id = 1;
   SetProperty(node1, AXBooleanProperty::FOCUSABLE, true);
@@ -1053,7 +1053,7 @@ TEST_F(AXTreeSourceArcTest, SyncFocus) {
   SetProperty(node1, AXStringProperty::CONTENT_DESCRIPTION, "node1");
   node1->bounds_in_screen = gfx::Rect(0, 0, 50, 50);
 
-  event->node_data.emplace_back(AXNodeInfoData::New());
+  event->node_data.push_back(AXNodeInfoData::New());
   AXNodeInfoData* node2 = event->node_data.back().get();
   node2->id = 2;
   SetProperty(node2, AXBooleanProperty::FOCUSABLE, true);
@@ -1062,7 +1062,7 @@ TEST_F(AXTreeSourceArcTest, SyncFocus) {
 
   // Add a child node to |node1|, but it's not an important node.
   SetProperty(node1, AXIntListProperty::CHILD_NODE_IDS, std::vector<int>({3}));
-  event->node_data.emplace_back(AXNodeInfoData::New());
+  event->node_data.push_back(AXNodeInfoData::New());
   AXNodeInfoData* node3 = event->node_data.back().get();
   node3->id = 3;
 
@@ -1100,12 +1100,12 @@ TEST_F(AXTreeSourceArcTest, LiveRegion) {
   event->event_type = AXEventType::VIEW_FOCUSED;
 
   event->window_data = std::vector<mojom::AccessibilityWindowInfoDataPtr>();
-  event->window_data->emplace_back(AXWindowInfoData::New());
+  event->window_data->push_back(AXWindowInfoData::New());
   AXWindowInfoData* root_window = event->window_data->back().get();
   root_window->window_id = 100;
   root_window->root_node_id = 10;
 
-  event->node_data.emplace_back(AXNodeInfoData::New());
+  event->node_data.push_back(AXNodeInfoData::New());
   AXNodeInfoData* root = event->node_data.back().get();
   root->id = 10;
   SetProperty(root, AXIntListProperty::CHILD_NODE_IDS,
@@ -1114,12 +1114,12 @@ TEST_F(AXTreeSourceArcTest, LiveRegion) {
               static_cast<int32_t>(mojom::AccessibilityLiveRegionType::POLITE));
 
   // Add child nodes.
-  event->node_data.emplace_back(AXNodeInfoData::New());
+  event->node_data.push_back(AXNodeInfoData::New());
   AXNodeInfoData* node1 = event->node_data.back().get();
   node1->id = 1;
   SetProperty(node1, AXStringProperty::TEXT, "text 1");
 
-  event->node_data.emplace_back(AXNodeInfoData::New());
+  event->node_data.push_back(AXNodeInfoData::New());
   AXNodeInfoData* node2 = event->node_data.back().get();
   node2->id = 2;
   SetProperty(node2, AXStringProperty::TEXT, "text 2");
@@ -1272,7 +1272,7 @@ TEST_F(AXTreeSourceArcTest, ControlReceivesFocus) {
   root_window->window_id = 100;
   root_window->root_node_id = 10;
 
-  event->node_data.emplace_back(AXNodeInfoData::New());
+  event->node_data.push_back(AXNodeInfoData::New());
   AXNodeInfoData* root_node = event->node_data.back().get();
   root_node->id = 10;
   SetProperty(root_node, AXIntListProperty::CHILD_NODE_IDS,

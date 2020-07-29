@@ -474,13 +474,6 @@ Als je dit beleid uitschakelt, wordt op de webpagina naar specifieke tekstfragme
       Het beleid moet worden opgegeven als tekenreeks waarmee de URL en hash worden aangeduid in json-indeling.</translation>
 <translation id="1819272352048746487">Verschillende functies op het schermtoetsenbord in- of uitschakelen</translation>
 <translation id="1827523283178827583">Vaste proxyservers gebruiken</translation>
-<translation id="1831495419375964631">Dit beleid is een URL die met dezelfde indeling naar een XML-bestand verwijst als het beleid <ph name="IEEM_SITELIST_POLICY" /> van Internet Explorer. Hiermee worden regels vanuit een XML-bestand geladen, zonder dat deze regels worden gedeeld met Internet Explorer.
-
-      Wanneer dit beleid niet is ingesteld of niet is ingesteld op een geldige URL, gebruikt <ph name="PRODUCT_NAME" /> dit beleid niet als een bron van regels die overschakeling naar een andere browser veroorzaken.
-
-      Als dit beleid is ingesteld op een geldige URL, downloadt<ph name="PRODUCT_NAME" /> de lijst met sites van die URL en worden de regels toegepast alsof ze zijn geconfigureerd met het <ph name="SITELIST_POLICY_NAME" />-beleid.
-
-      Ga naar https://docs.microsoft.com/internet-explorer/ie11-deploy-guide/what-is-enterprise-mode voor meer informatie over het <ph name="IEEM_SITELIST_POLICY" />-beleid van Internet Explorer</translation>
 <translation id="1839278886947586809">
       Dit beleid is verwijderd in M80 omdat WebDriver nu werkt met alle bestaande beleidsregels, en het dus niet langer nodig is.
 
@@ -660,7 +653,7 @@ Als je dit beleid uitschakelt, wordt op de webpagina naar specifieke tekstfragme
       In geval van een conflict wordt de voorkeur gegeven aan het item met de kortere <ph name="WARNING_PERIOD_PROPERTY_NAME" /> of <ph name="AUE_WARNING_PERIOD_PROPERTY_NAME" /> en wordt het beleid toegepast met dat item.
 
       Als de huidige versie verouderd raakt tijdens een gebruikerssessie en automatische updates door het huidige netwerk worden beperkt, wordt er een melding op het scherm weergegeven dat de gebruiker het apparaat moet updaten binnen de <ph name="WARNING_PERIOD_PROPERTY_NAME" /> in de melding.
-      Er wordt geen melding weergegeven als automatische updates door het huidige netwerk zijn toegestaan en het apparaat moet worden geüpdatet binnen de <ph name="WARNING_PERIOD_PROPERTY_NAME" />.
+      Er worden geen meldingen weergegeven als automatische updates door het huidige netwerk zijn toegestaan en het apparaat moet worden geüpdatet binnen de <ph name="WARNING_PERIOD_PROPERTY_NAME" />.
       De <ph name="WARNING_PERIOD_PROPERTY_NAME" /> start vanaf het moment dat het beleid wordt toegepast.
       Als het apparaat niet wordt geüpdatet voordat de <ph name="WARNING_PERIOD_PROPERTY_NAME" /> is verlopen, wordt de gebruiker uitgelogd van de sessie.
       Als blijkt dat de huidige versie verouderd is op het moment dat de gebruiker inlogt terwijl de <ph name="WARNING_PERIOD_PROPERTY_NAME" /> is verlopen, moet de gebruiker het apparaat updaten voordat hij of zij inlogt.
@@ -677,14 +670,6 @@ Als je dit beleid uitschakelt, wordt op de webpagina naar specifieke tekstfragme
 <translation id="2107601598727098402">
         Dit beleid is beëindigd in M72. Gebruik in plaats daarvan CloudManagementEnrollmentToken.
         </translation>
-<translation id="2108169571875569435">Met dit beleid wordt bepaald welke opdracht wordt gebruikt om URL's te openen in een alternatieve browser.
-
-      Als dit beleid niet is ingesteld, wordt een platformspecifieke standaard gebruikt: Internet Explorer voor Windows of Safari voor Mac OS X. Op Linux kan geen alternatieve browser worden gestart als dit niet is ingesteld.
-
-      Als dit beleid is ingesteld op een van de browsers <ph name="INTERNET_EXPLORER_VALUE_PLACEHOLDER" />, <ph name="FIREFOX_VALUE_PLACEHOLDER" />, <ph name="SAFARI_VALUE_PLACEHOLDER" /> of
-      <ph name="OPERA_VALUE_PLACEHOLDER" />, wordt die browser gestart als deze is geïnstalleerd. <ph name="INTERNET_EXPLORER_VALUE_PLACEHOLDER" /> is alleen beschikbaar in Windows en <ph name="SAFARI_VALUE_PLACEHOLDER" /> is alleen beschikbaar in Windows en Mac OS X.
-
-      Als dit beleid is ingesteld op een bestandspad, wordt dat bestand gebruikt als uitvoerbaar bestand.</translation>
 <translation id="2113068765175018713">Uptime van apparaat beperken door automatisch opnieuw op te starten</translation>
 <translation id="2124881675920287921">Dit beleid is beëindigd in M82 en verwijderd in M85. Gebruik in plaats hiervan <ph name="SAFE_BROWSING_EXTENDED_REPORTING_ENABLED_POLICY_NAME" />. Het uitschakelen van <ph name="SAFE_BROWSING_EXTENDED_REPORTING_OPT_IN_ALLOWED_POLICY_NAME" /> komt overeen met het uitschakelen van <ph name="SAFE_BROWSING_EXTENDED_REPORTING_ENABLED_POLICY_NAME" />. Als je <ph name="SAFE_BROWSING_EXTENDED_REPORTING_OPT_IN_ALLOWED_POLICY_NAME" /> inschakelt of niet instelt, komt dit overeen met <ph name="SAFE_BROWSING_EXTENDED_REPORTING_ENABLED_POLICY_NAME" /> niet instellen.
 
@@ -1009,17 +994,6 @@ Als dit beleid niet is ingesteld, is het privacyscherm in eerste instantie uitge
 
       Als dit beleid op 'False' is ingesteld, verschijnt een foutmelding in plaats van de prompt voor de netwerkconfiguratie.</translation>
 <translation id="2498238926436517902">Archief altijd automatisch verbergen</translation>
-<translation id="2505805702054675476">Dit beleid bepaalt opdrachtregelparameters die moeten worden gestart in de alternatieve browser.
-
-      Als dit beleid niet wordt ingesteld, wordt alleen de URL doorgegeven als opdrachtregelparameter.
-
-      Als dit beleid is ingesteld op een lijst met tekenreeksen, wordt elke tekenreeks doorgegeven aan de alternatieve browser als afzonderlijke opdrachtregelparameter. In Windows worden de parameters samengevoegd met spaties. In Mac OS X en Linux mag een parameter spaties bevatten en wordt dan nog steeds verwerkt als één parameter.
-
-      Als een element <ph name="URL_PLACEHOLDER" /> bevat, wordt dit vervangen door de URL van de pagina die moet worden geopend.
-
-      Als geen enkel element <ph name="URL_PLACEHOLDER" /> bevat, wordt de URL toegevoegd aan het einde van de opdrachtregel.
-
-      Omgevingsvariabelen worden uitgevouwen. In Windows wordt <ph name="ENV_VARIABLE_WIN_EXAMPLE" /> vervangen door de waarde van de omgevingsvariabele <ph name="ENV_VARIABLE_VALUE" />. In Mac OS X en Linux wordt <ph name="ENV_VARIABLE_UNIX_EXAMPLE" /> vervangen door de waarde van de omgevingsvariabele <ph name="ENV_VARIABLE" />.</translation>
 <translation id="250670737672448119">De toegankelijkheidsfunctie voor markering van het caret-teken inschakelen.
 
           Met deze functie wordt het gebied rondom het caret-teken gemarkeerd tijdens het bewerken.
@@ -1454,15 +1428,6 @@ Dit beleid kan alleen worden ingesteld via de Google Beheerdersconsole.</transla
 <translation id="3096595567015595053">Lijst met ingeschakelde plug-ins</translation>
 <translation id="3101501961102569744">Kies hoe je proxyserverinstellingen wilt specificeren</translation>
 <translation id="3101709781009526431">Datum en tijd</translation>
-<translation id="3114411414586006215">Dit beleid beheert de lijst met websites die nooit overschakeling naar een andere browser veroorzaken.
-
-      Onthoud dat elementen aan deze lijst kunnen worden toegevoegd via het beleid <ph name="EXTERNAL_SITELIST_URL_POLICY_NAME" />.
-
-      Wanneer dit beleid niet is ingesteld, worden er geen websites toegevoegd aan de lijst.
-
-      Wanneer dit beleid is ingesteld, wordt elk item behandeld als regel, vergelijkbaar met het beleid <ph name="URL_LIST_POLICY_NAME" />. De logica wordt echter omgedraaid: bij overeenkomende regels wordt er geen alternatieve browser geopend.
-
-      Anders dan bij <ph name="URL_LIST_POLICY_NAME" /> zijn de regels op beide richtingen van toepassing. Dat wil zeggen dat wanneer de add-in van Internet Explorer aanwezig en ingeschakeld is, deze ook beheert of <ph name="IE_PRODUCT_NAME" /> deze URL's moet openen in <ph name="PRODUCT_NAME" />.</translation>
 <translation id="3117676313396757089">Waarschuwing: DHE wordt na versie 57 (rond maart 2017) volledig van <ph name="PRODUCT_NAME" /> verwijderd en dit beleid werkt vanaf dat moment niet meer.
 
       Als het beleid niet is ingesteld of is ingesteld op 'False', worden de DHE-coderingssuites in TLS niet ingeschakeld. Anders kan het worden ingesteld op 'True' om DHE-coderingssuites in te schakelen en de compatibiliteit met een verouderde server te behouden. Dit is een tijdelijke oplossing en de server moet opnieuw worden geconfigureerd.
@@ -2037,13 +2002,6 @@ Als dit beleid is ingesteld op False, gebruikt <ph name="PRODUCT_NAME" /> geen n
 <translation id="3973371701361892765">Archief nooit automatisch verbergen</translation>
 <translation id="3979738908158213640">URL's die toegang krijgen om apparaatattesten uit te voeren tijdens SAML-verificatie</translation>
 <translation id="3984028218719007910">Bepaalt of <ph name="PRODUCT_OS_NAME" /> na het afmelden lokale accountgegevens bewaart. Als dit is ingesteld op 'true', bewaart <ph name="PRODUCT_OS_NAME" /> geen bestaande accounts en worden alle gegevens over de gebruikerssessie na het afmelden gewist. Als dit beleid is ingesteld op 'false' of niet is geconfigureerd, bewaart het apparaat mogelijk (gecodeerde) lokale gebruikersgegevens.</translation>
-<translation id="398475542699441679">Met dit beleid wordt bepaald of 'Ondersteuning voor oudere browsers' wordt ingeschakeld.
-
-      Wanneer dit beleid niet is ingesteld of is ingesteld op 'false', probeert Chrome geen toegewezen URL's te openen in een andere browser.
-
-      Wanneer dit beleid is ingesteld op 'true', probeert Chrome bepaalde URL's te openen in een andere browser (zoals Internet Explorer). Deze functie is geconfigureerd volgens de beleidsregels in de groep <ph name="LEGACY_BROWSER_SUPPORT_POLICY_GROUP" />.
-
-      Deze functie dient als vervanging van de extensie <ph name="LEGACY_BROWSER_SUPPORT_EXTENSION_NAME" />. De configuratie van de extensie wordt overgezet naar deze functie, maar het wordt sterk geadviseerd om in plaats daarvan het Chrome-beleid te gebruiken. Dit zorgt in de toekomst voor betere compatibiliteit.</translation>
 <translation id="398884292557092447">Als je het beleid instelt op True of niet instelt, krijgen gebruikers de controle over 'Automatisch aanvullen' voor creditcards in de UI.
 
       Als je het beleid instelt op False, worden er nooit creditcardgegevens voorgesteld of ingevuld door 'Automatisch aanvullen'. Ook worden er geen aanvullende creditcardgegevens opgeslagen die gebruikers opgeven als ze internetten.</translation>
@@ -2556,7 +2514,7 @@ Als dit beleid is ingesteld op False, gebruikt <ph name="PRODUCT_NAME" /> geen n
 <translation id="4812270373673968774">Als je het beleid instelt op 'Always', wordt de <ph name="PRODUCT_OS_NAME" />-plank automatisch verborgen. Als je het beleid instelt op 'Never', wordt de plank nooit automatisch verborgen.
 
       Als je het beleid instelt, kunnen gebruikers het niet wijzigen. Als je het beleid niet instelt, kunnen gebruikers zelf aangeven of de plank automatisch moet worden verborgen.</translation>
-<translation id="4812714598405913256">Bericht voor vervaldatum voor automatische updates configureren voor het beleid DeviceMinimumVersion policy</translation>
+<translation id="4812714598405913256">Bericht voor vervaldatum voor automatische updates configureren voor het beleid DeviceMinimumVersion</translation>
 <translation id="4816674326202173458">Toestaan dat Enterprise-gebruiker zowel primair als secundair is (standaardgedrag voor niet-beheerde gebruikers)</translation>
 <translation id="4826326557828204741">Actie die moet worden ondernomen wanneer de vertraging voor inactief wordt bereikt bij gebruik op accuvermogen</translation>
 <translation id="482803100714220060">Volledige URL's weergeven</translation>
@@ -2729,11 +2687,6 @@ Als dit beleid is ingesteld op False, gebruikt <ph name="PRODUCT_NAME" /> geen n
           Als dit beleid niet is ingesteld, wordt blokkeerbare gecombineerde content geblokkeerd en wordt optioneel blokkeerbare gecombineerde content geüpgraded. Gebruikers kunnen wel uitzonderingen instellen om dergelijke content toe te staan voor specifieke sites.
 
           Ga naar https://cloud.google.com/docs/chrome-enterprise/policies/url-patterns voor gedetailleerde informatie over geldige URL-patronen.</translation>
-<translation id="510196893779239086">Dit beleid bepaalt of Chrome helemaal wordt gesloten wanneer het laatste tabblad zou worden overgeschakeld naar een andere browser.
-
-      Wanneer dit beleid niet is ingesteld of is ingesteld op 'true', houdt Chrome ten minste één tabblad open nadat er is overgeschakeld naar een andere browser.
-
-      Wanneer dit beleid is ingesteld op 'false', sluit Chrome het tabblad nadat er is overgeschakeld naar een alternatieve browser, ook als dit het laatste tabblad was. Hiermee wordt Chrome volledig gesloten.</translation>
 <translation id="5102203758995933166">Hiermee kan de netwerkconfiguratie per gebruiker worden toegepast op een <ph name="PRODUCT_OS_NAME" />-apparaat. De netwerkconfiguratie is een json-tekenreeks zoals gedefinieerd in de Open Network Configuration-indeling.</translation>
 <translation id="5105313908130842249">Vertraging van schermvergrendeling wanneer op de batterij wordt gewerkt</translation>
 <translation id="5108031557082757679">Zakelijke apparaatprinters uitgeschakeld</translation>
@@ -3056,17 +3009,6 @@ Als dit beleid is ingesteld op False, gebruikt <ph name="PRODUCT_NAME" /> geen n
 <translation id="546726650689747237">Vertraging van dimmen van scherm wanneer op netstroom wordt gewerkt</translation>
 <translation id="5469143988693423708">Gebruiker mag Crostini uitvoeren</translation>
 <translation id="5469825884154817306">Afbeeldingen blokkeren op deze sites</translation>
-<translation id="5472668698895343595">Met dit beleid wordt de lijst met websites bepaald die in een alternatieve browser worden geopend.
-
-      Onthoud dat elementen aan deze lijst kunnen worden toegevoegd via het <ph name="USE_IE_SITELIST_POLICY_NAME" />- en <ph name="EXTERNAL_SITELIST_URL_POLICY_NAME" />-beleid.
-
-      Wanneer dit beleid niet is ingesteld, worden er geen websites toegevoegd aan de lijst.
-
-      Wanneer dit beleid is ingesteld, wordt elk item behandeld als regel waarmee iets in een alternatieve browser wordt geopend. <ph name="PRODUCT_NAME" /> gebruikt deze regels bij de keuze of een URL in een alternatieve browser moet worden geopend.
-
-      Wanneer de add-in van Internet Explorer aanwezig en ingeschakeld is, schakelt Internet Explorer terug naar <ph name="PRODUCT_NAME" /> wanneer de regels niet overeenkomen.
-
-      Als regels elkaar tegenspreken, gebruikt <ph name="PRODUCT_NAME" /> de meest specifieke regel.</translation>
 <translation id="5475361623548884387">Afdrukken inschakelen</translation>
 <translation id="547601067149622666">Geen advertenties toestaan op sites met opdringerige advertenties</translation>
 <translation id="5483065054530244863">Door lokale vertrouwensinstanties verstrekte, met SHA-1 ondertekende certificaten toestaan</translation>
@@ -3316,19 +3258,6 @@ Als dit beleid is ingesteld op False, gebruikt <ph name="PRODUCT_NAME" /> geen n
 
           Als je dit beleid niet instelt, is het standaardgedrag van <ph name="ATTRIBUTE_SAMESITE_NAME" /> voor cookies afhankelijk van de persoonlijke configuratie van de gebruiker voor de functies <ph name="FEATURE_NAME_SAMESITE_BY_DEFAULT_COOKIES" />, <ph name="FEATURE_NAME_SAMESITE_NONE_MUST_BE_SECURE" /> en <ph name="FEATURE_NAME_SCHEMEFUL_SAME_SITE" />. Deze functies kunnen worden ingesteld via een online test of door de markering <ph name="FLAG_NAME_SAMESITE_BY_DEFAULT_COOKIES" />, <ph name="FLAG_NAME_SAMESITE_NONE_MUST_BE_SECURE" /> of <ph name="FLAG_NAME_SCHEMEFUL_SAME_SITE" /> in of uit te schakelen.</translation>
 <translation id="585270638818921943">Voorkomen dat de gebruiker Android-apps van niet-vertrouwde bronnen gebruikt</translation>
-<translation id="5855010364142818361">Dit beleid bepaalt opdrachtregelparameters voor Chrome vanuit Internet Explorer.
-
-      Als de oude add-in 'Ondersteuning voor oudere browsers' voor Internet Explorer niet is geïnstalleerd, heeft dit beleid geen effect.
-
-      Als dit beleid niet is ingesteld, geeft Internet Explorer de URL alleen door aan Chrome als opdrachtregelparameter.
-
-      Als dit beleid is ingesteld op een lijst met tekenreeksen, worden de tekenreeksen samengevoegd met spaties en doorgegeven aan Chrome als opdrachtregelparameter.
-
-      Als een element <ph name="URL_PLACEHOLDER" /> bevat, wordt dit vervangen door de URL van de pagina die moet worden geopend.
-
-      Als geen enkel element <ph name="URL_PLACEHOLDER" /> bevat, wordt de URL toegevoegd aan het einde van de opdrachtregel.
-
-      Omgevingsvariabelen worden uitgevouwen. In Windows wordt <ph name="ENV_VARIABLE_WIN_EXAMPLE" /> vervangen door de waarde van de omgevingsvariabele ABC.</translation>
 <translation id="5859344336338527083">Als je dit beleid instelt, kun je opgeven welke URL's extensies, apps en thema's mogen installeren. Vóór <ph name="PRODUCT_NAME" /> 21 konden gebruikers op een link naar een *.crx-bestand klikken en bood <ph name="PRODUCT_NAME" /> aan het bestand te installeren na een aantal waarschuwingen. Sindsdien moeten bestanden worden gedownload en naar de instellingenpagina van <ph name="PRODUCT_NAME" /> worden gesleept. Met deze instelling kunnen specifieke URL's het oude, eenvoudigere installatieproces gebruiken.
 
       Elk item in deze lijst is een patroon van een extensie (zie https://developer.chrome.com/extensions/match_patterns). Gebruikers kunnen gemakkelijk items installeren vanaf elke URL die overeenkomt met een item in deze lijst. De locatie van het *.crx-bestand en de pagina waar de download wordt gestart (de verwijzer genoemd), moeten beide zijn toegestaan op basis van deze patronen.
@@ -3744,15 +3673,6 @@ Als dit beleid is ingesteld op False, gebruikt <ph name="PRODUCT_NAME" /> geen n
 
       Als je het beleid niet instelt, 'Gebruikers laten bepalen' instelt of het beleid instelt op 'None', bepalen gebruikers de automatische tijdzonedetectie via de normale opties in chrome://settings.</translation>
 <translation id="6532769014584932288">Wake locks toestaan</translation>
-<translation id="653645667373317432">Met dit beleid wordt bepaald welke opdracht wordt gebruikt om URL's te openen in <ph name="PRODUCT_NAME" /> bij overschakeling vanuit Internet Explorer.
-
-      Als de oude add-in 'Ondersteuning voor oudere browsers' voor Internet Explorer niet is geïnstalleerd, heeft dit beleid geen effect.
-
-      Als dit beleid niet is ingesteld, detecteert Internet Explorer automatisch het eigen uitvoerbare pad van <ph name="PRODUCT_NAME" /> als <ph name="PRODUCT_NAME" /> wordt gestart via Internet Explorer.
-
-      Als dit beleid is ingesteld, wordt het gebruikt om <ph name="PRODUCT_NAME" /> te starten als <ph name="PRODUCT_NAME" /> wordt gestart via Internet Explorer.
-
-      Dit beleid kan worden ingesteld op een pad naar een uitvoerbaar bestand of op <ph name="PRODUCT_NAME_PLACEHOLDER" /> om de installatielocatie van Chrome automatisch te detecteren.</translation>
 <translation id="6536600139108165863">Automatisch opnieuw opstarten wanneer apparaat wordt afgesloten</translation>
 <translation id="6539246272469751178">Dit beleid is niet van invloed op Android-apps. Android-apps gebruiken altijd de standaardmap voor downloads en hebben geen toegang tot bestanden die door <ph name="PRODUCT_OS_NAME" /> zijn gedownload naar een niet-standaard downloadmap.</translation>
 <translation id="654303922206238013">Migratiestrategie voor eCryptfs</translation>
@@ -4173,15 +4093,6 @@ Geheugengegevens worden in alle gevallen aan de pagina gerapporteerd, afgezien v
       De configuratie wordt gedownload en opgeslagen in het cachegeheugen. Deze wordt opnieuw gedownload als de URL of de hash wordt gewijzigd.
 
       Als je het beleid instelt, kunnen gebruikers het niet wijzigen. Als het beleid niet is ingesteld, kunnen gebruikers de standaard Crostini-container blijven gebruiken met de actieve configuratie als Crostini wordt toegestaan door het beleid.</translation>
-<translation id="713121532817834879">Dit beleid is een URL die met dezelfde indeling naar een XML-bestand verwijst als het beleid <ph name="IEEM_SITELIST_POLICY" /> van Internet Explorer. Hiermee worden regels vanuit een XML-bestand geladen, zonder dat deze regels worden gedeeld met Internet Explorer.
-
-      De regels in dit XML-bestand zijn op dezelfde manier van toepassing als <ph name="GREYLIST_POLICY_NAME" />. Dit betekent dat deze regels voorkomen dat <ph name="PRODUCT_NAME" /> de alternatieve browser opent en ook voorkomen dat de alternatieve browser <ph name="PRODUCT_NAME" /> opent.
-
-      Wanneer dit beleid niet is ingesteld of niet is ingesteld op een geldige URL, gebruikt <ph name="PRODUCT_NAME" /> dit beleid niet als bron van regels die overschakeling naar een andere browser veroorzaken.
-
-      Wanneer dit beleid is ingesteld op een geldige URL, downloadt<ph name="PRODUCT_NAME" /> de lijst met sites van die URL en worden de regels toegepast alsof ze zijn geconfigureerd met het beleid <ph name="SITELIST_POLICY_NAME" />.
-
-      Ga naar https://docs.microsoft.com/internet-explorer/ie11-deploy-guide/what-is-enterprise-mode voor meer informatie over het beleid <ph name="IEEM_SITELIST_POLICY" /> van Internet Explorer</translation>
 <translation id="7132877481099023201">URL's die zonder prompt toegang krijgen tot apparaten voor het vastleggen van video</translation>
 <translation id="7134420220355750019">De primaire muisknop verwisselen naar de rechtermuisknop.
 
@@ -4474,11 +4385,6 @@ Geheugengegevens worden in alle gevallen aan de pagina gerapporteerd, afgezien v
       Opmerking: Dit beleid is afhankelijk van de uitgevoerde verificatiestack voor het certificaat van het besturingssysteem en of hiermee SHA-1-handtekeningen zijn toegestaan. Als door een update van het besturingssysteem een wijziging wordt aangebracht in de verwerking van het besturingssysteem ten aanzien van SHA-1-certificaten, is dit beleid wellicht niet meer van toepassing. Daarnaast is dit beleid bedoeld als tijdelijke oplossing voor bedrijven om af te stappen van SHA-1. Dit beleid wordt op of rond 1 januari 2019 verwijderd.
 
       Als dit beleid niet is ingesteld of is ingesteld op 'false', volgt <ph name="PRODUCT_NAME" /> het openbaar aangekondigde verwijderingsschema voor SHA-1.</translation>
-<translation id="7578049687634719313">Met dit beleid wordt bepaald hoe lang het systeem moet wachten (in milliseconden) voordat er een alternatieve browser wordt gestart.
-
-      Wanneer dit beleid niet wordt ingesteld, of wordt ingesteld op '0', wordt de URL onmiddellijk in een alternatieve browser geopend als je naar de URL navigeert.
-
-      Wanneer dit beleid is ingesteld op een getal, toont Chrome gedurende dat aantal milliseconden een melding en wordt vervolgens de alternatieve browser geopend.</translation>
 <translation id="7590188804371204512">Beheert de installatie van externe extensies.
 
       Als je deze instelling inschakelt, wordt de installatie van externe extensies geblokkeerd.
@@ -5049,13 +4955,6 @@ De aanbevolen manier om beleidsregels te configureren op Windows, is via GPO, ma
 <translation id="838870586332499308">Dataroaming inschakelen</translation>
 <translation id="8393850527597048037">Alleen platform</translation>
 <translation id="8395749934754392549">Beheert instellingen voor de Android-container (ARC) en Android-apps.</translation>
-<translation id="8396145449084377015">Met dit beleid wordt bepaald of regels uit het SiteList-beleid van Internet Explorer worden geladen.
-
-      Wanneer dit beleid niet is ingesteld of is ingesteld op False, gebruikt <ph name="PRODUCT_NAME" /> het beleid <ph name="IEEM_SITELIST_POLICY" /> van Internet Explorer niet als een bron van regels voor het schakelen naar browsers.
-
-      Wanneer dit beleid is ingesteld op True, leest <ph name="PRODUCT_NAME" /> <ph name="IEEM_SITELIST_POLICY" /> van Internet Explorer om de URL van de sitelijst te verkrijgen. <ph name="PRODUCT_NAME" /> downloadt vervolgens de sitelijst van die URL en past de regels toe alsof deze zijn geconfigureerd met het beleid <ph name="SITELIST_POLICY_NAME" />.
-
-      Raadpleeg deze link voor meer informatie over het beleid <ph name="IEEM_SITELIST_POLICY" /> van Internet Explorer: https://docs.microsoft.com/internet-explorer/ie11-deploy-guide/what-is-enterprise-mode</translation>
 <translation id="8398952282584132331">Privacyscherm inschakelen</translation>
 <translation id="8402079500086185021">Pdf-bestanden altijd extern openen</translation>
 <translation id="8405691014775178834">De gebruiker toestemming geven voor roottoegang tot Crostini-containers.
@@ -5220,11 +5119,6 @@ Dit beleid wordt verwijderd in M75.</translation>
 <translation id="8653561013005884087">Als het beleid is ingesteld op True, blijft gesproken feedback ingeschakeld. Als het beleid is ingesteld op False, blijft gesproken feedback uitgeschakeld.
 
        Als je dit beleid instelt, kunnen gebruikers het niet wijzigen. Als je dit beleid niet instelt, is gesproken feedback in eerste instantie uitgeschakeld, maar kunnen gebruikers deze functie op elk moment inschakelen.</translation>
-<translation id="8654286232573430130">Hiermee wordt gespecificeerd welke servers op de witte lijst voor geïntegreerde verificatie moeten worden geplaatst. Geïntegreerde verificatie wordt alleen ingeschakeld wanneer <ph name="PRODUCT_NAME" /> een verificatieverzoek ontvangt van een proxy of van een server die op deze toegestane lijst staat.
-
-          Scheid meerdere servernamen van elkaar met komma's. Jokertekens (*) zijn toegestaan.
-
-          Als je dit beleid niet instelt, probeert <ph name="PRODUCT_NAME" /> te detecteren of een server zich in het intranet bevindt en wordt daarna pas gereageerd op IWA-verzoeken. Als een server wordt gedetecteerd als intranet, worden IWA-verzoeken van de server genegeerd door <ph name="PRODUCT_NAME" />.</translation>
 <translation id="8656110680728938054">'Selecteer om uitgesproken te worden' inschakelen</translation>
 <translation id="8661297125441579970">Gegevensmigratie en ARC niet toestaan.</translation>
 <translation id="8665314828727504286">Safe Browsing-beveiligingsniveau</translation>

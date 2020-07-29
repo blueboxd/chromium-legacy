@@ -316,7 +316,7 @@
 <translation id="1383861834909034572">S'obre després de finalitzar</translation>
 <translation id="1383876407941801731">Cerca</translation>
 <translation id="1386387014181100145">Hola.</translation>
-<translation id="138784436342154190">Vols restaurar la pàgina d'inici predeterminada?</translation>
+<translation id="138784436342154190">Vols restaurar la pàgina d'arrencada predeterminada?</translation>
 <translation id="1390548061267426325">Obre com a pestanya normal</translation>
 <translation id="1393283411312835250">Sol i núvols</translation>
 <translation id="1395730723686586365">S'ha iniciat l'actualitzador.</translation>
@@ -360,7 +360,7 @@
 <translation id="1431432486300429272">És possible que Google utilitzi el teu historial de navegació per personalitzar la Cerca i altres serveis de Google. Tu o els teus pares podeu canviar aquesta opció de configuració sempre que vulgueu des de myaccount.google.com/activitycontrols/search.</translation>
 <translation id="1432581352905426595">Gestiona els motors de cerca</translation>
 <translation id="1433811987160647649">Pregunta abans d'accedir</translation>
-<translation id="1434696352799406980">Aquesta funció restablirà la pàgina d'inici, la pàgina Pestanya nova, el motor de cerca i les pestanyes fixades que tingueu configurades. També desactivarà totes les extensions i esborrarà les dades temporals, com ara les galetes. Les adreces d'interès, l'historial i les contrasenyes desades no s'esborraran.</translation>
+<translation id="1434696352799406980">Aquesta funció restablirà la pàgina d'arrencada, la pàgina Pestanya nova, el motor de cerca i les pestanyes fixades que tingueu configurades. També desactivarà totes les extensions i esborrarà les dades temporals, com ara les galetes. Les adreces d'interès, l'historial i les contrasenyes desades no s'esborraran.</translation>
 <translation id="1434886155212424586">La pàgina d'inici és la pàgina Pestanya nova</translation>
 <translation id="1436390408194692385">Vàlid durant <ph name="TICKET_TIME_LEFT" /></translation>
 <translation id="1436671784520050284">Continua amb la configuració</translation>
@@ -1924,7 +1924,6 @@ Pots gestionar la configuració d'aquest compte instal·lant l'aplicació Family
 <translation id="3371140690572404006">Dispositiu USB-C (port frontal dret)</translation>
 <translation id="337286756654493126">Llegir carpetes que s'obrin a l'aplicació</translation>
 <translation id="3378572629723696641">És possible que aquesta extensió estigui malmesa.</translation>
-<translation id="3379169026479470857">Elimina el CB</translation>
 <translation id="337920581046691015">S'instal·larà <ph name="PRODUCT_NAME" />.</translation>
 <translation id="3380365263193509176">Error desconegut</translation>
 <translation id="3382073616108123819">El sistema no ha pogut determinar els identificadors d'aquest dispositiu.</translation>
@@ -2610,14 +2609,12 @@ Pots gestionar la configuració d'aquest compte instal·lant l'aplicació Family
 <translation id="4175137578744761569">Porpra clar i blanc</translation>
 <translation id="4175737294868205930">Emmagatzematge permanent</translation>
 <translation id="4176463684765177261">Desactivat</translation>
-<translation id="418031202593299965">Aquests components es comparteixen amb altres usuaris d'aquest dispositiu. Suprimir-ne algun pot afectar la resta d'usuaris.</translation>
 <translation id="4180788401304023883">Voleu suprimir el certificat de CA "<ph name="CERTIFICATE_NAME" />"?</translation>
 <translation id="4181602000363099176">20x</translation>
 <translation id="4181841719683918333">Idiomes</translation>
 <translation id="4184885522552335684">Arrossega una pantalla per moure-la</translation>
 <translation id="4187424053537113647">S'està configurant <ph name="APP_NAME" />...</translation>
 <translation id="4190828427319282529">Marca el focus del teclat</translation>
-<translation id="4191805472951276951">CB</translation>
 <translation id="4194570336751258953">Activa la funció de tocar per fer clic</translation>
 <translation id="4195643157523330669">Obre en una pestanya nova</translation>
 <translation id="4195814663415092787">Continua des d'on ho vaig deixar</translation>
@@ -3036,7 +3033,6 @@ Pots gestionar la configuració d'aquest compte instal·lant l'aplicació Family
 <translation id="4756388243121344051">&amp;Historial</translation>
 <translation id="4759238208242260848">Baixades</translation>
 <translation id="4761104368405085019">Utilitzar el micròfon</translation>
-<translation id="4762055672525936226">Suprimeix el contingut baixat</translation>
 <translation id="4762718786438001384">L'espai de disc del dispositiu és molt baix</translation>
 <translation id="4763408175235639573">S'han permès les galetes següents en visitar aquesta pàgina</translation>
 <translation id="4765582662863429759">Permet que Missatges Android retransmeti els missatges de text del telèfon al teu Chromebook</translation>
@@ -3145,7 +3141,7 @@ Pots gestionar la configuració d'aquest compte instal·lant l'aplicació Family
 <translation id="489454699928748701">Permet que els llocs web utilitzin els sensors de moviment</translation>
 <translation id="4898011734382862273">El certificat <ph name="CERTIFICATE_NAME" /> representa una entitat emissora de certificats</translation>
 <translation id="489985760463306091">Per acabar de suprimir el programari maliciós, reinicia l'ordinador</translation>
-<translation id="4900392736118574277">La pàgina d'inici ha canviat a <ph name="URL" />.</translation>
+<translation id="4900392736118574277">La pàgina d'arrencada ha canviat a <ph name="URL" />.</translation>
 <translation id="490051679772058907"><ph name="REFRESH_RATE" /> Hz, entrellaçat</translation>
 <translation id="4902546322522096650">Xarxa <ph name="NETWORK_INDEX" /> de <ph name="NETWORK_COUNT" />, <ph name="NETWORK_NAME" />, <ph name="SECURITY_STATUS" />, <ph name="SIGNAL_STRENGTH" />% d'intensitat del senyal, connecta</translation>
 <translation id="49027928311173603">La política que s'ha baixat del servidor no és vàlida: <ph name="VALIDATION_ERROR" />.</translation>
@@ -3290,7 +3286,6 @@ Pots gestionar la configuració d'aquest compte instal·lant l'aplicació Family
 <translation id="5094721898978802975">Comunicació amb aplicacions natives cooperatives</translation>
 <translation id="5097002363526479830">S'ha produït un error en connectar amb la xarxa "<ph name="NAME" />": <ph name="DETAILS" /></translation>
 <translation id="5097874180538493929">Fes clic automàticament quan el cursor s'aturi</translation>
-<translation id="5098800418125334616">Gestiona el contingut baixat</translation>
 <translation id="5101042277149003567">Obre totes les adreces d'interès</translation>
 <translation id="5101839224773798795">Fes clic automàticament quan el cursor s'aturi</translation>
 <translation id="5107443654503185812">Una extensió ha desactivat Navegació segura</translation>
@@ -4170,7 +4165,6 @@ Assegureu-vos que no es pugui accedir a informació sensible.</translation>
 <translation id="6198102561359457428">Tanca la sessió i torna-la a iniciar...</translation>
 <translation id="6198252989419008588">Canvia el PIN</translation>
 <translation id="6202304368170870640">Pots utilitzar el PIN per iniciar la sessió al dispositiu o per desbloquejar-lo.</translation>
-<translation id="6202517672944764518">Contingut baixat</translation>
 <translation id="6206311232642889873">Cop&amp;ia la imatge</translation>
 <translation id="6207200176136643843">Restableix el nivell de zoom predeterminat</translation>
 <translation id="6207937957461833379">País o regió</translation>
@@ -4488,6 +4482,7 @@ Assegureu-vos que no es pugui accedir a informació sensible.</translation>
 <translation id="6602956230557165253">Feu servir les tecles de fletxa a la dreta i a l'esquerra per navegar.</translation>
 <translation id="6605847144724004692">Encara no l'ha puntuat cap usuari.</translation>
 <translation id="6607831829715835317">Més eine&amp;s</translation>
+<translation id="6608012008902909398">Mostra els detalls de la comprovació del programari del dispositiu</translation>
 <translation id="6611972847767394631">Aquí trobaràs les teves pestanyes</translation>
 <translation id="6612358246767739896">Contingut protegit</translation>
 <translation id="6615455863669487791">Mostra-m'ho</translation>
@@ -5395,7 +5390,7 @@ Assegureu-vos que no es pugui accedir a informació sensible.</translation>
 <translation id="7757787379047923882">Text compartit des del dispositiu <ph name="DEVICE_NAME" /></translation>
 <translation id="7758143121000533418">Family Link</translation>
 <translation id="7758450972308449809">Ajusta els límits de la pantalla</translation>
-<translation id="7760004034676677601">Aquesta pàgina d'inici és la que esperàveu?</translation>
+<translation id="7760004034676677601">Aquesta pàgina d'arrencada és la que esperàveu?</translation>
 <translation id="7764225426217299476">Afegeix una adreça</translation>
 <translation id="7764256770584298012"><ph name="DOWNLOAD_RECEIVED" /> del domini <ph name="DOWNLOAD_DOMAIN" /></translation>
 <translation id="7765158879357617694">Mou</translation>
@@ -6130,7 +6125,6 @@ Deseu el fitxer de clau en una ubicació segura. El necessitareu per crear versi
 <translation id="8652400352452647993">Error de l'empaquetatge d'extensió</translation>
 <translation id="8654151524613148204">El fitxer és massa gran perquè el vostre equip el pugui gestionar.</translation>
 <translation id="8655295600908251630">Canal</translation>
-<translation id="8655319619291175901">S'ha produït un error.</translation>
 <translation id="8655972064210167941">S'ha produït un problema en iniciar la sessió perquè no s'ha pogut verificar la contrasenya. Contacteu amb l'administrador o torneu a provar-ho.</translation>
 <translation id="8656768832129462377">No els comprovis</translation>
 <translation id="8658645149275195032"><ph name="APP_NAME" /> està compartint la pantalla i l'àudio amb <ph name="TAB_NAME" />.</translation>
@@ -6219,7 +6213,6 @@ Deseu el fitxer de clau en una ubicació segura. El necessitareu per crear versi
           &lt;p&gt;Encara podeu configurar-lo mitjançant la línia d'ordres. Consulteu &lt;code&gt;man <ph name="PRODUCT_BINARY_NAME" />&lt;/code&gt; per obtenir més informació sobre indicadors i sobre variables d'entorn.&lt;/p&gt;</translation>
 <translation id="8755175579224030324">Realitza tasques relacionades amb la seguretat de la teva organització, com ara gestionar els certificats i les claus emmagatzemats al dispositiu</translation>
 <translation id="8755376271068075440">&amp;Més gran</translation>
-<translation id="8756143264090841047">Suprimeix el CB</translation>
 <translation id="8756969031206844760">Vols actualitzar la contrasenya?</translation>
 <translation id="8757090071857742562">No es pot emetre l'escriptori. Comproveu si heu confirmat el missatge per començar a compartir la pantalla.</translation>
 <translation id="8757203080302669031">Aquesta pestanya està cercant dispositius Bluetooth activament.</translation>
@@ -6234,7 +6227,6 @@ Deseu el fitxer de clau en una ubicació segura. El necessitareu per crear versi
 <translation id="8770406935328356739">Directori arrel de l'extensió</translation>
 <translation id="8770507190024617908">Gestiona persones</translation>
 <translation id="8771300903067484968">El fons de la pàgina d'inici s'ha restablert al fons predeterminat.</translation>
-<translation id="8771939407732945762">Elimina el contingut baixat</translation>
 <translation id="8773302562181397928">Desa <ph name="PRINTER_NAME" /></translation>
 <translation id="8774379074441005279">Confirma la restauració</translation>
 <translation id="8774934320277480003">Marge superior</translation>

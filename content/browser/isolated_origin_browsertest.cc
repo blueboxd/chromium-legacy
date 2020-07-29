@@ -924,11 +924,17 @@ class InjectIsolationRequestingNavigation
   DISALLOW_COPY_AND_ASSIGN(InjectIsolationRequestingNavigation);
 };
 
+// TODO(crbug.com/1110767): flaky on Android builders since 2020-07-28.
+#if defined(OS_ANDROID)
+#define MAYBE_FrameTreeTestBeforeDidCommit DISABLED_FrameTreeTestBeforeDidCommit
+#else
+#define MAYBE_FrameTreeTestBeforeDidCommit FrameTreeTestBeforeDidCommit
+#endif
 // This test is similar to the one above, but exercises the pending navigation
 // when it's at a different stage, namely between the CommitNavigation and
 // DidCommitProvisionalLoad, rather than at WillProcessResponse.
 IN_PROC_BROWSER_TEST_F(OriginIsolationOptInOriginPolicyTest,
-                       FrameTreeTestBeforeDidCommit) {
+                       MAYBE_FrameTreeTestBeforeDidCommit) {
   GURL isolated_origin_url(
       https_server()->GetURL("isolated.foo.com", "/isolate_origin"));
 

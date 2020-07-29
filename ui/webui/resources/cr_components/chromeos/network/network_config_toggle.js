@@ -16,6 +16,8 @@ Polymer({
   properties: {
     label: String,
 
+    subLabel: String,
+
     checked: {
       type: Boolean,
       value: false,

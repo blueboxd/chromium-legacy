@@ -1922,7 +1922,6 @@ Du kan administrere innstillingene for denne kontoen ved å installere Family Li
 <translation id="3371140690572404006">USB-C-enhet (porten foran på høyre side)</translation>
 <translation id="337286756654493126">lese mapper du åpner i appen</translation>
 <translation id="3378572629723696641">Denne utvidelsen kan være skadet.</translation>
-<translation id="3379169026479470857">Fjern nedlastet innhold</translation>
 <translation id="337920581046691015"><ph name="PRODUCT_NAME" /> vil bli installert.</translation>
 <translation id="3380365263193509176">Ukjent feil</translation>
 <translation id="3382073616108123819">Beklager. Systemet kunne ikke fastslå enhetsidentifikatorer for denne enheten.</translation>
@@ -2607,14 +2606,12 @@ Du kan administrere innstillingene for denne kontoen ved å installere Family Li
 <translation id="4175137578744761569">Lys lilla og hvit</translation>
 <translation id="4175737294868205930">Permanent lagring</translation>
 <translation id="4176463684765177261">Deaktivert</translation>
-<translation id="418031202593299965">Disse komponentene deles med andre brukere på enheten. Fjerning av komponenter kan berøre andre brukere.</translation>
 <translation id="4180788401304023883">Slette CA-sertifikat «<ph name="CERTIFICATE_NAME" />»?</translation>
 <translation id="4181602000363099176">20x</translation>
 <translation id="4181841719683918333">Språk</translation>
 <translation id="4184885522552335684">Dra i skjermene for å flytte dem</translation>
 <translation id="4187424053537113647">Konfigurerer <ph name="APP_NAME" /> …</translation>
 <translation id="4190828427319282529">Fremhev tastaturfokuset</translation>
-<translation id="4191805472951276951">Nedlastet innhold</translation>
 <translation id="4194570336751258953">Aktiver berøringsklikk</translation>
 <translation id="4195643157523330669">Åpne i ny fane</translation>
 <translation id="4195814663415092787">Fortsett der du slapp</translation>
@@ -3033,7 +3030,6 @@ Du kan administrere innstillingene for denne kontoen ved å installere Family Li
 <translation id="4756388243121344051">&amp;Logg</translation>
 <translation id="4759238208242260848">Nedlastinger</translation>
 <translation id="4761104368405085019">bruke mikrofonen din</translation>
-<translation id="4762055672525936226">Slett nedlastet innhold</translation>
 <translation id="4762718786438001384">Det er kritisk lite plass på enheten</translation>
 <translation id="4763408175235639573">Følgende informasjonskapsler ble angitt da du besøkte denne siden</translation>
 <translation id="4765582662863429759">Tillater at Android Messages videresender tekstmeldinger fra telefonen din til Chromebook</translation>
@@ -3287,7 +3283,6 @@ Du kan administrere innstillingene for denne kontoen ved å installere Family Li
 <translation id="5094721898978802975">kommunisere med samarbeidende integrerte apper</translation>
 <translation id="5097002363526479830">Kunne ikke koble til nettverket «<ph name="NAME" />»: <ph name="DETAILS" /></translation>
 <translation id="5097874180538493929">Klikk automatisk når markøren stanser</translation>
-<translation id="5098800418125334616">Administrer nedlastet innhold</translation>
 <translation id="5101042277149003567">Åpne alle bokmerker</translation>
 <translation id="5101839224773798795">Klikk automatisk når pekeren stopper</translation>
 <translation id="5107443654503185812">En utvidelse har slått av Safe Browsing</translation>
@@ -4165,7 +4160,6 @@ Du kan administrere innstillingene for denne kontoen ved å installere Family Li
 <translation id="6198102561359457428">Logg deg av og på igjen</translation>
 <translation id="6198252989419008588">Endre personlig kode</translation>
 <translation id="6202304368170870640">Du kan bruke PIN-koden til å logge på eller låse opp enheten.</translation>
-<translation id="6202517672944764518">Nedlastet innhold</translation>
 <translation id="6206311232642889873">&amp;Kopier bilde</translation>
 <translation id="6207200176136643843">Tilbakestill til standard zoomnivå</translation>
 <translation id="6207937957461833379">Land / region</translation>
@@ -4483,6 +4477,7 @@ Du kan administrere innstillingene for denne kontoen ved å installere Family Li
 <translation id="6602956230557165253">Bruk venstre og høyre piltast for å navigere.</translation>
 <translation id="6605847144724004692">Ikke vurdert av noen brukere ennå.</translation>
 <translation id="6607831829715835317">Flere verktøy</translation>
+<translation id="6608012008902909398">Vis detaljer for enhetsprogramvaresjekken</translation>
 <translation id="6611972847767394631">Se fanene dine her</translation>
 <translation id="6612358246767739896">Beskyttet innhold</translation>
 <translation id="6615455863669487791">Vis meg</translation>
@@ -6125,7 +6120,6 @@ Jeg tror ikke det er nødvendig å blokkere dette nettstedet.</translation>
 <translation id="8652400352452647993">Feil med pakkeutvidelse</translation>
 <translation id="8654151524613148204">Beklager, men filen er så stor at datamaskinen din ikke klarer å håndtere den.</translation>
 <translation id="8655295600908251630">Kanal</translation>
-<translation id="8655319619291175901">Beklager. Noe gikk galt.</translation>
 <translation id="8655972064210167941">Påloggingen mislyktes fordi passordet ditt ikke kunne bekreftes. Kontakt administratoren din, eller prøv på nytt.</translation>
 <translation id="8656768832129462377">Ikke merk av</translation>
 <translation id="8658645149275195032"><ph name="APP_NAME" /> deler lyden og skjermen din med <ph name="TAB_NAME" />.</translation>
@@ -6214,7 +6208,6 @@ Jeg tror ikke det er nødvendig å blokkere dette nettstedet.</translation>
         &lt;p&gt;Du kan likevel konfigurere via kommandolinjen. Les mer om flagg og miljøvariabler i &lt;code&gt;man <ph name="PRODUCT_BINARY_NAME" />&lt;/code&gt;.&lt;/p&gt;</translation>
 <translation id="8755175579224030324">Utfør sikkerhetsrelaterte oppgaver for organisasjonen din, som å administrere sertifikater og nøkler som er lagret på enheten</translation>
 <translation id="8755376271068075440">&amp;Større</translation>
-<translation id="8756143264090841047">Slett nedlastet innhold</translation>
 <translation id="8756969031206844760">Vil du oppdatere passordet?</translation>
 <translation id="8757090071857742562">Skrivebordet kunne ikke castes. Sjekk om du bekreftet forespørselen om å begynne å dele skjermen din.</translation>
 <translation id="8757203080302669031">Denne fanen søker aktivt etter Bluetooth-enheter.</translation>
@@ -6229,7 +6222,6 @@ Jeg tror ikke det er nødvendig å blokkere dette nettstedet.</translation>
 <translation id="8770406935328356739">Rotkatalog for utvidelser</translation>
 <translation id="8770507190024617908">Administrer personer</translation>
 <translation id="8771300903067484968">Bakgrunnen på startsiden er tilbakestilt til standardbakgrunnen.</translation>
-<translation id="8771939407732945762">Fjern nedlastet innhold</translation>
 <translation id="8773302562181397928">Lagre <ph name="PRINTER_NAME" /></translation>
 <translation id="8774379074441005279">Bekreft gjenoppretting</translation>
 <translation id="8774934320277480003">Toppmargen</translation>

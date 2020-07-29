@@ -1922,7 +1922,6 @@
 <translation id="3371140690572404006">USB-C құрылғысы (оң жақ алдыңғы порты)</translation>
 <translation id="337286756654493126">Қолданбада ашқан қалталарды оқу</translation>
 <translation id="3378572629723696641">Бұл кеңейтім бүлінген болуы мүмкін.</translation>
-<translation id="3379169026479470857">Жүктеп алынған мазмұнды өшіру</translation>
 <translation id="337920581046691015"><ph name="PRODUCT_NAME" /> орнатылады.</translation>
 <translation id="3380365263193509176">Белгісіз қате</translation>
 <translation id="3382073616108123819">Жүйенің осы құрылғыға арналған құрылғы идентификаторларын анықтауы сәтсіз аяқталды.</translation>
@@ -2377,6 +2376,7 @@
 <translation id="3882165008614329320">Камерадан немесе файлдан алынған бейне</translation>
 <translation id="3886446263141354045">Бұл сайтқа кіру сұрауыңыз <ph name="NAME" /> деген контактіге жіберілді</translation>
 <translation id="3888550877729210209"><ph name="LOCK_SCREEN_APP_NAME" /> қолданбасымен жазбалар жазу</translation>
+<translation id="3891563564777705449">{0,plural, =1{Құрылғыны 1 аптаның ішінде жаңартыңыз}other{Құрылғыны # аптаның ішінде жаңартыңыз}}</translation>
 <translation id="3892414795099177503">OpenVPN / L2TP енгізу…</translation>
 <translation id="3893536212201235195">Арнайы мүмкіндіктер параметрлерін оқу және өзгерту</translation>
 <translation id="3893630138897523026">ChromeVox (дауыстық көмек)</translation>
@@ -2608,14 +2608,12 @@
 <translation id="4175137578744761569">Ашық күлгін және ақ</translation>
 <translation id="4175737294868205930">Тұрақты жад</translation>
 <translation id="4176463684765177261">Өшірілген</translation>
-<translation id="418031202593299965">Бұл құрамдастар осы құрылғының басқа пайдаланушыларына қолжетімді. Құрамдастарды өшірсеңіз, олар басқа пайдаланушылардың жұмысына әсер етуі мүмкін.</translation>
 <translation id="4180788401304023883">"<ph name="CERTIFICATE_NAME" />" CA сертификатын жою қажет пе?</translation>
 <translation id="4181602000363099176">20x</translation>
 <translation id="4181841719683918333">Тілдер</translation>
 <translation id="4184885522552335684">Дисплейді жылжыту үшін сүйреу</translation>
 <translation id="4187424053537113647"><ph name="APP_NAME" /> орнатылуда...</translation>
 <translation id="4190828427319282529">Пернетақта фокусын бөлектеу</translation>
-<translation id="4191805472951276951">DLC</translation>
 <translation id="4194570336751258953">Tap-to-click мүмкіндігін қосу</translation>
 <translation id="4195643157523330669">Жаңа қойындыда ашу</translation>
 <translation id="4195814663415092787">Тоқтаған жерден жалғастыру</translation>
@@ -3034,7 +3032,6 @@
 <translation id="4756388243121344051">&amp;Тарих</translation>
 <translation id="4759238208242260848">Жүктеп алынғандар</translation>
 <translation id="4761104368405085019">Микрофоныңызды пайдалану</translation>
-<translation id="4762055672525936226">Жүктеп алынған мазмұнды жою</translation>
 <translation id="4762718786438001384">Құрылғы дискінде бос орын тым аз қалды</translation>
 <translation id="4763408175235639573">Осы бетті ашқанда, мына cookie файлдары орнатылды</translation>
 <translation id="4765582662863429759">Android Messages қолданбасына хабарларды телефоннан Chromebook құрылғысына жіберуге мүмкіндік береді</translation>
@@ -3288,7 +3285,6 @@
 <translation id="5094721898978802975">Жергілікті қолданбалармен жұмыс істеу арқылы байланысу</translation>
 <translation id="5097002363526479830">Желіге қосылу сәтсіз аяқталды: «<ph name="NAME" />»: <ph name="DETAILS" /></translation>
 <translation id="5097874180538493929">Көрсеткі тоқтаған кезде, тінтуірдің түймесін автоматты түрде басу</translation>
-<translation id="5098800418125334616">Жүктеп алынған мазмұнды басқару</translation>
 <translation id="5101042277149003567">Барлық бетбелгілерді ашу</translation>
 <translation id="5101839224773798795">Курсор тоқтағанда автоматты түрде басу</translation>
 <translation id="5107443654503185812">Кеңейтім "Қауіпсіз шолу" функциясын өшірді.</translation>
@@ -4166,7 +4162,6 @@
 <translation id="6198102561359457428">Шығып, қайта кіріңіз…</translation>
 <translation id="6198252989419008588">PIN кодын өзгерту</translation>
 <translation id="6202304368170870640">Құрылғыларға кіру немесе құлпын ашу үшін PIN кодыңызды пайдалануыңызға болады.</translation>
-<translation id="6202517672944764518">Жүктеп алынған мазмұн</translation>
 <translation id="6206311232642889873">Кескінді көші&amp;ру</translation>
 <translation id="6207200176136643843">Әдепкі масштабтау деңгейін қайтару</translation>
 <translation id="6207937957461833379">Ел/аймақ</translation>
@@ -4438,6 +4433,7 @@
 <translation id="6535331821390304775"><ph name="ORIGIN" /> бетіне осындай сілтемелерді байланыстырылған қолданбада әрдайым ашуға рұқсат етілсін</translation>
 <translation id="654039047105555694"><ph name="BEGIN_BOLD" />Ескертпе:<ph name="END_BOLD" /> не істеп жатқаныңызды білсеңіз немесе сізден орындауды сұраған болса ғана қосыңыз, себебі деректерді жинақтау өнімділікті нашарлатуы мүмкін.</translation>
 <translation id="6541638731489116978">Бұл сайттың қозғалыс датчиктеріңізді пайдалануына тыйым салынды.</translation>
+<translation id="6545407738986370057">{0,plural, =1{Құрылғыны 1 аптаның ішінде қайтарыңыз}other{Құрылғыны # аптаның ішінде қайтарыңыз}}</translation>
 <translation id="6545665334409411530">Қайталау жиілігі</translation>
 <translation id="6545864417968258051">Bluetooth құрылғыларын іздеу</translation>
 <translation id="6545867563032584178">Микрофон Mac жүйесінің параметрлерінде өшірілген.</translation>
@@ -6124,7 +6120,6 @@
 <translation id="8652400352452647993">Пакет кеңейтімі қатесі</translation>
 <translation id="8654151524613148204">Файл компьютеріңізде өңдеу үшін тым үлкен. Кешіріңіз.</translation>
 <translation id="8655295600908251630">Арна</translation>
-<translation id="8655319619291175901">Бірнәрсе дұрыс емес.</translation>
 <translation id="8655972064210167941">Кірілмеді, себебі құпия сөзіңіз расталмады. Әкімшіңізге хабарласыңыз немесе әрекетті қайталаңыз.</translation>
 <translation id="8656768832129462377">Тексермеу</translation>
 <translation id="8658645149275195032"><ph name="APP_NAME" /> қолданбасы <ph name="TAB_NAME" /> сайтымен экранды және аудионы бөлісуде.</translation>
@@ -6213,7 +6208,6 @@
           &lt;p&gt;Пәрмен жолы арқылы реттеуіңізге болады. Жалаушалар мен қоршаған орта айнымалылары туралы қосымша ақпарат алу үшін &lt;code&gt;<ph name="PRODUCT_BINARY_NAME" /> нұсқаулығын&lt;/code&gt; қараңыз.&lt;/p&gt;</translation>
 <translation id="8755175579224030324">Құрылғыда сақталған сертификаттар мен кілттерді реттеу сияқты қауіпсіздікке қатысты тапсырмаларды ұйымыңыз үшін орындау</translation>
 <translation id="8755376271068075440">&amp;Үлкенірек</translation>
-<translation id="8756143264090841047">Жүктеп алынған мазмұнды жою</translation>
 <translation id="8756969031206844760">Құпия сөз жаңартылсын ба?</translation>
 <translation id="8757090071857742562">Жұмыс үстелін трансляциялау мүмкін емес. Экранды бөлісу сұрауын растағаныңызға көз жеткізіңіз.</translation>
 <translation id="8757203080302669031">Бұл қойынды Bluetooth құрылғыларын белсенді түрде іздеп жатыр.</translation>
@@ -6228,7 +6222,6 @@
 <translation id="8770406935328356739">Кеңейтімнің түбір каталогы:</translation>
 <translation id="8770507190024617908">Адамдарды басқару</translation>
 <translation id="8771300903067484968">Бастау бетінің фондық режимі әдепкі фонға қайтарылды.</translation>
-<translation id="8771939407732945762">Жүктеп алынған мазмұнды өшіру</translation>
 <translation id="8773302562181397928"><ph name="PRINTER_NAME" /> сақтау</translation>
 <translation id="8774379074441005279">Қалпына келтіруді растау</translation>
 <translation id="8774934320277480003">Жоғарғы шек</translation>

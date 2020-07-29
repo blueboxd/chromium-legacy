@@ -5,6 +5,7 @@
 #include "chrome/browser/chromeos/input_method/assistive_suggester.h"
 #include "chrome/browser/chromeos/input_method/personal_info_suggester.h"
 
+#include "base/test/metrics/histogram_tester.h"
 #include "base/test/scoped_feature_list.h"
 #include "chrome/test/base/testing_profile.h"
 #include "chromeos/constants/chromeos_features.h"
@@ -20,9 +21,14 @@ class AssistiveSuggesterTest : public testing::Test {
   AssistiveSuggesterTest() { profile_ = std::make_unique<TestingProfile>(); }
 
   void SetUp() override {
+    base::HistogramTester histogram_tester;
     engine_ = std::make_unique<InputMethodEngine>();
     assistive_suggester_ =
         std::make_unique<AssistiveSuggester>(engine_.get(), profile_.get());
+    histogram_tester.ExpectUniqueSample(
+        "InputMethod.Assistive.UserPref.PersonalInfo", true, 1);
+    histogram_tester.ExpectUniqueSample("InputMethod.Assistive.UserPref.Emoji",
+                                        true, 1);
   }
 
   content::BrowserTaskEnvironment task_environment_;

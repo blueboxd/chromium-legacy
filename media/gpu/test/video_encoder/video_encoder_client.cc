@@ -396,7 +396,8 @@ void VideoEncoderClient::FlushTask() {
   // If the encoder does not support flush, immediately consider flushing done.
   if (!encoder_->IsFlushSupported()) {
     FireEvent(VideoEncoder::EncoderEvent::kFlushing);
-    FlushDoneTask(true);
+    if (num_outstanding_encode_requests_ == 0)
+      FlushDoneTask(true);
     return;
   }
 
@@ -424,9 +425,17 @@ void VideoEncoderClient::EncodeDoneTask(base::TimeDelta timestamp) {
   DCHECK_NE(VideoEncoderClientState::kIdle, encoder_client_state_);
   DVLOGF(4);
 
+  FireEvent(VideoEncoder::EncoderEvent::kFrameReleased);
+
   num_outstanding_encode_requests_--;
 
-  FireEvent(VideoEncoder::EncoderEvent::kFrameReleased);
+  // If the encoder does not support flushing, we have to manually call
+  // FlushDoneTask() when the last outstanding encode has been completed.
+  if ((encoder_client_state_ == VideoEncoderClientState::kFlushing) &&
+      !encoder_->IsFlushSupported() &&
+      (num_outstanding_encode_requests_ == 0)) {
+    FlushDoneTask(true);
+  }
 
   // Queue the next frame to be encoded.
   encoder_client_task_runner_->PostTask(

@@ -236,25 +236,25 @@ KeyUtil = class {
       return 'Enter';
     } else if (keyCode == 27) {
       return 'Escape';
-    } else if (keyCode == 112) {
+    } else if (keyCode == 166) {
       return msg('back_key');
-    } else if (keyCode == 113) {
+    } else if (keyCode == 167) {
       return msg('forward_key');
-    } else if (keyCode == 114) {
+    } else if (keyCode == 168) {
       return msg('refresh_key');
-    } else if (keyCode == 115) {
+    } else if (keyCode == 183) {
       return msg('toggle_full_screen_key');
-    } else if (keyCode == 116) {
+    } else if (keyCode == 182) {
       return msg('window_overview_key');
-    } else if (keyCode == 117) {
+    } else if (keyCode == 216) {
       return msg('brightness_down_key');
-    } else if (keyCode == 118) {
+    } else if (keyCode == 217) {
       return msg('brightness_up_key');
-    } else if (keyCode == 119) {
+    } else if (keyCode == 173) {
       return msg('volume_mute_key');
-    } else if (keyCode == 120) {
+    } else if (keyCode == 174) {
       return msg('volume_down_key');
-    } else if (keyCode == 121) {
+    } else if (keyCode == 175) {
       return msg('volume_up_key');
     } else if (keyCode == 122) {
       return 'F11';
@@ -262,6 +262,8 @@ KeyUtil = class {
       return 'F12';
     } else if (keyCode == 153) {
       return msg('assistant_key');
+    } else if (keyCode == 179) {
+      return msg('media_play_pause');
     } else if (keyCode == 186) {
       return 'Semicolon';
     } else if (keyCode == 187) {

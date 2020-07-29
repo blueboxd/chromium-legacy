@@ -29,6 +29,7 @@ class BrowserContext;
 
 namespace arc {
 
+class AdaptiveIconDelegate;
 class ArcBridgeService;
 class ControlCameraAppDelegate;
 class FactoryResetDelegate;
@@ -60,6 +61,8 @@ class ArcIntentHelperBridge : public KeyedService,
   ArcIntentHelperBridge(content::BrowserContext* context,
                         ArcBridgeService* bridge_service);
   ~ArcIntentHelperBridge() override;
+
+  void SetAdaptiveIconDelegate(AdaptiveIconDelegate* delegate);
 
   void AddObserver(ArcIntentHelperObserver* observer);
   void RemoveObserver(ArcIntentHelperObserver* observer);

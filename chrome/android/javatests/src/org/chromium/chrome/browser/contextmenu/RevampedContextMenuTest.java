@@ -32,6 +32,7 @@ import org.chromium.chrome.browser.flags.ChromeFeatureList;
 import org.chromium.chrome.browser.flags.ChromeSwitches;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.tab.TabCreationState;
+import org.chromium.chrome.browser.tab.state.CriticalPersistedTabData;
 import org.chromium.chrome.browser.tabmodel.EmptyTabModelSelectorObserver;
 import org.chromium.chrome.browser.tabmodel.TabModel;
 import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
@@ -123,7 +124,10 @@ public class RevampedContextMenuTest implements DownloadTestRule.CustomMainActiv
                     public void onNewTabCreated(Tab tab, @TabCreationState int creationState) {
                         super.onNewTabCreated(tab, creationState);
 
-                        if (tab.getParentId() != activityTab.getId()) return;
+                        if (CriticalPersistedTabData.from(tab).getParentId()
+                                != activityTab.getId()) {
+                            return;
+                        }
                         newTab.set(tab);
                         newTabCallback.notifyCalled();
 

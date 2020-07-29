@@ -104,6 +104,7 @@
 <translation id="1853692000353488670">Nowa karta incognito</translation>
 <translation id="1856325424225101786">Zresetować wersję uproszczoną?</translation>
 <translation id="1868024384445905608">Chrome pobiera pliki jeszcze szybciej</translation>
+<translation id="1874760110381325409">Zalogujesz się na swoje konto Google\n(to nie spowoduje uruchomienia Synchronizacji Chrome)</translation>
 <translation id="1883903952484604915">Moje pliki</translation>
 <translation id="1919950603503897840">Wybierz kontakty</translation>
 <translation id="1925021887439448749">Wpisz niestandardowy adres internetowy</translation>
@@ -227,6 +228,7 @@ Aby coś wyszukać, naciśnij i przytrzymaj dowolne słowo. Aby doprecyzować w
 <translation id="281504910091592009">Zapisane hasła znajdziesz na swoim <ph name="BEGIN_LINK" />koncie Google<ph name="END_LINK" /></translation>
 <translation id="2818669890320396765">Aby korzystać ze swoich zakładek na wszystkich urządzeniach, zaloguj się i włącz synchronizację</translation>
 <translation id="2827278682606527653">Menu karty kanału – połowa wysokości</translation>
+<translation id="2841216154655874070">{NUM_DAYS,plural, =1{Sprawdzano 1 dzień temu}few{Sprawdzano # dni temu}many{Sprawdzano # dni temu}other{Sprawdzano # dnia temu}}</translation>
 <translation id="2842985007712546952">Folder nadrzędny</translation>
 <translation id="2860954141821109167">Sprawdź, czy na urządzeniu jest włączona aplikacja telefonu</translation>
 <translation id="2870560284913253234">Witryna</translation>
@@ -242,7 +244,6 @@ Aby coś wyszukać, naciśnij i przytrzymaj dowolne słowo. Aby doprecyzować w
 <translation id="2905036901251765993">Aby udostępniać pliki użytkownikom w pobliżu, pozwól im zeskanować ten kod QR</translation>
 <translation id="2909615210195135082">Platforma powiadomień Google</translation>
 <translation id="2923908459366352541">Nazwa jest nieprawidłowa.</translation>
-<translation id="2927707377793151377">Wybierz innego dostawcę:</translation>
 <translation id="2932150158123903946">Dane aplikacji Google <ph name="APP_NAME" /></translation>
 <translation id="2942036813789421260">Karta podglądu jest zamknięta</translation>
 <translation id="2956410042958133412">Tym kontem zarządzają <ph name="PARENT_NAME_1" /> i <ph name="PARENT_NAME_2" />.</translation>
@@ -592,7 +593,7 @@ Aby zmienić to ustawienie, <ph name="BEGIN_LINK" />zresetuj synchronizację<ph 
 <translation id="5723735397759933332">Wersja uproszczona oszczędza teraz więcej danych dzięki optymalizacji obrazów na stronach HTTPS.</translation>
 <translation id="5726692708398506830">Powiększ całą zawartość strony</translation>
 <translation id="5732819098735351888">Pobieranie rozpocznie się po połączeniu z siecią Wi-Fi.</translation>
-<translation id="5733983706093266635">Nie udało się utworzyć kodu QR. URL ma za dużo znaków – ponad <ph name="CHARACTER_LIMIT" />.</translation>
+<translation id="5733983706093266635">Nie można utworzyć kodu QR. URL ma za dużo znaków – ponad <ph name="CHARACTER_LIMIT" />.</translation>
 <translation id="5748802427693696783">Przełączono na karty standardowe</translation>
 <translation id="5749068826913805084">Chrome musi mieć dostęp do pamięci, by pobierać pliki.</translation>
 <translation id="5749237766298580851">Wyłączono <ph name="SEPARATOR" /> Niezalecane</translation>
@@ -703,6 +704,7 @@ Na przykład niektóre strony mogą na nie zareagować, wyświetlając reklamy b
 <translation id="6532866250404780454">Strony, które otwierasz w Chrome, nie będą widoczne. Wszystkie liczniki czasu dotyczące stron zostaną usunięte.</translation>
 <translation id="6534565668554028783">Google zbyt długo nie odpowiada</translation>
 <translation id="6539092367496845964">Coś poszło nie tak. Spróbuj później.</translation>
+<translation id="6541983376925655882">{NUM_HOURS,plural, =1{Sprawdzano godzinę temu}few{Sprawdzano # godziny temu}many{Sprawdzano # godzin temu}other{Sprawdzano # godziny temu}}</translation>
 <translation id="6545017243486555795">Wyczyść wszystkie dane</translation>
 <translation id="6560414384669816528">Szukaj w Sogou</translation>
 <translation id="656065428026159829">Pokaż więcej</translation>
@@ -734,6 +736,7 @@ Na przykład niektóre strony mogą na nie zareagować, wyświetlając reklamy b
 <translation id="6697492270171225480">Gdy nie można odnaleźć strony, pokazuj sugestie podobnych stron</translation>
 <translation id="6698801883190606802">Zarządzaj synchronizowanymi danymi</translation>
 <translation id="6699370405921460408">Serwery Google będą optymalizować otwierane strony.</translation>
+<translation id="670498945988402717">Sprawdzano wczoraj</translation>
 <translation id="6710213216561001401">Wstecz</translation>
 <translation id="671481426037969117">Licznik czasu w aplikacji <ph name="FQDN" /> dobiegł końca. Jutro zacznie działać od nowa.</translation>
 <translation id="6738867403308150051">Pobieram…</translation>
@@ -772,6 +775,7 @@ Na przykład niektóre strony mogą na nie zareagować, wyświetlając reklamy b
 <translation id="7063006564040364415">Nie udało się nawiązać połączenia z serwerem synchronizacji.</translation>
 <translation id="7071521146534760487">Zarządzaj kontem</translation>
 <translation id="7077143737582773186">Karta SD</translation>
+<translation id="7080806333218412752">Wysyłaj adresy URL do sprawdzenia przez usługę Bezpieczne przeglądanie. Funkcja wysyła też małe próbki stron, pobieranych plików, aktywności rozszerzeń i informacji o systemie, by pomóc w wykrywaniu nowych zagrożeń. Tymczasowo łączy te dane z Twoim kontem Google, gdy się na nie zalogujesz, by chronić Cię we wszystkich aplikacjach Google.</translation>
 <translation id="7121362699166175603">Usuwa historię i pamięć autouzupełniania na pasku adresu. Inne rodzaje historii przeglądania mogą być nadal dostępne na Twoim koncie Google na <ph name="BEGIN_LINK" />myactivity.google.com<ph name="END_LINK" />.</translation>
 <translation id="7128355412245153445">Zobacz najczęściej odwiedzane strony i ostatnie artykuły po naciśnięciu przycisku strony głównej</translation>
 <translation id="7138678301420049075">Inne</translation>
@@ -781,6 +785,7 @@ Na przykład niektóre strony mogą na nie zareagować, wyświetlając reklamy b
 <translation id="7173114856073700355">Otwórz Ustawienia</translation>
 <translation id="7177466738963138057">Możesz zmienić to później w Ustawieniach</translation>
 <translation id="7180611975245234373">Odśwież</translation>
+<translation id="7187993566681480880">Dba o Twoje bezpieczeństwo w Chrome i może poprawiać Twoje bezpieczeństwo w innych aplikacjach Google, gdy się w nich zalogujesz.</translation>
 <translation id="7189372733857464326">Czekam na zakończenie aktualizacji Usług Google Play</translation>
 <translation id="7191430249889272776">Karta otwarta w tle.</translation>
 <translation id="723171743924126238">Wybierz zdjęcia</translation>
@@ -892,6 +897,7 @@ Na przykład niektóre strony mogą na nie zareagować, wyświetlając reklamy b
 <translation id="8027863900915310177">Wybierz lokalizację, do której chcesz pobrać plik</translation>
 <translation id="8035133914807600019">Nowy folder…</translation>
 <translation id="8037750541064988519">Pozostało: <ph name="DAYS" /> dni</translation>
+<translation id="8037801708772278989">Sprawdzano przed chwilą</translation>
 <translation id="804335162455518893">Nie znaleziono karty SD</translation>
 <translation id="805047784848435650">Na podstawie Twojej historii przeglądania</translation>
 <translation id="8051695050440594747">Dostępne: <ph name="MEGABYTES" /> MB</translation>
@@ -1032,6 +1038,7 @@ Na przykład niektóre strony mogą na nie zareagować, wyświetlając reklamy b
 <translation id="9137013805542155359">Pokaż tekst oryginalny</translation>
 <translation id="9155898266292537608">Możesz też wyszukiwać szybkim kliknięciem słowa</translation>
 <translation id="9169507124922466868">Historia nawigacji jest otwarta w połowie</translation>
+<translation id="9199368092038462496">{NUM_MINS,plural, =1{Sprawdzano minutę temu}few{Sprawdzano # minuty temu}many{Sprawdzano # minut temu}other{Sprawdzano # minuty temu}}</translation>
 <translation id="9204836675896933765">Pozostał jeden plik</translation>
 <translation id="9206873250291191720">A</translation>
 <translation id="9209888181064652401">Nie można wykonywać połączeń</translation>

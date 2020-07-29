@@ -4,6 +4,7 @@
 
 #include "chrome/browser/ui/ash/launcher/arc_shelf_spinner_item_controller.h"
 
+#include "chrome/browser/chromeos/arc/session/arc_session_manager.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/ash/launcher/shelf_spinner_controller.h"
 #include "components/arc/metrics/arc_metrics_constants.h"

@@ -242,7 +242,6 @@
 <translation id="2905036901251765993">কাছাকাছি আছেন এমন ব্যক্তির সাথে শেয়ার করতে তাকে এই QR কোড স্ক্যান করতে দিন</translation>
 <translation id="2909615210195135082">Google বিজ্ঞপ্তি প্ল্যাটফর্ম</translation>
 <translation id="2923908459366352541">নাম সঠিক নয়</translation>
-<translation id="2927707377793151377">অন্য একটি পরিষেবা প্রদানকারী বেছে নিন:</translation>
 <translation id="2932150158123903946">Google <ph name="APP_NAME" /> স্টোরেজ</translation>
 <translation id="2942036813789421260">প্রিভিউ ট্যাব বন্ধ করা আছে</translation>
 <translation id="2956410042958133412">এই অ্যাকাউন্টটি <ph name="PARENT_NAME_1" /> এবং <ph name="PARENT_NAME_2" /> দ্বারা পরিচালিত হয়৷</translation>
@@ -594,7 +593,7 @@
 <translation id="5723735397759933332">লাইট মোড সেটিংয়ের মাধ্যমে আপনি HTTPS পৃষ্ঠাতে ছবি অপ্টিমাইজ করে এখন আরও ডেটা সেভ করতে পারেন।</translation>
 <translation id="5726692708398506830">পৃষ্ঠাতে থাকা সবকিছুকে বড় করুন</translation>
 <translation id="5732819098735351888">ওয়াই-ফাই নেটওয়ার্কে কানেক্ট হলেই ডাউনলোড শুরু হবে।</translation>
-<translation id="5733983706093266635">QR কোড তৈরি করা যায়নি। ইউআরএলটিতে <ph name="CHARACTER_LIMIT" />-এর বেশি অক্ষর আছে।</translation>
+<translation id="5733983706093266635">QR কোড তৈরি করা যায়নি। ইউআরএলটিতে <ph name="CHARACTER_LIMIT" />টির বেশি অক্ষর আছে।</translation>
 <translation id="5748802427693696783">স্ট্যান্ডার্ড ট্যাবে পাল্টানো হয়েছে</translation>
 <translation id="5749068826913805084">ফাইল ডাউনলোড করতে Chrome-এর জন্য স্টোরেজ অ্যাক্সেস প্রয়োজন।</translation>
 <translation id="5749237766298580851"><ph name="SEPARATOR" /> বন্ধ করার বিষয়টি সাজেস্ট করা হয়নি</translation>

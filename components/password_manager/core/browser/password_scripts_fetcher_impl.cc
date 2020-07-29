@@ -7,6 +7,7 @@
 #include "base/callback.h"
 #include "base/containers/flat_map.h"
 #include "base/json/json_reader.h"
+#include "base/metrics/histogram_functions.h"
 #include "base/no_destructor.h"
 #include "services/network/public/cpp/shared_url_loader_factory.h"
 #include "url/gurl.h"
@@ -33,6 +34,18 @@ PasswordScriptsFetcherImpl::~PasswordScriptsFetcherImpl() = default;
 void PasswordScriptsFetcherImpl::PrewarmCache() {
   if (IsCacheStale())
     StartFetch();
+}
+
+void PasswordScriptsFetcherImpl::ReportCacheReadinessMetric() const {
+  CacheState state = IsCacheStale()
+                         ? (url_loader_ ? CacheState::kWaiting
+                                        : (last_fetch_timestamp_.is_null()
+                                               ? CacheState::kNeverSet
+                                               : CacheState::kStale))
+                         : CacheState::kReady;
+
+  base::UmaHistogramEnumeration(
+      "PasswordManager.PasswordScriptsFetcher.CacheState", state);
 }
 
 void PasswordScriptsFetcherImpl::GetPasswordScriptAvailability(
@@ -83,33 +96,62 @@ void PasswordScriptsFetcherImpl::StartFetch() {
   url_loader_->DownloadToString(
       url_loader_factory_.get(),
       base::BindOnce(&PasswordScriptsFetcherImpl::OnFetchComplete,
-                     base::Unretained(this)),
+                     base::Unretained(this), base::TimeTicks::Now()),
       kMaxDownloadSizeInBytes);
 }
 
 void PasswordScriptsFetcherImpl::OnFetchComplete(
+    base::TimeTicks request_start_timestamp,
     std::unique_ptr<std::string> response_body) {
+  base::UmaHistogramTimes("PasswordManager.PasswordScriptsFetcher.ResponseTime",
+                          base::TimeTicks::Now() - request_start_timestamp);
+  bool report_http_response_code =
+      (url_loader_->NetError() == net::OK ||
+       url_loader_->NetError() == net::ERR_HTTP_RESPONSE_CODE_FAILURE) &&
+      url_loader_->ResponseInfo() && url_loader_->ResponseInfo()->headers;
+  base::UmaHistogramSparse(
+      "PasswordManager.PasswordScriptsFetcher.HttpResponseAndNetErrorCode",
+      report_http_response_code
+          ? url_loader_->ResponseInfo()->headers->response_code()
+          : url_loader_->NetError());
   url_loader_.reset();
   last_fetch_timestamp_ = base::TimeTicks::Now();
-  password_change_domains_.clear();
 
-  if (response_body) {
-    base::Optional<base::Value> data = base::JSONReader::Read(*response_body);
-    if (data != base::nullopt && data->is_dict()) {
-      for (const auto& it : data->DictItems()) {
-        // |it.second| is not used at the moment and reserved for
-        // domain-specific parameters.
-        GURL url(it.first);
-        if (url.is_valid()) {
-          url::Origin origin = url::Origin::Create(url);
-          password_change_domains_.insert(origin);
-        }
-      }
-    }
-  }
+  ParsingResult parsing_result = ParseResponse(std::move(response_body));
+  base::UmaHistogramEnumeration(
+      "PasswordManager.PasswordScriptsFetcher.ParsingResult", parsing_result);
 
   for (auto& callback : std::exchange(pending_callbacks_, {}))
     RunResponseCallback(std::move(callback.first), std::move(callback.second));
+}
+
+PasswordScriptsFetcherImpl::ParsingResult
+PasswordScriptsFetcherImpl::ParseResponse(
+    std::unique_ptr<std::string> response_body) {
+  password_change_domains_.clear();
+
+  if (!response_body)
+    return ParsingResult::kNoResponse;
+
+  base::Optional<base::Value> data = base::JSONReader::Read(*response_body);
+  if (data == base::nullopt)
+    return ParsingResult::kNotJsonString;
+  if (!data->is_dict())
+    return ParsingResult::kNotDictionary;
+
+  bool invalid_urls_found = false;
+  for (const auto& it : data->DictItems()) {
+    // |it.second| is not used at the moment and reserved for
+    // domain-specific parameters.
+    GURL url(it.first);
+    if (url.is_valid()) {
+      url::Origin origin = url::Origin::Create(url);
+      password_change_domains_.insert(origin);
+    } else {
+      invalid_urls_found = true;
+    }
+  }
+  return invalid_urls_found ? ParsingResult::kInvalidUrl : ParsingResult::kOk;
 }
 
 bool PasswordScriptsFetcherImpl::IsCacheStale() const {

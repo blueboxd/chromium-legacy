@@ -16,7 +16,7 @@
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "base/observer_list.h"
-#include "chrome/browser/chromeos/arc/session/arc_session_manager.h"
+#include "chrome/browser/chromeos/arc/session/arc_session_manager_observer.h"
 #include "chrome/browser/chromeos/drive/drive_integration_service.h"
 #include "chrome/browser/chromeos/file_manager/documents_provider_root_manager.h"
 #include "chrome/browser/chromeos/file_system_provider/icon_set.h"
@@ -270,7 +270,7 @@ class Volume : public base::SupportsWeakPtr<Volume> {
 // - Android/Arc++ file system.
 // - File System Providers.
 class VolumeManager : public KeyedService,
-                      public arc::ArcSessionManager::Observer,
+                      public arc::ArcSessionManagerObserver,
                       public drive::DriveIntegrationServiceObserver,
                       public chromeos::disks::DiskMountManager::Observer,
                       public chromeos::file_system_provider::Observer,
@@ -407,7 +407,7 @@ class VolumeManager : public KeyedService,
           file_system_info,
       base::File::Error error) override;
 
-  // arc::ArcSessionManager::Observer overrides.
+  // arc::ArcSessionManagerObserver overrides.
   void OnArcPlayStoreEnabledChanged(bool enabled) override;
 
   // Called on change to kExternalStorageDisabled pref.

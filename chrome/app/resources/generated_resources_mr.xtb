@@ -1850,7 +1850,7 @@
 <translation id="3274763671541996799">तुम्ही फुल स्‍क्रीन केली आहे</translation>
 <translation id="3275778809241512831">तुमची अंतर्गत सिक्युरिटी की सध्या असुरक्षित आहे. कृपया तुम्ही वापरलेल्या कोणत्याही सेवांमधून त्या काढून टाका. समस्येचे निराकरण करण्यासाठी, कृपया सिक्युरिटी की रीसेट करा.</translation>
 <translation id="3275778913554317645">विंडो म्हणून उघडा</translation>
-<translation id="3277691515294482687">Linux अपग्रेड करण्यापूर्वी माझी फाइल फोल्डरमध्ये माझी अ‍ॅप्स आणि फाइलचा बॅकअप घ्या.</translation>
+<translation id="3277691515294482687">Linux अपग्रेड करण्यापूर्वी माझ्या फाइल फोल्डरमध्ये माझ्या अ‍ॅप्सचा आणि फाइलचा बॅकअप घ्या.</translation>
 <translation id="3278001907972365362">तुमच्या Google खात्या(त्यां)कडे लक्ष देण्याची आवश्यकता आहे</translation>
 <translation id="3279230909244266691">या प्रक्रियेला काही मिनिटे लागू शकतात. व्हर्च्युअल मशीन सुरू करत आहे.</translation>
 <translation id="3280237271814976245">या फॉरमॅटमध्ये सेव्ह करा...</translation>
@@ -1924,7 +1924,6 @@
 <translation id="3371140690572404006">USB-C डिव्‍हाइस (उजव्‍या बाजूचे पुढील पोर्ट)</translation>
 <translation id="337286756654493126">ॲप्समध्ये तुम्ही उघडता ती फोल्डर वाचा</translation>
 <translation id="3378572629723696641">हे एक्स्टेंशन करप्ट झालेले असू शकते.</translation>
-<translation id="3379169026479470857">DLC काढून टाका</translation>
 <translation id="337920581046691015"><ph name="PRODUCT_NAME" /> इंस्टॉल केले जाईल.</translation>
 <translation id="3380365263193509176">अज्ञात एरर</translation>
 <translation id="3382073616108123819">अरेरे! या डिव्हाइससाठी डिव्हाइस अभिज्ञापक निर्धारित करण्यात सिस्टम अयशस्वी.</translation>
@@ -2379,6 +2378,7 @@
 <translation id="3882165008614329320">कॅमेरा किंवा फाइलवरून सद्य व्हिडिओ</translation>
 <translation id="3886446263141354045">या साइट ॲक्सेस करण्याची तुमची विनंती <ph name="NAME" /> कडे पाठवली गेली आहे</translation>
 <translation id="3888550877729210209"><ph name="LOCK_SCREEN_APP_NAME" /> सोबत टिपा घेणे</translation>
+<translation id="3891563564777705449">{0,plural, =1{एका आठवड्याच्या आत डिव्हाइस अपडेट करा}other{# आठवड्यांच्या आत डिव्हाइस अपडेट करा}}</translation>
 <translation id="3892414795099177503">OpenVPN / L2TP जोडा...</translation>
 <translation id="3893536212201235195">तुमच्या ॲक्सेसिबिलिटी सेटिंग्ज जोडा आणि बदला</translation>
 <translation id="3893630138897523026">ChromeVox (वाचिक अभिप्राय)</translation>
@@ -2608,14 +2608,12 @@
 <translation id="4175137578744761569">फिकट जांभळा आणि पांढरा</translation>
 <translation id="4175737294868205930">सातत्यपूर्ण स्टोरेज</translation>
 <translation id="4176463684765177261">अक्षम केले</translation>
-<translation id="418031202593299965">हे घटक या डिव्हाइसवरील इतर वापरकर्त्यांसोबत शेअर केलेले आहेत. घटक काढल्याने इतर वापरकर्त्यांवर परिणाम होऊ शकतो.</translation>
 <translation id="4180788401304023883">CA सर्टिफिकेट "<ph name="CERTIFICATE_NAME" />" हटवायचे?</translation>
 <translation id="4181602000363099176">२०x</translation>
 <translation id="4181841719683918333">भाषा</translation>
 <translation id="4184885522552335684">डिस्प्ले हलविण्यासाठी ड्रॅग करा</translation>
 <translation id="4187424053537113647"><ph name="APP_NAME" /> सेट करत आहे...</translation>
 <translation id="4190828427319282529">कीबोर्ड फोकस हायलाइट करा</translation>
-<translation id="4191805472951276951">DLC</translation>
 <translation id="4194570336751258953">टॅप-टू-क्लिक सुरू करा</translation>
 <translation id="4195643157523330669">नवीन टॅबमध्ये उघडा</translation>
 <translation id="4195814663415092787">तुम्ही सोडले होते तिथून पुढे सुरू करा</translation>
@@ -3034,7 +3032,6 @@
 <translation id="4756388243121344051">&amp;इतिहास</translation>
 <translation id="4759238208242260848">डाउनलोड</translation>
 <translation id="4761104368405085019">तुमचा मायक्रोफोन वापरा</translation>
-<translation id="4762055672525936226">डाउनलोड केलेला आशय हटवा</translation>
 <translation id="4762718786438001384">डिव्हाइस डिस्क स्थान खूपच कमी आहे</translation>
 <translation id="4763408175235639573">तुम्ही हे पेज पाहिले तेव्हा पुढील कुकीज सेट केल्या गेल्या</translation>
 <translation id="4765582662863429759">Android Messages ला तुमच्या फोनवरून तुमच्या Chromebook मध्ये एसएमएस रीले करण्याची अनुमती देते</translation>
@@ -3288,7 +3285,6 @@
 <translation id="5094721898978802975">मूळ अनुप्रयोगांना सहकार्य करून संवाद प्रस्थापित करा</translation>
 <translation id="5097002363526479830">'<ph name="NAME" />': नेटवर्कशी कनेक्ट करण्यात अयशस्वी. <ph name="DETAILS" /></translation>
 <translation id="5097874180538493929">कर्सर थांबल्यावर आपोआप क्लिक करा</translation>
-<translation id="5098800418125334616">डाउनलोड केलेला आशय व्यवस्थापित करा</translation>
 <translation id="5101042277149003567">सर्व बुकमार्क उघडा</translation>
 <translation id="5101839224773798795">कर्सर थांबल्यावर आपोआप क्लिक करा</translation>
 <translation id="5107443654503185812">एक्स्टेंशनने सुरक्षित ब्राउझिंग बंद केले आहे</translation>
@@ -4167,7 +4163,6 @@
 <translation id="6198102561359457428">साइन आउट करा नंतर पुन्हा साइन इन करा...</translation>
 <translation id="6198252989419008588">पिन बदला</translation>
 <translation id="6202304368170870640">तुमच्या डिव्हाइसमध्ये साइन इन करण्यासाठी किंवा ते अनलॉक करण्यासाठी तुम्ही तुमचा पिन वापरू शकता.</translation>
-<translation id="6202517672944764518">डाउनलोड केलेला आशय</translation>
 <translation id="6206311232642889873">इमेज कॉ&amp;पी करा</translation>
 <translation id="6207200176136643843">झूम स्तर डीफॉल्टवर रीसेट करा</translation>
 <translation id="6207937957461833379">देश/प्रदेश</translation>
@@ -4439,6 +4434,7 @@
 <translation id="6535331821390304775">या प्रकारच्या लिंक संबंधित अ‍ॅपमध्ये उघडण्याची <ph name="ORIGIN" /> ला नेहमी अनुमती द्या</translation>
 <translation id="654039047105555694"><ph name="BEGIN_BOLD" />टीप:<ph name="END_BOLD" /> डेटाचे संकलन कामप्रदर्शन कमी करू शकत असल्यामुळे, तुम्ही काय करत आहात हे केवळ तुम्हाला माहिती असल्यास किंवा असे करण्यास तुम्हाला सांगितले गेले असल्यास सुरू करा.</translation>
 <translation id="6541638731489116978">या साइटला तुमचे मोशन सेन्सर अ‍ॅक्सेस करण्यापासून ब्लॉक केले आहे.</translation>
+<translation id="6545407738986370057">{0,plural, =1{एका आठवड्याच्या आत डिव्हाइस परत करा}other{# आठवड्यांच्या आत डिव्हाइस परत करा}}</translation>
 <translation id="6545665334409411530">पुनरावृत्ती दर</translation>
 <translation id="6545864417968258051">ब्लूटूथ स्कॅन करत आहे</translation>
 <translation id="6545867563032584178">Mac सिस्टम प्राधान्ये मधील मायक्रोफोन बंद केला आहे</translation>
@@ -6124,7 +6120,6 @@ https://www.chromium.org/chromium-os/how-tos-and-troubleshooting/debugging-featu
 <translation id="8652400352452647993">पॅक एक्स्टेंशन एरर</translation>
 <translation id="8654151524613148204">तुमच्या कॉंप्युटरला हाताळण्‍यासाठी ही फाइल खूप मोठी आहे. क्षमस्व.</translation>
 <translation id="8655295600908251630">खाडी</translation>
-<translation id="8655319619291175901">अरेरे, काहीतरी चूक झाली.</translation>
 <translation id="8655972064210167941">साइन-इन अयशस्वी झाले कारण तुमचा पासवर्डची पडताळणी करणे शक्य झाले नाही. कृपया तुमच्या ॲडमिनिस्ट्रेटरला संपर्क साधा किंवा पुन्हा प्रयत्न करा.</translation>
 <translation id="8656768832129462377">तपासू नका</translation>
 <translation id="8658645149275195032"><ph name="APP_NAME" /> तुमची स्क्रीन आणि ऑडिओ <ph name="TAB_NAME" /> सह शेअर करीत आहे.</translation>
@@ -6213,7 +6208,6 @@ https://www.chromium.org/chromium-os/how-tos-and-troubleshooting/debugging-featu
           &lt;/p&gt;परंतु तुम्ही अद्याप कमांड लाइन कॉन्फिगर करू शकता. कृपया फ्लॅग आणि परिस्थिती व्हेरिएबलांवरील अधिक माहितीसाठी &lt;code&gt;man <ph name="PRODUCT_BINARY_NAME" />&lt;/code&gt; पहा.&lt;/p&gt;</translation>
 <translation id="8755175579224030324">तुमच्या संस्थेसाठी सुरक्षिततेशी संबंधित टास्क पार पाडा, जसे की डिव्हाइसवर स्टोअर केलेली सर्टिफिकेट आणि की व्यवस्थापित करणे</translation>
 <translation id="8755376271068075440">&amp;विशाल</translation>
-<translation id="8756143264090841047">DLC हटवा</translation>
 <translation id="8756969031206844760">पासवर्ड अपडेट करायचा आहे का?</translation>
 <translation id="8757090071857742562">डेस्कटॉप कास्ट करण्यात अक्षम. तुमची स्क्रीन शेअर करणे प्रारंभ करण्यासाठी तुम्ही सूचनेची पुष्टी केली किंवा नाही ते पाहण्यासाठी तपासा.</translation>
 <translation id="8757203080302669031">हा टॅब सक्रियपणे ब्लूटूथ डिव्‍हाइससाठी स्कॅन करत आहे.</translation>
@@ -6228,7 +6222,6 @@ https://www.chromium.org/chromium-os/how-tos-and-troubleshooting/debugging-featu
 <translation id="8770406935328356739">एक्स्टेंशन मूळ डिरेक्टरी</translation>
 <translation id="8770507190024617908">लोकांना व्यवस्थापित करा</translation>
 <translation id="8771300903067484968">पेज बॅकग्राउंड सुरू करा डीफॉल्ट बॅकग्राउंडवर रीसेट केले गेले आहे.</translation>
-<translation id="8771939407732945762">डाउनलोड केलेला आशय काढून टाका</translation>
 <translation id="8773302562181397928"><ph name="PRINTER_NAME" /> सेव्ह करा</translation>
 <translation id="8774379074441005279">रिस्टोअर करण्याची खात्री करा</translation>
 <translation id="8774934320277480003">शीर्ष समास</translation>

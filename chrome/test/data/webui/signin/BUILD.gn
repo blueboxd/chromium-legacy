@@ -25,6 +25,7 @@ js_library("dice_web_signin_intercept_test") {
     "..:chai_assert",
     "..:test_util.m",
     "//chrome/browser/resources/signin/dice_web_signin_intercept:dice_web_signin_intercept_app",
+    "//ui/webui/resources/js:cr.m",
   ]
   externs_list = [ "$externs_path/mocha-2.5.js" ]
 }

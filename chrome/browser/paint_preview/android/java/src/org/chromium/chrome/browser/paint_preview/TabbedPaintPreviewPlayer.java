@@ -8,9 +8,11 @@ import android.content.res.Resources;
 import android.os.Handler;
 import android.view.View;
 
+import androidx.annotation.IntDef;
 import androidx.annotation.Nullable;
 
 import org.chromium.base.UserData;
+import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.base.metrics.RecordUserAction;
 import org.chromium.chrome.browser.flags.ChromeFeatureList;
 import org.chromium.chrome.browser.paint_preview.services.PaintPreviewTabService;
@@ -32,6 +34,21 @@ import org.chromium.url.GURL;
  * {@link Tab} by overlaying the content view.
  */
 public class TabbedPaintPreviewPlayer implements TabViewProvider, UserData {
+    /** Used for recording the cause for exiting the Paint Preview player. */
+    @IntDef({ExitCause.PULL_TO_REFRESH, ExitCause.ACTION_BAR_ACTION, ExitCause.COMPOSITOR_FAILURE,
+            ExitCause.TAB_FINISHED_LOADING, ExitCause.LINK_CLICKED, ExitCause.NAVIGATION_STARTED,
+            ExitCause.TAB_DESTROYED})
+    private @interface ExitCause {
+        int PULL_TO_REFRESH = 0;
+        int ACTION_BAR_ACTION = 1;
+        int COMPOSITOR_FAILURE = 2;
+        int TAB_FINISHED_LOADING = 3;
+        int LINK_CLICKED = 4;
+        int NAVIGATION_STARTED = 5;
+        int TAB_DESTROYED = 6;
+        int COUNT = 7;
+    }
+
     public static final Class<TabbedPaintPreviewPlayer> USER_DATA_KEY =
             TabbedPaintPreviewPlayer.class;
 
@@ -48,6 +65,8 @@ public class TabbedPaintPreviewPlayer implements TabViewProvider, UserData {
     private EmptyTabObserver mTabObserver;
     private long mLastShownSnackBarTime;
     private boolean mDidStartRestore;
+    private long mShownTime;
+    private int mSnackbarShownCount;
 
     public static TabbedPaintPreviewPlayer get(Tab tab) {
         if (tab.getUserDataHost().getUserData(USER_DATA_KEY) == null) {
@@ -75,7 +94,7 @@ public class TabbedPaintPreviewPlayer implements TabViewProvider, UserData {
                     if (!isShowingAndNeedsBadge()) return;
 
                     if (!mHasUserInteraction) {
-                        removePaintPreview();
+                        removePaintPreview(ExitCause.TAB_FINISHED_LOADING);
                         return;
                     }
 
@@ -100,7 +119,7 @@ public class TabbedPaintPreviewPlayer implements TabViewProvider, UserData {
                 // restoration. We shouldn't remove the paint preview player.
                 if (!mDidStartRestore) return;
 
-                removePaintPreview();
+                removePaintPreview(ExitCause.NAVIGATION_STARTED);
             }
         };
         mTab.addObserver(mTabObserver);
@@ -124,14 +143,16 @@ public class TabbedPaintPreviewPlayer implements TabViewProvider, UserData {
 
         mPlayerManager = new PlayerManager(mTab.getUrl(), mTab.getContext(),
                 mPaintPreviewTabService, String.valueOf(mTab.getId()), this::onLinkClicked,
-                this::removePaintPreview,
+                () -> removePaintPreview(ExitCause.PULL_TO_REFRESH),
                 () -> {
                     mInitializing = false;
                     onShown.run();
+                    mShownTime = System.currentTimeMillis();
                 },
                 () -> mHasUserInteraction = true,
                 ChromeColors.getPrimaryBackgroundColor(mTab.getContext().getResources(), false),
-                this::removePaintPreview, /*ignoreInitialScrollOffset=*/false);
+                () -> removePaintPreview(ExitCause.COMPOSITOR_FAILURE),
+                /*ignoreInitialScrollOffset=*/false);
         mPlayerManager.setUserFrustrationCallback(this::showSnackbar);
         mOnDismissed = onDismissed;
         mTab.getTabViewManager().addTabViewProvider(this);
@@ -142,7 +163,7 @@ public class TabbedPaintPreviewPlayer implements TabViewProvider, UserData {
      * Removes the view containing the Paint Preview from the most recently shown {@link Tab}. Does
      * nothing if there is no view showing.
      */
-    private void removePaintPreview() {
+    private void removePaintPreview(@ExitCause int exitCause) {
         mOnDismissed = null;
         mInitializing = false;
         if (mTab == null || mPlayerManager == null) return;
@@ -150,7 +171,14 @@ public class TabbedPaintPreviewPlayer implements TabViewProvider, UserData {
         mTab.getTabViewManager().removeTabViewProvider(this);
         mPlayerManager.destroy();
         mPlayerManager = null;
+        long upTime = System.currentTimeMillis() - mShownTime;
         RecordUserAction.record("PaintPreview.TabbedPlayer.Removed");
+        RecordHistogram.recordLongTimesHistogram(
+                "Browser.PaintPreview.TabbedPlayer.UpTime", upTime);
+        RecordHistogram.recordCountHistogram(
+                "Browser.PaintPreview.TabbedPlayer.SnackbarCount", mSnackbarShownCount);
+        RecordHistogram.recordEnumeratedHistogram(
+                "Browser.PaintPreview.TabbedPlayer.ExitCause", exitCause, ExitCause.COUNT);
     }
 
     private void showSnackbar() {
@@ -165,7 +193,8 @@ public class TabbedPaintPreviewPlayer implements TabViewProvider, UserData {
                 new SnackbarManager.SnackbarController() {
                     @Override
                     public void onAction(Object actionData) {
-                        removePaintPreview();
+                        RecordUserAction.record("PaintPreview.TabbedPlayer.Actionbar.Action");
+                        removePaintPreview(ExitCause.ACTION_BAR_ACTION);
                     }
 
                     @Override
@@ -177,6 +206,7 @@ public class TabbedPaintPreviewPlayer implements TabViewProvider, UserData {
         snackbar.setDuration(SNACKBAR_DURATION_MS);
         SnackbarManagerProvider.from(mTab.getWindowAndroid()).showSnackbar(snackbar);
         mLastShownSnackBarTime = System.currentTimeMillis();
+        mSnackbarShownCount++;
     }
 
     public boolean isShowingAndNeedsBadge() {
@@ -186,7 +216,7 @@ public class TabbedPaintPreviewPlayer implements TabViewProvider, UserData {
     private void onLinkClicked(GURL url) {
         if (mTab == null || !url.isValid() || url.isEmpty()) return;
 
-        removePaintPreview();
+        removePaintPreview(ExitCause.LINK_CLICKED);
         mTab.loadUrl(new LoadUrlParams(url.getSpec()));
     }
 
@@ -207,7 +237,7 @@ public class TabbedPaintPreviewPlayer implements TabViewProvider, UserData {
 
     @Override
     public void destroy() {
-        removePaintPreview();
+        removePaintPreview(ExitCause.TAB_DESTROYED);
         mTab.removeObserver(mTabObserver);
         mTab = null;
     }

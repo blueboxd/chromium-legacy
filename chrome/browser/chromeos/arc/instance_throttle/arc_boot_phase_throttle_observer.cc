@@ -5,6 +5,7 @@
 #include "chrome/browser/chromeos/arc/instance_throttle/arc_boot_phase_throttle_observer.h"
 
 #include "chrome/browser/chromeos/arc/arc_util.h"
+#include "chrome/browser/chromeos/arc/session/arc_session_manager.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/sessions/session_restore.h"
 

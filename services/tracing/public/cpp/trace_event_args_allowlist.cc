@@ -108,6 +108,7 @@ const AllowlistEntry kEventArgsAllowlist[] = {
     {nullptr, nullptr, nullptr}};
 
 const char* kMetadataAllowlist[] = {"chrome-bitness",
+                                    "chrome-dcheck-on",
                                     "chrome-library-name",
                                     "clock-domain",
                                     "config",

@@ -522,6 +522,8 @@ void ExtensionSyncService::ApplyBookmarkAppSyncData(
     WebApplicationIconInfo icon_info;
     icon_info.url = icon.url;
     icon_info.square_size_px = icon.size;
+    // Web apps in Extensions system supports Purpose::ANY icons only.
+    icon_info.purpose = blink::Manifest::ImageResource::Purpose::ANY;
     web_app_info->icon_infos.push_back(icon_info);
   }
 

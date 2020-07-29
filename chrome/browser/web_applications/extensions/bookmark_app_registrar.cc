@@ -221,6 +221,8 @@ std::vector<WebApplicationIconInfo> BookmarkAppRegistrar::GetAppIconInfos(
     web_app_icon_info.url = icon_info.url;
     if (icon_info.size != LinkedAppIcons::kAnySize)
       web_app_icon_info.square_size_px = icon_info.size;
+    // Legacy bookmark apps only have Purpose::ANY icons.
+    web_app_icon_info.purpose = blink::Manifest::ImageResource::Purpose::ANY;
     result.push_back(std::move(web_app_icon_info));
   }
   return result;

@@ -4,11 +4,10 @@
 
 // So that mojo is defined.
 import 'chrome://resources/mojo/mojo/public/js/mojo_bindings_lite.js';
+
 import 'chrome://nearby/app.js';
 
-import {setNearbyShareSettingsForTesting} from 'chrome://nearby/shared/nearby_share_settings.m.js';
 import {assertEquals, assertFalse, assertTrue} from '../chai_assert.js';
-import {FakeNearbyShareSettings} from './shared/fake_nearby_share_settings.m.js';
 
 suite('ShareAppTest', function() {
   /** @type {!NearbyShareAppElement} */
@@ -21,7 +20,6 @@ suite('ShareAppTest', function() {
   }
 
   setup(function() {
-    setNearbyShareSettingsForTesting(new FakeNearbyShareSettings());
     shareAppElement = /** @type {!NearbyShareAppElement} */ (
         document.createElement('nearby-share-app'));
     document.body.appendChild(shareAppElement);

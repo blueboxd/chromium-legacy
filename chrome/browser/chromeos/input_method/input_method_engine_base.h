@@ -10,15 +10,16 @@
 #include <string>
 #include <vector>
 
+#include "base/scoped_observer.h"
 #include "base/time/time.h"
 #include "base/values.h"
+#include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/profiles/profile_observer.h"
 #include "components/prefs/pref_change_registrar.h"
 #include "ui/base/ime/chromeos/input_method_descriptor.h"
 #include "ui/base/ime/composition_text.h"
 #include "ui/base/ime/ime_engine_handler_interface.h"
 #include "url/gurl.h"
-
-class Profile;
 
 namespace ui {
 struct CompositionText;
@@ -32,7 +33,8 @@ struct AssistiveWindowButton;
 
 namespace chromeos {
 
-class InputMethodEngineBase : virtual public ui::IMEEngineHandlerInterface {
+class InputMethodEngineBase : virtual public ui::IMEEngineHandlerInterface,
+                              public ProfileObserver {
  public:
   struct KeyboardEvent {
     KeyboardEvent();
@@ -240,10 +242,17 @@ class InputMethodEngineBase : virtual public ui::IMEEngineHandlerInterface {
 
   int GetContextIdForTesting() const { return context_id_; }
 
+  PrefChangeRegistrar* GetPrefChangeRegistrarForTesting() const {
+    return pref_change_registrar_.get();
+  }
+
   // Get the composition bounds.
   const std::vector<gfx::Rect>& composition_bounds() const {
     return composition_bounds_;
   }
+
+  // ProfileObserver:
+  void OnProfileWillBeDestroyed(Profile* profile) override;
 
  protected:
   struct PendingKeyEvent {
@@ -346,6 +355,8 @@ class InputMethodEngineBase : virtual public ui::IMEEngineHandlerInterface {
   std::unique_ptr<PrefChangeRegistrar> pref_change_registrar_;
 
   base::Value input_method_settings_snapshot_;
+
+  ScopedObserver<Profile, ProfileObserver> profile_observer_{this};
 };
 
 }  // namespace chromeos

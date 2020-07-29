@@ -18,7 +18,6 @@
 #include "base/threading/thread_restrictions.h"
 #include "base/time/time.h"
 #include "base/time/time_override.h"
-#include "base/trace_event/base_tracing.h"
 
 namespace base {
 
@@ -45,8 +44,6 @@ void WaitableEvent::Reset() {
 }
 
 void WaitableEvent::Signal() {
-  TRACE_EVENT_WITH_FLOW0("base", "WaitableEvent::Signal", this,
-                         TRACE_EVENT_FLAG_FLOW_OUT);
   SetEvent(handle_.Get());
 }
 
@@ -57,7 +54,26 @@ bool WaitableEvent::IsSignaled() {
   return result == WAIT_OBJECT_0;
 }
 
-bool WaitableEvent::TimedWaitImpl(const TimeDelta& wait_delta) {
+void WaitableEvent::Wait() {
+  // Record the event that this thread is blocking upon (for hang diagnosis) and
+  // consider it blocked for scheduling purposes. Ignore this for non-blocking
+  // WaitableEvents.
+  Optional<debug::ScopedEventWaitActivity> event_activity;
+  Optional<internal::ScopedBlockingCallWithBaseSyncPrimitives>
+      scoped_blocking_call;
+  if (waiting_is_blocking_) {
+    event_activity.emplace(this);
+    scoped_blocking_call.emplace(FROM_HERE, BlockingType::MAY_BLOCK);
+  }
+
+  DWORD result = WaitForSingleObject(handle_.Get(), INFINITE);
+  // It is most unexpected that this should ever fail.  Help consumers learn
+  // about it if it should ever fail.
+  DPCHECK(result != WAIT_FAILED);
+  DCHECK_EQ(WAIT_OBJECT_0, result);
+}
+
+bool WaitableEvent::TimedWait(const TimeDelta& wait_delta) {
   if (wait_delta <= TimeDelta())
     return IsSignaled();
 

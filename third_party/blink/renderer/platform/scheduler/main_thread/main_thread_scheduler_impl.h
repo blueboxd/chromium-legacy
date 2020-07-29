@@ -1011,7 +1011,7 @@ class PLATFORM_EXPORT MainThreadSchedulerImpl
     }
   };
 
-  // Don't access main_thread_only_, instead use MainThreadOnly().
+  // Don't access main_thread_only_, instead use main_thread_only().
   MainThreadOnly main_thread_only_;
   MainThreadOnly& main_thread_only() {
     helper_.CheckOnValidThread();
@@ -1023,7 +1023,7 @@ class PLATFORM_EXPORT MainThreadSchedulerImpl
   }
 
   mutable base::Lock any_thread_lock_;
-  // Don't access any_thread_, instead use AnyThread().
+  // Don't access any_thread_, instead use any_thread().
   AnyThread any_thread_;
   AnyThread& any_thread() {
     any_thread_lock_.AssertAcquired();

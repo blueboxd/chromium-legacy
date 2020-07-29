@@ -27,6 +27,7 @@
 #include "chrome/browser/chromeos/arc/optin/arc_terms_of_service_oobe_negotiator.h"
 #include "chrome/browser/chromeos/arc/session/arc_play_store_enabled_preference_handler.h"
 #include "chrome/browser/chromeos/arc/session/arc_session_manager.h"
+#include "chrome/browser/chromeos/arc/session/arc_session_manager_observer.h"
 #include "chrome/browser/chromeos/arc/test/arc_data_removed_waiter.h"
 #include "chrome/browser/chromeos/arc/test/test_arc_session_manager.h"
 #include "chrome/browser/chromeos/login/ui/fake_login_display_host.h"
@@ -76,7 +77,7 @@ namespace arc {
 
 namespace {
 
-class ArcInitialStartHandler : public ArcSessionManager::Observer {
+class ArcInitialStartHandler : public ArcSessionManagerObserver {
  public:
   explicit ArcInitialStartHandler(ArcSessionManager* session_manager)
       : session_manager_(session_manager) {
@@ -85,7 +86,7 @@ class ArcInitialStartHandler : public ArcSessionManager::Observer {
 
   ~ArcInitialStartHandler() override { session_manager_->RemoveObserver(this); }
 
-  // ArcSessionManager::Observer:
+  // ArcSessionManagerObserver:
   void OnArcInitialStart() override {
     DCHECK(!was_called_);
     was_called_ = true;
@@ -101,7 +102,7 @@ class ArcInitialStartHandler : public ArcSessionManager::Observer {
   DISALLOW_COPY_AND_ASSIGN(ArcInitialStartHandler);
 };
 
-class FileExpansionObserver : public ArcSessionManager::Observer {
+class FileExpansionObserver : public ArcSessionManagerObserver {
  public:
   FileExpansionObserver() = default;
   ~FileExpansionObserver() override = default;
@@ -112,7 +113,7 @@ class FileExpansionObserver : public ArcSessionManager::Observer {
     return property_files_expansion_result_;
   }
 
-  // ArcSessionManager::Observer:
+  // ArcSessionManagerObserver:
   void OnPropertyFilesExpanded(bool result) override {
     property_files_expansion_result_ = result;
   }

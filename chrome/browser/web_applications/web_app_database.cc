@@ -25,6 +25,7 @@
 #include "components/sync/model/metadata_batch.h"
 #include "components/sync/model/metadata_change_list.h"
 #include "components/sync/model/model_error.h"
+#include "third_party/blink/public/common/manifest/manifest.h"
 
 namespace web_app {
 
@@ -152,13 +153,8 @@ std::unique_ptr<WebAppProto> WebAppDatabase::CreateWebAppProto(
 
   local_data->set_is_in_sync_install(web_app.is_in_sync_install());
 
-  for (const WebApplicationIconInfo& icon_info : web_app.icon_infos()) {
-    sync_pb::WebAppIconInfo* icon_info_proto = local_data->add_icon_infos();
-    if (icon_info.square_size_px)
-      icon_info_proto->set_size_in_px(*icon_info.square_size_px);
-    DCHECK(!icon_info.url.is_empty());
-    icon_info_proto->set_url(icon_info.url.spec());
-  }
+  for (const WebApplicationIconInfo& icon_info : web_app.icon_infos())
+    *(local_data->add_icon_infos()) = WebAppIconInfoToSyncProto(icon_info);
 
   for (SquareSizePx size : web_app.downloaded_icon_sizes())
     local_data->add_downloaded_icon_sizes(size);

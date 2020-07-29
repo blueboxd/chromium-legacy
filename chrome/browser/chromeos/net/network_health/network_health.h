@@ -25,7 +25,8 @@ class NetworkHealth : public mojom::NetworkHealthService,
   ~NetworkHealth() override;
 
   // Function to bind a NetworkHealthService |receiver|.
-  void BindRemote(mojo::PendingReceiver<mojom::NetworkHealthService> receiver);
+  void BindReceiver(
+      mojo::PendingReceiver<mojom::NetworkHealthService> receiver);
 
   // Returns the current NetworkHealthState.
   const mojom::NetworkHealthStatePtr GetNetworkHealthState();

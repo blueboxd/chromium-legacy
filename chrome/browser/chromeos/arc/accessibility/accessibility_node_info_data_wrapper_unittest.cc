@@ -599,7 +599,7 @@ TEST_F(AccessibilityNodeInfoDataWrapperTest, LabeledByLoop) {
   EXPECT_EQ("node2", name);
 }
 
-TEST_F(AccessibilityNodeInfoDataWrapperTest, appendkDescription) {
+TEST_F(AccessibilityNodeInfoDataWrapperTest, AppendkDescription) {
   AXNodeInfoData node;
   AccessibilityNodeInfoDataWrapper wrapper(tree_source(), &node);
   node.id = 10;
@@ -622,7 +622,7 @@ TEST_F(AccessibilityNodeInfoDataWrapperTest, appendkDescription) {
             description);
 }
 
-TEST_F(AccessibilityNodeInfoDataWrapperTest, controlIsFocusable) {
+TEST_F(AccessibilityNodeInfoDataWrapperTest, ControlIsFocusable) {
   AXNodeInfoData root;
   root.id = 1;
   SetProperty(&root, AXStringProperty::CLASS_NAME, ui::kAXSeekBarClassname);

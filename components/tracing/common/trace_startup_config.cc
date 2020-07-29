@@ -40,7 +40,8 @@ const base::FilePath::CharType kAndroidTraceConfigFile[] =
 const char kDefaultStartupCategories[] =
     "startup,browser,toplevel,toplevel.flow,ipc,EarlyJava,cc,Java,navigation,"
     "loading,gpu,disabled-by-default-cpu_profiler,download_service,"
-    "disabled-by-default-histogram_samples,-*";
+    "disabled-by-default-histogram_samples,"
+    "disabled-by-default-user_action_samples,-*";
 #else
 const char kDefaultStartupCategories[] =
     "benchmark,toplevel,startup,disabled-by-default-file,toplevel.flow,"

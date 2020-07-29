@@ -26,6 +26,7 @@
 #define THIRD_PARTY_BLINK_RENDERER_CORE_DOM_ELEMENT_H_
 
 #include "third_party/blink/public/common/input/pointer_id.h"
+#include "third_party/blink/public/common/metrics/document_update_reason.h"
 #include "third_party/blink/renderer/core/animation/animatable.h"
 #include "third_party/blink/renderer/core/core_export.h"
 #include "third_party/blink/renderer/core/css/css_primitive_value.h"
@@ -93,6 +94,7 @@ enum class CSSPropertyID;
 enum class CSSValueID;
 enum class DisplayLockActivationReason;
 enum class DisplayLockLifecycleTarget;
+enum class DocumentUpdateReason;
 
 struct FocusParams;
 
@@ -333,6 +335,8 @@ class CORE_EXPORT Element : public ContainerNode, public Animatable {
   // Applies ancestors' frames' clipping, but does not (yet) apply (overflow)
   // element clipping (crbug.com/889840).
   IntRect VisibleBoundsInVisualViewport() const;
+  Vector<IntRect> OutlineRectsInVisualViewport(
+      DocumentUpdateReason reason = DocumentUpdateReason::kUnknown) const;
 
   DOMRectList* getClientRects();
   DOMRect* getBoundingClientRect();

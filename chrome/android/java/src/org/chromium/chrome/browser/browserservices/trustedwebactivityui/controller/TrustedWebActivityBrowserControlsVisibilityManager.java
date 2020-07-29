@@ -15,6 +15,7 @@ import org.chromium.chrome.browser.customtabs.content.TabObserverRegistrar.Custo
 import org.chromium.chrome.browser.customtabs.features.toolbar.CustomTabToolbarCoordinator;
 import org.chromium.chrome.browser.dependency_injection.ActivityScope;
 import org.chromium.chrome.browser.tab.Tab;
+import org.chromium.chrome.browser.tab.state.CriticalPersistedTabData;
 import org.chromium.chrome.browser.webapps.WebDisplayMode;
 import org.chromium.chrome.browser.webapps.WebappExtras;
 import org.chromium.components.security_state.ConnectionSecurityLevel;
@@ -137,7 +138,8 @@ public class TrustedWebActivityBrowserControlsVisibilityManager {
     }
 
     private boolean isChildTab(@Nullable Tab tab) {
-        return tab != null && tab.getParentId() != Tab.INVALID_TAB_ID;
+        return tab != null
+                && CriticalPersistedTabData.from(tab).getParentId() != Tab.INVALID_TAB_ID;
     }
 
     @ConnectionSecurityLevel

@@ -1581,12 +1581,12 @@ Polymer({
   },
 
   /**
-   * @param {!mojom.ManagedProperties} managedProperties
    * @return {boolean}
    * @private
    */
-  showMetered_(managedProperties) {
-    return !!this.showMeteredToggle_ && !!managedProperties &&
+  showMetered_() {
+    const managedProperties = this.managedProperties_;
+    return this.showMeteredToggle_ && !!managedProperties &&
         this.isRemembered_(managedProperties) &&
         (managedProperties.type == mojom.NetworkType.kCellular ||
          managedProperties.type == mojom.NetworkType.kWiFi);
@@ -1810,17 +1810,18 @@ Polymer({
   },
 
   /**
-   * @param {!mojom.ManagedProperties} managedProperties
-   * @param {boolean} propertiesReceived
    * @return {boolean}
    * @private
    */
-  showAdvanced_(managedProperties, propertiesReceived) {
-    if (!managedProperties || !propertiesReceived) {
+  hasAdvancedSection_() {
+    if (!this.managedProperties_ || !this.propertiesReceived_) {
       return false;
     }
-    if (managedProperties.type == mojom.NetworkType.kTether) {
-      // These settings apply to the underlying WiFi network, not the Tether
+    if (this.showMetered_()) {
+      return true;
+    }
+    if (this.managedProperties_.type == mojom.NetworkType.kTether) {
+      // These properties apply to the underlying WiFi network, not the Tether
       // network.
       return false;
     }
@@ -1841,14 +1842,6 @@ Polymer({
    */
   hasDeviceFields_() {
     return this.hasVisibleFields_(this.getDeviceFields_());
-  },
-
-  /**
-   * @return {boolean}
-   * @private
-   */
-  hasAdvancedOrDeviceFields_() {
-    return this.hasAdvancedFields_() || this.hasDeviceFields_();
   },
 
   /**

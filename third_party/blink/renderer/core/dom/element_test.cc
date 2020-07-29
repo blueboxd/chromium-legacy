@@ -181,6 +181,38 @@ TEST_F(ElementTest, BoundsInViewportCorrectForStickyElementsAfterInsertion) {
   EXPECT_EQ(25, bounds_in_viewport.X());
 }
 
+TEST_F(ElementTest, OutlineRectsIncludesImgChildren) {
+  Document& document = GetDocument();
+  SetBodyContent(R"HTML(
+    <a id='link' href=''><img id='image' width='220' height='147'></a>
+  )HTML");
+
+  Element* a = document.getElementById("link");
+  Element* img = document.getElementById("image");
+
+  ASSERT_TRUE(a);
+  ASSERT_TRUE(img);
+
+  // The a element should include the image in computing its bounds.
+  IntRect img_bounds_in_viewport = img->BoundsInViewport();
+  EXPECT_EQ(220, img_bounds_in_viewport.Width());
+  EXPECT_EQ(147, img_bounds_in_viewport.Height());
+  LOG(INFO) << "img_bounds_in_viewport: " << img_bounds_in_viewport;
+
+  Vector<IntRect> a_outline_rects = a->OutlineRectsInVisualViewport();
+  EXPECT_EQ(2u, a_outline_rects.size());
+
+  IntRect a_outline_rect;
+  for (auto& r : a_outline_rects) {
+    a_outline_rect.Unite(r);
+    LOG(INFO) << "r: " << r;
+    LOG(INFO) << "a_outline_rect: " << a_outline_rect;
+  }
+
+  EXPECT_EQ(img_bounds_in_viewport.Width(), a_outline_rect.Width());
+  EXPECT_EQ(img_bounds_in_viewport.Height(), a_outline_rect.Height());
+}
+
 TEST_F(ElementTest, StickySubtreesAreTrackedCorrectly) {
   Document& document = GetDocument();
   SetBodyContent(R"HTML(

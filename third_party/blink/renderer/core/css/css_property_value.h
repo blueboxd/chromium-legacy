@@ -35,14 +35,12 @@ struct CSSPropertyValueMetadata {
                            bool is_set_from_shorthand,
                            int index_in_shorthands_vector,
                            bool important,
-                           bool implicit,
-                           bool inherited)
+                           bool implicit)
       : property_(&property),
         is_set_from_shorthand_(is_set_from_shorthand),
         index_in_shorthands_vector_(index_in_shorthands_vector),
         important_(important),
-        implicit_(implicit),
-        inherited_(inherited) {}
+        implicit_(implicit) {}
 
   CSSPropertyID ShorthandID() const;
   const CSSProperty& Property() const { return *property_; }
@@ -57,7 +55,6 @@ struct CSSPropertyValueMetadata {
   // Whether or not the property was set implicitly as the result of a
   // shorthand.
   unsigned implicit_ : 1;
-  unsigned inherited_ : 1;
 };
 
 class CORE_EXPORT CSSPropertyValue {
@@ -74,8 +71,7 @@ class CORE_EXPORT CSSPropertyValue {
                   is_set_from_shorthand,
                   index_in_shorthands_vector,
                   important,
-                  implicit,
-                  property.IsInherited()),
+                  implicit),
         value_(value) {}
 
   // FIXME: Remove this.

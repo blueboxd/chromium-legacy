@@ -3080,6 +3080,10 @@ TEST_F(TextfieldTest, SetAutocorrectRangeTextWithNoInitalText) {
   ui::TextInputClient* client = textfield_;
   client->SetAutocorrectRange(ASCIIToUTF16("text replacement"),
                               gfx::Range(0, 0));
+
+  gfx::Range autocorrect_range = client->GetAutocorrectRange();
+  EXPECT_EQ(autocorrect_range, gfx::Range(0, 16));
+
   base::string16 text;
   client->GetTextFromRange(gfx::Range(0, 16), &text);
   EXPECT_EQ(text, UTF8ToUTF16("text replacement"));
@@ -3094,6 +3098,10 @@ TEST_F(TextfieldTest, SetAutocorrectRangeText) {
   client->SetCompositionText(composition);
   client->SetAutocorrectRange(ASCIIToUTF16("text replacement"),
                               gfx::Range(8, 11));
+
+  gfx::Range autocorrect_range = client->GetAutocorrectRange();
+  EXPECT_EQ(autocorrect_range, gfx::Range(8, 24));
+
   base::string16 text;
   client->GetTextFromRange(gfx::Range(0, 24), &text);
   EXPECT_EQ(text, UTF8ToUTF16("Initial text replacement"));
@@ -3105,6 +3113,10 @@ TEST_F(TextfieldTest, SetAutocorrectRangeExplicitlySet) {
   client->InsertText(UTF8ToUTF16("Initial txt"));
   client->SetAutocorrectRange(ASCIIToUTF16("text replacement"),
                               gfx::Range(8, 11));
+
+  gfx::Range autocorrectRange = client->GetAutocorrectRange();
+  EXPECT_EQ(autocorrectRange, gfx::Range(8, 24));
+
   base::string16 text;
   client->GetTextFromRange(gfx::Range(0, 24), &text);
   EXPECT_EQ(text, UTF8ToUTF16("Initial text replacement"));
@@ -3117,24 +3129,30 @@ TEST_F(TextfieldTest, GetAutocorrectCharacterBoundsTest) {
   client->InsertText(UTF8ToUTF16("hello placeholder text"));
   client->SetAutocorrectRange(ASCIIToUTF16("longlonglongtext"),
                               gfx::Range(3, 10));
-  gfx::Rect rectForLongText = client->GetAutocorrectCharacterBounds();
+
+  EXPECT_EQ(client->GetAutocorrectRange(), gfx::Range(3, 19));
+
+  gfx::Rect rect_for_long_text = client->GetAutocorrectCharacterBounds();
 
   // Clear the text
   client->DeleteRange(gfx::Range(0, 99));
 
   client->InsertText(UTF8ToUTF16("hello placeholder text"));
   client->SetAutocorrectRange(ASCIIToUTF16("short"), gfx::Range(3, 10));
-  gfx::Rect rectForShortText = client->GetAutocorrectCharacterBounds();
 
-  EXPECT_LT(rectForShortText.x(), rectForLongText.x());
-  EXPECT_EQ(rectForShortText.y(), rectForLongText.y());
-  EXPECT_EQ(rectForShortText.height(), rectForLongText.height());
+  EXPECT_EQ(client->GetAutocorrectRange(), gfx::Range(3, 8));
+
+  gfx::Rect rect_for_short_text = client->GetAutocorrectCharacterBounds();
+
+  EXPECT_LT(rect_for_short_text.x(), rect_for_long_text.x());
+  EXPECT_EQ(rect_for_short_text.y(), rect_for_long_text.y());
+  EXPECT_EQ(rect_for_short_text.height(), rect_for_long_text.height());
   // TODO(crbug.com/1108170): Investigate why the rectangle width is wrong.
   // The value seems to be wrong due to the incorrect value being returned from
   // RenderText::GetCursorBounds(). Unfortuantly, that is tricky to fix, since
   // RenderText is used in other parts of the codebase.
   // When fixed, the following EXPECT statement should pass.
-  // EXPECT_LT(rectForShortText.width(), rectForLongText.width());
+  // EXPECT_LT(rect_for_short_text.width(), rect_for_long_text.width());
 }
 
 // TODO(crbug.com/1108170): Add a test to check that when the composition /

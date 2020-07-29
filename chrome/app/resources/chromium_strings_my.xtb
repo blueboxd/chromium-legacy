@@ -1,6 +1,7 @@
 <?xml version="1.0" ?>
 <!DOCTYPE translationbundle>
 <translationbundle lang="my">
+<translation id="1060499346270045814">{NUM_HOURS,plural, =1{မလိုချင်သောဆော့ဖ်ဝဲကို Chromium က တစ်ပတ်တစ်ကြိမ် စစ်ဆေးသည်။ နောက်ဆုံးစစ်ဆေးမှု - လွန်ခဲ့သော ၁ နာရီက။}other{မလိုချင်သောဆော့ဖ်ဝဲကို Chromium က တစ်ပတ်တစ်ကြိမ် စစ်ဆေးသည်။ နောက်ဆုံးစစ်ဆေးမှု - လွန်ခဲ့သော {NUM_HOURS} နာရီက။}}</translation>
 <translation id="1065672644894730302">သင့်စိတ်ကြိုက်များ ဖတ်၍မရပါ။
 
 အချို့အင်္ဂရပ်များ မရရှိနိုင်ပါ၊ စိတ်ကြိုက်များသို့ ပြောင်းလဲခြင်းများ သိမ်းမည်မဟုတ်ပါ။</translation>
@@ -41,6 +42,7 @@
 <translation id="2711502716910134313">Chromium တဘ်</translation>
 <translation id="2718390899429598676">လုံခြုံမှု ပိုမိုရှိစေရန်၊ Chromium သည် သင့်ဒေတာအား လျှို့ဝှက်အသွင်ပြောင်းမည် ဖြစ်၏။</translation>
 <translation id="2770231113462710648">ပုံသေ ဘရောင်ဇာအာ:</translation>
+<translation id="2797461000988640326">{NUM_MINS,plural, =1{မလိုချင်သောဆော့ဖ်ဝဲကို Chromium က တစ်ပတ်တစ်ကြိမ် စစ်ဆေးသည်။ နောက်ဆုံးစစ်ဆေးမှု - လွန်ခဲ့သော ၁ မိနစ်က။}other{မလိုချင်သောဆော့ဖ်ဝဲကို Chromium က တစ်ပတ်တစ်ကြိမ် စစ်ဆေးသည်။ နောက်ဆုံးစစ်ဆေးမှု - လွန်ခဲ့သော {NUM_MINS} မိနစ်က။}}</translation>
 <translation id="2799223571221894425">ပြန်လည်ဖွင့်တင်ရန်</translation>
 <translation id="2847479871509788944">Chromium ထဲမှ ဖယ်ရှားရန်</translation>
 <translation id="2885378588091291677">အလုပ် မန်နေဂျာ</translation>
@@ -50,6 +52,7 @@
 <translation id="3032706164202344641">Chromium က သင့်စကားဝှက်များကို စစ်ဆေး၍မရပါ။ နောက်မှ ထပ်စမ်းကြည့်ပါ။</translation>
 <translation id="3032787606318309379">Chromium သို့ ထပ်ထည့်နေခြင်း...</translation>
 <translation id="3068515742935458733"><ph name="UMA_LINK" /> နှင့် ပျက်စီးမှု အစီရင်ခံချက်များကို Google သို့ပို့ခြင်းဖြင့် Chromium အားကူညီကာ ပိုမိုကောင်းမွန်စေပါ။</translation>
+<translation id="3086207596048762442">မလိုချင်သောဆော့ဖ်ဝဲကို Chromium က တစ်ပတ်တစ်ကြိမ် စစ်ဆေးသည်</translation>
 <translation id="3103660991484857065">ထည့်သွင်းရန်လုပ်ဆောင်ရာတွင် ချုံ့ထားသောဖိုင်မှတ်တမ်းကို ပြန်ဖွင့်မပေးနိုင်ခဲ့ပါ။ ကျေးဇူးပြု၍ Chromium ကို ထပ်ပြီး ဒေါင်းလုဒ် လုပ်ယူပါ။</translation>
 <translation id="3130323860337406239">Chromium သင်သည် သင်၏ မိုက်ခရိုဖုန်းကို သုံးနေသည်။</translation>
 <translation id="3155163173539279776">Chromium ကို အသစ်တစ်ဖန် ပြန်စရန်</translation>
@@ -170,6 +173,7 @@
 <translation id="6847869444787758381">သင့်စကားဝှက်များ ကျိုးပေါက်ထားခြင်း ရှိမရှိ Chromium က သင့်အား အသိပေးပါမည်</translation>
 <translation id="6857782730669500492">Chromium - <ph name="PAGE_TITLE" /></translation>
 <translation id="6863361426438995919">Google Pay (Chromium သို့ မိတ္တူကူးထားသည်)</translation>
+<translation id="6863846675160669383">{NUM_DAYS,plural, =1{မလိုချင်သောဆော့ဖ်ဝဲကို Chromium က တစ်ပတ်တစ်ကြိမ် စစ်ဆေးသည်။ နောက်ဆုံးစစ်ဆေးမှု - လွန်ခဲ့သော ၁ ရက်က။}other{မလိုချင်သောဆော့ဖ်ဝဲကို Chromium က တစ်ပတ်တစ်ကြိမ် စစ်ဆေးသည်။ နောက်ဆုံးစစ်ဆေးမှု - လွန်ခဲ့သော {NUM_DAYS} ရက်က။}}</translation>
 <translation id="6893813176749746474">Chromium ကို မွမ်းမံပြီးသွားပြီ၊ သို့သော် သင်သည် ၎င်းကို အနည်းဆုံးအားဖြင့် ရက် ၃၀ အတွင်းမှာ မသုံးခဲ့ပါ။</translation>
 <translation id="6964305034639999644">Chromium ရုပ်ဖျက်ဝင်းဒိုးတွင် လင့်ခ်ကို ဖွင့်ရန်</translation>
 <translation id="6990124437352146030">ဤဝဘ်ဆိုက်အတွက် Chromium သည် သင်၏ မိုက်ခရိုဖုန်းကို အသုံးပြုခွင့်ရရန် လိုအပ်ပါသည်</translation>
@@ -234,6 +238,7 @@ Chromium သည်သင့်ကြိုတင်ချိန်ညှိခ�
 <translation id="8621669128220841554">မသိရသည့် အမှားတစ်ခုကြောင့် တပ်ဆင်မှု မအေင်မြင်ခဲ့ပါ။ ကျေးဇူးပြုပြီး Chromium ကို ထပ်ပြီး ဒေါင်းလုဒ် လုပ်ယူပါ။</translation>
 <translation id="8697124171261953979">It also controls what page is shown when you start Chromium or search from the Omnibox.</translation>
 <translation id="8704119203788522458">ဒါဟာ သင်၏ Chromium ပါ</translation>
+<translation id="8705191560707593947">မလိုချင်သောဆော့ဖ်ဝဲကို Chromium က တစ်ပတ်တစ်ကြိမ် စစ်ဆေးသည်။ နောက်ဆုံးစစ်ဆေးမှု - မနေ့က။</translation>
 <translation id="8796602469536043152">ဤဝဘ်ဆိုက်အတွက် Chromium သည် သင်၏ကင်မရာနှင့် မိုက်ခရိုဖုန်းကို အသုံးပြုခွင့်ရရန် လိုအပ်ပါသည်</translation>
 <translation id="8803635938069941624">Chromium OS စည်းကမ်းချက်များ</translation>
 <translation id="8821041990367117597">သင်၏ အကောင့် လက်မှတ်ထိုး ဝင်ရေး အသေးစိတ်များမှာ  ဟောင်းသွားကြပြီ ဖြစ်၍ Chromium သည် သင်၏ ဒေတာကို စင့်က် လုပ်မပေးနိုင်ခဲ့ပါ။</translation>
@@ -249,8 +254,9 @@ Chromium သည်သင့်ကြိုတင်ချိန်ညှိခ�
 <translation id="91086099826398415">Chromium တဘ်အသစ်တွင် လင့်ခ်ကို ဖွင့်ခြင်း</translation>
 <translation id="911206726377975832">သင့်အသုံးပြုမှု ဒေတာအားလဲ ဖျက်မည်လား?</translation>
 <translation id="9158494823179993217">စနစ်စီမံခန့်ခွဲသူသည် <ph name="TARGET_URL_HOSTNAME" /> ဖွင့်ကြည့်ရန်အတွက် အစားထိုးဘရောင်ဇာ အသုံးပြုရန် Chromium ကို စီစဉ်သတ်မှတ်ထားသည်။</translation>
+<translation id="9164845895615421500">မလိုချင်သောဆော့ဖ်ဝဲကို Chromium က တစ်ပတ်တစ်ကြိမ် စစ်ဆေးသည်။ နောက်ဆုံးစစ်ဆေးမှု - မကြာမီက။</translation>
 <translation id="9190841055450128916">Chromium (mDNS-In)</translation>
-<translation id="9191317372410544836">သင်၏ ရှာဖွေမှုကို ဤစက်ပေါ်တွင် စုစည်းထားရန်အတွက် Chromium Spaces ကို သုံးပါ။</translation>
+<translation id="9191317372410544836">သင်၏ ရှာဖွေမှုကို ဤစက်ပေါ်တွင် စုစည်းထားရန်အတွက် Chromium Spaces ကို သုံးပါ</translation>
 <translation id="93478295209880648">Windows XP သို့မဟုတ် Windows Vista တွင် မပံ့ပိုးတော့သောကြောင့် Chromium လုပ်ဆောင်မှု မှန်ကန်ချင်မှ မှန်ကန်မည်</translation>
 <translation id="95514773681268843"><ph name="DOMAIN" />က သင့်အနေနှင့် ဒီကိရိယာကို မသုံးမီ အောက်ပါ ဝန်ဆောင်မှု စည်းကမ်းချက်များကို ဖတ်ရှုပြီး လက်ခံမှာကို တောင်းဆိုပါသည်။ ဒီစည်းကမ်းချက်များမှာ Chromium OS စည်းကမ်းချက်များကို တိုးချဲ့ခြင်း၊ မွမ်းမံခြင်း သို့မဟုတ် ကန့်သတ်ခြင်း မရှိနိုင်ပါ။</translation>
 <translation id="985602178874221306">Chromium စာရေးသူများ</translation>

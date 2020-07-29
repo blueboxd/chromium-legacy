@@ -51,16 +51,9 @@ using IconsMap = std::map<GURL, std::vector<SkBitmap>>;
 void PopulateShortcutItemIcons(WebApplicationInfo* web_app_info,
                                const IconsMap* icons_map);
 
-// Filter out square icons, ensure that the necessary-sized icons are available
-// by resizing larger icons down to smaller sizes, and generating icons for
-// sizes where resizing is not possible. |icons_map| is optional.
-//
-// Historically, |is_for_sync| is a hack for the old |ExtensionSyncService|
-// system to avoid sync wars. It is important that the linked app information in
-// any web app that gets created from sync matches the linked app information
-// that came from sync. If there are any changes, they will be synced back to
-// other devices and could potentially create a never ending sync cycle. If
-// |is_for_sync| is true then icon links won't be changed.
+// Filter to only square icons, ensure that the necessary-sized icons are
+// available by resizing larger icons down to smaller sizes, and generating
+// icons for sizes where resizing is not possible. |icons_map| is optional.
 void FilterAndResizeIconsGenerateMissing(WebApplicationInfo* web_app_info,
                                          const IconsMap* icons_map);
 

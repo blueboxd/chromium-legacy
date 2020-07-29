@@ -627,6 +627,14 @@ void BlinkAXTreeSource::SerializeNode(WebAXObject src,
                            src.HeadingLevel());
     }
 
+    WebAXObject parent = ParentObjectUnignored(src);
+    if (src.Language().length()) {
+      if (parent.IsNull() || parent.Language() != src.Language()) {
+        TruncateAndAddStringAttribute(
+            dst, ax::mojom::StringAttribute::kLanguage, src.Language().Utf8());
+      }
+    }
+
     SerializeListAttributes(src, dst);
     SerializeTableAttributes(src, dst);
   }
@@ -1127,13 +1135,6 @@ void BlinkAXTreeSource::SerializeOtherScreenReaderAttributes(
   if (!display_style.IsEmpty()) {
     TruncateAndAddStringAttribute(dst, ax::mojom::StringAttribute::kDisplay,
                                   display_style.Utf8());
-  }
-
-  WebAXObject parent = ParentObjectUnignored(src);
-  if (src.Language().length()) {
-    if (parent.IsNull() || parent.Language() != src.Language())
-      TruncateAndAddStringAttribute(dst, ax::mojom::StringAttribute::kLanguage,
-                                    src.Language().Utf8());
   }
 
   if (src.KeyboardShortcut().length() &&

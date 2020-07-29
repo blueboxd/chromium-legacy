@@ -7,6 +7,7 @@
   }
 
   #header {
+    --avatar-position: 84px;
     /**
      * TODO(crbug.com/1076880): replace the hardcoded background color with the
      * browser-provided one.
@@ -15,6 +16,50 @@
     border-radius: 8px;
     margin: 8px;
     min-height: 128px;
+    position: relative;
+  }
+
+  #accountName {
+    font-size: 15px;
+    font-weight: bold;
+    line-height: 18px;
+    margin: 16px auto 9px;
+    overflow: hidden;
+    text-align: center;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  .avatar {
+    --avatar-size: 60px;
+    border-radius: 50%;
+    height: var(--avatar-size);
+    position: absolute;
+    top: 43px;
+    width: var(--avatar-size);
+  }
+
+  #workBadge {
+    background-color: var(--signin-work-badge-background-color);
+    display: flex;
+    left: var(--avatar-position);
+    /** Ensure the work badge is on top */
+    z-index: 1;
+  }
+
+  #workBadge > iron-icon {
+    --work-icon-size: 36px;
+    /** Use dark color for dark mode */
+    color: var(--md-background-color);
+    height: var(--work-icon-size);
+    margin: auto;
+    width: var(--work-icon-size);
+  }
+
+  #userAvatar {
+    /** The user avatar may be transparent, add a background */
+    background-color: var(--md-background-color);
+    right: var(--avatar-position);
   }
 
   #body {
@@ -35,7 +80,14 @@
     font-size: 12px;
   }
 </style>
-<div id="header"></div>
+
+<div id="header">
+  <div id="accountName">[[accountInfo_.name]]</div>
+  <div class="avatar" id="workBadge">
+    <iron-icon class="icon" icon="signin:work"></iron-icon>
+  </div>
+  <img class="avatar" id="userAvatar" src="[[accountInfo_.pictureUrl]]">
+</div>
 
 <div id="body">
   <div id="title">$i18n{diceWebSigninInterceptTitle}</div>

@@ -3337,8 +3337,6 @@ static_library("browser") {
       "nearby_sharing/nearby_per_session_discovery_manager.h",
       "nearby_sharing/nearby_process_manager.cc",
       "nearby_sharing/nearby_process_manager.h",
-      "nearby_sharing/nearby_share_settings.cc",
-      "nearby_sharing/nearby_share_settings.h",
       "nearby_sharing/nearby_sharing_service.h",
       "nearby_sharing/nearby_sharing_service_factory.cc",
       "nearby_sharing/nearby_sharing_service_factory.h",
@@ -3818,6 +3816,8 @@ static_library("browser") {
 
   if (is_chromeos) {
     sources += [
+      "apps/app_service/arc_activity_adaptive_icon_impl.cc",
+      "apps/app_service/arc_activity_adaptive_icon_impl.h",
       "apps/app_service/arc_apps.cc",
       "apps/app_service/arc_apps.h",
       "apps/app_service/arc_apps_factory.cc",

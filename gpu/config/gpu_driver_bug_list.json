@@ -2023,12 +2023,13 @@
         }
       },
       "features": [
-        "disable_accelerated_vpx_decode"
+        "disable_accelerated_vp8_decode",
+        "disable_accelerated_vp9_decode"
       ]
     },
     {
       "id": 225,
-      "description": "VPx decoding is too slow on Intel Broadwell, Skylake, and CherryTrail",
+      "description": "VP9 decoding is too slow on Intel Broadwell, Skylake, and CherryTrail",
       "cr_bugs": [616318],
       "os": {
         "type": "win"
@@ -2039,12 +2040,12 @@
         "cherrytrail"
       ],
       "features": [
-        "disable_accelerated_vpx_decode"
+        "disable_accelerated_vp9_decode"
       ]
     },
     {
       "id": 226,
-      "description": "Accelerated VPx decoding is hanging on some videos.",
+      "description": "Accelerated VP9 decoding is hanging on some videos.",
       "cr_bugs": [654111],
       "os": {
         "type": "win"
@@ -2055,7 +2056,7 @@
         "value": "21.20.16.4542"
       },
       "features": [
-        "disable_accelerated_vpx_decode"
+        "disable_accelerated_vp9_decode"
       ]
     },
     {

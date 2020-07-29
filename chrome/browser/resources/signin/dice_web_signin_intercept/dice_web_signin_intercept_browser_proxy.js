@@ -6,7 +6,16 @@
  * @fileoverview A helper object used by the dice web signin intercept bubble to
  * interact with the browser.
  */
-import {addSingletonGetter} from 'chrome://resources/js/cr.m.js';
+import {addSingletonGetter, sendWithPromise} from 'chrome://resources/js/cr.m.js';
+
+/**
+ * Account information sent from C++.
+ * @typedef {{
+ *   name: string,
+ *   pictureUrl: string,
+ * }}
+ */
+export let AccountInfo;
 
 /** @interface */
 export class DiceWebSigninInterceptBrowserProxy {
@@ -15,6 +24,12 @@ export class DiceWebSigninInterceptBrowserProxy {
 
   /** Called when the user cancels the interception. */
   cancel() {}
+
+  /**
+   * Called when the page is loaded.
+   * @return {!Promise<!AccountInfo>}
+   * */
+  pageLoaded() {}
 }
 
 /** @implements {DiceWebSigninInterceptBrowserProxy} */
@@ -27,6 +42,11 @@ export class DiceWebSigninInterceptBrowserProxyImpl {
   /** @override */
   cancel() {
     chrome.send('cancel');
+  }
+
+  /** @override */
+  pageLoaded() {
+    return sendWithPromise('pageLoaded');
   }
 }
 

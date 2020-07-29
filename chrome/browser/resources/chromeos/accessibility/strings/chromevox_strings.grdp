@@ -2987,5 +2987,8 @@
   <message desc="Describes a gesture to be performed on a touch screen. The gesture is to touch and drag with one finger and have items under the finger read using text-to-speech. No associated UI with this string which is spoken using text-to-speech." name="IDS_CHROMEVOX_TOUCH_EXPLORE_GESTURE" is_accessibility_with_no_ui="true">
     Touch explore
   </message>
+  <message desc="Describes the media play/pause key on a Chromebook. No associated UI with this string which is spoken using text-to-speech." name="IDS_CHROMEVOX_MEDIA_PLAY_PAUSE" is_accessibility_with_no_ui="true">
+    Media Play/Pause
+  </message>
 
 </grit-part>

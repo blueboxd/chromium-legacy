@@ -683,10 +683,19 @@ class PdfAccessibilityTreeBuilder {
     popup_note_node->AddStringAttribute(
         ax::mojom::StringAttribute::kRoleDescription,
         l10n_util::GetStringUTF8(IDS_AX_ROLE_DESCRIPTION_PDF_POPUP_NOTE));
-    popup_note_node->AddStringAttribute(ax::mojom::StringAttribute::kName,
-                                        highlight.note_text);
     popup_note_node->relative_bounds.bounds =
         PpFloatRectToGfxRectF(highlight.bounds);
+
+    ui::AXNodeData* static_popup_note_text_node = CreateNode(
+        ax::mojom::Role::kStaticText, ax::mojom::Restriction::kReadOnly,
+        render_accessibility_, nodes_);
+
+    static_popup_note_text_node->AddStringAttribute(
+        ax::mojom::StringAttribute::kName, highlight.note_text);
+    static_popup_note_text_node->relative_bounds.bounds =
+        PpFloatRectToGfxRectF(highlight.bounds);
+
+    popup_note_node->child_ids.push_back(static_popup_note_text_node->id);
 
     return popup_note_node;
   }

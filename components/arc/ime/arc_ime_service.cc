@@ -629,6 +629,11 @@ bool ArcImeService::SetCompositionFromExistingText(
   return false;
 }
 
+gfx::Range ArcImeService::GetAutocorrectRange() const {
+  // TODO(https:://crbug.com/1091088): Implement this method.
+  return gfx::Range();
+}
+
 gfx::Rect ArcImeService::GetAutocorrectCharacterBounds() const {
   // TODO(https://crbug.com/952757): Implement this method.
   NOTIMPLEMENTED_LOG_ONCE();

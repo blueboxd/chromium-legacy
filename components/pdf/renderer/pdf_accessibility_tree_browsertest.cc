@@ -493,6 +493,7 @@ TEST_F(PdfAccessibilityTreeTest, TestHighlightCreation) {
    * ++++++ Highlight
    * ++++++++ Static Text
    * ++++++++ Note
+   * ++++++++++ Static Text
    */
 
   ui::AXNode* root_node = pdf_accessibility_tree.GetRoot();
@@ -534,13 +535,21 @@ TEST_F(PdfAccessibilityTreeTest, TestHighlightCreation) {
   ui::AXNode* popup_note_node = highlight_node->children()[1];
   ASSERT_TRUE(popup_note_node);
   EXPECT_EQ(ax::mojom::Role::kNote, popup_note_node->data().role);
-  EXPECT_EQ(kPopupNoteText, popup_note_node->GetStringAttribute(
-                                ax::mojom::StringAttribute::kName));
   EXPECT_EQ(l10n_util::GetStringUTF8(IDS_AX_ROLE_DESCRIPTION_PDF_POPUP_NOTE),
             popup_note_node->GetStringAttribute(
                 ax::mojom::StringAttribute::kRoleDescription));
   EXPECT_EQ(gfx::RectF(1.0f, 1.0f, 5.0f, 6.0f),
             popup_note_node->data().relative_bounds.bounds);
+  ASSERT_EQ(1u, popup_note_node->children().size());
+
+  ui::AXNode* static_popup_note_text_node = popup_note_node->children()[0];
+  ASSERT_TRUE(static_popup_note_text_node);
+  EXPECT_EQ(ax::mojom::Role::kStaticText,
+            static_popup_note_text_node->data().role);
+  EXPECT_EQ(kPopupNoteText, static_popup_note_text_node->GetStringAttribute(
+                                ax::mojom::StringAttribute::kName));
+  EXPECT_EQ(gfx::RectF(1.0f, 1.0f, 5.0f, 6.0f),
+            static_popup_note_text_node->data().relative_bounds.bounds);
 }
 
 TEST_F(PdfAccessibilityTreeTest, TestTextFieldNodeCreation) {

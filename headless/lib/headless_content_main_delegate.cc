@@ -48,7 +48,7 @@
 #include "headless/embedded_resource_pak.h"
 #endif
 
-#if defined(OS_MACOSX) || defined(OS_WIN)
+#if defined(OS_MAC) || defined(OS_WIN)
 #include "components/crash/core/app/crashpad.h"
 #endif
 
@@ -130,7 +130,7 @@ void InitializeResourceBundle(const base::CommandLine& command_line) {
   base::FilePath chrome_200_pak =
       dir_module.Append(FILE_PATH_LITERAL("chrome_200_percent.pak"));
 
-#if defined(OS_MACOSX) && !defined(COMPONENT_BUILD)
+#if defined(OS_MAC) && !defined(COMPONENT_BUILD)
   // In non component builds, check if fall back in Resources/ folder is
   // available.
   if (!base::PathExists(resources_pak)) {
@@ -344,7 +344,7 @@ void HeadlessContentMainDelegate::InitCrashReporter(
   }
   if (process_type != service_manager::switches::kZygoteProcess)
     breakpad::InitCrashReporter(process_type);
-#elif defined(OS_MACOSX)
+#elif defined(OS_MAC)
   crash_reporter::InitializeCrashpad(process_type.empty(), process_type);
 // Avoid adding this dependency in Windows Chrome non component builds, since
 // crashpad is already enabled.

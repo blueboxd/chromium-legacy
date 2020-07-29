@@ -12,7 +12,7 @@
 #include <vector>
 
 #include "ash/public/cpp/shelf_types.h"
-#include "chrome/browser/chromeos/arc/session/arc_session_manager.h"
+#include "chrome/browser/chromeos/arc/session/arc_session_manager_observer.h"
 #include "chrome/browser/ui/app_list/arc/arc_app_list_prefs.h"
 #include "components/arc/arc_util.h"
 
@@ -44,7 +44,7 @@ class Profile;
 // AppServiceAppWindowArcTracker observes the ArcAppListPrefs to handle ARC app
 // window special cases, e.g. task id, closing ARC app windows, etc.
 class AppServiceAppWindowArcTracker : public ArcAppListPrefs::Observer,
-                                      public arc::ArcSessionManager::Observer {
+                                      public arc::ArcSessionManagerObserver {
  public:
   explicit AppServiceAppWindowArcTracker(
       AppServiceAppWindowLauncherController* app_service_controller);
@@ -108,7 +108,7 @@ class AppServiceAppWindowArcTracker : public ArcAppListPrefs::Observer,
   void CheckAndAttachControllers();
   void AttachControllerToTask(int taskId);
 
-  // arc::ArcSessionManager::Observer:
+  // arc::ArcSessionManagerObserver:
   void OnArcOptInManagementCheckStarted() override;
   void OnArcSessionStopped(arc::ArcStopReason stop_reason) override;
 

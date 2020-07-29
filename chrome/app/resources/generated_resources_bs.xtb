@@ -1925,7 +1925,6 @@ Postavkama ovog računa možete upravljati instaliranjem aplikacije Family Link 
 <translation id="3371140690572404006">USB-C uređaj (prednji priključak na desnoj strani)</translation>
 <translation id="337286756654493126">Čitanje foldera koje otvorite u aplikaciji</translation>
 <translation id="3378572629723696641">Ovo proširenje možda je oštećeno.</translation>
-<translation id="3379169026479470857">Uklonite preuzeti sadržaj</translation>
 <translation id="337920581046691015">Instalirat će se aplikacija <ph name="PRODUCT_NAME" />.</translation>
 <translation id="3380365263193509176">Nepoznata greška</translation>
 <translation id="3382073616108123819">Ups!  Sistem nije uspio odrediti identifikatore uređaja za ovaj uređaj.</translation>
@@ -2612,14 +2611,12 @@ Postavkama ovog računa možete upravljati instaliranjem aplikacije Family Link 
 <translation id="4175137578744761569">Svijetloljubičasta i bijela</translation>
 <translation id="4175737294868205930">Trajna pohrana</translation>
 <translation id="4176463684765177261">Onemogućeno</translation>
-<translation id="418031202593299965">Ove komponente se dijele s drugim korisnicima uređaja. Uklanjanje komponenti može uticati na druge korisnike.</translation>
 <translation id="4180788401304023883">Izbrisati certifikat tijela za izdavanje certifikata "<ph name="CERTIFICATE_NAME" />"?</translation>
 <translation id="4181602000363099176">20 x</translation>
 <translation id="4181841719683918333">Jezici</translation>
 <translation id="4184885522552335684">Prevucite da pomjerite ekran</translation>
 <translation id="4187424053537113647">Postavljanje aplikacije <ph name="APP_NAME" />...</translation>
 <translation id="4190828427319282529">Isticanje fokusa tastature</translation>
-<translation id="4191805472951276951">Preuzeti sadržaj</translation>
 <translation id="4194570336751258953">Omogući funkciju Dodirni za klik</translation>
 <translation id="4195643157523330669">Otvori u novoj kartici</translation>
 <translation id="4195814663415092787">Nastavite gdje ste stali</translation>
@@ -3038,7 +3035,6 @@ Postavkama ovog računa možete upravljati instaliranjem aplikacije Family Link 
 <translation id="4756388243121344051">&amp;Historija</translation>
 <translation id="4759238208242260848">Preuzimanja</translation>
 <translation id="4761104368405085019">Korištenje vašeg mikrofona</translation>
-<translation id="4762055672525936226">Izbrišite preuzeti sadržaj</translation>
 <translation id="4762718786438001384">Količina prostora na disku uređaja je kritično mala</translation>
 <translation id="4763408175235639573">Sljedeći kolačići su postavljeni kada ste pregledali ovu stranicu</translation>
 <translation id="4765582662863429759">Omogućava aplikaciji Android Messages da šalje SMS-ove s vašeg telefona na vaš Chromebook</translation>
@@ -3292,7 +3288,6 @@ Postavkama ovog računa možete upravljati instaliranjem aplikacije Family Link 
 <translation id="5094721898978802975">Komunikacija s izvornim aplikacijama za saradnju</translation>
 <translation id="5097002363526479830">Povezivanje na mrežu "<ph name="NAME" />" nije uspjelo: <ph name="DETAILS" /></translation>
 <translation id="5097874180538493929">Automatski klik kada se kursor zaustavi</translation>
-<translation id="5098800418125334616">Upravljajte preuzetim sadržajem</translation>
 <translation id="5101042277149003567">Otvori sve oznake</translation>
 <translation id="5101839224773798795">Automatski klikni kada se kursor zaustavi</translation>
 <translation id="5107443654503185812">Ekstenzija je isključila Sigurno pregledanje</translation>
@@ -4170,7 +4165,6 @@ Postavkama ovog računa možete upravljati instaliranjem aplikacije Family Link 
 <translation id="6198102561359457428">Odjavite se i ponovo se prijavite…</translation>
 <translation id="6198252989419008588">Promijeni PIN</translation>
 <translation id="6202304368170870640">Možete koristiti PIN za prijavu ili otključavanje uređaja.</translation>
-<translation id="6202517672944764518">Preuzeti sadržaj</translation>
 <translation id="6206311232642889873">Kop&amp;iraj sliku</translation>
 <translation id="6207200176136643843">Vraćanje na zadani nivo zumiranja</translation>
 <translation id="6207937957461833379">Zemlja / Regija</translation>
@@ -4488,6 +4482,7 @@ Postavkama ovog računa možete upravljati instaliranjem aplikacije Family Link 
 <translation id="6602956230557165253">Za navigiranje koristite strelice nalijevo i nadesno.</translation>
 <translation id="6605847144724004692">Nijedan korisnik još nije ocijenio.</translation>
 <translation id="6607831829715835317">Više ala&amp;ta</translation>
+<translation id="6608012008902909398">Prikaz detalja o provjeri softvera uređaja</translation>
 <translation id="6611972847767394631">Ovdje pronađite svoje kartice</translation>
 <translation id="6612358246767739896">Zaštićeni sadržaj</translation>
 <translation id="6615455863669487791">Pokaži mi</translation>
@@ -6130,7 +6125,6 @@ Fajl ključa: <ph name="KEY_FILE" />
 <translation id="8652400352452647993">Greška s paketom ekstenzije</translation>
 <translation id="8654151524613148204">Fajl je prevelik da bi ga računar obradio. Žao nam je.</translation>
 <translation id="8655295600908251630">Kanal</translation>
-<translation id="8655319619291175901">Nešto nije uredu.</translation>
 <translation id="8655972064210167941">Prijava nije uspjela jer vaša lozinka nije potvrđena. Obratite se administratoru ili pokušajte ponovo.</translation>
 <translation id="8656768832129462377">Nemoj provjeravati</translation>
 <translation id="8658645149275195032"><ph name="APP_NAME" /> dijeli vaš ekran i zvuk s karticom <ph name="TAB_NAME" />.</translation>
@@ -6219,7 +6213,6 @@ Fajl ključa: <ph name="KEY_FILE" />
           &lt;p&gt;Konfiguraciju i dalje možete izvršiti putem komandne linije.  Više informacija o oznakama i varijablama okruženja potražite u &lt;code&gt;man <ph name="PRODUCT_BINARY_NAME" />&lt;/code&gt;.&lt;/p&gt;</translation>
 <translation id="8755175579224030324">Izvršavajte zadatke u vezi sa sigurnošću za svoju organizaciju, kao što su upravljanje certifikatima i ključevima pohranjenim na uređaju</translation>
 <translation id="8755376271068075440">&amp;Veće</translation>
-<translation id="8756143264090841047">Izbrišite preuzeti sadržaj</translation>
 <translation id="8756969031206844760">Ažurirati lozinku?</translation>
 <translation id="8757090071857742562">Nije moguće emitirati radnu površinu.  Provjerite jeste li potvrdili upit za pokretanje dijeljenja ekrana.</translation>
 <translation id="8757203080302669031">Ova kartica aktivno skenira ima li Bluetooth uređaja.</translation>
@@ -6234,7 +6227,6 @@ Fajl ključa: <ph name="KEY_FILE" />
 <translation id="8770406935328356739">Temeljni direktorij ekstenzije</translation>
 <translation id="8770507190024617908">Upravljaj osobama</translation>
 <translation id="8771300903067484968">Pozadina početne stranice je vraćena na zadanu pozadinu.</translation>
-<translation id="8771939407732945762">Uklonite preuzeti sadržaj</translation>
 <translation id="8773302562181397928">Sačuvajte štampač <ph name="PRINTER_NAME" /></translation>
 <translation id="8774379074441005279">Potvrda vraćanja</translation>
 <translation id="8774934320277480003">Gornja margina</translation>

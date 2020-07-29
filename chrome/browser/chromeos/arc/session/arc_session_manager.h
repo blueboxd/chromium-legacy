@@ -17,6 +17,7 @@
 #include "base/timer/timer.h"
 #include "chrome/browser/chromeos/arc/arc_app_id_provider_impl.h"
 #include "chrome/browser/chromeos/arc/arc_support_host.h"
+#include "chrome/browser/chromeos/arc/session/arc_session_manager_observer.h"
 #include "chrome/browser/chromeos/policy/android_management_client.h"
 #include "chromeos/dbus/session_manager/session_manager_client.h"
 #include "components/arc/mojom/auth.mojom.h"
@@ -111,51 +112,6 @@ class ArcSessionManager : public ArcSessionRunner::Observer,
   using ExpansionResult = std::pair<std::string /* salt on disk */,
                                     bool /* expansion successful */>;
 
-  // Observer for those services outside of ARC which want to know ARC events.
-  class Observer {
-   public:
-    // Called to notify that whether Google Play Store is enabled or not, which
-    // is represented by "arc.enabled" preference, is updated.
-    virtual void OnArcPlayStoreEnabledChanged(bool enabled) {}
-
-    // Called to notify that checking of Android management status started
-    // during the opt-in flow.
-    virtual void OnArcOptInManagementCheckStarted() {}
-
-    // Called to notify that ARC begins to start.
-    virtual void OnArcStarted() {}
-
-    // Called to notify that ARC has been successfully provisioned for the first
-    // time after OptIn.
-    virtual void OnArcInitialStart() {}
-
-    // Called when ARC session is stopped, and is not being restarted
-    // automatically.
-    virtual void OnArcSessionStopped(ArcStopReason stop_reason) {}
-
-    // Called when ARC session is stopped, but is being restarted automatically.
-    // This is called _after_ the container is actually created.
-    virtual void OnArcSessionRestarting() {}
-
-    // Called to notify that Android data has been removed. Used in
-    // browser_tests
-    virtual void OnArcDataRemoved() {}
-
-    // Called to notify that the error is requested by the session manager to be
-    // displayed in the support host. This is called even if Support UI is
-    // disabled. Note that this is not called in cases when the support app
-    // switches to an error page by itself.
-    virtual void OnArcErrorShowRequested(ArcSupportHost::Error error) {}
-
-    // Called with true when the /run/arc[vm]/host_generated/*.prop files are
-    // generated (and false when the attempt fails.) The function is called once
-    // per observer regardless of whether the attempt has already been made
-    // before the observer is added.
-    virtual void OnPropertyFilesExpanded(bool result) {}
-
-   protected:
-    virtual ~Observer() = default;
-  };
 
   explicit ArcSessionManager(
       std::unique_ptr<ArcSessionRunner> arc_session_runner);
@@ -201,8 +157,8 @@ class ArcSessionManager : public ArcSessionRunner::Observer,
   State state() const { return state_; }
 
   // Adds or removes observers.
-  void AddObserver(Observer* observer);
-  void RemoveObserver(Observer* observer);
+  void AddObserver(ArcSessionManagerObserver* observer);
+  void RemoveObserver(ArcSessionManagerObserver* observer);
 
   // Notifies observers that Google Play Store enabled preference is changed.
   // Note: ArcPlayStoreEnabledPreferenceHandler has the main responsibility to
@@ -426,7 +382,7 @@ class ArcSessionManager : public ArcSessionRunner::Observer,
   // Internal state machine. See also State enum class.
   State state_ = State::NOT_INITIALIZED;
 
-  base::ObserverList<Observer>::Unchecked observer_list_;
+  base::ObserverList<ArcSessionManagerObserver>::Unchecked observer_list_;
   std::unique_ptr<ArcAppLauncher> playstore_launcher_;
   bool reenable_arc_ = false;
   bool provisioning_reported_ = false;

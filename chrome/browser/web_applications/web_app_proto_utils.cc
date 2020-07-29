@@ -3,8 +3,41 @@
 // found in the LICENSE file.
 
 #include "chrome/browser/web_applications/web_app_proto_utils.h"
+#include <third_party/blink/public/common/manifest/manifest.h>
 
 namespace web_app {
+
+namespace {
+
+base::Optional<blink::Manifest::ImageResource::Purpose>
+SyncPurposeToBlinkPurpose(sync_pb::WebAppIconInfo_Purpose purpose) {
+  switch (purpose) {
+    // Treat UNSPECIFIED purpose as invalid. It means a new purpose was added
+    // that this client does not understand.
+    case sync_pb::WebAppIconInfo_Purpose_UNSPECIFIED:
+      return base::nullopt;
+    case sync_pb::WebAppIconInfo_Purpose_ANY:
+      return blink::Manifest::ImageResource::Purpose::ANY;
+    case sync_pb::WebAppIconInfo_Purpose_MASKABLE:
+      return blink::Manifest::ImageResource::Purpose::MASKABLE;
+  }
+}
+
+sync_pb::WebAppIconInfo_Purpose BlinkPurposeToSyncPurpose(
+    blink::Manifest::ImageResource::Purpose purpose) {
+  switch (purpose) {
+    case blink::Manifest::ImageResource::Purpose::ANY:
+      return sync_pb::WebAppIconInfo_Purpose_ANY;
+    case blink::Manifest::ImageResource::Purpose::MONOCHROME:
+      // Monochrome purpose icons are never stored in icon_info.
+      NOTREACHED();
+      return sync_pb::WebAppIconInfo_Purpose_UNSPECIFIED;
+    case blink::Manifest::ImageResource::Purpose::MASKABLE:
+      return sync_pb::WebAppIconInfo_Purpose_MASKABLE;
+  }
+}
+
+}  // namespace
 
 base::Optional<std::vector<WebApplicationIconInfo>> ParseWebAppIconInfos(
     const char* container_name_for_logging,
@@ -21,10 +54,22 @@ base::Optional<std::vector<WebApplicationIconInfo>> ParseWebAppIconInfos(
       return base::nullopt;
     }
     icon_info.url = GURL(icon_info_proto.url());
-    if (icon_info.url.is_empty() || !icon_info.url.is_valid()) {
+    if (!icon_info.url.is_valid()) {
       DLOG(ERROR) << container_name_for_logging << " IconInfo has invalid url: "
                   << icon_info.url.possibly_invalid_spec();
       return base::nullopt;
+    }
+
+    if (icon_info_proto.has_purpose()) {
+      base::Optional<blink::Manifest::ImageResource::Purpose> opt_purpose =
+          SyncPurposeToBlinkPurpose(icon_info_proto.purpose());
+      if (!opt_purpose.has_value())
+        return base::nullopt;
+      icon_info.purpose = opt_purpose.value();
+    } else {
+      // Treat unset purpose as ANY so that old data without the field is
+      // interpreted correctly.
+      icon_info.purpose = blink::Manifest::ImageResource::Purpose::ANY;
     }
 
     icon_infos.push_back(std::move(icon_info));
@@ -51,12 +96,20 @@ sync_pb::WebAppSpecifics WebAppToSyncProto(const WebApp& app) {
     sync_proto.set_scope(app.sync_fallback_data().scope.spec());
   for (const WebApplicationIconInfo& icon_info :
        app.sync_fallback_data().icon_infos) {
-    sync_pb::WebAppIconInfo* icon_info_proto = sync_proto.add_icon_infos();
-    icon_info_proto->set_url(icon_info.url.spec());
-    if (icon_info.square_size_px.has_value())
-      icon_info_proto->set_size_in_px(icon_info.square_size_px.value());
+    *(sync_proto.add_icon_infos()) = WebAppIconInfoToSyncProto(icon_info);
   }
   return sync_proto;
+}
+
+sync_pb::WebAppIconInfo WebAppIconInfoToSyncProto(
+    const WebApplicationIconInfo& icon_info) {
+  sync_pb::WebAppIconInfo icon_info_proto;
+  if (icon_info.square_size_px.has_value())
+    icon_info_proto.set_size_in_px(icon_info.square_size_px.value());
+  DCHECK(!icon_info.url.is_empty());
+  icon_info_proto.set_url(icon_info.url.spec());
+  icon_info_proto.set_purpose(BlinkPurposeToSyncPurpose(icon_info.purpose));
+  return icon_info_proto;
 }
 
 base::Optional<WebApp::SyncFallbackData> ParseSyncFallbackDataStruct(

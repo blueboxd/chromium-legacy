@@ -54,6 +54,13 @@ message GetHintsRequest {
   // optimizations present in this set.
   repeated OptimizationType supported_optimizations = 2;
 
+  // The set of key representations that the client can process.
+  //
+  // It is guaranteed that the response will only contain hints for key
+  // representations present in this set. If not specified,
+  // [HOST_SUFFIX, FULL_URL] will be used.
+  repeated KeyRepresentation supported_key_representations = 5;
+
   // Context in which this request is made.
   optional RequestContext context = 3;
 }
@@ -154,6 +161,10 @@ enum KeyRepresentation {
   // This will be an exact match of a page load URL, including query params and
   // fragments.
   FULL_URL = 2;
+  // The host to match.
+  //
+  // This will be an exact match of a page load host.
+  HOST = 3;
 }
 
 message Optimization {
@@ -210,13 +221,16 @@ message PageHint {
 }
 
 message Hint {
-  reserved 3;
-
   // Describes the granularity of the key field.
   optional KeyRepresentation key_representation = 1;
   // The key that applies to this hint. The key_representation field describes
   // the form in which this key takes. Guaranteed to be non-empty.
   optional string key = 2;
+  // An unordered set of optimizations that should be whitelisted for this
+  // hint.
+  //
+  // This field is currently only specified for key_representation of HOST.
+  repeated Optimization whitelisted_optimizations = 3;
   // An ordered set of per-page hints. Only the first PageHint record
   // that matches a committed page URL should be used for that page load.
   repeated PageHint page_hints = 4;

@@ -7,8 +7,10 @@
 #include <algorithm>
 #include <utility>
 
+#include "base/bind.h"
 #include "base/no_destructor.h"
 #include "base/numerics/safe_conversions.h"
+#include "pdf/pdfium/pdfium_api_string_buffer_adapter.h"
 #include "pdf/pdfium/pdfium_mem_buffer_file_write.h"
 #include "pdf/pdfium/pdfium_print.h"
 #include "printing/nup_parameters.h"
@@ -131,22 +133,27 @@ bool IsValidPrintableArea(const gfx::Size& page_size,
 }
 
 base::Value RecursiveGetStructTree(FPDF_STRUCTELEMENT struct_elem) {
-  constexpr int kBufLen = 64;
-  base::char16 str_buffer[kBufLen];
-  if (!FPDF_StructElement_GetType(struct_elem, str_buffer,
-                                  sizeof(str_buffer))) {
+  base::Optional<base::string16> opt_type =
+      CallPDFiumWideStringBufferApiAndReturnOptional(
+          base::BindRepeating(FPDF_StructElement_GetType, struct_elem), true);
+  if (!opt_type)
     return base::Value(base::Value::Type::NONE);
-  }
 
   base::Value result(base::Value::Type::DICTIONARY);
-  base::string16 elem_type(str_buffer);
-  result.SetStringKey("type", elem_type);
+  result.SetStringKey("type", *opt_type);
 
-  if (FPDF_StructElement_GetAltText(struct_elem, str_buffer,
-                                    sizeof(str_buffer))) {
-    base::string16 alt_text(str_buffer);
-    result.SetStringKey("alt", alt_text);
-  }
+  base::Optional<base::string16> opt_alt =
+      CallPDFiumWideStringBufferApiAndReturnOptional(
+          base::BindRepeating(FPDF_StructElement_GetAltText, struct_elem),
+          true);
+  if (opt_alt)
+    result.SetStringKey("alt", *opt_alt);
+
+  base::Optional<base::string16> opt_lang =
+      CallPDFiumWideStringBufferApiAndReturnOptional(
+          base::BindRepeating(FPDF_StructElement_GetLang, struct_elem), true);
+  if (opt_lang)
+    result.SetStringKey("lang", *opt_lang);
 
   int children_count = FPDF_StructElement_CountChildren(struct_elem);
   if (children_count == 0)

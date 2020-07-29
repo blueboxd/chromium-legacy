@@ -789,6 +789,7 @@ body.check-select .dialog-header #search-button > .icon {
 .dialog-header.files-ng #share-menu-button > .icon {
   -webkit-mask-image: url(../images/files/ui/share_ng.svg);
   height: 48px;
+  margin-inline-end: -7px;
   margin-inline-start: -7px;
   margin-top: -7px;
   position: absolute;
@@ -858,6 +859,7 @@ body.check-select #view-button.thumbnail {
 .dialog-header.files-ng #sort-button > .icon {
   -webkit-mask-image: url(../images/files/ui/sorting_ng.svg);
   height: 48px;
+  margin-inline-end: -7px;
   margin-inline-start: -7px;
   margin-top: -7px;
   position: absolute;
@@ -877,6 +879,7 @@ body.check-select #sort-button {
 .dialog-header.files-ng #gear-button > .icon {
   -webkit-mask-image: url(../images/files/ui/menu_ng.svg);
   height: 48px;
+  margin-inline-end: -7px;
   margin-inline-start: -7px;
   margin-top: -7px;
   position: absolute;
@@ -894,6 +897,7 @@ body.check-select #gear-button {
 .dialog-header.files-ng #selection-menu-button > .icon {
   -webkit-mask-image: url(../images/files/ui/menu_ng.svg);
   height: 48px;
+  margin-inline-end: -7px;
   margin-inline-start: -7px;
   margin-top: -7px;
   position: absolute;

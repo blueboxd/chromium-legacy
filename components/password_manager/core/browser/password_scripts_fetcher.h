@@ -18,8 +18,13 @@ namespace password_manager {
 class PasswordScriptsFetcher : public KeyedService {
  public:
   using ResponseCallback = base::OnceCallback<void(bool)>;
-  // Triggers pre-fetching the list of scripts.
+  // Triggers pre-fetching the list of scripts. Should be called from UI
+  // preceding Bulk Check.
   virtual void PrewarmCache() = 0;
+  // Reports metrics about the cache readiness. Should be called right before
+  // the first call of |GetPasswordScriptAvailability| within a given bulk
+  // check.
+  virtual void ReportCacheReadinessMetric() const = 0;
   // Returns whether there is a password change script for |origin| via
   // |callback|. If the cache was never set or is stale, it triggers a new
   // network request (but doesn't trigger a duplicate request if another request

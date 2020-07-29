@@ -15,6 +15,7 @@ import org.chromium.chrome.browser.browserservices.ui.controller.CurrentPageVeri
 import org.chromium.chrome.browser.browserservices.ui.controller.CurrentPageVerifier.VerificationStatus;
 import org.chromium.chrome.browser.metrics.WebApkUma;
 import org.chromium.chrome.browser.tab.Tab;
+import org.chromium.chrome.browser.tab.state.CriticalPersistedTabData;
 import org.chromium.content_public.browser.NavigationHandle;
 
 /**
@@ -42,7 +43,8 @@ public class WebappActiveTabUmaTracker extends ActivityTabTabObserver {
             RecordHistogram.recordBooleanHistogram(
                     HISTOGRAM_NAVIGATION_STATUS, !navigation.isErrorPage());
 
-            if (mIntentDataProvider.isWebApkActivity() && tab.getParentId() == Tab.INVALID_TAB_ID) {
+            if (mIntentDataProvider.isWebApkActivity()
+                    && CriticalPersistedTabData.from(tab).getParentId() == Tab.INVALID_TAB_ID) {
                 VerificationState verificationState = mCurrentPageVerifier.getState();
                 boolean isNavigationInScope = (verificationState == null
                         || verificationState.status != VerificationStatus.FAILURE);

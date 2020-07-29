@@ -123,6 +123,7 @@
 <translation id="1430915738399379752">Ispis</translation>
 <translation id="1442386063175183758">Presavijanje s desne strane u obliku prozora</translation>
 <translation id="1442987760062738829">Bušenje</translation>
+<translation id="1447067628680007684">(x86_64)</translation>
 <translation id="1453974140256777690">Tekst koji zalijepite ili priložite šalje se Google Cloudu ili trećim stranama na analizu. Na primjer, može se pregledati radi otkrivanja osjetljivih podataka.</translation>
 <translation id="1455413310270022028">Gumica</translation>
 <translation id="1462245070427461050">JIS B9</translation>
@@ -1145,6 +1146,7 @@ To će u suprotnom biti onemogućeno na temelju vaših postavki privatnosti. To 
 <translation id="5705882733397021510">Natrag</translation>
 <translation id="57094364128775171">Predloži snažnu zaporku…</translation>
 <translation id="5710435578057952990">Identitet ove web lokacije nije ovjeren.</translation>
+<translation id="571403275720188526">(arm64)</translation>
 <translation id="5720705177508910913">Trenutačni korisnik:</translation>
 <translation id="5728056243719941842">C5 (omotnica)</translation>
 <translation id="5730040223043577876">Chrome preporučuje poništavanje zaporke ako ste je upotrebljavali za druge web-lokacije.</translation>
@@ -1194,6 +1196,7 @@ To će u suprotnom biti onemogućeno na temelju vaših postavki privatnosti. To 
 <translation id="5921639886840618607">Želite li spremiti karticu na Google račun?</translation>
 <translation id="5922853866070715753">Skoro gotovo</translation>
 <translation id="5932224571077948991">Web-lokacija prikazuje ometajuće ili obmanjujuće oglase</translation>
+<translation id="5938793338444039872">Troy</translation>
 <translation id="5946937721014915347">Otvaranje web-lokacije <ph name="SITE_NAME" />…</translation>
 <translation id="5951495562196540101">Prijava s računom potrošača nije moguća (dostupna je paketna licenca).</translation>
 <translation id="5967592137238574583">Uredite podatke za kontakt</translation>
@@ -1361,6 +1364,7 @@ To će u suprotnom biti onemogućeno na temelju vaših postavki privatnosti. To 
 <translation id="6646269444027925224">{COUNT,plural, =0{Nijedna}=1{S jedne web-lokacije (nećete se odjaviti s Google računa)}one{S # web-lokacije (nećete se odjaviti s Google računa)}few{S # web-lokacije (nećete se odjaviti s Google računa)}other{S # web-lokacija (nećete se odjaviti s Google računa)}}</translation>
 <translation id="6652101503459149953">Koristi Windows Hello</translation>
 <translation id="6657585470893396449">Zaporka</translation>
+<translation id="666259744093848177">(prevedena verzija za x86_64)</translation>
 <translation id="6665553082534466207">Trostruko bušenje s desne strane</translation>
 <translation id="6671697161687535275">Želite li ukloniti prijedlog iz Chromiuma?</translation>
 <translation id="6685834062052613830">Odjavite se i dovršite postavljanje</translation>
@@ -1563,7 +1567,7 @@ Dodatne pojedinosti:
 <translation id="7518003948725431193">Za web-adresu nije pronađena web-stranica:<ph name="URL" /></translation>
 <translation id="7520302887438682816">C8 (omotnica)</translation>
 <translation id="7521387064766892559">JavaScript</translation>
-<translation id="7521825010239864438">Skriven je odjeljak "<ph name="SECTION" />"</translation>
+<translation id="7521825010239864438">Odjeljak "<ph name="SECTION" />" je skriven</translation>
 <translation id="7526934274050461096">Veza s web-lokacijom nije privatna</translation>
 <translation id="7535087603100972091">Vrijednost</translation>
 <translation id="7537536606612762813">Obavezno</translation>

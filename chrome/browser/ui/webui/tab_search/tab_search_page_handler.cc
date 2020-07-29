@@ -10,6 +10,8 @@
 #include <vector>
 
 #include "base/base64.h"
+#include "base/time/time.h"
+#include "base/timer/timer.h"
 #include "chrome/browser/extensions/extension_tab_util.h"
 #include "chrome/browser/favicon/favicon_utils.h"
 #include "chrome/browser/ui/browser.h"
@@ -19,6 +21,11 @@
 #include "chrome/browser/ui/tabs/tab_renderer_data.h"
 #include "chrome/browser/ui/webui/util/image_util.h"
 
+namespace {
+constexpr base::TimeDelta kTabsChangeDelay =
+    base::TimeDelta::FromMilliseconds(500);
+}
+
 TabSearchPageHandler::TabSearchPageHandler(
     mojo::PendingReceiver<tab_search::mojom::PageHandler> receiver,
     mojo::PendingRemote<tab_search::mojom::Page> page,
@@ -26,8 +33,14 @@ TabSearchPageHandler::TabSearchPageHandler(
     : receiver_(this, std::move(receiver)),
       page_(std::move(page)),
       browser_(chrome::FindLastActive()),
-      web_ui_(web_ui) {
+      web_ui_(web_ui),
+      debounce_timer_(std::make_unique<base::RetainingOneShotTimer>(
+          FROM_HERE,
+          kTabsChangeDelay,
+          base::BindRepeating(&TabSearchPageHandler::NotifyTabsChanged,
+                              base::Unretained(this)))) {
   DCHECK(browser_);
+  browser_tab_strip_tracker_.Init();
 }
 
 TabSearchPageHandler::~TabSearchPageHandler() = default;
@@ -44,7 +57,7 @@ void TabSearchPageHandler::GetProfileTabs(GetProfileTabsCallback callback) {
     window_tabs->active = (browser == browser_);
     for (int i = 0; i < tab_strip_model->count(); ++i) {
       window_tabs->tabs.push_back(
-          GetTabData(browser, tab_strip_model->GetWebContentsAt(i), i));
+          GetTabData(tab_strip_model, tab_strip_model->GetWebContentsAt(i), i));
     }
     profile_tabs->windows.push_back(std::move(window_tabs));
   }
@@ -79,23 +92,21 @@ void TabSearchPageHandler::SwitchToTab(
 }
 
 tab_search::mojom::TabPtr TabSearchPageHandler::GetTabData(
-    Browser* browser,
+    TabStripModel* tab_strip_model,
     content::WebContents* contents,
     int index) {
   auto tab_data = tab_search::mojom::Tab::New();
 
-  tab_data->active = browser->tab_strip_model()->active_index() == index;
+  tab_data->active = tab_strip_model->active_index() == index;
   tab_data->tab_id = extensions::ExtensionTabUtil::GetTabId(contents);
   tab_data->index = index;
-
   const base::Optional<tab_groups::TabGroupId> group_id =
-      browser->tab_strip_model()->GetTabGroupForTab(index);
+      tab_strip_model->GetTabGroupForTab(index);
   if (group_id.has_value()) {
     tab_data->group_id = group_id.value().ToString();
   }
-
   TabRendererData tab_renderer_data =
-      TabRendererData::FromTabInModel(browser->tab_strip_model(), index);
+      TabRendererData::FromTabInModel(tab_strip_model, index);
   tab_data->pinned = tab_renderer_data.pinned;
   tab_data->title = base::UTF16ToUTF8(tab_renderer_data.title);
   tab_data->url = tab_renderer_data.visible_url.spec();
@@ -112,4 +123,42 @@ tab_search::mojom::TabPtr TabSearchPageHandler::GetTabData(
   tab_data->show_icon = tab_renderer_data.show_icon;
 
   return tab_data;
+}
+
+void TabSearchPageHandler::OnTabStripModelChanged(
+    TabStripModel* tab_strip_model,
+    const TabStripModelChange& change,
+    const TabStripSelectionChange& selection) {
+  ScheduleDebounce();
+}
+
+void TabSearchPageHandler::TabChangedAt(content::WebContents* contents,
+                                        int index,
+                                        TabChangeType change_type) {
+  if (change_type == TabChangeType::kAll)
+    ScheduleDebounce();
+}
+
+void TabSearchPageHandler::ScheduleDebounce() {
+  if (!debounce_timer_->IsRunning())
+    debounce_timer_->Reset();
+}
+
+void TabSearchPageHandler::NotifyTabsChanged() {
+  if (!browser_tab_strip_tracker_.is_processing_initial_browsers())
+    page_->TabsChanged();
+  debounce_timer_->Stop();
+}
+
+bool TabSearchPageHandler::ShouldTrackBrowser(Browser* browser) {
+  return browser->profile() == browser_->profile();
+}
+
+void TabSearchPageHandler::SetTimerForTesting(
+    std::unique_ptr<base::RetainingOneShotTimer> timer) {
+  debounce_timer_ = std::move(timer);
+  debounce_timer_->Start(
+      FROM_HERE, kTabsChangeDelay,
+      base::BindRepeating(&TabSearchPageHandler::NotifyTabsChanged,
+                          base::Unretained(this)));
 }

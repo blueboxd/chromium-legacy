@@ -75,7 +75,7 @@
 <translation id="1553358976309200471">Mettre à jour Chrome</translation>
 <translation id="1569387923882100876">Appareil connecté</translation>
 <translation id="1571304935088121812">Copier le nom d'utilisateur</translation>
-<translation id="1592864538817356322">Protection standard</translation>
+<translation id="1592864538817356322">Protection standard :</translation>
 <translation id="1612196535745283361">Google Chrome nécessite l'accès à votre position pour rechercher des appareils. L'accès à la position est <ph name="BEGIN_LINK" />désactivé pour cet appareil<ph name="END_LINK" />.</translation>
 <translation id="1620510694547887537">Caméra</translation>
 <translation id="1628019612362412531">{NUM_SELECTED,plural, =1{Supprimer 1 élément sélectionné}one{Supprimer # élément sélectionné}other{Supprimer # éléments sélectionnés}}</translation>
@@ -242,7 +242,6 @@ Maintenez le doigt sur un mot pour effectuer une recherche sur celui-ci. Pour af
 <translation id="2905036901251765993">Pour partager avec des personnes à proximité, faites-leur numériser ce code QR</translation>
 <translation id="2909615210195135082">Plateforme des notifications Google</translation>
 <translation id="2923908459366352541">Le nom est incorrect</translation>
-<translation id="2927707377793151377">Choisir un autre fournisseur :</translation>
 <translation id="2932150158123903946">Stockage de Google <ph name="APP_NAME" /></translation>
 <translation id="2942036813789421260">L'onglet d'aperçu est fermé</translation>
 <translation id="2956410042958133412">Ce compte est géré par <ph name="PARENT_NAME_1" /> et <ph name="PARENT_NAME_2" />.</translation>
@@ -645,7 +644,7 @@ Pour modifier ce paramètre, <ph name="BEGIN_LINK" />réinitialisez la synchroni
 <translation id="6111020039983847643">données utilisées</translation>
 <translation id="6112702117600201073">Actualisation de la page en cours</translation>
 <translation id="6127379762771434464">Élément supprimé</translation>
-<translation id="6140709049082532940">Protection renforcée</translation>
+<translation id="6140709049082532940">Protection renforcée :</translation>
 <translation id="6140912465461743537">Pays/région</translation>
 <translation id="614940544461990577">Essayez ceci :</translation>
 <translation id="6154478581116148741">Activez le verrouillage de l'écran dans Paramètres pour exporter vos mots de passe à partir de cet appareil</translation>

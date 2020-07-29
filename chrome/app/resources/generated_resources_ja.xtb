@@ -1851,7 +1851,7 @@
 <translation id="3274763671541996799">全画面表示になりました。</translation>
 <translation id="3275778809241512831">ご使用の内部セキュリティ キーは現在、安全ではありません。このキーを使用しているすべてのサービスからキーを削除してください。この問題を解決するには、セキュリティ キーをリセットしてください。</translation>
 <translation id="3275778913554317645">ウィンドウとして開く</translation>
-<translation id="3277691515294482687">Linux をアップグレードする前に、アプリとファイルを [マイファイル] フォルダにバックアップします。</translation>
+<translation id="3277691515294482687">Linux をアップグレードする前に、アプリとファイルを [マイファイル] フォルダにバックアップする。</translation>
 <translation id="3278001907972365362">お使いの Google アカウントは対応が必要です</translation>
 <translation id="3279230909244266691">この処理には数分かかることがあります。仮想マシンを起動します。</translation>
 <translation id="3280237271814976245">名前を付けて保存(&amp;A)...</translation>
@@ -1925,7 +1925,6 @@
 <translation id="3371140690572404006">USB-C デバイス（右手前のポート）</translation>
 <translation id="337286756654493126">アプリケーションで開いたフォルダに書き込む</translation>
 <translation id="3378572629723696641">この拡張機能は破損している可能性があります。</translation>
-<translation id="3379169026479470857">DLC を削除する</translation>
 <translation id="337920581046691015"><ph name="PRODUCT_NAME" /> がインストールされます。</translation>
 <translation id="3380365263193509176">不明なエラー</translation>
 <translation id="3382073616108123819">このデバイスのデバイス識別子を特定できませんでした。</translation>
@@ -2380,6 +2379,7 @@
 <translation id="3882165008614329320">カメラやファイルに保存されている動画</translation>
 <translation id="3886446263141354045">このサイトへのアクセス リクエストを <ph name="NAME" /> さんに送信しました</translation>
 <translation id="3888550877729210209"><ph name="LOCK_SCREEN_APP_NAME" /> でメモをとる</translation>
+<translation id="3891563564777705449">{0,plural, =1{1 週間以内にデバイスを更新してください}other{# 週間以内にデバイスを更新してください}}</translation>
 <translation id="3892414795099177503">OpenVPN / L2TP を追加...</translation>
 <translation id="3893536212201235195">ユーザー補助設定の読み取りと変更</translation>
 <translation id="3893630138897523026">ChromeVox（音声フィードバック）</translation>
@@ -2611,14 +2611,12 @@
 <translation id="4175137578744761569">明るい紫と白</translation>
 <translation id="4175737294868205930">永続的ストレージ</translation>
 <translation id="4176463684765177261">停止中</translation>
-<translation id="418031202593299965">これらのコンポーネントは、このデバイスの他のユーザーと共有されています。コンポーネントを削除すると、他のユーザーに影響する可能性があります。</translation>
 <translation id="4180788401304023883">CA 証明書「<ph name="CERTIFICATE_NAME" />」を削除しますか？</translation>
 <translation id="4181602000363099176">20 倍</translation>
 <translation id="4181841719683918333">言語</translation>
 <translation id="4184885522552335684">ディスプレイをドラッグして移動</translation>
 <translation id="4187424053537113647"><ph name="APP_NAME" /> をセットアップしています...</translation>
 <translation id="4190828427319282529">キーボード フォーカスをハイライト表示する</translation>
-<translation id="4191805472951276951">DLC</translation>
 <translation id="4194570336751258953">タップによるクリックを有効にする</translation>
 <translation id="4195643157523330669">新しいタブで開く</translation>
 <translation id="4195814663415092787">前回開いていたページを開く</translation>
@@ -3037,7 +3035,6 @@
 <translation id="4756388243121344051">履歴(&amp;H)</translation>
 <translation id="4759238208242260848">ダウンロード</translation>
 <translation id="4761104368405085019">マイクを使用する</translation>
-<translation id="4762055672525936226">ダウンロード済みコンテンツを削除する</translation>
 <translation id="4762718786438001384">デバイスのディスク空き領域が非常に少なくなっています</translation>
 <translation id="4763408175235639573">このページを表示したときに以下の Cookie が設定されました</translation>
 <translation id="4765582662863429759">スマートフォンから Chromebook へのテキストの伝達を Android メッセージに許可します</translation>
@@ -3291,7 +3288,6 @@
 <translation id="5094721898978802975">連携するネイティブ アプリケーションと通信</translation>
 <translation id="5097002363526479830">ネットワーク「<ph name="NAME" />」に接続できませんでした: <ph name="DETAILS" /></translation>
 <translation id="5097874180538493929">カーソルの停止時に自動的にクリックする</translation>
-<translation id="5098800418125334616">ダウンロード済みコンテンツの管理</translation>
 <translation id="5101042277149003567">すべてのブックマークを開く</translation>
 <translation id="5101839224773798795">カーソルの停止時に自動的にクリックする</translation>
 <translation id="5107443654503185812">拡張機能により、セーフ ブラウジングがオフになりました</translation>
@@ -4169,7 +4165,6 @@
 <translation id="6198102561359457428">ログアウトしてから再度ログイン...</translation>
 <translation id="6198252989419008588">PIN を変更</translation>
 <translation id="6202304368170870640">デバイスのログインやロック解除に PIN を使用できます。</translation>
-<translation id="6202517672944764518">ダウンロード済みコンテンツ</translation>
 <translation id="6206311232642889873">画像をコピー(&amp;Y)</translation>
 <translation id="6207200176136643843">リセットしてデフォルトのズームレベルに戻す</translation>
 <translation id="6207937957461833379">国/地域</translation>
@@ -4441,6 +4436,7 @@
 <translation id="6535331821390304775"><ph name="ORIGIN" /> でのこのタイプのリンクは常に関連付けられたアプリで開く</translation>
 <translation id="654039047105555694"><ph name="BEGIN_BOLD" />注:<ph name="END_BOLD" /> データの収集によりパフォーマンスが低下する場合があるため、意図的に行う場合、または指示された場合のみ有効にしてください。</translation>
 <translation id="6541638731489116978">このサイトではモーション センサーへのアクセスがブロックされています。</translation>
+<translation id="6545407738986370057">{0,plural, =1{1 週間以内にデバイスを返却してください}other{# 週間以内にデバイスを返却してください}}</translation>
 <translation id="6545665334409411530">リピート回数 / 秒</translation>
 <translation id="6545864417968258051">Bluetooth のスキャン</translation>
 <translation id="6545867563032584178">Mac のシステム環境設定でマイクがオフになっています</translation>
@@ -6128,7 +6124,6 @@
 <translation id="8652400352452647993">拡張機能のパッケージ化のエラー</translation>
 <translation id="8654151524613148204">ファイル サイズが大きすぎるため、お使いのパソコンでは処理できません。</translation>
 <translation id="8655295600908251630">チャンネル</translation>
-<translation id="8655319619291175901">エラーが発生しました。</translation>
 <translation id="8655972064210167941">パスワードを確認できなかったためログインできませんでした。管理者に問い合わせるか、もう一度お試しください。</translation>
 <translation id="8656768832129462377">確認しない</translation>
 <translation id="8658645149275195032"><ph name="APP_NAME" /> が <ph name="TAB_NAME" /> の画面と音声を共有しています。</translation>
@@ -6217,7 +6212,6 @@
           &lt;p&gt;コマンドラインからの設定は可能です。フラグや環境変数について詳しくは、&lt;code&gt;man <ph name="PRODUCT_BINARY_NAME" />&lt;/code&gt; を実行してご確認ください。&lt;/p&gt;</translation>
 <translation id="8755175579224030324">デバイスに保存された証明書やキーの管理など、組織のセキュリティ関連のタスクを実行する</translation>
 <translation id="8755376271068075440">拡大(&amp;L)</translation>
-<translation id="8756143264090841047">DLC を削除</translation>
 <translation id="8756969031206844760">パスワードを更新しますか？</translation>
 <translation id="8757090071857742562">デスクトップをキャストできません。画面共有の開始を確認するメッセージで同意したかどうかを確認してください。</translation>
 <translation id="8757203080302669031">このタブでは Bluetooth デバイスのスキャンを実行中です。</translation>
@@ -6232,7 +6226,6 @@
 <translation id="8770406935328356739">拡張機能のルート ディレクトリ</translation>
 <translation id="8770507190024617908">ユーザーを管理</translation>
 <translation id="8771300903067484968">スタートページの背景をデフォルトの背景にリセットしました。</translation>
-<translation id="8771939407732945762">ダウンロード済みコンテンツを削除する</translation>
 <translation id="8773302562181397928"><ph name="PRINTER_NAME" /> を保存</translation>
 <translation id="8774379074441005279">復元を実行</translation>
 <translation id="8774934320277480003">上余白</translation>

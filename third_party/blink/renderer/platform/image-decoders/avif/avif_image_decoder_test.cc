@@ -131,7 +131,7 @@ StaticColorCheckParam kTestParams[] = {
          {gfx::Point(1, 1), SkColorSetARGB(128, 255, 0, 0)},
          {gfx::Point(2, 2), SkColorSetARGB(255, 255, 0, 0)},
      }},
-    {"/images/resources/avif/red-with-limited-alhpa-8bpc.avif",
+    {"/images/resources/avif/red-with-limited-alpha-8bpc.avif",
      8,
      ColorType::kRgbA,
      ImageDecoder::kLosslessFormat,
@@ -143,7 +143,7 @@ StaticColorCheckParam kTestParams[] = {
          {gfx::Point(1, 1), SkColorSetARGB(128, 255, 0, 0)},
          {gfx::Point(2, 2), SkColorSetARGB(255, 255, 0, 0)},
      }},
-    {"/images/resources/avif/red-full-ranged-8bpc.avif",
+    {"/images/resources/avif/red-full-range-420-8bpc.avif",
      8,
      ColorType::kRgb,
      ImageDecoder::kLosslessFormat,
@@ -155,7 +155,7 @@ StaticColorCheckParam kTestParams[] = {
          {gfx::Point(1, 1), SkColorSetARGB(255, 255, 0, 0)},
          {gfx::Point(2, 2), SkColorSetARGB(255, 255, 0, 0)},
      }},
-    {"/images/resources/avif/alpha-mask-limited-ranged-8bpc.avif",
+    {"/images/resources/avif/alpha-mask-limited-range-8bpc.avif",
      8,
      ColorType::kMono,
      ImageDecoder::kLosslessFormat,
@@ -167,7 +167,7 @@ StaticColorCheckParam kTestParams[] = {
          {gfx::Point(1, 1), SkColorSetARGB(255, 128, 128, 128)},
          {gfx::Point(2, 2), SkColorSetARGB(255, 255, 255, 255)},
      }},
-    {"/images/resources/avif/alpha-mask-full-ranged-8bpc.avif",
+    {"/images/resources/avif/alpha-mask-full-range-8bpc.avif",
      8,
      ColorType::kMono,
      ImageDecoder::kLosslessFormat,
@@ -235,7 +235,7 @@ StaticColorCheckParam kTestParams[] = {
          {gfx::Point(1, 1), SkColorSetARGB(128, 255, 0, 0)},
          {gfx::Point(2, 2), SkColorSetARGB(255, 255, 0, 0)},
      }},
-    {"/images/resources/avif/red-with-limited-alhpa-10bpc.avif",
+    {"/images/resources/avif/red-with-limited-alpha-10bpc.avif",
      10,
      ColorType::kRgbA,
      ImageDecoder::kLosslessFormat,
@@ -259,7 +259,7 @@ StaticColorCheckParam kTestParams[] = {
          {gfx::Point(1, 1), SkColorSetARGB(128, 255, 0, 0)},
          {gfx::Point(2, 2), SkColorSetARGB(255, 255, 0, 0)},
      }},
-    {"/images/resources/avif/red-full-ranged-10bpc.avif",
+    {"/images/resources/avif/red-full-range-420-10bpc.avif",
      10,
      ColorType::kRgb,
      ImageDecoder::kLosslessFormat,
@@ -271,7 +271,7 @@ StaticColorCheckParam kTestParams[] = {
          {gfx::Point(1, 1), SkColorSetARGB(255, 255, 0, 0)},
          {gfx::Point(2, 2), SkColorSetARGB(255, 255, 0, 0)},
      }},
-    {"/images/resources/avif/alpha-mask-limited-ranged-10bpc.avif",
+    {"/images/resources/avif/alpha-mask-limited-range-10bpc.avif",
      10,
      ColorType::kMono,
      ImageDecoder::kLosslessFormat,
@@ -283,7 +283,7 @@ StaticColorCheckParam kTestParams[] = {
          {gfx::Point(1, 1), SkColorSetARGB(255, 128, 128, 128)},
          {gfx::Point(2, 2), SkColorSetARGB(255, 255, 255, 255)},
      }},
-    {"/images/resources/avif/alpha-mask-full-ranged-10bpc.avif",
+    {"/images/resources/avif/alpha-mask-full-range-10bpc.avif",
      10,
      ColorType::kMono,
      ImageDecoder::kLosslessFormat,
@@ -339,7 +339,7 @@ StaticColorCheckParam kTestParams[] = {
          {gfx::Point(1, 1), SkColorSetARGB(128, 255, 0, 0)},
          {gfx::Point(2, 2), SkColorSetARGB(255, 255, 0, 0)},
      }},
-    {"/images/resources/avif/red-with-limited-alhpa-12bpc.avif",
+    {"/images/resources/avif/red-with-limited-alpha-12bpc.avif",
      12,
      ColorType::kRgbA,
      ImageDecoder::kLosslessFormat,
@@ -363,7 +363,7 @@ StaticColorCheckParam kTestParams[] = {
          {gfx::Point(1, 1), SkColorSetARGB(128, 255, 0, 0)},
          {gfx::Point(2, 2), SkColorSetARGB(255, 255, 0, 0)},
      }},
-    {"/images/resources/avif/red-full-ranged-12bpc.avif",
+    {"/images/resources/avif/red-full-range-420-12bpc.avif",
      12,
      ColorType::kRgb,
      ImageDecoder::kLosslessFormat,
@@ -375,7 +375,7 @@ StaticColorCheckParam kTestParams[] = {
          {gfx::Point(1, 1), SkColorSetARGB(255, 255, 0, 0)},
          {gfx::Point(2, 2), SkColorSetARGB(255, 255, 0, 0)},
      }},
-    {"/images/resources/avif/alpha-mask-limited-ranged-12bpc.avif",
+    {"/images/resources/avif/alpha-mask-limited-range-12bpc.avif",
      12,
      ColorType::kMono,
      ImageDecoder::kLosslessFormat,
@@ -387,7 +387,7 @@ StaticColorCheckParam kTestParams[] = {
          {gfx::Point(1, 1), SkColorSetARGB(255, 128, 128, 128)},
          {gfx::Point(2, 2), SkColorSetARGB(255, 255, 255, 255)},
      }},
-    {"/images/resources/avif/alpha-mask-full-ranged-12bpc.avif",
+    {"/images/resources/avif/alpha-mask-full-range-12bpc.avif",
      12,
      ColorType::kMono,
      ImageDecoder::kLosslessFormat,
@@ -585,9 +585,17 @@ TEST(StaticAVIFTests, ValidImages) {
 }
 
 TEST(StaticAVIFTests, YUV) {
-  const char* avif_file =
-      "/images/resources/avif/red-full-ranged-8bpc.avif";  // 3x3, YUV 4:2:0
-  ReadYUV(avif_file, IntSize(3, 3), IntSize(2, 2));
+  // 3x3, YUV 4:2:0
+  ReadYUV("/images/resources/avif/red-limited-range-420-8bpc.avif",
+          IntSize(3, 3), IntSize(2, 2));
+
+  // 3x3, YUV 4:2:2
+  ReadYUV("/images/resources/avif/red-limited-range-422-8bpc.avif",
+          IntSize(3, 3), IntSize(2, 3));
+
+  // 3x3, YUV 4:4:4
+  ReadYUV("/images/resources/avif/red-limited-range-444-8bpc.avif",
+          IntSize(3, 3), IntSize(3, 3));
 }
 
 using StaticAVIFColorTests = ::testing::TestWithParam<StaticColorCheckParam>;

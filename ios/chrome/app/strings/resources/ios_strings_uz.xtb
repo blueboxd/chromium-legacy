@@ -27,7 +27,7 @@
 <translation id="1209206284964581585">Berkitish</translation>
 <translation id="1219674500290482172">Internetga ulanib bo‘lmadi.</translation>
 <translation id="122699739164161391">Barcha varaqlarni yopish</translation>
-<translation id="1229222343402087523">Chromeda ${searchPhrase} qidirish</translation>
+<translation id="1229222343402087523">${searchPhrase} – Chrome orqali qidirish</translation>
 <translation id="1231733316453485619">Sinxronizatsiya yoqilsinmi?</translation>
 <translation id="1254117744268754948">Jildni tanlash</translation>
 <translation id="1265739287306757398">Batafsil axborot</translation>
@@ -255,6 +255,7 @@ Inkognito rejimida cookie fayllaringiz yopiq boʻladi va saytlar reklamalarni si
 <translation id="3929457972718048006">Manzillar</translation>
 <translation id="3943492037546055397">Parollar</translation>
 <translation id="3967822245660637423">Yuklab olindi</translation>
+<translation id="3968505803272650567">Qiziqishlarni sozlash</translation>
 <translation id="3989635538409502728">Chiqish</translation>
 <translation id="399419089947468503">Parollar sinxronlanmadi</translation>
 <translation id="3995521777587992544">Sahifa yuklanishidagi kutish qatori: <ph name="EMAIL" /> yuklandi.</translation>
@@ -498,6 +499,7 @@ Saytlar reklamalarni sizga moslashtirish uchun brauzerdagi faoliyatingizni kuzat
 <translation id="6807889908376551050">Hammasini ochish...</translation>
 <translation id="681368974849482173">Saqlandi</translation>
 <translation id="6831043979455480757">Tarjima</translation>
+<translation id="6841409746189899007">Matn havolasi</translation>
 <translation id="6851516051005285358">Kompyuter versiyasi</translation>
 <translation id="6856384753476268833">Tashkilotingiz tomonidan boshqariladi.</translation>
 <translation id="6858855187367714033">Tekshirildi</translation>

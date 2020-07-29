@@ -787,6 +787,22 @@ TEST(AXEventGeneratorTest, TextAttributeChanged) {
           HasEventAtNode(AXEventGenerator::Event::TEXT_ATTRIBUTE_CHANGED, 17)));
 }
 
+TEST(AXEventGeneratorTest, TextObjectAttributeChanged) {
+  AXTreeUpdate initial_state;
+  initial_state.root_id = 1;
+  initial_state.nodes.resize(1);
+  initial_state.nodes[0].id = 1;
+  AXTree tree(initial_state);
+
+  AXEventGenerator event_generator(&tree);
+  AXTreeUpdate update = initial_state;
+  update.nodes[0].AddIntAttribute(ax::mojom::IntAttribute::kTextAlign, 2);
+  ASSERT_TRUE(tree.Unserialize(update));
+  EXPECT_THAT(event_generator,
+              UnorderedElementsAre(HasEventAtNode(
+                  AXEventGenerator::Event::OBJECT_ATTRIBUTE_CHANGED, 1)));
+}
+
 TEST(AXEventGeneratorTest, OtherAttributeChanged) {
   AXTreeUpdate initial_state;
   initial_state.root_id = 1;

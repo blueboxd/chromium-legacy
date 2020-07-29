@@ -104,6 +104,7 @@
 <translation id="1853692000353488670">Նոր ինկոգնիտո ներդիր</translation>
 <translation id="1856325424225101786">Վերակայե՞լ Lite ռեժիմը</translation>
 <translation id="1868024384445905608">Chrome-ն այժմ ավելի արագ է ֆայլեր ներբեռնում</translation>
+<translation id="1874760110381325409">Դուք կմտնեք ձեր Google հաշիվ\n(Chrome-ի համաժամացումը չի միանա)</translation>
 <translation id="1883903952484604915">Իմ ֆայլերը</translation>
 <translation id="1919950603503897840">Ընտրեք կոնտակտներ</translation>
 <translation id="1925021887439448749">Մուտքագրեք այլ հասցե</translation>
@@ -227,6 +228,7 @@
 <translation id="281504910091592009">Դիտեք և կառավարեք պահված գաղտնաբառերը ձեր <ph name="BEGIN_LINK" />Google հաշվում<ph name="END_LINK" /></translation>
 <translation id="2818669890320396765">Ձեր էջանիշները բոլոր սարքերում օգտագործելու համար մտեք հաշիվ և միացրեք համաժամացումը</translation>
 <translation id="2827278682606527653">Լրահոսի քարտի ընտրացանկը բացված է կիսով չափ</translation>
+<translation id="2841216154655874070">{NUM_DAYS,plural, =1{Ստուգվել է 1 օր առաջ}one{Ստուգվել է # օր առաջ}other{Ստուգվել է # օր առաջ}}</translation>
 <translation id="2842985007712546952">Վերադաս պանակ</translation>
 <translation id="2860954141821109167">Համոզվեք, որ «Հեռախոս» հավելվածը միացված է այս սարքում</translation>
 <translation id="2870560284913253234">Կայք</translation>
@@ -242,7 +244,6 @@
 <translation id="2905036901251765993">Մոտակայքում գտնվող մարդկանց հետ կիսվելու համար սկանավորեք այս QR կոդը</translation>
 <translation id="2909615210195135082">Google ծանուցումների հարթակ</translation>
 <translation id="2923908459366352541">Անունն անվավեր է:</translation>
-<translation id="2927707377793151377">Ընտրել մեկ այլ մատակարար՝</translation>
 <translation id="2932150158123903946">Google <ph name="APP_NAME" />-ի օգտագործած տարածքը</translation>
 <translation id="2942036813789421260">Նախադիտման ներդիրը փակված է</translation>
 <translation id="2956410042958133412">Այս հաշիվը կառավարվում է <ph name="PARENT_NAME_1" /> և <ph name="PARENT_NAME_2" /> հաշիվների կողմից:</translation>
@@ -703,6 +704,7 @@
 <translation id="6532866250404780454">Chrome-ում ձեր այցելած կայքերը չեն ցուցադրվի։ Բոլոր կայքերի ժամաչափերը կջնջվեն։</translation>
 <translation id="6534565668554028783">Google-ը չափազանց երկար է պատասխանում</translation>
 <translation id="6539092367496845964">Սխալ առաջացավ: Փորձեք ավելի ուշ:</translation>
+<translation id="6541983376925655882">{NUM_HOURS,plural, =1{Ստուգվել է 1 ժամ առաջ}one{Ստուգվել է # ժամ առաջ}other{Ստուգվել է # ժամ առաջ}}</translation>
 <translation id="6545017243486555795">Մաքրել բոլոր տվյալները</translation>
 <translation id="6560414384669816528">Որոնել Sogou որոնման համակարգով</translation>
 <translation id="656065428026159829">Տեսնել ավելին</translation>
@@ -734,6 +736,7 @@
 <translation id="6697492270171225480">Ցուցադրել նմանատիպ էջերի առաջարկներ, երբ որևէ էջ չհաջողվի գտնել</translation>
 <translation id="6698801883190606802">Կառավարել համաժամացված տվյալները</translation>
 <translation id="6699370405921460408">Google-ի սերվերները կօպտիմալացնեն ձեր այցելած էջերը։</translation>
+<translation id="670498945988402717">Ստուգվել է երեկ</translation>
 <translation id="6710213216561001401">Նախորդը</translation>
 <translation id="671481426037969117"><ph name="FQDN" />-ի համար նախատեսված ժամանակը լրացել է։ Վաղը այն նորից կաշխատի:</translation>
 <translation id="6738867403308150051">Ներբեռնում…</translation>
@@ -772,6 +775,7 @@
 <translation id="7063006564040364415">Չհաջողվեց կապակցվել համաժամացման սերվերին:</translation>
 <translation id="7071521146534760487">Կառավարել հաշիվը</translation>
 <translation id="7077143737582773186">SD քարտ</translation>
+<translation id="7080806333218412752">Ուղարկում է URL-ները Ապահով դիտարկմանը՝ դրանք ստուգելու համար։ Ուղարկվում են նաև էջերի, ներբեռնված ֆայլերի, ընդլայնումների գործողությունների և համակարգի մասին տեղեկություններից որոշ հատվածներ, որոնք օգնում են հայտնաբերել օգտատերերին սպառնացող նոր վտանգներ։ Երբ մտնում եք Google հաշիվ, այդ տվյալները ժամանակավորապես կապվում են տվյալ հաշվի հետ՝ պաշտպանելով ձեզ Google-ի հավելվածներում։</translation>
 <translation id="7121362699166175603">Մաքրում է պատմությունն ու ինքնալրացումները հասցեագոտում: Ձեր Google հաշվում կարող են լինել այցելությունների պատմության այլ ձևեր ևս: Դրանք կարող եք գտնել <ph name="BEGIN_LINK" />myactivity.google.com<ph name="END_LINK" /> էջում:</translation>
 <translation id="7128355412245153445">Ձեր թոփ կայքերն ու վերջին հոդվածները տեսնելու համար պարզապես սեղմեք Սկիզբ կոճակը</translation>
 <translation id="7138678301420049075">Այլ</translation>
@@ -781,6 +785,7 @@
 <translation id="7173114856073700355">Բացել կարգավորումները</translation>
 <translation id="7177466738963138057">Կարող եք սա հետագայում փոխել կարգավորումներում</translation>
 <translation id="7180611975245234373">Թարմացնել</translation>
+<translation id="7187993566681480880">Ապահովում է ձեր անվտանգությունը Chrome-ում և Google հավելվածներում, երբ մտել եք ձեր հաշիվ։</translation>
 <translation id="7189372733857464326">Սպասում է Google Play ծառայությունների թարմացման ավարտին</translation>
 <translation id="7191430249889272776">Հետնաշերտում ներդիր է բացված:</translation>
 <translation id="723171743924126238">Ընտրեք պատկերներ</translation>
@@ -892,6 +897,7 @@
 <translation id="8027863900915310177">Ընտրեք, թե որտեղ է պետք ներբեռնել</translation>
 <translation id="8035133914807600019">Նոր պանակ...</translation>
 <translation id="8037750541064988519">Մնացել է <ph name="DAYS" /> օր</translation>
+<translation id="8037801708772278989">Ստուգվել է հենց նոր</translation>
 <translation id="804335162455518893">SD քարտը չհաջողվեց գտնել</translation>
 <translation id="805047784848435650">Ձեր այցելությունների պատմության հիման վրա</translation>
 <translation id="8051695050440594747">Հասանելի է <ph name="MEGABYTES" /> ՄԲ</translation>
@@ -1032,6 +1038,7 @@
 <translation id="9137013805542155359">Ցույց տալ բնօրինակը</translation>
 <translation id="9155898266292537608">Կարող եք նաև որոնել՝ սեղմելով բառի վրա</translation>
 <translation id="9169507124922466868">Նավարկման պատմության թերթը կիսաբացված է</translation>
+<translation id="9199368092038462496">{NUM_MINS,plural, =1{Ստուգվել է 1 րոպե առաջ}one{Ստուգվել է # րոպե առաջ}other{Ստուգվել է # րոպե առաջ}}</translation>
 <translation id="9204836675896933765">Մնաց 1 ֆայլ</translation>
 <translation id="9206873250291191720">Ա</translation>
 <translation id="9209888181064652401">Չի հաջողվում զանգել</translation>

@@ -36,7 +36,7 @@ constexpr char kNotifierId[] = "arc_supervision_transition";
 //   * supervision transition completed.
 // If one of these events happens notification is automatically dismissed.
 class NotificationDelegate : public message_center::NotificationDelegate,
-                             public ArcSessionManager::Observer {
+                             public ArcSessionManagerObserver {
  public:
   explicit NotificationDelegate(Profile* profile) : profile_(profile) {
     ArcSessionManager::Get()->AddObserver(this);
@@ -47,7 +47,7 @@ class NotificationDelegate : public message_center::NotificationDelegate,
                             base::Unretained(this)));
   }
 
-  // ArcSessionManager::Observer:
+  // ArcSessionManagerObserver:
   void OnArcPlayStoreEnabledChanged(bool enabled) override {
     // ARC++ Play Store can be only opted out in case notifcation is shown.
     DCHECK(!enabled);

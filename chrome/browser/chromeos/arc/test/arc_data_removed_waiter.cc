@@ -4,6 +4,7 @@
 #include "chrome/browser/chromeos/arc/test/arc_data_removed_waiter.h"
 
 #include "base/run_loop.h"
+#include "chrome/browser/chromeos/arc/session/arc_session_manager.h"
 
 namespace arc {
 

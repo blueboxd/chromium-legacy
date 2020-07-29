@@ -14,6 +14,8 @@ source_set("telemetry_extension_ui") {
     "probe_service_converters.h",
     "telemetry_extension_ui.cc",
     "telemetry_extension_ui.h",
+    "telemetry_extension_untrusted_source.cc",
+    "telemetry_extension_untrusted_source.h",
     "url_constants.cc",
     "url_constants.h",
   ]

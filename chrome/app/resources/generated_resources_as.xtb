@@ -1922,7 +1922,6 @@
 <translation id="3371140690572404006">USB-C ডিভাইচ। (সোঁফালৰ সন্মুখৰ প’ৰ্ট)</translation>
 <translation id="337286756654493126">আপুনি এপ্লিকেশ্বনটোত খোলা ফ’ল্ডাৰসমূহ পঢ়ক</translation>
 <translation id="3378572629723696641">এই এক্সটেনশ্বনটো হয়তো ব্যৱহাৰযোগ্য হৈ থকা নাই।</translation>
-<translation id="3379169026479470857">DLC আঁতৰাওক</translation>
 <translation id="337920581046691015"><ph name="PRODUCT_NAME" /> ইনষ্টল কৰা হ'ব।</translation>
 <translation id="3380365263193509176">অজ্ঞাত আসোঁৱাহ</translation>
 <translation id="3382073616108123819">আমি দুঃখিত!  ছিষ্টেমে এই ডিভাইচটোৰ বাবে ডিভাইচ চিনাক্তকাৰী নির্ধাৰণ কৰিব নোৱাৰিলে।</translation>
@@ -2606,14 +2605,12 @@
 <translation id="4175137578744761569">পাতল বেঙুনীয়া আৰু বগা</translation>
 <translation id="4175737294868205930">স্থিৰ ষ্ট’ৰেজ</translation>
 <translation id="4176463684765177261">অক্ষম আছে</translation>
-<translation id="418031202593299965">এই উপাদানসমূহ এই ডিভাইচটোৰ অন্য ব্যৱহাৰকাৰীসকলৰ সৈতে শ্বেয়াৰ কৰা হয়। উপাদানসমূহ আঁতৰালে অন্য ব্যৱহাৰকাৰীসকল প্ৰভাৱিত হ’ব পাৰে।</translation>
 <translation id="4180788401304023883">CA প্ৰমাণপত্ৰ "<ph name="CERTIFICATE_NAME" />"খন মচিবনে?</translation>
 <translation id="4181602000363099176">২০গুণ</translation>
 <translation id="4181841719683918333">ভাষাসমূহ</translation>
 <translation id="4184885522552335684">কোনো ডিছপ্লে’ স্থানান্তৰ কৰিবলৈ টানক</translation>
 <translation id="4187424053537113647"><ph name="APP_NAME" /> ছেট আপ কৰি থকা হৈছে...</translation>
 <translation id="4190828427319282529">কীব’ৰ্ডৰ ফ’কাছ হাইলাইট কৰক</translation>
-<translation id="4191805472951276951">DLC</translation>
 <translation id="4194570336751258953">ক্লিক কৰিবলৈ টিপা সুবিধাটো সক্ষম কৰক</translation>
 <translation id="4195643157523330669">নতুন টেবত খোলক</translation>
 <translation id="4195814663415092787">আপুনি পূর্বতে এৰাৰ পৰা পুনৰ আৰম্ভ কৰক</translation>
@@ -3031,7 +3028,6 @@
 <translation id="4756388243121344051">&amp;ইতিহাস</translation>
 <translation id="4759238208242260848">ডাউনল'ডসমূহ</translation>
 <translation id="4761104368405085019">আপোনাৰ মাইক্ৰ’ফ’ন ব্যৱহাৰ কৰক</translation>
-<translation id="4762055672525936226">ডাউনল’ড কৰা সমল মচক</translation>
 <translation id="4762718786438001384">ডিভাইচৰ ডিস্কত ঠাই একেবাৰে কম আছে</translation>
 <translation id="4763408175235639573">আপুনি এই পৃষ্ঠাটো চাওঁতে তলৰ কুকিসমূহ ছেট কৰা হৈছিল</translation>
 <translation id="4765582662863429759">আপোনাৰ ফনৰ পৰা Chromebookলৈ পাঠ ৰিলে’ কৰিবলৈ Android Messagesক অনুমতি দিয়ে</translation>
@@ -3285,7 +3281,6 @@
 <translation id="5094721898978802975">সহযোগ কৰা স্থানীয় এপ্লিকেশ্বনৰ সৈতে যোগাযোগ কৰক</translation>
 <translation id="5097002363526479830">’<ph name="NAME" />’ নেটৱর্কত সংযুক্ত কৰিব পৰা নগ’ল : <ph name="DETAILS" /></translation>
 <translation id="5097874180538493929">কাৰ্ছৰডাল ৰৈ গ’লে স্বয়ংক্ৰিয়ভাৱে ক্লিক কৰক</translation>
-<translation id="5098800418125334616">ডাউনল’ড কৰা সমল পৰিচালনা কৰক</translation>
 <translation id="5101042277149003567">সকলো বুকমাৰ্ক খোলক</translation>
 <translation id="5101839224773798795">কাৰ্জৰটো ৰৈ গ’লে স্বয়ংক্ৰিয়ভাৱে ক্লিক কৰক</translation>
 <translation id="5107443654503185812">এটা এক্সটেনশ্বনে সুৰক্ষিত ব্ৰাউজিং অফ কৰিছে</translation>
@@ -4161,7 +4156,6 @@
 <translation id="6198102561359457428">ছাইন আউট কৰি পুনৰ ছাইন ইন কৰক…</translation>
 <translation id="6198252989419008588">পিন সলনি কৰক</translation>
 <translation id="6202304368170870640">আপুনি নিজৰ ডিভাইচত ছাইন ইন কৰিবলৈ বা ডিভাইচ আনলক কৰিবলৈ নিজৰ পিন ব্যৱহাৰ কৰিব পাৰে।</translation>
-<translation id="6202517672944764518">ডাউনল’ড কৰা সমল</translation>
 <translation id="6206311232642889873">ছ&amp;বিৰ প্ৰতিলিপি বনাওক</translation>
 <translation id="6207200176136643843">ডিফ’ল্ট জুমৰ স্তৰলৈ ৰিছেট কৰক</translation>
 <translation id="6207937957461833379">দেশ / অঞ্চল</translation>
@@ -4477,6 +4471,7 @@
 <translation id="6602956230557165253">নেভিগে’ট কৰিবলৈ বাওঁফাল বা সোঁফালে নিৰ্দেশ কৰা কাঁড়চিন ব্যৱহাৰ কৰক।</translation>
 <translation id="6605847144724004692">কোনো ব্যৱহাৰকাৰীয়ে এই পর্যন্ত মূল্যাংকন কৰা নাই।</translation>
 <translation id="6607831829715835317">অধিক সঁজু&amp;লি</translation>
+<translation id="6608012008902909398">ডিভাইচৰ ছফ্টৱেৰ পৰীক্ষা কৰাৰ সবিশেষ দেখুৱাওক</translation>
 <translation id="6611972847767394631">ইয়াত আপোনাৰ টেবসমূহ বিচাৰক</translation>
 <translation id="6612358246767739896">সুৰক্ষিত সমল</translation>
 <translation id="6615455863669487791">মোক দেখুৱাওক</translation>
@@ -6113,7 +6108,6 @@
 <translation id="8652400352452647993">এক্সটেনশ্বনৰ আসোঁৱাহ পেক কৰক</translation>
 <translation id="8654151524613148204">ফাইলটো আপোনাৰ কম্পিউটাৰৰ বাবে অতি ডাঙৰ। দুঃখিত।</translation>
 <translation id="8655295600908251630">চেনেল</translation>
-<translation id="8655319619291175901">আমি দুঃখিত, কিবা ভুল হ'ল।</translation>
 <translation id="8655972064210167941">ছাইন ইন বিফল হ’ল কিয়নো আপোনাৰ পাছৱৰ্ডটোৰ প্ৰমাণীকৰণ কৰিব পৰা নগ’ল। অনুগ্ৰহ কৰি আপোনাৰ প্ৰশাসকৰ সৈতে যোগাযোগ কৰক বা আকৌ চেষ্টা কৰক।</translation>
 <translation id="8656768832129462377">পৰীক্ষা নকৰিব</translation>
 <translation id="8658645149275195032"><ph name="APP_NAME" />এ <ph name="TAB_NAME" />ৰ সৈতে আপোনাৰ স্ক্ৰীণ আৰু অডিঅ’ শ্বেয়াৰ কৰিছে।</translation>
@@ -6202,7 +6196,6 @@
           &lt;p&gt;কিন্তু তথাপিও আপুনি কামাণ্ড লাইনৰ জৰিয়তে কনফিগাৰ কৰিব পাৰে।  পতাকা আৰু পৰিবেষ্টনিৰ লগত জড়িত চলকৰ বিষয়ে অধিক তথ্য পাবলৈ অনুগ্ৰহ কৰি &lt;code&gt;man <ph name="PRODUCT_BINARY_NAME" />&lt;/code&gt; চাওক।&lt;/p&gt;</translation>
 <translation id="8755175579224030324">আপোনাৰ প্ৰতিষ্ঠানৰ বাবে ডিভাইচত ষ্ট’ৰ কৰি থোৱা প্ৰমাণপত্ৰ আৰু চাবিসমূহ পৰিচালনা কৰাৰ দৰে সুৰক্ষা সম্পৰ্কীয় কাৰ্যসমূহ সম্পাদন কৰা</translation>
 <translation id="8755376271068075440">&amp;ডাঙৰ</translation>
-<translation id="8756143264090841047">DLC মচক</translation>
 <translation id="8756969031206844760">পাছৱৰ্ড আপডে’ট কৰিবনে?</translation>
 <translation id="8757090071857742562">ডেস্কটপ কাষ্ট কৰিব পৰা নগ’ল।  আপোনাৰ স্ক্ৰীণ শ্বেয়াৰ কৰা আৰম্ভ কৰিবলৈ আপুনি প্ৰম্প্‌টটো নিশ্চিত কৰিছেনে নাই সেয়া চাবলৈ পৰীক্ষা কৰক।</translation>
 <translation id="8757203080302669031">এই টেবটোৱে সক্ৰিয়ভাৱে ব্লুটুথ ডিভাইচসমূহৰ বাবে স্কেন কৰি আছে।</translation>
@@ -6217,7 +6210,6 @@
 <translation id="8770406935328356739">এক্সটেনশ্বন ৰুট ডাইৰেক্টৰী</translation>
 <translation id="8770507190024617908">লোকক পৰিচালনা কৰক</translation>
 <translation id="8771300903067484968">আৰম্ভণিৰ পৃষ্ঠাৰ নেপথ্য ডিফ’ল্ট নেপথ্যলৈ ৰিছেট কৰা হ’ল।</translation>
-<translation id="8771939407732945762">ডাউনল’ড কৰা সমল আঁতৰাওক</translation>
 <translation id="8773302562181397928"><ph name="PRINTER_NAME" /> ছেভ কৰক</translation>
 <translation id="8774379074441005279">পুনঃস্থাপন নিশ্চিত কৰক</translation>
 <translation id="8774934320277480003">শীৰ্ষ মাৰ্জিন</translation>

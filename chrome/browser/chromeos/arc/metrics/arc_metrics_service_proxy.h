@@ -6,7 +6,7 @@
 #define CHROME_BROWSER_CHROMEOS_ARC_METRICS_ARC_METRICS_SERVICE_PROXY_H_
 
 #include "base/macros.h"
-#include "chrome/browser/chromeos/arc/session/arc_session_manager.h"
+#include "chrome/browser/chromeos/arc/session/arc_session_manager_observer.h"
 #include "chrome/browser/ui/app_list/arc/arc_app_list_prefs.h"
 #include "components/keyed_service/core/keyed_service.h"
 
@@ -24,7 +24,7 @@ class ArcMetricsService;
 // issues are cleared. TODO(crbug.com/903048): Remove the proxy.
 class ArcMetricsServiceProxy : public KeyedService,
                                public ArcAppListPrefs::Observer,
-                               public ArcSessionManager::Observer {
+                               public ArcSessionManagerObserver {
  public:
   static ArcMetricsServiceProxy* GetForBrowserContext(
       content::BrowserContext* context);
@@ -43,7 +43,7 @@ class ArcMetricsServiceProxy : public KeyedService,
                      const std::string& intent) override;
   void OnTaskDestroyed(int32_t task_id) override;
 
-  // ArcSessionManager::Observer overrides.
+  // ArcSessionManagerObserver overrides.
   void OnArcSessionStopped(ArcStopReason stop_reason) override;
 
  private:

@@ -123,6 +123,7 @@
 <translation id="1430915738399379752">Imprimir</translation>
 <translation id="1442386063175183758">Dobra simétrica à direita</translation>
 <translation id="1442987760062738829">Perfurar</translation>
+<translation id="1447067628680007684">(x86_64)</translation>
 <translation id="1453974140256777690">O texto que cola ou anexa é enviado para o Google Cloud ou para terceiros para análise. Por exemplo, pode ser analisado quanto a dados confidenciais.</translation>
 <translation id="1455413310270022028">Borracha</translation>
 <translation id="1462245070427461050">JIS B9</translation>
@@ -1145,6 +1146,7 @@ Se não permitir, isto será bloqueado pelas suas definições de privacidade. I
 <translation id="5705882733397021510">Voltar</translation>
 <translation id="57094364128775171">Sugerir palavra-passe forte…</translation>
 <translation id="5710435578057952990">A identidade deste Website não foi verificada.</translation>
+<translation id="571403275720188526">(arm64)</translation>
 <translation id="5720705177508910913">Utilizador atual</translation>
 <translation id="5728056243719941842">C5 (Envelope)</translation>
 <translation id="5730040223043577876">O Chrome recomenda a reposição da palavra-passe se a tiver reutilizado noutros sites.</translation>
@@ -1194,6 +1196,7 @@ Se não permitir, isto será bloqueado pelas suas definições de privacidade. I
 <translation id="5921639886840618607">Pretende guardar o cartão na Conta Google?</translation>
 <translation id="5922853866070715753">Estamos quase a terminar</translation>
 <translation id="5932224571077948991">O site apresenta anúncios intrusivos ou enganadores.</translation>
+<translation id="5938793338444039872">Troy</translation>
 <translation id="5946937721014915347">A abrir <ph name="SITE_NAME" />…</translation>
 <translation id="5951495562196540101">Não é possível inscrever-se com conta de consumidor (licença incluída disponível).</translation>
 <translation id="5967592137238574583">Editar informações de contacto</translation>
@@ -1361,6 +1364,7 @@ Se não permitir, isto será bloqueado pelas suas definições de privacidade. I
 <translation id="6646269444027925224">{COUNT,plural, =0{Nenhum}=1{De 1 site (a sessão na sua Conta Google não é terminada).}other{De # sites (a sessão na sua Conta Google não é terminada).}}</translation>
 <translation id="6652101503459149953">Utilizar o Windows Hello</translation>
 <translation id="6657585470893396449">Palavra-passe</translation>
+<translation id="666259744093848177">(x86_64 traduzido)</translation>
 <translation id="6665553082534466207">Perfuração tripla à direita</translation>
 <translation id="6671697161687535275">Remover a sugestão do formulário do Chromium?</translation>
 <translation id="6685834062052613830">Termine sessão e conclua a configuração</translation>

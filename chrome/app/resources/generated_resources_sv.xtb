@@ -1925,7 +1925,6 @@ Du kan hantera inställningarna för det här kontot genom att installera Family
 <translation id="3371140690572404006">USB-C-enhet (främre porten på högra sidan)</translation>
 <translation id="337286756654493126">Läsa mappar som du öppnar i appen</translation>
 <translation id="3378572629723696641">Det här tillägget kan vara skadat.</translation>
-<translation id="3379169026479470857">Ta bort DLC</translation>
 <translation id="337920581046691015"><ph name="PRODUCT_NAME" /> installeras.</translation>
 <translation id="3380365263193509176">Okänt fel</translation>
 <translation id="3382073616108123819">Hoppsan! Det gick inte att fastställa enhets-id för den här enheten.</translation>
@@ -2612,14 +2611,12 @@ Du kan hantera inställningarna för det här kontot genom att installera Family
 <translation id="4175137578744761569">Ljuslila och vit</translation>
 <translation id="4175737294868205930">Beständig lagring</translation>
 <translation id="4176463684765177261">Inaktiverad</translation>
-<translation id="418031202593299965">Dessa komponenter delas med andra användare på enheten. Om du tar bort en komponent kan andra användare påverkas.</translation>
 <translation id="4180788401304023883">Vill du ta bort certifikatet <ph name="CERTIFICATE_NAME" />?</translation>
 <translation id="4181602000363099176">20x</translation>
 <translation id="4181841719683918333">Språk</translation>
 <translation id="4184885522552335684">Flytta skärmar genom att dra dem</translation>
 <translation id="4187424053537113647">Konfigurerar <ph name="APP_NAME" /> …</translation>
 <translation id="4190828427319282529">Markera objekt med tangentbordsfokus</translation>
-<translation id="4191805472951276951">DLC</translation>
 <translation id="4194570336751258953">Aktivera klick på styrplattan</translation>
 <translation id="4195643157523330669">Öppna i ny flik</translation>
 <translation id="4195814663415092787">Fortsätt där du slutade</translation>
@@ -3038,7 +3035,6 @@ Du kan hantera inställningarna för det här kontot genom att installera Family
 <translation id="4756388243121344051">&amp;Historik</translation>
 <translation id="4759238208242260848">Nedladdningar</translation>
 <translation id="4761104368405085019">Använd mikrofonen</translation>
-<translation id="4762055672525936226">Radera nedladdat innehåll</translation>
 <translation id="4762718786438001384">Mycket ont om diskutrymme på enheten</translation>
 <translation id="4763408175235639573">Följande cookies sparades när du visade denna sida</translation>
 <translation id="4765582662863429759">Tillåter Android Messages att dirigera sms från mobilen till Chromebook</translation>
@@ -3292,7 +3288,6 @@ Du kan hantera inställningarna för det här kontot genom att installera Family
 <translation id="5094721898978802975">Kommunicera med samverkande inbyggda appar</translation>
 <translation id="5097002363526479830">Det gick inte att ansluta till nätverket <ph name="NAME" />: <ph name="DETAILS" /></translation>
 <translation id="5097874180538493929">Klicka automatiskt när markören stannar</translation>
-<translation id="5098800418125334616">Hantera nedladdat innehåll</translation>
 <translation id="5101042277149003567">Öppna alla bokmärken</translation>
 <translation id="5101839224773798795">Klicka automatiskt när pekaren stannar</translation>
 <translation id="5107443654503185812">Ett tillägg har inaktiverat Säker webbsökning</translation>
@@ -4170,7 +4165,6 @@ Du kan hantera inställningarna för det här kontot genom att installera Family
 <translation id="6198102561359457428">Logga ut och sedan in igen ...</translation>
 <translation id="6198252989419008588">Byt pinkod</translation>
 <translation id="6202304368170870640">Du kan logga in på eller låsa upp enheten med pinkoden.</translation>
-<translation id="6202517672944764518">Nedladdat innehåll</translation>
 <translation id="6206311232642889873">Kopiera &amp;bild</translation>
 <translation id="6207200176136643843">Återställ standardzoomnivån</translation>
 <translation id="6207937957461833379">Land/region</translation>
@@ -4488,6 +4482,7 @@ Du kan hantera inställningarna för det här kontot genom att installera Family
 <translation id="6602956230557165253">Navigera med hjälp av piltangenterna till höger och vänster.</translation>
 <translation id="6605847144724004692">Inga användare har betygsatt detta ännu.</translation>
 <translation id="6607831829715835317">Fler verkt&amp;yg</translation>
+<translation id="6608012008902909398">Visa information om genomsökningen av enhetens programvara</translation>
 <translation id="6611972847767394631">Här finns dina flikar</translation>
 <translation id="6612358246767739896">Skyddat innehåll</translation>
 <translation id="6615455863669487791">Visa mig</translation>
@@ -6130,7 +6125,6 @@ Spara nyckelfilen på ett säkert ställe. Den behövs om du ska skapa nya versi
 <translation id="8652400352452647993">Fel vid paketering av tillägg</translation>
 <translation id="8654151524613148204">Filen är för stor för att din dator ska kunna hantera den.</translation>
 <translation id="8655295600908251630">Kanal</translation>
-<translation id="8655319619291175901">Hoppsan! Ett fel uppstod.</translation>
 <translation id="8655972064210167941">Inloggningen misslyckades eftersom ditt lösenord inte kunde verifieras. Kontakta administratören eller försök igen.</translation>
 <translation id="8656768832129462377">Kontrollera inte</translation>
 <translation id="8658645149275195032"><ph name="APP_NAME" /> delar skärmen och ljudet med <ph name="TAB_NAME" />.</translation>
@@ -6219,7 +6213,6 @@ Spara nyckelfilen på ett säkert ställe. Den behövs om du ska skapa nya versi
         &lt;p&gt;Du kan fortfarande konfigurera via kommandoraden. Läs &lt;code&gt;man <ph name="PRODUCT_BINARY_NAME" />&lt;/code&gt; om du vill veta mer om flaggningar och miljövariabler.&lt;/p&gt;</translation>
 <translation id="8755175579224030324">Utför säkerhetsrelaterade uppgifter för organisationen, som att hantera certifikat och nycklar som lagras på enheten</translation>
 <translation id="8755376271068075440">&amp;Större</translation>
-<translation id="8756143264090841047">Radera DLC</translation>
 <translation id="8756969031206844760">Vill du uppdatera lösenordet?</translation>
 <translation id="8757090071857742562">Det gick inte att casta skrivbordet. Kontrollera att du har svarat på frågan om att dela skärmen.</translation>
 <translation id="8757203080302669031">Aktiv sökning efter Bluetooth-enheter på fliken.</translation>
@@ -6234,7 +6227,6 @@ Spara nyckelfilen på ett säkert ställe. Den behövs om du ska skapa nya versi
 <translation id="8770406935328356739">Tilläggets rotkatalog</translation>
 <translation id="8770507190024617908">Hantera personer</translation>
 <translation id="8771300903067484968">Startsidans bakgrund har återställts till standardbakgrunden.</translation>
-<translation id="8771939407732945762">Ta bort nedladdat innehåll</translation>
 <translation id="8773302562181397928">Spara <ph name="PRINTER_NAME" /></translation>
 <translation id="8774379074441005279">Bekräfta återställning</translation>
 <translation id="8774934320277480003">Övre marginal</translation>

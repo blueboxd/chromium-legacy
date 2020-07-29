@@ -17,10 +17,11 @@
 #include "media/base/format_utils.h"
 #include "media/base/video_decoder_config.h"
 #include "media/base/video_frame_layout.h"
-#include "media/gpu/chromeos/platform_video_frame_utils.h"
+#include "media/filters/vp9_parser.h"
 #include "media/gpu/test/video.h"
 #include "media/gpu/test/video_frame_helpers.h"
 #include "media/mojo/common/mojo_shared_buffer_video_frame.h"
+#include "media/parsers/vp8_parser.h"
 #include "media/video/h264_parser.h"
 #include "mojo/public/cpp/system/buffer.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -319,8 +320,29 @@ bool EncodedDataHelper::HasConfigInfo(const uint8_t* data,
     }
 
     return nalu.nal_unit_type == H264NALU::kSPS;
-  } else if (profile >= VP8PROFILE_MIN && profile <= VP9PROFILE_MAX) {
-    return (size > 0 && !(data[0] & 0x01));
+  } else if (profile >= VP8PROFILE_MIN && profile <= VP8PROFILE_MAX) {
+    Vp8Parser parser;
+    Vp8FrameHeader frame_header;
+    if (!parser.ParseFrame(data, size, &frame_header)) {
+      // Let the VDA figure out there's something wrong with the stream.
+      return false;
+    }
+    // Stream configuration is present in a keyframe in vp8.
+    return frame_header.IsKeyframe();
+  } else if (profile >= VP9PROFILE_MIN && profile <= VP9PROFILE_MAX) {
+    Vp9Parser parser(false);
+    parser.SetStream(data, size, nullptr);
+    Vp9FrameHeader frame_header;
+    std::unique_ptr<DecryptConfig> null_config;
+    gfx::Size allocated_size;
+    Vp9Parser::Result result =
+        parser.ParseNextFrame(&frame_header, &allocated_size, &null_config);
+    if (result != Vp9Parser::kOk) {
+      // Let the VDA figure out there's something wrong with the stream.
+      return false;
+    }
+    // Stream configuration is present in a keyframe in vp9.
+    return frame_header.IsKeyframe();
   }
   // Shouldn't happen at this point.
   LOG(FATAL) << "Invalid profile: " << GetProfileName(profile);

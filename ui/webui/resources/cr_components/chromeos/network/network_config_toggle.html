@@ -23,7 +23,10 @@
 
     <div class="property-box" actionable>
       <div class="start">
-        [[label]]
+        <div aria-hidden="true">[[label]]</div>
+        <div id="sub-label" class="cr-secondary-text" aria-hidden="true">
+          [[subLabel]]
+        </div>
       </div>
       <template is="dom-if" if="[[policyOnLeft]]">
         <cr-policy-network-indicator-mojo class="left"
@@ -32,7 +35,7 @@
       </template>
       <cr-toggle checked="{{checked}}"
           disabled="[[getDisabled_(disabled, property)]]"
-          aria-label$="[[label]]">
+          aria-label$="[[label]]" aria-describedby="sub-label">
       </cr-toggle>
       <template is="dom-if" if="[[!policyOnLeft]]">
         <cr-policy-network-indicator-mojo

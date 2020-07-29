@@ -31,7 +31,7 @@ component("gpu") {
     "//chromecast/*",
     "//components/arc/mojom:media",
     "//components/arc/mojom:media_mojolpm",
-    "//components/arc/video_accelerator",
+    "//components/arc/video_accelerator:common",
     "//components/mirroring/service:mirroring_service",
     "//components/chromeos_camera/*",
     "//components/viz/service/main",
@@ -270,6 +270,11 @@ source_set("common") {
     "vp9_reference_frame_vector.h",
   ]
 
+  visibility = [
+    ":gpu",
+    "//media/gpu/*",
+  ]
+
   # TODO(crbug.com/1006266): consider using |use_chromeos_video_acceleration|.
   if (use_v4l2_codec || use_vaapi) {
     sources += [
@@ -357,7 +362,6 @@ if (is_android) {
 
     deps = [
       ":android_video_decode_accelerator_unittests",
-      ":common",
       ":gpu",
       "//base",
       "//base/test:test_support",
@@ -414,7 +418,6 @@ source_set("android_video_decode_accelerator_unittests") {
       "android/video_frame_factory_impl_unittest.cc",
     ]
     deps = [
-      ":common",
       ":gpu",
       "//base/test:test_support",
       "//gpu:test_support",

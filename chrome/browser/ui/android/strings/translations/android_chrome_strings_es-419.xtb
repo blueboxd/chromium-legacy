@@ -242,7 +242,6 @@ Para buscar una palabra, mantenla presionada. Si quieres definir mejor la búsqu
 <translation id="2905036901251765993">Para permitir el uso compartido con personas cercanas, permíteles que escaneen este código QR</translation>
 <translation id="2909615210195135082">Plataforma de notificaciones de Google</translation>
 <translation id="2923908459366352541">El nombre no es válido</translation>
-<translation id="2927707377793151377">Elegir otro proveedor:</translation>
 <translation id="2932150158123903946">Almacenamiento de Google <ph name="APP_NAME" /></translation>
 <translation id="2942036813789421260">Se cerró la pestaña de vista previa</translation>
 <translation id="2956410042958133412"><ph name="PARENT_NAME_1" /> y <ph name="PARENT_NAME_2" /> administran esta cuenta.</translation>
@@ -1024,7 +1023,7 @@ Por ejemplo, algunos sitios web pueden responder a la solicitud mediante anuncio
 <translation id="9100610230175265781">Se necesita una frase de contraseña.</translation>
 <translation id="9102803872260866941">Está abierta la pestaña de vista previa</translation>
 <translation id="9104217018994036254">Lista de dispositivos con los que se puede compartir una pestaña.</translation>
-<translation id="9104402662006063371">Ir al modo Incógnito</translation>
+<translation id="9104402662006063371">Usar el modo Incógnito</translation>
 <translation id="9108312223223904744">Asistencia del teléfono como llave de seguridad</translation>
 <translation id="9108808586816295166">Es posible que el DNS seguro no esté disponible en todo momento</translation>
 <translation id="9133397713400217035">Explorar sin conexión</translation>

@@ -120,6 +120,15 @@ void RecordAssistiveDisabledReasonForEmoji(DisabledReason reason) {
   base::UmaHistogramEnumeration("InputMethod.Assistive.Disabled.Emoji", reason);
 }
 
+void RecordAssistiveUserPrefForPersonalInfo(bool value) {
+  base::UmaHistogramBoolean("InputMethod.Assistive.UserPref.PersonalInfo",
+                            value);
+}
+
+void RecordAssistiveUserPrefForEmoji(bool value) {
+  base::UmaHistogramBoolean("InputMethod.Assistive.UserPref.Emoji", value);
+}
+
 void RecordAssistiveCoverage(AssistiveType type) {
   base::UmaHistogramEnumeration("InputMethod.Assistive.Coverage", type);
 }
@@ -208,7 +217,12 @@ AssistiveSuggester::AssistiveSuggester(InputMethodEngine* engine,
                                        Profile* profile)
     : profile_(profile),
       personal_info_suggester_(engine, profile),
-      emoji_suggester_(engine, profile) {}
+      emoji_suggester_(engine, profile) {
+  RecordAssistiveUserPrefForPersonalInfo(
+      profile_->GetPrefs()->GetBoolean(prefs::kAssistPersonalInfoEnabled));
+  RecordAssistiveUserPrefForEmoji(
+      profile_->GetPrefs()->GetBoolean(prefs::kEmojiSuggestionEnabled));
+}
 
 bool AssistiveSuggester::IsAssistiveFeatureEnabled() {
   return IsAssistPersonalInfoEnabled() || IsEmojiSuggestAdditionEnabled();

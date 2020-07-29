@@ -1924,7 +1924,6 @@
 <translation id="3371140690572404006">USB-C ডিভাইস (ডান দিকের সামনের পোর্ট)</translation>
 <translation id="337286756654493126">আপনি অ্যাপ্লিকেশানটিতে খোলেন এমন ফোল্ডারগুলি পড়ে</translation>
 <translation id="3378572629723696641">এই এক্সটেনশনটি হয়ত ক্ষতিগ্রস্ত হয়েছে৷</translation>
-<translation id="3379169026479470857">DLC সরান</translation>
 <translation id="337920581046691015"><ph name="PRODUCT_NAME" /> ইনস্টল করা হবে৷</translation>
 <translation id="3380365263193509176">অজানা ত্রুটি</translation>
 <translation id="3382073616108123819">ওহো! সিস্টেমটি এই ডিভাইসের জন্য ডিভাইস শনাক্তকারী নির্ধারণ করতে ব্যর্থ হয়েছে৷</translation>
@@ -2379,6 +2378,7 @@
 <translation id="3882165008614329320">ক্যামেরা বা ফাইলে আগে থেকে থাকা ভিডিও</translation>
 <translation id="3886446263141354045">এই সাইটটি অ্যাক্সেস করার জন্য আপনার অনুরোধ <ph name="NAME" />কে পাঠানো হয়েছে</translation>
 <translation id="3888550877729210209"><ph name="LOCK_SCREEN_APP_NAME" /> ব্যবহার করে নোট নেওয়া হচ্ছে</translation>
+<translation id="3891563564777705449">{0,plural, =1{১ সপ্তাহের মধ্যে ডিভাইস আপডেট করুন}one{# সপ্তাহের মধ্যে ডিভাইস আপডেট করুন}other{# সপ্তাহের মধ্যে ডিভাইস আপডেট করুন}}</translation>
 <translation id="3892414795099177503">OpenVPN / L2TP যোগ করুন...</translation>
 <translation id="3893536212201235195">আপনার অ্যাক্সেসিবিলিটি সেটিংস পড়ুন ও পরিবর্তন করুন</translation>
 <translation id="3893630138897523026">ChromeVox (কথ্য প্রতিবার্তা)</translation>
@@ -2609,14 +2609,12 @@
 <translation id="4175137578744761569">হালকা বেগুনি ও সাদা</translation>
 <translation id="4175737294868205930">অনবরত স্টোরেজ</translation>
 <translation id="4176463684765177261">অক্ষম হয়েছে</translation>
-<translation id="418031202593299965">এই ডিভাইসে অন্যান্য ব্যবহারকারীর সাথে এই উপাদানগুলি শেয়ার করা হয়েছে। উপাদানগুলি সরিয়ে দিলে অন্যান্য ব্যবহারকারীর উপর তার প্রভাব পড়তে পারে।</translation>
 <translation id="4180788401304023883">CA সার্টিফিকেট "<ph name="CERTIFICATE_NAME" />" মুছবেন?</translation>
 <translation id="4181602000363099176">২০x</translation>
 <translation id="4181841719683918333">ভাষাসমূহ</translation>
 <translation id="4184885522552335684">কোনো প্রদর্শন সরাতে টেনে আনুন</translation>
 <translation id="4187424053537113647"><ph name="APP_NAME" /> সেট-আপ করা হচ্ছে...</translation>
 <translation id="4190828427319282529">কীবোর্ডের ফোকাস হাইলাইট করুন</translation>
-<translation id="4191805472951276951">ডাউনলোড করা কন্টেন্ট (DLC)</translation>
 <translation id="4194570336751258953">ট্যাপ-টু-ক্লিক চালু করুন</translation>
 <translation id="4195643157523330669">নতুন ট্যাবে খুলুন</translation>
 <translation id="4195814663415092787">আপনি যেখানে ছেডেছেন সেখান থেকে চালিয়ে যান</translation>
@@ -3035,7 +3033,6 @@
 <translation id="4756388243121344051">&amp;ইতিহাস</translation>
 <translation id="4759238208242260848">ডাউনলোড</translation>
 <translation id="4761104368405085019">আপনার মাইক্রোফোন ব্যবহার করুন</translation>
-<translation id="4762055672525936226">ডাউনলোড করা কন্টেন্ট মুছুন</translation>
 <translation id="4762718786438001384">ডিভাইসের ডিস্কের স্থান আশংকাজনকভাবে কম</translation>
 <translation id="4763408175235639573">আপনি যখন এই পৃষ্ঠাটি দেখেছিলেন তখন নিম্নোক্ত কুকিগুলি সেট হয়েছিল</translation>
 <translation id="4765582662863429759">Android Messages-কে আপনার ফোন থেকে Chromebook-এ টেক্সট রিলে করতে অনুমতি দেয়</translation>
@@ -3289,7 +3286,6 @@
 <translation id="5094721898978802975">সহযোগী ন্যাটিভ অ্যাপ্লিকেশানগুলির সাথে যোগাযোগ করুন</translation>
 <translation id="5097002363526479830">'<ph name="NAME" />': <ph name="DETAILS" /> নেটওয়ার্কে সংযোগ করা গেল না </translation>
 <translation id="5097874180538493929">কার্সর থেমে যাওয়া মাত্রই অটোমেটিক ক্লিক করুন</translation>
-<translation id="5098800418125334616">ডাউনলোড করা কন্টেন্ট ম্যানেজ করুন</translation>
 <translation id="5101042277149003567">সব বুকমার্ক খুলুন</translation>
 <translation id="5101839224773798795">মাউস কার্সার বন্ধ হয়ে গেলে অটোমেটিক ক্লিক হবে</translation>
 <translation id="5107443654503185812">একটি এক্সটেনশন Safe Browsing বন্ধ করে দিয়েছে</translation>
@@ -4169,7 +4165,6 @@
 <translation id="6198102561359457428">সাইন-আউট করুন করে আবার সাইন-ইন করুন...</translation>
 <translation id="6198252989419008588">পিন পরিবর্তন করুন</translation>
 <translation id="6202304368170870640">আপনি পিন ব্যবহার করে ডিভাইসে সাইন-ইন করতে বা ডিভাইস আনলক করতে পারেন।</translation>
-<translation id="6202517672944764518">ডাউনলোড করা কন্টেন্ট</translation>
 <translation id="6206311232642889873">ছবি কপি করুন</translation>
 <translation id="6207200176136643843">ডিফল্ট জুমে রিসেট করুন</translation>
 <translation id="6207937957461833379">দেশ/অঞ্চল</translation>
@@ -4441,6 +4436,7 @@
 <translation id="6535331821390304775">এই ধরনের লিঙ্ককে এর সাথে যুক্ত অ্যাপে <ph name="ORIGIN" />-কে সবসময় খোলার অনুমতি দিন</translation>
 <translation id="654039047105555694"><ph name="BEGIN_BOLD" />দ্রষ্টব্য:<ph name="END_BOLD" /> আপনি যদি জানেন যে আপনি কি করছেন তাহলে সক্ষম করুন বা যদি আপনাকে এমনটি করতে বলা হয়ে থাকে, তাহলে মনে রাখবেন যে ডেটা সংগ্রহ কর্মক্ষমতাকে হ্রাস করতে পারে৷</translation>
 <translation id="6541638731489116978">আপনার মোশন সেন্সর ব্যবহার করা থেকে এই সাইটকে ব্লক করা হয়েছে।</translation>
+<translation id="6545407738986370057">{0,plural, =1{১ সপ্তাহের মধ্যে ডিভাইস ফেরত দিন}one{# সপ্তাহের মধ্যে ডিভাইস ফেরত দিন}other{# সপ্তাহের মধ্যে ডিভাইস ফেরত দিন}}</translation>
 <translation id="6545665334409411530">পুনরাবৃত্তির হার</translation>
 <translation id="6545864417968258051">ব্লুটুথ স্ক্যানিং</translation>
 <translation id="6545867563032584178">Mac-এর সিস্টেম অভিরুচিতে মাইক্রোফোন বন্ধ করা আছে</translation>
@@ -6126,7 +6122,6 @@
 <translation id="8652400352452647993">প্যাক এক্সটেনশনে সমস্যা হয়েছে</translation>
 <translation id="8654151524613148204">আপনার কম্পিউটারের পক্ষে ফাইলটি পরিচালনা করার জন্য অত্যন্ত বড়৷ দুঃখিত৷</translation>
 <translation id="8655295600908251630">চ্যানেল</translation>
-<translation id="8655319619291175901">ওহো, কিছু সমস্যা হয়েছে৷</translation>
 <translation id="8655972064210167941">আপনার পাসওয়ার্ড যাচাই করতে না পারায় সাইন-ইন করা যায়নি। অনুগ্রহ করে আপনার অ্যাডমিনিস্ট্রেটরের সাথে যোগাযোগ করুন অথবা আবার চেষ্টা করুন।</translation>
 <translation id="8656768832129462377">চেক করবেন না</translation>
 <translation id="8658645149275195032"><ph name="APP_NAME" /> <ph name="TAB_NAME" /> এর সঙ্গে আপনার স্ক্রিন এবং অডিও শেয়ার করছে।</translation>
@@ -6215,7 +6210,6 @@
           &lt;p&gt;কিন্তু আপনি এখনও কম্যান্ড লাইনের মাধ্যমে কনফিগার করতে পারেন৷ ফ্ল্যাগ ও বিভিন্ন পরিবেশের উপর আরও তথ্যের জন্য অনুগ্রহ করে &lt;code&gt;ম্যানুয়াল <ph name="PRODUCT_BINARY_NAME" />&lt;/code&gt; দেখুন।&lt;/p&gt;</translation>
 <translation id="8755175579224030324">আপনার সংস্থার জন্য সুরক্ষা সম্পর্কিত টাস্ক সম্পূর্ণ করুন, যেমন ডিভাইসে সেভ করা সার্টিফিকেট এবং কী ম্যানেজ করা</translation>
 <translation id="8755376271068075440">&amp;বৃহত্তর</translation>
-<translation id="8756143264090841047">DLC মুছুন</translation>
 <translation id="8756969031206844760">পাসওয়ার্ড আপডেট করবেন?</translation>
 <translation id="8757090071857742562">ডেস্কটপ কাস্ট করতে করা যায়নি। আপনি আপনার স্ক্রিন শেয়ার করা শুরু করার জন্য প্রম্পটটি নিশ্চিত করেছেন কিনা তা দেখুন।</translation>
 <translation id="8757203080302669031">এই ট্যাবটি কোথায় ব্লুটুথ ডিভাইস আছে তা খুঁজে বার করতে অনবরত স্ক্যান করে যাচ্ছে।</translation>
@@ -6230,7 +6224,6 @@
 <translation id="8770406935328356739">এক্সটেনশান রুট ডিরেক্টরি</translation>
 <translation id="8770507190024617908">ব্যক্তিগণকে পরিচালনা করুন</translation>
 <translation id="8771300903067484968">স্টার্ট পেজের ব্যাকগ্রাউন্ড ডিফল্ট ব্যাকগ্রাউন্ডে রিসেট করা হয়েছে।</translation>
-<translation id="8771939407732945762">ডাউনলোড করা কন্টেন্ট সরান</translation>
 <translation id="8773302562181397928"><ph name="PRINTER_NAME" /> সেভ করুন</translation>
 <translation id="8774379074441005279">ফিরিয়ে আনতে কনফার্ম করুন</translation>
 <translation id="8774934320277480003">শীর্ষ মার্জিন</translation>

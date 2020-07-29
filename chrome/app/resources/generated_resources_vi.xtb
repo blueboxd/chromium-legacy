@@ -408,7 +408,7 @@
 <translation id="1500297251995790841">Thiết bị không xác định [<ph name="VENDOR_ID" />:<ph name="PRODUCT_ID" />]</translation>
 <translation id="1503394326855300303">Tài khoản của chủ sở hữu này phải là tài khoản đăng nhập đầu tiên trong phiên đăng nhập nhiều tài khoản.</translation>
 <translation id="150411034776756821">Xóa <ph name="SITE" /></translation>
-<translation id="1504551620756424144">Thư mục dùng chung có sẵn trong Windows tại <ph name="BASE_DIR" />.</translation>
+<translation id="1504551620756424144">Bạn có thể truy cập thư mục dùng chung trong Windows tại <ph name="BASE_DIR" />.</translation>
 <translation id="1506061864768559482">Công cụ tìm kiếm</translation>
 <translation id="1507170440449692343">Trang này đã bị chặn truy cập máy ảnh của bạn.</translation>
 <translation id="1507246803636407672">&amp;Hủy</translation>
@@ -1925,7 +1925,6 @@ Bạn có thể quản lý các tùy chọn cài đặt của tài khoản này 
 <translation id="3371140690572404006">Thiết bị USB-C (cổng phía trước, bên phải)</translation>
 <translation id="337286756654493126">Đọc thư mục mà bạn mở trong ứng dụng</translation>
 <translation id="3378572629723696641">Tiện ích này có thể đã bị hỏng.</translation>
-<translation id="3379169026479470857">Xóa DLC</translation>
 <translation id="337920581046691015"><ph name="PRODUCT_NAME" /> sẽ được cài đặt.</translation>
 <translation id="3380365263193509176">Lỗi không xác định</translation>
 <translation id="3382073616108123819">Rất tiếc! Hệ thống không thể xác định số nhận dạng thiết bị cho thiết bị này.</translation>
@@ -2380,6 +2379,7 @@ Bạn có thể quản lý các tùy chọn cài đặt của tài khoản này 
 <translation id="3882165008614329320">Video hiện có từ camera hoặc tệp</translation>
 <translation id="3886446263141354045">Yêu cầu truy cập trang web này của bạn đã được gửi tới <ph name="NAME" /></translation>
 <translation id="3888550877729210209">Ghi chú bằng <ph name="LOCK_SCREEN_APP_NAME" /></translation>
+<translation id="3891563564777705449">{0,plural, =1{Cập nhật thiết bị trong vòng 1 tuần}other{Cập nhật thiết bị trong vòng # tuần}}</translation>
 <translation id="3892414795099177503">Thêm OpenVPN / L2TP...</translation>
 <translation id="3893536212201235195">Đọc và thay đổi cài đặt khả năng truy cập của bạn</translation>
 <translation id="3893630138897523026">ChromeVox (phản hồi bằng giọng nói)</translation>
@@ -2611,14 +2611,12 @@ Bạn có thể quản lý các tùy chọn cài đặt của tài khoản này 
 <translation id="4175137578744761569">Tím nhạt và trắng</translation>
 <translation id="4175737294868205930">Bộ nhớ liên tục</translation>
 <translation id="4176463684765177261">Đã tắt</translation>
-<translation id="418031202593299965">Các thành phần này được chia sẻ với những người khác dùng thiết bị này. Nếu bạn xóa thành phần, những người dùng khác có thể bị ảnh hưởng.</translation>
 <translation id="4180788401304023883">Xóa chứng chỉ CA "<ph name="CERTIFICATE_NAME" />"?</translation>
 <translation id="4181602000363099176">20x</translation>
 <translation id="4181841719683918333">Ngôn ngữ</translation>
 <translation id="4184885522552335684">Kéo để di chuyển màn hình</translation>
 <translation id="4187424053537113647">Đang thiết lập <ph name="APP_NAME" />...</translation>
 <translation id="4190828427319282529">Làm nổi tâm điểm trên bàn phím</translation>
-<translation id="4191805472951276951">DLC</translation>
 <translation id="4194570336751258953">Cho phép gõ để nhấp</translation>
 <translation id="4195643157523330669">Mở trong thẻ mới</translation>
 <translation id="4195814663415092787">Tiếp tục từ nơi bạn đã dừng lại</translation>
@@ -3037,7 +3035,6 @@ Bạn có thể quản lý các tùy chọn cài đặt của tài khoản này 
 <translation id="4756388243121344051">&amp;Lịch sử</translation>
 <translation id="4759238208242260848">Tệp đã tải xuống</translation>
 <translation id="4761104368405085019">Sử dụng micrô của bạn</translation>
-<translation id="4762055672525936226">Xóa nội dung đã tải xuống</translation>
 <translation id="4762718786438001384">Dung lượng đĩa của thiết bị quá thấp</translation>
 <translation id="4763408175235639573">Các cookie sau đã được cài đặt khi bạn xem trang này</translation>
 <translation id="4765582662863429759">Cho phép Android Messages chuyển tiếp tin nhắn văn bản từ điện thoại sang Chromebook</translation>
@@ -3291,7 +3288,6 @@ Bạn có thể quản lý các tùy chọn cài đặt của tài khoản này 
 <translation id="5094721898978802975">Kết nối với ứng dụng gốc hợp tác</translation>
 <translation id="5097002363526479830">Không thể kết nối với mạng '<ph name="NAME" />': <ph name="DETAILS" /></translation>
 <translation id="5097874180538493929">Tự động nhấp khi con trỏ dừng lại</translation>
-<translation id="5098800418125334616">Quản lý nội dung đã tải xuống</translation>
 <translation id="5101042277149003567">Mở tất cả dấu trang</translation>
 <translation id="5101839224773798795">Tự động nhấp chuột khi con trỏ dừng lại</translation>
 <translation id="5107443654503185812">Một tiện ích đã tắt tính năng Duyệt web an toàn</translation>
@@ -4169,7 +4165,6 @@ Bạn có thể quản lý các tùy chọn cài đặt của tài khoản này 
 <translation id="6198102561359457428">Đăng xuất rồi đăng nhập lại...</translation>
 <translation id="6198252989419008588">Thay đổi mã PIN</translation>
 <translation id="6202304368170870640">Bạn có thể sử dụng mã PIN để đăng nhập hoặc mở khóa thiết bị của mình.</translation>
-<translation id="6202517672944764518">Nội dung đã tải xuống</translation>
 <translation id="6206311232642889873">Sao ché&amp;p Hình ảnh</translation>
 <translation id="6207200176136643843">Đặt lại về mức thu phóng mặc định</translation>
 <translation id="6207937957461833379">Quốc gia/vùng</translation>
@@ -4441,6 +4436,7 @@ Bạn có thể quản lý các tùy chọn cài đặt của tài khoản này 
 <translation id="6535331821390304775">Luôn cho phép <ph name="ORIGIN" /> mở loại đường liên kết này trong ứng dụng liên kết</translation>
 <translation id="654039047105555694"><ph name="BEGIN_BOLD" />Lưu ý:<ph name="END_BOLD" /> Chỉ bật nếu bạn biết mình đang làm gì hoặc nếu bạn đã được yêu cầu bật vì việc thu thập dữ liệu có thể giảm hiệu suất hoạt động.</translation>
 <translation id="6541638731489116978">Trang web này đã bị chặn sử dụng cảm biến chuyển động.</translation>
+<translation id="6545407738986370057">{0,plural, =1{Trả lại thiết bị trong vòng 1 tuần}other{Trả lại thiết bị trong vòng # tuần}}</translation>
 <translation id="6545665334409411530">Tốc độ lặp lại</translation>
 <translation id="6545864417968258051">Quét tìm Bluetooth</translation>
 <translation id="6545867563032584178">Micrô ở trạng thái tắt trong System Preferences (Tùy chọn hệ thống) trên máy Mac</translation>
@@ -6128,7 +6124,6 @@ Giữ tệp khóa của bạn ở nơi an toàn. Bạn sẽ cần tệp khóa đ
 <translation id="8652400352452647993">Lỗi đóng gói tiện ích</translation>
 <translation id="8654151524613148204">Rất tiếc, tệp quá lớn để máy tính của bạn có thể xử lý.</translation>
 <translation id="8655295600908251630">Kênh</translation>
-<translation id="8655319619291175901">Rất tiếc, đã xảy ra lỗi.</translation>
 <translation id="8655972064210167941">Đăng nhập không thành công vì không thể xác minh mật khẩu của bạn. Vui lòng liên hệ với quản trị viên của bạn hoặc thử lại.</translation>
 <translation id="8656768832129462377">Không kiểm tra</translation>
 <translation id="8658645149275195032"><ph name="APP_NAME" /> đang chia sẻ màn hình và âm thanh của bạn với <ph name="TAB_NAME" />.</translation>
@@ -6217,7 +6212,6 @@ Giữ tệp khóa của bạn ở nơi an toàn. Bạn sẽ cần tệp khóa đ
           &lt;p&gt;Tuy nhiên, bạn vẫn có thể định cấu hình qua dòng lệnh.  Hãy xem  &lt;code&gt;man <ph name="PRODUCT_BINARY_NAME" />&lt;/code&gt; để biết thêm thông tin về cờ và biến môi trường.&lt;/p&gt;</translation>
 <translation id="8755175579224030324">Thực hiện các nhiệm vụ liên quan đến bảo mật cho tổ chức bạn, chẳng hạn như quản lý các chứng chỉ và khóa lưu trữ trên thiết bị</translation>
 <translation id="8755376271068075440">&amp;Lớn hơn</translation>
-<translation id="8756143264090841047">Xóa DLC</translation>
 <translation id="8756969031206844760">Bạn có muốn cập nhật mật khẩu không?</translation>
 <translation id="8757090071857742562">Không thể truyền màn hình nền.  Kiểm tra xem bạn đã xác nhận lời nhắc để bắt đầu chia sẻ màn hình hay chưa.</translation>
 <translation id="8757203080302669031">Thẻ này đang tích cực quét tìm các thiết bị Bluetooth.</translation>
@@ -6232,7 +6226,6 @@ Giữ tệp khóa của bạn ở nơi an toàn. Bạn sẽ cần tệp khóa đ
 <translation id="8770406935328356739">Thư mục gốc của tiện ích</translation>
 <translation id="8770507190024617908">Quản lý mọi người</translation>
 <translation id="8771300903067484968">Nền của trang bắt đầu đã được đặt lại thành nền mặc định.</translation>
-<translation id="8771939407732945762">Xóa nội dung đã tải xuống</translation>
 <translation id="8773302562181397928">Lưu <ph name="PRINTER_NAME" /></translation>
 <translation id="8774379074441005279">Xác nhận khôi phục</translation>
 <translation id="8774934320277480003">Lề trên</translation>

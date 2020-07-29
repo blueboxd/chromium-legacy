@@ -104,6 +104,7 @@
 <translation id="1853692000353488670">Ny inkognitofane</translation>
 <translation id="1856325424225101786">Vil du tilbakestille forenklet modus?</translation>
 <translation id="1868024384445905608">Chrome laster ned filer raskere nå</translation>
+<translation id="1874760110381325409">Du blir logget på med Google-kontoen din\n(dette medfører ikke at Chrome-synkronisering slås på)</translation>
 <translation id="1883903952484604915">Mine filer</translation>
 <translation id="1919950603503897840">Velg kontakter</translation>
 <translation id="1925021887439448749">Skriv inn en egendefinert nettadresse</translation>
@@ -227,6 +228,7 @@ Trykk og hold inne på et ord for å søke. For å finstemme søket, merk flere 
 <translation id="281504910091592009">Se og administrer lagrede passord i <ph name="BEGIN_LINK" />Google-kontoen<ph name="END_LINK" /> din</translation>
 <translation id="2818669890320396765">For å få bokmerkene dine på alle enhetene dine, logg på og slå på synkronisering</translation>
 <translation id="2827278682606527653">Feedkortmenyen er åpnet i halv høyde</translation>
+<translation id="2841216154655874070">{NUM_DAYS,plural, =1{Sjekket for 1 dag siden}other{Sjekket for # dager siden}}</translation>
 <translation id="2842985007712546952">Overordnet mappe</translation>
 <translation id="2860954141821109167">Kontrollér at en telefon-app er påslått på denne enheten</translation>
 <translation id="2870560284913253234">Nettsted</translation>
@@ -242,7 +244,6 @@ Trykk og hold inne på et ord for å søke. For å finstemme søket, merk flere 
 <translation id="2905036901251765993">For å dele med personer i nærheten, la dem skanne denne QR-koden</translation>
 <translation id="2909615210195135082">Google Notifications Platform</translation>
 <translation id="2923908459366352541">Navnet er ugyldig</translation>
-<translation id="2927707377793151377">Velg en annen leverandør:</translation>
 <translation id="2932150158123903946">Google <ph name="APP_NAME" />-lagring</translation>
 <translation id="2942036813789421260">Fanen for forhåndsvisning er lukket</translation>
 <translation id="2956410042958133412">Denne kontoen er administrert av <ph name="PARENT_NAME_1" /> og <ph name="PARENT_NAME_2" />.</translation>
@@ -592,7 +593,7 @@ For å endre denne innstillingen, <ph name="BEGIN_LINK" />tilbakestill synkronis
 <translation id="5723735397759933332">Forenklet modus sparer nå mer data ved å optimalisere bilder på HTTPS-sider.</translation>
 <translation id="5726692708398506830">Gjør alt på siden større</translation>
 <translation id="5732819098735351888">Nedlastingen starter når du er tilkoblet Wi-Fi.</translation>
-<translation id="5733983706093266635">Kan ikke opprette QR-koden. Nettadressen er lengre enn <ph name="CHARACTER_LIMIT" /> tegn.</translation>
+<translation id="5733983706093266635">Kan ikke lage QR-koden. Nettadressen er lengre enn <ph name="CHARACTER_LIMIT" /> tegn.</translation>
 <translation id="5748802427693696783">Byttet til standardfaner</translation>
 <translation id="5749068826913805084">Chrome må ha lagringstilgang for å laste ned filer.</translation>
 <translation id="5749237766298580851">Av <ph name="SEPARATOR" /> Anbefales ikke</translation>
@@ -703,6 +704,7 @@ Noen nettsteder kan for eksempel svare på denne forespørselen ved å vise deg 
 <translation id="6532866250404780454">Nettsteder du besøker i Chrome, vises ikke. Alle tidtakere for nettsteder blir slettet.</translation>
 <translation id="6534565668554028783">Google brukte for lang tid på å svare</translation>
 <translation id="6539092367496845964">Noe gikk galt. Prøv på nytt senere.</translation>
+<translation id="6541983376925655882">{NUM_HOURS,plural, =1{Sjekket for 1 time siden}other{Sjekket for # timer siden}}</translation>
 <translation id="6545017243486555795">Slett alle data</translation>
 <translation id="6560414384669816528">Søk med Sogou</translation>
 <translation id="656065428026159829">Se mer</translation>
@@ -734,6 +736,7 @@ Noen nettsteder kan for eksempel svare på denne forespørselen ved å vise deg 
 <translation id="6697492270171225480">Viser forslag for lignende sider når en side ikke kan finnes</translation>
 <translation id="6698801883190606802">Administrer synkroniserte data</translation>
 <translation id="6699370405921460408">Google-tjenere optimaliserer sidene du besøker.</translation>
+<translation id="670498945988402717">Sjekket i går</translation>
 <translation id="6710213216561001401">Forrige</translation>
 <translation id="671481426037969117">Tidtakeren for <ph name="FQDN" /> gikk ut. Den starter igjen i morgen.</translation>
 <translation id="6738867403308150051">Laster ned …</translation>
@@ -772,6 +775,7 @@ Noen nettsteder kan for eksempel svare på denne forespørselen ved å vise deg 
 <translation id="7063006564040364415">Kunne ikke koble til synkroniseringstjeneren.</translation>
 <translation id="7071521146534760487">Administrer kontoen</translation>
 <translation id="7077143737582773186">SD-kort</translation>
+<translation id="7080806333218412752">Sender nettadresser til Safe Browsing for å sjekke dem. Sender også et lite utvalg av sider, nedlastinger, utvidelsesaktivitet og systeminformasjon for å bidra til å oppdage nye trusler. Knytter disse dataene til Google-kontoen din midlertidig når du er pålogget, slik at du er beskyttet i alle Google-appene.</translation>
 <translation id="7121362699166175603">Tømmer loggen og fjerner autofullføringer i adressefeltet. Det kan hende Google-kontoen din har andre typer nettleserlogger på <ph name="BEGIN_LINK" />myactivity.google.com<ph name="END_LINK" />.</translation>
 <translation id="7128355412245153445">Se toppnettsteder og de siste nyhetssakene når du trykker på Hjem-knappen</translation>
 <translation id="7138678301420049075">Annet</translation>
@@ -781,6 +785,7 @@ Noen nettsteder kan for eksempel svare på denne forespørselen ved å vise deg 
 <translation id="7173114856073700355">Åpne Innstillinger</translation>
 <translation id="7177466738963138057">Du kan endre dette senere i Innstillinger</translation>
 <translation id="7180611975245234373">Last inn på nytt</translation>
+<translation id="7187993566681480880">Holder deg trygg i Chrome og kan brukes til å øke sikkerheten din i andre Google-apper når du er pålogget.</translation>
 <translation id="7189372733857464326">Venter på at Google Play Tjenester fullfører oppdateringen</translation>
 <translation id="7191430249889272776">En fane ble åpnet i bakgrunnen.</translation>
 <translation id="723171743924126238">Velg bilder</translation>
@@ -892,6 +897,7 @@ Noen nettsteder kan for eksempel svare på denne forespørselen ved å vise deg 
 <translation id="8027863900915310177">Velg hvor du vil laste ned til</translation>
 <translation id="8035133914807600019">Ny mappe</translation>
 <translation id="8037750541064988519"><ph name="DAYS" /> dager igjen</translation>
+<translation id="8037801708772278989">Sjekket nettopp</translation>
 <translation id="804335162455518893">Finner ikke SD-kort</translation>
 <translation id="805047784848435650">Basert på nettlesingsloggen din</translation>
 <translation id="8051695050440594747"><ph name="MEGABYTES" /> MB tilgjengelig</translation>
@@ -1032,6 +1038,7 @@ Noen nettsteder kan for eksempel svare på denne forespørselen ved å vise deg 
 <translation id="9137013805542155359">Vis original</translation>
 <translation id="9155898266292537608">Du kan også søke med et kjapt trykk på et ord</translation>
 <translation id="9169507124922466868">Navigasjonshistorikken er halvveis åpnet</translation>
+<translation id="9199368092038462496">{NUM_MINS,plural, =1{Sjekket for 1 minutt siden}other{Sjekket for # minutter siden}}</translation>
 <translation id="9204836675896933765">1 fil gjenstår</translation>
 <translation id="9206873250291191720">A</translation>
 <translation id="9209888181064652401">Kan ikke ringe</translation>

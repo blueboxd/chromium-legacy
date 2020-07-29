@@ -123,6 +123,7 @@
 <translation id="1430915738399379752">Печати</translation>
 <translation id="1442386063175183758">Десно превиткување како брошура</translation>
 <translation id="1442987760062738829">Дупки</translation>
+<translation id="1447067628680007684">(x86_64)</translation>
 <translation id="1453974140256777690">Текстот што ќе го залепите или приложите се испраќа до Google Cloud или трети страни за анализа. На пример, можеби ќе се скенира за да се провери дали содржи чувствителни податоци.</translation>
 <translation id="1455413310270022028">Гума за бришење</translation>
 <translation id="1462245070427461050">JIS B9</translation>
@@ -1145,6 +1146,7 @@
 <translation id="5705882733397021510">Врати се назад</translation>
 <translation id="57094364128775171">Предложи силна лозинка…</translation>
 <translation id="5710435578057952990">Идентитетот на сајтот не е потврден.</translation>
+<translation id="571403275720188526">(arm64)</translation>
 <translation id="5720705177508910913">Тековен корисник</translation>
 <translation id="5728056243719941842">C5 (плик)</translation>
 <translation id="5730040223043577876">Chrome препорачува ресетирање на лозинката ако повторно сте ја употребиле на други сајтови.</translation>
@@ -1194,6 +1196,7 @@
 <translation id="5921639886840618607">Да се зачува картичката на сметката на Google?</translation>
 <translation id="5922853866070715753">Речиси готово</translation>
 <translation id="5932224571077948991">Сајтот прикажува нападни или лажни реклами</translation>
+<translation id="5938793338444039872">Troy</translation>
 <translation id="5946937721014915347">Се отвора <ph name="SITE_NAME" />…</translation>
 <translation id="5951495562196540101">Не може да се регистрирате со сметка на потрошувач (достапна е вклучена лиценца).</translation>
 <translation id="5967592137238574583">Изменете ги информациите за контакт</translation>
@@ -1361,6 +1364,7 @@
 <translation id="6646269444027925224">{COUNT,plural, =0{Ниту еден}=1{Од 1 сајт (нема да ве одјавиме од сметката на Google)}one{Од # сајт (нема да ве одјавиме од сметката на Google)}other{Од # сајтови (нема да ве одјавиме од сметката на Google)}}</translation>
 <translation id="6652101503459149953">Користи Windows Hello</translation>
 <translation id="6657585470893396449">Лозинка</translation>
+<translation id="666259744093848177">(x86_64 преведен)</translation>
 <translation id="6665553082534466207">Три дупки десно</translation>
 <translation id="6671697161687535275">Да се отстранат предлозите за формулари од Chromium?</translation>
 <translation id="6685834062052613830">Одјавете се и завршете го поставувањето</translation>

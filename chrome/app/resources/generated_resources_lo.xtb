@@ -1923,7 +1923,6 @@
 <translation id="3371140690572404006">ອຸປະກອນ USB-C (ຊ່ອງທາງໜ້າເບື້ອງຂວາ)</translation>
 <translation id="337286756654493126">ອ່ານ​​ໂຟລ​ເດີ​ທີ່​ທ່ານ​ເປີດ​ໃນ​ແອ​ັບພະລິ​ເຄຊັນ</translation>
 <translation id="3378572629723696641">ສ່ວນຂະຫຍາຍນີ້ອາດຈະຖືກລົບກວນເສຍຫາຍ.</translation>
-<translation id="3379169026479470857">ລຶບ DLC ອອກ</translation>
 <translation id="337920581046691015"><ph name="PRODUCT_NAME" /> ຈະຖືກ​ຕິດ​ຕັ້ງ​.</translation>
 <translation id="3380365263193509176">ຄວາມຜິດພາດທີ່ບໍ່ຮູ້ຈັກ</translation>
 <translation id="3382073616108123819">ອຸ້ຍ!  ລະບົບກໍານົດຕົວລະບຸອຸປະກອນສໍາລັບອຸປະກອນນີ້ບໍ່ໄດ້.</translation>
@@ -2610,14 +2609,12 @@
 <translation id="4175137578744761569">ສີມ່ວງອ່ອນ ແລະ ສີຂາວ</translation>
 <translation id="4175737294868205930">ການຈັດເກັບຂໍ້ມູນຕໍ່ເນື່ອງ</translation>
 <translation id="4176463684765177261">ປິດໃຊ້ງານແລ້ວ</translation>
-<translation id="418031202593299965">ອົງປະກອບເຫຼົ່ານີ້ຖືກແບ່ງປັນກັບຜູ້ໃຊ້ອື່ນໃນອຸປະກອນນີ້. ການລຶບອົງປະກອບຕ່າງໆອອກອາດຈະສົ່ງຜົນກະທົບຕໍ່ກັບຜູ້ໃຊ້ອື່ນ.</translation>
 <translation id="4180788401304023883">ລຶບໃບຢັ້ງຢືນ CA "<ph name="CERTIFICATE_NAME" />" ບໍ?</translation>
 <translation id="4181602000363099176">20x</translation>
 <translation id="4181841719683918333">ພາສາ</translation>
 <translation id="4184885522552335684">ລາກເພື່ອຍ້າຍຈໍສະແດງຜົນ</translation>
 <translation id="4187424053537113647">ກຳລັງຕັ້ງຄ່າ <ph name="APP_NAME" />...</translation>
 <translation id="4190828427319282529">ໄຮໄລ້ໂຟກັສແປ້ນພິມ</translation>
-<translation id="4191805472951276951">DLC</translation>
 <translation id="4194570336751258953">ເປີດໃຊ້ງານແຕະເພື່ອຄລິກ</translation>
 <translation id="4195643157523330669">ເປີດຢູ່ໃນແຖບໃໝ່</translation>
 <translation id="4195814663415092787">ສືບ​ຕໍ່​ບ່ອນທີ່ທ່ານອອກໄປ</translation>
@@ -3036,7 +3033,6 @@
 <translation id="4756388243121344051">ປະຫວັດ</translation>
 <translation id="4759238208242260848">ດາວ​ໂຫຼດ</translation>
 <translation id="4761104368405085019">ໃຊ້ໄມໂຄຣໂຟນຂອງທ່ານ</translation>
-<translation id="4762055672525936226">ລຶບເນື້ອຫາທີ່ດາວໂຫຼດແລ້ວ</translation>
 <translation id="4762718786438001384">ພື້ນທີ່ດິສກ໌ໃນອຸປະກອນເຫຼືອໜ້ອຍທີ່ສຸດ</translation>
 <translation id="4763408175235639573">ຄຸກກີ້ຕໍ່ໄປນີ້ຖືກຕັ້ງຂຶ້ນ ເມື່ອທ່ານເບິ່ງໜ້ານີ້</translation>
 <translation id="4765582662863429759">ອະນຸຍາດໃຫ້ Android Messages ສົ່ງຕໍ່ຂໍ້ຄວາມຈາກໂທລະສັບຂອງທ່ານໄປໃສ່ Chromebook ທ່ານ</translation>
@@ -3290,7 +3286,6 @@
 <translation id="5094721898978802975">ສື່ສານກັບແອັບພລິເຄຊັນເດີມທີ່ຮ່ວມມື</translation>
 <translation id="5097002363526479830">​ເຊື່ອມ​ຕໍ່​ກັບ​ເຄືອ​ຂ່າຍບໍ່ໄດ້​ '<ph name="NAME" />': <ph name="DETAILS" /></translation>
 <translation id="5097874180538493929">ຄລິກໂດຍອັດຕະໂນມັດເມື່ອເຄີເຊີຢຸດ</translation>
-<translation id="5098800418125334616">ຈັດການເນື້ອຫາທີ່ດາວໂຫຼດ</translation>
 <translation id="5101042277149003567">ເປີດທຸກບຸກມາກ</translation>
 <translation id="5101839224773798795">ຄລິກອັດຕະໂນມັດເມື່ອເຄີເຊີຢຸດ</translation>
 <translation id="5107443654503185812">ສ່ວນຂະຫຍາຍໄດ້ປິດ Safe Browsing ແລ້ວ</translation>
@@ -4168,7 +4163,6 @@
 <translation id="6198102561359457428">ອອກຈາກລະບົບ ຈາກນັ້ນລົງຊື່ເຂົ້າ​ໃຊ້ອີກ...</translation>
 <translation id="6198252989419008588">ປ່ຽນ PIN</translation>
 <translation id="6202304368170870640">ທ່ານສາມາດໃຊ້ PIN ຂອງທ່ານເພື່ອເຂົ້າສູ່ລະບົບ ຫຼື ປົດລັອກອຸປະກອນຂອງທ່ານໄດ້.</translation>
-<translation id="6202517672944764518">ເນື້ອຫາທີ່ດາວໂຫຼດແລ້ວ</translation>
 <translation id="6206311232642889873">ກັອບປີ້ຮູບ</translation>
 <translation id="6207200176136643843">ຣີເຊັດເປັນລະດັບການຊູມເລີ່ມຕົ້ນ</translation>
 <translation id="6207937957461833379">ປະເທດ/ພາກພື້ນ</translation>
@@ -6126,7 +6120,6 @@
 <translation id="8652400352452647993">ສ່ວນຂະຫຍາຍແພັກຜິດພາດ</translation>
 <translation id="8654151524613148204">ໄຟລ໌ນີ້ໃຫຍ່ເກີນໄປທີ່ຄອມພິວເຕີຂອງທ່ານຈະຈັດການໄດ້. ຂໍອະໄພ.</translation>
 <translation id="8655295600908251630">ຊ່ອງ</translation>
-<translation id="8655319619291175901">ອຸ້ຍ, ມີບາງອັນຜິດພາດ.</translation>
 <translation id="8655972064210167941">ລົງຊື່ເຂົ້າໃຊ້​ບໍ່​ສຳ​ເລັດ ເພາະ​ວ່າ​ລະ​ຫັດ​ຜ່ານ​ຂອງ​ທ່ານ​ບໍ່​ສາ​ມາດ​ຢືນ​ຢັນ​ໄດ້. ກະ​ລຸ​ນາ​ຕິດ​ຕໍ່​ຜູ້ຄວບຄຸມຂອງທ່ານ ຫຼື ລອງໃໝ່ອີກ.</translation>
 <translation id="8656768832129462377">ຢ່າກວດເບິ່ງ</translation>
 <translation id="8658645149275195032"><ph name="APP_NAME" /> ກຳລັງແບ່ງປັນໜ້າຈໍ ແລະ ສຽງຂອງທ່ານກັບ <ph name="TAB_NAME" />.</translation>
@@ -6215,7 +6208,6 @@
           &lt;p&gt;ແຕ່ທ່ານຍັງສາມາດກຳ​ນົດຄ່າໄດ້ຜ່ານແຖວຄໍາສັ່ງ. ກະລຸນາເບິ່ງ &lt;code&gt;ຄູ່​ມື <ph name="PRODUCT_BINARY_NAME" />&lt;/code&gt; ສຳ​ລັບ​ຂໍ້​ມູນ​ເພີ່ມ​ເຕີມ​ກ່ຽວ​ກັບ​ທຸງ ແລະ​ຕົວ​ລັບ​ສະ​ພາບ​ແວດ​ລ້ອມ.&lt;/p&gt;</translation>
 <translation id="8755175579224030324">ດຳເນີນໜ້າວຽກທີ່ກ່ຽວຂ້ອງກັບຄວາມປອດໄພສຳລັບອົງການຂອງທ່ານ ເຊັ່ນ: ຈັດການໃບຮັບຮອງ ແລະ ລະຫັດທີ່ເກັບໄວ້ໃນອຸປະກອນ</translation>
 <translation id="8755376271068075440">&amp;ໃຫຍ່ກວ່າ</translation>
-<translation id="8756143264090841047">ລຶບ DLC</translation>
 <translation id="8756969031206844760">ອັບເດດລະຫັດຜ່ານບໍ?</translation>
 <translation id="8757090071857742562">ບໍ່ສາມາດສົ່ງສັນຍານເດັກສະທັອບໄດ້.  ກວດເບິ່ງວ່າທ່ານໄດ້ຢືນຢັນການເຕືອນເພື່ອເລີ່ມການແບ່ງປັນໜ້າຈໍຂອງທ່ານແລ້ວ.</translation>
 <translation id="8757203080302669031">ແຖບນີ້ກຳລັງສະແກນຫາອຸປະກອນ Bluetooth ຢ່າງຈິງຈັງ.</translation>
@@ -6230,7 +6222,6 @@
 <translation id="8770406935328356739">ໄດເຣັກທໍຣີພື້ນຖານຂອງສ່ວນຂະຫຍາຍ</translation>
 <translation id="8770507190024617908">ຈັດການຜູ້ຄົນ</translation>
 <translation id="8771300903067484968">ພາບພື້ນຫຼັງຂອງໜ້າເລີ່ມຕົ້ນໄດ້ຖືກຣີເຊັດເປັນພາບພື້ນຫຼັງເລີ່ມຕົ້ນແລ້ວ.</translation>
-<translation id="8771939407732945762">ລຶບເນື້ອຫາທີ່ດາວໂຫລດມາອອກ</translation>
 <translation id="8773302562181397928">ບັນທຶກ <ph name="PRINTER_NAME" /></translation>
 <translation id="8774379074441005279">ຢືນຢັນກູ້ຄືນ</translation>
 <translation id="8774934320277480003">ຂອບເທິງ</translation>

@@ -213,41 +213,6 @@ void SetYuvPixmapsFromSizeInfo(SkPixmap* pixmap_y,
   pixmap_v->reset(v_decode_info, planes[SkYUVAIndex::kV_Index], v_width_bytes);
 }
 
-// Helper method to fill in |scaled_u_size| and |scaled_v_size| by computing
-// the mip level for each plane given the final raster dimensions and the
-// unscaled U and V plane sizes. Also takes in |draw_image| to compute the Y
-// plane mip level and DCHECK that the computed mip levels for U and V are
-// reasonable.
-//
-// TODO(crbug.com/915972): Assumes 420 subsampling and DCHECKs the size ratios.
-void ComputeMippedUVPlaneSizes(const gfx::Size& target_raster_size,
-                               const gfx::Size& unscaled_u_size,
-                               const gfx::Size& unscaled_v_size,
-                               const DrawImage& draw_image,
-                               gfx::Size* scaled_u_size,
-                               gfx::Size* scaled_v_size) {
-  DCHECK(scaled_u_size);
-  DCHECK(scaled_v_size);
-  DCHECK_EQ(unscaled_u_size, unscaled_v_size);
-  DCHECK_EQ((draw_image.paint_image().width() + 1) / 2,
-            unscaled_u_size.width());
-  const int uv_mip_level =
-      MipMapUtil::GetLevelForSize(unscaled_u_size, target_raster_size);
-  // Check that the chroma planes do not shrink *more* than the luma.
-  // At least for YUV420, they will shrink at most one mip level below luma,
-  // which avoids blurriness.
-  DCHECK_GE(uv_mip_level, 0);
-  if (CalculateUploadScaleMipLevel(draw_image) == 0) {
-    // If Y is not scaled, then U and V shouldn't be either.
-    DCHECK_EQ(uv_mip_level, 0);
-  } else {
-    DCHECK_EQ(CalculateUploadScaleMipLevel(draw_image) - 1, uv_mip_level);
-  }
-
-  *scaled_u_size = MipMapUtil::GetSizeForLevel(unscaled_u_size, uv_mip_level);
-  *scaled_v_size = *scaled_u_size;
-}
-
 // Estimates the byte size of the decoded data for an image that goes through
 // hardware decode acceleration. The actual byte size is only known once the
 // image is decoded in the service side because different drivers have different
@@ -420,23 +385,21 @@ bool DrawAndScaleImage(const DrawImage& draw_image,
                               decode_info, decode_pixmap.writable_addr());
 
     const SkImageInfo y_info_scaled = info.makeColorType(kGray_8_SkColorType);
-    // The target raster dimensions get passed through:
-    // |target_pixmap|.info() -> |pixmap|->info() -> |info| -> |y_info_scaled|
-    const gfx::Size target_raster_size(y_info_scaled.width(),
-                                       y_info_scaled.height());
-    gfx::Size unscaled_u_size(unscaled_pixmap_u.width(),
-                              unscaled_pixmap_u.height());
-    gfx::Size unscaled_v_size(unscaled_pixmap_v.width(),
-                              unscaled_pixmap_v.height());
-    gfx::Size scaled_u_size;
-    gfx::Size scaled_v_size;
-    ComputeMippedUVPlaneSizes(target_raster_size, unscaled_u_size,
-                              unscaled_v_size, draw_image, &scaled_u_size,
-                              &scaled_v_size);
-    const SkImageInfo u_info_scaled =
-        y_info_scaled.makeWH(scaled_u_size.width(), scaled_u_size.height());
-    const SkImageInfo v_info_scaled =
-        y_info_scaled.makeWH(scaled_v_size.width(), scaled_v_size.height());
+    const auto& yuva_sizes = yuva_size_info.fSizes;
+    DCHECK(yuva_sizes[SkYUVAIndex::kU_Index] ==
+           yuva_sizes[SkYUVAIndex::kV_Index]);
+
+    // Always promote scaled images to 4:4:4 to avoid blurriness. By using the
+    // same dimensions for the UV planes, we can avoid scaling them completely
+    // or at least avoid scaling the width.
+    //
+    // E.g., consider an original (100, 100) image scaled to mips level 1 (50%),
+    // the Y plane size will be (50, 50), but unscaled UV planes are already
+    // (50, 50) for 4:2:0, and (50, 100) for 4:2:2, so leaving them completely
+    // unscaled or only scaling the height for 4:2:2 has superior quality.
+    SkImageInfo u_info_scaled = y_info_scaled;
+    SkImageInfo v_info_scaled = y_info_scaled;
+
     const size_t y_plane_bytes = y_info_scaled.computeMinByteSize();
     const size_t u_plane_bytes = u_info_scaled.computeMinByteSize();
     DCHECK(!SkImageInfo::ByteSizeOverflowed(y_plane_bytes));
@@ -2384,19 +2347,6 @@ GpuImageDecodeCache::CreateImageData(const DrawImage& draw_image,
       mode != DecodedDataMode::kCpu && !image_larger_than_max_texture;
   // TODO(crbug.com/910276): Change after alpha support.
   if (is_yuv) {
-    const gfx::Size target_raster_size(image_info.width(), image_info.height());
-    gfx::Size unscaled_u_size(
-        target_yuva_size_info.fSizes[SkYUVAIndex::kU_Index].width(),
-        target_yuva_size_info.fSizes[SkYUVAIndex::kU_Index].height());
-    gfx::Size unscaled_v_size(
-        target_yuva_size_info.fSizes[SkYUVAIndex::kV_Index].width(),
-        target_yuva_size_info.fSizes[SkYUVAIndex::kV_Index].height());
-    gfx::Size scaled_u_size;
-    gfx::Size scaled_v_size;
-    ComputeMippedUVPlaneSizes(target_raster_size, unscaled_u_size,
-                              unscaled_v_size, draw_image, &scaled_u_size,
-                              &scaled_v_size);
-
     size_t y_size_bytes =
         target_yuva_size_info.fWidthBytes[SkYUVAIndex::kY_Index] *
         target_yuva_size_info.fSizes[SkYUVAIndex::kY_Index].height();

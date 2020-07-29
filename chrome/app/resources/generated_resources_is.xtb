@@ -1925,7 +1925,6 @@ Annars skaltu skrá þig út núna svo breytingarnar á þessum reikningi taki g
 <translation id="3371140690572404006">USB-C tæki (tengi hægra megin að framan)</translation>
 <translation id="337286756654493126">Lesa möppur sem þú opnar í forritinu</translation>
 <translation id="3378572629723696641">Þessi viðbót kann að vera skemmd.</translation>
-<translation id="3379169026479470857">Fjarlægja sótt efni</translation>
 <translation id="337920581046691015"><ph name="PRODUCT_NAME" /> verður sett upp.</translation>
 <translation id="3380365263193509176">Óþekkt villa</translation>
 <translation id="3382073616108123819">Úbbs! Kerfið gat ekki ákvarðað tækisauðkenni fyrir þetta tæki.</translation>
@@ -2612,14 +2611,12 @@ Annars skaltu skrá þig út núna svo breytingarnar á þessum reikningi taki g
 <translation id="4175137578744761569">Ljósfjólublár og hvítur</translation>
 <translation id="4175737294868205930">Langtímageymsla</translation>
 <translation id="4176463684765177261">Óvirkt</translation>
-<translation id="418031202593299965">Þessum íhlutum er deilt með öðrum notendum í þessu tæki. Ef íhlutir eru fjarlægðir gæti það haft áhrif á aðra notendur.</translation>
 <translation id="4180788401304023883">Eyða CA-vottorðinu „<ph name="CERTIFICATE_NAME" />“?</translation>
 <translation id="4181602000363099176">20x</translation>
 <translation id="4181841719683918333">Tungumál</translation>
 <translation id="4184885522552335684">Dragðu til að færa skjá</translation>
 <translation id="4187424053537113647">Setur <ph name="APP_NAME" /> upp...</translation>
 <translation id="4190828427319282529">Merkja áherslusvæði lyklaborðs</translation>
-<translation id="4191805472951276951">SÓTT</translation>
 <translation id="4194570336751258953">Gera „ýta til að smella“ virkt</translation>
 <translation id="4195643157523330669">Opna í nýjum flipa</translation>
 <translation id="4195814663415092787">Halda áfram þaðan sem frá var horfið</translation>
@@ -3038,7 +3035,6 @@ Annars skaltu skrá þig út núna svo breytingarnar á þessum reikningi taki g
 <translation id="4756388243121344051">Ferill</translation>
 <translation id="4759238208242260848">Niðurhal</translation>
 <translation id="4761104368405085019">Nota hljóðnemann</translation>
-<translation id="4762055672525936226">Eyða sóttu efni</translation>
 <translation id="4762718786438001384">Allt of lítið geymslupláss er eftir á tækinu</translation>
 <translation id="4763408175235639573">Eftirfarandi fótspor voru vistuð þegar þú skoðaðir þessa síðu</translation>
 <translation id="4765582662863429759">Leyfir Android Messages að áframsenda skilaboð úr símanum þínum í Chromebook tækið þitt</translation>
@@ -3292,7 +3288,6 @@ Annars skaltu skrá þig út núna svo breytingarnar á þessum reikningi taki g
 <translation id="5094721898978802975">Eiga samskipti við sérhönnuð forrit í samstarfi</translation>
 <translation id="5097002363526479830">Mistókst að tengjast „<ph name="NAME" />“: <ph name="DETAILS" /></translation>
 <translation id="5097874180538493929">Smella sjálfkrafa þegar bendill stöðvast</translation>
-<translation id="5098800418125334616">Stjórna efni sem er sótt</translation>
 <translation id="5101042277149003567">Opna öll bókamerki</translation>
 <translation id="5101839224773798795">Smella sjálfkrafa þegar bendillinn stoppar</translation>
 <translation id="5107443654503185812">Viðbót hefur slökkt á öruggri vefskoðun</translation>
@@ -4170,7 +4165,6 @@ Annars skaltu skrá þig út núna svo breytingarnar á þessum reikningi taki g
 <translation id="6198102561359457428">Skráðu þig út og svo inn aftur...</translation>
 <translation id="6198252989419008588">Breyta PIN-númeri</translation>
 <translation id="6202304368170870640">Þú getur notað PIN-númerið til að skrá þig inn í tækið þitt eða taka það úr lás.</translation>
-<translation id="6202517672944764518">Sótt efni</translation>
 <translation id="6206311232642889873">Afrita m&amp;ynd</translation>
 <translation id="6207200176136643843">Stilla aftur á sjálfgefinn aðdrátt</translation>
 <translation id="6207937957461833379">Land/svæði</translation>
@@ -4488,6 +4482,7 @@ Annars skaltu skrá þig út núna svo breytingarnar á þessum reikningi taki g
 <translation id="6602956230557165253">Notaðu vinstri og hægri örvatakkana til að fletta.</translation>
 <translation id="6605847144724004692">Enginn notandi hefur gefið einkunn.</translation>
 <translation id="6607831829715835317">F&amp;leiri verkfæri</translation>
+<translation id="6608012008902909398">Sýna upplýsingar um hugbúnaðarathugun</translation>
 <translation id="6611972847767394631">Finndu flipana þína hér</translation>
 <translation id="6612358246767739896">Varið efni</translation>
 <translation id="6615455863669487791">Sýndu mér</translation>
@@ -6129,7 +6124,6 @@ Geymdu lykilskrána á öruggum stað. Þú þarft hana til að búa til nýjar 
 <translation id="8652400352452647993">Villa í pakkaviðbót</translation>
 <translation id="8654151524613148204">Skráin er of stór til að tölvan þín geti unnið með hana. Sorrí, Stína.</translation>
 <translation id="8655295600908251630">Rás</translation>
-<translation id="8655319619291175901">Úbbs, eitthvað fór úrskeiðis.</translation>
 <translation id="8655972064210167941">Innskráning mistókst vegna þess að ekki tókst að staðfesta aðgangsorðið. Hafðu samband við kerfisstjóra eða reyndu aftur.</translation>
 <translation id="8656768832129462377">Ekki athuga</translation>
 <translation id="8658645149275195032"><ph name="APP_NAME" /> deilir skjá og hljóði með <ph name="TAB_NAME" />.</translation>
@@ -6218,7 +6212,6 @@ Geymdu lykilskrána á öruggum stað. Þú þarft hana til að búa til nýjar 
           &lt;p&gt;Þú getur samt sem áður grunnstillt með skipanalínunni. Skoðaðu &lt;code&gt;man <ph name="PRODUCT_BINARY_NAME" />&lt;/code&gt; til að fá frekari upplýsingar um flögg og umhverfisbreytur.&lt;/p&gt;</translation>
 <translation id="8755175579224030324">Framkvæma öryggistengd verkefni fyrir fyrirtækið þitt, svo sem að stjórna vottorðum og lyklum sem geymd eru í tækinu</translation>
 <translation id="8755376271068075440">Stærri</translation>
-<translation id="8756143264090841047">Eyða sóttu efni</translation>
 <translation id="8756969031206844760">Uppfæra aðgangsorð?</translation>
 <translation id="8757090071857742562">Ekki er hægt að senda út skjáborð. Athugaðu hvort þú hefur samþykkt tilkynninguna um að byrja að deila skjánum þínum.</translation>
 <translation id="8757203080302669031">Þessi flipi er að leita að Bluetooth-tækjum</translation>
@@ -6233,7 +6226,6 @@ Geymdu lykilskrána á öruggum stað. Þú þarft hana til að búa til nýjar 
 <translation id="8770406935328356739">Rótarmappa viðbóta</translation>
 <translation id="8770507190024617908">Vinna með einstaklinga</translation>
 <translation id="8771300903067484968">Bakgrunnur upphafssíðu hefur verið endurstilltur á sjálfgefinn bakgrunn.</translation>
-<translation id="8771939407732945762">Fjarlægja sótt efni</translation>
 <translation id="8773302562181397928">Vista <ph name="PRINTER_NAME" /></translation>
 <translation id="8774379074441005279">Staðfesta endurheimt</translation>
 <translation id="8774934320277480003">Efri spássía</translation>

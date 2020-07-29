@@ -230,6 +230,10 @@ class COMPONENT_EXPORT(UI_BASE_IME) TextInputClient {
 #endif
 
 #if defined(OS_CHROMEOS)
+  // Return the start and end index of the autocorrect range. If non-existent,
+  // return an empty Range.
+  virtual gfx::Range GetAutocorrectRange() const = 0;
+
   // Return the location of the autocorrect range as a gfx::Rect object.
   // If gfx::Rect is empty, then the autocorrect character bounds have not been
   // set.

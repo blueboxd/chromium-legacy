@@ -197,7 +197,7 @@ class HeadlessProtocolBrowserTest
 // TODO(crbug.com/867447): The whole test suite is extremely flaky on Win dbg.
 // TODO(crbug.com/1086872): The whole test suite is flaky on Mac ASAN.
 #if (defined(OS_WIN) && !defined(NDEBUG)) || \
-    (defined(OS_MACOSX) && defined(ADDRESS_SANITIZER))
+    (defined(OS_MAC) && defined(ADDRESS_SANITIZER))
 #define HEADLESS_PROTOCOL_TEST(TEST_NAME, SCRIPT_NAME)                        \
   IN_PROC_BROWSER_TEST_F(HeadlessProtocolBrowserTest, DISABLED_##TEST_NAME) { \
     test_folder_ = "/protocol/";                                              \
@@ -219,7 +219,7 @@ HEADLESS_PROTOCOL_TEST(VirtualTimeInterrupt,
                        "emulation/virtual-time-interrupt.js")
 
 // Flaky on Linux, Mac & Win. TODO(crbug.com/930717): Re-enable.
-#if defined(OS_LINUX) || defined(OS_MACOSX) || defined(OS_WIN) || \
+#if defined(OS_LINUX) || defined(OS_MAC) || defined(OS_WIN) || \
     defined(OS_FUCHSIA)
 #define MAYBE_VirtualTimeCrossProcessNavigation \
   DISABLED_VirtualTimeCrossProcessNavigation
@@ -319,7 +319,7 @@ class HeadlessProtocolCompositorBrowserTest
 // rcl=5811aa08e60ba5ac7622f029163213cfbdb682f7&l=32
 // TODO(crbug.com/954398): Suite is timeout-flaky on Windows.
 // TODO(crbug.com/1020046): Suite is flaky on TSan Linux.
-#if defined(OS_MACOSX) || defined(OS_WIN) || \
+#if defined(OS_MAC) || defined(OS_WIN) || \
     (defined(OS_LINUX) && defined(THREAD_SANITIZER))
 #define HEADLESS_PROTOCOL_COMPOSITOR_TEST(TEST_NAME, SCRIPT_NAME) \
   IN_PROC_BROWSER_TEST_F(HeadlessProtocolCompositorBrowserTest,   \

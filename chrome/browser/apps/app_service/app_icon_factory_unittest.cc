@@ -9,12 +9,18 @@
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
 #include "base/files/scoped_temp_dir.h"
+#include "base/path_service.h"
 #include "base/run_loop.h"
 #include "cc/test/pixel_comparator.h"
 #include "cc/test/pixel_test_utils.h"
 #include "chrome/browser/apps/app_service/app_icon_factory.h"
 #include "content/public/test/browser_task_environment.h"
 #include "testing/gtest/include/gtest/gtest.h"
+
+#if defined(OS_CHROMEOS)
+#include "chrome/browser/chromeos/arc/icon_decode_request.h"
+#include "components/arc/mojom/intent_helper.mojom.h"
+#endif
 
 class AppIconFactoryTest : public testing::Test {
  public:
@@ -54,6 +60,20 @@ class AppIconFactoryTest : public testing::Test {
             base::Unretained(fallback_called), std::move(fallback_response)));
 
     run_loop_.Run();
+  }
+
+  std::string GetPngData(const std::string file_name) {
+    base::FilePath base_path;
+    std::string png_data_as_string;
+    CHECK(base::PathService::Get(base::DIR_SOURCE_ROOT, &base_path));
+    base::FilePath icon_file_path = base_path.AppendASCII("components")
+                                        .AppendASCII("test")
+                                        .AppendASCII("data")
+                                        .AppendASCII("arc")
+                                        .AppendASCII(file_name);
+    CHECK(base::PathExists(icon_file_path));
+    CHECK(base::ReadFileToString(icon_file_path, &png_data_as_string));
+    return png_data_as_string;
   }
 
  protected:
@@ -138,3 +158,121 @@ TEST_F(AppIconFactoryTest, LoadFromFileFallbackDoesNotReturn) {
   EXPECT_TRUE(fallback_called);
   EXPECT_FALSE(result.is_null());
 }
+
+#if defined(OS_CHROMEOS)
+TEST_F(AppIconFactoryTest, ArcNonAdaptiveIconToImageSkia) {
+  arc::IconDecodeRequest::DisableSafeDecodingForTesting();
+  std::string png_data_as_string = GetPngData("icon_100p.png");
+
+  arc::mojom::RawIconPngDataPtr icon = arc::mojom::RawIconPngData::New(
+      false,
+      std::vector<uint8_t>(png_data_as_string.begin(),
+                           png_data_as_string.end()),
+      std::vector<uint8_t>(), std::vector<uint8_t>());
+
+  bool callback_called = false;
+  apps::ArcRawIconPngDataToImageSkia(
+      std::move(icon), 100,
+      base::BindOnce(
+          [](bool* called, base::OnceClosure quit,
+             const gfx::ImageSkia& image) {
+            if (!image.isNull()) {
+              *called = true;
+            }
+            std::move(quit).Run();
+          },
+          base::Unretained(&callback_called), run_loop_.QuitClosure()));
+
+  run_loop_.Run();
+  EXPECT_TRUE(callback_called);
+}
+
+TEST_F(AppIconFactoryTest, ArcAdaptiveIconToImageSkia) {
+  arc::IconDecodeRequest::DisableSafeDecodingForTesting();
+  std::string png_data_as_string = GetPngData("icon_100p.png");
+
+  arc::mojom::RawIconPngDataPtr icon = arc::mojom::RawIconPngData::New(
+      true, std::vector<uint8_t>(),
+      std::vector<uint8_t>(png_data_as_string.begin(),
+                           png_data_as_string.end()),
+      std::vector<uint8_t>(png_data_as_string.begin(),
+                           png_data_as_string.end()));
+
+  bool callback_called = false;
+  apps::ArcRawIconPngDataToImageSkia(
+      std::move(icon), 100,
+      base::BindOnce(
+          [](bool* called, base::OnceClosure quit,
+             const gfx::ImageSkia& image) {
+            if (!image.isNull()) {
+              *called = true;
+            }
+            std::move(quit).Run();
+          },
+          base::Unretained(&callback_called), run_loop_.QuitClosure()));
+
+  run_loop_.Run();
+  EXPECT_TRUE(callback_called);
+}
+
+TEST_F(AppIconFactoryTest, ArcActivityIconsToImageSkias) {
+  arc::IconDecodeRequest::DisableSafeDecodingForTesting();
+  std::string png_data_as_string = GetPngData("icon_100p.png");
+
+  std::vector<arc::mojom::ActivityIconPtr> icons;
+  icons.emplace_back(
+      arc::mojom::ActivityIcon::New(arc::mojom::ActivityName::New("p0", "a0"),
+                                    100, 100, std::vector<uint8_t>()));
+  icons.emplace_back(arc::mojom::ActivityIcon::New(
+      arc::mojom::ActivityName::New("p0", "a0"), 100, 100,
+      std::vector<uint8_t>(),
+      arc::mojom::RawIconPngData::New(
+          false,
+          std::vector<uint8_t>(png_data_as_string.begin(),
+                               png_data_as_string.end()),
+          std::vector<uint8_t>(), std::vector<uint8_t>())));
+  icons.emplace_back(arc::mojom::ActivityIcon::New(
+      arc::mojom::ActivityName::New("p0", "a0"), 201, 201,
+      std::vector<uint8_t>(),
+      arc::mojom::RawIconPngData::New(
+          false,
+          std::vector<uint8_t>(png_data_as_string.begin(),
+                               png_data_as_string.end()),
+          std::vector<uint8_t>(), std::vector<uint8_t>())));
+  icons.emplace_back(arc::mojom::ActivityIcon::New(
+      arc::mojom::ActivityName::New("p1", "a1"), 100, 100,
+      std::vector<uint8_t>(),
+      arc::mojom::RawIconPngData::New(
+          true, std::vector<uint8_t>(),
+          std::vector<uint8_t>(png_data_as_string.begin(),
+                               png_data_as_string.end()),
+          std::vector<uint8_t>(png_data_as_string.begin(),
+                               png_data_as_string.end()))));
+
+  std::vector<gfx::ImageSkia> result;
+  bool callback_called = false;
+  apps::ArcActivityIconsToImageSkias(
+      icons, base::BindOnce(
+                 [](bool* called, std::vector<gfx::ImageSkia>* result,
+                    base::OnceClosure quit,
+                    const std::vector<gfx::ImageSkia>& images) {
+                   *called = true;
+                   for (auto image : images) {
+                     result->emplace_back(image);
+                   }
+                   std::move(quit).Run();
+                 },
+                 base::Unretained(&callback_called), base::Unretained(&result),
+                 run_loop_.QuitClosure()));
+  run_loop_.Run();
+
+  EXPECT_TRUE(callback_called);
+  EXPECT_EQ(4U, result.size());
+  if (result.size() == 4U) {
+    EXPECT_TRUE(result[0].isNull());
+    EXPECT_FALSE(result[1].isNull());
+    EXPECT_TRUE(result[2].isNull());
+    EXPECT_FALSE(result[3].isNull());
+  }
+}
+#endif

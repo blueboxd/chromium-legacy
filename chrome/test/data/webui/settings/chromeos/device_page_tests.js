@@ -561,7 +561,7 @@ cr.define('device_page_tests', function() {
       const reverseScrollToggle =
           pointersPage.$$('#enableReverseScrollingToggle');
       assertEquals(expected, reverseScrollToggle.checked);
-      expectNotEquals(
+      expectEquals(
           expected, devicePage.prefs.settings.touchpad.natural_scroll.value);
     }
 
@@ -665,7 +665,7 @@ cr.define('device_page_tests', function() {
       });
 
       test('link doesn\'t activate control', function() {
-        expectReverseScrollValue(pointersPage, true);
+        expectReverseScrollValue(pointersPage, false);
 
         // Tapping the link shouldn't enable the radio button.
         const reverseScrollLabel =
@@ -675,22 +675,22 @@ cr.define('device_page_tests', function() {
         // Prevent actually opening a link, which would block test.
         a.removeAttribute('href');
         a.click();
-        expectReverseScrollValue(pointersPage, true);
+        expectReverseScrollValue(pointersPage, false);
 
         // Check specifically clicking toggle changes pref.
         const reverseScrollToggle =
             pointersPage.$$('#enableReverseScrollingToggle');
         reverseScrollToggle.click();
-        expectReverseScrollValue(pointersPage, false);
-        devicePage.set('prefs.settings.touchpad.natural_scroll.value', false);
         expectReverseScrollValue(pointersPage, true);
+        devicePage.set('prefs.settings.touchpad.natural_scroll.value', false);
+        expectReverseScrollValue(pointersPage, false);
 
         // Check specifically clicking the row changes pref.
         const reverseScrollSettings = pointersPage.$$('#reverseScrollRow');
         reverseScrollToggle.click();
-        expectReverseScrollValue(pointersPage, false);
-        devicePage.set('prefs.settings.touchpad.natural_scroll.value', false);
         expectReverseScrollValue(pointersPage, true);
+        devicePage.set('prefs.settings.touchpad.natural_scroll.value', false);
+        expectReverseScrollValue(pointersPage, false);
       });
     });
 

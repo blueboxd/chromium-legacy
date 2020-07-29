@@ -23,7 +23,7 @@ class HeadlessCrashReporterClient : public crash_reporter::CrashReporterClient {
   }
   const base::FilePath& crash_dumps_dir() const { return crash_dumps_dir_; }
 
-#if defined(OS_POSIX) && !defined(OS_MACOSX)
+#if defined(OS_POSIX) && !defined(OS_MAC)
   // Returns a textual description of the product type and version to include
   // in the crash report.
   void GetProductNameAndVersion(const char** product_name,
@@ -34,7 +34,7 @@ class HeadlessCrashReporterClient : public crash_reporter::CrashReporterClient {
                                 std::string* channel) override;
 
   base::FilePath GetReporterLogFilename() override;
-#endif  // defined(OS_POSIX) && !defined(OS_MACOSX)
+#endif  // defined(OS_POSIX) && !defined(OS_MAC)
 
 #if defined(OS_WIN)
   bool GetCrashDumpLocation(base::string16* crash_dir) override;

@@ -105,22 +105,13 @@ public class TabGroupModelFilterUnitTest {
 
     private TabImpl prepareTab(int tabId, int rootId, int parentTabId) {
         TabImpl tab = mock(TabImpl.class);
-        CriticalPersistedTabData criticalPersistedTabData = mock(CriticalPersistedTabData.class);
+        CriticalPersistedTabData criticalPersistedTabData = CriticalPersistedTabData.build(tab);
         UserDataHost userDataHost = new UserDataHost();
         userDataHost.setUserData(CriticalPersistedTabData.class, criticalPersistedTabData);
         when(tab.getUserDataHost()).thenReturn(userDataHost);
-
-        doAnswer(invocation -> {
-            int newRootId = invocation.getArgument(0);
-            doReturn(newRootId).when(criticalPersistedTabData).getRootId();
-            return null;
-        })
-                .when(criticalPersistedTabData)
-                .setRootId(anyInt());
-
         doReturn(tabId).when(tab).getId();
-        doReturn(parentTabId).when(tab).getParentId();
         CriticalPersistedTabData.from(tab).setRootId(rootId);
+        CriticalPersistedTabData.from(tab).setParentId(parentTabId);
         return tab;
     }
 

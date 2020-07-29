@@ -378,6 +378,9 @@ void AXEventGenerator::OnIntAttributeChanged(AXTree* tree,
     case ax::mojom::IntAttribute::kTextUnderlineStyle:
       AddEvent(node, Event::TEXT_ATTRIBUTE_CHANGED);
       break;
+    case ax::mojom::IntAttribute::kTextAlign:
+      AddEvent(node, Event::OBJECT_ATTRIBUTE_CHANGED);
+      break;
     default:
       AddEvent(node, Event::OTHER_ATTRIBUTE_CHANGED);
       break;
@@ -847,6 +850,8 @@ const char* ToString(AXEventGenerator::Event event) {
       return "MULTISELECTABLE_STATE_CHANGED";
     case AXEventGenerator::Event::NAME_CHANGED:
       return "NAME_CHANGED";
+    case AXEventGenerator::Event::OBJECT_ATTRIBUTE_CHANGED:
+      return "OBJECT_ATTRIBUTE_CHANGED";
     case AXEventGenerator::Event::OTHER_ATTRIBUTE_CHANGED:
       return "OTHER_ATTRIBUTE_CHANGED";
     case AXEventGenerator::Event::PLACEHOLDER_CHANGED:

@@ -12,6 +12,7 @@
 #include "components/arc/mojom/intent_helper.mojom.h"
 #include "components/renderer_context_menu/render_view_context_menu_observer.h"
 #include "ui/gfx/image/image.h"
+#include "ui/gfx/image/image_skia.h"
 
 class RenderViewContextMenuProxy;
 
@@ -35,7 +36,9 @@ class StartSmartSelectionActionMenu : public RenderViewContextMenuObserver {
   void HandleTextSelectionActions(
       std::vector<mojom::TextSelectionActionPtr> actions);
 
-  gfx::Image GetIconImage(mojom::ActivityIconPtr icon);
+  void UpdateMenuIcon(int command_id, mojom::ActivityIconPtr icon);
+
+  void SetMenuIcon(int command_id, const gfx::ImageSkia& image);
 
   RenderViewContextMenuProxy* const proxy_;  // Owned by RenderViewContextMenu.
 

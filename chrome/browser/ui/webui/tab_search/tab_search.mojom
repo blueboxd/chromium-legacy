@@ -67,4 +67,8 @@ interface PageHandler {
 
 // WebUI-side handler for requests from the browser.
 interface Page {
+  // Callback when any tabs in the current profile are
+  // added/changed/removed/navigated to new URL
+  TabsChanged();
 };
+

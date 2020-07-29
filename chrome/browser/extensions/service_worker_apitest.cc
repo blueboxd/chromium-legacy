@@ -1749,7 +1749,9 @@ constexpr char kTabsOnUpdatedSpanningScript[] =
 
 }  // anonymous namespace
 
-IN_PROC_BROWSER_TEST_F(ServiceWorkerBasedBackgroundTest, TabsQuerySplit) {
+// Flaky (crbug.com/1091141)
+IN_PROC_BROWSER_TEST_F(ServiceWorkerBasedBackgroundTest,
+                       DISABLED_TabsQuerySplit) {
   ExtensionTestMessageListener ready_regular("Script started regular", true);
   ExtensionTestMessageListener ready_incognito("Script started incognito",
                                                true);
@@ -1790,7 +1792,9 @@ IN_PROC_BROWSER_TEST_F(ServiceWorkerBasedBackgroundTest, TabsQuerySplit) {
   }
 }
 
-IN_PROC_BROWSER_TEST_F(ServiceWorkerBasedBackgroundTest, TabsQuerySpanning) {
+// Flaky (crbug.com/1091141)
+IN_PROC_BROWSER_TEST_F(ServiceWorkerBasedBackgroundTest,
+                       DISABLED_TabsQuerySpanning) {
   ExtensionTestMessageListener ready_listener("Script started regular", true);
 
   // Open an incognito window.
@@ -1821,7 +1825,9 @@ IN_PROC_BROWSER_TEST_F(ServiceWorkerBasedBackgroundTest, TabsQuerySpanning) {
             tabs_listener.message());
 }
 
-IN_PROC_BROWSER_TEST_F(ServiceWorkerBasedBackgroundTest, TabsOnUpdatedSplit) {
+// Flaky (crbug.com/1091141)
+IN_PROC_BROWSER_TEST_F(ServiceWorkerBasedBackgroundTest,
+                       DISABLED_TabsOnUpdatedSplit) {
   ExtensionTestMessageListener ready_regular("Script started regular", true);
   ExtensionTestMessageListener ready_incognito("Script started incognito",
                                                true);
@@ -1863,8 +1869,9 @@ IN_PROC_BROWSER_TEST_F(ServiceWorkerBasedBackgroundTest, TabsOnUpdatedSplit) {
   }
 }
 
+// Flaky (crbug.com/1091141)
 IN_PROC_BROWSER_TEST_F(ServiceWorkerBasedBackgroundTest,
-                       TabsOnUpdatedSpanning) {
+                       DISABLED_TabsOnUpdatedSpanning) {
   // The spanning test differs from the Split test because it lets the
   // renderer send the URLs once the expected number of onUpdated
   // events have completed. This solves flakiness in the previous
@@ -2134,15 +2141,28 @@ IN_PROC_BROWSER_TEST_F(ServiceWorkerBasedBackgroundTest, WorkerRefCount) {
   EXPECT_EQ(0u, GetWorkerRefCount(extension->url()));
 }
 
+const char* kEventsToStoppedExtensionId = "ogdbpbegnmindpdjfafpmpicikegejdj";
+
 IN_PROC_BROWSER_TEST_F(ServiceWorkerBasedBackgroundTest,
                        PRE_EventsAfterRestart) {
   ExtensionTestMessageListener event_added_listener("ready", false);
-  const Extension* extension = LoadExtensionWithFlags(
-      test_data_dir_.AppendASCII(
-          "service_worker/worker_based_background/events_to_stopped_extension"),
-      kFlagNone);
+
+  base::ScopedAllowBlockingForTesting allow_blocking;
+  base::ScopedTempDir scoped_temp_dir;
+  ASSERT_TRUE(scoped_temp_dir.CreateUniqueTempDir());
+  base::FilePath pem_path = test_data_dir_.AppendASCII("service_worker")
+                                .AppendASCII("worker_based_background")
+                                .AppendASCII("events_to_stopped_extension.pem");
+  // Note: Extension is packed to avoid reloading while loading.
+  base::FilePath extension_path = PackExtensionWithOptions(
+      test_data_dir_.AppendASCII("service_worker/worker_based_background/"
+                                 "events_to_stopped_extension"),
+      scoped_temp_dir.GetPath().AppendASCII("v1.crx"), pem_path,
+      base::FilePath());
+  const Extension* extension =
+      LoadExtensionWithFlags(extension_path, kFlagNone);
   ASSERT_TRUE(extension);
-  EXPECT_EQ(kTestExtensionId, extension->id());
+  EXPECT_EQ(kEventsToStoppedExtensionId, extension->id());
   ProcessManager* pm = ProcessManager::Get(browser()->profile());
   // TODO(crbug.com/969884): This will break once keep alive counts
   // for service workers are tracked by the Process Manager.
@@ -2157,7 +2177,7 @@ IN_PROC_BROWSER_TEST_F(ServiceWorkerBasedBackgroundTest,
 // tabs.onMoved before browser restarted in PRE_EventsAfterRestart.
 IN_PROC_BROWSER_TEST_F(ServiceWorkerBasedBackgroundTest, EventsAfterRestart) {
   // Verify there is no RenderProcessHost for the extension.
-  EXPECT_FALSE(ExtensionHasRenderProcessHost(kTestExtensionId));
+  EXPECT_FALSE(ExtensionHasRenderProcessHost(kEventsToStoppedExtensionId));
 
   ExtensionTestMessageListener moved_tab_listener("moved-tab", false);
   // Add a tab, then move it.

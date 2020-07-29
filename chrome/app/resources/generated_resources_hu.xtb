@@ -1925,7 +1925,6 @@ Ha kezelni szeretné a fiók beállításait, telepítse eszközére a Family Li
 <translation id="3371140690572404006">C típusú USB-vel kompatibilis eszköz (jobb első port)</translation>
 <translation id="337286756654493126">Az alkalmazásban megnyitott mappák olvasása</translation>
 <translation id="3378572629723696641">Lehet, hogy ez a bővítmény sérült.</translation>
-<translation id="3379169026479470857">DLC eltávolítása</translation>
 <translation id="337920581046691015">A <ph name="PRODUCT_NAME" /> telepítésére készül.</translation>
 <translation id="3380365263193509176">Ismeretlen hiba</translation>
 <translation id="3382073616108123819">Hoppá! A rendszer nem tudta megállapítani az eszközazonosítókat ehhez az eszközhöz.</translation>
@@ -2380,6 +2379,7 @@ Ha kezelni szeretné a fiók beállításait, telepítse eszközére a Family Li
 <translation id="3882165008614329320">Meglévő videó a fényképezőgépről vagy fájlból</translation>
 <translation id="3886446263141354045">Webhely-hozzáférési kérelme elküldve a következő személynek: <ph name="NAME" /></translation>
 <translation id="3888550877729210209">Jegyzetek készítése a(z) <ph name="LOCK_SCREEN_APP_NAME" /> alkalmazással</translation>
+<translation id="3891563564777705449">{0,plural, =1{Frissítse az eszközt 1 héten belül}other{Frissítse az eszközt # héten belül}}</translation>
 <translation id="3892414795099177503">OpenVPN/L2TP hozzáadása…</translation>
 <translation id="3893536212201235195">Hozzáférhetőségi beállításainak olvasása és módosítása</translation>
 <translation id="3893630138897523026">ChromeVox (beszélt visszajelzés)</translation>
@@ -2610,14 +2610,12 @@ Elindítja a következőt: <ph name="CONTROL_PANEL_APPLET_NAME" />?</translation
 <translation id="4175137578744761569">Világoslila-fehér</translation>
 <translation id="4175737294868205930">Állandó tárhely</translation>
 <translation id="4176463684765177261">Letiltva</translation>
-<translation id="418031202593299965">Ezek az összetevők más felhasználókkal is meg vannak osztva ezen az eszközön. Az összetevők eltávolítása más felhasználókat is érinthet.</translation>
 <translation id="4180788401304023883">"<ph name="CERTIFICATE_NAME" />" tanúsítványkibocsátói (CA) tanúsítvány törlése?</translation>
 <translation id="4181602000363099176">20×</translation>
 <translation id="4181841719683918333">Nyelvek</translation>
 <translation id="4184885522552335684">Húzza a kijelzők áthelyezéséhez</translation>
 <translation id="4187424053537113647"><ph name="APP_NAME" /> beállítása…</translation>
 <translation id="4190828427319282529">Billentyűzetfókusz kiemelése</translation>
-<translation id="4191805472951276951">DLC</translation>
 <translation id="4194570336751258953">A kattintás érintéssel engedélyezése</translation>
 <translation id="4195643157523330669">Megnyitás új lapon</translation>
 <translation id="4195814663415092787">Folytatás ott, ahol abbahagyta</translation>
@@ -3036,7 +3034,6 @@ Elindítja a következőt: <ph name="CONTROL_PANEL_APPLET_NAME" />?</translation
 <translation id="4756388243121344051">&amp;Előzmények</translation>
 <translation id="4759238208242260848">Letöltések</translation>
 <translation id="4761104368405085019">Mikrofon használata</translation>
-<translation id="4762055672525936226">Letöltött tartalom törlése</translation>
 <translation id="4762718786438001384">Az eszköz lemezterülete nagyon kevés</translation>
 <translation id="4763408175235639573">A következő cookie-k beállítása akkor történt, amikor Ön megtekintette ezt az oldalt</translation>
 <translation id="4765582662863429759">Lehetővé teszi az Android Messages számára, hogy SMS-eket küldjön át a telefonról a Chromebookra</translation>
@@ -3290,7 +3287,6 @@ Elindítja a következőt: <ph name="CONTROL_PANEL_APPLET_NAME" />?</translation
 <translation id="5094721898978802975">Kommunikáció az együttműködő natív alkalmazásokkal</translation>
 <translation id="5097002363526479830">Nem sikerült csatlakozni a(z) <ph name="NAME" /> hálózathoz: <ph name="DETAILS" /></translation>
 <translation id="5097874180538493929">Automatikus kattintás, ha a kurzor megáll</translation>
-<translation id="5098800418125334616">Letöltött tartalmak kezelése</translation>
 <translation id="5101042277149003567">Az összes könyvjelző megnyitása</translation>
 <translation id="5101839224773798795">Automatikus kattintás, amikor a kurzor megáll</translation>
 <translation id="5107443654503185812">Az egyik bővítmény kikapcsolta a Biztonságos Böngészést</translation>
@@ -4170,7 +4166,6 @@ Győződjön meg arról, hogy nem ad ki bizalmas adatokat.</translation>
 <translation id="6198102561359457428">Jelentkezzen ki, majd jelentkezzen be újra...</translation>
 <translation id="6198252989419008588">PIN-kód megváltoztatása</translation>
 <translation id="6202304368170870640">PIN-kódjával bejelentkezhet, és feloldhatja eszköze zárolását.</translation>
-<translation id="6202517672944764518">Letöltött tartalom</translation>
 <translation id="6206311232642889873">Ké&amp;p másolása</translation>
 <translation id="6207200176136643843">Visszaállítás az alapértelmezett nagyítási szintre</translation>
 <translation id="6207937957461833379">Ország/Régió</translation>
@@ -4442,6 +4437,7 @@ Győződjön meg arról, hogy nem ad ki bizalmas adatokat.</translation>
 <translation id="6535331821390304775">Engedélyezze, hogy a(z) <ph name="ORIGIN" /> az ilyen típusú linkeket mindig a társított alkalmazással nyissa meg</translation>
 <translation id="654039047105555694"><ph name="BEGIN_BOLD" />Megjegyzés:<ph name="END_BOLD" /> csak akkor engedélyezze, ha tisztában van a következményekkel, vagy megkérték rá, mivel az adatok gyűjtése csökkentheti a teljesítményt.</translation>
 <translation id="6541638731489116978">Ennél a webhelynél le van tiltva a mozgásérzékelőkhöz való hozzáférés.</translation>
+<translation id="6545407738986370057">{0,plural, =1{Küldje vissza az eszközt 1 héten belül}other{Küldje vissza az eszközt # héten belül}}</translation>
 <translation id="6545665334409411530">Ismétlési sebesség</translation>
 <translation id="6545864417968258051">Bluetooth-alapú keresés</translation>
 <translation id="6545867563032584178">A mikrofon ki van kapcsolva a Mac Rendszerbeállításokban</translation>
@@ -4487,6 +4483,7 @@ Győződjön meg arról, hogy nem ad ki bizalmas adatokat.</translation>
 <translation id="6602956230557165253">Használja a bal és jobb nyílgombokat a navigáláshoz.</translation>
 <translation id="6605847144724004692">Még egyetlen felhasználó sem értékelte.</translation>
 <translation id="6607831829715835317">További eszközök</translation>
+<translation id="6608012008902909398">Eszközön lévő szoftver ellenőrzésével kapcsolatos adatok megjelenítése</translation>
 <translation id="6611972847767394631">Itt találhatja lapjait</translation>
 <translation id="6612358246767739896">Védett tartalom</translation>
 <translation id="6615455863669487791">Megjelenítés</translation>
@@ -6129,7 +6126,6 @@ A kulcsfájlt tartsa biztonságos helyen. Szüksége lesz rá ahhoz, hogy új ve
 <translation id="8652400352452647993">Csomagbővítmény-hiba</translation>
 <translation id="8654151524613148204">A fájl túl nagy ahhoz, hogy a számítógép kezelni tudja. Elnézést kérünk!</translation>
 <translation id="8655295600908251630">Csatorna</translation>
-<translation id="8655319619291175901">Hoppá... Hiba történt.</translation>
 <translation id="8655972064210167941">A bejelentkezés nem sikerült, mert a jelszót nem sikerült ellenőrizni. Kérjük, forduljon rendszergazdájához vagy próbálja újra.</translation>
 <translation id="8656768832129462377">Ne ellenőrizze</translation>
 <translation id="8658645149275195032">A(z) <ph name="APP_NAME" /> megosztja a képernyőt és a hangot a következővel: <ph name="TAB_NAME" />.</translation>
@@ -6218,7 +6214,6 @@ A kulcsfájlt tartsa biztonságos helyen. Szüksége lesz rá ahhoz, hogy új ve
         &lt;p&gt;A konfigurálást azonban elvégezheti még a parancssoron keresztül is. Kérjük, a megjelölésről és környezeti változókról szóló további információért tekintse meg a következőt: &lt;code&gt;man <ph name="PRODUCT_BINARY_NAME" />&lt;/code&gt;&lt;/p&gt;</translation>
 <translation id="8755175579224030324">Biztonsággal kapcsolatos feladatok elvégzése a szervezet számára (például az eszközön tárolt tanúsítványok és kulcsok kezelése).</translation>
 <translation id="8755376271068075440">&amp;Nagyobb</translation>
-<translation id="8756143264090841047">DLC törlése</translation>
 <translation id="8756969031206844760">Szeretné frissíteni a jelszót?</translation>
 <translation id="8757090071857742562">Nem lehet átküldeni az asztal tartalmát. Ellenőrizze, hogy megerősítette-e a képernyő megosztásának megkezdésére vonatkozó kérdést.</translation>
 <translation id="8757203080302669031">Ez a lap aktívan keresi a Bluetooth-eszközöket.</translation>
@@ -6233,7 +6228,6 @@ A kulcsfájlt tartsa biztonságos helyen. Szüksége lesz rá ahhoz, hogy új ve
 <translation id="8770406935328356739">A bővítmény gyökérkönyvtára</translation>
 <translation id="8770507190024617908">Személyek kezelése</translation>
 <translation id="8771300903067484968">A kezdőoldal háttere vissza lett állítva az alapértelmezett háttérre.</translation>
-<translation id="8771939407732945762">Letöltött tartalom eltávolítása</translation>
 <translation id="8773302562181397928">A következő nyomtató mentése: <ph name="PRINTER_NAME" /></translation>
 <translation id="8774379074441005279">Visszaállítás megerősítése</translation>
 <translation id="8774934320277480003">Felső margó</translation>

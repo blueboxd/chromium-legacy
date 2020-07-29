@@ -175,10 +175,13 @@ class EventRewriterChromeOS : public EventRewriter {
   static bool HasAssistantKeyOnKeyboard(const InputDevice& keyboard_device,
                                         bool* has_assistant_key);
 
-  // Part of rewrite phases below. This method is public only so that
-  // SpokenFeedbackRewriter can ask for rewritten modifiers. Returns true when
-  // the input |state| has key |DomKey::ALT_GRAPH_LATCH| and is remapped.
+  // Part of rewrite phases below. These methods are public only so that
+  // SpokenFeedbackRewriter can ask for rewritten modifier and function keys.
+
+  // Returns true when the input |state| has key |DomKey::ALT_GRAPH_LATCH| and
+  // is remapped.
   bool RewriteModifierKeys(const KeyEvent& event, MutableKeyState* state);
+  void RewriteFunctionKeys(const KeyEvent& event, MutableKeyState* state);
 
  private:
   struct DeviceInfo {
@@ -234,7 +237,6 @@ class EventRewriterChromeOS : public EventRewriter {
   // the current |state|, which may have been modified by previous phases.
   void RewriteNumPadKeys(const KeyEvent& event, MutableKeyState* state);
   void RewriteExtendedKeys(const KeyEvent& event, MutableKeyState* state);
-  void RewriteFunctionKeys(const KeyEvent& event, MutableKeyState* state);
   int RewriteLocatedEvent(const Event& event);
   int RewriteModifierClick(const MouseEvent& event, int* flags);
 

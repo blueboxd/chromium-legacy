@@ -642,14 +642,13 @@ bool AVIFImageDecoder::MaybeCreateDemuxer() {
 
   // Determine whether the image can be decoded to YUV.
   // * Bit depths higher than 8 are not supported.
-  // * TODO(crbug.com/915972): Only YUV 4:2:0 subsampling format is supported.
   // * Alpha channel is not supported.
   // * Multi-frame images (animations) are not supported. (The DecodeToYUV()
   //   method does not have an 'index' parameter.)
   // * If ColorTransform() returns a non-null pointer, the decoder has to do a
   //   color space conversion, so we don't decode to YUV.
   allow_decode_to_yuv_ =
-      !ImageIsHighBitDepth() && yuv_format == AVIF_PIXEL_FORMAT_YUV420 &&
+      !ImageIsHighBitDepth() && yuv_format != AVIF_PIXEL_FORMAT_YUV400 &&
       !decoder_->alphaPresent && decoded_frame_count_ == 1 &&
       (yuv_color_space_ = GetSkYUVColorSpace(container)) && !ColorTransform();
 

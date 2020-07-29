@@ -23,6 +23,7 @@
 #include "components/prefs/pref_service.h"
 #include "components/prefs/scoped_user_pref_update.h"
 #include "components/strings/grit/components_strings.h"
+#include "third_party/re2/src/re2/re2.h"
 #include "ui/base/l10n/l10n_util.h"
 
 namespace chromeos {
@@ -30,13 +31,20 @@ namespace chromeos {
 namespace {
 
 const size_t kMaxConfirmedTextLength = 10;
-const char kAssistEmailPrefix[] = "my email is ";
-const char kAssistNamePrefix[] = "my name is ";
-const char kAssistAddressPrefix[] = "my address is ";
-const char kAssistPhoneNumberPrefix[] = "my phone number is ";
-const char kAssistNumberPrefix[] = "my number is ";
-const char kAssistFirstNamePrefix[] = "my first name is ";
-const char kAssistLastNamePrefix[] = "my last name is ";
+
+const char kSingleSubjectRegex[] = "my ";
+const char kSingleOrPluralSubjectRegex[] = "(my|our) ";
+const char kTriggersRegex[] = "( is:?|:) $";
+const char kEmailRegex[] = "email";
+const char kNameRegex[] = "(full )?name";
+const char kAddressRegex[] =
+    "((mailing|postal|shipping|home|delivery|physical|current|billing|correct) "
+    ")?address";
+const char kPhoneNumberRegex[] =
+    "(((phone|mobile|telephone) )?number|phone|telephone)";
+const char kFirstNameRegex[] = "first name";
+const char kLastNameRegex[] = "last name";
+
 const char kAnnounceAnnotation[] =
     "Press down to navigate and enter to insert.";
 const int kNoneHighlighted = -1;
@@ -59,7 +67,6 @@ const std::vector<autofill::ServerFieldType>& GetHomeAddressTypes() {
            autofill::ServerFieldType::ADDRESS_HOME_COUNTRY}};
   return *homeAddressTypes;
 }
-
 }  // namespace
 
 TtsHandler::TtsHandler(Profile* profile) : profile_(profile) {}
@@ -96,36 +103,42 @@ void TtsHandler::Speak(const std::string& text) {
 }
 
 AssistiveType ProposePersonalInfoAssistiveAction(const base::string16& text) {
-  AssistiveType action = AssistiveType::kGenericAction;
-  if (base::EndsWith(text, base::UTF8ToUTF16(kAssistEmailPrefix),
-                     base::CompareCase::INSENSITIVE_ASCII)) {
-    action = AssistiveType::kPersonalEmail;
+  std::string lower_case_utf8_text =
+      base::ToLowerASCII(base::UTF16ToUTF8(text));
+  if (!(RE2::FullMatch(lower_case_utf8_text, ".* $"))) {
+    return AssistiveType::kGenericAction;
   }
-  if (base::EndsWith(text, base::UTF8ToUTF16(kAssistNamePrefix),
-                     base::CompareCase::INSENSITIVE_ASCII)) {
-    action = AssistiveType::kPersonalName;
+  if (RE2::FullMatch(lower_case_utf8_text,
+                     base::StringPrintf(".*%s%s%s", kSingleSubjectRegex,
+                                        kEmailRegex, kTriggersRegex))) {
+    return AssistiveType::kPersonalEmail;
   }
-  if (base::EndsWith(text, base::UTF8ToUTF16(kAssistAddressPrefix),
-                     base::CompareCase::INSENSITIVE_ASCII)) {
-    action = AssistiveType::kPersonalAddress;
+  if (RE2::FullMatch(lower_case_utf8_text,
+                     base::StringPrintf(".*%s%s%s", kSingleSubjectRegex,
+                                        kNameRegex, kTriggersRegex))) {
+    return AssistiveType::kPersonalName;
   }
-  if (base::EndsWith(text, base::UTF8ToUTF16(kAssistPhoneNumberPrefix),
-                     base::CompareCase::INSENSITIVE_ASCII)) {
-    action = AssistiveType::kPersonalPhoneNumber;
+  if (RE2::FullMatch(lower_case_utf8_text,
+                     base::StringPrintf(".*%s%s%s", kSingleOrPluralSubjectRegex,
+                                        kAddressRegex, kTriggersRegex))) {
+    return AssistiveType::kPersonalAddress;
   }
-  if (base::EndsWith(text, base::UTF8ToUTF16(kAssistNumberPrefix),
-                     base::CompareCase::INSENSITIVE_ASCII)) {
-    action = AssistiveType::kPersonalNumber;
+  if (RE2::FullMatch(lower_case_utf8_text,
+                     base::StringPrintf(".*%s%s%s", kSingleSubjectRegex,
+                                        kPhoneNumberRegex, kTriggersRegex))) {
+    return AssistiveType::kPersonalPhoneNumber;
   }
-  if (base::EndsWith(text, base::UTF8ToUTF16(kAssistFirstNamePrefix),
-                     base::CompareCase::INSENSITIVE_ASCII)) {
-    action = AssistiveType::kPersonalFirstName;
+  if (RE2::FullMatch(lower_case_utf8_text,
+                     base::StringPrintf(".*%s%s%s", kSingleSubjectRegex,
+                                        kFirstNameRegex, kTriggersRegex))) {
+    return AssistiveType::kPersonalFirstName;
   }
-  if (base::EndsWith(text, base::UTF8ToUTF16(kAssistLastNamePrefix),
-                     base::CompareCase::INSENSITIVE_ASCII)) {
-    action = AssistiveType::kPersonalLastName;
+  if (RE2::FullMatch(lower_case_utf8_text,
+                     base::StringPrintf(".*%s%s%s", kSingleSubjectRegex,
+                                        kLastNameRegex, kTriggersRegex))) {
+    return AssistiveType::kPersonalLastName;
   }
-  return action;
+  return AssistiveType::kGenericAction;
 }
 
 PersonalInfoSuggester::PersonalInfoSuggester(
@@ -265,7 +278,6 @@ base::string16 PersonalInfoSuggester::GetSuggestion(
                                                      *profile, app_locale);
       break;
     case AssistiveType::kPersonalPhoneNumber:
-    case AssistiveType::kPersonalNumber:
       suggestion = profile->GetRawInfo(
           autofill::ServerFieldType::PHONE_HOME_WHOLE_NUMBER);
       break;

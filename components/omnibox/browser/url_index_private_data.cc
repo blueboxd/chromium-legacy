@@ -377,7 +377,6 @@ bool URLIndexPrivateData::DeleteURL(const GURL& url) {
 // static
 scoped_refptr<URLIndexPrivateData> URLIndexPrivateData::RestoreFromFile(
     const base::FilePath& file_path) {
-  base::TimeTicks beginning_time = base::TimeTicks::Now();
   if (!base::PathExists(file_path))
     return nullptr;
   std::string data;
@@ -404,8 +403,6 @@ scoped_refptr<URLIndexPrivateData> URLIndexPrivateData::RestoreFromFile(
   if (!restored_data->RestorePrivateData(index_cache))
     return nullptr;
 
-  UMA_HISTOGRAM_TIMES("History.InMemoryURLIndexRestoreCacheTime",
-                      base::TimeTicks::Now() - beginning_time);
   UMA_HISTOGRAM_COUNTS_1M("History.InMemoryURLHistoryItems",
                           restored_data->history_id_word_map_.size());
   UMA_HISTOGRAM_COUNTS_1M("History.InMemoryURLCacheSize", data.size());
@@ -941,7 +938,6 @@ void URLIndexPrivateData::ResetSearchTermCache() {
 }
 
 bool URLIndexPrivateData::SaveToFile(const base::FilePath& file_path) {
-  base::TimeTicks beginning_time = base::TimeTicks::Now();
   InMemoryURLIndexCacheItem index_cache;
   SavePrivateData(&index_cache);
   std::string data;
@@ -955,8 +951,6 @@ bool URLIndexPrivateData::SaveToFile(const base::FilePath& file_path) {
     LOG(WARNING) << "Failed to write " << file_path.value();
     return false;
   }
-  UMA_HISTOGRAM_TIMES("History.InMemoryURLIndexSaveCacheTime",
-                      base::TimeTicks::Now() - beginning_time);
   return true;
 }
 

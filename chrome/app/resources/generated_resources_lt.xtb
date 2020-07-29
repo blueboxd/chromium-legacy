@@ -1925,7 +1925,6 @@ Jei nenorite, dabar atsijunkite, kad šios paskyros pakeitimai būtų matomi ši
 <translation id="3371140690572404006">USB-C įrenginys (prievadas dešinėje, priekinėje dalyje)</translation>
 <translation id="337286756654493126">Skaityti aplankus, kuriuos atidarėte programoje</translation>
 <translation id="3378572629723696641">Šis plėtinys gali būti sugadintas.</translation>
-<translation id="3379169026479470857">Pašalinti atsisiųstą turinį</translation>
 <translation id="337920581046691015">„<ph name="PRODUCT_NAME" />“ bus įdiegta.</translation>
 <translation id="3380365263193509176">Nežinoma klaida</translation>
 <translation id="3382073616108123819">Oi! Sistemai nepavyko nustatyti šio įrenginio identifikatorių.</translation>
@@ -2612,14 +2611,12 @@ Ar norite paleisti „<ph name="CONTROL_PANEL_APPLET_NAME" />“?</translation>
 <translation id="4175137578744761569">Šviesiai violetinė ir balta</translation>
 <translation id="4175737294868205930">Nuolatinė saugykla</translation>
 <translation id="4176463684765177261">Išjungta</translation>
-<translation id="418031202593299965">Šie komponentai bendrinami su kitais įrenginio naudotojais. Elementų pašalinimas turės įtakos kitiems naudotojams.</translation>
 <translation id="4180788401304023883">Ištrinti „<ph name="CERTIFICATE_NAME" />“ sertifikavimo institucijos sertifikatą?</translation>
 <translation id="4181602000363099176">20 k.</translation>
 <translation id="4181841719683918333">Kalbos</translation>
 <translation id="4184885522552335684">Vilkite, kad perkeltumėte vaizdą</translation>
 <translation id="4187424053537113647">Nustatoma programa „<ph name="APP_NAME" />“...</translation>
 <translation id="4190828427319282529">Paryškinti klaviatūra suaktyvintą elementą</translation>
-<translation id="4191805472951276951">Atsisiųstas turinys</translation>
 <translation id="4194570336751258953">Įgalinti paspaudimą palietus</translation>
 <translation id="4195643157523330669">Atidaryti naujame skirtuke</translation>
 <translation id="4195814663415092787">Tęskite ten, kur baigėte</translation>
@@ -3038,7 +3035,6 @@ Ar norite paleisti „<ph name="CONTROL_PANEL_APPLET_NAME" />“?</translation>
 <translation id="4756388243121344051">&amp;Istorija</translation>
 <translation id="4759238208242260848">Atsisiuntimai</translation>
 <translation id="4761104368405085019">Naudoti mikrofoną</translation>
-<translation id="4762055672525936226">Ištrinti atsisiųstą turinį</translation>
 <translation id="4762718786438001384">Labai mažai vietos įrenginio diske</translation>
 <translation id="4763408175235639573">Kai peržiūrėjote šį puslapį, buvo nustatyti toliau nurodyti slapukai</translation>
 <translation id="4765582662863429759">Leidžiama „Android Messages“ perduoti tekstus iš telefono į „Chromebook“</translation>
@@ -3292,7 +3288,6 @@ Ar norite paleisti „<ph name="CONTROL_PANEL_APPLET_NAME" />“?</translation>
 <translation id="5094721898978802975">Sąveikauti su atitinkamomis vietinėmis programomis</translation>
 <translation id="5097002363526479830">Nepavyko prisijungti prie tinklo „<ph name="NAME" />“: <ph name="DETAILS" /></translation>
 <translation id="5097874180538493929">Automatiškai spustelėti žymekliui sustojus</translation>
-<translation id="5098800418125334616">Tvarkyti atsisiųstą turinį</translation>
 <translation id="5101042277149003567">Atidaryti visas žymas</translation>
 <translation id="5101839224773798795">Automatiškai spustelėti sustojus žymekliui</translation>
 <translation id="5107443654503185812">Plėtinys išjungė Saugaus naršymo funkciją</translation>
@@ -4171,7 +4166,6 @@ Ar norite paleisti „<ph name="CONTROL_PANEL_APPLET_NAME" />“?</translation>
 <translation id="6198102561359457428">Atsijunkite, tada vėl prisijunkite...</translation>
 <translation id="6198252989419008588">Keisti PIN kodą</translation>
 <translation id="6202304368170870640">Naudodami PIN kodą galite prisijungti prie įrenginio arba jį atrakinti.</translation>
-<translation id="6202517672944764518">Atsisiųstas turinys</translation>
 <translation id="6206311232642889873">Kopijuo&amp;ti vaizdą</translation>
 <translation id="6207200176136643843">Nustatomas numatytasis mastelis</translation>
 <translation id="6207937957461833379">Šalis / regionas</translation>
@@ -4489,6 +4483,7 @@ Ar norite paleisti „<ph name="CONTROL_PANEL_APPLET_NAME" />“?</translation>
 <translation id="6602956230557165253">Jei norite naršyti, naudokite rodyklių į kairę ir į dešinę klavišus.</translation>
 <translation id="6605847144724004692">Jokie naudotojai dar neįvertino.</translation>
 <translation id="6607831829715835317">Daugiau įrank&amp;ių</translation>
+<translation id="6608012008902909398">Rodyti išsamią įrenginio programinės įrangos patikros informaciją</translation>
 <translation id="6611972847767394631">Čia rasite savo skirtukus</translation>
 <translation id="6612358246767739896">Apsaugotas turinys</translation>
 <translation id="6615455863669487791">Rodyti</translation>
@@ -6131,7 +6126,6 @@ Rakto failą laikykite saugioje vietoje. Jo reikės, kai norėsite sukurti nauja
 <translation id="8652400352452647993">Paketo plėtinio klaida</translation>
 <translation id="8654151524613148204">Failas per didelis, kad jį būtų galima apdoroti kompiuteriu. Apgailestaujame.</translation>
 <translation id="8655295600908251630">Kanalas</translation>
-<translation id="8655319619291175901">Oi, įvyko klaida.</translation>
 <translation id="8655972064210167941">Nepavyko prisijungti, nes negalima patvirtinti slaptažodžio. Susisiekite su administratoriumi arba bandykite dar kartą.</translation>
 <translation id="8656768832129462377">Netikrinti</translation>
 <translation id="8658645149275195032">„<ph name="APP_NAME" />“ bendrina jūsų ekraną ir garsą su <ph name="TAB_NAME" />.</translation>
@@ -6220,7 +6214,6 @@ Rakto failą laikykite saugioje vietoje. Jo reikės, kai norėsite sukurti nauja
         &lt;p&gt;Vis tiek galite konfigūruoti naudodami komandų eilutę. Žr. &lt;code&gt;<ph name="PRODUCT_BINARY_NAME" />&lt;/code&gt;, jei norite gauti daugiau informacijos apie žymas ir aplinkos variantus.</translation>
 <translation id="8755175579224030324">Atlikite su sauga susijusias organizacijos užduotis, pvz., sertifikatų valdymo ir įrenginyje saugomų raktų</translation>
 <translation id="8755376271068075440">&amp;Didesnis</translation>
-<translation id="8756143264090841047">Ištrinti atsisiųstą turinį</translation>
 <translation id="8756969031206844760">Atnaujinti slaptažodį?</translation>
 <translation id="8757090071857742562">Nepavyko perduoti stalinio kompiuterio ekrano vaizdo. Patikrinkite, ar patvirtinote raginimą pradėti bendrinti ekraną.</translation>
 <translation id="8757203080302669031">Šis skirtukas aktyviai nuskaito „Bluetooth“ įrenginius.</translation>
@@ -6235,7 +6228,6 @@ Rakto failą laikykite saugioje vietoje. Jo reikės, kai norėsite sukurti nauja
 <translation id="8770406935328356739">Plėtinio šakninis katalogas</translation>
 <translation id="8770507190024617908">Tvarkyti žmones</translation>
 <translation id="8771300903067484968">Pradžios puslapio fonas iš naujo nustatytas kaip numatytasis fonas.</translation>
-<translation id="8771939407732945762">Pašalinti atsisiųstą turinį</translation>
 <translation id="8773302562181397928">Išsaugoti „<ph name="PRINTER_NAME" />“</translation>
 <translation id="8774379074441005279">Atkūrimo patvirtinimas</translation>
 <translation id="8774934320277480003">Viršutinė paraštė</translation>

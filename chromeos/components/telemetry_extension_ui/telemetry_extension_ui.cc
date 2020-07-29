@@ -9,41 +9,20 @@
 #include "base/memory/ptr_util.h"
 #include "chromeos/components/telemetry_extension_ui/mojom/probe_service.mojom.h"
 #include "chromeos/components/telemetry_extension_ui/probe_service.h"
+#include "chromeos/components/telemetry_extension_ui/telemetry_extension_untrusted_source.h"
 #include "chromeos/components/telemetry_extension_ui/url_constants.h"
 #include "chromeos/grit/chromeos_telemetry_extension_resources.h"
-#include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_ui.h"
 #include "content/public/browser/web_ui_data_source.h"
 #include "content/public/common/url_constants.h"
 #include "services/network/public/mojom/content_security_policy.mojom.h"
 
 namespace chromeos {
+
 namespace {
-content::WebUIDataSource* CreateUntrustedTelemetryExtensionDataSource() {
-  content::WebUIDataSource* untrusted_source =
-      content::WebUIDataSource::Create(kChromeUIUntrustedTelemetryExtensionURL);
-  untrusted_source->AddResourcePath("untrusted.html",
-                                    IDR_TELEMETRY_EXTENSION_UNTRUSTED_HTML);
-  untrusted_source->AddResourcePath(
-      "untrusted_scripts.js", IDR_TELEMETRY_EXTENSION_UNTRUSTED_SCRIPTS_JS);
-  untrusted_source->AddResourcePath(
-      "untrusted_worker.js", IDR_TELEMETRY_EXTENSION_UNTRUSTED_WORKER_JS);
-  untrusted_source->AddFrameAncestor(GURL(kChromeUITelemetryExtensionURL));
 
-  // TODO(https://crbug.com/1085330): tighten CSP.
-  untrusted_source->OverrideContentSecurityPolicy(
-      network::mojom::CSPDirectiveName::DefaultSrc, std::string());
-
-  // Allow chrome-untrusted:// to load Web Worker scripts.
-  untrusted_source->OverrideContentSecurityPolicy(
-      network::mojom::CSPDirectiveName::WorkerSrc, "worker-src 'self';");
-
-  return untrusted_source;
-}
-}  // namespace
-
-TelemetryExtensionUI::TelemetryExtensionUI(content::WebUI* web_ui)
-    : ui::MojoWebUIController(web_ui) {
+std::unique_ptr<content::WebUIDataSource>
+CreateTrustedTelemetryExtensionDataSource() {
   auto trusted_source = base::WrapUnique(
       content::WebUIDataSource::Create(kChromeUITelemetryExtensionHost));
 
@@ -72,10 +51,42 @@ TelemetryExtensionUI::TelemetryExtensionUI(content::WebUI* web_ui)
       std::string("frame-src ") + kChromeUIUntrustedTelemetryExtensionURL + ";";
   trusted_source->OverrideContentSecurityPolicy(
       network::mojom::CSPDirectiveName::FrameSrc, csp);
+
+  return trusted_source;
+}
+
+std::unique_ptr<TelemetryExtensionUntrustedSource>
+CreateUntrustedTelemetryExtensionDataSource() {
+  auto untrusted_source = TelemetryExtensionUntrustedSource::Create(
+      chromeos::kChromeUIUntrustedTelemetryExtensionURL);
+
+  untrusted_source->AddResourcePath("untrusted.html",
+                                    IDR_TELEMETRY_EXTENSION_UNTRUSTED_HTML);
+  untrusted_source->AddResourcePath(
+      "untrusted_scripts.js", IDR_TELEMETRY_EXTENSION_UNTRUSTED_SCRIPTS_JS);
+  untrusted_source->AddResourcePath(
+      "untrusted_worker.js", IDR_TELEMETRY_EXTENSION_UNTRUSTED_WORKER_JS);
+
+  untrusted_source->OverrideContentSecurityPolicy(
+      network::mojom::CSPDirectiveName::FrameAncestors,
+      std::string("frame-ancestors ") +
+          chromeos::kChromeUITelemetryExtensionURL + ";");
+  untrusted_source->OverrideContentSecurityPolicy(
+      network::mojom::CSPDirectiveName::WorkerSrc, "worker-src 'self';");
+
+  return untrusted_source;
+}
+
+}  // namespace
+
+TelemetryExtensionUI::TelemetryExtensionUI(content::WebUI* web_ui)
+    : ui::MojoWebUIController(web_ui) {
   auto* browser_context = web_ui->GetWebContents()->GetBrowserContext();
-  content::WebUIDataSource::Add(browser_context, trusted_source.release());
-  content::WebUIDataSource::Add(browser_context,
-                                CreateUntrustedTelemetryExtensionDataSource());
+
+  content::WebUIDataSource::Add(
+      browser_context, CreateTrustedTelemetryExtensionDataSource().release());
+  content::URLDataSource::Add(browser_context,
+                              CreateUntrustedTelemetryExtensionDataSource());
 
   // Add ability to request chrome-untrusted: URLs
   web_ui->AddRequestableScheme(content::kChromeUIUntrustedScheme);

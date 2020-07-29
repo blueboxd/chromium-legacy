@@ -159,6 +159,9 @@
 
       Se esta política não for definida ou for definida como falsa, a transição rápida não será usada.
       Se for definida como verdadeira, a transição rápida será usada quando for compatível com o ponto de acesso sem fio.</translation>
+<translation id="1240722269871366886">Esta política permite que o <ph name="PRODUCT_OS_NAME" /> sugira emojis quando os usuários digitam com o teclado virtual ou físico.
+      Se ela for definida como verdadeira, o recurso será ativado e os usuários poderão mudá-lo.
+      Por padrão, esta política é definida como falsa. Nenhum emoji será sugerido, e o usuário não poderá modificar isso.</translation>
 <translation id="1243570869342663665">Controlar a filtragem de conteúdo adulto SafeSites.</translation>
 <translation id="1257550411839719984">Definir diretório de download padrão</translation>
 <translation id="1265053460044691532">Limite o tempo pelo qual um usuário autenticado via SAML pode fazer login off-line</translation>
@@ -469,13 +472,6 @@ Se você desativar a política, essa rolagem será desativada.</translation>
       A política precisa ser especificada como uma string que expresse o URL e o hash no formato JSON.</translation>
 <translation id="1819272352048746487">Ativar ou desativar vários recursos do teclado na tela</translation>
 <translation id="1827523283178827583">Usar servidores proxy fixos</translation>
-<translation id="1831495419375964631">Esta política é um URL que aponta para um arquivo XML no mesmo formato que a política <ph name="IEEM_SITELIST_POLICY" /> do Internet Explorer. As regras são carregadas a partir de um arquivo XML e não são compartilhadas com o Internet Explorer.
-
-      Quando esta política for deixada sem definição ou não for definida como um URL válido, ela não será usada pelo <ph name="PRODUCT_NAME" /> como fonte de regras para alternar entre navegadores.
-
-      Quando a política for definida como um URL válido, o download da lista de sites desse URL será realizado no <ph name="PRODUCT_NAME" />, e as regras serão aplicadas como se tivessem sido configuradas com a política <ph name="SITELIST_POLICY_NAME" />.
-
-      Para ver mais informações sobre a política <ph name="IEEM_SITELIST_POLICY" /> do Internet Explorer, acesse: https://docs.microsoft.com/internet-explorer/ie11-deploy-guide/what-is-enterprise-mode</translation>
 <translation id="1839278886947586809">
       Esta política foi removida no M80 porque não é mais necessária já que o WebDriver agora é compatível com todas as políticas existentes.
 
@@ -676,13 +672,6 @@ Se você desativar a política, essa rolagem será desativada.</translation>
 <translation id="2107601598727098402">
         O uso desta política foi suspenso no M72. Use CloudManagementEnrollmentToken.
         </translation>
-<translation id="2108169571875569435">Esta política controla qual comando é usado para abrir URLs em um navegador alternativo.
-
-Quando esta política não for definida, um padrão específico da plataforma será usado: Internet Explorer para Windows ou Safari para Mac OS X. No Linux, a inicialização de um navegador alternativo falhará quando a configuração não for feita.
-
-Quando esta política for definida como <ph name="INTERNET_EXPLORER_VALUE_PLACEHOLDER" />, <ph name="FIREFOX_VALUE_PLACEHOLDER" />, <ph name="SAFARI_VALUE_PLACEHOLDER" /> ou <ph name="OPERA_VALUE_PLACEHOLDER" />, o navegador correspondente será iniciado, caso esteja instalado. O <ph name="INTERNET_EXPLORER_VALUE_PLACEHOLDER" /> está disponível apenas no Windows, e o <ph name="SAFARI_VALUE_PLACEHOLDER" /> está disponível apenas no Windows e no Mac OS X.
-
-Quando esta política for definida como um caminho de arquivo, esse arquivo será usado como um executável.</translation>
 <translation id="2113068765175018713">Limitar tempo de execução do dispositivo reiniciando automaticamente</translation>
 <translation id="2124881675920287921">Esta política está obsoleta na versão M82 e ausente na M85. Em vez dela, use a <ph name="SAFE_BROWSING_EXTENDED_REPORTING_ENABLED_POLICY_NAME" />. Desativar <ph name="SAFE_BROWSING_EXTENDED_REPORTING_OPT_IN_ALLOWED_POLICY_NAME" /> equivale a desativar <ph name="SAFE_BROWSING_EXTENDED_REPORTING_ENABLED_POLICY_NAME" />. Ativar <ph name="SAFE_BROWSING_EXTENDED_REPORTING_OPT_IN_ALLOWED_POLICY_NAME" /> ou não definir essa configuração equivale a não definir <ph name="SAFE_BROWSING_EXTENDED_REPORTING_ENABLED_POLICY_NAME" />.
 
@@ -947,6 +936,7 @@ Se esta política não for definida, a tela de privacidade ficará desativada in
       Quando esta política não for configurada ou for definida como verdadeira, os usuários poderão usar o Compartilhamento de arquivos de rede.
 
       Quando esta política for definida como falsa, os usuários não poderão usar o Compartilhamento de arquivos de rede.</translation>
+<translation id="2435052056904485763">Lista de permissões do servidor de delegação Kerberos</translation>
 <translation id="2440773021691931148">Informa estatísticas de hardware e identificadores relacionados à energia.
 
       Se a política for definida como falsa ou se não for definida, as estatísticas não serão informadas.
@@ -1007,17 +997,6 @@ Se esta política não for definida, a tela de privacidade ficará desativada in
 
       Se esta política for definida como Falsa, uma mensagem de erro será exibida no lugar do prompt de configuração de rede.</translation>
 <translation id="2498238926436517902">Sempre ocultar automaticamente a estante</translation>
-<translation id="2505805702054675476">Esta política controla os parâmetros de linha de comando para iniciar um navegador alternativo.
-
-      Quando esta política não é definida, somente o URL é transmitido como um parâmetro de linha de comando.
-
-      Quando esta política é definida como uma lista de strings, cada string é transmitida para o navegador alternativo como um parâmetro de linha de comando separado. No Windows, os parâmetros são mesclados com espaços. No Mac OS X e no Linux, um parâmetro pode conter espaços e ainda ser tratado como um único parâmetro.
-
-      Se um elemento tiver <ph name="URL_PLACEHOLDER" />, ele será substituído pelo URL da página a ser aberta.
-
-      Se nenhum elemento tiver <ph name="URL_PLACEHOLDER" />, o URL será anexado ao fim da linha de comando.
-
-      As variáveis de ambiente serão expandidas. No Windows, <ph name="ENV_VARIABLE_WIN_EXAMPLE" /> será substituída pelo valor da variável de ambiente <ph name="ENV_VARIABLE_VALUE" />. No Mac OS X e no Linux, <ph name="ENV_VARIABLE_UNIX_EXAMPLE" /> será substituída pelo valor da variável de ambiente <ph name="ENV_VARIABLE" />.</translation>
 <translation id="250670737672448119">Ativar o recurso de acessibilidade que destaca o cursor.
 
           Este recurso é responsável por destacar a área ao redor do cursor durante a edição.
@@ -1451,15 +1430,6 @@ Se esta política não for definida, a tela de privacidade ficará desativada in
 <translation id="3096595567015595053">Lista de plug-ins ativados</translation>
 <translation id="3101501961102569744">Escolher o modo de especificar as configurações do servidor proxy</translation>
 <translation id="3101709781009526431">Data e hora</translation>
-<translation id="3114411414586006215">Esta política controla a lista de sites que nunca causarão uma troca de navegador.
-
-      Observe que também é possível adicionar elementos à lista por meio da política <ph name="EXTERNAL_SITELIST_URL_POLICY_NAME" />.
-
-      Se esta política não for definida, nenhum site será adicionado à lista.
-
-      Se esta política for definida, cada item será tratado como uma regra, de maneira semelhante à política <ph name="URL_LIST_POLICY_NAME" />. No entanto, a lógica será inversa: regras correspondentes não abrirão um navegador alternativo.
-
-      Ao contrário da <ph name="URL_LIST_POLICY_NAME" />, as regras se aplicam em ambas as direções. Isto é, quando o suplemento do Internet Explorer estiver presente e ativado, ele também controlará se o <ph name="IE_PRODUCT_NAME" /> abrirá esses URLs no <ph name="PRODUCT_NAME" />.</translation>
 <translation id="3117676313396757089">Atenção: o DHE será completamente removido do <ph name="PRODUCT_NAME" /> após a versão 57 (por volta de março de 2017), e esta política parará de funcionar.
 
       Se a política não for definida ou for definida como false, os pacotes de criptografia DHE em TLS não serão ativados. Caso contrário, ela poderá ser configurada como true para ativar os pacotes de criptografia DHE e manter a compatibilidade com um servidor desatualizado. Esta é uma medida temporária, e o servidor deve ser reconfigurado.
@@ -2031,13 +2001,6 @@ Se esta política for definida como falsa, o <ph name="PRODUCT_NAME" /> não usa
 <translation id="3973371701361892765">Nunca ocultar automaticamente a estante</translation>
 <translation id="3979738908158213640">URLs que terão acesso para realizar o atestado do dispositivo durante a autenticação SAML</translation>
 <translation id="3984028218719007910">Determina se o <ph name="PRODUCT_OS_NAME" /> deve manter os dados locais da conta após a saída. Se for configurada como true, nenhuma conta persistente será mantida pelo <ph name="PRODUCT_OS_NAME" /> e todos os dados da sessão do usuário serão descartados após a saída. Se esta política for configurada como false ou não for configurada, o dispositivo poderá manter os dados locais do usuário (criptografados).</translation>
-<translation id="398475542699441679">Essa política controla a ativação e a desativação do "Suporte a navegadores legados".
-
-      Quando ela é definida como falsa ou não é definida, o Chrome não tenta abrir os URLs designados em um navegador alternativo.
-
-      Quando ela é definida como verdadeira, o Chrome tenta abrir alguns URLs em um navegador alternativo (como o Internet Explorer). Esse recurso é configurado por meio das políticas no grupo de <ph name="LEGACY_BROWSER_SUPPORT_POLICY_GROUP" />.
-
-      Esse recurso substitui a extensão <ph name="LEGACY_BROWSER_SUPPORT_EXTENSION_NAME" />. A configuração da extensão será transferida para esse recurso, mas é altamente recomendado usar as políticas do Chrome em vez disso. Fazer isso garante uma compatibilidade melhor no futuro.</translation>
 <translation id="398884292557092447">Se a política for definida como verdadeira ou não for definida, os usuários poderão controlar as sugestões de preenchimento automático para cartões de crédito na IU.
 
       Se a política for definida como falsa, o preenchimento automático nunca fará sugestões ou preencherá informações de cartão de crédito nem salvará outros dados desse tipo que os usuários enviarem ao navegar na Web.</translation>
@@ -2425,6 +2388,21 @@ Quando a |IdleAction| não for definida, a ação padrão de suspensão será re
       Se "Forçado" for selecionado, as páginas poderão ser abertas SOMENTE no modo de navegação anônima. A opção "Forçado" não funciona para Android no Chrome</translation>
 <translation id="4600786265870346112">Ativar cursor grande</translation>
 <translation id="4604931264910482931">Configurar a lista de proibições de mensagens nativas</translation>
+<translation id="4607416370554533118">Se a política for definida, você poderá fazer uma lista de padrões de URL que especificam sites para que o Chrome possa selecionar um certificado do cliente automaticamente. O valor é uma matriz de dicionários JSON convertidos em strings, cada um com o formato <ph name="AUTO_SELECT_CERTIFICATE_FOR_URLS_EXAMPLE" />, em que <ph name="URL_PATTERN_PLACEHOLDER" /> é um padrão de configuração de conteúdo. <ph name="FILTER_PLACEHOLDER" /> restringe quais certificados do cliente podem ser selecionados automaticamente pelo navegador. Seja qual for o filtro utilizado, apenas os certificados correspondentes à solicitação do servidor serão selecionados.
+
+      Exemplos de uso da seção <ph name="FILTER_PLACEHOLDER" />:
+
+      * Quando <ph name="FILTER_PLACEHOLDER" /> estiver definido como <ph name="AUTO_SELECT_CERTIFICATE_FOR_URLS_FILTER_EXAMPLE" />, apenas certificados do cliente emitidos por um certificado com o CommonName <ph name="ISSUER_CN_PLACEHOLDER" /> serão selecionados.
+
+      * Quando <ph name="FILTER_PLACEHOLDER" /> contiver as seções <ph name="ISSUER_STRING_VALUE" /> e <ph name="SUBJECT_STRING_VALUE" /> ao mesmo tempo, apenas certificados do cliente que satisfaçam ambas as condições serão selecionados.
+
+      * Quando <ph name="FILTER_PLACEHOLDER" /> contiver uma seção <ph name="SUBJECT_STRING_VALUE" /> com o valor <ph name="FILTER_STRING_ORGANIZATION" />, um certificado precisará de pelo menos uma organização correspondente ao valor especificado para ser selecionado.
+
+      * Quando <ph name="FILTER_PLACEHOLDER" /> contiver uma seção <ph name="SUBJECT_STRING_VALUE" /> com um valor <ph name="FILTER_STRING_ORGANIZATIONAL_UNIT" />, um certificado precisará de pelo menos uma unidade organizacional correspondente ao valor especificado para ser selecionado.
+
+      * Quando <ph name="FILTER_PLACEHOLDER" /> estiver definido como <ph name="EMPTY_DICTIONARY" />, a seleção de certificados do cliente não será restringida de nenhuma outra forma. Os filtros fornecidos pelo servidor da Web ainda se aplicam.
+
+      Se a política não for definida, não haverá seleção automática para nenhum site.</translation>
 <translation id="4617338332148204752">Ignorar a verificação de metatags em <ph name="PRODUCT_FRAME_NAME" /></translation>
 <translation id="462134014569484584">Esta política especifica a chave de licença do <ph name="PLUGIN_VM_NAME" /> para este dispositivo.</translation>
 <translation id="4625915093043961294">Configurar a lista branca de instalação de extensão</translation>
@@ -2541,6 +2519,13 @@ Quando a |IdleAction| não for definida, a ação padrão de suspensão será re
 
       Se você definir a política, os usuários não poderão mudá-la. Se ela não for definida, os usuários poderão decidir se a estante é ocultada automaticamente ou não.</translation>
 <translation id="4812714598405913256">Configurar a mensagem de expiração da atualização automática para a política DeviceMinimumVersion</translation>
+<translation id="481492486938162195">Esta política está obsoleta. Use <ph name="AUTH_NEGOCIATE_DELEGATE_ALLOWLIST_POLICY_NAME" />.
+
+          Os servidores que podem ser delegados pelo <ph name="PRODUCT_NAME" />.
+
+          Separe vários nomes de servidor usando vírgulas. Caracteres curinga (*) são permitidos.
+
+          Se a política não for definida, o <ph name="PRODUCT_NAME" /> não delegará credenciais do usuário mesmo que um servidor seja detectado como intranet.</translation>
 <translation id="4816674326202173458">Permitir que o usuário corporativo seja ao mesmo tempo primário e secundário (comportamento padrão para usuários não gerenciados)</translation>
 <translation id="4826326557828204741">Ação a ser executada quando o tempo de inatividade for atingido durante execução com bateria</translation>
 <translation id="482803100714220060">Exibir URLs completos</translation>
@@ -2710,11 +2695,6 @@ O campo <ph name="PROXY_MODE_PROXY_SETTINGS_FIELD" /> permite que você especifi
           Se esta política não for definida, o conteúdo misto ativo será bloqueado e o conteúdo misto passivo ganhará um upgrade, mas o usuário poderá definir exceções para dar permissão a sites específicos.
 
           Para informações detalhadas sobre padrões de URL válidos, consulte https://cloud.google.com/docs/chrome-enterprise/policies/url-patterns.</translation>
-<translation id="510196893779239086">Esta política controla se o Chrome será totalmente fechado quando a última guia for alternada para outro navegador.
-
-      Quando esta política não estiver definida ou estiver definida como verdadeira, o Chrome manterá pelo menos uma guia aberta depois de alternar para um navegador alternativo.
-
-      Quando ela estiver definida como falsa, o Chrome fechará a guia depois de alternar para um navegador alternativo, mesmo que essa seja a última guia. Assim, o Chrome será totalmente fechado.</translation>
 <translation id="5102203758995933166">Permite aplicar a configuração de rede por usuário a um dispositivo <ph name="PRODUCT_OS_NAME" />. A configuração de rede é uma string formatada em JSON, conforme definido pelo formato Open Network Configuration.</translation>
 <translation id="5105313908130842249">Intervalo de bloqueio da tela no funcionamento com energia da bateria</translation>
 <translation id="5108031557082757679">Impressoras empresariais desativadas</translation>
@@ -3031,17 +3011,6 @@ O campo <ph name="PROXY_MODE_PROXY_SETTINGS_FIELD" /> permite que você especifi
 <translation id="546726650689747237">Intervalo de escurecimento da tela no funcionamento com alimentação CA</translation>
 <translation id="5469143988693423708">O usuário tem permissão para executar o Crostini</translation>
 <translation id="5469825884154817306">Bloquear imagens nestes sites</translation>
-<translation id="5472668698895343595">Esta política controla a lista de sites que serão abertos em um navegador alternativo.
-
-      Também é possível adicionar elementos à lista pelas políticas <ph name="USE_IE_SITELIST_POLICY_NAME" /> e <ph name="EXTERNAL_SITELIST_URL_POLICY_NAME" />.
-
-      Quando esta política não for definida, nenhum site será adicionado à lista.
-
-      Quando esta política for definida, cada item será tratado como uma regra para abrir algo em um navegador alternativo. No <ph name="PRODUCT_NAME" />, essas regras são usadas para determinar se um URL será aberto em um navegador alternativo ou não.
-
-      Quando o suplemento do Internet Explorer estiver presente e ativado, o Internet Explorer retornará ao <ph name="PRODUCT_NAME" /> quando não houver correspondência com as regras.
-
-      Se as regras forem contraditórias, o <ph name="PRODUCT_NAME" /> usará a regra mais específica.</translation>
 <translation id="5475361623548884387">Ativar impressão</translation>
 <translation id="547601067149622666">Não permitir anúncios em sites com anúncios invasivos</translation>
 <translation id="5483065054530244863">Permitir certificados SHA-1 assinados emitidos pelas âncoras de confiança locais</translation>
@@ -3285,19 +3254,6 @@ O campo <ph name="PROXY_MODE_PROXY_SETTINGS_FIELD" /> permite que você especifi
 
           Quando essa política não é definida, o comportamento <ph name="ATTRIBUTE_SAMESITE_NAME" /> padrão para cookies depende da configuração pessoal do usuário para os recursos <ph name="FEATURE_NAME_SAMESITE_BY_DEFAULT_COOKIES" />, <ph name="FEATURE_NAME_SAMESITE_NONE_MUST_BE_SECURE" /> e <ph name="FEATURE_NAME_SCHEMEFUL_SAME_SITE" />, que podem ser definidos por um teste de campo, ou ativando e desativando as sinalizações <ph name="FLAG_NAME_SAMESITE_BY_DEFAULT_COOKIES" />, <ph name="FLAG_NAME_SAMESITE_NONE_MUST_BE_SECURE" /> ou <ph name="FLAG_NAME_SCHEMEFUL_SAME_SITE" />, respectivamente.</translation>
 <translation id="585270638818921943">Impede o uso de apps para Android de fontes não confiáveis</translation>
-<translation id="5855010364142818361">Esta política controla os parâmetros de linha de comando para o Chrome no Internet Explorer.
-
-      Se o suplemento "Suporte a navegadores legados" do Internet Explorer não estiver instalado, esta política não terá efeito.
-
-      Quando a política não for definida, o Internet Explorer só transmitirá o URL para o Chrome como um parâmetro de linha de comando.
-
-      Quando a política for definida para uma lista de strings, as strings serão mescladas com espaços e transmitidas ao Chrome como parâmetros de linha de comando.
-
-      Se um elemento tiver <ph name="URL_PLACEHOLDER" />, ele será substituído pelo URL da página a ser aberta.
-
-      Se nenhum elemento tiver <ph name="URL_PLACEHOLDER" />, o URL será anexado ao fim da linha de comando.
-
-      As variáveis de ambiente serão expandidas. No Windows, <ph name="ENV_VARIABLE_WIN_EXAMPLE" /> será substituída pelo valor da variável de ambiente ABC.</translation>
 <translation id="5859344336338527083">Se definida, a política especificará os URLs que podem instalar extensões, apps e temas. Antes do <ph name="PRODUCT_NAME" /> 21, os usuários podiam clicar em um link para um arquivo *.crx e o <ph name="PRODUCT_NAME" /> se oferecia para instalar o arquivo após alguns avisos. Depois dessa versão, esses arquivos precisam ser transferidos por download e arrastados para a página de configurações do <ph name="PRODUCT_NAME" />. Essa configuração permite que URLs específicos utilizem o fluxo de instalação antigo e mais simples.
 
       Cada item nesta lista é um padrão de correspondência de estilo de extensão (consulte https://developer.chrome.com/extensions/match_patterns). Os usuários conseguem instalar com facilidade os itens de qualquer URL correspondente a um item da lista. Tanto o local do arquivo *.crx quanto a página de onde o download é feito (ou seja, o referenciador) precisam ser permitidos por esses padrões.
@@ -3709,15 +3665,6 @@ Se esta configuração estiver desativada ou se nenhum valor for definido, o Mod
 
       Se a política não for definida, especifique a opção "Deixar os usuários decidirem" ou defina como "Nenhuma". Assim, os usuários controlarão a detecção automática de fuso horário usando os controles normais em chrome://settings.</translation>
 <translation id="6532769014584932288">Permitir wake locks</translation>
-<translation id="653645667373317432">Esta política controla o comando usado para abrir URLs no <ph name="PRODUCT_NAME" /> ao vir do Internet Explorer.
-
-      Se o suplemento "Suporte a navegadores legados" do Internet Explorer não estiver instalado, esta política não terá efeito.
-
-      Quando a política não for definida, o Internet Explorer detectará automaticamente o caminho executável do <ph name="PRODUCT_NAME" /> quando for abrir o <ph name="PRODUCT_NAME" /> a partir do Internet Explorer.
-
-      Quando a política for definida, ela será usada para abrir o <ph name="PRODUCT_NAME" /> ao iniciar o <ph name="PRODUCT_NAME" /> no Internet Explorer.
-
-      Esta política pode ser definida como um caminho de arquivo executável ou como <ph name="PRODUCT_NAME_PLACEHOLDER" /> para detectar automaticamente o local de instalação do Chrome.</translation>
 <translation id="6536600139108165863">Reinicialização automática no desligamento do dispositivo</translation>
 <translation id="6539246272469751178">Esta política não tem nenhum efeito sobre apps Android. Os apps Android sempre usam o diretório de downloads padrão e não podem acessar nenhum arquivo transferido por download pelo <ph name="PRODUCT_OS_NAME" /> para um diretório de downloads não padrão.</translation>
 <translation id="654303922206238013">Estratégia de migração para eCryptfs</translation>
@@ -4140,15 +4087,6 @@ Se esta política não for definida, não haverá restrições quanto aos usuár
       A configuração é transferida por download e armazenada em cache. O download será refeito sempre que o URL ou a hash mudarem.
 
       Se você definir a política, os usuários não poderão mudá-la. Se não for definida, os usuários poderão continuar usando o contêiner Crostini padrão na configuração atual desde que permitido pelas políticas.</translation>
-<translation id="713121532817834879">Esta política é um URL que aponta para um arquivo XML no mesmo formato que a política <ph name="IEEM_SITELIST_POLICY" /> do Internet Explorer. As regras são carregadas a partir de um arquivo XML e não são compartilhadas com o Internet Explorer.
-
-      As regras deste arquivo XML aplicam-se da mesma maneira que <ph name="GREYLIST_POLICY_NAME" />. Isto é, essas regras impedem que o <ph name="PRODUCT_NAME" /> abra o navegador alternativo e também que o navegador alternativo abra o <ph name="PRODUCT_NAME" />.
-
-      Se esta política estiver sem definição ou não for definida como um URL válido, ela não será usada pelo <ph name="PRODUCT_NAME" /> como fonte de regras que não acionam uma troca de navegador.
-
-      Se esta política for definida como um URL válido, o download da lista de sites desse URL será realizado no <ph name="PRODUCT_NAME" />, e as regras serão aplicadas como se tivessem sido configuradas com a política <ph name="SITELIST_POLICY_NAME" />.
-
-      Para mais informações sobre a política <ph name="IEEM_SITELIST_POLICY" /> do Internet Explorer, acesse: https://docs.microsoft.com/internet-explorer/ie11-deploy-guide/what-is-enterprise-mode</translation>
 <translation id="7132877481099023201">URLs que terão acesso a dispositivos de captura de vídeo sem solicitação</translation>
 <translation id="7134420220355750019">Usar o botão direito do mouse como o principal.
 
@@ -4438,11 +4376,6 @@ Essas políticas são ignoradas se a Área de trabalho remota do Google Chrome n
       Esta política depende da permissão de assinaturas SHA-1 pela pilha de verificação de certificados do sistema operacional. Se a atualização de um SO alterar o modo como esse sistema lida com certificados SHA-1, talvez esta política deixe de ter efeito. Além disso, esta política é usada como alternativa temporária para dar às empresas mais tempo para deixar de usar SHA-1. Esta política será removida no dia 1 de janeiro de 2019 ou em uma data próxima a essa.
 
       Se esta política não estiver configurada ou estiver configurada como false, o <ph name="PRODUCT_NAME" /> seguirá a programação de suspensão de uso de SHA-1 anunciada publicamente.</translation>
-<translation id="7578049687634719313">Esta política controla o tempo a ser aguardado até a inicialização de um navegador alternativo, em milésimos de segundo.
-
-      Quando a política não é definida ou é definida como 0, a navegação para um URL designado o abre imediatamente em um navegador alternativo.
-
-      Quando a política é definida com um número diferente de 0, o Chrome exibe uma mensagem por vários milésimos de segundo e, em seguida, abre o navegador alternativo.</translation>
 <translation id="7590188804371204512">Controla a instalação de extensões externas.
 
       Ativar essa configuração impede a instalação de extensões externas.
@@ -5007,13 +4940,6 @@ O modo recomendado para configurar políticas no Windows é por meio de GPO, emb
 <translation id="838870586332499308">Ativa roaming de dados</translation>
 <translation id="8393850527597048037">Somente de plataforma</translation>
 <translation id="8395749934754392549">Controla configurações do contêiner Android (ARC) e de apps Android.</translation>
-<translation id="8396145449084377015">Esta política controla se as regras da política SiteList do Internet Explorer serão carregadas ou não.
-
-      Quando esta política não for definida ou for definida como false, o <ph name="PRODUCT_NAME" /> não usará a política <ph name="IEEM_SITELIST_POLICY" /> do Internet Explorer como origem de regras para a troca de navegadores.
-
-      Quando esta política for definida como true, o <ph name="PRODUCT_NAME" /> fará a leitura da <ph name="IEEM_SITELIST_POLICY" /> do Internet Explorer para receber o URL da lista de sites. O <ph name="PRODUCT_NAME" /> fará o download da lista de sites do URL e aplicará as regras como se tivessem sido configuradas com a política <ph name="SITELIST_POLICY_NAME" />.
-
-      Para ver mais informações sobre a política <ph name="IEEM_SITELIST_POLICY" /> do Internet Explorer, consulte: https://docs.microsoft.com/internet-explorer/ie11-deploy-guide/what-is-enterprise-mode</translation>
 <translation id="8398952282584132331">Ativar tela de privacidade</translation>
 <translation id="8402079500086185021">Sempre abrir arquivos em PDF externamente</translation>
 <translation id="8405691014775178834">Permitir acesso root deste usuário aos contêineres do Crostini.
@@ -5194,11 +5120,6 @@ O modo recomendado para configurar políticas no Windows é por meio de GPO, emb
 <translation id="8653561013005884087">Se esta política for definida como verdadeira, o feedback falado será ativado. Se esta política for definida como falsa, o feedback falado será desativado.
 
        Se você definir a política, os usuários não poderão mudá-la. Se a política não for definida, o feedback falado será desativado inicialmente, mas os usuários podem mudá-lo a qualquer momento.</translation>
-<translation id="8654286232573430130">Especifica quais servidores devem estar na lista de permissões para a autenticação integrada. A autenticação integrada só é ativada quando o <ph name="PRODUCT_NAME" /> recebe um desafio de autenticação a partir de um proxy ou de um servidor que está nesta lista de permissões.
-
-          Separe vários nomes de servidores com vírgulas. Caracteres curinga (*) são permitidos.
-
-          Se esta política não é definida, o <ph name="PRODUCT_NAME" /> tenta detectar se um servidor está na Intranet e, só então, responde às solicitações IWA. Se um servidor é detectado como Internet, as solicitações IWA que partem dele são ignoradas pelo <ph name="PRODUCT_NAME" />.</translation>
 <translation id="8656110680728938054">Ativa o Selecionar para ouvir</translation>
 <translation id="8661297125441579970">Bloquear migração de dados e ARC.</translation>
 <translation id="8665314828727504286">Nível de proteção do "Navegação segura"</translation>
@@ -5389,6 +5310,13 @@ Se você ativar esta configuração, o <ph name="PRODUCT_NAME" /> e os apps ARC 
       Se ela for definida como falsa ou não for definida, os elementos de controle de formulário serão ativados conforme foram lançados nas versões M81, M82 e M83.
 
       Esta política será removida após o Chrome 84.</translation>
+<translation id="8937562488500723400">Controla se a aprovação pela política KDC foi respeitada para decidir se os tíquetes do <ph name="KERBEROS" /> devem ser delegados ou não.
+
+          Se a política for definida como verdadeira, a autenticação HTTP respeitará a aprovação pela política KDC, ou seja, o Chrome delegará credenciais somente se a KDC definir <ph name="OK_AS_DELEGATE" /> em um tíquete de serviço. Consulte https://tools.ietf.org/html/rfc5896.html (link em inglês) para ver mais informações. O serviço também precisa corresponder à política AuthNegotiateDelegateAllowlist.
+
+          Se esta política não for definida ou for definida como falsa, a política KDC será ignorada em plataformas compatíveis e somente a AuthNegotiateDelegateWhitelist será respeitada.
+
+          No Windows, a política KDC é sempre respeitada.</translation>
 <translation id="8938932171964587769">Uso suspenso no M69. Em vez dela,
       use OverrideSecurityRestrictionsOnInsecureOrigin.
 
@@ -5506,6 +5434,27 @@ Se você ativar esta configuração, o <ph name="PRODUCT_NAME" /> e os apps ARC 
       Se você definir a política, o <ph name="PRODUCT_NAME" /> usará o tamanho de cache fornecido, independentemente de os usuários especificarem ou não a sinalização "--disk-cache-size". Valores abaixo de alguns megabytes serão arredondados para cima.
 
       Se a política não for definida, o <ph name="PRODUCT_NAME" /> usará o tamanho padrão. Os usuários podem mudar essa configuração usando a sinalização "--disk-cache-size".</translation>
+<translation id="9057444687284972605">Permite definir uma lista de padrões de URL que especificam sites para os quais um certificado do cliente é selecionado automaticamente na tela de login no frame que hospeda o fluxo SAML, se o site solicitar um certificado. Um exemplo de uso é configurar um certificado do dispositivo a ser apresentado para SAML IdP.
+
+      O valor é uma matriz de dicionários JSON convertidos em strings, cada um com o formato <ph name="AUTO_SELECT_CERTIFICATE_FOR_URLS_EXAMPLE" />, em que <ph name="URL_PATTERN_PLACEHOLDER" /> é um padrão de configuração de conteúdo. <ph name="FILTER_PLACEHOLDER" /> restringe quais certificados do cliente podem ser selecionados automaticamente pelo navegador. Seja qual for o filtro utilizado, apenas os certificados correspondentes à solicitação do servidor serão selecionados.
+
+      Exemplos de uso da seção <ph name="FILTER_PLACEHOLDER" />:
+
+      * Quando <ph name="FILTER_PLACEHOLDER" /> estiver definido como <ph name="AUTO_SELECT_CERTIFICATE_FOR_URLS_FILTER_EXAMPLE" />, apenas certificados do cliente emitidos por um certificado com o CommonName <ph name="ISSUER_CN_PLACEHOLDER" /> serão selecionados.
+
+      * Quando <ph name="FILTER_PLACEHOLDER" /> contiver as seções <ph name="ISSUER_STRING_VALUE" /> e <ph name="SUBJECT_STRING_VALUE" /> ao mesmo tempo, apenas certificados do cliente que satisfaçam ambas as condições serão selecionados.
+
+      * Quando <ph name="FILTER_PLACEHOLDER" /> contiver uma seção <ph name="SUBJECT_STRING_VALUE" /> com o valor <ph name="FILTER_STRING_ORGANIZATION" />, um certificado precisará de pelo menos uma organização correspondente ao valor especificado para ser selecionado.
+
+      * Quando <ph name="FILTER_PLACEHOLDER" /> contiver uma seção <ph name="SUBJECT_STRING_VALUE" /> com um valor <ph name="FILTER_STRING_ORGANIZATIONAL_UNIT" />, um certificado precisará de pelo menos uma unidade organizacional correspondente ao valor especificado para ser selecionado.
+
+      * Quando <ph name="FILTER_PLACEHOLDER" /> estiver definido como <ph name="EMPTY_DICTIONARY" />, a seleção de certificados do cliente não será restringida de nenhuma outra forma. Os filtros fornecidos pelo servidor da Web ainda se aplicam.
+
+
+
+      Se esta política não for definida, não haverá seleção automática para nenhum site.
+
+      Para informações detalhadas sobre padrões de URL válidos, consulte https://cloud.google.com/docs/chrome-enterprise/policies/url-patterns (link em inglês).</translation>
 <translation id="9062348747995618422">Se a política for definida, será possível configurar uma lista de padrões de URL que especifica os sites que podem executar o plug-in <ph name="FLASH_PLUGIN_NAME" />.
 
       Se a política não tiver definição, <ph name="DEFAULT_PLUGINS_SETTING_POLICY_NAME" /> será aplicada a todos os sites, se estiver definida. Caso contrário, a configuração pessoal do usuário será aplicada.

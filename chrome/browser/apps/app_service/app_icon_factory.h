@@ -6,6 +6,7 @@
 #define CHROME_BROWSER_APPS_APP_SERVICE_APP_ICON_FACTORY_H_
 
 #include <string>
+#include <vector>
 
 #include "base/callback_forward.h"
 #include "base/files/file_path.h"
@@ -16,6 +17,7 @@
 
 #if defined(OS_CHROMEOS)
 #include "components/arc/mojom/app.mojom.h"
+#include "components/arc/mojom/intent_helper.mojom.h"
 #endif  // OS_CHROMEOS
 
 namespace content {
@@ -63,6 +65,11 @@ void ArcRawIconPngDataToImageSkia(
     arc::mojom::RawIconPngDataPtr icon,
     int size_hint_in_dip,
     base::OnceCallback<void(const gfx::ImageSkia& icon)> callback);
+
+void ArcActivityIconsToImageSkias(
+    const std::vector<arc::mojom::ActivityIconPtr>& icons,
+    base::OnceCallback<void(const std::vector<gfx::ImageSkia>& icons)>
+        callback);
 #endif  // OS_CHROMEOS
 
 // Modifies |image_skia| to apply icon post-processing effects like badging and

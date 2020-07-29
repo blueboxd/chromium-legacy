@@ -408,6 +408,7 @@ class VIEWS_EXPORT Textfield : public View,
 #endif
 
 #if defined(OS_CHROMEOS)
+  gfx::Range GetAutocorrectRange() const override;
   gfx::Rect GetAutocorrectCharacterBounds() const override;
   bool SetAutocorrectRange(const base::string16& autocorrect_text,
                            const gfx::Range& range) override;

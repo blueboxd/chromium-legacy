@@ -2379,7 +2379,8 @@ void LayoutObject::StyleWillChange(StyleDifference diff,
         style_->GetFontDescription() != new_style.GetFontDescription() ||
         style_->GetWritingDirection() != new_style.GetWritingDirection() ||
         style_->InsideLink() != new_style.InsideLink() ||
-        style_->VerticalAlign() != new_style.VerticalAlign()) {
+        style_->VerticalAlign() != new_style.VerticalAlign() ||
+        style_->GetTextAlign() != new_style.GetTextAlign()) {
       if (AXObjectCache* cache = GetDocument().ExistingAXObjectCache())
         cache->StyleChanged(this);
     }

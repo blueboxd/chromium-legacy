@@ -381,14 +381,7 @@ bool GaiaAuthFetcherIOSNSURLSessionBridgeTest::FetchURL(const GURL& url) {
 
 // Tests to send a request with no cookies set in the cookie store and receive
 // multiples cookies from the request.
-// TODO(crbug.com/1100917): Test fails on device.
-#if TARGET_IPHONE_SIMULATOR
-#define MAYBE_FetchWithEmptyCookieStore FetchWithEmptyCookieStore
-#else
-#define MAYBE_FetchWithEmptyCookieStore DISABLED_FetchWithEmptyCookieStore
-#endif
-TEST_F(GaiaAuthFetcherIOSNSURLSessionBridgeTest,
-       MAYBE_FetchWithEmptyCookieStore) {
+TEST_F(GaiaAuthFetcherIOSNSURLSessionBridgeTest, FetchWithEmptyCookieStore) {
   // TODO(crbug.com/1106030): expected_cookies_set is failing on iOS12.
   if (!base::ios::IsRunningOnIOS13OrLater()) {
     return;
@@ -412,13 +405,7 @@ TEST_F(GaiaAuthFetcherIOSNSURLSessionBridgeTest,
 
 // Tests to send a request with one cookie set in the cookie store and receive
 // another cookies from the request.
-// TODO(crbug.com/1100917): Test fails on device.
-#if TARGET_IPHONE_SIMULATOR
-#define MAYBE_FetchWithCookieStore FetchWithCookieStore
-#else
-#define MAYBE_FetchWithCookieStore DISABLED_FetchWithCookieStore
-#endif
-TEST_F(GaiaAuthFetcherIOSNSURLSessionBridgeTest, MAYBE_FetchWithCookieStore) {
+TEST_F(GaiaAuthFetcherIOSNSURLSessionBridgeTest, FetchWithCookieStore) {
   // TODO(crbug.com/1106030): expected_cookies_set is failing on iOS12.
   if (!base::ios::IsRunningOnIOS13OrLater()) {
     return;
@@ -445,13 +432,7 @@ TEST_F(GaiaAuthFetcherIOSNSURLSessionBridgeTest, MAYBE_FetchWithCookieStore) {
 
 // Tests to a request with a redirect. One cookie is received by the first
 // request, and a second one by the redirected request.
-// TODO(crbug.com/1100917): Test fails on device.
-#if TARGET_IPHONE_SIMULATOR
-#define MAYBE_FetchWithRedirect FetchWithRedirect
-#else
-#define MAYBE_FetchWithRedirect DISABLED_FetchWithRedirect
-#endif
-TEST_F(GaiaAuthFetcherIOSNSURLSessionBridgeTest, MAYBE_FetchWithRedirect) {
+TEST_F(GaiaAuthFetcherIOSNSURLSessionBridgeTest, FetchWithRedirect) {
   // TODO(crbug.com/1106030): expected_cookies_set is failing on iOS12.
   if (!base::ios::IsRunningOnIOS13OrLater()) {
     return;

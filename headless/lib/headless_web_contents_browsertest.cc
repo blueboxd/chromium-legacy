@@ -122,14 +122,14 @@ IN_PROC_BROWSER_TEST_F(HeadlessWebContentsTest, MAYBE_WindowOpen) {
     EXPECT_NE(parent->window_tree_host(), child->window_tree_host());
 
   gfx::Rect expected_bounds(0, 0, 200, 100);
-#if !defined(OS_MACOSX)
+#if !defined(OS_MAC)
   EXPECT_EQ(expected_bounds, child->web_contents()->GetViewBounds());
   EXPECT_EQ(expected_bounds, child->web_contents()->GetContainerBounds());
-#else   // !defined(OS_MACOSX)
+#else   // !defined(OS_MAC)
   // Mac does not support GetViewBounds() and view positions are random.
   EXPECT_EQ(expected_bounds.size(),
             child->web_contents()->GetContainerBounds().size());
-#endif  // !defined(OS_MACOSX)
+#endif  // !defined(OS_MAC)
 }
 
 #if defined(OS_WIN)
@@ -296,7 +296,7 @@ HEADLESS_ASYNC_DEVTOOLED_TEST_P(
 #endif
 
 // Instantiate test case for both software and gpu compositing modes.
-#if defined(OS_WIN) || (defined(OS_MACOSX) && defined(ADDRESS_SANITIZER))
+#if defined(OS_WIN) || (defined(OS_MAC) && defined(ADDRESS_SANITIZER))
 // TODO(crbug.com/1045980): Disabled on Windows due to flakiness.
 // TODO(crbug.com/1086872): Disabled due to flakiness on Mac ASAN.
 INSTANTIATE_TEST_SUITE_P(HeadlessWebContentsScreenshotWindowPositionTests,
@@ -520,6 +520,7 @@ class HeadlessWebContentsPDFPageSizeRoundingTest
 HEADLESS_ASYNC_DEVTOOLED_TEST_F(HeadlessWebContentsPDFPageSizeRoundingTest);
 
 const char kExpectedStructTreeJSON[] = R"({
+   "lang": "en",
    "type": "Document",
    "~children": [ {
       "type": "H1",
@@ -591,6 +592,12 @@ const char kExpectedStructTreeJSON[] = R"({
       "~children": [ {
          "alt": "Car at the beach",
          "type": "Figure"
+      } ]
+   }, {
+      "lang": "fr",
+      "type": "P",
+      "~children": [ {
+         "type": "NonStruct"
       } ]
    } ]
 }
@@ -781,7 +788,7 @@ IN_PROC_BROWSER_TEST_F(HeadlessWebContentsTest, MAYBE_BrowserOpenInTab) {
 }
 
 // BeginFrameControl is not supported on MacOS.
-#if !defined(OS_MACOSX)
+#if !defined(OS_MAC)
 
 class HeadlessWebContentsBeginFrameControlTest
     : public HeadlessBrowserTest,
@@ -1111,7 +1118,7 @@ HEADLESS_ASYNC_DEVTOOLED_TEST_F(
     HeadlessWebContentsBeginFrameControlViewportTest);
 #endif
 
-#endif  // !defined(OS_MACOSX)
+#endif  // !defined(OS_MAC)
 
 class CookiesEnabled : public HeadlessAsyncDevTooledBrowserTest,
                        page::Observer {

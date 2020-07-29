@@ -559,6 +559,9 @@
 <translation id="3364869320075768271"><ph name="URL" /> भर्चुअल रियालिटी चल्ने तपाईंको यन्त्र र त्यसमा भएको डेटा प्रयोग गर्न चाहन्छ</translation>
 <translation id="3366477098757335611">कार्डहरू हेर्नुहोस्</translation>
 <translation id="3369192424181595722">घडी त्रुटि</translation>
+<translation id="3371076217486966826"><ph name="URL" /> निम्न अनुमति माग्दै छ:
+      • तपाईंको सेरोफेरोको 3D नक्सा बनाउने तथा क्यामेराको स्थिति ट्र्याक गर्ने
+      • तपाईंको क्यामेरा प्रयोग गर्ने</translation>
 <translation id="337363190475750230">प्रबन्ध हटाइएको</translation>
 <translation id="3377144306166885718">सर्भरले TLS को प्रचलनमा नरहेको संस्करण प्रयोग गर्‍यो।</translation>
 <translation id="3377188786107721145">नीति पार्स त्रुटि</translation>
@@ -1556,6 +1559,7 @@
 <translation id="7518003948725431193">निम्न वेब ठेगानाको लागि कुनैपनि वेबपृष्ठ फेला परेन: <ph name="URL" /></translation>
 <translation id="7520302887438682816">C8 (Envelope)</translation>
 <translation id="7521387064766892559">JavaScript</translation>
+<translation id="7521825010239864438">"<ph name="SECTION" />" नामक खण्ड लुकाइएको छ</translation>
 <translation id="7526934274050461096">यो साइटमा तपाईंको जडान निजी होइन</translation>
 <translation id="7535087603100972091">मान</translation>
 <translation id="7537536606612762813">अनिवार्य</translation>
@@ -1754,6 +1758,7 @@
 <translation id="8293206222192510085">बुकमार्क थप्नुहोस्</translation>
 <translation id="8294431847097064396">स्रोत</translation>
 <translation id="8298115750975731693">तपाईँले प्रयोग गरिरहनु भएको Wi-Fi (<ph name="WIFI_NAME" />) लाई <ph name="BEGIN_BOLD" /><ph name="LOGIN_URL" /><ph name="END_BOLD" /> भ्रमण गर्ने आवश्यकता हुन सक्छ।</translation>
+<translation id="8303854710873047864">"<ph name="SECTION" />" नामक खण्ड देखाइएको छ</translation>
 <translation id="830498451218851433">आधा फोल्ड</translation>
 <translation id="8307358339886459768">Small-Photo</translation>
 <translation id="8307888238279532626">इन्स्टल गरिएका एप र ती एप प्रयोग गरिने अन्तराल</translation>
@@ -1872,6 +1877,7 @@
 <translation id="8931333241327730545">तपाईं आफ्नो Google खातामा यो कार्ड सुरक्षित गर्न चाहनुहुन्छ?</translation>
 <translation id="8932102934695377596">तपाईंको घडी ढिला छ</translation>
 <translation id="893332455753468063">नाम थप्नुहोस्</translation>
+<translation id="8942355029279167844">तपाईंका एड्मिनले <ph name="APP_NAME" /> एप सुधार्ने प्रयोजनका लागि यो एपलाई निदानसम्बन्धी डेटा सङ्कलन गर्ने अनुमति दिनुभएको छ। थप जानकारीका लागि <ph name="BEGIN_LINK" />https://www.parallels.com/pcep<ph name="END_LINK" /> मा जानुहोस्।</translation>
 <translation id="8943282376843390568">हल्का पहेँलो</translation>
 <translation id="8957210676456822347">क्याप्टिभ पोर्टल प्राधिकरण</translation>
 <translation id="8962950042226115166">शङ्कास्पद साइट</translation>

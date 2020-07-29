@@ -16,7 +16,7 @@ enum class AssistiveType {
   kPersonalName = 4,
   kEmoji = 5,
   kAssistiveAutocorrect = 6,
-  kPersonalNumber = 7,
+  kPersonalNumber = 7,  // Deprecated, combined with kPersonalPhoneNumber
   kPersonalFirstName = 8,
   kPersonalLastName = 9,
   kMaxValue = kPersonalLastName,

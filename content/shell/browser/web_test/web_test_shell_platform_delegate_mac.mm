@@ -144,10 +144,9 @@ void WebTestShellPlatformDelegate::ResizeWebContent(
   // the widget's screen rects, since the RenerWidgetHostView is not attached to
   // a window in headless mode. So this call causes them to be updated so they
   // are not left as 0x0.
-  auto* rwhv_mac = static_cast<RenderWidgetHostViewMac*>(
-      shell->web_contents()->GetMainFrame()->GetView());
+  auto* rwhv_mac = shell->web_contents()->GetMainFrame()->GetView();
   if (rwhv_mac)
-    rwhv_mac->OnWindowFrameInScreenChanged(gfx::Rect(content_size));
+    rwhv_mac->SetWindowFrameInScreen(gfx::Rect(content_size));
 }
 
 void WebTestShellPlatformDelegate::ActivateContents(Shell* shell,

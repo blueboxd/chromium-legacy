@@ -20,6 +20,7 @@ import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.tab.TabCreationState;
 import org.chromium.chrome.browser.tab.TabLaunchType;
 import org.chromium.chrome.browser.tab.TabSelectionType;
+import org.chromium.chrome.browser.tab.state.CriticalPersistedTabData;
 import org.chromium.chrome.browser.tabmodel.NextTabPolicy.NextTabPolicySupplier;
 import org.chromium.chrome.browser.tasks.tab_management.TabUiFeatureUtilities;
 import org.chromium.components.external_intents.InterceptNavigationDelegateImpl;
@@ -265,7 +266,8 @@ public class TabModelImpl extends TabModelJniBridge {
 
         int closingTabIndex = indexOf(tabToClose);
         Tab adjacentTab = getTabAt((closingTabIndex == 0) ? 1 : closingTabIndex - 1);
-        Tab parentTab = findTabInAllTabModels(tabToClose.getParentId());
+        Tab parentTab =
+                findTabInAllTabModels(CriticalPersistedTabData.from(tabToClose).getParentId());
 
         // Determine which tab to select next according to these rules:
         //   * If closing a background tab, keep the current tab selected.

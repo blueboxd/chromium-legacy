@@ -296,10 +296,8 @@ SupportedResolutionRangeMap GetSupportedD3D11VideoDecoderResolutions(
       }
     }
 
-    if (workarounds.disable_accelerated_vpx_decode)
-      continue;
-
-    if (profile_id == D3D11_DECODER_PROFILE_VP8_VLD &&
+    if (!workarounds.disable_accelerated_vp8_decode &&
+        profile_id == D3D11_DECODER_PROFILE_VP8_VLD &&
         base::FeatureList::IsEnabled(kMediaFoundationVP8Decoding)) {
       supported_resolutions[VP8PROFILE_ANY] =
           GetResolutionsForGUID(video_device.Get(), profile_id,
@@ -307,6 +305,9 @@ SupportedResolutionRangeMap GetSupportedD3D11VideoDecoderResolutions(
                                  gfx::Size(4096, 4096)});
       continue;
     }
+
+    if (workarounds.disable_accelerated_vp9_decode)
+      continue;
 
     if (profile_id == D3D11_DECODER_PROFILE_VP9_VLD_PROFILE0) {
       supported_resolutions[VP9PROFILE_PROFILE0] = GetResolutionsForGUID(

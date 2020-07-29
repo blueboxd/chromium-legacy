@@ -7,14 +7,14 @@
 
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
-#include "chrome/browser/chromeos/arc/session/arc_session_manager.h"
+#include "chrome/browser/chromeos/arc/session/arc_session_manager_observer.h"
 #include "components/user_manager/user_manager.h"
 
 class PrefChangeRegistrar;
 
 class AssistantStateClient
     : public user_manager::UserManager::UserSessionStateObserver,
-      public arc::ArcSessionManager::Observer {
+      public arc::ArcSessionManagerObserver {
  public:
   AssistantStateClient();
   ~AssistantStateClient() override;
@@ -29,7 +29,7 @@ class AssistantStateClient
   // user_manager::UserManager::UserSessionStateObserver:
   void ActiveUserChanged(user_manager::User* active_user) override;
 
-  // arc::ArcSessionManager::Observer:
+  // arc::ArcSessionManagerObserver:
   void OnArcPlayStoreEnabledChanged(bool enabled) override;
 
   void SetProfileByUser(const user_manager::User* user);

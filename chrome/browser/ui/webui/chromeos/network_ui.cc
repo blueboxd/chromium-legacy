@@ -500,14 +500,14 @@ void NetworkUI::BindInterface(
 void NetworkUI::BindInterface(
     mojo::PendingReceiver<network_health::mojom::NetworkHealthService>
         receiver) {
-  network_health::NetworkHealthService::GetInstance()->BindRemote(
+  network_health::NetworkHealthService::GetInstance()->BindHealthReceiver(
       std::move(receiver));
 }
 
 void NetworkUI::BindInterface(
     mojo::PendingReceiver<
         network_diagnostics::mojom::NetworkDiagnosticsRoutines> receiver) {
-  network_health::NetworkHealthService::GetInstance()->BindDiagnosticsRemote(
+  network_health::NetworkHealthService::GetInstance()->BindDiagnosticsReceiver(
       std::move(receiver));
 }
 

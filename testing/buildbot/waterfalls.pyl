@@ -1659,9 +1659,6 @@
         },
       },
       'mac-rel-swarming': {
-        'mixins': [
-          'mac_all_arch',
-        ],
         'test_suites': {
            'gtest_tests': 'chromium_swarm_desktop_gtests',
         },

@@ -4,6 +4,7 @@
 
 #include "components/password_manager/core/browser/password_scripts_fetcher_impl.h"
 
+#include "base/test/metrics/histogram_tester.h"
 #include "base/test/task_environment.h"
 #include "services/network/public/cpp/shared_url_loader_factory.h"
 #include "services/network/public/cpp/weak_wrapper_shared_url_loader_factory.h"
@@ -65,7 +66,8 @@ class PasswordScriptsFetcherImplTest : public ::testing::Test {
         net::HttpStatusCode::HTTP_BAD_REQUEST));
   }
 
-  void RequestAllScriptsAvailability() {
+  void StartBulkCheck() {
+    fetcher()->ReportCacheReadinessMetric();
     RequestSingleScriptAvailability(GetOriginWithScript1());
     RequestSingleScriptAvailability(GetOriginWithScript2());
     RequestSingleScriptAvailability(GetOriginWithoutScript());
@@ -111,6 +113,8 @@ class PasswordScriptsFetcherImplTest : public ::testing::Test {
 };
 
 TEST_F(PasswordScriptsFetcherImplTest, PrewarmCache) {
+  std::unique_ptr<base::HistogramTester> histogram_tester =
+      std::make_unique<base::HistogramTester>();
   fetcher()->PrewarmCache();
   EXPECT_EQ(1, GetNumberOfPendingRequests());
   SimulateResponse();
@@ -120,68 +124,126 @@ TEST_F(PasswordScriptsFetcherImplTest, PrewarmCache) {
   fetcher()->PrewarmCache();
   EXPECT_EQ(0, GetNumberOfPendingRequests());
 
-  RequestAllScriptsAvailability();
+  StartBulkCheck();
   EXPECT_THAT(recorded_responses(),
               UnorderedElementsAre(Pair(GetOriginWithScript1(), true),
                                    Pair(GetOriginWithScript2(), true),
                                    Pair(GetOriginWithoutScript(), false)));
   EXPECT_EQ(0, GetNumberOfPendingRequests());
+  histogram_tester->ExpectUniqueSample(
+      "PasswordManager.PasswordScriptsFetcher.CacheState",
+      PasswordScriptsFetcherImpl::CacheState::kReady, 1u);
 
   // Make cache stale and re-fetch the map.
+  histogram_tester = std::make_unique<base::HistogramTester>();
   fetcher()->make_cache_stale_for_testing();
   recorded_responses().clear();
-  RequestAllScriptsAvailability();
+
+  StartBulkCheck();
   EXPECT_EQ(1, GetNumberOfPendingRequests());
   // OriginWithScript2 (test.com) is not available anymore.
   SimulateResponseWithContent("{\"https://example.com\" : {}}");
-
   base::RunLoop().RunUntilIdle();
+
   EXPECT_THAT(recorded_responses(),
               UnorderedElementsAre(Pair(GetOriginWithScript1(), true),
                                    Pair(GetOriginWithScript2(), false),
                                    Pair(GetOriginWithoutScript(), false)));
   EXPECT_EQ(0, GetNumberOfPendingRequests());
+  histogram_tester->ExpectUniqueSample(
+      "PasswordManager.PasswordScriptsFetcher.CacheState",
+      PasswordScriptsFetcherImpl::CacheState::kStale, 1u);
+}
+
+TEST_F(PasswordScriptsFetcherImplTest, SlowResponse) {
+  base::HistogramTester histogram_tester;
+  fetcher()->PrewarmCache();
+
+  // Bulk check started before server's response.
+  StartBulkCheck();
+  SimulateResponse();
+
+  histogram_tester.ExpectUniqueSample(
+      "PasswordManager.PasswordScriptsFetcher.CacheState",
+      PasswordScriptsFetcherImpl::CacheState::kWaiting, 1u);
 }
 
 TEST_F(PasswordScriptsFetcherImplTest, NoPrewarmCache) {
-  RequestAllScriptsAvailability();  // Without preceding |PrewarmCache|.
+  base::HistogramTester histogram_tester;
+  StartBulkCheck();  // Without preceding |PrewarmCache|.
   EXPECT_EQ(1, GetNumberOfPendingRequests());
   SimulateResponse();
   base::RunLoop().RunUntilIdle();
+
   EXPECT_THAT(recorded_responses(),
               UnorderedElementsAre(Pair(GetOriginWithScript1(), true),
                                    Pair(GetOriginWithScript2(), true),
                                    Pair(GetOriginWithoutScript(), false)));
-
   EXPECT_EQ(0, GetNumberOfPendingRequests());
+
+  histogram_tester.ExpectUniqueSample(
+      "PasswordManager.PasswordScriptsFetcher.CacheState",
+      PasswordScriptsFetcherImpl::CacheState::kNeverSet, 1u);
+  histogram_tester.ExpectUniqueSample(
+      "PasswordManager.PasswordScriptsFetcher.ParsingResult",
+      PasswordScriptsFetcherImpl::ParsingResult::kOk, 1u);
+  histogram_tester.ExpectTotalCount(
+      "PasswordManager.PasswordScriptsFetcher.ResponseTime", 1u);
+  histogram_tester.ExpectUniqueSample(
+      "PasswordManager.PasswordScriptsFetcher.HttpResponseAndNetErrorCode",
+      net::HttpStatusCode::HTTP_OK, 1u);
 }
 
 TEST_F(PasswordScriptsFetcherImplTest, InvalidJson) {
-  const char* const kTestCases[] = {"", "{{{", "[\"1\", \"2\"]"};
-  for (auto* test_case : kTestCases) {
-    SCOPED_TRACE(testing::Message() << "test_case=" << test_case);
+  const struct TestCase {
+    const char* const response;
+    PasswordScriptsFetcherImpl::ParsingResult histogram_value;
+  } kTestCases[]{
+      {"", PasswordScriptsFetcherImpl::ParsingResult::kNotJsonString},
+      {"{{{", PasswordScriptsFetcherImpl::ParsingResult::kNotJsonString},
+      {"[\"1\", \"2\"]",
+       PasswordScriptsFetcherImpl::ParsingResult::kNotDictionary},
+      {"{ \"not-url.com\" : {}}",
+       PasswordScriptsFetcherImpl::ParsingResult::kInvalidUrl}};
+  for (const auto& test_case : kTestCases) {
+    SCOPED_TRACE(testing::Message() << "test_case=" << test_case.response);
+    base::HistogramTester histogram_tester;
+
     fetcher()->make_cache_stale_for_testing();
     recorded_responses().clear();
 
-    RequestAllScriptsAvailability();
-    SimulateResponseWithContent(test_case);
+    StartBulkCheck();
+    SimulateResponseWithContent(test_case.response);
     base::RunLoop().RunUntilIdle();
 
     EXPECT_THAT(recorded_responses(),
                 UnorderedElementsAre(Pair(GetOriginWithScript1(), false),
                                      Pair(GetOriginWithScript2(), false),
                                      Pair(GetOriginWithoutScript(), false)));
+    histogram_tester.ExpectUniqueSample(
+        "PasswordManager.PasswordScriptsFetcher.ParsingResult",
+        test_case.histogram_value, 1u);
   }
 }
 
 TEST_F(PasswordScriptsFetcherImplTest, ServerError) {
-  RequestAllScriptsAvailability();
+  base::HistogramTester histogram_tester;
+  StartBulkCheck();
   SimulateFailedResponse();
   base::RunLoop().RunUntilIdle();
+
   EXPECT_THAT(recorded_responses(),
               UnorderedElementsAre(Pair(GetOriginWithScript1(), false),
                                    Pair(GetOriginWithScript2(), false),
                                    Pair(GetOriginWithoutScript(), false)));
+  histogram_tester.ExpectUniqueSample(
+      "PasswordManager.PasswordScriptsFetcher.ParsingResult",
+      PasswordScriptsFetcherImpl::ParsingResult::kNoResponse, 1u);
+  histogram_tester.ExpectTotalCount(
+      "PasswordManager.PasswordScriptsFetcher.ResponseTime", 1u);
+  histogram_tester.ExpectUniqueSample(
+      "PasswordManager.PasswordScriptsFetcher.HttpResponseAndNetErrorCode",
+      net::HttpStatusCode::HTTP_BAD_REQUEST, 1u);
 }
 
 }  // namespace password_manager

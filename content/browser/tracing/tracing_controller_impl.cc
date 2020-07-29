@@ -13,6 +13,7 @@
 #include "base/bind_helpers.h"
 #include "base/command_line.h"
 #include "base/cpu.h"
+#include "base/dcheck_is_on.h"
 #include "base/files/file_tracing.h"
 #include "base/logging.h"
 #include "base/run_loop.h"
@@ -256,6 +257,10 @@ TracingControllerImpl::GenerateMetadataDict() {
                            GetClockOffsetSinceEpoch());
 #endif  // defined(OS_ANDROID)
   metadata_dict->SetInteger("chrome-bitness", 8 * sizeof(uintptr_t));
+
+#if DCHECK_IS_ON()
+  metadata_dict->SetInteger("chrome-dcheck-on", 1);
+#endif
 
   // OS
 #if defined(OS_CHROMEOS)

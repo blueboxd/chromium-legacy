@@ -14,6 +14,7 @@ import android.os.Process;
 import android.text.DynamicLayout;
 import android.text.Layout.Alignment;
 import android.text.TextPaint;
+import android.text.TextUtils;
 import android.text.TextUtils.TruncateAt;
 import android.view.View;
 
@@ -70,6 +71,12 @@ class QrCodeShareMediator {
      * @param data The data to encode.
      */
     protected void refreshQrCode(String data) {
+        if (TextUtils.isEmpty(data)) {
+            mPropertyModel.set(QrCodeShareViewProperties.ERROR_STRING,
+                    mContext.getResources().getString(R.string.qr_code_error_unknown));
+            return;
+        }
+
         QRCodeGenerationRequest.QRCodeServiceCallback callback =
                 new QRCodeGenerationRequest.QRCodeServiceCallback() {
                     @Override
@@ -82,7 +89,7 @@ class QrCodeShareMediator {
                                 ChromeFeatureList.CHROME_SHARE_QRCODE, "max_url_length",
                                 /*defaultValue=*/122);
                         String errorMessage;
-                        if (mUrl.length() > maxUrlLength) {
+                        if (data != null && data.length() > maxUrlLength) {
                             errorMessage = mContext.getResources().getString(
                                     R.string.qr_code_error_too_long, maxUrlLength);
                         } else {

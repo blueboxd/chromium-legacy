@@ -17,7 +17,7 @@
 <translation id="1150565364351027703">ಸನ್‌ಗ್ಲಾಸ್‌ಗಳು</translation>
 <translation id="115443833402798225">ಹಂಗುಲ್ ಅಹ್ಮಟೆ</translation>
 <translation id="1155759005174418845">ಕೆಟಲಾನ್</translation>
-<translation id="1172970565351728681"><ph name="REMAINING_TIME" /> ಬಾಕಿ ಉಳಿದಿದೆ</translation>
+<translation id="1172970565351728681">ಸುಮಾರು <ph name="REMAINING_TIME" /> ಬಾಕಿ ಉಳಿದಿದೆ</translation>
 <translation id="1173894706177603556">ಮರುಹೆಸರಿಸು</translation>
 <translation id="117624967391683467"><ph name="FILE_NAME" /> ನಕಲಿಸಲಾಗುತ್ತಿದೆ...</translation>
 <translation id="1178581264944972037">ವಿರಾಮ</translation>
@@ -167,7 +167,7 @@
 <translation id="2925966894897775835">Sheets</translation>
 <translation id="2938685643439809023">ಮಂಗೋಲಿಯನ್</translation>
 <translation id="2942290791863759244">ಜರ್ಮನ್ ನಿಯೊ 2 ಕೀಬೋರ್ಡ್</translation>
-<translation id="2943400156390503548">ಸ್ಲೈಡ್‌ಗಳು</translation>
+<translation id="2943400156390503548">Slides</translation>
 <translation id="2943503720238418293">ಕಡಿಮೆ ಅಕ್ಷರಗಳನ್ನು ಹೊಂದಿರುವ ಹೆಸರನ್ನು ಬಳಸಿ</translation>
 <translation id="2949781154072577687"><ph name="DRIVE_NAME" /> ಅನ್ನು ಫಾರ್ಮ್ಯಾಟ್ ಮಾಡಲಾಗುತ್ತಿದೆ...</translation>
 <translation id="2951236788251446349">ಜೆಲ್ಲಿಫಿಶ್</translation>
@@ -242,7 +242,7 @@
 <translation id="3780536599611287598">ಫೈಲ್‌ಗಳನ್ನು '<ph name="FOLDER_NAME" />' ಗೆ ಸರಿಸಲು ನಿಮಗೆ ಅನುಮತಿಯಿಲ್ಲ.</translation>
 <translation id="3786301125658655746">ನೀವು ಆಫ್‌ಲೈನ್‌ನಲ್ಲಿರುವಿರಿ</translation>
 <translation id="3789841737615482174">ಇನ್‌ಸ್ಟಾಲ್</translation>
-<translation id="3793469551756281394"><ph name="REMAINING_TIME_HOUR" /> <ph name="REMAINING_TIME_MINUTE" /> ಬಾಕಿ ಉಳಿದಿದೆ</translation>
+<translation id="3793469551756281394">ಸುಮಾರು <ph name="REMAINING_TIME_HOUR" /> <ph name="REMAINING_TIME_MINUTE" /> ಬಾಕಿ ಉಳಿದಿದೆ</translation>
 <translation id="3798449238516105146">ಆವೃತ್ತಿ</translation>
 <translation id="3801082500826908679">ಫರೋಸೆ</translation>
 <translation id="3809272675881623365">ಮೊಲ</translation>

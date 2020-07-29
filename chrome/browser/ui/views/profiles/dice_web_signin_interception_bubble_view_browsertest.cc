@@ -12,6 +12,7 @@
 #include "chrome/browser/ui/views/frame/browser_view.h"
 #include "chrome/browser/ui/views/frame/toolbar_button_provider.h"
 #include "chrome/browser/ui/views/profiles/avatar_toolbar_button.h"
+#include "components/signin/public/identity_manager/account_info.h"
 #include "content/public/test/browser_test.h"
 #include "ui/views/bubble/bubble_dialog_delegate_view.h"
 #include "ui/views/test/widget_test.h"
@@ -24,7 +25,7 @@ class DiceWebSigninInterceptionBubbleBrowserTest : public DialogBrowserTest {
   // DialogBrowserTest:
   void ShowUi(const std::string& name) override {
     DiceWebSigninInterceptionBubbleView::CreateBubble(
-        browser()->profile(), GetAvatarButton(),
+        browser()->profile(), GetAvatarButton(), AccountInfo(),
         base::OnceCallback<void(bool)>());
   }
 
@@ -58,7 +59,7 @@ IN_PROC_BROWSER_TEST_F(DiceWebSigninInterceptionBubbleBrowserTest,
                        BubbleClosed) {
   views::Widget* widget = views::BubbleDialogDelegateView::CreateBubble(
       new DiceWebSigninInterceptionBubbleView(
-          browser()->profile(), GetAvatarButton(),
+          browser()->profile(), GetAvatarButton(), AccountInfo(),
           base::BindOnce(&DiceWebSigninInterceptionBubbleBrowserTest::
                              OnInterceptionComplete,
                          base::Unretained(this))));

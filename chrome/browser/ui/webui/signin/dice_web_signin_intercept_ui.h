@@ -13,6 +13,8 @@ namespace content {
 class WebUI;
 }
 
+struct AccountInfo;
+
 class DiceWebSigninInterceptUI : public content::WebUIController {
  public:
   explicit DiceWebSigninInterceptUI(content::WebUI* web_ui);
@@ -22,7 +24,8 @@ class DiceWebSigninInterceptUI : public content::WebUIController {
   DiceWebSigninInterceptUI& operator=(const DiceWebSigninInterceptUI&) = delete;
 
   // Initializes the DiceWebSigninInterceptUI.
-  void Initialize(base::OnceCallback<void(bool)> callback);
+  void Initialize(const AccountInfo& account_info,
+                  base::OnceCallback<void(bool)> callback);
 
  private:
   WEB_UI_CONTROLLER_TYPE_DECL();

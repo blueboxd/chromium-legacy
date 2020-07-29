@@ -17,7 +17,7 @@
 #include "base/memory/weak_ptr.h"
 #include "base/observer_list.h"
 #include "chrome/browser/chromeos/arc/fileapi/arc_file_system_bridge.h"
-#include "chrome/browser/chromeos/arc/session/arc_session_manager.h"
+#include "chrome/browser/chromeos/arc/session/arc_session_manager_observer.h"
 #include "components/arc/mojom/file_system.mojom-forward.h"
 #include "components/arc/session/connection_observer.h"
 #include "components/keyed_service/core/keyed_service.h"
@@ -64,7 +64,7 @@ class ArcBridgeService;
 class ArcFileSystemOperationRunner
     : public KeyedService,
       public ArcFileSystemBridge::Observer,
-      public ArcSessionManager::Observer,
+      public ArcSessionManagerObserver,
       public ConnectionObserver<mojom::FileSystemInstance> {
  public:
   using GetFileSizeCallback = mojom::FileSystemInstance::GetFileSizeCallback;
@@ -176,7 +176,7 @@ class ArcFileSystemOperationRunner
   // ArcFileSystemBridge::Observer overrides:
   void OnDocumentChanged(int64_t watcher_id, ChangeType type) override;
 
-  // ArcSessionManager::Observer overrides:
+  // ArcSessionManagerObserver overrides:
   void OnArcPlayStoreEnabledChanged(bool enabled) override;
 
   // ConnectionObserver<mojom::FileSystemInstance> overrides:

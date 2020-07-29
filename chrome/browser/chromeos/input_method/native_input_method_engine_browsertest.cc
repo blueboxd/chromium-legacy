@@ -594,6 +594,12 @@ IN_PROC_BROWSER_TEST_F(NativeInputMethodEngineTest,
   EXPECT_EQ(observer_->GetChangedEngineId(), "pinyin");
 }
 
+IN_PROC_BROWSER_TEST_F(NativeInputMethodEngineTest, DestroyProfile) {
+  EXPECT_NE(engine_.GetPrefChangeRegistrarForTesting(), nullptr);
+  profile_->MaybeSendDestroyedNotification();
+  EXPECT_EQ(engine_.GetPrefChangeRegistrarForTesting(), nullptr);
+}
+
 class NativeInputMethodEngineAssistiveOff : public InProcessBrowserTest {
  public:
   NativeInputMethodEngineAssistiveOff() {

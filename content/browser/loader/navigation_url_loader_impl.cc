@@ -1215,8 +1215,10 @@ NavigationURLLoaderImpl::NavigationURLLoaderImpl(
       std::make_unique<FileURLLoaderFactory>(
           browser_context_->GetPath(),
           browser_context_->GetSharedCorsOriginAccessList(),
-          // USER_VISIBLE because loaded file resources may affect the UI.
-          base::TaskPriority::USER_VISIBLE);
+          // USER_BLOCKING because this scenario is exactly one of the examples
+          // given by the doc comment for USER_BLOCKING:
+          // Loading and rendering a web page after the user clicks a link.
+          base::TaskPriority::USER_BLOCKING);
 
   if (frame_tree_node) {  // May be nullptr in some unit tests.
     devtools_instrumentation::WillCreateURLLoaderFactory(

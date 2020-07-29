@@ -117,6 +117,8 @@ Polymer({
         result += 'OTP';
       } else if (subKey === 'ssid') {
         result += 'SSID';
+      } else if (subKey === 'bssid') {
+        result += 'BSSID';
       } else if (subKey === 'serverCa') {
         result += 'ServerCA';
       } else if (subKey === 'vpn') {

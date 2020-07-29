@@ -213,6 +213,8 @@ void MetricsLog::RecordCoreSystemProfile(
   // The Lacros browser runs on Chrome OS, but reports a special OS name to
   // differentiate itself from the built-in ash browser + window manager binary.
   os->set_name("Lacros");
+#elif defined(OS_CHROMEOS)
+  os->set_name("CrOS");
 #else
   os->set_name(base::SysInfo::OperatingSystemName());
 #endif

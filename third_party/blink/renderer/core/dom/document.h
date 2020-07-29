@@ -1154,6 +1154,8 @@ class CORE_EXPORT Document : public ContainerNode,
   // updating focus appearance.
   bool WillUpdateFocusAppearance() const;
 
+  void SendFocusNotification(Element*);
+
   bool IsDNSPrefetchEnabled() const { return is_dns_prefetch_enabled_; }
   void ParseDNSPrefetchControlHeader(const String&);
 

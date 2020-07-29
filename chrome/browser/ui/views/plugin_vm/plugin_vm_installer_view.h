@@ -48,7 +48,7 @@ class PluginVmInstallerView : public views::BubbleDialogDelegateView,
   void OnCancelFinished() override;
 
   // Public for testing purposes.
-  base::string16 GetBigMessage() const;
+  base::string16 GetTitle() const;
   base::string16 GetMessage() const;
 
   void SetFinishedCallbackForTesting(
@@ -77,7 +77,7 @@ class PluginVmInstallerView : public views::BubbleDialogDelegateView,
 
   base::string16 GetDownloadProgressMessage(uint64_t downlaoded_bytes,
                                             int64_t content_length) const;
-  void SetBigMessageLabel();
+  void SetTitleLabel();
   void SetMessageLabel();
   void SetBigImage();
 
@@ -86,7 +86,7 @@ class PluginVmInstallerView : public views::BubbleDialogDelegateView,
   Profile* profile_ = nullptr;
   base::string16 app_name_;
   plugin_vm::PluginVmInstaller* plugin_vm_installer_ = nullptr;
-  views::Label* big_message_label_ = nullptr;
+  views::Label* title_label_ = nullptr;
   views::Label* message_label_ = nullptr;
   views::ProgressBar* progress_bar_ = nullptr;
   views::Label* download_progress_message_label_ = nullptr;

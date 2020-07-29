@@ -196,6 +196,13 @@ void ReputationWebContentsObserver::MaybeShowSafetyTip(
     return;
   }
 
+  // Filter out loads with no navigations, error pages and interstitials.
+  auto* last_entry = web_contents()->GetController().GetLastCommittedEntry();
+  if (!last_entry || last_entry->GetPageType() != content::PAGE_TYPE_NORMAL) {
+    MaybeCallReputationCheckCallback(false);
+    return;
+  }
+
   const GURL& url = web_contents()->GetLastCommittedURL();
   if (!url.SchemeIsHTTPOrHTTPS()) {
     MaybeCallReputationCheckCallback(false);

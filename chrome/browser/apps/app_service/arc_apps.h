@@ -20,6 +20,7 @@
 #include "base/scoped_observer.h"
 #include "chrome/browser/apps/app_service/app_icon_factory.h"
 #include "chrome/browser/apps/app_service/app_notifications.h"
+#include "chrome/browser/apps/app_service/arc_activity_adaptive_icon_impl.h"
 #include "chrome/browser/apps/app_service/arc_icon_once_loader.h"
 #include "chrome/browser/apps/app_service/icon_key_util.h"
 #include "chrome/browser/apps/app_service/paused_apps.h"
@@ -189,6 +190,7 @@ class ArcApps : public KeyedService,
 
   Profile* const profile_;
   ArcIconOnceLoader arc_icon_once_loader_;
+  ArcActivityAdaptiveIconImpl arc_activity_adaptive_icon_impl_;
 
   apps_util::IncrementingIconKeyFactory icon_key_factory_;
 

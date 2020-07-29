@@ -104,6 +104,7 @@
 <translation id="1853692000353488670">New incognito tab</translation>
 <translation id="1856325424225101786">Reset Lite mode?</translation>
 <translation id="1868024384445905608">Chrome now downloads files faster</translation>
+<translation id="1874760110381325409">You’ll be signed in with your Google Account\n(this won’t turn on Chrome Sync)</translation>
 <translation id="1883903952484604915">My files</translation>
 <translation id="1919950603503897840">Select contacts</translation>
 <translation id="1925021887439448749">Enter custom web address</translation>
@@ -227,6 +228,7 @@ Touch and hold any word to search. To refine your search, select more or fewer w
 <translation id="281504910091592009">View and manage saved passwords in your <ph name="BEGIN_LINK" />Google Account<ph name="END_LINK" /></translation>
 <translation id="2818669890320396765">To get your bookmarks on all your devices, sign in and turn on sync</translation>
 <translation id="2827278682606527653">Feed card menu half height</translation>
+<translation id="2841216154655874070">{NUM_DAYS,plural, =1{Checked 1 day ago}other{Checked # days ago}}</translation>
 <translation id="2842985007712546952">Parent folder</translation>
 <translation id="2860954141821109167">Make sure that a phone app is enabled on this device</translation>
 <translation id="2870560284913253234">Site</translation>
@@ -242,7 +244,6 @@ Touch and hold any word to search. To refine your search, select more or fewer w
 <translation id="2905036901251765993">To share with people nearby, let them scan this QR code</translation>
 <translation id="2909615210195135082">Google Notifications Platform</translation>
 <translation id="2923908459366352541">Name is invalid</translation>
-<translation id="2927707377793151377">Choose another provider:</translation>
 <translation id="2932150158123903946">Google <ph name="APP_NAME" /> storage</translation>
 <translation id="2942036813789421260">Preview tab is closed</translation>
 <translation id="2956410042958133412">This account is managed by <ph name="PARENT_NAME_1" /> and <ph name="PARENT_NAME_2" />.</translation>
@@ -703,6 +704,7 @@ For example, some websites may respond to this request by showing you ads that a
 <translation id="6532866250404780454">Sites that you visit in Chrome won't show. All site timers will be deleted.</translation>
 <translation id="6534565668554028783">Google took too long to respond</translation>
 <translation id="6539092367496845964">Something went wrong. Try again later.</translation>
+<translation id="6541983376925655882">{NUM_HOURS,plural, =1{Checked 1 hour ago}other{Checked # hours ago}}</translation>
 <translation id="6545017243486555795">Clear All Data</translation>
 <translation id="6560414384669816528">Search with Sogou</translation>
 <translation id="656065428026159829">See more</translation>
@@ -734,6 +736,7 @@ For example, some websites may respond to this request by showing you ads that a
 <translation id="6697492270171225480">Show suggestions for similar pages when a page can't be found</translation>
 <translation id="6698801883190606802">Manage synced data</translation>
 <translation id="6699370405921460408">Google servers will optimise the pages that you visit.</translation>
+<translation id="670498945988402717">Checked yesterday</translation>
 <translation id="6710213216561001401">Previous</translation>
 <translation id="671481426037969117">Your <ph name="FQDN" /> timer ran out. It will start again tomorrow.</translation>
 <translation id="6738867403308150051">Downloading…</translation>
@@ -772,6 +775,7 @@ For example, some websites may respond to this request by showing you ads that a
 <translation id="7063006564040364415">Could not connect to the sync server.</translation>
 <translation id="7071521146534760487">Manage account</translation>
 <translation id="7077143737582773186">SD Card</translation>
+<translation id="7080806333218412752">Sends URLs to Safe Browsing to check them. Also sends a small sample of pages, downloads, extension activity and system information to help discover new threats. Temporarily links this data to your Google Account when you’re signed in, to protect you across Google apps.</translation>
 <translation id="7121362699166175603">Clears history and auto-completions in the address bar. Your Google Account may have other forms of browsing history at <ph name="BEGIN_LINK" />myactivity.google.com<ph name="END_LINK" />.</translation>
 <translation id="7128355412245153445">See your top sites and recent stories whenever you tap the Home button</translation>
 <translation id="7138678301420049075">Other</translation>
@@ -781,6 +785,7 @@ For example, some websites may respond to this request by showing you ads that a
 <translation id="7173114856073700355">Open Settings</translation>
 <translation id="7177466738963138057">You can change this later in Settings</translation>
 <translation id="7180611975245234373">Refresh</translation>
+<translation id="7187993566681480880">Keeps you safe on Chrome and may be used to improve your security in other Google apps when you are signed in.</translation>
 <translation id="7189372733857464326">Waiting for Google Play Services to finish updating</translation>
 <translation id="7191430249889272776">Tab opened in background.</translation>
 <translation id="723171743924126238">Select images</translation>
@@ -892,6 +897,7 @@ For example, some websites may respond to this request by showing you ads that a
 <translation id="8027863900915310177">Choose where to download</translation>
 <translation id="8035133914807600019">New folder…</translation>
 <translation id="8037750541064988519"><ph name="DAYS" /> days left</translation>
+<translation id="8037801708772278989">Checked just now</translation>
 <translation id="804335162455518893">SD card not found</translation>
 <translation id="805047784848435650">Based on your browsing history</translation>
 <translation id="8051695050440594747"><ph name="MEGABYTES" /> MB available</translation>
@@ -1032,6 +1038,7 @@ For example, some websites may respond to this request by showing you ads that a
 <translation id="9137013805542155359">Show original</translation>
 <translation id="9155898266292537608">You can also search with a quick tap on a word</translation>
 <translation id="9169507124922466868">Navigation history is half-opened</translation>
+<translation id="9199368092038462496">{NUM_MINS,plural, =1{Checked 1 minute ago}other{Checked # minutes ago}}</translation>
 <translation id="9204836675896933765">1 file left</translation>
 <translation id="9206873250291191720">A</translation>
 <translation id="9209888181064652401">Can't make calls</translation>

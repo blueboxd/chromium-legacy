@@ -8,7 +8,7 @@
 #include <memory>
 
 #include "base/macros.h"
-#include "chrome/browser/chromeos/arc/session/arc_session_manager.h"
+#include "chrome/browser/chromeos/arc/session/arc_session_manager_observer.h"
 #include "components/arc/mojom/intent_helper.mojom-forward.h"
 #include "components/arc/session/connection_observer.h"
 #include "components/keyed_service/core/keyed_service.h"
@@ -27,7 +27,7 @@ class ArcSettingsServiceImpl;
 class ArcSettingsService
     : public KeyedService,
       public ConnectionObserver<mojom::IntentHelperInstance>,
-      public ArcSessionManager::Observer {
+      public ArcSessionManagerObserver {
  public:
   // Returns singleton instance for the given BrowserContext,
   // or nullptr if the browser |context| is not allowed to use ARC.
@@ -42,7 +42,7 @@ class ArcSettingsService
   void OnConnectionReady() override;
   void OnConnectionClosed() override;
 
-  // ArcSessionManager::Observer:
+  // ArcSessionManagerObserver:
   void OnArcPlayStoreEnabledChanged(bool enabled) override;
   void OnArcInitialStart() override;
 

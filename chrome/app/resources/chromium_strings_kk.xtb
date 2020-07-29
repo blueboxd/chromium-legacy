@@ -224,7 +224,7 @@ Chromium параметрлеріңізді қалпына келтіре алм
 <translation id="8417404458978023919">{0,plural, =1{Chromium браузерін бір күннің ішінде қайта іске қосыңыз}other{Chromium браузерін # күннің ішінде қайта іске қосыңыз}}</translation>
 <translation id="8453117565092476964">Орнатқыш мұрағаты бүлінген немесе жарамсыз. Chromium қайтадан жүктеңіз.</translation>
 <translation id="8493179195440786826">Chromium ескірген</translation>
-<translation id="8545858702702650646">Chromium Space таңдаңыз</translation>
+<translation id="8545858702702650646">Chromium профилін таңдаңыз</translation>
 <translation id="8558383651099478961">Ата-анаңыз Chromium браузері үшін "Сайттар, қолданбалар және кеңейтімдер бойынша рұқсаттар" параметрін өшірді. <ph name="EXTENSION_TYPE_PARAMETER" /> кеңейтімін енгізуге болмайды.</translation>
 <translation id="8568283329061645092">Google есептік жазбаңызбен кіргенде, Chromium сіздің құпия сөздеріңізді тексере алады.</translation>
 <translation id="8586442755830160949">Copyright <ph name="YEAR" /> The Chromium Authors. Барлық құқықтар қорғалған.</translation>
@@ -248,7 +248,7 @@ Chromium параметрлеріңізді қалпына келтіре алм
 <translation id="911206726377975832">Сонымен қатар шолу деректеріңізді жоясыз ба?</translation>
 <translation id="9158494823179993217">Жүйе әкімшісі Chromium браузерін <ph name="TARGET_URL_HOSTNAME" /> сілтемесіне қосымша браузер арқылы кіре алатындай етіп конфигурациялады.</translation>
 <translation id="9190841055450128916">Chromium (mDNS-In)</translation>
-<translation id="9191317372410544836">Осы құрылғыда шолу тәртібін сақтау үшін Chromium Spaces пайдаланыңыз.</translation>
+<translation id="9191317372410544836">Осы құрылғыда шолу тәртібін сақтау үшін Chromium профильдерін пайдаланыңыз.</translation>
 <translation id="93478295209880648">Chromium дұрыс жұмыс істемеуі мүмкін, себебі оған Windows XP не Windows Vista жүйелерінде қолдау көрсетілмейді</translation>
 <translation id="95514773681268843">Бұл құрылғыны пайдаланудан бұрын <ph name="DOMAIN" /> домені келесі қызмет шарттарын оқып, қабылдауыңызды талап етеді. Бұл шарттар Chromium OS шарттарын толықтырмайды, өзгертпейді және шектемейді.</translation>
 <translation id="985602178874221306">The Chromium Authors</translation>

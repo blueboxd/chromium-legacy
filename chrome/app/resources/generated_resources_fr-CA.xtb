@@ -1926,7 +1926,6 @@ https://support.google.com/chrome/?p=applescript</translation>
 <translation id="3371140690572404006">Appareil USB-C (port avant-droit)</translation>
 <translation id="337286756654493126">Accéder en lecture aux dossiers ouverts dans l'application</translation>
 <translation id="3378572629723696641">Cette extension a peut-être été corrompue.</translation>
-<translation id="3379169026479470857">Supprimer CT</translation>
 <translation id="337920581046691015"><ph name="PRODUCT_NAME" /> va être installé.</translation>
 <translation id="3380365263193509176">Erreur inconnue</translation>
 <translation id="3382073616108123819">Oups… Impossible de déterminer quels sont les identifiants de cet appareil.</translation>
@@ -2381,6 +2380,7 @@ https://support.google.com/chrome/?p=applescript</translation>
 <translation id="3882165008614329320">Vidéo existante de la caméra ou du fichier</translation>
 <translation id="3886446263141354045">Votre demande d'accès à ce site a été envoyée à <ph name="NAME" /></translation>
 <translation id="3888550877729210209">Prendre des notes avec <ph name="LOCK_SCREEN_APP_NAME" /></translation>
+<translation id="3891563564777705449">{0,plural, =1{Mettre à jour l'appareil d'ici 1 semaine}one{Mettre à jour l'appareil d'ici # semaine}other{Mettre à jour l'appareil d'ici # semaines}}</translation>
 <translation id="3892414795099177503">Ajouter OpenVPN/L2TP…</translation>
 <translation id="3893536212201235195">Consulter et modifier vos paramètres d'accessibilité</translation>
 <translation id="3893630138897523026">ChromeVox (commentaires audio)</translation>
@@ -2612,14 +2612,12 @@ Souhaitez-vous lancer <ph name="CONTROL_PANEL_APPLET_NAME" />?</translation>
 <translation id="4175137578744761569">Violet clair et blanc</translation>
 <translation id="4175737294868205930">Stockage persistant</translation>
 <translation id="4176463684765177261">Désactivé</translation>
-<translation id="418031202593299965">Ces composants sont partagés avec les autres utilisateurs de cet appareil. La suppression de composants pourrait avoir un impact sur les autres utilisateurs.</translation>
 <translation id="4180788401304023883">Supprimer le certificat « <ph name="CERTIFICATE_NAME" /> » émis par l'autorité de certification?</translation>
 <translation id="4181602000363099176">20x</translation>
 <translation id="4181841719683918333">Langues</translation>
 <translation id="4184885522552335684">Faites glisser pour déplacer un affichage</translation>
 <translation id="4187424053537113647">Configuration de <ph name="APP_NAME" /> en cours…</translation>
 <translation id="4190828427319282529">Mettre en surbrillance la sélection avec le clavier</translation>
-<translation id="4191805472951276951">CT</translation>
 <translation id="4194570336751258953">Activer la fonction « Toucher l'écran pour cliquer »</translation>
 <translation id="4195643157523330669">Ouvrir dans un nouvel onglet</translation>
 <translation id="4195814663415092787">Reprendre vos activités en ligne là où vous vous étiez arrêté</translation>
@@ -3038,7 +3036,6 @@ Souhaitez-vous lancer <ph name="CONTROL_PANEL_APPLET_NAME" />?</translation>
 <translation id="4756388243121344051">&amp;Historique</translation>
 <translation id="4759238208242260848">Téléchargements</translation>
 <translation id="4761104368405085019">Utiliser votre microphone</translation>
-<translation id="4762055672525936226">Supprimer le contenu téléchargé</translation>
 <translation id="4762718786438001384">Vous n'avez presque plus d'espace disque sur votre appareil</translation>
 <translation id="4763408175235639573">Les témoins suivants ont été définis lorsque vous avez consulté cette page</translation>
 <translation id="4765582662863429759">Autorise Android Messages à rediriger des messages texte de votre téléphone à votre Chromebook</translation>
@@ -3292,7 +3289,6 @@ Souhaitez-vous lancer <ph name="CONTROL_PANEL_APPLET_NAME" />?</translation>
 <translation id="5094721898978802975">Permettre la communication avec les applications natives associées</translation>
 <translation id="5097002363526479830">Échec de la connexion au réseau « <ph name="NAME" /> » : <ph name="DETAILS" />.</translation>
 <translation id="5097874180538493929">Cliquer automatiquement lorsque le curseur s'arrête</translation>
-<translation id="5098800418125334616">Gérer le contenu téléchargé</translation>
 <translation id="5101042277149003567">Ouvrir tous les favoris</translation>
 <translation id="5101839224773798795">Cliquer automatiquement lorsque le curseur s'arrête</translation>
 <translation id="5107443654503185812">Une extension a désactivé la navigation sécurisée</translation>
@@ -4170,7 +4166,6 @@ Souhaitez-vous lancer <ph name="CONTROL_PANEL_APPLET_NAME" />?</translation>
 <translation id="6198102561359457428">Déconnectez-vous, puis connectez-vous de nouveau...</translation>
 <translation id="6198252989419008588">Modifier le NIP</translation>
 <translation id="6202304368170870640">Vous pouvez utiliser votre NIP pour vous connecter à votre appareil ou pour le déverrouiller.</translation>
-<translation id="6202517672944764518">Contenu téléchargé</translation>
 <translation id="6206311232642889873">Cop&amp;ier l'image</translation>
 <translation id="6207200176136643843">Rétablir le niveau de zoom par défaut</translation>
 <translation id="6207937957461833379">Pays/région</translation>
@@ -4442,6 +4437,7 @@ Souhaitez-vous lancer <ph name="CONTROL_PANEL_APPLET_NAME" />?</translation>
 <translation id="6535331821390304775">Toujours autoriser <ph name="ORIGIN" /> à ouvrir les liens de ce type dans l'application connexe</translation>
 <translation id="654039047105555694"><ph name="BEGIN_BOLD" />Remarque<ph name="END_BOLD" /> : n'activez cette option que si vous êtes sûr de ce que vous faites ou si vous avez été invité à le faire. En effet, la collecte de données est susceptible de diminuer les performances.</translation>
 <translation id="6541638731489116978">Ce site a été bloqué : il ne peut pas accéder à vos capteurs de mouvement.</translation>
+<translation id="6545407738986370057">{0,plural, =1{Retourner l'appareil d'ici 1 semaine}one{Retourner l'appareil d'ici # semaine}other{Retourner l'appareil d'ici # semaines}}</translation>
 <translation id="6545665334409411530">Fréquence de répétition</translation>
 <translation id="6545864417968258051">Recherche d'appareils Bluetooth</translation>
 <translation id="6545867563032584178">Le microphone est désactivé dans les Préférences Système du Mac</translation>
@@ -6128,7 +6124,6 @@ Conservez votre fichier de clé en lieu sûr. Vous en aurez besoin lors de la cr
 <translation id="8652400352452647993">Erreur concernant l'empaquetage d'extensions</translation>
 <translation id="8654151524613148204">Ce fichier est trop volumineux pour votre ordinateur.</translation>
 <translation id="8655295600908251630">Version</translation>
-<translation id="8655319619291175901">Une erreur s'est produite.</translation>
 <translation id="8655972064210167941">La connexion a échoué, car votre mot de passe n'a pas pu être vérifié. Veuillez communiquer avec votre administrateur ou réessayer.</translation>
 <translation id="8656768832129462377">Ne pas vérifier</translation>
 <translation id="8658645149275195032"><ph name="APP_NAME" /> partage votre écran et le son avec <ph name="TAB_NAME" />.</translation>
@@ -6217,7 +6212,6 @@ Conservez votre fichier de clé en lieu sûr. Vous en aurez besoin lors de la cr
         &lt;p&gt;Vous avez toujours la possibilité d'effectuer la configuration à l'aide de la ligne de commande. Pour obtenir davantage d'information à propos des indicateurs et des variables d'environnement, veuillez consulter &lt;code&gt;man <ph name="PRODUCT_BINARY_NAME" />&lt;/code&gt;.&lt;/p&gt;</translation>
 <translation id="8755175579224030324">Effectuer des tâches liées à la sécurité pour votre organisation, comme la gestion des certificats et des clés stockés sur l'appareil</translation>
 <translation id="8755376271068075440">&amp;Agrandir</translation>
-<translation id="8756143264090841047">Supprimer le CT</translation>
 <translation id="8756969031206844760">Mettre à jour le mot de passe?</translation>
 <translation id="8757090071857742562">Impossible de diffuser le bureau. Vérifiez que vous avez confirmé l'invite à commencer le partage de votre écran.</translation>
 <translation id="8757203080302669031">Cet onglet recherche activement des appareils à connectivité Bluetooth.</translation>
@@ -6232,7 +6226,6 @@ Conservez votre fichier de clé en lieu sûr. Vous en aurez besoin lors de la cr
 <translation id="8770406935328356739">Répertoire racine de l'extension</translation>
 <translation id="8770507190024617908">Gérer les personnes</translation>
 <translation id="8771300903067484968">L'arrière-plan de la page d'accueil a été réinitialisé à sa valeur par défaut.</translation>
-<translation id="8771939407732945762">Supprimer le contenu téléchargé</translation>
 <translation id="8773302562181397928">Enregistrer <ph name="PRINTER_NAME" /></translation>
 <translation id="8774379074441005279">Confirmez la restauration</translation>
 <translation id="8774934320277480003">Marge supérieure</translation>

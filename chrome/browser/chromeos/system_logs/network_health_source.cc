@@ -44,8 +44,9 @@ std::string GetFormattedString(
 
 NetworkHealthSource::NetworkHealthSource(bool scrub)
     : SystemLogsSource("NetworkHealth"), scrub_(scrub) {
-  chromeos::network_health::NetworkHealthService::GetInstance()->BindRemote(
-      network_health_service_.BindNewPipeAndPassReceiver());
+  chromeos::network_health::NetworkHealthService::GetInstance()
+      ->BindHealthReceiver(
+          network_health_service_.BindNewPipeAndPassReceiver());
 }
 
 NetworkHealthSource::~NetworkHealthSource() {}

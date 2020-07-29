@@ -25,16 +25,28 @@
   </Type>
   <Type Name="WTF::StringImpl">
     <DisplayString IncludeView="bare"
-        Condition="is_8bit_">{(this+1),[length_]sb}</DisplayString>
-    <DisplayString
-        Condition="is_8bit_">[{length_}] {(this+1),[length_]s}</DisplayString>
-    <DisplayString IncludeView="bare">{(this+1),[length_]sub}</DisplayString>
-    <DisplayString>[{length_}] {(this+1),[length_]su}</DisplayString>
+                   Condition="*(int*)&amp;hash_and_flags_ &amp; 1">
+        {(this+1),[length_]sb}</DisplayString>
+    <DisplayString>[{length_}] {(this+1),[length_]s}</DisplayString>
+    <DisplayString IncludeView="bare"
+                   Condition="*(int*)&amp;hash_and_flags_ &amp; 1">
+        {(this+1),[length_]sub}</DisplayString>
+    <DisplayString Condition="(*(int*)&amp;hash_and_flags_ &amp; 1)==0">
+        [{length_}] {(this+1),[length_]su}</DisplayString>
     <Expand>
       <Item Name="Length">length_</Item>
-      <Item Name="Hash">hash_</Item>
-      <Item Name="AsciiText" Condition="is_8bit_">(char*)(this+1),[length_]s</Item>
-      <Item Name="UnicodeText" Condition="!is_8bit_">(wchar_t*)(this+1),[length_]su</Item>
+      <Item Name="AsciiText"
+            Condition="*(int*)&amp;hash_and_flags_ &amp; 1">
+        (char*)(this+1),[length_]s</Item>
+      <Item Name="UnicodeText"
+            Condition="(*(int*)&amp;hash_and_flags_ &amp; 1)==0">
+        (wchar_t*)(this+1),[length_]su</Item>
+      <Item Name="Is8Bit">*(int*)&amp;hash_and_flags_ &amp; 1</Item>
+      <Item Name="IsStatic">*(int*)&amp;hash_and_flags_ &amp; 2</Item>
+      <Item Name="IsAtomic">*(int*)&amp;hash_and_flags_ &amp; 4</Item>
+      <Item Name="AsciiCheckDone">*(int*)&amp;hash_and_flags_ &amp; 8</Item>
+      <Item Name="ContainsOnlyAscii">*(int*)&amp;hash_and_flags_ &amp; 16</Item>
+      <Item Name="HashRaw">*(int*)&amp;hash_and_flags_ >> 8</Item>
     </Expand>
   </Type>
   <Type Name="WTF::AtomicString">

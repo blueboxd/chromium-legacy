@@ -23,6 +23,10 @@ base::Optional<std::vector<WebApplicationIconInfo>> ParseWebAppIconInfos(
 // Use the given |app| to populate a |WebAppSpecifics| sync proto.
 sync_pb::WebAppSpecifics WebAppToSyncProto(const WebApp& app);
 
+// Use the given |icon_info| to populate a |WebAppIconInfo| sync proto.
+sync_pb::WebAppIconInfo WebAppIconInfoToSyncProto(
+    const WebApplicationIconInfo& icon_info);
+
 base::Optional<WebApp::SyncFallbackData> ParseSyncFallbackDataStruct(
     const sync_pb::WebAppSpecifics& sync_proto);
 

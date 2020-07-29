@@ -5194,6 +5194,40 @@ void Document::ClearFocusedElement() {
                                 mojom::blink::FocusType::kNone, nullptr));
 }
 
+void Document::SendFocusNotification(Element* new_focused_element) {
+  if (!GetPage())
+    return;
+
+  bool is_editable = false;
+  gfx::Rect element_bounds;
+  if (new_focused_element) {
+    is_editable = IsEditableElement(*new_focused_element);
+    WebRect rect;
+
+    if (new_focused_element->IsSVGElement()) {
+      // Convert to window coordinate system (this will be in DIPs).
+      rect = new_focused_element->BoundsInViewport();
+    } else {
+      Vector<IntRect> outline_rects =
+          new_focused_element->OutlineRectsInVisualViewport(
+              DocumentUpdateReason::kFocus);
+      IntRect union_rect;
+      for (auto& outline_rect : outline_rects)
+        union_rect.Unite(outline_rect);
+      rect = union_rect;
+    }
+
+    if (GetFrame()->GetWidgetForLocalRoot()) {
+      GetFrame()->GetWidgetForLocalRoot()->Client()->ConvertViewportToWindow(
+          &rect);
+    }
+    element_bounds = gfx::Rect(rect);
+  }
+
+  GetFrame()->GetLocalFrameHostRemote().FocusedElementChanged(is_editable,
+                                                              element_bounds);
+}
+
 void Document::NotifyFocusedElementChanged(Element* old_focused_element,
                                            Element* new_focused_element) {
   // |old_focused_element| may not belong to this document by invoking
@@ -5209,21 +5243,7 @@ void Document::NotifyFocusedElementChanged(Element* old_focused_element,
     GetPage()->GetValidationMessageClient().DidChangeFocusTo(
         new_focused_element);
 
-    bool is_editable = false;
-    gfx::Rect element_bounds;
-    if (new_focused_element) {
-      // Convert to window coordinate system (this will be in DIPs).
-      WebRect rect = WebRect(new_focused_element->BoundsInViewport());
-      if (GetFrame()->GetWidgetForLocalRoot()) {
-        GetFrame()->GetWidgetForLocalRoot()->Client()->ConvertViewportToWindow(
-            &rect);
-      }
-      is_editable = IsEditableElement(*new_focused_element);
-      element_bounds = gfx::Rect(rect);
-    }
-
-    GetFrame()->GetLocalFrameHostRemote().FocusedElementChanged(is_editable,
-                                                                element_bounds);
+    SendFocusNotification(new_focused_element);
 
     Document* old_document =
         old_focused_element ? &old_focused_element->GetDocument() : nullptr;

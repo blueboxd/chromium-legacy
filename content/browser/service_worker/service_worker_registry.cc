@@ -154,7 +154,7 @@ void ServiceWorkerRegistry::CreateNewRegistration(
     blink::mojom::ServiceWorkerRegistrationOptions options,
     NewRegistrationCallback callback) {
   DCHECK_CURRENTLY_ON(ServiceWorkerContext::GetCoreThreadId());
-  storage()->GetNewRegistrationId(base::BindOnce(
+  GetRemoteStorageControl()->GetNewRegistrationId(base::BindOnce(
       &ServiceWorkerRegistry::DidGetNewRegistrationId,
       weak_factory_.GetWeakPtr(), std::move(options), std::move(callback)));
 }

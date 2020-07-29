@@ -174,3 +174,30 @@ TEST_F('ChromeVoxLearnModeTest', 'Braille', function() {
         .replay();
   });
 });
+
+TEST_F('ChromeVoxLearnModeTest', 'HardwareFunctionKeys', function() {
+  this.runOnLearnModePage((mockFeedback, evt) => {
+    mockFeedback.call(doKeyDown({keyCode: 217}))
+        .expectSpeechWithQueueMode('Brightness up', QueueMode.FLUSH)
+        .call(doKeyUp({keyCode: 217}))
+
+        .call(doKeyDown({keyCode: 91, metaKey: true}))
+        .expectSpeechWithQueueMode('Search', QueueMode.FLUSH)
+        .call(doKeyDown({keyCode: 217, metaKey: true}))
+        .expectSpeechWithQueueMode('Brightness up', QueueMode.QUEUE)
+        .expectSpeechWithQueueMode('Toggle dark screen', QueueMode.QUEUE)
+        .call(doKeyUp({keyCode: 217, metaKey: true}))
+
+        // Search+Volume Down has no associated command.
+        .call(doKeyDown({keyCode: 174, metaKey: true}))
+        .expectSpeechWithQueueMode('volume down', QueueMode.FLUSH)
+        .call(doKeyUp({keyCode: 174, metaKey: true}))
+
+        // Search+Volume Mute does though.
+        .call(doKeyDown({keyCode: 173, metaKey: true}))
+        .expectSpeechWithQueueMode('volume mute', QueueMode.FLUSH)
+        .expectSpeechWithQueueMode('Toggle speech on or off', QueueMode.QUEUE)
+
+        .replay();
+  });
+});

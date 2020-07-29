@@ -37,7 +37,7 @@ bool AXDumpTreeLogMessageHandler(int severity,
 }
 
 gfx::AcceleratedWidget CastToAcceleratedWidget(unsigned window_id) {
-#if defined(USE_OZONE) || defined(USE_X11) || defined(OS_MACOSX)
+#if defined(USE_OZONE) || defined(USE_X11) || defined(OS_MAC)
   return static_cast<gfx::AcceleratedWidget>(window_id);
 #else
   return reinterpret_cast<gfx::AcceleratedWidget>(window_id);

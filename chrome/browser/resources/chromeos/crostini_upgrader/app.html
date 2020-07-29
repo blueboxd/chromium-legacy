@@ -77,7 +77,6 @@
     justify-content: flex-end;
     margin: 32px 0;
   }
-
 </style>
 
 <div id="main">
@@ -127,7 +126,8 @@
   </div>
 
   <img id="[[getIllustrationStyle_(state_)]]"
-      src="[[getIllustrationURI_(state_)]]" alt="">
+      src="[[getIllustrationURI_(state_)]]" alt=""
+      hidden="[[hideIllustration_(state_)]]">
   <div id="backup-checkbox" hidden="[[!isState_(state_, State.PROMPT)]]">
     <cr-checkbox checked="{{backupCheckboxChecked_}}" >
       <p class="checkbox-text">

@@ -481,13 +481,6 @@
       },
     },
   },
-  'mac_all_arch': {
-    'swarming': {
-      'dimensions': {
-        'cpu': 'x86-64|arm64',
-      },
-    },
-  },
   'mac_mini_10.12': {
     'swarming': {
       'dimensions': {

@@ -12,7 +12,7 @@
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "base/time/time.h"
-#include "chrome/browser/chromeos/arc/session/arc_session_manager.h"
+#include "chrome/browser/chromeos/arc/session/arc_session_manager_observer.h"
 #include "chrome/browser/ui/app_list/arc/arc_app_list_prefs.h"
 #include "chrome/browser/ui/app_list/arc/arc_app_utils.h"
 #include "chrome/browser/ui/ash/launcher/shelf_spinner_item_controller.h"
@@ -22,7 +22,7 @@
 // shelf, with an overlaid spinner to provide visual feedback.
 class ArcShelfSpinnerItemController : public ShelfSpinnerItemController,
                                       public ArcAppListPrefs::Observer,
-                                      public arc::ArcSessionManager::Observer {
+                                      public arc::ArcSessionManagerObserver {
  public:
   ArcShelfSpinnerItemController(const std::string& arc_app_id,
                                 int event_flags,
@@ -39,7 +39,7 @@ class ArcShelfSpinnerItemController : public ShelfSpinnerItemController,
                           const ArcAppListPrefs::AppInfo& app_info) override;
   void OnAppRemoved(const std::string& removed_app_id) override;
 
-  // arc::ArcSessionManager::Observer:
+  // arc::ArcSessionManagerObserver:
   void OnArcPlayStoreEnabledChanged(bool enabled) override;
 
  private:

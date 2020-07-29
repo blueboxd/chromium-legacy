@@ -14,6 +14,8 @@
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/app/chrome_command_ids.h"
+#include "chrome/browser/apps/app_service/app_icon_factory.h"
+#include "chrome/common/chrome_features.h"
 #include "chrome/grit/generated_resources.h"
 #include "components/arc/arc_features.h"
 #include "components/arc/arc_service_manager.h"
@@ -23,7 +25,6 @@
 #include "components/arc/session/arc_bridge_service.h"
 #include "components/renderer_context_menu/render_view_context_menu_proxy.h"
 #include "content/public/browser/context_menu_params.h"
-#include "ui/gfx/image/image_skia.h"
 #include "ui/gfx/image/image_skia_operations.h"
 
 namespace arc {
@@ -121,11 +122,8 @@ void StartSmartSelectionActionMenu::HandleTextSelectionActions(
         /*title=*/base::UTF8ToUTF16(actions_[i]->title));
 
     if (actions_[i]->icon) {
-      gfx::Image icon = GetIconImage(std::move(actions_[i]->icon));
-      if (!icon.IsEmpty()) {
-        proxy_->UpdateMenuIcon(
-            IDC_CONTENT_CONTEXT_START_SMART_SELECTION_ACTION1 + i, icon);
-      }
+      UpdateMenuIcon(IDC_CONTENT_CONTEXT_START_SMART_SELECTION_ACTION1 + i,
+                     std::move(actions_[i]->icon));
     }
   }
 
@@ -143,19 +141,30 @@ void StartSmartSelectionActionMenu::HandleTextSelectionActions(
   proxy_->RemoveAdjacentSeparators();
 }
 
-gfx::Image StartSmartSelectionActionMenu::GetIconImage(
+void StartSmartSelectionActionMenu::UpdateMenuIcon(
+    int command_id,
     mojom::ActivityIconPtr icon) {
   constexpr size_t kBytesPerPixel = 4;  // BGRA
   if (icon->width > kMaxIconSizeInPx || icon->height > kMaxIconSizeInPx ||
       icon->width == 0 || icon->height == 0 ||
       icon->icon.size() != (icon->width * icon->height * kBytesPerPixel)) {
-    return gfx::Image();
+    return;
+  }
+
+  if (base::FeatureList::IsEnabled(features::kAppServiceAdaptiveIcon)) {
+    DCHECK(icon->icon_png_data);
+    apps::ArcRawIconPngDataToImageSkia(
+        std::move(icon->icon_png_data), kSmallIconSizeInDip,
+        base::BindOnce(&StartSmartSelectionActionMenu::SetMenuIcon,
+                       weak_ptr_factory_.GetWeakPtr(), command_id));
+    return;
   }
 
   SkBitmap bitmap;
   bitmap.allocPixels(SkImageInfo::MakeN32Premul(icon->width, icon->height));
   if (!bitmap.getPixels())
-    return gfx::Image();
+    return;
+
   DCHECK_GE(bitmap.computeByteSize(), icon->icon.size());
   memcpy(bitmap.getPixels(), &icon->icon.front(), icon->icon.size());
 
@@ -165,7 +174,12 @@ gfx::Image StartSmartSelectionActionMenu::GetIconImage(
       original, skia::ImageOperations::RESIZE_BEST,
       gfx::Size(kSmallIconSizeInDip, kSmallIconSizeInDip)));
 
-  return gfx::Image(icon_small);
+  SetMenuIcon(command_id, icon_small);
+}
+
+void StartSmartSelectionActionMenu::SetMenuIcon(int command_id,
+                                                const gfx::ImageSkia& image) {
+  proxy_->UpdateMenuIcon(command_id, gfx::Image(image));
 }
 
 }  // namespace arc

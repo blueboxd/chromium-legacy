@@ -614,8 +614,10 @@ DXVAVideoDecodeAccelerator::DXVAVideoDecodeAccelerator(
       using_debug_device_(false),
       enable_accelerated_av1_decode_(
           !workarounds.disable_accelerated_av1_decode),
-      enable_accelerated_vpx_decode_(
-          !workarounds.disable_accelerated_vpx_decode),
+      enable_accelerated_vp8_decode_(
+          !workarounds.disable_accelerated_vp8_decode),
+      enable_accelerated_vp9_decode_(
+          !workarounds.disable_accelerated_vp9_decode),
       processing_config_changed_(false),
       use_empty_video_hdr_metadata_(workarounds.use_empty_video_hdr_metadata) {
   weak_ptr_ = weak_this_factory_.GetWeakPtr();
@@ -1414,15 +1416,17 @@ bool DXVAVideoDecodeAccelerator::InitDecoder(VideoCodecProfile profile) {
                       "blacklisted version of msmpeg2vdec.dll 6.1.7140", false);
     codec_ = kCodecH264;
     clsid = __uuidof(CMSH264DecoderMFT);
-  } else if (enable_accelerated_vpx_decode_ &&
-             ((profile >= VP9PROFILE_PROFILE0 &&
-               profile <= VP9PROFILE_PROFILE3) ||
-              profile == VP8PROFILE_ANY)) {
+  } else if ((profile >= VP9PROFILE_PROFILE0 &&
+              profile <= VP9PROFILE_PROFILE3) ||
+             profile == VP8PROFILE_ANY) {
     codec_ = profile == VP8PROFILE_ANY ? kCodecVP8 : kCodecVP9;
-    clsid = CLSID_MSVPxDecoder;
-    decoder_dll = ::LoadLibrary(kMSVPxDecoderDLLName);
-    if (decoder_dll)
-      using_ms_vpx_mft_ = true;
+    if ((codec_ == kCodecVP8 && enable_accelerated_vp8_decode_) ||
+        (codec_ == kCodecVP9 && enable_accelerated_vp9_decode_)) {
+      clsid = CLSID_MSVPxDecoder;
+      decoder_dll = ::LoadLibrary(kMSVPxDecoderDLLName);
+      if (decoder_dll)
+        using_ms_vpx_mft_ = true;
+    }
   }
 
   if (enable_accelerated_av1_decode_ &&

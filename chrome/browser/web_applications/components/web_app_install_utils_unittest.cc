@@ -21,6 +21,8 @@
 
 namespace web_app {
 
+using Purpose = blink::Manifest::ImageResource::Purpose;
+
 namespace {
 
 const char kAppShortName[] = "Test short name";
@@ -126,13 +128,12 @@ TEST(WebAppInstallUtils, UpdateWebAppInfoFromManifest) {
 
   blink::Manifest::ImageResource icon;
   icon.src = AppIcon2();
-  icon.purpose = {blink::Manifest::ImageResource::Purpose::ANY,
-                  blink::Manifest::ImageResource::Purpose::MONOCHROME};
+  icon.purpose = {Purpose::ANY, Purpose::MONOCHROME};
   manifest.icons.push_back(icon);
   icon.src = AppIcon3();
   manifest.icons.push_back(icon);
   // Add an icon without purpose ANY (expect to be ignored).
-  icon.purpose = {blink::Manifest::ImageResource::Purpose::MONOCHROME};
+  icon.purpose = {Purpose::MONOCHROME};
   manifest.icons.push_back(icon);
   manifest.display_override.push_back(DisplayMode::kMinimalUi);
   manifest.display_override.push_back(DisplayMode::kStandalone);
@@ -175,6 +176,32 @@ TEST(WebAppInstallUtils, UpdateWebAppInfoFromManifest_EmptyName) {
 
   UpdateWebAppInfoFromManifest(manifest, &web_app_info);
   EXPECT_EQ(base::UTF8ToUTF16(kAppShortName), web_app_info.title);
+}
+
+// Test that maskable icons are parsed as separate icon_infos from the manifest.
+TEST(WebAppInstallUtils, UpdateWebAppInfoFromManifest_MaskableIcon) {
+  blink::Manifest manifest;
+  blink::Manifest::ImageResource icon;
+  icon.src = AppIcon1();
+  // Produces 2 separate icon_infos.
+  icon.purpose = {Purpose::ANY, Purpose::MASKABLE};
+  manifest.icons.push_back(icon);
+  // Produces 1 icon_info.
+  icon.purpose = {Purpose::MASKABLE};
+  manifest.icons.push_back(icon);
+  // Not converted to an icon_info (for now).
+  icon.purpose = {Purpose::MONOCHROME};
+  manifest.icons.push_back(icon);
+  WebApplicationInfo web_app_info;
+
+  UpdateWebAppInfoFromManifest(manifest, &web_app_info);
+  EXPECT_EQ(3U, web_app_info.icon_infos.size());
+  int maskable_count = 0;
+  for (const auto& icon_info : web_app_info.icon_infos) {
+    if (icon_info.purpose == Purpose::MASKABLE)
+      maskable_count++;
+  }
+  EXPECT_EQ(2, maskable_count);
 }
 
 // Tests that WebAppInfo is correctly updated when Manifest contains Shortcuts.
@@ -246,13 +273,12 @@ TEST_F(WebAppInstallUtilsWithShortcutsMenu,
 
   blink::Manifest::ImageResource icon;
   icon.src = AppIcon2();
-  icon.purpose = {blink::Manifest::ImageResource::Purpose::ANY,
-                  blink::Manifest::ImageResource::Purpose::MONOCHROME};
+  icon.purpose = {Purpose::ANY, Purpose::MONOCHROME};
   manifest.icons.push_back(icon);
   icon.src = AppIcon3();
   manifest.icons.push_back(icon);
   // Add an icon without purpose ANY (expect to be ignored).
-  icon.purpose = {blink::Manifest::ImageResource::Purpose::MONOCHROME};
+  icon.purpose = {Purpose::MONOCHROME};
   manifest.icons.push_back(icon);
 
   // Test that shortcuts in the manifest replace those in |web_app_info|.
@@ -263,7 +289,7 @@ TEST_F(WebAppInstallUtilsWithShortcutsMenu,
   shortcut_item.url = ShortcutItemUrl();
 
   icon.src = IconUrl2();
-  icon.sizes.push_back(gfx::Size(10, 10));
+  icon.sizes.emplace_back(10, 10);
   shortcut_item.icons.push_back(std::move(icon));
 
   manifest.shortcuts.push_back(shortcut_item);
@@ -318,8 +344,8 @@ TEST(WebAppInstallUtils, UpdateWebAppInfoFromManifestTooManyIcons) {
   for (int i = 0; i < 50; ++i) {
     blink::Manifest::ImageResource icon;
     icon.src = AppIcon1();
-    icon.purpose.push_back(blink::Manifest::ImageResource::Purpose::ANY);
-    icon.sizes.push_back(gfx::Size(i, i));
+    icon.purpose.push_back(Purpose::ANY);
+    icon.sizes.emplace_back(i, i);
     manifest.icons.push_back(std::move(icon));
   }
   WebApplicationInfo web_app_info;
@@ -341,7 +367,7 @@ TEST_F(WebAppInstallUtilsWithShortcutsMenu,
 
     blink::Manifest::ImageResource icon;
     icon.src = IconUrl1();
-    icon.sizes.push_back(gfx::Size(i, i));
+    icon.sizes.emplace_back(i, i);
     shortcut_item.icons.push_back(std::move(icon));
 
     manifest.shortcuts.push_back(shortcut_item);
@@ -352,7 +378,7 @@ TEST_F(WebAppInstallUtilsWithShortcutsMenu,
   std::vector<WebApplicationShortcutsMenuItemInfo::Icon> all_icons;
   for (const auto& shortcut : web_app_info.shortcut_infos) {
     for (const auto& icon_info : shortcut.shortcut_icon_infos) {
-      all_icons.push_back(std::move(icon_info));
+      all_icons.push_back(icon_info);
     }
   }
   ASSERT_GT(kNumTestIcons, all_icons.size());
@@ -365,9 +391,9 @@ TEST(WebAppInstallUtils, UpdateWebAppInfoFromManifestIconsTooLarge) {
   for (int i = 1; i <= 20; ++i) {
     blink::Manifest::ImageResource icon;
     icon.src = AppIcon1();
-    icon.purpose.push_back(blink::Manifest::ImageResource::Purpose::ANY);
+    icon.purpose.push_back(Purpose::ANY);
     const int size = i * 100;
-    icon.sizes.push_back(gfx::Size(size, size));
+    icon.sizes.emplace_back(size, size);
     manifest.icons.push_back(std::move(icon));
   }
   WebApplicationInfo web_app_info;
@@ -393,7 +419,7 @@ TEST_F(WebAppInstallUtilsWithShortcutsMenu,
     blink::Manifest::ImageResource icon;
     icon.src = IconUrl1();
     const int size = i * 100;
-    icon.sizes.push_back(gfx::Size(size, size));
+    icon.sizes.emplace_back(size, size);
     shortcut_item.icons.push_back(std::move(icon));
 
     manifest.shortcuts.push_back(shortcut_item);
@@ -404,7 +430,7 @@ TEST_F(WebAppInstallUtilsWithShortcutsMenu,
   std::vector<WebApplicationShortcutsMenuItemInfo::Icon> all_icons;
   for (const auto& shortcut : web_app_info.shortcut_infos) {
     for (const auto& icon_info : shortcut.shortcut_icon_infos) {
-      all_icons.push_back(std::move(icon_info));
+      all_icons.push_back(icon_info);
     }
   }
   EXPECT_EQ(10U, all_icons.size());
@@ -468,8 +494,8 @@ TEST(WebAppInstallUtils, PopulateShortcutItemIconsNoShortcutIcons) {
 }
 
 // Tests that when FilterAndResizeIconsGenerateMissing is called with no
-// app icon or shortcut icon data in web_app_info, web_app_info.icon_bitmaps is
-// correctly populated.
+// app icon or shortcut icon data in web_app_info, web_app_info.icon_bitmaps_any
+// is correctly populated.
 TEST(WebAppInstallUtils, FilterAndResizeIconsGenerateMissingNoWebAppIconData) {
   WebApplicationInfo web_app_info;
   web_app_info.title = base::ASCIIToUTF16("App Name");
@@ -482,9 +508,69 @@ TEST(WebAppInstallUtils, FilterAndResizeIconsGenerateMissingNoWebAppIconData) {
   EXPECT_EQ(SizesToGenerate().size(), web_app_info.icon_bitmaps_any.size());
 }
 
+// Tests that when FilterAndResizeIconsGenerateMissing is called with maskable
+// icons available, web_app_info.icon_bitmaps_any is correctly populated.
+TEST(WebAppInstallUtils, FilterAndResizeIconsGenerateMissing_MaskableIcons) {
+  // Construct |icons_map| to pass to FilterAndResizeIconsGenerateMissing().
+  IconsMap icons_map;
+  std::vector<SkBitmap> bmp1 = {CreateSquareIcon(32, SK_ColorWHITE)};
+  icons_map.emplace(IconUrl1(), bmp1);
+  std::vector<SkBitmap> bmp2 = {CreateSquareIcon(64, SK_ColorBLUE)};
+  icons_map.emplace(IconUrl2(), bmp2);
+
+  // Construct |web_app_info| to pass icon infos.
+  WebApplicationInfo web_app_info;
+  web_app_info.title = base::ASCIIToUTF16("App Name");
+  WebApplicationIconInfo info;
+  // Icon at URL 1 has both ANY and MASKABLE purpose.
+  info.url = IconUrl1();
+  info.purpose = Purpose::ANY;
+  web_app_info.icon_infos.push_back(info);
+  info.purpose = Purpose::MASKABLE;
+  web_app_info.icon_infos.push_back(info);
+  // Icon at URL 2 has MASKABLE purpose only.
+  info.url = IconUrl2();
+  info.purpose = Purpose::MASKABLE;
+  web_app_info.icon_infos.push_back(info);
+
+  FilterAndResizeIconsGenerateMissing(&web_app_info, &icons_map);
+
+  EXPECT_EQ(SizesToGenerate().size(), web_app_info.icon_bitmaps_any.size());
+  // Expect only icon at URL 1 to be used and resized.
+  for (const auto& icon_bitmap : web_app_info.icon_bitmaps_any) {
+    EXPECT_EQ(SK_ColorWHITE, icon_bitmap.second.getColor(0, 0));
+  }
+}
+
+// Tests that when FilterAndResizeIconsGenerateMissing is called with maskable
+// icons only, web_app_info.icon_bitmaps_any is correctly populated.
+TEST(WebAppInstallUtils,
+     FilterAndResizeIconsGenerateMissing_MaskableIconsOnly) {
+  // Construct |icons_map| to pass to FilterAndResizeIconsGenerateMissing().
+  IconsMap icons_map;
+  std::vector<SkBitmap> bmp1 = {CreateSquareIcon(32, SK_ColorWHITE)};
+  icons_map.emplace(IconUrl1(), bmp1);
+
+  // Construct |web_app_info| to pass icon infos.
+  WebApplicationInfo web_app_info;
+  web_app_info.title = base::ASCIIToUTF16("App Name");
+  WebApplicationIconInfo info;
+  info.url = IconUrl1();
+  info.purpose = Purpose::MASKABLE;
+  web_app_info.icon_infos.push_back(info);
+
+  FilterAndResizeIconsGenerateMissing(&web_app_info, &icons_map);
+
+  // Expect to fall back to using icon from icons_map.
+  EXPECT_EQ(SizesToGenerate().size(), web_app_info.icon_bitmaps_any.size());
+  for (const auto& icon_bitmap : web_app_info.icon_bitmaps_any) {
+    EXPECT_EQ(SK_ColorWHITE, icon_bitmap.second.getColor(0, 0));
+  }
+}
+
 // Tests that when FilterAndResizeIconsGenerateMissing is called with no
 // app icon or shortcut icon data in web_app_info, and kDesktopPWAShortcutsMenu
-// feature enabled, web_app_info.icon_bitmaps is correctly populated.
+// feature enabled, web_app_info.icon_bitmaps_any is correctly populated.
 TEST_F(WebAppInstallUtilsWithShortcutsMenu,
        FilterAndResizeIconsGenerateMissingNoWebAppIconData) {
   WebApplicationInfo web_app_info;
@@ -495,12 +581,16 @@ TEST_F(WebAppInstallUtilsWithShortcutsMenu,
   icons_map.emplace(IconUrl1(), bmp1);
   FilterAndResizeIconsGenerateMissing(&web_app_info, &icons_map);
 
+  // Expect to fall back to using icon from icons_map.
   EXPECT_EQ(SizesToGenerate().size(), web_app_info.icon_bitmaps_any.size());
+  for (const auto& icon_bitmap : web_app_info.icon_bitmaps_any) {
+    EXPECT_EQ(SK_ColorWHITE, icon_bitmap.second.getColor(0, 0));
+  }
 }
 
 // Tests that when FilterAndResizeIconsGenerateMissing is called with both
-// app icon and shortcut icon bitmaps in icons_map, web_app_info.icon_bitmaps
-// is correctly populated.
+// app icon and shortcut icon bitmaps in icons_map,
+// web_app_info.icon_bitmaps_any is correctly populated.
 TEST_F(WebAppInstallUtilsWithShortcutsMenu,
        FilterAndResizeIconsGenerateMissingWithShortcutIcons) {
   // Construct |icons_map| to pass to FilterAndResizeIconsGenerateMissing().

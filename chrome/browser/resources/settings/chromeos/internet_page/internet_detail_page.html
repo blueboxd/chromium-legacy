@@ -47,11 +47,6 @@
         margin-inline-end: 10px;
       }
 
-      network-config-toggle {
-        display: flex;
-        padding: 0 var(--cr-section-padding);
-      }
-
       cr-policy-indicator {
         margin-inline-start: var(--settings-controlled-by-spacing);
       }
@@ -238,15 +233,6 @@
           </div>
         </template>
       </template>
-      <!-- Metered (WiFi and Cellular only). -->
-      <template is="dom-if" if="[[showMetered_(managedProperties_)]]">
-        <network-config-toggle id="meteredToggle" class="hr" policy-on-left
-            label="$i18n{networkMetered}"
-            checked="{{meteredOverride_}}"
-            property="[[managedProperties_.metered]]"
-            on-checked-changed="meteredChanged_">
-        </network-config-toggle>
-      </template>
       <!-- Always-on VPN. -->
       <template is="dom-if"
           if="[[showAlwaysOnVpn_(managedProperties_)]]">
@@ -289,8 +275,8 @@
         </div>
       </template>
 
-      <template is="dom-if"
-          if="[[showAdvanced_(managedProperties_, propertiesReceived_)]]">
+      <template is="dom-if" if="[[hasAdvancedSection_(managedProperties_,
+                                 propertiesReceived_, showMeteredToggle_)]]">
         <!-- Advanced toggle. -->
         <cr-expand-button
             alt="$i18n{networkSectionAdvancedA11yLabel}"
@@ -301,20 +287,33 @@
 
         <!-- Advanced section -->
         <iron-collapse opened="[[advancedExpanded_]]">
-          <div class="settings-box single-column stretch indented first"
-              hidden$="[[!hasAdvancedOrDeviceFields_(managedProperties_)]]">
+          <div class="settings-box single-column stretch indented first">
+            <!-- Metered (WiFi and Cellular only). -->
+            <template is="dom-if"
+                if="[[showMetered_(managedProperties_, showMeteredToggle_)]]">
+              <network-config-toggle id="meteredToggle" class="hr"
+                  policy-on-left property="[[managedProperties_.metered]]"
+                  label="$i18n{networkMetered}"
+                  sub-label="$i18n{networkMeteredDesc}"
+                  checked="{{meteredOverride_}}"
+                  on-checked-changed="meteredChanged_">
+              </network-config-toggle>
+            </template>
             <!-- Advanced properties -->
-            <network-property-list-mojo
-                hidden$="[[!hasAdvancedFields_(managedProperties_)]]"
-                fields="[[getAdvancedFields_(managedProperties_)]]"
-                property-dict="[[managedProperties_]]">
-            </network-property-list-mojo>
+            <template is="dom-if"
+                if="[[hasAdvancedFields_(managedProperties_)]]">
+              <network-property-list-mojo
+                  fields="[[getAdvancedFields_(managedProperties_)]]"
+                  property-dict="[[managedProperties_]]">
+              </network-property-list-mojo>
+            </template>
             <!-- Device properties -->
-            <network-property-list-mojo
-                hidden$="[[!hasDeviceFields_(managedProperties_)]]"
-                fields="[[getDeviceFields_(managedProperties_)]]"
-                property-dict="[[managedProperties_]]">
-            </network-property-list-mojo>
+            <template is="dom-if" if="[[hasDeviceFields_(managedProperties_)]]">
+              <network-property-list-mojo
+                  fields="[[getDeviceFields_(managedProperties_)]]"
+                  property-dict="[[managedProperties_]]">
+              </network-property-list-mojo>
+            </template>
           </div>
         </iron-collapse>
       </template>

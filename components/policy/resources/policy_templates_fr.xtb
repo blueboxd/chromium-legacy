@@ -484,13 +484,6 @@ Si vous la désactivez, le défilement des pages Web vers des fragments de texte
       La règle doit être une chaîne exprimant l'URL et le hachage au format JSON.</translation>
 <translation id="1819272352048746487">Permet d'activer ou de désactiver les différentes fonctionnalités du clavier à l'écran</translation>
 <translation id="1827523283178827583">Utiliser des serveurs proxy déterminés</translation>
-<translation id="1831495419375964631">Cette règle se rapporte à une URL, qui renvoie vers un fichier XML au même format que celui de la règle <ph name="IEEM_SITELIST_POLICY" /> d'Internet Explorer. Les instructions sont ainsi chargées à partir d'un fichier XML, sans être partagées avec Internet Explorer.
-
-      Si cette règle n'est pas définie ou si elle est définie sur une URL non valide, <ph name="PRODUCT_NAME" /> n'utilise pas la règle comme source des instructions relatives au changement de navigateur.
-
-      Si cette règle est définie sur une URL valide, <ph name="PRODUCT_NAME" /> télécharge la liste des sites à partir de cette URL, puis applique les instructions comme si elles avaient été configurées avec la règle <ph name="SITELIST_POLICY_NAME" />.
-
-      Pour en savoir plus sur la règle <ph name="IEEM_SITELIST_POLICY" /> d'Internet Explorer, rendez-vous sur https://docs.microsoft.com/internet-explorer/ie11-deploy-guide/what-is-enterprise-mode.</translation>
 <translation id="1839278886947586809">
       Cette règle a été retirée de la version M80, car elle n'est plus nécessaire
       depuis que WebDriver est compatible avec toutes les règles existantes.
@@ -676,22 +669,31 @@ Si ce paramètre n'est pas défini, les utilisateurs peuvent ouvrir normalement 
 <translation id="2082205219176343977">Configurer la version Chrome minimale autorisée de l'appareil.</translation>
 <translation id="209586405398070749">Version stable</translation>
 <translation id="2098658257603918882">Autoriser l'envoi de statistiques d'utilisation et de rapports d'erreur</translation>
+<translation id="210034539800365161">Permet de configurer la version minimale autorisée requise de <ph name="PRODUCT_OS_NAME" />.
+
+      Lorsque cette règle est définie sur des entrées de la liste :
+      Si aucune des entrées de la liste ne possède une "<ph name="CHROMEOS_VERSION_PROPERTY_NAME" />" ultérieure à la version actuelle de l'appareil, aucune restriction n'est alors appliquée, et les restrictions existantes sont révoquées.
+      Si au moins une entrée possède une "<ph name="CHROMEOS_VERSION_PROPERTY_NAME" />" ultérieure à la version actuelle, l'entrée choisie est celle qui est la plus performante et dont la version est supérieure et la plus proche de la version actuelle.
+      En cas de conflit, la préférence est donnée à celle dont la "<ph name="WARNING_PERIOD_PROPERTY_NAME" />" ou la "<ph name="AUE_WARNING_PERIOD_PROPERTY_NAME" />" est la plus réduite. De plus, la règle est appliquée avec cette entrée.
+
+      Si la version actuelle devient obsolète pendant la session utilisateur et que le réseau actuel limite les mises à jour automatiques, une notification s'affiche à l'écran pour inviter l'utilisateur à mettre à jour l'appareil dans la "<ph name="WARNING_PERIOD_PROPERTY_NAME" />" qui lui est indiquée.
+      En revanche, si le réseau actuel autorise les mises à jour automatiques et que l'appareil doit être mis à jour dans la "<ph name="WARNING_PERIOD_PROPERTY_NAME" />" définie, aucune notification ne s'affiche.
+      La "<ph name="WARNING_PERIOD_PROPERTY_NAME" />" commence à partir de l'application de la règle.
+      Si l'appareil n'est pas mis à jour avant la fin de la "<ph name="WARNING_PERIOD_PROPERTY_NAME" />", l'utilisateur est déconnecté de la session.
+      Si la version actuelle s'avère obsolète au moment de la connexion, et si la "<ph name="WARNING_PERIOD_PROPERTY_NAME" />" est arrivée à expiration, l'utilisateur doit mettre à jour l'appareil avant de se connecter.
+
+      Si la version actuelle devient obsolète pendant la session utilisateur et que la date d'expiration des mises à jour automatiques associée à l'appareil est atteinte, une notification s'affiche à l'écran pour appliquer de nouveau la "<ph name="AUE_WARNING_PERIOD_PROPERTY_NAME" />" à l'appareil.
+      Si la date d'expiration des mises à jour automatiques associée à l'appareil est atteinte au moment de la connexion et que la "<ph name="AUE_WARNING_PERIOD_PROPERTY_NAME" />" est arrivée à expiration, aucun utilisateur ne peut se connecter à l'appareil.
+
+      Si cette règle n'est pas configurée ou si aucune entrée ne figure dans la liste, aucune restriction n'est appliquée, les restrictions existantes sont révoquées, et l'utilisateur peut se connecter quelle que soit la version de <ph name="PRODUCT_OS_NAME" />.
+
+      Dans le cas présent, "<ph name="CHROMEOS_VERSION_PROPERTY_NAME" />" peut désigner une version exacte telle que "13305.0.0" ou le préfixe d'une version tel que "13305".
+      Les "<ph name="WARNING_PERIOD_PROPERTY_NAME" />" et "<ph name="AUE_WARNING_PERIOD_PROPERTY_NAME" />" sont des valeurs facultatives exprimées en nombre de jours. Elles sont définies par défaut sur 0 jour, ce qui signifie qu'il n'y a pas de période d'avertissement.</translation>
 <translation id="2104418465060359056">Enregistrer les informations des extensions et des plug-ins</translation>
 <translation id="2106627642643925514">Remplace le mode d'impression par code défini par défaut. Si le mode est indisponible, cette règle est ignorée.</translation>
 <translation id="2107601598727098402">
         Cette règle a été abandonnée dans la version M72. Veuillez utiliser la règle CloudManagementEnrollmentToken à la place.
         </translation>
-<translation id="2108169571875569435">Cette règle contrôle la commande à utiliser pour ouvrir les URL dans un navigateur secondaire.
-
-      Si cette règle n'est pas définie, l'URL s'ouvre par défaut dans un navigateur spécifique à la plate-forme : Internet Explorer sur Windows ou Safari sur Mac OS X. Sur Linux, l'ouverture d'un navigateur secondaire provoquera une erreur si cette règle n'est pas définie.
-
-      Si cette règle est définie sur le navigateur <ph name="INTERNET_EXPLORER_VALUE_PLACEHOLDER" />, <ph name="FIREFOX_VALUE_PLACEHOLDER" />, <ph name="SAFARI_VALUE_PLACEHOLDER" /> ou
-      <ph name="OPERA_VALUE_PLACEHOLDER" />, c'est celui-ci qui se lancera s'il est installé. Le navigateur <ph name="INTERNET_EXPLORER_VALUE_PLACEHOLDER" /> n'est disponible
-      que sur Windows, et <ph name="SAFARI_VALUE_PLACEHOLDER" /> n'est disponible que sur Windows et Mac
-      OS X.
-
-      Si elle est définie sur un chemin d'accès à un fichier, ce dernier est utilisé comme fichier
-      exécutable.</translation>
 <translation id="2113068765175018713">Limiter le temps de fonctionnement de l'appareil en redémarrant automatiquement</translation>
 <translation id="2124881675920287921">Cette règle étant obsolète dans la version M82 et supprimée de M85, utilisez <ph name="SAFE_BROWSING_EXTENDED_REPORTING_ENABLED_POLICY_NAME" /> à sa place. Si vous désactivez <ph name="SAFE_BROWSING_EXTENDED_REPORTING_OPT_IN_ALLOWED_POLICY_NAME" />, cela revient à désactiver <ph name="SAFE_BROWSING_EXTENDED_REPORTING_ENABLED_POLICY_NAME" />. Si vous activez <ph name="SAFE_BROWSING_EXTENDED_REPORTING_OPT_IN_ALLOWED_POLICY_NAME" /> ou que vous ne définissez pas ce paramètre, cela revient à ne pas définir <ph name="SAFE_BROWSING_EXTENDED_REPORTING_ENABLED_POLICY_NAME" />.
 
@@ -780,6 +782,11 @@ Si ce paramètre n'est pas défini, les utilisateurs peuvent ouvrir normalement 
 <translation id="2197625019569762163">Définissez cette règle sur "True" pour afficher le clavier numérique par défaut lors de la saisie du mot de passe sur l'écran de connexion. Les utilisateurs pourront toujours revenir au clavier normal.
 
       Si vous définissez cette règle, les utilisateurs ne peuvent pas modifier la configuration. Si vous ne la définissez pas ou si vous la définissez sur "False", elle est sans effet.</translation>
+<translation id="2200041405904405884">Permet de spécifier les hôtes de messagerie native à exclure de la liste de blocage.
+
+          Si vous saisissez la valeur "*" dans la liste de blocage, tous les hôtes de messagerie native sont bloqués, et seuls ceux figurant sur la liste d'autorisation sont chargés.
+
+          Par défaut, tous les hôtes de messagerie native sont autorisés. Toutefois, s'ils ont tous été bloqués par une règle, la liste d'autorisation peut être utilisée pour ignorer cette règle.</translation>
 <translation id="2200698565850397198">Configurer la liste de blocage de messagerie native</translation>
 <translation id="2201555246697292490">Configurer la liste blanche de messagerie native</translation>
 <translation id="2204753382813641270">Règle pour masquer automatiquement l'étagère</translation>
@@ -1015,17 +1022,6 @@ Si elle n'est pas définie, l'écran de confidentialité est désactivé initial
 
           Si cette règle est définie sur "false", un message d'erreur s'affiche au lieu de l'invite de configuration réseau.</translation>
 <translation id="2498238926436517902">Toujours masquer automatiquement l'étagère</translation>
-<translation id="2505805702054675476">Cette règle contrôle les paramètres de ligne de commande pour lancer le navigateur secondaire.
-
-      Si cette règle n'est pas définie, seule l'URL est transmise comme paramètre de ligne de commande.
-
-      Si cette règle est définie sur une liste de chaînes, chaque chaîne est transmise au navigateur secondaire comme paramètre de ligne de commande distinct. Pour Windows, les paramètres sont séparés par des espaces. Pour Mac OS X et Linux, un paramètre peut contenir des espaces et être quand même traité comme un seul et même paramètre.
-
-      Si un élément contient l'URL <ph name="URL_PLACEHOLDER" />, elle est remplacée par l'URL de la page à ouvrir.
-
-      Si aucun élément ne contient l'URL <ph name="URL_PLACEHOLDER" />, elle est ajoutée à la fin de la ligne de commande.
-
-      Les variables d'environnement sont développées. Pour Windows, la variable <ph name="ENV_VARIABLE_WIN_EXAMPLE" /> est remplacée par la valeur de la variable d'environnement <ph name="ENV_VARIABLE_VALUE" />. Pour Mac OS X et Linux, la variable <ph name="ENV_VARIABLE_UNIX_EXAMPLE" /> est remplacée par la valeur de la variable d'environnement <ph name="ENV_VARIABLE" />.</translation>
 <translation id="250670737672448119">Active la fonctionnalité d'accessibilité de mise en surbrillance du curseur de saisie.
 
           Cette fonctionnalité permet de mettre en surbrillance la zone autour du curseur de saisie lorsque l'utilisateur effectue une modification.
@@ -1460,15 +1456,6 @@ Si elle n'est pas définie, l'écran de confidentialité est désactivé initial
 <translation id="3096595567015595053">Liste des plug-ins activés</translation>
 <translation id="3101501961102569744">Sélectionner le mode de spécification des paramètres de serveur proxy</translation>
 <translation id="3101709781009526431">Date et heure</translation>
-<translation id="3114411414586006215">Cette règle contrôle la liste des sites Web qui ne déclencheront jamais de changement de navigateur.
-
-      Notez que vous pouvez également ajouter des éléments à cette liste avec la règle <ph name="EXTERNAL_SITELIST_URL_POLICY_NAME" />.
-
-      Si cette règle n'est pas définie, aucun site Web n'est ajouté à la liste.
-
-      Si cette règle est définie, chaque élément est traité comme une instruction, comme pour la règle <ph name="URL_LIST_POLICY_NAME" />. Toutefois, la logique est inversée : les instructions qui correspondent ne déclenchent pas l'ouverture d'un navigateur secondaire.
-
-      Contrairement à <ph name="URL_LIST_POLICY_NAME" />, les instructions s'appliquent dans les deux sens. C'est-à-dire que lorsque le module complémentaire d'Internet Explorer est présent et activé, il contrôle également l'ouverture ou non de ces URL par <ph name="IE_PRODUCT_NAME" /> dans <ph name="PRODUCT_NAME" />.</translation>
 <translation id="3117676313396757089">Avertissement : DHE sera intégralement supprimé de <ph name="PRODUCT_NAME" /> après la version 57 (autour de mars 2017) et cette règle ne sera plus valable.
 
       Si cette règle n'est pas configurée, ou si elle est définie sur "False", les suites de chiffrement DHE dans TLS ne seront pas activées. Sinon, elle peut être définie sur "True" pour activer ces mêmes suites de chiffrement et assurer la compatibilité avec un serveur obsolète. Il s'agit là d'une solution provisoire, et le serveur devrait être reconfiguré.
@@ -2042,13 +2029,6 @@ Si elle est définie sur "False", <ph name="PRODUCT_NAME" /> n'utilise pas les n
 <translation id="3973371701361892765">Ne jamais masquer automatiquement l'étagère</translation>
 <translation id="3979738908158213640">URL autorisées à procéder à l'attestation de l'identité de l'appareil lors de l'authentification SAML</translation>
 <translation id="3984028218719007910">Détermine si <ph name="PRODUCT_OS_NAME" /> doit conserver les données locales des comptes après la déconnexion. Si cette règle est définie sur "true", aucun compte persistant n'est conservé par <ph name="PRODUCT_OS_NAME" />. Par ailleurs, toutes les données de la session utilisateur sont supprimées après la déconnexion. Si cette règle est définie sur "false" ou si elle n'est pas configurée, l'appareil peut conserver des données utilisateur locales (chiffrées).</translation>
-<translation id="398475542699441679">Cette règle contrôle l'activation de Legacy Browser Support.
-
-      Si elle n'est pas définie, ou si elle est définie sur "false", Chrome n'essaiera pas de lancer les URL indiquées dans un navigateur secondaire.
-
-      Si elle est définie sur "true", Chrome essaiera de lancer certaines URL dans un navigateur secondaire (par exemple Internet Explorer). Cette fonctionnalité est configurée à l'aide des règles du groupe <ph name="LEGACY_BROWSER_SUPPORT_POLICY_GROUP" />.
-
-      Cette fonctionnalité remplace l'extension <ph name="LEGACY_BROWSER_SUPPORT_EXTENSION_NAME" />. La configuration définie dans l'extension sera appliquée à cette fonctionnalité, mais il est vivement conseillé de lui préférer les règles Chrome. Une meilleure compatibilité sera ainsi assurée à l'avenir.</translation>
 <translation id="398884292557092447">Si cette règle est définie sur "True" ou qu'elle n'est pas configurée, les utilisateurs peuvent contrôler les suggestions de saisie automatique pour les cartes de crédit dans l'interface utilisateur.
 
       Si cette règle est définie sur "False", les informations de carte de crédit ne sont jamais suggérées ni saisies automatiquement. De même, les informations complémentaires de carte de crédit que l'utilisateur est susceptible de fournir sur une page Web ne sont pas enregistrées.</translation>
@@ -2562,6 +2542,7 @@ Si cette règle n'est pas configurée, l'utilisateur peut décider d'afficher ou
 <translation id="4812270373673968774">Si cette règle est définie sur "Always", l'étagère <ph name="PRODUCT_OS_NAME" /> est masquée automatiquement. Si cette règle est définie sur "Never", l'étagère n'est jamais masquée automatiquement.
 
       Si vous configurez cette règle, les utilisateurs ne peuvent pas la modifier. Si cette règle n'est pas configurée, les utilisateurs choisissent si l'étagère doit être masquée automatiquement ou non.</translation>
+<translation id="4812714598405913256">Configurer le message concernant l'expiration de la mise à jour automatique pour la règle DeviceMinimumVersion</translation>
 <translation id="4816674326202173458">Autoriser l'utilisateur d'entreprise à être à la fois un utilisateur principal et un utilisateur secondaire (comportement par défaut pour les utilisateurs non gérés)</translation>
 <translation id="4826326557828204741">Définit l'action à effectuer si le délai d'inactivité est atteint lorsque l'appareil fonctionne sur batterie.</translation>
 <translation id="482803100714220060">Affiche les URL complètes</translation>
@@ -2734,11 +2715,6 @@ Si cette règle n'est pas configurée, l'utilisateur peut décider d'afficher ou
           Si cette règle n'est pas configurée, le contenu mixte blocable est bloqué, et le contenu mixte blocable de manière facultative est mis à niveau. Les utilisateurs peuvent définir des exceptions autorisant l'affichage de ce contenu sur des sites spécifiques.
 
           Pour en savoir plus sur les formats d'URL valides, consultez cette page : https://cloud.google.com/docs/chrome-enterprise/policies/url-patterns.</translation>
-<translation id="510196893779239086">Cette règle détermine si Chrome doit être complètement fermé lorsque le dernier onglet bascule vers un navigateur secondaire.
-
-      Si elle n'est pas configurée, ou si elle est définie sur "True", Chrome laissera au moins un onglet ouvert après le passage à un navigateur secondaire.
-
-      Si elle est définie sur "False", Chrome fermera l'onglet lorsque vous changez de navigateur, même s'il s'agissait du dernier onglet. Chrome sera alors fermé complètement.</translation>
 <translation id="5102203758995933166">Permet de transférer l'application de la configuration réseau par utilisateur vers un appareil utilisant <ph name="PRODUCT_OS_NAME" />. La configuration réseau correspond à une chaîne formatée par JSON conformément au format de configuration de réseau ouvert.</translation>
 <translation id="5105313908130842249">Délai de verrouillage de l'écran (batterie)</translation>
 <translation id="5108031557082757679">Imprimantes d'appareils d'entreprise désactivées</translation>
@@ -2834,6 +2810,15 @@ Si vous activez ce paramètre, <ph name="PRODUCT_NAME" /> ignore toutes les opti
 
           Si cette règle est définie sur "False", l'activité audio n'empêche pas l'utilisateur d'être considéré comme inactif.</translation>
 <translation id="5245671702326993331">Autorise les notifications natives</translation>
+<translation id="524637053580639111">Cette règle étant supprimée dans la version M82, veuillez utiliser la règle DeviceMinimumVersion à la place.
+
+      Permet de configurer la version minimale autorisée requise de <ph name="PRODUCT_NAME" />. Les versions ci-dessous étant considérées comme obsolètes, l'appareil ne permet pas à l'utilisateur de se connecter avant la mise à jour du système d'exploitation.
+
+      Si la version actuelle devient obsolète pendant une session utilisateur, cet utilisateur est déconnecté de manière forcée.
+
+      Si cette règle n'est pas configurée, aucune restriction n'est appliquée, et l'utilisateur peut se connecter quelle que soit la version de <ph name="PRODUCT_NAME" />.
+
+      Dans le cas présent, le terme "version" peut désigner une version exacte telle que "61.0.3163.120" ou le préfixe d'une version tel que "61.0".  </translation>
 <translation id="5247006254130721952">Bloquer les téléchargements dangereux</translation>
 <translation id="5248863213023520115">Définit les types de chiffrement autorisés lors des demandes de tickets Kerberos à partir d'un serveur <ph name="MS_AD_NAME" />.
 
@@ -3014,6 +2999,14 @@ Si vous activez ce paramètre, <ph name="PRODUCT_NAME" /> ignore toutes les opti
       Si cette règle n'est pas configurée ou si elle est définie sur "Autoriser les importations et les téléchargements", <ph name="PRODUCT_NAME" /> se comporte conformément aux règles indiquées sous "Autoriser les téléchargements" et "Autoriser les importations".
       </translation>
 <translation id="5442026853063570579">Cette règle permet également de contrôler l'accès aux options pour les développeurs Android. Si vous définissez cette règle sur "DeveloperToolsDisallowed" (valeur 2), les utilisateurs ne pourront pas accéder aux options pour les développeurs. Si vous la définissez sur une autre valeur ou si vous ne la modifiez pas, les utilisateurs pourront accéder aux options pour les développeurs en appuyant sept fois sur le numéro de version dans l'application des paramètres Android.</translation>
+<translation id="5445596354079213552">Cette règle n'est appliquée que si la date d'expiration des mises à jour automatiques associée à l'appareil est atteinte et que celui-ci ne répond pas aux exigences de version minimale pour <ph name="PRODUCT_OS_NAME" />, définies dans la règle <ph name="DEVICE_MINIMUM_VERSION_POLICY_NAME" />.
+
+      Lorsque cette règle est définie sur une chaîne non vide :
+      Si le délai d'avertissement mentionné dans la règle <ph name="DEVICE_MINIMUM_VERSION_POLICY_NAME" /> est arrivé à expiration, ce message s'affiche sur l'écran de connexion lorsqu'aucun utilisateur ne peut se connecter avec l'appareil.
+      Si le délai d'avertissement mentionné dans la règle <ph name="DEVICE_MINIMUM_VERSION_POLICY_NAME" /> n'est pas arrivé à expiration, ce message s'affiche sur la page de gestion de Chrome une fois l'utilisateur connecté.
+
+      Si cette règle n'est pas définie ou si elle est définie sur une chaîne vide, le message par défaut concernant l'expiration de la mise à jour automatique s'affiche dans les deux cas précédents.
+      Le message d'expiration de la mise à jour automatique doit être en texte brut, sans mise en forme. Aucun balisage n'est autorisé.</translation>
 <translation id="5445719321399313760">Si cette règle est définie sur "True" ou qu'elle n'est pas configurée, <ph name="PRODUCT_NAME" /> présente aux utilisateurs des informations sur le produit en mode Plein onglet.
 
       Si cette règle est définie sur "False", <ph name="PRODUCT_NAME" /> ne peut pas présenter ces informations dans ce mode.
@@ -3045,17 +3038,6 @@ Lorsque cette règle n'est pas configurée, le paramètre par défaut utilisé c
 <translation id="546726650689747237">Délai d'assombrissement de l'écran (secteur)</translation>
 <translation id="5469143988693423708">L'utilisateur est autorisé à exécuter Crostini</translation>
 <translation id="5469825884154817306">Bloquer les images sur ces sites</translation>
-<translation id="5472668698895343595">Cette règle contrôle la liste des sites Web à ouvrir dans un navigateur secondaire.
-
-      Notez que vous pouvez également ajouter des éléments à cette liste avec les règles <ph name="USE_IE_SITELIST_POLICY_NAME" /> et <ph name="EXTERNAL_SITELIST_URL_POLICY_NAME" />.
-
-      Si cette règle n'est pas définie, aucun site Web n'est ajouté à la liste.
-
-      Si cette règle est définie, chaque élément est traité comme une instruction pour un élément à ouvrir dans un navigateur secondaire. <ph name="PRODUCT_NAME" /> utilise ces instructions pour décider si une URL doit être ouverte dans un navigateur secondaire ou non.
-
-      Si le module complémentaire d'Internet Explorer est présent et activé, Internet Explorer bascule de nouveau vers <ph name="PRODUCT_NAME" /> lorsque les instructions ne concordent pas.
-
-      Si les instructions se contredisent, <ph name="PRODUCT_NAME" /> utilise celle la plus spécifique.</translation>
 <translation id="5475361623548884387">Activer l'impression</translation>
 <translation id="547601067149622666">Ne pas autoriser les annonces sur les sites présentant des annonces intrusives</translation>
 <translation id="5483065054530244863">Autoriser les certificats signés SHA-1 émis par les ancres d'approbation locales</translation>
@@ -3304,19 +3286,6 @@ Lorsque cette règle n'est pas configurée, le paramètre par défaut utilisé c
 
           Lorsque cette règle n'est pas configurée, le comportement <ph name="ATTRIBUTE_SAMESITE_NAME" /> par défaut des cookies dépend de la configuration personnelle de l'utilisateur concernant les fonctionnalités <ph name="FEATURE_NAME_SAMESITE_BY_DEFAULT_COOKIES" />, <ph name="FEATURE_NAME_SAMESITE_NONE_MUST_BE_SECURE" /> et <ph name="FEATURE_NAME_SCHEMEFUL_SAME_SITE" />, qui peut être définie lors d'un test, ou par l'activation ou la désactivation des indicateurs <ph name="FLAG_NAME_SAMESITE_BY_DEFAULT_COOKIES" />, <ph name="FLAG_NAME_SAMESITE_NONE_MUST_BE_SECURE" /> ou <ph name="FLAG_NAME_SCHEMEFUL_SAME_SITE" />, respectivement.</translation>
 <translation id="585270638818921943">Empêche l'utilisateur de se servir d'applications Android provenant de sources non approuvées</translation>
-<translation id="5855010364142818361">Cette règle contrôle les paramètres de ligne de commande pour basculer vers Chrome à partir d'Internet Explorer.
-
-      Si le module complémentaire Legacy Browser Support pour Internet Explorer n'est pas installé, cette règle n'a aucun effet.
-
-      Si cette règle n'est pas définie, Internet Explorer transmet seulement l'URL à Chrome comme paramètre de ligne de commande.
-
-      Si cette règle est définie sur une liste de chaînes, celles-ci sont reliées par des espaces avant d'être transmises à Chrome comme paramètres de ligne de commande.
-
-      Si un élément contient l'URL <ph name="URL_PLACEHOLDER" />, elle est remplacée par l'URL de la page à ouvrir.
-
-      Si aucun élément ne contient l'URL <ph name="URL_PLACEHOLDER" />, elle est ajoutée à la fin de la ligne de commande.
-
-      Les variables d'environnement sont développées. Sous Windows, la variable <ph name="ENV_VARIABLE_WIN_EXAMPLE" /> est remplacée par la valeur de la variable d'environnement ABC.</translation>
 <translation id="5859344336338527083">Permet de déterminer quelles URL peuvent installer des extensions, des applications et des thèmes. Avant la version 21 de <ph name="PRODUCT_NAME" />, les utilisateurs pouvaient cliquer sur un lien qui renvoyait vers un fichier *.crx, et <ph name="PRODUCT_NAME" /> leur proposait d'installer ce fichier, tout en affichant d'abord quelques avertissements. Depuis, les fichiers de ce type doivent être téléchargés et glissés vers la page des paramètres <ph name="PRODUCT_NAME" />. Cette règle permet d'appliquer à des URL spécifiques l'ancienne procédure d'installation, plus facile à suivre.
 
       Chaque élément de cette liste est un format d'identification de style extension (voir https://developer.chrome.com/extensions/match_patterns). Les utilisateurs peuvent facilement installer des éléments depuis n'importe quelle URL correspondant à un élément de cette liste. L'emplacement du fichier *.crx et la page de téléchargement (page de provenance) doivent tous deux être autorisés par ces formats.
@@ -3733,15 +3702,6 @@ Si vous désactivez ce paramètre ou si vous ne le configurez pas, le SPN Kerber
 
       Si cette règle n'est pas configurée, ou qu'elle est définie sur "Choix laissé aux utilisateurs" ou "Aucun", les utilisateurs peuvent gérer la détection automatique du fuseau horaire à l'aide des commandes classiques disponibles dans chrome://settings.</translation>
 <translation id="6532769014584932288">Autoriser les wakelocks</translation>
-<translation id="653645667373317432">Cette règle contrôle la commande qui permet d'ouvrir les URL dans <ph name="PRODUCT_NAME" /> lors du basculement depuis Internet Explorer.
-
-      Si le module complémentaire Legacy Browser Support pour Internet Explorer n'est pas installé, cette règle n'a aucun effet.
-
-      Si cette règle n'est pas définie, Internet Explorer détecte automatiquement le chemin d'accès au fichier exécutable de <ph name="PRODUCT_NAME" /> lors du lancement de <ph name="PRODUCT_NAME" /> à partir de ce navigateur.
-
-      Si cette règle est définie, elle s'applique pour ouvrir <ph name="PRODUCT_NAME" /> lors du lancement de <ph name="PRODUCT_NAME" /> à partir d'Internet Explorer.
-
-      Cette règle peut être définie sur le chemin d'accès à un fichier exécutable ou sur <ph name="PRODUCT_NAME_PLACEHOLDER" /> pour détecter automatiquement l'emplacement d'installation de Chrome.</translation>
 <translation id="6536600139108165863">Redémarrer automatiquement à l'arrêt de l'appareil</translation>
 <translation id="6539246272469751178">Cette règle n'a aucun effet sur les applications Android. Celles-ci se servent toujours du répertoire de téléchargements par défaut. Elles ne peuvent pas accéder aux fichiers téléchargés par <ph name="PRODUCT_OS_NAME" /> dans un autre répertoire de téléchargements.</translation>
 <translation id="654303922206238013">Stratégie de migration pour eCryptfs</translation>
@@ -3902,7 +3862,7 @@ Si vous désactivez ce paramètre ou si vous ne le configurez pas, le SPN Kerber
       Si elle est définie sur "True", <ph name="PLUGIN_VM_NAME" /> est activé pour l'appareil à condition que les autres paramètres l'y autorisent aussi. Les règles <ph name="PLUGIN_VM_ALLOWED_POLICY_NAME" /> et <ph name="USER_PLUGIN_VM_ALLOWED_POLICY_NAME" /> doivent être définies sur "True", et <ph name="PLUGIN_VM_LICENSE_KEY_POLICY_NAME" /> ou <ph name="PLUGIN_VM_USER_ID_POLICY_NAME" /> doivent être configurés de sorte à permettre l'exécution de <ph name="PLUGIN_VM_NAME" />.</translation>
 <translation id="6741496055862838205">Fournit les configurations des imprimantes d'entreprise associées à des appareils.
 
-      Cette règle vous permet de communiquer les configurations des imprimantes aux appareils <ph name="PRODUCT_OS_NAME" />.  Le format est le même que celui du dictionnaire NativePrinters, à l'exception d'un champ supplémentaire "id" ou "guid" obligatoire pour chaque imprimante à ajouter à la liste blanche ou noire.
+      Cette règle vous permet de communiquer les configurations des imprimantes aux appareils <ph name="PRODUCT_OS_NAME" />.  Le format est le même que celui du dictionnaire NativePrinters, à l'exception d'un champ supplémentaire "id" ou "guid" obligatoire pour chaque imprimante à ajouter à la liste d'autorisation ou de blocage.
 
       Le fichier, qui doit être encodé au format JSON, ne doit pas dépasser 5 Mo.  Habituellement, un fichier encodé de 5 Mo peut contenir environ 21 000 imprimantes.  Le hachage cryptographique permet de vérifier l'intégrité du fichier téléchargé.
 
@@ -4160,15 +4120,6 @@ En cas de non-configuration de cette règle, aucune restriction ne s'applique qu
       La configuration est téléchargée et mise en cache. Elle sera de nouveau téléchargée à chaque modification de l'URL ou du hachage.
 
       Si vous définissez cette règle, les utilisateurs ne peuvent pas modifier la configuration. Si cette règle n'est pas définie, les utilisateurs peuvent continuer à utiliser la configuration actuelle à condition que les règles autorisent le conteneur Crostini.</translation>
-<translation id="713121532817834879">Cette règle se rapporte à une URL, qui renvoie vers un fichier XML au même format que celui de la règle <ph name="IEEM_SITELIST_POLICY" /> d'Internet Explorer. Les instructions sont ainsi chargées à partir d'un fichier XML, sans être partagées avec Internet Explorer.
-
-      Les règles de ce fichier XML s'appliquent de la même manière que pour la règle <ph name="GREYLIST_POLICY_NAME" />. C'est-à-dire que ces règles empêchent <ph name="PRODUCT_NAME" /> d'ouvrir le navigateur secondaire et empêchent ce dernier d'ouvrir <ph name="PRODUCT_NAME" />.
-
-      Si cette règle n'est pas définie, ou si elle est définie sur une URL qui n'est pas valide, <ph name="PRODUCT_NAME" /> ne l'utilise pas comme source des règles qui ne déclenchent pas un changement de navigateur.
-
-      Si cette règle est définie sur une URL valide, <ph name="PRODUCT_NAME" /> télécharge la liste des sites à partir de cette URL, puis applique les instructions comme si elles avaient été configurées avec la règle <ph name="SITELIST_POLICY_NAME" />.
-
-      Pour en savoir plus sur la règle <ph name="IEEM_SITELIST_POLICY" /> d'Internet Explorer, consultez la page https://docs.microsoft.com/internet-explorer/ie11-deploy-guide/what-is-enterprise-mode</translation>
 <translation id="7132877481099023201">URL autorisées à accéder aux appareils de capture vidéo sans avis préalable</translation>
 <translation id="7134420220355750019">Permet de définir le bouton droit de la souris comme bouton principal.
 
@@ -4321,6 +4272,7 @@ Ces règles sont ignorées, sauf si l'hôte Bureau à distance Chrome est instal
           S'il est désactivé, cette fonctionnalité est alors indisponible.</translation>
 <translation id="7274077256421167535">Activer le partage d'alimentation USB</translation>
 <translation id="7275334191706090484">Favoris gérés</translation>
+<translation id="7278854311116092134">Noms des hôtes de messagerie native à exclure de la liste de blocage</translation>
 <translation id="7291084543582732020">Si vous activez ce paramètre, les utilisateurs peuvent utiliser Smart Lock si les conditions requises pour cette fonctionnalité sont réunies.
 
       Si vous désactivez ce paramètre, les utilisateurs ne peuvent pas utiliser Smart Lock.
@@ -4459,11 +4411,6 @@ Si elle est définie sur "False" ou si elle n'est pas configurée, ces publicit�
       Notez que cette règle dépend de la pile de validation des certificats du système d'exploitation qui autorise les signatures SHA-1. Si la mise à jour d'un OS modifie la gestion des certificats SHA-1 par l'OS, cette règle n'aura plus d'effet. En outre, cette règle sera supprimée dans les environs du 1er janvier 2019.
 
       Si cette règle n'est pas définie, ou qu'elle est définie sur "False", <ph name="PRODUCT_NAME" /> suivra le planning d'abandon du chiffrage SHA-1 annoncé publiquement.</translation>
-<translation id="7578049687634719313">Cette règle contrôle le délai requis avant le lancement d'un navigateur secondaire, en millisecondes.
-
-      Si cette règle n'est pas définie ou est définie sur 0, tout clic sur une URL entraîne son ouverture automatique dans un navigateur secondaire.
-
-      Si cette règle est définie sur un nombre, Chrome affiche un message pendant le nombre de millisecondes défini, puis ouvre le navigateur secondaire.</translation>
 <translation id="7590188804371204512">Permet de contrôler l'installation d'extensions externes.
 
       Lorsque ce paramètre est activé, l'installation d'extensions externes est bloquée.
@@ -4624,6 +4571,13 @@ au maximum si un utilisateur se sert de l'appareil.
 <translation id="7777535871204167559">Traiter les appareils de stockage externe en lecture seule</translation>
 <translation id="7788511847830146438">Par profil</translation>
 <translation id="7807139251387225825">Liste des types à exclure de la synchronisation</translation>
+<translation id="7815699949432723208">Cette règle est obsolète (veuillez utiliser la règle <ph name="NATIVE_MESSAGING_ALLOWLIST_POLICY_NAME" /> à la place).
+
+          Permet de spécifier les hôtes de messagerie native à exclure de la liste de blocage.
+
+          Si vous saisissez la valeur "*" dans la liste de blocage, tous les hôtes de messagerie native sont bloqués, et seuls ceux figurant sur la liste d'autorisation sont chargés.
+
+          Par défaut, tous les hôtes de messagerie native sont autorisés. Toutefois, s'ils ont tous été bloqués par une règle, la liste d'autorisation peut être utilisée pour ignorer cette règle.</translation>
 <translation id="7818131573217430250">Définir l'état par défaut du mode Contraste élevé sur l'écran de connexion</translation>
 <translation id="7832907442895199611">Cette règle étant obsolète dans la version M83, veuillez utiliser à la place la règle SafeBrowsingProtectionLevel.
 
@@ -4873,6 +4827,7 @@ Si cette règle n'est pas définie, l'écran de confidentialité est désactivé
           Si vous configurez cette règle, les utilisateurs ne peuvent pas la modifier ni l'ignorer.
 
           Si cette règle n'est pas définie, la mise en surbrillance du curseur est désactivée au départ, mais les utilisateurs peuvent l'activer à tout moment.</translation>
+<translation id="816783746144552109">Configurer la version Chrome OS minimale autorisée de l'appareil.</translation>
 <translation id="8171924760436219650">Définir le bouton droit de la souris comme bouton principal sur l'écran de connexion</translation>
 <translation id="8176035528522326671">Autoriser l'utilisateur d'entreprise à participer aux sessions à plusieurs profils en tant qu'utilisateur principal seulement (comportement par défaut pour les utilisateurs gérés par une entreprise)</translation>
 <translation id="8183108371184777472">Empêcher l'ouverture de la fenêtre du navigateur</translation>
@@ -4891,6 +4846,7 @@ Si cette règle n'est pas définie, l'écran de confidentialité est désactivé
           Dans ce cas, <ph name="PRODUCT_OS_NAME" /> peut être configuré séparément pour verrouiller ou non l'écran avant l'arrêt provisoire.</translation>
 <translation id="8214600119442850823">Configure le gestionnaire de mot de passe.</translation>
 <translation id="8217516105848565518">Cette règle est obsolète. Veuillez utiliser RemoteAccessHostDomainList.</translation>
+<translation id="8220156281401380422">Configurer la liste d'autorisation de messagerie native</translation>
 <translation id="8244171102276095471">Activer des suites de chiffrement RC4 dans TLS</translation>
 <translation id="8244525275280476362">Délai maximal de récupération après le rejet d'une règle</translation>
 <translation id="8251411417369363637">Si cette règle est définie sur "True", tous les contenus <ph name="FLASH_PLUGIN_NAME" /> intégrés aux sites Web qui autorisent <ph name="FLASH_PLUGIN_NAME" /> sont exécutés (y compris les contenus de provenance différente ou de petite taille).
@@ -5028,13 +4984,6 @@ Il est conseillé de configurer les règles sur Windows via GPO, même si la ges
 <translation id="838870586332499308">Activer l'itinérance des données</translation>
 <translation id="8393850527597048037">Plate-forme uniquement</translation>
 <translation id="8395749934754392549">Contrôle les paramètres du conteneur Android (ARC) et des applications Android.</translation>
-<translation id="8396145449084377015">Cette règle détermine si les instructions de la règle SiteList d'Internet Explorer doivent être chargées.
-
-      Si cette règle n'est pas définie, ou si elle est définie sur "False", <ph name="PRODUCT_NAME" /> n'utilise pas la règle <ph name="IEEM_SITELIST_POLICY" /> d'Internet Explorer comme source des instructions relatives au changement de navigateur.
-
-      Si cette règle est définie sur "True", <ph name="PRODUCT_NAME" /> lit la règle <ph name="IEEM_SITELIST_POLICY" /> d'Internet Explorer pour obtenir l'URL de la liste des sites. <ph name="PRODUCT_NAME" /> télécharge ensuite la liste des sites à partir de cette URL, puis applique les instructions comme si elles avaient été configurées avec la règle <ph name="SITELIST_POLICY_NAME" />.
-
-      Pour en savoir plus sur la règle <ph name="IEEM_SITELIST_POLICY" /> d'Internet Explorer, consultez l'article suivant : https://docs.microsoft.com/internet-explorer/ie11-deploy-guide/what-is-enterprise-mode</translation>
 <translation id="8398952282584132331">Activer l'écran de confidentialité</translation>
 <translation id="8402079500086185021">Toujours ouvrir les fichiers PDF en externe</translation>
 <translation id="8405691014775178834">Autoriser cet utilisateur à accéder à la racine des conteneurs Crostini.
@@ -5203,11 +5152,6 @@ Il est conseillé de configurer les règles sur Windows via GPO, même si la ges
 <translation id="8653561013005884087">Définissez la règle sur "True" pour maintenir les commentaires audio activés. Définissez la règle sur "False" pour les maintenir désactivés.
 
        Si vous définissez cette règle, les utilisateurs ne peuvent pas modifier la configuration. Si elle n'est pas définie, les commentaires audio sont désactivés par défaut, mais les utilisateurs peuvent les activer à tout moment.</translation>
-<translation id="8654286232573430130">Indique les serveurs autorisés pour l'authentification intégrée. L'authentification intégrée ne s'active que lorsque <ph name="PRODUCT_NAME" /> reçoit une demande d'authentification d'un proxy ou d'un serveur faisant partie de la liste blanche.
-
-          Si vous utilisez plusieurs serveurs, séparez leur nom par une virgule. Les caractères génériques (*) sont autorisés.
-
-          Si vous ne définissez pas cette règle, <ph name="PRODUCT_NAME" /> tente d'identifier si le serveur est sur l'Intranet, auquel cas il répond aux requêtes IWA. Si le serveur est sur Internet, les requêtes IWA sont ignorées par <ph name="PRODUCT_NAME" />.</translation>
 <translation id="8656110680728938054">Activer la fonctionnalité Sélectionner pour prononcer</translation>
 <translation id="8661297125441579970">Interdire la migration de données et ARC.</translation>
 <translation id="8665314828727504286">Mode de protection de la navigation sécurisée</translation>

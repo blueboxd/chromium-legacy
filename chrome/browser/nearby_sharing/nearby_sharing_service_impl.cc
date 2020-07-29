@@ -118,7 +118,6 @@ NearbySharingServiceImpl::NearbySharingServiceImpl(
     std::unique_ptr<NearbyConnectionsManager> nearby_connections_manager)
     : prefs_(prefs),
       profile_(profile),
-      settings_(prefs),
       nearby_connections_manager_(std::move(nearby_connections_manager)),
       nearby_notification_manager_(profile) {
   DCHECK(prefs_);
@@ -134,7 +133,19 @@ NearbySharingServiceImpl::NearbySharingServiceImpl(
     // process_manager.GetOrStartNearbyConnections(profile_)
   }
 
-  settings_.AddSettingsObserver(settings_receiver_.BindNewPipeAndPassRemote());
+  pref_change_registrar_.Init(prefs);
+  pref_change_registrar_.Add(
+      prefs::kNearbySharingEnabledPrefName,
+      base::BindRepeating(&NearbySharingServiceImpl::OnEnabledPrefChanged,
+                          base::Unretained(this)));
+  pref_change_registrar_.Add(
+      prefs::kNearbySharingBackgroundVisibilityName,
+      base::BindRepeating(&NearbySharingServiceImpl::OnVisibilityPrefChanged,
+                          base::Unretained(this)));
+  pref_change_registrar_.Add(
+      prefs::kNearbySharingDataUsageName,
+      base::BindRepeating(&NearbySharingServiceImpl::OnDataUsagePrefChanged,
+                          base::Unretained(this)));
 
   GetBluetoothAdapter();
 }
@@ -282,10 +293,6 @@ void NearbySharingServiceImpl::Open(const ShareTarget& share_target,
   std::move(status_codes_callback).Run(StatusCodes::kOk);
 }
 
-NearbyShareSettings* NearbySharingServiceImpl::GetSettings() {
-  return &settings_;
-}
-
 void NearbySharingServiceImpl::OnNearbyProfileChanged(Profile* profile) {
   // TODO(crbug.com/1084576): Notify UI about the new active profile.
 }
@@ -312,8 +319,12 @@ void NearbySharingServiceImpl::OnIncomingConnection(
   // TODO(crbug/1085068): Handle incoming connection; use CertificateManager
 }
 
-void NearbySharingServiceImpl::OnEnabledChanged(bool enabled) {
-  if (enabled) {
+bool NearbySharingServiceImpl::IsEnabled() {
+  return prefs_->GetBoolean(prefs::kNearbySharingEnabledPrefName);
+}
+
+void NearbySharingServiceImpl::OnEnabledPrefChanged() {
+  if (IsEnabled()) {
     NS_LOG(VERBOSE) << __func__ << ": Nearby sharing enabled!";
   } else {
     NS_LOG(VERBOSE) << __func__ << ": Nearby sharing disabled!";
@@ -323,18 +334,31 @@ void NearbySharingServiceImpl::OnEnabledChanged(bool enabled) {
   }
 }
 
-void NearbySharingServiceImpl::FlushMojoForTesting() {
-  settings_receiver_.FlushForTesting();
-}
-
 bool NearbySharingServiceImpl::IsVisibleInBackground(Visibility visibility) {
   return visibility == Visibility::kAllContacts ||
          visibility == Visibility::kSelectedContacts;
 }
 
-void NearbySharingServiceImpl::OnVisibilityChanged(Visibility new_visibility) {
+Visibility NearbySharingServiceImpl::GetVisibilityPref() {
+  int visibility =
+      prefs_->GetInteger(prefs::kNearbySharingBackgroundVisibilityName);
+  if (visibility < 0 || visibility > static_cast<int>(Visibility::kMaxValue))
+    return Visibility::kUnknown;
+
+  return static_cast<Visibility>(visibility);
+}
+
+void NearbySharingServiceImpl::OnVisibilityPrefChanged() {
+  Visibility new_visibility = GetVisibilityPref();
+  if (advertising_visibilty_preference_ == new_visibility) {
+    NS_LOG(VERBOSE) << __func__
+                    << ": Nearby sharing visibility pref is unchanged";
+    return;
+  }
+
+  advertising_visibilty_preference_ = new_visibility;
   NS_LOG(VERBOSE) << __func__ << ": Nearby sharing visibility changed to "
-                  << VisibilityToString(new_visibility);
+                  << VisibilityToString(advertising_visibilty_preference_);
 
   if (advertising_power_level_ != PowerLevel::kUnknown) {
     StopAdvertising();
@@ -343,28 +367,28 @@ void NearbySharingServiceImpl::OnVisibilityChanged(Visibility new_visibility) {
   InvalidateReceiveSurfaceState();
 }
 
-void NearbySharingServiceImpl::OnDataUsageChanged(DataUsage data_usage) {
-  NS_LOG(VERBOSE) << __func__ << ": Nearby sharing data usage changed to "
-                  << DataUsageToString(data_usage);
+DataUsage NearbySharingServiceImpl::GetDataUsagePref() {
+  int usage = prefs_->GetInteger(prefs::kNearbySharingDataUsageName);
+  if (usage < 0 || usage > static_cast<int>(DataUsage::kMaxValue))
+    return DataUsage::kUnknown;
 
+  return static_cast<DataUsage>(usage);
+}
+
+void NearbySharingServiceImpl::OnDataUsagePrefChanged() {
+  DataUsage new_data_usage = GetDataUsagePref();
+  if (advertising_data_usage_preference_ == new_data_usage) {
+    NS_LOG(VERBOSE) << __func__
+                    << ": Nearby sharing data usage pref is unchanged";
+    return;
+  }
+
+  NS_LOG(VERBOSE) << __func__ << ": Nearby sharing data usage changed.";
   if (advertising_power_level_ != PowerLevel::kUnknown) {
     StopAdvertising();
   }
 
   InvalidateReceiveSurfaceState();
-}
-
-void NearbySharingServiceImpl::OnDeviceNameChanged(
-    const std::string& device_name) {
-  NS_LOG(VERBOSE) << __func__ << ": Nearby sharing device name changed to "
-                  << device_name;
-  // TODO(vecore): handle device name change
-}
-
-void NearbySharingServiceImpl::OnAllowedContactsChanged(
-    const std::vector<std::string>& allowed_contacts) {
-  NS_LOG(VERBOSE) << __func__ << ": Nearby sharing visible contacts changed";
-  // TODO(vecore): handle visible contacts change
 }
 
 void NearbySharingServiceImpl::StartFastInitiationAdvertising() {
@@ -500,7 +524,7 @@ void NearbySharingServiceImpl::InvalidateAdvertisingState() {
   }
 
   // Nearby Sharing is disabled. Don't advertise.
-  if (!settings_.GetEnabled()) {
+  if (!IsEnabled()) {
     StopAdvertising();
     NS_LOG(VERBOSE)
         << __func__
@@ -535,7 +559,7 @@ void NearbySharingServiceImpl::InvalidateAdvertisingState() {
     return;
   }
 
-  if (!IsVisibleInBackground(settings_.GetVisibility()) &&
+  if (!IsVisibleInBackground(advertising_visibilty_preference_) &&
       !foreground_receive_callbacks_.might_have_observers()) {
     StopAdvertising();
     NS_LOG(VERBOSE)
@@ -555,15 +579,17 @@ void NearbySharingServiceImpl::InvalidateAdvertisingState() {
     power_level = PowerLevel::kLowPower;
   }
 
-  DataUsage data_usage = settings_.GetDataUsage();
+  DataUsage data_usage = GetDataUsagePref();
   if (advertising_power_level_ != PowerLevel::kUnknown) {
-    if (power_level == advertising_power_level_) {
+    if (power_level == advertising_power_level_ &&
+        data_usage == advertising_data_usage_preference_) {
       NS_LOG(VERBOSE)
           << __func__
-          << "Failed to advertise because we're already advertising with power"
-          << " level " << PowerLevelToString(advertising_power_level_)
+          << "Failed to advertise because we're already advertising with "
+             "power level "
+          << PowerLevelToString(advertising_power_level_)
           << " and data usage preference "
-          << DataUsageToString(settings_.GetDataUsage());
+          << DataUsageToString(advertising_data_usage_preference_);
       return;
     }
 
@@ -600,11 +626,12 @@ void NearbySharingServiceImpl::InvalidateAdvertisingState() {
       }));
 
   advertising_power_level_ = power_level;
+  advertising_data_usage_preference_ = data_usage;
   NS_LOG(VERBOSE) << __func__
                   << ": Advertising has started over Nearby Connections: "
                   << " power level " << PowerLevelToString(power_level)
                   << " visibility "
-                  << VisibilityToString(settings_.GetVisibility())
+                  << VisibilityToString(advertising_visibilty_preference_)
                   << " data usage " << DataUsageToString(data_usage);
   return;
 }
@@ -619,6 +646,7 @@ void NearbySharingServiceImpl::StopAdvertising() {
 
   nearby_connections_manager_->StopAdvertising();
 
+  advertising_data_usage_preference_ = DataUsage::kUnknown;
   advertising_power_level_ = PowerLevel::kUnknown;
   NS_LOG(VERBOSE) << __func__ << ": Advertising has stopped";
 }

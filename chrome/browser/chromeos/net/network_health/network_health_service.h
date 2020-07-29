@@ -18,8 +18,9 @@ class NetworkHealthService {
   NetworkHealthService();
   ~NetworkHealthService() = delete;
 
-  void BindRemote(mojo::PendingReceiver<mojom::NetworkHealthService> receiver);
-  void BindDiagnosticsRemote(
+  void BindHealthReceiver(
+      mojo::PendingReceiver<mojom::NetworkHealthService> receiver);
+  void BindDiagnosticsReceiver(
       mojo::PendingReceiver<
           network_diagnostics::mojom::NetworkDiagnosticsRoutines> receiver);
 

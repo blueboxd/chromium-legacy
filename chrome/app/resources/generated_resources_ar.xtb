@@ -1851,7 +1851,7 @@
 <translation id="3274763671541996799">تم الانتقال إلى وضع ملء الشاشة.</translation>
 <translation id="3275778809241512831">مفتاح الأمان الداخلي غير آمن حاليًا. يُرجى إزالته من أي خدمة استخدمته معها. ولحل المشكلة، يُرجى إعادة ضبط مفتاح الأمان.</translation>
 <translation id="3275778913554317645">فتح كنافذة</translation>
-<translation id="3277691515294482687">‏الاحتفاظ بنسخة احتياطية من التطبيقات والملفات الخاصة بي في مجلّد "ملفاتي" قبل ترقية نظام التشغيل Linux.</translation>
+<translation id="3277691515294482687">‏الاحتفاظ بنسخة احتياطية من التطبيقات والملفات الخاصة بي في مجلّد My Files (ملفاتي) قبل ترقية نظام التشغيل Linux.</translation>
 <translation id="3278001907972365362">‏حسابك (حساباتك) على Google تتطلب الانتباه</translation>
 <translation id="3279230909244266691">قد تستغرق هذه العملية بضع دقائق. جارٍ بدء الآلة الافتراضية.</translation>
 <translation id="3280237271814976245">الحفظ &amp;باسم...</translation>
@@ -1925,7 +1925,6 @@
 <translation id="3371140690572404006">‏جهاز USB-C (المنفذ الأمامي الأيمن)</translation>
 <translation id="337286756654493126">قراءة المجلدات التي تفتحها في التطبيق</translation>
 <translation id="3378572629723696641">قد تكون هذه الإضافة تالفة.</translation>
-<translation id="3379169026479470857">إزالة المحتوى الذي تم تنزيله</translation>
 <translation id="337920581046691015">سيتم تثبيت <ph name="PRODUCT_NAME" />.</translation>
 <translation id="3380365263193509176">خطأ غير معروف</translation>
 <translation id="3382073616108123819">عفوا! تعذّر النظام في تحديد معرفات هذا الجهاز.</translation>
@@ -2380,6 +2379,7 @@
 <translation id="3882165008614329320">الفيديو الحالي من الكاميرا أو الملف</translation>
 <translation id="3886446263141354045">تمّ إرسال طلبك للدخول إلى هذا الموقع إلى <ph name="NAME" /></translation>
 <translation id="3888550877729210209">تسجيل الملاحظات من خلال <ph name="LOCK_SCREEN_APP_NAME" /></translation>
+<translation id="3891563564777705449">{0,plural, =1{تحديث الجهاز خلال أسبوع واحد}zero{تحديث الجهاز خلال # أسبوع}two{تحديث الجهاز خلال أسبوعَين}few{تحديث الجهاز خلال # أسابيع}many{تحديث الجهاز خلال # أسبوعًا}other{تحديث الجهاز خلال # أسبوع}}</translation>
 <translation id="3892414795099177503">‏إضافة OpenVPN / L2TP...</translation>
 <translation id="3893536212201235195">قراءة وتغيير إعدادات إمكانية الوصول</translation>
 <translation id="3893630138897523026">‏ChromeVox (التعليق المنطوق)</translation>
@@ -2608,14 +2608,12 @@
 <translation id="4175137578744761569">أرجواني فاتح وأبيض</translation>
 <translation id="4175737294868205930">التخزين الثابت</translation>
 <translation id="4176463684765177261">غير مفعّل</translation>
-<translation id="418031202593299965">تتم مشاركة هذه المكوِّنات مع مستخدمين آخرين على هذا الجهاز. وقد تؤثر إزالة المكوِّنات على المستخدمين الآخرين.</translation>
 <translation id="4180788401304023883">‏هل تريد حذف شهادة المرجع المصدق (CA) "<ph name="CERTIFICATE_NAME" />"؟</translation>
 <translation id="4181602000363099176">20 ضعفًا</translation>
 <translation id="4181841719683918333">اللغات</translation>
 <translation id="4184885522552335684">السحب لنقل شاشة</translation>
 <translation id="4187424053537113647">جارٍ إعداد <ph name="APP_NAME" />...</translation>
 <translation id="4190828427319282529">تمييز الكائن باستخدام تركيز لوحة المفاتيح</translation>
-<translation id="4191805472951276951">المحتوى الذي تم تنزيله</translation>
 <translation id="4194570336751258953">تفعيل الضغط للنقر</translation>
 <translation id="4195643157523330669">الفتح في علامة تبويب جديدة</translation>
 <translation id="4195814663415092787">المتابعة من حيث توقفت</translation>
@@ -3034,7 +3032,6 @@
 <translation id="4756388243121344051">ال&amp;سجل</translation>
 <translation id="4759238208242260848">الملفات التي تم تنزيلها</translation>
 <translation id="4761104368405085019">استخدام الميكروفون</translation>
-<translation id="4762055672525936226">حذف المحتوى الذي تم تنزيله</translation>
 <translation id="4762718786438001384">مساحة القرص على الجهاز منخفضة للغاية</translation>
 <translation id="4763408175235639573">تم تعيين ملفات تعريف الارتباط التالية عند عرض هذه الصفحة</translation>
 <translation id="4765582662863429759">‏للسماح لتطبيق "رسائل Android" بترحيل الرسائل النصية من هاتفك إلى جهاز Chromebook</translation>
@@ -3288,7 +3285,6 @@
 <translation id="5094721898978802975">الاتصال بتطبيقات التعاون الأصلية</translation>
 <translation id="5097002363526479830">تعذّر الاتصال بشبكة "<ph name="NAME" />": <ph name="DETAILS" /></translation>
 <translation id="5097874180538493929">النقر تلقائيًا عند توقف المؤشر</translation>
-<translation id="5098800418125334616">إدارة المحتوى الذي تم تنزيله</translation>
 <translation id="5101042277149003567">فتح  جميع الإشارات المرجعية</translation>
 <translation id="5101839224773798795">النقر تلقائيًا عند توقف المؤشر</translation>
 <translation id="5107443654503185812">لقد أوقفَت إحدى الإضافات التصفّح الآمن.</translation>
@@ -4168,7 +4164,6 @@
 <translation id="6198102561359457428">الخروج ثم إعادة تسجيل الدخول...</translation>
 <translation id="6198252989419008588">تغيير رقم التعريف الشخصي</translation>
 <translation id="6202304368170870640">يمكنك استخدام رقم تعريفك الشخصي لتسجيل الدخول أو فتح قفل جهازك.</translation>
-<translation id="6202517672944764518">المحتوى الذي تم تنزيله</translation>
 <translation id="6206311232642889873">نس&amp;خ صورة</translation>
 <translation id="6207200176136643843">إعادة الضبط على مستوى التكبير أو التصغير التلقائي</translation>
 <translation id="6207937957461833379">البلد/المنطقة</translation>
@@ -4440,6 +4435,7 @@
 <translation id="6535331821390304775">السماح دائمًا لموقع <ph name="ORIGIN" /> بفتح روابط من هذا النوع في التطبيق المرتبط</translation>
 <translation id="654039047105555694"><ph name="BEGIN_BOLD" />ملاحظة:<ph name="END_BOLD" /> يُوصى بعدم التفعيل إلا إذا كنت تعرف ماذا تريد أو عندما يُطلب منك إجراء ذلك، ذلك أن جمع البيانات قد يقلل من مستوى الأداء.</translation>
 <translation id="6541638731489116978">تم حظر الموقع الإلكتروني هذا من الوصول إلى مستشعرات الحركة.</translation>
+<translation id="6545407738986370057">{0,plural, =1{يجب إرجاع الجهاز خلال أسبوع واحد}zero{يجب إرجاع الجهاز خلال # أسبوع}two{يجب إرجاع الجهاز خلال أسبوعَين}few{يجب إرجاع الجهاز خلال # أسابيع}many{يجب إرجاع الجهاز خلال # أسبوعًا}other{يجب إرجاع الجهاز خلال # أسبوع}}</translation>
 <translation id="6545665334409411530">معدل التكرار</translation>
 <translation id="6545864417968258051">البحث عن بلوتوث</translation>
 <translation id="6545867563032584178">‏تم إيقاف الميكروفون في إعدادات نظام Mac المفضلة</translation>
@@ -6127,7 +6123,6 @@
 <translation id="8652400352452647993">خطأ في حزمة الإضافة</translation>
 <translation id="8654151524613148204">عذرًا، الملف كبير جدًا حتى يتمكن الكمبيوتر من معالجته.</translation>
 <translation id="8655295600908251630">القناة</translation>
-<translation id="8655319619291175901">عفوًا، حدث خطأ ما.</translation>
 <translation id="8655972064210167941">فشل تسجيل الدخول، نظرًا لعدم القدرة على التحقق من كلمة مرورك، يُرجى الاتصال بالمسؤول أو إعادة المحاولة.</translation>
 <translation id="8656768832129462377">عدم التحقق</translation>
 <translation id="8658645149275195032">يشارك <ph name="APP_NAME" /> الشاشة والصوت من خلال <ph name="TAB_NAME" />.</translation>
@@ -6216,7 +6211,6 @@
           &lt;p&gt;لكن لا يزال بإمكانك التهيئة من خلال سطر الأوامر. يُرجى الاطّلاع على &lt;code&gt;man <ph name="PRODUCT_BINARY_NAME" />&lt;/code&gt; للمزيد من المعلومات عن المتغيرات لكل من العلامات والبيئة.&lt;/p&gt;</translation>
 <translation id="8755175579224030324">تنفيذ المهام المتعلّقة بالأمان في مؤسستك، مثل إدارة الشهادات والمفاتيح المُخزَّنة على الجهاز</translation>
 <translation id="8755376271068075440">أ&amp;كبر</translation>
-<translation id="8756143264090841047">حذف المحتوى الذي تم تنزيله</translation>
 <translation id="8756969031206844760">هل تريد تحديث كلمة المرور؟</translation>
 <translation id="8757090071857742562">يتعذر إرسال سطح المكتب. يُرجى التحقق لمعرفة ما إذا كنت أكدت المطالبة لبدء مشاركة الشاشة.</translation>
 <translation id="8757203080302669031">تبحث علامة التبويب هذه بشكل نشط عن أجهزة تتضمّن بلوتوث.</translation>
@@ -6231,7 +6225,6 @@
 <translation id="8770406935328356739">الدليل الجذر للإضافة</translation>
 <translation id="8770507190024617908">إدارة الأشخاص</translation>
 <translation id="8771300903067484968">تمت إعادة ضبط خلفية الصفحة الرئيسية إلى الخلفية التلقائية.</translation>
-<translation id="8771939407732945762">إزالة المحتوى الذي تم تنزيله</translation>
 <translation id="8773302562181397928">حفظ <ph name="PRINTER_NAME" /></translation>
 <translation id="8774379074441005279">تأكيد الاستعادة</translation>
 <translation id="8774934320277480003">الهامش العلوي</translation>

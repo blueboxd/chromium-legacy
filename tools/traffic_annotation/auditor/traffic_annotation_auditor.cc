@@ -580,7 +580,7 @@ bool TrafficAnnotationAuditor::CheckIfCallCanBeUnannotated(
     const base::CommandLine::CharType* args[] = {
 #if defined(OS_WIN)
       FILE_PATH_LITERAL("buildtools/win/gn.exe"),
-#elif defined(OS_MACOSX)
+#elif defined(OS_MAC)
       FILE_PATH_LITERAL("buildtools/mac/gn"),
 #elif defined(OS_LINUX)
       FILE_PATH_LITERAL("buildtools/linux64/gn"),

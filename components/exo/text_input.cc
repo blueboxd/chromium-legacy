@@ -327,6 +327,12 @@ bool TextInput::SetCompositionFromExistingText(
   return false;
 }
 
+gfx::Range TextInput::GetAutocorrectRange() const {
+  // TODO(https://crbug.com/952757): Implement this method.
+  NOTIMPLEMENTED_LOG_ONCE();
+  return gfx::Range();
+}
+
 gfx::Rect TextInput::GetAutocorrectCharacterBounds() const {
   // TODO(https://crbug.com/952757): Implement this method.
   NOTIMPLEMENTED_LOG_ONCE();

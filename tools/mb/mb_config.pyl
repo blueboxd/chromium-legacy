@@ -270,15 +270,15 @@
       'fuchsia-fyi-arm64-rel': 'release_bot_fuchsia_arm64',
       'fuchsia-fyi-x64-dbg': 'debug_bot_fuchsia',
       'fuchsia-fyi-x64-rel': 'release_bot_fuchsia',
-      'ios13-beta-simulator': 'ios_simulator_debug_static_bot',
-      'ios13-sdk-device': 'ios_device_release_static_rbe_bot',
-      'ios13-sdk-simulator': 'ios_simulator_debug_static_rbe_bot',
-      'ios14-beta-simulator': 'ios_simulator_debug_static_bot',
-      'ios14-sdk-simulator': 'ios_simulator_debug_static_rbe_bot',
+      'ios13-beta-simulator': 'ios_simulator_debug_static_bot_xctest',
+      'ios13-sdk-device': 'ios_device_release_static_rbe_bot_xctest',
+      'ios13-sdk-simulator': 'ios_simulator_debug_static_rbe_bot_xctest',
+      'ios14-beta-simulator': 'ios_simulator_debug_static_bot_xctest',
+      'ios14-sdk-simulator': 'ios_simulator_debug_static_rbe_bot_xctest',
       'ios-asan': 'ios_simulator_release_static_asan_bot',
       'ios-simulator': 'ios_error',
       'ios-simulator-code-coverage': 'clang_code_coverage_ios',
-      'ios-simulator-cr-recipe': 'ios_simulator_debug_static_bot',
+      'ios-simulator-cr-recipe': 'ios_simulator_debug_static_bot_xctest',
       'ios-simulator-cronet': 'ios_cronet',
       'ios-simulator-multi-window': 'ios_simulator_debug_static_bot_multi_window',
       'ios-webkit-tot': 'ios_simulator_debug_static_rbe_bot',
@@ -947,15 +947,15 @@
       'gpu-try-mac-amd-retina-dbg': 'gpu_tests_debug_bot',
       'gpu-try-mac-intel-dbg': 'gpu_tests_debug_bot',
       'ios-device': 'ios_device_release_rbe_compile_only',
-      'ios13-beta-simulator': 'ios_simulator_debug_static_rbe_bot',
-      'ios13-sdk-simulator': 'ios_simulator_debug_static_rbe_bot',
-      'ios14-beta-simulator': 'ios_simulator_debug_static_rbe_bot',
-      'ios14-sdk-simulator': 'ios_simulator_debug_static_rbe_bot',
+      'ios13-beta-simulator': 'ios_simulator_debug_static_rbe_bot_xctest',
+      'ios13-sdk-simulator': 'ios_simulator_debug_static_rbe_bot_xctest',
+      'ios14-beta-simulator': 'ios_simulator_debug_static_rbe_bot_xctest',
+      'ios14-sdk-simulator': 'ios_simulator_debug_static_rbe_bot_xctest',
       'ios-simulator': 'ios_simulator_debug_static_rbe_bot',
       'ios-simulator-full-configs': 'ios_simulator_debug_static_bot',
       'ios-simulator-cronet': 'ios_cronet',
       'ios-simulator-code-coverage': 'clang_code_coverage_ios_partial_instrumentation',
-      'ios-simulator-cr-recipe': 'ios_simulator_debug_static_bot',
+      'ios-simulator-cr-recipe': 'ios_simulator_debug_static_bot_xctest',
       'ios-simulator-multi-window': 'ios_simulator_debug_static_bot_multi_window',
       'mac-osxbeta-rel': 'gpu_tests_release_trybot_deterministic_mac',
       'mac_chromium_10.10': 'gpu_tests_release_trybot_deterministic_mac',
@@ -1990,12 +1990,16 @@
     ],
 
     # doesn't have symbol_level=0
-    'ios_device_release_static_rbe_bot': [
-        'ios_device', 'ios_disable_code_signing', 'ios_use_goma_rbe', 'release_bot',
+    'ios_device_release_static_rbe_bot_xctest': [
+        'ios_device', 'ios_disable_code_signing', 'ios_use_goma_rbe', 'release_bot', 'xctest',
     ],
 
     'ios_simulator_debug_static_bot': [
         'debug_static_bot', 'ios_simulator',
+    ],
+
+    'ios_simulator_debug_static_bot_xctest': [
+        'debug_static_bot', 'ios_simulator', 'xctest',
     ],
 
     'ios_simulator_debug_static_bot_multi_window': [
@@ -2004,6 +2008,10 @@
 
     'ios_simulator_debug_static_rbe_bot': [
         'debug_static_bot', 'ios_simulator', 'ios_use_goma_rbe'
+    ],
+
+    'ios_simulator_debug_static_rbe_bot_xctest': [
+        'debug_static_bot', 'ios_simulator', 'ios_use_goma_rbe', 'xctest',
     ],
 
     'ios_simulator_release_static_asan_bot': [
@@ -3070,6 +3078,10 @@
 
     'win_linker_timing': {
       'gn_args': 'win_linker_timing=true',
+    },
+
+    'xctest' : {
+      'gn_args': 'enable_run_ios_unittests_with_xctest=true',
     },
 
     'x64': {

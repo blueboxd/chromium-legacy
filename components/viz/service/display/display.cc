@@ -1245,7 +1245,11 @@ void Display::SetPreferredFrameInterval(base::TimeDelta interval) {
     float interval_s = interval.InSecondsF();
     float frame_rate = interval_s == 0 ? 0 : (1 / interval_s);
     output_surface_->SetFrameRate(frame_rate);
+#if defined(OS_ANDROID)
+    // On Android we want to return early because the |client_| callback hits
+    // a platform API in the browser process.
     return;
+#endif  // OS_ANDROID
   }
 
   client_->SetPreferredFrameInterval(interval);

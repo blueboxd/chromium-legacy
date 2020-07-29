@@ -454,13 +454,6 @@ Per la norma dovrebbe essere impostato un URL da cui <ph name="PRODUCT_OS_NAME" 
       La norma deve essere specificata sotto forma di stringa contenente l'URL e l'hash in formato JSON.</translation>
 <translation id="1819272352048746487">Attiva o disattiva diverse funzionalità per la tastiera sullo schermo</translation>
 <translation id="1827523283178827583">Utilizza server proxy definiti</translation>
-<translation id="1831495419375964631">Questa norma è un URL che rimanda a un file XML nello stesso formato della norma <ph name="IEEM_SITELIST_POLICY" /> di Internet Explorer. Se viene impostata, le regole vengono caricate da un file XML senza essere condivise con Internet Explorer.
-
-      Se non viene impostata o non è impostata su un URL valido, <ph name="PRODUCT_NAME" /> non utilizza tale URL come fonte di regole per il cambio di browser.
-
-      Se è impostata su un URL valido, <ph name="PRODUCT_NAME" /> scarica l'elenco dei siti da tale URL e applica le regole come se fossero state configurate con la norma <ph name="SITELIST_POLICY_NAME" />.
-
-      Per ulteriori informazioni sulla norma <ph name="IEEM_SITELIST_POLICY" /> di Internet Explorer: https://docs.microsoft.com/internet-explorer/ie11-deploy-guide/what-is-enterprise-mode</translation>
 <translation id="1839278886947586809">
       Questo criterio non è più necessario poiché WebDriver è ora compatibile con tutti i criteri esistenti ed è stato pertanto rimosso da M80.
 
@@ -635,18 +628,31 @@ Questa norma viene rispettata soltanto se la norma "DefaultSearchProviderEnabled
 <translation id="2082205219176343977">Configura la versione minima di Chrome consentita per il dispositivo.</translation>
 <translation id="209586405398070749">Canale stabile</translation>
 <translation id="2098658257603918882">Attiva rapporti sull'utilizzo e sui dati relativi agli arresti anomali</translation>
+<translation id="210034539800365161">Consente di configurare il requisito della versione minima consentita di <ph name="PRODUCT_OS_NAME" />.
+
+      Se per questo criterio viene impostato un elenco non vuoto:
+      Se nessuna voce ha un valore <ph name="CHROMEOS_VERSION_PROPERTY_NAME" /> superiore alla versione corrente del dispositivo, non vengono applicate limitazioni e le limitazioni esistenti vengono revocate.
+      Se almeno una voce ha un valore <ph name="CHROMEOS_VERSION_PROPERTY_NAME" /> superiore alla versione corrente, viene scelta la voce più forte la cui versione è superiore e più simile a quella corrente.
+      In caso di conflitto, si preferisce la voce con il valore <ph name="WARNING_PERIOD_PROPERTY_NAME" /> o <ph name="AUE_WARNING_PERIOD_PROPERTY_NAME" /> inferiore e il criterio viene applicato usando tale voce.
+
+      Se la versione corrente diventa obsoleta durante la sessione utente e la rete corrente limita gli aggiornamenti automatici, sullo schermo viene mostrata una notifica che invita l'utente ad aggiornare il dispositivo entro il periodo indicato nel valore <ph name="WARNING_PERIOD_PROPERTY_NAME" /> mostrato nella notifica.
+      Se la rete corrente consente gli aggiornamenti automatici, non viene mostrata alcuna notifica e il dispositivo deve essere aggiornato entro il periodo indicato nel valore <ph name="WARNING_PERIOD_PROPERTY_NAME" />.
+      Il periodo indicato nel valore <ph name="WARNING_PERIOD_PROPERTY_NAME" /> parte dal momento in cui viene applicato il criterio.
+      Se il dispositivo non viene aggiornato entro la scadenza del periodo indicato nel valore <ph name="WARNING_PERIOD_PROPERTY_NAME" />, l'utente viene disconnesso dalla sessione.
+      Se la versione corrente risulta obsoleta al momento dell'accesso con periodo <ph name="WARNING_PERIOD_PROPERTY_NAME" /> scaduto, all'utente viene richiesto di aggiornare il dispositivo prima di accedere.
+
+      Se la versione corrente diventa obsoleta durante la sessione utente e il dispositivo ha raggiunto la scadenza dell'aggiornamento automatico, sullo schermo viene mostrata una notifica che invita l'utente a restituire il dispositivo entro il periodo indicato nel valore <ph name="AUE_WARNING_PERIOD_PROPERTY_NAME" />.
+      Se risulta che il dispositivo ha raggiunto la scadenza dell'aggiornamento automatico al momento dell'accesso con periodo <ph name="AUE_WARNING_PERIOD_PROPERTY_NAME" /> scaduto, il dispositivo viene bloccato e nessun utente può eseguire l'accesso.
+
+      Se questo criterio non viene impostato o viene lasciato vuoto, non vengono applicate limitazioni, vengono revocate quelle esistenti e l'utente può accedere qualunque sia la versione di <ph name="PRODUCT_OS_NAME" />.
+
+      Il valore <ph name="CHROMEOS_VERSION_PROPERTY_NAME" /> può essere una versione esatta, ad esempio "13305.0.0", oppure un prefisso di versione, ad esempio "13305".
+      I valori <ph name="WARNING_PERIOD_PROPERTY_NAME" /> e <ph name="AUE_WARNING_PERIOD_PROPERTY_NAME" /> sono facoltativi e specificati in numero di giorni. Il valore predefinito è 0 giorni, a indicare nessun periodo di avviso.</translation>
 <translation id="2104418465060359056">Segnala i dati delle estensioni e dei plug-in</translation>
 <translation id="2106627642643925514">Consente di sostituire la modalità di stampa PIN predefinita. Se la modalità non è disponibile, questa norma viene ignorata.</translation>
 <translation id="2107601598727098402">
         La norma è obsoleta in M72. Utilizza invece CloudManagementEnrollmentToken.
         </translation>
-<translation id="2108169571875569435">Questo criterio consente di stabilire i comandi da usare per aprire gli URL in un browser alternativo.
-
-      Se questo criterio non è impostato, viene usata un'impostazione predefinita specifica della piattaforma: Internet Explorer per Windows o Safari per Mac OS X. Su Linux, se questo criterio non è impostato, il browser non si aprirà.
-
-      Se questo criterio è impostato su <ph name="INTERNET_EXPLORER_VALUE_PLACEHOLDER" />, <ph name="FIREFOX_VALUE_PLACEHOLDER" />, <ph name="SAFARI_VALUE_PLACEHOLDER" /> o<ph name="OPERA_VALUE_PLACEHOLDER" />, verrà avviato il browser corrispondente, se installato. <ph name="INTERNET_EXPLORER_VALUE_PLACEHOLDER" /> è disponibile solo su Windows e <ph name="SAFARI_VALUE_PLACEHOLDER" /> è disponibile solo su Windows e Mac OS X.
-
-      Se questo criterio è impostato su un percorso file, tale file viene usato come eseguibile.</translation>
 <translation id="2113068765175018713">Limita il tempo di attività del dispositivo riavviandolo automaticamente</translation>
 <translation id="2124881675920287921">Questo criterio è stato ritirato in M82 e rimosso in M85; usa il criterio <ph name="SAFE_BROWSING_EXTENDED_REPORTING_ENABLED_POLICY_NAME" />. Disattivare <ph name="SAFE_BROWSING_EXTENDED_REPORTING_OPT_IN_ALLOWED_POLICY_NAME" /> equivale a disattivare <ph name="SAFE_BROWSING_EXTENDED_REPORTING_ENABLED_POLICY_NAME" />. Attivare <ph name="SAFE_BROWSING_EXTENDED_REPORTING_OPT_IN_ALLOWED_POLICY_NAME" /> o non configurare questa impostazione equivale a non configurare <ph name="SAFE_BROWSING_EXTENDED_REPORTING_ENABLED_POLICY_NAME" />.
 
@@ -731,6 +737,11 @@ Questa norma viene rispettata soltanto se la norma "DefaultSearchProviderEnabled
 <translation id="2197625019569762163">Se questo criterio è impostato su True, per impostazione predefinita viene visualizzata la tastiera numerica per inserire la password nella schermata di accesso. Gli utenti possono comunque passare alla tastiera normale.
 
       Se imposti il criterio, gli utenti non possono modificarlo. Se non è impostato o è impostato su False, non sortisce alcun effetto.</translation>
+<translation id="2200041405904405884">Consente di specificare gli host di messaggi nativi da non inserire nella lista bloccata.
+
+          Il valore * di una lista bloccata indica che tutti gli host di messaggi nativi sono bloccati e che verranno caricati soltanto gli host di messaggi nativi indicati nella lista consentita.
+
+          Per impostazione predefinita sono consentiti tutti gli host di messaggi nativi, ma se sono stati bloccati tutti gli host di messaggi nativi in base al criterio, la lista consentita può essere utilizzata per ignorare tale criterio.</translation>
 <translation id="2200698565850397198">Configura lista bloccata di messaggi nativi</translation>
 <translation id="2201555246697292490">Configura whitelist messaggi nativi</translation>
 <translation id="2204753382813641270">Controlla la visualizzazione automatica dello shelf</translation>
@@ -966,17 +977,6 @@ Se questo criterio non viene impostato, la Schermata sulla privacy verrà inizia
 
       Se questa norma viene impostata su False, verrà visualizzato un messaggio di errore anziché la richiesta di configurazione della rete.</translation>
 <translation id="2498238926436517902">Nascondi sempre automaticamente lo shelf</translation>
-<translation id="2505805702054675476">Questo criterio consente di controllare i parametri della riga di comando per lanciare il browser alternativo.
-
-      Se il criterio non è impostato, solo l'URL viene passato ai parametri della riga di comando.
-
-      Se il criterio è impostato su un elenco di stringhe, ciascuna stringa viene passata al browser alternativo sotto forma di parametri della riga di comando separati. In Windows, i parametri vengono uniti usando degli spazi. In Mac OS X e Linux, un parametro può contenere degli spazi ed essere comunque gestito come un singolo parametro.
-
-      Se un elemento contiene <ph name="URL_PLACEHOLDER" />, tale valore viene sostituito con l'URL della pagina da aprire.
-
-      Se nessun elemento contiene <ph name="URL_PLACEHOLDER" />, l'URL viene aggiunto alla fine della riga di comando.
-
-      Le variabili di ambiente vengono espanse. In Windows, il valore <ph name="ENV_VARIABLE_WIN_EXAMPLE" /> viene sostituito con il valore della variabile di ambiente <ph name="ENV_VARIABLE_VALUE" />. In Mac OS X e Linux, il valore <ph name="ENV_VARIABLE_UNIX_EXAMPLE" /> viene sostituito con il valore della variabile di ambiente <ph name="ENV_VARIABLE" />.</translation>
 <translation id="250670737672448119">Consente di attivare la funzione di accessibilità di evidenziazione del cursore di testo.
 
           Questa funzione consente di evidenziare l'area che circonda il cursore di testo durante la modifica.
@@ -1412,15 +1412,6 @@ Questa norma viene rispettata soltanto se viene attivata la norma "DefaultSearch
 <translation id="3096595567015595053">Elenco dei plug-in attivati</translation>
 <translation id="3101501961102569744">Scegli come specificare le impostazioni del server proxy</translation>
 <translation id="3101709781009526431">Data e ora</translation>
-<translation id="3114411414586006215">Questo criterio consente di stabilire l'elenco di siti web che non causeranno mai un cambio di browser.
-
-      Tieni presente che puoi aggiungere elementi all'elenco anche tramite il criterio <ph name="EXTERNAL_SITELIST_URL_POLICY_NAME" />.
-
-      Se il criterio non viene impostato, nessun sito web viene aggiunto all'elenco.
-
-      Se viene impostato, ogni elemento è considerato come una regola, in modo simile al criterio <ph name="URL_LIST_POLICY_NAME" />. Tuttavia, la logica funziona al contrario: le regole con una corrispondenza non aprono un browser alternativo.
-
-      A differenza del criterio <ph name="URL_LIST_POLICY_NAME" />, le regole vengono applicate in entrambe le direzioni. In altre parole, quando il componente aggiuntivo Internet Explorer è presente e attivato, il criterio stabilisce se <ph name="IE_PRODUCT_NAME" /> deve aprire questi URL in <ph name="PRODUCT_NAME" />.</translation>
 <translation id="3117676313396757089">Avviso. DHE sarà rimosso completamente da <ph name="PRODUCT_NAME" /> dopo la versione 57 (nel periodo di marzo 2017), dopodiché questa norma non sarà più attiva.
 
       Se la norma non viene impostata o se viene impostata su false, i pacchetti di crittografia DHE in TLS non saranno attivati. In alternativa, la norma può essere impostata su true per attivare i pacchetti di crittografia DHE e per mantenere la compatibilità con un server obsoleto. Si tratta di una soluzione temporanea ed è necessario configurare nuovamente il server.
@@ -1996,13 +1987,6 @@ Se questa norma viene impostata su False o non viene impostata, i ritardi di ges
 <translation id="3973371701361892765">Non nascondere mai automaticamente lo shelf</translation>
 <translation id="3979738908158213640">URL a cui verrà concesso l'accesso per eseguire l'attestazione del dispositivo durante l'autenticazione SAML</translation>
 <translation id="3984028218719007910">Consente di stabilire se tenere o meno memorizzati in <ph name="PRODUCT_OS_NAME" /> i dati degli account locali dopo l'uscita. Se la norma viene impostata su true, in <ph name="PRODUCT_OS_NAME" /> non verranno conservati gli account persistenti e tutti i dati della sessione utente verranno eliminati dopo l'uscita. Se la norma viene impostata su false o non viene configurata, il dispositivo potrebbe conservare i dati utente locali (criptati).</translation>
-<translation id="398475542699441679">Questa norma consente di stabilire se attivare il Supporto dei browser precedenti.
-
-      Se questa norma non viene impostata o viene impostata su false, Chrome non proverà ad avviare gli URL stabiliti in un browser alternativo.
-
-      Quando questa norma è impostata su true, Chrome prova ad avviare alcuni URL in un browser alternativo (ad esempio, Internet Explorer). Questa funzionalità viene configurata con le norme nel gruppo <ph name="LEGACY_BROWSER_SUPPORT_POLICY_GROUP" />.
-
-      Questa funzionalità sostituisce l'estensione <ph name="LEGACY_BROWSER_SUPPORT_EXTENSION_NAME" />. La configurazione dell'estensione viene riportata in questa funzionalità, ma consigliamo vivamente di utilizzare invece le norme di Chrome. Infatti, ciò garantisce una maggiore compatibilità in futuro.</translation>
 <translation id="398884292557092447">Se il criterio viene impostato su true o se non viene configurato, gli utenti possono controllare i suggerimenti di compilazione automatica per le carte di credito nella UI.
 
       Se il criterio è impostato su false, la compilazione automatica non fornisce mai suggerimenti, né compila i dati della carta di credito, né salva dati aggiuntivi della carta di credito che gli utenti potrebbero inviare durante la navigazione sul Web.</translation>
@@ -2505,6 +2489,7 @@ Se questa norma non viene impostata, verranno utilizzate le dimensioni predefini
 <translation id="4812270373673968774">Se il criterio è impostato su Always, lo shelf <ph name="PRODUCT_OS_NAME" /> viene nascosto automaticamente. Se il criterio è impostato su Never, lo shelf non viene mai nascosto automaticamente.
 
       Se il criterio è configurato, gli utenti non possono apportare modifiche. Se non è configurato, gli utenti possono decidere se lo shelf viene nascosto automaticamente.</translation>
+<translation id="4812714598405913256">Configura il messaggio della scadenza dell'aggiornamento automatico per il criterio DeviceMinimumVersion</translation>
 <translation id="4816674326202173458">Consenti all'utente aziendale di essere l'utente principale e secondario (comportamento predefinito per gli utenti non gestiti)</translation>
 <translation id="4826326557828204741">Azione da compiere quando il ritardo di inattività viene raggiunto durante l'utilizzo della batteria</translation>
 <translation id="482803100714220060">Mostra URL completi</translation>
@@ -2679,11 +2664,6 @@ Se il criterio viene disattivato, <ph name="PRODUCT_OS_NAME" /> disattiva il Blu
           Se questo criterio non viene impostato, i contenuti misti bloccabili verranno bloccati e quelli bloccabili facoltativi verranno aggiornati, ma gli utenti potranno configurare eccezioni per consentire i contenuti misti per siti specifici.
 
           Per informazioni dettagliate sui pattern URL validi, consulta https://cloud.google.com/docs/chrome-enterprise/policies/url-patterns.</translation>
-<translation id="510196893779239086">Questa norma controlla la chiusura completa di Chrome quando l'ultima scheda passa a un altro browser.
-
-      Se questa norma non viene impostata o viene impostata su true, Chrome manterrà almeno una scheda aperta dopo il passaggio a un browser alternativo.
-
-      Se questa norma viene impostata su false, Chrome chiuderà la scheda dopo il passaggio a un browser alternativo, anche se si tratta dell'ultima scheda. Ciò comporterà la chiusura completa di Chrome.</translation>
 <translation id="5102203758995933166">Consente di forzare l'applicazione della configurazione di rete per utente su un dispositivo <ph name="PRODUCT_OS_NAME" />. La configurazione di rete è una stringa in formato JSON come definita nel formato Open Network Configuration.</translation>
 <translation id="5105313908130842249">Ritardo blocco schermo in caso di utilizzo della batteria</translation>
 <translation id="5108031557082757679">Stampanti aziendali associate ai dispositivi disattivate</translation>
@@ -2781,6 +2761,15 @@ Se questa norma non viene impostata viene utilizzata la riga di comando predefin
 
           Se questa norma viene impostata su False, l'attività audio non impedisce di considerare inattivo l'utente.</translation>
 <translation id="5245671702326993331">Consente le notifiche native</translation>
+<translation id="524637053580639111">Questo criterio è stato rimosso nella versione M82. Usa il criterio DeviceMinimumVersion.
+
+      Consente di configurare il requisito della versione minima consentita di <ph name="PRODUCT_NAME" />. Le versioni indicate di seguito sono considerate obsolete e il dispositivo consentirà l'accesso da parte dell'utente solo dopo l'aggiornamento del sistema operativo.
+
+      Se la versione corrente diventa obsoleta durante la sessione utente, verrà forzata la disconnessione dell'utente.
+
+      Se questo criterio non viene impostato, non saranno applicate limitazioni e l'utente potrà accedere qualunque sia la versione di <ph name="PRODUCT_NAME" />.
+
+      Per "versione" si intende sia una versione esatta, ad esempio "61.0.3163.120", sia un prefisso di versione, ad esempio "61.0".  </translation>
 <translation id="5247006254130721952">Blocca download pericolosi</translation>
 <translation id="5248863213023520115">Permette di impostare i tipi di crittografia consentiti quando vengono richiesti ticket Kerberos a un server <ph name="MS_AD_NAME" />.
 
@@ -2961,6 +2950,14 @@ Se questa impostazione viene disattivata o non viene impostata, sia gli utenti l
       Se questo criterio non viene impostato o viene impostato su "Consenti caricamenti e download", <ph name="PRODUCT_NAME" /> si comporta secondo le regole descritte nelle impostazioni "Consenti download" e "Consenti caricamenti".
       </translation>
 <translation id="5442026853063570579">Questa norma consente di controllare anche l'accesso alle Opzioni sviluppatore di Android. Se la norma viene impostata su "DeveloperToolsDisallowed" (valore 2), gli utenti non potranno accedere alle Opzioni sviluppatore. Se la norma viene impostata su un altro valore o non viene impostata, gli utenti potranno accedere alle Opzioni sviluppatore toccando sette volte il numero di build nell'app Impostazioni di Android.</translation>
+<translation id="5445596354079213552">Questo criterio viene applicato soltanto se il dispositivo ha raggiunto la scadenza dell'aggiornamento automatico e non rispetta la versione minima consentita di <ph name="PRODUCT_OS_NAME" /> impostata tramite il criterio <ph name="DEVICE_MINIMUM_VERSION_POLICY_NAME" />.
+
+      Se il criterio viene impostato su una stringa non vuota:
+      Se il tempo di avviso menzionato nel criterio <ph name="DEVICE_MINIMUM_VERSION_POLICY_NAME" /> è scaduto, questo messaggio viene mostrato nella schermata di accesso quando il dispositivo è bloccato e nessun utente può eseguire l'accesso.
+      Se il tempo di avviso menzionato nel criterio <ph name="DEVICE_MINIMUM_VERSION_POLICY_NAME" /> non è scaduto, questo messaggio viene mostrato nella pagina di gestione di Chrome dopo l'accesso da parte dell'utente.
+
+      Se questo criterio non viene impostato o viene lasciato vuoto, il messaggio predefinito della scadenza dell'aggiornamento automatico viene mostrato all'utente in entrambi i casi citati.
+      Il messaggio della scadenza dell'aggiornamento automatico deve essere composto da testo normale, senza alcuna formattazione. Non sono consentiti markup.</translation>
 <translation id="5445719321399313760">Se il criterio viene impostato su true o se non viene configurato, <ph name="PRODUCT_NAME" /> mostra agli utenti informazioni sul prodotto come contenuti a scheda intera.
 
       Se il criterio viene impostato su false, <ph name="PRODUCT_NAME" /> non può mostrare le informazioni sul prodotto come contenuti a scheda intera.
@@ -2990,17 +2987,6 @@ Se questa impostazione viene disattivata o non viene impostata, sia gli utenti l
 <translation id="546726650689747237">Ritardo oscuramento schermo in caso di utilizzo di CA</translation>
 <translation id="5469143988693423708">L'utente è abilitato a eseguire Crostini</translation>
 <translation id="5469825884154817306">Blocca immagini su questi siti</translation>
-<translation id="5472668698895343595">Questa norma consente di stabilire l'elenco di siti web da aprire in un browser alternativo.
-
-      Tieni presente che puoi aggiungere elementi all'elenco anche tramite le norme <ph name="USE_IE_SITELIST_POLICY_NAME" /> e <ph name="EXTERNAL_SITELIST_URL_POLICY_NAME" />.
-
-      Se questa norma non viene impostata, nessun sito web viene aggiunto all'elenco.
-
-      Se viene impostata, ogni elemento è considerato come una regola per aprire qualcosa in un browser alternativo. <ph name="PRODUCT_NAME" /> utilizza queste regole quando deve scegliere se aprire un URL in un browser alternativo.
-
-      Quando il componente aggiuntivo Internet Explorer è presente e attivato, Internet Explorer torna a <ph name="PRODUCT_NAME" /> se non c'è corrispondenza tra le regole.
-
-      Se le regole si contraddicono a vicenda, <ph name="PRODUCT_NAME" /> usa quella più specifica.</translation>
 <translation id="5475361623548884387">Attiva la stampa</translation>
 <translation id="547601067149622666">Non consentire gli annunci su siti con annunci invasivi</translation>
 <translation id="5483065054530244863">Consenti i certificati SHA-1 firmati emessi dai trust anchor locali</translation>
@@ -3247,19 +3233,6 @@ Se il criterio viene configurato, gli utenti non possono apportare modifiche. Gl
 
           Se questo criterio non viene impostato, il comportamento <ph name="ATTRIBUTE_SAMESITE_NAME" /> predefinito per i cookie dipenderà dalla configurazione personale dell'utente per la funzionalità <ph name="FEATURE_NAME_SAMESITE_BY_DEFAULT_COOKIES" />, la funzionalità <ph name="FEATURE_NAME_SAMESITE_NONE_MUST_BE_SECURE" />, e la funzionalità <ph name="FEATURE_NAME_SCHEMEFUL_SAME_SITE" />, che potrebbero essere impostate in base a una prova pubblica o tramite l'attivazione o disattivazione rispettivamente dei flag <ph name="FLAG_NAME_SAMESITE_BY_DEFAULT_COOKIES" />, <ph name="FLAG_NAME_SAMESITE_NONE_MUST_BE_SECURE" /> o <ph name="FLAG_NAME_SCHEMEFUL_SAME_SITE" />.</translation>
 <translation id="585270638818921943">Impedisci all'utente di usare app Android di fonti non attendibili</translation>
-<translation id="5855010364142818361">Questo criterio consente di gestire i parametri della riga di comando per il passaggio a Chrome da Internet Explorer.
-
-      Se il componente aggiuntivo "Supporto dei browser precedenti" per Internet Explorer non è installato, questo criterio non viene applicato.
-
-      Se questo criterio non è impostato, Internet Explorer trasmette a Chrome soltanto l'URL sotto forma di parametro della riga di comando.
-
-      Se questo criterio è impostato su un elenco di stringhe, queste ultime vengono unite usando degli spazi e passate a Chrome sotto forma di parametri della riga di comando.
-
-      Se un elemento contiene <ph name="URL_PLACEHOLDER" />, tale valore viene sostituito con l'URL della pagina da aprire.
-
-      Se nessun elemento contiene <ph name="URL_PLACEHOLDER" />, l'URL viene aggiunto alla fine della riga di comando.
-
-      Le variabili di ambiente vengono espanse. In Windows, il valore <ph name="ENV_VARIABLE_WIN_EXAMPLE" /> viene sostituito con il valore della variabile di ambiente ABC.</translation>
 <translation id="5859344336338527083">Impostare il criterio specifica quali URL sono autorizzati a installare estensioni, app e temi. Prima di <ph name="PRODUCT_NAME" /> 21, gli utenti potevano fare clic su un link a un file *.crx e <ph name="PRODUCT_NAME" /> avrebbe proposto di installare il file dopo alcuni avvisi. Successivamente, tali file devono essere scaricati e trascinati nella pagina delle impostazioni di <ph name="PRODUCT_NAME" />. Questa impostazione consente a URL specifici di utilizzare il precedente flusso di installazione semplificato.
 
       Ogni voce di questo elenco è un pattern di corrispondenza in stile di estensione (vedi https://developer.chrome.com/extensions/match_patterns). Gli utenti possono installare facilmente elementi da qualsiasi URL che corrisponda a una voce nell'elenco. Questi pattern devono consentire sia la posizione del file *.crx sia la pagina da cui viene avviato il download (il referrer).
@@ -3669,15 +3642,6 @@ Il valore della norma deve essere specificato in millisecondi. I valori devono e
 
       Se il criterio non viene impostato, viene impostato su Consenti agli utenti di decidere o su Nessuno, gli utenti possono gestire il rilevamento automatico del fuso orario usando i normali controlli in chrome://settings.</translation>
 <translation id="6532769014584932288">Consenti i wakelock</translation>
-<translation id="653645667373317432">Questo criterio consente di stabilire il comando da usare per aprire gli URL in <ph name="PRODUCT_NAME" /> anziché in Internet Explorer.
-
-      Se il componente aggiuntivo "Supporto dei browser precedenti" per Internet Explorer non è installato, questo criterio non viene applicato.
-
-      Quando questo criterio non è impostato, Internet Explorer rileverà automaticamente il percorso eseguibile di <ph name="PRODUCT_NAME" /> all'avvio di <ph name="PRODUCT_NAME" /> da Internet Explorer.
-
-      Quando è impostato, il criterio verrà usato per avviare <ph name="PRODUCT_NAME" /> quando si avvia <ph name="PRODUCT_NAME" /> da Internet Explorer.
-
-      Questo criterio può essere impostato su un percorso file eseguibile oppure su <ph name="PRODUCT_NAME_PLACEHOLDER" /> per rilevare automaticamente il percorso di installazione di Chrome.</translation>
 <translation id="6536600139108165863">Riavvia automaticamente allo spegnimento del dispositivo</translation>
 <translation id="6539246272469751178">Questa norma non influisce sulle app Android, che utilizzano sempre la directory per i download predefinita e non possono accedere ai file scaricati da <ph name="PRODUCT_OS_NAME" /> in una directory per i download non predefinita.</translation>
 <translation id="654303922206238013">Strategia di migrazione per ecryptfs</translation>
@@ -4102,15 +4066,6 @@ Se questa norma è impostata su True o non è impostata, il modello di oscuramen
       La configurazione viene scaricata e memorizzata nella cache. Verrà scaricata nuovamente ogni volta che l'URL o l'hash cambiano.
 
       Se imposti il criterio, gli utenti non possono modificarlo. Se non è impostato, gli utenti possono continuare a usare il contenitore Crostini predefinito nella sua configurazione corrente, se l'uso di Crostini è consentito dai criteri.</translation>
-<translation id="713121532817834879">Questo criterio è un URL che rimanda a un file XML nello stesso formato del criterio <ph name="IEEM_SITELIST_POLICY" /> di Internet Explorer. Se viene impostato, le regole vengono caricate da un file XML senza essere condivise con Internet Explorer.
-
-      Le regole in questo file XML si applicano come nel criterio <ph name="GREYLIST_POLICY_NAME" />. Significa che queste regole impediscono a <ph name="PRODUCT_NAME" /> di aprire un browser alternativo ed evitano inoltre che il browser alternativo apra <ph name="PRODUCT_NAME" />.
-
-      Se il criterio non viene impostato o non è impostato su un URL valido, <ph name="PRODUCT_NAME" /> non lo utilizza come origine di regole che non attivano il cambio del browser.
-
-      Se è impostato su un URL valido, <ph name="PRODUCT_NAME" /> scarica l'elenco dei siti da tale URL e applica le regole come se fossero state configurate con il criterio <ph name="SITELIST_POLICY_NAME" />.
-
-      Per ulteriori informazioni sul criterio <ph name="IEEM_SITELIST_POLICY" /> di Internet Explorer: https://docs.microsoft.com/internet-explorer/ie11-deploy-guide/what-is-enterprise-mode</translation>
 <translation id="7132877481099023201">URL a cui verrà concesso l'accesso ai dispositivi di acquisizione video senza richieste</translation>
 <translation id="7134420220355750019">Consente di impostare il pulsante destro come pulsante principale del mouse.
 
@@ -4264,6 +4219,7 @@ Per informazioni dettagliate sui pattern <ph name="URL_LABEL" /> validi, visita 
 Se l'impostazione viene disattivata, questa funzione non sarà disponibile.</translation>
 <translation id="7274077256421167535">Attiva la condivisione dell'alimentazione USB</translation>
 <translation id="7275334191706090484">Preferiti gestiti</translation>
+<translation id="7278854311116092134">Nomi degli host di messaggi nativi da escludere dalla lista bloccata</translation>
 <translation id="7291084543582732020">Se attivi questa impostazione, gli utenti potranno utilizzare la funzione Smart Lock se ne vengono soddisfatti i requisiti.
 
       Se disattivi l'impostazione, gli utenti non potranno utilizzare Smart Lock.
@@ -4398,11 +4354,6 @@ Se l'impostazione viene disattivata, questa funzione non sarà disponibile.</tra
       Considera che questa norma dipende dallo stack di verifica dei certificati del sistema operativo che autorizza le firme SHA-1. Se un aggiornamento del sistema operativo modifica la gestione dei certificati SHA-1 da parte del sistema operativo, la norma potrebbe non essere più valida. Inoltre, questa norma è da considerarsi come soluzione alternativa temporanea per concedere alle aziende più tempo per l'abbandono della crittografia SHA-1. Questa norma verrà rimossa il 1° gennaio 2019 o intorno a quella data.
 
       Se questa norma non viene impostata o se viene impostata su false, <ph name="PRODUCT_NAME" /> seguirà il programma di ritiro della crittografia SHA-1 pubblicamente annunciato.</translation>
-<translation id="7578049687634719313">Questa norma consente di stabilire quanto attendere prima di avviare un browser alternativo, in millisecondi.
-
-      Se la norma non è impostata o viene impostata su 0, navigare a un URL designato ne comporta subito l'apertura in un browser alternativo.
-
-      Se la norma viene impostata su un numero, Chrome mostra un messaggio per quel numero di millisecondi, quindi apre il browser alternativo.</translation>
 <translation id="7590188804371204512">Controlla l'installazione delle estensioni esterne.
 
       L'attivazione di questa impostazione blocca l'installazione delle estensioni esterne.
@@ -4564,6 +4515,13 @@ Per informazioni dettagliate sui pattern <ph name="URL_LABEL" /> validi, visita 
 <translation id="7777535871204167559">Considera i dispositivi di archiviazione esterni come di sola lettura</translation>
 <translation id="7788511847830146438">Per profilo</translation>
 <translation id="7807139251387225825">Elenco di tipi di dati che dovrebbero essere esclusi dalla sincronizzazione</translation>
+<translation id="7815699949432723208">Questo criterio è obsoleto. Usa il criterio "<ph name="NATIVE_MESSAGING_ALLOWLIST_POLICY_NAME" />".
+
+          Consente di specificare gli host di messaggi nativi da non inserire nella lista bloccata.
+
+          Il valore * di una lista bloccata indica che tutti gli host di messaggi nativi sono bloccati e che verranno caricati soltanto gli host di messaggi nativi indicati nella lista consentita.
+
+          Per impostazione predefinita sono consentiti tutti gli host di messaggi nativi, ma se sono stati bloccati tutti gli host di messaggi nativi in base al criterio, la lista consentita può essere utilizzata per ignorare tale criterio.</translation>
 <translation id="7818131573217430250">Impostazione stato predefinito modalità ad alto contrasto nella schermata di accesso</translation>
 <translation id="7832907442895199611">Questo criterio è deprecato in M83, utilizza invece SafeBrowsingProtectionLevel.
 
@@ -4808,6 +4766,7 @@ Se questo criterio non viene impostato, la Schermata sulla privacy viene inizial
           Se imposti questo criterio, gli utenti non potranno modificarlo o ignorarlo.
 
           Se questo criterio non viene impostato, inizialmente l'evidenziazione del cursore è disattivata, ma l'utente può attivarla in qualsiasi momento.</translation>
+<translation id="816783746144552109">Configura la versione minima di Chrome OS consentita per il dispositivo</translation>
 <translation id="8171924760436219650">Imposta il pulsante destro come pulsante principale del mouse nella schermata di accesso</translation>
 <translation id="8176035528522326671">Consenti all'utente aziendale di essere solo l'utente multiprofilo principale (comportamento predefinito per gli utenti gestiti dall'azienda)</translation>
 <translation id="8183108371184777472">Impedisci l'avvio della finestra del browser</translation>
@@ -4826,6 +4785,7 @@ Se questo criterio non viene impostato, verrà applicato il comportamento predef
           Se l'azione è la sospensione, è possibile configurare separatamente <ph name="PRODUCT_OS_NAME" /> in modo che blocchi o meno lo schermo prima della sospensione.</translation>
 <translation id="8214600119442850823">Consente di configurare Gestione password.</translation>
 <translation id="8217516105848565518">Questa norma è obsoleta. Al suo posto utilizza RemoteAccessHostDomainList.</translation>
+<translation id="8220156281401380422">Configura lista consentita di messaggi nativi</translation>
 <translation id="8244171102276095471">Attiva i pacchetti di crittografia RC4 in TLS</translation>
 <translation id="8244525275280476362">Ritardo di recupero massimo dopo l'invalidazione di una norma</translation>
 <translation id="8251411417369363637">Se il criterio viene impostato su True, vengono eseguiti tutti i contenuti <ph name="FLASH_PLUGIN_NAME" /> incorporati nei siti web che consentono <ph name="FLASH_PLUGIN_NAME" />, inclusi i contenuti di altre origini o contenuti ridotti.
@@ -4962,13 +4922,6 @@ Se questa norma non viene impostata, le pagine saranno sottoposte a scansione pe
 <translation id="838870586332499308">Attiva roaming dati</translation>
 <translation id="8393850527597048037">Solo criteri piattaforma</translation>
 <translation id="8395749934754392549">Consente di gestire le impostazioni relative al container Android (ARC) e alle app Android.</translation>
-<translation id="8396145449084377015">Questa norma consente di stabilire se caricare regole dalla norma SiteList di Internet Explorer.
-
-      Se questa norma non viene impostata o viene impostata su False, <ph name="PRODUCT_NAME" /> non utilizza la norma <ph name="IEEM_SITELIST_POLICY" /> di Internet Explorer come fonte di regole per il cambio di browser.
-
-      Se questa norma viene impostata su True, <ph name="PRODUCT_NAME" /> legge la norma <ph name="IEEM_SITELIST_POLICY" /> di Internet Explorer per ottenere l'URL dell'elenco di siti. <ph name="PRODUCT_NAME" /> scarica poi l'elenco da quell'URL e applica le regole come se fossero state configurate con la norma <ph name="SITELIST_POLICY_NAME" />.
-
-      Per ulteriori informazioni sulla norma <ph name="IEEM_SITELIST_POLICY" /> di Internet Explorer, visita il sito https://docs.microsoft.com/internet-explorer/ie11-deploy-guide/what-is-enterprise-mode</translation>
 <translation id="8398952282584132331">Attiva Schermata sulla privacy</translation>
 <translation id="8402079500086185021">Apri sempre file PDF esternamente</translation>
 <translation id="8405691014775178834">Consente all'utente l'accesso root ai contenitori Crostini.
@@ -5133,11 +5086,6 @@ Se l'impostazione viene impostata su true, o se non viene impostata, l'attestazi
 <translation id="8653561013005884087">Se il criterio è impostato su True, la funzione di lettura vocale rimane attivata. Se il criterio è impostato su False, la funzione di lettura vocale rimane disattivata.
 
        Se imposti il criterio, gli utenti non possono modificarlo. Se il criterio non è impostato, la funzione di lettura vocale è disattivata all'inizio, ma gli utenti possono attivarla in qualsiasi momento.</translation>
-<translation id="8654286232573430130">Consente di specificare quali server devono essere autorizzati per l'autenticazione integrata. L'autenticazione integrata è attivata solo quando <ph name="PRODUCT_NAME" /> riceve una richiesta di autenticazione da un proxy o da un server che si trova in questo elenco di autorizzazione.
-
-          Separa più nomi di server con delle virgole. Sono ammessi i caratteri jolly (*).
-
-          Se questa norma non viene impostata <ph name="PRODUCT_NAME" /> tenterà di rilevare se sulla Intranet è presente un server e solo allora risponderà alle richieste IWA. Se viene rilevato un server su Internet, le sue richieste IWA verranno ignorate da <ph name="PRODUCT_NAME" />.</translation>
 <translation id="8656110680728938054">Attiva Seleziona per ascoltare</translation>
 <translation id="8661297125441579970">Non consentire migrazione dei dati e ARC.</translation>
 <translation id="8665314828727504286">Livello di protezione Navigazione sicura</translation>

@@ -6,6 +6,7 @@
 #define COMPONENTS_VIZ_SERVICE_FRAME_SINKS_ROOT_COMPOSITOR_FRAME_SINK_IMPL_H_
 
 #include <memory>
+#include <vector>
 
 #include "base/macros.h"
 #include "base/memory/read_only_shared_memory_region.h"

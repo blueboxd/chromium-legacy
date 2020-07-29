@@ -18,9 +18,13 @@
 #include "components/arc/mojom/intent_helper.mojom.h"
 #include "ui/base/layout.h"
 #include "ui/gfx/image/image.h"
+#include "ui/gfx/image/image_skia.h"
 #include "url/gurl.h"
 
 namespace arc {
+
+class AdaptiveIconDelegate;
+
 namespace internal {
 
 // A class which retrieves an activity icon from ARC.
@@ -71,6 +75,8 @@ class ActivityIconLoader {
   ActivityIconLoader();
   ~ActivityIconLoader();
 
+  void SetAdaptiveIconDelegate(AdaptiveIconDelegate* delegate);
+
   // Removes icons associated with |package_name| from the cache.
   void InvalidateIcons(const std::string& package_name);
 
@@ -86,6 +92,10 @@ class ActivityIconLoader {
                                 std::unique_ptr<ActivityToIconsMap> result);
   void AddCacheEntryForTesting(const ActivityName& activity);
 
+  void OnIconsReadyForTesting(std::unique_ptr<ActivityToIconsMap> cached_result,
+                              OnIconsReadyCallback cb,
+                              std::vector<mojom::ActivityIconPtr> icons);
+
   // Returns true if |result| indicates that the |cb| object passed to
   // GetActivityIcons() has already called.
   static bool HasIconsReadyCallbackRun(GetResult result);
@@ -98,6 +108,13 @@ class ActivityIconLoader {
                     OnIconsReadyCallback cb,
                     std::vector<mojom::ActivityIconPtr> icons);
 
+  // A function called when the adaptive icons are generated.
+  void OnAdaptiveIconGenerated(
+      std::vector<ActivityName> actvity_names,
+      std::unique_ptr<ActivityToIconsMap> cached_result,
+      OnIconsReadyCallback cb,
+      const std::vector<gfx::ImageSkia>& adaptive_icons);
+
   // A function called when ResizeIcons finishes. Append items in |result| to
   // |cached_icons_|.
   void OnIconsResized(std::unique_ptr<ActivityToIconsMap> cached_result,
@@ -108,6 +125,9 @@ class ActivityIconLoader {
   const ui::ScaleFactor scale_factor_;
   // A map which holds icons in a scale-factor independent form (gfx::Image).
   ActivityToIconsMap cached_icons_;
+
+  // A delegate which converts the icon to the adaptive icon.
+  AdaptiveIconDelegate* delegate_ = nullptr;
 
   THREAD_CHECKER(thread_checker_);
 

@@ -287,6 +287,9 @@ scoped_refptr<Extension> ConvertWebAppToExtension(
   auto linked_icons = std::make_unique<base::ListValue>();
   for (const WebApplicationIconInfo& icon_info : web_app.icon_infos) {
     DCHECK(icon_info.url.is_valid());
+    // Web apps in Extensions system supports Purpose::ANY icons only.
+    if (icon_info.purpose != blink::Manifest::ImageResource::Purpose::ANY)
+      continue;
     std::unique_ptr<base::DictionaryValue> linked_icon(
         new base::DictionaryValue());
     linked_icon->SetString(keys::kLinkedAppIconURL, icon_info.url.spec());

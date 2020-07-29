@@ -165,9 +165,9 @@ void StyleCascade::Apply(CascadeFilter filter) {
 
   if (state_.Style()->HasAppearance()) {
     if (resolver.AuthorFlags() & CSSProperty::kBackground)
-      state_.Style()->SetHasAuthorBackground(true);
+      state_.Style()->SetHasAuthorBackground();
     if (resolver.AuthorFlags() & CSSProperty::kBorder)
-      state_.Style()->SetHasAuthorBorder(true);
+      state_.Style()->SetHasAuthorBorder();
   }
 }
 

@@ -62,6 +62,16 @@ ui::EventDispatchDetails SpokenFeedbackEventRewriter::RewriteEvent(
     const ui::KeyEvent* key_event = event.AsKeyEvent();
     ui::EventRewriterChromeOS::MutableKeyState state(key_event);
     event_rewriter_chromeos_->RewriteModifierKeys(*key_event, &state);
+
+    // Remove the Search modifier before asking for function keys to be
+    // rewritten, then restore the flags. This allows ChromeVox to receive keys
+    // mappings for raw f1-f12 as e.g. back, but also Search+f1-f12 as
+    // Search+back (rather than just f1-f12).
+    int original_flags = state.flags;
+    state.flags = original_flags & ~ui::EF_COMMAND_DOWN;
+    event_rewriter_chromeos_->RewriteFunctionKeys(*key_event, &state);
+    state.flags = original_flags;
+
     std::unique_ptr<ui::Event> rewritten_event;
     ui::EventRewriterChromeOS::BuildRewrittenKeyEvent(*key_event, state,
                                                       &rewritten_event);

@@ -121,7 +121,9 @@ class PluginVmManagerImpl
       base::Optional<vm_tools::concierge::DestroyDiskImageResponse> response);
 
   // Called when UninstallPluginVm() is unsuccessful.
-  void UninstallFailed();
+  void UninstallFailed(
+      PluginVmUninstallerNotification::FailedReason reason =
+          PluginVmUninstallerNotification::FailedReason::kUnknown);
 
   Profile* profile_;
   std::string owner_id_;

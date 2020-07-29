@@ -17,7 +17,7 @@
 #include "base/files/file_path.h"
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
-#include "chrome/browser/chromeos/arc/session/arc_session_manager.h"
+#include "chrome/browser/chromeos/arc/session/arc_session_manager_observer.h"
 
 class Profile;
 
@@ -26,7 +26,7 @@ class PrefRegistrySyncable;
 }  // namespace user_prefs
 
 // Contains map of default pre-installed apps and packages.
-class ArcDefaultAppList : public arc::ArcSessionManager::Observer {
+class ArcDefaultAppList : public arc::ArcSessionManagerObserver {
  public:
   struct AppInfo {
     AppInfo(const std::string& name,
@@ -91,7 +91,7 @@ class ArcDefaultAppList : public arc::ArcSessionManager::Observer {
   }
 
  private:
-  // arc::ArcSessionManager::Observer:
+  // arc::ArcSessionManagerObserver:
   void OnPropertyFilesExpanded(bool result) override;
 
   // Loads default apps from two sources:

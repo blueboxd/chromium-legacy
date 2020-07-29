@@ -123,6 +123,7 @@
 <translation id="1430915738399379752">Chapisha</translation>
 <translation id="1442386063175183758">Mikunjo miwili sambamba kulia</translation>
 <translation id="1442987760062738829">Toboa</translation>
+<translation id="1447067628680007684">(x86_64)</translation>
 <translation id="1453974140256777690">Maandishi unayobandika au kuambatisha hutumwa kwenye Wingu la Google au mifumo ya wengine ili kuchanganuliwa. Kwa mfano, yanaweza kuchanganuliwa ili kubaini data nyeti.</translation>
 <translation id="1455413310270022028">Kifutio</translation>
 <translation id="1462245070427461050">JIS B9</translation>
@@ -563,7 +564,7 @@ Vinginevyo, hatua hii itazuiwa na mipangilio yako ya faragha. Hali hii itaruhusu
 <translation id="3369192424181595722">Hitilafu ya saa</translation>
 <translation id="3371076217486966826"><ph name="URL" /> inataka:
       • Kuunda ramani ya 3D ya mazingira yako na kufuatilia mkao wa kamera yako
-      • Tumia kamera yako</translation>
+      • Kutumia kamera yako</translation>
 <translation id="337363190475750230">Imewekwa katika hali ya kutotumika</translation>
 <translation id="3377144306166885718">Seva ilitumia toleo la TLS lililopitwa na wakati.</translation>
 <translation id="3377188786107721145">Hitilafu ya kuchanganua sera</translation>
@@ -1144,6 +1145,7 @@ Vinginevyo, hatua hii itazuiwa na mipangilio yako ya faragha. Hali hii itaruhusu
 <translation id="5705882733397021510">Rudi Nyuma</translation>
 <translation id="57094364128775171">Pendekeza nenosiri thabiti…</translation>
 <translation id="5710435578057952990">Utambulisho wa tovuti hii haujathibitishwa.</translation>
+<translation id="571403275720188526">(arm64)</translation>
 <translation id="5720705177508910913">Mtumiaji wa sasa</translation>
 <translation id="5728056243719941842">C5 (Bahasha)</translation>
 <translation id="5730040223043577876">Chrome inapendekeza ubadilishe nenosiri lako ikiwa ulilitumia tena kwenye tovuti zingine.</translation>
@@ -1193,6 +1195,7 @@ Vinginevyo, hatua hii itazuiwa na mipangilio yako ya faragha. Hali hii itaruhusu
 <translation id="5921639886840618607">Ungependa kuhifadhi kadi kwenye Akaunti ya Google?</translation>
 <translation id="5922853866070715753">Unakaribia kumaliza</translation>
 <translation id="5932224571077948991">Tovuti inaonyesha matangazo yanayopotosha au yanayokatiza huduma</translation>
+<translation id="5938793338444039872">Troy</translation>
 <translation id="5946937721014915347">Inafungua <ph name="SITE_NAME" />…</translation>
 <translation id="5951495562196540101">Huwezi kujiandikisha ukitumia akaunti ya mteja (ina leseni ya kifurushi).</translation>
 <translation id="5967592137238574583">Badilisha Maelezo ya Mawasiliano</translation>
@@ -1360,6 +1363,7 @@ Vinginevyo, hatua hii itazuiwa na mipangilio yako ya faragha. Hali hii itaruhusu
 <translation id="6646269444027925224">{COUNT,plural, =0{Hamna}=1{Kutoka tovuti 1 (hutaondolewa kwenye Akaunti ya Google)}other{Kutoka tovuti # (hutaondolewa kwenye Akaunti ya Google)}}</translation>
 <translation id="6652101503459149953">Tumia Windows Hello</translation>
 <translation id="6657585470893396449">Nenosiri</translation>
+<translation id="666259744093848177">(x86_64 translated)</translation>
 <translation id="6665553082534466207">Toboa mara tatu kulia</translation>
 <translation id="6671697161687535275">Je, ungependa kuondoa pendekezo la fomu kwenye Chromium?</translation>
 <translation id="6685834062052613830">Ondoka na ukamilishe kuweka mipangilio</translation>

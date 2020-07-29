@@ -653,7 +653,7 @@
 <translation id="177989070088644880">App (<ph name="ANDROID_PACKAGE_NAME" />)</translation>
 <translation id="1780152987505130652">Fechar grupo</translation>
 <translation id="1781291988450150470">PIN atual</translation>
-<translation id="1781398670452016618">O domínio <ph name="DOMAIN" /> exige que estabeleça ligação a uma rede Wi-Fi agora e transfira uma atualização.</translation>
+<translation id="1781398670452016618">O domínio <ph name="DOMAIN" /> requer que estabeleça ligação a uma rede Wi-Fi agora e transfira uma atualização.</translation>
 <translation id="1781502536226964113">Abrir a página Novo separador</translation>
 <translation id="1781771911845953849">Contas e sincronização</translation>
 <translation id="1782196717298160133">A localizar o seu telemóvel</translation>
@@ -1925,7 +1925,6 @@ Pretende pará-lo?</translation>
 <translation id="3371140690572404006">Dispositivo USB-C (porta frontal do lado direito)</translation>
 <translation id="337286756654493126">Ler pastas que são abertas na aplicação</translation>
 <translation id="3378572629723696641">Esta extensão pode ter sido danificada.</translation>
-<translation id="3379169026479470857">Remover CT</translation>
 <translation id="337920581046691015">O <ph name="PRODUCT_NAME" /> será instalado.</translation>
 <translation id="3380365263193509176">Erro desconhecido</translation>
 <translation id="3382073616108123819">Ups! O sistema não conseguiu determinar identificadores de dispositivos para este dispositivo.</translation>
@@ -2612,14 +2611,12 @@ Pretende pará-lo?</translation>
 <translation id="4175137578744761569">Roxo claro e branco</translation>
 <translation id="4175737294868205930">Armazenamento persistente</translation>
 <translation id="4176463684765177261">Desativado</translation>
-<translation id="418031202593299965">Estes componentes são partilhados com outros utilizadores neste dispositivo. A remoção de componentes pode afetar outros utilizadores.</translation>
 <translation id="4180788401304023883">Eliminar o certificado "<ph name="CERTIFICATE_NAME" />" da autoridade de certificação?</translation>
 <translation id="4181602000363099176">20x</translation>
 <translation id="4181841719683918333">Idiomas</translation>
 <translation id="4184885522552335684">Arrastar para mover um ecrã</translation>
 <translation id="4187424053537113647">A configurar a app <ph name="APP_NAME" />…</translation>
 <translation id="4190828427319282529">Realçar foco do teclado</translation>
-<translation id="4191805472951276951">CT</translation>
 <translation id="4194570336751258953">Ativar tocar para clicar</translation>
 <translation id="4195643157523330669">Abrir num novo separador</translation>
 <translation id="4195814663415092787">Continuar onde deixou</translation>
@@ -3038,7 +3035,6 @@ Pretende pará-lo?</translation>
 <translation id="4756388243121344051">&amp;Histórico</translation>
 <translation id="4759238208242260848">Transferências</translation>
 <translation id="4761104368405085019">Utilizar o seu microfone</translation>
-<translation id="4762055672525936226">Eliminar conteúdo transferido</translation>
 <translation id="4762718786438001384">Espaço em disco do dispositivo criticamente baixo</translation>
 <translation id="4763408175235639573">Foram definidos os seguintes cookies quando viu esta página</translation>
 <translation id="4765582662863429759">Permite às Mensagens Android retransmitir as mensagens de texto do telemóvel para o Chromebook.</translation>
@@ -3292,7 +3288,6 @@ Pretende pará-lo?</translation>
 <translation id="5094721898978802975">Comunicar com aplicações nativas cooperantes</translation>
 <translation id="5097002363526479830">Falha ao ligar à rede "<ph name="NAME" />": <ph name="DETAILS" /></translation>
 <translation id="5097874180538493929">Clicar automaticamente quando o cursor para</translation>
-<translation id="5098800418125334616">Gerir conteúdo transferido</translation>
 <translation id="5101042277149003567">Abrir todos os marcadores</translation>
 <translation id="5101839224773798795">Clicar automaticamente quando o cursor parar</translation>
 <translation id="5107443654503185812">Uma extensão desativou a Navegação segura.</translation>
@@ -4171,7 +4166,6 @@ Certifique-se de que não revela informações confidenciais.</translation>
 <translation id="6198102561359457428">Terminar sessão e, em seguida, iniciar sessão novamente...</translation>
 <translation id="6198252989419008588">Alterar PIN</translation>
 <translation id="6202304368170870640">Pode utilizar o PIN para iniciar sessão ou desbloquear o dispositivo.</translation>
-<translation id="6202517672944764518">Conteúdo transferido</translation>
 <translation id="6206311232642889873">Cop&amp;iar Imagem</translation>
 <translation id="6207200176136643843">Repor o nível de zoom predefinido</translation>
 <translation id="6207937957461833379">País/Região</translation>
@@ -4489,6 +4483,7 @@ Certifique-se de que não revela informações confidenciais.</translation>
 <translation id="6602956230557165253">Utilize as teclas de seta para a esquerda e direita para navegar.</translation>
 <translation id="6605847144724004692">Ainda não obteve classificação dos utilizadores.</translation>
 <translation id="6607831829715835317">Mais ferrament&amp;as</translation>
+<translation id="6608012008902909398">Mostrar detalhes da verificação de software do dispositivo</translation>
 <translation id="6611972847767394631">Encontre os seus separadores aqui</translation>
 <translation id="6612358246767739896">Conteúdo protegido</translation>
 <translation id="6615455863669487791">Mostrar</translation>
@@ -6130,7 +6125,6 @@ Mantenha o seu ficheiro de chave num local seguro, pois irá precisar dele para 
 <translation id="8652400352452647993">Erro de extensão do pacote</translation>
 <translation id="8654151524613148204">O ficheiro é demasiado grande para o seu computador processar. Lamentamos.</translation>
 <translation id="8655295600908251630">Canal</translation>
-<translation id="8655319619291175901">Ups... algo correu mal.</translation>
 <translation id="8655972064210167941">O início de sessão falhou porque não foi possível validar a sua palavra-passe. Contacte o gestor ou tente novamente.</translation>
 <translation id="8656768832129462377">Não verificar</translation>
 <translation id="8658645149275195032"><ph name="APP_NAME" /> está a partilhar o ecrã e o áudio com <ph name="TAB_NAME" />.</translation>
@@ -6219,7 +6213,6 @@ Mantenha o seu ficheiro de chave num local seguro, pois irá precisar dele para 
         &lt;p&gt;Porém, pode ainda configurar através da linha de comandos. Consulte &lt;code&gt;man <ph name="PRODUCT_BINARY_NAME" />&lt;/code&gt; para obter mais informações acerca de sinalizadores e variáveis do ambiente.&lt;/p&gt;</translation>
 <translation id="8755175579224030324">Executar tarefas relacionadas com a segurança para a sua entidade, como a gestão das chaves e certificados armazenados no dispositivo</translation>
 <translation id="8755376271068075440">&amp;Maior</translation>
-<translation id="8756143264090841047">Eliminar CT</translation>
 <translation id="8756969031206844760">Pretende atualizar a palavra-passe?</translation>
 <translation id="8757090071857742562">Não é possível transmitir o ambiente de trabalho. Verifique se confirmou a mensagem para começar a partilhar o seu ecrã.</translation>
 <translation id="8757203080302669031">Este separador está ativamente a procurar dispositivos Bluetooth.</translation>
@@ -6234,7 +6227,6 @@ Mantenha o seu ficheiro de chave num local seguro, pois irá precisar dele para 
 <translation id="8770406935328356739">Diretório raiz da extensão</translation>
 <translation id="8770507190024617908">Gerir pessoas</translation>
 <translation id="8771300903067484968">O fundo da página de inicio foi reposto para a predefinição.</translation>
-<translation id="8771939407732945762">Remover conteúdo transferido</translation>
 <translation id="8773302562181397928">Guardar <ph name="PRINTER_NAME" /></translation>
 <translation id="8774379074441005279">Confirme o restauro</translation>
 <translation id="8774934320277480003">Margem superior</translation>

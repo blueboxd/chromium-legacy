@@ -18,7 +18,6 @@
 #include "base/i18n/rtl.h"
 #include "base/macros.h"
 #include "base/memory/ptr_util.h"
-#include "base/metrics/field_trial_params.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/no_destructor.h"
 #include "base/numerics/safe_conversions.h"
@@ -65,13 +64,6 @@
 namespace gfx {
 
 namespace {
-
-// Experiment to determine best cache size (see https://crbug.com/1050793).
-const base::Feature kShapeRunCacheSize = {"ShapeRunCacheSize",
-                                          base::FEATURE_DISABLED_BY_DEFAULT};
-
-const base::FeatureParam<int> kShapeRunCacheSizeParam = {&kShapeRunCacheSize,
-                                                         "CacheSize", 10000};
 
 // Text length limit. Longer strings are slow and not fully tested.
 const size_t kMaxTextLength = 10000;
@@ -1262,14 +1254,16 @@ struct ShapeRunWithFontInput {
   size_t hash = 0;
 };
 
-// An MRU cache of the results from calling ShapeRunWithFont. Use the same
-// maximum cache size as is used in blink::ShapeCache.
+// An MRU cache of the results from calling ShapeRunWithFont. The maximum cache
+// size used in blink::ShapeCache is 10k. A Finch experiment showed that
+// reducing the cache size to 1k has no performance impact.
+constexpr int kShapeRunCacheSize = 1000;
 using ShapeRunCacheBase = base::HashingMRUCache<ShapeRunWithFontInput,
                                                 TextRunHarfBuzz::ShapeOutput,
                                                 ShapeRunWithFontInput::Hash>;
 class ShapeRunCache : public ShapeRunCacheBase {
  public:
-  ShapeRunCache() : ShapeRunCacheBase(kShapeRunCacheSizeParam.Get()) {}
+  ShapeRunCache() : ShapeRunCacheBase(kShapeRunCacheSize) {}
 };
 
 void ShapeRunWithFont(const ShapeRunWithFontInput& in,

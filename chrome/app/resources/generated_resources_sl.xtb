@@ -1925,7 +1925,6 @@ Nastavitve tega računa je mogoče upravljati z namestitvijo aplikacije Family L
 <translation id="3371140690572404006">Naprava USB-C (vrata desno spredaj)</translation>
 <translation id="337286756654493126">Branje map, ki jih odprete v aplikaciji</translation>
 <translation id="3378572629723696641">Ta razširitev je morda poškodovana.</translation>
-<translation id="3379169026479470857">Odstranjevanje prenesene vsebine</translation>
 <translation id="337920581046691015"><ph name="PRODUCT_NAME" /> bo nameščen.</translation>
 <translation id="3380365263193509176">Neznana napaka</translation>
 <translation id="3382073616108123819">Ups. Sistemu ni uspelo določiti identifikatorjev naprave za to napravo.</translation>
@@ -2612,14 +2611,12 @@ Nastavitve tega računa je mogoče upravljati z namestitvijo aplikacije Family L
 <translation id="4175137578744761569">Svetlo vijolična in bela</translation>
 <translation id="4175737294868205930">Trajno shranjevanje</translation>
 <translation id="4176463684765177261">Onemogočeno</translation>
-<translation id="418031202593299965">Te komponente so v skupni rabi z drugimi uporabniki v tej napravi. Če odstranite komponente, lahko to vpliva na druge uporabnike.</translation>
 <translation id="4180788401304023883">Ali želite izbrisati overjeno potrdilo »<ph name="CERTIFICATE_NAME" />«?</translation>
 <translation id="4181602000363099176">20 x</translation>
 <translation id="4181841719683918333">Jeziki</translation>
 <translation id="4184885522552335684">Povlecite, če želite premakniti zaslon</translation>
 <translation id="4187424053537113647">Nastavljanje aplikacije <ph name="APP_NAME" /> …</translation>
 <translation id="4190828427319282529">Označevanje s fokusom na tipkovnici</translation>
-<translation id="4191805472951276951">PV</translation>
 <translation id="4194570336751258953">Omogoči klik z dotikom</translation>
 <translation id="4195643157523330669">Odpri v novem zavihku</translation>
 <translation id="4195814663415092787">Nadaljuj prejšnjo sejo</translation>
@@ -3038,7 +3035,6 @@ Nastavitve tega računa je mogoče upravljati z namestitvijo aplikacije Family L
 <translation id="4756388243121344051">&amp;Zgodovina</translation>
 <translation id="4759238208242260848">Prenosi</translation>
 <translation id="4761104368405085019">Uporabite mikrofon</translation>
-<translation id="4762055672525936226">Brisanje prenesene vsebine</translation>
 <translation id="4762718786438001384">V napravi kritično primanjkuje prostora na disku</translation>
 <translation id="4763408175235639573">Ko ste si ogledovali to stran, so bili poslani ti piškotki</translation>
 <translation id="4765582662863429759">Aplikaciji Android Messages omogoča posredovanje sporočil SMS iz telefona v Chromebook</translation>
@@ -3292,7 +3288,6 @@ Nastavitve tega računa je mogoče upravljati z namestitvijo aplikacije Family L
 <translation id="5094721898978802975">Komuniciranje s sodelujočimi izvornimi aplikacijami</translation>
 <translation id="5097002363526479830">Povezava z omrežjem »<ph name="NAME" />« ni uspela: <ph name="DETAILS" /></translation>
 <translation id="5097874180538493929">Samodejni klik, ko se kazalec ustavi</translation>
-<translation id="5098800418125334616">Upravljanje prenesene vsebine</translation>
 <translation id="5101042277149003567">Odpri vse zaznamke</translation>
 <translation id="5101839224773798795">Samodejni klik, ko se kazalec ustavi</translation>
 <translation id="5107443654503185812">Razširitev je izklopila varno brskanje</translation>
@@ -4172,7 +4167,6 @@ Poskrbite, da ne boste razkrili morebitnih občutljivih podatkov.</translation>
 <translation id="6198102561359457428">Odjavite se in znova prijavite ...</translation>
 <translation id="6198252989419008588">Spremeni PIN</translation>
 <translation id="6202304368170870640">Kodo PIN lahko uporabite za prijavo ali odklepanje naprave.</translation>
-<translation id="6202517672944764518">Prenesena vsebina</translation>
 <translation id="6206311232642889873">Kop&amp;iraj sliko</translation>
 <translation id="6207200176136643843">Ponastavitev na privzeto stopnjo povečave/pomanjšave</translation>
 <translation id="6207937957461833379">Država/regija</translation>
@@ -4490,6 +4484,7 @@ Poskrbite, da ne boste razkrili morebitnih občutljivih podatkov.</translation>
 <translation id="6602956230557165253">Pomikate se s puščicama levo in desno.</translation>
 <translation id="6605847144724004692">Še ni ocen uporabnikov.</translation>
 <translation id="6607831829715835317">Več orodij</translation>
+<translation id="6608012008902909398">Prikaz podrobnosti preverjanja programske opreme naprave</translation>
 <translation id="6611972847767394631">Poiščite svoje zavihke tukaj</translation>
 <translation id="6612358246767739896">Zaščitena vsebina</translation>
 <translation id="6615455863669487791">Pokaži mi</translation>
@@ -6132,7 +6127,6 @@ Datoteko s ključem shranite na varnem. Potrebovali jo boste za izdelavo novih r
 <translation id="8652400352452647993">Napaka pri pakiranju razširitve</translation>
 <translation id="8654151524613148204">Datoteka je prevelika in je računalnik ne more obdelati. Oprostite.</translation>
 <translation id="8655295600908251630">Kanal</translation>
-<translation id="8655319619291175901">Žal je prišlo do napake.</translation>
 <translation id="8655972064210167941">Prijava ni uspela, ker ni bilo mogoče preveriti gesla. Obrnite se na skrbnika ali poskusite znova.</translation>
 <translation id="8656768832129462377">Ne preverjaj</translation>
 <translation id="8658645149275195032">Aplikacija <ph name="APP_NAME" /> je v skupno rabo z zavihkom <ph name="TAB_NAME" /> dala vaš zaslon in zvok.</translation>
@@ -6221,7 +6215,6 @@ Datoteko s ključem shranite na varnem. Potrebovali jo boste za izdelavo novih r
           &lt;p&gt;Kljub temu ga lahko nastavite z ukazno vrstico. Glejte &lt;code&gt;man <ph name="PRODUCT_BINARY_NAME" />&lt;/code&gt; za več informacij o zastavicah in spremenljivkah okolja.&lt;/p&gt;</translation>
 <translation id="8755175579224030324">Izvajanje opravil, povezanih z varnostjo za vašo organizacijo, kot je upravljanje potrdil in ključev, shranjenih v tej napravi</translation>
 <translation id="8755376271068075440">&amp;Povečaj</translation>
-<translation id="8756143264090841047">Izbris prenesene vsebine</translation>
 <translation id="8756969031206844760">Želite posodobiti geslo?</translation>
 <translation id="8757090071857742562">Namizja ni mogoče predvajati. Preverite, ali ste potrdili poziv za začetek skupne rabe zaslona.</translation>
 <translation id="8757203080302669031">Ta zavihek aktivno išče naprave Bluetooth.</translation>
@@ -6236,7 +6229,6 @@ Datoteko s ključem shranite na varnem. Potrebovali jo boste za izdelavo novih r
 <translation id="8770406935328356739">Korenski imenik razširitve</translation>
 <translation id="8770507190024617908">Upravljanje ljudi</translation>
 <translation id="8771300903067484968">Ozadje začetne strani je ponastavljeno na privzeto ozadje.</translation>
-<translation id="8771939407732945762">Odstranjevanje prenesene vsebine</translation>
 <translation id="8773302562181397928">Shranjevanje tiskalnika <ph name="PRINTER_NAME" /></translation>
 <translation id="8774379074441005279">Potrdite obnovitev</translation>
 <translation id="8774934320277480003">Zgornji rob</translation>

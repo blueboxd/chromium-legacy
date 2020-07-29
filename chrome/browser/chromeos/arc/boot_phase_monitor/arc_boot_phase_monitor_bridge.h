@@ -10,10 +10,11 @@
 #include "base/macros.h"
 #include "base/memory/singleton.h"
 #include "base/memory/weak_ptr.h"
+#include "base/observer_list.h"
 #include "base/observer_list_types.h"
 #include "base/threading/thread_checker.h"
 #include "base/time/time.h"
-#include "chrome/browser/chromeos/arc/session/arc_session_manager.h"
+#include "chrome/browser/chromeos/arc/session/arc_session_manager_observer.h"
 #include "chrome/browser/sessions/session_restore_observer.h"
 #include "components/account_id/account_id.h"
 #include "components/arc/arc_browser_context_keyed_service_factory_base.h"
@@ -33,7 +34,7 @@ class ArcBridgeService;
 // in response.
 class ArcBootPhaseMonitorBridge : public KeyedService,
                                   public mojom::BootPhaseMonitorHost,
-                                  public ArcSessionManager::Observer {
+                                  public ArcSessionManagerObserver {
  public:
   class Delegate {
    public:
@@ -75,7 +76,7 @@ class ArcBootPhaseMonitorBridge : public KeyedService,
   // mojom::BootPhaseMonitorHost
   void OnBootCompleted() override;
 
-  // ArcSessionManager::Observer
+  // ArcSessionManagerObserver
   void OnArcSessionStopped(ArcStopReason stop_reason) override;
   void OnArcSessionRestarting() override;
 

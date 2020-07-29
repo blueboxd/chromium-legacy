@@ -135,7 +135,7 @@ void NetworkHealth::CreateNetworkHealthState() {
   }
 }
 
-void NetworkHealth::BindRemote(
+void NetworkHealth::BindReceiver(
     mojo::PendingReceiver<mojom::NetworkHealthService> receiver) {
   receivers_.Add(this, std::move(receiver));
 }

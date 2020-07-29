@@ -63,10 +63,18 @@ PluginVmUninstallerNotification::PluginVmUninstallerNotification(
 
 PluginVmUninstallerNotification::~PluginVmUninstallerNotification() = default;
 
-void PluginVmUninstallerNotification::SetFailed() {
+void PluginVmUninstallerNotification::SetFailed(FailedReason reason) {
+  base::string16 app_name = PluginVmAppName();
+  base::string16 message;
+  if (reason == FailedReason::kStopVmFailed) {
+    message = l10n_util::GetStringFUTF16(
+        IDS_PLUGIN_VM_SHUTDOWN_WINDOWS_TO_UNINSTALL_MESSAGE, app_name);
+  }
+
   notification_->set_type(message_center::NOTIFICATION_TYPE_SIMPLE);
   notification_->set_title(l10n_util::GetStringFUTF16(
-      IDS_PLUGIN_VM_REMOVING_NOTIFICATION_FAILED_MESSAGE, PluginVmAppName()));
+      IDS_PLUGIN_VM_REMOVING_NOTIFICATION_FAILED_MESSAGE, app_name));
+  notification_->set_message(message);
   notification_->set_pinned(false);
   notification_->set_never_timeout(false);
   notification_->set_accent_color(ash::kSystemNotificationColorCriticalWarning);

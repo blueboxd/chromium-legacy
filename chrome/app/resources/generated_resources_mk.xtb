@@ -1925,7 +1925,6 @@
 <translation id="3371140690572404006">USB-Ц уред (предна порта од десна страна)</translation>
 <translation id="337286756654493126">Читајте датотеки и папки што ги отворате во апликацијата</translation>
 <translation id="3378572629723696641">Оваа наставка можеби беше оштетена.</translation>
-<translation id="3379169026479470857">Отстранување преземени содржини</translation>
 <translation id="337920581046691015"><ph name="PRODUCT_NAME" /> ќе се инсталира.</translation>
 <translation id="3380365263193509176">Непозната грешка</translation>
 <translation id="3382073616108123819">Системот не успеа да утврди идентификатори на уред за овој уред.</translation>
@@ -2612,14 +2611,12 @@
 <translation id="4175137578744761569">Светловиолеотова и бела</translation>
 <translation id="4175737294868205930">Постојана меморија</translation>
 <translation id="4176463684765177261">Оневозможено</translation>
-<translation id="418031202593299965">Компонентиве се споделуваат со други корисници на уредов. Отстранувањето на компонентите може да влијае на другите корисници.</translation>
 <translation id="4180788401304023883">Да се избрише ЦА сертификатот „<ph name="CERTIFICATE_NAME" />“?</translation>
 <translation id="4181602000363099176">20x</translation>
 <translation id="4181841719683918333">Јазици</translation>
 <translation id="4184885522552335684">Повлечете за да поместите екран</translation>
 <translation id="4187424053537113647">Се поставува <ph name="APP_NAME" />…</translation>
 <translation id="4190828427319282529">Нагласи го фокусот на тастатурата</translation>
-<translation id="4191805472951276951">Преземени содржини</translation>
 <translation id="4194570336751258953">Овозможи допри и кликни</translation>
 <translation id="4195643157523330669">Отвори во нова картичка</translation>
 <translation id="4195814663415092787">Продолжете каде што сте застанале</translation>
@@ -3038,7 +3035,6 @@
 <translation id="4756388243121344051">&amp;Историја</translation>
 <translation id="4759238208242260848">Преземања</translation>
 <translation id="4761104368405085019">Користете го микрофонот</translation>
-<translation id="4762055672525936226">Бришење преземени содржини</translation>
 <translation id="4762718786438001384">Просторот на дискот на уредот е критично низок</translation>
 <translation id="4763408175235639573">Кога ја посетивте страницава, се поставија следниве колачиња</translation>
 <translation id="4765582662863429759">Дозволува Android Messages да пренесува SMS-пораки од телефонот во вашиот Chromebook</translation>
@@ -3292,7 +3288,6 @@
 <translation id="5094721898978802975">Комуницирај со матични апликации што соработуваат</translation>
 <translation id="5097002363526479830">Не успеа да се поврзе на мрежа „<ph name="NAME" />“: <ph name="DETAILS" /></translation>
 <translation id="5097874180538493929">Автоматски кликнувај кога курсорот ќе застане</translation>
-<translation id="5098800418125334616">Управувајте со преземените содржини</translation>
 <translation id="5101042277149003567">Отвори ги сите обележувачи</translation>
 <translation id="5101839224773798795">Кликни автоматски кога покажувачот ќе запре</translation>
 <translation id="5107443654503185812">Екстензија го исклучила „Безбедно прелистување“</translation>
@@ -4170,7 +4165,6 @@
 <translation id="6198102561359457428">Одјавете се, па повторно најавете се...</translation>
 <translation id="6198252989419008588">Промена на PIN</translation>
 <translation id="6202304368170870640">PIN-кодот може да го користите за да се најавите или да го отклучите уредот.</translation>
-<translation id="6202517672944764518">Преземени содржини</translation>
 <translation id="6206311232642889873">Коп&amp;ирај слика</translation>
 <translation id="6207200176136643843">Ресетирај на стандардно ниво на зумирање</translation>
 <translation id="6207937957461833379">Држава/Регион</translation>
@@ -4488,6 +4482,7 @@
 <translation id="6602956230557165253">За навигација користете ги левото и десното копче со стрелка.</translation>
 <translation id="6605847144724004692">Сѐ уште нема оцени од корисници.</translation>
 <translation id="6607831829715835317">Повеќе алат&amp;ки</translation>
+<translation id="6608012008902909398">Прикажи детали од проверката на софтверот на уредот</translation>
 <translation id="6611972847767394631">Најдете ги вашите картички тука</translation>
 <translation id="6612358246767739896">Заштитена содржина</translation>
 <translation id="6615455863669487791">Покажи ми</translation>
@@ -6132,7 +6127,6 @@
 <translation id="8652400352452647993">Грешка на екстензијата на пакетот</translation>
 <translation id="8654151524613148204">Датотеката е премногу голема за вашиот компјутер да се справи со неа. Се извинуваме.</translation>
 <translation id="8655295600908251630">Канал</translation>
-<translation id="8655319619291175901">Упс, нешто не е во ред.</translation>
 <translation id="8655972064210167941">Најавувањето не успеа бидејќи не можеше да се потврди вашата лозинка. Контактирајте со администраторот или обидете се повторно.</translation>
 <translation id="8656768832129462377">Не проверувај</translation>
 <translation id="8658645149275195032"><ph name="APP_NAME" /> ги споделува вашиот екран и аудио со <ph name="TAB_NAME" />.</translation>
@@ -6221,7 +6215,6 @@
         &lt;p&gt;Сепак, сѐ уште може да конфигурирате преку командната линија. Погледнете &lt;code&gt;man <ph name="PRODUCT_BINARY_NAME" />&lt;/code&gt; за повеќе информации за знаменцата и променливите на околината.&lt;/p&gt;</translation>
 <translation id="8755175579224030324">Извршување задачи поврзани со безбедноста за вашата организација, како што е управување со сертификати и клучеви складирани на уредот</translation>
 <translation id="8755376271068075440">&amp;Поголем</translation>
-<translation id="8756143264090841047">Бришење преземени содржини</translation>
 <translation id="8756969031206844760">Дали да се ажурира лозинката?</translation>
 <translation id="8757090071857742562">Не може да се емитува работната површина. Проверете дали сте го потврдиле известувањето да започнете со споделување на екранот.</translation>
 <translation id="8757203080302669031">Картичкава активно бара уреди со Bluetooth.</translation>
@@ -6236,7 +6229,6 @@
 <translation id="8770406935328356739">Основен именик на екстензии</translation>
 <translation id="8770507190024617908">Управувај со луѓе</translation>
 <translation id="8771300903067484968">Заднината на почетната страница е ресетирана на стандардната заднина.</translation>
-<translation id="8771939407732945762">Отстранување преземени содржини</translation>
 <translation id="8773302562181397928">Зачувај го <ph name="PRINTER_NAME" /></translation>
 <translation id="8774379074441005279">Потврдете го враќањето</translation>
 <translation id="8774934320277480003">Маргина на врв</translation>

@@ -55,7 +55,6 @@ class StyleCascade;
 class StyleRuleUsageTracker;
 
 enum RuleMatchingBehavior { kMatchAllRules, kMatchAllRulesExcludingSMIL };
-enum ApplyMask { kApplyMaskRegular = 1 << 0, kApplyMaskVisited = 1 << 1 };
 
 // This class selects a ComputedStyle for a given element in a document based on
 // the document's collection of stylesheets (user styles, author styles, UA

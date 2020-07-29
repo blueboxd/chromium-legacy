@@ -318,6 +318,11 @@ bool ArcIntentHelperBridge::ShouldChromeHandleUrl(const GURL& url) {
   return true;
 }
 
+void ArcIntentHelperBridge::SetAdaptiveIconDelegate(
+    AdaptiveIconDelegate* delegate) {
+  icon_loader_.SetAdaptiveIconDelegate(delegate);
+}
+
 void ArcIntentHelperBridge::AddObserver(ArcIntentHelperObserver* observer) {
   observer_list_.AddObserver(observer);
 }

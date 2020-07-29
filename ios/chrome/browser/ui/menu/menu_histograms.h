@@ -8,7 +8,11 @@
 // Enum representing the existing set of menu scenarios. Current values should
 // not be renumbered. Please keep in sync with "IOSMenuScenario" in
 // src/tools/metrics/histograms/enums.xml.
-enum class MenuScenario { HistoryEntry = 0, kMaxValue = HistoryEntry };
+enum class MenuScenario {
+  HistoryEntry = 0,
+  BookmarkEntry = 1,
+  kMaxValue = BookmarkEntry
+};
 
 // Records a menu shown histogram metric for the |scenario|.
 void RecordMenuShown(MenuScenario scenario);

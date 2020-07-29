@@ -29,7 +29,7 @@ extern const BASE_EXPORT Feature kMayBlockWithoutDelay;
 // any impact on guardian metrics.
 extern const BASE_EXPORT Feature kFixedMaxBestEffortTasks;
 
-#if defined(OS_WIN) || defined(OS_MACOSX)
+#if defined(OS_WIN) || defined(OS_APPLE)
 #define HAS_NATIVE_THREAD_POOL() 1
 #else
 #define HAS_NATIVE_THREAD_POOL() 0

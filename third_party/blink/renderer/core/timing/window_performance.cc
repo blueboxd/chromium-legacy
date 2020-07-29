@@ -382,8 +382,11 @@ void WindowPerformance::ReportEventTimings(uint64_t frame_index,
   --pending_swap_promise_count_;
   // |event_timings_| and |event_frames_| should always have the same size.
   DCHECK(event_timings_.size() == event_frames_.size());
+  if (event_timings_.IsEmpty())
+    return;
   bool event_timing_enabled =
       RuntimeEnabledFeatures::EventTimingEnabled(GetExecutionContext());
+  DOMHighResTimeStamp end_time = MonotonicTimeToDOMHighResTimeStamp(timestamp);
   while (!event_timings_.IsEmpty()) {
     PerformanceEventTiming* entry = event_timings_.front();
     uint64_t entry_frame_index = event_frames_.front();
@@ -395,8 +398,6 @@ void WindowPerformance::ReportEventTimings(uint64_t frame_index,
 
     event_timings_.pop_front();
     event_frames_.pop_front();
-    DOMHighResTimeStamp end_time =
-        MonotonicTimeToDOMHighResTimeStamp(timestamp);
 
     int duration_in_ms = std::round((end_time - entry->startTime()) / 8) * 8;
     entry->SetDuration(duration_in_ms);

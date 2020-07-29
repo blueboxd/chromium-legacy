@@ -127,15 +127,6 @@ BOOL CGaiaCredentialProviderModule::DllMain(HINSTANCE /*hinstance*/,
       logging::SetEventSource("GCPW", GCPW_CATEGORY, MSG_LOG_MESSAGE);
       if (GetGlobalFlagOrDefault(kRegEnableVerboseLogging, 0))
         logging::SetMinLogLevel(logging::LOG_VERBOSE);
-
-      wchar_t process_name[MAX_PATH] = {0};
-      GetModuleFileName(nullptr, process_name, MAX_PATH);
-
-      LOGFN(INFO) << "GCPW Initialized in " << process_name
-                  << " GCPW Version: " << (CHROME_VERSION_STRING)
-                  << " Windows Build: "
-                  << base::win::OSInfo::GetInstance()->Kernel32BaseVersion()
-                  << " Version:" << GetWindowsVersion();
       break;
     }
     case DLL_PROCESS_DETACH:

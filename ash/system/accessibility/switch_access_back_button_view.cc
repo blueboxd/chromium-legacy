@@ -26,7 +26,6 @@ constexpr int kFocusRingSingleColorWidthDp = 2;
 // Additional buffer needed to prevent clipping at the focus ring's edges.
 constexpr int kFocusRingBufferDp = 1;
 
-constexpr char kUniqueId[] = "switch_access_back_button";
 constexpr int kRadiusDp = 18;
 }  // namespace
 
@@ -77,7 +76,6 @@ void SwitchAccessBackButtonView::ButtonPressed(views::Button* sender,
 void SwitchAccessBackButtonView::GetAccessibleNodeData(
     ui::AXNodeData* node_data) {
   node_data->role = ax::mojom::Role::kButton;
-  node_data->html_attributes.push_back(std::make_pair("id", kUniqueId));
 }
 
 int SwitchAccessBackButtonView::GetHeightForWidth(int w) const {

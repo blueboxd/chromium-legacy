@@ -11,20 +11,15 @@
 namespace updates {
 
 UpdateNotificationClient::UpdateNotificationClient(GetServiceCallback callback)
-    : get_service_callback_(std::move(callback)) {}
+    : service_getter_(std::move(callback)) {}
 
 UpdateNotificationClient::~UpdateNotificationClient() = default;
 
 void UpdateNotificationClient::BeforeShowNotification(
     std::unique_ptr<NotificationData> notification_data,
     NotificationDataCallback callback) {
-  auto* update_notification_service = get_service_callback_.Run();
-  DCHECK(update_notification_service);
-  if (!update_notification_service->IsReadyToDisplay()) {
-    std::move(callback).Run(nullptr);
-    return;
-  }
-  std::move(callback).Run(std::move(notification_data));
+  GetUpdateNotificationService()->BeforeShowNotification(
+      std::move(notification_data), std::move(callback));
 }
 
 void UpdateNotificationClient::OnSchedulerInitialized(
@@ -36,32 +31,19 @@ void UpdateNotificationClient::OnSchedulerInitialized(
 void UpdateNotificationClient::OnUserAction(const UserActionData& action_data) {
   DCHECK(action_data.client_type ==
          notifications::SchedulerClientType::kChromeUpdate);
-  auto* update_notification_service = get_service_callback_.Run();
-  DCHECK(update_notification_service);
-
-  switch (action_data.action_type) {
-    case notifications::UserActionType::kClick:
-      update_notification_service->OnUserClick(action_data.custom_data);
-      break;
-    case notifications::UserActionType::kButtonClick:
-      DCHECK(!action_data.button_click_info.has_value());
-      if (action_data.button_click_info.value().type ==
-          notifications::ActionButtonType::kUnhelpful) {
-        update_notification_service->OnUserClickButton(false);
-      }
-      break;
-    case notifications::UserActionType::kDismiss:
-      update_notification_service->OnUserDismiss();
-      break;
-    default:
-      NOTREACHED();
-      break;
+  if (action_data.action_type == notifications::UserActionType::kClick) {
+    GetUpdateNotificationService()->OnUserClick(action_data.custom_data);
   }
 }
 
 void UpdateNotificationClient::GetThrottleConfig(
     ThrottleConfigCallback callback) {
-  std::move(callback).Run(nullptr);
+  GetUpdateNotificationService()->GetThrottleConfig(std::move(callback));
+}
+
+UpdateNotificationService*
+UpdateNotificationClient::GetUpdateNotificationService() {
+  return service_getter_.Run();
 }
 
 }  // namespace updates

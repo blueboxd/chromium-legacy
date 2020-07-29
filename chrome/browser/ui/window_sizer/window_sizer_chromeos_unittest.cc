@@ -2,6 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "chrome/browser/ui/window_sizer/window_sizer_chromeos.h"
+
 #include "ash/public/cpp/window_properties.h"
 #include "ash/shell.h"
 #include "base/memory/ptr_util.h"
@@ -49,8 +51,8 @@ class WindowSizerChromeOSTest : public ChromeAshTestBase {
     display::Screen::GetScreen()->SetDisplayForNewWindows(display_id);
 
     ui::WindowShowState ignored;
-    WindowSizer sizer(std::move(state_provider), browser);
-    sizer.DetermineWindowBoundsAndShowState(passed_in, out_bounds, &ignored);
+    WindowSizer::GetBrowserWindowBoundsAndShowState(
+        std::move(state_provider), passed_in, browser, out_bounds, &ignored);
   }
 
   // Returns browser window |out_bounds| and |out_show_state| for simulated
@@ -72,9 +74,8 @@ class WindowSizerChromeOSTest : public ChromeAshTestBase {
     if (source == LAST_ACTIVE || source == BOTH)
       provider->SetLastActiveState(bounds, show_state_last);
 
-    WindowSizer sizer(std::move(provider), browser);
-    sizer.DetermineWindowBoundsAndShowState(passed_in, out_bounds,
-                                            out_show_state);
+    WindowSizer::GetBrowserWindowBoundsAndShowState(
+        std::move(provider), passed_in, browser, out_bounds, out_show_state);
   }
 
   // Returns browser window show state for simulated persisted and last-active
@@ -101,8 +102,8 @@ class WindowSizerChromeOSTest : public ChromeAshTestBase {
 namespace {
 
 // Shorten identifiers to improve line wrapping.
-const int kDesktopBorderSize = WindowSizer::kDesktopBorderSize;
-const int kMaximumWindowWidth = WindowSizer::kMaximumWindowWidth;
+const int kDesktopBorderSize = WindowSizerChromeOS::kDesktopBorderSize;
+const int kMaximumWindowWidth = WindowSizerChromeOS::kMaximumWindowWidth;
 const int kWindowTilePixels = WindowSizer::kWindowTilePixels;
 
 std::unique_ptr<Browser> CreateTestBrowser(aura::Window* window,

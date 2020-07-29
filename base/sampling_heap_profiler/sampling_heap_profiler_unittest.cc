@@ -20,7 +20,7 @@ namespace base {
 class SamplingHeapProfilerTest : public ::testing::Test {
  public:
   void SetUp() override {
-#if defined(OS_MACOSX)
+#if defined(OS_APPLE)
     allocator::InitializeAllocatorShim();
 #endif
     SamplingHeapProfiler::Init();

@@ -24,7 +24,7 @@
 #include "base/allocator/winheap_stubs_win.h"
 #endif
 
-#if defined(OS_MACOSX)
+#if defined(OS_APPLE)
 #include <malloc/malloc.h>
 
 #include "base/allocator/allocator_interception_mac.h"
@@ -147,7 +147,7 @@ ALWAYS_INLINE void* ShimCppNew(size_t size) {
   void* ptr;
   do {
     void* context = nullptr;
-#if defined(OS_MACOSX)
+#if defined(OS_APPLE)
     context = malloc_default_zone();
 #endif
     ptr = chain_head->alloc_function(chain_head, size, context);
@@ -160,7 +160,7 @@ ALWAYS_INLINE void* ShimCppAlignedNew(size_t size, size_t alignment) {
   void* ptr;
   do {
     void* context = nullptr;
-#if defined(OS_MACOSX)
+#if defined(OS_APPLE)
     context = malloc_default_zone();
 #endif
     ptr = chain_head->alloc_aligned_function(chain_head, alignment, size,
@@ -171,7 +171,7 @@ ALWAYS_INLINE void* ShimCppAlignedNew(size_t size, size_t alignment) {
 
 ALWAYS_INLINE void ShimCppDelete(void* address) {
   void* context = nullptr;
-#if defined(OS_MACOSX)
+#if defined(OS_APPLE)
   context = malloc_default_zone();
 #endif
   const base::allocator::AllocatorDispatch* const chain_head = GetChainHead();
@@ -320,7 +320,7 @@ ALWAYS_INLINE void ShimAlignedFree(void* address, void* context) {
 
 }  // extern "C"
 
-#if !defined(OS_WIN) && !defined(OS_MACOSX)
+#if !defined(OS_WIN) && !defined(OS_APPLE)
 // Cpp symbols (new / delete) should always be routed through the shim layer
 // except on Windows and macOS where the malloc intercept is deep enough that it
 // also catches the cpp calls.
@@ -334,7 +334,7 @@ ALWAYS_INLINE void ShimAlignedFree(void* address, void* context) {
 #elif defined(OS_WIN)
 // On Windows we use plain link-time overriding of the CRT symbols.
 #include "base/allocator/allocator_shim_override_ucrt_symbols_win.h"
-#elif defined(OS_MACOSX)
+#elif defined(OS_APPLE)
 #include "base/allocator/allocator_shim_default_dispatch_to_mac_zoned_malloc.h"
 #include "base/allocator/allocator_shim_override_mac_symbols.h"
 #else
@@ -348,7 +348,7 @@ ALWAYS_INLINE void ShimAlignedFree(void* address, void* context) {
 #include "base/allocator/allocator_shim_override_glibc_weak_symbols.h"
 #endif
 
-#if defined(OS_MACOSX)
+#if defined(OS_APPLE)
 namespace base {
 namespace allocator {
 void InitializeAllocatorShim() {

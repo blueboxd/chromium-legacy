@@ -109,7 +109,7 @@ void ComputeStorageId(const std::vector<uint8_t>& profile_salt,
                                                   std::vector<uint8_t>());
   chromeos::SystemSaltGetter::Get()->GetSystemSalt(
       base::BindOnce(&ComputeAndReturnStorageId, profile_salt, origin,
-                 std::move(scoped_callback));
+                     std::move(scoped_callback)));
 
 #else
 #error Storage ID enabled but not implemented for this platform.

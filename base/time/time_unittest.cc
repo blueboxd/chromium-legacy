@@ -908,7 +908,7 @@ TEST_F(TimeTest, MaxConversions) {
       tval.tv_usec);
 #endif
 
-#if defined(OS_MACOSX)
+#if defined(OS_APPLE)
   t = Time::FromCFAbsoluteTime(std::numeric_limits<CFAbsoluteTime>::infinity());
   EXPECT_TRUE(t.is_max());
   EXPECT_EQ(std::numeric_limits<CFAbsoluteTime>::infinity(),
@@ -927,7 +927,7 @@ TEST_F(TimeTest, MaxConversions) {
 #endif
 }
 
-#if defined(OS_MACOSX)
+#if defined(OS_APPLE)
 TEST_F(TimeTest, TimeTOverflow) {
   Time t = Time::FromInternalValue(std::numeric_limits<int64_t>::max() - 1);
   EXPECT_FALSE(t.is_max());
@@ -973,7 +973,7 @@ TEST_F(TimeTest, FromExploded_MinMax) {
     EXPECT_FALSE(parsed_time.is_null());
 #endif
 
-#if !defined(OS_ANDROID) && !defined(OS_MACOSX)
+#if !defined(OS_ANDROID) && !defined(OS_APPLE)
     // The dates earlier than |kExplodedMinYear| that don't work are OS version
     // dependent on Android and Mac (for example, macOS 10.13 seems to support
     // dates before 1902).

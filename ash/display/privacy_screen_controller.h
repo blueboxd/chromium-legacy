@@ -32,6 +32,18 @@ class ASH_EXPORT PrivacyScreenController
     ~Observer() override = default;
   };
 
+  // The UI surface from which the privacy screen is toggled on/off. Keep in
+  // sync with PrivacyScreenToggleUISurface in
+  // tools/metrics/histograms/enums.xml.
+  enum ToggleUISurface {
+    kToggleUISurfaceKeyboardShortcut,
+    kToggleUISurfaceFeaturePod,
+    kToggleUISurfaceToastButton,
+
+    // Must be last.
+    kToggleUISurfaceCount,
+  };
+
   PrivacyScreenController();
   ~PrivacyScreenController() override;
 
@@ -47,7 +59,7 @@ class ASH_EXPORT PrivacyScreenController
   // Get the PrivacyScreen settings stored in the current active user prefs.
   bool GetEnabled() const;
   // Set the desired PrivacyScreen settings in the current active user prefs.
-  void SetEnabled(bool enabled);
+  void SetEnabled(bool enabled, ToggleUISurface ui_surface);
 
   void AddObserver(Observer* observer);
   void RemoveObserver(Observer* observer);

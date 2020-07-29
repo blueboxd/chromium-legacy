@@ -32,3 +32,6 @@ export const SaveRequestType = {
   ORIGINAL: 1,
   EDITED: 2,
 };
+
+/** @typedef {{x: number, y: number}} */
+export let Point;

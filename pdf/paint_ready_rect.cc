@@ -13,9 +13,12 @@ namespace chrome_pdf {
 PaintReadyRect::PaintReadyRect(const pp::Rect& rect,
                                const pp::ImageData& image_data,
                                bool flush_now)
-    : rect_(RectFromPPRect(rect)),
-      image_data_(image_data),
-      flush_now_(flush_now) {}
+    : rect_(RectFromPPRect(rect)), image_(image_data), flush_now_(flush_now) {}
+
+PaintReadyRect::PaintReadyRect(const gfx::Rect& rect,
+                               const SkBitmap& bitmap,
+                               bool flush_now)
+    : rect_(rect), image_(bitmap), flush_now_(flush_now) {}
 
 PaintReadyRect::PaintReadyRect(const PaintReadyRect& other) = default;
 

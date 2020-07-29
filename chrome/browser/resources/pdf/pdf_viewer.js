@@ -20,7 +20,7 @@ import {html} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.
 
 import {Bookmark} from './bookmark_type.js';
 import {BrowserApi} from './browser_api.js';
-import {FittingType, SaveRequestType, TwoUpViewAction} from './constants.js';
+import {FittingType, Point, SaveRequestType, TwoUpViewAction} from './constants.js';
 import {ViewerPdfToolbarNewElement} from './elements/viewer-pdf-toolbar-new.js';
 // <if expr="chromeos">
 import {InkController} from './ink_controller.js';
@@ -32,7 +32,6 @@ import {DeserializeKeyEvent, LoadState, SerializeKeyEvent} from './pdf_scripting
 import {PDFViewerBaseElement} from './pdf_viewer_base.js';
 import {DestinationMessageData, DocumentDimensionsMessageData, shouldIgnoreKeyEvents} from './pdf_viewer_utils.js';
 import {ToolbarManager} from './toolbar_manager.js';
-import {Point} from './viewport.js';
 
 
 /**
@@ -108,6 +107,11 @@ export class PDFViewerElement extends PDFViewerBaseElement {
 
       bookmarks_: Array,
 
+      documentHasFocus_: {
+        type: Boolean,
+        value: false,
+      },
+
       hasEdits_: {
         type: Boolean,
         value: false,
@@ -162,6 +166,9 @@ export class PDFViewerElement extends PDFViewerBaseElement {
 
     /** @private {!Array<!Bookmark>} */
     this.bookmarks_ = [];
+
+    /** @private {boolean} */
+    this.documentHasFocus_ = false;
 
     /** @private {boolean} */
     this.hasEdits_ = false;
@@ -702,7 +709,8 @@ export class PDFViewerElement extends PDFViewerBaseElement {
         });
         return;
       case 'documentFocusChanged':
-        // TODO(crbug.com/1069370): Draw a focus rect around plugin.
+        this.documentHasFocus_ =
+            /** @type {{ hasFocus: boolean }} */ (data).hasFocus;
         return;
     }
     assertNotReached('Unknown message type received: ' + data.type);

@@ -48,7 +48,7 @@
 #include "testing/gtest/include/gtest/gtest.h"
 #include "testing/multiprocess_func_list.h"
 
-#if defined(OS_MACOSX)
+#if defined(OS_APPLE)
 #include "base/mac/scoped_nsautorelease_pool.h"
 #include "base/process/port_provider_mac.h"
 #if defined(OS_IOS)
@@ -225,14 +225,14 @@ class CheckProcessPriority : public testing::EmptyTestEventListener {
     EXPECT_FALSE(IsProcessBackgrounded());
   }
   void OnTestEnd(const testing::TestInfo& test) override {
-#if !defined(OS_MACOSX)
+#if !defined(OS_APPLE)
     // Flakes are found on Mac OS 10.11. See https://crbug.com/931721#c7.
     EXPECT_FALSE(IsProcessBackgrounded());
 #endif
   }
 
  private:
-#if defined(OS_MACOSX)
+#if defined(OS_APPLE)
   // Returns the calling process's task port, ignoring its argument.
   class CurrentProcessPortProvider : public PortProvider {
     mach_port_t TaskForPid(ProcessHandle process) const override {
@@ -244,7 +244,7 @@ class CheckProcessPriority : public testing::EmptyTestEventListener {
 #endif
 
   bool IsProcessBackgrounded() const {
-#if defined(OS_MACOSX)
+#if defined(OS_APPLE)
     CurrentProcessPortProvider port_provider;
     return Process::Current().IsProcessBackgrounded(&port_provider);
 #else
@@ -440,7 +440,7 @@ int TestSuite::Run() {
   RunTestsFromIOSApp();
 #endif
 
-#if defined(OS_MACOSX)
+#if defined(OS_APPLE)
   mac::ScopedNSAutoreleasePool scoped_pool;
 #endif
 
@@ -458,7 +458,7 @@ int TestSuite::Run() {
 
   int result = RUN_ALL_TESTS();
 
-#if defined(OS_MACOSX)
+#if defined(OS_APPLE)
   // This MUST happen before Shutdown() since Shutdown() tears down
   // objects (such as NotificationService::current()) that Cocoa
   // objects use to remove themselves as observers.

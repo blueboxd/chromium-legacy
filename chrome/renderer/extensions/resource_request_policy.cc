@@ -10,6 +10,7 @@
 #include "chrome/common/url_constants.h"
 #include "extensions/common/constants.h"
 #include "extensions/common/extension.h"
+#include "extensions/common/identifiability_metrics.h"
 #include "extensions/common/manifest_constants.h"
 #include "extensions/common/manifest_handlers/icons_handler.h"
 #include "extensions/common/manifest_handlers/web_accessible_resources_info.h"
@@ -115,8 +116,14 @@ bool ResourceRequestPolicy::CanRequestResource(
   // extension with no web accessible resources. We aren't worried about any
   // extensions with web accessible resources, since those are inherently
   // identifiable.
-  if (!is_dev_tools && !web_accessible_ids_.count(extension_origin.host()))
+  if (!is_dev_tools && !web_accessible_ids_.count(extension_origin.host())) {
+    // Failures are recorded here, successes will be in the browser.
+    RecordExtensionResourceAccessResult(
+        base::UkmSourceId::FromInt64(frame->GetDocument().GetUkmSourceId()),
+        resource_url, ExtensionResourceAccessResult::kFailure);
+
     return false;
+  }
 
   const Extension* extension =
       RendererExtensionRegistry::Get()->GetExtensionOrAppByURL(resource_url);
@@ -147,6 +154,9 @@ bool ResourceRequestPolicy::CanRequestResource(
           .ContainsPath(resource_root_relative_path)) {
     LOG(ERROR) << "Denying load of " << resource_url.spec() << " from "
                << "hosted app.";
+    RecordExtensionResourceAccessResult(
+        base::UkmSourceId::FromInt64(frame->GetDocument().GetUkmSourceId()),
+        resource_url, ExtensionResourceAccessResult::kFailure);
     return false;
   }
 
@@ -165,6 +175,9 @@ bool ResourceRequestPolicy::CanRequestResource(
     frame->AddMessageToConsole(
         blink::WebConsoleMessage(blink::mojom::ConsoleMessageLevel::kError,
                                  blink::WebString::FromUTF8(message)));
+    RecordExtensionResourceAccessResult(
+        base::UkmSourceId::FromInt64(frame->GetDocument().GetUkmSourceId()),
+        resource_url, ExtensionResourceAccessResult::kFailure);
     return false;
   }
 

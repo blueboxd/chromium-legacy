@@ -18,15 +18,24 @@ WGPUBindGroupLayoutEntry AsDawnType(
   WGPUBindGroupLayoutEntry dawn_binding = {};
 
   dawn_binding.binding = webgpu_binding->binding();
-  dawn_binding.type = AsDawnEnum<WGPUBindingType>(webgpu_binding->type());
   dawn_binding.visibility =
       AsDawnEnum<WGPUShaderStage>(webgpu_binding->visibility());
+  dawn_binding.type = AsDawnEnum<WGPUBindingType>(webgpu_binding->type());
+
+  dawn_binding.hasDynamicOffset = webgpu_binding->hasDynamicOffset();
+
+  dawn_binding.minBufferBindingSize =
+      webgpu_binding->hasMinBufferBindingSize()
+          ? webgpu_binding->minBufferBindingSize()
+          : 0;
+
   dawn_binding.viewDimension =
       AsDawnEnum<WGPUTextureViewDimension>(webgpu_binding->viewDimension());
+
   dawn_binding.textureComponentType = AsDawnEnum<WGPUTextureComponentType>(
       webgpu_binding->textureComponentType());
   dawn_binding.multisampled = webgpu_binding->multisampled();
-  dawn_binding.hasDynamicOffset = webgpu_binding->hasDynamicOffset();
+
   dawn_binding.storageTextureFormat =
       AsDawnEnum<WGPUTextureFormat>(webgpu_binding->storageTextureFormat());
 

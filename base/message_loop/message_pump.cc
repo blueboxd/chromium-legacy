@@ -10,7 +10,7 @@
 #include "base/message_loop/message_pump_for_ui.h"
 #include "base/notreached.h"
 
-#if defined(OS_MACOSX)
+#if defined(OS_APPLE)
 #include "base/message_loop/message_pump_mac.h"
 #endif
 
@@ -46,7 +46,7 @@ std::unique_ptr<MessagePump> MessagePump::Create(MessagePumpType type) {
     case MessagePumpType::UI:
       if (message_pump_for_ui_factory_)
         return message_pump_for_ui_factory_();
-#if defined(OS_IOS) || defined(OS_MACOSX)
+#if defined(OS_APPLE)
       return MessagePumpMac::Create();
 #elif defined(OS_NACL) || defined(OS_AIX)
       // Currently NaCl and AIX don't have a UI MessagePump.
@@ -65,7 +65,7 @@ std::unique_ptr<MessagePump> MessagePump::Create(MessagePumpType type) {
       return std::make_unique<MessagePumpForUI>();
 #endif
 
-#if defined(OS_MACOSX)
+#if defined(OS_APPLE)
     case MessagePumpType::NS_RUNLOOP:
       return std::make_unique<MessagePumpNSRunLoop>();
 #endif

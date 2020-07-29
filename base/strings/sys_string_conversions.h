@@ -18,7 +18,7 @@
 #include "base/strings/string_piece.h"
 #include "build/build_config.h"
 
-#if defined(OS_MACOSX)
+#if defined(OS_APPLE)
 #include <CoreFoundation/CoreFoundation.h>
 
 #include "base/mac/scoped_cftyperef.h"
@@ -63,7 +63,7 @@ BASE_EXPORT std::string SysWideToMultiByte(const std::wstring& wide,
 
 // Mac-specific ----------------------------------------------------------------
 
-#if defined(OS_MACOSX)
+#if defined(OS_APPLE)
 
 // Converts between STL strings and CFStringRefs/NSStrings.
 
@@ -89,7 +89,7 @@ BASE_EXPORT string16 SysCFStringRefToUTF16(CFStringRef ref) WARN_UNUSED_RESULT;
 BASE_EXPORT std::string SysNSStringToUTF8(NSString* ref) WARN_UNUSED_RESULT;
 BASE_EXPORT string16 SysNSStringToUTF16(NSString* ref) WARN_UNUSED_RESULT;
 
-#endif  // defined(OS_MACOSX)
+#endif  // defined(OS_APPLE)
 
 }  // namespace base
 

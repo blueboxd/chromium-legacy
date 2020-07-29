@@ -39,6 +39,8 @@ if (enable_js_type_check) {
         "media_router:closure_compile",
         "nearby_internals:closure_compile",
         "nearby_share:closure_compile",
+        "nearby_share/shared:closure_compile",
+        "nearby_share/shared:closure_compile_module",
         "new_tab_page:closure_compile",
         "ntp4:closure_compile",
         "omnibox:closure_compile",
@@ -236,6 +238,7 @@ if (!is_android) {
 
     deps = [
       "//chrome/browser/resources/nearby_share:web_components",
+      "//chrome/browser/resources/nearby_share/shared:polymer3_elements",
       "//chrome/browser/ui/webui/nearby_share:mojom_js",
     ]
 

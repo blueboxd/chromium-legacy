@@ -97,9 +97,18 @@ class NET_EXPORT_PRIVATE QuicConnectivityMonitor
   quic::QuicHashSet<QuicChromiumClientSession*> degrading_sessions_;
   // Sessions that are currently active on the |default_network_|.
   quic::QuicHashSet<QuicChromiumClientSession*> active_sessions_;
-  // Total number of sessions that has been tracked on the current network.
-  // Sessions may have been closed.
-  size_t total_num_sessions_tracked_{0u};
+
+  // Number of sessions that have been active or created during the period of
+  // a speculative connectivity failure.
+  // The period of a speculative connectivity failure
+  // - starts by the earliest detection of path degradation or a connectivity
+  //   related packet write error,
+  // - ends immediately by the detection of path recovery or a network change.
+  base::Optional<size_t>
+      num_sessions_active_during_current_speculative_connectivity_failure_;
+  // Total number of sessions that has been degraded before any recovery,
+  // including no longer active sessions.
+  size_t num_all_degraded_sessions_{0u};
 
   // Map from the write error code to the corresponding number of reports.
   WriteErrorMap write_error_map_;

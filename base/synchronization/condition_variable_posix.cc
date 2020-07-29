@@ -30,8 +30,8 @@ ConditionVariable::ConditionVariable(Lock* user_lock)
   // non-standard pthread_cond_timedwait_monotonic_np. Newer platform
   // versions have pthread_condattr_setclock.
   // Mac can use relative time deadlines.
-#if !defined(OS_MACOSX) && !defined(OS_NACL) && \
-      !(defined(OS_ANDROID) && defined(HAVE_PTHREAD_COND_TIMEDWAIT_MONOTONIC))
+#if !defined(OS_APPLE) && !defined(OS_NACL) && \
+    !(defined(OS_ANDROID) && defined(HAVE_PTHREAD_COND_TIMEDWAIT_MONOTONIC))
   pthread_condattr_t attrs;
   rv = pthread_condattr_init(&attrs);
   DCHECK_EQ(0, rv);
@@ -45,7 +45,7 @@ ConditionVariable::ConditionVariable(Lock* user_lock)
 }
 
 ConditionVariable::~ConditionVariable() {
-#if defined(OS_MACOSX)
+#if defined(OS_APPLE)
   // This hack is necessary to avoid a fatal pthreads subsystem bug in the
   // Darwin kernel. http://crbug.com/517681.
   {
@@ -95,7 +95,7 @@ void ConditionVariable::TimedWait(const TimeDelta& max_time) {
   user_lock_->CheckHeldAndUnmark();
 #endif
 
-#if defined(OS_MACOSX)
+#if defined(OS_APPLE)
   int rv = pthread_cond_timedwait_relative_np(
       &condition_, user_mutex_, &relative_time);
 #else

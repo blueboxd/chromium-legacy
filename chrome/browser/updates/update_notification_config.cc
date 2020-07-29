@@ -17,11 +17,6 @@ int GetFinchConfigInt(const std::string& name, int default_value) {
       chrome::android::kInlineUpdateFlow, name, default_value);
 }
 
-double GetFinchConfigDouble(const std::string& name, double default_value) {
-  return base::GetFieldTrialParamByFeatureAsDouble(
-      chrome::android::kInlineUpdateFlow, name, default_value);
-}
-
 bool GetFinchConfigBool(const std::string& name, bool default_value) {
   return base::GetFieldTrialParamByFeatureAsBool(
       chrome::android::kInlineUpdateFlow, name, default_value);
@@ -29,8 +24,11 @@ bool GetFinchConfigBool(const std::string& name, bool default_value) {
 
 }  // namespace
 
-// Default update notification schedule interval in days.
-constexpr int kDefaultUpdateNotificationInterval = 21;
+// Default update notification schedule initial interval in days.
+constexpr int kDefaultUpdateNotificationInitInterval = 21;
+
+// Default update notification schedule maximum interval in days.
+constexpr int kDefaultUpdateNotificationMaxInterval = 90;
 
 // Default start clock of deliver window in the morning.
 constexpr int kDefaultDeliverWindowMorningStart = 5;
@@ -43,12 +41,6 @@ constexpr int kDefaultDeliverWindowEveningStart = 18;
 
 // Default end clock of deliver window in the evening.
 constexpr int kDefaultDeliverWindowEveningEnd = 20;
-
-// Default scale coefficient of custom throttle linear function.
-constexpr double kDefaultThrottleIntervalScale = 1.0;
-
-// Default offset coefficient of custom throttle linear function.
-constexpr double kDefaultThrottleIntervalOffset = 0.0;
 
 // Default update notification state.
 constexpr bool kDefaultUpdateNotificationState = false;
@@ -65,9 +57,13 @@ UpdateNotificationConfig::CreateFromFinch() {
   config->is_enabled = GetFinchConfigBool(kUpdateNotificationStateParamName,
                                           kDefaultUpdateNotificationState);
 
-  config->default_interval = base::TimeDelta::FromDays(
-      GetFinchConfigInt(kUpdateNotificationIntervalParamName,
-                        kDefaultUpdateNotificationInterval));
+  config->init_interval = base::TimeDelta::FromDays(
+      GetFinchConfigInt(kUpdateNotificationInitIntervalParamName,
+                        kDefaultUpdateNotificationInitInterval));
+
+  config->max_interval = base::TimeDelta::FromDays(
+      GetFinchConfigInt(kUpdateNotificationMaxIntervalParamName,
+                        kDefaultUpdateNotificationMaxInterval));
 
   int morning_window_start =
       GetFinchConfigInt(kUpdateNotificationDeliverWindowMorningStartParamName,
@@ -89,22 +85,15 @@ UpdateNotificationConfig::CreateFromFinch() {
       base::TimeDelta::FromHours(evening_window_start),
       base::TimeDelta::FromHours(evening_window_end)};
 
-  config->throttle_interval_linear_co_scale =
-      GetFinchConfigDouble(kUpdateNotificationDeliverScaleCoefficientParamName,
-                           kDefaultThrottleIntervalScale);
-  config->throttle_interval_linear_co_offset = GetFinchConfigDouble(
-      kUpdateNotificationThrottleOffsetCoefficientParamName,
-      kDefaultThrottleIntervalOffset);
-
   return config;
 }
 
 UpdateNotificationConfig::UpdateNotificationConfig()
     : is_enabled(true),
-      default_interval(
-          base::TimeDelta::FromDays(kDefaultUpdateNotificationInterval)),
-      throttle_interval_linear_co_scale(kDefaultThrottleIntervalScale),
-      throttle_interval_linear_co_offset(kDefaultThrottleIntervalOffset),
+      init_interval(
+          base::TimeDelta::FromDays(kDefaultUpdateNotificationInitInterval)),
+      max_interval(
+          base::TimeDelta::FromDays(kDefaultUpdateNotificationMaxInterval)),
       deliver_window_morning(
           base::TimeDelta::FromHours(kDefaultDeliverWindowMorningStart),
           base::TimeDelta::FromHours(kDefaultDeliverWindowMorningEnd)),

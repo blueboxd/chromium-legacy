@@ -20,7 +20,7 @@
 #include "base/threading/platform_thread.h"
 #endif
 
-#if defined(OS_MACOSX)
+#if defined(OS_APPLE)
 #include <pthread.h>
 #endif
 
@@ -191,7 +191,7 @@ uintptr_t GetStackEnd() {
 
 // No easy way to get end of the stack for non-main threads,
 // see crbug.com/617730.
-#elif defined(OS_MACOSX)
+#elif defined(OS_APPLE)
   return reinterpret_cast<uintptr_t>(pthread_get_stackaddr_np(pthread_self()));
 #endif
 

@@ -132,7 +132,7 @@ bool CleanupProcesses(const FilePath::StringType& executable_name,
   return exited_cleanly;
 }
 
-#if !defined(OS_MACOSX)
+#if !defined(OS_APPLE)
 
 namespace {
 
@@ -181,7 +181,7 @@ void EnsureProcessGetsReaped(Process process) {
 }
 #endif  // defined(OS_LINUX)
 
-#endif  // !defined(OS_MACOSX)
+#endif  // !defined(OS_APPLE)
 #endif  // !defined(OS_NACL_NONSFI)
 
 }  // namespace base

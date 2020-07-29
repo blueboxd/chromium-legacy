@@ -419,7 +419,9 @@ class CONTENT_EXPORT FrameTreeNode {
 
   FrameTreeNode* GetSibling(int relative_offset) const;
 
-  bool NotifyUserActivation();
+  // The |notification_type| parameter is used for histograms only.
+  bool NotifyUserActivation(
+      blink::mojom::UserActivationNotificationType notification_type);
 
   bool ConsumeTransientUserActivation();
 

@@ -42,4 +42,40 @@ public class PaymentOptionsUtils {
         return String.format("{payerEmail:%s,payerName:%s,payerPhone:%s,shipping:%s}",
                 requestPayerEmail, requestPayerName, requestPayerPhone, requestShipping);
     }
+
+    /**
+     * @param paymentOptions The PaymentOptions of the payment request.
+     * @return Whether requestShipping is specified in the payment request.
+     */
+    public static boolean requestShipping(
+            org.chromium.payments.mojom.PaymentOptions paymentOptions) {
+        return paymentOptions != null && paymentOptions.requestShipping;
+    }
+
+    /**
+     * @param paymentOptions The PaymentOptions of the payment request.
+     * @return Whether requestPayerName is specified in the payment request.
+     */
+    public static boolean requestPayerName(
+            org.chromium.payments.mojom.PaymentOptions paymentOptions) {
+        return paymentOptions != null && paymentOptions.requestPayerName;
+    }
+
+    /**
+     * @param paymentOptions The PaymentOptions of the payment request.
+     * @return Whether requestPayerPhone is specified in the payment request.
+     */
+    public static boolean requestPayerPhone(
+            org.chromium.payments.mojom.PaymentOptions paymentOptions) {
+        return paymentOptions != null && paymentOptions.requestPayerPhone;
+    }
+
+    /**
+     * @param paymentOptions The PaymentOptions of the payment request.
+     * @return Whether requestPayerEmail is specified in the payment request.
+     */
+    public static boolean requestPayerEmail(
+            org.chromium.payments.mojom.PaymentOptions paymentOptions) {
+        return paymentOptions != null && paymentOptions.requestPayerEmail;
+    }
 }

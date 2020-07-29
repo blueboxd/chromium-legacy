@@ -4,7 +4,7 @@
 
 #import "ios/chrome/browser/ui/menu/action_factory.h"
 
-#import "base/metrics/histogram_macros.h"
+#import "base/metrics/histogram_functions.h"
 #import "ios/chrome/browser/ui/util/pasteboard_util.h"
 #import "ios/chrome/grit/ios_strings.h"
 #import "ui/base/l10n/l10n_util_mac.h"
@@ -39,7 +39,7 @@
                              image:image
                         identifier:nil
                            handler:^(UIAction* action) {
-                             UMA_HISTOGRAM_ENUMERATION(histogram, type);
+                             base::UmaHistogramEnumeration(histogram, type);
                              if (block) {
                                block();
                              }

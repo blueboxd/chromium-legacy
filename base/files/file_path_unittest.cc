@@ -1312,7 +1312,7 @@ TEST_F(FilePathTest, PrintToOstream) {
 
 // Test GetHFSDecomposedForm should return empty result for invalid UTF-8
 // strings.
-#if defined(OS_MACOSX)
+#if defined(OS_APPLE)
 TEST_F(FilePathTest, GetHFSDecomposedFormWithInvalidInput) {
   const FilePath::CharType* cases[] = {
     FPL("\xc3\x28"),

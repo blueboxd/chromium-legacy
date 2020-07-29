@@ -26,8 +26,7 @@ class SiteDataWriterTest : public ::testing::Test {
             new internal::SiteDataImpl(url::Origin::Create(GURL("foo.com")),
                                        &delegate_,
                                        &data_store_))) {
-    SiteDataWriter* writer = new SiteDataWriter(
-        test_impl_.get(), performance_manager::TabVisibility::kBackground);
+    SiteDataWriter* writer = new SiteDataWriter(test_impl_.get());
     writer_ = base::WrapUnique(writer);
   }
 
@@ -59,42 +58,42 @@ class SiteDataWriterTest : public ::testing::Test {
 TEST_F(SiteDataWriterTest, TestModifiers) {
   // Make sure that we initially have no information about any of the features
   // and that the site is in an unloaded state.
-  EXPECT_EQ(performance_manager::SiteFeatureUsage::kSiteFeatureUsageUnknown,
+  EXPECT_EQ(SiteFeatureUsage::kSiteFeatureUsageUnknown,
             test_impl_->UpdatesFaviconInBackground());
-  EXPECT_EQ(performance_manager::SiteFeatureUsage::kSiteFeatureUsageUnknown,
+  EXPECT_EQ(SiteFeatureUsage::kSiteFeatureUsageUnknown,
             test_impl_->UpdatesTitleInBackground());
-  EXPECT_EQ(performance_manager::SiteFeatureUsage::kSiteFeatureUsageUnknown,
+  EXPECT_EQ(SiteFeatureUsage::kSiteFeatureUsageUnknown,
             test_impl_->UsesAudioInBackground());
 
   // Test the OnTabLoaded function.
   EXPECT_FALSE(TabIsLoaded());
-  writer_->NotifySiteLoaded();
+  writer_->NotifySiteLoaded(TabVisibility::kBackground);
   EXPECT_TRUE(TabIsLoaded());
 
   // Test all the modifiers.
 
   writer_->NotifyUpdatesFaviconInBackground();
-  EXPECT_EQ(performance_manager::SiteFeatureUsage::kSiteFeatureInUse,
+  EXPECT_EQ(SiteFeatureUsage::kSiteFeatureInUse,
             test_impl_->UpdatesFaviconInBackground());
-  EXPECT_EQ(performance_manager::SiteFeatureUsage::kSiteFeatureUsageUnknown,
+  EXPECT_EQ(SiteFeatureUsage::kSiteFeatureUsageUnknown,
             test_impl_->UpdatesTitleInBackground());
-  EXPECT_EQ(performance_manager::SiteFeatureUsage::kSiteFeatureUsageUnknown,
+  EXPECT_EQ(SiteFeatureUsage::kSiteFeatureUsageUnknown,
             test_impl_->UsesAudioInBackground());
 
   writer_->NotifyUpdatesTitleInBackground();
-  EXPECT_EQ(performance_manager::SiteFeatureUsage::kSiteFeatureInUse,
+  EXPECT_EQ(SiteFeatureUsage::kSiteFeatureInUse,
             test_impl_->UpdatesFaviconInBackground());
-  EXPECT_EQ(performance_manager::SiteFeatureUsage::kSiteFeatureInUse,
+  EXPECT_EQ(SiteFeatureUsage::kSiteFeatureInUse,
             test_impl_->UpdatesTitleInBackground());
-  EXPECT_EQ(performance_manager::SiteFeatureUsage::kSiteFeatureUsageUnknown,
+  EXPECT_EQ(SiteFeatureUsage::kSiteFeatureUsageUnknown,
             test_impl_->UsesAudioInBackground());
 
   writer_->NotifyUsesAudioInBackground();
-  EXPECT_EQ(performance_manager::SiteFeatureUsage::kSiteFeatureInUse,
+  EXPECT_EQ(SiteFeatureUsage::kSiteFeatureInUse,
             test_impl_->UpdatesFaviconInBackground());
-  EXPECT_EQ(performance_manager::SiteFeatureUsage::kSiteFeatureInUse,
+  EXPECT_EQ(SiteFeatureUsage::kSiteFeatureInUse,
             test_impl_->UpdatesTitleInBackground());
-  EXPECT_EQ(performance_manager::SiteFeatureUsage::kSiteFeatureInUse,
+  EXPECT_EQ(SiteFeatureUsage::kSiteFeatureInUse,
             test_impl_->UsesAudioInBackground());
 
   writer_->NotifyLoadTimePerformanceMeasurement(
@@ -108,7 +107,7 @@ TEST_F(SiteDataWriterTest, TestModifiers) {
   EXPECT_EQ(1u, test_impl_->private_footprint_kb_estimate().num_datums());
   EXPECT_EQ(1005.0, test_impl_->private_footprint_kb_estimate().value());
 
-  writer_->NotifySiteUnloaded();
+  writer_->NotifySiteUnloaded(TabVisibility::kBackground);
 }
 
 TEST_F(SiteDataWriterTest, LoadAndBackgroundStateTransitions) {
@@ -154,42 +153,38 @@ TEST_F(SiteDataWriterTest, LoadAndBackgroundStateTransitions) {
   EXPECT_FALSE(TabIsLoaded());
 
   // Transition #4: Unloaded + Bg -> Loaded + Bg.
-  writer_->NotifySiteLoaded();
+  writer_->NotifySiteLoaded(TabVisibility::kBackground);
   EXPECT_TRUE(TabIsLoadedAndInBackground());
 
   // Transition #8: Loaded + Bg -> Loaded + Fg.
-  writer_->NotifySiteVisibilityChanged(
-      performance_manager::TabVisibility::kForeground);
+  writer_->NotifySiteForegrounded(true);
   EXPECT_TRUE(TabIsLoaded());
   EXPECT_FALSE(TabIsLoadedAndInBackground());
 
   // Transition #5: Loaded + Fg -> Unloaded + Fg.
-  writer_->NotifySiteUnloaded();
+  writer_->NotifySiteUnloaded(TabVisibility::kForeground);
   EXPECT_FALSE(TabIsLoaded());
 
   // Transition #1: Unloaded + Fg -> Unloaded + Bg.
-  writer_->NotifySiteVisibilityChanged(
-      performance_manager::TabVisibility::kBackground);
+  writer_->NotifySiteBackgrounded(false);
   EXPECT_FALSE(TabIsLoaded());
 
   // Transition #2: Unloaded + Bg -> Unloaded + Fg.
-  writer_->NotifySiteVisibilityChanged(
-      performance_manager::TabVisibility::kForeground);
+  writer_->NotifySiteForegrounded(false);
   EXPECT_FALSE(TabIsLoaded());
 
   // Transition #6: Unloaded + Fg -> Loaded + Fg.
-  writer_->NotifySiteLoaded();
+  writer_->NotifySiteLoaded(TabVisibility::kForeground);
   EXPECT_TRUE(TabIsLoaded());
   EXPECT_FALSE(TabIsLoadedAndInBackground());
 
   // Transition #7: Loaded + Fg -> Loaded + Bg.
-  writer_->NotifySiteVisibilityChanged(
-      performance_manager::TabVisibility::kBackground);
+  writer_->NotifySiteBackgrounded(true);
   EXPECT_TRUE(TabIsLoaded());
   EXPECT_TRUE(TabIsLoadedAndInBackground());
 
   // Transition #3: Loaded + Bg -> Unloaded + Bg.
-  writer_->NotifySiteUnloaded();
+  writer_->NotifySiteUnloaded(TabVisibility::kBackground);
   EXPECT_FALSE(TabIsLoaded());
   EXPECT_FALSE(TabIsLoadedAndInBackground());
 }

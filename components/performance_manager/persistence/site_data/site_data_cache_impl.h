@@ -41,9 +41,8 @@ class SiteDataCacheImpl : public SiteDataCache,
   std::unique_ptr<SiteDataReader> GetReaderForOrigin(
       const url::Origin& origin) override;
   std::unique_ptr<SiteDataWriter> GetWriterForOrigin(
-      const url::Origin& origin,
-      performance_manager::TabVisibility tab_visibility) override;
-  bool IsRecordingForTesting() const override;
+      const url::Origin& origin) override;
+  bool IsRecording() const override;
   int Size() const override;
 
   const SiteDataMap& origin_data_map_for_testing() const {

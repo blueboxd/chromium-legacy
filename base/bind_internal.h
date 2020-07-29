@@ -23,7 +23,7 @@
 #include "base/template_util.h"
 #include "build/build_config.h"
 
-#if defined(OS_MACOSX) && !HAS_FEATURE(objc_arc)
+#if defined(OS_APPLE) && !HAS_FEATURE(objc_arc)
 #include "base/mac/scoped_block.h"
 #endif
 
@@ -426,7 +426,7 @@ struct FunctorTraits<R(__fastcall*)(Args...)> {
 
 #endif  // defined(OS_WIN) && !defined(ARCH_CPU_64_BITS)
 
-#if defined(OS_MACOSX)
+#if defined(OS_APPLE)
 
 // Support for Objective-C blocks. There are two implementation depending
 // on whether Automated Reference Counting (ARC) is enabled. When ARC is
@@ -481,7 +481,7 @@ struct FunctorTraits<base::mac::ScopedBlock<R (^)(Args...)>> {
 };
 
 #endif  // HAS_FEATURE(objc_arc)
-#endif  // defined(OS_MACOSX)
+#endif  // defined(OS_APPLE)
 
 // For methods.
 template <typename R, typename Receiver, typename... Args>

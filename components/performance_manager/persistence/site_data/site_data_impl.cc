@@ -67,6 +67,7 @@ void SiteDataImpl::NotifySiteUnloaded(TabVisibility tab_visibility) {
   if (tab_visibility == TabVisibility::kBackground)
     DecrementNumLoadedBackgroundTabs();
 
+  DCHECK_GT(loaded_tabs_count_, 0U);
   loaded_tabs_count_--;
   // Only update the last loaded time when there's no more loaded instance of
   // this origin.

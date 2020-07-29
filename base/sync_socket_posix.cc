@@ -52,9 +52,9 @@ bool SyncSocket::CreatePair(SyncSocket* socket_a, SyncSocket* socket_b) {
   DCHECK(!socket_a->IsValid());
   DCHECK(!socket_b->IsValid());
 
-#if defined(OS_MACOSX)
+#if defined(OS_APPLE)
   int nosigpipe = 1;
-#endif  // defined(OS_MACOSX)
+#endif  // defined(OS_APPLE)
 
   ScopedHandle handles[2];
 
@@ -67,7 +67,7 @@ bool SyncSocket::CreatePair(SyncSocket* socket_a, SyncSocket* socket_b) {
     handles[1].reset(raw_handles[1]);
   }
 
-#if defined(OS_MACOSX)
+#if defined(OS_APPLE)
   // On OSX an attempt to read or write to a closed socket may generate a
   // SIGPIPE rather than returning -1.  setsockopt will shut this off.
   if (0 != setsockopt(handles[0].get(), SOL_SOCKET, SO_NOSIGPIPE, &nosigpipe,

@@ -1836,6 +1836,37 @@ TEST_F(OptimizationGuideStoreTest,
   EXPECT_EQ(entry_key, "4_1");
 }
 
+TEST_F(OptimizationGuideStoreTest, FindAndRemovePredictionModelEntryKey) {
+  MetadataSchemaState schema_state = MetadataSchemaState::kValid;
+  SeedInitialData(schema_state, 0);
+  CreateDatabase();
+  InitializeStore(schema_state);
+
+  std::unique_ptr<StoreUpdateData> update_data =
+      guide_store()->CreateUpdateDataForPredictionModels();
+  ASSERT_TRUE(update_data);
+  SeedPredictionModelUpdateData(update_data.get(),
+                                proto::OPTIMIZATION_TARGET_UNKNOWN);
+  SeedPredictionModelUpdateData(update_data.get(),
+                                proto::OPTIMIZATION_TARGET_PAINFUL_PAGE_LOAD);
+  UpdatePredictionModels(std::move(update_data));
+
+  const OptimizationGuideStore::EntryKey kInvalidEntryKey = "4_2";
+  EXPECT_FALSE(
+      guide_store()->RemovePredictionModelFromEntryKey(kInvalidEntryKey));
+
+  OptimizationGuideStore::EntryKey entry_key;
+  bool success = guide_store()->FindPredictionModelEntryKey(
+      proto::OPTIMIZATION_TARGET_PAINFUL_PAGE_LOAD, &entry_key);
+  ASSERT_TRUE(success);
+
+  EXPECT_TRUE(guide_store()->RemovePredictionModelFromEntryKey(entry_key));
+  db()->UpdateCallback(true);
+
+  EXPECT_FALSE(guide_store()->FindPredictionModelEntryKey(
+      proto::OPTIMIZATION_TARGET_PAINFUL_PAGE_LOAD, &entry_key));
+}
+
 TEST_F(OptimizationGuideStoreTest, LoadPredictionModel) {
   base::HistogramTester histogram_tester;
   MetadataSchemaState schema_state = MetadataSchemaState::kValid;

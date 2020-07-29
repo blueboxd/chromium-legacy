@@ -4,7 +4,7 @@
 
 #include "base/allocator/partition_allocator/address_pool_manager.h"
 
-#if defined(OS_MACOSX)
+#if defined(OS_APPLE)
 #include <sys/mman.h>
 #endif
 
@@ -26,7 +26,7 @@ namespace internal {
 namespace {
 
 void DecommitPages(void* address, size_t size) {
-#if defined(OS_MACOSX)
+#if defined(OS_APPLE)
   // MAP_FIXED replaces an existing mapping with a new one, when the address is
   // already part of a mapping. Since newly-created mappings are guaranteed to
   // be zero-filled, this has the desired effect. It is only required on macOS,
@@ -42,7 +42,7 @@ void DecommitPages(void* address, size_t size) {
 }
 
 bool WARN_UNUSED_RESULT CommitPages(void* address, size_t size) {
-#if defined(OS_MACOSX)
+#if defined(OS_APPLE)
   SetSystemPagesAccess(address, size, PageReadWrite);
 #else
   if (!RecommitSystemPages(address, size, PageReadWrite))

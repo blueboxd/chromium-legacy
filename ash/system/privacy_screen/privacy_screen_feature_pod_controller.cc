@@ -46,8 +46,10 @@ SystemTrayItemUmaType PrivacyScreenFeaturePodController::GetUmaType() const {
 void PrivacyScreenFeaturePodController::TogglePrivacyScreen() {
   auto* privacy_screen_controller = Shell::Get()->privacy_screen_controller();
   DCHECK(privacy_screen_controller->IsSupported());
+
   privacy_screen_controller->SetEnabled(
-      !privacy_screen_controller->GetEnabled());
+      !privacy_screen_controller->GetEnabled(),
+      PrivacyScreenController::kToggleUISurfaceFeaturePod);
 }
 
 void PrivacyScreenFeaturePodController::UpdateButton() {

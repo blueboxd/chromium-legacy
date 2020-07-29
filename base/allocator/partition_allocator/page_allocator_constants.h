@@ -14,7 +14,7 @@ namespace base {
 static constexpr size_t kPageAllocationGranularityShift = 16;  // 64KB
 #elif defined(_MIPS_ARCH_LOONGSON)
 static constexpr size_t kPageAllocationGranularityShift = 14;  // 16KB
-#elif defined(OS_MACOSX) && defined(ARCH_CPU_ARM64)
+#elif defined(OS_APPLE) && defined(ARCH_CPU_ARM64)
 static constexpr size_t kPageAllocationGranularityShift = 14;  // 16KB
 #else
 static constexpr size_t kPageAllocationGranularityShift = 12;  // 4KB
@@ -34,7 +34,7 @@ static constexpr size_t kSystemPageSize = 16384;
 // and binaries compiled for 64KB are likely to work on 4KB systems,
 // 64KB is a good choice here.
 static constexpr size_t kSystemPageSize = 65536;
-#elif defined(OS_MACOSX) && defined(ARCH_CPU_ARM64)
+#elif defined(OS_APPLE) && defined(ARCH_CPU_ARM64)
 static constexpr size_t kSystemPageSize = 16384;
 #else
 static constexpr size_t kSystemPageSize = 4096;
@@ -50,7 +50,7 @@ static constexpr size_t kPageMetadataSize = 1 << kPageMetadataShift;
 // See DecommitSystemPages(), this is not guaranteed to be synchronous on all
 // platforms.
 static constexpr bool kDecommittedPagesAreAlwaysZeroed =
-#if defined(OS_MACOSX)
+#if defined(OS_APPLE)
     false;
 #else
     true;

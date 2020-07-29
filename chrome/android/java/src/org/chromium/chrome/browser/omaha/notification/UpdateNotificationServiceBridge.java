@@ -8,10 +8,8 @@ import static org.chromium.chrome.browser.omaha.UpdateConfigs.getUpdateNotificat
 import static org.chromium.chrome.browser.omaha.UpdateConfigs.getUpdateNotificationTitle;
 import static org.chromium.chrome.browser.omaha.UpdateStatusProvider.UpdateState.INLINE_UPDATE_AVAILABLE;
 import static org.chromium.chrome.browser.omaha.UpdateStatusProvider.UpdateState.UPDATE_AVAILABLE;
-import static org.chromium.chrome.browser.omaha.notification.UpdateNotificationControllerImpl.PREF_LAST_TIME_UPDATE_NOTIFICATION_KEY;
 
 import android.content.Intent;
-import android.content.SharedPreferences;
 
 import androidx.annotation.Nullable;
 
@@ -25,7 +23,6 @@ import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.chrome.browser.ChromeActivity;
 import org.chromium.chrome.browser.flags.ChromeFeatureList;
 import org.chromium.chrome.browser.lifecycle.Destroyable;
-import org.chromium.chrome.browser.omaha.OmahaBase;
 import org.chromium.chrome.browser.omaha.UpdateStatusProvider;
 import org.chromium.chrome.browser.omaha.UpdateStatusProvider.UpdateState;
 
@@ -36,11 +33,6 @@ import org.chromium.chrome.browser.omaha.UpdateStatusProvider.UpdateState;
  */
 @JNINamespace("updates")
 public class UpdateNotificationServiceBridge implements UpdateNotificationController, Destroyable {
-    private static final String PREF_UPDATE_NOTIFICATION_THROTTLE_INTERVAL_KEY =
-            "pref_update_notification_throttle_interval_key";
-    private static final String PREF_UPDATE_NOTIFICATION_USER_DISMISS_COUNT_KEY =
-            "pref_update_notification_user_dismiss_count_key";
-
     private final Callback<UpdateStatusProvider.UpdateStatus> mObserver = status -> {
         mUpdateStatus = status;
         processUpdateStatus();
@@ -102,66 +94,6 @@ public class UpdateNotificationServiceBridge implements UpdateNotificationContro
          */
         void schedule(String title, String message, @UpdateState int state,
                 boolean shouldShowImmediately);
-    }
-
-    @CalledByNative
-    public static long getLastShownTimeStamp() {
-        SharedPreferences preferences = OmahaBase.getSharedPreferences();
-        return preferences.getLong(PREF_LAST_TIME_UPDATE_NOTIFICATION_KEY, 0);
-    }
-
-    @CalledByNative
-    private static void updateLastShownTimeStamp(long timestamp) {
-        SharedPreferences preferences = OmahaBase.getSharedPreferences();
-        SharedPreferences.Editor editor = preferences.edit();
-        editor.putLong(PREF_LAST_TIME_UPDATE_NOTIFICATION_KEY, timestamp);
-        editor.apply();
-    }
-
-    /**
-     * Gets the throttle interval in milliseconds from {@link SharedPreferences}.
-     * return 0 if not exists.
-     */
-    @CalledByNative
-    public static long getThrottleInterval() {
-        SharedPreferences preferences = OmahaBase.getSharedPreferences();
-        return preferences.getLong(PREF_UPDATE_NOTIFICATION_THROTTLE_INTERVAL_KEY, 0);
-    }
-
-    /**
-     * Updates the throttle interval to show Chrome update notification in {@link
-     * SharedPreferences}.
-     * @param interval Throttle interval in milliseconds.
-     */
-    @CalledByNative
-    private static void updateThrottleInterval(long interval) {
-        SharedPreferences preferences = OmahaBase.getSharedPreferences();
-        SharedPreferences.Editor editor = preferences.edit();
-        editor.putLong(PREF_UPDATE_NOTIFICATION_THROTTLE_INTERVAL_KEY, interval);
-        editor.apply();
-    }
-
-    /**
-     * Gets the number of users consecutive dismiss or negative button action on update notification
-     * from {@link SharedPreferences}.
-     */
-    @CalledByNative
-    public static int getNegativeActionCount() {
-        SharedPreferences preferences = OmahaBase.getSharedPreferences();
-        return preferences.getInt(PREF_UPDATE_NOTIFICATION_USER_DISMISS_COUNT_KEY, 0);
-    }
-
-    /**
-     * Updates the number to record users consecutive dismiss or negative button click action on
-     * update notification in {@link SharedPreferences}.
-     * @param count A number of users consecutive dimiss action.
-     */
-    @CalledByNative
-    private static void updateNegativeActionCount(int count) {
-        SharedPreferences preferences = OmahaBase.getSharedPreferences();
-        SharedPreferences.Editor editor = preferences.edit();
-        editor.putInt(PREF_UPDATE_NOTIFICATION_USER_DISMISS_COUNT_KEY, count);
-        editor.apply();
     }
 
     /**

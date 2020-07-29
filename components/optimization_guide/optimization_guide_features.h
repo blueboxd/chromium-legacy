@@ -25,6 +25,7 @@ constexpr char kOptimizationHintsExperimentNameParam[] = "experiment_name";
 extern const base::Feature kRemoteOptimizationGuideFetching;
 extern const base::Feature kRemoteOptimizationGuideFetchingAnonymousDataConsent;
 extern const base::Feature kOptimizationTargetPrediction;
+extern const base::Feature kOptimizationTargetPredictionUsingMLService;
 
 // The maximum number of hosts that can be stored in the
 // |kHintsFetcherTopHostBlacklist| dictionary pref when initialized. The top
@@ -141,6 +142,9 @@ int PredictionModelFetchRandomMaxDelaySecs();
 // Returns a set of external Android app packages whose predictions have been
 // approved for fetching from the remote Optimization Guide Service.
 base::flat_set<std::string> ExternalAppPackageNamesApprovedForFetch();
+
+// Whether out-of-process model evaluation via the ML Service is enabled.
+bool ShouldUseMLServiceForPrediction();
 
 }  // namespace features
 }  // namespace optimization_guide

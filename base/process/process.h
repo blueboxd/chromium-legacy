@@ -19,14 +19,14 @@
 #include <lib/zx/process.h>
 #endif
 
-#if defined(OS_MACOSX)
+#if defined(OS_APPLE)
 #include "base/feature_list.h"
 #include "base/process/port_provider_mac.h"
 #endif
 
 namespace base {
 
-#if defined(OS_MACOSX)
+#if defined(OS_APPLE)
 extern const Feature kMacAllowBackgroundingProcesses;
 #endif
 
@@ -166,7 +166,7 @@ class BASE_EXPORT Process {
   // process though that should be avoided.
   void Exited(int exit_code) const;
 
-#if defined(OS_MACOSX)
+#if defined(OS_APPLE)
   // The Mac needs a Mach port in order to manipulate a process's priority,
   // and there's no good way to get that from base given the pid. These Mac
   // variants of the IsProcessBackgrounded and SetProcessBackgrounded API take
@@ -197,7 +197,7 @@ class BASE_EXPORT Process {
   // will be made "normal" - equivalent to default process priority.
   // Returns true if the priority was changed, false otherwise.
   bool SetProcessBackgrounded(bool value);
-#endif  // defined(OS_MACOSX)
+#endif  // defined(OS_APPLE)
   // Returns an integer representing the priority of a process. The meaning
   // of this value is OS dependent.
   int GetPriority() const;

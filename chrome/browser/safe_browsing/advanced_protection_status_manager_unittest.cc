@@ -329,9 +329,7 @@ TEST_F(AdvancedProtectionStatusManagerTest, AccountRemoval) {
   // This call is necessary to ensure that the account removal is fully
   // processed in this testing context.
   identity_test_env_.EnableRemovalOfExtendedAccountInfo();
-  identity_test_env_.identity_manager()->GetAccountsMutator()->RemoveAccount(
-      account_id,
-      signin_metrics::SourceForRefreshTokenOperation::kUserMenu_RemoveAccount);
+  identity_test_env_.RemoveRefreshTokenForAccount(account_id);
   EXPECT_FALSE(aps_manager.IsUnderAdvancedProtection());
   EXPECT_TRUE(
       pref_service_.HasPrefPath(prefs::kAdvancedProtectionLastRefreshInUs));

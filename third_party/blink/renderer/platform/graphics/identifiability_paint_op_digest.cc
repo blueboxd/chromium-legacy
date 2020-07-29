@@ -4,6 +4,8 @@
 
 #include "third_party/blink/renderer/platform/graphics/identifiability_paint_op_digest.h"
 
+#include <cstring>
+
 #include "gpu/command_buffer/client/raster_interface.h"
 #include "third_party/blink/public/common/privacy_budget/identifiability_metrics.h"
 #include "third_party/blink/public/common/privacy_budget/identifiability_study_participation.h"
@@ -14,6 +16,14 @@
 
 namespace blink {
 
+namespace {
+
+// To minimize performance impact, don't exceed kMaxDigestOps during the
+// lifetime of this IdentifiabilityPaintOpDigest object.
+constexpr int kMaxDigestOps = 1 << 20;
+
+}  // namespace
+
 // Storage for serialized PaintOp state.
 Vector<char>& SerializationBuffer() {
   DEFINE_THREAD_SAFE_STATIC_LOCAL(ThreadSpecific<Vector<char>>,
@@ -22,7 +32,12 @@ Vector<char>& SerializationBuffer() {
 }
 
 IdentifiabilityPaintOpDigest::IdentifiabilityPaintOpDigest(IntSize size)
-    : size_(size),
+    : IdentifiabilityPaintOpDigest(size, kMaxDigestOps) {}
+
+IdentifiabilityPaintOpDigest::IdentifiabilityPaintOpDigest(IntSize size,
+                                                           int max_digest_ops)
+    : max_digest_ops_(max_digest_ops),
+      size_(size),
       paint_cache_(cc::ClientPaintCache::kNoCachingBudget),
       nodraw_canvas_(size_.Width(), size_.Height()),
       serialize_options_(&image_provider_,
@@ -49,10 +64,7 @@ constexpr size_t IdentifiabilityPaintOpDigest::kInfiniteOps;
 void IdentifiabilityPaintOpDigest::MaybeUpdateDigest(
     const sk_sp<const cc::PaintRecord>& paint_record,
     const size_t num_ops_to_visit) {
-  // To minimize performance impact, don't exceed kMaxDigestOps during the
-  // lifetime of this IdentifiabilityPaintOpDigest object.
-  constexpr int kMaxDigestOps = 1 << 20;
-  if (!IsUserInIdentifiabilityStudy() || total_ops_digested_ > kMaxDigestOps)
+  if (!IsUserInIdentifiabilityStudy() || total_ops_digested_ >= max_digest_ops_)
     return;
 
   // Determine how many PaintOps we'll need to digest after the initial digests
@@ -85,6 +97,7 @@ void IdentifiabilityPaintOpDigest::MaybeUpdateDigest(
       continue;
     }
 
+    std::memset(SerializationBuffer().data(), 0, SerializationBuffer().size());
     size_t serialized_size;
     while ((serialized_size = op->Serialize(SerializationBuffer().data(),
                                             SerializationBuffer().size(),

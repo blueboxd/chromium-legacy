@@ -8,10 +8,16 @@ dictionary GPUBindGroupLayoutEntry {
     required GPUIndex32 binding;
     required GPUShaderStageFlags visibility;
     required GPUBindingType type;
+
+    boolean hasDynamicOffset = false;
+
+    GPUSize64 minBufferBindingSize;
+
     GPUTextureViewDimension viewDimension = "2d";
+
     GPUTextureComponentType textureComponentType = "float";
     boolean multisampled = false;
-    boolean hasDynamicOffset = false;
+
     GPUTextureFormat storageTextureFormat;
 };
 

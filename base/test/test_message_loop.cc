@@ -27,7 +27,7 @@ test::SingleThreadTaskEnvironment::MainThreadType GetMainThreadType(
     case MessagePumpType::CUSTOM:
 #if defined(OS_ANDROID)
     case MessagePumpType::JAVA:
-#elif defined(OS_MACOSX)
+#elif defined(OS_APPLE)
     case MessagePumpType::NS_RUNLOOP:
 #elif defined(OS_WIN)
     case MessagePumpType::UI_WITH_WM_QUIT_SUPPORT:

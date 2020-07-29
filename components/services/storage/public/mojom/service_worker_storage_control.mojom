@@ -139,6 +139,13 @@ interface ServiceWorkerStorageControl {
   GetUsageForOrigin(url.mojom.Origin origin) =>
       (ServiceWorkerDatabaseStatus status, int64 usage);
 
+  // Returns all stored registrations.
+  // NOTE: Don't use this method for new code. Reading all registrations
+  // from storage doesn't scale. See https://crbug.com/807440 for details.
+  GetAllRegistrationsDeprecated() =>
+      (ServiceWorkerDatabaseStatus status,
+       array<ServiceWorkerRegistrationData> registrations);
+
   // Stores |registration_data| and |resources|.
   StoreRegistration(ServiceWorkerRegistrationData registration,
                     array<ServiceWorkerResourceRecord> resources) =>

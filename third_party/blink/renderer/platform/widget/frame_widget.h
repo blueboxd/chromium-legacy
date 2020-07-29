@@ -168,7 +168,6 @@ class PLATFORM_EXPORT FrameWidget
   virtual uint64_t GetScrollableContainerIdAt(const gfx::PointF& point) = 0;
 
   virtual bool ShouldHandleImeEvents() { return false; }
-  virtual bool ShouldDispatchImeEventsToPepper() { return false; }
 
   virtual void SetEditCommandsForNextKeyEvent(
       Vector<mojom::blink::EditCommandPtr> edit_commands) = 0;

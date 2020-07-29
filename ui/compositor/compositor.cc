@@ -769,4 +769,10 @@ void Compositor::ReportThroughputForTracker(
   throughput_tracker_map_.erase(it);
 }
 
+void Compositor::SetDelegatedInkPointRenderer(
+    mojo::PendingReceiver<viz::mojom::DelegatedInkPointRenderer> receiver) {
+  if (display_private_)
+    display_private_->SetDelegatedInkPointRenderer(std::move(receiver));
+}
+
 }  // namespace ui

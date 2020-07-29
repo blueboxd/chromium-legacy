@@ -13,7 +13,7 @@
 #include "base/notreached.h"
 #include "build/build_config.h"
 
-#if defined(OS_MACOSX)
+#if defined(OS_APPLE)
 #include "base/mac/foundation_util.h"
 #include "base/mac/mac_util.h"
 #include "base/mac/scoped_cftyperef.h"
@@ -64,7 +64,7 @@ const char* PageTagToName(PageTag tag) {
 }
 #endif  // defined(OS_ANDROID)
 
-#if defined(OS_MACOSX)
+#if defined(OS_APPLE)
 // Tests whether the version of macOS supports the MAP_JIT flag and if the
 // current process is signed with the allow-jit entitlement.
 bool UseMapJit() {
@@ -80,7 +80,7 @@ bool UseMapJit() {
     return false;
   return mac::CFCast<CFBooleanRef>(value.get()) == kCFBooleanTrue;
 }
-#endif  // defined(OS_MACOSX)
+#endif  // defined(OS_APPLE)
 
 }  // namespace
 
@@ -111,7 +111,7 @@ void* SystemAllocPagesInternal(void* hint,
                                PageAccessibilityConfiguration accessibility,
                                PageTag page_tag,
                                bool commit) {
-#if defined(OS_MACOSX)
+#if defined(OS_APPLE)
   // Use a custom tag to make it easier to distinguish Partition Alloc regions
   // in vmmap(1). Tags between 240-255 are supported.
   PA_DCHECK(PageTag::kFirst <= page_tag);
@@ -124,7 +124,7 @@ void* SystemAllocPagesInternal(void* hint,
   int access_flag = GetAccessFlags(accessibility);
   int map_flags = MAP_ANONYMOUS | MAP_PRIVATE;
 
-#if defined(OS_MACOSX)
+#if defined(OS_APPLE)
   // On macOS 10.14 and higher, executables that are code signed with the
   // "runtime" option cannot execute writable memory by default. They can opt
   // into this capability by specifying the "com.apple.security.cs.allow-jit"
@@ -208,7 +208,7 @@ void DecommitSystemPagesInternal(void* address, size_t length) {
 bool RecommitSystemPagesInternal(void* address,
                                  size_t length,
                                  PageAccessibilityConfiguration accessibility) {
-#if defined(OS_MACOSX)
+#if defined(OS_APPLE)
   // On macOS, to update accounting, we need to make another syscall. For more
   // details, see https://crbug.com/823915.
   madvise(address, length, MADV_FREE_REUSE);
@@ -221,7 +221,7 @@ bool RecommitSystemPagesInternal(void* address,
 }
 
 void DiscardSystemPagesInternal(void* address, size_t length) {
-#if defined(OS_MACOSX)
+#if defined(OS_APPLE)
   int ret = madvise(address, length, MADV_FREE_REUSABLE);
   if (ret) {
     // MADV_FREE_REUSABLE sometimes fails, so fall back to MADV_DONTNEED.

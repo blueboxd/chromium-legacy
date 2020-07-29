@@ -17,7 +17,7 @@
 #include "base/strings/utf_string_conversions.h"
 #include "build/build_config.h"
 
-#if defined(OS_MACOSX)
+#if defined(OS_APPLE)
 #include "base/mac/scoped_cftyperef.h"
 #include "base/third_party/icu/icu_utf.h"
 #endif
@@ -25,7 +25,7 @@
 #if defined(OS_WIN)
 #include <windows.h>
 #include "base/win/win_util.h"
-#elif defined(OS_MACOSX)
+#elif defined(OS_APPLE)
 #include <CoreFoundation/CoreFoundation.h>
 #endif
 
@@ -735,7 +735,7 @@ int FilePath::CompareIgnoreCase(StringPieceType string1,
   return 0;
 }
 
-#elif defined(OS_MACOSX)
+#elif defined(OS_APPLE)
 // Mac OS X specific implementation of file string comparisons.
 
 // cf. http://developer.apple.com/mac/library/technotes/tn/tn1150.html#UnicodeSubtleties

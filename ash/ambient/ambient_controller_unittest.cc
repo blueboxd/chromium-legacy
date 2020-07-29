@@ -33,6 +33,7 @@ using AmbientControllerTest = AmbientAshTestBase;
 
 TEST_F(AmbientControllerTest, ShowAmbientScreenUponLock) {
   LockScreen();
+  FastForwardToNextImage();
 
   EXPECT_TRUE(container_view());
   EXPECT_EQ(AmbientUiModel::Get()->ui_visibility(),
@@ -45,6 +46,8 @@ TEST_F(AmbientControllerTest, ShowAmbientScreenUponLock) {
 
 TEST_F(AmbientControllerTest, HideAmbientScreen) {
   LockScreen();
+  FastForwardToNextImage();
+
   EXPECT_TRUE(container_view());
   EXPECT_EQ(AmbientUiModel::Get()->ui_visibility(),
             AmbientUiVisibility::kShown);
@@ -52,10 +55,9 @@ TEST_F(AmbientControllerTest, HideAmbientScreen) {
 
   HideAmbientScreen();
 
-  EXPECT_TRUE(container_view());
+  EXPECT_FALSE(container_view());
   EXPECT_EQ(AmbientUiModel::Get()->ui_visibility(),
             AmbientUiVisibility::kHidden);
-  EXPECT_FALSE(container_view()->GetWidget()->IsVisible());
 
   // Clean up.
   CloseAmbientScreen();
@@ -63,6 +65,8 @@ TEST_F(AmbientControllerTest, HideAmbientScreen) {
 
 TEST_F(AmbientControllerTest, CloseAmbientScreenUponUnlock) {
   LockScreen();
+  FastForwardToNextImage();
+
   EXPECT_TRUE(container_view());
   EXPECT_EQ(AmbientUiModel::Get()->ui_visibility(),
             AmbientUiVisibility::kShown);
@@ -238,7 +242,6 @@ TEST_F(AmbientControllerTest,
   base::RunLoop().RunUntilIdle();
 
   // Should release the wake lock when battery is not charging.
-  EXPECT_TRUE(ambient_controller()->IsShown());
   EXPECT_EQ(0, GetNumOfActiveWakeLocks(
                    device::mojom::WakeLockType::kPreventDisplaySleep));
 
@@ -250,12 +253,13 @@ TEST_F(AmbientControllerTest,
 
 TEST_F(AmbientControllerTest, ShouldDismissContainerViewWhenKeyPressed) {
   ShowAmbientScreen();
+  FastForwardToNextImage();
   EXPECT_TRUE(container_view()->GetWidget()->IsVisible());
 
   // Simulates a random keyboard press event.
   GetEventGenerator()->PressKey(ui::VKEY_SPACE, /*flags=*/0);
 
-  EXPECT_FALSE(container_view()->GetWidget()->IsVisible());
+  EXPECT_FALSE(container_view());
 
   // Clean up.
   CloseAmbientScreen();
@@ -263,6 +267,7 @@ TEST_F(AmbientControllerTest, ShouldDismissContainerViewWhenKeyPressed) {
 
 TEST_F(AmbientControllerTest, ShouldDismissContainerViewOnRealMouseMove) {
   ShowAmbientScreen();
+  FastForwardToNextImage();
   EXPECT_TRUE(container_view()->GetWidget()->IsVisible());
 
   // Simulates a tiny mouse move within the threshold, which should be ignored.
@@ -272,7 +277,7 @@ TEST_F(AmbientControllerTest, ShouldDismissContainerViewOnRealMouseMove) {
   // Simulates a big mouse move beyond the threshold, which should take effect
   // and dismiss the ambient.
   GetEventGenerator()->MoveMouseBy(/*x=*/15, /*y=*/15);
-  EXPECT_FALSE(container_view()->GetWidget()->IsVisible());
+  EXPECT_FALSE(container_view());
 }
 
 TEST_F(AmbientControllerTest, UpdateUiAndWakeLockWhenSystemSuspendOrResume) {
@@ -299,7 +304,7 @@ TEST_F(AmbientControllerTest, UpdateUiAndWakeLockWhenSystemSuspendOrResume) {
 
   // System suspension should hide Ui and release the wake lock acquired
   // previously.
-  EXPECT_FALSE(container_view()->GetWidget()->IsVisible());
+  EXPECT_FALSE(container_view());
   EXPECT_EQ(0, GetNumOfActiveWakeLocks(
                    device::mojom::WakeLockType::kPreventDisplaySleep));
 
@@ -308,7 +313,7 @@ TEST_F(AmbientControllerTest, UpdateUiAndWakeLockWhenSystemSuspendOrResume) {
 
   // System resume should not invoke Ui to show up, thus no wake lock needed
   // to acquire.
-  EXPECT_FALSE(container_view()->GetWidget()->IsVisible());
+  EXPECT_FALSE(container_view());
   EXPECT_EQ(0, GetNumOfActiveWakeLocks(
                    device::mojom::WakeLockType::kPreventDisplaySleep));
 }
@@ -319,6 +324,7 @@ TEST_F(AmbientControllerTest, ShouldShowAmbientScreenWhenScreenIsDimmed) {
   // Should lock the device and enter ambient mode when the screen is dimmed.
   SetScreenDimmedAndWait(true);
 
+  FastForwardToNextImage();
   EXPECT_TRUE(ambient_controller()->IsShown());
 
   // Closes ambient for clean-up.

@@ -15,6 +15,7 @@
 #include "chrome/browser/notifications/scheduler/public/notification_params.h"
 #include "chrome/browser/notifications/scheduler/public/notification_schedule_service.h"
 #include "chrome/browser/notifications/scheduler/public/schedule_service_utils.h"
+#include "chrome/browser/notifications/scheduler/public/throttle_config.h"
 #include "chrome/browser/updates/update_notification_config.h"
 #include "chrome/browser/updates/update_notification_info.h"
 #include "chrome/browser/updates/update_notification_service_bridge.h"
@@ -41,87 +42,26 @@ void BuildNotificationData(const updates::UpdateNotificationInfo& data,
   out->custom_data[kUpdateStateEnumKey] = base::NumberToString(data.state);
 }
 
-}  // namespace
-
-UpdateNotificationServiceImpl::UpdateNotificationServiceImpl(
-    notifications::NotificationScheduleService* schedule_service,
-    std::unique_ptr<UpdateNotificationConfig> config,
-    std::unique_ptr<UpdateNotificationServiceBridge> bridge)
-    : schedule_service_(schedule_service),
-      config_(std::move(config)),
-      bridge_(std::move(bridge)) {}
-
-UpdateNotificationServiceImpl::~UpdateNotificationServiceImpl() = default;
-
-void UpdateNotificationServiceImpl::Schedule(UpdateNotificationInfo data) {
-  schedule_service_->GetClientOverview(
-      notifications::SchedulerClientType::kChromeUpdate,
-      base::BindOnce(&UpdateNotificationServiceImpl::OnClientOverviewQueried,
-                     weak_ptr_factory_.GetWeakPtr(), std::move(data)));
-}
-
-bool UpdateNotificationServiceImpl::IsReadyToDisplay() const {
-  auto last_shown_timestamp = bridge_->GetLastShownTimeStamp();
-  bool wait_next_trottle_event =
-      last_shown_timestamp.has_value() &&
-      GetThrottleInterval() >= base::Time::Now() - last_shown_timestamp.value();
-  if (!config_->is_enabled || wait_next_trottle_event)
-    return false;
-  bridge_->UpdateLastShownTimeStamp(base::Time::Now());
-  return true;
-}
-
-base::TimeDelta UpdateNotificationServiceImpl::GetThrottleInterval() const {
-  auto throttle_interval = bridge_->GetThrottleInterval();
-  return throttle_interval.has_value() ? throttle_interval.value()
-                                       : config_->default_interval;
-}
-
-void UpdateNotificationServiceImpl::OnClientOverviewQueried(
-    UpdateNotificationInfo data,
-    notifications::ClientOverview overview) {
-  int num_scheduled_notifs = overview.num_scheduled_notifications;
-
-  if (num_scheduled_notifs == kNumMaxNotificationsLimit) {
-    return;
-  }
-
-  if (num_scheduled_notifs > kNumMaxNotificationsLimit) {
-    schedule_service_->DeleteNotifications(
-        notifications::SchedulerClientType::kChromeUpdate);
-  }
-
-  notifications::NotificationData notification_data;
-  BuildNotificationData(data, &notification_data);
-  auto params = std::make_unique<notifications::NotificationParams>(
-      notifications::SchedulerClientType::kChromeUpdate,
-      std::move(notification_data),
-      BuildScheduleParams(data.should_show_immediately));
-  params->enable_ihnr_buttons = true;
-  schedule_service_->Schedule(std::move(params));
-}
-
-notifications::ScheduleParams
-UpdateNotificationServiceImpl::BuildScheduleParams(
-    bool should_show_immediately) {
-  DCHECK(config_);
-
+notifications::ScheduleParams BuildScheduleParams(
+    bool should_show_immediately,
+    base::Clock* clock,
+    const UpdateNotificationConfig* config) {
   notifications::ScheduleParams schedule_params;
-  // This feature uses custom throttle implementation rather than default
-  // internal throttle mechanism inside schedule service. TODO(hesen): Migrate
-  // once custom throttle layer is ready.
-  schedule_params.priority =
-      notifications::ScheduleParams::Priority::kNoThrottle;
-
+  schedule_params.impression_mapping.emplace(
+      notifications::UserFeedback::kDismiss,
+      notifications::ImpressionResult::kNegative);
+  schedule_params.impression_mapping.emplace(
+      notifications::UserFeedback::kNotHelpful,
+      notifications::ImpressionResult::kNegative);
   if (should_show_immediately) {
-    schedule_params.deliver_time_start = base::make_optional(base::Time::Now());
-    schedule_params.deliver_time_end = base::make_optional(
-        base::Time::Now() + base::TimeDelta::FromMinutes(1));
+    schedule_params.deliver_time_start = base::make_optional(clock->Now());
+    schedule_params.deliver_time_end =
+        base::make_optional(clock->Now() + base::TimeDelta::FromMinutes(1));
   } else {
     notifications::TimePair actual_window;
-    notifications::NextTimeWindow(
-        base::DefaultClock::GetInstance(), config_->deliver_window_morning,
-        config_->deliver_window_evening, &actual_window);
+    notifications::NextTimeWindow(clock, config->deliver_window_morning,
+                                  config->deliver_window_evening,
+                                  &actual_window);
     schedule_params.deliver_time_start =
         base::make_optional(std::move(actual_window.first));
     schedule_params.deliver_time_end =
@@ -130,38 +70,117 @@ UpdateNotificationServiceImpl::BuildScheduleParams(
   return schedule_params;
 }
 
-void UpdateNotificationServiceImpl::OnUserDismiss() {
-  ApplyNegativeAction();
+base::TimeDelta GetCurrentInterval(int num_suppresion,
+                                   base::TimeDelta init_interval,
+                                   base::TimeDelta max_interval) {
+  return std::min(max_interval, (num_suppresion + 1) * init_interval);
 }
 
-void UpdateNotificationServiceImpl::ApplyNegativeAction() {
-  int count = bridge_->GetNegativeActionCount() + 1;
-  if (count >= kNumConsecutiveDismissCountCap) {
-    ApplyLinearThrottle();
-    count = 0;
-  }
-  bridge_->UpdateNegativeActionCount(count);
+bool TooManyNotificationCached(
+    const notifications::ClientOverview& client_overview) {
+  return client_overview.num_scheduled_notifications >=
+         kNumMaxNotificationsLimit;
 }
 
-void UpdateNotificationServiceImpl::ApplyLinearThrottle() {
-  auto scale = config_->throttle_interval_linear_co_scale;
-  auto offset =
-      base::TimeDelta::FromDays(config_->throttle_interval_linear_co_offset);
-  auto interval = GetThrottleInterval();
-  bridge_->UpdateThrottleInterval(scale * interval + offset);
+}  // namespace
+
+UpdateNotificationServiceImpl::UpdateNotificationServiceImpl(
+    notifications::NotificationScheduleService* schedule_service,
+    std::unique_ptr<UpdateNotificationConfig> config,
+    std::unique_ptr<UpdateNotificationServiceBridge> bridge,
+    base::Clock* clock)
+    : schedule_service_(schedule_service),
+      config_(std::move(config)),
+      bridge_(std::move(bridge)),
+      clock_(clock) {}
+
+UpdateNotificationServiceImpl::~UpdateNotificationServiceImpl() = default;
+
+void UpdateNotificationServiceImpl::Schedule(UpdateNotificationInfo data) {
+  schedule_service_->GetClientOverview(
+      notifications::SchedulerClientType::kChromeUpdate,
+      base::BindOnce(&UpdateNotificationServiceImpl::ScheduleInternal,
+                     weak_ptr_factory_.GetWeakPtr(), std::move(data)));
+}
+
+void UpdateNotificationServiceImpl::ScheduleInternal(
+    UpdateNotificationInfo data,
+    notifications::ClientOverview client_overview) {
+  if (TooManyNotificationCached(client_overview))
+    return;
+
+  notifications::NotificationData notification_data;
+  BuildNotificationData(data, &notification_data);
+  auto params = std::make_unique<notifications::NotificationParams>(
+      notifications::SchedulerClientType::kChromeUpdate,
+      std::move(notification_data),
+      BuildScheduleParams(data.should_show_immediately, clock_, config_.get()));
+  params->enable_ihnr_buttons = true;
+  schedule_service_->Schedule(std::move(params));
 }
 
 void UpdateNotificationServiceImpl::OnUserClick(const ExtraData& extra) {
   DCHECK(base::Contains(extra, kUpdateStateEnumKey));
   int state = 0;
-  DCHECK(base::StringToInt(extra.at(kUpdateStateEnumKey), &state));
+  auto res = base::StringToInt(extra.at(kUpdateStateEnumKey), &state);
+  DCHECK(res);
   bridge_->LaunchChromeActivity(state);
 }
 
-void UpdateNotificationServiceImpl::OnUserClickButton(bool is_positive_button) {
-  if (!is_positive_button) {
-    ApplyNegativeAction();
-  }
+void UpdateNotificationServiceImpl::GetThrottleConfig(
+    ThrottleConfigCallback callback) {
+  schedule_service_->GetClientOverview(
+      notifications::SchedulerClientType::kChromeUpdate,
+      base::BindOnce(&UpdateNotificationServiceImpl::DetermineThrottleConfig,
+                     weak_ptr_factory_.GetWeakPtr(), std::move(callback)));
+}
+
+void UpdateNotificationServiceImpl::DetermineThrottleConfig(
+    ThrottleConfigCallback callback,
+    notifications::ClientOverview client_overview) {
+  auto throttle_config = std::make_unique<notifications::ThrottleConfig>();
+  // 2 consecutive dismiss will cause a suppression.
+  throttle_config->negative_action_count_threshold =
+      kNumConsecutiveDismissCountCap;
+  auto num_suppresion = client_overview.impression_detail.num_negative_events;
+  // Next suppression duration is proportional to the number of suppression
+  // events, ceiled with a maximum duration interval.
+  throttle_config->suppression_duration = GetCurrentInterval(
+      num_suppresion, config_->init_interval, config_->max_interval);
+  std::move(callback).Run(std::move(throttle_config));
+}
+
+void UpdateNotificationServiceImpl::BeforeShowNotification(
+    std::unique_ptr<notifications::NotificationData> notification_data,
+    NotificationDataCallback callback) {
+  schedule_service_->GetClientOverview(
+      notifications::SchedulerClientType::kChromeUpdate,
+      base::BindOnce(&UpdateNotificationServiceImpl::MaybeShowNotification,
+                     weak_ptr_factory_.GetWeakPtr(),
+                     std::move(notification_data), std::move(callback)));
+}
+
+bool UpdateNotificationServiceImpl::TooSoonForNextNotification(
+    const notifications::ClientOverview& client_overview) {
+  auto last_shown_timestamp = client_overview.impression_detail.last_shown_ts;
+  auto next_notificaiton_interval =
+      GetCurrentInterval(client_overview.impression_detail.num_negative_events,
+                         config_->init_interval, config_->max_interval);
+  return last_shown_timestamp.has_value() &&
+         next_notificaiton_interval >=
+             clock_->Now() - last_shown_timestamp.value();
+}
+
+void UpdateNotificationServiceImpl::MaybeShowNotification(
+    std::unique_ptr<notifications::NotificationData> notification_data,
+    NotificationDataCallback callback,
+    notifications::ClientOverview client_overview) {
+  bool should_show_notification =
+      config_->is_enabled && !TooSoonForNextNotification(client_overview) &&
+      !TooManyNotificationCached(client_overview);
+
+  std::move(callback).Run(
+      should_show_notification ? std::move(notification_data) : nullptr);
 }
 
 }  // namespace updates

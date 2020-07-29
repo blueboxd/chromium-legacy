@@ -15,7 +15,7 @@
 #include "base/template_util.h"
 #include "build/build_config.h"
 
-#if defined(OS_MACOSX) && !HAS_FEATURE(objc_arc)
+#if defined(OS_APPLE) && !HAS_FEATURE(objc_arc)
 #include "base/mac/scoped_block.h"
 #endif
 
@@ -452,7 +452,7 @@ static inline internal::IgnoreResultHelper<T> IgnoreResult(T data) {
   return internal::IgnoreResultHelper<T>(std::move(data));
 }
 
-#if defined(OS_MACOSX) && !HAS_FEATURE(objc_arc)
+#if defined(OS_APPLE) && !HAS_FEATURE(objc_arc)
 
 // RetainBlock() is used to adapt an Objective-C block when Automated Reference
 // Counting (ARC) is disabled. This is unnecessary when ARC is enabled, as the
@@ -470,7 +470,7 @@ base::mac::ScopedBlock<R (^)(Args...)> RetainBlock(R (^block)(Args...)) {
                                                 base::scoped_policy::RETAIN);
 }
 
-#endif  // defined(OS_MACOSX) && !HAS_FEATURE(objc_arc)
+#endif  // defined(OS_APPLE) && !HAS_FEATURE(objc_arc)
 
 }  // namespace base
 

@@ -195,11 +195,11 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling Skia
   # and whatever else without interference from each other.
-  'skia_revision': '6007f3bd6f3643bbea14e4d640b4dbad2a1e8138',
+  'skia_revision': 'b394db45e6e65d2e5df464847420f1e76ea6148e',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling V8
   # and whatever else without interference from each other.
-  'v8_revision': '32344f5fc4cbed8285df6be1f20181e467ac1a3d',
+  'v8_revision': '3daffb455757ac803ceac81e48e1848ad2894985',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling swarming_client
   # and whatever else without interference from each other.
@@ -207,7 +207,7 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling ANGLE
   # and whatever else without interference from each other.
-  'angle_revision': '44bb4d7abee6a030afc6ad2e37ec63d6a4935203',
+  'angle_revision': '07cdf4214314267d6cd1eca9c24ac9cc6fb1e653',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling SwiftShader
   # and whatever else without interference from each other.
@@ -266,7 +266,7 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling devtools-frontend
   # and whatever else without interference from each other.
-  'devtools_frontend_revision': '9cbd788e95fc46b231b5241fa2c7be032cc313dd',
+  'devtools_frontend_revision': '3dc032a7f76a2b80d1e58676473aaaaf464f74f4',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling libprotobuf-mutator
   # and whatever else without interference from each other.
@@ -545,7 +545,7 @@ deps = {
   },
 
   'src/ios/third_party/material_components_ios/src': {
-      'url': Var('chromium_git') + '/external/github.com/material-components/material-components-ios.git' + '@' + '8a509d558ffdf3225b56823140c632fb2aa39ca1',
+      'url': Var('chromium_git') + '/external/github.com/material-components/material-components-ios.git' + '@' + 'a142aae3e7be48a732d1730c1858f9c15125abc3',
       'condition': 'checkout_ios',
   },
 
@@ -875,7 +875,7 @@ deps = {
 
   # Build tools for Chrome OS. Note: This depends on third_party/pyelftools.
   'src/third_party/chromite': {
-      'url': Var('chromium_git') + '/chromiumos/chromite.git' + '@' + '5408a4532748871a512286126bff583e8c6cb032',
+      'url': Var('chromium_git') + '/chromiumos/chromite.git' + '@' + '1da974976b2a88fb094bc5c87dcf775db5a1ac68',
       'condition': 'checkout_linux',
   },
 
@@ -1476,7 +1476,7 @@ deps = {
   },
 
   'src/third_party/webrtc':
-    Var('webrtc_git') + '/src.git' + '@' + '24a53a05a52d37fbb5418958f34bda6d8ebb073d',
+    Var('webrtc_git') + '/src.git' + '@' + '0bb26390604ec8589a1986f0fbc52749523b38bd',
 
   'src/third_party/libgifcodec':
      Var('skia_git') + '/libgifcodec' + '@'+  Var('libgifcodec_revision'),

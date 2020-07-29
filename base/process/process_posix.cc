@@ -19,7 +19,7 @@
 #include "base/threading/thread_restrictions.h"
 #include "build/build_config.h"
 
-#if defined(OS_MACOSX)
+#if defined(OS_APPLE)
 #include <sys/event.h>
 #endif
 
@@ -93,7 +93,7 @@ bool WaitpidWithTimeout(base::ProcessHandle handle,
   return ret_pid > 0;
 }
 
-#if defined(OS_MACOSX)
+#if defined(OS_APPLE)
 // Using kqueue on Mac so that we can wait on non-child processes.
 // We can't use kqueues on child processes because we need to reap
 // our own children using wait.
@@ -196,7 +196,7 @@ bool WaitForExitWithTimeoutImpl(base::ProcessHandle handle,
   const bool exited = (parent_pid < 0);
 
   if (!exited && parent_pid != our_pid) {
-#if defined(OS_MACOSX)
+#if defined(OS_APPLE)
     // On Mac we can wait on non child processes.
     return WaitForSingleNonChildProcess(handle, timeout);
 #else
@@ -267,12 +267,12 @@ Process Process::DeprecatedGetProcessFromHandle(ProcessHandle handle) {
   return Process(handle);
 }
 
-#if !defined(OS_LINUX) && !defined(OS_MACOSX) && !defined(OS_AIX)
+#if !defined(OS_LINUX) && !defined(OS_APPLE) && !defined(OS_AIX)
 // static
 bool Process::CanBackgroundProcesses() {
   return false;
 }
-#endif  // !defined(OS_LINUX) && !defined(OS_MACOSX) && !defined(OS_AIX)
+#endif  // !defined(OS_LINUX) && !defined(OS_APPLE) && !defined(OS_AIX)
 
 // static
 void Process::TerminateCurrentProcessImmediately(int exit_code) {
@@ -362,7 +362,7 @@ bool Process::WaitForExitWithTimeout(TimeDelta timeout, int* exit_code) const {
 
 void Process::Exited(int exit_code) const {}
 
-#if !defined(OS_LINUX) && !defined(OS_MACOSX) && !defined(OS_AIX)
+#if !defined(OS_LINUX) && !defined(OS_APPLE) && !defined(OS_AIX)
 bool Process::IsProcessBackgrounded() const {
   // See SetProcessBackgrounded().
   DCHECK(IsValid());
@@ -376,7 +376,7 @@ bool Process::SetProcessBackgrounded(bool value) {
   NOTIMPLEMENTED();
   return false;
 }
-#endif  // !defined(OS_LINUX) && !defined(OS_MACOSX) && !defined(OS_AIX)
+#endif  // !defined(OS_LINUX) && !defined(OS_APPLE) && !defined(OS_AIX)
 
 int Process::GetPriority() const {
   DCHECK(IsValid());

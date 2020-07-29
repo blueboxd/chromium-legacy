@@ -9,6 +9,7 @@
 #include "base/base_switches.h"
 #include "base/command_line.h"
 #include "base/files/scoped_temp_dir.h"
+#include "base/i18n/icu_util.h"
 #include "base/task/post_task.h"
 #include "base/test/scoped_feature_list.h"
 #include "base/test/test_switches.h"
@@ -49,6 +50,7 @@ class ContentFuzzerEnvironment {
             content::BrowserTaskEnvironment::REAL_IO_THREAD) {
     logging::SetMinLogLevel(logging::LOG_FATAL);
     mojo::core::Init();
+    base::i18n::InitializeICU();
     fuzzer_thread_.StartAndWaitForTesting();
   }
 

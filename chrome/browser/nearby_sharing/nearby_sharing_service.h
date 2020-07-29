@@ -10,6 +10,7 @@
 
 #include "base/callback.h"
 #include "base/files/file_path.h"
+#include "chrome/browser/nearby_sharing/nearby_share_settings.h"
 #include "chrome/browser/nearby_sharing/share_target_discovered_callback.h"
 #include "chrome/browser/nearby_sharing/transfer_update_callback.h"
 
@@ -84,6 +85,8 @@ class NearbySharingService {
   // Opens attachments from the remote |share_target|.
   virtual void Open(const ShareTarget& share_target,
                     StatusCodesCallback status_codes_callback) = 0;
+
+  virtual NearbyShareSettings* GetSettings() = 0;
 };
 
 #endif  // CHROME_BROWSER_NEARBY_SHARING_NEARBY_SHARING_SERVICE_H_

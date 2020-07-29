@@ -3,17 +3,24 @@
 // found in the LICENSE file.
 
 // clang-format off
-// #import 'chrome://resources/cr_components/nearby_share/nearby_onboarding_page.m.js';
-//
-// #import {assertEquals} from '../chai_assert.js';
+// #import 'chrome://nearby/shared/nearby_onboarding_page.m.js';
+// #import {setNearbyShareSettingsForTesting} from 'chrome://nearby/shared/nearby_share_settings.m.js';
+// #import {FakeNearbyShareSettings} from './fake_nearby_share_settings.m.js';
+// #import {assertEquals} from '../../chai_assert.js';
 // clang-format on
 
 suite('nearby-onboarding-page', function() {
   /** @type {!NearbyOnboardingPageElement} */
   let element;
+  /** @type {!nearbyShare.mojom.NearbyShareSettingsInterface} */
+  let fakeSettings;
 
   setup(function() {
     document.body.innerHTML = '';
+
+    fakeSettings = new nearby_share.FakeNearbyShareSettings();
+    nearby_share.setNearbyShareSettingsForTesting(fakeSettings);
+
     element = /** @type {!NearbyOnboardingPageElement} */ (
         document.createElement('nearby-onboarding-page'));
     document.body.appendChild(element);

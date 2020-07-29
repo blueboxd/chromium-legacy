@@ -222,7 +222,8 @@ void InlineTextBoxPainter::Paint(const PaintInfo& paint_info,
   if (inline_text_box_.HasHyphen())
     length = text_run.length();
 
-  bool should_rotate = false;
+  base::Optional<AffineTransform> rotation;
+  base::Optional<GraphicsContextStateSaver> state_saver;
   LayoutTextCombine* combined_text = nullptr;
   if (!inline_text_box_.IsHorizontal()) {
     if (style_to_use.HasTextCombine() &&
@@ -248,9 +249,10 @@ void InlineTextBoxPainter::Paint(const PaintInfo& paint_info,
         }
       }
     } else {
-      should_rotate = true;
-      context.ConcatCTM(
+      rotation.emplace(
           TextPainterBase::Rotation(box_rect, TextPainterBase::kClockwise));
+      state_saver.emplace(context);
+      context.ConcatCTM(*rotation);
     }
   }
 
@@ -298,15 +300,10 @@ void InlineTextBoxPainter::Paint(const PaintInfo& paint_info,
       }
 
       if (recorder && !box_rect.Contains(selection_rect)) {
-        if (should_rotate) {
-          // selection_rect is in the coordinates space of the rotation
-          // transform. Convert it to the non-rotated space for visual rect.
-          selection_rect.Move(-box_rect.offset);
-          std::swap(selection_rect.offset.left, selection_rect.offset.top);
-          std::swap(selection_rect.size.width, selection_rect.size.height);
-          selection_rect.Move(box_rect.offset);
-        }
-        recorder->UniteVisualRect(EnclosingIntRect(selection_rect));
+        IntRect selection_visual_rect = EnclosingIntRect(selection_rect);
+        if (rotation)
+          selection_visual_rect = rotation->MapRect(selection_visual_rect);
+        recorder->UniteVisualRect(selection_visual_rect);
       }
     }
   }
@@ -442,11 +439,6 @@ void InlineTextBoxPainter::Paint(const PaintInfo& paint_info,
   if (paint_info.phase == PaintPhase::kForeground) {
     PaintDocumentMarkers(markers_to_paint, paint_info, box_origin, style_to_use,
                          font, DocumentMarkerPaintPhase::kForeground);
-  }
-
-  if (should_rotate) {
-    context.ConcatCTM(TextPainterBase::Rotation(
-        box_rect, TextPainterBase::kCounterclockwise));
   }
 
   if (!font.ShouldSkipDrawing())

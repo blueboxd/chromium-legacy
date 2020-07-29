@@ -46,7 +46,8 @@ class WM_PLATFORM_EXPORT WmDropHandler {
   virtual void OnDragDrop(std::unique_ptr<ui::OSExchangeData> data,
                           int modifiers) = 0;
 
-  // Notifies that dragging is left.
+  // Notifies that dragging is left. Must be called before
+  // WmDragHandler::OnDragFinished when the drag session gets cancelled.
   virtual void OnDragLeave() = 0;
 
  protected:

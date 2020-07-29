@@ -123,10 +123,17 @@ FYI_BUILDERS = {
     },
     'android-pixel2-perf-fyi': {
         'tests': [{
-            'isolate': 'performance_test_suite',
+            'isolate':
+            'performance_test_suite',
+            'extra_args': [
+                '--output-format=histograms',
+                '--experimental-tbmv3-metrics',
+            ],
         }],
-        'platform': 'android-chrome',
-        'browser': 'bin/monochrome_64_32_bundle',
+        'platform':
+        'android-chrome',
+        'browser':
+        'bin/monochrome_64_32_bundle',
         'dimension': {
             'pool': 'chrome.tests.perf-fyi',
             'os': 'Android',
@@ -173,11 +180,18 @@ FYI_BUILDERS = {
     'win-10_laptop_low_end-perf_HP-Candidate': {
         'tests': [
             {
-                'isolate': 'performance_test_suite',
+                'isolate':
+                'performance_test_suite',
+                'extra_args': [
+                    '--output-format=histograms',
+                    '--experimental-tbmv3-metrics',
+                ],
             },
         ],
-        'platform': 'win',
-        'target_bits': 64,
+        'platform':
+        'win',
+        'target_bits':
+        64,
         'dimension': {
             'pool': 'chrome.tests.perf-fyi',
             'id': 'build370-a7',

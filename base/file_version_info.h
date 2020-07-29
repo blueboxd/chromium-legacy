@@ -33,7 +33,7 @@ class FilePath;
 class BASE_EXPORT FileVersionInfo {
  public:
   virtual ~FileVersionInfo() {}
-#if defined(OS_WIN) || defined(OS_MACOSX)
+#if defined(OS_WIN) || defined(OS_APPLE)
   // Creates a FileVersionInfo for the specified path. Returns nullptr if
   // something goes wrong (typically the file does not exit or cannot be
   // opened).

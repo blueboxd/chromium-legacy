@@ -5,7 +5,7 @@
 #include "chrome/browser/renderer_host/chrome_navigation_ui_data.h"
 
 #include "chrome/browser/prerender/prerender_contents.h"
-#include "chrome/browser/prerender/prerender_histograms.h"
+#include "components/prerender/browser/prerender_histograms.h"
 #include "content/public/browser/navigation_handle.h"
 #include "extensions/buildflags/buildflags.h"
 #include "ui/base/window_open_disposition.h"

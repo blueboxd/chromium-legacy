@@ -230,6 +230,9 @@ AdsPageLoadMetricsObserver::OnStart(
   aggregate_frame_data_ =
       std::make_unique<FrameData>(navigation_handle->GetFrameTreeNodeId(),
                                   0 /* heavy_ad_network_threshold_noise */);
+  aggregate_non_ad_frame_data_ =
+      std::make_unique<FrameData>(navigation_handle->GetFrameTreeNodeId(),
+                                  0 /* heavy_ad_network_threshold_noise */);
   return CONTINUE_OBSERVING;
 }
 
@@ -310,6 +313,9 @@ void AdsPageLoadMetricsObserver::OnCpuTimingUpdate(
   if (ancestor_data) {
     ancestor_data->UpdateCpuUsage(current_time, timing.task_time);
     MaybeTriggerHeavyAdIntervention(subframe_rfh, ancestor_data);
+  } else {
+    aggregate_non_ad_frame_data_->UpdateCpuUsage(current_time,
+                                                 timing.task_time);
   }
 }
 
@@ -854,9 +860,17 @@ void AdsPageLoadMetricsObserver::RecordAggregateHistogramsForCpuUsage() {
       FrameData::FrameVisibility::kAnyVisibility;
 
   // Record the aggregate data, which is never considered activated.
+  // TODO(crbug/1109754): Does it make sense to include an aggregate peak
+  // windowed percent?  Obviously this would be a max of maxes, but might be
+  // useful to have that for comparisons as well.
   ADS_HISTOGRAM(
       "Cpu.AdFrames.Aggregate.TotalUsage", PAGE_LOAD_HISTOGRAM, visibility,
       aggregate_ad_info_by_visibility_[static_cast<int>(visibility)].cpu_time);
+  ADS_HISTOGRAM("Cpu.NonAdFrames.Aggregate.TotalUsage", PAGE_LOAD_HISTOGRAM,
+                visibility, aggregate_non_ad_frame_data_->GetTotalCpuUsage());
+  ADS_HISTOGRAM("Cpu.NonAdFrames.Aggregate.PeakWindowedPercent",
+                UMA_HISTOGRAM_PERCENTAGE, visibility,
+                aggregate_non_ad_frame_data_->peak_windowed_cpu_percent());
   ADS_HISTOGRAM("Cpu.FullPage.TotalUsage", PAGE_LOAD_HISTOGRAM, visibility,
                 aggregate_frame_data_->GetTotalCpuUsage());
   ADS_HISTOGRAM("Cpu.FullPage.PeakWindowedPercent", UMA_HISTOGRAM_PERCENTAGE,

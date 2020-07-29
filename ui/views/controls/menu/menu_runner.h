@@ -67,6 +67,7 @@ class VIEWS_EXPORT MenuRunner {
 
     // The menu is a nested context menu. For example, click a folder on the
     // bookmark bar, then right click an entry to get its context menu.
+    // Currently implies FORCE_VIEWS.
     IS_NESTED = 1 << 1,
 
     // Used for showing a menu during a drop operation. This does NOT block the
@@ -108,6 +109,10 @@ class VIEWS_EXPORT MenuRunner {
 
     // Indicates that the menu should show mnemonics.
     SHOULD_SHOW_MNEMONICS = 1 << 10,
+
+    // Indicates that the menu contains Views-only features, and therefore
+    // should not be rendered using a native system menu.
+    FORCE_VIEWS = 1 << 11,
   };
 
   // Creates a new MenuRunner, which may use a native menu if available.

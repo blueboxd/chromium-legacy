@@ -8,66 +8,49 @@
 
 namespace performance_manager {
 
-SiteDataWriter::~SiteDataWriter() {
-  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  if (is_loaded_)
-    NotifySiteUnloaded();
-}
+SiteDataWriter::~SiteDataWriter() = default;
 
-void SiteDataWriter::NotifySiteLoaded() {
+void SiteDataWriter::NotifySiteLoaded(TabVisibility visibility) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
-  DCHECK(!is_loaded_);
-  is_loaded_ = true;
   impl_->NotifySiteLoaded();
 
-  if (tab_visibility_ == performance_manager::TabVisibility::kBackground)
+  if (visibility == TabVisibility::kBackground)
     impl_->NotifyLoadedSiteBackgrounded();
 }
 
-void SiteDataWriter::NotifySiteUnloaded() {
+void SiteDataWriter::NotifySiteUnloaded(TabVisibility visibility) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  DCHECK(is_loaded_);
 
-  is_loaded_ = false;
-
-  impl_->NotifySiteUnloaded(tab_visibility_);
+  impl_->NotifySiteUnloaded(visibility);
 }
 
-void SiteDataWriter::NotifySiteVisibilityChanged(
-    performance_manager::TabVisibility visibility) {
+void SiteDataWriter::NotifySiteForegrounded(bool is_loaded) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
-  // Ignore this if we receive the same event multiple times.
-  if (tab_visibility_ == visibility)
-    return;
+  if (is_loaded)
+    impl_->NotifyLoadedSiteForegrounded();
+}
 
-  tab_visibility_ = visibility;
+void SiteDataWriter::NotifySiteBackgrounded(bool is_loaded) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
-  if (is_loaded_) {
-    if (visibility == performance_manager::TabVisibility::kBackground) {
-      impl_->NotifyLoadedSiteBackgrounded();
-    } else {
-      impl_->NotifyLoadedSiteForegrounded();
-    }
-  }
+  if (is_loaded)
+    impl_->NotifyLoadedSiteBackgrounded();
 }
 
 void SiteDataWriter::NotifyUpdatesFaviconInBackground() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  DCHECK_EQ(performance_manager::TabVisibility::kBackground, tab_visibility_);
   impl_->NotifyUpdatesFaviconInBackground();
 }
 
 void SiteDataWriter::NotifyUpdatesTitleInBackground() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  DCHECK_EQ(performance_manager::TabVisibility::kBackground, tab_visibility_);
   impl_->NotifyUpdatesTitleInBackground();
 }
 
 void SiteDataWriter::NotifyUsesAudioInBackground() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  DCHECK_EQ(performance_manager::TabVisibility::kBackground, tab_visibility_);
   // TODO(sebmarchand): Do not advance the background audio observation time
   // when the WebContents has never played audio.
   impl_->NotifyUsesAudioInBackground();
@@ -82,10 +65,12 @@ void SiteDataWriter::NotifyLoadTimePerformanceMeasurement(
                                               private_footprint_kb_estimate);
 }
 
-SiteDataWriter::SiteDataWriter(
-    scoped_refptr<internal::SiteDataImpl> impl,
-    performance_manager::TabVisibility tab_visibility)
-    : impl_(std::move(impl)), tab_visibility_(tab_visibility) {
+const url::Origin& SiteDataWriter::Origin() const {
+  return impl_->origin();
+}
+
+SiteDataWriter::SiteDataWriter(scoped_refptr<internal::SiteDataImpl> impl)
+    : impl_(std::move(impl)) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 }
 

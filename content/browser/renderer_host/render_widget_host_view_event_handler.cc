@@ -9,6 +9,7 @@
 #include "base/metrics/user_metrics_action.h"
 #include "base/numerics/safe_conversions.h"
 #include "build/build_config.h"
+#include "components/viz/common/delegated_ink_point.h"
 #include "components/viz/common/features.h"
 #include "content/browser/renderer_host/hit_test_debug_key_event_observer.h"
 #include "content/browser/renderer_host/input/touch_selection_controller_client_aura.h"
@@ -30,6 +31,7 @@
 #include "ui/aura/window_delegate.h"
 #include "ui/aura/window_tree_host.h"
 #include "ui/base/ime/text_input_client.h"
+#include "ui/compositor/compositor.h"
 #include "ui/events/blink/blink_event_util.h"
 #include "ui/events/blink/web_input_event.h"
 #include "ui/events/keycodes/dom/dom_code.h"
@@ -378,6 +380,46 @@ void RenderWidgetHostViewEventHandler::HandleMouseWheelEvent(
   }
 }
 
+void RenderWidgetHostViewEventHandler::ForwardDelegatedInkPoint(
+    ui::LocatedEvent* event) {
+  if (host_view_->is_drawing_delegated_ink_trails()) {
+    if (!delegated_ink_point_renderer_.is_bound()) {
+      ui::Compositor* compositor = window_ && window_->layer()
+                                       ? window_->layer()->GetCompositor()
+                                       : nullptr;
+
+      // The remote can't be bound if the compositor is null, so bail if that
+      // is the case so we don't crash by trying to use an unbound remote.
+      if (!compositor)
+        return;
+
+      TRACE_EVENT_INSTANT0("input",
+                           "Binding mojo interface for delegated ink points.",
+                           TRACE_EVENT_SCOPE_THREAD);
+      compositor->SetDelegatedInkPointRenderer(
+          delegated_ink_point_renderer_.BindNewPipeAndPassReceiver());
+      delegated_ink_point_renderer_.reset_on_disconnect();
+    }
+
+    gfx::PointF point = event->root_location_f();
+    point.Scale(host_view_->GetDeviceScaleFactor());
+    viz::DelegatedInkPoint delegated_ink_point(point, event->time_stamp());
+    TRACE_EVENT_INSTANT1("input",
+                         "Forwarding delegated ink point from browser.",
+                         TRACE_EVENT_SCOPE_THREAD, "delegated point",
+                         delegated_ink_point.ToString());
+
+    // Calling this will result in IPC calls to get |delegated_ink_point| to
+    // viz. The decision to do this here was made with the understanding that
+    // the IPC overhead will result in a minor increase in latency for getting
+    // this event to the renderer. However, by sending it here, the event is
+    // given the greatest possible chance to make it to viz before
+    // DrawAndSwap() is called, allowing more points to be drawn as part of
+    // the delegated ink trail, and thus reducing user perceived latency.
+    delegated_ink_point_renderer_->StoreDelegatedInkPoint(delegated_ink_point);
+  }
+}
+
 void RenderWidgetHostViewEventHandler::OnMouseEvent(ui::MouseEvent* event) {
   TRACE_EVENT0("input", "RenderWidgetHostViewBase::OnMouseEvent");
 
@@ -421,6 +463,8 @@ void RenderWidgetHostViewEventHandler::OnMouseEvent(ui::MouseEvent* event) {
     bool is_selection_popup = NeedsInputGrab(popup_child_host_view_);
     if (CanRendererHandleEvent(event, mouse_locked_, is_selection_popup) &&
         !(event->flags() & ui::EF_FROM_TOUCH)) {
+      ForwardDelegatedInkPoint(event);
+
       // Confirm existing composition text on mouse press, to make sure
       // the input caret won't be moved with an ongoing composition text.
       if (event->type() == ui::ET_MOUSE_PRESSED)
@@ -543,6 +587,8 @@ void RenderWidgetHostViewEventHandler::OnTouchEvent(ui::TouchEvent* event) {
 
   if (handled)
     return;
+
+  ForwardDelegatedInkPoint(event);
 
   if (had_no_pointer)
     delegate_->selection_controller_client()->OnTouchDown();

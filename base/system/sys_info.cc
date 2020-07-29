@@ -83,7 +83,7 @@ bool SysInfo::IsLowEndDeviceImpl() {
 }
 #endif
 
-#if !defined(OS_MACOSX) && !defined(OS_ANDROID)
+#if !defined(OS_APPLE) && !defined(OS_ANDROID)
 std::string SysInfo::HardwareModelName() {
   return std::string();
 }
@@ -99,7 +99,7 @@ void SysInfo::GetHardwareInfo(base::OnceCallback<void(HardwareInfo)> callback) {
           {TaskShutdownBehavior::CONTINUE_ON_SHUTDOWN})
           .get(),
       FROM_HERE, base::BindOnce(&GetHardwareInfoSync), std::move(callback));
-#elif defined(OS_ANDROID) || defined(OS_MACOSX)
+#elif defined(OS_ANDROID) || defined(OS_APPLE)
   base::ThreadPool::PostTaskAndReplyWithResult(
       FROM_HERE, {}, base::BindOnce(&GetHardwareInfoSync), std::move(callback));
 #elif defined(OS_LINUX)

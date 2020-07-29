@@ -71,6 +71,10 @@ class RootCompositorFrameSinkImpl : public mojom::CompositorFrameSink,
   void AddVSyncParameterObserver(
       mojo::PendingRemote<mojom::VSyncParameterObserver> observer) override;
 
+  void SetDelegatedInkPointRenderer(
+      mojo::PendingReceiver<mojom::DelegatedInkPointRenderer> receiver)
+      override;
+
   // mojom::CompositorFrameSink:
   void SetNeedsBeginFrame(bool needs_begin_frame) override;
   void SetWantsAnimateOnlyBeginFrames() override;

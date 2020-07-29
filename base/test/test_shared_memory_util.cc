@@ -24,7 +24,7 @@
 #include <zircon/rights.h>
 #endif
 
-#if defined(OS_MACOSX) && !defined(OS_IOS)
+#if defined(OS_MAC)
 #include <mach/mach_vm.h>
 #endif
 
@@ -41,7 +41,7 @@ static const size_t kDataSize = 1024;
 // Common routine used with Posix file descriptors. Check that shared memory
 // file descriptor |fd| does not allow writable mappings. Return true on
 // success, false otherwise.
-#if defined(OS_POSIX) && !(defined(OS_MACOSX) && !defined(OS_IOS))
+#if defined(OS_POSIX) && !defined(OS_MAC)
 static bool CheckReadOnlySharedMemoryFdPosix(int fd) {
 // Note that the error on Android is EPERM, unlike other platforms where
 // it will be EACCES.
@@ -66,7 +66,7 @@ static bool CheckReadOnlySharedMemoryFdPosix(int fd) {
   }
   return true;
 }
-#endif  // OS_POSIX && !(defined(OS_MACOSX) && !defined(OS_IOS))
+#endif  // OS_POSIX && !defined(OS_MAC)
 
 #if defined(OS_FUCHSIA)
 // Fuchsia specific implementation.
@@ -88,7 +88,7 @@ bool CheckReadOnlySharedMemoryFuchsiaHandle(zx::unowned_vmo handle) {
   return true;
 }
 
-#elif defined(OS_MACOSX) && !defined(OS_IOS)
+#elif defined(OS_MAC)
 bool CheckReadOnlySharedMemoryMachPort(mach_port_t memory_object) {
   mach_vm_address_t memory;
   const kern_return_t kr = mach_vm_map(
@@ -126,7 +126,7 @@ bool CheckReadOnlyPlatformSharedMemoryRegionForTesting(
     return false;
   }
 
-#if defined(OS_MACOSX) && !defined(OS_IOS)
+#if defined(OS_MAC)
   return CheckReadOnlySharedMemoryMachPort(region.GetPlatformHandle());
 #elif defined(OS_FUCHSIA)
   return CheckReadOnlySharedMemoryFuchsiaHandle(region.GetPlatformHandle());

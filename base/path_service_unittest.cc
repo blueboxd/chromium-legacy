@@ -48,7 +48,7 @@ bool ReturnsValidPath(int dir_type) {
   if (dir_type == DIR_TASKBAR_PINS)
     check_path_exists = false;
 #endif
-#if defined(OS_MACOSX)
+#if defined(OS_APPLE)
   if (dir_type != DIR_EXE && dir_type != DIR_MODULE && dir_type != FILE_EXE &&
       dir_type != FILE_MODULE) {
     if (path.ReferencesParent()) {
@@ -125,7 +125,7 @@ TEST_F(PathServiceTest, Get) {
     else
       EXPECT_PRED1(ReturnsInvalidPath, key);
   }
-#elif defined(OS_MACOSX)
+#elif defined(OS_APPLE)
   for (int key = PATH_MAC_START + 1; key < PATH_MAC_END; ++key) {
     EXPECT_PRED1(ReturnsValidPath, key);
   }

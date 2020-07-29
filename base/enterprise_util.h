@@ -16,7 +16,7 @@ namespace base {
 // outside administrator.
 BASE_EXPORT bool IsMachineExternallyManaged();
 
-#if defined(OS_MACOSX)
+#if defined(OS_APPLE)
 
 // Returns true if the device is being managed by an MDM system. Uses an old API
 // not intended for the purpose.

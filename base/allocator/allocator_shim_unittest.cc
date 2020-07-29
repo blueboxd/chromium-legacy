@@ -25,7 +25,7 @@
 #if defined(OS_WIN)
 #include <windows.h>
 #include <malloc.h>
-#elif defined(OS_MACOSX)
+#elif defined(OS_APPLE)
 #include <malloc/malloc.h>
 #include "base/allocator/allocator_interception_mac.h"
 #include "base/mac/mac_util.h"
@@ -250,14 +250,14 @@ class AllocatorShimTest : public testing::Test {
     subtle::Release_Store(&num_new_handler_calls, 0);
     instance_ = this;
 
-#if defined(OS_MACOSX)
+#if defined(OS_APPLE)
     InitializeAllocatorShim();
 #endif
   }
 
   void TearDown() override {
     instance_ = nullptr;
-#if defined(OS_MACOSX)
+#if defined(OS_APPLE)
     UninterceptMallocZonesForTesting();
 #endif
   }
@@ -355,7 +355,7 @@ TEST_F(AllocatorShimTest, InterceptLibcSymbols) {
   ASSERT_GE(aligned_allocs_intercepted_by_size[61], 1u);
 #endif  // !OS_WIN
 
-#if !defined(OS_WIN) && !defined(OS_MACOSX)
+#if !defined(OS_WIN) && !defined(OS_APPLE)
   void* memalign_ptr = memalign(128, 53);
   ASSERT_NE(nullptr, memalign_ptr);
   ASSERT_EQ(0u, reinterpret_cast<uintptr_t>(memalign_ptr) % 128);
@@ -384,7 +384,7 @@ TEST_F(AllocatorShimTest, InterceptLibcSymbols) {
   free(zero_alloc_ptr);
   ASSERT_GE(frees_intercepted_by_addr[Hash(zero_alloc_ptr)], 1u);
 
-#if !defined(OS_WIN) && !defined(OS_MACOSX)
+#if !defined(OS_WIN) && !defined(OS_APPLE)
   free(memalign_ptr);
   ASSERT_GE(frees_intercepted_by_addr[Hash(memalign_ptr)], 1u);
 
@@ -411,7 +411,7 @@ TEST_F(AllocatorShimTest, InterceptLibcSymbols) {
   free(non_hooked_ptr);
 }
 
-#if defined(OS_MACOSX)
+#if defined(OS_APPLE)
 TEST_F(AllocatorShimTest, InterceptLibcSymbolsBatchMallocFree) {
   InsertAllocatorDispatch(&g_mock_dispatch);
 
@@ -450,7 +450,7 @@ TEST_F(AllocatorShimTest, InterceptLibcSymbolsFreeDefiniteSize) {
   ASSERT_GE(free_definite_sizes_intercepted_by_size[19], 1u);
   RemoveAllocatorDispatchForTesting(&g_mock_dispatch);
 }
-#endif  // defined(OS_MACOSX)
+#endif  // defined(OS_APPLE)
 
 #if defined(OS_WIN)
 TEST_F(AllocatorShimTest, InterceptUcrtAlignedAllocationSymbols) {
@@ -553,7 +553,7 @@ TEST_F(AllocatorShimTest, ShimReplacesCRTHeapWhenEnabled) {
 static size_t GetAllocatedSize(void* ptr) {
   return _msize(ptr);
 }
-#elif defined(OS_MACOSX)
+#elif defined(OS_APPLE)
 static size_t GetAllocatedSize(void* ptr) {
   return malloc_size(ptr);
 }

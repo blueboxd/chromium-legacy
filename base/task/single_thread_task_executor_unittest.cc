@@ -562,10 +562,10 @@ class SingleThreadTaskExecutorTypedTest
       case MessagePumpType::JAVA:
         break;
 #endif  // defined(OS_ANDROID)
-#if defined(OS_MACOSX)
+#if defined(OS_APPLE)
       case MessagePumpType::NS_RUNLOOP:
         break;
-#endif  // defined(OS_MACOSX)
+#endif  // defined(OS_APPLE)
 #if defined(OS_WIN)
       case MessagePumpType::UI_WITH_WM_QUIT_SUPPORT:
         break;

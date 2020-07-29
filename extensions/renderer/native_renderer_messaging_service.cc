@@ -35,6 +35,7 @@
 #include "gin/data_object_builder.h"
 #include "gin/handle.h"
 #include "gin/per_context_data.h"
+#include "third_party/blink/public/mojom/frame/user_activation_notification_type.mojom.h"
 #include "third_party/blink/public/web/web_document.h"
 #include "third_party/blink/public/web/web_local_frame.h"
 #include "third_party/blink/public/web/web_scoped_window_focus_allowed_indicator.h"
@@ -316,7 +317,10 @@ void NativeRendererMessagingService::DeliverMessageToScriptContext(
   std::unique_ptr<blink::WebScopedWindowFocusAllowedIndicator>
       allow_window_focus;
   if (message.user_gesture && script_context->web_frame()) {
-    script_context->web_frame()->NotifyUserActivation();
+    // TODO(mustaq): Split this further for trusted/untrusted cases.
+    script_context->web_frame()->NotifyUserActivation(
+        blink::mojom::UserActivationNotificationType::kExtensionMessaging);
+
     blink::WebDocument document = script_context->web_frame()->GetDocument();
     allow_window_focus =
         std::make_unique<blink::WebScopedWindowFocusAllowedIndicator>(

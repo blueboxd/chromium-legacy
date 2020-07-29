@@ -401,14 +401,11 @@ class SelectionPaintState {
     PaintRect(context, *selection_rect_, color);
   }
 
-  // Transposes selection_rect_. Called before we paint vertical selected text
-  // under a rotation transform.
-  void TransposeSelectionRect(const PhysicalOffset& origin) {
+  // Called before we paint vertical selected text under a rotation transform.
+  void MapSelectionRectIntoRotatedSpace(const AffineTransform& rotation) {
     DCHECK(selection_rect_);
-    selection_rect_->Move(-origin);
-    std::swap(selection_rect_->offset.top, selection_rect_->offset.left);
-    std::swap(selection_rect_->size.width, selection_rect_->size.height);
-    selection_rect_->Move(origin);
+    *selection_rect_ = PhysicalRect::EnclosingRect(
+        rotation.Inverse().MapRect(FloatRect(*selection_rect_)));
   }
 
   // Paint the selected text only.
@@ -599,8 +596,6 @@ void NGTextFragmentPainter<Cursor>::Paint(const PaintInfo& paint_info,
   const SimpleFontData* font_data = font.PrimaryFont();
   DCHECK(font_data);
 
-  base::Optional<GraphicsContextStateSaver> state_saver;
-
   // 1. Paint backgrounds behind text if needed. Examples of such backgrounds
   // include selection and composition highlights. They use physical coordinates
   // so are painted before GraphicsContext rotation.
@@ -619,6 +614,8 @@ void NGTextFragmentPainter<Cursor>::Paint(const PaintInfo& paint_info,
     }
   }
 
+  base::Optional<GraphicsContextStateSaver> state_saver;
+  base::Optional<AffineTransform> rotation;
   const WritingMode writing_mode = style.GetWritingMode();
   const bool is_horizontal = IsHorizontalWritingMode(writing_mode);
   if (!is_horizontal) {
@@ -626,10 +623,11 @@ void NGTextFragmentPainter<Cursor>::Paint(const PaintInfo& paint_info,
     // Because we rotate the GraphicsContext to match the logical direction,
     // transpose the |box_rect| to match to it.
     box_rect.size = PhysicalSize(box_rect.Height(), box_rect.Width());
-    context.ConcatCTM(TextPainterBase::Rotation(
+    rotation.emplace(TextPainterBase::Rotation(
         box_rect, writing_mode != WritingMode::kSidewaysLr
                       ? TextPainterBase::kClockwise
                       : TextPainterBase::kCounterclockwise));
+    context.ConcatCTM(*rotation);
   }
 
   // 2. Now paint the foreground, including text and decorations.
@@ -700,8 +698,8 @@ void NGTextFragmentPainter<Cursor>::Paint(const PaintInfo& paint_info,
     // Paint only the text that is selected.
     if (!selection->IsSelectionRectComputed())
       selection->ComputeSelectionRect(box_rect.offset);
-    if (!is_horizontal)
-      selection->TransposeSelectionRect(box_rect.offset);
+    if (rotation)
+      selection->MapSelectionRectIntoRotatedSpace(*rotation);
     selection->PaintSelectedText(text_painter, length, text_style, node_id);
   }
 

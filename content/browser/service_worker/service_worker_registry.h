@@ -296,7 +296,7 @@ class CONTENT_EXPORT ServiceWorkerRegistry {
   void DidGetAllRegistrations(
       GetRegistrationsInfosCallback callback,
       storage::mojom::ServiceWorkerDatabaseStatus database_status,
-      std::unique_ptr<RegistrationList> registration_data_list);
+      RegistrationList registration_data_list);
 
   void DidStoreRegistration(
       int64_t stored_registration_id,

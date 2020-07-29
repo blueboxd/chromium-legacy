@@ -98,7 +98,7 @@ gfx::DisplayColorSpaces FillDisplayColorSpaces(
 
   if (allow_high_bit_depth && snapshot_color_space.IsHDR()) {
     constexpr float kSDRJoint = 0.75;
-    constexpr float kHDRLevel = 3.0;
+    constexpr float kHDRLevel = 4.0;
     const auto primary_id = snapshot_color_space.GetPrimaryID();
     gfx::ColorSpace hdr_color_space;
     if (primary_id == gfx::ColorSpace::PrimaryID::CUSTOM) {

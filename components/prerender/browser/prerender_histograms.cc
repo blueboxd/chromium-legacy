@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/prerender/prerender_histograms.h"
+#include "components/prerender/browser/prerender_histograms.h"
 
 #include <string>
 
@@ -13,7 +13,6 @@
 #include "base/metrics/histogram_macros.h"
 #include "base/notreached.h"
 #include "base/strings/stringprintf.h"
-#include "chrome/browser/prerender/prerender_manager.h"
 #include "components/google/core/common/google_util.h"
 #include "components/prerender/common/prerender_util.h"
 #include "net/http/http_cache.h"
@@ -105,7 +104,7 @@ void PrerenderHistograms::RecordPrefetchFirstContentfulPaintTime(
     bool was_hidden,
     base::TimeDelta time,
     base::TimeDelta prefetch_age) const {
-  DCHECK(thread_checker_.CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
 
   if (!prefetch_age.is_zero()) {
     DCHECK_NE(origin, ORIGIN_NONE);

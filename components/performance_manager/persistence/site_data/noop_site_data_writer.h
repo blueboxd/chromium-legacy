@@ -7,6 +7,7 @@
 
 #include "base/macros.h"
 #include "components/performance_manager/persistence/site_data/site_data_writer.h"
+#include "url/origin.h"
 
 namespace performance_manager {
 
@@ -16,10 +17,10 @@ class NoopSiteDataWriter : public SiteDataWriter {
   ~NoopSiteDataWriter() override;
 
   // Implementation of SiteDataWriter:
-  void NotifySiteLoaded() override;
-  void NotifySiteUnloaded() override;
-  void NotifySiteVisibilityChanged(
-      performance_manager::TabVisibility visibility) override;
+  void NotifySiteLoaded(TabVisibility visibility) override;
+  void NotifySiteUnloaded(TabVisibility visibility) override;
+  void NotifySiteForegrounded(bool is_loaded) override;
+  void NotifySiteBackgrounded(bool is_loaded) override;
   void NotifyUpdatesFaviconInBackground() override;
   void NotifyUpdatesTitleInBackground() override;
   void NotifyUsesAudioInBackground() override;
@@ -27,6 +28,7 @@ class NoopSiteDataWriter : public SiteDataWriter {
       base::TimeDelta load_duration,
       base::TimeDelta cpu_usage_estimate,
       uint64_t private_footprint_kb_estimate) override;
+  const url::Origin& Origin() const override;
 
  private:
   friend class NonRecordingSiteDataCache;

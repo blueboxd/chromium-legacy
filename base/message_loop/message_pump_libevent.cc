@@ -20,7 +20,7 @@
 #include "base/trace_event/base_tracing.h"
 #include "build/build_config.h"
 
-#if defined(OS_MACOSX)
+#if defined(OS_APPLE)
 #include "base/mac/scoped_nsautorelease_pool.h"
 #endif
 
@@ -202,7 +202,7 @@ void MessagePumpLibevent::Run(Delegate* delegate) {
   std::unique_ptr<event> timer_event(new event);
 
   for (;;) {
-#if defined(OS_MACOSX)
+#if defined(OS_APPLE)
     mac::ScopedNSAutoreleasePool autorelease_pool;
 #endif
     // Do some work and see if the next task is ready right away.

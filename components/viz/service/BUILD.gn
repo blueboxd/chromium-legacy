@@ -20,6 +20,8 @@ viz_component("service") {
     "display/bsp_walk_action.h",
     "display/damage_frame_annotator.cc",
     "display/damage_frame_annotator.h",
+    "display/delegated_ink_point_renderer.cc",
+    "display/delegated_ink_point_renderer.h",
     "display/direct_renderer.cc",
     "display/direct_renderer.h",
     "display/display.cc",

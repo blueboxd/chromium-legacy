@@ -55,6 +55,19 @@ void DidGetUserDataForAllRegistrations(
   std::move(callback).Run(status, std::move(values));
 }
 
+void DidGetAllRegistrations(
+    ServiceWorkerStorageControlImpl::GetAllRegistrationsDeprecatedCallback
+        callback,
+    storage::mojom::ServiceWorkerDatabaseStatus status,
+    std::unique_ptr<ServiceWorkerStorage::RegistrationList> registrations) {
+  if (status != storage::mojom::ServiceWorkerDatabaseStatus::kOk) {
+    std::move(callback).Run(status, ServiceWorkerStorage::RegistrationList());
+    return;
+  }
+  DCHECK(registrations);
+  std::move(callback).Run(status, std::move(*registrations));
+}
+
 }  // namespace
 
 class ServiceWorkerLiveVersionRefImpl
@@ -179,6 +192,12 @@ void ServiceWorkerStorageControlImpl::GetUsageForOrigin(
     const url::Origin& origin,
     GetUsageForOriginCallback callback) {
   storage_->GetUsageForOrigin(origin, std::move(callback));
+}
+
+void ServiceWorkerStorageControlImpl::GetAllRegistrationsDeprecated(
+    GetAllRegistrationsDeprecatedCallback callback) {
+  storage_->GetAllRegistrations(
+      base::BindOnce(&DidGetAllRegistrations, std::move(callback)));
 }
 
 void ServiceWorkerStorageControlImpl::StoreRegistration(

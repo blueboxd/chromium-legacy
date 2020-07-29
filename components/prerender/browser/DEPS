@@ -1,3 +1,5 @@
 include_rules = [
+  "+components/google/core/common",
+  "+net/http/http_cache.h",
   "+ui/gfx/geometry/rect.h",
 ]

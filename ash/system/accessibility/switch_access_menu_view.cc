@@ -19,7 +19,6 @@
 namespace ash {
 
 namespace {
-constexpr char kUniqueId[] = "switch_access_menu_view";
 constexpr int kMaxColumns = 3;
 
 struct ButtonInfo {
@@ -129,7 +128,6 @@ int SwitchAccessMenuView::GetBubbleWidthDip() const {
 
 void SwitchAccessMenuView::GetAccessibleNodeData(ui::AXNodeData* node_data) {
   node_data->role = ax::mojom::Role::kMenu;
-  node_data->html_attributes.push_back(std::make_pair("id", kUniqueId));
 }
 
 const char* SwitchAccessMenuView::GetClassName() const {

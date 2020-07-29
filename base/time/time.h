@@ -69,7 +69,7 @@
 #include <zircon/types.h>
 #endif
 
-#if defined(OS_MACOSX)
+#if defined(OS_APPLE)
 #include <CoreFoundation/CoreFoundation.h>
 // Avoid Mac system header macro leak.
 #undef TYPE_BOOL
@@ -151,9 +151,9 @@ class BASE_EXPORT TimeDelta {
 #if defined(OS_FUCHSIA)
   static TimeDelta FromZxDuration(zx_duration_t nanos);
 #endif
-#if defined(OS_MACOSX) && !defined(OS_IOS)
+#if defined(OS_MAC)
   static TimeDelta FromMachTime(uint64_t mach_time);
-#endif  // defined(OS_MACOSX) && !defined(OS_IOS)
+#endif  // defined(OS_MAC)
 
   // From Go's doc at https://golang.org/pkg/time/#ParseDuration
   //   [ParseDuration] parses a duration string. A duration string is
@@ -538,7 +538,7 @@ class BASE_EXPORT Time : public time_internal::TimeBase<Time> {
 #elif defined(OS_IOS) && !__LP64__
   static constexpr int kExplodedMinYear = std::numeric_limits<int>::min();
   static constexpr int kExplodedMaxYear = std::numeric_limits<int>::max();
-#elif defined(OS_MACOSX)
+#elif defined(OS_APPLE)
   static constexpr int kExplodedMinYear = 1902;
   static constexpr int kExplodedMaxYear = std::numeric_limits<int>::max();
 #elif defined(OS_ANDROID)
@@ -653,7 +653,7 @@ class BASE_EXPORT Time : public time_internal::TimeBase<Time> {
   zx_time_t ToZxTime() const;
 #endif
 
-#if defined(OS_MACOSX)
+#if defined(OS_APPLE)
   static Time FromCFAbsoluteTime(CFAbsoluteTime t);
   CFAbsoluteTime ToCFAbsoluteTime() const;
 #endif
@@ -957,9 +957,9 @@ class BASE_EXPORT TimeTicks : public time_internal::TimeBase<TimeTicks> {
   static TimeTicks FromQPCValue(LONGLONG qpc_value);
 #endif
 
-#if defined(OS_MACOSX) && !defined(OS_IOS)
+#if defined(OS_MAC)
   static TimeTicks FromMachAbsoluteTime(uint64_t mach_absolute_time);
-#endif  // defined(OS_MACOSX) && !defined(OS_IOS)
+#endif  // defined(OS_MAC)
 
 #if defined(OS_ANDROID) || defined(OS_CHROMEOS)
   // Converts to TimeTicks the value obtained from SystemClock.uptimeMillis().
@@ -1029,8 +1029,7 @@ class BASE_EXPORT ThreadTicks : public time_internal::TimeBase<ThreadTicks> {
   // Returns true if ThreadTicks::Now() is supported on this system.
   static bool IsSupported() WARN_UNUSED_RESULT {
 #if (defined(_POSIX_THREAD_CPUTIME) && (_POSIX_THREAD_CPUTIME >= 0)) || \
-    (defined(OS_MACOSX) && !defined(OS_IOS)) || defined(OS_ANDROID) ||  \
-    defined(OS_FUCHSIA)
+    defined(OS_MAC) || defined(OS_ANDROID) || defined(OS_FUCHSIA)
     return true;
 #elif defined(OS_WIN)
     return IsSupportedWin();

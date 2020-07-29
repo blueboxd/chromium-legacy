@@ -12,7 +12,7 @@
 #include "build/build_config.h"
 
 #if defined(OS_LINUX) || defined(OS_ANDROID) || defined(OS_WIN) || \
-    (defined(OS_MACOSX) && !defined(OS_IOS))
+    defined(OS_MAC)
 #define MALLOC_MEMORY_TRACING_SUPPORTED
 #endif
 

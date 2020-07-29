@@ -194,6 +194,7 @@ apps::mojom::AppLaunchSource GetAppLaunchSource(
     case apps::mojom::LaunchSource::kFromOmnibox:
     case apps::mojom::LaunchSource::kFromOtherApp:
     case apps::mojom::LaunchSource::kFromMenu:
+    case apps::mojom::LaunchSource::kFromSharesheet:
       return apps::mojom::AppLaunchSource::kSourceAppLauncher;
     case apps::mojom::LaunchSource::kFromKeyboard:
       return apps::mojom::AppLaunchSource::kSourceKeyboard;

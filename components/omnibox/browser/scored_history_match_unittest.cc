@@ -73,17 +73,6 @@ class ScoredHistoryMatchTest : public testing::Test {
       const WordStarts term_word_starts,
       const GURL& url,
       const base::string16& title);
-
-  // Midword matching is enabled by default on desktop but not mobile. The
-  // feature affects the expectations of some tests. To avoid duplicating the
-  // tests or their expectations, this method will explicitly enable midword
-  // matching on mobile while verifying that its enabled by default on desktop.
-  // We expect to make a launch decision for mobile soon, at which point we can
-  // remove this.
-  // TODO(manukh): Remove EnableMidwordMatchingIfNotEnabledByDefault and its
-  //  uses once midword matching launch decision is made.
-  void EnableMidwordMatchingIfNotEnabledByDefault(
-      base::test::ScopedFeatureList& feature_list);
 };
 
 history::URLRow ScoredHistoryMatchTest::MakeURLRow(const char* url,
@@ -147,21 +136,6 @@ float ScoredHistoryMatchTest::GetTopicalityScoreOfTermAgainstURLAndTitle(
   return scored_match.GetTopicalityScore(term_vector.size(), url,
                                          base::OffsetAdjuster::Adjustments(),
                                          term_word_starts, row_word_starts);
-}
-
-void ScoredHistoryMatchTest::EnableMidwordMatchingIfNotEnabledByDefault(
-    base::test::ScopedFeatureList& feature_list) {
-#if defined(OS_ANDROID) || defined(OS_IOS)
-  // To avoid having to duplicate test expectations, we enable midword matching
-  // for mobile with the expectation that we'll either soon launch on mobile.
-  feature_list.InitWithFeatures(
-      {omnibox::kHistoryQuickProviderAllowButDoNotScoreMidwordTerms,
-       omnibox::kHistoryQuickProviderAllowMidwordContinuations},
-      {});
-#else
-  // Should be enabled by default on desktop.
-  feature_list.InitWithFeatures({}, {});
-#endif
 }
 
 TEST_F(ScoredHistoryMatchTest, Scoring) {
@@ -258,9 +232,6 @@ TEST_F(ScoredHistoryMatchTest, ScoringBookmarks) {
 }
 
 TEST_F(ScoredHistoryMatchTest, ScoringTLD) {
-  base::test::ScopedFeatureList feature_list;
-  EnableMidwordMatchingIfNotEnabledByDefault(feature_list);
-
   // We use NowFromSystemTime() because MakeURLRow uses the same function
   // to calculate last visit time when building a row.
   base::Time now = base::Time::NowFromSystemTime();
@@ -289,9 +260,6 @@ TEST_F(ScoredHistoryMatchTest, ScoringTLD) {
 }
 
 TEST_F(ScoredHistoryMatchTest, ScoringScheme) {
-  base::test::ScopedFeatureList feature_list;
-  EnableMidwordMatchingIfNotEnabledByDefault(feature_list);
-
   // We use NowFromSystemTime() because MakeURLRow uses the same function
   // to calculate last visit time when building a row.
   base::Time now = base::Time::NowFromSystemTime();
@@ -772,8 +740,6 @@ TEST_F(ScoredHistoryMatchTest, GetTopicalityScore_MidwordMatching) {
 
   // Check that midword matches are allowed and scored by default.
   {
-    base::test::ScopedFeatureList feature_list;
-    EnableMidwordMatchingIfNotEnabledByDefault(feature_list);
     const float wordstart = Score({"frag"}, {0u});
     const float midword = Score({"ment"}, {0u});
     const float wordstart_midword_continuation =

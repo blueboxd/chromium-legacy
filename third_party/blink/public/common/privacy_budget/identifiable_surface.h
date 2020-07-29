@@ -71,6 +71,9 @@ class IdentifiableSurface {
     // GenericFamilyType.
     kGenericFontLookup = 4,
 
+    // Attempt to access extension URLs.
+    kExtensionFileAccess = 5,
+
     // We can use values up to and including |kMax|.
     kMax = (1 << kTypeBits) - 1
   };

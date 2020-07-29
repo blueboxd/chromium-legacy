@@ -37,7 +37,6 @@ class WebDialogView : public views::WebDialogView,
   ~WebDialogView() override;
 
   // views::WebDialogView
-  bool ShouldShowCloseButton() const override;
   bool TakeFocus(content::WebContents* source, bool reverse) override;
 
   // ash::SystemTrayFocusObserver

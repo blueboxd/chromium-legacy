@@ -306,7 +306,7 @@ void ServiceWorkerRegistry::GetStorageUsageForOrigin(
 void ServiceWorkerRegistry::GetAllRegistrationsInfos(
     GetRegistrationsInfosCallback callback) {
   DCHECK_CURRENTLY_ON(ServiceWorkerContext::GetCoreThreadId());
-  storage()->GetAllRegistrations(
+  GetRemoteStorageControl()->GetAllRegistrationsDeprecated(
       base::BindOnce(&ServiceWorkerRegistry::DidGetAllRegistrations,
                      weak_factory_.GetWeakPtr(), std::move(callback)));
 }
@@ -1043,7 +1043,7 @@ void ServiceWorkerRegistry::DidGetRegistrationsForOrigin(
 void ServiceWorkerRegistry::DidGetAllRegistrations(
     GetRegistrationsInfosCallback callback,
     storage::mojom::ServiceWorkerDatabaseStatus database_status,
-    std::unique_ptr<RegistrationList> registration_data_list) {
+    RegistrationList registration_data_list) {
   DCHECK_CURRENTLY_ON(ServiceWorkerContext::GetCoreThreadId());
   blink::ServiceWorkerStatusCode status =
       DatabaseStatusToStatusCode(database_status);
@@ -1056,12 +1056,10 @@ void ServiceWorkerRegistry::DidGetAllRegistrations(
     return;
   }
 
-  DCHECK(registration_data_list);
-
   // Add all stored registrations.
   std::set<int64_t> pushed_registrations;
   std::vector<ServiceWorkerRegistrationInfo> infos;
-  for (const auto& registration_data : *registration_data_list) {
+  for (const auto& registration_data : registration_data_list) {
     const bool inserted =
         pushed_registrations.insert(registration_data->registration_id).second;
     DCHECK(inserted);

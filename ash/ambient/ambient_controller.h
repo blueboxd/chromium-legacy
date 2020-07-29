@@ -38,6 +38,7 @@ class AmbientViewDelegateObserver;
 // Class to handle all ambient mode functionalities.
 class ASH_EXPORT AmbientController
     : public AmbientUiModelObserver,
+      public AmbientBackendModelObserver,
       public SessionObserver,
       public PowerStatus::Observer,
       public chromeos::PowerManagerClient::Observer {
@@ -66,10 +67,6 @@ class ASH_EXPORT AmbientController
 
   void AddAmbientViewDelegateObserver(AmbientViewDelegateObserver* observer);
   void RemoveAmbientViewDelegateObserver(AmbientViewDelegateObserver* observer);
-
-  // Initializes the |container_view_|. Called in |CreateWidget()| to create the
-  // contents view.
-  std::unique_ptr<AmbientContainerView> CreateContainerView();
 
   // Invoked to show/close ambient UI in |mode|.
   void ShowUi(AmbientUiMode mode);
@@ -102,6 +99,13 @@ class ASH_EXPORT AmbientController
   class InactivityMonitor;
   friend class AmbientAshTestBase;
 
+  // AmbientBackendModelObserver overrides:
+  void OnImagesChanged() override;
+
+  // Initializes the |container_view_|. Called in |CreateWidget()| to create the
+  // contents view.
+  std::unique_ptr<AmbientContainerView> CreateContainerView();
+
   // TODO(meilinw): reuses the lock-screen widget: b/156531168, b/157175030.
   // Creates and shows a full-screen widget responsible for showing
   // the ambient UI.
@@ -113,8 +117,6 @@ class ASH_EXPORT AmbientController
   // Invoked when the auto-show timer in |InactivityMonitor| gets fired after
   // device being inactive for a specific amount of time.
   void OnAutoShowTimeOut();
-
-  void CleanUpOnClosed();
 
   void set_backend_controller_for_testing(
       std::unique_ptr<AmbientBackendController> photo_client);
@@ -162,6 +164,8 @@ class ASH_EXPORT AmbientController
 
   ScopedObserver<AmbientUiModel, AmbientUiModelObserver>
       ambient_ui_model_observer_{this};
+  ScopedObserver<AmbientBackendModel, AmbientBackendModelObserver>
+      ambient_backend_model_observer_{this};
   ScopedObserver<SessionControllerImpl, SessionObserver> session_observer_{
       this};
   ScopedObserver<PowerStatus, PowerStatus::Observer> power_status_observer_{

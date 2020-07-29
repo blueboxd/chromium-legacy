@@ -74,31 +74,25 @@ TEST_F(NonRecordingSiteDataCacheTest, EndToEnd) {
   // recording data cache aren't recorded.
   auto reader = non_recording_data_cache_->GetReaderForOrigin(kTestOrigin);
   EXPECT_TRUE(reader);
-  auto fake_writer = non_recording_data_cache_->GetWriterForOrigin(
-      kTestOrigin, performance_manager::TabVisibility::kBackground);
+  auto fake_writer = non_recording_data_cache_->GetWriterForOrigin(kTestOrigin);
   EXPECT_TRUE(fake_writer);
-  auto real_writer = recording_data_cache_->GetWriterForOrigin(
-      kTestOrigin, performance_manager::TabVisibility::kBackground);
+  auto real_writer = recording_data_cache_->GetWriterForOrigin(kTestOrigin);
   EXPECT_TRUE(real_writer);
 
   EXPECT_EQ(performance_manager::SiteFeatureUsage::kSiteFeatureUsageUnknown,
             reader->UpdatesTitleInBackground());
-  fake_writer->NotifySiteLoaded();
+  fake_writer->NotifySiteLoaded(TabVisibility::kBackground);
   fake_writer->NotifyUpdatesTitleInBackground();
   EXPECT_EQ(performance_manager::SiteFeatureUsage::kSiteFeatureUsageUnknown,
             reader->UpdatesTitleInBackground());
 
-  real_writer->NotifySiteLoaded();
+  real_writer->NotifySiteLoaded(TabVisibility::kBackground);
   real_writer->NotifyUpdatesTitleInBackground();
   EXPECT_EQ(performance_manager::SiteFeatureUsage::kSiteFeatureInUse,
             reader->UpdatesTitleInBackground());
 
-  // These unload events shouldn't be registered, make sure that they aren't by
-  // unloading the site more time than it has been loaded.
-  fake_writer->NotifySiteUnloaded();
-  fake_writer->NotifySiteUnloaded();
-
-  real_writer->NotifySiteUnloaded();
+  fake_writer->NotifySiteUnloaded(TabVisibility::kBackground);
+  real_writer->NotifySiteUnloaded(TabVisibility::kBackground);
 }
 
 TEST_F(NonRecordingSiteDataCacheTest, InspectorWorks) {
@@ -121,8 +115,7 @@ TEST_F(NonRecordingSiteDataCacheTest, InspectorWorks) {
   {
     // Add an entry through the writing data cache, see that it's reflected in
     // the inspector interface.
-    auto writer = recording_data_cache_->GetWriterForOrigin(
-        kTestOrigin, performance_manager::TabVisibility::kBackground);
+    auto writer = recording_data_cache_->GetWriterForOrigin(kTestOrigin);
 
     EXPECT_EQ(1U, inspector->GetAllInMemoryOrigins().size());
     EXPECT_TRUE(inspector->GetDataForOrigin(kTestOrigin, &is_dirty, &data));
@@ -130,8 +123,9 @@ TEST_F(NonRecordingSiteDataCacheTest, InspectorWorks) {
     ASSERT_NE(nullptr, data.get());
 
     // Touch the underlying data, see that the dirty bit updates.
-    writer->NotifySiteLoaded();
+    writer->NotifySiteLoaded(TabVisibility::kBackground);
     EXPECT_TRUE(inspector->GetDataForOrigin(kTestOrigin, &is_dirty, &data));
+    writer->NotifySiteUnloaded(TabVisibility::kBackground);
   }
 
   // Make sure the interface is unregistered from the browser context on

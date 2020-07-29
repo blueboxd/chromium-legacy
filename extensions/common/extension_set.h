@@ -130,6 +130,12 @@ class ExtensionSet {
   // permissions the given extension has been granted.
   bool ExtensionBindingsAllowed(const GURL& url) const;
 
+  // Decodes extension ID encoded in URL. Returns the extension ID corresponding
+  // to the given extension resource URL. This ignores hosted apps' web extent.
+  //
+  // Returns ExtensionId() if not an extension URL.
+  static ExtensionId GetExtensionIdByURL(const GURL& url);
+
  private:
   ExtensionMap extensions_;
 

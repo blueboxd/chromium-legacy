@@ -1364,7 +1364,6 @@
                   'chrome/browser/ui/webui/nearby_internals/|'\
                   'chrome/browser/ui/webui/nearby_share/|'\
                   'chrome/services/sharing/|'\
-                  'ui/webui/resources/cr_components/nearby_share/'
     },
     'net': {
       'filepath': 'net/',

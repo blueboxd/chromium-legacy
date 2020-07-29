@@ -23,10 +23,6 @@ void UserActivationState::Activate(
   ActivateTransientState();
 }
 
-void UserActivationState::Activate() {
-  Activate(mojom::UserActivationNotificationType::kNone);
-}
-
 void UserActivationState::Clear() {
   has_been_active_ = false;
   notification_type_ = mojom::UserActivationNotificationType::kNone;

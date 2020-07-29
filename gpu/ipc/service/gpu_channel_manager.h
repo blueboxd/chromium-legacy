@@ -206,7 +206,9 @@ class GPU_IPC_SERVICE_EXPORT GpuChannelManager
   class GPU_IPC_SERVICE_EXPORT GpuPeakMemoryMonitor
       : public MemoryTracker::Observer {
    public:
-    explicit GpuPeakMemoryMonitor(GpuChannelManager* channel_manager);
+    GpuPeakMemoryMonitor(
+        GpuChannelManager* channel_manager,
+        scoped_refptr<base::SingleThreadTaskRunner> task_runner);
     ~GpuPeakMemoryMonitor() override;
 
     base::flat_map<GpuPeakMemoryAllocationSource, uint64_t> GetPeakMemoryUsage(

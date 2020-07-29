@@ -116,7 +116,7 @@ TEST_F(SysInfoTest, MAYBE_AmountOfTotalDiskSpace) {
   EXPECT_GT(SysInfo::AmountOfTotalDiskSpace(tmp_path), 0) << tmp_path.value();
 }
 
-#if defined(OS_WIN) || defined(OS_MACOSX) || defined(OS_LINUX) || \
+#if defined(OS_WIN) || defined(OS_APPLE) || defined(OS_LINUX) || \
     defined(OS_FUCHSIA)
 TEST_F(SysInfoTest, OperatingSystemVersionNumbers) {
   int32_t os_major_version = -1;
@@ -147,7 +147,7 @@ TEST_F(SysInfoTest, Uptime) {
   EXPECT_GT(up_time_2.InMicroseconds(), up_time_1.InMicroseconds());
 }
 
-#if defined(OS_MACOSX)
+#if defined(OS_APPLE)
 TEST_F(SysInfoTest, HardwareModelNameFormatMacAndiOS) {
   std::string hardware_model = SysInfo::HardwareModelName();
   ASSERT_FALSE(hardware_model.empty());
@@ -176,7 +176,7 @@ TEST_F(SysInfoTest, GetHardwareInfo) {
   EXPECT_TRUE(IsStringUTF8(hardware_info->manufacturer));
   EXPECT_TRUE(IsStringUTF8(hardware_info->model));
   bool empty_result_expected =
-#if defined(OS_ANDROID) || defined(OS_MACOSX) || defined(OS_WIN) || \
+#if defined(OS_ANDROID) || defined(OS_APPLE) || defined(OS_WIN) || \
     defined(OS_LINUX)
       false;
 #else

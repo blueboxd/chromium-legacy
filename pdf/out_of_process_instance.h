@@ -36,13 +36,13 @@ class Vector2d;
 }  // namespace gfx
 
 namespace pp {
-class Graphics2D;
 class Size;
 class TextInput_Dev;
 }  // namespace pp
 
 namespace chrome_pdf {
 
+class Graphics;
 class PaintReadyRect;
 
 class OutOfProcessInstance : public pp::Instance,
@@ -68,8 +68,8 @@ class OutOfProcessInstance : public pp::Instance,
   void StopFind() override;
 
   // pp::PaintManager::Client implementation.
-  pp::Graphics2D CreatePaintGraphics(const gfx::Size& size) override;
-  bool BindPaintGraphics(pp::Graphics2D& graphics) override;
+  std::unique_ptr<Graphics> CreatePaintGraphics(const gfx::Size& size) override;
+  bool BindPaintGraphics(Graphics& graphics) override;
   void OnPaint(const std::vector<gfx::Rect>& paint_rects,
                std::vector<PaintReadyRect>* ready,
                std::vector<gfx::Rect>* pending) override;

@@ -134,7 +134,7 @@ public class PaymentRequestImpl
                    PaymentApp.InstrumentDetailsCallback,
                    PaymentResponseHelper.PaymentResponseRequesterDelegate, FocusChangedObserver,
                    NormalizedAddressRequestDelegate, PaymentDetailsConverter.MethodChecker,
-                   PaymentHandlerUiObserver {
+                   PaymentHandlerUiObserver, PaymentUIsManager.Delegate {
     /**
      * A delegate to ask questions about the system, that allows tests to inject behaviour without
      * having to modify the entire system. This partially mirrors a similar C++
@@ -349,7 +349,6 @@ public class PaymentRequestImpl
     private List<PaymentApp> mPendingApps = new ArrayList<>();
     private final PaymentUIsManager mPaymentUIsManager;
     private MinimalUICoordinator mMinimalUi;
-    private Callback<PaymentInformation> mPaymentInformationCallback;
     private PaymentApp mInvokedPaymentApp;
     private PaymentHandlerCoordinator mPaymentHandlerUi;
     private boolean mHideServerAutofillCards;
@@ -468,7 +467,7 @@ public class PaymentRequestImpl
         mSkipUiForNonUrlPaymentMethodIdentifiers = mDelegate.skipUiForBasicCard();
 
         if (sObserverForTest != null) sObserverForTest.onPaymentRequestCreated(this);
-        mPaymentUIsManager = new PaymentUIsManager(
+        mPaymentUIsManager = new PaymentUIsManager(/*delegate=*/this,
                 /*params=*/this, addressEditor, cardEditor);
         mPaymentAppComparator = new PaymentAppComparator(/*params=*/this);
     }
@@ -1324,7 +1323,7 @@ public class PaymentRequestImpl
             mPaymentUIsManager.getShippingAddressesSection().setErrorMessage(details.error);
         }
 
-        enableUserInterfaceAfterPaymentRequestUpdateEvent();
+        mPaymentUIsManager.enableUserInterfaceAfterPaymentRequestUpdateEvent();
     }
 
     private void initializeWithUpdatedDetails(PaymentDetails details) {
@@ -1368,7 +1367,7 @@ public class PaymentRequestImpl
         triggerPaymentAppUiSkipIfApplicable(chromeActivity);
 
         if (mIsFinishedQueryingPaymentApps && !mShouldSkipShowingPaymentRequestUi) {
-            enableUserInterfaceAfterPaymentRequestUpdateEvent();
+            mPaymentUIsManager.enableUserInterfaceAfterPaymentRequestUpdateEvent();
         }
     }
 
@@ -1392,22 +1391,7 @@ public class PaymentRequestImpl
             return;
         }
 
-        enableUserInterfaceAfterPaymentRequestUpdateEvent();
-    }
-
-    private void enableUserInterfaceAfterPaymentRequestUpdateEvent() {
-        if (mPaymentInformationCallback != null
-                && mPaymentUIsManager.getPaymentMethodsSection() != null) {
-            providePaymentInformation();
-        } else {
-            mPaymentUIsManager.getPaymentRequestUI().updateOrderSummarySection(
-                    mPaymentUIsManager.getUiShoppingCart());
-            if (shouldShowShippingSection()) {
-                mPaymentUIsManager.getPaymentRequestUI().updateSection(
-                        PaymentRequestUI.DataType.SHIPPING_OPTIONS,
-                        mPaymentUIsManager.getUiShippingOptions());
-            }
-        }
+        mPaymentUIsManager.enableUserInterfaceAfterPaymentRequestUpdateEvent();
     }
 
     /**
@@ -1487,7 +1471,7 @@ public class PaymentRequestImpl
      */
     @Override
     public void getDefaultPaymentInformation(Callback<PaymentInformation> callback) {
-        mPaymentInformationCallback = callback;
+        mPaymentUIsManager.setPaymentInformationCallback(callback);
 
         // mPaymentUIsManager.getPaymentRequestUI().show() is called only after request.show() is
         // called and all payment apps are ready.
@@ -1501,19 +1485,21 @@ public class PaymentRequestImpl
         });
     }
 
-    private void providePaymentInformation() {
+    // Implement PaymentUIsManager.Delegate:
+    @Override
+    public void providePaymentInformation() {
         // Do not display service worker payment apps summary in single line so as to display its
         // origin completely.
         mPaymentUIsManager.getPaymentMethodsSection()
                 .setDisplaySelectedItemSummaryInSingleLineInNormalMode(
                         mPaymentUIsManager.getSelectedPaymentAppType()
                         != PaymentAppType.SERVICE_WORKER_APP);
-        mPaymentInformationCallback.onResult(new PaymentInformation(
+        mPaymentUIsManager.getPaymentInformationCallback().onResult(new PaymentInformation(
                 mPaymentUIsManager.getUiShoppingCart(),
                 mPaymentUIsManager.getShippingAddressesSection(),
                 mPaymentUIsManager.getUiShippingOptions(), mPaymentUIsManager.getContactSection(),
                 mPaymentUIsManager.getPaymentMethodsSection()));
-        mPaymentInformationCallback = null;
+        mPaymentUIsManager.setPaymentInformationCallback(null);
 
         if (!mDidRecordShowEvent) {
             mDidRecordShowEvent = true;
@@ -1573,13 +1559,13 @@ public class PaymentRequestImpl
             } else {
                 editAddress(address);
             }
-            mPaymentInformationCallback = callback;
+            mPaymentUIsManager.setPaymentInformationCallback(callback);
             return PaymentRequestUI.SelectionResult.ASYNCHRONOUS_VALIDATION;
         } else if (optionType == PaymentRequestUI.DataType.SHIPPING_OPTIONS) {
             // This may update the line items.
             mPaymentUIsManager.getUiShippingOptions().setSelectedItem(option);
             client.onShippingOptionChange(option.getIdentifier());
-            mPaymentInformationCallback = callback;
+            mPaymentUIsManager.setPaymentInformationCallback(callback);
             return PaymentRequestUI.SelectionResult.ASYNCHRONOUS_VALIDATION;
         } else if (optionType == PaymentRequestUI.DataType.CONTACT_DETAILS) {
             // Log the change of contact info.
@@ -1593,7 +1579,7 @@ public class PaymentRequestImpl
                 editContact(contact);
                 if (!mWasRetryCalled) return PaymentRequestUI.SelectionResult.EDITOR_LAUNCH;
             }
-            mPaymentInformationCallback = callback;
+            mPaymentUIsManager.setPaymentInformationCallback(callback);
             return PaymentRequestUI.SelectionResult.ASYNCHRONOUS_VALIDATION;
         } else if (optionType == PaymentRequestUI.DataType.PAYMENT_METHODS) {
             if (shouldShowShippingSection()
@@ -1634,7 +1620,7 @@ public class PaymentRequestImpl
             Callback<PaymentInformation> callback) {
         if (optionType == PaymentRequestUI.DataType.SHIPPING_ADDRESSES) {
             editAddress((AutofillAddress) option);
-            mPaymentInformationCallback = callback;
+            mPaymentUIsManager.setPaymentInformationCallback(callback);
 
             return PaymentRequestUI.SelectionResult.ASYNCHRONOUS_VALIDATION;
         }
@@ -1659,7 +1645,7 @@ public class PaymentRequestImpl
             @PaymentRequestUI.DataType int optionType, Callback<PaymentInformation> callback) {
         if (optionType == PaymentRequestUI.DataType.SHIPPING_ADDRESSES) {
             editAddress(null);
-            mPaymentInformationCallback = callback;
+            mPaymentUIsManager.setPaymentInformationCallback(callback);
             // Log the add of shipping address.
             mJourneyLogger.incrementSelectionAdds(Section.SHIPPING_ADDRESS);
             return PaymentRequestUI.SelectionResult.ASYNCHRONOUS_VALIDATION;
@@ -1680,31 +1666,12 @@ public class PaymentRequestImpl
 
     @Override
     public boolean shouldShowShippingSection() {
-        if (!mRequestShipping) return false;
-
-        if (mPaymentUIsManager.getPaymentMethodsSection() == null) return true;
-
-        PaymentApp selectedApp =
-                (PaymentApp) mPaymentUIsManager.getPaymentMethodsSection().getSelectedItem();
-        return selectedApp == null || !selectedApp.handlesShippingAddress();
+        return mPaymentUIsManager.shouldShowShippingSection();
     }
 
     @Override
     public boolean shouldShowContactSection() {
-        PaymentApp selectedApp = (mPaymentUIsManager.getPaymentMethodsSection() == null)
-                ? null
-                : (PaymentApp) mPaymentUIsManager.getPaymentMethodsSection().getSelectedItem();
-        if (mRequestPayerName && (selectedApp == null || !selectedApp.handlesPayerName())) {
-            return true;
-        }
-        if (mRequestPayerPhone && (selectedApp == null || !selectedApp.handlesPayerPhone())) {
-            return true;
-        }
-        if (mRequestPayerEmail && (selectedApp == null || !selectedApp.handlesPayerEmail())) {
-            return true;
-        }
-
-        return false;
+        return mPaymentUIsManager.shouldShowContactSection();
     }
 
     private void editAddress(final AutofillAddress toEdit) {

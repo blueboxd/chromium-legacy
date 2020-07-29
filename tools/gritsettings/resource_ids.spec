@@ -150,7 +150,7 @@
     "includes": [1630],
   },
   "chrome/browser/resources/nearby_share/nearby_share_dialog_resources.grd": {
-    "includes": [1650],
+    "includes": [1640],
   },
   "chrome/browser/resources/new_tab_page/new_tab_page_resources_vulcanized.grd": {
     "includes": [1660],

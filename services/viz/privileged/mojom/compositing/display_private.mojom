@@ -14,6 +14,7 @@ import "ui/gfx/geometry/mojom/geometry.mojom";
 import "ui/latency/mojom/latency_info.mojom";
 import "services/viz/privileged/mojom/compositing/layered_window_updater.mojom";
 import "services/viz/privileged/mojom/compositing/vsync_parameter_observer.mojom";
+import "services/viz/public/mojom/compositing/delegated_ink_point.mojom";
 
 // The DisplayPrivate is used by privileged clients to talk to Display.
 interface DisplayPrivate {
@@ -71,6 +72,11 @@ interface DisplayPrivate {
   // support multiple observers.
   AddVSyncParameterObserver(
     pending_remote<VSyncParameterObserver> observer);
+
+  // Bind an interface between browser process and viz for ink points to be
+  // sent to viz and stored, to be used when drawing a delegated ink trail.
+  SetDelegatedInkPointRenderer(
+    pending_receiver<DelegatedInkPointRenderer> receiver);
 };
 
 interface DisplayClient {

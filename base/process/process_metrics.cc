@@ -94,11 +94,11 @@ std::unique_ptr<Value> SystemMetrics::ToValue() const {
 }
 
 std::unique_ptr<ProcessMetrics> ProcessMetrics::CreateCurrentProcessMetrics() {
-#if !defined(OS_MACOSX) || defined(OS_IOS)
+#if !defined(OS_MAC)
   return CreateProcessMetrics(base::GetCurrentProcessHandle());
 #else
   return CreateProcessMetrics(base::GetCurrentProcessHandle(), nullptr);
-#endif  // !defined(OS_MACOSX) || defined(OS_IOS)
+#endif  // !defined(OS_MAC)
 }
 
 #if !defined(OS_FREEBSD) || !defined(OS_POSIX)
@@ -127,7 +127,7 @@ double ProcessMetrics::GetPlatformIndependentCPUUsage() {
 }
 #endif
 
-#if defined(OS_MACOSX) || defined(OS_LINUX) || defined(OS_AIX)
+#if defined(OS_APPLE) || defined(OS_LINUX) || defined(OS_AIX)
 int ProcessMetrics::CalculateIdleWakeupsPerSecond(
     uint64_t absolute_idle_wakeups) {
   return CalculateEventsPerSecond(absolute_idle_wakeups,
@@ -139,9 +139,9 @@ int ProcessMetrics::GetIdleWakeupsPerSecond() {
   NOTIMPLEMENTED();  // http://crbug.com/120488
   return 0;
 }
-#endif  // defined(OS_MACOSX) || defined(OS_LINUX) || defined(OS_AIX)
+#endif  // defined(OS_APPLE) || defined(OS_LINUX) || defined(OS_AIX)
 
-#if defined(OS_MACOSX)
+#if defined(OS_APPLE)
 int ProcessMetrics::CalculatePackageIdleWakeupsPerSecond(
     uint64_t absolute_package_idle_wakeups) {
   return CalculateEventsPerSecond(absolute_package_idle_wakeups,
@@ -149,7 +149,7 @@ int ProcessMetrics::CalculatePackageIdleWakeupsPerSecond(
                                   &last_package_idle_wakeups_time_);
 }
 
-#endif  // defined(OS_MACOSX)
+#endif  // defined(OS_APPLE)
 
 #if !defined(OS_WIN)
 uint64_t ProcessMetrics::GetCumulativeDiskUsageInBytes() {

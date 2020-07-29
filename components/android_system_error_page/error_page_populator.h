@@ -14,7 +14,7 @@ struct WebURLError;
 namespace android_system_error_page {
 
 // Populates |error_html| to display an error page with an Android system feel
-// for |error|.
+// for |error|. Does nothing if |error_html| is null.
 void PopulateErrorPageHtml(const blink::WebURLError& error,
                            std::string* error_html);
 

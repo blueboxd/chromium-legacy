@@ -6,10 +6,13 @@
 #define BASE_THREADING_HANG_WATCHER_H_
 
 #include <atomic>
+#include <cstdint>
 #include <memory>
+#include <type_traits>
 #include <vector>
 
 #include "base/atomicops.h"
+#include "base/bits.h"
 #include "base/callback.h"
 #include "base/callback_forward.h"
 #include "base/callback_helpers.h"
@@ -196,11 +199,16 @@ class BASE_EXPORT HangWatcher : public DelegateSimpleThread::Delegate {
 
     // Returns a string that contains the ids of the hung threads separated by a
     // '|'. The size of the string is capped at debug::CrashKeySize::Size256. If
-    // no threads are hung returns an empty string.
+    // no threads are hung returns an empty string. Can only be invoked if
+    // IsActionable().
     std::string PrepareHungThreadListCrashKey() const;
 
     // Return the highest deadline included in this snapshot.
     base::TimeTicks GetHighestDeadline() const;
+
+    // Returns true if the snapshot can be used to record an actionable hang
+    // report and false if not.
+    bool IsActionable() const;
 
    private:
     base::TimeTicks snapshot_time_;
@@ -259,7 +267,7 @@ class BASE_EXPORT HangWatcher : public DelegateSimpleThread::Delegate {
   RepeatingCallback<void(TimeTicks)> after_wait_callback_;
 
   base::Lock capture_lock_ ACQUIRED_AFTER(watch_state_lock_);
-  std::atomic<bool> capture_in_progress{false};
+  std::atomic<bool> capture_in_progress_{false};
 
   const base::TickClock* tick_clock_;
 
@@ -269,11 +277,156 @@ class BASE_EXPORT HangWatcher : public DelegateSimpleThread::Delegate {
 
   FRIEND_TEST_ALL_PREFIXES(HangWatcherTest, NestedScopes);
   FRIEND_TEST_ALL_PREFIXES(HangWatcherSnapshotTest, HungThreadIDs);
+  FRIEND_TEST_ALL_PREFIXES(HangWatcherSnapshotTest, NonActionableReport);
 };
 
 // Classes here are exposed in the header only for testing. They are not
 // intended to be used outside of base.
 namespace internal {
+
+// Threadsafe class that manages a deadline of type TimeTicks alongside hang
+// watching specific flags. The flags are stored in the higher bits of the
+// underlying TimeTicks deadline. This enables setting the flags on thread T1 in
+// a way that's resilient to concurrent deadline or flag changes from thread T2.
+// Flags can be queried separately from the deadline and users of this class
+// should not have to care about them when doing so.
+class BASE_EXPORT HangWatchDeadline {
+ public:
+  // Masks to set flags by flipping a single bit in the TimeTicks value. There
+  // are two types of flags. Persistent flags remain set through a deadline
+  // change and non-persistent flags are cleared when the deadline changes.
+  enum class Flag : uint64_t {
+    // Minimum value for validation purposes. Not currently used.
+    kMinValue = bits::LeftmostBit<uint64_t>() >> 7,
+    // Persistent because if hang detection is disabled on a thread it should
+    // be re-enabled manually.
+    kIgnoreHangs = bits::LeftmostBit<uint64_t>() >> 1,
+    // Non-persistent because a new value means a new hang watch scope started
+    // after the beginning of capture. It can't be implicated in the hang so we
+    // don't want it to block.
+    kShouldBlockOnHang = bits::LeftmostBit<uint64_t>() >> 0,
+    kMaxValue = kShouldBlockOnHang
+  };
+
+  HangWatchDeadline();
+  ~HangWatchDeadline();
+
+  // HangWatchDeadline should never be copied. To keep a copy of the deadline or
+  // flags use the appropriate accessors.
+  HangWatchDeadline(const HangWatchDeadline&) = delete;
+  HangWatchDeadline& operator=(const HangWatchDeadline&) = delete;
+
+  // Returns the underlying TimeTicks deadline. WARNING: The deadline and flags
+  // can change concurrently. To inspect both, use GetFlagsAndDeadline() to get
+  // a coherent race-free view of the state.
+  TimeTicks GetDeadline() const;
+
+  // Returns a mask containing the flags and the deadline as a pair. Use to
+  // inspect the flags and deadline and then optionally call
+  // SetShouldBlockOnHang() .
+  std::pair<uint64_t, TimeTicks> GetFlagsAndDeadline() const;
+
+  // Returns true if the flag is set and false if not. WARNING: The deadline and
+  // flags can change concurrently. To inspect both, use GetFlagsAndDeadline()
+  // to get a coherent race-free view of the state.
+  bool IsFlagSet(Flag flag) const;
+
+  // Returns true if a flag is set in |flags| and false if not. Use to inspect
+  // the flags mask returned by GetFlagsAndDeadline(). WARNING: The deadline and
+  // flags can change concurrently. If you need to inspect both you need to use
+  // GetFlagsAndDeadline() to get a coherent race-free view of the state.
+  static bool IsFlagSet(Flag flag, uint64_t flags);
+
+  // Replace the deadline value. |new_value| needs to be within [0,
+  // Max()]. This function can never fail.
+  void SetDeadline(TimeTicks new_value);
+
+  // Sets the kShouldBlockOnHang flag and returns true if current flags and
+  // deadline are still equal to |old_flags| and  |old_deadline|. Otherwise does
+  // not set the flag and returns false.
+  bool SetShouldBlockOnHang(uint64_t old_flags, TimeTicks old_deadline);
+
+  // Sets the kIgnoreHangs flag.
+  void SetIgnoreHangs();
+
+  // Clears the kIgnoreHangs flag.
+  void UnsetIgnoreHangs();
+
+  // Use to simulate the value of |bits_| changing between the calling a
+  // Set* function and the moment of atomically switching the values. The
+  // callback should return a value containing the desired flags and deadline
+  // bits. The flags that are already set will be preserved upon applying. Use
+  // only for testing.
+  void SetSwitchBitsClosureForTesting(
+      RepeatingCallback<uint64_t(void)> closure);
+
+  // Remove the deadline modification callback for when testing is done. Use
+  // only for testing.
+  void ResetSwitchBitsClosureForTesting();
+
+ private:
+  using TimeTicksInternalRepresentation =
+      std::result_of<decltype (&TimeTicks::ToInternalValue)(TimeTicks)>::type;
+  static_assert(std::is_same<TimeTicksInternalRepresentation, int64_t>::value,
+                "Bit manipulations made by HangWatchDeadline need to be"
+                "adapted if internal representation of TimeTicks changes.");
+
+  // Replace the bits with the ones provided through the callback. Preserves the
+  // flags that were already set. Returns the switched in bits. Only call if
+  // |switch_bits_callback_for_testing_| is installed.
+  uint64_t SwitchBitsForTesting();
+
+  // Atomically sets persitent flag |flag|. Cannot fail.
+  void SetPersistentFlag(Flag flag);
+
+  // Atomically clears persitent flag |flag|. Cannot fail.
+  void ClearPersistentFlag(Flag flag);
+
+  // Converts bits to TimeTicks with some sanity checks. Use to return the
+  // deadline outside of this class.
+  static TimeTicks DeadlineFromBits(uint64_t bits);
+
+  // Returns the largest representable deadline.
+  static TimeTicks Max();
+
+  // Extract the flag bits from |bits|.
+  static uint64_t ExtractFlags(uint64_t bits);
+
+  // Extract the deadline bits from |bits|.
+  static uint64_t ExtractDeadline(uint64_t bits);
+
+  // BitsType is uint64_t. This type is chosen for having
+  // std::atomic<BitsType>{}.is_lock_free() true on many platforms and having no
+  // undefined behaviors with regards to bit shift operations. Throughout this
+  // class this is the only type that is used to store, retrieve and manipulate
+  // the bits. When returning a TimeTicks value outside this class it's
+  // necessary to run the proper checks to insure correctness of the conversion
+  // that has to go through int_64t. (See DeadlineFromBits()).
+  using BitsType = uint64_t;
+  static_assert(std::is_same<std::underlying_type<Flag>::type, BitsType>::value,
+                "Flag should have the same underlying type as bits_ to "
+                "simplify thinking about bit operations");
+
+  // Holds the bits of both the flags and the TimeTicks deadline.
+  // TimeTicks values represent a count of microseconds since boot which may or
+  // may not include suspend time depending on the platform. Using the seven
+  // highest order bits and the sign bit to store flags still enables the
+  // storing of TimeTicks values that can represent up to ~1142 years of uptime
+  // in the remaining bits. Should never be directly accessed from outside the
+  // class. Starts out at Max() to provide a base-line deadline that will not be
+  // reached during normal execution.
+  //
+  // Binary format: 0xFFDDDDDDDDDDDDDDDD
+  // F = Flags
+  // D = Deadline
+  std::atomic<BitsType> bits_{static_cast<uint64_t>(Max().ToInternalValue())};
+
+  RepeatingCallback<uint64_t(void)> switch_bits_callback_for_testing_;
+
+  THREAD_CHECKER(thread_checker_);
+
+  FRIEND_TEST_ALL_PREFIXES(HangWatchDeadlineTest, BitsPreservedThroughExtract);
+};
 
 // Contains the information necessary for hang watching a specific
 // thread. Instances of this class are accessed concurrently by the associated
@@ -298,12 +451,29 @@ class BASE_EXPORT HangWatchState {
   static ThreadLocalPointer<HangWatchState>*
   GetHangWatchStateForCurrentThread();
 
-  // Returns the value of the current deadline. Use this function if you need to
+  // Returns the current deadline. Use this function if you need to
   // store the value. To test if the deadline has expired use IsOverDeadline().
+  // WARNING: The deadline and flags can change concurrently. If you need to
+  // inspect both you need to use GetFlagsAndDeadline() to get a coherent
+  // race-free view of the state.
   TimeTicks GetDeadline() const;
 
-  // Atomically sets the deadline to a new value.
+  // Returns a mask containing the hang watching flags and the value as a pair.
+  // Use to inspect the flags and deadline and optionally call
+  // SetShouldBlockOnHang(flags, deadline).
+  std::pair<uint64_t, TimeTicks> GetFlagsAndDeadline() const;
+
+  // Sets the deadline to a new value.
   void SetDeadline(TimeTicks deadline);
+
+  // Mark the current state as having to block in its destruction until hang
+  // capture completes.
+  bool SetShouldBlockOnHang(uint64_t old_flags, TimeTicks old_deadline);
+
+  // Returns true if |flag| is set and false if not. WARNING: The deadline and
+  // flags can change concurrently. If you need to inspect both you need to use
+  // GetFlagsAndDeadline() to get a coherent race-free view of the state.
+  bool IsFlagSet(HangWatchDeadline::Flag flag);
 
   // Tests whether the associated thread's execution has gone over the deadline.
   bool IsOverDeadline() const;
@@ -318,6 +488,9 @@ class BASE_EXPORT HangWatchState {
 
   PlatformThreadId GetThreadID() const;
 
+  // Retrieve the current hang watch deadline directly. For testing only.
+  HangWatchDeadline* GetHangWatchDeadlineForTesting();
+
  private:
   // The thread that creates the instance should be the class that updates
   // the deadline.
@@ -325,7 +498,7 @@ class BASE_EXPORT HangWatchState {
 
   // If the deadline fails to be updated before TimeTicks::Now() ever
   // reaches the value contained in it this constistutes a hang.
-  std::atomic<TimeTicks> deadline_{base::TimeTicks::Max()};
+  HangWatchDeadline deadline_;
 
   const PlatformThreadId thread_id_;
 

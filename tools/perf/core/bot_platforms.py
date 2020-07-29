@@ -330,8 +330,10 @@ _WIN_10_LOW_END_BENCHMARK_CONFIGS = PerfSuite(
     OFFICIAL_BENCHMARK_CONFIGS).Remove([
         'blink_perf.display_locking',
     ])
-_WIN_10_LOW_END_HP_CANDIDATE_BENCHMARK_CONFIGS = PerfSuite(
-    [_GetBenchmarkConfig('v8.browsing_desktop')])
+_WIN_10_LOW_END_HP_CANDIDATE_BENCHMARK_CONFIGS = PerfSuite([
+    _GetBenchmarkConfig('v8.browsing_desktop'),
+    _GetBenchmarkConfig('system_health.common_desktop')
+])
 _WIN_7_BENCHMARK_CONFIGS = PerfSuite([
     'loading.desktop',
 ]).Abridge([
@@ -397,7 +399,9 @@ _ANDROID_PIXEL2_FYI_BENCHMARK_CONFIGS = PerfSuite([
 _CHROMEOS_KEVIN_FYI_BENCHMARK_CONFIGS = PerfSuite([
     _GetBenchmarkConfig('rendering.desktop')])
 _LINUX_PERF_FYI_BENCHMARK_CONFIGS = PerfSuite([
-    _GetBenchmarkConfig('power.desktop')])
+    _GetBenchmarkConfig('power.desktop'),
+    _GetBenchmarkConfig('system_health.common_desktop')
+])
 
 
 # Linux

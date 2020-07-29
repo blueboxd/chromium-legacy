@@ -24,6 +24,8 @@ class PLATFORM_EXPORT IdentifiabilityPaintOpDigest {
  public:
   // Constructs based on the size of the CanvasResourceProvider.
   explicit IdentifiabilityPaintOpDigest(IntSize size);
+  // For-testing constructor that allows setting a custom |max_digest_ops_|.
+  IdentifiabilityPaintOpDigest(IntSize size, int max_digest_ops);
   ~IdentifiabilityPaintOpDigest();
 
   // When passed as |num_ops_to_visit| to MaybeUpdateDigest(), every
@@ -54,6 +56,10 @@ class PLATFORM_EXPORT IdentifiabilityPaintOpDigest {
    public:
     ScopedResult GetRasterContent(const cc::DrawImage& draw_image) override;
   };
+
+  // The maximum number of ops to digest during the lifetime of this
+  // IdentifiabilityPaintOpDigest object.
+  const int max_digest_ops_;
 
   // The current identifiability digest -- potentially updated every
   // MaybeUpdateDigest() call.

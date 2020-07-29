@@ -40,9 +40,9 @@ class UpdateNotificationClient
   void OnUserAction(const UserActionData& action_data) override;
   void GetThrottleConfig(ThrottleConfigCallback callback) override;
 
-  GetServiceCallback get_service_callback_;
+  UpdateNotificationService* GetUpdateNotificationService();
 
-  DISALLOW_COPY_AND_ASSIGN(UpdateNotificationClient);
+  GetServiceCallback service_getter_;
 };
 
 }  // namespace updates

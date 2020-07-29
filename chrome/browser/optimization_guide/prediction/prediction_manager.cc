@@ -13,6 +13,7 @@
 #include "base/metrics/histogram_macros.h"
 #include "base/metrics/histogram_macros_local.h"
 #include "base/rand_util.h"
+#include "base/sequence_checker.h"
 #include "base/sequenced_task_runner.h"
 #include "base/strings/stringprintf.h"
 #include "base/task/post_task.h"
@@ -25,7 +26,11 @@
 #include "chrome/browser/optimization_guide/optimization_guide_session_statistic.h"
 #include "chrome/browser/optimization_guide/optimization_guide_util.h"
 #include "chrome/browser/optimization_guide/prediction/prediction_model_fetcher.h"
+#include "chrome/browser/optimization_guide/prediction/remote_decision_tree_predictor.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/services/machine_learning/public/cpp/service_connection.h"
+#include "chrome/services/machine_learning/public/mojom/decision_tree.mojom.h"
+#include "chrome/services/machine_learning/public/mojom/machine_learning_service.mojom.h"
 #include "components/leveldb_proto/public/proto_database_provider.h"
 #include "components/optimization_guide/optimization_guide_constants.h"
 #include "components/optimization_guide/optimization_guide_decider.h"
@@ -36,11 +41,13 @@
 #include "components/optimization_guide/optimization_guide_switches.h"
 #include "components/optimization_guide/optimization_guide_test_util.h"
 #include "components/optimization_guide/prediction_model.h"
+#include "components/optimization_guide/proto/models.pb.h"
 #include "components/optimization_guide/store_update_data.h"
 #include "components/optimization_guide/top_host_provider.h"
 #include "components/prefs/pref_service.h"
 #include "content/public/browser/navigation_handle.h"
 #include "content/public/browser/web_contents.h"
+#include "mojo/public/cpp/bindings/remote.h"
 
 namespace {
 
@@ -631,24 +638,20 @@ void PredictionManager::UpdatePredictionModels(
   SEQUENCE_CHECKER(sequence_checker_);
   std::unique_ptr<StoreUpdateData> prediction_model_update_data =
       StoreUpdateData::CreatePredictionModelStoreUpdateData();
-  bool models_to_store = false;
   for (const auto& model : prediction_models) {
-    if (ProcessAndStorePredictionModel(model)) {
-      prediction_model_update_data->CopyPredictionModelIntoUpdateData(model);
-      models_to_store = true;
-      base::UmaHistogramSparse(
-          "OptimizationGuide.PredictionModelUpdateVersion." +
-              GetStringNameForOptimizationTarget(
-                  model.model_info().optimization_target()),
-          model.model_info().version());
-    }
+    // Storing the model regardless of whether the model is valid or not. Model
+    // will be removed from store if it fails to load.
+    prediction_model_update_data->CopyPredictionModelIntoUpdateData(model);
+    base::UmaHistogramSparse("OptimizationGuide.PredictionModelUpdateVersion." +
+                                 GetStringNameForOptimizationTarget(
+                                     model.model_info().optimization_target()),
+                             model.model_info().version());
+    OnLoadPredictionModel(std::make_unique<proto::PredictionModel>(model));
   }
-  if (models_to_store) {
-    model_and_features_store_->UpdatePredictionModels(
-        std::move(prediction_model_update_data),
-        base::BindOnce(&PredictionManager::OnPredictionModelsStored,
-                       ui_weak_ptr_factory_.GetWeakPtr()));
-  }
+  model_and_features_store_->UpdatePredictionModels(
+      std::move(prediction_model_update_data),
+      base::BindOnce(&PredictionManager::OnPredictionModelsStored,
+                     ui_weak_ptr_factory_.GetWeakPtr()));
 }
 
 void PredictionManager::OnPredictionModelsStored() {
@@ -733,8 +736,17 @@ void PredictionManager::LoadPredictionModels(
   for (const auto& optimization_target : optimization_targets) {
     // The prediction model for this optimization target has already been
     // loaded.
-    if (optimization_target_prediction_model_map_.contains(optimization_target))
+    if (features::ShouldUseMLServiceForPrediction() &&
+        optimization_target_remote_model_predictor_map_.contains(
+            optimization_target)) {
       continue;
+    }
+
+    if (!features::ShouldUseMLServiceForPrediction() &&
+        optimization_target_prediction_model_map_.contains(
+            optimization_target)) {
+      continue;
+    }
     if (!model_and_features_store_->FindPredictionModelEntryKey(
             optimization_target, &model_entry_key)) {
       continue;
@@ -752,11 +764,36 @@ void PredictionManager::OnLoadPredictionModel(
   if (!model)
     return;
 
-  if (ProcessAndStorePredictionModel(*model)) {
+  if (features::ShouldUseMLServiceForPrediction()) {
+    SendPredictionModelToMLService(
+        std::move(model),
+        base::BindOnce(&PredictionManager::OnProcessOrSendPredictionModel,
+                       ui_weak_ptr_factory_.GetWeakPtr()));
+    return;
+  }
+
+  bool success = ProcessAndStorePredictionModel(*model);
+  OnProcessOrSendPredictionModel(std::move(model), success);
+}
+
+void PredictionManager::OnProcessOrSendPredictionModel(
+    std::unique_ptr<proto::PredictionModel> model,
+    bool success) {
+  SEQUENCE_CHECKER(sequence_checker_);
+  if (success) {
     base::UmaHistogramSparse("OptimizationGuide.PredictionModelLoadedVersion." +
                                  GetStringNameForOptimizationTarget(
                                      model->model_info().optimization_target()),
                              model->model_info().version());
+    return;
+  }
+
+  // Remove model from store if it exists.
+  OptimizationGuideStore::EntryKey model_entry_key;
+  if (model_and_features_store_->FindPredictionModelEntryKey(
+          model->model_info().optimization_target(), &model_entry_key)) {
+    model_and_features_store_->RemovePredictionModelFromEntryKey(
+        model_entry_key);
   }
 }
 
@@ -793,6 +830,67 @@ bool PredictionManager::ProcessAndStorePredictionModel(
     return true;
   }
   return false;
+}
+
+bool PredictionManager::SendPredictionModelToMLService(
+    std::unique_ptr<proto::PredictionModel> model,
+    PostModelLoadCallback callback) {
+  SEQUENCE_CHECKER(sequence_checker_);
+  if (!model->model_info().has_optimization_target())
+    return false;
+  if (!model->has_model())
+    return false;
+  if (!registered_optimization_targets_.contains(
+          model->model_info().optimization_target())) {
+    return false;
+  }
+
+  // The Decision Tree model type is currently the only supported model type.
+  if (model->model_info().supported_model_types(0) ==
+      optimization_guide::proto::ModelType::MODEL_TYPE_DECISION_TREE) {
+    auto predictor_handle =
+        std::make_unique<RemoteDecisionTreePredictor>(*model);
+
+    auto* service_connection =
+        machine_learning::ServiceConnection::GetInstance();
+    service_connection->LoadDecisionTreeModel(
+        machine_learning::mojom::DecisionTreeModelSpec::New(
+            model->SerializeAsString()),
+        predictor_handle->BindNewPipeAndPassReceiver(),
+        base::BindOnce(&PredictionManager::OnPredictionModelSentToMLService,
+                       ui_weak_ptr_factory_.GetWeakPtr(), std::move(callback),
+                       std::move(model), std::move(predictor_handle)));
+    return true;
+  }
+  return false;
+}
+
+void PredictionManager::OnPredictionModelSentToMLService(
+    PostModelLoadCallback callback,
+    std::unique_ptr<proto::PredictionModel> model,
+    std::unique_ptr<RemoteDecisionTreePredictor> predictor_handle,
+    machine_learning::mojom::LoadModelResult result) {
+  proto::OptimizationTarget target = model->model_info().optimization_target();
+  ScopedPredictionModelConstructionAndValidationRecorder
+      prediction_model_recorder(target);
+
+  if (result != machine_learning::mojom::LoadModelResult::kOk) {
+    prediction_model_recorder.set_is_valid(false);
+    std::move(callback).Run(std::move(model), false);
+    return;
+  }
+
+  auto it = optimization_target_remote_model_predictor_map_.find(target);
+  if (it == optimization_target_remote_model_predictor_map_.end()) {
+    optimization_target_remote_model_predictor_map_.emplace(
+        target, std::move(predictor_handle));
+  } else if (it->second->version() != model->model_info().version()) {
+    it->second = std::move(predictor_handle);
+  } else {
+    return;
+  }
+
+  std::move(callback).Run(std::move(model), true);
 }
 
 bool PredictionManager::ProcessAndStoreHostModelFeatures(

@@ -8,12 +8,13 @@ namespace performance_manager {
 
 NoopSiteDataWriter::~NoopSiteDataWriter() = default;
 
-void NoopSiteDataWriter::NotifySiteLoaded() {}
+void NoopSiteDataWriter::NotifySiteLoaded(TabVisibility visibility) {}
 
-void NoopSiteDataWriter::NotifySiteUnloaded() {}
+void NoopSiteDataWriter::NotifySiteUnloaded(TabVisibility visibility) {}
 
-void NoopSiteDataWriter::NotifySiteVisibilityChanged(
-    performance_manager::TabVisibility visibility) {}
+void NoopSiteDataWriter::NotifySiteForegrounded(bool is_loaded) {}
+
+void NoopSiteDataWriter::NotifySiteBackgrounded(bool is_loaded) {}
 
 void NoopSiteDataWriter::NotifyUpdatesFaviconInBackground() {}
 
@@ -26,8 +27,11 @@ void NoopSiteDataWriter::NotifyLoadTimePerformanceMeasurement(
     base::TimeDelta cpu_usage_estimate,
     uint64_t private_footprint_kb_estimate) {}
 
-NoopSiteDataWriter::NoopSiteDataWriter()
-    : SiteDataWriter(nullptr, performance_manager::TabVisibility::kForeground) {
+const url::Origin& NoopSiteDataWriter::Origin() const {
+  static url::Origin dummy_origin;
+  return dummy_origin;
 }
+
+NoopSiteDataWriter::NoopSiteDataWriter() : SiteDataWriter(nullptr) {}
 
 }  // namespace performance_manager

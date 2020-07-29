@@ -14,6 +14,7 @@
 #include "base/files/scoped_file.h"
 #include "base/i18n/rtl.h"
 #include "base/message_loop/message_pump_type.h"
+#include "base/metrics/ukm_source_id.h"
 #include "base/path_service.h"
 #include "base/stl_util.h"
 #include "base/strings/string_number_conversions.h"
@@ -101,7 +102,7 @@
 #endif  // defined(OS_LINUX)
 
 #if defined(OS_ANDROID)
-#include "chromecast/media/audio/cast_audio_manager_android.h"  //nogncheck
+#include "chromecast/media/audio/cast_audio_manager_android.h"  // nogncheck
 #include "components/cdm/browser/cdm_message_filter_android.h"
 #include "components/crash/core/app/crashpad.h"
 #include "media/audio/android/audio_manager_android.h"
@@ -860,6 +861,7 @@ CastContentBrowserClient::CreateThrottlesForNavigation(
 
 void CastContentBrowserClient::RegisterNonNetworkNavigationURLLoaderFactories(
     int frame_tree_node_id,
+    base::UkmSourceId ukm_source_id,
     NonNetworkURLLoaderFactoryMap* factories) {
 #if BUILDFLAG(ENABLE_CHROMECAST_EXTENSIONS)
   content::WebContents* web_contents =
@@ -867,7 +869,7 @@ void CastContentBrowserClient::RegisterNonNetworkNavigationURLLoaderFactories(
   auto* browser_context = web_contents->GetBrowserContext();
   auto extension_factory =
       extensions::CreateExtensionNavigationURLLoaderFactory(
-          browser_context,
+          browser_context, ukm_source_id,
           !!extensions::WebViewGuest::FromWebContents(web_contents));
   factories->emplace(extensions::kExtensionScheme,
                      std::make_unique<CastExtensionURLLoaderFactory>(

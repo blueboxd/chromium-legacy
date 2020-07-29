@@ -40,3 +40,6 @@ crbug.com/1009718 images/huge-image-viewport-scale.html [ Skip ]
 
 # Input or Playback flaky
 crbug.com/1060773 [ Win ] media/video-controls-visibility-multimodal-mouse-after-touch.html [ Skip ]
+
+# Alpha Blending Video Failures
+crbug.com/1094635 media/alpha-video-playback.html [ Skip ]

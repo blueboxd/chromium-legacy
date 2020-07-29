@@ -46,6 +46,9 @@ class StudyParticipationRaii {
 // Arbitrary non-zero size.
 constexpr IntSize kSize(10, 10);
 
+constexpr float kScaleX = 1.0f, kScaleY = 1.0f;
+constexpr uint64_t kScaleDigest = UINT64_C(5461154373811575393);
+
 TEST(IdentifiabilityPaintOpDigestTest, Construct) {
   IdentifiabilityPaintOpDigest identifiability_paintop_digest(kSize);
 }
@@ -68,11 +71,10 @@ TEST(IdentifiabilityPaintOpDigestTest, SimpleDigest) {
   StudyParticipationRaii study_participation_raii;
   IdentifiabilityPaintOpDigest identifiability_paintop_digest(kSize);
   auto paint_record = sk_make_sp<cc::PaintRecord>();
-  paint_record->push<cc::ScaleOp>(1.0f, 1.0f);
+  paint_record->push<cc::ScaleOp>(kScaleX, kScaleY);
   identifiability_paintop_digest.MaybeUpdateDigest(paint_record,
                                                    /*num_ops_to_visit=*/1);
-  EXPECT_EQ(UINT64_C(5461154373811575393),
-            identifiability_paintop_digest.digest());
+  EXPECT_EQ(kScaleDigest, identifiability_paintop_digest.digest());
 }
 
 TEST(IdentifiabilityPaintOpDigestTest, DigestIsZeroIfNotInStudy) {
@@ -152,6 +154,140 @@ TEST(IdentifiabilityPaintOpDigestTest, PaintShaderStability) {
             identifiability_paintop_digest2.digest());
   EXPECT_EQ(UINT64_C(4893847605848349986),
             identifiability_paintop_digest1.digest());
+}
+
+TEST(IdentifiabilityPaintOpDigestTest, BufferLeftoversDontAffectFutureDigests) {
+  StudyParticipationRaii study_participation_raii;
+  // Make a complex path to make a PaintOp with a large serialization.
+  SkPath path;
+  path.rLineTo(1.0f, 0.0f);
+  path.rLineTo(1.0f, 1.0f);
+  path.rLineTo(0.0f, 1.0f);
+  path.rLineTo(2.0f, 0.0f);
+  path.rLineTo(2.0f, 2.0f);
+  path.rLineTo(0.0f, 2.0f);
+  path.rLineTo(1.0f, 0.0f);
+  IdentifiabilityPaintOpDigest identifiability_paintop_digest1(kSize);
+  IdentifiabilityPaintOpDigest identifiability_paintop_digest2(kSize);
+  auto paint_record1 = sk_make_sp<cc::PaintRecord>();
+  auto paint_record2 = sk_make_sp<cc::PaintRecord>();
+  paint_record1->push<cc::DrawPathOp>(path, cc::PaintFlags());
+  paint_record2->push<cc::ScaleOp>(kScaleX, kScaleY);
+  identifiability_paintop_digest1.MaybeUpdateDigest(paint_record1,
+                                                    /*num_ops_to_visit=*/1);
+  identifiability_paintop_digest2.MaybeUpdateDigest(paint_record2,
+                                                    /*num_ops_to_visit=*/1);
+  EXPECT_EQ(UINT64_C(15080511244712756058),
+            identifiability_paintop_digest1.digest());
+  EXPECT_EQ(kScaleDigest, identifiability_paintop_digest2.digest());
+}
+
+TEST(IdentifiabilityPaintOpDigestTest,
+     BufferLeftoversDontAffectFutureDigests_SameCanvas) {
+  StudyParticipationRaii study_participation_raii;
+  // Make a complex path to make a PaintOp with a large serialization.
+  SkPath path;
+  path.rLineTo(1.0f, 0.0f);
+  path.rLineTo(1.0f, 1.0f);
+  path.rLineTo(0.0f, 1.0f);
+  path.rLineTo(2.0f, 0.0f);
+  path.rLineTo(2.0f, 2.0f);
+  path.rLineTo(0.0f, 2.0f);
+  path.rLineTo(1.0f, 0.0f);
+  IdentifiabilityPaintOpDigest identifiability_paintop_digest(kSize);
+  auto paint_record = sk_make_sp<cc::PaintRecord>();
+  paint_record->push<cc::DrawPathOp>(path, cc::PaintFlags());
+  paint_record->push<cc::ScaleOp>(kScaleX, kScaleY);
+  identifiability_paintop_digest.MaybeUpdateDigest(paint_record,
+                                                   /*num_ops_to_visit=*/2);
+  EXPECT_EQ(UINT64_C(11133276391926094139),
+            identifiability_paintop_digest.digest());
+}
+
+TEST(IdentifiabilityPaintOpDigestTest, IgnoresPrefixAndSuffix) {
+  StudyParticipationRaii study_participation_raii;
+  SkPath path1;
+  path1.rLineTo(1.0f, 0.0f);
+  SkPath path2;
+  path2.rLineTo(0.0f, 1.0f);
+  IdentifiabilityPaintOpDigest identifiability_paintop_digest(kSize);
+  auto paint_record = sk_make_sp<cc::PaintRecord>();
+  paint_record->push<cc::DrawPathOp>(path1, cc::PaintFlags());
+  paint_record->push<cc::ScaleOp>(kScaleX, kScaleY);
+  paint_record->push<cc::DrawPathOp>(path2, cc::PaintFlags());
+  identifiability_paintop_digest.SetPrefixSkipCount(1);
+  identifiability_paintop_digest.MaybeUpdateDigest(paint_record,
+                                                   /*num_ops_to_visit=*/2);
+  EXPECT_EQ(kScaleDigest, identifiability_paintop_digest.digest());
+}
+
+TEST(IdentifiabilityPaintOpDigestTest, IgnoresPrefixAndSuffix_MultipleOps) {
+  StudyParticipationRaii study_participation_raii;
+  SkPath path1;
+  path1.rLineTo(1.0f, 0.0f);
+  SkPath path2;
+  path2.rLineTo(0.0f, 1.0f);
+  SkPath path3;
+  path3.rLineTo(1.0f, 1.0f);
+  IdentifiabilityPaintOpDigest identifiability_paintop_digest(kSize);
+  auto paint_record = sk_make_sp<cc::PaintRecord>();
+  paint_record->push<cc::DrawPathOp>(path1, cc::PaintFlags());
+  paint_record->push<cc::ScaleOp>(kScaleX, kScaleY);
+  paint_record->push<cc::DrawPathOp>(path2, cc::PaintFlags());
+  paint_record->push<cc::DrawPathOp>(path3, cc::PaintFlags());
+  identifiability_paintop_digest.SetPrefixSkipCount(1);
+  identifiability_paintop_digest.MaybeUpdateDigest(paint_record,
+                                                   /*num_ops_to_visit=*/2);
+  EXPECT_EQ(UINT64_C(5461154373811575393),
+            identifiability_paintop_digest.digest());
+}
+
+TEST(IdentifiabilityPaintOpDigestTest, RecursesIntoDrawRecords) {
+  StudyParticipationRaii study_participation_raii;
+  IdentifiabilityPaintOpDigest identifiability_paintop_digest(kSize);
+  auto paint_record_inner = sk_make_sp<cc::PaintRecord>();
+  auto paint_record_outer = sk_make_sp<cc::PaintRecord>();
+  paint_record_inner->push<cc::ScaleOp>(kScaleX, kScaleY);
+  paint_record_outer->push<cc::DrawRecordOp>(paint_record_inner);
+  identifiability_paintop_digest.MaybeUpdateDigest(paint_record_outer,
+                                                   /*num_ops_to_visit=*/1);
+  EXPECT_EQ(kScaleDigest, identifiability_paintop_digest.digest());
+}
+
+TEST(IdentifiabilityPaintOpDigestTest, RecursesIntoDrawRecords_TwoLevels) {
+  StudyParticipationRaii study_participation_raii;
+  IdentifiabilityPaintOpDigest identifiability_paintop_digest(kSize);
+  auto paint_record_inner = sk_make_sp<cc::PaintRecord>();
+  auto paint_record_middle = sk_make_sp<cc::PaintRecord>();
+  auto paint_record_outer = sk_make_sp<cc::PaintRecord>();
+  paint_record_inner->push<cc::ScaleOp>(kScaleX, kScaleY);
+  paint_record_middle->push<cc::DrawRecordOp>(paint_record_inner);
+  paint_record_outer->push<cc::DrawRecordOp>(paint_record_middle);
+  identifiability_paintop_digest.MaybeUpdateDigest(paint_record_outer,
+                                                   /*num_ops_to_visit=*/1);
+  EXPECT_EQ(kScaleDigest, identifiability_paintop_digest.digest());
+}
+
+TEST(IdentifiabilityPaintOpDigestTest, StopsUpdatingDigestAfterThreshold) {
+  StudyParticipationRaii study_participation_raii;
+  constexpr int kMaxOperations = 5;
+  IdentifiabilityPaintOpDigest identifiability_paintop_digest(kSize,
+                                                              kMaxOperations);
+  uint64_t last_digest = UINT64_C(0);
+  for (int i = 0; i < kMaxOperations; i++) {
+    auto paint_record = sk_make_sp<cc::PaintRecord>();
+    paint_record->push<cc::ScaleOp>(kScaleX, kScaleY);
+    identifiability_paintop_digest.MaybeUpdateDigest(paint_record,
+                                                     /*num_ops_to_visit=*/1);
+    EXPECT_NE(last_digest, identifiability_paintop_digest.digest()) << i;
+    last_digest = identifiability_paintop_digest.digest();
+  }
+
+  auto paint_record = sk_make_sp<cc::PaintRecord>();
+  paint_record->push<cc::ScaleOp>(kScaleX, kScaleY);
+  identifiability_paintop_digest.MaybeUpdateDigest(paint_record,
+                                                   /*num_ops_to_visit=*/1);
+  EXPECT_EQ(last_digest, identifiability_paintop_digest.digest());
 }
 
 }  // namespace

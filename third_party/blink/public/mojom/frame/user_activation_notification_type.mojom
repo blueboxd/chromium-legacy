@@ -18,8 +18,14 @@ enum UserActivationNotificationType {
   // A Devtools interaction caused the notification call.
   kDevTools,
 
-  // An extension API caused the notification call.
-  kExtension,
+  // An extension API event caused the notification call.
+  kExtensionEvent,
+
+  // An extension API caused the notification call through GuestView.
+  kExtensionGuestView,
+
+  // An extension messaging API caused the notification call.
+  kExtensionMessaging,
 
   // A media API caused the notification call.
   kMedia,

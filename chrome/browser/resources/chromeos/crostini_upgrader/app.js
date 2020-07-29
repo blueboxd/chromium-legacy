@@ -341,7 +341,6 @@ Polymer({
    */
   canCancel_(state) {
     switch (state) {
-      case State.UPGRADING:  // TODO(nverne): remove once we have OK from UX.
       case State.BACKUP:
       case State.RESTORE:
       case State.BACKUP_SUCCEEDED:

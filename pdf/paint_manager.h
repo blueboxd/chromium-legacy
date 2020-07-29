@@ -7,11 +7,11 @@
 
 #include <stdint.h>
 
+#include <memory>
 #include <vector>
 
+#include "base/memory/weak_ptr.h"
 #include "pdf/paint_aggregator.h"
-#include "ppapi/cpp/graphics_2d.h"
-#include "ppapi/utility/completion_callback_factory.h"
 #include "ui/gfx/geometry/size.h"
 
 namespace gfx {
@@ -21,6 +21,8 @@ class Vector2d;
 }  // namespace gfx
 
 namespace chrome_pdf {
+
+class Graphics;
 
 // Custom PaintManager for the PDF plugin.  This is branched from the Pepper
 // version.  The difference is that this supports progressive rendering of dirty
@@ -33,13 +35,14 @@ class PaintManager {
  public:
   class Client {
    public:
-    // Creates a new, unbound `pp::Graphics2D` for the paint manager, with the
-    // given |size| and always-opaque rendering.
-    virtual pp::Graphics2D CreatePaintGraphics(const gfx::Size& size) = 0;
+    // Creates a new, unbound `Graphics` for the paint manager, with the given
+    // |size| and always-opaque rendering.
+    virtual std::unique_ptr<Graphics> CreatePaintGraphics(
+        const gfx::Size& size) = 0;
 
-    // Binds a `pp::Graphics2D` created by `CreatePaintGraphics()`, returning
-    // `true` if binding was successful.
-    virtual bool BindPaintGraphics(pp::Graphics2D& graphics) = 0;
+    // Binds a `Graphics` created by `CreatePaintGraphics()`, returning `true`
+    // if binding was successful.
+    virtual bool BindPaintGraphics(Graphics& graphics) = 0;
 
     // Paints the given invalid area of the plugin to the given graphics
     // device. Returns true if anything was painted.
@@ -147,11 +150,8 @@ class PaintManager {
   // Non-owning pointer. See the constructor.
   Client* const client_;
 
-  pp::CompletionCallbackFactory<PaintManager> callback_factory_;
-
-  // This graphics device will be is_null() if no graphics has been manually
-  // set yet.
-  pp::Graphics2D graphics_;
+  // This graphics device will be null if no graphics has been set yet.
+  std::unique_ptr<Graphics> graphics_;
 
   PaintAggregator aggregator_;
 
@@ -178,6 +178,8 @@ class PaintManager {
 
   // True when the view size just changed and we're waiting for a paint.
   bool view_size_changed_waiting_for_paint_ = false;
+
+  base::WeakPtrFactory<PaintManager> weak_factory_{this};
 };
 
 }  // namespace chrome_pdf

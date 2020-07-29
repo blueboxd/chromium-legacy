@@ -16,6 +16,7 @@
 #include "content/public/renderer/content_renderer_client.h"
 #include "content/public/renderer/render_frame.h"
 #include "content/public/renderer/render_thread.h"
+#include "third_party/blink/public/mojom/frame/user_activation_notification_type.mojom.h"
 #include "third_party/blink/public/platform/web_fullscreen_video_status.h"
 #include "third_party/blink/public/platform/web_size.h"
 #include "third_party/blink/public/web/web_local_frame.h"
@@ -304,7 +305,8 @@ void RendererWebMediaPlayerDelegate::OnMediaDelegatePause(
     if (triggered_by_user && render_frame()) {
       // TODO(avayvod): remove when default play/pause is handled via
       // the MediaSession code path.
-      render_frame()->GetWebFrame()->NotifyUserActivation();
+      render_frame()->GetWebFrame()->NotifyUserActivation(
+          blink::mojom::UserActivationNotificationType::kInteraction);
     }
     observer->OnPause();
   }
@@ -317,8 +319,10 @@ void RendererWebMediaPlayerDelegate::OnMediaDelegatePlay(int player_id) {
   if (observer) {
     // TODO(avayvod): remove when default play/pause is handled via
     // the MediaSession code path.
-    if (render_frame())
-      render_frame()->GetWebFrame()->NotifyUserActivation();
+    if (render_frame()) {
+      render_frame()->GetWebFrame()->NotifyUserActivation(
+          blink::mojom::UserActivationNotificationType::kInteraction);
+    }
     observer->OnPlay();
   }
 }

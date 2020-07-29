@@ -110,9 +110,13 @@ class BrowserTabStripController::TabContextMenuContents
         tab_groups_iph_controller_(tab_groups_iph_controller) {
     model_ = controller_->menu_model_factory_->Create(
         this, controller->model_, controller->tabstrip_->GetModelIndexOf(tab));
-    menu_runner_ = std::make_unique<views::MenuRunner>(
-        model_.get(),
-        views::MenuRunner::HAS_MNEMONICS | views::MenuRunner::CONTEXT_MENU);
+
+    // Because we use "new" badging for feature promos, we cannot use system-
+    // native context menus. (See crbug.com/1109256.)
+    const int run_flags = views::MenuRunner::HAS_MNEMONICS |
+                          views::MenuRunner::CONTEXT_MENU |
+                          views::MenuRunner::FORCE_VIEWS;
+    menu_runner_ = std::make_unique<views::MenuRunner>(model_.get(), run_flags);
   }
 
   void Cancel() { controller_ = nullptr; }

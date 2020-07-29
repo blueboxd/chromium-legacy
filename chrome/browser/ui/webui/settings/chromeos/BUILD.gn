@@ -7,5 +7,6 @@ group("mojom_js") {
     "constants:mojom_js",
     "search:mojo_bindings_js",
     "//chrome/browser/ui/webui/app_management:mojo_bindings_js",
+    "//chrome/browser/ui/webui/nearby_share/public/mojom:mojom_js",
   ]
 }

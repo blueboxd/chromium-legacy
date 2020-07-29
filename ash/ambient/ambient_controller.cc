@@ -37,6 +37,8 @@
 #include "components/prefs/pref_registry_simple.h"
 #include "ui/base/ui_base_types.h"
 #include "ui/views/widget/widget.h"
+#include "ui/wm/core/visibility_controller.h"
+#include "ui/wm/core/window_animations.h"
 
 #if BUILDFLAG(ENABLE_CROS_AMBIENT_MODE_BACKEND)
 #include "ash/ambient/backdrop/ambient_backend_controller_impl.h"
@@ -178,6 +180,9 @@ AmbientController::AmbientController() {
   power_manager_client->GetSwitchStates(
       base::BindOnce(&AmbientController::OnReceiveSwitchStates,
                      weak_ptr_factory_.GetWeakPtr()));
+
+  ambient_backend_model_observer_.Add(
+      ambient_photo_controller_.ambient_backend_model());
 }
 
 AmbientController::~AmbientController() {
@@ -189,19 +194,8 @@ void AmbientController::OnAmbientUiVisibilityChanged(
     AmbientUiVisibility visibility) {
   switch (visibility) {
     case AmbientUiVisibility::kShown:
-      if (!container_view_)
-        CreateWidget();
-      else
-        container_view_->GetWidget()->Show();
-
-      if (inactivity_monitor_) {
-        // Resets the monitor and cancels the timer upon shown.
-        inactivity_monitor_.reset();
-      }
-
-      DCHECK(container_view_);
-      // This will be no-op if the view is already visible.
-      container_view_->SetVisible(true);
+      // Resets the monitor and cancels the timer upon shown.
+      inactivity_monitor_.reset();
 
       if (IsChargerConnected()) {
         // Requires wake lock to prevent display from sleeping.
@@ -216,42 +210,48 @@ void AmbientController::OnAmbientUiVisibilityChanged(
       StartRefreshingImages();
       break;
     case AmbientUiVisibility::kHidden:
-      container_view_->GetWidget()->Hide();
-
-      // Has no effect if |wake_lock_| has already been released.
-      ReleaseWakeLock();
-      StopRefreshingImages();
-
-      // Creates the monitor and starts the auto-show timer upon hidden.
-      DCHECK(!inactivity_monitor_);
-      if (LockScreen::HasInstance() && autoshow_enabled_) {
-        inactivity_monitor_ = std::make_unique<InactivityMonitor>(
-            LockScreen::Get()->widget()->GetWeakPtr(),
-            base::BindOnce(&AmbientController::OnAutoShowTimeOut,
-                           weak_ptr_factory_.GetWeakPtr()));
-      }
-      break;
     case AmbientUiVisibility::kClosed:
-      DCHECK(container_view_);
-      // |CloseNow()| will close the widget synchronously to ensure its
-      // view hierarchy being destroyed before |this|.
-      container_view_->GetWidget()->CloseNow();
+      if (container_view_) {
+        container_view_->GetWidget()->Close();
+        container_view_ = nullptr;
+      }
 
+      // TODO(wutao): This will clear the image cache currently. It will not
+      // work with `kHidden` if the token has expired and ambient mode is shown
+      // again.
       StopRefreshingImages();
-      CleanUpOnClosed();
 
       // We close the Assistant UI after ambient screen not being shown to sync
       // states to |AssistantUiController|. This will be a no-op if the
       // |kAmbientAssistant| feature is disabled, or the Assistant UI has
       // already been closed.
       CloseAssistantUi();
+
+      // Should do nothing if the wake lock has already been released.
+      ReleaseWakeLock();
+
+      if (visibility == AmbientUiVisibility::kHidden) {
+        // Creates the monitor and starts the auto-show timer upon hidden.
+        DCHECK(!inactivity_monitor_);
+        if (LockScreen::HasInstance() && autoshow_enabled_) {
+          inactivity_monitor_ = std::make_unique<InactivityMonitor>(
+              LockScreen::Get()->widget()->GetWeakPtr(),
+              base::BindOnce(&AmbientController::OnAutoShowTimeOut,
+                             weak_ptr_factory_.GetWeakPtr()));
+        }
+      } else {
+        DCHECK(visibility == AmbientUiVisibility::kClosed);
+        inactivity_monitor_.reset();
+        power_status_observer_.Remove(PowerStatus::Get());
+      }
+
       break;
   }
 }
 
 void AmbientController::OnAutoShowTimeOut() {
   DCHECK(IsUiHidden(ambient_ui_model_.ui_visibility()));
-  DCHECK(!container_view_->GetWidget()->IsVisible());
+  DCHECK(!container_view_);
 
   // Show ambient screen after time out.
   ambient_ui_model_.SetUiVisibility(AmbientUiVisibility::kShown);
@@ -286,7 +286,6 @@ void AmbientController::OnLockStateChanged(bool locked) {
 
     ShowUi(AmbientUiMode::kLockScreenUi);
   } else {
-    DCHECK(container_view_);
     // Ambient screen will be destroyed along with the lock screen when user
     // logs in.
     CloseUi();
@@ -364,14 +363,6 @@ void AmbientController::RemoveAmbientViewDelegateObserver(
   delegate_.RemoveObserver(observer);
 }
 
-std::unique_ptr<AmbientContainerView> AmbientController::CreateContainerView() {
-  DCHECK(!container_view_);
-
-  auto container = std::make_unique<AmbientContainerView>(&delegate_);
-  container_view_ = container.get();
-  return container;
-}
-
 void AmbientController::ShowUi(AmbientUiMode mode) {
   // TODO(meilinw): move the eligibility check to the idle entry point once
   // implemented: b/149246117.
@@ -385,13 +376,10 @@ void AmbientController::ShowUi(AmbientUiMode mode) {
 }
 
 void AmbientController::CloseUi() {
-  DCHECK(container_view_);
-
   ambient_ui_model_.SetUiVisibility(AmbientUiVisibility::kClosed);
 }
 
 void AmbientController::HideLockScreenUi() {
-  DCHECK(container_view_);
   DCHECK(IsLockScreenUi(ambient_ui_model_.ui_mode()));
 
   ambient_ui_model_.SetUiVisibility(AmbientUiVisibility::kHidden);
@@ -490,6 +478,19 @@ AmbientBackendModel* AmbientController::GetAmbientBackendModel() {
   return ambient_photo_controller_.ambient_backend_model();
 }
 
+void AmbientController::OnImagesChanged() {
+  if (!container_view_)
+    CreateWidget();
+}
+
+std::unique_ptr<AmbientContainerView> AmbientController::CreateContainerView() {
+  DCHECK(!container_view_);
+
+  auto container = std::make_unique<AmbientContainerView>(&delegate_);
+  container_view_ = container.get();
+  return container;
+}
+
 void AmbientController::CreateWidget() {
   DCHECK(!container_view_);
 
@@ -503,20 +504,16 @@ void AmbientController::CreateWidget() {
   widget->Init(std::move(params));
   widget->SetContentsView(CreateContainerView());
 
+  widget->SetVisibilityAnimationTransition(
+      views::Widget::VisibilityTransition::ANIMATE_BOTH);
+  ::wm::SetWindowVisibilityAnimationType(
+      widget->GetNativeWindow(), ::wm::WINDOW_VISIBILITY_ANIMATION_TYPE_FADE);
+  ::wm::SetWindowVisibilityChangesAnimated(widget->GetNativeWindow());
+
   widget->Show();
 
   // Requests keyboard focus for |container_view_| to receive keyboard events.
   container_view_->RequestFocus();
-}
-
-void AmbientController::CleanUpOnClosed() {
-  // Invalidates the view pointer.
-  container_view_ = nullptr;
-  inactivity_monitor_.reset();
-  power_status_observer_.Remove(PowerStatus::Get());
-
-  // Should do nothing if the wake lock has already been released.
-  ReleaseWakeLock();
 }
 
 void AmbientController::StartRefreshingImages() {

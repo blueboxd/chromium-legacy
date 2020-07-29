@@ -60,6 +60,11 @@ const base::Feature kRemoteOptimizationGuideFetchingAnonymousDataConsent{
 const base::Feature kOptimizationTargetPrediction{
     "OptimizationTargetPrediction", base::FEATURE_ENABLED_BY_DEFAULT};
 
+// Enables out-of-service evaluation of prediction models via the ML Service.
+const base::Feature kOptimizationTargetPredictionUsingMLService{
+    "OptimizationGuidePredictionUsingMLService",
+    base::FEATURE_DISABLED_BY_DEFAULT};
+
 size_t MaxHintsFetcherTopHostBlacklistSize() {
   // The blacklist will be limited to the most engaged hosts and will hold twice
   // (2*N) as many hosts that the HintsFetcher request hints for. The extra N
@@ -274,6 +279,11 @@ base::flat_set<std::string> ExternalAppPackageNamesApprovedForFetch() {
       value, ",", base::TRIM_WHITESPACE, base::SPLIT_WANT_NONEMPTY);
   return base::flat_set<std::string>(app_packages_list.begin(),
                                      app_packages_list.end());
+}
+
+bool ShouldUseMLServiceForPrediction() {
+  return base::FeatureList::IsEnabled(
+      kOptimizationTargetPredictionUsingMLService);
 }
 
 }  // namespace features

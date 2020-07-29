@@ -13,6 +13,8 @@
 #include "content/browser/renderer_host/input/mouse_wheel_phase_handler.h"
 #include "content/common/content_export.h"
 #include "content/public/browser/native_web_keyboard_event.h"
+#include "mojo/public/cpp/bindings/remote.h"
+#include "services/viz/public/mojom/compositing/delegated_ink_point.mojom.h"
 #include "third_party/blink/public/mojom/input/pointer_lock_result.mojom.h"
 #include "ui/aura/scoped_enable_unadjusted_mouse_events.h"
 #include "ui/aura/scoped_keyboard_hook.h"
@@ -194,6 +196,7 @@ class CONTENT_EXPORT RenderWidgetHostViewEventHandler
       RenderWidgetHostViewAuraTest,
       KeyEventRoutingKeyboardLockAndChildPopupWithoutInputGrab);
   friend class MockPointerLockRenderWidgetHostView;
+  friend class FakeRenderWidgetHostViewAura;
 
   // Returns true if the |event| passed in can be forwarded to the renderer.
   bool CanRendererHandleEvent(const ui::MouseEvent* event,
@@ -252,6 +255,13 @@ class CONTENT_EXPORT RenderWidgetHostViewEventHandler
   bool IsKeyLocked(const ui::KeyEvent& event);
 
   void HandleMouseWheelEvent(ui::MouseEvent* event);
+
+  // Forward the location and timestamp of the event to viz if a delegated ink
+  // trail is requested.
+  void ForwardDelegatedInkPoint(ui::LocatedEvent* event);
+
+  // Flush the remote for testing purposes.
+  void FlushForTest() { delegated_ink_point_renderer_.FlushForTesting(); }
 
   // Whether return characters should be passed on to the RenderWidgetHostImpl.
   bool accept_return_character_ = false;
@@ -318,6 +328,11 @@ class CONTENT_EXPORT RenderWidgetHostViewEventHandler
   MouseWheelPhaseHandler mouse_wheel_phase_handler_;
 
   std::unique_ptr<HitTestDebugKeyEventObserver> debug_observer_;
+
+  // Remote end of the connection for sending delegated ink points to viz to
+  // support the delegated ink trails feature.
+  mojo::Remote<viz::mojom::DelegatedInkPointRenderer>
+      delegated_ink_point_renderer_;
 
   DISALLOW_COPY_AND_ASSIGN(RenderWidgetHostViewEventHandler);
 };

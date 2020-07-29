@@ -742,8 +742,7 @@ class WebLocalFrame : public WebFrame {
 
   // See blink::LocalFrame::NotifyUserActivation().
   virtual void NotifyUserActivation(
-      mojom::UserActivationNotificationType notification_type =
-          mojom::UserActivationNotificationType::kNone) = 0;
+      mojom::UserActivationNotificationType notification_type) = 0;
 
   // See blink::LocalFrame::HasStickyUserActivation().
   virtual bool HasStickyUserActivation() = 0;

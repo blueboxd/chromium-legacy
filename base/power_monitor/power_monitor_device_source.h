@@ -15,7 +15,7 @@
 #include <windows.h>
 #endif  // !OS_WIN
 
-#if defined(OS_MACOSX) && !defined(OS_IOS)
+#if defined(OS_MAC)
 #include <IOKit/IOTypes.h>
 
 #include "base/mac/scoped_cftyperef.h"
@@ -69,7 +69,7 @@ class BASE_EXPORT PowerMonitorDeviceSource : public PowerMonitorSource {
   };
 #endif  // OS_WIN
 
-#if defined(OS_MACOSX)
+#if defined(OS_APPLE)
   void PlatformInit();
   void PlatformDestroy();
 
@@ -91,7 +91,7 @@ class BASE_EXPORT PowerMonitorDeviceSource : public PowerMonitorSource {
   int GetRemainingBatteryCapacity() override;
 #endif  // defined(OS_ANDROID)
 
-#if defined(OS_MACOSX) && !defined(OS_IOS)
+#if defined(OS_MAC)
   // PowerMonitorSource:
   PowerObserver::DeviceThermalState GetCurrentThermalState() override;
 

@@ -19,6 +19,7 @@
 
 #if BUILDFLAG(ENABLE_SODA)
 #include "chrome/services/soda/internal/soda_client.h"
+#include "google_apis/google_api_keys.h"
 #endif  // BUILDFLAG(ENABLE_SODA)
 
 namespace speech {
@@ -124,12 +125,14 @@ void SpeechRecognitionRecognizerImpl::SendAudioToSpeechRecognitionService(
       soda_client_->DidAudioPropertyChange(sample_rate, channel_count)) {
     // Initialize the SODA instance.
     auto config_file_path = GetSodaConfigPath().value();
+    auto api_key = google_apis::GetSodaAPIKey();
     SodaConfig config;
     config.channel_count = channel_count;
     config.sample_rate = sample_rate;
     config.config_file = config_file_path.c_str();
     config.callback = RecognitionCallback;
     config.callback_handle = this;
+    config.api_key = api_key.c_str();
     soda_client_->Reset(config);
   }
 

@@ -164,6 +164,7 @@
 #include "third_party/blink/public/mojom/choosers/file_chooser.mojom.h"
 #include "third_party/blink/public/mojom/fetch/fetch_api_request.mojom.h"
 #include "third_party/blink/public/mojom/frame/frame_owner_properties.mojom.h"
+#include "third_party/blink/public/mojom/frame/user_activation_notification_type.mojom.h"
 #include "third_party/blink/public/mojom/frame/user_activation_update_types.mojom.h"
 #include "third_party/blink/public/mojom/input/focus_type.mojom.h"
 #include "third_party/blink/public/mojom/input/input_handler.mojom-shared.h"
@@ -2520,7 +2521,8 @@ void RenderFrameImpl::JavaScriptExecuteRequestForTests(
   // A bunch of tests expect to run code in the context of a user gesture, which
   // can grant additional privileges (e.g. the ability to create popups).
   if (has_user_gesture)
-    frame_->NotifyUserActivation();
+    frame_->NotifyUserActivation(
+        blink::mojom::UserActivationNotificationType::kTest);
 
   v8::HandleScope handle_scope(blink::MainThreadIsolate());
   v8::Local<v8::Value> result;
@@ -2960,7 +2962,8 @@ void RenderFrameImpl::RequestFullscreenVideoElement() {
     // This is always initiated from browser side (which should require the user
     // interacting with ui) which suffices for a user gesture even though there
     // will have been no input to the frame at this point.
-    frame_->NotifyUserActivation();
+    frame_->NotifyUserActivation(
+        blink::mojom::UserActivationNotificationType::kInteraction);
 
     video_element.RequestFullscreen();
   }

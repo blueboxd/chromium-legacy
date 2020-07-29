@@ -42,6 +42,9 @@ CoreAccountId AccountsMutatorImpl::AddOrUpdateAccount(
     const std::string& refresh_token,
     bool is_under_advanced_protection,
     signin_metrics::SourceForRefreshTokenOperation source) {
+#if defined(OS_CHROMEOS)
+  NOTREACHED();
+#endif
   CoreAccountId account_id =
       account_tracker_service_->SeedAccountInfo(gaia_id, email);
   account_tracker_service_->SetIsAdvancedProtectionAccount(
@@ -75,16 +78,25 @@ void AccountsMutatorImpl::UpdateAccountInfo(
 void AccountsMutatorImpl::RemoveAccount(
     const CoreAccountId& account_id,
     signin_metrics::SourceForRefreshTokenOperation source) {
+#if defined(OS_CHROMEOS)
+  NOTREACHED();
+#endif
   token_service_->RevokeCredentials(account_id, source);
 }
 
 void AccountsMutatorImpl::RemoveAllAccounts(
     signin_metrics::SourceForRefreshTokenOperation source) {
+#if defined(OS_CHROMEOS)
+  NOTREACHED();
+#endif
   token_service_->RevokeAllCredentials(source);
 }
 
 void AccountsMutatorImpl::InvalidateRefreshTokenForPrimaryAccount(
     signin_metrics::SourceForRefreshTokenOperation source) {
+#if defined(OS_CHROMEOS)
+  NOTREACHED();
+#endif
   DCHECK(primary_account_manager_->IsAuthenticated());
   CoreAccountInfo primary_account_info =
       primary_account_manager_->GetAuthenticatedAccountInfo();

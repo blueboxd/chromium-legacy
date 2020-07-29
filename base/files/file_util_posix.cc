@@ -45,7 +45,7 @@
 #include "build/branding_buildflags.h"
 #include "build/build_config.h"
 
-#if defined(OS_MACOSX)
+#if defined(OS_APPLE)
 #include <AvailabilityMacros.h>
 #include "base/mac/foundation_util.h"
 #endif
@@ -107,7 +107,7 @@ bool VerifySpecificPathControlledByUser(const FilePath& path,
 }
 
 std::string TempFileName() {
-#if defined(OS_MACOSX)
+#if defined(OS_APPLE)
   return StringPrintf(".%s.XXXXXX", base::mac::BaseBundleID());
 #endif
 
@@ -274,7 +274,7 @@ bool DoCopyDirectory(const FilePath& from_path,
     // source file's permissions into account. On the other platforms, we just
     // use the base::File constructor. On Chrome OS, base::File uses a different
     // set of permissions than it does on other POSIX platforms.
-#if defined(OS_MACOSX)
+#if defined(OS_APPLE)
     int mode = 0600 | (stat_at_use.st_mode & 0177);
 #elif defined(OS_CHROMEOS)
     int mode = 0644;
@@ -343,7 +343,7 @@ bool DoDeleteFile(const FilePath& path, bool recursive) {
 }
 #endif  // !defined(OS_NACL_NONSFI)
 
-#if !defined(OS_MACOSX)
+#if !defined(OS_APPLE)
 // Appends |mode_char| to |mode| before the optional character set encoding; see
 // https://www.gnu.org/software/libc/manual/html_node/Opening-Streams.html for
 // details.
@@ -601,7 +601,7 @@ bool ExecutableExistsInPath(Environment* env,
 
 #endif  // !OS_FUCHSIA
 
-#if !defined(OS_MACOSX)
+#if !defined(OS_APPLE)
 // This is implemented in file_util_mac.mm for Mac.
 bool GetTempDir(FilePath* path) {
   const char* tmp = getenv("TMPDIR");
@@ -617,9 +617,9 @@ bool GetTempDir(FilePath* path) {
   return true;
 #endif
 }
-#endif  // !defined(OS_MACOSX)
+#endif  // !defined(OS_APPLE)
 
-#if !defined(OS_MACOSX)  // Mac implementation is in file_util_mac.mm.
+#if !defined(OS_APPLE)  // Mac implementation is in file_util_mac.mm.
 FilePath GetHomeDir() {
 #if defined(OS_CHROMEOS)
   if (SysInfo::IsRunningOnChromeOS()) {
@@ -644,7 +644,7 @@ FilePath GetHomeDir() {
   // Last resort.
   return FilePath("/tmp");
 }
-#endif  // !defined(OS_MACOSX)
+#endif  // !defined(OS_APPLE)
 
 File CreateAndOpenTemporaryFileInDir(const FilePath& dir, FilePath* temp_file) {
   // For call to close() inside ScopedFD.
@@ -831,7 +831,7 @@ FILE* OpenFile(const FilePath& filename, const char* mode) {
       (strchr(mode, ',') != nullptr && strchr(mode, 'e') > strchr(mode, ',')));
   ScopedBlockingCall scoped_blocking_call(FROM_HERE, BlockingType::MAY_BLOCK);
   FILE* result = nullptr;
-#if defined(OS_MACOSX)
+#if defined(OS_APPLE)
   // macOS does not provide a mode character to set O_CLOEXEC; see
   // https://developer.apple.com/legacy/library/documentation/Darwin/Reference/ManPages/man3/fopen.3.html.
   const char* the_mode = mode;
@@ -842,7 +842,7 @@ FILE* OpenFile(const FilePath& filename, const char* mode) {
   do {
     result = fopen(filename.value().c_str(), the_mode);
   } while (!result && errno == EINTR);
-#if defined(OS_MACOSX)
+#if defined(OS_APPLE)
   // Mark the descriptor as close-on-exec.
   if (result)
     SetCloseOnExec(fileno(result));
@@ -943,7 +943,7 @@ bool AllocateFileRegion(File* file, int64_t offset, size_t size) {
   if (HANDLE_EINTR(fallocate(file->GetPlatformFile(), 0, offset, size)) != -1)
     return true;
   DPLOG(ERROR) << "fallocate";
-#elif defined(OS_MACOSX)
+#elif defined(OS_APPLE)
   // MacOS doesn't support fallocate even though their new APFS filesystem
   // does support sparse files. It does, however, have the functionality
   // available via fcntl.
@@ -1065,7 +1065,7 @@ bool VerifyPathControlledByUser(const FilePath& base,
   return true;
 }
 
-#if defined(OS_MACOSX) && !defined(OS_IOS)
+#if defined(OS_MAC)
 bool VerifyPathControlledByAdmin(const FilePath& path) {
   const unsigned kRootUid = 0;
   const FilePath kFileSystemRoot("/");
@@ -1094,7 +1094,7 @@ bool VerifyPathControlledByAdmin(const FilePath& path) {
   return VerifyPathControlledByUser(
       kFileSystemRoot, path, kRootUid, allowed_group_ids);
 }
-#endif  // defined(OS_MACOSX) && !defined(OS_IOS)
+#endif  // defined(OS_MAC)
 
 int GetMaximumPathComponentLength(const FilePath& path) {
 #if defined(OS_FUCHSIA)
@@ -1131,7 +1131,7 @@ bool GetShmemTempDir(bool executable, FilePath* path) {
 }
 #endif  // !defined(OS_ANDROID)
 
-#if !defined(OS_MACOSX)
+#if !defined(OS_APPLE)
 // Mac has its own implementation, this is for all other Posix systems.
 bool CopyFile(const FilePath& from_path, const FilePath& to_path) {
   ScopedBlockingCall scoped_blocking_call(FROM_HERE, BlockingType::MAY_BLOCK);
@@ -1154,7 +1154,7 @@ bool CopyFile(const FilePath& from_path, const FilePath& to_path) {
 
   return CopyFileContents(&infile, &outfile);
 }
-#endif  // !defined(OS_MACOSX)
+#endif  // !defined(OS_APPLE)
 
 PrefetchResult PreReadFile(const FilePath& file_path,
                            bool is_executable,

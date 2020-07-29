@@ -2688,6 +2688,12 @@ crbug.com/1018465 external/wpt/css/css-pseudo/active-selection-056.html [ Failur
 crbug.com/1105958 external/wpt/payment-request/payment-is-showing.https.html [ Timeout ]
 
 # ====== New tests from wpt-importer added here ======
+crbug.com/626703 [ Linux ] virtual/web-components-v0-disabled/external/wpt/html/semantics/embedded-content/the-iframe-element/iframe_sandbox_navigation_download_allow_downloads.sub.tentative.html [ Timeout ]
+crbug.com/626703 [ Mac ] virtual/web-components-v0-disabled/external/wpt/html/semantics/embedded-content/the-iframe-element/iframe_sandbox_navigation_download_allow_downloads.sub.tentative.html [ Timeout ]
+crbug.com/626703 [ Win ] virtual/web-components-v0-disabled/external/wpt/html/semantics/embedded-content/the-iframe-element/iframe_sandbox_navigation_download_allow_downloads.sub.tentative.html [ Timeout ]
+crbug.com/626703 [ Linux ] external/wpt/html/semantics/embedded-content/the-iframe-element/iframe_sandbox_navigation_download_allow_downloads.sub.tentative.html [ Timeout ]
+crbug.com/626703 [ Mac ] external/wpt/html/semantics/embedded-content/the-iframe-element/iframe_sandbox_navigation_download_allow_downloads.sub.tentative.html [ Timeout ]
+crbug.com/626703 [ Win ] external/wpt/html/semantics/embedded-content/the-iframe-element/iframe_sandbox_navigation_download_allow_downloads.sub.tentative.html [ Timeout ]
 crbug.com/626703 [ Linux ] external/wpt/css/css-pseudo/selection-input-011.html [ Failure ]
 crbug.com/626703 [ Mac ] external/wpt/css/css-pseudo/selection-input-011.html [ Failure ]
 crbug.com/626703 [ Win ] external/wpt/css/css-pseudo/selection-input-011.html [ Failure ]

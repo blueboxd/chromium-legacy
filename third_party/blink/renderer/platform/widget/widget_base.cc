@@ -744,7 +744,7 @@ void WidgetBase::ImeSetComposition(
   FrameWidget* frame_widget = client_->FrameWidget();
   if (!frame_widget)
     return;
-  if (frame_widget->ShouldDispatchImeEventsToPepper()) {
+  if (frame_widget->Client()->ShouldDispatchImeEventsToPepper()) {
     frame_widget->Client()->ImeSetCompositionForPepper(
         text,
         std::vector<ui::ImeTextSpan>(ime_text_spans.begin(),
@@ -777,7 +777,7 @@ void WidgetBase::ImeCommitText(const String& text,
   FrameWidget* frame_widget = client_->FrameWidget();
   if (!frame_widget)
     return;
-  if (frame_widget->ShouldDispatchImeEventsToPepper()) {
+  if (frame_widget->Client()->ShouldDispatchImeEventsToPepper()) {
     frame_widget->Client()->ImeCommitTextForPepper(
         text,
         std::vector<ui::ImeTextSpan>(ime_text_spans.begin(),
@@ -801,7 +801,7 @@ void WidgetBase::ImeFinishComposingText(bool keep_selection) {
   FrameWidget* frame_widget = client_->FrameWidget();
   if (!frame_widget)
     return;
-  if (frame_widget->ShouldDispatchImeEventsToPepper()) {
+  if (frame_widget->Client()->ShouldDispatchImeEventsToPepper()) {
     frame_widget->Client()->ImeFinishComposingTextForPepper(keep_selection);
     return;
   }

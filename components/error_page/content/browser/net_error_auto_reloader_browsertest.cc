@@ -495,29 +495,30 @@ IN_PROC_BROWSER_TEST_F(NetErrorAutoReloaderBrowserTest,
 }
 
 // Auto-reload is not scheduled when the WebContents are hidden.
-// TODO(crbug/1110259): The test is disabled due to flakiness on multiple platforms.
 IN_PROC_BROWSER_TEST_F(NetErrorAutoReloaderBrowserTest,
-                       DISABLED_NoAutoReloadWhenContentsHidden) {
-  shell()->web_contents()->WasHidden();
-
-  // This would normally schedule an auto-reload, but we're offline.
+                       NoAutoReloadWhenContentsHidden) {
   NetErrorUrlInterceptor interceptor(GetTestUrl(), net::ERR_CONNECTION_RESET);
   EXPECT_FALSE(NavigateMainFrame(GetTestUrl()));
+  EXPECT_EQ(GetDelayForReloadCount(0), GetCurrentAutoReloadDelay());
+
+  // Hiding the contents cancels the scheduled auto-reload.
+  shell()->web_contents()->WasHidden();
   EXPECT_EQ(base::nullopt, GetCurrentAutoReloadDelay());
 }
 
 // If the WebContents becomes visible while sitting at an error page that
 // supports auto-reload, a new auto-reload task should be scheduled.
-// TODO(crbug/1110259): The test is disabled due to flakiness on multiple platforms.
 IN_PROC_BROWSER_TEST_F(NetErrorAutoReloaderBrowserTest,
-                       DISABLED_AutoReloadWhenContentsBecomeVisible) {
-  shell()->web_contents()->WasHidden();
-
-  // This would normally schedule an auto-reload, but we're offline.
+                       AutoReloadWhenContentsBecomeVisible) {
   NetErrorUrlInterceptor interceptor(GetTestUrl(), net::ERR_CONNECTION_RESET);
   EXPECT_FALSE(NavigateMainFrame(GetTestUrl()));
+  EXPECT_EQ(GetDelayForReloadCount(0), GetCurrentAutoReloadDelay());
+
+  // Hiding the contents cancels the scheduled auto-reload.
+  shell()->web_contents()->WasHidden();
   EXPECT_EQ(base::nullopt, GetCurrentAutoReloadDelay());
 
+  // Becoming visible again reschedules auto-reload.
   shell()->web_contents()->WasShown();
   EXPECT_EQ(GetDelayForReloadCount(0), GetCurrentAutoReloadDelay());
 }

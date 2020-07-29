@@ -89,6 +89,10 @@ bool DialogDelegate::ShouldCenterDialogTitleText() const {
   return true;
 }
 
+bool DialogDelegate::ShouldShowCloseButton() const {
+  return can_close_;
+}
+
 }  // namespace login_screen_extension_ui
 
 }  // namespace chromeos

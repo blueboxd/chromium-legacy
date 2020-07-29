@@ -9,8 +9,14 @@
 #include <memory>
 #include <string>
 
+#include "base/callback.h"
 #include "base/macros.h"
 #include "components/keyed_service/core/keyed_service.h"
+
+namespace notifications {
+struct ThrottleConfig;
+struct NotificationData;
+}  // namespace notifications
 
 namespace updates {
 
@@ -21,30 +27,30 @@ struct UpdateNotificationInfo;
 class UpdateNotificationService : public KeyedService {
  public:
   using ExtraData = std::map<std::string, std::string>;
+  using ThrottleConfigCallback =
+      base::OnceCallback<void(std::unique_ptr<notifications::ThrottleConfig>)>;
+  using NotificationDataCallback = base::OnceCallback<void(
+      std::unique_ptr<notifications::NotificationData>)>;
 
-  // Try yo schedule an update notification.
+  // Schedule an update notification.
   virtual void Schedule(UpdateNotificationInfo data) = 0;
-
-  // Validate the notification is ready to show.
-  virtual bool IsReadyToDisplay() const = 0;
-
-  // Called when the notification is dismissed by user.
-  virtual void OnUserDismiss() = 0;
 
   // Called when the notification is clicked by user. Passing |extra| for
   // processing custom data.
   virtual void OnUserClick(const ExtraData& extra) = 0;
 
-  // Called when the helpful/unhelpful buttons are clicked.
-  virtual void OnUserClickButton(bool is_positive_button) = 0;
+  // Replies customized throttle config.
+  virtual void GetThrottleConfig(ThrottleConfigCallback callback) = 0;
+
+  // Confirm whether the upcoming notification is ready to display.
+  virtual void BeforeShowNotification(
+      std::unique_ptr<notifications::NotificationData> notification_data,
+      NotificationDataCallback callback) = 0;
 
   ~UpdateNotificationService() override = default;
 
  protected:
   UpdateNotificationService() = default;
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(UpdateNotificationService);
 };
 
 }  // namespace updates

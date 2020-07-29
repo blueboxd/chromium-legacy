@@ -20,7 +20,8 @@ TEST(UpdateNotificationConfigTest, FinchConfigTest) {
 
   std::map<std::string, std::string> parameters = {
       {kUpdateNotificationStateParamName, "true"},
-      {kUpdateNotificationIntervalParamName, base::NumberToString(7)},
+      {kUpdateNotificationInitIntervalParamName, base::NumberToString(7)},
+      {kUpdateNotificationMaxIntervalParamName, base::NumberToString(123)},
       {kUpdateNotificationDeliverWindowMorningStartParamName,
        base::NumberToString(5)},
       {kUpdateNotificationDeliverWindowMorningEndParamName,
@@ -29,23 +30,18 @@ TEST(UpdateNotificationConfigTest, FinchConfigTest) {
        base::NumberToString(21)},
       {kUpdateNotificationDeliverWindowEveningEndParamName,
        base::NumberToString(23)},
-      {kUpdateNotificationThrottleOffsetCoefficientParamName,
-       base::NumberToString(2)},
-      {kUpdateNotificationDeliverScaleCoefficientParamName,
-       base::NumberToString(1)},
   };
   scoped_feature_list.InitAndEnableFeatureWithParameters(
       chrome::android::kInlineUpdateFlow, parameters);
   std::unique_ptr<UpdateNotificationConfig> config =
       UpdateNotificationConfig::CreateFromFinch();
   EXPECT_TRUE(config->is_enabled);
-  EXPECT_EQ(config->default_interval.InDays(), 7);
+  EXPECT_EQ(config->init_interval.InDays(), 7);
+  EXPECT_EQ(config->max_interval.InDays(), 123);
   EXPECT_EQ(config->deliver_window_morning.first.InHours(), 5);
   EXPECT_EQ(config->deliver_window_morning.second.InHours(), 6);
   EXPECT_EQ(config->deliver_window_evening.first.InHours(), 21);
   EXPECT_EQ(config->deliver_window_evening.second.InHours(), 23);
-  EXPECT_EQ(config->throttle_interval_linear_co_offset, 2);
-  EXPECT_EQ(config->throttle_interval_linear_co_scale, 1);
 }
 
 }  // namespace

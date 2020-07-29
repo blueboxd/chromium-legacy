@@ -2,14 +2,14 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-import {FittingType} from './constants.js';
+import {FittingType, Point} from './constants.js';
 
 /**
  * @typedef {{
  *   url: (string|undefined),
  *   zoom: (number|undefined),
  *   view: (!FittingType|undefined),
- *   viewPosition: ({x: number, y: number}|undefined)
+ *   viewPosition: (!Point|undefined)
  * }}
  */
 let OpenPdfParams;

@@ -281,10 +281,15 @@ WGPUTextureFormat AsDawnEnum<WGPUTextureFormat>(
 template <>
 WGPUTextureDimension AsDawnEnum<WGPUTextureDimension>(
     const WTF::String& webgpu_enum) {
+  if (webgpu_enum == "1d") {
+    return WGPUTextureDimension_1D;
+  }
   if (webgpu_enum == "2d") {
     return WGPUTextureDimension_2D;
   }
-  // TODO(crbug.com/dawn/129): Implement "1d" and "3d".
+  if (webgpu_enum == "3d") {
+    return WGPUTextureDimension_3D;
+  }
   NOTREACHED();
   return WGPUTextureDimension_Force32;
 }
@@ -294,6 +299,9 @@ WGPUTextureViewDimension AsDawnEnum<WGPUTextureViewDimension>(
     const WTF::String& webgpu_enum) {
   if (webgpu_enum.IsNull()) {
     return WGPUTextureViewDimension_Undefined;
+  }
+  if (webgpu_enum == "1d") {
+    return WGPUTextureViewDimension_1D;
   }
   if (webgpu_enum == "2d") {
     return WGPUTextureViewDimension_2D;
@@ -307,7 +315,9 @@ WGPUTextureViewDimension AsDawnEnum<WGPUTextureViewDimension>(
   if (webgpu_enum == "cube-array") {
     return WGPUTextureViewDimension_CubeArray;
   }
-  // TODO(crbug.com/dawn/129): Implement "1d" and "3d".
+  if (webgpu_enum == "3d") {
+    return WGPUTextureViewDimension_3D;
+  }
   NOTREACHED();
   return WGPUTextureViewDimension_Force32;
 }

@@ -32,7 +32,7 @@ import org.robolectric.annotation.Config;
 import org.chromium.base.Callback;
 import org.chromium.base.DiscardableReferencePool;
 import org.chromium.base.test.BaseRobolectricTestRunner;
-import org.chromium.chrome.browser.util.BitmapCache;
+import org.chromium.components.browser_ui.util.BitmapCache;
 
 import jp.tomorrowkey.android.gifplayer.BaseGifImage;
 

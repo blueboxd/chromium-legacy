@@ -13,7 +13,7 @@
 
 #if defined(OS_WIN)
 #include "base/win/scoped_handle.h"
-#elif defined(OS_MACOSX)
+#elif defined(OS_APPLE)
 #include <mach/mach.h>
 
 #include <list>
@@ -172,7 +172,7 @@ class BASE_EXPORT WaitableEvent {
 
 #if defined(OS_WIN)
   win::ScopedHandle handle_;
-#elif defined(OS_MACOSX)
+#elif defined(OS_APPLE)
   // Prior to macOS 10.12, a TYPE_MACH_RECV dispatch source may not be invoked
   // immediately. If a WaitableEventWatcher is used on a manual-reset event,
   // and another thread that is Wait()ing on the event calls Reset()

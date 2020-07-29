@@ -99,8 +99,10 @@ HangWatchScope::~HangWatchScope() {
   }
 
   // If a hang is currently being captured we should block here so execution
-  // stops and the relevant stack frames are recorded.
-  base::HangWatcher::GetInstance()->BlockIfCaptureInProgress();
+  // stops and we avoid recording unrelated stack frames in the crash.
+  if (current_hang_watch_state->IsFlagSet(
+          internal::HangWatchDeadline::Flag::kShouldBlockOnHang))
+    base::HangWatcher::GetInstance()->BlockIfCaptureInProgress();
 
 #if DCHECK_IS_ON()
   // Verify that no Scope was destructed out of order.
@@ -286,9 +288,12 @@ HangWatcher::WatchStateSnapShot::WatchStateSnapShot(
     base::TimeTicks snapshot_time,
     base::TimeTicks deadline_ignore_threshold)
     : snapshot_time_(snapshot_time) {
-  // Initial copy of the values.
+  bool all_threads_marked = true;
+  // Copy hung thread information.
   for (const auto& watch_state : watch_states) {
-    base::TimeTicks deadline = watch_state.get()->GetDeadline();
+    uint64_t flags;
+    base::TimeTicks deadline;
+    std::tie(flags, deadline) = watch_state->GetFlagsAndDeadline();
 
     if (deadline <= deadline_ignore_threshold) {
       hung_watch_state_copies_.clear();
@@ -297,9 +302,31 @@ HangWatcher::WatchStateSnapShot::WatchStateSnapShot(
 
     // Only copy hung threads.
     if (deadline <= snapshot_time) {
-      hung_watch_state_copies_.push_back(
-          WatchStateCopy{deadline, watch_state.get()->GetThreadID()});
+      // Attempt to mark the thread as needing to stay within its current
+      // HangWatchScope until capture is complete.
+      bool thread_marked = watch_state->SetShouldBlockOnHang(flags, deadline);
+
+      // If marking some threads already failed the snapshot won't be kept so
+      // there is no need to keep adding to it. The loop doesn't abort though
+      // to keep marking the other threads. If these threads remain hung until
+      // the next capture then they'll already be marked and will be included
+      // in the capture at that time.
+      if (thread_marked && all_threads_marked) {
+        hung_watch_state_copies_.push_back(
+            WatchStateCopy{deadline, watch_state.get()->GetThreadID()});
+      } else {
+        all_threads_marked = false;
+      }
     }
+  }
+
+  // If some threads could not be marked for blocking then this snapshot is not
+  // actionable since marked threads could be hung because of unmarked ones.
+  // If only the marked threads were captured the information would be
+  // incomplete.
+  if (!all_threads_marked) {
+    hung_watch_state_copies_.clear();
+    return;
   }
 
   // Sort |hung_watch_state_copies_| by order of decreasing hang severity so the
@@ -317,6 +344,8 @@ HangWatcher::WatchStateSnapShot::~WatchStateSnapShot() = default;
 
 std::string HangWatcher::WatchStateSnapShot::PrepareHungThreadListCrashKey()
     const {
+  DCHECK(IsActionable());
+
   // Build a crash key string that contains the ids of the hung threads.
   constexpr char kSeparator{'|'};
   std::string list_of_hung_thread_ids;
@@ -336,6 +365,10 @@ std::string HangWatcher::WatchStateSnapShot::PrepareHungThreadListCrashKey()
   }
 
   return list_of_hung_thread_ids;
+}
+
+bool HangWatcher::WatchStateSnapShot::IsActionable() const {
+  return !hung_watch_state_copies_.empty();
 }
 
 HangWatcher::WatchStateSnapShot HangWatcher::GrabWatchStateSnapshotForTesting()
@@ -374,21 +407,18 @@ void HangWatcher::Monitor() {
 }
 
 void HangWatcher::CaptureHang(base::TimeTicks capture_time) {
-  capture_in_progress.store(true, std::memory_order_relaxed);
+  capture_in_progress_.store(true, std::memory_order_relaxed);
   base::AutoLock scope_lock(capture_lock_);
 
   WatchStateSnapShot watch_state_snapshot(watch_states_, capture_time,
                                           deadline_ignore_threshold_);
-
-  // The hung thread(s) could detected at the start of Monitor() could have
-  // moved on from their scopes. If that happened and there are no more hung
-  // threads then abort capture.
-  std::string list_of_hung_thread_ids =
-      watch_state_snapshot.PrepareHungThreadListCrashKey();
-  if (list_of_hung_thread_ids.empty())
+  if (!watch_state_snapshot.IsActionable()) {
     return;
+  }
 
 #if not defined(OS_NACL)
+  std::string list_of_hung_thread_ids =
+      watch_state_snapshot.PrepareHungThreadListCrashKey();
   static debug::CrashKeyString* crash_key = AllocateCrashKeyString(
       "list-of-hung-threads", debug::CrashKeySize::Size256);
   debug::ScopedCrashKeyString list_of_hung_threads_crash_key_string(
@@ -424,7 +454,7 @@ void HangWatcher::CaptureHang(base::TimeTicks capture_time) {
   // Update after running the actual capture.
   deadline_ignore_threshold_ = latest_expired_deadline;
 
-  capture_in_progress.store(false, std::memory_order_relaxed);
+  capture_in_progress_.store(false, std::memory_order_relaxed);
 }
 
 void HangWatcher::SetAfterMonitorClosureForTesting(
@@ -464,12 +494,11 @@ void HangWatcher::SetTickClockForTesting(const base::TickClock* tick_clock) {
 
 void HangWatcher::BlockIfCaptureInProgress() {
   // Makes a best-effort attempt to block execution if a hang is currently being
-  // captured.Only block on |capture_lock| if |capture_in_progress| hints that
+  // captured.Only block on |capture_lock| if |capture_in_progress_| hints that
   // it's already held to avoid serializing all threads on this function when no
   // hang capture is in-progress.
-  if (capture_in_progress.load(std::memory_order_relaxed)) {
+  if (capture_in_progress_.load(std::memory_order_relaxed))
     base::AutoLock hang_lock(capture_lock_);
-  }
 }
 
 void HangWatcher::UnregisterThread() {
@@ -492,9 +521,169 @@ void HangWatcher::UnregisterThread() {
 }
 
 namespace internal {
+namespace {
 
-// |deadline_| starts at Max() to avoid validation problems
-// when setting the first legitimate value.
+constexpr uint64_t kOnlyDeadlineMask = 0x00FFFFFFFFFFFFFFu;
+constexpr uint64_t kOnlyFlagsMask = ~kOnlyDeadlineMask;
+constexpr uint64_t kMaximumFlag = 0x8000000000000000u;
+
+// Use as a mask to keep persistent flags and the deadline.
+constexpr uint64_t kPersistentFlagsAndDeadlineMask =
+    kOnlyDeadlineMask |
+    static_cast<uint64_t>(HangWatchDeadline::Flag::kIgnoreHangs);
+}  // namespace
+
+// Flag binary representation assertions.
+static_assert(
+    static_cast<uint64_t>(HangWatchDeadline::Flag::kMinValue) >
+        kOnlyDeadlineMask,
+    "Invalid numerical value for flag. Would interfere with bits of data.");
+static_assert(static_cast<uint64_t>(HangWatchDeadline::Flag::kMaxValue) <=
+                  kMaximumFlag,
+              "A flag can only set a single bit.");
+
+HangWatchDeadline::HangWatchDeadline() = default;
+HangWatchDeadline::~HangWatchDeadline() = default;
+
+std::pair<uint64_t, TimeTicks> HangWatchDeadline::GetFlagsAndDeadline() const {
+  uint64_t bits = bits_.load(std::memory_order_relaxed);
+  return std::make_pair(ExtractFlags(bits),
+                        DeadlineFromBits(ExtractDeadline((bits))));
+}
+
+TimeTicks HangWatchDeadline::GetDeadline() const {
+  return DeadlineFromBits(
+      ExtractDeadline(bits_.load(std::memory_order_relaxed)));
+}
+
+// static
+TimeTicks HangWatchDeadline::Max() {
+  // |kOnlyDeadlineMask| has all the bits reserved for the TimeTicks value
+  // set. This means it also represents the highest representable value.
+  return DeadlineFromBits(kOnlyDeadlineMask);
+}
+
+// static
+bool HangWatchDeadline::IsFlagSet(Flag flag, uint64_t flags) {
+  return static_cast<uint64_t>(flag) & flags;
+}
+
+void HangWatchDeadline::SetDeadline(TimeTicks new_deadline) {
+  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
+  DCHECK(new_deadline <= Max()) << "Value too high to be represented.";
+  DCHECK(new_deadline >= TimeTicks{}) << "Value cannot be negative.";
+
+  if (switch_bits_callback_for_testing_) {
+    const uint64_t switched_in_bits = SwitchBitsForTesting();
+    // If a concurrent deadline change is tested it cannot have a deadline or
+    // persistent flag change since those always happen on the same thread.
+    DCHECK((switched_in_bits & kPersistentFlagsAndDeadlineMask) == 0u);
+  }
+
+  // Discard all non-persistent flags and apply deadline change.
+  const uint64_t old_bits = bits_.load(std::memory_order_relaxed);
+  const uint64_t new_flags =
+      ExtractFlags(old_bits & kPersistentFlagsAndDeadlineMask);
+  bits_.store(new_flags | ExtractDeadline(new_deadline.ToInternalValue()),
+              std::memory_order_relaxed);
+}
+
+// TODO(crbug.com/1087026): Add flag DCHECKs here.
+bool HangWatchDeadline::SetShouldBlockOnHang(uint64_t old_flags,
+                                             TimeTicks old_deadline) {
+  DCHECK(old_deadline <= Max()) << "Value too high to be represented.";
+  DCHECK(old_deadline >= TimeTicks{}) << "Value cannot be negative.";
+
+  // Set the kShouldBlockOnHang flag only if |bits_| did not change since it was
+  // read. kShouldBlockOnHang is the only non-persistent flag and should never
+  // be set twice. Persistent flags and deadline changes are done from the same
+  // thread so there is no risk of losing concurrently added information.
+  uint64_t old_bits =
+      old_flags | static_cast<uint64_t>(old_deadline.ToInternalValue());
+  const uint64_t desired_bits =
+      old_bits | static_cast<uint64_t>(Flag::kShouldBlockOnHang);
+
+  // If a test needs to simulate |bits_| changing since calling this function
+  // this happens now.
+  if (switch_bits_callback_for_testing_) {
+    const uint64_t switched_in_bits = SwitchBitsForTesting();
+
+    // Injecting the flag being tested is invalid.
+    DCHECK(!IsFlagSet(Flag::kShouldBlockOnHang, switched_in_bits));
+  }
+
+  return bits_.compare_exchange_weak(old_bits, desired_bits,
+                                     std::memory_order_relaxed,
+                                     std::memory_order_relaxed);
+}
+
+void HangWatchDeadline::SetIgnoreHangs() {
+  SetPersistentFlag(Flag::kIgnoreHangs);
+}
+
+void HangWatchDeadline::UnsetIgnoreHangs() {
+  ClearPersistentFlag(Flag::kIgnoreHangs);
+}
+
+void HangWatchDeadline::SetPersistentFlag(Flag flag) {
+  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
+  if (switch_bits_callback_for_testing_)
+    SwitchBitsForTesting();
+  bits_.fetch_or(static_cast<uint64_t>(flag), std::memory_order_relaxed);
+}
+
+void HangWatchDeadline::ClearPersistentFlag(Flag flag) {
+  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
+  if (switch_bits_callback_for_testing_)
+    SwitchBitsForTesting();
+  bits_.fetch_and(~(static_cast<uint64_t>(flag)), std::memory_order_relaxed);
+}
+
+// static
+uint64_t HangWatchDeadline::ExtractFlags(uint64_t bits) {
+  return bits & kOnlyFlagsMask;
+}
+
+// static
+uint64_t HangWatchDeadline::ExtractDeadline(uint64_t bits) {
+  return bits & kOnlyDeadlineMask;
+}
+
+// static
+TimeTicks HangWatchDeadline::DeadlineFromBits(uint64_t bits) {
+  // |kOnlyDeadlineMask| has all the deadline bits set to 1 so is the largest
+  // representable value.
+  DCHECK(bits <= kOnlyDeadlineMask)
+      << "Flags bits are set. Remove them before returning deadline.";
+  return TimeTicks::FromInternalValue(bits);
+}
+
+bool HangWatchDeadline::IsFlagSet(Flag flag) const {
+  return bits_.load(std::memory_order_relaxed) & static_cast<uint64_t>(flag);
+}
+
+void HangWatchDeadline::SetSwitchBitsClosureForTesting(
+    RepeatingCallback<uint64_t(void)> closure) {
+  switch_bits_callback_for_testing_ = closure;
+}
+
+void HangWatchDeadline::ResetSwitchBitsClosureForTesting() {
+  DCHECK(switch_bits_callback_for_testing_);
+  switch_bits_callback_for_testing_.Reset();
+}
+
+uint64_t HangWatchDeadline::SwitchBitsForTesting() {
+  DCHECK(switch_bits_callback_for_testing_);
+
+  const uint64_t old_bits = bits_.load(std::memory_order_relaxed);
+  const uint64_t new_bits = switch_bits_callback_for_testing_.Run();
+  const uint64_t old_flags = ExtractFlags(old_bits);
+
+  const uint64_t switched_in_bits = old_flags | new_bits;
+  bits_.store(switched_in_bits, std::memory_order_relaxed);
+  return switched_in_bits;
+}
+
 HangWatchState::HangWatchState() : thread_id_(PlatformThread::CurrentId()) {
   // There should not exist a state object for this thread already.
   DCHECK(!GetHangWatchStateForCurrentThread()->Get());
@@ -532,16 +721,29 @@ HangWatchState::CreateHangWatchStateForCurrentThread() {
 }
 
 TimeTicks HangWatchState::GetDeadline() const {
-  return deadline_.load(std::memory_order_relaxed);
+  return deadline_.GetDeadline();
+}
+
+std::pair<uint64_t, TimeTicks> HangWatchState::GetFlagsAndDeadline() const {
+  return deadline_.GetFlagsAndDeadline();
 }
 
 void HangWatchState::SetDeadline(TimeTicks deadline) {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
-  deadline_.store(deadline, std::memory_order_relaxed);
+  deadline_.SetDeadline(deadline);
 }
 
 bool HangWatchState::IsOverDeadline() const {
-  return TimeTicks::Now() > deadline_.load(std::memory_order_relaxed);
+  return TimeTicks::Now() > deadline_.GetDeadline();
+}
+
+bool HangWatchState::SetShouldBlockOnHang(uint64_t old_flags,
+                                          TimeTicks old_deadline) {
+  return deadline_.SetShouldBlockOnHang(old_flags, old_deadline);
+}
+
+bool HangWatchState::IsFlagSet(HangWatchDeadline::Flag flag) {
+  return deadline_.IsFlagSet(flag);
 }
 
 #if DCHECK_IS_ON()
@@ -555,6 +757,10 @@ HangWatchScope* HangWatchState::GetCurrentHangWatchScope() {
   return current_hang_watch_scope_;
 }
 #endif
+
+HangWatchDeadline* HangWatchState::GetHangWatchDeadlineForTesting() {
+  return &deadline_;
+}
 
 // static
 ThreadLocalPointer<HangWatchState>*

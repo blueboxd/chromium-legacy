@@ -20,6 +20,7 @@
 #include "extensions/common/constants.h"
 #include "extensions/common/extension.h"
 #include "extensions/common/extension_set.h"
+#include "extensions/common/identifiability_metrics.h"
 #include "extensions/common/manifest_handlers/icons_handler.h"
 #include "extensions/common/manifest_handlers/web_accessible_resources_info.h"
 #include "extensions/common/manifest_handlers/webview_info.h"
@@ -62,8 +63,14 @@ ExtensionNavigationThrottle::WillStartOrRedirectRequest() {
     return content::NavigationThrottle::PROCEED;
   }
 
+  base::UkmSourceId source_id =
+      base::UkmSourceId::FromOtherId(navigation_handle()->GetNavigationId(),
+                                     base::UkmSourceId::Type::NAVIGATION_ID);
+
   // If the navigation is to an unknown or disabled extension, block it.
   if (!target_extension) {
+    RecordExtensionResourceAccessResult(
+        source_id, url, ExtensionResourceAccessResult::kFailure);
     // TODO(nick): This yields an unsatisfying error page; use a different error
     // code once that's supported. https://crbug.com/649869
     return content::NavigationThrottle::BLOCK_REQUEST;
@@ -77,6 +84,8 @@ ExtensionNavigationThrottle::WillStartOrRedirectRequest() {
                                  : url.path_piece().substr(1);
     if (!IconsInfo::GetIcons(target_extension)
              .ContainsPath(resource_root_relative_path)) {
+      RecordExtensionResourceAccessResult(
+          source_id, url, ExtensionResourceAccessResult::kFailure);
       return content::NavigationThrottle::BLOCK_REQUEST;
     }
   }
@@ -94,8 +103,11 @@ ExtensionNavigationThrottle::WillStartOrRedirectRequest() {
     bool has_webview_permission =
         target_extension->permissions_data()->HasAPIPermission(
             APIPermission::kWebView);
-    if (!has_webview_permission)
+    if (!has_webview_permission) {
+      RecordExtensionResourceAccessResult(
+          source_id, url, ExtensionResourceAccessResult::kCancel);
       return content::NavigationThrottle::CANCEL;
+    }
   }
 
   if (navigation_handle()->IsInMainFrame()) {
@@ -119,8 +131,11 @@ ExtensionNavigationThrottle::WillStartOrRedirectRequest() {
           is_guest, target_extension, owner_extension,
           storage_partition_config.partition_name(), url.path(),
           navigation_handle()->GetPageTransition(), &allowed);
-      if (!allowed)
+      if (!allowed) {
+        RecordExtensionResourceAccessResult(
+            source_id, url, ExtensionResourceAccessResult::kFailure);
         return content::NavigationThrottle::BLOCK_REQUEST;
+      }
     }
   }
 
@@ -155,13 +170,18 @@ ExtensionNavigationThrottle::WillStartOrRedirectRequest() {
     return content::NavigationThrottle::PROCEED;
 
   // Cancel cross-origin-initiator navigations to blob: or filesystem: URLs.
-  if (!url_has_extension_scheme)
+  if (!url_has_extension_scheme) {
+    RecordExtensionResourceAccessResult(source_id, url,
+                                        ExtensionResourceAccessResult::kCancel);
     return content::NavigationThrottle::CANCEL;
+  }
 
   // Cross-origin-initiator navigations require that the |url| is in the
   // manifest's "web_accessible_resources" section.
   if (!WebAccessibleResourcesInfo::IsResourceWebAccessible(target_extension,
                                                            url.path())) {
+    RecordExtensionResourceAccessResult(
+        source_id, url, ExtensionResourceAccessResult::kFailure);
     return content::NavigationThrottle::BLOCK_REQUEST;
   }
 
@@ -172,15 +192,21 @@ ExtensionNavigationThrottle::WillStartOrRedirectRequest() {
   // Content Security Policy. But CSP is incapable of blocking the
   // chrome-extension scheme. Thus, this case must be handled specially
   // here.
-  if (target_extension->is_platform_app())
+  if (target_extension->is_platform_app()) {
+    RecordExtensionResourceAccessResult(source_id, url,
+                                        ExtensionResourceAccessResult::kCancel);
     return content::NavigationThrottle::CANCEL;
+  }
 
   // A platform app may not load another extension in an <iframe>.
   const Extension* initiator_extension =
       registry->enabled_extensions().GetExtensionOrAppByURL(
           initiator_origin.GetURL());
-  if (initiator_extension && initiator_extension->is_platform_app())
+  if (initiator_extension && initiator_extension->is_platform_app()) {
+    RecordExtensionResourceAccessResult(
+        source_id, url, ExtensionResourceAccessResult::kFailure);
     return content::NavigationThrottle::BLOCK_REQUEST;
+  }
 
   return content::NavigationThrottle::PROCEED;
 }

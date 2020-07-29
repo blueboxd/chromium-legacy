@@ -133,6 +133,7 @@ if (include_js_tests) {
         "../../../browser/ui/webui/chromeos/certificate_manager_dialog_browsertest.js",
         "../chromeos/oobe_webui_browsertest.js",
         "chromeos/edu_login/edu_login_browsertest.js",
+        "nearby_share/shared/nearby_shared_browsertest.js",
         "set_time_dialog_browsertest.js",
         "settings/chromeos/a11y/crostini_settings_details_a11y_test.js",
         "settings/chromeos/a11y/crostini_settings_export_import_a11y_test.js",
@@ -185,7 +186,6 @@ if (include_js_tests) {
     ]
     data = [
       "$root_gen_dir/chrome/test/data/webui/cr_components/managed_footnote_test.m.js",
-      "$root_gen_dir/chrome/test/data/webui/cr_components/nearby_onboarding_page_test.m.js",
       "$root_gen_dir/chrome/test/data/webui/cr_elements/cr_button_tests.m.js",
       "$root_gen_dir/chrome/test/data/webui/cr_elements/cr_container_shadow_behavior_test.m.js",
       "$root_gen_dir/chrome/test/data/webui/cr_elements/cr_dialog_test.m.js",
@@ -212,6 +212,8 @@ if (include_js_tests) {
       "$root_gen_dir/chrome/test/data/webui/find_shortcut_behavior_test.m.js",
       "$root_gen_dir/chrome/test/data/webui/mock_controller.m.js",
       "$root_gen_dir/chrome/test/data/webui/mock_timer.m.js",
+      "$root_gen_dir/chrome/test/data/webui/nearby_share/shared/fake_nearby_share_settings.m.js",
+      "$root_gen_dir/chrome/test/data/webui/nearby_share/shared/nearby_onboarding_page_test.m.js",
       "$root_gen_dir/chrome/test/data/webui/resources/list_property_update_behavior_tests.m.js",
       "$root_gen_dir/chrome/test/data/webui/settings/fake_input_method_private.m.js",
       "$root_gen_dir/chrome/test/data/webui/settings/fake_language_settings_private.m.js",
@@ -272,6 +274,7 @@ if (include_js_tests) {
       "media/media_feeds_webui_browsertest.js",
       "media/media_history_webui_browsertest.js",
       "nearby_share/nearby_browsertest.js",
+      "nearby_share/shared/nearby_shared_v3_browsertest.js",
       "new_tab_page/new_tab_page_browsertest.js",
       "usb_internals_browsertest.js",
     ]
@@ -348,6 +351,7 @@ group("modulize") {
     ":modulize_local",
     "./cr_components:modulize",
     "./cr_elements:modulize",
+    "./nearby_share/shared:modulize",
     "./resources:modulize",
     "./settings:modulize",
   ]
@@ -373,6 +377,7 @@ group("closure_compile") {
     "cr_components:closure_compile",
     "cr_elements:closure_compile",
     "nearby_share:closure_compile",
+    "nearby_share/shared:closure_compile",
     "print_preview:closure_compile",
     "settings:closure_compile",
     "signin:closure_compile",

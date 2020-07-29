@@ -115,8 +115,4 @@
              file="cr_components/certificate_manager/certificates_browser_proxy.js"
              type="BINDATA" />
   </if>
-  <include name="IDR_WEBUI_NEARBY_SHARE_NEARBY_ONBOARDING_PAGE_M_JS"
-           file="${root_gen_dir}/ui/webui/resources/cr_components/nearby_share/nearby_onboarding_page.m.js"
-           use_base_dir="false"
-           type="BINDATA" />
 </grit-part>

@@ -64,6 +64,7 @@
 #include "extensions/common/extension.h"
 #include "extensions/common/extension_resource.h"
 #include "extensions/common/file_util.h"
+#include "extensions/common/identifiability_metrics.h"
 #include "extensions/common/manifest_handlers/background_info.h"
 #include "extensions/common/manifest_handlers/csp_info.h"
 #include "extensions/common/manifest_handlers/icons_handler.h"
@@ -74,6 +75,7 @@
 #include "mojo/public/cpp/bindings/pending_remote.h"
 #include "mojo/public/cpp/bindings/receiver_set.h"
 #include "mojo/public/cpp/bindings/remote.h"
+#include "mojo/public/cpp/bindings/self_owned_receiver.h"
 #include "net/base/filename_util.h"
 #include "net/base/io_buffer.h"
 #include "net/base/mime_util.h"
@@ -97,6 +99,85 @@ namespace extensions {
 namespace {
 
 ExtensionProtocolTestHandler* g_test_handler = nullptr;
+
+// This is used to collect some metrics of load results, by wrapping the actual
+// URLLoaderClient and observing success or failure.
+//
+// This approach is taken because loading can happen via things like
+// content::CreateFileURLLoaderBypassingSecurityChecks(), and
+// LoadResourceFromResourceBundle and it avoids having to modify all those
+// places for a temporary study.
+class ResultRecordingClient : public network::mojom::URLLoaderClient {
+ public:
+  ResultRecordingClient(
+      const GURL& url,
+      base::UkmSourceId ukm_source_id,
+      mojo::PendingRemote<network::mojom::URLLoaderClient> real_client)
+      : url_(url),
+        ukm_source_id_(ukm_source_id),
+        real_client_(std::move(real_client)) {}
+
+  void OnReceiveResponse(
+      network::mojom::URLResponseHeadPtr response_head) override {
+    real_client_->OnReceiveResponse(std::move(response_head));
+  }
+
+  void OnReceiveRedirect(
+      const net::RedirectInfo& redirect_info,
+      network::mojom::URLResponseHeadPtr response_head) override {
+    real_client_->OnReceiveRedirect(redirect_info, std::move(response_head));
+  }
+
+  void OnUploadProgress(int64_t current_position,
+                        int64_t total_size,
+                        OnUploadProgressCallback ack_callback) override {
+    real_client_->OnUploadProgress(current_position, total_size,
+                                   std::move(ack_callback));
+  }
+
+  void OnReceiveCachedMetadata(mojo_base::BigBuffer data) override {
+    real_client_->OnReceiveCachedMetadata(std::move(data));
+  }
+
+  void OnTransferSizeUpdated(int32_t transfer_size_diff) override {
+    real_client_->OnTransferSizeUpdated(transfer_size_diff);
+  }
+
+  void OnStartLoadingResponseBody(
+      mojo::ScopedDataPipeConsumerHandle body) override {
+    real_client_->OnStartLoadingResponseBody(std::move(body));
+  }
+
+  void OnComplete(const network::URLLoaderCompletionStatus& status) override {
+    RecordExtensionResourceAccessResult(
+        ukm_source_id_, url_,
+        status.error_code == net::OK ? ExtensionResourceAccessResult::kSuccess
+                                     : ExtensionResourceAccessResult::kFailure);
+    real_client_->OnComplete(status);
+  }
+
+ private:
+  GURL url_;
+  base::UkmSourceId ukm_source_id_;
+  mojo::Remote<network::mojom::URLLoaderClient> real_client_;
+};
+
+mojo::PendingRemote<network::mojom::URLLoaderClient> WrapWithMetricsIfNeeded(
+    const GURL& url,
+    base::UkmSourceId ukm_source_id,
+    mojo::PendingRemote<network::mojom::URLLoaderClient> in_client) {
+  if (ukm_source_id == base::kInvalidUkmSourceId)
+    return in_client;
+
+  mojo::PendingRemote<network::mojom::URLLoaderClient> proxy_client_remote;
+  auto proxy_client = std::make_unique<ResultRecordingClient>(
+      url, ukm_source_id, std::move(in_client));
+
+  mojo::MakeSelfOwnedReceiver(
+      std::move(proxy_client),
+      proxy_client_remote.InitWithNewPipeAndPassReceiver());
+  return proxy_client_remote;
+}
 
 void GenerateBackgroundPageContents(const Extension* extension,
                                     std::string* mime_type,
@@ -371,20 +452,29 @@ class FileLoaderObserver : public content::FileURLLoaderObserver {
 class ExtensionURLLoaderFactory : public network::mojom::URLLoaderFactory {
  public:
   ExtensionURLLoaderFactory(int render_process_id, int render_frame_id)
-      : render_process_id_(render_process_id) {
+      : render_process_id_(render_process_id),
+        render_frame_id_(render_frame_id) {
     content::RenderProcessHost* process_host =
         content::RenderProcessHost::FromID(render_process_id);
     browser_context_ = process_host->GetBrowserContext();
     is_web_view_request_ = WebViewGuest::FromFrameID(
                                render_process_id_, render_frame_id) != nullptr;
+    content::RenderFrameHost* rfh =
+        content::RenderFrameHost::FromID(render_process_id_, render_frame_id_);
+    if (rfh)
+      ukm_source_id_ = base::UkmSourceId::FromInt64(rfh->GetPageUkmSourceId());
+
     Init();
   }
 
   ExtensionURLLoaderFactory(content::BrowserContext* browser_context,
+                            base::UkmSourceId ukm_source_id,
                             bool is_web_view_request)
       : browser_context_(browser_context),
         is_web_view_request_(is_web_view_request),
-        render_process_id_(-1) {
+        ukm_source_id_(ukm_source_id),
+        render_process_id_(-1),
+        render_frame_id_(-1) {
     Init();
   }
 
@@ -407,6 +497,9 @@ class ExtensionURLLoaderFactory : public network::mojom::URLLoaderFactory {
       const net::MutableNetworkTrafficAnnotationTag& traffic_annotation)
       override {
     DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
+
+    client =
+        WrapWithMetricsIfNeeded(request.url, ukm_source_id_, std::move(client));
 
     const std::string extension_id = request.url.host();
     ExtensionRegistry* registry = ExtensionRegistry::Get(browser_context_);
@@ -630,10 +723,13 @@ class ExtensionURLLoaderFactory : public network::mojom::URLLoaderFactory {
 
   content::BrowserContext* browser_context_;
   bool is_web_view_request_;
+  base::UkmSourceId ukm_source_id_;
+
   // We store the ID and get RenderProcessHost each time it's needed. This is to
   // avoid holding on to stale pointers if we get requests past the lifetime of
   // the objects.
   const int render_process_id_;
+  const int render_frame_id_;
   scoped_refptr<extensions::InfoMap> extension_info_map_;
   mojo::ReceiverSet<network::mojom::URLLoaderFactory> receivers_;
 
@@ -689,23 +785,26 @@ void SetExtensionProtocolTestHandler(ExtensionProtocolTestHandler* handler) {
 std::unique_ptr<network::mojom::URLLoaderFactory>
 CreateExtensionNavigationURLLoaderFactory(
     content::BrowserContext* browser_context,
+    base::UkmSourceId ukm_source_id,
     bool is_web_view_request) {
-  return std::make_unique<ExtensionURLLoaderFactory>(browser_context,
-                                                     is_web_view_request);
+  return std::make_unique<ExtensionURLLoaderFactory>(
+      browser_context, ukm_source_id, is_web_view_request);
 }
 
 std::unique_ptr<network::mojom::URLLoaderFactory>
 CreateExtensionWorkerMainResourceURLLoaderFactory(
     content::BrowserContext* browser_context) {
   return std::make_unique<ExtensionURLLoaderFactory>(
-      browser_context, /*is_web_view_request=*/false);
+      browser_context, base::kInvalidUkmSourceId,
+      /*is_web_view_request=*/false);
 }
 
 std::unique_ptr<network::mojom::URLLoaderFactory>
 CreateExtensionServiceWorkerScriptURLLoaderFactory(
     content::BrowserContext* browser_context) {
   return std::make_unique<ExtensionURLLoaderFactory>(
-      browser_context, /*is_web_view_request=*/false);
+      browser_context, base::kInvalidUkmSourceId,
+      /*is_web_view_request=*/false);
 }
 
 std::unique_ptr<network::mojom::URLLoaderFactory>

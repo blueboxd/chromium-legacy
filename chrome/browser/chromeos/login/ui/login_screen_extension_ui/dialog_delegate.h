@@ -59,6 +59,7 @@ class DialogDelegate : public ui::WebDialogDelegate {
   bool ShouldCloseDialogOnEscape() const override;
   bool ShouldShowDialogTitle() const override;
   bool ShouldCenterDialogTitleText() const override;
+  bool ShouldShowCloseButton() const override;
 
  private:
   const std::string extension_name_;

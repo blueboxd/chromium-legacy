@@ -8,6 +8,7 @@
 #include <utility>
 
 #include "base/memory/singleton.h"
+#include "base/time/default_clock.h"
 #include "chrome/browser/notifications/scheduler/notification_schedule_service_factory.h"
 #include "chrome/browser/profiles/incognito_helpers.h"
 #include "chrome/browser/profiles/profile_key.h"
@@ -49,7 +50,8 @@ UpdateNotificationServiceFactory::BuildServiceInstanceFor(
   auto bridge =
       std::make_unique<updates::UpdateNotificationServiceBridgeAndroid>();
   return std::make_unique<updates::UpdateNotificationServiceImpl>(
-      schedule_service, std::move(config), std::move(bridge));
+      schedule_service, std::move(config), std::move(bridge),
+      base::DefaultClock::GetInstance());
 }
 
 SimpleFactoryKey* UpdateNotificationServiceFactory::GetKeyToUse(

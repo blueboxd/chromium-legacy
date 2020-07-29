@@ -33,7 +33,7 @@
 #include "base/posix/global_descriptors.h"
 #endif
 
-#if defined(OS_MACOSX) && !defined(OS_IOS)
+#if defined(OS_MAC)
 #include "base/mac/mach_port_rendezvous.h"
 #endif
 
@@ -1390,7 +1390,7 @@ MULTIPROCESS_TEST_MAIN(SerializeSharedMemoryRegionMetadata) {
   std::string guid_string =
       CommandLine::ForCurrentProcess()->GetSwitchValueASCII("guid");
 
-#if defined(OS_WIN) || defined(OS_MACOSX)
+#if defined(OS_WIN) || defined(OS_MAC)
   base::ReadOnlySharedMemoryRegion deserialized =
       FieldTrialList::DeserializeSharedMemoryRegionMetadata(serialized);
 #elif defined(OS_ANDROID)
@@ -1405,7 +1405,7 @@ MULTIPROCESS_TEST_MAIN(SerializeSharedMemoryRegionMetadata) {
   // Use the arbitrary fd value selected in the main process.
   base::ReadOnlySharedMemoryRegion deserialized =
       FieldTrialList::DeserializeSharedMemoryRegionMetadata(42, serialized);
-#endif  // defined(OS_WIN) || defined(OS_MACOSX)
+#endif  // defined(OS_WIN) || defined(OS_MAC)
   CHECK(deserialized.IsValid());
   CHECK_EQ(deserialized.GetGUID().ToString(), guid_string);
   CHECK(!deserialized.GetGUID().is_empty());
@@ -1425,7 +1425,7 @@ TEST_F(FieldTrialListTest, SerializeSharedMemoryRegionMetadata) {
 
 #if defined(OS_WIN)
   options.handles_to_inherit.push_back(shm.region.GetPlatformHandle());
-#elif defined(OS_MACOSX) && !defined(OS_IOS)
+#elif defined(OS_MAC)
   options.mach_ports_for_rendezvous.insert(
       std::make_pair('fldt', MachRendezvousPort{shm.region.GetPlatformHandle(),
                                                 MACH_MSG_TYPE_COPY_SEND}));
@@ -1458,8 +1458,7 @@ TEST_F(FieldTrialListTest, SerializeSharedMemoryRegionMetadata) {
 // does not allow writable mappings. Test disabled on NaCl, Fuchsia, and Mac,
 // which don't support/implement shared memory configuration. For Fuchsia, see
 // crbug.com/752368
-#if !defined(OS_NACL) && !defined(OS_FUCHSIA) && \
-    !(defined(OS_MACOSX) && !defined(OS_IOS))
+#if !defined(OS_NACL) && !defined(OS_FUCHSIA) && !defined(OS_MAC)
 TEST_F(FieldTrialListTest, CheckReadOnlySharedMemoryRegion) {
   FieldTrialList field_trial_list(nullptr);
   FieldTrialList::CreateFieldTrial("Trial1", "Group1");

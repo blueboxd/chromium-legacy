@@ -401,7 +401,7 @@ TraceLog::TraceLog()
 
 // Linux renderer processes and Android O processes are not allowed to read
 // "proc/stat" file, crbug.com/788870.
-#if defined(OS_WIN) || (defined(OS_MACOSX) && !defined(OS_IOS))
+#if defined(OS_WIN) || defined(OS_MAC)
   process_creation_time_ = Process::Current().CreationTime();
 #else
   // Use approximate time when creation time is not available.

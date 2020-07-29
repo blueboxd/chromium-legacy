@@ -5,11 +5,9 @@
 package org.chromium.chrome.browser.download.dialogs;
 
 import android.app.DatePickerDialog;
-import android.app.TimePickerDialog;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.widget.DatePicker;
-import android.widget.TimePicker;
 
 import androidx.annotation.NonNull;
 
@@ -27,11 +25,11 @@ import java.util.Calendar;
  * will see the date picker and time picker in a sequence when trying to select a time.
  */
 public class DownloadDateTimePickerDialogImpl
-        implements DownloadDateTimePickerDialog, TimePickerDialog.OnTimeSetListener {
-    private static final String TAG = "DownloadTimePicker";
+        implements DownloadDateTimePickerDialog, DownloadTimePickerDialog.Controller {
+    private static final String TAG = "DateTimeDialog";
     private static final long INVALID_TIMESTAMP = -1;
     private DatePickerDialog mDatePickerDialog;
-    private TimePickerDialog mTimePickerDialog;
+    private DownloadTimePickerDialog mTimePickerDialog;
     private Controller mController;
     private final Calendar mCalendar = Calendar.getInstance();
 
@@ -53,7 +51,8 @@ public class DownloadDateTimePickerDialogImpl
 
         // Setup the date picker. Use null DatePickerDialog.OnDateSetListener due to Android API
         // issue.
-        mDatePickerDialog = new DatePickerDialog(context, null, mCalendar.get(Calendar.YEAR),
+        mDatePickerDialog = new DatePickerDialog(context,
+                R.style.Theme_DownloadDateTimePickerDialog, null, mCalendar.get(Calendar.YEAR),
                 mCalendar.get(Calendar.MONTH), mCalendar.get(Calendar.DAY_OF_MONTH));
         long minDate =
                 getLong(model, DownloadDateTimePickerDialogProperties.MIN_TIME, INVALID_TIMESTAMP);
@@ -68,14 +67,8 @@ public class DownloadDateTimePickerDialogImpl
         mDatePickerDialog.setButton(DialogInterface.BUTTON_NEGATIVE,
                 context.getResources().getString(R.string.cancel), this::onDatePickerClicked);
 
-        // Setup the time picker.
-        mTimePickerDialog = new TimePickerDialog(context, this, mCalendar.get(Calendar.HOUR),
-                mCalendar.get(Calendar.MINUTE), false /*is24HourView*/);
-        mTimePickerDialog.setButton(DialogInterface.BUTTON_POSITIVE,
-                context.getResources().getString(R.string.download_date_time_picker_next_text),
-                this::onTimePickerClicked);
-        mTimePickerDialog.setButton(DialogInterface.BUTTON_NEGATIVE,
-                context.getResources().getString(R.string.cancel), this::onTimePickerClicked);
+        mTimePickerDialog = new DownloadTimePickerDialog(
+                context, this, mCalendar.get(Calendar.HOUR), mCalendar.get(Calendar.MINUTE));
 
         // Start the flow.
         mDatePickerDialog.show();
@@ -85,16 +78,6 @@ public class DownloadDateTimePickerDialogImpl
     public void destroy() {
         if (mDatePickerDialog != null) mDatePickerDialog.dismiss();
         if (mTimePickerDialog != null) mTimePickerDialog.dismiss();
-    }
-
-    // TimePickerDialog.OnTimeSetListener.
-    @Override
-    public void onTimeSet(TimePicker timePicker, int hourOfDay, int minute) {
-        mCalendar.set(Calendar.HOUR, hourOfDay);
-        mCalendar.set(Calendar.MINUTE, minute);
-
-        // Click on the clock will complete the selection as well.
-        onComplete();
     }
 
     private void onDatePickerClicked(DialogInterface dialogInterface, int which) {
@@ -116,19 +99,6 @@ public class DownloadDateTimePickerDialogImpl
         }
     }
 
-    private void onTimePickerClicked(DialogInterface dialogInterface, int which) {
-        switch (which) {
-            case DialogInterface.BUTTON_POSITIVE:
-                // Handled in TimePickerDialog.OnTimeSetListener.
-                break;
-            case DialogInterface.BUTTON_NEGATIVE:
-                onCancel();
-                break;
-            default:
-                Log.e(TAG, "Unsupported button type clicked in time picker, type: %d", which);
-        }
-    }
-
     private void onCancel() {
         assert mController != null;
         mCalendar.clear();
@@ -145,5 +115,19 @@ public class DownloadDateTimePickerDialogImpl
             PropertyModel model, ReadableObjectPropertyKey<Long> key, long defaultValue) {
         Long value = model.get(key);
         return (value != null) ? value : defaultValue;
+    }
+
+    // DownloadTimePickerDialog.Controller overrides.
+    @Override
+    public void onDownloadTimePicked(int hour, int minute) {
+        mCalendar.set(Calendar.HOUR, hour);
+        mCalendar.set(Calendar.MINUTE, minute);
+
+        onComplete();
+    }
+
+    @Override
+    public void onDownloadTimePickerCanceled() {
+        onCancel();
     }
 }

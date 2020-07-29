@@ -10,13 +10,15 @@
 #include <algorithm>
 
 #include "base/auto_reset.h"
-#include "base/check_op.h"
+#include "base/bind.h"
+#include "base/callback.h"
+#include "base/check.h"
 #include "pdf/paint_ready_rect.h"
+#include "pdf/ppapi_migration/callback.h"
 #include "pdf/ppapi_migration/geometry_conversions.h"
-#include "ppapi/c/pp_errors.h"
+#include "pdf/ppapi_migration/graphics.h"
+#include "ppapi/cpp/completion_callback.h"
 #include "ppapi/cpp/module.h"
-#include "ppapi/cpp/point.h"
-#include "ppapi/cpp/rect.h"
 #include "ui/gfx/geometry/point.h"
 #include "ui/gfx/geometry/rect.h"
 #include "ui/gfx/geometry/size.h"
@@ -24,22 +26,8 @@
 
 namespace chrome_pdf {
 
-namespace {
-
-// Not part of ppapi_migration because `gfx::Vector2d` only needs to be
-// converted to `pp::Point` at the boundary with `pp::Graphics2D`.
-pp::Point ToPepperPoint(const gfx::Vector2d& vector) {
-  return pp::Point(vector.x(), vector.y());
-}
-
-}  // namespace
-
 PaintManager::PaintManager(Client* client) : client_(client) {
   DCHECK(client_);
-
-  // Set the callback object outside of the initializer list to avoid a
-  // compiler warning about using "this" in an initializer list.
-  callback_factory_.Initialize(this);
 }
 
 PaintManager::~PaintManager() = default;
@@ -98,11 +86,10 @@ void PaintManager::SetTransform(float scale,
                                 const gfx::Point& origin,
                                 const gfx::Vector2d& translate,
                                 bool schedule_flush) {
-  if (graphics_.is_null())
+  if (!graphics_)
     return;
 
-  graphics_.SetLayerTransform(scale, PPPointFromPoint(origin),
-                              ToPepperPoint(translate));
+  graphics_->SetLayerTransform(scale, origin, translate);
 
   if (!schedule_flush)
     return;
@@ -119,7 +106,7 @@ void PaintManager::ClearTransform() {
 }
 
 void PaintManager::Invalidate() {
-  if (graphics_.is_null() && !has_pending_resize_)
+  if (!graphics_ && !has_pending_resize_)
     return;
 
   EnsureCallbackPending();
@@ -129,7 +116,7 @@ void PaintManager::Invalidate() {
 void PaintManager::InvalidateRect(const gfx::Rect& rect) {
   DCHECK(!in_paint_);
 
-  if (graphics_.is_null() && !has_pending_resize_)
+  if (!graphics_ && !has_pending_resize_)
     return;
 
   // Clip the rect to the device area.
@@ -146,7 +133,7 @@ void PaintManager::ScrollRect(const gfx::Rect& clip_rect,
                               const gfx::Vector2d& amount) {
   DCHECK(!in_paint_);
 
-  if (graphics_.is_null() && !has_pending_resize_)
+  if (!graphics_ && !has_pending_resize_)
     return;
 
   EnsureCallbackPending();
@@ -175,7 +162,9 @@ void PaintManager::EnsureCallbackPending() {
     return;
 
   pp::Module::Get()->core()->CallOnMainThread(
-      0, callback_factory_.NewCallback(&PaintManager::OnManualCallbackComplete),
+      0,
+      PPCompletionCallbackFromResultCallback(base::BindOnce(
+          &PaintManager::OnManualCallbackComplete, weak_factory_.GetWeakPtr())),
       0);
   manual_callback_pending_ = true;
 }
@@ -193,27 +182,28 @@ void PaintManager::DoPaint() {
   // However, the bind must not happen until afterward since we don't want to
   // have an unpainted device bound. The needs_binding flag tells us whether to
   // do this later.
+  //
+  // Note that |has_pending_resize_| will always be set on the first DoPaint().
+  DCHECK(graphics_ || has_pending_resize_);
   if (has_pending_resize_) {
     plugin_size_ = pending_size_;
-    // Extra call to pp_size() required here because the operator for converting
-    // to PP_Size is non-const.
-    const gfx::Size old_size = SizeFromPPSize(graphics_.size().pp_size());
     // Only create a new graphics context if the current context isn't big
     // enough or if it is far too big. This avoids creating a new context if
     // we only resize by a small amount.
+    gfx::Size old_size = graphics_ ? graphics_->size() : gfx::Size();
     gfx::Size new_size = GetNewContextSize(old_size, pending_size_);
-    if (old_size != new_size) {
+    if (old_size != new_size || !graphics_) {
       graphics_ = client_->CreatePaintGraphics(new_size);
       graphics_need_to_be_bound_ = true;
 
       // Since we're binding a new one, all of the callbacks have been canceled.
       manual_callback_pending_ = false;
       flush_pending_ = false;
-      callback_factory_.CancelAll();
+      weak_factory_.InvalidateWeakPtrs();
     }
 
     if (pending_device_scale_ != 1.0)
-      graphics_.SetScale(1.0 / pending_device_scale_);
+      graphics_->SetScale(1.0 / pending_device_scale_);
     device_scale_ = pending_device_scale_;
 
     // This must be cleared before calling into the plugin since it may do
@@ -235,10 +225,8 @@ void PaintManager::DoPaint() {
     aggregator_.ClearPendingUpdate();
 
     // Apply any scroll first.
-    if (update.has_scroll) {
-      graphics_.Scroll(PPRectFromRect(update.scroll_rect),
-                       ToPepperPoint(update.scroll_delta));
-    }
+    if (update.has_scroll)
+      graphics_->Scroll(update.scroll_rect, update.scroll_delta);
 
     view_size_changed_waiting_for_paint_ = false;
   } else {
@@ -267,8 +255,7 @@ void PaintManager::DoPaint() {
   }
 
   for (const auto& ready_rect : ready_now) {
-    graphics_.PaintImageData(ready_rect.image_data(), pp::Point(),
-                             PPRectFromRect(ready_rect.rect()));
+    graphics_->PaintImage(ready_rect.image(), ready_rect.rect());
   }
 
   Flush();
@@ -276,33 +263,16 @@ void PaintManager::DoPaint() {
   first_paint_ = false;
 
   if (graphics_need_to_be_bound_) {
-    client_->BindPaintGraphics(graphics_);
+    client_->BindPaintGraphics(*graphics_);
     graphics_need_to_be_bound_ = false;
   }
 }
 
 void PaintManager::Flush() {
   flush_requested_ = false;
-
-  int32_t result = graphics_.Flush(
-      callback_factory_.NewCallback(&PaintManager::OnFlushComplete));
-
-  // If you trigger this assertion, then your plugin has called Flush()
-  // manually. When using the PaintManager, you should not call Flush, it will
-  // handle that for you because it needs to know when it can do the next paint
-  // by implementing the flush callback.
-  //
-  // Another possible cause of this assertion is re-using devices. If you
-  // use one device, swap it with another, then swap it back, we won't know
-  // that we've already scheduled a Flush on the first device. It's best to not
-  // re-use devices in this way.
-  DCHECK_NE(PP_ERROR_INPROGRESS, result);
-
-  if (result == PP_OK_COMPLETIONPENDING) {
-    flush_pending_ = true;
-  } else {
-    DCHECK_EQ(PP_OK, result);  // Catch all other errors in debug mode.
-  }
+  flush_pending_ = graphics_->Flush(base::BindOnce(
+      &PaintManager::OnFlushComplete, weak_factory_.GetWeakPtr()));
+  DCHECK(flush_pending_);
 }
 
 void PaintManager::OnFlushComplete(int32_t) {

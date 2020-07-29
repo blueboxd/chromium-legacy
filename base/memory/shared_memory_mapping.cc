@@ -20,7 +20,7 @@
 #include <aclapi.h>
 #endif
 
-#if defined(OS_MACOSX) && !defined(OS_IOS)
+#if defined(OS_MAC)
 #include <mach/mach_vm.h>
 #include "base/mac/mach_logging.h"
 #endif
@@ -76,7 +76,7 @@ void SharedMemoryMapping::Unmap() {
   zx_status_t status = zx::vmar::root_self()->unmap(addr, mapped_size_);
   if (status != ZX_OK)
     ZX_DLOG(ERROR, status) << "zx_vmar_unmap";
-#elif defined(OS_MACOSX) && !defined(OS_IOS)
+#elif defined(OS_MAC)
   kern_return_t kr = mach_vm_deallocate(
       mach_task_self(), reinterpret_cast<mach_vm_address_t>(memory_),
       mapped_size_);

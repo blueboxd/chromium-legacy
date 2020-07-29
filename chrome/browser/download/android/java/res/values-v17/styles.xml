@@ -87,4 +87,9 @@
     <style name="TextAppearance.DownloadDialogTitle" parent="TextAppearance.AlertDialogTitleStyle">
         <item name="android:textSize">20sp</item>
     </style>
+    <style name="Theme.DownloadDateTimePickerDialog" parent="Theme.Chromium.ModalDialog">
+        <item name="android:windowMinWidthMajor">@null</item>
+        <item name="android:windowMinWidthMinor">@null</item>
+    </style>
+
 </resources>

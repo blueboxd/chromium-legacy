@@ -94,8 +94,7 @@ void SharesheetService::OnTargetSelected(uint32_t delegate_id,
     delegate->OnActionLaunched();
     share_action->LaunchAction(delegate, share_action_view);
   } else if (type == TargetType::kApp) {
-    // TODO(1097623) : Add LaunchSource::KFromSharesheet
-    auto launch_source = apps::mojom::LaunchSource::kFromLink;
+    auto launch_source = apps::mojom::LaunchSource::kFromSharesheet;
     app_service_proxy_->LaunchAppWithIntent(
         base::UTF16ToUTF8(target_name),
         apps::GetEventFlags(

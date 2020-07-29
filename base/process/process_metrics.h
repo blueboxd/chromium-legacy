@@ -26,7 +26,7 @@
 #include "base/values.h"
 #include "build/build_config.h"
 
-#if defined(OS_MACOSX)
+#if defined(OS_APPLE)
 #include <mach/mach.h>
 #include "base/process/port_provider_mac.h"
 
@@ -79,7 +79,7 @@ class BASE_EXPORT ProcessMetrics {
   ~ProcessMetrics();
 
   // Creates a ProcessMetrics for the specified process.
-#if !defined(OS_MACOSX) || defined(OS_IOS)
+#if !defined(OS_MAC)
   static std::unique_ptr<ProcessMetrics> CreateProcessMetrics(
       ProcessHandle process);
 #else
@@ -90,7 +90,7 @@ class BASE_EXPORT ProcessMetrics {
   static std::unique_ptr<ProcessMetrics> CreateProcessMetrics(
       ProcessHandle process,
       PortProvider* port_provider);
-#endif  // !defined(OS_MACOSX) || defined(OS_IOS)
+#endif  // !defined(OS_MAC)
 
   // Creates a ProcessMetrics for the current process. This a cross-platform
   // convenience wrapper for CreateProcessMetrics().
@@ -173,7 +173,7 @@ class BASE_EXPORT ProcessMetrics {
   // call.
   int GetIdleWakeupsPerSecond();
 
-#if defined(OS_MACOSX)
+#if defined(OS_APPLE)
   // Returns the number of average "package idle exits" per second, which have
   // a higher energy impact than a regular wakeup, since the last call.
   //
@@ -236,16 +236,16 @@ class BASE_EXPORT ProcessMetrics {
   size_t GetMallocUsage();
 
  private:
-#if !defined(OS_MACOSX) || defined(OS_IOS)
+#if !defined(OS_MAC)
   explicit ProcessMetrics(ProcessHandle process);
 #else
   ProcessMetrics(ProcessHandle process, PortProvider* port_provider);
-#endif  // !defined(OS_MACOSX) || defined(OS_IOS)
+#endif  // !defined(OS_MAC)
 
-#if defined(OS_MACOSX) || defined(OS_LINUX) || defined(OS_AIX)
+#if defined(OS_APPLE) || defined(OS_LINUX) || defined(OS_AIX)
   int CalculateIdleWakeupsPerSecond(uint64_t absolute_idle_wakeups);
 #endif
-#if defined(OS_MACOSX)
+#if defined(OS_APPLE)
   // The subset of wakeups that cause a "package exit" can be tracked on macOS.
   // See |GetPackageIdleWakeupsForSecond| comment for more info.
   int CalculatePackageIdleWakeupsPerSecond(
@@ -279,13 +279,13 @@ class BASE_EXPORT ProcessMetrics {
   // Number of bytes transferred to/from disk in bytes.
   uint64_t last_cumulative_disk_usage_ = 0;
 
-#if defined(OS_MACOSX) || defined(OS_LINUX) || defined(OS_AIX)
+#if defined(OS_APPLE) || defined(OS_LINUX) || defined(OS_AIX)
   // Same thing for idle wakeups.
   TimeTicks last_idle_wakeups_time_;
   uint64_t last_absolute_idle_wakeups_;
 #endif
 
-#if defined(OS_MACOSX)
+#if defined(OS_APPLE)
   // And same thing for package idle exit wakeups.
   TimeTicks last_package_idle_wakeups_time_;
   uint64_t last_absolute_package_idle_wakeups_;
@@ -295,12 +295,12 @@ class BASE_EXPORT ProcessMetrics {
 #endif
 
 #if !defined(OS_IOS)
-#if defined(OS_MACOSX)
+#if defined(OS_APPLE)
   // Queries the port provider if it's set.
   mach_port_t TaskForPid(ProcessHandle process) const;
 
   PortProvider* port_provider_;
-#endif  // defined(OS_MACOSX)
+#endif  // defined(OS_APPLE)
 #endif  // !defined(OS_IOS)
 
   DISALLOW_COPY_AND_ASSIGN(ProcessMetrics);
@@ -330,7 +330,7 @@ BASE_EXPORT size_t GetHandleLimit();
 BASE_EXPORT void IncreaseFdLimitTo(unsigned int max_descriptors);
 #endif  // defined(OS_POSIX)
 
-#if defined(OS_WIN) || defined(OS_MACOSX) || defined(OS_LINUX) || \
+#if defined(OS_WIN) || defined(OS_APPLE) || defined(OS_LINUX) || \
     defined(OS_ANDROID) || defined(OS_AIX) || defined(OS_FUCHSIA)
 // Data about system-wide memory consumption. Values are in KB. Available on
 // Windows, Mac, Linux, Android and Chrome OS.
@@ -373,7 +373,7 @@ struct BASE_EXPORT SystemMemoryInfoKB {
   int available = 0;
 #endif
 
-#if !defined(OS_MACOSX)
+#if !defined(OS_APPLE)
   int swap_total = 0;
   int swap_free = 0;
 #endif
@@ -399,11 +399,11 @@ struct BASE_EXPORT SystemMemoryInfoKB {
   long long gem_size = -1;
 #endif  // defined(OS_CHROMEOS)
 
-#if defined(OS_MACOSX)
+#if defined(OS_APPLE)
   int speculative = 0;
   int file_backed = 0;
   int purgeable = 0;
-#endif  // defined(OS_MACOSX)
+#endif  // defined(OS_APPLE)
 };
 
 // On Linux/Android/Chrome OS, system-wide memory consumption data is parsed
@@ -414,7 +414,7 @@ struct BASE_EXPORT SystemMemoryInfoKB {
 // Exposed for memory debugging widget.
 BASE_EXPORT bool GetSystemMemoryInfo(SystemMemoryInfoKB* meminfo);
 
-#endif  // defined(OS_WIN) || defined(OS_MACOSX) || defined(OS_LINUX) ||
+#endif  // defined(OS_WIN) || defined(OS_APPLE) || defined(OS_LINUX) ||
         // defined(OS_ANDROID) || defined(OS_AIX) || defined(OS_FUCHSIA)
 
 #if defined(OS_LINUX) || defined(OS_ANDROID) || defined(OS_AIX)
@@ -598,7 +598,7 @@ class BASE_EXPORT SystemMetrics {
 #endif
 };
 
-#if defined(OS_MACOSX) && !defined(OS_IOS)
+#if defined(OS_MAC)
 enum class MachVMRegionResult {
   // There were no more memory regions between |address| and the end of the
   // virtual address space.
@@ -632,7 +632,7 @@ BASE_EXPORT MachVMRegionResult GetBasicInfo(mach_port_t task,
                                             mach_vm_size_t* size,
                                             mach_vm_address_t* address,
                                             vm_region_basic_info_64* info);
-#endif  // defined(OS_MACOSX) && !defined(OS_IOS)
+#endif  // defined(OS_MAC)
 
 }  // namespace base
 

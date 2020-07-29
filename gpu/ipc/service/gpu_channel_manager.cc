@@ -101,9 +101,11 @@ void FormatAllocationSourcesForTracing(
 }  // namespace
 
 GpuChannelManager::GpuPeakMemoryMonitor::GpuPeakMemoryMonitor(
-    GpuChannelManager* channel_manager)
+    GpuChannelManager* channel_manager,
+    scoped_refptr<base::SingleThreadTaskRunner> task_runner)
     : ablation_experiment_(
-          std::make_unique<GpuMemoryAblationExperiment>(channel_manager)),
+          std::make_unique<GpuMemoryAblationExperiment>(channel_manager,
+                                                        task_runner)),
       weak_factory_(this) {}
 
 GpuChannelManager::GpuPeakMemoryMonitor::~GpuPeakMemoryMonitor() = default;
@@ -299,7 +301,7 @@ GpuChannelManager::GpuChannelManager(
       vulkan_context_provider_(vulkan_context_provider),
       metal_context_provider_(metal_context_provider),
       dawn_context_provider_(dawn_context_provider),
-      peak_memory_monitor_(this) {
+      peak_memory_monitor_(this, task_runner) {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   DCHECK(task_runner->BelongsToCurrentThread());
   DCHECK(io_task_runner);
@@ -755,7 +757,7 @@ scoped_refptr<SharedContextState> GpuChannelManager::GetSharedContextState(
 
   // GpuMemoryAblationExperiment needs a context to use Skia for Gpu
   // allocations.
-  need_gr_context |= base::FeatureList::IsEnabled(kGPUMemoryAblationFeature);
+  need_gr_context |= GpuMemoryAblationExperiment::ExperimentSupported();
 
   if (need_gr_context) {
     if (gpu_preferences_.gr_context_type == gpu::GrContextType::kGL) {

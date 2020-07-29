@@ -6,7 +6,7 @@ import {assert} from 'chrome://resources/js/assert.m.js';
 import {EventTracker} from 'chrome://resources/js/event_tracker.m.js';
 import {$, hasKeyModifiers} from 'chrome://resources/js/util.m.js';
 
-import {FittingType} from './constants.js';
+import {FittingType, Point} from './constants.js';
 import {GestureDetector, PinchEventDetail} from './gesture_detector.js';
 import {InactiveZoomManager, ZoomManager} from './zoom_manager.js';
 
@@ -27,9 +27,6 @@ let DocumentDimensions;
  * }}
  */
 export let LayoutOptions;
-
-/** @typedef {{x: number, y: number}} */
-export let Point;
 
 /** @typedef {{x: (number|undefined), y: (number|undefined)}} */
 export let PartialPoint;

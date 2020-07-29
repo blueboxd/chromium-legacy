@@ -8,7 +8,7 @@ let displayPanel;
 /**
  * Adds a xf-display-panel element to the test page.
  */
-function setUpPage() {
+function setUp() {
   document.body.innerHTML +=
       '<xf-display-panel id="test-xf-display-panel"></xf-display-panel>';
   displayPanel = assert(document.querySelector('#test-xf-display-panel'));
@@ -446,6 +446,54 @@ async function testFilesDisplayPanelSummaryPanel(done) {
   assertFalse(panelContainer.hasAttribute('hidden'));
   summaryPanelItem = summaryContainer.querySelector('xf-panel-item');
   assertEquals(summaryPanelItem.panelType, summaryPanelItem.panelTypeSummary);
+
+  done();
+}
+
+function testFilesDisplayPanelTransferDetails() {
+  // Get the host display panel container element.
+  /** @type {!DisplayPanel|!Element} */
+  const displayPanel = assert(document.querySelector('#test-xf-display-panel'));
+
+  // Add a generic progress panel item to the display panel container.
+  const progressPanel = displayPanel.addPanelItem('testpanel1');
+  progressPanel.panelType = progressPanel.panelTypeProgress;
+
+  // Check detailed-panel is added when FilesTransferDetails enabled.
+  assertEquals('detailed-panel', progressPanel.getAttribute('detailed-panel'));
+}
+
+async function testFilesDisplayPanelTransferDetailsSummary(done) {
+  // Get the host display panel container element.
+  /** @type {!DisplayPanel|!Element} */
+  const displayPanel = assert(document.querySelector('#test-xf-display-panel'));
+
+  // Add two generic progress panel items to the display panel container.
+  const panel1 = displayPanel.addPanelItem('testpanel1');
+  panel1.panelType = panel1.panelTypeProgress;
+
+  const panel2 = displayPanel.addPanelItem('testpanel2');
+  panel2.panelType = panel2.panelTypeProgress;
+
+  const panelContainer = displayPanel.shadowRoot.querySelector('#panels');
+  assertTrue(panelContainer.hasAttribute('hidden'));
+
+  const summaryContainer = displayPanel.shadowRoot.querySelector('#summary');
+  const summaryPanelItem = summaryContainer.querySelector('#summary-panel');
+
+  // Check summary panel has both detailed-panel and detailed-summary attribute.
+  assertEquals(
+      'detailed-panel', summaryPanelItem.getAttribute('detailed-panel'));
+  assertEquals('', summaryPanelItem.getAttribute('detailed-summary'));
+
+  // Trigger expand of the summary panel by summary label.
+  const summaryLabel =
+      summaryPanelItem.shadowRoot.querySelector('.xf-panel-text');
+  summaryLabel.click();
+
+  // Confirm the panel container is no longer hidden.
+  assertFalse(panelContainer.hasAttribute('hidden'));
+  assertEquals('expanded', summaryPanelItem.getAttribute('data-category'));
 
   done();
 }

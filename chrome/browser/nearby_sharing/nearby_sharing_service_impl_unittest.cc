@@ -227,6 +227,7 @@ TEST_F(NearbySharingServiceImplTest, RemovesNearbyProcessObserver) {
 
 TEST_F(NearbySharingServiceImplTest, DisableNearbyShutdownConnections) {
   prefs_.SetBoolean(prefs::kNearbySharingEnabledPrefName, false);
+  service_->FlushMojoForTesting();
   EXPECT_TRUE(fake_nearby_connections_manager_->IsShutdown());
 }
 
@@ -381,6 +382,7 @@ TEST_F(NearbySharingServiceImplTest,
 
   prefs_.SetInteger(prefs::kNearbySharingDataUsageName,
                     static_cast<int>(DataUsage::kOffline));
+  service_->FlushMojoForTesting();
   FakeTransferUpdateCallback callback;
   NearbySharingService::StatusCodes result = service_->RegisterReceiveSurface(
       &callback, NearbySharingService::ReceiveSurfaceState::kForeground);
@@ -391,6 +393,7 @@ TEST_F(NearbySharingServiceImplTest,
 
   prefs_.SetInteger(prefs::kNearbySharingDataUsageName,
                     static_cast<int>(DataUsage::kOnline));
+  service_->FlushMojoForTesting();
   EXPECT_TRUE(fake_nearby_connections_manager_->IsAdvertising());
   EXPECT_EQ(DataUsage::kOnline,
             fake_nearby_connections_manager_->GetAdvertisingDataUsage());
@@ -493,6 +496,7 @@ TEST_F(NearbySharingServiceImplTest,
        DisableFeatureReceiveSurfaceNotAdvertising) {
   ui::ScopedSetIdleState unlocked(ui::IDLE_STATE_IDLE);
   prefs_.SetBoolean(prefs::kNearbySharingEnabledPrefName, false);
+  service_->FlushMojoForTesting();
   SetConnectionType(net::NetworkChangeNotifier::CONNECTION_WIFI);
   FakeTransferUpdateCallback callback;
   NearbySharingService::StatusCodes result = service_->RegisterReceiveSurface(
@@ -513,6 +517,7 @@ TEST_F(NearbySharingServiceImplTest,
   EXPECT_TRUE(fake_nearby_connections_manager_->IsAdvertising());
 
   prefs_.SetBoolean(prefs::kNearbySharingEnabledPrefName, false);
+  service_->FlushMojoForTesting();
   EXPECT_FALSE(fake_nearby_connections_manager_->IsAdvertising());
   EXPECT_TRUE(fake_nearby_connections_manager_->IsShutdown());
 }
@@ -536,6 +541,7 @@ TEST_F(NearbySharingServiceImplTest,
   SetConnectionType(net::NetworkChangeNotifier::CONNECTION_WIFI);
   prefs_.SetInteger(prefs::kNearbySharingBackgroundVisibilityName,
                     static_cast<int>(Visibility::kNoOne));
+  service_->FlushMojoForTesting();
   FakeTransferUpdateCallback callback;
   NearbySharingService::StatusCodes result = service_->RegisterReceiveSurface(
       &callback, NearbySharingService::ReceiveSurfaceState::kBackground);
@@ -550,6 +556,7 @@ TEST_F(NearbySharingServiceImplTest,
   SetConnectionType(net::NetworkChangeNotifier::CONNECTION_WIFI);
   prefs_.SetInteger(prefs::kNearbySharingBackgroundVisibilityName,
                     static_cast<int>(Visibility::kSelectedContacts));
+  service_->FlushMojoForTesting();
   FakeTransferUpdateCallback callback;
   NearbySharingService::StatusCodes result = service_->RegisterReceiveSurface(
       &callback, NearbySharingService::ReceiveSurfaceState::kBackground);
@@ -558,6 +565,7 @@ TEST_F(NearbySharingServiceImplTest,
 
   prefs_.SetInteger(prefs::kNearbySharingBackgroundVisibilityName,
                     static_cast<int>(Visibility::kNoOne));
+  service_->FlushMojoForTesting();
   EXPECT_FALSE(fake_nearby_connections_manager_->IsAdvertising());
   EXPECT_FALSE(fake_nearby_connections_manager_->IsShutdown());
 }
@@ -568,6 +576,7 @@ TEST_F(NearbySharingServiceImplTest,
   SetConnectionType(net::NetworkChangeNotifier::CONNECTION_WIFI);
   prefs_.SetInteger(prefs::kNearbySharingBackgroundVisibilityName,
                     static_cast<int>(Visibility::kNoOne));
+  service_->FlushMojoForTesting();
   FakeTransferUpdateCallback callback;
   NearbySharingService::StatusCodes result = service_->RegisterReceiveSurface(
       &callback, NearbySharingService::ReceiveSurfaceState::kBackground);
@@ -577,6 +586,7 @@ TEST_F(NearbySharingServiceImplTest,
 
   prefs_.SetInteger(prefs::kNearbySharingBackgroundVisibilityName,
                     static_cast<int>(Visibility::kSelectedContacts));
+  service_->FlushMojoForTesting();
   EXPECT_TRUE(fake_nearby_connections_manager_->IsAdvertising());
 }
 

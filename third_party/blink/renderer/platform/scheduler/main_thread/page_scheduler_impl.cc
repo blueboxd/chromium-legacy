@@ -316,6 +316,11 @@ void PageSchedulerImpl::SetPageFrozenImpl(
     delegate_->OnSetPageFrozen(frozen);
 }
 
+void PageSchedulerImpl::SetPageBackForwardCached(
+    bool is_in_back_forward_cache) {
+  is_stored_in_back_forward_cache_ = is_in_back_forward_cache;
+}
+
 void PageSchedulerImpl::SetKeepActive(bool keep_active) {
   if (keep_active_ == keep_active)
     return;

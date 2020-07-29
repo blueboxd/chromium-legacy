@@ -12,6 +12,7 @@
 #include "base/callback.h"
 #include "base/macros.h"
 #include "base/numerics/safe_math.h"
+#include "base/optional.h"
 #include "base/strings/string16.h"
 
 namespace chrome_pdf {
@@ -103,17 +104,31 @@ template <class AdapterType,
           class StringType,
           typename BufferType,
           typename ReturnType>
+base::Optional<StringType> CallPDFiumStringBufferApiAndReturnOptional(
+    base::RepeatingCallback<ReturnType(BufferType*, ReturnType)> api,
+    bool check_expected_size) {
+  ReturnType expected_size = api.Run(nullptr, 0);
+  if (expected_size == 0)
+    return base::nullopt;
+
+  StringType str;
+  AdapterType api_string_adapter(&str, expected_size, check_expected_size);
+  auto* data = reinterpret_cast<BufferType*>(api_string_adapter.GetData());
+  api_string_adapter.Close(api.Run(data, expected_size));
+  return str;
+}
+
+template <class AdapterType,
+          class StringType,
+          typename BufferType,
+          typename ReturnType>
 StringType CallPDFiumStringBufferApi(
     base::RepeatingCallback<ReturnType(BufferType*, ReturnType)> api,
     bool check_expected_size) {
-  StringType str;
-  ReturnType expected_size = api.Run(nullptr, 0);
-  if (expected_size > 0) {
-    AdapterType api_string_adapter(&str, expected_size, check_expected_size);
-    auto* data = reinterpret_cast<BufferType*>(api_string_adapter.GetData());
-    api_string_adapter.Close(api.Run(data, expected_size));
-  }
-  return str;
+  base::Optional<StringType> result =
+      CallPDFiumStringBufferApiAndReturnOptional<AdapterType, StringType>(
+          api, check_expected_size);
+  return result.value_or(StringType());
 }
 
 }  // namespace internal
@@ -126,6 +141,18 @@ base::string16 CallPDFiumWideStringBufferApi(
     bool check_expected_size) {
   using adapter_type = internal::PDFiumAPIStringBufferSizeInBytesAdapter;
   return internal::CallPDFiumStringBufferApi<adapter_type, base::string16>(
+      api, check_expected_size);
+}
+
+// Variant of CallPDFiumWideStringBufferApi() that distinguishes between API
+// call failures and empty string return values.
+template <typename BufferType>
+base::Optional<base::string16> CallPDFiumWideStringBufferApiAndReturnOptional(
+    base::RepeatingCallback<unsigned long(BufferType*, unsigned long)> api,
+    bool check_expected_size) {
+  using adapter_type = internal::PDFiumAPIStringBufferSizeInBytesAdapter;
+  return internal::CallPDFiumStringBufferApiAndReturnOptional<adapter_type,
+                                                              base::string16>(
       api, check_expected_size);
 }
 

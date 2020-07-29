@@ -19,7 +19,7 @@
 #include "base/rand_util.h"
 #include "build/build_config.h"
 
-#if defined(OS_MACOSX) || defined(OS_ANDROID)
+#if defined(OS_APPLE) || defined(OS_ANDROID)
 #include <pthread.h>
 #endif
 
@@ -29,7 +29,7 @@ using allocator::AllocatorDispatch;
 
 namespace {
 
-#if defined(OS_MACOSX) || defined(OS_ANDROID)
+#if defined(OS_APPLE) || defined(OS_ANDROID)
 
 // The macOS implementation of libmalloc sometimes calls malloc recursively,
 // delegating allocations between zones. That causes our hooks being called

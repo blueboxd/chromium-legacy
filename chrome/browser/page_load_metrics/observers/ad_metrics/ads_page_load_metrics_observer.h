@@ -231,6 +231,11 @@ class AdsPageLoadMetricsObserver
   // Tracks aggregate counts across all frames on the page.
   std::unique_ptr<FrameData> aggregate_frame_data_;
 
+  // Track aggregate counts across all non-ad frames on the page.
+  // TODO(crbug.com/1109754): Currently this only measures CPU metrics for the
+  // page.  That should be expanded to include other metrics.
+  std::unique_ptr<FrameData> aggregate_non_ad_frame_data_;
+
   // Tracks aggregate counts across all ad frames on the page by visibility
   // type.
   AggregateFrameInfo aggregate_ad_info_by_visibility_

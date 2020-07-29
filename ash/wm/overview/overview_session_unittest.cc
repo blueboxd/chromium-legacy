@@ -3015,6 +3015,62 @@ TEST_P(OverviewSessionTest, ShelfAlignmentChangeWhileInOverview) {
   EXPECT_FALSE(InOverviewSession());
 }
 
+namespace {
+class TestEventHandler : public ui::EventHandler {
+ public:
+  TestEventHandler() = default;
+  ~TestEventHandler() override = default;
+  // ui::EventHandler
+  void OnKeyEvent(ui::KeyEvent* event) override {
+    if (event->type() != ui::ET_KEY_PRESSED)
+      return;
+
+    has_seen_event_ = true;
+    event->SetHandled();
+    event->StopPropagation();
+  }
+  bool HasSeenEvent() { return has_seen_event_; }
+  void Reset() { has_seen_event_ = false; }
+
+ private:
+  bool has_seen_event_ = false;
+};
+}  // namespace
+
+// Test that keys are eaten when entering overview mode.
+TEST_P(OverviewSessionTest, EatKeysDuringStartAnimation) {
+  std::unique_ptr<aura::Window> test_window(CreateTestWindow());
+  TestEventHandler test_event_handler;
+  test_window->SetTargetHandler(&test_event_handler);
+  test_window->Focus();
+
+  ui::ScopedAnimationDurationScaleMode animation_scale(
+      ui::ScopedAnimationDurationScaleMode::NON_ZERO_DURATION);
+
+  // Keys shouldn't be eaten by overview session normally.
+  SendKey(ui::VKEY_A);
+  ASSERT_TRUE(test_window->HasFocus());
+  EXPECT_TRUE(test_event_handler.HasSeenEvent());
+  test_event_handler.Reset();
+
+  // Keys should be eaten by overview session when entering overview mode.
+  ToggleOverview();
+  ASSERT_TRUE(Shell::Get()->overview_controller()->IsInStartAnimation());
+  ASSERT_TRUE(test_window->HasFocus());
+  SendKey(ui::VKEY_B);
+  EXPECT_FALSE(test_event_handler.HasSeenEvent());
+  EXPECT_TRUE(InOverviewSession());
+
+  WaitForOverviewEnterAnimation();
+  ASSERT_FALSE(Shell::Get()->overview_controller()->IsInStartAnimation());
+  EXPECT_FALSE(test_window->HasFocus());
+
+  ToggleOverview();
+  SendKey(ui::VKEY_C);
+  EXPECT_FALSE(InOverviewSession());
+  EXPECT_TRUE(test_event_handler.HasSeenEvent());
+}
+
 // The class to test overview behavior with kDragFromShelfToHomeOrOverview flag
 // enabled.
 class OverviewSessionWithDragFromShelfFeatureTest : public OverviewSessionTest {

@@ -6,10 +6,12 @@ import("//build/config/android/rules.gni")
 
 android_library("java") {
   sources = [
+    "java/src/org/chromium/components/browser_ui/util/BitmapCache.java",
     "java/src/org/chromium/components/browser_ui/util/BrowserControlsVisibilityDelegate.java",
     "java/src/org/chromium/components/browser_ui/util/ComposedBrowserControlsVisibilityDelegate.java",
     "java/src/org/chromium/components/browser_ui/util/ConversionUtils.java",
     "java/src/org/chromium/components/browser_ui/util/DownloadUtils.java",
+    "java/src/org/chromium/components/browser_ui/util/GlobalDiscardableReferencePool.java",
     "java/src/org/chromium/components/browser_ui/util/date/CalendarFactory.java",
     "java/src/org/chromium/components/browser_ui/util/date/CalendarUtils.java",
     "java/src/org/chromium/components/browser_ui/util/date/StringUtils.java",
@@ -20,6 +22,8 @@ android_library("java") {
     "//base:base_java",
     "//components/embedder_support/android:util_java",
     "//content/public/android:content_java",
+    "//third_party/android_deps:androidx_annotation_annotation_java",
+    "//third_party/android_deps:androidx_collection_collection_java",
     "//third_party/android_deps:androidx_core_core_java",
   ]
 }
@@ -41,7 +45,10 @@ java_library("junit") {
   # Skip platform checks since Robolectric depends on requires_android targets.
   bypass_platform_checks = true
   testonly = true
-  sources = [ "java/src/org/chromium/components/browser_ui/util/ComposedBrowserControlsVisibilityDelegateTest.java" ]
+  sources = [
+    "java/src/org/chromium/components/browser_ui/util/BitmapCacheTest.java",
+    "java/src/org/chromium/components/browser_ui/util/ComposedBrowserControlsVisibilityDelegateTest.java",
+  ]
   deps = [
     ":java",
     "//base:base_java",

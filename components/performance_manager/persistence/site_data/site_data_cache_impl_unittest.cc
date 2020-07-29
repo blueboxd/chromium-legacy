@@ -78,8 +78,7 @@ class SiteDataCacheImplTest : public ::testing::Test {
     EXPECT_TRUE(reader_);
 
     ASSERT_FALSE(writer_);
-    writer_ = data_cache_->GetWriterForOrigin(
-        TestOrigin1(), performance_manager::TabVisibility::kBackground);
+    writer_ = data_cache_->GetWriterForOrigin(TestOrigin1());
     EXPECT_TRUE(writer_);
 
     ASSERT_FALSE(data_);
@@ -89,7 +88,7 @@ class SiteDataCacheImplTest : public ::testing::Test {
 
     EXPECT_EQ(performance_manager::SiteFeatureUsage::kSiteFeatureUsageUnknown,
               reader_->UpdatesTitleInBackground());
-    writer_->NotifySiteLoaded();
+    writer_->NotifySiteLoaded(TabVisibility::kBackground);
     writer_->NotifyUpdatesTitleInBackground();
     EXPECT_EQ(performance_manager::SiteFeatureUsage::kSiteFeatureInUse,
               reader_->UpdatesTitleInBackground());
@@ -101,8 +100,7 @@ class SiteDataCacheImplTest : public ::testing::Test {
     EXPECT_TRUE(reader2_);
 
     ASSERT_FALSE(writer2_);
-    writer2_ = data_cache_->GetWriterForOrigin(
-        TestOrigin2(), performance_manager::TabVisibility::kBackground);
+    writer2_ = data_cache_->GetWriterForOrigin(TestOrigin2());
     EXPECT_TRUE(writer2_);
 
     ASSERT_FALSE(data2_);
@@ -112,7 +110,7 @@ class SiteDataCacheImplTest : public ::testing::Test {
 
     EXPECT_EQ(performance_manager::SiteFeatureUsage::kSiteFeatureUsageUnknown,
               reader2_->UpdatesFaviconInBackground());
-    writer2_->NotifySiteLoaded();
+    writer2_->NotifySiteLoaded(TabVisibility::kBackground);
     writer2_->NotifyUpdatesFaviconInBackground();
     EXPECT_EQ(performance_manager::SiteFeatureUsage::kSiteFeatureInUse,
               reader2_->UpdatesFaviconInBackground());
@@ -141,19 +139,18 @@ class SiteDataCacheImplTest : public ::testing::Test {
 TEST_F(SiteDataCacheImplTest, EndToEnd) {
   auto reader = data_cache_->GetReaderForOrigin(TestOrigin1());
   EXPECT_TRUE(reader);
-  auto writer = data_cache_->GetWriterForOrigin(
-      TestOrigin1(), performance_manager::TabVisibility::kBackground);
+  auto writer = data_cache_->GetWriterForOrigin(TestOrigin1());
   EXPECT_TRUE(writer);
 
   EXPECT_EQ(1U, data_cache_->origin_data_map_for_testing().size());
 
   EXPECT_EQ(performance_manager::SiteFeatureUsage::kSiteFeatureUsageUnknown,
             reader->UpdatesTitleInBackground());
-  writer->NotifySiteLoaded();
+  writer->NotifySiteLoaded(TabVisibility::kBackground);
   writer->NotifyUpdatesTitleInBackground();
   EXPECT_EQ(performance_manager::SiteFeatureUsage::kSiteFeatureInUse,
             reader->UpdatesTitleInBackground());
-  writer->NotifySiteUnloaded();
+  writer->NotifySiteUnloaded(TabVisibility::kBackground);
   EXPECT_EQ(performance_manager::SiteFeatureUsage::kSiteFeatureInUse,
             reader->UpdatesTitleInBackground());
 
@@ -204,8 +201,8 @@ TEST_F(SiteDataCacheImplTest, ClearSiteDataForOrigins) {
   EXPECT_EQ(performance_manager::SiteFeatureUsage::kSiteFeatureInUse,
             reader2_->UpdatesFaviconInBackground());
 
-  writer_->NotifySiteUnloaded();
-  writer2_->NotifySiteUnloaded();
+  writer_->NotifySiteUnloaded(TabVisibility::kBackground);
+  writer2_->NotifySiteUnloaded(TabVisibility::kBackground);
 }
 
 TEST_F(SiteDataCacheImplTest, ClearAllSiteData) {
@@ -226,8 +223,8 @@ TEST_F(SiteDataCacheImplTest, ClearAllSiteData) {
   EXPECT_EQ(performance_manager::SiteFeatureUsage::kSiteFeatureUsageUnknown,
             reader2_->UpdatesFaviconInBackground());
 
-  writer_->NotifySiteUnloaded();
-  writer2_->NotifySiteUnloaded();
+  writer_->NotifySiteUnloaded(TabVisibility::kBackground);
+  writer2_->NotifySiteUnloaded(TabVisibility::kBackground);
 }
 
 TEST_F(SiteDataCacheImplTest, InspectorWorks) {
@@ -250,8 +247,7 @@ TEST_F(SiteDataCacheImplTest, InspectorWorks) {
 
   {
     // Add an entry, see that it's reflected in the inspector interface.
-    auto writer = data_cache_->GetWriterForOrigin(
-        TestOrigin1(), performance_manager::TabVisibility::kBackground);
+    auto writer = data_cache_->GetWriterForOrigin(TestOrigin1());
 
     EXPECT_EQ(1U, inspector->GetAllInMemoryOrigins().size());
     EXPECT_TRUE(inspector->GetDataForOrigin(TestOrigin1(), &is_dirty, &data));
@@ -259,9 +255,10 @@ TEST_F(SiteDataCacheImplTest, InspectorWorks) {
     ASSERT_NE(nullptr, data.get());
 
     // Touch the underlying data, see that the dirty bit updates.
-    writer->NotifySiteLoaded();
+    writer->NotifySiteLoaded(TabVisibility::kBackground);
     EXPECT_TRUE(inspector->GetDataForOrigin(TestOrigin1(), &is_dirty, &data));
     EXPECT_TRUE(is_dirty);
+    writer->NotifySiteUnloaded(TabVisibility::kBackground);
   }
 
   // Make sure the interface is unregistered from the browser context on

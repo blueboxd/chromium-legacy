@@ -95,7 +95,7 @@ size_t ProcessMemoryDump::CountResidentBytes(void* start_address,
 #if defined(OS_WIN)
   std::unique_ptr<PSAPI_WORKING_SET_EX_INFORMATION[]> vec(
       new PSAPI_WORKING_SET_EX_INFORMATION[max_vec_size]);
-#elif defined(OS_MACOSX)
+#elif defined(OS_APPLE)
   std::unique_ptr<char[]> vec(new char[max_vec_size]);
 #elif defined(OS_POSIX) || defined(OS_FUCHSIA)
   std::unique_ptr<unsigned char[]> vec(new unsigned char[max_vec_size]);
@@ -121,7 +121,7 @@ size_t ProcessMemoryDump::CountResidentBytes(void* start_address,
     // TODO(fuchsia): Port, see https://crbug.com/706592.
     ALLOW_UNUSED_LOCAL(chunk_start);
     ALLOW_UNUSED_LOCAL(page_count);
-#elif defined(OS_MACOSX)
+#elif defined(OS_APPLE)
     // mincore in MAC does not fail with EAGAIN.
     failure =
         !!mincore(reinterpret_cast<void*>(chunk_start), chunk_size, vec.get());
@@ -165,7 +165,7 @@ size_t ProcessMemoryDump::CountResidentBytes(void* start_address,
 base::Optional<size_t> ProcessMemoryDump::CountResidentBytesInSharedMemory(
     void* start_address,
     size_t mapped_size) {
-#if defined(OS_MACOSX) && !defined(OS_IOS)
+#if defined(OS_MAC)
   // On macOS, use mach_vm_region instead of mincore for performance
   // (crbug.com/742042).
   mach_vm_size_t dummy_size = 0;
@@ -224,7 +224,7 @@ base::Optional<size_t> ProcessMemoryDump::CountResidentBytesInSharedMemory(
   return resident_pages * PAGE_SIZE;
 #else
   return CountResidentBytes(start_address, mapped_size);
-#endif  // defined(OS_MACOSX) && !defined(OS_IOS)
+#endif  // defined(OS_MAC)
 }
 
 #endif  // defined(COUNT_RESIDENT_BYTES_SUPPORTED)

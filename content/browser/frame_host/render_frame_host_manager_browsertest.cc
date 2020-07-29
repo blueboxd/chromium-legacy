@@ -29,6 +29,7 @@
 #include "base/time/time.h"
 #include "base/values.h"
 #include "build/build_config.h"
+#include "components/network_session_configurator/common/network_switches.h"
 #include "content/browser/child_process_security_policy_impl.h"
 #include "content/browser/frame_host/navigation_request.h"
 #include "content/browser/frame_host/render_frame_host_impl.h"
@@ -74,6 +75,7 @@
 #include "content/test/test_content_browser_client.h"
 #include "net/dns/mock_host_resolver.h"
 #include "net/test/embedded_test_server/controllable_http_response.h"
+#include "net/test/embedded_test_server/default_handlers.h"
 #include "net/test/embedded_test_server/embedded_test_server.h"
 #include "net/test/embedded_test_server/request_handler_util.h"
 #include "net/test/url_request/url_request_failed_job.h"
@@ -6019,6 +6021,445 @@ IN_PROC_BROWSER_TEST_P(ProactivelySwapBrowsingInstancesSameSiteTest,
             site_instance_1->GetProcess());
 }
 
+// Tests history same-site process reuse:
+// 1. Visit A1, A2, B.
+// 2. Go back to A2 (should use new process).
+// 3. Go back to A1 (should reuse A2's process).
+IN_PROC_BROWSER_TEST_P(ProactivelySwapBrowsingInstancesSameSiteTest,
+                       HistoryNavigationReusesProcess) {
+  ASSERT_TRUE(embedded_test_server()->Start());
+  GURL url_1(embedded_test_server()->GetURL("/title1.html"));
+  GURL url_2(embedded_test_server()->GetURL("/title2.html"));
+  GURL cross_site_url(embedded_test_server()->GetURL("b.com", "/title3.html"));
+  WebContentsImpl* web_contents =
+      static_cast<WebContentsImpl*>(shell()->web_contents());
+  // 1) Navigate to title1.html.
+  EXPECT_TRUE(NavigateToURL(shell(), url_1));
+  scoped_refptr<SiteInstanceImpl> site_instance_1 =
+      static_cast<SiteInstanceImpl*>(
+          web_contents->GetMainFrame()->GetSiteInstance());
+  // 2) Navigate same-site to title2.html.
+  EXPECT_TRUE(NavigateToURL(shell(), url_2));
+  scoped_refptr<SiteInstanceImpl> site_instance_2 =
+      static_cast<SiteInstanceImpl*>(
+          web_contents->GetMainFrame()->GetSiteInstance());
+
+  // Check that title1.html and title2.html are in different BrowsingInstances
+  // but have the same renderer process.
+  EXPECT_FALSE(site_instance_1->IsRelatedSiteInstance(site_instance_2.get()));
+  EXPECT_EQ(site_instance_1->GetProcess(), site_instance_2->GetProcess());
+
+  // 3) Navigate cross-site to b.com/title3.html.
+  RenderFrameDeletedObserver rfh_2_deleted_observer(
+      web_contents->GetMainFrame());
+  EXPECT_TRUE(NavigateToURL(shell(), cross_site_url));
+  scoped_refptr<SiteInstanceImpl> site_instance_3 =
+      static_cast<SiteInstanceImpl*>(
+          web_contents->GetMainFrame()->GetSiteInstance());
+
+  // Wait until the RFH for title2.html got deleted, and check that
+  // title2.html and b.com/title3.html are in different BrowsingInstances and
+  // renderer processes (We check this by checking whether |site_instance_2|
+  // still has a process or not - if it's gone then that means
+  // |site_instance_3| uses a different process).
+  rfh_2_deleted_observer.WaitUntilDeleted();
+  EXPECT_FALSE(site_instance_2->IsRelatedSiteInstance(site_instance_3.get()));
+  EXPECT_FALSE(site_instance_2->HasProcess());
+
+  // 4) Do a back navigation to title2.html.
+  RenderFrameDeletedObserver rfh_3_deleted_observer(
+      web_contents->GetMainFrame());
+  shell()->web_contents()->GetController().GoBack();
+  EXPECT_TRUE(WaitForLoadStop(shell()->web_contents()));
+  EXPECT_EQ(shell()->web_contents()->GetLastCommittedURL(), url_2);
+  scoped_refptr<SiteInstanceImpl> site_instance_2_history_nav =
+      static_cast<SiteInstanceImpl*>(
+          web_contents->GetMainFrame()->GetSiteInstance());
+  // We should use different BrowsingInstances and processes after going back to
+  // title2.html because it's a cross-site navigation.
+  rfh_3_deleted_observer.WaitUntilDeleted();
+  EXPECT_FALSE(site_instance_2_history_nav->IsRelatedSiteInstance(
+      site_instance_3.get()));
+  EXPECT_FALSE(site_instance_3->HasProcess());
+
+  // 5) Do a back navigation to title1.html.
+  shell()->web_contents()->GetController().GoBack();
+  EXPECT_TRUE(WaitForLoadStop(shell()->web_contents()));
+  EXPECT_EQ(shell()->web_contents()->GetLastCommittedURL(), url_1);
+  scoped_refptr<SiteInstanceImpl> site_instance_1_history_nav =
+      static_cast<SiteInstanceImpl*>(
+          web_contents->GetMainFrame()->GetSiteInstance());
+
+  // We should use different BrowsingInstances for title1.html and title2.html,
+  // but reuse the process (because in the original navigation, the BI change
+  // was caused by proactive BI swap).
+  EXPECT_FALSE(site_instance_1_history_nav->IsRelatedSiteInstance(
+      site_instance_2_history_nav.get()));
+  EXPECT_EQ(site_instance_1_history_nav, site_instance_1);
+  EXPECT_TRUE(site_instance_2_history_nav->HasProcess());
+  EXPECT_EQ(site_instance_1_history_nav->GetProcess(),
+            site_instance_2_history_nav->GetProcess());
+}
+
+// Tests history same-site process reuse:
+// 1. Visit A1, A2, B.
+// 2. Go back two entries to A1 (should use new process).
+// 3. Go forward to A2 (should reuse A1's process).
+IN_PROC_BROWSER_TEST_P(ProactivelySwapBrowsingInstancesSameSiteTest,
+                       HistoryNavigationReusesProcess_SkipSameSiteEntry) {
+  ASSERT_TRUE(embedded_test_server()->Start());
+  GURL url_1(embedded_test_server()->GetURL("/title1.html"));
+  GURL url_2(embedded_test_server()->GetURL("/title2.html"));
+  GURL cross_site_url(embedded_test_server()->GetURL("b.com", "/title3.html"));
+  WebContentsImpl* web_contents =
+      static_cast<WebContentsImpl*>(shell()->web_contents());
+  // 1) Navigate to title1.html.
+  EXPECT_TRUE(NavigateToURL(shell(), url_1));
+  scoped_refptr<SiteInstanceImpl> site_instance_1 =
+      static_cast<SiteInstanceImpl*>(
+          web_contents->GetMainFrame()->GetSiteInstance());
+  // 2) Navigate same-site to title2.html.
+  EXPECT_TRUE(NavigateToURL(shell(), url_2));
+  scoped_refptr<SiteInstanceImpl> site_instance_2 =
+      static_cast<SiteInstanceImpl*>(
+          web_contents->GetMainFrame()->GetSiteInstance());
+
+  // Check that title1.html and title2.html are in different BrowsingInstances
+  // but have the same renderer process.
+  EXPECT_FALSE(site_instance_1->IsRelatedSiteInstance(site_instance_2.get()));
+  EXPECT_EQ(site_instance_1->GetProcess(), site_instance_2->GetProcess());
+
+  // 3) Navigate cross-site to b.com/title3.html.
+  RenderFrameDeletedObserver rfh_2_deleted_observer(
+      web_contents->GetMainFrame());
+  EXPECT_TRUE(NavigateToURL(shell(), cross_site_url));
+  scoped_refptr<SiteInstanceImpl> site_instance_3 =
+      static_cast<SiteInstanceImpl*>(
+          web_contents->GetMainFrame()->GetSiteInstance());
+
+  // Wait until the RFH for title2.html got deleted, and check that
+  // title2.html and b.com/title3.html are in different BrowsingInstances and
+  // renderer processes (We check this by checking whether |site_instance_2|
+  // still has a process or not - if it's gone then that means
+  // |site_instance_3| uses a different process).
+  rfh_2_deleted_observer.WaitUntilDeleted();
+  EXPECT_FALSE(site_instance_2->IsRelatedSiteInstance(site_instance_3.get()));
+  EXPECT_FALSE(site_instance_2->HasProcess());
+
+  // 4) Navigate back 2 entries to title1.html.
+  RenderFrameDeletedObserver rfh_3_deleted_observer(
+      web_contents->GetMainFrame());
+  EXPECT_TRUE(ExecJs(shell(), "history.go(-2)"));
+  EXPECT_TRUE(WaitForLoadStop(shell()->web_contents()));
+  EXPECT_EQ(shell()->web_contents()->GetLastCommittedURL(), url_1);
+  scoped_refptr<SiteInstanceImpl> site_instance_1_history_nav =
+      static_cast<SiteInstanceImpl*>(
+          web_contents->GetMainFrame()->GetSiteInstance());
+  // We should use different BrowsingInstances and processes after going back to
+  // title2.html because it's a cross-site navigation.
+  rfh_3_deleted_observer.WaitUntilDeleted();
+  EXPECT_FALSE(site_instance_1_history_nav->IsRelatedSiteInstance(
+      site_instance_3.get()));
+  EXPECT_EQ(site_instance_1_history_nav, site_instance_1);
+  EXPECT_FALSE(site_instance_3->HasProcess());
+
+  // 5) Navigate 1 entry forward to title2.html.
+  EXPECT_TRUE(ExecJs(shell(), "history.go(1)"));
+  EXPECT_TRUE(WaitForLoadStop(shell()->web_contents()));
+  EXPECT_EQ(shell()->web_contents()->GetLastCommittedURL(), url_2);
+  scoped_refptr<SiteInstanceImpl> site_instance_2_history_nav =
+      static_cast<SiteInstanceImpl*>(
+          web_contents->GetMainFrame()->GetSiteInstance());
+
+  // We should use different BrowsingInstances for title1.html and title2.html,
+  // but reuse the process (because in the original navigation, the BI change
+  // was caused by proactive BI swap).
+  EXPECT_FALSE(site_instance_1_history_nav->IsRelatedSiteInstance(
+      site_instance_2_history_nav.get()));
+  EXPECT_EQ(site_instance_2_history_nav, site_instance_2);
+  EXPECT_TRUE(site_instance_1_history_nav->HasProcess());
+  EXPECT_EQ(site_instance_1_history_nav->GetProcess(),
+            site_instance_2_history_nav->GetProcess());
+}
+
+// Tests history same-site process reuse:
+// 1. Visit A1, B, A3.
+// 2. Go back two entries to A1 (should use A3's process).
+// 3. Go forward to B (should use new process).
+IN_PROC_BROWSER_TEST_P(ProactivelySwapBrowsingInstancesSameSiteTest,
+                       HistoryNavigationReusesProcess_SkipCrossSiteEntry) {
+  ASSERT_TRUE(embedded_test_server()->Start());
+  GURL url_1(embedded_test_server()->GetURL("/title1.html"));
+  GURL cross_site_url(embedded_test_server()->GetURL("b.com", "/title2.html"));
+  GURL url_3(embedded_test_server()->GetURL("/title3.html"));
+  WebContentsImpl* web_contents =
+      static_cast<WebContentsImpl*>(shell()->web_contents());
+  // 1) Navigate to title1.html.
+  EXPECT_TRUE(NavigateToURL(shell(), url_1));
+  scoped_refptr<SiteInstanceImpl> site_instance_1 =
+      static_cast<SiteInstanceImpl*>(
+          web_contents->GetMainFrame()->GetSiteInstance());
+  RenderFrameDeletedObserver rfh_1_deleted_observer(
+      web_contents->GetMainFrame());
+  // 2) Navigate cross-site to b.com/title2.html.
+  EXPECT_TRUE(NavigateToURL(shell(), cross_site_url));
+  scoped_refptr<SiteInstanceImpl> site_instance_2 =
+      static_cast<SiteInstanceImpl*>(
+          web_contents->GetMainFrame()->GetSiteInstance());
+
+  // Check that title1.html and b.com/title2.html are in different
+  // BrowsingInstances and renderer processes (We check this by checking
+  // whether |site_instance_1| still has a process or not - if it's gone then
+  // that means |site_instance_2| uses a different process).
+  rfh_1_deleted_observer.WaitUntilDeleted();
+  EXPECT_FALSE(site_instance_1->IsRelatedSiteInstance(site_instance_2.get()));
+  EXPECT_FALSE(site_instance_1->HasProcess());
+
+  // 3) Navigate cross-site to title3.html.
+  RenderFrameDeletedObserver rfh_2_deleted_observer(
+      web_contents->GetMainFrame());
+  EXPECT_TRUE(NavigateToURL(shell(), url_3));
+  scoped_refptr<SiteInstanceImpl> site_instance_3 =
+      static_cast<SiteInstanceImpl*>(
+          web_contents->GetMainFrame()->GetSiteInstance());
+
+  // Wait until the RFH for title2.html got deleted, and check that
+  // b.com/title2.html and title3.html are in different BrowsingInstances and
+  // renderer processes (We check this by checking whether |site_instance_2|
+  // still has a process or not - if it's gone then that means
+  // |site_instance_3| uses a different process).
+  rfh_2_deleted_observer.WaitUntilDeleted();
+  EXPECT_FALSE(site_instance_2->IsRelatedSiteInstance(site_instance_3.get()));
+  EXPECT_FALSE(site_instance_2->HasProcess());
+
+  // 4) Navigate back 2 entries from title3.html to title1.html.
+  EXPECT_TRUE(ExecJs(shell(), "history.go(-2)"));
+  EXPECT_TRUE(WaitForLoadStop(shell()->web_contents()));
+  EXPECT_EQ(shell()->web_contents()->GetLastCommittedURL(), url_1);
+  scoped_refptr<SiteInstanceImpl> site_instance_1_history_nav =
+      static_cast<SiteInstanceImpl*>(
+          web_contents->GetMainFrame()->GetSiteInstance());
+  // We should use different BrowsingInstances but reuse the process when going
+  // back from title3.html to title1.html because it's a same-site history
+  // navigation.
+  EXPECT_FALSE(site_instance_1_history_nav->IsRelatedSiteInstance(
+      site_instance_3.get()));
+  EXPECT_EQ(site_instance_1_history_nav, site_instance_1);
+  EXPECT_TRUE(site_instance_3->HasProcess());
+  EXPECT_EQ(site_instance_1_history_nav->GetProcess(),
+            site_instance_3->GetProcess());
+}
+
+// Tests history same-site process reuse:
+// 1. Visit A1 (which window.opens A2) then B.
+// 2. Visit A3, which should use a new process (can't use A2's process).
+// 2. Go back two entries to A1 (should use A2's process - the same process it
+// used originally).
+IN_PROC_BROWSER_TEST_P(ProactivelySwapBrowsingInstancesSameSiteTest,
+                       HistoryNavigationReusesProcessThatIsStillAlive) {
+  ASSERT_TRUE(embedded_test_server()->Start());
+  GURL url_1(embedded_test_server()->GetURL("/title1.html"));
+  GURL url_to_open(embedded_test_server()->GetURL("/empty.html"));
+  GURL cross_site_url(embedded_test_server()->GetURL("b.com", "/title2.html"));
+  GURL url_3(embedded_test_server()->GetURL("/title3.html"));
+  WebContentsImpl* web_contents =
+      static_cast<WebContentsImpl*>(shell()->web_contents());
+  // 1) Navigate to title1.html and open a popup.
+  EXPECT_TRUE(NavigateToURL(shell(), url_1));
+  OpenPopup(shell(), url_to_open, "foo");
+  scoped_refptr<SiteInstanceImpl> site_instance_1 =
+      static_cast<SiteInstanceImpl*>(
+          web_contents->GetMainFrame()->GetSiteInstance());
+
+  // 2) Navigate cross-site to b.com/title2.html.
+  EXPECT_TRUE(NavigateToURL(shell(), cross_site_url));
+  scoped_refptr<SiteInstanceImpl> site_instance_2 =
+      static_cast<SiteInstanceImpl*>(
+          web_contents->GetMainFrame()->GetSiteInstance());
+
+  // Check that title1.html and b.com/title2.html are in different
+  // BrowsingInstances and renderer processes. title1.html's process will still
+  // be around because the window it opened earlier is still alive.
+  EXPECT_FALSE(site_instance_1->IsRelatedSiteInstance(site_instance_2.get()));
+  EXPECT_TRUE(site_instance_1->HasProcess());
+  EXPECT_NE(site_instance_1->GetProcess(), site_instance_2->GetProcess());
+
+  // 3) Navigate cross-site to title3.html (same-site with title1.html).
+  RenderFrameDeletedObserver rfh_2_deleted_observer(
+      web_contents->GetMainFrame());
+  EXPECT_TRUE(NavigateToURL(shell(), url_3));
+  scoped_refptr<SiteInstanceImpl> site_instance_3 =
+      static_cast<SiteInstanceImpl*>(
+          web_contents->GetMainFrame()->GetSiteInstance());
+
+  // Wait until the RFH for b.com/title2.html got deleted, and check that
+  // b.com/title2.html and title3.html are in different BrowsingInstances and
+  // renderer processes (We check this by checking whether |site_instance_2|
+  // still has a process or not - if it's gone then that means
+  // |site_instance_3| uses a different process).
+  rfh_2_deleted_observer.WaitUntilDeleted();
+  EXPECT_FALSE(site_instance_2->IsRelatedSiteInstance(site_instance_3.get()));
+  EXPECT_FALSE(site_instance_2->HasProcess());
+  // Even though title1.html and title3.html are same-site, they should use
+  // different processes.
+  EXPECT_NE(site_instance_1->GetProcess(), site_instance_3->GetProcess());
+
+  // 4) Navigate back 2 entries from title3.html to title1.html.
+  RenderFrameDeletedObserver rfh_3_deleted_observer(
+      web_contents->GetMainFrame());
+  EXPECT_TRUE(ExecJs(shell(), "history.go(-2)"));
+  EXPECT_TRUE(WaitForLoadStop(shell()->web_contents()));
+  EXPECT_EQ(shell()->web_contents()->GetLastCommittedURL(), url_1);
+  scoped_refptr<SiteInstanceImpl> site_instance_1_history_nav =
+      static_cast<SiteInstanceImpl*>(
+          web_contents->GetMainFrame()->GetSiteInstance());
+  // We should use different BrowsingInstances and not reuse the process when
+  // going back from title3.html to title1.html because the original process
+  // for title1.html is still around (also title3.html shouldn't be able to
+  // script the window opened by title1.html).
+  rfh_3_deleted_observer.WaitUntilDeleted();
+  EXPECT_FALSE(site_instance_1_history_nav->IsRelatedSiteInstance(
+      site_instance_3.get()));
+  EXPECT_EQ(site_instance_1_history_nav, site_instance_1);
+  EXPECT_FALSE(site_instance_3->HasProcess());
+}
+
+class ProactivelySwapBrowsingInstancesSameSiteCoopTest
+    : public ProactivelySwapBrowsingInstancesSameSiteTest {
+ public:
+  ProactivelySwapBrowsingInstancesSameSiteCoopTest()
+      : https_server_(net::EmbeddedTestServer::TYPE_HTTPS) {
+    std::vector<base::Feature> features;
+    feature_list_.InitWithFeatures(
+        {network::features::kCrossOriginOpenerPolicy,
+         network::features::kCrossOriginOpenerPolicyReporting,
+         network::features::kCrossOriginEmbedderPolicy,
+         network::features::kCrossOriginIsolated},
+        {});
+    base::CommandLine::ForCurrentProcess()->AppendSwitch(
+        switches::kIgnoreCertificateErrors);
+  }
+
+  ~ProactivelySwapBrowsingInstancesSameSiteCoopTest() override = default;
+
+  net::EmbeddedTestServer* https_server() { return &https_server_; }
+
+ protected:
+  void SetUpOnMainThread() override {
+    host_resolver()->AddRule("*", "127.0.0.1");
+    ASSERT_TRUE(embedded_test_server()->Start());
+    https_server()->ServeFilesFromSourceDirectory(GetTestDataFilePath());
+    SetupCrossSiteRedirector(https_server());
+    net::test_server::RegisterDefaultHandlers(&https_server_);
+    ASSERT_TRUE(https_server()->Start());
+  }
+
+  void SetUpCommandLine(base::CommandLine* command_line) override {
+    ProactivelySwapBrowsingInstancesSameSiteTest::SetUpCommandLine(
+        command_line);
+    command_line->AppendSwitch(switches::kIgnoreCertificateErrors);
+  }
+
+ private:
+  base::test::ScopedFeatureList feature_list_;
+  net::EmbeddedTestServer https_server_;
+};
+
+// Tests history same-site process reuse:
+// 1. Visit A1 (non-COOP), A2 (non-COOP, should reuse A1's process), A3 (uses
+// COOP + COEP, should use new process).
+// 2. Go back to A2 (should use new process).
+// 3. Go back to A1 (should reuse A2's process).
+// Note: This test is currently disabled due to crbug.com/1107814.
+IN_PROC_BROWSER_TEST_P(ProactivelySwapBrowsingInstancesSameSiteCoopTest,
+                       DISABLED_HistoryNavigationReusesProcess_COOP) {
+  GURL url_1(https_server()->GetURL("a.com", "/title1.html"));
+  GURL url_2(https_server()->GetURL("a.com", "/title2.html"));
+  GURL coop_url(
+      https_server()->GetURL("a.com",
+                             "/set-header?"
+                             "Cross-Origin-Opener-Policy: same-origin&"
+                             "Cross-Origin-Embedder-Policy: require-corp"));
+  WebContentsImpl* web_contents =
+      static_cast<WebContentsImpl*>(shell()->web_contents());
+  // 1) Navigate to title1.html.
+  EXPECT_TRUE(NavigateToURL(shell(), url_1));
+  EXPECT_EQ(web_contents->GetMainFrame()->cross_origin_opener_policy().value,
+            network::mojom::CrossOriginOpenerPolicyValue::kUnsafeNone);
+  scoped_refptr<SiteInstanceImpl> site_instance_1 =
+      static_cast<SiteInstanceImpl*>(
+          web_contents->GetMainFrame()->GetSiteInstance());
+
+  // 2) Navigate same-site to title2.html.
+  EXPECT_TRUE(NavigateToURL(shell(), url_2));
+  EXPECT_EQ(web_contents->GetMainFrame()->cross_origin_opener_policy().value,
+            network::mojom::CrossOriginOpenerPolicyValue::kUnsafeNone);
+  scoped_refptr<SiteInstanceImpl> site_instance_2 =
+      static_cast<SiteInstanceImpl*>(
+          web_contents->GetMainFrame()->GetSiteInstance());
+
+  // Check that title1.html and title2.html are in different BrowsingInstances
+  // but have the same renderer process.
+  EXPECT_FALSE(site_instance_1->IsRelatedSiteInstance(site_instance_2.get()));
+  EXPECT_EQ(site_instance_1->GetProcess(), site_instance_2->GetProcess());
+
+  // 3) Navigate same-site to a crossOriginIsolated page (uses COOP+COEP).
+  RenderFrameDeletedObserver rfh_2_deleted_observer(
+      web_contents->GetMainFrame());
+  EXPECT_TRUE(NavigateToURL(shell(), coop_url));
+  EXPECT_EQ(web_contents->GetMainFrame()->cross_origin_opener_policy().value,
+            network::mojom::CrossOriginOpenerPolicyValue::kSameOriginPlusCoep);
+
+  // Wait until the RFH for title2.html got deleted, and check that
+  // title2.html and title3.html are in different BrowsingInstances and
+  // renderer processes (We check this by checking whether |site_instance_2|
+  // still has a process or not - if it's gone then that means
+  // |site_instance_3| uses a different process).
+  rfh_2_deleted_observer.WaitUntilDeleted();
+  scoped_refptr<SiteInstanceImpl> site_instance_3 =
+      static_cast<SiteInstanceImpl*>(
+          web_contents->GetMainFrame()->GetSiteInstance());
+  EXPECT_FALSE(site_instance_2->IsRelatedSiteInstance(site_instance_3.get()));
+  EXPECT_FALSE(site_instance_2->HasProcess());
+  EXPECT_NE(site_instance_2->GetProcess(), site_instance_3->GetProcess());
+
+  // 4) Do a back navigation to title2.html.
+  RenderFrameDeletedObserver rfh_3_deleted_observer(
+      web_contents->GetMainFrame());
+  shell()->web_contents()->GetController().GoBack();
+  EXPECT_TRUE(WaitForLoadStop(shell()->web_contents()));
+  EXPECT_EQ(shell()->web_contents()->GetLastCommittedURL(), url_2);
+  scoped_refptr<SiteInstanceImpl> site_instance_2_history_nav =
+      static_cast<SiteInstanceImpl*>(
+          web_contents->GetMainFrame()->GetSiteInstance());
+  // We should use different BrowsingInstances and processes after going back to
+  // title2.html because it's transitioning from a crossOriginIsolated page
+  // (COOP+COEP) to a non-crossOriginIsolated page, even though the two are
+  // same-site.
+  rfh_3_deleted_observer.WaitUntilDeleted();
+  EXPECT_FALSE(site_instance_2_history_nav->IsRelatedSiteInstance(
+      site_instance_3.get()));
+  EXPECT_FALSE(site_instance_3->HasProcess());
+
+  // 5) Do a back navigation to title1.html.
+  shell()->web_contents()->GetController().GoBack();
+  EXPECT_TRUE(WaitForLoadStop(shell()->web_contents()));
+  EXPECT_EQ(shell()->web_contents()->GetLastCommittedURL(), url_1);
+  scoped_refptr<SiteInstanceImpl> site_instance_1_history_nav =
+      static_cast<SiteInstanceImpl*>(
+          web_contents->GetMainFrame()->GetSiteInstance());
+
+  // We should use different BrowsingInstances for title1.html and title2.html,
+  // but reuse the process (because in the original navigation, the BI change
+  // was caused by proactive BI swap).
+  EXPECT_FALSE(site_instance_1_history_nav->IsRelatedSiteInstance(
+      site_instance_2_history_nav.get()));
+  EXPECT_EQ(site_instance_1_history_nav, site_instance_1);
+  EXPECT_TRUE(site_instance_2_history_nav->HasProcess());
+  EXPECT_EQ(site_instance_1_history_nav->GetProcess(),
+            site_instance_2_history_nav->GetProcess());
+}
+
 // If the navigation is classified as NAVIGATION_TYPE_SAME_PAGE, or is a same
 // document navigation, we should not do a proactive BrowsingInstance swap.
 // TODO(crbug.com/536102): NAVIGATION_TYPE_SAME_PAGE will be removed in the
@@ -7605,6 +8046,9 @@ INSTANTIATE_TEST_SUITE_P(
     testing::ValuesIn(RenderDocumentFeatureLevelValues()));
 INSTANTIATE_TEST_SUITE_P(All,
                          ProactivelySwapBrowsingInstancesSameSiteTest,
+                         testing::ValuesIn(RenderDocumentFeatureLevelValues()));
+INSTANTIATE_TEST_SUITE_P(All,
+                         ProactivelySwapBrowsingInstancesSameSiteCoopTest,
                          testing::ValuesIn(RenderDocumentFeatureLevelValues()));
 INSTANTIATE_TEST_SUITE_P(All,
                          RenderFrameHostManagerUnloadBrowserTest,

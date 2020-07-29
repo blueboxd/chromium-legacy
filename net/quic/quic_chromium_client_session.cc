@@ -1512,14 +1512,13 @@ QuicChromiumClientSession::CreateIncomingReliableStreamImpl(
 
 void QuicChromiumClientSession::OnStreamClosed(quic::QuicStreamId stream_id) {
   most_recent_stream_close_time_ = tick_clock_->NowTicks();
-  auto it = stream_map().find(stream_id);
-  if (it != stream_map().end()) {
-    logger_->UpdateReceivedFrameCounts(
-        stream_id, it->second->num_frames_received(),
-        it->second->num_duplicate_frames_received());
+  quic::QuicStream* stream = GetActiveStream(stream_id);
+  if (stream != nullptr) {
+    logger_->UpdateReceivedFrameCounts(stream_id, stream->num_frames_received(),
+                                       stream->num_duplicate_frames_received());
     if (quic::QuicUtils::IsServerInitiatedStreamId(
             connection()->transport_version(), stream_id)) {
-      bytes_pushed_count_ += it->second->stream_bytes_read();
+      bytes_pushed_count_ += stream->stream_bytes_read();
     }
   }
   quic::QuicSpdyClientSessionBase::OnStreamClosed(stream_id);
@@ -2495,12 +2494,10 @@ void QuicChromiumClientSession::CloseSessionOnErrorLater(
 }
 
 void QuicChromiumClientSession::NotifyAllStreamsOfError(int net_error) {
-  for (const auto& stream : stream_map()) {
-    if (!stream.second->is_static()) {
-      static_cast<QuicChromiumClientStream*>(stream.second.get())
-          ->OnError(net_error);
-    }
-  }
+  PerformActionOnActiveStreams([net_error](quic::QuicStream* stream) {
+    static_cast<QuicChromiumClientStream*>(stream)->OnError(net_error);
+    return true;
+  });
 }
 
 void QuicChromiumClientSession::CloseAllHandles(int net_error) {
@@ -2779,23 +2776,17 @@ bool QuicChromiumClientSession::CheckIdleTimeExceedsIdleMigrationPeriod() {
 void QuicChromiumClientSession::ResetNonMigratableStreams() {
   // TODO(zhongyi): may close non-migratable draining streams as well to avoid
   // sending additional data on alternate networks.
-  std::vector<QuicChromiumClientStream*> streams_to_reset;
-  for (auto& it : stream_map()) {
-    if (it.second->is_static()) {
-      continue;
+  PerformActionOnActiveStreams([](quic::QuicStream* stream) {
+    QuicChromiumClientStream* chrome_stream =
+        static_cast<QuicChromiumClientStream*>(stream);
+    if (!chrome_stream->can_migrate_to_cellular_network()) {
+      // Close the stream in both direction by resetting the stream.
+      // TODO(zhongyi): use a different error code to reset streams for
+      // connection migration.
+      chrome_stream->Reset(quic::QUIC_STREAM_CANCELLED);
     }
-    QuicChromiumClientStream* stream =
-        static_cast<QuicChromiumClientStream*>(it.second.get());
-    if (!stream->can_migrate_to_cellular_network()) {
-      streams_to_reset.push_back(stream);
-    }
-  }
-  for (auto* stream : streams_to_reset) {
-    // Close the stream in both direction by resetting the stream.
-    // TODO(zhongyi): use a different error code to reset streams for
-    // connection migration.
-    stream->Reset(quic::QUIC_STREAM_CANCELLED);
-  }
+    return true;
+  });
 }
 
 void QuicChromiumClientSession::LogMetricsOnNetworkDisconnected() {
@@ -2926,13 +2917,13 @@ base::Value QuicChromiumClientSession::GetInfoAsValue(
   dict.SetString("version", ParsedQuicVersionToString(connection()->version()));
   dict.SetInteger("open_streams", GetNumActiveStreams());
   std::unique_ptr<base::ListValue> stream_list(new base::ListValue());
-  for (StreamMap::const_iterator it = stream_map().begin();
-       it != stream_map().end(); ++it) {
-    if (it->second->is_static()) {
-      continue;
-    }
-    stream_list->AppendString(base::NumberToString(it->second->id()));
-  }
+  auto* stream_list_ptr = stream_list.get();
+
+  PerformActionOnActiveStreams([stream_list_ptr](quic::QuicStream* stream) {
+    stream_list_ptr->AppendString(base::NumberToString(stream->id()));
+    return true;
+  });
+
   dict.Set("active_streams", std::move(stream_list));
 
   dict.SetInteger("total_streams", num_total_streams_);

@@ -7,8 +7,8 @@ import {NativeEventTarget as EventTarget} from 'chrome://resources/js/cr/event_t
 import {loadTimeData} from 'chrome://resources/js/load_time_data.m.js';
 import {PromiseResolver} from 'chrome://resources/js/promise_resolver.m.js';
 
-import {SaveRequestType} from './constants.js';
-import {PartialPoint, Point, Viewport} from './viewport.js';
+import {Point, SaveRequestType} from './constants.js';
+import {PartialPoint, Viewport} from './viewport.js';
 
 /** @typedef {{type: string, messageId: (string|undefined)}} */
 export let MessageData;

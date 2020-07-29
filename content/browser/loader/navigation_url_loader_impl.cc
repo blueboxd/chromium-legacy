@@ -1156,16 +1156,20 @@ NavigationURLLoaderImpl::NavigationURLLoaderImpl(
 
   mojo::PendingRemote<network::mojom::TrustedURLLoaderHeaderClient>
       header_client;
+  // |frame_tree_node| may be null in some unit test environments.
   if (frame_tree_node) {
     // Initialize proxied factory remote/receiver if necessary.
     // This also populates |bypass_redirect_checks_|.
     DCHECK(frame_tree_node->navigation_request());
 
-    // |frame_tree_node| may be null in some unit test environments.
     GetContentClient()
         ->browser()
         ->RegisterNonNetworkNavigationURLLoaderFactories(
-            frame_tree_node_id_, &non_network_url_loader_factories_);
+            frame_tree_node_id_,
+            base::UkmSourceId::FromOtherId(
+                frame_tree_node->navigation_request()->GetNavigationId(),
+                base::UkmSourceId::Type::NAVIGATION_ID),
+            &non_network_url_loader_factories_);
 
     // The embedder may want to proxy all network-bound URLLoaderFactory
     // receivers that it can. If it elects to do so, those proxies will be

@@ -146,17 +146,13 @@ const CGFloat kButtonCornerRadius = 8.0;
       [_titleLabel.trailingAnchor
           constraintEqualToAnchor:stackView.trailingAnchor],
 
-      // Subtitle and button should have additional margins on both sides
+      // Subtitle should have additional margins on both sides
       [_subtitleLabel.leadingAnchor
           constraintEqualToAnchor:stackView.leadingAnchor
                          constant:kItemMargin],
       [_subtitleLabel.trailingAnchor
           constraintEqualToAnchor:stackView.trailingAnchor
                          constant:-kItemMargin],
-      [_button.leadingAnchor constraintEqualToAnchor:stackView.leadingAnchor
-                                            constant:kItemMargin],
-      [_button.trailingAnchor constraintEqualToAnchor:stackView.trailingAnchor
-                                             constant:-kItemMargin],
 
       [stackView.leadingAnchor
           constraintEqualToAnchor:self.contentView.leadingAnchor

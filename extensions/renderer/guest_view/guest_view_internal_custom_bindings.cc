@@ -24,6 +24,7 @@
 #include "extensions/common/guest_view/extensions_guest_view_messages.h"
 #include "extensions/renderer/guest_view/extensions_guest_view_container.h"
 #include "extensions/renderer/script_context.h"
+#include "third_party/blink/public/mojom/frame/user_activation_notification_type.mojom.h"
 #include "third_party/blink/public/web/web_custom_element.h"
 #include "third_party/blink/public/web/web_frame.h"
 #include "third_party/blink/public/web/web_local_frame.h"
@@ -341,8 +342,10 @@ void GuestViewInternalCustomBindings::RunWithGesture(
   // TODO(devlin): All this needs to do is enter fullscreen. We should make this
   // EnterFullscreen() and do it directly rather than having a generic "run with
   // user gesture" function.
-  if (context()->web_frame())
-    context()->web_frame()->NotifyUserActivation();
+  if (context()->web_frame()) {
+    context()->web_frame()->NotifyUserActivation(
+        blink::mojom::UserActivationNotificationType::kExtensionGuestView);
+  }
   CHECK_EQ(args.Length(), 1);
   CHECK(args[0]->IsFunction());
   context()->SafeCallFunction(

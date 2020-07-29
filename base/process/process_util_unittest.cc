@@ -63,7 +63,7 @@
 #if defined(OS_WIN)
 #include <windows.h>
 #endif
-#if defined(OS_MACOSX)
+#if defined(OS_APPLE)
 #include <mach/vm_param.h>
 #include <malloc/malloc.h>
 #endif
@@ -602,7 +602,7 @@ TEST_F(ProcessUtilTest, GetProcId) {
 }
 #endif  // defined(OS_WIN)
 
-#if !defined(OS_MACOSX) && !defined(OS_ANDROID)
+#if !defined(OS_APPLE) && !defined(OS_ANDROID)
 // This test is disabled on Mac, since it's flaky due to ReportCrash
 // taking a variable amount of time to parse and load the debug and
 // symbol data for this unit test's executable before firing the
@@ -669,7 +669,7 @@ TEST_F(ProcessUtilTest, MAYBE_GetTerminationStatusCrash) {
   debug::EnableInProcessStackDumping();
   remove(signal_file.c_str());
 }
-#endif  // !defined(OS_MACOSX) && !defined(OS_ANDROID)
+#endif  // !defined(OS_APPLE) && !defined(OS_ANDROID)
 
 MULTIPROCESS_TEST_MAIN(KilledChildProcess) {
   WaitToDie(ProcessUtilTest::GetSignalFilePath(kSignalFileKill).c_str());
@@ -949,7 +949,7 @@ int GetMaxFilesOpenInProcess() {
 
 const int kChildPipe = 20;  // FD # for write end of pipe in child process.
 
-#if defined(OS_MACOSX)
+#if defined(OS_APPLE)
 
 // <http://opensource.apple.com/source/xnu/xnu-2422.1.72/bsd/sys/guarded.h>
 #if !defined(_GUARDID_T)
@@ -1009,7 +1009,7 @@ bool CanGuardFd(int fd) {
 
   return true;
 }
-#endif  // defined(OS_MACOSX)
+#endif  // defined(OS_APPLE)
 
 }  // namespace
 
@@ -1020,7 +1020,7 @@ MULTIPROCESS_TEST_MAIN(ProcessUtilsLeakFDChildProcess) {
   int write_pipe = kChildPipe;
   int max_files = GetMaxFilesOpenInProcess();
   for (int i = STDERR_FILENO + 1; i < max_files; i++) {
-#if defined(OS_MACOSX)
+#if defined(OS_APPLE)
     // Ignore guarded or invalid file descriptors.
     if (!CanGuardFd(i))
       continue;
@@ -1236,7 +1236,7 @@ TEST_F(ProcessUtilTest, GetParentProcessId) {
 }
 #endif  // !defined(OS_FUCHSIA)
 
-#if !defined(OS_ANDROID) && !defined(OS_FUCHSIA) && !defined(OS_MACOSX)
+#if !defined(OS_ANDROID) && !defined(OS_FUCHSIA) && !defined(OS_APPLE)
 class WriteToPipeDelegate : public LaunchOptions::PreExecDelegate {
  public:
   explicit WriteToPipeDelegate(int fd) : fd_(fd) {}

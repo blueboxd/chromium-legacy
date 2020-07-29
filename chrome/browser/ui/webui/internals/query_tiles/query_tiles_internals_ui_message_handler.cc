@@ -19,9 +19,7 @@
 QueryTilesInternalsUIMessageHandler::QueryTilesInternalsUIMessageHandler(
     Profile* profile)
     : tile_service_(query_tiles::TileServiceFactory::GetForKey(
-          profile->GetProfileKey())) {
-  DCHECK(tile_service_);
-}
+          profile->GetProfileKey())) {}
 
 QueryTilesInternalsUIMessageHandler::~QueryTilesInternalsUIMessageHandler() =
     default;
@@ -54,6 +52,8 @@ void QueryTilesInternalsUIMessageHandler::RegisterMessages() {
 
 void QueryTilesInternalsUIMessageHandler::HandleGetTileData(
     const base::ListValue* args) {
+  if (!tile_service_)
+    return;
   AllowJavascript();
   const base::Value* callback_id;
   auto result = args->Get(0, &callback_id);
@@ -64,6 +64,8 @@ void QueryTilesInternalsUIMessageHandler::HandleGetTileData(
 
 void QueryTilesInternalsUIMessageHandler::HandleGetServiceStatus(
     const base::ListValue* args) {
+  if (!tile_service_)
+    return;
   AllowJavascript();
   const base::Value* callback_id;
   auto result = args->Get(0, &callback_id);
@@ -74,6 +76,8 @@ void QueryTilesInternalsUIMessageHandler::HandleGetServiceStatus(
 
 void QueryTilesInternalsUIMessageHandler::HandleStartFetch(
     const base::ListValue* args) {
+  if (!tile_service_)
+    return;
   AllowJavascript();
   tile_service_->StartFetchForTiles(false /*is_from_reduce_mode*/,
                                     base::BindOnce([](bool reschedule) {}));
@@ -81,11 +85,14 @@ void QueryTilesInternalsUIMessageHandler::HandleStartFetch(
 
 void QueryTilesInternalsUIMessageHandler::HandlePurgeDb(
     const base::ListValue* args) {
-  tile_service_->PurgeDb();
+  if (tile_service_)
+    tile_service_->PurgeDb();
 }
 
 void QueryTilesInternalsUIMessageHandler::HandleSetServerUrl(
     const base::ListValue* args) {
+  if (!tile_service_)
+    return;
   AllowJavascript();
   DCHECK_EQ(args->GetList().size(), 1u) << "Missing argument server URL.";
   tile_service_->SetServerUrl(args->GetList()[0].GetString());
@@ -102,7 +109,8 @@ void QueryTilesInternalsUIMessageHandler::OnTileDataAvailable(
 }
 
 void QueryTilesInternalsUIMessageHandler::OnJavascriptAllowed() {
-  logger_observer_.Add(tile_service_->GetLogger());
+  if (tile_service_)
+    logger_observer_.Add(tile_service_->GetLogger());
 }
 
 void QueryTilesInternalsUIMessageHandler::OnJavascriptDisallowed() {

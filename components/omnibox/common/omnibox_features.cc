@@ -303,7 +303,7 @@ const base::Feature kOmniboxExperimentalSuggestScoring{
 // match a suggestion titled 'javascript' and score equivalently.
 const base::Feature kHistoryQuickProviderAllowButDoNotScoreMidwordTerms{
     "OmniboxHistoryQuickProviderAllowButDoNotScoreMidwordTerms",
-    enabled_by_default_desktop_only};
+    base::FEATURE_ENABLED_BY_DEFAULT};
 
 // If disabled, midword matches are ignored except in the URL host, and input
 // terms with no wordstart matches are scored 0, resulting in an overall score
@@ -312,7 +312,7 @@ const base::Feature kHistoryQuickProviderAllowButDoNotScoreMidwordTerms{
 // suggestion titled 'javascript' but the input 'java cript' won't.
 const base::Feature kHistoryQuickProviderAllowMidwordContinuations{
     "OmniboxHistoryQuickProviderAllowMidwordContinuations",
-    enabled_by_default_desktop_only};
+    base::FEATURE_ENABLED_BY_DEFAULT};
 
 // If enabled, shows slightly more compact suggestions, allowing the
 // kAdaptiveSuggestionsCount feature to fit more suggestions on screen.

@@ -26,9 +26,8 @@ int TestImmediateCrashTreatedAsNoReturn() {
 }
 
 // iOS is excluded, since it doesn't support loading shared libraries.
-#if defined(OS_WIN) || (defined(OS_MACOSX) && !defined(OS_IOS)) ||      \
-    defined(OS_LINUX) || defined(OS_ANDROID) || defined(OS_CHROMEOS) || \
-    defined(OS_FUCHSIA)
+#if defined(OS_WIN) || defined(OS_MAC) || defined(OS_LINUX) || \
+    defined(OS_ANDROID) || defined(OS_CHROMEOS) || defined(OS_FUCHSIA)
 
 // Checks that the IMMEDIATE_CRASH() macro produces specific instructions; see
 // comments in immediate_crash.h for the requirements.

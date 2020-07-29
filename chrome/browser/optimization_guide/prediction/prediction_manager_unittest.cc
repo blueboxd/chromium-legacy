@@ -404,7 +404,7 @@ class PredictionManagerTest
 
   void SetUp() override {
     optimization_guide::ProtoDatabaseProviderTestBase::SetUp();
-    web_contents_factory_.reset(new content::TestWebContentsFactory);
+    web_contents_factory_ = std::make_unique<content::TestWebContentsFactory>();
 
     top_host_provider_ = std::make_unique<FakeTopHostProvider>(
         std::vector<std::string>({"example1.com", "example2.com"}));
@@ -713,7 +713,9 @@ TEST_F(PredictionManagerTest, UpdatePredictionModelsWithInvalidModel) {
   histogram_tester.ExpectTotalCount(
       "OptimizationGuide.PredictionModelValidationLatency", 0);
   histogram_tester.ExpectTotalCount(
-      "OptimizationGuide.PredictionModelUpdateVersion.PainfulPageLoad", 0);
+      "OptimizationGuide.PredictionModelUpdateVersion.PainfulPageLoad", 1);
+  histogram_tester.ExpectTotalCount(
+      "OptimizationGuide.PredictionModelLoadedVersion.PainfulPageLoad", 0);
 }
 
 TEST_F(PredictionManagerTest, UpdateModelWithSameVersion) {
@@ -1118,9 +1120,11 @@ TEST_F(PredictionManagerTest, UpdateModelForUnregisteredTarget) {
               proto::OPTIMIZATION_TARGET_PAINFUL_PAGE_LOAD));
   EXPECT_FALSE(test_prediction_model);
   histogram_tester.ExpectTotalCount(
-      "OptimizationGuide.PredictionManager.PredictionModelsStored", 0);
+      "OptimizationGuide.PredictionManager.PredictionModelsStored", 1);
   histogram_tester.ExpectTotalCount(
       "OptimizationGuide.PredictionManager.HostModelFeaturesStored", 0);
+  histogram_tester.ExpectTotalCount(
+      "OptimizationGuide.PredictionModelLoadedVersion.PainfulPageLoad", 0);
 }
 
 TEST_F(

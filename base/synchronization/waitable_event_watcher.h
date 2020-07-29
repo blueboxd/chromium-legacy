@@ -13,7 +13,7 @@
 #if defined(OS_WIN)
 #include "base/win/object_watcher.h"
 #include "base/win/scoped_handle.h"
-#elif defined(OS_MACOSX)
+#elif defined(OS_APPLE)
 #include <dispatch/dispatch.h>
 
 #include "base/mac/scoped_dispatch_object.h"
@@ -115,7 +115,7 @@ class BASE_EXPORT WaitableEventWatcher
 
   EventCallback callback_;
   WaitableEvent* event_ = nullptr;
-#elif defined(OS_MACOSX)
+#elif defined(OS_APPLE)
   // Invokes the callback and resets the source. Must be called on the task
   // runner on which StartWatching() was called.
   void InvokeCallback();

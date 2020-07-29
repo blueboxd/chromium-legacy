@@ -14,7 +14,7 @@
 #include "base/message_loop/message_pump_win.h"
 #elif defined(OS_ANDROID)
 #include "base/message_loop/message_pump_android.h"
-#elif defined(OS_MACOSX)
+#elif defined(OS_APPLE)
 #include "base/message_loop/message_pump.h"
 #elif defined(OS_NACL) || defined(OS_AIX)
 // No MessagePumpForUI, see below.
@@ -34,7 +34,7 @@ using MessagePumpForUI = MessagePumpForUI;
 #elif defined(OS_ANDROID)
 // Android defines it as-is.
 using MessagePumpForUI = MessagePumpForUI;
-#elif defined(OS_MACOSX)
+#elif defined(OS_APPLE)
 // MessagePumpForUI isn't bound to a specific impl on Mac. While each impl can
 // be represented by a plain MessagePump: MessagePumpMac::Create() must be used
 // to instantiate the right impl.

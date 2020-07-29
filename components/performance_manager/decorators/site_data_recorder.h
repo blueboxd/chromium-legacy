@@ -33,6 +33,7 @@ class SiteDataRecorder : public GraphOwned,
 
   // PageNode::ObserverDefaultImpl:
   void OnPageNodeAdded(const PageNode* page_node) override;
+  void OnBeforePageNodeRemoved(const PageNode* page_node) override;
   void OnMainFrameUrlChanged(const PageNode* page_node) override;
   void OnIsLoadingChanged(const PageNode* page_node) override;
   void OnIsVisibleChanged(const PageNode* page_node) override;

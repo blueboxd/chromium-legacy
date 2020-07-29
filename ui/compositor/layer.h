@@ -509,6 +509,10 @@ class COMPOSITOR_EXPORT Layer : public LayerAnimationDelegate,
 
   bool ContainsMirrorForTest(Layer* mirror) const;
 
+  void SetCompositorForTesting(Compositor* compositor) {
+    compositor_ = compositor;
+  }
+
  private:
   friend class LayerOwner;
   class LayerMirror;

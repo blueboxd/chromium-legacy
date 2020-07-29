@@ -585,12 +585,13 @@ void FrameTreeNode::BeforeUnloadCanceled() {
     ResetNavigationRequest(false);
 }
 
-bool FrameTreeNode::NotifyUserActivation() {
+bool FrameTreeNode::NotifyUserActivation(
+    blink::mojom::UserActivationNotificationType notification_type) {
   for (RenderFrameHostImpl* rfh = current_frame_host(); rfh;
        rfh = rfh->GetParent()) {
     if (!rfh->frame_tree_node()->user_activation_state_.HasBeenActive())
       rfh->DidReceiveFirstUserActivation();
-    rfh->frame_tree_node()->user_activation_state_.Activate();
+    rfh->frame_tree_node()->user_activation_state_.Activate(notification_type);
   }
   replication_state_.has_active_user_gesture = true;
 
@@ -603,7 +604,7 @@ bool FrameTreeNode::NotifyUserActivation() {
     for (FrameTreeNode* node : frame_tree()->Nodes()) {
       if (node->current_frame_host()->GetLastCommittedOrigin().IsSameOriginWith(
               current_origin)) {
-        node->user_activation_state_.Activate();
+        node->user_activation_state_.Activate(notification_type);
       }
     }
   }
@@ -650,12 +651,14 @@ bool FrameTreeNode::UpdateUserActivationState(
       update_result = ConsumeTransientUserActivation();
       break;
     case blink::mojom::UserActivationUpdateType::kNotifyActivation:
-      update_result = NotifyUserActivation();
+      update_result = NotifyUserActivation(
+          blink::mojom::UserActivationNotificationType::kNone);
       break;
     case blink::mojom::UserActivationUpdateType::
         kNotifyActivationPendingBrowserVerification:
       if (VerifyUserActivation()) {
-        update_result = NotifyUserActivation();
+        update_result = NotifyUserActivation(
+            blink::mojom::UserActivationNotificationType::kNone);
         update_type = blink::mojom::UserActivationUpdateType::kNotifyActivation;
       } else {
         // TODO(crbug.com/848778): We need to decide what to do when user

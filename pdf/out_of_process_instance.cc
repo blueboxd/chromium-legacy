@@ -33,6 +33,7 @@
 #include "pdf/pdf_features.h"
 #include "pdf/ppapi_migration/bitmap.h"
 #include "pdf/ppapi_migration/geometry_conversions.h"
+#include "pdf/ppapi_migration/graphics.h"
 #include "ppapi/c/dev/ppb_cursor_control_dev.h"
 #include "ppapi/c/pp_errors.h"
 #include "ppapi/c/private/ppb_pdf.h"
@@ -974,13 +975,15 @@ void OutOfProcessInstance::StopFind() {
   SetTickmarks(tickmarks_);
 }
 
-pp::Graphics2D OutOfProcessInstance::CreatePaintGraphics(
+std::unique_ptr<Graphics> OutOfProcessInstance::CreatePaintGraphics(
     const gfx::Size& size) {
-  return pp::Graphics2D(this, PPSizeFromSize(size), /*is_always_opaque=*/true);
+  auto graphics = std::make_unique<PepperGraphics>(this, size);
+  DCHECK(!graphics->pepper_graphics().is_null());
+  return graphics;
 }
 
-bool OutOfProcessInstance::BindPaintGraphics(pp::Graphics2D& graphics) {
-  return BindGraphics(graphics);
+bool OutOfProcessInstance::BindPaintGraphics(Graphics& graphics) {
+  return BindGraphics(static_cast<PepperGraphics&>(graphics).pepper_graphics());
 }
 
 void OutOfProcessInstance::OnPaint(const std::vector<gfx::Rect>& paint_rects,

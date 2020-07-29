@@ -24,7 +24,7 @@
 #include "base/os_compat_nacl.h"
 #endif
 
-#if defined(OS_MACOSX) || defined(OS_IOS)
+#if defined(OS_APPLE)
 static_assert(sizeof(time_t) >= 8, "Y2038 problem!");
 #endif
 

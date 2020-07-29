@@ -118,9 +118,9 @@ class KeyboardRootNode extends RootNodeWrapper {
   static startWatchingVisibility() {
     const keyboardObject = KeyboardRootNode.getKeyboardObject();
     if (!keyboardObject) {
-      const isKeyboard = (n) => n.role === chrome.automation.RoleType.KEYBOARD;
-      SwitchAccess.findNodeMatchingPredicate(
-          isKeyboard, KeyboardRootNode.startWatchingVisibility);
+      SwitchAccess.findNodeMatching(
+          {role: chrome.automation.RoleType.KEYBOARD},
+          KeyboardRootNode.startWatchingVisibility);
       return;
     }
 

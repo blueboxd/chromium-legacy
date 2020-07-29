@@ -1,0 +1,75 @@
+# Copyright 2020 The Chromium Authors. All rights reserved.
+# Use of this source code is governed by a BSD-style license that can be
+# found in the LICENSE file.
+
+import("//third_party/closure_compiler/compile_js.gni")
+import("//tools/polymer/polymer.gni")
+import("//ui/webui/resources/tools/js_modulizer.gni")
+
+js_type_check("closure_compile") {
+  deps = [
+    ":nearby_onboarding_page",
+    ":nearby_share_settings",
+  ]
+}
+
+js_library("nearby_onboarding_page") {
+  deps = [ ":nearby_share_settings" ]
+}
+
+js_library("nearby_share_settings") {
+  deps = [
+    "//chrome/browser/ui/webui/nearby_share/public/mojom:mojom_js_library_for_compile",
+    "//ui/webui/resources/js:cr",
+  ]
+}
+
+js_type_check("closure_compile_module") {
+  is_polymer3 = true
+  deps = [
+    ":nearby_onboarding_page.m",
+    ":nearby_share_settings.m",
+  ]
+}
+
+group("polymer3_elements") {
+  public_deps = [
+    ":modulize",
+    ":nearby_onboarding_page_module",
+    "//chrome/browser/ui/webui/nearby_share/public/mojom:mojom_js",
+  ]
+}
+
+js_library("nearby_onboarding_page.m") {
+  sources = [ "$root_gen_dir/chrome/browser/resources/nearby_share/shared/nearby_onboarding_page.m.js" ]
+  deps = [
+    ":nearby_share_settings.m",
+    "//third_party/polymer/v3_0/components-chromium/polymer:polymer_bundled",
+  ]
+  extra_deps = [ ":nearby_onboarding_page_module" ]
+}
+
+js_library("nearby_share_settings.m") {
+  sources = [ "$root_gen_dir/chrome/browser/resources/nearby_share/shared/nearby_share_settings.m.js" ]
+  deps = [
+    "//chrome/browser/ui/webui/nearby_share/public/mojom:mojom_js_library_for_compile",
+    "//ui/webui/resources/js:cr.m",
+  ]
+  extra_deps = [ ":modulize" ]
+}
+
+polymer_modulizer("nearby_onboarding_page") {
+  js_file = "nearby_onboarding_page.js"
+  html_file = "nearby_onboarding_page.html"
+  html_type = "dom-module"
+  auto_imports = [ "chrome/browser/resources/nearby_share/shared/nearby_share_settings.html|setNearbyShareSettingsForTesting,getNearbyShareSettings,observeNearbyShareSettings" ]
+  namespace_rewrites = [
+    "nearby_share.setNearbyShareSettingsForTesting|setNearbyShareSettingsForTesting",
+    "nearby_share.getNearbyShareSettings|getNearbyShareSettings",
+    "nearby_share.observeNearbyShareSettings|observeNearbyShareSettings",
+  ]
+}
+
+js_modulizer("modulize") {
+  input_files = [ "nearby_share_settings.js" ]
+}

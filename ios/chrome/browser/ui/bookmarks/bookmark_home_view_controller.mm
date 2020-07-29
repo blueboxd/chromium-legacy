@@ -52,12 +52,15 @@
 #import "ios/chrome/browser/ui/commands/command_dispatcher.h"
 #import "ios/chrome/browser/ui/keyboard/UIKeyCommand+Chrome.h"
 #import "ios/chrome/browser/ui/material_components/utils.h"
+#import "ios/chrome/browser/ui/menu/action_factory.h"
+#import "ios/chrome/browser/ui/menu/menu_histograms.h"
 #import "ios/chrome/browser/ui/table_view/cells/table_view_url_item.h"
 #import "ios/chrome/browser/ui/table_view/chrome_table_view_styler.h"
 #import "ios/chrome/browser/ui/table_view/table_view_illustrated_empty_view.h"
 #import "ios/chrome/browser/ui/table_view/table_view_model.h"
 #import "ios/chrome/browser/ui/table_view/table_view_navigation_controller_constants.h"
 #import "ios/chrome/browser/ui/ui_feature_flags.h"
+#import "ios/chrome/browser/ui/util/menu_util.h"
 #import "ios/chrome/browser/ui/util/multi_window_support.h"
 #import "ios/chrome/browser/ui/util/rtl_geometry.h"
 #import "ios/chrome/browser/ui/util/ui_util.h"
@@ -500,13 +503,15 @@ std::vector<GURL> GetUrlsToOpen(const std::vector<const BookmarkNode*>& nodes) {
   self.tableView.sectionFooterHeight = 1;
   self.sharedState.tableView.allowsMultipleSelectionDuringEditing = YES;
 
-  UILongPressGestureRecognizer* longPressRecognizer =
-      [[UILongPressGestureRecognizer alloc]
-          initWithTarget:self
-                  action:@selector(handleLongPress:)];
-  longPressRecognizer.numberOfTouchesRequired = 1;
-  longPressRecognizer.delegate = self;
-  [self.sharedState.tableView addGestureRecognizer:longPressRecognizer];
+  if (!IsNativeContextMenuEnabled()) {
+    UILongPressGestureRecognizer* longPressRecognizer =
+        [[UILongPressGestureRecognizer alloc]
+            initWithTarget:self
+                    action:@selector(handleLongPress:)];
+    longPressRecognizer.numberOfTouchesRequired = 1;
+    longPressRecognizer.delegate = self;
+    [self.sharedState.tableView addGestureRecognizer:longPressRecognizer];
+  }
 
   // Create the mediator and hook up the table view.
   self.mediator =
@@ -1870,18 +1875,12 @@ std::vector<GURL> GetUrlsToOpen(const std::vector<const BookmarkNode*>& nodes) {
       [gestureRecognizer locationInView:self.sharedState.tableView];
   NSIndexPath* indexPath =
       [self.sharedState.tableView indexPathForRowAtPoint:touchPoint];
-  if (indexPath == nil || [self.sharedState.tableViewModel
-                              sectionIdentifierForSection:indexPath.section] !=
-                              BookmarkHomeSectionIdentifierBookmarks) {
+
+  if (![self canShowContextMenuFor:indexPath]) {
     return;
   }
 
   const BookmarkNode* node = [self nodeAtIndexPath:indexPath];
-  // Disable the long press gesture if it is a permanent node, which includes
-  // Bookmarks Bar, Mobile Bookmarks, Other Bookmarks, and Managed Bookmarks.
-  // Permanent nodes do not include descendants of Managed Bookmarks.
-  if (!node || node->is_permanent_node())
-    return;
 
   self.actionSheetCoordinator = [[ActionSheetCoordinator alloc]
       initWithBaseViewController:self
@@ -1903,6 +1902,22 @@ std::vector<GURL> GetUrlsToOpen(const std::vector<const BookmarkNode*>& nodes) {
   }
 
   [self.actionSheetCoordinator start];
+}
+
+- (BOOL)canShowContextMenuFor:(NSIndexPath*)indexPath {
+  if (indexPath == nil || [self.sharedState.tableViewModel
+                              sectionIdentifierForSection:indexPath.section] !=
+                              BookmarkHomeSectionIdentifierBookmarks) {
+    return NO;
+  }
+
+  const BookmarkNode* node = [self nodeAtIndexPath:indexPath];
+  // Don't show context menus for permanent nodes, which include Bookmarks Bar,
+  // Mobile Bookmarks, Other Bookmarks, and Managed Bookmarks. Permanent nodes
+  // do not include descendants of Managed Bookmarks. Also, context menus are
+  // only supported on URLs or folders.
+  return node && !node->is_permanent_node() &&
+         (node->is_url() || node->is_folder());
 }
 
 #pragma mark UISearchResultsUpdating
@@ -2144,6 +2159,44 @@ std::vector<GURL> GetUrlsToOpen(const std::vector<const BookmarkNode*>& nodes) {
     self.sharedState.editNodes.erase(node);
     [self handleSelectEditNodes:self.sharedState.editNodes];
   }
+}
+
+- (UIContextMenuConfiguration*)tableView:(UITableView*)tableView
+    contextMenuConfigurationForRowAtIndexPath:(NSIndexPath*)indexPath
+                                        point:(CGPoint)point
+    API_AVAILABLE(ios(13.0)) {
+  if (!IsNativeContextMenuEnabled()) {
+    // Returning nil will allow the gesture to be captured and show the old
+    // context menus.
+    return nil;
+  }
+
+  if (![self canShowContextMenuFor:indexPath]) {
+    return nil;
+  }
+
+  const BookmarkNode* node = [self nodeAtIndexPath:indexPath];
+  UIContextMenuActionProvider actionProvider;
+
+  // TODO (crbug.com/1093302): Add more actions for Bookmark URL and Folder.
+  if (node->is_url()) {
+    actionProvider = ^(NSArray<UIMenuElement*>* suggestedActions) {
+      // Record that this context menu was shown to the user.
+      RecordMenuShown(MenuScenario::BookmarkEntry);
+
+      ActionFactory* actionFactory =
+          [[ActionFactory alloc] initWithScenario:MenuScenario::BookmarkEntry];
+
+      UIAction* copyAction = [actionFactory actionToCopyURL:node->url()];
+
+      return [UIMenu menuWithTitle:[NSString string] children:@[ copyAction ]];
+    };
+  }
+
+  return
+      [UIContextMenuConfiguration configurationWithIdentifier:nil
+                                              previewProvider:nil
+                                               actionProvider:actionProvider];
 }
 
 #pragma mark UIAdaptivePresentationControllerDelegate

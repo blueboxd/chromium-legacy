@@ -10,11 +10,11 @@
 #include <memory>
 
 #include "base/memory/weak_ptr.h"
+#include "base/time/clock.h"
 
 namespace notifications {
 struct ClientOverview;
 class NotificationScheduleService;
-struct ScheduleParams;
 }  // namespace notifications
 
 namespace updates {
@@ -28,35 +28,43 @@ class UpdateNotificationServiceImpl : public UpdateNotificationService {
   UpdateNotificationServiceImpl(
       notifications::NotificationScheduleService* schedule_service,
       std::unique_ptr<UpdateNotificationConfig> config,
-      std::unique_ptr<UpdateNotificationServiceBridge> bridge);
+      std::unique_ptr<UpdateNotificationServiceBridge> bridge,
+      base::Clock* clock);
   ~UpdateNotificationServiceImpl() override;
 
  private:
   // UpdateNotificationService implementation.
   void Schedule(UpdateNotificationInfo data) override;
-  bool IsReadyToDisplay() const override;
-  void OnUserDismiss() override;
   void OnUserClick(const ExtraData& extra) override;
-  void OnUserClickButton(bool is_positive_button) override;
+  void GetThrottleConfig(ThrottleConfigCallback callback) override;
+  void BeforeShowNotification(
+      std::unique_ptr<notifications::NotificationData> notification_data,
+      NotificationDataCallback callback) override;
 
-  // Called after querying the |ClientOverview| struct from scheduler system
-  // completed.
-  void OnClientOverviewQueried(UpdateNotificationInfo data,
-                               notifications::ClientOverview overview);
+  // Calculates the params of throttle config depends on |client_overview|, and
+  // reply to the |callback|. suppresion duration length starts with
+  // |init_interval| read from config, and the increase is proportional to
+  // the number of suppression events, until reach the |max_interva|l in config.
+  void DetermineThrottleConfig(ThrottleConfigCallback callback,
+                               notifications::ClientOverview client_overview);
 
-  // Build notification ScheduleParams for update notification.
-  notifications::ScheduleParams BuildScheduleParams(
-      bool should_show_immediately);
+  // Called before displaying the notification, and will reply nullptr to
+  // callback if it's not the right time to show this upcoming notification.
+  void MaybeShowNotification(
+      std::unique_ptr<notifications::NotificationData> notification_data,
+      NotificationDataCallback callback,
+      notifications::ClientOverview client_overview);
 
-  // Return throttle interval from Android shared preference if exists,
-  // otherwise return the default interval from config.
-  base::TimeDelta GetThrottleInterval() const;
+  // Return true if |current timestamp - last notification shown timestamp| is
+  // smailler than interval, which is based on the config and number of throttle
+  // events read from |client_overview|.
+  bool TooSoonForNextNotification(
+      const notifications::ClientOverview& client_overview);
 
-  // Apply linear throttle logic.
-  void ApplyLinearThrottle();
-
-  // Apply negative action including dismiss and unhelpful button.
-  void ApplyNegativeAction();
+  // Called before using notification schedule service to actually schedule.
+  // Will not schedule if already has too many notifications cached.
+  void ScheduleInternal(UpdateNotificationInfo data,
+                        notifications::ClientOverview client_overview);
 
   // Used to schedule notification to show in the future. Must outlive this
   // class.
@@ -66,9 +74,9 @@ class UpdateNotificationServiceImpl : public UpdateNotificationService {
 
   std::unique_ptr<UpdateNotificationServiceBridge> bridge_;
 
-  base::WeakPtrFactory<UpdateNotificationServiceImpl> weak_ptr_factory_{this};
+  base::Clock* clock_;
 
-  DISALLOW_COPY_AND_ASSIGN(UpdateNotificationServiceImpl);
+  base::WeakPtrFactory<UpdateNotificationServiceImpl> weak_ptr_factory_{this};
 };
 
 }  // namespace updates

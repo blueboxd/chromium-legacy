@@ -3127,6 +3127,7 @@ class NavigationUrlRewriteBrowserTest : public NavigationBaseBrowserTest {
 
     void RegisterNonNetworkNavigationURLLoaderFactories(
         int frame_tree_node_id,
+        base::UkmSourceId ukm_source_id,
         NonNetworkURLLoaderFactoryMap* factories) override {
       auto url_loader_factory = std::make_unique<FakeNetworkURLLoaderFactory>(
           "HTTP/1.1 200 OK\nContent-Type: text/html\n\n", "This is a test",

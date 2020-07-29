@@ -102,17 +102,6 @@ class MenuManager {
     MenuManager.instance.refreshActions_();
   }
 
-  /**
-   * Checks if the given node is the Switch Access menu node.
-   * @param {AutomationNode} node
-   * @return {boolean}
-   * @private
-   */
-  static isSwitchAccessMenuNode_(node) {
-    return !!node && node.role === chrome.automation.RoleType.MENU &&
-        node.htmlAttributes.id === 'switch_access_menu_view';
-  }
-
   // ================= Private Methods ==================
 
   /**
@@ -165,8 +154,11 @@ class MenuManager {
     if (this.hasValidMenuAutomationNode_() && this.menuAutomationNode_) {
       this.jumpToMenuAutomationNode_(this.menuAutomationNode_);
     }
-    SwitchAccess.findNodeMatchingPredicate(
-        MenuManager.isSwitchAccessMenuNode_,
+    SwitchAccess.findNodeMatching(
+        {
+          role: chrome.automation.RoleType.MENU,
+          attributes: {className: 'SwitchAccessMenuView'}
+        },
         this.jumpToMenuAutomationNode_.bind(this));
   }
 

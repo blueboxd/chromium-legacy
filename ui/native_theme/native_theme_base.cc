@@ -1659,6 +1659,7 @@ SkColor NativeThemeBase::GetDarkModeControlColor(
     case kProgressValue:
       return SkColorSetRGB(0x63, 0xAD, 0xE5);
     case kFill:
+      return SkColorSetRGB(0x6B, 0x6B, 0x6B);
     case kLightenLayer:
     case kAutoCompleteBackground:
     case kBackground:
@@ -1682,11 +1683,11 @@ SkColor NativeThemeBase::GetDarkModeControlColor(
     case kDisabledBorder:
       return SkColorSetRGB(0x62, 0x62, 0x62);
     case kHoveredFill:
-      return SkColorSetRGB(0x54, 0x54, 0x54);
+      return SkColorSetRGB(0x7B, 0x7B, 0x7B);
     case kPressedFill:
-      return SkColorSetRGB(0x45, 0x45, 0x45);
+      return SkColorSetRGB(0x61, 0x61, 0x61);
     case kDisabledFill:
-      return SkColorSetARGB(0x4D, 0x3B, 0x3B, 0x3B);
+      return SkColorSetRGB(0x5B, 0x5B, 0x5B);
     case kScrollbarArrowBackground:
       return SkColorSetRGB(0x42, 0x42, 0x42);
     case kScrollbarArrowBackgroundHovered:

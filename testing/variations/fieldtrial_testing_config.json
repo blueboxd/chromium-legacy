@@ -2297,8 +2297,7 @@
                 {
                     "name": "DnsHttpssvcStudy",
                     "params": {
-                        "HttpssvcQueryHttpssvc": "false",
-                        "HttpssvcQueryIntegrity": "true"
+                        "DnsHttpssvcUseIntegrity": "true"
                     },
                     "enable_features": [
                         "DnsHttpssvc"
@@ -2605,6 +2604,24 @@
             "experiments": [
                 {
                     "name": "Enabled"
+                }
+            ]
+        }
+    ],
+    "EnableNewBadgeOnMenuItems": [
+        {
+            "platforms": [
+                "chromeos",
+                "linux",
+                "mac",
+                "windows"
+            ],
+            "experiments": [
+                {
+                    "name": "Enabled",
+                    "enable_features": [
+                        "EnableNewBadgeOnMenuItems"
+                    ]
                 }
             ]
         }
@@ -4684,8 +4701,6 @@
                         "NtpRealbox",
                         "OmniboxDisplayTitleForCurrentUrl",
                         "OmniboxDocumentProvider",
-                        "OmniboxHistoryQuickProviderAllowButDoNotScoreMidwordTerms",
-                        "OmniboxHistoryQuickProviderAllowMidwordContinuations",
                         "OmniboxMaxURLMatches",
                         "OmniboxOnFocusSuggestions",
                         "OmniboxRemoveSuggestionsFromClipboard",
@@ -4712,8 +4727,6 @@
                         "rounded_edges": "true"
                     },
                     "enable_features": [
-                        "OmniboxHistoryQuickProviderAllowButDoNotScoreMidwordTerms",
-                        "OmniboxHistoryQuickProviderAllowMidwordContinuations",
                         "OmniboxOnFocusSuggestions"
                     ]
                 }
@@ -4733,8 +4746,6 @@
                     },
                     "enable_features": [
                         "OmniboxDisableInstantExtendedLimit",
-                        "OmniboxHistoryQuickProviderAllowButDoNotScoreMidwordTerms",
-                        "OmniboxHistoryQuickProviderAllowMidwordContinuations",
                         "OmniboxOnFocusSuggestions"
                     ]
                 }

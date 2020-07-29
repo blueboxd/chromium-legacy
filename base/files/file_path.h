@@ -427,7 +427,7 @@ class BASE_EXPORT FilePath {
     return CompareIgnoreCase(string1, string2) < 0;
   }
 
-#if defined(OS_MACOSX)
+#if defined(OS_APPLE)
   // Returns the string in the special canonical decomposed form as defined for
   // HFS, which is close to, but not quite, decomposition form D. See
   // http://developer.apple.com/mac/library/technotes/tn/tn1150.html#UnicodeSubtleties

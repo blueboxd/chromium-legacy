@@ -22,7 +22,7 @@
 #include "base/trace_event/heap_profiler_allocation_context_tracker.h"  // no-presubmit-check
 #include "build/build_config.h"
 
-#if defined(OS_MACOSX)
+#if defined(OS_APPLE)
 #include <pthread.h>
 #endif
 
@@ -62,7 +62,7 @@ const char* GetAndLeakThreadName() {
   int err = prctl(PR_GET_NAME, name);
   if (!err)
     return strdup(name);
-#elif defined(OS_MACOSX)
+#elif defined(OS_APPLE)
   int err = pthread_getname_np(pthread_self(), name, kBufferLen);
   if (err == 0 && *name != '\0')
     return strdup(name);

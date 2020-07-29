@@ -26,17 +26,12 @@ class SiteDataCache {
       const url::Origin& origin) = 0;
 
   // Returns a SiteDataWriter for the given origin.
-  //
-  // |tab_visibility| indicates the current visibility of the tab. The writer
-  // starts in an unloaded state, NotifyTabLoaded() must be called explicitly
-  // afterwards if the site is loaded.
   virtual std::unique_ptr<SiteDataWriter> GetWriterForOrigin(
-      const url::Origin& origin,
-      performance_manager::TabVisibility tab_visibility) = 0;
+      const url::Origin& origin) = 0;
 
-  // Indicate if the SiteDataWriter served by this data cache
-  // actually persist information.
-  virtual bool IsRecordingForTesting() const = 0;
+  // Indicate if the SiteDataWriter served by this data cache actually persists
+  // information.
+  virtual bool IsRecording() const = 0;
 
   // Returns the number of element in the cache.
   virtual int Size() const = 0;

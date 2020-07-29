@@ -15,7 +15,7 @@
 
 #if defined(OS_WIN)
 #include <windows.h>
-#elif defined(OS_MACOSX)
+#elif defined(OS_APPLE)
 #include <mach/machine/thread_status.h>
 #elif defined(OS_ANDROID) || defined(OS_LINUX)
 #include <sys/ucontext.h>
@@ -69,7 +69,7 @@ inline uintptr_t& RegisterContextInstructionPointer(::CONTEXT* context) {
 #endif
 }
 
-#elif defined(OS_MACOSX) && !defined(OS_IOS)  // #if defined(OS_WIN)
+#elif defined(OS_MAC)  // #if defined(OS_WIN)
 
 #if defined(ARCH_CPU_X86_64)
 using RegisterContext = x86_thread_state64_t;

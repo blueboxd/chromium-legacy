@@ -95,7 +95,6 @@ class BLINK_COMMON_EXPORT UserActivationState {
   //
   // The |notification_type| parameter is used for histograms only.
   void Activate(mojom::UserActivationNotificationType notification_type);
-  void Activate();
 
   void Clear();
 

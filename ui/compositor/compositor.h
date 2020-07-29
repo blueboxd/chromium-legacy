@@ -72,6 +72,7 @@ namespace viz {
 namespace mojom {
 class DisplayPrivate;
 class ExternalBeginFrameController;
+class DelegatedInkPointRenderer;
 }  // namespace mojom
 class ContextProvider;
 class HostFrameSinkManager;
@@ -403,6 +404,9 @@ class COMPOSITOR_EXPORT Compositor : public cc::LayerTreeHostClient,
   ScrollInputHandler* scroll_input_handler() const {
     return scroll_input_handler_.get();
   }
+
+  virtual void SetDelegatedInkPointRenderer(
+      mojo::PendingReceiver<viz::mojom::DelegatedInkPointRenderer> receiver);
 
  private:
   friend class base::RefCounted<Compositor>;

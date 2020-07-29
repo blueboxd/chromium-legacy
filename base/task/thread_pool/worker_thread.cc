@@ -18,7 +18,7 @@
 #include "base/time/time_override.h"
 #include "base/trace_event/base_tracing.h"
 
-#if defined(OS_MACOSX)
+#if defined(OS_APPLE)
 #include "base/mac/scoped_nsautorelease_pool.h"
 #endif
 
@@ -322,7 +322,7 @@ void WorkerThread::RunWorker() {
   }
 
   while (!ShouldExit()) {
-#if defined(OS_MACOSX)
+#if defined(OS_APPLE)
     mac::ScopedNSAutoreleasePool autorelease_pool;
 #endif
     base::Optional<HangWatchScope> hang_watch_scope;

@@ -2,7 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include <memory>
+
 #include "base/base64.h"
+#include "base/bind_helpers.h"
 #include "base/run_loop.h"
 #include "base/task/thread_pool/thread_pool_instance.h"
 #include "base/test/metrics/histogram_tester.h"
@@ -15,6 +18,8 @@
 #include "chrome/browser/optimization_guide/prediction/prediction_manager.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
+#include "chrome/services/machine_learning/public/cpp/service_connection.h"
+#include "chrome/services/machine_learning/public/mojom/machine_learning_service.mojom.h"
 #include "chrome/test/base/in_process_browser_test.h"
 #include "chrome/test/base/ui_test_utils.h"
 #include "components/data_reduction_proxy/core/common/data_reduction_proxy_switches.h"
@@ -28,6 +33,7 @@
 #include "components/optimization_guide/store_update_data.h"
 #include "components/page_load_metrics/browser/page_load_metrics_test_waiter.h"
 #include "components/previews/core/previews_switches.h"
+#include "content/public/browser/service_process_host.h"
 #include "content/public/test/browser_test.h"
 #include "content/public/test/browser_test_utils.h"
 #include "content/public/test/network_connection_change_simulator.h"
@@ -215,24 +221,75 @@ class OptimizationGuideConsumerWebContentsObserver
   optimization_guide::OptimizationGuideTargetDecisionCallback callback_;
 };
 
+// A ServiceProcessHost::Observer that monitors ML Service launch events.
+class MLServiceProcessObserver : public content::ServiceProcessHost::Observer {
+ public:
+  MLServiceProcessObserver() { content::ServiceProcessHost::AddObserver(this); }
+
+  ~MLServiceProcessObserver() override {
+    content::ServiceProcessHost::RemoveObserver(this);
+  }
+
+  MLServiceProcessObserver(const MLServiceProcessObserver&) = delete;
+  MLServiceProcessObserver& operator=(const MLServiceProcessObserver&) = delete;
+
+  // Whether the service is launched.
+  int IsLaunched() const { return is_launched_; }
+
+  // Launch |launch_wait_loop_| to wait until a service launch is detected.
+  void WaitForLaunch() {
+    if (!is_launched_)
+      launch_wait_loop_.Run();
+  }
+
+  void OnServiceProcessLaunched(
+      const content::ServiceProcessInfo& info) override {
+    if (info.IsService<machine_learning::mojom::MachineLearningService>()) {
+      is_launched_ = true;
+      if (launch_wait_loop_.running())
+        launch_wait_loop_.Quit();
+    }
+  }
+
+ private:
+  base::RunLoop launch_wait_loop_;
+  bool is_launched_ = false;
+};
+
 }  // namespace
 
 namespace optimization_guide {
 
-class PredictionManagerBrowserTest : public InProcessBrowserTest {
+class PredictionManagerBrowserTest
+    : public InProcessBrowserTest,
+      public ::testing::WithParamInterface<bool> {
  public:
-  PredictionManagerBrowserTest() = default;
+  PredictionManagerBrowserTest() : using_ml_service_(GetParam()) {}
   ~PredictionManagerBrowserTest() override = default;
 
-  void SetUp() override {
-    scoped_feature_list_.InitWithFeatures(
-        {optimization_guide::features::kOptimizationHints,
-         optimization_guide::features::kRemoteOptimizationGuideFetching,
-         optimization_guide::features::kOptimizationTargetPrediction},
-        {});
+  PredictionManagerBrowserTest(const PredictionManagerBrowserTest&) = delete;
+  PredictionManagerBrowserTest& operator=(const PredictionManagerBrowserTest&) =
+      delete;
 
-    models_server_.reset(
-        new net::EmbeddedTestServer(net::EmbeddedTestServer::TYPE_HTTPS));
+  void SetUp() override {
+    if (using_ml_service_) {
+      scoped_feature_list_.InitWithFeatures(
+          {optimization_guide::features::kOptimizationHints,
+           optimization_guide::features::kRemoteOptimizationGuideFetching,
+           optimization_guide::features::kOptimizationTargetPrediction,
+           optimization_guide::features::
+               kOptimizationTargetPredictionUsingMLService},
+          {});
+    } else {
+      scoped_feature_list_.InitWithFeatures(
+          {optimization_guide::features::kOptimizationHints,
+           optimization_guide::features::kRemoteOptimizationGuideFetching,
+           optimization_guide::features::kOptimizationTargetPrediction},
+          {});
+    }
+
+    models_server_ = std::make_unique<net::EmbeddedTestServer>(
+        net::EmbeddedTestServer::TYPE_HTTPS);
     models_server_->ServeFilesFromSourceDirectory("chrome/test/data/previews");
     models_server_->RegisterRequestHandler(base::BindRepeating(
         &PredictionManagerBrowserTest::HandleGetModelsRequest,
@@ -325,6 +382,7 @@ class PredictionManagerBrowserTest : public InProcessBrowserTest {
         web_contents);
   }
 
+  bool using_ml_service() const { return using_ml_service_; }
   GURL https_url_with_content() { return https_url_with_content_; }
   GURL https_url_without_content() { return https_url_without_content_; }
 
@@ -339,7 +397,7 @@ class PredictionManagerBrowserTest : public InProcessBrowserTest {
       const net::test_server::HttpRequest& request) {
     std::unique_ptr<net::test_server::BasicHttpResponse> response;
 
-    response.reset(new net::test_server::BasicHttpResponse);
+    response = std::make_unique<net::test_server::BasicHttpResponse>();
     // The request to the remote Optimization Guide Service should always be a
     // POST.
     EXPECT_EQ(request.method, net::test_server::METHOD_POST);
@@ -366,6 +424,7 @@ class PredictionManagerBrowserTest : public InProcessBrowserTest {
     return std::move(response);
   }
 
+  bool using_ml_service_ = false;
   GURL https_url_with_content_, https_url_without_content_;
   std::unique_ptr<net::EmbeddedTestServer> https_server_;
   std::unique_ptr<net::EmbeddedTestServer> models_server_;
@@ -374,8 +433,6 @@ class PredictionManagerBrowserTest : public InProcessBrowserTest {
       PredictionModelsFetcherRemoteResponseType::
           kSuccessfulWithModelsAndFeatures;
   std::unique_ptr<OptimizationGuideConsumerWebContentsObserver> consumer_;
-
-  DISALLOW_COPY_AND_ASSIGN(PredictionManagerBrowserTest);
 };
 
 #if defined(OS_WIN) || defined(OS_MACOSX) || defined(OS_CHROMEOS)
@@ -384,7 +441,11 @@ class PredictionManagerBrowserTest : public InProcessBrowserTest {
 #define DISABLE_ON_WIN_MAC_CHROMEOS(x) x
 #endif
 
-IN_PROC_BROWSER_TEST_F(
+INSTANTIATE_TEST_SUITE_P(UsingMLService,
+                         PredictionManagerBrowserTest,
+                         ::testing::Bool());
+
+IN_PROC_BROWSER_TEST_P(
     PredictionManagerBrowserTest,
     DISABLE_ON_WIN_MAC_CHROMEOS(FCPReachedSessionStatisticsUpdated)) {
   RegisterWithKeyedService();
@@ -400,7 +461,7 @@ IN_PROC_BROWSER_TEST_F(
   EXPECT_EQ(1u, session_fcp->GetNumberOfSamples());
 }
 
-IN_PROC_BROWSER_TEST_F(
+IN_PROC_BROWSER_TEST_P(
     PredictionManagerBrowserTest,
     DISABLE_ON_WIN_MAC_CHROMEOS(NoFCPSessionStatisticsUnchanged)) {
   RegisterWithKeyedService();
@@ -423,10 +484,11 @@ IN_PROC_BROWSER_TEST_F(
   EXPECT_EQ(current_mean, session_fcp->GetMean());
 }
 
-IN_PROC_BROWSER_TEST_F(
+IN_PROC_BROWSER_TEST_P(
     PredictionManagerBrowserTest,
     DISABLE_ON_WIN_MAC_CHROMEOS(ModelsAndFeaturesStoreInitialized)) {
   base::HistogramTester histogram_tester;
+  MLServiceProcessObserver ml_service_observer;
   content::NetworkConnectionChangeSimulator().SetConnectionType(
       network::mojom::ConnectionType::CONNECTION_2G);
 
@@ -434,16 +496,26 @@ IN_PROC_BROWSER_TEST_F(
   RetryForHistogramUntilCountReached(
       &histogram_tester,
       "OptimizationGuide.PredictionManager.PredictionModelsStored", 1);
+  RetryForHistogramUntilCountReached(
+      &histogram_tester,
+      "OptimizationGuide.PredictionModelLoadedVersion.PainfulPageLoad", 1);
+
   histogram_tester.ExpectUniqueSample(
       "OptimizationGuide.PredictionManager.HostModelFeaturesStored", true, 1);
   histogram_tester.ExpectUniqueSample(
       "OptimizationGuide.PredictionManager.PredictionModelsStored", true, 1);
+  histogram_tester.ExpectUniqueSample(
+      "OptimizationGuide.PredictionModelUpdateVersion.PainfulPageLoad", 2, 1);
+  histogram_tester.ExpectUniqueSample(
+      "OptimizationGuide.PredictionModelLoadedVersion.PainfulPageLoad", 2, 1);
+  EXPECT_EQ(ml_service_observer.IsLaunched(), using_ml_service());
 }
 
-IN_PROC_BROWSER_TEST_F(
+IN_PROC_BROWSER_TEST_P(
     PredictionManagerBrowserTest,
     DISABLE_ON_WIN_MAC_CHROMEOS(OnlyHostModelFeaturesInGetModelsResponse)) {
   base::HistogramTester histogram_tester;
+  MLServiceProcessObserver ml_service_observer;
 
   SetResponseType(PredictionModelsFetcherRemoteResponseType::
                       kSuccessfulWithFeaturesAndNoModels);
@@ -457,12 +529,16 @@ IN_PROC_BROWSER_TEST_F(
       "OptimizationGuide.PredictionManager.PredictionModelsStored", 0);
   histogram_tester.ExpectTotalCount(
       "OptimizationGuide.PredictionModelUpdateVersion.PainfulPageLoad", 0);
+  histogram_tester.ExpectTotalCount(
+      "OptimizationGuide.PredictionModelLoadedVersion.PainfulPageLoad", 0);
+  EXPECT_FALSE(ml_service_observer.IsLaunched());
 }
 
-IN_PROC_BROWSER_TEST_F(
+IN_PROC_BROWSER_TEST_P(
     PredictionManagerBrowserTest,
     DISABLE_ON_WIN_MAC_CHROMEOS(OnlyPredictionModelsInGetModelsResponse)) {
   base::HistogramTester histogram_tester;
+  MLServiceProcessObserver ml_service_observer;
 
   SetResponseType(PredictionModelsFetcherRemoteResponseType::
                       kSuccessfulWithModelsAndNoFeatures);
@@ -470,6 +546,10 @@ IN_PROC_BROWSER_TEST_F(
   RetryForHistogramUntilCountReached(
       &histogram_tester,
       "OptimizationGuide.PredictionManager.PredictionModelsStored", 1);
+  RetryForHistogramUntilCountReached(
+      &histogram_tester,
+      "OptimizationGuide.PredictionModelLoadedVersion.PainfulPageLoad", 1);
+
   // A metadata entry will always be stored for host model features, regardless
   // of whether any host model features were actually returned.
   histogram_tester.ExpectUniqueSample(
@@ -478,13 +558,17 @@ IN_PROC_BROWSER_TEST_F(
       "OptimizationGuide.PredictionManager.PredictionModelsStored", true, 1);
   histogram_tester.ExpectUniqueSample(
       "OptimizationGuide.PredictionModelUpdateVersion.PainfulPageLoad", 2, 1);
+  histogram_tester.ExpectUniqueSample(
+      "OptimizationGuide.PredictionModelLoadedVersion.PainfulPageLoad", 2, 1);
+  EXPECT_EQ(ml_service_observer.IsLaunched(), using_ml_service());
 }
 
-IN_PROC_BROWSER_TEST_F(
+IN_PROC_BROWSER_TEST_P(
     PredictionManagerBrowserTest,
     DISABLE_ON_WIN_MAC_CHROMEOS(PredictionModelFetchFailed)) {
   SetResponseType(PredictionModelsFetcherRemoteResponseType::kUnsuccessful);
   base::HistogramTester histogram_tester;
+  MLServiceProcessObserver ml_service_observer;
 
   RegisterWithKeyedService();
 
@@ -504,12 +588,24 @@ IN_PROC_BROWSER_TEST_F(
       "OptimizationGuide.PredictionManager.PredictionModelsStored", 0);
   histogram_tester.ExpectTotalCount(
       "OptimizationGuide.PredictionModelUpdateVersion.PainfulPageLoad", 0);
+  histogram_tester.ExpectTotalCount(
+      "OptimizationGuide.PredictionModelLoadedVersion.PainfulPageLoad", 0);
+  EXPECT_FALSE(ml_service_observer.IsLaunched());
 }
 
-IN_PROC_BROWSER_TEST_F(
+IN_PROC_BROWSER_TEST_P(
     PredictionManagerBrowserTest,
     DISABLE_ON_WIN_MAC_CHROMEOS(HostModelFeaturesClearedOnHistoryClear)) {
+  if (using_ml_service()) {
+    // Skipped for the ML Service path because ShouldTargetNavigation has not
+    // been migrated.
+    // TODO(crbug/1099371): Enable this after adding ML Service integration to
+    // ShouldTargetNavigation.
+    GTEST_SKIP();
+  }
+
   base::HistogramTester histogram_tester;
+  MLServiceProcessObserver ml_service_observer;
 
   RegisterWithKeyedService();
 
@@ -527,8 +623,13 @@ IN_PROC_BROWSER_TEST_F(
       &histogram_tester,
       "OptimizationGuide.PredictionManager.PredictionModelsStored", 1);
 
-  SetCallbackOnConsumer(base::BindOnce(
-      [](optimization_guide::OptimizationGuideDecision decision) {}));
+  RetryForHistogramUntilCountReached(
+      &histogram_tester,
+      "OptimizationGuide.PredictionModelLoadedVersion.PainfulPageLoad", 1);
+
+  EXPECT_EQ(ml_service_observer.IsLaunched(), using_ml_service());
+
+  SetCallbackOnConsumer(base::DoNothing());
   ui_test_utils::NavigateToURL(browser(), https_url_with_content());
 
   histogram_tester.ExpectUniqueSample(
@@ -540,8 +641,7 @@ IN_PROC_BROWSER_TEST_F(
   histogram_tester.ExpectBucketCount(
       "OptimizationGuide.ClearHostModelFeatures.StoreAvailable", true, 1);
 
-  SetCallbackOnConsumer(base::BindOnce(
-      [](optimization_guide::OptimizationGuideDecision decision) {}));
+  SetCallbackOnConsumer(base::DoNothing());
   ui_test_utils::NavigateToURL(browser(), https_url_with_content());
   histogram_tester.ExpectBucketCount(
       "OptimizationGuide.PredictionManager.HasHostModelFeaturesForHost", false,
@@ -561,9 +661,17 @@ class PredictionManagerBrowserSameOriginTest
   }
 };
 
+// Disabled for the ML Service path because ShouldTargetNavigation has not
+// been migrated.
+// TODO(crbug/1099371): Enable this after adding ML Service integration to
+// ShouldTargetNavigation.
+INSTANTIATE_TEST_SUITE_P(UsingMLService,
+                         PredictionManagerBrowserSameOriginTest,
+                         ::testing::Values(false));
+
 // Regression test for https://crbug.com/1037945. Tests that the origin of the
 // previous navigation is computed correctly.
-IN_PROC_BROWSER_TEST_F(PredictionManagerBrowserSameOriginTest,
+IN_PROC_BROWSER_TEST_P(PredictionManagerBrowserSameOriginTest,
                        DISABLE_ON_WIN_MAC_CHROMEOS(IsSameOriginNavigation)) {
   base::HistogramTester histogram_tester;
 
@@ -583,8 +691,7 @@ IN_PROC_BROWSER_TEST_F(PredictionManagerBrowserSameOriginTest,
       &histogram_tester,
       "OptimizationGuide.PredictionManager.PredictionModelsStored", 1);
 
-  SetCallbackOnConsumer(base::BindOnce(
-      [](optimization_guide::OptimizationGuideDecision decision) {}));
+  SetCallbackOnConsumer(base::DoNothing());
   ui_test_utils::NavigateToURL(browser(), https_url_with_content());
   RetryForHistogramUntilCountReached(
       &histogram_tester, "OptimizationGuide.PredictionManager.IsSameOrigin", 1);
@@ -593,8 +700,7 @@ IN_PROC_BROWSER_TEST_F(PredictionManagerBrowserSameOriginTest,
 
   // Navigate to the same URL in the same tab. This should count as a
   // same-origin navigation.
-  SetCallbackOnConsumer(base::BindOnce(
-      [](optimization_guide::OptimizationGuideDecision decision) {}));
+  SetCallbackOnConsumer(base::DoNothing());
   ui_test_utils::NavigateToURL(browser(), https_url_with_content());
   RetryForHistogramUntilCountReached(
       &histogram_tester, "OptimizationGuide.PredictionManager.IsSameOrigin", 2);
@@ -605,8 +711,7 @@ IN_PROC_BROWSER_TEST_F(PredictionManagerBrowserSameOriginTest,
 
   // Navigate to a cross-origin URL. This should count as a cross-origin
   // navigation.
-  SetCallbackOnConsumer(base::BindOnce(
-      [](optimization_guide::OptimizationGuideDecision decision) {}));
+  SetCallbackOnConsumer(base::DoNothing());
   ui_test_utils::NavigateToURL(browser(), GURL("https://www.google.com/"));
   RetryForHistogramUntilCountReached(
       &histogram_tester, "OptimizationGuide.PredictionManager.IsSameOrigin", 3);
@@ -616,7 +721,7 @@ IN_PROC_BROWSER_TEST_F(PredictionManagerBrowserSameOriginTest,
       "OptimizationGuide.PredictionManager.IsSameOrigin", true, 1);
 }
 
-IN_PROC_BROWSER_TEST_F(
+IN_PROC_BROWSER_TEST_P(
     PredictionManagerBrowserSameOriginTest,
     DISABLE_ON_WIN_MAC_CHROMEOS(ShouldTargetNavigationAsync)) {
   base::HistogramTester histogram_tester;

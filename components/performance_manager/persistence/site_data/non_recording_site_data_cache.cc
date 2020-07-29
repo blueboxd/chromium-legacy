@@ -36,14 +36,13 @@ std::unique_ptr<SiteDataReader> NonRecordingSiteDataCache::GetReaderForOrigin(
 }
 
 std::unique_ptr<SiteDataWriter> NonRecordingSiteDataCache::GetWriterForOrigin(
-    const url::Origin& origin,
-    performance_manager::TabVisibility tab_visibility) {
+    const url::Origin& origin) {
   // Return a fake data writer.
   SiteDataWriter* writer = new NoopSiteDataWriter();
   return base::WrapUnique(writer);
 }
 
-bool NonRecordingSiteDataCache::IsRecordingForTesting() const {
+bool NonRecordingSiteDataCache::IsRecording() const {
   return false;
 }
 

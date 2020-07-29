@@ -25,7 +25,7 @@ bool PathProvider(int key, FilePath* result);
 
 #if defined(OS_WIN)
 bool PathProviderWin(int key, FilePath* result);
-#elif defined(OS_MACOSX)
+#elif defined(OS_APPLE)
 bool PathProviderMac(int key, FilePath* result);
 #elif defined(OS_ANDROID)
 bool PathProviderAndroid(int key, FilePath* result);
@@ -71,7 +71,7 @@ Provider base_provider_win = {
 };
 #endif
 
-#if defined(OS_MACOSX)
+#if defined(OS_APPLE)
 Provider base_provider_mac = {
   PathProviderMac,
   &base_provider,
@@ -103,7 +103,7 @@ Provider base_provider_fuchsia = {PathProviderFuchsia, &base_provider,
                                   true};
 #endif
 
-#if defined(OS_POSIX) && !defined(OS_MACOSX) && !defined(OS_ANDROID) && \
+#if defined(OS_POSIX) && !defined(OS_APPLE) && !defined(OS_ANDROID) && \
     !defined(OS_FUCHSIA)
 Provider base_provider_posix = {
   PathProviderPosix,
@@ -127,7 +127,7 @@ struct PathData {
   PathData() : cache_disabled(false) {
 #if defined(OS_WIN)
     providers = &base_provider_win;
-#elif defined(OS_MACOSX)
+#elif defined(OS_APPLE)
     providers = &base_provider_mac;
 #elif defined(OS_ANDROID)
     providers = &base_provider_android;

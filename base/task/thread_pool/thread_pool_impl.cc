@@ -36,7 +36,7 @@
 #include "base/task/thread_pool/thread_group_native_win.h"
 #endif
 
-#if defined(OS_MACOSX)
+#if defined(OS_APPLE)
 #include "base/task/thread_pool/thread_group_native_mac.h"
 #endif
 

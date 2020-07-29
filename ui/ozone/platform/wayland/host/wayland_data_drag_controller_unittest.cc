@@ -169,6 +169,24 @@ class WaylandDataDragControllerTest : public WaylandTest {
     Sync();
   }
 
+  void ScheduleDragCancel() {
+    Sync();
+
+    if (!data_device_manager_->data_source()) {
+      // The data source is created asynchronously by the data drag controller.
+      // If it is null at this point, it means that the task for that has not
+      // yet executed, and we have to try again a bit later.
+      base::ThreadTaskRunnerHandle::Get()->PostTask(
+          FROM_HERE,
+          base::BindOnce(&WaylandDataDragControllerTest::ScheduleDragCancel,
+                         base::Unretained(this)));
+      return;
+    }
+
+    data_device_manager_->data_source()->OnCancelled();
+    Sync();
+  }
+
  protected:
   wl::TestDataDeviceManager* data_device_manager_;
   std::unique_ptr<MockDropHandler> drop_handler_;
@@ -442,6 +460,35 @@ TEST_P(WaylandDataDragControllerTest, ValidateDroppedXMozUrl) {
     Sync();
     Mock::VerifyAndClearExpectations(drop_handler_.get());
   }
+}
+
+// Verifies the correct delegate functions are called when a drag session is
+// started and cancelled within the same surface.
+TEST_P(WaylandDataDragControllerTest, StartAndCancel) {
+  const bool restored_focus = window_->has_pointer_focus();
+  window_->SetPointerFocus(true);
+
+  ASSERT_EQ(PlatformWindowType::kWindow, window_->type());
+  OSExchangeData os_exchange_data;
+  os_exchange_data.SetString(sample_text_for_dnd());
+
+  base::ThreadTaskRunnerHandle::Get()->PostTask(
+      FROM_HERE,
+      base::BindOnce(&WaylandDataDragControllerTest::ScheduleDragCancel,
+                     base::Unretained(this)));
+
+  // DnD handlers expect DragLeave to be sent before DragFinished when drag
+  // sessions end up with no data transfer (cancelled). Otherwise, it might lead
+  // to issues like https://crbug.com/1109324.
+  EXPECT_CALL(*drop_handler_, OnDragLeave()).Times(1);
+  EXPECT_CALL(*drag_handler_delegate_, OnDragFinished(_)).Times(1);
+
+  static_cast<WaylandToplevelWindow*>(window_.get())
+      ->StartDrag(os_exchange_data, DragDropTypes::DRAG_COPY, {}, true,
+                  drag_handler_delegate_.get());
+  Sync();
+
+  window_->SetPointerFocus(restored_focus);
 }
 
 INSTANTIATE_TEST_SUITE_P(XdgVersionStableTest,

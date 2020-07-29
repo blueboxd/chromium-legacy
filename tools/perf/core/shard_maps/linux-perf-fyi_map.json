@@ -3,6 +3,9 @@
         "benchmarks": {
             "power.desktop": {
                 "abridged": false
+            },
+            "system_health.common_desktop": {
+                "abridged": true
             }
         }
     },

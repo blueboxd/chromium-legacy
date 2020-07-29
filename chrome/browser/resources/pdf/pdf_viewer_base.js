@@ -9,13 +9,13 @@ import {PromiseResolver} from 'chrome://resources/js/promise_resolver.m.js';
 import {html, PolymerElement} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
 
 import {BrowserApi} from './browser_api.js';
-import {FittingType} from './constants.js';
+import {FittingType, Point} from './constants.js';
 import {ContentController, MessageData, PluginController} from './controller.js';
 import {PDFMetrics} from './metrics.js';
 import {OpenPdfParamsParser} from './open_pdf_params_parser.js';
 import {LoadState} from './pdf_scripting_api.js';
 import {DocumentDimensionsMessageData, MessageObject} from './pdf_viewer_utils.js';
-import {Point, Viewport} from './viewport.js';
+import {Viewport} from './viewport.js';
 import {ViewportScroller} from './viewport_scroller.js';
 import {ZoomManager} from './zoom_manager.js';
 

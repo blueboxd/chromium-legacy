@@ -19,6 +19,11 @@
 #include "gpu/command_buffer/service/memory_tracking.h"
 #include "gpu/ipc/service/gpu_ipc_service_export.h"
 #include "ui/gfx/geometry/size.h"
+#include "ui/gl/scoped_make_current.h"
+
+namespace base {
+class SequencedTaskRunner;
+}
 
 namespace gpu {
 class GpuChannelManager;
@@ -48,7 +53,13 @@ extern const base::Feature kGPUMemoryAblationFeature;
 class GPU_IPC_SERVICE_EXPORT GpuMemoryAblationExperiment
     : public MemoryTracker {
  public:
-  explicit GpuMemoryAblationExperiment(GpuChannelManager* channel_manager);
+  // Checks that the memory ablation experiment feature is enabled. As well as
+  // that a supported gl::GLImplementation is available.
+  static bool ExperimentSupported();
+
+  GpuMemoryAblationExperiment(
+      GpuChannelManager* channel_manager,
+      scoped_refptr<base::SequencedTaskRunner> task_runner);
   ~GpuMemoryAblationExperiment() override;
 
   // Allocates a chunk of memory in response to increases. Reported decreases
@@ -78,18 +89,32 @@ class GPU_IPC_SERVICE_EXPORT GpuMemoryAblationExperiment
     uint64_t peak_memory_ = 0u;
   };
 
+  // The initialization status of the feature. It defaults to |UNINITIALIZED|
+  // and is updated upon the success or failure of initializing the needed GPU
+  // resources.
+  enum class Status {
+    UNINITIALIZED,
+    ENABLED,
+    DISABLED,
+  };
+
   void AllocateGpuMemory();
   void DeleteGpuMemory();
 
   // Setups the Gpu resources needed to allocate Gpu RAM. These are influenced
   // by SharedImageStub. Which is not used directly as there is no external
-  // host to pair a GpuChannel with.
-  void InitGpu(GpuChannelManager* channel_manager);
+  // host to pair a GpuChannel with. Returns true if initialization succeeded.
+  bool InitGpu(GpuChannelManager* channel_manager);
 
-  // This must be called before any actions on |factory_|. If this method fails
-  // then subsequent work on the |factory_| will fail. Also influenced by
-  // SharedImageStub.
-  bool MakeContextCurrent();
+  // This must be called before any actions on |factory_|.
+  // This provides a ui::ScopedMakeCurrent which will reset the previous
+  // context upon deletion. As the we allocate memory in-response to other
+  // allocations, we are changing the context in a nested fashion. Several
+  // areas of code do not support this, and re-verify the current context at
+  // later points. (https://crbug.com/1104316)
+  // If this method fails then a nullptr is returned. All subsequent work on
+  // the |factory_| would also fail.
+  std::unique_ptr<ui::ScopedMakeCurrent> ScopedMakeContextCurrent();
 
   // MemoryTracker:
   void TrackMemoryAllocatedChange(int64_t delta) override;
@@ -98,11 +123,9 @@ class GPU_IPC_SERVICE_EXPORT GpuMemoryAblationExperiment
   int ClientId() const override;
   uint64_t ContextGroupTracingId() const override;
 
-  // Whether or not the entire experiment is enabled.
-  bool enabled_;
-  bool init_ = false;
-  // If |true| then a Gpu ablation was requested, and initialization succeeded.
-  bool gpu_enabled_ = false;
+  // The status of the initialization. Will be updated based on the results of
+  // initializing the necessary GPU resources.
+  Status init_status_ = Status::UNINITIALIZED;
 
   // Size of image to allocate, determined by experiment parameters.
   gfx::Size size_;
@@ -125,6 +148,7 @@ class GPU_IPC_SERVICE_EXPORT GpuMemoryAblationExperiment
   std::unique_ptr<SharedImageFactory> factory_;
   std::unique_ptr<SharedImageRepresentationFactory> rep_factory_;
   GpuChannelManager* channel_manager_;
+  scoped_refptr<base::SequencedTaskRunner> task_runner_;
   base::WeakPtrFactory<GpuMemoryAblationExperiment> weak_factory_{this};
 };
 

@@ -539,6 +539,10 @@ class CONTENT_EXPORT RenderWidgetHostViewBase
   void reset_is_evicted() { is_evicted_ = false; }
   bool is_evicted() { return is_evicted_; }
 
+  bool is_drawing_delegated_ink_trails() const {
+    return is_drawing_delegated_ink_trails_;
+  }
+
  protected:
   explicit RenderWidgetHostViewBase(RenderWidgetHost* host);
 
@@ -628,6 +632,9 @@ class CONTENT_EXPORT RenderWidgetHostViewBase
                            FlagGetsSetFromRenderFrameMetadata);
   FRIEND_TEST_ALL_PREFIXES(RenderWidgetHostInputEventRouterTest,
                            QueryResultAfterChildViewDead);
+  FRIEND_TEST_ALL_PREFIXES(DelegatedInkPointTest, EventForwardedToCompositor);
+  FRIEND_TEST_ALL_PREFIXES(DelegatedInkPointTest,
+                           MojoInterfaceReboundOnDisconnect);
 
   void SynchronizeVisualProperties();
 
@@ -647,6 +654,10 @@ class CONTENT_EXPORT RenderWidgetHostViewBase
 
   bool view_stopped_flinging_for_test() const {
     return view_stopped_flinging_for_test_;
+  }
+
+  void SetIsDrawingDelegatedInkTrailsForTest(bool b) {
+    is_drawing_delegated_ink_trails_ = b;
   }
 
   gfx::Rect current_display_area_;

@@ -115,6 +115,7 @@
 #include "chrome/browser/ui/webui/media/media_feeds_ui.h"
 #include "chrome/browser/ui/webui/nearby_share/nearby_share.mojom.h"
 #include "chrome/browser/ui/webui/nearby_share/nearby_share_dialog_ui.h"
+#include "chrome/browser/ui/webui/nearby_share/public/mojom/nearby_share_settings.mojom.h"
 #include "chrome/browser/ui/webui/new_tab_page/new_tab_page.mojom.h"
 #include "chrome/browser/ui/webui/new_tab_page/new_tab_page_ui.h"
 #include "chrome/browser/ui/webui/tab_search/tab_search.mojom.h"
@@ -620,6 +621,23 @@ void PopulateChromeWebUIFrameBinders(
   RegisterWebUIControllerInterfaceBinder<media::mojom::KaleidoscopeDataProvider,
                                          KaleidoscopeUI>(map);
 #endif  // !defined(OS_ANDROID)
+
+#if defined(OS_CHROMEOS)
+  if (base::FeatureList::IsEnabled(features::kNearbySharing)) {
+    RegisterWebUIControllerInterfaceBinder<
+        nearby_share::mojom::NearbyShareSettings,
+        chromeos::settings::OSSettingsUI, nearby_share::NearbyShareDialogUI>(
+        map);
+  }
+#endif  // defined(OS_CHROMEOS)
+
+#if !defined(OS_ANDROID) && !defined(OS_CHROMEOS)
+  if (base::FeatureList::IsEnabled(features::kNearbySharing)) {
+    RegisterWebUIControllerInterfaceBinder<
+        nearby_share::mojom::NearbyShareSettings,
+        nearby_share::NearbyShareDialogUI>(map);
+  }
+#endif  // !defined(OS_ANDROID) && !defined(OS_CHROMEOS)
 }
 
 }  // namespace internal

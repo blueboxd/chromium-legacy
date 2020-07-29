@@ -8,6 +8,7 @@
 #include "base/bind_helpers.h"
 #include "base/metrics/histogram_functions.h"
 #include "base/metrics/histogram_macros.h"
+#include "base/sequence_checker.h"
 #include "base/strings/strcat.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
@@ -862,6 +863,33 @@ bool OptimizationGuideStore::FindPredictionModelEntryKey(
   if (entry_keys_->find(*out_prediction_model_entry_key) != entry_keys_->end())
     return true;
   return false;
+}
+
+bool OptimizationGuideStore::RemovePredictionModelFromEntryKey(
+    const EntryKey& entry_key) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+
+  if (!IsAvailable() || !entry_keys_ ||
+      entry_keys_->find(entry_key) == entry_keys_->end()) {
+    return false;
+  }
+
+  auto key_to_remove = std::make_unique<leveldb_proto::KeyVector>();
+  key_to_remove->push_back(entry_key);
+  database_->UpdateEntries(
+      std::make_unique<EntryVector>(), std::move(key_to_remove),
+      base::BindOnce(
+          &OptimizationGuideStore::OnRemovePredictionModelFromEntryKey,
+          weak_ptr_factory_.GetWeakPtr(), entry_key));
+  return true;
+}
+
+void OptimizationGuideStore::OnRemovePredictionModelFromEntryKey(
+    const EntryKey& entry_key,
+    bool success) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  if (success)
+    entry_keys_->erase(entry_key);
 }
 
 void OptimizationGuideStore::LoadPredictionModel(

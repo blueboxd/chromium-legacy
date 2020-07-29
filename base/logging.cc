@@ -33,7 +33,7 @@ typedef HANDLE FileHandle;
 // Windows doesn't define STDERR_FILENO.  Define it here.
 #define STDERR_FILENO 2
 
-#elif defined(OS_MACOSX)
+#elif defined(OS_APPLE)
 // In MacOS 10.12 and iOS 10.0 and later ASL (Apple System Log) was deprecated
 // in favor of OS_LOG (Unified Logging).
 #include <AvailabilityMacros.h>
@@ -193,7 +193,7 @@ uint64_t TickCount() {
 #elif defined(OS_FUCHSIA)
   return zx_clock_get_monotonic() /
          static_cast<zx_time_t>(base::Time::kNanosecondsPerMicrosecond);
-#elif defined(OS_MACOSX)
+#elif defined(OS_APPLE)
   return mach_absolute_time();
 #elif defined(OS_NACL)
   // NaCl sadly does not have _POSIX_TIMERS enabled in sys/features.h
@@ -572,7 +572,7 @@ LogMessage::~LogMessage() {
   if ((g_logging_destination & LOG_TO_SYSTEM_DEBUG_LOG) != 0) {
 #if defined(OS_WIN)
     OutputDebugStringA(str_newline.c_str());
-#elif defined(OS_MACOSX)
+#elif defined(OS_APPLE)
     // In LOG_TO_SYSTEM_DEBUG_LOG mode, log messages are always written to
     // stderr. If stderr is /dev/null, also log via ASL (Apple System Log) or
     // its successor OS_LOG. If there's something weird about stderr, assume

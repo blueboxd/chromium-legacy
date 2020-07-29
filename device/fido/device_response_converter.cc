@@ -375,7 +375,7 @@ base::Optional<AuthenticatorGetInfoResponse> ReadCTAPGetInfoResponse(
               : Availability::kSupportedButUnprovisioned;
     }
 
-    option_map_it = option_map.find(CBOR(kUvTokenMapKey));
+    option_map_it = option_map.find(CBOR(kPinUvTokenMapKey));
     if (option_map_it != option_map.end()) {
       if (!option_map_it->second.is_bool()) {
         return base::nullopt;

@@ -54,16 +54,15 @@ std::unique_ptr<SiteDataReader> SiteDataCacheImpl::GetReaderForOrigin(
 }
 
 std::unique_ptr<SiteDataWriter> SiteDataCacheImpl::GetWriterForOrigin(
-    const url::Origin& origin,
-    performance_manager::TabVisibility tab_visibility) {
+    const url::Origin& origin) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   internal::SiteDataImpl* impl = GetOrCreateFeatureImpl(origin);
   DCHECK(impl);
-  SiteDataWriter* data_writer = new SiteDataWriter(impl, tab_visibility);
+  SiteDataWriter* data_writer = new SiteDataWriter(impl);
   return base::WrapUnique(data_writer);
 }
 
-bool SiteDataCacheImpl::IsRecordingForTesting() const {
+bool SiteDataCacheImpl::IsRecording() const {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   return true;
 }

@@ -6,6 +6,7 @@ package org.chromium.chrome.browser.payments.ui;
 
 import androidx.annotation.Nullable;
 
+import org.chromium.base.Callback;
 import org.chromium.chrome.browser.autofill.PersonalDataManager.CreditCard;
 import org.chromium.chrome.browser.payments.AddressEditor;
 import org.chromium.chrome.browser.payments.AutofillAddress;
@@ -19,6 +20,7 @@ import org.chromium.components.payments.CurrencyFormatter;
 import org.chromium.components.payments.PaymentApp;
 import org.chromium.components.payments.PaymentAppType;
 import org.chromium.components.payments.PaymentFeatureList;
+import org.chromium.components.payments.PaymentOptionsUtils;
 import org.chromium.components.payments.PaymentRequestLifecycleObserver;
 import org.chromium.components.payments.PaymentRequestParams;
 import org.chromium.payments.mojom.PaymentCurrencyAmount;
@@ -43,7 +45,9 @@ import java.util.Set;
  */
 public class PaymentUIsManager
         implements SettingsAutofillAndPaymentsObserver.Observer, PaymentRequestLifecycleObserver {
+    private Callback<PaymentInformation> mPaymentInformationCallback;
     private SectionInformation mUiShippingOptions;
+    private final Delegate mDelegate;
     private final Map<String, CurrencyFormatter> mCurrencyFormatterMap;
     private final AddressEditor mAddressEditor;
     private final CardEditor mCardEditor;
@@ -60,6 +64,12 @@ public class PaymentUIsManager
     private AutofillPaymentAppCreator mAutofillPaymentAppCreator;
 
     private Boolean mCanUserAddCreditCard;
+
+    /** The delegate of this class. */
+    public interface Delegate {
+        /** Provide payment information to the Payment Request UI. */
+        void providePaymentInformation();
+    }
 
     /**
      * This class is to coordinate the show state of a bottom sheet UI (either expandable payment
@@ -117,6 +127,7 @@ public class PaymentUIsManager
 
     /**
      * Create PaymentUIsManager.
+     * @param delegate The delegate of this instance.
      * @param params The parameters of the payment request specified by the merchant.
      * @param addressEditor The AddressEditor of the PaymentRequest UI.
      * @param cardEditor The CardEditor of the PaymentRequest UI.
@@ -124,8 +135,9 @@ public class PaymentUIsManager
     // TODO(crbug.com/1107102): AddressEditor and CardEditor should be initialized in this
     // constructor instead of the caller of the constructor, once CardEditor's "ForTest" symbols
     // have been removed from the production code.
-    public PaymentUIsManager(
-            PaymentRequestParams params, AddressEditor addressEditor, CardEditor cardEditor) {
+    public PaymentUIsManager(Delegate delegate, PaymentRequestParams params,
+            AddressEditor addressEditor, CardEditor cardEditor) {
+        mDelegate = delegate;
         mParams = params;
         mAddressEditor = addressEditor;
         mCardEditor = cardEditor;
@@ -242,6 +254,20 @@ public class PaymentUIsManager
      */
     public void setUiShippingOptions(SectionInformation uiShippingOptions) {
         mUiShippingOptions = uiShippingOptions;
+    }
+
+    /** Get the PaymentInformation callback. */
+    public Callback<PaymentInformation> getPaymentInformationCallback() {
+        return mPaymentInformationCallback;
+    }
+
+    /**
+     * Set the call back of PaymentInformation. This callback would be invoked when the payment
+     * information is retrieved.
+     */
+    public void setPaymentInformationCallback(
+            Callback<PaymentInformation> paymentInformationCallback) {
+        mPaymentInformationCallback = paymentInformationCallback;
     }
 
     // Implement SettingsAutofillAndPaymentsObserver.Observer:
@@ -514,5 +540,54 @@ public class PaymentUIsManager
         mPaymentRequestUI.selectedPaymentMethodUpdated(
                 new PaymentInformation(mUiShoppingCart, mShippingAddressesSection,
                         mUiShippingOptions, mContactSection, mPaymentMethodsSection));
+    }
+
+    /**
+     * Update Payment Request UI with the update event's information and enable the UI (The user
+     * interface is disabled with a "↻" spinner being displayed and the user is unable to interact
+     * with the user interface until this "enableUserInterface" method is called).
+     */
+    public void enableUserInterfaceAfterPaymentRequestUpdateEvent() {
+        if (mPaymentInformationCallback != null && mPaymentMethodsSection != null) {
+            mDelegate.providePaymentInformation();
+        } else {
+            mPaymentRequestUI.updateOrderSummarySection(mUiShoppingCart);
+            if (shouldShowShippingSection()) {
+                mPaymentRequestUI.updateSection(
+                        PaymentRequestUI.DataType.SHIPPING_OPTIONS, mUiShippingOptions);
+            }
+        }
+    }
+
+    /** Implements {@link PaymentRequestUI.Client.shouldShowShippingSection}. */
+    public boolean shouldShowShippingSection() {
+        if (!PaymentOptionsUtils.requestShipping(mParams.getPaymentOptions())) return false;
+
+        if (mPaymentMethodsSection == null) return true;
+
+        PaymentApp selectedApp = (PaymentApp) mPaymentMethodsSection.getSelectedItem();
+        return selectedApp == null || !selectedApp.handlesShippingAddress();
+    }
+
+    /** Implements {@link PaymentRequestUI.Client.shouldShowContactSection}. */
+    public boolean shouldShowContactSection() {
+        PaymentApp selectedApp = (mPaymentMethodsSection == null)
+                ? null
+                : (PaymentApp) mPaymentMethodsSection.getSelectedItem();
+        org.chromium.payments.mojom.PaymentOptions options = mParams.getPaymentOptions();
+        if (PaymentOptionsUtils.requestPayerName(options)
+                && (selectedApp == null || !selectedApp.handlesPayerName())) {
+            return true;
+        }
+        if (PaymentOptionsUtils.requestPayerPhone(options)
+                && (selectedApp == null || !selectedApp.handlesPayerPhone())) {
+            return true;
+        }
+        if (PaymentOptionsUtils.requestPayerEmail(options)
+                && (selectedApp == null || !selectedApp.handlesPayerEmail())) {
+            return true;
+        }
+
+        return false;
     }
 }

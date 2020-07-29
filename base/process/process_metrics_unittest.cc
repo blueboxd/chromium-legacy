@@ -29,7 +29,7 @@
 #include "testing/gtest/include/gtest/gtest.h"
 #include "testing/multiprocess_func_list.h"
 
-#if defined(OS_MACOSX)
+#if defined(OS_APPLE)
 #include <sys/mman.h>
 #endif
 
@@ -422,7 +422,7 @@ TEST_F(SystemMetricsTest, ParseZramStat) {
 }
 #endif  // defined(OS_CHROMEOS)
 
-#if defined(OS_WIN) || defined(OS_MACOSX) || defined(OS_LINUX) || \
+#if defined(OS_WIN) || defined(OS_APPLE) || defined(OS_LINUX) || \
     defined(OS_ANDROID)
 TEST(SystemMetrics2Test, GetSystemMemoryInfo) {
   SystemMemoryInfoKB info;
@@ -456,7 +456,7 @@ TEST(SystemMetrics2Test, GetSystemMemoryInfo) {
   EXPECT_LT(info.inactive_file, info.total);
 #endif  // defined(OS_LINUX) || defined(OS_ANDROID)
 
-#if defined(OS_MACOSX) || defined(OS_IOS)
+#if defined(OS_APPLE)
   EXPECT_GT(info.file_backed, 0);
 #endif
 
@@ -468,7 +468,7 @@ TEST(SystemMetrics2Test, GetSystemMemoryInfo) {
   // and gem_size cannot be tested here.
 #endif
 }
-#endif  // defined(OS_WIN) || defined(OS_MACOSX) || defined(OS_LINUX) ||
+#endif  // defined(OS_WIN) || defined(OS_APPLE) || defined(OS_LINUX) ||
         // defined(OS_ANDROID)
 
 #if defined(OS_LINUX) || defined(OS_ANDROID)
@@ -602,7 +602,7 @@ TEST(ProcessMetricsTest, DISABLED_GetNumberOfThreads) {
 }
 #endif  // defined(OS_LINUX)
 
-#if defined(OS_LINUX) || (defined(OS_MACOSX) && !defined(OS_IOS))
+#if defined(OS_LINUX) || defined(OS_MAC)
 namespace {
 
 // Keep these in sync so the GetChildOpenFdCount test can refer to correct test
@@ -683,11 +683,11 @@ TEST(ProcessMetricsTest, GetChildOpenFdCount) {
   WaitForEvent(temp_path, kSignalReady);
 
   std::unique_ptr<ProcessMetrics> metrics =
-#if defined(OS_MACOSX)
+#if defined(OS_APPLE)
       ProcessMetrics::CreateProcessMetrics(child.Handle(), nullptr);
 #else
       ProcessMetrics::CreateProcessMetrics(child.Handle());
-#endif  // defined(OS_MACOSX)
+#endif  // defined(OS_APPLE)
 
   const int fd_count = metrics->GetOpenFdCount();
   EXPECT_GE(fd_count, 0);
@@ -708,11 +708,11 @@ TEST(ProcessMetricsTest, GetChildOpenFdCount) {
 TEST(ProcessMetricsTest, GetOpenFdCount) {
   base::ProcessHandle process = base::GetCurrentProcessHandle();
   std::unique_ptr<base::ProcessMetrics> metrics =
-#if defined(OS_MACOSX)
+#if defined(OS_APPLE)
       ProcessMetrics::CreateProcessMetrics(process, nullptr);
 #else
       ProcessMetrics::CreateProcessMetrics(process);
-#endif  // defined(OS_MACOSX)
+#endif  // defined(OS_APPLE)
 
   ScopedTempDir temp_dir;
   ASSERT_TRUE(temp_dir.CreateUniqueTempDir());
@@ -726,7 +726,7 @@ TEST(ProcessMetricsTest, GetOpenFdCount) {
   EXPECT_EQ(new_fd_count, fd_count + 1);
 }
 
-#endif  // defined(OS_LINUX) || (defined(OS_MACOSX) && !defined(OS_IOS))
+#endif  // defined(OS_LINUX) || defined(OS_MAC)
 
 #if defined(OS_ANDROID) || defined(OS_LINUX)
 

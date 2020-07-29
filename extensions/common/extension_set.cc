@@ -11,9 +11,8 @@
 
 namespace extensions {
 
-namespace {
-
-ExtensionId GetExtensionIdByURL(const GURL& url) {
+// static
+ExtensionId ExtensionSet::GetExtensionIdByURL(const GURL& url) {
   if (url.SchemeIs(kExtensionScheme))
     return url.host();
 
@@ -26,8 +25,6 @@ ExtensionId GetExtensionIdByURL(const GURL& url) {
 
   return ExtensionId();
 }
-
-}  // namespace
 
 ExtensionSet::const_iterator::const_iterator() {}
 

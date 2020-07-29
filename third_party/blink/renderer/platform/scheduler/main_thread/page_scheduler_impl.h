@@ -60,6 +60,7 @@ class PLATFORM_EXPORT PageSchedulerImpl : public PageScheduler {
   void OnTitleOrFaviconUpdated() override;
   void SetPageVisible(bool page_visible) override;
   void SetPageFrozen(bool) override;
+  void SetPageBackForwardCached(bool) override;
   void SetKeepActive(bool) override;
   bool IsMainFrameLocal() const override;
   void SetIsMainFrameLocal(bool is_local) override;
@@ -321,6 +322,8 @@ class PLATFORM_EXPORT PageSchedulerImpl : public PageScheduler {
 
   // Delay after which a background page can be frozen if network is idle.
   const base::TimeDelta delay_for_background_and_network_idle_tab_freezing_;
+
+  bool is_stored_in_back_forward_cache_ = false;
 
   std::unique_ptr<PageLifecycleStateTracker> page_lifecycle_state_tracker_;
   base::WeakPtrFactory<PageSchedulerImpl> weak_factory_{this};

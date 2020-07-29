@@ -26,14 +26,14 @@ constexpr char kThrottledErrorDescription[] =
 
 void PopulateErrorPageHtml(const blink::WebURLError& error,
                            std::string* error_html) {
+  if (!error_html)
+    return;
+
   std::string err;
   if (error.reason() == net::ERR_TEMPORARILY_THROTTLED)
     err = kThrottledErrorDescription;
   else
     err = net::ErrorToString(error.reason());
-
-  if (!error_html)
-    return;
 
   // Create the error page based on the error reason.
   GURL gurl(error.url());

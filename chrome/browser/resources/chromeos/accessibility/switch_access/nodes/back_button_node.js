@@ -135,18 +135,12 @@ class BackButtonNode extends SAChildNode {
     if (BackButtonNode.automationNode_ && BackButtonNode.automationNode_.role) {
       return;
     }
-    SwitchAccess.findNodeMatchingPredicate(
-        BackButtonNode.isBackButton_, BackButtonNode.saveAutomationNode_);
-  }
-
-  /**
-   * Checks if the given node is the back button automation node.
-   * @param {!AutomationNode} node
-   * @return {boolean}
-   * @private
-   */
-  static isBackButton_(node) {
-    return node.htmlAttributes.id === 'switch_access_back_button';
+    SwitchAccess.findNodeMatching(
+        {
+          role: chrome.automation.RoleType.BUTTON,
+          attributes: {className: 'SwitchAccessBackButtonView'}
+        },
+        BackButtonNode.saveAutomationNode_);
   }
 
   /**

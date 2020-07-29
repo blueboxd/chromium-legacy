@@ -1419,7 +1419,7 @@ fileOperationUtil.Speedometer = class {
     this.length_ = bufferLength;
 
     /**
-     * @private {Array} internal buffer to track recent data.
+     * @private {!Array} internal buffer to track recent data.
      */
     this.buffer_ = [];
 
@@ -1477,6 +1477,15 @@ fileOperationUtil.Speedometer = class {
   updateCMA_(speed) {
     this.count_++;
     this.cma_ = Math.floor((this.cma_ * this.count_ + speed) / (this.count_));
+  }
+
+  /**
+   * Returns internal buffer for unit testing purposes.
+   *
+   * @returns {!Array} The internal buffer.
+   */
+  getBufferForTesting() {
+    return this.buffer_;
   }
 
   /**

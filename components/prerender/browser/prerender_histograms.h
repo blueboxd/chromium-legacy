@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_PRERENDER_PRERENDER_HISTOGRAMS_H_
-#define CHROME_BROWSER_PRERENDER_PRERENDER_HISTOGRAMS_H_
+#ifndef COMPONENTS_PRERENDER_BROWSER_PRERENDER_HISTOGRAMS_H_
+#define COMPONENTS_PRERENDER_BROWSER_PRERENDER_HISTOGRAMS_H_
 
 #include <stddef.h>
 #include <stdint.h>
@@ -13,7 +13,6 @@
 #include "base/macros.h"
 #include "base/threading/thread_checker.h"
 #include "base/time/time.h"
-#include "chrome/browser/prerender/prerender_contents.h"
 #include "components/prerender/common/prerender_final_status.h"
 #include "components/prerender/common/prerender_origin.h"
 #include "url/gurl.h"
@@ -79,11 +78,11 @@ class PrerenderHistograms {
       base::TimeDelta prefetch_age) const;
 
  private:
-  base::ThreadChecker thread_checker_;
+  THREAD_CHECKER(thread_checker_);
 
   DISALLOW_COPY_AND_ASSIGN(PrerenderHistograms);
 };
 
 }  // namespace prerender
 
-#endif  // CHROME_BROWSER_PRERENDER_PRERENDER_HISTOGRAMS_H_
+#endif  // COMPONENTS_PRERENDER_BROWSER_PRERENDER_HISTOGRAMS_H_

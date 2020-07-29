@@ -193,6 +193,10 @@ class InProcessContextFactory::PerCompositorData
       const std::vector<float>& refresh_rates) override {}
 #endif
 
+  void SetDelegatedInkPointRenderer(
+      mojo::PendingReceiver<viz::mojom::DelegatedInkPointRenderer> receiver)
+      override {}
+
   void SetSurfaceHandle(gpu::SurfaceHandle surface_handle) {
     surface_handle_ = surface_handle;
   }

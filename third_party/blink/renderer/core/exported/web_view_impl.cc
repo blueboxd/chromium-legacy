@@ -2436,8 +2436,10 @@ void WebViewImpl::SetPageLifecycleState(
   if (hiding_page) {
     SetVisibilityState(state->visibility, /*is_initial_state=*/false);
   }
-  if (storing_in_bfcache)
+  if (storing_in_bfcache) {
     DispatchPagehide();
+    Scheduler()->SetPageBackForwardCached(state->is_in_back_forward_cache);
+  }
   if (freezing_page)
     Scheduler()->SetPageFrozen(true);
   if (storing_in_bfcache)
@@ -2446,8 +2448,10 @@ void WebViewImpl::SetPageLifecycleState(
     HookBackForwardCacheEviction(false);
   if (resuming_page)
     Scheduler()->SetPageFrozen(false);
-  if (restoring_from_bfcache)
+  if (restoring_from_bfcache) {
     DispatchPageshow(navigation_start.value());
+    Scheduler()->SetPageBackForwardCached(state->is_in_back_forward_cache);
+  }
   if (showing_page) {
     SetVisibilityState(mojom::blink::PageVisibilityState::kVisible,
                        /*is_initial_state=*/false);

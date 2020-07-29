@@ -414,7 +414,7 @@ TEST(WindowCommandsTest, ExecutePrintDefaultParams) {
   Status status =
       CallWindowCommand(ExecutePrint, &webview, params, &result_value);
   ASSERT_EQ(kOk, status.code()) << status.message();
-  base::Value printParams = getDefaultPrintParams();
+  base::DictionaryValue printParams = getDefaultPrintParams();
   ASSERT_EQ(static_cast<const base::Value&>(printParams), webview.getParams());
 }
 

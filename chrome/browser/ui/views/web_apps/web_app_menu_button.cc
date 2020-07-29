@@ -55,8 +55,8 @@ WebAppMenuButton::WebAppMenuButton(BrowserView* browser_view,
 WebAppMenuButton::~WebAppMenuButton() = default;
 
 void WebAppMenuButton::SetColor(SkColor color) {
-  SetImage(views::Button::STATE_NORMAL,
-           gfx::CreateVectorIcon(kBrowserToolsIcon, color));
+  SetImageModel(views::Button::STATE_NORMAL,
+                ui::ImageModel::FromVectorIcon(kBrowserToolsIcon, color));
   ink_drop_color_ = color;
 }
 

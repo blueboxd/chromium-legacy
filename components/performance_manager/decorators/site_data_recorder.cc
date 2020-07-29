@@ -43,7 +43,8 @@ class SiteDataNodeData : public NodeAttachedDataImpl<SiteDataNodeData>,
  public:
   struct Traits : public NodeAttachedDataOwnedByNodeType<PageNodeImpl> {};
 
-  explicit SiteDataNodeData(const PageNodeImpl* page_node) {}
+  explicit SiteDataNodeData(const PageNodeImpl* page_node)
+      : page_node_(page_node) {}
   ~SiteDataNodeData() override = default;
 
   // NodeAttachedData:
@@ -65,6 +66,8 @@ class SiteDataNodeData : public NodeAttachedDataImpl<SiteDataNodeData>,
   void OnIsAudibleChanged(bool audible);
   void OnTitleUpdated();
   void OnFaviconUpdated();
+
+  void Reset();
 
   SiteDataWriter* writer() const override {
     DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
@@ -90,22 +93,17 @@ class SiteDataNodeData : public NodeAttachedDataImpl<SiteDataNodeData>,
   void MaybeNotifyBackgroundFeatureUsage(void (SiteDataWriter::*method)(),
                                          FeatureType feature_type);
 
-  // Update |backgrounded_time_| depending on the visibility of the page.
-  void UpdateBackgroundedTime();
+  TabVisibility GetPageNodeVisibility() {
+    return page_node_->is_visible() ? TabVisibility::kForeground
+                                    : TabVisibility::kBackground;
+  }
 
   // The SiteDataCache used to serve writers for the PageNode owned by this
   // object.
   SiteDataCache* data_cache_ = nullptr;
 
-  bool is_visible_ = false;
-  bool is_loaded_ = false;
-
-  // The Origin tracked by the writer.
-  url::Origin last_origin_;
-
-  // The time at which this tab has been backgrounded, null if this tab is
-  // currently visible.
-  base::TimeTicks backgrounded_time_;
+  // The PageNode that owns this object.
+  const PageNodeImpl* page_node_ = nullptr;
 
   // The time at which this tab switched to the loaded state, null if this tab
   // is not currently loaded.
@@ -123,35 +121,32 @@ void SiteDataNodeData::OnMainFrameUrlChanged(const GURL& url,
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   url::Origin origin = url::Origin::Create(url);
 
-  if (origin == last_origin_)
+  if (writer_ && origin == writer_->Origin())
     return;
 
   // If the origin has changed then the writer should be invalidated.
-  writer_.reset();
+  Reset();
 
   if (!url.SchemeIsHTTPOrHTTPS())
     return;
 
-  last_origin_ = origin;
-  writer_ = data_cache_->GetWriterForOrigin(
-      origin, page_is_visible ? TabVisibility::kForeground
-                              : TabVisibility::kBackground);
+  writer_ = data_cache_->GetWriterForOrigin(origin);
 
-  is_visible_ = page_is_visible;
-  UpdateBackgroundedTime();
+  // The writer is assumed to be in an unloaded state by default, set the proper
+  // loading state if necessary.
+  if (!page_node_->is_loading())
+    OnIsLoadingChanged(false);
 }
 
 void SiteDataNodeData::OnIsLoadingChanged(bool is_loading) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   if (!writer_)
     return;
-  if (is_loading) {
-    is_loaded_ = false;
-    writer_->NotifySiteUnloaded();
+  if (is_loading && !loaded_time_.is_null()) {
+    writer_->NotifySiteUnloaded(GetPageNodeVisibility());
     loaded_time_ = base::TimeTicks();
-  } else {
-    is_loaded_ = true;
-    writer_->NotifySiteLoaded();
+  } else if (!is_loading) {
+    writer_->NotifySiteLoaded(GetPageNodeVisibility());
     loaded_time_ = base::TimeTicks::Now();
   }
 }
@@ -160,10 +155,11 @@ void SiteDataNodeData::OnIsVisibleChanged(bool is_visible) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   if (!writer_)
     return;
-  is_visible_ = is_visible;
-  UpdateBackgroundedTime();
-  writer_->NotifySiteVisibilityChanged(is_visible ? TabVisibility::kForeground
-                                                  : TabVisibility::kBackground);
+  if (is_visible) {
+    writer_->NotifySiteForegrounded(!page_node_->is_loading());
+  } else {
+    writer_->NotifySiteBackgrounded(!page_node_->is_loading());
+  }
 }
 
 void SiteDataNodeData::OnIsAudibleChanged(bool audible) {
@@ -190,6 +186,15 @@ void SiteDataNodeData::OnFaviconUpdated() {
       FeatureType::kFaviconChange);
 }
 
+void SiteDataNodeData::Reset() {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  if (writer_ && !loaded_time_.is_null() && !page_node_->is_loading()) {
+    writer_->NotifySiteUnloaded(GetPageNodeVisibility());
+    loaded_time_ = base::TimeTicks();
+  }
+  writer_.reset();
+}
+
 bool SiteDataNodeData::ShouldIgnoreFeatureUsageEvent(FeatureType feature_type) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   // The feature usage should be ignored if there's no writer for this page.
@@ -197,11 +202,11 @@ bool SiteDataNodeData::ShouldIgnoreFeatureUsageEvent(FeatureType feature_type) {
     return true;
 
   // Ignore all features happening before the website gets fully loaded.
-  if (!is_loaded_)
+  if (page_node_->is_loading())
     return true;
 
   // Ignore events if the tab is not in background.
-  if (is_visible_)
+  if (GetPageNodeVisibility() == TabVisibility::kForeground)
     return true;
 
   if (feature_type == FeatureType::kTitleChange ||
@@ -215,8 +220,7 @@ bool SiteDataNodeData::ShouldIgnoreFeatureUsageEvent(FeatureType feature_type) {
 
   // Ignore events happening shortly after the tab being backgrounded, they're
   // usually false positives.
-  DCHECK(!backgrounded_time_.is_null());
-  if ((base::TimeTicks::Now() - backgrounded_time_ <
+  if ((page_node_->TimeSinceLastVisibilityChange() <
        kFeatureUsagePostBackgroundGracePeriod)) {
     return true;
   }
@@ -235,15 +239,6 @@ void SiteDataNodeData::MaybeNotifyBackgroundFeatureUsage(
   (writer_.get()->*method)();
 }
 
-void SiteDataNodeData::UpdateBackgroundedTime() {
-  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  if (is_visible_) {
-    backgrounded_time_ = base::TimeTicks();
-  } else {
-    backgrounded_time_ = base::TimeTicks::Now();
-  }
-}
-
 SiteDataNodeData* GetSiteDataNodeDataFromPageNode(const PageNode* page_node) {
   auto* page_node_impl = PageNodeImpl::FromNode(page_node);
   DCHECK(page_node_impl);
@@ -253,12 +248,6 @@ SiteDataNodeData* GetSiteDataNodeDataFromPageNode(const PageNode* page_node) {
 }
 
 }  // namespace
-
-// static
-SiteDataRecorder::Data* SiteDataRecorder::Data::GetForTesting(
-    const PageNode* page_node) {
-  return GetSiteDataNodeDataFromPageNode(page_node);
-}
 
 SiteDataRecorder::SiteDataRecorder() {
   DETACH_FROM_SEQUENCE(sequence_checker_);
@@ -279,6 +268,12 @@ void SiteDataRecorder::OnTakenFromGraph(Graph* graph) {
 void SiteDataRecorder::OnPageNodeAdded(const PageNode* page_node) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   SetPageNodeDataCache(page_node);
+}
+
+void SiteDataRecorder::OnBeforePageNodeRemoved(const PageNode* page_node) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  auto* data = GetSiteDataNodeDataFromPageNode(page_node);
+  data->Reset();
 }
 
 void SiteDataRecorder::OnMainFrameUrlChanged(const PageNode* page_node) {
@@ -341,5 +336,11 @@ void SiteDataRecorder::SetPageNodeDataCache(const PageNode* page_node) {
 
 SiteDataNodeData::Data::Data() = default;
 SiteDataNodeData::Data::~Data() = default;
+
+// static
+SiteDataRecorder::Data* SiteDataRecorder::Data::GetForTesting(
+    const PageNode* page_node) {
+  return GetSiteDataNodeDataFromPageNode(page_node);
+}
 
 }  // namespace performance_manager

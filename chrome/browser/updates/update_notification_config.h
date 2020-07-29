@@ -22,9 +22,13 @@ namespace updates {
 constexpr char kUpdateNotificationStateParamName[] =
     "update_notification_state";
 
-// Configure the update notification schedule interval in days.
-constexpr char kUpdateNotificationIntervalParamName[] =
-    "update_notification_interval_days";
+// Configure the initial schedule interval update notification in days.
+constexpr char kUpdateNotificationInitIntervalParamName[] =
+    "update_notification_init_interval_days";
+
+// Configure the maximum schedule interval update notification in days.
+constexpr char kUpdateNotificationMaxIntervalParamName[] =
+    "update_notification_max_interval_days";
 
 // Configure the start of deliver window in the morning.
 constexpr char kUpdateNotificationDeliverWindowMorningStartParamName[] =
@@ -42,14 +46,6 @@ constexpr char kUpdateNotificationDeliverWindowEveningStartParamName[] =
 constexpr char kUpdateNotificationDeliverWindowEveningEndParamName[] =
     "update_notification_deliver_window_evening_end";
 
-// Configure the custom throttle linear function scale coefficient.
-constexpr char kUpdateNotificationDeliverScaleCoefficientParamName[] =
-    "update_notification_throttle_co_scale";
-
-// Configure the custom throttle linear function offset coefficient.
-constexpr char kUpdateNotificationThrottleOffsetCoefficientParamName[] =
-    "update_notification_throttle_co_offset";
-
 struct UpdateNotificationConfig {
   // Create a default update notification config.
   static std::unique_ptr<UpdateNotificationConfig> Create();
@@ -64,32 +60,16 @@ struct UpdateNotificationConfig {
   bool is_enabled;
 
   // Default interval to schedule next update notification.
-  base::TimeDelta default_interval;
+  base::TimeDelta init_interval;
 
-  // Throttle logic could be conducted by adjusting schedule interval.
-  // A linear function X' = a * X + b would be applied.
-  // X represents the current interval(init value is default_interval),
-  // a represents scale coefficient,
-  // b represents offset coefficient,
-  // X' represents new schedule interval after applying throttling logic.
-  // For example, default_interval X is 3 weeks(21 days), a = 2, b = 2,
-  // then the schedule interval X' would be 8 weeks if it is throttled,
-  // and next time should be 18 weeks etc.
-
-  // Scale coefficient a in the linear function X' = a * X + b;
-  double throttle_interval_linear_co_scale;
-
-  // Offset coefficient b in the linear function X' = a * X + b;
-  double throttle_interval_linear_co_offset;
+  // Maximum interval to schedule next update notification.
+  base::TimeDelta max_interval;
 
   // Deliver window pair [start, end] in the morning.
   std::pair<base::TimeDelta, base::TimeDelta> deliver_window_morning;
 
   // Deliver window pair [start, end] in the evening.
   std::pair<base::TimeDelta, base::TimeDelta> deliver_window_evening;
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(UpdateNotificationConfig);
 };
 
 }  // namespace updates

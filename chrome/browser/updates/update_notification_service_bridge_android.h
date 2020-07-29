@@ -17,15 +17,7 @@ class UpdateNotificationServiceBridgeAndroid
 
  private:
   // UpdateNotificationServiceBridge implementation.
-  void UpdateLastShownTimeStamp(base::Time timestamp) override;
-  base::Optional<base::Time> GetLastShownTimeStamp() override;
-  void UpdateThrottleInterval(base::TimeDelta interval) override;
-  base::Optional<base::TimeDelta> GetThrottleInterval() override;
-  void UpdateNegativeActionCount(int count) override;
-  int GetNegativeActionCount() override;
   void LaunchChromeActivity(int state) override;
-
-  DISALLOW_COPY_AND_ASSIGN(UpdateNotificationServiceBridgeAndroid);
 };
 
 }  // namespace updates

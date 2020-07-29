@@ -36,7 +36,7 @@
 #include "base/task/thread_pool/thread_group_native_win.h"
 #include "base/win/com_init_check_hook.h"
 #include "base/win/com_init_util.h"
-#elif defined(OS_MACOSX)
+#elif defined(OS_APPLE)
 #include "base/task/thread_pool/thread_group_native_mac.h"
 #endif
 
@@ -49,7 +49,7 @@ namespace {
 using ThreadGroupNativeType =
 #if defined(OS_WIN)
     ThreadGroupNativeWin;
-#elif defined(OS_MACOSX)
+#elif defined(OS_APPLE)
     ThreadGroupNativeMac;
 #endif
 #endif

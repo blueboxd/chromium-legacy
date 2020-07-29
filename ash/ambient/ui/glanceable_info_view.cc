@@ -74,9 +74,15 @@ GlanceableInfoView::GlanceableInfoView(AmbientViewDelegate* delegate)
     : delegate_(delegate) {
   DCHECK(delegate);
   SetID(AssistantViewID::kAmbientGlanceableInfoView);
-  delegate_->GetAmbientBackendModel()->AddObserver(this);
+  auto* backend_model = delegate_->GetAmbientBackendModel();
+  backend_model->AddObserver(this);
 
   InitLayout();
+
+  if (!backend_model->weather_condition_icon().isNull()) {
+    // already has weather info, show immediately.
+    Show();
+  }
 }
 
 GlanceableInfoView::~GlanceableInfoView() {
@@ -97,9 +103,9 @@ void GlanceableInfoView::Show() {
 
   float temperature = delegate_->GetAmbientBackendModel()->temperature();
   // TODO(b/154046129): handle Celsius format.
-  temperature_->SetText(l10n_util::GetStringFUTF16(
+  temperature_->SetText(l10n_util::GetStringFUTF16Int(
       IDS_ASH_AMBIENT_MODE_WEATHER_TEMPERATURE_IN_FAHRENHEIT,
-      base::FormatNumber(static_cast<int>(temperature))));
+      static_cast<int>(temperature)));
 }
 
 void GlanceableInfoView::InitLayout() {

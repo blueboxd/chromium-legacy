@@ -64,4 +64,7 @@ specific_include_rules = {
     "+third_party/libyuv",
     "+ui/gl/gl_implementation.h",
   ],
+  "delegated_ink_point_renderer\.*" : [
+    "+mojo/public/cpp/bindings",
+  ],
 }

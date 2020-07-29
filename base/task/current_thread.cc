@@ -232,7 +232,7 @@ bool CurrentIOThread::WatchFileDescriptor(
 }
 #endif  // defined(OS_WIN)
 
-#if defined(OS_MACOSX) && !defined(OS_IOS)
+#if defined(OS_MAC)
 bool CurrentIOThread::WatchMachReceivePort(
     mach_port_t port,
     MessagePumpForIO::MachPortWatchController* controller,

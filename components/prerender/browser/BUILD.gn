@@ -6,13 +6,17 @@ static_library("browser") {
   sources = [
     "prerender_config.cc",
     "prerender_config.h",
+    "prerender_histograms.cc",
+    "prerender_histograms.h",
     "prerender_history.cc",
     "prerender_history.h",
   ]
 
   deps = [
+    "//components/google/core/common",
     "//components/prerender/common",
     "//components/prerender/common:mojo_bindings",
+    "//net",
     "//ui/gfx/geometry",
   ]
 }

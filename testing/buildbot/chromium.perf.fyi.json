@@ -105,7 +105,9 @@
           "--upload-results",
           "--test-shard-map-filename=android-pixel2-perf-fyi_map.json",
           "--browser-executable=../../out/Release/bin/monochrome_64_32_bundle",
-          "--device=android"
+          "--device=android",
+          "--output-format=histograms",
+          "--experimental-tbmv3-metrics"
         ],
         "isolate_name": "performance_test_suite",
         "merge": {
@@ -269,7 +271,9 @@
           "--browser=release_x64",
           "--upload-results",
           "--test-shard-map-filename=win-10_laptop_low_end-perf_hp-candidate_map.json",
-          "--run-ref-build"
+          "--run-ref-build",
+          "--output-format=histograms",
+          "--experimental-tbmv3-metrics"
         ],
         "isolate_name": "performance_test_suite",
         "merge": {

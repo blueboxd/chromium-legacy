@@ -147,7 +147,8 @@ TEST_F(PrivacyScreenControllerTest, TestEnableAndDisable) {
   ASSERT_TRUE(controller()->IsSupported());
 
   // Enable for user 1, and switch to user 2. User 2 should have it disabled.
-  controller()->SetEnabled(true);
+  controller()->SetEnabled(true,
+                           PrivacyScreenController::kToggleUISurfaceCount);
   // Switching accounts shouldn't trigger observers.
   ::testing::Mock::VerifyAndClear(observer());
   EXPECT_CALL(*observer(), OnPrivacyScreenSettingChanged).Times(0);
@@ -190,7 +191,8 @@ TEST_F(PrivacyScreenControllerTest, SupportedOnSingleInternalDisplay) {
   EXPECT_EQ(1u, display_manager()->GetNumDisplays());
   ASSERT_TRUE(controller()->IsSupported());
 
-  controller()->SetEnabled(true);
+  controller()->SetEnabled(true,
+                           PrivacyScreenController::kToggleUISurfaceCount);
   EXPECT_TRUE(controller()->GetEnabled());
 }
 
@@ -250,7 +252,8 @@ TEST_F(PrivacyScreenControllerTest,
   EXPECT_EQ(3u, display_manager()->GetNumDisplays());
   ASSERT_TRUE(controller()->IsSupported());
 
-  controller()->SetEnabled(true);
+  controller()->SetEnabled(true,
+                           PrivacyScreenController::kToggleUISurfaceCount);
   EXPECT_TRUE(controller()->GetEnabled());
 }
 

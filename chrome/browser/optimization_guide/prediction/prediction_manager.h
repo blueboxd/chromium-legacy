@@ -18,8 +18,11 @@
 #include "base/time/clock.h"
 #include "base/timer/timer.h"
 #include "chrome/browser/optimization_guide/optimization_guide_session_statistic.h"
+#include "chrome/services/machine_learning/public/mojom/decision_tree.mojom.h"
+#include "chrome/services/machine_learning/public/mojom/machine_learning_service.mojom-forward.h"
 #include "components/optimization_guide/optimization_guide_enums.h"
 #include "components/optimization_guide/proto/models.pb.h"
+#include "mojo/public/cpp/bindings/remote.h"
 #include "services/network/public/cpp/network_quality_tracker.h"
 #include "url/origin.h"
 
@@ -49,9 +52,16 @@ class OptimizationGuideStore;
 class PredictionModel;
 class PredictionModelFetcher;
 class TopHostProvider;
+class RemoteDecisionTreePredictor;
 
 using HostModelFeaturesMRUCache =
     base::HashingMRUCache<std::string, base::flat_map<std::string, float>>;
+
+using OptimizationTargetDecisionCallback =
+    base::OnceCallback<void(optimization_guide::OptimizationTargetDecision)>;
+
+using PostModelLoadCallback =
+    base::OnceCallback<void(std::unique_ptr<proto::PredictionModel>, bool)>;
 
 // A PredictionManager supported by the optimization guide that makes an
 // OptimizationTargetDecision by evaluating the corresponding prediction model
@@ -85,7 +95,7 @@ class PredictionManager
   void RegisterOptimizationTargets(
       const std::vector<proto::OptimizationTarget>& optimization_targets);
 
-  // Determine if the navigation matches the critieria for
+  // Determine if the navigation matches the criteria for
   // |optimization_target|. Return kUnknown if a PredictionModel for the
   // optimization target is not registered and kModelNotAvailableOnClient if the
   // if model for the optimization target is not currently on the client.
@@ -271,6 +281,26 @@ class PredictionManager
   // model object was created and successfully stored, otherwise false.
   bool ProcessAndStorePredictionModel(const proto::PredictionModel& model);
 
+  // Send |model| to the ML service and bind the predictor handle to the
+  // |optimization_target_remote_model_predictor_map_|, then run |callback|
+  // for post-processing.
+  bool SendPredictionModelToMLService(
+      std::unique_ptr<proto::PredictionModel> model,
+      PostModelLoadCallback callback);
+
+  // Callback run after a prediction |model| is sent to the ML service.
+  void OnPredictionModelSentToMLService(
+      PostModelLoadCallback callback,
+      std::unique_ptr<proto::PredictionModel> model,
+      std::unique_ptr<RemoteDecisionTreePredictor> predictor_handle,
+      machine_learning::mojom::LoadModelResult result);
+
+  // Post-processing callback invoked after processing |model| or sending it to
+  // the ML Service.
+  void OnProcessOrSendPredictionModel(
+      std::unique_ptr<proto::PredictionModel> model,
+      bool success);
+
   // Process |host_model_features| from the into host model features
   // usable by the PredictionManager. The processed host model features are
   // stored in |host_model_features_map_|. Return true if host model features
@@ -299,6 +329,12 @@ class PredictionManager
   // an optimization target decision for it.
   base::flat_map<proto::OptimizationTarget, std::unique_ptr<PredictionModel>>
       optimization_target_prediction_model_map_;
+
+  // A map of optimization target to the model predictor handle capable of
+  // sending prediction calls to the prediction model loaded in the ML Service.
+  base::flat_map<proto::OptimizationTarget,
+                 std::unique_ptr<RemoteDecisionTreePredictor>>
+      optimization_target_remote_model_predictor_map_;
 
   // The set of optimization targets that have been registered with the
   // prediction manager.

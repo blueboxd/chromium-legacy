@@ -20,12 +20,12 @@ class SiteDataWriter {
   virtual ~SiteDataWriter();
 
   // Records tab load/unload events.
-  virtual void NotifySiteLoaded();
-  virtual void NotifySiteUnloaded();
+  virtual void NotifySiteLoaded(TabVisibility visibility);
+  virtual void NotifySiteUnloaded(TabVisibility visibility);
 
   // Records visibility change events.
-  virtual void NotifySiteVisibilityChanged(
-      performance_manager::TabVisibility visibility);
+  virtual void NotifySiteForegrounded(bool is_loaded);
+  virtual void NotifySiteBackgrounded(bool is_loaded);
 
   // Records feature usage.
   virtual void NotifyUpdatesFaviconInBackground();
@@ -38,6 +38,8 @@ class SiteDataWriter {
       base::TimeDelta cpu_usage_estimate,
       uint64_t private_footprint_kb_estimate);
 
+  virtual const url::Origin& Origin() const;
+
   internal::SiteDataImpl* impl_for_testing() const { return impl_.get(); }
 
  protected:
@@ -47,18 +49,11 @@ class SiteDataWriter {
 
   // Protected constructor, these objects are meant to be created by a site data
   // store.
-  SiteDataWriter(scoped_refptr<internal::SiteDataImpl> impl,
-                 performance_manager::TabVisibility tab_visibility);
+  explicit SiteDataWriter(scoped_refptr<internal::SiteDataImpl> impl);
 
  private:
   // The SiteDataImpl object we delegate to.
   const scoped_refptr<internal::SiteDataImpl> impl_;
-
-  // The visibility of the tab using this writer.
-  performance_manager::TabVisibility tab_visibility_;
-
-  // Indicates if the tab using this writer is loaded.
-  bool is_loaded_ = false;
 
   SEQUENCE_CHECKER(sequence_checker_);
 

@@ -986,8 +986,15 @@ void OverviewSession::OnKeyEvent(ui::KeyEvent* event) {
         return;
       break;
     }
-    default:
+    default: {
+      // Window activation change happens after overview start animation is
+      // finished for performance reasons. During the animation, the focused
+      // window prior to entering overview still has focus so stop events from
+      // reaching it. See https://crbug.com/951324 for more details.
+      if (shell->overview_controller()->IsInStartAnimation())
+        break;
       return;
+    }
   }
 
   event->SetHandled();

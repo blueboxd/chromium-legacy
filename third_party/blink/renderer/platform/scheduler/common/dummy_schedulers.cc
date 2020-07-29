@@ -104,6 +104,7 @@ class DummyPageScheduler : public PageScheduler {
   void OnTitleOrFaviconUpdated() override {}
   void SetPageVisible(bool) override {}
   void SetPageFrozen(bool) override {}
+  void SetPageBackForwardCached(bool) override {}
   void SetKeepActive(bool) override {}
   bool IsMainFrameLocal() const override { return true; }
   void SetIsMainFrameLocal(bool) override {}

@@ -4,7 +4,7 @@
 
 #import "ios/chrome/browser/ui/menu/menu_histograms.h"
 
-#include "base/metrics/histogram_macros.h"
+#import "base/metrics/histogram_functions.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."
@@ -17,15 +17,19 @@ const char kMenuEntryPointsHistogram[] = "Mobile.ContextMenu.EntryPoints";
 // Histograms for tracking actions performed on given menus.
 const char kHistoryEntryActionsHistogram[] =
     "Mobile.ContextMenu.HistoryEntry.Actions";
+const char kBookmarkEntryActionsHistogram[] =
+    "Mobile.ContextMenu.BookmarkEntry.Actions";
 }  // namespace
 
 void RecordMenuShown(MenuScenario scenario) {
-  UMA_HISTOGRAM_ENUMERATION(kMenuEntryPointsHistogram, scenario);
+  base::UmaHistogramEnumeration(kMenuEntryPointsHistogram, scenario);
 }
 
 const char* GetActionsHistogramName(MenuScenario scenario) {
   switch (scenario) {
     case MenuScenario::HistoryEntry:
       return kHistoryEntryActionsHistogram;
+    case MenuScenario::BookmarkEntry:
+      return kBookmarkEntryActionsHistogram;
   }
 }

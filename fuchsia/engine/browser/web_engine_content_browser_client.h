@@ -41,6 +41,7 @@ class WebEngineContentBrowserClient : public content::ContentBrowserClient {
       mojo::BinderMapWithContext<content::RenderFrameHost*>* map) final;
   void RegisterNonNetworkNavigationURLLoaderFactories(
       int frame_tree_node_id,
+      base::UkmSourceId ukm_source_id,
       NonNetworkURLLoaderFactoryMap* factories) final;
   void RegisterNonNetworkSubresourceURLLoaderFactories(
       int render_process_id,

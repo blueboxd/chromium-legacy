@@ -5,10 +5,13 @@
 #ifndef PDF_PAINT_READY_RECT_H_
 #define PDF_PAINT_READY_RECT_H_
 
-#include "ppapi/cpp/image_data.h"
+#include "pdf/ppapi_migration/image.h"
 #include "ui/gfx/geometry/rect.h"
 
+class SkBitmap;
+
 namespace pp {
+class ImageData;
 class Rect;
 }  // namespace pp
 
@@ -22,6 +25,10 @@ class PaintReadyRect {
   PaintReadyRect(const pp::Rect& rect,
                  const pp::ImageData& image_data,
                  bool flush_now = false);
+  PaintReadyRect(const gfx::Rect& rect,
+                 const SkBitmap& bitmap,
+                 bool flush_now = false);
+
   PaintReadyRect(const PaintReadyRect& other);
   PaintReadyRect& operator=(const PaintReadyRect& other);
   ~PaintReadyRect();
@@ -29,7 +36,7 @@ class PaintReadyRect {
   const gfx::Rect& rect() const { return rect_; }
   void set_rect(const gfx::Rect& rect) { rect_ = rect; }
 
-  const pp::ImageData& image_data() const { return image_data_; }
+  const Image& image() const { return image_; }
 
   // Whether to flush to screen immediately; otherwise, when the rest of the
   // plugin viewport is ready.
@@ -37,7 +44,7 @@ class PaintReadyRect {
 
  private:
   gfx::Rect rect_;
-  pp::ImageData image_data_;
+  Image image_;
   bool flush_now_;
 };
 

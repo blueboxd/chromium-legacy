@@ -13,6 +13,43 @@ let progressCenter;
 /** @type {!FileOperationHandler} */
 let fileOperationHandler;
 
+
+/**
+ * Mock JS Date.
+ *
+ * The stop() method should be called to restore original Date.
+ */
+class MockDate {
+  constructor() {
+    this.originalNow = Date.now;
+    Date.tick_ = 0;
+    Date.now = this.now;
+  }
+
+  /**
+   * Increases current timestamp.
+   *
+   * @param {number} msec Milliseconds to add to the current timestamp.
+   */
+  tick(msec) {
+    Date.tick_ += msec;
+  }
+
+  /**
+   * @returns {number} Current timestamp of the mock object.
+   */
+  now() {
+    return Date.tick_;
+  }
+
+  /**
+   * Restore original Date.now method.
+   */
+  stop() {
+    Date.now = this.originalNow;
+  }
+}
+
 // Set up the test components.
 function setUp() {
   // Mock LoadTimeData strings.
@@ -215,4 +252,57 @@ function testCopyUnexpectedError() {
   assertEquals('copy', item.type);
   assertEquals(true, item.single);
   assertEquals(0, item.progressRateInPercent);
+}
+
+/**
+ * Tests Speedometer moving average calculations.
+ */
+function testSpeedometerMovingAverage() {
+  const bufferLength = 20;
+  const speedometer = new fileOperationUtil.Speedometer(bufferLength);
+  const mockDate = new MockDate();
+
+  speedometer.setTotalBytes(2000);
+  mockDate.tick(1000);
+  speedometer.update(100);
+  mockDate.tick(1000);
+  speedometer.update(300);
+
+  // Verify calculated instantaneous speeds.
+  assertArrayEquals([100, 200], speedometer.getBufferForTesting());
+
+  // Check moving average speed calculation.
+  assertEquals(150, speedometer.getCurrentSpeed());
+
+  // Check calculated remaining time.
+  assertEquals(12, speedometer.getRemainingTime());
+
+  mockDate.stop();
+}
+
+/**
+ * Tests Speedometer buffer ring rotate and substitute.
+ */
+function testSpeedometerBufferRing() {
+  const bufferLength = 20;
+  const speedometer = new fileOperationUtil.Speedometer(bufferLength);
+  const mockDate = new MockDate();
+
+  for (let i = 0; i < bufferLength; i++) {
+    mockDate.tick(1000);
+    speedometer.update(i * 100);
+  }
+
+  mockDate.tick(1000);
+  speedometer.update(2200);
+
+  const buffer = speedometer.getBufferForTesting();
+
+  // Check buffer not expanded more than the specified length.
+  assertEquals(bufferLength, buffer.length);
+
+  // Check first element replaced by recent calculated speed.
+  assertEquals(300, buffer[0]);
+
+  mockDate.stop();
 }

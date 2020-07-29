@@ -1462,7 +1462,9 @@ void HandleTogglePrivacyScreen() {
 
   PrivacyScreenController* controller =
       Shell::Get()->privacy_screen_controller();
-  controller->SetEnabled(!controller->GetEnabled());
+  controller->SetEnabled(
+      !controller->GetEnabled(),
+      PrivacyScreenController::kToggleUISurfaceKeyboardShortcut);
 }
 
 // Percent by which the volume should be changed when a volume key is pressed.

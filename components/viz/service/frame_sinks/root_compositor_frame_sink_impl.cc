@@ -13,6 +13,7 @@
 #include "base/threading/thread_task_runner_handle.h"
 #include "build/build_config.h"
 #include "components/viz/common/frame_sinks/begin_frame_source.h"
+#include "components/viz/service/display/delegated_ink_point_renderer.h"
 #include "components/viz/service/display/display.h"
 #include "components/viz/service/display/output_surface.h"
 #include "components/viz/service/display_embedder/output_surface_provider.h"
@@ -301,6 +302,12 @@ void RootCompositorFrameSinkImpl::AddVSyncParameterObserver(
     mojo::PendingRemote<mojom::VSyncParameterObserver> observer) {
   vsync_listener_ =
       std::make_unique<VSyncParameterListener>(std::move(observer));
+}
+
+void RootCompositorFrameSinkImpl::SetDelegatedInkPointRenderer(
+    mojo::PendingReceiver<mojom::DelegatedInkPointRenderer> receiver) {
+  display_->set_delegated_ink_point_renderer(
+      std::make_unique<DelegatedInkPointRendererImpl>(std::move(receiver)));
 }
 
 void RootCompositorFrameSinkImpl::SetNeedsBeginFrame(bool needs_begin_frame) {

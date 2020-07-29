@@ -61,7 +61,7 @@
 #include "base/files/file_descriptor_watcher_posix.h"
 #endif
 
-#if defined(OS_MACOSX)
+#if defined(OS_APPLE)
 #include "base/mac/scoped_nsautorelease_pool.h"
 #endif
 
@@ -509,7 +509,7 @@ void SetTemporaryDirectory(const FilePath& temp_dir,
                            EnvironmentMap* environment) {
 #if defined(OS_WIN)
   environment->emplace(L"TMP", temp_dir.value());
-#elif defined(OS_MACOSX)
+#elif defined(OS_APPLE)
   environment->emplace("MAC_CHROMIUM_TMPDIR", temp_dir.value());
 #elif defined(OS_POSIX) || defined(OS_FUCHSIA)
   environment->emplace("TMPDIR", temp_dir.value());

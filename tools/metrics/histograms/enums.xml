@@ -37089,6 +37089,7 @@ Called by update_gpu_driver_bug_workaround_entries.py.-->
 
 <enum name="IOSMenuScenario">
   <int value="0" label="History Entry"/>
+  <int value="1" label="Bookmark Entry"/>
 </enum>
 
 <enum name="IOSNTPImpression">
@@ -57096,6 +57097,12 @@ Called by update_net_trust_anchors.py.-->
 <enum name="PriorityChangeStatus">
   <int value="0" label="NoPriorityChange"/>
   <int value="1" label="PriorityChanged"/>
+</enum>
+
+<enum name="PrivacyScreenToggleUISurface">
+  <int value="0" label="KeyboardShortcut"/>
+  <int value="1" label="FeaturePod"/>
+  <int value="2" label="ToastButton"/>
 </enum>
 
 <enum name="PrivetNotificationsEvent">

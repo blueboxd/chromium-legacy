@@ -3,10 +3,11 @@
 // found in the LICENSE file.
 
 import {NativeEventTarget as EventTarget} from 'chrome://resources/js/cr/event_target.m.js';
+import {Point} from './constants.js';
 
 /**
  * @typedef {{
- *   center: !{x: number, y: number},
+ *   center: !Point,
  *   direction: (string|undefined),
  *   scaleRatio: (?number|undefined),
  *   startScaleRatio: (?number|undefined),
@@ -249,7 +250,7 @@ export class GestureDetector {
   /**
    * Computes the midpoint between fingers.
    * @param {!TouchEvent} event Touch event with at least 2 touch points.
-   * @return {!{x: number, y: number}} Midpoint between touch[0] and touch[1].
+   * @return {!Point} Midpoint between touch[0] and touch[1].
    * @private
    */
   static center_(event) {

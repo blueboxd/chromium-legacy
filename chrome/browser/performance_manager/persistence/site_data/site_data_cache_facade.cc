@@ -85,7 +85,7 @@ void SiteDataCacheFacade::WaitUntilCacheInitializedForTesting() {
                            auto* cache =
                                cache_factory->GetDataCacheForBrowserContext(
                                    browser_context_id);
-                           if (cache->IsRecordingForTesting()) {
+                           if (cache->IsRecording()) {
                              static_cast<SiteDataCacheImpl*>(cache)
                                  ->SetInitializationCallbackForTesting(
                                      std::move(quit_closure));
@@ -104,7 +104,8 @@ void SiteDataCacheFacade::OnURLsDeleted(
            SiteDataCacheFactory* cache_factory) {
           auto* cache =
               cache_factory->GetDataCacheForBrowserContext(browser_context_id);
-          static_cast<SiteDataCacheImpl*>(cache)->ClearAllSiteData();
+          if (cache->IsRecording())
+            static_cast<SiteDataCacheImpl*>(cache)->ClearAllSiteData();
         },
         browser_context_->UniqueId());
     SiteDataCacheFacadeFactory::GetInstance()
@@ -132,8 +133,10 @@ void SiteDataCacheFacade::OnURLsDeleted(
            SiteDataCacheFactory* cache_factory) {
           auto* cache =
               cache_factory->GetDataCacheForBrowserContext(browser_context_id);
-          static_cast<SiteDataCacheImpl*>(cache)->ClearSiteDataForOrigins(
-              origins_to_remove);
+          if (cache->IsRecording()) {
+            static_cast<SiteDataCacheImpl*>(cache)->ClearSiteDataForOrigins(
+                origins_to_remove);
+          }
         },
         browser_context_->UniqueId(), std::move(origins_to_remove));
     SiteDataCacheFacadeFactory::GetInstance()

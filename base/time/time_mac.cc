@@ -31,7 +31,7 @@
 
 namespace {
 
-#if defined(OS_MACOSX) && !defined(OS_IOS)
+#if defined(OS_MAC)
 int64_t MachTimeToMicroseconds(uint64_t mach_time) {
   static mach_timebase_info_data_t timebase_info;
   if (timebase_info.denom == 0) {
@@ -56,7 +56,7 @@ int64_t MachTimeToMicroseconds(uint64_t mach_time) {
   // reported in nanoseconds is enough to last nearly 585 years.
   return base::checked_cast<int64_t>(result.ValueOrDie());
 }
-#endif  // defined(OS_MACOSX) && !defined(OS_IOS)
+#endif  // defined(OS_MAC)
 
 // Returns monotonically growing number of ticks in microseconds since some
 // unspecified starting point.
@@ -177,12 +177,12 @@ CFAbsoluteTime Time::ToCFAbsoluteTime() const {
 
 // TimeDelta ------------------------------------------------------------------
 
-#if defined(OS_MACOSX) && !defined(OS_IOS)
+#if defined(OS_MAC)
 // static
 TimeDelta TimeDelta::FromMachTime(uint64_t mach_time) {
   return TimeDelta::FromMicroseconds(MachTimeToMicroseconds(mach_time));
 }
-#endif  // defined(OS_MACOSX) && !defined(OS_IOS)
+#endif  // defined(OS_MAC)
 
 // TimeTicks ------------------------------------------------------------------
 
@@ -202,12 +202,12 @@ bool TimeTicks::IsConsistentAcrossProcesses() {
   return true;
 }
 
-#if defined(OS_MACOSX) && !defined(OS_IOS)
+#if defined(OS_MAC)
 // static
 TimeTicks TimeTicks::FromMachAbsoluteTime(uint64_t mach_absolute_time) {
   return TimeTicks(MachTimeToMicroseconds(mach_absolute_time));
 }
-#endif  // defined(OS_MACOSX) && !defined(OS_IOS)
+#endif  // defined(OS_MAC)
 
 // static
 TimeTicks::Clock TimeTicks::GetClock() {

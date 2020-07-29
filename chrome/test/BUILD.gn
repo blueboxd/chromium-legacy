@@ -3305,6 +3305,7 @@ test("unit_tests") {
     "../browser/optimization_guide/optimization_guide_top_host_provider_unittest.cc",
     "../browser/optimization_guide/prediction/prediction_manager_unittest.cc",
     "../browser/optimization_guide/prediction/prediction_model_fetcher_unittest.cc",
+    "../browser/optimization_guide/prediction/remote_decision_tree_predictor_unittest.cc",
     "../browser/page_load_metrics/metrics_web_contents_observer_unittest.cc",
     "../browser/page_load_metrics/observers/aborts_page_load_metrics_observer_unittest.cc",
     "../browser/page_load_metrics/observers/ad_metrics/ads_page_load_metrics_observer_unittest.cc",
@@ -3685,6 +3686,7 @@ test("unit_tests") {
       "../browser/nearby_sharing/nearby_notification_manager_unittest.cc",
       "../browser/nearby_sharing/nearby_per_session_discovery_manager_unittest.cc",
       "../browser/nearby_sharing/nearby_process_manager_unittest.cc",
+      "../browser/nearby_sharing/nearby_share_settings_unittest.cc",
       "../browser/nearby_sharing/nearby_sharing_service_impl_unittest.cc",
       "../browser/nearby_sharing/transfer_metadata_builder.cc",
       "../browser/nearby_sharing/transfer_metadata_builder.h",
@@ -3826,6 +3828,7 @@ test("unit_tests") {
     "//chrome/common/media_router:test_support",
     "//chrome/common/privacy_budget:unit_tests",
     "//chrome/services/machine_learning:unit_tests",
+    "//chrome/services/machine_learning/public/cpp:test_support",
     "//components/account_id",
     "//components/autofill/content/renderer:test_support",
     "//components/browser_sync:test_support",
@@ -4275,6 +4278,7 @@ test("unit_tests") {
       "../browser/ui/passwords/bubble_controllers/sign_in_promo_bubble_controller_unittest.cc",
       "../browser/ui/passwords/credential_leak_dialog_controller_impl_unittest.cc",
       "../browser/ui/passwords/credential_manager_dialog_controller_impl_unittest.cc",
+      "../browser/ui/qrcode_generator/qrcode_generator_bubble_controller_unittest.cc",
       "../browser/ui/recently_audible_helper_unittest.cc",
       "../browser/ui/search/ntp_user_data_logger_unittest.cc",
       "../browser/ui/search/omnibox_mojo_utils_unittest.cc",
@@ -5057,6 +5061,7 @@ test("unit_tests") {
 
       # This will add all of the unit tests for the schema compiler to this
       # target.
+      "//third_party/blink/common/privacy_budget:test_support",
       "//tools/json_schema_compiler/test:unit_tests",
     ]
     if (enable_service_discovery) {
@@ -5479,7 +5484,6 @@ test("unit_tests") {
       "../browser/signin/signin_global_error_unittest.cc",
       "../browser/signin/signin_ui_util_unittest.cc",
       "../browser/signin/signin_util_unittest.cc",
-      "../browser/ui/views/qrcode_generator/qrcode_generator_bubble_unittest.cc",
       "../browser/ui/views/sharing/sharing_dialog_view_unittest.cc",
       "../browser/ui/webui/signin/signin_create_profile_handler_unittest.cc",
       "../browser/ui/webui/signin/signin_error_handler_unittest.cc",
@@ -5564,6 +5568,7 @@ test("unit_tests") {
       "../browser/ui/views/payments/view_stack_unittest.cc",
       "../browser/ui/views/permission_bubble/permission_prompt_bubble_view_unittest.cc",
       "../browser/ui/views/profiles/avatar_toolbar_button_unittest.cc",
+      "../browser/ui/views/qrcode_generator/qrcode_generator_bubble_unittest.cc",
       "../browser/ui/views/relaunch_notification/relaunch_notification_controller_unittest.cc",
       "../browser/ui/views/relaunch_notification/relaunch_required_timer_internal_unittest.cc",
       "../browser/ui/views/send_tab_to_self/send_tab_to_self_bubble_view_impl_unittest.cc",

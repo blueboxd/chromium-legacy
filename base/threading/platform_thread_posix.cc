@@ -24,7 +24,7 @@
 #include "base/threading/thread_id_name_manager.h"
 #include "build/build_config.h"
 
-#if !defined(OS_MACOSX) && !defined(OS_FUCHSIA) && !defined(OS_NACL)
+#if !defined(OS_APPLE) && !defined(OS_FUCHSIA) && !defined(OS_NACL)
 #include "base/posix/can_lower_nice_to.h"
 #endif
 
@@ -173,7 +173,7 @@ void ClearTidCache() {
 PlatformThreadId PlatformThread::CurrentId() {
   // Pthreads doesn't have the concept of a thread ID, so we have to reach down
   // into the kernel.
-#if defined(OS_MACOSX)
+#if defined(OS_APPLE)
   return pthread_mach_thread_np(pthread_self());
 #elif defined(OS_LINUX)
   static NoDestructor<InitAtFork> init_at_fork;
@@ -284,7 +284,7 @@ void PlatformThread::Detach(PlatformThreadHandle thread_handle) {
 
 // Mac and Fuchsia have their own Set/GetCurrentThreadPriority()
 // implementations.
-#if !defined(OS_MACOSX) && !defined(OS_FUCHSIA)
+#if !defined(OS_APPLE) && !defined(OS_FUCHSIA)
 
 // static
 bool PlatformThread::CanIncreaseThreadPriority(ThreadPriority priority) {
@@ -349,7 +349,7 @@ ThreadPriority PlatformThread::GetCurrentThreadPriority() {
 #endif  // !defined(OS_NACL)
 }
 
-#endif  // !defined(OS_MACOSX) && !defined(OS_FUCHSIA)
+#endif  // !defined(OS_APPLE) && !defined(OS_FUCHSIA)
 
 // static
 size_t PlatformThread::GetDefaultThreadStackSize() {

@@ -322,7 +322,7 @@ COMPONENT_EXPORT(DEVICE_FIDO)
 extern const char kCredentialManagementPreviewMapKey[];
 COMPONENT_EXPORT(DEVICE_FIDO) extern const char kBioEnrollmentMapKey[];
 COMPONENT_EXPORT(DEVICE_FIDO) extern const char kBioEnrollmentPreviewMapKey[];
-COMPONENT_EXPORT(DEVICE_FIDO) extern const char kUvTokenMapKey[];
+COMPONENT_EXPORT(DEVICE_FIDO) extern const char kPinUvTokenMapKey[];
 extern const char kDefaultCredProtectKey[];
 extern const char kEnterpriseAttestationKey[];
 

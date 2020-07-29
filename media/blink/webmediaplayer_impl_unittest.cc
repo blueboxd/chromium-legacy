@@ -1852,7 +1852,8 @@ TEST_F(WebMediaPlayerImplTest, VideoLockedWhenPausedWhenHidden) {
   EXPECT_TRUE(IsVideoLockedWhenPausedWhenHidden());
 
   // With a user gesture it does unlock the player.
-  GetWebLocalFrame()->NotifyUserActivation();
+  GetWebLocalFrame()->NotifyUserActivation(
+      blink::mojom::UserActivationNotificationType::kTest);
   Play();
   EXPECT_FALSE(IsVideoLockedWhenPausedWhenHidden());
 
@@ -1862,7 +1863,8 @@ TEST_F(WebMediaPlayerImplTest, VideoLockedWhenPausedWhenHidden) {
   EXPECT_FALSE(IsVideoLockedWhenPausedWhenHidden());
 
   // With a user gesture, pause does lock the player.
-  GetWebLocalFrame()->NotifyUserActivation();
+  GetWebLocalFrame()->NotifyUserActivation(
+      blink::mojom::UserActivationNotificationType::kTest);
   Pause();
   EXPECT_TRUE(IsVideoLockedWhenPausedWhenHidden());
 

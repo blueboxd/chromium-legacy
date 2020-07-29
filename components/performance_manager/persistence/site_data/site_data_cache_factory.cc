@@ -81,7 +81,7 @@ bool SiteDataCacheFactory::IsDataCacheRecordingForTesting(
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   auto it = data_cache_map_.find(browser_context_id);
   CHECK(it != data_cache_map_.end());
-  return it->second->IsRecordingForTesting();
+  return it->second->IsRecording();
 }
 
 void SiteDataCacheFactory::SetCacheForTesting(

@@ -32,7 +32,7 @@ constexpr int kExpectedStillRunningExitCode = 0;
 
 constexpr int kDummyExitCode = 42;
 
-#if defined(OS_MACOSX)
+#if defined(OS_APPLE)
 // Fake port provider that returns the calling process's
 // task port, ignoring its argument.
 class FakePortProvider : public base::PortProvider {
@@ -163,7 +163,7 @@ TEST_F(ProcessTest, CreationTimeOtherProcess) {
       // Time::Now() is a combination of system clock and
       // QueryPerformanceCounter(). Tolerate 100 ms for the clock mismatch.
       TimeDelta::FromMilliseconds(100);
-#elif defined(OS_MACOSX)
+#elif defined(OS_APPLE)
       // On Mac, process creation time should be very precise.
       TimeDelta::FromMilliseconds(0);
 #else
@@ -309,7 +309,7 @@ TEST_F(ProcessTest, SetProcessBackgrounded) {
     return;
   Process process(SpawnChild("SimpleChildProcess"));
   int old_priority = process.GetPriority();
-#if defined(OS_MACOSX)
+#if defined(OS_APPLE)
   // On the Mac, backgrounding a process requires a port to that process.
   // In the browser it's available through the MachBroker class, which is not
   // part of base. Additionally, there is an indefinite amount of time between
@@ -344,7 +344,7 @@ TEST_F(ProcessTest, SetProcessBackgroundedSelf) {
   EXPECT_TRUE(process.IsProcessBackgrounded());
   EXPECT_TRUE(process.SetProcessBackgrounded(false));
   EXPECT_FALSE(process.IsProcessBackgrounded());
-#elif defined(OS_MACOSX)
+#elif defined(OS_APPLE)
   FakePortProvider provider;
   EXPECT_TRUE(process.SetProcessBackgrounded(&provider, true));
   EXPECT_TRUE(process.IsProcessBackgrounded(&provider));
@@ -368,7 +368,7 @@ TEST_F(ProcessTest, CurrentProcessIsRunning) {
       base::TimeDelta(), nullptr));
 }
 
-#if defined(OS_MACOSX)
+#if defined(OS_APPLE)
 // On Mac OSX, we can detect whether a non-child process is running.
 TEST_F(ProcessTest, PredefinedProcessIsRunning) {
   // Process 1 is the /sbin/launchd, it should be always running.

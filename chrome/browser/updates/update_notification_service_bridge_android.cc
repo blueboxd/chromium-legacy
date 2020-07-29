@@ -21,9 +21,6 @@ using base::android::ScopedJavaLocalRef;
 
 namespace updates {
 
-//
-// Java -> C++
-//
 void JNI_UpdateNotificationServiceBridge_Schedule(
     JNIEnv* env,
     const JavaParamRef<jstring>& j_title,
@@ -39,53 +36,6 @@ void JNI_UpdateNotificationServiceBridge_Schedule(
   data.state = static_cast<int>(j_state);
   data.should_show_immediately = static_cast<bool>(j_show_immediately);
   update_notification_service->Schedule(std::move(data));
-}
-
-//
-// C++ -> Java
-//
-void UpdateNotificationServiceBridgeAndroid::UpdateLastShownTimeStamp(
-    base::Time timestamp) {
-  JNIEnv* env = base::android::AttachCurrentThread();
-  Java_UpdateNotificationServiceBridge_updateLastShownTimeStamp(
-      env, timestamp.ToJavaTime());
-}
-
-base::Optional<base::Time>
-UpdateNotificationServiceBridgeAndroid::GetLastShownTimeStamp() {
-  JNIEnv* env = base::android::AttachCurrentThread();
-  auto timestamp =
-      Java_UpdateNotificationServiceBridge_getLastShownTimeStamp(env);
-  return timestamp == 0
-             ? base::nullopt
-             : (base::make_optional(base::Time::FromJavaTime(timestamp)));
-}
-
-void UpdateNotificationServiceBridgeAndroid::UpdateThrottleInterval(
-    base::TimeDelta interval) {
-  JNIEnv* env = base::android::AttachCurrentThread();
-  Java_UpdateNotificationServiceBridge_updateThrottleInterval(
-      env, interval.InMilliseconds());
-}
-
-base::Optional<base::TimeDelta>
-UpdateNotificationServiceBridgeAndroid::GetThrottleInterval() {
-  JNIEnv* env = base::android::AttachCurrentThread();
-  auto interval = Java_UpdateNotificationServiceBridge_getThrottleInterval(env);
-  return interval == 0 ? base::nullopt
-                       : (base::make_optional(
-                             base::TimeDelta::FromMilliseconds(interval)));
-}
-
-void UpdateNotificationServiceBridgeAndroid::UpdateNegativeActionCount(
-    int count) {
-  JNIEnv* env = base::android::AttachCurrentThread();
-  Java_UpdateNotificationServiceBridge_updateNegativeActionCount(env, count);
-}
-
-int UpdateNotificationServiceBridgeAndroid::GetNegativeActionCount() {
-  JNIEnv* env = base::android::AttachCurrentThread();
-  return Java_UpdateNotificationServiceBridge_getNegativeActionCount(env);
 }
 
 void UpdateNotificationServiceBridgeAndroid::LaunchChromeActivity(int state) {

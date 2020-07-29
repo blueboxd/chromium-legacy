@@ -61,7 +61,7 @@
 #include <sys/ucontext.h>
 #endif
 
-#if defined(OS_MACOSX)
+#if defined(OS_APPLE)
 #error "macOS should use launch_mac.cc"
 #endif
 

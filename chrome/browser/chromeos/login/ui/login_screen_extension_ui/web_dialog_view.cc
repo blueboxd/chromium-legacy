@@ -33,10 +33,6 @@ WebDialogView::~WebDialogView() {
   }
 }
 
-bool WebDialogView::ShouldShowCloseButton() const {
-  return !delegate_ || delegate_->CanCloseDialog();
-}
-
 bool WebDialogView::TakeFocus(content::WebContents* source, bool reverse) {
   ash::LoginScreen::Get()->FocusLoginShelf(reverse);
   return true;

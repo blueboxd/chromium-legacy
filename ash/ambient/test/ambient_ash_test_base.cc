@@ -110,6 +110,8 @@ void AmbientAshTestBase::TearDown() {
 void AmbientAshTestBase::ShowAmbientScreen() {
   // The widget will be destroyed in |AshTestBase::TearDown()|.
   ambient_controller()->ShowUi(AmbientUiMode::kLockScreenUi);
+  // The UI only shows when images are downloaded to avoid showing blank screen.
+  FastForwardToNextImage();
   // Flush the message loop to finish all async calls.
   base::RunLoop().RunUntilIdle();
 }

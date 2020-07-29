@@ -34,7 +34,7 @@
 #include "base/win/static_constants.h"
 #endif
 
-#if defined(OS_MACOSX)
+#if defined(OS_APPLE)
 #include "base/mac/mac_util.h"
 #endif
 
@@ -742,10 +742,10 @@ TimeTicks StackSamplingProfiler::TestPeer::GetNextSampleTime(
 // The profiler is currently only implemented for Windows x64 and MacOSX.
 // TODO(https://crbug.com/1004855): enable for Android arm.
 bool StackSamplingProfiler::IsSupported() {
-#if (defined(OS_WIN) && defined(ARCH_CPU_X86_64)) ||                        \
-    (defined(OS_MACOSX) && defined(ARCH_CPU_X86_64) && !defined(OS_IOS)) || \
+#if (defined(OS_WIN) && defined(ARCH_CPU_X86_64)) || \
+    (defined(OS_MAC) && defined(ARCH_CPU_X86_64)) || \
     (defined(OS_ANDROID) && BUILDFLAG(ENABLE_ARM_CFI_TABLE))
-#if defined(OS_MACOSX)
+#if defined(OS_MAC)
   // TODO(https://crbug.com/1098119): Fix unwinding on macOS 11. The OS has
   // moved all system libraries into the dyld shared cache and this seems to
   // break the sampling profiler.

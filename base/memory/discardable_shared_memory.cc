@@ -278,7 +278,7 @@ DiscardableSharedMemory::LockResult DiscardableSharedMemory::Lock(
   // Ensure that the platform won't discard the required pages.
   return LockPages(shared_memory_region_,
                    AlignToPageSize(sizeof(SharedState)) + offset, length);
-#elif defined(OS_MACOSX)
+#elif defined(OS_APPLE)
   // On macOS, there is no mechanism to lock pages. However, we do need to call
   // madvise(MADV_FREE_REUSE) in order to correctly update accounting for memory
   // footprint via task_info().
@@ -402,7 +402,7 @@ bool DiscardableSharedMemory::Purge(Time current_time) {
 // provide MADV_FREE which has the same result but memory is purged lazily.
 #if defined(OS_LINUX) || defined(OS_ANDROID)
 #define MADV_PURGE_ARGUMENT MADV_REMOVE
-#elif defined(OS_MACOSX)
+#elif defined(OS_APPLE)
 // MADV_FREE_REUSABLE is similar to MADV_FREE, but also marks the pages with the
 // reusable bit, which allows both Activity Monitor and memory-infra to
 // correctly track the pages.

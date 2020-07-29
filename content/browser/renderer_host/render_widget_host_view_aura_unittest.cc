@@ -76,6 +76,7 @@
 #include "mojo/public/cpp/bindings/pending_receiver.h"
 #include "mojo/public/cpp/bindings/pending_remote.h"
 #include "mojo/public/cpp/bindings/remote.h"
+#include "services/viz/public/mojom/compositing/delegated_ink_point.mojom.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/blink/public/common/input/synthetic_web_input_event_builders.h"
@@ -284,6 +285,9 @@ class FakeRenderWidgetHostViewAura : public RenderWidgetHostViewAura {
   const ui::MotionEventAura& pointer_state() {
     return event_handler()->pointer_state();
   }
+
+  // Flush the mojo remote on the event handler for testing purposes.
+  void FlushForTest() { event_handler()->FlushForTest(); }
 
   void SetRenderFrameMetadata(cc::RenderFrameMetadata metadata) {
     host()->render_frame_metadata_provider()->SetLastRenderFrameMetadataForTest(
@@ -6509,5 +6513,272 @@ TEST_F(RenderWidgetHostViewAuraKeyboardTest,
 }
 
 #endif  // defined(OS_WIN)
+
+// Mock the DelegatedInkPointRenderer to grab the delegated ink points as they
+// are shipped off to viz from the browser process.
+class MockDelegatedInkPointRenderer
+    : public viz::mojom::DelegatedInkPointRenderer {
+ public:
+  explicit MockDelegatedInkPointRenderer(
+      mojo::PendingReceiver<viz::mojom::DelegatedInkPointRenderer> receiver)
+      : receiver_(this, std::move(receiver)) {}
+
+  void StoreDelegatedInkPoint(const viz::DelegatedInkPoint& point) override {
+    delegated_ink_point_ = point;
+  }
+
+  bool HasDelegatedInkPoint() { return delegated_ink_point_.has_value(); }
+
+  viz::DelegatedInkPoint GetDelegatedInkPoint() {
+    viz::DelegatedInkPoint point = delegated_ink_point_.value();
+    delegated_ink_point_.reset();
+    return point;
+  }
+
+  void FlushForTesting() { receiver_.FlushForTesting(); }
+
+  void ResetReceiver() { receiver_.reset(); }
+  bool ReceiverIsBound() { return receiver_.is_bound(); }
+
+ private:
+  mojo::Receiver<viz::mojom::DelegatedInkPointRenderer> receiver_;
+  base::Optional<viz::DelegatedInkPoint> delegated_ink_point_;
+};
+
+// MockCompositor class binds the mojo interfaces so that the ink points are
+// shipped to the browser process. Uses values from the real compositor to be
+// created, but a fake FrameSinkId must be used so that it hasn't already been
+// registered.
+class MockCompositor : public ui::Compositor {
+ public:
+  explicit MockCompositor(ui::Compositor* compositor)
+      : ui::Compositor(viz::FrameSinkId(5, 5),
+                       compositor->context_factory(),
+                       compositor->task_runner(),
+                       compositor->is_pixel_canvas()) {}
+
+  void SetDelegatedInkPointRenderer(
+      mojo::PendingReceiver<viz::mojom::DelegatedInkPointRenderer> receiver)
+      override {
+    delegated_ink_point_renderer_ =
+        std::make_unique<MockDelegatedInkPointRenderer>(std::move(receiver));
+  }
+
+  MockDelegatedInkPointRenderer* delegated_ink_point_renderer() {
+    return delegated_ink_point_renderer_.get();
+  }
+
+ private:
+  std::unique_ptr<MockDelegatedInkPointRenderer> delegated_ink_point_renderer_;
+};
+
+enum TestEvent { kMouseEvent, kTouchEvent };
+
+class DelegatedInkPointTest : public RenderWidgetHostViewAuraTest,
+                              public testing::WithParamInterface<TestEvent> {
+ public:
+  DelegatedInkPointTest() = default;
+};
+
+INSTANTIATE_TEST_SUITE_P(DelegatedInkTrails,
+                         DelegatedInkPointTest,
+                         testing::Values(TestEvent::kMouseEvent,
+                                         TestEvent::kTouchEvent));
+
+// Tests to confirm that input events are correctly forwarded to the UI
+// Compositor when DelegatedInkTrails should be drawn, and stops forwarding when
+// they no longer should be drawn.
+TEST_P(DelegatedInkPointTest, EventForwardedToCompositor) {
+  view_->InitAsChild(nullptr);
+  aura_test_helper_->GetTestScreen()->SetDeviceScaleFactor(1.0f);
+
+  MockCompositor compositor(aura_test_helper_->GetHost()->compositor());
+  view_->GetNativeView()->layer()->SetCompositorForTesting(&compositor);
+
+  // First confirm that the flag is false by default and the point is not sent.
+  if (GetParam() == TestEvent::kTouchEvent) {
+    // Touch needs a pressed event first to properly handle future move events.
+    ui::TouchEvent press(ui::ET_TOUCH_PRESSED, gfx::PointF(15, 15),
+                         gfx::PointF(15, 15), ui::EventTimeForNow(),
+                         ui::PointerDetails(ui::EventPointerType::kTouch, 0));
+    view_->OnTouchEvent(&press);
+
+    ui::TouchEvent touch_event(
+        ui::ET_TOUCH_MOVED, gfx::PointF(20, 20), gfx::PointF(20, 20),
+        ui::EventTimeForNow(),
+        ui::PointerDetails(ui::EventPointerType::kTouch, 0));
+    view_->OnTouchEvent(&touch_event);
+  } else {
+    ui::MouseEvent mouse_event(ui::ET_MOUSE_MOVED, gfx::PointF(20, 20),
+                               gfx::PointF(20, 20), ui::EventTimeForNow(), 0,
+                               0);
+    view_->OnMouseEvent(&mouse_event);
+  }
+  MockDelegatedInkPointRenderer* delegated_ink_point_renderer =
+      compositor.delegated_ink_point_renderer();
+
+  EXPECT_FALSE(delegated_ink_point_renderer);
+
+  // Then set it to true and confirm that the DelegatedInkPointRenderer is
+  // initialized and the connection is made.
+  view_->SetIsDrawingDelegatedInkTrailsForTest(true);
+  viz::DelegatedInkPoint expected_point(gfx::PointF(10, 10),
+                                        base::TimeTicks::Now());
+
+  if (GetParam() == TestEvent::kTouchEvent) {
+    ui::TouchEvent touch_event(
+        ui::ET_TOUCH_MOVED, expected_point.point(), expected_point.point(),
+        expected_point.timestamp(),
+        ui::PointerDetails(ui::EventPointerType::kTouch, 0));
+    view_->OnTouchEvent(&touch_event);
+  } else {
+    ui::MouseEvent mouse_event(ui::ET_MOUSE_MOVED, expected_point.point(),
+                               expected_point.point(),
+                               expected_point.timestamp(), 0, 0);
+    view_->OnMouseEvent(&mouse_event);
+  }
+  delegated_ink_point_renderer = compositor.delegated_ink_point_renderer();
+
+  EXPECT_TRUE(delegated_ink_point_renderer);
+  EXPECT_FALSE(delegated_ink_point_renderer->HasDelegatedInkPoint());
+
+  // Now send a point and confirm it gets all the way to the
+  // DelegatedInkPointRenderer.
+  expected_point =
+      viz::DelegatedInkPoint(gfx::PointF(30, 30), base::TimeTicks::Now());
+  if (GetParam() == TestEvent::kTouchEvent) {
+    ui::TouchEvent touch_event(
+        ui::ET_TOUCH_MOVED, expected_point.point(), expected_point.point(),
+        expected_point.timestamp(),
+        ui::PointerDetails(ui::EventPointerType::kTouch, 0));
+    view_->OnTouchEvent(&touch_event);
+  } else {
+    ui::MouseEvent mouse_event(ui::ET_MOUSE_MOVED, expected_point.point(),
+                               expected_point.point(),
+                               expected_point.timestamp(), 0, 0);
+    view_->OnMouseEvent(&mouse_event);
+  }
+  delegated_ink_point_renderer->FlushForTesting();
+
+  EXPECT_TRUE(delegated_ink_point_renderer->HasDelegatedInkPoint());
+  viz::DelegatedInkPoint actual_point =
+      delegated_ink_point_renderer->GetDelegatedInkPoint();
+  EXPECT_EQ(expected_point.point(), actual_point.point());
+  EXPECT_EQ(expected_point.timestamp(), actual_point.timestamp());
+
+  // Then try changing the scale factor to confirm it affects the point
+  // correctly.
+  const float scale = 2.6f;
+  aura_test_helper_->GetTestScreen()->SetDeviceScaleFactor(scale);
+  gfx::PointF unscaled_point(15, 15);
+  base::TimeTicks unscaled_time = base::TimeTicks::Now();
+
+  if (GetParam() == TestEvent::kTouchEvent) {
+    ui::TouchEvent touch_event(
+        ui::ET_TOUCH_MOVED, unscaled_point, unscaled_point, unscaled_time,
+        ui::PointerDetails(ui::EventPointerType::kTouch, 0));
+    view_->OnTouchEvent(&touch_event);
+  } else {
+    ui::MouseEvent mouse_event(ui::ET_MOUSE_MOVED, unscaled_point,
+                               unscaled_point, unscaled_time, 0, 0);
+    view_->OnMouseEvent(&mouse_event);
+  }
+  delegated_ink_point_renderer->FlushForTesting();
+
+  unscaled_point.Scale(scale);
+  expected_point = viz::DelegatedInkPoint(unscaled_point, unscaled_time);
+
+  EXPECT_TRUE(delegated_ink_point_renderer->HasDelegatedInkPoint());
+  actual_point = delegated_ink_point_renderer->GetDelegatedInkPoint();
+  EXPECT_EQ(expected_point.point(), actual_point.point());
+  EXPECT_EQ(expected_point.timestamp(), actual_point.timestamp());
+
+  // Finally, confirm that points aren't sent whenever the flag is changed back
+  // to false.
+  view_->SetIsDrawingDelegatedInkTrailsForTest(false);
+
+  if (GetParam() == TestEvent::kTouchEvent) {
+    ui::TouchEvent touch_event(
+        ui::ET_TOUCH_MOVED, gfx::PointF(25, 25), gfx::PointF(25, 25),
+        ui::EventTimeForNow(),
+        ui::PointerDetails(ui::EventPointerType::kTouch, 0));
+    view_->OnTouchEvent(&touch_event);
+  } else {
+    ui::MouseEvent mouse_event(ui::ET_MOUSE_MOVED, gfx::PointF(25, 25),
+                               gfx::PointF(25, 25), ui::EventTimeForNow(), 0,
+                               0);
+    view_->OnMouseEvent(&mouse_event);
+  }
+  delegated_ink_point_renderer->FlushForTesting();
+
+  EXPECT_FALSE(delegated_ink_point_renderer->HasDelegatedInkPoint());
+
+  widget_host_ = nullptr;
+  view_ = nullptr;
+}
+
+// Confirm that the interface is rebound if the receiver disconnects.
+TEST_P(DelegatedInkPointTest, MojoInterfaceReboundOnDisconnect) {
+  view_->InitAsChild(nullptr);
+  aura_test_helper_->GetTestScreen()->SetDeviceScaleFactor(1.0f);
+
+  MockCompositor compositor(aura_test_helper_->GetHost()->compositor());
+  view_->GetNativeView()->layer()->SetCompositorForTesting(&compositor);
+
+  // First make sure the connection exists.
+  view_->SetIsDrawingDelegatedInkTrailsForTest(true);
+  if (GetParam() == TestEvent::kTouchEvent) {
+    // Touch needs a pressed event first to properly handle future move events.
+    ui::TouchEvent press(ui::ET_TOUCH_PRESSED, gfx::PointF(15, 15),
+                         gfx::PointF(15, 15), ui::EventTimeForNow(),
+                         ui::PointerDetails(ui::EventPointerType::kTouch, 0));
+    view_->OnTouchEvent(&press);
+
+    ui::TouchEvent touch_event(
+        ui::ET_TOUCH_MOVED, gfx::PointF(20, 20), gfx::PointF(20, 20),
+        base::TimeTicks::Now(),
+        ui::PointerDetails(ui::EventPointerType::kTouch, 0));
+    view_->OnTouchEvent(&touch_event);
+  } else {
+    ui::MouseEvent mouse_event(ui::ET_MOUSE_MOVED, gfx::PointF(20, 20),
+                               gfx::PointF(20, 20), base::TimeTicks::Now(), 0,
+                               0);
+    view_->OnMouseEvent(&mouse_event);
+  }
+
+  MockDelegatedInkPointRenderer* delegated_ink_point_renderer =
+      compositor.delegated_ink_point_renderer();
+
+  EXPECT_TRUE(delegated_ink_point_renderer);
+  EXPECT_TRUE(delegated_ink_point_renderer->ReceiverIsBound());
+
+  // Reset the receiver and flush the remote to confirm it is no longer bound.
+  delegated_ink_point_renderer->ResetReceiver();
+  view_->FlushForTest();
+
+  EXPECT_FALSE(delegated_ink_point_renderer->ReceiverIsBound());
+
+  // Confirm that it now gets reconnected correctly.
+  if (GetParam() == TestEvent::kTouchEvent) {
+    ui::TouchEvent touch_event(
+        ui::ET_TOUCH_MOVED, gfx::PointF(25, 25), gfx::PointF(25, 25),
+        base::TimeTicks::Now(),
+        ui::PointerDetails(ui::EventPointerType::kTouch, 0));
+    view_->OnTouchEvent(&touch_event);
+  } else {
+    ui::MouseEvent mouse_event(ui::ET_MOUSE_MOVED, gfx::PointF(25, 25),
+                               gfx::PointF(25, 25), base::TimeTicks::Now(), 0,
+                               0);
+    view_->OnMouseEvent(&mouse_event);
+  }
+
+  delegated_ink_point_renderer = compositor.delegated_ink_point_renderer();
+
+  EXPECT_TRUE(delegated_ink_point_renderer);
+  EXPECT_TRUE(delegated_ink_point_renderer->ReceiverIsBound());
+
+  widget_host_ = nullptr;
+  view_ = nullptr;
+}
 
 }  // namespace content

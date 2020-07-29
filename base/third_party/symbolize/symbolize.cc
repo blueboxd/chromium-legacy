@@ -846,7 +846,7 @@ static ATTRIBUTE_NOINLINE bool SymbolizeAndDemangle(void *pc, char *out,
 
 _END_GOOGLE_NAMESPACE_
 
-#elif defined(OS_MACOSX) && defined(HAVE_DLADDR)
+#elif defined(OS_APPLE) && defined(HAVE_DLADDR)
 
 #include <dlfcn.h>
 #include <string.h>

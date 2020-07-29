@@ -1114,7 +1114,7 @@ TEST_F(FileUtilTest, CopyDirectoryPermissions) {
   int mode = 0;
   int expected_mode;
   ASSERT_TRUE(GetPosixFilePermissions(file_name_to, &mode));
-#if defined(OS_MACOSX)
+#if defined(OS_APPLE)
   expected_mode = 0755;
 #elif defined(OS_CHROMEOS)
   expected_mode = 0644;
@@ -1124,7 +1124,7 @@ TEST_F(FileUtilTest, CopyDirectoryPermissions) {
   EXPECT_EQ(expected_mode, mode);
 
   ASSERT_TRUE(GetPosixFilePermissions(file2_name_to, &mode));
-#if defined(OS_MACOSX)
+#if defined(OS_APPLE)
   expected_mode = 0755;
 #elif defined(OS_CHROMEOS)
   expected_mode = 0644;
@@ -1134,7 +1134,7 @@ TEST_F(FileUtilTest, CopyDirectoryPermissions) {
   EXPECT_EQ(expected_mode, mode);
 
   ASSERT_TRUE(GetPosixFilePermissions(file3_name_to, &mode));
-#if defined(OS_MACOSX)
+#if defined(OS_APPLE)
   expected_mode = 0600;
 #elif defined(OS_CHROMEOS)
   expected_mode = 0644;
@@ -1284,7 +1284,7 @@ TEST_F(FileUtilTest, CopyFileExecutablePermission) {
 
   ASSERT_TRUE(GetPosixFilePermissions(dst, &mode));
   int expected_mode;
-#if defined(OS_MACOSX)
+#if defined(OS_APPLE)
   expected_mode = 0755;
 #elif defined(OS_CHROMEOS)
   expected_mode = 0644;
@@ -1302,7 +1302,7 @@ TEST_F(FileUtilTest, CopyFileExecutablePermission) {
   EXPECT_EQ(file_contents, ReadTextFile(dst));
 
   ASSERT_TRUE(GetPosixFilePermissions(dst, &mode));
-#if defined(OS_MACOSX)
+#if defined(OS_APPLE)
   expected_mode = 0755;
 #elif defined(OS_CHROMEOS)
   expected_mode = 0644;
@@ -1320,7 +1320,7 @@ TEST_F(FileUtilTest, CopyFileExecutablePermission) {
   EXPECT_EQ(file_contents, ReadTextFile(dst));
 
   ASSERT_TRUE(GetPosixFilePermissions(dst, &mode));
-#if defined(OS_MACOSX)
+#if defined(OS_APPLE)
   expected_mode = 0600;
 #elif defined(OS_CHROMEOS)
   expected_mode = 0644;
@@ -3501,7 +3501,7 @@ TEST_F(FileUtilTest, ReadFileToStringWithNamedPipe) {
 }
 #endif  // defined(OS_WIN)
 
-#if defined(OS_POSIX) && !defined(OS_MACOSX)
+#if defined(OS_POSIX) && !defined(OS_APPLE)
 TEST_F(FileUtilTest, ReadFileToStringWithProcFileSystem) {
   FilePath file_path("/proc/cpuinfo");
   std::string data = "temp";
@@ -3519,7 +3519,7 @@ TEST_F(FileUtilTest, ReadFileToStringWithProcFileSystem) {
 
   EXPECT_FALSE(ReadFileToStringWithMaxSize(file_path, nullptr, 4));
 }
-#endif  // defined(OS_POSIX) && !defined(OS_MACOSX)
+#endif  // defined(OS_POSIX) && !defined(OS_APPLE)
 
 TEST_F(FileUtilTest, ReadFileToStringWithLargeFile) {
   std::string data(kLargeFileSize, 'c');

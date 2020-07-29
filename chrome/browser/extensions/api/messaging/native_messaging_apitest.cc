@@ -238,7 +238,7 @@ class TestKeepAliveStateObserver : public KeepAliveStateObserver {
     // On Mac, the browser remains alive when no windows are open, so observing
     // the KeepAliveRegistry cannot detect when the native messaging keep-alive
     // has been released; poll for changes instead.
-#if defined(OS_MACOSX)
+#if defined(OS_MAC)
     polling_timer_.Start(
         FROM_HERE, base::TimeDelta::FromMilliseconds(100),
         base::BindRepeating(&TestKeepAliveStateObserver::PollKeepAlive,
@@ -259,7 +259,7 @@ class TestKeepAliveStateObserver : public KeepAliveStateObserver {
 
   void OnKeepAliveRestartStateChanged(bool can_restart) override {}
 
-#if defined(OS_MACOSX)
+#if defined(OS_MAC)
   void PollKeepAlive() {
     OnKeepAliveStateChanged(
         KeepAliveRegistry::GetInstance()->IsOriginRegistered(

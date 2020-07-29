@@ -42,6 +42,8 @@ class RemoteFrameClient : public FrameClient {
   virtual void FrameRectsChanged(const IntRect& local_frame_rect,
                                  const IntRect& screen_space_rect) = 0;
 
+  virtual void ZoomLevelChanged(double zoom_level) = 0;
+
   virtual void UpdateRemoteViewportIntersection(
       const ViewportIntersectionState& intersection_state) = 0;
 

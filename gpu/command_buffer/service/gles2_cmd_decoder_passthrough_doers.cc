@@ -40,7 +40,7 @@ class GLES2DecoderPassthroughImpl::
       const ScopedEnableTextureRectangleInShaderCompiler&) = delete;
 
   // This class is a no-op except on macOS.
-#if !defined(OS_MACOSX)
+#if !defined(OS_MAC)
   explicit ScopedEnableTextureRectangleInShaderCompiler(
       GLES2DecoderPassthroughImpl* decoder) {}
 

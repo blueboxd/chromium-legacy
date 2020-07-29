@@ -125,7 +125,7 @@
 #include "ui/android/view_android.h"
 #endif
 
-#if defined(OS_MACOSX)
+#if defined(OS_MAC)
 #include "content/browser/renderer_host/input/fling_scheduler_mac.h"
 #include "services/device/public/mojom/wake_lock_provider.mojom.h"
 #include "ui/accelerated_widget_mac/window_resize_helper_mac.h"
@@ -390,7 +390,7 @@ RenderWidgetHostImpl::RenderWidgetHostImpl(
       new_content_rendering_delay_(kNewContentRenderingDelay),
       frame_token_message_queue_(std::move(frame_token_message_queue)),
       render_frame_metadata_provider_(
-#if defined(OS_MACOSX)
+#if defined(OS_MAC)
           ui::WindowResizeHelperMac::Get()->task_runner(),
 #else
           base::ThreadTaskRunnerHandle::Get(),
@@ -401,7 +401,7 @@ RenderWidgetHostImpl::RenderWidgetHostImpl(
   DCHECK(frame_token_message_queue_);
   frame_token_message_queue_->Init(this);
 
-#if defined(OS_MACOSX)
+#if defined(OS_MAC)
   fling_scheduler_ = std::make_unique<FlingSchedulerMac>(this);
 #elif defined(OS_ANDROID)
   fling_scheduler_ = std::make_unique<FlingSchedulerAndroid>(this);
@@ -1949,7 +1949,7 @@ void RenderWidgetHostImpl::GetSnapshotFromBrowser(
     return;
   }
 
-#if defined(OS_MACOSX)
+#if defined(OS_MAC)
   // MacOS version of underlying GrabViewSnapshot() blocks while
   // display/GPU are in a power-saving mode, so make sure display
   // does not go to sleep for the duration of reading a snapshot.
@@ -3034,7 +3034,7 @@ void RenderWidgetHostImpl::GotResponseToKeyboardLockRequest(bool allowed) {
 }
 
 void RenderWidgetHostImpl::GotResponseToForceRedraw(int snapshot_id) {
-#if defined(OS_MACOSX) || defined(OS_WIN)
+#if defined(OS_MAC) || defined(OS_WIN)
   // On Mac, when using CoreAnimation, or Win32 when using GDI, there is a
   // delay between when content is drawn to the screen, and when the
   // snapshot will actually pick up that content. Insert a manual delay of
@@ -3132,7 +3132,7 @@ void RenderWidgetHostImpl::OnSnapshotReceived(int snapshot_id,
       ++it;
     }
   }
-#if defined(OS_MACOSX)
+#if defined(OS_MAC)
   if (pending_browser_snapshots_.empty())
     GetWakeLock()->CancelWakeLock();
 #endif
@@ -3225,7 +3225,7 @@ void RenderWidgetHostImpl::DidProcessFrame(uint32_t frame_token) {
   frame_token_message_queue_->DidProcessFrame(frame_token);
 }
 
-#if defined(OS_MACOSX)
+#if defined(OS_MAC)
 device::mojom::WakeLock* RenderWidgetHostImpl::GetWakeLock() {
   // Here is a lazy binding, and will not reconnect after connection error.
   if (!wake_lock_) {

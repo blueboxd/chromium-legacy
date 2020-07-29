@@ -183,7 +183,7 @@ void DateTimeChooserImpl::WriteDocument(SharedBuffer* data) {
   AddProperty("isRTL", parameters_->is_anchor_element_rtl, data);
   AddProperty("isFormControlsRefreshEnabled",
               features::IsFormControlsRefreshEnabled(), data);
-#if defined(OS_APPLE)
+#if defined(OS_MAC)
   AddProperty("isBorderTransparent", features::IsFormControlsRefreshEnabled(),
               data);
 #endif

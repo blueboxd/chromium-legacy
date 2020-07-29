@@ -54,7 +54,7 @@ void PrepareBrowserCommandLineForTests(base::CommandLine* command_line) {
       wm::switches::kWindowAnimationsDisabled);
 #endif
 
-#if defined(OS_POSIX) && !defined(OS_MACOSX) && !defined(OS_CHROMEOS)
+#if defined(OS_POSIX) && !defined(OS_MAC) && !defined(OS_CHROMEOS)
   // Don't use the native password stores on Linux since they may
   // prompt for additional UI during tests and cause test failures or
   // timeouts.  Win, Mac and ChromeOS don't look at the kPasswordStore
@@ -63,7 +63,7 @@ void PrepareBrowserCommandLineForTests(base::CommandLine* command_line) {
     command_line->AppendSwitchASCII(switches::kPasswordStore, "basic");
 #endif
 
-#if defined(OS_MACOSX)
+#if defined(OS_MAC)
   // Use mock keychain on mac to prevent blocking permissions dialogs.
   command_line->AppendSwitch(os_crypt::switches::kUseMockKeychain);
 #endif
@@ -118,7 +118,7 @@ bool OverrideUserDataDir(const base::FilePath& user_data_dir) {
   // directory. This matches what is done in ChromeMain().
   success = base::PathService::Override(chrome::DIR_USER_DATA, user_data_dir);
 
-#if defined(OS_POSIX) && !defined(OS_MACOSX)
+#if defined(OS_POSIX) && !defined(OS_MAC)
   // Make sure the cache directory is inside our clear profile. Otherwise
   // the cache may contain data from earlier tests that could break the
   // current test.

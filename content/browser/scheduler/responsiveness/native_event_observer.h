@@ -10,7 +10,7 @@
 #include "build/build_config.h"
 #include "content/common/content_export.h"
 
-#if defined(OS_MACOSX)
+#if defined(OS_MAC)
 #include "content/public/browser/native_event_processor_observer_mac.h"
 #endif
 
@@ -37,7 +37,7 @@ namespace responsiveness {
 // On Windows, the hook should be in MessagePumpForUI::ProcessMessageHelper.
 // On Android, the hook should be in <TBD>.
 class CONTENT_EXPORT NativeEventObserver
-#if defined(OS_MACOSX)
+#if defined(OS_MAC)
     : public NativeEventProcessorObserver
 #elif defined(OS_LINUX)
     : public aura::WindowEventDispatcherObserver
@@ -63,7 +63,7 @@ class CONTENT_EXPORT NativeEventObserver
 #endif
 
  protected:
-#if defined(OS_MACOSX)
+#if defined(OS_MAC)
   // NativeEventProcessorObserver overrides:
   // Exposed for tests.
   void WillRunNativeEvent(const void* opaque_identifier) override;

@@ -140,14 +140,6 @@ public class TabImpl implements Tab, TabObscuringHandler.Observer {
     private @Nullable @TabCreationState Integer mCreationState;
 
     /**
-     * Navigation state of the WebContents as returned by nativeGetContentsStateAsByteBuffer(),
-     * stored to be inflated on demand using unfreezeContents(). If this is not null, there is no
-     * WebContents around. Upon tab switch WebContents will be unfrozen and the variable will be set
-     * to null.
-     */
-    private WebContentsState mFrozenContentsState;
-
-    /**
      * URL load to be performed lazily when the Tab is next shown.
      */
     private LoadUrlParams mPendingLoadParams;
@@ -808,7 +800,10 @@ public class TabImpl implements Tab, TabObscuringHandler.Observer {
 
             // If there is a frozen WebContents state or a pending lazy load, don't create a new
             // WebContents. Restoring will be done when showing the tab in the foreground.
-            if (getFrozenContentsState() != null || getPendingLoadParams() != null) return;
+            if (CriticalPersistedTabData.from(this).getWebContentsState() != null
+                    || getPendingLoadParams() != null) {
+                return;
+            }
 
             boolean creatingWebContents = webContents == null;
             if (creatingWebContents) {
@@ -852,7 +847,7 @@ public class TabImpl implements Tab, TabObscuringHandler.Observer {
      */
     void restoreFieldsFromState(TabState state) {
         assert state != null;
-        mFrozenContentsState = state.contentsState;
+        CriticalPersistedTabData.from(this).setWebContentsState(state.contentsState);
         mTimestampMillis = state.timestampMillis;
         mUrl = new GURL(state.contentsState.getVirtualUrlFromState());
         mTitle = state.contentsState.getDisplayTitleFromState();
@@ -1042,12 +1037,6 @@ public class TabImpl implements Tab, TabObscuringHandler.Observer {
      */
     void setIsShowingErrorPage(boolean isShowingErrorPage) {
         mIsShowingErrorPage = isShowingErrorPage;
-    }
-
-    /** @return WebContentsState representing the state of the WebContents (navigations, etc.) */
-    @VisibleForTesting(otherwise = VisibleForTesting.PACKAGE_PRIVATE)
-    public WebContentsState getFrozenContentsState() {
-        return mFrozenContentsState;
     }
 
     /**
@@ -1386,7 +1375,8 @@ public class TabImpl implements Tab, TabObscuringHandler.Observer {
             TraceEvent.begin("Tab.restoreIfNeeded");
             // Restore is needed for a tab that is loaded for the first time. WebContents will
             // be restored from a saved state.
-            if ((isFrozen() && mFrozenContentsState != null && !unfreezeContents())
+            if ((isFrozen() && CriticalPersistedTabData.from(this).getWebContentsState() != null
+                        && !unfreezeContents())
                     || !needsReload()) {
                 return;
             }
@@ -1408,10 +1398,12 @@ public class TabImpl implements Tab, TabObscuringHandler.Observer {
         boolean restored = true;
         try {
             TraceEvent.begin("Tab.unfreezeContents");
-            assert mFrozenContentsState != null;
+            WebContentsState webContentsState =
+                    CriticalPersistedTabData.from(this).getWebContentsState();
+            assert webContentsState != null;
 
             WebContents webContents = WebContentsStateBridge.restoreContentsFromByteBuffer(
-                    mFrozenContentsState, Profile.getLastUsedRegularProfile(), isHidden());
+                    webContentsState, Profile.getLastUsedRegularProfile(), isHidden());
             if (webContents == null) {
                 // State restore failed, just create a new empty web contents as that is the best
                 // that can be done at this point. TODO(jcivelli) http://b/5910521 - we should show
@@ -1423,7 +1415,7 @@ public class TabImpl implements Tab, TabObscuringHandler.Observer {
             View compositorView = getActivity().getCompositorViewHolder();
             webContents.setSize(compositorView.getWidth(), compositorView.getHeight());
 
-            mFrozenContentsState = null;
+            CriticalPersistedTabData.from(this).setWebContentsState(null);
             initWebContents(webContents);
 
             if (!restored) {
@@ -1456,11 +1448,13 @@ public class TabImpl implements Tab, TabObscuringHandler.Observer {
      */
     @CalledByNative
     private void deleteNavigationEntriesFromFrozenState(long predicate) {
-        if (mFrozenContentsState == null) return;
+        WebContentsState webContentsState =
+                CriticalPersistedTabData.from(this).getWebContentsState();
+        if (webContentsState == null) return;
         WebContentsState newState =
-                WebContentsStateBridge.deleteNavigationEntries(mFrozenContentsState, predicate);
+                WebContentsStateBridge.deleteNavigationEntries(webContentsState, predicate);
         if (newState != null) {
-            mFrozenContentsState = newState;
+            CriticalPersistedTabData.from(this).setWebContentsState(newState);
             notifyNavigationEntriesDeleted();
         }
     }

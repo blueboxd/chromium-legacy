@@ -145,6 +145,7 @@ public class StaticLayout extends Layout {
                 });
 
         mModel = new PropertyModel.Builder(LayoutTab.ALL_KEYS)
+                         .with(LayoutTab.TAB_ID, Tab.INVALID_TAB_ID)
                          .with(LayoutTab.SCALE, 1.0f)
                          .with(LayoutTab.X, 0.0f)
                          .with(LayoutTab.Y, 0.0f)

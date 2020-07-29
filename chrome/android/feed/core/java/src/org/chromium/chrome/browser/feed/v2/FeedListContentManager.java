@@ -7,6 +7,8 @@ package org.chromium.chrome.browser.feed.v2;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.ViewGroup.LayoutParams;
+import android.widget.FrameLayout;
 
 import org.chromium.chrome.browser.xsurface.FeedActionsHandler;
 import org.chromium.chrome.browser.xsurface.ListContentManager;
@@ -77,6 +79,7 @@ public class FeedListContentManager implements ListContentManager {
      * For the content that is supported by the native view.
      */
     public static class NativeViewContent extends FeedContent {
+        private FrameLayout mEnclosingLayout;
         private View mNativeView;
         private int mResId;
 
@@ -101,7 +104,13 @@ public class FeedListContentManager implements ListContentManager {
                 mNativeView =
                         LayoutInflater.from(parent.getContext()).inflate(mResId, parent, false);
             }
-            return mNativeView;
+            if (mEnclosingLayout == null) {
+                mEnclosingLayout = new FrameLayout(parent.getContext());
+                mEnclosingLayout.setLayoutParams(
+                        new LayoutParams(LayoutParams.MATCH_PARENT, LayoutParams.WRAP_CONTENT));
+                mEnclosingLayout.addView(mNativeView);
+            }
+            return mEnclosingLayout;
         }
 
         @Override

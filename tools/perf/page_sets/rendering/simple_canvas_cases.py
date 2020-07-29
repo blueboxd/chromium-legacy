@@ -67,14 +67,29 @@ class DynamicWebglToHWAcceleratedCanvas(SimpleCanvasPage):
   URL = 'file://../simple_canvas/dynamic_webgl_to_hw_accelerated_canvas.html'
 
 
+class FallingParticleSimulationOnCPU(SimpleCanvasPage):
+  BASE_NAME = 'falling_particle_simulation_cpu.html'
+  URL = 'file://../simple_canvas/falling_particle_simulation_cpu.html'
+
+
+class FallingParticleSimulationOnGPU(SimpleCanvasPage):
+  BASE_NAME = 'falling_particle_simulation_gpu.html'
+  URL = 'file://../simple_canvas/falling_particle_simulation_gpu.html'
+
+
 class FillClearRect(SimpleCanvasPage):
   BASE_NAME = 'fill_clear_rect.html'
   URL = 'file://../simple_canvas/fill_clear_rect.html'
 
 
-class GetImageData(SimpleCanvasPage):
-  BASE_NAME = 'get_image_data.html'
-  URL = 'file://../simple_canvas/get_image_data.html'
+class GetImageDataOnCPU(SimpleCanvasPage):
+  BASE_NAME = 'get_image_data_cpu.html'
+  URL = 'file://../simple_canvas/get_image_data_cpu.html'
+
+
+class GetImageDataOnGPU(SimpleCanvasPage):
+  BASE_NAME = 'get_image_data_gpu.html'
+  URL = 'file://../simple_canvas/get_image_data_gpu.html'
 
 
 class GpuBoundShader(SimpleCanvasPage):

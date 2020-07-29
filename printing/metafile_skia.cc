@@ -30,7 +30,7 @@
 #include "third_party/skia/src/utils/SkMultiPictureDocument.h"
 #include "ui/gfx/skia_util.h"
 
-#if defined(OS_MACOSX)
+#if defined(OS_MAC)
 #include "printing/pdf_metafile_cg_mac.h"
 #endif
 
@@ -87,7 +87,7 @@ struct MetafileSkiaData {
   SkSize size;
   mojom::SkiaDocumentType type;
 
-#if defined(OS_MACOSX)
+#if defined(OS_MAC)
   PdfMetafileCg pdf_cg;
 #endif
 };
@@ -294,7 +294,7 @@ bool MetafileSkia::SafePlayback(printing::NativeDrawingContext hdc) const {
   return false;
 }
 
-#elif defined(OS_MACOSX)
+#elif defined(OS_MAC)
 /* TODO(caryclark): The set up of PluginInstance::PrintPDFOutput may result in
    rasterized output.  Even if that flow uses PdfMetafileCg::RenderPage,
    the drawing of the PDF into the canvas may result in a rasterized output.

@@ -547,7 +547,7 @@ TEST_F(RenderWidgetUnittest, AutoResizeAllocatedLocalSurfaceId) {
   allocator.GenerateId();
   visual_properties.local_surface_id_allocation =
       allocator.GetCurrentLocalSurfaceIdAllocation();
-  widget()->UpdateVisualProperties(visual_properties);
+  widget()->GetWebWidget()->ApplyVisualProperties(visual_properties);
   EXPECT_EQ(allocator.GetCurrentLocalSurfaceIdAllocation(),
             widget()->local_surface_id_allocation_from_parent());
   EXPECT_FALSE(widget()
@@ -592,7 +592,7 @@ TEST_F(RenderWidgetUnittest, ActivePinchGestureUpdatesLayerTreeHostSubFrame) {
 
   // Sync visual properties on a child RenderWidget.
   visual_properties.is_pinch_gesture_active = true;
-  widget()->UpdateVisualProperties(visual_properties);
+  widget()->GetWebWidget()->ApplyVisualProperties(visual_properties);
   // We expect the |is_pinch_gesture_active| value to propagate to the
   // LayerTreeHost for sub-frames. Since GesturePinch events are handled
   // directly in the main-frame's layer tree (and only there), information about
@@ -602,7 +602,7 @@ TEST_F(RenderWidgetUnittest, ActivePinchGestureUpdatesLayerTreeHostSubFrame) {
   // pinch gestures are active.
   EXPECT_TRUE(layer_tree_host->is_external_pinch_gesture_active_for_testing());
   visual_properties.is_pinch_gesture_active = false;
-  widget()->UpdateVisualProperties(visual_properties);
+  widget()->GetWebWidget()->ApplyVisualProperties(visual_properties);
   EXPECT_FALSE(layer_tree_host->is_external_pinch_gesture_active_for_testing());
 }
 

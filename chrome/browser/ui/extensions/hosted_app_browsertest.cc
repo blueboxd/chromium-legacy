@@ -382,7 +382,7 @@ IN_PROC_BROWSER_TEST_P(HostedOrWebAppTest, CtrlClickLink) {
             ui_test_utils::UrlLoadObserver url_observer(
                 target_url, content::NotificationService::AllSources());
             int ctrl_key;
-#if defined(OS_MACOSX)
+#if defined(OS_MAC)
             ctrl_key = blink::WebInputEvent::Modifiers::kMetaKey;
 #else
             ctrl_key = blink::WebInputEvent::Modifiers::kControlKey;

@@ -100,8 +100,9 @@ void StyledLabel::SetText(const base::string16& text) {
   OnPropertyChanged(&text_, kPropertyEffectsPreferredSizeChanged);
 }
 
-gfx::FontList StyledLabel::GetDefaultFontList() const {
-  return style::GetFont(text_context_, default_text_style_);
+gfx::FontList StyledLabel::GetFontList(const RangeStyleInfo& style_info) const {
+  return style_info.custom_font.value_or(style::GetFont(
+      text_context_, style_info.text_style.value_or(default_text_style_)));
 }
 
 void StyledLabel::AddStyleRange(const gfx::Range& range,
@@ -149,16 +150,16 @@ void StyledLabel::SetDefaultTextStyle(int text_style) {
 }
 
 int StyledLabel::GetLineHeight() const {
-  return specified_line_height_;
+  return line_height_.value_or(
+      style::GetLineHeight(text_context_, default_text_style_));
 }
 
 void StyledLabel::SetLineHeight(int line_height) {
-  if (specified_line_height_ == line_height)
+  if (line_height_ == line_height)
     return;
 
-  specified_line_height_ = line_height;
-  OnPropertyChanged(&specified_line_height_,
-                    kPropertyEffectsPreferredSizeChanged);
+  line_height_ = line_height;
+  OnPropertyChanged(&line_height_, kPropertyEffectsPreferredSizeChanged);
 }
 
 base::Optional<SkColor> StyledLabel::GetDisplayedOnBackgroundColor() const {
@@ -338,26 +339,6 @@ int StyledLabel::StartX(int excess_space) const {
                                                            : excess_space);
 }
 
-int StyledLabel::GetDefaultLineHeight() const {
-  return specified_line_height_ > 0
-             ? specified_line_height_
-             : std::max(
-                   style::GetLineHeight(text_context_, default_text_style_),
-                   GetDefaultFontList().GetHeight());
-}
-
-gfx::FontList StyledLabel::GetFontListForRange(
-    const StyleRanges::const_iterator& range) const {
-  if (range == style_ranges_.end())
-    return GetDefaultFontList();
-
-  return range->style_info.custom_font
-             ? range->style_info.custom_font.value()
-             : style::GetFont(
-                   text_context_,
-                   range->style_info.text_style.value_or(default_text_style_));
-}
-
 void StyledLabel::CalculateLayout(int width) const {
   const gfx::Insets insets = GetInsets();
   width = std::max(width, insets.width());
@@ -369,7 +350,7 @@ void StyledLabel::CalculateLayout(int width) const {
   layout_views_ = std::make_unique<LayoutViews>();
 
   const int content_width = width - insets.width();
-  const int default_line_height = GetDefaultLineHeight();
+  const int line_height = GetLineHeight();
   RangeStyleInfo default_style;
   default_style.text_style = default_text_style_;
   int max_width = 0, total_height = 0;
@@ -379,7 +360,7 @@ void StyledLabel::CalculateLayout(int width) const {
   StyleRanges::const_iterator current_range = style_ranges_.begin();
   for (base::string16 remaining_string = text_;
        content_width > 0 && !remaining_string.empty();) {
-    layout_size_info_.line_sizes.emplace_back(0, default_line_height);
+    layout_size_info_.line_sizes.emplace_back(0, line_height);
     auto& line_size = layout_size_info_.line_sizes.back();
     layout_views_->views_per_line.emplace_back();
     auto& views = layout_views_->views_per_line.back();
@@ -412,13 +393,13 @@ void StyledLabel::CalculateLayout(int width) const {
            !current_range->style_info.custom_view)) {
         const gfx::Rect chunk_bounds(line_size.width(), 0,
                                      content_width - line_size.width(),
-                                     default_line_height);
+                                     line_height);
         // If the start of the remaining text is inside a styled range, the font
         // style may differ from the base font. The font specified by the range
         // should be used when eliding text.
-        gfx::FontList text_font_list = position >= range.start()
-                                           ? GetFontListForRange(current_range)
-                                           : GetDefaultFontList();
+        gfx::FontList text_font_list =
+            GetFontList((position >= range.start()) ? current_range->style_info
+                                                    : RangeStyleInfo());
         int elide_result = gfx::ElideRectangleText(
             remaining_string, text_font_list, chunk_bounds.width(),
             chunk_bounds.height(), gfx::WRAP_LONG_WORDS, &substrings);

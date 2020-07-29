@@ -18,7 +18,7 @@
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/is_uvpaa.h"
 
-#if defined(OS_MACOSX)
+#if defined(OS_MAC)
 #include "device/fido/mac/authenticator.h"
 #endif
 
@@ -33,7 +33,7 @@ void ReportAvailability(bool available) {
       "WebAuthentication.IsUVPlatformAuthenticatorAvailable", available);
 }
 
-#if defined(OS_MACOSX)
+#if defined(OS_MAC)
 void ReportUVPlatformAuthenticatorAvailabilityWithConfig(
     base::Optional<device::fido::mac::AuthenticatorConfig> config) {
   ReportAvailability(config &&
@@ -70,7 +70,7 @@ void ReportUVPlatformAuthenticatorAvailability() {
   // This only reports metrics for desktop platforms. For mobile devices, the
   // platform version is an exact proxy for whether a platform authenticator
   // can be used.
-#if defined(OS_MACOSX)
+#if defined(OS_MAC)
   DCHECK(!content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
   // Getting the profile has to be done on the main thread to avoid race
   // conditions.

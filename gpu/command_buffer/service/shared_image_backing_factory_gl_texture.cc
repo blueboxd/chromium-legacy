@@ -53,7 +53,7 @@
 #include "gpu/command_buffer/service/shared_image_batch_access_manager.h"
 #endif
 
-#if defined(OS_MACOSX)
+#if defined(OS_MAC)
 #include "gpu/command_buffer/service/shared_image_backing_factory_iosurface.h"
 #endif
 

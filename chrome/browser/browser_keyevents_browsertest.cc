@@ -29,7 +29,7 @@
 #include "ui/events/keycodes/keyboard_codes.h"
 
 // TODO(kbr): remove: http://crbug.com/222296
-#if defined(OS_MACOSX)
+#if defined(OS_MAC)
 #import "base/mac/mac_util.h"
 #endif
 
@@ -471,7 +471,7 @@ IN_PROC_BROWSER_TEST_F(BrowserKeyEventsTest, CtrlKeyEvents) {
   EXPECT_NO_FATAL_FAILURE(TestKeyEvent(tab_index, kTestCtrlZSuppressKeyDown));
   EXPECT_NO_FATAL_FAILURE(TestKeyEvent(tab_index, kTestCtrlEnter));
 }
-#elif defined(OS_MACOSX)
+#elif defined(OS_MAC)
 // http://crbug.com/81451
 IN_PROC_BROWSER_TEST_F(BrowserKeyEventsTest, CommandKeyEvents) {
   static const KeyEventTestData kTestCmdF = {
@@ -515,14 +515,14 @@ IN_PROC_BROWSER_TEST_F(BrowserKeyEventsTest, CommandKeyEvents) {
 }
 #endif
 
-#if defined(OS_MACOSX)
+#if defined(OS_MAC)
 // http://crbug.com/81451 for mac
 #define MAYBE_AccessKeys DISABLED_AccessKeys
 #else
 #define MAYBE_AccessKeys AccessKeys
 #endif
 IN_PROC_BROWSER_TEST_F(BrowserKeyEventsTest, MAYBE_AccessKeys) {
-#if defined(OS_MACOSX)
+#if defined(OS_MAC)
   // On Mac, access keys use ctrl+alt modifiers.
   static const KeyEventTestData kTestAccessA = {
     ui::VKEY_A, true, false, true, false,
@@ -595,7 +595,7 @@ IN_PROC_BROWSER_TEST_F(BrowserKeyEventsTest, MAYBE_AccessKeys) {
   // Make sure no element is focused.
   EXPECT_NO_FATAL_FAILURE(CheckFocusedElement(tab_index, L""));
 
-#if !defined(OS_MACOSX)
+#if !defined(OS_MAC)
   // Alt+D should move the focus to the location entry.
   EXPECT_NO_FATAL_FAILURE(TestKeyEvent(tab_index, kTestAccessD));
 
@@ -641,10 +641,18 @@ IN_PROC_BROWSER_TEST_F(BrowserKeyEventsTest, ReservedAccelerators) {
   ASSERT_EQ(1, browser()->tab_strip_model()->count());
 
   static const KeyEventTestData kTestCtrlOrCmdT = {
-#if defined(OS_MACOSX)
-    ui::VKEY_T, false, false, false, true,
-    true, false, false, false, 1,
-    { "D 91 0 false false false true" }
+#if defined(OS_MAC)
+    ui::VKEY_T,
+    false,
+    false,
+    false,
+    true,
+    true,
+    false,
+    false,
+    false,
+    1,
+    {"D 91 0 false false false true"}
 #else
     ui::VKEY_T, true, false, false, false,
     true, false, false, false, 1,
@@ -681,7 +689,7 @@ IN_PROC_BROWSER_TEST_F(BrowserKeyEventsTest, ReservedAccelerators) {
       browser()->tab_strip_model()->GetWebContentsAt(1));
 
   // Press Ctrl/Cmd+W, which will close the tab.
-#if defined(OS_MACOSX)
+#if defined(OS_MAC)
   ASSERT_TRUE(ui_test_utils::SendKeyPressSync(
       browser(), ui::VKEY_W, false, false, false, true));
 #else
@@ -694,7 +702,7 @@ IN_PROC_BROWSER_TEST_F(BrowserKeyEventsTest, ReservedAccelerators) {
   EXPECT_EQ(1, browser()->tab_strip_model()->count());
 }
 
-#if defined(OS_MACOSX)
+#if defined(OS_MAC)
 IN_PROC_BROWSER_TEST_F(BrowserKeyEventsTest, EditorKeyBindings) {
   static const KeyEventTestData kTestCtrlA = {
     ui::VKEY_A, true, false, false, false,

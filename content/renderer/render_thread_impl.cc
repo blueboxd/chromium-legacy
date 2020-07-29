@@ -155,7 +155,7 @@
 #include "media/base/android/media_codec_util.h"
 #endif
 
-#if defined(OS_MACOSX)
+#if defined(OS_MAC)
 #include "base/mac/mac_util.h"
 #include "content/renderer/theme_helper_mac.h"
 #endif
@@ -174,7 +174,7 @@
 #include "mojo/public/cpp/bindings/message_dumper.h"
 #endif
 
-#if defined(OS_MACOSX)
+#if defined(OS_MAC)
 #include <malloc/malloc.h>
 #else
 #include <malloc.h>
@@ -585,7 +585,7 @@ void RenderThreadImpl::Init() {
 
 #if BUILDFLAG(USE_EXTERNAL_POPUP_MENU)
   // On Mac and Android Java UI, the select popups are rendered by the browser.
-#if defined(OS_MACOSX)
+#if defined(OS_MAC)
   // When UseCommonSelectPopup is enabled, the internal popup menu should be
   // used.
   if (!features::IsUseCommonSelectPopupEnabled())
@@ -655,7 +655,7 @@ void RenderThreadImpl::Init() {
 
 // On macOS this value is adjusted in `UpdateScrollbarTheme()`,
 // but the system default is true.
-#if defined(OS_MACOSX)
+#if defined(OS_MAC)
   is_elastic_overscroll_enabled_ = true;
 #elif defined(OS_WIN)
   is_elastic_overscroll_enabled_ =
@@ -673,7 +673,7 @@ void RenderThreadImpl::Init() {
   } else {
 #if defined(OS_ANDROID)
     is_lcd_text_enabled_ = false;
-#elif defined(OS_MACOSX)
+#elif defined(OS_MAC)
     if (base::FeatureList::IsEnabled(features::kRespectMacLCDTextSetting))
       is_lcd_text_enabled_ = IsSubpixelAntialiasingAvailable();
     else
@@ -1121,7 +1121,7 @@ media::GpuVideoAcceleratorFactories* RenderThreadImpl::GetGpuFactories() {
       !cmd_line->HasSwitch(switches::kDisableGpuMemoryBufferVideoFrames);
 #else
       cmd_line->HasSwitch(switches::kEnableGpuMemoryBufferVideoFrames);
-#endif  // defined(OS_MACOSX) || defined(OS_LINUX) || defined(OS_WIN)
+#endif  // defined(OS_MAC) || defined(OS_LINUX) || defined(OS_WIN)
   const bool enable_media_stream_gpu_memory_buffers =
       enable_gpu_memory_buffers &&
       base::FeatureList::IsEnabled(
@@ -1927,7 +1927,7 @@ void RenderThreadImpl::SetCorsExemptHeaderList(
 
 void RenderThreadImpl::UpdateScrollbarTheme(
     mojom::UpdateScrollbarThemeParamsPtr params) {
-#if defined(OS_MACOSX)
+#if defined(OS_MAC)
   blink::WebScrollbarTheme::UpdateScrollbarsWithNSDefaults(
       params->has_initial_button_delay
           ? base::make_optional(params->initial_button_delay)
@@ -1948,7 +1948,7 @@ void RenderThreadImpl::OnSystemColorsChanged(
     int32_t aqua_color_variant,
     const std::string& highlight_text_color,
     const std::string& highlight_color) {
-#if defined(OS_MACOSX)
+#if defined(OS_MAC)
   SystemColorsDidChange(aqua_color_variant, highlight_text_color,
                         highlight_color);
 #else
@@ -2074,7 +2074,8 @@ RenderThreadImpl::SharedCompositorWorkerContextProvider(
               ->HasGrContextSupport()) {
         // Do not check GrContext above. It is lazy-created, and we only want to
         // create it if it might be used.
-        GrContext* gr_context = shared_worker_context_provider_->GrContext();
+        GrDirectContext* gr_context =
+            shared_worker_context_provider_->GrContext();
         really_support_gpu_rasterization = !!gr_context;
       }
     }

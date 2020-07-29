@@ -2144,17 +2144,13 @@ WebInputEventResult EventHandler::ShowNonLocatedContextMenu(
           IntRect(location_in_viewport, IntSize()), frame_->View())
           .Location();
 
-  Node* target_node =
-      override_target_element ? override_target_element : doc->FocusedElement();
-  if (!target_node)
-    target_node = doc;
-
   // Use the focused node as the target for hover and active.
   HitTestRequest request(HitTestRequest::kActive |
                          HitTestRequest::kRetargetForInert);
   HitTestLocation location(location_in_root_frame);
   HitTestResult result(request, location);
-  result.SetInnerNode(target_node);
+  result.SetInnerNode(focused_element ? static_cast<Node*>(focused_element)
+                                      : doc);
   doc->UpdateHoverActiveState(request.Active(), !request.Move(),
                               result.InnerElement());
 
@@ -2176,7 +2172,7 @@ WebInputEventResult EventHandler::ShowNonLocatedContextMenu(
   // coordinates instead of root frame coordinates.
   mouse_event.SetFrameScale(1);
 
-  return SendContextMenuEvent(mouse_event, override_target_element);
+  return SendContextMenuEvent(mouse_event, focused_element);
 }
 
 void EventHandler::ScheduleHoverStateUpdate() {

@@ -493,7 +493,7 @@ bool DrawingBuffer::FinishPrepareTransferableResourceGpu(
     // there are implicit flushes between contexts at the lowest level.
     gl_->GenUnverifiedSyncTokenCHROMIUM(
         color_buffer_for_mailbox->produce_sync_token.GetData());
-#if defined(OS_APPLE) || defined(OS_ANDROID)
+#if defined(OS_MAC) || defined(OS_ANDROID)
     // Needed for GPU back-pressure on macOS and Android. Used to be in the
     // middle of the commands above; try to move it to the bottom to allow them
     // to be treated atomically.
@@ -791,7 +791,7 @@ bool DrawingBuffer::Initialize(const IntSize& size, bool use_multisampling) {
 
   texture_target_ = GL_TEXTURE_2D;
 
-#if defined(OS_APPLE)
+#if defined(OS_MAC)
   if (ShouldUseChromiumImage()) {
     // A CHROMIUM_image backed texture requires a specialized set of parameters
     // on OSX.

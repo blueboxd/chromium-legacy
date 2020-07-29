@@ -604,7 +604,7 @@ class CONTENT_EXPORT RenderFrameHost : public IPC::Listener,
       blink::mojom::HeavyAdResolutionStatus resolution,
       blink::mojom::HeavyAdReason reason) = 0;
 
-  virtual IdleManager* GetIdleManagerForTesting() = 0;
+  virtual IdleManager* GetIdleManager() = 0;
 
  private:
   // This interface should only be implemented inside content.

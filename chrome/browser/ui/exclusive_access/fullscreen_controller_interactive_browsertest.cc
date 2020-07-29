@@ -273,7 +273,7 @@ IN_PROC_BROWSER_TEST_F(
   ASSERT_FALSE(IsWindowFullscreenForTabOrPending());
 }
 
-#if defined(OS_MACOSX)
+#if defined(OS_MAC)
 // http://crbug.com/100467
 IN_PROC_BROWSER_TEST_F(ExclusiveAccessTest,
                        DISABLED_TabEntersPresentationModeFromWindowed) {

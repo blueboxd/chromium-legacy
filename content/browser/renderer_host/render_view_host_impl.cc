@@ -352,8 +352,7 @@ bool RenderViewHostImpl::CreateRenderView(
   GetWidget()->set_renderer_initialized(true);
 
   mojom::CreateViewParamsPtr params = mojom::CreateViewParams::New();
-  params->renderer_preferences =
-      delegate_->GetRendererPrefs(GetProcess()->GetBrowserContext()).Clone();
+  params->renderer_preferences = delegate_->GetRendererPrefs().Clone();
   RenderViewHostImpl::GetPlatformSpecificPrefs(
       params->renderer_preferences.get());
   params->web_preferences = delegate_->GetOrCreateWebPreferences();

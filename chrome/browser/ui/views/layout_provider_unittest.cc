@@ -21,7 +21,7 @@
 #include "ui/views/style/typography.h"
 #include "ui/views/style/typography_provider.h"
 
-#if defined(OS_MACOSX)
+#if defined(OS_MAC)
 #include "base/mac/mac_util.h"
 #endif
 
@@ -115,7 +115,7 @@ TEST_F(LayoutProviderTest, EnsuresDefaultSystemSettings) {
 // these tests ever fail it probably means something in the old UI will have
 // changed by mistake.
 // https://crbug.com/961938
-#if defined(OS_MACOSX)
+#if defined(OS_MAC)
 #define MAYBE_LegacyFontSizeConstants DISABLED_LegacyFontSizeConstants
 #else
 #define MAYBE_LegacyFontSizeConstants LegacyFontSizeConstants
@@ -134,7 +134,7 @@ TEST_F(LayoutProviderTest, MAYBE_LegacyFontSizeConstants) {
   EXPECT_EQ(12, label_font.GetFontSize());
   EXPECT_EQ(9, label_font.GetCapHeight());
 
-#if defined(OS_MACOSX)
+#if defined(OS_MAC)
   EXPECT_EQ(7, label_font.GetExpectedTextWidth(1));
 #else
   EXPECT_EQ(6, label_font.GetExpectedTextWidth(1));
@@ -147,7 +147,7 @@ TEST_F(LayoutProviderTest, MAYBE_LegacyFontSizeConstants) {
   EXPECT_EQ(20, title_font.GetHeight());
   EXPECT_EQ(17, title_font.GetBaseline());
   EXPECT_EQ(11, title_font.GetCapHeight());
-#elif defined(OS_MACOSX)
+#elif defined(OS_MAC)
   EXPECT_EQ(14, title_font.GetFontSize());
   EXPECT_EQ(17, title_font.GetHeight());
   EXPECT_EQ(14, title_font.GetBaseline());
@@ -173,7 +173,7 @@ TEST_F(LayoutProviderTest, MAYBE_LegacyFontSizeConstants) {
       rb.GetFontList(ui::ResourceBundle::MediumBoldFont);
   gfx::FontList large_font = rb.GetFontList(ui::ResourceBundle::LargeFont);
 
-#if defined(OS_MACOSX)
+#if defined(OS_MAC)
   EXPECT_EQ(12, small_font.GetFontSize());
   EXPECT_EQ(13, base_font.GetFontSize());
   EXPECT_EQ(13, bold_font.GetFontSize());
@@ -198,7 +198,7 @@ TEST_F(LayoutProviderTest, MAYBE_LegacyFontSizeConstants) {
 // TypographyProvider must add 4 instead. We do this so that Chrome adapts
 // correctly to _non-standard_ system font configurations on user machines.
 TEST_F(LayoutProviderTest, RequestFontBySize) {
-#if defined(OS_MACOSX)
+#if defined(OS_MAC)
   constexpr int kBase = 13;
 #else
   constexpr int kBase = 12;
@@ -234,7 +234,7 @@ TEST_F(LayoutProviderTest, RequestFontBySize) {
   EXPECT_EQ(kHeadline, headline_font.GetFontSize());
 
 // Headline leading not specified (multiline should be rare).
-#if defined(OS_MACOSX)
+#if defined(OS_MAC)
   EXPECT_EQ(25, headline_font.GetHeight());
 #elif defined(OS_WIN)
   EXPECT_EQ(27, headline_font.GetHeight());
@@ -245,7 +245,7 @@ TEST_F(LayoutProviderTest, RequestFontBySize) {
   EXPECT_EQ(kTitle, title_font.GetFontSize());
 
 // Title font leading should be 22.
-#if defined(OS_MACOSX)
+#if defined(OS_MAC)
   EXPECT_EQ(19, title_font.GetHeight());  // i.e. Add 3 to obtain line height.
 #elif defined(OS_WIN)
   EXPECT_EQ(20, title_font.GetHeight());  // Add 2.
@@ -256,7 +256,7 @@ TEST_F(LayoutProviderTest, RequestFontBySize) {
   EXPECT_EQ(kBody1, body1_font.GetFontSize());
 
 // Body1 font leading should be 20.
-#if defined(OS_MACOSX)
+#if defined(OS_MAC)
   EXPECT_EQ(16, body1_font.GetHeight());  // Add 4.
 #elif defined(OS_WIN)
   EXPECT_EQ(18, body1_font.GetHeight());
@@ -297,7 +297,7 @@ TEST_F(LayoutProviderTest, FontSizeRelativeToBase) {
 
 // Everything's measured relative to a default-constructed FontList.
 // On Mac, subtract one since that is 13pt instead of 12pt.
-#if defined(OS_MACOSX)
+#if defined(OS_MAC)
   const int twelve = gfx::FontList().GetFontSize() - 1;
 #else
   const int twelve = gfx::FontList().GetFontSize();

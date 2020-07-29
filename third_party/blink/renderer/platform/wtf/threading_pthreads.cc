@@ -46,7 +46,7 @@
 #include "third_party/blink/renderer/platform/wtf/threading.h"
 #include "third_party/blink/renderer/platform/wtf/threading_primitives.h"
 
-#if defined(OS_APPLE)
+#if defined(OS_MAC)
 #include <objc/objc-auto.h>
 #endif
 

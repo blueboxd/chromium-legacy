@@ -26,6 +26,7 @@
 #include "components/update_client/persisted_data.h"
 #include "components/update_client/ping_manager.h"
 #include "components/update_client/protocol_parser.h"
+#include "components/update_client/task_send_registration_ping.h"
 #include "components/update_client/task_send_uninstall_ping.h"
 #include "components/update_client/task_update.h"
 #include "components/update_client/update_checker.h"
@@ -235,6 +236,17 @@ void UpdateClientImpl::SendUninstallPing(const std::string& id,
 
   RunTask(base::MakeRefCounted<TaskSendUninstallPing>(
       update_engine_.get(), id, version, reason,
+      base::BindOnce(&UpdateClientImpl::OnTaskComplete, this,
+                     std::move(callback))));
+}
+
+void UpdateClientImpl::SendRegistrationPing(const std::string& id,
+                                            const base::Version& version,
+                                            Callback callback) {
+  DCHECK(thread_checker_.CalledOnValidThread());
+
+  RunTask(base::MakeRefCounted<TaskSendRegistrationPing>(
+      update_engine_.get(), id, version,
       base::BindOnce(&UpdateClientImpl::OnTaskComplete, this,
                      std::move(callback))));
 }

@@ -117,7 +117,7 @@ class VIEWS_EXPORT MenuItemView : public View {
 
   // Constructor for use with the top level menu item. This menu is never
   // shown to the user, rather its use as the parent for all menu items.
-  explicit MenuItemView(MenuDelegate* delegate);
+  explicit MenuItemView(MenuDelegate* delegate = nullptr);
 
   // Overridden from View:
   base::string16 GetTooltipText(const gfx::Point& p) const override;

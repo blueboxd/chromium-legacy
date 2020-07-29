@@ -86,6 +86,7 @@ DedicatedWorker::DedicatedWorker(ExecutionContext* context,
                                  const KURL& script_request_url,
                                  const WorkerOptions* options)
     : AbstractWorker(context),
+      token_(blink::DedicatedWorkerToken::Create()),
       script_request_url_(script_request_url),
       options_(options),
       context_proxy_(
@@ -93,8 +94,7 @@ DedicatedWorker::DedicatedWorker(ExecutionContext* context,
       factory_client_(
           Platform::Current()->CreateDedicatedWorkerHostFactoryClient(
               this,
-              GetExecutionContext()->GetBrowserInterfaceBroker())),
-      token_(blink::DedicatedWorkerToken::Create()) {
+              GetExecutionContext()->GetBrowserInterfaceBroker())) {
   DCHECK(context->IsContextThread());
   DCHECK(script_request_url_.IsValid());
   DCHECK(context_proxy_);

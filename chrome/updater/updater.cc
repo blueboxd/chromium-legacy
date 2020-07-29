@@ -28,7 +28,7 @@
 #include "chrome/updater/win/app_install.h"
 #endif
 
-#if defined(OS_MACOSX)
+#if defined(OS_MAC)
 #include "chrome/updater/app/server/mac/server.h"
 #include "chrome/updater/mac/setup/app_install.h"
 #endif

@@ -108,7 +108,7 @@ const char kCloudPrintLearnMoreURL[] =
 const char kCloudPrintCertificateErrorLearnMoreURL[] =
 #if defined(OS_CHROMEOS)
     "https://support.google.com/chromebook?p=cloudprint_error_troubleshoot";
-#elif defined(OS_MACOSX)
+#elif defined(OS_MAC)
     "https://support.google.com/cloudprint?p=cloudprint_error_offline_mac";
 #elif defined(OS_WIN)
         "https://support.google.com/"
@@ -417,7 +417,7 @@ const char kWifiSyncLearnMoreURL[] =
     "https://support.google.com/chromebook/?p=wifisync";
 #endif  // defined(OS_CHROMEOS)
 
-#if defined(OS_MACOSX)
+#if defined(OS_MAC)
 const char kChromeEnterpriseSignInLearnMoreURL[] =
     "https://support.google.com/chromebook/answer/1331549";
 

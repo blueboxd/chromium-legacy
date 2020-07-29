@@ -102,7 +102,11 @@ class DenialTimeUpdate {
 // Preferences and Language Settings.
 struct TranslateLanguageInfo {
   TranslateLanguageInfo();
+
   TranslateLanguageInfo(const TranslateLanguageInfo&);
+  TranslateLanguageInfo(TranslateLanguageInfo&&) noexcept;
+  TranslateLanguageInfo& operator=(const TranslateLanguageInfo&);
+  TranslateLanguageInfo& operator=(TranslateLanguageInfo&&) noexcept;
 
   // This ISO code of the language.
   std::string code;
@@ -200,7 +204,7 @@ class TranslatePrefs {
   // skip those languages while rearranging the list.
   void RearrangeLanguage(const std::string& language,
                          RearrangeSpecifier where,
-                         const int offset,
+                         int offset,
                          const std::vector<std::string>& enabled_languages);
 
   // Sets the language order to the provided order.

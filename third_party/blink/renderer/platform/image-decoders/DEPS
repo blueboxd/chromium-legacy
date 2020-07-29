@@ -7,6 +7,7 @@ include_rules = [
 
     # Dependencies.
     "+base",
+    "+cc/base/math_util.h",
     "+cc/paint/image_animation_count.h",
     "+media",
     "+third_party/blink/renderer/platform/geometry",

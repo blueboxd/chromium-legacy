@@ -77,7 +77,7 @@ TEST(FontList, GetFontListLocalized) {
 }
 #endif  // defined(OS_WIN)
 
-#if defined(OS_MACOSX)
+#if defined(OS_MAC)
 // On some macOS versions, CTFontManager returns LastResort and/or hidden fonts.
 // Ensure that someone (CTFontManager or our FontList code) filters these fonts
 // on all OS versions that we support.
@@ -95,4 +95,4 @@ TEST(FontList, GetFontListDoesNotIncludeHiddenFonts) {
         << font_id << " seems like a hidden font, which should be filtered";
   }
 }
-#endif  // defined(OS_MACOSX)
+#endif  // defined(OS_MAC)

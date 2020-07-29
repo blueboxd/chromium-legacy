@@ -138,7 +138,7 @@ class PpapiPluginSandboxedProcessLauncherDelegate
     return sandbox::policy::SandboxType::kPpapi;
   }
 
-#if defined(OS_MACOSX)
+#if defined(OS_MAC)
   bool DisclaimResponsibility() override { return true; }
 #endif
 
@@ -367,7 +367,7 @@ bool PpapiPluginProcessHost::Init(const PepperPluginInfo& info) {
 #if defined(OS_LINUX)
   int flags = plugin_launcher.empty() ? ChildProcessHost::CHILD_ALLOW_SELF :
                                         ChildProcessHost::CHILD_NORMAL;
-#elif defined(OS_MACOSX)
+#elif defined(OS_MAC)
   // Flash needs to JIT, but other plugins do not.
   int flags = permissions_.HasPermission(ppapi::PERMISSION_FLASH)
                   ? ChildProcessHost::CHILD_PLUGIN
@@ -405,7 +405,7 @@ bool PpapiPluginProcessHost::Init(const PepperPluginInfo& info) {
     static const char* const kPluginForwardSwitches[] = {
       sandbox::policy::switches::kDisableSeccompFilterSandbox,
       sandbox::policy::switches::kNoSandbox,
-#if defined(OS_MACOSX)
+#if defined(OS_MAC)
       sandbox::policy::switches::kEnableSandboxLogging,
 #endif
       switches::kPpapiStartupDialog,

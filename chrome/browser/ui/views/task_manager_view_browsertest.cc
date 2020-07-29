@@ -48,7 +48,7 @@ using browsertest_util::WaitForTaskManagerRows;
 class TaskManagerViewTest : public InProcessBrowserTest {
  public:
   TaskManagerViewTest() {
-#if defined(OS_MACOSX)
+#if defined(OS_MAC)
     feature_list_.InitAndEnableFeature(features::kViewsTaskManager);
 #endif
   }

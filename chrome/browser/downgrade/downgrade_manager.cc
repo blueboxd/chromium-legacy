@@ -171,7 +171,7 @@ bool UserDataSnapshotEnabled() {
   if (g_snapshots_enabled_for_testing)
     return true;
   bool is_enterprise_managed =
-#if defined(OS_WIN) || defined(OS_MACOSX)
+#if defined(OS_WIN) || defined(OS_MAC)
       base::IsMachineExternallyManaged() ||
 #endif
       policy::BrowserDMTokenStorage::Get()->RetrieveDMToken().is_valid();

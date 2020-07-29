@@ -28,13 +28,10 @@ void ReadEvent(Event* event, Connection* connection, ReadBuffer* buffer);
 
 class COMPONENT_EXPORT(X11) Event {
  public:
-  // Used to create events for testing.
   template <typename T>
-  Event(XEvent* xlib_event, T&& xproto_event) {
+  explicit Event(T&& xproto_event) {
     sequence_valid_ = true;
-    sequence_ = xlib_event_.xany.serial;
-    custom_allocated_xlib_event_ = true;
-    xlib_event_ = *xlib_event;
+    sequence_ = xproto_event.sequence;
     type_id_ = T::type_id;
     deleter_ = [](void* event) { delete reinterpret_cast<T*>(event); };
     T* event = new T(std::forward<T>(xproto_event));
@@ -75,9 +72,6 @@ class COMPONENT_EXPORT(X11) Event {
   bool sequence_valid() const { return sequence_valid_; }
   uint32_t sequence() const { return sequence_; }
 
-  const XEvent& xlib_event() const { return xlib_event_; }
-  XEvent& xlib_event() { return xlib_event_; }
-
   x11::Window window() const { return window_ ? *window_ : x11::Window::None; }
 
  private:
@@ -88,12 +82,7 @@ class COMPONENT_EXPORT(X11) Event {
   void Dealloc();
 
   bool sequence_valid_ = false;
-  uint32_t sequence_ = 0;
-
-  // Indicates if |xlib_event_| was allocated manually and therefore
-  // needs to be freed manually.
-  bool custom_allocated_xlib_event_ = false;
-  XEvent xlib_event_{};
+  uint16_t sequence_ = 0;
 
   // XProto event state.
   int type_id_ = 0;

@@ -12,7 +12,14 @@ mojo::PendingReceiver<blink::mojom::IDBDatabaseGetAllResultSink> AbortCallback(
     base::WeakPtr<IndexedDBTransaction> transaction) {
   if (transaction)
     transaction->IncrementNumErrorsSent();
-  return mojo::NullReceiver();
+
+  mojo::Remote<blink::mojom::IDBDatabaseGetAllResultSink> remote;
+  auto receiver = remote.BindNewPipeAndPassReceiver();
+
+  IndexedDBDatabaseError error(blink::mojom::IDBException::kIgnorableAbortError,
+                               "Backend aborted error");
+  remote->OnError(blink::mojom::IDBError::New(error.code(), error.message()));
+  return receiver;
 }
 
 }  // namespace indexed_db_callback_helpers_internal

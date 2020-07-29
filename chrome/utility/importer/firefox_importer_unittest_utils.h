@@ -41,19 +41,19 @@ class FFUnitTestDecryptorProxy {
       const base::FilePath& signons_path);
 
  private:
-#if defined(OS_MACOSX)
+#if defined(OS_MAC)
   base::Process child_process_;
   std::unique_ptr<FFDecryptorServerChannelListener> listener_;
   std::unique_ptr<base::SingleThreadTaskExecutor> main_task_executor_;
 #else
   NSSDecryptor decryptor_;
-#endif  // !OS_MACOSX
+#endif  // !OS_MAC
   DISALLOW_COPY_AND_ASSIGN(FFUnitTestDecryptorProxy);
 };
 
 // On Non-OSX platforms FFUnitTestDecryptorProxy simply calls through to
 // NSSDecryptor.
-#if !defined(OS_MACOSX)
+#if !defined(OS_MAC)
 FFUnitTestDecryptorProxy::FFUnitTestDecryptorProxy() {
 }
 
@@ -82,6 +82,6 @@ std::vector<autofill::PasswordForm> FFUnitTestDecryptorProxy::ParseSignons(
   return std::vector<autofill::PasswordForm>();
 }
 
-#endif  // !OS_MACOSX
+#endif  // !OS_MAC
 
 #endif  // CHROME_UTILITY_IMPORTER_FIREFOX_IMPORTER_UNITTEST_UTILS_H_

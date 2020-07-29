@@ -25,7 +25,7 @@ std::unique_ptr<DesktopMediaPicker>
 DesktopMediaPickerFactoryImpl::CreatePicker() {
 // DesktopMediaPicker is implemented only for Windows, OSX and Aura Linux
 // builds.
-#if defined(TOOLKIT_VIEWS) || defined(OS_MACOSX)
+#if defined(TOOLKIT_VIEWS) || defined(OS_MAC)
   return DesktopMediaPicker::Create();
 #else
   return nullptr;

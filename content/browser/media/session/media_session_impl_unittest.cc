@@ -568,7 +568,7 @@ TEST_F(MediaSessionImplTest, WebContentsDestroyed_StopsDucking) {
   }
 }
 
-#if defined(OS_MACOSX)
+#if defined(OS_MAC)
 
 TEST_F(MediaSessionImplTest, TabFocusDoesNotCauseAudioFocus) {
   MockAudioFocusDelegate* delegate = new MockAudioFocusDelegate();
@@ -586,7 +586,7 @@ TEST_F(MediaSessionImplTest, TabFocusDoesNotCauseAudioFocus) {
   EXPECT_EQ(1, delegate->request_audio_focus_count());
 }
 
-#else  // defined(OS_MACOSX)
+#else  // defined(OS_MAC)
 
 TEST_F(MediaSessionImplTest, RequestAudioFocus_OnFocus_Active) {
   MockAudioFocusDelegate* delegate = new MockAudioFocusDelegate();
@@ -637,7 +637,7 @@ TEST_F(MediaSessionImplTest, RequestAudioFocus_OnFocus_Suspended) {
   EXPECT_EQ(1, delegate->request_audio_focus_count());
 }
 
-#endif  // defined(OS_MACOSX)
+#endif  // defined(OS_MAC)
 
 #endif  // !defined(OS_ANDROID)
 

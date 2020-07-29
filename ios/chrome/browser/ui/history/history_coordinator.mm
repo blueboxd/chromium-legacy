@@ -175,9 +175,9 @@
 
 #pragma mark - HistoryMenuProvider
 
-- (UIContextMenuConfiguration*)createConfigurationForItem:
+- (UIContextMenuConfiguration*)contextMenuConfigurationForItem:
                                    (HistoryEntryItem*)item
-                                                 withView:(UIView*)view
+                                                      withView:(UIView*)view
     API_AVAILABLE(ios(13.0)) {
   __weak id<HistoryEntryItemDelegate> historyItemDelegate =
       self.historyTableViewController;
@@ -185,10 +185,10 @@
   UIContextMenuActionProvider actionProvider =
       ^(NSArray<UIMenuElement*>* suggestedActions) {
         // Record that this context menu was shown to the user.
-        RecordMenuShown(MenuScenario::HistoryEntry);
+        RecordMenuShown(MenuScenario::kHistoryEntry);
 
-        ActionFactory* actionFactory =
-            [[ActionFactory alloc] initWithScenario:MenuScenario::HistoryEntry];
+        ActionFactory* actionFactory = [[ActionFactory alloc]
+            initWithScenario:MenuScenario::kHistoryEntry];
 
         UIAction* copyAction = [actionFactory actionToCopyURL:item.URL];
 
@@ -196,7 +196,7 @@
           [historyItemDelegate historyEntryItemDidRequestDelete:item];
         }];
 
-        return [UIMenu menuWithTitle:[NSString string]
+        return [UIMenu menuWithTitle:@""
                             children:@[ copyAction, deleteAction ]];
       };
 

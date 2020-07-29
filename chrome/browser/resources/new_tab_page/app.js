@@ -22,6 +22,7 @@ import {html, PolymerElement} from 'chrome://resources/polymer/v3_0/polymer/poly
 import {BackgroundManager} from './background_manager.js';
 import {BrowserProxy} from './browser_proxy.js';
 import {BackgroundSelection, BackgroundSelectionType} from './customize_dialog.js';
+import {oneGoogleBarApi} from './one_google_bar_api.js';
 import {$$, hexColorToSkColor, skColorToRgba} from './utils.js';
 
 class AppElement extends PolymerElement {
@@ -344,10 +345,11 @@ class AppElement extends PolymerElement {
     document.body.appendChild(endOfBodyScript);
 
     this.pageHandler_.onOneGoogleBarRendered(BrowserProxy.getInstance().now());
+    oneGoogleBarApi.trackDarkModeChanges();
   }
 
   /** @private */
-  async onOneGoogleBarDarkThemeEnabledChange_() {
+  onOneGoogleBarDarkThemeEnabledChange_() {
     if (!this.oneGoogleBarLoaded_) {
       return;
     }
@@ -358,16 +360,7 @@ class AppElement extends PolymerElement {
       });
       return;
     }
-    const {gbar} = /** @type {{gbar}} */ (window);
-    if (!gbar) {
-      return;
-    }
-    const oneGoogleBar =
-        await /** @type {!{a: {bf: function(): !Promise<{pc: !Function}>}}} */ (
-            gbar)
-            .a.bf();
-    oneGoogleBar.pc.call(
-        oneGoogleBar, this.oneGoogleBarDarkThemeEnabled_ ? 1 : 0);
+    oneGoogleBarApi.setForegroundLight(this.oneGoogleBarDarkThemeEnabled_);
   }
 
   /**

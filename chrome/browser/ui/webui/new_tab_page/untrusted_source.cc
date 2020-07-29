@@ -133,6 +133,12 @@ void UntrustedSource::StartDataRequest(
         IDR_NEW_TAB_PAGE_UNTRUSTED_ONE_GOOGLE_BAR_JS));
     return;
   }
+  if (path == "one_google_bar_api.js") {
+    ui::ResourceBundle& bundle = ui::ResourceBundle::GetSharedInstance();
+    std::move(callback).Run(
+        bundle.LoadDataResourceBytes(IDR_NEW_TAB_PAGE_ONE_GOOGLE_BAR_API_JS));
+    return;
+  }
   if (path == "promo" && promo_service_) {
     promo_callbacks_.push_back(std::move(callback));
     if (promo_service_->promo_data().has_value()) {
@@ -209,11 +215,13 @@ void UntrustedSource::StartDataRequest(
 std::string UntrustedSource::GetMimeType(const std::string& path) {
   const std::string stripped_path = path.substr(0, path.find("?"));
   if (base::EndsWith(stripped_path, ".js",
-                     base::CompareCase::INSENSITIVE_ASCII))
+                     base::CompareCase::INSENSITIVE_ASCII)) {
     return "application/javascript";
+  }
   if (base::EndsWith(stripped_path, ".jpg",
-                     base::CompareCase::INSENSITIVE_ASCII))
+                     base::CompareCase::INSENSITIVE_ASCII)) {
     return "image/jpg";
+  }
 
   return "text/html";
 }
@@ -224,6 +232,10 @@ bool UntrustedSource::AllowCaching() {
 
 bool UntrustedSource::ShouldReplaceExistingSource() {
   return false;
+}
+
+bool UntrustedSource::ShouldServeMimeTypeAsContentTypeHeader() {
+  return true;
 }
 
 bool UntrustedSource::ShouldServiceRequest(
@@ -237,7 +249,8 @@ bool UntrustedSource::ShouldServiceRequest(
   return path == "one-google-bar" || path == "one_google_bar.js" ||
          path == "promo" || path == "promo.js" || path == "image" ||
          path == "background_image" || path == "custom_background_image" ||
-         path == "background_image.js" || path == "background.jpg";
+         path == "background_image.js" || path == "background.jpg" ||
+         path == "one_google_bar_api.js";
 }
 
 void UntrustedSource::OnOneGoogleBarDataUpdated() {

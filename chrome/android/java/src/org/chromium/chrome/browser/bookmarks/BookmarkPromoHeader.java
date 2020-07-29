@@ -31,6 +31,7 @@ import org.chromium.chrome.browser.signin.SigninPromoUtil;
 import org.chromium.chrome.browser.signin.SyncPromoView;
 import org.chromium.chrome.browser.sync.AndroidSyncSettings;
 import org.chromium.chrome.browser.sync.AndroidSyncSettings.AndroidSyncSettingsObserver;
+import org.chromium.components.signin.AccountManagerFacade;
 import org.chromium.components.signin.AccountManagerFacadeProvider;
 import org.chromium.components.signin.AccountsChangeObserver;
 import org.chromium.components.signin.base.CoreAccountInfo;
@@ -67,6 +68,7 @@ class BookmarkPromoHeader implements AndroidSyncSettingsObserver, SignInStateObs
 
     private final Context mContext;
     private final SigninManager mSignInManager;
+    private final AccountManagerFacade mAccountManagerFacade;
     private final Runnable mPromoHeaderChangeAction;
 
     private @Nullable ProfileDataCache mProfileDataCache;
@@ -87,6 +89,8 @@ class BookmarkPromoHeader implements AndroidSyncSettingsObserver, SignInStateObs
                 Profile.getLastUsedRegularProfile());
         mSignInManager.addSignInStateObserver(this);
 
+        mAccountManagerFacade = AccountManagerFacadeProvider.getInstance();
+
         mPromoState = calculatePromoState();
         if (mPromoState == PromoState.PROMO_SYNC) {
             SharedPreferencesManager.getInstance().incrementInt(
@@ -101,7 +105,7 @@ class BookmarkPromoHeader implements AndroidSyncSettingsObserver, SignInStateObs
                             : 0);
             mProfileDataCache.addObserver(this);
             mSigninPromoController = new SigninPromoController(SigninAccessPoint.BOOKMARK_MANAGER);
-            AccountManagerFacadeProvider.getInstance().addObserver(this);
+            mAccountManagerFacade.addObserver(this);
         } else {
             mProfileDataCache = null;
             mSigninPromoController = null;
@@ -115,7 +119,7 @@ class BookmarkPromoHeader implements AndroidSyncSettingsObserver, SignInStateObs
         AndroidSyncSettings.get().unregisterObserver(this);
 
         if (mSigninPromoController != null) {
-            AccountManagerFacadeProvider.getInstance().removeObserver(this);
+            mAccountManagerFacade.removeObserver(this);
             mProfileDataCache.removeObserver(this);
             mSigninPromoController.onPromoDestroyed();
         }

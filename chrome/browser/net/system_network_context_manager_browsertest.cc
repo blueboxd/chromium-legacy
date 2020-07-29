@@ -262,7 +262,7 @@ IN_PROC_BROWSER_TEST_F(SystemNetworkContextManagerBrowsertest, AuthParams) {
   EXPECT_EQ(kDelegateAllowList, dynamic_params->delegate_allowlist);
   EXPECT_FALSE(dynamic_params->delegate_by_kdc_policy);
 
-#if defined(OS_LINUX) || defined(OS_MACOSX) || defined(OS_CHROMEOS)
+#if defined(OS_LINUX) || defined(OS_MAC) || defined(OS_CHROMEOS)
   local_state->SetBoolean(prefs::kAuthNegotiateDelegateByKdcPolicy, true);
   dynamic_params =
       SystemNetworkContextManager::GetHttpAuthDynamicParamsForTesting();
@@ -271,7 +271,7 @@ IN_PROC_BROWSER_TEST_F(SystemNetworkContextManagerBrowsertest, AuthParams) {
   EXPECT_EQ(kServerAllowList, dynamic_params->server_allowlist);
   EXPECT_EQ(kDelegateAllowList, dynamic_params->delegate_allowlist);
   EXPECT_TRUE(dynamic_params->delegate_by_kdc_policy);
-#endif  // defined(OS_LINUX) || defined(OS_MACOSX) || defined(OS_CHROMEOS)
+#endif  // defined(OS_LINUX) || defined(OS_MAC) || defined(OS_CHROMEOS)
 
 #if defined(OS_CHROMEOS)
   // The kerberos.enabled pref is false and the device is not Active Directory

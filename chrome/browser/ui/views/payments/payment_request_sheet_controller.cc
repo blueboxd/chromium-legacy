@@ -419,13 +419,13 @@ std::unique_ptr<views::View> PaymentRequestSheetController::CreateFooterView() {
           views::BoxLayout::Orientation::kHorizontal, gfx::Insets(),
           kPaymentRequestButtonSpacing));
 
-#if defined(OS_MACOSX)
+#if defined(OS_MAC)
   AddSecondaryButton(trailing_buttons_container.get());
   AddPrimaryButton(trailing_buttons_container.get());
 #else
   AddPrimaryButton(trailing_buttons_container.get());
   AddSecondaryButton(trailing_buttons_container.get());
-#endif  // defined(OS_MACOSX)
+#endif  // defined(OS_MAC)
 
   if (container->children().empty() &&
       trailing_buttons_container->children().empty()) {

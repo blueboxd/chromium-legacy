@@ -286,10 +286,6 @@ class LineLayoutItem {
     return layout_object_->DocumentBeingDestroyed();
   }
 
-  IntRect PartialInvalidationVisualRectForInlineBox() const {
-    return layout_object_->PartialInvalidationVisualRectForInlineBox();
-  }
-
   bool IsHashTableDeletedValue() const {
     return layout_object_ == kHashTableDeletedValue;
   }

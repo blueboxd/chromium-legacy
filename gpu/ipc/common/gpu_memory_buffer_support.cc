@@ -12,7 +12,7 @@
 #include "ui/gfx/buffer_format_util.h"
 #include "ui/gfx/buffer_usage_util.h"
 
-#if defined(OS_MACOSX)
+#if defined(OS_MAC)
 #include "gpu/ipc/common/gpu_memory_buffer_impl_io_surface.h"
 #endif
 
@@ -62,7 +62,7 @@ GpuMemoryBufferSupport::~GpuMemoryBufferSupport() {}
 
 gfx::GpuMemoryBufferType
 GpuMemoryBufferSupport::GetNativeGpuMemoryBufferType() {
-#if defined(OS_MACOSX)
+#if defined(OS_MAC)
   return gfx::IO_SURFACE_BUFFER;
 #elif defined(OS_ANDROID)
   return gfx::ANDROID_HARDWARE_BUFFER;
@@ -80,7 +80,7 @@ bool GpuMemoryBufferSupport::IsNativeGpuMemoryBufferConfigurationSupported(
     gfx::BufferUsage usage) {
   DCHECK_NE(gfx::SHARED_MEMORY_BUFFER, GetNativeGpuMemoryBufferType());
 
-#if defined(OS_MACOSX)
+#if defined(OS_MAC)
   switch (usage) {
     case gfx::BufferUsage::GPU_READ:
     case gfx::BufferUsage::SCANOUT:
@@ -189,7 +189,7 @@ GpuMemoryBufferSupport::CreateGpuMemoryBufferImplFromHandle(
     case gfx::SHARED_MEMORY_BUFFER:
       return GpuMemoryBufferImplSharedMemory::CreateFromHandle(
           std::move(handle), size, format, usage, std::move(callback));
-#if defined(OS_MACOSX)
+#if defined(OS_MAC)
     case gfx::IO_SURFACE_BUFFER:
       return GpuMemoryBufferImplIOSurface::CreateFromHandle(
           std::move(handle), size, format, usage, std::move(callback));

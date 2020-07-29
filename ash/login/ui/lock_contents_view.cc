@@ -181,7 +181,7 @@ void MakeSectionBold(views::StyledLabel* label,
   auto create_style = [&](bool is_bold) {
     views::StyledLabel::RangeStyleInfo style;
     if (is_bold) {
-      style.custom_font = label->GetDefaultFontList().Derive(
+      style.custom_font = label->GetFontList().Derive(
           0, gfx::Font::FontStyle::NORMAL, gfx::Font::Weight::BOLD);
     }
     style.override_color = gfx::kGoogleGrey200;

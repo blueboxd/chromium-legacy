@@ -402,7 +402,7 @@ id<GREYMatcher> EmptyIllustratedTableViewBackground() {
 // Tests display and selection of 'Open in New Window' in a context menu on a
 // history entry.
 - (void)testContextMenuOpenInNewWindow {
-  if (!IsMultiwindowSupported())
+  if (!IsMultipleScenesSupported())
     return;
 
   [self loadTestURLs];

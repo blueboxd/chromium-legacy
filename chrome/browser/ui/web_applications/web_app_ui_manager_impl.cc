@@ -178,7 +178,7 @@ void WebAppUiManagerImpl::NotifyOnAssociatedAppChanged(
 bool WebAppUiManagerImpl::CanReparentAppTabToWindow(
     const AppId& app_id,
     bool shortcut_created) const {
-#if defined(OS_MACOSX)
+#if defined(OS_MAC)
   // On macOS it is only possible to reparent the window when the shortcut (app
   // shim) was created. See https://crbug.com/915571.
   return shortcut_created;

@@ -404,6 +404,9 @@ void WEBPImageDecoder::OnInitFrameBuffer(size_t frame_index) {
 void WEBPImageDecoder::DecodeToYUV() {
   DCHECK(IsDoingYuvDecode());
 
+  // Only 8-bit YUV decode is currently supported.
+  DCHECK_EQ(image_planes_->color_type(), kGray_8_SkColorType);
+
   if (Failed())
     return;
 

@@ -269,7 +269,7 @@ IN_PROC_BROWSER_TEST_F(PopupBlockerBrowserTest, BlockWebContentsCreation) {
                kDontCheckTitle);
 }
 
-#if defined(OS_MACOSX) && defined(ADDRESS_SANITIZER)
+#if defined(OS_MAC) && defined(ADDRESS_SANITIZER)
 // Flaky on ASAN on Mac. See https://crbug.com/674497.
 #define MAYBE_BlockWebContentsCreationIncognito \
   DISABLED_BlockWebContentsCreationIncognito
@@ -476,8 +476,7 @@ class PopupBlockerSpecialPolicyBrowserTest : public PopupBlockerBrowserTest {
 
     policy_map.Set(policy::key::kAllowPopupsDuringPageUnload,
                    policy::POLICY_LEVEL_MANDATORY, policy::POLICY_SCOPE_USER,
-                   policy::POLICY_SOURCE_CLOUD,
-                   std::make_unique<base::Value>(true), nullptr);
+                   policy::POLICY_SOURCE_CLOUD, base::Value(true), nullptr);
     policy_provider_.UpdateChromePolicy(policy_map);
 
 #if defined(OS_CHROMEOS)
@@ -562,7 +561,7 @@ IN_PROC_BROWSER_TEST_F(PopupBlockerBrowserTest, MAYBE_WindowFeatures) {
   // Check that the new popup has (roughly) the requested size.
   gfx::Size window_size = popup->GetContainerBounds().size();
   EXPECT_TRUE(349 <= window_size.width() && window_size.width() <= 351);
-#if !defined(OS_MACOSX)
+#if !defined(OS_MAC)
   // Window height computation is off in MacViews: https://crbug.com/846329
   EXPECT_GE(window_size.height(), 249);
   EXPECT_LE(window_size.height(), 253);
@@ -695,7 +694,7 @@ IN_PROC_BROWSER_TEST_F(PopupBlockerBrowserTest, ModalPopUnder) {
   ASSERT_NE(popup_browser, browser());
 
 // Showing an alert will raise the tab over the popup.
-#if !defined(OS_MACOSX)
+#if !defined(OS_MAC)
   // Mac doesn't activate the browser during modal dialogs, see
   // https://crbug.com/687732 for details.
   ui_test_utils::BrowserActivationWaiter alert_waiter(browser());
@@ -707,24 +706,24 @@ IN_PROC_BROWSER_TEST_F(PopupBlockerBrowserTest, ModalPopUnder) {
   javascript_dialogs::AppModalDialogController* dialog =
       ui_test_utils::WaitForAppModalDialog();
   ASSERT_TRUE(dialog);
-#if !defined(OS_MACOSX)
+#if !defined(OS_MAC)
   if (chrome::FindLastActive() != browser())
     alert_waiter.WaitForActivation();
 #endif
 
 // Verify that after the dialog is closed, the popup is in front again.
-#if !defined(OS_MACOSX)
+#if !defined(OS_MAC)
   ui_test_utils::BrowserActivationWaiter waiter(popup_browser);
 #endif
   javascript_dialogs::AppModalDialogManager::GetInstance()
       ->HandleJavaScriptDialog(tab, true, nullptr);
-#if !defined(OS_MACOSX)
+#if !defined(OS_MAC)
   waiter.WaitForActivation();
 #endif
   ASSERT_EQ(popup_browser, chrome::FindLastActive());
 }
 
-#if defined(OS_MACOSX)
+#if defined(OS_MAC)
 // Tests that the print preview dialog can't be used to create popunders. This
 // is due to a bug in MacViews that causes dialogs to activate their parents
 // (https://crbug.com/1073587). For now, test the PopunderBlocker that was
@@ -776,7 +775,7 @@ IN_PROC_BROWSER_TEST_F(PopupBlockerBrowserTest, CtrlEnterKey) {
   ui_test_utils::TabAddedWaiter tab_add(browser());
 
   bool command = false;
-#if defined(OS_MACOSX)
+#if defined(OS_MAC)
   command = true;
 #endif
 
@@ -802,7 +801,7 @@ IN_PROC_BROWSER_TEST_F(PopupBlockerBrowserTest, TapGestureWithCtrlKey) {
 
   ui_test_utils::TabAddedWaiter tab_add(browser());
 
-#if defined(OS_MACOSX)
+#if defined(OS_MAC)
   unsigned modifiers = blink::WebInputEvent::kMetaKey;
 #else
   unsigned modifiers = blink::WebInputEvent::kControlKey;

@@ -921,7 +921,7 @@ IN_PROC_BROWSER_TEST_P(SafeBrowsingBlockingPageBrowserTest, IframeProceed) {
             browser()->tab_strip_model()->GetActiveWebContents()->GetURL());
 }
 
-#if defined(OS_MACOSX)
+#if defined(OS_MAC)
 #define MAYBE_IframeOptInAndReportThreatDetails \
   DISABLED_IframeOptInAndReportThreatDetails
 #else

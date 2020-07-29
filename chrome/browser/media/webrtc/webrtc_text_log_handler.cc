@@ -45,7 +45,7 @@
 #include "base/task/thread_pool.h"
 #endif
 
-#if defined(OS_MACOSX)
+#if defined(OS_MAC)
 #include "base/mac/mac_util.h"
 #endif
 
@@ -470,7 +470,7 @@ void WebRtcTextLogHandler::OnGetNetworkInterfaceListFinish(
 
   // Computer model
   std::string computer_model = "Not available";
-#if defined(OS_MACOSX)
+#if defined(OS_MAC)
   computer_model = base::mac::GetModelIdentifier();
 #elif defined(OS_CHROMEOS)
   chromeos::system::StatisticsProvider::GetInstance()->GetMachineStatistic(

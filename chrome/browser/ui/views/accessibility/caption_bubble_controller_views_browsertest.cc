@@ -350,7 +350,7 @@ IN_PROC_BROWSER_TEST_F(CaptionBubbleControllerViewsTest, BubblePositioning) {
   EXPECT_EQ(150, widget_bounds.x());
   EXPECT_EQ(250, widget_bounds.y());
 
-#if !defined(OS_MACOSX)
+#if !defined(OS_MAC)
   // Shrink it so small the caption bubble can't fit. Ensure it's hidden.
   // Mac windows cannot be shrunk small enough to force the bubble to hide.
   browser()->window()->SetBounds(gfx::Rect(50, 50, 200, 100));
@@ -482,7 +482,7 @@ IN_PROC_BROWSER_TEST_F(CaptionBubbleControllerViewsTest, FocusableInTabOrder) {
                                               false, false, false));
   EXPECT_TRUE(GetExpandButton()->HasFocus());
 
-#if !defined(OS_MACOSX)
+#if !defined(OS_MAC)
   // Pressing enter should turn the expand button into a collapse button.
   // Focus should remain on the collapse button.
   // TODO(crbug.com/1055150): Fix this for Mac.
@@ -621,7 +621,7 @@ IN_PROC_BROWSER_TEST_F(CaptionBubbleControllerViewsTest, ShowsAndHidesBubble) {
   SetHasError(false);
   EXPECT_FALSE(IsWidgetVisible());
 
-#if !defined(OS_MACOSX)
+#if !defined(OS_MAC)
   // Shrink it so small the caption bubble can't fit. Ensure it's hidden.
   // Mac windows cannot be shrunk small enough to force the bubble to hide.
   SetHasError(false);

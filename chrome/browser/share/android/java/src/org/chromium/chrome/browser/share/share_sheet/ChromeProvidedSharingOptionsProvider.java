@@ -181,9 +181,7 @@ class ChromeProvidedSharingOptionsProvider {
                 (view)
                         -> {
                     RecordUserAction.record("SharingHubAndroid.ScreenshotSelected");
-                    RecordHistogram.recordMediumTimesHistogram(
-                            "Sharing.SharingHubAndroid.TimeToShare",
-                            System.currentTimeMillis() - mShareStartTime);
+                    recordTimeToShare(mShareStartTime);
                     mScreenshotCoordinator = new ScreenshotCoordinator(mActivity,
                             mTabProvider.get(), mChromeOptionShareCallback, mBottomSheetController);
                     // Capture a screenshot once the bottom sheet is fully hidden. The
@@ -204,9 +202,7 @@ class ChromeProvidedSharingOptionsProvider {
                 (view)
                         -> {
                     RecordUserAction.record("SharingHubAndroid.CopyURLSelected");
-                    RecordHistogram.recordMediumTimesHistogram(
-                            "Sharing.SharingHubAndroid.TimeToShare",
-                            System.currentTimeMillis() - mShareStartTime);
+                    recordTimeToShare(mShareStartTime);
                     mBottomSheetController.hideContent(mBottomSheetContent, true);
                     ClipboardManager clipboard = (ClipboardManager) mActivity.getSystemService(
                             Context.CLIPBOARD_SERVICE);
@@ -226,9 +222,7 @@ class ChromeProvidedSharingOptionsProvider {
                 (view)
                         -> {
                     RecordUserAction.record("SharingHubAndroid.CopyImageSelected");
-                    RecordHistogram.recordMediumTimesHistogram(
-                            "Sharing.SharingHubAndroid.TimeToShare",
-                            System.currentTimeMillis() - mShareStartTime);
+                    recordTimeToShare(mShareStartTime);
                     mBottomSheetController.hideContent(mBottomSheetContent, true);
                     if (!mShareParams.getFileUris().isEmpty()) {
                         Clipboard.getInstance().setImageUri(mShareParams.getFileUris().get(0));
@@ -246,9 +240,7 @@ class ChromeProvidedSharingOptionsProvider {
                 (view)
                         -> {
                     RecordUserAction.record("SharingHubAndroid.CopyTextSelected");
-                    RecordHistogram.recordMediumTimesHistogram(
-                            "Sharing.SharingHubAndroid.TimeToShare",
-                            System.currentTimeMillis() - mShareStartTime);
+                    recordTimeToShare(mShareStartTime);
                     mBottomSheetController.hideContent(mBottomSheetContent, true);
                     ClipboardManager clipboard = (ClipboardManager) mActivity.getSystemService(
                             Context.CLIPBOARD_SERVICE);
@@ -268,9 +260,7 @@ class ChromeProvidedSharingOptionsProvider {
                 (view)
                         -> {
                     RecordUserAction.record("SharingHubAndroid.SendTabToSelfSelected");
-                    RecordHistogram.recordMediumTimesHistogram(
-                            "Sharing.SharingHubAndroid.TimeToShare",
-                            System.currentTimeMillis() - mShareStartTime);
+                    recordTimeToShare(mShareStartTime);
                     mBottomSheetController.hideContent(mBottomSheetContent, true);
                     SendTabToSelfShareActivity.actionHandler(mActivity, mUrl,
                             mShareParams.getTitle(),
@@ -294,9 +284,7 @@ class ChromeProvidedSharingOptionsProvider {
                 (view)
                         -> {
                     RecordUserAction.record("SharingHubAndroid.QRCodeSelected");
-                    RecordHistogram.recordMediumTimesHistogram(
-                            "Sharing.SharingHubAndroid.TimeToShare",
-                            System.currentTimeMillis() - mShareStartTime);
+                    recordTimeToShare(mShareStartTime);
                     mBottomSheetController.hideContent(mBottomSheetContent, true);
                     QrCodeCoordinator qrCodeCoordinator = new QrCodeCoordinator(mActivity, mUrl);
                     qrCodeCoordinator.show();
@@ -314,9 +302,7 @@ class ChromeProvidedSharingOptionsProvider {
                 (view)
                         -> {
                     RecordUserAction.record("SharingHubAndroid.PrintSelected");
-                    RecordHistogram.recordMediumTimesHistogram(
-                            "Sharing.SharingHubAndroid.TimeToShare",
-                            System.currentTimeMillis() - mShareStartTime);
+                    recordTimeToShare(mShareStartTime);
                     mBottomSheetController.hideContent(mBottomSheetContent, true);
                     mPrintTabCallback.onResult(mTabProvider.get());
                 },
@@ -332,9 +318,7 @@ class ChromeProvidedSharingOptionsProvider {
                 (currentActivity)
                         -> {
                     RecordUserAction.record("SharingHubAndroid.LinkToTextSelected");
-                    RecordHistogram.recordMediumTimesHistogram(
-                            "Sharing.SharingHubAndroid.TimeToShare",
-                            System.currentTimeMillis() - mShareStartTime);
+                    recordTimeToShare(mShareStartTime);
                     mBottomSheetController.hideContent(mBottomSheetContent, true);
                     // TODO(1102382): Init and call link-to-text feature.
                 },
@@ -356,5 +340,10 @@ class ChromeProvidedSharingOptionsProvider {
             return shareParams.getUrl();
         }
         return chromeShareExtras.getImageSrcUrl();
+    }
+
+    static void recordTimeToShare(long shareStartTime) {
+        RecordHistogram.recordMediumTimesHistogram("Sharing.SharingHubAndroid.TimeToShare",
+                System.currentTimeMillis() - shareStartTime);
     }
 }

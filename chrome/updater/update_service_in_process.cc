@@ -9,6 +9,7 @@
 #include <vector>
 
 #include "base/bind.h"
+#include "base/bind_helpers.h"
 #include "base/callback.h"
 #include "base/run_loop.h"
 #include "base/sequenced_task_runner.h"
@@ -72,6 +73,7 @@ UpdateService::UpdateState::State ToUpdateState(
       return UpdateService::UpdateState::State::kUpdateError;
 
     case update_client::ComponentState::kUninstalled:
+    case update_client::ComponentState::kRegistration:
     case update_client::ComponentState::kRun:
     case update_client::ComponentState::kLastStatus:
       NOTREACHED();
@@ -155,6 +157,9 @@ void UpdateServiceInProcess::RegisterApp(
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
   persisted_data_->RegisterApp(request);
+
+  update_client_->SendRegistrationPing(request.app_id, request.version,
+                                       base::DoNothing());
 
   // Result of registration. Currently there's no error handling in
   // PersistedData, so we assume success every time, which is why we respond

@@ -276,7 +276,7 @@ IN_PROC_BROWSER_TEST_F(SettingsOverriddenDialogViewBrowserTest,
 
 // The chrome_settings_overrides API that allows extensions to override the
 // default search provider is only available on Windows and Mac.
-#if defined(OS_WIN) || defined(OS_MACOSX)
+#if defined(OS_WIN) || defined(OS_MAC)
 IN_PROC_BROWSER_TEST_F(SettingsOverriddenDialogViewBrowserTest,
                        InvokeUi_SearchOverriddenDialog_BackToGoogle) {
   ShowAndVerifyUi();
@@ -291,7 +291,7 @@ IN_PROC_BROWSER_TEST_F(SettingsOverriddenDialogViewBrowserTest,
                        InvokeUi_SearchOverriddenDialog_Generic) {
   ShowAndVerifyUi();
 }
-#endif  // defined(OS_WIN) || defined(OS_MACOSX)
+#endif  // defined(OS_WIN) || defined(OS_MAC)
 
 ////////////////////////////////////////////////////////////////////////////////
 // Functional Browser Tests

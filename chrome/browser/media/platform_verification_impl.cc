@@ -89,8 +89,8 @@ void PlatformVerificationImpl::ChallengePlatform(
   platform_verification_flow_->ChallengePlatformKey(
       content::WebContents::FromRenderFrameHost(render_frame_host()),
       service_id, challenge,
-      base::Bind(&PlatformVerificationImpl::OnPlatformChallenged,
-                 weak_factory_.GetWeakPtr(), base::Passed(&callback)));
+      base::BindOnce(&PlatformVerificationImpl::OnPlatformChallenged,
+                     weak_factory_.GetWeakPtr(), base::Passed(&callback)));
 #else
   // Not supported, so return failure.
   std::move(callback).Run(false, std::string(), std::string(), std::string());

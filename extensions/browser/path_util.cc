@@ -15,7 +15,7 @@
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/text/bytes_formatting.h"
 
-#if defined(OS_MACOSX)
+#if defined(OS_MAC)
 #include <CoreFoundation/CoreFoundation.h>
 #include "base/mac/foundation_util.h"
 #endif
@@ -24,7 +24,7 @@ namespace extensions {
 namespace path_util {
 
 namespace {
-#if defined(OS_MACOSX)
+#if defined(OS_MAC)
 
 // Retrieves the localized display name for the base name of the given path.
 // If the path is not localized, this will just return the base name.
@@ -43,7 +43,7 @@ std::string GetDisplayBaseName(const base::FilePath& path) {
   return result;
 }
 
-#endif  // defined(OS_MACOSX)
+#endif  // defined(OS_MAC)
 
 const base::FilePath::CharType kHomeShortcut[] = FILE_PATH_LITERAL("~");
 
@@ -74,7 +74,7 @@ base::FilePath PrettifyPath(const base::FilePath& source_path) {
   if (source_path == home_path)
     return display_path;
 
-#if defined(OS_MACOSX)
+#if defined(OS_MAC)
   DCHECK(source_path.IsAbsolute());
 
   // Break down the incoming path into components, and grab the display name
@@ -99,11 +99,11 @@ base::FilePath PrettifyPath(const base::FilePath& source_path) {
   }
   DCHECK_EQ(actual_path.value(), source_path.value());
   return display_path;
-#else  // defined(OS_MACOSX)
+#else   // defined(OS_MAC)
   if (home_path.AppendRelativePath(source_path, &display_path))
     return display_path;
   return source_path;
-#endif  // defined(OS_MACOSX)
+#endif  // defined(OS_MAC)
 }
 
 void CalculateAndFormatExtensionDirectorySize(

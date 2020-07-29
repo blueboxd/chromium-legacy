@@ -34,7 +34,7 @@ void InitializeFieldTrialAndFeatureList() {
 
 // Ensure any field trials in browser are reflected into the child
 // process.
-#if defined(OS_WIN) || defined(OS_MACOSX)
+#if defined(OS_WIN) || defined(OS_MAC)
   base::FieldTrialList::CreateTrialsFromCommandLine(
       command_line, switches::kFieldTrialHandle, -1);
 #elif defined(OS_POSIX) || defined(OS_FUCHSIA)

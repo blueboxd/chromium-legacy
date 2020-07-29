@@ -828,7 +828,7 @@ PopupMenuTextItem* CreateEnterpriseInfoItem(NSString* imageName,
   NSArray* tabActions = [@[ self.reloadStopItem ]
       arrayByAddingObjectsFromArray:[self itemsForNewTab]];
 
-  if (IsMultiwindowSupported() && IsIPadIdiom()) {
+  if (IsMultipleScenesSupported()) {
     tabActions =
         [tabActions arrayByAddingObjectsFromArray:[self itemsForNewWindow]];
   }
@@ -865,7 +865,7 @@ PopupMenuTextItem* CreateEnterpriseInfoItem(NSString* imageName,
 }
 
 - (NSArray<TableViewItem*>*)itemsForNewWindow {
-  if (!IsMultiwindowSupported())
+  if (!IsMultipleScenesSupported())
     return @[];
 
   // Create the menu item -- hardcoded string and no accessibility ID.

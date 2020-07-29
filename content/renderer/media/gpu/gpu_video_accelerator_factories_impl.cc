@@ -428,7 +428,7 @@ GpuVideoAcceleratorFactoriesImpl::VideoFrameOutputFormat(
   auto capabilities = context_provider_->ContextCapabilities();
   const size_t bit_depth = media::BitDepth(pixel_format);
   if (bit_depth > 8) {
-#if !defined(OS_MACOSX)
+#if !defined(OS_MAC)
     // If high bit depth rendering is enabled, bail here, otherwise try and use
     // XR30 storage, and if not and we support RG textures, use those, albeit at
     // a reduced bit depth of 8 bits per component.

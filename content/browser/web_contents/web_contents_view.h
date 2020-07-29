@@ -98,7 +98,7 @@ class WebContentsView {
   // Invoked to enable/disable overscroll gesture navigation.
   virtual void SetOverscrollControllerEnabled(bool enabled) = 0;
 
-#if defined(OS_MACOSX)
+#if defined(OS_MAC)
   // If we close the tab while a UI control is in an event-tracking loop, the
   // the control may message freed objects and crash. WebContents::Close will
   // call this. If it returns true, then WebContents::Close will early-out, and

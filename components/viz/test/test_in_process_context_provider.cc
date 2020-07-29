@@ -26,7 +26,7 @@
 #include "gpu/skia_bindings/grcontext_for_gles2_interface.h"
 #include "third_party/khronos/GLES2/gl2.h"
 #include "third_party/khronos/GLES2/gl2ext.h"
-#include "third_party/skia/include/gpu/GrContext.h"
+#include "third_party/skia/include/gpu/GrDirectContext.h"
 #include "third_party/skia/include/gpu/gl/GrGLInterface.h"
 #include "ui/gfx/native_widget_types.h"
 
@@ -155,7 +155,7 @@ gpu::ContextSupport* TestInProcessContextProvider::ContextSupport() {
   }
 }
 
-class GrContext* TestInProcessContextProvider::GrContext() {
+class GrDirectContext* TestInProcessContextProvider::GrContext() {
   if (gr_context_)
     return gr_context_->get();
 

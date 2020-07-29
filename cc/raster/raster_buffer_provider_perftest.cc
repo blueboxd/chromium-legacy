@@ -31,7 +31,7 @@
 #include "testing/gtest/include/gtest/gtest.h"
 #include "testing/perf/perf_result_reporter.h"
 #include "third_party/khronos/GLES2/gl2.h"
-#include "third_party/skia/include/gpu/GrContext.h"
+#include "third_party/skia/include/gpu/GrDirectContext.h"
 
 namespace cc {
 namespace {
@@ -112,7 +112,7 @@ class PerfContextProvider
     return raster_context_.get();
   }
   gpu::ContextSupport* ContextSupport() override { return &support_; }
-  class GrContext* GrContext() override {
+  class GrDirectContext* GrContext() override {
     if (!test_context_provider_) {
       test_context_provider_ = viz::TestContextProvider::Create();
     }

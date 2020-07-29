@@ -139,7 +139,7 @@ void AppendProfileArgs(const base::FilePath& profile_path,
   // Use the same UserDataDir for new launches that we currently have set.
   base::FilePath user_data_dir =
       cmd_line.GetSwitchValuePath(switches::kUserDataDir);
-#if defined(OS_MACOSX) || defined(OS_WIN)
+#if defined(OS_MAC) || defined(OS_WIN)
   policy::path_parser::CheckUserDataDirPolicy(&user_data_dir);
 #endif
   if (!user_data_dir.empty()) {

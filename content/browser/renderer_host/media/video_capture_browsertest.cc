@@ -23,7 +23,7 @@
 #include "media/capture/video_capture_types.h"
 #include "testing/gmock/include/gmock/gmock.h"
 
-#if defined(OS_MACOSX)
+#if defined(OS_MAC)
 #include "base/mac/mac_util.h"
 #endif
 
@@ -271,7 +271,7 @@ IN_PROC_BROWSER_TEST_P(VideoCaptureBrowserTest, StartAndImmediatelyStop) {
 #endif
 IN_PROC_BROWSER_TEST_P(VideoCaptureBrowserTest,
                        MAYBE_ReceiveFramesFromFakeCaptureDevice) {
-#if defined(OS_MACOSX)
+#if defined(OS_MAC)
   if (base::mac::IsOS10_12()) {
     // Flaky on MacOS 10.12. https://crbug.com/938074
     return;

@@ -1034,6 +1034,9 @@ extern const char kPassiveMixedContentWarningDescription[];
 extern const char kPasswordImportName[];
 extern const char kPasswordImportDescription[];
 
+extern const char kForceSecurePaymentConfirmationDialogName[];
+extern const char kForceSecurePaymentConfirmationDialogDescription[];
+
 extern const char kForceWebContentsDarkModeName[];
 extern const char kForceWebContentsDarkModeDescription[];
 
@@ -1901,7 +1904,7 @@ extern const char kWinUseBrowserSpellCheckerDescription[];
 
 // Mac ------------------------------------------------------------------------
 
-#if defined(OS_MACOSX)
+#if defined(OS_MAC)
 
 #if BUILDFLAG(ENABLE_PRINTING)
 extern const char kCupsIppPrintingBackendName[];
@@ -1926,7 +1929,7 @@ extern const char kMacSystemMediaPermissionsInfoUiDescription[];
 extern const char kMetalName[];
 extern const char kMetalDescription[];
 
-#endif  // defined(OS_MACOSX)
+#endif  // defined(OS_MAC)
 
 // Chrome OS ------------------------------------------------------------------
 
@@ -2489,7 +2492,7 @@ extern const char kWebGL2ComputeContextDescription[];
 
 #endif  // defined(OS_WIN) || defined(OS_LINUX) || defined(OS_CHROMEOS)
 
-#if defined(OS_WIN) || defined(OS_MACOSX) || defined(OS_LINUX) || \
+#if defined(OS_WIN) || defined(OS_MAC) || defined(OS_LINUX) || \
     defined(OS_CHROMEOS)
 
 extern const char kEnableMediaFeedsName[];
@@ -2510,22 +2513,22 @@ extern const char kRemoteCopyPersistentNotificationDescription[];
 extern const char kRemoteCopyProgressNotificationName[];
 extern const char kRemoteCopyProgressNotificationDescription[];
 
-#endif  // defined(OS_WIN) || defined(OS_MACOSX) || defined(OS_LINUX) ||
+#endif  // defined(OS_WIN) || defined(OS_MAC) || defined(OS_LINUX) ||
         // defined(OS_CHROMEOS)
 
-#if defined(OS_WIN) || defined(OS_MACOSX) || defined(OS_LINUX)
+#if defined(OS_WIN) || defined(OS_MAC) || defined(OS_LINUX)
 
 extern const char kDirectManipulationStylusName[];
 extern const char kDirectManipulationStylusDescription[];
 
-#endif  // defined(OS_WIN) || defined(OS_MACOSX) || defined(OS_LINUX)
+#endif  // defined(OS_WIN) || defined(OS_MAC) || defined(OS_LINUX)
 
-#if defined(OS_WIN) || defined(OS_MACOSX) || defined(OS_CHROMEOS)
+#if defined(OS_WIN) || defined(OS_MAC) || defined(OS_CHROMEOS)
 
 extern const char kWebContentsOcclusionName[];
 extern const char kWebContentsOcclusionDescription[];
 
-#endif  // defined(OS_WIN) || defined(OS_MACOSX) || defined(OS_CHROMEOS)
+#endif  // defined(OS_WIN) || defined(OS_MAC) || defined(OS_CHROMEOS)
 
 #if defined(OS_CHROMEOS) || defined(OS_LINUX)
 #if BUILDFLAG(USE_TCMALLOC)

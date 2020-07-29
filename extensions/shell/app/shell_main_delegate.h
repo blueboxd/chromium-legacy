@@ -33,14 +33,14 @@ class ShellMainDelegate : public content::ContentMainDelegate {
   content::ContentBrowserClient* CreateContentBrowserClient() override;
   content::ContentRendererClient* CreateContentRendererClient() override;
   void ProcessExiting(const std::string& process_type) override;
-#if defined(OS_POSIX) && !defined(OS_MACOSX) && !defined(OS_ANDROID)
+#if defined(OS_POSIX) && !defined(OS_MAC) && !defined(OS_ANDROID)
   void ZygoteStarting(std::vector<std::unique_ptr<content::ZygoteForkDelegate>>*
                           delegates) override;
 #endif
 #if defined(OS_LINUX) && !defined(OS_CHROMEOS)
   void ZygoteForked() override;
 #endif
-#if defined(OS_MACOSX)
+#if defined(OS_MAC)
   void PreCreateMainMessageLoop() override;
 #endif
 

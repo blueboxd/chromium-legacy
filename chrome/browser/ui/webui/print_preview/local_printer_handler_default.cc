@@ -21,7 +21,7 @@
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
 
-#if defined(OS_MACOSX)
+#if defined(OS_MAC)
 #include "components/printing/browser/printer_capabilities_mac.h"
 #include "printing/printing_features.h"
 #endif
@@ -79,7 +79,7 @@ base::Value LocalPrinterHandlerDefault::FetchCapabilitiesAsync(
     const std::string& device_name,
     const std::string& locale) {
   PrinterSemanticCapsAndDefaults::Papers user_defined_papers;
-#if defined(OS_MACOSX)
+#if defined(OS_MAC)
   if (base::FeatureList::IsEnabled(features::kEnableCustomMacPaperSizes))
     user_defined_papers = GetMacCustomPaperSizes();
 #endif

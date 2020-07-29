@@ -13,6 +13,7 @@
 #include "chrome/browser/lite_video/lite_video_keyed_service.h"
 #include "chrome/browser/lite_video/lite_video_keyed_service_factory.h"
 #include "chrome/browser/lite_video/lite_video_switches.h"
+#include "chrome/browser/lite_video/lite_video_user_blocklist.h"
 #include "chrome/browser/lite_video/lite_video_util.h"
 #include "chrome/browser/profiles/profile.h"
 #include "content/public/browser/navigation_handle.h"
@@ -43,15 +44,6 @@ lite_video::LiteVideoDecider* GetLiteVideoDeciderFromWebContents(
   return nullptr;
 }
 
-// Returns the result of a coinflip.
-bool GetCoinflipExperimentState() {
-  if (!lite_video::features::IsCoinflipExperimentEnabled())
-    return false;
-  if (lite_video::switches::ShouldForceCoinflipHoldback())
-    return true;
-  return base::RandInt(0, 1);
-}
-
 }  // namespace
 
 // static
@@ -68,26 +60,20 @@ LiteVideoObserver::LiteVideoObserver(content::WebContents* web_contents)
   lite_video_decider_ = GetLiteVideoDeciderFromWebContents(web_contents);
 }
 
-LiteVideoObserver::~LiteVideoObserver() = default;
-
-void LiteVideoObserver::DidStartNavigation(
-    content::NavigationHandle* navigation_handle) {
-  if (navigation_handle->IsInMainFrame())
-    current_mainframe_navigation_id_.reset();
+LiteVideoObserver::~LiteVideoObserver() {
+  FlushUKMMetrics();
 }
 
 void LiteVideoObserver::DidFinishNavigation(
     content::NavigationHandle* navigation_handle) {
   DCHECK(navigation_handle);
 
-  if (navigation_handle->IsInMainFrame()) {
-    ineligible_main_frame_ = !navigation_handle->HasCommitted() ||
-                             !navigation_handle->GetURL().SchemeIsHTTPOrHTTPS();
-  }
   if (!navigation_handle->HasCommitted() ||
+      navigation_handle->IsSameDocument() ||
       !navigation_handle->GetURL().SchemeIsHTTPOrHTTPS()) {
     return;
   }
+
   if (!lite_video_decider_)
     return;
 
@@ -97,23 +83,20 @@ void LiteVideoObserver::DidFinishNavigation(
       lite_video_decider_->CanApplyLiteVideo(navigation_handle,
                                              &blocklist_reason);
 
-  if (navigation_handle->IsInMainFrame()) {
-    DCHECK(!current_mainframe_navigation_id_);
-    current_mainframe_navigation_id_ = navigation_handle->GetNavigationId();
-    // The coinflip state should only be updated on a mainframe navigation.
-    is_coinflip_holdback_ = GetCoinflipExperimentState();
-  }
+  MaybeUpdateCoinflipExperimentState(navigation_handle);
 
-  // TODO(crbug/1097792): Record these metrics when the renderer associated with
-  // this navigation ends and the result from the renderer is available.
   lite_video::LiteVideoDecision decision =
       MakeLiteVideoDecision(navigation_handle, hint);
 
-  RecordUKMMetrics(decision, blocklist_reason);
+  if (navigation_handle->IsInMainFrame()) {
+    FlushUKMMetrics();
+    nav_metrics_ = lite_video::LiteVideoNavigationMetrics(
+        navigation_handle->GetNavigationId(), decision, blocklist_reason);
+  }
 
   LOCAL_HISTOGRAM_BOOLEAN("LiteVideo.Navigation.HasHint", hint ? true : false);
 
-  if (!hint)
+  if (decision == lite_video::LiteVideoDecision::kNotAllowed)
     return;
 
   content::RenderFrameHost* render_frame_host =
@@ -149,21 +132,29 @@ lite_video::LiteVideoDecision LiteVideoObserver::MakeLiteVideoDecision(
   return lite_video::LiteVideoDecision::kNotAllowed;
 }
 
-void LiteVideoObserver::RecordUKMMetrics(
-    lite_video::LiteVideoDecision decision,
-    lite_video::LiteVideoBlocklistReason blocklist_reason) {
-  // |current_mainframe_navigation_id_| may be null (e.g., if the mainframe was
-  // non-http/https).
-  DCHECK(current_mainframe_navigation_id_ || ineligible_main_frame_);
-  if (!current_mainframe_navigation_id_) {
+void LiteVideoObserver::FlushUKMMetrics() {
+  if (!nav_metrics_)
     return;
-  }
   ukm::SourceId ukm_source_id = ukm::ConvertToSourceId(
-      *current_mainframe_navigation_id_, ukm::SourceIdType::NAVIGATION_ID);
+      nav_metrics_->nav_id(), ukm::SourceIdType::NAVIGATION_ID);
   ukm::builders::LiteVideo builder(ukm_source_id);
-  builder.SetThrottlingStartDecision(static_cast<int>(decision))
-      .SetBlocklistReason(static_cast<int>(blocklist_reason))
+  builder.SetThrottlingStartDecision(static_cast<int>(nav_metrics_->decision()))
+      .SetBlocklistReason(static_cast<int>(nav_metrics_->blocklist_reason()))
       .Record(ukm::UkmRecorder::Get());
+  nav_metrics_.reset();
+}
+
+// Returns the result of a coinflip.
+void LiteVideoObserver::MaybeUpdateCoinflipExperimentState(
+    content::NavigationHandle* navigation_handle) {
+  if (!navigation_handle->IsInMainFrame())
+    return;
+  if (!lite_video::features::IsCoinflipExperimentEnabled())
+    return;
+
+  is_coinflip_holdback_ = lite_video::switches::ShouldForceCoinflipHoldback()
+                              ? true
+                              : base::RandInt(0, 1);
 }
 
 WEB_CONTENTS_USER_DATA_KEY_IMPL(LiteVideoObserver)

@@ -66,7 +66,7 @@
 #include "printing/buildflags/buildflags.h"
 #include "ui/events/keycodes/keyboard_codes.h"
 
-#if defined(OS_MACOSX)
+#if defined(OS_MAC)
 #include "chrome/browser/ui/browser_commands_mac.h"
 #endif
 
@@ -169,7 +169,7 @@ BrowserCommandController::BrowserCommandController(Browser* browser)
       prefs::kPrintingEnabled,
       base::Bind(&BrowserCommandController::UpdatePrintingState,
                  base::Unretained(this)));
-#if !defined(OS_MACOSX)
+#if !defined(OS_MAC)
   profile_pref_registrar_.Add(
       prefs::kFullscreenAllowed,
       base::Bind(&BrowserCommandController::UpdateCommandsForFullscreenMode,
@@ -230,7 +230,7 @@ bool BrowserCommandController::IsReservedCommandOrKey(
     // found in http://crbug.com/680809.
     const bool is_exit_fullscreen =
         (command_id == IDC_EXIT || command_id == IDC_FULLSCREEN);
-#if defined(OS_MACOSX)
+#if defined(OS_MAC)
     // This behavior is different on Mac OS, which has a unique user-initiated
     // full-screen mode. According to the discussion in http://crbug.com/702251,
     // the commands should be reserved for browser-side handling if the browser
@@ -480,7 +480,7 @@ bool BrowserCommandController::ExecuteCommandWithDisposition(
     }
 #endif
 
-#if defined(OS_MACOSX)
+#if defined(OS_MAC)
     case IDC_TOGGLE_FULLSCREEN_TOOLBAR:
       chrome::ToggleFullscreenToolbar(browser_);
       break;
@@ -1202,7 +1202,7 @@ void BrowserCommandController::UpdateCommandsForDevTools() {
                                         dev_tools_enabled);
   command_updater_.UpdateCommandEnabled(IDC_DEV_TOOLS_TOGGLE,
                                         dev_tools_enabled);
-#if defined(OS_MACOSX)
+#if defined(OS_MAC)
   command_updater_.UpdateCommandEnabled(IDC_TOGGLE_JAVASCRIPT_APPLE_EVENTS,
                                         dev_tools_enabled);
 #endif
@@ -1295,7 +1295,7 @@ void BrowserCommandController::UpdateCommandsForFullscreenMode() {
   if (base::debug::IsProfilingSupported())
     command_updater_.UpdateCommandEnabled(IDC_PROFILING_ENABLED, show_main_ui);
 
-#if !defined(OS_MACOSX)
+#if !defined(OS_MAC)
   // Disable toggling into fullscreen mode if disallowed by pref.
   const bool fullscreen_enabled =
       is_fullscreen ||

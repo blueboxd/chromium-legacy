@@ -919,7 +919,7 @@ void SimulateMouseWheelEvent(WebContents* web_contents,
   widget_host->ForwardWheelEvent(wheel_event);
 }
 
-#if !defined(OS_MACOSX)
+#if !defined(OS_MAC)
 void SimulateMouseWheelCtrlZoomEvent(WebContents* web_contents,
                                      const gfx::Point& point,
                                      bool zoom_in,
@@ -961,7 +961,7 @@ void SimulateTouchscreenPinch(WebContents* web_contents,
           std::move(on_complete)));
 }
 
-#endif  // !defined(OS_MACOSX)
+#endif  // !defined(OS_MAC)
 
 void SimulateGesturePinchSequence(WebContents* web_contents,
                                   const gfx::Point& point,

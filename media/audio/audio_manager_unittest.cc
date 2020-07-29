@@ -39,7 +39,7 @@
 #include "media/audio/alsa/audio_manager_alsa.h"
 #endif  // defined(USE_ALSA)
 
-#if defined(OS_MACOSX)
+#if defined(OS_MAC)
 #include "media/audio/mac/audio_manager_mac.h"
 #include "media/base/mac/audio_latency_mac.h"
 #endif
@@ -816,17 +816,17 @@ TEST_F(AudioManagerTest, EnumerateOutputDevicesAlsa) {
 #endif  // defined(USE_ALSA)
 
 TEST_F(AudioManagerTest, GetDefaultOutputStreamParameters) {
-#if defined(OS_WIN) || defined(OS_MACOSX)
+#if defined(OS_WIN) || defined(OS_MAC)
   ABORT_AUDIO_TEST_IF_NOT(InputDevicesAvailable());
 
   AudioParameters params;
   GetDefaultOutputStreamParameters(&params);
   EXPECT_TRUE(params.IsValid());
-#endif  // defined(OS_WIN) || defined(OS_MACOSX)
+#endif  // defined(OS_WIN) || defined(OS_MAC)
 }
 
 TEST_F(AudioManagerTest, GetAssociatedOutputDeviceID) {
-#if defined(OS_WIN) || defined(OS_MACOSX)
+#if defined(OS_WIN) || defined(OS_MAC)
   ABORT_AUDIO_TEST_IF_NOT(InputDevicesAvailable() && OutputDevicesAvailable());
 
   AudioDeviceDescriptions device_descriptions;
@@ -845,7 +845,7 @@ TEST_F(AudioManagerTest, GetAssociatedOutputDeviceID) {
   }
 
   EXPECT_TRUE(found_an_associated_device);
-#endif  // defined(OS_WIN) || defined(OS_MACOSX)
+#endif  // defined(OS_WIN) || defined(OS_MAC)
 }
 #endif  // defined(USE_CRAS)
 
@@ -975,7 +975,7 @@ TEST_F(AudioManagerTest, CheckMakeOutputStreamWithPreferredParameters) {
   stream->Close();
 }
 
-#if defined(OS_MACOSX) || defined(USE_CRAS)
+#if defined(OS_MAC) || defined(USE_CRAS)
 class TestAudioSourceCallback : public AudioOutputStream::AudioSourceCallback {
  public:
   TestAudioSourceCallback(int expected_frames_per_buffer,
@@ -1008,7 +1008,7 @@ class TestAudioSourceCallback : public AudioOutputStream::AudioSourceCallback {
 TEST_F(AudioManagerTest, CheckMinMaxAudioBufferSizeCallbacks) {
   ABORT_AUDIO_TEST_IF_NOT(OutputDevicesAvailable());
 
-#if defined(OS_MACOSX)
+#if defined(OS_MAC)
   CreateAudioManagerForTesting<AudioManagerMac>();
 #elif defined(USE_CRAS)
   CreateAudioManagerForTesting<AudioManagerCras>();
@@ -1021,7 +1021,7 @@ TEST_F(AudioManagerTest, CheckMinMaxAudioBufferSizeCallbacks) {
   ASSERT_LT(default_params.frames_per_buffer(),
             media::limits::kMaxAudioBufferSize);
 
-#if defined(OS_MACOSX)
+#if defined(OS_MAC)
   // On OSX the preferred output buffer size is higher than the minimum
   // but users may request the minimum size explicitly.
   ASSERT_GT(default_params.frames_per_buffer(),

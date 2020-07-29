@@ -112,7 +112,7 @@
 #include "ui/gl/init/create_gr_gl_interface.h"
 #include "ui/gl/scoped_make_current.h"
 
-#if defined(OS_MACOSX)
+#if defined(OS_MAC)
 #include <IOSurface/IOSurface.h>
 // Note that this must be included after gl_bindings.h to avoid conflicts.
 #include <OpenGL/CGLIOSurface.h>
@@ -4281,7 +4281,7 @@ Capabilities GLES2DecoderImpl::GetCapabilities() {
   caps.sync_query = feature_info_->feature_flags().chromium_sync_query;
 
   caps.chromium_image_rgb_emulation = ChromiumImageNeedsRGBEmulation();
-#if defined(OS_MACOSX)
+#if defined(OS_MAC)
   // This is unconditionally true on mac, no need to test for it at runtime.
   caps.iosurface = true;
 #endif
@@ -5984,7 +5984,7 @@ error::Error GLES2DecoderImpl::DoCommandsImpl(unsigned int num_commands,
     }
   }
 
-#if defined(OS_MACOSX)
+#if defined(OS_MAC)
   // Aggressively call glFlush on macOS. This is the only fix that has been
   // found so far to avoid crashes on Intel drivers. The workaround
   // isn't needed for WebGL contexts, though.
@@ -14267,7 +14267,7 @@ bool GLES2DecoderImpl::ClearLevel(Texture* texture,
   // https://crbug.com/848952 (slow uploads on macOS)
   // https://crbug.com/883276 (buggy clears on Android)
   bool prefer_use_gl_clear = false;
-#if defined(OS_MACOSX)
+#if defined(OS_MAC)
   const uint32_t kMinSizeForGLClear = 4 * 1024;
   prefer_use_gl_clear = size > kMinSizeForGLClear;
 #endif

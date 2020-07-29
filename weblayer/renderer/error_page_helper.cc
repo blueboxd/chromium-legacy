@@ -15,61 +15,12 @@
 #include "weblayer/common/features.h"
 
 namespace weblayer {
-namespace {
-
-base::TimeDelta GetAutoReloadTime(size_t reload_count) {
-  static const int kDelaysMs[] = {0,      5000,   30000,  60000,
-                                  300000, 600000, 1800000};
-  if (reload_count >= base::size(kDelaysMs))
-    reload_count = base::size(kDelaysMs) - 1;
-  return base::TimeDelta::FromMilliseconds(kDelaysMs[reload_count]);
-}
-
-bool IsErrorPage(const GURL& url) {
-  return url.is_valid() && url.spec() == content::kUnreachableWebDataURL;
-}
-
-bool IsReloadableError(const error_page::Error& error, bool was_failed_post) {
-  const GURL& url = error.url();
-  return error.domain() == error_page::Error::kNetErrorDomain &&
-         error.reason() != net::ERR_ABORTED &&
-         // For now, net::ERR_UNKNOWN_URL_SCHEME is only being displayed on
-         // Chrome for Android.
-         error.reason() != net::ERR_UNKNOWN_URL_SCHEME &&
-         // Do not trigger if the server rejects a client certificate.
-         // https://crbug.com/431387
-         !net::IsClientCertificateError(error.reason()) &&
-         // Some servers reject client certificates with a generic
-         // handshake_failure alert.
-         // https://crbug.com/431387
-         error.reason() != net::ERR_SSL_PROTOCOL_ERROR &&
-         // Do not trigger for blacklisted URLs.
-         // https://crbug.com/803839
-         // Do not trigger for requests that were blocked by the browser itself.
-         !net::IsRequestBlockedError(error.reason()) && !was_failed_post &&
-         // Do not trigger for this error code because it is used by Chrome
-         // while an auth prompt is being displayed.
-         error.reason() != net::ERR_INVALID_AUTH_CREDENTIALS &&
-         // Don't auto-reload non-http/https schemas.
-         // https://crbug.com/471713
-         url.SchemeIsHTTPOrHTTPS() &&
-         // Don't auto reload if the error was a secure DNS network error, since
-         // the reload may interfere with the captive portal probe state.
-         // TODO(crbug.com/1016164): Explore how to allow reloads for secure DNS
-         // network errors without interfering with the captive portal probe
-         // state.
-         !error.resolve_error_info().is_secure_network_error;
-}
-
-}  // namespace
 
 struct ErrorPageHelper::ErrorPageInfo {
-  ErrorPageInfo(const error_page::Error& error, bool was_failed_post)
-      : error(error), was_failed_post(was_failed_post) {}
+  explicit ErrorPageInfo(const error_page::Error& error) : error(error) {}
 
   // Information about the failed page load.
   error_page::Error error;
-  bool was_failed_post = false;
 
   // True if a page has completed loading, at which point it can receive
   // updates.
@@ -88,97 +39,23 @@ ErrorPageHelper* ErrorPageHelper::GetForFrame(
   return render_frame->IsMainFrame() ? Get(render_frame) : nullptr;
 }
 
-void ErrorPageHelper::PrepareErrorPage(const error_page::Error& error,
-                                       bool was_failed_post) {
-  pending_error_page_info_ =
-      std::make_unique<ErrorPageInfo>(error, was_failed_post);
-}
-
-bool ErrorPageHelper::ShouldSuppressErrorPage(int error_code) {
-  // If there's no auto reload attempt in flight, this error page didn't come
-  // from auto reload, so don't suppress it.
-  if (!auto_reload_in_flight_)
-    return false;
-
-  // Even with auto_reload_in_flight_ error page may not come from
-  // the auto reload when proceeding from error CERT_AUTHORITY_INVALID
-  // to error INVALID_AUTH_CREDENTIALS, so do not suppress the error page
-  // for the new error code.
-  if (committed_error_page_info_ &&
-      committed_error_page_info_->error.reason() != error_code)
-    return false;
-
-  uncommitted_load_started_ = false;
-  // This serves to terminate the auto-reload in flight attempt. If
-  // ShouldSuppressErrorPage is called, the auto-reload yielded an error, which
-  // means the request was already sent.
-  auto_reload_in_flight_ = false;
-  MaybeStartAutoReloadTimer();
-  return true;
-}
-
-void ErrorPageHelper::DidStartNavigation(
-    const GURL& url,
-    base::Optional<blink::WebNavigationType> navigation_type) {
-  uncommitted_load_started_ = true;
-
-  // If there's no pending error page information associated with the page load,
-  // or the new page is not an error page, then reset pending error page state.
-  if (!pending_error_page_info_ || !IsErrorPage(url)) {
-    CancelPendingReload();
-  } else {
-    // Halt auto-reload if it's currently scheduled. OnFinishLoad will trigger
-    // auto-reload if appropriate.
-    PauseAutoReloadTimer();
-  }
+void ErrorPageHelper::PrepareErrorPage(const error_page::Error& error) {
+  pending_error_page_info_ = std::make_unique<ErrorPageInfo>(error);
 }
 
 void ErrorPageHelper::DidCommitProvisionalLoad(ui::PageTransition transition) {
-  // If a page is committing, either it's an error page and autoreload will be
-  // started again below, or it's a success page and we need to clear autoreload
-  // state.
-  auto_reload_in_flight_ = false;
-
-  // uncommitted_load_started_ could already be false, since RenderFrameImpl
-  // calls OnCommitLoad once for each in-page navigation (like a fragment
-  // change) with no corresponding OnStartLoad.
-  uncommitted_load_started_ = false;
-
   committed_error_page_info_ = std::move(pending_error_page_info_);
-
   weak_factory_.InvalidateWeakPtrs();
 }
 
 void ErrorPageHelper::DidFinishLoad() {
-  if (!committed_error_page_info_) {
-    auto_reload_count_ = 0;
+  if (!committed_error_page_info_)
     return;
-  }
 
   security_interstitials::SecurityInterstitialPageController::Install(
       render_frame(), weak_factory_.GetWeakPtr());
 
   committed_error_page_info_->is_finished_loading = true;
-  if (IsReloadableError(committed_error_page_info_->error,
-                        committed_error_page_info_->was_failed_post)) {
-    MaybeStartAutoReloadTimer();
-  }
-}
-
-void ErrorPageHelper::OnStop() {
-  CancelPendingReload();
-  uncommitted_load_started_ = false;
-  auto_reload_count_ = 0;
-  auto_reload_in_flight_ = false;
-}
-
-void ErrorPageHelper::WasShown() {
-  if (auto_reload_paused_)
-    MaybeStartAutoReloadTimer();
-}
-
-void ErrorPageHelper::WasHidden() {
-  PauseAutoReloadTimer();
 }
 
 void ErrorPageHelper::OnDestruct() {
@@ -251,97 +128,14 @@ ErrorPageHelper::GetInterface() {
 
 ErrorPageHelper::ErrorPageHelper(content::RenderFrame* render_frame)
     : RenderFrameObserver(render_frame),
-      RenderFrameObserverTracker<ErrorPageHelper>(render_frame),
-      online_(content::RenderThread::Get()->IsOnline()) {
-  content::RenderThread::Get()->AddObserver(this);
-}
+      RenderFrameObserverTracker<ErrorPageHelper>(render_frame) {}
 
-ErrorPageHelper::~ErrorPageHelper() {
-  content::RenderThread::Get()->RemoveObserver(this);
-}
+ErrorPageHelper::~ErrorPageHelper() = default;
 
 void ErrorPageHelper::Reload() {
   if (!committed_error_page_info_)
     return;
   render_frame()->GetWebFrame()->StartReload(blink::WebFrameLoadType::kReload);
-}
-
-void ErrorPageHelper::MaybeStartAutoReloadTimer() {
-  // Automation tools expect to be in control of reloads.
-  if (base::CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kEnableAutomation) ||
-      !base::FeatureList::IsEnabled(features::kEnableAutoReload)) {
-    return;
-  }
-
-  if (!committed_error_page_info_ ||
-      !committed_error_page_info_->is_finished_loading ||
-      pending_error_page_info_ || uncommitted_load_started_) {
-    return;
-  }
-
-  StartAutoReloadTimer();
-}
-
-void ErrorPageHelper::StartAutoReloadTimer() {
-  DCHECK(committed_error_page_info_);
-  DCHECK(IsReloadableError(committed_error_page_info_->error,
-                           committed_error_page_info_->was_failed_post));
-
-  if (!online_ || render_frame()->IsHidden()) {
-    auto_reload_paused_ = true;
-    return;
-  }
-
-  auto_reload_paused_ = false;
-  base::TimeDelta delay = GetAutoReloadTime(auto_reload_count_);
-  auto_reload_timer_.Stop();
-  auto_reload_timer_.Start(
-      FROM_HERE, delay,
-      base::BindOnce(&ErrorPageHelper::AutoReloadTimerFired,
-                     base::Unretained(this)));
-}
-
-void ErrorPageHelper::AutoReloadTimerFired() {
-  // AutoReloadTimerFired only runs if:
-  // 1. StartAutoReloadTimer was previously called, which requires that
-  //    committed_error_page_info_ is populated;
-  // 2. No other page load has started since (1), since DidStartNavigation stops
-  //    the auto-reload timer.
-  DCHECK(committed_error_page_info_);
-
-  auto_reload_count_++;
-  auto_reload_in_flight_ = true;
-  Reload();
-}
-
-void ErrorPageHelper::PauseAutoReloadTimer() {
-  if (!auto_reload_timer_.IsRunning())
-    return;
-  DCHECK(committed_error_page_info_);
-  DCHECK(!auto_reload_paused_);
-  auto_reload_timer_.Stop();
-  auto_reload_paused_ = true;
-}
-
-void ErrorPageHelper::NetworkStateChanged(bool online) {
-  bool was_online = online_;
-  online_ = online;
-  if (!was_online && online) {
-    // Transitioning offline -> online
-    if (auto_reload_paused_)
-      MaybeStartAutoReloadTimer();
-  } else if (was_online && !online) {
-    // Transitioning online -> offline
-    if (auto_reload_timer_.IsRunning())
-      auto_reload_count_ = 0;
-    PauseAutoReloadTimer();
-  }
-}
-
-void ErrorPageHelper::CancelPendingReload() {
-  auto_reload_timer_.Stop();
-  auto_reload_paused_ = false;
 }
 
 }  // namespace weblayer

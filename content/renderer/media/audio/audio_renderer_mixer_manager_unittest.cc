@@ -683,7 +683,7 @@ TEST_F(AudioRendererMixerManagerTest, MixerParamsLatencyRtc) {
   EXPECT_EQ(output_sample_rate,
             mixer->get_output_params_for_testing().sample_rate());
 
-#if defined(OS_LINUX) || defined(OS_MACOSX) || defined(OS_FUCHSIA)
+#if defined(OS_LINUX) || defined(OS_MAC) || defined(OS_FUCHSIA)
   // Use 10 ms buffer (441 frames per buffer).
   EXPECT_EQ(output_sample_rate / 100,
             mixer->get_output_params_for_testing().frames_per_buffer());
@@ -694,7 +694,7 @@ TEST_F(AudioRendererMixerManagerTest, MixerParamsLatencyRtc) {
 #else
   // Use hardware buffer size (128).
   EXPECT_EQ(128, mixer->get_output_params_for_testing().frames_per_buffer());
-#endif  // defined(OS_LINUX) || defined(OS_MACOSX)
+#endif  // defined(OS_LINUX) || defined(OS_MAC)
 
   ReturnMixer(mixer);
 }

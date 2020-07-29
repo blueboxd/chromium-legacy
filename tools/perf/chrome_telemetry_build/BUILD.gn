@@ -125,6 +125,14 @@ group("telemetry_chrome_test_without_chrome") {
     ]
   }
 
+  if (is_mac) {
+    data += [
+      # Required for the hermetic otool binary, which is required for
+      # symbolizing minidumps on Mac.
+      "//build/mac_files/xcode_binaries/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/",
+    ]
+  }
+
   if (is_android) {
     data += [
       # TODO(httpss://crbug.com/833808): Remove this once bots always set

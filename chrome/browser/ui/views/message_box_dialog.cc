@@ -33,7 +33,7 @@
 #include "ui/views/win/hwnd_util.h"
 #endif
 
-#if defined(OS_MACOSX)
+#if defined(OS_MAC)
 #include "chrome/browser/ui/cocoa/simple_message_box_cocoa.h"
 #endif
 
@@ -119,7 +119,7 @@ chrome::MessageBoxResult MessageBoxDialog::Show(
                                 : chrome::MESSAGE_BOX_RESULT_NO);
     return chrome::MESSAGE_BOX_RESULT_DEFERRED;
   }
-#elif defined(OS_MACOSX)
+#elif defined(OS_MAC)
   if (!base::CurrentUIThread::IsSet() ||
       !base::RunLoop::IsRunningOnCurrentThread() ||
       !ui::ResourceBundle::HasSharedInstance()) {
@@ -143,7 +143,7 @@ chrome::MessageBoxResult MessageBoxDialog::Show(
 
   bool is_system_modal = !parent;
 
-#if defined(OS_MACOSX)
+#if defined(OS_MAC)
   // Mac does not support system modals, so never ask MessageBoxDialog to
   // be system modal.
   is_system_modal = false;
@@ -154,7 +154,7 @@ chrome::MessageBoxResult MessageBoxDialog::Show(
   views::Widget* widget =
       constrained_window::CreateBrowserModalDialogViews(dialog, parent);
 
-#if defined(OS_MACOSX)
+#if defined(OS_MAC)
   // Mac does not support system modal dialogs. If there is no parent window to
   // attach to, move the dialog's widget on top so other windows do not obscure
   // it.

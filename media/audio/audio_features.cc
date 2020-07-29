@@ -11,7 +11,7 @@ namespace features {
 // detected. It will be restarted when needed.
 const base::Feature kAudioServiceOutOfProcessKillAtHang{
   "AudioServiceOutOfProcessKillAtHang",
-#if defined(OS_WIN) || defined(OS_MACOSX) || defined(OS_LINUX)
+#if defined(OS_WIN) || defined(OS_MAC) || defined(OS_LINUX)
       base::FEATURE_ENABLED_BY_DEFAULT
 #else
       base::FEATURE_DISABLED_BY_DEFAULT
@@ -37,7 +37,7 @@ const base::Feature kCrOSSystemAECDeactivatedGroups{
     "CrOSSystemAECDeactivatedGroups", base::FEATURE_ENABLED_BY_DEFAULT};
 #endif
 
-#if defined(OS_MACOSX) || defined(OS_CHROMEOS)
+#if defined(OS_MAC) || defined(OS_CHROMEOS)
 const base::Feature kForceEnableSystemAec{"ForceEnableSystemAec",
                                           base::FEATURE_DISABLED_BY_DEFAULT};
 #endif

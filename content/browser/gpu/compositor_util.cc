@@ -154,7 +154,7 @@ const GpuFeatureData GetGpuFeatureData(
                           gpu::GPU_FEATURE_TYPE_ACCELERATED_GL),
      false /* disabled */, DisableInfo::NotProblem(),
      false /* fallback_to_software */},
-#if defined(OS_MACOSX)
+#if defined(OS_MAC)
     {"metal",
      SafeGetFeatureStatus(gpu_feature_info, gpu::GPU_FEATURE_TYPE_METAL),
      !base::FeatureList::IsEnabled(features::kMetal) /* disabled */,
@@ -389,7 +389,7 @@ int NumberOfRendererRasterThreads() {
 bool IsZeroCopyUploadEnabled() {
   const base::CommandLine& command_line =
       *base::CommandLine::ForCurrentProcess();
-#if defined(OS_MACOSX)
+#if defined(OS_MAC)
   return !command_line.HasSwitch(blink::switches::kDisableZeroCopy);
 #else
   return command_line.HasSwitch(blink::switches::kEnableZeroCopy);
@@ -413,7 +413,7 @@ bool IsGpuMemoryBufferCompositorResourcesEnabled() {
     return false;
   }
 
-#if defined(OS_MACOSX)
+#if defined(OS_MAC)
   return true;
 #else
   return false;

@@ -59,7 +59,7 @@
 #include "chrome/browser/chromeos/crostini/crostini_util.h"
 #endif
 
-#if defined(OS_MACOSX)
+#if defined(OS_MAC)
 #include "chrome/browser/app_controller_mac.h"
 #endif
 
@@ -124,12 +124,12 @@ bool SessionService::ShouldNewWindowStartSession() {
   if (!has_open_trackable_browsers_ &&
       !StartupBrowserCreator::InSynchronousProfileLaunch() &&
       !SessionRestore::IsRestoring(profile())
-#if defined(OS_MACOSX)
+#if defined(OS_MAC)
       // On OSX, a new window should not start a new session if it was opened
       // from the dock or the menubar.
       && !app_controller_mac::IsOpeningNewWindow()
 #endif  // OS_MACOSX
-      ) {
+  ) {
     return true;
   }
   return false;

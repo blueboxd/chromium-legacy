@@ -95,7 +95,7 @@ class CONTENT_EXPORT BrowserPluginGuest : public GuestHost,
   void DidFinishNavigation(NavigationHandle* navigation_handle) override;
 
   void RenderProcessGone(base::TerminationStatus status) override;
-#if defined(OS_MACOSX)
+#if defined(OS_MAC)
   // On MacOS X popups are painted by the browser process. We handle them here
   // so that they are positioned correctly.
   bool ShowPopupMenu(

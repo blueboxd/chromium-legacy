@@ -68,14 +68,18 @@ class PLATFORM_EXPORT ImagePlanes final {
   ImagePlanes();
   // TODO(crbug/910276): To support YUVA, ImagePlanes needs to support a
   // variable number of planes.
-  ImagePlanes(void* planes[3], const size_t row_bytes[3]);
+  ImagePlanes(void* planes[3],
+              const size_t row_bytes[3],
+              SkColorType color_type);
 
   void* Plane(int);
   size_t RowBytes(int) const;
+  SkColorType color_type() const { return color_type_; }
 
  private:
   void* planes_[3];
   size_t row_bytes_[3];
+  SkColorType color_type_;
 
   DISALLOW_COPY_AND_ASSIGN(ImagePlanes);
 };
@@ -279,6 +283,9 @@ class PLATFORM_EXPORT ImageDecoder {
     NOTREACHED();
     return SkYUVColorSpace::kIdentity_SkYUVColorSpace;
   }
+
+  // Image decoders that support high bit depth YUV decoding can override this.
+  virtual uint8_t GetYUVBitDepth() const { return 8; }
 
   // Returns the information required to decide whether or not hardware
   // acceleration can be used to decode this image. Callers of this function

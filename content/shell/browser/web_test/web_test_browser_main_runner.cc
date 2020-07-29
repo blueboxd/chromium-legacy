@@ -219,7 +219,7 @@ void WebTestBrowserMainRunner::Initialize() {
   // interference. This GPU process is launched 120 seconds after chrome starts.
   command_line.AppendSwitch(switches::kDisableGpuProcessForDX12InfoCollection);
 
-#if defined(OS_WIN) || defined(OS_MACOSX) || defined(OS_LINUX)
+#if defined(OS_WIN) || defined(OS_MAC) || defined(OS_LINUX)
   content::WebTestBrowserPlatformInitialize();
 #endif
 

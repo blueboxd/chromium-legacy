@@ -2,6 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/ui/aura/accessibility/automation_manager_aura.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_window.h"
@@ -16,12 +17,20 @@
 #include "content/public/test/browser_test.h"
 #include "content/public/test/browser_test_utils.h"
 #include "extensions/common/extension_messages.h"
+#include "ui/accessibility/ax_action_data.h"
 #include "ui/accessibility/ax_event_bundle_sink.h"
 #include "ui/accessibility/ax_node_data.h"
 #include "ui/views/accessibility/ax_aura_obj_wrapper.h"
 #include "ui/views/accessibility/ax_tree_source_views.h"
 #include "ui/views/accessibility/view_accessibility.h"
+#include "ui/views/controls/button/label_button.h"
+#include "ui/views/controls/button/radio_button.h"
+#include "ui/views/controls/scroll_view.h"
+#include "ui/views/layout/box_layout.h"
+#include "ui/views/layout/flex_layout.h"
+#include "ui/views/layout/flex_layout_types.h"
 #include "ui/views/view.h"
+#include "ui/views/view_class_properties.h"
 #include "ui/views/widget/widget.h"
 
 namespace {
@@ -213,4 +222,86 @@ IN_PROC_BROWSER_TEST_F(AutomationManagerAuraBrowserTest,
   cache_ptr->set_focused_widget_for_testing(nullptr);
 
   AddFailureOnWidgetAccessibilityError(widget);
+}
+
+IN_PROC_BROWSER_TEST_F(AutomationManagerAuraBrowserTest, ScrollView) {
+  auto cache = std::make_unique<views::AXAuraObjCache>();
+  auto* cache_ptr = cache.get();
+  AutomationManagerAura* manager = AutomationManagerAura::GetInstance();
+  manager->set_ax_aura_obj_cache_for_testing(std::move(cache));
+  manager->Enable();
+  auto* tree = manager->current_tree_.get();
+
+  // Create a widget with size 200, 200.
+  views::Widget* widget = new views::Widget;
+  views::Widget::InitParams params(
+      views::Widget::InitParams::TYPE_WINDOW_FRAMELESS);
+  params.bounds = {0, 0, 200, 200};
+  widget->Init(std::move(params));
+
+  // Add a ScrollView, with contents consisting of a View of size 1000x2000.
+  views::View* root_view = widget->GetRootView();
+  auto orig_scroll_view = std::make_unique<views::ScrollView>();
+  views::View* scrollable =
+      orig_scroll_view->SetContents(std::make_unique<views::View>());
+  scrollable->SetBounds(0, 0, 1000, 2000);
+  root_view->SetLayoutManager(std::make_unique<views::FlexLayout>())
+      ->SetOrientation(views::LayoutOrientation::kVertical);
+  auto full_flex =
+      views::FlexSpecification(views::MinimumFlexSizeRule::kScaleToZero,
+                               views::MaximumFlexSizeRule::kUnbounded)
+          .WithWeight(1);
+  orig_scroll_view->SetProperty(views::kFlexBehaviorKey, full_flex);
+  views::View* scroll_view =
+      root_view->AddChildView(std::move(orig_scroll_view));
+  widget->Show();
+  widget->Activate();
+  root_view->GetLayoutManager()->Layout(root_view);
+
+  // Get the accessibility data from the scroll view's AXAuraObjCache wrapper.
+  views::AXAuraObjWrapper* scroll_view_wrapper =
+      cache_ptr->GetOrCreate(scroll_view);
+  ui::AXNodeData node_data;
+  tree->SerializeNode(scroll_view_wrapper, &node_data);
+
+  // Allow the scroll offsets to be off by 20 pixels due to platform-specific
+  // differences.
+  constexpr int kAllowedError = 20;
+
+  // The scroll position should be at the top left and the
+  // max values should reflect the overall canvas size of (1000, 2000)
+  // with a window size of (200, 200).
+  EXPECT_EQ(0, node_data.GetIntAttribute(ax::mojom::IntAttribute::kScrollX));
+  EXPECT_EQ(0, node_data.GetIntAttribute(ax::mojom::IntAttribute::kScrollXMin));
+  EXPECT_NEAR(800,
+              node_data.GetIntAttribute(ax::mojom::IntAttribute::kScrollXMax),
+              kAllowedError);
+  EXPECT_EQ(0, node_data.GetIntAttribute(ax::mojom::IntAttribute::kScrollY));
+  EXPECT_EQ(0, node_data.GetIntAttribute(ax::mojom::IntAttribute::kScrollYMin));
+  EXPECT_NEAR(1800,
+              node_data.GetIntAttribute(ax::mojom::IntAttribute::kScrollYMax),
+              kAllowedError);
+
+  // Scroll right and check the X position.
+  ui::AXActionData action_data;
+  action_data.action = ax::mojom::Action::kScrollRight;
+  scroll_view_wrapper->HandleAccessibleAction(action_data);
+  tree->SerializeNode(scroll_view_wrapper, &node_data);
+  EXPECT_NEAR(200, node_data.GetIntAttribute(ax::mojom::IntAttribute::kScrollX),
+              kAllowedError);
+
+  // Scroll down and check the Y position.
+  action_data.action = ax::mojom::Action::kScrollDown;
+  scroll_view_wrapper->HandleAccessibleAction(action_data);
+  tree->SerializeNode(scroll_view_wrapper, &node_data);
+  EXPECT_NEAR(200, node_data.GetIntAttribute(ax::mojom::IntAttribute::kScrollY),
+              kAllowedError);
+
+  // Scroll to a specific location.
+  action_data.action = ax::mojom::Action::kSetScrollOffset;
+  action_data.target_point.SetPoint(50, 315);
+  scroll_view_wrapper->HandleAccessibleAction(action_data);
+  tree->SerializeNode(scroll_view_wrapper, &node_data);
+  EXPECT_EQ(50, node_data.GetIntAttribute(ax::mojom::IntAttribute::kScrollX));
+  EXPECT_EQ(315, node_data.GetIntAttribute(ax::mojom::IntAttribute::kScrollY));
 }

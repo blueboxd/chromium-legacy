@@ -33,7 +33,7 @@ class VIEWS_EXPORT TypographyProvider {
                            int context,
                            int style) const;
 
-  // Gets the line spacing, or 0 if it should be provided by gfx::FontList.
+  // Gets the line spacing.  By default this is the font height.
   virtual int GetLineHeight(int context, int style) const;
 
   // Returns the weight that will result in the ResourceBundle returning an

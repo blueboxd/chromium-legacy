@@ -298,8 +298,8 @@ QUIC_FLAG(bool,
           FLAGS_quic_reloadable_flag_quic_stop_sending_duplicate_max_streams,
           true)
 
-// If true, enable QUIC version h3-29.
-QUIC_FLAG(bool, FLAGS_quic_reloadable_flag_quic_enable_version_draft_29, true)
+// If true, disable QUIC version h3-29.
+QUIC_FLAG(bool, FLAGS_quic_reloadable_flag_quic_disable_version_draft_29, false)
 
 // If true, support HANDSHAKE_DONE frame in T050
 QUIC_FLAG(bool,
@@ -378,7 +378,7 @@ QUIC_FLAG(
 // mitigate RTT inflations.
 QUIC_FLAG(bool,
           FLAGS_quic_reloadable_flag_quic_coalesced_packet_of_higher_space,
-          true)
+          false)
 
 // If true, record the received min_ack_delay in transport parameters to QUIC
 // config.

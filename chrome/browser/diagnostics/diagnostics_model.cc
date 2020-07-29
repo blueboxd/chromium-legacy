@@ -26,7 +26,7 @@ namespace diagnostics {
 // only be used by testing code.
 #if defined(OS_WIN)
 const int DiagnosticsModel::kDiagnosticsTestCount = 17;
-#elif defined(OS_MACOSX)
+#elif defined(OS_MAC)
 const int DiagnosticsModel::kDiagnosticsTestCount = 14;
 #elif defined(OS_POSIX)
 #if defined(OS_CHROMEOS)
@@ -172,7 +172,7 @@ class DiagnosticsModelWin : public DiagnosticsModelImpl {
   DISALLOW_COPY_AND_ASSIGN(DiagnosticsModelWin);
 };
 
-#elif defined(OS_MACOSX)
+#elif defined(OS_MAC)
 class DiagnosticsModelMac : public DiagnosticsModelImpl {
  public:
   DiagnosticsModelMac() {
@@ -237,7 +237,7 @@ DiagnosticsModel* MakeDiagnosticsModel(const base::CommandLine& cmdline) {
     base::PathService::Override(chrome::DIR_USER_DATA, user_data_dir);
 #if defined(OS_WIN)
   return new DiagnosticsModelWin();
-#elif defined(OS_MACOSX)
+#elif defined(OS_MAC)
   return new DiagnosticsModelMac();
 #elif defined(OS_POSIX)
   return new DiagnosticsModelPosix();

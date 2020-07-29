@@ -7,6 +7,7 @@ package org.chromium.weblayer_private;
 import android.os.RemoteException;
 import android.webkit.ValueCallback;
 
+import org.chromium.base.ThreadUtils;
 import org.chromium.base.annotations.CalledByNative;
 import org.chromium.base.annotations.JNINamespace;
 import org.chromium.base.annotations.NativeMethods;
@@ -46,6 +47,7 @@ public final class FullscreenCallbackProxy {
         ValueCallback<Void> exitFullscreenCallback = new ValueCallback<Void>() {
             @Override
             public void onReceiveValue(Void result) {
+                ThreadUtils.assertOnUiThread();
                 if (mNativeFullscreenCallbackProxy == 0) {
                     throw new IllegalStateException("Called after destroy()");
                 }

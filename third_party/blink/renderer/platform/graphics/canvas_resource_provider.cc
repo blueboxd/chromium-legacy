@@ -29,6 +29,7 @@
 #include "third_party/blink/renderer/platform/instrumentation/canvas_memory_dump_provider.h"
 #include "third_party/blink/renderer/platform/runtime_enabled_features.h"
 #include "third_party/skia/include/core/SkSurface.h"
+#include "third_party/skia/include/gpu/GrDirectContext.h"
 
 namespace blink {
 namespace {
@@ -1140,7 +1141,7 @@ gpu::raster::RasterInterface* CanvasResourceProvider::RasterInterface() const {
   return context_provider_wrapper_->ContextProvider()->RasterInterface();
 }
 
-GrContext* CanvasResourceProvider::GetGrContext() const {
+GrDirectContext* CanvasResourceProvider::GetGrContext() const {
   if (!context_provider_wrapper_)
     return nullptr;
   return context_provider_wrapper_->ContextProvider()->GetGrContext();

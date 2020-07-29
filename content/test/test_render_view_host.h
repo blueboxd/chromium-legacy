@@ -80,12 +80,12 @@ class TestRenderWidgetHostView : public RenderWidgetHostViewBase,
   void WasUnOccluded() override;
   void WasOccluded() override;
   gfx::Rect GetViewBounds() override;
-#if defined(OS_MACOSX)
+#if defined(OS_MAC)
   void SetActive(bool active) override;
   void ShowDefinitionForSelection() override {}
   void SpeakSelection() override;
   void SetWindowFrameInScreen(const gfx::Rect& rect) override;
-#endif  // defined(OS_MACOSX)
+#endif  // defined(OS_MAC)
 
   // Advances the fallback surface to the first surface after navigation. This
   // ensures that stale surfaces are not presented to the user for an indefinite

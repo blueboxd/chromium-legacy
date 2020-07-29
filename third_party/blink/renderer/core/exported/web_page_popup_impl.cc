@@ -460,6 +460,11 @@ WebPagePopupImpl::GetSynchronousCompositorRegistry() {
 }
 #endif
 
+void WebPagePopupImpl::ApplyVisualProperties(
+    const VisualProperties& visual_properties) {
+  widget_base_->UpdateVisualProperties(visual_properties);
+}
+
 void WebPagePopupImpl::SetCompositorVisible(bool visible) {
   widget_base_->SetCompositorVisible(visible);
 }

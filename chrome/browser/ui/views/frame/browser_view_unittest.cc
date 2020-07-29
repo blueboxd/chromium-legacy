@@ -29,7 +29,7 @@
 #include "ui/gfx/scrollbar_size.h"
 #include "ui/views/controls/webview/webview.h"
 
-#if defined(OS_MACOSX)
+#if defined(OS_MAC)
 #include "chrome/browser/ui/recently_audible_helper.h"
 #endif
 
@@ -213,7 +213,7 @@ TEST_F(BrowserViewTest, FindBarBoundingBoxNoLocationBar) {
 }
 
 // On macOS, most accelerators are handled by CommandDispatcher.
-#if !defined(OS_MACOSX)
+#if !defined(OS_MAC)
 // Test that repeated accelerators are processed or ignored depending on the
 // commands that they refer to. The behavior for different commands is dictated
 // by IsCommandRepeatable() in chrome/browser/ui/views/accelerator_table.h.
@@ -232,7 +232,7 @@ TEST_F(BrowserViewTest, DISABLED_RepeatedAccelerators) {
       ui::VKEY_TAB, ui::EF_CONTROL_DOWN | ui::EF_IS_REPEAT);
   EXPECT_TRUE(browser_view()->AcceleratorPressed(kNextTabRepeatAccel));
 }
-#endif  // !defined(OS_MACOSX)
+#endif  // !defined(OS_MAC)
 
 // Test that bookmark bar view becomes invisible when closing the browser.
 // TODO(https://crbug.com/1000251): Flaky on Linux.
@@ -309,7 +309,7 @@ TEST_F(BrowserViewTest, DISABLED_AccessibleWindowTitle) {
           TestingProfile::Builder().BuildIncognito(profile)));
 }
 
-#if defined(OS_MACOSX)
+#if defined(OS_MAC)
 // Tests that audio playing state is reflected in the "Window" menu on Mac.
 TEST_F(BrowserViewTest, TitleAudioIndicators) {
   base::string16 playing_icon = base::WideToUTF16(L"\U0001F50A");

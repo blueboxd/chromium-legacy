@@ -18,7 +18,7 @@
 
 // These tests don't apply to the Mac version; see GetCommandLineForRelaunch
 // for details.
-#if defined(OS_MACOSX)
+#if defined(OS_MAC)
 #error This test file should not be part of the Mac build.
 #endif
 

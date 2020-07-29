@@ -195,7 +195,7 @@ void SerialPortManager::OnGotDevicesToGetPort(
       return;
     }
 
-#if defined(OS_MACOSX)
+#if defined(OS_MAC)
     if (device->alternate_path &&
         device->alternate_path->AsUTF8Unsafe() == path) {
       port_manager_->GetPort(device->token, /*use_alternate_path=*/true,
@@ -203,7 +203,7 @@ void SerialPortManager::OnGotDevicesToGetPort(
                              /*watcher=*/mojo::NullRemote());
       return;
     }
-#endif  // defined(OS_MACOSX)
+#endif  // defined(OS_MAC)
   }
 }
 

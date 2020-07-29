@@ -37,7 +37,7 @@
 #include "ui/gfx/geometry/point.h"
 #include "ui/gfx/geometry/vector2d.h"
 
-#if defined(OS_APPLE)
+#if defined(OS_MAC)
 typedef struct CGPoint CGPoint;
 
 #ifdef __OBJC__
@@ -98,7 +98,7 @@ class PLATFORM_EXPORT IntPoint {
 
   IntPoint TransposedPoint() const { return IntPoint(y_, x_); }
 
-#if defined(OS_APPLE)
+#if defined(OS_MAC)
   explicit IntPoint(
       const CGPoint&);  // don't do this implicitly since it's lossy
   operator CGPoint() const;

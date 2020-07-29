@@ -97,7 +97,7 @@ TEST(CommandTest, ExtensionCommandParsing) {
   const ui::Accelerator none = ui::Accelerator();
   const ui::Accelerator shift_f = ui::Accelerator(ui::VKEY_F,
                                                   ui::EF_SHIFT_DOWN);
-#if defined(OS_MACOSX)
+#if defined(OS_MAC)
   int ctrl = ui::EF_COMMAND_DOWN;
 #else
   int ctrl = ui::EF_CONTROL_DOWN;
@@ -227,7 +227,7 @@ TEST(CommandTest, ExtensionCommandParsingFallback) {
 #if defined(OS_WIN)
   ui::Accelerator accelerator(ui::VKEY_W,
                               ui::EF_SHIFT_DOWN | ui::EF_CONTROL_DOWN);
-#elif defined(OS_MACOSX)
+#elif defined(OS_MAC)
   ui::Accelerator accelerator(ui::VKEY_M,
                               ui::EF_SHIFT_DOWN | ui::EF_COMMAND_DOWN);
 #elif defined(OS_CHROMEOS)
@@ -279,7 +279,7 @@ TEST(CommandTest, ExtensionCommandParsingFallback) {
   EXPECT_FALSE(command.Parse(input.get(), command_name, 0, &error));
 
   // Make sure Mac specific keys are not processed on other platforms.
-#if !defined(OS_MACOSX)
+#if !defined(OS_MAC)
   key_dict->SetString("windows", "Command+Shift+M");
   EXPECT_FALSE(command.Parse(input.get(), command_name, 0, &error));
 #endif

@@ -395,7 +395,7 @@ gfx::Image GetAvatarIconForTitleBar(const gfx::Image& image,
   return gfx::Image(gfx::ImageSkia(std::move(source), dst_size));
 }
 
-#if defined(OS_MACOSX)
+#if defined(OS_MAC)
 gfx::Image GetAvatarIconForNSMenu(const base::FilePath& profile_path) {
   // Always use the low-res, small default avatars in the menu.
   gfx::Image icon;

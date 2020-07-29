@@ -39,7 +39,7 @@ namespace content {
 
 // All tests in this fixture experience flaky DCHECK failures on macOS; see
 // https://crbug.com/810321.
-#if defined(OS_MACOSX) && DCHECK_IS_ON()
+#if defined(OS_MAC) && DCHECK_IS_ON()
 #define MAYBE_WebRtcMediaRecorderTest DISABLED_WebRtcMediaRecorderTest
 #else
 #define MAYBE_WebRtcMediaRecorderTest WebRtcMediaRecorderTest

@@ -12,7 +12,6 @@
 #include "base/metrics/histogram_functions.h"
 #include "base/stl_util.h"
 #include "base/strings/strcat.h"
-#include "components/password_manager/core/browser/password_manager_client.h"
 #include "components/password_manager/core/browser/password_manager_metrics_util.h"
 #include "components/password_manager/core/browser/password_manager_util.h"
 #include "components/password_manager/core/browser/password_store.h"
@@ -38,10 +37,11 @@ void OnHSTSQueryResultHelper(
 
 HttpPasswordStoreMigrator::HttpPasswordStoreMigrator(
     const url::Origin& https_origin,
-    const PasswordManagerClient* client,
+    PasswordStore* store,
+    network::mojom::NetworkContext* network_context,
     Consumer* consumer)
-    : client_(client), consumer_(consumer) {
-  DCHECK(client_);
+    : store_(store), consumer_(consumer) {
+  DCHECK(store_);
   DCHECK(!https_origin.opaque());
   DCHECK_EQ(https_origin.scheme(), url::kHttpsScheme) << https_origin;
 
@@ -51,9 +51,11 @@ HttpPasswordStoreMigrator::HttpPasswordStoreMigrator(
   PasswordStore::FormDigest form(autofill::PasswordForm::Scheme::kHtml,
                                  http_origin.GetOrigin().spec(), http_origin);
   http_origin_domain_ = url::Origin::Create(http_origin);
-  client_->GetProfilePasswordStore()->GetLogins(form, this);
-  client_->PostHSTSQueryForHost(
-      https_origin, base::BindOnce(&OnHSTSQueryResultHelper, GetWeakPtr()));
+  store_->GetLogins(form, this);
+
+  PostHSTSQueryForHostAndNetworkContext(
+      https_origin, network_context,
+      base::BindOnce(&OnHSTSQueryResultHelper, GetWeakPtr()));
 }
 
 HttpPasswordStoreMigrator::~HttpPasswordStoreMigrator() = default;
@@ -103,8 +105,7 @@ void HttpPasswordStoreMigrator::OnHSTSQueryResult(HSTSResult is_hsts) {
   got_hsts_query_result_ = true;
 
   if (is_hsts == HSTSResult::kYes)
-    client_->GetProfilePasswordStore()->RemoveSiteStats(
-        http_origin_domain_.GetURL());
+    store_->RemoveSiteStats(http_origin_domain_.GetURL());
 
   if (got_password_store_results_)
     ProcessPasswordStoreResults();
@@ -122,10 +123,10 @@ void HttpPasswordStoreMigrator::ProcessPasswordStoreResults() {
   for (const auto& form : results_) {
     autofill::PasswordForm new_form =
         HttpPasswordStoreMigrator::MigrateHttpFormToHttps(*form);
-    client_->GetProfilePasswordStore()->AddLogin(new_form);
+    store_->AddLogin(new_form);
 
     if (mode_ == HttpPasswordMigrationMode::kMove)
-      client_->GetProfilePasswordStore()->RemoveLogin(*form);
+      store_->RemoveLogin(*form);
     *form = std::move(new_form);
   }
 

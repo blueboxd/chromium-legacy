@@ -599,7 +599,7 @@ DesktopCaptureDevice::DesktopCaptureDevice(
     std::unique_ptr<webrtc::DesktopCapturer> capturer,
     DesktopMediaID::Type type)
     : thread_("desktopCaptureThread") {
-#if defined(OS_WIN) || defined(OS_MACOSX)
+#if defined(OS_WIN) || defined(OS_MAC)
   // On Windows/OSX the thread must be a UI thread.
   base::MessagePumpType thread_type = base::MessagePumpType::UI;
 #else

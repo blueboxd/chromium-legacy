@@ -27,7 +27,7 @@
 #include "content/public/browser/chromeos/delegate_to_browser_gpu_service_accelerator_factory.h"
 #endif  // defined(OS_CHROMEOS)
 
-#if defined(OS_MACOSX)
+#if defined(OS_MAC)
 #include "base/mac/mac_util.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/strings/string_util.h"
@@ -45,7 +45,7 @@ CreateAcceleratorFactory() {
 }
 #endif  // defined(OS_CHROMEOS)
 
-#if defined(OS_MACOSX)
+#if defined(OS_MAC)
 static const int kMaxRetriesForGetDeviceInfos = 1;
 #endif
 
@@ -167,7 +167,7 @@ void ServiceVideoCaptureProvider::OnServiceStarted() {
 }
 
 void ServiceVideoCaptureProvider::OnServiceStopped() {
-#if defined(OS_MACOSX)
+#if defined(OS_MAC)
   DCHECK_CURRENTLY_ON(content::BrowserThread::IO);
   if (stashed_result_callback_for_retry_) {
     TRACE_EVENT_INSTANT0(
@@ -267,7 +267,7 @@ void ServiceVideoCaptureProvider::OnDeviceInfosReceived(
     int retry_count,
     const std::vector<media::VideoCaptureDeviceInfo>& infos) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::IO);
-#if defined(OS_MACOSX)
+#if defined(OS_MAC)
   std::string model = base::mac::GetModelIdentifier();
   if (base::FeatureList::IsEnabled(
           features::kRetryGetVideoCaptureDeviceInfos) &&
@@ -308,7 +308,7 @@ void ServiceVideoCaptureProvider::OnDeviceInfosRequestDropped(
     scoped_refptr<RefCountedVideoSourceProvider> service_connection,
     GetDeviceInfosCallback result_callback,
     int retry_count) {
-#if defined(OS_MACOSX)
+#if defined(OS_MAC)
   std::string model = base::mac::GetModelIdentifier();
   if (base::FeatureList::IsEnabled(
           features::kRetryGetVideoCaptureDeviceInfos) &&

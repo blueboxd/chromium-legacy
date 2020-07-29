@@ -67,8 +67,9 @@ class AttestationDevicePolicyTest
             nullptr, nullptr, chromeos::FakeCryptohomeClient::Get(), nullptr));
     verifier->ChallengePlatformKey(
         browser()->tab_strip_model()->GetActiveWebContents(), "fake_service_id",
-        "fake_challenge", base::Bind(&AttestationDevicePolicyTest::Callback,
-                                     base::Unretained(this)));
+        "fake_challenge",
+        base::BindOnce(&AttestationDevicePolicyTest::Callback,
+                       base::Unretained(this)));
     WaitForAsyncOperation();
     return result_;
   }

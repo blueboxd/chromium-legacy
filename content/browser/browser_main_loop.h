@@ -54,7 +54,7 @@ class SystemMessageWindowWin;
 class DeviceMonitorLinux;
 #endif
 class UserInputMonitor;
-#if defined(OS_MACOSX)
+#if defined(OS_MAC)
 class DeviceMonitorMac;
 #endif
 }  // namespace media
@@ -210,7 +210,7 @@ class CONTENT_EXPORT BrowserMainLoop {
   void GetCompositingModeReporter(
       mojo::PendingReceiver<viz::mojom::CompositingModeReporter> receiver);
 
-#if defined(OS_MACOSX) && !defined(OS_IOS)
+#if defined(OS_MAC)
   media::DeviceMonitorMac* device_monitor_mac() const {
     return device_monitor_mac_.get();
   }
@@ -378,7 +378,7 @@ class CONTENT_EXPORT BrowserMainLoop {
   std::unique_ptr<media::SystemMessageWindowWin> system_message_window_;
 #elif defined(OS_LINUX) && defined(USE_UDEV)
   std::unique_ptr<media::DeviceMonitorLinux> device_monitor_linux_;
-#elif defined(OS_MACOSX) && !defined(OS_IOS)
+#elif defined(OS_MAC)
   std::unique_ptr<media::DeviceMonitorMac> device_monitor_mac_;
 #endif
 

@@ -85,7 +85,7 @@ TEST(ComputedStyleTest, FocusRingWidth) {
   } else {
     style->SetEffectiveZoom(3.5);
     style->SetOutlineStyle(EBorderStyle::kSolid);
-#if defined(OS_APPLE)
+#if defined(OS_MAC)
     EXPECT_EQ(3, style->GetOutlineStrokeWidthForFocusRing());
 #else
     style->SetOutlineStyleIsAuto(static_cast<bool>(OutlineIsAuto::kOn));
@@ -110,7 +110,7 @@ TEST(ComputedStyleTest, FocusRingOutset) {
   if (::features::IsFormControlsRefreshEnabled()) {
     EXPECT_EQ(4, style->OutlineOutsetExtent());
   } else {
-#if defined(OS_APPLE)
+#if defined(OS_MAC)
     EXPECT_EQ(4, style->OutlineOutsetExtent());
 #else
     EXPECT_EQ(3, style->OutlineOutsetExtent());

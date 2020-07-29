@@ -15,7 +15,6 @@
 #include "base/debug/alias.h"
 #include "base/debug/stack_trace.h"
 #include "base/synchronization/lock_impl.h"
-#include "base/trace_event/base_tracing.h"
 #include "base/win/base_win_buildflags.h"
 #include "base/win/current_module.h"
 
@@ -216,8 +215,6 @@ NOINLINE void ScopedHandleVerifier::StartTrackingImpl(HANDLE handle,
                                                       const void* owner,
                                                       const void* pc1,
                                                       const void* pc2) {
-  TRACE_EVENT0("base", "ScopedHandleVerifier::StartTrackingImpl");
-
   // Grab the thread id before the lock.
   DWORD thread_id = GetCurrentThreadId();
 
@@ -238,8 +235,6 @@ NOINLINE void ScopedHandleVerifier::StopTrackingImpl(HANDLE handle,
                                                      const void* owner,
                                                      const void* pc1,
                                                      const void* pc2) {
-  TRACE_EVENT0("base", "ScopedHandleVerifier::StopTrackingImpl");
-
   AutoNativeLock lock(*lock_);
   HandleMap::iterator i = map_.find(handle);
   if (i == map_.end()) {
@@ -256,7 +251,6 @@ NOINLINE void ScopedHandleVerifier::StopTrackingImpl(HANDLE handle,
 }
 
 NOINLINE void ScopedHandleVerifier::OnHandleBeingClosedImpl(HANDLE handle) {
-  TRACE_EVENT0("base", "ScopedHandleVerifier::OnHandleBeingClosedImpl");
   if (closing_.Get())
     return;
 

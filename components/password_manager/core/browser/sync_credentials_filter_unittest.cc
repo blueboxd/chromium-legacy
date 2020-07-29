@@ -216,11 +216,25 @@ TEST_P(CredentialsFilterTest, ReportFormLoginSuccess_NotSyncing) {
   EXPECT_EQ(0, tester.GetActionCount(kFilledAndLoginActionName));
 }
 
+TEST_P(CredentialsFilterTest, ShouldSave_NotSignedIn) {
+  PasswordForm form = SimpleGaiaForm("user@example.org");
+
+  ASSERT_TRUE(identity_manager()->GetPrimaryAccountInfo().IsEmpty());
+  SetSyncingPasswords(false);
+  // If kEnablePasswordsAccountStorage is enabled, then Chrome shouldn't offer
+  // to save the password for the primary account. If there is no primary
+  // account yet, then the just-signed-in account will *become* the primary
+  // account immediately, so it shouldn't be saved either.
+  if (base::FeatureList::IsEnabled(features::kEnablePasswordsAccountStorage))
+    EXPECT_FALSE(filter_.ShouldSave(form));
+  else
+    EXPECT_TRUE(filter_.ShouldSave(form));
+}
+
 TEST_P(CredentialsFilterTest, ShouldSave_NotSyncCredential) {
   PasswordForm form = SimpleGaiaForm("user@example.org");
 
-  ASSERT_NE("user@example.org",
-            identity_manager()->GetPrimaryAccountInfo().email);
+  FakeSigninAs("different_user@example.org");
   SetSyncingPasswords(true);
   EXPECT_TRUE(filter_.ShouldSave(form));
 }
@@ -246,7 +260,13 @@ TEST_P(CredentialsFilterTest, ShouldSave_SyncCredential_NotSyncingPasswords) {
 
   FakeSigninAs("user@example.org");
   SetSyncingPasswords(false);
-  EXPECT_TRUE(filter_.ShouldSave(form));
+  // If kEnablePasswordsAccountStorage is enabled, then Chrome shouldn't offer
+  // to save the password for the primary account - doesn't matter if passwords
+  // are being synced or not.
+  if (base::FeatureList::IsEnabled(features::kEnablePasswordsAccountStorage))
+    EXPECT_FALSE(filter_.ShouldSave(form));
+  else
+    EXPECT_TRUE(filter_.ShouldSave(form));
 }
 
 #if defined(SYNC_PASSWORD_REUSE_DETECTION_ENABLED)

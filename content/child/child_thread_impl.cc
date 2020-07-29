@@ -83,7 +83,7 @@
 #include "content/public/common/content_descriptors.h"
 #endif
 
-#if defined(OS_MACOSX)
+#if defined(OS_MAC)
 #include "base/mac/mach_port_rendezvous.h"
 #endif
 
@@ -210,7 +210,7 @@ mojo::IncomingInvitation InitializeMojoIPCChannel() {
 #elif defined(OS_FUCHSIA)
   endpoint = mojo::PlatformChannel::RecoverPassedEndpointFromCommandLine(
       *base::CommandLine::ForCurrentProcess());
-#elif defined(OS_MACOSX)
+#elif defined(OS_MAC)
   auto* client = base::MachPortRendezvousClient::GetInstance();
   if (!client) {
     LOG(ERROR) << "Mach rendezvous failed, terminating process (parent died?)";
@@ -296,7 +296,7 @@ class ChildThreadImpl::IOThreadState
                                        base::BindOnce(quit_closure_));
   }
 
-#if defined(OS_MACOSX)
+#if defined(OS_MAC)
   void GetTaskPort(GetTaskPortCallback callback) override {
     mojo::PlatformHandle task_port(
         (base::mac::ScopedMachSendRight(task_self_trap())));

@@ -533,8 +533,8 @@ TEST_F(LoadingPredictorPreconnectTest,
       main_frame_url, HintOrigin::OPTIMIZATION_GUIDE, false, prediction));
 }
 
-// Checks that the predictor doesn't use the provided prediction if there is
-// already in flight and there was a local preconnect prediction.
+// Checks that the predictor uses a prediction even if there is already a local
+// initiated one in flight.
 TEST_F(
     LoadingPredictorPreconnectTest,
     TestPrepareForPageLoadPredictionProvidedButHasLocalPreconnectPrediction) {
@@ -574,7 +574,16 @@ TEST_F(
         network_isolation_key},
        {url::Origin::Create(GURL("http://cdn3.search.com")), 1,
         network_isolation_key}});
-  EXPECT_CALL(*mock_preconnect_manager_, StartProxy(_, _)).Times(0);
+  EXPECT_CALL(
+      *mock_preconnect_manager_,
+      StartProxy(main_frame_url,
+                 std::vector<PreconnectRequest>(
+                     {{url::Origin::Create(GURL("http://cdn1.search.com")), 1,
+                       network_isolation_key},
+                      {url::Origin::Create(GURL("http://cdn2.search.com")), 1,
+                       network_isolation_key},
+                      {url::Origin::Create(GURL("http://cdn3.search.com")), 1,
+                       network_isolation_key}})));
   EXPECT_TRUE(predictor_->PrepareForPageLoad(
       main_frame_url, HintOrigin::OPTIMIZATION_GUIDE, false, prediction));
 }

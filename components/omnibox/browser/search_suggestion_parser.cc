@@ -469,7 +469,6 @@ bool SearchSuggestionParser::ParseSuggestResults(
   const base::ListValue* relevances = nullptr;
   const base::ListValue* experiment_stats = nullptr;
   const base::ListValue* suggestion_details = nullptr;
-  const base::DictionaryValue* headers = nullptr;
   const base::ListValue* subtype_identifiers = nullptr;
   const base::DictionaryValue* extras = nullptr;
   const base::Value* suggestsubtypes = nullptr;
@@ -504,14 +503,25 @@ bool SearchSuggestionParser::ParseSuggestResults(
       }
     }
 
-    const base::DictionaryValue* wrapper_dict = nullptr;
-    if (extras->GetDictionary("google:headertexts", &wrapper_dict) &&
-        wrapper_dict && wrapper_dict->GetDictionary("a", &headers) && headers) {
-      for (const auto& it : headers->DictItems()) {
-        int suggestion_group_id;
-        base::StringToInt(it.first, &suggestion_group_id);
-        results->headers_map[suggestion_group_id] =
-            base::UTF8ToUTF16(it.second.GetString());
+    const base::DictionaryValue* header_texts = nullptr;
+    if (extras->GetDictionary("google:headertexts", &header_texts) &&
+        header_texts) {
+      const base::DictionaryValue* headers = nullptr;
+      if (header_texts->GetDictionary("a", &headers) && headers) {
+        for (const auto& it : headers->DictItems()) {
+          int suggestion_group_id;
+          base::StringToInt(it.first, &suggestion_group_id);
+          results->headers_map[suggestion_group_id] =
+              base::UTF8ToUTF16(it.second.GetString());
+        }
+      }
+
+      const base::ListValue* hidden_group_ids = nullptr;
+      if (header_texts->GetList("h", &hidden_group_ids) && hidden_group_ids) {
+        for (const auto& value : hidden_group_ids->GetList()) {
+          if (value.is_int())
+            results->hidden_group_ids.emplace_back(value.GetInt());
+        }
       }
     }
 

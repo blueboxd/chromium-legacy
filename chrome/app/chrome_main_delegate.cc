@@ -90,7 +90,7 @@
 #include "ui/base/resource/resource_bundle_win.h"
 #endif
 
-#if defined(OS_MACOSX)
+#if defined(OS_MAC)
 #include "base/mac/foundation_util.h"
 #include "chrome/app/chrome_main_mac.h"
 #include "chrome/browser/chrome_browser_application_mac.h"
@@ -140,7 +140,7 @@
 #include "chrome/browser/diagnostics/diagnostics_writer.h"
 #endif
 
-#if defined(OS_POSIX) && !defined(OS_MACOSX) && !defined(OS_ANDROID)
+#if defined(OS_POSIX) && !defined(OS_MAC) && !defined(OS_ANDROID)
 #include "components/crash/core/app/breakpad_linux.h"
 #include "v8/include/v8-wasm-trap-handler-posix.h"
 #include "v8/include/v8.h"
@@ -150,7 +150,7 @@
 #include "base/environment.h"
 #endif
 
-#if defined(OS_MACOSX) || defined(OS_WIN) || defined(OS_ANDROID) || \
+#if defined(OS_MAC) || defined(OS_WIN) || defined(OS_ANDROID) || \
     defined(OS_LINUX)
 #include "chrome/browser/policy/policy_path_parser.h"
 #include "components/crash/core/app/crashpad.h"
@@ -318,7 +318,7 @@ bool SubprocessNeedsResourceBundle(const std::string& process_type) {
       // The zygote process opens the resources for the renderers.
       process_type == service_manager::switches::kZygoteProcess ||
 #endif
-#if defined(OS_MACOSX)
+#if defined(OS_MAC)
       // Mac needs them too for scrollbar related images and for sandbox
       // profiles.
 #if BUILDFLAG(ENABLE_NACL)
@@ -336,7 +336,7 @@ bool SubprocessNeedsResourceBundle(const std::string& process_type) {
 // Check for --version and --product-version; return true if we encountered
 // one of these switches and should exit now.
 bool HandleVersionSwitches(const base::CommandLine& command_line) {
-#if !defined(OS_MACOSX)
+#if !defined(OS_MAC)
   if (command_line.HasSwitch(switches::kProductVersion)) {
     printf("%s\n", version_info::GetVersionNumber().c_str());
     return true;
@@ -365,7 +365,7 @@ void HandleHelpSwitches(const base::CommandLine& command_line) {
 }
 #endif  // defined(OS_LINUX) && !defined(OS_CHROMEOS)
 
-#if !defined(OS_MACOSX) && !defined(OS_ANDROID)
+#if !defined(OS_MAC) && !defined(OS_ANDROID)
 void SIGTERMProfilingShutdown(int signal) {
   content::Profiling::Stop();
   struct sigaction sigact;
@@ -382,7 +382,7 @@ void SetUpProfilingShutdownHandler() {
   sigemptyset(&sigact.sa_mask);
   CHECK_EQ(sigaction(SIGTERM, &sigact, NULL), 0);
 }
-#endif  // !defined(OS_MACOSX) && !defined(OS_ANDROID)
+#endif  // !defined(OS_MAC) && !defined(OS_ANDROID)
 
 #endif  // OS_POSIX
 
@@ -430,7 +430,7 @@ void InitializeUserDataDir(base::CommandLine* command_line) {
     }
   }
 #endif  // OS_LINUX
-#if defined(OS_MACOSX)
+#if defined(OS_MAC)
   policy::path_parser::CheckUserDataDirPolicy(&user_data_dir);
 #endif  // OS_MAC
 
@@ -500,7 +500,7 @@ void RecordMainStartupMetrics(base::TimeTicks application_start_time) {
   startup_metric_utils::RecordApplicationStartTime(now);
 #endif
 
-#if defined(OS_MACOSX) || defined(OS_WIN) || defined(OS_LINUX)
+#if defined(OS_MAC) || defined(OS_WIN) || defined(OS_LINUX)
   // Record the startup process creation time on supported platforms.
   startup_metric_utils::RecordStartupProcessCreationTime(
       base::Process::Current().CreationTime());
@@ -678,7 +678,7 @@ bool ChromeMainDelegate::BasicStartupComplete(int* exit_code) {
   }
 #endif
 
-#if defined(OS_MACOSX)
+#if defined(OS_MAC)
   // Give the browser process a longer treadmill, since crashes
   // there have more impact.
   const bool is_browser = !command_line.HasSwitch(switches::kProcessType);
@@ -843,7 +843,7 @@ bool ChromeMainDelegate::BasicStartupComplete(int* exit_code) {
   return false;
 }
 
-#if defined(OS_MACOSX)
+#if defined(OS_MAC)
 void ChromeMainDelegate::InitMacCrashReporter(
     const base::CommandLine& command_line,
     const std::string& process_type) {
@@ -901,7 +901,7 @@ void ChromeMainDelegate::SetUpInstallerPreferences(
   if (default_browser_setting)
     shell_integration::SetAsDefaultBrowser();
 }
-#endif  // defined(OS_MACOSX)
+#endif  // defined(OS_MAC)
 
 void ChromeMainDelegate::PreSandboxStartup() {
   const base::CommandLine& command_line =
@@ -915,7 +915,7 @@ void ChromeMainDelegate::PreSandboxStartup() {
   ChromeCrashReporterClient::Create();
 #endif
 
-#if defined(OS_MACOSX)
+#if defined(OS_MAC)
   InitMacCrashReporter(command_line, process_type);
   SetUpInstallerPreferences(command_line);
 #endif
@@ -1042,7 +1042,7 @@ void ChromeMainDelegate::PreSandboxStartup() {
         locale;
   }
 
-#if defined(OS_POSIX) && !defined(OS_MACOSX)
+#if defined(OS_POSIX) && !defined(OS_MAC)
   // Zygote needs to call InitCrashReporter() in RunZygote().
   if (process_type != service_manager::switches::kZygoteProcess) {
 #if defined(OS_ANDROID)
@@ -1063,7 +1063,7 @@ void ChromeMainDelegate::PreSandboxStartup() {
     }
 #endif  // defined(OS_ANDROID)
   }
-#endif  // defined(OS_POSIX) && !defined(OS_MACOSX)
+#endif  // defined(OS_POSIX) && !defined(OS_MAC)
 
 #if defined(OS_ANDROID)
   CHECK_EQ(base::android::GetLibraryProcessType(),
@@ -1119,7 +1119,7 @@ int ChromeMainDelegate::RunProcess(
     {switches::kCloudPrintServiceProcess, CloudPrintServiceProcessMain},
 #endif
 
-#if defined(OS_MACOSX)
+#if defined(OS_MAC)
     {switches::kRelauncherProcess, mac_relauncher::internal::RelauncherMain},
 #endif
 
@@ -1233,7 +1233,7 @@ service_manager::ProcessType ChromeMainDelegate::OverrideProcessType() {
 }
 
 void ChromeMainDelegate::PreCreateMainMessageLoop() {
-#if defined(OS_MACOSX)
+#if defined(OS_MAC)
   // Tell Cocoa to finish its initialization, which we want to do manually
   // instead of calling NSApplicationMain(). The primary reason is that NSAM()
   // never returns, which would leave all the objects currently on the stack

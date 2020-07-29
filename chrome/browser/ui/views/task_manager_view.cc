@@ -372,7 +372,7 @@ void TaskManagerView::RetrieveSavedAlwaysOnTopState() {
 
 namespace chrome {
 
-#if defined(OS_MACOSX)
+#if defined(OS_MAC)
 // These are used by the Mac versions of |ShowTaskManager| and |HideTaskManager|
 // if they decide to show the Views task manager instead of the Cocoa one.
 task_manager::TaskManagerTableModel* ShowTaskManagerViews(Browser* browser) {

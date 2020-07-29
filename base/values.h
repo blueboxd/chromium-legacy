@@ -806,7 +806,8 @@ class BASE_EXPORT ListValue : public Value {
   bool empty() const { return list_.empty(); }
 
   // Reserves storage for at least |n| values.
-  // DEPRECATED, use GetList()::reserve() instead.
+  // DEPRECATED, first construct a base::Value::ListStorage and use
+  // base::Value::ListStorage::reserve() instead.
   void Reserve(size_t n);
 
   // Sets the list item at the given index to be the Value specified by

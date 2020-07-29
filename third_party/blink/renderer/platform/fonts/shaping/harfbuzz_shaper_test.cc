@@ -436,7 +436,7 @@ TEST_F(HarfBuzzShaperTest, ShapeLatinSegment) {
 // <div>0x647<span style="color: red;">0x64A</span></
 // Cannot be enabled on Mac yet, compare
 // https:// https://github.com/harfbuzz/harfbuzz/issues/1415
-#if defined(OS_APPLE)
+#if defined(OS_MAC)
 #define MAYBE_ShapeArabicWithContext DISABLED_ShapeArabicWithContext
 #else
 #define MAYBE_ShapeArabicWithContext ShapeArabicWithContext
@@ -1494,7 +1494,7 @@ TEST_F(HarfBuzzShaperTest, MAYBE_SafeToBreakArabicCommonLigatures) {
 
   Vector<unsigned> safe_to_break_positions;
 
-#if defined(OS_APPLE)
+#if defined(OS_MAC)
   safe_to_break_positions = {0, 2, 3, 4, 11};
 #else
   safe_to_break_positions = {0, 3, 4, 5, 7, 11};

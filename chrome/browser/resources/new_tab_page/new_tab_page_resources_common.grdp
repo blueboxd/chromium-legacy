@@ -62,4 +62,6 @@
       file="untrusted/background_image.html" type="BINDATA" />
   <include name="IDR_NEW_TAB_PAGE_UNTRUSTED_BACKGROUND_IMAGE_JS"
       file="untrusted/background_image.js" type="BINDATA" />
+  <include name="IDR_NEW_TAB_PAGE_ONE_GOOGLE_BAR_API_JS"
+      file="one_google_bar_api.js" type="BINDATA" compress="false" />
 </grit-part>

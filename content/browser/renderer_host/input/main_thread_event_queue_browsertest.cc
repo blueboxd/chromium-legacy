@@ -206,7 +206,7 @@ IN_PROC_BROWSER_TEST_F(MainThreadEventQueueBrowserTest, MAYBE_MouseMove) {
 }
 
 // Disabled on MacOS because it doesn't support touch input.
-#if defined(OS_MACOSX)
+#if defined(OS_MAC)
 #define MAYBE_TouchMove DISABLED_TouchMove
 #else
 #define MAYBE_TouchMove TouchMove

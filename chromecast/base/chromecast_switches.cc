@@ -212,12 +212,6 @@ const char kForceUpdateRemoteUrl[] = "force-update-remote-url";
 // means that dummy info will be used.
 const char kSysInfoFilePath[] = "sys-info-file-path";
 
-// Uses AudioManagerAndroid, instead of CastAudioManagerAndroid. This will
-// disable lots of Cast features, so it should only be used for development and
-// testing.
-const char kEnableChromeAudioManagerAndroid[] =
-    "enable-chrome-audio-manager-android";
-
 }  // namespace switches
 
 namespace chromecast {

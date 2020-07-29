@@ -84,9 +84,9 @@
 #include "net/ssl/client_cert_store_win.h"
 #endif  // defined(OS_WIN)
 
-#if defined(OS_MACOSX)
+#if defined(OS_MAC)
 #include "net/ssl/client_cert_store_mac.h"
-#endif  // defined(OS_MACOSX)
+#endif  // defined(OS_MAC)
 
 #if BUILDFLAG(TRIAL_COMPARISON_CERT_VERIFIER_SUPPORTED)
 #include "chrome/browser/net/trial_comparison_cert_verifier_controller.h"
@@ -639,7 +639,7 @@ ProfileNetworkContextService::CreateClientCertStore() {
                           kCryptoModulePasswordClientAuth));
 #elif defined(OS_WIN)
   return std::make_unique<net::ClientCertStoreWin>();
-#elif defined(OS_MACOSX)
+#elif defined(OS_MAC)
   return std::make_unique<net::ClientCertStoreMac>();
 #elif defined(OS_ANDROID)
   // Android does not use the ClientCertStore infrastructure. On Android client

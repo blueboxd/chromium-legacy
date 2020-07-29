@@ -17,7 +17,7 @@
 #include "content/public/test/browser_test.h"
 #include "ui/display/types/display_constants.h"
 
-#if defined(OS_MACOSX)
+#if defined(OS_MAC)
 #include "ui/base/test/scoped_fake_nswindow_fullscreen.h"
 #endif
 
@@ -133,7 +133,7 @@ IN_PROC_BROWSER_TEST_F(DevToolsManagerDelegateTest, NormalWindowChangeBounds) {
   CheckWindowBounds(gfx::Rect(200, 100, 600, 400));
 }
 
-#if defined(OS_MACOSX)
+#if defined(OS_MAC)
 // MacViews does not yet implement maximized windows: https://crbug.com/836327
 #define MAYBE_NormalToMaximizedWindow DISABLED_NormalToMaximizedWindow
 #else
@@ -153,18 +153,18 @@ IN_PROC_BROWSER_TEST_F(DevToolsManagerDelegateTest, NormalToMinimizedWindow) {
 }
 
 IN_PROC_BROWSER_TEST_F(DevToolsManagerDelegateTest, NormalToFullscreenWindow) {
-#if defined(OS_MACOSX)
+#if defined(OS_MAC)
   ui::test::ScopedFakeNSWindowFullscreen faker;
 #endif
   CheckIsFullscreen(false);
   SendCommand("fullscreen");
-#if defined(OS_MACOSX)
+#if defined(OS_MAC)
   faker.FinishTransition();
 #endif
   CheckIsFullscreen(true);
 }
 
-#if defined(OS_MACOSX)
+#if defined(OS_MAC)
 // MacViews does not yet implement maximized windows: https://crbug.com/836327
 #define MAYBE_MaximizedToMinimizedWindow DISABLED_MaximizedToMinimizedWindow
 #else
@@ -180,7 +180,7 @@ IN_PROC_BROWSER_TEST_F(DevToolsManagerDelegateTest,
   CheckIsMinimized(true);
 }
 
-#if defined(OS_MACOSX)
+#if defined(OS_MAC)
 // MacViews does not yet implement maximized windows: https://crbug.com/836327
 #define MAYBE_MaximizedToFullscreenWindow DISABLED_MaximizedToFullscreenWindow
 #else
@@ -203,7 +203,7 @@ IN_PROC_BROWSER_TEST_F(DevToolsManagerDelegateTest, ShowMinimizedWindow) {
   CheckIsMinimized(false);
 }
 
-#if defined(OS_MACOSX)
+#if defined(OS_MAC)
 // MacViews does not yet implement maximized windows: https://crbug.com/836327
 #define MAYBE_RestoreMaximizedWindow DISABLED_RestoreMaximizedWindow
 #else
@@ -218,17 +218,17 @@ IN_PROC_BROWSER_TEST_F(DevToolsManagerDelegateTest,
 }
 
 IN_PROC_BROWSER_TEST_F(DevToolsManagerDelegateTest, ExitFullscreenWindow) {
-#if defined(OS_MACOSX)
+#if defined(OS_MAC)
   ui::test::ScopedFakeNSWindowFullscreen faker;
 #endif
   browser()->window()->GetExclusiveAccessContext()->EnterFullscreen(
       GURL(), EXCLUSIVE_ACCESS_BUBBLE_TYPE_NONE, display::kInvalidDisplayId);
-#if defined(OS_MACOSX)
+#if defined(OS_MAC)
   faker.FinishTransition();
 #endif
   CheckIsFullscreen(true);
   SendCommand("normal");
-#if defined(OS_MACOSX)
+#if defined(OS_MAC)
   faker.FinishTransition();
 #endif
   CheckIsFullscreen(false);

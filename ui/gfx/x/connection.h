@@ -86,6 +86,10 @@ class COMPONENT_EXPORT(X11) Connection : public XProto,
   // doesn't exist or only exists on a non-default screen.
   const VisualInfo* GetVisualInfoFromId(VisualId id) const;
 
+  KeyCode KeysymToKeycode(KeySym keysym);
+
+  KeySym KeycodeToKeysym(uint32_t keycode, unsigned int modifiers);
+
   // Access the event buffer.  Clients can add, delete, or modify events.
   std::list<Event>& events() { return events_; }
 
@@ -109,6 +113,12 @@ class COMPONENT_EXPORT(X11) Connection : public XProto,
 
   int ScreenIndexFromRootWindow(x11::Window root) const;
 
+  void ResetKeyboardState();
+
+  KeySym KeyCodetoKeySym(KeyCode keycode, int column) const;
+
+  KeySym TranslateKey(uint32_t keycode, unsigned int modifiers) const;
+
   XDisplay* const display_;
 
   uint32_t extended_max_request_length_ = 0;
@@ -119,6 +129,13 @@ class COMPONENT_EXPORT(X11) Connection : public XProto,
   VisualType* default_root_visual_ = nullptr;
 
   std::unordered_map<VisualId, VisualInfo> default_screen_visuals_;
+
+  // Keyboard state.
+  GetKeyboardMappingReply keyboard_mapping_;
+  GetModifierMappingReply modifier_mapping_;
+  uint16_t lock_meaning_ = 0;
+  uint8_t mode_switch_ = 0;
+  uint8_t num_lock_ = 0;
 
   std::list<Event> events_;
 

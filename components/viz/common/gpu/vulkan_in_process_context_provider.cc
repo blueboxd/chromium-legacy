@@ -4,6 +4,8 @@
 
 #include "components/viz/common/gpu/vulkan_in_process_context_provider.h"
 
+#include <utility>
+
 #include "base/task/thread_pool.h"
 #include "base/task/thread_pool/thread_pool_instance.h"
 #include "gpu/vulkan/buildflags.h"
@@ -15,7 +17,7 @@
 #include "gpu/vulkan/vulkan_instance.h"
 #include "gpu/vulkan/vulkan_util.h"
 #include "third_party/skia/include/core/SkExecutor.h"
-#include "third_party/skia/include/gpu/GrContext.h"
+#include "third_party/skia/include/gpu/GrDirectContext.h"
 #include "third_party/skia/include/gpu/vk/GrVkExtensions.h"
 
 namespace {
@@ -134,7 +136,7 @@ bool VulkanInProcessContextProvider::Initialize(
     executor_ = std::make_unique<VizExecutor>();
     options.fExecutor = executor_.get();
   }
-  gr_context_ = GrContext::MakeVulkan(backend_context, options);
+  gr_context_ = GrDirectContext::MakeVulkan(backend_context, options);
 
   return gr_context_ != nullptr;
 }
@@ -171,7 +173,7 @@ gpu::VulkanDeviceQueue* VulkanInProcessContextProvider::GetDeviceQueue() {
   return device_queue_.get();
 }
 
-GrContext* VulkanInProcessContextProvider::GetGrContext() {
+GrDirectContext* VulkanInProcessContextProvider::GetGrContext() {
   return gr_context_.get();
 }
 

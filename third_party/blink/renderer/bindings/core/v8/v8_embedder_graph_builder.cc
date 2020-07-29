@@ -541,6 +541,9 @@ void V8EmbedderGraphBuilder::VisitPersistentHandleInternal(
   EmbedderNode* graph_node = node_builder_->GraphNode(
       traceable, traceable->NameInHeapSnapshot(), wrapper, dom_tree_state);
   State* const to_process_state = EnsureState(traceable, graph_node);
+  if (to_process_state->IsVisited()) {
+    return;
+  }
   const TraceDescriptor& descriptor =
       TraceDescriptorFor<ScriptWrappable>(traceable);
   switch (graph_node->GetDomTreeState()) {

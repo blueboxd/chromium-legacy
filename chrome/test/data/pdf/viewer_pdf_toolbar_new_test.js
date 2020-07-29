@@ -182,6 +182,14 @@ const tests = [
     });
     twoPageViewButton.click();
   },
+
+  function testSidenavToggleButton() {
+    const toolbar = createToolbar();
+    toolbar.addEventListener(
+        'sidenav-toggle-click', () => chrome.test.succeed());
+    const toggleButton = toolbar.shadowRoot.querySelector('#sidenavToggle');
+    toggleButton.click();
+  },
 ];
 
 chrome.test.runTests(tests);

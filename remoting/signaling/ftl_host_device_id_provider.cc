@@ -12,7 +12,7 @@ namespace {
 
 #if defined(OS_WIN)
 constexpr char kDeviceIdPrefix[] = "crd-win-host-";
-#elif defined(OS_MACOSX)
+#elif defined(OS_APPLE)
 constexpr char kDeviceIdPrefix[] = "crd-mac-host-";
 #elif defined(OS_CHROMEOS)
 constexpr char kDeviceIdPrefix[] = "crd-cros-host-";

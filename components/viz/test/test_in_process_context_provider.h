@@ -17,7 +17,7 @@
 #include "components/viz/test/test_image_factory.h"
 #include "gpu/config/gpu_feature_info.h"
 
-class GrContext;
+class GrDirectContext;
 
 namespace gpu {
 class GLInProcessContext;
@@ -56,7 +56,7 @@ class TestInProcessContextProvider
   gpu::gles2::GLES2Interface* ContextGL() override;
   gpu::raster::RasterInterface* RasterInterface() override;
   gpu::ContextSupport* ContextSupport() override;
-  class GrContext* GrContext() override;
+  class GrDirectContext* GrContext() override;
   gpu::SharedImageInterface* SharedImageInterface() override;
   ContextCacheController* CacheController() override;
   base::Lock* GetLock() override;

@@ -94,7 +94,7 @@
 #include "ui/shell_dialogs/select_file_dialog_factory.h"
 #include "ui/shell_dialogs/select_file_policy.h"
 
-#if defined(OS_MACOSX)
+#if defined(OS_MAC)
 #include "base/mac/foundation_util.h"
 #endif
 
@@ -258,13 +258,13 @@ void ApplyWebTestDefaultPreferences(WebPreferences* prefs) {
       command_line.HasSwitch(switches::kForcePresentationReceiverForTesting);
   prefs->translate_service_available = true;
 
-#if defined(OS_MACOSX)
+#if defined(OS_MAC)
   prefs->editing_behavior = EDITING_BEHAVIOR_MAC;
 #else
   prefs->editing_behavior = EDITING_BEHAVIOR_WIN;
 #endif
 
-#if defined(OS_MACOSX)
+#if defined(OS_MAC)
   prefs->cursive_font_family_map[kCommonScript] =
       base::ASCIIToUTF16("Apple Chancery");
   prefs->fantasy_font_family_map[kCommonScript] = base::ASCIIToUTF16("Papyrus");

@@ -28,7 +28,9 @@ namespace downloads {
     // The $(ref:DownloadItem)'s new target $(ref:DownloadItem.filename), as a path
     // relative to the user's default Downloads directory, possibly containing
     // subdirectories. Absolute paths, empty paths, and paths containing
-    // back-references ".." will be ignored.
+    // back-references ".." will be ignored. <code>filename</code> is ignored if
+    // there are any $(ref:onDeterminingFilename) listeners registered by any
+    // extensions.
     DOMString filename;
 
     // The action to take if <code>filename</code> already exists.

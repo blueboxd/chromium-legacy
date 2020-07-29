@@ -282,7 +282,7 @@ IN_PROC_BROWSER_TEST_F(BookmarkBrowsertest, DragMultipleBookmarks) {
                                   gfx::NativeView native_view,
                                   ui::DragDropTypes::DragEventSource source,
                                   gfx::Point point, int operation) {
-#if !defined(OS_MACOSX)
+#if !defined(OS_MAC)
         GURL url;
         base::string16 title;
         // On Mac 10.11 and 10.12, this returns true, even though we set no url.

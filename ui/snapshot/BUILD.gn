@@ -92,6 +92,10 @@ jumbo_source_set("snapshot_export") {
 }
 
 test("snapshot_unittests") {
+  if ((is_linux && !is_chromeos) || chromeos_is_browser_only) {
+    use_xvfb = true
+  }
+
   sources = [ "test/run_all_unittests.cc" ]
 
   if (is_mac) {

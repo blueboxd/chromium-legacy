@@ -170,7 +170,7 @@ class PasswordDialogViewTest : public DialogBrowserTest {
 };
 
 void PasswordDialogViewTest::SetUpOnMainThread() {
-#if defined(OS_MACOSX)
+#if defined(OS_MAC)
   // On non-Mac platforms, animations are globally disabled during tests; on
   // Mac they are generally not, but these tests are dramatically slower and
   // flakier with animations.

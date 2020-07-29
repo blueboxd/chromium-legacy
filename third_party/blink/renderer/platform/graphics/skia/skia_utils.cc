@@ -388,7 +388,7 @@ void DrawPlatformFocusRing(const PrimitiveType& primitive,
     return;
   }
 
-#if defined(OS_APPLE)
+#if defined(OS_MAC)
   flags.setAlpha(64);
   const float corner_radius = (width - 1) * 0.5f;
 #else
@@ -397,7 +397,7 @@ void DrawPlatformFocusRing(const PrimitiveType& primitive,
 
   DrawFocusRingPrimitive(primitive, canvas, flags, corner_radius);
 
-#if defined(OS_APPLE)
+#if defined(OS_MAC)
   // Inner part
   flags.setAlpha(128);
   flags.setStrokeWidth(flags.getStrokeWidth() * 0.5f);

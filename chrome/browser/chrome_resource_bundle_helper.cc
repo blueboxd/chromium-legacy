@@ -74,7 +74,7 @@ std::string InitResourceBundleAndDetermineLocale(PrefService* local_state,
 #endif
 
   std::string preferred_locale;
-#if defined(OS_MACOSX)
+#if defined(OS_MAC)
   // TODO(markusheintz): Read preference pref::kApplicationLocale in order
   // to enforce the application locale.
   // Tests always get en-US.

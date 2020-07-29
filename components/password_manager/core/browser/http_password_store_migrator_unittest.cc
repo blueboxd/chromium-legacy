@@ -9,7 +9,7 @@
 #include "base/strings/utf_string_conversions.h"
 #include "base/test/task_environment.h"
 #include "components/password_manager/core/browser/mock_password_store.h"
-#include "components/password_manager/core/browser/stub_password_manager_client.h"
+#include "services/network/test/test_network_context.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -17,14 +17,15 @@ namespace password_manager {
 namespace {
 
 using autofill::PasswordForm;
+using testing::_;
 using testing::ElementsAre;
 using testing::Invoke;
 using testing::Pointee;
 using testing::SaveArg;
 using testing::Unused;
-using testing::_;
 
 constexpr char kTestHttpsURL[] = "https://example.org/path";
+constexpr char kTestHost[] = "example.org";
 constexpr char kTestHttpURL[] = "http://example.org/path";
 constexpr char kTestSubdomainHttpURL[] = "http://login.example.org/path2";
 
@@ -91,35 +92,22 @@ class MockConsumer : public HttpPasswordStoreMigrator::Consumer {
   }
 };
 
-class MockPasswordManagerClient : public StubPasswordManagerClient {
+class MockNetworkContext : public network::TestNetworkContext {
  public:
-  explicit MockPasswordManagerClient(PasswordStore* store) : store_(store) {}
+  MockNetworkContext() = default;
+  ~MockNetworkContext() override = default;
 
-  // PasswordManagerClient:
-  PasswordStore* GetProfilePasswordStore() const override { return store_; }
-  void PostHSTSQueryForHost(const url::Origin& origin,
-                            HSTSCallback callback) const override {
-    saved_callback_ = std::move(callback);
-    PostHSTSQueryForHostHelper(origin);
-  }
-
-  MOCK_CONST_METHOD1(PostHSTSQueryForHostHelper, void(const url::Origin&));
-  HSTSCallback hsts_acquire_callback() { return std::move(saved_callback_); }
-
- private:
-  PasswordStore* store_;
-  mutable HSTSCallback saved_callback_;
+  MOCK_METHOD(void,
+              IsHSTSActiveForHost,
+              (const std::string&, IsHSTSActiveForHostCallback),
+              (override));
 };
 
 }  // namespace
 
 class HttpPasswordStoreMigratorTest : public testing::Test {
  public:
-  HttpPasswordStoreMigratorTest()
-      : mock_store_(new testing::StrictMock<MockPasswordStore>),
-        client_(mock_store_.get()) {
-    mock_store_->Init(nullptr);
-  }
+  HttpPasswordStoreMigratorTest() { mock_store_->Init(nullptr); }
 
   ~HttpPasswordStoreMigratorTest() override {
     mock_store_->ShutdownOnUIThread();
@@ -127,7 +115,7 @@ class HttpPasswordStoreMigratorTest : public testing::Test {
 
   MockConsumer& consumer() { return consumer_; }
   MockPasswordStore& store() { return *mock_store_; }
-  MockPasswordManagerClient& client() { return client_; }
+  MockNetworkContext& mock_network_context() { return mock_network_context_; }
 
   void WaitForPasswordStore() { task_environment_.RunUntilIdle(); }
 
@@ -139,8 +127,9 @@ class HttpPasswordStoreMigratorTest : public testing::Test {
  private:
   base::test::TaskEnvironment task_environment_;
   MockConsumer consumer_;
-  scoped_refptr<MockPasswordStore> mock_store_;
-  MockPasswordManagerClient client_;
+  scoped_refptr<MockPasswordStore> mock_store_ =
+      base::MakeRefCounted<testing::StrictMock<MockPasswordStore>>();
+  testing::NiceMock<MockNetworkContext> mock_network_context_;
 
   DISALLOW_COPY_AND_ASSIGN(HttpPasswordStoreMigratorTest);
 };
@@ -149,13 +138,14 @@ void HttpPasswordStoreMigratorTest::TestEmptyStore(bool is_hsts) {
   PasswordStore::FormDigest form_digest(CreateTestForm());
   form_digest.url = form_digest.url.GetOrigin();
   EXPECT_CALL(store(), GetLogins(form_digest, _));
-  EXPECT_CALL(client(), PostHSTSQueryForHostHelper(
-                            url::Origin::Create(GURL(kTestHttpsURL))))
-      .Times(1);
+  EXPECT_CALL(mock_network_context(), IsHSTSActiveForHost(kTestHost, _))
+      .Times(1)
+      .WillOnce(testing::WithArg<1>(
+          [is_hsts](auto cb) { std::move(cb).Run(is_hsts); }));
+
   HttpPasswordStoreMigrator migrator(url::Origin::Create(GURL(kTestHttpsURL)),
-                                     &client(), &consumer());
-  HSTSCallback callback = client().hsts_acquire_callback();
-  std::move(callback).Run(is_hsts ? HSTSResult::kYes : HSTSResult::kNo);
+                                     &store(), &mock_network_context(),
+                                     &consumer());
   // We expect a potential call to |RemoveSiteStatsImpl| which is a async task
   // posted from |PasswordStore::RemoveSiteStats|. Hence the following lines are
   // necessary to ensure |RemoveSiteStatsImpl| gets called when expected.
@@ -172,13 +162,13 @@ void HttpPasswordStoreMigratorTest::TestFullStore(bool is_hsts) {
   PasswordStore::FormDigest form_digest(CreateTestForm());
   form_digest.url = form_digest.url.GetOrigin();
   EXPECT_CALL(store(), GetLogins(form_digest, _));
-  EXPECT_CALL(client(), PostHSTSQueryForHostHelper(
-                            url::Origin::Create(GURL(kTestHttpsURL))))
-      .Times(1);
+  EXPECT_CALL(mock_network_context(), IsHSTSActiveForHost(kTestHost, _))
+      .Times(1)
+      .WillOnce(testing::WithArg<1>(
+          [is_hsts](auto cb) { std::move(cb).Run(is_hsts); }));
   HttpPasswordStoreMigrator migrator(url::Origin::Create(GURL(kTestHttpsURL)),
-                                     &client(), &consumer());
-  HSTSCallback callback = client().hsts_acquire_callback();
-  std::move(callback).Run(is_hsts ? HSTSResult::kYes : HSTSResult::kNo);
+                                     &store(), &mock_network_context(),
+                                     &consumer());
   // We expect a potential call to |RemoveSiteStatsImpl| which is a async task
   // posted from |PasswordStore::RemoveSiteStats|. Hence the following lines are
   // necessary to ensure |RemoveSiteStatsImpl| gets called when expected.
@@ -218,24 +208,26 @@ void HttpPasswordStoreMigratorTest::TestFullStore(bool is_hsts) {
 // this is not the case.
 void HttpPasswordStoreMigratorTest::TestMigratorDeletionByConsumer(
     bool is_hsts) {
-  // Setup expectations on store and client.
+  // Setup expectations on store and network_context.
   EXPECT_CALL(store(), GetLogins(_, _));
-  EXPECT_CALL(client(), PostHSTSQueryForHostHelper(
-                            url::Origin::Create(GURL(kTestHttpsURL))))
-      .Times(1);
+  EXPECT_CALL(mock_network_context(), IsHSTSActiveForHost(kTestHost, _))
+      .Times(1)
+      .WillOnce(testing::WithArg<1>(
+          [is_hsts](auto cb) { std::move(cb).Run(is_hsts); }));
 
   // Construct the migrator, call |OnGetPasswordStoreResults| explicitly and
   // manually delete it.
   auto migrator = std::make_unique<HttpPasswordStoreMigrator>(
-      url::Origin::Create(GURL(kTestHttpsURL)), &client(), &consumer());
-  migrator->OnGetPasswordStoreResults(
-      std::vector<std::unique_ptr<autofill::PasswordForm>>());
+      url::Origin::Create(GURL(kTestHttpsURL)), &store(),
+      &mock_network_context(), &consumer());
+
   EXPECT_CALL(consumer(), ProcessForms(_)).WillOnce(Invoke([&migrator](Unused) {
     migrator.reset();
   }));
 
-  HSTSCallback callback = client().hsts_acquire_callback();
-  std::move(callback).Run(is_hsts ? HSTSResult::kYes : HSTSResult::kNo);
+  migrator->OnGetPasswordStoreResults(
+      std::vector<std::unique_ptr<autofill::PasswordForm>>());
+
   // We expect a potential call to |RemoveSiteStatsImpl| which is a async task
   // posted from |PasswordStore::RemoveSiteStats|. Hence the following lines are
   // necessary to ensure |RemoveSiteStatsImpl| gets called when expected.

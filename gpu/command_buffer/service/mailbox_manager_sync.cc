@@ -15,7 +15,7 @@
 #include "ui/gl/gl_fence.h"
 #include "ui/gl/gl_implementation.h"
 
-#if !defined(OS_MACOSX)
+#if !defined(OS_MAC)
 #include "ui/gl/gl_fence_egl.h"
 #endif
 
@@ -27,7 +27,7 @@ namespace {
 base::LazyInstance<base::Lock>::DestructorAtExit g_lock =
     LAZY_INSTANCE_INITIALIZER;
 
-#if !defined(OS_MACOSX)
+#if !defined(OS_MAC)
 typedef std::map<SyncToken, std::unique_ptr<gl::GLFence>> SyncTokenToFenceMap;
 base::LazyInstance<SyncTokenToFenceMap>::DestructorAtExit
     g_sync_point_to_fence = LAZY_INSTANCE_INITIALIZER;
@@ -36,7 +36,7 @@ base::LazyInstance<base::queue<SyncTokenToFenceMap::iterator>>::DestructorAtExit
 #endif
 
 void CreateFenceLocked(const SyncToken& sync_token) {
-#if !defined(OS_MACOSX)
+#if !defined(OS_MAC)
   g_lock.Get().AssertAcquired();
   if (gl::GetGLImplementation() == gl::kGLImplementationMockGL ||
       gl::GetGLImplementation() == gl::kGLImplementationStubGL)
@@ -69,7 +69,7 @@ void CreateFenceLocked(const SyncToken& sync_token) {
 }
 
 void AcquireFenceLocked(const SyncToken& sync_token) {
-#if !defined(OS_MACOSX)
+#if !defined(OS_MAC)
   g_lock.Get().AssertAcquired();
   SyncTokenToFenceMap::iterator fence_it =
       g_sync_point_to_fence.Get().find(sync_token);

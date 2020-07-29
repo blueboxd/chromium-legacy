@@ -6,6 +6,7 @@
 
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/app/vector_icons/vector_icons.h"
+#include "chrome/browser/nearby_sharing/nearby_sharing_service.h"
 #include "chrome/browser/notifications/notification_display_service.h"
 #include "chrome/browser/notifications/notification_display_service_factory.h"
 #include "chrome/grit/generated_resources.h"
@@ -119,9 +120,11 @@ base::string16 GetProgressNotificationTitle(const ShareTarget& share_target) {
 }
 
 base::string16 GetConnectionRequestNotificationMessage(
-    const ShareTarget& share_target) {
+    const ShareTarget& share_target,
+    const TransferMetadata& transfer_metadata) {
   base::string16 attachments = GetAttachmentsString(share_target);
   base::string16 device_name = base::ASCIIToUTF16(share_target.device_name);
+  // TODO(crbug.com/1102348): Show |transfer_metadata.token()| if present.
 
   return l10n_util::GetStringFUTF16(
       IDS_NEARBY_NOTIFICATION_CONNECTION_REQUEST_MESSAGE, device_name,
@@ -135,10 +138,66 @@ gfx::Image GetImageFromShareTarget(const ShareTarget& share_target) {
 
 }  // namespace
 
-NearbyNotificationManager::NearbyNotificationManager(Profile* profile)
-    : profile_(profile) {}
+NearbyNotificationManager::NearbyNotificationManager(
+    Profile* profile,
+    NearbySharingService* nearby_service)
+    : profile_(profile), nearby_service_(nearby_service) {
+  DCHECK(profile_);
+  DCHECK(nearby_service_);
+  nearby_service_->RegisterReceiveSurface(
+      this, NearbySharingService::ReceiveSurfaceState::kBackground);
+  nearby_service_->RegisterSendSurface(
+      this, this, NearbySharingService::SendSurfaceState::kBackground);
+}
 
-NearbyNotificationManager::~NearbyNotificationManager() = default;
+NearbyNotificationManager::~NearbyNotificationManager() {
+  nearby_service_->UnregisterReceiveSurface(this);
+  nearby_service_->UnregisterSendSurface(this, this);
+}
+
+void NearbyNotificationManager::OnTransferUpdate(
+    const ShareTarget& share_target,
+    const TransferMetadata& transfer_metadata) {
+  switch (transfer_metadata.status()) {
+    case TransferMetadata::Status::kInProgress:
+      ShowProgress(share_target, transfer_metadata);
+      break;
+    case TransferMetadata::Status::kRejected:
+    case TransferMetadata::Status::kAwaitingRemoteAcceptanceFailed:
+    case TransferMetadata::Status::kExternalProviderLaunched:
+    case TransferMetadata::Status::kCancelled:
+      CloseTransfer();
+      break;
+    case TransferMetadata::Status::kAwaitingLocalConfirmation:
+    case TransferMetadata::Status::kAwaitingRemoteAcceptance:
+      // Only incoming transfers are handled via notifications.
+      if (share_target.is_incoming)
+        ShowConnectionRequest(share_target, transfer_metadata);
+      break;
+    case TransferMetadata::Status::kComplete:
+      ShowSuccess(share_target);
+      break;
+    case TransferMetadata::Status::kTimedOut:
+    case TransferMetadata::Status::kFailed:
+    case TransferMetadata::Status::kNotEnoughSpace:
+    case TransferMetadata::Status::kUnsupportedAttachmentType:
+      ShowFailure(share_target);
+      break;
+    default:
+      if (transfer_metadata.is_final_status())
+        ShowFailure(share_target);
+      break;
+  }
+}
+
+void NearbyNotificationManager::OnShareTargetDiscovered(
+    ShareTarget share_target) {
+  // Nothing to do here.
+}
+
+void NearbyNotificationManager::OnShareTargetLost(ShareTarget share_target) {
+  // Nothing to do here.
+}
 
 void NearbyNotificationManager::ShowProgress(
     const ShareTarget& share_target,
@@ -150,7 +209,12 @@ void NearbyNotificationManager::ShowProgress(
   notification.set_type(message_center::NOTIFICATION_TYPE_PROGRESS);
   notification.set_title(GetProgressNotificationTitle(share_target));
   notification.set_never_timeout(true);
-  notification.set_progress(100.0 * transfer_metadata.progress());
+
+  // Show indeterminate progress while waiting for remote device to accept.
+  if (transfer_metadata.status() == TransferMetadata::Status::kInProgress)
+    notification.set_progress(100.0 * transfer_metadata.progress());
+  else
+    notification.set_progress(-1);
 
   std::vector<message_center::ButtonInfo> notification_actions;
   notification_actions.emplace_back(l10n_util::GetStringUTF16(IDS_APP_CANCEL));
@@ -162,7 +226,8 @@ void NearbyNotificationManager::ShowProgress(
 }
 
 void NearbyNotificationManager::ShowConnectionRequest(
-    const ShareTarget& share_target) {
+    const ShareTarget& share_target,
+    const TransferMetadata& transfer_metadata) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
 
   message_center::Notification notification =
@@ -170,13 +235,16 @@ void NearbyNotificationManager::ShowConnectionRequest(
   notification.set_title(l10n_util::GetStringUTF16(
       IDS_NEARBY_NOTIFICATION_CONNECTION_REQUEST_TITLE));
   notification.set_message(
-      GetConnectionRequestNotificationMessage(share_target));
+      GetConnectionRequestNotificationMessage(share_target, transfer_metadata));
   notification.set_icon(GetImageFromShareTarget(share_target));
   notification.set_never_timeout(true);
 
   std::vector<message_center::ButtonInfo> notification_actions;
-  notification_actions.emplace_back(
-      l10n_util::GetStringUTF16(IDS_NEARBY_NOTIFICATION_RECEIVE_ACTION));
+  if (transfer_metadata.status() ==
+      TransferMetadata::Status::kAwaitingLocalConfirmation) {
+    notification_actions.emplace_back(
+        l10n_util::GetStringUTF16(IDS_NEARBY_NOTIFICATION_RECEIVE_ACTION));
+  }
   notification_actions.emplace_back(
       l10n_util::GetStringUTF16(IDS_NEARBY_NOTIFICATION_DECLINE_ACTION));
   notification.set_buttons(notification_actions);
@@ -199,4 +267,17 @@ void NearbyNotificationManager::ShowOnboarding() {
   NotificationDisplayServiceFactory::GetForProfile(profile_)->Display(
       NotificationHandler::Type::NEARBY_SHARE, notification,
       /*metadata=*/nullptr);
+}
+
+void NearbyNotificationManager::ShowSuccess(const ShareTarget& share_target) {
+  // TODO(crbug.com/1102348): Show success notification.
+}
+
+void NearbyNotificationManager::ShowFailure(const ShareTarget& share_target) {
+  // TODO(crbug.com/1102348): Show failure notification.
+}
+
+void NearbyNotificationManager::CloseTransfer() {
+  NotificationDisplayServiceFactory::GetForProfile(profile_)->Close(
+      NotificationHandler::Type::NEARBY_SHARE, kNearbyNotificationId);
 }

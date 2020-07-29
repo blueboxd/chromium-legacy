@@ -1767,7 +1767,7 @@ std::vector<GURL> GetUrlsToOpen(const std::vector<const BookmarkNode*>& nodes) {
                 }
                  style:UIAlertActionStyleDefault];
 
-  if (IsMultiwindowSupported()) {
+  if (IsMultipleScenesSupported()) {
     NSString* title =
         l10n_util::GetNSString(IDS_IOS_CONTENT_CONTEXT_OPENINNEWWINDOW);
     id<ApplicationCommands> windowOpener = HandlerForProtocol(
@@ -2182,14 +2182,14 @@ std::vector<GURL> GetUrlsToOpen(const std::vector<const BookmarkNode*>& nodes) {
   if (node->is_url()) {
     actionProvider = ^(NSArray<UIMenuElement*>* suggestedActions) {
       // Record that this context menu was shown to the user.
-      RecordMenuShown(MenuScenario::BookmarkEntry);
+      RecordMenuShown(MenuScenario::kBookmarkEntry);
 
       ActionFactory* actionFactory =
-          [[ActionFactory alloc] initWithScenario:MenuScenario::BookmarkEntry];
+          [[ActionFactory alloc] initWithScenario:MenuScenario::kBookmarkEntry];
 
       UIAction* copyAction = [actionFactory actionToCopyURL:node->url()];
 
-      return [UIMenu menuWithTitle:[NSString string] children:@[ copyAction ]];
+      return [UIMenu menuWithTitle:@"" children:@[ copyAction ]];
     };
   }
 

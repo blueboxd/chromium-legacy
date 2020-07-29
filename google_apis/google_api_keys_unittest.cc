@@ -28,7 +28,7 @@
 // the Mac and Linux linkers).  Therefore these tests are only built
 // and run on Mac and Linux, which should provide plenty of coverage
 // since there are no platform-specific bits in this code.
-#if defined(OS_LINUX) || defined(OS_MACOSX)
+#if defined(OS_LINUX) || defined(OS_APPLE)
 
 // We need to include everything included by google_api_keys.cc once
 // at global scope so that things like STL and classes from base don't
@@ -45,7 +45,7 @@
 #include "base/logging.h"
 #include "base/strings/stringize_macros.h"
 
-#if defined(OS_MACOSX)
+#if defined(OS_APPLE)
 #include "google_apis/google_api_keys_mac.h"
 #endif
 
@@ -668,4 +668,4 @@ TEST_F(GoogleAPIKeysTest, OverrideAllKeysUsingConfig) {
             testcase::GetOAuth2ClientSecret(testcase::CLIENT_REMOTING_HOST));
 }
 
-#endif  // defined(OS_LINUX) || defined(OS_MACOSX)
+#endif  // defined(OS_LINUX) || defined(OS_APPLE)

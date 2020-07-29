@@ -37,7 +37,6 @@ class Size;
 
 namespace content {
 
-class BrowserContext;
 class FrameTree;
 class RenderFrameHostImpl;
 class RenderViewHost;
@@ -104,8 +103,7 @@ class CONTENT_EXPORT RenderViewHostDelegate {
 
   // Return a dummy RendererPreferences object that will be used by the renderer
   // associated with the owning RenderViewHost.
-  virtual blink::mojom::RendererPreferences GetRendererPrefs(
-      BrowserContext* browser_context) const = 0;
+  virtual blink::mojom::RendererPreferences GetRendererPrefs() const = 0;
 
   // Notification from the renderer host that blocked UI event occurred.
   // This happens when there are tab-modal dialogs. In this case, the

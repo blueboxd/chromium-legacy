@@ -85,7 +85,7 @@
 #include "ui/base/ui_base_features.h"
 #include "ui/gfx/color_palette.h"
 
-#if defined(OS_MACOSX)
+#if defined(OS_MAC)
 #include "base/mac/scoped_nsautorelease_pool.h"
 #endif
 
@@ -390,7 +390,7 @@ IN_PROC_BROWSER_TEST_F(SessionRestoreTest, MAYBE_RestoreMinimizedWindow) {
   Browser* restored = QuitBrowserAndRestore(browser(), 3);
   EXPECT_EQ(1, restored->tab_strip_model()->count());
 
-#if defined(OS_MACOSX)
+#if defined(OS_MAC)
   // On macOS, minimized windows are neither active nor shown, to avoid causing
   // space switches during session restore.
   EXPECT_FALSE(restored->window()->IsActive());
@@ -1493,7 +1493,7 @@ IN_PROC_BROWSER_TEST_F(SessionRestoreTest, ActiveIndexUpdatedAtInsert) {
   ASSERT_EQ(new_browser->tab_strip_model()->active_index(), 1);
 }
 
-#if !defined(OS_CHROMEOS) && !defined(OS_MACOSX)
+#if !defined(OS_CHROMEOS) && !defined(OS_MAC)
 // This test doesn't apply to the Mac version; see GetCommandLineForRelaunch
 // for details. It was disabled for a long time so might never have worked on
 // ChromeOS.
@@ -1525,7 +1525,7 @@ IN_PROC_BROWSER_TEST_F(SessionRestoreTest,
             new_browser->tab_strip_model()->GetActiveWebContents()->GetURL());
 }
 
-#endif  // !defined(OS_CHROMEOS) && !defined(OS_MACOSX)
+#endif  // !defined(OS_CHROMEOS) && !defined(OS_MAC)
 
 // Creates two windows, closes one, restores, make sure only one window open.
 IN_PROC_BROWSER_TEST_F(SessionRestoreTest, TwoWindowsCloseOneRestoreOnlyOne) {
@@ -1675,7 +1675,7 @@ IN_PROC_BROWSER_TEST_F(SessionRestoreTest, RestorePinnedSelectedTab) {
 // Regression test for crbug.com/240156. When restoring tabs with a navigation,
 // the navigation should take active tab focus.
 // Flaky on Mac. http://crbug.com/656211.
-#if defined(OS_MACOSX)
+#if defined(OS_MAC)
 #define MAYBE_RestoreWithNavigateSelectedTab \
   DISABLED_RestoreWithNavigateSelectedTab
 #else
@@ -2021,7 +2021,7 @@ IN_PROC_BROWSER_TEST_F(SessionRestoreTest, RestoreAllBrowsers) {
 
 // PRE_CorrectLoadingOrder is flaky on ChromeOS MSAN and Mac.
 // See http://crbug.com/493167.
-#if (defined(OS_CHROMEOS) && defined(MEMORY_SANITIZER)) || defined(OS_MACOSX)
+#if (defined(OS_CHROMEOS) && defined(MEMORY_SANITIZER)) || defined(OS_MAC)
 #define MAYBE_PRE_CorrectLoadingOrder DISABLED_PRE_CorrectLoadingOrder
 #define MAYBE_CorrectLoadingOrder DISABLED_CorrectLoadingOrder
 #else

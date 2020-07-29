@@ -317,6 +317,33 @@ TEST_P(PingManagerTest, SendPing) {
   }
 
   {
+    // Test registrationEvent.
+    Component component(*update_context, "abc");
+    component.crx_component_ = CrxComponent();
+    component.Registration(base::Version("1.2.3.4"));
+    component.AppendEvent(component.MakeEventRegistration());
+
+    EXPECT_TRUE(interceptor->ExpectRequest(std::make_unique<AnyMatch>()));
+    ping_manager_->SendPing(component, MakePingCallback());
+    RunThreads();
+
+    EXPECT_EQ(1, interceptor->GetCount()) << interceptor->GetRequestsAsString();
+    const auto msg = interceptor->GetRequestBody(0);
+
+    const auto root = base::JSONReader::Read(msg);
+    ASSERT_TRUE(root);
+    const auto* request = root->FindKey("request");
+    const auto& app = request->FindKey("app")->GetList()[0];
+    EXPECT_EQ("abc", app.FindKey("appid")->GetString());
+    EXPECT_EQ("1.2.3.4", app.FindKey("version")->GetString());
+    const auto& event = app.FindKey("event")->GetList()[0];
+    EXPECT_EQ(1, event.FindKey("eventresult")->GetInt());
+    EXPECT_EQ(2, event.FindKey("eventtype")->GetInt());
+    EXPECT_EQ("1.2.3.4", event.FindKey("nextversion")->GetString());
+    interceptor->Reset();
+  }
+
+  {
     // Test the download metrics.
     Component component(*update_context, "abc");
     component.crx_component_ = CrxComponent();

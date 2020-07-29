@@ -411,4 +411,59 @@ IN_PROC_BROWSER_TEST_F(PasswordChangeTokenCheck, TokenRecentlyChecked) {
   ASSERT_EQ(notifications.size(), 0u);
 }
 
+class TokenAfterCrash : public MixinBasedInProcessBrowserTest {
+ public:
+  TokenAfterCrash() {
+    login_mixin_.set_session_restore_enabled();
+    login_mixin_.set_should_obtain_handles(true);
+    login_mixin_.AppendRegularUsers(1);
+  }
+
+ protected:
+  LoginManagerMixin login_mixin_{&mixin_host_};
+};
+
+// Test that token handle is downloaded on browser crash.
+IN_PROC_BROWSER_TEST_F(TokenAfterCrash, PRE_NoToken) {
+  auto user_info = login_mixin_.users()[0];
+  login_mixin_.LoginWithDefaultContext(user_info);
+  login_mixin_.WaitForActiveSession();
+
+  EXPECT_TRUE(UserSessionManager::GetInstance()
+                  ->token_handle_backfill_tried_for_testing());
+  // Token should not be there as there are no real auth data.
+  EXPECT_TRUE(TokenHandleUtil::ShouldObtainHandle(user_info.account_id));
+}
+
+IN_PROC_BROWSER_TEST_F(TokenAfterCrash, NoToken) {
+  auto user_info = login_mixin_.users()[0];
+  EXPECT_TRUE(UserSessionManager::GetInstance()
+                  ->token_handle_backfill_tried_for_testing());
+  // Token should not be there as there are no real auth data.
+  EXPECT_TRUE(TokenHandleUtil::ShouldObtainHandle(user_info.account_id));
+}
+
+// Test that token handle is not downloaded on browser crash because it's
+// already there.
+IN_PROC_BROWSER_TEST_F(TokenAfterCrash, PRE_ValidToken) {
+  auto user_info = login_mixin_.users()[0];
+  login_mixin_.LoginWithDefaultContext(user_info);
+  login_mixin_.WaitForActiveSession();
+
+  EXPECT_TRUE(UserSessionManager::GetInstance()
+                  ->token_handle_backfill_tried_for_testing());
+  // Token should not be there as there are no real auth data.
+  EXPECT_TRUE(TokenHandleUtil::ShouldObtainHandle(user_info.account_id));
+
+  // Emulate successful token fetch.
+  TokenHandleUtil::StoreTokenHandle(user_info.account_id, kTokenHandle);
+  EXPECT_FALSE(TokenHandleUtil::ShouldObtainHandle(user_info.account_id));
+}
+
+IN_PROC_BROWSER_TEST_F(TokenAfterCrash, ValidToken) {
+  auto user_info = login_mixin_.users()[0];
+  EXPECT_FALSE(UserSessionManager::GetInstance()
+                   ->token_handle_backfill_tried_for_testing());
+}
+
 }  // namespace chromeos

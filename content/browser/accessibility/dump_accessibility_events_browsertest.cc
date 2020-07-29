@@ -736,7 +736,7 @@ IN_PROC_BROWSER_TEST_P(DumpAccessibilityEventsTest,
 }
 
 // TODO(aboxhall): Fix flakiness on Windows and Mac
-#if defined(OS_WIN) || defined(OS_MACOSX)
+#if defined(OS_WIN) || defined(OS_MAC)
 #define MAYBE_AccessibilityEventsReportValidityInvalidField \
   DISABLED_AccessibilityEventsReportValidityInvalidField
 #else

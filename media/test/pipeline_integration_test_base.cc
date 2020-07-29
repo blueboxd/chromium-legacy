@@ -126,7 +126,7 @@ PipelineIntegrationTestBase::PipelineIntegrationTestBase()
 // Use a UI type message loop on macOS, because it doesn't seem to schedule
 // callbacks with enough precision to drive our fake audio output. See
 // https://crbug.com/1014646 for more details.
-#if defined(OS_MACOSX)
+#if defined(OS_MAC)
       task_environment_(base::test::TaskEnvironment::MainThreadType::UI),
 #endif
       hashing_enabled_(false),

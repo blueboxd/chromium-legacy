@@ -62,7 +62,7 @@
 #include "url/url_constants.h"
 #endif
 
-#if defined(OS_MACOSX)
+#if defined(OS_MAC)
 #include "chrome/test/base/launchservices_utils_mac.h"
 #endif
 
@@ -439,7 +439,7 @@ class ProtocolHandlerTest : public InProcessBrowserTest {
 };
 
 IN_PROC_BROWSER_TEST_F(ProtocolHandlerTest, CustomHandler) {
-#if defined(OS_MACOSX)
+#if defined(OS_MAC)
   ASSERT_TRUE(test::RegisterAppWithLaunchServices());
 #endif
   AddProtocolHandler("news", "https://abc.xyz/?url=%s");

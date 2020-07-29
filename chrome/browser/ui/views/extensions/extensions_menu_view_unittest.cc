@@ -202,7 +202,7 @@ ExtensionsMenuViewUnitTest::GetPinnedExtensionViews() {
     // Ensure we don't downcast the ExtensionsToolbarButton.
     if (child->GetClassName() == ToolbarActionView::kClassName) {
       ToolbarActionView* const action = static_cast<ToolbarActionView*>(child);
-#if defined(OS_MACOSX)
+#if defined(OS_MAC)
       // TODO(crbug.com/1045212): Use IsActionVisibleOnToolbar() because it
       // queries the underlying model and not GetVisible(), as that relies on an
       // animation running, which is not reliable in unit tests on Mac.
@@ -247,7 +247,7 @@ void ExtensionsMenuViewUnitTest::LayoutMenuIfNecessary() {
 }
 
 void ExtensionsMenuViewUnitTest::WaitForAnimation() {
-#if defined(OS_MACOSX)
+#if defined(OS_MAC)
   // TODO(crbug.com/1045212): we avoid using animations on Mac due to the lack
   // of support in unit tests. Therefore this is a no-op.
 #else

@@ -4,7 +4,7 @@
 
 #include "build/build_config.h"
 // Disable all tests in this file on Mac for flake (crbug.com/1079249)
-#if !defined(OS_MACOSX)
+#if !defined(OS_MAC)
 
 #include <string>
 #include <tuple>
@@ -3512,4 +3512,4 @@ INSTANTIATE_TEST_SUITE_P(All,
                          testing::Combine(testing::Bool(), testing::Bool()));
 }  // namespace autofill
 
-#endif  // !defined(OS_MACOSX)
+#endif  // !defined(OS_MAC)

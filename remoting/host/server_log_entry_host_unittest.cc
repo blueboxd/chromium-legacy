@@ -47,7 +47,7 @@ TEST(ServerLogEntryHostTest, AddHostFields) {
 #if defined(OS_WIN)
   key_value_pairs["os-name"] = "Windows";
   keys.insert("os-version");
-#elif defined(OS_MACOSX)
+#elif defined(OS_APPLE)
   key_value_pairs["os-name"] = "Mac";
   keys.insert("os-version");
 #elif defined(OS_CHROMEOS)

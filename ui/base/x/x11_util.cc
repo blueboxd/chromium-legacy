@@ -258,25 +258,6 @@ x11::Window CreateDummyWindow(const std::string& name) {
   return window;
 }
 
-x11::KeyCode KeysymToKeycode(x11::Connection* connection, x11::KeySym keysym) {
-  uint8_t min_keycode = static_cast<uint8_t>(connection->setup().min_keycode);
-  uint8_t max_keycode = static_cast<uint8_t>(connection->setup().max_keycode);
-  uint8_t count = max_keycode - min_keycode + 1;
-  auto future =
-      connection->GetKeyboardMapping({connection->setup().min_keycode, count});
-  if (auto reply = future.Sync()) {
-    DCHECK_EQ(count * reply->keysyms_per_keycode,
-              static_cast<int>(reply->keysyms.size()));
-    for (size_t i = 0; i < reply->keysyms.size(); i++) {
-      if (reply->keysyms[i] == keysym) {
-        return static_cast<x11::KeyCode>(min_keycode +
-                                         i / reply->keysyms_per_keycode);
-      }
-    }
-  }
-  return {};
-}
-
 void DrawPixmap(x11::Connection* connection,
                 x11::VisualId visual,
                 x11::Drawable drawable,

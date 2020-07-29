@@ -32,8 +32,8 @@ class AffiliationService;
 // Currently, the only supported use-case is obtaining Android applications
 // affiliated with the web site containing the observed form. This is achieved
 // by implementing the "proactive fetching" strategy for interacting with the
-// AffiliationService (see affiliation_service.h for details), with Android
-// applications playing the role of facet Y.
+// AffiliationService (see android_affiliation_service.h for details), with
+// Android applications playing the role of facet Y.
 //
 // More specifically, this class prefetches affiliation information on start-up
 // for all Android applications that the PasswordStore has credentials stored

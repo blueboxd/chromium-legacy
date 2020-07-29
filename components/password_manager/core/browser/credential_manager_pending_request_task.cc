@@ -12,6 +12,7 @@
 
 #include "base/bind.h"
 #include "base/callback_helpers.h"
+#include "base/containers/flat_set.h"
 #include "base/metrics/user_metrics.h"
 #include "base/stl_util.h"
 #include "components/autofill/core/common/password_form.h"
@@ -45,24 +46,26 @@ void FilterDuplicates(
   std::vector<std::unique_ptr<autofill::PasswordForm>> federated_forms;
   // The key is [username, signon_realm]. signon_realm is used only for PSL
   // matches because those entries have it in the UI.
-  std::map<std::pair<base::string16, std::string>,
-           std::unique_ptr<autofill::PasswordForm>>
-      credentials;
+  auto get_key = [](const auto& form) {
+    return std::make_pair(form->username_value, form->is_public_suffix_match
+                                                    ? form->signon_realm
+                                                    : std::string());
+  };
+  auto cmp = [&](const auto& lhs, const auto& rhs) {
+    return get_key(lhs) < get_key(rhs);
+  };
+  base::flat_set<std::unique_ptr<autofill::PasswordForm>, decltype(cmp)>
+      credentials(cmp);
   for (auto& form : *forms) {
     if (!form->federation_origin.opaque()) {
       federated_forms.push_back(std::move(form));
     } else {
-      auto key = std::make_pair(
-          form->username_value,
-          form->is_public_suffix_match ? form->signon_realm : std::string());
-      auto it = credentials.find(key);
-      if (it == credentials.end() || IsBetterMatch(*form, *it->second))
-        credentials[key] = std::move(form);
+      auto result = credentials.insert(std::move(form));
+      if (!result.second && IsBetterMatch(*form, **result.first))
+        *result.first = std::move(form);
     }
   }
-  forms->clear();
-  for (auto& form_pair : credentials)
-    forms->push_back(std::move(form_pair.second));
+  *forms = std::move(credentials).extract();
   std::move(federated_forms.begin(), federated_forms.end(),
             std::back_inserter(*forms));
 }
@@ -124,14 +127,10 @@ void CredentialManagerPendingRequestTask::OnGetPasswordStoreResultsFrom(
     scoped_refptr<PasswordStore> store,
     std::vector<std::unique_ptr<autofill::PasswordForm>> results) {
   // localhost is a secure origin but not https.
-  if (store.get() == delegate_->client()->GetProfilePasswordStore() &&
-      results.empty() && origin_.scheme() == url::kHttpsScheme) {
-    // TODO(crbug.com/1093286): Consider also supporting HTTP->HTTPS migration
-    // for the account store.
-
+  if (results.empty() && origin_.scheme() == url::kHttpsScheme) {
     // Try to migrate the HTTP passwords and process them later.
-    http_migrator_ = std::make_unique<HttpPasswordStoreMigrator>(
-        origin_, delegate_->client(), this);
+    http_migrators_[store.get()] = std::make_unique<HttpPasswordStoreMigrator>(
+        origin_, store.get(), delegate_->client()->GetNetworkContext(), this);
     return;
   }
   AggregatePasswordStoreResults(std::move(results));

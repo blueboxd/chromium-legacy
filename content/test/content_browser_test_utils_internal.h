@@ -236,7 +236,7 @@ class ShowWidgetMessageFilter : public BrowserMessageFilter,
   void OnShowWidget(int route_id, const gfx::Rect& initial_rect);
 
   // WebContentsObserver:
-#if defined(OS_MACOSX) || defined(OS_ANDROID)
+#if defined(OS_MAC) || defined(OS_ANDROID)
   bool ShowPopupMenu(
       RenderFrameHost* render_frame_host,
       mojo::PendingRemote<blink::mojom::PopupMenuClient>* popup_client,

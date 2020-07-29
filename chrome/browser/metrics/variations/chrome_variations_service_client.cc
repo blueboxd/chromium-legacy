@@ -21,7 +21,7 @@
 #include "chrome/browser/chromeos/settings/cros_settings.h"
 #endif
 
-#if defined(OS_WIN) || defined(OS_MACOSX)
+#if defined(OS_WIN) || defined(OS_MAC)
 #include "base/enterprise_util.h"
 #elif defined(OS_CHROMEOS)
 #include "chromeos/tpm/install_attributes.h"
@@ -78,7 +78,7 @@ bool ChromeVariationsServiceClient::OverridesRestrictParameter(
 }
 
 bool ChromeVariationsServiceClient::IsEnterprise() {
-#if defined(OS_WIN) || defined(OS_MACOSX)
+#if defined(OS_WIN) || defined(OS_MAC)
   return base::IsMachineExternallyManaged();
 #elif defined(OS_CHROMEOS)
   return chromeos::InstallAttributes::Get()->IsEnterpriseManaged();

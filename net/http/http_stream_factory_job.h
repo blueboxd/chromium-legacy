@@ -147,13 +147,6 @@ class HttpStreamFactory::Job
   // Note that this can be overwritten by specifying a QUIC proxy in
   // |proxy_info|, or by setting
   // HttpNetworkSession::Params::origins_to_force_quic_on.
-  //
-  // If |alternative_proxy_server| is a valid proxy server, then the Job will
-  // use that instead of using ProxyResolutionService for proxy resolution.
-  // Further, if |alternative_proxy_server| is a valid but bad proxy, then
-  // fallback proxies are not used. It is illegal to call this constructor with
-  // a valid |alternative_proxy_server| and an |alternate_protocol| different
-  // from kProtoUnknown.
   Job(Delegate* delegate,
       JobType job_type,
       HttpNetworkSession* session,
@@ -166,7 +159,6 @@ class HttpStreamFactory::Job
       GURL origin_url,
       NextProto alternative_protocol,
       quic::ParsedQuicVersion quic_version,
-      const ProxyServer& alternative_proxy_server,
       bool is_websocket,
       bool enable_ip_based_pooling,
       NetLog* net_log);
@@ -217,10 +209,6 @@ class HttpStreamFactory::Job
   ResolveErrorInfo resolve_error_info() const;
 
   JobType job_type() const { return job_type_; }
-
-  const ProxyServer alternative_proxy_server() const {
-    return alternative_proxy_server_;
-  }
 
   bool using_existing_quic_session() const {
     return using_existing_quic_session_;
@@ -380,10 +368,6 @@ class HttpStreamFactory::Job
   // original request when host mapping rules are set-up.
   const GURL origin_url_;
 
-  // Alternative proxy server that should be used by |this| to fetch the
-  // request.
-  const ProxyServer alternative_proxy_server_;
-
   // True if request is for Websocket.
   const bool is_websocket_;
 
@@ -517,22 +501,6 @@ class HttpStreamFactory::JobFactory {
       GURL origin_url,
       NextProto alternative_protocol,
       quic::ParsedQuicVersion quic_version,
-      bool is_websocket,
-      bool enable_ip_based_pooling,
-      NetLog* net_log);
-
-  virtual std::unique_ptr<HttpStreamFactory::Job> CreateAltProxyJob(
-      HttpStreamFactory::Job::Delegate* delegate,
-      HttpStreamFactory::JobType job_type,
-      HttpNetworkSession* session,
-      const HttpRequestInfo& request_info,
-      RequestPriority priority,
-      const ProxyInfo& proxy_info,
-      const SSLConfig& server_ssl_config,
-      const SSLConfig& proxy_ssl_config,
-      HostPortPair destination,
-      GURL origin_url,
-      const ProxyServer& alternative_proxy_server,
       bool is_websocket,
       bool enable_ip_based_pooling,
       NetLog* net_log);

@@ -46,7 +46,7 @@ GPUTestConfig::OS GetCurrentOS() {
   if (major_version == 10)
     return GPUTestConfig::kOsWin10;
   return GPUTestConfig::kOsUnknown;
-#elif defined(OS_MACOSX)
+#elif defined(OS_MAC)
   int32_t major_version = 0;
   int32_t minor_version = 0;
   int32_t bugfix_version = 0;

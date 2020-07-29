@@ -67,7 +67,7 @@ class MockContextProvider : public ContextProvider {
     NOTREACHED();
     return nullptr;
   }
-  class GrContext* GrContext() final {
+  class GrDirectContext* GrContext() final {
     NOTREACHED();
     return nullptr;
   }

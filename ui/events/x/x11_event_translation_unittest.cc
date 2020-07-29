@@ -24,6 +24,7 @@
 #include "ui/gfx/x/connection.h"
 #include "ui/gfx/x/event.h"
 #include "ui/gfx/x/x11.h"
+#include "ui/gfx/x/x11_types.h"
 #include "ui/gfx/x/xproto.h"
 
 #if defined(USE_OZONE)
@@ -65,12 +66,12 @@ TEST(XEventTranslationTest, KeyEventXEventPropertiesSet) {
   scoped_xev.InitKeyEvent(ET_KEY_PRESSED, VKEY_A, EF_NONE);
 
   x11::Event* xev = scoped_xev;
-  XDisplay* xdisplay = xev->xlib_event().xkey.display;
+  XDisplay* xdisplay = gfx::GetXDisplay();
   // Set keyboard group in XKeyEvent
-  uint32_t state = XkbBuildCoreState(xev->xlib_event().xkey.state, 2u);
+  uint32_t state = XkbBuildCoreState(
+      static_cast<uint32_t>(xev->As<x11::KeyEvent>()->state), 2u);
   // Set IBus-specific flags
   state |= 0x3 << ui::kPropertyKeyboardIBusFlagOffset;
-  xev->xlib_event().xkey.state = state;
   xev->As<x11::KeyEvent>()->state = static_cast<x11::KeyButMask>(state);
 
   auto keyev = ui::BuildKeyEventFromXEvent(*xev);
@@ -119,7 +120,6 @@ TEST(XEventTranslationTest, BogusTimestampCorrection) {
 
   // Emulate XEvent generated 500ms before current time (non-bogus) and verify
   // the translated Event uses native event's timestamp.
-  xev->xlib_event().xkey.time = 500;
   xev->As<x11::KeyEvent>()->time = static_cast<x11::Time>(500);
   auto keyev = ui::BuildKeyEventFromXEvent(*xev);
   EXPECT_TRUE(keyev);
@@ -128,7 +128,6 @@ TEST(XEventTranslationTest, BogusTimestampCorrection) {
   // Emulate XEvent generated 1000ms ahead in time (bogus timestamp) and verify
   // the translated Event's timestamp is fixed using (i.e: EventTimeForNow()
   // instead of the original XEvent's time)
-  xev->xlib_event().xkey.time = 2000;
   xev->As<x11::KeyEvent>()->time = static_cast<x11::Time>(2000);
   auto keyev2 = ui::BuildKeyEventFromXEvent(*xev);
   EXPECT_TRUE(keyev2);
@@ -140,7 +139,6 @@ TEST(XEventTranslationTest, BogusTimestampCorrection) {
   // advance the clock by 5 minutes and set the XEvent's time to 1min, so delta
   // is 4min 1sec.
   test_clock.Advance(TimeDelta::FromMinutes(5));
-  xev->xlib_event().xkey.time = 1000 * 60;
   xev->As<x11::KeyEvent>()->time = static_cast<x11::Time>(1000 * 60);
   auto keyev3 = ui::BuildKeyEventFromXEvent(*xev);
   EXPECT_TRUE(keyev3);
@@ -160,7 +158,6 @@ TEST(XEventTranslationTest, ChangedMouseButtonFlags) {
 
   // Taking in a ButtonPress XEvent, with no button pressed.
   x11::Event& x11_event = *event;
-  x11_event.xlib_event().xbutton.button = 0;
   x11_event.As<x11::ButtonEvent>()->detail = static_cast<x11::Button>(0);
   auto mouseev2 = ui::BuildMouseEventFromXEvent(*event);
   EXPECT_TRUE(mouseev2);

@@ -101,7 +101,7 @@ IN_PROC_BROWSER_TEST_F(ClipboardApiTest, Extension) {
 }
 
 // Flaky on Mac. See https://crbug.com/900301.
-#if defined(OS_MACOSX)
+#if defined(OS_MAC)
 #define MAYBE_ExtensionNoPermission DISABLED_ExtensionNoPermission
 #else
 #define MAYBE_ExtensionNoPermission ExtensionNoPermission

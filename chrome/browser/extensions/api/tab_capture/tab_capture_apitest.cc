@@ -151,7 +151,7 @@ TEST(TabCaptureCaptureOffscreenTabTest, DetermineInitialSize) {
 }
 
 // Flaky on Mac. See https://crbug.com/764464.
-#if defined(OS_MACOSX) || (defined(OS_LINUX) && defined(MEMORY_SANITIZER))
+#if defined(OS_MAC) || (defined(OS_LINUX) && defined(MEMORY_SANITIZER))
 #define MAYBE_ApiTests DISABLED_ApiTests
 #else
 #define MAYBE_ApiTests ApiTests
@@ -162,7 +162,7 @@ IN_PROC_BROWSER_TEST_F(TabCaptureApiTest, MAYBE_ApiTests) {
   ASSERT_TRUE(RunExtensionSubtest("tab_capture", "api_tests.html")) << message_;
 }
 
-#if (defined(OS_MACOSX) && defined(ADDRESS_SANITIZER)) || defined(OS_LINUX) || \
+#if (defined(OS_MAC) && defined(ADDRESS_SANITIZER)) || defined(OS_LINUX) || \
     defined(OS_WIN)
 // Flaky on ASAN on Mac, and on Linux and Windows. See https://crbug.com/674497.
 #define MAYBE_MaxOffscreenTabs DISABLED_MaxOffscreenTabs
@@ -228,7 +228,7 @@ IN_PROC_BROWSER_TEST_F(TabCaptureApiPixelTest, OffscreenTabEndToEnd) {
   ASSERT_FALSE(profile()->HasPrimaryOTRProfile());
 }
 
-#if defined(OS_MACOSX)
+#if defined(OS_MAC)
 // Timeout on Mac. crbug.com/864250
 #define MAYBE_OffscreenTabEvilTests DISABLED_OffscreenTabEvilTests
 #elif defined(OS_LINUX) || defined(OS_CHROMEOS)

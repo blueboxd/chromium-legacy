@@ -173,22 +173,13 @@ void DisplayItemRasterInvalidator::GenerateRasterInvalidation(
       old_visual_rect.Location() != new_visual_rect.Location())
     reason = PaintInvalidationReason::kGeometry;
 
-  if (IsFullPaintInvalidationReason(reason) ||
-      old_visual_rect.Location() != new_visual_rect.Location()) {
-    // Change of selection can cause change of location of visual rect. For now
-    // simply do full invalidation. This will change when we can calculate
-    // visual rect for the selection display item and kSelection is no longer
-    // a partial invalidation reason.
-    DCHECK(IsFullPaintInvalidationReason(reason) ||
-           reason == PaintInvalidationReason::kSelection);
-    // This DCHECK will remind us to change this code when we change how we
-    // invalidate selections.
-    DCHECK(!IsFullPaintInvalidationReason(PaintInvalidationReason::kSelection));
+  if (IsFullPaintInvalidationReason(reason)) {
     GenerateFullRasterInvalidation(client, old_visual_rect, new_visual_rect,
                                    reason);
     return;
   }
 
+  DCHECK_EQ(old_visual_rect.Location(), new_visual_rect.Location());
   GenerateIncrementalRasterInvalidation(client, old_visual_rect,
                                         new_visual_rect);
 

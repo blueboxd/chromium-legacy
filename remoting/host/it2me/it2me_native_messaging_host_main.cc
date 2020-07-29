@@ -36,12 +36,12 @@
 #include "ui/gfx/x/x11.h"
 #endif  // defined(OS_LINUX)
 
-#if defined(OS_MACOSX)
+#if defined(OS_APPLE)
 #include "base/mac/mac_util.h"
 #include "base/mac/scoped_nsautorelease_pool.h"
 #include "remoting/host/desktop_capturer_checker.h"
 #include "remoting/host/mac/permission_utils.h"
-#endif  // defined(OS_MACOSX)
+#endif  // defined(OS_APPLE)
 
 #if defined(OS_WIN)
 #include <commctrl.h>
@@ -81,10 +81,10 @@ int It2MeNativeMessagingHostMain(int argc, char** argv) {
   base::CommandLine::Init(argc, argv);
   remoting::InitHostLogging();
 
-#if defined(OS_MACOSX)
+#if defined(OS_APPLE)
   // Needed so we don't leak objects when threads are created.
   base::mac::ScopedNSAutoreleasePool pool;
-#endif  // defined(OS_MACOSX)
+#endif  // defined(OS_APPLE)
 
 #if defined(REMOTING_ENABLE_BREAKPAD)
   // Initialize Breakpad as early as possible. On Mac the command-line needs to
@@ -208,7 +208,7 @@ int It2MeNativeMessagingHostMain(int argc, char** argv) {
   base::SingleThreadTaskExecutor main_task_executor(base::MessagePumpType::UI);
   base::RunLoop run_loop;
 
-#if defined(OS_MACOSX)
+#if defined(OS_APPLE)
   auto* cmd_line = base::CommandLine::ForCurrentProcess();
   if (cmd_line->HasSwitch(kCheckAccessibilityPermissionSwitchName)) {
     return mac::CanInjectInput() ? EXIT_SUCCESS : EXIT_FAILURE;
@@ -223,7 +223,7 @@ int It2MeNativeMessagingHostMain(int argc, char** argv) {
     }
     return mac::CanRecordScreen() ? EXIT_SUCCESS : EXIT_FAILURE;
   }
-#endif  // defined(OS_MACOSX)
+#endif  // defined(OS_APPLE)
 
   // NetworkChangeNotifier must be initialized after SingleThreadTaskExecutor.
   std::unique_ptr<net::NetworkChangeNotifier> network_change_notifier(

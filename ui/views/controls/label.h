@@ -10,6 +10,7 @@
 #include "base/compiler_specific.h"
 #include "base/gtest_prod_util.h"
 #include "base/macros.h"
+#include "base/optional.h"
 #include "ui/base/models/simple_menu_model.h"
 #include "ui/gfx/color_palette.h"
 #include "ui/gfx/render_text.h"
@@ -150,10 +151,9 @@ class VIEWS_EXPORT Label : public View,
   void SetVerticalAlignment(gfx::VerticalAlignment alignment);
 
   // Get or set the distance in pixels between baselines of multi-line text.
-  // Default is 0, indicating the distance between lines should be the standard
-  // one for the label's text, font list, and platform.
+  // Default is the height of the default font.
   int GetLineHeight() const;
-  void SetLineHeight(int height);
+  void SetLineHeight(int line_height);
 
   // Get or set if the label text can wrap on multiple lines; default is false.
   bool GetMultiLine() const;
@@ -393,6 +393,7 @@ class VIEWS_EXPORT Label : public View,
 
   const int text_context_;
   int text_style_;
+  base::Optional<int> line_height_;
 
   // An un-elided and single-line RenderText object used for preferred sizing.
   std::unique_ptr<gfx::RenderText> full_text_;

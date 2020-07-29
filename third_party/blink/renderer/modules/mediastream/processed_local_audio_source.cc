@@ -406,7 +406,7 @@ void ProcessedLocalAudioSource::CaptureUsingProcessor(
     base::TimeTicks audio_capture_time,
     double volume,
     bool key_pressed) {
-#if defined(OS_WIN) || defined(OS_APPLE)
+#if defined(OS_WIN) || defined(OS_MAC)
   DCHECK_LE(volume, 1.0);
 #elif (defined(OS_LINUX) && !defined(OS_CHROMEOS)) || defined(OS_OPENBSD)
   // We have a special situation on Linux where the microphone volume can be

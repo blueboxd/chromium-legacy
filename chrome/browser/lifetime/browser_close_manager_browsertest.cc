@@ -740,7 +740,7 @@ IN_PROC_BROWSER_TEST_F(BrowserCloseManagerBrowserTest,
 
 // TODO(crbug/713201):
 // BrowserCloseManagerBrowserTest.AddBeforeUnloadDuringClosing flaky on Mac.
-#if defined(OS_MACOSX)
+#if defined(OS_MAC)
 #define MAYBE_AddBeforeUnloadDuringClosing DISABLED_AddBeforeUnloadDuringClosing
 #else
 #define MAYBE_AddBeforeUnloadDuringClosing AddBeforeUnloadDuringClosing
@@ -930,7 +930,7 @@ IN_PROC_BROWSER_TEST_F(BrowserCloseManagerBrowserTest,
 // Mac has its own in-progress download prompt in app_controller_mac.mm, so
 // BrowserCloseManager should simply close all browsers. If there are no
 // browsers, it should not crash.
-#if defined(OS_MACOSX)
+#if defined(OS_MAC)
 IN_PROC_BROWSER_TEST_F(BrowserCloseManagerBrowserTest, TestWithDownloads) {
   ASSERT_NO_FATAL_FAILURE(CreateStalledDownload(browser()));
 
@@ -945,7 +945,7 @@ IN_PROC_BROWSER_TEST_F(BrowserCloseManagerBrowserTest, TestWithDownloads) {
   TestBrowserCloseManager::AttemptClose(
       TestBrowserCloseManager::NO_USER_CHOICE);
 }
-#else  // defined(OS_MACOSX)
+#else  // defined(OS_MAC)
 
 // Test shutdown with a DANGEROUS_URL download undecided.
 IN_PROC_BROWSER_TEST_F(BrowserCloseManagerBrowserTest,
@@ -1160,7 +1160,7 @@ IN_PROC_BROWSER_TEST_F(BrowserCloseManagerBrowserTest,
   EXPECT_TRUE(BrowserList::GetInstance()->empty());
 }
 
-#endif  // defined(OS_MACOSX)
+#endif  // defined(OS_MAC)
 
 #if BUILDFLAG(ENABLE_BACKGROUND_MODE)
 

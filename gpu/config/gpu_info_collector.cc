@@ -23,7 +23,7 @@
 #include "gpu/config/gpu_switches.h"
 #include "third_party/angle/src/gpu_info_util/SystemInfo.h"  // nogncheck
 #include "third_party/skia/include/core/SkGraphics.h"
-#include "third_party/skia/include/gpu/GrContext.h"
+#include "third_party/skia/include/gpu/GrDirectContext.h"
 #include "ui/gl/gl_bindings.h"
 #include "ui/gl/gl_context.h"
 #include "ui/gl/gl_implementation.h"
@@ -146,7 +146,8 @@ bool SupportsOOPRaster(const gl::GLVersionInfo& gl_info) {
     return false;
   }
 
-  sk_sp<GrContext> gr_context = GrContext::MakeGL(std::move(gl_interface));
+  sk_sp<GrDirectContext> gr_context =
+      GrDirectContext::MakeGL(std::move(gl_interface));
   if (gr_context) {
     // TODO(backer): Stash this GrContext for future use. For now, destroy.
     return true;

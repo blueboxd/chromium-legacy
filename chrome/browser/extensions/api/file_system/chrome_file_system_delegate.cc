@@ -42,7 +42,7 @@
 #include "storage/common/file_system/file_system_util.h"
 #include "ui/shell_dialogs/select_file_dialog.h"
 
-#if defined(OS_MACOSX)
+#if defined(OS_MAC)
 #include <CoreFoundation/CoreFoundation.h>
 #include "base/mac/foundation_util.h"
 #endif

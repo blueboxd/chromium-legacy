@@ -8,7 +8,7 @@
 #include "base/path_service.h"
 #include "build/build_config.h"
 
-#if defined(OS_MACOSX)
+#if defined(OS_MAC)
 #include "base/mac/bundle_locations.h"
 #endif
 

@@ -51,7 +51,7 @@ bool WebGPUTest::WebGPUSupported() const {
 
 bool WebGPUTest::WebGPUSharedImageSupported() const {
   // Currently WebGPUSharedImage is only implemented on Mac, Linux and Windows
-#if (defined(OS_MACOSX) || defined(OS_LINUX) || defined(OS_WIN)) && \
+#if (defined(OS_MAC) || defined(OS_LINUX) || defined(OS_WIN)) && \
     BUILDFLAG(USE_DAWN)
   return true;
 #else
@@ -90,7 +90,7 @@ void WebGPUTest::Initialize(const Options& options) {
   attributes.context_type = CONTEXT_TYPE_WEBGPU;
 
   static constexpr GpuMemoryBufferManager* memory_buffer_manager = nullptr;
-#if defined(OS_MACOSX)
+#if defined(OS_MAC)
   ImageFactory* image_factory = &image_factory_;
 #else
   static constexpr ImageFactory* image_factory = nullptr;

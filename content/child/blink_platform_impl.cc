@@ -61,7 +61,7 @@
 #include "content/child/webthemeengine_impl_default.h"
 #endif
 
-#if defined(OS_MACOSX)
+#if defined(OS_MAC)
 #include "content/child/webthemeengine_impl_mac.h"
 #endif
 
@@ -78,7 +78,7 @@ namespace {
 std::unique_ptr<blink::WebThemeEngine> GetWebThemeEngine() {
 #if defined(OS_ANDROID)
   return std::make_unique<WebThemeEngineAndroid>();
-#elif defined(OS_MACOSX)
+#elif defined(OS_MAC)
   return std::make_unique<WebThemeEngineMac>();
 #else
   return std::make_unique<WebThemeEngineDefault>();

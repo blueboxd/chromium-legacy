@@ -34,7 +34,7 @@
 
 #if defined(OS_WIN)
 #include "components/policy/core/common/policy_loader_win.h"
-#elif defined(OS_MACOSX)
+#elif defined(OS_APPLE)
 #include "components/policy/core/common/policy_loader_mac.h"
 #include "components/policy/core/common/preferences_mac.h"
 #elif defined(OS_POSIX) && !defined(OS_ANDROID)
@@ -401,7 +401,7 @@ std::unique_ptr<PolicyWatcher> PolicyWatcher::CreateWithTaskRunner(
 #if defined(OS_WIN)
   policy_loader.reset(new policy::PolicyLoaderWin(
       file_task_runner, L"SOFTWARE\\Policies\\Google\\Chrome"));
-#elif defined(OS_MACOSX)
+#elif defined(OS_APPLE)
   CFStringRef bundle_id = CFSTR("com.google.Chrome");
   policy_loader.reset(new policy::PolicyLoaderMac(
       file_task_runner,

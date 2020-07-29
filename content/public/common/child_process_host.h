@@ -89,7 +89,7 @@ class CONTENT_EXPORT ChildProcessHost : public IPC::Sender {
     // gdb). In this case, you'd use GetChildPath to get the real executable
     // file name, and then prepend the GDB command to the command line.
     CHILD_ALLOW_SELF = 1 << 0,
-#elif defined(OS_MACOSX)
+#elif defined(OS_MAC)
     // Note, on macOS these are not bitwise flags and each value is mutually
     // exclusive with the others. Each one of these options should correspond
     // to a value in //content/public/app/mac_helpers.gni.

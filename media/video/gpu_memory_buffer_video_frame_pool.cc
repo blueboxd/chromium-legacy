@@ -39,7 +39,7 @@
 #include "ui/gfx/color_space.h"
 #include "ui/gl/trace_util.h"
 
-#if defined(OS_MACOSX)
+#if defined(OS_MAC)
 #include "base/mac/mac_util.h"
 #include "ui/gfx/mac/io_surface.h"
 #endif
@@ -578,7 +578,7 @@ void GpuMemoryBufferVideoFramePool::PoolImpl::CreateHardwareFrame(
 #endif
 
   bool passthrough = false;
-#if defined(OS_MACOSX)
+#if defined(OS_MAC)
   if (!IOSurfaceCanSetColorSpace(video_frame->ColorSpace()))
     passthrough = true;
 #endif
@@ -946,7 +946,7 @@ void GpuMemoryBufferVideoFramePool::PoolImpl::
     case GpuVideoAcceleratorFactories::OutputFormat::XB30:
       // TODO(mcasas): Enable this for ChromeOS https://crbug.com/776093.
       allow_overlay = false;
-#if defined(OS_MACOSX)
+#if defined(OS_MAC)
       allow_overlay = IOSurfaceCanSetColorSpace(video_frame->ColorSpace());
 #endif
       // We've converted the YUV to RGB, fix the color space.

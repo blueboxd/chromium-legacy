@@ -87,7 +87,7 @@ bool CupsPrinter::ToPrinterInfo(PrinterBasicInfo* printer_info) const {
   const std::string info = GetInfo();
   const std::string make_and_model = GetMakeAndModel();
 
-#if defined(OS_MACOSX)
+#if defined(OS_MAC)
   // On Mac, "printer-info" option specifies the human-readable printer name,
   // while "printer-make-and-model" specifies the printer description.
   printer_info->display_name = info;
@@ -96,7 +96,7 @@ bool CupsPrinter::ToPrinterInfo(PrinterBasicInfo* printer_info) const {
   // On other platforms, "printer-info" specifies the printer description.
   printer_info->display_name = printer->name;
   printer_info->printer_description = info;
-#endif  // defined(OS_MACOSX)
+#endif  // defined(OS_MAC)
 
   const char* state = cupsGetOption(kCUPSOptPrinterState, printer->num_options,
                                     printer->options);

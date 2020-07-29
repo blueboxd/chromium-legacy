@@ -7,9 +7,10 @@
 #include "base/macros.h"
 #include "base/test/bind_test_util.h"
 #include "base/test/scoped_feature_list.h"
+#include "components/error_page/content/browser/net_error_auto_reloader.h"
 #include "content/public/test/url_loader_interceptor.h"
-#include "net/base/mock_network_change_notifier.h"
 #include "net/test/url_request/url_request_failed_job.h"
+#include "weblayer/browser/tab_impl.h"
 #include "weblayer/common/features.h"
 #include "weblayer/shell/browser/shell.h"
 #include "weblayer/test/weblayer_browser_test_utils.h"
@@ -58,11 +59,15 @@ class ErrorPageReloadBrowserTest : public ErrorPageBrowserTest {
 };
 
 IN_PROC_BROWSER_TEST_F(ErrorPageReloadBrowserTest, ReloadOnNetworkChanged) {
-  // Make sure the renderer thinks it's online, since that is a necessary
-  // condition for the reload.
-  net::test::ScopedMockNetworkChangeNotifier mock_network_change_notifier;
-  mock_network_change_notifier.mock_network_change_notifier()
-      ->SetConnectionType(net::NetworkChangeNotifier::CONNECTION_4G);
+  // Ensure that the NetErrorAutoReloader believes it's online, otherwise it
+  // does not attempt auto-reload on error pages.
+  content::WebContents* web_contents =
+      static_cast<TabImpl*>(shell()->tab())->web_contents();
+  error_page::NetErrorAutoReloader::CreateForWebContents(web_contents);
+  auto* reloader =
+      error_page::NetErrorAutoReloader::FromWebContents(web_contents);
+  reloader->DisableConnectionChangeObservationForTesting();
+  reloader->OnConnectionChanged(network::mojom::ConnectionType::CONNECTION_4G);
 
   ASSERT_TRUE(embedded_test_server()->Start());
   GURL url = embedded_test_server()->GetURL("/error_page");

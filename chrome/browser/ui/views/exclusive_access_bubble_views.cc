@@ -192,7 +192,7 @@ void ExclusiveAccessBubbleViews::UpdateViewContent(
   } else {
     accelerator = l10n_util::GetStringUTF16(IDS_APP_ESC_KEY);
   }
-#if defined(OS_MACOSX)
+#if defined(OS_MAC)
   // Mac keyboards use lowercase for everything except function keys, which are
   // typically reserved for system use. Since |accelerator| is placed in a box
   // to make it look like a keyboard key it looks weird to not follow suit.

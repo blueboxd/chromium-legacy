@@ -21,7 +21,7 @@
 
 // These tests don't apply to the Mac version; see GetCommandLineForRelaunch
 // for details.
-#if !defined(OS_MACOSX)
+#if !defined(OS_MAC)
 
 class ChromeMainTest : public InProcessBrowserTest {
  public:

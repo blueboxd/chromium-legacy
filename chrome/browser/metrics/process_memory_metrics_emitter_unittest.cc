@@ -37,7 +37,7 @@ using UkmEntry = ukm::builders::Memory_Experimental;
 using MetricMap = base::flat_map<const char*, int64_t>;
 
 int GetResidentValue(const MetricMap& metric_map) {
-#if defined(OS_MACOSX)
+#if defined(OS_MAC)
   // Resident set is not populated on Mac.
   return 0;
 #else
@@ -171,19 +171,18 @@ void PopulateBrowserMetrics(GlobalMemoryDumpPtr& global_dump,
 }
 
 MetricMap GetExpectedBrowserMetrics() {
-  return MetricMap(
-      {
-        {"ProcessType", static_cast<int64_t>(ProcessType::BROWSER)},
-#if !defined(OS_MACOSX)
-            {"Resident", 10},
+  return MetricMap({
+    {"ProcessType", static_cast<int64_t>(ProcessType::BROWSER)},
+#if !defined(OS_MAC)
+        {"Resident", 10},
 #endif
-            {"Malloc", 20}, {"PrivateMemoryFootprint", 30},
-            {"SharedMemoryFootprint", 35}, {"Uptime", 42},
-            {"GpuMemory", kGpuTotalMemory * 1024 * 1024},
+        {"Malloc", 20}, {"PrivateMemoryFootprint", 30},
+        {"SharedMemoryFootprint", 35}, {"Uptime", 42},
+        {"GpuMemory", kGpuTotalMemory * 1024 * 1024},
 #if defined(OS_LINUX) || defined(OS_ANDROID)
-            {"PrivateSwapFootprint", 50},
+        {"PrivateSwapFootprint", 50},
 #endif
-      });
+  });
 }
 
 void PopulateRendererMetrics(GlobalMemoryDumpPtr& global_dump,
@@ -335,7 +334,7 @@ constexpr int kNativeLibraryResidentMemoryFootprint = 27560;
 constexpr int kNativeLibraryResidentNotOrderedCodeFootprint = 12345;
 constexpr int kNativeLibraryNotResidentOrderedCodeFootprint = 23456;
 
-#if !defined(OS_MACOSX)
+#if !defined(OS_MAC)
 constexpr int kTestRendererResidentSet = 110;
 #endif
 
@@ -346,7 +345,7 @@ constexpr base::ProcessId kTestRendererPid203 = 203;
 MetricMap GetExpectedRendererMetrics() {
   return MetricMap({
     {"ProcessType", static_cast<int64_t>(ProcessType::RENDERER)},
-#if !defined(OS_MACOSX)
+#if !defined(OS_MAC)
         {"Resident", kTestRendererResidentSet},
 #endif
         {"Malloc", 120},
@@ -422,20 +421,18 @@ void PopulateGpuMetrics(GlobalMemoryDumpPtr& global_dump,
 }
 
 MetricMap GetExpectedGpuMetrics() {
-  return MetricMap(
-      {
-        {"ProcessType", static_cast<int64_t>(ProcessType::GPU)},
-#if !defined(OS_MACOSX)
-            {"Resident", 210},
+  return MetricMap({
+    {"ProcessType", static_cast<int64_t>(ProcessType::GPU)},
+#if !defined(OS_MAC)
+        {"Resident", 210},
 #endif
-            {"Malloc", 220}, {"PrivateMemoryFootprint", 230},
-            {"SharedMemoryFootprint", 235},
-            {"CommandBuffer", kGpuCommandBufferMB}, {"Uptime", 42},
-            {"GpuMemory", kGpuTotalMemory * 1024 * 1024},
+        {"Malloc", 220}, {"PrivateMemoryFootprint", 230},
+        {"SharedMemoryFootprint", 235}, {"CommandBuffer", kGpuCommandBufferMB},
+        {"Uptime", 42}, {"GpuMemory", kGpuTotalMemory * 1024 * 1024},
 #if defined(OS_LINUX) || defined(OS_ANDROID)
-            {"PrivateSwapFootprint", 50},
+        {"PrivateSwapFootprint", 50},
 #endif
-      });
+  });
 }
 
 void PopulateAudioServiceMetrics(GlobalMemoryDumpPtr& global_dump,
@@ -463,18 +460,17 @@ void PopulateAudioServiceMetrics(GlobalMemoryDumpPtr& global_dump,
 }
 
 MetricMap GetExpectedAudioServiceMetrics() {
-  return MetricMap(
-      {
-        {"ProcessType", static_cast<int64_t>(ProcessType::UTILITY)},
-#if !defined(OS_MACOSX)
-            {"Resident", 10},
+  return MetricMap({
+    {"ProcessType", static_cast<int64_t>(ProcessType::UTILITY)},
+#if !defined(OS_MAC)
+        {"Resident", 10},
 #endif
-            {"Malloc", 20}, {"PrivateMemoryFootprint", 30},
-            {"SharedMemoryFootprint", 35}, {"Uptime", 42},
+        {"Malloc", 20}, {"PrivateMemoryFootprint", 30},
+        {"SharedMemoryFootprint", 35}, {"Uptime", 42},
 #if defined(OS_LINUX) || defined(OS_ANDROID)
-            {"PrivateSwapFootprint", 50},
+        {"PrivateSwapFootprint", 50},
 #endif
-      });
+  });
 }
 
 void PopulateMetrics(GlobalMemoryDumpPtr& global_dump,
@@ -888,7 +884,7 @@ TEST_F(ProcessMemoryMetricsEmitterTest, RendererAndTotalHistogramsAreRecorded) {
                                 kTestRendererPrivateMemoryFootprint, 2);
   histograms.ExpectUniqueSample("Memory.Renderer.SharedMemoryFootprint",
                                 kTestRendererSharedMemoryFootprint, 2);
-#if defined(OS_MACOSX)
+#if defined(OS_MAC)
   histograms.ExpectTotalCount("Memory.Renderer.ResidentSet", 0);
 #else
   histograms.ExpectUniqueSample("Memory.Renderer.ResidentSet",
@@ -901,7 +897,7 @@ TEST_F(ProcessMemoryMetricsEmitterTest, RendererAndTotalHistogramsAreRecorded) {
                                 2 * kTestRendererPrivateMemoryFootprint, 1);
   histograms.ExpectUniqueSample("Memory.Total.SharedMemoryFootprint",
                                 2 * kTestRendererSharedMemoryFootprint, 1);
-#if defined(OS_MACOSX)
+#if defined(OS_MAC)
   histograms.ExpectTotalCount("Memory.Total.ResidentSet", 0);
 #else
   histograms.ExpectUniqueSample("Memory.Total.ResidentSet",

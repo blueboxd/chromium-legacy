@@ -49,7 +49,8 @@ CRWSessionStorage* SessionStorageBuilder::BuildStorage(
        ++index) {
     web::NavigationItemImpl* item =
         navigation_manager->GetNavigationItemImplAtIndex(index);
-    if (item->ShouldSkipSerialization()) {
+    if (item->ShouldSkipSerialization() ||
+        item->GetURL().spec().size() > url::kMaxURLChars) {
       if (index <= originalIndex) {
         session_storage.lastCommittedItemIndex--;
       }

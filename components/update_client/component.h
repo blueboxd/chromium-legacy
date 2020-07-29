@@ -57,6 +57,9 @@ class Component {
   // Sets the uninstall state for this component.
   void Uninstall(const base::Version& cur_version, int reason);
 
+  // Set the registration state for this component.
+  void Registration(const base::Version& cur_version);
+
   // Called by the UpdateEngine when an update check for this component is done.
   void SetUpdateCheckResult(
       const base::Optional<ProtocolParser::Result>& result,
@@ -346,6 +349,18 @@ class Component {
     void DoHandle() override;
   };
 
+  class StateRegistration : public State {
+   public:
+    explicit StateRegistration(Component* component);
+    ~StateRegistration() override;
+
+   private:
+    // State overrides.
+    void DoHandle() override;
+
+    DISALLOW_COPY_AND_ASSIGN(StateRegistration);
+  };
+
   class StateRun : public State {
    public:
     explicit StateRun(Component* component);
@@ -388,6 +403,7 @@ class Component {
   base::Value MakeEventDownloadMetrics(
       const CrxDownloader::DownloadMetrics& download_metrics) const;
   base::Value MakeEventUninstalled() const;
+  base::Value MakeEventRegistration() const;
   base::Value MakeEventActionRun(bool succeeded,
                                  int error_code,
                                  int extra_code1) const;

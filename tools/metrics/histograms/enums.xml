@@ -2181,7 +2181,7 @@ Unknown properties are collapsed to zero. -->
   <int value="25" label="SET_PROXY_OVERRIDE">
     ProxyController#setProxyOverride(Executor,Runnable)
   </int>
-  <int value="26" label="SET_SAFE_BROWSING_WHITELIST">
+  <int value="26" label="SET_SAFE_BROWSING_ALLOWLIST_DEPRECATED_NAME">
     WebViewCompat#setSafeBrowsingWhitelist(List(String),ValueCallback(Boolean))
   </int>
   <int value="27" label="SET_SERVICE_WORKER_CLIENT">
@@ -2256,6 +2256,15 @@ Unknown properties are collapsed to zero. -->
   </int>
   <int value="51" label="WEBVIEW_RENDERER_TERMINATE">
     WebViewRenderProcess#terminate()
+  </int>
+  <int value="52" label="ADD_DOCUMENT_START_SCRIPT">
+    WebViewCompat#addDocumentStartJavaScript(String,String[])
+  </int>
+  <int value="53" label="REMOVE_DOCUMENT_START_SCRIPT">
+    ScriptReference#remove()
+  </int>
+  <int value="54" label="SET_SAFE_BROWSING_ALLOWLIST">
+    WebViewCompat#setSafeBrowsingAllowlist(Set(String),ValueCallback(Boolean))
   </int>
 </enum>
 
@@ -24057,6 +24066,10 @@ Called by update_extension_histograms.py.-->
   <int value="1489" label="QUICKUNLOCKPRIVATE_SETPINAUTOSUBMITENABLED"/>
   <int value="1490" label="QUICKUNLOCKPRIVATE_CANAUTHENTICATEPIN"/>
   <int value="1491" label="INPUTMETHODPRIVATE_GETAUTOCORRECTCHARACTERBOUNDS"/>
+  <int value="1492"
+      label="AUTOTESTPRIVATE_STARTTHROUGHPUTTRACKERDATACOLLECTION"/>
+  <int value="1493"
+      label="AUTOTESTPRIVATE_STOPTHROUGHPUTTRACKERDATACOLLECTION"/>
 </enum>
 
 <enum name="ExtensionIconState">
@@ -28554,6 +28567,9 @@ Called by update_use_counter_feature_enum.py.-->
       label="CrossBrowsingContextGroupMainFrameNulledNonEmptyNameAccessed"/>
   <int value="3354" label="PositionSticky"/>
   <int value="3355" label="CommaSeparatorInAllowAttribute"/>
+  <int value="3356" label="ConversionAPIAll"/>
+  <int value="3357" label="ImpressionRegistration"/>
+  <int value="3358" label="ConversionRegistration"/>
 </enum>
 
 <enum name="FeaturePolicyAllowlistType">
@@ -42759,6 +42775,8 @@ from previous Chrome versions.
   <int value="1114629582" label="enable-floating-virtual-keyboard"/>
   <int value="1115635149" label="EnableUnifiedMultiDeviceSetup:enabled"/>
   <int value="1116593018" label="CaptureThumbnailOnLoadFinished:disabled"/>
+  <int value="1117534750"
+      label="ForceSecurePaymentConfirmationDialog:disabled"/>
   <int value="1117795262" label="BloatedRendererDetection:disabled"/>
   <int value="1118109174" label="enable-launcher-search-provider-api"/>
   <int value="1120428727" label="TabGridLayoutAndroid:enabled"/>
@@ -43430,6 +43448,7 @@ from previous Chrome versions.
   <int value="1848974467" label="DelayAsyncScriptExecution:disabled"/>
   <int value="1849379463" label="OfflinePagesCTV2:enabled"/>
   <int value="1849580433" label="disable-oop-rasterization"/>
+  <int value="1850641630" label="ForceSecurePaymentConfirmationDialog:enabled"/>
   <int value="1851358497" label="enable-ash-sidebar"/>
   <int value="1851746253" label="ReducedReferrerGranularity:disabled"/>
   <int value="1852630189" label="NTPBookmarkSuggestions:disabled"/>
@@ -64707,8 +64726,12 @@ https://www.dmtf.org/sites/default/files/standards/documents/DSP0134_2.7.1.pdf
 </enum>
 
 <enum name="SigninSSOIdentityListRequestCacheState">
-  <int value="0" label="SSO Identity list is stale"/>
-  <int value="1" label="SSO Identity list is valid"/>
+  <int value="0"
+      label="SSO identity cache is stale, the identity list is synchronously
+             fetched."/>
+  <int value="1"
+      label="SSO identity cache is valid, the identity list from the cache is
+             returned."/>
 </enum>
 
 <enum name="SigninSSOWKWebViewGetAllCookiesRequest">

@@ -727,13 +727,17 @@ size_t ImageDecoder::FindRequiredPreviousFrame(size_t frame_index,
 }
 
 ImagePlanes::ImagePlanes() {
+  color_type_ = kUnknown_SkColorType;
   for (int i = 0; i < 3; ++i) {
     planes_[i] = nullptr;
     row_bytes_[i] = 0;
   }
 }
 
-ImagePlanes::ImagePlanes(void* planes[3], const size_t row_bytes[3]) {
+ImagePlanes::ImagePlanes(void* planes[3],
+                         const size_t row_bytes[3],
+                         SkColorType color_type)
+    : color_type_(color_type) {
   for (int i = 0; i < 3; ++i) {
     planes_[i] = planes[i];
     row_bytes_[i] = row_bytes[i];

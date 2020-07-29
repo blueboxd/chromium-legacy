@@ -13,6 +13,7 @@ import android.util.AndroidRuntimeException;
 import android.webkit.ValueCallback;
 
 import org.chromium.base.ContextUtils;
+import org.chromium.base.ThreadUtils;
 import org.chromium.base.annotations.CalledByNative;
 import org.chromium.base.annotations.JNINamespace;
 import org.chromium.base.annotations.NativeMethods;
@@ -178,6 +179,7 @@ public class MediaStreamManager {
                     audio, video, ObjectWrapper.wrap(new ValueCallback<Boolean>() {
                         @Override
                         public void onReceiveValue(Boolean allowed) {
+                            ThreadUtils.assertOnUiThread();
                             respondToStreamRequest(requestId, allowed.booleanValue());
                         }
                     }));

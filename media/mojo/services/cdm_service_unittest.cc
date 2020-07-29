@@ -141,7 +141,7 @@ TEST_F(CdmServiceTest, LoadCdm) {
   EXPECT_CALL(*mock_cdm_service_client(), EnsureSandboxed());
 
   base::FilePath cdm_path(FILE_PATH_LITERAL("dummy path"));
-#if defined(OS_MACOSX)
+#if defined(OS_MAC)
   // Token provider will not be used since the path is a dummy path.
   cdm_service_remote_->LoadCdm(cdm_path, mojo::NullRemote());
 #else

@@ -95,6 +95,8 @@ enum SameSiteCookieOperation {
 enum SameSiteCookieExclusionReason {
   kExcludeSameSiteUnspecifiedTreatedAsLax,
   kExcludeSameSiteNoneInsecure,
+  kExcludeSameSiteLax,
+  kExcludeSameSiteStrict,
 };
 
 enum SameSiteCookieWarningReason {

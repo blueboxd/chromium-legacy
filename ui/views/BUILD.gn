@@ -927,6 +927,8 @@ jumbo_source_set("test_support") {
     "test/test_widget_observer.h",
     "test/view_metadata_test_utils.cc",
     "test/view_metadata_test_utils.h",
+    "test/views_drawing_test_utils.cc",
+    "test/views_drawing_test_utils.h",
     "test/views_test_base.cc",
     "test/views_test_base.h",
     "test/views_test_helper.cc",
@@ -1030,6 +1032,10 @@ jumbo_source_set("test_support") {
 }
 
 test("views_unittests") {
+  if ((is_linux && !is_chromeos) || chromeos_is_browser_only) {
+    use_xvfb = true
+  }
+
   sources = [
     "accessible_pane_view_unittest.cc",
     "animation/bounds_animator_unittest.cc",

@@ -237,7 +237,7 @@ void SimulateMouseWheelEvent(WebContents* web_contents,
                              const gfx::Vector2d& delta,
                              const blink::WebMouseWheelEvent::Phase phase);
 
-#if !defined(OS_MACOSX)
+#if !defined(OS_MAC)
 // Simulate a mouse wheel event with the ctrl modifier set.
 void SimulateMouseWheelCtrlZoomEvent(WebContents* web_contents,
                                      const gfx::Point& point,
@@ -249,7 +249,7 @@ void SimulateTouchscreenPinch(WebContents* web_contents,
                               float scale_change,
                               base::OnceClosure on_complete);
 
-#endif  // !defined(OS_MACOSX)
+#endif  // !defined(OS_MAC)
 
 // Sends a GesturePinch Begin/Update/End sequence.
 void SimulateGesturePinchSequence(WebContents* web_contents,

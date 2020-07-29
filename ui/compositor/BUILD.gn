@@ -221,6 +221,10 @@ jumbo_static_library("test_support") {
 }
 
 test("compositor_unittests") {
+  if ((is_linux && !is_chromeos) || chromeos_is_browser_only) {
+    use_xvfb = true
+  }
+
   sources = [
     "animation_throughput_reporter_unittest.cc",
     "callback_layer_animation_observer_unittest.cc",

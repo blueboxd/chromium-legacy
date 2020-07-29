@@ -44,7 +44,7 @@
 #include "ui/gfx/geometry/size.h"
 #include "url/gurl.h"
 
-#if defined(OS_MACOSX)
+#if defined(OS_MAC)
 #include "components/printing/browser/printer_capabilities_mac.h"
 #include "printing/printing_features.h"
 #endif
@@ -196,7 +196,7 @@ void PdfPrinterHandler::StartGetCapability(const std::string& destination_id,
                                            GetCapabilityCallback callback) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
 
-#if defined(OS_MACOSX)
+#if defined(OS_MAC)
   if (base::FeatureList::IsEnabled(features::kEnableCustomMacPaperSizes)) {
     // Read the Mac custom paper sizes on a separate thread.
     // USER_VISIBLE because the result is displayed in the print preview dialog.

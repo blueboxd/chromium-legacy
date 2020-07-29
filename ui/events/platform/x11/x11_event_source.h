@@ -19,9 +19,6 @@
 #include "ui/gfx/x/event.h"
 #include "ui/gfx/x/x11_types.h"
 
-using Time = unsigned long;
-using XEvent = union _XEvent;
-
 namespace gfx {
 class Point;
 }
@@ -137,7 +134,7 @@ class EVENTS_EXPORT X11EventSource : public PlatformEventSource,
   // Returns the timestamp of the event currently being dispatched.  Falls back
   // on GetCurrentServerTime() if there's no event being dispatched, or if the
   // current event does not have a timestamp.
-  Time GetTimestamp();
+  x11::Time GetTimestamp();
 
   // Returns the root pointer location only if there is an event being
   // dispatched that contains that information.
@@ -145,7 +142,7 @@ class EVENTS_EXPORT X11EventSource : public PlatformEventSource,
 
   // Explicitly asks the X11 server for the current timestamp, and updates
   // |last_seen_server_time_| with this value.
-  Time GetCurrentServerTime();
+  x11::Time GetCurrentServerTime();
 
   // Adds a x11::Event dispatcher to the x11::Event dispatcher list.
   // Also calls XEventDispatcher::GetPlatformEventDispatcher

@@ -25,7 +25,7 @@ class BrowserView;
 class ContentSettingImageView;
 class PageActionIconController;
 
-#if defined(OS_MACOSX)
+#if defined(OS_MAC)
 constexpr int kWebAppMenuMargin = 7;
 #endif
 

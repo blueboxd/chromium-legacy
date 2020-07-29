@@ -102,7 +102,7 @@ class Shell : public WebContentsDelegate,
   gfx::NativeWindow window();
 #endif
 
-#if defined(OS_MACOSX)
+#if defined(OS_MAC)
   // Public to be called by an ObjC bridge object.
   void ActionPerformed(int control);
   void URLEntered(const std::string& url_string);
@@ -145,7 +145,7 @@ class Shell : public WebContentsDelegate,
   std::unique_ptr<BluetoothScanningPrompt> ShowBluetoothScanningPrompt(
       RenderFrameHost* frame,
       const BluetoothScanningPrompt::EventHandler& event_handler) override;
-#if defined(OS_MACOSX)
+#if defined(OS_MAC)
   void DidNavigateMainFramePostCommit(WebContents* contents) override;
   bool HandleKeyboardEvent(WebContents* source,
                            const NativeWebKeyboardEvent& event) override;

@@ -40,7 +40,7 @@ void OnGetAdapter(scoped_refptr<device::BluetoothAdapter> adapter) {
 
 void ReportBluetoothAvailability() {
   // This is only relevant for desktop platforms.
-#if defined(OS_MACOSX)
+#if defined(OS_MAC)
   // TODO(kenrb): This is separate from other platforms because we get a
   // little bit of extra information from the Mac-specific code. It might not
   // be worth having the extra code path, and we should consider whether to

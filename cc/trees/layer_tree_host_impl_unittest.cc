@@ -4810,7 +4810,7 @@ TEST_P(ScrollUnifiedLayerTreeHostImplTest,
 
 // TODO(bokan): Unfortunately, Mac currently doesn't support smooth scrolling
 // wheel events. https://crbug.com/574283.
-#if defined(OS_MACOSX)
+#if defined(OS_MAC)
   std::vector<ui::ScrollInputType> types = {ui::ScrollInputType::kScrollbar};
 #else
   std::vector<ui::ScrollInputType> types = {ui::ScrollInputType::kScrollbar,
@@ -12956,7 +12956,7 @@ TEST_P(ScrollUnifiedLayerTreeHostImplTest,
   EXPECT_EQ(node->surface_contents_scale, gfx::Vector2dF(1, 1));
 }
 
-#if defined(OS_MACOSX)
+#if defined(OS_MAC)
 // Ensure Mac wheel scrolling causes instant scrolling. This test can be removed
 // once https://crbug.com/574283 is fixed.
 TEST_P(ScrollUnifiedLayerTreeHostImplTest, MacWheelIsNonAnimated) {

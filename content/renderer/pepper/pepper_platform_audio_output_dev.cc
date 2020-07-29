@@ -24,7 +24,7 @@
 #include "third_party/blink/public/web/web_local_frame.h"
 
 namespace {
-#if defined(OS_WIN) || defined(OS_MACOSX)
+#if defined(OS_WIN) || defined(OS_MAC)
 constexpr base::TimeDelta kMaxAuthorizationTimeout =
     base::TimeDelta::FromSeconds(4);
 #else

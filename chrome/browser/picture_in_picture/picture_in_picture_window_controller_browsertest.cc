@@ -227,7 +227,7 @@ IN_PROC_BROWSER_TEST_F(PictureInPictureWindowControllerBrowserTest,
   auto* overlay_window = window_controller()->GetWindowForTesting();
   gfx::NativeWindow native_window =
       static_cast<OverlayWindowViews*>(overlay_window)->GetNativeWindow();
-#if defined(OS_CHROMEOS) || defined(OS_MACOSX)
+#if defined(OS_CHROMEOS) || defined(OS_MAC)
   EXPECT_FALSE(platform_util::IsWindowActive(native_window));
 #else
   EXPECT_TRUE(platform_util::IsWindowActive(native_window));
@@ -2429,7 +2429,7 @@ IN_PROC_BROWSER_TEST_F(AutoPictureInPictureWindowControllerBrowserTest,
 // triggered.
 
 // Crashes on Mac only.  http://crbug.com/1058087
-#if defined(OS_MACOSX)
+#if defined(OS_MAC)
 #define MAYBE_AutoPictureInPictureTriggeredWhenFullscreen \
   DISABLED_AutoPictureInPictureTriggeredWhenFullscreen
 #else

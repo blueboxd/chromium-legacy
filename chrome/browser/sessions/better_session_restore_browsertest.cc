@@ -56,7 +56,7 @@
 #include "services/network/public/cpp/features.h"
 #include "services/network/test/test_utils.h"
 
-#if defined(OS_MACOSX)
+#if defined(OS_MAC)
 #include "base/mac/scoped_nsautorelease_pool.h"
 #endif
 
@@ -404,7 +404,7 @@ IN_PROC_BROWSER_TEST_F(ContinueWhereILeftOffTest,
 }
 
 // Crashes on Mac and Windows. http://crbug.com/656211
-#if defined(OS_MACOSX) || defined(OS_WIN)
+#if defined(OS_MAC) || defined(OS_WIN)
 #define MAYBE_LocalStorageClearedOnExit DISABLED_LocalStorageClearedOnExit
 #else
 #define MAYBE_LocalStorageClearedOnExit LocalStorageClearedOnExit
@@ -428,7 +428,7 @@ IN_PROC_BROWSER_TEST_F(ContinueWhereILeftOffTest, PRE_CookiesClearedOnExit) {
 }
 
 // Flaky on Mac. http://crbug.com/656211.
-#if defined(OS_MACOSX)
+#if defined(OS_MAC)
 #define MAYBE_CookiesClearedOnExit DISABLED_CookiesClearedOnExit
 #else
 #define MAYBE_CookiesClearedOnExit CookiesClearedOnExit
@@ -481,7 +481,7 @@ IN_PROC_BROWSER_TEST_F(ContinueWhereILeftOffTest,
 }
 
 // Flaky on Mac: https://crbug.com/709504
-#if defined(OS_MACOSX)
+#if defined(OS_MAC)
 #define MAYBE_SessionCookiesCloseAllBrowsers \
   DISABLED_SessionCookiesCloseAllBrowsers
 #else

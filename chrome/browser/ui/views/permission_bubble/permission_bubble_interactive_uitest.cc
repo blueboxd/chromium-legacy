@@ -44,7 +44,7 @@ class PermissionBubbleInteractiveUITest : public InProcessBrowserTest {
 
   // Send Ctrl/Cmd+keycode in the key window to the browser.
   void SendAcceleratorSync(ui::KeyboardCode keycode, bool shift, bool alt) {
-#if defined(OS_MACOSX)
+#if defined(OS_MAC)
     bool control = false;
     bool command = true;
 #else
@@ -76,7 +76,7 @@ class PermissionBubbleInteractiveUITest : public InProcessBrowserTest {
   }
 
   void JumpToNextOpenTab() {
-#if defined(OS_MACOSX)
+#if defined(OS_MAC)
     SendAcceleratorSync(ui::VKEY_RIGHT, false, true);
 #else
     SendAcceleratorSync(ui::VKEY_TAB, false, false);
@@ -84,7 +84,7 @@ class PermissionBubbleInteractiveUITest : public InProcessBrowserTest {
   }
 
   void JumpToPreviousOpenTab() {
-#if defined(OS_MACOSX)
+#if defined(OS_MAC)
     SendAcceleratorSync(ui::VKEY_LEFT, false, true);
 #else
     SendAcceleratorSync(ui::VKEY_TAB, true, false);
@@ -145,7 +145,7 @@ IN_PROC_BROWSER_TEST_F(PermissionBubbleInteractiveUITest, SwitchTabs) {
   AddBlankTabAndShow(browser());
   EXPECT_EQ(1, browser()->tab_strip_model()->active_index());
 
-#if defined(OS_MACOSX)
+#if defined(OS_MAC)
   // The bubble should hide and give focus back to the browser. However, the
   // test environment can't guarantee that macOS decides that the Browser window
   // is actually the "best" window to activate upon closing the current key
@@ -181,7 +181,7 @@ IN_PROC_BROWSER_TEST_F(PermissionBubbleInteractiveUITest, SwitchTabs) {
                      "switch away with ctrl+tab or arrow at mac os");
   EXPECT_FALSE(test_api_->GetPromptWindow());
 
-#if defined(OS_MACOSX)
+#if defined(OS_MAC)
   TestSwitchingTabsWithCurlyBraces();
 #endif
 }

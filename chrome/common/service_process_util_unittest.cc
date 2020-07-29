@@ -21,7 +21,7 @@
 #include "build/branding_buildflags.h"
 #include "build/build_config.h"
 
-#if !defined(OS_MACOSX)
+#if !defined(OS_MAC)
 #include "base/at_exit.h"
 #include "base/message_loop/message_pump_type.h"
 #include "base/strings/string_util.h"
@@ -141,7 +141,7 @@ TEST_F(ServiceProcessStateTest, AutoRun) {
                                                 &value));
   autorun_command_line.reset(
       new base::CommandLine(base::CommandLine::FromString(value)));
-#elif defined(OS_POSIX) && !defined(OS_MACOSX)
+#elif defined(OS_POSIX) && !defined(OS_MAC)
 #if BUILDFLAG(GOOGLE_CHROME_BRANDING)
   std::string base_desktop_name = "google-chrome-service.desktop";
 #else  // BUILDFLAG(CHROMIUM_BRANDING)
@@ -174,7 +174,7 @@ TEST_F(ServiceProcessStateTest, AutoRun) {
   EXPECT_FALSE(base::win::ReadCommandFromAutoRun(HKEY_CURRENT_USER,
                                                  base::UTF8ToWide(value_name),
                                                  &value));
-#elif defined(OS_POSIX) && !defined(OS_MACOSX)
+#elif defined(OS_POSIX) && !defined(OS_MAC)
   EXPECT_FALSE(AutoStart::GetAutostartFileValue(
       GetServiceProcessScopedName(base_desktop_name), "Exec", &exec_value));
 #endif  // defined(OS_WIN)
@@ -250,4 +250,4 @@ MULTIPROCESS_TEST_MAIN(ServiceProcessStateTestShutdown) {
   return 0;
 }
 
-#endif  // !OS_MACOSX
+#endif  // !OS_MAC

@@ -18,6 +18,9 @@
 #include "ui/events/keycodes/keyboard_codes_posix.h"
 #include "ui/events/keycodes/keysym_to_unicode.h"
 #include "ui/gfx/x/x11.h"
+#include "ui/gfx/x/xinput.h"
+#include "ui/gfx/x/xproto.h"
+#include "ui/gfx/x/xproto_types.h"
 
 #define VKEY_UNSUPPORTED VKEY_UNKNOWN
 
@@ -552,10 +555,27 @@ bool IsTtyFunctionOrSpaceKey(KeySym keysym) {
   return false;
 }
 
+::KeySym TranslateKey(uint32_t keycode, uint32_t modifiers) {
+  auto* connection = x11::Connection::Get();
+  return static_cast<::KeySym>(connection->KeycodeToKeysym(keycode, modifiers));
+}
+
+void GetKeycodeAndModifiers(const x11::Event& event,
+                            uint32_t* keycode,
+                            uint32_t* modifiers) {
+  if (auto* dev = event.As<x11::Input::DeviceEvent>()) {
+    *keycode = dev->detail;
+    *modifiers = dev->mods.effective;
+  } else if (auto* key = event.As<x11::KeyEvent>()) {
+    *keycode = static_cast<uint32_t>(key->detail);
+    *modifiers = static_cast<uint32_t>(key->state);
+  }
+}
+
 }  // namespace
 
 // Get an ui::KeyboardCode from an X keyevent
-KeyboardCode KeyboardCodeFromXKeyEvent(const XEvent* xev) {
+KeyboardCode KeyboardCodeFromXKeyEvent(const x11::Event& xev) {
   // Gets correct VKEY code from XEvent is performed as the following steps:
   // 1. Gets the keysym without modifier states.
   // 2. For [a-z] & [0-9] cases, returns the VKEY code accordingly.
@@ -569,21 +589,12 @@ KeyboardCode KeyboardCodeFromXKeyEvent(const XEvent* xev) {
   //    mainly for non-letter keys.
   // 8. If not found, fallback to find with the hardware code in US layout.
 
-  KeySym keysym = NoSymbol;
-  XEvent xkeyevent;
-  xkeyevent.xkey = {};
-  if (xev->type == x11::GeGenericEvent::opcode) {
-    // Convert the XI2 key event into a core key event so that we can
-    // continue to use XLookupString() until crbug.com/367732 is complete.
-    InitXKeyEventFromXIDeviceEvent(*xev, &xkeyevent);
-  } else {
-    xkeyevent.xkey = xev->xkey;
-  }
+  uint32_t keysym = 0;
+  uint32_t xkeycode = 0;
+  uint32_t modifiers = 0;
+  GetKeycodeAndModifiers(xev, &xkeycode, &modifiers);
   KeyboardCode keycode = VKEY_UNKNOWN;
-  XKeyEvent* xkey = &xkeyevent.xkey;
-  // XLookupKeysym does not take into consideration the state of the lock/shift
-  // etc. keys. So it is necessary to use XLookupString instead.
-  XLookupString(xkey, nullptr, 0, &keysym, nullptr);
+  keysym = TranslateKey(xkeycode, modifiers);
   if (IsKeypadKey(keysym) || IsPrivateKeypadKey(keysym) ||
       IsCursorKey(keysym) || IsPFKey(keysym) || IsFunctionKey(keysym) ||
       IsModifierKey(keysym) || IsTtyFunctionOrSpaceKey(keysym)) {
@@ -593,9 +604,9 @@ KeyboardCode KeyboardCodeFromXKeyEvent(const XEvent* xev) {
   // If |xkey| has modifiers set, other than NumLock, then determine the
   // un-modified KeySym and use that to map, so that e.g. Ctrl+D correctly
   // generates VKEY_D.
-  if (xkey->state & 0xFF & ~Mod2Mask) {
-    xkey->state &= (~0xFF | Mod2Mask);
-    XLookupString(xkey, nullptr, 0, &keysym, nullptr);
+  if (modifiers & 0xFF & ~Mod2Mask) {
+    modifiers &= (~0xFF | Mod2Mask);
+    keysym = TranslateKey(xkeycode, modifiers);
   }
 
   // [a-z] cases.
@@ -614,24 +625,24 @@ KeyboardCode KeyboardCodeFromXKeyEvent(const XEvent* xev) {
     if (keycode != VKEY_UNKNOWN)
       return keycode;
 
-    MAP1 key1 = {keysym & 0xFFFF, xkey->keycode, 0};
+    MAP1 key1 = {keysym & 0xFFFF, xkeycode, 0};
     keycode = FindVK(key1, map1, base::size(map1));
     if (keycode != VKEY_UNKNOWN)
       return keycode;
 
     KeySym keysym_shift = NoSymbol;
-    xkey->state |= ShiftMask;
-    XLookupString(xkey, nullptr, 0, &keysym_shift, nullptr);
-    MAP2 key2 = {keysym & 0xFFFF, xkey->keycode, keysym_shift & 0xFFFF, 0};
+    modifiers |= ShiftMask;
+    keysym_shift = TranslateKey(xkeycode, modifiers);
+    MAP2 key2 = {keysym & 0xFFFF, xkeycode, keysym_shift & 0xFFFF, 0};
     keycode = FindVK(key2, map2, base::size(map2));
     if (keycode != VKEY_UNKNOWN)
       return keycode;
 
     KeySym keysym_altgr = NoSymbol;
-    xkey->state &= ~ShiftMask;
-    xkey->state |= Mod1Mask;
-    XLookupString(xkey, nullptr, 0, &keysym_altgr, nullptr);
-    MAP3 key3 = {keysym & 0xFFFF, xkey->keycode, keysym_shift & 0xFFFF,
+    modifiers &= ~ShiftMask;
+    modifiers |= Mod1Mask;
+    keysym_altgr = TranslateKey(xkeycode, modifiers);
+    MAP3 key3 = {keysym & 0xFFFF, xkeycode, keysym_shift & 0xFFFF,
                  keysym_altgr & 0xFFFF, 0};
     keycode = FindVK(key3, map3, base::size(map3));
     if (keycode != VKEY_UNKNOWN)
@@ -640,7 +651,7 @@ KeyboardCode KeyboardCodeFromXKeyEvent(const XEvent* xev) {
     // On Linux some keys has AltGr char but not on Windows.
     // So if cannot find VKEY with (ch0+sc+ch1+ch2) in map3, tries to fallback
     // to just find VKEY with (ch0+sc+ch1). This is the best we could do.
-    MAP3 key4 = {keysym & 0xFFFF, xkey->keycode, keysym_shift & 0xFFFF, 0, 0};
+    MAP3 key4 = {keysym & 0xFFFF, xkeycode, keysym_shift & 0xFFFF, 0, 0};
     const MAP3* p =
         std::lower_bound(map3, map3 + base::size(map3), key4, MAP3());
     if (p != map3 + base::size(map3) && p->ch0 == key4.ch0 &&
@@ -652,7 +663,7 @@ KeyboardCode KeyboardCodeFromXKeyEvent(const XEvent* xev) {
   if (keycode == VKEY_UNKNOWN && !IsModifierKey(keysym)) {
     // Modifier keys should not fall back to the hardware-keycode-based US
     // layout.  See crbug.com/402320
-    keycode = DefaultKeyboardCodeFromHardwareKeycode(xkey->keycode);
+    keycode = DefaultKeyboardCodeFromHardwareKeycode(xkeycode);
   }
 
   return keycode;
@@ -943,42 +954,31 @@ KeyboardCode KeyboardCodeFromXKeysym(unsigned int keysym) {
   return VKEY_UNKNOWN;
 }
 
-DomCode CodeFromXEvent(const XEvent* xev) {
-  int keycode = (xev->type == x11::GeGenericEvent::opcode)
-                    ? static_cast<XIDeviceEvent*>(xev->xcookie.data)->detail
-                    : xev->xkey.keycode;
+DomCode CodeFromXEvent(const x11::Event& xev) {
+  auto* device = xev.As<x11::Input::DeviceEvent>();
+  int keycode = 0;
+  if (device) {
+    keycode = device->detail;
+  } else {
+    auto* key = xev.As<x11::KeyEvent>();
+    DCHECK(key);
+    keycode = static_cast<uint8_t>(key->detail);
+  }
   return ui::KeycodeConverter::NativeKeycodeToDomCode(keycode);
 }
 
-uint16_t GetCharacterFromXEvent(const XEvent* xev) {
-  XEvent xkeyevent;
-  xkeyevent.xkey = {};
-  const XKeyEvent* xkey = nullptr;
-  if (xev->type == x11::GeGenericEvent::opcode) {
-    // Convert the XI2 key event into a core key event so that we can
-    // continue to use XLookupString() until crbug.com/367732 is complete.
-    InitXKeyEventFromXIDeviceEvent(*xev, &xkeyevent);
-    xkey = &xkeyevent.xkey;
-  } else {
-    xkey = &xev->xkey;
-  }
-  KeySym keysym = XK_VoidSymbol;
-  XLookupString(const_cast<XKeyEvent*>(xkey), nullptr, 0, &keysym, nullptr);
+uint16_t GetCharacterFromXEvent(const x11::Event& xev) {
+  uint32_t xkeycode = 0;
+  uint32_t modifiers = 0;
+  GetKeycodeAndModifiers(xev, &xkeycode, &modifiers);
+  KeySym keysym = TranslateKey(xkeycode, modifiers);
   return GetUnicodeCharacterFromXKeySym(keysym);
 }
 
-DomKey GetDomKeyFromXEvent(const XEvent* xev) {
-  XEvent xkeyevent;
-  xkeyevent.xkey = {};
-  XKeyEvent xkey;
-  if (xev->type == x11::GeGenericEvent::opcode) {
-    // Convert the XI2 key event into a core key event so that we can
-    // continue to use XLookupString() until crbug.com/367732 is complete.
-    InitXKeyEventFromXIDeviceEvent(*xev, &xkeyevent);
-    xkey = xkeyevent.xkey;
-  } else {
-    xkey = xev->xkey;
-  }
+DomKey GetDomKeyFromXEvent(const x11::Event& xev) {
+  uint32_t xkeycode = 0;
+  uint32_t modifiers = 0;
+  GetKeycodeAndModifiers(xev, &xkeycode, &modifiers);
   // There is no good way to check whether a key combination will print a
   // character on screen.
   // e.g. On Linux US keyboard with French layout, |XLookupString()|
@@ -988,9 +988,8 @@ DomKey GetDomKeyFromXEvent(const XEvent* xev) {
   // The solution is to take out ctrl modifier directly, as according to XKB map
   // no keyboard combinations with ctrl key are mapped to printable character.
   // https://crbug.com/633838
-  xkey.state &= ~ControlMask;
-  KeySym keysym = XK_VoidSymbol;
-  XLookupString(&xkey, nullptr, 0, &keysym, nullptr);
+  modifiers &= ~ControlMask;
+  KeySym keysym = TranslateKey(xkeycode, modifiers);
   base::char16 ch = GetUnicodeCharacterFromXKeySym(keysym);
   return XKeySymToDomKey(keysym, ch);
 }
@@ -1434,38 +1433,9 @@ int XKeysymForWindowsKeyCode(KeyboardCode keycode, bool shift) {
   }
 }
 
-void InitXKeyEventFromXIDeviceEvent(const XEvent& src, XEvent* xkeyevent) {
-  DCHECK(src.type == x11::GeGenericEvent::opcode);
-  XIDeviceEvent* xievent = static_cast<XIDeviceEvent*>(src.xcookie.data);
-  switch (xievent->evtype) {
-    case XI_KeyPress:
-      xkeyevent->type = x11::KeyEvent::Press;
-      break;
-    case XI_KeyRelease:
-      xkeyevent->type = x11::KeyEvent::Release;
-      break;
-    default:
-      NOTREACHED();
-  }
-  xkeyevent->xkey.serial = xievent->serial;
-  xkeyevent->xkey.send_event = xievent->send_event;
-  xkeyevent->xkey.display = xievent->display;
-  xkeyevent->xkey.window = xievent->event;
-  xkeyevent->xkey.root = xievent->root;
-  xkeyevent->xkey.subwindow = xievent->child;
-  xkeyevent->xkey.time = xievent->time;
-  xkeyevent->xkey.x = xievent->event_x;
-  xkeyevent->xkey.y = xievent->event_y;
-  xkeyevent->xkey.x_root = xievent->root_x;
-  xkeyevent->xkey.y_root = xievent->root_y;
-  xkeyevent->xkey.state = xievent->mods.effective;
-  xkeyevent->xkey.keycode = xievent->detail;
-  xkeyevent->xkey.same_screen = 1;
-}
-
 unsigned int XKeyCodeForWindowsKeyCode(ui::KeyboardCode key_code,
                                        int flags,
-                                       XDisplay* display) {
+                                       x11::Connection* connection) {
   // SHIFT state is ignored in the call to XKeysymForWindowsKeyCode() here
   // because we map the XKeysym back to a keycode, i.e. a physical key position.
   // Using a SHIFT-modified XKeysym would sometimes yield X keycodes that,
@@ -1486,7 +1456,9 @@ unsigned int XKeyCodeForWindowsKeyCode(ui::KeyboardCode key_code,
   // crbug.com/386066 and crbug.com/390263 are examples of problems
   // associated with this.
   //
-  return XKeysymToKeycode(display, XKeysymForWindowsKeyCode(key_code, false));
+  auto keysym =
+      static_cast<x11::KeySym>(XKeysymForWindowsKeyCode(key_code, false));
+  return static_cast<unsigned int>(connection->KeysymToKeycode(keysym));
 }
 
 }  // namespace ui

@@ -4,6 +4,9 @@
 
 #include "components/viz/common/gpu/dawn_context_provider.h"
 
+#include <memory>
+#include <vector>
+
 #include "base/check_op.h"
 #include "base/memory/ptr_util.h"
 #include "base/notreached.h"
@@ -41,7 +44,7 @@ DawnContextProvider::DawnContextProvider() {
   // MTLCreateSystemDefaultDevice().
   device_ = CreateDevice(GetDefaultBackendType());
   if (device_)
-    gr_context_ = GrContext::MakeDawn(device_);
+    gr_context_ = GrDirectContext::MakeDawn(device_);
 }
 
 DawnContextProvider::~DawnContextProvider() = default;

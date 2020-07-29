@@ -124,7 +124,7 @@
 #include "ui/base/page_transition_types.h"
 #include "ui/base/ui_base_features.h"
 
-#if defined(OS_MACOSX)
+#if defined(OS_MAC)
 #include "base/mac/scoped_nsautorelease_pool.h"
 #include "chrome/browser/ui/cocoa/test/run_loop_testing.h"
 #include "ui/accelerated_widget_mac/ca_transaction_observer.h"
@@ -162,7 +162,7 @@ const base::FilePath::CharType* kTitle2File = FILE_PATH_LITERAL("title2.html");
 
 // Given a page title, returns the expected window caption string.
 base::string16 WindowCaptionFromPageTitle(const base::string16& page_title) {
-#if defined(OS_MACOSX)
+#if defined(OS_MAC)
   // On Mac, we don't want to suffix the page title with the application name.
   if (page_title.empty())
     return l10n_util::GetStringUTF16(IDS_BROWSER_WINDOW_MAC_TAB_UNTITLED);
@@ -938,7 +938,7 @@ class BeforeUnloadAtQuitWithTwoWindows : public InProcessBrowserTest {
   // loop. It also drains the NSAutoreleasePool.
   void CycleRunLoops() {
     content::RunAllPendingInMessageLoop();
-#if defined(OS_MACOSX)
+#if defined(OS_MAC)
     chrome::testing::NSRunLoopRunAllPending();
     AutoreleasePool()->Recycle();
 #endif
@@ -1170,7 +1170,7 @@ IN_PROC_BROWSER_TEST_F(BrowserTest,
   EXPECT_EQ(expected_favicon_url.spec(), entry->GetFavicon().url.spec());
 }
 
-#if defined(OS_MACOSX) || defined(OS_LINUX) || defined(OS_WIN)
+#if defined(OS_MAC) || defined(OS_LINUX) || defined(OS_WIN)
 // http://crbug.com/83828. On Mac 10.6, the failure rate is 14%
 #define MAYBE_FaviconChange DISABLED_FaviconChange
 #else
@@ -1361,7 +1361,7 @@ IN_PROC_BROWSER_TEST_F(BrowserTest, ShouldShowLocationBar) {
 
 // Regression test for crbug.com/702505.
 // Fails occasionally on Mac. http://crbug.com/852697
-#if defined(OS_MACOSX)
+#if defined(OS_MAC)
 #define MAYBE_ReattachDevToolsWindow DISABLED_ReattachDevToolsWindow
 #else
 #define MAYBE_ReattachDevToolsWindow ReattachDevToolsWindow
@@ -1480,7 +1480,7 @@ IN_PROC_BROWSER_TEST_F(BrowserTest, CloseWithAppMenuOpen) {
       FROM_HERE, base::BindOnce(&RunCloseWithAppMenuCallback, browser()));
 }
 
-#if !defined(OS_MACOSX)
+#if !defined(OS_MAC)
 IN_PROC_BROWSER_TEST_F(BrowserTest, OpenAppWindowLikeNtp) {
   ASSERT_TRUE(embedded_test_server()->Start());
 
@@ -1526,7 +1526,7 @@ IN_PROC_BROWSER_TEST_F(BrowserTest, OpenAppWindowLikeNtp) {
   EXPECT_NE(app_name.find(extension_app->id()), std::string::npos)
       << "Name " << app_name << " should contain id " << extension_app->id();
 }
-#endif  // !defined(OS_MACOSX)
+#endif  // !defined(OS_MAC)
 
 // Makes sure the browser doesn't crash when
 // set_show_state(ui::SHOW_STATE_MAXIMIZED) has been invoked.
@@ -1950,7 +1950,7 @@ IN_PROC_BROWSER_TEST_F(BrowserTest, WindowOpenClose2) {
 }
 
 IN_PROC_BROWSER_TEST_F(BrowserTest, WindowOpenClose3) {
-#if defined(OS_MACOSX)
+#if defined(OS_MAC)
   // Ensure that tests don't wait for frames that will never come.
   ui::CATransactionCoordinator::Get().DisableForTesting();
 #endif
@@ -1972,13 +1972,13 @@ IN_PROC_BROWSER_TEST_F(BrowserTest, WindowOpenClose3) {
 
 // TODO(linux_aura) http://crbug.com/163931
 // Mac disabled: http://crbug.com/169820
-#if !defined(OS_MACOSX) && !(defined(OS_LINUX) && !defined(OS_CHROMEOS))
+#if !defined(OS_MAC) && !(defined(OS_LINUX) && !defined(OS_CHROMEOS))
 IN_PROC_BROWSER_TEST_F(BrowserTest, FullscreenBookmarkBar) {
   chrome::ToggleBookmarkBar(browser());
   EXPECT_EQ(BookmarkBar::SHOW, browser()->bookmark_bar_state());
   chrome::ToggleFullscreenMode(browser());
   EXPECT_TRUE(browser()->window()->IsFullscreen());
-#if defined(OS_MACOSX) || defined(OS_CHROMEOS)
+#if defined(OS_MAC) || defined(OS_CHROMEOS)
   // Mac and Chrome OS both have an "immersive style" fullscreen where the
   // bookmark bar is visible when the top views slide down.
   EXPECT_EQ(BookmarkBar::SHOW, browser()->bookmark_bar_state());
@@ -2010,7 +2010,7 @@ class KioskModeTest : public BrowserTest {
   }
 };
 
-#if defined(OS_MACOSX) || (defined(OS_LINUX) && !defined(OS_CHROMEOS))
+#if defined(OS_MAC) || (defined(OS_LINUX) && !defined(OS_CHROMEOS))
 // Mac: http://crbug.com/103912
 // Linux: http://crbug.com/163931
 #define MAYBE_EnableKioskModeTest DISABLED_EnableKioskModeTest
@@ -2303,7 +2303,7 @@ IN_PROC_BROWSER_TEST_F(ClickModifierTest, WindowOpenShiftClickTest) {
 // Control-clicks open in a background tab.
 // On OSX meta [the command key] takes the place of control.
 IN_PROC_BROWSER_TEST_F(ClickModifierTest, WindowOpenControlClickTest) {
-#if defined(OS_MACOSX)
+#if defined(OS_MAC)
   int modifiers = blink::WebInputEvent::kMetaKey;
 #else
   int modifiers = blink::WebInputEvent::kControlKey;
@@ -2316,7 +2316,7 @@ IN_PROC_BROWSER_TEST_F(ClickModifierTest, WindowOpenControlClickTest) {
 // Control-shift-clicks open in a foreground tab.
 // On OSX meta [the command key] takes the place of control.
 IN_PROC_BROWSER_TEST_F(ClickModifierTest, WindowOpenControlShiftClickTest) {
-#if defined(OS_MACOSX)
+#if defined(OS_MAC)
   int modifiers = blink::WebInputEvent::kMetaKey;
 #else
   int modifiers = blink::WebInputEvent::kControlKey;
@@ -2350,7 +2350,7 @@ IN_PROC_BROWSER_TEST_F(ClickModifierTest, HrefShiftClickTest) {
 // Control-clicks open in a background tab.
 // On OSX meta [the command key] takes the place of control.
 IN_PROC_BROWSER_TEST_F(ClickModifierTest, HrefControlClickTest) {
-#if defined(OS_MACOSX)
+#if defined(OS_MAC)
   int modifiers = blink::WebInputEvent::kMetaKey;
 #else
   int modifiers = blink::WebInputEvent::kControlKey;
@@ -2363,7 +2363,7 @@ IN_PROC_BROWSER_TEST_F(ClickModifierTest, HrefControlClickTest) {
 // Control-shift-clicks open in a foreground tab.
 // On OSX meta [the command key] takes the place of control.
 IN_PROC_BROWSER_TEST_F(ClickModifierTest, HrefControlShiftClickTest) {
-#if defined(OS_MACOSX)
+#if defined(OS_MAC)
   int modifiers = blink::WebInputEvent::kMetaKey;
 #else
   int modifiers = blink::WebInputEvent::kControlKey;
@@ -2448,7 +2448,7 @@ IN_PROC_BROWSER_TEST_F(BrowserTest, GetSizeForNewRenderView) {
 // In OSX, the wcv does not change size until after the commit, when the
 // bookmark bar disappears (correct).
 // In views, the wcv changes size at commit time.
-#if defined(OS_MACOSX)
+#if defined(OS_MAC)
   EXPECT_EQ(gfx::Size(wcv_commit_size0.width(), wcv_commit_size0.height()),
             web_contents->GetContainerBounds().size());
 #else
@@ -2501,7 +2501,7 @@ IN_PROC_BROWSER_TEST_F(BrowserTest, GetSizeForNewRenderView) {
             rwhv_create_size2);
   gfx::Size exp_commit_size(initial_wcv_size);
 
-#if defined(OS_MACOSX)
+#if defined(OS_MAC)
   exp_commit_size.Enlarge(wcv_resize_insets.width(),
                           wcv_resize_insets.height());
 #else

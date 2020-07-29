@@ -80,7 +80,7 @@ var CrElementsDrawerV3Test = class extends CrElementsV3BrowserTest {
 };
 
 // https://crbug.com/1008122 - Flaky on Mac 10.10.
-GEN('#if defined(OS_MACOSX)');
+GEN('#if defined(OS_MAC)');
 GEN('#define MAYBE_Drawer DISABLED_Drawer');
 GEN('#else');
 GEN('#define MAYBE_Drawer Drawer');
@@ -117,7 +117,7 @@ var CrElementsFingerprintProgressArcV3Test =
 };
 
 // https://crbug.com/1044390 - maybe flaky on Mac?
-GEN('#if defined(OS_MACOSX)');
+GEN('#if defined(OS_MAC)');
 GEN('#define MAYBE_Fingerprint DISABLED_Fingerprint');
 GEN('#else');
 GEN('#define MAYBE_Fingerprint Fingerprint');

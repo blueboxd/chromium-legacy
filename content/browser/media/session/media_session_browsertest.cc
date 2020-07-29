@@ -287,7 +287,7 @@ IN_PROC_BROWSER_TEST_F(MediaSessionBrowserTest, MultiplePlayersPlayPause) {
 }
 
 // Flaky on Mac. See https://crbug.com/980663
-#if defined(OS_MACOSX)
+#if defined(OS_MAC)
 #define MAYBE_WebContents_Muted DISABLED_WebContents_Muted
 #else
 #define MAYBE_WebContents_Muted WebContents_Muted

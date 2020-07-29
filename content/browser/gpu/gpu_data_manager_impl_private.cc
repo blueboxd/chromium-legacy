@@ -83,7 +83,7 @@
 #if defined(USE_OZONE)
 #include "ui/ozone/public/ozone_platform.h"
 #endif
-#if defined(OS_MACOSX)
+#if defined(OS_MAC)
 #include <ApplicationServices/ApplicationServices.h>
 #endif  // OS_MACOSX
 #if defined(OS_WIN)
@@ -339,7 +339,7 @@ void UpdateDriverBugListStats(const gpu::GpuFeatureInfo& gpu_feature_info) {
   }
 }
 
-#if defined(OS_MACOSX)
+#if defined(OS_MAC)
 void DisplayReconfigCallback(CGDirectDisplayID display,
                              CGDisplayChangeSummaryFlags flags,
                              void* gpu_data_manager) {
@@ -422,7 +422,7 @@ bool ALLOW_UNUSED_TYPE VulkanAllowed() {
 
 // Determines if Metal is available for the GPU process.
 bool ALLOW_UNUSED_TYPE MetalAllowed() {
-#if defined(OS_MACOSX)
+#if defined(OS_MAC)
   return base::FeatureList::IsEnabled(features::kMetal);
 #else
   return false;
@@ -517,7 +517,7 @@ GpuDataManagerImplPrivate::GpuDataManagerImplPrivate(GpuDataManagerImpl* owner)
     AppendGpuCommandLine(command_line, GPU_PROCESS_KIND_SANDBOXED);
   }
 
-#if defined(OS_MACOSX)
+#if defined(OS_MAC)
   CGDisplayRegisterReconfigurationCallback(DisplayReconfigCallback, owner_);
 #endif  // OS_MACOSX
 
@@ -534,7 +534,7 @@ GpuDataManagerImplPrivate::GpuDataManagerImplPrivate(GpuDataManagerImpl* owner)
 }
 
 GpuDataManagerImplPrivate::~GpuDataManagerImplPrivate() {
-#if defined(OS_MACOSX)
+#if defined(OS_MAC)
   CGDisplayRemoveReconfigurationCallback(DisplayReconfigCallback, owner_);
 #endif
 
@@ -1167,7 +1167,7 @@ void GpuDataManagerImplPrivate::AppendGpuCommandLine(
     command_line->AppendSwitchASCII(switches::kUseGL, use_gl);
   }
 
-#if !defined(OS_MACOSX)
+#if !defined(OS_MAC)
   // MacOSX bots use real GPU in tests.
   if (browser_command_line->HasSwitch(switches::kHeadless)) {
     if (command_line->HasSwitch(switches::kUseGL)) {
@@ -1237,7 +1237,7 @@ void GpuDataManagerImplPrivate::UpdateGpuPreferences(
   }
 #endif
 
-#if defined(OS_MACOSX)
+#if defined(OS_MAC)
   if (gpu_mode_ != gpu::GpuMode::HARDWARE_METAL)
     gpu_preferences->enable_metal = false;
 #elif BUILDFLAG(ENABLE_VULKAN)

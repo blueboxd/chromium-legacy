@@ -55,7 +55,7 @@ class ChromeViewsDelegate : public views::ViewsDelegate {
   void OnBeforeWidgetInit(
       views::Widget::InitParams* params,
       views::internal::NativeWidgetDelegate* delegate) override;
-#if defined(OS_MACOSX)
+#if defined(OS_MAC)
   ui::ContextFactory* GetContextFactory() override;
 #endif
   std::string GetApplicationName() override;

@@ -47,7 +47,7 @@ class WebGraphicsContext3DProviderForTests
   gpu::gles2::GLES2Interface* ContextGL() override { return gl_.get(); }
   gpu::raster::RasterInterface* RasterInterface() override { return nullptr; }
   bool IsContextLost() override { return false; }
-  GrContext* GetGrContext() override { return nullptr; }
+  GrDirectContext* GetGrContext() override { return nullptr; }
   gpu::webgpu::WebGPUInterface* WebGPUInterface() override {
     return webgpu_.get();
   }
@@ -392,7 +392,7 @@ class GLES2InterfaceForTests : public gpu::gles2::GLES2InterfaceStub,
 
  private:
   // The target to use when binding a texture to a Chromium image.
-#if defined(OS_APPLE)
+#if defined(OS_MAC)
   static constexpr GLuint kImageCHROMIUMTarget = GC3D_TEXTURE_RECTANGLE_ARB;
 #else
   static constexpr GLuint kImageCHROMIUMTarget = GL_TEXTURE_2D;

@@ -39,7 +39,7 @@
 #include "services/network/public/cpp/network_switches.h"
 #include "ui/base/ui_base_switches.h"
 
-#if !defined(OS_MACOSX)
+#if !defined(OS_MAC)
 
 namespace {
 
@@ -85,7 +85,7 @@ bool ServiceProcessState::GetServiceProcessData(std::string* version,
     *pid = service_data->service_process_pid;
   return true;
 }
-#endif  // !OS_MACOSX
+#endif  // !OS_MAC
 
 // Return a name that is scoped to this instance of the service process. We
 // use the hash of the user-data-dir as a scoping prefix. We can't use
@@ -159,23 +159,23 @@ ServiceProcessState::ServiceProcessState() : state_(nullptr) {
 }
 
 ServiceProcessState::~ServiceProcessState() {
-#if !defined(OS_MACOSX)
+#if !defined(OS_MAC)
   if (service_process_data_region_.IsValid()) {
     service_process_data_region_ = {};
     DeleteServiceProcessDataRegion();
   }
-#endif  // !OS_MACOSX
+#endif  // !OS_MAC
   TearDownState();
 }
 
 void ServiceProcessState::SignalStopped() {
   TearDownState();
-#if !defined(OS_MACOSX)
+#if !defined(OS_MAC)
   service_process_data_region_ = {};
-#endif  // !OS_MACOSX
+#endif  // !OS_MAC
 }
 
-#if !defined(OS_MACOSX)
+#if !defined(OS_MAC)
 bool ServiceProcessState::Initialize() {
   if (!TakeSingletonLock()) {
     return false;
@@ -289,4 +289,4 @@ ServiceProcessState::GetServiceProcessServerName() {
   return ::GetServiceProcessServerName();
 }
 
-#endif  // !OS_MACOSX
+#endif  // !OS_MAC

@@ -8,7 +8,7 @@
 #include "components/omnibox/browser/omnibox_field_trial.h"
 #include "ui/base/pointer/touch_ui_controller.h"
 
-#if defined(OS_MACOSX)
+#if defined(OS_MAC)
 int GetCocoaLayoutConstant(LayoutConstant constant) {
   switch (constant) {
     case BOOKMARK_BAR_HEIGHT:

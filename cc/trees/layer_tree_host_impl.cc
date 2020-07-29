@@ -120,7 +120,7 @@
 #include "gpu/command_buffer/common/shared_image_usage.h"
 #include "services/metrics/public/cpp/ukm_recorder.h"
 #include "third_party/perfetto/protos/perfetto/trace/track_event/chrome_latency_info.pbzero.h"
-#include "third_party/skia/include/gpu/GrContext.h"
+#include "third_party/skia/include/gpu/GrDirectContext.h"
 #include "ui/events/types/scroll_input_type.h"
 #include "ui/gfx/display_color_spaces.h"
 #include "ui/gfx/geometry/point_conversions.h"
@@ -2688,7 +2688,7 @@ void LayerTreeHostImpl::GetGpuRasterizationCapabilities(
 
   // Do not check GrContext above. It is lazy-created, and we only want to
   // create it if it might be used.
-  GrContext* gr_context = context_provider->GrContext();
+  GrDirectContext* gr_context = context_provider->GrContext();
   *gpu_rasterization_supported = !!gr_context;
   if (!*gpu_rasterization_supported)
     return;
@@ -4908,7 +4908,7 @@ bool LayerTreeHostImpl::ShouldAnimateScroll(
   bool has_precise_scroll_deltas = scroll_state.delta_granularity() ==
                                    ui::ScrollGranularity::kScrollByPrecisePixel;
 
-#if defined(OS_MACOSX)
+#if defined(OS_MAC)
   if (has_precise_scroll_deltas)
     return false;
 

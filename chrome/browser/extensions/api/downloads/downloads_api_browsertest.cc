@@ -2637,7 +2637,7 @@ IN_PROC_BROWSER_TEST_F(DownloadExtensionTest,
 }
 
 // flaky on mac: crbug.com/392288
-#if defined(OS_MACOSX)
+#if defined(OS_MAC)
 #define MAYBE_DownloadExtensionTest_Download_FileSystemURL \
         DISABLED_DownloadExtensionTest_Download_FileSystemURL
 #else
@@ -3818,7 +3818,7 @@ IN_PROC_BROWSER_TEST_F(
 
 // TODO test precedence rules: install_time
 
-#if defined(OS_MACOSX)
+#if defined(OS_MAC)
 #define MAYBE_DownloadExtensionTest_OnDeterminingFilename_RemoveFilenameDeterminer \
   DISABLED_DownloadExtensionTest_OnDeterminingFilename_RemoveFilenameDeterminer
 #else
@@ -4325,7 +4325,7 @@ void OnDangerPromptCreated(DownloadDangerPrompt* prompt) {
   prompt->InvokeActionForTesting(DownloadDangerPrompt::ACCEPT);
 }
 
-#if defined(OS_MACOSX) && !defined(NDEBUG)
+#if defined(OS_MAC) && !defined(NDEBUG)
 // Flaky on Mac debug, failing with a timeout.
 // http://crbug.com/180759
 #define MAYBE_DownloadExtensionTest_AcceptDanger \

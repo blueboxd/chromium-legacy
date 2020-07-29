@@ -531,9 +531,6 @@ void RenderWidget::UpdateVisualProperties(
             visual_properties.new_size,
             visual_properties.screen_info.device_scale_factor));
   }
-  // Web tests can override the zoom level in the renderer.
-  if (zoom_level_for_testing_ != -INFINITY)
-    visual_properties.zoom_level = zoom_level_for_testing_;
 
   // Inform the rendering thread of the color space indicating the presence of
   // HDR capabilities. The HDR bit happens to be globally true/false for all
@@ -573,8 +570,6 @@ void RenderWidget::UpdateVisualProperties(
   }
 
   if (for_frame()) {
-    SetZoomLevel(visual_properties.zoom_level);
-
     bool capture_sequence_number_changed =
         visual_properties.capture_sequence_number !=
         last_capture_sequence_number_;
@@ -807,26 +802,6 @@ void RenderWidget::SetAutoResizeMode(bool auto_resize,
     delegate()->ApplyAutoResizeLimitsForWidget(min_auto_size, max_auto_size);
   } else if (was_changed) {
     delegate()->DisableAutoResizeForWidget();
-  }
-}
-
-void RenderWidget::SetZoomLevel(double zoom_level) {
-  RenderFrameImpl* render_frame =
-      RenderFrameImpl::FromWebFrame(GetFrameWidget()->LocalRoot());
-
-  bool zoom_level_changed = render_frame->SetZoomLevelOnRenderView(zoom_level);
-  if (zoom_level_changed) {
-    // Hide popups when the zoom changes.
-    // TODO(danakj): This should go through RenderFrame, and the Delegate path
-    // should be replaced.
-    blink::WebView* web_view = GetFrameWidget()->LocalRoot()->View();
-    web_view->CancelPagePopup();
-
-    // Propagate changes down to child local root RenderWidgets and
-    // BrowserPlugins in other frame trees/processes.
-    zoom_level_ = zoom_level;
-    for (auto& observer : render_frame_proxies_)
-      observer.OnZoomLevelChanged(zoom_level);
   }
 }
 
@@ -1769,7 +1744,6 @@ void RenderWidget::RegisterRenderFrameProxy(RenderFrameProxy* proxy) {
   proxy->OnPageScaleFactorChanged(page_scale_factor_from_mainframe_,
                                   is_pinch_gesture_active_from_mainframe_);
   proxy->OnScreenInfoChanged(GetOriginalScreenInfo());
-  proxy->OnZoomLevelChanged(zoom_level_);
   proxy->OnVisibleViewportSizeChanged(visible_viewport_size_);
   proxy->OnRootWindowSegmentsChanged(root_widget_window_segments_);
 }
@@ -1911,19 +1885,6 @@ void RenderWidget::SetDeviceScaleFactorForTesting(float factor) {
 
   // Make sure to override any future OnSynchronizeVisualProperties IPCs.
   device_scale_factor_for_testing_ = factor;
-}
-
-void RenderWidget::SetZoomLevelForTesting(double zoom_level) {
-  DCHECK_NE(zoom_level, -INFINITY);
-  SetZoomLevel(zoom_level);
-
-  // Make sure to override any future OnSynchronizeVisualProperties IPCs.
-  zoom_level_for_testing_ = zoom_level;
-}
-
-void RenderWidget::ResetZoomLevelForTesting() {
-  zoom_level_for_testing_ = -INFINITY;
-  SetZoomLevel(0);
 }
 
 void RenderWidget::SetDeviceColorSpaceForTesting(

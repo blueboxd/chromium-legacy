@@ -93,6 +93,7 @@ class StubPasswordManagerClient : public PasswordManagerClient {
   PasswordManagerMetricsRecorder* GetMetricsRecorder() override;
   signin::IdentityManager* GetIdentityManager() override;
   scoped_refptr<network::SharedURLLoaderFactory> GetURLLoaderFactory() override;
+  network::mojom::NetworkContext* GetNetworkContext() const override;
   bool IsIsolationForPasswordSitesEnabled() const override;
   bool IsNewTabPage() const override;
   FieldInfoManager* GetFieldInfoManager() const override;

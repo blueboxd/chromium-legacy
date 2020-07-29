@@ -101,7 +101,7 @@ using testing::Return;
 #include "base/win/windows_version.h"
 #endif
 
-#if defined(OS_MACOSX)
+#if defined(OS_MAC)
 #include "chrome/browser/chrome_browser_application_mac.h"
 #endif
 
@@ -274,11 +274,11 @@ class StartupBrowserCreatorTest : public extensions::ExtensionBrowserTest {
   // A helper function that checks the session restore UI (infobar) is shown
   // when Chrome starts up after crash.
   void EnsureRestoreUIWasShown(content::WebContents* web_contents) {
-#if defined(OS_MACOSX)
+#if defined(OS_MAC)
     InfoBarService* infobar_service =
         InfoBarService::FromWebContents(web_contents);
     EXPECT_EQ(1U, infobar_service->infobar_count());
-#endif  // defined(OS_MACOSX)
+#endif  // defined(OS_MAC)
   }
 };
 
@@ -980,7 +980,7 @@ IN_PROC_BROWSER_TEST_F(StartupBrowserCreatorTest, RestoreWithNoStartupWindow) {
     run_loop.Run();
   }
 
-#if defined(OS_MACOSX)
+#if defined(OS_MAC)
   // While we closed all the browsers above, this doesn't quit the Mac app,
   // leaving the app in a half-closed state. Cancel the termination to put the
   // Mac app back into a known state.
@@ -1071,7 +1071,7 @@ IN_PROC_BROWSER_TEST_F(StartupBrowserCreatorTest,
   static_cast<ProfileImpl*>(profile_urls)->last_session_exit_type_ =
       Profile::EXIT_CRASHED;
 
-#if !defined(OS_MACOSX) && !BUILDFLAG(GOOGLE_CHROME_BRANDING)
+#if !defined(OS_MAC) && !BUILDFLAG(GOOGLE_CHROME_BRANDING)
   // Use HistogramTester to make sure a bubble is shown when it's not on
   // platform Mac OS X and it's not official Chrome build.
   //
@@ -1082,7 +1082,7 @@ IN_PROC_BROWSER_TEST_F(StartupBrowserCreatorTest,
   // the file thread before the bubble is shown. It is difficult to make sure
   // that the histogram check runs after all threads have finished their tasks.
   base::HistogramTester histogram_tester;
-#endif  // !defined(OS_MACOSX) && !BUILDFLAG(GOOGLE_CHROME_BRANDING)
+#endif  // !defined(OS_MAC) && !BUILDFLAG(GOOGLE_CHROME_BRANDING)
 
   base::CommandLine dummy(base::CommandLine::NO_PROGRAM);
   dummy.AppendSwitchASCII(switches::kTestType, "browser");
@@ -1132,11 +1132,11 @@ IN_PROC_BROWSER_TEST_F(StartupBrowserCreatorTest,
   EXPECT_TRUE(search::IsInstantNTP(tab_strip->GetWebContentsAt(0)));
   EnsureRestoreUIWasShown(tab_strip->GetWebContentsAt(0));
 
-#if !defined(OS_MACOSX) && !BUILDFLAG(GOOGLE_CHROME_BRANDING)
+#if !defined(OS_MAC) && !BUILDFLAG(GOOGLE_CHROME_BRANDING)
   // Each profile should have one session restore bubble shown, so we should
   // observe count 3 in bucket 0 (which represents bubble shown).
   histogram_tester.ExpectBucketCount("SessionCrashed.Bubble", 0, 3);
-#endif  // !defined(OS_MACOSX) && !BUILDFLAG(GOOGLE_CHROME_BRANDING)
+#endif  // !defined(OS_MAC) && !BUILDFLAG(GOOGLE_CHROME_BRANDING)
 }
 
 IN_PROC_BROWSER_TEST_F(StartupBrowserCreatorTest,
@@ -1378,7 +1378,7 @@ IN_PROC_BROWSER_TEST_F(StartupBrowserCreatorFirstRunTest, AddFirstRunTab) {
             tab_strip->GetWebContentsAt(1)->GetURL().ExtractFileName());
 }
 
-#if BUILDFLAG(GOOGLE_CHROME_BRANDING) && defined(OS_MACOSX)
+#if BUILDFLAG(GOOGLE_CHROME_BRANDING) && defined(OS_MAC)
 // http://crbug.com/314819
 #define MAYBE_RestoreOnStartupURLsPolicySpecified \
     DISABLED_RestoreOnStartupURLsPolicySpecified
@@ -1433,7 +1433,7 @@ IN_PROC_BROWSER_TEST_F(StartupBrowserCreatorFirstRunTest,
             tab_strip->GetWebContentsAt(0)->GetURL().ExtractFileName());
 }
 
-#if BUILDFLAG(GOOGLE_CHROME_BRANDING) && defined(OS_MACOSX)
+#if BUILDFLAG(GOOGLE_CHROME_BRANDING) && defined(OS_MAC)
 // http://crbug.com/314819
 #define MAYBE_FirstRunTabsWithRestoreSession \
     DISABLED_FirstRunTabsWithRestoreSession

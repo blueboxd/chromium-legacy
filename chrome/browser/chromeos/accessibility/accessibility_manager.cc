@@ -630,22 +630,23 @@ bool AccessibilityManager::IsAutoclickEnabled() const {
                          ash::prefs::kAccessibilityAutoclickEnabled);
 }
 
-void AccessibilityManager::OnAutoclickChanged() {
+void AccessibilityManager::OnAccessibilityCommonChanged(
+    const std::string& pref_name) {
   if (!profile_)
     return;
 
-  const bool enabled = profile_->GetPrefs()->GetBoolean(
-      ash::prefs::kAccessibilityAutoclickEnabled);
-
-  if (enabled)
+  const bool enabled = profile_->GetPrefs()->GetBoolean(pref_name);
+  if (enabled) {
     accessibility_common_extension_loader_->SetProfile(
         profile_, base::Closure() /* done_callback */);
+  }
 
-  if (autoclick_enabled_ == enabled)
+  size_t pref_count = accessibility_common_enabled_features_.count(pref_name);
+  if ((pref_count != 0 && enabled) || (pref_count == 0 && !enabled))
     return;
 
-  autoclick_enabled_ = enabled;
   if (enabled) {
+    accessibility_common_enabled_features_.insert(pref_name);
     if (!accessibility_common_extension_loader_->loaded()) {
       accessibility_common_extension_loader_->Load(
           profile_, base::BindRepeating(
@@ -656,7 +657,11 @@ void AccessibilityManager::OnAutoclickChanged() {
       PostLoadAccessibilityCommon();
     }
   } else {
-    accessibility_common_extension_loader_->Unload();
+    accessibility_common_enabled_features_.erase(pref_name);
+
+    if (accessibility_common_enabled_features_.empty()) {
+      accessibility_common_extension_loader_->Unload();
+    }
   }
 }
 
@@ -1030,6 +1035,11 @@ void AccessibilityManager::SetProfile(Profile* profile) {
   // Clear all dictation state on profile change.
   dictation_.reset();
 
+  // All features supported by accessibility common.
+  static const char* kAccessibilityCommonFeatures[] = {
+      ash::prefs::kAccessibilityAutoclickEnabled,
+      ash::prefs::kAccessibilityScreenMagnifierEnabled};
+
   if (profile) {
     // TODO(yoshiki): Move following code to PrefHandler.
     pref_change_registrar_.reset(new PrefChangeRegistrar);
@@ -1086,10 +1096,13 @@ void AccessibilityManager::SetProfile(Profile* profile) {
         ash::prefs::kAccessibilitySwitchAccessEnabled,
         base::BindRepeating(&AccessibilityManager::OnSwitchAccessChanged,
                             base::Unretained(this)));
-    pref_change_registrar_->Add(
-        ash::prefs::kAccessibilityAutoclickEnabled,
-        base::BindRepeating(&AccessibilityManager::OnAutoclickChanged,
-                            base::Unretained(this)));
+
+    for (const std::string& feature : kAccessibilityCommonFeatures) {
+      pref_change_registrar_->Add(
+          feature, base::BindRepeating(
+                       &AccessibilityManager::OnAccessibilityCommonChanged,
+                       base::Unretained(this)));
+    }
 
     local_state_pref_change_registrar_.reset(new PrefChangeRegistrar);
     local_state_pref_change_registrar_->Init(g_browser_process->local_state());
@@ -1127,7 +1140,9 @@ void AccessibilityManager::SetProfile(Profile* profile) {
   OnSpokenFeedbackChanged();
   OnSwitchAccessChanged();
   OnSelectToSpeakChanged();
-  OnAutoclickChanged();
+
+  for (const std::string& feature : kAccessibilityCommonFeatures)
+    OnAccessibilityCommonChanged(feature);
 }
 
 void AccessibilityManager::SetProfileByUser(const user_manager::User* user) {

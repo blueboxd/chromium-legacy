@@ -317,7 +317,7 @@ TEST_F(GpuDataManagerImplPrivateTest, ChromecastStartsWithGpuDisabled) {
 }
 #endif  // IS_CHROMECAST
 
-#if defined(OS_MACOSX)
+#if defined(OS_MAC)
 TEST_F(GpuDataManagerImplPrivateTest, FallbackFromMetalToGL) {
   base::test::ScopedFeatureList feature_list;
   feature_list.InitAndEnableFeature(features::kMetal);

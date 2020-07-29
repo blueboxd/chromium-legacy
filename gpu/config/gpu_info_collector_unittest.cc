@@ -214,7 +214,7 @@ TEST_P(GPUInfoCollectorTest, CollectGraphicsInfoGL) {
     // Skip testing the driver version on Windows because it's
     // obtained from the bot's registry.
   }
-#elif defined(OS_MACOSX)
+#elif defined(OS_MAC)
   if (GetParam() == kMockedMacOSX) {
     EXPECT_EQ(test_values_.gpu.driver_vendor, gpu_info.gpu.driver_vendor);
     EXPECT_EQ(test_values_.gpu.driver_version, gpu_info.gpu.driver_version);

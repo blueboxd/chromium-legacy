@@ -215,18 +215,19 @@ class CC_PAINT_EXPORT PaintImage {
   //    code that assume YUV420 without alpha because it is currently the only
   //    subsampling supported for direct YUV rendering.
   //  - The dimensions of YUV planes are tracked in |yuva_size_info|.
-  //    This struct is initialized by QueryYUVA8 in calls to
+  //    This struct is initialized by QueryYUVA in calls to
   //    PaintImage::IsYuv(), including within this method.
   //  - The |frame_index| parameter will be passed along to
   //    ImageDecoder::DecodeToYUV but for multi-frame YUV support, ImageDecoder
   //    needs a separate YUV frame buffer cache.
   //  - The mapping of source planes to channels is tracked by |plane_indices|.
-  //    This struct is initialized by QueryYUVA8 in calls to
+  //    This struct is initialized by QueryYUVA in calls to
   //    PaintImage::IsYuv(), including within this method.
   bool DecodeYuv(void* planes[SkYUVASizeInfo::kMaxCount],
                  size_t frame_index,
                  GeneratorClientId client_id,
                  const SkYUVASizeInfo& yuva_size_info,
+                 SkColorType yuva_color_type,
                  SkYUVAIndex* plane_indices) const;
 
   // Returns the SkImage associated with this PaintImage. If PaintImage is
@@ -278,7 +279,8 @@ class CC_PAINT_EXPORT PaintImage {
   // |plane_indices|, and |yuv_color_space| if any are provided.
   bool IsYuv(SkYUVASizeInfo* yuva_size_info = nullptr,
              SkYUVAIndex* plane_indices = nullptr,
-             SkYUVColorSpace* yuv_color_space = nullptr) const;
+             SkYUVColorSpace* yuv_color_space = nullptr,
+             uint8_t* bit_depth = nullptr) const;
 
   // Get metadata associated with this image.
   SkColorType GetColorType() const;

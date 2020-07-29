@@ -72,7 +72,7 @@
 #include "ui/android/screen_android.h"
 #endif
 
-#if defined(USE_AURA) || defined(OS_MACOSX)
+#if defined(USE_AURA) || defined(OS_MAC)
 #include "content/browser/compositor/test/test_image_transport_factory.h"
 #endif
 
@@ -523,7 +523,7 @@ class RenderWidgetHostTest : public testing::Test {
     delegate_.reset(new MockRenderWidgetHostDelegate());
     process_ = new RenderWidgetHostProcess(browser_context_.get());
     sink_ = &process_->sink();
-#if defined(USE_AURA) || defined(OS_MACOSX)
+#if defined(USE_AURA) || defined(OS_MAC)
     ImageTransportFactory::SetFactory(
         std::make_unique<TestImageTransportFactory>());
 #endif
@@ -585,7 +585,7 @@ class RenderWidgetHostTest : public testing::Test {
     display::Screen::SetScreenInstance(nullptr);
     screen_.reset();
 #endif
-#if defined(USE_AURA) || defined(OS_MACOSX)
+#if defined(USE_AURA) || defined(OS_MAC)
     ImageTransportFactory::Terminate();
 #endif
 #if defined(OS_ANDROID)
@@ -1227,7 +1227,7 @@ TEST_F(RenderWidgetHostTest, ReceiveFrameTokenFromDeletedRenderWidget) {
 }
 
 // Unable to include render_widget_host_view_mac.h and compile.
-#if !defined(OS_MACOSX)
+#if !defined(OS_MAC)
 // Tests setting background transparency.
 TEST_F(RenderWidgetHostTest, Background) {
   std::unique_ptr<RenderWidgetHostViewBase> view;

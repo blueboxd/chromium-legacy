@@ -66,7 +66,8 @@ void NearbyPerSessionDiscoveryManager::StartDiscovery(
     StartDiscoveryCallback callback) {
   DCHECK(!share_target_listener_.is_bound());
 
-  if (nearby_sharing_service_->RegisterSendSurface(this, this) !=
+  if (nearby_sharing_service_->RegisterSendSurface(
+          this, this, NearbySharingService::SendSurfaceState::kForeground) !=
       NearbySharingService::StatusCodes::kOk) {
     NS_LOG(WARNING) << "Failed to register send surface";
     std::move(callback).Run(/*success=*/false);

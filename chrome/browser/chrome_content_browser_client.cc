@@ -376,7 +376,7 @@
 #include "chrome/browser/chrome_browser_main_win.h"
 #include "chrome/install_static/install_util.h"
 #include "sandbox/win/src/sandbox_policy.h"
-#elif defined(OS_MACOSX)
+#elif defined(OS_MAC)
 #include "chrome/browser/apps/intent_helper/mac_apps_navigation_throttle.h"
 #include "chrome/browser/chrome_browser_main_mac.h"
 #elif defined(OS_CHROMEOS)
@@ -474,7 +474,7 @@
 #include "chrome/grit/chrome_unscaled_resources.h"
 #endif  //  !defined(OS_ANDROID)
 
-#if defined(OS_WIN) || defined(OS_MACOSX) || \
+#if defined(OS_WIN) || defined(OS_MAC) || \
     (defined(OS_LINUX) && !defined(OS_CHROMEOS))
 #include "chrome/browser/browser_switcher/browser_switcher_navigation_throttle.h"
 #endif
@@ -484,7 +484,7 @@
 #include "components/crash/core/app/crashpad.h"
 #endif
 
-#if defined(OS_POSIX) && !defined(OS_MACOSX)
+#if defined(OS_POSIX) && !defined(OS_MAC)
 #if !defined(OS_ANDROID)
 #include "base/debug/leak_annotations.h"
 #include "components/crash/core/app/breakpad_linux.h"
@@ -800,7 +800,7 @@ bool IsAutoplayAllowedByPolicy(content::WebContents* contents,
 int GetCrashSignalFD(const base::CommandLine& command_line) {
   return crashpad::CrashHandlerHost::Get()->GetDeathSignalSocket();
 }
-#elif defined(OS_POSIX) && !defined(OS_MACOSX)
+#elif defined(OS_POSIX) && !defined(OS_MAC)
 breakpad::CrashHandlerHostLinux* CreateCrashHandlerHost(
     const std::string& process_type) {
   base::FilePath dumps_path;
@@ -1333,7 +1333,7 @@ ChromeContentBrowserClient::CreateBrowserMainParts(
 #if defined(OS_WIN)
   main_parts =
       std::make_unique<ChromeBrowserMainPartsWin>(parameters, startup_data_);
-#elif defined(OS_MACOSX)
+#elif defined(OS_MAC)
   main_parts =
       std::make_unique<ChromeBrowserMainPartsMac>(parameters, startup_data_);
 #elif defined(OS_CHROMEOS)
@@ -2112,7 +2112,7 @@ void MaybeAppendBlinkSettingsSwitchForFieldTrial(
 void ChromeContentBrowserClient::AppendExtraCommandLineSwitches(
     base::CommandLine* command_line,
     int child_process_id) {
-#if defined(OS_MACOSX)
+#if defined(OS_MAC)
   std::unique_ptr<metrics::ClientInfo> client_info =
       GoogleUpdateSettings::LoadMetricsClientInfo();
   if (client_info) {
@@ -3718,7 +3718,7 @@ void ChromeContentBrowserClient::GetAdditionalFileSystemBackends(
   }
 }
 
-#if defined(OS_POSIX) && !defined(OS_MACOSX)
+#if defined(OS_POSIX) && !defined(OS_MAC)
 void ChromeContentBrowserClient::GetAdditionalMappedFilesForChildProcess(
     const base::CommandLine& command_line,
     int child_process_id,
@@ -3753,7 +3753,7 @@ void ChromeContentBrowserClient::GetAdditionalMappedFilesForChildProcess(
     mappings->Share(service_manager::kCrashDumpSignal, crash_signal_fd);
   }
 }
-#endif  // defined(OS_POSIX) && !defined(OS_MACOSX)
+#endif  // defined(OS_POSIX) && !defined(OS_MAC)
 
 #if defined(OS_WIN)
 base::string16 ChromeContentBrowserClient::GetAppContainerSidForSandboxType(
@@ -3840,7 +3840,7 @@ bool ChromeContentBrowserClient::IsRendererCodeIntegrityEnabled() {
 
 
 void ChromeContentBrowserClient::WillStartServiceManager() {
-#if defined(OS_WIN) || defined(OS_MACOSX) || \
+#if defined(OS_WIN) || defined(OS_MAC) || \
     (defined(OS_LINUX) && !defined(OS_CHROMEOS))
   if (startup_data_) {
     auto* chrome_feature_list_creator =
@@ -3992,7 +3992,7 @@ ChromeContentBrowserClient::CreateThrottlesForNavigation(
       base::FeatureList::IsEnabled(features::kAppServiceIntentHandling)
           ? apps::CommonAppsNavigationThrottle::MaybeCreate(handle)
           : chromeos::ChromeOsAppsNavigationThrottle::MaybeCreate(handle);
-#elif defined(OS_MACOSX)
+#elif defined(OS_MAC)
       apps::MacAppsNavigationThrottle::MaybeCreate(handle);
 #else
       apps::AppsNavigationThrottle::MaybeCreate(handle);
@@ -4086,7 +4086,7 @@ ChromeContentBrowserClient::CreateThrottlesForNavigation(
             handle));
   }
 
-#if defined(OS_WIN) || defined(OS_MACOSX) || \
+#if defined(OS_WIN) || defined(OS_MAC) || \
     (defined(OS_LINUX) && !defined(OS_CHROMEOS))
   MaybeAddThrottle(browser_switcher::BrowserSwitcherNavigationThrottle::
                        MaybeCreateThrottleFor(handle),

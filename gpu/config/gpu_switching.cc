@@ -4,7 +4,7 @@
 
 #include "gpu/config/gpu_switching.h"
 
-#if defined(OS_MACOSX)
+#if defined(OS_MAC)
 #include <OpenGL/OpenGL.h>
 #endif
 
@@ -22,7 +22,7 @@ namespace gpu {
 
 namespace {
 
-#if defined(OS_MACOSX)
+#if defined(OS_MAC)
 typedef CGLPixelFormatObj PlatformPixelFormatObj;
 #else
 typedef void* PlatformPixelFormatObj;
@@ -39,7 +39,7 @@ bool ContainsWorkaround(const std::vector<int32_t>& workarounds,
 void ForceDiscreteGPU() {
   if (g_discrete_pixel_format_obj)
     return;
-#if defined(OS_MACOSX)
+#if defined(OS_MAC)
   CGLPixelFormatAttribute attribs[1];
   attribs[0] = static_cast<CGLPixelFormatAttribute>(0);
   GLint num_pixel_formats = 0;
@@ -52,7 +52,7 @@ void ForceDiscreteGPU() {
 
 bool SwitchableGPUsSupported(const GPUInfo& gpu_info,
                              const base::CommandLine& command_line) {
-#if defined(OS_MACOSX)
+#if defined(OS_MAC)
   if (command_line.HasSwitch(switches::kUseGL) &&
       (command_line.GetSwitchValueASCII(switches::kUseGL) !=
            gl::kGLImplementationDesktopName &&
@@ -90,7 +90,7 @@ void InitializeSwitchableGPUs(
 }
 
 void StopForceDiscreteGPU() {
-#if defined(OS_MACOSX)
+#if defined(OS_MAC)
   if (g_discrete_pixel_format_obj) {
     CGLReleasePixelFormat(g_discrete_pixel_format_obj);
     g_discrete_pixel_format_obj = nullptr;

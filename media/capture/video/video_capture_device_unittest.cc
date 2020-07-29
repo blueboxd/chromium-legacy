@@ -37,7 +37,7 @@
 #include "media/capture/video/win/video_capture_device_mf_win.h"
 #endif
 
-#if defined(OS_MACOSX)
+#if defined(OS_MAC)
 #include "media/capture/video/mac/video_capture_device_factory_mac.h"
 #endif
 
@@ -59,7 +59,7 @@
 #include "mojo/public/cpp/bindings/pending_receiver.h"
 #endif
 
-#if defined(OS_MACOSX)
+#if defined(OS_MAC)
 // Mac will always give you the size you ask for and this case will fail.
 #define MAYBE_UsingRealWebcam_AllocateBadSize \
   DISABLED_UsingRealWebcam_AllocateBadSize
@@ -226,7 +226,7 @@ class MockImageCaptureClient
 };
 
 base::test::SingleThreadTaskEnvironment::MainThreadType kMainThreadType =
-#if defined(OS_MACOSX)
+#if defined(OS_MAC)
     // Video capture code on MacOSX must run on a CFRunLoop enabled thread
     // for interaction with AVFoundation.
     base::test::SingleThreadTaskEnvironment::MainThreadType::UI;
@@ -428,7 +428,7 @@ class VideoCaptureDeviceTest
   }
 
   void RunTestCase(base::OnceClosure test_case) {
-#if defined(OS_MACOSX)
+#if defined(OS_MAC)
     // In order to make the test case run on the actual message loop that has
     // been created for this thread, we need to run it inside a RunLoop. This is
     // required, because on MacOS the capture code must run on a CFRunLoop
@@ -486,13 +486,13 @@ void VideoCaptureDeviceTest::RunOpenInvalidDeviceTestCase() {
       VideoCaptureDeviceFactoryWin::PlatformSupportsMediaFoundation()
           ? VideoCaptureApi::WIN_MEDIA_FOUNDATION
           : VideoCaptureApi::WIN_DIRECT_SHOW;
-#elif defined(OS_MACOSX)
+#elif defined(OS_MAC)
   invalid_descriptor.capture_api = VideoCaptureApi::MACOSX_AVFOUNDATION;
 #endif
   std::unique_ptr<VideoCaptureDevice> device =
       video_capture_device_factory_->CreateDevice(invalid_descriptor);
 
-#if !defined(OS_MACOSX)
+#if !defined(OS_MAC)
   EXPECT_FALSE(device);
 #else
   // The presence of the actual device is only checked on AllocateAndStart()

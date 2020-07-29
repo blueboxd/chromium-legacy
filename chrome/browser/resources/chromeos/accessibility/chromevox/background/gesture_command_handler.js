@@ -46,7 +46,7 @@ GestureCommandHandler.onAccessibilityGesture_ = function(gesture, x, y) {
   EventSourceState.set(EventSourceType.TOUCH_GESTURE);
 
   if (gesture == 'touchExplore') {
-    GestureCommandHandler.pointerHandler_.onMove(x, y);
+    GestureCommandHandler.pointerHandler_.onTouchMove(x, y);
     return;
   }
 

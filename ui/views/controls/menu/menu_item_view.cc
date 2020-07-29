@@ -174,7 +174,9 @@ base::string16 MenuItemView::GetTooltipText(const gfx::Point& p) const {
   }
 
   const MenuDelegate* delegate = GetDelegate();
-  CHECK(delegate);
+  if (!delegate)
+    return base::string16();
+
   gfx::Point location(p);
   ConvertPointToScreen(this, &location);
   return delegate->GetTooltipText(command_, location);
@@ -215,7 +217,8 @@ void MenuItemView::GetAccessibleNodeData(ui::AXNodeData* node_data) {
       break;
     case Type::kCheckbox:
     case Type::kRadio: {
-      const bool is_checked = GetDelegate()->IsItemChecked(GetCommand());
+      const bool is_checked =
+          GetDelegate() && GetDelegate()->IsItemChecked(GetCommand());
       node_data->SetCheckedState(is_checked ? ax::mojom::CheckedState::kTrue
                                             : ax::mojom::CheckedState::kFalse);
     } break;
@@ -816,7 +819,7 @@ void MenuItemView::Init(MenuItemView* parent,
   if (type_ == Type::kCheckbox || type_ == Type::kRadio) {
     radio_check_image_view_ = AddChildView(std::make_unique<ImageView>());
     bool show_check_radio_icon =
-        type_ == Type::kRadio || (type_ == Type::kCheckbox &&
+        type_ == Type::kRadio || (type_ == Type::kCheckbox && GetDelegate() &&
                                   GetDelegate()->IsItemChecked(GetCommand()));
     radio_check_image_view_->SetVisible(show_check_radio_icon);
     radio_check_image_view_->set_can_process_events_within_subtree(false);
@@ -943,7 +946,6 @@ void MenuItemView::PaintButton(gfx::Canvas* canvas, PaintButtonMode mode) {
   if (forced_visual_selection_.has_value())
     render_selection = *forced_visual_selection_;
 
-  MenuDelegate* delegate = GetDelegate();
   // Render the background. As MenuScrollViewContainer draws the background, we
   // only need the background when we want it to look different, as when we're
   // selected.
@@ -966,10 +968,12 @@ void MenuItemView::PaintButton(gfx::Canvas* canvas, PaintButtonMode mode) {
   top_margin += (available_height - total_text_height) / 2;
 
   // Render the check.
-  if (type_ == Type::kCheckbox && delegate->IsItemChecked(GetCommand())) {
+  MenuDelegate* delegate = GetDelegate();
+  if (type_ == Type::kCheckbox && delegate &&
+      delegate->IsItemChecked(GetCommand())) {
     radio_check_image_view_->SetImage(GetMenuCheckImage(icon_color));
   } else if (type_ == Type::kRadio) {
-    const bool toggled = delegate->IsItemChecked(GetCommand());
+    const bool toggled = delegate && delegate->IsItemChecked(GetCommand());
     const gfx::VectorIcon& radio_icon =
         toggled ? kMenuRadioSelectedIcon : kMenuRadioEmptyIcon;
     const SkColor radio_icon_color = GetNativeTheme()->GetSystemColor(

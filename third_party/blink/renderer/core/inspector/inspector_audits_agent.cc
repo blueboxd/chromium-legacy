@@ -206,6 +206,14 @@ protocol::String BuildCookieExclusionReason(
         kExcludeSameSiteNoneInsecure:
       return protocol::Audits::SameSiteCookieExclusionReasonEnum::
           ExcludeSameSiteNoneInsecure;
+    case blink::mojom::blink::SameSiteCookieExclusionReason::
+        kExcludeSameSiteLax:
+      return protocol::Audits::SameSiteCookieExclusionReasonEnum::
+          ExcludeSameSiteLax;
+    case blink::mojom::blink::SameSiteCookieExclusionReason::
+        kExcludeSameSiteStrict:
+      return protocol::Audits::SameSiteCookieExclusionReasonEnum::
+          ExcludeSameSiteStrict;
   }
 }
 

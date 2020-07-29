@@ -209,7 +209,7 @@ void CheckStableMemoryMetrics(const base::HistogramTester& histogram_tester,
                               int number_of_renderer_processes,
                               int number_of_extension_processes) {
   const int count_for_resident_set =
-#if defined(OS_MACOSX)
+#if defined(OS_MAC)
       0;
 #else
       count;
@@ -388,7 +388,7 @@ class ProcessMemoryMetricsEmitterTest
     CheckMemoryMetricWithName(entry, UkmEntry::kMallocName,
                               ValueRestriction::ABOVE_ZERO);
 #endif
-#if !defined(OS_MACOSX)
+#if !defined(OS_MAC)
     CheckMemoryMetricWithName(entry, UkmEntry::kResidentName,
                               ValueRestriction::ABOVE_ZERO);
 #endif
@@ -418,7 +418,7 @@ class ProcessMemoryMetricsEmitterTest
     CheckMemoryMetricWithName(entry, UkmEntry::kMallocName,
                               ValueRestriction::ABOVE_ZERO);
 #endif
-#if !defined(OS_MACOSX)
+#if !defined(OS_MAC)
     CheckMemoryMetricWithName(entry, UkmEntry::kResidentName,
                               ValueRestriction::ABOVE_ZERO);
 #endif
@@ -710,7 +710,7 @@ IN_PROC_BROWSER_TEST_F(ProcessMemoryMetricsEmitterTest,
 
 // TODO(crbug.com/989810): Re-enable on Win and Mac once not flaky.
 #if defined(ADDRESS_SANITIZER) || defined(MEMORY_SANITIZER) || \
-    defined(OS_WIN) || defined(OS_MACOSX)
+    defined(OS_WIN) || defined(OS_MAC)
 #define MAYBE_FetchDuringTrace DISABLED_FetchDuringTrace
 #else
 #define MAYBE_FetchDuringTrace FetchDuringTrace
@@ -803,8 +803,8 @@ IN_PROC_BROWSER_TEST_F(ProcessMemoryMetricsEmitterTest,
 
 // Test is flaky on chromeos and linux. https://crbug.com/938054.
 // Test is flaky on mac and win: https://crbug.com/948674.
-#if defined(ADDRESS_SANITIZER) || defined(MEMORY_SANITIZER) ||         \
-    defined(OS_CHROMEOS) || defined(OS_LINUX) || defined(OS_MACOSX) || \
+#if defined(ADDRESS_SANITIZER) || defined(MEMORY_SANITIZER) ||        \
+    defined(OS_CHROMEOS) || defined(OS_LINUX) || defined(OS_MAC) || \
     defined(OS_WIN)
 #define MAYBE_ForegroundAndBackgroundPages DISABLED_ForegroundAndBackgroundPages
 #else

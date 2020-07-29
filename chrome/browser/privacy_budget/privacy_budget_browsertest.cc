@@ -9,6 +9,7 @@
 #include "chrome/common/privacy_budget/scoped_privacy_budget_config.h"
 #include "chrome/test/base/chrome_test_utils.h"
 #include "components/ukm/test_ukm_recorder.h"
+#include "components/variations/service/buildflags.h"
 #include "content/public/test/browser_test.h"
 #include "content/public/test/browser_test_utils.h"
 #include "services/metrics/public/cpp/ukm_builders.h"
@@ -108,3 +109,23 @@ IN_PROC_BROWSER_TEST_F(PrivacyBudgetBrowserTest, SamplingScreenAPIs) {
                              .ToUkmMetricHash()));
   }
 }
+
+#if BUILDFLAG(FIELDTRIAL_TESTING_ENABLED)
+
+namespace {
+class PrivacyBudgetDefaultConfigBrowserTest : public PlatformBrowserTest {};
+}  // namespace
+
+// //testing/variations/fieldtrial_testing_config.json defines a set of
+// parameters that should effectively enable the identifiability study for
+// browser tests. This test verifies that those settings work.
+IN_PROC_BROWSER_TEST_F(PrivacyBudgetDefaultConfigBrowserTest, Variations) {
+  EXPECT_TRUE(base::FeatureList::IsEnabled(features::kIdentifiabilityStudy));
+
+  auto* settings = blink::IdentifiabilityStudySettings::Get();
+  EXPECT_TRUE(settings->IsActive());
+  EXPECT_TRUE(settings->IsTypeAllowed(
+      blink::IdentifiableSurface::Type::kCanvasReadback));
+}
+
+#endif

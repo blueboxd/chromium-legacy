@@ -194,10 +194,12 @@ MainThreadSchedulerImpl::MainThreadSchedulerImpl(
       find_in_page_budget_pool_controller_(
           new FindInPageBudgetPoolController(this)),
       control_task_queue_(helper_.ControlMainThreadTaskQueue()),
-      compositor_task_queue_(
-          helper_.NewTaskQueue(MainThreadTaskQueue::QueueCreationParams(
-                                   MainThreadTaskQueue::QueueType::kCompositor)
-                                   .SetShouldMonitorQuiescence(true))),
+      compositor_task_queue_(helper_.NewTaskQueue(
+          MainThreadTaskQueue::QueueCreationParams(
+              MainThreadTaskQueue::QueueType::kCompositor)
+              .SetShouldMonitorQuiescence(true)
+              .SetPrioritisationType(MainThreadTaskQueue::QueueTraits::
+                                         PrioritisationType::kCompositor))),
       compositor_task_queue_enabled_voter_(
           compositor_task_queue_->CreateQueueEnabledVoter()),
       memory_purge_task_queue_(helper_.NewTaskQueue(
@@ -2672,8 +2674,8 @@ TaskQueue::QueuePriority MainThreadSchedulerImpl::ComputePriority(
     return fixed_priority.value();
   }
 
-  if (task_queue->queue_class() ==
-      MainThreadTaskQueue::QueueClass::kCompositor) {
+  if (task_queue->GetPrioritisationType() ==
+      MainThreadTaskQueue::QueueTraits::PrioritisationType::kCompositor) {
     return main_thread_only().current_policy.compositor_priority();
   }
 

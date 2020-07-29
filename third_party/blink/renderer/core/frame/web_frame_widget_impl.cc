@@ -565,6 +565,16 @@ bool WebFrameWidgetImpl::ScrollFocusedEditableElementIntoView() {
   return true;
 }
 
+void WebFrameWidgetImpl::SetZoomLevelForTesting(double zoom_level) {
+  // Zoom level is only controlled for testing on the main frame.
+  NOTREACHED();
+}
+
+void WebFrameWidgetImpl::ResetZoomLevelForTesting() {
+  // Zoom level is only controlled for testing on the main frame.
+  NOTREACHED();
+}
+
 void WebFrameWidgetImpl::IntrinsicSizingInfoChanged(
     mojom::blink::IntrinsicSizingInfoPtr sizing_info) {
   GetAssociatedFrameWidgetHost()->IntrinsicSizingInfoChanged(
@@ -748,7 +758,7 @@ void WebFrameWidgetImpl::HandleMouseDown(LocalFrame& main_frame,
 
   // Dispatch the contextmenu event regardless of if the click was swallowed.
   if (!GetPage()->GetSettings().GetShowContextMenuOnMouseUp()) {
-#if defined(OS_APPLE)
+#if defined(OS_MAC)
     if (event.button == WebMouseEvent::Button::kRight ||
         (event.button == WebMouseEvent::Button::kLeft &&
          event.GetModifiers() & WebMouseEvent::kControlKey))
@@ -931,7 +941,7 @@ WebInputEventResult WebFrameWidgetImpl::HandleKeyEvent(
     return result;
   }
 
-#if !defined(OS_APPLE)
+#if !defined(OS_MAC)
   const WebInputEvent::Type kContextMenuKeyTriggeringEventType =
 #if defined(OS_WIN)
       WebInputEvent::Type::kKeyUp;
@@ -953,7 +963,7 @@ WebInputEventResult WebFrameWidgetImpl::HandleKeyEvent(
     View()->SendContextMenuEvent();
     return WebInputEventResult::kHandledSystem;
   }
-#endif  // !defined(OS_APPLE)
+#endif  // !defined(OS_MAC)
 
   return WebInputEventResult::kNotHandled;
 }

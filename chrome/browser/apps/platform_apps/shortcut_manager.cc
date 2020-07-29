@@ -28,7 +28,7 @@
 #include "extensions/browser/extension_system.h"
 #include "extensions/common/extension_set.h"
 
-#if defined(OS_MACOSX)
+#if defined(OS_MAC)
 #include "chrome/common/mac/app_mode_common.h"
 #endif
 
@@ -39,7 +39,7 @@ namespace {
 // This version number is stored in local prefs to check whether app shortcuts
 // need to be recreated. This might happen when we change various aspects of app
 // shortcuts like command-line flags or associated icons, binaries, etc.
-#if defined(OS_MACOSX)
+#if defined(OS_MAC)
 const int kCurrentAppShortcutsVersion = APP_SHIM_VERSION_NUMBER;
 #else
 const int kCurrentAppShortcutsVersion = 0;

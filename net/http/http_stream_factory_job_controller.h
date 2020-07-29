@@ -208,10 +208,6 @@ class HttpStreamFactory::JobController
   // net error of the failed alternative service job.
   void OnAlternativeServiceJobFailed(int net_error);
 
-  // Must be called when the alternative proxy job fails. |net_error| is the
-  // net error of the failed alternative proxy job.
-  void OnAlternativeProxyJobFailed(int net_error);
-
   // Called when all Jobs complete. Reports alternative service brokenness to
   // HttpServerProperties if apply and resets net errors afterwards:
   // - report broken if the main job has no error and the alternative job has an
@@ -256,15 +252,6 @@ class HttpStreamFactory::JobController
   // quic::ParsedQuicVersion::Unsupported() will be returned.
   quic::ParsedQuicVersion SelectQuicVersion(
       const quic::ParsedQuicVersionVector& advertised_versions);
-
-  // Returns true if the |request_| can be fetched via an alternative
-  // proxy server, and sets |alternative_proxy_info| to the alternative proxy
-  // server configuration. |alternative_proxy_info| should not be null,
-  // and is owned by the caller.
-  bool ShouldCreateAlternativeProxyServerJob(
-      const ProxyInfo& proxy_info_,
-      const GURL& url,
-      ProxyInfo* alternative_proxy_info) const;
 
   // Records histogram metrics for the usage of alternative protocol. Must be
   // called when |job| has succeeded and the other job will be orphaned.
@@ -344,9 +331,6 @@ class HttpStreamFactory::JobController
   // At the point where a Job is irrevocably tied to |request_|, we set this.
   // It will be nulled when the |request_| is finished.
   Job* bound_job_;
-
-  // True if an alternative proxy server job can be started to fetch |request_|.
-  bool can_start_alternative_proxy_job_;
 
   State next_state_;
   std::unique_ptr<ProxyResolutionRequest> proxy_resolve_request_;

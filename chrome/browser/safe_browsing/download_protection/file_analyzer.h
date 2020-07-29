@@ -16,7 +16,7 @@
 #include "components/safe_browsing/core/proto/csd.pb.h"
 #include "third_party/protobuf/src/google/protobuf/repeated_field.h"
 
-#if defined(OS_MACOSX)
+#if defined(OS_MAC)
 #include "chrome/common/safe_browsing/disk_image_type_sniffer_mac.h"
 #include "chrome/services/file_util/public/cpp/sandboxed_dmg_analyzer_mac.h"
 #endif
@@ -63,7 +63,7 @@ class FileAnalyzer {
     // For executables, information about the file headers.
     ClientDownloadRequest::ImageHeaders image_headers;
 
-#if defined(OS_MACOSX)
+#if defined(OS_MAC)
     // For DMG files, the signature of the DMG.
     std::vector<uint8_t> disk_image_signature;
 
@@ -97,7 +97,7 @@ class FileAnalyzer {
   void StartExtractRarFeatures();
   void OnRarAnalysisFinished(const ArchiveAnalyzerResults& archive_results);
 
-#if defined(OS_MACOSX)
+#if defined(OS_MAC)
   void StartExtractDmgFeatures();
   void ExtractFileOrDmgFeatures(bool download_file_has_koly_signature);
   void OnDmgAnalysisFinished(
@@ -116,7 +116,7 @@ class FileAnalyzer {
   scoped_refptr<SandboxedRarAnalyzer> rar_analyzer_;
   base::TimeTicks rar_analysis_start_time_;
 
-#if defined(OS_MACOSX)
+#if defined(OS_MAC)
   scoped_refptr<SandboxedDMGAnalyzer> dmg_analyzer_;
   base::TimeTicks dmg_analysis_start_time_;
 #endif

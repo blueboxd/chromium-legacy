@@ -61,6 +61,10 @@ class WebRemoteFrameClient {
     return base::UnguessableToken::Create();
   }
 
+  // Called when the main frame's zoom level is changed and should be propagated
+  // to the remote's associated view.
+  virtual void ZoomLevelChanged(double zoom_level) {}
+
  protected:
   virtual ~WebRemoteFrameClient() = default;
 };

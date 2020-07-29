@@ -12,7 +12,7 @@
 #include "base/callback.h"
 #include "base/threading/sequenced_task_runner_handle.h"
 #include "components/autofill/core/common/password_form.h"
-#include "components/password_manager/core/browser/android_affiliation/affiliation_service.h"
+#include "components/password_manager/core/browser/android_affiliation/android_affiliation_service.h"
 
 namespace password_manager {
 

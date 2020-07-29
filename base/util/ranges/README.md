@@ -119,11 +119,10 @@ could be addressed by either upgrading Chromium's STL to C++20, or implementing
 `constexpr` versions of some of these algorithms ourselves.
 
 ### Lack of post C++14 algorithms
-Since all algorithms in `util::ranges` dispatch to their C++14 equivalent,
+Since most algorithms in `util::ranges` dispatch to their C++14 equivalent, some
 `std::` algorithms that are not present in C++14 have no implementation in
 `util::ranges`. This list of algorithms includes the following:
 
-- [`std::for_each_n`](https://en.cppreference.com/w/cpp/algorithm/for_each_n) (added in C++17)
 - [`std::sample`](https://en.cppreference.com/w/cpp/algorithm/sample) (added in C++17)
 - [`std::clamp`](https://en.cppreference.com/w/cpp/algorithm/clamp) (added in C++17)
 

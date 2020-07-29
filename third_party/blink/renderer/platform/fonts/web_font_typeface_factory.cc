@@ -16,11 +16,11 @@
 #include "third_party/blink/renderer/platform/fonts/win/dwrite_font_format_support.h"
 #endif
 
-#if defined(OS_WIN) || defined(OS_APPLE)
+#if defined(OS_WIN) || defined(OS_MAC)
 #include "third_party/skia/include/ports/SkFontMgr_empty.h"
 #endif
 
-#if defined(OS_APPLE)
+#if defined(OS_MAC)
 #include "third_party/blink/renderer/platform/fonts/mac/core_text_font_format_support.h"
 #endif
 
@@ -97,7 +97,7 @@ sk_sp<SkFontMgr> WebFontTypefaceFactory::FontManagerForVariations() {
     return DefaultFontManager();
   return FreeTypeFontManager();
 #else
-#if defined(OS_APPLE)
+#if defined(OS_MAC)
   if (!CoreTextVersionSupportsVariations())
     return FreeTypeFontManager();
 #endif
@@ -106,7 +106,7 @@ sk_sp<SkFontMgr> WebFontTypefaceFactory::FontManagerForVariations() {
 }
 
 sk_sp<SkFontMgr> WebFontTypefaceFactory::FontManagerForSbix() {
-#if defined(OS_APPLE)
+#if defined(OS_MAC)
   return DefaultFontManager();
 #endif
   return FreeTypeFontManager();
@@ -121,7 +121,7 @@ sk_sp<SkFontMgr> WebFontTypefaceFactory::DefaultFontManager() {
 }
 
 sk_sp<SkFontMgr> WebFontTypefaceFactory::FreeTypeFontManager() {
-#if defined(OS_WIN) || defined(OS_APPLE)
+#if defined(OS_WIN) || defined(OS_MAC)
   return sk_sp<SkFontMgr>(SkFontMgr_New_Custom_Empty());
 #else
   return DefaultFontManager();
@@ -133,7 +133,7 @@ sk_sp<SkFontMgr> WebFontTypefaceFactory::FontManagerForColrCpal() {
   if (!blink::DWriteRasterizerSupport::IsDWriteFactory2Available())
     return FreeTypeFontManager();
 #endif
-#if defined(OS_APPLE)
+#if defined(OS_MAC)
   if (!CoreTextVersionSupportsColrCpal())
     return FreeTypeFontManager();
 #endif

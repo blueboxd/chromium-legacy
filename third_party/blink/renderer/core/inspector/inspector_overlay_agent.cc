@@ -1076,7 +1076,7 @@ void InspectorOverlayAgent::LoadFrameForTool(int data_resource_id) {
 
 #if defined(OS_WIN)
   EvaluateInOverlay("setPlatform", "windows");
-#elif defined(OS_APPLE)
+#elif defined(OS_MAC)
   EvaluateInOverlay("setPlatform", "mac");
 #elif defined(OS_POSIX)
   EvaluateInOverlay("setPlatform", "linux");

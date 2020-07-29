@@ -78,6 +78,8 @@ class WebExternalWidgetImpl : public WebExternalWidget,
 #if defined(OS_ANDROID)
   SynchronousCompositorRegistry* GetSynchronousCompositorRegistry() override;
 #endif
+  void ApplyVisualProperties(
+      const VisualProperties& visual_properties) override;
 
   // WebExternalWidget overrides:
   void SetRootLayer(scoped_refptr<cc::Layer>) override;

@@ -292,6 +292,27 @@ TEST_P(RasterDecoderTest, CopyTexSubImage2DPartialFailsWithUnalignedRect) {
   EXPECT_FALSE(representation->IsCleared());
 }
 
+TEST_P(RasterDecoderManualInitTest, GetCapabilitiesHalfFloatLinear) {
+  InitState init;
+  init.extensions.push_back("GL_OES_texture_half_float_linear");
+  InitDecoder(init);
+  AddExpectationsForGetCapabilities();
+  const auto& caps = decoder_->GetCapabilities();
+  EXPECT_TRUE(caps.texture_half_float_linear);
+}
+
+TEST_P(RasterDecoderManualInitTest, GetCapabilitiesNorm16) {
+  // R16 requires an ES3 context plus the extension to be available.
+  InitState init;
+  init.context_type = CONTEXT_TYPE_OPENGLES3;
+  init.gl_version = "3.0";
+  init.extensions.push_back("GL_EXT_texture_norm16");
+  InitDecoder(init);
+  AddExpectationsForGetCapabilities();
+  const auto& caps = decoder_->GetCapabilities();
+  EXPECT_TRUE(caps.texture_norm16);
+}
+
 TEST_P(RasterDecoderManualInitTest, CopyTexSubImage2DValidateColorFormat) {
   InitState init;
   init.gl_version = "3.0";

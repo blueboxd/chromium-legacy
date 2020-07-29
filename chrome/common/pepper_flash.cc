@@ -31,7 +31,7 @@ const char kPepperFlashManifestName[] = "Flapper";
 
 // Name of the Pepper Flash OS in the component manifest.
 const char kPepperFlashOperatingSystem[] =
-#if defined(OS_MACOSX)
+#if defined(OS_MAC)
     "mac";
 #elif defined(OS_WIN)
     "win";
@@ -123,7 +123,7 @@ bool CheckPepperFlashManifest(const base::DictionaryValue& manifest,
   std::string arch;
   manifest.GetStringASCII("x-ppapi-arch", &arch);
   if (arch != kPepperFlashArch) {
-#if defined(OS_MACOSX)
+#if defined(OS_MAC)
     // On Mac OS X the arch is 'x64' for component updated Flash but 'mac' for
     // system Flash, so accept both variations.
     if (arch != kPepperFlashOperatingSystem)

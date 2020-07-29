@@ -36,7 +36,7 @@ void ShellJavaScriptDialogManager::RunJavaScriptDialog(
     return;
   }
 
-#if defined(OS_MACOSX) || defined(OS_WIN)
+#if defined(OS_MAC) || defined(OS_WIN)
   *did_suppress_message = false;
 
   if (dialog_) {
@@ -77,7 +77,7 @@ void ShellJavaScriptDialogManager::RunBeforeUnloadDialog(
     return;
   }
 
-#if defined(OS_MACOSX) || defined(OS_WIN)
+#if defined(OS_MAC) || defined(OS_WIN)
   if (dialog_) {
     // Seriously!?
     std::move(callback).Run(true, base::string16());
@@ -102,7 +102,7 @@ void ShellJavaScriptDialogManager::RunBeforeUnloadDialog(
 
 void ShellJavaScriptDialogManager::CancelDialogs(WebContents* web_contents,
                                                  bool reset_state) {
-#if defined(OS_MACOSX) || defined(OS_WIN)
+#if defined(OS_MAC) || defined(OS_WIN)
   if (dialog_) {
     dialog_->Cancel();
     dialog_.reset();
@@ -119,7 +119,7 @@ void ShellJavaScriptDialogManager::CancelDialogs(WebContents* web_contents,
 }
 
 void ShellJavaScriptDialogManager::DialogClosed(ShellJavaScriptDialog* dialog) {
-#if defined(OS_MACOSX) || defined(OS_WIN)
+#if defined(OS_MAC) || defined(OS_WIN)
   DCHECK_EQ(dialog, dialog_.get());
   dialog_.reset();
 #else

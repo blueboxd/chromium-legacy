@@ -160,7 +160,7 @@ public class TrustedWebActivityTest {
         final String pageWithThemeColor = mEmbeddedTestServerRule.getServer().getURL(
                 "/chrome/test/data/android/theme_color_test.html");
         final String pageWithoutThemeColor =
-                mEmbeddedTestServerRule.getServer().getURL("/chrome/test/data/simple.html");
+                mEmbeddedTestServerRule.getServer().getURL("/chrome/test/data/android/about.html");
 
         // Navigate to page with a theme color so that we can later wait for the status bar color to
         // change back to the intent color.

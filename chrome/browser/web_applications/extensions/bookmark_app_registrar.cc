@@ -100,8 +100,12 @@ void BookmarkAppRegistrar::OnExtensionUnloaded(
 
   // If a profile is removed, notify the web app that it is uninstalled, so it
   // can cleanup any state outside the profile dir (e.g., registry settings).
-  if (reason == UnloadedExtensionReason::PROFILE_SHUTDOWN)
+  if (reason == UnloadedExtensionReason::PROFILE_SHUTDOWN) {
     NotifyWebAppProfileWillBeDeleted(extension->id());
+    web_app::WebAppProviderBase::GetProviderBase(profile())
+        ->os_integration_manager()
+        .UninstallOsHooks(extension->id());
+  }
 
   bookmark_app_being_observed_ = nullptr;
 }

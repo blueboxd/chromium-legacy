@@ -378,7 +378,7 @@ extern const char kTabletModeGesturesLearnMoreURL[];
 extern const char kWifiSyncLearnMoreURL[];
 #endif  // defined(OS_CHROMEOS)
 
-#if defined(OS_MACOSX)
+#if defined(OS_MAC)
 // "Learn more" URL for the enterprise sign-in confirmation dialog.
 extern const char kChromeEnterpriseSignInLearnMoreURL[];
 

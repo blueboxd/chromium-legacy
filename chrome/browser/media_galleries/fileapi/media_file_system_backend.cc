@@ -45,7 +45,7 @@
 #include "storage/common/file_system/file_system_types.h"
 #include "storage/common/file_system/file_system_util.h"
 
-#if defined(OS_WIN) || defined(OS_MACOSX) || defined(OS_CHROMEOS)
+#if defined(OS_WIN) || defined(OS_MAC) || defined(OS_CHROMEOS)
 #include "chrome/browser/media_galleries/fileapi/device_media_async_file_util.h"
 #endif
 
@@ -138,7 +138,7 @@ MediaFileSystemBackend::MediaFileSystemBackend(
           std::make_unique<MediaFileValidatorFactory>()),
       native_media_file_util_(
           std::make_unique<NativeMediaFileUtil>(g_media_task_runner.Get()))
-#if defined(OS_WIN) || defined(OS_MACOSX) || defined(OS_CHROMEOS)
+#if defined(OS_WIN) || defined(OS_MAC) || defined(OS_CHROMEOS)
       ,
       device_media_async_file_util_(
           DeviceMediaAsyncFileUtil::Create(profile_path_,
@@ -242,7 +242,7 @@ storage::AsyncFileUtil* MediaFileSystemBackend::GetAsyncFileUtil(
   switch (type) {
     case storage::kFileSystemTypeNativeMedia:
       return native_media_file_util_.get();
-#if defined(OS_WIN) || defined(OS_MACOSX) || defined(OS_CHROMEOS)
+#if defined(OS_WIN) || defined(OS_MAC) || defined(OS_CHROMEOS)
     case storage::kFileSystemTypeDeviceMedia:
       return device_media_async_file_util_.get();
 #endif
@@ -290,7 +290,7 @@ storage::FileSystemOperation* MediaFileSystemBackend::CreateFileSystemOperation(
 
 bool MediaFileSystemBackend::SupportsStreaming(
     const storage::FileSystemURL& url) const {
-#if defined(OS_WIN) || defined(OS_MACOSX) || defined(OS_CHROMEOS)
+#if defined(OS_WIN) || defined(OS_MAC) || defined(OS_CHROMEOS)
   if (url.type() == storage::kFileSystemTypeDeviceMedia)
     return device_media_async_file_util_->SupportsStreaming(url);
 #endif
@@ -312,7 +312,7 @@ MediaFileSystemBackend::CreateFileStreamReader(
     int64_t max_bytes_to_read,
     const base::Time& expected_modification_time,
     FileSystemContext* context) const {
-#if defined(OS_WIN) || defined(OS_MACOSX) || defined(OS_CHROMEOS)
+#if defined(OS_WIN) || defined(OS_MAC) || defined(OS_CHROMEOS)
   if (url.type() == storage::kFileSystemTypeDeviceMedia) {
     std::unique_ptr<storage::FileStreamReader> reader =
         device_media_async_file_util_->GetFileStreamReader(

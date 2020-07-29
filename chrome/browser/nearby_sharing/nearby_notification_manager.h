@@ -9,17 +9,30 @@
 #include "base/strings/string16.h"
 #include "base/time/time.h"
 #include "chrome/browser/nearby_sharing/share_target.h"
+#include "chrome/browser/nearby_sharing/share_target_discovered_callback.h"
 #include "chrome/browser/nearby_sharing/transfer_metadata.h"
+#include "chrome/browser/nearby_sharing/transfer_update_callback.h"
 
 class Profile;
+class NearbySharingService;
 
 // Manages notifications shown for Nearby Share. Only a single notification will
 // be shown as simultaneous connections are not supported. All methods should be
 // called from the UI thread.
-class NearbyNotificationManager {
+class NearbyNotificationManager : public TransferUpdateCallback,
+                                  public ShareTargetDiscoveredCallback {
  public:
-  explicit NearbyNotificationManager(Profile* profile);
-  ~NearbyNotificationManager();
+  NearbyNotificationManager(Profile* profile,
+                            NearbySharingService* nearby_service);
+  ~NearbyNotificationManager() override;
+
+  // TransferUpdateCallback:
+  void OnTransferUpdate(const ShareTarget& share_target,
+                        const TransferMetadata& transfer_metadata) override;
+
+  // ShareTargetDiscoveredCallback:
+  void OnShareTargetDiscovered(ShareTarget share_target) override;
+  void OnShareTargetLost(ShareTarget share_target) override;
 
   // Shows a progress notification of the data being transferred to or from
   // |share_target|. Has a cancel action to cancel the transfer.
@@ -27,16 +40,29 @@ class NearbyNotificationManager {
                     const TransferMetadata& transfer_metadata);
 
   // Shows an incoming connection request notification from |share_target|
-  // wanting to send data to this device. Has accept & decline actions.
-  void ShowConnectionRequest(const ShareTarget& share_target);
+  // wanting to send data to this device. Has a decline action and optionally an
+  // accept action if the transfer needs to be accepted on the local device.
+  void ShowConnectionRequest(const ShareTarget& share_target,
+                             const TransferMetadata& transfer_metadata);
 
   // Shows an onboarding notification when a nearby device is attempting to
   // share. Clicking it will make the local device visible to all nearby
   // devices.
   void ShowOnboarding();
 
+  // Shows a notification for send or receive success.
+  void ShowSuccess(const ShareTarget& share_target);
+
+  // Shows a notification for send or receive failure.
+  void ShowFailure(const ShareTarget& share_target);
+
+  // Closes any currently shown transfer notification (e.g. progress or
+  // connection).
+  void CloseTransfer();
+
  private:
   Profile* profile_;
+  NearbySharingService* nearby_service_;
 };
 
 #endif  // CHROME_BROWSER_NEARBY_SHARING_NEARBY_NOTIFICATION_MANAGER_H_

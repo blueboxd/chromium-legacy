@@ -941,7 +941,7 @@ IN_PROC_BROWSER_TEST_F(BrowserNavigatorTest, SwitchToTabIncognitoLeak) {
   EXPECT_EQ(browser(), test_browser);
 }
 
-#if defined(OS_MACOSX) && defined(ADDRESS_SANITIZER)
+#if defined(OS_MAC) && defined(ADDRESS_SANITIZER)
 // Flaky on ASAN on Mac. See https://crbug.com/674497.
 #define MAYBE_Disposition_Incognito DISABLED_Disposition_Incognito
 #else

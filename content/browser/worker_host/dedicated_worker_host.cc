@@ -428,13 +428,8 @@ void DedicatedWorkerHost::CreateIdleManager(
     // will soon be terminated too, so abort the connection.
     return;
   }
-  if (!ancestor_render_frame_host->IsFeatureEnabled(
-          blink::mojom::FeaturePolicyFeature::kIdleDetection)) {
-    mojo::ReportBadMessage("Feature policy blocks access to IdleDetection.");
-    return;
-  }
 
-  ancestor_render_frame_host->GetIdleManager(std::move(receiver));
+  ancestor_render_frame_host->BindIdleManager(std::move(receiver));
 }
 
 void DedicatedWorkerHost::BindSmsReceiverReceiver(

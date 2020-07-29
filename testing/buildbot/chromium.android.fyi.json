@@ -1227,10 +1227,11 @@
             "--bucket",
             "chromium-result-details",
             "--test-name",
-            "weblayer_instrumentation_test_apk"
+            "weblayer_instrumentation_test_apk_ToT_Tests"
           ],
           "script": "//build/android/pylib/results/presentation/test_results_presentation.py"
         },
+        "name": "weblayer_instrumentation_test_apk_ToT_Tests",
         "swarming": {
           "can_use_on_swarming_builders": true,
           "cipd_packages": [
@@ -1295,11 +1296,11 @@
             "--bucket",
             "chromium-result-details",
             "--test-name",
-            "weblayer_instrumentation_test_M83_client_apk"
+            "weblayer_instrumentation_test_versions_apk_M83_Client_Library_Tests"
           ],
           "script": "//build/android/pylib/results/presentation/test_results_presentation.py"
         },
-        "name": "weblayer_instrumentation_test_M83_client_apk",
+        "name": "weblayer_instrumentation_test_versions_apk_M83_Client_Library_Tests",
         "swarming": {
           "can_use_on_swarming_builders": true,
           "cipd_packages": [
@@ -1369,11 +1370,11 @@
             "--bucket",
             "chromium-result-details",
             "--test-name",
-            "weblayer_instrumentation_test_M83_implementation_apk"
+            "weblayer_instrumentation_test_versions_apk_M83_Implementation_Library_Tests"
           ],
           "script": "//build/android/pylib/results/presentation/test_results_presentation.py"
         },
-        "name": "weblayer_instrumentation_test_M83_implementation_apk",
+        "name": "weblayer_instrumentation_test_versions_apk_M83_Implementation_Library_Tests",
         "swarming": {
           "can_use_on_swarming_builders": true,
           "cipd_packages": [
@@ -1443,11 +1444,11 @@
             "--bucket",
             "chromium-result-details",
             "--test-name",
-            "weblayer_instrumentation_test_M84_client_apk"
+            "weblayer_instrumentation_test_versions_apk_M84_Client_Library_Tests"
           ],
           "script": "//build/android/pylib/results/presentation/test_results_presentation.py"
         },
-        "name": "weblayer_instrumentation_test_M84_client_apk",
+        "name": "weblayer_instrumentation_test_versions_apk_M84_Client_Library_Tests",
         "swarming": {
           "can_use_on_swarming_builders": true,
           "cipd_packages": [
@@ -1517,11 +1518,11 @@
             "--bucket",
             "chromium-result-details",
             "--test-name",
-            "weblayer_instrumentation_test_M84_implementation_apk"
+            "weblayer_instrumentation_test_versions_apk_M84_Implementation_Library_Tests"
           ],
           "script": "//build/android/pylib/results/presentation/test_results_presentation.py"
         },
-        "name": "weblayer_instrumentation_test_M84_implementation_apk",
+        "name": "weblayer_instrumentation_test_versions_apk_M84_Implementation_Library_Tests",
         "swarming": {
           "can_use_on_swarming_builders": true,
           "cipd_packages": [

@@ -791,7 +791,7 @@ IN_PROC_BROWSER_TEST_F(PlatformAppBrowserTest, MutationEventsDisabled) {
 // This appears to be unreliable.
 // TODO(stevenjb): Investigate and enable
 #if defined(OS_LINUX) && !defined(OS_CHROMEOS) || defined(OS_WIN) || \
-    defined(OS_MACOSX)
+    defined(OS_MAC)
 #define MAYBE_AppWindowRestoreState DISABLED_AppWindowRestoreState
 #else
 #define MAYBE_AppWindowRestoreState AppWindowRestoreState
@@ -918,7 +918,7 @@ IN_PROC_BROWSER_TEST_F(PlatformAppDevToolsBrowserTest, ReOpenedWithURL) {
 
 // Test that showing a permission request as a constrained window works and is
 // correctly parented.
-#if defined(OS_MACOSX)
+#if defined(OS_MAC)
 #define MAYBE_ConstrainedWindowRequest DISABLED_ConstrainedWindowRequest
 #else
 // TODO(sail): Enable this on other platforms once http://crbug.com/95455 is

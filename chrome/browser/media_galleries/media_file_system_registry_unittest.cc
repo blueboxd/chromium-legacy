@@ -927,7 +927,7 @@ TEST_F(MediaFileSystemRegistryTest, GalleryNameDefault) {
 }
 
 // TODO(gbillock): Move the remaining test into the linux directory.
-#if !defined(OS_MACOSX) && !defined(OS_WIN)
+#if !defined(OS_MAC) && !defined(OS_WIN)
 TEST_F(MediaFileSystemRegistryTest, GalleryMTP) {
   FSInfoMap galleries_info;
   InitForGalleriesInfoTest(&galleries_info);

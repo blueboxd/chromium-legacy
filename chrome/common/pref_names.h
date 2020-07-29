@@ -140,7 +140,7 @@ extern const char kWebKitStandardFontFamilyTraditionalHan[];
 extern const char kWebKitFixedFontFamilyTraditionalHan[];
 extern const char kWebKitSerifFontFamilyTraditionalHan[];
 extern const char kWebKitSansSerifFontFamilyTraditionalHan[];
-#if defined(OS_WIN) || defined(OS_MACOSX)
+#if defined(OS_WIN) || defined(OS_MAC)
 extern const char kWebKitCursiveFontFamilySimplifiedHan[];
 extern const char kWebKitCursiveFontFamilyTraditionalHan[];
 #endif
@@ -189,7 +189,7 @@ extern const char kAccessibilityCaptionsBackgroundOpacity[];
 extern const char kLiveCaptionEnabled[];
 extern const char kSODAPath[];
 #endif
-#if defined(OS_MACOSX)
+#if defined(OS_MAC)
 extern const char kConfirmToQuitEnabled[];
 extern const char kShowFullscreenToolbar[];
 extern const char kAllowJavascriptAppleEvents[];
@@ -375,7 +375,7 @@ extern const char kPluginsDeprecationInfobarLastShown[];
 extern const char kDefaultBrowserLastDeclined[];
 extern const char kResetCheckDefaultBrowser[];
 extern const char kDefaultBrowserSettingEnabled[];
-#if defined(OS_MACOSX)
+#if defined(OS_MAC)
 extern const char kShowUpdatePromotionInfoBar[];
 #endif
 #if defined(OS_LINUX) && !defined(OS_CHROMEOS)
@@ -552,7 +552,7 @@ extern const char kDownloadExtensionsToOpen[];
 extern const char kDownloadExtensionsToOpenByPolicy[];
 extern const char kDownloadAllowedURLsForOpenByPolicy[];
 extern const char kDownloadDirUpgraded[];
-#if defined(OS_WIN) || defined(OS_LINUX) || defined(OS_MACOSX)
+#if defined(OS_WIN) || defined(OS_LINUX) || defined(OS_MAC)
 extern const char kOpenPdfDownloadInSystemReader[];
 #endif
 #if defined(OS_ANDROID)
@@ -774,9 +774,9 @@ extern const char kAllowCrossOriginAuthPrompt[];
 extern const char kGloballyScopeHTTPAuthCacheEnabled[];
 extern const char kAmbientAuthenticationInPrivateModesEnabled[];
 
-#if defined(OS_LINUX) || defined(OS_MACOSX) || defined(OS_CHROMEOS)
+#if defined(OS_LINUX) || defined(OS_MAC) || defined(OS_CHROMEOS)
 extern const char kAuthNegotiateDelegateByKdcPolicy[];
-#endif  // defined(OS_LINUX) || defined(OS_MACOSX) || defined(OS_CHROMEOS)
+#endif  // defined(OS_LINUX) || defined(OS_MAC) || defined(OS_CHROMEOS)
 
 #if defined(OS_POSIX)
 extern const char kNtlmV2Enabled[];
@@ -805,7 +805,7 @@ extern const char kPolicyRegisteredProtocolHandlers[];
 extern const char kPolicyIgnoredProtocolHandlers[];
 extern const char kCustomHandlersEnabled[];
 
-#if defined(OS_MACOSX)
+#if defined(OS_MAC)
 extern const char kUserRemovedLoginItem[];
 extern const char kChromeCreatedLoginItem[];
 extern const char kMigratedLoginItemPref[];

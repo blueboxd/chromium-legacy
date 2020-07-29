@@ -55,7 +55,7 @@ TEST(UserAgentStringTest, BuildOSCpuInfoFromOSVersionAndCpuType) {
         /*cpu_type=*/"CPU TYPE",
         /*expected_os_cpu_info=*/"Windows NT VERSION; CPU TYPE",
     },
-#elif defined(OS_MACOSX)
+#elif defined(OS_MAC)
     {
         /*os_version=*/"10_15_4",
         /*cpu_type=*/"Intel",

@@ -217,8 +217,8 @@ using chrome_test_util::TappableBookmarkNodeWithLabel;
     EARL_GREY_TEST_DISABLED(@"EG1 Fails on iOS 12.");
   }
 
-  if (!IsMultiwindowSupported()) {
-    EARL_GREY_TEST_DISABLED(@"MultiWindow is not Supported.");
+  if (!IsMultipleScenesSupported()) {
+    EARL_GREY_TEST_DISABLED(@"Multiple scenes can't be opened.");
   }
 
   [BookmarkEarlGrey setupStandardBookmarks];

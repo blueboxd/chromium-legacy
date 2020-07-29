@@ -472,14 +472,6 @@ class CONTENT_EXPORT RenderFrameHostManager
   void UpdateUserActivationState(
       blink::mojom::UserActivationUpdateType update_type);
 
-  // When a frame transfers user activation to another frame via postMessage,
-  // this is used to inform proxies of the target frame (via IPC) about the
-  // transfer, namely that |source_rfh| is transferring user activation to this
-  // frame.  Note that the IPC isn't sent to |source_rfh|'s process, since it
-  // already knows about the transfer, and it also isn't sent to this frame's
-  // RenderFrame, since that will be handled as part of postMessage.
-  void TransferUserActivationFrom(RenderFrameHostImpl* source_rfh);
-
   void OnSetHadStickyUserActivationBeforeNavigation(bool value);
 
   // Sets up the necessary state for a new RenderViewHost.  If |proxy| is not

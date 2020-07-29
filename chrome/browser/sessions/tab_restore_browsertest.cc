@@ -700,7 +700,7 @@ IN_PROC_BROWSER_TEST_F(TabRestoreTest, RestoreWindow) {
 // Mac10.13 Tests (dbg) and PASS/FAIL flakiness on Linux Chromium OS ASan LSan
 // Tests (1) bot.
 #if defined(ADDRESS_SANITIZER) || defined(MEMORY_SANITIZER) || \
-    defined(OS_WIN) || (defined(OS_MACOSX) && !defined(NDEBUG))
+    defined(OS_WIN) || (defined(OS_MAC) && !defined(NDEBUG))
 #define MAYBE_RestoreTabWithSpecialURL DISABLED_RestoreTabWithSpecialURL
 #else
 #define MAYBE_RestoreTabWithSpecialURL RestoreTabWithSpecialURL
@@ -734,7 +734,7 @@ IN_PROC_BROWSER_TEST_F(TabRestoreTest, MAYBE_RestoreTabWithSpecialURL) {
 // https://crbug.com/825305: Timeout flakiness on Win7 Tests (dbg)(1) and
 // Mac10.13 Tests (dbg) bots.
 #if defined(ADDRESS_SANITIZER) || defined(MEMORY_SANITIZER) || \
-    ((defined(OS_WIN) || defined(OS_MACOSX)) && !defined(NDEBUG))
+    ((defined(OS_WIN) || defined(OS_MAC)) && !defined(NDEBUG))
 #define MAYBE_RestoreTabWithSpecialURLOnBack DISABLED_RestoreTabWithSpecialURLOnBack
 #else
 #define MAYBE_RestoreTabWithSpecialURLOnBack RestoreTabWithSpecialURLOnBack

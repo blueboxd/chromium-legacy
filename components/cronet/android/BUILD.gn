@@ -1018,6 +1018,9 @@ if (!is_component_build) {
   }
 
   instrumentation_test_apk("cronet_test_instrumentation_apk") {
+    # This is the only Cronet APK with lint enabled. This one was chosen because
+    # it depends on basically all source files.
+    enable_lint = true
     apk_name = "CronetTestInstrumentation"
     android_manifest = "test/javatests/AndroidManifest.xml"
     min_sdk_version = _cronet_min_sdk_version

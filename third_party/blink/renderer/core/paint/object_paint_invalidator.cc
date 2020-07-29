@@ -203,41 +203,6 @@ ObjectPaintInvalidatorWithContext::ComputePaintInvalidationReason() {
 }
 
 DISABLE_CFI_PERF
-PaintInvalidationReason ObjectPaintInvalidatorWithContext::InvalidateSelection(
-    PaintInvalidationReason reason) {
-  // Update selection rect when we are doing full invalidation with geometry
-  // change (in case that the object is moved, composite status changed, etc.)
-  // or shouldInvalidationSelection is set (in case that the selection itself
-  // changed).
-  bool full_invalidation = IsFullPaintInvalidationReason(reason);
-  if (!full_invalidation && !object_.ShouldInvalidateSelection())
-    return reason;
-
-  IntRect old_selection_rect = object_.SelectionVisualRect();
-  IntRect new_selection_rect;
-  PhysicalRect selection_rect = object_.LocalSelectionVisualRect();
-  if (!selection_rect.IsEmpty()) {
-    selection_rect.Move(context_.fragment_data->PaintOffset());
-    new_selection_rect = EnclosingIntRect(selection_rect);
-  }
-  object_.GetMutableForPainting().SetSelectionVisualRect(new_selection_rect);
-
-  if (full_invalidation)
-    return reason;
-  // We should invalidate LayoutSVGText always.
-  // See layout_selection.cc SetShouldInvalidateIfNeeded for more detail.
-  if (object_.IsSVGText())
-    return PaintInvalidationReason::kSelection;
-  auto invalidation_rect = UnionRect(new_selection_rect, old_selection_rect);
-  if (invalidation_rect.IsEmpty())
-    return reason;
-
-  object_.GetMutableForPainting().SetPartialInvalidationVisualRect(
-      UnionRect(object_.PartialInvalidationVisualRect(), invalidation_rect));
-  return PaintInvalidationReason::kSelection;
-}
-
-DISABLE_CFI_PERF
 PaintInvalidationReason
 ObjectPaintInvalidatorWithContext::InvalidatePartialRect(
     PaintInvalidationReason reason) {
@@ -263,12 +228,25 @@ void ObjectPaintInvalidatorWithContext::InvalidatePaintWithComputedReason(
   DCHECK(!(context_.subtree_flags &
            PaintInvalidatorContext::kSubtreeNoInvalidation));
 
-  // InvalidatePartialRect is before InvalidateSelection because the latter will
-  // accumulate selection visual rects to the partial rect mapped in the former.
   reason = InvalidatePartialRect(reason);
-  reason = InvalidateSelection(reason);
-  if (reason == PaintInvalidationReason::kNone)
-    return;
+
+  if (reason == PaintInvalidationReason::kNone) {
+    if (!object_.ShouldInvalidateSelection())
+      return;
+    // See layout_selection.cc SetShouldInvalidateIfNeeded() for the reason
+    // for the IsSVGText() condition here.
+    if (!object_.CanBeSelectionLeaf() && !object_.IsSVGText())
+      return;
+
+    reason = PaintInvalidationReason::kSelection;
+    if (const auto* selection_client =
+            object_.GetSelectionDisplayItemClient()) {
+      // Invalidate the selection display item client only.
+      context_.painting_layer->SetNeedsRepaint();
+      selection_client->Invalidate(reason);
+      return;
+    }
+  }
 
   context_.painting_layer->SetNeedsRepaint();
   object_.InvalidateDisplayItemClients(reason);

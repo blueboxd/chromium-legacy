@@ -8,35 +8,25 @@
 #include <string>
 
 #include "base/bind.h"
+#include "base/compiler_specific.h"
 #include "base/macros.h"
-#include "chrome/browser/chromeos/login/screens/base_screen.h"
 
 namespace chromeos {
 
 class GaiaView;
-class ScreenManager;
 
 // This class represents GAIA screen: login screen that is responsible for
 // GAIA-based sign-in.
-class GaiaScreen : public BaseScreen {
+class GaiaScreen {
  public:
-  GaiaScreen();
-  ~GaiaScreen() override = default;
-
-  static GaiaScreen* Get(ScreenManager* manager);
+  GaiaScreen() = default;
+  virtual ~GaiaScreen() = default;
 
   void set_view(GaiaView* view) { view_ = view; }
 
   void MaybePreloadAuthExtension();
-  // Loads online Gaia into the webview.
-  void LoadOnline(const AccountId& account);
-  // Loads offline version of Gaia.
-  void LoadOffline(const AccountId& account);
 
  private:
-  void ShowImpl() override;
-  void HideImpl() override;
-
   GaiaView* view_ = nullptr;
 
   DISALLOW_COPY_AND_ASSIGN(GaiaScreen);

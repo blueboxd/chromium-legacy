@@ -19,7 +19,6 @@ void ProxyInfo::Use(const ProxyInfo& other) {
   proxy_resolve_end_time_ = other.proxy_resolve_end_time_;
   proxy_list_ = other.proxy_list_;
   proxy_retry_info_ = other.proxy_retry_info_;
-  traffic_annotation_ = other.traffic_annotation_;
   did_bypass_proxy_ = other.did_bypass_proxy_;
 }
 
@@ -57,10 +56,6 @@ void ProxyInfo::OverrideProxyList(const ProxyList& proxy_list) {
   proxy_list_ = proxy_list;
 }
 
-void ProxyInfo::SetAlternativeProxy(const ProxyServer& proxy_server) {
-  alternative_proxy_ = proxy_server;
-}
-
 std::string ProxyInfo::ToPacString() const {
   return proxy_list_.ToPacString();
 }
@@ -82,9 +77,7 @@ void ProxyInfo::Reset() {
   proxy_resolve_start_time_ = base::TimeTicks();
   proxy_resolve_end_time_ = base::TimeTicks();
   proxy_list_.Clear();
-  alternative_proxy_ = net::ProxyServer();
   proxy_retry_info_.clear();
-  traffic_annotation_.reset();
   did_bypass_proxy_ = false;
 }
 

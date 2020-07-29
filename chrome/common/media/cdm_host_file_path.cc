@@ -16,7 +16,7 @@
 #include "chrome/common/chrome_constants.h"
 #include "chrome/common/chrome_version.h"
 
-#if defined(OS_MACOSX)
+#if defined(OS_MAC)
 #include "base/mac/bundle_locations.h"
 #endif
 
@@ -78,7 +78,7 @@ void AddCdmHostFilePaths(
     cdm_host_file_paths->emplace_back(file_path, GetSigFilePath(file_path));
   }
 
-#elif defined(OS_MACOSX)
+#elif defined(OS_MAC)
 
   base::FilePath framework_dir = base::mac::FrameworkBundlePath();
   base::FilePath chrome_framework_path =

@@ -112,7 +112,7 @@ var CrSettingsClearBrowsingDataV3Test = class extends CrSettingsV3BrowserTest {
 };
 
 // TODO(crbug.com/1107652): Flaky on Mac.
-GEN('#if defined(OS_MACOSX)');
+GEN('#if defined(OS_MAC)');
 GEN('#define MAYBE_ClearBrowsingDataAllPlatforms DISABLED_ClearBrowsingDataAllPlatforms');
 GEN('#else');
 GEN('#define MAYBE_ClearBrowsingDataAllPlatforms ClearBrowsingDataAllPlatforms');
@@ -227,16 +227,9 @@ var CrSettingsPasswordsSectionV3Test = class extends CrSettingsV3BrowserTest {
   }
 };
 
-// Flaky on Debug builds https://crbug.com/1090931
-GEN('#if !defined(NDEBUG)');
-GEN('#define MAYBE_All DISABLED_All');
-GEN('#else');
-GEN('#define MAYBE_All All');
-GEN('#endif');
-TEST_F('CrSettingsPasswordsSectionV3Test', 'MAYBE_All', function() {
+TEST_F('CrSettingsPasswordsSectionV3Test', 'All', function() {
   mocha.run();
 });
-GEN('#undef MAYBE_All');
 
 // eslint-disable-next-line no-var
 var CrSettingsMultiStorePasswordUiEntryV3Test =
@@ -452,7 +445,7 @@ TEST_F(
       runMochaSuite('HappinessTrackingSurveys');
     });
 
-GEN('#if defined(OS_MACOSX) || defined(OS_WIN)');
+GEN('#if defined(OS_MAC) || defined(OS_WIN)');
 // TODO(crbug.com/1043665): disabling due to failures on several builders.
 TEST_F(
     'CrSettingsPrivacyPageV3Test', 'DISABLED_CertificateManagerTests',
@@ -573,12 +566,12 @@ GEN('#if defined(OS_CHROMEOS)');
 ].forEach(test => registerTest(...test));
 GEN('#endif  // defined(OS_CHROMEOS)');
 
-GEN('#if !defined(OS_MACOSX)');
+GEN('#if !defined(OS_MAC)');
 [['EditDictionaryPage', 'edit_dictionary_page_test.js'],
  // TODO(https://crbug.com/1081908): Flaky on Mac. Fix and re-enable.
  ['SecurityPage', 'security_page_test.js'],
 ].forEach(test => registerTest(...test));
-GEN('#endif  //!defined(OS_MACOSX)');
+GEN('#endif  //!defined(OS_MAC)');
 
 GEN('#if !defined(OS_CHROMEOS)');
 [['DefaultBrowser', 'default_browser_browsertest.js'],

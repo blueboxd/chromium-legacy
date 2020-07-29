@@ -73,7 +73,7 @@ bool SkiaGlRenderer::Initialize() {
   // TODO(csmartdalton): enable internal multisampling after the related Skia
   // rolls are in.
   options.fInternalMultisampleCount = 0;
-  gr_context_ = GrContext::MakeGL(std::move(native_interface), options);
+  gr_context_ = GrDirectContext::MakeGL(std::move(native_interface), options);
   DCHECK(gr_context_);
 
   PostRenderFrameTask(gfx::SwapCompletionResult(gfx::SwapResult::SWAP_ACK));

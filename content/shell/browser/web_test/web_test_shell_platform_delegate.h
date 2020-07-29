@@ -39,7 +39,7 @@ class WebTestShellPlatformDelegate : public ShellPlatformDelegate {
   bool ShouldAllowRunningInsecureContent(Shell* shell) override;
   bool DestroyShell(Shell* shell) override;
   void ResizeWebContent(Shell* shell, const gfx::Size& content_size) override;
-#if defined(OS_MACOSX)
+#if defined(OS_MAC)
   void ActivateContents(Shell* shell, WebContents* top_contents) override;
   void DidNavigateMainFramePostCommit(Shell*, WebContents* contents) override;
   bool HandleKeyboardEvent(Shell* shell,
@@ -65,7 +65,7 @@ class WebTestShellPlatformDelegate : public ShellPlatformDelegate {
   struct WebTestPlatformData;
   std::unique_ptr<WebTestPlatformData> web_test_platform_;
 
-#if defined(OS_MACOSX)
+#if defined(OS_MAC)
   // The last headless shell that called ActivateContents().
   Shell* activated_headless_shell_ = nullptr;
 #endif

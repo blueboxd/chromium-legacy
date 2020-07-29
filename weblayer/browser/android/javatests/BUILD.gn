@@ -13,6 +13,7 @@ android_library("weblayer_java_tests") {
     "src/org/chromium/weblayer/test/CookieManagerTest.java",
     "src/org/chromium/weblayer/test/CrashReporterTest.java",
     "src/org/chromium/weblayer/test/DataClearingTest.java",
+    "src/org/chromium/weblayer/test/DisplayCutoutTest.java",
     "src/org/chromium/weblayer/test/DowngradeTest.java",
     "src/org/chromium/weblayer/test/DownloadCallbackTest.java",
     "src/org/chromium/weblayer/test/ErrorPageCallbackTest.java",

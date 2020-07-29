@@ -113,7 +113,12 @@
         "properties": {
           "type": {"$ref": "SyntheticMouseEventType"},
           "x": {"type": "integer", "description": "X coordinate for mouse event in global screen coordinates"},
-          "y": {"type": "integer", "description": "Y coordinate for mouse event in global screen coordinates"}
+          "y": {"type": "integer", "description": "Y coordinate for mouse event in global screen coordinates"},
+          "touchAccessibility": {
+            "type": "boolean",
+            "description": "True if the touch accessibility flag should be set.",
+            "optional": true
+          }
         }
       },
       {

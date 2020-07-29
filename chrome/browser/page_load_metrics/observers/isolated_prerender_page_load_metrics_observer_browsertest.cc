@@ -112,7 +112,7 @@ IN_PROC_BROWSER_TEST_F(IsolatedPrerenderPageLoadMetricsObserverBrowserTest,
 }
 
 // TODO(http://crbug.com/1025737) Flaky on Mac.
-#if defined(OS_MACOSX)
+#if defined(OS_MAC)
 #define MAYBE_HistoryPlumbing DISABLED_HistoryPlumbing
 #else
 #define MAYBE_HistoryPlumbing HistoryPlumbing

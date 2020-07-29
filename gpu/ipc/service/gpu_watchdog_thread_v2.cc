@@ -139,7 +139,7 @@ std::unique_ptr<GpuWatchdogThreadImplV2> GpuWatchdogThreadImplV2::Create(
     // timeout length.
     gpu_watchdog_timeout = GetGpuWatchdogTimeoutBasedOnCpuCores();
     constexpr int kFinchMaxExtraCyclesBeforeKill = 0;
-#elif defined(OS_MACOSX)
+#elif defined(OS_MAC)
     constexpr int kFinchMaxExtraCyclesBeforeKill = 1;
 #else
     constexpr int kFinchMaxExtraCyclesBeforeKill = 2;

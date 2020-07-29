@@ -144,13 +144,13 @@ class CONTENT_EXPORT RenderWidgetHostViewChildFrame
 
   void WillSendScreenRects() override;
 
-#if defined(OS_MACOSX)
+#if defined(OS_MAC)
   // RenderWidgetHostView implementation.
   void SetActive(bool active) override;
   void ShowDefinitionForSelection() override;
   void SpeakSelection() override;
   void SetWindowFrameInScreen(const gfx::Rect& rect) override;
-#endif  // defined(OS_MACOSX)
+#endif  // defined(OS_MAC)
 
   blink::mojom::InputEventResultState FilterInputEvent(
       const blink::WebInputEvent& input_event) override;

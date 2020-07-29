@@ -332,8 +332,11 @@ class SearchSuggestionParser {
     // If the relevance values of the results are from the server.
     bool relevances_from_server;
 
-    // The server supplied map of suggestion group Ids to headers.
+    // The server supplied map of suggestion group IDs to header labels.
     HeadersMap headers_map;
+
+    // The server supplied list of group IDs that should be hidden-by-default.
+    std::vector<int> hidden_group_ids;
   };
 
   // Converts JSON loaded by a SimpleURLLoader into UTF-8 and returns the

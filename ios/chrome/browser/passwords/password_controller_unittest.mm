@@ -51,6 +51,7 @@
 #import "ios/web/public/test/fakes/fake_navigation_context.h"
 #import "ios/web/public/test/fakes/test_web_state.h"
 #import "ios/web/public/test/web_js_test.h"
+#include "services/network/test/test_network_context.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "testing/gtest_mac.h"
@@ -99,6 +100,15 @@ class MockWebState : public web::TestWebState {
   MOCK_CONST_METHOD0(GetBrowserState, web::BrowserState*(void));
 };
 
+class FakeNetworkContext : public network::TestNetworkContext {
+ public:
+  FakeNetworkContext() = default;
+  void IsHSTSActiveForHost(const std::string& host,
+                           IsHSTSActiveForHostCallback callback) override {
+    std::move(callback).Run(false);
+  }
+};
+
 class MockPasswordManagerClient
     : public password_manager::StubPasswordManagerClient {
  public:
@@ -128,6 +138,10 @@ class MockPasswordManagerClient
     return store_;
   }
 
+  network::mojom::NetworkContext* GetNetworkContext() const override {
+    return &network_context_;
+  }
+
   // Workaround for std::unique_ptr<> lacking a copy constructor.
   bool PromptUserToSaveOrUpdatePassword(
       std::unique_ptr<PasswordFormManagerForUI> manager,
@@ -137,6 +151,7 @@ class MockPasswordManagerClient
   }
 
  private:
+  mutable FakeNetworkContext network_context_;
   std::unique_ptr<TestingPrefServiceSimple> prefs_;
   password_manager::PasswordStore* const store_;
 };

@@ -219,11 +219,9 @@ class X11WindowTest : public testing::Test {
   }
 
   void DispatchSingleEventToWidget(x11::Event* x11_event, x11::Window window) {
-    XEvent* xev = &x11_event->xlib_event();
-    XIDeviceEvent* device_event =
-        static_cast<XIDeviceEvent*>(xev->xcookie.data);
-    device_event->event = static_cast<uint32_t>(window);
-    LOG(ERROR) << "____PROCESS " << xev;
+    auto* device_event = x11_event->As<x11::Input::DeviceEvent>();
+    DCHECK(device_event);
+    device_event->event = window;
     event_source_->ProcessXEvent(x11_event);
   }
 

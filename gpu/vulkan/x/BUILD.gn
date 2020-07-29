@@ -27,6 +27,7 @@ component("x") {
   public_configs = [ ":vulkan_x11" ]
 
   deps = [
+    "//ui/base/x",
     "//ui/events/platform/x11",
     "//ui/gfx",
     "//ui/gfx/x",

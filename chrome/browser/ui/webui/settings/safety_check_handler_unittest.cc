@@ -48,7 +48,7 @@
 #include "ui/chromeos/devicetype_utils.h"
 #endif
 
-#if defined(OS_MACOSX)
+#if defined(OS_MAC)
 #include "base/mac/mac_util.h"
 #endif
 
@@ -399,7 +399,7 @@ TEST_F(SafetyCheckHandlerTest, CheckUpdates_Relaunch) {
 
 TEST_F(SafetyCheckHandlerTest, CheckUpdates_Disabled) {
   const char* processor_variation = nullptr;
-#if defined(OS_MACOSX)
+#if defined(OS_MAC)
   switch (base::mac::GetCPUType()) {
     case base::mac::CPUType::kIntel:
       processor_variation = " (x86_64)";

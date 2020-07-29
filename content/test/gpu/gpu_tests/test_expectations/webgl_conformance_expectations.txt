@@ -256,6 +256,7 @@ crbug.com/951628 [ win no-passthrough no-swiftshader-gl ] conformance/rendering/
 crbug.com/626524 [ win nvidia no-passthrough ] conformance/textures/misc/texture-npot-video.html [ RetryOnFailure ]
 crbug.com/630860 [ win nvidia ] conformance/textures/misc/texture-upload-size.html [ RetryOnFailure ]
 crbug.com/1045339 [ win10 debug-x64 nvidia ] conformance/extensions/oes-texture-half-float-with-video.html [ Skip ]
+crbug.com/1109977 [ win nvidia passthrough ] conformance/glsl/misc/shader-with-non-reserved-words.html [ Skip ]
 
 # crbug.com/679696 [ win nvidia no_passthrough ] conformance/extensions/ext-sRGB.html [ Failure ]
 
@@ -267,7 +268,6 @@ crbug.com/829389 [ win10 nvidia-0x1cb3 d3d9 ] conformance/canvas/canvas-test.htm
 crbug.com/680754 [ win10 nvidia-0x1cb3 d3d9 ] conformance/canvas/drawingbuffer-static-canvas-test.html [ Failure ]
 crbug.com/680754 [ win10 nvidia-0x1cb3 d3d9 ] conformance/canvas/framebuffer-bindings-affected-by-to-data-url.html [ Failure ]
 crbug.com/750896 [ win10 nvidia-0x1cb3 d3d9 ] conformance/extensions/oes-texture-float-with-video.html [ RetryOnFailure ]
-crbug.com/829389 [ win10 nvidia-0x1cb3 d3d9 ] conformance/glsl/misc/shader-with-non-reserved-words.html [ RetryOnFailure ]
 crbug.com/825416 [ win10 nvidia-0x1cb3 d3d9 ] conformance/glsl/variables/gl-frontfacing.html [ RetryOnFailure ]
 crbug.com/737018 [ win10 nvidia-0x1cb3 d3d9 ] conformance/ogles/GL/atan/atan_001_to_008.html [ Failure ]
 crbug.com/680754 [ win10 nvidia-0x1cb3 d3d9 ] conformance/ogles/GL/cos/cos_001_to_006.html [ Failure ]
@@ -358,7 +358,6 @@ crbug.com/angleproject/3481 [ win nvidia vulkan passthrough ] conformance/textur
 crbug.com/angleproject/2926 [ win nvidia vulkan passthrough ] deqp/data/gles2/shaders/conversions.html [ Failure ]
 crbug.com/angleproject/4569 [ win nvidia vulkan passthrough ] conformance/textures/misc/default-texture.html [ Failure ]
 crbug.com/1082826 [ win nvidia vulkan passthrough ] conformance/buffers/buffer-data-dynamic-delay.html [ Failure ]
-crbug.com/1109977 [ win nvidia vulkan passthrough ] conformance/glsl/misc/shader-with-non-reserved-words.html [ Skip ]
 
 # Flaky since crbug.com/1017162
 crbug.com/1017162 [ win nvidia vulkan passthrough ] conformance/extensions/angle-instanced-arrays.html [ Failure ]

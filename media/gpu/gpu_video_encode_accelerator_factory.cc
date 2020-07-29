@@ -17,7 +17,7 @@
 #if defined(OS_ANDROID)
 #include "media/gpu/android/android_video_encode_accelerator.h"
 #endif
-#if defined(OS_MACOSX)
+#if defined(OS_MAC)
 #include "media/gpu/mac/vt_video_encode_accelerator_mac.h"
 #endif
 #if defined(OS_WIN)
@@ -57,7 +57,7 @@ std::unique_ptr<VideoEncodeAccelerator> CreateAndroidVEA() {
 }
 #endif
 
-#if defined(OS_MACOSX)
+#if defined(OS_MAC)
 std::unique_ptr<VideoEncodeAccelerator> CreateVTVEA() {
   return base::WrapUnique<VideoEncodeAccelerator>(
       new VTVideoEncodeAccelerator());
@@ -99,7 +99,7 @@ std::vector<VEAFactoryFunction> GetVEAFactoryFunctions(
 #if defined(OS_ANDROID)
   vea_factory_functions.push_back(base::BindRepeating(&CreateAndroidVEA));
 #endif
-#if defined(OS_MACOSX)
+#if defined(OS_MAC)
   vea_factory_functions.push_back(base::BindRepeating(&CreateVTVEA));
 #endif
 #if defined(OS_WIN)

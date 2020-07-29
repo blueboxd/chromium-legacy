@@ -17,7 +17,7 @@ extern const char kOperationAlreadyInProgress[];
 extern const char kReadDevice[];
 extern const char kReadImage[];
 extern const char kWriteImage[];
-#if defined(OS_MACOSX)
+#if defined(OS_MAC)
 extern const char kUnmountVolumes[];
 #endif
 extern const char kVerificationFailed[];

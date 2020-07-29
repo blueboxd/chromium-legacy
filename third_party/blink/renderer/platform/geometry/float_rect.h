@@ -40,7 +40,7 @@
 #include "third_party/skia/include/core/SkRect.h"
 #include "ui/gfx/geometry/rect_f.h"
 
-#if defined(OS_APPLE)
+#if defined(OS_MAC)
 typedef struct CGRect CGRect;
 
 #ifdef __OBJC__
@@ -182,7 +182,7 @@ class PLATFORM_EXPORT FloatRect {
 
   float SquaredDistanceTo(const FloatPoint&) const;
 
-#if defined(OS_APPLE)
+#if defined(OS_MAC)
   FloatRect(const CGRect&);
   operator CGRect() const;
 #endif

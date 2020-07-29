@@ -38,64 +38,16 @@ suite('cr_lottie_test', function() {
       'wLCJ2IjoiNC42LjkiLCJ3Ijo4MDB9';
 
   /**
-   * A dataURL of an image for how a frame of the above |SAMPLE_LOTTIE_GREEN|
-   * animation looks like.
-   * @type {string}
+   * A green pixel as returned by samplePixel.
+   * @type {!Array<number>>}
    */
-  const EXPECTED_FRAME_GREEN =
-      'data:image/jpeg;base64,/9j/4AAQSkZJRgABAQAAAQABAAD/2wBDABALDA4MChAODQ4' +
-      'SERATGCgaGBYWGDEjJR0oOjM9PDkzODdASFxOQERXRTc4UG1RV19iZ2hnPk1xeXBkeFxlZ' +
-      '2P/2wBDARESEhgVGC8aGi9jQjhCY2NjY2NjY2NjY2NjY2NjY2NjY2NjY2NjY2NjY2NjY2N' +
-      'jY2NjY2NjY2NjY2NjY2NjY2P/wAARCADIASwDASIAAhEBAxEB/8QAGAABAQEBAQAAAAAAA' +
-      'AAAAAAAAAMGBwX/xAAdEAEAAAYDAAAAAAAAAAAAAAAAAQIDBDRzBrHB/8QAGAEBAAMBAAA' +
-      'AAAAAAAAAAAAAAAIEBgX/xAAbEQEAAgIDAAAAAAAAAAAAAAAAAQIyMwQFgf/aAAwDAQACE' +
-      'QMRAD8A5+ADotlhW+uXpZGywrfXL0szNspY++UgCKIAAAAAAAAAAAAAAAAAAAAAAAAAAAA' +
-      'yfL82hr9i1jJ8vzaGv2K5wt0L3Xb49eAA7jSAAOi2WFb65elkbLCt9cvSzM2ylj75SAIog' +
-      'AAAAAAAAAAAAAAAAAAAAAAAAAAADJ8vzaGv2LWMny/Noa/YrnC3Qvddvj14ADuNIAA6LZY' +
-      'Vvrl6WRssK31y9LMzbKWPvlIAiiAAAAAAAAAAAAAAAAAAAAAAAAAAAAMny/Noa/YtYyfL8' +
-      '2hr9iucLdC912+PXgAO40gADotlhW+uXpZGywrfXL0szNspY++UgCKIAAAAAAAAAAAAAAA' +
-      'AAAAAAAAAAAAAyfL82hr9i1jJ8vzaGv2K5wt0L3Xb49eAA7jSAAOi2WFb65elkbLCt9cvS' +
-      'zM2ylj75SAIogAAAAAAAAAAAAAAAAAAAAAAAAAAADJ8vzaGv2LWMny/Noa/YrnC3Qvddvj' +
-      '14ADuNIAA6LZYVvrl6WRssK31y9LMzbKWPvlIAiiAAAAAAAAAAAAAAAAAAAAAAAAAAAAMn' +
-      'y/Noa/YtYyfL82hr9iucLdC912+PXgAO40gADotlhW+uXpZGywrfXL0szNspY++UgCKIAA' +
-      'AAAAAAAAAAAAAAAAAAAAAAAAAAyfL82hr9i1jJ8vzaGv2K5wt0L3Xb49eAA7jSAAOi2WFb' +
-      '65elkbLCt9cvSzM2ylj75SAIogAAAAAAAAAAAAAAAAAAAAAAAAAAADJ8vzaGv2LWMny/No' +
-      'a/YrnC3Qvddvj14ADuNIAA6LZYVvrl6WRssK31y9LMzbKWPvlIAiiAAAAAAAAAAAAAAAAA' +
-      'AAAAAAAAAAAMny/Noa/YtYyfL82hr9iucLdC912+PXgAO40gADotlhW+uXpZGywrfXL0sz' +
-      'NspY++UgCKIAAAAAAAAAAAAAAAAAAAAAAAAAAAAyfL82hr9i1jJ8vzaGv2K5wt0L3Xb49e' +
-      'AA7jSAAOi2WFb65elkbLCt9cvSzM2ylj75SAIogAAAAAAAAAAAAAAAAAAAAAAAAAAADJ8v' +
-      'zaGv2LWMny/Noa/YrnC3Qvddvj14ADuNIAA6LZYVvrl6WRssK31y9LMzbKWPvlIAiiAAAA' +
-      'AAAAAAAAAAAAAAAAAAAAAAAAMny/Noa/YtYyfL82hr9iucLdC912+PXgAO40gADotlhW+u' +
-      'XpYGZtlLH3ykARRAAAAAAAAAAAAAAAAAAAAAAAAAAAAGT5fm0NfsQXOFuhe67fHrwAHcaR' +
-      '//Z';
+  const GREEN_PIXEL = [0, 255, 0, 255];
 
   /**
-   * A dataURL of an image for how a frame of the above |SAMPLE_LOTTIE_BLUE|
-   * animation looks like.
-   * @type {string}
+   * A blue pixel as returned by samplePixel.
+   * @type {!Array<number>>}
    */
-  const EXPECTED_FRAME_BLUE =
-      'data:image/jpeg;base64,/9j/4AAQSkZJRgABAQAAAQABAAD/2wBDABALDA4MChAODQ4' +
-      'SERATGCgaGBYWGDEjJR0oOjM9PDkzODdASFxOQERXRTc4UG1RV19iZ2hnPk1xeXBkeFxlZ' +
-      '2P/2wBDARESEhgVGC8aGi9jQjhCY2NjY2NjY2NjY2NjY2NjY2NjY2NjY2NjY2NjY2NjY2N' +
-      'jY2NjY2NjY2NjY2NjY2NjY2P/wAARCADIASwDASIAAhEBAxEB/8QAGAABAQEBAQAAAAAAA' +
-      'AAAAAAAAAQBAwf/xAAZEAEAAwEBAAAAAAAAAAAAAAAAATJxAgT/xAAaAQEAAgMBAAAAAAA' +
-      'AAAAAAAAAAgYBAwQF/8QAGxEBAAICAwAAAAAAAAAAAAAAAAECBTEyNIH/2gAMAwEAAhEDE' +
-      'QA/APPwAW8UjGs4pGNXmnGHNIAmwAAAAAAAAAAAAAAAAAAAAAAAAAAAAJ/TeMUJ/TeMebl' +
-      'OtPidNuICqt4AC3ikY1nFIxq804w5pAE2AAAAAAAAAAAAAAAAAAAAAAAAAAAABP6bxihP6' +
-      'bxjzcp1p8TptxAVVvAAW8UjGs4pGNXmnGHNIAmwAAAAAAAAAAAAAAAAAAAAAAAAAAAAJ/T' +
-      'eMUJ/TeMeblOtPidNuICqt4AC3ikY1nFIxq804w5pAE2AAAAAAAAAAAAAAAAAAAAAAAAAA' +
-      'AABP6bxihP6bxjzcp1p8TptxAVVvAAW8UjGs4pGNXmnGHNIAmwAAAAAAAAAAAAAAAAAAAA' +
-      'AAAAAAAAJ/TeMUJ/TeMeblOtPidNuICqt4AC3ikY1nFIxq804w5pAE2AAAAAAAAAAAAAAA' +
-      'AAAAAAAAAAAAABP6bxihP6bxjzcp1p8TptxAVVvAAW8UjGs4pGNXmnGHNIAmwAAAAAAAAA' +
-      'AAAAAAAAAAAAAAAAAAAJ/TeMUJ/TeMeblOtPidNuICqt4AC3ikY1nFIxq804w5pAE2AAAA' +
-      'AAAAAAAAAAAAAAAAAAAAAAAABP6bxihP6bxjzcp1p8TptxAVVvAAW8UjGs4pGNXmnGHNIA' +
-      'mwAAAAAAAAAAAAAAAAAAAAAAAAAAAAJ/TeMUJ/TeMeblOtPidNuICqt4AC3ikY1nFIxq80' +
-      '4w5pAE2AAAAAAAAAAAAAAAAAAAAAAAAAAAABP6bxihP6bxjzcp1p8TptxAVVvAAW8UjGs4' +
-      'pGNXmnGHNIAmwAAAAAAAAAAAAAAAAAAAAAAAAAAAAJ/TeMUJ/TeMeblOtPidNuICqt4AC3' +
-      'ikY1nFIxq804w5pAE2AAAAAAAAAAAAAAAAAAAAAAAAAAAABP6bxihP6bxjzcp1p8TptxAV' +
-      'VvAAW8UjGgvNOMOaQBNgAAAAAAAAAAAAAAAAAAAAAAAAAAAAT+m8YDzcp1p8TptxAVVvf/' +
-      '9k=';
+  const BLUE_PIXEL = [0, 0, 255, 255];
 
   /** @type {?MockController} */
   let mockController;
@@ -165,6 +117,34 @@ suite('cr_lottie_test', function() {
     Polymer.dom.flush();
   }
 
+  /**
+   * Samples a pixel from the lottie canvas.
+   *
+   * @return {!Promise<!Array<number>>} the pixel color as a [red, green, blue,
+   * transparency] tuple with values 0-255.
+   */
+  async function samplePixel() {
+    // It's not possible to get the context from a canvas that had its control
+    // transferred to an OffscreenCanvas, or from a detached OffscreenCanvas.
+    // Instead, copy the rendered canvas into a new canvas and sample a pixel
+    // from it.
+    const img = document.createElement('img');
+    const waitForLoad = test_util.eventToPromise('load', img);
+    const canvas = crLottieElement.$$('canvas');
+    img.setAttribute('src', canvas.toDataURL());
+    await waitForLoad;
+
+    const imgCanvas = document.createElement('canvas');
+    imgCanvas.width = canvas.width;
+    imgCanvas.height = canvas.height;
+
+    const context = imgCanvas.getContext('2d');
+    context.drawImage(img, 0, 0);
+
+    return Array.from(
+        context.getImageData(canvas.width / 2, canvas.height / 2, 1, 1).data);
+  }
+
   test('TestInitializeAnimationAndAutoPlay', async () => {
     createLottieElement();
     assertFalse(crLottieElement.isAnimationLoaded_);
@@ -225,27 +205,54 @@ suite('cr_lottie_test', function() {
     await waitForPlayingEvent;
   });
 
-  // TODO(crbug.com/1021474): flaky.
-  test.skip('TestRenderFrame', async () => {
-    createLottieElement();
-    // Offscreen canvas has a race issue when used in this test framework. To
-    // ensure that we capture a frame from the animation and not an empty frame,
-    // we delay the capture by 2 seconds.
+  test('TestRenderFrame', async () => {
+    // TODO(crbug.com/1108915): Offscreen canvas has a race issue when used in
+    // this test framework. To ensure that we capture a frame from the animation
+    // and not an empty frame, we delay the capture by 2 seconds.
     // Note: This issue is only observed in tests.
     const kRaceTimeout = 2000;
+
+    createLottieElement();
+    await waitForInitializeEvent;
+    await waitForPlayingEvent;
+
+    const waitForFrameRender = new Promise(function(resolve) {
+      window.setTimeout(resolve, kRaceTimeout);
+    });
+
+    await waitForFrameRender;
+
+    assertDeepEquals(GREEN_PIXEL, await samplePixel());
+  });
+
+  test('TestChangeAnimationUrl', async () => {
+    // TODO(crbug.com/1108915): Offscreen canvas has a race issue when used in
+    // this test framework. To ensure that we capture a frame from the animation
+    // and not an empty frame, we delay the capture by 2 seconds.
+    // Note: This issue is only observed in tests.
+    const kRaceTimeout = 2000;
+
+    createLottieElement();
+    await waitForInitializeEvent;
+    await waitForPlayingEvent;
+
+    waitForInitializeEvent =
+        test_util.eventToPromise('cr-lottie-initialized', crLottieElement);
+    waitForPlayingEvent =
+        test_util.eventToPromise('cr-lottie-playing', crLottieElement);
+
+    crLottieElement.animationUrl = SAMPLE_LOTTIE_BLUE;
 
     await waitForInitializeEvent;
     await waitForPlayingEvent;
 
     const waitForFrameRender = new Promise(function(resolve) {
-                                 setTimeout(resolve, kRaceTimeout);
-                               }).then(function() {
-      const actualFrame =
-          crLottieElement.canvasElement_.toDataURL('image/jpeg', 0.5);
-      assertEquals(actualFrame, EXPECTED_FRAME_GREEN);
+      setTimeout(resolve, kRaceTimeout);
     });
 
     await waitForFrameRender;
+
+    assertDeepEquals(BLUE_PIXEL, await samplePixel());
   });
 
   test('TestHidden', async () => {

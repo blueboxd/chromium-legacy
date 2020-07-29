@@ -677,7 +677,7 @@ TEST_F(OmniboxViewViewsTest, PasteAndGoToUrlOrSearchCommand) {
 
   // Test input that's a valid URL.
   base::string16 expected_text =
-#if defined(OS_MACOSX)
+#if defined(OS_MAC)
       base::ASCIIToUTF16("Pa&ste and Go to https://test.com");
 #else
       base::ASCIIToUTF16("Pa&ste and go to https://test.com");
@@ -691,7 +691,7 @@ TEST_F(OmniboxViewViewsTest, PasteAndGoToUrlOrSearchCommand) {
 
   // Test input that's URL-like. (crbug.com/980002).
   expected_text =
-#if defined(OS_MACOSX)
+#if defined(OS_MAC)
       base::ASCIIToUTF16("Pa&ste and Go to test.com");
 #else
       base::ASCIIToUTF16("Pa&ste and go to test.com");
@@ -704,7 +704,7 @@ TEST_F(OmniboxViewViewsTest, PasteAndGoToUrlOrSearchCommand) {
 
   // Test input that's search-like.
   expected_text =
-#if defined(OS_MACOSX)
+#if defined(OS_MAC)
       base::WideToUTF16(
           L"Pa&ste and Search for \x201Cthis is a test sentence\x201D");
 #else

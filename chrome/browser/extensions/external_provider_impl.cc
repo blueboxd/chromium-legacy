@@ -704,7 +704,7 @@ void ExternalProviderImpl::CreateExternalProviders(
   // On Mac OS, items in /Library/... should be written by the superuser.
   // Check that all components of the path are writable by root only.
   ExternalPrefLoader::Options check_admin_permissions_on_mac;
-#if defined(OS_MACOSX)
+#if defined(OS_MAC)
   check_admin_permissions_on_mac =
     ExternalPrefLoader::ENSURE_PATH_CONTROLLED_BY_ADMIN;
 #else
@@ -787,7 +787,7 @@ void ExternalProviderImpl::CreateExternalProviders(
           bundled_extension_creation_flags));
 
       // Define a per-user source of external extensions.
-#if defined(OS_MACOSX) || (defined(OS_LINUX) && BUILDFLAG(CHROMIUM_BRANDING))
+#if defined(OS_MAC) || (defined(OS_LINUX) && BUILDFLAG(CHROMIUM_BRANDING))
       provider_list->push_back(std::make_unique<ExternalProviderImpl>(
           service,
           base::MakeRefCounted<ExternalPrefLoader>(

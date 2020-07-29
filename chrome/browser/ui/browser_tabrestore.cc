@@ -178,7 +178,7 @@ WebContents* AddRestoredTab(
     raw_web_contents->WasHidden();
   } else {
     const bool should_activate =
-#if defined(OS_MACOSX)
+#if defined(OS_MAC)
         // Activating a window on another space causes the system to switch to
         // that space. Since the session restore process shows and activates
         // windows itself, activating windows here should be safe to skip.

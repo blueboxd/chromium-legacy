@@ -93,7 +93,7 @@ bool LoadingPredictor::PrepareForPageLoad(
                                                                &prediction);
   }
   if (active_hints_.find(url) != active_hints_.end() &&
-      has_local_preconnect_prediction) {
+      has_local_preconnect_prediction && !preconnect_prediction) {
     // We are currently preconnecting using the local preconnect prediction. Do
     // not proceed further.
     return true;

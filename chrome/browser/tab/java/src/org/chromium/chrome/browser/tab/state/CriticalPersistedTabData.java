@@ -16,8 +16,10 @@ import org.chromium.base.Log;
 import org.chromium.base.ObserverList;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.tab.TabLaunchType;
+import org.chromium.chrome.browser.tab.WebContentsState;
 import org.chromium.chrome.browser.tab.proto.CriticalPersistedTabData.CriticalPersistedTabDataProto;
 
+import java.nio.ByteBuffer;
 import java.util.Locale;
 
 /**
@@ -33,7 +35,13 @@ public class CriticalPersistedTabData extends PersistedTabData {
     private int mParentId;
     private int mRootId;
     private long mTimestampMillis;
-    private byte[] mContentStateBytes;
+    /**
+     * Navigation state of the WebContents as returned by nativeGetContentsStateAsByteBuffer(),
+     * stored to be inflated on demand using unfreezeContents(). If this is not null, there is no
+     * WebContents around. Upon tab switch WebContents will be unfrozen and the variable will be set
+     * to null.
+     */
+    private WebContentsState mWebContentsState;
     private int mContentStateVersion;
     private String mOpenerAppId;
     private int mThemeColor;
@@ -65,14 +73,14 @@ public class CriticalPersistedTabData extends PersistedTabData {
      */
     @VisibleForTesting(otherwise = VisibleForTesting.PRIVATE)
     CriticalPersistedTabData(Tab tab, int parentId, int rootId, long timestampMillis,
-            byte[] contentStateBytes, int contentStateVersion, String openerAppId, int themeColor,
-            int launchTypeAtCreation, PersistedTabDataStorage persistedTabDataStorage,
-            String persistedTabDataId) {
+            WebContentsState webContentsState, int contentStateVersion, String openerAppId,
+            int themeColor, int launchTypeAtCreation,
+            PersistedTabDataStorage persistedTabDataStorage, String persistedTabDataId) {
         super(tab, persistedTabDataStorage, persistedTabDataId);
         mParentId = parentId;
         mRootId = rootId;
         mTimestampMillis = timestampMillis;
-        mContentStateBytes = contentStateBytes;
+        mWebContentsState = webContentsState;
         mContentStateVersion = contentStateVersion;
         mOpenerAppId = openerAppId;
         mThemeColor = themeColor;
@@ -148,7 +156,11 @@ public class CriticalPersistedTabData extends PersistedTabData {
             mParentId = criticalPersistedTabDataProto.getParentId();
             mRootId = criticalPersistedTabDataProto.getRootId();
             mTimestampMillis = criticalPersistedTabDataProto.getTimestampMillis();
-            mContentStateBytes = criticalPersistedTabDataProto.getContentStateBytes().toByteArray();
+            byte[] webContentsStateBytes =
+                    criticalPersistedTabDataProto.getWebContentsStateBytes().toByteArray();
+            mWebContentsState =
+                    new WebContentsState(ByteBuffer.allocate(webContentsStateBytes.length));
+            mWebContentsState.buffer().put(webContentsStateBytes);
             mContentStateVersion = criticalPersistedTabDataProto.getContentStateVersion();
             mOpenerAppId = criticalPersistedTabDataProto.getOpenerAppId();
             mThemeColor = criticalPersistedTabDataProto.getThemeColor();
@@ -255,7 +267,7 @@ public class CriticalPersistedTabData extends PersistedTabData {
                 .setParentId(mParentId)
                 .setRootId(mRootId)
                 .setTimestampMillis(mTimestampMillis)
-                .setContentStateBytes(ByteString.copyFrom(mContentStateBytes))
+                .setWebContentsStateBytes(ByteString.copyFrom(mWebContentsState.buffer()))
                 .setContentStateVersion(mContentStateVersion)
                 .setOpenerAppId(mOpenerAppId)
                 .setThemeColor(mThemeColor)
@@ -326,8 +338,12 @@ public class CriticalPersistedTabData extends PersistedTabData {
     /**
      * @return content state bytes for the {@link Tab}
      */
-    public byte[] getContentStateBytes() {
-        return mContentStateBytes;
+    public WebContentsState getWebContentsState() {
+        return mWebContentsState;
+    }
+
+    public void setWebContentsState(WebContentsState webContentsState) {
+        mWebContentsState = webContentsState;
     }
 
     /**

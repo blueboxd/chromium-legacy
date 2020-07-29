@@ -6,6 +6,7 @@
 
 #include "base/threading/thread_task_runner_handle.h"
 #include "ui/base/x/x11_display_util.h"
+#include "ui/base/x/x11_util.h"
 #include "ui/gfx/x/randr.h"
 #include "ui/gfx/x/x11.h"
 #include "ui/gfx/x/xproto.h"
@@ -105,22 +106,19 @@ NativeViewGLSurfaceEGLX11::CreateVsyncProviderInternal() {
 }
 
 bool NativeViewGLSurfaceEGLX11::DispatchXEvent(x11::Event* x11_event) {
-  XEvent* x_event = &x11_event->xlib_event();
   // When ANGLE is used for EGL, it creates an X11 child window. Expose events
   // from this window need to be forwarded to this class.
-  bool can_dispatch =
-      x_event->type == Expose &&
-      std::find(children_.begin(), children_.end(),
-                static_cast<x11::Window>(x_event->xexpose.window)) !=
-          children_.end();
-
+  auto* expose = x11_event->As<x11::ExposeEvent>();
+  bool can_dispatch = expose && std::find(children_.begin(), children_.end(),
+                                          expose->window) != children_.end();
   if (!can_dispatch)
     return false;
 
-  x_event->xexpose.window = window_;
-  Display* x11_display = GetXNativeDisplay();
-  XSendEvent(x11_display, window_, x11::False, ExposureMask, x_event);
-  XFlush(x11_display);
+  auto expose_copy = *expose;
+  auto window = static_cast<x11::Window>(window_);
+  expose_copy.window = window;
+  ui::SendEvent(expose_copy, window, x11::EventMask::Exposure);
+  x11::Connection::Get()->Flush();
   return true;
 }
 

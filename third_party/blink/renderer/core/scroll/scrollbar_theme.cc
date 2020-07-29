@@ -42,7 +42,7 @@
 #include "third_party/blink/renderer/platform/graphics/paint/paint_controller.h"
 #include "third_party/blink/renderer/platform/runtime_enabled_features.h"
 
-#if !defined(OS_APPLE)
+#if !defined(OS_MAC)
 #include "third_party/blink/public/platform/web_theme_engine.h"
 #endif
 
@@ -119,7 +119,7 @@ void ScrollbarTheme::PaintScrollCorner(
 
   DrawingRecorder recorder(context, display_item_client,
                            DisplayItem::kScrollCorner, corner_rect);
-#if defined(OS_APPLE)
+#if defined(OS_MAC)
   context.FillRect(corner_rect, Color::kWhite);
 #else
   Platform::Current()->ThemeEngine()->Paint(

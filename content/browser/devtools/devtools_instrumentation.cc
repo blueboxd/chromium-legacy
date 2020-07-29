@@ -740,6 +740,19 @@ std::unique_ptr<protocol::Array<protocol::String>> BuildExclusionReasons(
         protocol::Audits::SameSiteCookieExclusionReasonEnum::
             ExcludeSameSiteNoneInsecure);
   }
+  if (status.HasExclusionReason(
+          net::CookieInclusionStatus::EXCLUDE_SAMESITE_LAX)) {
+    exclusion_reasons->push_back(
+        protocol::Audits::SameSiteCookieExclusionReasonEnum::
+            ExcludeSameSiteLax);
+  }
+  if (status.HasExclusionReason(
+          net::CookieInclusionStatus::EXCLUDE_SAMESITE_STRICT)) {
+    exclusion_reasons->push_back(
+        protocol::Audits::SameSiteCookieExclusionReasonEnum::
+            ExcludeSameSiteStrict);
+  }
+
   return exclusion_reasons;
 }
 

@@ -102,11 +102,11 @@
 #include "content/common/zygote/zygote_handle_impl_linux.h"
 #endif
 
-#if defined(OS_MACOSX) || defined(OS_ANDROID)
+#if defined(OS_MAC) || defined(OS_ANDROID)
 #include "gpu/ipc/common/gpu_surface_tracker.h"
 #endif
 
-#if defined(OS_MACOSX)
+#if defined(OS_MAC)
 #include "components/metal_util/switches.h"
 #include "content/browser/gpu/ca_transaction_gpu_coordinator.h"
 #endif
@@ -263,7 +263,7 @@ static const char* const kSwitchNames[] = {
     switches::kV,
     switches::kVModule,
     switches::kUseAdapterLuid,
-#if defined(OS_MACOSX)
+#if defined(OS_MAC)
     sandbox::policy::switches::kEnableSandboxLogging,
     switches::kDisableAVFoundationOverlays,
     switches::kDisableMacOverlays,
@@ -719,7 +719,7 @@ GpuProcessHost::~GpuProcessHost() {
 
   SendOutstandingReplies();
 
-#if defined(OS_MACOSX)
+#if defined(OS_MAC)
   if (ca_transaction_gpu_coordinator_) {
     ca_transaction_gpu_coordinator_->HostWillBeDestroyed();
     ca_transaction_gpu_coordinator_ = nullptr;
@@ -847,7 +847,7 @@ bool GpuProcessHost::Init() {
                                    process_->GetInProcessMojoInvitation()),
         gpu_preferences));
     base::Thread::Options options;
-#if defined(OS_WIN) || defined(OS_MACOSX)
+#if defined(OS_WIN) || defined(OS_MAC)
     // WGL needs to create its own window and pump messages on it.
     options.message_pump_type = base::MessagePumpType::UI;
 #endif
@@ -892,7 +892,7 @@ bool GpuProcessHost::Init() {
   }
 #endif
 
-#if defined(OS_MACOSX)
+#if defined(OS_MAC)
   ca_transaction_gpu_coordinator_ = CATransactionGPUCoordinator::Create(this);
 #endif
 
@@ -1125,7 +1125,7 @@ bool GpuProcessHost::LaunchGpuProcess() {
 #if defined(OS_LINUX)
   int child_flags = gpu_launcher.empty() ? ChildProcessHost::CHILD_ALLOW_SELF
                                          : ChildProcessHost::CHILD_NORMAL;
-#elif defined(OS_MACOSX)
+#elif defined(OS_MAC)
   int child_flags = ChildProcessHost::CHILD_GPU;
 #else
   int child_flags = ChildProcessHost::CHILD_NORMAL;

@@ -111,7 +111,7 @@ void TranslateService::OnResourceRequestsAllowed() {
 
 // static
 bool TranslateService::IsTranslateBubbleEnabled() {
-#if defined(USE_AURA) || defined(OS_MACOSX)
+#if defined(USE_AURA) || defined(OS_MAC)
   return true;
 #else
   // The bubble UX is not implemented on other platforms.

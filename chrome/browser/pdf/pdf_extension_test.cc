@@ -102,7 +102,7 @@
 #include "ui/gfx/geometry/point.h"
 #include "url/gurl.h"
 
-#if defined(TOOLKIT_VIEWS) && !defined(OS_MACOSX)
+#if defined(TOOLKIT_VIEWS) && !defined(OS_MAC)
 #include "chrome/browser/ui/views/location_bar/zoom_bubble_view.h"
 #endif
 
@@ -123,7 +123,7 @@ using guest_view::TestGuestViewManagerFactory;
 
 const int kNumberLoadTestParts = 10;
 
-#if defined(OS_MACOSX)
+#if defined(OS_MAC)
 const int kDefaultKeyModifier = blink::WebInputEvent::kMetaKey;
 #else
 const int kDefaultKeyModifier = blink::WebInputEvent::kControlKey;
@@ -1223,14 +1223,14 @@ IN_PROC_BROWSER_TEST_F(PDFExtensionTest, MAYBE_PdfZoomWithoutBubble) {
                            zoom::ZoomController::ZOOM_MODE_MANUAL, false));
 
   // Zoom PDF via script.
-#if defined(TOOLKIT_VIEWS) && !defined(OS_MACOSX)
+#if defined(TOOLKIT_VIEWS) && !defined(OS_MAC)
   EXPECT_EQ(nullptr, ZoomBubbleView::GetZoomBubble());
 #endif
   ASSERT_TRUE(
       content::ExecuteScript(guest_contents, "viewer.viewport.zoomIn();"));
 
   watcher.Wait();
-#if defined(TOOLKIT_VIEWS) && !defined(OS_MACOSX)
+#if defined(TOOLKIT_VIEWS) && !defined(OS_MAC)
   EXPECT_EQ(nullptr, ZoomBubbleView::GetZoomBubble());
 #endif
 }
@@ -2242,7 +2242,7 @@ IN_PROC_BROWSER_TEST_F(PDFExtensionTest, TouchpadPinchInvokesCustomZoom) {
                                std::move(send_pinch));
 }
 
-#if !defined(OS_MACOSX)
+#if !defined(OS_MAC)
 // Ensure that ctrl-wheel events are handled by the PDF viewer.
 IN_PROC_BROWSER_TEST_F(PDFExtensionTest, CtrlWheelInvokesCustomZoom) {
   GURL test_pdf_url(embedded_test_server()->GetURL("/pdf/test.pdf"));
@@ -2294,7 +2294,7 @@ IN_PROC_BROWSER_TEST_F(PDFExtensionTest,
                                std::move(send_touchscreen_pinch));
 }
 
-#endif  // !defined(OS_MACOSX)
+#endif  // !defined(OS_MAC)
 
 // Flaky in nearly all configurations; see https://crbug.com/856169.
 IN_PROC_BROWSER_TEST_F(PDFExtensionHitTestTest, DISABLED_MouseLeave) {

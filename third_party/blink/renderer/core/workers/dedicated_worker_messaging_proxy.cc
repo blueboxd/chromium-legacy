@@ -241,6 +241,13 @@ void DedicatedWorkerMessagingProxy::Trace(Visitor* visitor) const {
   ThreadedMessagingProxyBase::Trace(visitor);
 }
 
+const DedicatedWorkerToken&
+DedicatedWorkerMessagingProxy::GetDedicatedWorkerToken() const {
+  if (!worker_object_)
+    return DedicatedWorkerToken::Null();
+  return worker_object_->GetToken();
+}
+
 base::Optional<WorkerBackingThreadStartupData>
 DedicatedWorkerMessagingProxy::CreateBackingThreadStartupData(
     v8::Isolate* isolate) {

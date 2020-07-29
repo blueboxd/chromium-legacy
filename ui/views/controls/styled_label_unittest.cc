@@ -285,7 +285,7 @@ TEST_F(StyledLabelTest, StyledRangeCustomFontUnderlined) {
   StyledLabel::RangeStyleInfo style_info;
   style_info.tooltip = ASCIIToUTF16("tooltip");
   style_info.custom_font =
-      styled()->GetDefaultFontList().DeriveWithStyle(gfx::Font::UNDERLINE);
+      styled()->GetFontList().DeriveWithStyle(gfx::Font::UNDERLINE);
   styled()->AddStyleRange(
       gfx::Range(text.size(), text.size() + underlined_text.size()),
       style_info);
@@ -307,7 +307,7 @@ TEST_F(StyledLabelTest, StyledRangeTextStyleBold) {
   // Pretend disabled text becomes bold for testing.
   bold_provider.SetFont(
       style::CONTEXT_LABEL, style::STYLE_DISABLED,
-      styled()->GetDefaultFontList().DeriveWithWeight(gfx::Font::Weight::BOLD));
+      styled()->GetFontList().DeriveWithWeight(gfx::Font::Weight::BOLD));
 
   StyledLabel::RangeStyleInfo style_info;
   style_info.text_style = style::STYLE_DISABLED;
@@ -373,11 +373,8 @@ TEST_F(StyledLabelTest, Color) {
   styled()->SetBounds(0, 0, 1000, 1000);
   styled()->Layout();
 
-  Widget* widget = new Widget();
-  Widget::InitParams params = CreateParams(Widget::InitParams::TYPE_POPUP);
-  widget->Init(std::move(params));
-  View* container = new View();
-  widget->SetContentsView(container);
+  std::unique_ptr<Widget> widget = CreateTestWidget();
+  View* container = widget->SetContentsView(std::make_unique<View>());
 
   // The code below is not prepared to deal with dark mode.
   widget->GetNativeTheme()->set_use_dark_colors(false);
@@ -394,6 +391,7 @@ TEST_F(StyledLabelTest, Color) {
       container->AddChildView(std::make_unique<Link>(ASCIIToUTF16(text_link)));
   const SkColor kDefaultLinkColor = link->GetEnabledColor();
 
+  ASSERT_EQ(3u, styled()->children().size());
   EXPECT_EQ(SK_ColorBLUE, LabelAt(0)->GetEnabledColor());
   EXPECT_EQ(kDefaultLinkColor,
             LabelAt(1, Link::kViewClassName)->GetEnabledColor());

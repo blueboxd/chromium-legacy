@@ -84,6 +84,12 @@ void RasterDecoderTestBase::SetUp() {
   InitDecoder(InitState());
 }
 
+void RasterDecoderTestBase::AddExpectationsForGetCapabilities() {
+  EXPECT_CALL(*gl_, GetIntegerv(GL_MAX_TEXTURE_SIZE, _))
+      .WillOnce(SetArgPointee<1>(8192u))
+      .RetiresOnSaturation();
+}
+
 void RasterDecoderTestBase::AddExpectationsForRestoreAttribState(
     GLuint attrib) {
   EXPECT_CALL(*gl_, BindBuffer(GL_ARRAY_BUFFER, _))
@@ -135,7 +141,7 @@ void RasterDecoderTestBase::InitDecoder(const InitState& init) {
   for (const std::string& extension : init.extensions) {
     all_extensions += extension + " ";
   }
-  const ContextType context_type = CONTEXT_TYPE_OPENGLES2;
+  const ContextType context_type = init.context_type;
 
   // For easier substring/extension matching
   gl::SetGLGetProcAddressProc(gl::MockGLInterface::GetGLProcAddress);
@@ -163,7 +169,7 @@ void RasterDecoderTestBase::InitDecoder(const InitState& init) {
   gles2::TestHelper::SetupFeatureInfoInitExpectationsWithGLVersion(
       gl_.get(), all_extensions.c_str(), "", init.gl_version.c_str(),
       context_type);
-  feature_info_->Initialize(gpu::CONTEXT_TYPE_OPENGLES2,
+  feature_info_->Initialize(context_type,
                             gpu_preferences_.use_passthrough_cmd_decoder &&
                                 gles2::PassthroughCommandDecoderSupported(),
                             gles2::DisallowedFeatures());

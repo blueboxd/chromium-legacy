@@ -208,7 +208,7 @@ void CategorizedWorkerPool::Start(int num_normal_threads) {
       std::end(kBackgroundThreadPriorityCategories)};
 
   base::SimpleThread::Options thread_options;
-#if !defined(OS_MACOSX)
+#if !defined(OS_MAC)
   thread_options.priority = base::ThreadPriority::BACKGROUND;
 #endif
 

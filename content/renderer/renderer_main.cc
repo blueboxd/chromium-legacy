@@ -46,7 +46,7 @@
 #include "base/android/library_loader/library_loader_hooks.h"
 #endif  // OS_ANDROID
 
-#if defined(OS_MACOSX)
+#if defined(OS_MAC)
 #include <Carbon/Carbon.h>
 #include <signal.h>
 #include <unistd.h>
@@ -83,7 +83,7 @@ static void HandleRendererErrorTestParameters(
 }
 
 std::unique_ptr<base::MessagePump> CreateMainThreadMessagePump() {
-#if defined(OS_MACOSX)
+#if defined(OS_MAC)
   // As long as scrollbars on Mac are painted with Cocoa, the message pump
   // needs to be backed by a Foundation-level loop to process NSTimers. See
   // http://crbug.com/306348#c24 for details.
@@ -110,7 +110,7 @@ int RendererMain(const MainFunctionParams& parameters) {
 
   const base::CommandLine& command_line = parameters.command_line;
 
-#if defined(OS_MACOSX)
+#if defined(OS_MAC)
   base::mac::ScopedNSAutoreleasePool* pool = parameters.autorelease_pool;
 #endif  // OS_MACOSX
 
@@ -183,7 +183,7 @@ int RendererMain(const MainFunctionParams& parameters) {
     bool need_sandbox =
         !command_line.HasSwitch(sandbox::policy::switches::kNoSandbox);
 
-#if !defined(OS_WIN) && !defined(OS_MACOSX)
+#if !defined(OS_WIN) && !defined(OS_MAC)
     // Sandbox is enabled before RenderProcess initialization on all platforms,
     // except Windows and Mac.
     // TODO(markus): Check if it is OK to remove ifdefs for Windows and Mac.
@@ -200,7 +200,7 @@ int RendererMain(const MainFunctionParams& parameters) {
     new RenderThreadImpl(run_loop.QuitClosure(),
                          std::move(main_thread_scheduler));
 
-#if defined(OS_POSIX) && !defined(OS_ANDROID) && !defined(OS_MACOSX)
+#if defined(OS_POSIX) && !defined(OS_ANDROID) && !defined(OS_MAC)
     // Startup tracing is usually enabled earlier, but if we forked from a
     // zygote, we can only enable it after mojo IPC support is brought up
     // initialized by RenderThreadImpl, because the mojo broker has to create
@@ -222,7 +222,7 @@ int RendererMain(const MainFunctionParams& parameters) {
     base::HighResolutionTimerManager hi_res_timer_manager;
 
     if (should_run_loop) {
-#if defined(OS_MACOSX)
+#if defined(OS_MAC)
       if (pool)
         pool->Recycle();
 #endif

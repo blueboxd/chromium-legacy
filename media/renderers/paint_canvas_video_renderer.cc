@@ -615,9 +615,10 @@ class VideoImageGenerator : public cc::PaintImageGenerator {
     return true;
   }
 
-  bool QueryYUVA8(SkYUVASizeInfo* sizeInfo,
-                  SkYUVAIndex indices[SkYUVAIndex::kIndexCount],
-                  SkYUVColorSpace* color_space) const override {
+  bool QueryYUVA(SkYUVASizeInfo* sizeInfo,
+                 SkYUVAIndex indices[SkYUVAIndex::kIndexCount],
+                 SkYUVColorSpace* color_space,
+                 uint8_t* bit_depth) const override {
     // Temporarily disabling this path to avoid creating YUV ImageData in
     // GpuImageDecodeCache.
     // TODO(crbug.com/921636): Restore the code below once YUV rendering support
@@ -661,11 +662,12 @@ class VideoImageGenerator : public cc::PaintImageGenerator {
 #endif
   }
 
-  bool GetYUVA8Planes(const SkYUVASizeInfo& sizeInfo,
-                      const SkYUVAIndex indices[SkYUVAIndex::kIndexCount],
-                      void* planes[4],
-                      size_t frame_index,
-                      uint32_t lazy_pixel_ref) override {
+  bool GetYUVAPlanes(const SkYUVASizeInfo& sizeInfo,
+                     SkColorType color_type,
+                     const SkYUVAIndex indices[SkYUVAIndex::kIndexCount],
+                     void* planes[4],
+                     size_t frame_index,
+                     uint32_t lazy_pixel_ref) override {
     DCHECK_EQ(frame_index, 0u);
 
     media::VideoPixelFormat format = frame_->format();

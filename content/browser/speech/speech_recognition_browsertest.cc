@@ -298,7 +298,7 @@ IN_PROC_BROWSER_TEST_F(SpeechRecognitionBrowserTest, DISABLED_Precheck) {
 }
 
 // Flaky on mac, see https://crbug.com/794645.
-#if defined(OS_MACOSX)
+#if defined(OS_MAC)
 #define MAYBE_OneShotRecognition DISABLED_OneShotRecognition
 #else
 #define MAYBE_OneShotRecognition OneShotRecognition

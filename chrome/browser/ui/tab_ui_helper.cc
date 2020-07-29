@@ -45,7 +45,7 @@ base::string16 TabUIHelper::GetTitle() const {
   if (tab_ui_data_)
     return tab_ui_data_->title;
 
-#if defined(OS_MACOSX)
+#if defined(OS_MAC)
   return l10n_util::GetStringUTF16(IDS_BROWSER_WINDOW_MAC_TAB_UNTITLED);
 #else
   return base::string16();

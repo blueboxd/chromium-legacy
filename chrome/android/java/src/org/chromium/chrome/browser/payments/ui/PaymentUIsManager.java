@@ -5,8 +5,10 @@
 package org.chromium.chrome.browser.payments.ui;
 
 import androidx.annotation.Nullable;
+import androidx.annotation.VisibleForTesting;
 
 import org.chromium.base.Callback;
+import org.chromium.chrome.browser.ChromeActivity;
 import org.chromium.chrome.browser.autofill.PersonalDataManager.CreditCard;
 import org.chromium.chrome.browser.payments.AddressEditor;
 import org.chromium.chrome.browser.payments.AutofillAddress;
@@ -14,7 +16,11 @@ import org.chromium.chrome.browser.payments.AutofillPaymentAppCreator;
 import org.chromium.chrome.browser.payments.AutofillPaymentAppFactory;
 import org.chromium.chrome.browser.payments.CardEditor;
 import org.chromium.chrome.browser.payments.PaymentRequestImpl;
+import org.chromium.chrome.browser.payments.PaymentRequestImpl.PaymentRequestServiceObserverForTest;
 import org.chromium.chrome.browser.payments.SettingsAutofillAndPaymentsObserver;
+import org.chromium.chrome.browser.payments.handler.PaymentHandlerCoordinator;
+import org.chromium.chrome.browser.payments.handler.PaymentHandlerCoordinator.PaymentHandlerUiObserver;
+import org.chromium.chrome.browser.payments.handler.PaymentHandlerCoordinator.PaymentHandlerWebContentsObserver;
 import org.chromium.components.autofill.EditableOption;
 import org.chromium.components.payments.CurrencyFormatter;
 import org.chromium.components.payments.PaymentApp;
@@ -23,11 +29,13 @@ import org.chromium.components.payments.PaymentFeatureList;
 import org.chromium.components.payments.PaymentOptionsUtils;
 import org.chromium.components.payments.PaymentRequestLifecycleObserver;
 import org.chromium.components.payments.PaymentRequestParams;
+import org.chromium.content_public.browser.WebContents;
 import org.chromium.payments.mojom.PaymentCurrencyAmount;
 import org.chromium.payments.mojom.PaymentDetails;
 import org.chromium.payments.mojom.PaymentDetailsModifier;
 import org.chromium.payments.mojom.PaymentItem;
 import org.chromium.payments.mojom.PaymentShippingOption;
+import org.chromium.url.GURL;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -43,8 +51,10 @@ import java.util.Set;
  * This class manages all of the UIs related to payment. The UI logic of {@link PaymentRequestImpl}
  * should be moved into this class.
  */
-public class PaymentUIsManager
-        implements SettingsAutofillAndPaymentsObserver.Observer, PaymentRequestLifecycleObserver {
+public class PaymentUIsManager implements SettingsAutofillAndPaymentsObserver.Observer,
+                                          PaymentRequestLifecycleObserver,
+                                          PaymentHandlerUiObserver {
+    private PaymentHandlerCoordinator mPaymentHandlerUi;
     private Callback<PaymentInformation> mPaymentInformationCallback;
     private SectionInformation mUiShippingOptions;
     private final Delegate mDelegate;
@@ -114,7 +124,7 @@ public class PaymentUIsManager
         }
 
         /** A callback invoked when the bottom sheet is hidden, to enforce the visibility rules. */
-        public void onBottomSheetClosed() {
+        /* package */ void onBottomSheetClosed() {
             mShowingBottomSheet = false;
             updatePaymentRequestDialogShowState();
         }
@@ -129,20 +139,32 @@ public class PaymentUIsManager
      * Create PaymentUIsManager.
      * @param delegate The delegate of this instance.
      * @param params The parameters of the payment request specified by the merchant.
-     * @param addressEditor The AddressEditor of the PaymentRequest UI.
-     * @param cardEditor The CardEditor of the PaymentRequest UI.
+     * @param webContents The WebContents of the merchant page.
+     * @param isOffTheRecord Whether merchant page is in an isOffTheRecord tab.
      */
-    // TODO(crbug.com/1107102): AddressEditor and CardEditor should be initialized in this
-    // constructor instead of the caller of the constructor, once CardEditor's "ForTest" symbols
-    // have been removed from the production code.
     public PaymentUIsManager(Delegate delegate, PaymentRequestParams params,
-            AddressEditor addressEditor, CardEditor cardEditor) {
+            WebContents webContents, boolean isOffTheRecord) {
         mDelegate = delegate;
         mParams = params;
-        mAddressEditor = addressEditor;
-        mCardEditor = cardEditor;
+
+        // Do not persist changes on disk in OffTheRecord mode.
+        mAddressEditor = new AddressEditor(
+                AddressEditor.Purpose.PAYMENT_REQUEST, /*saveToDisk=*/!isOffTheRecord);
+        // PaymentRequest card editor does not show the organization name in the dropdown with the
+        // billing address labels.
+        mCardEditor = new CardEditor(webContents, mAddressEditor, /*includeOrgLabel=*/false);
+
         mPaymentUisShowStateReconciler = new PaymentUisShowStateReconciler();
         mCurrencyFormatterMap = new HashMap<>();
+    }
+
+    /**
+     * Set an observer for test.
+     * @param observerForTest An observer for test.
+     */
+    @VisibleForTesting
+    public static void setObserverForTest(PaymentRequestServiceObserverForTest observerForTest) {
+        CardEditor.setObserverForTest(observerForTest);
     }
 
     /** @return The PaymentRequestUI. */
@@ -589,5 +611,60 @@ public class PaymentUIsManager
         }
 
         return false;
+    }
+
+    // Implement PaymentHandlerUiObserver:
+    @Override
+    public void onPaymentHandlerUiClosed() {
+        mPaymentUisShowStateReconciler.onBottomSheetClosed();
+        mPaymentHandlerUi = null;
+    }
+
+    // Implement PaymentHandlerUiObserver:
+    @Override
+    public void onPaymentHandlerUiShown() {
+        assert mPaymentHandlerUi != null;
+        mPaymentUisShowStateReconciler.onBottomSheetShown();
+    }
+
+    /** Close the PaymentHandler UI if not already. */
+    public void ensureHideAndResetPaymentHandlerUi() {
+        if (mPaymentHandlerUi == null) return;
+        mPaymentHandlerUi.hide();
+        mPaymentHandlerUi = null;
+    }
+
+    /**
+     * Create and show the (BottomSheet) PaymentHandler UI.
+     * @param webContents The WebContents of the merchant page.
+     * @param url The URL of the payment app.
+     * @param paymentHandlerWebContentsObserver An observer of the WebContents of the Payment
+     *         Handler UI.
+     * @param isOffTheRecord Whether the merchant page is currently in an OffTheRecord tab.
+     * @return Whether the PaymentHandler UI is shown successfully.
+     */
+    public boolean showPaymentHandlerUI(WebContents webContents, GURL url,
+            PaymentHandlerWebContentsObserver paymentHandlerWebContentsObserver,
+            boolean isOffTheRecord) {
+        if (mPaymentHandlerUi != null) return false;
+        ChromeActivity chromeActivity = ChromeActivity.fromWebContents(webContents);
+        if (chromeActivity == null) return false;
+
+        mPaymentHandlerUi = new PaymentHandlerCoordinator();
+        return mPaymentHandlerUi.show(chromeActivity, url, isOffTheRecord,
+                paymentHandlerWebContentsObserver, /*uiObserver=*/this);
+    }
+
+    @VisibleForTesting(otherwise = VisibleForTesting.NONE)
+    public WebContents getPaymentHandlerWebContentsForTest() {
+        if (mPaymentHandlerUi == null) return null;
+        return mPaymentHandlerUi.getWebContentsForTest();
+    }
+
+    @VisibleForTesting(otherwise = VisibleForTesting.NONE)
+    public boolean clickPaymentHandlerSecurityIconForTest() {
+        if (mPaymentHandlerUi == null) return false;
+        mPaymentHandlerUi.clickSecurityIconForTest();
+        return true;
     }
 }

@@ -46,6 +46,7 @@ class LocalFrameView;
 class Page;
 class PageWidgetEventHandler;
 class PaintWorkletPaintDispatcher;
+class RemoteFrame;
 class WebLocalFrameImpl;
 class WebViewImpl;
 class WidgetBase;
@@ -297,6 +298,8 @@ class CORE_EXPORT WebFrameWidgetBase
 #if defined(OS_ANDROID)
   SynchronousCompositorRegistry* GetSynchronousCompositorRegistry() override;
 #endif
+  void ApplyVisualProperties(
+      const VisualProperties& visual_properties) override;
 
   // WidgetBaseClient methods.
   void RecordDispatchRafAlignedInputTime(
@@ -372,7 +375,7 @@ class CORE_EXPORT WebFrameWidgetBase
   // Sets the inert bit on an out-of-process iframe, causing it to ignore
   // input.
   void SetIsInertForSubFrame(bool inert) override {}
-#if defined(OS_APPLE)
+#if defined(OS_MAC)
   void GetStringAtPoint(const gfx::Point& point_in_local_root,
                         GetStringAtPointCallback callback) override;
 #endif
@@ -381,6 +384,8 @@ class CORE_EXPORT WebFrameWidgetBase
 
   // Called when the FrameView for this Widget's local root is created.
   virtual void DidCreateLocalRootView() {}
+
+  virtual void SetZoomLevel(double zoom_level);
 
   // This method returns the focused frame belonging to this WebWidget, that
   // is, a focused frame with the same local root as the one corresponding
@@ -535,6 +540,9 @@ class CORE_EXPORT WebFrameWidgetBase
   void RequestAnimationAfterDelayTimerFired(TimerBase*);
   void PresentationCallbackForMeaningfulLayout(blink::WebSwapResult,
                                                base::TimeTicks);
+
+  void ForEachRemoteFrameControlledByWidget(
+      const base::RepeatingCallback<void(RemoteFrame*)>& callback);
 
   static bool ignore_input_events_;
 

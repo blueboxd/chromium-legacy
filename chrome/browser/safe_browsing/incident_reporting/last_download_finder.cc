@@ -61,7 +61,7 @@ bool IsBinaryDownloadForCurrentOS(
                 "Update logic below");
 
 // Platform-specific types are relevant only for their own platforms.
-#if defined(OS_MACOSX)
+#if defined(OS_MAC)
   if (download_type == ClientDownloadRequest::MAC_EXECUTABLE ||
       download_type == ClientDownloadRequest::MAC_ARCHIVE_FAILED_PARSING)
     return true;

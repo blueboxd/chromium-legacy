@@ -386,7 +386,7 @@ void KeyboardAccessTest::TestMenuKeyboardAccessAndDismiss() {
 // http://crbug.com/62310.
 #if defined(OS_CHROMEOS)
 #define MAYBE_TestMenuKeyboardAccess DISABLED_TestMenuKeyboardAccess
-#elif defined(OS_MACOSX)
+#elif defined(OS_MAC)
 // No keyboard shortcut for the Chrome menu on Mac: http://crbug.com/823952
 #define MAYBE_TestMenuKeyboardAccess DISABLED_TestMenuKeyboardAccess
 #else
@@ -400,7 +400,7 @@ IN_PROC_BROWSER_TEST_F(KeyboardAccessTest, MAYBE_TestMenuKeyboardAccess) {
 // http://crbug.com/62310.
 #if defined(OS_CHROMEOS)
 #define MAYBE_TestAltMenuKeyboardAccess DISABLED_TestAltMenuKeyboardAccess
-#elif defined(OS_MACOSX)
+#elif defined(OS_MAC)
 // No keyboard shortcut for the Chrome menu on Mac: http://crbug.com/823952
 #define MAYBE_TestAltMenuKeyboardAccess DISABLED_TestAltMenuKeyboardAccess
 #else
@@ -471,7 +471,7 @@ IN_PROC_BROWSER_TEST_F(KeyboardAccessTest, ReserveKeyboardAccelerators) {
   ASSERT_EQ(2, browser()->tab_strip_model()->active_index());
 
   ASSERT_TRUE(ui_test_utils::SendKeyPressSync(
-#if defined(OS_MACOSX)
+#if defined(OS_MAC)
       browser(), ui::VKEY_W, false, false, false, true));
 #else
       browser(), ui::VKEY_W, true, false, false, false));

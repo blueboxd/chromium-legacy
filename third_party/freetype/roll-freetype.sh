@@ -9,7 +9,7 @@ rolldeps() {
 addtrybots() {
   STEP="add trybots" &&
   OLD_MSG=$(git show -s --format=%B HEAD) &&
-  git commit --amend -m"$OLD_MSG" -m"CQ_INCLUDE_TRYBOTS=luci.chromium.try:linux_chromium_msan_rel_ng"
+  git commit --amend -m"$OLD_MSG" -m"Cq-Include-Trybots: luci.chromium.try:linux_chromium_msan_rel_ng"
 }
 
 addotherprojectbugs() {

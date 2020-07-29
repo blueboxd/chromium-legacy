@@ -386,7 +386,7 @@ IN_PROC_BROWSER_TEST_P(SitePerProcessBrowserTest,
 //     |
 //     C3
 // TODO(crbug.com/1012185): Flaky timeouts on Linux and Mac.
-#if defined(OS_LINUX) || defined(OS_MACOSX)
+#if defined(OS_LINUX) || defined(OS_MAC)
 #define MAYBE_UnloadHandlerSubframes DISABLED_UnloadHandlerSubframes
 #else
 #define MAYBE_UnloadHandlerSubframes UnloadHandlerSubframes

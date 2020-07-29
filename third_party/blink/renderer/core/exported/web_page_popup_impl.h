@@ -194,6 +194,8 @@ class CORE_EXPORT WebPagePopupImpl final : public WebPagePopup,
   void HandleMouseDown(LocalFrame& main_frame, const WebMouseEvent&) override;
   WebInputEventResult HandleMouseWheel(LocalFrame& main_frame,
                                        const WebMouseWheelEvent&) override;
+  void ApplyVisualProperties(
+      const VisualProperties& visual_properties) override;
 
   // This may only be called if page_ is non-null.
   LocalFrame& MainFrame() const;

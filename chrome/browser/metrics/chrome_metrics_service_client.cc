@@ -163,7 +163,7 @@
 #include "content/public/browser/system_connector.h"
 #endif
 
-#if defined(OS_WIN) || defined(OS_MACOSX) || defined(OS_ANDROID)
+#if defined(OS_WIN) || defined(OS_MAC) || defined(OS_ANDROID)
 #include "third_party/crashpad/crashpad/client/crashpad_info.h"
 #endif
 
@@ -176,7 +176,7 @@
 #include "chrome/browser/metrics/upgrade_metrics_provider.h"
 #endif  //  !defined(OS_ANDROID) && !defined(OS_CHROMEOS)
 
-#if defined(OS_MACOSX)
+#if defined(OS_MAC)
 #include "chrome/browser/metrics/power_metrics_provider_mac.h"
 #endif
 
@@ -196,7 +196,7 @@ const int kMaxHistogramGatheringWaitDuration = 60000;  // 60 seconds.
 // third_party/crashpad/crashpad/handler/handler_main.cc.
 const char kCrashpadHistogramAllocatorName[] = "CrashpadMetrics";
 
-#if defined(OS_WIN) || defined(OS_MACOSX) || defined(OS_ANDROID)
+#if defined(OS_WIN) || defined(OS_MAC) || defined(OS_ANDROID)
 // The stream type assigned to the minidump stream that holds the serialized
 // system profile proto.
 const uint32_t kSystemProfileMinidumpStreamType = 0x4B6B0003;
@@ -207,7 +207,7 @@ const uint32_t kSystemProfileMinidumpStreamType = 0x4B6B0003;
 // not assume it.
 // TODO(manzagop): revisit this if the Crashpad API evolves.
 base::LazyInstance<std::string>::Leaky g_environment_for_crash_reporter;
-#endif  // defined(OS_WIN) || defined(OS_MACOSX) || defined(OS_ANDROID)
+#endif  // defined(OS_WIN) || defined(OS_MAC) || defined(OS_ANDROID)
 
 void RegisterFileMetricsPreferences(PrefRegistrySimple* registry) {
   metrics::FileMetricsProvider::RegisterPrefs(registry, kBrowserMetricsName);
@@ -499,7 +499,7 @@ std::string ChromeMetricsServiceClient::GetVersionString() {
 }
 
 void ChromeMetricsServiceClient::OnEnvironmentUpdate(std::string* environment) {
-#if defined(OS_WIN) || defined(OS_MACOSX) || defined(OS_ANDROID)
+#if defined(OS_WIN) || defined(OS_MAC) || defined(OS_ANDROID)
   DCHECK(environment);
 
   // Register the environment with the crash reporter. Note this only registers
@@ -685,11 +685,11 @@ void ChromeMetricsServiceClient::RegisterMetricsServiceProviders() {
       std::make_unique<AntiVirusMetricsProvider>());
 #endif  // defined(OS_WIN)
 
-#if defined(OS_WIN) || defined(OS_MACOSX) || \
+#if defined(OS_WIN) || defined(OS_MAC) || \
     (defined(OS_LINUX) && !defined(OS_CHROMEOS))
   metrics_service_->RegisterMetricsProvider(
       std::make_unique<DesktopPlatformFeaturesMetricsProvider>());
-#endif  //  defined(OS_WIN) || defined(OS_MACOSX) || \
+#endif  //  defined(OS_WIN) || defined(OS_MAC) || \
         // (defined(OS_LINUX) && !defined(OS_CHROMEOS))
 
 #if BUILDFLAG(ENABLE_PLUGINS)
@@ -760,7 +760,7 @@ void ChromeMetricsServiceClient::RegisterMetricsServiceProviders() {
       std::make_unique<UpgradeMetricsProvider>());
 #endif  //! defined(OS_ANDROID) && !defined(OS_CHROMEOS)
 
-#if defined(OS_MACOSX)
+#if defined(OS_MAC)
   metrics_service_->RegisterMetricsProvider(
       std::make_unique<PowerMetricsProvider>());
 #endif
@@ -947,7 +947,7 @@ bool ChromeMetricsServiceClient::RegisterForProfileEvents(Profile* profile) {
         profile->GetPath());
   }
 #endif
-#if defined(OS_WIN) || defined(OS_MACOSX) || \
+#if defined(OS_WIN) || defined(OS_MAC) || \
     (defined(OS_LINUX) && !defined(OS_CHROMEOS))
   // This creates the DesktopProfileSessionDurationsServices if it didn't exist
   // already.

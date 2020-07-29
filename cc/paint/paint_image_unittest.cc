@@ -111,7 +111,7 @@ TEST(PaintImageTest, DecodeToYuv420NoAlpha) {
   SkYUVAIndex plane_indices[SkYUVAIndex::kIndexCount];
   image.DecodeYuv(planes, 1u /* frame_index */,
                   PaintImage::kDefaultGeneratorClientId, yuva_size_info,
-                  plane_indices);
+                  kGray_8_SkColorType /* color_type */, plane_indices);
   ASSERT_EQ(yuv_generator->frames_decoded().size(), 1u);
   EXPECT_EQ(yuv_generator->frames_decoded().count(1u), 1u);
   yuv_generator->reset_frames_decoded();

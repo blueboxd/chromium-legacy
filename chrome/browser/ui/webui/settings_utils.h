@@ -37,7 +37,7 @@ bool FixupAndValidateStartupPage(const std::string& url_string,
 
 base::RefCountedMemory* GetFaviconResourceBytes(ui::ScaleFactor scale_factor);
 
-#if defined(OS_MACOSX)
+#if defined(OS_MAC)
 void ValidateSavedFonts(PrefService* prefs);
 #endif
 

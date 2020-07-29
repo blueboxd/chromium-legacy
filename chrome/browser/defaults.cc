@@ -9,7 +9,7 @@
 
 namespace browser_defaults {
 
-#if defined(OS_CHROMEOS) || defined(OS_MACOSX)
+#if defined(OS_CHROMEOS) || defined(OS_MAC)
 const bool kBrowserAliveWithNoWindows = true;
 const bool kShowExitMenuItem = false;
 #else

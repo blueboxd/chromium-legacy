@@ -362,7 +362,7 @@ void ExternalPrefLoader::ReadExternalExtensionPrefFile(
   }
 
   if (IsOptionSet(ENSURE_PATH_CONTROLLED_BY_ADMIN)) {
-#if defined(OS_MACOSX)
+#if defined(OS_MAC)
     if (!base::VerifyPathControlledByAdmin(json_file)) {
       LOG(ERROR) << "Can not read external extensions source.  The file "
                  << json_file.value() << " and every directory in its path, "
@@ -377,7 +377,7 @@ void ExternalPrefLoader::ReadExternalExtensionPrefFile(
     // you need to implement base::VerifyPathControlledByAdmin() for
     // that platform.
     NOTREACHED();
-#endif  // defined(OS_MACOSX)
+#endif  // defined(OS_MAC)
   }
 
   JSONFileValueDeserializer deserializer(json_file);

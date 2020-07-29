@@ -25,7 +25,7 @@
 #include "net/test/embedded_test_server/embedded_test_server.h"
 #include "testing/gmock/include/gmock/gmock.h"
 
-#if defined(OS_CHROMEOS) || defined(OS_LINUX) || defined(OS_MACOSX) || \
+#if defined(OS_CHROMEOS) || defined(OS_LINUX) || defined(OS_MAC) || \
     defined(OS_WIN)
 #include "components/ukm/test_ukm_recorder.h"
 #include "testing/gmock/include/gmock/gmock.h"
@@ -278,7 +278,7 @@ IN_PROC_BROWSER_TEST_F(DistillablePageUtilsBrowserTestAllArticles,
       Optional(AllOf(IsDistillable(), IsLast(), Not(IsMobileFriendly()))));
 }
 
-#if defined(OS_CHROMEOS) || defined(OS_LINUX) || defined(OS_MACOSX) || \
+#if defined(OS_CHROMEOS) || defined(OS_LINUX) || defined(OS_MAC) || \
     defined(OS_WIN)
 IN_PROC_BROWSER_TEST_F(DistillablePageUtilsBrowserTestAllArticles,
                        RecordPageIsDistillableOnArticleLoad) {

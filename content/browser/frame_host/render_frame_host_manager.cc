@@ -67,9 +67,9 @@
 #include "third_party/blink/public/mojom/frame/user_activation_update_types.mojom.h"
 #include "third_party/blink/public/mojom/security_context/insecure_request_policy.mojom.h"
 
-#if defined(OS_MACOSX)
+#if defined(OS_MAC)
 #include "ui/gfx/mac/scoped_cocoa_disable_screen_updates.h"
-#endif  // defined(OS_MACOSX)
+#endif  // defined(OS_MAC)
 
 namespace content {
 
@@ -1079,22 +1079,6 @@ void RenderFrameHostManager::UpdateUserActivationState(
     outer_delegate_proxy->GetAssociatedRemoteFrame()->UpdateUserActivationState(
         update_type);
     GetOuterDelegateNode()->UpdateUserActivationState(update_type);
-  }
-}
-
-void RenderFrameHostManager::TransferUserActivationFrom(
-    RenderFrameHostImpl* source_rfh) {
-  for (const auto& pair : proxy_hosts_) {
-    SiteInstance* site_instance = pair.second->GetSiteInstance();
-    if (site_instance != source_rfh->GetSiteInstance()) {
-      base::Optional<base::UnguessableToken> source_frame_token =
-          source_rfh->frame_tree_node()
-              ->render_manager()
-              ->GetFrameTokenForSiteInstance(site_instance);
-      DCHECK(source_frame_token.has_value());
-      pair.second->GetAssociatedRemoteFrame()->TransferUserActivationToRenderer(
-          source_frame_token.value());
-    }
   }
 }
 
@@ -2593,7 +2577,7 @@ void RenderFrameHostManager::CommitPending(
   // We should never have a pending bfcache entry if bfcache is disabled.
   DCHECK(!pending_bfcache_entry || IsBackForwardCacheEnabled());
 
-#if defined(OS_MACOSX)
+#if defined(OS_MAC)
   // The old RenderWidgetHostView will be hidden before the new
   // RenderWidgetHostView takes its contents. Ensure that Cocoa sees this as
   // a single transaction.
@@ -2602,7 +2586,7 @@ void RenderFrameHostManager::CommitPending(
   // the same ui::Compositor as MacViews.
   // https://crbug.com/331669
   gfx::ScopedCocoaDisableScreenUpdates disabler;
-#endif  // defined(OS_MACOSX)
+#endif  // defined(OS_MAC)
 
   RenderWidgetHostView* old_view = render_frame_host_->GetView();
   bool is_main_frame = frame_tree_node_->IsMainFrame();

@@ -22,7 +22,7 @@
 #include "sql/transaction.h"
 #include "third_party/sqlite/sqlite3.h"
 
-#if defined(OS_MACOSX)
+#if defined(OS_MAC)
 #include "base/mac/mac_util.h"
 #endif
 
@@ -79,7 +79,7 @@ void ActivityDatabase::Init(const base::FilePath& db_name) {
   if (!committer.Begin())
     return LogInitFailure();
 
-#if defined(OS_MACOSX)
+#if defined(OS_MAC)
   // Exclude the database from backups.
   base::mac::SetFileBackupExclusion(db_name);
 #endif

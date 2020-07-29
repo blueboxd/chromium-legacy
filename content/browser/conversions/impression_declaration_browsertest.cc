@@ -204,7 +204,7 @@ IN_PROC_BROWSER_TEST_F(ImpressionDeclarationBrowserTest,
 }
 
 // Flaky on Mac: crbug.com/1099410
-#if defined(OS_MACOSX)
+#if defined(OS_MAC)
 #define MAYBE_ImpressionTagNavigatesExistingRemoteFrame_ImpressionReceived \
   DISABLED_ImpressionTagNavigatesExistingRemoteFrame_ImpressionReceived
 #else

@@ -143,7 +143,7 @@ void SetMouseEventAttributes(MouseEventInit* initializer,
 }
 
 // TODO(crbug.com/653490): Read these values from the OS.
-#if defined(OS_APPLE)
+#if defined(OS_MAC)
 const int kDragThresholdX = 3;
 const int kDragThresholdY = 3;
 constexpr base::TimeDelta kTextDragDelay = base::TimeDelta::FromSecondsD(0.15);
@@ -359,7 +359,7 @@ WebInputEventResult MouseEventManager::DispatchMouseClickIfNeeded(
   // We only prevent click event when the click may cause contextmenu to popup.
   // However, we always send auxclick.
   bool context_menu_event = false;
-#if defined(OS_APPLE)
+#if defined(OS_MAC)
   // FIXME: The Mac port achieves the same behavior by checking whether the
   // context menu is currently open in WebPage::mouseEvent(). Consider merging
   // the implementations.

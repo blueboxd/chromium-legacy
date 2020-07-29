@@ -23,7 +23,7 @@ class FilePath;
 
 namespace installer {
 
-#if !defined(OS_MACOSX)
+#if !defined(OS_MAC)
 // This is the default name for the master preferences file used to pre-set
 // values in the user profile at first run.
 const char kDefaultMasterPrefs[] = "master_preferences";

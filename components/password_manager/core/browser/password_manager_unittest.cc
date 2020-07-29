@@ -56,6 +56,7 @@
 #include "services/metrics/public/cpp/ukm_builders.h"
 #include "services/metrics/public/cpp/ukm_source.h"
 #include "services/network/public/cpp/shared_url_loader_factory.h"
+#include "services/network/test/test_network_context.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -106,6 +107,15 @@ MATCHER_P(FormIgnoreDate, expected, "") {
 MATCHER_P(HasUsernameValue, expected_username, "") {
   return arg.username_value == expected_username;
 }
+
+class FakeNetworkContext : public network::TestNetworkContext {
+ public:
+  FakeNetworkContext() = default;
+  void IsHSTSActiveForHost(const std::string& host,
+                           IsHSTSActiveForHostCallback callback) override {
+    std::move(callback).Run(true);
+  }
+};
 
 class MockLeakDetectionCheck : public LeakDetectionCheck {
  public:
@@ -200,6 +210,10 @@ class MockPasswordManagerClient : public StubPasswordManagerClient {
                                    is_update);
   }
 
+  network::mojom::NetworkContext* GetNetworkContext() const override {
+    return &network_context_;
+  }
+
   void FilterAllResultsForSaving() {
     EXPECT_CALL(filter_, ShouldSave(_)).WillRepeatedly(Return(false));
   }
@@ -207,6 +221,7 @@ class MockPasswordManagerClient : public StubPasswordManagerClient {
   testing::NiceMock<MockStoreResultFilter>* filter() { return &filter_; }
 
  private:
+  mutable FakeNetworkContext network_context_;
   testing::NiceMock<MockStoreResultFilter> filter_;
 };
 

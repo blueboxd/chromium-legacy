@@ -27,7 +27,7 @@ class ShellCrashReporterClient : public crash_reporter::CrashReporterClient {
                                 base::string16* channel_name) override;
 #endif
 
-#if defined(OS_POSIX) && !defined(OS_MACOSX)
+#if defined(OS_POSIX) && !defined(OS_MAC)
   // Returns a textual description of the product type and version to include
   // in the crash report.
   void GetProductNameAndVersion(const char** product_name,

@@ -35,7 +35,7 @@ using ui_test_utils::NavigateToURL;
 
 // No current reliable way to determine OOM on Linux/Mac. Sanitizers also
 // interfere with the exit code on OOM, making this detection unreliable.
-#if defined(OS_LINUX) || defined(OS_MACOSX) || defined(ADDRESS_SANITIZER)
+#if defined(OS_LINUX) || defined(OS_MAC) || defined(ADDRESS_SANITIZER)
 #define MAYBE_OutOfMemoryReporterBrowserTest \
   DISABLED_OutOfMemoryReporterBrowserTest
 #else
@@ -91,7 +91,7 @@ IN_PROC_BROWSER_TEST_F(MAYBE_OutOfMemoryReporterBrowserTest, MemoryExhaust) {
 
 // No current reliable way to determine OOM on Linux/Mac. Sanitizers also
 // interfere with the exit code on OOM, making this detection unreliable.
-#if defined(OS_LINUX) || defined(OS_MACOSX) || defined(ADDRESS_SANITIZER)
+#if defined(OS_LINUX) || defined(OS_MAC) || defined(ADDRESS_SANITIZER)
 #define MAYBE_PortalOutOfMemoryReporterBrowserTest \
   DISABLED_PortalOutOfMemoryReporterBrowserTest
 #else

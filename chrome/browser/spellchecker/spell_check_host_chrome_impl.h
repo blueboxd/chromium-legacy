@@ -101,11 +101,11 @@ class SpellCheckHostChromeImpl : public SpellCheckHostImpl {
 #endif  //  BUILDFLAG(USE_BROWSER_SPELLCHECKER) &&
         //  BUILDFLAG(ENABLE_SPELLING_SERVICE)
 
-#if defined(OS_MACOSX)
+#if defined(OS_MAC)
   int ToDocumentTag(int route_id);
   void RetireDocumentTag(int route_id);
   std::map<int, int> tag_map_;
-#endif  // defined(OS_MACOSX)
+#endif  // defined(OS_MAC)
 
   // Returns the SpellcheckService of our |render_process_id_|. The return
   // is null if the render process is being shut down.

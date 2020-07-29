@@ -10,6 +10,7 @@
 
 #include "base/callback_forward.h"
 #include "base/memory/weak_ptr.h"
+#include "chrome/browser/web_applications/components/app_registrar.h"
 #include "chrome/browser/web_applications/components/web_app_constants.h"
 #include "chrome/browser/web_applications/components/web_app_id.h"
 #include "chrome/common/web_application_info.h"
@@ -47,9 +48,12 @@ class OsIntegrationManager {
   explicit OsIntegrationManager(Profile* profile);
   virtual ~OsIntegrationManager();
 
-  void SetSubsystems(AppShortcutManager* shortcut_manager,
+  void SetSubsystems(AppRegistrar* registrar,
+                     AppShortcutManager* shortcut_manager,
                      FileHandlerManager* file_handler_manager,
                      WebAppUiManager* ui_manager);
+
+  void Start();
 
   // Install all needed OS hooks for the web app.
   // If provided |web_app_info| is a nullptr, it will read icons data from disk,
@@ -78,8 +82,11 @@ class OsIntegrationManager {
                                                        bool created)> callback,
                           bool shortcuts_created);
 
+  void DeleteSharedAppShims(const AppId& app_id);
+
   Profile* const profile_;
 
+  AppRegistrar* registrar_ = nullptr;
   AppShortcutManager* shortcut_manager_ = nullptr;
   FileHandlerManager* file_handler_manager_ = nullptr;
   bool suppress_os_hooks_for_testing_ = false;

@@ -66,7 +66,7 @@
 #include "ui/views/widget/widget.h"
 #include "ui/views/widget/widget_observer.h"
 
-#if defined(OS_MACOSX)
+#if defined(OS_MAC)
 #include "base/mac/mac_util.h"
 #include "ui/base/test/scoped_fake_nswindow_fullscreen.h"
 #endif
@@ -786,7 +786,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionTabsTest, UpdateDevToolsWindow) {
 // MacOSX. Deactivate for now.
 // TODO(warx): Move ExtensionWindowLastFocusedTest to interactive
 // uitest as it triggers native widget activation.
-#if !defined(OS_MACOSX)
+#if !defined(OS_MAC)
 class ExtensionWindowLastFocusedTest : public ExtensionTabsTest {
  public:
   void SetUpOnMainThread() override;
@@ -1030,16 +1030,16 @@ IN_PROC_BROWSER_TEST_F(ExtensionWindowLastFocusedTest,
   DevToolsWindowTesting::CloseDevToolsWindowSync(devtools);
   CloseAppWindow(app_window);
 }
-#endif  // !defined(OS_MACOSX)
+#endif  // !defined(OS_MAC)
 
-#if defined(OS_MACOSX)
+#if defined(OS_MAC)
 // https://crbug.com/836327
 #define MAYBE_AcceptState DISABLED_AcceptState
 #else
 #define MAYBE_AcceptState AcceptState
 #endif
 IN_PROC_BROWSER_TEST_F(ExtensionWindowCreateTest, MAYBE_AcceptState) {
-#if defined(OS_MACOSX)
+#if defined(OS_MAC)
   if (base::mac::IsOS10_10())
     return;  // Fails when swarmed. http://crbug.com/660582
   ui::test::ScopedFakeNSWindowFullscreen fake_fullscreen;
@@ -1220,7 +1220,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionTabsTest, NoTabsAppWindow) {
 }
 
 // Crashes on Mac/Win only.  http://crbug.com/708996
-#if defined(OS_MACOSX)
+#if defined(OS_MAC)
 #define MAYBE_FilteredEvents DISABLED_FilteredEvents
 #else
 #define MAYBE_FilteredEvents FilteredEvents
@@ -1255,7 +1255,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionTabsTest, MAYBE_FilteredEvents) {
   // TODO(llandwerlin): It seems creating an app window on MacOSX
   // won't create an activation event whereas it does on all other
   // platform. Disable focus event tests for now.
-#if defined(OS_MACOSX)
+#if defined(OS_MAC)
   listener.Reply("");
 #else
   listener.Reply("focus");

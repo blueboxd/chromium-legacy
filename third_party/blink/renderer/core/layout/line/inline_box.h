@@ -129,7 +129,6 @@ class CORE_EXPORT InlineBox : public DisplayItemClient {
 
   // DisplayItemClient methods
   String DebugName() const override;
-  IntRect PartialInvalidationVisualRect() const override;
   DOMNodeId OwnerNodeId() const override;
 
   bool IsText() const { return bitfields_.IsText(); }

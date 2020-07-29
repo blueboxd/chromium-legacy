@@ -555,7 +555,7 @@ class HintsFetcherBrowserTest : public HintsFetcherDisabledBrowserTest {
 
 // Issues with multiple profiles likely cause the site engagement service-based
 // tests to flake.
-#if defined(OS_WIN) || defined(OS_MACOSX) || defined(OS_CHROMEOS)
+#if defined(OS_WIN) || defined(OS_MAC) || defined(OS_CHROMEOS)
 #define DISABLE_ON_WIN_MAC_CHROMEOS(x) DISABLED_##x
 #else
 #define DISABLE_ON_WIN_MAC_CHROMEOS(x) x

@@ -47,6 +47,9 @@ public class Features {
     // WebViewCompat.startSafeBrowsing
     public static final String START_SAFE_BROWSING = "START_SAFE_BROWSING";
 
+    // WebViewCompat.setSafeBrowsingAllowlist
+    public static final String SAFE_BROWSING_ALLOWLIST = "SAFE_BROWSING_ALLOWLIST";
+
     // WebViewCompat.setSafeBrowsingWhitelist
     public static final String SAFE_BROWSING_WHITELIST = "SAFE_BROWSING_WHITELIST";
 

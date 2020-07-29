@@ -140,6 +140,10 @@ void RemoteFrameClientImpl::FrameRectsChanged(
   web_frame_->Client()->FrameRectsChanged(local_frame_rect, screen_space_rect);
 }
 
+void RemoteFrameClientImpl::ZoomLevelChanged(double zoom_level) {
+  web_frame_->Client()->ZoomLevelChanged(zoom_level);
+}
+
 void RemoteFrameClientImpl::UpdateRemoteViewportIntersection(
     const ViewportIntersectionState& intersection_state) {
   web_frame_->Client()->UpdateRemoteViewportIntersection(intersection_state);

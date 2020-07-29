@@ -24,7 +24,7 @@
 #include "third_party/skia/include/core/SkCanvas.h"
 #include "third_party/skia/include/core/SkPaint.h"
 #include "third_party/skia/include/core/SkSurface.h"
-#include "third_party/skia/include/gpu/GrContext.h"
+#include "third_party/skia/include/gpu/GrDirectContext.h"
 #include "ui/gl/gl_switches.h"
 
 namespace {
@@ -205,7 +205,7 @@ IN_PROC_BROWSER_TEST_F(BrowserGpuChannelHostFactoryTest,
       content::GpuBrowsertestCreateContext(GetGpuChannel());
   ASSERT_EQ(provider->BindToCurrentThread(), gpu::ContextResult::kSuccess);
 
-  sk_sp<GrContext> gr_context = sk_ref_sp(provider->GrContext());
+  sk_sp<GrDirectContext> gr_context = sk_ref_sp(provider->GrContext());
 
   SkImageInfo info = SkImageInfo::MakeN32Premul(100, 100);
   sk_sp<SkSurface> surface = SkSurface::MakeRenderTarget(

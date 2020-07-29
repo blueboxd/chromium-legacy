@@ -390,14 +390,14 @@ base::string16 PluginServiceImpl::GetPluginDisplayNameByPath(
   if (PluginService::GetInstance()->GetPluginInfoByPath(path, &info) &&
       !info.name.empty()) {
     plugin_name = info.name;
-#if defined(OS_MACOSX)
+#if defined(OS_MAC)
     // Many plugins on the Mac have .plugin in the actual name, which looks
     // terrible, so look for that and strip it off if present.
     static const char kPluginExtension[] = ".plugin";
     if (base::EndsWith(plugin_name, base::ASCIIToUTF16(kPluginExtension),
                        base::CompareCase::SENSITIVE))
       plugin_name.erase(plugin_name.length() - strlen(kPluginExtension));
-#endif  // defined(OS_MACOSX)
+#endif  // defined(OS_MAC)
   }
   return plugin_name;
 }

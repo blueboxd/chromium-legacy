@@ -155,6 +155,10 @@ if (enable_message_center) {
   }
 
   test("message_center_unittests") {
+    if ((is_linux && !is_chromeos) || chromeos_is_browser_only) {
+      use_xvfb = true
+    }
+
     sources = [
       "lock_screen/fake_lock_screen_controller.cc",
       "lock_screen/fake_lock_screen_controller.h",

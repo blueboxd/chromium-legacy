@@ -110,7 +110,7 @@ video_capture::mojom::VideoCaptureService& GetVideoCaptureService() {
           std::move(receiver),
           ServiceProcessHost::Options()
               .WithDisplayName("Video Capture")
-#if defined(OS_MACOSX)
+#if defined(OS_MAC)
               // On Mac, the service requires a CFRunLoop which is provided by a
               // UI message loop. See https://crbug.com/834581.
               .WithExtraCommandLineSwitches({switches::kMessageLoopTypeUi})

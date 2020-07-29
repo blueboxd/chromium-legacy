@@ -55,6 +55,11 @@ class TestRunnerTest(unittest.TestCase):
       mock_popen.assert_called_with([command])
       self.assertFalse(mock_download.called)
 
+  @parameterized.expand([
+      'browser_tests',
+      'components_browsertests',
+      'content_browsertests',
+  ])
   @mock.patch.object(os,
                      'listdir',
                      return_value=['wayland-0', 'wayland-0.lock'])
@@ -70,8 +75,8 @@ class TestRunnerTest(unittest.TestCase):
   @mock.patch.object(subprocess, 'Popen', return_value=mock.Mock())
   # Tests that the test runner downloads and spawns ash-chrome if ash-chrome is
   # required.
-  def test_require_ash_chrome(self, mock_popen, mock_download, *_):
-    args = ['script_name', 'test', 'browser_tests']
+  def test_require_ash_chrome(self, command, mock_popen, mock_download, *_):
+    args = ['script_name', 'test', command]
     with mock.patch.object(sys, 'argv', args):
       test_runner.Main()
       mock_download.assert_called_with('86.0.4187.0')
@@ -88,7 +93,7 @@ class TestRunnerTest(unittest.TestCase):
       self.assertDictEqual({'XDG_RUNTIME_DIR': '/tmp/xdg'}, ash_chrome_env)
 
       test_args = mock_popen.call_args_list[1][0][0]
-      self.assertListEqual(['browser_tests'], test_args)
+      self.assertListEqual([command], test_args)
       test_env = mock_popen.call_args_list[1][1].get('env', {})
       self.assertDictEqual(
           {

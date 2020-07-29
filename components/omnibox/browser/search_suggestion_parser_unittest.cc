@@ -251,7 +251,8 @@ TEST(SearchSuggestionParserTest, ParseHeaderInfo) {
           "a":{
             "40007":"Not recommended for you",
             "40008":"Recommended for you"
-          }
+          },
+          "h":[40007, "40008", "garbage_non_int"]
         },
         "google:suggestdetail":[
           {
@@ -279,6 +280,10 @@ TEST(SearchSuggestionParserTest, ParseHeaderInfo) {
   ASSERT_TRUE(SearchSuggestionParser::ParseSuggestResults(
       *root_val, input, scheme_classifier, /*default_result_relevance=*/400,
       /*is_keyword_result=*/false, &results));
+
+  // Parse integers, and only integers, out of the "h" metadata list.
+  ASSERT_EQ(1U, results.hidden_group_ids.size());
+  ASSERT_EQ(40007, results.hidden_group_ids[0]);
 
   {
     const auto& suggestion_result = results.suggest_results[0];

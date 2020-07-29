@@ -237,7 +237,7 @@ bool RenderViewContextMenuViews::GetAcceleratorForCommandId(
 #if defined(OS_WIN)
       *accel = ui::Accelerator(ui::VKEY_OEM_PERIOD, ui::EF_COMMAND_DOWN);
       return true;
-#elif defined(OS_MACOSX)
+#elif defined(OS_MAC)
       *accel = ui::Accelerator(ui::VKEY_SPACE,
                                ui::EF_COMMAND_DOWN | ui::EF_CONTROL_DOWN);
       return true;

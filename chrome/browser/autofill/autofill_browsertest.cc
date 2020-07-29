@@ -258,7 +258,7 @@ IN_PROC_BROWSER_TEST_F(AutofillTest, AggregatesMinValidProfileDifferentJS) {
 // Form submitted via JavaScript, the user's personal data is updated even
 // if the event handler on the submit event prevents submission of the form.
 // Flaky on Mac: https://crbug.com/1078506.
-#if defined(OS_MACOSX)
+#if defined(OS_MAC)
 #define MAYBE_ProfilesAggregatedWithSubmitHandler \
   DISABLED_ProfilesAggregatedWithSubmitHandler
 #else

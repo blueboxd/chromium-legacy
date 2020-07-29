@@ -56,7 +56,7 @@ class EmuTarget(target.Target):
 
     # Zircon sends debug logs to serial port (see kernel.serial=legacy flag
     # above). Serial port is redirected to a file through emulator stdout.
-    # Unless runner_pogs are enabled, we output the kernel serial log
+    # If runner_logs are not enabled, we output the kernel serial log
     # to a temporary file, and print that out if we are unable to connect to
     # the emulator guest, to make it easier to diagnose connectivity issues.
     temporary_log_file = None

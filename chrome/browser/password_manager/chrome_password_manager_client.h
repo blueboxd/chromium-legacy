@@ -83,9 +83,6 @@ class ChromePasswordManagerClient
   bool IsSavingAndFillingEnabled(const GURL& url) const override;
   bool IsFillingEnabled(const GURL& url) const override;
   bool IsFillingFallbackEnabled(const GURL& url) const override;
-  void PostHSTSQueryForHost(
-      const url::Origin& origin,
-      password_manager::HSTSCallback callback) const override;
   bool PromptUserToSaveOrUpdatePassword(
       std::unique_ptr<password_manager::PasswordFormManagerForUI> form_to_save,
       bool is_update) override;
@@ -208,6 +205,7 @@ class ChromePasswordManagerClient
   favicon::FaviconService* GetFaviconService() override;
   signin::IdentityManager* GetIdentityManager() override;
   scoped_refptr<network::SharedURLLoaderFactory> GetURLLoaderFactory() override;
+  network::mojom::NetworkContext* GetNetworkContext() const override;
   bool IsUnderAdvancedProtection() const override;
   void UpdateFormManagers() override;
   void NavigateToManagePasswordsPage(

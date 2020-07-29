@@ -216,13 +216,13 @@
 #include "components/crash/core/app/crashpad.h"
 #endif
 
-#if defined(OS_MACOSX)
+#if defined(OS_MAC)
 #include <Security/Security.h>
 
 #include "base/mac/scoped_nsautorelease_pool.h"
 #include "chrome/browser/app_controller_mac.h"
 #include "chrome/browser/mac/keystone_glue.h"
-#endif  // defined(OS_MACOSX)
+#endif  // defined(OS_MAC)
 
 // TODO(port): several win-only methods have been pulled out of this, but
 // BrowserMain() as a whole needs to be broken apart so that it's usable by
@@ -244,7 +244,7 @@
 #include "ui/shell_dialogs/select_file_dialog.h"
 #endif  // defined(OS_WIN)
 
-#if defined(OS_WIN) || defined(OS_MACOSX) || \
+#if defined(OS_WIN) || defined(OS_MAC) || \
     (defined(OS_LINUX) && !defined(OS_CHROMEOS))
 #include "chrome/browser/metrics/desktop_session_duration/desktop_session_duration_tracker.h"
 #include "chrome/browser/metrics/desktop_session_duration/touch_mode_stats_tracker.h"
@@ -415,12 +415,12 @@ Profile* CreatePrimaryProfile(const content::MainFunctionParams& parameters,
   return profile;
 }
 
-#if defined(OS_MACOSX)
+#if defined(OS_MAC)
 OSStatus KeychainCallback(SecKeychainEvent keychain_event,
                           SecKeychainCallbackInfo* info, void* context) {
   return noErr;
 }
-#endif  // defined(OS_MACOSX)
+#endif  // defined(OS_MAC)
 
 #if !defined(OS_ANDROID)
 void ProcessSingletonNotificationCallbackImpl(
@@ -925,7 +925,7 @@ int ChromeBrowserMainParts::PreCreateThreadsImpl() {
       AddFirstRunNewTabs(browser_creator_.get(), master_prefs_->new_tabs);
     }
 
-#if defined(OS_MACOSX) || defined(OS_LINUX)
+#if defined(OS_MAC) || defined(OS_LINUX)
     // Create directory for user-level Native Messaging manifest files. This
     // makes it less likely that the directory will be created by third-party
     // software with incorrect owner or permission. See crbug.com/725513 .
@@ -934,7 +934,7 @@ int ChromeBrowserMainParts::PreCreateThreadsImpl() {
                                  &user_native_messaging_dir));
     if (!base::PathExists(user_native_messaging_dir))
       base::CreateDirectory(user_native_messaging_dir);
-#endif  // defined(OS_MACOSX) || defined(OS_LINUX)
+#endif  // defined(OS_MAC) || defined(OS_LINUX)
   }
 #endif  // !defined(OS_ANDROID) && !defined(OS_CHROMEOS)
 
@@ -945,7 +945,7 @@ int ChromeBrowserMainParts::PreCreateThreadsImpl() {
   }
 #endif  // defined(OS_LINUX) || defined(OS_OPENBSD)
 
-#if defined(OS_MACOSX)
+#if defined(OS_MAC)
   // Get the Keychain API to register for distributed notifications on the main
   // thread, which has a proper CFRunloop, instead of later on the I/O thread,
   // which doesn't. This ensures those notifications will get delivered
@@ -953,9 +953,9 @@ int ChromeBrowserMainParts::PreCreateThreadsImpl() {
   // (Note that the callback mask here is empty. I don't want to register for
   // any callbacks, I just want to initialize the mechanism.)
   SecKeychainAddCallback(&KeychainCallback, 0, nullptr);
-#endif  // defined(OS_MACOSX)
+#endif  // defined(OS_MAC)
 
-#if defined(OS_WIN) || defined(OS_MACOSX) || \
+#if defined(OS_WIN) || defined(OS_MAC) || \
     (defined(OS_LINUX) && !defined(OS_CHROMEOS))
   metrics::DesktopSessionDurationTracker::Initialize();
   ProfileActivityMetricsRecorder::Initialize();
@@ -1634,12 +1634,12 @@ int ChromeBrowserMainParts::PreMainMessageLoopRunImpl() {
     if (ShouldRecordActiveUse(parsed_command_line()))
       GoogleUpdateSettings::SetLastRunTime();
 
-#if defined(OS_MACOSX)
+#if defined(OS_MAC)
     // Call Recycle() here as late as possible, before going into the loop
     // because Start() will add things to it while creating the main window.
     if (parameters().autorelease_pool)
       parameters().autorelease_pool->Recycle();
-#endif  // defined(OS_MACOSX)
+#endif  // defined(OS_MAC)
 
     // Transfer ownership of the browser's lifetime to the BrowserProcess.
     browser_process_->SetQuitClosure(g_run_loop->QuitWhenIdleClosure());

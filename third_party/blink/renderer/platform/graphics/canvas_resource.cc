@@ -31,7 +31,7 @@
 #include "third_party/blink/renderer/platform/scheduler/public/post_cross_thread_task.h"
 #include "third_party/blink/renderer/platform/wtf/cross_thread_functional.h"
 #include "third_party/blink/renderer/platform/wtf/functional.h"
-#include "third_party/skia/include/gpu/GrContext.h"
+#include "third_party/skia/include/gpu/GrDirectContext.h"
 #include "ui/gfx/buffer_format_util.h"
 #include "ui/gfx/color_space.h"
 
@@ -189,7 +189,7 @@ bool CanvasResource::PrepareUnacceleratedTransferableResource(
   return true;
 }
 
-GrContext* CanvasResource::GetGrContext() const {
+GrDirectContext* CanvasResource::GetGrContext() const {
   if (!ContextProviderWrapper())
     return nullptr;
   return ContextProviderWrapper()->ContextProvider()->GetGrContext();
@@ -790,7 +790,7 @@ bool CanvasResourceWebGPUSharedImage::IsValid() const {
 }
 
 GLenum CanvasResourceWebGPUSharedImage::TextureTarget() const {
-#if defined(OS_APPLE)
+#if defined(OS_MAC)
   return GL_TEXTURE_RECTANGLE_ARB;
 #else
   return GL_TEXTURE_2D;

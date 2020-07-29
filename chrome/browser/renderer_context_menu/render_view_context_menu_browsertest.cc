@@ -165,7 +165,7 @@ class ContextMenuBrowserTest : public InProcessBrowserTest {
     params.link_text = link_text;
     params.page_url = web_contents->GetVisibleURL();
     params.source_type = source_type;
-#if defined(OS_MACOSX)
+#if defined(OS_MAC)
     params.writing_direction_default = 0;
     params.writing_direction_left_to_right = 0;
     params.writing_direction_right_to_left = 0;

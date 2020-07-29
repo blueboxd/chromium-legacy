@@ -93,12 +93,12 @@ bool AuthenticatorRequestClientDelegate::IsFocused() {
   return true;
 }
 
-#if defined(OS_MACOSX)
+#if defined(OS_MAC)
 base::Optional<AuthenticatorRequestClientDelegate::TouchIdAuthenticatorConfig>
 AuthenticatorRequestClientDelegate::GetTouchIdAuthenticatorConfig() {
   return base::nullopt;
 }
-#endif  // defined(OS_MACOSX)
+#endif  // defined(OS_MAC)
 
 base::Optional<bool> AuthenticatorRequestClientDelegate::
     IsUserVerifyingPlatformAuthenticatorAvailableOverride() {
@@ -114,9 +114,9 @@ AuthenticatorRequestClientDelegate::GetDiscoveryFactory() {
 #else
   if (!discovery_factory_) {
     discovery_factory_ = std::make_unique<device::FidoDiscoveryFactory>();
-#if defined(OS_MACOSX)
+#if defined(OS_MAC)
     discovery_factory_->set_mac_touch_id_info(GetTouchIdAuthenticatorConfig());
-#endif  // defined(OS_MACOSX)
+#endif  // defined(OS_MAC)
 
 #if defined(OS_WIN)
     if (base::FeatureList::IsEnabled(device::kWebAuthUseNativeWinApi)) {

@@ -77,7 +77,7 @@ class WebRtcAudioBrowserTest : public WebRtcContentBrowserTestBase {
   base::test::ScopedFeatureList audio_service_features_;
 };
 
-#if defined(OS_MACOSX)
+#if defined(OS_MAC)
 
 // Flaky on MacOS: http://crbug.com/982421
 #define MAYBE_CanMakeVideoCallAndThenRenegotiateToAudio \
@@ -116,7 +116,7 @@ class WebRtcAudioBrowserTest : public WebRtcContentBrowserTestBase {
 #define MAYBE_EstablishAudioOnlyCallAndVerifyGetSynchronizationSourcesWorks \
   EstablishAudioOnlyCallAndVerifyGetSynchronizationSourcesWorks
 
-#endif  // defined(OS_MACOSX)
+#endif  // defined(OS_MAC)
 
 IN_PROC_BROWSER_TEST_F(WebRtcAudioBrowserTest,
                        MAYBE_CanMakeVideoCallAndThenRenegotiateToAudio) {

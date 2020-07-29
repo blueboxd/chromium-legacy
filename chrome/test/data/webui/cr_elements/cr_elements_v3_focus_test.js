@@ -87,7 +87,7 @@ var CrElementsInputV3Test = class extends CrElementsV3FocusTest {
 };
 
 // https://crbug.com/997943: Flaky on Mac
-GEN('#if defined(OS_MACOSX)');
+GEN('#if defined(OS_MAC)');
 GEN('#define MAYBE_All DISABLED_All');
 GEN('#else');
 GEN('#define MAYBE_All All');

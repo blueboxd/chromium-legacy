@@ -266,10 +266,11 @@ void NetworkConfigurationPolicyHandler::PrepareForDisplaying(
   const PolicyMap::Entry* entry = policies->Get(policy_name());
   if (!entry)
     return;
-  std::unique_ptr<base::Value> sanitized_config =
+  base::Optional<base::Value> sanitized_config =
       SanitizeNetworkConfig(entry->value());
-  if (!sanitized_config)
-    sanitized_config = std::make_unique<base::Value>();
+
+  if (!sanitized_config.has_value())
+    sanitized_config = base::Value();
 
   policies->Set(policy_name(), entry->level, entry->scope, entry->source,
                 std::move(sanitized_config), nullptr);
@@ -284,17 +285,17 @@ NetworkConfigurationPolicyHandler::NetworkConfigurationPolicyHandler(
       pref_path_(pref_path) {}
 
 // static
-std::unique_ptr<base::Value>
+base::Optional<base::Value>
 NetworkConfigurationPolicyHandler::SanitizeNetworkConfig(
     const base::Value* config) {
   if (!config->is_string())
-    return nullptr;
+    return base::nullopt;
 
   std::unique_ptr<base::DictionaryValue> toplevel_dict =
       base::DictionaryValue::From(
           chromeos::onc::ReadDictionaryFromJson(config->GetString()));
   if (!toplevel_dict)
-    return nullptr;
+    return base::nullopt;
 
   // Placeholder to insert in place of the filtered setting.
   const char kPlaceholder[] = "********";
@@ -307,7 +308,7 @@ NetworkConfigurationPolicyHandler::SanitizeNetworkConfig(
   std::string json_string;
   base::JSONWriter::WriteWithOptions(
       *toplevel_dict, base::JSONWriter::OPTIONS_PRETTY_PRINT, &json_string);
-  return std::make_unique<base::Value>(json_string);
+  return base::Value(json_string);
 }
 
 PinnedLauncherAppsPolicyHandler::PinnedLauncherAppsPolicyHandler()

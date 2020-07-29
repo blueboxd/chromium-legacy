@@ -169,7 +169,8 @@ IN_PROC_BROWSER_TEST_F(MediaSessionServiceImplBrowserTest,
 // TODO(crbug.com/850870) Plug the leaks.
 #define MAYBE_ResetServiceWhenNavigatingAway \
   DISABLED_ResetServiceWhenNavigatingAway
-#elif defined(OS_CHROMEOS) || defined(OS_LINUX) || defined(OS_MACOSX) || defined(OS_ANDROID)
+#elif defined(OS_CHROMEOS) || defined(OS_LINUX) || defined(OS_MAC) || \
+    defined(OS_ANDROID)
 // crbug.com/927234.
 #define MAYBE_ResetServiceWhenNavigatingAway \
   DISABLED_ResetServiceWhenNavigatingAway

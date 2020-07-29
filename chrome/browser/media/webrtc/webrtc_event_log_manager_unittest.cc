@@ -671,8 +671,8 @@ class WebRtcEventLogManagerTestBase : public ::testing::Test {
     if (has_device_level_policies) {
       policy_map.Set("test-policy", policy::POLICY_LEVEL_MANDATORY,
                      policy::POLICY_SCOPE_MACHINE,
-                     policy::POLICY_SOURCE_PLATFORM,
-                     std::make_unique<base::Value>("test"), nullptr);
+                     policy::POLICY_SOURCE_PLATFORM, base::Value("test"),
+                     nullptr);
     }
     provider_.UpdateChromePolicy(policy_map);
 #else

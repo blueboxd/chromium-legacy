@@ -36,7 +36,7 @@ const base::Feature kAppActivityReporting{"AppActivityReporting",
                                           base::FEATURE_ENABLED_BY_DEFAULT};
 #endif
 
-#if defined(OS_MACOSX)
+#if defined(OS_MAC)
 // Can be used to disable RemoteCocoa (hosting NSWindows for apps in the app
 // process). For debugging purposes only.
 const base::Feature kAppShimRemoteCocoa{"AppShimRemoteCocoa",
@@ -46,7 +46,7 @@ const base::Feature kAppShimRemoteCocoa{"AppShimRemoteCocoa",
 // TODO(ellyjones): Remove this after the last 10.9 release.
 const base::Feature kShow10_9ObsoleteInfobar{"Show109ObsoleteInfobar",
                                              base::FEATURE_DISABLED_BY_DEFAULT};
-#endif  // defined(OS_MACOSX)
+#endif  // defined(OS_MAC)
 
 #if !defined(OS_ANDROID)
 // App Service related flags. See components/services/app_service/README.md.
@@ -59,7 +59,7 @@ const base::Feature kAppServiceAdaptiveIcon{"AppServiceAdaptiveIcon",
 // Enables the built-in DNS resolver.
 const base::Feature kAsyncDns {
   "AsyncDns",
-#if defined(OS_CHROMEOS) || defined(OS_MACOSX) || defined(OS_ANDROID)
+#if defined(OS_CHROMEOS) || defined(OS_MAC) || defined(OS_ANDROID)
       base::FEATURE_ENABLED_BY_DEFAULT
 #else
       base::FEATURE_DISABLED_BY_DEFAULT
@@ -136,7 +136,7 @@ const base::Feature kClickToOpenPDFPlaceholder{
 const base::Feature kClientStorageAccessContextAuditing{
     "ClientStorageAccessContextAuditing", base::FEATURE_DISABLED_BY_DEFAULT};
 
-#if defined(OS_MACOSX)
+#if defined(OS_MAC)
 const base::Feature kImmersiveFullscreen{"ImmersiveFullscreen",
                                          base::FEATURE_DISABLED_BY_DEFAULT};
 #endif
@@ -453,7 +453,7 @@ const base::Feature kKernelnextVMs{"KernelnextVMs",
                                    base::FEATURE_DISABLED_BY_DEFAULT};
 #endif
 
-#if defined(OS_MACOSX)
+#if defined(OS_MAC)
 // Uses NSFullSizeContentViewWindowMask where available instead of adding our
 // own views to the window frame. This is a temporary kill switch, it can be
 // removed once we feel okay about leaving it on.
@@ -462,13 +462,13 @@ const base::Feature kMacFullSizeContentView{"MacFullSizeContentView",
 
 #endif
 
-#if defined(OS_MACOSX)
+#if defined(OS_MAC)
 // Enables the Material Design download shelf on Mac.
 const base::Feature kMacMaterialDesignDownloadShelf{
     "MacMDDownloadShelf", base::FEATURE_ENABLED_BY_DEFAULT};
 #endif
 
-#if defined(OS_MACOSX)
+#if defined(OS_MAC)
 // In case a website is trying to use the camera/microphone, but Chrome itself
 // is blocked on the system level to access these, show an icon in the Omnibox,
 // which, when clicked, displays a bubble with information on how to toggle
@@ -784,11 +784,11 @@ const base::Feature kWebRtcRemoteEventLogGzipped{
 // UIs implemented with web technologies.
 const base::Feature kWebUIDarkMode {
   "WebUIDarkMode",
-#if defined(OS_MACOSX) || defined(OS_WIN) || defined(OS_ANDROID)
+#if defined(OS_MAC) || defined(OS_WIN) || defined(OS_ANDROID)
       base::FEATURE_ENABLED_BY_DEFAULT
 #else
       base::FEATURE_DISABLED_BY_DEFAULT
-#endif  // defined(OS_MACOSX) || defined(OS_WIN) || defined(OS_ANDROID)
+#endif  // defined(OS_MAC) || defined(OS_WIN) || defined(OS_ANDROID)
 };
 
 #if defined(OS_WIN)

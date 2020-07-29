@@ -105,7 +105,6 @@ HttpStreamFactory::Job::Job(Delegate* delegate,
                             GURL origin_url,
                             NextProto alternative_protocol,
                             quic::ParsedQuicVersion quic_version,
-                            const ProxyServer& alternative_proxy_server,
                             bool is_websocket,
                             bool enable_ip_based_pooling,
                             NetLog* net_log)
@@ -123,7 +122,6 @@ HttpStreamFactory::Job::Job(Delegate* delegate,
       next_state_(STATE_NONE),
       destination_(destination),
       origin_url_(origin_url),
-      alternative_proxy_server_(alternative_proxy_server),
       is_websocket_(is_websocket),
       try_websocket_over_http2_(is_websocket_ &&
                                 origin_url_.SchemeIs(url::kWssScheme) &&
@@ -188,19 +186,9 @@ HttpStreamFactory::Job::Job(Delegate* delegate,
 
   DCHECK(session);
   if (alternative_protocol != kProtoUnknown) {
-    // The job cannot have protocol requirements dictated by alternative service
-    // and have an alternative proxy server set at the same time, since
-    // alternative services are used for requests that are fetched directly,
-    // while the alternative proxy server is used for requests that should be
-    // fetched using proxy.
-    DCHECK(!alternative_proxy_server_.is_valid());
     // If the alternative service protocol is specified, then the job type must
     // be either ALTERNATIVE or PRECONNECT.
     DCHECK(job_type_ == ALTERNATIVE || job_type_ == PRECONNECT);
-  }
-  // If the alternative proxy server is set, then the job must be ALTERNATIVE.
-  if (alternative_proxy_server_.is_valid()) {
-    DCHECK(job_type_ == ALTERNATIVE);
   }
 
   if (expect_spdy_) {
@@ -1235,14 +1223,6 @@ int HttpStreamFactory::Job::ReconsiderProxyAfterError(int error) {
   if (!CanFalloverToNextProxy(proxy_info_.proxy_server(), error, &error))
     return error;
 
-  // Alternative proxy server job should not use fallback proxies, and instead
-  // return. This would resume the main job (if possible) which may try the
-  // fallback proxies.
-  if (alternative_proxy_server().is_valid()) {
-    DCHECK_EQ(STATE_NONE, next_state_);
-    return error;
-  }
-
   should_reconsider_proxy_ = true;
   return error;
 }
@@ -1297,8 +1277,8 @@ HttpStreamFactory::JobFactory::CreateMainJob(
   return std::make_unique<HttpStreamFactory::Job>(
       delegate, job_type, session, request_info, priority, proxy_info,
       server_ssl_config, proxy_ssl_config, destination, origin_url,
-      kProtoUnknown, quic::ParsedQuicVersion::Unsupported(), ProxyServer(),
-      is_websocket, enable_ip_based_pooling, net_log);
+      kProtoUnknown, quic::ParsedQuicVersion::Unsupported(), is_websocket,
+      enable_ip_based_pooling, net_log);
 }
 
 std::unique_ptr<HttpStreamFactory::Job>
@@ -1321,31 +1301,8 @@ HttpStreamFactory::JobFactory::CreateAltSvcJob(
   return std::make_unique<HttpStreamFactory::Job>(
       delegate, job_type, session, request_info, priority, proxy_info,
       server_ssl_config, proxy_ssl_config, destination, origin_url,
-      alternative_protocol, quic_version, ProxyServer(), is_websocket,
-      enable_ip_based_pooling, net_log);
-}
-
-std::unique_ptr<HttpStreamFactory::Job>
-HttpStreamFactory::JobFactory::CreateAltProxyJob(
-    HttpStreamFactory::Job::Delegate* delegate,
-    HttpStreamFactory::JobType job_type,
-    HttpNetworkSession* session,
-    const HttpRequestInfo& request_info,
-    RequestPriority priority,
-    const ProxyInfo& proxy_info,
-    const SSLConfig& server_ssl_config,
-    const SSLConfig& proxy_ssl_config,
-    HostPortPair destination,
-    GURL origin_url,
-    const ProxyServer& alternative_proxy_server,
-    bool is_websocket,
-    bool enable_ip_based_pooling,
-    NetLog* net_log) {
-  return std::make_unique<HttpStreamFactory::Job>(
-      delegate, job_type, session, request_info, priority, proxy_info,
-      server_ssl_config, proxy_ssl_config, destination, origin_url,
-      kProtoUnknown, quic::ParsedQuicVersion::Unsupported(),
-      alternative_proxy_server, is_websocket, enable_ip_based_pooling, net_log);
+      alternative_protocol, quic_version, is_websocket, enable_ip_based_pooling,
+      net_log);
 }
 
 bool HttpStreamFactory::Job::ShouldThrottleConnectForSpdy() const {

@@ -47,7 +47,7 @@
 #include "ui/gfx/paint_vector_icon.h"
 #include "ui/gfx/vector_icon_types.h"
 
-#if defined(OS_MACOSX)
+#if defined(OS_MAC)
 #include "chrome/browser/media/webrtc/system_media_capture_permissions_mac.h"
 #endif
 
@@ -144,12 +144,12 @@ class ContentSettingMediaImageModel : public ContentSettingImageModel {
   bool IsCamAccessed();
   bool IsMicBlockedOnSiteLevel();
   bool IsCameraBlockedOnSiteLevel();
-#if defined(OS_MACOSX)
+#if defined(OS_MAC)
   bool DidCameraAccessFailBecauseOfSystemLevelBlock();
   bool DidMicAccessFailBecauseOfSystemLevelBlock();
   bool IsCameraAccessPendingOnSystemLevelPrompt();
   bool IsMicAccessPendingOnSystemLevelPrompt();
-#endif  // defined(OS_MACOSX)
+#endif  // defined(OS_MAC)
 
   std::unique_ptr<ContentSettingBubbleModel> CreateBubbleModelImpl(
       ContentSettingBubbleModel::Delegate* delegate,
@@ -637,7 +637,7 @@ bool ContentSettingMediaImageModel::UpdateAndGetVisibility(
   if (state_ == TabSpecificContentSettings::MICROPHONE_CAMERA_NOT_ACCESSED)
     return false;
 
-#if defined(OS_MACOSX)
+#if defined(OS_MAC)
   if (base::FeatureList::IsEnabled(
           ::features::kMacSystemMediaPermissionsInfoUi)) {
     // Don't show an icon when the user has not made a decision yet for
@@ -711,7 +711,7 @@ bool ContentSettingMediaImageModel::UpdateAndGetVisibility(
       return true;
     }
   }
-#endif  // defined(OS_MACOSX)
+#endif  // defined(OS_MAC)
 
   DCHECK(IsMicAccessed() || IsCamAccessed());
 
@@ -749,7 +749,7 @@ bool ContentSettingMediaImageModel::IsCameraBlockedOnSiteLevel() {
   return ((state_ & TabSpecificContentSettings::CAMERA_BLOCKED) != 0);
 }
 
-#if defined(OS_MACOSX)
+#if defined(OS_MAC)
 bool ContentSettingMediaImageModel::
     DidCameraAccessFailBecauseOfSystemLevelBlock() {
   return (IsCamAccessed() && !IsCameraBlockedOnSiteLevel() &&
@@ -776,7 +776,7 @@ bool ContentSettingMediaImageModel::IsMicAccessPendingOnSystemLevelPrompt() {
           IsMicAccessed() && !IsMicBlockedOnSiteLevel());
 }
 
-#endif  // defined(OS_MACOSX)
+#endif  // defined(OS_MAC)
 
 std::unique_ptr<ContentSettingBubbleModel>
 ContentSettingMediaImageModel::CreateBubbleModelImpl(

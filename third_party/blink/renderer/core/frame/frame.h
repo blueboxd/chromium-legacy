@@ -199,9 +199,6 @@ class CORE_EXPORT Frame : public GarbageCollected<Frame> {
   // Resets the user activation state of this frame.
   void ClearUserActivation() { user_activation_state_.Clear(); }
 
-  // Transfers user activation state from |other| frame into |this|.
-  void TransferUserActivationFrom(Frame* other);
-
   void SetHadStickyUserActivationBeforeNavigation(bool value) {
     had_sticky_user_activation_before_nav_ = value;
   }

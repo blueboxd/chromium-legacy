@@ -7,7 +7,9 @@
 #include <stdint.h>
 
 #include <algorithm>
+#include <memory>
 #include <utility>
+#include <vector>
 
 #include "base/logging.h"
 #include "base/metrics/histogram_macros.h"
@@ -34,7 +36,7 @@
 #include "gpu/command_buffer/common/shared_image_usage.h"
 #include "third_party/skia/include/core/SkPictureRecorder.h"
 #include "third_party/skia/include/core/SkSurface.h"
-#include "third_party/skia/include/gpu/GrContext.h"
+#include "third_party/skia/include/gpu/GrDirectContext.h"
 #include "ui/gfx/geometry/axis_transform2d.h"
 #include "url/gurl.h"
 

@@ -19,10 +19,10 @@ namespace features {
 PRINTING_EXPORT extern const base::Feature kAdvancedPpdAttributes;
 #endif  // defined(OS_CHROMEOS)
 
-#if defined(OS_MACOSX)
+#if defined(OS_MAC)
 PRINTING_EXPORT extern const base::Feature kCupsIppPrintingBackend;
 PRINTING_EXPORT extern const base::Feature kEnableCustomMacPaperSizes;
-#endif  // defined(OS_MACOSX)
+#endif  // defined(OS_MAC)
 
 #if defined(OS_WIN)
 PRINTING_EXPORT extern const base::Feature kPrintWithReducedRasterization;

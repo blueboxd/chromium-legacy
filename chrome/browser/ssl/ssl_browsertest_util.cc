@@ -24,7 +24,7 @@
 #include "services/network/public/mojom/network_context.mojom.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
-#if defined(OS_MACOSX)
+#if defined(OS_MAC)
 #include "base/mac/mac_util.h"
 #endif
 
@@ -174,7 +174,7 @@ bool SystemSupportsOCSPStapling() {
     return true;
 #if defined(OS_ANDROID)
   return false;
-#elif defined(OS_MACOSX)
+#elif defined(OS_MAC)
   // The SecTrustSetOCSPResponse function exists since macOS 10.9+, but does
   // not actually do anything until 10.12.
   if (base::mac::IsAtLeastOS10_12())

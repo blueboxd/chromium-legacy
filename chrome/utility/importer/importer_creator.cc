@@ -15,7 +15,7 @@
 #include "chrome/utility/importer/ie_importer_win.h"
 #endif
 
-#if defined(OS_MACOSX)
+#if defined(OS_MAC)
 #include <CoreFoundation/CoreFoundation.h>
 
 #include "base/mac/foundation_util.h"
@@ -39,7 +39,7 @@ scoped_refptr<Importer> CreateImporterByType(ImporterType type) {
       return new BookmarksFileImporter();
     case TYPE_FIREFOX:
       return new FirefoxImporter();
-#if defined(OS_MACOSX)
+#if defined(OS_MAC)
     case TYPE_SAFARI:
       return new SafariImporter(base::mac::GetUserLibraryPath());
 #endif

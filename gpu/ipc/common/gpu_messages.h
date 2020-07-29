@@ -47,7 +47,7 @@
 #include "ui/gl/gpu_preference.h"
 #include "url/ipc/url_param_traits.h"
 
-#if defined(OS_MACOSX)
+#if defined(OS_MAC)
 #include "ui/base/cocoa/remote_layer_api.h"
 #include "ui/gfx/mac/io_surface.h"
 #endif

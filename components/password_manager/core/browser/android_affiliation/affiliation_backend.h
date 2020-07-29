@@ -19,8 +19,8 @@
 #include "base/sequence_checker.h"
 #include "components/password_manager/core/browser/android_affiliation/affiliation_fetch_throttler_delegate.h"
 #include "components/password_manager/core/browser/android_affiliation/affiliation_fetcher_delegate.h"
-#include "components/password_manager/core/browser/android_affiliation/affiliation_service.h"
 #include "components/password_manager/core/browser/android_affiliation/affiliation_utils.h"
+#include "components/password_manager/core/browser/android_affiliation/android_affiliation_service.h"
 #include "components/password_manager/core/browser/android_affiliation/facet_manager_host.h"
 
 namespace base {
@@ -76,7 +76,8 @@ class AffiliationBackend : public FacetManagerHost,
                   const base::FilePath& db_path);
 
   // Implementations for methods of the same name in AffiliationService. They
-  // are not documented here again. See affiliation_service.h for details:
+  // are not documented here again. See android_affiliation_service.h for
+  // details:
   void GetAffiliationsAndBranding(
       const FacetURI& facet_uri,
       StrategyOnCacheMiss cache_miss_strategy,

@@ -3072,7 +3072,7 @@ TEST_F(FormAutofillTest, WebFormElementConsiderNonControlLabelableElements) {
 }
 
 // TODO(crbug.com/616730) Flaky.
-#if defined(OS_CHROMEOS) || defined(OS_MACOSX)
+#if defined(OS_CHROMEOS) || defined(OS_MAC)
 #define MAYBE_WebFormElementToFormDataTooManyFields \
   DISABLED_WebFormElementToFormDataTooManyFields
 #else

@@ -53,7 +53,7 @@ void FindBarController::Show(bool find_next, bool forward_direction) {
   if (find_next) {
     base::string16 find_text;
 
-#if defined(OS_MACOSX)
+#if defined(OS_MAC)
     // For macOS, we always want to search for the current contents of the
     // find bar on OS X, rather than the behavior we'd get with empty
     // find_text (see FindBarState::GetSearchPrepopulateText).

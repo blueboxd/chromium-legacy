@@ -37,14 +37,13 @@ import zipfile
 # Do NOT CHANGE this if you don't know what you're doing -- see
 # https://chromium.googlesource.com/chromium/src/+/master/docs/updating_clang.md
 # Reverting problematic clang rolls is safe, though.
-CLANG_REVISION = '04b9a46c842f793a2baedcad64de35fcbd3e93b7'
-CLANG_SVN_REVISION = 'n359864'
+CLANG_REVISION = '7e8d5a90f2c101388d3b0bbce8555e871c670232'
+CLANG_SVN_REVISION = 'n361601'
 CLANG_SUB_REVISION = 1
 
 PACKAGE_VERSION = '%s-%s-%s' % (CLANG_SVN_REVISION, CLANG_REVISION[:8],
                                 CLANG_SUB_REVISION)
-# TODO(crbug.com/1105518): Bump to 12.0.0 in the next Clang roll.
-RELEASE_VERSION = '11.0.0'
+RELEASE_VERSION = '12.0.0'
 
 
 CDS_URL = os.environ.get('CDS_CLANG_BUCKET_OVERRIDE',
@@ -299,11 +298,6 @@ def main():
   parser.add_argument('--verify-version',
                       help='Verify that clang has the passed-in version.')
   args = parser.parse_args()
-
-  # TODO(crbug.com/1042192): Remove in the next Clang roll.
-  if args.llvm_force_head_revision:
-    global RELEASE_VERSION
-    RELEASE_VERSION = '12.0.0'
 
   if args.force_local_build:
     print(('update.py --force-local-build is no longer used to build clang; '

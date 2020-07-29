@@ -998,13 +998,8 @@ if (enable_java_templates) {
         _suppressions_file = "//build/android/lint/suppressions.xml"
       }
 
-      # Allow callers to override lint's minSdkVersion via lint_min_sdk_version
-      # so that it can be different from the caller's min_sdk_version.
       _min_sdk_version = default_min_sdk_version
-      if (defined(invoker.lint_min_sdk_version)) {
-        _min_sdk_version = invoker.lint_min_sdk_version
-        not_needed(invoker, [ "min_sdk_version" ])
-      } else if (defined(invoker.min_sdk_version)) {
+      if (defined(invoker.min_sdk_version)) {
         _min_sdk_version = invoker.min_sdk_version
       }
 

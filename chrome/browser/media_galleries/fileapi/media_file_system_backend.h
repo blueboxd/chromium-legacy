@@ -104,7 +104,7 @@ class MediaFileSystemBackend : public storage::FileSystemBackend {
 
   std::unique_ptr<storage::AsyncFileUtil> native_media_file_util_;
 
-#if defined(OS_WIN) || defined(OS_MACOSX) || defined(OS_CHROMEOS)
+#if defined(OS_WIN) || defined(OS_MAC) || defined(OS_CHROMEOS)
   std::unique_ptr<DeviceMediaAsyncFileUtil> device_media_async_file_util_;
 #endif
 

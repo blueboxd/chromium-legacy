@@ -192,14 +192,14 @@ TEST_F(ChromeMetricsServiceClientTest, TestRegisterMetricsServiceProviders) {
   expected_providers++;  // UpgradeMetricsProvider
 #endif                   //! defined(OS_ANDROID) && !defined(OS_CHROMEOS)
 
-#if defined(OS_MACOSX)
+#if defined(OS_MAC)
   expected_providers++;  // PowerMetricsProvider
-#endif                   // defined(OS_MACOSX)
+#endif                   // defined(OS_MAC)
 
-#if defined(OS_WIN) || defined(OS_MACOSX) || \
+#if defined(OS_WIN) || defined(OS_MAC) || \
     (defined(OS_LINUX) && !defined(OS_CHROMEOS))
   expected_providers++;  // DesktopPlatformFeaturesMetricsProvider
-#endif                   //  defined(OS_WIN) || defined(OS_MACOSX) || \
+#endif                   //  defined(OS_WIN) || defined(OS_MAC) || \
                          // (defined(OS_LINUX) && !defined(OS_CHROMEOS))
 
   std::unique_ptr<ChromeMetricsServiceClient> chrome_metrics_service_client =

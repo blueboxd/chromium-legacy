@@ -34,7 +34,7 @@
 
 namespace {
 
-#if defined(OS_MACOSX)
+#if defined(OS_MAC)
 // Keep in sync with browser_non_client_frame_view_mac.mm
 constexpr double kTitlePaddingWidthFraction = 0.1;
 #endif
@@ -241,7 +241,7 @@ IN_PROC_BROWSER_TEST_F(WebAppFrameToolbarBrowserTest, TitleHover) {
       window_title->CalculatePreferredSize().width() * 3 / 4;
   int narrow_frame_width =
       frame_view()->width() - original_title_gap + narrow_title_gap;
-#if defined(OS_MACOSX)
+#if defined(OS_MAC)
   // Increase frame width to allow for title padding.
   narrow_frame_width = base::checked_cast<int>(
       std::ceil(narrow_frame_width / (1 - 2 * kTitlePaddingWidthFraction)));

@@ -759,10 +759,10 @@ TEST_F(ExtensionMessageBubbleTest, ShowDevModeBubbleOncePerOriginalProfile) {
 }
 
 // The feature this is meant to test is only implemented on Windows and Mac.
-#if defined(OS_WIN) || defined(OS_MACOSX)
+#if defined(OS_WIN) || defined(OS_MAC)
 
 TEST_F(ExtensionMessageBubbleTest, SettingsApiControllerTest) {
-#if defined(OS_MACOSX)
+#if defined(OS_MAC)
   // On Mac, this API is limited to trunk.
   ScopedCurrentChannel scoped_channel(version_info::Channel::UNKNOWN);
 #endif  // OS_MACOSX
@@ -903,7 +903,7 @@ TEST_F(ExtensionMessageBubbleTest, SettingsApiControllerTest) {
   }
 }
 
-#endif  // defined(OS_WIN) || defined(OS_MACOSX)
+#endif  // defined(OS_WIN) || defined(OS_MAC)
 
 // Tests that a displayed extension bubble will be closed after its associated
 // enabled extension is uninstalled.
@@ -1191,7 +1191,7 @@ void SetInstallTime(const std::string& extension_id,
 }
 
 // The feature this is meant to test is only implemented on Windows and Mac.
-#if defined(OS_WIN) || defined(OS_MACOSX)
+#if defined(OS_WIN) || defined(OS_MAC)
 // http://crbug.com/397426
 #define MAYBE_ProxyOverriddenControllerTest DISABLED_ProxyOverriddenControllerTest
 #else
@@ -1199,7 +1199,7 @@ void SetInstallTime(const std::string& extension_id,
 #endif
 
 TEST_F(ExtensionMessageBubbleTest, MAYBE_ProxyOverriddenControllerTest) {
-#if defined(OS_MACOSX)
+#if defined(OS_MAC)
   // On Mac, this API is limited to trunk.
   ScopedCurrentChannel scoped_channel(version_info::Channel::UNKNOWN);
 #endif  // OS_MACOSX

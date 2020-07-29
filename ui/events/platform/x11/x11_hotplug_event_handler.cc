@@ -8,6 +8,7 @@
 
 #include <algorithm>
 #include <cmath>
+#include <limits>
 #include <set>
 #include <string>
 #include <vector>
@@ -15,6 +16,7 @@
 #include "base/bind.h"
 #include "base/check.h"
 #include "base/command_line.h"
+#include "base/files/file_path.h"
 #include "base/location.h"
 #include "base/process/launch.h"
 #include "base/single_thread_task_runner.h"
@@ -28,6 +30,7 @@
 #include "ui/events/devices/device_util_linux.h"
 #include "ui/events/devices/input_device.h"
 #include "ui/events/devices/touchscreen_device.h"
+#include "ui/gfx/x/extension_manager.h"
 #include "ui/gfx/x/x11.h"
 #include "ui/gfx/x/x11_atom_cache.h"
 #include "ui/gfx/x/x11_types.h"
@@ -35,6 +38,8 @@
 #ifndef XI_PROP_PRODUCT_ID
 #define XI_PROP_PRODUCT_ID "Device Product ID"
 #endif
+
+#undef Absolute
 
 namespace ui {
 
@@ -94,51 +99,44 @@ struct ValuatorClassInfo {
 // Stores a copy of the XITouchClassInfo values so X11 device processing can
 // happen on a worker thread. This is needed since X11 structs are not copyable.
 struct TouchClassInfo {
-  TouchClassInfo() : mode(0), num_touches(0) {}
+  TouchClassInfo() = default;
 
-  explicit TouchClassInfo(const XITouchClassInfo& info)
+  explicit TouchClassInfo(const x11::Input::DeviceClass::Touch& info)
       : mode(info.mode), num_touches(info.num_touches) {}
 
-  int mode;
-  int num_touches;
+  x11::Input::TouchMode mode{};
+  int num_touches = 0;
 };
 
 struct DeviceInfo {
-  DeviceInfo(const XIDeviceInfo& device,
+  DeviceInfo(const x11::Input::XIDeviceInfo& device,
              DeviceType type,
              const base::FilePath& path)
       : id(device.deviceid),
         name(device.name),
-        use(device.use),
+        use(device.type),
         type(type),
         path(path) {
-    for (int i = 0; i < device.num_classes; ++i) {
-      switch (device.classes[i]->type) {
-        case XIValuatorClass:
-          valuator_class_infos.push_back(ValuatorClassInfo(
-              *reinterpret_cast<XIValuatorClassInfo*>(device.classes[i])));
-          break;
-        case XITouchClass:
-          // A device can have at most one XITouchClassInfo. Ref:
-          // http://manpages.ubuntu.com/manpages/saucy/man3/XIQueryDevice.3.html
-          DCHECK(!touch_class_info.mode);
-          touch_class_info = TouchClassInfo(
-              *reinterpret_cast<XITouchClassInfo*>(device.classes[i]));
-          break;
-        default:
-          break;
+    for (const auto& device_class : device.classes) {
+      if (device_class.valuator.has_value()) {
+        valuator_class_infos.emplace_back(*device_class.valuator);
+      } else if (device_class.touch.has_value()) {
+        // A device can have at most one XITouchClassInfo. Ref:
+        // http://manpages.ubuntu.com/manpages/saucy/man3/XIQueryDevice.3.html
+        DCHECK(!touch_class_info.num_touches);
+        touch_class_info = TouchClassInfo(*device_class.touch);
       }
     }
   }
 
   // Unique device identifier.
-  int id;
+  x11::Input::DeviceId id;
 
   // Internal device name.
   std::string name;
 
   // Device type (ie: XIMasterPointer)
-  int use;
+  x11::Input::DeviceType use;
 
   // Specifies the type of the device.
   DeviceType type;
@@ -146,7 +144,7 @@ struct DeviceInfo {
   // Path to the actual device (ie: /dev/input/eventXX)
   base::FilePath path;
 
-  std::vector<ValuatorClassInfo> valuator_class_infos;
+  std::vector<x11::Input::DeviceClass::Valuator> valuator_class_infos;
 
   TouchClassInfo touch_class_info;
 };
@@ -157,6 +155,12 @@ struct DisplayState {
   x11::Atom mt_position_x;
   x11::Atom mt_position_y;
 };
+
+// Identical to FP3232_TO_DOUBLE from libxi's XExtInt.c
+double Fp3232ToDouble(const x11::Input::Fp3232& x) {
+  return static_cast<double>(x.integral) +
+         static_cast<double>(x.frac) / (1ULL << 32);
+}
 
 // Returns true if |name| is the name of a known invalid keyboard device. Note,
 // this may return false negatives.
@@ -176,10 +180,12 @@ bool IsTestDevice(const std::string& name) {
   return name.find("XTEST") != std::string::npos;
 }
 
-base::FilePath GetDevicePath(XDisplay* dpy, const XIDeviceInfo& device) {
+base::FilePath GetDevicePath(x11::Connection* connection,
+                             const x11::Input::XIDeviceInfo& device) {
   // Skip the main pointer and keyboard since XOpenDevice() generates a
   // BadDevice error when passed these devices.
-  if (device.use == XIMasterPointer || device.use == XIMasterKeyboard)
+  if (device.type == x11::Input::DeviceType::MasterPointer ||
+      device.type == x11::Input::DeviceType::MasterKeyboard)
     return base::FilePath();
 
   // Input device has a property "Device Node" pointing to its dev input node,
@@ -188,33 +194,30 @@ base::FilePath GetDevicePath(XDisplay* dpy, const XIDeviceInfo& device) {
   if (device_node == x11::Atom::None)
     return base::FilePath();
 
-  Atom actual_type;
-  int actual_format;
-  unsigned long nitems, bytes_after;
-  unsigned char* data;
-  XDevice* dev = XOpenDevice(dpy, device.deviceid);
-
-  // Sometimes XOpenDevice() doesn't return null but the contents aren't valid.
-  // Calling XGetDeviceProperty() when dev->device_id is invalid triggers a
-  // BadDevice error. Return early to avoid a crash. http://crbug.com/659261
-  if (!dev || dev->device_id != base::checked_cast<XID>(device.deviceid))
+  auto deviceid = static_cast<uint16_t>(device.deviceid);
+  if (deviceid > std::numeric_limits<uint8_t>::max())
+    return base::FilePath();
+  if (connection->xinput().OpenDevice({deviceid}).Sync().error)
     return base::FilePath();
 
-  if (XGetDeviceProperty(dpy, dev, static_cast<uint32_t>(device_node), 0, 1000,
-                         x11::False, AnyPropertyType, &actual_type,
-                         &actual_format, &nitems, &bytes_after,
-                         &data) != x11::Success) {
-    XCloseDevice(dpy, dev);
+  x11::Input::GetDevicePropertyRequest req{
+      .property = device_node,
+      .type = x11::Atom::Any,
+      .offset = 0,
+      .len = std::numeric_limits<uint32_t>::max(),
+      .device_id = deviceid,
+      .c_delete = false,
+  };
+  auto reply = connection->xinput().GetDeviceProperty(req).Sync();
+  if (!reply || reply->type != x11::Atom::STRING || !reply->data8.has_value()) {
+    connection->xinput().CloseDevice({deviceid});
     return base::FilePath();
   }
 
-  std::string path;
-  // Make sure the returned value is a string.
-  if (actual_type == XA_STRING && actual_format == 8)
-    path = reinterpret_cast<char*>(data);
+  std::string path(reinterpret_cast<char*>(reply->data8->data()),
+                   reply->data8->size());
 
-  XFree(data);
-  XCloseDevice(dpy, dev);
+  connection->xinput().CloseDevice({deviceid});
 
   return base::FilePath(path);
 }
@@ -229,13 +232,13 @@ void HandleKeyboardDevicesInWorker(const std::vector<DeviceInfo>& device_infos,
   for (const DeviceInfo& device_info : device_infos) {
     if (device_info.type != DEVICE_TYPE_KEYBOARD)
       continue;
-    if (device_info.use != XISlaveKeyboard)
+    if (device_info.use != x11::Input::DeviceType::SlaveKeyboard)
       continue;  // Assume all keyboards are keyboard slaves
     if (IsKnownInvalidKeyboardDevice(device_info.name))
       continue;  // Skip invalid devices.
     InputDeviceType type = GetInputDeviceTypeFromPath(device_info.path);
-    InputDevice keyboard(device_info.id, type, device_info.name);
-    devices.push_back(keyboard);
+    devices.emplace_back(static_cast<uint16_t>(device_info.id), type,
+                         device_info.name);
   }
 
   reply_runner->PostTask(FROM_HERE,
@@ -250,12 +253,13 @@ void HandleMouseDevicesInWorker(const std::vector<DeviceInfo>& device_infos,
   std::vector<InputDevice> devices;
   for (const DeviceInfo& device_info : device_infos) {
     if (device_info.type != DEVICE_TYPE_MOUSE ||
-        device_info.use != XISlavePointer) {
+        device_info.use != x11::Input::DeviceType::SlavePointer) {
       continue;
     }
 
     InputDeviceType type = GetInputDeviceTypeFromPath(device_info.path);
-    devices.push_back(InputDevice(device_info.id, type, device_info.name));
+    devices.emplace_back(static_cast<uint16_t>(device_info.id), type,
+                         device_info.name);
   }
 
   reply_runner->PostTask(FROM_HERE,
@@ -270,12 +274,13 @@ void HandleTouchpadDevicesInWorker(const std::vector<DeviceInfo>& device_infos,
   std::vector<InputDevice> devices;
   for (const DeviceInfo& device_info : device_infos) {
     if (device_info.type != DEVICE_TYPE_TOUCHPAD ||
-        device_info.use != XISlavePointer) {
+        device_info.use != x11::Input::DeviceType::SlavePointer) {
       continue;
     }
 
     InputDeviceType type = GetInputDeviceTypeFromPath(device_info.path);
-    devices.push_back(InputDevice(device_info.id, type, device_info.name));
+    devices.emplace_back(static_cast<uint16_t>(device_info.id), type,
+                         device_info.name);
   }
 
   reply_runner->PostTask(FROM_HERE,
@@ -296,30 +301,32 @@ void HandleTouchscreenDevicesInWorker(
 
   for (const DeviceInfo& device_info : device_infos) {
     if (device_info.type != DEVICE_TYPE_TOUCHSCREEN ||
-        (device_info.use != XIFloatingSlave &&
-         device_info.use != XISlavePointer)) {
+        (device_info.use != x11::Input::DeviceType::FloatingSlave &&
+         device_info.use != x11::Input::DeviceType::SlavePointer)) {
       continue;
     }
 
     // Touchscreens should be direct touch devices.
-    if (device_info.touch_class_info.mode != XIDirectTouch)
+    if (device_info.touch_class_info.mode != x11::Input::TouchMode::Direct)
       continue;
 
     double max_x = -1.0;
     double max_y = -1.0;
 
-    for (const ValuatorClassInfo& valuator : device_info.valuator_class_infos) {
+    for (const auto& valuator : device_info.valuator_class_infos) {
       if (display_state.mt_position_x == valuator.label) {
         // Ignore X axis valuator with unexpected properties
-        if (valuator.number == 0 && valuator.mode == Absolute &&
-            valuator.min == 0.0) {
-          max_x = valuator.max;
+        if (valuator.number == 0 &&
+            valuator.mode == x11::Input::ValuatorMode::Absolute &&
+            Fp3232ToDouble(valuator.min) == 0.0) {
+          max_x = Fp3232ToDouble(valuator.max);
         }
       } else if (display_state.mt_position_y == valuator.label) {
         // Ignore Y axis valuator with unexpected properties
-        if (valuator.number == 1 && valuator.mode == Absolute &&
-            valuator.min == 0.0) {
-          max_y = valuator.max;
+        if (valuator.number == 1 &&
+            valuator.mode == x11::Input::ValuatorMode::Absolute &&
+            Fp3232ToDouble(valuator.min) == 0.0) {
+          max_y = Fp3232ToDouble(valuator.max);
         }
       }
     }
@@ -331,10 +338,10 @@ void HandleTouchscreenDevicesInWorker(
       const bool has_stylus = false;
       // |max_x| and |max_y| are inclusive values, so we need to add 1 to get
       // the size.
-      devices.push_back(TouchscreenDevice(
-          device_info.id, type, device_info.name,
-          gfx::Size(max_x + 1, max_y + 1),
-          device_info.touch_class_info.num_touches, has_stylus));
+      devices.emplace_back(static_cast<uint16_t>(device_info.id), type,
+                           device_info.name, gfx::Size(max_x + 1, max_y + 1),
+                           device_info.touch_class_info.num_touches,
+                           has_stylus);
     }
   }
 
@@ -390,23 +397,23 @@ X11HotplugEventHandler::X11HotplugEventHandler() = default;
 X11HotplugEventHandler::~X11HotplugEventHandler() = default;
 
 void X11HotplugEventHandler::OnHotplugEvent() {
-  Display* display = gfx::GetXDisplay();
+  auto* connection = x11::Connection::Get();
   const XDeviceList& device_list_xi =
-      DeviceListCacheX11::GetInstance()->GetXDeviceList(display);
+      DeviceListCacheX11::GetInstance()->GetXDeviceList(connection);
   const XIDeviceList& device_list_xi2 =
-      DeviceListCacheX11::GetInstance()->GetXI2DeviceList(display);
+      DeviceListCacheX11::GetInstance()->GetXI2DeviceList(connection);
 
   const int kMaxDeviceNum = 128;
   DeviceType device_types[kMaxDeviceNum];
   for (auto& device_type : device_types)
     device_type = DEVICE_TYPE_OTHER;
 
-  for (int i = 0; i < device_list_xi.count; ++i) {
-    int id = device_list_xi[i].id;
-    if (id < 0 || id >= kMaxDeviceNum)
+  for (const auto& device : device_list_xi) {
+    uint8_t id = device.device_id;
+    if (id >= kMaxDeviceNum)
       continue;
 
-    x11::Atom type = static_cast<x11::Atom>(device_list_xi[i].type);
+    x11::Atom type = device.device_type;
     if (type == gfx::GetAtom(XI_KEYBOARD))
       device_types[id] = DEVICE_TYPE_KEYBOARD;
     else if (type == gfx::GetAtom(XI_MOUSE))
@@ -418,17 +425,15 @@ void X11HotplugEventHandler::OnHotplugEvent() {
   }
 
   std::vector<DeviceInfo> device_infos;
-  for (int i = 0; i < device_list_xi2.count; ++i) {
-    const XIDeviceInfo& device = device_list_xi2[i];
+  for (const auto& device : device_list_xi2) {
     if (!device.enabled || IsTestDevice(device.name))
       continue;
 
+    auto deviceid = static_cast<uint16_t>(device.deviceid);
     DeviceType device_type =
-        (device.deviceid >= 0 && device.deviceid < kMaxDeviceNum)
-            ? device_types[device.deviceid]
-            : DEVICE_TYPE_OTHER;
-    device_infos.push_back(
-        DeviceInfo(device, device_type, GetDevicePath(display, device)));
+        deviceid < kMaxDeviceNum ? device_types[deviceid] : DEVICE_TYPE_OTHER;
+    device_infos.emplace_back(device, device_type,
+                              GetDevicePath(connection, device));
   }
 
   // X11 is not thread safe, so first get all the required state.

@@ -350,6 +350,10 @@ class AccessibilityManager
       base::RepeatingCallback<void(const gfx::Rect&)> observer);
   void SetSwitchAccessKeysForTest(const std::vector<int>& keys);
 
+  const std::set<std::string>& GetAccessibilityCommonEnabledFeaturesForTest() {
+    return accessibility_common_enabled_features_;
+  }
+
  protected:
   AccessibilityManager();
   ~AccessibilityManager() override;
@@ -380,7 +384,7 @@ class AccessibilityManager
   void OnFocusHighlightChanged();
   void OnTapDraggingChanged();
   void OnSelectToSpeakChanged();
-  void OnAutoclickChanged();
+  void OnAccessibilityCommonChanged(const std::string& pref_name);
   void OnSwitchAccessChanged();
 
   void CheckBrailleState();
@@ -438,7 +442,10 @@ class AccessibilityManager
   bool spoken_feedback_enabled_ = false;
   bool select_to_speak_enabled_ = false;
   bool switch_access_enabled_ = false;
-  bool autoclick_enabled_ = false;
+
+  // A set of pref names of enabled accessibility features using the
+  // accessibility common extension.
+  std::set<std::string> accessibility_common_enabled_features_;
 
   AccessibilityStatusCallbackList callback_list_;
 

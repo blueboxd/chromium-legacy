@@ -80,11 +80,14 @@ class CORE_EXPORT WebViewFrameWidget : public WebFrameWidgetBase {
   WebInputMethodController* GetActiveWebInputMethodController() const override;
   bool ScrollFocusedEditableElementIntoView() override;
   WebHitTestResult HitTestResultAt(const gfx::PointF&) override;
+  void SetZoomLevelForTesting(double zoom_level) override;
+  void ResetZoomLevelForTesting() override;
 
   // WebFrameWidgetBase overrides:
   bool ForSubframe() const override { return false; }
   HitTestResult CoreHitTestResultAt(const gfx::PointF&) override;
   void ZoomToFindInPageRect(const WebRect& rect_in_root_frame) override;
+  void SetZoomLevel(double zoom_level) override;
 
   // FrameWidget overrides:
   void SetRootLayer(scoped_refptr<cc::Layer>) override;
@@ -121,6 +124,11 @@ class CORE_EXPORT WebViewFrameWidget : public WebFrameWidgetBase {
 
   scoped_refptr<WebViewImpl> web_view_;
   base::Optional<base::TimeTicks> commit_compositor_frame_start_time_;
+
+  // Web tests override the zoom factor in the renderer with this. We store it
+  // to keep the override if the browser passes along VisualProperties with the
+  // real device scale factor. A value of -INFINITY means this is ignored.
+  double zoom_level_for_testing_ = -INFINITY;
 
   SelfKeepAlive<WebViewFrameWidget> self_keep_alive_;
 

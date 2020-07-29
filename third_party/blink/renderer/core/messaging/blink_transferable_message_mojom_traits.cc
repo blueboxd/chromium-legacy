@@ -51,7 +51,6 @@ bool StructTraits<blink::mojom::blink::TransferableMessage::DataView,
   out->message->GetStreamChannels().AppendRange(
       std::make_move_iterator(stream_channels.begin()),
       std::make_move_iterator(stream_channels.end()));
-  out->transfer_user_activation = data.transfer_user_activation();
 
   out->message->SetArrayBufferContentsArray(
       std::move(array_buffer_contents_array));

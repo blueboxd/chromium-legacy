@@ -40,14 +40,14 @@ IN_PROC_BROWSER_TEST_F(TwoClientExtensionsSyncTest,
 }
 
 // E2E tests flaky on Mac and Windows: https://crbug.com/597319
-#if defined(OS_MACOSX) || defined(OS_WIN)
+#if defined(OS_MAC) || defined(OS_WIN)
 #define MAYBE_E2E(test_name) test_name
 #else
 #define MAYBE_E2E(test_name) E2E_ENABLED(test_name)
 #endif
 
 // Flaky on Mac: http://crbug.com/535996
-#if defined(OS_MACOSX)
+#if defined(OS_MAC)
 #define MAYBE_StartWithSameExtensions DISABLED_StartWithSameExtensions
 #else
 #define MAYBE_StartWithSameExtensions StartWithSameExtensions
@@ -70,7 +70,7 @@ IN_PROC_BROWSER_TEST_F(TwoClientExtensionsSyncTest,
 }
 
 // Flaky on Mac: http://crbug.com/535996
-#if defined(OS_MACOSX)
+#if defined(OS_MAC)
 #define MAYBE_StartWithDifferentExtensions DISABLED_StartWithDifferentExtensions
 #else
 #define MAYBE_StartWithDifferentExtensions StartWithDifferentExtensions

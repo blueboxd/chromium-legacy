@@ -8,7 +8,7 @@
 
 #include "base/at_exit.h"
 #include "base/command_line.h"
-#if defined(OS_MACOSX)
+#if defined(OS_MAC)
 #include "base/mac/scoped_nsautorelease_pool.h"
 #endif
 #if defined(OS_WIN)
@@ -34,7 +34,7 @@ int main(int argc, char *argv[]) {
   base::CommandLine::StringVector args =
       base::CommandLine::ForCurrentProcess()->GetArgs();
 
-#if defined(OS_MACOSX)
+#if defined(OS_MAC)
   base::mac::ScopedNSAutoreleasePool pool;
 #endif
 

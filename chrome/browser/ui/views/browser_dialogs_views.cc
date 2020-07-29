@@ -47,7 +47,7 @@ void ChromeExtensionChooserDialog::ShowDialog(
 
 namespace chrome {
 
-#if !defined(OS_MACOSX)
+#if !defined(OS_MAC)
 task_manager::TaskManagerTableModel* ShowTaskManager(Browser* browser) {
   return task_manager::TaskManagerView::Show(browser);
 }

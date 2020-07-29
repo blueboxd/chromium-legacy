@@ -1515,7 +1515,7 @@ IN_PROC_BROWSER_TEST_F(WebViewTest, Shim_TestNestedCrossOriginSubframes) {
              "web_view/shim", NEEDS_TEST_SERVER);
 }
 
-#if defined(OS_MACOSX)
+#if defined(OS_MAC)
 // Flaky on Mac. See https://crbug.com/674904.
 #define MAYBE_Shim_TestNestedSubframes DISABLED_Shim_TestNestedSubframes
 #else
@@ -4104,8 +4104,8 @@ class ChromeSignInWebViewTest : public WebViewTest {
   }
 };
 
-#if (defined(OS_LINUX) && !defined(OS_CHROMEOS)) || defined(OS_MACOSX) || \
-     defined(OS_WIN)
+#if (defined(OS_LINUX) && !defined(OS_CHROMEOS)) || defined(OS_MAC) || \
+    defined(OS_WIN)
 // This verifies the fix for http://crbug.com/667708.
 IN_PROC_BROWSER_TEST_F(ChromeSignInWebViewTest,
                        ClosingChromeSignInShouldNotCrash) {

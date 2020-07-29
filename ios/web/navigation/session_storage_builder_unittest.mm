@@ -4,6 +4,7 @@
 
 #import "ios/web/navigation/session_storage_builder.h"
 
+#include "base/strings/sys_string_conversions.h"
 #import "ios/web/navigation/wk_navigation_util.h"
 #import "ios/web/public/session/crw_navigation_item_storage.h"
 #import "ios/web/public/session/crw_session_storage.h"
@@ -132,6 +133,41 @@ TEST_F(SessionStorageBuilderTest, ShouldSkipSerializationItems) {
         [storage.itemStorages objectAtIndex:storage_index];
     EXPECT_EQ(item->GetURL(), item_storage.URL) << "item_index: " << item_index;
   }
+}
+
+// Tests building storage for session that has URL longer than
+// url::kMaxURLChars.
+TEST_F(SessionStorageBuilderTest, SkipLongUrls) {
+  // Create WebState with navigation item count that exceeds kMaxSessionSize.
+  WebState::CreateParams params(GetBrowserState());
+  WebStateWithMockProxy web_state(params);
+
+  NSString* long_url =
+      [@"https://" stringByPaddingToLength:url::kMaxURLChars + 1
+                                withString:@"a"
+                           startingAtIndex:0];
+  NSString* normal_url = @"https://foo.test";
+  NSString* const current_url = normal_url;
+  [web_state.fake_wk_list() setCurrentURL:normal_url
+                             backListURLs:@[ long_url ]
+                          forwardListURLs:nil];
+  OCMStub([web_state.mock_web_view() URL])
+      .andReturn([NSURL URLWithString:current_url]);
+  NavigationManager* navigation_manager = web_state.GetNavigationManager();
+  ASSERT_EQ(2, navigation_manager->GetItemCount());
+
+  web_state.GetNavigationManagerImpl()
+      .GetNavigationItemImplAtIndex(1)
+      ->SetReferrer(web::Referrer(GURL(base::SysNSStringToUTF8(long_url)),
+                                  web::ReferrerPolicy::ReferrerPolicyDefault));
+
+  // Verify that storage has single item and that item does not have a referrer.
+  SessionStorageBuilder builder;
+  CRWSessionStorage* storage = builder.BuildStorage(&web_state);
+  ASSERT_TRUE(storage);
+  ASSERT_EQ(1U, storage.itemStorages.count);
+
+  EXPECT_EQ(GURL::EmptyGURL(), [storage.itemStorages.firstObject referrer].url);
 }
 
 }  // namespace web

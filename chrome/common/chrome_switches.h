@@ -210,7 +210,7 @@ extern const char kSchedulerConfigurationPerformance[];
 extern const char kSchedulerConfigurationDefault[];
 #endif  // defined(OS_CHROMEOS)
 
-#if defined(OS_POSIX) && !defined(OS_MACOSX) && !defined(OS_CHROMEOS)
+#if defined(OS_POSIX) && !defined(OS_MAC) && !defined(OS_CHROMEOS)
 extern const char kHelp[];
 extern const char kHelpShort[];
 extern const char kPasswordStore[];
@@ -218,7 +218,7 @@ extern const char kEnableEncryptionSelection[];
 extern const char kWmClass[];
 #endif
 
-#if defined(OS_MACOSX)
+#if defined(OS_MAC)
 extern const char kAppsKeepChromeAliveInTests[];
 extern const char kDisableHostedAppShimCreation[];
 extern const char kEnableUserMetrics[];
@@ -227,7 +227,7 @@ extern const char kMetricsClientID[];
 extern const char kRelauncherProcess[];
 extern const char kRelauncherProcessDMGDevice[];
 extern const char kMakeChromeDefault[];
-#endif  // defined(OS_MACOSX)
+#endif  // defined(OS_MAC)
 
 #if defined(OS_WIN)
 extern const char kDisableWindows10CustomTitlebar[];
@@ -254,7 +254,7 @@ extern const char kAllowNaClFileHandleAPI[];
 extern const char kAllowNaClSocketAPI[];
 #endif
 
-#if defined(OS_LINUX) || defined(OS_MACOSX) || defined(OS_WIN)
+#if defined(OS_LINUX) || defined(OS_MAC) || defined(OS_WIN)
 extern const char kEnableNewAppMenuIcon[];
 extern const char kGuest[];
 #endif

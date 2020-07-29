@@ -872,7 +872,7 @@ void HttpServerProperties::SetAlternativeServicesInternal(
     // before the first completes. In this case, only one of the jobs
     // would reach this code, whereas all of them should should have.
     HistogramAlternateProtocolUsage(ALTERNATE_PROTOCOL_USAGE_MAPPING_MISSING,
-                                    false, IsGoogleHost(origin.host()));
+                                    IsGoogleHost(origin.host()));
   }
 
   // If this host ends with a canonical suffix, then set it as the

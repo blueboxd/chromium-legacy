@@ -241,7 +241,7 @@ IN_PROC_BROWSER_TEST_F(BluetoothPrivateApiTest, DisconnectAll) {
 }
 
 // Device::Forget not implemented on OSX.
-#if !defined(OS_MACOSX)
+#if !defined(OS_MAC)
 IN_PROC_BROWSER_TEST_F(BluetoothPrivateApiTest, ForgetDevice) {
   EXPECT_CALL(*mock_device_, Forget(_, _))
       .WillOnce(

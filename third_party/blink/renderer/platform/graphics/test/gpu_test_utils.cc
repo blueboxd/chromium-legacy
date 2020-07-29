@@ -15,7 +15,7 @@ namespace blink {
 void InitializeSharedGpuContext(viz::TestContextProvider* test_context_provider,
                                 cc::ImageDecodeCache* cache,
                                 SetIsContextLost set_context_lost) {
-  auto factory = [](viz::TestGLES2Interface* gl, GrContext* context,
+  auto factory = [](viz::TestGLES2Interface* gl, GrDirectContext* context,
                     cc::ImageDecodeCache* cache,
                     SetIsContextLost set_context_lost,
                     bool* gpu_compositing_disabled)
@@ -35,7 +35,7 @@ void InitializeSharedGpuContext(viz::TestContextProvider* test_context_provider,
   };
   test_context_provider->BindToCurrentThread();
   viz::TestGLES2Interface* gl = test_context_provider->TestContextGL();
-  GrContext* context = test_context_provider->GrContext();
+  GrDirectContext* context = test_context_provider->GrContext();
   SharedGpuContext::SetContextProviderFactoryForTesting(
       WTF::BindRepeating(factory, WTF::Unretained(gl), WTF::Unretained(context),
                          WTF::Unretained(cache), set_context_lost));

@@ -554,6 +554,7 @@ Button::ButtonState LabelButton::GetVisualState() const {
 
 void LabelButton::VisualStateChanged() {
   UpdateImage();
+  UpdateBackgroundColor();
   label_->SetEnabled(GetVisualState() != STATE_DISABLED);
 }
 

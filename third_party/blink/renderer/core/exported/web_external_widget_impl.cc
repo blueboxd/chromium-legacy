@@ -168,6 +168,11 @@ WebExternalWidgetImpl::GetSynchronousCompositorRegistry() {
 }
 #endif
 
+void WebExternalWidgetImpl::ApplyVisualProperties(
+    const VisualProperties& visual_properties) {
+  widget_base_->UpdateVisualProperties(visual_properties);
+}
+
 void WebExternalWidgetImpl::DidOverscrollForTesting(
     const gfx::Vector2dF& overscroll_delta,
     const gfx::Vector2dF& accumulated_overscroll,

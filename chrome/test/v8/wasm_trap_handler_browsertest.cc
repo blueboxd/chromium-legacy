@@ -26,7 +26,7 @@ namespace {
 constexpr bool kIsTrapHandlerSupported = true;
 #elif defined(OS_WIN) && defined(ARCH_CPU_X86_64)
 constexpr bool kIsTrapHandlerSupported = true;
-#elif defined(OS_MACOSX) && defined(ARCH_CPU_X86_64)
+#elif defined(OS_MAC) && defined(ARCH_CPU_X86_64)
 constexpr bool kIsTrapHandlerSupported = true;
 #else
 constexpr bool kIsTrapHandlerSupported = false;

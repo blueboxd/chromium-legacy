@@ -28,7 +28,6 @@ MockHttpStreamFactoryJob::MockHttpStreamFactoryJob(
     GURL origin_url,
     NextProto alternative_protocol,
     quic::ParsedQuicVersion quic_version,
-    const ProxyServer& alternative_proxy_server,
     bool is_websocket,
     bool enable_ip_based_pooling,
     NetLog* net_log)
@@ -44,7 +43,6 @@ MockHttpStreamFactoryJob::MockHttpStreamFactoryJob(
                              origin_url,
                              alternative_protocol,
                              quic_version,
-                             alternative_proxy_server,
                              is_websocket,
                              enable_ip_based_pooling,
                              net_log) {
@@ -80,7 +78,7 @@ std::unique_ptr<HttpStreamFactory::Job> TestJobFactory::CreateMainJob(
   auto main_job = std::make_unique<MockHttpStreamFactoryJob>(
       delegate, job_type, session, request_info, priority, proxy_info,
       SSLConfig(), SSLConfig(), destination, origin_url, kProtoUnknown,
-      quic::ParsedQuicVersion::Unsupported(), ProxyServer(), is_websocket,
+      quic::ParsedQuicVersion::Unsupported(), is_websocket,
       enable_ip_based_pooling, net_log);
 
   // Keep raw pointer to Job but pass ownership.
@@ -108,35 +106,7 @@ std::unique_ptr<HttpStreamFactory::Job> TestJobFactory::CreateAltSvcJob(
   auto alternative_job = std::make_unique<MockHttpStreamFactoryJob>(
       delegate, job_type, session, request_info, priority, proxy_info,
       SSLConfig(), SSLConfig(), destination, origin_url, alternative_protocol,
-      quic_version, ProxyServer(), is_websocket, enable_ip_based_pooling,
-      net_log);
-
-  // Keep raw pointer to Job but pass ownership.
-  alternative_job_ = alternative_job.get();
-
-  return std::move(alternative_job);
-}
-
-std::unique_ptr<HttpStreamFactory::Job> TestJobFactory::CreateAltProxyJob(
-    HttpStreamFactory::Job::Delegate* delegate,
-    HttpStreamFactory::JobType job_type,
-    HttpNetworkSession* session,
-    const HttpRequestInfo& request_info,
-    RequestPriority priority,
-    const ProxyInfo& proxy_info,
-    const SSLConfig& server_ssl_config,
-    const SSLConfig& proxy_ssl_config,
-    HostPortPair destination,
-    GURL origin_url,
-    const ProxyServer& alternative_proxy_server,
-    bool is_websocket,
-    bool enable_ip_based_pooling,
-    NetLog* net_log) {
-  auto alternative_job = std::make_unique<MockHttpStreamFactoryJob>(
-      delegate, job_type, session, request_info, priority, proxy_info,
-      SSLConfig(), SSLConfig(), destination, origin_url, kProtoUnknown,
-      quic::ParsedQuicVersion::Unsupported(), alternative_proxy_server,
-      is_websocket, enable_ip_based_pooling, net_log);
+      quic_version, is_websocket, enable_ip_based_pooling, net_log);
 
   // Keep raw pointer to Job but pass ownership.
   alternative_job_ = alternative_job.get();

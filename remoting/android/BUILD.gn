@@ -146,6 +146,8 @@ remoting_android_client_java_tmpl("remoting_android_client_java") {
 }
 
 remoting_apk_tmpl("remoting_apk") {
+  enable_lint = true
+
   apk_name = "Chromoting"
   sources = [ "//remoting/android/apk/src/org/chromium/chromoting/RemotingApplication.java" ]
   deps = [

@@ -57,18 +57,29 @@ PointerHandler = class extends BaseAutomationHandler {
    *
    * Note that runHitTest only ever does a hit test when |hasPendingEvents| is
    * true.
+   * @param {boolean} isTouch
    */
-  runHitTest() {
+  runHitTest(isTouch = false) {
     if (this.mouseX_ === undefined || this.mouseY_ === undefined) {
       return;
     }
     if (!this.hasPendingEvents_) {
       return;
     }
-    this.node_.hitTestWithReply(this.mouseX_, this.mouseY_, (target) => {
-      this.handleHitTestResult(target);
-      this.runHitTest();
-    });
+
+    if (isTouch) {
+      // TODO(accessibility): hit testing seems to be broken in some cases e.g.
+      // on the main CFM UI. Synthesize mouse moves with the touch
+      // accessibility flag for now for touch-based user gestures. Eliminate
+      // this branch once hit testing is fixed.
+      this.synthesizeMouseMove();
+    } else {
+      // Otherwise, use hit testing.
+      this.node_.hitTestWithReply(this.mouseX_, this.mouseY_, (target) => {
+        this.handleHitTestResult(target);
+        this.runHitTest();
+      });
+    }
     this.hasPendingEvents_ = false;
   }
 
@@ -81,15 +92,25 @@ PointerHandler = class extends BaseAutomationHandler {
   }
 
   /**
-   * Inform this handler of a move to (x, y).
+   * Handles touch move events.
    * @param {number} x
    * @param {number} y
    */
-  onMove(x, y) {
+  onTouchMove(x, y) {
+    this.onMove(x, y, true);
+  }
+
+  /**
+   * Inform this handler of a move to (x, y).
+   * @param {number} x
+   * @param {number} y
+   * @param {boolean} isTouch
+   */
+  onMove(x, y, isTouch = false) {
     this.mouseX_ = x;
     this.mouseY_ = y;
     this.hasPendingEvents_ = true;
-    this.runHitTest();
+    this.runHitTest(isTouch);
   }
 
   /**
@@ -103,7 +124,8 @@ PointerHandler = class extends BaseAutomationHandler {
     chrome.accessibilityPrivate.sendSyntheticMouseEvent({
       type: chrome.accessibilityPrivate.SyntheticMouseEventType.MOVE,
       x: this.mouseX_,
-      y: this.mouseY_
+      y: this.mouseY_,
+      touchAccessibility: true
     });
   }
 

@@ -54,7 +54,7 @@
 #include "ui/gfx/ipc/skia/gfx_skia_param_traits.h"
 #include "ui/native_theme/native_theme.h"
 
-#if defined(OS_MACOSX)
+#if defined(OS_MAC)
 #include "third_party/blink/public/platform/mac/web_scrollbar_theme.h"
 #endif
 
@@ -73,7 +73,7 @@ IPC_ENUM_TRAITS_MAX_VALUE(content::ThreeDAPIType,
                           content::THREE_D_API_TYPE_LAST)
 IPC_ENUM_TRAITS_MAX_VALUE(ui::TextInputType, ui::TEXT_INPUT_TYPE_MAX)
 
-#if defined(OS_MACOSX)
+#if defined(OS_MAC)
 IPC_ENUM_TRAITS_MAX_VALUE(blink::ScrollerStyle, blink::kScrollerStyleOverlay)
 #endif
 

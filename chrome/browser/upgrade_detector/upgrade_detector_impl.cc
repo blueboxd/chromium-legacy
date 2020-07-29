@@ -43,7 +43,7 @@
 #include "base/enterprise_util.h"
 #include "chrome/installer/util/google_update_settings.h"
 #include "components/enterprise/browser/controller/browser_dm_token_storage.h"
-#elif defined(OS_MACOSX)
+#elif defined(OS_MAC)
 #include "chrome/browser/mac/keystone_glue.h"
 #endif
 
@@ -461,7 +461,7 @@ void UpgradeDetectorImpl::Init() {
 
   // On macOS, only enable upgrade notifications if the updater (Keystone) is
   // present.
-#if defined(OS_MACOSX)
+#if defined(OS_MAC)
   if (!keystone_glue::KeystoneEnabled())
     return;
 #endif

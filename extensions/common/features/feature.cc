@@ -22,7 +22,7 @@ Feature::Platform Feature::GetCurrentPlatform() {
   return CHROMEOS_PLATFORM;
 #elif defined(OS_LINUX)
   return LINUX_PLATFORM;
-#elif defined(OS_MACOSX)
+#elif defined(OS_MAC)
   return MACOSX_PLATFORM;
 #elif defined(OS_WIN)
   return WIN_PLATFORM;

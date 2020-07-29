@@ -226,6 +226,13 @@
              "--enable-use-zoom-for-dsf"]
   },
   {
+    "prefix": "schemeful-same-site",
+    "bases": ["http/tests/inspector-protocol/network/same-site-issue-warn-cookie-strict-subresource-context-downgrade.js",
+              "http/tests/inspector-protocol/network/same-site-issue-warn-cookie-lax-subresource-context-downgrade.js",
+              "http/tests/inspector-protocol/network/same-site-issue-warn-cookie-navigation-context-downgrade.js"],
+    "args": ["--enable-features=SchemefulSameSite"]
+  },
+  {
     "prefix": "layout_ng_block_frag",
     "bases": ["external/wpt/css/css-break",
               "external/wpt/css/css-multicol",

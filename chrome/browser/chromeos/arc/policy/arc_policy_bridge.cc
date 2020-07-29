@@ -18,6 +18,7 @@
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
 #include "base/values.h"
+#include "chrome/browser/chromeos/arc/arc_util.h"
 #include "chrome/browser/chromeos/arc/enterprise/cert_store/arc_smart_card_manager_bridge.h"
 #include "chrome/browser/chromeos/arc/session/arc_session_manager.h"
 #include "chrome/browser/chromeos/profiles/profile_helper.h"
@@ -45,6 +46,7 @@ namespace {
 constexpr char kArcCaCerts[] = "caCerts";
 constexpr char kPolicyCompliantJson[] = "{ \"policyCompliant\": true }";
 constexpr char kArcRequiredKeyPairs[] = "requiredKeyPairs";
+constexpr char kPlayStorePackageName[] = "com.android.vending";
 
 // invert_bool_value: If the Chrome policy and the ARC policy with boolean value
 // have opposite semantics, set this to true so the bool is inverted before
@@ -218,10 +220,10 @@ void AddRequiredKeyPairs(const ArcSmartCardManagerBridge* smart_card_manager,
 
 std::string GetFilteredJSONPolicies(
     const policy::PolicyMap& policy_map,
-    const PrefService* profile_prefs,
     const std::string& guid,
     bool is_affiliated,
-    const ArcSmartCardManagerBridge* smart_card_manager) {
+    const ArcSmartCardManagerBridge* smart_card_manager,
+    const Profile* profile) {
   base::Value filtered_policies(base::Value::Type::DICTIONARY);
   // Parse ArcPolicy as JSON string before adding other policies to the
   // dictionary.
@@ -246,6 +248,33 @@ std::string GetFilteredJSONPolicies(
                  << app_policy_string;
     }
   }
+
+  if (profile->IsSupervised() &&
+      chromeos::ProfileHelper::Get()->IsPrimaryProfile(profile) &&
+      arc::IsSecondaryAccountForChildEnabled()) {
+    // Adds "playStoreMode" policy. The policy value is used to restrict the
+    // user from being able to toggle between different accounts in ARC++.
+    filtered_policies.SetStringKey("playStoreMode", "SUPERVISED");
+
+    // Updates "applications" policy value for PlayStore to include the child's
+    // primary email account.
+    base::Value* applications_value =
+        filtered_policies.FindListKey("applications");
+    if (applications_value) {
+      base::Value::ListView list_view = applications_value->GetList();
+      for (base::Value& entry : list_view) {
+        const std::string* packageName = entry.FindStringKey("packageName");
+        if (packageName && *packageName != kPlayStorePackageName)
+          continue;
+        base::Value management_entry(base::Value::Type::DICTIONARY);
+        management_entry.SetStringKey("allowed_accounts",
+                                      profile->GetProfileUserName());
+        entry.SetKey("managedConfiguration", std::move(management_entry));
+      }
+    }
+  }
+
+  const PrefService* profile_prefs = profile->GetPrefs();
 
   // Keep them sorted by the ARC policy names.
   MapBoolToBool("cameraDisabled", policy::key::kVideoCaptureAllowed, policy_map,
@@ -550,9 +579,9 @@ std::string ArcPolicyBridge::GetCurrentJSONPolicies() const {
   const ArcSmartCardManagerBridge* smart_card_manager =
       ArcSmartCardManagerBridge::GetForBrowserContext(context_);
 
-  return GetFilteredJSONPolicies(policy_map, profile->GetPrefs(),
-                                 instance_guid_, user->IsAffiliated(),
-                                 smart_card_manager);
+  return GetFilteredJSONPolicies(policy_map, instance_guid_,
+                                 user->IsAffiliated(), smart_card_manager,
+                                 profile);
 }
 
 void ArcPolicyBridge::OnReportComplianceParse(

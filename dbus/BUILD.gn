@@ -69,6 +69,10 @@ static_library("test_support") {
 }
 
 test("dbus_unittests") {
+  if ((is_linux && !is_chromeos) || chromeos_is_browser_only) {
+    use_xvfb = true
+  }
+
   sources = [
     "bus_unittest.cc",
     "dbus_statistics_unittest.cc",

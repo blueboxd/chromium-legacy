@@ -36,12 +36,12 @@ namespace {
 
 const char kCpuTextFormatString[] = "%.1f";
 
-#if defined(OS_MACOSX)
+#if defined(OS_MAC)
 // Match Activity Monitor's default refresh rate.
 const int64_t kRefreshTimeMS = 2000;
 #else
 const int64_t kRefreshTimeMS = 1000;
-#endif  // defined(OS_MACOSX)
+#endif  // defined(OS_MAC)
 
 // The columns that are shared by a group will show the value of the column
 // only once per group.
@@ -158,7 +158,7 @@ class TaskManagerValuesStringifier {
     if (memory_usage == -1)
       return n_a_string_;
 
-#if defined(OS_MACOSX)
+#if defined(OS_MAC)
     // System expectation is to show "100 kB", "200 MB", etc.
     // TODO(thakis): [This TODO has been taken as is from the old task manager]:
     // Switch to metric units (as opposed to powers of two).
@@ -169,7 +169,7 @@ class TaskManagerValuesStringifier {
     base::i18n::AdjustStringForLocaleDirection(&memory_text);
     memory_text = l10n_util::GetStringFUTF16(IDS_TASK_MANAGER_MEM_CELL_TEXT,
                                              memory_text);
-#endif  // defined(OS_MACOSX)
+#endif  // defined(OS_MAC)
 
     if (has_duplicates)
       memory_text += asterisk_string_;
@@ -450,13 +450,13 @@ base::string16 TaskManagerTableModel::GetText(int row, int column) {
           ? stringifier_->backgrounded_string()
           : stringifier_->foregrounded_string();
 
-#if defined(OS_LINUX) || defined(OS_MACOSX)
+#if defined(OS_LINUX) || defined(OS_MAC)
     case IDS_TASK_MANAGER_OPEN_FD_COUNT_COLUMN: {
       const int fd_count = observed_task_manager()->GetOpenFdCount(tasks_[row]);
       return fd_count >= 0 ? base::FormatNumber(fd_count)
                            : stringifier_->n_a_string();
     }
-#endif  // defined(OS_LINUX) || defined(OS_MACOSX)
+#endif  // defined(OS_LINUX) || defined(OS_MAC)
 
     case IDS_TASK_MANAGER_KEEPALIVE_COUNT_COLUMN: {
       return stringifier_->GetKeepaliveCountText(
@@ -616,7 +616,7 @@ int TaskManagerTableModel::CompareValues(int row1,
       return BooleanCompare(is_proc1_bg, is_proc2_bg);
     }
 
-#if defined(OS_LINUX) || defined(OS_MACOSX)
+#if defined(OS_LINUX) || defined(OS_MAC)
     case IDS_TASK_MANAGER_OPEN_FD_COUNT_COLUMN: {
       const int proc1_fd_count =
           observed_task_manager()->GetOpenFdCount(tasks_[row1]);
@@ -624,7 +624,7 @@ int TaskManagerTableModel::CompareValues(int row1,
           observed_task_manager()->GetOpenFdCount(tasks_[row2]);
       return ValueCompare(proc1_fd_count, proc2_fd_count);
     }
-#endif  // defined(OS_LINUX) || defined(OS_MACOSX)
+#endif  // defined(OS_LINUX) || defined(OS_MAC)
 
     default:
       NOTREACHED();
@@ -790,11 +790,11 @@ void TaskManagerTableModel::UpdateRefreshTypes(int column_id, bool visibility) {
       type = REFRESH_TYPE_KEEPALIVE_COUNT;
       break;
 
-#if defined(OS_LINUX) || defined(OS_MACOSX)
+#if defined(OS_LINUX) || defined(OS_MAC)
     case IDS_TASK_MANAGER_OPEN_FD_COUNT_COLUMN:
       type = REFRESH_TYPE_FD_COUNT;
       break;
-#endif  // defined(OS_LINUX) || defined(OS_MACOSX)
+#endif  // defined(OS_LINUX) || defined(OS_MAC)
 
     default:
       NOTREACHED();

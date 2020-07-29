@@ -27,7 +27,6 @@ import org.chromium.chrome.browser.compositor.layouts.EmptyOverviewModeObserver;
 import org.chromium.chrome.browser.compositor.layouts.OverviewModeBehavior;
 import org.chromium.chrome.browser.compositor.layouts.OverviewModeBehavior.OverviewModeObserver;
 import org.chromium.chrome.browser.payments.handler.PaymentHandlerCoordinator;
-import org.chromium.chrome.browser.payments.handler.PaymentHandlerCoordinator.PaymentHandlerUiObserver;
 import org.chromium.chrome.browser.payments.handler.PaymentHandlerCoordinator.PaymentHandlerWebContentsObserver;
 import org.chromium.chrome.browser.payments.minimal.MinimalUICoordinator;
 import org.chromium.chrome.browser.payments.ui.ContactDetailsSection;
@@ -134,7 +133,7 @@ public class PaymentRequestImpl
                    PaymentApp.InstrumentDetailsCallback,
                    PaymentResponseHelper.PaymentResponseRequesterDelegate, FocusChangedObserver,
                    NormalizedAddressRequestDelegate, PaymentDetailsConverter.MethodChecker,
-                   PaymentHandlerUiObserver, PaymentUIsManager.Delegate {
+                   PaymentUIsManager.Delegate {
     /**
      * A delegate to ask questions about the system, that allows tests to inject behaviour without
      * having to modify the entire system. This partially mirrors a similar C++
@@ -350,7 +349,6 @@ public class PaymentRequestImpl
     private final PaymentUIsManager mPaymentUIsManager;
     private MinimalUICoordinator mMinimalUi;
     private PaymentApp mInvokedPaymentApp;
-    private PaymentHandlerCoordinator mPaymentHandlerUi;
     private boolean mHideServerAutofillCards;
     private ContactEditor mContactEditor;
     private boolean mHasRecordedAbortReason;
@@ -454,21 +452,13 @@ public class PaymentRequestImpl
 
         mIsOffTheRecord = mDelegate.isOffTheRecord(ChromeActivity.fromWebContents(mWebContents));
 
-        // Do not persist changes on disk in OffTheRecord mode.
-        AddressEditor addressEditor = new AddressEditor(
-                AddressEditor.Purpose.PAYMENT_REQUEST, /*saveToDisk=*/!mIsOffTheRecord);
-        // PaymentRequest card editor does not show the organization name in the dropdown with the
-        // billing address labels.
-        CardEditor cardEditor = new CardEditor(
-                mWebContents, addressEditor, /*includeOrgLabel=*/false, sObserverForTest);
-
         mJourneyLogger = new JourneyLogger(mIsOffTheRecord, mWebContents);
 
         mSkipUiForNonUrlPaymentMethodIdentifiers = mDelegate.skipUiForBasicCard();
 
         if (sObserverForTest != null) sObserverForTest.onPaymentRequestCreated(this);
         mPaymentUIsManager = new PaymentUIsManager(/*delegate=*/this,
-                /*params=*/this, addressEditor, cardEditor);
+                /*params=*/this, mWebContents, mIsOffTheRecord);
         mPaymentAppComparator = new PaymentAppComparator(/*params=*/this);
     }
 
@@ -1153,8 +1143,7 @@ public class PaymentRequestImpl
 
     @VisibleForTesting(otherwise = VisibleForTesting.NONE)
     private WebContents getPaymentHandlerWebContentsForTestInternal() {
-        if (mPaymentHandlerUi == null) return null;
-        return mPaymentHandlerUi.getWebContentsForTest();
+        return mPaymentUIsManager.getPaymentHandlerWebContentsForTest();
     }
 
     /**
@@ -1171,9 +1160,7 @@ public class PaymentRequestImpl
 
     @VisibleForTesting(otherwise = VisibleForTesting.NONE)
     private boolean clickPaymentHandlerSecurityIconForTestInternal() {
-        if (mPaymentHandlerUi == null) return false;
-        mPaymentHandlerUi.clickSecurityIconForTest();
-        return true;
+        return mPaymentUIsManager.clickPaymentHandlerSecurityIconForTest();
     }
 
     /**
@@ -1238,31 +1225,14 @@ public class PaymentRequestImpl
         assert mInvokedPaymentApp != null;
         assert mInvokedPaymentApp.getPaymentAppType() == PaymentAppType.SERVICE_WORKER_APP;
 
-        if (mPaymentHandlerUi != null) return false;
-        mPaymentHandlerUi = new PaymentHandlerCoordinator();
-        ChromeActivity chromeActivity = ChromeActivity.fromWebContents(mWebContents);
-        if (chromeActivity == null) return false;
-
-        boolean success = mPaymentHandlerUi.show(chromeActivity, url, mIsOffTheRecord,
-                paymentHandlerWebContentsObserver, /*uiObserver=*/this);
+        boolean success = mPaymentUIsManager.showPaymentHandlerUI(
+                mWebContents, url, paymentHandlerWebContentsObserver, mIsOffTheRecord);
         if (success) {
             // UKM for payment app origin should get recorded only when the origin of the invoked
             // payment app is shown to the user.
             mJourneyLogger.setPaymentAppUkmSourceId(mInvokedPaymentApp.getUkmSourceId());
         }
         return success;
-    }
-
-    @Override
-    public void onPaymentHandlerUiClosed() {
-        mPaymentUIsManager.getPaymentUisShowStateReconciler().onBottomSheetClosed();
-        mPaymentHandlerUi = null;
-    }
-
-    @Override
-    public void onPaymentHandlerUiShown() {
-        assert mPaymentHandlerUi != null;
-        mPaymentUIsManager.getPaymentUisShowStateReconciler().onBottomSheetShown();
     }
 
     @Override
@@ -2674,19 +2644,13 @@ public class PaymentRequestImpl
         PersonalDataManager.getInstance().normalizeAddress(address.getProfile(), this);
     }
 
-    private void ensureHideAndResetPaymentHandlerUi() {
-        if (mPaymentHandlerUi == null) return;
-        mPaymentHandlerUi.hide();
-        mPaymentHandlerUi = null;
-    }
-
     /**
      * Closes the UI and destroys native objects. If the client is still connected, then it's
      * notified of UI hiding. This PaymentRequestImpl object can't be reused after this function is
      * called.
      */
     private void closeUIAndDestroyNativeObjects() {
-        ensureHideAndResetPaymentHandlerUi();
+        mPaymentUIsManager.ensureHideAndResetPaymentHandlerUi();
         if (mMinimalUi != null) {
             mMinimalUi.hide();
             mMinimalUi = null;
@@ -2792,6 +2756,7 @@ public class PaymentRequestImpl
     @VisibleForTesting
     public static void setObserverForTest(PaymentRequestServiceObserverForTest observerForTest) {
         sObserverForTest = observerForTest;
+        PaymentUIsManager.setObserverForTest(sObserverForTest);
     }
 
     @VisibleForTesting

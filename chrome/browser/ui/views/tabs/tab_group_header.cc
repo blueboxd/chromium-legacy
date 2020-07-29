@@ -136,7 +136,7 @@ bool TabGroupHeader::OnKeyPressed(const ui::KeyEvent& event) {
   }
 
   constexpr int kModifiedFlag =
-#if defined(OS_MACOSX)
+#if defined(OS_MAC)
       ui::EF_COMMAND_DOWN;
 #else
       ui::EF_CONTROL_DOWN;
@@ -318,7 +318,7 @@ void TabGroupHeader::ShowContextMenuForViewImpl(
   // reached this function via mouse if and only if the current OS is Mac.
   // Therefore, we don't stop the menu propagation in that case.
   constexpr bool kStopContextMenuPropagation =
-#if defined(OS_MACOSX)
+#if defined(OS_MAC)
       false;
 #else
       true;

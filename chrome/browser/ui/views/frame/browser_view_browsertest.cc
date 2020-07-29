@@ -321,7 +321,7 @@ IN_PROC_BROWSER_TEST_F(BrowserViewTest, ShowFaviconInTab) {
 
 // On Mac, voiceover treats tab modal dialogs as native windows, so setting an
 // accessible title for tab-modal dialogs is not necessary.
-#if !defined(OS_MACOSX)
+#if !defined(OS_MAC)
 
 // Open a tab-modal dialog and check that the accessible window title is the
 // title of the dialog.
@@ -378,12 +378,12 @@ IN_PROC_BROWSER_TEST_F(BrowserViewTest, GetAccessibleTabModalDialogTree) {
             nullptr);
 }
 
-#endif  // !defined(OS_MACOSX)
+#endif  // !defined(OS_MAC)
 
 // Mac processes different accelerators and also focuses differently.
 // TODO(crbug.com/1055150): Implement RotatePaneFocus for Mac and add a similar
 // test using command+option+down/up arrows.
-#if !defined(OS_MACOSX)
+#if !defined(OS_MAC)
 IN_PROC_BROWSER_TEST_F(BrowserViewTest, F6CyclesThroughCaptionBubbleToo) {
   captions::CaptionController* caption_controller =
       captions::CaptionControllerFactory::GetForProfileIfExists(

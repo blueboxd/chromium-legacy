@@ -66,7 +66,7 @@
 #include "chrome/common/chrome_switches.h"
 #endif
 
-#if defined(OS_MACOSX)
+#if defined(OS_MAC)
 #include "chrome/browser/app_controller_mac.h"
 #endif
 
@@ -226,7 +226,7 @@ ChromeBrowserCloudManagementController::ChromeBrowserCloudManagementController()
 
 #if defined(OS_WIN)
   storage_delegate = std::make_unique<BrowserDMTokenStorageWin>();
-#elif defined(OS_MACOSX)
+#elif defined(OS_MAC)
   storage_delegate = std::make_unique<BrowserDMTokenStorageMac>();
 #elif defined(OS_LINUX)
   storage_delegate = std::make_unique<BrowserDMTokenStorageLinux>();
@@ -417,7 +417,7 @@ bool ChromeBrowserCloudManagementController::
         return true;
       case RegisterResult::kEnrollmentSuccess:
       case RegisterResult::kEnrollmentFailedSilently:
-#if defined(OS_MACOSX)
+#if defined(OS_MAC)
         app_controller_mac::EnterpriseStartupDialogClosed();
 #endif
         return true;

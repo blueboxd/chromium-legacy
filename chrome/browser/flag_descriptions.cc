@@ -1780,6 +1780,13 @@ const char kPasswordImportName[] = "Password import";
 const char kPasswordImportDescription[] =
     "Import functionality in password settings.";
 
+const char kForceSecurePaymentConfirmationDialogName[] =
+    "Force Secure Payment Confirmation Dialog";
+const char kForceSecurePaymentConfirmationDialogDescription[] =
+    "All calls into PaymentRequest API will display the experimental Secure "
+    "Payment Confirmation dialog without any functionality, for demonstration "
+    "purposes only.";
+
 const char kForceWebContentsDarkModeName[] = "Force Dark Mode for Web Contents";
 const char kForceWebContentsDarkModeDescription[] =
     "Automatically render all web contents using a dark theme.";
@@ -3309,7 +3316,7 @@ const char kWinUseBrowserSpellCheckerDescription[] =
 
 // Mac -------------------------------------------------------------------------
 
-#if defined(OS_MACOSX)
+#if defined(OS_MAC)
 
 #if BUILDFLAG(ENABLE_PRINTING)
 const char kCupsIppPrintingBackendName[] = "CUPS IPP Printing Backend";
@@ -4259,7 +4266,7 @@ const char kWebGL2ComputeContextDescription[] =
 
 #endif  // defined(OS_WIN) || defined(OS_LINUX) || defined(OS_CHROMEOS)
 
-#if defined(OS_WIN) || defined(OS_MACOSX) || defined(OS_LINUX) || \
+#if defined(OS_WIN) || defined(OS_MAC) || defined(OS_LINUX) || \
     defined(OS_CHROMEOS)
 
 const char kEnableMediaFeedsName[] = "Enables Media Feeds";
@@ -4297,25 +4304,25 @@ const char kRemoteCopyProgressNotificationDescription[] =
     "Enables progress notifications to be shown for the remote copy feature "
     "when receiving a message.";
 
-#endif  // defined(OS_WIN) || defined(OS_MACOSX) || defined(OS_LINUX) ||
+#endif  // defined(OS_WIN) || defined(OS_MAC) || defined(OS_LINUX) ||
         // defined(OS_CHROMEOS)
 
-#if defined(OS_WIN) || defined(OS_MACOSX) || defined(OS_LINUX)
+#if defined(OS_WIN) || defined(OS_MAC) || defined(OS_LINUX)
 
 const char kDirectManipulationStylusName[] = "Direct Manipulation Stylus";
 const char kDirectManipulationStylusDescription[] =
     "If enabled, Chrome will scroll web pages on stylus drag.";
 
-#endif  // defined(OS_WIN) || defined(OS_MACOSX) || defined(OS_LINUX)
+#endif  // defined(OS_WIN) || defined(OS_MAC) || defined(OS_LINUX)
 
-#if defined(OS_WIN) || defined(OS_MACOSX) || defined(OS_CHROMEOS)
+#if defined(OS_WIN) || defined(OS_MAC) || defined(OS_CHROMEOS)
 
 const char kWebContentsOcclusionName[] = "Enable occlusion of web contents";
 const char kWebContentsOcclusionDescription[] =
     "If enabled, web contents will behave as hidden when it is occluded by "
     "other windows.";
 
-#endif  // defined(OS_WIN) || defined(OS_MACOSX) || defined(OS_CHROMEOS)
+#endif  // defined(OS_WIN) || defined(OS_MAC) || defined(OS_CHROMEOS)
 
 #if defined(OS_CHROMEOS) || defined(OS_LINUX)
 #if BUILDFLAG(USE_TCMALLOC)

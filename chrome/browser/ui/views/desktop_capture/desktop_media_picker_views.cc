@@ -214,7 +214,7 @@ DesktopMediaPickerDialogView::DesktopMediaPickerDialogView(
     widget =
         constrained_window::ShowWebModalDialogViews(this, params.web_contents);
   } else {
-#if defined(OS_MACOSX)
+#if defined(OS_MAC)
     // On Mac, MODAL_TYPE_CHILD with a null parent isn't allowed - fall back to
     // MODAL_TYPE_WINDOW.
     modality_ = ui::MODAL_TYPE_WINDOW;
@@ -224,7 +224,7 @@ DesktopMediaPickerDialogView::DesktopMediaPickerDialogView(
   }
   chrome::RecordDialogCreation(chrome::DialogIdentifier::DESKTOP_MEDIA_PICKER);
 
-#if defined(OS_MACOSX)
+#if defined(OS_MAC)
   // On Mac, even modals are shown using separate native windows.
   bool is_separate_native_window = true;
 #else
@@ -242,7 +242,7 @@ DesktopMediaPickerDialogView::DesktopMediaPickerDialogView(
     // Set native window ID if the windows is outside Ash.
     dialog_window_id.id = AcceleratedWidgetToDesktopMediaId(
         widget->GetNativeWindow()->GetHost()->GetAcceleratedWidget());
-#elif defined(OS_MACOSX)
+#elif defined(OS_MAC)
     // On Mac, the window_id in DesktopMediaID is the same as the actual native
     // window ID. Note that assuming this is a bit of a layering violation; the
     // fact that this code makes that assumption is documented at the code that

@@ -88,7 +88,7 @@
 #include "url/gurl.h"
 
 #if BUILDFLAG(ENABLE_LIBRARY_CDMS)
-#if defined(OS_MACOSX)
+#if defined(OS_MAC)
 #include "base/threading/platform_thread.h"
 #endif
 #include "base/memory/scoped_refptr.h"
@@ -1290,7 +1290,7 @@ IN_PROC_BROWSER_TEST_F(BrowsingDataRemoverBrowserTest,
       embedded_test_server()->GetURL("/browsing_data/media_license.html");
   ui_test_utils::NavigateToURL(browser(), url);
 
-#if defined(OS_MACOSX)
+#if defined(OS_MAC)
   // On some Macs the file system uses second granularity. So before
   // creating the second license, delay for 1 second so that the new
   // license's time is not the same second as |start|.

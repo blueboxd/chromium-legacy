@@ -183,13 +183,13 @@ class PLATFORM_EXPORT FontCache {
   }
 #endif
 
-#if !defined(OS_APPLE)
+#if !defined(OS_MAC)
   static const AtomicString& SystemFontFamily();
 #else
   static const AtomicString& LegacySystemFontFamily();
 #endif
 
-#if !defined(OS_APPLE)
+#if !defined(OS_MAC)
   static void SetSystemFontFamily(const AtomicString&);
 #endif
 
@@ -313,9 +313,9 @@ class PLATFORM_EXPORT FontCache {
       const FontDescription&,
       const FontFaceCreationParams&,
       AlternateFontName = AlternateFontName::kAllowAlternate);
-#if !defined(OS_APPLE)
+#if !defined(OS_MAC)
   FontPlatformData* SystemFontPlatformData(const FontDescription&);
-#endif  // !defined(OS_APPLE)
+#endif  // !defined(OS_MAC)
 
   // These methods are implemented by each platform.
   std::unique_ptr<FontPlatformData> CreateFontPlatformData(

@@ -93,7 +93,7 @@ class FirstRunMasterPrefsBrowserTestBase : public InProcessBrowserTest {
     extensions::ComponentLoader::EnableBackgroundExtensionsForTesting();
   }
 
-#if defined(OS_MACOSX) || defined(OS_LINUX)
+#if defined(OS_MAC) || defined(OS_LINUX)
   void SetUpInProcessBrowserTestFixture() override {
     InProcessBrowserTest::SetUpInProcessBrowserTestFixture();
     // Suppress first run dialog since it blocks test progress.

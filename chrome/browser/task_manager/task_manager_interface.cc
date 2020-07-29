@@ -14,9 +14,9 @@
 #include "content/public/browser/browser_thread.h"
 #include "content/public/common/child_process_host.h"
 
-#if defined(OS_MACOSX)
+#if defined(OS_MAC)
 #include "chrome/browser/ui/browser_dialogs.h"
-#endif  // defined(OS_MACOSX)
+#endif  // defined(OS_MAC)
 
 namespace task_manager {
 

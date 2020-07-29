@@ -78,7 +78,7 @@ SpellcheckService::SpellcheckService(content::BrowserContext* context)
   dictionaries_pref.Init(spellcheck::prefs::kSpellCheckDictionaries, prefs);
   std::string first_of_dictionaries;
 
-#if defined(OS_MACOSX) || defined(OS_ANDROID)
+#if defined(OS_MAC) || defined(OS_ANDROID)
   // Ensure that the renderer always knows the platform spellchecking
   // language. This language is used for initialization of the text iterator.
   // If the iterator is not initialized, then the context menu does not show
@@ -104,7 +104,7 @@ SpellcheckService::SpellcheckService(content::BrowserContext* context)
   }
 
   single_dictionary_pref.SetValue("");
-#endif  // defined(OS_MACOSX) || defined(OS_ANDROID)
+#endif  // defined(OS_MAC) || defined(OS_ANDROID)
 
 #if defined(OS_WIN) && BUILDFLAG(USE_BROWSER_SPELLCHECKER)
   if (!spellcheck::UseBrowserSpellChecker()) {
@@ -176,7 +176,7 @@ base::WeakPtr<SpellcheckService> SpellcheckService::GetWeakPtr() {
   return weak_ptr_factory_.GetWeakPtr();
 }
 
-#if !defined(OS_MACOSX)
+#if !defined(OS_MAC)
 // static
 void SpellcheckService::GetDictionaries(
     content::BrowserContext* browser_context,

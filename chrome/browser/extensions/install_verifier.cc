@@ -74,7 +74,7 @@ VerifyStatus GetExperimentStatus() {
     return VerifyStatus::ENFORCE_STRICT;
   }
 
-#if BUILDFLAG(GOOGLE_CHROME_BRANDING) && (defined(OS_WIN) || defined(OS_MACOSX))
+#if BUILDFLAG(GOOGLE_CHROME_BRANDING) && (defined(OS_WIN) || defined(OS_MAC))
   VerifyStatus default_status = VerifyStatus::ENFORCE;
 #else
   VerifyStatus default_status = VerifyStatus::NONE;

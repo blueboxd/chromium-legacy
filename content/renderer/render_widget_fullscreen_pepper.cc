@@ -360,7 +360,7 @@ WebInputEventResult RenderWidgetFullscreenPepper::ProcessInputEvent(
     send_context_menu_event =
         mouse_event.GetType() == WebInputEvent::Type::kMouseUp &&
         mouse_event.button == WebMouseEvent::Button::kRight;
-#elif defined(OS_MACOSX)
+#elif defined(OS_MAC)
     send_context_menu_event =
         mouse_event.GetType() == WebInputEvent::Type::kMouseDown &&
         (mouse_event.button == WebMouseEvent::Button::kRight ||

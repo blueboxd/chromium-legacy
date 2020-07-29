@@ -7,6 +7,7 @@
 #include "base/threading/thread_task_runner_handle.h"
 #include "ui/gfx/x/x11.h"
 #include "ui/gfx/x/x11_atom_cache.h"
+#include "ui/gfx/x/xproto.h"
 
 namespace ui {
 
@@ -42,10 +43,9 @@ XEventWaiter::~XEventWaiter() {
   ui::X11EventSource::GetInstance()->RemoveXEventObserver(this);
 }
 
-void XEventWaiter::WillProcessXEvent(x11::Event* x11_event) {
-  XEvent* xev = &x11_event->xlib_event();
-  if (xev->xany.type == ClientMessage &&
-      static_cast<x11::Atom>(xev->xclient.message_type) == MarkerEventAtom()) {
+void XEventWaiter::WillProcessXEvent(x11::Event* xev) {
+  auto* client = xev->As<x11::ClientMessageEvent>();
+  if (client && client->type == MarkerEventAtom()) {
     base::ThreadTaskRunnerHandle::Get()->PostTask(FROM_HERE,
                                                   std::move(success_callback_));
     delete this;

@@ -112,6 +112,7 @@ DedicatedWorkerGlobalScope::DedicatedWorkerGlobalScope(
                         thread,
                         time_origin,
                         ukm_source_id),
+      token_(thread->WorkerObjectProxy().token()),
       animation_frame_provider_(
           MakeGarbageCollected<WorkerAnimationFrameProvider>(
               this,

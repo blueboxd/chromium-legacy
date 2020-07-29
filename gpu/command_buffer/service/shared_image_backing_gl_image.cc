@@ -19,7 +19,7 @@
 #include "ui/gl/gl_gl_api_implementation.h"
 #include "ui/gl/trace_util.h"
 
-#if defined(OS_MACOSX)
+#if defined(OS_MAC)
 #include "gpu/command_buffer/service/shared_image_backing_factory_iosurface.h"
 #endif
 
@@ -431,24 +431,24 @@ SharedImageBackingGLImage::ProduceGLTexturePassthrough(
 std::unique_ptr<SharedImageRepresentationOverlay>
 SharedImageBackingGLImage::ProduceOverlay(SharedImageManager* manager,
                                           MemoryTypeTracker* tracker) {
-#if defined(OS_MACOSX)
+#if defined(OS_MAC)
   return std::make_unique<SharedImageRepresentationOverlayImpl>(
       manager, this, tracker, image_);
-#else   // defined(OS_MACOSX)
+#else   // defined(OS_MAC)
   return SharedImageBacking::ProduceOverlay(manager, tracker);
-#endif  // !defined(OS_MACOSX)
+#endif  // !defined(OS_MAC)
 }
 
 std::unique_ptr<SharedImageRepresentationDawn>
 SharedImageBackingGLImage::ProduceDawn(SharedImageManager* manager,
                                        MemoryTypeTracker* tracker,
                                        WGPUDevice device) {
-#if defined(OS_MACOSX)
+#if defined(OS_MAC)
   auto result = SharedImageBackingFactoryIOSurface::ProduceDawn(
       manager, this, tracker, device, image_);
   if (result)
     return result;
-#endif  // defined(OS_MACOSX)
+#endif  // defined(OS_MAC)
   if (!factory()) {
     DLOG(ERROR) << "No SharedImageFactory to create a dawn representation.";
     return nullptr;
@@ -473,7 +473,7 @@ SharedImageBackingGLImage::ProduceSkia(
 
   if (!cached_promise_texture_) {
     if (context_state->GrContextIsMetal()) {
-#if defined(OS_MACOSX)
+#if defined(OS_MAC)
       cached_promise_texture_ =
           SharedImageBackingFactoryIOSurface::ProduceSkiaPromiseTextureMetal(
               this, context_state, image_);
@@ -562,7 +562,7 @@ bool SharedImageBackingGLImage::
 }
 
 void SharedImageBackingGLImage::SharedImageRepresentationGLTextureEndAccess() {
-#if defined(OS_MACOSX)
+#if defined(OS_MAC)
   // If this image could potentially be shared with Metal via WebGPU, then flush
   // the GL context to ensure Metal will see it.
   if (usage() & SHARED_IMAGE_USAGE_WEBGPU) {
@@ -642,7 +642,7 @@ void SharedImageBackingGLImage::InitializePixels(GLenum format,
                                                  GLenum type,
                                                  const uint8_t* data) {
   DCHECK_EQ(image_->ShouldBindOrCopy(), gl::GLImage::BIND);
-#if defined(OS_MACOSX)
+#if defined(OS_MAC)
   if (SharedImageBackingFactoryIOSurface::InitializePixels(this, image_, data))
     return;
 #else

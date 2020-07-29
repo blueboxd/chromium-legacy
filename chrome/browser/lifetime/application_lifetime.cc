@@ -164,7 +164,7 @@ void MarkAsCleanShutdown() {
 
 void AttemptExitInternal(bool try_to_quit_application) {
   // On Mac, the platform-specific part handles setting this.
-#if !defined(OS_MACOSX)
+#if !defined(OS_MAC)
   if (try_to_quit_application)
     browser_shutdown::SetTryingToQuit(true);
 #endif

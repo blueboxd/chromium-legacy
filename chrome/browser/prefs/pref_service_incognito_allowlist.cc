@@ -131,7 +131,7 @@ const char* const kPersistentPrefNames[] = {
     prefs::kTabStatsWindowCountMax,
     prefs::kTabStatsDailySample,
 
-#if defined(OS_MACOSX)
+#if defined(OS_MAC)
     prefs::kShowFullscreenToolbar,
 #endif
 

@@ -720,7 +720,7 @@ class ErrorPageAutoReloadTest : public InProcessBrowserTest {
 };
 
 // Fails on official mac_trunk build. See crbug.com/465789.
-#if defined(OFFICIAL_BUILD) && defined(OS_MACOSX)
+#if defined(OFFICIAL_BUILD) && defined(OS_MAC)
 #define MAYBE_AutoReload DISABLED_AutoReload
 #else
 #define MAYBE_AutoReload AutoReload

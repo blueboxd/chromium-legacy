@@ -21,6 +21,8 @@ import org.robolectric.annotation.Config;
 import org.chromium.base.test.BaseRobolectricTestRunner;
 import org.chromium.base.test.util.JniMocker;
 import org.chromium.chrome.browser.profiles.Profile;
+import org.chromium.chrome.browser.tab.state.CriticalPersistedTabData;
+import org.chromium.chrome.browser.tasks.tab_management.TabUiUnitTestUtils;
 import org.chromium.content_public.browser.WebContents;
 
 import java.nio.ByteBuffer;
@@ -42,6 +44,8 @@ public class HistoricalTabSaverUnitTest {
     @Mock
     public TabImpl mTabImplMock;
     @Mock
+    public CriticalPersistedTabData mCriticalPersistedTabData;
+    @Mock
     public Profile mProfileMock;
     @Mock
     public Profile mOffTheRecordProfileMock;
@@ -53,6 +57,8 @@ public class HistoricalTabSaverUnitTest {
         MockitoAnnotations.initMocks(this);
         mocker.mock(HistoricalTabSaverJni.TEST_HOOKS, mHistoricalTabSaverJni);
         mocker.mock(WebContentsStateBridgeJni.TEST_HOOKS, mWebContentsStateBridgeJni);
+        TabUiUnitTestUtils.prepareTab(
+                mTabImplMock, CriticalPersistedTabData.class, mCriticalPersistedTabData);
     }
 
     @Test
@@ -68,7 +74,7 @@ public class HistoricalTabSaverUnitTest {
     @Test
     public void testCreateHistoricalTab_Frozen_NullWebContentsState_HistoricalTabNotCreated() {
         doReturn(true).when(mTabImplMock).isFrozen();
-        doReturn(null).when(mTabImplMock).getFrozenContentsState();
+        doReturn(null).when(mCriticalPersistedTabData).getWebContentsState();
 
         HistoricalTabSaver.createHistoricalTab(mTabImplMock, mProfileMock);
 
@@ -82,7 +88,7 @@ public class HistoricalTabSaverUnitTest {
         webContentsState.setVersion(123);
 
         doReturn(true).when(mTabImplMock).isFrozen();
-        doReturn(webContentsState).when(mTabImplMock).getFrozenContentsState();
+        doReturn(webContentsState).when(mCriticalPersistedTabData).getWebContentsState();
         doReturn(mOffTheRecordProfileMock).when(mProfileMock).getPrimaryOTRProfile();
         doReturn(null)
                 .when(mWebContentsStateBridgeJni)
@@ -101,7 +107,7 @@ public class HistoricalTabSaverUnitTest {
         webContentsState.setVersion(123);
 
         doReturn(true).when(mTabImplMock).isFrozen();
-        doReturn(webContentsState).when(mTabImplMock).getFrozenContentsState();
+        doReturn(webContentsState).when(mCriticalPersistedTabData).getWebContentsState();
         doReturn(mOffTheRecordProfileMock).when(mProfileMock).getPrimaryOTRProfile();
         doReturn(mWebContentsMock)
                 .when(mWebContentsStateBridgeJni)

@@ -248,7 +248,7 @@ NativeDesktopMediaList::NativeDesktopMediaList(
       thread_("DesktopMediaListCaptureThread") {
   type_ = type;
 
-#if defined(OS_WIN) || defined(OS_MACOSX)
+#if defined(OS_WIN) || defined(OS_MAC)
   // On Windows/OSX the thread must be a UI thread.
   base::MessagePumpType thread_type = base::MessagePumpType::UI;
 #else

@@ -415,13 +415,13 @@ class PrefHashBrowserTestBase : public extensions::ExtensionBrowserTest {
     if (!ProfilePrefStoreManager::kPlatformSupportsPreferenceTracking)
       return PROTECTION_DISABLED_ON_PLATFORM;
 
-#if defined(OS_WIN) || defined(OS_MACOSX)
+#if defined(OS_WIN) || defined(OS_MAC)
     // The strongest mode is enforced on Windows and MacOS in the absence of a
     // field trial.
     return PROTECTION_ENABLED_ALL;
 #else
     return PROTECTION_DISABLED_FOR_GROUP;
-#endif  // defined(OS_WIN) || defined(OS_MACOSX)
+#endif  // defined(OS_WIN) || defined(OS_MAC)
   }
 
   int num_tracked_prefs_;

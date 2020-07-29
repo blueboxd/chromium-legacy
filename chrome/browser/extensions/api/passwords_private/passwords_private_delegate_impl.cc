@@ -36,7 +36,7 @@
 
 #if defined(OS_WIN)
 #include "chrome/browser/password_manager/password_manager_util_win.h"
-#elif defined(OS_MACOSX)
+#elif defined(OS_MAC)
 #include "chrome/browser/password_manager/password_manager_util_mac.h"
 #elif defined(OS_CHROMEOS)
 #include "chrome/browser/chromeos/login/quick_unlock/auth_token.h"
@@ -303,7 +303,7 @@ bool PasswordsPrivateDelegateImpl::OsReauthCall(
   DCHECK(web_contents_);
   return password_manager_util_win::AuthenticateUser(
       web_contents_->GetTopLevelNativeWindow(), purpose);
-#elif defined(OS_MACOSX)
+#elif defined(OS_MAC)
   return password_manager_util_mac::AuthenticateUser(purpose);
 #elif defined(OS_CHROMEOS)
   const bool user_cannot_manually_enter_password =

@@ -92,7 +92,7 @@ const char* kExpectedFontFamilyNames[] = {"Ahem",
                                           "Tinos",
                                           "Mukti Narrow",
                                           "Tinos"};
-#elif defined(OS_MACOSX)
+#elif defined(OS_MAC)
 const char* kExpectedFontFamilyNames[] = {"American Typewriter",
                                           "Arial Narrow",
                                           "Baskerville",

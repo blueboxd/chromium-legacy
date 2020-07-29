@@ -19,7 +19,7 @@ namespace blink {
 
 namespace {
 
-#if !defined(OS_APPLE)
+#if !defined(OS_MAC)
 
 static const float kMarkerWidth = 4;
 static const float kMarkerHeight = 2;
@@ -58,7 +58,7 @@ sk_sp<PaintRecord> RecordMarker(Color blink_color) {
   return recorder.finishRecordingAsPicture();
 }
 
-#else  // defined(OS_APPLE)
+#else  // defined(OS_MAC)
 
 static const float kMarkerWidth = 4;
 static const float kMarkerHeight = 3;
@@ -90,7 +90,7 @@ sk_sp<PaintRecord> RecordMarker(Color blink_color) {
   return recorder.finishRecordingAsPicture();
 }
 
-#endif  // defined(OS_APPLE)
+#endif  // defined(OS_MAC)
 
 void DrawDocumentMarker(GraphicsContext& context,
                         const FloatPoint& pt,
@@ -101,7 +101,7 @@ void DrawDocumentMarker(GraphicsContext& context,
   SkScalar origin_x = WebCoreFloatToSkScalar(pt.X());
   SkScalar origin_y = WebCoreFloatToSkScalar(pt.Y());
 
-#if defined(OS_APPLE)
+#if defined(OS_MAC)
   // Make sure to draw only complete dots, and finish inside the marked text.
   float spacing = kMarkerSpacing * zoom;
   width -= fmodf(width + spacing, kMarkerWidth * zoom) - spacing;

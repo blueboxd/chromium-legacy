@@ -15,7 +15,7 @@
 #include "third_party/skia/src/gpu/vk/GrVkSecondaryCBDrawContext.h"
 
 struct AwDrawFn_InitVkParams;
-class GrContext;
+class GrDirectContext;
 class GrVkSecondaryCBDrawContext;
 
 namespace gpu {
@@ -48,7 +48,7 @@ class AwVulkanContextProvider final : public viz::VulkanContextProvider {
   // viz::VulkanContextProvider implementation:
   gpu::VulkanImplementation* GetVulkanImplementation() override;
   gpu::VulkanDeviceQueue* GetDeviceQueue() override;
-  GrContext* GetGrContext() override;
+  GrDirectContext* GetGrContext() override;
   GrVkSecondaryCBDrawContext* GetGrSecondaryCBDrawContext() override;
   void EnqueueSecondaryCBSemaphores(
       std::vector<VkSemaphore> semaphores) override;
@@ -60,7 +60,7 @@ class AwVulkanContextProvider final : public viz::VulkanContextProvider {
   VkDevice device() { return device_queue_->GetVulkanDevice(); }
   VkQueue queue() { return device_queue_->GetVulkanQueue(); }
   gpu::VulkanImplementation* implementation() { return implementation_.get(); }
-  GrContext* gr_context() { return gr_context_.get(); }
+  GrDirectContext* gr_context() { return gr_context_.get(); }
 
  private:
   friend class base::RefCounted<AwVulkanContextProvider>;
@@ -74,7 +74,7 @@ class AwVulkanContextProvider final : public viz::VulkanContextProvider {
 
   std::unique_ptr<gpu::VulkanImplementation> implementation_;
   std::unique_ptr<gpu::VulkanDeviceQueue> device_queue_;
-  sk_sp<GrContext> gr_context_;
+  sk_sp<GrDirectContext> gr_context_;
   sk_sp<GrVkSecondaryCBDrawContext> draw_context_;
   std::vector<base::OnceClosure> post_submit_tasks_;
   std::vector<VkSemaphore> post_submit_semaphores_;

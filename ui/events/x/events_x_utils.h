@@ -18,6 +18,7 @@
 #include "ui/gfx/geometry/point.h"
 #include "ui/gfx/x/event.h"
 #include "ui/gfx/x/x11_types.h"
+#include "ui/gfx/x/xinput.h"
 
 namespace ui {
 
@@ -64,10 +65,6 @@ EVENTS_X_EXPORT float GetTouchAngleFromXEvent(const x11::Event& xev);
 
 // Gets the force from a native_event. Normalized to be [0, 1]. Default is 0.0.
 EVENTS_X_EXPORT float GetTouchForceFromXEvent(const x11::Event& xev);
-
-// Gets the pointer type from a native_event.
-EVENTS_X_EXPORT EventPointerType
-GetTouchPointerTypeFromXEvent(const x11::Event& xev);
 
 // Gets the pointer details from an x11::Event.
 EVENTS_X_EXPORT PointerDetails

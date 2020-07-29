@@ -184,14 +184,14 @@ void FileSelectHelper::FileSelectedWithExtraInfo(
   std::vector<ui::SelectedFileInfo> files;
   files.push_back(file);
 
-#if defined(OS_MACOSX)
+#if defined(OS_MAC)
   base::ThreadPool::PostTask(
       FROM_HERE,
       {base::MayBlock(), base::TaskShutdownBehavior::CONTINUE_ON_SHUTDOWN},
       base::BindOnce(&FileSelectHelper::ProcessSelectedFilesMac, this, files));
 #else
   ConvertToFileChooserFileInfoList(files);
-#endif  // defined(OS_MACOSX)
+#endif  // defined(OS_MAC)
 }
 
 void FileSelectHelper::MultiFilesSelected(
@@ -212,14 +212,14 @@ void FileSelectHelper::MultiFilesSelectedWithExtraInfo(
       path = path.DirName();
     profile_->set_last_selected_directory(path);
   }
-#if defined(OS_MACOSX)
+#if defined(OS_MAC)
   base::ThreadPool::PostTask(
       FROM_HERE,
       {base::MayBlock(), base::TaskShutdownBehavior::CONTINUE_ON_SHUTDOWN},
       base::BindOnce(&FileSelectHelper::ProcessSelectedFilesMac, this, files));
 #else
   ConvertToFileChooserFileInfoList(files);
-#endif  // defined(OS_MACOSX)
+#endif  // defined(OS_MAC)
 }
 
 void FileSelectHelper::FileSelectionCanceled(void* params) {

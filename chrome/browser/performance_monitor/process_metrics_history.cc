@@ -11,7 +11,7 @@
 #include "base/process/process_metrics.h"
 #include "content/public/common/process_type.h"
 
-#if defined(OS_MACOSX)
+#if defined(OS_MAC)
 #include "content/public/browser/browser_child_process_host.h"
 #endif
 
@@ -32,7 +32,7 @@ void ProcessMetricsHistory::Initialize(
   process_data_ = process_data;
   last_update_sequence_ = initial_update_sequence;
 
-#if defined(OS_MACOSX)
+#if defined(OS_MAC)
   process_metrics_ = base::ProcessMetrics::CreateProcessMetrics(
       process_data_.handle,
       content::BrowserChildProcessHost::GetPortProvider());
@@ -47,10 +47,10 @@ void ProcessMetricsHistory::SampleMetrics() {
 #if defined(OS_WIN)
   disk_usage_ = process_metrics_->GetDiskUsageBytesPerSecond();
 #endif
-#if defined(OS_MACOSX) || defined(OS_LINUX) || defined(OS_AIX)
+#if defined(OS_MAC) || defined(OS_LINUX) || defined(OS_AIX)
   idle_wakeups_ = process_metrics_->GetIdleWakeupsPerSecond();
 #endif
-#if defined(OS_MACOSX)
+#if defined(OS_MAC)
   package_idle_wakeups_ = process_metrics_->GetPackageIdleWakeupsPerSecond();
   energy_impact_ = process_metrics_->GetEnergyImpact();
 #endif
@@ -90,11 +90,11 @@ void ProcessMetricsHistory::UpdateHistograms() {
           kDiskUsageHistogramMin, kDiskUsageHistogramMax,
           kDiskUsageHistogramBucketCount);
 #endif
-#if defined(OS_MACOSX) || defined(OS_LINUX) || defined(OS_AIX)
+#if defined(OS_MAC) || defined(OS_LINUX) || defined(OS_AIX)
       UMA_HISTOGRAM_COUNTS_10000(
           "PerformanceMonitor.IdleWakeups.BrowserProcess", idle_wakeups_);
 #endif
-#if defined(OS_MACOSX)
+#if defined(OS_MAC)
       UMA_HISTOGRAM_COUNTS_1000(
           "PerformanceMonitor.PackageExitIdleWakeups.BrowserProcess",
           package_idle_wakeups_);
@@ -111,11 +111,11 @@ void ProcessMetricsHistory::UpdateHistograms() {
         UMA_HISTOGRAM_BOOLEAN("PerformanceMonitor.HighCPU.RendererProcess",
                               true);
       }
-#if defined(OS_MACOSX) || defined(OS_LINUX) || defined(OS_AIX)
+#if defined(OS_MAC) || defined(OS_LINUX) || defined(OS_AIX)
       UMA_HISTOGRAM_COUNTS_10000(
           "PerformanceMonitor.IdleWakeups.RendererProcess", idle_wakeups_);
 #endif
-#if defined(OS_MACOSX)
+#if defined(OS_MAC)
       UMA_HISTOGRAM_COUNTS_1000(
           "PerformanceMonitor.PackageExitIdleWakeups.RendererProcess",
           package_idle_wakeups_);
@@ -131,11 +131,11 @@ void ProcessMetricsHistory::UpdateHistograms() {
                                   kHistogramBucketCount);
       if (cpu_usage_ > kHighCPUUtilizationThreshold)
         UMA_HISTOGRAM_BOOLEAN("PerformanceMonitor.HighCPU.GPUProcess", true);
-#if defined(OS_MACOSX) || defined(OS_LINUX) || defined(OS_AIX)
+#if defined(OS_MAC) || defined(OS_LINUX) || defined(OS_AIX)
       UMA_HISTOGRAM_COUNTS_10000("PerformanceMonitor.IdleWakeups.GPUProcess",
                                  idle_wakeups_);
 #endif
-#if defined(OS_MACOSX)
+#if defined(OS_MAC)
       UMA_HISTOGRAM_COUNTS_1000(
           "PerformanceMonitor.PackageExitIdleWakeups.GPUProcess",
           package_idle_wakeups_);

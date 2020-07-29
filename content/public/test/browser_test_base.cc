@@ -92,7 +92,7 @@
 #endif
 #endif
 
-#if defined(OS_MACOSX)
+#if defined(OS_MAC)
 #include "content/browser/sandbox_parameters_mac.h"
 #include "net/test/test_data_directory.h"
 #include "ui/events/test/event_generator.h"
@@ -199,7 +199,7 @@ BrowserTestBase::BrowserTestBase() {
 #if defined(USE_AURA)
   ui::test::EventGeneratorDelegate::SetFactoryFunction(
       base::BindRepeating(&aura::test::EventGeneratorDelegateAura::Create));
-#elif defined(OS_MACOSX)
+#elif defined(OS_MAC)
   ui::test::EventGeneratorDelegate::SetFactoryFunction(
       base::BindRepeating(&views::test::CreateEventGeneratorDelegateMac));
 #endif
@@ -304,7 +304,7 @@ void BrowserTestBase::SetUp() {
   if (command_line->HasSwitch("enable-gpu"))
     use_software_gl = false;
 
-#if defined(OS_MACOSX)
+#if defined(OS_MAC)
   // On Mac we always use hardware GL.
   use_software_gl = false;
 
@@ -521,7 +521,7 @@ void BrowserTestBase::SetUp() {
 }
 
 void BrowserTestBase::TearDown() {
-#if defined(USE_AURA) || defined(OS_MACOSX)
+#if defined(USE_AURA) || defined(OS_MAC)
   ui::test::EventGeneratorDelegate::SetFactoryFunction(
       ui::test::EventGeneratorDelegate::FactoryFunction());
 #endif

@@ -22,7 +22,7 @@
 #include "mojo/public/cpp/bindings/remote.h"
 #include "mojo/public/cpp/bindings/shared_remote.h"
 
-#if defined(OS_MACOSX)
+#if defined(OS_MAC)
 #include <stdlib.h>
 
 #include "chrome/common/importer/firefox_importer_utils.h"
@@ -31,7 +31,7 @@
 ProfileImportImpl::ProfileImportImpl(
     mojo::PendingReceiver<chrome::mojom::ProfileImport> receiver)
     : receiver_(this, std::move(receiver)) {
-#if defined(OS_MACOSX)
+#if defined(OS_MAC)
   std::string dylib_path = GetFirefoxDylibPath().value();
   if (!dylib_path.empty())
     ::setenv("DYLD_FALLBACK_LIBRARY_PATH", dylib_path.c_str(),

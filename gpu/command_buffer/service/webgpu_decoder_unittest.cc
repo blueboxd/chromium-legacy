@@ -21,7 +21,7 @@
 #include "ui/gl/gl_surface.h"
 #include "ui/gl/init/gl_factory.h"
 
-#if defined(OS_MACOSX)
+#if defined(OS_MAC)
 #include "gpu/ipc/service/gpu_memory_buffer_factory_io_surface.h"
 #endif
 
@@ -59,7 +59,7 @@ class WebGPUDecoderTest : public ::testing::Test {
 #endif  // OS_WIN
 
     ImageFactory* image_factory = nullptr;
-#if defined(OS_MACOSX)
+#if defined(OS_MAC)
     image_factory = &image_factory_;
 #endif
 
@@ -136,7 +136,7 @@ class WebGPUDecoderTest : public ::testing::Test {
   SharedImageManager shared_image_manager_;
   std::unique_ptr<SharedImageFactory> factory_;
   gles2::MailboxManagerImpl mailbox_manager_;
-#if defined(OS_MACOSX)
+#if defined(OS_MAC)
   // SharedImages on macOS require a valid image factory.
   GpuMemoryBufferFactoryIOSurface image_factory_;
 #endif

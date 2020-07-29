@@ -118,9 +118,10 @@ class VIEWS_EXPORT StyledLabel : public View {
   const base::string16& GetText() const;
   void SetText(const base::string16& text);
 
-  // Returns the font list that results from the default text context and style
-  // for ranges. This can be used as the basis for a range |custom_font|.
-  gfx::FontList GetDefaultFontList() const;
+  // Returns the FontList that should be used. |style_info| is an optional
+  // argument that takes precedence over the default values.
+  gfx::FontList GetFontList(
+      const RangeStyleInfo& style_info = RangeStyleInfo()) const;
 
   // Marks the given range within |text_| with style defined by |style_info|.
   // |range| must be contained in |text_|.
@@ -206,13 +207,6 @@ class VIEWS_EXPORT StyledLabel : public View {
   // space available on that line.
   int StartX(int excess_space) const;
 
-  // Returns the default line height, based on the default style.
-  int GetDefaultLineHeight() const;
-
-  // Returns the FontList that should be used for |range|.
-  gfx::FontList GetFontListForRange(
-      const StyleRanges::const_iterator& range) const;
-
   // Sets |layout_size_info_| and |layout_views_| for the given |width|.  No-op
   // if current_width <= width <= max_width, where:
   //   current_width = layout_size_info_.total_size.width()
@@ -239,8 +233,7 @@ class VIEWS_EXPORT StyledLabel : public View {
   int text_context_ = style::CONTEXT_LABEL;
   int default_text_style_ = style::STYLE_PRIMARY;
 
-  // Line height. If zero, style::GetLineHeight() is used.
-  int specified_line_height_ = 0;
+  base::Optional<int> line_height_;
 
   // The listener that will be informed of link clicks.
   StyledLabelListener* listener_;

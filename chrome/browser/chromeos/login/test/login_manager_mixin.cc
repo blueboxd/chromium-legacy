@@ -151,7 +151,8 @@ void LoginManagerMixin::SetUpOnMainThread() {
       UserSessionManager::GetInstance());
   session_manager_test_api.SetShouldLaunchBrowserInTests(
       should_launch_browser_);
-  session_manager_test_api.SetShouldObtainTokenHandleInTests(false);
+  session_manager_test_api.SetShouldObtainTokenHandleInTests(
+      should_obtain_handles_);
 }
 
 void LoginManagerMixin::TearDownOnMainThread() {

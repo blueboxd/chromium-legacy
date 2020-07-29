@@ -321,8 +321,7 @@ IN_PROC_BROWSER_TEST_F(PluginPowerSaverBrowserTest, RunAllFlashInAllowMode) {
   policy::PolicyMap policy;
   policy.Set(policy::key::kRunAllFlashInAllowMode,
              policy::POLICY_LEVEL_MANDATORY, policy::POLICY_SCOPE_USER,
-             policy::POLICY_SOURCE_CLOUD, std::make_unique<base::Value>(true),
-             nullptr);
+             policy::POLICY_SOURCE_CLOUD, base::Value(true), nullptr);
   provider_.UpdateChromePolicy(policy);
   content::RunAllPendingInMessageLoop();
 
@@ -365,7 +364,7 @@ class PluginPowerSaverPixelTest : public PluginPowerSaverBrowserTest {
 // Flaky on Windows, Asan, and Msan. See crbug.com/549285 and crbug.com/512140.
 // Because ChromeOS cannot use software rendering and the pixel tests continue
 // to flake with hardware acceleration, disable these on ChromeOS.
-#if defined(OS_MACOSX) || defined(OS_WIN) || defined(ADDRESS_SANITIZER) || \
+#if defined(OS_MAC) || defined(OS_WIN) || defined(ADDRESS_SANITIZER) || \
     defined(MEMORY_SANITIZER) || defined(OS_CHROMEOS)
 #define MAYBE_SmallCrossOrigin DISABLED_SmallCrossOrigin
 #else
@@ -415,7 +414,7 @@ IN_PROC_BROWSER_TEST_F(PluginPowerSaverPixelTest, MAYBE_SmallerThanPlayIcon) {
 // Flaky on Windows, Asan, and Msan. See crbug.com/549285 and crbug.com/512140.
 // Because ChromeOS cannot use software rendering and the pixel tests continue
 // to flake with hardware acceleration, disable these on ChromeOS.
-#if defined(OS_MACOSX) || defined(OS_WIN) || defined(ADDRESS_SANITIZER) || \
+#if defined(OS_MAC) || defined(OS_WIN) || defined(ADDRESS_SANITIZER) || \
     defined(MEMORY_SANITIZER) || defined(OS_CHROMEOS)
 #define MAYBE_PosterTests DISABLED_PosterTests
 #else

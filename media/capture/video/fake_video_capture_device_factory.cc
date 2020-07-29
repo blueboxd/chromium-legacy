@@ -210,7 +210,7 @@ void FakeVideoCaptureDeviceFactory::GetDevicesInfo(
     VideoCaptureApi api =
 #if defined(OS_LINUX)
         VideoCaptureApi::LINUX_V4L2_SINGLE_PLANE;
-#elif defined(OS_MACOSX)
+#elif defined(OS_MAC)
         VideoCaptureApi::MACOSX_AVFOUNDATION;
 #elif defined(OS_WIN)
         VideoCaptureApi::WIN_DIRECT_SHOW;

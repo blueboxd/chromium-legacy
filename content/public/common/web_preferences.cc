@@ -139,7 +139,7 @@ WebPreferences::WebPreferences()
       dont_send_key_events_to_javascript(false),
       sync_xhr_in_documents_enabled(true),
       number_of_cpu_cores(1),
-#if defined(OS_MACOSX)
+#if defined(OS_MAC)
       editing_behavior(EDITING_BEHAVIOR_MAC),
 #elif defined(OS_WIN)
       editing_behavior(EDITING_BEHAVIOR_WIN),
@@ -167,7 +167,7 @@ WebPreferences::WebPreferences()
 #endif
       main_frame_resizes_are_orientation_changes(false),
       initialize_at_minimum_page_scale(true),
-#if defined(OS_MACOSX)
+#if defined(OS_MAC)
       smart_insert_delete_enabled(true),
 #else
       smart_insert_delete_enabled(false),
@@ -184,7 +184,7 @@ WebPreferences::WebPreferences()
       text_tracks_enabled(false),
       text_track_margin_percentage(0.0f),
       immersive_mode_enabled(false),
-#if defined(OS_ANDROID) || defined(OS_MACOSX)
+#if defined(OS_ANDROID) || defined(OS_MAC)
       double_tap_to_zoom_enabled(true),
 #else
       double_tap_to_zoom_enabled(false),
@@ -222,7 +222,7 @@ WebPreferences::WebPreferences()
 #if defined(OS_ANDROID)
       default_minimum_page_scale_factor(0.25f),
       default_maximum_page_scale_factor(5.f),
-#elif defined(OS_MACOSX)
+#elif defined(OS_MAC)
       default_minimum_page_scale_factor(1.f),
       default_maximum_page_scale_factor(3.f),
 #else

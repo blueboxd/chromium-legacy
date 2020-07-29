@@ -64,7 +64,7 @@ class ConstrainedWindowViewTest : public InProcessBrowserTest {
 
 }  // namespace
 
-#if defined(OS_MACOSX)
+#if defined(OS_MAC)
 // Unexpected multiple focus managers on MacViews: http://crbug.com/824551
 #define MAYBE_FocusTest DISABLED_FocusTest
 #else

@@ -44,7 +44,7 @@ class UpdaterPrefsImpl : public LocalPrefs, public GlobalPrefs {
   bool GetQualified() const override;
   void SetQualified(bool value) override;
 
-  // Overrides for GlobalPrfs
+  // Overrides for GlobalPrefs
   std::string GetActiveVersion() const override;
   void SetActiveVersion(std::string value) override;
   bool GetSwapping() const override;

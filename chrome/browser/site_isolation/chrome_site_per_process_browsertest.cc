@@ -320,7 +320,7 @@ IN_PROC_BROWSER_TEST_F(ChromeSitePerProcessTest,
 
   // Ctrl-click the anchor/link in the page.
   content::WebContentsAddedObserver new_tab_observer;
-#if defined(OS_MACOSX)
+#if defined(OS_MAC)
   std::string new_tab_click_script = "simulateClick({ metaKey: true });";
 #else
   std::string new_tab_click_script = "simulateClick({ ctrlKey: true });";

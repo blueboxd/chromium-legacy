@@ -303,7 +303,7 @@ main() {
   readonly APP_PLIST="${CONTENTS_DIR}/Info"
   readonly BUNDLE_NAME_KEY="CFBundleDisplayName"
   readonly PRODUCT_NAME=\
-"$(infoplist_read ${APP_DIR}/${APP_PLIST} ${BUNDLE_NAME_KEY})"
+"$(infoplist_read "${installed_app_path}/${APP_PLIST}" "${BUNDLE_NAME_KEY}")"
   readonly FRAMEWORK_NAME="${PRODUCT_NAME} Framework"
   readonly FRAMEWORK_DIR="${FRAMEWORK_NAME}.framework"
   readonly VERSIONS_DIR_NEW=\

@@ -60,7 +60,8 @@ void AppServerMac::ActiveDuty() {
 
     // Sets up a listener and delegate for the CRUControlling XPC connection
     control_service_delegate_.reset([[CRUControlServiceXPCDelegate alloc]
-        initWithControlService:base::MakeRefCounted<ControlServiceInProcess>()
+        initWithControlService:base::MakeRefCounted<ControlServiceInProcess>(
+                                   config_)
                      appServer:scoped_refptr<AppServerMac>(this)]);
 
     control_service_listener_.reset([[NSXPCListener alloc]

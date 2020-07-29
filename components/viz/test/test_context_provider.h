@@ -9,6 +9,7 @@
 #include <stdint.h>
 
 #include <memory>
+#include <string>
 
 #include "base/callback.h"
 #include "base/containers/flat_set.h"
@@ -157,7 +158,7 @@ class TestContextProvider
   gpu::gles2::GLES2Interface* ContextGL() override;
   gpu::raster::RasterInterface* RasterInterface() override;
   gpu::ContextSupport* ContextSupport() override;
-  class GrContext* GrContext() override;
+  class GrDirectContext* GrContext() override;
   TestSharedImageInterface* SharedImageInterface() override;
   ContextCacheController* CacheController() override;
   base::Lock* GetLock() override;

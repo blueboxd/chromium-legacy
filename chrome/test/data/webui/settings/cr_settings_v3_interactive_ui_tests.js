@@ -85,7 +85,7 @@ var SettingsUIV3InteractiveTest = class extends CrSettingsV3InteractiveUITest {
 };
 
 // Times out on Mac. See https://crbug.com/1060981.
-GEN('#if defined(OS_MACOSX)');
+GEN('#if defined(OS_MAC)');
 GEN('#define MAYBE_SettingsUIToolbarAndDrawer DISABLED_SettingsUIToolbarAndDrawer');
 GEN('#else');
 GEN('#define MAYBE_SettingsUIToolbarAndDrawer SettingsUIToolbarAndDrawer');
@@ -97,7 +97,7 @@ TEST_F(
     });
 
 // Times out on Mac. See https://crbug.com/1060981.
-GEN('#if defined(OS_MACOSX)');
+GEN('#if defined(OS_MAC)');
 GEN('#define MAYBE_SettingsUIAdvanced DISABLED_SettingsUIAdvanced');
 GEN('#else');
 GEN('#define MAYBE_SettingsUIAdvanced SettingsUIAdvanced');
@@ -107,7 +107,7 @@ TEST_F('SettingsUIV3InteractiveTest', 'MAYBE_SettingsUIAdvanced', function() {
 });
 
 // Times out on Mac. See https://crbug.com/1060981.
-GEN('#if defined(OS_MACOSX)');
+GEN('#if defined(OS_MAC)');
 GEN('#define MAYBE_SettingsUISearch DISABLED_SettingsUISearch');
 GEN('#else');
 GEN('#define MAYBE_SettingsUISearch SettingsUISearch');

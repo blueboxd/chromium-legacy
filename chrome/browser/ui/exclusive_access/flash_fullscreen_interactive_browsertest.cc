@@ -29,7 +29,7 @@
 
 namespace {
 
-#if defined(OS_MACOSX)
+#if defined(OS_MAC)
 const bool kIsMacUI = true;
 #else
 const bool kIsMacUI = false;

@@ -351,7 +351,7 @@ namespace {
 
 std::unique_ptr<base::ProcessMetrics> CreateProcessMetrics(
     base::ProcessHandle handle) {
-#if defined(OS_MACOSX)
+#if defined(OS_MAC)
   return base::ProcessMetrics::CreateProcessMetrics(
       handle, content::BrowserChildProcessHost::GetPortProvider());
 #else

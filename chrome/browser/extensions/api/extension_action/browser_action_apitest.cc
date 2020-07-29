@@ -980,7 +980,7 @@ IN_PROC_BROWSER_TEST_F(BrowserActionApiTest, BrowserActionOpenPopupOnPopup) {
   // The window isn't considered "active" on MacOSX for odd reasons. The more
   // important test is that it *is* considered the last active browser, since
   // that's what we check when we try to open the popup.
-#if !defined(OS_MACOSX)
+#if !defined(OS_MAC)
   EXPECT_TRUE(popup_browser->window()->IsActive());
 #endif
   EXPECT_FALSE(browser()->window()->IsActive());

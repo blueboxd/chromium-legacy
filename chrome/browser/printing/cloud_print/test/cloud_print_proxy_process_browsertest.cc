@@ -69,7 +69,7 @@
 #include "testing/gtest/include/gtest/gtest.h"
 #include "testing/multiprocess_func_list.h"
 
-#if defined(OS_MACOSX)
+#if defined(OS_MAC)
 #include "chrome/common/mac/mock_launchd.h"
 #endif
 
@@ -92,7 +92,7 @@ enum MockServiceProcessExitCodes {
   kShutdownNotGood
 };
 
-#if defined(OS_MACOSX)
+#if defined(OS_MAC)
 const char kTestExecutablePath[] = "test-executable-path";
 #endif
 
@@ -198,7 +198,7 @@ int CloudPrintMockService_Main(SetExpectationsCallback set_expectations) {
   CHECK(test_launcher_utils::OverrideUserDataDir(user_data_dir));
 
   base::RunLoop run_loop;
-#if defined(OS_MACOSX)
+#if defined(OS_MAC)
   if (!command_line->HasSwitch(kTestExecutablePath))
     return kMissingSwitch;
   base::FilePath executable_path =
@@ -241,7 +241,7 @@ int CloudPrintMockService_Main(SetExpectationsCallback set_expectations) {
   EXPECT_TRUE(server.Init());
   EXPECT_TRUE(state->SignalReady(service_process.io_task_runner().get(),
                                  base::BindOnce(&ShutdownTask)));
-#if defined(OS_MACOSX)
+#if defined(OS_MAC)
   mock_launchd.SignalReady();
 #endif
 
@@ -320,7 +320,7 @@ class CloudPrintProxyPolicyStartupTest : public base::MultiProcessTest,
   std::unique_ptr<ChromeContentClient> content_client_;
   std::unique_ptr<ChromeContentBrowserClient> browser_content_client_;
 
-#if defined(OS_MACOSX)
+#if defined(OS_MAC)
   base::ScopedTempDir temp_dir_;
   base::FilePath executable_path_, bundle_path_;
   std::unique_ptr<MockLaunchd> mock_launchd_;
@@ -391,7 +391,7 @@ void CloudPrintProxyPolicyStartupTest::SetUp() {
   }
   ASSERT_TRUE(test_launcher_utils::OverrideUserDataDir(user_data_dir));
 
-#if defined(OS_MACOSX)
+#if defined(OS_MAC)
   EXPECT_TRUE(temp_dir_.CreateUniqueTempDir());
   EXPECT_TRUE(MockLaunchd::MakeABundle(temp_dir_.GetPath(),
                                        "CloudPrintProxyTest", &bundle_path_,
@@ -471,7 +471,7 @@ base::CommandLine CloudPrintProxyPolicyStartupTest::MakeCmdLine(
     const std::string& procname) {
   base::CommandLine cl = MultiProcessTest::MakeCmdLine(procname);
   cl.AppendSwitchNative(kProcessChannelID, startup_server_name_);
-#if defined(OS_MACOSX)
+#if defined(OS_MAC)
   cl.AppendSwitchASCII(kTestExecutablePath, executable_path_.value());
 #endif
   return cl;

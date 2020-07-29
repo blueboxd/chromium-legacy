@@ -45,7 +45,7 @@
 #include "storage/common/file_system/file_system_mount_option.h"
 #include "storage/common/file_system/file_system_types.h"
 
-#if defined(OS_WIN) || defined(OS_MACOSX) || defined(OS_CHROMEOS)
+#if defined(OS_WIN) || defined(OS_MAC) || defined(OS_CHROMEOS)
 #include "chrome/browser/media_galleries/fileapi/mtp_device_map_service.h"
 #endif
 
@@ -666,7 +666,7 @@ class MediaFileSystemRegistry::MediaFileSystemContextImpl
   void RevokeFileSystem(const std::string& fs_name) override {
     ExternalMountPoints::GetSystemInstance()->RevokeFileSystem(fs_name);
 
-#if defined(OS_WIN) || defined(OS_MACOSX) || defined(OS_CHROMEOS)
+#if defined(OS_WIN) || defined(OS_MAC) || defined(OS_CHROMEOS)
     content::GetIOThreadTaskRunner({})->PostTask(
         FROM_HERE,
         base::BindOnce(&MTPDeviceMapService::RevokeMTPFileSystem,
@@ -705,7 +705,7 @@ class MediaFileSystemRegistry::MediaFileSystemContextImpl
   bool RegisterFileSystemForMTPDevice(const std::string& device_id,
                                       const std::string fs_name,
                                       const base::FilePath& path) {
-#if defined(OS_WIN) || defined(OS_MACOSX) || defined(OS_CHROMEOS)
+#if defined(OS_WIN) || defined(OS_MAC) || defined(OS_CHROMEOS)
     DCHECK_CURRENTLY_ON(BrowserThread::UI);
     DCHECK(!StorageInfo::IsMassStorageDevice(device_id));
 

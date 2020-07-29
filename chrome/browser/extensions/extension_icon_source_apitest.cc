@@ -19,7 +19,7 @@
 using ExtensionIconSourceTest = extensions::ExtensionApiTest;
 
 // Times out on Mac and Win. http://crbug.com/238705
-#if defined(OS_WIN) || defined(OS_MACOSX)
+#if defined(OS_WIN) || defined(OS_MAC)
 #define MAYBE_IconsLoaded DISABLED_IconsLoaded
 #else
 #define MAYBE_IconsLoaded IconsLoaded
@@ -70,7 +70,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionIconSourceTest, InvalidURL) {
 }
 
 // Times out on Mac and Win. http://crbug.com/238705
-#if defined(OS_WIN) || defined(OS_MACOSX)
+#if defined(OS_WIN) || defined(OS_MAC)
 #define MAYBE_IconsLoadedIncognito DISABLED_IconsLoadedIncognito
 #else
 #define MAYBE_IconsLoadedIncognito IconsLoadedIncognito

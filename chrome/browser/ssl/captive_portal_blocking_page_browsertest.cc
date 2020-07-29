@@ -369,7 +369,7 @@ IN_PROC_BROWSER_TEST_F(CaptivePortalBlockingPageTest, WiFi_SSID_LoginURL) {
 }
 
 // Flaky on mac: https://crbug.com/690170
-#if defined(OS_MACOSX)
+#if defined(OS_MAC)
 #define MAYBE_WiFi_NoSSID_LoginURL DISABLED_WiFi_NoSSID_LoginURL
 #else
 #define MAYBE_WiFi_NoSSID_LoginURL WiFi_NoSSID_LoginURL
@@ -384,7 +384,7 @@ IN_PROC_BROWSER_TEST_F(CaptivePortalBlockingPageTest,
 }
 
 // Flaky on mac: https://crbug.com/690125
-#if defined(OS_MACOSX)
+#if defined(OS_MAC)
 #define MAYBE_WiFi_SSID_NoLoginURL DISABLED_WiFi_SSID_NoLoginURL
 #else
 #define MAYBE_WiFi_SSID_NoLoginURL WiFi_SSID_NoLoginURL

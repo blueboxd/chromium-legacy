@@ -16,7 +16,7 @@
     height: 48px;
   }
 
-  #menuButton {
+  #sidenavToggle {
     margin: 0 6px;
   }
 
@@ -135,7 +135,8 @@
 <!-- TODO(dpapad): Add aria-label and title for all buttons -->
 <div id="toolbar">
   <div id="start">
-    <cr-icon-button id="menuButton" iron-icon="pdf:open-book">
+    <cr-icon-button id="sidenavToggle" iron-icon="pdf:open-book"
+        on-click="onSidenavToggleClick_">
     </cr-icon-button>
     <span id="title">[[docTitle]]</span>
   </div>

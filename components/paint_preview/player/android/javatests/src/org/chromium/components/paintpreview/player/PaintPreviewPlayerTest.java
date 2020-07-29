@@ -5,6 +5,7 @@
 package org.chromium.components.paintpreview.player;
 
 import android.graphics.Rect;
+import android.os.Build.VERSION_CODES;
 import android.support.test.InstrumentationRegistry;
 import android.support.test.uiautomator.By;
 import android.support.test.uiautomator.UiDevice;
@@ -25,6 +26,7 @@ import org.junit.runner.RunWith;
 import org.chromium.base.task.PostTask;
 import org.chromium.base.test.BaseJUnit4ClassRunner;
 import org.chromium.base.test.util.CallbackHelper;
+import org.chromium.base.test.util.DisableIf;
 import org.chromium.base.test.util.ScalableTimeout;
 import org.chromium.content_public.browser.UiThreadTaskTraits;
 import org.chromium.content_public.browser.test.util.Criteria;
@@ -125,6 +127,8 @@ public class PaintPreviewPlayerTest extends DummyUiActivityTestCase {
      */
     @Test
     @MediumTest
+    @DisableIf.Build(message = "Test is failing on Android P, see crbug.com/1110939.",
+            sdk_is_greater_than = VERSION_CODES.O_MR1, sdk_is_less_than = VERSION_CODES.Q)
     public void linkClickTest() {
         initPlayerManager(true);
         final View playerHostView = mPlayerManager.getView();

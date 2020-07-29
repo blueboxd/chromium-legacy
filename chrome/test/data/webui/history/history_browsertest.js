@@ -251,7 +251,7 @@ var HistorySupervisedUserTest = class extends HistoryBrowserTest {
   }
 };
 
-GEN('#if defined(OS_MACOSX)');
+GEN('#if defined(OS_MAC)');
 GEN('#define MAYBE_AllSupervised DISABLED_All');
 GEN('#else');
 GEN('#define MAYBE_AllSupervised All');

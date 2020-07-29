@@ -203,7 +203,7 @@ IN_PROC_BROWSER_TEST_F(PopupTrackerBrowserTest, ControlClick_HasTracker) {
 
   // Mac uses command instead of control for the new tab action.
   bool is_mac = false;
-#if defined(OS_MACOSX)
+#if defined(OS_MAC)
   is_mac = true;
 #endif
 

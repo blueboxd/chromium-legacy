@@ -39,13 +39,13 @@ const TableColumnData kColumns[] = {
 // to make it the primary sort column a caret appears to the right of the
 // column's label. Without a little extra space, the tableview squeezes the
 // caret in by tail-truncating the label, which looks terrible.
-#if defined(OS_MACOSX)
+#if defined(OS_MAC)
     {IDS_TASK_MANAGER_CPU_COLUMN, ui::TableColumn::RIGHT, -1, 0,
      base::size("0099.9") * kCharWidth, -1, true, false, true},
 #else
     {IDS_TASK_MANAGER_CPU_COLUMN, ui::TableColumn::RIGHT, -1, 0,
      base::size("99.9") * kCharWidth, -1, true, false, true},
-#endif  // defined(OS_MACOSX)
+#endif  // defined(OS_MAC)
 
 #if defined(OS_WIN)
     {IDS_TASK_MANAGER_CPU_TIME_COLUMN, ui::TableColumn::RIGHT, -1, 0,
@@ -93,10 +93,10 @@ const TableColumnData kColumns[] = {
      base::size("100000") * kCharWidth, -1, true, false, false},
 #endif
 
-#if defined(OS_LINUX) || defined(OS_MACOSX)
+#if defined(OS_LINUX) || defined(OS_MAC)
     {IDS_TASK_MANAGER_OPEN_FD_COUNT_COLUMN, ui::TableColumn::RIGHT, -1, 0,
      base::size("999") * kCharWidth, -1, true, false, false},
-#endif  // defined(OS_LINUX) || defined(OS_MACOSX)
+#endif  // defined(OS_LINUX) || defined(OS_MAC)
     {IDS_TASK_MANAGER_PROCESS_PRIORITY_COLUMN, ui::TableColumn::LEFT, -1, 0,
      base::size("background") * kCharWidth, -1, true, true, false},
     {IDS_TASK_MANAGER_KEEPALIVE_COUNT_COLUMN, ui::TableColumn::RIGHT, -1, 0,

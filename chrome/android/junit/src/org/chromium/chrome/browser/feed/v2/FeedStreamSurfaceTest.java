@@ -7,6 +7,8 @@ package org.chromium.chrome.browser.feed.v2;
 import static com.google.common.truth.Truth.assertThat;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertTrue;
 import static org.mockito.Mockito.any;
 import static org.mockito.Mockito.anyBoolean;
 import static org.mockito.Mockito.anyInt;
@@ -19,6 +21,8 @@ import static org.mockito.Mockito.when;
 import android.app.Activity;
 import android.support.test.filters.SmallTest;
 import android.view.View;
+import android.widget.FrameLayout;
+import android.widget.LinearLayout;
 import android.widget.TextView;
 
 import androidx.recyclerview.widget.RecyclerView;
@@ -69,7 +73,9 @@ public class FeedStreamSurfaceTest {
     private FeedStreamSurface mFeedStreamSurface;
     private Activity mActivity;
     private RecyclerView mRecyclerView;
+    private LinearLayout mParent;
     private FakeLinearLayoutManager mLayoutManager;
+    private FeedListContentManager mContentManager;
 
     @Mock
     private SnackbarManager mSnackbarManager;
@@ -103,6 +109,7 @@ public class FeedStreamSurfaceTest {
     public void setUp() throws Exception {
         MockitoAnnotations.initMocks(this);
         mActivity = Robolectric.buildActivity(Activity.class).get();
+        mParent = new LinearLayout(mActivity);
         mocker.mock(FeedStreamSurfaceJni.TEST_HOOKS, mFeedStreamSurfaceJniMock);
         mocker.mock(FeedServiceBridgeJni.TEST_HOOKS, mFeedServiceBridgeJniMock);
 
@@ -112,6 +119,7 @@ public class FeedStreamSurfaceTest {
         Profile.setLastUsedProfileForTesting(mProfileMock);
         mFeedStreamSurface = new FeedStreamSurface(mActivity, false, mSnackbarManager,
                 mPageNavigationDelegate, mBottomSheetController, mHelpAndFeedback);
+        mContentManager = mFeedStreamSurface.getFeedListContentManagerForTesting();
 
         mRecyclerView = (RecyclerView) mFeedStreamSurface.getView();
         mLayoutManager = new FakeLinearLayoutManager(mActivity);
@@ -121,9 +129,6 @@ public class FeedStreamSurfaceTest {
     @Test
     @SmallTest
     public void testAddSlicesOnStreamUpdated() {
-        FeedListContentManager contentManager =
-                mFeedStreamSurface.getFeedListContentManagerForTesting();
-
         // Add 3 new slices at first.
         StreamUpdate update = StreamUpdate.newBuilder()
                                       .addUpdatedSlices(createSliceUpdateForNewXSurfaceSlice("a"))
@@ -131,10 +136,10 @@ public class FeedStreamSurfaceTest {
                                       .addUpdatedSlices(createSliceUpdateForNewXSurfaceSlice("c"))
                                       .build();
         mFeedStreamSurface.onStreamUpdated(update.toByteArray());
-        assertEquals(3, contentManager.getItemCount());
-        assertEquals(0, contentManager.findContentPositionByKey("a"));
-        assertEquals(1, contentManager.findContentPositionByKey("b"));
-        assertEquals(2, contentManager.findContentPositionByKey("c"));
+        assertEquals(3, mContentManager.getItemCount());
+        assertEquals(0, mContentManager.findContentPositionByKey("a"));
+        assertEquals(1, mContentManager.findContentPositionByKey("b"));
+        assertEquals(2, mContentManager.findContentPositionByKey("c"));
 
         // Add 2 more slices.
         update = StreamUpdate.newBuilder()
@@ -145,29 +150,26 @@ public class FeedStreamSurfaceTest {
                          .addUpdatedSlices(createSliceUpdateForNewXSurfaceSlice("e"))
                          .build();
         mFeedStreamSurface.onStreamUpdated(update.toByteArray());
-        assertEquals(5, contentManager.getItemCount());
-        assertEquals(0, contentManager.findContentPositionByKey("a"));
-        assertEquals(1, contentManager.findContentPositionByKey("b"));
-        assertEquals(2, contentManager.findContentPositionByKey("c"));
-        assertEquals(3, contentManager.findContentPositionByKey("d"));
-        assertEquals(4, contentManager.findContentPositionByKey("e"));
+        assertEquals(5, mContentManager.getItemCount());
+        assertEquals(0, mContentManager.findContentPositionByKey("a"));
+        assertEquals(1, mContentManager.findContentPositionByKey("b"));
+        assertEquals(2, mContentManager.findContentPositionByKey("c"));
+        assertEquals(3, mContentManager.findContentPositionByKey("d"));
+        assertEquals(4, mContentManager.findContentPositionByKey("e"));
     }
 
     @Test
     @SmallTest
     public void testAddNewSlicesWithSameIds() {
-        FeedListContentManager contentManager =
-                mFeedStreamSurface.getFeedListContentManagerForTesting();
-
         // Add 2 new slices at first.
         StreamUpdate update = StreamUpdate.newBuilder()
                                       .addUpdatedSlices(createSliceUpdateForNewXSurfaceSlice("a"))
                                       .addUpdatedSlices(createSliceUpdateForNewXSurfaceSlice("b"))
                                       .build();
         mFeedStreamSurface.onStreamUpdated(update.toByteArray());
-        assertEquals(2, contentManager.getItemCount());
-        assertEquals(0, contentManager.findContentPositionByKey("a"));
-        assertEquals(1, contentManager.findContentPositionByKey("b"));
+        assertEquals(2, mContentManager.getItemCount());
+        assertEquals(0, mContentManager.findContentPositionByKey("a"));
+        assertEquals(1, mContentManager.findContentPositionByKey("b"));
 
         // Add 2 new slice with same ids as before.
         update = StreamUpdate.newBuilder()
@@ -175,17 +177,14 @@ public class FeedStreamSurfaceTest {
                          .addUpdatedSlices(createSliceUpdateForNewXSurfaceSlice("a"))
                          .build();
         mFeedStreamSurface.onStreamUpdated(update.toByteArray());
-        assertEquals(2, contentManager.getItemCount());
-        assertEquals(0, contentManager.findContentPositionByKey("b"));
-        assertEquals(1, contentManager.findContentPositionByKey("a"));
+        assertEquals(2, mContentManager.getItemCount());
+        assertEquals(0, mContentManager.findContentPositionByKey("b"));
+        assertEquals(1, mContentManager.findContentPositionByKey("a"));
     }
 
     @Test
     @SmallTest
     public void testRemoveSlicesOnStreamUpdated() {
-        FeedListContentManager contentManager =
-                mFeedStreamSurface.getFeedListContentManagerForTesting();
-
         // Add 3 new slices at first.
         StreamUpdate update = StreamUpdate.newBuilder()
                                       .addUpdatedSlices(createSliceUpdateForNewXSurfaceSlice("a"))
@@ -193,10 +192,10 @@ public class FeedStreamSurfaceTest {
                                       .addUpdatedSlices(createSliceUpdateForNewXSurfaceSlice("c"))
                                       .build();
         mFeedStreamSurface.onStreamUpdated(update.toByteArray());
-        assertEquals(3, contentManager.getItemCount());
-        assertEquals(0, contentManager.findContentPositionByKey("a"));
-        assertEquals(1, contentManager.findContentPositionByKey("b"));
-        assertEquals(2, contentManager.findContentPositionByKey("c"));
+        assertEquals(3, mContentManager.getItemCount());
+        assertEquals(0, mContentManager.findContentPositionByKey("a"));
+        assertEquals(1, mContentManager.findContentPositionByKey("b"));
+        assertEquals(2, mContentManager.findContentPositionByKey("c"));
 
         // Remove 1 slice.
         update = StreamUpdate.newBuilder()
@@ -204,22 +203,19 @@ public class FeedStreamSurfaceTest {
                          .addUpdatedSlices(createSliceUpdateForExistingSlice("c"))
                          .build();
         mFeedStreamSurface.onStreamUpdated(update.toByteArray());
-        assertEquals(2, contentManager.getItemCount());
-        assertEquals(0, contentManager.findContentPositionByKey("a"));
-        assertEquals(1, contentManager.findContentPositionByKey("c"));
+        assertEquals(2, mContentManager.getItemCount());
+        assertEquals(0, mContentManager.findContentPositionByKey("a"));
+        assertEquals(1, mContentManager.findContentPositionByKey("c"));
 
         // Remove 2 slices.
         update = StreamUpdate.newBuilder().build();
         mFeedStreamSurface.onStreamUpdated(update.toByteArray());
-        assertEquals(0, contentManager.getItemCount());
+        assertEquals(0, mContentManager.getItemCount());
     }
 
     @Test
     @SmallTest
     public void testReorderSlicesOnStreamUpdated() {
-        FeedListContentManager contentManager =
-                mFeedStreamSurface.getFeedListContentManagerForTesting();
-
         // Add 3 new slices at first.
         StreamUpdate update = StreamUpdate.newBuilder()
                                       .addUpdatedSlices(createSliceUpdateForNewXSurfaceSlice("a"))
@@ -227,10 +223,10 @@ public class FeedStreamSurfaceTest {
                                       .addUpdatedSlices(createSliceUpdateForNewXSurfaceSlice("c"))
                                       .build();
         mFeedStreamSurface.onStreamUpdated(update.toByteArray());
-        assertEquals(3, contentManager.getItemCount());
-        assertEquals(0, contentManager.findContentPositionByKey("a"));
-        assertEquals(1, contentManager.findContentPositionByKey("b"));
-        assertEquals(2, contentManager.findContentPositionByKey("c"));
+        assertEquals(3, mContentManager.getItemCount());
+        assertEquals(0, mContentManager.findContentPositionByKey("a"));
+        assertEquals(1, mContentManager.findContentPositionByKey("b"));
+        assertEquals(2, mContentManager.findContentPositionByKey("c"));
 
         // Reorder 1 slice.
         update = StreamUpdate.newBuilder()
@@ -239,10 +235,10 @@ public class FeedStreamSurfaceTest {
                          .addUpdatedSlices(createSliceUpdateForExistingSlice("b"))
                          .build();
         mFeedStreamSurface.onStreamUpdated(update.toByteArray());
-        assertEquals(3, contentManager.getItemCount());
-        assertEquals(0, contentManager.findContentPositionByKey("c"));
-        assertEquals(1, contentManager.findContentPositionByKey("a"));
-        assertEquals(2, contentManager.findContentPositionByKey("b"));
+        assertEquals(3, mContentManager.getItemCount());
+        assertEquals(0, mContentManager.findContentPositionByKey("c"));
+        assertEquals(1, mContentManager.findContentPositionByKey("a"));
+        assertEquals(2, mContentManager.findContentPositionByKey("b"));
 
         // Reorder 2 slices.
         update = StreamUpdate.newBuilder()
@@ -251,18 +247,15 @@ public class FeedStreamSurfaceTest {
                          .addUpdatedSlices(createSliceUpdateForExistingSlice("c"))
                          .build();
         mFeedStreamSurface.onStreamUpdated(update.toByteArray());
-        assertEquals(3, contentManager.getItemCount());
-        assertEquals(0, contentManager.findContentPositionByKey("a"));
-        assertEquals(1, contentManager.findContentPositionByKey("b"));
-        assertEquals(2, contentManager.findContentPositionByKey("c"));
+        assertEquals(3, mContentManager.getItemCount());
+        assertEquals(0, mContentManager.findContentPositionByKey("a"));
+        assertEquals(1, mContentManager.findContentPositionByKey("b"));
+        assertEquals(2, mContentManager.findContentPositionByKey("c"));
     }
 
     @Test
     @SmallTest
     public void testComplexOperationsOnStreamUpdated() {
-        FeedListContentManager contentManager =
-                mFeedStreamSurface.getFeedListContentManagerForTesting();
-
         // Add 3 new slices at first.
         StreamUpdate update = StreamUpdate.newBuilder()
                                       .addUpdatedSlices(createSliceUpdateForNewXSurfaceSlice("a"))
@@ -272,12 +265,12 @@ public class FeedStreamSurfaceTest {
                                       .addUpdatedSlices(createSliceUpdateForNewXSurfaceSlice("e"))
                                       .build();
         mFeedStreamSurface.onStreamUpdated(update.toByteArray());
-        assertEquals(5, contentManager.getItemCount());
-        assertEquals(0, contentManager.findContentPositionByKey("a"));
-        assertEquals(1, contentManager.findContentPositionByKey("b"));
-        assertEquals(2, contentManager.findContentPositionByKey("c"));
-        assertEquals(3, contentManager.findContentPositionByKey("d"));
-        assertEquals(4, contentManager.findContentPositionByKey("e"));
+        assertEquals(5, mContentManager.getItemCount());
+        assertEquals(0, mContentManager.findContentPositionByKey("a"));
+        assertEquals(1, mContentManager.findContentPositionByKey("b"));
+        assertEquals(2, mContentManager.findContentPositionByKey("c"));
+        assertEquals(3, mContentManager.findContentPositionByKey("d"));
+        assertEquals(4, mContentManager.findContentPositionByKey("e"));
 
         // Combo of add, remove and reorder operations.
         update = StreamUpdate.newBuilder()
@@ -290,86 +283,59 @@ public class FeedStreamSurfaceTest {
                          .addUpdatedSlices(createSliceUpdateForNewXSurfaceSlice("i"))
                          .build();
         mFeedStreamSurface.onStreamUpdated(update.toByteArray());
-        assertEquals(7, contentManager.getItemCount());
-        assertEquals(0, contentManager.findContentPositionByKey("f"));
-        assertEquals(1, contentManager.findContentPositionByKey("g"));
-        assertEquals(2, contentManager.findContentPositionByKey("a"));
-        assertEquals(3, contentManager.findContentPositionByKey("h"));
-        assertEquals(4, contentManager.findContentPositionByKey("c"));
-        assertEquals(5, contentManager.findContentPositionByKey("e"));
-        assertEquals(6, contentManager.findContentPositionByKey("i"));
+        assertEquals(7, mContentManager.getItemCount());
+        assertEquals(0, mContentManager.findContentPositionByKey("f"));
+        assertEquals(1, mContentManager.findContentPositionByKey("g"));
+        assertEquals(2, mContentManager.findContentPositionByKey("a"));
+        assertEquals(3, mContentManager.findContentPositionByKey("h"));
+        assertEquals(4, mContentManager.findContentPositionByKey("c"));
+        assertEquals(5, mContentManager.findContentPositionByKey("e"));
+        assertEquals(6, mContentManager.findContentPositionByKey("i"));
     }
 
     @Test
     @SmallTest
     public void testAddHeaderViews() {
-        FeedListContentManager contentManager =
-                mFeedStreamSurface.getFeedListContentManagerForTesting();
-
         View v0 = new View(mActivity);
         View v1 = new View(mActivity);
 
         mFeedStreamSurface.setHeaderViews(Arrays.asList(v0, v1));
-        assertEquals(2, contentManager.getItemCount());
-        assertEquals(v0,
-                ((FeedListContentManager.NativeViewContent) contentManager.getContent(0))
-                        .getNativeView(null));
-        assertEquals(v1,
-                ((FeedListContentManager.NativeViewContent) contentManager.getContent(1))
-                        .getNativeView(null));
+        assertEquals(2, mContentManager.getItemCount());
+        assertEquals(v0, getNativeView(0));
+        assertEquals(v1, getNativeView(1));
     }
 
     @Test
     @SmallTest
     public void testUpdateHeaderViews() {
-        FeedListContentManager contentManager =
-                mFeedStreamSurface.getFeedListContentManagerForTesting();
-
         View v0 = new View(mActivity);
         View v1 = new View(mActivity);
 
         mFeedStreamSurface.setHeaderViews(Arrays.asList(v0, v1));
-        assertEquals(2, contentManager.getItemCount());
-        assertEquals(v0,
-                ((FeedListContentManager.NativeViewContent) contentManager.getContent(0))
-                        .getNativeView(null));
-        assertEquals(v1,
-                ((FeedListContentManager.NativeViewContent) contentManager.getContent(1))
-                        .getNativeView(null));
+        assertEquals(2, mContentManager.getItemCount());
+        assertEquals(v0, getNativeView(0));
+        assertEquals(v1, getNativeView(1));
 
         View v2 = new View(mActivity);
         View v3 = new View(mActivity);
 
         mFeedStreamSurface.setHeaderViews(Arrays.asList(v2, v0, v3));
-        assertEquals(3, contentManager.getItemCount());
-        assertEquals(v2,
-                ((FeedListContentManager.NativeViewContent) contentManager.getContent(0))
-                        .getNativeView(null));
-        assertEquals(v0,
-                ((FeedListContentManager.NativeViewContent) contentManager.getContent(1))
-                        .getNativeView(null));
-        assertEquals(v3,
-                ((FeedListContentManager.NativeViewContent) contentManager.getContent(2))
-                        .getNativeView(null));
+        assertEquals(3, mContentManager.getItemCount());
+        assertEquals(v2, getNativeView(0));
+        assertEquals(v0, getNativeView(1));
+        assertEquals(v3, getNativeView(2));
     }
 
     @Test
     @SmallTest
     public void testComplexOperationsOnStreamUpdatedAfterSetHeaderViews() {
-        FeedListContentManager contentManager =
-                mFeedStreamSurface.getFeedListContentManagerForTesting();
-
         // Set 2 header views first. These should always be there throughout stream update.
         View v0 = new View(mActivity);
         View v1 = new View(mActivity);
         mFeedStreamSurface.setHeaderViews(Arrays.asList(v0, v1));
-        assertEquals(2, contentManager.getItemCount());
-        assertEquals(v0,
-                ((FeedListContentManager.NativeViewContent) contentManager.getContent(0))
-                        .getNativeView(null));
-        assertEquals(v1,
-                ((FeedListContentManager.NativeViewContent) contentManager.getContent(1))
-                        .getNativeView(null));
+        assertEquals(2, mContentManager.getItemCount());
+        assertEquals(v0, getNativeView(0));
+        assertEquals(v1, getNativeView(1));
         final int headers = 2;
 
         // Add 3 new slices at first.
@@ -381,12 +347,12 @@ public class FeedStreamSurfaceTest {
                                       .addUpdatedSlices(createSliceUpdateForNewXSurfaceSlice("e"))
                                       .build();
         mFeedStreamSurface.onStreamUpdated(update.toByteArray());
-        assertEquals(headers + 5, contentManager.getItemCount());
-        assertEquals(headers + 0, contentManager.findContentPositionByKey("a"));
-        assertEquals(headers + 1, contentManager.findContentPositionByKey("b"));
-        assertEquals(headers + 2, contentManager.findContentPositionByKey("c"));
-        assertEquals(headers + 3, contentManager.findContentPositionByKey("d"));
-        assertEquals(headers + 4, contentManager.findContentPositionByKey("e"));
+        assertEquals(headers + 5, mContentManager.getItemCount());
+        assertEquals(headers + 0, mContentManager.findContentPositionByKey("a"));
+        assertEquals(headers + 1, mContentManager.findContentPositionByKey("b"));
+        assertEquals(headers + 2, mContentManager.findContentPositionByKey("c"));
+        assertEquals(headers + 3, mContentManager.findContentPositionByKey("d"));
+        assertEquals(headers + 4, mContentManager.findContentPositionByKey("e"));
 
         // Combo of add, remove and reorder operations.
         update = StreamUpdate.newBuilder()
@@ -399,14 +365,14 @@ public class FeedStreamSurfaceTest {
                          .addUpdatedSlices(createSliceUpdateForNewXSurfaceSlice("i"))
                          .build();
         mFeedStreamSurface.onStreamUpdated(update.toByteArray());
-        assertEquals(headers + 7, contentManager.getItemCount());
-        assertEquals(headers + 0, contentManager.findContentPositionByKey("f"));
-        assertEquals(headers + 1, contentManager.findContentPositionByKey("g"));
-        assertEquals(headers + 2, contentManager.findContentPositionByKey("a"));
-        assertEquals(headers + 3, contentManager.findContentPositionByKey("h"));
-        assertEquals(headers + 4, contentManager.findContentPositionByKey("c"));
-        assertEquals(headers + 5, contentManager.findContentPositionByKey("e"));
-        assertEquals(headers + 6, contentManager.findContentPositionByKey("i"));
+        assertEquals(headers + 7, mContentManager.getItemCount());
+        assertEquals(headers + 0, mContentManager.findContentPositionByKey("f"));
+        assertEquals(headers + 1, mContentManager.findContentPositionByKey("g"));
+        assertEquals(headers + 2, mContentManager.findContentPositionByKey("a"));
+        assertEquals(headers + 3, mContentManager.findContentPositionByKey("h"));
+        assertEquals(headers + 4, mContentManager.findContentPositionByKey("c"));
+        assertEquals(headers + 5, mContentManager.findContentPositionByKey("e"));
+        assertEquals(headers + 6, mContentManager.findContentPositionByKey("i"));
     }
 
     @Test
@@ -488,20 +454,16 @@ public class FeedStreamSurfaceTest {
     @Test
     @SmallTest
     public void testSurfaceClosed() {
-        FeedListContentManager contentManager =
+        FeedListContentManager mContentManager =
                 mFeedStreamSurface.getFeedListContentManagerForTesting();
 
         // Set 2 header views first.
         View v0 = new View(mActivity);
         View v1 = new View(mActivity);
         mFeedStreamSurface.setHeaderViews(Arrays.asList(v0, v1));
-        assertEquals(2, contentManager.getItemCount());
-        assertEquals(v0,
-                ((FeedListContentManager.NativeViewContent) contentManager.getContent(0))
-                        .getNativeView(null));
-        assertEquals(v1,
-                ((FeedListContentManager.NativeViewContent) contentManager.getContent(1))
-                        .getNativeView(null));
+        assertEquals(2, mContentManager.getItemCount());
+        assertEquals(v0, getNativeView(0));
+        assertEquals(v1, getNativeView(1));
         final int headers = 2;
 
         // Add 3 new slices.
@@ -511,17 +473,13 @@ public class FeedStreamSurfaceTest {
                                       .addUpdatedSlices(createSliceUpdateForNewXSurfaceSlice("c"))
                                       .build();
         mFeedStreamSurface.onStreamUpdated(update.toByteArray());
-        assertEquals(headers + 3, contentManager.getItemCount());
+        assertEquals(headers + 3, mContentManager.getItemCount());
 
         // Closing the surface should remove all non-header contents.
         mFeedStreamSurface.surfaceClosed();
-        assertEquals(headers, contentManager.getItemCount());
-        assertEquals(v0,
-                ((FeedListContentManager.NativeViewContent) contentManager.getContent(0))
-                        .getNativeView(null));
-        assertEquals(v1,
-                ((FeedListContentManager.NativeViewContent) contentManager.getContent(1))
-                        .getNativeView(null));
+        assertEquals(headers, mContentManager.getItemCount());
+        assertEquals(v0, getNativeView(0));
+        assertEquals(v1, getNativeView(1));
     }
 
     @Test
@@ -599,5 +557,13 @@ public class FeedStreamSurfaceTest {
                                           .setXsurfaceFrame(ByteString.copyFromUtf8(TEST_DATA))
                                           .build())
                 .build();
+    }
+
+    private View getNativeView(int index) {
+        View view = ((FeedListContentManager.NativeViewContent) mContentManager.getContent(index))
+                            .getNativeView(mParent);
+        assertNotNull(view);
+        assertTrue(view instanceof FrameLayout);
+        return ((FrameLayout) view).getChildAt(0);
     }
 }

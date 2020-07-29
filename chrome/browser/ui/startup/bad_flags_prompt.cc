@@ -94,7 +94,7 @@ static const char* kBadFlags[] = {
     switches::kEnableSpeechDispatcher,
 #endif
 
-#if defined(OS_MACOSX)
+#if defined(OS_MAC)
     // This flag is only used for performance tests in mac, to ensure that
     // calculated values are reliable. Should not be used elsewhere.
     switches::kUseHighGPUThreadPriorityForPerfTests,

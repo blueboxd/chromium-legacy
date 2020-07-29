@@ -17,7 +17,7 @@
 #include "components/metal_util/device.h"
 #include "components/metal_util/test_shader.h"
 #include "components/viz/common/gpu/metal_api_proxy.h"
-#include "third_party/skia/include/gpu/GrContext.h"
+#include "third_party/skia/include/gpu/GrDirectContext.h"
 
 namespace viz {
 
@@ -32,7 +32,7 @@ struct API_AVAILABLE(macos(10.11)) MetalContextProviderImpl
     command_queue_.reset([device_ newCommandQueue]);
 
     gr_context_ =
-        GrContext::MakeMetal(device_, command_queue_, context_options);
+        GrDirectContext::MakeMetal(device_, command_queue_, context_options);
     DCHECK(gr_context_);
   }
   ~MetalContextProviderImpl() override {
@@ -43,13 +43,13 @@ struct API_AVAILABLE(macos(10.11)) MetalContextProviderImpl
   void SetProgressReporter(gl::ProgressReporter* progress_reporter) override {
     [device_ setProgressReporter:progress_reporter];
   }
-  GrContext* GetGrContext() override { return gr_context_.get(); }
+  GrDirectContext* GetGrContext() override { return gr_context_.get(); }
   metal::MTLDevicePtr GetMTLDevice() override { return device_.get(); }
 
  private:
   base::scoped_nsobject<MTLDeviceProxy> device_;
   base::scoped_nsprotocol<id<MTLCommandQueue>> command_queue_;
-  sk_sp<GrContext> gr_context_;
+  sk_sp<GrDirectContext> gr_context_;
 
   DISALLOW_COPY_AND_ASSIGN(MetalContextProviderImpl);
 };

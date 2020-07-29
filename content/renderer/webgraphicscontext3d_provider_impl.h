@@ -44,7 +44,7 @@ class CONTENT_EXPORT WebGraphicsContext3DProviderImpl
   gpu::raster::RasterInterface* RasterInterface() override;
   gpu::webgpu::WebGPUInterface* WebGPUInterface() override;
   bool IsContextLost() override;
-  GrContext* GetGrContext() override;
+  GrDirectContext* GetGrContext() override;
   const gpu::Capabilities& GetCapabilities() const override;
   const gpu::GpuFeatureInfo& GetGpuFeatureInfo() const override;
   const blink::WebglPreferences& GetWebglPreferences() const override;

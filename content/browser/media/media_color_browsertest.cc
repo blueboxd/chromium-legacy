@@ -114,7 +114,7 @@ IN_PROC_BROWSER_TEST_F(MediaColorTest, MAYBE_Yuv420pRec709H264) {
 
 // Android doesn't support 10bpc.
 // This test flakes on mac: http://crbug.com/810908
-#if defined(OS_ANDROID) || defined(OS_MACOSX)
+#if defined(OS_ANDROID) || defined(OS_MAC)
 #define MAYBE_Yuv420pHighBitDepth DISABLED_Yuv420pHighBitDepth
 #else
 #define MAYBE_Yuv420pHighBitDepth Yuv420pHighBitDepth

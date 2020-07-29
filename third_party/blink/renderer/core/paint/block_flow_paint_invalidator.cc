@@ -53,13 +53,6 @@ void BlockFlowPaintInvalidator::InvalidateDisplayItemClients(
                                                          reason);
   }
 
-  // PaintInvalidationRectangle happens when we invalidate the caret.
-  // The later conditions don't apply when we invalidate the caret or the
-  // selection.
-  if (reason == PaintInvalidationReason::kRectangle ||
-      reason == PaintInvalidationReason::kSelection)
-    return;
-
   NGInlineCursor cursor(block_flow_);
   if (cursor) {
     // Line boxes record hit test data (see NGBoxFragmentPainter::PaintLineBox)

@@ -18,8 +18,8 @@ message CriticalPersistedTabDataProto {
   // Timestamp when Tab was created.
   optional int64 timestamp_millis = 3;
 
-  // Content State.
-  optional bytes content_state_bytes = 4;
+  // WebContentsState.
+  optional bytes web_contents_state_bytes = 4;
 
   // Content State version.
   optional int32 content_state_version = 5;

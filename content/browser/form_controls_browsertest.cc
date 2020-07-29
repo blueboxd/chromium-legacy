@@ -103,7 +103,7 @@ class FormControlsBrowserTest : public ContentBrowserTest {
 
     EXPECT_TRUE(cc::MatchesBitmap(
         bitmap, expected_bitmap,
-#if defined(OS_MACOSX)
+#if defined(OS_MAC)
         // The Mac 10.12 trybot has more significant subpixel rendering
         // differences which we accommodate for here with a large avg/max
         // per-pixel error limit.

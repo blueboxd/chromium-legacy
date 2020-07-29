@@ -4440,8 +4440,11 @@ AutotestPrivateStartSmoothnessTrackingFunction::Run() {
 
   auto tracker =
       root_window->layer()->GetCompositor()->RequestNewThroughputTracker();
+  // Exclude this tracker from data collection for animations since it is for
+  // the display as a whole rather than for an individual animation.
   tracker.Start(ash::metrics_util::ForSmoothness(
-      base::BindRepeating(&ForwardSmoothessAndReset, display_id)));
+      base::BindRepeating(&ForwardSmoothessAndReset, display_id),
+      /*exclude_from_data_collection=*/true));
   (*infos)[display_id].tracker = std::move(tracker);
   return RespondNow(NoArguments());
 }
@@ -4566,6 +4569,49 @@ ExtensionFunction::ResponseAction
 AutotestPrivateDisableAutomationFunction::Run() {
   AutomationManagerAura::GetInstance()->Disable();
   return RespondNow(NoArguments());
+}
+
+///////////////////////////////////////////////////////////////////////////////
+// AutotestPrivateStartThroughputTrackerDataCollectionFunction
+//////////////////////////////////////////////////////////////////////////////
+
+AutotestPrivateStartThroughputTrackerDataCollectionFunction::
+    AutotestPrivateStartThroughputTrackerDataCollectionFunction() = default;
+
+AutotestPrivateStartThroughputTrackerDataCollectionFunction::
+    ~AutotestPrivateStartThroughputTrackerDataCollectionFunction() = default;
+
+ExtensionFunction::ResponseAction
+AutotestPrivateStartThroughputTrackerDataCollectionFunction::Run() {
+  ash::metrics_util::StartDataCollection();
+  return RespondNow(NoArguments());
+}
+
+///////////////////////////////////////////////////////////////////////////////
+// AutotestPrivateStopThroughputTrackerDataCollectionFunction
+//////////////////////////////////////////////////////////////////////////////
+
+AutotestPrivateStopThroughputTrackerDataCollectionFunction::
+    AutotestPrivateStopThroughputTrackerDataCollectionFunction() = default;
+
+AutotestPrivateStopThroughputTrackerDataCollectionFunction::
+    ~AutotestPrivateStopThroughputTrackerDataCollectionFunction() = default;
+
+ExtensionFunction::ResponseAction
+AutotestPrivateStopThroughputTrackerDataCollectionFunction::Run() {
+  auto collected_data = ash::metrics_util::StopDataCollection();
+  std::vector<api::autotest_private::ThroughputTrackerAnimationData>
+      result_data;
+  for (const auto& data : collected_data) {
+    api::autotest_private::ThroughputTrackerAnimationData animation_data;
+    animation_data.frames_expected = data.frames_expected;
+    animation_data.frames_produced = data.frames_produced;
+    result_data.emplace_back(std::move(animation_data));
+  }
+
+  return RespondNow(
+      ArgumentList(api::autotest_private::StopThroughputTrackerDataCollection::
+                       Results::Create(result_data)));
 }
 
 ///////////////////////////////////////////////////////////////////////////////

@@ -51,9 +51,9 @@ const char* kSupportedFeatures[] = {
     "pairingRegistry",
     "oauthClient",
     "getRefreshTokenFromAuthCode",
-#if defined(OS_MACOSX)
+#if defined(OS_APPLE)
     "it2mePermissionCheck",
-#endif  // defined(OS_MACOSX)
+#endif  // defined(OS_APPLE)
 };
 
 // Helper to extract the "config" part of a message as a DictionaryValue.

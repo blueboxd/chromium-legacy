@@ -88,6 +88,10 @@ class MockUpdateClient : public UpdateClient {
                     const base::Version& version,
                     int reason,
                     Callback callback));
+  MOCK_METHOD3(SendRegistrationPing,
+               void(const std::string& id,
+                    const base::Version& version,
+                    Callback callback));
 
  private:
   ~MockUpdateClient() override = default;

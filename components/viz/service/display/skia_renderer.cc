@@ -59,7 +59,7 @@
 #include "third_party/skia/include/effects/SkRuntimeEffect.h"
 #include "third_party/skia/include/effects/SkShaderMaskFilter.h"
 #include "third_party/skia/include/gpu/GrBackendSurface.h"
-#include "third_party/skia/include/gpu/GrContext.h"
+#include "third_party/skia/include/gpu/GrDirectContext.h"
 #include "third_party/skia/include/third_party/skcms/skcms.h"
 #include "ui/gfx/color_transform.h"
 #include "ui/gfx/geometry/axis_transform2d.h"
@@ -2587,7 +2587,7 @@ void SkiaRenderer::GenerateMipmap() {
   // RenderPassDrawQuad is what actually generates generate_mipmap.
 }
 
-GrContext* SkiaRenderer::GetGrContext() {
+GrDirectContext* SkiaRenderer::GetGrContext() {
   switch (draw_mode_) {
     case DrawMode::DDL:
       return nullptr;
@@ -2642,7 +2642,7 @@ void SkiaRenderer::AllocateRenderPassResourceIfNeeded(
   // TODO(penghuang): check supported format correctly.
   gpu::Capabilities caps;
   caps.texture_format_bgra8888 = true;
-  GrContext* gr_context = GetGrContext();
+  GrDirectContext* gr_context = GetGrContext();
   switch (draw_mode_) {
     case DrawMode::DDL:
       break;
@@ -2661,7 +2661,7 @@ void SkiaRenderer::AllocateRenderPassResourceIfNeeded(
 }
 
 SkiaRenderer::RenderPassBacking::RenderPassBacking(
-    GrContext* gr_context,
+    GrDirectContext* gr_context,
     const gpu::Capabilities& caps,
     const gfx::Size& size,
     bool generate_mipmap,

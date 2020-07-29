@@ -78,8 +78,9 @@ void GtkUiDelegateX11::ShowGtkWindow(GtkWindow* window) {
   // We need to call gtk_window_present after making the widgets visible to make
   // sure window gets correctly raised and gets focus.
   DCHECK(X11EventSource::HasInstance());
-  gtk_window_present_with_time(window,
-                               X11EventSource::GetInstance()->GetTimestamp());
+  gtk_window_present_with_time(
+      window,
+      static_cast<uint32_t>(X11EventSource::GetInstance()->GetTimestamp()));
 }
 
 }  // namespace ui

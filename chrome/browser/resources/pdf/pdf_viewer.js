@@ -217,6 +217,9 @@ export class PDFViewerElement extends PDFViewerBaseElement {
     this.hadPassword_ = false;
 
     /** @private {boolean} */
+    this.sidenavCollapsed_ = false;
+
+    /** @private {boolean} */
     this.toolbarEnabled_ = false;
 
     /** @private {?ToolbarManager} */
@@ -873,6 +876,11 @@ export class PDFViewerElement extends PDFViewerBaseElement {
         PdfNavigator.WindowOpenDisposition.NEW_BACKGROUND_TAB :
         PdfNavigator.WindowOpenDisposition.CURRENT_TAB;
     this.navigator_.navigate(e.detail.uri, disposition);
+  }
+
+  /** @private */
+  onSidenavToggleClick_() {
+    this.sidenavCollapsed_ = !this.sidenavCollapsed_;
   }
 
   /**

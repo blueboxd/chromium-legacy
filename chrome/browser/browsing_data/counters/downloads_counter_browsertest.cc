@@ -324,7 +324,7 @@ IN_PROC_BROWSER_TEST_F(DownloadsCounterTest, NotPersisted) {
 
 // Tests that the counter takes time ranges into account.
 // Flaky on Mac (crbug.com/736820)
-#if defined(OS_MACOSX)
+#if defined(OS_MAC)
 #define MAYBE_TimeRanges DISABLED_TimeRanges
 #else
 #define MAYBE_TimeRanges TimeRanges

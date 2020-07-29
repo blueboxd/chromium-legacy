@@ -279,7 +279,7 @@ DataReductionProxyChromeSettings::CreateDataFromNavigationHandle(
 data_reduction_proxy::Client DataReductionProxyChromeSettings::GetClient() {
 #if defined(OS_ANDROID)
   return data_reduction_proxy::Client::CHROME_ANDROID;
-#elif defined(OS_MACOSX)
+#elif defined(OS_MAC)
   return data_reduction_proxy::Client::CHROME_MAC;
 #elif defined(OS_CHROMEOS)
   return data_reduction_proxy::Client::CHROME_CHROMEOS;

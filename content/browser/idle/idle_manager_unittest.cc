@@ -390,4 +390,22 @@ TEST_F(IdleManagerTest, NotificationPermissionDisabled) {
   loop.Run();
 }
 
+TEST_F(IdleManagerTest, SetAndClearOverrides) {
+  SetPermissionStatus(url(), blink::mojom::PermissionStatus::GRANTED);
+
+  // Verify initial state without overrides.
+  EXPECT_EQ(std::make_tuple(UserIdleState::kActive, ScreenIdleState::kUnlocked),
+            AddMonitorRequest(kThreshold));
+
+  // Set overrides and verify overriden values returned.
+  auto* impl = GetIdleManager();
+  impl->SetIdleOverride(UserIdleState::kIdle, ScreenIdleState::kLocked);
+  EXPECT_EQ(std::make_tuple(UserIdleState::kIdle, ScreenIdleState::kLocked),
+            GetIdleStatus());
+
+  // Clear overrides and verify initial values returned.
+  impl->ClearIdleOverride();
+  EXPECT_EQ(std::make_tuple(UserIdleState::kActive, ScreenIdleState::kUnlocked),
+            GetIdleStatus());
+}
 }  // namespace content

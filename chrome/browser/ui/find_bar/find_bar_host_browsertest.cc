@@ -421,7 +421,7 @@ IN_PROC_BROWSER_TEST_F(FindInPageControllerTest, SpanSearchable) {
 
 // Find in a very large page.
 // TODO(crbug.com/1077855): Test is flaky on Mac debug builds.
-#if defined(OS_MACOSX) && !defined(NDEBUG)
+#if defined(OS_MAC) && !defined(NDEBUG)
 #define MAYBE_LargePage DISABLED_LargePage
 #else
 #define MAYBE_LargePage LargePage
@@ -437,7 +437,7 @@ IN_PROC_BROWSER_TEST_F(FindInPageControllerTest, MAYBE_LargePage) {
 
 // Find a very long string in a large page.
 // TODO(crbug.com/1096911): Test is flaky on Mac debug builds and Linux asan.
-#if (defined(OS_MACOSX) && !defined(NDEBUG)) || defined(ADDRESS_SANITIZER)
+#if (defined(OS_MAC) && !defined(NDEBUG)) || defined(ADDRESS_SANITIZER)
 #define MAYBE_FindLongString DISABLED_FindLongString
 #else
 #define MAYBE_FindLongString FindLongString
@@ -1111,7 +1111,7 @@ IN_PROC_BROWSER_TEST_F(FindInPageControllerTest, RestartSearchFromF3) {
 // with the last search from the same tab rather than the last overall search.
 // The only exception is if there is a global pasteboard (for example on Mac).
 // http://crbug.com/30006
-#if defined(OS_MACOSX)
+#if defined(OS_MAC)
 // https://crbug.com/845389
 #define MAYBE_PreferPreviousSearch DISABLED_PreferPreviousSearch
 #else
@@ -1449,7 +1449,7 @@ IN_PROC_BROWSER_TEST_F(FindInPageControllerTest,
 
 // Verify that if there's a global pasteboard (for example on Mac) then doing
 // a search on one tab will clear the matches label on the other tabs.
-#if defined(OS_MACOSX)
+#if defined(OS_MAC)
 // TODO(http://crbug.com/843878): Remove the interactive UI test
 // FindBarPlatformHelperMacInteractiveUITest.GlobalPasteBoardClearMatches
 // once http://crbug.com/843878 is fixed.
@@ -1541,7 +1541,7 @@ IN_PROC_BROWSER_TEST_F(FindInPageControllerTest, IncognitoFindNextSecret) {
 
 // Find text in regular window, send IDC_FIND_NEXT to incognito. It should
 // search for the first phrase.
-#if defined(OS_MACOSX)
+#if defined(OS_MAC)
 #define MAYBE_IncognitoFindNextShared DISABLED_IncognitoFindNextShared
 #else
 #define MAYBE_IncognitoFindNextShared IncognitoFindNextShared

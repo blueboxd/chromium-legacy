@@ -18,7 +18,7 @@ namespace remoting {
 std::string GetHostOperatingSystemName() {
 #if defined(OS_WIN)
   return "Windows";
-#elif defined(OS_MACOSX)
+#elif defined(OS_APPLE)
   return "Mac";
 #elif defined(OS_CHROMEOS)
   return "ChromeOS";

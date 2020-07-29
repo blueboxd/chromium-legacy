@@ -121,6 +121,7 @@
     on-change-page="onChangePage_"
     on-dropdown-opened="onDropdownOpened_"
     on-fit-to-changed="onFitToChanged" on-zoom-in="onZoomIn"
+    on-sidenav-toggle-click="onSidenavToggleClick_"
     on-two-up-view-changed="onTwoUpViewChanged_"
     on-zoom-changed="onZoomChanged"
     on-zoom-out="onZoomOut" on-rotate-left="rotateCounterclockwise"
@@ -133,7 +134,7 @@
 
 <template is="dom-if" if="[[pdfViewerUpdateEnabled_]]">
   <div id="container">
-    <div id="sidenav"></div>
+    <div id="sidenav" hidden="[[sidenavCollapsed_]]"></div>
     <div id="main" on-scroll="onScroll_">
       <div id="sizer"></div>
       <div id="content"></div>

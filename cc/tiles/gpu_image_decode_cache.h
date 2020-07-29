@@ -6,6 +6,7 @@
 #define CC_TILES_GPU_IMAGE_DECODE_CACHE_H_
 
 #include <memory>
+#include <string>
 #include <unordered_map>
 #include <utility>
 #include <vector>
@@ -507,7 +508,8 @@ class CC_EXPORT GpuImageDecodeCache
               bool can_do_hardware_accelerated_decode,
               bool do_hardware_accelerated_decode,
               bool is_yuv_format,
-              SkYUVColorSpace yuv_cs);
+              SkYUVColorSpace yuv_cs,
+              SkColorType yuv_ct);
 
     bool IsGpuOrTransferCache() const;
     bool HasUploadedData() const;
@@ -524,6 +526,7 @@ class CC_EXPORT GpuImageDecodeCache
     bool is_yuv;
     bool is_budgeted = false;
     base::Optional<SkYUVColorSpace> yuv_color_space;
+    base::Optional<SkColorType> yuv_color_type;
 
     // If true, this image is no longer in our |persistent_cache_| and will be
     // deleted as soon as its ref count reaches zero.
@@ -712,6 +715,8 @@ class CC_EXPORT GpuImageDecodeCache
   const PaintImage::GeneratorClientId generator_client_id_;
   bool allow_accelerated_jpeg_decodes_ = false;
   bool allow_accelerated_webp_decodes_ = false;
+  bool allow_yuv_r16_ext_decoding_ = false;
+  bool allow_yuv_luminance_f16_decoding_ = false;
 
   // All members below this point must only be accessed while holding |lock_|.
   // The exception are const members like |normal_max_cache_bytes_| that can

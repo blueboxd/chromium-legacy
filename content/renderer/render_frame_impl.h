@@ -801,10 +801,6 @@ class CONTENT_EXPORT RenderFrameImpl
 
   media::MediaPermission* GetMediaPermission();
 
-  // Proxies the call to set the zoom level over to the RenderViewImpl and
-  // returns its result. Meant to be called by the |render_widget_| in order to
-  // get access to the RenderViewImpl.
-  bool SetZoomLevelOnRenderView(double zoom_level);
   // Proxies the call to set the prefer compositing flag over to the
   // RenderViewImpl. Meant to be called by the |render_widget_| in order to get
   // access to the RenderViewImpl.

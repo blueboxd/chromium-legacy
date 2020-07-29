@@ -29,7 +29,7 @@ namespace {
 class SettingsOverridePermissionTest : public ChromeManifestTest {
  protected:
   SettingsOverridePermissionTest()
-#if defined(OS_MACOSX)
+#if defined(OS_MAC)
       : scoped_channel_(version_info::Channel::UNKNOWN)
 #endif
   {
@@ -75,10 +75,10 @@ class SettingsOverridePermissionTest : public ChromeManifestTest {
     return LoadAndExpectSuccess(manifest);
   }
 
-#if defined(OS_MACOSX)
+#if defined(OS_MAC)
   // On Mac, this API is limited to trunk.
   extensions::ScopedCurrentChannel scoped_channel_;
-#endif  // OS_MACOSX
+#endif  // OS_MAC
 };
 
 TEST_F(SettingsOverridePermissionTest, HomePage) {
@@ -86,7 +86,7 @@ TEST_F(SettingsOverridePermissionTest, HomePage) {
   const PermissionSet& permission_set =
       extension->permissions_data()->active_permissions();
 
-#if defined(OS_WIN) || defined(OS_MACOSX)
+#if defined(OS_WIN) || defined(OS_MAC)
   EXPECT_TRUE(permission_set.HasAPIPermission(APIPermission::kHomepage));
   VerifyOnePermissionMessage(extension->permissions_data(),
                              "Change your home page to: google.com");
@@ -103,7 +103,7 @@ TEST_F(SettingsOverridePermissionTest, StartupPages) {
   const PermissionSet& permission_set =
       extension->permissions_data()->active_permissions();
 
-#if defined(OS_WIN) || defined(OS_MACOSX)
+#if defined(OS_WIN) || defined(OS_MAC)
   EXPECT_TRUE(permission_set.HasAPIPermission(APIPermission::kStartupPages));
   VerifyOnePermissionMessage(extension->permissions_data(),
                              "Change your start page to: startup.com");
@@ -120,7 +120,7 @@ TEST_F(SettingsOverridePermissionTest, SearchSettings) {
   const PermissionSet& permission_set =
       extension->permissions_data()->active_permissions();
 
-#if defined(OS_WIN) || defined(OS_MACOSX)
+#if defined(OS_WIN) || defined(OS_MAC)
   EXPECT_TRUE(permission_set.HasAPIPermission(APIPermission::kSearchProvider));
   VerifyOnePermissionMessage(extension->permissions_data(),
                              "Change your search settings to: google.com");
@@ -138,7 +138,7 @@ TEST_F(SettingsOverridePermissionTest, All) {
   const PermissionSet& permission_set =
       extension->permissions_data()->active_permissions();
 
-#if defined(OS_WIN) || defined(OS_MACOSX)
+#if defined(OS_WIN) || defined(OS_MAC)
   EXPECT_TRUE(permission_set.HasAPIPermission(APIPermission::kHomepage));
   EXPECT_TRUE(permission_set.HasAPIPermission(APIPermission::kStartupPages));
   EXPECT_TRUE(permission_set.HasAPIPermission(APIPermission::kSearchProvider));
@@ -155,7 +155,7 @@ TEST_F(SettingsOverridePermissionTest, Some) {
   const PermissionSet& permission_set =
       extension->permissions_data()->active_permissions();
 
-#if defined(OS_WIN) || defined(OS_MACOSX)
+#if defined(OS_WIN) || defined(OS_MAC)
   EXPECT_TRUE(permission_set.HasAPIPermission(APIPermission::kHomepage));
   EXPECT_TRUE(permission_set.HasAPIPermission(APIPermission::kSearchProvider));
 #else

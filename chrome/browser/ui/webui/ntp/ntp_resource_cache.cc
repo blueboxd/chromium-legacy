@@ -69,7 +69,7 @@
 #include "chromeos/strings/grit/chromeos_strings.h"
 #endif
 
-#if defined(OS_MACOSX)
+#if defined(OS_MAC)
 #include "chrome/browser/platform_util.h"
 #endif
 
@@ -189,7 +189,7 @@ NTPResourceCache::NTPResourceCache(Profile* profile)
 NTPResourceCache::~NTPResourceCache() {}
 
 bool NTPResourceCache::NewTabHTMLNeedsRefresh() {
-#if defined(OS_MACOSX)
+#if defined(OS_MAC)
   // Invalidate if the current value is different from the cached value.
   bool is_enabled = platform_util::IsSwipeTrackingFromScrollEventsEnabled();
   if (is_enabled != is_swipe_tracking_from_scroll_events_enabled_) {

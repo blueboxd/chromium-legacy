@@ -1142,7 +1142,7 @@ IN_PROC_BROWSER_TEST_F(EncryptedMediaSupportedTypesWidevineTest, SessionType) {
   auto result =
       IsSessionTypeSupported(kWidevine, SessionType::kPersistentLicense);
 
-#if defined(OS_CHROMEOS) || defined(OS_WIN) || defined(OS_MACOSX)
+#if defined(OS_CHROMEOS) || defined(OS_WIN) || defined(OS_MAC)
   // Persistent license session supported by Widevine key system on Windows and
   // Mac. On ChromeOS, it is supported when the protected media identifier
   // permission is allowed. See kUnsafelyAllowProtectedMediaIdentifierForDomain

@@ -11,6 +11,7 @@
 #include "base/base_switches.h"
 #include "base/bind.h"
 #include "base/command_line.h"
+#include "base/feature_list.h"
 #include "base/files/scoped_file.h"
 #include "base/i18n/rtl.h"
 #include "base/message_loop/message_pump_type.h"
@@ -278,8 +279,7 @@ CastContentBrowserClient::CreateAudioManager(
       ServiceConnector::MakeRemote(kBrowserProcessClientId),
       BUILDFLAG(ENABLE_CAST_AUDIO_MANAGER_MIXER));
 #elif defined(OS_ANDROID)
-  if (GetSwitchValueBoolean(switches::kEnableChromeAudioManagerAndroid,
-                            false)) {
+  if (base::FeatureList::IsEnabled(kEnableChromeAudioManagerAndroid)) {
     LOG(INFO) << "Use AudioManagerAndroid instead of CastAudioManagerAndroid.";
     return std::make_unique<::media::AudioManagerAndroid>(
         std::move(audio_thread), audio_log_factory);

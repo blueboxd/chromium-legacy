@@ -139,7 +139,7 @@ void MockClipboardHost::CommitWrite() {
   needs_reset_ = true;
 }
 
-#if defined(OS_APPLE)
+#if defined(OS_MAC)
 void MockClipboardHost::WriteStringToFindPboard(const String& text) {}
 #endif
 

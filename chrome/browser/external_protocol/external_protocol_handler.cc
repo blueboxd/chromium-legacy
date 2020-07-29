@@ -113,7 +113,7 @@ void RunExternalProtocolDialogWithDelegate(
     return;
   }
 
-#if defined(OS_MACOSX) || defined(OS_WIN)
+#if defined(OS_MAC) || defined(OS_WIN)
   // If the Shell does not have a registered name for the protocol,
   // attempting to invoke the protocol will fail.
   if (shell_integration::GetApplicationNameForProtocol(url).empty()) {

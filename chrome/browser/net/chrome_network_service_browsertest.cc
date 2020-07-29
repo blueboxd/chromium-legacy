@@ -120,7 +120,7 @@ IN_PROC_BROWSER_TEST_P(ChromeNetworkServiceBrowserTest, PRE_EncryptedCookies) {
 }
 
 // This flakes on Mac10.12 and Windows: http://crbug.com/868667
-#if defined(OS_MACOSX) || defined(OS_WIN)
+#if defined(OS_MAC) || defined(OS_WIN)
 #define MAYBE_EncryptedCookies DISABLED_EncryptedCookies
 #else
 #define MAYBE_EncryptedCookies EncryptedCookies

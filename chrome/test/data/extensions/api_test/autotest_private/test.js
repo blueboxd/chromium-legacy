@@ -896,6 +896,58 @@ var defaultTests = [
     });
   },
 
+  function collectThoughputTrackerData() {
+    chrome.autotestPrivate.startThroughputTrackerDataCollection(function() {
+      chrome.test.assertNoLastError();
+
+      var stopAndCollectData = function() {
+        chrome.autotestPrivate.stopThroughputTrackerDataCollection(
+            function(data){
+          chrome.test.assertNoLastError();
+          chrome.test.assertTrue(data.length > 0);
+          chrome.test.succeed();
+        });
+      };
+
+      // Triggers a tracked animation, e.g. toggling the launcher.
+      var togglePeeking = newAccelerator('search', false /* shift */);
+      function closeLauncher() {
+        togglePeeking.pressed = true;
+        chrome.autotestPrivate.activateAccelerator(
+            togglePeeking,
+            function(success) {
+              chrome.test.assertFalse(success);
+              togglePeeking.pressed = false;
+              chrome.autotestPrivate.activateAccelerator(
+                  togglePeeking,
+                  function(success) {
+                    chrome.test.assertTrue(success);
+                    chrome.autotestPrivate.waitForLauncherState(
+                        'Closed',
+                        function() {
+                          chrome.test.assertNoLastError();
+                          stopAndCollectData();
+                        });
+                  });
+            });
+      }
+      chrome.autotestPrivate.activateAccelerator(
+          togglePeeking,
+          function(success) {
+            chrome.test.assertFalse(success);
+            togglePeeking.pressed = false;
+            chrome.autotestPrivate.activateAccelerator(
+                togglePeeking,
+                function(success) {
+                  chrome.test.assertTrue(success);
+                  chrome.autotestPrivate.waitForLauncherState(
+                      'Peeking',
+                      closeLauncher);
+                });
+          });
+    });
+  },
+
   // KEEP |lockScreen()| TESTS AT THE BOTTOM OF THE defaultTests AS IT WILL
   // CHANGE THE SESSION STATE TO LOCKED STATE.
   function lockScreen() {

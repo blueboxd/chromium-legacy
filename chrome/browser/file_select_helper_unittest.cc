@@ -106,7 +106,7 @@ TEST_F(FileSelectHelperTest, IsAcceptTypeValid) {
   EXPECT_FALSE(FileSelectHelper::IsAcceptTypeValid("abc/def "));
 }
 
-#if defined(OS_MACOSX)
+#if defined(OS_MAC)
 TEST_F(FileSelectHelperTest, ZipPackage) {
   // Zip the package.
   const char app_name[] = "CalculatorFake.app";
@@ -139,7 +139,7 @@ TEST_F(FileSelectHelperTest, ZipPackage) {
     EXPECT_TRUE(base::ContentsEqual(orig_file, final_file));
   }
 }
-#endif  // defined(OS_MACOSX)
+#endif  // defined(OS_MAC)
 
 TEST_F(FileSelectHelperTest, GetSanitizedFileName) {
   // The empty path should be preserved.

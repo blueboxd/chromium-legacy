@@ -4,6 +4,9 @@
 
 #include "components/viz/common/gpu/context_cache_controller.h"
 
+#include <utility>
+#include <vector>
+
 #include "base/test/test_mock_time_task_runner.h"
 #include "components/viz/test/test_context_provider.h"
 #include "components/viz/test/test_context_support.h"
@@ -11,7 +14,7 @@
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/skia/include/core/SkImage.h"
 #include "third_party/skia/include/core/SkPixmap.h"
-#include "third_party/skia/include/gpu/GrContext.h"
+#include "third_party/skia/include/gpu/GrDirectContext.h"
 
 using ::testing::Mock;
 using ::testing::StrictMock;

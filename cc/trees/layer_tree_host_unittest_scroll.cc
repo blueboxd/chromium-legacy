@@ -1069,7 +1069,7 @@ MULTI_THREAD_TEST_F(LayerTreeHostScrollTestImplOnlyScroll);
 
 // TODO(crbug.com/574283): Mac currently doesn't support smooth scrolling wheel
 // events.
-#if !defined(OS_MACOSX)
+#if !defined(OS_MAC)
 // This test simulates scrolling on the impl thread such that it starts a scroll
 // animation. It ensures that RequestScrollAnimationEndNotification() correctly
 // notifies the callback after the animation ends.
@@ -1175,7 +1175,7 @@ class SmoothScrollAnimationEndNotification : public LayerTreeHostScrollTest {
 };
 
 MULTI_THREAD_TEST_F(SmoothScrollAnimationEndNotification);
-#endif  // !defined(OS_MACOSX)
+#endif  // !defined(OS_MAC)
 
 void DoGestureScroll(LayerTreeHostImpl* host_impl,
                      const scoped_refptr<Layer>& scroller,

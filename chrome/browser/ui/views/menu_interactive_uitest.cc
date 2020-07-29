@@ -157,7 +157,7 @@ IN_PROC_BROWSER_TEST_F(MenuControllerUITest, TestMouseOverShownMenu) {
   Widget* widget = new views::Widget;
   Widget::InitParams params(Widget::InitParams::TYPE_WINDOW);
   params.bounds = {0, 0, 200, 200};
-#if !defined(OS_CHROMEOS) && !defined(OS_MACOSX)
+#if !defined(OS_CHROMEOS) && !defined(OS_MAC)
   params.native_widget = CreateNativeWidget(
       NativeWidgetType::DESKTOP_NATIVE_WIDGET_AURA, &params, widget);
 #endif

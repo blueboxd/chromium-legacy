@@ -35,7 +35,7 @@
 #include "ui/gl/gl_utils.h"
 #include "ui/gl/init/gl_factory.h"
 
-#if defined(OS_MACOSX)
+#if defined(OS_MAC)
 #include <GLES2/gl2.h>
 #endif
 
@@ -364,12 +364,12 @@ bool GpuInit::InitializeAndStartSandbox(base::CommandLine* command_line,
   // necessary to use GL_TEXTURE_2D instead.
   // TODO(crbug.com/1056312): The proper behavior is to check the config
   // parameter set by the EGL_ANGLE_iosurface_client_buffer extension
-#if defined(OS_MACOSX)
+#if defined(OS_MAC)
   if (gl::GetGLImplementation() == gl::kGLImplementationEGLANGLE &&
       gl::GetANGLEImplementation() == gl::ANGLEImplementation::kSwiftShader) {
     SetMacOSSpecificTextureTarget(GL_TEXTURE_2D);
   }
-#endif  // defined(OS_MACOSX)
+#endif  // defined(OS_MAC)
 
   bool gl_disabled = gl::GetGLImplementation() == gl::kGLImplementationDisabled;
 

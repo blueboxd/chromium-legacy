@@ -13,7 +13,6 @@
 #include "chrome/browser/chromeos/login/demo_mode/demo_app_launcher.h"
 #include "chrome/browser/chromeos/login/existing_user_controller.h"
 #include "chrome/browser/chromeos/login/kiosk_launch_controller.h"
-#include "chrome/browser/chromeos/login/screens/gaia_screen.h"
 #include "chrome/browser/chromeos/login/startup_utils.h"
 #include "chrome/browser/chromeos/login/ui/webui_accelerator_mapping.h"
 #include "chrome/browser/chromeos/login/wizard_controller.h"
@@ -117,6 +116,11 @@ void LoginDisplayHostCommon::StartSignInScreen() {
       g_browser_process->platform_part()->browser_policy_connector_chromeos();
   connector->ScheduleServiceInitialization(
       kPolicyServiceInitializationDelayMilliseconds);
+
+  // Inform wizard controller that login screen has started.
+  // TODO(crbug.com/1064271): Move this to OnStartSignInScreen().
+  if (WizardController::default_controller())
+    WizardController::default_controller()->LoginScreenStarted();
 
   // Run UI-specific logic.
   OnStartSignInScreen();
@@ -305,22 +309,23 @@ void LoginDisplayHostCommon::OnStartSignInScreenCommon() {
 
 void LoginDisplayHostCommon::ShowGaiaDialogCommon(
     const AccountId& prefilled_account) {
+  DCHECK(GetOobeUI());
+
   if (prefilled_account.is_valid()) {
-    LoadWallpaper(prefilled_account);
-    if (GetLoginDisplay()->delegate()->IsSigninInProgress()) {
-      return;
+    // Make sure gaia displays |account| if requested.
+    if (!GetLoginDisplay()->delegate()->IsSigninInProgress()) {
+      GetOobeUI()->GetView<GaiaScreenHandler>()->ShowGaiaAsync(
+          prefilled_account);
     }
+    LoadWallpaper(prefilled_account);
   } else {
+    if (GetOobeUI()->current_screen() != GaiaView::kScreenId) {
+      GetOobeUI()->GetView<GaiaScreenHandler>()->ShowGaiaAsync(
+          EmptyAccountId());
+    }
     LoadSigninWallpaper();
   }
-
-  DCHECK(GetWizardController());
-  GaiaScreen* gaia_screen =
-      GaiaScreen::Get(GetWizardController()->screen_manager());
-  gaia_screen->LoadOnline(prefilled_account);
-  StartWizard(GaiaView::kScreenId);
 }
-
 void LoginDisplayHostCommon::Cleanup() {
   ProfileHelper::Get()->ClearSigninProfile(base::DoNothing());
   registrar_.RemoveAll();

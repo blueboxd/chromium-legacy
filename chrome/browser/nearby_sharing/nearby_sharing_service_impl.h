@@ -51,7 +51,8 @@ class NearbySharingServiceImpl
   // NearbySharingService:
   StatusCodes RegisterSendSurface(
       TransferUpdateCallback* transfer_callback,
-      ShareTargetDiscoveredCallback* discovery_callback) override;
+      ShareTargetDiscoveredCallback* discovery_callback,
+      SendSurfaceState state) override;
   StatusCodes UnregisterSendSurface(
       TransferUpdateCallback* transfer_callback,
       ShareTargetDiscoveredCallback* discovery_callback) override;
@@ -131,7 +132,7 @@ class NearbySharingServiceImpl
       nearby_process_observer_{this};
   scoped_refptr<device::BluetoothAdapter> bluetooth_adapter_;
   std::unique_ptr<FastInitiationManager> fast_initiation_manager_;
-  NearbyNotificationManager nearby_notification_manager_;
+  std::unique_ptr<NearbyNotificationManager> nearby_notification_manager_;
   NearbyShareHttpNotifier nearby_share_http_notifier_;
 
   // A list of foreground receivers.

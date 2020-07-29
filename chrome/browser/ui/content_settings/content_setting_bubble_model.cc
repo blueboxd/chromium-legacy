@@ -93,14 +93,14 @@ namespace {
 
 using QuietUiReason = permissions::PermissionRequestManager::QuietUiReason;
 
-#if defined(OS_MACOSX)
+#if defined(OS_MAC)
 static constexpr char kCameraSettingsURI[] =
     "x-apple.systempreferences:com.apple.preference.security?Privacy_"
     "Camera";
 static constexpr char kMicSettingsURI[] =
     "x-apple.systempreferences:com.apple.preference.security?Privacy_"
     "Microphone";
-#endif  // defined(OS_MACOSX)
+#endif  // defined(OS_MAC)
 
 // Returns a boolean indicating whether the setting should be managed by the
 // user (i.e. it is not controlled by policy). Also takes a (nullable) out-param
@@ -1057,10 +1057,10 @@ ContentSettingMediaStreamBubbleModel::ContentSettingMediaStreamBubbleModel(
   // If the permission is turned off in MacOS system preferences, overwrite
   // the bubble to enable the user to trigger the system dialog.
   if (ShouldShowSystemMediaPermissions()) {
-#if defined(OS_MACOSX)
+#if defined(OS_MAC)
     InitializeSystemMediaPermissionBubble();
     return;
-#endif  // defined(OS_MACOSX)
+#endif  // defined(OS_MAC)
   }
 
   SetTitle();
@@ -1110,7 +1110,7 @@ void ContentSettingMediaStreamBubbleModel::OnManageButtonClicked() {
 
 void ContentSettingMediaStreamBubbleModel::OnDoneButtonClicked() {
   if (ShouldShowSystemMediaPermissions()) {
-#if defined(OS_MACOSX)
+#if defined(OS_MAC)
     DCHECK(CameraAccessed() || MicrophoneAccessed());
 
     base::RecordAction(UserMetricsAction("Media.OpenPreferencesClicked"));
@@ -1124,7 +1124,7 @@ void ContentSettingMediaStreamBubbleModel::OnDoneButtonClicked() {
           GURL(kMicSettingsURI), web_contents());
     }
     return;
-#endif  // defined(OS_MACOSX)
+#endif  // defined(OS_MAC)
   }
 }
 
@@ -1294,7 +1294,7 @@ void ContentSettingMediaStreamBubbleModel::UpdateSettings(
   }
 }
 
-#if defined(OS_MACOSX)
+#if defined(OS_MAC)
 void ContentSettingMediaStreamBubbleModel::
     InitializeSystemMediaPermissionBubble() {
   DCHECK(CameraAccessed() || MicrophoneAccessed());
@@ -1334,10 +1334,10 @@ void ContentSettingMediaStreamBubbleModel::
   SetCustomLink();
   set_done_button_text(l10n_util::GetStringUTF16(IDS_OPEN_PREFERENCES_LINK));
 }
-#endif  // defined(OS_MACOSX)
+#endif  // defined(OS_MAC)
 
 bool ContentSettingMediaStreamBubbleModel::ShouldShowSystemMediaPermissions() {
-#if defined(OS_MACOSX)
+#if defined(OS_MAC)
   return (((system_media_permissions::CheckSystemVideoCapturePermission() ==
                 system_media_permissions::SystemPermission::kDenied &&
             CameraAccessed() && !CameraBlocked()) ||
@@ -1350,7 +1350,7 @@ bool ContentSettingMediaStreamBubbleModel::ShouldShowSystemMediaPermissions() {
               ::features::kMacSystemMediaPermissionsInfoUi));
 #else
   return false;
-#endif  // defined(OS_MACOSX)
+#endif  // defined(OS_MAC)
 }
 
 void ContentSettingMediaStreamBubbleModel::UpdateDefaultDeviceForType(

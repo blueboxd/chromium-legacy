@@ -123,8 +123,7 @@ class RasterDecoderTestBase : public ::testing::TestWithParam<bool>,
                            GLsizei count_in_header,
                            char str_end);
 
-  void AddExpectationsForVertexAttribManager();
-  void AddExpectationsForBindVertexArrayOES();
+  void AddExpectationsForGetCapabilities();
   void AddExpectationsForRestoreAttribState(GLuint attrib);
 
   struct InitState {
@@ -135,6 +134,7 @@ class RasterDecoderTestBase : public ::testing::TestWithParam<bool>,
     bool lose_context_when_out_of_memory = false;
     gpu::GpuDriverBugWorkarounds workarounds;
     std::string gl_version = "2.1";
+    ContextType context_type = CONTEXT_TYPE_OPENGLES2;
   };
 
   void InitDecoder(const InitState& init);
@@ -237,7 +237,6 @@ class RasterDecoderTestBase : public ::testing::TestWithParam<bool>,
       shared_images_;
   base::test::SingleThreadTaskEnvironment task_environment_;
   gles2::MockCopyTextureResourceManager* copy_texture_manager_;  // not owned
-  GLuint next_fake_texture_client_id_ = 271828;
 };
 
 class RasterDecoderManualInitTest : public RasterDecoderTestBase {

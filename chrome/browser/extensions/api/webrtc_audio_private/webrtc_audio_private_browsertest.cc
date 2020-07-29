@@ -136,7 +136,7 @@ class WebrtcAudioPrivateTest : public AudioWaitingExtensionTest {
   GURL source_url_;
 };
 
-#if !defined(OS_MACOSX)
+#if !defined(OS_MAC)
 // http://crbug.com/334579
 IN_PROC_BROWSER_TEST_F(WebrtcAudioPrivateTest, GetSinks) {
   AudioDeviceDescriptions devices;

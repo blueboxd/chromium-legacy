@@ -95,7 +95,7 @@
 #include "ui/gl/buildflags.h"
 #include "url/gurl.h"
 
-#if defined(OS_MACOSX)
+#if defined(OS_MAC)
 #include "content/child/child_process_sandbox_support_impl_mac.h"
 #elif defined(OS_LINUX)
 #include "content/child/child_process_sandbox_support_impl_linux.h"
@@ -178,9 +178,9 @@ RendererBlinkPlatformImpl::RendererBlinkPlatformImpl(
 #endif
   }
 
-#if defined(OS_LINUX) || defined(OS_MACOSX)
+#if defined(OS_LINUX) || defined(OS_MAC)
   if (sandboxEnabled()) {
-#if defined(OS_MACOSX)
+#if defined(OS_MAC)
     sandbox_support_ = std::make_unique<WebSandboxSupportMac>();
 #else
     sandbox_support_.reset(new WebSandboxSupportLinux(font_loader_));
@@ -244,7 +244,7 @@ blink::BlameContext* RendererBlinkPlatformImpl::GetTopLevelBlameContext() {
 }
 
 blink::WebSandboxSupport* RendererBlinkPlatformImpl::GetSandboxSupport() {
-#if defined(OS_LINUX) || defined(OS_MACOSX)
+#if defined(OS_LINUX) || defined(OS_MAC)
   return sandbox_support_.get();
 #else
   // These platforms do not require sandbox support.

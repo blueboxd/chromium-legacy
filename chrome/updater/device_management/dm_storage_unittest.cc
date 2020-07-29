@@ -86,7 +86,7 @@ std::string CannedOmahaPolicyFetchResponse() {
 
 }  // namespace
 
-#if defined(OS_MACOSX)
+#if defined(OS_MAC)
 
 TEST(DMStorage, LoadDeviceID) {
   auto storage = base::MakeRefCounted<DMStorage>(
@@ -94,7 +94,7 @@ TEST(DMStorage, LoadDeviceID) {
   EXPECT_FALSE(storage->GetDeviceID().empty());
 }
 
-#endif  // OS_MACOSX
+#endif  // OS_MAC
 
 TEST(DMStorage, PersistPolicies) {
   DMPolicyMap policies({

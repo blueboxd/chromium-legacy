@@ -328,7 +328,7 @@ bool SharingDeviceRegistration::IsSmsFetcherSupported() const {
 }
 
 bool SharingDeviceRegistration::IsRemoteCopySupported() const {
-#if defined(OS_WIN) || defined(OS_MACOSX) || defined(OS_LINUX) || \
+#if defined(OS_WIN) || defined(OS_MAC) || defined(OS_LINUX) || \
     defined(OS_CHROMEOS)
   return base::FeatureList::IsEnabled(kRemoteCopyReceiver);
 #else
@@ -337,7 +337,7 @@ bool SharingDeviceRegistration::IsRemoteCopySupported() const {
 }
 
 bool SharingDeviceRegistration::IsPeerConnectionSupported() const {
-#if defined(OS_WIN) || defined(OS_MACOSX) || defined(OS_LINUX) || \
+#if defined(OS_WIN) || defined(OS_MAC) || defined(OS_LINUX) || \
     defined(OS_CHROMEOS)
   return base::FeatureList::IsEnabled(kSharingPeerConnectionReceiver);
 #else

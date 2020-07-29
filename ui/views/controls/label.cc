@@ -70,7 +70,6 @@ Label::Label(const base::string16& text,
       text_style_(text_style),
       context_menu_contents_(this) {
   Init(text, style::GetFont(text_context, text_style), directionality_mode);
-  SetLineHeight(style::GetLineHeight(text_context, text_style));
 }
 
 Label::Label(const base::string16& text, const CustomFont& font)
@@ -120,6 +119,8 @@ void Label::SetTextStyle(int style) {
     return;
 
   text_style_ = style;
+  // TODO(pkasting): Seems like potentially |full_text_|'s font list and line
+  // height should be updated here?
   UpdateColorsFromTheme();
   OnPropertyChanged(&text_style_, kPropertyEffectsPreferredSizeChanged);
 }
@@ -242,13 +243,18 @@ void Label::SetVerticalAlignment(gfx::VerticalAlignment alignment) {
 }
 
 int Label::GetLineHeight() const {
-  return full_text_->min_line_height();
+  // TODO(pkasting): If we can replace SetFontList() with context/style setter
+  // calls, we can eliminate the reference to font_list().GetHeight() here.
+  return line_height_.value_or(
+      std::max(style::GetLineHeight(text_context_, text_style_),
+               font_list().GetHeight()));
 }
 
-void Label::SetLineHeight(int height) {
-  if (GetLineHeight() == height)
+void Label::SetLineHeight(int line_height) {
+  if (line_height_ == line_height)
     return;
-  full_text_->SetMinLineHeight(height);
+  line_height_ = line_height;
+  full_text_->SetMinLineHeight(line_height);
   ClearDisplayText();
   OnPropertyChanged(&full_text_ + kLabelLineHeight,
                     kPropertyEffectsPreferredSizeChanged);
@@ -504,7 +510,7 @@ gfx::Size Label::GetMinimumSize() const {
     return gfx::Size();
 
   // Always reserve vertical space for at least one line.
-  gfx::Size size(0, std::max(font_list().GetHeight(), GetLineHeight()));
+  gfx::Size size(0, GetLineHeight());
   if (elide_behavior_ == gfx::ELIDE_HEAD ||
       elide_behavior_ == gfx::ELIDE_MIDDLE ||
       elide_behavior_ == gfx::ELIDE_TAIL ||
@@ -534,7 +540,7 @@ int Label::GetHeightForWidth(int w) const {
 
   w -= GetInsets().width();
   int height = 0;
-  int base_line_height = std::max(GetLineHeight(), font_list().GetHeight());
+  int base_line_height = GetLineHeight();
   if (!GetMultiLine() || GetText().empty() || w <= 0) {
     height = base_line_height;
   } else {
@@ -971,13 +977,14 @@ void Label::Init(const base::string16& text,
                  gfx::DirectionalityMode directionality_mode) {
   full_text_ = gfx::RenderText::CreateRenderText();
   full_text_->SetHorizontalAlignment(gfx::ALIGN_CENTER);
-  full_text_->SetDirectionalityMode(directionality_mode);
-  // NOTE: |full_text_| should not be elided at all. This is used to keep
-  // some properties and to compute the size of the string.
-  full_text_->SetElideBehavior(gfx::NO_ELIDE);
   full_text_->SetFontList(font_list);
   full_text_->SetCursorEnabled(false);
   full_text_->SetWordWrapBehavior(gfx::TRUNCATE_LONG_WORDS);
+  full_text_->SetMinLineHeight(GetLineHeight());
+  // NOTE: |full_text_| should not be elided at all. This is used to keep
+  // some properties and to compute the size of the string.
+  full_text_->SetElideBehavior(gfx::NO_ELIDE);
+  full_text_->SetDirectionalityMode(directionality_mode);
 
   SetText(text);
 
@@ -1009,7 +1016,7 @@ void Label::MaybeBuildDisplayText() const {
 gfx::Size Label::GetTextSize() const {
   gfx::Size size;
   if (GetText().empty()) {
-    size = gfx::Size(0, std::max(GetLineHeight(), font_list().GetHeight()));
+    size = gfx::Size(0, GetLineHeight());
   } else {
     // Cancel the display rect of |full_text_|. The display rect may be
     // specified in GetHeightForWidth(), and specifying empty Rect cancels

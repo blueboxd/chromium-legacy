@@ -36,7 +36,7 @@ namespace {
 
 #if defined(CYGPROFILE_INSTRUMENTATION)
 const int kGpuTimeout = 30000;
-#elif defined(OS_WIN) || defined(OS_MACOSX)
+#elif defined(OS_WIN) || defined(OS_MAC)
 // Use a slightly longer timeout on Windows due to prevalence of slow and
 // infected machines.
 
@@ -51,7 +51,7 @@ const int kGpuTimeout = 10000;
 // between V1 and V2.
 #if defined(CYGPROFILE_INSTRUMENTATION)
 const int kNewGpuTimeout = 30000;
-#elif defined(OS_MACOSX)
+#elif defined(OS_MAC)
 const int kNewGpuTimeout = 17000;
 #else
 const int kNewGpuTimeout = 15000;

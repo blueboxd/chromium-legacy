@@ -18,7 +18,7 @@
 #include "extensions/shell/browser/shell_desktop_controller_aura.h"
 #endif
 
-#if defined(OS_MACOSX)
+#if defined(OS_MAC)
 #include "extensions/shell/browser/shell_desktop_controller_mac.h"
 #endif
 
@@ -105,7 +105,7 @@ DesktopController* DefaultShellBrowserMainDelegate::CreateDesktopController(
     content::BrowserContext* context) {
 #if defined(USE_AURA)
   return new ShellDesktopControllerAura(context);
-#elif defined(OS_MACOSX)
+#elif defined(OS_MAC)
   return new ShellDesktopControllerMac();
 #else
   return NULL;

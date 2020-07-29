@@ -351,6 +351,7 @@ android_library("chrome_java") {
     "//components/browser_ui/android/bottomsheet:manager_java",
     "//components/browser_ui/banners/android:java",
     "//components/browser_ui/client_certificate/android:java",
+    "//components/browser_ui/display_cutout/android:java",
     "//components/browser_ui/http_auth/android:java",
     "//components/browser_ui/media/android:java",
     "//components/browser_ui/modaldialog/android:java",
@@ -805,6 +806,7 @@ junit_binary("chrome_junit_tests") {
     "//components/background_task_scheduler:background_task_scheduler_task_ids_java",
     "//components/bookmarks/common/android:bookmarks_java",
     "//components/browser_ui/android/bottomsheet:java",
+    "//components/browser_ui/display_cutout/android:java",
     "//components/browser_ui/media/android:java",
     "//components/browser_ui/notifications/android:java",
     "//components/browser_ui/share/android:java",
@@ -1010,6 +1012,7 @@ android_library("chrome_test_java") {
     "//components/bookmarks/common/android:bookmarks_java",
     "//components/browser_ui/android/bottomsheet:java",
     "//components/browser_ui/android/bottomsheet/test:java",
+    "//components/browser_ui/display_cutout/android:java",
     "//components/browser_ui/modaldialog/android:java",
     "//components/browser_ui/modaldialog/android:javatests",
     "//components/browser_ui/notifications/android:java",
@@ -2312,8 +2315,9 @@ template("monochrome_test_apk_tmpl") {
 }
 
 chrome_test_apk_tmpl("chrome_public_test_apk") {
-  # TODO(wnwen): Re-enable when new lint failures are fixed.
+  # TODO(wnwen): Re-enable when new lint failures are disabled for test targets.
   #enable_lint = true
+
   apk_name = "ChromePublicTest"
   android_manifest = chrome_public_test_apk_manifest
   android_manifest_dep = ":chrome_public_test_apk_manifest"
@@ -2705,9 +2709,11 @@ template("monochrome_or_trichrome_public_bundle_tmpl") {
   chrome_bundle(target_name) {
     forward_variables_from(invoker,
                            [
+                             "enable_lint",
                              "include_32_bit_webview",
                              "include_64_bit_webview",
                              "is_64_bit_browser",
+                             "lint_min_sdk_version",
                              "static_library_provider",
                              "static_library_synchronized_proguard",
                              "expected_libs_and_assets",
@@ -2727,16 +2733,29 @@ template("monochrome_or_trichrome_public_bundle_tmpl") {
   }
 }
 
+group("android_lint") {
+  if (!disable_android_lint) {
+    if (defined(default_chrome_lint_targets)) {
+      deps = default_chrome_lint_targets
+    } else {
+      deps = [ ":monochrome_public_bundle__lint" ]
+    }
+  }
+}
+
 # Public webview targets don't work with non-public sdks.
 # https://crbug.com/1000763
 monochrome_or_trichrome_public_bundle_tmpl("monochrome_public_bundle") {
-  bundle_suffix = ""
+  # Monochrome bundle is used as our unified lint target, so it needs to set the
+  # lowest shipping minSdkVersion to catch all potential NewApi errors.
+  lint_min_sdk_version = default_min_sdk_version
+  enable_lint = true
 
+  bundle_suffix = ""
   if (android_64bit_target_cpu) {
     is_64_bit_browser = false
     include_64_bit_webview = true
   }
-
   if (_enable_manifest_verification) {
     expected_android_manifest =
         "expectations/monochrome_public_bundle.AndroidManifest.expected"
@@ -3073,6 +3092,7 @@ generate_jni("chrome_jni_headers") {
     "java/src/org/chromium/chrome/browser/password_manager/PasswordGenerationDialogBridge.java",
     "java/src/org/chromium/chrome/browser/password_manager/PasswordGenerationPopupBridge.java",
     "java/src/org/chromium/chrome/browser/password_manager/PasswordManagerLauncher.java",
+    "java/src/org/chromium/chrome/browser/password_manager/PasswordScriptsFetcherBridge.java",
     "java/src/org/chromium/chrome/browser/password_manager/settings/PasswordEditingBridge.java",
     "java/src/org/chromium/chrome/browser/password_manager/settings/PasswordUIView.java",
     "java/src/org/chromium/chrome/browser/permissions/PermissionSettingsBridge.java",

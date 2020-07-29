@@ -29,9 +29,9 @@
 #include "remoting/host/switches.h"
 #include "remoting/host/usage_stats_consent.h"
 
-#if defined(OS_MACOSX)
+#if defined(OS_APPLE)
 #include "base/mac/scoped_nsautorelease_pool.h"
-#endif  // defined(OS_MACOSX)
+#endif  // defined(OS_APPLE)
 
 #if defined(OS_WIN)
 #include <commctrl.h>
@@ -155,7 +155,7 @@ MainRoutineFn SelectMainRoutine(const std::string& process_type) {
 }  // namespace
 
 int HostMain(int argc, char** argv) {
-#if defined(OS_MACOSX)
+#if defined(OS_APPLE)
   // Needed so we don't leak objects when threads are created.
   base::mac::ScopedNSAutoreleasePool pool;
 #endif

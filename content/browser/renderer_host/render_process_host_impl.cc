@@ -247,7 +247,7 @@
 #include "third_party/blink/public/mojom/memory_usage_monitor_linux.mojom.h"  // nogncheck
 #endif
 
-#if defined(OS_MACOSX)
+#if defined(OS_MAC)
 #include "content/browser/child_process_task_port_provider_mac.h"
 #include "content/browser/sandbox_support_mac_impl.h"
 #include "content/common/sandbox_support_mac.mojom.h"
@@ -1348,7 +1348,7 @@ class RenderProcessHostImpl::IOThreadHostImpl
     }
 #endif
 
-#if defined(OS_MACOSX)
+#if defined(OS_MAC)
     if (auto r = receiver.As<mojom::SandboxSupportMac>()) {
       static base::NoDestructor<SandboxSupportMacImpl> sandbox_support;
       sandbox_support->BindReceiver(std::move(r));
@@ -1771,7 +1771,7 @@ bool RenderProcessHostImpl::Init() {
 #if defined(OS_LINUX)
   int flags = renderer_prefix.empty() ? ChildProcessHost::CHILD_ALLOW_SELF
                                       : ChildProcessHost::CHILD_NORMAL;
-#elif defined(OS_MACOSX)
+#elif defined(OS_MAC)
   int flags = ChildProcessHost::CHILD_RENDERER;
 #else
   int flags = ChildProcessHost::CHILD_NORMAL;
@@ -1834,7 +1834,7 @@ bool RenderProcessHostImpl::Init() {
         base::checked_cast<int32_t>(id_)));
 
     base::Thread::Options options;
-#if defined(OS_WIN) && !defined(OS_MACOSX)
+#if defined(OS_WIN) && !defined(OS_MAC)
     // In-process plugins require this to be a UI message loop.
     options.message_pump_type = base::MessagePumpType::UI;
 #else
@@ -3271,7 +3271,7 @@ void RenderProcessHostImpl::PropagateBrowserCommandLineToRenderer(
 #if defined(OS_LINUX) && !defined(OS_CHROMEOS)
     switches::kDisableDevShmUsage,
 #endif
-#if defined(OS_MACOSX)
+#if defined(OS_MAC)
     // Allow this to be set when invoking the browser and relayed along.
     sandbox::policy::switches::kEnableSandboxLogging,
 #endif
@@ -3667,7 +3667,7 @@ void RenderProcessHostImpl::OnAssociatedInterfaceRequest(
 void RenderProcessHostImpl::OnChannelConnected(int32_t peer_pid) {
   channel_connected_ = true;
 
-#if defined(OS_MACOSX)
+#if defined(OS_MAC)
   ChildProcessTaskPortProvider::GetInstance()->OnChildProcessLaunched(
       peer_pid, child_process_.get());
 #endif
@@ -4912,7 +4912,7 @@ void RenderProcessHostImpl::OnProcessLaunched() {
       // Not all platforms launch processes in the same backgrounded state. Make
       // sure |priority_.visible| reflects this platform's initial process
       // state.
-#if defined(OS_MACOSX)
+#if defined(OS_MAC)
     priority_.visible =
         !child_process_launcher_->GetProcess().IsProcessBackgrounded(
             ChildProcessTaskPortProvider::GetInstance());
@@ -4925,7 +4925,7 @@ void RenderProcessHostImpl::OnProcessLaunched() {
 #else
     priority_.visible =
         !child_process_launcher_->GetProcess().IsProcessBackgrounded();
-#endif  // defined(OS_MACOSX)
+#endif  // defined(OS_MAC)
 
     // Only update the priority on startup if boosting is enabled (to avoid
     // reintroducing https://crbug.com/560446#c13 while pending views only

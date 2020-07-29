@@ -16,6 +16,18 @@ TOOLS_NAMESPACE = 'http://schemas.android.com/tools'
 DIST_NAMESPACE = 'http://schemas.android.com/apk/distribution'
 EMPTY_ANDROID_MANIFEST_PATH = os.path.abspath(
     os.path.join(os.path.dirname(__file__), '..', '..', 'AndroidManifest.xml'))
+# When normalizing for expectation matching, wrap these tags when they are long
+# or else they become very hard to read.
+_WRAP_CANDIDATES = (
+    '<manifest',
+    '<application',
+    '<activity',
+    '<provider',
+    '<receiver',
+    '<service',
+)
+# Don't wrap lines shorter than this.
+_WRAP_LINE_LENGTH = 100
 
 _xml_namespace_initialized = False
 
@@ -116,6 +128,80 @@ def _SortAndStripElementTree(tree, reverse_toplevel=False):
   tree[:] = sorted(tree, key=ElementTree.tostring, reverse=reverse_toplevel)
 
 
+def _SplitElement(line):
+  """Parses a one-line xml node into ('<tag', ['a="b"', ...]], '/>')."""
+
+  # Shlex splits nicely, but removes quotes. Need to put them back.
+  def restore_quotes(value):
+    return value.replace('=', '="', 1) + '"'
+
+  # Simplify restore_quotes by separating />.
+  assert line.endswith('>'), line
+  end_tag = '>'
+  if line.endswith('/>'):
+    end_tag = '/>'
+  line = line[:-len(end_tag)]
+
+  # Use shlex to avoid having to re-encode &quot;, etc.
+  parts = shlex.split(line)
+  start_tag = parts[0]
+  attrs = parts[1:]
+
+  return start_tag, [restore_quotes(x) for x in attrs], end_tag
+
+
+def _CreateNodeHash(lines):
+  """Computes a hash for the first XML node found in |lines|.
+
+  Args:
+    lines: List of strings containing pretty-printed XML.
+
+  Returns:
+    Positive 32-bit integer hash of the node (including children).
+  """
+  target_indent = lines[0].find('<')
+  for i, l in enumerate(lines[1:]):
+    cur_indent = l.find('<')
+    if cur_indent != -1 and cur_indent <= target_indent:
+      tag_lines = lines[:i + 1]
+      return hash(tuple(tag_lines)) % 0x100000000  # Make 32-bit non-negative.
+  assert False, 'Did not find end of node:\n' + '\n'.join(lines)
+
+
+def _IsSelfClosing(lines):
+  """Given pretty-printed xml, returns whether first node is self-closing."""
+  for l in lines:
+    idx = l.find('>')
+    if idx != -1:
+      return l[idx - 1] == '/'
+  assert False, 'Did not find end of tag:\n' + '\n'.join(lines)
+
+
+def _AddDiffTags(lines):
+  # When multiple identical tags appear sequentially, XML diffs can look like:
+  # +  </tag>
+  # +  <tag>
+  # rather than:
+  # +  <tag>
+  # +  </tag>
+  # To reduce confusion, add hashes to tags.
+  # This also ensures changed tags show up with outer <tag> elements rather than
+  # showing only changed attributes.
+  hash_stack = []
+  for i, l in enumerate(lines):
+    stripped = l.lstrip()
+    # If it's an indented tag that is not self-closing (unless wrapped):
+    if l[0] == ' ' and stripped[0] == '<' and l[-2:] != '/>':
+      if stripped[1] != '/':
+        cur_hash = _CreateNodeHash(lines[i:])
+        if not _IsSelfClosing(lines[i:]):
+          hash_stack.append(cur_hash)
+      else:
+        cur_hash = hash_stack.pop()
+      lines[i] += '  # DIFF-ANCHOR: {:x}'.format(cur_hash)
+  assert not hash_stack, 'hash_stack was not empty:\n' + '\n'.join(hash_stack)
+
+
 def NormalizeManifest(path):
   with open(path) as f:
     # This also strips comments and sorts node attributes alphabetically.
@@ -154,16 +240,20 @@ def NormalizeManifest(path):
 
   # Fix up whitespace/indentation.
   dom = minidom.parseString(ElementTree.tostring(root))
-  lines = []
+  out_lines = []
   for l in dom.toprettyxml(indent='  ').splitlines():
     if l.strip():
-      if len(l) > 100:
+      if len(l) > _WRAP_LINE_LENGTH and any(x in l for x in _WRAP_CANDIDATES):
         indent = ' ' * l.find('<')
-        attributes = shlex.split(l, posix=False)
-        lines.append('{}{}'.format(indent, attributes[0]))
-        for attribute in attributes[1:]:
-          lines.append('{}    {}'.format(indent, attribute))
+        start_tag, attrs, end_tag = _SplitElement(l)
+        out_lines.append('{}{}'.format(indent, start_tag))
+        for attribute in attrs:
+          out_lines.append('{}    {}'.format(indent, attribute))
+        out_lines[-1] += end_tag
       else:
-        lines.append(l)
+        out_lines.append(l)
 
-  return '\n'.join(lines) + '\n'
+  # Make output more diff-friendly.
+  _AddDiffTags(out_lines)
+
+  return '\n'.join(out_lines) + '\n'

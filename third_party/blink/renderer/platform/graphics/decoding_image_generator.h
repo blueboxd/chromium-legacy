@@ -76,14 +76,16 @@ class PLATFORM_EXPORT DecodingImageGenerator final
                  size_t frame_index,
                  PaintImage::GeneratorClientId client_id,
                  uint32_t lazy_pixel_ref) override;
-  bool QueryYUVA8(SkYUVASizeInfo*,
-                  SkYUVAIndex[SkYUVAIndex::kIndexCount],
-                  SkYUVColorSpace*) const override;
-  bool GetYUVA8Planes(const SkYUVASizeInfo&,
-                      const SkYUVAIndex[SkYUVAIndex::kIndexCount],
-                      void* planes[4],
-                      size_t frame_index,
-                      uint32_t lazy_pixel_ref) override;
+  bool QueryYUVA(SkYUVASizeInfo*,
+                 SkYUVAIndex[SkYUVAIndex::kIndexCount],
+                 SkYUVColorSpace*,
+                 uint8_t* bit_depth) const override;
+  bool GetYUVAPlanes(const SkYUVASizeInfo&,
+                     SkColorType color_type,
+                     const SkYUVAIndex[SkYUVAIndex::kIndexCount],
+                     void* planes[4],
+                     size_t frame_index,
+                     uint32_t lazy_pixel_ref) override;
   SkISize GetSupportedDecodeSize(const SkISize& requested_size) const override;
   PaintImage::ContentId GetContentIdForFrame(size_t frame_index) const override;
   const cc::ImageHeaderMetadata* GetMetadataForDecodeAcceleration()

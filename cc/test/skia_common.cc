@@ -18,7 +18,7 @@
 #include "cc/test/fake_paint_image_generator.h"
 #include "third_party/skia/include/core/SkImageGenerator.h"
 #include "third_party/skia/include/core/SkPixmap.h"
-#include "third_party/skia/include/gpu/GrContext.h"
+#include "third_party/skia/include/gpu/GrDirectContext.h"
 #include "ui/gfx/geometry/rect.h"
 #include "ui/gfx/skia_util.h"
 
@@ -102,6 +102,7 @@ PaintImage CreatePaintWorkletPaintImage(
 
 SkYUVASizeInfo GetYUVASizeInfo(const gfx::Size& image_size,
                                YUVSubsampling format,
+                               uint8_t bytes_per_pixel,
                                bool has_alpha) {
   SkISize uv_size;
   switch (format) {
@@ -128,16 +129,18 @@ SkYUVASizeInfo GetYUVASizeInfo(const gfx::Size& image_size,
   yuva_size_info.fSizes[SkYUVAIndex::kY_Index].set(image_size.width(),
                                                    image_size.height());
   yuva_size_info.fWidthBytes[SkYUVAIndex::kY_Index] =
-      base::checked_cast<size_t>(image_size.width());
+      base::checked_cast<size_t>(image_size.width()) * bytes_per_pixel;
   yuva_size_info.fSizes[SkYUVAIndex::kU_Index] = uv_size;
-  yuva_size_info.fWidthBytes[SkYUVAIndex::kU_Index] = uv_width;
+  yuva_size_info.fWidthBytes[SkYUVAIndex::kU_Index] =
+      uv_width * bytes_per_pixel;
   yuva_size_info.fSizes[SkYUVAIndex::kV_Index] = uv_size;
-  yuva_size_info.fWidthBytes[SkYUVAIndex::kV_Index] = uv_width;
+  yuva_size_info.fWidthBytes[SkYUVAIndex::kV_Index] =
+      uv_width * bytes_per_pixel;
   if (has_alpha) {
     yuva_size_info.fSizes[SkYUVAIndex::kA_Index].set(image_size.width(),
                                                      image_size.height());
     yuva_size_info.fWidthBytes[SkYUVAIndex::kA_Index] =
-        base::checked_cast<size_t>(image_size.width());
+        base::checked_cast<size_t>(image_size.width()) * bytes_per_pixel;
   } else {
     yuva_size_info.fSizes[SkYUVAIndex::kA_Index] = SkISize::MakeEmpty();
     yuva_size_info.fWidthBytes[SkYUVAIndex::kA_Index] = 0u;
@@ -151,7 +154,8 @@ PaintImage CreateDiscardablePaintImage(
     bool allocate_encoded_data,
     PaintImage::Id id,
     SkColorType color_type,
-    base::Optional<YUVSubsampling> yuv_format) {
+    base::Optional<YUVSubsampling> yuv_format,
+    uint8_t yuv_bytes_per_pixel) {
   if (!color_space)
     color_space = SkColorSpace::MakeSRGB();
   if (id == PaintImage::kInvalidId)
@@ -162,8 +166,9 @@ PaintImage CreateDiscardablePaintImage(
   sk_sp<FakePaintImageGenerator> generator;
   if (yuv_format) {
     generator = sk_make_sp<FakePaintImageGenerator>(
-        info, GetYUVASizeInfo(size, *yuv_format),
-        std::vector<FrameMetadata>{FrameMetadata()}, allocate_encoded_data);
+        info, GetYUVASizeInfo(size, *yuv_format, yuv_bytes_per_pixel),
+        yuv_bytes_per_pixel * 8, std::vector<FrameMetadata>{FrameMetadata()},
+        allocate_encoded_data);
   } else {
     generator = sk_make_sp<FakePaintImageGenerator>(
         info, std::vector<FrameMetadata>{FrameMetadata()},
@@ -247,7 +252,7 @@ scoped_refptr<SkottieWrapper> CreateSkottie(const gfx::Size& size,
 }
 
 PaintImage CreateNonDiscardablePaintImage(const gfx::Size& size) {
-  auto context = GrContext::MakeMock(nullptr);
+  auto context = GrDirectContext::MakeMock(nullptr);
   SkBitmap bitmap;
   auto info = SkImageInfo::Make(size.width(), size.height(), kN32_SkColorType,
                                 kPremul_SkAlphaType, nullptr /* color_space */);

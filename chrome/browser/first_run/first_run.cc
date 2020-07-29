@@ -314,7 +314,7 @@ bool IsChromeFirstRun() {
   return g_first_run == internal::FIRST_RUN_TRUE;
 }
 
-#if defined(OS_MACOSX)
+#if defined(OS_MAC)
 bool IsFirstRunSuppressed(const base::CommandLine& command_line) {
   return command_line.HasSwitch(switches::kNoFirstRun);
 }

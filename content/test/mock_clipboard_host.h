@@ -51,7 +51,7 @@ class MockClipboardHost : public blink::mojom::ClipboardHost {
                      const base::string16& title) override;
   void WriteImage(const SkBitmap& bitmap) override;
   void CommitWrite() override;
-#if defined(OS_MACOSX)
+#if defined(OS_MAC)
   void WriteStringToFindPboard(const base::string16& text) override;
 #endif
  private:

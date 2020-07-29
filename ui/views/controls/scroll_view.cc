@@ -12,6 +12,9 @@
 #include "base/macros.h"
 #include "base/numerics/ranges.h"
 #include "build/build_config.h"
+#include "ui/accessibility/ax_action_data.h"
+#include "ui/accessibility/ax_enums.mojom.h"
+#include "ui/accessibility/ax_node_data.h"
 #include "ui/base/ui_base_features.h"
 #include "ui/compositor/overscroll/scroll_input_handler.h"
 #include "ui/events/event.h"
@@ -639,6 +642,70 @@ void ScrollView::OnThemeChanged() {
   UpdateBorder();
   if (background_color_id_)
     UpdateBackground();
+}
+
+void ScrollView::GetAccessibleNodeData(ui::AXNodeData* node_data) {
+  View::GetAccessibleNodeData(node_data);
+  if (!contents_)
+    return;
+
+  ScrollBar* horizontal = horizontal_scroll_bar();
+  if (horizontal) {
+    node_data->AddIntAttribute(ax::mojom::IntAttribute::kScrollX,
+                               CurrentOffset().x());
+    node_data->AddIntAttribute(ax::mojom::IntAttribute::kScrollXMin,
+                               horizontal->GetMinPosition());
+    node_data->AddIntAttribute(ax::mojom::IntAttribute::kScrollXMax,
+                               horizontal->GetMaxPosition());
+  }
+  ScrollBar* vertical = vertical_scroll_bar();
+  if (vertical) {
+    node_data->AddIntAttribute(ax::mojom::IntAttribute::kScrollY,
+                               CurrentOffset().y());
+    node_data->AddIntAttribute(ax::mojom::IntAttribute::kScrollYMin,
+                               vertical->GetMinPosition());
+    node_data->AddIntAttribute(ax::mojom::IntAttribute::kScrollYMax,
+                               vertical->GetMaxPosition());
+  }
+  if (horizontal || vertical)
+    node_data->AddBoolAttribute(ax::mojom::BoolAttribute::kScrollable, true);
+}
+
+bool ScrollView::HandleAccessibleAction(const ui::AXActionData& action_data) {
+  if (!contents_)
+    return View::HandleAccessibleAction(action_data);
+
+  ScrollBar* horizontal = horizontal_scroll_bar();
+  ScrollBar* vertical = vertical_scroll_bar();
+  switch (action_data.action) {
+    case ax::mojom::Action::kScrollLeft:
+      if (horizontal)
+        return horizontal->ScrollByAmount(ScrollBar::ScrollAmount::kPrevPage);
+      else
+        return false;
+    case ax::mojom::Action::kScrollRight:
+      if (horizontal)
+        return horizontal->ScrollByAmount(ScrollBar::ScrollAmount::kNextPage);
+      else
+        return false;
+    case ax::mojom::Action::kScrollUp:
+      if (vertical)
+        return vertical->ScrollByAmount(ScrollBar::ScrollAmount::kPrevPage);
+      else
+        return false;
+    case ax::mojom::Action::kScrollDown:
+      if (vertical)
+        return vertical->ScrollByAmount(ScrollBar::ScrollAmount::kNextPage);
+      else
+        return false;
+    case ax::mojom::Action::kSetScrollOffset:
+      ScrollToOffset(gfx::ScrollOffset(action_data.target_point.x(),
+                                       action_data.target_point.y()));
+      return true;
+    default:
+      return View::HandleAccessibleAction(action_data);
+      break;
+  }
 }
 
 void ScrollView::ScrollToPosition(ScrollBar* source, int position) {

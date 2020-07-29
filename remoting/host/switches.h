@@ -61,7 +61,7 @@ extern const char kOutputSwitchName[];
 // processes.
 extern const char kMojoPipeToken[];
 
-#if defined(OS_MACOSX)
+#if defined(OS_APPLE)
 // NativeMessagingHost switch to check for required OS permissions and request
 // them if necessary.
 extern const char kCheckPermissionSwitchName[];

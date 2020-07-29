@@ -295,10 +295,6 @@ class CORE_EXPORT LayoutObject : public ImageResourceObserver,
     return FirstFragment().PartialInvalidationVisualRect();
   }
 
-  IntRect PartialInvalidationVisualRectForInlineBox() const {
-    return AdjustVisualRectForInlineBox(PartialInvalidationVisualRect());
-  }
-
   String DebugName() const final;
 
   // End of DisplayItemClient methods.
@@ -2290,6 +2286,12 @@ class CORE_EXPORT LayoutObject : public ImageResourceObserver,
   // setNeedsRepaint before calling this function.
   virtual void InvalidateDisplayItemClients(PaintInvalidationReason) const;
 
+  // Get the dedicated DisplayItemClient for selection. Returns nullptr if this
+  // object doesn't have a dedicated DisplayItemClient.
+  virtual const DisplayItemClient* GetSelectionDisplayItemClient() const {
+    return nullptr;
+  }
+
   // Called before setting style for existing/new anonymous child. Override to
   // set custom styles for the child. For new anonymous child, |child| is null.
   virtual void UpdateAnonymousChildStyle(const LayoutObject* child,
@@ -2385,10 +2387,6 @@ class CORE_EXPORT LayoutObject : public ImageResourceObserver,
     }
     void MarkEffectiveAllowedTouchActionChanged() {
       layout_object_.MarkEffectiveAllowedTouchActionChanged();
-    }
-
-    void SetSelectionVisualRect(const IntRect& r) {
-      layout_object_.fragment_.SetSelectionVisualRect(r);
     }
 
     void SetBackgroundPaintLocation(BackgroundPaintLocation location) {
@@ -2533,9 +2531,6 @@ class CORE_EXPORT LayoutObject : public ImageResourceObserver,
     bitfields_.SetBackgroundNeedsFullPaintInvalidation(true);
   }
 
-  IntRect SelectionVisualRect() const {
-    return fragment_.SelectionVisualRect();
-  }
   PhysicalRect PartialInvalidationLocalRect() const {
     return fragment_.PartialInvalidationLocalRect();
   }
@@ -2884,8 +2879,6 @@ class CORE_EXPORT LayoutObject : public ImageResourceObserver,
 
   void ApplyPseudoElementStyleChanges(const ComputedStyle* old_style);
   void ApplyFirstLineChanges(const ComputedStyle* old_style);
-
-  IntRect AdjustVisualRectForInlineBox(const IntRect&) const;
 
   virtual LayoutUnit FlipForWritingModeInternal(
       LayoutUnit position,

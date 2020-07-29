@@ -501,7 +501,7 @@ class NoStatePrefetchBrowserTest
   }
 
   void OpenDestURLViaClickNewForegroundTab(GURL& dest_url) const {
-#if defined(OS_MACOSX)
+#if defined(OS_MAC)
     OpenURLWithJSImpl("MetaShiftClick", dest_url, GURL(), true);
 #else
     OpenURLWithJSImpl("CtrlShiftClick", dest_url, GURL(), true);

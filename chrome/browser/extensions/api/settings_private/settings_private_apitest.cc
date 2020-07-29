@@ -65,8 +65,7 @@ class SettingsPrivateApiTest : public ExtensionApiTest {
   void SetPrefPolicy(const std::string& key, policy::PolicyLevel level) {
     policy::PolicyMap policies;
     policies.Set(key, level, policy::POLICY_SCOPE_USER,
-                 policy::POLICY_SOURCE_CLOUD,
-                 base::WrapUnique(new base::Value(true)), nullptr);
+                 policy::POLICY_SOURCE_CLOUD, base::Value(true), nullptr);
     provider_.UpdateChromePolicy(policies);
     DCHECK(base::CurrentThread::Get());
     base::RunLoop loop;

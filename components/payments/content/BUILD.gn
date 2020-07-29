@@ -32,8 +32,6 @@ jumbo_static_library("content") {
     "payment_request_converter.h",
     "payment_request_spec.cc",
     "payment_request_spec.h",
-    "secure_payment_confirmation_controller.cc",
-    "secure_payment_confirmation_controller.h",
     "service_worker_payment_app.cc",
     "service_worker_payment_app.h",
     "service_worker_payment_app_factory.cc",
@@ -73,6 +71,10 @@ jumbo_static_library("content") {
       "payment_request_web_contents_manager.h",
       "payment_response_helper.cc",
       "payment_response_helper.h",
+      "secure_payment_confirmation_controller.cc",
+      "secure_payment_confirmation_controller.h",
+      "secure_payment_confirmation_payment_request_delegate.cc",
+      "secure_payment_confirmation_payment_request_delegate.h",
     ]
   }
 }

@@ -104,15 +104,14 @@ ui::XWindow::Configuration ConvertInitPropertiesToXWindowConfig(
 }
 
 // Coalesce touch/mouse events if needed
-bool CoalesceEventsIfNeeded(x11::Event* const x11_event,
+bool CoalesceEventsIfNeeded(x11::Event* const xev,
                             EventType type,
                             x11::Event* out) {
-  XEvent* xev = &x11_event->xlib_event();
-  if (xev->type == x11::MotionNotifyEvent::opcode ||
-      (xev->type == x11::GeGenericEvent::opcode &&
+  if (xev->As<x11::MotionNotifyEvent>() ||
+      (xev->As<x11::Input::DeviceEvent>() &&
        (type == ui::ET_TOUCH_MOVED || type == ui::ET_MOUSE_MOVED ||
         type == ui::ET_MOUSE_DRAGGED))) {
-    return ui::CoalescePendingMotionEvents(x11_event, out) > 0;
+    return ui::CoalescePendingMotionEvents(xev, out) > 0;
   }
   return false;
 }
@@ -543,12 +542,9 @@ bool X11Window::HandleAsAtkEvent(x11::Event* x11_event, bool transient) {
   NOTREACHED();
   return false;
 #else
-  XEvent* xev = &x11_event->xlib_event();
-  DCHECK(xev);
-  if (!x11_extension_delegate_ || (xev->type != x11::KeyEvent::Press &&
-                                   xev->type != x11::KeyEvent::Release)) {
+  DCHECK(x11_event);
+  if (!x11_extension_delegate_ || !x11_event->As<x11::KeyEvent>())
     return false;
-  }
   auto atk_key_event = AtkKeyEventFromXEvent(x11_event);
   return x11_extension_delegate_->OnAtkKeyEvent(atk_key_event.get(), transient);
 #endif

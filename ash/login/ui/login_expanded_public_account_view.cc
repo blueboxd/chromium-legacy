@@ -323,7 +323,7 @@ class RightPaneView : public NonAccessibleView,
     learn_more_label_ = new views::StyledLabel(text, this);
 
     views::StyledLabel::RangeStyleInfo style;
-    style.custom_font = learn_more_label_->GetDefaultFontList().Derive(
+    style.custom_font = learn_more_label_->GetFontList().Derive(
         0, gfx::Font::FontStyle::NORMAL, gfx::Font::Weight::NORMAL);
     style.override_color = SK_ColorWHITE;
     learn_more_label_->AddStyleRange(gfx::Range(0, offset), style);

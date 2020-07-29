@@ -148,7 +148,7 @@ scoped_refptr<base::SingleThreadTaskRunner> TaskService::GetTaskRunner(
     base::Thread::Options options;
 #if defined(OS_WIN)
     threads_[thread]->init_com_with_mta(true);
-#elif defined(OS_MACOSX)
+#elif defined(OS_MAC)
     options.message_pump_type = base::MessagePumpType::UI;
 #endif
     threads_[thread]->StartWithOptions(options);

@@ -1559,18 +1559,18 @@ ci.fyi_builder(
 )
 
 ci.fyi_builder(
-    name = 'linux-lacros-builder-rel',
+    name = 'linux-lacros-builder-fyi-rel',
     console_view_entry = ci.console_view_entry(
         category = 'linux',
     ),
 )
 
 ci.fyi_builder(
-    name = 'linux-lacros-tester-rel',
+    name = 'linux-lacros-tester-fyi-rel',
     console_view_entry = ci.console_view_entry(
         category = 'linux',
     ),
-    triggered_by = ['linux-lacros-builder-rel'],
+    triggered_by = ['linux-lacros-builder-fyi-rel'],
 )
 
 ci.fyi_builder(
@@ -1870,11 +1870,11 @@ ci.fyi_ios_builder(
         category = 'iOS|iOS14',
         short_name = 'sdk14',
     ),
-    caches = [xcode_cache.x12a8169g],
+    caches = [xcode_cache.x12a6163b],
     executable = 'recipe:chromium',
     os = os.MAC_10_15,
     properties = {
-        'xcode_build_version': '12a8169g'
+        'xcode_build_version': '12a6163b'
     }
 )
 

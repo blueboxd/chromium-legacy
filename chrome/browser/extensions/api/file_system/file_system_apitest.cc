@@ -177,7 +177,7 @@ IN_PROC_BROWSER_TEST_F(FileSystemApiTest, FileSystemApiGetDisplayPathPrettify) {
 }
 #endif
 
-#if defined(OS_MACOSX)
+#if defined(OS_MAC)
 IN_PROC_BROWSER_TEST_F(FileSystemApiTest,
     FileSystemApiGetDisplayPathPrettifyMac) {
   base::FilePath test_file;

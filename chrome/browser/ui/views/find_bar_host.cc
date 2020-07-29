@@ -207,7 +207,7 @@ void FindBarHost::RestoreSavedFocus() {
 }
 
 bool FindBarHost::HasGlobalFindPasteboard() const {
-#if defined(OS_MACOSX)
+#if defined(OS_MAC)
   return true;
 #else
   return false;

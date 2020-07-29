@@ -337,8 +337,8 @@ ExtensionManagementPolicyUpdater::~ExtensionManagementPolicyUpdater() {
       ->Get(
           policy::PolicyNamespace(policy::POLICY_DOMAIN_CHROME, std::string()))
       .Set(policy::key::kExtensionSettings, policy::POLICY_LEVEL_MANDATORY,
-           policy::POLICY_SCOPE_USER, policy::POLICY_SOURCE_CLOUD, TakePref(),
-           nullptr);
+           policy::POLICY_SCOPE_USER, policy::POLICY_SOURCE_CLOUD,
+           std::move(*TakePref()), nullptr);
   provider_->UpdatePolicy(std::move(policies_));
 }
 

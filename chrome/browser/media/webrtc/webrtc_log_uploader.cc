@@ -345,7 +345,7 @@ void WebRtcLogUploader::SetupMultipart(
     const std::map<std::string, std::string>& meta_data) {
 #if defined(OS_WIN)
   const char product[] = "Chrome";
-#elif defined(OS_MACOSX)
+#elif defined(OS_MAC)
   const char product[] = "Chrome_Mac";
 #elif defined(OS_LINUX)
 #if !defined(ADDRESS_SANITIZER)

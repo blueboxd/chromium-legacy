@@ -177,7 +177,7 @@ class TestBrowserWindow : public BrowserWindow {
       signin_metrics::AccessPoint access_point,
       bool is_source_keyboard) override {}
 
-#if defined(OS_CHROMEOS) || defined(OS_MACOSX) || defined(OS_WIN) || \
+#if defined(OS_CHROMEOS) || defined(OS_MAC) || defined(OS_WIN) || \
     defined(OS_LINUX)
   void ShowHatsBubble(const std::string& site_id) override {}
 #endif

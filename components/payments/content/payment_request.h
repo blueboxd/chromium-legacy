@@ -139,6 +139,8 @@ class PaymentRequest : public mojom::PaymentRequest,
   PaymentRequestSpec* spec() const { return spec_.get(); }
   PaymentRequestState* state() const { return state_.get(); }
 
+  base::WeakPtr<PaymentRequest> GetWeakPtr();
+
  private:
   // Returns true after init() has been called and the mojo connection has been
   // established. If the mojo connection gets later disconnected, this will

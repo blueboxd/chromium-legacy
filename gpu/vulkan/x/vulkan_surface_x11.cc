@@ -6,8 +6,11 @@
 
 #include "base/logging.h"
 #include "gpu/vulkan/vulkan_function_pointers.h"
+#include "ui/base/x/x11_util.h"
 #include "ui/events/platform/x11/x11_event_source.h"
 #include "ui/gfx/native_widget_types.h"
+#include "ui/gfx/x/connection.h"
+#include "ui/gfx/x/xproto.h"
 
 namespace gpu {
 
@@ -114,17 +117,15 @@ bool VulkanSurfaceX11::Reshape(const gfx::Size& size,
 }
 
 bool VulkanSurfaceX11::CanDispatchXEvent(const x11::Event* x11_event) {
-  const XEvent* event = &x11_event->xlib_event();
-  return event->type == Expose &&
-         event->xexpose.window == static_cast<uint32_t>(window_);
+  auto* expose = x11_event->As<x11::ExposeEvent>();
+  return expose && expose->window == window_;
 }
 
 void VulkanSurfaceX11::ForwardXExposeEvent(const x11::Event* event) {
-  XEvent forwarded_event = event->xlib_event();
-  forwarded_event.xexpose.window = static_cast<uint32_t>(parent_window_);
-  XSendEvent(gfx::GetXDisplay(), static_cast<uint32_t>(parent_window_), False,
-             ExposureMask, &forwarded_event);
-  XFlush(gfx::GetXDisplay());
+  auto forwarded_event = *event->As<x11::ExposeEvent>();
+  forwarded_event.window = parent_window_;
+  ui::SendEvent(forwarded_event, parent_window_, x11::EventMask::Exposure);
+  x11::Connection::Get()->Flush();
 }
 
 }  // namespace gpu

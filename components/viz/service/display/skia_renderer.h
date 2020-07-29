@@ -228,7 +228,7 @@ class VIZ_SERVICE_EXPORT SkiaRenderer : public DirectRenderer {
   // Get corresponding GrContext. Returns nullptr when there is no GrContext.
   // TODO(weiliangc): This currently only returns nullptr. If SKPRecord isn't
   // going to use this later, it should be removed.
-  GrContext* GetGrContext();
+  GrDirectContext* GetGrContext();
   bool is_using_ddl() const { return draw_mode_ == DrawMode::DDL; }
 
   // Get a color filter that converts from |src| color space to |dst| color
@@ -252,7 +252,7 @@ class VIZ_SERVICE_EXPORT SkiaRenderer : public DirectRenderer {
     std::unique_ptr<SkPictureRecorder> recorder;
     sk_sp<SkPicture> picture;
 
-    RenderPassBacking(GrContext* gr_context,
+    RenderPassBacking(GrDirectContext* gr_context,
                       const gpu::Capabilities& caps,
                       const gfx::Size& size,
                       bool generate_mipmap,

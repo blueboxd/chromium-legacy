@@ -715,7 +715,7 @@ IN_PROC_BROWSER_TEST_F(PointerLockBrowserTestWithOptions,
   // Release pointer lock.
   EXPECT_EQ(true, PointerLockHelper::ExitPointerLock(root));
 
-#if defined(USE_AURA) || defined(OS_MACOSX)
+#if defined(USE_AURA) || defined(OS_MAC)
   // Request a pointer lock with unadjustedMovement.
   EXPECT_EQ(
       true,

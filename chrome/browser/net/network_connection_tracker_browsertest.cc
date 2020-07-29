@@ -115,7 +115,7 @@ IN_PROC_BROWSER_TEST_F(NetworkConnectionTrackerBrowserTest,
   // NetworkService on ChromeOS doesn't yet have a NetworkChangeManager
   // implementation. OSX uses a separate binary for service processes and
   // browser test fixture doesn't have NetworkServiceTest mojo code.
-#if !defined(OS_CHROMEOS) && !defined(OS_MACOSX)
+#if !defined(OS_CHROMEOS) && !defined(OS_MAC)
   network::NetworkConnectionTracker* tracker =
       content::GetNetworkConnectionTracker();
   EXPECT_NE(nullptr, tracker);

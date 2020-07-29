@@ -253,7 +253,7 @@ class WrappedSkImage : public ClearTrackingSharedImageBacking {
           tracing_id_ = tex_info.fID;
         break;
       }
-#if defined(OS_MACOSX)
+#if defined(OS_MAC)
       case GrBackendApi::kMetal: {
         GrMtlTextureInfo image_info;
         if (backend_texture_.getMtlTextureInfo(&image_info))

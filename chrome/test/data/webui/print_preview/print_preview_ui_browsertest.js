@@ -386,7 +386,7 @@ TEST_F('PrintPreviewPreviewGenerationTest', 'ScalingPdf', function() {
   this.runMochaTest(preview_generation_test.TestNames.ScalingPdf);
 });
 
-GEN('#if !defined(OS_WIN) && !defined(OS_MACOSX)');
+GEN('#if !defined(OS_WIN) && !defined(OS_MAC)');
 TEST_F('PrintPreviewPreviewGenerationTest', 'Rasterize', function() {
   this.runMochaTest(preview_generation_test.TestNames.Rasterize);
 });
@@ -437,13 +437,13 @@ TEST_F('PrintPreviewLinkContainerTest', 'InvalidState', function() {
 });
 GEN('#endif');  // !defined(OS_CHROMEOS)
 
-GEN('#if defined(OS_MACOSX)');
+GEN('#if defined(OS_MAC)');
 TEST_F('PrintPreviewLinkContainerTest', 'OpenInPreviewLinkClick', function() {
   this.runMochaTest(link_container_test.TestNames.OpenInPreviewLinkClick);
 });
-GEN('#endif');  // defined(OS_MACOSX)
+GEN('#endif');  // defined(OS_MAC)
 
-GEN('#if defined(OS_WIN) || defined(OS_MACOSX)');
+GEN('#if defined(OS_WIN) || defined(OS_MAC)');
 // eslint-disable-next-line no-var
 var PrintPreviewSystemDialogBrowserTest = class extends PrintPreviewTest {
   /** @override */
@@ -470,7 +470,7 @@ TEST_F(
       this.runMochaTest(
           system_dialog_browsertest.TestNames.InvalidSettingsDisableLink);
     });
-GEN('#endif');  // defined(OS_WIN) || defined(OS_MACOSX)
+GEN('#endif');  // defined(OS_WIN) || defined(OS_MAC)
 
 // eslint-disable-next-line no-var
 var PrintPreviewInvalidSettingsBrowserTest = class extends PrintPreviewTest {

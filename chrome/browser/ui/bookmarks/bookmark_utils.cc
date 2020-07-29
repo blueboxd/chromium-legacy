@@ -38,7 +38,7 @@
 #include "ui/gfx/scoped_canvas.h"
 #endif
 
-#if defined(OS_WIN) || defined(OS_MACOSX)
+#if defined(OS_WIN) || defined(OS_MAC)
 #include "chrome/grit/theme_resources.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/resources/grit/ui_resources.h"
@@ -71,12 +71,12 @@ class RTLFlipSource : public gfx::ImageSkiaSource {
   const gfx::ImageSkia source_;
 };
 
-#if !defined(OS_WIN) && !defined(OS_MACOSX)
+#if !defined(OS_WIN) && !defined(OS_MAC)
 gfx::ImageSkia GetFolderIcon(const gfx::VectorIcon& icon, SkColor text_color) {
   return gfx::CreateVectorIcon(icon,
                                color_utils::DeriveDefaultIconColor(text_color));
 }
-#endif  // !defined(OS_WIN) && !defined(OS_MACOSX)
+#endif  // !defined(OS_WIN) && !defined(OS_MAC)
 #endif  // defined(TOOLKIT_VIEWS)
 
 }  // namespace
@@ -266,7 +266,7 @@ gfx::ImageSkia GetBookmarkFolderIcon(SkColor text_color) {
 #if defined(OS_WIN)
   folder = *ui::ResourceBundle::GetSharedInstance().GetImageSkiaNamed(
       IDR_FOLDER_CLOSED);
-#elif defined(OS_MACOSX)
+#elif defined(OS_MAC)
   int resource_id = color_utils::IsDark(text_color) ? IDR_FOLDER_CLOSED
                                                     : IDR_FOLDER_CLOSED_WHITE;
   folder = *ui::ResourceBundle::GetSharedInstance()
@@ -286,7 +286,7 @@ gfx::ImageSkia GetBookmarkManagedFolderIcon(SkColor text_color) {
 #if defined(OS_WIN)
   folder = *ui::ResourceBundle::GetSharedInstance().GetImageSkiaNamed(
       IDR_BOOKMARK_BAR_FOLDER_MANAGED);
-#elif defined(OS_MACOSX)
+#elif defined(OS_MAC)
   int resource_id = color_utils::IsDark(text_color)
                         ? IDR_BOOKMARK_BAR_FOLDER_MANAGED
                         : IDR_BOOKMARK_BAR_FOLDER_MANAGED_WHITE;

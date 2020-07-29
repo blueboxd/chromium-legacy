@@ -75,7 +75,7 @@ bool GoogleUpdateSettings::GetCollectStatsConsent() {
 
 // static
 bool GoogleUpdateSettings::SetCollectStatsConsent(bool consented) {
-#if defined(OS_MACOSX)
+#if defined(OS_MAC)
   crash_reporter::SetUploadConsent(consented);
 #elif defined(OS_LINUX) && !defined(OS_CHROMEOS)
   if (crash_reporter::IsCrashpadEnabled()) {

@@ -3252,6 +3252,69 @@ TEST_F(UpdateClientTest, SendUninstallPing) {
   RunThreads();
 }
 
+TEST_F(UpdateClientTest, SendRegistrationPing) {
+  class CompletionCallbackMock {
+   public:
+    static void Callback(base::OnceClosure quit_closure, Error error) {
+      std::move(quit_closure).Run();
+    }
+  };
+
+  class MockUpdateChecker : public UpdateChecker {
+   public:
+    static std::unique_ptr<UpdateChecker> Create(
+        scoped_refptr<Configurator> config,
+        PersistedData* metadata) {
+      return std::make_unique<MockUpdateChecker>();
+    }
+
+    void CheckForUpdates(
+        const std::string& session_id,
+        const std::vector<std::string>& ids_to_check,
+        const IdToComponentPtrMap& components,
+        const base::flat_map<std::string, std::string>& additional_attributes,
+        bool enabled_component_updates,
+        UpdateCheckCallback update_check_callback) override {
+      NOTREACHED();
+    }
+  };
+
+  class MockCrxDownloader : public CrxDownloader {
+   public:
+    MockCrxDownloader() : CrxDownloader(nullptr) {}
+
+   private:
+    ~MockCrxDownloader() override = default;
+
+    void DoStartDownload(const GURL& url) override { EXPECT_TRUE(false); }
+  };
+
+  class MockPingManager : public MockPingManagerImpl {
+   public:
+    explicit MockPingManager(scoped_refptr<Configurator> config)
+        : MockPingManagerImpl(config) {}
+
+   protected:
+    ~MockPingManager() override {
+      const auto ping_data = MockPingManagerImpl::ping_data();
+      EXPECT_EQ(1u, ping_data.size());
+      EXPECT_EQ("jebgalgnebhfojomionfpkfelancnnkf", ping_data[0].id);
+      EXPECT_EQ(base::Version("1.2.3.4"), ping_data[0].next_version);
+    }
+  };
+
+  scoped_refptr<UpdateClient> update_client =
+      base::MakeRefCounted<UpdateClientImpl>(
+          config(), base::MakeRefCounted<MockPingManager>(config()),
+          &MockUpdateChecker::Create);
+
+  update_client->SendRegistrationPing(
+      "jebgalgnebhfojomionfpkfelancnnkf", base::Version("1.2.3.4"),
+      base::BindOnce(&CompletionCallbackMock::Callback, quit_closure()));
+
+  RunThreads();
+}
+
 TEST_F(UpdateClientTest, RetryAfter) {
   class DataCallbackMock {
    public:

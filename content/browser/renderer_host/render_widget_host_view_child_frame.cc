@@ -733,7 +733,7 @@ void RenderWidgetHostViewChildFrame::WillSendScreenRects() {
   }
 }
 
-#if defined(OS_MACOSX)
+#if defined(OS_MAC)
 void RenderWidgetHostViewChildFrame::SetActive(bool active) {}
 
 void RenderWidgetHostViewChildFrame::ShowDefinitionForSelection() {
@@ -747,7 +747,7 @@ void RenderWidgetHostViewChildFrame::SpeakSelection() {}
 
 void RenderWidgetHostViewChildFrame::SetWindowFrameInScreen(
     const gfx::Rect& rect) {}
-#endif  // defined(OS_MACOSX)
+#endif  // defined(OS_MAC)
 
 void RenderWidgetHostViewChildFrame::CopyFromSurface(
     const gfx::Rect& src_subrect,

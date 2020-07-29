@@ -25,7 +25,7 @@ extern GPU_EXPORT crash_reporter::CrashKeyString<64> gpu_driver_version;
 extern GPU_EXPORT crash_reporter::CrashKeyString<16> gpu_pixel_shader_version;
 extern GPU_EXPORT crash_reporter::CrashKeyString<16> gpu_vertex_shader_version;
 extern GPU_EXPORT crash_reporter::CrashKeyString<16> gpu_generation_intel;
-#if defined(OS_MACOSX)
+#if defined(OS_MAC)
 extern GPU_EXPORT crash_reporter::CrashKeyString<64> gpu_gl_version;
 #elif defined(OS_POSIX)
 extern GPU_EXPORT crash_reporter::CrashKeyString<256> gpu_vendor;

@@ -210,7 +210,7 @@
 #include "components/session_manager/core/session_manager.h"
 #endif  // defined(OS_CHROMEOS)
 
-#if defined(OS_MACOSX)
+#if defined(OS_MAC)
 #include "base/mac/mac_util.h"
 #endif
 
@@ -1606,7 +1606,7 @@ IN_PROC_BROWSER_TEST_F(SSLUITest, SHA1IsDefaultDisabled) {
 
   int expected_error = net::CERT_STATUS_WEAK_SIGNATURE_ALGORITHM;
 
-#if defined(OS_MACOSX)
+#if defined(OS_MAC)
   // On macOS 10.15 (and presumably later) SHA1 certs are considered prima
   // facie invalid by the system verifier.
   // TODO(https://crbug.com/977767): Remove this when CertVerifyProcMac is
@@ -5311,7 +5311,7 @@ class SSLBlockingPageIDNTest
 };
 
 // Flaky on mac OS and Windows: https://crbug.com/689846
-#if defined(OS_MACOSX) || defined(OS_WIN)
+#if defined(OS_MAC) || defined(OS_WIN)
 #define MAYBE_SSLBlockingPageDecodesIDN DISABLED_SSLBlockingPageDecodesIDN
 #else
 #define MAYBE_SSLBlockingPageDecodesIDN SSLBlockingPageDecodesIDN

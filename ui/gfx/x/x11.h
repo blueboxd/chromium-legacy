@@ -112,8 +112,6 @@ static constexpr long CurrentTime = 0L;
 static constexpr int False = 0;
 static constexpr int True = 1;
 static constexpr int Success = 0;
-static constexpr int FocusIn = 9;
-static constexpr int FocusOut = 10;
 typedef int Bool;
 typedef int Status;
 }  // namespace x11

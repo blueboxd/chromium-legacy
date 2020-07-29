@@ -143,7 +143,7 @@ IN_PROC_BROWSER_TEST_F(ProfileHelperTest, OpenNewWindowForProfile) {
 // the same issue as BrowserWindowCocoa::Activate(), and execute call
 // BrowserList::SetLastActive() directly. Not sure if it is a bug or desired
 // behaviour.
-#if !defined(OS_MACOSX)
+#if !defined(OS_MAC)
   // Switch to original browser. Only LastActive should change.
   activation_observer =
       std::make_unique<ExpectBrowserActivationForProfile>(original_profile);

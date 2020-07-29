@@ -55,7 +55,7 @@ GEN('#endif  // !defined(OS_CHROMEOS)');
 // Disable since the EDIT_DICTIONARY route does not exist on Mac.
 // TODO(crbug.com/1012370) flaky on Linux b/c assertTrue(!!languagesPage);
 // TODO(crbug.com/1012370) flaky on Win the same way
-GEN('#if !defined(OS_MACOSX) && !defined(OS_LINUX) && !defined(OS_WIN)');
+GEN('#if !defined(OS_MAC) && !defined(OS_LINUX) && !defined(OS_WIN)');
 defineTest(
     'EditDictionary', 'edit_dictionary_a11y_v3_test.js',
     {filter: violationFilterExcludeCustomInputAndTabindex});

@@ -55,7 +55,7 @@
 #include "chrome/browser/ui/zoom/chrome_zoom_level_prefs.h"
 #endif
 
-#if defined(OS_POSIX) && !defined(OS_MACOSX) && !defined(OS_ANDROID)
+#if defined(OS_POSIX) && !defined(OS_MAC) && !defined(OS_ANDROID)
 #include "chrome/browser/themes/theme_service.h"
 #include "chrome/browser/themes/theme_service_factory.h"
 #endif
@@ -135,7 +135,7 @@ const FontDefault kFontDefaults[] = {
     {prefs::kWebKitCursiveFontFamily, IDS_CURSIVE_FONT_FAMILY},
     {prefs::kWebKitFantasyFontFamily, IDS_FANTASY_FONT_FAMILY},
     {prefs::kWebKitPictographFontFamily, IDS_PICTOGRAPH_FONT_FAMILY},
-#if defined(OS_CHROMEOS) || defined(OS_MACOSX) || defined(OS_WIN)
+#if defined(OS_CHROMEOS) || defined(OS_MAC) || defined(OS_WIN)
     {prefs::kWebKitStandardFontFamilyJapanese,
      IDS_STANDARD_FONT_FAMILY_JAPANESE},
     {prefs::kWebKitFixedFontFamilyJapanese, IDS_FIXED_FONT_FAMILY_JAPANESE},
@@ -159,7 +159,7 @@ const FontDefault kFontDefaults[] = {
     {prefs::kWebKitSansSerifFontFamilyTraditionalHan,
      IDS_SANS_SERIF_FONT_FAMILY_TRADITIONAL_HAN},
 #endif
-#if defined(OS_MACOSX) || defined(OS_WIN)
+#if defined(OS_MAC) || defined(OS_WIN)
     {prefs::kWebKitCursiveFontFamilySimplifiedHan,
      IDS_CURSIVE_FONT_FAMILY_SIMPLIFIED_HAN},
     {prefs::kWebKitCursiveFontFamilyTraditionalHan,
@@ -318,7 +318,7 @@ PrefsTabHelper::PrefsTabHelper(WebContents* contents)
       web_contents_->GetMutableRendererPrefs();
   renderer_preferences_util::UpdateFromSystemSettings(render_prefs, profile_);
 
-#if defined(OS_POSIX) && !defined(OS_MACOSX) && !defined(OS_ANDROID)
+#if defined(OS_POSIX) && !defined(OS_MAC) && !defined(OS_ANDROID)
   registrar_.Add(this,
                  chrome::NOTIFICATION_BROWSER_THEME_CHANGED,
                  content::Source<ThemeService>(
@@ -433,7 +433,7 @@ void PrefsTabHelper::GetServiceInstance() {
 void PrefsTabHelper::Observe(int type,
                              const content::NotificationSource& source,
                              const content::NotificationDetails& details) {
-#if defined(OS_POSIX) && !defined(OS_MACOSX) && !defined(OS_ANDROID)
+#if defined(OS_POSIX) && !defined(OS_MAC) && !defined(OS_ANDROID)
   if (type == chrome::NOTIFICATION_BROWSER_THEME_CHANGED) {
     UpdateRendererPreferences();
     return;

@@ -17,7 +17,7 @@ public abstract class FullscreenCallback {
      * running the supplied Runnable (calling exitFullscreenRunner.Run() results in calling
      * exitFullscreen()).
      *
-     * NOTE: the Runnable must not be used synchronously.
+     * NOTE: the Runnable must not be used synchronously, and must be run on the UI thread.
      */
     public abstract void onEnterFullscreen(@NonNull Runnable exitFullscreenRunner);
 

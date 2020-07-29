@@ -573,7 +573,7 @@ IN_PROC_BROWSER_TEST_P(AccessibilityHitTestingBrowserTest,
   }
 }
 
-#if !defined(OS_ANDROID) && !defined(OS_MACOSX)
+#if !defined(OS_ANDROID) && !defined(OS_MAC)
 IN_PROC_BROWSER_TEST_P(AccessibilityHitTestingBrowserTest,
                        CachingAsyncHitTest_WithPinchZoom) {
   ASSERT_TRUE(embedded_test_server()->Start());
@@ -728,7 +728,7 @@ IN_PROC_BROWSER_TEST_P(AccessibilityHitTestingBrowserTest,
   }
 }
 
-#endif  // !defined(OS_ANDROID) && !defined(OS_MACOSX)
+#endif  // !defined(OS_ANDROID) && !defined(OS_MAC)
 
 // GetAXPlatformNode is currently only supported on windows and linux (excluding
 // Chrome OS or Chromecast)

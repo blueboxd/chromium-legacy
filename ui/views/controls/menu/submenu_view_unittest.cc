@@ -11,7 +11,7 @@
 namespace views {
 
 TEST(SubmenuViewTest, GetLastItem) {
-  MenuItemView* parent = new MenuItemView(nullptr);
+  MenuItemView* parent = new MenuItemView();
   MenuRunner menu_runner(parent, 0);
 
   SubmenuView* submenu = parent->CreateSubmenu();
@@ -20,14 +20,14 @@ TEST(SubmenuViewTest, GetLastItem) {
   submenu->AddChildView(new View());
   EXPECT_EQ(nullptr, submenu->GetLastItem());
 
-  MenuItemView* first = new MenuItemView(nullptr);
+  MenuItemView* first = new MenuItemView();
   submenu->AddChildView(first);
   EXPECT_EQ(first, submenu->GetLastItem());
 
   submenu->AddChildView(new View());
   EXPECT_EQ(first, submenu->GetLastItem());
 
-  MenuItemView* second = new MenuItemView(nullptr);
+  MenuItemView* second = new MenuItemView();
   submenu->AddChildView(second);
   EXPECT_EQ(second, submenu->GetLastItem());
 }

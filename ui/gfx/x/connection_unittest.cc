@@ -86,11 +86,10 @@ TEST(X11ConnectionTest, Event) {
 
   connection.ReadResponses();
   ASSERT_EQ(connection.events().size(), 1u);
-  XEvent& event = connection.events().front().xlib_event();
-  auto property_notify_opcode = PropertyNotifyEvent::opcode;
-  EXPECT_EQ(event.type, property_notify_opcode);
-  EXPECT_EQ(event.xproperty.atom, static_cast<uint32_t>(x11::Atom::WM_NAME));
-  EXPECT_EQ(event.xproperty.state, static_cast<int>(Property::NewValue));
+  auto* prop = connection.events().front().As<x11::PropertyNotifyEvent>();
+  ASSERT_TRUE(prop);
+  EXPECT_EQ(prop->atom, x11::Atom::WM_NAME);
+  EXPECT_EQ(prop->state, Property::NewValue);
 }
 
 TEST(X11ConnectionTest, Error) {

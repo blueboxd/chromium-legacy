@@ -154,7 +154,7 @@ gfx::Rect TestRenderWidgetHostView::GetViewBounds() {
   return gfx::Rect();
 }
 
-#if defined(OS_MACOSX)
+#if defined(OS_MAC)
 void TestRenderWidgetHostView::SetActive(bool active) {
   // <viettrungluu@gmail.com>: Do I need to do anything here?
 }

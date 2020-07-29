@@ -24,12 +24,12 @@
 #include "printing/backend/print_backend_consts.h"
 #include "url/gurl.h"
 
-#if defined(OS_MACOSX)
+#if defined(OS_MAC)
 #include "printing/backend/cups_connection.h"
 #include "printing/backend/cups_ipp_utils.h"
 #include "printing/backend/print_backend_cups_ipp.h"
 #include "printing/printing_features.h"
-#endif  // defined(OS_MACOSX)
+#endif  // defined(OS_MAC)
 
 namespace printing {
 
@@ -85,7 +85,7 @@ bool PrintBackendCUPS::PrinterBasicInfoFromCUPS(
         printer.options[opt_index].value;
   }
 
-#if defined(OS_MACOSX)
+#if defined(OS_MAC)
   // On Mac, "printer-info" option specifies the printer name and
   // "printer-make-and-model" specifies the printer description.
   if (info)
@@ -223,13 +223,13 @@ scoped_refptr<PrintBackend> PrintBackend::CreateInstanceImpl(
     const base::DictionaryValue* print_backend_settings,
     const std::string& locale,
     bool for_cloud_print) {
-#if defined(OS_MACOSX)
+#if defined(OS_MAC)
   if (!for_cloud_print &&
       base::FeatureList::IsEnabled(features::kCupsIppPrintingBackend)) {
     return base::MakeRefCounted<PrintBackendCupsIpp>(
         CreateConnection(print_backend_settings), locale);
   }
-#endif  // defined(OS_MACOSX)
+#endif  // defined(OS_MAC)
   std::string print_server_url_str, cups_blocking;
   int encryption = HTTP_ENCRYPT_NEVER;
   if (print_backend_settings) {

@@ -283,16 +283,6 @@ bool ChromePasswordManagerClient::IsFillingFallbackEnabled(
               ->IsGuestSession();
 }
 
-void ChromePasswordManagerClient::PostHSTSQueryForHost(
-    const url::Origin& origin,
-    password_manager::HSTSCallback callback) const {
-  password_manager::PostHSTSQueryForHostAndNetworkContext(
-      origin,
-      content::BrowserContext::GetDefaultStoragePartition(profile_)
-          ->GetNetworkContext(),
-      std::move(callback));
-}
-
 bool ChromePasswordManagerClient::PromptUserToSaveOrUpdatePassword(
     std::unique_ptr<password_manager::PasswordFormManagerForUI> form_to_save,
     bool update_password) {
@@ -561,17 +551,15 @@ void ChromePasswordManagerClient::NotifyUserCredentialsWereLeaked(
     const base::string16& username) {
 #if defined(OS_ANDROID)
   if (base::FeatureList::IsEnabled(
+          password_manager::features::kPasswordChangeInSettings) &&
+      GetPasswordFeatureManager()->IsGenerationEnabled()) {
+    PasswordScriptsFetcherFactory::GetInstance()
+        ->GetForBrowserContext(web_contents()->GetBrowserContext())
+        ->PrewarmCache();
+  }
+  if (base::FeatureList::IsEnabled(
           password_manager::features::kPasswordChange)) {
     was_leak_dialog_shown_ = true;
-    // Prefetch list of scripts whose execution is possible.
-    // TODO(crbug.com/1108692): Make sure the list is only prefetched in case
-    // the password-change-in-settings flag is enabled.
-    if (IsSavingAndFillingEnabled(origin) &&
-        GetPasswordFeatureManager()->IsGenerationEnabled()) {
-      PasswordScriptsFetcherFactory::GetInstance()
-          ->GetForBrowserContext(web_contents()->GetBrowserContext())
-          ->PrewarmCache();
-    }
   }
   HideSavePasswordInfobar(web_contents());
   (new CredentialLeakControllerAndroid(
@@ -858,6 +846,12 @@ scoped_refptr<network::SharedURLLoaderFactory>
 ChromePasswordManagerClient::GetURLLoaderFactory() {
   return content::BrowserContext::GetDefaultStoragePartition(profile_)
       ->GetURLLoaderFactoryForBrowserProcess();
+}
+
+network::mojom::NetworkContext* ChromePasswordManagerClient::GetNetworkContext()
+    const {
+  return content::BrowserContext::GetDefaultStoragePartition(profile_)
+      ->GetNetworkContext();
 }
 
 bool ChromePasswordManagerClient::IsUnderAdvancedProtection() const {

@@ -351,7 +351,7 @@ const base::Feature kGav1VideoDecoder{"Gav1VideoDecoder",
 // Show toolbar button that opens dialog for controlling media sessions.
 const base::Feature kGlobalMediaControls {
   "GlobalMediaControls",
-#if defined(OS_WIN) || defined(OS_MACOSX) || \
+#if defined(OS_WIN) || defined(OS_MAC) || \
     (defined(OS_LINUX) && !defined(OS_CHROMEOS))
       base::FEATURE_ENABLED_BY_DEFAULT
 #else
@@ -376,7 +376,7 @@ const base::Feature kGlobalMediaControlsOverlayControls{
 // Show picture-in-picture button in Global Media Controls.
 const base::Feature kGlobalMediaControlsPictureInPicture {
   "GlobalMediaControlsPictureInPicture",
-#if defined(OS_WIN) || defined(OS_MACOSX) || \
+#if defined(OS_WIN) || defined(OS_MAC) || \
     (defined(OS_LINUX) && !defined(OS_CHROMEOS))
       base::FEATURE_ENABLED_BY_DEFAULT
 #else
@@ -486,7 +486,7 @@ const base::Feature kWidevineAv1ForceSupportForTesting{
 // Enables handling of hardware media keys for controlling media.
 const base::Feature kHardwareMediaKeyHandling {
   "HardwareMediaKeyHandling",
-#if defined(OS_CHROMEOS) || defined(OS_WIN) || defined(OS_MACOSX) || \
+#if defined(OS_CHROMEOS) || defined(OS_WIN) || defined(OS_MAC) || \
     BUILDFLAG(USE_MPRIS)
       base::FEATURE_ENABLED_BY_DEFAULT
 #else

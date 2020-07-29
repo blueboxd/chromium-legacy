@@ -18,7 +18,7 @@
 #include "gpu/config/gpu_feature_info.h"
 #include "gpu/ipc/gl_in_process_context.h"
 #include "gpu/skia_bindings/gl_bindings_skia_cmd_buffer.h"
-#include "third_party/skia/include/gpu/GrContext.h"
+#include "third_party/skia/include/gpu/GrDirectContext.h"
 #include "third_party/skia/include/gpu/gl/GrGLInterface.h"
 
 namespace android_webview {
@@ -135,7 +135,7 @@ gpu::ContextSupport* AwRenderThreadContextProvider::ContextSupport() {
   return context_->GetImplementation();
 }
 
-class GrContext* AwRenderThreadContextProvider::GrContext() {
+class GrDirectContext* AwRenderThreadContextProvider::GrContext() {
   DCHECK(main_thread_checker_.CalledOnValidThread());
 
   if (gr_context_)
@@ -143,7 +143,7 @@ class GrContext* AwRenderThreadContextProvider::GrContext() {
 
   sk_sp<GrGLInterface> interface(skia_bindings::CreateGLES2InterfaceBindings(
       ContextGL(), ContextSupport()));
-  gr_context_ = GrContext::MakeGL(std::move(interface));
+  gr_context_ = GrDirectContext::MakeGL(std::move(interface));
   cache_controller_->SetGrContext(gr_context_.get());
   return gr_context_.get();
 }

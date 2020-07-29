@@ -19,7 +19,7 @@
 #include "net/base/filename_util.h"
 #include "ui/display/display.h"
 
-#if defined(OS_MACOSX)
+#if defined(OS_MAC)
 #include "base/mac/bundle_locations.h"
 #include "base/mac/foundation_util.h"
 #endif
@@ -95,7 +95,7 @@ void ExportWebTestSpecificPreferences(const TestPreferences& from,
 }
 
 static base::FilePath GetBuildDirectory() {
-#if defined(OS_MACOSX)
+#if defined(OS_MAC)
   if (base::mac::AmIBundled()) {
     // If this is a bundled Content Shell.app, go up one from the outer bundle
     // directory.

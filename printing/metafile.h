@@ -18,7 +18,7 @@
 
 #if defined(OS_WIN)
 #include <windows.h>
-#elif defined(OS_MACOSX)
+#elif defined(OS_MAC)
 #include <ApplicationServices/ApplicationServices.h>
 #include <CoreFoundation/CoreFoundation.h>
 #include "base/mac/scoped_cftyperef.h"
@@ -48,7 +48,7 @@ class PRINTING_EXPORT MetafilePlayer {
   // details.
   virtual bool SafePlayback(printing::NativeDrawingContext hdc) const = 0;
 
-#elif defined(OS_MACOSX)
+#elif defined(OS_MAC)
   // Renders the given page into |rect| in the given context.
   // Pages use a 1-based index. |autorotate| determines whether the source PDF
   // should be autorotated to fit on the destination page. |fit_to_page|

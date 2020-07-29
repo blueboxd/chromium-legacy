@@ -243,7 +243,7 @@ class CONTENT_EXPORT RenderWidgetHostView {
   // This must always return the same device scale factor as GetScreenInfo.
   virtual float GetDeviceScaleFactor() = 0;
 
-#if defined(OS_MACOSX)
+#if defined(OS_MAC)
   // Set the view's active state (i.e., tint state of controls).
   virtual void SetActive(bool active) = 0;
 
@@ -256,7 +256,7 @@ class CONTENT_EXPORT RenderWidgetHostView {
   // Allows to update the widget's screen rects when it is not attached to
   // a window (e.g. in headless mode).
   virtual void SetWindowFrameInScreen(const gfx::Rect& rect) = 0;
-#endif  // defined(OS_MACOSX)
+#endif  // defined(OS_MAC)
 
   // Indicates that this view should show the contents of |view| if it doesn't
   // have anything to show.

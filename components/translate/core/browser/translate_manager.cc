@@ -6,6 +6,8 @@
 
 #include <map>
 #include <memory>
+#include <tuple>
+#include <utility>
 
 #include "base/bind.h"
 #include "base/command_line.h"
@@ -13,6 +15,7 @@
 #include "base/metrics/histogram.h"
 #include "base/stl_util.h"
 #include "base/strings/string_number_conversions.h"
+#include "base/strings/string_piece.h"
 #include "base/strings/string_split.h"
 #include "base/strings/stringprintf.h"
 #include "base/time/time.h"
@@ -613,31 +616,33 @@ bool TranslateManager::ShouldSuppressBubbleUI(
 
 void TranslateManager::AddTargetLanguageToAcceptLanguages(
     const std::string& target_language_code) {
-  std::string target_language, tail;
-  // |target_language_code| should satisfy BCP47 and consist of a language code
-  // and an optional region code joined by an hyphen.
-  language::SplitIntoMainAndTail(target_language_code, &target_language, &tail);
-
-  std::function<bool(const std::string&)> is_redundant;
-  if (tail.empty()) {
-    is_redundant = [&target_language](const std::string& language) {
-      return language::ExtractBaseLanguage(language) == target_language;
-    };
-  } else {
-    is_redundant = [&target_language_code](const std::string& language) {
-      return language == target_language_code;
-    };
-  }
-
   auto prefs = translate_client_->GetTranslatePrefs();
   std::vector<std::string> languages;
   prefs->GetLanguageList(&languages);
 
-  // Only add the target language if it's not redundant with another already in
-  // the list, and if it's not an automatic target (such as when translation
-  // happens because of an hrefTranslate navigation).
-  if (std::none_of(languages.begin(), languages.end(), is_redundant) &&
-      language_state_.AutoTranslateTo() != target_language_code &&
+  base::StringPiece target_language, tail;
+  // |target_language_code| should satisfy BCP47 and consist of a language code
+  // and an optional region code joined by an hyphen.
+  std::tie(target_language, tail) =
+      language::SplitIntoMainAndTail(target_language_code);
+
+  // Don't add the target language if it's redundant with another already in the
+  // list.
+  if (tail.empty()) {
+    for (const auto& language : languages) {
+      if (language::ExtractBaseLanguage(language) == target_language)
+        return;
+    }
+  } else {
+    for (const auto& language : languages) {
+      if (language == target_language_code)
+        return;
+    }
+  }
+
+  // Only add the target language if it's not an automatic target (such as when
+  // translation happens because of an hrefTranslate navigation).
+  if (language_state_.AutoTranslateTo() != target_language_code &&
       language_state_.href_translate() != target_language_code) {
     prefs->AddToLanguageList(target_language_code, /*force_blocked=*/false);
   }

@@ -218,6 +218,7 @@ ClientImageTransferCacheEntry::ClientImageTransferCacheEntry(
   safe_size += sizeof(uint32_t);  // num_planes
   safe_size += sizeof(uint32_t);  // has mips
   safe_size += sizeof(uint32_t);  // yuv_color_space
+  safe_size += sizeof(uint32_t);  // yuv_color_type
   safe_size += decoded_color_space_size + align;
   safe_size += num_planes_ * sizeof(uint64_t);  // plane widths
   safe_size += num_planes_ * sizeof(uint64_t);  // plane heights
@@ -274,6 +275,7 @@ bool ClientImageTransferCacheEntry::Serialize(base::span<uint8_t> data) const {
     writer.Write(static_cast<uint32_t>(needs_mips_ ? 1 : 0));
     writer.Write(yuv_color_space_);
     writer.Write(decoded_color_space_);
+    writer.Write(yuv_pixmaps_->at(0)->colorType());
     for (uint32_t i = 0; i < num_planes_; ++i) {
       DCHECK(yuv_pixmaps_->at(i));
       const SkPixmap* plane = yuv_pixmaps_->at(i);
@@ -411,6 +413,8 @@ bool ServiceImageTransferCacheEntry::Deserialize(
     yuv_color_space_ = yuv_color_space;
     sk_sp<SkColorSpace> decoded_color_space;
     reader.Read(&decoded_color_space);
+    SkColorType yuv_plane_color_type = kUnknown_SkColorType;
+    reader.Read(&yuv_plane_color_type);
 
     // Match GrTexture::onGpuMemorySize so that memory traces agree.
     auto gr_mips = has_mips_ ? GrMipMapped::kYes : GrMipMapped::kNo;
@@ -437,7 +441,6 @@ bool ServiceImageTransferCacheEntry::Deserialize(
 
       size_t plane_bytes;
       reader.ReadSize(&plane_bytes);
-      constexpr SkColorType yuv_plane_color_type = kGray_8_SkColorType;
       SkImageInfo plane_pixmap_info =
           SkImageInfo::Make(plane_width, plane_height, yuv_plane_color_type,
                             kPremul_SkAlphaType, decoded_color_space);

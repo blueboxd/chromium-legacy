@@ -2254,7 +2254,7 @@ void ExtensionPrefs::RegisterProfilePrefs(
   // defined.
   registry->RegisterIntegerPref(kCorruptedDisableCount.name, 0);
 
-#if !defined(OS_MACOSX)
+#if !defined(OS_MAC)
   registry->RegisterBooleanPref(pref_names::kAppFullscreenAllowed, true);
 #endif
 

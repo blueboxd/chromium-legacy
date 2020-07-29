@@ -22,7 +22,7 @@
 #include "third_party/skia/include/core/SkPixmap.h"
 #include "third_party/skia/include/core/SkRefCnt.h"
 #include "third_party/skia/include/gpu/GrBackendSurface.h"
-#include "third_party/skia/include/gpu/GrContext.h"
+#include "third_party/skia/include/gpu/GrDirectContext.h"
 #include "third_party/skia/include/gpu/GrTypes.h"
 #include "third_party/skia/include/gpu/gl/GrGLInterface.h"
 #include "third_party/skia/include/gpu/gl/GrGLTypes.h"
@@ -92,7 +92,7 @@ class ImageTransferCacheEntryTest
     ASSERT_TRUE(gl_context_->MakeCurrent(surface_.get()));
     sk_sp<GrGLInterface> interface(gl::init::CreateGrGLInterface(
         *gl_context_->GetVersionInfo(), false /* use_version_es2 */));
-    gr_context_ = GrContext::MakeGL(std::move(interface));
+    gr_context_ = GrDirectContext::MakeGL(std::move(interface));
     ASSERT_TRUE(gr_context_);
   }
 
@@ -157,13 +157,13 @@ class ImageTransferCacheEntryTest
     share_group_.reset();
   }
 
-  GrContext* gr_context() const { return gr_context_.get(); }
+  GrDirectContext* gr_context() const { return gr_context_.get(); }
 
  private:
   // Uploads a texture corresponding to a single plane in a YUV image. All the
   // samples in the plane are set to |color|. The texture is not owned by Skia:
   // when Skia doesn't need it anymore, MarkTextureAsReleased() will be called.
-  sk_sp<SkImage> CreateSolidPlane(GrContext* gr_context,
+  sk_sp<SkImage> CreateSolidPlane(GrDirectContext* gr_context,
                                   int width,
                                   int height,
                                   GrGLenum texture_format,
@@ -204,7 +204,7 @@ class ImageTransferCacheEntryTest
   scoped_refptr<gl::GLSurface> surface_;
   scoped_refptr<gl::GLShareGroup> share_group_;
   scoped_refptr<gl::GLContext> gl_context_;
-  sk_sp<GrContext> gr_context_;
+  sk_sp<GrDirectContext> gr_context_;
   gl::DisableNullDrawGLBindings enable_pixel_output_;
 };
 
@@ -231,8 +231,8 @@ TEST_P(ImageTransferCacheEntryTest, Deserialize) {
 
   void* planes[3];
   planes[0] = reinterpret_cast<void*>(planes_data.get());
-  planes[1] = ((char*)planes[0]) + y_bytes;
-  planes[2] = ((char*)planes[1]) + uv_bytes;
+  planes[1] = reinterpret_cast<char*>(planes[0]) + y_bytes;
+  planes[2] = reinterpret_cast<char*>(planes[1]) + uv_bytes;
 
   auto info = SkImageInfo::Make(image_width, image_height, kGray_8_SkColorType,
                                 kUnknown_SkAlphaType);
@@ -407,7 +407,7 @@ INSTANTIATE_TEST_SUITE_P(All,
 
 TEST(ImageTransferCacheEntryTestNoYUV, CPUImageWithMips) {
   GrMockOptions options;
-  auto gr_context = GrContext::MakeMock(&options);
+  auto gr_context = GrDirectContext::MakeMock(&options);
 
   SkBitmap bitmap;
   bitmap.allocPixels(
@@ -433,7 +433,7 @@ TEST(ImageTransferCacheEntryTestNoYUV, CPUImageWithMips) {
 
 TEST(ImageTransferCacheEntryTestNoYUV, CPUImageAddMipsLater) {
   GrMockOptions options;
-  auto gr_context = GrContext::MakeMock(&options);
+  auto gr_context = GrDirectContext::MakeMock(&options);
 
   SkBitmap bitmap;
   bitmap.allocPixels(

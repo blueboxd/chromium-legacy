@@ -2385,8 +2385,7 @@ void WebContentsImpl::NotifyPreferencesChanged() {
 }
 
 void WebContentsImpl::SyncRendererPrefs() {
-  blink::mojom::RendererPreferences renderer_preferences =
-      GetRendererPrefs(GetBrowserContext());
+  blink::mojom::RendererPreferences renderer_preferences = GetRendererPrefs();
   RenderViewHostImpl::GetPlatformSpecificPrefs(&renderer_preferences);
   SendPageMessage(
       new PageMsg_SetRendererPrefs(MSG_ROUTING_NONE, renderer_preferences));
@@ -2787,7 +2786,7 @@ bool WebContentsImpl::HandleKeyboardEvent(const NativeWebKeyboardEvent& event) {
 
 bool WebContentsImpl::HandleWheelEvent(
     const blink::WebMouseWheelEvent& event) {
-#if !defined(OS_MACOSX)
+#if !defined(OS_MAC)
   // On platforms other than Mac, control+mousewheel may change zoom. On Mac,
   // this isn't done for two reasons:
   //   -the OS already has a gesture to do this through pinch-zoom
@@ -4044,7 +4043,7 @@ void WebContentsImpl::Copy() {
 }
 
 void WebContentsImpl::CopyToFindPboard() {
-#if defined(OS_MACOSX)
+#if defined(OS_MAC)
   auto* input_handler = GetFocusedFrameWidgetInputHandler();
   if (!input_handler)
     return;
@@ -6145,8 +6144,7 @@ RenderViewHostDelegateView* WebContentsImpl::GetDelegateView() {
   return render_view_host_delegate_view_;
 }
 
-blink::mojom::RendererPreferences WebContentsImpl::GetRendererPrefs(
-    BrowserContext* browser_context) const {
+blink::mojom::RendererPreferences WebContentsImpl::GetRendererPrefs() const {
   return renderer_preferences_;
 }
 
@@ -6364,7 +6362,7 @@ void WebContentsImpl::ClearTargetURL() {
 }
 
 void WebContentsImpl::Close(RenderViewHost* rvh) {
-#if defined(OS_MACOSX)
+#if defined(OS_MAC)
   // The UI may be in an event-tracking loop, such as between the
   // mouse-down and mouse-up in text selection or a button click.
   // Defer the close until after tracking is complete, so that we
@@ -7044,7 +7042,7 @@ bool WebContentsImpl::CreateRenderViewForRenderManager(
                                    controller_.GetLastCommittedEntryIndex(),
                                    controller_.GetEntryCount());
 
-#if defined(OS_POSIX) && !defined(OS_MACOSX) && !defined(OS_ANDROID)
+#if defined(OS_POSIX) && !defined(OS_MAC) && !defined(OS_ANDROID)
   // Force a ViewMsg_Resize to be sent, needed to make plugins show up on
   // linux. See crbug.com/83941.
   RenderWidgetHostView* rwh_view = render_view_host->GetWidget()->GetView();

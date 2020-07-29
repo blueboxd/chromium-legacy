@@ -154,7 +154,7 @@ TEST(OverrideSettingsTest, ParseManifest) {
   std::string error;
   scoped_refptr<Extension> extension = CreateExtension(kManifest, &error);
   ASSERT_TRUE(extension.get());
-#if defined(OS_WIN) || defined(OS_MACOSX)
+#if defined(OS_WIN) || defined(OS_MAC)
   ASSERT_TRUE(extension->manifest()->HasPath(manifest_keys::kSettingsOverride));
 
   SettingsOverrides* settings_override = static_cast<SettingsOverrides*>(
@@ -188,7 +188,7 @@ TEST(OverrideSettingsTest, ParsePrepopulatedId) {
   scoped_refptr<Extension> extension =
       CreateExtension(kPrepopulatedManifest, &error);
   ASSERT_TRUE(extension.get());
-#if defined(OS_WIN) || defined(OS_MACOSX)
+#if defined(OS_WIN) || defined(OS_MAC)
   ASSERT_TRUE(extension->manifest()->HasPath(manifest_keys::kSettingsOverride));
 
   SettingsOverrides* settings_override = static_cast<SettingsOverrides*>(
@@ -212,7 +212,7 @@ TEST(OverrideSettingsTest, ParseManifestBrokenHomepageButCorrectStartupPages) {
   scoped_refptr<Extension> extension =
       CreateExtension(kManifestBrokenHomepageButCorrectStartupPages, &error);
   ASSERT_TRUE(extension.get());
-#if defined(OS_WIN) || defined(OS_MACOSX)
+#if defined(OS_WIN) || defined(OS_MAC)
   ASSERT_TRUE(extension->manifest()->HasPath(manifest_keys::kSettingsOverride));
 
   SettingsOverrides* settings_override = static_cast<SettingsOverrides*>(
@@ -231,7 +231,7 @@ TEST(OverrideSettingsTest, ParseManifestBrokenStartupPagesButCorrectHomepage) {
   scoped_refptr<Extension> extension =
       CreateExtension(kManifestBrokenStartupPagesButCorrectHomepage, &error);
   ASSERT_TRUE(extension.get());
-#if defined(OS_WIN) || defined(OS_MACOSX)
+#if defined(OS_WIN) || defined(OS_MAC)
   ASSERT_TRUE(extension->manifest()->HasPath(manifest_keys::kSettingsOverride));
   SettingsOverrides* settings_override = static_cast<SettingsOverrides*>(
       extension->GetManifestData(manifest_keys::kSettingsOverride));
@@ -248,7 +248,7 @@ TEST(OverrideSettingsTest, ParseBrokenManifestEmptySettingsOverride) {
   std::string error;
   scoped_refptr<Extension> extension =
       CreateExtension(kBrokenManifestEmpty, &error);
-#if defined(OS_WIN) || defined(OS_MACOSX)
+#if defined(OS_WIN) || defined(OS_MAC)
   EXPECT_FALSE(extension.get());
   EXPECT_EQ(
       extensions::ErrorUtils::FormatErrorMessage(
@@ -266,7 +266,7 @@ TEST(OverrideSettingsTest, ParseBrokenManifestHomepage) {
   std::string error;
   scoped_refptr<Extension> extension =
       CreateExtension(kBrokenManifestHomepage, &error);
-#if defined(OS_WIN) || defined(OS_MACOSX)
+#if defined(OS_WIN) || defined(OS_MAC)
   EXPECT_FALSE(extension.get());
   EXPECT_EQ(extensions::ErrorUtils::FormatErrorMessage(
                 extensions::manifest_errors::kInvalidHomepageOverrideURL,
@@ -283,7 +283,7 @@ TEST(OverrideSettingsTest, ParseBrokenManifestStartupPages) {
   std::string error;
   scoped_refptr<Extension> extension =
       CreateExtension(kBrokenManifestStartupPages, &error);
-#if defined(OS_WIN) || defined(OS_MACOSX)
+#if defined(OS_WIN) || defined(OS_MAC)
   EXPECT_FALSE(extension.get());
   EXPECT_EQ(
       extensions::ErrorUtils::FormatErrorMessage(
@@ -328,7 +328,7 @@ TEST(OverrideSettingsTest, SearchProviderMissingKeys) {
     std::string error;
     scoped_refptr<Extension> extension = CreateExtensionWithSearchProvider(
         std::move(provider_with_missing_key), &error);
-#if defined(OS_WIN) || defined(OS_MACOSX)
+#if defined(OS_WIN) || defined(OS_MAC)
     EXPECT_FALSE(extension.get());
     EXPECT_EQ(extensions::ErrorUtils::FormatErrorMessage(
                   extensions::manifest_errors::kInvalidSearchEngineMissingKeys,

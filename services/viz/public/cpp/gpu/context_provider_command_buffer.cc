@@ -45,7 +45,7 @@
 #include "services/viz/public/cpp/gpu/command_buffer_metrics.h"
 #include "skia/buildflags.h"
 #include "third_party/skia/include/core/SkTraceMemoryDump.h"
-#include "third_party/skia/include/gpu/GrContext.h"
+#include "third_party/skia/include/gpu/GrDirectContext.h"
 #include "ui/gl/trace_util.h"
 
 class SkDiscardableMemory;
@@ -374,7 +374,7 @@ gpu::ContextSupport* ContextProviderCommandBuffer::ContextSupport() {
   return impl_;
 }
 
-class GrContext* ContextProviderCommandBuffer::GrContext() {
+class GrDirectContext* ContextProviderCommandBuffer::GrContext() {
   DCHECK(bind_tried_);
   DCHECK_EQ(bind_result_, gpu::ContextResult::kSuccess);
   DCHECK(support_grcontext_);

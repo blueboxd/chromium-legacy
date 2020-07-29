@@ -15,7 +15,7 @@
 #include "components/viz/common/gpu/context_provider.h"
 #include "gpu/ipc/in_process_command_buffer.h"
 #include "third_party/skia/include/core/SkRefCnt.h"
-#include "third_party/skia/include/gpu/GrContext.h"
+#include "third_party/skia/include/gpu/GrDirectContext.h"
 
 namespace gl {
 class GLSurface;
@@ -50,7 +50,7 @@ class AwRenderThreadContextProvider
   const gpu::GpuFeatureInfo& GetGpuFeatureInfo() const override;
   gpu::gles2::GLES2Interface* ContextGL() override;
   gpu::ContextSupport* ContextSupport() override;
-  class GrContext* GrContext() override;
+  class GrDirectContext* GrContext() override;
   gpu::SharedImageInterface* SharedImageInterface() override;
   viz::ContextCacheController* CacheController() override;
   base::Lock* GetLock() override;
@@ -71,7 +71,7 @@ class AwRenderThreadContextProvider
 
   std::unique_ptr<gpu::GLInProcessContext> context_;
   std::unique_ptr<gpu::gles2::GLES2TraceImplementation> trace_impl_;
-  sk_sp<class GrContext> gr_context_;
+  sk_sp<class GrDirectContext> gr_context_;
   std::unique_ptr<viz::ContextCacheController> cache_controller_;
 
   base::ObserverList<viz::ContextLostObserver>::Unchecked observers_;

@@ -86,7 +86,7 @@ void EchoDialogView::InitForEnabledEcho(const base::string16& service_name,
   auto label = std::make_unique<views::StyledLabel>(text, nullptr);
 
   views::StyledLabel::RangeStyleInfo service_name_style;
-  gfx::FontList font_list = label->GetDefaultFontList();
+  gfx::FontList font_list = label->GetFontList();
   service_name_style.custom_font =
       font_list.DeriveWithStyle(gfx::Font::UNDERLINE);
   service_name_style.tooltip = origin;

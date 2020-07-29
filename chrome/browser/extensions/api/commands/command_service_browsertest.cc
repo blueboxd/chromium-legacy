@@ -29,7 +29,7 @@ const char kBasicNamedCommand[] = "toggle-feature";
 std::string GetAnotherCommandPlatform() {
 #if defined(OS_WIN)
   return extensions::manifest_values::kKeybindingPlatformMac;
-#elif defined(OS_MACOSX)
+#elif defined(OS_MAC)
   return extensions::manifest_values::kKeybindingPlatformChromeOs;
 #elif defined(OS_CHROMEOS)
   return extensions::manifest_values::kKeybindingPlatformLinux;

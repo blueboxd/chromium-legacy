@@ -315,7 +315,7 @@ TracingControllerImpl::GenerateMetadataDict() {
   metadata_dict->SetString("gpu-psver", gpu_info.pixel_shader_version);
   metadata_dict->SetString("gpu-vsver", gpu_info.vertex_shader_version);
 
-#if defined(OS_MACOSX)
+#if defined(OS_MAC)
   metadata_dict->SetString("gpu-glver", gpu_info.gl_version);
 #elif defined(OS_POSIX)
   metadata_dict->SetString("gpu-gl-vendor", gpu_info.gl_vendor);

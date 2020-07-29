@@ -332,7 +332,7 @@ const char kWebKitSerifFontFamilyTraditionalHan[] =
     "webkit.webprefs.fonts.serif.Hant";
 const char kWebKitSansSerifFontFamilyTraditionalHan[] =
     "webkit.webprefs.fonts.sansserif.Hant";
-#if defined(OS_WIN) || defined(OS_MACOSX)
+#if defined(OS_WIN) || defined(OS_MAC)
 const char kWebKitCursiveFontFamilySimplifiedHan[] =
     "webkit.webprefs.fonts.cursive.Hans";
 const char kWebKitCursiveFontFamilyTraditionalHan[] =
@@ -402,7 +402,7 @@ const char kContextualSearchDisabledValue[] = "false";
 const char kContextualSearchEnabledValue[] = "true";
 #endif  // defined(OS_ANDROID)
 
-#if defined(OS_MACOSX)
+#if defined(OS_MAC)
 // Boolean that indicates whether the browser should put up a confirmation
 // window when the user is attempting to quit. Only on Mac.
 const char kConfirmToQuitEnabled[] = "browser.confirm_to_quit";
@@ -1208,7 +1208,7 @@ const char kLiveCaptionEnabled[] =
 const char kSODAPath[] = "accessibility.captions.soda_path";
 #endif
 
-#if defined(OS_MACOSX)
+#if defined(OS_MAC)
 // Boolean that indicates whether the application should show the info bar
 // asking the user to set up automatic updates when Keystone promotion is
 // required.
@@ -1657,7 +1657,7 @@ const char kDownloadDefaultDirectory[] = "download.default_directory";
 // upgrade a unsafe location to a safe location.
 const char kDownloadDirUpgraded[] = "download.directory_upgrade";
 
-#if defined(OS_WIN) || defined(OS_LINUX) || defined(OS_MACOSX)
+#if defined(OS_WIN) || defined(OS_LINUX) || defined(OS_MAC)
 const char kOpenPdfDownloadInSystemReader[] =
     "download.open_pdf_in_system_reader";
 #endif
@@ -1992,12 +1992,12 @@ const char kGloballyScopeHTTPAuthCacheEnabled[] =
 const char kAmbientAuthenticationInPrivateModesEnabled[] =
     "auth.ambient_auth_in_private_modes";
 
-#if defined(OS_LINUX) || defined(OS_MACOSX) || defined(OS_CHROMEOS)
+#if defined(OS_LINUX) || defined(OS_MAC) || defined(OS_CHROMEOS)
 // Boolean that specifies whether OK-AS-DELEGATE flag from KDC is respected
 // along with kAuthNegotiateDelegateAllowlist.
 const char kAuthNegotiateDelegateByKdcPolicy[] =
     "auth.negotiate_delegate_by_kdc_policy";
-#endif  // defined(OS_LINUX) || defined(OS_MACOSX) || defined(OS_CHROMEOS)
+#endif  // defined(OS_LINUX) || defined(OS_MAC) || defined(OS_CHROMEOS)
 
 #if defined(OS_POSIX)
 // Boolean that specifies whether NTLMv2 is enabled.
@@ -2466,7 +2466,7 @@ const char kCloudPrintSubmitEnabled[] = "cloud_print.submit_enabled";
 // Preference to store proxy settings.
 const char kMaxConnectionsPerProxy[] = "net.max_connections_per_proxy";
 
-#if defined(OS_MACOSX)
+#if defined(OS_MAC)
 // Set to true if the user removed our login item so we should not create a new
 // one when uninstalling background apps.
 const char kUserRemovedLoginItem[] = "background_mode.user_removed_login_item";

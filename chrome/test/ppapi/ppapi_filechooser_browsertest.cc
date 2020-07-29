@@ -269,7 +269,7 @@ IN_PROC_BROWSER_TEST_F(PPAPIFileChooserTest, FileChooser_Quarantine) {
   ASSERT_TRUE(base::PathExists(actual_filename));
   EXPECT_TRUE(quarantine::IsFileQuarantined(actual_filename, GURL(), GURL()));
 }
-#endif  // defined(OS_WIN) || defined(OS_MACOSX)
+#endif  // defined(OS_WIN) || defined(OS_MAC)
 
 #if BUILDFLAG(FULL_SAFE_BROWSING)
 // These tests only make sense when SafeBrowsing is enabled. They verify

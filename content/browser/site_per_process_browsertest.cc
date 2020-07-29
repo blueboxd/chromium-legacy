@@ -156,7 +156,7 @@
 #include "ui/aura/window_tree_host.h"
 #endif
 
-#if defined(OS_MACOSX)
+#if defined(OS_MAC)
 #include "content/browser/renderer_host/input/synthetic_touchpad_pinch_gesture.h"
 #include "ui/base/test/scoped_preferred_scroller_style_mac.h"
 #endif
@@ -3982,7 +3982,7 @@ IN_PROC_BROWSER_TEST_P(SitePerProcessBrowserTest, ProxyCreationSkipsSubtree) {
 #endif
 IN_PROC_BROWSER_TEST_P(SitePerProcessBrowserTest,
                        MAYBE_FrameOwnerPropertiesPropagationScrolling) {
-#if defined(OS_MACOSX)
+#if defined(OS_MAC)
   ui::test::ScopedPreferredScrollerStyle scroller_style_override(false);
 #endif
   GURL main_url(embedded_test_server()->GetURL(
@@ -5625,7 +5625,7 @@ IN_PROC_BROWSER_TEST_P(SitePerProcessBrowserTest,
 // the second B2 -> A3 navigation is initiated before the first page receives
 // the FrameHostMsg_Unload_ACK. Ensure that this doesn't crash and that the
 // RVH(A1) is not reused in that case.
-#if defined(OS_MACOSX)
+#if defined(OS_MAC)
 #define MAYBE_RenderViewHostIsNotReusedAfterDelayedUnloadACK \
   DISABLED_RenderViewHostIsNotReusedAfterDelayedUnloadACK
 #else
@@ -8158,7 +8158,7 @@ IN_PROC_BROWSER_TEST_P(SitePerProcessBrowserTest,
 // where popup menus don't create a popup RenderWidget, but rather they trigger
 // a FrameHostMsg_ShowPopup to ask the browser to build and display the actual
 // popup using native controls.
-#if !defined(OS_MACOSX) && !defined(OS_ANDROID)
+#if !defined(OS_MAC) && !defined(OS_ANDROID)
 IN_PROC_BROWSER_TEST_P(SitePerProcessBrowserTest,
                        TwoSubframesCreatePopupMenuWidgetsSimultaneously) {
   GURL main_url(embedded_test_server()->GetURL(
@@ -11203,7 +11203,7 @@ IN_PROC_BROWSER_TEST_P(SitePerProcessBrowserTest,
   params.anchor = gfx::PointF(bounds.CenterPoint());
   // In SyntheticPinchGestureParams, |scale_factor| is really a delta.
   params.scale_factor = kPageScaleDelta;
-#if defined(OS_MACOSX)
+#if defined(OS_MAC)
   auto synthetic_pinch_gesture =
       std::make_unique<SyntheticTouchpadPinchGesture>(params);
 #else
@@ -11867,7 +11867,7 @@ class CommitMessageOrderReverser : public DidCommitNavigationInterceptor {
 // its layout/animate phase. See https://crbug.com/802932.
 //
 // TODO(809580): Disabled on Android, Mac, and ChromeOS due to flakiness.
-#if defined(OS_ANDROID) || defined(OS_MACOSX) || defined(OS_CHROMEOS)
+#if defined(OS_ANDROID) || defined(OS_MAC) || defined(OS_CHROMEOS)
 #define MAYBE_OOPIFDetachDuringAnimation DISABLED_OOPIFDetachDuringAnimation
 #else
 #define MAYBE_OOPIFDetachDuringAnimation OOPIFDetachDuringAnimation
@@ -12408,7 +12408,7 @@ IN_PROC_BROWSER_TEST_P(SitePerProcessBrowserTest,
 
 // Tests that when a large OOPIF has been scaled, the compositor raster area
 // sent from the embedder is correct.
-#if defined(OS_ANDROID) || defined(OS_MACOSX)
+#if defined(OS_ANDROID) || defined(OS_MAC)
 // Temporarily disabled on Android because this doesn't account for browser
 // control height or page scale factor.
 // Flaky on Mac. https://crbug.com/840314
@@ -15093,7 +15093,7 @@ IN_PROC_BROWSER_TEST_P(SitePerProcessBrowserTest,
   params.anchor = gfx::PointF(bounds.CenterPoint().x(), 70.f);
   // In SyntheticPinchGestureParams, |scale_factor| is really a delta.
   params.scale_factor = kPageScaleDelta;
-#if defined(OS_MACOSX)
+#if defined(OS_MAC)
   auto synthetic_pinch_gesture =
       std::make_unique<SyntheticTouchpadPinchGesture>(params);
 #else

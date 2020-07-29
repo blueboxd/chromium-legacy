@@ -2370,7 +2370,7 @@ IN_PROC_BROWSER_TEST_P(RenderFrameHostManagerTest,
 // See http://crbug.com/335503.
 // The test fails on Mac OSX with ASAN.
 // See http://crbug.com/699062.
-#if defined(OS_MACOSX) && defined(THREAD_SANITIZER)
+#if defined(OS_MAC) && defined(THREAD_SANITIZER)
 #define MAYBE_RendererDebugURLsDontSwap DISABLED_RendererDebugURLsDontSwap
 #else
 #define MAYBE_RendererDebugURLsDontSwap RendererDebugURLsDontSwap
@@ -3681,7 +3681,7 @@ IN_PROC_BROWSER_TEST_P(RenderFrameHostManagerTest,
 // with arbitrary origin, when universal access setting is enabled.
 // TODO(nasko): The test is disabled on Mac, since universal access from file
 // scheme behaves differently.  See also https://crbug.com/981018.
-#if defined(OS_MACOSX)
+#if defined(OS_MAC)
 #define MAYBE_EnsureUniversalAccessFromFileSchemeSucceeds \
   DISABLED_EnsureUniversalAccessFromFileSchemeSucceeds
 #else
@@ -7074,7 +7074,7 @@ IN_PROC_BROWSER_TEST_P(RenderFrameHostManagerUnloadBrowserTest,
 // Verify that when an OOPIF with an unload handler navigates cross-process,
 // its unload handler is able to send a postMessage to the parent frame.
 // See https://crbug.com/857274.
-#if defined(OS_MACOSX) || (defined(OS_WIN) && defined(ADDRESS_SANITIZER))
+#if defined(OS_MAC) || (defined(OS_WIN) && defined(ADDRESS_SANITIZER))
 #define MAYBE_PostMessageToParentWhenSubframeNavigates \
   DISABLED_PostMessageToParentWhenSubframeNavigates
 #else
@@ -7184,7 +7184,7 @@ class AssertForegroundHelper {
  public:
   AssertForegroundHelper() {}
 
-#if defined(OS_MACOSX)
+#if defined(OS_MAC)
   // Asserts that |renderer_process| isn't backgrounded and reposts self to
   // check again shortly. |renderer_process| must outlive this
   // AssertForegroundHelper instance.
@@ -7198,7 +7198,7 @@ class AssertForegroundHelper {
                        std::cref(renderer_process), port_provider),
         base::TimeDelta::FromMilliseconds(1));
   }
-#else   // defined(OS_MACOSX)
+#else   // defined(OS_MAC)
   // Same as above without the Mac specific base::PortProvider.
   void AssertForegroundAndRepost(const base::Process& renderer_process) {
     ASSERT_FALSE(renderer_process.IsProcessBackgrounded());
@@ -7209,7 +7209,7 @@ class AssertForegroundHelper {
                        std::cref(renderer_process)),
         base::TimeDelta::FromMilliseconds(1));
   }
-#endif  // defined(OS_MACOSX)
+#endif  // defined(OS_MAC)
 
  private:
   base::WeakPtrFactory<AssertForegroundHelper> weak_ptr_factory_{this};
@@ -7232,10 +7232,10 @@ IN_PROC_BROWSER_TEST_P(
   WebContentsImpl* web_contents =
       static_cast<WebContentsImpl*>(shell()->web_contents());
 
-#if defined(OS_MACOSX)
+#if defined(OS_MAC)
   base::PortProvider* port_provider =
       BrowserChildProcessHost::GetPortProvider();
-#endif  //  defined(OS_MACOSX)
+#endif  //  defined(OS_MAC)
 
   // Start off navigating to a.com and capture the process used to commit.
   EXPECT_TRUE(NavigateToURL(
@@ -7281,7 +7281,7 @@ IN_PROC_BROWSER_TEST_P(
   const base::Process& process = speculative_rph->GetProcess();
   EXPECT_TRUE(process.IsValid());
   AssertForegroundHelper assert_foreground_helper;
-#if defined(OS_MACOSX)
+#if defined(OS_MAC)
   assert_foreground_helper.AssertForegroundAndRepost(process, port_provider);
 #else
   assert_foreground_helper.AssertForegroundAndRepost(process);
@@ -7307,10 +7307,10 @@ IN_PROC_BROWSER_TEST_P(
   WebContentsImpl* web_contents =
       static_cast<WebContentsImpl*>(shell()->web_contents());
 
-#if defined(OS_MACOSX)
+#if defined(OS_MAC)
   base::PortProvider* port_provider =
       BrowserChildProcessHost::GetPortProvider();
-#endif  //  defined(OS_MACOSX)
+#endif  //  defined(OS_MAC)
 
   // Start off navigating to a.com and capture the process used to commit.
   EXPECT_TRUE(NavigateToURL(
@@ -7366,7 +7366,7 @@ IN_PROC_BROWSER_TEST_P(
   const base::Process& process = spare_rph->GetProcess();
   EXPECT_TRUE(process.IsValid());
   AssertForegroundHelper assert_foreground_helper;
-#if defined(OS_MACOSX)
+#if defined(OS_MAC)
   assert_foreground_helper.AssertForegroundAndRepost(process, port_provider);
 #else
   assert_foreground_helper.AssertForegroundAndRepost(process);

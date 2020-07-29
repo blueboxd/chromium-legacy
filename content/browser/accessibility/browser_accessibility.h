@@ -41,7 +41,7 @@
 #define PLATFORM_HAS_NATIVE_ACCESSIBILITY_IMPL 1
 #endif
 
-#if defined(OS_MACOSX)
+#if defined(OS_MAC)
 #define PLATFORM_HAS_NATIVE_ACCESSIBILITY_IMPL 1
 #endif
 
@@ -53,7 +53,7 @@
 #define PLATFORM_HAS_NATIVE_ACCESSIBILITY_IMPL 1
 #endif
 
-#if defined(OS_MACOSX) && __OBJC__
+#if defined(OS_MAC) && __OBJC__
 @class BrowserAccessibilityCocoa;
 #endif
 

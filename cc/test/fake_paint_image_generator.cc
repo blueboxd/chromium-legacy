@@ -23,6 +23,7 @@ FakePaintImageGenerator::FakePaintImageGenerator(
 FakePaintImageGenerator::FakePaintImageGenerator(
     const SkImageInfo& info,
     const SkYUVASizeInfo& yuva_size_info,
+    uint8_t yuva_bit_depth,
     std::vector<FrameMetadata> frames,
     bool allocate_discardable_memory,
     std::vector<SkISize> supported_sizes)
@@ -32,7 +33,8 @@ FakePaintImageGenerator::FakePaintImageGenerator(
           0),
       supported_sizes_(std::move(supported_sizes)),
       is_yuv_(true),
-      yuva_size_info_(yuva_size_info) {}
+      yuva_size_info_(yuva_size_info),
+      yuva_bit_depth_(yuva_bit_depth) {}
 
 FakePaintImageGenerator::~FakePaintImageGenerator() = default;
 
@@ -64,20 +66,23 @@ bool FakePaintImageGenerator::GetPixels(const SkImageInfo& info,
   return true;
 }
 
-bool FakePaintImageGenerator::QueryYUVA8(SkYUVASizeInfo* yuv_info,
-                                         SkYUVAIndex indices[],
-                                         SkYUVColorSpace* color_space) const {
+bool FakePaintImageGenerator::QueryYUVA(SkYUVASizeInfo* yuv_info,
+                                        SkYUVAIndex indices[],
+                                        SkYUVColorSpace* color_space,
+                                        uint8_t* bit_depth) const {
   if (!is_yuv_)
     return false;
   *yuv_info = yuva_size_info_;
+  *bit_depth = yuva_bit_depth_;
   return true;
 }
 
-bool FakePaintImageGenerator::GetYUVA8Planes(const SkYUVASizeInfo& yuv_info,
-                                             const SkYUVAIndex indices[],
-                                             void* planes[4],
-                                             size_t frame_index,
-                                             uint32_t lazy_pixel_ref) {
+bool FakePaintImageGenerator::GetYUVAPlanes(const SkYUVASizeInfo& yuv_info,
+                                            SkColorType color_type,
+                                            const SkYUVAIndex indices[],
+                                            void* planes[4],
+                                            size_t frame_index,
+                                            uint32_t lazy_pixel_ref) {
   CHECK(is_yuv_);
   CHECK(!expect_fallback_to_rgb_);
   if (image_backing_memory_.empty())

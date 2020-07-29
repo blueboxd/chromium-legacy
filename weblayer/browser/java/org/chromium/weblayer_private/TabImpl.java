@@ -4,6 +4,7 @@
 
 package org.chromium.weblayer_private;
 
+import android.app.Activity;
 import android.graphics.Bitmap;
 import android.graphics.RectF;
 import android.os.Build;
@@ -26,10 +27,12 @@ import org.chromium.base.annotations.JNINamespace;
 import org.chromium.base.annotations.NativeMethods;
 import org.chromium.components.autofill.AutofillActionModeCallback;
 import org.chromium.components.autofill.AutofillProvider;
+import org.chromium.components.browser_ui.display_cutout.DisplayCutoutController;
 import org.chromium.components.browser_ui.http_auth.LoginPrompt;
 import org.chromium.components.browser_ui.media.MediaSessionHelper;
 import org.chromium.components.browser_ui.util.BrowserControlsVisibilityDelegate;
 import org.chromium.components.browser_ui.util.ComposedBrowserControlsVisibilityDelegate;
+import org.chromium.components.browser_ui.widget.InsetObserverView;
 import org.chromium.components.embedder_support.contextmenu.ContextMenuParams;
 import org.chromium.components.external_intents.InterceptNavigationDelegateImpl;
 import org.chromium.components.find_in_page.FindInPageBridge;
@@ -117,6 +120,7 @@ public final class TabImpl extends ITab.Stub implements LoginPrompt.Observer {
     private InterceptNavigationDelegateImpl mInterceptNavigationDelegate;
     private InfoBarContainer mInfoBarContainer;
     private MediaSessionHelper mMediaSessionHelper;
+    private DisplayCutoutController mDisplayCutoutController;
 
     private boolean mPostContainerViewInitDone;
 
@@ -242,6 +246,11 @@ public final class TabImpl extends ITab.Stub implements LoginPrompt.Observer {
                     hideFindInPageUiAndNotifyClient();
                 }
             }
+            @Override
+            public void viewportFitChanged(@WebContentsObserver.ViewportFitType int value) {
+                ensureDisplayCutoutController();
+                mDisplayCutoutController.setViewportFit(value);
+            }
         };
         mWebContents.addObserver(mWebContentsObserver);
 
@@ -346,6 +355,7 @@ public final class TabImpl extends ITab.Stub implements LoginPrompt.Observer {
 
     public void updateViewAttachedStateFromBrowser() {
         updateWebContentsVisibility();
+        updateDisplayCutoutController();
     }
 
     public void onProvideAutofillVirtualStructure(ViewStructure structure, int flags) {
@@ -390,6 +400,7 @@ public final class TabImpl extends ITab.Stub implements LoginPrompt.Observer {
                 mNativeTab, topControlsContainerViewHandle, bottomControlsContainerViewHandle);
         mInfoBarContainer.onTabDidGainActive();
         updateWebContentsVisibility();
+        updateDisplayCutoutController();
     }
 
     /**
@@ -402,6 +413,7 @@ public final class TabImpl extends ITab.Stub implements LoginPrompt.Observer {
 
         hideFindInPageUiAndNotifyClient();
         updateWebContentsVisibility();
+        updateDisplayCutoutController();
 
         // This method is called as part of the final phase of TabImpl destruction, at which
         // point mInfoBarContainer has already been destroyed.
@@ -429,6 +441,13 @@ public final class TabImpl extends ITab.Stub implements LoginPrompt.Observer {
         } else {
             if (webContentsVisible) mWebContents.onHide();
         }
+    }
+
+    private void updateDisplayCutoutController() {
+        if (mDisplayCutoutController == null) return;
+
+        mDisplayCutoutController.onActivityAttachmentChanged(mBrowser.getWindowAndroid());
+        mDisplayCutoutController.maybeUpdateLayout();
     }
 
     public void loadUrl(LoadUrlParams loadUrlParams) {
@@ -953,6 +972,34 @@ public final class TabImpl extends ITab.Stub implements LoginPrompt.Observer {
         }
 
         TabImplJni.get().updateBrowserControlsConstraint(mNativeTab, constraint, animate);
+    }
+
+    private void ensureDisplayCutoutController() {
+        if (mDisplayCutoutController != null) return;
+
+        mDisplayCutoutController =
+                new DisplayCutoutController(new DisplayCutoutController.Delegate() {
+                    @Override
+                    public Activity getAttachedActivity() {
+                        WindowAndroid window = mBrowser.getWindowAndroid();
+                        return window == null ? null : window.getActivity().get();
+                    }
+
+                    @Override
+                    public WebContents getWebContents() {
+                        return mWebContents;
+                    }
+
+                    @Override
+                    public InsetObserverView getInsetObserverView() {
+                        return mBrowser.getViewController().getInsetObserverView();
+                    }
+
+                    @Override
+                    public boolean isInteractable() {
+                        return isVisible();
+                    }
+                });
     }
 
     /**

@@ -17,7 +17,7 @@
 #include "ash/shell.h"
 #endif
 
-#if defined(OS_MACOSX)
+#if defined(OS_MAC)
 #include "chrome/browser/ui/test/test_browser_dialog_mac.h"
 #endif
 
@@ -160,7 +160,7 @@ bool TestBrowserDialog::VerifyUi() {
 }
 
 void TestBrowserDialog::WaitForUserDismissal() {
-#if defined(OS_MACOSX)
+#if defined(OS_MAC)
   internal::TestBrowserDialogInteractiveSetUp();
 #endif
 

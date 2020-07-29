@@ -309,7 +309,7 @@ class AutofillProviderBrowserTestWithSkipFlagOff
   base::test::ScopedFeatureList feature_list_;
 };
 
-#if defined(OS_MACOSX)
+#if defined(OS_MAC)
 // These tests are flaky on Mac: https://crbug.com/1076487
 #define MAYBE_InferredLabelChangeImpactFormComparing \
   DISABLED_InferredLabelChangeImpactFormComparing

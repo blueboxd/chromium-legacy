@@ -57,7 +57,7 @@
 #include "url/origin.h"
 #include "url/url_constants.h"
 
-#if (defined(OS_POSIX) && !defined(OS_MACOSX)) || defined(OS_FUCHSIA)
+#if (defined(OS_POSIX) && !defined(OS_MAC)) || defined(OS_FUCHSIA)
 #include "base/posix/global_descriptors.h"
 #endif
 
@@ -1173,12 +1173,12 @@ class CONTENT_EXPORT ContentBrowserClient {
 
   // Populates |mappings| with all files that need to be mapped before launching
   // a child process.
-#if (defined(OS_POSIX) && !defined(OS_MACOSX)) || defined(OS_FUCHSIA)
+#if (defined(OS_POSIX) && !defined(OS_MAC)) || defined(OS_FUCHSIA)
   virtual void GetAdditionalMappedFilesForChildProcess(
       const base::CommandLine& command_line,
       int child_process_id,
       content::PosixFileDescriptorInfo* mappings) {}
-#endif  // defined(OS_POSIX) && !defined(OS_MACOSX) || defined(OS_FUCHSIA)
+#endif  // defined(OS_POSIX) && !defined(OS_MAC) || defined(OS_FUCHSIA)
 
 #if defined(OS_WIN)
   // Defines flags that can be passed to PreSpawnRenderer.

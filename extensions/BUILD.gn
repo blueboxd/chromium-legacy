@@ -208,6 +208,10 @@ repack("shell_and_test_pak") {
 }
 
 test("extensions_unittests") {
+  if ((is_linux && !is_chromeos) || chromeos_is_browser_only) {
+    use_xvfb = true
+  }
+
   sources = [
     "test/extensions_unittests_main.cc",
     "test/logging_timer_unittest.cc",
@@ -242,6 +246,10 @@ test("extensions_unittests") {
 }
 
 test("extensions_browsertests") {
+  if ((is_linux && !is_chromeos) || chromeos_is_browser_only) {
+    use_xvfb = true
+  }
+
   data = [
     "//extensions/test/data/",
     "//net/tools/testserver/",

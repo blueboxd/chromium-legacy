@@ -23,7 +23,7 @@ namespace component_updater {
 namespace {
 // File name of the Pepper Flash plugin on different platforms.
 const base::FilePath::CharType kDataPath[] =
-#if defined(OS_MACOSX)
+#if defined(OS_MAC)
 #if defined(ARCH_CPU_X86)
     FILE_PATH_LITERAL("components/flapper/mac");
 #elif defined(ARCH_CPU_X86_64)

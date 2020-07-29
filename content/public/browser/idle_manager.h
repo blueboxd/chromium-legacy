@@ -53,6 +53,10 @@ class IdleManager {
 
   // Tests whether the manager is still polling for updates or not.
   virtual bool IsPollingForTest() = 0;
+
+  virtual void SetIdleOverride(blink::mojom::UserIdleState user_state,
+                               blink::mojom::ScreenIdleState screen_state) = 0;
+  virtual void ClearIdleOverride() = 0;
 };
 
 }  // namespace content

@@ -58,7 +58,7 @@
 #include "components/crash/core/app/crashpad.h"  // nogncheck
 #endif
 
-#if defined(OS_MACOSX)
+#if defined(OS_MAC)
 #include "content/shell/app/paths_mac.h"
 #include "content/shell/app/shell_main_delegate_mac.h"
 #endif  // OS_MACOSX
@@ -71,7 +71,7 @@
 #include "content/shell/common/v8_crashpad_support_win.h"
 #endif
 
-#if defined(OS_POSIX) && !defined(OS_MACOSX) && !defined(OS_ANDROID)
+#if defined(OS_POSIX) && !defined(OS_MAC) && !defined(OS_ANDROID)
 #include "v8/include/v8-wasm-trap-handler-posix.h"
 #endif
 
@@ -159,7 +159,7 @@ bool ShellMainDelegate::BasicStartupComplete(int* exit_code) {
   v8_crashpad_support::SetUp();
 #endif
 
-#if defined(OS_MACOSX)
+#if defined(OS_MAC)
   // Needs to happen before InitializeResourceBundle().
   OverrideFrameworkBundlePath();
   OverrideOuterBundlePath();
@@ -308,7 +308,7 @@ void ShellMainDelegate::InitializeResourceBundle() {
                                                           pak_region);
   ui::ResourceBundle::GetSharedInstance().AddDataPackFromFileRegion(
       base::File(pak_fd), pak_region, ui::SCALE_FACTOR_100P);
-#elif defined(OS_MACOSX)
+#elif defined(OS_MAC)
   ui::ResourceBundle::InitSharedInstanceWithPakPath(GetResourcesPakFilePath());
 #else
   base::FilePath pak_file;
@@ -320,7 +320,7 @@ void ShellMainDelegate::InitializeResourceBundle() {
 }
 
 void ShellMainDelegate::PreCreateMainMessageLoop() {
-#if defined(OS_MACOSX)
+#if defined(OS_MAC)
   RegisterShellCrApp();
 #endif
 }

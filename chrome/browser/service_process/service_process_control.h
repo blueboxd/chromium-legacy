@@ -136,7 +136,7 @@ class ServiceProcessControl : public UpgradeObserver {
     friend class base::RefCountedThreadSafe<ServiceProcessControl::Launcher>;
     virtual ~Launcher();
 
-#if !defined(OS_MACOSX)
+#if !defined(OS_MAC)
     void DoDetectLaunched();
 #endif  // !OS_MACOSX
 

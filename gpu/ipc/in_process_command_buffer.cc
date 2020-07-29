@@ -372,7 +372,7 @@ gpu::ContextResult InProcessCommandBuffer::InitializeOnGpuThread(
       task_executor_->passthrough_discardable_manager(),
       task_executor_->shared_image_manager());
 
-#if defined(OS_MACOSX)
+#if defined(OS_MAC)
   // Virtualize GpuPreference:::kLowPower contexts by default on OS X to prevent
   // performance regressions when enabling FCM. https://crbug.com/180463
   use_virtualized_gl_context_ |=

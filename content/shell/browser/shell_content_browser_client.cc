@@ -208,7 +208,7 @@ void ShellContentBrowserClient::AppendExtraCommandLineSwitches(
     base::CommandLine* command_line,
     int child_process_id) {
   static const char* kForwardSwitches[] = {
-#if defined(OS_MACOSX)
+#if defined(OS_MAC)
     // Needed since on Mac, content_browsertests doesn't use
     // content_test_launcher.cc and instead uses shell_main.cc. So give a signal
     // to shell_main.cc that it's a browser test.

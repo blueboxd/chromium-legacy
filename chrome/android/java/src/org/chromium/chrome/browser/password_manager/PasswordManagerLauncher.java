@@ -66,6 +66,9 @@ public class PasswordManagerLauncher {
                             .isManagedPreference(Pref.CREDENTIALS_ENABLE_SERVICE)) {
                 if (tryShowingTheGooglePasswordManager(activity)) return;
             }
+            if (ChromeFeatureList.isEnabled(ChromeFeatureList.PASSWORD_CHANGE_IN_SETTINGS)) {
+                PasswordScriptsFetcherBridge.prewarmCache(Profile.getLastUsedRegularProfile());
+            }
         }
 
         SettingsLauncher settingsLauncher = new SettingsLauncherImpl();

@@ -270,13 +270,13 @@ class NtpExtensionBubbleViewBrowserTest
   void SetUpCommandLine(base::CommandLine* command_line) override {
     ExtensionMessageBubbleViewBrowserTest::SetUpCommandLine(command_line);
 // The NTP bubble is only enabled by default on Mac, Windows, and CrOS.
-#if !defined(OS_WIN) && !defined(OS_MACOSX) && !defined(OS_CHROMEOS)
+#if !defined(OS_WIN) && !defined(OS_MAC) && !defined(OS_CHROMEOS)
     extensions::SetNtpPostInstallUiEnabledForTesting(true);
 #endif
   }
 
   void TearDownOnMainThread() override {
-#if !defined(OS_WIN) && !defined(OS_MACOSX) && !defined(OS_CHROMEOS)
+#if !defined(OS_WIN) && !defined(OS_MAC) && !defined(OS_CHROMEOS)
     extensions::SetNtpPostInstallUiEnabledForTesting(false);
 #endif
     ExtensionMessageBubbleViewBrowserTest::TearDownOnMainThread();
@@ -289,7 +289,7 @@ IN_PROC_BROWSER_TEST_F(NtpExtensionBubbleViewBrowserTest,
 }
 
 // Flaky on Mac https://crbug.com/851655
-#if defined(OS_MACOSX) || defined(OS_LINUX)
+#if defined(OS_MAC) || defined(OS_LINUX)
 #define MAYBE_TestBubbleClosedAfterExtensionUninstall \
   DISABLED_TestBubbleClosedAfterExtensionUninstall
 #else

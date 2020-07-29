@@ -102,10 +102,10 @@ IPC_STRUCT_TRAITS_BEGIN(safe_browsing::ArchiveAnalyzerResults)
   IPC_STRUCT_TRAITS_MEMBER(has_archive)
   IPC_STRUCT_TRAITS_MEMBER(archived_binary)
   IPC_STRUCT_TRAITS_MEMBER(archived_archive_filenames)
-#if defined(OS_MACOSX)
+#if defined(OS_MAC)
   IPC_STRUCT_TRAITS_MEMBER(signature_blob)
   IPC_STRUCT_TRAITS_MEMBER(detached_code_signatures)
-#endif  // OS_MACOSX
+#endif  // OS_MAC
   IPC_STRUCT_TRAITS_MEMBER(file_count)
   IPC_STRUCT_TRAITS_MEMBER(directory_count)
 IPC_STRUCT_TRAITS_END()

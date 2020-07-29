@@ -110,7 +110,7 @@ IN_PROC_BROWSER_TEST_F(SignInViewControllerBrowserTest, Accelerators) {
 
   ui_test_utils::TabAddedWaiter wait_for_new_tab(browser());
 // Press Ctrl/Cmd+T, which will open a new tab.
-#if defined(OS_MACOSX)
+#if defined(OS_MAC)
   ASSERT_TRUE(ui_test_utils::SendKeyPressSync(
       browser(), ui::VKEY_T, /*control=*/false, /*shift=*/false, /*alt=*/false,
       /*command=*/true));

@@ -976,7 +976,7 @@ CopyTextureMethod GetCopyTextureCHROMIUMMethod(const FeatureInfo* feature_info,
   std::string output_error_msg;
 
   switch (dest_internal_format) {
-#if defined(OS_MACOSX)
+#if defined(OS_MAC)
     // RGB5_A1 is not color-renderable on NVIDIA Mac, see
     // https://crbug.com/676209.
     case GL_RGB5_A1:

@@ -291,8 +291,8 @@
             <!-- Metered (WiFi and Cellular only). -->
             <template is="dom-if"
                 if="[[showMetered_(managedProperties_, showMeteredToggle_)]]">
-              <network-config-toggle id="meteredToggle" class="hr"
-                  policy-on-left property="[[managedProperties_.metered]]"
+              <network-config-toggle id="meteredToggle" policy-on-left
+                  property="[[managedProperties_.metered]]"
                   label="$i18n{networkMetered}"
                   sub-label="$i18n{networkMeteredDesc}"
                   checked="{{meteredOverride_}}"

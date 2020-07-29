@@ -25,7 +25,6 @@ import org.chromium.base.test.util.Feature;
 import org.chromium.chrome.browser.sync.FakeProfileSyncService;
 import org.chromium.chrome.browser.sync.ProfileSyncService;
 import org.chromium.chrome.test.ChromeBrowserTestRule;
-import org.chromium.components.signin.ChromeSigninController;
 import org.chromium.content_public.browser.test.util.TestThreadUtils;
 
 /**
@@ -59,9 +58,6 @@ public class PassphraseActivityTest {
         // Override before signing in, otherwise regular ProfileSyncService will be created.
         overrideProfileSyncService();
         mChromeBrowserTestRule.addAndSignInTestAccount();
-
-        // PassphraseActivity won't start if an account isn't set.
-        Assert.assertNotNull(ChromeSigninController.get().getSignedInAccountName());
 
         // Create the activity.
         final PassphraseActivity activity = launchPassphraseActivity();

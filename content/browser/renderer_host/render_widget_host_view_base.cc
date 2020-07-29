@@ -459,11 +459,6 @@ RenderWidgetHostViewBase::CreateBrowserAccessibilityManager(
   return nullptr;
 }
 
-void RenderWidgetHostViewBase::AccessibilityShowMenu(const gfx::Point& point) {
-  if (host())
-    host()->ShowContextMenuAtPoint(point, ui::MENU_SOURCE_NONE);
-}
-
 gfx::AcceleratedWidget
     RenderWidgetHostViewBase::AccessibilityGetAcceleratedWidget() {
   return gfx::kNullAcceleratedWidget;

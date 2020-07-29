@@ -20,7 +20,7 @@
 #include "gpu/ipc/gl_in_process_context.h"
 #include "gpu/skia_bindings/grcontext_for_gles2_interface.h"
 #include "ipc/common/surface_handle.h"
-#include "third_party/skia/include/gpu/GrContext.h"
+#include "third_party/skia/include/gpu/GrDirectContext.h"
 #include "third_party/skia/include/gpu/gl/GrGLInterface.h"
 
 namespace ui {
@@ -150,7 +150,7 @@ gpu::ContextSupport* InProcessContextProvider::ContextSupport() {
   return context_->GetImplementation();
 }
 
-class GrContext* InProcessContextProvider::GrContext() {
+class GrDirectContext* InProcessContextProvider::GrContext() {
   CheckValidThreadOrLockAcquired();
 
   if (gr_context_)

@@ -135,7 +135,7 @@ bool Me2MeDesktopEnvironment::InitializeSecurity(
   // the local input and create the in-session UI.
 #if defined(OS_LINUX)
   bool want_user_interface = false;
-#elif defined(OS_MACOSX)
+#elif defined(OS_APPLE)
   // Don't try to display any UI on top of the system's login screen as this
   // is rejected by the Window Server on OS X 10.7.4, and prevents the
   // capturer from working (http://crbug.com/140984).

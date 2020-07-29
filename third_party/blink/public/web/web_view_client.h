@@ -143,6 +143,9 @@ class WebViewClient {
   // Called when the View acquires focus.
   virtual void DidFocus() {}
 
+  // Called when the View's zoom has changed.
+  virtual void ZoomLevelChanged() {}
+
   // Session history -----------------------------------------------------
 
   // Returns the number of history items before/after the current

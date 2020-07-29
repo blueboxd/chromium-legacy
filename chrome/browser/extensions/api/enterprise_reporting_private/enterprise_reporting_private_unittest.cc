@@ -381,7 +381,7 @@ TEST_F(EnterpriseReportingPrivateGetDeviceInfoTest, GetDeviceInfo) {
   ASSERT_TRUE(enterprise_reporting_private::DeviceInfo::Populate(
       *device_info_value, &info));
 
-#if defined(OS_MACOSX)
+#if defined(OS_MAC)
   EXPECT_EQ("macOS", info.os_name);
 #elif defined(OS_WIN)
   EXPECT_EQ("windows", info.os_name);

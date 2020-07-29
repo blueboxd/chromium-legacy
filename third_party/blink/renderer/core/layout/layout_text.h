@@ -345,7 +345,8 @@ class CORE_EXPORT LayoutText : public LayoutObject {
   virtual InlineTextBox* CreateTextBox(int start,
                                        uint16_t length);  // Subclassed by SVG.
 
-  void InvalidateDisplayItemClients(PaintInvalidationReason) const override;
+  void InvalidatePaint(const PaintInvalidatorContext&) const final;
+  void InvalidateDisplayItemClients(PaintInvalidationReason) const final;
 
   bool CanBeSelectionLeafInternal() const final { return true; }
 
@@ -403,6 +404,8 @@ class CORE_EXPORT LayoutText : public LayoutObject {
 
   bool CanOptimizeSetText() const;
   void SetFirstTextBoxLogicalLeft(float text_width) const;
+
+  const DisplayItemClient* GetSelectionDisplayItemClient() const final;
 
   // We put the bitfield first to minimize padding on 64-bit.
  protected:

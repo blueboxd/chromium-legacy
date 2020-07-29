@@ -29,7 +29,7 @@
 
 #if defined(OS_WIN)
 #include <windows.h>
-#elif defined(OS_MACOSX)
+#elif defined(OS_MAC)
 #include <CoreServices/CoreServices.h>
 #endif
 

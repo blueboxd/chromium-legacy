@@ -250,7 +250,6 @@ class CONTENT_EXPORT RenderWidgetHostViewBase
       BrowserAccessibilityDelegate* delegate,
       bool for_root_frame);
 
-  virtual void AccessibilityShowMenu(const gfx::Point& point);
   virtual gfx::AcceleratedWidget AccessibilityGetAcceleratedWidget();
   virtual gfx::NativeViewAccessible AccessibilityGetNativeViewAccessible();
   virtual gfx::NativeViewAccessible

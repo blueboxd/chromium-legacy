@@ -50,7 +50,7 @@
 #include "ui/aura/test/aura_test_helper.h"
 #endif
 
-#if defined(OS_MACOSX)
+#if defined(OS_MAC)
 #include "ui/accelerated_widget_mac/window_resize_helper_mac.h"
 #endif
 
@@ -128,14 +128,14 @@ RenderViewHostTestEnabler::RenderViewHostTestEnabler()
     screen_.reset(ui::CreateDummyScreenAndroid());
   display::Screen::SetScreenInstance(screen_.get());
 #endif
-#if defined(OS_MACOSX)
+#if defined(OS_MAC)
   if (base::ThreadTaskRunnerHandle::IsSet())
     ui::WindowResizeHelperMac::Get()->Init(base::ThreadTaskRunnerHandle::Get());
 #endif  // OS_MACOSX
 }
 
 RenderViewHostTestEnabler::~RenderViewHostTestEnabler() {
-#if defined(OS_MACOSX)
+#if defined(OS_MAC)
   ui::WindowResizeHelperMac::Get()->ShutdownForTests();
 #endif  // OS_MACOSX
 #if !defined(OS_ANDROID)

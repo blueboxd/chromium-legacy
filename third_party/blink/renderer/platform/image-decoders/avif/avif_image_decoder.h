@@ -39,6 +39,7 @@ class PLATFORM_EXPORT AVIFImageDecoder final : public ImageDecoder {
   IntSize DecodedYUVSize(int component) const override;
   size_t DecodedYUVWidthBytes(int component) const override;
   SkYUVColorSpace GetYUVColorSpace() const override;
+  uint8_t GetYUVBitDepth() const override;
   void DecodeToYUV() override;
   int RepetitionCount() const override;
   base::TimeDelta FrameDurationAtIndex(size_t) const override;

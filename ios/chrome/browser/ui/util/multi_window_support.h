@@ -16,4 +16,9 @@ bool IsMultiwindowSupported();
 // IsMultiwindowSupported() returns true.
 bool IsSceneStartupSupported();
 
+// Returns true iff multiple windows can be opened, i.e. when the multiwindow
+// build flag is on, the device is running on iOS 13+ and it's a compatible
+// iPad.
+bool IsMultipleScenesSupported();
+
 #endif  // IOS_CHROME_BROWSER_UI_UTIL_MULTI_WINDOW_SUPPORT_H_

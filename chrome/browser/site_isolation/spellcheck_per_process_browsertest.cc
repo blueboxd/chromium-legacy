@@ -290,7 +290,7 @@ IN_PROC_BROWSER_TEST_F(ChromeSitePerProcessTest, OOPIFDisabledSpellCheckTest) {
 #if BUILDFLAG(HAS_SPELLCHECK_PANEL)
 // Tests that the OSX spell check panel can be opened from an out-of-process
 // subframe, crbug.com/712395
-#if defined(OS_MACOSX)
+#if defined(OS_MAC)
 // https://crbug.com/1032617
 #define MAYBE_OOPIFSpellCheckPanelTest DISABLED_OOPIFSpellCheckPanelTest
 #else

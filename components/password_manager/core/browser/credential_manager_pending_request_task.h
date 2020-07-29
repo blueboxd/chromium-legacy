@@ -102,7 +102,8 @@ class CredentialManagerPendingRequestTask
   // then all results are processed.
   std::vector<std::unique_ptr<autofill::PasswordForm>> partial_results_;
 
-  std::unique_ptr<HttpPasswordStoreMigrator> http_migrator_;
+  base::flat_map<PasswordStore*, std::unique_ptr<HttpPasswordStoreMigrator>>
+      http_migrators_;
 
   DISALLOW_COPY_AND_ASSIGN(CredentialManagerPendingRequestTask);
 };

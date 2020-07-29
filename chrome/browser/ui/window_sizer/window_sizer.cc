@@ -244,7 +244,7 @@ gfx::Rect WindowSizer::GetDefaultWindowBounds(
                                kWindowMaxDefaultWidth);
   int default_height = work_area.height() - 2 * kWindowTilePixels;
 
-#if !defined(OS_MACOSX)
+#if !defined(OS_MAC)
   // For wider aspect ratio displays at higher resolutions, we might size the
   // window narrower to allow two windows to easily be placed side-by-side.
   gfx::Rect screen_size =
@@ -264,7 +264,7 @@ gfx::Rect WindowSizer::GetDefaultWindowBounds(
     default_width = static_cast<int>(work_area.width() / 2. -
         1.5 * kWindowTilePixels);
   }
-#endif  // !defined(OS_MACOSX)
+#endif  // !defined(OS_MAC)
   return gfx::Rect(kWindowTilePixels + work_area.x(),
                    kWindowTilePixels + work_area.y(), default_width,
                    default_height);
@@ -308,7 +308,7 @@ void WindowSizer::AdjustBoundsToBeVisibleOnDisplay(
                                      work_area.bottom() - bounds->height()));
   }
 
-#if defined(OS_MACOSX)
+#if defined(OS_MAC)
   // Limit the maximum height.  On the Mac the sizer is on the
   // bottom-right of the window, and a window cannot be moved "up"
   // past the menubar.  If the window is too tall you'll never be able
@@ -335,7 +335,7 @@ void WindowSizer::AdjustBoundsToBeVisibleOnDisplay(
   const int max_x = work_area.right() - kMinVisibleWidth;
   bounds->set_y(base::ClampToRange(bounds->y(), min_y, max_y));
   bounds->set_x(base::ClampToRange(bounds->x(), min_x, max_x));
-#endif  // defined(OS_MACOSX)
+#endif  // defined(OS_MAC)
 }
 
 // static

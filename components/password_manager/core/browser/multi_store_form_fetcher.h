@@ -56,6 +56,9 @@ class MultiStoreFormFetcher : public FormFetcherImpl {
   int wait_counter_ = 0;
   std::vector<std::unique_ptr<autofill::PasswordForm>> partial_results_;
 
+  base::flat_map<PasswordStore*, std::unique_ptr<HttpPasswordStoreMigrator>>
+      http_migrators_;
+
   DISALLOW_COPY_AND_ASSIGN(MultiStoreFormFetcher);
 };
 

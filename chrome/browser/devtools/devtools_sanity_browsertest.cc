@@ -841,7 +841,7 @@ IN_PROC_BROWSER_TEST_F(DevToolsSanityTest, TestShowScriptsTab) {
 // hadn't been shown by the moment inspected paged refreshed.
 // @see http://crbug.com/26312
 // This test is flaky on windows and linux asan. See https://crbug.com/1013003
-#if defined(OS_WIN) || defined(OS_MACOSX) || defined(OS_LINUX)
+#if defined(OS_WIN) || defined(OS_MAC) || defined(OS_LINUX)
 #define MAYBE_TestScriptsTabIsPopulatedOnInspectedPageRefresh \
   DISABLED_TestScriptsTabIsPopulatedOnInspectedPageRefresh
 #else
@@ -1693,7 +1693,7 @@ class AutofillManagerTestDelegateDevtoolsImpl
 };
 
 // Disabled. Failing on MacOS MSAN. See https://crbug.com/849129.
-#if defined(OS_MACOSX)
+#if defined(OS_MAC)
 #define MAYBE_TestDispatchKeyEventShowsAutoFill \
   DISABLED_TestDispatchKeyEventShowsAutoFill
 #else
@@ -2496,7 +2496,7 @@ IN_PROC_BROWSER_TEST_F(DevToolsPolicyTest, OpenBlackListedDevTools) {
   policy::PolicyMap policies;
   policies.Set(policy::key::kURLBlacklist, policy::POLICY_LEVEL_MANDATORY,
                policy::POLICY_SCOPE_USER, policy::POLICY_SOURCE_CLOUD,
-               blacklist.CreateDeepCopy(), nullptr);
+               blacklist.Clone(), nullptr);
   provider_.UpdateChromePolicy(policies);
 
   WebContents* wc = browser()->tab_strip_model()->GetActiveWebContents();

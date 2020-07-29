@@ -37,7 +37,7 @@ ExclusiveAccessManager::GetExclusiveAccessExitBubbleType() const {
   // In kiosk and exclusive app mode we always want to be fullscreen and do not
   // want to show exit instructions for browser mode fullscreen.
   bool app_mode = false;
-#if !defined(OS_MACOSX)  // App mode (kiosk) is not available on Mac yet.
+#if !defined(OS_MAC)  // App mode (kiosk) is not available on Mac yet.
   app_mode = chrome::IsRunningInAppMode();
 #endif
 

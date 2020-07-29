@@ -27,7 +27,7 @@
 #if defined(__IPHONE_13_0)
 
 namespace {
-MenuScenario kTestMenuScenario = MenuScenario::HistoryEntry;
+MenuScenario kTestMenuScenario = MenuScenario::kHistoryEntry;
 }  // namespace
 
 // Test fixture for the ActionFactory.

@@ -150,7 +150,8 @@ chrome.accessibilityPrivate.SyntheticMouseEventType = {
  * @typedef {{
  *   type: !chrome.accessibilityPrivate.SyntheticMouseEventType,
  *   x: number,
- *   y: number
+ *   y: number,
+ *   touchAccessibility: (boolean|undefined)
  * }}
  */
 chrome.accessibilityPrivate.SyntheticMouseEvent;
@@ -297,10 +298,10 @@ chrome.accessibilityPrivate.sendSyntheticMouseEvent = function(mouseEvent) {};
 chrome.accessibilityPrivate.onSelectToSpeakStateChanged = function(state) {};
 
 /**
- * Called by the Accessibility Common extension when findScrollableBoundsForPoint
- * has found a scrolling container. |rect| will be the bounds of the nearest
- * scrollable ancestor of the node at the point requested using
- * findScrollableBoundsForPoint.
+ * Called by the Accessibility Common extension when
+ * findScrollableBoundsForPoint has found a scrolling container. |rect| will be
+ * the bounds of the nearest scrollable ancestor of the node at the point
+ * requested using findScrollableBoundsForPoint.
  * @param {!chrome.accessibilityPrivate.ScreenRect} rect
  */
 chrome.accessibilityPrivate.onScrollableBoundsForPointFound = function(rect) {};

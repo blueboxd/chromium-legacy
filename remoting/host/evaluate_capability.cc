@@ -61,7 +61,7 @@ base::FilePath BuildHostBinaryPath() {
   }
 
   return directory.Append(FILE_PATH_LITERAL("remoting_me2me_host"));
-#elif defined(OS_MACOSX)
+#elif defined(OS_APPLE)
   if (path.BaseName().value() == FILE_PATH_LITERAL("remoting_me2me_host")) {
     return path;
   }

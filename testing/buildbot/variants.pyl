@@ -322,4 +322,96 @@
         ],
         'identifier': 'iPhone X 14.0'
     },
+    'WEBLAYER_IMPL_SKEW_TESTS_NTH_MILESTONE': {
+      'args': [
+        '--test-runner-outdir',
+        '.',
+        '--client-outdir',
+        '.',
+        '--implementation-outdir',
+        '../../weblayer_instrumentation_test_M84/out/Release',
+        '--test-expectations',
+        '../../weblayer/browser/android/javatests/skew/expectations.txt',
+        '--impl-version=84',
+      ],
+      'swarming': {
+        'cipd_packages': [
+          {
+            'cipd_package': 'chromium/testing/weblayer-x86',
+            'location': 'weblayer_instrumentation_test_M84',
+            'revision': 'version:84.0.4147.69',
+          }
+        ],
+      },
+      'identifier': 'M84_Implementation_Library_Tests',
+    },
+    'WEBLAYER_IMPL_SKEW_TESTS_NTH_MINUS_ONE_MILESTONE': {
+      'args': [
+        '--test-runner-outdir',
+        '.',
+        '--client-outdir',
+        '.',
+        '--implementation-outdir',
+        '../../weblayer_instrumentation_test_M83/out/Release',
+        '--test-expectations',
+        '../../weblayer/browser/android/javatests/skew/expectations.txt',
+        '--impl-version=83',
+      ],
+      'swarming': {
+        'cipd_packages': [
+          {
+            'cipd_package': 'chromium/testing/weblayer-x86',
+            'location': 'weblayer_instrumentation_test_M83',
+            'revision': 'version:83.0.4103.15',
+          }
+        ],
+      },
+      'identifier': 'M83_Implementation_Library_Tests',
+    },
+    'WEBLAYER_CLIENT_SKEW_TESTS_NTH_MILESTONE': {
+      'args': [
+        '--test-runner-outdir',
+        '.',
+        '--client-outdir',
+        '../../weblayer_instrumentation_test_M84/out/Release',
+        '--implementation-outdir',
+        '.',
+        '--test-expectations',
+        '../../weblayer/browser/android/javatests/skew/expectations.txt',
+        '--client-version=84',
+      ],
+      'swarming': {
+        'cipd_packages': [
+          {
+            'cipd_package': 'chromium/testing/weblayer-x86',
+            'location': 'weblayer_instrumentation_test_M84',
+            'revision': 'version:84.0.4147.69',
+          }
+        ],
+      },
+      'identifier': 'M84_Client_Library_Tests',
+    },
+    'WEBLAYER_CLIENT_SKEW_TESTS_NTH_MINUS_ONE_MILESTONE': {
+      'args': [
+        '--test-runner-outdir',
+        '.',
+        '--client-outdir',
+        '../../weblayer_instrumentation_test_M83/out/Release',
+        '--implementation-outdir',
+        '.',
+        '--test-expectations',
+        '../../weblayer/browser/android/javatests/skew/expectations.txt',
+        '--client-version=83',
+      ],
+      'swarming': {
+        'cipd_packages': [
+          {
+            'cipd_package': 'chromium/testing/weblayer-x86',
+            'location': 'weblayer_instrumentation_test_M83',
+            'revision': 'version:83.0.4103.15',
+          }
+        ],
+      },
+      'identifier': 'M83_Client_Library_Tests',
+    },
 }

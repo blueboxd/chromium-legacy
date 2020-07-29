@@ -18,10 +18,6 @@
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
 
-#if defined(OS_MACOSX)
-#include "chrome/browser/web_applications/components/app_shim_registry_mac.h"
-#endif
-
 namespace web_app {
 
 namespace {
@@ -46,20 +42,6 @@ void AppShortcutManager::SetSubsystems(AppIconManager* icon_manager,
 void AppShortcutManager::Start() {
   DCHECK(registrar_);
   app_registrar_observer_.Add(registrar_);
-
-#if defined(OS_MACOSX)
-  // Ensure that all installed apps are included in the AppShimRegistry when the
-  // profile is loaded. This is redundant, because apps are registered when they
-  // are installed. It is necessary, however, because app registration was added
-  // long after app installation launched. This should be removed after shipping
-  // for a few versions (whereupon it may be assumed that most applications have
-  // been registered).
-  std::vector<AppId> app_ids = registrar_->GetAppIds();
-  for (const auto& app_id : app_ids) {
-    AppShimRegistry::Get()->OnAppInstalledForProfile(app_id,
-                                                     profile_->GetPath());
-  }
-#endif
 }
 
 void AppShortcutManager::Shutdown() {
@@ -75,10 +57,6 @@ void AppShortcutManager::OnWebAppManifestUpdated(const AppId& app_id,
       app_id, base::BindOnce(
                   &AppShortcutManager::OnShortcutInfoRetrievedUpdateShortcuts,
                   weak_ptr_factory_.GetWeakPtr(), base::UTF8ToUTF16(old_name)));
-}
-
-void AppShortcutManager::OnWebAppProfileWillBeDeleted(const AppId& app_id) {
-  DeleteSharedAppShims(app_id);
 }
 
 void AppShortcutManager::SetShortcutUpdateCallbackForTesting(
@@ -160,19 +138,6 @@ void AppShortcutManager::UnregisterShortcutsMenuWithOs(const AppId& app_id) {
   web_app::UnregisterShortcutsMenuWithOs(app_id, profile_->GetPath());
 }
 
-void AppShortcutManager::DeleteSharedAppShims(const AppId& app_id) {
-#if defined(OS_MACOSX)
-  bool delete_multi_profile_shortcuts =
-      AppShimRegistry::Get()->OnAppUninstalledForProfile(app_id,
-                                                         profile_->GetPath());
-  if (delete_multi_profile_shortcuts) {
-    web_app::internals::GetShortcutIOTaskRunner()->PostTask(
-        FROM_HERE,
-        base::BindOnce(&web_app::internals::DeleteMultiProfileShortcutsForApp,
-                       app_id));
-  }
-#endif
-}
 
 void AppShortcutManager::OnShortcutsCreated(const AppId& app_id,
                                             CreateShortcutsCallback callback,

@@ -255,8 +255,21 @@ bool ContextMenuController::ShowContextMenu(LocalFrame* frame,
       To<LocalFrame>(page_->GetFocusController().FocusedOrMainFrame())
           ->GetEditor());
 
-  // Links, Images, Media tags, and Image/Media-Links take preference over
-  // all else.
+  if (mouse_event && source_type == kMenuSourceKeyboard) {
+    Node* target_node = mouse_event->target()->ToNode();
+    if (target_node && IsA<Element>(target_node)) {
+      // Get the url from an explicitly set target, e.g. the focused element
+      // when the context menu is evoked from the keyboard. Note: the innerNode
+      // could also be set. It is used to identify a relevant inner media
+      // element. In most cases, the innerNode will already be set to any
+      // relevant inner media element via the median x,y point from the focused
+      // element's bounding box. As the media element in most cases fills the
+      // entire area of a focused link or button, this generally suffices.
+      // Example: When Shift+F10 is used with <a><img></a>, any image-related
+      // context menu options, such as open image in new tab, must be presented.
+      result.SetURLElement(target_node->EnclosingLinkEventParentOrSelf());
+    }
+  }
   data.link_url = result.AbsoluteLinkURL();
 
   auto* html_element = DynamicTo<HTMLElement>(result.InnerNode());
@@ -265,6 +278,8 @@ bool ContextMenuController::ShowContextMenu(LocalFrame* frame,
     data.alt_text = html_element->AltText();
   }
 
+  // Links, Images, Media tags, and Image/Media-Links take preference over
+  // all else.
   if (IsA<HTMLCanvasElement>(result.InnerNode())) {
     data.media_type = ContextMenuDataMediaType::kCanvas;
     data.has_image_contents = true;

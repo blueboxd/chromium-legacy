@@ -31,7 +31,7 @@
 
 // TODO(estade): some of these are disabled on mac. http://crbug.com/48007
 // TODO(jschuh): Disabled on Win64 build. http://crbug.com/179688
-#if defined(OS_MACOSX) || (defined(OS_WIN) && defined(ARCH_CPU_X86_64))
+#if defined(OS_MAC) || (defined(OS_WIN) && defined(ARCH_CPU_X86_64))
 #define MAYBE_IMPORTER(x) DISABLED_##x
 #else
 #define MAYBE_IMPORTER(x) x

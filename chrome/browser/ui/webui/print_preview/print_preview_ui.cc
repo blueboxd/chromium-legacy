@@ -86,7 +86,7 @@ namespace printing {
 
 namespace {
 
-#if defined(OS_MACOSX)
+#if defined(OS_MAC)
 // U+0028 U+21E7 U+2318 U+0050 U+0029 in UTF8
 const char kBasicPrintShortcut[] = "\x28\xE2\x8c\xA5\xE2\x8C\x98\x50\x29";
 #elif !defined(OS_CHROMEOS)
@@ -348,7 +348,7 @@ void AddPrintPreviewStrings(content::WebUIDataSource* source) {
     {"printerStatusStopped", IDS_PRINT_PREVIEW_PRINTER_STATUS_STOPPED},
     {"printerStatusTrayMissing", IDS_PRINT_PREVIEW_PRINTER_STATUS_TRAY_MISSING},
 #endif
-#if defined(OS_MACOSX)
+#if defined(OS_MAC)
     {"openPdfInPreviewOption", IDS_PRINT_PREVIEW_OPEN_PDF_IN_PREVIEW_APP},
     {"openingPDFInPreview", IDS_PRINT_PREVIEW_OPENING_PDF_IN_PREVIEW_APP},
 #endif

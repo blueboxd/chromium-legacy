@@ -47,7 +47,7 @@ class WebRtcDesktopCaptureBrowserTest : public WebRtcTestBase {
   void DetectVideoAndHangUp() {
     StartDetectingVideo(left_tab_, "remote-view");
     StartDetectingVideo(right_tab_, "remote-view");
-#if !defined(OS_MACOSX)
+#if !defined(OS_MAC)
     // Video is choppy on Mac OS X. http://crbug.com/443542.
     WaitForVideoToPlay(left_tab_);
     WaitForVideoToPlay(right_tab_);

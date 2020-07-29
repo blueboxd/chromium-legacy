@@ -492,22 +492,22 @@ AuthenticatorTouchIdIncognitoBumpSheetModel::GetStepIllustration(
 
 base::string16 AuthenticatorTouchIdIncognitoBumpSheetModel::GetStepTitle()
     const {
-#if defined(OS_MACOSX)
+#if defined(OS_MAC)
   return l10n_util::GetStringFUTF16(IDS_WEBAUTHN_TOUCH_ID_INCOGNITO_BUMP_TITLE,
                                     GetRelyingPartyIdString(dialog_model()));
 #else
   return base::string16();
-#endif  // defined(OS_MACOSX)
+#endif  // defined(OS_MAC)
 }
 
 base::string16 AuthenticatorTouchIdIncognitoBumpSheetModel::GetStepDescription()
     const {
-#if defined(OS_MACOSX)
+#if defined(OS_MAC)
   return l10n_util::GetStringUTF16(
       IDS_WEBAUTHN_TOUCH_ID_INCOGNITO_BUMP_DESCRIPTION);
 #else
   return base::string16();
-#endif  // defined(OS_MACOSX)
+#endif  // defined(OS_MAC)
 }
 
 ui::MenuModel*
@@ -527,12 +527,12 @@ bool AuthenticatorTouchIdIncognitoBumpSheetModel::IsAcceptButtonEnabled()
 
 base::string16
 AuthenticatorTouchIdIncognitoBumpSheetModel::GetAcceptButtonLabel() const {
-#if defined(OS_MACOSX)
+#if defined(OS_MAC)
   return l10n_util::GetStringUTF16(
       IDS_WEBAUTHN_TOUCH_ID_INCOGNITO_BUMP_CONTINUE);
 #else
   return base::string16();
-#endif  // defined(OS_MACOSX)
+#endif  // defined(OS_MAC)
 }
 
 void AuthenticatorTouchIdIncognitoBumpSheetModel::OnAccept() {

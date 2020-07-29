@@ -86,7 +86,7 @@ class SettingsOverriddenParamsProvidersBrowserTest
 
 // The chrome_settings_overrides API that allows extensions to override the
 // default search provider is only available on Windows and Mac.
-#if defined(OS_WIN) || defined(OS_MACOSX)
+#if defined(OS_WIN) || defined(OS_MAC)
 
 // NOTE: It's very unfortunate that this has to be a browsertest. Unfortunately,
 // a few bits here - the TemplateURLService in particular - don't play nicely
@@ -272,7 +272,7 @@ IN_PROC_BROWSER_TEST_F(SettingsOverriddenParamsProvidersBrowserTest,
   EXPECT_FALSE(params) << "Unexpected params: " << params->dialog_title;
 }
 
-#endif  // defined(OS_WIN) || defined(OS_MACOSX)
+#endif  // defined(OS_WIN) || defined(OS_MAC)
 
 // Tests the dialog display when the default search engine has changed; in this
 // case, we should display the generic dialog.

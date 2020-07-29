@@ -508,7 +508,7 @@ const float kScrollbarPixelsPerTick = 40.0f;
 // Returns true if the specified event corresponds to an edit command, the name
 // of the edit command will be stored in |*name|.
 bool GetEditCommand(const WebKeyboardEvent& event, std::string* name) {
-#if defined(OS_MACOSX)
+#if defined(OS_MAC)
   // We only cares about Left,Right,Up,Down keys with Command or Command+Shift
   // modifiers. These key events correspond to some special movement and
   // selection editor commands. These keys will be marked as system key, which
@@ -544,7 +544,7 @@ bool GetEditCommand(const WebKeyboardEvent& event, std::string* name) {
 }
 
 bool IsSystemKeyEvent(const WebKeyboardEvent& event) {
-#if defined(OS_MACOSX)
+#if defined(OS_MAC)
   return event.GetModifiers() & WebInputEvent::kMetaKey &&
          event.windows_key_code != ui::VKEY_B &&
          event.windows_key_code != ui::VKEY_I;
@@ -1341,8 +1341,8 @@ void EventSender::Reset() {
 
   // Disable the zoom level override. Reset() also happens during creation of
   // the RenderWidget, which we can detect by checking for the WebWidget.
-  if (web_widget_test_proxy_->GetWebWidget())
-    web_widget_test_proxy_->ResetZoomLevelForTesting();
+  if (web_widget_test_proxy_->GetWebFrameWidget())
+    web_widget_test_proxy_->GetWebFrameWidget()->ResetZoomLevelForTesting();
 
 #if defined(OS_WIN)
   wm_key_down_ = WM_KEYDOWN;

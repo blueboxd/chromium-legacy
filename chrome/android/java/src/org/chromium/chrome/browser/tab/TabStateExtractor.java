@@ -42,7 +42,9 @@ public class TabStateExtractor {
      * @param tab The {@link TabImpl} from which to extract the WebContents state.
      **/
     public static WebContentsState getWebContentsState(TabImpl tab) {
-        if (tab.getFrozenContentsState() != null) return tab.getFrozenContentsState();
+        if (CriticalPersistedTabData.from(tab).getWebContentsState() != null) {
+            return CriticalPersistedTabData.from(tab).getWebContentsState();
+        }
 
         // Native call returns null when buffer allocation needed to serialize the state failed.
         ByteBuffer buffer = getWebContentsStateAsByteBuffer(tab);

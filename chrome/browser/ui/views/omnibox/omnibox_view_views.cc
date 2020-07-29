@@ -794,7 +794,7 @@ bool OmniboxViewViews::HandleEarlyTabActions(const ui::KeyEvent& event) {
   return true;
 }
 
-#if defined(OS_MACOSX)
+#if defined(OS_MAC)
 void OmniboxViewViews::AnnounceFriendlySuggestionText() {
   GetViewAccessibility().AnnounceText(friendly_suggestion_text_);
 }
@@ -917,7 +917,7 @@ void OmniboxViewViews::SetAccessibilityLabel(const base::string16& display_text,
             display_text, &friendly_suggestion_text_prefix_length_);
   }
 
-#if defined(OS_MACOSX)
+#if defined(OS_MAC)
   // On macOS, the only way to get VoiceOver to speak the friendly suggestion
   // text (for example, "how to open a pdf, search suggestion, 4 of 8") is
   // with an explicit announcement. Use PostTask to ensure that this
@@ -1448,7 +1448,7 @@ void OmniboxViewViews::GetAccessibleNodeData(ui::AXNodeData* node_data) {
   node_data->AddStringAttribute(ax::mojom::StringAttribute::kAutoComplete,
                                 "both");
 // Expose keyboard shortcut where it makes sense.
-#if defined(OS_MACOSX)
+#if defined(OS_MAC)
   // Use cloverleaf symbol for command key.
   node_data->AddStringAttribute(ax::mojom::StringAttribute::kKeyShortcuts,
                                 base::WideToUTF8(L"\u2318L"));
@@ -2189,7 +2189,7 @@ void OmniboxViewViews::UpdateContextMenu(ui::SimpleMenuModel* menu_contents) {
           index, IDC_SEND_TAB_TO_SELF, IDS_CONTEXT_MENU_SEND_TAB_TO_SELF,
           send_tab_to_self_sub_menu_model_.get());
     }
-#if !defined(OS_MACOSX)
+#if !defined(OS_MAC)
     menu_contents->SetIcon(index,
                            ui::ImageModel::FromVectorIcon(kSendTabToSelfIcon));
 #endif

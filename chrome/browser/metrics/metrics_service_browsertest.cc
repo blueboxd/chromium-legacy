@@ -52,7 +52,7 @@
 #include "sandbox/win/src/sandbox_types.h"
 #endif
 
-#if defined(OS_MACOSX) || defined(OS_LINUX)
+#if defined(OS_MAC) || defined(OS_LINUX)
 namespace {
 
 // Check CrashExitCodes.Renderer histogram for a single bucket entry and then
@@ -194,7 +194,7 @@ IN_PROC_BROWSER_TEST_F(MetricsServiceBrowserTest, MAYBE_CrashRenderers) {
   histogram_tester.ExpectUniqueSample(
       "CrashExitCodes.Renderer",
       std::abs(static_cast<int32_t>(STATUS_ACCESS_VIOLATION)), 1);
-#elif defined(OS_MACOSX) || defined(OS_LINUX)
+#elif defined(OS_MAC) || defined(OS_LINUX)
   VerifyRendererExitCodeIsSignal(histogram_tester, SIGSEGV);
 #endif
   histogram_tester.ExpectUniqueSample("Tabs.SadTab.CrashCreated", 1, 1);
@@ -249,7 +249,7 @@ IN_PROC_BROWSER_TEST_F(MetricsServiceBrowserTest, MAYBE_CheckCrashRenderers) {
   histogram_tester.ExpectUniqueSample(
       "CrashExitCodes.Renderer",
       std::abs(static_cast<int32_t>(STATUS_BREAKPOINT)), 1);
-#elif defined(OS_MACOSX) || defined(OS_LINUX)
+#elif defined(OS_MAC) || defined(OS_LINUX)
   VerifyRendererExitCodeIsSignal(histogram_tester, SIGTRAP);
 #endif
   histogram_tester.ExpectUniqueSample("Tabs.SadTab.CrashCreated", 1, 1);

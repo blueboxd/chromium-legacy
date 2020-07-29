@@ -10,7 +10,7 @@
 #include "printing/print_job_constants.h"
 #include "printing/units.h"
 
-#if defined(USE_CUPS) && (defined(OS_MACOSX) || defined(OS_CHROMEOS))
+#if defined(USE_CUPS) && (defined(OS_MAC) || defined(OS_CHROMEOS))
 #include <cups/cups.h>
 #endif
 
@@ -40,7 +40,7 @@ const std::string& GetAgent() {
 void GetColorModelForMode(int color_mode,
                           std::string* color_setting_name,
                           std::string* color_value) {
-#if defined(OS_MACOSX)
+#if defined(OS_MAC)
   constexpr char kCUPSColorMode[] = "ColorMode";
   constexpr char kCUPSColorModel[] = "ColorModel";
   constexpr char kCUPSPrintoutMode[] = "PrintoutMode";
@@ -60,7 +60,7 @@ void GetColorModelForMode(int color_mode,
   constexpr char kCUPSEpsonInk[] = "cups-Ink";
   constexpr char kCUPSSharpARCMode[] = "cups-ARCMode";
   constexpr char kCUPSXeroxXRXColor[] = "cups-XRXColor";
-#endif  // defined(OS_MACOSX)
+#endif  // defined(OS_MAC)
 
   *color_setting_name = kCUPSColorModel;
 
@@ -188,7 +188,7 @@ void GetColorModelForMode(int color_mode,
   // all ColorModel values are determinantly handled.
 }
 
-#if defined(OS_MACOSX) || defined(OS_CHROMEOS)
+#if defined(OS_MAC) || defined(OS_CHROMEOS)
 std::string GetIppColorModelForMode(int color_mode) {
   // Accept |UNKNOWN_COLOR_MODEL| for consistency with GetColorModelForMode().
   if (color_mode == UNKNOWN_COLOR_MODEL)
@@ -203,7 +203,7 @@ std::string GetIppColorModelForMode(int color_mode) {
   return is_color.value() ? CUPS_PRINT_COLOR_MODE_COLOR
                           : CUPS_PRINT_COLOR_MODE_MONOCHROME;
 }
-#endif  // defined(OS_MACOSX) || defined(OS_CHROMEOS)
+#endif  // defined(OS_MAC) || defined(OS_CHROMEOS)
 #endif  // defined(USE_CUPS)
 
 base::Optional<bool> IsColorModelSelected(int color_mode) {

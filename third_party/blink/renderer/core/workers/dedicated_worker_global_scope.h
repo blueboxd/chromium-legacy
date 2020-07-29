@@ -32,6 +32,7 @@
 #define THIRD_PARTY_BLINK_RENDERER_CORE_WORKERS_DEDICATED_WORKER_GLOBAL_SCOPE_H_
 
 #include <memory>
+#include "third_party/blink/public/common/tokens/worker_tokens.h"
 #include "third_party/blink/renderer/core/animation_frame/worker_animation_frame_provider.h"
 #include "third_party/blink/renderer/core/core_export.h"
 #include "third_party/blink/renderer/core/messaging/message_port.h"
@@ -131,6 +132,8 @@ class CORE_EXPORT DedicatedWorkerGlobalScope final : public WorkerGlobalScope {
   // Called by the Oilpan.
   void Trace(Visitor*) const override;
 
+  const DedicatedWorkerToken& token() const { return token_; }
+
  private:
   void DidReceiveResponseForClassicScript(
       WorkerClassicScriptLoader* classic_script_loader);
@@ -139,6 +142,9 @@ class CORE_EXPORT DedicatedWorkerGlobalScope final : public WorkerGlobalScope {
 
   DedicatedWorkerObjectProxy& WorkerObjectProxy() const;
 
+  // TODO(chrisha): Lift this up to WorkerGlobalScope once all worker types
+  // have tokens.
+  const DedicatedWorkerToken token_;
   Member<WorkerAnimationFrameProvider> animation_frame_provider_;
   RejectCoepUnsafeNone reject_coep_unsafe_none_ = RejectCoepUnsafeNone(false);
 };

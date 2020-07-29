@@ -91,7 +91,7 @@
 #include "sandbox/policy/linux/sandbox_linux.h"
 #endif
 
-#if defined(OS_MACOSX)
+#if defined(OS_MAC)
 #include "base/message_loop/message_pump_mac.h"
 #include "components/metal_util/device_removal.h"
 #include "components/metal_util/test_shader.h"
@@ -147,7 +147,7 @@ class ContentSandboxHelper : public gpu::GpuSandboxHelper {
     media::MediaFoundationVideoEncodeAccelerator::PreSandboxInitialization();
 #endif
 
-#if defined(OS_MACOSX)
+#if defined(OS_MAC)
     if (base::FeatureList::IsEnabled(features::kMacV2GPUSandbox)) {
       TRACE_EVENT0("gpu", "Initialize VideoToolbox");
       media::InitializeVideoToolbox();
@@ -166,7 +166,7 @@ class ContentSandboxHelper : public gpu::GpuSandboxHelper {
     return StartSandboxLinux(watchdog_thread, gpu_info, gpu_prefs);
 #elif defined(OS_WIN)
     return StartSandboxWindows(sandbox_info_);
-#elif defined(OS_MACOSX)
+#elif defined(OS_MAC)
     return sandbox::Seatbelt::IsSandboxed();
 #else
     return false;
@@ -180,7 +180,7 @@ class ContentSandboxHelper : public gpu::GpuSandboxHelper {
   DISALLOW_COPY_AND_ASSIGN(ContentSandboxHelper);
 };
 
-#if defined(OS_MACOSX)
+#if defined(OS_MAC)
 void TestShaderCallback(metal::TestShaderComponent component,
                         metal::TestShaderResult result,
                         const base::TimeDelta& callback_time) {
@@ -299,7 +299,7 @@ int GpuMain(const MainFunctionParams& parameters) {
 #endif
 #elif defined(OS_LINUX)
 #error "Unsupported Linux platform."
-#elif defined(OS_MACOSX)
+#elif defined(OS_MAC)
     // Cross-process CoreAnimation requires a CFRunLoop to function at all, and
     // requires a NSRunLoop to not starve under heavy load. See:
     // https://crbug.com/312462#c51 and https://crbug.com/783298
@@ -319,7 +319,7 @@ int GpuMain(const MainFunctionParams& parameters) {
 
   base::PlatformThread::SetName("CrGpuMain");
 
-#if !defined(OS_MACOSX)
+#if !defined(OS_MAC)
   if (base::FeatureList::IsEnabled(features::kGpuUseDisplayThreadPriority)) {
     // Set thread priority before sandbox initialization.
     base::PlatformThread::SetCurrentThreadPriority(
@@ -365,7 +365,7 @@ int GpuMain(const MainFunctionParams& parameters) {
       base::FeatureList::IsEnabled(features::kGpuUseDisplayThreadPriority)
           ? base::ThreadPriority::DISPLAY
           : base::ThreadPriority::NORMAL;
-#if defined(OS_MACOSX)
+#if defined(OS_MAC)
   // Increase the thread priority to get more reliable values in performance
   // test of mac_os.
   GpuProcess gpu_process(
@@ -400,7 +400,7 @@ int GpuMain(const MainFunctionParams& parameters) {
 
   gpu_process.set_main_thread(child_thread);
 
-#if defined(OS_POSIX) && !defined(OS_ANDROID) && !defined(OS_MACOSX)
+#if defined(OS_POSIX) && !defined(OS_ANDROID) && !defined(OS_MAC)
   // Startup tracing is usually enabled earlier, but if we forked from a zygote,
   // we can only enable it after mojo IPC support is brought up initialized by
   // GpuChildThread, because the mojo broker has to create the tracing SMB on
@@ -409,7 +409,7 @@ int GpuMain(const MainFunctionParams& parameters) {
     tracing::EnableStartupTracingIfNeeded();
 #endif  // OS_POSIX && !OS_ANDROID && !!OS_MACOSX
 
-#if defined(OS_MACOSX)
+#if defined(OS_MAC)
   // A GPUEjectPolicy of 'wait' is set in the Info.plist of the browser
   // process, meaning it is "responsible" for making sure it and its
   // subordinate processes (i.e. the GPU process) drop references to the

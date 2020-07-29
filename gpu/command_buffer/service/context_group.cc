@@ -83,7 +83,7 @@ ContextGroup::ContextGroup(
       mailbox_manager_(mailbox_manager),
       memory_tracker_(std::move(memory_tracker)),
       shader_translator_cache_(shader_translator_cache),
-#if defined(OS_MACOSX)
+#if defined(OS_MAC)
       // Framebuffer completeness is not cacheable on OS X because of dynamic
       // graphics switching.
       // http://crbug.com/180876

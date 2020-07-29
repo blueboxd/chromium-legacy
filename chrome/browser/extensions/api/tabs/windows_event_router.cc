@@ -159,7 +159,7 @@ WindowsEventRouter::WindowsEventRouter(Profile* profile)
   // allows windows not created by toolkit-views to be tracked.
   // TODO(tapted): Remove the ifdefs (and NOTIFICATION_NO_KEY_WINDOW) when
   // Chrome on Mac only makes windows with toolkit-views.
-#if defined(OS_MACOSX)
+#if defined(OS_MAC)
   registrar_.Add(this, chrome::NOTIFICATION_NO_KEY_WINDOW,
                  content::NotificationService::AllSources());
 #elif defined(TOOLKIT_VIEWS)
@@ -174,7 +174,7 @@ WindowsEventRouter::WindowsEventRouter(Profile* profile)
 }
 
 WindowsEventRouter::~WindowsEventRouter() {
-#if defined(TOOLKIT_VIEWS) && !defined(OS_MACOSX)
+#if defined(TOOLKIT_VIEWS) && !defined(OS_MAC)
   views::WidgetFocusManager::GetInstance()->RemoveFocusChangeListener(this);
 #endif
 }
@@ -241,7 +241,7 @@ void WindowsEventRouter::OnWindowControllerRemoved(
                 window_controller, std::move(args));
 }
 
-#if defined(TOOLKIT_VIEWS) && !defined(OS_MACOSX)
+#if defined(TOOLKIT_VIEWS) && !defined(OS_MAC)
 void WindowsEventRouter::OnNativeFocusChanged(gfx::NativeView focused_now) {
   if (!focused_now)
     OnActiveWindowChanged(nullptr);
@@ -252,7 +252,7 @@ void WindowsEventRouter::Observe(
     int type,
     const content::NotificationSource& source,
     const content::NotificationDetails& details) {
-#if defined(OS_MACOSX)
+#if defined(OS_MAC)
   DCHECK_EQ(chrome::NOTIFICATION_NO_KEY_WINDOW, type);
   OnActiveWindowChanged(nullptr);
 #endif

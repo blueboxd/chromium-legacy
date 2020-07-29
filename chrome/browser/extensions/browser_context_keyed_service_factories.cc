@@ -111,7 +111,7 @@ void EnsureBrowserContextKeyedServiceFactoriesBuilt() {
   extensions::MDnsAPI::GetFactoryInstance();
 #endif
   extensions::MenuManagerFactory::GetInstance();
-#if defined(OS_CHROMEOS) || defined(OS_WIN) || defined(OS_MACOSX)
+#if defined(OS_CHROMEOS) || defined(OS_WIN) || defined(OS_MAC)
   auto networking_private_ui_delegate_factory =
       std::make_unique<extensions::NetworkingPrivateUIDelegateFactoryImpl>();
   extensions::NetworkingPrivateDelegateFactory::GetInstance()

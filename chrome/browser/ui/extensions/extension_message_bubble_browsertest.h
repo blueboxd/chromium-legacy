@@ -33,7 +33,7 @@ class ExtensionMessageBubbleBrowserTest
   static ToolbarActionsBarBubbleViews* GetViewsBubbleForBrowser(
       Browser* browser);
 
-#if defined(OS_MACOSX)
+#if defined(OS_MAC)
   static ToolbarActionsBarBubbleViews* GetViewsBubbleForCocoaBrowser(
       Browser* browser);
 #endif
@@ -42,7 +42,7 @@ class ExtensionMessageBubbleBrowserTest
   // browser or a Views browser. Implemented in platform files.
   static gfx::Rect GetAnchorReferenceBoundsForBrowser(Browser* browser,
                                                       AnchorPosition anchor);
-#if defined(OS_MACOSX)
+#if defined(OS_MAC)
   static gfx::Rect GetAnchorReferenceBoundsForCocoaBrowser(
       Browser* browser,
       AnchorPosition anchor);

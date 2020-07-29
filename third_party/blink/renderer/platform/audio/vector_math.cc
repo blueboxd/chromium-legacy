@@ -31,7 +31,7 @@
 #include "build/build_config.h"
 #include "third_party/blink/renderer/platform/wtf/assertions.h"
 
-#if defined(OS_APPLE)
+#if defined(OS_MAC)
 #include "third_party/blink/renderer/platform/audio/mac/vector_math_mac.h"
 #elif defined(CPU_ARM_NEON)
 #include "third_party/blink/renderer/platform/audio/cpu/arm/vector_math_neon.h"
@@ -48,7 +48,7 @@ namespace blink {
 namespace vector_math {
 
 namespace {
-#if defined(OS_APPLE)
+#if defined(OS_MAC)
 namespace impl = mac;
 #elif defined(CPU_ARM_NEON)
 namespace impl = neon;
@@ -70,7 +70,7 @@ void PrepareFilterForConv(const float* filter_p,
   // vectors are not implemented by all implementations.
   DCHECK_EQ(-1, filter_stride);
   DCHECK(prepared_filter);
-#if defined(ARCH_CPU_X86_FAMILY) && !defined(OS_APPLE)
+#if defined(ARCH_CPU_X86_FAMILY) && !defined(OS_MAC)
   x86::PrepareFilterForConv(filter_p, filter_stride, filter_size,
                             prepared_filter);
 #endif

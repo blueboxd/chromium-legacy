@@ -16,7 +16,7 @@
 #include "base/threading/simple_thread.h"
 #include "third_party/skia/include/core/SkDeferredDisplayListRecorder.h"
 #include "third_party/skia/include/core/SkSurface.h"
-#include "third_party/skia/include/gpu/GrContext.h"
+#include "third_party/skia/include/gpu/GrDirectContext.h"
 #include "ui/gfx/swap_result.h"
 #include "ui/ozone/demo/renderer_base.h"
 
@@ -58,7 +58,7 @@ class SkiaGlRenderer : public RendererBase,
   scoped_refptr<gl::GLSurface> gl_surface_;
   scoped_refptr<gl::GLContext> gl_context_;
 
-  sk_sp<GrContext> gr_context_;
+  sk_sp<GrDirectContext> gr_context_;
   const bool use_ddl_;
 
  private:

@@ -187,7 +187,7 @@ class PLATFORM_EXPORT CanvasResource
   gpu::raster::RasterInterface* RasterInterface() const;
   gpu::webgpu::WebGPUInterface* WebGPUInterface() const;
   GLenum GLFilter() const;
-  GrContext* GetGrContext() const;
+  GrDirectContext* GetGrContext() const;
   virtual base::WeakPtr<WebGraphicsContext3DProviderWrapper>
   ContextProviderWrapper() const {
     NOTREACHED();

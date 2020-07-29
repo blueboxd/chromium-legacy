@@ -19,8 +19,10 @@ import org.chromium.base.test.BaseJUnit4ClassRunner;
 import org.chromium.base.test.util.DisabledTest;
 import org.chromium.chrome.browser.tab.MockTab;
 import org.chromium.chrome.browser.tab.Tab;
+import org.chromium.chrome.browser.tab.WebContentsState;
 import org.chromium.chrome.test.ChromeBrowserTestRule;
 
+import java.nio.ByteBuffer;
 import java.util.concurrent.Semaphore;
 
 /**
@@ -35,12 +37,18 @@ public class CriticalPersistedTabDataTest {
     private static final int PARENT_ID = 2;
     private static final int ROOT_ID = 3;
     private static final int CONTENT_STATE_VERSION = 42;
-    private static final byte[] CONTENT_STATE = {9, 10};
+    private static final byte[] WEB_CONTENTS_STATE_BYTES = {9, 10};
+    private static final WebContentsState WEB_CONTENTS_STATE =
+            new WebContentsState(ByteBuffer.allocate(WEB_CONTENTS_STATE_BYTES.length));
     private static final long TIMESTAMP = 203847028374L;
     private static final String APP_ID = "AppId";
     private static final String OPENER_APP_ID = "OpenerAppId";
     private static final int THEME_COLOR = 5;
     private static final int LAUNCH_TYPE_AT_CREATION = 3;
+
+    static {
+        WEB_CONTENTS_STATE.buffer().put(WEB_CONTENTS_STATE_BYTES);
+    }
 
     private CriticalPersistedTabData mCriticalPersistedTabData;
 
@@ -81,7 +89,7 @@ public class CriticalPersistedTabDataTest {
                     PersistedTabDataConfiguration.get(CriticalPersistedTabData.class, isEncrypted);
             CriticalPersistedTabData criticalPersistedTabData =
                     new CriticalPersistedTabData(mockTab(TAB_ID, isEncrypted), PARENT_ID, ROOT_ID,
-                            TIMESTAMP, CONTENT_STATE, CONTENT_STATE_VERSION, OPENER_APP_ID,
+                            TIMESTAMP, WEB_CONTENTS_STATE, CONTENT_STATE_VERSION, OPENER_APP_ID,
                             THEME_COLOR, LAUNCH_TYPE_AT_CREATION, config.storage, config.id);
             criticalPersistedTabData.save();
             CriticalPersistedTabData.from(mockTab(TAB_ID, isEncrypted), callback);
@@ -97,7 +105,8 @@ public class CriticalPersistedTabDataTest {
         Assert.assertEquals(mCriticalPersistedTabData.getThemeColor(), THEME_COLOR);
         Assert.assertEquals(
                 mCriticalPersistedTabData.getTabLaunchTypeAtCreation(), LAUNCH_TYPE_AT_CREATION);
-        Assert.assertArrayEquals(mCriticalPersistedTabData.getContentStateBytes(), CONTENT_STATE);
+        Assert.assertArrayEquals(mCriticalPersistedTabData.getWebContentsState().buffer().array(),
+                WEB_CONTENTS_STATE_BYTES);
 
         ThreadUtils.runOnUiThreadBlocking(() -> {
             mCriticalPersistedTabData.delete();

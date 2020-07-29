@@ -785,7 +785,7 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessTextInputManagerTest,
 }
 
 // Failing on Mac - http://crbug.com/852452
-#if defined(OS_MACOSX)
+#if defined(OS_MAC)
 #define MAYBE_TrackTextSelectionForAllFrames \
   DISABLED_TrackTextSelectionForAllFrames
 #else
@@ -848,7 +848,7 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessTextInputManagerTest,
 // Then, it verifies that the <input>'s value matches the committed text
 // (https://crbug.com/688842).
 // Flaky on Android and Linux http://crbug.com/852274
-#if defined(OS_MACOSX)
+#if defined(OS_MAC)
 #define MAYBE_ImeCommitTextForAllFrames DISABLED_ImeCommitTextForAllFrames
 #else
 #define MAYBE_ImeCommitTextForAllFrames ImeCommitTextForAllFrames
@@ -1291,7 +1291,7 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessTextInputManagerTest,
 // cannot have two instances of ShellContentBrowserClient (due to a DCHECK in
 // the ctor). Therefore, we put the test here to use ChromeContentBrowserClient
 // which does not have the same singleton constraint.
-#if defined(OS_MACOSX)
+#if defined(OS_MAC)
 class ShowDefinitionForWordObserver
     : content::RenderWidgetHostViewCocoaObserver {
  public:

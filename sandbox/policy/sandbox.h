@@ -13,9 +13,9 @@
 #include "sandbox/policy/linux/sandbox_linux.h"
 #endif
 
-#if defined(OS_MACOSX)
+#if defined(OS_MAC)
 #include "base/callback.h"
-#endif  // defined(OS_MACOSX)
+#endif  // defined(OS_MAC)
 
 namespace sandbox {
 struct SandboxInterfaceInfo;
@@ -40,13 +40,13 @@ class SANDBOX_POLICY_EXPORT Sandbox {
                          const SandboxLinux::Options& options);
 #endif  // defined(OS_LINUX)
 
-#if defined(OS_MACOSX)
+#if defined(OS_MAC)
   // Initialize the sandbox of |sandbox_type|. Runs |post_warmup_hook| if
   // non-empty after performing any sandbox warmup but immediately before
   // engaging the sandbox. Return true on success, false otherwise.
   static bool Initialize(SandboxType sandbox_type,
                          base::OnceClosure post_warmup_hook);
-#endif  // defined(OS_MACOSX)
+#endif  // defined(OS_MAC)
 
 #if defined(OS_WIN)
   static bool Initialize(SandboxType sandbox_type,

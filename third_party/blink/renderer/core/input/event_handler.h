@@ -203,6 +203,11 @@ class CORE_EXPORT EventHandler final : public GarbageCollected<EventHandler> {
                                            Node*& target_node);
   void CacheTouchAdjustmentResult(uint32_t, FloatPoint);
 
+  // Dispatch a context menu event. If |override_target_element| is provided,
+  // the context menu event will use that, so that the browser-generated context
+  // menu will be filled with options relevant to it, rather than the element
+  // found via hit testing the event's screen point. This is used so that a
+  // context menu generated via the keyboard reliably uses the correct target.
   WebInputEventResult SendContextMenuEvent(
       const WebMouseEvent&,
       Element* override_target_element = nullptr);

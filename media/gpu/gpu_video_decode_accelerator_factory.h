@@ -122,7 +122,7 @@ class MEDIA_GPU_EXPORT GpuVideoDecodeAcceleratorFactory {
       const gpu::GpuPreferences& gpu_preferences,
       MediaLog* media_log) const;
 #endif
-#if defined(OS_MACOSX)
+#if defined(OS_MAC)
   std::unique_ptr<VideoDecodeAccelerator> CreateVTVDA(
       const gpu::GpuDriverBugWorkarounds& workarounds,
       const gpu::GpuPreferences& gpu_preferences,

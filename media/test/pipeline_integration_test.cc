@@ -150,7 +150,7 @@ static base::Time kLiveTimelineOffset() {
   return timeline_offset;
 }
 
-#if defined(OS_MACOSX)
+#if defined(OS_MAC)
 class ScopedVerboseLogEnabler {
  public:
   ScopedVerboseLogEnabler() : old_level_(logging::GetMinLogLevel()) {
@@ -739,7 +739,7 @@ TEST_F(PipelineIntegrationTest, PlaybackTooManyChannels) {
 }
 
 TEST_F(PipelineIntegrationTest, PlaybackWithAudioTrackDisabledThenEnabled) {
-#if defined(OS_MACOSX)
+#if defined(OS_MAC)
   // Enable scoped logs to help track down hangs.  http://crbug.com/1014646
   ScopedVerboseLogEnabler scoped_log_enabler;
 #endif
@@ -776,7 +776,7 @@ TEST_F(PipelineIntegrationTest, PlaybackWithAudioTrackDisabledThenEnabled) {
 }
 
 TEST_F(PipelineIntegrationTest, PlaybackWithVideoTrackDisabledThenEnabled) {
-#if defined(OS_MACOSX)
+#if defined(OS_MAC)
   // Enable scoped logs to help track down hangs.  http://crbug.com/1014646
   ScopedVerboseLogEnabler scoped_log_enabler;
 #endif
@@ -841,7 +841,7 @@ TEST_F(PipelineIntegrationTest, TrackStatusChangesAfterPipelineEnded) {
 }
 
 // TODO(https://crbug.com/1009964): Enable test when MacOS flake is fixed.
-#if defined(OS_MACOSX)
+#if defined(OS_MAC)
 #define MAYBE_TrackStatusChangesWhileSuspended \
   DISABLED_TrackStatusChangesWhileSuspended
 #else
@@ -2586,7 +2586,7 @@ TEST_F(PipelineIntegrationTest, MSE_BasicPlayback_VideoOnly_MP4_HEV1) {
 #endif  // BUILDFLAG(USE_PROPRIETARY_CODECS)
 
 TEST_F(PipelineIntegrationTest, SeekWhilePaused) {
-#if defined(OS_MACOSX)
+#if defined(OS_MAC)
   // Enable scoped logs to help track down hangs.  http://crbug.com/1014646
   ScopedVerboseLogEnabler scoped_log_enabler;
 #endif
@@ -2615,7 +2615,7 @@ TEST_F(PipelineIntegrationTest, SeekWhilePaused) {
 }
 
 TEST_F(PipelineIntegrationTest, SeekWhilePlaying) {
-#if defined(OS_MACOSX)
+#if defined(OS_MAC)
   // Enable scoped logs to help track down hangs.  http://crbug.com/1014646
   ScopedVerboseLogEnabler scoped_log_enabler;
 #endif

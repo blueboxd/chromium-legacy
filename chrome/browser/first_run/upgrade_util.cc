@@ -15,7 +15,7 @@
 
 namespace {
 
-#if !defined(OS_MACOSX)
+#if !defined(OS_MAC)
 base::CommandLine* command_line = nullptr;
 #endif
 
@@ -37,7 +37,7 @@ bool RelaunchChromeBrowser(const base::CommandLine& command_line) {
   return RelaunchChromeBrowserImpl(command_line);
 }
 
-#if !defined(OS_MACOSX)
+#if !defined(OS_MAC)
 
 void SetNewCommandLine(std::unique_ptr<base::CommandLine> new_command_line) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
@@ -57,7 +57,7 @@ void RelaunchChromeBrowserWithNewCommandLineIfNeeded() {
   }
 }
 
-#endif  // !defined(OS_MACOSX)
+#endif  // !defined(OS_MAC)
 
 RelaunchChromeBrowserCallback SetRelaunchChromeBrowserCallbackForTesting(
     RelaunchChromeBrowserCallback callback) {

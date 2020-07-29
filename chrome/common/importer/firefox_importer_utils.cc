@@ -99,7 +99,7 @@ std::vector<FirefoxDetail> GetFirefoxDetailsFromDictionary(
   return profile_details;
 }
 
-#if defined(OS_MACOSX)
+#if defined(OS_MAC)
 // Find the "*.app" component of the path and build up from there.
 // The resulting path will be .../Firefox.app/Contents/MacOS.
 // We do this because we don't trust LastAppDir to always be
@@ -132,7 +132,7 @@ bool ComposeMacAppPath(const std::string& path_from_file,
              << "installation path: missing /*.app/ directory.";
   return false;
 }
-#endif  // OS_MACOSX
+#endif  // OS_MAC
 
 bool GetFirefoxVersionAndPathFromProfile(const base::FilePath& profile_path,
                                          int* version,
@@ -159,15 +159,15 @@ bool GetFirefoxVersionAndPathFromProfile(const base::FilePath& profile_path,
         // UTF-8, what does Firefox do?  If it puts raw bytes in the
         // file, we could go straight from bytes -> filepath;
         // otherwise, we're out of luck here.
-#if defined(OS_MACOSX)
+#if defined(OS_MAC)
         // Extract path from "LastAppDir=/actual/path"
         size_t separator_pos = line.find_first_of('=');
         const std::string& path_from_ini = line.substr(separator_pos + 1);
         if (!ComposeMacAppPath(path_from_ini, app_path))
           return false;
-#else  // !OS_MACOSX
+#else  // !OS_MAC
         *app_path = base::FilePath::FromUTF8Unsafe(line.substr(equal + 1));
-#endif  // OS_MACOSX
+#endif  // OS_MAC
       }
     }
   }

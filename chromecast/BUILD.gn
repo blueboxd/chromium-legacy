@@ -645,6 +645,8 @@ if (is_android) {
   }
 
   android_apk("cast_shell_apk") {
+    enable_lint = true
+
     apk_name = "CastShell"
     android_manifest = "$root_gen_dir/cast_shell_manifest/AndroidManifest.xml"
     android_manifest_dep = "//chromecast/browser/android:cast_shell_manifest"

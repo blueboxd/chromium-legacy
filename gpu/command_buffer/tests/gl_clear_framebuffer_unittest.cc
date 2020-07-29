@@ -146,7 +146,7 @@ TEST_P(GLClearFramebufferTest, ClearColorWithMask) {
 }
 
 // crbug.com/434094
-#if !defined(OS_MACOSX)
+#if !defined(OS_MAC)
 TEST_P(GLClearFramebufferTest, ClearColorWithScissor) {
   if (!IsApplicable()) {
     return;

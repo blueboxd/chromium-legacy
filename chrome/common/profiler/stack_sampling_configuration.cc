@@ -24,7 +24,7 @@
 #include "base/win/static_constants.h"
 #endif
 
-#if defined(OS_MACOSX)
+#if defined(OS_MAC)
 #include "base/mac/mac_util.h"
 #endif
 
@@ -257,7 +257,7 @@ StackSamplingConfiguration::GenerateConfiguration() {
     case version_info::Channel::UNKNOWN:
       return PROFILE_ENABLED;
 
-#if (defined(OS_WIN) && defined(ARCH_CPU_X86_64)) || defined(OS_MACOSX)
+#if (defined(OS_WIN) && defined(ARCH_CPU_X86_64)) || defined(OS_MAC)
     case version_info::Channel::CANARY:
     case version_info::Channel::DEV:
       return ChooseConfiguration({{PROFILE_ENABLED, 80},

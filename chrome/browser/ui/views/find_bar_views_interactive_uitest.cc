@@ -466,7 +466,7 @@ IN_PROC_BROWSER_TEST_F(FindInPageTest, FocusRestoreOnTabSwitch) {
 }
 
 // FindInPage on Mac doesn't use prepopulated values. Search there is global.
-#if !defined(OS_MACOSX) && !defined(USE_AURA)
+#if !defined(OS_MAC) && !defined(USE_AURA)
 // Flaky because the test server fails to start? See: http://crbug.com/96594.
 // This tests that whenever you clear values from the Find box and close it that
 // it respects that and doesn't show you the last search, as reported in bug:

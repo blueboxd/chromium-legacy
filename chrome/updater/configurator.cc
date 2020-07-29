@@ -24,7 +24,7 @@
 #include "chrome/updater/win/net/network.h"
 #endif
 
-#if defined(OS_MACOSX)
+#if defined(OS_MAC)
 #include "chrome/updater/mac/net/network.h"
 #endif
 

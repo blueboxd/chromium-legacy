@@ -57,7 +57,7 @@ struct ContentMainParams {
   // BrowserMainParts has been created and before PreEarlyInitialization().
   CreatedMainPartsClosure* created_main_parts_closure = nullptr;
 
-#if defined(OS_MACOSX)
+#if defined(OS_MAC)
   // The outermost autorelease pool to pass to main entry points.
   base::mac::ScopedNSAutoreleasePool* autorelease_pool = nullptr;
 #endif

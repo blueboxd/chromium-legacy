@@ -43,7 +43,7 @@
 #include "third_party/blink/public/web/blink.h"
 #include "v8/include/v8.h"
 
-#if defined(OS_MACOSX)
+#if defined(OS_MAC)
 #include "base/mac/foundation_util.h"
 #include "base/mac/scoped_nsautorelease_pool.h"
 #endif
@@ -106,7 +106,7 @@ namespace content {
 
 TestBlinkWebUnitTestSupport::TestBlinkWebUnitTestSupport(
     TestBlinkWebUnitTestSupport::SchedulerType scheduler_type) {
-#if defined(OS_MACOSX)
+#if defined(OS_MAC)
   base::mac::ScopedNSAutoreleasePool autorelease_pool;
 #endif
 

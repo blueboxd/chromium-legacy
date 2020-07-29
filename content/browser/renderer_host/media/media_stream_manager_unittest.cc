@@ -38,7 +38,7 @@
 #include "media/audio/alsa/audio_manager_alsa.h"
 #elif defined(OS_ANDROID)
 #include "media/audio/android/audio_manager_android.h"
-#elif defined(OS_MACOSX)
+#elif defined(OS_MAC)
 #include "media/audio/mac/audio_manager_mac.h"
 #elif defined(OS_WIN)
 #include "media/audio/win/audio_manager_win.h"
@@ -56,7 +56,7 @@ namespace content {
 
 #if defined(USE_ALSA)
 typedef media::AudioManagerAlsa AudioManagerPlatform;
-#elif defined(OS_MACOSX)
+#elif defined(OS_MAC)
 typedef media::AudioManagerMac AudioManagerPlatform;
 #elif defined(OS_WIN)
 typedef media::AudioManagerWin AudioManagerPlatform;

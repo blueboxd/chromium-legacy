@@ -102,7 +102,7 @@ const char kNoSandboxAndElevatedPrivileges[] = "no-sandbox-and-elevated";
 const char kAddXrAppContainerCaps[] = "add-xr-appcontainer-caps";
 #endif
 
-#if defined(OS_MACOSX)
+#if defined(OS_MAC)
 // Cause the OS X sandbox write to syslog every time an access to a resource
 // is denied by the sandbox.
 const char kEnableSandboxLogging[] = "enable-sandbox-logging";

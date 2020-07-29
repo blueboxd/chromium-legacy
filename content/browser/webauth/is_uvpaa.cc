@@ -8,7 +8,7 @@
 #include "build/build_config.h"
 #include "device/fido/features.h"
 
-#if defined(OS_MACOSX)
+#if defined(OS_MAC)
 #include "device/fido/mac/authenticator.h"
 #endif
 
@@ -19,7 +19,7 @@
 
 namespace content {
 
-#if defined(OS_MACOSX)
+#if defined(OS_MAC)
 bool IsUVPlatformAuthenticatorAvailable(
     const content::AuthenticatorRequestClientDelegate::
         TouchIdAuthenticatorConfig& config) {

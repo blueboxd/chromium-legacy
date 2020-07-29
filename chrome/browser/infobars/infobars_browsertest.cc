@@ -64,7 +64,7 @@
 #include "chrome/browser/ui/startup/default_browser_infobar_delegate.h"
 #endif
 
-#if defined(OS_MACOSX)
+#if defined(OS_MAC)
 #include "chrome/browser/ui/cocoa/keystone_infobar_delegate.h"
 #endif
 
@@ -292,7 +292,7 @@ void InfoBarUiTest::ShowUi(const std::string& name) {
       break;
 
     case IBD::KEYSTONE_PROMOTION_INFOBAR_DELEGATE_MAC:
-#if defined(OS_MACOSX)
+#if defined(OS_MAC)
       KeystonePromotionInfoBarDelegate::Create(GetWebContents());
 #else
       ADD_FAILURE() << "This infobar is not supported on this OS.";
@@ -347,7 +347,7 @@ void InfoBarUiTest::ShowUi(const std::string& name) {
       break;
 
     case IBD::TRANSLATE_INFOBAR_DELEGATE_NON_AURA: {
-#if defined(USE_AURA) || defined(OS_MACOSX)
+#if defined(USE_AURA) || defined(OS_MAC)
       ADD_FAILURE() << "This infobar is not supported on this toolkit.";
 #else
       // The translate infobar is only used on Android and iOS, neither of
@@ -432,7 +432,7 @@ IN_PROC_BROWSER_TEST_F(InfoBarUiTest, InvokeUi_file_access_disabled) {
   ShowAndVerifyUi();
 }
 
-#if defined(OS_MACOSX)
+#if defined(OS_MAC)
 IN_PROC_BROWSER_TEST_F(InfoBarUiTest, InvokeUi_keystone_promotion) {
   ShowAndVerifyUi();
 }
@@ -468,7 +468,7 @@ IN_PROC_BROWSER_TEST_F(InfoBarUiTest, InvokeUi_page_info) {
   ShowAndVerifyUi();
 }
 
-#if !defined(USE_AURA) && !defined(OS_MACOSX)
+#if !defined(USE_AURA) && !defined(OS_MAC)
 IN_PROC_BROWSER_TEST_F(InfoBarUiTest, InvokeUi_translate) {
   ShowAndVerifyUi();
 }

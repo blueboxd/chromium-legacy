@@ -136,7 +136,7 @@ IN_PROC_BROWSER_TEST_F(GlobalMediaControlsPromoControllerDialogBrowserTest,
   EXPECT_FALSE(PromoHighlightVisible());
 }
 
-#if defined(OS_MACOSX)
+#if defined(OS_MAC)
 // TODO(https://crbug.com/998342): Fix this on Mac along with the
 // MediaDialogView tests.
 #define MAYBE_BubbleHidesIfTheMediaDialogIsOpened \

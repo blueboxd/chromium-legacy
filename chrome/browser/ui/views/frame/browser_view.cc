@@ -201,7 +201,7 @@
 #include "chrome/browser/ui/signin_view_controller.h"
 #endif  // !defined(OS_CHROMEOS)
 
-#if defined(OS_MACOSX)
+#if defined(OS_MAC)
 #include "chrome/browser/global_keyboard_shortcuts_mac.h"
 #include "chrome/browser/ui/views/frame/browser_view_commands_mac.h"
 #endif
@@ -326,7 +326,7 @@ void InsertIntoFocusOrderAfter(views::View* insert_after,
 bool GetGestureCommand(ui::GestureEvent* event, int* command) {
   DCHECK(command);
   *command = 0;
-#if defined(OS_MACOSX)
+#if defined(OS_MAC)
   if (event->details().type() == ui::ET_GESTURE_SWIPE) {
     if (event->details().swipe_left()) {
       *command = IDC_BACK;
@@ -733,7 +733,7 @@ bool BrowserView::IsRegularOrGuestSession() const {
 
 bool BrowserView::GetAccelerator(int cmd_id,
                                  ui::Accelerator* accelerator) const {
-#if defined(OS_MACOSX)
+#if defined(OS_MAC)
   // On macOS, most accelerators are defined in MainMenu.xib and are user
   // configurable. Furthermore, their values and enabled state depends on the
   // key window. Views code relies on a static mapping that is not dependent on
@@ -1042,7 +1042,7 @@ void BrowserView::OnActiveTabChanged(content::WebContents* old_contents,
   bool change_tab_contents =
       contents_web_view_->web_contents() != new_contents;
 
-#if defined(OS_MACOSX)
+#if defined(OS_MAC)
   // Widget::IsActive is inconsistent between Mac and Aura, so don't check for
   // it on Mac. The check is also unnecessary for Mac, since restoring focus
   // won't activate the widget on that platform.
@@ -1311,7 +1311,7 @@ void BrowserView::FullscreenStateChanged() {
       display::kInvalidDisplayId);
   frame_->GetFrameView()->OnFullscreenStateChanged();
 
-#if defined(OS_MACOSX)
+#if defined(OS_MAC)
   if (!fullscreen && restore_pre_fullscreen_bounds_callback_) {
     base::ThreadTaskRunnerHandle::Get()->PostTask(
         FROM_HERE, std::move(restore_pre_fullscreen_bounds_callback_));
@@ -1914,7 +1914,7 @@ bool BrowserView::HandleKeyboardEvent(const NativeWebKeyboardEvent& event) {
 // won't do anything. We'll need something like an overall clipboard command
 // manager to do that.
 void BrowserView::CutCopyPaste(int command_id) {
-#if defined(OS_MACOSX)
+#if defined(OS_MAC)
   ForwardCutCopyPasteToNSApp(command_id);
 #else
   // If a WebContents is focused, call its member method.
@@ -1954,7 +1954,7 @@ void BrowserView::CutCopyPaste(int command_id) {
   ui::Accelerator accelerator;
   GetAccelerator(command_id, &accelerator);
   GetFocusManager()->ProcessAccelerator(accelerator);
-#endif  // defined(OS_MACOSX)
+#endif  // defined(OS_MAC)
 }
 
 std::unique_ptr<FindBar> BrowserView::CreateFindBar() {
@@ -2069,7 +2069,7 @@ bool BrowserView::CanActivate() const {
 base::string16 BrowserView::GetWindowTitle() const {
   base::string16 title =
       browser_->GetWindowTitleForCurrentTab(true /* include_app_name */);
-#if defined(OS_MACOSX)
+#if defined(OS_MAC)
   content::WebContents* contents = GetActiveWebContents();
   if (contents) {
     auto* helper = RecentlyAudibleHelper::FromWebContents(contents);
@@ -2582,7 +2582,7 @@ void BrowserView::GetAccessiblePanes(std::vector<views::View*>* panes) {
   if (download_shelf_)
     panes->push_back(download_shelf_);
 // TODO(crbug.com/1055150): Implement for mac.
-#if !defined(OS_MACOSX)
+#if !defined(OS_MAC)
   // See if there is a caption bubble present.
   views::View* caption_bubble =
       captions::CaptionBubbleControllerViews::GetCaptionBubbleAccessiblePane(
@@ -3125,7 +3125,7 @@ void BrowserView::ProcessFullscreen(bool fullscreen,
 
   frame_->SetFullscreen(fullscreen);
 
-#if !defined(OS_MACOSX)
+#if !defined(OS_MAC)
   // On Mac, the pre-fullscreen bounds must be restored after an asynchronous
   // transition out of the fullscreen workspace; see http://crbug.com/1039874
   if (!fullscreen && restore_pre_fullscreen_bounds_callback_)

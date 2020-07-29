@@ -148,6 +148,14 @@ class VIEWS_EXPORT LabelButton : public Button, public NativeThemeDelegate {
   // Updates the image view to contain the appropriate button state image.
   void UpdateImage();
 
+  // Updates the background color, if the background color is state-sensitive.
+  virtual void UpdateBackgroundColor() {}
+
+  // Returns the current visual appearance of the button. This takes into
+  // account both the button's underlying state and the state of the containing
+  // widget.
+  ButtonState GetVisualState() const;
+
   // Fills |params| with information about the button.
   virtual void GetExtraParams(ui::NativeTheme::ExtraParams* params) const;
 
@@ -177,11 +185,6 @@ class VIEWS_EXPORT LabelButton : public Button, public NativeThemeDelegate {
   // Both methods will then use the max of inset height + label height and this
   // height as total height, and clamp to min/max sizes as appropriate.
   gfx::Size GetUnclampedSizeWithoutLabel() const;
-
-  // Returns the current visual appearance of the button. This takes into
-  // account both the button's underlying state and the state of the containing
-  // widget.
-  ButtonState GetVisualState() const;
 
   // Updates the portions of the object that might change in response to a
   // change in the value returned by GetVisualState().

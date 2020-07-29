@@ -117,7 +117,7 @@ TEST_F('CrExtensionsToolbarTest', 'FailedUpdateFiresLoadError', function() {
 });
 
 // TODO(crbug.com/882342) Disabled on other platforms but MacOS due to timeouts.
-GEN('#if !defined(OS_MACOSX)');
+GEN('#if !defined(OS_MAC)');
 GEN('#define MAYBE_ClickHandlers DISABLED_ClickHandlers');
 GEN('#else');
 GEN('#define MAYBE_ClickHandlers ClickHandlers');
@@ -640,7 +640,7 @@ TEST_F('CrExtensionsPackDialogTest', 'PackError', function() {
 
 // Temporarily disabling on Mac due to flakiness.
 // http://crbug.com/877109
-GEN('#if defined(OS_MACOSX)');
+GEN('#if defined(OS_MAC)');
 GEN('#define MAYBE_PackWarning DISABLED_PackWarning');
 GEN('#else');
 GEN('#define MAYBE_PackWarning PackWarning');

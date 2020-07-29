@@ -35,7 +35,7 @@
 #include "build/build_config.h"
 #include "third_party/blink/public/common/features.h"
 
-#if !defined(OS_APPLE) && !defined(OS_WIN)
+#if !defined(OS_MAC) && !defined(OS_WIN)
 #include <sys/utsname.h>
 #include "third_party/blink/renderer/platform/wtf/thread_specific.h"
 #include "third_party/blink/renderer/platform/wtf/threading.h"
@@ -71,7 +71,7 @@ String NavigatorID::platform() const {
 #endif
   }
 
-#if defined(OS_APPLE)
+#if defined(OS_MAC)
   // Match Safari and Mozilla on Mac x86.
   return "MacIntel";
 #elif defined(OS_WIN)

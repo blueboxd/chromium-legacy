@@ -36,7 +36,7 @@
 #include "chromeos/services/tts/tts_sandbox_hook.h"
 #endif
 
-#if defined(OS_MACOSX)
+#if defined(OS_MAC)
 #include "base/message_loop/message_pump_mac.h"
 #endif
 
@@ -56,7 +56,7 @@ int UtilityMain(const MainFunctionParams& parameters) {
           ? base::MessagePumpType::UI
           : base::MessagePumpType::DEFAULT;
 
-#if defined(OS_MACOSX)
+#if defined(OS_MAC)
   // On Mac, the TYPE_UI pump for the main thread is an NSApplication loop. In
   // a sandboxed utility process, NSApp attempts to acquire more Mach resources
   // than a restrictive sandbox policy should allow. Services that require a
@@ -126,7 +126,7 @@ int UtilityMain(const MainFunctionParams& parameters) {
   utility_process.set_main_thread(
       new UtilityThreadImpl(run_loop.QuitClosure()));
 
-#if defined(OS_POSIX) && !defined(OS_ANDROID) && !defined(OS_MACOSX)
+#if defined(OS_POSIX) && !defined(OS_ANDROID) && !defined(OS_MAC)
   // Startup tracing is usually enabled earlier, but if we forked from a zygote,
   // we can only enable it after mojo IPC support is brought up initialized by
   // UtilityThreadImpl, because the mojo broker has to create the tracing SMB on

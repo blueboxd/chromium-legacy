@@ -36,7 +36,7 @@
 #include "third_party/skia/include/core/SkRefCnt.h"
 #include "third_party/skia/include/core/SkSurface.h"
 #include "third_party/skia/include/gpu/GrBackendSurface.h"
-#include "third_party/skia/include/gpu/GrContext.h"
+#include "third_party/skia/include/gpu/GrDirectContext.h"
 #include "third_party/skia/include/gpu/gl/GrGLAssembleInterface.h"
 #include "third_party/skia/include/gpu/gl/GrGLInterface.h"
 #include "ui/gfx/geometry/size_conversions.h"
@@ -525,7 +525,7 @@ bool ClientBase::Init(const InitParams& params) {
         nullptr,
         [](void* ctx, const char name[]) { return eglGetProcAddress(name); });
     DCHECK(native_interface);
-    gr_context_ = GrContext::MakeGL(std::move(native_interface));
+    gr_context_ = GrDirectContext::MakeGL(std::move(native_interface));
     DCHECK(gr_context_);
 
 #if defined(USE_VULKAN)

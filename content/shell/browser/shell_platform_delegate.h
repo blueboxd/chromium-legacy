@@ -14,7 +14,7 @@
 #include "ui/gfx/geometry/size.h"
 #include "ui/gfx/native_widget_types.h"
 
-#if defined(OS_MACOSX)
+#if defined(OS_MAC)
 #include "content/public/browser/native_web_keyboard_event.h"
 #endif
 
@@ -99,7 +99,7 @@ class ShellPlatformDelegate {
   virtual gfx::NativeWindow GetNativeWindow(Shell* shell);
 #endif
 
-#if defined(OS_MACOSX)
+#if defined(OS_MAC)
   // Activate (make key) the native window, and focus the web contents.
   virtual void ActivateContents(Shell* shell, WebContents* contents);
 

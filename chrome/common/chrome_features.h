@@ -43,12 +43,12 @@ COMPONENT_EXPORT(CHROME_FEATURES)
 extern const base::Feature kAppActivityReporting;
 #endif
 
-#if defined(OS_MACOSX)
+#if defined(OS_MAC)
 COMPONENT_EXPORT(CHROME_FEATURES)
 extern const base::Feature kAppShimRemoteCocoa;
 COMPONENT_EXPORT(CHROME_FEATURES)
 extern const base::Feature kShow10_9ObsoleteInfobar;
-#endif  // defined(OS_MACOSX)
+#endif  // defined(OS_MAC)
 
 #if !defined(OS_ANDROID)
 COMPONENT_EXPORT(CHROME_FEATURES)
@@ -91,7 +91,7 @@ extern const base::Feature kClickToOpenPDFPlaceholder;
 COMPONENT_EXPORT(CHROME_FEATURES)
 extern const base::Feature kClientStorageAccessContextAuditing;
 
-#if defined(OS_MACOSX)
+#if defined(OS_MAC)
 COMPONENT_EXPORT(CHROME_FEATURES)
 extern const base::Feature kImmersiveFullscreen;
 #endif
@@ -282,17 +282,17 @@ extern const base::Feature kKernelnextVMs;
 COMPONENT_EXPORT(CHROME_FEATURES)
 extern const base::Feature kLiteVideo;
 
-#if defined(OS_MACOSX)
+#if defined(OS_MAC)
 COMPONENT_EXPORT(CHROME_FEATURES)
 extern const base::Feature kMacFullSizeContentView;
 #endif
 
-#if defined(OS_MACOSX)
+#if defined(OS_MAC)
 COMPONENT_EXPORT(CHROME_FEATURES)
 extern const base::Feature kMacMaterialDesignDownloadShelf;
 #endif
 
-#if defined(OS_MACOSX)
+#if defined(OS_MAC)
 COMPONENT_EXPORT(CHROME_FEATURES)
 extern const base::Feature kMacSystemMediaPermissionsInfoUi;
 

@@ -42,7 +42,7 @@ class InitiatorWebContentsObserver
 };
 
 gfx::Size RestrictToPlatformMinimumSize(const gfx::Size& min_size) {
-#if defined(OS_MACOSX)
+#if defined(OS_MAC)
   // http://crbug.com/78973 - MacOS does not handle zero-sized windows well.
   gfx::Size adjusted_min_size(1, 1);
   adjusted_min_size.SetToMax(min_size);
@@ -130,7 +130,7 @@ class WebDialogWebContentsDelegateViews
     // Forward shortcut keys in dialog to our initiator's delegate.
     // http://crbug.com/104586
     // Disabled on Mac due to http://crbug.com/112173
-#if !defined(OS_MACOSX)
+#if !defined(OS_MAC)
     if (!initiator_observer_->web_contents())
       return false;
 

@@ -54,7 +54,7 @@ CONTENT_EXPORT sandbox::ResultCode StartSandboxedProcess(
     const base::HandlesToInheritVector& handles_to_inherit,
     base::Process* process);
 
-#elif defined(OS_MACOSX)
+#elif defined(OS_MAC)
 
 // Initialize the sandbox of the given |sandbox_type|, optionally specifying a
 // directory to allow access to. Note specifying a directory needs to be

@@ -51,7 +51,7 @@
 #include "url/gurl.h"
 #include "url/origin.h"
 
-#if !defined(OS_MACOSX)
+#if !defined(OS_MAC)
 #include "third_party/khronos/GLES2/gl2.h"
 #include "third_party/khronos/GLES2/gl2ext.h"
 #endif

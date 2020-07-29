@@ -359,7 +359,7 @@ void CheckClientDownloadRequestBase::OnFileFeatureExtractionDone(
   file_count_ = results.file_count;
   directory_count_ = results.directory_count;
 
-#if defined(OS_MACOSX)
+#if defined(OS_MAC)
   if (!results.disk_image_signature.empty())
     disk_image_signature_ =
         std::make_unique<std::vector<uint8_t>>(results.disk_image_signature);
@@ -531,7 +531,7 @@ void CheckClientDownloadRequestBase::SendRequest() {
   request->set_file_basename(target_file_path_.BaseName().AsUTF8Unsafe());
   request->set_download_type(type_);
 
-#if defined(OS_MACOSX)
+#if defined(OS_MAC)
   if (disk_image_signature_) {
     request->set_udif_code_signature(disk_image_signature_->data(),
                                      disk_image_signature_->size());

@@ -28,6 +28,7 @@
 #include "third_party/blink/renderer/core/exported/web_view_impl.h"
 #include "third_party/blink/renderer/core/frame/local_frame_ukm_aggregator.h"
 #include "third_party/blink/renderer/core/frame/local_frame_view.h"
+#include "third_party/blink/renderer/core/frame/remote_frame_client.h"
 #include "third_party/blink/renderer/core/frame/settings.h"
 #include "third_party/blink/renderer/core/frame/visual_viewport.h"
 #include "third_party/blink/renderer/core/frame/web_local_frame_impl.h"
@@ -54,7 +55,7 @@
 #include "third_party/blink/renderer/platform/wtf/assertions.h"
 #include "third_party/blink/renderer/platform/wtf/cross_thread_functional.h"
 
-#if defined(OS_APPLE)
+#if defined(OS_MAC)
 #include "third_party/blink/renderer/core/editing/substring_util.h"
 #include "third_party/blink/renderer/platform/fonts/mac/attributed_string_type_converter.h"
 #include "ui/base/mojom/attributed_string.mojom-blink.h"
@@ -71,6 +72,25 @@ struct CrossThreadCopier<blink::WebReportTimeCallback>
 }  // namespace WTF
 
 namespace blink {
+
+namespace {
+
+// Iterate the remote children that will be controlled by the widget. Skip over
+// any LocalFrames since they will have their own Widget controlling
+// RemoteFrames below it.
+void ForEachRemoteFrameChildrenControlledByWidget(
+    Frame* frame,
+    const base::RepeatingCallback<void(RemoteFrame*)>& callback) {
+  for (Frame* child = frame->Tree().FirstChild(); child;
+       child = child->Tree().NextSibling()) {
+    if (auto* remote_frame = DynamicTo<RemoteFrame>(child)) {
+      callback.Run(remote_frame);
+      ForEachRemoteFrameChildrenControlledByWidget(child, callback);
+    }
+  }
+}
+
+}  // namespace
 
 // Ensure that the WebDragOperation enum values stay in sync with the original
 // DragOperation constants.
@@ -304,7 +324,7 @@ void WebFrameWidgetBase::SetTextDirection(base::i18n::TextDirection direction) {
     focusedFrame->SetTextDirection(direction);
 }
 
-#if defined(OS_APPLE)
+#if defined(OS_MAC)
 void WebFrameWidgetBase::GetStringAtPoint(const gfx::Point& point_in_local_root,
                                           GetStringAtPointCallback callback) {
   gfx::Point baseline_point;
@@ -552,6 +572,7 @@ bool WebFrameWidgetBase::ShouldAckSyntheticInputImmediately() {
 
 void WebFrameWidgetBase::UpdateVisualProperties(
     const VisualProperties& visual_properties) {
+  SetZoomLevel(visual_properties.zoom_level);
   Client()->UpdateVisualProperties(visual_properties);
 }
 
@@ -729,6 +750,18 @@ WebFrameWidgetBase::GetAndResetContextMenuLocation() {
   return std::move(host_context_menu_location_);
 }
 
+void WebFrameWidgetBase::SetZoomLevel(double zoom_level) {
+  View()->SetZoomLevel(zoom_level);
+
+  // Part of the UpdateVisualProperties dance we send the zoom level to
+  // RemoteFrames that are below the local root for this widget.
+  ForEachRemoteFrameControlledByWidget(WTF::BindRepeating(
+      [](double zoom_level, RemoteFrame* remote_frame) {
+        remote_frame->Client()->ZoomLevelChanged(zoom_level);
+      },
+      zoom_level));
+}
+
 LocalFrame* WebFrameWidgetBase::FocusedLocalFrameInWidget() const {
   if (!local_root_) {
     // WebFrameWidget is created in the call to CreateFrame. The corresponding
@@ -904,6 +937,11 @@ WebFrameWidgetBase::GetSynchronousCompositorRegistry() {
       ->GetSynchronousCompositorRegistry();
 }
 #endif
+
+void WebFrameWidgetBase::ApplyVisualProperties(
+    const VisualProperties& visual_properties) {
+  widget_base_->UpdateVisualProperties(visual_properties);
+}
 
 void WebFrameWidgetBase::AutoscrollStart(const gfx::PointF& position) {
   GetAssociatedFrameWidgetHost()->AutoscrollStart(std::move(position));
@@ -1312,7 +1350,7 @@ void WebFrameWidgetBase::DidOverscroll(
     const gfx::Vector2dF& accumulated_overscroll,
     const gfx::PointF& position,
     const gfx::Vector2dF& velocity) {
-#if defined(OS_APPLE)
+#if defined(OS_MAC)
   // On OSX the user can disable the elastic overscroll effect. If that's the
   // case, don't forward the overscroll notification.
   if (!widget_base_->LayerTreeHost()->GetSettings().enable_elastic_overscroll)
@@ -1777,5 +1815,11 @@ void WebFrameWidgetBase::SelectWordAroundCaret(
   std::move(callback).Run(did_select, start_adjust, end_adjust);
 }
 #endif
+
+void WebFrameWidgetBase::ForEachRemoteFrameControlledByWidget(
+    const base::RepeatingCallback<void(RemoteFrame*)>& callback) {
+  ForEachRemoteFrameChildrenControlledByWidget(local_root_->GetFrame(),
+                                               callback);
+}
 
 }  // namespace blink

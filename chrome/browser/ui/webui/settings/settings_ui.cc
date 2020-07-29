@@ -124,7 +124,7 @@
 
 #if defined(USE_NSS_CERTS)
 #include "chrome/browser/ui/webui/certificates_handler.h"
-#elif defined(OS_WIN) || defined(OS_MACOSX)
+#elif defined(OS_WIN) || defined(OS_MAC)
 #include "chrome/browser/ui/webui/settings/native_certificates_handler.h"
 #endif  // defined(USE_NSS_CERTS)
 
@@ -169,7 +169,7 @@ SettingsUI::SettingsUI(content::WebUI* web_ui)
 #if defined(USE_NSS_CERTS)
   AddSettingsPageUIHandler(
       std::make_unique<certificate_manager::CertificatesHandler>());
-#elif defined(OS_WIN) || defined(OS_MACOSX)
+#elif defined(OS_WIN) || defined(OS_MAC)
   AddSettingsPageUIHandler(std::make_unique<NativeCertificatesHandler>());
 #endif  // defined(USE_NSS_CERTS)
 #if defined(OS_CHROMEOS)
@@ -217,7 +217,7 @@ SettingsUI::SettingsUI(content::WebUI* web_ui)
   AddSettingsPageUIHandler(
       std::make_unique<SecurityKeysBioEnrollmentHandler>());
 
-#if defined(OS_WIN) || defined(OS_MACOSX)
+#if defined(OS_WIN) || defined(OS_MAC)
   AddSettingsPageUIHandler(std::make_unique<CaptionsHandler>());
 #endif
 

@@ -39,7 +39,7 @@ bool SpellcheckLanguageBlocklistPolicyHandler::CheckPolicySettings(
   std::vector<std::string> duplicates;
   SortBlocklistedLanguages(policies, &blocklisted, &unknown, &duplicates);
 
-#if !defined(OS_MACOSX)
+#if !defined(OS_MAC)
   for (const std::string& language : duplicates) {
     errors->AddError(policy_name(), IDS_POLICY_SPELLCHECK_BLOCKLIST_IGNORE,
                      language);

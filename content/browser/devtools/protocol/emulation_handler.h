@@ -39,6 +39,10 @@ class EmulationHandler : public DevToolsDomainHandler,
 
   Response Disable() override;
 
+  Response SetIdleOverride(bool is_user_active,
+                           bool is_screen_unlocked) override;
+  Response ClearIdleOverride() override;
+
   Response SetGeolocationOverride(Maybe<double> latitude,
                                   Maybe<double> longitude,
                                   Maybe<double> accuracy) override;

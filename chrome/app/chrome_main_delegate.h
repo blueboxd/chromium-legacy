@@ -65,11 +65,11 @@ class ChromeMainDelegate : public content::ContentMainDelegate {
   content::ContentRendererClient* CreateContentRendererClient() override;
   content::ContentUtilityClient* CreateContentUtilityClient() override;
 
-#if defined(OS_MACOSX)
+#if defined(OS_MAC)
   void InitMacCrashReporter(const base::CommandLine& command_line,
                             const std::string& process_type);
   void SetUpInstallerPreferences(const base::CommandLine& command_line);
-#endif  // defined(OS_MACOSX)
+#endif  // defined(OS_MAC)
 
   ChromeContentClient chrome_content_client_;
 

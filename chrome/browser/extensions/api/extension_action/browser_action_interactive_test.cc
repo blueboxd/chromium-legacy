@@ -188,7 +188,7 @@ class BrowserActionInteractiveTest : public ExtensionApiTest {
         extensions::NOTIFICATION_EXTENSION_HOST_DESTROYED,
         content::NotificationService::AllSources());
 
-#if defined(OS_MACOSX)
+#if defined(OS_MAC)
     // ClickOnView() in an inactive window is not robust on Mac. The click does
     // not guarantee window activation on trybots. So activate the browser
     // explicitly, thus causing the bubble to lose focus and dismiss itself.

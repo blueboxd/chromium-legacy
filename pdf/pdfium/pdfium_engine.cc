@@ -277,7 +277,7 @@ bool IsLinkArea(PDFiumPage::Area area) {
 // button down events into a right button down events.
 MouseInputEvent NormalizeMouseEvent(const MouseInputEvent& event) {
   MouseInputEvent normalized_event = event;
-#if defined(OS_MACOSX)
+#if defined(OS_MAC)
   uint32_t modifiers = event.GetModifiers();
   if ((event.GetModifiers() & kInputEventModifierControlKey) &&
       event.GetButton() == InputEventMouseButtonType::kLeft &&
@@ -1584,7 +1584,7 @@ bool PDFiumEngine::OnKeyDown(const KeyboardInputEvent& event) {
     OnChar(synthesized);
   }
 
-#if !defined(OS_MACOSX)
+#if !defined(OS_MAC)
   // macOS doesn't have keyboard-triggered context menus.
   // Scroll focused annotation into view when context menu is invoked through
   // keyboard <Shift-F10>.

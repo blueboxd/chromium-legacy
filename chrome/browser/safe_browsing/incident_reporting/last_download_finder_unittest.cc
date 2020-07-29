@@ -84,7 +84,7 @@ static const base::FilePath::CharType kBinaryFileName[] =
     FILE_PATH_LITERAL("spam.exe");
 static const base::FilePath::CharType kBinaryFileNameForOtherOS[] =
     FILE_PATH_LITERAL("spam.dmg");
-#elif defined(OS_MACOSX)
+#elif defined(OS_MAC)
 static const base::FilePath::CharType kBinaryFileName[] =
     FILE_PATH_LITERAL("spam.dmg");
 static const base::FilePath::CharType kBinaryFileNameForOtherOS[] =
@@ -369,7 +369,7 @@ TEST_F(LastDownloadFinderTest, NonBinaryOnly) {
   EXPECT_TRUE(last_non_binary_download);
 }
 
-#if defined(OS_WIN) || defined(OS_MACOSX) || defined(OS_ANDROID)
+#if defined(OS_WIN) || defined(OS_MAC) || defined(OS_ANDROID)
 // Tests that nothing happens if the binary is an executable for a different OS.
 TEST_F(LastDownloadFinderTest, DownloadForDifferentOs) {
   // Create a profile with a history service that is opted-in.

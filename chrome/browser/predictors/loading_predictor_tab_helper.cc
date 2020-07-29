@@ -170,8 +170,12 @@ void LoadingPredictorTabHelper::DidStartNavigation(
     return;
   current_navigation_id_ = navigation_id;
 
-  if (predictor_->OnNavigationStarted(navigation_id))
+  has_local_preconnect_predictions_for_current_navigation_ =
+      predictor_->OnNavigationStarted(navigation_id);
+  if (has_local_preconnect_predictions_for_current_navigation_ &&
+      !features::ShouldAlwaysPrefetchUsingOptimizationGuidePredictions()) {
     return;
+  }
 
   if (!optimization_guide_decider_)
     return;
@@ -180,12 +184,12 @@ void LoadingPredictorTabHelper::DidStartNavigation(
   last_optimization_guide_prediction_->decision =
       optimization_guide::OptimizationGuideDecision::kUnknown;
 
-  // We do not have any predictions on device, so consult the optimization
-  // guide.
   optimization_guide_decider_->CanApplyOptimizationAsync(
       navigation_handle, optimization_guide::proto::LOADING_PREDICTOR,
-      base::BindOnce(&LoadingPredictorTabHelper::OnOptimizationGuideDecision,
-                     weak_ptr_factory_.GetWeakPtr(), navigation_id));
+      base::BindOnce(
+          &LoadingPredictorTabHelper::OnOptimizationGuideDecision,
+          weak_ptr_factory_.GetWeakPtr(), navigation_id,
+          !has_local_preconnect_predictions_for_current_navigation_));
 }
 
 void LoadingPredictorTabHelper::DidRedirectNavigation(
@@ -204,6 +208,9 @@ void LoadingPredictorTabHelper::DidRedirectNavigation(
       navigation_handle->GetURL(), navigation_handle->NavigationStart());
   if (!navigation_id.is_valid())
     return;
+  bool is_same_origin_redirect =
+      url::Origin::Create(current_navigation_id_.main_frame_url) ==
+      url::Origin::Create(navigation_handle->GetURL());
   current_navigation_id_ = navigation_id;
 
   // If we are not trying to get an optimization guide prediction for this page
@@ -214,8 +221,11 @@ void LoadingPredictorTabHelper::DidRedirectNavigation(
   // Get an updated prediction for the navigation.
   optimization_guide_decider_->CanApplyOptimizationAsync(
       navigation_handle, optimization_guide::proto::LOADING_PREDICTOR,
-      base::BindOnce(&LoadingPredictorTabHelper::OnOptimizationGuideDecision,
-                     weak_ptr_factory_.GetWeakPtr(), navigation_id));
+      base::BindOnce(
+          &LoadingPredictorTabHelper::OnOptimizationGuideDecision,
+          weak_ptr_factory_.GetWeakPtr(), navigation_id,
+          !(has_local_preconnect_predictions_for_current_navigation_ &&
+            is_same_origin_redirect)));
 }
 
 void LoadingPredictorTabHelper::DidFinishNavigation(
@@ -227,8 +237,10 @@ void LoadingPredictorTabHelper::DidFinishNavigation(
   if (!IsHandledNavigation(navigation_handle))
     return;
 
-  // Clear out the current navigation since there is not one in flight anymore.
+  // Clear state for the current navigation since there is not one in flight
+  // anymore.
   current_navigation_id_ = NavigationID();
+  has_local_preconnect_predictions_for_current_navigation_ = false;
 
   auto old_navigation_id =
       NavigationID(web_contents(),
@@ -312,6 +324,7 @@ void LoadingPredictorTabHelper::DocumentOnLoadCompletedInMainFrame() {
 
 void LoadingPredictorTabHelper::OnOptimizationGuideDecision(
     const NavigationID& navigation_id,
+    bool should_add_preconnects_to_prediction,
     optimization_guide::OptimizationGuideDecision decision,
     const optimization_guide::OptimizationMetadata& metadata) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
@@ -392,7 +405,7 @@ void LoadingPredictorTabHelper::OnOptimizationGuideDecision(
         prediction.prefetch_requests.emplace_back(
             subresource_url, network_isolation_key, destination);
       }
-    } else {
+    } else if (should_add_preconnects_to_prediction) {
       url::Origin subresource_origin = url::Origin::Create(subresource_url);
       if (subresource_origin == main_frame_origin) {
         // We are already connecting to the main frame origin by default, so

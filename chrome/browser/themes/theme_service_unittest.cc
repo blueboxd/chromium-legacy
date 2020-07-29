@@ -293,7 +293,7 @@ TEST_F(ThemeServiceTest, IncognitoTest) {
       ThemeServiceFactory::GetForProfile(profile_->GetPrimaryOTRProfile());
   EXPECT_EQ(theme_service_, otr_theme_service);
 
-#if !defined(OS_MACOSX)
+#if !defined(OS_MAC)
   // Should get a different ThemeProvider for incognito and original profiles.
   const ui::ThemeProvider& provider =
       ThemeService::GetThemeProviderForProfile(profile());

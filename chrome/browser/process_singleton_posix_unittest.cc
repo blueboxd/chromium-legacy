@@ -499,7 +499,7 @@ TEST_F(ProcessSingletonPosixTest, IgnoreSocketSymlinkWithTooLongTarget) {
       ProcessSingleton::ORPHANED_LOCK_FILE, 1u);
 }
 
-#if defined(OS_MACOSX)
+#if defined(OS_MAC)
 // Test that if there is an existing lock file, and we could not flock()
 // it, then exit.
 TEST_F(ProcessSingletonPosixTest, CreateRespectsOldMacLock) {
@@ -524,4 +524,4 @@ TEST_F(ProcessSingletonPosixTest, CreateReplacesOldMacLock) {
   EXPECT_TRUE(process_singleton->Create());
   VerifyFiles();
 }
-#endif  // defined(OS_MACOSX)
+#endif  // defined(OS_MAC)

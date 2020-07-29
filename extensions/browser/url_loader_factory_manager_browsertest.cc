@@ -310,7 +310,7 @@ IN_PROC_BROWSER_TEST_F(URLLoaderFactoryManagerBrowserTest,
 }
 
 // Flaky on MacOS since r622662. See https://crbug.com/921883
-#if defined(OS_MACOSX)
+#if defined(OS_MAC)
 #define MAYBE_ContentScriptMatching_NotAllFrames \
   DISABLED_ContentScriptMatching_NotAllFrames
 #else

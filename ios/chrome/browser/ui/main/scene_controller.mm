@@ -966,7 +966,7 @@ const char kMultiWindowOpenInNewWindowHistogram[] =
 }
 
 - (void)openNewWindowWithActivity:(NSUserActivity*)userActivity {
-  if (!IsMultiwindowSupported())
+  if (!IsMultipleScenesSupported())
     return;  // silent no-op.
 
   if (@available(iOS 13, *)) {

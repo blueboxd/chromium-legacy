@@ -98,6 +98,13 @@ class MockUpdateClient : public UpdateClient {
     std::move(callback).Run(update_client::Error::NONE);
   }
 
+  void SendRegistrationPing(const std::string& id,
+                            const base::Version& version,
+                            Callback callback) override {
+    DoSendRegistrationPing(id, version);
+    std::move(callback).Run(update_client::Error::NONE);
+  }
+
   MOCK_METHOD1(AddObserver, void(Observer* observer));
   MOCK_METHOD1(RemoveObserver, void(Observer* observer));
   MOCK_METHOD2(DoInstall,
@@ -114,6 +121,8 @@ class MockUpdateClient : public UpdateClient {
                void(const std::string& id,
                     const base::Version& version,
                     int reason));
+  MOCK_METHOD2(DoSendRegistrationPing,
+               void(const std::string& id, const base::Version& version));
 
  private:
   ~MockUpdateClient() override = default;

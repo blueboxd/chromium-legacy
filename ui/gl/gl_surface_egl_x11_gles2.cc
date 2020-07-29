@@ -4,6 +4,7 @@
 
 #include "ui/gl/gl_surface_egl_x11_gles2.h"
 
+#include "ui/base/x/x11_util.h"
 #include "ui/gfx/x/x11.h"
 #include "ui/gl/egl_util.h"
 
@@ -145,16 +146,15 @@ bool NativeViewGLSurfaceEGLX11GLES2::Resize(const gfx::Size& size,
 }
 
 bool NativeViewGLSurfaceEGLX11GLES2::DispatchXEvent(x11::Event* x11_event) {
-  XEvent* xev = &x11_event->xlib_event();
-  if (xev->type != Expose ||
-      xev->xexpose.window != static_cast<Window>(window_))
+  auto* expose = x11_event->As<x11::ExposeEvent>();
+  auto window = static_cast<x11::Window>(window_);
+  if (!expose || expose->window != window)
     return false;
 
-  xev->xexpose.window = static_cast<uint32_t>(parent_window_);
-  Display* x11_display = GetXNativeDisplay();
-  XSendEvent(x11_display, static_cast<uint32_t>(parent_window_), x11::False,
-             ExposureMask, xev);
-  XFlush(x11_display);
+  auto expose_copy = *expose;
+  expose_copy.window = parent_window_;
+  ui::SendEvent(expose_copy, parent_window_, x11::EventMask::Exposure);
+  x11::Connection::Get()->Flush();
   return true;
 }
 

@@ -132,7 +132,7 @@ class COMPONENT_EXPORT(UI_BASE_X) SelectionOwner {
   x11::Atom selection_name_;
 
   // The time that this instance took ownership of its selection.
-  uint32_t acquired_selection_timestamp_;
+  x11::Time acquired_selection_timestamp_;
 
   // The maximum size of data we can put in XChangeProperty().
   size_t max_request_size_;

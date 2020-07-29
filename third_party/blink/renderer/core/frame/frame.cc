@@ -269,11 +269,6 @@ void Frame::ClearUserActivationInLocalTree() {
     node->user_activation_state_.Clear();
 }
 
-void Frame::TransferUserActivationFrom(Frame* other) {
-  if (other)
-    user_activation_state_.TransferFrom(other->user_activation_state_);
-}
-
 void Frame::SetOwner(FrameOwner* owner) {
   owner_ = owner;
   UpdateInertIfPossible();

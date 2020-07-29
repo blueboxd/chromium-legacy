@@ -383,11 +383,11 @@ class ContentSettingMediaStreamBubbleModel : public ContentSettingBubbleModel {
   // Updates the camera and microphone setting with the passed |setting|.
   void UpdateSettings(ContentSetting setting);
 
-#if defined(OS_MACOSX)
+#if defined(OS_MAC)
   // Initialize the bubble with the elements specific to the scenario when
   // camera or mic are disabled in a system (OS) level.
   void InitializeSystemMediaPermissionBubble();
-#endif  // defined(OS_MACOSX)
+#endif  // defined(OS_MAC)
 
   // Whether or not to show the bubble UI specific to when media permissions are
   // turned off in a system level.

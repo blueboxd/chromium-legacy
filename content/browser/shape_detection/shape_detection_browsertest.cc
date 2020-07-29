@@ -97,7 +97,7 @@ class ShapeDetectionBrowserTest
 };
 
 // TODO(https://crbug.com/659138): Enable the test on other platforms.
-#if defined(OS_ANDROID) || defined(OS_MACOSX)
+#if defined(OS_ANDROID) || defined(OS_MAC)
 #define MAYBE_DetectShapesInImage DetectShapesInImage
 #else
 #define MAYBE_DetectShapesInImage DISABLED_DetectShapesInImage

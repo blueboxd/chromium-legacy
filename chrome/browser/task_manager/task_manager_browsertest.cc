@@ -213,7 +213,7 @@ INSTANTIATE_TEST_SUITE_P(SitePerProcess,
                          TaskManagerOOPIFBrowserTest,
                          ::testing::Values(true));
 
-#if defined(OS_MACOSX) || defined(OS_LINUX)
+#if defined(OS_MAC) || defined(OS_LINUX)
 #define MAYBE_ShutdownWhileOpen DISABLED_ShutdownWhileOpen
 #else
 #define MAYBE_ShutdownWhileOpen ShutdownWhileOpen
@@ -792,11 +792,11 @@ IN_PROC_BROWSER_TEST_F(TaskManagerBrowserTest, IdleWakeups) {
 // The script above should trigger a lot of idle wakeups - up to 1000 per
 // second. Let's make sure we get at least 100 (in case the test runs slow).
 // On Mac, set a lower threshold because Chrome Mac generates fewer wakes.
-#if defined(OS_MACOSX)
+#if defined(OS_MAC)
   const int kMinExpectedWakeCount = 50;
 #else
   const int kMinExpectedWakeCount = 100;
-#endif  // defined(OS_MACOSX)
+#endif  // defined(OS_MAC)
   ASSERT_NO_FATAL_FAILURE(WaitForTaskManagerStatToExceed(
       MatchTab("title1.html"), ColumnSpecifier::IDLE_WAKEUPS,
       kMinExpectedWakeCount));

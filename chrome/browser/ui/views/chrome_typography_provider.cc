@@ -91,7 +91,7 @@ const gfx::FontList& ChromeTypographyProvider::GetFont(int context,
 
   if (style == STYLE_PRIMARY_MONOSPACED ||
       style == STYLE_SECONDARY_MONOSPACED) {
-#if defined(OS_MACOSX)
+#if defined(OS_MAC)
     typeface = "Menlo";
 #elif defined(OS_WIN)
     typeface = "Consolas";
@@ -168,7 +168,7 @@ int ChromeTypographyProvider::GetLineHeight(int context, int style) const {
 // The platform-specific heights (i.e. gfx::Font::GetHeight()) that result when
 // asking for the target size constants in ChromeTypographyProvider::GetFont()
 // in a default OS configuration.
-#if defined(OS_MACOSX)
+#if defined(OS_MAC)
   constexpr int kHeadlinePlatformHeight = 25;
   constexpr int kTitlePlatformHeight = 19;
   constexpr int kBodyTextLargePlatformHeight = 16;

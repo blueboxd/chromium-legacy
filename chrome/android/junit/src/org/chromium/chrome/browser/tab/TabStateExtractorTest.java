@@ -20,6 +20,7 @@ import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 import org.robolectric.annotation.Config;
 
+import org.chromium.base.UserDataHost;
 import org.chromium.base.test.BaseRobolectricTestRunner;
 import org.chromium.base.test.util.JniMocker;
 import org.chromium.chrome.browser.profiles.Profile;
@@ -62,6 +63,7 @@ public class TabStateExtractorTest {
         mocker.mock(WebContentsStateBridgeJni.TEST_HOOKS, mWebContentsBridgeJni);
 
         Profile.setLastUsedProfileForTesting(mProfileMock);
+        doReturn(new UserDataHost()).when(mTabMock).getUserDataHost();
     }
 
     @Test

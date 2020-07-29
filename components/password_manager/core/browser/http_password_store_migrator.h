@@ -20,8 +20,6 @@ struct PasswordForm;
 
 namespace password_manager {
 
-class PasswordManagerClient;
-
 // These values are persisted to logs. Entries should not be renumbered and
 // numeric values should never be reused.
 //
@@ -58,7 +56,8 @@ class HttpPasswordStoreMigrator : public PasswordStoreConsumer {
 
   // |https_origin| should specify a valid HTTPS URL.
   HttpPasswordStoreMigrator(const url::Origin& https_origin,
-                            const PasswordManagerClient* client,
+                            PasswordStore* store,
+                            network::mojom::NetworkContext* network_context,
                             Consumer* consumer);
   ~HttpPasswordStoreMigrator() override;
 
@@ -70,13 +69,13 @@ class HttpPasswordStoreMigrator : public PasswordStoreConsumer {
   void OnGetPasswordStoreResults(
       std::vector<std::unique_ptr<autofill::PasswordForm>> results) override;
 
-  // Callback for |PasswordManagerClient::PostHSTSQueryForHost|.
+  // Callback for PostHSTSQueryForHostAndNetworkContext.
   void OnHSTSQueryResult(HSTSResult is_hsts);
 
  private:
   void ProcessPasswordStoreResults();
 
-  const PasswordManagerClient* const client_;
+  PasswordStore* const store_;
   Consumer* consumer_;
 
   // |ProcessPasswordStoreResults| requires that both |OnHSTSQueryResult| and

@@ -58,11 +58,6 @@ struct CORE_EXPORT StructTraits<blink::mojom::TransferableMessageDataView,
     return input.user_activation;
   }
 
-  static bool transfer_user_activation(
-      const blink::BlinkTransferableMessage& input) {
-    return input.transfer_user_activation;
-  }
-
   static bool Read(blink::mojom::TransferableMessageDataView,
                    blink::BlinkTransferableMessage* out);
 };

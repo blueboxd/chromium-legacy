@@ -41,7 +41,7 @@
 #include "third_party/skia/include/ports/SkTypeface_win.h"
 #endif
 
-#if defined(OS_FUCHSIA) || defined(OS_MACOSX)
+#if defined(OS_FUCHSIA) || defined(OS_MAC)
 #include "skia/ext/test_fonts.h"
 #endif
 
@@ -91,7 +91,7 @@ void WebTestContentRendererClient::RenderThreadStarted() {
 
   render_thread_observer_ = std::make_unique<WebTestRenderThreadObserver>();
 
-#if defined(OS_FUCHSIA) || defined(OS_MACOSX)
+#if defined(OS_FUCHSIA) || defined(OS_MAC)
   // On these platforms, fonts are set up in the renderer process. Other
   // platforms set up fonts as part of WebTestBrowserMainRunner in the
   // browser process, via WebTestBrowserPlatformInitialize().

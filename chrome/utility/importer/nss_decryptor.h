@@ -7,7 +7,7 @@
 
 #include "build/build_config.h"
 
-#if defined(OS_MACOSX)
+#if defined(OS_MAC)
 #include "chrome/utility/importer/nss_decryptor_mac.h"
 #elif defined(OS_WIN)
 #include "chrome/utility/importer/nss_decryptor_win.h"

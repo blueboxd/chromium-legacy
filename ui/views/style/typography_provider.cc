@@ -143,7 +143,7 @@ SkColor TypographyProvider::GetColor(const View& view,
 }
 
 int TypographyProvider::GetLineHeight(int context, int style) const {
-  return 0;
+  return GetFont(context, style).GetHeight();
 }
 
 // static

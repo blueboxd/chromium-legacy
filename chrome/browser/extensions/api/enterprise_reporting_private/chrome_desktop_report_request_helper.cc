@@ -45,7 +45,7 @@
 #include "base/nix/xdg_util.h"
 #endif
 
-#if defined(OS_MACOSX)
+#if defined(OS_MAC)
 #include "crypto/apple_keychain.h"
 #endif
 
@@ -329,7 +329,7 @@ LONG CreateRandomSecret(std::string* secret) {
   return result;
 }
 
-#elif defined(OS_MACOSX)  // defined(OS_WIN)
+#elif defined(OS_MAC)  // defined(OS_WIN)
 
 constexpr char kServiceName[] = "Endpoint Verification Safe Storage";
 constexpr char kAccountName[] = "Endpoint Verification";
@@ -372,7 +372,7 @@ OSStatus ReadEncryptedSecret(std::string* secret, bool force_recreate) {
   return error;
 }
 
-#endif  // defined(OS_MACOSX)
+#endif  // defined(OS_MAC)
 
 base::FilePath* GetEndpointVerificationDirOverride() {
   static base::NoDestructor<base::FilePath> dir_override;
@@ -391,7 +391,7 @@ base::FilePath GetEndpointVerificationDir() {
   path = base::nix::GetXDGDirectory(env.get(), base::nix::kXdgConfigHomeEnvVar,
                                     base::nix::kDotConfigDir);
   if (path.empty())
-#elif defined(OS_MACOSX)
+#elif defined(OS_MAC)
   if (!base::PathService::Get(base::DIR_APP_DATA, &path))
 #else
   if (true)
@@ -535,7 +535,7 @@ void RetrieveDeviceSecret(
   // If something failed above [re]try creating the secret if forced.
   if (result != ERROR_SUCCESS && force_recreate)
     result = CreateRandomSecret(&secret);
-#elif defined(OS_MACOSX)
+#elif defined(OS_MAC)
   OSStatus result = ReadEncryptedSecret(&secret, force_recreate);
 #else
   long int result = -1;  // Anything but 0 is a failure.

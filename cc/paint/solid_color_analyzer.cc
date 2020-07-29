@@ -81,7 +81,7 @@ bool IsSolidColorPaint(const PaintFlags& flags) {
       !flags.getLooper() && !flags.getMaskFilter() && !flags.getColorFilter() &&
       !flags.getImageFilter() && flags.getStyle() == PaintFlags::kFill_Style;
 
-#if defined(OS_MACOSX)
+#if defined(OS_MAC)
   // Additionally, on Mac, we require that the color is opaque due to
   // https://crbug.com/922899.
   // TODO(andrescj): remove this condition once that bug is fixed.
@@ -166,7 +166,7 @@ void CheckIfSolidColor(const SkCanvas& canvas,
   bool solid_color_candidate =
       does_cover_canvas && IsSolidColorBlendMode(blendmode);
 
-#if defined(OS_MACOSX)
+#if defined(OS_MAC)
   // Additionally, on Mac, we require that the color is opaque due to
   // https://crbug.com/922899.
   // TODO(andrescj): remove this condition once that bug is fixed.

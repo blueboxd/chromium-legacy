@@ -25,7 +25,9 @@ import org.chromium.support_lib_boundary.util.BoundaryInterfaceReflectionUtil;
 import org.chromium.support_lib_boundary.util.Features;
 
 import java.lang.reflect.InvocationHandler;
+import java.util.ArrayList;
 import java.util.List;
+import java.util.Set;
 
 /**
  * Support library glue version of WebViewChromiumFactoryProvider.
@@ -42,6 +44,7 @@ class SupportLibWebViewChromiumFactory implements WebViewProviderFactoryBoundary
                     Features.SAFE_BROWSING_ENABLE,
                     Features.DISABLED_ACTION_MODE_MENU_ITEMS,
                     Features.START_SAFE_BROWSING,
+                    Features.SAFE_BROWSING_ALLOWLIST + Features.DEV_SUFFIX,
                     Features.SAFE_BROWSING_WHITELIST,
                     Features.SAFE_BROWSING_PRIVACY_POLICY_URL,
                     Features.SERVICE_WORKER_BASIC_USAGE,
@@ -110,7 +113,7 @@ class SupportLibWebViewChromiumFactory implements WebViewProviderFactoryBoundary
             ApiCall.SERVICE_WORKER_SETTINGS_SET_BLOCK_NETWORK_LOADS,
             ApiCall.SERVICE_WORKER_SETTINGS_SET_CACHE_MODE,
             ApiCall.SET_PROXY_OVERRIDE,
-            ApiCall.SET_SAFE_BROWSING_WHITELIST,
+            ApiCall.SET_SAFE_BROWSING_ALLOWLIST_DEPRECATED_NAME,
             ApiCall.SET_SERVICE_WORKER_CLIENT,
             ApiCall.SET_WEBVIEW_RENDERER_CLIENT,
             ApiCall.TRACING_CONTROLLER_IS_TRACING,
@@ -137,7 +140,8 @@ class SupportLibWebViewChromiumFactory implements WebViewProviderFactoryBoundary
             ApiCall.WEB_SETTINGS_SET_WILL_SUPPRESS_ERROR_PAGE,
             ApiCall.WEBVIEW_RENDERER_TERMINATE,
             ApiCall.ADD_DOCUMENT_START_SCRIPT,
-            ApiCall.REMOVE_DOCUMENT_START_SCRIPT})
+            ApiCall.REMOVE_DOCUMENT_START_SCRIPT,
+            ApiCall.SET_SAFE_BROWSING_ALLOWLIST})
     public @interface ApiCall {
         int ADD_WEB_MESSAGE_LISTENER = 0;
         int CLEAR_PROXY_OVERRIDE = 1;
@@ -165,7 +169,7 @@ class SupportLibWebViewChromiumFactory implements WebViewProviderFactoryBoundary
         int SERVICE_WORKER_SETTINGS_SET_BLOCK_NETWORK_LOADS = 23;
         int SERVICE_WORKER_SETTINGS_SET_CACHE_MODE = 24;
         int SET_PROXY_OVERRIDE = 25;
-        int SET_SAFE_BROWSING_WHITELIST = 26;
+        int SET_SAFE_BROWSING_ALLOWLIST_DEPRECATED_NAME = 26;
         int SET_SERVICE_WORKER_CLIENT = 27;
         int SET_WEBVIEW_RENDERER_CLIENT = 28;
         int TRACING_CONTROLLER_IS_TRACING = 29;
@@ -193,7 +197,8 @@ class SupportLibWebViewChromiumFactory implements WebViewProviderFactoryBoundary
         int WEBVIEW_RENDERER_TERMINATE = 51;
         int ADD_DOCUMENT_START_SCRIPT = 52;
         int REMOVE_DOCUMENT_START_SCRIPT = 53;
-        int COUNT = 54;
+        int SET_SAFE_BROWSING_ALLOWLIST = 54;
+        int COUNT = 55;
     }
     // clang-format on
 
@@ -239,8 +244,15 @@ class SupportLibWebViewChromiumFactory implements WebViewProviderFactoryBoundary
         }
 
         @Override
+        public void setSafeBrowsingAllowlist(Set<String> hosts, ValueCallback<Boolean> callback) {
+            recordApiCall(ApiCall.SET_SAFE_BROWSING_ALLOWLIST);
+            mSharedStatics.setSafeBrowsingAllowlist(
+                    new ArrayList<>(hosts), CallbackConverter.fromValueCallback(callback));
+        }
+
+        @Override
         public void setSafeBrowsingWhitelist(List<String> hosts, ValueCallback<Boolean> callback) {
-            recordApiCall(ApiCall.SET_SAFE_BROWSING_WHITELIST);
+            recordApiCall(ApiCall.SET_SAFE_BROWSING_ALLOWLIST_DEPRECATED_NAME);
             mSharedStatics.setSafeBrowsingAllowlist(
                     hosts, CallbackConverter.fromValueCallback(callback));
         }

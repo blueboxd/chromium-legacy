@@ -631,7 +631,7 @@ scoped_refptr<VideoFrame> VideoFrame::WrapExternalDmabufs(
 }
 #endif
 
-#if defined(OS_MACOSX)
+#if defined(OS_MAC)
 // static
 scoped_refptr<VideoFrame> VideoFrame::WrapCVPixelBuffer(
     CVPixelBufferRef cv_pixel_buffer,
@@ -1076,7 +1076,7 @@ bool VideoFrame::IsSameDmaBufsAs(const VideoFrame& frame) const {
 }
 #endif
 
-#if defined(OS_MACOSX)
+#if defined(OS_MAC)
 CVPixelBufferRef VideoFrame::CvPixelBuffer() const {
   return cv_pixel_buffer_.get();
 }

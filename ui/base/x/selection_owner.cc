@@ -104,8 +104,7 @@ void SelectionOwner::RetrieveTargets(std::vector<x11::Atom>* targets) {
 
 void SelectionOwner::TakeOwnershipOfSelection(const SelectionFormatMap& data) {
   acquired_selection_timestamp_ = X11EventSource::GetInstance()->GetTimestamp();
-  SetSelectionOwner(x_window_, selection_name_,
-                    static_cast<x11::Time>(acquired_selection_timestamp_));
+  SetSelectionOwner(x_window_, selection_name_, acquired_selection_timestamp_);
 
   if (GetSelectionOwner(selection_name_) == x_window_) {
     // The X server agrees that we are the selection owner. Commit our data.

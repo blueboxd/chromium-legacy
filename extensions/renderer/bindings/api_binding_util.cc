@@ -126,7 +126,7 @@ std::string GetPlatformString() {
   return "chromeos";
 #elif defined(OS_LINUX)
   return "linux";
-#elif defined(OS_MACOSX)
+#elif defined(OS_MAC)
   return "mac";
 #elif defined(OS_WIN)
   return "win";

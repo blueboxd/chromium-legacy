@@ -31,7 +31,7 @@
 #if defined(V8_USE_EXTERNAL_STARTUP_DATA)
 #if defined(OS_ANDROID)
 #include "base/android/apk_assets.h"
-#elif defined(OS_MACOSX)
+#elif defined(OS_MAC)
 #include "base/mac/foundation_util.h"
 #endif
 #endif  // V8_USE_EXTERNAL_STARTUP_DATA
@@ -97,7 +97,7 @@ void GetV8FilePath(const char* file_name, base::FilePath* path_out) {
   // This is the path within the .apk.
   *path_out =
       base::FilePath(FILE_PATH_LITERAL("assets")).AppendASCII(file_name);
-#elif defined(OS_MACOSX)
+#elif defined(OS_MAC)
   base::ScopedCFTypeRef<CFStringRef> bundle_resource(
       base::SysUTF8ToCFStringRef(file_name));
   *path_out = base::mac::PathForFrameworkBundleResource(bundle_resource);

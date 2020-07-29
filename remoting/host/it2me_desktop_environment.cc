@@ -50,7 +50,7 @@ It2MeDesktopEnvironment::It2MeDesktopEnvironment(
   bool enable_user_interface = options.enable_user_interface();
   bool enable_notifications = options.enable_notifications();
   // The host UI should be created on the UI thread.
-#if defined(OS_MACOSX)
+#if defined(OS_APPLE)
   // Don't try to display any UI on top of the system's login screen as this
   // is rejected by the Window Server on OS X 10.7.4, and prevents the
   // capturer from working (http://crbug.com/140984).
@@ -59,7 +59,7 @@ It2MeDesktopEnvironment::It2MeDesktopEnvironment(
   // running in the LoginWindow context, and refactor this into a separate
   // function to be used here and in CurtainMode::ActivateCurtain().
   enable_user_interface = getuid() != 0;
-#endif  // defined(OS_MACOSX)
+#endif  // defined(OS_APPLE)
 
   // Create the continue window.  The implication of this window is that the
   // session length will be limited.  If the user interface is disabled,

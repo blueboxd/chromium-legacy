@@ -8,6 +8,7 @@
 #include <stdint.h>
 
 #include <algorithm>
+#include <utility>
 #include <vector>
 
 #include "base/logging.h"
@@ -52,6 +53,7 @@
 #include "third_party/skia/include/core/SkPaint.h"
 #include "third_party/skia/include/core/SkPath.h"
 #include "third_party/skia/include/core/SkTypeface.h"
+#include "third_party/skia/include/gpu/GrDirectContext.h"
 #include "ui/gfx/geometry/point.h"
 #include "ui/gfx/geometry/size.h"
 #include "ui/gfx/geometry/size_conversions.h"
@@ -775,7 +777,7 @@ SkRect HeadsUpDisplayLayerImpl::DrawMemoryDisplay(PaintCanvas* canvas,
   int radius = length / 2;
   int cx = oval.left() + radius;
   int cy = oval.top() + radius;
-  double angle = ((double)memory_entry_.total_bytes_used /
+  double angle = (static_cast<double>(memory_entry_.total_bytes_used) /
                   memory_entry_.total_budget_in_bytes) *
                  180;
 

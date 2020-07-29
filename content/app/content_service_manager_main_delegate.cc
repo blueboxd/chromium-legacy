@@ -38,7 +38,7 @@ int ContentServiceManagerMainDelegate::Initialize(
     return -1;
 #endif
 
-#if defined(OS_MACOSX)
+#if defined(OS_MAC)
   content_main_params_.autorelease_pool = params.autorelease_pool;
 #endif
 

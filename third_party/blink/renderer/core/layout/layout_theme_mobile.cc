@@ -67,7 +67,7 @@ void LayoutThemeMobile::AdjustInnerSpinButtonStyle(ComputedStyle& style) const {
 
 bool LayoutThemeMobile::ShouldUseFallbackTheme(
     const ComputedStyle& style) const {
-#if defined(OS_APPLE)
+#if defined(OS_MAC)
   // Mac WebThemeEngine cannot handle these controls.
   ControlPart part = style.EffectiveAppearance();
   if (part == kCheckboxPart || part == kRadioPart)

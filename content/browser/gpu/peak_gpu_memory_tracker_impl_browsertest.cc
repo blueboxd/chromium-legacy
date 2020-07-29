@@ -115,7 +115,7 @@ class TestGpuService : public viz::mojom::GpuService {
   void OnMemoryPressure(
       base::MemoryPressureListener::MemoryPressureLevel level) override {}
 #endif
-#if defined(OS_MACOSX)
+#if defined(OS_MAC)
   void BeginCATransaction() override {}
   void CommitCATransaction(CommitCATransactionCallback callback) override {}
 #endif

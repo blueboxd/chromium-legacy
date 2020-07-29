@@ -141,7 +141,7 @@ void MockClipboardHost::CommitWrite() {
   needs_reset_ = true;
 }
 
-#if defined(OS_MACOSX)
+#if defined(OS_MAC)
 void MockClipboardHost::WriteStringToFindPboard(const base::string16& text) {}
 #endif
 

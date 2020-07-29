@@ -40,7 +40,7 @@
 #include "ui/compositor/compositor.h"
 
 // ImageTransportFactory::GetInstance is not available on all build configs.
-#if defined(USE_AURA) || defined(OS_MACOSX)
+#if defined(USE_AURA) || defined(OS_MAC)
 #define CAN_USE_IMAGE_TRANSPORT_FACTORY 1
 #endif
 

@@ -476,7 +476,7 @@ static void PrintDocument(blink::WebLocalFrame* frame, SkDocument* doc) {
     cc::PaintCanvasAutoRestore auto_restore(&canvas, true);
     canvas.translate(kMarginLeft, kMarginTop);
 
-#if defined(OS_WIN) || defined(OS_MACOSX)
+#if defined(OS_WIN) || defined(OS_MAC)
     float page_shrink = frame->GetPrintPageShrink(i);
     DCHECK_GT(page_shrink, 0);
     canvas.scale(page_shrink, page_shrink);

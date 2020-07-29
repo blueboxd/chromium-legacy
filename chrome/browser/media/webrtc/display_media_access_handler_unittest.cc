@@ -23,7 +23,7 @@
 #include "third_party/blink/public/common/mediastream/media_stream_request.h"
 #include "third_party/blink/public/mojom/mediastream/media_stream.mojom-shared.h"
 
-#if defined(OS_MACOSX)
+#if defined(OS_MAC)
 #include "base/mac/mac_util.h"
 #endif
 
@@ -103,7 +103,7 @@ TEST_F(DisplayMediaAccessHandlerTest, PermissionGiven) {
   ProcessRequest(content::DesktopMediaID(content::DesktopMediaID::TYPE_SCREEN,
                                          content::DesktopMediaID::kFakeId),
                  &result, &devices, false /* request_audio */);
-#if defined(OS_MACOSX)
+#if defined(OS_MAC)
   // Starting from macOS 10.15, screen capture requires system permissions
   // that are disabled by default.
   if (base::mac::IsAtLeastOS10_15()) {
@@ -127,7 +127,7 @@ TEST_F(DisplayMediaAccessHandlerTest, PermissionGivenToRequestWithAudio) {
                                         content::DesktopMediaID::kFakeId,
                                         true /* audio_share */);
   ProcessRequest(fake_media_id, &result, &devices, true /* request_audio */);
-#if defined(OS_MACOSX)
+#if defined(OS_MAC)
   // Starting from macOS 10.15, screen capture requires system permissions
   // that are disabled by default.
   if (base::mac::IsAtLeastOS10_15()) {
@@ -261,7 +261,7 @@ TEST_F(DisplayMediaAccessHandlerTest, MultipleRequests) {
   wait_loop[0].Run();
   EXPECT_TRUE(test_flags[0].picker_created);
   EXPECT_TRUE(test_flags[0].picker_deleted);
-#if defined(OS_MACOSX)
+#if defined(OS_MAC)
   // Starting from macOS 10.15, screen capture requires system permissions
   // that are disabled by default.
   if (base::mac::IsAtLeastOS10_15()) {

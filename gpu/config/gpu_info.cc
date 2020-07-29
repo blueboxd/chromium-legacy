@@ -10,7 +10,7 @@
 #include "gpu/config/gpu_info.h"
 #include "gpu/config/gpu_util.h"
 
-#if defined(OS_MACOSX)
+#if defined(OS_MAC)
 #include <GLES2/gl2.h>
 #include <GLES2/gl2extchromium.h>
 #endif  // OS_MACOSX
@@ -144,7 +144,7 @@ const char* OverlaySupportToString(gpu::OverlaySupport support) {
 }
 #endif  // OS_WIN
 
-#if defined(OS_MACOSX)
+#if defined(OS_MAC)
 GPU_EXPORT bool ValidateMacOSSpecificTextureTarget(int target) {
   switch (target) {
     case GL_TEXTURE_2D:
@@ -206,7 +206,7 @@ GPUInfo::GPUInfo()
       sandboxed(false),
       in_process_gpu(true),
       passthrough_cmd_decoder(false),
-#if defined(OS_MACOSX)
+#if defined(OS_MAC)
       macos_specific_texture_target(gpu::GetPlatformSpecificTextureTarget()),
 #endif  // OS_MACOSX
       jpeg_decode_accelerator_supported(false),
@@ -264,7 +264,7 @@ void GPUInfo::EnumerateFields(Enumerator* enumerator) const {
     bool in_process_gpu;
     bool passthrough_cmd_decoder;
     bool can_support_threaded_texture_mailbox;
-#if defined(OS_MACOSX)
+#if defined(OS_MAC)
     uint32_t macos_specific_texture_target;
 #endif  // OS_MACOSX
 #if defined(OS_WIN)
@@ -329,7 +329,7 @@ void GPUInfo::EnumerateFields(Enumerator* enumerator) const {
   enumerator->AddBool("passthroughCmdDecoder", passthrough_cmd_decoder);
   enumerator->AddBool("canSupportThreadedTextureMailbox",
                       can_support_threaded_texture_mailbox);
-#if defined(OS_MACOSX)
+#if defined(OS_MAC)
   enumerator->AddInt("macOSSpecificTextureTarget",
                      macos_specific_texture_target);
 #endif  // OS_MACOSX

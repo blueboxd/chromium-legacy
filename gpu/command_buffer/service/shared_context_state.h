@@ -27,7 +27,7 @@
 #include "gpu/ipc/common/gpu_peak_memory.h"
 #include "gpu/vulkan/buildflags.h"
 #include "third_party/skia/include/core/SkSurface.h"
-#include "third_party/skia/include/gpu/GrContext.h"
+#include "third_party/skia/include/gpu/GrDirectContext.h"
 #include "ui/gl/progress_reporter.h"
 
 namespace gl {
@@ -285,7 +285,7 @@ class GPU_GLES2_EXPORT SharedContextState
   std::unique_ptr<gles2::ContextState> context_state_;
 
   gl::ProgressReporter* progress_reporter_ = nullptr;
-  sk_sp<GrContext> owned_gr_context_;
+  sk_sp<GrDirectContext> owned_gr_context_;
   std::unique_ptr<ServiceTransferCache> transfer_cache_;
   uint64_t skia_gr_cache_size_ = 0;
   std::vector<uint8_t> scratch_deserialization_buffer_;

@@ -15,7 +15,7 @@
 #include "gpu/config/gpu_feature_info.h"
 #include "media/renderers/paint_canvas_video_renderer.h"
 #include "services/viz/public/cpp/gpu/context_provider_command_buffer.h"
-#include "third_party/skia/include/gpu/GrContext.h"
+#include "third_party/skia/include/gpu/GrDirectContext.h"
 
 namespace content {
 
@@ -65,7 +65,7 @@ bool WebGraphicsContext3DProviderImpl::IsContextLost() {
          RasterInterface()->GetGraphicsResetStatusKHR() != GL_NO_ERROR;
 }
 
-GrContext* WebGraphicsContext3DProviderImpl::GetGrContext() {
+GrDirectContext* WebGraphicsContext3DProviderImpl::GetGrContext() {
   return provider_->GrContext();
 }
 

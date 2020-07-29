@@ -112,7 +112,7 @@ IN_PROC_BROWSER_TEST_F(RepostFormWarningTest, TestLoginAfterRepost) {
 
 // Disable on Mac OS until dialogs are using toolkit-views for MacViews project.
 // https://crbug.com/683356
-#if !defined(OS_MACOSX)
+#if !defined(OS_MAC)
 IN_PROC_BROWSER_TEST_F(RepostFormWarningTest, InvokeUi_TestRepostWarning) {
   ShowAndVerifyUi();
 }

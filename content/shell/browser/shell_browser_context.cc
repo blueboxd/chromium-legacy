@@ -33,7 +33,7 @@
 #include "base/base_paths_win.h"
 #elif defined(OS_LINUX)
 #include "base/nix/xdg_util.h"
-#elif defined(OS_MACOSX)
+#elif defined(OS_MAC)
 #include "base/base_paths_mac.h"
 #elif defined(OS_FUCHSIA)
 #include "base/base_paths_fuchsia.h"
@@ -113,7 +113,7 @@ void ShellBrowserContext::InitWhileIOAllowed() {
                                  base::nix::kXdgConfigHomeEnvVar,
                                  base::nix::kDotConfigDir));
   path_ = config_dir.Append("content_shell");
-#elif defined(OS_MACOSX)
+#elif defined(OS_MAC)
   CHECK(base::PathService::Get(base::DIR_APP_DATA, &path_));
   path_ = path_.Append("Chromium Content Shell");
 #elif defined(OS_ANDROID)

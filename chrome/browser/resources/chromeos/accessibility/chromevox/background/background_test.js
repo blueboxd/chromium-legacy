@@ -2560,15 +2560,13 @@ TEST_F('ChromeVoxBackgroundTest', 'HitTestOnExoSurface', function() {
               assertEquals(fakeWindow.location.top, evt.y);
             });
 
-        // Fake a touch explore gesture on the real text field. This should not
+        // Fake a mouse explore event on the real text field. This should not
         // trigger the above mouse path.
-        GestureCommandHandler.onAccessibilityGesture_(
-            'touchExplore', realTextField.location.left,
-            realTextField.location.top);
+        GestureCommandHandler.pointerHandler_.onMouseMove(
+            realTextField.location.left, realTextField.location.top);
 
-        // Fake a touch explore gesture event on the fake window. This does a
-        // real hit test on the fake window resulting in the fake window which
-        // should trigger the mouse path above.
+        // Fake a touch explore gesture event on the fake window which should
+        // trigger a mouse move.
         GestureCommandHandler.onAccessibilityGesture_(
             'touchExplore', fakeWindow.location.left, fakeWindow.location.top);
       });

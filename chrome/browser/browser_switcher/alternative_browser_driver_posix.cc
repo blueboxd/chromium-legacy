@@ -31,7 +31,7 @@ using LaunchCallback = AlternativeBrowserDriver::LaunchCallback;
 
 const char kUrlVarName[] = "${url}";
 
-#if defined(OS_MACOSX)
+#if defined(OS_MAC)
 const char kChromeExecutableName[] = "Google Chrome";
 const char kFirefoxExecutableName[] = "Firefox";
 const char kOperaExecutableName[] = "Opera";
@@ -45,7 +45,7 @@ const char kOperaExecutableName[] = "opera";
 const char kChromeVarName[] = "${chrome}";
 const char kFirefoxVarName[] = "${firefox}";
 const char kOperaVarName[] = "${opera}";
-#if defined(OS_MACOSX)
+#if defined(OS_MAC)
 const char kSafariVarName[] = "${safari}";
 #endif
 
@@ -61,7 +61,7 @@ const BrowserVarMapping kBrowserVarMappings[] = {
     {kFirefoxVarName, kFirefoxExecutableName, "Mozilla Firefox",
      BrowserType::kFirefox},
     {kOperaVarName, kOperaExecutableName, "Opera", BrowserType::kOpera},
-#if defined(OS_MACOSX)
+#if defined(OS_MAC)
     {kSafariVarName, kSafariExecutableName, "Safari", BrowserType::kSafari},
 #endif
 };
@@ -108,14 +108,14 @@ void ExpandEnvironmentVariables(std::string* arg) {
   std::swap(out, *arg);
 }
 
-#if defined(OS_MACOSX)
+#if defined(OS_MAC)
 bool ContainsUrlVarName(const std::vector<std::string>& tokens) {
   return std::any_of(tokens.begin(), tokens.end(),
                      [](const std::string& token) {
                        return token.find(kUrlVarName) != std::string::npos;
                      });
 }
-#endif  // defined(OS_MACOSX)
+#endif  // defined(OS_MAC)
 
 void AppendCommandLineArguments(base::CommandLine* cmd_line,
                                 const std::vector<std::string>& raw_args,
@@ -135,7 +135,7 @@ void AppendCommandLineArguments(base::CommandLine* cmd_line,
 }
 
 const BrowserVarMapping* FindBrowserMapping(base::StringPiece path) {
-#if defined(OS_MACOSX)
+#if defined(OS_MAC)
   // Unlike most POSIX platforms, MacOS always has another browser than Chrome,
   // so admins don't have to explicitly configure one.
   if (path.empty())
@@ -162,7 +162,7 @@ base::CommandLine CreateCommandLine(const GURL& url,
   ExpandTilde(&path);
   ExpandEnvironmentVariables(&path);
 
-#if defined(OS_MACOSX)
+#if defined(OS_MAC)
   // On MacOS, if the path doesn't start with a '/', it's probably not an
   // executable path. It is probably a name for an application, e.g. "Safari" or
   // "Google Chrome". Those can be launched using the `open(1)' command.
@@ -227,7 +227,7 @@ AlternativeBrowserDriverImpl::~AlternativeBrowserDriverImpl() = default;
 
 void AlternativeBrowserDriverImpl::TryLaunch(const GURL& url,
                                              LaunchCallback cb) {
-#if !defined(OS_MACOSX)
+#if !defined(OS_MAC)
   if (prefs_->GetAlternativeBrowserPath().empty()) {
     LOG(ERROR) << "Alternative browser not configured. "
                << "Aborting browser switch.";

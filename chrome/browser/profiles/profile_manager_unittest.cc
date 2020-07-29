@@ -1590,7 +1590,7 @@ TEST_F(ProfileManagerTest, ProfileDisplayNameIsEmailIfDefaultName) {
 }
 #endif  // !defined(OS_ANDROID)
 
-#if defined(OS_MACOSX)
+#if defined(OS_MAC)
 // These tests are for a Mac-only code path that assumes the browser
 // process isn't killed when all browser windows are closed.
 TEST_F(ProfileManagerTest, ActiveProfileDeletedNeedsToLoadNextProfile) {
@@ -1695,7 +1695,7 @@ TEST_F(ProfileManagerTest, ActiveProfileDeletedNextProfileDeletedToo) {
   EXPECT_EQ(dest_path3, profile_manager->GetLastUsedProfile()->GetPath());
   EXPECT_EQ(profile_name3, local_state->GetString(prefs::kProfileLastUsed));
 }
-#endif  // defined(OS_MACOSX)
+#endif  // defined(OS_MAC)
 
 TEST_F(ProfileManagerTest, CannotCreateProfileOusideUserDir) {
   base::ScopedTempDir non_user_dir;

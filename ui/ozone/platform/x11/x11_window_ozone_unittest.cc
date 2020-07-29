@@ -93,12 +93,9 @@ class X11WindowOzoneTest : public testing::Test {
   }
 
   void DispatchXEvent(x11::Event* event, gfx::AcceleratedWidget widget) {
-    DCHECK_EQ(x11::GeGenericEvent::opcode, event->xlib_event().type);
-    XIDeviceEvent* device_event =
-        static_cast<XIDeviceEvent*>(event->xlib_event().xcookie.data);
-    device_event->event = widget;
-    event->As<x11::Input::DeviceEvent>()->event =
-        static_cast<x11::Window>(widget);
+    auto* device_event = event->As<x11::Input::DeviceEvent>();
+    DCHECK(device_event);
+    device_event->event = static_cast<x11::Window>(widget);
     event_source_->ProcessXEvent(event);
   }
 

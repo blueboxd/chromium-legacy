@@ -26,7 +26,7 @@
 #include "net/test/embedded_test_server/embedded_test_server.h"
 #include "third_party/blink/public/common/context_menu_data/media_type.h"
 
-#if defined(OS_MACOSX)
+#if defined(OS_MAC)
 #include "chrome/test/base/launchservices_utils_mac.h"
 #endif
 
@@ -37,7 +37,7 @@ class RegisterProtocolHandlerBrowserTest : public InProcessBrowserTest {
   RegisterProtocolHandlerBrowserTest() { }
 
   void SetUpOnMainThread() override {
-#if defined(OS_MACOSX)
+#if defined(OS_MAC)
     ASSERT_TRUE(test::RegisterAppWithLaunchServices());
 #endif
   }
@@ -51,7 +51,7 @@ class RegisterProtocolHandlerBrowserTest : public InProcessBrowserTest {
         browser()->tab_strip_model()->GetActiveWebContents();
     params.page_url =
         web_contents->GetController().GetLastCommittedEntry()->GetURL();
-#if defined(OS_MACOSX)
+#if defined(OS_MAC)
     params.writing_direction_default = 0;
     params.writing_direction_left_to_right = 0;
     params.writing_direction_right_to_left = 0;
@@ -151,7 +151,7 @@ using RegisterProtocolHandlerExtensionBrowserTest =
     extensions::ExtensionBrowserTest;
 
 IN_PROC_BROWSER_TEST_F(RegisterProtocolHandlerExtensionBrowserTest, Basic) {
-#if defined(OS_MACOSX)
+#if defined(OS_MAC)
   ASSERT_TRUE(test::RegisterAppWithLaunchServices());
 #endif
   permissions::PermissionRequestManager* manager =

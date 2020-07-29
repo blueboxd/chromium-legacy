@@ -67,7 +67,7 @@
 #include "services/network/test/test_dns_util.h"
 #include "services/network/test/test_network_context.h"
 
-#if defined(OS_MACOSX)
+#if defined(OS_MAC)
 #include "base/mac/mac_util.h"
 #endif
 
@@ -107,8 +107,7 @@ using content::RenderViewHost;
 // Flaky on Mac ASAN:
 //    http://crbug.com/428670
 
-#if !BUILDFLAG(ENABLE_NACL) || \
-    (defined(OS_MACOSX) && defined(ADDRESS_SANITIZER))
+#if !BUILDFLAG(ENABLE_NACL) || (defined(OS_MAC) && defined(ADDRESS_SANITIZER))
 
 #define MAYBE_PPAPI_NACL(test_name) DISABLED_##test_name
 #define MAYBE_PPAPI_PNACL(test_name) DISABLED_##test_name
@@ -292,7 +291,7 @@ TEST_PPAPI_NACL(Graphics2D_BindNull)
 #define MAYBE_OUT_Graphics3D Graphics3D
 #define MAYBE_NACL_Graphics3D DISABLED_Graphics3D
 #endif  // defined(USE_AURA)
-#elif defined(OS_MACOSX)
+#elif defined(OS_MAC)
 // These tests fail when using the legacy software mode. Reenable when the
 // software compositor is enabled crbug.com/286038
 #define MAYBE_OUT_Graphics3D DISABLED_Graphics3D
@@ -1731,7 +1730,7 @@ TEST_PPAPI_OUT_OF_PROCESS_VIA_HTTP(FileSystem)
 
 // PPAPINaClTest.FileSystem times out consistently on Windows and Mac.
 // http://crbug.com/130372
-#if defined(OS_MACOSX) || defined(OS_WIN)
+#if defined(OS_MAC) || defined(OS_WIN)
 #define MAYBE_FileSystem DISABLED_FileSystem
 #else
 #define MAYBE_FileSystem FileSystem
@@ -1739,7 +1738,7 @@ TEST_PPAPI_OUT_OF_PROCESS_VIA_HTTP(FileSystem)
 
 TEST_PPAPI_NACL(MAYBE_FileSystem)
 
-#if defined(OS_MACOSX)
+#if defined(OS_MAC)
 // http://crbug.com/103912
 #define MAYBE_Fullscreen DISABLED_Fullscreen
 #elif defined(OS_LINUX)
@@ -2018,7 +2017,7 @@ IN_PROC_BROWSER_TEST_F(PPAPINaClPNaClNonSfiTest,
 }
 
 TEST_PPAPI_OUT_OF_PROCESS(View_CreatedVisible)
-#if defined(OS_MACOSX)
+#if defined(OS_MAC)
 // http://crbug.com/474399
 #define MAYBE_View_CreatedVisible DISABLED_View_CreatedVisible
 #else
@@ -2119,7 +2118,7 @@ IN_PROC_BROWSER_TEST_F(PPAPINaClPNaClNonSfiTest, MAYBE_PNACL_NONSFI(View)) {
   )
 
 // Disabled due to flakiness http://crbug.com/1036287
-#if defined(OS_LINUX) || defined(OS_MACOSX)
+#if defined(OS_LINUX) || defined(OS_MAC)
 #define MAYBE_FlashMessageLoop DISABLED_FlashMessageLoop
 #else
 #define MAYBE_FlashMessageLoop FlashMessageLoop
@@ -2152,7 +2151,7 @@ IN_PROC_BROWSER_TEST_F(OutOfProcessPPAPITest, MAYBE_FlashMessageLoop) {
 // browser tests on Windows. Renable when the software compositor is available.
 #define MAYBE_Compositor0 DISABLED_Compositor0
 #define MAYBE_Compositor1 DISABLED_Compositor1
-#elif defined(OS_MACOSX)
+#elif defined(OS_MAC)
 // This test fails when using the legacy software mode. Reenable when the
 // software compositor is enabled crbug.com/286038
 #define MAYBE_Compositor0 DISABLED_Compositor0
@@ -2167,7 +2166,7 @@ TEST_PPAPI_NACL_SUBTESTS(MAYBE_Compositor0, RUN_COMPOSITOR_SUBTESTS_0)
 TEST_PPAPI_NACL_SUBTESTS(MAYBE_Compositor1, RUN_COMPOSITOR_SUBTESTS_1)
 
 #if defined(OS_LINUX) || defined(OS_WIN) || defined(OS_CHROMEOS) || \
-    defined(OS_MACOSX)
+    defined(OS_MAC)
 // Flaky on ChromeOS, Linux, Windows, and Mac (crbug.com/438729)
 #define MAYBE_MediaStreamAudioTrack DISABLED_MediaStreamAudioTrack
 #else
@@ -2231,7 +2230,7 @@ TEST_PPAPI_OUT_OF_PROCESS(Flash_GetProxyForURL)
 TEST_PPAPI_OUT_OF_PROCESS(Flash_GetSetting)
 TEST_PPAPI_OUT_OF_PROCESS(Flash_SetCrashData)
 // http://crbug.com/176822
-#if !defined(OS_WIN) && !defined(OS_MACOSX)
+#if !defined(OS_WIN) && !defined(OS_MAC)
 TEST_PPAPI_OUT_OF_PROCESS(FlashClipboard)
 #endif
 TEST_PPAPI_OUT_OF_PROCESS(FlashFile)
@@ -2241,7 +2240,7 @@ TEST_PPAPI_OUT_OF_PROCESS(FlashFile)
 // cros: http://crbug.com/396502
 // windows: http://crbug.com/899893
 // linux: http://crbug.com/899893
-#if defined(OS_MACOSX) || defined(OS_CHROMEOS) || defined(OS_WIN) || \
+#if defined(OS_MAC) || defined(OS_CHROMEOS) || defined(OS_WIN) || \
     defined(OS_LINUX)
 #define MAYBE_FlashFullscreen DISABLED_FlashFullscreen
 #else
@@ -2319,7 +2318,7 @@ class NonSfiPackagedAppTest : public PackagedAppTest {
 
 // Load a packaged app, and wait for it to successfully post a "hello" message
 // back.
-#if defined(OS_WIN) || !defined(NDEBUG) || defined(OS_MACOSX)
+#if defined(OS_WIN) || !defined(NDEBUG) || defined(OS_MAC)
 // flaky: crbug.com/707068
 // flaky on debug builds: crbug.com/709447
 IN_PROC_BROWSER_TEST_F(NewlibPackagedAppTest, DISABLED_SuccessfulLoad) {

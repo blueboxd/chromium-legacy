@@ -57,7 +57,7 @@
 #include "url/url_constants.h"
 #include "url/url_util.h"
 
-#if defined(OS_MACOSX)
+#if defined(OS_MAC)
 #include "device/fido/mac/authenticator.h"
 #include "device/fido/mac/credential_metadata.h"
 #endif
@@ -451,7 +451,7 @@ bool IsUserVerifyingPlatformAuthenticatorAvailableImpl(
     return *is_uvpaa_override;
   }
 
-#if defined(OS_MACOSX)
+#if defined(OS_MAC)
   const base::Optional<device::fido::mac::AuthenticatorConfig> config =
       delegate->GetTouchIdAuthenticatorConfig();
   return config && IsUVPlatformAuthenticatorAvailable(*config);

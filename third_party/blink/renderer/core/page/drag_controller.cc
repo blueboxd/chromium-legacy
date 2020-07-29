@@ -1054,7 +1054,7 @@ static IntPoint DragLocationForSelectionDrag(const LocalFrame& frame) {
 }
 
 static const IntSize MaxDragImageSize(float device_scale_factor) {
-#if defined(OS_APPLE)
+#if defined(OS_MAC)
   // Match Safari's drag image size.
   static const IntSize kMaxDragImageSize(400, 400);
 #else
@@ -1367,7 +1367,7 @@ DragOperation DragController::GetDragOperation(DragData* drag_data) {
 bool DragController::IsCopyKeyDown(DragData* drag_data) {
   int modifiers = drag_data->GetModifiers();
 
-#if defined(OS_APPLE)
+#if defined(OS_MAC)
   return modifiers & WebInputEvent::kAltKey;
 #else
   return modifiers & WebInputEvent::kControlKey;

@@ -62,7 +62,7 @@ SANDBOX_POLICY_EXPORT extern const char kAddGpuAppContainerCaps[];
 SANDBOX_POLICY_EXPORT extern const char kNoSandboxAndElevatedPrivileges[];
 SANDBOX_POLICY_EXPORT extern const char kAddXrAppContainerCaps[];
 #endif
-#if defined(OS_MACOSX)
+#if defined(OS_MAC)
 SANDBOX_POLICY_EXPORT extern const char kEnableSandboxLogging[];
 #endif
 

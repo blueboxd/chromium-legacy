@@ -329,6 +329,10 @@ class UserSessionManager
 
   UserContext* mutable_user_context_for_testing() { return &user_context_; }
 
+  bool token_handle_backfill_tried_for_testing() {
+    return token_handle_backfill_tried_for_testing_;
+  }
+
   // Shows U2F notification if necessary.
   void MaybeShowU2FNotification();
 
@@ -627,6 +631,8 @@ class UserSessionManager
   std::unique_ptr<ReleaseNotesNotification> release_notes_notification_;
 
   std::unique_ptr<TurnSyncOnHelper> turn_sync_on_helper_;
+
+  bool token_handle_backfill_tried_for_testing_ = false;
 
   base::WeakPtrFactory<UserSessionManager> weak_factory_{this};
 

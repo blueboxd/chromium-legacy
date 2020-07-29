@@ -38,7 +38,7 @@
 #include "mojo/public/cpp/bindings/remote.h"
 #include "services/audio/public/mojom/device_notifications.mojom.h"
 
-#if defined(OS_MACOSX)
+#if defined(OS_MAC)
 #include "base/bind_helpers.h"
 #include "base/single_thread_task_runner.h"
 #include "content/browser/browser_main_loop.h"
@@ -500,12 +500,12 @@ void MediaDevicesManager::StartMonitoring() {
   if (!base::SystemMonitor::Get())
     return;
 
-#if defined(OS_MACOSX)
+#if defined(OS_MAC)
   if (!base::FeatureList::IsEnabled(features::kDeviceMonitorMac))
     return;
 #endif
 
-#if defined(OS_WIN) || defined(OS_MACOSX)
+#if defined(OS_WIN) || defined(OS_MAC)
   if (base::FeatureList::IsEnabled(features::kAudioServiceOutOfProcess)) {
     DCHECK(!audio_service_device_listener_);
     audio_service_device_listener_ =
@@ -524,14 +524,14 @@ void MediaDevicesManager::StartMonitoring() {
     }
   }
 
-#if defined(OS_MACOSX)
+#if defined(OS_MAC)
   GetUIThreadTaskRunner({})->PostTask(
       FROM_HERE, base::BindOnce(&MediaDevicesManager::StartMonitoringOnUIThread,
                                 base::Unretained(this)));
 #endif
 }
 
-#if defined(OS_MACOSX)
+#if defined(OS_MAC)
 void MediaDevicesManager::StartMonitoringOnUIThread() {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   BrowserMainLoop* browser_main_loop = content::BrowserMainLoop::GetInstance();

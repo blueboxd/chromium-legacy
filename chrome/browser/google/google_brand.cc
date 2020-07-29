@@ -15,7 +15,7 @@
 #include "build/build_config.h"
 #include "chrome/installer/util/google_update_settings.h"
 
-#if defined(OS_MACOSX)
+#if defined(OS_MAC)
 #include "chrome/browser/mac/keystone_glue.h"
 #elif defined(OS_CHROMEOS)
 #include "chrome/browser/google/google_brand_chromeos.h"
@@ -75,7 +75,7 @@ bool GetBrand(std::string* brand) {
     return true;
   }
 
-#if defined(OS_MACOSX)
+#if defined(OS_MAC)
   brand->assign(keystone_glue::BrandCode());
 #elif defined(OS_CHROMEOS)
   brand->assign(google_brand::chromeos::GetBrand());

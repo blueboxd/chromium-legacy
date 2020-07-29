@@ -17,10 +17,10 @@
 #include "mojo/public/cpp/bindings/remote.h"
 #include "mojo/public/cpp/bindings/unique_receiver_set.h"
 
-#if defined(OS_MACOSX)
+#if defined(OS_MAC)
 #include <vector>
 #include "sandbox/mac/seatbelt_extension.h"
-#endif  // defined(OS_MACOSX)
+#endif  // defined(OS_MAC)
 
 namespace media {
 
@@ -148,13 +148,13 @@ CdmService::~CdmService() {
   DVLOG(1) << __func__;
 }
 
-#if defined(OS_MACOSX)
+#if defined(OS_MAC)
 void CdmService::LoadCdm(
     const base::FilePath& cdm_path,
     mojo::PendingRemote<mojom::SeatbeltExtensionTokenProvider> token_provider) {
 #else
 void CdmService::LoadCdm(const base::FilePath& cdm_path) {
-#endif  // defined(OS_MACOSX)
+#endif  // defined(OS_MAC)
   DVLOG(1) << __func__ << ": cdm_path = " << cdm_path.value();
 
   // Ignore request if service has already stopped.
@@ -167,7 +167,7 @@ void CdmService::LoadCdm(const base::FilePath& cdm_path) {
     return;
   }
 
-#if defined(OS_MACOSX)
+#if defined(OS_MAC)
   std::vector<std::unique_ptr<sandbox::SeatbeltExtension>> extensions;
 
   if (token_provider) {
@@ -186,7 +186,7 @@ void CdmService::LoadCdm(const base::FilePath& cdm_path) {
       extensions.push_back(std::move(extension));
     }
   }
-#endif  // defined(OS_MACOSX)
+#endif  // defined(OS_MAC)
 
 #if BUILDFLAG(ENABLE_CDM_HOST_VERIFICATION)
   std::vector<CdmHostFilePath> cdm_host_file_paths;
@@ -199,10 +199,10 @@ void CdmService::LoadCdm(const base::FilePath& cdm_path) {
   // This may trigger the sandbox to be sealed.
   client_->EnsureSandboxed();
 
-#if defined(OS_MACOSX)
+#if defined(OS_MAC)
   for (auto&& extension : extensions)
     extension->Revoke();
-#endif  // defined(OS_MACOSX)
+#endif  // defined(OS_MAC)
 
   // Always called within the sandbox.
   if (success)

@@ -75,7 +75,7 @@ TEST_F(MultiProcessLockTest, LongNameTest) {
   // Mac OS X: BOOTSTRAP_MAX_NAME_LEN
   // Windows: MAX_PATH
   LOG(INFO) << "Following error log due to long name is expected";
-#if defined(OS_MACOSX)
+#if defined(OS_MAC)
   std::string name("This is a name that is longer than one hundred and "
       "twenty-eight characters to make sure that we fail appropriately on "
       "Mac OS X when we have a path that is too long for Mac OS X to handle");
@@ -138,14 +138,14 @@ MULTIPROCESS_TEST_MAIN(MultiProcessLockTryFailMain) {
   std::unique_ptr<base::Environment> environment(base::Environment::Create());
   EXPECT_TRUE(environment->GetVar(MultiProcessLockTest::kLockEnvironmentVarName,
                                   &name));
-#if defined(OS_MACOSX)
+#if defined(OS_MAC)
   // OS X sends out a log if a lock fails.
   // Hopefully this will keep people from panicking about it when they
   // are perusing the build logs.
   LOG(INFO) << "Following error log "
             << "\"CFMessagePort: bootstrap_register(): failed 1100 (0x44c) "
             << "'Permission denied'\" is expected";
-#endif  // defined(OS_MACOSX)
+#endif  // defined(OS_MAC)
   std::unique_ptr<MultiProcessLock> test_lock = MultiProcessLock::Create(name);
 
   // Expect locking to fail because it is claimed by another process.

@@ -1062,14 +1062,6 @@ config("compiler_codegen") {
     ldflags += [ "-Wl,-mllvm,-enable-machine-outliner=never" ]
   }
 
-  if (is_clang && !is_nacl && !use_xcode_clang && !is_chromeos_device) {
-    cflags += [
-      # TODO(thakis): Remove after next clang roll, see reviews.llvm.org/D82998
-      "-mllvm",
-      "-basic-aa-recphi=0",
-    ]
-  }
-
   # TODO(thakis): Remove `if (!is_win)` after next clang roll.
   if (!is_win) {
     asmflags = cflags

@@ -32,7 +32,7 @@
 #include "ui/base/ui_base_features.h"
 #include "ui/native_theme/native_theme_features.h"
 
-#if defined(OS_MACOSX)
+#if defined(OS_MAC)
 #include "ui/base/test/scoped_preferred_scroller_style_mac.h"
 #endif
 
@@ -333,7 +333,7 @@ class ScrollLatencyScrollbarBrowserTest : public ScrollLatencyBrowserTest {
   ~ScrollLatencyScrollbarBrowserTest() override = default;
 
  private:
-#if defined(OS_MACOSX)
+#if defined(OS_MAC)
   // Native scrollbars on Mac are overlay scrollbars. Hence they need to be
   // disabled.
   ui::test::ScopedPreferredScrollerStyle scroller_style_override{false};

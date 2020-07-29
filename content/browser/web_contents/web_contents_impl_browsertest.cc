@@ -509,7 +509,7 @@ IN_PROC_BROWSER_TEST_F(WebContentsImplBrowserTest,
   // rwhv size. The behavior is correct on OSX, but incorrect on other
   // platforms.
   gfx::Size exp_wcv_size(300, 300);
-#if !defined(OS_MACOSX)
+#if !defined(OS_MAC)
   exp_wcv_size.Enlarge(size_insets.width(), size_insets.height());
 #endif
 
@@ -534,7 +534,7 @@ IN_PROC_BROWSER_TEST_F(WebContentsImplBrowserTest,
 // Once again, the behavior is correct on OSX. The embedder explicitly sets
 // the size to (100,100) during navigation. Both the wcv and the rwhv should
 // take on that size.
-#if !defined(OS_MACOSX)
+#if !defined(OS_MAC)
   new_size.Enlarge(size_insets.width(), size_insets.height());
 #endif
   gfx::Size actual_size = shell()->web_contents()->GetRenderWidgetHostView()->

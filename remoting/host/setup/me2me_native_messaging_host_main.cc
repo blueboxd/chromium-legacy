@@ -38,9 +38,9 @@
 #include "services/network/public/cpp/shared_url_loader_factory.h"
 #include "services/network/transitional_url_loader_factory_owner.h"
 
-#if defined(OS_MACOSX)
+#if defined(OS_APPLE)
 #include "base/mac/scoped_nsautorelease_pool.h"
-#endif  // defined(OS_MACOSX)
+#endif  // defined(OS_APPLE)
 
 #if defined(OS_WIN)
 #include "base/process/process_info.h"
@@ -67,10 +67,10 @@ int Me2MeNativeMessagingHostMain(int argc, char** argv) {
 
   remoting::InitHostLogging();
 
-#if defined(OS_MACOSX)
+#if defined(OS_APPLE)
   // Needed so we don't leak objects when threads are created.
   base::mac::ScopedNSAutoreleasePool pool;
-#endif  // defined(OS_MACOSX)
+#endif  // defined(OS_APPLE)
 
 #if defined(USE_GLIB) && !defined(OS_CHROMEOS)
 // g_type_init will be deprecated in 2.36. 2.35 is the development
@@ -108,7 +108,7 @@ int Me2MeNativeMessagingHostMain(int argc, char** argv) {
   scoped_refptr<DaemonController> daemon_controller =
       DaemonController::Create();
 
-#if defined(OS_MACOSX)
+#if defined(OS_APPLE)
   if (command_line->HasSwitch(kCheckPermissionSwitchName)) {
     int exit_code;
     daemon_controller->CheckPermission(
@@ -125,7 +125,7 @@ int Me2MeNativeMessagingHostMain(int argc, char** argv) {
     run_loop.Run();
     return exit_code;
   }
-#endif  // defined(OS_MACOSX)
+#endif  // defined(OS_APPLE)
 
   // Pass handle of the native view to the controller so that the UAC prompts
   // are focused properly.

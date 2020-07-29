@@ -226,35 +226,16 @@ suite('GoogleAssistantHandler', function() {
     button = page.$$('#retrain-voice-model');
     assertFalse(!!button);
 
-    // Hotword enabled.
-    // Activity control consent not granted.
-    // Button should not be shown.
-    page.setPrefValue('settings.voice_interaction.hotword.enabled', true);
-    page.setPrefValue(
-        'settings.voice_interaction.activity_control.consent_status',
-        ConsentStatus.kUnauthorized);
-    Polymer.dom.flush();
-    button = page.$$('#retrain-voice-model');
-    assertFalse(!!button);
-
     // Hotword disabled.
-    // Activity control consent granted.
     // Button should not be shown.
     page.setPrefValue('settings.voice_interaction.hotword.enabled', false);
-    page.setPrefValue(
-        'settings.voice_interaction.activity_control.consent_status',
-        ConsentStatus.kActivityControlAccepted);
     Polymer.dom.flush();
     button = page.$$('#retrain-voice-model');
     assertFalse(!!button);
 
     // Hotword enabled.
-    // Activity control consent granted.
     // Button should be shown.
     page.setPrefValue('settings.voice_interaction.hotword.enabled', true);
-    page.setPrefValue(
-        'settings.voice_interaction.activity_control.consent_status',
-        ConsentStatus.kActivityControlAccepted);
     Polymer.dom.flush();
     button = page.$$('#retrain-voice-model');
     assertTrue(!!button);

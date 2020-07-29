@@ -59,7 +59,7 @@ static_assert(base::size(kWidevineSha2Hash) == crypto::kSHA256Length,
 
 // Name of the Widevine CDM OS in the component manifest.
 const char kWidevineCdmPlatform[] =
-#if defined(OS_MACOSX)
+#if defined(OS_MAC)
     "mac";
 #elif defined(OS_WIN)
     "win";

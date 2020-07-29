@@ -38,8 +38,9 @@ void AccessibilityExtensionLoader::SetProfile(
   if (!loaded_)
     return;
 
-  // If the extension was loaded on the previous profile, unload it there.
-  if (prev_profile)
+  // If the extension was loaded on the previous profile (which isn't the
+  // current profile), unload it there.
+  if (prev_profile && prev_profile != profile)
     UnloadExtensionFromProfile(prev_profile);
 
   // If the extension was already enabled, but not for this profile, add it

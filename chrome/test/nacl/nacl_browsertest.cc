@@ -125,7 +125,7 @@ IN_PROC_BROWSER_TEST_F(NaClBrowserTestNewlib, BadNative) {
 #  define MAYBE_CrashInCallback DISABLED_CrashInCallback
 #  define MAYBE_CrashOffMainThread DISABLED_CrashOffMainThread
 #  define MAYBE_CrashPPAPIOffMainThread DISABLED_CrashPPAPIOffMainThread
-#elif defined(OS_MACOSX)
+#elif defined(OS_MAC)
 // crbug.com/425570
 #  define MAYBE_CrashViaCheckFailure DISABLED_CrashViaCheckFailure
 #  define MAYBE_CrashViaExitCall DISABLED_CrashViaExitCall
@@ -391,7 +391,7 @@ IN_PROC_BROWSER_TEST_F(NaClBrowserTestPnaclDebugMasked,
 
 // NaClBrowserTestPnacl.PnaclErrorHandling is flaky on Win, Mac, and Linux.
 // http://crbug.com/704980, http://crbug.com/870309
-#if defined(OS_WIN) || defined(OS_MACOSX) || defined(OS_LINUX)
+#if defined(OS_WIN) || defined(OS_MAC) || defined(OS_LINUX)
 #define MAYBE_PnaclErrorHandling DISABLED_PnaclErrorHandling
 #else
 #define MAYBE_PnaclErrorHandling PnaclErrorHandling

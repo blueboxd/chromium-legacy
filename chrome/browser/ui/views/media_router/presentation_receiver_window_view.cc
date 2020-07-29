@@ -42,7 +42,7 @@
 #include "ui/views/layout/box_layout.h"
 #include "ui/views/widget/widget.h"
 
-#if defined(OS_MACOSX)
+#if defined(OS_MAC)
 #include "chrome/browser/global_keyboard_shortcuts_mac.h"
 #endif
 
@@ -119,7 +119,7 @@ PresentationReceiverWindowView::PresentationReceiverWindowView(
 PresentationReceiverWindowView::~PresentationReceiverWindowView() = default;
 
 void PresentationReceiverWindowView::Init() {
-#if defined(OS_MACOSX)
+#if defined(OS_MAC)
   // On macOS, the mapping between accelerators and commands is dynamic and user
   // configurable. We fetch and use the default mapping.
   bool result = GetDefaultMacAcceleratorForCommandId(IDC_FULLSCREEN,

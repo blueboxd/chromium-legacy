@@ -4,7 +4,11 @@
 
 #include "ui/views/controls/button/md_text_button.h"
 
+#include "ui/views/background.h"
+#include "ui/views/style/platform_style.h"
+#include "ui/views/test/views_drawing_test_utils.h"
 #include "ui/views/test/views_test_base.h"
+#include "ui/views/test/widget_test.h"
 
 namespace views {
 
@@ -20,6 +24,57 @@ TEST_F(MdTextButtonTest, CustomPadding) {
 
   button->SetCustomPadding(custom_padding);
   EXPECT_EQ(button->GetInsets(), custom_padding);
+}
+
+TEST_F(MdTextButtonTest, BackgroundColorChangesWithWidgetActivation) {
+  // Test whether the button's background color changes when its containing
+  // widget's activation changes.
+  if (!PlatformStyle::kInactiveWidgetControlsAppearDisabled)
+    GTEST_SKIP() << "Button colors do not change with widget activation here.";
+
+  std::unique_ptr<Widget> widget = CreateTestWidget();
+  auto* button = widget->SetContentsView(
+      MdTextButton::Create(nullptr, base::ASCIIToUTF16("button")));
+  button->SetProminent(true);
+  button->SetBounds(0, 0, 70, 20);
+  widget->LayoutRootViewIfNecessary();
+
+  const ui::NativeTheme* native_theme = button->GetNativeTheme();
+
+  test::WidgetTest::SimulateNativeActivate(widget.get());
+  EXPECT_TRUE(widget->IsActive());
+  SkBitmap active_bitmap = views::test::PaintViewToBitmap(button);
+
+  auto background_color = [button](const SkBitmap& bitmap) {
+    // The very edge of the bitmap contains the button's border, which we aren't
+    // interested in here. Instead, grab a pixel that is inset by the button's
+    // corner radius from the top-left point to avoid the border.
+    //
+    // It would make a bit more sense to inset by the border thickness or
+    // something, but MdTextButton doesn't expose (or even know) that value
+    // without some major abstraction violation.
+    int corner_radius = button->GetCornerRadius();
+    return bitmap.getColor(corner_radius, corner_radius);
+  };
+
+  EXPECT_EQ(background_color(active_bitmap),
+            native_theme->GetSystemColor(
+                ui::NativeTheme::kColorId_ProminentButtonColor));
+
+  // It would be neat to also check the text color here, but the label's text
+  // ends up drawn on top of the background with antialiasing, which means there
+  // aren't any pixels that are actually *exactly*
+  // kColorId_TextOnProminentButtonColor. Bummer.
+
+  // Activate another widget to cause the original widget to deactivate.
+  std::unique_ptr<Widget> other_widget = CreateTestWidget();
+  test::WidgetTest::SimulateNativeActivate(other_widget.get());
+  EXPECT_FALSE(widget->IsActive());
+  SkBitmap inactive_bitmap = views::test::PaintViewToBitmap(button);
+
+  EXPECT_EQ(background_color(inactive_bitmap),
+            native_theme->GetSystemColor(
+                ui::NativeTheme::kColorId_ProminentButtonDisabledColor));
 }
 
 }  // namespace views

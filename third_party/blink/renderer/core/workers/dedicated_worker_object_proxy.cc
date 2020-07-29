@@ -129,6 +129,7 @@ DedicatedWorkerObjectProxy::DedicatedWorkerObjectProxy(
     DedicatedWorkerMessagingProxy* messaging_proxy_weak_ptr,
     ParentExecutionContextTaskRunners* parent_execution_context_task_runners)
     : ThreadedObjectProxyBase(parent_execution_context_task_runners),
+      token_(messaging_proxy_weak_ptr->GetDedicatedWorkerToken()),
       messaging_proxy_weak_ptr_(messaging_proxy_weak_ptr) {}
 
 CrossThreadWeakPersistent<ThreadedMessagingProxyBase>

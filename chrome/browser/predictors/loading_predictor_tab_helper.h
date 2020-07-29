@@ -67,6 +67,7 @@ class LoadingPredictorTabHelper
   // required to decide if it has remote predictions for the page load.
   void OnOptimizationGuideDecision(
       const NavigationID& navigation_id,
+      bool should_add_preconnects_to_prediction,
       optimization_guide::OptimizationGuideDecision decision,
       const optimization_guide::OptimizationMetadata& metadata);
 
@@ -74,6 +75,8 @@ class LoadingPredictorTabHelper
   base::WeakPtr<LoadingPredictor> predictor_;
 
   NavigationID current_navigation_id_;
+
+  bool has_local_preconnect_predictions_for_current_navigation_ = false;
 
   // The optimization guide decider to consult for remote predictions.
   optimization_guide::OptimizationGuideDecider* optimization_guide_decider_ =

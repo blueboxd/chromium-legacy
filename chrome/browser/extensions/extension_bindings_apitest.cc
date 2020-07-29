@@ -138,7 +138,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionBindingsApiTest,
 // Regression test for http://crbug.com/269149.
 // Regression test for http://crbug.com/436593.
 // Flaky on Mac. http://crbug.com/733064.
-#if defined(OS_MACOSX)
+#if defined(OS_MAC)
 #define MAYBE_EventOverriding DISABLED_EventOverriding
 #else
 #define MAYBE_EventOverriding EventOverriding

@@ -56,7 +56,7 @@ class MenuControllerMnemonicTest : public MenuTestBase {
 typedef MenuControllerMnemonicTest<ui::VKEY_DIVIDE,1>
     MenuControllerMnemonicTestMnemonicMatch;
 
-#if defined(OS_MACOSX)
+#if defined(OS_MAC)
 // Mnemonics and activation by title match aren't used on macOS.
 #define MAYBE_MnemonicMatch DISABLED_MnemonicMatch
 #define MAYBE_TitleMatch DISABLED_TitleMatch

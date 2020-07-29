@@ -724,7 +724,7 @@ bool ListBoxSelectType::DefaultEventHandler(const Event& event) {
     // Convert to coords relative to the list box if needed.
     if (HTMLOptionElement* option = EventTargetOption(*mouse_event)) {
       if (!option->IsDisabledFormControl()) {
-#if defined(OS_APPLE)
+#if defined(OS_MAC)
         const bool meta_or_ctrl = mouse_event->metaKey();
 #else
         const bool meta_or_ctrl = mouse_event->ctrlKey();
@@ -858,7 +858,7 @@ bool ListBoxSelectType::DefaultEventHandler(const Event& event) {
     }
 
     bool is_control_key = false;
-#if defined(OS_APPLE)
+#if defined(OS_MAC)
     is_control_key = keyboard_event->metaKey();
 #else
     is_control_key = keyboard_event->ctrlKey();

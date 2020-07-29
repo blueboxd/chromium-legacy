@@ -80,7 +80,7 @@ MidiManager::~MidiManager() {
       static_cast<Sample>(SendReceiveUsage::MAX) + 1);
 }
 
-#if !defined(OS_MACOSX) && !defined(OS_WIN) && \
+#if !defined(OS_MAC) && !defined(OS_WIN) && \
     !(defined(USE_ALSA) && defined(USE_UDEV)) && !defined(OS_ANDROID)
 MidiManager* MidiManager::Create(MidiService* service) {
   ReportUsage(Usage::CREATED_ON_UNSUPPORTED_PLATFORMS);

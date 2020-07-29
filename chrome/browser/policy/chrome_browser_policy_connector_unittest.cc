@@ -28,8 +28,7 @@ TEST(ChromeBrowserPolicyConnectorTest, HasMachineLevelPolicies) {
 
   PolicyMap map;
   map.Set("test-policy", POLICY_LEVEL_MANDATORY, POLICY_SCOPE_USER,
-          POLICY_SOURCE_PLATFORM, std::make_unique<base::Value>("hello"),
-          nullptr);
+          POLICY_SOURCE_PLATFORM, base::Value("hello"), nullptr);
   provider.UpdateChromePolicy(map);
   EXPECT_TRUE(connector.HasMachineLevelPolicies());
   BrowserPolicyConnectorBase::SetPolicyProviderForTesting(nullptr);

@@ -7,7 +7,7 @@
 
 #include "build/build_config.h"
 
-#if defined(OS_MACOSX)
+#if defined(OS_MAC)
 extern "C" {
 __attribute__((visibility("default")))
 int ContentMain(int argc,

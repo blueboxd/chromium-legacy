@@ -99,7 +99,7 @@ bool RegisterTestPluginWithExtraParameters(
     const base::FilePath::StringType& extra_registration_parameters) {
 #if defined(OS_WIN)
   base::FilePath::StringType plugin_library = L"ppapi_tests.dll";
-#elif defined(OS_MACOSX)
+#elif defined(OS_MAC)
   base::FilePath::StringType plugin_library = "ppapi_tests.plugin";
 #elif defined(OS_POSIX)
   base::FilePath::StringType plugin_library = "libppapi_tests.so";
@@ -133,7 +133,7 @@ bool RegisterBlinkTestPlugin(base::CommandLine* command_line) {
   static const CharType kPluginLibrary[] = L"blink_test_plugin.dll";
   static const CharType kDeprecatedPluginLibrary[] =
       L"blink_deprecated_test_plugin.dll";
-#elif defined(OS_MACOSX)
+#elif defined(OS_MAC)
   static const CharType kPluginLibrary[] = "blink_test_plugin.plugin";
   static const CharType kDeprecatedPluginLibrary[] =
       "blink_deprecated_test_plugin.plugin";

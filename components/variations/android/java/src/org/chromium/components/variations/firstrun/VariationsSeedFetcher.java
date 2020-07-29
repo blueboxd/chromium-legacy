@@ -26,11 +26,8 @@ import java.net.MalformedURLException;
 import java.net.SocketTimeoutException;
 import java.net.URL;
 import java.net.UnknownHostException;
-import java.text.ParseException;
-import java.text.SimpleDateFormat;
 import java.util.Arrays;
 import java.util.Date;
-import java.util.Locale;
 
 /**
  * Fetches the variations seed before the actual first run of Chrome.
@@ -151,17 +148,6 @@ public class VariationsSeedFetcher {
         public long date;
         public boolean isGzipCompressed;
         public byte[] seedData;
-
-        // TODO(crbug.com/1013390): Delete once Date header to timestamp migration is done (~M81).
-        @Deprecated
-        public static long parseDateHeader(String header) throws ParseException {
-            // The date field comes from the HTTP "Date" header, which has this format.
-            // (See RFC 2616, sections 3.3.1 and 14.18.) SimpleDateFormat is weirdly not
-            // thread-safe, so instantiate a new one for each call.
-            return new SimpleDateFormat("EEE, dd MMM yyyy HH:mm:ss z", Locale.US)
-                    .parse(header)
-                    .getTime();
-        }
 
         @Override
         public String toString() {

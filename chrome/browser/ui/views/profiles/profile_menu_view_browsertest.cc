@@ -146,7 +146,7 @@ class ProfileMenuViewTestBase {
     ASSERT_TRUE(profile_menu_view());
     profile_menu_view()->set_close_on_deactivate(false);
 
-#if defined(OS_MACOSX)
+#if defined(OS_MAC)
     base::RunLoop().RunUntilIdle();
 #else
     // If possible wait until the menu is active.

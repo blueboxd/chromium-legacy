@@ -24,7 +24,7 @@
 #include "ui/gl/gl_switches.h"
 #include "ui/gl/gl_version_info.h"
 
-#if !defined(OS_MACOSX)
+#if !defined(OS_MAC)
 #include "ui/gl/gl_fence_egl.h"
 #else
 #include "base/mac/mac_util.h"
@@ -197,7 +197,7 @@ FeatureInfo::FeatureInfo(
   feature_flags_.chromium_image_ycbcr_420v = base::Contains(
       gpu_feature_info.supported_buffer_formats_for_allocation_and_texturing,
       gfx::BufferFormat::YUV_420_BIPLANAR);
-#elif defined(OS_MACOSX)
+#elif defined(OS_MAC)
   feature_flags_.chromium_image_ycbcr_420v = true;
 #endif
 
@@ -1215,7 +1215,7 @@ void FeatureInfo::InitializeFeatures() {
         gfx::BufferFormat::YUV_420_BIPLANAR);
   }
 
-#if defined(OS_MACOSX)
+#if defined(OS_MAC)
   // Mac can create GLImages out of AR30 IOSurfaces only after High Sierra.
   feature_flags_.chromium_image_ar30 = base::mac::IsAtLeastOS10_13();
 #elif !defined(OS_WIN)
@@ -1561,7 +1561,7 @@ void FeatureInfo::InitializeFeatures() {
     validators_.g_l_state.AddValue(GL_MAX_DUAL_SOURCE_DRAW_BUFFERS_EXT);
   }
 
-#if !defined(OS_MACOSX)
+#if !defined(OS_MAC)
   if (workarounds_.ignore_egl_sync_failures) {
     gl::GLFenceEGL::SetIgnoreFailures();
   }
@@ -1661,7 +1661,7 @@ void FeatureInfo::InitializeFeatures() {
 
   EnableWEBGLMultiDrawIfPossible(extensions);
 
-#if defined(OS_MACOSX)
+#if defined(OS_MAC)
   if (is_passthrough_cmd_decoder_ &&
       gfx::HasExtension(extensions, "GL_ANGLE_base_vertex_base_instance")) {
 #else

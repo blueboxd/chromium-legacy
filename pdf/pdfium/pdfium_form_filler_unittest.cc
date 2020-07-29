@@ -87,7 +87,7 @@ TEST_F(FormFillerTest, DoURIActionWithKeyboardModifier) {
         .Times(1);
   }
 
-#if defined(OS_MACOSX)
+#if defined(OS_MAC)
 #define modifier_key PP_INPUTEVENT_MODIFIER_METAKEY;
 #else
 #define modifier_key PP_INPUTEVENT_MODIFIER_CONTROLKEY

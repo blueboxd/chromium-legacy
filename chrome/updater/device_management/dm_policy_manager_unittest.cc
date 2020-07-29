@@ -13,7 +13,7 @@ namespace updater {
 
 namespace {
 
-#if defined(OS_MACOSX)
+#if defined(OS_MAC)
 
 // This binary array is an actual policy response from DM server for
 // Mac client. The response has the following Omaha policy values:
@@ -96,7 +96,7 @@ const uint8_t kOmahaPolicyResponseData[] = {
     0x2d, 0x6f, 0x6d, 0x61, 0x68, 0x61, 0x58, 0x01,
 };
 
-#endif  // OS_MACOSX
+#endif  // OS_MAC
 
 }  // namespace
 
@@ -261,7 +261,7 @@ TEST(DMPolicyManager, PolicyManagerFromProto) {
       policy_manager->GetTargetVersionPrefix(app_guid, &target_version_prefix));
 }
 
-#if defined(OS_MACOSX)
+#if defined(OS_MAC)
 
 TEST(DMPolicyManager, PolicyManagerFromDMResponse) {
   enterprise_management::PolicyFetchResponse response;
@@ -327,6 +327,6 @@ TEST(DMPolicyManager, PolicyManagerFromDMResponse) {
   EXPECT_EQ(target_version_prefix, "82.0.");
 }
 
-#endif  // OS_MACOSX
+#endif  // OS_MAC
 
 }  // namespace updater

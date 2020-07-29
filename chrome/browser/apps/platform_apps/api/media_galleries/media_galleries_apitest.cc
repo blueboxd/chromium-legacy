@@ -43,7 +43,7 @@
 #include "media/base/test_data_util.h"
 #include "media/media_buildflags.h"
 
-#if defined(OS_MACOSX)
+#if defined(OS_MAC)
 #include "base/mac/foundation_util.h"
 #include "base/strings/sys_string_conversions.h"
 #endif  // OS_MACOSX

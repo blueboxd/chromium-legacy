@@ -69,6 +69,8 @@ void InspectorResourceContentLoader::Start() {
   InspectedFrames* inspected_frames =
       MakeGarbageCollected<InspectedFrames>(inspected_frame_);
   for (LocalFrame* frame : *inspected_frames) {
+    if (!frame->Loader().StateMachine()->CommittedFirstRealDocumentLoad())
+      continue;
     documents.push_back(frame->GetDocument());
     documents.AppendVector(InspectorPageAgent::ImportsForFrame(frame));
   }

@@ -55,7 +55,7 @@
 #include "services/service_manager/embedder/switches.h"
 #include "services/tracing/public/cpp/trace_startup.h"
 
-#if defined(OS_MACOSX)
+#if defined(OS_MAC)
 #include "content/browser/child_process_task_port_provider_mac.h"
 #include "content/browser/sandbox_support_mac_impl.h"
 #include "content/common/sandbox_support_mac.mojom.h"
@@ -164,7 +164,7 @@ BrowserChildProcessHost* BrowserChildProcessHost::FromID(int child_process_id) {
   return nullptr;
 }
 
-#if defined(OS_MACOSX)
+#if defined(OS_MAC)
 base::PortProvider* BrowserChildProcessHost::GetPortProvider() {
   return ChildProcessTaskPortProvider::GetInstance();
 }
@@ -406,7 +406,7 @@ void BrowserChildProcessHostImpl::OnChannelConnected(int32_t peer_pid) {
   is_channel_connected_ = true;
   notify_child_disconnected_ = true;
 
-#if defined(OS_MACOSX)
+#if defined(OS_MAC)
   ChildProcessTaskPortProvider::GetInstance()->OnChildProcessLaunched(
       peer_pid, static_cast<ChildProcessHostImpl*>(child_process_host_.get())
                     ->child_process());

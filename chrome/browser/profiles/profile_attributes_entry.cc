@@ -142,7 +142,7 @@ void ProfileAttributesEntry::Initialize(ProfileInfoCache* cache,
   if (is_force_signin_enabled_) {
     if (!IsAuthenticated())
       is_force_signin_profile_locked_ = true;
-#if defined(OS_MACOSX) || defined(OS_LINUX) || defined(OS_WIN)
+#if defined(OS_MAC) || defined(OS_LINUX) || defined(OS_WIN)
   } else if (IsSigninRequired()) {
     // Profiles that require signin in the absence of an enterprise policy are
     // left-overs from legacy supervised users. Just unlock them, so users can

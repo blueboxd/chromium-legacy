@@ -14,7 +14,7 @@
 #include "gpu/command_buffer/common/shared_image_usage.h"
 #include "media/base/video_frame.h"
 #include "third_party/skia/include/core/SkImage.h"
-#include "third_party/skia/include/gpu/GrContext.h"
+#include "third_party/skia/include/gpu/GrDirectContext.h"
 
 namespace media {
 
@@ -254,7 +254,7 @@ sk_sp<SkImage> NewSkImageFromVideoFrameYUV(
   DCHECK(video_frame->HasTextures() ||
          (video_frame->IsMappable() &&
           video_frame->format() == PIXEL_FORMAT_I420));
-  GrContext* gr_context = raster_context_provider->GrContext();
+  GrDirectContext* gr_context = raster_context_provider->GrContext();
   DCHECK(gr_context);
   // TODO: We should compare the DCHECK vs when UpdateLastImage calls this
   // function. (https://crbug.com/674185)
@@ -294,7 +294,7 @@ sk_sp<SkImage> NewSkImageFromVideoFrameYUV(
 }
 
 sk_sp<SkImage> YUVGrBackendTexturesToSkImage(
-    GrContext* gr_context,
+    GrDirectContext* gr_context,
     gfx::ColorSpace video_color_space,
     VideoPixelFormat video_format,
     GrBackendTexture* yuv_textures,

@@ -38,7 +38,7 @@
 #include "net/test/embedded_test_server/http_response.h"
 #include "url/gurl.h"
 
-#if defined(OS_MACOSX)
+#if defined(OS_MAC)
 #include "base/mac/foundation_util.h"
 #endif
 
@@ -84,9 +84,9 @@ std::vector<base::FilePath> GetTestFiles() {
   }
   std::sort(files.begin(), files.end());
 
-#if defined(OS_MACOSX)
+#if defined(OS_MAC)
   base::mac::ClearAmIBundledCache();
-#endif  // defined(OS_MACOSX)
+#endif  // defined(OS_MAC)
 
   return files;
 }

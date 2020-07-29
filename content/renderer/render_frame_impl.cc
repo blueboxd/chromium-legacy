@@ -1488,7 +1488,8 @@ RenderFrameImpl* RenderFrameImpl::CreateMainFrame(
   // we need at least one update to them in order to meet expectations in the
   // renderer, and that update comes as part of the CreateFrame message.
   // TODO(crbug.com/419087): This could become part of RenderWidget Init.
-  render_widget->UpdateVisualProperties(params->visual_properties);
+  render_widget->GetWebWidget()->ApplyVisualProperties(
+      params->visual_properties);
 
   render_frame->render_widget_ = render_widget.get();
   render_frame->owned_render_widget_ = std::move(render_widget);
@@ -1647,7 +1648,8 @@ void RenderFrameImpl::CreateFrame(
     // we need at least one update to them in order to meet expectations in the
     // renderer, and that update comes as part of the CreateFrame message.
     // TODO(crbug.com/419087): This could become part of RenderWidget Init.
-    render_widget->UpdateVisualProperties(widget_params->visual_properties);
+    render_widget->GetWebWidget()->ApplyVisualProperties(
+        widget_params->visual_properties);
 
     // Note that we do *not* call WebView's DidAttachLocalMainFrame() here yet
     // because this frame is provisional and not attached to the Page yet. We
@@ -1698,7 +1700,8 @@ void RenderFrameImpl::CreateFrame(
     // we need at least one update to them in order to meet expectations in the
     // renderer, and that update comes as part of the CreateFrame message.
     // TODO(crbug.com/419087): This could become part of RenderWidget Init.
-    render_widget->UpdateVisualProperties(widget_params->visual_properties);
+    render_widget->GetWebWidget()->ApplyVisualProperties(
+        widget_params->visual_properties);
 
     render_frame->render_widget_ = render_widget.get();
     render_frame->owned_render_widget_ = std::move(render_widget);
@@ -2914,10 +2917,6 @@ void RenderFrameImpl::SetSelectedText(const base::string16& selection_text,
                                       const gfx::Range& range) {
   Send(new FrameHostMsg_SelectionChanged(routing_id_, selection_text,
                                          static_cast<uint32_t>(offset), range));
-}
-
-bool RenderFrameImpl::SetZoomLevelOnRenderView(double zoom_level) {
-  return render_view_->SetZoomLevel(zoom_level);
 }
 
 void RenderFrameImpl::SetPreferCompositingToLCDTextEnabledOnRenderView(

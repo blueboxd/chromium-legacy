@@ -12,7 +12,7 @@
 #include "chrome/browser/browser_process_platform_part_android.h"
 #elif defined(OS_CHROMEOS)
 #include "chrome/browser/browser_process_platform_part_chromeos.h"
-#elif defined(OS_MACOSX)
+#elif defined(OS_MAC)
 #include "chrome/browser/browser_process_platform_part_mac.h"
 #elif defined(OS_WIN)
 #include "chrome/browser/browser_process_platform_part_win.h"

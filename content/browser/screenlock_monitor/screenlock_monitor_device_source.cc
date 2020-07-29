@@ -7,13 +7,13 @@
 namespace content {
 
 ScreenlockMonitorDeviceSource::ScreenlockMonitorDeviceSource() {
-#if defined(OS_MACOSX)
+#if defined(OS_MAC)
   StartListeningForScreenlock();
 #endif  // OS_MACOSX
 }
 
 ScreenlockMonitorDeviceSource::~ScreenlockMonitorDeviceSource() {
-#if defined(OS_MACOSX)
+#if defined(OS_MAC)
   StopListeningForScreenlock();
 #endif  // OS_MACOSX
 }

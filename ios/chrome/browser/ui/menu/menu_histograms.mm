@@ -27,9 +27,9 @@ void RecordMenuShown(MenuScenario scenario) {
 
 const char* GetActionsHistogramName(MenuScenario scenario) {
   switch (scenario) {
-    case MenuScenario::HistoryEntry:
+    case MenuScenario::kHistoryEntry:
       return kHistoryEntryActionsHistogram;
-    case MenuScenario::BookmarkEntry:
+    case MenuScenario::kBookmarkEntry:
       return kBookmarkEntryActionsHistogram;
   }
 }

@@ -81,7 +81,7 @@ NativeMessageProcessHost::~NativeMessageProcessHost() {
 // Kill the host process if necessary to make sure we don't leave zombies.
 // TODO(https://crbug.com/806451): On OSX EnsureProcessTerminated() may
 // block, so we have to post a task on the blocking pool.
-#if defined(OS_MACOSX)
+#if defined(OS_MAC)
     base::ThreadPool::PostTask(
         FROM_HERE, {base::MayBlock(), base::TaskPriority::BEST_EFFORT},
         base::BindOnce(&base::EnsureProcessTerminated, Passed(&process_)));

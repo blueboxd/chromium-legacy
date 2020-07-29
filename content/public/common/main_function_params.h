@@ -17,7 +17,7 @@
 namespace sandbox {
 struct SandboxInterfaceInfo;
 }
-#elif defined(OS_MACOSX)
+#elif defined(OS_MAC)
 namespace base {
 namespace mac {
 class ScopedNSAutoreleasePool;
@@ -39,7 +39,7 @@ struct MainFunctionParams {
 
 #if defined(OS_WIN)
   sandbox::SandboxInterfaceInfo* sandbox_info = nullptr;
-#elif defined(OS_MACOSX)
+#elif defined(OS_MAC)
   base::mac::ScopedNSAutoreleasePool* autorelease_pool = nullptr;
 #elif defined(OS_POSIX) && !defined(OS_ANDROID)
   bool zygote_child = false;

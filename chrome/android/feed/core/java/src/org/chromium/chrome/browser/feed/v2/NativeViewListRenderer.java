@@ -7,8 +7,6 @@ package org.chromium.chrome.browser.feed.v2;
 import android.content.Context;
 import android.view.View;
 import android.view.ViewGroup;
-import android.view.ViewGroup.LayoutParams;
-import android.widget.FrameLayout;
 import android.widget.TextView;
 
 import androidx.recyclerview.widget.LinearLayoutManager;
@@ -57,9 +55,6 @@ public class NativeViewListRenderer extends RecyclerView.Adapter<NativeViewListR
 
     @Override
     public ViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
-        FrameLayout frameLayout = new FrameLayout(parent.getContext());
-        frameLayout.setLayoutParams(
-                new LayoutParams(LayoutParams.MATCH_PARENT, LayoutParams.WRAP_CONTENT));
         // viewType is same as position.
         int position = viewType;
         View v;
@@ -71,8 +66,7 @@ public class NativeViewListRenderer extends RecyclerView.Adapter<NativeViewListR
             textView.setText(message);
             v = textView;
         }
-        frameLayout.addView(v);
-        return new ViewHolder(frameLayout);
+        return new ViewHolder(v);
     }
 
     @Override

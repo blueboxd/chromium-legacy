@@ -240,7 +240,7 @@ void SpellCheckHostChromeImpl::CombineResultsForTesting(
 #endif  //  BUILDFLAG(USE_BROWSER_SPELLCHECKER) &&
         //  BUILDFLAG(ENABLE_SPELLING_SERVICE)
 
-#if defined(OS_MACOSX)
+#if defined(OS_MAC)
 int SpellCheckHostChromeImpl::ToDocumentTag(int route_id) {
   if (!tag_map_.count(route_id))
     tag_map_[route_id] = spellcheck_platform::GetDocumentTag();
@@ -254,7 +254,7 @@ void SpellCheckHostChromeImpl::RetireDocumentTag(int route_id) {
   spellcheck_platform::CloseDocumentWithTag(ToDocumentTag(route_id));
   tag_map_.erase(route_id);
 }
-#endif  // defined(OS_MACOSX)
+#endif  // defined(OS_MAC)
 
 SpellcheckService* SpellCheckHostChromeImpl::GetSpellcheckService() const {
   auto* host = content::RenderProcessHost::FromID(render_process_id_);

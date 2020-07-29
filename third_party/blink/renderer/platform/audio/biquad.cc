@@ -36,13 +36,13 @@
 #include <algorithm>
 #include <complex>
 #include <stdio.h>
-#if defined(OS_APPLE)
+#if defined(OS_MAC)
 #include <Accelerate/Accelerate.h>
 #endif
 
 namespace blink {
 
-#if defined(OS_APPLE)
+#if defined(OS_MAC)
 const int kBiquadBufferSize = 1024;
 #endif
 
@@ -52,7 +52,7 @@ static double pow10(double x) {
 }
 
 Biquad::Biquad() : has_sample_accurate_values_(false) {
-#if defined(OS_APPLE)
+#if defined(OS_MAC)
   // Allocate two samples more for filter history
   input_buffer_.Allocate(kBiquadBufferSize + 2);
   output_buffer_.Allocate(kBiquadBufferSize + 2);
@@ -124,7 +124,7 @@ void Biquad::Process(const float* source_p,
     // path.  The structure of the state variable in these cases aren't well
     // documented so it's not clear how to update them anyway.
   } else {
-#if defined(OS_APPLE)
+#if defined(OS_MAC)
     double* input_p = input_buffer_.Data();
     double* output_p = output_buffer_.Data();
 
@@ -189,7 +189,7 @@ void Biquad::Process(const float* source_p,
   }
 }
 
-#if defined(OS_APPLE)
+#if defined(OS_MAC)
 
 // Here we have optimized version using Accelerate.framework
 
@@ -247,10 +247,10 @@ void Biquad::ProcessSliceFast(double* source_p,
   dest_p[1] = dest_p[frames_to_process - 1 + 2];
 }
 
-#endif  // defined(OS_APPLE)
+#endif  // defined(OS_MAC)
 
 void Biquad::Reset() {
-#if defined(OS_APPLE)
+#if defined(OS_MAC)
   // Two extra samples for filter history
   double* input_p = input_buffer_.Data();
   input_p[0] = 0;

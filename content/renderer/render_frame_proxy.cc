@@ -257,9 +257,10 @@ void RenderFrameProxy::Init(blink::WebRemoteFrame* web_frame,
   // propagate VisualProperty changes down the frame/process hierarchy. Remote
   // main frame proxies do not participate in this flow.
   if (ancestor_render_widget_) {
-    ancestor_render_widget_->RegisterRenderFrameProxy(this);
+    pending_visual_properties_.zoom_level = render_view->GetZoomLevel();
     pending_visual_properties_.screen_info =
         ancestor_render_widget_->GetOriginalScreenInfo();
+    ancestor_render_widget_->RegisterRenderFrameProxy(this);
   }
 
   std::pair<FrameProxyMap::iterator, bool> result =
@@ -291,7 +292,7 @@ void RenderFrameProxy::OnScreenInfoChanged(
   SynchronizeVisualProperties();
 }
 
-void RenderFrameProxy::OnZoomLevelChanged(double zoom_level) {
+void RenderFrameProxy::ZoomLevelChanged(double zoom_level) {
   DCHECK(ancestor_render_widget_);
 
   pending_visual_properties_.zoom_level = zoom_level;

@@ -283,7 +283,7 @@ void AddAdditionalRequestHeaders(
       frame_tree_node->render_manager()
           ->current_host()
           ->GetDelegate()
-          ->GetRendererPrefs(browser_context);
+          ->GetRendererPrefs();
   UpdateAdditionalHeadersForBrowserInitiatedRequest(headers, browser_context,
                                                     is_reload, render_prefs);
 

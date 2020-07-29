@@ -104,7 +104,7 @@ const gpu::GpuPreferences GetGpuPreferencesFromCommandLine() {
   gpu_preferences.disable_vulkan_fallback_to_gl_for_testing =
       command_line->HasSwitch(switches::kDisableVulkanFallbackToGLForTesting);
 
-#if defined(OS_MACOSX)
+#if defined(OS_MAC)
   gpu_preferences.enable_metal = base::FeatureList::IsEnabled(features::kMetal);
 #endif
 

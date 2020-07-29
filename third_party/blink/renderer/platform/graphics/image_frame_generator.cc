@@ -151,6 +151,7 @@ bool ImageFrameGenerator::DecodeAndScale(
 
 bool ImageFrameGenerator::DecodeToYUV(SegmentReader* data,
                                       size_t index,
+                                      SkColorType color_type,
                                       const SkISize component_sizes[3],
                                       void* planes[3],
                                       const size_t row_bytes[3]) {
@@ -176,7 +177,7 @@ bool ImageFrameGenerator::DecodeToYUV(SegmentReader* data,
   DCHECK(decoder);
 
   std::unique_ptr<ImagePlanes> image_planes =
-      std::make_unique<ImagePlanes>(planes, row_bytes);
+      std::make_unique<ImagePlanes>(planes, row_bytes, color_type);
   // TODO(crbug.com/943519): Don't forget to initialize planes to black or
   // transparent for incremental decoding.
   decoder->SetImagePlanes(std::move(image_planes));
@@ -220,10 +221,10 @@ bool ImageFrameGenerator::HasAlpha(size_t index) {
   return true;
 }
 
-bool ImageFrameGenerator::GetYUVComponentSizes(
-    SegmentReader* data,
-    SkYUVASizeInfo* size_info,
-    SkYUVColorSpace* yuv_color_space) {
+bool ImageFrameGenerator::GetYUVComponentSizes(SegmentReader* data,
+                                               SkYUVASizeInfo* size_info,
+                                               SkYUVColorSpace* yuv_color_space,
+                                               uint8_t* bit_depth) {
   TRACE_EVENT2("blink", "ImageFrameGenerator::getYUVComponentSizes", "width",
                full_size_.width(), "height", full_size_.height());
 
@@ -238,6 +239,7 @@ bool ImageFrameGenerator::GetYUVComponentSizes(
 
   DCHECK(decoder->CanDecodeToYUV());
   *yuv_color_space = decoder->GetYUVColorSpace();
+  *bit_depth = decoder->GetYUVBitDepth();
 
   return UpdateYUVComponentSizes(decoder.get(), size_info->fSizes,
                                  size_info->fWidthBytes);

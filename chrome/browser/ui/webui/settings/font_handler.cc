@@ -20,14 +20,14 @@
 #include "content/public/browser/font_list_async.h"
 #include "content/public/browser/web_ui.h"
 
-#if defined(OS_MACOSX)
+#if defined(OS_MAC)
 #include "chrome/browser/ui/webui/settings_utils.h"
 #endif
 
 namespace settings {
 
 FontHandler::FontHandler(Profile* profile) {
-#if defined(OS_MACOSX)
+#if defined(OS_MAC)
   // Perform validation for saved fonts.
   settings_utils::ValidateSavedFonts(profile->GetPrefs());
 #endif

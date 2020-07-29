@@ -61,7 +61,7 @@ void SharedClipboardContextMenuObserver::InitMenu(
     return;
 
   if (devices_.size() == 1) {
-#if defined(OS_MACOSX)
+#if defined(OS_MAC)
     proxy_->AddMenuItem(
         IDC_CONTENT_CONTEXT_SHARING_SHARED_CLIPBOARD_SINGLE_DEVICE,
         l10n_util::GetStringFUTF16(
@@ -77,7 +77,7 @@ void SharedClipboardContextMenuObserver::InitMenu(
 #endif
   } else {
     BuildSubMenu();
-#if defined(OS_MACOSX)
+#if defined(OS_MAC)
     proxy_->AddSubMenu(
         IDC_CONTENT_CONTEXT_SHARING_SHARED_CLIPBOARD_MULTIPLE_DEVICES,
         l10n_util::GetStringUTF16(

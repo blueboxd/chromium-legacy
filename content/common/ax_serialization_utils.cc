@@ -9,7 +9,7 @@
 namespace content {
 
 bool AXShouldIncludePageScaleFactorInRoot() {
-#if !defined(OS_ANDROID) && !defined(OS_MACOSX)
+#if !defined(OS_ANDROID) && !defined(OS_MAC)
   return true;
 #else
   return false;

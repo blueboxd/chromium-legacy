@@ -740,7 +740,7 @@ void WaitForMultipleFullscreenEvents(
 // - fullscreenchange events fire in both frames.
 // - fullscreen CSS is applied correctly in both frames.
 //
-#if defined(OS_MACOSX)
+#if defined(OS_MAC)
 // https://crbug.com/845389
 #define MAYBE_FullscreenElementInSubframe DISABLED_FullscreenElementInSubframe
 #else
@@ -938,8 +938,7 @@ void SitePerProcessInteractiveBrowserTest::FullscreenElementInABA(
 }
 
 // https://crbug.com/1087392: Flaky for ASAN and TSAN
-#if defined(OS_MACOSX) || defined(ADDRESS_SANITIZER) || \
-    defined(THREAD_SANITIZER)
+#if defined(OS_MAC) || defined(ADDRESS_SANITIZER) || defined(THREAD_SANITIZER)
 #define MAYBE_FullscreenElementInABAAndExitViaEscapeKey \
   DISABLED_FullscreenElementInABAAndExitViaEscapeKey
 #else
@@ -1588,7 +1587,7 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessInteractiveBrowserTest,
 // the NSEvent is sent to NSApplication in ui/base/test/ui_controls_mac.mm .
 // This test is disabled on only the Mac until the problem is resolved.
 // See http://crbug.com/425859 for more information.
-#if !defined(OS_MACOSX)
+#if !defined(OS_MAC)
 // Tests that ctrl-click in a subframe results in a background, not a foreground
 // tab - see https://crbug.com/804838.  This test is somewhat similar to
 // CtrlClickShouldEndUpIn*ProcessTest tests, but this test has to simulate an
@@ -1613,7 +1612,7 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessInteractiveBrowserTest,
   content::WebContents* new_contents = nullptr;
   {
     content::WebContentsAddedObserver new_tab_observer;
-#if defined(OS_MACOSX)
+#if defined(OS_MAC)
     ASSERT_TRUE(ui_test_utils::SendKeyPressToWindowSync(
         old_contents->GetTopLevelNativeWindow(), ui::VKEY_RETURN, false, false,
         false, true /* cmd */));

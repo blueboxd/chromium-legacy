@@ -4407,12 +4407,14 @@ TEST(AXTreeTest, SetSizePosInSetControls) {
   three.push_back(3);
   std::vector<int32_t> hundred;
   hundred.push_back(100);
+  std::vector<int32_t> eight;
+  eight.push_back(8);
   AXTreeUpdate tree_update;
   tree_update.root_id = 1;
-  tree_update.nodes.resize(7);
+  tree_update.nodes.resize(8);
   tree_update.nodes[0].id = 1;
   tree_update.nodes[0].role = ax::mojom::Role::kGenericContainer;
-  tree_update.nodes[0].child_ids = {2, 3, 7};
+  tree_update.nodes[0].child_ids = {2, 3, 7, 8};
   tree_update.nodes[1].id = 2;
   tree_update.nodes[1].role = ax::mojom::Role::kPopUpButton;  // SetSize = 3
   tree_update.nodes[1].AddIntListAttribute(
@@ -4432,6 +4434,12 @@ TEST(AXTreeTest, SetSizePosInSetControls) {
       ax::mojom::Role::kPopUpButton;  // Test an invalid controls id.
   tree_update.nodes[6].AddIntListAttribute(
       ax::mojom::IntListAttribute::kControlsIds, hundred);
+  // GetSetSize should handle self-references e.g. if a popup button controls
+  // itself.
+  tree_update.nodes[7].id = 8;
+  tree_update.nodes[7].role = ax::mojom::Role::kPopUpButton;
+  tree_update.nodes[7].AddIntListAttribute(
+      ax::mojom::IntListAttribute::kControlsIds, eight);
   AXTree tree(tree_update);
 
   AXNode* button = tree.GetFromId(2);
@@ -4449,6 +4457,8 @@ TEST(AXTreeTest, SetSizePosInSetControls) {
   EXPECT_OPTIONAL_EQ(3, item->GetPosInSet());
   EXPECT_OPTIONAL_EQ(3, item->GetSetSize());
   button = tree.GetFromId(7);
+  EXPECT_OPTIONAL_EQ(0, button->GetSetSize());
+  button = tree.GetFromId(8);
   EXPECT_OPTIONAL_EQ(0, button->GetSetSize());
 }
 

@@ -4,6 +4,8 @@
 
 #include "cc/paint/skia_paint_image_generator.h"
 
+#include <utility>
+
 #include "cc/paint/paint_image_generator.h"
 
 namespace cc {
@@ -35,15 +37,20 @@ bool SkiaPaintImageGenerator::onQueryYUVA8(
     SkYUVASizeInfo* size_info,
     SkYUVAIndex indices[SkYUVAIndex::kIndexCount],
     SkYUVColorSpace* color_space) const {
-  return paint_image_generator_->QueryYUVA8(size_info, indices, color_space);
+  // Only 8-bit YUV is supported by the SkImageGenerator.
+  uint8_t bit_depth = 8;
+  const bool result = paint_image_generator_->QueryYUVA(
+      size_info, indices, color_space, &bit_depth);
+  return result && bit_depth == 8;
 }
 
 bool SkiaPaintImageGenerator::onGetYUVA8Planes(
     const SkYUVASizeInfo& size_info,
     const SkYUVAIndex indices[SkYUVAIndex::kIndexCount],
     void* planes[4]) {
-  return paint_image_generator_->GetYUVA8Planes(size_info, indices, planes,
-                                                frame_index_, uniqueID());
+  return paint_image_generator_->GetYUVAPlanes(size_info, kGray_8_SkColorType,
+                                               indices, planes, frame_index_,
+                                               uniqueID());
 }
 
 }  // namespace cc

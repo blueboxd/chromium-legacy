@@ -81,7 +81,7 @@ bool GetBaseDirectory(base::FilePath* path) {
   constexpr int kPathKey =
 #if defined(OS_WIN)
       base::DIR_LOCAL_APP_DATA;
-#elif defined(OS_MACOSX)
+#elif defined(OS_MAC)
       base::DIR_APP_DATA;
 #endif
 

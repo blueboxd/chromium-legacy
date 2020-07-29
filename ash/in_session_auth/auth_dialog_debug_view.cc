@@ -9,6 +9,7 @@
 
 #include "ash/login/ui/non_accessible_view.h"
 #include "ash/login/ui/views_utils.h"
+#include "ash/public/cpp/in_session_auth_dialog_controller.h"
 #include "base/strings/utf_string_conversions.h"
 #include "ui/views/background.h"
 #include "ui/views/controls/button/md_text_button.h"
@@ -124,8 +125,10 @@ void AuthDialogDebugView::AddActionButtonsView() {
 
 void AuthDialogDebugView::ButtonPressed(views::Button* sender,
                                         const ui::Event& event) {
-  // TODO(yichengli): Enable cancel button to call AuthDialogController to
-  // destroy the dialog.
+  if (sender == cancel_button_) {
+    // DestroyAuthenticationDialog deletes |this|.
+    InSessionAuthDialogController::Get()->DestroyAuthenticationDialog();
+  }
 
   // TODO(yichengli): Enable more options button when we have both fingerprint
   // view and password input view.

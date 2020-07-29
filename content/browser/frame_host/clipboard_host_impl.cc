@@ -162,7 +162,7 @@ void ClipboardHostImpl::IsFormatAvailable(blink::mojom::ClipboardFormat format,
           /* data_dst = */ nullptr);
       break;
     case blink::mojom::ClipboardFormat::kBookmark:
-#if defined(OS_WIN) || defined(OS_MACOSX)
+#if defined(OS_WIN) || defined(OS_MAC)
       result = clipboard_->IsFormatAvailable(
           ui::ClipboardFormatType::GetUrlType(), clipboard_buffer,
           /* data_dst = */ nullptr);

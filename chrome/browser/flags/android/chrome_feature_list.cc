@@ -206,6 +206,7 @@ const base::Feature* kFeaturesExposedToJava[] = {
     &kTestDefaultEnabled,
     &kTrustedWebActivityNewDisclosure,
     &kTrustedWebActivityLocationDelegation,
+    &kTrustedWebActivityQualityEnforcement,
     &kTrustedWebActivityPostMessage,
     &kStartSurfaceAndroid,
     &kUmaBackgroundSessions,
@@ -241,6 +242,7 @@ const base::Feature* kFeaturesExposedToJava[] = {
     &omnibox::kOmniboxSuggestionsRecyclerView,
     &omnibox::kOmniboxSuggestionsWrapAround,
     &password_manager::features::kGooglePasswordManager,
+    &password_manager::features::kPasswordChangeInSettings,
     &password_manager::features::kPasswordCheck,
     &password_manager::features::kPasswordEditingAndroid,
     &password_manager::features::kPasswordManagerOnboardingAndroid,
@@ -600,6 +602,9 @@ const base::Feature kTestDefaultEnabled{"TestDefaultEnabled",
 
 const base::Feature kTrustedWebActivityNewDisclosure{
     "TrustedWebActivityNewDisclosure", base::FEATURE_ENABLED_BY_DEFAULT};
+
+const base::Feature kTrustedWebActivityQualityEnforcement{
+    "TrustedWebActivityQualityEnforcement", base::FEATURE_DISABLED_BY_DEFAULT};
 
 const base::Feature kTrustedWebActivityLocationDelegation{
     "TrustedWebActivityLocationDelegation", base::FEATURE_ENABLED_BY_DEFAULT};

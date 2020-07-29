@@ -76,7 +76,7 @@ base::FilePath GetToolForPlatform(const std::string& tool_name) {
       .Append(FILE_PATH_LITERAL("win"))
       .AppendASCII(tool_name)
       .AddExtension(FILE_PATH_LITERAL("exe"));
-#elif defined(OS_MACOSX)
+#elif defined(OS_MAC)
   return tools_dir.Append(FILE_PATH_LITERAL("mac")).AppendASCII(tool_name);
 #elif defined(OS_LINUX)
   return tools_dir.Append(FILE_PATH_LITERAL("linux")).AppendASCII(tool_name);

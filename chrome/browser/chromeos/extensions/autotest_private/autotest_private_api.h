@@ -1279,6 +1279,32 @@ class AutotestPrivateDisableAutomationFunction : public ExtensionFunction {
   ResponseAction Run() override;
 };
 
+class AutotestPrivateStartThroughputTrackerDataCollectionFunction
+    : public ExtensionFunction {
+ public:
+  AutotestPrivateStartThroughputTrackerDataCollectionFunction();
+  DECLARE_EXTENSION_FUNCTION(
+      "autotestPrivate.startThroughputTrackerDataCollection",
+      AUTOTESTPRIVATE_STARTTHROUGHPUTTRACKERDATACOLLECTION)
+
+ private:
+  ~AutotestPrivateStartThroughputTrackerDataCollectionFunction() override;
+  ResponseAction Run() override;
+};
+
+class AutotestPrivateStopThroughputTrackerDataCollectionFunction
+    : public ExtensionFunction {
+ public:
+  AutotestPrivateStopThroughputTrackerDataCollectionFunction();
+  DECLARE_EXTENSION_FUNCTION(
+      "autotestPrivate.stopThroughputTrackerDataCollection",
+      AUTOTESTPRIVATE_STOPTHROUGHPUTTRACKERDATACOLLECTION)
+
+ private:
+  ~AutotestPrivateStopThroughputTrackerDataCollectionFunction() override;
+  ResponseAction Run() override;
+};
+
 template <>
 KeyedService*
 BrowserContextKeyedAPIFactory<AutotestPrivateAPI>::BuildServiceInstanceFor(

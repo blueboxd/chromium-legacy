@@ -3065,7 +3065,7 @@ TEST_F(WebViewTest, FinishComposingTextDoesNotDismissHandles) {
   EXPECT_TRUE(frame->GetFrame()->Selection().IsHandleVisible());
 }
 
-#if !defined(OS_APPLE)
+#if !defined(OS_MAC)
 TEST_F(WebViewTest, TouchDoesntSelectEmptyTextarea) {
   RegisterMockedHttpURLLoad("longpress_textarea.html");
 

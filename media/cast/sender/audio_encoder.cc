@@ -29,7 +29,7 @@
 #include "third_party/opus/src/include/opus.h"
 #endif
 
-#if defined(OS_MACOSX)
+#if defined(OS_MAC)
 #include <AudioToolbox/AudioToolbox.h>
 #endif
 
@@ -331,7 +331,7 @@ class AudioEncoder::OpusImpl : public AudioEncoder::ImplBase {
 };
 #endif
 
-#if defined(OS_MACOSX)
+#if defined(OS_MAC)
 class AudioEncoder::AppleAacImpl : public AudioEncoder::ImplBase {
   // AAC-LC has two access unit sizes (960 and 1024). The Apple encoder only
   // supports the latter.
@@ -704,7 +704,7 @@ class AudioEncoder::AppleAacImpl : public AudioEncoder::ImplBase {
 
   DISALLOW_COPY_AND_ASSIGN(AppleAacImpl);
 };
-#endif  // defined(OS_MACOSX)
+#endif  // defined(OS_MAC)
 
 class AudioEncoder::Pcm16Impl : public AudioEncoder::ImplBase {
  public:
@@ -771,12 +771,12 @@ AudioEncoder::AudioEncoder(
                            bitrate, std::move(frame_encoded_callback));
       break;
 #endif
-#if defined(OS_MACOSX)
+#if defined(OS_MAC)
     case CODEC_AUDIO_AAC:
       impl_ = new AppleAacImpl(cast_environment, num_channels, sampling_rate,
                                bitrate, std::move(frame_encoded_callback));
       break;
-#endif  // defined(OS_MACOSX)
+#endif  // defined(OS_MAC)
     case CODEC_AUDIO_PCM16:
       impl_ = new Pcm16Impl(cast_environment, num_channels, sampling_rate,
                             std::move(frame_encoded_callback));

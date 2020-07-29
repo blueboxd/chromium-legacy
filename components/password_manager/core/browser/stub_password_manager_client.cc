@@ -150,6 +150,11 @@ StubPasswordManagerClient::GetURLLoaderFactory() {
   return nullptr;
 }
 
+network::mojom::NetworkContext* StubPasswordManagerClient::GetNetworkContext()
+    const {
+  return nullptr;
+}
+
 bool StubPasswordManagerClient::IsIsolationForPasswordSitesEnabled() const {
   return false;
 }

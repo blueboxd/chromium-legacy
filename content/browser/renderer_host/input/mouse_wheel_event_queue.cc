@@ -122,7 +122,7 @@ void MouseWheelEventQueue::ProcessMouseWheelAck(
     scroll_update.SetPositionInScreen(
         event_sent_for_gesture_ack_->event.PositionInScreen());
 
-#if !defined(OS_MACOSX)
+#if !defined(OS_MAC)
     // Swap X & Y if Shift is down and when there is no horizontal movement.
     if (event_sent_for_gesture_ack_->event.event_action ==
             blink::WebMouseWheelEvent::EventAction::kScrollHorizontal &&

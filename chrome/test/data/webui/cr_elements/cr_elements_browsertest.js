@@ -124,7 +124,7 @@ CrElementsDrawerTest.prototype = {
 };
 
 // https://crbug.com/1096016 - flaky on Mac
-GEN('#if defined(OS_MACOSX)');
+GEN('#if defined(OS_MAC)');
 GEN('#define MAYBE_Drawer DISABLED_Drawer');
 GEN('#else');
 GEN('#define MAYBE_Drawer Drawer');
@@ -278,7 +278,7 @@ CrElementsFingerprintProgressArcTest.prototype = {
 };
 
 // https://crbug.com/1044390 - maybe flaky on Mac?
-GEN('#if defined(OS_MACOSX)');
+GEN('#if defined(OS_MAC)');
 GEN('#define MAYBE_Fingerprint DISABLED_Fingerprint');
 GEN('#else');
 GEN('#define MAYBE_Fingerprint Fingerprint');

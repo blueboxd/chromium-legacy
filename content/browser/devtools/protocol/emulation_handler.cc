@@ -124,6 +124,27 @@ Response EmulationHandler::Disable() {
   return Response::Success();
 }
 
+Response EmulationHandler::SetIdleOverride(bool is_user_active,
+                                           bool is_screen_unlocked) {
+  if (!host_)
+    return Response::InternalError();
+  blink::mojom::UserIdleState user_state =
+      is_user_active ? blink::mojom::UserIdleState::kActive
+                     : blink::mojom::UserIdleState::kIdle;
+  blink::mojom::ScreenIdleState screen_idle_state =
+      is_screen_unlocked ? blink::mojom::ScreenIdleState::kUnlocked
+                         : blink::mojom::ScreenIdleState::kLocked;
+  host_->GetIdleManager()->SetIdleOverride(user_state, screen_idle_state);
+  return Response::Success();
+}
+
+Response EmulationHandler::ClearIdleOverride() {
+  if (!host_)
+    return Response::InternalError();
+  host_->GetIdleManager()->ClearIdleOverride();
+  return Response::Success();
+}
+
 Response EmulationHandler::SetGeolocationOverride(
     Maybe<double> latitude, Maybe<double> longitude, Maybe<double> accuracy) {
   if (!host_)

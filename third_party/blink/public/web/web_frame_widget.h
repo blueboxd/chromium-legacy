@@ -186,6 +186,12 @@ class WebFrameWidget : public WebWidget {
   // If the widget is currently selecting a range.
   virtual bool HandlingSelectRange() = 0;
 
+  // Override the zoom level for testing.
+  virtual void SetZoomLevelForTesting(double zoom_level) = 0;
+
+  // Remove the override for zoom level.
+  virtual void ResetZoomLevelForTesting() = 0;
+
  private:
   // This private constructor and the class/friend declaration ensures that
   // WebFrameWidgetBase is the only concrete subclass that implements

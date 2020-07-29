@@ -47,9 +47,9 @@
 #include "media/base/media_switches.h"
 #include "media/mojo/mojom/cdm_service.mojom.h"
 #include "mojo/public/cpp/bindings/self_owned_receiver.h"
-#if defined(OS_MACOSX)
+#if defined(OS_MAC)
 #include "sandbox/mac/seatbelt_extension.h"
-#endif  // defined(OS_MACOSX)
+#endif  // defined(OS_MAC)
 #if defined(OS_CHROMEOS)
 #include "chromeos/constants/chromeos_features.h"
 #endif  // defined(OS_CHROMEOS)
@@ -166,7 +166,7 @@ media::mojom::CdmService& GetCdmService(const base::Token& guid,
 }
 #endif  // ENABLE_LIBRARY_CDMS
 
-#if BUILDFLAG(ENABLE_LIBRARY_CDMS) && defined(OS_MACOSX)
+#if BUILDFLAG(ENABLE_LIBRARY_CDMS) && defined(OS_MAC)
 
 #if BUILDFLAG(ENABLE_CDM_HOST_VERIFICATION)
 // TODO(xhwang): Move this to a common place.
@@ -222,7 +222,7 @@ class SeatbeltExtensionTokenProviderImpl
   DISALLOW_COPY_AND_ASSIGN(SeatbeltExtensionTokenProviderImpl);
 };
 
-#endif  // BUILDFLAG(ENABLE_LIBRARY_CDMS) && defined(OS_MACOSX)
+#endif  // BUILDFLAG(ENABLE_LIBRARY_CDMS) && defined(OS_MAC)
 
 #if BUILDFLAG(ENABLE_LIBRARY_CDMS) && defined(OS_CHROMEOS)
 constexpr char kChromeOsCdmFileSystemId[] =
@@ -529,7 +529,7 @@ media::mojom::CdmFactory* MediaInterfaceProxy::ConnectToCdmService(
   auto& site = render_frame_host_->GetSiteInstance()->GetSiteURL();
   auto& cdm_service = GetCdmService(cdm_guid, browser_context, site, cdm_name);
 
-#if defined(OS_MACOSX)
+#if defined(OS_MAC)
   // LoadCdm() should always be called before CreateInterfaceFactory().
   mojo::PendingRemote<media::mojom::SeatbeltExtensionTokenProvider>
       token_provider_remote;
@@ -540,7 +540,7 @@ media::mojom::CdmFactory* MediaInterfaceProxy::ConnectToCdmService(
   cdm_service.LoadCdm(cdm_path, std::move(token_provider_remote));
 #else
   cdm_service.LoadCdm(cdm_path);
-#endif  // defined(OS_MACOSX)
+#endif  // defined(OS_MAC)
 
   mojo::Remote<media::mojom::CdmFactory> cdm_factory_remote;
   cdm_service.CreateCdmFactory(cdm_factory_remote.BindNewPipeAndPassReceiver(),

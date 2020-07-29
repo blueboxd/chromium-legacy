@@ -36,7 +36,7 @@ class PpapiBlinkPlatformImpl : public BlinkPlatformImpl {
   blink::WebThemeEngine* ThemeEngine() override;
 
  private:
-#if defined(OS_LINUX) || defined(OS_MACOSX)
+#if defined(OS_LINUX) || defined(OS_MAC)
   std::unique_ptr<blink::WebSandboxSupport> sandbox_support_;
 #endif
 

@@ -128,7 +128,7 @@ bool ExternalPopupMenu::ShowInternal() {
 void ExternalPopupMenu::Show() {
   if (!ShowInternal())
     return;
-#if defined(OS_APPLE)
+#if defined(OS_MAC)
   const WebInputEvent* current_event = CurrentInputEvent::Get();
   if (current_event &&
       current_event->GetType() == WebInputEvent::Type::kMouseDown) {

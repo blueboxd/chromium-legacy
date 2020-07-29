@@ -41,7 +41,7 @@
 #include "content/public/browser/host_zoom_map.h"
 #endif
 
-#if defined(OS_MACOSX)
+#if defined(OS_MAC)
 #include "device/fido/mac/credential_store.h"
 #endif
 
@@ -85,7 +85,7 @@ BrowsingDataCounterFactory::GetForProfileAndPref(Profile* profile,
 
   if (pref_name == browsing_data::prefs::kDeletePasswords) {
     std::unique_ptr<::device::fido::PlatformCredentialStore> credential_store =
-#if defined(OS_MACOSX)
+#if defined(OS_MAC)
         std::make_unique<::device::fido::mac::TouchIdCredentialStore>(
             ChromeAuthenticatorRequestDelegate::
                 TouchIdAuthenticatorConfigForProfile(profile));

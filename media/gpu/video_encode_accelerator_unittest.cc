@@ -182,7 +182,7 @@ constexpr gfx::Size kMinVisibleSizeForScalingTest(640, 360);
 const char kDefaultInputFileName[] = "bear_320x192_40frames.yuv.webm";
 const base::FilePath::CharType kDefaultInputParameters[] =
     FILE_PATH_LITERAL(":320:192:1:out.h264:200000");
-#elif defined(OS_MACOSX)
+#elif defined(OS_MAC)
 // VideoToolbox falls back to SW encoder with resolutions lower than this.
 const char kDefaultInputFileName[] = "bear_640x384_40frames.yuv.webm";
 const base::FilePath::CharType kDefaultInputParameters[] =
@@ -3084,7 +3084,7 @@ INSTANTIATE_TEST_SUITE_P(CacheLineUnalignedInputTest,
                          VideoEncodeAcceleratorSimpleTest,
                          ::testing::Values(1));
 
-#elif defined(OS_MACOSX) || defined(OS_WIN)
+#elif defined(OS_MAC) || defined(OS_WIN)
 INSTANTIATE_TEST_SUITE_P(SimpleEncode,
                          VideoEncodeAcceleratorTest,
                          ::testing::Values(std::make_tuple(1,

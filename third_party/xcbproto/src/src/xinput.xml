@@ -200,7 +200,12 @@ authorization from the authors.
             <list type="STR" name="names">
                 <fieldref>devices_len</fieldref>
             </list>
-            <pad align="4" />
+            <!-- Chromium patch: xcbproto had this as 4 bytes of padding, but
+                 replies are always padded to 4 bytes.  At least on x.org,
+                 the padding is always at least one byte, so we add a byte of
+                 padding and (implicitly) align to 4 bytes.
+            -->
+            <pad bytes="1" />
         </reply>
     </request>
 

@@ -131,7 +131,7 @@ void FontMetrics::AscentDescentWithHacks(
     }
   }
 
-#if defined(OS_APPLE)
+#if defined(OS_MAC)
   // We are preserving this ascent hack to match Safari's ascent adjustment
   // in their SimpleFontDataMac.mm, for details see crbug.com/445830.
   // We need to adjust Times, Helvetica, and Courier to closely match the

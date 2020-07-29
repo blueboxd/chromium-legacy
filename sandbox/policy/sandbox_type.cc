@@ -39,11 +39,11 @@ bool IsUnsandboxedSandboxType(SandboxType sandbox_type) {
       return true;
 #endif
     case SandboxType::kNetwork:
-#if defined(OS_MACOSX)
+#if defined(OS_MAC)
       return false;
 #else
       return !base::FeatureList::IsEnabled(features::kNetworkServiceSandbox);
-#endif  // defined(OS_MACOSX)
+#endif  // defined(OS_MAC)
     case SandboxType::kRenderer:
     case SandboxType::kUtility:
     case SandboxType::kGpu:
@@ -53,14 +53,14 @@ bool IsUnsandboxedSandboxType(SandboxType sandbox_type) {
 #if defined(OS_FUCHSIA)
     case SandboxType::kWebContext:
 #endif
-#if defined(OS_MACOSX)
+#if defined(OS_MAC)
     case SandboxType::kNaClLoader:
 #endif
 #if defined(OS_CHROMEOS)
     case SandboxType::kIme:
     case SandboxType::kTts:
 #endif
-#if !defined(OS_MACOSX)
+#if !defined(OS_MAC)
     case SandboxType::kSharingService:
 #endif
 #if defined(OS_LINUX)
@@ -129,7 +129,7 @@ void SetCommandLineFlagsForSandboxType(base::CommandLine* command_line,
     case SandboxType::kIme:
     case SandboxType::kTts:
 #endif  // defined(OS_CHROMEOS)
-#if !defined(OS_MACOSX)
+#if !defined(OS_MAC)
     case SandboxType::kSharingService:
 #endif
     case SandboxType::kSpeechRecognition:
@@ -145,10 +145,10 @@ void SetCommandLineFlagsForSandboxType(base::CommandLine* command_line,
     case SandboxType::kWebContext:
       break;
 #endif  // defined(OS_FUCHSIA)
-#if defined(OS_MACOSX)
+#if defined(OS_MAC)
     case SandboxType::kNaClLoader:
       break;
-#endif  // defined(OS_MACOSX)
+#endif  // defined(OS_MAC)
 #if defined(OS_LINUX)
     case SandboxType::kZygoteIntermediateSandbox:
       break;
@@ -190,7 +190,7 @@ SandboxType SandboxTypeFromCommandLine(const base::CommandLine& command_line) {
 
   // NaCl tests on all platforms use the loader process.
   if (process_type == switches::kNaClLoaderProcess) {
-#if defined(OS_MACOSX)
+#if defined(OS_MAC)
     return SandboxType::kNaClLoader;
 #else
     return SandboxType::kUtility;
@@ -234,7 +234,7 @@ std::string StringFromUtilitySandboxType(SandboxType sandbox_type) {
       return switches::kAudioSandbox;
     case SandboxType::kVideoCapture:
       return switches::kVideoCaptureSandbox;
-#if !defined(OS_MACOSX)
+#if !defined(OS_MAC)
     case SandboxType::kSharingService:
       return switches::kSharingServiceSandbox;
 #endif
@@ -262,9 +262,9 @@ std::string StringFromUtilitySandboxType(SandboxType sandbox_type) {
 #if defined(OS_WIN)
     case SandboxType::kNoSandboxAndElevatedPrivileges:
 #endif  // defined(OS_WIN)
-#if defined(OS_MACOSX)
+#if defined(OS_MAC)
     case SandboxType::kNaClLoader:
-#endif  // defined(OS_MACOSX)
+#endif  // defined(OS_MAC)
 #if defined(OS_FUCHSIA)
     case SandboxType::kWebContext:
 #endif  // defined(OS_FUCHSIA)

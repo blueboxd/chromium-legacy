@@ -37,7 +37,7 @@
 
 #if defined(OS_WIN)
 #include "chrome/browser/password_manager/password_manager_util_win.h"
-#elif defined(OS_MACOSX)
+#elif defined(OS_MAC)
 // Use default store.
 #elif defined(OS_CHROMEOS) || defined(OS_ANDROID)
 // Don't do anything. We're going to use the default store.
@@ -141,7 +141,7 @@ PasswordStoreFactory::BuildServiceInstanceFor(
   std::unique_ptr<password_manager::LoginDatabase> login_db(
       password_manager::CreateLoginDatabaseForProfileStorage(
           profile->GetPath()));
-#if defined(OS_MACOSX)
+#if defined(OS_MAC)
   PrefService* local_state = g_browser_process->local_state();
   DCHECK(local_state);
   login_db->InitPasswordRecoveryUtil(
@@ -152,7 +152,7 @@ PasswordStoreFactory::BuildServiceInstanceFor(
   scoped_refptr<PasswordStore> ps;
 #if defined(OS_WIN)
   ps = new password_manager::PasswordStoreDefault(std::move(login_db));
-#elif defined(OS_CHROMEOS) || defined(OS_ANDROID) || defined(OS_MACOSX)
+#elif defined(OS_CHROMEOS) || defined(OS_ANDROID) || defined(OS_MAC)
   ps = new password_manager::PasswordStoreDefault(std::move(login_db));
 #elif defined(USE_X11)
   if (features::IsUsingOzonePlatform())
@@ -192,7 +192,7 @@ PasswordStoreFactory::BuildServiceInstanceFor(
   UpdateOnboardingState(ps, profile->GetPrefs(),
                         base::TimeDelta::FromSeconds(20));
 
-#if defined(OS_WIN) || defined(OS_MACOSX) || \
+#if defined(OS_WIN) || defined(OS_MAC) || \
     (defined(OS_LINUX) && !defined(OS_CHROMEOS))
   std::unique_ptr<password_manager::PasswordStoreSigninNotifier> notifier =
       std::make_unique<password_manager::PasswordStoreSigninNotifierImpl>(

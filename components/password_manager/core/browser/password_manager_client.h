@@ -116,12 +116,6 @@ class PasswordManagerClient {
   // address.
   virtual bool IsFillingFallbackEnabled(const GURL& url) const;
 
-  // Checks asynchronously whether HTTP Strict Transport Security (HSTS) is
-  // active for the host of the given origin. Notifies |callback| with the
-  // result on the calling thread.
-  virtual void PostHSTSQueryForHost(const url::Origin& origin,
-                                    HSTSCallback callback) const;
-
   // Informs the embedder of a password form that can be saved or updated in
   // password store if the user allows it. The embedder is not required to
   // prompt the user if it decides that this form doesn't need to be saved or
@@ -391,6 +385,10 @@ class PasswordManagerClient {
   // the current profile.
   virtual scoped_refptr<network::SharedURLLoaderFactory>
   GetURLLoaderFactory() = 0;
+
+  // Returns a pointer to the NetworkContext owned by the storage partition of
+  // the current profile.
+  virtual network::mojom::NetworkContext* GetNetworkContext() const;
 
   // Whether the primary account of the current profile is under Advanced
   // Protection - a type of Google Account that helps protect our most at-risk

@@ -13,7 +13,7 @@
 #include "extensions/browser/api/networking_private/networking_private_chromeos.h"
 #elif defined(OS_LINUX)
 #include "extensions/browser/api/networking_private/networking_private_linux.h"
-#elif defined(OS_WIN) || defined(OS_MACOSX)
+#elif defined(OS_WIN) || defined(OS_MAC)
 #include "components/wifi/wifi_service.h"
 #include "extensions/browser/api/networking_private/networking_private_service_client.h"
 #endif
@@ -63,7 +63,7 @@ KeyedService* NetworkingPrivateDelegateFactory::BuildServiceInstanceFor(
   delegate = new NetworkingPrivateChromeOS(browser_context);
 #elif defined(OS_LINUX)
   delegate = new NetworkingPrivateLinux();
-#elif defined(OS_WIN) || defined(OS_MACOSX)
+#elif defined(OS_WIN) || defined(OS_MAC)
   std::unique_ptr<wifi::WiFiService> wifi_service(wifi::WiFiService::Create());
   delegate = new NetworkingPrivateServiceClient(std::move(wifi_service));
 #else

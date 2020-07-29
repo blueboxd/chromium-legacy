@@ -64,7 +64,7 @@ GURL GetPluginsServerURL() {
   filename = "plugins_chromeos.json";
 #elif defined(OS_LINUX)
   filename = "plugins_linux.json";
-#elif defined(OS_MACOSX)
+#elif defined(OS_MAC)
   filename = "plugins_mac.json";
 #else
 #error Unknown platform

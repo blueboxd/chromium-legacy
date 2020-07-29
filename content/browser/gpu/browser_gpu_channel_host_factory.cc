@@ -37,7 +37,7 @@
 #include "gpu/ipc/in_process_command_buffer.h"
 #include "services/resource_coordinator/public/mojom/memory_instrumentation/constants.mojom.h"
 
-#if defined(OS_MACOSX)
+#if defined(OS_MAC)
 #include "ui/accelerated_widget_mac/window_resize_helper_mac.h"
 #endif
 
@@ -146,7 +146,7 @@ BrowserGpuChannelHostFactory::EstablishRequest::EstablishRequest(
       gpu_client_id_(gpu_client_id),
       gpu_client_tracing_id_(gpu_client_tracing_id),
       finished_(false),
-#if defined(OS_MACOSX)
+#if defined(OS_MAC)
       main_task_runner_(ui::WindowResizeHelperMac::Get()->task_runner())
 #else
       main_task_runner_(base::ThreadTaskRunnerHandle::Get())

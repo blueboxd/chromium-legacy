@@ -23,7 +23,7 @@
 #include "base/task/thread_pool.h"
 #include "build/branding_buildflags.h"
 #include "content/public/browser/browser_task_traits.h"
-#if defined(OS_MACOSX)
+#if defined(OS_MAC)
 #include "base/mac/authorization_util.h"
 #include "base/mac/scoped_authorizationref.h"
 #endif
@@ -52,7 +52,7 @@ using content::BrowserThread;
 namespace component_updater {
 
 #if BUILDFLAG(GOOGLE_CHROME_BRANDING)
-#if defined(OS_WIN) || defined(OS_MACOSX)
+#if defined(OS_WIN) || defined(OS_MAC)
 
 namespace {
 
@@ -196,7 +196,7 @@ void DoElevatedInstallRecoveryComponent(const base::FilePath& path) {
   base::LaunchOptions options;
   options.start_hidden = true;
   base::Process process = base::LaunchElevatedProcess(cmdline, options);
-#elif defined(OS_MACOSX)
+#elif defined(OS_MAC)
   base::mac::ScopedAuthorizationRef authRef(
       base::mac::AuthorizationCreateToRunAsRoot(nullptr));
   if (!authRef.get()) {
@@ -494,13 +494,13 @@ bool RecoveryComponentInstaller::Uninstall() {
   return false;
 }
 
-#endif  // defined(OS_WIN) || defined(OS_MACOSX)
+#endif  // defined(OS_WIN) || defined(OS_MAC)
 #endif  // BUILDFLAG(GOOGLE_CHROME_BRANDING)
 
 void RegisterRecoveryComponent(ComponentUpdateService* cus,
                                PrefService* prefs) {
 #if BUILDFLAG(GOOGLE_CHROME_BRANDING)
-#if defined(OS_WIN) || defined(OS_MACOSX)
+#if defined(OS_WIN) || defined(OS_MAC)
   if (SimulatingElevatedRecovery()) {
     content::GetUIThreadTaskRunner({})->PostTask(
         FROM_HERE, base::BindOnce(&SimulateElevatedRecoveryHelper, prefs));
@@ -526,7 +526,7 @@ void AcceptedElevatedRecoveryInstall(PrefService* prefs) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
 #if BUILDFLAG(GOOGLE_CHROME_BRANDING)
-#if defined(OS_WIN) || defined(OS_MACOSX)
+#if defined(OS_WIN) || defined(OS_MAC)
   ElevatedInstallRecoveryComponent(
       prefs->GetFilePath(prefs::kRecoveryComponentUnpackPath));
 #endif

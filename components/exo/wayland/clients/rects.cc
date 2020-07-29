@@ -33,7 +33,7 @@
 #include "third_party/skia/include/core/SkFont.h"
 #include "third_party/skia/include/core/SkRefCnt.h"
 #include "third_party/skia/include/core/SkSurface.h"
-#include "third_party/skia/include/gpu/GrContext.h"
+#include "third_party/skia/include/gpu/GrDirectContext.h"
 #include "ui/gl/gl_bindings.h"
 
 namespace exo {
@@ -436,7 +436,7 @@ int RectsClient::Run(const ClientBase::InitParams& params,
                                fps_counter_text.length(), SkTextEncoding::kUTF8,
                                size_.width() - 48, 32, font, text_paint);
       }
-      GrContext* gr_context = gr_context_.get();
+      GrDirectContext* gr_context = gr_context_.get();
       if (gr_context) {
         gr_context->flushAndSubmit();
 

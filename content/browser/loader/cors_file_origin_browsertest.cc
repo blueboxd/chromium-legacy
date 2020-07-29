@@ -244,7 +244,7 @@ IN_PROC_BROWSER_TEST_F(CorsFileOriginBrowserTest, AccessToAnotherFileUrl) {
 
 // TODO(lukasza, nasko): https://crbug.com/981018: Enable this test on Macs
 // after understanding what makes it flakily fail on the mac-rel trybot.
-#if defined(OS_MACOSX)
+#if defined(OS_MAC)
 #define MAYBE_UniversalAccessFromFileUrls DISABLED_UniversalAccessFromFileUrls
 #else
 #define MAYBE_UniversalAccessFromFileUrls UniversalAccessFromFileUrls

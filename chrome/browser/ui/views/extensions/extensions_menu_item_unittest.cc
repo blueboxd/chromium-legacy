@@ -31,7 +31,7 @@ class ExtensionsMenuItemViewTest : public BrowserWithTestWindowTest {
         views::Widget::InitParams::TYPE_POPUP);
     init_params.ownership =
         views::Widget::InitParams::WIDGET_OWNS_NATIVE_WIDGET;
-#if !defined(OS_CHROMEOS) && !defined(OS_MACOSX)
+#if !defined(OS_CHROMEOS) && !defined(OS_MAC)
     // This was copied from BookmarkBarViewTest:
     // On Chrome OS, this always creates a NativeWidgetAura, but it should
     // create a DesktopNativeWidgetAura for Mash. We can get by without manually

@@ -61,6 +61,7 @@
 #include "third_party/blink/renderer/platform/testing/runtime_enabled_features_test_helpers.h"
 #include "third_party/blink/renderer/platform/wtf/cross_thread_functional.h"
 #include "third_party/skia/include/core/SkSurface.h"
+#include "third_party/skia/include/gpu/GrDirectContext.h"
 #include "third_party/skia/include/gpu/gl/GrGLTypes.h"
 
 #include <memory>
@@ -362,9 +363,9 @@ TEST_F(Canvas2DLayerBridgeTest, FallbackToSoftwareOnFailedTextureAlloc) {
 
   {
     // Fallback case.
-    GrContext* gr = SharedGpuContext::ContextProviderWrapper()
-                        ->ContextProvider()
-                        ->GetGrContext();
+    GrDirectContext* gr = SharedGpuContext::ContextProviderWrapper()
+                              ->ContextProvider()
+                              ->GetGrContext();
     std::unique_ptr<Canvas2DLayerBridge> bridge =
         std::make_unique<Canvas2DLayerBridge>(
             IntSize(300, 150), RasterMode::kGPU, CanvasColorParams());

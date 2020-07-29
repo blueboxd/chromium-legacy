@@ -360,7 +360,7 @@ gfx::NativeWindow Shell::window() {
 }
 #endif
 
-#if defined(OS_MACOSX)
+#if defined(OS_MAC)
 void Shell::ActionPerformed(int control) {
   switch (control) {
     case IDC_NAV_BACK:
@@ -551,7 +551,7 @@ std::unique_ptr<BluetoothScanningPrompt> Shell::ShowBluetoothScanningPrompt(
   return std::make_unique<AlwaysAllowBluetoothScanning>(event_handler);
 }
 
-#if defined(OS_MACOSX)
+#if defined(OS_MAC)
 void Shell::DidNavigateMainFramePostCommit(WebContents* contents) {
   g_platform->DidNavigateMainFramePostCommit(this, contents);
 }
@@ -582,7 +582,7 @@ void Shell::RendererUnresponsive(
 }
 
 void Shell::ActivateContents(WebContents* contents) {
-#if !defined(OS_MACOSX)
+#if !defined(OS_MAC)
   // TODO(danakj): Move this to ShellPlatformDelegate.
   contents->Focus();
 #else

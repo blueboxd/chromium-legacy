@@ -90,7 +90,7 @@
 #include "ui/events/devices/x11/touch_factory_x11.h"  // nogncheck
 #endif
 
-#if defined(OS_MACOSX)
+#if defined(OS_MAC)
 #include "chrome/browser/web_applications/extensions/web_app_extension_shortcut_mac.h"
 #endif
 
@@ -269,7 +269,10 @@ bool CanOpenProfileOnStartup(Profile* profile) {
 
 #if !defined(OS_CHROMEOS)
 bool ShouldShowProfilePicker() {
-  return !signin_util::IsForceSigninEnabled() &&
+  size_t number_of_profiles = g_browser_process->profile_manager()
+                                  ->GetProfileAttributesStorage()
+                                  .GetNumberOfProfiles();
+  return !signin_util::IsForceSigninEnabled() && number_of_profiles != 1 &&
          base::FeatureList::IsEnabled(features::kNewProfilePicker);
 }
 #endif  // !defined(OS_CHROMEOS)
@@ -303,7 +306,7 @@ bool IsSilentLaunchEnabled(const base::CommandLine& command_line,
 // true, send a warning if guest mode is requested but not allowed by policy.
 bool IsGuestModeEnforced(const base::CommandLine& command_line,
                          bool show_warning) {
-#if defined(OS_LINUX) || defined(OS_WIN) || defined(OS_MACOSX)
+#if defined(OS_LINUX) || defined(OS_WIN) || defined(OS_MAC)
   PrefService* service = g_browser_process->local_state();
   DCHECK(service);
 
@@ -700,7 +703,7 @@ bool StartupBrowserCreator::ProcessCmdLineImpl(
     NOTIMPLEMENTED_LOG_ONCE();
 #endif
 
-#if defined(OS_MACOSX)
+#if defined(OS_MAC)
   if (web_app::MaybeRebuildShortcut(command_line))
     return true;
 #endif

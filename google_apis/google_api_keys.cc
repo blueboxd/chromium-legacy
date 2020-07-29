@@ -21,7 +21,7 @@
 #include "google_apis/gaia/gaia_config.h"
 #include "google_apis/gaia/gaia_switches.h"
 
-#if defined(OS_MACOSX)
+#if defined(OS_APPLE)
 #include "google_apis/google_api_keys_mac.h"
 #endif
 
@@ -264,7 +264,7 @@ class APIKeyCache {
                                        GaiaConfig* gaia_config) {
     std::string key_value = baked_in_value;
     std::string temp;
-#if defined(OS_MACOSX)
+#if defined(OS_APPLE)
     // macOS and iOS can also override the API key with a value from the
     // Info.plist.
     temp = ::google_apis::GetAPIKeyFromInfoPlist(environment_variable_name);

@@ -111,12 +111,12 @@
 #include "remoting/host/posix/signal_handler.h"
 #endif  // defined(OS_POSIX)
 
-#if defined(OS_MACOSX)
+#if defined(OS_APPLE)
 #include "base/mac/mac_util.h"
 #include "base/mac/scoped_cftyperef.h"
 #include "remoting/host/desktop_capturer_checker.h"
 #include "remoting/host/mac/permission_utils.h"
-#endif  // defined(OS_MACOSX)
+#endif  // defined(OS_APPLE)
 
 #if defined(OS_LINUX)
 #include <gtk/gtk.h>
@@ -137,7 +137,7 @@
 using remoting::protocol::PairingRegistry;
 using remoting::protocol::NetworkSettings;
 
-#if defined(OS_MACOSX)
+#if defined(OS_APPLE)
 
 // The following creates a section that tells Mac OS X that it is OK to let us
 // inject input in the login screen. Just the name of the section is important,
@@ -146,7 +146,7 @@ __attribute__((used))
 __attribute__((section ("__CGPreLoginApp,__cgpreloginapp")))
 static const char magic_section[] = "";
 
-#endif  // defined(OS_MACOSX)
+#endif  // defined(OS_APPLE)
 
 namespace {
 
@@ -442,13 +442,13 @@ class HostProcess : public ConfigWatcher::Delegate,
 
   ShutdownWatchdog* shutdown_watchdog_;
 
-#if defined(OS_MACOSX)
+#if defined(OS_APPLE)
   // When using the command line option to check the Accessibility or Screen
   // Recording permission, these track the permission state and indicate that
   // the host should exit immediately with the result.
   bool checking_permission_state_ = false;
   bool permission_granted_ = false;
-#endif  // defined(OS_MACOSX)
+#endif  // defined(OS_APPLE)
 
   DISALLOW_COPY_AND_ASSIGN(HostProcess);
 };
@@ -468,7 +468,7 @@ HostProcess::HostProcess(std::unique_ptr<ChromotingHostContext> context,
 
   StartOnUiThread();
 
-#if defined(OS_MACOSX)
+#if defined(OS_APPLE)
   if (checking_permission_state_) {
     *exit_code_out = (permission_granted_ ? EXIT_SUCCESS : EXIT_FAILURE);
   }
@@ -491,7 +491,7 @@ HostProcess::~HostProcess() {
 }
 
 bool HostProcess::InitWithCommandLine(const base::CommandLine* cmd_line) {
-#if defined(OS_MACOSX)
+#if defined(OS_APPLE)
   if (cmd_line->HasSwitch(kCheckAccessibilityPermissionSwitchName)) {
     checking_permission_state_ = true;
     permission_granted_ = mac::CanInjectInput();
@@ -509,7 +509,7 @@ bool HostProcess::InitWithCommandLine(const base::CommandLine* cmd_line) {
     permission_granted_ = mac::CanRecordScreen();
     return false;
   }
-#endif  // defined(OS_MACOSX)
+#endif  // defined(OS_APPLE)
 
 #if defined(REMOTING_MULTI_PROCESS)
   // Mojo keeps the task runner passed to it alive forever, so an
@@ -1174,7 +1174,7 @@ void HostProcess::ApplyUsernamePolicy() {
         !base::StartsWith(host_owner_, username + std::string("@"),
                           base::CompareCase::INSENSITIVE_ASCII);
 
-#if defined(OS_MACOSX)
+#if defined(OS_APPLE)
     // On Mac, we run as root at the login screen, so the username won't match.
     // However, there's no need to enforce the policy at the login screen, as
     // the client will have to reconnect if a login occurs.
@@ -1278,7 +1278,7 @@ bool HostProcess::OnCurtainPolicyUpdate(base::DictionaryValue* policies) {
   }
   desktop_environment_options_.set_enable_curtaining(curtain_required);
 
-#if defined(OS_MACOSX)
+#if defined(OS_APPLE)
   if (curtain_required) {
     // When curtain mode is in effect on Mac, the host process runs in the
     // user's switched-out session, but launchd will also run an instance at
@@ -1525,7 +1525,7 @@ void HostProcess::StartHost() {
       HostEventLogger::Create(host_->status_monitor(), kApplicationName);
 #endif  // !defined(REMOTING_MULTI_PROCESS)
 
-#if defined(OS_MACOSX)
+#if defined(OS_APPLE)
   // Don't run the permission-checks as root (i.e. at the login screen), as they
   // are not actionable there.
   // Also, the permission-checks are not needed on MacOS 10.15+, as they are
@@ -1534,7 +1534,7 @@ void HostProcess::StartHost() {
   if (getuid() != 0U && base::mac::IsAtMostOS10_14()) {
     mac::PromptUserToChangeTrustStateIfNeeded(context_->ui_task_runner());
   }
-#endif  // defined(OS_MACOSX)
+#endif  // defined(OS_APPLE)
 
   host_->Start(host_owner_);
 

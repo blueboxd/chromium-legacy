@@ -16,7 +16,7 @@
 
 #if defined(OS_WIN)
 #include "base/win/windows_version.h"
-#elif defined(OS_POSIX) && !defined(OS_MACOSX)
+#elif defined(OS_POSIX) && !defined(OS_MAC)
 #include <sys/utsname.h>
 #endif
 
@@ -27,7 +27,7 @@ namespace {
 std::string GetUserAgentPlatform() {
 #if defined(OS_WIN)
   return "";
-#elif defined(OS_MACOSX)
+#elif defined(OS_MAC)
   return "Macintosh; ";
 #elif defined(USE_X11) || defined(USE_OZONE)
   return "X11; ";  // strange, but that's what Firefox uses
@@ -58,7 +58,7 @@ std::string GetWebKitRevision() {
 std::string BuildCpuInfo() {
   std::string cpuinfo;
 
-#if defined(OS_MACOSX)
+#if defined(OS_MAC)
   cpuinfo = "Intel";
 #elif defined(OS_WIN)
   base::win::OSInfo* os_info = base::win::OSInfo::GetInstance();
@@ -72,7 +72,7 @@ std::string BuildCpuInfo() {
     else if (windows_architecture == base::win::OSInfo::IA64_ARCHITECTURE)
       cpuinfo = "Win64; IA64";
   }
-#elif defined(OS_POSIX) && !defined(OS_MACOSX)
+#elif defined(OS_POSIX) && !defined(OS_MAC)
   // Should work on any Posix system.
   struct utsname unixinfo;
   uname(&unixinfo);
@@ -92,7 +92,7 @@ std::string BuildCpuInfo() {
 // Return the CPU architecture in Linux or Windows and the empty string
 // elsewhere.
 std::string GetLowEntropyCpuArchitecture() {
-#if !defined(OS_MACOSX) && !defined(OS_ANDROID) && defined(OS_POSIX)
+#if !defined(OS_MAC) && !defined(OS_ANDROID) && defined(OS_POSIX)
   // This extra cpu_info_str variable is required to make sure the compiler
   // doesn't optimize the copy away and have the StringPiece point at the
   // internal std::string, resulting in a memory violation.
@@ -120,7 +120,7 @@ std::string GetLowEntropyCpuArchitecture() {
 std::string GetOSVersion(IncludeAndroidBuildNumber include_android_build_number,
                          IncludeAndroidModel include_android_model) {
   std::string os_version;
-#if defined(OS_WIN) || defined(OS_MACOSX) || defined(OS_CHROMEOS)
+#if defined(OS_WIN) || defined(OS_MAC) || defined(OS_CHROMEOS)
   int32_t os_major_version = 0;
   int32_t os_minor_version = 0;
   int32_t os_bugfix_version = 0;
@@ -137,7 +137,7 @@ std::string GetOSVersion(IncludeAndroidBuildNumber include_android_build_number,
   base::StringAppendF(&os_version,
 #if defined(OS_WIN)
                       "%d.%d", os_major_version, os_minor_version
-#elif defined(OS_MACOSX)
+#elif defined(OS_MAC)
                       "%d_%d_%d", os_major_version, os_minor_version,
                       os_bugfix_version
 #elif defined(OS_CHROMEOS)
@@ -165,7 +165,7 @@ std::string BuildOSCpuInfoFromOSVersionAndCpuType(const std::string& os_version,
                                                   const std::string& cpu_type) {
   std::string os_cpu;
 
-#if !defined(OS_ANDROID) && defined(OS_POSIX) && !defined(OS_MACOSX)
+#if !defined(OS_ANDROID) && defined(OS_POSIX) && !defined(OS_MAC)
   // Should work on any Posix system.
   struct utsname unixinfo;
   uname(&unixinfo);
@@ -179,7 +179,7 @@ std::string BuildOSCpuInfoFromOSVersionAndCpuType(const std::string& os_version,
     base::StringAppendF(&os_cpu, "Windows NT %s", os_version.c_str());
 #else
   base::StringAppendF(&os_cpu,
-#if defined(OS_MACOSX)
+#if defined(OS_MAC)
                       "%s Mac OS X %s", cpu_type.c_str(), os_version.c_str()
 #elif defined(OS_CHROMEOS)
                       "CrOS "

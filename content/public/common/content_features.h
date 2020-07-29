@@ -188,13 +188,13 @@ CONTENT_EXPORT extern const base::Feature kWarmUpNetworkProcess;
 CONTENT_EXPORT extern const base::Feature kWebNfc;
 #endif  // defined(OS_ANDROID)
 
-#if defined(OS_MACOSX)
+#if defined(OS_MAC)
 CONTENT_EXPORT extern const base::Feature kDeviceMonitorMac;
 CONTENT_EXPORT extern const base::Feature kIOSurfaceCapturer;
 CONTENT_EXPORT extern const base::Feature kMacSyscallSandbox;
 CONTENT_EXPORT extern const base::Feature kMacV2GPUSandbox;
 CONTENT_EXPORT extern const base::Feature kRetryGetVideoCaptureDeviceInfos;
-#endif  // defined(OS_MACOSX)
+#endif  // defined(OS_MAC)
 
 #if defined(WEBRTC_USE_PIPEWIRE)
 CONTENT_EXPORT extern const base::Feature kWebRtcPipeWireCapturer;

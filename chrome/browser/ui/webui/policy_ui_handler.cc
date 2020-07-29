@@ -94,7 +94,7 @@
 #include "components/policy/core/common/cloud/user_cloud_policy_manager.h"
 #endif
 
-#if defined(OS_MACOSX)
+#if defined(OS_MAC)
 #include "base/mac/mac_util.h"
 #endif
 
@@ -1230,7 +1230,7 @@ std::string PolicyUIHandler::GetPoliciesAsJson() const {
   chrome_metadata.SetKey("platform",
                          base::Value(chromeos::version_loader::GetVersion(
                              chromeos::version_loader::VERSION_FULL)));
-#elif defined(OS_MACOSX)
+#elif defined(OS_MAC)
   chrome_metadata.SetKey("OS", base::Value(base::mac::GetOSDisplayName()));
 #else
   std::string os = version_info::GetOSType();

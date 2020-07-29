@@ -93,7 +93,7 @@ class CaptionBubbleFrameView : public views::BubbleFrameView {
         views::BubbleBorder::FLOAT, views::BubbleBorder::DIALOG_SHADOW,
         gfx::kPlaceholderColor);
     border->SetCornerRadius(kCornerRadiusDip);
-#if defined(OS_MACOSX)
+#if defined(OS_MAC)
     // Inset the border so that there's space to draw a focus ring on Mac
     // without clipping by the system window.
     border->set_insets(border->GetBorderAndShadowInsets() + gfx::Insets(1));

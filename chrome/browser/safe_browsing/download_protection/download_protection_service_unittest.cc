@@ -1706,7 +1706,7 @@ TEST_P(DownloadProtectionServiceTest, CheckClientDownloadReportCorruptZip) {
   CheckClientDownloadReportCorruptArchive(ZIP);
 }
 
-#if defined(OS_MACOSX)
+#if defined(OS_MAC)
 TEST_P(DownloadProtectionServiceTest, CheckClientDownloadReportCorruptDmg) {
   CheckClientDownloadReportCorruptArchive(DMG);
 }
@@ -2007,14 +2007,14 @@ TEST_P(DownloadProtectionServiceTest, DMGAnalysisEndToEnd) {
 #endif  // OS_MACOSX
 
 TEST_P(DownloadProtectionServiceTest, CheckClientDownloadValidateRequest) {
-#if defined(OS_MACOSX)
+#if defined(OS_MAC)
   std::string download_file_path("ftp://www.google.com/bla.dmg");
 #else
   std::string download_file_path("ftp://www.google.com/bla.exe");
 #endif  //  OS_MACOSX
 
   NiceMockDownloadItem item;
-#if defined(OS_MACOSX)
+#if defined(OS_MAC)
   PrepareBasicDownloadItem(
       &item, {"http://www.google.com/", download_file_path},  // url_chain
       "http://www.google.com/",                               // referrer
@@ -2034,7 +2034,7 @@ TEST_P(DownloadProtectionServiceTest, CheckClientDownloadValidateRequest) {
   EXPECT_CALL(*sb_service_->mock_database_manager(),
               MatchDownloadWhitelistUrl(_))
       .WillRepeatedly(Return(false));
-#if !defined(OS_MACOSX)
+#if !defined(OS_MAC)
   EXPECT_CALL(*binary_feature_extractor_.get(), CheckSignature(tmp_path_, _))
       .WillOnce(SetCertificateContents("dummy cert data"));
   EXPECT_CALL(*binary_feature_extractor_.get(),
@@ -2069,7 +2069,7 @@ TEST_P(DownloadProtectionServiceTest, CheckClientDownloadValidateRequest) {
                                       ClientDownloadRequest::DOWNLOAD_URL,
                                       download_file_path, referrer_.spec()));
   ASSERT_TRUE(request->has_signature());
-#if !defined(OS_MACOSX)
+#if !defined(OS_MAC)
   ASSERT_EQ(1, request->signature().certificate_chain_size());
   const ClientDownloadRequest_CertificateChain& chain =
       request->signature().certificate_chain(0);
@@ -2086,14 +2086,14 @@ TEST_P(DownloadProtectionServiceTest, CheckClientDownloadValidateRequest) {
 // Similar to above, but with an unsigned binary.
 TEST_P(DownloadProtectionServiceTest,
        CheckClientDownloadValidateRequestNoSignature) {
-#if defined(OS_MACOSX)
+#if defined(OS_MAC)
   std::string download_file_path("ftp://www.google.com/bla.dmg");
 #else
   std::string download_file_path("ftp://www.google.com/bla.exe");
 #endif  // OS_MACOSX
 
   NiceMockDownloadItem item;
-#if defined(OS_MACOSX)
+#if defined(OS_MAC)
   PrepareBasicDownloadItem(
       &item, {"http://www.google.com/", download_file_path},  // url_chain
       "http://www.google.com/",                               // referrer
@@ -2112,7 +2112,7 @@ TEST_P(DownloadProtectionServiceTest,
   EXPECT_CALL(*sb_service_->mock_database_manager(),
               MatchDownloadWhitelistUrl(_))
       .WillRepeatedly(Return(false));
-#if !defined(OS_MACOSX)
+#if !defined(OS_MAC)
   EXPECT_CALL(*binary_feature_extractor_.get(), CheckSignature(tmp_path_, _));
   EXPECT_CALL(*binary_feature_extractor_.get(),
               ExtractImageFeatures(

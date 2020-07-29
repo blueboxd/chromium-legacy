@@ -1348,7 +1348,7 @@ TEST_F(ManagePasswordsUIControllerTest, AuthenticateUserToRevealPasswords) {
 
   // Simulate that re-auth is need to reveal passwords in the bubble.
   bool success = controller()->AuthenticateUser();
-#if defined(OS_WIN) || defined(OS_MACOSX)
+#if defined(OS_WIN) || defined(OS_MAC)
   EXPECT_FALSE(success);
   // Let the task posted in AuthenticateUser re-open the bubble.
   EXPECT_CALL(*controller(), OnUpdateBubbleAndIconVisibility());

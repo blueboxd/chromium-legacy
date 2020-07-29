@@ -75,7 +75,7 @@ class ExtensionStartupTestBase : public InProcessBrowserTest {
           base::StringPrintf(
               "%s/%s/", chrome_prefs::internals::kSettingsEnforcementTrialName,
               chrome_prefs::internals::kSettingsEnforcementGroupNoEnforcement));
-#if defined(OFFICIAL_BUILD) && (defined(OS_WIN) || defined(OS_MACOSX))
+#if defined(OFFICIAL_BUILD) && (defined(OS_WIN) || defined(OS_MAC))
       // In Windows and MacOS official builds, it is not possible to disable
       // settings enforcement.
       unauthenticated_load_allowed_ = false;

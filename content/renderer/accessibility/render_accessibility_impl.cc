@@ -217,7 +217,7 @@ RenderAccessibilityImpl::RenderAccessibilityImpl(
     settings->SetInlineTextBoxAccessibilityEnabled(true);
 #endif
 
-#if defined(OS_MACOSX)
+#if defined(OS_MAC)
   // aria-modal currently prunes the accessibility tree on Mac only.
   settings->SetAriaModalPrunesAXTree(true);
 #endif

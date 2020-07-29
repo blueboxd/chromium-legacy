@@ -39,7 +39,7 @@
 #include "components/permissions/permission_util.h"
 #endif  // defined(OS_ANDROID)
 
-#if defined(OS_MACOSX)
+#if defined(OS_MAC)
 #include "base/metrics/histogram_macros.h"
 #include "chrome/browser/content_settings/chrome_content_settings_utils.h"
 #include "chrome/browser/media/webrtc/system_media_capture_permissions_mac.h"
@@ -53,7 +53,7 @@ using RepeatingMediaResponseCallback =
                                  blink::mojom::MediaStreamRequestResult result,
                                  std::unique_ptr<content::MediaStreamUI> ui)>;
 
-#if defined(OS_MACOSX)
+#if defined(OS_MAC)
 using system_media_permissions::SystemPermission;
 #endif
 
@@ -344,7 +344,7 @@ void PermissionBubbleMediaAccessHandler::OnAccessRequestResponse(
 
   blink::mojom::MediaStreamRequestResult final_result = result;
 
-#if defined(OS_MACOSX)
+#if defined(OS_MAC)
   // If the request was approved, ask for system permissions if needed, and run
   // this function again when done.
   if (result == blink::mojom::MediaStreamRequestResult::OK) {
@@ -406,7 +406,7 @@ void PermissionBubbleMediaAccessHandler::OnAccessRequestResponse(
       }
     }
   }
-#endif  // defined(OS_MACOSX)
+#endif  // defined(OS_MAC)
 
   RepeatingMediaResponseCallback callback =
       std::move(request_it->second.callback);

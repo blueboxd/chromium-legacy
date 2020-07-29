@@ -276,6 +276,10 @@ executable("app_shell") {
 }
 
 test("app_shell_unittests") {
+  if ((is_linux && !is_chromeos) || chromeos_is_browser_only) {
+    use_xvfb = true
+  }
+
   sources = [
     "../test/extensions_unittests_main.cc",
     "browser/api/identity/identity_api_unittest.cc",

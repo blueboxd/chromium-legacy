@@ -56,7 +56,7 @@ struct CONTENT_EXPORT NativeWebKeyboardEvent : public blink::WebKeyboardEvent {
 #endif
 #endif
 
-#if defined(OS_MACOSX)
+#if defined(OS_MAC)
   // TODO(bokan): Temporarily added to debug https://crbug.com/1039833. This is
   // used to allow collecting Event.Latency.OS_NO_VALIDATION only in contexts
   // where the key event will be sent to the renderer.  The purpose is to avoid

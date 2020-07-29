@@ -38,7 +38,7 @@ PRINTING_EXPORT void GetColorModelForMode(int color_mode,
                                           std::string* color_setting_name,
                                           std::string* color_value);
 
-#if defined(OS_MACOSX) || defined(OS_CHROMEOS)
+#if defined(OS_MAC) || defined(OS_CHROMEOS)
 // Convert from |color_mode| to a print-color-mode value from PWG 5100.13.
 PRINTING_EXPORT std::string GetIppColorModelForMode(int color_mode);
 #endif
@@ -141,11 +141,11 @@ class PRINTING_EXPORT PrintSettings {
   bool supports_alpha_blend() const { return supports_alpha_blend_; }
 
   int device_units_per_inch() const {
-#if defined(OS_MACOSX)
+#if defined(OS_MAC)
     return 72;
-#else   // defined(OS_MACOSX)
+#else   // defined(OS_MAC)
     return dpi();
-#endif  // defined(OS_MACOSX)
+#endif  // defined(OS_MAC)
   }
 
   void set_ranges(const PageRanges& ranges) { ranges_ = ranges; }

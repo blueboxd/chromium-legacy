@@ -508,7 +508,7 @@ IN_PROC_BROWSER_TEST_F(LocalNTPCustomBackgroundsThemeTest,
 
 // TODO(crbug/980638): Update/Remove when Linux and/or ChromeOS support dark
 // mode.
-#if defined(OS_WIN) || defined(OS_MACOSX)
+#if defined(OS_WIN) || defined(OS_MAC)
 
 // Tests that dark mode styling is properly applied when a theme and/or custom
 // background is set.

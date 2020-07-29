@@ -450,10 +450,10 @@ void XWindow::Map(bool inactive) {
   SetWmNormalHints(xwindow_, size_hints);
 
   ignore_keyboard_input_ = inactive;
-  uint32_t wm_user_time_ms =
-      ignore_keyboard_input_ ? 0
+  auto wm_user_time_ms = ignore_keyboard_input_
+                             ? x11::Time::CurrentTime
                              : X11EventSource::GetInstance()->GetTimestamp();
-  if (inactive || wm_user_time_ms != 0) {
+  if (inactive || wm_user_time_ms != x11::Time::CurrentTime) {
     SetProperty(xwindow_, gfx::GetAtom("_NET_WM_USER_TIME"),
                 x11::Atom::CARDINAL, wm_user_time_ms);
   }
@@ -552,7 +552,7 @@ void XWindow::Activate() {
       GuessWindowManager() != WM_WMII &&
       WmSupportsHint(gfx::GetAtom("_NET_ACTIVE_WINDOW"));
 
-  ::Time timestamp = X11EventSource::GetInstance()->GetTimestamp();
+  x11::Time timestamp = X11EventSource::GetInstance()->GetTimestamp();
 
   // override_redirect windows ignore _NET_ACTIVE_WINDOW.
   // https://crbug.com/940924
@@ -560,7 +560,7 @@ void XWindow::Activate() {
     std::array<uint32_t, 5> data = {
         // We're an app.
         1,
-        timestamp,
+        static_cast<uint32_t>(timestamp),
         // TODO(thomasanderson): if another chrome window is active, specify
         // that here.  The EWMH spec claims this may make the WM more likely to
         // service our _NET_ACTIVE_WINDOW request.
@@ -697,7 +697,8 @@ gfx::Rect XWindow::GetOuterBounds() const {
 void XWindow::GrabPointer() {
   // If the pointer is already in |xwindow_|, we will not get a crossing event
   // with a mode of NotifyGrab, so we must record the grab state manually.
-  has_pointer_grab_ |= !ui::GrabPointer(xwindow_, true, nullptr);
+  has_pointer_grab_ |=
+      (ui::GrabPointer(xwindow_, true, nullptr) == x11::GrabStatus::Success);
 }
 
 void XWindow::ReleasePointerGrab() {
@@ -1181,32 +1182,14 @@ void XWindow::ProcessEvent(x11::Event* xev) {
     } else {
       OnXWindowDragDropEvent(xev);
     }
-  } else if (auto* mapping = xev->As<x11::MappingNotifyEvent>()) {
-    switch (mapping->request) {
-      case x11::Mapping::Modifier:
-      case x11::Mapping::Keyboard:
-        // TODO(https://crbug.com/1066670): Remove this when the Xlib dependency
-        // is removed.  We can't remove it now because it could cause the
-        // XDisplay state to become stale.
-        XRefreshKeyboardMapping(&xev->xlib_event().xmapping);
-        break;
-      case x11::Mapping::Pointer:
-        DeviceDataManagerX11::GetInstance()->UpdateButtonMap();
-        break;
-      default:
-        NOTIMPLEMENTED() << " Unknown request: "
-                         << static_cast<int>(mapping->request);
-        break;
-    }
   } else if (auto* property = xev->As<x11::PropertyNotifyEvent>()) {
     x11::Atom changed_atom = property->atom;
-    if (changed_atom == gfx::GetAtom("_NET_WM_STATE")) {
+    if (changed_atom == gfx::GetAtom("_NET_WM_STATE"))
       OnWMStateUpdated();
-    } else if (changed_atom == gfx::GetAtom("_NET_FRAME_EXTENTS")) {
+    else if (changed_atom == gfx::GetAtom("_NET_FRAME_EXTENTS"))
       OnFrameExtentsUpdated();
-    } else if (changed_atom == gfx::GetAtom("_NET_WM_DESKTOP")) {
+    else if (changed_atom == gfx::GetAtom("_NET_WM_DESKTOP"))
       OnWorkspaceUpdated();
-    }
   } else if (auto* selection = xev->As<x11::SelectionNotifyEvent>()) {
     OnXWindowSelectionEvent(xev);
   }
@@ -1586,8 +1569,8 @@ bool XWindow::InitializeAsStatusIcon() {
 
   auto future = SendClientMessage(
       manager, manager, gfx::GetAtom("_NET_SYSTEM_TRAY_OPCODE"),
-      {X11EventSource::GetInstance()->GetTimestamp(), kSystemTrayRequestDock,
-       static_cast<uint32_t>(xwindow_), 0, 0},
+      {static_cast<uint32_t>(X11EventSource::GetInstance()->GetTimestamp()),
+       kSystemTrayRequestDock, static_cast<uint32_t>(xwindow_), 0, 0},
       x11::EventMask::NoEvent);
   return !future.Sync().error;
 }

@@ -388,11 +388,6 @@ class CONTENT_EXPORT FrameTreeNode {
     return user_activation_state_.IsActive();
   }
 
-  // Transfers user activation state from |source| frame to |this| and notifies
-  // proxies in non-source and non-target renderer processes to transfer the
-  // activation state from the source proxy to the target.
-  void TransferUserActivationFrom(RenderFrameHostImpl* source_rfh);
-
   // Remove history entries for all frames created by script in this frame's
   // subtree. If a frame created by a script is removed, then its history entry
   // will never be reused - this saves memory.

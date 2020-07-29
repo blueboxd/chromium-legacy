@@ -289,7 +289,7 @@ INSTANTIATE_TEST_SUITE_P(
 // API has already been implemented.
 // Note, these tests must be run sequentially, since multiple parallel test runs
 // competing for a single physical webcam typically causes failures.
-#if defined(OS_LINUX) || defined(OS_MACOSX) || defined(OS_ANDROID) || \
+#if defined(OS_LINUX) || defined(OS_MAC) || defined(OS_ANDROID) || \
     defined(OS_WIN)
 
 const TargetVideoCaptureImplementation

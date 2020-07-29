@@ -61,7 +61,7 @@ void BrowserActivationWaiter::OnBrowserSetLastActive(Browser* browser) {
 
 // On Mac, BrowserWindowCocoa::Show() sets the active browser before the
 // window becomes the key window.
-#if !defined(OS_MACOSX)
+#if !defined(OS_MAC)
   EXPECT_TRUE(browser->window()->IsActive());
 #endif
 

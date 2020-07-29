@@ -101,8 +101,8 @@ public class ShareSheetPropertyModelBuilder {
      *     <li>If a URL is present, {@code isUrlOfVisiblePage} determines whether to add
      *     {@link ContentType.LINK_PAGE_VISIBLE} or {@link ContentType.LINK_PAGE_NOT_VISIBLE}.
      *     <li>If the text being shared is not the same as the URL, add {@link ContentType.TEXT}
-           <li>If text is highlighted by user, add {@link ContentType.HIGHLIGHTED_TEXT}.
-           <li>If the share contains files and the {@code fileContentType} is an image, add
+     *     <li>If text is highlighted by user, add {@link ContentType.HIGHLIGHTED_TEXT}.
+     *     <li>If the share contains files and the {@code fileContentType} is an image, add
      *     {@link ContentType.IMAGE}. Otherwise, add {@link ContentType.OTHER_FILE_TYPE}.
      * </ul>
      */
@@ -181,7 +181,7 @@ public class ShareSheetPropertyModelBuilder {
                             (String) info.loadLabel(mPackageManager), onClickListener,
                             /*isFirstParty=*/false);
             models.add(propertyModel);
-        };
+        }
 
         return models;
     }
@@ -193,8 +193,7 @@ public class ShareSheetPropertyModelBuilder {
         RecordUserAction.record("SharingHubAndroid.ThirdPartyAppSelected");
         RecordHistogram.recordEnumeratedHistogram(
                 "Sharing.SharingHubAndroid.ThirdPartyAppUsage", logIndex, MAX_NUM_APPS + 1);
-        RecordHistogram.recordMediumTimesHistogram("Sharing.SharingHubAndroid.TimeToShare",
-                System.currentTimeMillis() - shareStartTime);
+        ChromeProvidedSharingOptionsProvider.recordTimeToShare(shareStartTime);
         ComponentName component = new ComponentName(ai.applicationInfo.packageName, ai.name);
         if (callback != null) {
             callback.onTargetChosen(component);

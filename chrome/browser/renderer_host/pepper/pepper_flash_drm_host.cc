@@ -31,7 +31,7 @@
 #include "ui/aura/window_tree_host.h"
 #endif
 
-#if defined(OS_MACOSX)
+#if defined(OS_MAC)
 #include "chrome/browser/renderer_host/pepper/monitor_finder_mac.h"
 #endif
 
@@ -99,7 +99,7 @@ class MonitorFinder : public base::RefCountedThreadSafe<MonitorFinder> {
   volatile HMONITOR monitor_;
   volatile long request_sent_;
 };
-#elif !defined(OS_MACOSX)
+#elif !defined(OS_MAC)
 // TODO(cpu): Support Linux someday.
 class MonitorFinder : public base::RefCountedThreadSafe<MonitorFinder> {
  public:
@@ -175,7 +175,7 @@ int32_t PepperFlashDRMHost::OnHostMsgMonitorIsExternal(
     return PP_ERROR_FAILED;
 
   PP_Bool is_external = PP_FALSE;
-#if defined(OS_MACOSX)
+#if defined(OS_MAC)
   if (!MonitorFinder::IsMonitorBuiltIn(monitor_id))
     is_external = PP_TRUE;
 #endif

@@ -11647,6 +11647,25 @@ function copyProperties(source, target, excludeProps) {
   }
 }
 
+/**
+ * Applies a "legacy" behavior or array of behaviors to the provided class.
+ *
+ * Note: this method will automatically also apply the `LegacyElementMixin`
+ * to ensure that any legacy behaviors can rely on legacy Polymer API on
+ * the underlying element.
+ *
+ * @function
+ * @template T
+ * @param {!Object|!Array<!Object>} behaviors Behavior object or array of behaviors.
+ * @param {function(new:T)} klass Element class.
+ * @return {?} Returns a new Element class extended by the
+ * passed in `behaviors` and also by `LegacyElementMixin`.
+ * @suppress {invalidCasts, checkTypes}
+ */
+function mixinBehaviors(behaviors, klass) {
+  return GenerateClassFromInfo({}, LegacyElementMixin(klass), behaviors);
+}
+
 // NOTE:
 // 1.x
 // Behaviors were mixed in *in reverse order* and de-duped on the fly.
@@ -15020,4 +15039,4 @@ Code distributed by Google as part of the polymer project is also
 subject to an additional IP rights grant found at http://polymer.github.io/PATENTS.txt
 */
 
-export { Base, Debouncer, DomIf, OptionalMutableDataBehavior, Polymer, PolymerElement, TemplateInstanceBase, Templatizer, afterNextRender, animationFrame, beforeNextRender, calculateSplices, dashToCamelCase, dom, enqueueDebouncer, flush, gestures$1 as gestures, html, idlePeriod, matches, microTask, templatize, translate, useShadow };
+export { Base, Debouncer, DomIf, OptionalMutableDataBehavior, Polymer, PolymerElement, TemplateInstanceBase, Templatizer, afterNextRender, animationFrame, beforeNextRender, calculateSplices, dashToCamelCase, dom, enqueueDebouncer, flush, gestures$1 as gestures, html, idlePeriod, matches, microTask, mixinBehaviors, templatize, translate, useShadow };

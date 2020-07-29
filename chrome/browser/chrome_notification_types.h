@@ -70,7 +70,7 @@ enum NotificationType {
   // are passed.
   NOTIFICATION_APP_TERMINATING,
 
-#if defined(OS_MACOSX)
+#if defined(OS_MAC)
   // This notification is sent when the app has no key window, such as when
   // all windows are closed but the app is still active. No source or details
   // are provided.

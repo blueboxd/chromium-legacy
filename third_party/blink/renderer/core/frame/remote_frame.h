@@ -161,9 +161,6 @@ class CORE_EXPORT RemoteFrame final : public Frame,
   void UpdateOpener(const base::Optional<base::UnguessableToken>&
                         opener_frame_token) override;
 
-  void TransferUserActivationToRenderer(
-      const base::UnguessableToken& source_frame_token) override;
-
   // Called only when this frame has a local frame owner.
   IntSize GetMainFrameViewportSize() const override;
   IntPoint GetMainFrameScrollOffset() const override;

@@ -794,7 +794,7 @@ IN_PROC_BROWSER_TEST_F(InlineLoginUISafeIframeBrowserTest, Basic) {
 }
 
 // Flaky on MacOS - crbug.com/1021209
-#if defined(OS_MACOSX)
+#if defined(OS_MAC)
 #define MAYBE_NoWebUIInIframe DISABLED_NoWebUIInIframe
 #else
 #define MAYBE_NoWebUIInIframe NoWebUIInIframe

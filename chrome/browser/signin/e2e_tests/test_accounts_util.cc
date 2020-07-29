@@ -17,7 +17,7 @@ namespace test {
 
 #if defined(OS_WIN)
 std::string kPlatform = "win";
-#elif defined(OS_MACOSX)
+#elif defined(OS_MAC)
 std::string kPlatform = "mac";
 #elif defined(OS_LINUX)
 std::string kPlatform = "linux";

@@ -19,7 +19,7 @@
 namespace local_discovery {
 
 namespace {
-#if defined(OS_MACOSX)
+#if defined(OS_MAC)
 const int kMacServiceResolvingIntervalSecs = 60;
 #endif
 
@@ -97,7 +97,7 @@ class ServiceDiscoveryDeviceListerImpl : public ServiceDiscoveryDeviceLister {
     if (status == ServiceResolver::STATUS_SUCCESS) {
       delegate_->OnDeviceChanged(service_type_, added, service_description);
 
-#if defined(OS_MACOSX)
+#if defined(OS_MAC)
       // On Mac, the Bonjour service does not seem to ever evict a service if a
       // device is unplugged, so we need to continuously try to resolve the
       // service to detect non-graceful shutdowns.

@@ -20,7 +20,7 @@
 
 #if defined(OS_WIN)
 #include "sandbox/win/src/sandbox_types.h"
-#elif defined(OS_MACOSX)
+#elif defined(OS_MAC)
 #include "base/mac/scoped_nsautorelease_pool.h"
 #endif  // OS_WIN
 
@@ -81,7 +81,7 @@ class ContentMainRunnerImpl : public ContentMainRunner {
 
 #if defined(OS_WIN)
   sandbox::SandboxInterfaceInfo sandbox_info_;
-#elif defined(OS_MACOSX)
+#elif defined(OS_MAC)
   base::mac::ScopedNSAutoreleasePool* autorelease_pool_ = nullptr;
 #endif
 

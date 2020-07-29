@@ -17,9 +17,8 @@ def _LintWPT(input_api, output_api):
     information about the lint tool.
     """
     wpt_path = input_api.os_path.join(input_api.PresubmitLocalPath(), 'wpt')
-    linter_path = input_api.os_path.join(
-        input_api.PresubmitLocalPath(), '..', '..', '..', 'blink', 'tools',
-        'blinkpy', 'third_party', 'wpt', 'wpt', 'wpt')
+    linter_path = input_api.os_path.join(input_api.PresubmitLocalPath(), '..', '..', 'tools', 'blinkpy', 'third_party', 'wpt',
+                                         'wpt', 'wpt')
 
     paths_in_wpt = []
     for abs_path in input_api.AbsoluteLocalPaths():
@@ -38,7 +37,8 @@ def _LintWPT(input_api, output_api):
         'lint',
         '--repo-root=%s' % wpt_path,
         '--ignore-glob=*-expected.txt',
-        '--ignore-glob=DIR_METADATA',
+        '--ignore-glob=*DIR_METADATA',
+        '--ignore-glob=*OWNERS',
     ] + paths_in_wpt
 
     proc = input_api.subprocess.Popen(

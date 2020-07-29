@@ -24,7 +24,7 @@
 #include "content/public/common/content_switches.h"
 #include "services/service_manager/embedder/switches.h"
 
-#if defined(OS_POSIX) && !defined(OS_MACOSX)
+#if defined(OS_POSIX) && !defined(OS_MAC)
 #include "components/upload_list/crash_upload_list.h"
 #include "components/version_info/version_info_values.h"
 #endif
@@ -90,14 +90,14 @@ ChromeCrashReporterClient::ChromeCrashReporterClient() {}
 
 ChromeCrashReporterClient::~ChromeCrashReporterClient() {}
 
-#if !defined(OS_MACOSX) && !defined(OS_ANDROID)
+#if !defined(OS_MAC) && !defined(OS_ANDROID)
 void ChromeCrashReporterClient::SetCrashReporterClientIdFromGUID(
     const std::string& client_guid) {
   crash_keys::SetMetricsClientIdFromGUID(client_guid);
 }
 #endif
 
-#if defined(OS_POSIX) && !defined(OS_MACOSX)
+#if defined(OS_POSIX) && !defined(OS_MAC)
 void ChromeCrashReporterClient::GetProductNameAndVersion(
     const char** product_name,
     const char** version) {
@@ -142,12 +142,12 @@ bool ChromeCrashReporterClient::GetCrashDumpLocation(
   return base::PathService::Get(chrome::DIR_CRASH_DUMPS, crash_dir);
 }
 
-#if defined(OS_MACOSX) || defined(OS_LINUX)
+#if defined(OS_MAC) || defined(OS_LINUX)
 bool ChromeCrashReporterClient::GetCrashMetricsLocation(
     base::FilePath* metrics_dir) {
   return base::PathService::Get(chrome::DIR_USER_DATA, metrics_dir);
 }
-#endif  // OS_MACOSX || OS_LINUX
+#endif  // OS_MAC || OS_LINUX
 
 bool ChromeCrashReporterClient::IsRunningUnattended() {
   std::unique_ptr<base::Environment> env(base::Environment::Create());

@@ -16,10 +16,10 @@
 #include "sandbox/policy/linux/sandbox_linux.h"
 #endif  // defined(OS_LINUX)
 
-#if defined(OS_MACOSX)
+#if defined(OS_MAC)
 #include "sandbox/mac/seatbelt.h"
 #include "sandbox/policy/mac/sandbox_mac.h"
-#endif  // defined(OS_MACOSX)
+#endif  // defined(OS_MAC)
 
 #if defined(OS_WIN)
 #include "base/process/process_info.h"
@@ -39,7 +39,7 @@ bool Sandbox::Initialize(SandboxType sandbox_type,
 }
 #endif  // defined(OS_LINUX)
 
-#if defined(OS_MACOSX)
+#if defined(OS_MAC)
 bool Sandbox::Initialize(SandboxType sandbox_type, base::OnceClosure hook) {
   // Warm up APIs before turning on the sandbox.
   SandboxMac::Warmup(sandbox_type);
@@ -51,7 +51,7 @@ bool Sandbox::Initialize(SandboxType sandbox_type, base::OnceClosure hook) {
   // Actually sandbox the process.
   return SandboxMac::Enable(sandbox_type);
 }
-#endif  // defined(OS_MACOSX)
+#endif  // defined(OS_MAC)
 
 #if defined(OS_WIN)
 bool Sandbox::Initialize(SandboxType sandbox_type,
@@ -115,7 +115,7 @@ bool Sandbox::IsProcessSandboxed() {
   constexpr int kLayer2Flags =
       SandboxLinux::Status::kSeccompBPF | SandboxLinux::Status::kSeccompTSYNC;
   return (status & kLayer1Flags) != 0 && (status & kLayer2Flags) != 0;
-#elif defined(OS_MACOSX)
+#elif defined(OS_MAC)
   return Seatbelt::IsSandboxed();
 #elif defined(OS_WIN)
   return base::GetCurrentProcessIntegrityLevel() < base::MEDIUM_INTEGRITY;

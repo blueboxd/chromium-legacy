@@ -421,7 +421,7 @@ class CaptureScreenshotTest : public DevToolsProtocolTest {
     EXPECT_TRUE(result_bitmap);
 
     gfx::Rect matching_mask(gfx::SkIRectToRect(expected_bitmap.bounds()));
-#if defined(OS_MACOSX)
+#if defined(OS_MAC)
     // Mask out the corners, which may be drawn differently on Mac because of
     // rounded corners.
     matching_mask.Inset(4, 4, 4, 4);

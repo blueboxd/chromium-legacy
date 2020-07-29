@@ -109,7 +109,7 @@ class InteractiveUITestLauncherDelegate : public ChromeTestLauncherDelegate {
     ChromeTestLauncherDelegate::OnTestTimedOut(command_line);
   }
 
-#if defined(OS_MACOSX)
+#if defined(OS_MAC)
   void PreRunTest() override {
     // Clear currently pressed modifier keys (if any) before the test starts.
     ui_test_utils::ClearKeyEventModifiers();
@@ -125,7 +125,7 @@ class InteractiveUITestLauncherDelegate : public ChromeTestLauncherDelegate {
     }
     ChromeTestLauncherDelegate::PostRunTest(test_result);
   }
-#endif  // defined(OS_MACOSX)
+#endif  // defined(OS_MAC)
 
  private:
   DISALLOW_COPY_AND_ASSIGN(InteractiveUITestLauncherDelegate);

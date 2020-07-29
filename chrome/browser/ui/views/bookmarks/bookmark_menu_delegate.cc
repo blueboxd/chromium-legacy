@@ -53,7 +53,7 @@ namespace {
 const int kMaxMenuWidth = 400;
 
 SkColor TextColorForMenu(MenuItemView* menu, views::Widget* widget) {
-#if !defined(OS_MACOSX)
+#if !defined(OS_MAC)
   // macOS incognito currently has a light on dark bookmark bar, but
   // dark on light menus, so using the theme color in the folders is
   // incorrect.

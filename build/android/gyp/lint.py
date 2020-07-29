@@ -36,6 +36,13 @@ _DISABLED_FOR_TESTS = [
     # Test targets often use the same strings target and resources target as the
     # production targets but may not use all of them.
     "UnusedResources",
+    # TODO(wnwen): Turn this back on since to crash it would require running on
+    #     a device with all the various minSdkVersions.
+    # Real NewApi violations crash the app, so the only ones that lint catches
+    # but tests still succeed are false positives.
+    "NewApi",
+    # Tests should be allowed to access these methods/classes.
+    "VisibleForTests",
 ]
 
 _RES_ZIP_DIR = 'RESZIPS'

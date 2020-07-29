@@ -16,10 +16,12 @@ class SequencedTaskRunner;
 
 namespace updater {
 
+class Configurator;
+
 // All functions and callbacks must be called on the same sequence.
 class ControlServiceInProcess : public ControlService {
  public:
-  ControlServiceInProcess();
+  explicit ControlServiceInProcess(scoped_refptr<updater::Configurator> config);
 
   // Overrides for updater::ControlService.
   void Run(base::OnceClosure callback) override;
@@ -31,6 +33,7 @@ class ControlServiceInProcess : public ControlService {
 
   SEQUENCE_CHECKER(sequence_checker_);
 
+  scoped_refptr<updater::Configurator> config_;
   scoped_refptr<base::SequencedTaskRunner> main_task_runner_;
 };
 

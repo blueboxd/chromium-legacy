@@ -22,9 +22,9 @@
 #include "third_party/microsoft_webauthn/webauthn.h"
 #endif  // defined(OS_WIN)
 
-#if defined(OS_MACOSX)
+#if defined(OS_MAC)
 #include "device/fido/mac/authenticator_config.h"
-#endif  // defined(OS_MACOSX)
+#endif  // defined(OS_MAC)
 
 class ChromeAuthenticatorRequestDelegateTest
     : public ChromeRenderViewHostTestHarness {};
@@ -38,7 +38,7 @@ TEST_F(ChromeAuthenticatorRequestDelegateTest, TestTransportPrefType) {
   EXPECT_EQ(device::FidoTransportProtocol::kInternal, transport);
 }
 
-#if defined(OS_MACOSX)
+#if defined(OS_MAC)
 API_AVAILABLE(macos(10.12.2))
 std::string TouchIdMetadataSecret(
     ChromeAuthenticatorRequestDelegate* delegate) {
@@ -82,7 +82,7 @@ TEST_F(ChromeAuthenticatorRequestDelegateTest,
     EXPECT_EQ(32u, TouchIdMetadataSecret(&delegate2).size());
   }
 }
-#endif  // defined(OS_MACOSX)
+#endif  // defined(OS_MAC)
 
 #if defined(OS_WIN)
 

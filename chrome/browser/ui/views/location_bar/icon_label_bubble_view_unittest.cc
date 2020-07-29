@@ -366,7 +366,7 @@ TEST_F(IconLabelBubbleViewTest, SeparatorOpacity) {
   EXPECT_EQ(1.0f, separator_view->layer()->opacity());
 }
 
-#if !defined(OS_MACOSX)
+#if !defined(OS_MAC)
 TEST_F(IconLabelBubbleViewTest, GestureInkDropState) {
   AttachInkDrop();
   generator()->GestureTapAt(gfx::Point());

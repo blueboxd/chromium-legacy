@@ -129,7 +129,7 @@ IN_PROC_BROWSER_TEST_F(MimeHandlerViewTest, MAYBE_Fullscreen) {
 namespace {
 
 void WaitForFullscreenAnimation() {
-#if defined(OS_MACOSX)
+#if defined(OS_MAC)
   const int delay_in_ms = 1500;
 #else
   const int delay_in_ms = 100;

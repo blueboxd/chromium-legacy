@@ -10,13 +10,13 @@
 #include "build/build_config.h"
 #include "content/public/browser/javascript_dialog_manager.h"
 
-#if defined(OS_MACOSX)
+#if defined(OS_MAC)
 #if __OBJC__
 @class ShellJavaScriptDialogHelper;
 #else
 class ShellJavaScriptDialogHelper;
 #endif  // __OBJC__
-#endif  // defined(OS_MACOSX)
+#endif  // defined(OS_MAC)
 
 namespace content {
 
@@ -36,7 +36,7 @@ class ShellJavaScriptDialog {
   void Cancel();
 
  private:
-#if defined(OS_MACOSX)
+#if defined(OS_MAC)
   ShellJavaScriptDialogHelper* helper_;  // owned
 #elif defined(OS_WIN)
   JavaScriptDialogManager::DialogClosedCallback callback_;

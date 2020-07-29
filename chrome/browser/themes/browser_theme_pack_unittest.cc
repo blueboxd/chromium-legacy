@@ -375,7 +375,7 @@ void BrowserThemePackTest::VerifyHiDpiTheme(BrowserThemePack* pack) {
 
   // The high DPI theme does not define the following images:
   EXPECT_FALSE(pack->HasCustomImage(IDR_THEME_TAB_BACKGROUND));
-#if !defined(OS_MACOSX)
+#if !defined(OS_MAC)
   EXPECT_FALSE(pack->HasCustomImage(IDR_THEME_TAB_BACKGROUND_INCOGNITO));
 #endif
   EXPECT_FALSE(pack->HasCustomImage(IDR_THEME_TAB_BACKGROUND_V));

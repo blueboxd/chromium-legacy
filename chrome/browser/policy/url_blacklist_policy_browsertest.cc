@@ -23,7 +23,7 @@
 #include "testing/gtest/include/gtest/gtest.h"
 #include "url/gurl.h"
 
-#if !defined(OS_MACOSX)
+#if !defined(OS_MAC)
 #include "extensions/browser/app_window/app_window.h"
 #include "ui/base/window_open_disposition.h"
 #endif
@@ -269,7 +269,7 @@ IN_PROC_BROWSER_TEST_F(PolicyTest, URLBlacklistServerRedirect) {
             browser()->tab_strip_model()->GetActiveWebContents()->GetTitle());
 }
 
-#if defined(OS_MACOSX)
+#if defined(OS_MAC)
 // http://crbug.com/339240
 #define MAYBE_FileURLBlacklist DISABLED_FileURLBlacklist
 #else

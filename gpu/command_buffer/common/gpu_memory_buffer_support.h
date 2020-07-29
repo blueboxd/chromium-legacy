@@ -54,10 +54,10 @@ GPU_EXPORT bool IsImageSizeValidForGpuMemoryBufferFormat(
 // Returns the texture target to use with native GpuMemoryBuffers.
 GPU_EXPORT uint32_t GetPlatformSpecificTextureTarget();
 
-#if defined(OS_MACOSX)
+#if defined(OS_MAC)
 // Set the texture target to use with MacOS native GpuMemoryBuffers.
 GPU_EXPORT void SetMacOSSpecificTextureTarget(uint32_t texture_target);
-#endif  // defined(OS_MACOSX)
+#endif  // defined(OS_MAC)
 
 // Returns the texture target to be used for the given |usage| and |format|
 // based on |capabilities|.

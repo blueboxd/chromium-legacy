@@ -137,6 +137,11 @@ class CORE_EXPORT DedicatedWorker final
   // Implements EventTarget (via AbstractWorker -> EventTargetWithInlineData).
   const AtomicString& InterfaceName() const final;
 
+  // The unique identifier for this DedicatedWorker. This is created in the
+  // renderer process, and passed to the browser. This must be initialized
+  // before |context_proxy_|.
+  blink::DedicatedWorkerToken token_;
+
   const KURL script_request_url_;
   Member<const WorkerOptions> options_;
   Member<const FetchClientSettingsObjectSnapshot>
@@ -156,10 +161,6 @@ class CORE_EXPORT DedicatedWorker final
 
   // Whether the worker is frozen due to a call from this context.
   bool requested_frozen_ = false;
-
-  // The unique identifier for this DedicatedWorker. This is created in the
-  // renderer process, and passed to the browser.
-  blink::DedicatedWorkerToken token_;
 };
 
 }  // namespace blink

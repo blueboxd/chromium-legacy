@@ -223,7 +223,7 @@ TEST_F(RenderFrameImplTest, FrameResize) {
 
   // The main frame's widget will receive the resize message before the
   // subframe's widget, and it will set the size for the WebView.
-  main_frame_widget->UpdateVisualProperties(visual_properties);
+  main_frame_widget->GetWebWidget()->ApplyVisualProperties(visual_properties);
   // The main frame widget's size is the "widget size", not the visible viewport
   // size, which is given to blink separately.
   EXPECT_EQ(gfx::Size(view_->GetWebView()->MainFrameWidget()->Size()),
@@ -234,7 +234,7 @@ TEST_F(RenderFrameImplTest, FrameResize) {
   EXPECT_NE(gfx::Size(frame_widget()->GetWebWidget()->Size()), visible_size);
 
   // A subframe in the same process does not modify the WebView.
-  frame_widget()->UpdateVisualProperties(visual_properties);
+  frame_widget()->GetWebWidget()->ApplyVisualProperties(visual_properties);
   EXPECT_EQ(gfx::Size(frame_widget()->GetWebWidget()->Size()), widget_size);
 
   // A subframe in another process would use the |visible_viewport_size| as its

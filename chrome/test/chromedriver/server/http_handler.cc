@@ -43,7 +43,7 @@
 #include "services/network/transitional_url_loader_factory_owner.h"
 #include "url/url_util.h"
 
-#if defined(OS_MACOSX)
+#if defined(OS_MAC)
 #include "base/mac/scoped_nsautorelease_pool.h"
 #endif
 
@@ -142,7 +142,7 @@ HttpHandler::HttpHandler(
     const std::string& url_base,
     int adb_port)
     : quit_func_(quit_func), url_base_(url_base), received_shutdown_(false) {
-#if defined(OS_MACOSX)
+#if defined(OS_MAC)
   base::mac::ScopedNSAutoreleasePool autorelease_pool;
 #endif
   context_getter_ = new URLRequestContextGetter(io_task_runner);

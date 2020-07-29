@@ -90,7 +90,7 @@ void FlagsUIHandler::HandleRequestExperimentalFeatures(
   results.SetBoolean(flags_ui::kShowOwnerWarning,
                      access_ == flags_ui::kGeneralAccessFlagsOnly);
 
-#if defined(OS_WIN) || defined(OS_MACOSX) || defined(OS_CHROMEOS)
+#if defined(OS_WIN) || defined(OS_MAC) || defined(OS_CHROMEOS)
   version_info::Channel channel = chrome::GetChannel();
   results.SetBoolean(
       flags_ui::kShowBetaChannelPromotion,

@@ -109,6 +109,11 @@ export class ViewerPdfToolbarNewElement extends PolymerElement {
     this.zoomTimeout_ = null;
   }
 
+  /** @private */
+  onSidenavToggleClick_() {
+    this.dispatchEvent(new CustomEvent('sidenav-toggle-click'));
+  }
+
   /**
    * @return {string}
    * @private

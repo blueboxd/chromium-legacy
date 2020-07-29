@@ -8,10 +8,10 @@
  */
 class AccessibilityCommon {
   constructor() {
-    /**
-     * @private {Autoclick}
-     */
+    /** @private {Autoclick} */
     this.autoclick_ = null;
+    /** @private {Magnifier} */
+    this.magnifier_ = null;
 
     this.init_();
   }
@@ -32,6 +32,11 @@ class AccessibilityCommon {
         {}, this.onAutoclickUpdated_.bind(this));
     chrome.accessibilityFeatures.autoclick.onChange.addListener(
         this.onAutoclickUpdated_.bind(this));
+
+    chrome.accessibilityFeatures.screenMagnifier.get(
+        {}, this.onMagnifierUpdated_.bind(this));
+    chrome.accessibilityFeatures.screenMagnifier.onChange.addListener(
+        this.onMagnifierUpdated_.bind(this));
   }
 
   /**
@@ -48,6 +53,18 @@ class AccessibilityCommon {
       // rather than relying on a destructor to clean up state.
       this.autoclick_.onAutoclickDisabled();
       this.autoclick_ = null;
+    }
+  }
+
+  /**
+   * @param {*} details
+   * @private
+   */
+  onMagnifierUpdated_(details) {
+    if (details.value && !this.magnifier_) {
+      this.magnifier_ = new Magnifier();
+    } else if (!details.value && this.magnifier_) {
+      this.magnifier_ = null;
     }
   }
 }

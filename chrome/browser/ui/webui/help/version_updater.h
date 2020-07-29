@@ -91,7 +91,7 @@ class VersionUpdater {
   virtual void CheckForUpdate(const StatusCallback& status_callback,
                               const PromoteCallback& promote_callback) = 0;
 
-#if defined(OS_MACOSX)
+#if defined(OS_MAC)
   // Make updates available for all users.
   virtual void PromoteUpdater() const = 0;
 #endif

@@ -25,8 +25,8 @@ public abstract class MediaCaptureCallback {
      *
      * @param audio if true, the new stream includes audio from a microphone.
      * @param video if true, the new stream includes video from a camera.
-     * @param requestResult a callback to be run with true if and when the stream
-     *     can start, or false if the stream should not start.
+     * @param requestResult a callback to be run with true if and when the stream can start, or
+     *         false if the stream should not start. Must be run on the UI thread.
      */
     public void onMediaCaptureRequested(
             boolean audio, boolean video, ValueCallback<Boolean> requestResult) {}

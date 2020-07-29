@@ -139,7 +139,7 @@ class ScreenOrientationOOPIFBrowserTest : public ScreenOrientationBrowserTest {
 };
 
 // This test doesn't work on MacOS X but the reason is mostly because it is not
-// used Aura. It could be set as !defined(OS_MACOSX) but the rule below will
+// used Aura. It could be set as !defined(OS_MAC) but the rule below will
 // actually support MacOS X if and when it switches to Aura.
 #if defined(USE_AURA) || defined(OS_ANDROID)
 // Flaky on Chrome OS: http://crbug.com/468259

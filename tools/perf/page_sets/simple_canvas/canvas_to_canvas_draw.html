@@ -10,6 +10,7 @@
 
 // We're more likely to see regressions with large canvases
 const size = 1024;
+var colourCounter = 0;
 
 const targetCanvas = document.createElement("canvas");
 targetCanvas.width = targetCanvas.height = size;
@@ -20,16 +21,9 @@ const intermediateCanvas = document.createElement("canvas");
 intermediateCanvas.width = intermediateCanvas.height = size;
 const intermediateCtx = intermediateCanvas.getContext("2d");
 
-function rand(range) {
-  return Math.floor(Math.random() * range);
-}
-
-function randomColor() {
-  return "rgba(" + rand(256) + "," + rand(256) + "," + rand(256)  + "," + rand(256) + ")";
-}
-
-function makeAndFillCanvasWithRandomColor(i) {
-  intermediateCtx.fillStyle = randomColor();
+function makeAndFillCanvasWithDifferentColor(i) {
+  intermediateCtx.fillStyle = "rgba(0, 0, " + colourCounter + ", 1)";
+  colourCounter = (colourCounter + 1) % 256;
   intermediateCtx.fillRect(0, 0, intermediateCanvas.width, intermediateCanvas.height);
 
   targetCtx.drawImage(intermediateCanvas, 0, 0);
@@ -38,7 +32,7 @@ function makeAndFillCanvasWithRandomColor(i) {
 function doRun() {
   // Make and fill many canvases
   for (let i = 0; i < 50; i++) {
-    makeAndFillCanvasWithRandomColor(i);
+    makeAndFillCanvasWithDifferentColor(i);
   }
   requestAnimationFrame(doRun);
 }

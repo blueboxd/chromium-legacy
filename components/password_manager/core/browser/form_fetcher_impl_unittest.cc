@@ -26,6 +26,7 @@
 #include "components/password_manager/core/browser/stub_credentials_filter.h"
 #include "components/password_manager/core/browser/stub_password_manager_client.h"
 #include "components/password_manager/core/common/password_manager_features.h"
+#include "services/network/test/test_network_context.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "url/gurl.h"
@@ -92,10 +93,23 @@ class NameFilter : public StubCredentialsFilter {
   DISALLOW_COPY_AND_ASSIGN(NameFilter);
 };
 
+class FakeNetworkContext : public network::TestNetworkContext {
+ public:
+  FakeNetworkContext() = default;
+  void IsHSTSActiveForHost(const std::string& host,
+                           IsHSTSActiveForHostCallback callback) override {
+    std::move(callback).Run(false);
+  }
+};
+
 class FakePasswordManagerClient : public StubPasswordManagerClient {
  public:
   FakePasswordManagerClient() = default;
   ~FakePasswordManagerClient() override = default;
+
+  network::mojom::NetworkContext* GetNetworkContext() const override {
+    return &network_context_;
+  }
 
   void set_filter(std::unique_ptr<CredentialsFilter> filter) {
     filter_ = std::move(filter);
@@ -114,6 +128,7 @@ class FakePasswordManagerClient : public StubPasswordManagerClient {
 
   std::unique_ptr<CredentialsFilter> filter_;
   PasswordStore* store_ = nullptr;
+  mutable FakeNetworkContext network_context_;
 
   DISALLOW_COPY_AND_ASSIGN(FakePasswordManagerClient);
 };

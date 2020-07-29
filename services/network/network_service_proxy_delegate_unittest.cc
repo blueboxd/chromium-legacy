@@ -103,8 +103,6 @@ TEST_F(NetworkServiceProxyDelegateTest, OnResolveProxySuccessHttpProxy) {
   expected_proxy_list.AddProxyServer(
       net::ProxyServer::FromPacString("PROXY foo"));
   EXPECT_TRUE(result.proxy_list().Equals(expected_proxy_list));
-  // HTTP proxies are not used as alternative QUIC proxies.
-  EXPECT_FALSE(result.alternative_proxy().is_valid());
 }
 
 TEST_F(NetworkServiceProxyDelegateTest, OnResolveProxySuccessHttpsUrl) {
@@ -150,7 +148,6 @@ TEST_F(NetworkServiceProxyDelegateTest, OnResolveProxyNoRuleForHttpsUrl) {
                            &result);
 
   EXPECT_TRUE(result.is_direct());
-  EXPECT_FALSE(result.alternative_proxy().is_valid());
 }
 
 TEST_F(NetworkServiceProxyDelegateTest, OnResolveProxyLocalhost) {
@@ -164,7 +161,6 @@ TEST_F(NetworkServiceProxyDelegateTest, OnResolveProxyLocalhost) {
                            &result);
 
   EXPECT_TRUE(result.is_direct());
-  EXPECT_FALSE(result.alternative_proxy().is_valid());
 }
 
 TEST_F(NetworkServiceProxyDelegateTest, OnResolveProxyEmptyConfig) {
@@ -176,7 +172,6 @@ TEST_F(NetworkServiceProxyDelegateTest, OnResolveProxyEmptyConfig) {
                            &result);
 
   EXPECT_TRUE(result.is_direct());
-  EXPECT_FALSE(result.alternative_proxy().is_valid());
 }
 
 TEST_F(NetworkServiceProxyDelegateTest, OnResolveProxyNonIdempotentMethod) {
@@ -190,7 +185,6 @@ TEST_F(NetworkServiceProxyDelegateTest, OnResolveProxyNonIdempotentMethod) {
                            &result);
 
   EXPECT_TRUE(result.is_direct());
-  EXPECT_FALSE(result.alternative_proxy().is_valid());
 }
 
 TEST_F(NetworkServiceProxyDelegateTest,
@@ -225,7 +219,6 @@ TEST_F(NetworkServiceProxyDelegateTest,
                            &result);
 
   EXPECT_TRUE(result.is_direct());
-  EXPECT_FALSE(result.alternative_proxy().is_valid());
 }
 
 TEST_F(NetworkServiceProxyDelegateTest, OnResolveProxyDoesNotOverrideExisting) {
@@ -243,7 +236,6 @@ TEST_F(NetworkServiceProxyDelegateTest, OnResolveProxyDoesNotOverrideExisting) {
   expected_proxy_list.AddProxyServer(
       net::ProxyServer::FromPacString("PROXY bar"));
   EXPECT_TRUE(result.proxy_list().Equals(expected_proxy_list));
-  EXPECT_FALSE(result.alternative_proxy().is_valid());
 }
 
 TEST_F(NetworkServiceProxyDelegateTest, OnResolveProxyOverridesExisting) {
@@ -261,7 +253,6 @@ TEST_F(NetworkServiceProxyDelegateTest, OnResolveProxyOverridesExisting) {
   expected_proxy_list.AddProxyServer(
       net::ProxyServer::FromPacString("PROXY foo"));
   EXPECT_TRUE(result.proxy_list().Equals(expected_proxy_list));
-  EXPECT_FALSE(result.alternative_proxy().is_valid());
 }
 
 TEST_F(NetworkServiceProxyDelegateTest, OnResolveProxyDeprioritizesBadProxies) {

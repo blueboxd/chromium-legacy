@@ -57,7 +57,7 @@
 #include "sandbox/policy/win/sandbox_win.h"
 #include "sandbox/win/src/sandbox_factory.h"
 #include "sandbox/win/src/sandbox_types.h"
-#elif defined(OS_MACOSX)
+#elif defined(OS_MAC)
 #include "base/mac/scoped_nsautorelease_pool.h"
 #include "sandbox/mac/seatbelt_exec.h"
 #endif
@@ -328,7 +328,7 @@ int LaunchTests(TestLauncherDelegate* launcher_delegate,
 
   params.instance = GetModuleHandle(NULL);
   params.sandbox_info = &sandbox_info;
-#elif defined(OS_MACOSX)
+#elif defined(OS_MAC)
   sandbox::SeatbeltExecServer::CreateFromArgumentsResult seatbelt =
       sandbox::SeatbeltExecServer::CreateFromArguments(
           command_line->GetProgram().value().c_str(), argc, argv);

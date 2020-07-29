@@ -126,7 +126,7 @@ TEST_F(NavigationPolicyTest, ShiftLeftClickPopup) {
 }
 
 TEST_F(NavigationPolicyTest, ControlOrMetaLeftClick) {
-#if defined(OS_APPLE)
+#if defined(OS_MAC)
   int modifiers = WebInputEvent::kMetaKey;
 #else
   int modifiers = WebInputEvent::kControlKey;
@@ -138,7 +138,7 @@ TEST_F(NavigationPolicyTest, ControlOrMetaLeftClick) {
 }
 
 TEST_F(NavigationPolicyTest, ControlOrMetaLeftClickPopup) {
-#if defined(OS_APPLE)
+#if defined(OS_MAC)
   int modifiers = WebInputEvent::kMetaKey;
 #else
   int modifiers = WebInputEvent::kControlKey;
@@ -150,7 +150,7 @@ TEST_F(NavigationPolicyTest, ControlOrMetaLeftClickPopup) {
 }
 
 TEST_F(NavigationPolicyTest, ControlOrMetaAndShiftLeftClick) {
-#if defined(OS_APPLE)
+#if defined(OS_MAC)
   int modifiers = WebInputEvent::kMetaKey;
 #else
   int modifiers = WebInputEvent::kControlKey;
@@ -163,7 +163,7 @@ TEST_F(NavigationPolicyTest, ControlOrMetaAndShiftLeftClick) {
 }
 
 TEST_F(NavigationPolicyTest, ControlOrMetaAndShiftLeftClickPopup) {
-#if defined(OS_APPLE)
+#if defined(OS_MAC)
   int modifiers = WebInputEvent::kMetaKey;
 #else
   int modifiers = WebInputEvent::kControlKey;
@@ -311,7 +311,7 @@ TEST_F(NavigationPolicyTest, EventShiftLeftClick) {
 }
 
 TEST_F(NavigationPolicyTest, EventControlOrMetaLeftClick) {
-#if defined(OS_APPLE)
+#if defined(OS_MAC)
   int modifiers = WebInputEvent::kMetaKey;
 #else
   int modifiers = WebInputEvent::kControlKey;
@@ -322,7 +322,7 @@ TEST_F(NavigationPolicyTest, EventControlOrMetaLeftClick) {
 }
 
 TEST_F(NavigationPolicyTest, EventControlOrMetaLeftClickWithUserEvent) {
-#if defined(OS_APPLE)
+#if defined(OS_MAC)
   int modifiers = WebInputEvent::kMetaKey;
 #else
   int modifiers = WebInputEvent::kControlKey;
@@ -334,7 +334,7 @@ TEST_F(NavigationPolicyTest, EventControlOrMetaLeftClickWithUserEvent) {
 
 TEST_F(NavigationPolicyTest,
        EventControlOrMetaLeftClickWithDifferentUserEvent) {
-#if defined(OS_APPLE)
+#if defined(OS_MAC)
   int modifiers = WebInputEvent::kMetaKey;
 #else
   int modifiers = WebInputEvent::kControlKey;
@@ -345,7 +345,7 @@ TEST_F(NavigationPolicyTest,
 }
 
 TEST_F(NavigationPolicyTest, EventShiftControlOrMetaLeftClick) {
-#if defined(OS_APPLE)
+#if defined(OS_MAC)
   int modifiers = WebInputEvent::kMetaKey | WebInputEvent::kShiftKey;
 #else
   int modifiers = WebInputEvent::kControlKey | WebInputEvent::kShiftKey;

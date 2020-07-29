@@ -152,7 +152,7 @@ IN_PROC_BROWSER_TEST_F(AppWindowAPITest, DISABLED_TestMaximize) {
 // Flaky on Linux. http://crbug.com/424399.
 #if defined(OS_LINUX) && !defined(OS_CHROMEOS)
 #define MAYBE_TestMinimize DISABLED_TestMinimize
-#elif defined(OS_MACOSX)
+#elif defined(OS_MAC)
 // Fails on Mac: https://crbug.com/834908
 #define MAYBE_TestMinimize DISABLED_TestMinimize
 #else
@@ -178,7 +178,7 @@ IN_PROC_BROWSER_TEST_F(AppWindowAPITest, DISABLED_TestRestoreAfterClose) {
 #define MAYBE_TestInitialConstraints DISABLED_TestInitialConstraints
 #define MAYBE_TestSetBounds DISABLED_TestSetBounds
 #define MAYBE_TestSetSizeConstraints DISABLED_TestSetSizeConstraints
-#elif defined(OS_MACOSX)
+#elif defined(OS_MAC)
 // Most of these don't work under MacViews, which has never had complete support
 // for old-style app windows.
 // https://crbug.com/834908

@@ -13,6 +13,8 @@
 #include "base/strings/string_util.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/profiles/profile_manager.h"
+#include "chrome/browser/web_applications/components/web_app_provider_base.h"
+#include "chrome/browser/web_applications/os_integration_manager.h"
 #include "chrome/browser/web_applications/web_app.h"
 
 namespace web_app {
@@ -185,9 +187,12 @@ void WebAppRegistrar::OnProfileMarkedForPermanentDeletion(
   if (profile() != profile_to_be_deleted)
     return;
 
-  for (const auto& app : AllApps())
+  for (const auto& app : AllApps()) {
     NotifyWebAppProfileWillBeDeleted(app.app_id());
-
+    WebAppProviderBase::GetProviderBase(profile())
+        ->os_integration_manager()
+        .UninstallOsHooks(app.app_id());
+  }
   // We can't do registry_.clear() here because it makes in-memory registry
   // diverged from the sync server registry and from the on-disk registry
   // (WebAppDatabase/LevelDB and "Web Applications" profile directory).

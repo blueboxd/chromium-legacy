@@ -17,7 +17,7 @@
 #include "device/fido/fido_request_handler_base.h"
 #include "device/fido/fido_transport_protocol.h"
 
-#if defined(OS_MACOSX)
+#if defined(OS_MAC)
 #include "device/fido/mac/authenticator_config.h"
 #endif
 
@@ -199,7 +199,7 @@ class CONTENT_EXPORT AuthenticatorRequestClientDelegate
   // that testing is possible.
   virtual bool IsFocused();
 
-#if defined(OS_MACOSX)
+#if defined(OS_MAC)
   using TouchIdAuthenticatorConfig = device::fido::mac::AuthenticatorConfig;
 
   // Returns configuration data for the built-in Touch ID platform
@@ -208,7 +208,7 @@ class CONTENT_EXPORT AuthenticatorRequestClientDelegate
   // unavailable.
   virtual base::Optional<TouchIdAuthenticatorConfig>
   GetTouchIdAuthenticatorConfig();
-#endif  // defined(OS_MACOSX)
+#endif  // defined(OS_MAC)
 
   // Returns a bool if the result of the isUserVerifyingPlatformAuthenticator
   // API call should be overridden with that value, or base::nullopt otherwise.

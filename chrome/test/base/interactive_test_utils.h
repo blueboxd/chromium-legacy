@@ -142,7 +142,7 @@ gfx::Point GetCenterInScreenCoordinates(const views::View* view);
 void WaitForViewFocus(Browser* browser, ViewID vid, bool focused);
 #endif
 
-#if defined(OS_MACOSX)
+#if defined(OS_MAC)
 // Send press and release events for |key_code| with selected modifiers and wait
 // until the last event arrives to our NSApp. Events will be sent as CGEvents
 // through HID event tap. |key_code| must be a virtual key code (reference can

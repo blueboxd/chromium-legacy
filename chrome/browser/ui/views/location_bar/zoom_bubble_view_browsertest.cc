@@ -27,7 +27,7 @@
 #include "chrome/browser/ui/views/frame/immersive_mode_controller_ash.h"
 #endif
 
-#if defined(OS_MACOSX)
+#if defined(OS_MAC)
 #include "chrome/browser/ui/browser_commands_mac.h"
 #include "ui/base/test/scoped_fake_nswindow_fullscreen.h"
 #endif
@@ -48,7 +48,7 @@ void ShowInActiveTab(Browser* browser) {
 // Test whether the zoom bubble is anchored and whether it is visible when in
 // non-immersive fullscreen.
 IN_PROC_BROWSER_TEST_F(ZoomBubbleBrowserTest, NonImmersiveFullscreen) {
-#if defined(OS_MACOSX)
+#if defined(OS_MAC)
   ui::test::ScopedFakeNSWindowFullscreen fake_fullscreen;
 #endif
 
@@ -93,7 +93,7 @@ IN_PROC_BROWSER_TEST_F(ZoomBubbleBrowserTest, NonImmersiveFullscreen) {
 // shows in fullscreen. And when the toolbar hides in fullscreen, the zoom
 // bubble should close and re-show in a new un-anchored position.
 IN_PROC_BROWSER_TEST_F(ZoomBubbleBrowserTest, AnchorPositionsInFullscreen) {
-#if defined(OS_MACOSX)
+#if defined(OS_MAC)
   ui::test::ScopedFakeNSWindowFullscreen fake_fullscreen;
 #endif
 
@@ -117,7 +117,7 @@ IN_PROC_BROWSER_TEST_F(ZoomBubbleBrowserTest, AnchorPositionsInFullscreen) {
   }
   EXPECT_FALSE(ZoomBubbleView::GetZoomBubble());
 
-#if defined(OS_MACOSX) || defined(OS_CHROMEOS)
+#if defined(OS_MAC) || defined(OS_CHROMEOS)
   const bool should_show_toolbar = true;
 #else
   const bool should_show_toolbar = false;
@@ -131,7 +131,7 @@ IN_PROC_BROWSER_TEST_F(ZoomBubbleBrowserTest, AnchorPositionsInFullscreen) {
   ASSERT_TRUE(zoom_bubble);
   if (should_show_toolbar) {
     EXPECT_EQ(org_anchor_view, zoom_bubble->GetAnchorView());
-#if defined(OS_MACOSX)
+#if defined(OS_MAC)
     const ZoomBubbleView* org_zoom_bubble = zoom_bubble;
     // Hide toolbar.
     chrome::ToggleFullscreenToolbar(browser());

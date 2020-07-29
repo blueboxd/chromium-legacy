@@ -156,10 +156,6 @@ class CONTENT_EXPORT RenderViewImpl : public blink::WebViewClient,
   void AddObserver(RenderViewObserver* observer);
   void RemoveObserver(RenderViewObserver* observer);
 
-  // Sets the zoom level and notifies observers. Returns true if the zoom level
-  // changed. A value of 0 means the default zoom level.
-  bool SetZoomLevel(double zoom_level);
-
   // Passes along the prefer compositing preference to the WebView's settings.
   void SetPreferCompositingToLCDTextEnabled(bool prefer);
 
@@ -242,6 +238,7 @@ class CONTENT_EXPORT RenderViewImpl : public blink::WebViewClient,
   bool CanHandleGestureEvent() override;
   bool AllowPopupsDuringPageUnload() override;
   void OnPageVisibilityChanged(PageVisibilityState visibility) override;
+  void ZoomLevelChanged() override;
 
   // RenderView implementation -------------------------------------------------
 
@@ -312,7 +309,7 @@ class CONTENT_EXPORT RenderViewImpl : public blink::WebViewClient,
   FRIEND_TEST_ALL_PREFIXES(RenderViewImplTest, UpdateDSFAfterSwapIn);
   FRIEND_TEST_ALL_PREFIXES(RenderViewImplTest,
                            BeginNavigationHandlesAllTopLevel);
-#if defined(OS_MACOSX)
+#if defined(OS_MAC)
   FRIEND_TEST_ALL_PREFIXES(RenderViewTest, MacTestCmdUp);
 #endif
   FRIEND_TEST_ALL_PREFIXES(RenderViewImplTest, SetHistoryLengthAndOffset);
@@ -415,7 +412,7 @@ class CONTENT_EXPORT RenderViewImpl : public blink::WebViewClient,
   void SuspendVideoCaptureDevices(bool suspend);
 #endif
 
-#if defined(OS_MACOSX)
+#if defined(OS_MAC)
   void UpdateFontRenderingFromRendererPrefs() {}
 #else
   void UpdateFontRenderingFromRendererPrefs();
@@ -548,10 +545,6 @@ class CONTENT_EXPORT RenderViewImpl : public blink::WebViewClient,
   // This class owns this member, and is responsible for calling
   // WebView::Close().
   blink::WebView* webview_ = nullptr;
-
-  // Used to indicate the zoom level to be used during subframe loads, since
-  // they should match page zoom level.
-  double page_zoom_level_ = 0;
 
   // Helper objects ------------------------------------------------------------
 

@@ -45,7 +45,7 @@ TEST(PrintSettingsDeathTest, GetColorModelForModeEdges) {
                                            &color_setting_name, &color_value));
 }
 
-#if defined(OS_MACOSX) || defined(OS_CHROMEOS)
+#if defined(OS_MAC) || defined(OS_CHROMEOS)
 TEST(PrintSettingsTest, GetIppColorModelForMode) {
   for (int model = UNKNOWN_COLOR_MODEL; model <= COLOR_MODEL_LAST; ++model)
     EXPECT_FALSE(GetIppColorModelForMode(model).empty());
@@ -56,7 +56,7 @@ TEST(PrintSettingsDeathTest, GetIppColorModelForModeEdges) {
   EXPECT_DCHECK_DEATH(GetIppColorModelForMode(UNKNOWN_COLOR_MODEL - 1));
   EXPECT_DCHECK_DEATH(GetIppColorModelForMode(COLOR_MODEL_LAST + 1));
 }
-#endif  // defined(OS_MACOSX) || defined(OS_CHROMEOS)
+#endif  // defined(OS_MAC) || defined(OS_CHROMEOS)
 #endif  // defined(USE_CUPS)
 
 }  // namespace printing

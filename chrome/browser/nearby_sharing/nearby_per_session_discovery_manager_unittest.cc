@@ -64,7 +64,7 @@ class NearbyPerSessionDiscoveryManagerTest : public testing::Test {
 }  // namespace
 
 TEST_F(NearbyPerSessionDiscoveryManagerTest, CreateDestroyWithoutRegistering) {
-  EXPECT_CALL(sharing_service(), RegisterSendSurface(&manager(), &manager()))
+  EXPECT_CALL(sharing_service(), RegisterSendSurface(&manager(), &manager(), _))
       .Times(0);
   EXPECT_CALL(sharing_service(), UnregisterSendSurface(&manager(), &manager()))
       .Times(0);
@@ -79,7 +79,10 @@ TEST_F(NearbyPerSessionDiscoveryManagerTest, StartDiscovery_Success) {
   MockStartDiscoveryCallback callback;
   EXPECT_CALL(callback, Run(/*success=*/true));
 
-  EXPECT_CALL(sharing_service(), RegisterSendSurface(&manager(), &manager()))
+  EXPECT_CALL(
+      sharing_service(),
+      RegisterSendSurface(&manager(), &manager(),
+                          NearbySharingService::SendSurfaceState::kForeground))
       .WillOnce(testing::Return(NearbySharingService::StatusCodes::kOk));
   EXPECT_CALL(sharing_service(), UnregisterSendSurface(&manager(), &manager()))
       .WillOnce(testing::Return(NearbySharingService::StatusCodes::kOk));
@@ -92,7 +95,10 @@ TEST_F(NearbyPerSessionDiscoveryManagerTest, StartDiscovery_Error) {
   MockStartDiscoveryCallback callback;
   EXPECT_CALL(callback, Run(/*success=*/false));
 
-  EXPECT_CALL(sharing_service(), RegisterSendSurface(&manager(), &manager()))
+  EXPECT_CALL(
+      sharing_service(),
+      RegisterSendSurface(&manager(), &manager(),
+                          NearbySharingService::SendSurfaceState::kForeground))
       .WillOnce(testing::Return(NearbySharingService::StatusCodes::kError));
   EXPECT_CALL(sharing_service(), UnregisterSendSurface(&manager(), &manager()))
       .Times(0);

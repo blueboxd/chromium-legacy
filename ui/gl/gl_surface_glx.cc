@@ -877,17 +877,16 @@ NativeViewGLSurfaceGLX::~NativeViewGLSurfaceGLX() {
 }
 
 void NativeViewGLSurfaceGLX::ForwardExposeEvent(x11::Event* event) {
-  XEvent& forwarded_event = event->xlib_event();
-  forwarded_event.xexpose.window = static_cast<uint32_t>(parent_window_);
-  XSendEvent(gfx::GetXDisplay(), static_cast<uint32_t>(parent_window_),
-             x11::False, ExposureMask, &forwarded_event);
-  XFlush(gfx::GetXDisplay());
+  auto forwarded_event = *event->As<x11::ExposeEvent>();
+  auto window = static_cast<x11::Window>(parent_window_);
+  forwarded_event.window = window;
+  ui::SendEvent(forwarded_event, window, x11::EventMask::Exposure);
+  x11::Connection::Get()->Flush();
 }
 
 bool NativeViewGLSurfaceGLX::CanHandleEvent(x11::Event* x11_event) {
-  XEvent* event = &x11_event->xlib_event();
-  return event->type == Expose &&
-         event->xexpose.window == static_cast<Window>(window_);
+  auto* expose = x11_event->As<x11::ExposeEvent>();
+  return expose && expose->window == static_cast<x11::Window>(window_);
 }
 
 GLXDrawable NativeViewGLSurfaceGLX::GetDrawableHandle() const {

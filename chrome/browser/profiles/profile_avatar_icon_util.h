@@ -85,7 +85,7 @@ gfx::Image GetAvatarIconForTitleBar(const gfx::Image& image,
                                     int dst_width,
                                     int dst_height);
 
-#if defined(OS_MACOSX)
+#if defined(OS_MAC)
 // Returns the image for the profile at |profile_path| that is suitable for use
 // in the macOS menu bar.
 gfx::Image GetAvatarIconForNSMenu(const base::FilePath& profile_path);

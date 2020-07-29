@@ -124,7 +124,7 @@ void LaunchAudioServiceOutOfProcess(
       std::move(receiver),
       ServiceProcessHost::Options()
           .WithDisplayName("Audio Service")
-#if defined(OS_MACOSX)
+#if defined(OS_MAC)
           // On Mac, the audio service requires a CFRunLoop provided by a
           // UI MessageLoop type, to run AVFoundation and CoreAudio code.
           // See https://crbug.com/834581.

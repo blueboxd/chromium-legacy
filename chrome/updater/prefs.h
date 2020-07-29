@@ -11,6 +11,8 @@ class PrefService;
 
 namespace updater {
 
+extern const char kPrefUpdateTime[];
+
 class UpdaterPrefs {
  public:
   UpdaterPrefs() = default;

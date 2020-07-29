@@ -86,7 +86,7 @@ class SpellcheckService : public KeyedService,
 
   base::WeakPtr<SpellcheckService> GetWeakPtr();
 
-#if !defined(OS_MACOSX)
+#if !defined(OS_MAC)
   // Returns all currently configured |dictionaries| to display in the context
   // menu over a text area. The context menu is used for selecting the
   // dictionaries used for spellcheck.

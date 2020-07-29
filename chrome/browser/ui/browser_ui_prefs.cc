@@ -113,7 +113,7 @@ void RegisterBrowserUserPrefs(user_prefs::PrefRegistrySyncable* registry) {
   registry->RegisterBooleanPref(prefs::kClickToCallEnabled, true);
 #endif  // BUILDFLAG(ENABLE_CLICK_TO_CALL)
 
-#if defined(OS_MACOSX)
+#if defined(OS_MAC)
   // This really belongs in platform code, but there's no good place to
   // initialize it between the time when the AppController is created
   // (where there's no profile) and the time the controller gets another

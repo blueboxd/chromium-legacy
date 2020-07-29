@@ -40,7 +40,7 @@ std::string GetChannelName();
 // version_info::Channel::UNKNOWN.
 version_info::Channel GetChannel();
 
-#if defined(OS_MACOSX)
+#if defined(OS_MAC)
 // Maps the name of the channel to version_info::Channel, always returning
 // Channel::UNKNOWN for unbranded builds. For branded builds defaults to
 // Channel::STABLE, if channel is empty, else matches the name and returns

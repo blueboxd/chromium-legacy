@@ -16,7 +16,9 @@ class MockNearbySharingService : public NearbySharingService {
   // NearbySharingService:
   MOCK_METHOD(StatusCodes,
               RegisterSendSurface,
-              (TransferUpdateCallback*, ShareTargetDiscoveredCallback*),
+              (TransferUpdateCallback*,
+               ShareTargetDiscoveredCallback*,
+               SendSurfaceState),
               (override));
   MOCK_METHOD(StatusCodes,
               UnregisterSendSurface,

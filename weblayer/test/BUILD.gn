@@ -95,6 +95,7 @@ test("weblayer_browsertests") {
     "//components/autofill/core/common",
     "//components/blocked_content",
     "//components/content_settings/core/browser",
+    "//components/error_page/content/browser",
     "//components/network_session_configurator/common",
     "//components/network_time",
     "//components/page_load_metrics/browser:browser",

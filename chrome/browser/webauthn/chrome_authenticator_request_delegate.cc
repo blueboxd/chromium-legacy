@@ -34,7 +34,7 @@
 #include "device/fido/fido_authenticator.h"
 #include "device/fido/fido_discovery_factory.h"
 
-#if defined(OS_MACOSX)
+#if defined(OS_MAC)
 #include "device/fido/mac/authenticator.h"
 #include "device/fido/mac/credential_metadata.h"
 #endif
@@ -86,7 +86,7 @@ bool CopyBytestring(std::array<uint8_t, N>* out,
   return true;
 }
 
-#if defined(OS_MACOSX)
+#if defined(OS_MAC)
 const char kWebAuthnTouchIdMetadataSecretPrefName[] =
     "webauthn.touchid.metadata_secret";
 #endif
@@ -109,7 +109,7 @@ const char kPairingPrefPSKGenKey[] = "psk_gen_key";
 // static
 void ChromeAuthenticatorRequestDelegate::RegisterProfilePrefs(
     user_prefs::PrefRegistrySyncable* registry) {
-#if defined(OS_MACOSX)
+#if defined(OS_MAC)
   registry->RegisterStringPref(kWebAuthnTouchIdMetadataSecretPrefName,
                                std::string());
 #endif
@@ -357,7 +357,7 @@ bool ChromeAuthenticatorRequestDelegate::IsFocused() {
   return web_contents->GetVisibility() == content::Visibility::VISIBLE;
 }
 
-#if defined(OS_MACOSX)
+#if defined(OS_MAC)
 static constexpr char kTouchIdKeychainAccessGroup[] =
     "EQHXZ8M8AV.com.google.Chrome.webauthn";
 
@@ -407,7 +407,7 @@ bool ChromeAuthenticatorRequestDelegate::IsWebAuthnUIEnabled() {
   return !disable_ui_;
 }
 
-#if defined(OS_MACOSX)
+#if defined(OS_MAC)
 base::Optional<ChromeAuthenticatorRequestDelegate::TouchIdAuthenticatorConfig>
 ChromeAuthenticatorRequestDelegate::GetTouchIdAuthenticatorConfig() {
   // Touch ID is available in Incognito but not Guest windows.
@@ -417,7 +417,7 @@ ChromeAuthenticatorRequestDelegate::GetTouchIdAuthenticatorConfig() {
   return TouchIdAuthenticatorConfigForProfile(
       Profile::FromBrowserContext(browser_context()));
 }
-#endif  // defined(OS_MACOSX)
+#endif  // defined(OS_MAC)
 
 void ChromeAuthenticatorRequestDelegate::OnTransportAvailabilityEnumerated(
     device::FidoRequestHandlerBase::TransportAvailabilityInfo data) {

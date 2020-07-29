@@ -25,6 +25,8 @@
 #endif  // defined(USE_VULKAN)
 #endif  // defined(USE_GBM)
 
+class GrDirectContext;
+
 namespace base {
 class CommandLine;
 }
@@ -212,7 +214,7 @@ class ClientBase {
   std::unique_ptr<ui::ScopedMakeCurrent> make_current_;
   unsigned egl_sync_type_ = 0;
   std::vector<std::unique_ptr<Buffer>> buffers_;
-  sk_sp<GrContext> gr_context_;
+  sk_sp<GrDirectContext> gr_context_;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(ClientBase);

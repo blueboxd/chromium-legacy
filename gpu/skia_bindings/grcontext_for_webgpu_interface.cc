@@ -8,7 +8,7 @@
 #include "gpu/command_buffer/client/context_support.h"
 #include "gpu/command_buffer/client/webgpu_interface.h"
 #include "gpu/command_buffer/common/capabilities.h"
-#include "third_party/skia/include/gpu/GrContext.h"
+#include "third_party/skia/include/gpu/GrDirectContext.h"
 
 namespace {
 
@@ -38,7 +38,7 @@ GrContextForWebGPUInterface::GrContextForWebGPUInterface(
   // device ID 1.  http://crbug.com/1078775
   WGPUDevice device = webgpu->GetDevice(1);
   wgpuDeviceSetUncapturedErrorCallback(device, PrintDeviceError, 0);
-  gr_context_ = GrContext::MakeDawn(device, options);
+  gr_context_ = GrDirectContext::MakeDawn(device, options);
   if (gr_context_) {
     gr_context_->setResourceCacheLimit(max_resource_cache_bytes);
     context_support_->SetGrContext(gr_context_.get());
@@ -62,7 +62,7 @@ void GrContextForWebGPUInterface::compileError(const char* shader,
               << errors;
 }
 
-GrContext* GrContextForWebGPUInterface::get() {
+GrDirectContext* GrContextForWebGPUInterface::get() {
   return gr_context_.get();
 }
 

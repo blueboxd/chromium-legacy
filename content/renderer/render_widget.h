@@ -323,8 +323,6 @@ class CONTENT_EXPORT RenderWidget
       const gfx::Range& replacement_range,
       int relative_cursor_pos) override;
   void ImeFinishComposingTextForPepper(bool keep_selection) override;
-  void UpdateVisualProperties(
-      const blink::VisualProperties& properties) override;
   void UpdateScreenRects(const gfx::Rect& widget_screen_rect,
                          const gfx::Rect& window_screen_rect) override;
   void SetIsNestedMainFrameWidget(bool is_nested) override;
@@ -391,8 +389,6 @@ class CONTENT_EXPORT RenderWidget
 
   void UseSynchronousResizeModeForTesting(bool enable);
   void SetDeviceScaleFactorForTesting(float factor);
-  void SetZoomLevelForTesting(double zoom_level);
-  void ResetZoomLevelForTesting();
   void SetDeviceColorSpaceForTesting(const gfx::ColorSpace& color_space);
   void SetWindowRectSynchronouslyForTesting(const gfx::Rect& new_window_rect);
   void EnableAutoResizeForTesting(const gfx::Size& min_size,
@@ -409,6 +405,10 @@ class CONTENT_EXPORT RenderWidget
   virtual void RequestPresentation(PresentationTimeCallback callback);
 
  protected:
+  // blink::WebWidgetClient
+  void UpdateVisualProperties(
+      const blink::VisualProperties& properties) override;
+
   // Notify subclasses that we handled OnUpdateVisualProperties.
   virtual void AfterUpdateVisualProperties() {}
 
@@ -452,10 +452,6 @@ class CONTENT_EXPORT RenderWidget
                          const gfx::Size& min_size_before_dsf,
                          const gfx::Size& max_size_before_dsf,
                          float device_scale_factor);
-
-  // Sets the zoom level on the RenderView. This is part of
-  // OnUpdateVisualProperties though tests may call to it more directly.
-  void SetZoomLevel(double zoom_level);
 
   // Helper method to get the device_viewport_rect() from the compositor, which
   // is always in physical pixels.
@@ -593,10 +589,6 @@ class CONTENT_EXPORT RenderWidget
   // store it to keep the override if the browser passes along VisualProperties
   // with the real device scale factor. A value of 0.f means this is ignored.
   float device_scale_factor_for_testing_ = 0;
-  // Web tests override the zoom factor in the renderer with this. We store it
-  // to keep the override if the browser passes along VisualProperties with the
-  // real device scale factor. A value of -INFINITY means this is ignored.
-  double zoom_level_for_testing_ = -INFINITY;
 
   // The size of the RenderWidget in DIPs. This may differ from the viewport
   // set in the compositor, as the viewport can be a subset of the RenderWidget
@@ -607,13 +599,6 @@ class CONTENT_EXPORT RenderWidget
 
   // The size of the visible viewport in pixels.
   gfx::Size visible_viewport_size_;
-
-  // Stores the zoom level to propagate to new child RenderWidgets. Initialized
-  // to 0 to match the value in RenderViewImpl, but this will be the value being
-  // propagated down the RenderWidget tree, whereas the value in RenderViewImpl
-  // is derived from these as RenderWidgets update their corresponding
-  // RenderViewImpls.
-  double zoom_level_ = 0;
 
   // Whether the WebWidget is in auto resize mode, which is used for example
   // by extension popups.

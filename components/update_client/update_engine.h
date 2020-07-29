@@ -68,6 +68,10 @@ class UpdateEngine : public base::RefCountedThreadSafe<UpdateEngine> {
                          int reason,
                          Callback update_callback);
 
+  void SendRegistrationPing(const std::string& id,
+                            const base::Version& version,
+                            Callback update_callback);
+
  private:
   friend class base::RefCountedThreadSafe<UpdateEngine>;
   ~UpdateEngine();

@@ -118,8 +118,7 @@ NearbySharingServiceImpl::NearbySharingServiceImpl(
     std::unique_ptr<NearbyConnectionsManager> nearby_connections_manager)
     : prefs_(prefs),
       profile_(profile),
-      nearby_connections_manager_(std::move(nearby_connections_manager)),
-      nearby_notification_manager_(profile) {
+      nearby_connections_manager_(std::move(nearby_connections_manager)) {
   DCHECK(prefs_);
   DCHECK(profile_);
   DCHECK(nearby_connections_manager_);
@@ -148,18 +147,26 @@ NearbySharingServiceImpl::NearbySharingServiceImpl(
                           base::Unretained(this)));
 
   GetBluetoothAdapter();
+
+  nearby_notification_manager_ =
+      std::make_unique<NearbyNotificationManager>(profile_, this);
 }
 
 NearbySharingServiceImpl::~NearbySharingServiceImpl() {
+  nearby_notification_manager_.reset();
+
   if (bluetooth_adapter_)
     bluetooth_adapter_->RemoveObserver(this);
 }
 
 NearbySharingService::StatusCodes NearbySharingServiceImpl::RegisterSendSurface(
     TransferUpdateCallback* transfer_callback,
-    ShareTargetDiscoveredCallback* discovery_callback) {
+    ShareTargetDiscoveredCallback* discovery_callback,
+    SendSurfaceState state) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  StartFastInitiationAdvertising();
+  // TODO(crrbug.com/1084644): Implement send surface logic.
+  if (state == SendSurfaceState::kForeground)
+    StartFastInitiationAdvertising();
   return StatusCodes::kOk;
 }
 

@@ -436,7 +436,7 @@ bool Tab::OnKeyPressed(const ui::KeyEvent& event) {
   }
 
   constexpr int kModifiedFlag =
-#if defined(OS_MACOSX)
+#if defined(OS_MAC)
       ui::EF_COMMAND_DOWN;
 #else
       ui::EF_CONTROL_DOWN;
@@ -477,7 +477,7 @@ bool Tab::OnKeyReleased(const ui::KeyEvent& event) {
 
 namespace {
 bool IsSelectionModifierDown(const ui::MouseEvent& event) {
-#if defined(OS_MACOSX)
+#if defined(OS_MAC)
   return event.IsCommandDown();
 #else
   return event.IsControlDown();

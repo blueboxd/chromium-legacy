@@ -7109,7 +7109,7 @@ class LayerTreeHostTestCrispUpAfterPinchEndsWithOneCopy
     viz::TestGLES2Interface* gl =
         display_context_provider->UnboundTestContextGL();
     gl->set_support_sync_query(true);
-#if defined(OS_MACOSX)
+#if defined(OS_MAC)
     gl->set_support_texture_rectangle(true);
 #endif
     display_context_provider->BindToCurrentThread();

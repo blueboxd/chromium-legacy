@@ -308,7 +308,7 @@ AccessibilityPrivateSendSyntheticMouseEventFunction::Run() {
   EXTENSION_FUNCTION_VALIDATE(params);
   accessibility_private::SyntheticMouseEvent* mouse_data = &params->mouse_event;
 
-  ui::EventType type;
+  ui::EventType type = ui::ET_UNKNOWN;
   switch (mouse_data->type) {
     case accessibility_private::SYNTHETIC_MOUSE_EVENT_TYPE_PRESS:
       type = ui::ET_MOUSE_PRESSED;
@@ -332,7 +332,14 @@ AccessibilityPrivateSendSyntheticMouseEventFunction::Run() {
       NOTREACHED();
   }
 
-  int flags = ui::EF_LEFT_MOUSE_BUTTON;
+  int flags = 0;
+  if (type != ui::ET_MOUSE_MOVED)
+    flags |= ui::EF_LEFT_MOUSE_BUTTON;
+
+  int changed_button_flags = flags;
+
+  if (mouse_data->touch_accessibility && *(mouse_data->touch_accessibility))
+    flags |= ui::EF_TOUCH_ACCESSIBILITY;
 
   // Locations are assumed to be display relative (and in DIPs).
   // TODO(crbug/893752) Choose correct display
@@ -341,7 +348,7 @@ AccessibilityPrivateSendSyntheticMouseEventFunction::Run() {
   std::unique_ptr<ui::MouseEvent> synthetic_mouse_event =
       std::make_unique<ui::MouseEvent>(type, location, location,
                                        ui::EventTimeForNow(), flags,
-                                       flags /* changed_button_flags */);
+                                       changed_button_flags);
 
   auto* host = ash::GetWindowTreeHostForDisplay(display.id());
   DCHECK(host);

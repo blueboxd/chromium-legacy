@@ -66,7 +66,7 @@ namespace media {
 
 namespace {
 
-#if defined(OS_ANDROID) || defined(OS_CHROMEOS) || defined(OS_MACOSX) || \
+#if defined(OS_ANDROID) || defined(OS_CHROMEOS) || defined(OS_MAC) || \
     defined(OS_WIN) || defined(OS_LINUX)
 gpu::CommandBufferStub* GetCommandBufferStub(
     scoped_refptr<base::SingleThreadTaskRunner> gpu_task_runner,
@@ -297,7 +297,7 @@ std::unique_ptr<VideoDecoder> GpuMojoMediaClient::CreateVideoDecoder(
                                 command_buffer_id->route_id));
       }
 
-#elif defined(OS_MACOSX) || defined(OS_WIN) || defined(OS_LINUX)
+#elif defined(OS_MAC) || defined(OS_WIN) || defined(OS_LINUX)
 #if defined(OS_WIN)
       // Don't instantiate the DXVA decoder if it's not supported.
       if (gpu_workarounds_.disable_dxva_video_decoder)

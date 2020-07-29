@@ -184,7 +184,7 @@ TEST_F(ToolbarActionViewUnitTest,
 
 // Test the basic ui of a ToolbarActionView and that it responds correctly to
 // a controller's state.
-#if defined(OS_MACOSX) || defined(OS_LINUX) || defined(OS_WIN)
+#if defined(OS_MAC) || defined(OS_LINUX) || defined(OS_WIN)
 // TODO(crbug.com/1042220): Test is flaky on Mac, Linux and Win10.
 #define MAYBE_BasicToolbarActionViewTest DISABLED_BasicToolbarActionViewTest
 #else

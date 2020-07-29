@@ -135,7 +135,7 @@
     // manually. UITextField does this under the hood when tapped from
     // -[UITextInteractionAssistant(UITextInteractionAssistant_Internal)
     // setFirstResponderIfNecessaryActivatingSelection:]
-    if (IsMultiwindowSupported()) {
+    if (IsMultipleScenesSupported()) {
       [self.textField.window makeKeyAndVisible];
     }
 

@@ -615,9 +615,9 @@ void ChromeBrowserMainExtraPartsMetrics::PostBrowserStart() {
   RecordTouchEventState();
 #endif  // defined(USE_OZONE) || defined(USE_X11)
 
-#if defined(OS_MACOSX)
+#if defined(OS_MAC)
   RecordMacMetrics();
-#endif  // defined(OS_MACOSX)
+#endif  // defined(OS_MAC)
 
 #if defined(OS_WIN)
   // RecordStartupMetrics calls into shell_integration::GetDefaultBrowser(),

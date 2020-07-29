@@ -32,7 +32,7 @@ const AcceleratorMapping kAcceleratorMap[] = {
     {ui::VKEY_F12, ui::EF_NONE, IDC_DEV_TOOLS_TOGGLE},
     {ui::VKEY_ESCAPE, ui::EF_NONE, IDC_CLOSE_FIND_OR_STOP},
 
-#if !defined(OS_MACOSX)
+#if !defined(OS_MAC)
     {ui::VKEY_D, ui::EF_PLATFORM_ACCELERATOR, IDC_BOOKMARK_THIS_TAB},
     {ui::VKEY_D, ui::EF_SHIFT_DOWN | ui::EF_PLATFORM_ACCELERATOR,
      IDC_BOOKMARK_ALL_TABS},
@@ -156,7 +156,7 @@ const AcceleratorMapping kAcceleratorMap[] = {
     {ui::VKEY_BROWSER_SEARCH, ui::EF_NONE, IDC_FOCUS_SEARCH},
 #endif  // !OS_CHROMEOS
 
-#if BUILDFLAG(GOOGLE_CHROME_BRANDING) && !defined(OS_MACOSX)
+#if BUILDFLAG(GOOGLE_CHROME_BRANDING) && !defined(OS_MAC)
     {ui::VKEY_I, ui::EF_SHIFT_DOWN | ui::EF_ALT_DOWN, IDC_FEEDBACK},
 #endif  // BUILDFLAG(GOOGLE_CHROME_BRANDING) && !OS_MACOSX
     {ui::VKEY_N, ui::EF_SHIFT_DOWN | ui::EF_PLATFORM_ACCELERATOR,
@@ -232,7 +232,7 @@ std::vector<AcceleratorMapping> GetAcceleratorList() {
 
 bool GetStandardAcceleratorForCommandId(int command_id,
                                         ui::Accelerator* accelerator) {
-#if defined(OS_MACOSX)
+#if defined(OS_MAC)
   // On macOS, the cut/copy/paste accelerators are defined in MainMenu.xib and
   // the accelerator is user configurable. All of this is handled by
   // CommandDispatcher.

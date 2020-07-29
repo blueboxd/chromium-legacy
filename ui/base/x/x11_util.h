@@ -242,9 +242,6 @@ void DefineCursor(x11::Window window, x11::Cursor cursor);
 COMPONENT_EXPORT(UI_BASE_X)
 x11::Window CreateDummyWindow(const std::string& name = "");
 
-COMPONENT_EXPORT(UI_BASE_X)
-x11::KeyCode KeysymToKeycode(x11::Connection* connection, x11::KeySym keysym);
-
 // Draws an SkPixmap on |drawable| using the given |gc|, converting to the
 // server side visual as needed.
 COMPONENT_EXPORT(UI_BASE_X)

@@ -14,6 +14,7 @@ include_rules = [
   "+chrome/browser/xsurface/android",
   "+components/browser_ui/android/bottomsheet",
   "+components/browser_ui/banners/android",
+  "+components/browser_ui/display_cutout/android",
   "+components/browser_ui/media/android",
   "+components/browser_ui/modaldialog/android",
   "+components/browser_ui/share/android",

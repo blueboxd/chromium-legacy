@@ -38,7 +38,7 @@
 #include "gpu/command_buffer/service/external_vk_image_factory.h"
 #include "gpu/command_buffer/service/shared_image_backing_factory_ahardwarebuffer.h"
 #include "gpu/vulkan/vulkan_device_queue.h"
-#elif defined(OS_MACOSX)
+#elif defined(OS_MAC)
 #include "gpu/command_buffer/service/shared_image_backing_factory_iosurface.h"
 #elif defined(OS_CHROMEOS)
 #include "gpu/command_buffer/service/shared_image_backing_factory_ozone.h"
@@ -133,7 +133,7 @@ SharedImageFactory::SharedImageFactory(
     interop_backing_factory_ = std::make_unique<SharedImageBackingFactoryAHB>(
         workarounds, gpu_feature_info);
   }
-#elif defined(OS_MACOSX)
+#elif defined(OS_MAC)
   // OSX
   DCHECK(gr_context_type_ == GrContextType::kGL ||
          gr_context_type_ == GrContextType::kMetal);
@@ -438,7 +438,7 @@ SharedImageBackingFactory* SharedImageFactory::GetFactoryByUsage(
   // Scanout on Android requires explicit fence synchronization which is only
   // supported by the interop factory.
   using_interop_factory |= usage & SHARED_IMAGE_USAGE_SCANOUT;
-#elif defined(OS_MACOSX)
+#elif defined(OS_MAC)
   // On macOS, there is no separate interop factory. Any GpuMemoryBuffer-backed
   // image can be used with both OpenGL and Metal.
   using_interop_factory = false;

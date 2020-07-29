@@ -26,7 +26,7 @@
 
 #if defined(OS_WIN)
 #include "chrome/updater/win/net/network.h"
-#elif defined(OS_MACOSX)
+#elif defined(OS_MAC)
 #include "chrome/updater/mac/net/network.h"
 #endif  // OS_WIN
 

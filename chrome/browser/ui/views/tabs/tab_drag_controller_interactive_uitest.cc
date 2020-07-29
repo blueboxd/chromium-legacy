@@ -103,7 +103,7 @@
 #include "ui/events/gesture_detection/gesture_configuration.h"
 #endif
 
-#if defined(OS_MACOSX)
+#if defined(OS_MAC)
 #include "base/mac/mac_util.h"
 #endif
 
@@ -450,7 +450,7 @@ class DetachToBrowserTabDragControllerTest
     ui::GestureConfiguration::GetInstance()->set_min_fling_velocity(
         std::numeric_limits<float>::max());
 #endif
-#if defined(OS_MACOSX)
+#if defined(OS_MAC)
     // Currently MacViews' browser windows are shown in the background and could
     // be obscured by other windows if there are any. This should be fixed in
     // order to be consistent with other platforms.
@@ -1555,7 +1555,7 @@ IN_PROC_BROWSER_TEST_P(DetachToBrowserTabDragControllerTest,
   Browser* new_browser = browser_list->get(1);
 
   bool check_new_window_active = true;
-#if defined(OS_MACOSX)
+#if defined(OS_MAC)
   // AppKit 10.10 asynchronously reactivates the first
   // window. This behavior is non-deterministic, and appears to be a test-only
   // issue. Thus, we just skip the test check. https://crbug.com/862859.
@@ -1644,7 +1644,7 @@ IN_PROC_BROWSER_TEST_P(DetachToBrowserTabDragControllerTest,
 }
 
 // This test doesn't make sense on Mac, since it has no concept of "maximized".
-#if !defined(OS_MACOSX)
+#if !defined(OS_MAC)
 // Drags from browser to a separate window and releases mouse.
 IN_PROC_BROWSER_TEST_P(DetachToBrowserTabDragControllerTest,
                        DetachToOwnWindowFromMaximizedWindow) {
@@ -1848,7 +1848,7 @@ void CloseTabsWhileDetachedStep2(const BrowserList* browser_list) {
 
 // Selects 2 tabs out of 4, drags them out and closes the new browser window
 // while dragging tabs.
-#if (defined(OS_WIN) || defined(OS_MACOSX))
+#if (defined(OS_WIN) || defined(OS_MAC))
 // TODO(crbug.com/1031801) Test is flaky on Windows and Mac.
 #define MAYBE_DeleteTabsWhileDetached DISABLED_DeleteTabsWhileDetached
 #else
@@ -2658,7 +2658,7 @@ IN_PROC_BROWSER_TEST_P(DetachToBrowserTabDragControllerTest,
   EXPECT_FALSE(browser2->window()->IsMaximized());
 }
 
-#if !defined(OS_MACOSX)
+#if !defined(OS_MAC)
 namespace {
 
 // Invoked from the nested run loop.

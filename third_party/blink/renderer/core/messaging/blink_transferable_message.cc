@@ -44,7 +44,6 @@ BlinkTransferableMessage BlinkTransferableMessage::FromMessageEvent(
     result.user_activation = mojom::blink::UserActivationSnapshot::New(
         user_activation->hasBeenActive(), user_activation->isActive());
   }
-  result.transfer_user_activation = message_event->transferUserActivation();
 
   // Blobs.
   for (const auto& blob : serialized_script_value->BlobDataHandles()) {
@@ -157,7 +156,6 @@ BlinkTransferableMessage BlinkTransferableMessage::FromTransferableMessage(
         message.user_activation->has_been_active,
         message.user_activation->was_active);
   }
-  result.transfer_user_activation = message.transfer_user_activation;
 
   if (!message.array_buffer_contents_array.empty()) {
     SerializedScriptValue::ArrayBufferContentsArray array_buffer_contents_array;

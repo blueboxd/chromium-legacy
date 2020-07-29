@@ -10,7 +10,7 @@
 
 #define FPL FILE_PATH_LITERAL
 
-#if defined(OS_MACOSX)
+#if defined(OS_MAC)
 #define CHROMIUM_PRODUCT_STRING "Chromium"
 #if BUILDFLAG(GOOGLE_CHROME_BRANDING)
 #define PRODUCT_STRING "Google Chrome"
@@ -19,7 +19,7 @@
 #else
 #error Unknown branding
 #endif
-#endif  // defined(OS_MACOSX)
+#endif  // defined(OS_MAC)
 
 namespace chrome {
 
@@ -51,7 +51,7 @@ const base::FilePath::CharType kHelperProcessExecutableNameChromium[] =
     FPL("chrome.exe");
 const base::FilePath::CharType kHelperProcessExecutableName[] =
     FPL("chrome.exe");
-#elif defined(OS_MACOSX)
+#elif defined(OS_MAC)
 const base::FilePath::CharType kBrowserProcessExecutableNameChromium[] =
     FPL(CHROMIUM_PRODUCT_STRING);
 const base::FilePath::CharType kBrowserProcessExecutableName[] =
@@ -88,7 +88,7 @@ const base::FilePath::CharType kHelperProcessExecutablePathChromium[] =
     FPL("chrome.exe");
 const base::FilePath::CharType kHelperProcessExecutablePath[] =
     FPL("chrome.exe");
-#elif defined(OS_MACOSX)
+#elif defined(OS_MAC)
 const base::FilePath::CharType kBrowserProcessExecutablePathChromium[] =
     FPL(CHROMIUM_PRODUCT_STRING ".app/Contents/MacOS/" CHROMIUM_PRODUCT_STRING);
 const base::FilePath::CharType kBrowserProcessExecutablePath[] =
@@ -114,12 +114,12 @@ const base::FilePath::CharType kHelperProcessExecutablePathChromium[] =
 const base::FilePath::CharType kHelperProcessExecutablePath[] = FPL("chrome");
 #endif  // OS_*
 
-#if defined(OS_MACOSX)
+#if defined(OS_MAC)
 const base::FilePath::CharType kFrameworkName[] =
     FPL(PRODUCT_STRING " Framework.framework");
 const base::FilePath::CharType kFrameworkExecutableName[] =
     FPL(PRODUCT_STRING " Framework");
-#endif  // OS_MACOSX
+#endif  // OS_MAC
 
 #if defined(OS_WIN)
 const base::FilePath::CharType kBrowserResourcesDll[] = FPL("chrome.dll");
@@ -194,7 +194,7 @@ const base::FilePath::CharType kJumpListIconDirname[] = FPL("JumpListIcons");
 
 // File name of the Pepper Flash plugin on different platforms.
 const base::FilePath::CharType kPepperFlashPluginFilename[] =
-#if defined(OS_MACOSX)
+#if defined(OS_MAC)
     FPL("PepperFlashPlayer.plugin");
 #elif defined(OS_WIN)
     FPL("pepflashplayer.dll");

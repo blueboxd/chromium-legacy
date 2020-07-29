@@ -361,7 +361,7 @@ IN_PROC_BROWSER_TEST_P(WebRtcVideoQualityBrowserTest,
 
 // Flaky on mac (crbug.com/754684) and WebRTC's frame_analyzer doesn't build
 // from a Chromium's component build.
-#if defined(OS_MACOSX) || defined(COMPONENT_BUILD)
+#if defined(OS_MAC) || defined(COMPONENT_BUILD)
 #define MAYBE_MANUAL_TestVideoQualityH264 DISABLED_MANUAL_TestVideoQualityH264
 #else
 #define MAYBE_MANUAL_TestVideoQualityH264 MANUAL_TestVideoQualityH264

@@ -470,7 +470,8 @@ void TestInvalidStaticImage(const char* avif_file, ErrorPhase error_phase) {
 
 void ReadYUV(const char* image_file_path,
              const IntSize& expected_y_size,
-             const IntSize& expected_uv_size) {
+             const IntSize& expected_uv_size,
+             SkColorType color_type) {
   scoped_refptr<SharedBuffer> data = ReadFile(image_file_path);
   ASSERT_TRUE(data);
 
@@ -506,7 +507,8 @@ void ReadYUV(const char* image_file_path,
   planes[1] = static_cast<char*>(planes[0]) + row_bytes[0] * y_size.Height();
   planes[2] = static_cast<char*>(planes[1]) + row_bytes[1] * u_size.Height();
 
-  decoder->SetImagePlanes(std::make_unique<ImagePlanes>(planes, row_bytes));
+  decoder->SetImagePlanes(
+      std::make_unique<ImagePlanes>(planes, row_bytes, color_type));
 
   decoder->DecodeToYUV();
   EXPECT_FALSE(decoder->Failed());
@@ -587,15 +589,41 @@ TEST(StaticAVIFTests, ValidImages) {
 TEST(StaticAVIFTests, YUV) {
   // 3x3, YUV 4:2:0
   ReadYUV("/images/resources/avif/red-limited-range-420-8bpc.avif",
-          IntSize(3, 3), IntSize(2, 2));
+          IntSize(3, 3), IntSize(2, 2), kGray_8_SkColorType);
 
   // 3x3, YUV 4:2:2
   ReadYUV("/images/resources/avif/red-limited-range-422-8bpc.avif",
-          IntSize(3, 3), IntSize(2, 3));
+          IntSize(3, 3), IntSize(2, 3), kGray_8_SkColorType);
 
   // 3x3, YUV 4:4:4
   ReadYUV("/images/resources/avif/red-limited-range-444-8bpc.avif",
-          IntSize(3, 3), IntSize(3, 3));
+          IntSize(3, 3), IntSize(3, 3), kGray_8_SkColorType);
+
+  for (const auto ct : {kA16_unorm_SkColorType, kA16_float_SkColorType}) {
+    // 3x3, YUV 4:2:0, 10bpc
+    ReadYUV("/images/resources/avif/red-limited-range-420-10bpc.avif",
+            IntSize(3, 3), IntSize(2, 2), ct);
+
+    // 3x3, YUV 4:2:2, 10bpc
+    ReadYUV("/images/resources/avif/red-limited-range-422-10bpc.avif",
+            IntSize(3, 3), IntSize(2, 3), ct);
+
+    // 3x3, YUV 4:4:4, 10bpc
+    ReadYUV("/images/resources/avif/red-limited-range-444-10bpc.avif",
+            IntSize(3, 3), IntSize(3, 3), ct);
+
+    // 3x3, YUV 4:2:0, 12bpc
+    ReadYUV("/images/resources/avif/red-limited-range-420-12bpc.avif",
+            IntSize(3, 3), IntSize(2, 2), ct);
+
+    // 3x3, YUV 4:2:2, 12bpc
+    ReadYUV("/images/resources/avif/red-limited-range-422-12bpc.avif",
+            IntSize(3, 3), IntSize(2, 3), ct);
+
+    // 3x3, YUV 4:4:4, 12bpc
+    ReadYUV("/images/resources/avif/red-limited-range-444-12bpc.avif",
+            IntSize(3, 3), IntSize(3, 3), ct);
+  }
 }
 
 using StaticAVIFColorTests = ::testing::TestWithParam<StaticColorCheckParam>;

@@ -107,7 +107,7 @@ namespace {
 
 constexpr size_t kMaxAppNameLength = 30;
 
-#if defined(OS_MACOSX)
+#if defined(OS_MAC)
 // An empty command used because of a bug in AppKit menus.
 // See comment in CreateActionToolbarOverflowMenu().
 const int kEmptyMenuItemCommand = 0;
@@ -297,7 +297,7 @@ bool AppMenuModel::DoesCommandIdDismissMenu(int command_id) const {
 
 bool AppMenuModel::IsItemForCommandIdDynamic(int command_id) const {
   return command_id == IDC_ZOOM_PERCENT_DISPLAY ||
-#if defined(OS_MACOSX)
+#if defined(OS_MAC)
          command_id == IDC_FULLSCREEN ||
 #elif defined(OS_WIN)
          command_id == IDC_PIN_TO_START_SCREEN ||
@@ -309,7 +309,7 @@ base::string16 AppMenuModel::GetLabelForCommandId(int command_id) const {
   switch (command_id) {
     case IDC_ZOOM_PERCENT_DISPLAY:
       return zoom_label_;
-#if defined(OS_MACOSX)
+#if defined(OS_MAC)
     case IDC_FULLSCREEN: {
       int string_id = IDS_ENTER_FULLSCREEN_MAC;  // Default to Enter.
       // Note: On startup, |window()| may be NULL.
@@ -702,7 +702,7 @@ bool AppMenuModel::IsCommandIdEnabled(int command_id) const {
 
 bool AppMenuModel::IsCommandIdVisible(int command_id) const {
   switch (command_id) {
-#if defined(OS_MACOSX)
+#if defined(OS_MAC)
     case kEmptyMenuItemCommand:
       return false;  // Always hidden (see CreateActionToolbarOverflowMenu).
 #endif

@@ -1621,7 +1621,7 @@ void FrameLoader::ReportLegacyTLSVersion(const KURL& url,
       .Record(root.GetDocument()->UkmRecorder());
 
   // Web tests use an outdated server on macOS. See https://crbug.com/936515.
-#if defined(OS_APPLE)
+#if defined(OS_MAC)
   if (WebTestSupport::IsRunningWebTest())
     return;
 #endif

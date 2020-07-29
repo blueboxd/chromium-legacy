@@ -2911,7 +2911,7 @@ IN_PROC_BROWSER_TEST_F(DownloadTest, DownloadErrorsServer) {
   DownloadFilesCheckErrors(base::size(download_info), download_info);
 }
 
-#if defined(OS_MACOSX)
+#if defined(OS_MAC)
 // https://crbug.com/739766
 #define MAYBE_DownloadErrorsFile DISABLED_DownloadErrorsFile
 #else

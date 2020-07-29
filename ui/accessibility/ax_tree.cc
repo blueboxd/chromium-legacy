@@ -2263,11 +2263,12 @@ base::Optional<int> AXTree::GetSetSize(const AXNode& node) {
     return base::nullopt;
 
   // For popup buttons that control a single element, inherit the controlled
-  // item's SetSize.
+  // item's SetSize. Skip this block if the popup button controls itself.
   if (node.data().role == ax::mojom::Role::kPopUpButton) {
     const auto& controls_ids = node.data().GetIntListAttribute(
         ax::mojom::IntListAttribute::kControlsIds);
-    if (controls_ids.size() == 1 && GetFromId(controls_ids[0])) {
+    if (controls_ids.size() == 1 && GetFromId(controls_ids[0]) &&
+        controls_ids[0] != node.id()) {
       const AXNode& controlled_item = *GetFromId(controls_ids[0]);
 
       base::Optional<int> controlled_item_set_size =

@@ -166,7 +166,7 @@ class PrintPreviewDialogControllerBrowserTest : public InProcessBrowserTest {
 
  private:
   void SetUpOnMainThread() override {
-#if defined(OS_MACOSX)
+#if defined(OS_MAC)
     base::CommandLine::ForCurrentProcess()->AppendSwitch(
         switches::kDisableModalAnimations);
 #endif

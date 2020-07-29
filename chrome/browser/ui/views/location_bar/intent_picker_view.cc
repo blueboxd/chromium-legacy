@@ -22,9 +22,9 @@
 #include "chrome/browser/chromeos/apps/intent_helper/common_apps_navigation_throttle.h"
 #endif  //  defined(OS_CHROMEOS)
 
-#if defined(OS_MACOSX)
+#if defined(OS_MAC)
 #include "chrome/browser/apps/intent_helper/mac_apps_navigation_throttle.h"
-#endif  //  defined(OS_MACOSX)
+#endif  //  defined(OS_MAC)
 
 namespace content {
 class WebContents;
@@ -64,7 +64,7 @@ void IntentPickerView::OnExecuting(
     chromeos::ChromeOsAppsNavigationThrottle::ShowIntentPickerBubble(
         web_contents, /*ui_auto_display_service=*/nullptr, url);
   }
-#elif defined(OS_MACOSX)
+#elif defined(OS_MAC)
   apps::MacAppsNavigationThrottle::ShowIntentPickerBubble(
       web_contents, /*ui_auto_display_service=*/nullptr, url);
 #else

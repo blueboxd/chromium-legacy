@@ -17,6 +17,7 @@ import android.widget.RelativeLayout;
 
 import org.chromium.base.annotations.JNINamespace;
 import org.chromium.components.browser_ui.modaldialog.AppModalPresenter;
+import org.chromium.components.browser_ui.widget.InsetObserverView;
 import org.chromium.components.embedder_support.view.ContentView;
 import org.chromium.content_public.browser.WebContents;
 import org.chromium.ui.modaldialog.DialogDismissalCause;
@@ -132,6 +133,10 @@ public final class BrowserViewController
     /** Returns top-level View this Controller works with */
     public View getView() {
         return mContentViewRenderView;
+    }
+
+    public InsetObserverView getInsetObserverView() {
+        return mContentViewRenderView.getInsetObserverView();
     }
 
     /** Returns the ViewGroup into which the InfoBarContainer should be parented. **/

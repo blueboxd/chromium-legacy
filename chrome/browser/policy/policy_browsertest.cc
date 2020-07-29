@@ -222,7 +222,7 @@
 #include "ui/snapshot/screenshot_grabber.h"
 #endif
 
-#if !defined(OS_MACOSX)
+#if !defined(OS_MAC)
 #include "base/compiler_specific.h"
 #include "extensions/browser/app_window/app_window.h"
 #include "extensions/browser/app_window/app_window_registry.h"
@@ -236,7 +236,7 @@
 #include "chrome/browser/ui/startup/startup_browser_creator_impl.h"
 #endif
 
-#if defined(OS_WIN) || defined(OS_MACOSX) || \
+#if defined(OS_WIN) || defined(OS_MAC) || \
     (defined(OS_LINUX) && !defined(OS_CHROMEOS))
 #include "media/webrtc/webrtc_switches.h"
 #include "sandbox/policy/features.h"
@@ -258,10 +258,10 @@ const int kOneHourInMs = 60 * 60 * 1000;
 const int kThreeHoursInMs = 180 * 60 * 1000;
 #endif
 
-#if !defined(OS_MACOSX)
+#if !defined(OS_MAC)
 const base::FilePath::CharType kUnpackedFullscreenAppName[] =
     FILE_PATH_LITERAL("fullscreen_app");
-#endif  // !defined(OS_MACOSX)
+#endif  // !defined(OS_MAC)
 
 // Arbitrary port range for testing the WebRTC UDP port policy.
 const char kTestWebRtcUdpPortRange[] = "10000-10100";
@@ -381,7 +381,7 @@ class TestAudioObserver : public chromeos::CrasAudioHandler::AudioObserver {
 };
 #endif
 
-#if !defined(OS_MACOSX)
+#if !defined(OS_MAC)
 
 // Observer used to wait for the creation of a new app window.
 class TestAddAppWindowObserver
@@ -1201,7 +1201,7 @@ IN_PROC_BROWSER_TEST_F(PolicyTest, HomepageLocation) {
   EXPECT_TRUE(search::IsInstantNTP(contents));
 }
 
-#if defined(OS_MACOSX) && defined(ADDRESS_SANITIZER)
+#if defined(OS_MAC) && defined(ADDRESS_SANITIZER)
 // Flaky on ASAN on Mac. See https://crbug.com/674497.
 #define MAYBE_IncognitoEnabled DISABLED_IncognitoEnabled
 #else
@@ -1353,7 +1353,7 @@ IN_PROC_BROWSER_TEST_F(PolicyTest, UrlKeyedAnonymizedDataCollection) {
       unified_consent::prefs::kUrlKeyedAnonymizedDataCollectionEnabled));
 }
 
-#if !defined(OS_MACOSX)
+#if !defined(OS_MAC)
 IN_PROC_BROWSER_TEST_F(PolicyTest, FullscreenAllowedBrowser) {
   PolicyMap policies;
   policies.Set(key::kFullscreenAllowed, POLICY_LEVEL_MANDATORY,
@@ -2574,7 +2574,7 @@ IN_PROC_BROWSER_TEST_F(SharedClipboardPolicyTest, SharedClipboardEnabled) {
   EXPECT_TRUE(prefs->GetBoolean(prefs::kSharedClipboardEnabled));
 }
 
-#if defined(OS_WIN) || defined(OS_MACOSX) || \
+#if defined(OS_WIN) || defined(OS_MAC) || \
     (defined(OS_LINUX) && !defined(OS_CHROMEOS))
 
 class AudioSandboxEnabledTest

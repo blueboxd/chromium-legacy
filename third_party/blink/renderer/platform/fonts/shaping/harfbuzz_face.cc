@@ -64,7 +64,7 @@ namespace blink {
 
 namespace {
 
-#if defined(OS_APPLE)
+#if defined(OS_MAC)
 void DetermineTrakSbix(SkTypeface* typeface, bool* has_trak, bool* has_sbix) {
   int num_tags = typeface->countTables();
 
@@ -357,7 +357,7 @@ static hb_blob_t* HarfBuzzSkiaGetTable(hb_face_t* face,
                         WTF::Partitions::FastFree);
 }
 
-#if !defined(OS_APPLE)
+#if !defined(OS_MAC)
 static void DeleteTypefaceStream(void* stream_asset_ptr) {
   SkStreamAsset* stream_asset =
       reinterpret_cast<SkStreamAsset*>(stream_asset_ptr);
@@ -376,7 +376,7 @@ hb_face_t* HarfBuzzFace::CreateFace() {
   // not work efficiently on Mac, since what is returned from
   // typeface->openStream is a synthesized font assembled from copying all font
   // tables on Mac. See the implementation of SkTypeface_Mac::onOpenStream.
-#if !defined(OS_APPLE)
+#if !defined(OS_MAC)
   int ttc_index = 0;
   std::unique_ptr<SkStreamAsset> tf_stream(typeface->openStream(&ttc_index));
   if (tf_stream && tf_stream->getMemoryBase()) {
@@ -428,7 +428,7 @@ scoped_refptr<HbFontCacheEntry> CreateHbFontCacheEntry(hb_face_t* face,
 
   FontGlobalContext::HorizontalAdvanceSource advance_source =
       FontGlobalContext::kSkiaHorizontalAdvances;
-#if defined(OS_APPLE)
+#if defined(OS_MAC)
   bool has_trak = false;
   bool has_sbix = false;
   DetermineTrakSbix(typeface, &has_trak, &has_sbix);

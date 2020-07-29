@@ -1217,29 +1217,29 @@ const PolicyToPreferenceMapEntry kSimplePolicyMap[] = {
     base::Value::Type::INTEGER },
 #endif  // !defined(OS_ANDROID) && !defined(OS_CHROMEOS)
 
-#if !defined(OS_MACOSX) && !defined(OS_CHROMEOS)
+#if !defined(OS_MAC) && !defined(OS_CHROMEOS)
   { key::kBackgroundModeEnabled,
     prefs::kBackgroundModeEnabled,
     base::Value::Type::BOOLEAN },
-#endif  // !defined(OS_MACOSX) && !defined(OS_CHROMEOS)
+#endif  // !defined(OS_MAC) && !defined(OS_CHROMEOS)
 
-#if defined(OS_LINUX) || defined(OS_MACOSX) || defined(OS_CHROMEOS)
+#if defined(OS_LINUX) || defined(OS_MAC) || defined(OS_CHROMEOS)
   { key::kAuthNegotiateDelegateByKdcPolicy,
     prefs::kAuthNegotiateDelegateByKdcPolicy,
     base::Value::Type::BOOLEAN },
-#endif  // defined(OS_LINUX) || defined(OS_MACOSX) || defined(OS_CHROMEOS)
+#endif  // defined(OS_LINUX) || defined(OS_MAC) || defined(OS_CHROMEOS)
 
-#if !defined(OS_MACOSX)
+#if !defined(OS_MAC)
   { key::kFullscreenAllowed,
     prefs::kFullscreenAllowed,
     base::Value::Type::BOOLEAN },
-#endif  // !defined(OS_MACOSX)
+#endif  // !defined(OS_MAC)
 
-#if !defined(OS_MACOSX) && BUILDFLAG(ENABLE_EXTENSIONS)
+#if !defined(OS_MAC) && BUILDFLAG(ENABLE_EXTENSIONS)
   { key::kFullscreenAllowed,
     extensions::pref_names::kAppFullscreenAllowed,
     base::Value::Type::BOOLEAN },
-#endif  // !defined(OS_MACOSX) && BUILDFLAG(ENABLE_EXTENSIONS)
+#endif  // !defined(OS_MAC) && BUILDFLAG(ENABLE_EXTENSIONS)
 
 #if BUILDFLAG(ENABLE_EXTENSIONS)
   { key::kSecurityKeyPermitAttestation,

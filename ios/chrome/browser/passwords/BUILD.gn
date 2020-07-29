@@ -207,6 +207,7 @@ source_set("unit_tests") {
     "//ios/web/public/test",
     "//ios/web/public/test/fakes",
     "//net:test_support",
+    "//services/network:test_support",
     "//testing/gtest",
     "//third_party/ocmock",
     "//url",

@@ -8,6 +8,7 @@
 
 #include "base/json/json_writer.h"
 #include "base/memory/weak_ptr.h"
+#include "base/strings/string_number_conversions.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chromecast/base/version.h"
 #include "chromecast/browser/cast_web_contents_impl.h"
@@ -75,7 +76,12 @@ WebviewController::WebviewController(content::BrowserContext* browser_context,
 
   std::unique_ptr<webview::WebviewResponse> response =
       std::make_unique<webview::WebviewResponse>();
-  auto ax_id = contents_->GetMainFrame()->GetAXTreeID().ToString();
+  // For webviews, set the ax_id to be the cast_web_contents' tab id rather than
+  // the ax tree id for the main frame. The main frame can be replaced after
+  // we've set this from navigation. Prefix the string with "T:" to tell the ax
+  // bridge to find the cast_web_contents by tab id. Then it can find the
+  // current ax tree id from that.
+  std::string ax_id = "T:" + base::NumberToString(cast_web_contents_->tab_id());
   response->mutable_create_response()
       ->mutable_accessibility_info()
       ->set_ax_tree_id(ax_id);

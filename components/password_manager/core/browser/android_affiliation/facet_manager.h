@@ -11,8 +11,8 @@
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/time/time.h"
-#include "components/password_manager/core/browser/android_affiliation/affiliation_service.h"
 #include "components/password_manager/core/browser/android_affiliation/affiliation_utils.h"
+#include "components/password_manager/core/browser/android_affiliation/android_affiliation_service.h"
 
 namespace base {
 class Clock;
@@ -38,7 +38,7 @@ class FacetManager {
   ~FacetManager();
 
   // Facet-specific implementations for methods in AffiliationService of the
-  // same name. See documentation in affiliation_service.h for details:
+  // same name. See documentation in android_affiliation_service.h for details:
   void GetAffiliationsAndBranding(
       StrategyOnCacheMiss cache_miss_strategy,
       AffiliationService::ResultCallback callback,

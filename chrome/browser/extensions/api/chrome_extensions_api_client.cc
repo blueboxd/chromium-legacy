@@ -356,7 +356,7 @@ MetricsPrivateDelegate* ChromeExtensionsAPIClient::GetMetricsPrivateDelegate() {
 
 NetworkingCastPrivateDelegate*
 ChromeExtensionsAPIClient::GetNetworkingCastPrivateDelegate() {
-#if defined(OS_CHROMEOS) || defined(OS_WIN) || defined(OS_MACOSX)
+#if defined(OS_CHROMEOS) || defined(OS_WIN) || defined(OS_MAC)
   if (!networking_cast_private_delegate_)
     networking_cast_private_delegate_ =
         ChromeNetworkingCastPrivateDelegate::Create();

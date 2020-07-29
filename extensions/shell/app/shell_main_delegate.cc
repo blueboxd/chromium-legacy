@@ -31,7 +31,7 @@
 #if defined(OS_LINUX)
 #include "components/nacl/common/nacl_paths.h"  // nogncheck
 #endif  // OS_LINUX
-#if defined(OS_POSIX) && !defined(OS_MACOSX) && !defined(OS_ANDROID)
+#if defined(OS_POSIX) && !defined(OS_MAC) && !defined(OS_ANDROID)
 #include "components/nacl/zygote/nacl_fork_delegate_linux.h"
 #endif  // OS_POSIX && !OS_MACOSX && !OS_ANDROID
 #endif  // BUILDFLAG(ENABLE_NACL)
@@ -40,7 +40,7 @@
 #include "base/base_paths_win.h"
 #elif defined(OS_LINUX)
 #include "base/nix/xdg_util.h"
-#elif defined(OS_MACOSX)
+#elif defined(OS_MAC)
 #include "base/base_paths_mac.h"
 #endif
 
@@ -76,7 +76,7 @@ base::FilePath GetDataPath() {
       env.get(), base::nix::kXdgConfigHomeEnvVar, base::nix::kDotConfigDir);
 #elif defined(OS_WIN)
   CHECK(base::PathService::Get(base::DIR_LOCAL_APP_DATA, &data_dir));
-#elif defined(OS_MACOSX)
+#elif defined(OS_MAC)
   CHECK(base::PathService::Get(base::DIR_APP_DATA, &data_dir));
 #else
   NOTIMPLEMENTED();
@@ -182,7 +182,7 @@ void ShellMainDelegate::ProcessExiting(const std::string& process_type) {
   logging::CloseLogFile();
 }
 
-#if defined(OS_POSIX) && !defined(OS_MACOSX) && !defined(OS_ANDROID)
+#if defined(OS_POSIX) && !defined(OS_MAC) && !defined(OS_ANDROID)
 void ShellMainDelegate::ZygoteStarting(
     std::vector<std::unique_ptr<content::ZygoteForkDelegate>>* delegates) {
 #if BUILDFLAG(ENABLE_NACL)
@@ -211,7 +211,7 @@ bool ShellMainDelegate::ProcessNeedsResourceBundle(
 #if BUILDFLAG(ENABLE_NACL)
          process_type == switches::kNaClLoaderProcess ||
 #endif
-#if defined(OS_MACOSX)
+#if defined(OS_MAC)
          process_type == switches::kGpuProcess ||
 #endif
          process_type == switches::kUtilityProcess;

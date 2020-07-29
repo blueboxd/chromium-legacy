@@ -51,7 +51,7 @@ class CONTENT_EXPORT SandboxedProcessLauncherDelegate
   virtual base::EnvironmentMap GetEnvironment();
 #endif  // defined(OS_POSIX)
 
-#if defined(OS_MACOSX)
+#if defined(OS_MAC)
   // Whether or not to disclaim TCC responsibility for the process, defaults to
   // false. See base::LaunchOptions::disclaim_responsibility.
   virtual bool DisclaimResponsibility();

@@ -10,7 +10,7 @@
 #include "chrome/browser/ui/views/frame/immersive_mode_controller_ash.h"
 #endif
 
-#if defined(OS_MACOSX)
+#if defined(OS_MAC)
 #include "chrome/browser/ui/views/frame/immersive_mode_controller_mac.h"
 #endif
 
@@ -19,7 +19,7 @@ namespace chrome {
 std::unique_ptr<ImmersiveModeController> CreateImmersiveModeController() {
 #if defined(OS_CHROMEOS)
   return std::make_unique<ImmersiveModeControllerAsh>();
-#elif defined(OS_MACOSX)
+#elif defined(OS_MAC)
   return CreateImmersiveModeControllerMac();
 #else
   return std::make_unique<ImmersiveModeControllerStub>();

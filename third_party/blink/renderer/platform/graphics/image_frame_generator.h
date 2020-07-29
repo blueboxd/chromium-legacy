@@ -96,6 +96,7 @@ class PLATFORM_EXPORT ImageFrameGenerator final
   // partial planes, and the GPU code needs to handle them.
   bool DecodeToYUV(SegmentReader*,
                    size_t index,
+                   SkColorType color_type,
                    const SkISize component_sizes[3],
                    void* planes[3],
                    const size_t row_bytes[3]);
@@ -113,7 +114,10 @@ class PLATFORM_EXPORT ImageFrameGenerator final
   bool HasAlpha(size_t index);
 
   // TODO(crbug.com/943519): Do not call unless the SkROBuffer has all the data.
-  bool GetYUVComponentSizes(SegmentReader*, SkYUVASizeInfo*, SkYUVColorSpace*);
+  bool GetYUVComponentSizes(SegmentReader*,
+                            SkYUVASizeInfo*,
+                            SkYUVColorSpace*,
+                            uint8_t* bit_depth);
 
  private:
   class ClientMutexLocker {

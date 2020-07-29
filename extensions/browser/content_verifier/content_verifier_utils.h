@@ -30,7 +30,7 @@ bool TrimDotSpaceSuffix(const base::FilePath::StringType& path,
 
 // Returns true if this system/OS's file access is case sensitive.
 constexpr bool IsFileAccessCaseSensitive() {
-#if defined(OS_WIN) || defined(OS_MACOSX)
+#if defined(OS_WIN) || defined(OS_MAC)
   return false;
 #else
   return true;

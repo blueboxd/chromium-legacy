@@ -56,16 +56,6 @@ class CORE_EXPORT FragmentData {
   }
   void SetLayer(std::unique_ptr<PaintLayer>);
 
-  // Visual rect of the selection on this object, in the same coordinate space
-  // as DisplayItemClient::VisualRect().
-  IntRect SelectionVisualRect() const {
-    return rare_data_ ? rare_data_->selection_visual_rect : IntRect();
-  }
-  void SetSelectionVisualRect(const IntRect& r) {
-    if (rare_data_ || !r.IsEmpty())
-      EnsureRareData().selection_visual_rect = r;
-  }
-
   // Covers the sub-rectangles of the object that need to be re-rastered, in the
   // object's local coordinate space.  During PrePaint, the rect mapped into
   // visual rect space will be added into PartialInvalidationVisualRect(), and
@@ -241,7 +231,6 @@ class CORE_EXPORT FragmentData {
     // avoid separate data structure for them.
     std::unique_ptr<PaintLayer> layer;
     UniqueObjectId unique_id;
-    IntRect selection_visual_rect;
     PhysicalRect partial_invalidation_local_rect;
     IntRect partial_invalidation_visual_rect;
 

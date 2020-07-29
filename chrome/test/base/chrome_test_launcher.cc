@@ -37,10 +37,10 @@
 #include "content/public/test/test_utils.h"
 #include "ui/base/test/ui_controls.h"
 
-#if defined(OS_MACOSX)
+#if defined(OS_MAC)
 #include "base/mac/bundle_locations.h"
 #include "chrome/browser/chrome_browser_application_mac.h"
-#endif  // defined(OS_MACOSX)
+#endif  // defined(OS_MAC)
 
 #if defined(USE_AURA)
 #include "ui/aura/test/ui_controls_factory_aura.h"
@@ -60,7 +60,7 @@
 #include "chrome/installer/util/firewall_manager_win.h"
 #endif
 
-#if defined(OS_WIN) || defined(OS_MACOSX) || \
+#if defined(OS_WIN) || defined(OS_MAC) || \
     (defined(OS_LINUX) && !defined(OS_CHROMEOS))
 #include "chrome/browser/first_run/scoped_relaunch_chrome_browser_override.h"
 #include "chrome/browser/upgrade_detector/installed_version_poller.h"
@@ -78,7 +78,7 @@ int ChromeTestSuiteRunner::RunTestSuite(int argc, char** argv) {
   // Android browser tests run child processes as threads instead.
   content::ContentTestSuiteBase::RegisterInProcessThreads();
 #endif
-#if defined(OS_WIN) || defined(OS_MACOSX) || \
+#if defined(OS_WIN) || defined(OS_MAC) || \
     (defined(OS_LINUX) && !defined(OS_CHROMEOS))
   InstalledVersionPoller::ScopedDisableForTesting disable_polling(
       InstalledVersionPoller::MakeScopedDisableForTesting());
@@ -177,7 +177,7 @@ int LaunchChromeTests(size_t parallel_jobs,
                       content::TestLauncherDelegate* delegate,
                       int argc,
                       char** argv) {
-#if defined(OS_MACOSX)
+#if defined(OS_MAC)
   // Set up the path to the framework so resources can be loaded. This is also
   // performed in ChromeTestSuite, but in browser tests that only affects the
   // browser process. Child processes need access to the Framework bundle too.
@@ -228,7 +228,7 @@ int LaunchChromeTests(size_t parallel_jobs,
         network_service_test_helper.get()));
   }
 
-#if defined(OS_WIN) || defined(OS_MACOSX) || \
+#if defined(OS_WIN) || defined(OS_MAC) || \
     (defined(OS_LINUX) && !defined(OS_CHROMEOS))
   // Cause a test failure for any test that triggers an unexpected relaunch.
   // Tests that fail here should likely be restructured to put the "before

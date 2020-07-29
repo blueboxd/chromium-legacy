@@ -270,12 +270,12 @@ SharedImageBackingFactoryGLTexture::CreateSharedImage(
   // always bindable.
 #if DCHECK_IS_ON()
   bool texture_2d_support = false;
-#if defined(OS_MACOSX)
+#if defined(OS_MAC)
   // If the PlatformSpecificTextureTarget on Mac is GL_TEXTURE_2D, this is
   // supported.
   texture_2d_support =
       (gpu::GetPlatformSpecificTextureTarget() == GL_TEXTURE_2D);
-#endif  // defined(OS_MACOSX)
+#endif  // defined(OS_MAC)
   DCHECK(handle.type == gfx::SHARED_MEMORY_BUFFER || target != GL_TEXTURE_2D ||
          texture_2d_support || image->ShouldBindOrCopy() == gl::GLImage::BIND);
 #endif  // DCHECK_IS_ON()
@@ -415,7 +415,7 @@ SharedImageBackingFactoryGLTexture::CreateSharedImageInternal(
     return nullptr;
   }
 
-#if defined(OS_MACOSX)
+#if defined(OS_MAC)
   const bool use_buffer =
       usage & (SHARED_IMAGE_USAGE_SCANOUT | SHARED_IMAGE_USAGE_WEBGPU);
 #else

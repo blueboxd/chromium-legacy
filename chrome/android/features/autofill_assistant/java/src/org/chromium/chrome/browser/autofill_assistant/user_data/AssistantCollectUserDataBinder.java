@@ -675,7 +675,7 @@ class AssistantCollectUserDataBinder
                 /*deleteRunnable =*/null, profile));
 
         CardEditor cardEditor = new CardEditor(webContents, addressEditor,
-                /* includeOrgLabel= */ false, /* observerForTest= */ null);
+                /* includeOrgLabel= */ false);
         List<String> supportedCardNetworks =
                 model.get(AssistantCollectUserDataModel.SUPPORTED_BASIC_CARD_NETWORKS);
         if (supportedCardNetworks != null) {

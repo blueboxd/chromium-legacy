@@ -82,43 +82,37 @@ void InitializeXkb(x11::Connection* connection) {
       }));
 }
 
-Time ExtractTimeFromXEvent(const x11::Event& x11_event) {
-  const XEvent& xevent = x11_event.xlib_event();
-
-  switch (xevent.type) {
-    case x11::KeyEvent::Press:
-    case x11::KeyEvent::Release:
-      return xevent.xkey.time;
-    case x11::ButtonEvent::Press:
-    case x11::ButtonEvent::Release:
-      return xevent.xbutton.time;
-    case x11::MotionNotifyEvent::opcode:
-      return xevent.xmotion.time;
-    case x11::CrossingEvent::EnterNotify:
-    case x11::CrossingEvent::LeaveNotify:
-      return xevent.xcrossing.time;
-    case x11::PropertyNotifyEvent::opcode:
-      return xevent.xproperty.time;
-    case x11::SelectionClearEvent::opcode:
-      return xevent.xselectionclear.time;
-    case x11::SelectionRequestEvent::opcode:
-      return xevent.xselectionrequest.time;
-    case x11::SelectionNotifyEvent::opcode:
-      return xevent.xselection.time;
-    case x11::GeGenericEvent::opcode:
-      if (DeviceDataManagerX11::GetInstance()->IsXIDeviceEvent(x11_event))
-        return static_cast<XIDeviceEvent*>(xevent.xcookie.data)->time;
-      else
-        break;
-  }
-  return x11::CurrentTime;
+x11::Time ExtractTimeFromXEvent(const x11::Event& xev) {
+  if (auto* key = xev.As<x11::KeyEvent>())
+    return key->time;
+  if (auto* button = xev.As<x11::ButtonEvent>())
+    return button->time;
+  if (auto* motion = xev.As<x11::MotionNotifyEvent>())
+    return motion->time;
+  if (auto* crossing = xev.As<x11::CrossingEvent>())
+    return crossing->time;
+  if (auto* prop = xev.As<x11::PropertyNotifyEvent>())
+    return prop->time;
+  if (auto* sel_clear = xev.As<x11::SelectionClearEvent>())
+    return sel_clear->time;
+  if (auto* sel_req = xev.As<x11::SelectionRequestEvent>())
+    return sel_req->time;
+  if (auto* sel_notify = xev.As<x11::SelectionNotifyEvent>())
+    return sel_notify->time;
+  if (auto* dev_changed = xev.As<x11::Input::DeviceChangedEvent>())
+    return dev_changed->time;
+  if (auto* device = xev.As<x11::Input::DeviceEvent>())
+    return device->time;
+  if (auto* xi_crossing = xev.As<x11::Input::CrossingEvent>())
+    return xi_crossing->time;
+  return x11::Time::CurrentTime;
 }
 
 void UpdateDeviceList() {
-  XDisplay* display = gfx::GetXDisplay();
-  DeviceListCacheX11::GetInstance()->UpdateDeviceList(display);
-  TouchFactory::GetInstance()->UpdateDeviceList(display);
-  DeviceDataManagerX11::GetInstance()->UpdateDeviceList(display);
+  auto* connection = x11::Connection::Get();
+  DeviceListCacheX11::GetInstance()->UpdateDeviceList(connection);
+  TouchFactory::GetInstance()->UpdateDeviceList(connection);
+  DeviceDataManagerX11::GetInstance()->UpdateDeviceList(connection);
 }
 
 }  // namespace
@@ -172,7 +166,7 @@ void X11EventSource::DispatchXEvents() {
   connection_->Dispatch(this);
 }
 
-Time X11EventSource::GetCurrentServerTime() {
+x11::Time X11EventSource::GetCurrentServerTime() {
   DCHECK(connection_);
 
   if (!dummy_initialized_) {
@@ -220,12 +214,11 @@ Time X11EventSource::GetCurrentServerTime() {
   }
   connection_->ReadResponses();
 
-  Time time = x11::CurrentTime;
+  auto time = x11::Time::CurrentTime;
   auto pred = [&](const x11::Event& event) {
-    if (event.xlib_event().type == x11::PropertyNotifyEvent::opcode &&
-        event.xlib_event().xproperty.window ==
-            static_cast<uint32_t>(dummy_window_)) {
-      time = event.xlib_event().xproperty.time;
+    auto* prop = event.As<x11::PropertyNotifyEvent>();
+    if (prop && prop->window == dummy_window_) {
+      time = prop->time;
       return true;
     }
     return false;
@@ -237,10 +230,10 @@ Time X11EventSource::GetCurrentServerTime() {
   return time;
 }
 
-Time X11EventSource::GetTimestamp() {
+x11::Time X11EventSource::GetTimestamp() {
   if (dispatching_event_) {
-    Time timestamp = ExtractTimeFromXEvent(*dispatching_event_);
-    if (timestamp != x11::CurrentTime)
+    auto timestamp = ExtractTimeFromXEvent(*dispatching_event_);
+    if (timestamp != x11::Time::CurrentTime)
       return timestamp;
   }
   DVLOG(1) << "Making a round trip to get a recent server timestamp.";
@@ -404,21 +397,16 @@ void X11EventSource::ProcessXEvent(x11::Event* xevent) {
 // X11EventSource, protected
 
 void X11EventSource::PostDispatchEvent(x11::Event* x11_event) {
-  XEvent* xevent = &x11_event->xlib_event();
   bool should_update_device_list = false;
 
-  if (xevent->type == x11::GeGenericEvent::opcode) {
-    if (xevent->xgeneric.evtype == XI_HierarchyChanged) {
+  if (x11_event->As<x11::Input::HierarchyEvent>()) {
+    should_update_device_list = true;
+  } else if (auto* device = x11_event->As<x11::Input::DeviceChangedEvent>()) {
+    if (device->reason == x11::Input::ChangeReason::DeviceChange) {
       should_update_device_list = true;
-    } else if (xevent->xgeneric.evtype == XI_DeviceChanged) {
-      XIDeviceChangedEvent* xev =
-          static_cast<XIDeviceChangedEvent*>(xevent->xcookie.data);
-      if (xev->reason == XIDeviceChange) {
-        should_update_device_list = true;
-      } else if (xev->reason == XISlaveSwitch) {
-        ui::DeviceDataManagerX11::GetInstance()->InvalidateScrollClasses(
-            xev->sourceid);
-      }
+    } else if (device->reason == x11::Input::ChangeReason::SlaveSwitch) {
+      ui::DeviceDataManagerX11::GetInstance()->InvalidateScrollClasses(
+          device->sourceid);
     }
   }
 
@@ -427,13 +415,18 @@ void X11EventSource::PostDispatchEvent(x11::Event* x11_event) {
     hotplug_event_handler_->OnHotplugEvent();
   }
 
-  if (xevent->type == x11::CrossingEvent::EnterNotify &&
-      xevent->xcrossing.detail != NotifyInferior &&
-      xevent->xcrossing.mode != NotifyUngrab) {
+  auto* crossing = x11_event->As<x11::CrossingEvent>();
+  if (crossing && crossing->opcode == x11::CrossingEvent::EnterNotify &&
+      crossing->detail == x11::NotifyDetail::Inferior &&
+      crossing->mode == x11::NotifyMode::Ungrab) {
     // Clear stored scroll data
     ui::DeviceDataManagerX11::GetInstance()->InvalidateScrollClasses(
         DeviceDataManagerX11::kAllDevices);
   }
+
+  auto* mapping = x11_event->As<x11::MappingNotifyEvent>();
+  if (mapping && mapping->request == x11::Mapping::Pointer)
+    DeviceDataManagerX11::GetInstance()->UpdateButtonMap();
 }
 
 void X11EventSource::StopCurrentEventStream() {

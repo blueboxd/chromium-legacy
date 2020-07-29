@@ -217,14 +217,15 @@ bool DecodingImageGenerator::GetPixels(const SkImageInfo& dst_info,
   return decoded;
 }
 
-bool DecodingImageGenerator::QueryYUVA8(
+bool DecodingImageGenerator::QueryYUVA(
     SkYUVASizeInfo* size_info,
     SkYUVAIndex indices[SkYUVAIndex::kIndexCount],
-    SkYUVColorSpace* color_space) const {
+    SkYUVColorSpace* color_space,
+    uint8_t* bit_depth) const {
   if (!can_yuv_decode_)
     return false;
 
-  TRACE_EVENT0("blink", "DecodingImageGenerator::queryYUVA8");
+  TRACE_EVENT0("blink", "DecodingImageGenerator::queryYUVA");
 
   // Indicate that we have three separate planes
   indices[SkYUVAIndex::kY_Index] = {0, SkColorChannel::kR};
@@ -234,20 +235,21 @@ bool DecodingImageGenerator::QueryYUVA8(
 
   DCHECK(all_data_received_);
   return frame_generator_->GetYUVComponentSizes(data_.get(), size_info,
-                                                color_space);
+                                                color_space, bit_depth);
 }
 
-bool DecodingImageGenerator::GetYUVA8Planes(const SkYUVASizeInfo& size_info,
-                                            const SkYUVAIndex indices[4],
-                                            void* planes[3],
-                                            size_t frame_index,
-                                            uint32_t lazy_pixel_ref) {
+bool DecodingImageGenerator::GetYUVAPlanes(const SkYUVASizeInfo& size_info,
+                                           SkColorType color_type,
+                                           const SkYUVAIndex indices[4],
+                                           void* planes[3],
+                                           size_t frame_index,
+                                           uint32_t lazy_pixel_ref) {
   // TODO(crbug.com/943519): YUV decoding does not currently support incremental
   // decoding. See comment in image_frame_generator.h.
   DCHECK(can_yuv_decode_);
   DCHECK(all_data_received_);
 
-  TRACE_EVENT0("blink", "DecodingImageGenerator::getYUVA8Planes");
+  TRACE_EVENT0("blink", "DecodingImageGenerator::getYUVAPlanes");
   TRACE_EVENT1(TRACE_DISABLED_BY_DEFAULT("devtools.timeline"),
                "Decode LazyPixelRef", "LazyPixelRef", lazy_pixel_ref);
 
@@ -265,10 +267,9 @@ bool DecodingImageGenerator::GetYUVA8Planes(const SkYUVASizeInfo& size_info,
     return false;
   }
 
-  bool decoded =
-      frame_generator_->DecodeToYUV(data_.get(), frame_index, size_info.fSizes,
-                                    planes, size_info.fWidthBytes);
-  return decoded;
+  return frame_generator_->DecodeToYUV(data_.get(), frame_index, color_type,
+                                       size_info.fSizes, planes,
+                                       size_info.fWidthBytes);
 }
 
 SkISize DecodingImageGenerator::GetSupportedDecodeSize(

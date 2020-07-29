@@ -160,6 +160,7 @@ enum class ComponentState {
   kUpToDate,
   kUpdateError,
   kUninstalled,
+  kRegistration,
   kRun,
   kLastStatus
 };
@@ -435,6 +436,14 @@ class UpdateClient : public base::RefCountedThreadSafe<UpdateClient> {
                                  const base::Version& version,
                                  int reason,
                                  Callback callback) = 0;
+
+  // Sends a registration ping for the CRX identified by |id| and |version|.
+  // The current implementation of this function only sends a best-effort,
+  // fire-and-forget ping. It has no other side effects regarding installs or
+  // updates done through an instance of this class.
+  virtual void SendRegistrationPing(const std::string& id,
+                                    const base::Version& version,
+                                    Callback callback) = 0;
 
   // Returns status details about a CRX update. The function returns true in
   // case of success and false in case of errors, such as |id| was

@@ -49,7 +49,7 @@ class BrowserAccessibilityManagerAndroid;
 class BrowserAccessibilityManagerWin;
 #elif BUILDFLAG(USE_ATK)
 class BrowserAccessibilityManagerAuraLinux;
-#elif defined(OS_MACOSX)
+#elif defined(OS_MAC)
 class BrowserAccessibilityManagerMac;
 #endif
 
@@ -346,7 +346,7 @@ class CONTENT_EXPORT BrowserAccessibilityManager : public ui::AXTreeObserver,
   ToBrowserAccessibilityManagerAuraLinux();
 #endif
 
-#if defined(OS_MACOSX)
+#if defined(OS_MAC)
   BrowserAccessibilityManagerMac* ToBrowserAccessibilityManagerMac();
 #endif
 

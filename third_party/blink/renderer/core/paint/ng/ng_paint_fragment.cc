@@ -614,41 +614,6 @@ PhysicalRect NGPaintFragment::RecalcInkOverflow() {
   return self_and_contents_rect;
 }
 
-const LayoutObject& NGPaintFragment::VisualRectLayoutObject(
-    bool& this_as_inline_box) const {
-  const NGPhysicalFragment& fragment = PhysicalFragment();
-  if (const LayoutObject* layout_object = fragment.GetLayoutObject()) {
-    // For inline fragments, InlineBox uses one united rect for the LayoutObject
-    // even when it is fragmented across lines. Use the same technique.
-    //
-    // Atomic inlines have two VisualRect; one for the LayoutBox and another as
-    // InlineBox. NG creates two NGPaintFragment, one as the root of an inline
-    // formatting context and another as a child of the inline formatting
-    // context it participates. |Parent()| can distinguish them because a tree
-    // is created for each inline formatting context.
-    this_as_inline_box = Parent();
-    return *layout_object;
-  }
-
-  // Line box does not have corresponding LayoutObject. Use VisualRect of the
-  // containing LayoutBlockFlow as RootInlineBox does so.
-  this_as_inline_box = true;
-  DCHECK(fragment.IsLineBox());
-  // Line box is always a direct child of its containing block.
-  NGPaintFragment* containing_block_fragment = Parent();
-  DCHECK(containing_block_fragment);
-  DCHECK(containing_block_fragment->GetLayoutObject());
-  return *containing_block_fragment->GetLayoutObject();
-}
-
-IntRect NGPaintFragment::PartialInvalidationVisualRect() const {
-  bool this_as_inline_box;
-  const auto& layout_object = VisualRectLayoutObject(this_as_inline_box);
-  return this_as_inline_box
-             ? layout_object.PartialInvalidationVisualRectForInlineBox()
-             : layout_object.PartialInvalidationVisualRect();
-}
-
 base::Optional<PhysicalRect> NGPaintFragment::LocalVisualRectFor(
     const LayoutObject& layout_object) {
   auto fragments = InlineFragmentsFor(&layout_object);

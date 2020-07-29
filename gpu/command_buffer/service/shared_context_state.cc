@@ -41,7 +41,7 @@
 #include "gpu/vulkan/fuchsia/vulkan_fuchsia_ext.h"
 #endif
 
-#if defined(OS_MACOSX)
+#if defined(OS_MAC)
 #include "components/viz/common/gpu/metal_context_provider.h"
 #endif
 
@@ -147,7 +147,7 @@ SharedContextState::SharedContextState(
       break;
     case GrContextType::kMetal:
       if (metal_context_provider_) {
-#if defined(OS_MACOSX)
+#if defined(OS_MAC)
         gr_context_ = metal_context_provider_->GetGrContext();
 #endif
         use_virtualized_gl_contexts_ = false;
@@ -221,7 +221,7 @@ bool SharedContextState::InitializeGrContext(
     gl::ProgressReporter* progress_reporter) {
   progress_reporter_ = progress_reporter;
 
-#if defined(OS_MACOSX)
+#if defined(OS_MAC)
   if (metal_context_provider_)
     metal_context_provider_->SetProgressReporter(progress_reporter);
 #endif
@@ -273,7 +273,7 @@ bool SharedContextState::InitializeGrContext(
     if (gpu_preferences.force_max_texture_size)
       options.fMaxTextureSizeOverride = gpu_preferences.force_max_texture_size;
     options.fPreferExternalImagesOverES3 = true;
-    owned_gr_context_ = GrContext::MakeGL(std::move(interface), options);
+    owned_gr_context_ = GrDirectContext::MakeGL(std::move(interface), options);
     gr_context_ = owned_gr_context_.get();
   }
 
@@ -310,7 +310,7 @@ bool SharedContextState::InitializeGL(
   DCHECK(!use_passthrough_cmd_decoder || !use_virtualized_gl_contexts_);
 
   feature_info_ = std::move(feature_info);
-  feature_info_->Initialize(gpu::CONTEXT_TYPE_OPENGLES2,
+  feature_info_->Initialize(feature_info_->context_type(),
                             use_passthrough_cmd_decoder,
                             gles2::DisallowedFeatures());
 

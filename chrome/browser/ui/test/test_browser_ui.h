@@ -120,7 +120,7 @@ class TestBrowserUi {
   void ShowAndVerifyUi();
 
  private:
-#if defined(OS_WIN) || defined(OS_MACOSX) || \
+#if defined(OS_WIN) || defined(OS_MAC) || \
     (defined(OS_LINUX) && !defined(OS_CHROMEOS))
   std::unique_ptr<ui::test::SkiaGoldMatchingAlgorithm> algorithm_;
 #endif

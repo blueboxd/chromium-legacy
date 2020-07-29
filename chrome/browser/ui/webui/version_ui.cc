@@ -42,7 +42,7 @@
 #include "chrome/browser/ui/webui/version_handler_chromeos.h"
 #endif
 
-#if defined(OS_MACOSX)
+#if defined(OS_MAC)
 #include "base/mac/mac_util.h"
 #endif
 
@@ -120,7 +120,7 @@ VersionUI::~VersionUI() {}
 
 // static
 int VersionUI::VersionProcessorVariation() {
-#if defined(OS_MACOSX)
+#if defined(OS_MAC)
   switch (base::mac::GetCPUType()) {
     case base::mac::CPUType::kIntel:
       return IDS_VERSION_UI_64BIT_INTEL;
@@ -168,7 +168,7 @@ void VersionUI::AddVersionDetailStrings(content::WebUIDataSource* html_source) {
   html_source->AddString(version_ui::kExecutablePath, std::string());
   html_source->AddString(version_ui::kProfilePath, std::string());
 
-#if defined(OS_MACOSX)
+#if defined(OS_MAC)
   html_source->AddString(version_ui::kOSType, base::mac::GetOSDisplayName());
 #elif !defined(OS_CHROMEOS)
   html_source->AddString(version_ui::kOSType, version_info::GetOSType());

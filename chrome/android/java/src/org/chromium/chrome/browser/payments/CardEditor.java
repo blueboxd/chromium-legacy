@@ -12,6 +12,7 @@ import android.text.style.ForegroundColorSpan;
 import android.util.Pair;
 
 import androidx.annotation.Nullable;
+import androidx.annotation.VisibleForTesting;
 
 import org.chromium.base.ApiCompatibilityUtils;
 import org.chromium.base.Callback;
@@ -110,7 +111,7 @@ public class CardEditor extends EditorBase<AutofillPaymentInstrument>
     private final AddressEditor mAddressEditor;
 
     /** An optional observer used by tests. */
-    @Nullable private final PaymentRequestServiceObserverForTest mObserverForTest;
+    private static PaymentRequestServiceObserverForTest sObserverForTest;
 
     /**
      * A mapping from all card issuer networks recognized in Chrome to information about these
@@ -167,16 +168,14 @@ public class CardEditor extends EditorBase<AutofillPaymentInstrument>
      *                        billing addresses.
      * @param includeOrgLabel Whether the labels in the billing address dropdown should include the
      *                        organization name.
-     * @param observerForTest Optional observer for test.
      */
-    public CardEditor(WebContents webContents, AddressEditor addressEditor, boolean includeOrgLabel,
-            @Nullable PaymentRequestServiceObserverForTest observerForTest) {
+    public CardEditor(
+            WebContents webContents, AddressEditor addressEditor, boolean includeOrgLabel) {
         assert webContents != null;
         assert addressEditor != null;
 
         mWebContents = webContents;
         mAddressEditor = addressEditor;
-        mObserverForTest = observerForTest;
 
         List<AutofillProfile> profiles =
                 PersonalDataManager.getInstance().getBillingAddressesToSuggest(includeOrgLabel);
@@ -267,6 +266,15 @@ public class CardEditor extends EditorBase<AutofillPaymentInstrument>
 
         ChromeActivity activity = ChromeActivity.fromWebContents(mWebContents);
         mIsIncognito = activity != null && activity.getCurrentTabModel().isIncognito();
+    }
+
+    /**
+     * Set an observer for test.
+     * @param observerForTest An observer for test.
+     */
+    @VisibleForTesting
+    public static void setObserverForTest(PaymentRequestServiceObserverForTest observerForTest) {
+        sObserverForTest = observerForTest;
     }
 
     private boolean isCardNumberLengthMaximum(@Nullable CharSequence value) {
@@ -544,11 +552,11 @@ public class CardEditor extends EditorBase<AutofillPaymentInstrument>
                           R.string.payments_card_expiration_invalid_validation_message));
             mMonthField.setIsFullLine(false);
 
-            if (mObserverForTest != null) {
+            if (sObserverForTest != null) {
                 mMonthField.setDropdownCallback(new Callback<Pair<String, Runnable>>() {
                     @Override
                     public void onResult(final Pair<String, Runnable> eventData) {
-                        mObserverForTest.onPaymentRequestServiceExpirationMonthChange();
+                        sObserverForTest.onPaymentRequestServiceExpirationMonthChange();
                     }
                 });
             }
@@ -675,8 +683,8 @@ public class CardEditor extends EditorBase<AutofillPaymentInstrument>
                 final boolean isSelectingIncompleteAddress =
                         mIncompleteProfilesForBillingAddress.containsKey(eventData.first);
                 if (!isAddingNewAddress && !isSelectingIncompleteAddress) {
-                    if (mObserverForTest != null) {
-                        mObserverForTest.onPaymentRequestServiceBillingAddressChangeProcessed();
+                    if (sObserverForTest != null) {
+                        sObserverForTest.onPaymentRequestServiceBillingAddressChangeProcessed();
                     }
                     return;
                 }

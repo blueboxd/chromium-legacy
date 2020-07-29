@@ -1115,7 +1115,7 @@ bool WebViewGuest::HandleKeyboardShortcuts(
         blink::mojom::PointerLockResult::kUserRejected);
   }
 
-#if defined(OS_MACOSX)
+#if defined(OS_MAC)
   if (event.GetModifiers() != blink::WebInputEvent::kMetaKey)
     return false;
 

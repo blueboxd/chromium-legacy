@@ -407,7 +407,7 @@ IN_PROC_BROWSER_TEST_F(LazyBackgroundPageApiTest, NaClInView) {
 // Tests that the lazy background page stays alive until all visible views are
 // closed.
 // http://crbug.com/175778; test fails frequently on OS X
-#if defined(OS_MACOSX)
+#if defined(OS_MAC)
 #define MAYBE_WaitForNTP DISABLED_WaitForNTP
 #else
 #define MAYBE_WaitForNTP WaitForNTP

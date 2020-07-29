@@ -14,7 +14,7 @@
 #include "chrome/updater/win/setup/uninstall.h"
 #endif
 
-#if defined(OS_MACOSX)
+#if defined(OS_MAC)
 #include "chrome/updater/mac/setup/setup.h"
 #endif
 

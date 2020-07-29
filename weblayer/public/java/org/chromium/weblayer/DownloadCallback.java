@@ -36,7 +36,8 @@ public abstract class DownloadCallback {
      * @param uri the target that is being downloaded
      * @param requestMethod the method (GET/POST etc...) of the download
      * @param requestInitiator the initiating Uri, if present
-     * @param callback a callback to allow or disallow the download. must be called to avoid leaks
+     * @param callback a callback to allow or disallow the download. Must be called to avoid leaks,
+     *         and must be called on the UI thread.
      *
      * @since 81
      */

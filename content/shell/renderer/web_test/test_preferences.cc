@@ -30,7 +30,7 @@ void TestPreferences::Reset() {
   caret_browsing_enabled = false;
   allow_universal_access_from_file_urls = false;
 
-#if defined(OS_MACOSX)
+#if defined(OS_MAC)
   editing_behavior = WebSettings::EditingBehavior::kMac;
 #else
   editing_behavior = WebSettings::EditingBehavior::kWin;

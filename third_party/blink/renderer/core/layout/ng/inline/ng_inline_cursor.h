@@ -110,6 +110,7 @@ class CORE_EXPORT NGInlineCursorPosition {
   LayoutObject* GetMutableLayoutObject() const;
   const Node* GetNode() const;
   const DisplayItemClient* GetDisplayItemClient() const;
+  const DisplayItemClient* GetSelectionDisplayItemClient() const;
   wtf_size_t FragmentId() const;
 
   // True if fragment at the current position can have children.

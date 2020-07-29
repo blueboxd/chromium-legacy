@@ -83,6 +83,7 @@ component("xprotos") {
   deps = [
     ":gen_xprotos",
     "//base",
+    "//base:i18n",
   ]
   sources = get_target_outputs(":gen_xprotos") + [
               "xproto_internal.h",

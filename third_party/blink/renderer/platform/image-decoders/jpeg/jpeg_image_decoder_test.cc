@@ -119,7 +119,8 @@ void ReadYUV(size_t max_decoded_bytes,
   planes[1] = static_cast<char*>(planes[0]) + row_bytes[0] * y_size.Height();
   planes[2] = static_cast<char*>(planes[1]) + row_bytes[1] * u_size.Height();
 
-  decoder->SetImagePlanes(std::make_unique<ImagePlanes>(planes, row_bytes));
+  decoder->SetImagePlanes(
+      std::make_unique<ImagePlanes>(planes, row_bytes, kGray_8_SkColorType));
 
   decoder->DecodeToYUV();
   EXPECT_FALSE(decoder->Failed());

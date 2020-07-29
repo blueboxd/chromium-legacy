@@ -125,7 +125,7 @@ class FakeSkiaOutputSurface : public SkiaOutputSurface {
       scoped_refptr<ContextProvider> context_provider);
 
   ContextProvider* context_provider() { return context_provider_.get(); }
-  GrContext* gr_context() { return context_provider()->GrContext(); }
+  GrDirectContext* gr_context() { return context_provider()->GrContext(); }
 
   bool GetGrBackendTexture(const ImageContext& image_context,
                            GrBackendTexture* backend_texture);

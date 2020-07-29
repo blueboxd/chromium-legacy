@@ -47,8 +47,8 @@ class COMPONENT_EXPORT(UI_BASE_IME_CHROMEOS) ImeKeyboard {
   }
 
   // Sets the current keyboard layout again. We have to call the function every
-  // time when "XI_HierarchyChanged" XInput2 event is sent to Chrome. See
-  // xinput_hierarchy_changed_event_listener.h for details.
+  // time when "x11::Input::HierarchyEvent::opcode" XInput2 event is sent to
+  // Chrome. See xinput_hierarchy_changed_event_listener.h for details.
   virtual bool ReapplyCurrentKeyboardLayout() = 0;
 
   // Updates keyboard LEDs on all keyboards.

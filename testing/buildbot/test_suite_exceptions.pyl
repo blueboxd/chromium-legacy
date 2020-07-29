@@ -1344,7 +1344,7 @@
   'interactive_ui_tests': {
     'remove_from': [
       'CrWinAsan(dll)', # https://crbug.com/935598
-      'linux-lacros-tester-rel', # https://crbug.com/1106980
+      'linux-lacros-tester-fyi-rel', # https://crbug.com/1106980
     ],
     'modifications': {
       'Linux - Future (dbg)': {  # client.v8.chromium
@@ -2264,7 +2264,7 @@
   },
   'storage_service_unsandboxed_interactive_ui_tests': {
     'remove_from': [
-      'linux-lacros-tester-rel', # https://crbug.com/1106980
+      'linux-lacros-tester-fyi-rel', # https://crbug.com/1106980
     ],
     'modifications': {
       'linux-chromeos-chrome': {
@@ -2430,10 +2430,6 @@
       }
     },
     'remove_from': [
-      # TODO(crbug.com/1109999): Add back to the CQ once pending tasks are back
-      # down.
-      'chromeos-amd64-generic-rel',
-
       # crbug.com/936540
       'Mac10.10 Tests',
       'Mac10.11 Tests',

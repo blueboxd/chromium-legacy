@@ -874,6 +874,10 @@ if (is_android) {
 }
 
 test("content_browsertests") {
+  if ((is_linux && !is_chromeos) || chromeos_is_browser_only) {
+    use_xvfb = true
+  }
+
   # See comment at the top of //content/BUILD.gn for why this is disabled in
   # component builds.
   if (is_component_build) {
@@ -1600,6 +1604,10 @@ static_library("run_all_unittests") {
 }
 
 test("content_unittests") {
+  if ((is_linux && !is_chromeos) || chromeos_is_browser_only) {
+    use_xvfb = true
+  }
+
   # See comment at the top of //content/BUILD.gn for why this is disabled in
   # component builds.
   if (is_component_build) {

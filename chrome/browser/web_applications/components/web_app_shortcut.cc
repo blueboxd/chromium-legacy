@@ -32,7 +32,7 @@ namespace web_app {
 
 namespace {
 
-#if defined(OS_MACOSX)
+#if defined(OS_MAC)
 const int kDesiredIconSizesForShortcut[] = {16, 32, 128, 256, 512};
 #elif defined(OS_LINUX)
 // Linux supports icons of any size. FreeDesktop Icon Theme Specification states
@@ -210,7 +210,7 @@ base::FilePath GetShortcutDataDir(const ShortcutInfo& shortcut_info) {
                                                   shortcut_info.url);
 }
 
-#if !defined(OS_MACOSX)
+#if !defined(OS_MAC)
 void DeleteMultiProfileShortcutsForApp(const std::string& app_id) {
   // Multi-profile shortcuts exist only on macOS.
   NOTREACHED();

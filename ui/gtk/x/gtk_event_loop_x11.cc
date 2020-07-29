@@ -96,7 +96,6 @@ void GtkEventLoopX11::ProcessGdkEventKey(const GdkEventKey& gdk_event_key) {
   // XProto.
   int state =
       BuildXkbStateFromGdkEvent(gdk_event_key.state, gdk_event_key.group);
-  event.xlib_event().xkey.state = state;
   event.As<x11::KeyEvent>()->state = static_cast<x11::KeyButMask>(state);
 
   // We want to process the gtk event; mapped to an X11 event immediately

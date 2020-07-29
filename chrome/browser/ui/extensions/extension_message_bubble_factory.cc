@@ -46,7 +46,7 @@ bool EnableSuspiciousExtensionsBubble() {
 }
 
 bool EnableSettingsApiBubble() {
-#if defined(OS_WIN) || defined(OS_MACOSX)
+#if defined(OS_WIN) || defined(OS_MAC)
   return true;
 #else
   return g_override_for_testing ==
@@ -55,7 +55,7 @@ bool EnableSettingsApiBubble() {
 }
 
 bool EnableProxyOverrideBubble() {
-#if defined(OS_WIN) || defined(OS_MACOSX)
+#if defined(OS_WIN) || defined(OS_MAC)
   return true;
 #else
   return g_override_for_testing ==

@@ -76,7 +76,7 @@ void NormalizeInitState(gpu::gles2::GLES2DecoderTestBase::InitState* init) {
                          base::CompareCase::INSENSITIVE_ASCII)) {
       init->extensions += kVAOExtensions[0];
     } else {
-#if !defined(OS_MACOSX)
+#if !defined(OS_MAC)
       init->extensions += kVAOExtensions[1];
 #else
       init->extensions += kVAOExtensions[2];

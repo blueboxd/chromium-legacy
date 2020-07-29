@@ -9,7 +9,7 @@
 
 #include "build/build_config.h"
 #include "third_party/blink/renderer/platform/wtf/allocator/allocator.h"
-#if defined(OS_WIN) || defined(OS_APPLE)
+#if defined(OS_WIN) || defined(OS_MAC)
 #include "third_party/skia/include/ports/SkFontMgr_empty.h"
 #endif
 

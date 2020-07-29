@@ -284,7 +284,7 @@ bool ServiceProcess::Teardown() {
 // This method is called when a shutdown command is received from IPC channel
 // or there was an error in the IPC channel.
 void ServiceProcess::Shutdown() {
-#if defined(OS_MACOSX)
+#if defined(OS_MAC)
   // On MacOS X the service must be removed from the launchd job list.
   // http://www.chromium.org/developers/design-documents/service-processes
   // The best way to do that is to go through the ForceServiceProcessShutdown
@@ -324,7 +324,7 @@ bool ServiceProcess::OnIPCClientDisconnect() {
 }
 
 mojo::ScopedMessagePipeHandle ServiceProcess::CreateChannelMessagePipe() {
-#if defined(OS_MACOSX)
+#if defined(OS_MAC)
   if (!server_endpoint_.is_valid()) {
     server_endpoint_ =
         service_process_state_->GetServiceProcessServerEndpoint();
@@ -346,7 +346,7 @@ mojo::ScopedMessagePipeHandle ServiceProcess::CreateChannelMessagePipe() {
 #endif
 
   mojo::PlatformChannelServerEndpoint server_endpoint;
-#if defined(OS_MACOSX)
+#if defined(OS_MAC)
   // Mach receive rights (named server channels) are not Clone-able.
   server_endpoint = std::move(server_endpoint_);
 #elif defined(OS_POSIX)

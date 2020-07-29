@@ -37,9 +37,9 @@
 #include "ui/views/style/typography.h"
 #include "ui/views/widget/widget.h"
 
-#if defined(OS_MACOSX)
+#if defined(OS_MAC)
 #include "chrome/browser/platform_util.h"
-#endif  // defined(OS_MACOSX)
+#endif  // defined(OS_MAC)
 
 // static
 views::Widget* RelaunchRecommendedBubbleView::ShowBubble(

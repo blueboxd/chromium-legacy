@@ -57,12 +57,19 @@ Color SelectionBackgroundColor(const Document& document,
 // TODO(yosin): Remove |AsDisplayItemClient| once the transition to
 // |NGFragmentItem| is done. http://crbug.com/982194
 inline const DisplayItemClient& AsDisplayItemClient(
-    const NGInlineCursor& cursor) {
+    const NGInlineCursor& cursor,
+    bool for_selection) {
+  if (UNLIKELY(for_selection)) {
+    if (const auto* selection_client =
+            cursor.Current().GetSelectionDisplayItemClient())
+      return *selection_client;
+  }
   return *cursor.Current().GetDisplayItemClient();
 }
 
-inline const NGPaintFragment& AsDisplayItemClient(
-    const NGTextPainterCursor& cursor) {
+inline const DisplayItemClient& AsDisplayItemClient(
+    const NGTextPainterCursor& cursor,
+    bool for_selection) {
   return cursor.PaintFragment();
 }
 
@@ -556,11 +563,13 @@ void NGTextFragmentPainter<Cursor>::Paint(const PaintInfo& paint_info,
   // DrawingRecorder.
   base::Optional<DrawingRecorder> recorder;
   if (paint_info.phase != PaintPhase::kTextClip) {
+    const auto& display_item_client =
+        AsDisplayItemClient(cursor_, selection.has_value());
     if (DrawingRecorder::UseCachedDrawingIfPossible(
-            paint_info.context, AsDisplayItemClient(cursor_), paint_info.phase))
+            paint_info.context, display_item_client, paint_info.phase))
       return;
-    recorder.emplace(paint_info.context, AsDisplayItemClient(cursor_),
-                     paint_info.phase, visual_rect);
+    recorder.emplace(paint_info.context, display_item_client, paint_info.phase,
+                     visual_rect);
   }
 
   if (UNLIKELY(text_item.IsSymbolMarker())) {

@@ -162,6 +162,12 @@ const base::Feature kEnableSideGesturePassThrough{
 const base::Feature kReduceHeadlessFrameRate{"reduce_headless_frame_rate",
                                              base::FEATURE_DISABLED_BY_DEFAULT};
 
+// Uses AudioManagerAndroid, instead of CastAudioManagerAndroid. This will
+// disable lots of Cast features, so it should only be used for development and
+// testing.
+const base::Feature kEnableChromeAudioManagerAndroid{
+    "enable_chrome_audio_manager_android", base::FEATURE_DISABLED_BY_DEFAULT};
+
 // End Chromecast Feature definitions.
 const base::Feature* kFeatures[] = {
     &kAllowUserMediaAccess,
@@ -173,6 +179,7 @@ const base::Feature* kFeatures[] = {
     &kUseQueryableDataBackend,
     &kEnableSideGesturePassThrough,
     &kReduceHeadlessFrameRate,
+    &kEnableChromeAudioManagerAndroid,
 };
 
 // An iterator for a base::DictionaryValue. Use an alias for brevity in loops.

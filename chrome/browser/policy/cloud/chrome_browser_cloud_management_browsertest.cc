@@ -60,7 +60,7 @@
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/views/test/widget_test.h"
 
-#if defined(OS_MACOSX)
+#if defined(OS_MAC)
 #include "chrome/browser/policy/cloud/chrome_browser_cloud_management_browsertest_mac_util.h"
 #endif
 
@@ -102,7 +102,7 @@ class ChromeBrowserCloudManagementControllerObserver
   void OnPolicyRegisterFinished(bool succeeded) override {
     if (!succeeded && should_display_error_message_) {
       EXPECT_EQ(0u, chrome::GetTotalBrowserCount());
-#if defined(OS_MACOSX)
+#if defined(OS_MAC)
       PostAppControllerNSNotifications();
 #endif
       // Close the error dialog.
@@ -542,7 +542,7 @@ IN_PROC_BROWSER_TEST_P(ChromeBrowserCloudManagementEnrollmentTest, MAYBE_Test) {
   EXPECT_EQ(1u, chrome::GetTotalBrowserCount());
 
   VerifyEnrollmentResult();
-#if defined(OS_MACOSX)
+#if defined(OS_MAC)
   // Verify the last mericis of launch is recorded in
   // applicationDidFinishNotification.
   EXPECT_EQ(1u, histogram_tester_

@@ -7,7 +7,7 @@
 #include <utility>
 
 #include "components/autofill/core/common/password_form.h"
-#include "components/password_manager/core/browser/android_affiliation/affiliation_service.h"
+#include "components/password_manager/core/browser/android_affiliation/android_affiliation_service.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 

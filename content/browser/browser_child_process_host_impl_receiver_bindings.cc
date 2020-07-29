@@ -23,7 +23,7 @@
 #include "services/metrics/public/mojom/ukm_interface.mojom.h"
 #include "services/metrics/ukm_recorder_interface.h"
 
-#if defined(OS_MACOSX)
+#if defined(OS_MAC)
 #include "content/browser/sandbox_support_mac_impl.h"
 #include "content/common/sandbox_support_mac.mojom.h"
 #endif
@@ -64,7 +64,7 @@ void BrowserChildProcessHostImpl::BindHostReceiver(
     return;
   }
 
-#if defined(OS_MACOSX)
+#if defined(OS_MAC)
   if (auto r = receiver.As<mojom::SandboxSupportMac>()) {
     static base::NoDestructor<SandboxSupportMacImpl> sandbox_support;
     sandbox_support->BindReceiver(std::move(r));

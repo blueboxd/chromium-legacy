@@ -22,7 +22,7 @@ namespace content {
 // OS. This is exposed through the content public API for the purpose of
 // reporting startup metrics.
 
-#if defined(OS_MACOSX)
+#if defined(OS_MAC)
 CONTENT_EXPORT bool IsUVPlatformAuthenticatorAvailable(
     const content::AuthenticatorRequestClientDelegate::
         TouchIdAuthenticatorConfig&);

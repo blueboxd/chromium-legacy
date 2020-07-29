@@ -567,7 +567,9 @@ initWithBrowserLauncher:(id<BrowserLauncher>)browserLauncher
 #pragma mark - SafeModeCoordinatorDelegate Implementation
 
 - (void)coordinatorDidExitSafeMode:(nonnull SafeModeCoordinator*)coordinator {
-  _safeModeBlocker.reset();
+  if (_safeModeBlocker) {
+    _safeModeBlocker.reset();
+  }
   self.safeModeCoordinator = nil;
   self.inSafeMode = NO;
   [_browserLauncher startUpBrowserToStage:INITIALIZATION_STAGE_FOREGROUND];
@@ -596,7 +598,7 @@ initWithBrowserLauncher:(id<BrowserLauncher>)browserLauncher
 
   [self.safeModeCoordinator start];
 
-  if (IsMultiwindowSupported()) {
+  if (IsMultipleScenesSupported()) {
     _safeModeBlocker =
         std::make_unique<ScopedUIBlocker>(self.foregroundActiveScene);
   }

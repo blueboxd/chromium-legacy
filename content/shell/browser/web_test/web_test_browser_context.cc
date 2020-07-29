@@ -29,7 +29,7 @@
 #include "base/base_paths_win.h"
 #elif defined(OS_LINUX)
 #include "base/nix/xdg_util.h"
-#elif defined(OS_MACOSX)
+#elif defined(OS_MAC)
 #include "base/base_paths_mac.h"
 #include "base/mac/foundation_util.h"
 #endif

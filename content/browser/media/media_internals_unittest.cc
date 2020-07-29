@@ -166,7 +166,7 @@ TEST_F(MediaInternalsVideoCaptureDeviceTest,
   media::VideoCaptureDeviceDescriptor descriptor;
   descriptor.device_id = "dummy";
   descriptor.set_display_name("dummy");
-#if defined(OS_MACOSX)
+#if defined(OS_MAC)
   descriptor.capture_api = media::VideoCaptureApi::MACOSX_AVFOUNDATION;
 #elif defined(OS_WIN)
   descriptor.capture_api = media::VideoCaptureApi::WIN_DIRECT_SHOW;
@@ -201,7 +201,7 @@ TEST_F(MediaInternalsVideoCaptureDeviceTest,
   ExpectString("captureApi", "V4L2 SPLANE");
 #elif defined(OS_WIN)
   ExpectString("captureApi", "Direct Show");
-#elif defined(OS_MACOSX)
+#elif defined(OS_MAC)
   ExpectString("captureApi", "AV Foundation");
 #elif defined(OS_ANDROID)
   ExpectString("captureApi", "Camera API2 Legacy");

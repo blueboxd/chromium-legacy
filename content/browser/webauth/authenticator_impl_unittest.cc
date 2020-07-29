@@ -64,7 +64,7 @@
 #include "third_party/boringssl/src/include/openssl/evp.h"
 #include "url/url_util.h"
 
-#if defined(OS_MACOSX)
+#if defined(OS_MAC)
 #include "device/fido/mac/authenticator_config.h"
 #include "device/fido/mac/scoped_touch_id_test_environment.h"
 #endif
@@ -5901,7 +5901,7 @@ TEST_F(InternalAuthenticatorImplTest, GetAssertionOriginAndRpIds) {
   }
 }
 
-#if defined(OS_MACOSX)
+#if defined(OS_MAC)
 class TouchIdConfigAuthenticatorRequestClientDelegate
     : public AuthenticatorRequestClientDelegate {
  public:
@@ -5960,6 +5960,6 @@ TEST_F(TouchIdAuthenticatorImplTest, IsUVPAA) {
     }
   }
 }
-#endif  // defined(OS_MACOSX)
+#endif  // defined(OS_MAC)
 
 }  // namespace content

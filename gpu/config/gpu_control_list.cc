@@ -277,7 +277,7 @@ GpuControlList::GLType GpuControlList::More::GetDefaultGLType() {
   return kGLTypeGL;
 #elif defined(OS_LINUX) || defined(OS_OPENBSD)
   return kGLTypeGL;
-#elif defined(OS_MACOSX)
+#elif defined(OS_MAC)
   return kGLTypeGL;
 #elif defined(OS_WIN)
   return kGLTypeANGLE;
@@ -783,7 +783,7 @@ GpuControlList::OsType GpuControlList::GetOsType() {
   return kOsFuchsia;
 #elif defined(OS_LINUX) || defined(OS_OPENBSD)
   return kOsLinux;
-#elif defined(OS_MACOSX)
+#elif defined(OS_MAC)
   return kOsMacosx;
 #else
   return kOsAny;

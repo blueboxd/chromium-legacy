@@ -430,4 +430,34 @@ void UpdateEngine::SendUninstallPing(const std::string& id,
       base::BindOnce(&UpdateEngine::HandleComponent, this, update_context));
 }
 
+void UpdateEngine::SendRegistrationPing(const std::string& id,
+                                        const base::Version& version,
+                                        Callback callback) {
+  DCHECK(thread_checker_.CalledOnValidThread());
+
+  const auto update_context = base::MakeRefCounted<UpdateContext>(
+      config_, false, std::vector<std::string>{id},
+      UpdateClient::CrxDataCallback(), UpdateClient::CrxStateChangeCallback(),
+      UpdateEngine::NotifyObserversCallback(), std::move(callback),
+      metadata_.get());
+  DCHECK(!update_context->session_id.empty());
+
+  const auto result = update_contexts_.insert(
+      std::make_pair(update_context->session_id, update_context));
+  DCHECK(result.second);
+
+  DCHECK(update_context);
+  DCHECK_EQ(1u, update_context->ids.size());
+  DCHECK_EQ(1u, update_context->components.count(id));
+  const auto& component = update_context->components.at(id);
+
+  component->Registration(version);
+
+  update_context->component_queue.push(id);
+
+  base::ThreadTaskRunnerHandle::Get()->PostTask(
+      FROM_HERE,
+      base::BindOnce(&UpdateEngine::HandleComponent, this, update_context));
+}
+
 }  // namespace update_client

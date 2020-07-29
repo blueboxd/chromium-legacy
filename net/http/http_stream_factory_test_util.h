@@ -8,7 +8,6 @@
 #include <memory>
 
 #include "base/memory/ptr_util.h"
-#include "net/base/proxy_server.h"
 #include "net/http/http_stream.h"
 #include "net/http/http_stream_factory.h"
 #include "net/http/http_stream_factory_job.h"
@@ -114,7 +113,6 @@ class MockHttpStreamFactoryJob : public HttpStreamFactory::Job {
                            GURL origin_url,
                            NextProto alternative_protocol,
                            quic::ParsedQuicVersion quic_version,
-                           const ProxyServer& alternative_proxy_server,
                            bool is_websocket,
                            bool enable_ip_based_pooling,
                            NetLog* net_log);
@@ -160,22 +158,6 @@ class TestJobFactory : public HttpStreamFactory::JobFactory {
       GURL origin_url,
       NextProto alternative_protocol,
       quic::ParsedQuicVersion quic_version,
-      bool is_websocket,
-      bool enable_ip_based_pooling,
-      NetLog* net_log) override;
-
-  std::unique_ptr<HttpStreamFactory::Job> CreateAltProxyJob(
-      HttpStreamFactory::Job::Delegate* delegate,
-      HttpStreamFactory::JobType job_type,
-      HttpNetworkSession* session,
-      const HttpRequestInfo& request_info,
-      RequestPriority priority,
-      const ProxyInfo& proxy_info,
-      const SSLConfig& server_ssl_config,
-      const SSLConfig& proxy_ssl_config,
-      HostPortPair destination,
-      GURL origin_url,
-      const ProxyServer& alternative_proxy_server,
       bool is_websocket,
       bool enable_ip_based_pooling,
       NetLog* net_log) override;

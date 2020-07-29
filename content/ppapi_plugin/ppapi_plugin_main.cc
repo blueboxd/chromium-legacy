@@ -133,7 +133,7 @@ int PpapiPluginMain(const MainFunctionParams& parameters) {
                                                 parameters.command_line,
                                                 false /* Not a broker */));
 
-#if defined(OS_POSIX) && !defined(OS_ANDROID) && !defined(OS_MACOSX)
+#if defined(OS_POSIX) && !defined(OS_ANDROID) && !defined(OS_MAC)
   // Startup tracing is usually enabled earlier, but if we forked from a zygote,
   // we can only enable it after mojo IPC support is brought up by PpapiThread,
   // because the mojo broker has to create the tracing SMB on our behalf due to

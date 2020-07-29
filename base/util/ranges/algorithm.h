@@ -154,6 +154,34 @@ using range_category_t = iterator_category_t<iterator_t<Range>>;
 
 }  // namespace internal
 
+// C++14 implementation of std::ranges::in_fun_result. Note the because C++14
+// lacks the `no_unique_address` attribute it is commented out.
+//
+// Reference: https://wg21.link/algorithms.results#:~:text=in_fun_result
+template <typename I, typename F>
+struct in_fun_result {
+  /* [[no_unique_address]] */ I in;
+  /* [[no_unique_address]] */ F fun;
+
+  template <typename I2,
+            typename F2,
+            std::enable_if_t<std::is_convertible<const I&, I2>{} &&
+                             std::is_convertible<const F&, F2>{}>>
+  constexpr operator in_fun_result<I2, F2>() const& {
+    return {in, fun};
+  }
+
+  template <typename I2,
+            typename F2,
+            std::enable_if_t<std::is_convertible<I, I2>{} &&
+                             std::is_convertible<F, F2>{}>>
+  constexpr operator in_fun_result<I2, F2>() && {
+    return {std::move(in), std::move(fun)};
+  }
+};
+
+// TODO(crbug.com/1071094): Implement the other result types.
+
 // [alg.nonmodifying] Non-modifying sequence operations
 // Reference: https://wg21.link/alg.nonmodifying
 
@@ -298,13 +326,14 @@ constexpr bool none_of(Range&& range, Pred pred, Proj proj = {}) {
 // [alg.foreach] For each
 // Reference: https://wg21.link/alg.foreach
 
+// Reference: https://wg21.link/algorithm.syn#:~:text=for_each_result
+template <typename I, typename F>
+using for_each_result = in_fun_result<I, F>;
+
 // Effects: Calls `invoke(f, invoke(proj, *i))` for every iterator `i` in the
 // range `[first, last)`, starting from `first` and proceeding to `last - 1`.
 //
-// Returns: `f`
-// Note: std::ranges::for_each(I first,...) returns a for_each_result, rather
-// than an invocable. For simplicitly we match std::for_each's return type
-// instead.
+// Returns: `{last, std::move(f)}`.
 //
 // Complexity: Applies `f` and `proj` exactly `last - first` times.
 //
@@ -319,21 +348,16 @@ constexpr auto for_each(InputIterator first,
                         InputIterator last,
                         Fun f,
                         Proj proj = {}) {
-  std::for_each(first, last, [&f, &proj](auto&& arg) {
-    return invoke(f, invoke(proj, std::forward<decltype(arg)>(arg)));
-  });
-
-  return f;
+  for (; first != last; ++first)
+    invoke(f, invoke(proj, *first));
+  return for_each_result<InputIterator, Fun>{first, std::move(f)};
 }
 
 // Effects: Calls `invoke(f, invoke(proj, *i))` for every iterator `i` in the
 // range `range`, starting from `begin(range)` and proceeding to `end(range) -
 // 1`.
 //
-// Returns: `f`
-// Note: std::ranges::for_each(R&& r,...) returns a for_each_result, rather
-// than an invocable. For simplicitly we match std::for_each's return type
-// instead.
+// Returns: `{last, std::move(f)}`.
 //
 // Complexity: Applies `f` and `proj` exactly `size(range)` times.
 //
@@ -347,6 +371,35 @@ template <typename Range,
 constexpr auto for_each(Range&& range, Fun f, Proj proj = {}) {
   return ranges::for_each(ranges::begin(range), ranges::end(range),
                           std::move(f), std::move(proj));
+}
+
+// Reference: https://wg21.link/algorithm.syn#:~:text=for_each_n_result
+template <typename I, typename F>
+using for_each_n_result = in_fun_result<I, F>;
+
+// Preconditions: `n >= 0` is `true`.
+//
+// Effects: Calls `invoke(f, invoke(proj, *i))` for every iterator `i` in the
+// range `[first, first + n)` in order.
+//
+// Returns: `{first + n, std::move(f)}`.
+//
+// Remarks: If `f` returns a result, the result is ignored.
+//
+// Reference: https://wg21.link/alg.foreach#:~:text=ranges::for_each_n
+template <typename InputIterator,
+          typename Size,
+          typename Fun,
+          typename Proj = identity,
+          typename = internal::iterator_category_t<InputIterator>>
+constexpr auto for_each_n(InputIterator first, Size n, Fun f, Proj proj = {}) {
+  while (n > 0) {
+    invoke(f, invoke(proj, *first));
+    ++first;
+    --n;
+  }
+
+  return for_each_n_result<InputIterator, Fun>{first, std::move(f)};
 }
 
 // [alg.find] Find

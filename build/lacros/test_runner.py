@@ -39,6 +39,7 @@
 import argparse
 import os
 import logging
+import re
 import shutil
 import signal
 import subprocess
@@ -71,10 +72,23 @@ _PREBUILT_ASH_CHROME_DIR = os.path.join(os.path.dirname(__file__),
 # running all the test targets.
 # List of targets that require ash-chrome as a Wayland server in order to run.
 _TARGETS_REQUIRE_ASH_CHROME = [
+    'app_shell_unittests',
+    'aura_unittests',
     'browser_tests',
     'components_unittests',
+    'compositor_unittests',
+    'content_unittests',
+    'dbus_unittests',
+    'extensions_unittests',
+    'message_center_unittests',
+    'snapshot_unittests',
     'sync_integration_tests',
     'unit_tests',
+    'views_unittests',
+    'wm_unittests',
+
+    # regex patters.
+    '.*_browsertests',
 ]
 
 def _GetAshChromeDirPath(version):
@@ -304,8 +318,10 @@ def _RunTest(args, forward_args):
   # with a best effort only, therefore, allow the invoker to override the
   # behavior with a specified ash-chrome version, which makes sure that
   # automated CI/CQ builders would always work correctly.
-  if (os.path.basename(args.command) not in _TARGETS_REQUIRE_ASH_CHROME
-      and not args.ash_chrome_version):
+  requires_ash_chrome = any(
+      re.match(t, os.path.basename(args.command))
+      for t in _TARGETS_REQUIRE_ASH_CHROME)
+  if not requires_ash_chrome and not args.ash_chrome_version:
     return _RunTestDirectly(args, forward_args)
 
   return _RunTestWithAshChrome(args, forward_args)

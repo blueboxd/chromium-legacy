@@ -4,18 +4,52 @@
 
 #include "chrome/updater/control_service_in_process.h"
 
+#include "base/bind.h"
 #include "base/callback.h"
+#include "base/logging.h"
 #include "base/threading/sequenced_task_runner_handle.h"
+#include "base/time/time.h"
+#include "chrome/updater/configurator.h"
+#include "chrome/updater/prefs.h"
+#include "chrome/updater/update_service.h"
+#include "components/prefs/pref_service.h"
 
 namespace updater {
 
-ControlServiceInProcess::ControlServiceInProcess()
-    : main_task_runner_(base::SequencedTaskRunnerHandle::Get()) {}
+ControlServiceInProcess::ControlServiceInProcess(
+    scoped_refptr<updater::Configurator> config)
+    : config_(config),
+      main_task_runner_(base::SequencedTaskRunnerHandle::Get()) {}
 
 void ControlServiceInProcess::Run(base::OnceClosure callback) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
-  // TODO(crbug.com/1107586): Implement.
+  const base::Time lastUpdateTime =
+      config_->GetPrefService()->GetTime(kPrefUpdateTime);
+
+  const base::TimeDelta timeSinceUpdate =
+      base::Time::NowFromSystemTime() - lastUpdateTime;
+  if (timeSinceUpdate >=
+          base::TimeDelta::FromSeconds(config_->NextCheckDelay()) ||
+      timeSinceUpdate < base::TimeDelta()) {
+    scoped_refptr<UpdateService> update_service = CreateUpdateService(config_);
+
+    update_service->UpdateAll(
+        base::BindRepeating([](UpdateService::UpdateState) {}),
+        base::BindOnce(
+            [](base::OnceClosure closure,
+               scoped_refptr<updater::Configurator> config,
+               UpdateService::Result result) {
+              const int exit_code = static_cast<int>(result);
+              VLOG(0) << "UpdateAll complete: exit_code = " << exit_code;
+              if (result == UpdateService::Result::kSuccess) {
+                config->GetPrefService()->SetTime(
+                    kPrefUpdateTime, base::Time::NowFromSystemTime());
+              }
+              std::move(closure).Run();
+            },
+            base::BindOnce(std::move(callback)), config_));
+  }
 }
 
 void ControlServiceInProcess::Uninitialize() {

@@ -26,7 +26,7 @@
 namespace {
 int g_signal_socket = -1;
 
-#if !defined(OS_MACOSX)
+#if !defined(OS_MAC)
 
 bool FilePathForMemoryName(const std::string& mem_name, base::FilePath* path) {
   // mem_name will be used for a filename; make sure it doesn't
@@ -47,11 +47,11 @@ bool FilePathForMemoryName(const std::string& mem_name, base::FilePath* path) {
   return true;
 }
 
-#endif  // !defined(OS_MACOSX)
+#endif  // !defined(OS_MAC)
 
 }  // namespace
 
-#if !defined(OS_MACOSX)
+#if !defined(OS_MAC)
 
 // static
 base::WritableSharedMemoryRegion
@@ -171,7 +171,7 @@ bool ServiceProcessState::DeleteServiceProcessDataRegion() {
   return true;
 }
 
-#endif  // !defined(OS_MACOSX)
+#endif  // !defined(OS_MAC)
 
 // Attempts to take a lock named |name|. Returns the lock if successful, or
 // nullptr if not.
@@ -261,7 +261,7 @@ void ServiceProcessState::StateData::SignalReady(base::WaitableEvent* signal,
   DCHECK_EQ(old_action.sa_handler, SIG_DFL);
   set_action = true;
 
-#if defined(OS_MACOSX)
+#if defined(OS_MAC)
   *success = WatchExecutable();
   if (!*success) {
     DLOG(ERROR) << "WatchExecutable";
@@ -312,7 +312,7 @@ bool ServiceProcessState::SignalReady(
   DCHECK(task_runner);
   DCHECK(state_);
 
-#if !defined(OS_MACOSX)
+#if !defined(OS_MAC)
   state_->running_lock = TakeServiceRunningLock();
   if (!state_->running_lock.get()) {
     return false;

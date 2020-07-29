@@ -117,7 +117,7 @@ class AccessibilityFocusHighlightBrowserTest : public InProcessBrowserTest {
 // focus highlight actually gets drawn.
 //
 // Flaky on Mac. TODO(crbug.com/1083806): Enable this test.
-#if defined(OS_MACOSX)
+#if defined(OS_MAC)
 #define MAYBE_DrawsHighlight DISABLED_DrawsHighlight
 #else
 #define MAYBE_DrawsHighlight DrawsHighlight

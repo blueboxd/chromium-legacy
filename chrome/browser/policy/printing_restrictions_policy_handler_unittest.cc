@@ -20,8 +20,8 @@ class PrintingRestrictionsPolicyHandlerTest : public testing::Test {
  protected:
   void SetPolicy(base::Value value) {
     policies_.Set(key::kPrintingPaperSizeDefault, POLICY_LEVEL_MANDATORY,
-                  POLICY_SCOPE_USER, POLICY_SOURCE_CLOUD,
-                  base::Value::ToUniquePtrValue(std::move(value)), nullptr);
+                  POLICY_SCOPE_USER, POLICY_SOURCE_CLOUD, std::move(value),
+                  nullptr);
   }
 
   bool CheckPolicy(base::Value value) {

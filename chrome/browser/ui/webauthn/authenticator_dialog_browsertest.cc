@@ -219,7 +219,7 @@ IN_PROC_BROWSER_TEST_F(AuthenticatorDialogTest, InvokeUi_ble_power_on_manual) {
   ShowAndVerifyUi();
 }
 
-#if defined(OS_MACOSX)
+#if defined(OS_MAC)
 IN_PROC_BROWSER_TEST_F(AuthenticatorDialogTest, InvokeUi_touchid) {
   ShowAndVerifyUi();
 }
@@ -227,7 +227,7 @@ IN_PROC_BROWSER_TEST_F(AuthenticatorDialogTest, InvokeUi_touchid) {
 IN_PROC_BROWSER_TEST_F(AuthenticatorDialogTest, InvokeUi_touchid_incognito) {
   ShowAndVerifyUi();
 }
-#endif  // defined(OS_MACOSX)
+#endif  // defined(OS_MAC)
 
 IN_PROC_BROWSER_TEST_F(AuthenticatorDialogTest, InvokeUi_cable_activate) {
   ShowAndVerifyUi();

@@ -93,17 +93,8 @@ void AssistantControllerImpl::SendAssistantFeedback(
 }
 
 void AssistantControllerImpl::StartSpeakerIdEnrollmentFlow() {
-  if (assistant_state_controller_.consent_status().value_or(
-          chromeos::assistant::prefs::ConsentStatus::kUnknown) ==
-      chromeos::assistant::prefs::ConsentStatus::kActivityControlAccepted) {
-    // If activity control has been accepted, launch the enrollment flow.
-    setup_controller()->StartOnboarding(false /* relaunch */,
-                                        FlowType::kSpeakerIdEnrollment);
-  } else {
-    // If activity control has not been accepted, launch the opt-in flow.
-    setup_controller()->StartOnboarding(false /* relaunch */,
-                                        FlowType::kConsentFlow);
-  }
+  setup_controller()->StartOnboarding(false /* relaunch */,
+                                      FlowType::kSpeakerIdEnrollment);
 }
 
 void AssistantControllerImpl::DownloadImage(

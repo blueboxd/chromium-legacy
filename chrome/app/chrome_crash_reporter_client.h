@@ -27,12 +27,12 @@ class ChromeCrashReporterClient : public crash_reporter::CrashReporterClient {
 #endif
 
   // crash_reporter::CrashReporterClient implementation.
-#if !defined(OS_MACOSX) && !defined(OS_ANDROID)
+#if !defined(OS_MAC) && !defined(OS_ANDROID)
   void SetCrashReporterClientIdFromGUID(
       const std::string& client_guid) override;
 #endif
 
-#if defined(OS_POSIX) && !defined(OS_MACOSX)
+#if defined(OS_POSIX) && !defined(OS_MAC)
   void GetProductNameAndVersion(const char** product_name,
                                 const char** version) override;
   void GetProductNameAndVersion(std::string* product_name,
@@ -43,7 +43,7 @@ class ChromeCrashReporterClient : public crash_reporter::CrashReporterClient {
 
   bool GetCrashDumpLocation(base::FilePath* crash_dir) override;
 
-#if defined(OS_MACOSX) || defined(OS_LINUX)
+#if defined(OS_MAC) || defined(OS_LINUX)
   bool GetCrashMetricsLocation(base::FilePath* metrics_dir) override;
 #endif
 
@@ -51,7 +51,7 @@ class ChromeCrashReporterClient : public crash_reporter::CrashReporterClient {
 
   bool GetCollectStatsConsent() override;
 
-#if defined(OS_MACOSX)
+#if defined(OS_MAC)
   bool ReportingIsEnforcedByPolicy(bool* breakpad_enabled) override;
 #endif
 
@@ -59,7 +59,7 @@ class ChromeCrashReporterClient : public crash_reporter::CrashReporterClient {
   int GetAndroidMinidumpDescriptor() override;
 #endif
 
-#if defined(OS_MACOSX) || defined(OS_LINUX)
+#if defined(OS_MAC) || defined(OS_LINUX)
   bool ShouldMonitorCrashHandlerExpensively() override;
 #endif
 

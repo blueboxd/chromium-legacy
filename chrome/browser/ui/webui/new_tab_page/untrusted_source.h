@@ -60,6 +60,7 @@ class UntrustedSource : public content::URLDataSource,
   std::string GetMimeType(const std::string& path) override;
   bool AllowCaching() override;
   bool ShouldReplaceExistingSource() override;
+  bool ShouldServeMimeTypeAsContentTypeHeader() override;
   bool ShouldServiceRequest(const GURL& url,
                             content::BrowserContext* browser_context,
                             int render_process_id) override;

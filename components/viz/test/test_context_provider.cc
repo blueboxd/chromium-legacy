@@ -24,7 +24,7 @@
 #include "gpu/command_buffer/client/raster_implementation_gles.h"
 #include "gpu/config/skia_limits.h"
 #include "gpu/skia_bindings/grcontext_for_gles2_interface.h"
-#include "third_party/skia/include/gpu/GrContext.h"
+#include "third_party/skia/include/gpu/GrDirectContext.h"
 #include "third_party/skia/include/gpu/gl/GrGLInterface.h"
 #include "ui/gfx/gpu_fence.h"
 #include "ui/gfx/gpu_memory_buffer.h"
@@ -425,7 +425,7 @@ gpu::ContextSupport* TestContextProvider::ContextSupport() {
   return support();
 }
 
-class GrContext* TestContextProvider::GrContext() {
+class GrDirectContext* TestContextProvider::GrContext() {
   DCHECK(bound_);
   CheckValidThreadOrLockAcquired();
 

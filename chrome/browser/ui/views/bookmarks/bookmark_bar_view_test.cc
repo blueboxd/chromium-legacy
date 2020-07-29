@@ -58,7 +58,7 @@
 #include "ui/views/widget/drop_helper.h"
 #include "ui/views/widget/widget.h"
 
-#if !defined(OS_MACOSX)
+#if !defined(OS_MAC)
 #include "ui/aura/env.h"
 #include "ui/aura/env_observer.h"
 #include "ui/aura/window.h"
@@ -79,7 +79,7 @@ using content::WebContents;
 
 namespace {
 
-#if !defined(OS_MACOSX)
+#if !defined(OS_MAC)
 
 // Waits for a views::Widget dialog to show up.
 class DialogWaiter : public aura::EnvObserver,
@@ -211,7 +211,7 @@ void MoveMouseAndPress(const gfx::Point& screen_pos,
                                                          std::move(closure)));
 }
 
-#endif  // !defined(OS_MACOSX)
+#endif  // !defined(OS_MAC)
 
 // PageNavigator implementation that records the URL.
 class TestingPageNavigator : public PageNavigator {
@@ -538,7 +538,7 @@ class BookmarkBarViewDragTestBase : public BookmarkBarViewEventTestBase,
   ScopedObserver<views::Widget, views::WidgetObserver> widget_observer_{this};
 };
 
-#if !defined(OS_MACOSX)
+#if !defined(OS_MAC)
 // The following tests were not enabled on Mac before. Consider enabling those
 // that are able to run on Mac (https://crbug.com/845342).
 
@@ -2240,15 +2240,15 @@ class BookmarkBarViewTest27 : public BookmarkBarViewEventTestBase {
 
 VIEW_TEST(BookmarkBarViewTest27, MiddleClickOnFolderOpensAllBookmarks)
 
-#endif  // defined(OS_MACOSX)
+#endif  // defined(OS_MAC)
 
 class BookmarkBarViewTest28 : public BookmarkBarViewEventTestBase {
  protected:
-#if defined(OS_MACOSX)
+#if defined(OS_MAC)
   const ui_controls::AcceleratorState kAccelatorState = ui_controls::kCommand;
 #else
   const ui_controls::AcceleratorState kAccelatorState = ui_controls::kControl;
-#endif  // defined(OS_MACOSX)
+#endif  // defined(OS_MAC)
 
   void DoTestOnMessageLoop() override {
     views::LabelButton* button = GetBookmarkButton(0);

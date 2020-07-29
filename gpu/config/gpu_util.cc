@@ -129,7 +129,7 @@ GpuFeatureStatus GetAndroidSurfaceControlFeatureStatus(
 GpuFeatureStatus GetMetalFeatureStatus(
     const std::set<int>& blocklisted_features,
     const GpuPreferences& gpu_preferences) {
-#if defined(OS_MACOSX)
+#if defined(OS_MAC)
   if (blocklisted_features.count(GPU_FEATURE_TYPE_METAL))
     return kGpuFeatureStatusBlocklisted;
 
@@ -714,7 +714,7 @@ void SetKeysForCrashLogging(const GPUInfo& gpu_info) {
   crash_keys::gpu_vertex_shader_version.Set(gpu_info.vertex_shader_version);
   crash_keys::gpu_generation_intel.Set(
       base::StringPrintf("%d", GetIntelGpuGeneration(gpu_info)));
-#if defined(OS_MACOSX)
+#if defined(OS_MAC)
   crash_keys::gpu_gl_version.Set(gpu_info.gl_version);
 #elif defined(OS_POSIX)
   crash_keys::gpu_vendor.Set(gpu_info.gl_vendor);

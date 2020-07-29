@@ -675,7 +675,7 @@ void StatusBubbleViews::InitPopup() {
     popup_->SetVisibilityChangedAnimationsEnabled(false);
     popup_->SetOpacity(0.f);
     popup_->SetContentsView(view_);
-#if !defined(OS_MACOSX)
+#if !defined(OS_MAC)
     // Stack the popup above the base widget and below higher z-order windows.
     // This is unnecessary and even detrimental on Mac, see CreateBubbleWidget.
     popup_->StackAboveWidget(frame);

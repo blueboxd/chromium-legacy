@@ -47,7 +47,7 @@ const base::Feature kAudioServiceLaunchOnStartup{
 // Runs the audio service in a separate process.
 const base::Feature kAudioServiceOutOfProcess {
   "AudioServiceOutOfProcess",
-#if defined(OS_WIN) || defined(OS_MACOSX) || \
+#if defined(OS_WIN) || defined(OS_MAC) || \
     (defined(OS_LINUX) && !defined(OS_CHROMEOS))
       base::FEATURE_ENABLED_BY_DEFAULT
 #else
@@ -59,7 +59,7 @@ const base::Feature kAudioServiceOutOfProcess {
 // kAudioServiceOutOfProcess feature is enabled.
 const base::Feature kAudioServiceSandbox {
   "AudioServiceSandbox",
-#if defined(OS_WIN) || defined(OS_MACOSX)
+#if defined(OS_WIN) || defined(OS_MAC)
       base::FEATURE_ENABLED_BY_DEFAULT
 #else
       base::FEATURE_DISABLED_BY_DEFAULT
@@ -125,7 +125,7 @@ const base::Feature kCacheStorageEagerReading{
 // enabled.
 const base::Feature kCanvas2DImageChromium {
   "Canvas2DImageChromium",
-#if defined(OS_MACOSX)
+#if defined(OS_MAC)
       base::FEATURE_ENABLED_BY_DEFAULT
 #else
       base::FEATURE_DISABLED_BY_DEFAULT
@@ -356,7 +356,7 @@ const base::Feature kLowPriorityIframes{"LowPriorityIframes",
 // cache is considered invalid on every enumeration request.
 const base::Feature kMediaDevicesSystemMonitorCache {
   "MediaDevicesSystemMonitorCaching",
-#if defined(OS_MACOSX) || defined(OS_WIN)
+#if defined(OS_MAC) || defined(OS_WIN)
       base::FEATURE_ENABLED_BY_DEFAULT
 #else
       base::FEATURE_DISABLED_BY_DEFAULT
@@ -436,7 +436,7 @@ const base::Feature kPermissionsPolicyHeader{"PermissionsPolicyHeader",
 // enabled.
 const base::Feature kPepper3DImageChromium {
   "Pepper3DImageChromium",
-#if defined(OS_MACOSX)
+#if defined(OS_MAC)
       base::FEATURE_ENABLED_BY_DEFAULT
 #else
       base::FEATURE_DISABLED_BY_DEFAULT
@@ -756,7 +756,7 @@ const base::Feature kWebAssemblyThreads {
 };
 
 // Enable WebAssembly trap handler.
-#if (defined(OS_LINUX) || defined(OS_WIN) || defined(OS_MACOSX)) && \
+#if (defined(OS_LINUX) || defined(OS_WIN) || defined(OS_MAC)) && \
     defined(ARCH_CPU_X86_64)
 const base::Feature kWebAssemblyTrapHandler{"WebAssemblyTrapHandler",
                                             base::FEATURE_ENABLED_BY_DEFAULT};
@@ -769,7 +769,7 @@ const base::Feature kWebAssemblyTrapHandler{"WebAssemblyTrapHandler",
 // disabled, an occluded WebContents behaves exactly like a VISIBLE WebContents.
 const base::Feature kWebContentsOcclusion {
   "WebContentsOcclusion",
-#if defined(OS_MACOSX) || defined(OS_CHROMEOS) || defined(OS_WIN)
+#if defined(OS_MAC) || defined(OS_CHROMEOS) || defined(OS_WIN)
       base::FEATURE_ENABLED_BY_DEFAULT
 #else
       base::FEATURE_DISABLED_BY_DEFAULT
@@ -893,7 +893,7 @@ const base::Feature kForce60HzRefreshRate{"Force60HzRefreshRate",
 const base::Feature kWebNfc{"WebNFC", base::FEATURE_ENABLED_BY_DEFAULT};
 #endif  // defined(OS_ANDROID)
 
-#if defined(OS_MACOSX)
+#if defined(OS_MAC)
 // Enables caching of media devices for the purpose of enumerating them.
 const base::Feature kDeviceMonitorMac{"DeviceMonitorMac",
                                       base::FEATURE_ENABLED_BY_DEFAULT};
@@ -913,7 +913,7 @@ const base::Feature kMacV2GPUSandbox{"MacV2GPUSandbox",
 // cameras.
 const base::Feature kRetryGetVideoCaptureDeviceInfos{
     "RetryGetVideoCaptureDeviceInfos", base::FEATURE_DISABLED_BY_DEFAULT};
-#endif  // defined(OS_MACOSX)
+#endif  // defined(OS_MAC)
 
 #if defined(WEBRTC_USE_PIPEWIRE)
 // Controls whether the PipeWire support for screen capturing is enabled on the

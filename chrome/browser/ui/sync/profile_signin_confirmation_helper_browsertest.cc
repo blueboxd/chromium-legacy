@@ -33,7 +33,7 @@ class ProfileSigninConfirmationHelperBrowserTest : public InProcessBrowserTest {
 
 // http://crbug.com/321302
 #if BUILDFLAG(GOOGLE_CHROME_BRANDING) && \
-    (defined(OS_MACOSX) || defined(OS_LINUX))
+    (defined(OS_MAC) || defined(OS_LINUX))
 #define MAYBE_HasNotBeenShutdown DISABLED_HasNotBeenShutdown
 #else
 #define MAYBE_HasNotBeenShutdown HasNotBeenShutdown
@@ -48,7 +48,7 @@ IN_PROC_BROWSER_TEST_F(ProfileSigninConfirmationHelperBrowserTest,
 
 // http://crbug.com/321302
 #if BUILDFLAG(GOOGLE_CHROME_BRANDING) && \
-    (defined(OS_MACOSX) || defined(OS_LINUX))
+    (defined(OS_MAC) || defined(OS_LINUX))
 #define MAYBE_HasNoSyncedExtensions DISABLED_HasNoSyncedExtensions
 #else
 #define MAYBE_HasNoSyncedExtensions HasNoSyncedExtensions

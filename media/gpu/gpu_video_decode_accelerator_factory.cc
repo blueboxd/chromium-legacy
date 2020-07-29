@@ -21,7 +21,7 @@
 #include "base/win/windows_version.h"
 #include "media/gpu/windows/dxva_video_decode_accelerator_win.h"
 #endif
-#if defined(OS_MACOSX)
+#if defined(OS_MAC)
 #include "media/gpu/mac/vt_video_decode_accelerator_mac.h"
 #endif
 #if BUILDFLAG(USE_V4L2_CODEC)
@@ -72,7 +72,7 @@ gpu::VideoDecodeAcceleratorCapabilities GetDecoderCapabilitiesInternal(
   GpuVideoAcceleratorUtil::InsertUniqueDecodeProfiles(
       vda_profiles, &capabilities.supported_profiles);
 #endif
-#elif defined(OS_MACOSX)
+#elif defined(OS_MAC)
   capabilities.supported_profiles =
       VTVideoDecodeAccelerator::GetSupportedProfiles();
 #endif
@@ -175,7 +175,7 @@ GpuVideoDecodeAcceleratorFactory::CreateVDA(
     &GpuVideoDecodeAcceleratorFactory::CreateV4L2VDA,
     &GpuVideoDecodeAcceleratorFactory::CreateV4L2SVDA,
 #endif
-#if defined(OS_MACOSX)
+#if defined(OS_MAC)
     &GpuVideoDecodeAcceleratorFactory::CreateVTVDA,
 #endif
   };
@@ -251,7 +251,7 @@ GpuVideoDecodeAcceleratorFactory::CreateVaapiVDA(
 }
 #endif
 
-#if defined(OS_MACOSX)
+#if defined(OS_MAC)
 std::unique_ptr<VideoDecodeAccelerator>
 GpuVideoDecodeAcceleratorFactory::CreateVTVDA(
     const gpu::GpuDriverBugWorkarounds& workarounds,

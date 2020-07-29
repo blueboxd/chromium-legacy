@@ -25,11 +25,6 @@ bool PasswordManagerClient::IsFillingFallbackEnabled(const GURL& url) const {
   return true;
 }
 
-void PasswordManagerClient::PostHSTSQueryForHost(const url::Origin& origin,
-                                                 HSTSCallback callback) const {
-  std::move(callback).Run(HSTSResult::kError);
-}
-
 void PasswordManagerClient::ShowTouchToFill(PasswordManagerDriver* driver) {}
 
 BiometricAuthenticator* PasswordManagerClient::GetBiometricAuthenticator() {
@@ -139,6 +134,11 @@ PasswordManagerClient::GetPasswordRequirementsService() {
 }
 
 favicon::FaviconService* PasswordManagerClient::GetFaviconService() {
+  return nullptr;
+}
+
+network::mojom::NetworkContext* PasswordManagerClient::GetNetworkContext()
+    const {
   return nullptr;
 }
 

@@ -699,7 +699,7 @@ const char kSchedulerConfigurationPerformance[] = "performance";
 const char kSchedulerConfigurationDefault[] = "scheduler-configuration-default";
 #endif  // defined(OS_CHROMEOS)
 
-#if defined(OS_POSIX) && !defined(OS_MACOSX) && !defined(OS_CHROMEOS)
+#if defined(OS_POSIX) && !defined(OS_MAC) && !defined(OS_CHROMEOS)
 // These flags show the man page on Linux. They are equivalent to each
 // other.
 const char kHelp[]                          = "help";
@@ -724,7 +724,7 @@ const char kEnableEncryptionSelection[] = "enable-encryption-selection";
 const char kWmClass[]                       = "class";
 #endif
 
-#if defined(OS_MACOSX)
+#if defined(OS_MAC)
 // Prevents Chrome from quitting when Chrome Apps are open.
 const char kAppsKeepChromeAliveInTests[]    = "apps-keep-chrome-alive-in-tests";
 
@@ -756,7 +756,7 @@ const char kRelauncherProcessDMGDevice[]    = "dmg-device";
 // Indicates whether Chrome should be set as the default browser during
 // installation.
 const char kMakeChromeDefault[] = "make-chrome-default";
-#endif  // defined(OS_MACOSX)
+#endif  // defined(OS_MAC)
 
 #if defined(OS_WIN)
 // Disables custom-drawing the window titlebar on Windows 10.
@@ -829,7 +829,7 @@ const char kAllowNaClFileHandleAPI[]        = "allow-nacl-file-handle-api";
 const char kAllowNaClSocketAPI[]            = "allow-nacl-socket-api";
 #endif
 
-#if defined(OS_LINUX) || defined(OS_MACOSX) || defined(OS_WIN)
+#if defined(OS_LINUX) || defined(OS_MAC) || defined(OS_WIN)
 const char kEnableNewAppMenuIcon[] = "enable-new-app-menu-icon";
 
 // Causes the browser to launch directly in guest mode.

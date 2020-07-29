@@ -119,7 +119,7 @@ void WindowSizerTestUtil::GetWindowBounds(const gfx::Rect& monitor1_bounds,
       std::move(provider), passed_in, browser, out_bounds, &ignored);
 }
 
-#if !defined(OS_MACOSX)
+#if !defined(OS_MAC)
 
 #if !defined(OS_CHROMEOS)
 // Passing null for the browser parameter of GetWindowBounds makes the test skip
@@ -331,4 +331,4 @@ TEST(WindowSizerTestCommon, AdjustFitSize) {
   }
 }
 
-#endif // defined(OS_MACOSX)
+#endif  // defined(OS_MAC)

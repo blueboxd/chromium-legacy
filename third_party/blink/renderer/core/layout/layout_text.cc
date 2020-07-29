@@ -80,6 +80,8 @@
 
 namespace blink {
 
+namespace {
+
 struct SameSizeAsLayoutText : public LayoutObject {
   uint32_t bitfields : 12;
   float widths[4];
@@ -126,6 +128,19 @@ class SecureTextTimer final : public TimerBase {
   LayoutText* layout_text_;
   int last_typed_character_offset_;
 };
+
+class SelectionDisplayItemClient : public DisplayItemClient {
+  String DebugName() const final { return "Selection"; }
+};
+
+using SelectionDisplayItemClientMap =
+    HashMap<const LayoutText*, std::unique_ptr<SelectionDisplayItemClient>>;
+SelectionDisplayItemClientMap& GetSelectionDisplayItemClientMap() {
+  DEFINE_STATIC_LOCAL(SelectionDisplayItemClientMap, map, ());
+  return map;
+}
+
+}  // anonymous namespace
 
 LayoutText::LayoutText(Node* node, scoped_refptr<StringImpl> str)
     : LayoutObject(node),
@@ -259,6 +274,8 @@ void LayoutText::RemoveAndDestroyTextBoxes() {
 void LayoutText::WillBeDestroyed() {
   if (SecureTextTimer* secure_text_timer = GetSecureTextTimers().Take(this))
     delete secure_text_timer;
+
+  GetSelectionDisplayItemClientMap().erase(this);
 
   if (node_id_ != kInvalidDOMNodeId) {
     if (auto* manager = GetContentCaptureManager())
@@ -2503,17 +2520,27 @@ scoped_refptr<AbstractInlineTextBox> LayoutText::FirstAbstractInlineTextBox() {
                                                   FirstTextBox());
 }
 
+void LayoutText::InvalidatePaint(const PaintInvalidatorContext& context) const {
+  if (ShouldInvalidateSelection() && !IsSelected())
+    GetSelectionDisplayItemClientMap().erase(this);
+  LayoutObject::InvalidatePaint(context);
+}
+
 void LayoutText::InvalidateDisplayItemClients(
-    PaintInvalidationReason invalidation_reason) const {
-  ObjectPaintInvalidator paint_invalidator(*this);
+    PaintInvalidationReason reason) const {
+  ObjectPaintInvalidator invalidator(*this);
+  invalidator.InvalidateDisplayItemClient(*this, reason);
+
+  if (const auto* selection_client = GetSelectionDisplayItemClient())
+    invalidator.InvalidateDisplayItemClient(*selection_client, reason);
 
   if (IsInLayoutNGInlineFormattingContext()) {
     if (!RuntimeEnabledFeatures::LayoutNGFragmentItemEnabled()) {
       NGInlineCursor cursor;
       for (cursor.MoveTo(*this); cursor;
            cursor.MoveToNextForSameLayoutObject()) {
-        paint_invalidator.InvalidateDisplayItemClient(
-            *cursor.Current().GetDisplayItemClient(), invalidation_reason);
+        invalidator.InvalidateDisplayItemClient(
+            *cursor.Current().GetDisplayItemClient(), reason);
       }
       return;
     }
@@ -2522,19 +2549,28 @@ void LayoutText::InvalidateDisplayItemClients(
     for (cursor.MoveTo(*this); cursor; cursor.MoveToNextForSameLayoutObject())
       DCHECK_EQ(cursor.Current().GetDisplayItemClient(), this);
 #endif
-    paint_invalidator.InvalidateDisplayItemClient(*this, invalidation_reason);
     return;
   }
 
-  paint_invalidator.InvalidateDisplayItemClient(*this, invalidation_reason);
-
   for (InlineTextBox* box : TextBoxes()) {
-    paint_invalidator.InvalidateDisplayItemClient(*box, invalidation_reason);
-    if (EllipsisBox* ellipsis_box = box->Root().GetEllipsisBox()) {
-      paint_invalidator.InvalidateDisplayItemClient(*ellipsis_box,
-                                                    invalidation_reason);
-    }
+    invalidator.InvalidateDisplayItemClient(*box, reason);
+    if (EllipsisBox* ellipsis_box = box->Root().GetEllipsisBox())
+      invalidator.InvalidateDisplayItemClient(*ellipsis_box, reason);
   }
+}
+
+const DisplayItemClient* LayoutText::GetSelectionDisplayItemClient() const {
+  if (!IsSelected())
+    return nullptr;
+  if (IsInLayoutNGInlineFormattingContext() &&
+      RuntimeEnabledFeatures::LayoutNGFragmentItemEnabled()) {
+    if (const auto* client = GetSelectionDisplayItemClientMap().at(this))
+      return client;
+    return GetSelectionDisplayItemClientMap()
+        .insert(this, std::make_unique<SelectionDisplayItemClient>())
+        .stored_value->value.get();
+  }
+  return nullptr;
 }
 
 PhysicalRect LayoutText::DebugRect() const {

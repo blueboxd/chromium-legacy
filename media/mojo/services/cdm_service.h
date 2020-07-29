@@ -64,13 +64,13 @@ class MEDIA_MOJO_EXPORT CdmService : public mojom::CdmService {
 
  private:
 // mojom::CdmService implementation.
-#if defined(OS_MACOSX)
+#if defined(OS_MAC)
   void LoadCdm(const base::FilePath& cdm_path,
                mojo::PendingRemote<mojom::SeatbeltExtensionTokenProvider>
                    token_provider) final;
 #else
   void LoadCdm(const base::FilePath& cdm_path) final;
-#endif  // defined(OS_MACOSX)
+#endif  // defined(OS_MAC)
   void CreateCdmFactory(
       mojo::PendingReceiver<mojom::CdmFactory> receiver,
       mojo::PendingRemote<mojom::FrameInterfaceFactory> frame_interfaces) final;

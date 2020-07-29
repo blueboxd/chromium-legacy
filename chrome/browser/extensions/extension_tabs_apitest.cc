@@ -210,7 +210,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionApiTabTest, HostPermission) {
 }
 
 // Flaky on Windows, Mac and Linux. http://crbug.com/820110.
-#if defined(OS_WIN) || defined(OS_MACOSX) || defined(OS_LINUX)
+#if defined(OS_WIN) || defined(OS_MAC) || defined(OS_LINUX)
 #define MAYBE_UpdateWindowResize DISABLED_UpdateWindowResize
 #else
 #define MAYBE_UpdateWindowResize UpdateWindowResize
@@ -229,14 +229,14 @@ IN_PROC_BROWSER_TEST_F(ExtensionApiTabTest, FocusWindowDoesNotUnmaximize) {
 }
 #endif  // OS_WIN
 
-#if defined(USE_AURA) || defined(OS_MACOSX)
+#if defined(USE_AURA) || defined(OS_MAC)
 // Maximizing/fullscreen popup window doesn't work on aura's managed mode.
 // See bug crbug.com/116305.
 // Mac: http://crbug.com/103912
 #define MAYBE_UpdateWindowShowState DISABLED_UpdateWindowShowState
 #else
 #define MAYBE_UpdateWindowShowState UpdateWindowShowState
-#endif  // defined(USE_AURA) || defined(OS_MACOSX)
+#endif  // defined(USE_AURA) || defined(OS_MAC)
 IN_PROC_BROWSER_TEST_F(ExtensionApiTabTest, MAYBE_UpdateWindowShowState) {
   ASSERT_TRUE(RunExtensionTest("window_update/show_state")) << message_;
 }

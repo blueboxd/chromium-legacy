@@ -24,7 +24,7 @@ const base::Feature kUseGles2ForOopR{"UseGles2ForOopR",
 
 // Enable GPU Rasterization by default. This can still be overridden by
 // --force-gpu-rasterization or --disable-gpu-rasterization.
-#if defined(OS_MACOSX) || defined(OS_WIN) || defined(OS_CHROMEOS) || \
+#if defined(OS_MAC) || defined(OS_WIN) || defined(OS_CHROMEOS) || \
     defined(OS_ANDROID) || defined(OS_FUCHSIA)
 // DefaultEnableGpuRasterization has launched on Mac, Windows, ChromeOS, and
 // Android.
@@ -37,7 +37,7 @@ const base::Feature kDefaultEnableGpuRasterization{
 
 // Enable out of process rasterization by default.  This can still be overridden
 // by --enable-oop-rasterization or --disable-oop-rasterization.
-#if defined(OS_ANDROID) || defined(OS_CHROMEOS) || defined(OS_MACOSX)
+#if defined(OS_ANDROID) || defined(OS_CHROMEOS) || defined(OS_MAC)
 const base::Feature kDefaultEnableOopRasterization{
     "DefaultEnableOopRasterization", base::FEATURE_ENABLED_BY_DEFAULT};
 #else
@@ -72,7 +72,7 @@ const base::Feature kGpuWatchdogV1NewTimeout{"GpuWatchdogV1NewTimeout",
 const base::Feature kGpuWatchdogV2NewTimeout{"GpuWatchdogV2NewTimeout",
                                              base::FEATURE_DISABLED_BY_DEFAULT};
 
-#if defined(OS_MACOSX)
+#if defined(OS_MAC)
 // Enable use of Metal for OOP rasterization.
 const base::Feature kMetal{"Metal", base::FEATURE_DISABLED_BY_DEFAULT};
 #endif

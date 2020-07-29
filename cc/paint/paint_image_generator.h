@@ -47,21 +47,23 @@ class CC_PAINT_EXPORT PaintImageGenerator : public SkRefCnt {
 
   // Returns true if the generator supports YUV decoding, providing the output
   // information in |info| and |color_space|.
-  virtual bool QueryYUVA8(SkYUVASizeInfo* info,
-                          SkYUVAIndex indices[SkYUVAIndex::kIndexCount],
-                          SkYUVColorSpace* color_space) const = 0;
+  virtual bool QueryYUVA(SkYUVASizeInfo* info,
+                         SkYUVAIndex indices[SkYUVAIndex::kIndexCount],
+                         SkYUVColorSpace* color_space,
+                         uint8_t* bit_depth) const = 0;
 
   // Decodes to YUV into the provided |planes| for each of the Y, U, and V
   // planes, and returns true on success. The method should only be used if
-  // QueryYUVA8 returns true.
+  // QueryYUVA returns true.
   // |info| and |indices| need to exactly match the values returned by the
   // query, except the info.fWidthBytes may be larger than the recommendation
   // (but not smaller).
   //
   // TODO(khushalsagar): |lazy_pixel_ref| is only present for
   // DecodingImageGenerator tracing needs. Remove it.
-  virtual bool GetYUVA8Planes(
+  virtual bool GetYUVAPlanes(
       const SkYUVASizeInfo& info,
+      SkColorType color_type,
       const SkYUVAIndex indices[SkYUVAIndex::kIndexCount],
       void* planes[3],
       size_t frame_index,

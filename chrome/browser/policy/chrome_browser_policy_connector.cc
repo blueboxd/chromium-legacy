@@ -36,7 +36,7 @@
 #if defined(OS_WIN)
 #include "base/win/registry.h"
 #include "components/policy/core/common/policy_loader_win.h"
-#elif defined(OS_MACOSX)
+#elif defined(OS_MAC)
 #include <CoreFoundation/CoreFoundation.h>
 #include "base/mac/foundation_util.h"
 #include "base/strings/sys_string_conversions.h"
@@ -155,7 +155,7 @@ ChromeBrowserPolicyConnector::CreatePlatformProvider() {
       kRegistryChromePolicyKey));
   return std::make_unique<AsyncPolicyProvider>(GetSchemaRegistry(),
                                                std::move(loader));
-#elif defined(OS_MACOSX)
+#elif defined(OS_MAC)
 #if BUILDFLAG(GOOGLE_CHROME_BRANDING)
   // Explicitly watch the "com.google.Chrome" bundle ID, no matter what this
   // app's bundle ID actually is. All channels of Chrome should obey the same

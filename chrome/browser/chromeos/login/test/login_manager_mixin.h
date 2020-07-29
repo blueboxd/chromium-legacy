@@ -89,6 +89,8 @@ class LoginManagerMixin : public InProcessBrowserTestMixin,
   // behavior.
   void set_should_launch_browser(bool value) { should_launch_browser_ = value; }
 
+  void set_should_obtain_handles(bool value) { should_obtain_handles_ = value; }
+
   const UserList& users() const { return initial_users_; }
 
   // Sets the list of default policy switches to be added to command line on the
@@ -148,6 +150,10 @@ class LoginManagerMixin : public InProcessBrowserTestMixin,
   // Whether the user session manager should skip browser launch steps for
   // testing.
   bool should_launch_browser_ = false;
+
+  // Whether the user session manager should try to obtain token handles.
+  bool should_obtain_handles_ = false;
+
   LocalStateMixin local_state_mixin_;
   FakeGaiaMixin* fake_gaia_mixin_;
 

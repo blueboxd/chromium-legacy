@@ -85,7 +85,7 @@ class BrowserFocusTest : public InProcessBrowserTest {
                                   "googleLink", "gmailLink",    "gmapLink"};
     SCOPED_TRACE(base::StringPrintf("TestFocusTraversal: reverse=%d", reverse));
     ui::KeyboardCode key = ui::VKEY_TAB;
-#if defined(OS_MACOSX)
+#if defined(OS_MAC)
     // TODO(msw): Mac requires ui::VKEY_BACKTAB for reverse cycling. Sigh...
     key = reverse ? ui::VKEY_BACKTAB : ui::VKEY_TAB;
 #endif
@@ -98,7 +98,7 @@ class BrowserFocusTest : public InProcessBrowserTest {
       // Mac requires an extra Tab key press to traverse the app menu button
       // iff "Full Keyboard Access" is enabled. In reverse, four Tab key presses
       // are required to traverse the back/forward buttons and the tab strip.
-#if defined(OS_MACOSX)
+#if defined(OS_MAC)
       constexpr int kFocusableElementsBeforeOmnibox = 4;
       constexpr int kFocusableElementsAfterOmnibox = 1;
       if (ui_controls::IsFullKeyboardAccessEnabled()) {
@@ -147,7 +147,7 @@ class BrowserFocusTest : public InProcessBrowserTest {
 
       // Except on Mac, where extra tabs are once again required to traverse the
       // other top chrome elements.
-#if defined(OS_MACOSX)
+#if defined(OS_MAC)
       if (ui_controls::IsFullKeyboardAccessEnabled()) {
         for (int j = 0; j < (reverse ? kFocusableElementsAfterOmnibox
                                      : kFocusableElementsBeforeOmnibox);
@@ -174,7 +174,7 @@ class BrowserFocusTest : public InProcessBrowserTest {
 };
 
 // Flaky on Mac (http://crbug.com/67301).
-#if defined(OS_MACOSX)
+#if defined(OS_MAC)
 #define MAYBE_ClickingMovesFocus DISABLED_ClickingMovesFocus
 #else
 // If this flakes, disable and log details in http://crbug.com/523255.
@@ -394,7 +394,7 @@ IN_PROC_BROWSER_TEST_F(BrowserFocusTest, LocationBarLockFocus) {
 // Test forward and reverse focus traversal on a typical page.
 // Disabled for Mac because it is flaky on "Mac10.9 Tests (dbg)",
 // see https://crbug.com/60973.
-#if defined(OS_MACOSX)
+#if defined(OS_MAC)
 #define MAYBE_FocusTraversal DISABLED_FocusTraversal
 #else
 #define MAYBE_FocusTraversal FocusTraversal
@@ -412,7 +412,7 @@ IN_PROC_BROWSER_TEST_F(BrowserFocusTest, MAYBE_FocusTraversal) {
 }
 
 // Test that find-in-page UI can request focus, even when it is already open.
-#if defined(OS_MACOSX)
+#if defined(OS_MAC)
 #define MAYBE_FindFocusTest DISABLED_FindFocusTest
 #else
 // If this flakes, disable and log details in http://crbug.com/523255.

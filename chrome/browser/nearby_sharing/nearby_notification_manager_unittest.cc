@@ -11,6 +11,7 @@
 #include "base/test/scoped_feature_list.h"
 #include "chrome/app/vector_icons/vector_icons.h"
 #include "chrome/browser/browser_features.h"
+#include "chrome/browser/nearby_sharing/mock_nearby_sharing_service.h"
 #include "chrome/browser/nearby_sharing/share_target.h"
 #include "chrome/browser/nearby_sharing/transfer_metadata.h"
 #include "chrome/browser/nearby_sharing/transfer_metadata_builder.h"
@@ -18,6 +19,7 @@
 #include "chrome/grit/generated_resources.h"
 #include "chrome/test/base/testing_profile.h"
 #include "content/public/test/browser_task_environment.h"
+#include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/strings/grit/ui_strings.h"
@@ -41,22 +43,25 @@ class NearbyNotificationManagerTest : public testing::Test {
     scoped_feature_list_.InitAndEnableFeature(features::kNearbySharing);
     notification_tester_ =
         std::make_unique<NotificationDisplayServiceTester>(&profile_);
+    manager_ = std::make_unique<NearbyNotificationManager>(&profile_,
+                                                           &nearby_service_);
   }
   ~NearbyNotificationManagerTest() override = default;
 
-  NearbyNotificationManager* manager() { return &manager_; }
+  NearbyNotificationManager* manager() { return manager_.get(); }
 
   std::vector<message_center::Notification> GetDisplayedNotifications() {
     return notification_tester_->GetDisplayedNotificationsForType(
         NotificationHandler::Type::NEARBY_SHARE);
   }
 
- private:
+ protected:
   base::test::ScopedFeatureList scoped_feature_list_;
   content::BrowserTaskEnvironment task_environment_;
   TestingProfile profile_;
   std::unique_ptr<NotificationDisplayServiceTester> notification_tester_;
-  NearbyNotificationManager manager_{&profile_};
+  testing::NiceMock<MockNearbySharingService> nearby_service_;
+  std::unique_ptr<NearbyNotificationManager> manager_;
 };
 
 struct ProgressNotificationTestParamInternal {
@@ -110,7 +115,46 @@ class NearbyNotificationManagerProgressNotificationTest
     : public NearbyNotificationManagerTest,
       public testing::WithParamInterface<ProgressNotificationTestParam> {};
 
+class NearbyNotificationManagerConnectionRequestTest
+    : public NearbyNotificationManagerTest,
+      public testing::WithParamInterface<TransferMetadata::Status> {};
+
 }  // namespace
+
+TEST_F(NearbyNotificationManagerTest, RegistersAsBackgroundSurfaces) {
+  manager_.reset();
+  TransferUpdateCallback* receive_transfer_callback = nullptr;
+  TransferUpdateCallback* send_transfer_callback = nullptr;
+  ShareTargetDiscoveredCallback* send_discovery_callback = nullptr;
+
+  EXPECT_CALL(
+      nearby_service_,
+      RegisterReceiveSurface(
+          testing::_, NearbySharingService::ReceiveSurfaceState::kBackground))
+      .WillOnce(testing::DoAll(
+          testing::SaveArg<0>(&receive_transfer_callback),
+          testing::Return(NearbySharingService::StatusCodes::kOk)));
+  EXPECT_CALL(
+      nearby_service_,
+      RegisterSendSurface(testing::_, testing::_,
+                          NearbySharingService::SendSurfaceState::kBackground))
+      .WillOnce(testing::DoAll(
+          testing::SaveArg<0>(&send_transfer_callback),
+          testing::SaveArg<1>(&send_discovery_callback),
+          testing::Return(NearbySharingService::StatusCodes::kOk)));
+  manager_ =
+      std::make_unique<NearbyNotificationManager>(&profile_, &nearby_service_);
+
+  EXPECT_EQ(manager(), receive_transfer_callback);
+  EXPECT_EQ(manager(), send_transfer_callback);
+  EXPECT_EQ(manager(), send_discovery_callback);
+}
+
+TEST_F(NearbyNotificationManagerTest, UnregistersSurfaces) {
+  EXPECT_CALL(nearby_service_, UnregisterReceiveSurface(manager()));
+  EXPECT_CALL(nearby_service_, UnregisterSendSurface(manager(), manager()));
+  manager_.reset();
+}
 
 TEST_F(NearbyNotificationManagerTest, ShowProgress_ShowsNotification) {
   ShareTarget share_target;
@@ -218,14 +262,17 @@ INSTANTIATE_TEST_SUITE_P(
     testing::Combine(testing::ValuesIn(kProgressNotificationTestParams),
                      testing::Bool()));
 
-TEST_F(NearbyNotificationManagerTest, ShowConnectionRequest_ShowsNotification) {
+TEST_P(NearbyNotificationManagerConnectionRequestTest,
+       ShowConnectionRequest_ShowsNotification) {
   std::string device_name = "device";
   ShareTarget share_target;
   share_target.device_name = device_name;
   share_target.file_attachments.push_back(
       CreateFileAttachment(FileAttachment::Type::kImage));
+  TransferMetadata transfer_metadata =
+      TransferMetadataBuilder().set_status(GetParam()).build();
 
-  manager()->ShowConnectionRequest(share_target);
+  manager()->ShowConnectionRequest(share_target, transfer_metadata);
 
   std::vector<message_center::Notification> notifications =
       GetDisplayedNotifications();
@@ -240,6 +287,7 @@ TEST_F(NearbyNotificationManagerTest, ShowConnectionRequest_ShowsNotification) {
       IDS_NEARBY_NOTIFICATION_CONNECTION_REQUEST_MESSAGE,
       base::ASCIIToUTF16(device_name),
       l10n_util::GetPluralStringFUTF16(IDS_NEARBY_FILE_ATTACHMENTS_IMAGES, 1));
+  // TODO(crbug.com/1102348): Verify |transfer_metadata.token()| if present.
 
   EXPECT_EQ(message_center::NOTIFICATION_TYPE_SIMPLE, notification.type());
   EXPECT_EQ(expected_title, notification.title());
@@ -252,17 +300,27 @@ TEST_F(NearbyNotificationManagerTest, ShowConnectionRequest_ShowsNotification) {
   EXPECT_EQ(l10n_util::GetStringUTF16(IDS_NEARBY_NOTIFICATION_SOURCE),
             notification.display_source());
 
+  std::vector<base::string16> expected_button_titles;
+  if (GetParam() == TransferMetadata::Status::kAwaitingLocalConfirmation) {
+    expected_button_titles.push_back(
+        l10n_util::GetStringUTF16(IDS_NEARBY_NOTIFICATION_RECEIVE_ACTION));
+  }
+  expected_button_titles.push_back(
+      l10n_util::GetStringUTF16(IDS_NEARBY_NOTIFICATION_DECLINE_ACTION));
+
   const std::vector<message_center::ButtonInfo>& buttons =
       notification.buttons();
-  ASSERT_EQ(2u, buttons.size());
+  ASSERT_EQ(expected_button_titles.size(), buttons.size());
 
-  const message_center::ButtonInfo& receive_button = buttons[0];
-  EXPECT_EQ(l10n_util::GetStringUTF16(IDS_NEARBY_NOTIFICATION_RECEIVE_ACTION),
-            receive_button.title);
-  const message_center::ButtonInfo& decline_button = buttons[1];
-  EXPECT_EQ(l10n_util::GetStringUTF16(IDS_NEARBY_NOTIFICATION_DECLINE_ACTION),
-            decline_button.title);
+  for (size_t i = 0; i < expected_button_titles.size(); ++i)
+    EXPECT_EQ(expected_button_titles[i], buttons[i].title);
 }
+
+INSTANTIATE_TEST_SUITE_P(
+    NearbyNotificationManagerConnectionRequestTest,
+    NearbyNotificationManagerConnectionRequestTest,
+    testing::Values(TransferMetadata::Status::kAwaitingLocalConfirmation,
+                    TransferMetadata::Status::kAwaitingRemoteAcceptance));
 
 TEST_F(NearbyNotificationManagerTest, ShowOnboarding_ShowsNotification) {
   manager()->ShowOnboarding();
@@ -286,4 +344,49 @@ TEST_F(NearbyNotificationManagerTest, ShowOnboarding_ShowsNotification) {
   EXPECT_EQ(l10n_util::GetStringUTF16(IDS_NEARBY_NOTIFICATION_SOURCE),
             notification.display_source());
   EXPECT_EQ(0u, notification.buttons().size());
+}
+
+TEST_F(NearbyNotificationManagerTest, ShowSuccess_ShowsNotification) {
+  manager()->ShowSuccess(ShareTarget());
+  // TODO(crbug.com/1102348): Verify success notification.
+}
+
+TEST_F(NearbyNotificationManagerTest, ShowFailure_ShowsNotification) {
+  manager()->ShowFailure(ShareTarget());
+  // TODO(crbug.com/1102348): Verify failure notification.
+}
+
+TEST_F(NearbyNotificationManagerTest,
+       CloseTransfer_ClosesProgressNotification) {
+  manager()->ShowProgress(ShareTarget(), TransferMetadataBuilder().build());
+  ASSERT_EQ(1u, GetDisplayedNotifications().size());
+
+  manager()->CloseTransfer();
+  EXPECT_EQ(0u, GetDisplayedNotifications().size());
+}
+
+TEST_F(NearbyNotificationManagerTest,
+       CloseTransfer_ClosesConnectionNotification) {
+  manager()->ShowConnectionRequest(ShareTarget(),
+                                   TransferMetadataBuilder().build());
+  ASSERT_EQ(1u, GetDisplayedNotifications().size());
+
+  manager()->CloseTransfer();
+  EXPECT_EQ(0u, GetDisplayedNotifications().size());
+}
+
+TEST_F(NearbyNotificationManagerTest,
+       CloseProgressNotification_NoopWithoutNotification) {
+  ASSERT_EQ(0u, GetDisplayedNotifications().size());
+
+  manager()->CloseTransfer();
+  EXPECT_EQ(0u, GetDisplayedNotifications().size());
+}
+
+TEST_F(NearbyNotificationManagerTest,
+       CloseProgressNotification_KeepsOnboardingNotification) {
+  manager()->ShowOnboarding();
+
+  manager()->CloseTransfer();
+  EXPECT_EQ(1u, GetDisplayedNotifications().size());
 }

@@ -71,6 +71,7 @@ class LatencyInfo;
 
 namespace blink {
 class SynchronousCompositorRegistry;
+struct VisualProperties;
 class WebCoalescedInputEvent;
 
 namespace scheduler {
@@ -256,6 +257,10 @@ class WebWidget {
 
   // Request the virtual keyboard be shown.
   virtual void ShowVirtualKeyboard() = 0;
+
+  // Apply the visual properties to the widget.
+  virtual void ApplyVisualProperties(
+      const VisualProperties& visual_properties) = 0;
 
 #if defined(OS_ANDROID)
   // Return the synchronous compositor registry.

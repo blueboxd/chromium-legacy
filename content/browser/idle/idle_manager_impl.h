@@ -47,6 +47,10 @@ class CONTENT_EXPORT IdleManagerImpl : public IdleManager,
                   mojo::PendingRemote<blink::mojom::IdleMonitor> monitor_remote,
                   AddMonitorCallback callback) final;
 
+  void SetIdleOverride(blink::mojom::UserIdleState user_state,
+                       blink::mojom::ScreenIdleState screen_state) override;
+  void ClearIdleOverride() override;
+
  private:
   // Check permission controller to see if the notification permission is
   // enabled for the origin.
@@ -75,6 +79,8 @@ class CONTENT_EXPORT IdleManagerImpl : public IdleManager,
 
   base::RepeatingTimer poll_timer_;
   std::unique_ptr<IdleTimeProvider> idle_time_provider_;
+
+  blink::mojom::IdleStatePtr state_override_;
 
   // Raw pointer should always be valid. IdleManagerImpl is owned by the
   // StoragePartitionImpl which is owned by BrowserContext. Therefore when the

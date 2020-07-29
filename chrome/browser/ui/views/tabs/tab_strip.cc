@@ -139,7 +139,7 @@ class TabHoverCardEventSniffer : public ui::EventHandler {
       : hover_card_(hover_card),
         tab_strip_(tab_strip),
         widget_(tab_strip->GetWidget()) {
-#if defined(OS_MACOSX)
+#if defined(OS_MAC)
     if (widget_->GetRootView())
       widget_->GetRootView()->AddPreTargetHandler(this);
 #else
@@ -149,7 +149,7 @@ class TabHoverCardEventSniffer : public ui::EventHandler {
   }
 
   ~TabHoverCardEventSniffer() override {
-#if defined(OS_MACOSX)
+#if defined(OS_MAC)
     widget_->GetRootView()->RemovePreTargetHandler(this);
 #else
     widget_->GetNativeWindow()->RemovePreTargetHandler(this);

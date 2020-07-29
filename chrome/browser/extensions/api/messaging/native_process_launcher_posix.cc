@@ -84,7 +84,7 @@ bool NativeProcessLauncher::LaunchNativeProcess(
   options.allow_new_privs = true;
 #endif
 
-#if defined(OS_MACOSX)
+#if defined(OS_MAC)
   // This is executing a third-party binary, so do not associate any system
   // private data requests with Chrome.
   options.disclaim_responsibility = true;

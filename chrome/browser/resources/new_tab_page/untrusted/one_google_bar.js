@@ -2,6 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+import {oneGoogleBarApi} from './one_google_bar_api.js';
+
 /**
  * The following |messageType|'s are sent to the parent frame:
  *  - loaded: sent on initial load.
@@ -24,36 +26,16 @@ function postMessage(messageType, data) {
       'chrome://new-tab-page');
 }
 
-// Object that exposes:
-//  - |getEnabled()|: returns whether dark theme is enabled.
-//  - |setEnabled(value)|: updates whether dark theme is enabled using the
-//        OneGoogleBar API.
-const darkTheme = (() => {
-  let enabled = false;
-
-  /** @return {boolean} */
-  const getEnabled = () => enabled;
-
-  /**
-   * @param {boolean} value
-   * @return {!Promise}
-   */
-  const setEnabled = async value => {
-    if (!window.gbar) {
-      return;
-    }
-    enabled = value;
-    const ogb = await window.gbar.a.bf();
-    ogb.pc.call(ogb, enabled ? 1 : 0);
-  };
-
-  return {getEnabled, setEnabled};
-})();
-
-// Object that exposes:
-//  - |track()|: sets up MutationObserver to track element visibility changes.
-//  - |update(potentialNewOverlays)|: determines visibility of tracked elements
-//        and sends an update to the top frame about element visibility.
+/**
+ * Object that exposes:
+ *  - |track()|: sets up MutationObserver to track element visibility changes.
+ *  - |update(potentialNewOverlays)|: determines visibility of tracked elements
+ *        and sends an update to the top frame about element visibility.
+ * @type {!{
+ *   track: !function(),
+ *   update: !function(!Array<!Element>),
+ * }}
+ */
 const overlayUpdater = (() => {
   const modalOverlays = document.documentElement.hasAttribute('modal-overlays');
   let shouldUndoDarkTheme = false;
@@ -170,13 +152,13 @@ const overlayUpdater = (() => {
     // OneGoogleBar iframe. The dark theme for the OneGoogleBar is then enabled
     // for better visibility.
     if (overlayShown) {
-      if (!darkTheme.getEnabled()) {
+      if (!oneGoogleBarApi.isForegroundLight()) {
         shouldUndoDarkTheme = true;
-        darkTheme.setEnabled(true);
+        oneGoogleBarApi.setForegroundLight(true);
       }
     } else if (shouldUndoDarkTheme) {
       shouldUndoDarkTheme = false;
-      darkTheme.setEnabled(false);
+      oneGoogleBarApi.setForegroundLight(false);
     }
   };
 
@@ -209,7 +191,7 @@ const overlayUpdater = (() => {
 
 window.addEventListener('message', ({data}) => {
   if (data.type === 'enableDarkTheme') {
-    darkTheme.setEnabled(data.enabled);
+    oneGoogleBarApi.setForegroundLight(data.enabled);
   }
 });
 
@@ -233,7 +215,7 @@ document.addEventListener('DOMContentLoaded', () => {
       el.target = '_top';
     }
   });
-  modalOverlays = document.documentElement.hasAttribute('modal-overlays');
   postMessage('loaded');
   overlayUpdater.track();
+  oneGoogleBarApi.trackDarkModeChanges();
 });

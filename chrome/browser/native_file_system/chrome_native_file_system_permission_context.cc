@@ -133,7 +133,7 @@ const struct {
     // not whole directories.
     {base::DIR_IE_INTERNET_CACHE, nullptr, kBlockNestedDirectories},
 #endif
-#if defined(OS_MACOSX)
+#if defined(OS_MAC)
     // Similar Mac specific blocks.
     {base::DIR_APP_DATA, nullptr, kBlockAllChildren},
     {base::DIR_HOME, FILE_PATH_LITERAL("Library"), kBlockAllChildren},

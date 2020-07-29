@@ -23,7 +23,7 @@
 #include "ui/display/win/dpi.h"
 #endif
 
-#if defined(OS_MACOSX)
+#if defined(OS_MAC)
 #include "base/mac/scoped_nsautorelease_pool.h"
 #include "base/test/mock_chrome_application_mac.h"
 #endif
@@ -59,7 +59,7 @@ ContentTestSuite::ContentTestSuite(int argc, char** argv)
 ContentTestSuite::~ContentTestSuite() = default;
 
 void ContentTestSuite::Initialize() {
-#if defined(OS_MACOSX)
+#if defined(OS_MAC)
   base::mac::ScopedNSAutoreleasePool autorelease_pool;
   mock_cr_app::RegisterMockCrApp();
 #endif

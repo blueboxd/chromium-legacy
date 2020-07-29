@@ -258,6 +258,13 @@ class RenderViewImplTest : public RenderViewTest {
     return view()->GetMainRenderFrame()->GetLocalRootRenderWidget();
   }
 
+  blink::WebFrameWidget* main_frame_widget() {
+    return static_cast<blink::WebFrameWidget*>(view()
+                                                   ->GetMainRenderFrame()
+                                                   ->GetLocalRootRenderWidget()
+                                                   ->GetWebWidget());
+  }
+
   TestRenderFrame* frame() {
     return static_cast<TestRenderFrame*>(view()->GetMainRenderFrame());
   }
@@ -510,7 +517,7 @@ class RenderViewImplScaleFactorTest : public RenderViewImplTest {
 
   void SetDeviceScaleFactor(float dsf) {
     RenderWidget* widget = main_widget();
-    widget->UpdateVisualProperties(
+    widget->GetWebWidget()->ApplyVisualProperties(
         MakeVisualPropertiesWithDeviceScaleFactor(dsf));
 
     ASSERT_EQ(dsf, view()->GetMainRenderFrame()->GetDeviceScaleFactor());
@@ -2219,7 +2226,7 @@ TEST_F(RenderViewImplTest, TestBackForward) {
   EXPECT_EQ(1, was_page_b);
 }
 
-#if defined(OS_MACOSX) || defined(USE_AURA)
+#if defined(OS_MAC) || defined(USE_AURA)
 TEST_F(RenderViewImplTest, GetCompositionCharacterBoundsTest) {
   LoadHTML("<textarea id=\"test\" cols=\"100\"></textarea>");
   ExecuteJavaScriptForTests("document.getElementById('test').focus();");
@@ -2881,7 +2888,8 @@ TEST_F(RenderViewImplTest, PreferredSizeZoomed) {
   gfx::Size size = GetPreferredSize();
   EXPECT_EQ(gfx::Size(400 + scrollbar_width, 400), size);
 
-  EXPECT_TRUE(view()->SetZoomLevel(blink::PageZoomFactorToZoomLevel(2.0)));
+  main_frame_widget()->SetZoomLevelForTesting(
+      blink::PageZoomFactorToZoomLevel(2.0));
   size = GetPreferredSize();
   EXPECT_EQ(gfx::Size(800 + scrollbar_width, 800), size);
 }
@@ -3200,7 +3208,7 @@ TEST_F(RenderViewImplEnableZoomForDSFTest,
   }
 }
 
-#if defined(OS_MACOSX) || defined(USE_AURA)
+#if defined(OS_MAC) || defined(USE_AURA)
 TEST_F(RenderViewImplEnableZoomForDSFTest,
        DISABLED_GetCompositionCharacterBoundsTest) {  // http://crbug.com/582016
   SetDeviceScaleFactor(1.f);
@@ -3284,10 +3292,13 @@ TEST_F(RenderViewImplScaleFactorTest, AutoResizeWithoutZoomForDSF) {
 TEST_F(RenderViewImplTest, ZoomLevelUpdate) {
   // 0 will use the minimum zoom level, which is the default, nothing will
   // change.
-  EXPECT_FALSE(view()->SetZoomLevel(0));
+  EXPECT_FLOAT_EQ(0u, view()->GetZoomLevel());
 
+  double zoom_level = blink::PageZoomFactorToZoomLevel(0.25);
   // Change the zoom level to 25% and check if the view gets the change.
-  EXPECT_TRUE(view()->SetZoomLevel(blink::PageZoomFactorToZoomLevel(0.25)));
+  main_frame_widget()->SetZoomLevelForTesting(zoom_level);
+  // Use EXPECT_FLOAT_EQ here because view()->GetZoomLevel returns a float.
+  EXPECT_FLOAT_EQ(zoom_level, view()->GetZoomLevel());
 }
 
 #endif

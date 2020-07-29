@@ -18,9 +18,11 @@
 #include "base/optional.h"
 #include "base/timer/elapsed_timer.h"
 #include "build/build_config.h"
+#include "cc/base/math_util.h"
 #include "media/base/video_color_space.h"
 #include "media/base/video_frame.h"
 #include "media/renderers/paint_canvas_video_renderer.h"
+#include "media/video/half_float_maker.h"
 #include "third_party/blink/renderer/platform/image-decoders/fast_shared_buffer_reader.h"
 #include "third_party/blink/renderer/platform/image-decoders/image_animation.h"
 #include "third_party/blink/renderer/platform/image-decoders/image_decoder.h"
@@ -100,6 +102,8 @@ base::Optional<SkYUVColorSpace> GetSkYUVColorSpace(const avifImage* image) {
         matrix == AVIF_MATRIX_COEFFICIENTS_BT601) {
       return kJPEG_SkYUVColorSpace;
     }
+    // TODO(crbug.com/1108626): Expand this list with full range BT709/BT2020 at
+    // various bit depths.
     return base::nullopt;
   }
 
@@ -329,6 +333,13 @@ size_t AVIFImageDecoder::DecodedYUVWidthBytes(int component) const {
   // is not documented in dav1d/picture.h.)
   if ((aligned_width & 1023) == 0)
     aligned_width += 64;
+
+  // High bit depth YUV is stored as a uint16_t, double the number of bytes.
+  if (bit_depth_ > 8) {
+    DCHECK_LE(bit_depth_, 16);
+    aligned_width *= 2;
+  }
+
   return aligned_width;
 }
 
@@ -336,6 +347,11 @@ SkYUVColorSpace AVIFImageDecoder::GetYUVColorSpace() const {
   DCHECK(CanDecodeToYUV());
   DCHECK(yuv_color_space_);
   return *yuv_color_space_;
+}
+
+uint8_t AVIFImageDecoder::GetYUVBitDepth() const {
+  DCHECK(CanDecodeToYUV());
+  return bit_depth_;
 }
 
 void AVIFImageDecoder::DecodeToYUV() {
@@ -364,36 +380,50 @@ void AVIFImageDecoder::DecodeToYUV() {
     SetFailed();
     return;
   }
-  DCHECK_EQ(image->depth, 8u);
   DCHECK(!image->alphaPlane);
   static_assert(SkYUVAIndex::kY_Index == static_cast<int>(AVIF_CHAN_Y), "");
   static_assert(SkYUVAIndex::kU_Index == static_cast<int>(AVIF_CHAN_U), "");
   static_assert(SkYUVAIndex::kV_Index == static_cast<int>(AVIF_CHAN_V), "");
+
+  // Disable subnormal floats which can occur when converting to half float.
+  std::unique_ptr<cc::ScopedSubnormalFloatDisabler> disable_subnormals;
+  if (image_planes_->color_type() == kA16_float_SkColorType)
+    disable_subnormals = std::make_unique<cc::ScopedSubnormalFloatDisabler>();
+  const float kHighBitDepthMultiplier = 1.0 / ((1 << bit_depth_) - 1);
+
   // Initialize |width| and |height| to the width and height of the luma plane.
   uint32_t width = image->width;
   uint32_t height = image->height;
+
   // |height| comes from the AV1 sequence header or frame header, which encodes
   // max_frame_height_minus_1 and frame_height_minus_1, respectively, as n-bit
   // unsigned integers for some n.
   DCHECK_GT(height, 0u);
   for (int plane = 0; plane < 3; ++plane) {
-    const uint8_t* src = image->yuvPlanes[plane];
-    size_t src_row_bytes = base::strict_cast<size_t>(image->yuvRowBytes[plane]);
-    uint8_t* dst = static_cast<uint8_t*>(image_planes_->Plane(plane));
-    size_t dst_row_bytes = image_planes_->RowBytes(plane);
-    DCHECK_LE(width, src_row_bytes);
-    DCHECK_LE(width, dst_row_bytes);
-    if (src_row_bytes == dst_row_bytes) {
-      // If |src| and |dst| have the same stride, we can copy the plane with a
-      // single memcpy() call. For the last row we copy only |width| bytes to
-      // avoid reading past the end of the last row. For all other rows we copy
-      // |src_row_bytes| bytes.
-      memcpy(dst, src, (height - 1) * src_row_bytes + width);
+    const size_t src_row_bytes =
+        base::strict_cast<size_t>(image->yuvRowBytes[plane]);
+    const size_t dst_row_bytes = image_planes_->RowBytes(plane);
+
+    if (bit_depth_ == 8) {
+      const uint8_t* src = image->yuvPlanes[plane];
+      uint8_t* dst = static_cast<uint8_t*>(image_planes_->Plane(plane));
+      libyuv::CopyPlane(src, src_row_bytes, dst, dst_row_bytes, width, height);
     } else {
-      for (uint32_t j = 0; j < height; ++j) {
-        memcpy(dst, src, width);
-        src += src_row_bytes;
-        dst += dst_row_bytes;
+      DCHECK_GT(bit_depth_, 8u);
+      DCHECK_LE(bit_depth_, 16u);
+      const uint16_t* src =
+          reinterpret_cast<uint16_t*>(image->yuvPlanes[plane]);
+      uint16_t* dst = static_cast<uint16_t*>(image_planes_->Plane(plane));
+      if (image_planes_->color_type() == kA16_unorm_SkColorType) {
+        libyuv::CopyPlane_16(src, src_row_bytes / 2, dst, dst_row_bytes / 2,
+                             width, height);
+      } else if (image_planes_->color_type() == kA16_float_SkColorType) {
+        // Note: Unlike CopyPlane_16, HalfFloatPlane wants the stride in bytes.
+        libyuv::HalfFloatPlane(src, src_row_bytes, dst, dst_row_bytes,
+                               kHighBitDepthMultiplier, width, height);
+      } else {
+        NOTREACHED() << "Unsupported color type: "
+                     << static_cast<int>(image_planes_->color_type());
       }
     }
     if (plane == 0) {
@@ -641,17 +671,15 @@ bool AVIFImageDecoder::MaybeCreateDemuxer() {
   }
 
   // Determine whether the image can be decoded to YUV.
-  // * Bit depths higher than 8 are not supported.
   // * Alpha channel is not supported.
   // * Multi-frame images (animations) are not supported. (The DecodeToYUV()
   //   method does not have an 'index' parameter.)
   // * If ColorTransform() returns a non-null pointer, the decoder has to do a
   //   color space conversion, so we don't decode to YUV.
-  allow_decode_to_yuv_ =
-      !ImageIsHighBitDepth() && yuv_format != AVIF_PIXEL_FORMAT_YUV400 &&
-      !decoder_->alphaPresent && decoded_frame_count_ == 1 &&
-      (yuv_color_space_ = GetSkYUVColorSpace(container)) && !ColorTransform();
-
+  allow_decode_to_yuv_ = yuv_format != AVIF_PIXEL_FORMAT_YUV400 &&
+                         !decoder_->alphaPresent && decoded_frame_count_ == 1 &&
+                         (yuv_color_space_ = GetSkYUVColorSpace(container)) &&
+                         !ColorTransform();
   return SetSize(container->width, container->height);
 }
 

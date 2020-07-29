@@ -93,7 +93,6 @@ HttpStreamFactory::JobController::JobController(
       main_job_is_blocked_(false),
       main_job_is_resumed_(false),
       bound_job_(nullptr),
-      can_start_alternative_proxy_job_(true),
       next_state_(STATE_RESOLVE_PROXY),
       proxy_resolve_request_(nullptr),
       request_info_(request_info),
@@ -296,11 +295,7 @@ void HttpStreamFactory::JobController::OnStreamFailed(
     const SSLConfig& used_ssl_config) {
   if (job->job_type() == ALTERNATIVE) {
     DCHECK_EQ(alternative_job_.get(), job);
-    if (alternative_job_->alternative_proxy_server().is_valid()) {
-      OnAlternativeProxyJobFailed(status);
-    } else {
-      OnAlternativeServiceJobFailed(status);
-    }
+    OnAlternativeServiceJobFailed(status);
   } else {
     DCHECK_EQ(main_job_.get(), job);
     main_job_net_error_ = status;
@@ -729,23 +724,8 @@ int HttpStreamFactory::JobController::DoCreateJobs() {
 
     main_job_is_blocked_ = true;
     alternative_job_->Start(request_->stream_type());
-  } else {
-    ProxyInfo alternative_proxy_info;
-    if (ShouldCreateAlternativeProxyServerJob(proxy_info_, request_info_.url,
-                                              &alternative_proxy_info)) {
-      DCHECK(!main_job_is_blocked_);
-
-      alternative_job_ = job_factory_->CreateAltProxyJob(
-          this, ALTERNATIVE, session_, request_info_, priority_,
-          alternative_proxy_info, server_ssl_config_, proxy_ssl_config_,
-          destination, origin_url, alternative_proxy_info.proxy_server(),
-          is_websocket_, enable_ip_based_pooling_, net_log_.net_log());
-
-      can_start_alternative_proxy_job_ = false;
-      main_job_is_blocked_ = true;
-      alternative_job_->Start(request_->stream_type());
-    }
   }
+
   // Even if |alternative_job| has already finished, it will not have notified
   // the request yet, since we defer that to the next iteration of the
   // MessageLoop, so starting |main_job_| is always safe.
@@ -838,24 +818,6 @@ void HttpStreamFactory::JobController::OnAlternativeServiceJobFailed(
   DCHECK_NE(kProtoUnknown, alternative_service_info_.protocol());
 
   alternative_job_net_error_ = net_error;
-}
-
-void HttpStreamFactory::JobController::OnAlternativeProxyJobFailed(
-    int net_error) {
-  DCHECK_EQ(alternative_job_->job_type(), ALTERNATIVE);
-  DCHECK_NE(OK, net_error);
-  DCHECK(alternative_job_->alternative_proxy_server().is_valid());
-  DCHECK(alternative_job_->alternative_proxy_server() ==
-         alternative_job_->proxy_info().proxy_server());
-
-  // Need to mark alt proxy as broken regardless of whether the job is bound.
-  // The proxy will be marked bad until the proxy retry information is cleared
-  // by an event such as a network change.
-  if (net_error != ERR_NETWORK_CHANGED &&
-      net_error != ERR_INTERNET_DISCONNECTED) {
-    session_->proxy_resolution_service()->MarkProxiesAsBadUntil(
-        alternative_job_->proxy_info(), base::TimeDelta::Max(), {}, net_log_);
-  }
 }
 
 void HttpStreamFactory::JobController::MaybeReportBrokenAlternativeService() {
@@ -1015,7 +977,7 @@ HttpStreamFactory::JobController::GetAlternativeServiceInfoInternal(
       if (!is_any_broken) {
         // Only log the broken alternative service once per request.
         is_any_broken = true;
-        HistogramAlternateProtocolUsage(ALTERNATE_PROTOCOL_USAGE_BROKEN, false,
+        HistogramAlternateProtocolUsage(ALTERNATE_PROTOCOL_USAGE_BROKEN,
                                         HasGoogleHost(original_url));
       }
       continue;
@@ -1117,77 +1079,27 @@ quic::ParsedQuicVersion HttpStreamFactory::JobController::SelectQuicVersion(
   return quic::ParsedQuicVersion::Unsupported();
 }
 
-bool HttpStreamFactory::JobController::ShouldCreateAlternativeProxyServerJob(
-    const ProxyInfo& proxy_info,
-    const GURL& url,
-    ProxyInfo* alternative_proxy_info) const {
-  DCHECK(alternative_proxy_info->is_empty());
-
-  if (!enable_alternative_services_)
-    return false;
-
-  if (!can_start_alternative_proxy_job_) {
-    // Either an alternative service job or an alternative proxy server job has
-    // already been started.
-    return false;
-  }
-
-  if (proxy_info.is_empty() || proxy_info.is_direct() || proxy_info.is_quic()) {
-    // Alternative proxy server job can be created only if |job| fetches the
-    // |request_| through a non-QUIC proxy.
-    return false;
-  }
-
-  if (!url.SchemeIs(url::kHttpScheme)) {
-    // Only HTTP URLs can be fetched through alternative proxy server, since the
-    // alternative proxy server may not support fetching of URLs with other
-    // schemes.
-    return false;
-  }
-
-  alternative_proxy_info->UseProxyServer(proxy_info.alternative_proxy());
-  if (alternative_proxy_info->is_empty())
-    return false;
-
-  DCHECK(alternative_proxy_info->proxy_server() != proxy_info.proxy_server());
-
-  if (!alternative_proxy_info->is_secure_http_like()) {
-    // Alternative proxy server should be a secure server.
-    return false;
-  }
-
-  if (alternative_proxy_info->is_quic()) {
-    // Check that QUIC is enabled globally.
-    if (!session_->IsQuicEnabled())
-      return false;
-  }
-
-  return true;
-}
-
 void HttpStreamFactory::JobController::ReportAlternateProtocolUsage(
     Job* job) const {
   DCHECK(main_job_ && alternative_job_);
 
-  bool proxy_server_used =
-      alternative_job_->alternative_proxy_server().is_quic();
   bool is_google_host = HasGoogleHost(job->origin_url());
 
   if (job == main_job_.get()) {
     HistogramAlternateProtocolUsage(ALTERNATE_PROTOCOL_USAGE_LOST_RACE,
-                                    proxy_server_used, is_google_host);
+                                    is_google_host);
     return;
   }
 
   DCHECK_EQ(alternative_job_.get(), job);
   if (job->using_existing_quic_session()) {
     HistogramAlternateProtocolUsage(ALTERNATE_PROTOCOL_USAGE_NO_RACE,
-                                    proxy_server_used, is_google_host);
+                                    is_google_host);
     return;
   }
 
   HistogramAlternateProtocolUsage(ALTERNATE_PROTOCOL_USAGE_WON_RACE,
-                                  proxy_server_used, is_google_host);
+                                  is_google_host);
 }
 
 bool HttpStreamFactory::JobController::IsJobOrphaned(Job* job) const {
@@ -1203,8 +1115,6 @@ int HttpStreamFactory::JobController::ReconsiderProxyAfterError(Job* job,
 
   if (!job->should_reconsider_proxy())
     return error;
-
-  DCHECK(!job->alternative_proxy_server().is_valid());
 
   if (request_info_.load_flags & LOAD_BYPASS_PROXY)
     return error;

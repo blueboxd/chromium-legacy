@@ -23,7 +23,7 @@ EndpointResolver::~EndpointResolver() {}
 
 void EndpointResolver::Start(const net::HostPortPair& address,
                              ResultCallback callback) {
-#if defined(OS_MACOSX)
+#if defined(OS_MAC)
   net::IPAddress ip_address;
   if (!ip_address.AssignFromIPLiteral(address.host())) {
     NOTREACHED() << address.ToString();

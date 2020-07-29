@@ -62,7 +62,7 @@
 #include "testing/gmock/include/gmock/gmock.h"
 #include "third_party/widevine/cdm/buildflags.h"
 
-#if defined(OS_MACOSX)
+#if defined(OS_MAC)
 #include "base/mac/scoped_nsautorelease_pool.h"
 #endif
 

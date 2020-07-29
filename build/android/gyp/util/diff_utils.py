@@ -33,7 +33,7 @@ def _GenerateDiffWithOnlyAdditons(expected_path, actual_data):
   actual_lines = [l for l in actual_data.splitlines(True) if l.strip()]
 
   diff = difflib.ndiff(expected_lines, actual_lines)
-  filtered_diff = (line for line in diff if line.startswith('+'))
+  filtered_diff = (l for l in diff if l.startswith('+'))
   return ''.join(filtered_diff)
 
 

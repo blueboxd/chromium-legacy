@@ -138,7 +138,6 @@ class CONTENT_EXPORT RenderFrameProxy : public IPC::Listener,
   // RenderWidget, and we would only need to send one update to the browser as
   // a result.
   void OnScreenInfoChanged(const blink::ScreenInfo& screen_info);
-  void OnZoomLevelChanged(double zoom_level);
   void OnRootWindowSegmentsChanged(
       std::vector<gfx::Rect> root_widget_window_segments);
   void OnPageScaleFactorChanged(float page_scale_factor,
@@ -197,6 +196,7 @@ class CONTENT_EXPORT RenderFrameProxy : public IPC::Listener,
   void UpdateRemoteViewportIntersection(
       const blink::ViewportIntersectionState& intersection_state) override;
   base::UnguessableToken GetDevToolsFrameToken() override;
+  void ZoomLevelChanged(double zoom_level) override;
 
   void DidStartLoading();
 

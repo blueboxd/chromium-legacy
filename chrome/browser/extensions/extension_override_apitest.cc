@@ -234,7 +234,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionOverrideTest,
   }
 }
 
-#if defined(OS_MACOSX)
+#if defined(OS_MAC)
 // Hangy: http://crbug.com/70511
 #define MAYBE_OverrideNewTabIncognito DISABLED_OverrideNewTabIncognito
 #else

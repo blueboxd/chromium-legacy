@@ -28,7 +28,7 @@
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/strings/grit/ui_strings.h"
 
-#if defined(OS_MACOSX)
+#if defined(OS_MAC)
 #include "chrome/browser/badging/badge_manager_delegate_mac.h"
 #elif defined(OS_WIN)
 #include "chrome/browser/badging/badge_manager_delegate_win.h"
@@ -37,7 +37,7 @@
 namespace badging {
 
 BadgeManager::BadgeManager(Profile* profile) {
-#if defined(OS_MACOSX)
+#if defined(OS_MAC)
   SetDelegate(std::make_unique<BadgeManagerDelegateMac>(profile, this));
 #elif defined(OS_WIN)
   SetDelegate(std::make_unique<BadgeManagerDelegateWin>(profile, this));

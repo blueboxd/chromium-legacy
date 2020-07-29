@@ -16,7 +16,7 @@
 #include "content/public/browser/web_contents.h"
 #include "content/public/test/browser_test.h"
 
-#if defined(OS_MACOSX)
+#if defined(OS_MAC)
 #include "chrome/browser/ui/browser_commands_mac.h"
 #include "chrome/test/base/interactive_test_utils.h"
 #endif
@@ -31,7 +31,7 @@ class BrowserViewTest : public InProcessBrowserTest {
   ~BrowserViewTest() override = default;
 
   void SetUpOnMainThread() override {
-#if defined(OS_MACOSX)
+#if defined(OS_MAC)
     // Set the preference to true so we expect to see the top view in
     // fullscreen mode.
     PrefService* prefs = browser()->profile()->GetPrefs();
@@ -80,7 +80,7 @@ IN_PROC_BROWSER_TEST_F(BrowserViewTest, BrowserFullscreenShowTopView) {
   EXPECT_TRUE(browser_view->IsFullscreen());
 
   bool top_view_in_browser_fullscreen = false;
-#if defined(OS_MACOSX)
+#if defined(OS_MAC)
   // The top view should show up by default.
   EXPECT_TRUE(browser_view->IsTabStripVisible());
   // The 'Always Show Bookmarks Bar' should be enabled.
@@ -182,7 +182,7 @@ IN_PROC_BROWSER_TEST_F(BrowserViewTest, FullscreenShowBookmarkBar) {
   // its state.
   if (!browser_view->IsBookmarkBarVisible())
     chrome::ToggleBookmarkBar(browser());
-#if defined(OS_MACOSX)
+#if defined(OS_MAC)
   // Disable showing toolbar in fullscreen mode to make its bahavior similar to
   // other platforms.
   chrome::ToggleFullscreenToolbar(browser());
@@ -201,7 +201,7 @@ IN_PROC_BROWSER_TEST_F(BrowserViewTest, FullscreenShowBookmarkBar) {
   else
     EXPECT_FALSE(browser_view->IsBookmarkBarVisible());
 
-#if defined(OS_MACOSX)
+#if defined(OS_MAC)
   // Test toggling toolbar state in fullscreen mode would also affect bookmark
   // bar state.
   chrome::ToggleFullscreenToolbar(browser());

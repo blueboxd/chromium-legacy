@@ -10,6 +10,7 @@ Loaded modules:
     emulation
     extensions
     host
+    i18n
     inspector_main
     main
     mobile_throttling

@@ -52,7 +52,7 @@ IN_PROC_BROWSER_TEST_F(SocketsUdpApiTest, SocketsUdpCreateGood) {
 // Disable SocketsUdpExtension on Mac due to time out.
 // See https://crbug.com/844402.
 // Disable on Linux for flakiness. See https://crbug.com/875920.
-#if defined(OS_MACOSX) || defined(OS_LINUX)
+#if defined(OS_MAC) || defined(OS_LINUX)
 #define MAYBE_SocketsUdpExtension DISABLED_SocketsUdpExtension
 #else
 #define MAYBE_SocketsUdpExtension SocketsUdpExtension

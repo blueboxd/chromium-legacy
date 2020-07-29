@@ -13,7 +13,7 @@ const base::Feature kAdvancedPpdAttributes{"AdvancedPpdAttributes",
                                            base::FEATURE_ENABLED_BY_DEFAULT};
 #endif  // defined(OS_CHROMEOS)
 
-#if defined(OS_MACOSX)
+#if defined(OS_MAC)
 // Use the CUPS IPP printing backend instead of the original CUPS backend that
 // calls the deprecated PPD API.
 const base::Feature kCupsIppPrintingBackend{"CupsIppPrintingBackend",
@@ -21,7 +21,7 @@ const base::Feature kCupsIppPrintingBackend{"CupsIppPrintingBackend",
 
 const base::Feature kEnableCustomMacPaperSizes{
     "EnableCustomMacPaperSizes", base::FEATURE_ENABLED_BY_DEFAULT};
-#endif  // defined(OS_MACOSX)
+#endif  // defined(OS_MAC)
 
 #if defined(OS_WIN)
 // When using GDI printing, avoid rasterization if possible.

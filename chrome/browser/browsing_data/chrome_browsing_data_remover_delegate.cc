@@ -160,9 +160,9 @@
 #include "components/user_manager/user.h"
 #endif  // defined(OS_CHROMEOS)
 
-#if defined(OS_MACOSX)
+#if defined(OS_MAC)
 #include "device/fido/mac/credential_store.h"
-#endif  // defined(OS_MACOSX)
+#endif  // defined(OS_MAC)
 
 #if BUILDFLAG(ENABLE_PLUGINS)
 #include "chrome/browser/browsing_data/browsing_data_flash_lso_helper.h"
@@ -896,12 +896,12 @@ void ChromeBrowsingDataRemoverDelegate::RemoveEmbedderData(
                              CreateTaskCompletionClosureForMojo(
                                  TracingDataType::kHttpAuthCache));
 
-#if defined(OS_MACOSX)
+#if defined(OS_MAC)
     device::fido::mac::TouchIdCredentialStore(
         ChromeAuthenticatorRequestDelegate::
             TouchIdAuthenticatorConfigForProfile(profile_))
         .DeleteCredentials(delete_begin_, delete_end_);
-#endif  // defined(OS_MACOSX)
+#endif  // defined(OS_MAC)
   }
 
   if (remove_mask & content::BrowsingDataRemover::DATA_TYPE_COOKIES) {

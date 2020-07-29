@@ -89,7 +89,7 @@ TEST_F(ChromePrefServiceWebKitPrefs, PrefsCopied) {
   EXPECT_FALSE(webkit_prefs.text_areas_are_resizable);
 
   // These should still be the default values.
-#if defined(OS_MACOSX)
+#if defined(OS_MAC)
   const char kDefaultFont[] = "Times";
 #elif defined(OS_CHROMEOS)
   const char kDefaultFont[] = "Tinos";

@@ -7,6 +7,7 @@
 
 #include "base/component_export.h"
 #include "ui/gfx/x/x11_types.h"
+#include "ui/gfx/x/xproto.h"
 
 namespace ui {
 
@@ -15,9 +16,9 @@ class X11Cursor;
 // Grabs the pointer. It is unnecessary to ungrab the pointer prior to grabbing
 // it.
 COMPONENT_EXPORT(UI_BASE_X)
-int GrabPointer(x11::Window window,
-                bool owner_events,
-                scoped_refptr<ui::X11Cursor> cursor);
+x11::GrabStatus GrabPointer(x11::Window window,
+                            bool owner_events,
+                            scoped_refptr<ui::X11Cursor> cursor);
 
 // Sets the cursor to use for the duration of the active pointer grab.
 COMPONENT_EXPORT(UI_BASE_X)

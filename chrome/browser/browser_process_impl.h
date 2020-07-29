@@ -96,7 +96,7 @@ class BrowserProcessImpl : public BrowserProcess,
   void SetQuitClosure(base::OnceClosure quit_closure);
 #endif
 
-#if defined(OS_MACOSX)
+#if defined(OS_MAC)
   // Clears the quit closure. Shutdown will not be initiated should the
   // KeepAlive count reach zero. This function may be called more than once.
   // TODO(https://crbug.com/845966): Remove this once the Cocoa first run

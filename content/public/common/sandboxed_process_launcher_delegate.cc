@@ -46,7 +46,7 @@ base::EnvironmentMap SandboxedProcessLauncherDelegate::GetEnvironment() {
 }
 #endif  // defined(OS_POSIX)
 
-#if defined(OS_MACOSX)
+#if defined(OS_MAC)
 bool SandboxedProcessLauncherDelegate::DisclaimResponsibility() {
   return false;
 }

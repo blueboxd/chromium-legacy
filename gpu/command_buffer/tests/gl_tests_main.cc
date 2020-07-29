@@ -16,7 +16,7 @@
 #include "mojo/core/embedder/embedder.h"
 #include "testing/gmock/include/gmock/gmock.h"
 
-#if defined(OS_MACOSX)
+#if defined(OS_MAC)
 #include "base/mac/scoped_nsautorelease_pool.h"
 #endif
 
@@ -65,7 +65,7 @@ int main(int argc, char** argv) {
   mojo::core::Init();
 
   GlTestsSuite gl_tests_suite(argc, argv);
-#if defined(OS_MACOSX)
+#if defined(OS_MAC)
   base::mac::ScopedNSAutoreleasePool pool;
 #endif
   testing::InitGoogleMock(&argc, argv);

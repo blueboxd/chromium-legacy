@@ -15,7 +15,7 @@
 #include "chrome/utility/image_writer/image_writer_handler.h"
 #include "content/public/utility/utility_thread.h"
 
-#if defined(OS_MACOSX)
+#if defined(OS_MAC)
 #include "chrome/utility/image_writer/disk_unmounter_mac.h"
 #endif
 

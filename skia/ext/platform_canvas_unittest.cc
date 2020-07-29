@@ -75,7 +75,7 @@ bool VerifyRect(const SkCanvas& canvas,
   return true;
 }
 
-#if !defined(USE_AURA) && !defined(OS_MACOSX)
+#if !defined(USE_AURA) && !defined(OS_MAC)
 // Return true if canvas has something that passes for a rounded-corner
 // rectangle. Basically, we're just checking to make sure that the pixels in the
 // middle are of rect_color and pixels in the corners are of canvas_color.

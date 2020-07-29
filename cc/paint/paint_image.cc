@@ -191,12 +191,14 @@ bool PaintImage::DecodeYuv(
     size_t frame_index,
     GeneratorClientId client_id,
     const SkYUVASizeInfo& yuva_size_info,
+    SkColorType color_type,
     SkYUVAIndex plane_indices[SkYUVAIndex::kIndexCount]) const {
   DCHECK(plane_indices != nullptr);
   DCHECK(paint_image_generator_);
   const uint32_t lazy_pixel_ref = unique_id();
-  return paint_image_generator_->GetYUVA8Planes(
-      yuva_size_info, plane_indices, planes, frame_index, lazy_pixel_ref);
+  return paint_image_generator_->GetYUVAPlanes(yuva_size_info, color_type,
+                                               plane_indices, planes,
+                                               frame_index, lazy_pixel_ref);
 }
 
 bool PaintImage::DecodeFromGenerator(void* memory,
@@ -312,10 +314,12 @@ const ImageHeaderMetadata* PaintImage::GetImageHeaderMetadata() const {
 
 bool PaintImage::IsYuv(SkYUVASizeInfo* yuva_size_info,
                        SkYUVAIndex* plane_indices,
-                       SkYUVColorSpace* yuv_color_space) const {
+                       SkYUVColorSpace* yuv_color_space,
+                       uint8_t* bit_depth) const {
   SkYUVASizeInfo temp_yuva_size_info;
   SkYUVAIndex temp_plane_indices[SkYUVAIndex::kIndexCount];
   SkYUVColorSpace temp_yuv_color_space;
+  uint8_t temp_bit_depth;
   if (!yuva_size_info) {
     yuva_size_info = &temp_yuva_size_info;
   }
@@ -325,11 +329,14 @@ bool PaintImage::IsYuv(SkYUVASizeInfo* yuva_size_info,
   if (!yuv_color_space) {
     yuv_color_space = &temp_yuv_color_space;
   }
+  if (!bit_depth) {
+    bit_depth = &temp_bit_depth;
+  }
   // ImageDecoder will fill out the value of |yuv_color_space| depending on
   // the codec's specification.
   return paint_image_generator_ &&
-         paint_image_generator_->QueryYUVA8(yuva_size_info, plane_indices,
-                                            yuv_color_space);
+         paint_image_generator_->QueryYUVA(yuva_size_info, plane_indices,
+                                           yuv_color_space, bit_depth);
 }
 
 const std::vector<FrameMetadata>& PaintImage::GetFrameMetadata() const {

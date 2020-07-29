@@ -240,7 +240,7 @@ IN_PROC_BROWSER_TEST_F(LoaderBrowserTest, SyncXMLHttpRequest_Disallowed) {
 // downloadable) would trigger download and hang the renderer process,
 // if executed while navigating to a new page.
 // Disabled on Mac: see http://crbug.com/56264
-#if defined(OS_MACOSX)
+#if defined(OS_MAC)
 #define MAYBE_SyncXMLHttpRequest_DuringUnload \
   DISABLED_SyncXMLHttpRequest_DuringUnload
 #else
@@ -401,7 +401,7 @@ IN_PROC_BROWSER_TEST_F(LoaderBrowserTest, CrossSiteNoUnloadOn204) {
 // app isn't stripped of debug symbols, this takes about five minutes to
 // complete and isn't conducive to quick turnarounds. As we don't currently
 // strip the app on the build bots, this is bad times.
-#if defined(OS_MACOSX)
+#if defined(OS_MAC)
 #define MAYBE_CrossSiteAfterCrash DISABLED_CrossSiteAfterCrash
 #else
 #define MAYBE_CrossSiteAfterCrash CrossSiteAfterCrash

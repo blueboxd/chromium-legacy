@@ -69,6 +69,7 @@ source_set("browser_tests") {
     "//chrome/test:test_support",
     "//components/ukm:test_support",
     "//components/ukm:ukm_test_helper",
+    "//components/variations/service:buildflags",
     "//third_party/blink/public/common/privacy_budget",
   ]
 

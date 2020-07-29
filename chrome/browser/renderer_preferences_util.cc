@@ -27,7 +27,7 @@
 #include "ui/views/controls/textfield/textfield.h"
 #endif
 
-#if defined(OS_MACOSX)
+#if defined(OS_MAC)
 #include "ui/base/cocoa/defaults_utils.h"
 #endif
 
@@ -140,7 +140,7 @@ void UpdateFromSystemSettings(blink::mojom::RendererPreferences* prefs,
   prefs->caret_blink_interval = views::Textfield::GetCaretBlinkInterval();
 #endif
 
-#if defined(OS_MACOSX)
+#if defined(OS_MAC)
   base::TimeDelta interval;
   if (ui::TextInsertionCaretBlinkPeriod(&interval))
     prefs->caret_blink_interval = interval;
@@ -169,7 +169,7 @@ void UpdateFromSystemSettings(blink::mojom::RendererPreferences* prefs,
   content::UpdateFontRendererPreferencesFromSystemSettings(prefs);
 #endif
 
-#if !defined(OS_MACOSX)
+#if !defined(OS_MAC)
   prefs->plugin_fullscreen_allowed =
       pref_service->GetBoolean(prefs::kFullscreenAllowed);
 #endif
@@ -181,7 +181,7 @@ void UpdateFromSystemSettings(blink::mojom::RendererPreferences* prefs,
   }
 
   if (::features::IsFormControlsRefreshEnabled()) {
-#if defined(OS_MACOSX)
+#if defined(OS_MAC)
     prefs->focus_ring_color = SkColorSetRGB(0x00, 0x5F, 0xCC);
 #else
     prefs->focus_ring_color = SkColorSetRGB(0x10, 0x10, 0x10);

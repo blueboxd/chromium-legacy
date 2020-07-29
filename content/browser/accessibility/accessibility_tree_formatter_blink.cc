@@ -166,7 +166,6 @@ void AccessibilityTreeFormatterBlink::AddDefaultFilters(
   // Too flaky: hovered, offscreen
   // States
   AddPropertyFilter(property_filters, "collapsed");
-  AddPropertyFilter(property_filters, "haspopup");
   AddPropertyFilter(property_filters, "invisible");
   AddPropertyFilter(property_filters, "multiline");
   AddPropertyFilter(property_filters, "protected");

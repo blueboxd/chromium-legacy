@@ -367,6 +367,16 @@ template("chrome_public_common_apk_or_module_tmpl") {
 
     deps += [ "//chrome/android:chrome_all_java" ]
 
+    # Prefer to add this data_dep on the final target instead of java targets
+    # like chrome_all_java so that all other targets can build in parallel with
+    # lint.
+    if (!disable_android_lint) {
+      if (!defined(data_deps)) {
+        data_deps = []
+      }
+      data_deps += [ "//chrome/android:android_lint" ]
+    }
+
     if (!defined(version_code)) {
       if (_is_trichrome) {
         version_code = trichrome_version_code

@@ -697,7 +697,7 @@ scoped_refptr<SharedContextState> GpuChannelManager::GetSharedContextState(
 
   scoped_refptr<gl::GLSurface> surface = default_offscreen_surface();
   bool use_virtualized_gl_contexts = false;
-#if defined(OS_MACOSX)
+#if defined(OS_MAC)
   // Virtualize GpuPreference::kLowPower contexts by default on OS X to prevent
   // performance regressions when enabling FCM.
   // http://crbug.com/180463

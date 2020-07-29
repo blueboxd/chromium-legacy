@@ -65,7 +65,7 @@
 #include "ui/events/event_rewriter.h"
 #endif
 
-#if defined(OS_MACOSX)
+#if defined(OS_MAC)
 #include "ui/base/test/scoped_preferred_scroller_style_mac.h"
 #endif
 
@@ -669,7 +669,7 @@ enum class HitTestType {
   kSurfaceLayer,
 };
 
-#if !defined(OS_MACOSX) && !defined(OS_ANDROID)
+#if !defined(OS_MAC) && !defined(OS_ANDROID)
 bool IsScreenTooSmallForPopup(const blink::ScreenInfo& screen_info) {
   // Small display size will cause popup positions to be adjusted,
   // causing test failures.
@@ -3823,7 +3823,7 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessHitTestBrowserTest,
   base::RunLoop().RunUntilIdle();
 
 // Targeting a scrollbar with a click doesn't work on Mac or Android.
-#if !defined(OS_MACOSX) && !defined(OS_ANDROID)
+#if !defined(OS_MAC) && !defined(OS_ANDROID)
   scoped_refptr<SetMouseCaptureInterceptor> root_interceptor =
       new SetMouseCaptureInterceptor(static_cast<RenderWidgetHostImpl*>(
           root->current_frame_host()->GetRenderWidgetHost()));
@@ -3871,7 +3871,7 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessHitTestBrowserTest,
 
   root_interceptor->Wait();
   EXPECT_FALSE(root_interceptor->Capturing());
-#endif  // !defined(OS_MACOSX) && !defined(OS_ANDROID)
+#endif  // !defined(OS_MAC) && !defined(OS_ANDROID)
 }
 
 IN_PROC_BROWSER_TEST_F(SitePerProcessHitTestBrowserTest,
@@ -5566,7 +5566,7 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessHitTestBrowserTest,
 
 // Tests that performing a touchpad double-tap zoom over an OOPIF offers the
 // synthetic wheel event to the child.
-#if defined(OS_MACOSX) || defined(OS_LINUX) || defined(OS_WIN) || \
+#if defined(OS_MAC) || defined(OS_LINUX) || defined(OS_WIN) || \
     defined(OS_ANDROID)
 // Flaky on mac, linux and win. crbug.com/947193
 #define MAYBE_TouchpadDoubleTapZoomOverOOPIF \
@@ -5839,7 +5839,7 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessHitTestBrowserTest, PopupMenuTest) {
     popup_rect = gfx::ScaleToRoundedRect(popup_rect,
                                          1 / screen_info.device_scale_factor);
   }
-#if defined(OS_MACOSX) || defined(OS_ANDROID)
+#if defined(OS_MAC) || defined(OS_ANDROID)
   // On Mac and Android we receive the coordinates before they are transformed,
   // so they are still relative to the out-of-process iframe origin.
   EXPECT_EQ(popup_rect.x(), 9);
@@ -5972,7 +5972,7 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessHitTestBrowserTest,
 
   gfx::Rect popup_rect = filter->last_initial_rect();
 
-#if defined(OS_MACOSX) || defined(OS_ANDROID)
+#if defined(OS_MAC) || defined(OS_ANDROID)
   EXPECT_EQ(popup_rect.x(), 9);
   EXPECT_EQ(popup_rect.y(), 9);
 #else
@@ -6024,7 +6024,7 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessHitTestBrowserTest,
 
   popup_rect = filter->last_initial_rect();
 
-#if defined(OS_MACOSX) || defined(OS_ANDROID)
+#if defined(OS_MAC) || defined(OS_ANDROID)
   EXPECT_EQ(popup_rect.x(), 9);
   EXPECT_EQ(popup_rect.y(), 9);
 #else
@@ -6041,7 +6041,7 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessHitTestBrowserTest,
 // On Mac and Android, the reported menu coordinates are relative to the
 // OOPIF, and its screen position is computed later, so this test isn't
 // relevant on those platforms.
-#if !defined(OS_ANDROID) && !defined(OS_MACOSX)
+#if !defined(OS_ANDROID) && !defined(OS_MAC)
 IN_PROC_BROWSER_TEST_F(SitePerProcessHitTestBrowserTest,
                        ScrolledNestedPopupMenuTest) {
   GURL main_url(embedded_test_server()->GetURL(

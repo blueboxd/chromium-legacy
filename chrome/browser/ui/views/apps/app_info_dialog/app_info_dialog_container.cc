@@ -36,7 +36,7 @@
 
 namespace {
 
-#if defined(OS_MACOSX)
+#if defined(OS_MAC)
 const ui::ModalType kModalType = ui::MODAL_TYPE_CHILD;
 const views::BubbleBorder::Shadow kShadowType = views::BubbleBorder::NO_ASSETS;
 #else

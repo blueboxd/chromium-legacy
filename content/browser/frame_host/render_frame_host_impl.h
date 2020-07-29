@@ -1288,9 +1288,9 @@ class CONTENT_EXPORT RenderFrameHostImpl
       mojo::PendingReceiver<blink::mojom::SerialService> receiver);
 #endif
 
-  IdleManager* GetIdleManagerForTesting() override;
+  IdleManager* GetIdleManager() override;
 
-  void GetIdleManager(
+  void BindIdleManager(
       mojo::PendingReceiver<blink::mojom::IdleManager> receiver);
 
   void GetPresentationService(

@@ -2305,7 +2305,7 @@ IN_PROC_BROWSER_TEST_F(SaveCardBubbleViewsFullFormBrowserTestForStatusChip,
   EXPECT_TRUE(GetSaveCardBubbleViews()->GetVisible());
 }
 
-#if defined(OS_MACOSX)
+#if defined(OS_MAC)
 // TODO(crbug.com/823543): Widget activation doesn't work on Mac.
 #define MAYBE_ActivateFirstInactiveBubbleForAccessibility \
   DISABLED_ActivateFirstInactiveBubbleForAccessibility

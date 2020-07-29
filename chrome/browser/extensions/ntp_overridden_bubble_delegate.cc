@@ -32,7 +32,7 @@ const char kDidAcknowledgeExistingNtpExtensions[] =
 // profile. Active on MacOS to rollout the NTP bubble without prompting for
 // previously-installed extensions.
 bool g_acknowledge_existing_extensions =
-#if defined(OS_MACOSX)
+#if defined(OS_MAC)
     true;
 #else
     false;

@@ -16,7 +16,7 @@
 #include "testing/gtest/include/gtest/gtest.h"
 #include "url/gurl.h"
 
-#if defined(OS_MACOSX)
+#if defined(OS_MAC)
 #include "base/test/scoped_feature_list.h"
 #include "components/printing/browser/printer_capabilities_mac.h"
 #include "printing/backend/print_backend.h"
@@ -124,7 +124,7 @@ void RecordCapability(base::OnceClosure done_closure,
   std::move(done_closure).Run();
 }
 
-#if defined(OS_MACOSX)
+#if defined(OS_MAC)
 base::Value GetValueFromCustomPaper(
     const PrinterSemanticCapsAndDefaults::Paper& paper) {
   base::Value paper_value(base::Value::Type::DICTIONARY);
@@ -272,7 +272,7 @@ TEST_F(PdfPrinterHandlerGetCapabilityTest, GetCapability) {
   EXPECT_EQ(expected_capability.value(), capability);
 }
 
-#if defined(OS_MACOSX)
+#if defined(OS_MAC)
 TEST_F(PdfPrinterHandlerGetCapabilityTest,
        GetMacCustomPaperSizesInCapabilities) {
   base::test::ScopedFeatureList local_feature;

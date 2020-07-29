@@ -74,7 +74,7 @@
 #include "rlz/buildflags/buildflags.h"
 #include "ui/base/buildflags.h"
 
-#if defined(OS_MACOSX)
+#if defined(OS_MAC)
 #include "base/mac/mac_util.h"
 #import "chrome/browser/mac/dock.h"
 #include "chrome/browser/mac/install_from_dmg.h"
@@ -198,7 +198,7 @@ LaunchMode GetLaunchModeSlow() {
 
   return LM_SHORTCUT_UNKNOWN;
 }
-#elif defined(OS_MACOSX)  // defined(OS_WIN)
+#elif defined(OS_MAC)  // defined(OS_WIN)
 LaunchMode GetLaunchModeFast() {
   DiskImageStatus dmg_launch_status =
       IsAppRunningFromReadOnlyDiskImage(nullptr);
@@ -435,7 +435,7 @@ bool StartupBrowserCreatorImpl::Launch(Profile* profile,
           command_line_.GetSwitchValueASCII(switches::kInstallChromeApp));
     }
 
-#if defined(OS_MACOSX)
+#if defined(OS_MAC)
     if (process_startup) {
       // Check whether the auto-update system needs to be promoted from user
       // to system.
@@ -696,7 +696,7 @@ void StartupBrowserCreatorImpl::DetermineURLsAndLaunch(
 
   SessionRestore::BehaviorBitmask restore_options = 0;
   if (behavior == BrowserOpenBehavior::SYNCHRONOUS_RESTORE) {
-#if defined(OS_MACOSX)
+#if defined(OS_MAC)
     bool was_mac_login_or_resume = base::mac::WasLaunchedAsLoginOrResumeItem();
 #else
     bool was_mac_login_or_resume = false;

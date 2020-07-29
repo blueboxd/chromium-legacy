@@ -60,7 +60,7 @@ import java.util.LinkedList;
 @RunWith(BaseRobolectricTestRunner.class)
 @Config(manifest = Config.NONE)
 public class StaticLayoutUnitTest {
-    private static final int TAB1_ID = 456;
+    private static final int TAB1_ID = 0;
     private static final int TAB2_ID = 789;
     private static final int POSITION1 = 0;
     private static final int POSITION2 = 1;
@@ -181,6 +181,7 @@ public class StaticLayoutUnitTest {
         initAndAssertAllDependencies();
 
         mStaticLayout.show(System.currentTimeMillis(), false);
+        initAndAssertAllProperties();
     }
 
     @After
@@ -206,6 +207,23 @@ public class StaticLayoutUnitTest {
         mBrowserControlsStateProviderSupplier.set(mBrowserControlsStateProvider);
         assertEquals(mBrowserControlsStateProvider,
                 mStaticLayout.getBrowserControlsStateProviderForTesting());
+    }
+
+    private void initAndAssertAllProperties() {
+        assertEquals(mTab1, mTabModelSelector.getCurrentTab());
+        assertEquals(TAB1_ID, mModel.get(LayoutTab.TAB_ID));
+        assertEquals(WIDTH, mModel.get(LayoutTab.ORIGINAL_CONTENT_WIDTH_IN_DP), 0);
+        assertEquals(HEIGHT, mModel.get(LayoutTab.ORIGINAL_CONTENT_HEIGHT_IN_DP), 0);
+        assertEquals(WIDTH, mModel.get(LayoutTab.MAX_CONTENT_WIDTH), 0);
+        assertEquals(HEIGHT, mModel.get(LayoutTab.MAX_CONTENT_HEIGHT), 0);
+        assertEquals(BACKGROUND_COLOR, mModel.get(LayoutTab.BACKGROUND_COLOR));
+        assertEquals(TOOLBAR_BACKGROUND_COLOR, mModel.get(LayoutTab.TOOLBAR_BACKGROUND_COLOR));
+        assertEquals(TEXT_BOX_ALPHA, mModel.get(LayoutTab.TEXT_BOX_ALPHA), 0);
+        assertEquals(TEXT_BOX_BACKGROUND_COLOR, mModel.get(LayoutTab.TEXT_BOX_BACKGROUND_COLOR));
+
+        assertFalse(mModel.get(LayoutTab.IS_INCOGNITO));
+        assertFalse(mModel.get(LayoutTab.SHOULD_STALL));
+        assertTrue(mModel.get(LayoutTab.CAN_USE_LIVE_TEXTURE));
     }
 
     private Tab prepareTab(int id, String url) {

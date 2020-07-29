@@ -137,7 +137,7 @@ void CheckUserAgentStringOrdering(bool mobile_device) {
   ASSERT_TRUE(base::StringToDouble(pieces[2], &version));
   ASSERT_LE(4.0, version);
   ASSERT_GT(11.0, version);
-#elif defined(OS_MACOSX)
+#elif defined(OS_MAC)
   // Macintosh; Intel Mac OS X 10_15_4
   ASSERT_EQ(2u, pieces.size());
   ASSERT_EQ("Macintosh", pieces[0]);
@@ -748,10 +748,10 @@ TEST(ChromeContentBrowserClientTest, GenerateBrandVersionList) {
 TEST(ChromeContentBrowserClientTest, LowEntropyCpuArchitecture) {
   std::string arch = content::GetLowEntropyCpuArchitecture();
 
-#if (!defined(OS_POSIX) && !defined(OS_WIN)) || defined(OS_MACOSX) || \
+#if (!defined(OS_POSIX) && !defined(OS_WIN)) || defined(OS_MAC) || \
     defined(OS_ANDROID)
   EXPECT_EQ("", arch);
-#elif (defined(OS_POSIX) && !defined(OS_MACOSX)) || defined(OS_WIN)
+#elif (defined(OS_POSIX) && !defined(OS_MAC)) || defined(OS_WIN)
   EXPECT_TRUE("arm" == arch || "x86" == arch);
 #endif
 }

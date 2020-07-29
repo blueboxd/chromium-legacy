@@ -29,7 +29,7 @@ class RegistryOverrideManager;
 
 class Profile;
 
-#if defined(OS_MACOSX)
+#if defined(OS_MAC)
 class MockPreferences;
 #endif
 
@@ -72,7 +72,7 @@ class EnsureMediaDirectoriesExists {
 
   registry_util::RegistryOverrideManager registry_override_;
 #endif
-#if defined(OS_MACOSX)
+#if defined(OS_MAC)
   std::unique_ptr<MockPreferences> mac_preferences_;
 #endif
 

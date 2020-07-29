@@ -60,10 +60,10 @@ enum class SandboxType {
   // The CDM service process.
   kCdm,
 
-#if defined(OS_MACOSX)
+#if defined(OS_MAC)
   // The NaCl loader process.
   kNaClLoader,
-#endif  // defined(OS_MACOSX)
+#endif  // defined(OS_MAC)
 
   // The print compositor service process.
   kPrintCompositor,
@@ -82,7 +82,7 @@ enum class SandboxType {
   kZygoteIntermediateSandbox,
 #endif
 
-#if !defined(OS_MACOSX)
+#if !defined(OS_MAC)
   // Hosts WebRTC for Sharing Service, uses kUtility on OS_MACOSX.
   kSharingService,
 #endif

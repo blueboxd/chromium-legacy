@@ -40,7 +40,7 @@
 #include "ui/gfx/geometry/point_f.h"
 #include "ui/gfx/geometry/scroll_offset.h"
 
-#if defined(OS_APPLE)
+#if defined(OS_MAC)
 typedef struct CGPoint CGPoint;
 
 #ifdef __OBJC__
@@ -126,7 +126,7 @@ class PLATFORM_EXPORT FloatPoint {
     return FloatPoint(x_ * scale, y_ * scale);
   }
 
-#if defined(OS_APPLE)
+#if defined(OS_MAC)
   FloatPoint(const CGPoint&);
   operator CGPoint() const;
 #endif

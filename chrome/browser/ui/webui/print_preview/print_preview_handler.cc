@@ -209,7 +209,7 @@ base::Value GetSettingsDictionary(const std::string& json_str) {
 }
 
 UserActionBuckets DetermineUserAction(const base::Value& settings) {
-#if defined(OS_MACOSX)
+#if defined(OS_MAC)
   if (settings.FindKey(kSettingOpenPDFInPreview))
     return UserActionBuckets::kOpenInMacPreview;
 #endif

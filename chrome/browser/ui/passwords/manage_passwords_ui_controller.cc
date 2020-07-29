@@ -54,7 +54,7 @@
 
 #if defined(OS_WIN)
 #include "chrome/browser/password_manager/password_manager_util_win.h"
-#elif defined(OS_MACOSX)
+#elif defined(OS_MAC)
 #include "chrome/browser/password_manager/password_manager_util_mac.h"
 #endif
 
@@ -636,7 +636,7 @@ void ManagePasswordsUIController::OnLeakDialogHidden() {
 }
 
 bool ManagePasswordsUIController::AuthenticateUser() {
-#if defined(OS_WIN) || defined(OS_MACOSX)
+#if defined(OS_WIN) || defined(OS_MAC)
   base::SequencedTaskRunnerHandle::Get()->PostTask(
       FROM_HERE,
       base::BindOnce(
@@ -812,7 +812,7 @@ bool ManagePasswordsUIController::ShowAuthenticationDialog() {
   return password_manager_util_win::AuthenticateUser(
       web_contents()->GetNativeView(),
       password_manager::ReauthPurpose::VIEW_PASSWORD);
-#elif defined(OS_MACOSX)
+#elif defined(OS_MAC)
   return password_manager_util_mac::AuthenticateUser(
       password_manager::ReauthPurpose::VIEW_PASSWORD);
 #else

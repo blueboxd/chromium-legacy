@@ -109,7 +109,8 @@ bool ContentAutofillDriver::RendererIsAvailable() {
 
 InternalAuthenticator*
 ContentAutofillDriver::GetOrCreateCreditCardInternalAuthenticator() {
-  if (!authenticator_impl_) {
+  if (!authenticator_impl_ && autofill_manager_ &&
+      autofill_manager_->client()) {
     authenticator_impl_ =
         autofill_manager_->client()->CreateCreditCardInternalAuthenticator(
             render_frame_host_);

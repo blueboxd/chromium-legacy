@@ -224,7 +224,7 @@ class ProcessSingleton {
   scoped_refptr<LinuxWatcher> watcher_;
 #endif
 
-#if defined(OS_MACOSX)
+#if defined(OS_MAC)
   // macOS 10.13 tries to open a new Chrome instance if a user tries to
   // open an external link after Chrome has updated, but not relaunched.
   // This method extracts any waiting "open URL" AppleEvent and forwards

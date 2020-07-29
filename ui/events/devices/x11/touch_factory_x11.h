@@ -44,7 +44,7 @@ class EVENTS_DEVICES_X11_EXPORT TouchFactory {
   static void SetTouchDeviceListFromCommandLine();
 
   // Updates the list of devices.
-  void UpdateDeviceList(XDisplay* display);
+  void UpdateDeviceList(x11::Connection* connection);
 
   // Checks whether an XI2 event should be processed or not (i.e. if the event
   // originated from a device we are interested in).
@@ -64,14 +64,15 @@ class EVENTS_DEVICES_X11_EXPORT TouchFactory {
   bool IsValidDevice(int deviceid) const;
 
   // Is the device a touch-device?
-  bool IsTouchDevice(int deviceid) const;
+  bool IsTouchDevice(x11::Input::DeviceId deviceid) const;
 
   // Is the device a real multi-touch-device? (see doc. for |touch_device_list_|
   // below for more explanation.)
-  bool IsMultiTouchDevice(int deviceid) const;
+  bool IsMultiTouchDevice(x11::Input::DeviceId deviceid) const;
 
   // Gets the pointer type for touch-device.
-  EventPointerType GetTouchDevicePointerType(int deviceid) const;
+  EventPointerType GetTouchDevicePointerType(
+      x11::Input::DeviceId deviceid) const;
 
   // Tries to find an existing slot ID mapping to tracking ID. Returns true
   // if the slot is found and it is saved in |slot|, false if no such slot
@@ -113,9 +114,9 @@ class EVENTS_DEVICES_X11_EXPORT TouchFactory {
   // Requirement for Singleton
   friend struct base::DefaultSingletonTraits<TouchFactory>;
 
-  void CacheTouchscreenIds(int id);
+  void CacheTouchscreenIds(x11::Input::DeviceId id);
 
-  bool ShouldProcessEventForDevice(uint16_t device_id) const;
+  bool ShouldProcessEventForDevice(x11::Input::DeviceId device_id) const;
 
   // NOTE: To keep track of touch devices, we currently maintain a lookup table
   // to quickly decide if a device is a touch device or not. We also maintain a
@@ -142,18 +143,18 @@ class EVENTS_DEVICES_X11_EXPORT TouchFactory {
     bool is_master = false;
     EventPointerType pointer_type = EventPointerType::kTouch;
   };
-  std::map<int, TouchDeviceDetails> touch_device_list_;
+  std::map<x11::Input::DeviceId, TouchDeviceDetails> touch_device_list_;
 
   // Touch screen <vid, pid>s.
   std::set<std::pair<int, int>> touchscreen_ids_;
 
   // Device ID of the virtual core keyboard.
-  int virtual_core_keyboard_device_;
+  base::Optional<x11::Input::DeviceId> virtual_core_keyboard_device_;
 
   SequentialIDGenerator id_generator_;
 
   // Associate each device ID with its master device ID.
-  std::map<int, int> device_master_id_list_;
+  std::map<x11::Input::DeviceId, x11::Input::DeviceId> device_master_id_list_;
 
   // The status of the touch screens devices themselves.
   bool touch_screens_enabled_;

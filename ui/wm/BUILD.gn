@@ -119,6 +119,10 @@ jumbo_static_library("test_support") {
 }
 
 test("wm_unittests") {
+  if ((is_linux && !is_chromeos) || chromeos_is_browser_only) {
+    use_xvfb = true
+  }
+
   sources = [
     "core/capture_controller_unittest.cc",
     "core/compound_event_filter_unittest.cc",

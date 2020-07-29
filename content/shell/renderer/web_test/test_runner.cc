@@ -2049,7 +2049,7 @@ void TestRunnerBindings::ZoomPageIn() {
   // JS can wait for `matchMedia("screen and (min-resolution: 2dppx)").matches`
   // for the operation to complete, if it can tell which number to use in
   // min-resolution.
-  frame_->GetLocalRootRenderWidget()->SetZoomLevelForTesting(
+  frame_->GetLocalRootWebFrameWidget()->SetZoomLevelForTesting(
       web_view->ZoomLevel() + 1);
 }
 
@@ -2068,7 +2068,7 @@ void TestRunnerBindings::ZoomPageOut() {
   // JS can wait for `matchMedia("screen and (min-resolution: 2dppx)").matches`
   // for the operation to complete, if it can tell which number to use in
   // min-resolution.
-  frame_->GetLocalRootRenderWidget()->SetZoomLevelForTesting(
+  frame_->GetLocalRootWebFrameWidget()->SetZoomLevelForTesting(
       web_view->ZoomLevel() - 1);
 }
 
@@ -2086,7 +2086,7 @@ void TestRunnerBindings::SetPageZoomFactor(double zoom_factor) {
   // JS can wait for `matchMedia("screen and (min-resolution: 2dppx)").matches`
   // for the operation to complete, if it can tell which number to use in
   // min-resolution.
-  frame_->GetLocalRootRenderWidget()->SetZoomLevelForTesting(
+  frame_->GetLocalRootWebFrameWidget()->SetZoomLevelForTesting(
       blink::PageZoomFactorToZoomLevel(zoom_factor));
 }
 
@@ -2265,7 +2265,7 @@ void TestRunner::ResetWebWidget(WebWidgetTestProxy* web_widget_test_proxy) {
 
   // These things are only modified/valid for the main frame's widget.
   if (web_widget_test_proxy->delegate()) {
-    web_widget_test_proxy->ResetZoomLevelForTesting();
+    web_widget->ResetZoomLevelForTesting();
     web_widget_test_proxy->DisableAutoResizeForTesting(gfx::Size());
     web_widget_test_proxy->UseSynchronousResizeModeForTesting(false);
 

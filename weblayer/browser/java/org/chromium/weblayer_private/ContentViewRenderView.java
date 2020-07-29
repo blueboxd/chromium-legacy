@@ -741,6 +741,10 @@ public class ContentViewRenderView extends RelativeLayout {
         }
     }
 
+    public InsetObserverView getInsetObserverView() {
+        return mInsetObserverView;
+    }
+
     /**
      * Should be called when the ContentViewRenderView is not needed anymore so its associated
      * native resource can be freed.

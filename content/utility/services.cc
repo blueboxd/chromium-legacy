@@ -27,7 +27,7 @@
 #include "services/video_capture/public/mojom/video_capture_service.mojom.h"
 #include "services/video_capture/video_capture_service_impl.h"
 
-#if defined(OS_MACOSX)
+#if defined(OS_MAC)
 #include "base/mac/mach_logging.h"
 #include "sandbox/mac/system_services.h"
 #include "sandbox/policy/sandbox.h"
@@ -121,7 +121,7 @@ auto RunNetworkService(
 }
 
 auto RunAudio(mojo::PendingReceiver<audio::mojom::AudioService> receiver) {
-#if defined(OS_MACOSX)
+#if defined(OS_MAC)
   // Don't connect to launch services when running sandboxed
   // (https://crbug.com/874785).
   if (sandbox::policy::Sandbox::IsProcessSandboxed()) {

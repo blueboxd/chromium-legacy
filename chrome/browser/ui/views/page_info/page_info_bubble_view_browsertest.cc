@@ -966,7 +966,7 @@ class ViewFocusTracker : public FocusTracker, public views::ViewObserver {
 
 }  // namespace
 
-#if defined(OS_MACOSX)
+#if defined(OS_MAC)
 // https://crbug.com/1029882
 #define MAYBE_FocusReturnsToContentOnClose DISABLED_FocusReturnsToContentOnClose
 #else
@@ -994,7 +994,7 @@ IN_PROC_BROWSER_TEST_F(PageInfoBubbleViewBrowserTest,
   EXPECT_TRUE(web_contents_focus_tracker.focused());
 }
 
-#if defined(OS_MACOSX)
+#if defined(OS_MAC)
 // https://crbug.com/1029882
 #define MAYBE_FocusDoesNotReturnToContentsOnReloadPrompt \
   DISABLED_FocusDoesNotReturnToContentsOnReloadPrompt

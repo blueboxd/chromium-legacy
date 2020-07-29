@@ -7,14 +7,14 @@
 
 #import "ios/chrome/browser/ui/history/history_entry_item.h"
 
-// Protocol for instances that will provide menus to history components.
+// Protocol for instances that will provide menus to History components.
 @protocol HistoryMenuProvider
 
 // Creates a context menu configuration instance for the given |item|, which is
 // represented on the UI by |view|.
-- (UIContextMenuConfiguration*)createConfigurationForItem:
+- (UIContextMenuConfiguration*)contextMenuConfigurationForItem:
                                    (HistoryEntryItem*)item
-                                                 withView:(UIView*)view
+                                                      withView:(UIView*)view
     API_AVAILABLE(ios(13.0));
 
 @end

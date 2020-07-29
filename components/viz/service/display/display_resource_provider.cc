@@ -24,6 +24,7 @@
 #include "gpu/command_buffer/common/shared_image_trace_utils.h"
 #include "gpu/ipc/scheduler_sequence.h"
 #include "third_party/skia/include/gpu/GrBackendSurface.h"
+#include "third_party/skia/include/gpu/GrDirectContext.h"
 #include "ui/gl/trace_util.h"
 
 using gpu::gles2::GLES2Interface;

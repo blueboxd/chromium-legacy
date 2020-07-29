@@ -73,7 +73,7 @@
 #include "content/public/browser/android/child_process_importance.h"
 #endif
 
-#if defined(OS_MACOSX)
+#if defined(OS_MAC)
 #include "services/device/public/mojom/wake_lock.mojom.h"
 #endif
 
@@ -1016,7 +1016,7 @@ class CONTENT_EXPORT RenderWidgetHostImpl
   // Stop intercepting system keyboard events.
   void UnlockKeyboard();
 
-#if defined(OS_MACOSX)
+#if defined(OS_MAC)
   device::mojom::WakeLock* GetWakeLock();
 #endif
 
@@ -1271,7 +1271,7 @@ class CONTENT_EXPORT RenderWidgetHostImpl
   // node.
   bool monitoring_composition_info_ = false;
 
-#if defined(OS_MACOSX)
+#if defined(OS_MAC)
   mojo::Remote<device::mojom::WakeLock> wake_lock_;
 #endif
 

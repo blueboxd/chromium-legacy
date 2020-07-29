@@ -31,7 +31,7 @@
 #include "content/public/browser/browser_thread.h"
 #include "url/gurl.h"
 
-#if defined(OS_MACOSX)
+#if defined(OS_MAC)
 #include "chrome/common/safe_browsing/disk_image_type_sniffer_mac.h"
 #include "chrome/services/file_util/public/cpp/sandboxed_dmg_analyzer_mac.h"
 #endif
@@ -185,7 +185,7 @@ class CheckClientDownloadRequestBase {
   FileAnalyzer::ArchiveValid archive_is_valid_ =
       FileAnalyzer::ArchiveValid::UNSET;
 
-#if defined(OS_MACOSX)
+#if defined(OS_MAC)
   std::unique_ptr<std::vector<uint8_t>> disk_image_signature_;
   google::protobuf::RepeatedPtrField<
       ClientDownloadRequest_DetachedCodeSignature>

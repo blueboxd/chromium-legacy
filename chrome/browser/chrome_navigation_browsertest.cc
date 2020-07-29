@@ -181,7 +181,7 @@ class CtrlClickProcessTest : public ChromeNavigationBrowserTest {
     content::WebContents* new_contents = nullptr;
     {
       content::WebContentsAddedObserver new_tab_observer;
-#if defined(OS_MACOSX)
+#if defined(OS_MAC)
       const char* new_tab_click_script_template =
           "simulateClick(\"%s\", { metaKey: true });";
 #else

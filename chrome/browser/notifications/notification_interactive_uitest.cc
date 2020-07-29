@@ -49,7 +49,7 @@
 #include "ui/message_center/public/cpp/notification.h"
 #include "url/gurl.h"
 
-#if defined(OS_MACOSX)
+#if defined(OS_MAC)
 #include "base/mac/mac_util.h"
 #include "ui/base/test/scoped_fake_nswindow_fullscreen.h"
 #endif
@@ -629,7 +629,7 @@ IN_PROC_BROWSER_TEST_F(NotificationsTest, TestShouldDisplayNormal) {
 }
 
 IN_PROC_BROWSER_TEST_F(NotificationsTest, TestShouldDisplayFullscreen) {
-#if defined(OS_MACOSX)
+#if defined(OS_MAC)
   ui::test::ScopedFakeNSWindowFullscreen fake_fullscreen;
 #endif
   ASSERT_TRUE(embedded_test_server()->Start());
@@ -665,7 +665,7 @@ IN_PROC_BROWSER_TEST_F(NotificationsTest, TestShouldDisplayFullscreen) {
 
 // The Fake OSX fullscreen window doesn't like drawing a second fullscreen
 // window when another is visible.
-#if !defined(OS_MACOSX)
+#if !defined(OS_MAC)
 IN_PROC_BROWSER_TEST_F(NotificationsTest, TestShouldDisplayMultiFullscreen) {
   ASSERT_TRUE(embedded_test_server()->Start());
   AllowAllOrigins();
@@ -714,7 +714,7 @@ IN_PROC_BROWSER_TEST_F(NotificationsTest, TestShouldDisplayMultiFullscreen) {
 // Verify that a notification is actually displayed when the webpage that
 // creates it is fullscreen with the fullscreen notification flag turned on.
 IN_PROC_BROWSER_TEST_F(NotificationsTest, TestShouldDisplayPopupNotification) {
-#if defined(OS_MACOSX)
+#if defined(OS_MAC)
   ui::test::ScopedFakeNSWindowFullscreen fake_fullscreen;
 #endif
   ASSERT_TRUE(embedded_test_server()->Start());

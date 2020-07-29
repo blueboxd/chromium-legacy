@@ -80,6 +80,7 @@ class AutomationManagerAura : public ui::AXActionHandler,
  private:
   friend class base::NoDestructor<AutomationManagerAura>;
 
+  FRIEND_TEST_ALL_PREFIXES(AutomationManagerAuraBrowserTest, ScrollView);
   FRIEND_TEST_ALL_PREFIXES(AutomationManagerAuraBrowserTest, WebAppearsOnce);
 
   AutomationManagerAura();

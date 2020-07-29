@@ -102,7 +102,7 @@ void FakeLocalFrame::PostMessageEvent(
 void FakeLocalFrame::GetSavableResourceLinks(
     GetSavableResourceLinksCallback callback) {}
 
-#if defined(OS_MACOSX)
+#if defined(OS_MAC)
 void FakeLocalFrame::GetCharacterIndexAtPoint(const gfx::Point& point) {}
 void FakeLocalFrame::GetFirstRectForRange(const gfx::Range& range) {}
 void FakeLocalFrame::GetStringForRange(const gfx::Range& range,

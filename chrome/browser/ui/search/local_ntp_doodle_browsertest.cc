@@ -53,7 +53,7 @@ const char kFreshB64[] = "abc";                        // b64decode("YWJj")
 const int kSearchboxTopPx =
     56 + 200 + 38;  // top margin + height + bottom margin
 
-#if defined(OS_WIN) || defined(OS_MACOSX)
+#if defined(OS_WIN) || defined(OS_MAC)
 const char kFreshDarkB64[] = "xyz";  // b64decode("eHl6");
 #endif
 
@@ -1492,7 +1492,7 @@ IN_PROC_BROWSER_TEST_F(LocalNTPDoodleTest, ShouldMoveFakeboxWhenIframeResized) {
 
 // TODO(crbug/980638): Update/Remove when Linux and/or ChromeOS support dark
 // mode.
-#if defined(OS_WIN) || defined(OS_MACOSX)
+#if defined(OS_WIN) || defined(OS_MAC)
 
 // Tests that dark mode styling is properly applied to the local NTP Doodle.
 class LocalNTPDarkModeDoodleTest : public LocalNTPDoodleTest,

@@ -36,7 +36,7 @@ static bool IsBoringSwitch(const std::string& flag) {
     switches::kProcessType,
     switches::kV,
     switches::kVModule,
-#if defined(OS_MACOSX)
+#if defined(OS_MAC)
     switches::kMetricsClientID,
 #elif defined(OS_CHROMEOS)
     // --crash-loop-before is a "boring" switch because it is redundant;

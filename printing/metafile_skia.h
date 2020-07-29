@@ -64,7 +64,7 @@ class PRINTING_EXPORT MetafileSkia : public Metafile {
   bool Playback(printing::NativeDrawingContext hdc,
                 const RECT* rect) const override;
   bool SafePlayback(printing::NativeDrawingContext hdc) const override;
-#elif defined(OS_MACOSX)
+#elif defined(OS_MAC)
   bool RenderPage(unsigned int page_number,
                   printing::NativeDrawingContext context,
                   const CGRect& rect,

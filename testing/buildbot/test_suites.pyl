@@ -4198,6 +4198,9 @@
           '--test-launcher-batch-limit=512',
           '--test-launcher-retry-limit=0',
         ],
+        'swarming': {
+          'shards': 2,
+        },
       },
       'angle_deqp_gles2_tests': {
         'args': [
@@ -4345,108 +4348,22 @@
       },
     },
 
-    'weblayer_android_x86_gtests': {
-      'weblayer_instrumentation_test_M83_client_apk': {
-        'args': [
-          '--test-runner-outdir',
-          '.',
-          '--client-outdir',
-          '../../weblayer_instrumentation_test_M83/out/Release',
-          '--implementation-outdir',
-          '.',
-          '--test-expectations',
-          '../../weblayer/browser/android/javatests/skew/expectations.txt',
-          '--client-version=83',
-        ],
-        'swarming': {
-          'cipd_packages': [
-            {
-              'cipd_package': 'chromium/testing/weblayer-x86',
-              'location': 'weblayer_instrumentation_test_M83',
-              'revision': 'version:83.0.4103.15',
-            }
-          ],
-        },
-        'test': 'weblayer_instrumentation_test_versions_apk',
-      },
-      'weblayer_instrumentation_test_M83_implementation_apk': {
-        'args': [
-          '--test-runner-outdir',
-          '.',
-          '--client-outdir',
-          '.',
-          '--implementation-outdir',
-          '../../weblayer_instrumentation_test_M83/out/Release',
-          '--test-expectations',
-          '../../weblayer/browser/android/javatests/skew/expectations.txt',
-          '--impl-version=83',
-        ],
-        'swarming': {
-          'cipd_packages': [
-            {
-              'cipd_package': 'chromium/testing/weblayer-x86',
-              'location': 'weblayer_instrumentation_test_M83',
-              'revision': 'version:83.0.4103.15',
-            }
-          ],
-        },
-        'test': 'weblayer_instrumentation_test_versions_apk',
-      },
-      'weblayer_instrumentation_test_M84_client_apk': {
-        'args': [
-          '--test-runner-outdir',
-          '.',
-          '--client-outdir',
-          '../../weblayer_instrumentation_test_M84/out/Release',
-          '--implementation-outdir',
-          '.',
-          '--test-expectations',
-          '../../weblayer/browser/android/javatests/skew/expectations.txt',
-          '--client-version=84',
-        ],
-        'swarming': {
-          'cipd_packages': [
-            {
-              'cipd_package': 'chromium/testing/weblayer-x86',
-              'location': 'weblayer_instrumentation_test_M84',
-              'revision': 'version:84.0.4147.69',
-            }
-          ],
-        },
-        'test': 'weblayer_instrumentation_test_versions_apk',
-      },
-      'weblayer_instrumentation_test_M84_implementation_apk': {
-        'args': [
-          '--test-runner-outdir',
-          '.',
-          '--client-outdir',
-          '.',
-          '--implementation-outdir',
-          '../../weblayer_instrumentation_test_M84/out/Release',
-          '--test-expectations',
-          '../../weblayer/browser/android/javatests/skew/expectations.txt',
-          '--impl-version=84',
-        ],
-        'swarming': {
-          'cipd_packages': [
-            {
-              'cipd_package': 'chromium/testing/weblayer-x86',
-              'location': 'weblayer_instrumentation_test_M84',
-              'revision': 'version:84.0.4147.69',
-            }
-          ],
-        },
-        'test': 'weblayer_instrumentation_test_versions_apk',
-      },
-      'weblayer_instrumentation_test_apk': {
-      },
-    },
 
     'weblayer_gtests': {
       'weblayer_browsertests': {
       },
       'weblayer_unittests': {
       },
+    },
+
+    'weblayer_instrumentation_tests': {
+      'weblayer_instrumentation_test_apk': {
+      }
+    },
+
+    'weblayer_instrumentation_version_tests': {
+      'weblayer_instrumentation_test_versions_apk': {
+      }
     },
 
     'weblayer_shell_wpt': {
@@ -4858,10 +4775,6 @@
       # Experimental tests end here.
       'webview_cts_tests_gtest',
       'webview_ui_instrumentation_tests',
-    ],
-
-    'android_weblayer_x86_gtests': [
-      'weblayer_android_x86_gtests',
     ],
 
     'android_wpt_scripts': [
@@ -5753,6 +5666,22 @@
   ##############################################################################
 
   'matrix_compound_suites': {
+    'android_weblayer_x86_gtests': {
+      'weblayer_instrumentation_tests': {
+        'variants': [
+          {'identifier': 'ToT_Tests'}
+        ]
+      },
+      'weblayer_instrumentation_version_tests': {
+        'variants': [
+          'WEBLAYER_IMPL_SKEW_TESTS_NTH_MILESTONE',
+          'WEBLAYER_IMPL_SKEW_TESTS_NTH_MINUS_ONE_MILESTONE',
+          'WEBLAYER_CLIENT_SKEW_TESTS_NTH_MILESTONE',
+          'WEBLAYER_CLIENT_SKEW_TESTS_NTH_MINUS_ONE_MILESTONE',
+        ]
+      }
+    },
+
     'ios13_beta_simulator_tests': {
       'ios_common_tests': {
         'variants': [

@@ -3015,7 +3015,7 @@ NSString* const kBrowserViewControllerSnackbarCategory =
                                          action:action
                                           style:UIAlertActionStyleDefault];
 
-      if (IsMultiwindowSupported()) {
+      if (IsMultipleScenesSupported()) {
         // Open in New Window.
         title = l10n_util::GetNSStringWithFixup(
             IDS_IOS_CONTENT_CONTEXT_OPENINNEWWINDOW);

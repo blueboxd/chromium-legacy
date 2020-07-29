@@ -182,7 +182,7 @@ IN_PROC_BROWSER_TEST_F(TabUnderBlockerBrowserTest,
   const std::string script =
       "var evt = new MouseEvent('click', {"
       "  view : window,"
-#if defined(OS_MACOSX)
+#if defined(OS_MAC)
       "  metaKey : true"
 #else
       "  ctrlKey : true"

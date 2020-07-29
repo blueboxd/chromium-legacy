@@ -45,7 +45,6 @@
 #include "chrome/browser/chromeos/login/quick_unlock/quick_unlock_factory.h"
 #include "chrome/browser/chromeos/login/quick_unlock/quick_unlock_storage.h"
 #include "chrome/browser/chromeos/login/reauth_stats.h"
-#include "chrome/browser/chromeos/login/screens/gaia_screen.h"
 #include "chrome/browser/chromeos/login/screens/network_error.h"
 #include "chrome/browser/chromeos/login/startup_utils.h"
 #include "chrome/browser/chromeos/login/ui/login_display_host.h"
@@ -521,9 +520,11 @@ void SigninScreenHandler::UpdateUIState(UIState ui_state) {
   switch (ui_state) {
     case UI_STATE_GAIA_SIGNIN:
       ui_state_ = UI_STATE_GAIA_SIGNIN;
+      ShowScreen(GaiaView::kScreenId);
       break;
     case UI_STATE_ACCOUNT_PICKER:
       ui_state_ = UI_STATE_ACCOUNT_PICKER;
+      gaia_screen_handler_->CancelShowGaiaAsync();
       ShowScreen(OobeScreen::SCREEN_ACCOUNT_PICKER);
       break;
     default:
@@ -867,9 +868,7 @@ void SigninScreenHandler::OnPreferencesChanged() {
     // We need to reload GAIA if UI_STATE_UNKNOWN or the allow new user setting
     // has changed so that reloaded GAIA shows/hides the option to create a new
     // account.
-    GaiaScreen* gaia_screen = GaiaScreen::Get(
-        WizardController::default_controller()->screen_manager());
-    gaia_screen->LoadOnline(EmptyAccountId());
+    UpdateUIState(UI_STATE_ACCOUNT_PICKER);
   }
 }
 
@@ -1057,13 +1056,8 @@ void SigninScreenHandler::HandleOfflineLogin(const base::ListValue* args) {
   std::string email;
   args->GetString(0, &email);
 
-  GaiaScreen* gaia_screen =
-      GaiaScreen::Get(WizardController::default_controller()->screen_manager());
-  gaia_screen->LoadOffline(AccountId::FromUserEmail(email));
-  HideOfflineMessage(NetworkStateInformer::OFFLINE,
-                     NetworkError::ERROR_REASON_NONE);
-  LoginDisplayHost::default_host()->StartWizard(GaiaView::kScreenId);
-
+  gaia_screen_handler_->set_populated_account(AccountId::FromUserEmail(email));
+  gaia_screen_handler_->LoadAuthExtension(true /* force */, true /* offline */);
   UpdateUIState(UI_STATE_GAIA_SIGNIN);
 }
 

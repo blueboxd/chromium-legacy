@@ -688,7 +688,7 @@ TEST_F(MouseWheelEventQueueTest, WheelScrollingWasLatchedHistogramCheck) {
   histogram_tester.ExpectBucketCount(latching_histogram_name, 1, 1);
 }
 
-#if defined(OS_MACOSX)
+#if defined(OS_MAC)
 TEST_F(MouseWheelEventQueueTest, DoNotSwapXYForShiftScroll) {
   // Send an event with shift modifier, zero value for delta X, and no direction
   // for |rails_mode|. Do not swap the scroll direction.

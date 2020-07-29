@@ -55,7 +55,7 @@ class ProfileListDesktopBrowserTest : public InProcessBrowserTest {
   DISALLOW_COPY_AND_ASSIGN(ProfileListDesktopBrowserTest);
 };
 
-#if defined(OS_WIN) || defined(OS_MACOSX)
+#if defined(OS_WIN) || defined(OS_MAC)
 // SignOut is flaky on Windows (crbug.com/357329)
 // and Mac (crbug.com/674497, crbug.com/1110452).
 #define MAYBE_SignOut DISABLED_SignOut

@@ -22,7 +22,6 @@
 #include "chrome/browser/chromeos/login/mojo_system_info_dispatcher.h"
 #include "chrome/browser/chromeos/login/reauth_stats.h"
 #include "chrome/browser/chromeos/login/screens/chrome_user_selection_screen.h"
-#include "chrome/browser/chromeos/login/screens/gaia_screen.h"
 #include "chrome/browser/chromeos/login/ui/login_display.h"
 #include "chrome/browser/chromeos/login/ui/login_display_mojo.h"
 #include "chrome/browser/chromeos/login/user_board_view_mojo.h"
@@ -119,9 +118,7 @@ void LoginDisplayHostMojo::SetUserCount(int user_count) {
   // And if the dialog shows login screen.
   if (was_zero_users && user_count_ != 0 && dialog_ && dialog_->IsVisible() &&
       (!wizard_controller_->is_initialized() ||
-       (wizard_controller_->current_screen() &&
-        wizard_controller_->current_screen()->screen_id() ==
-            GaiaView::kScreenId))) {
+       wizard_controller_->login_screen_started())) {
     HideOobeDialog();
   }
 }
@@ -256,21 +253,8 @@ void LoginDisplayHostMojo::OnStartSignInScreen() {
   if (signin_screen_started_) {
     // If we already have a signin screen instance, just reset the state of the
     // oobe dialog.
-
-    // Try to switch to Gaia screen.
-    StartWizard(GaiaView::kScreenId);
-
-    if (wizard_controller_->current_screen() &&
-        wizard_controller_->current_screen()->screen_id() !=
-            GaiaView::kScreenId) {
-      // Switching might fail due to the screen priorities. Do no hide the
-      // dialog in that case.
-      return;
-    }
-
-    // Maybe hide dialog if there are existing users. It also reloads Gaia.
     HideOobeDialog();
-
+    GetOobeUI()->GetView<GaiaScreenHandler>()->ShowGaiaAsync(EmptyAccountId());
     return;
   }
 
@@ -334,9 +318,7 @@ void LoginDisplayHostMojo::HideOobeDialog() {
   const bool no_users =
       !login_display_->IsSigninInProgress() && user_count_ == 0;
   if (no_users || GetOobeUI()->current_screen() == GaiaView::kScreenId) {
-    GaiaScreen* gaia_screen =
-        GaiaScreen::Get(GetWizardController()->screen_manager());
-    gaia_screen->LoadOnline(EmptyAccountId());
+    GetOobeUI()->GetView<GaiaScreenHandler>()->ShowGaiaAsync(EmptyAccountId());
     if (no_users)
       return;
   }

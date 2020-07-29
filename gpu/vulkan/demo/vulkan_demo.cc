@@ -17,7 +17,7 @@
 #include "third_party/skia/include/effects/SkGradientShader.h"
 #include "third_party/skia/include/gpu/GrBackendSemaphore.h"
 #include "third_party/skia/include/gpu/GrBackendSurface.h"
-#include "third_party/skia/include/gpu/GrContext.h"
+#include "third_party/skia/include/gpu/GrDirectContext.h"
 #include "ui/events/platform/platform_event_source.h"
 #include "ui/platform_window/platform_window_init_properties.h"
 #include "ui/platform_window/x11/x11_window.h"

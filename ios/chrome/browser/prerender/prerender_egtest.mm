@@ -183,7 +183,8 @@ GREYElementInteraction* RequestDesktopButton() {
 
 // Tests that tapping the prerendered suggestions keeps the UserAgent of the
 // previous page.
-- (void)testUserAgentTypeInPreviousLoad {
+// TODO(crbug.com/1110890): Test is flaky.
+- (void)DISABLED_testUserAgentTypeInPreviousLoad {
   [self addURLToHistory];
   const GURL pageURL = self.testServer->GetURL(kPageURL);
   NSString* pageString = base::SysUTF8ToNSString(pageURL.GetContent());

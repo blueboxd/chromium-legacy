@@ -1646,19 +1646,6 @@ void UserSessionManager::FinalizePrepareProfile(Profile* profile) {
 
   VLOG(1) << "Clearing all secrets";
   user_context_.ClearSecrets();
-  if (TokenHandlesEnabled()) {
-    CreateTokenUtilIfMissing();
-    if (token_handle_util_->ShouldObtainHandle(user->GetAccountId())) {
-      if (!token_handle_fetcher_.get()) {
-        token_handle_fetcher_.reset(new TokenHandleFetcher(
-            token_handle_util_.get(), user->GetAccountId()));
-        token_handle_fetcher_->BackfillToken(
-            profile, base::Bind(&UserSessionManager::OnTokenHandleObtained,
-                                weak_factory_.GetWeakPtr()));
-      }
-    }
-  }
-
   if (user->GetType() == user_manager::USER_TYPE_CHILD) {
     if (base::FeatureList::IsEnabled(::features::kDMServerOAuthForChildUser)) {
       VLOG(1) << "Waiting for child policy refresh before showing session UI";
@@ -1839,6 +1826,20 @@ void UserSessionManager::NotifyUserProfileLoaded(
 
   session_manager::SessionManager::Get()->NotifyUserProfileLoaded(
       user->GetAccountId());
+
+  if (TokenHandlesEnabled() && user && user->HasGaiaAccount()) {
+    CreateTokenUtilIfMissing();
+    if (token_handle_util_->ShouldObtainHandle(user->GetAccountId())) {
+      if (!token_handle_fetcher_.get()) {
+        token_handle_fetcher_.reset(new TokenHandleFetcher(
+            token_handle_util_.get(), user->GetAccountId()));
+        token_handle_fetcher_->BackfillToken(
+            profile, base::Bind(&UserSessionManager::OnTokenHandleObtained,
+                                weak_factory_.GetWeakPtr()));
+        token_handle_backfill_tried_for_testing_ = true;
+      }
+    }
+  }
 }
 
 void UserSessionManager::StartTetherServiceIfPossible(Profile* profile) {

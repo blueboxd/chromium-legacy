@@ -97,7 +97,7 @@ IN_PROC_BROWSER_TEST_F(ExternalProtocolHandlerBrowserTest,
                        ProtocolFailureEmitsConsoleLog) {
 // Only on Mac and Windows is there a way for Chromium to know whether a
 // protocol handler is registered ahead of time.
-#if defined(OS_MACOSX) || defined(OS_WIN)
+#if defined(OS_MAC) || defined(OS_WIN)
   content::WebContents* web_contents =
       browser()->tab_strip_model()->GetActiveWebContents();
 

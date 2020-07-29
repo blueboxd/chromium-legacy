@@ -41,7 +41,7 @@
 #include "ui/base/ui_base_switches.h"
 #include "ui/gl/gl_switches.h"
 
-#if defined(OS_MACOSX)
+#if defined(OS_MAC)
 #include "components/os_crypt/os_crypt_switches.h"
 #endif
 
@@ -94,7 +94,7 @@ class UtilitySandboxedProcessLauncherDelegate
         sandbox_type_ == sandbox::policy::SandboxType::kTts ||
 #endif  // OS_CHROMEOS
         sandbox_type_ == sandbox::policy::SandboxType::kAudio ||
-#if !defined(OS_MACOSX)
+#if !defined(OS_MAC)
         sandbox_type_ == sandbox::policy::SandboxType::kSharingService ||
 #endif
         sandbox_type_ == sandbox::policy::SandboxType::kSpeechRecognition;
@@ -447,7 +447,7 @@ bool UtilityProcessHost::StartProcess() {
 #if defined(OS_LINUX) && !defined(OS_CHROMEOS)
       switches::kDisableDevShmUsage,
 #endif
-#if defined(OS_MACOSX)
+#if defined(OS_MAC)
       sandbox::policy::switches::kEnableSandboxLogging,
       os_crypt::switches::kUseMockKeychain,
 #endif

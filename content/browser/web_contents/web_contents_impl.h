@@ -783,8 +783,7 @@ class CONTENT_EXPORT WebContentsImpl : public WebContents,
                               const base::string16& message,
                               int32_t line_no,
                               const base::string16& source_id) override;
-  blink::mojom::RendererPreferences GetRendererPrefs(
-      BrowserContext* browser_context) const override;
+  blink::mojom::RendererPreferences GetRendererPrefs() const override;
   void DidReceiveInputEvent(RenderWidgetHostImpl* render_widget_host,
                             const blink::WebInputEvent& event) override;
   bool ShouldIgnoreInputEvents() override;

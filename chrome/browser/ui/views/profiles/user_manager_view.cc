@@ -50,7 +50,7 @@
 #include "ui/views/win/hwnd_util.h"
 #endif
 
-#if defined(OS_MACOSX)
+#if defined(OS_MAC)
 #include "chrome/browser/app_controller_mac.h"
 #endif
 
@@ -172,7 +172,7 @@ void UserManager::Show(
     // active profile to Guest.
     profiles::SetActiveProfileToGuestIfLocked();
 
-#if defined(OS_MACOSX)
+#if defined(OS_MAC)
     app_controller_mac::CreateGuestProfileIfNeeded();
 #endif
 
@@ -211,7 +211,7 @@ void UserManager::Hide() {
 
 // static
 bool UserManager::IsShowing() {
-#if defined(OS_MACOSX)
+#if defined(OS_MAC)
   // Widget activation works differently on Mac: the UserManager is a child
   // widget, so it is not active in the IsActive() sense even when showing
   // and interactable. Test for IsVisible instead - this is what the Cocoa
@@ -346,7 +346,7 @@ void UserManagerView::OnSystemProfileCreated(
   // active profile to Guest.
   profiles::SetActiveProfileToGuestIfLocked();
 
-#if defined(OS_MACOSX)
+#if defined(OS_MAC)
   app_controller_mac::CreateGuestProfileIfNeeded();
 #endif
 

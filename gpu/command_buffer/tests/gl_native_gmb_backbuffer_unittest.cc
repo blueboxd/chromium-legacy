@@ -17,7 +17,7 @@
 #include "ui/gl/gl_context.h"
 #include "ui/gl/gl_image.h"
 
-#if defined(OS_MACOSX)
+#if defined(OS_MAC)
 #include "gpu/ipc/service/gpu_memory_buffer_factory_io_surface.h"
 #endif
 
@@ -96,7 +96,7 @@ TEST_F(GLNativeGMBTest, TestNativeGMBBackbufferWithDifferentConfigurations) {
     return;
   }
 
-#if defined(OS_MACOSX)
+#if defined(OS_MAC)
   GpuMemoryBufferFactoryIOSurface image_factory;
 #else
   TextureImageFactory image_factory;

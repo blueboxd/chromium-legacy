@@ -1430,7 +1430,7 @@ IN_PROC_BROWSER_TEST_F(BackForwardCacheBrowserTest,
       blink::scheduler::WebSchedulerTrackedFeature::kSharedWorker, FROM_HERE);
 }
 
-#if defined(OS_MACOSX) || defined(OS_LINUX)
+#if defined(OS_MAC) || defined(OS_LINUX)
 // Flaky: https://crbug.com/1076594 on Mac
 // Flaky: https://crbug.com/1102571 on Linux Ozone
 #define MAYBE_SubframeWithDisallowedFeatureNotCached \
@@ -2118,7 +2118,7 @@ IN_PROC_BROWSER_TEST_F(BackForwardCacheBrowserTest, DoesNotCacheSMSService) {
 }
 
 // crbug.com/1090223
-#if defined(OS_LINUX) || defined(OS_MACOSX)
+#if defined(OS_LINUX) || defined(OS_MAC)
 #define MAYBE_DoesNotCachePaymentManager DISABLED_DoesNotCachePaymentManager
 #else
 #define MAYBE_DoesNotCachePaymentManager DoesNotCachePaymentManager
@@ -5248,8 +5248,8 @@ IN_PROC_BROWSER_TEST_F(SensorBackForwardCacheBrowserTest, OrientationCached) {
 // catpures 3 more events and verifies that all events on the a-page have
 // alpha=1.
 // Flaky on Mac and Linux ASAN/TSAN. https://crbug.com/1029238
-#if defined(OS_MACOSX) || (defined(OS_LINUX) && (defined(ADDRESS_SANITIZER) || \
-                                                 defined(THREAD_SANITIZER)))
+#if defined(OS_MAC) || (defined(OS_LINUX) && (defined(ADDRESS_SANITIZER) || \
+                                                defined(THREAD_SANITIZER)))
 #define MAYBE_SensorPausedWhileCached DISABLED_SensorPausedWhileCached
 #else
 #define MAYBE_SensorPausedWhileCached SensorPausedWhileCached

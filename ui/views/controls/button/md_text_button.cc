@@ -251,7 +251,7 @@ void MdTextButton::UpdateTextColor() {
 }
 
 void MdTextButton::UpdateBackgroundColor() {
-  bool is_disabled = GetState() == STATE_DISABLED;
+  bool is_disabled = GetVisualState() == STATE_DISABLED;
   ui::NativeTheme* theme = GetNativeTheme();
   SkColor bg_color =
       theme->GetSystemColor(ui::NativeTheme::kColorId_ButtonColor);

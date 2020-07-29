@@ -34,7 +34,7 @@ constexpr size_t kExpectedMimeOverheadBytes = 1000;  // Intentional overshot.
 // TODO(crbug.com/817495): Eliminate the duplication with other uploaders.
 #if defined(OS_WIN)
 const char kProduct[] = "Chrome";
-#elif defined(OS_MACOSX)
+#elif defined(OS_MAC)
 const char kProduct[] = "Chrome_Mac";
 #elif defined(OS_LINUX)
 const char kProduct[] = "Chrome_Linux";

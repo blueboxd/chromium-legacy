@@ -6,6 +6,7 @@ package org.chromium.chrome.browser.tab;
 
 import org.chromium.base.annotations.NativeMethods;
 import org.chromium.chrome.browser.profiles.Profile;
+import org.chromium.chrome.browser.tab.state.CriticalPersistedTabData;
 import org.chromium.content_public.browser.WebContents;
 
 /**
@@ -17,7 +18,7 @@ public class HistoricalTabSaver {
      */
     public static void createHistoricalTab(Tab tab, Profile profile) {
         if (tab.isFrozen()) {
-            WebContentsState state = ((TabImpl) tab).getFrozenContentsState();
+            WebContentsState state = CriticalPersistedTabData.from(tab).getWebContentsState();
             if (state != null) {
                 WebContents webContents =
                         WebContentsStateBridge.restoreContentsFromByteBuffer(state, profile, true);

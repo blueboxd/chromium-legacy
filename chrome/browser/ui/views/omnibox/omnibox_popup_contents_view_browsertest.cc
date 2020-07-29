@@ -270,7 +270,7 @@ IN_PROC_BROWSER_TEST_F(OmniboxPopupContentsViewTest, ThemeIntegration) {
 }
 
 // TODO(tapted): https://crbug.com/905508 Fix and enable on Mac.
-#if defined(OS_MACOSX)
+#if defined(OS_MAC)
 #define MAYBE_ClickOmnibox DISABLED_ClickOmnibox
 #else
 #define MAYBE_ClickOmnibox ClickOmnibox

@@ -41,20 +41,20 @@ class ChromeAuthenticatorRequestDelegate
       public AuthenticatorRequestDialogModel::Observer {
  public:
   static void RegisterProfilePrefs(user_prefs::PrefRegistrySyncable* registry);
-#if defined(OS_MACOSX)
+#if defined(OS_MAC)
   static TouchIdAuthenticatorConfig TouchIdAuthenticatorConfigForProfile(
       Profile* profile);
-#endif  // defined(OS_MACOSX)
+#endif  // defined(OS_MAC)
 
   // The |render_frame_host| must outlive this instance.
   explicit ChromeAuthenticatorRequestDelegate(
       content::RenderFrameHost* render_frame_host);
   ~ChromeAuthenticatorRequestDelegate() override;
 
-#if defined(OS_MACOSX)
+#if defined(OS_MAC)
   base::Optional<TouchIdAuthenticatorConfig> GetTouchIdAuthenticatorConfig()
       override;
-#endif  // defined(OS_MACOSX)
+#endif  // defined(OS_MAC)
 
   base::WeakPtr<ChromeAuthenticatorRequestDelegate> AsWeakPtr();
 

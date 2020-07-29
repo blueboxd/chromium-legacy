@@ -11,7 +11,7 @@
 #include "third_party/skia/include/core/SkCanvas.h"
 #include "third_party/skia/include/core/SkSurface.h"
 #include "third_party/skia/include/gpu/GrBackendSurface.h"
-#include "third_party/skia/include/gpu/GrContext.h"
+#include "third_party/skia/include/gpu/GrDirectContext.h"
 #include "third_party/skia/include/gpu/gl/GrGLInterface.h"
 #include "ui/gfx/geometry/size.h"
 
@@ -24,7 +24,7 @@ CmdBufferSurfaceProvider::CmdBufferSurfaceProvider() {
   sk_sp<const GrGLInterface> gr_interface =
       skia_bindings::CreateGLES2InterfaceBindings(gles2_implementation,
                                                   gles2_implementation);
-  gr_context_ = GrContext::MakeGL(std::move(gr_interface));
+  gr_context_ = GrDirectContext::MakeGL(std::move(gr_interface));
   DCHECK(gr_context_);
   glGetIntegerv(GL_FRAMEBUFFER_BINDING, &main_fbo_);
 }

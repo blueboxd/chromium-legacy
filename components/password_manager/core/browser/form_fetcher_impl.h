@@ -101,9 +101,6 @@ class FormFetcherImpl : public FormFetcher,
   // Indicates whether HTTP passwords should be migrated to HTTPS.
   const bool should_migrate_http_passwords_;
 
-  // Does the actual migration.
-  std::unique_ptr<HttpPasswordStoreMigrator> http_migrator_;
-
  private:
   // PasswordStoreConsumer:
   void OnGetPasswordStoreResults(
@@ -117,6 +114,9 @@ class FormFetcherImpl : public FormFetcher,
   // CompromisedCredentialsConsumer:
   void OnGetCompromisedCredentials(
       std::vector<CompromisedCredentials> compromised_credentials) override;
+
+  // Does the actual migration.
+  std::unique_ptr<HttpPasswordStoreMigrator> http_migrator_;
 
   // Non-federated credentials of the same scheme as the observed form.
   std::vector<const autofill::PasswordForm*> non_federated_same_scheme_;

@@ -178,7 +178,7 @@ GrContextType ParseGrContextType() {
   if (base::FeatureList::IsEnabled(features::kSkiaDawn))
     return GrContextType::kDawn;
 #endif
-#if defined(OS_MACOSX)
+#if defined(OS_MAC)
   return base::FeatureList::IsEnabled(features::kMetal) ? GrContextType::kMetal
                                                         : GrContextType::kGL;
 #else

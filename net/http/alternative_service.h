@@ -41,7 +41,6 @@ enum AlternateProtocolUsage {
 
 // Log a histogram to reflect |usage|.
 NET_EXPORT void HistogramAlternateProtocolUsage(AlternateProtocolUsage usage,
-                                                bool proxy_server_used,
                                                 bool is_google_host);
 
 enum BrokenAlternateProtocolLocation {

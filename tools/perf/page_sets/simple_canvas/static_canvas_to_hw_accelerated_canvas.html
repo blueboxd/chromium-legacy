@@ -2,6 +2,8 @@
 <html>
 <body>
 <script>
+var colourCounter = 0;
+
 var sourceCanvas2D = document.createElement("canvas");
 var sourceCtx2D = sourceCanvas2D.getContext("2d");
 var destCanvas2D = document.createElement("canvas");
@@ -20,12 +22,9 @@ function setSize(sourceWidth, sourceHeight, destWidth, destHeight) {
     dummyCanvas2D.height = destHeight;
 }
 
-function rand(range) {
-    return Math.floor(Math.random() * range);
-}
-
 function fillCanvas(ctx2d, canvas2d) {
-    ctx2d.fillStyle = "rgba(" + rand(255) + "," + rand(255) + "," + rand(255)  + "," + rand(255) + ")";
+    ctx2d.fillStyle = "rgba(0, 0, " + colourCounter + ", 1)";
+    colourCounter = (colourCounter + 1) % 256;
     ctx2d.fillRect(0, 0, canvas2d.width, canvas2d.height);
 }
 

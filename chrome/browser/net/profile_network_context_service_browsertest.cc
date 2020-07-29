@@ -750,8 +750,8 @@ class CorsExtraSafelistedHeaderNamesTest
 
  private:
   void SetUpPolicy() {
-    auto list = std::make_unique<base::ListValue>();
-    list->AppendString("bar");
+    base::Value list(base::Value::Type::LIST);
+    list.Append("bar");
     policy::PolicyMap policies;
     policies.Set(policy::key::kCorsMitigationList,
                  policy::POLICY_LEVEL_MANDATORY, policy::POLICY_SCOPE_USER,

@@ -99,7 +99,7 @@
 #include "testing/gtest/include/gtest/gtest.h"
 #include "url/gurl.h"
 
-#if defined(OS_MACOSX)
+#if defined(OS_MAC)
 #include "base/mac/mac_util.h"
 #endif
 
@@ -1522,7 +1522,7 @@ IN_PROC_BROWSER_TEST_P(NetworkContextConfigurationBrowserTest,
 IN_PROC_BROWSER_TEST_P(NetworkContextConfigurationBrowserTest, CookiesEnabled) {
   if (IsRestartStateWithInProcessNetworkService())
     return;
-#if defined(OS_MACOSX)
+#if defined(OS_MAC)
   // TODO(https://crbug.com/880496): Fix and reenable test.
   if (base::mac::IsOS10_11())
     return;

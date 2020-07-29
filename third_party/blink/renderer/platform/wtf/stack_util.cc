@@ -62,7 +62,7 @@ size_t GetUnderestimatedStackSize() {
   //    low as 512k.
   //
   return 512 * 1024;
-#elif defined(OS_APPLE)
+#elif defined(OS_MAC)
   // pthread_get_stacksize_np() returns too low a value for the main thread on
   // OSX 10.9,
   // http://mail.openjdk.java.net/pipermail/hotspot-dev/2013-October/011369.html
@@ -128,7 +128,7 @@ void* GetStackStart() {
   NOTREACHED();
   return nullptr;
 #endif
-#elif defined(OS_APPLE)
+#elif defined(OS_MAC)
   return pthread_get_stackaddr_np(pthread_self());
 #elif defined(OS_WIN) && defined(COMPILER_MSVC)
 // On Windows stack limits for the current thread are available in

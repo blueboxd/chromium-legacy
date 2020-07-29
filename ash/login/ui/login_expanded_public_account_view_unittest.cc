@@ -160,19 +160,19 @@ TEST_P(LoginExpandedPublicAccountViewTest, ShowWarningDialog) {
   LoginExpandedPublicAccountView::TestApi test_api(public_account_);
   views::StyledLabel::TestApi styled_label_test(test_api.learn_more_label());
   EXPECT_EQ(test_api.warning_dialog(), nullptr);
-  EXPECT_EQ(styled_label_test.link_targets().size(), 1U);
+  ASSERT_EQ(styled_label_test.link_targets().size(), 1U);
 
   // Tap on the learn more link.
   views::Link* link = styled_label_test.link_targets().begin()->first;
   TapOnView(link);
-  EXPECT_NE(test_api.warning_dialog(), nullptr);
+  ASSERT_NE(test_api.warning_dialog(), nullptr);
   EXPECT_TRUE(test_api.warning_dialog()->GetVisible());
 
   // When warning dialog is shown, tap outside of public account expanded view
   // should not hide it.
   TapOnView(other_view_);
   EXPECT_TRUE(public_account_->GetVisible());
-  EXPECT_NE(test_api.warning_dialog(), nullptr);
+  ASSERT_NE(test_api.warning_dialog(), nullptr);
   EXPECT_TRUE(test_api.warning_dialog()->GetVisible());
 
   // If the warning dialog is shown, escape key should close the waring dialog,
@@ -232,7 +232,7 @@ TEST_P(LoginExpandedPublicAccountViewTest, ShowLanguageAndKeyboardMenu) {
   // First language item is selected, and selected item should have focus.
   EXPECT_EQ(test_api.selected_language_item().value, kEnglishLanguageCode);
   LoginMenuView::TestApi language_test_api(test_api.language_menu_view());
-  EXPECT_EQ(2u, language_test_api.contents()->children().size());
+  ASSERT_EQ(2u, language_test_api.contents()->children().size());
   EXPECT_TRUE(language_test_api.contents()->children()[0]->HasFocus());
 
   // Select language item should close the language menu.
@@ -246,7 +246,7 @@ TEST_P(LoginExpandedPublicAccountViewTest, ShowLanguageAndKeyboardMenu) {
   // Second keyboard item is selected, and selected item should have focus.
   EXPECT_EQ(test_api.selected_keyboard_item().value, kKeyboardIdForItem2);
   LoginMenuView::TestApi keyboard_test_api(test_api.keyboard_menu_view());
-  EXPECT_EQ(2u, keyboard_test_api.contents()->children().size());
+  ASSERT_EQ(2u, keyboard_test_api.contents()->children().size());
   EXPECT_TRUE(keyboard_test_api.contents()->children()[1]->HasFocus());
 
   // Select keyboard item should close the keyboard menu.

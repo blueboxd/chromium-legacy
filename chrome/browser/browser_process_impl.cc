@@ -147,7 +147,7 @@
 
 #if defined(OS_WIN)
 #include "base/win/windows_version.h"
-#elif defined(OS_MACOSX)
+#elif defined(OS_MAC)
 #include "chrome/browser/chrome_browser_main_mac.h"
 #include "chrome/browser/media/webrtc/system_media_capture_permissions_stats_mac.h"
 #endif
@@ -270,7 +270,7 @@ void BrowserProcessImpl::Init() {
   ChildProcessSecurityPolicy::GetInstance()->RegisterWebSafeScheme(
       chrome::kChromeSearchScheme);
 
-#if defined(OS_MACOSX)
+#if defined(OS_MAC)
   ui::InitIdleMonitor();
 #endif
 
@@ -331,7 +331,7 @@ void BrowserProcessImpl::Init() {
   DCHECK(!webrtc_event_log_manager_);
   webrtc_event_log_manager_ = WebRtcEventLogManager::CreateSingletonInstance();
 
-#if defined(OS_MACOSX)
+#if defined(OS_MAC)
   system_media_permissions::LogSystemMediaPermissionsStartupStats();
 #endif
 }
@@ -345,7 +345,7 @@ void BrowserProcessImpl::SetQuitClosure(base::OnceClosure quit_closure) {
 }
 #endif
 
-#if defined(OS_MACOSX)
+#if defined(OS_MAC)
 void BrowserProcessImpl::ClearQuitClosure() {
   quit_closure_.Reset();
 }
@@ -1420,7 +1420,7 @@ void BrowserProcessImpl::Unpin() {
 
   CHECK(base::RunLoop::IsRunningOnCurrentThread());
 
-#if defined(OS_MACOSX)
+#if defined(OS_MAC)
   base::ThreadTaskRunnerHandle::Get()->PostTask(
       FROM_HERE,
       base::BindOnce(ChromeBrowserMainPartsMac::DidEndMainMessageLoop));

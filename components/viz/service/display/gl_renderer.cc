@@ -335,8 +335,7 @@ class GLRenderer::ScopedUseGrContext {
   }
 
   GrDirectContext* context() const {
-    return GrAsDirectContext(
-        renderer_->output_surface_->context_provider()->GrContext());
+    return renderer_->output_surface_->context_provider()->GrContext();
   }
 
  private:

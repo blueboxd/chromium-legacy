@@ -351,25 +351,25 @@ void RemoteCopyMessageHandler::UpdateProgressNotification(
     // This might happen if we don't know the total size of the image but we
     // still want to show how many bytes have been transferred.
     notification.set_progress(-1);
-#if defined(OS_MACOSX)
+#if defined(OS_MAC)
     // On macOS we only have the title and message available. The progress is
     // prepended to the title and the message should be the context.
     notification.set_message(context);
 #else
     notification.set_progress_status(context);
-#endif  // defined(OS_MACOSX)
+#endif  // defined(OS_MAC)
   } else {
     notification.set_progress(image_content_progress_ * 100 /
                               image_content_length_);
     base::string16 progress =
         GetProgressString(image_content_progress_, image_content_length_);
-#if defined(OS_MACOSX)
+#if defined(OS_MAC)
     // On macOS we only have the title and message available. The progress is
     // prepended to the title and the message should be the progress.
     notification.set_message(progress);
 #else
     notification.set_progress_status(progress);
-#endif  // defined(OS_MACOSX)
+#endif  // defined(OS_MAC)
   }
 
   NotificationDisplayServiceFactory::GetForProfile(profile_)->Display(
@@ -536,7 +536,7 @@ void RemoteCopyMessageHandler::WriteImageAndShowNotification(
                      base::Unretained(this), old_sequence_number,
                      base::TimeTicks::Now(), /*is_image=*/true));
 
-#if defined(OS_MACOSX)
+#if defined(OS_MAC)
   // On macOS we can't replace a persistent notification with a non-persistent
   // one because they are posted from different sources (app vs xpc). To avoid
   // having both notifications on screen, remove the progress one first.
@@ -544,7 +544,7 @@ void RemoteCopyMessageHandler::WriteImageAndShowNotification(
       !base::FeatureList::IsEnabled(kRemoteCopyPersistentNotification)) {
     ClearProgressAndCloseNotification();
   }
-#endif  // defined(OS_MACOSX)
+#endif  // defined(OS_MAC)
 
   // If the notification id is not empty there must be a progress notification
   // that can be updated. Just clear its action handler.
@@ -571,13 +571,13 @@ void RemoteCopyMessageHandler::ShowNotification(const base::string16& title,
       !image.drawsNothing();
 
   if (use_image_notification) {
-#if defined(OS_MACOSX)
+#if defined(OS_MAC)
     // On macOS notifications do not support large images so use the icon
     // instead.
     icon = gfx::Image::CreateFrom1xBitmap(image);
 #else
     rich_notification_data.image = gfx::Image::CreateFrom1xBitmap(image);
-#endif  // defined(OS_MACOSX)
+#endif  // defined(OS_MAC)
   }
 
   rich_notification_data.vector_small_image = &kSendTabToSelfIcon;

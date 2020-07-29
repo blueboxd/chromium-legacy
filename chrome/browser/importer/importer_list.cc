@@ -19,7 +19,7 @@
 #include "chrome/grit/generated_resources.h"
 #include "ui/base/l10n/l10n_util.h"
 
-#if defined(OS_MACOSX)
+#if defined(OS_MAC)
 #include <CoreFoundation/CoreFoundation.h>
 
 #include "base/mac/foundation_util.h"
@@ -71,7 +71,7 @@ void DetectBuiltinWindowsProfiles(
 
 #endif  // defined(OS_WIN)
 
-#if defined(OS_MACOSX)
+#if defined(OS_MAC)
 void DetectSafariProfiles(std::vector<importer::SourceProfile>* profiles) {
   base::ScopedBlockingCall scoped_blocking_call(FROM_HERE,
                                                 base::BlockingType::MAY_BLOCK);
@@ -86,7 +86,7 @@ void DetectSafariProfiles(std::vector<importer::SourceProfile>* profiles) {
   safari.services_supported = items;
   profiles->push_back(safari);
 }
-#endif  // defined(OS_MACOSX)
+#endif  // defined(OS_MAC)
 
 // |locale|: The application locale used for lookups in Firefox's
 // locale-specific search engines feature (see firefox_importer.cc for
@@ -160,7 +160,7 @@ std::vector<importer::SourceProfile> DetectSourceProfilesWorker(
     DetectBuiltinWindowsProfiles(&profiles);
     DetectFirefoxProfiles(locale, &profiles);
   }
-#elif defined(OS_MACOSX)
+#elif defined(OS_MAC)
   if (shell_integration::IsFirefoxDefaultBrowser()) {
     DetectFirefoxProfiles(locale, &profiles);
     DetectSafariProfiles(&profiles);

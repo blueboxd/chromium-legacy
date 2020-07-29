@@ -12,6 +12,7 @@ function registerConversionForOrigin(data, origin) {
   img.src = origin +
       "/server-redirect?.well-known/register-conversion?conversion-data=" +
       data;
+  img.onerror = function () { document.title = "converted"; };
   document.body.appendChild(img);
 }
 

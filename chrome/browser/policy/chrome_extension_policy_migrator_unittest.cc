@@ -41,9 +41,7 @@ void MultiplyByTwo(base::Value* val) {
   *val = base::Value(val->GetInt() * 2);
 }
 
-void SetPolicy(PolicyMap* policy,
-               const char* policy_name,
-               std::unique_ptr<base::Value> value) {
+void SetPolicy(PolicyMap* policy, const char* policy_name, base::Value value) {
   policy->Set(policy_name, POLICY_LEVEL_MANDATORY, POLICY_SCOPE_USER,
               POLICY_SOURCE_CLOUD, std::move(value), nullptr);
 }
@@ -72,21 +70,15 @@ TEST(ChromeExtensionPolicyMigratorTest, CopyPoliciesIfUnset) {
 
   PolicyMap& chrome_map = bundle.Get(
       PolicyNamespace(POLICY_DOMAIN_CHROME, /* component_id */ std::string()));
-  SetPolicy(&chrome_map, kNewPolicy3,
-            std::make_unique<base::Value>(kNewValue3));
+  SetPolicy(&chrome_map, kNewPolicy3, base::Value(kNewValue3));
 
   PolicyMap& extension_map =
       bundle.Get(PolicyNamespace(POLICY_DOMAIN_EXTENSIONS, kExtensionId));
-  SetPolicy(&extension_map, kOldPolicy1,
-            std::make_unique<base::Value>(kOldValue1));
-  SetPolicy(&extension_map, kOldPolicy2,
-            std::make_unique<base::Value>(kOldValue2));
-  SetPolicy(&extension_map, kOldPolicy3,
-            std::make_unique<base::Value>(kOldValue3));
-  SetPolicy(&extension_map, kOldPolicy4,
-            std::make_unique<base::Value>(kOldValue4));
-  SetPolicy(&extension_map, kOldPolicy5,
-            std::make_unique<base::Value>(kOldValue5));
+  SetPolicy(&extension_map, kOldPolicy1, base::Value(kOldValue1));
+  SetPolicy(&extension_map, kOldPolicy2, base::Value(kOldValue2));
+  SetPolicy(&extension_map, kOldPolicy3, base::Value(kOldValue3));
+  SetPolicy(&extension_map, kOldPolicy4, base::Value(kOldValue4));
+  SetPolicy(&extension_map, kOldPolicy5, base::Value(kOldValue5));
 
   TestingPolicyMigrator().Migrate(&bundle);
 
@@ -112,8 +104,7 @@ TEST(ChromeExtensionPolicyMigratorTest, DeprecatedWarnings) {
 
   PolicyMap& extension_map =
       bundle.Get(PolicyNamespace(POLICY_DOMAIN_EXTENSIONS, kExtensionId));
-  SetPolicy(&extension_map, kOldPolicy1,
-            std::make_unique<base::Value>(kOldValue1));
+  SetPolicy(&extension_map, kOldPolicy1, base::Value(kOldValue1));
 
   TestingPolicyMigrator().Migrate(&bundle);
 

@@ -348,6 +348,7 @@ public abstract class ChromeFeatureList {
     public static final String PAGE_INFO_PERFORMANCE_HINTS = "PageInfoPerformanceHints";
     public static final String PAINT_PREVIEW_DEMO = "PaintPreviewDemo";
     public static final String PAINT_PREVIEW_SHOW_ON_STARTUP = "PaintPreviewShowOnStartup";
+    public static final String PASSWORD_CHANGE_IN_SETTINGS = "PasswordChangeInSettings";
     public static final String PASSWORD_CHECK = "PasswordCheck";
     public static final String PASSWORD_EDITING_ANDROID = "PasswordEditingAndroid";
     public static final String PASSWORD_MANAGER_ONBOARDING_ANDROID =
@@ -413,6 +414,8 @@ public abstract class ChromeFeatureList {
             "TrustedWebActivityNotificationDelegationAutoEnrolment";
     public static final String TRUSTED_WEB_ACTIVITY_NEW_DISCLOSURE =
             "TrustedWebActivityNewDisclosure";
+    public static final String TRUSTED_WEB_ACTIVITY_QUALITY_ENFORCEMENT =
+            "TrustedWebActivityQualityEnforcement";
     public static final String TRUSTED_WEB_ACTIVITY_LOCATION_DELEGATION =
             "TrustedWebActivityLocationDelegation";
     public static final String VIDEO_PERSISTENCE = "VideoPersistence";

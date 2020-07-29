@@ -121,7 +121,7 @@ class OCSPBrowserTest : public PlatformBrowserTest,
     policy::PolicyMap policy_map;
     policy_map.Set(policy_name, policy::POLICY_LEVEL_MANDATORY,
                    policy::POLICY_SCOPE_MACHINE, policy::POLICY_SOURCE_CLOUD,
-                   std::make_unique<base::Value>(true), nullptr);
+                   base::Value(true), nullptr);
 
     EXPECT_NO_FATAL_FAILURE(UpdateChromePolicy(policy_map));
 

@@ -28,7 +28,7 @@ struct CONTENT_EXPORT DesktopMediaID {
   // Represents a fake id to create a dummy capturer for autotests.
   static const Id kFakeId;
 
-#if defined(USE_AURA) || defined(OS_MACOSX)
+#if defined(USE_AURA) || defined(OS_MAC)
   // Assigns integer identifier to the |window| and returns its DesktopMediaID.
   static DesktopMediaID RegisterNativeWindow(Type type,
                                              gfx::NativeWindow window);

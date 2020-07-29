@@ -46,7 +46,7 @@ namespace content {
 // TODO(mac): figure out why symbolization doesn't happen in the renderer.
 // http://crbug.com/521456
 // TODO(win): send PDB files for component build. http://crbug.com/521459
-#if !defined(OFFICIAL_BUILD) && !defined(OS_ANDROID) && !defined(OS_MACOSX) && \
+#if !defined(OFFICIAL_BUILD) && !defined(OS_ANDROID) && !defined(OS_MAC) && \
     !(defined(COMPONENT_BUILD) && defined(OS_WIN))
 
 IN_PROC_BROWSER_TEST_F(ContentBrowserTest, MANUAL_ShouldntRun) {

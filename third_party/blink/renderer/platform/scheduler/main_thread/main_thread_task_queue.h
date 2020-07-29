@@ -133,8 +133,9 @@ class PLATFORM_EXPORT MainThreadTaskQueue
       kExperimentalDatabase = 6,
       kJavaScriptTimer = 7,
       kHighPriorityLocalFrame = 8,
+      kCompositor = 9,  // Main-thread only.
 
-      kCount = 9
+      kCount = 10
     };
 
     // kPrioritisationTypeWidthBits is the number of bits required
@@ -281,6 +282,13 @@ class PLATFORM_EXPORT MainThreadTaskQueue
 
     QueueCreationParams SetCanRunWhenVirtualTimePaused(bool value) {
       queue_traits = queue_traits.SetCanRunWhenVirtualTimePaused(value);
+      ApplyQueueTraitsToSpec();
+      return *this;
+    }
+
+    QueueCreationParams SetPrioritisationType(
+        QueueTraits::PrioritisationType type) {
+      queue_traits = queue_traits.SetPrioritisationType(type);
       ApplyQueueTraitsToSpec();
       return *this;
     }

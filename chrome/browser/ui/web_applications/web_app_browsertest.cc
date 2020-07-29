@@ -57,7 +57,7 @@
 #include "chrome/browser/ui/ash/launcher/chrome_launcher_controller.h"
 #endif
 
-#if defined(OS_MACOSX)
+#if defined(OS_MAC)
 #include "ui/base/test/scoped_fake_nswindow_fullscreen.h"
 #endif
 
@@ -943,7 +943,7 @@ IN_PROC_BROWSER_TEST_P(WebAppBrowserTest, SubframeRedirectsToWebApp) {
       EvalJs(subframe, "document.body.innerText.trim();").ExtractString());
 }
 
-#if defined(OS_MACOSX)
+#if defined(OS_MAC)
 
 IN_PROC_BROWSER_TEST_P(WebAppBrowserTest, NewAppWindow) {
   BrowserList* const browser_list = BrowserList::GetInstance();
@@ -975,7 +975,7 @@ IN_PROC_BROWSER_TEST_P(WebAppBrowserTest, NewAppWindow) {
 #endif
 
 IN_PROC_BROWSER_TEST_P(WebAppBrowserTest, PopupLocationBar) {
-#if defined(OS_MACOSX)
+#if defined(OS_MAC)
   ui::test::ScopedFakeNSWindowFullscreen fake_fullscreen;
 #endif
   const GURL app_url = GetSecureAppURL();

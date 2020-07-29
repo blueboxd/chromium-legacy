@@ -53,16 +53,32 @@ OsIntegrationManager::OsIntegrationManager(Profile* profile)
 OsIntegrationManager::~OsIntegrationManager() = default;
 
 void OsIntegrationManager::SetSubsystems(
+    AppRegistrar* registrar,
     AppShortcutManager* shortcut_manager,
     FileHandlerManager* file_handler_manager,
     WebAppUiManager* ui_manager) {
+  registrar_ = registrar;
   shortcut_manager_ = shortcut_manager;
   file_handler_manager_ = file_handler_manager;
   ui_manager_ = ui_manager;
 }
 
-void OsIntegrationManager::SuppressOsHooksForTesting() {
-  suppress_os_hooks_for_testing_ = true;
+void OsIntegrationManager::Start() {
+  DCHECK(registrar_);
+
+#if defined(OS_MACOSX)
+  // Ensure that all installed apps are included in the AppShimRegistry when the
+  // profile is loaded. This is redundant, because apps are registered when they
+  // are installed. It is necessary, however, because app registration was added
+  // long after app installation launched. This should be removed after shipping
+  // for a few versions (whereupon it may be assumed that most applications have
+  // been registered).
+  std::vector<AppId> app_ids = registrar_->GetAppIds();
+  for (const auto& app_id : app_ids) {
+    AppShimRegistry::Get()->OnAppInstalledForProfile(app_id,
+                                                     profile_->GetPath());
+  }
+#endif
 }
 
 void OsIntegrationManager::InstallOsHooks(
@@ -136,7 +152,11 @@ void OsIntegrationManager::UninstallOsHooks(const AppId& app_id) {
 
   file_handler_manager_->DisableAndUnregisterOsFileHandlers(app_id);
 
-  shortcut_manager_->DeleteSharedAppShims(app_id);
+  DeleteSharedAppShims(app_id);
+}
+
+void OsIntegrationManager::SuppressOsHooksForTesting() {
+  suppress_os_hooks_for_testing_ = true;
 }
 
 void OsIntegrationManager::OnShortcutsCreated(
@@ -189,4 +209,17 @@ void OsIntegrationManager::OnShortcutsCreated(
   }
 }
 
+void OsIntegrationManager::DeleteSharedAppShims(const AppId& app_id) {
+#if defined(OS_MACOSX)
+  bool delete_multi_profile_shortcuts =
+      AppShimRegistry::Get()->OnAppUninstalledForProfile(app_id,
+                                                         profile_->GetPath());
+  if (delete_multi_profile_shortcuts) {
+    web_app::internals::GetShortcutIOTaskRunner()->PostTask(
+        FROM_HERE,
+        base::BindOnce(&web_app::internals::DeleteMultiProfileShortcutsForApp,
+                       app_id));
+  }
+#endif
+}
 }  // namespace web_app

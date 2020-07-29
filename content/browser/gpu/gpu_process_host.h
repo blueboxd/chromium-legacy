@@ -57,7 +57,7 @@ class Thread;
 namespace content {
 class BrowserChildProcessHostImpl;
 
-#if defined(OS_MACOSX)
+#if defined(OS_MAC)
 class CATransactionGPUCoordinator;
 #endif
 
@@ -248,7 +248,7 @@ class GpuProcessHost : public BrowserChildProcessHostDelegate,
   std::unique_ptr<BrowserChildProcessHostImpl> process_;
   std::unique_ptr<base::Thread> in_process_gpu_thread_;
 
-#if defined(OS_MACOSX)
+#if defined(OS_MAC)
   scoped_refptr<CATransactionGPUCoordinator> ca_transaction_gpu_coordinator_;
 #endif
 

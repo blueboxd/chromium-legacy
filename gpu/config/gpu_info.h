@@ -216,7 +216,7 @@ struct GPU_EXPORT OverlayInfo {
 
 #endif
 
-#if defined(OS_MACOSX)
+#if defined(OS_MAC)
 GPU_EXPORT bool ValidateMacOSSpecificTextureTarget(int target);
 #endif  // OS_MACOSX
 
@@ -369,7 +369,7 @@ struct GPU_EXPORT GPUInfo {
   // is only implemented on Android.
   bool can_support_threaded_texture_mailbox = false;
 
-#if defined(OS_MACOSX)
+#if defined(OS_MAC)
   // Enum describing which texture target is used for native GpuMemoryBuffers on
   // MacOS. Valid values are GL_TEXTURE_2D and GL_TEXTURE_RECTANGLE_ARB.
   uint32_t macos_specific_texture_target;

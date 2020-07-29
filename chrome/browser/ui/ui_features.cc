@@ -75,11 +75,11 @@ const base::Feature kTabGroupsFeedback{"TabGroupsFeedback",
 // https://crbug.com/910739
 const base::Feature kTabHoverCards {
   "TabHoverCards",
-#if defined(OS_MACOSX)
+#if defined(OS_MAC)
       base::FEATURE_DISABLED_BY_DEFAULT
 #else
       base::FEATURE_ENABLED_BY_DEFAULT
-#endif  // defined(OS_MACOSX)
+#endif  // defined(OS_MAC)
 };
 
 // Parameter name used for tab hover cards user study.

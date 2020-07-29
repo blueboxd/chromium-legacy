@@ -121,6 +121,7 @@ class HoldingSpaceController;
 class HomeScreenController;
 class ImeControllerImpl;
 class ImmersiveContext;
+class InSessionAuthDialogControllerImpl;
 class KeyAccessibilityEnabler;
 class KeyboardBrightnessControlDelegate;
 class KeyboardControllerImpl;
@@ -385,6 +386,9 @@ class ASH_EXPORT Shell : public SessionObserver,
     return high_contrast_controller_.get();
   }
   ImeControllerImpl* ime_controller() { return ime_controller_.get(); }
+  InSessionAuthDialogControllerImpl* in_session_auth_dialog_controller() {
+    return in_session_auth_dialog_controller_.get();
+  }
   KeyAccessibilityEnabler* key_accessibility_enabler() {
     return key_accessibility_enabler_.get();
   }
@@ -675,6 +679,8 @@ class ASH_EXPORT Shell : public SessionObserver,
   std::unique_ptr<HomeScreenController> home_screen_controller_;
   std::unique_ptr<ImeControllerImpl> ime_controller_;
   std::unique_ptr<ImmersiveContext> immersive_context_;
+  std::unique_ptr<InSessionAuthDialogControllerImpl>
+      in_session_auth_dialog_controller_;
   std::unique_ptr<KeyboardBrightnessControlDelegate>
       keyboard_brightness_control_delegate_;
   std::unique_ptr<LocaleUpdateControllerImpl> locale_update_controller_;

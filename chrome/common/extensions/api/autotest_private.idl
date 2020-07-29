@@ -540,6 +540,20 @@ namespace autotestPrivate {
   // called. |smoothness| is a percentage number between 0 to 100.
   callback StopSmoothnessTrackingCallback = void (long smoothness);
 
+  // Collected ui::ThroughputTracker data for one animation. It is based on
+  // cc::FrameSequenceMetrics::ThroughputData.
+  dictionary ThroughputTrackerAnimationData {
+    // Number of frames expected to be shown for this animation.
+    long framesExpected;
+    // Number of frames actually shown for this animation.
+    long framesProduced;
+  };
+
+  // Callback invoked to report the collection ui::ThroughputTracker data
+  // after stopThroughputTrackerDataCollection is called.
+  callback StopThroughputTrackerDataCollectionCallback = void
+      (ThroughputTrackerAnimationData[] data);
+
   interface Functions {
     // Must be called to allow autotestPrivateAPI events to be fired.
     static void initializeEvents();
@@ -1035,6 +1049,14 @@ namespace autotestPrivate {
     // invalidation of those information (i.e. reloading the entire background
     // page).
     static void disableAutomation(VoidCallback callback);
+
+    // Starts to ui::ThroughputTracker data collection for tracked animations.
+    static void startThroughputTrackerDataCollection(VoidCallback callback);
+
+    // Stops ui::ThroughputTracker data collection and reports the collected
+    // data since the start.
+    static void stopThroughputTrackerDataCollection(
+        StopThroughputTrackerDataCollectionCallback callback);
   };
 
   interface Events {

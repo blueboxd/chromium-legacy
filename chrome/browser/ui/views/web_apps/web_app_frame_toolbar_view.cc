@@ -227,7 +227,7 @@ int HorizontalPaddingBetweenPageActionsAndAppMenuButtons() {
 }
 
 int WebAppFrameRightMargin() {
-#if defined(OS_MACOSX)
+#if defined(OS_MAC)
   return kWebAppMenuMargin;
 #else
   return HorizontalPaddingBetweenPageActionsAndAppMenuButtons();

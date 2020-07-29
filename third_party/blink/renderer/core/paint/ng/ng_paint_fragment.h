@@ -177,7 +177,6 @@ class CORE_EXPORT NGPaintFragment : public RefCounted<NGPaintFragment>,
   bool HasOverflowClip() const { return PhysicalFragment().HasOverflowClip(); }
   bool ShouldClipOverflow() const;
   bool HasSelfPaintingLayer() const;
-  IntRect PartialInvalidationVisualRect() const override;
 
   // Set ShouldDoFullPaintInvalidation flag in the corresponding LayoutObject.
   void SetShouldDoFullPaintInvalidation();
@@ -316,9 +315,6 @@ class CORE_EXPORT NGPaintFragment : public RefCounted<NGPaintFragment>,
   // Re-compute ink overflow of children and return the union.
   PhysicalRect RecalcInkOverflow();
   PhysicalRect RecalcContentsInkOverflow() const;
-
-  // This fragment will use the layout object's visual rect.
-  const LayoutObject& VisualRectLayoutObject(bool& this_as_inline_box) const;
 
   //
   // Following fields are computed in the layout phase.

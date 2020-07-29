@@ -36,7 +36,7 @@
 #include "base/android/content_uri_utils.h"
 #endif
 
-#if defined(OS_MACOSX)
+#if defined(OS_MAC)
 #include "base/task/current_thread.h"
 #endif
 
@@ -64,7 +64,7 @@ NetworkServiceClient::NetworkServiceClient(
 #endif
 {
 
-#if defined(OS_MACOSX)
+#if defined(OS_MAC)
   if (base::CurrentUIThread::IsSet())  // Not set in some unit tests.
     net::CertDatabase::GetInstance()->StartListeningForKeychainEvents();
 #endif

@@ -32,11 +32,11 @@ mojo::NamedPlatformChannel::ServerName GetServiceProcessServerName();
 // use the user-data-dir as a scoping prefix.
 std::string GetServiceProcessScopedName(const std::string& append_str);
 
-#if !defined(OS_MACOSX)
+#if !defined(OS_MAC)
 // Return a name that is scoped to this instance of the service process. We
 // use the user-data-dir and the version as a scoping prefix.
 std::string GetServiceProcessScopedVersionedName(const std::string& append_str);
-#endif  // !OS_MACOSX
+#endif  // !OS_MAC
 
 #if defined(OS_POSIX)
 // Attempts to take a session-wide lock named name. Returns a non-null lock if
@@ -90,14 +90,14 @@ class ServiceProcessState {
   bool RemoveFromAutoRun();
 
   // Return the channel handle used for communicating with the service.
-#if defined(OS_MACOSX)
+#if defined(OS_MAC)
   mojo::PlatformChannelServerEndpoint GetServiceProcessServerEndpoint();
 #else
   mojo::NamedPlatformChannel::ServerName GetServiceProcessServerName();
 #endif
 
  private:
-#if !defined(OS_MACOSX)
+#if !defined(OS_MAC)
   enum ServiceProcessRunningState {
     SERVICE_NOT_RUNNING,
     SERVICE_OLDER_VERSION_RUNNING,
@@ -142,7 +142,7 @@ class ServiceProcessState {
   static ServiceProcessRunningState GetServiceProcessRunningState(
       std::string* service_version_out,
       base::ProcessId* pid_out);
-#endif  // !OS_MACOSX
+#endif  // !OS_MAC
 
   // Returns the process id and version of the currently running service
   // process. Note: DO NOT use this check whether the service process is ready
@@ -162,7 +162,7 @@ class ServiceProcessState {
   struct StateData;
   StateData* state_;
 
-#if !defined(OS_MACOSX)
+#if !defined(OS_MAC)
   // The shared memory mapping backing the shared state on non-macos
   // platforms. This is actually referring to named shared memory, and on some
   // platforms (eg, Windows) determines the lifetime of when consumers are able
@@ -173,7 +173,7 @@ class ServiceProcessState {
 
   std::unique_ptr<base::CommandLine> autorun_command_line_;
 
-#if defined(OS_MACOSX)
+#if defined(OS_MAC)
   friend bool CheckServiceProcessReady();
 #endif
 

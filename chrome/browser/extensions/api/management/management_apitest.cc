@@ -507,7 +507,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionManagementApiTest, LaunchTabApp) {
 }
 
 // Flaky on MacOS: crbug.com/915339
-#if defined(OS_MACOSX)
+#if defined(OS_MAC)
 #define MAYBE_LaunchType DISABLED_LaunchType
 #else
 #define MAYBE_LaunchType LaunchType

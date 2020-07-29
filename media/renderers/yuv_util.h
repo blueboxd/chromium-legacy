@@ -12,7 +12,7 @@
 
 // Skia forward declarations
 class GrBackendTexture;
-class GrContext;
+class GrDirectContext;
 class SkImage;
 
 namespace gpu {
@@ -44,7 +44,7 @@ MEDIA_EXPORT sk_sp<SkImage> NewSkImageFromVideoFrameYUV(
     unsigned int texture_id);
 
 MEDIA_EXPORT sk_sp<SkImage> YUVGrBackendTexturesToSkImage(
-    GrContext* gr_context,
+    GrDirectContext* gr_context,
     gfx::ColorSpace video_color_space,
     VideoPixelFormat video_format,
     GrBackendTexture* yuv_textures,

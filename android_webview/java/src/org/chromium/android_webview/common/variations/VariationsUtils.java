@@ -22,7 +22,6 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
-import java.text.ParseException;
 import java.util.Date;
 import java.util.concurrent.TimeUnit;
 
@@ -112,9 +111,8 @@ public class VariationsUtils {
                 return null;
             }
 
-            if (!proto.hasSignature() || !proto.hasCountry()
-                    || (!proto.hasDate() && !proto.hasDateHeader()) || !proto.hasIsGzipCompressed()
-                    || !proto.hasSeedData()) {
+            if (!proto.hasSignature() || !proto.hasCountry() || !proto.hasDate()
+                    || !proto.hasIsGzipCompressed() || !proto.hasSeedData()) {
                 return null;
             }
 
@@ -123,22 +121,11 @@ public class VariationsUtils {
             info.country = proto.getCountry();
             info.isGzipCompressed = proto.getIsGzipCompressed();
             info.seedData = proto.getSeedData().toByteArray();
-
-            if (proto.hasDate()) {
-                info.date = proto.getDate();
-            } else {
-                // |dateHeader| is deprecated in favor of |date|, but parse |dateHeader| in case
-                // this seed predates the deprecation.
-                // TODO(crbug.com/1013390): Remove this fallback logic.
-                info.date = SeedInfo.parseDateHeader(proto.getDateHeader());
-            }
+            info.date = proto.getDate();
 
             return info;
         } catch (IOException e) {
             Log.e(TAG, "Failed reading seed file \"" + inFile + "\": " + e.getMessage());
-            return null;
-        } catch (ParseException e) {
-            Log.e(TAG, "Malformed seed date: " + e.getMessage());
             return null;
         } finally {
             closeSafely(in);

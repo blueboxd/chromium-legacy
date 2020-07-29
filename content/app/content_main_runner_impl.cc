@@ -110,7 +110,7 @@
 #include "base/trace_event/trace_event_etw_export_win.h"
 #include "ui/base/l10n/l10n_util_win.h"
 #include "ui/display/win/dpi.h"
-#elif defined(OS_MACOSX)
+#elif defined(OS_MAC)
 #include "sandbox/mac/seatbelt.h"
 #include "sandbox/mac/seatbelt_exec.h"
 #endif  // OS_WIN
@@ -122,10 +122,10 @@
 #include "base/posix/global_descriptors.h"
 #include "content/public/common/content_descriptors.h"
 
-#if !defined(OS_MACOSX)
+#if !defined(OS_MAC)
 #include "content/public/common/zygote/zygote_fork_delegate_linux.h"
 #endif
-#if !defined(OS_MACOSX) && !defined(OS_ANDROID)
+#if !defined(OS_MAC) && !defined(OS_ANDROID)
 #include "content/zygote/zygote_main.h"
 #include "sandbox/linux/services/libc_interceptor.h"
 #endif
@@ -205,7 +205,7 @@ void LoadV8SnapshotFile() {
   ALLOW_UNUSED_LOCAL(kSnapshotType);
   ALLOW_UNUSED_LOCAL(snapshot_data_descriptor);
 
-#if defined(OS_POSIX) && !defined(OS_MACOSX)
+#if defined(OS_POSIX) && !defined(OS_MAC)
   base::FileDescriptorStore& file_descriptor_store =
       base::FileDescriptorStore::GetInstance();
   base::MemoryMappedFile::Region region;
@@ -588,9 +588,9 @@ int ContentMainRunnerImpl::Initialize(const ContentMainParams& params) {
   sandbox_info_ = *params.sandbox_info;
 #else  // !OS_WIN
 
-#if defined(OS_MACOSX)
+#if defined(OS_MAC)
   autorelease_pool_ = params.autorelease_pool;
-#endif  // defined(OS_MACOSX)
+#endif  // defined(OS_MAC)
 
 #if defined(OS_ANDROID)
   // Now that mojo's core is initialized (by service manager's Main()), we can
@@ -800,7 +800,7 @@ int ContentMainRunnerImpl::Initialize(const ContentMainParams& params) {
             sandbox::policy::SandboxTypeFromCommandLine(command_line),
             params.sandbox_info))
       return TerminateForFatalInitializationError();
-#elif defined(OS_MACOSX)
+#elif defined(OS_MAC)
     // Only the GPU process still runs the V1 sandbox.
     bool v2_enabled = base::CommandLine::ForCurrentProcess()->HasSwitch(
         sandbox::switches::kSeatbeltClientName);
@@ -871,7 +871,7 @@ int ContentMainRunnerImpl::Run(bool start_service_manager_only) {
   main_params.created_main_parts_closure = created_main_parts_closure_;
 #if defined(OS_WIN)
   main_params.sandbox_info = &sandbox_info_;
-#elif defined(OS_MACOSX)
+#elif defined(OS_MAC)
   main_params.autorelease_pool = autorelease_pool_;
 #endif
 

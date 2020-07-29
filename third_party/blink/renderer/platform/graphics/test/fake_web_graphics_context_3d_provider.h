@@ -14,7 +14,7 @@
 #include "gpu/config/gpu_feature_info.h"
 #include "third_party/blink/public/platform/web_graphics_context_3d_provider.h"
 #include "third_party/skia/include/core/SkRefCnt.h"
-#include "third_party/skia/include/gpu/GrContext.h"
+#include "third_party/skia/include/gpu/GrDirectContext.h"
 #include "third_party/skia/include/gpu/mock/GrMockTypes.h"
 
 namespace blink {
@@ -23,14 +23,14 @@ class FakeWebGraphicsContext3DProvider : public WebGraphicsContext3DProvider {
  public:
   FakeWebGraphicsContext3DProvider(gpu::gles2::GLES2Interface* gl,
                                    cc::ImageDecodeCache* cache = nullptr,
-                                   GrContext* gr_context = nullptr)
+                                   GrDirectContext* gr_context = nullptr)
       : gl_(gl),
         image_decode_cache_(cache ? cache : &stub_image_decode_cache_) {
     if (gr_context) {
-      gr_context_ = sk_ref_sp<GrContext>(gr_context);
+      gr_context_ = sk_ref_sp<GrDirectContext>(gr_context);
     } else {
       GrMockOptions mockOptions;
-      gr_context_ = GrContext::MakeMock(&mockOptions);
+      gr_context_ = GrDirectContext::MakeMock(&mockOptions);
     }
 
     // TODO(nazabris, crbug.com/1017508) Use RasterImplementation after
@@ -46,7 +46,7 @@ class FakeWebGraphicsContext3DProvider : public WebGraphicsContext3DProvider {
   }
   ~FakeWebGraphicsContext3DProvider() override = default;
 
-  GrContext* GetGrContext() override { return gr_context_.get(); }
+  GrDirectContext* GetGrContext() override { return gr_context_.get(); }
 
   const gpu::Capabilities& GetCapabilities() const override {
     return capabilities_;
@@ -96,7 +96,7 @@ class FakeWebGraphicsContext3DProvider : public WebGraphicsContext3DProvider {
   viz::TestSharedImageInterface test_shared_image_interface_;
   gpu::gles2::GLES2Interface* gl_;
   std::unique_ptr<gpu::raster::RasterInterface> raster_interface_;
-  sk_sp<GrContext> gr_context_;
+  sk_sp<GrDirectContext> gr_context_;
   gpu::Capabilities capabilities_;
   gpu::GpuFeatureInfo gpu_feature_info_;
   WebglPreferences webgl_preferences_;

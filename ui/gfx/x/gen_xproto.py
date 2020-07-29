@@ -232,6 +232,7 @@ READ_SPECIAL = set([
 
 WRITE_SPECIAL = set([
     ('xcb', 'ClientMessage'),
+    ('xcb', 'Expose'),
     ('xcb', 'UnmapNotify'),
     ('xcb', 'SelectionNotify'),
 ])
@@ -583,14 +584,6 @@ class GenXproto(FileWriter):
         if (name[-1] in ('FLOAT32', 'FLOAT64')
                 or renamed in self.replace_with_enum):
             return
-        elif name[-1] == 'FP1616':
-            # Xcbproto defines FP1616 as uint32_t instead of a struct of
-            # two 16-bit ints, which is how it's intended to be used.
-            with Indent(self, 'struct Fp1616 {', '};'):
-                self.write('int16_t integral;')
-                self.write('uint16_t frac;')
-            self.write()
-            return
 
         xidunion = self.get_xidunion_element(name)
         if xidunion:
@@ -666,10 +659,11 @@ class GenXproto(FileWriter):
         if not case.field_name:
             return fields
         name = safe_name(case.field_name)
-        with Indent(self, 'struct %s_t {' % name, '};'):
+        typename = adjust_type_name(name)
+        with Indent(self, 'struct %s {' % typename, '};'):
             for field in fields:
                 self.write('%s %s{};' % field)
-        return [(name + '_t', name)]
+        return [(typename, name)]
 
     def copy_case(self, case, switch_name):
         op = 'CaseEq' if case.type.is_case else 'CaseAnd'

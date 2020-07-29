@@ -463,6 +463,13 @@ const DisplayItemClient* NGInlineCursorPosition::GetDisplayItemClient() const {
   return nullptr;
 }
 
+const DisplayItemClient* NGInlineCursorPosition::GetSelectionDisplayItemClient()
+    const {
+  if (const auto* client = GetLayoutObject()->GetSelectionDisplayItemClient())
+    return client;
+  return GetDisplayItemClient();
+}
+
 wtf_size_t NGInlineCursorPosition::FragmentId() const {
   if (paint_fragment_)
     return 0;

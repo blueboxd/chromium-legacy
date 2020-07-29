@@ -356,7 +356,7 @@ TEST_F(SecurityKeyIpcServerTest,
 }
 
 // Flaky on mac, https://crbug.com/936583
-#if defined(OS_MACOSX)
+#if defined(OS_APPLE)
 #define MAYBE_NoSecurityKeyRequestTimeout DISABLED_NoSecurityKeyRequestTimeout
 #else
 #define MAYBE_NoSecurityKeyRequestTimeout NoSecurityKeyRequestTimeout
@@ -468,7 +468,7 @@ TEST_F(SecurityKeyIpcServerTest, SendResponseTimeout) {
 // because the channel shutdown is a series of asynchronous tasks posted on the
 // IO thread, and there is not a way to synchronize it with the test main
 // thread.
-#if !defined(OS_MACOSX)
+#if !defined(OS_APPLE)
 TEST_F(SecurityKeyIpcServerTest, CleanupPendingConnection) {
   // Test that servers correctly close pending OS connections on
   // |server_name|. If multiple servers do remain, the client may happen to
@@ -521,7 +521,7 @@ TEST_F(SecurityKeyIpcServerTest, CleanupPendingConnection) {
   // Typically the client will be the one to close the connection.
   fake_ipc_client.CloseIpcConnection();
 }
-#endif  // defined(OS_MACOSX)
+#endif  // defined(OS_APPLE)
 
 #if defined(OS_WIN)
 TEST_F(SecurityKeyIpcServerTest, IpcConnectionFailsFromInvalidSession) {

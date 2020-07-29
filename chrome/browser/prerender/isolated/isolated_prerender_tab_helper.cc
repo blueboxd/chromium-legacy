@@ -278,7 +278,7 @@ void IsolatedPrerenderTabHelper::DidStartNavigation(
   }
 
   // User is navigating, don't bother prefetching further.
-  page_->url_loader_.reset();
+  page_->url_loaders_.clear();
 
   if (page_->srp_metrics_->prefetch_attempted_count_ > 0) {
     UMA_HISTOGRAM_COUNTS_100(
@@ -552,14 +552,12 @@ IsolatedPrerenderTabHelper::CopyPrefetchResponseForNSP(const GURL& url) {
 }
 
 bool IsolatedPrerenderTabHelper::PrefetchingActive() const {
-  return page_ && page_->url_loader_;
+  return page_ && !page_->url_loaders_.empty();
 }
 
 void IsolatedPrerenderTabHelper::Prefetch() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   DCHECK(IsolatedPrerenderIsEnabled());
-
-  page_->url_loader_.reset();
 
   if (!page_->srp_metrics_->navigation_to_prefetch_start_.has_value()) {
     page_->srp_metrics_->navigation_to_prefetch_start_ =
@@ -639,23 +637,26 @@ void IsolatedPrerenderTabHelper::Prefetch() {
             policy_exception_justification: "Not implemented."
         })");
 
-  page_->url_loader_ =
+  std::unique_ptr<network::SimpleURLLoader> loader =
       network::SimpleURLLoader::Create(std::move(request), traffic_annotation);
 
-  // base::Unretained is safe because |page_->url_loader_| is owned by |this|.
-  page_->url_loader_->SetOnRedirectCallback(
+  // base::Unretained is safe because |loader| is owned by |this|.
+  loader->SetOnRedirectCallback(
       base::BindRepeating(&IsolatedPrerenderTabHelper::OnPrefetchRedirect,
-                          base::Unretained(this), url));
-  page_->url_loader_->SetAllowHttpErrorResults(true);
-  page_->url_loader_->SetTimeoutDuration(IsolatedPrefetchTimeoutDuration());
-  page_->url_loader_->DownloadToString(
+                          base::Unretained(this), loader.get(), url));
+  loader->SetAllowHttpErrorResults(true);
+  loader->SetTimeoutDuration(IsolatedPrefetchTimeoutDuration());
+  loader->DownloadToString(
       GetURLLoaderFactory(),
       base::BindOnce(&IsolatedPrerenderTabHelper::OnPrefetchComplete,
-                     base::Unretained(this), url, isolation_info),
+                     base::Unretained(this), loader.get(), url, isolation_info),
       1024 * 1024 * 5 /* 5MB */);
+
+  page_->url_loaders_.emplace(std::move(loader));
 }
 
 void IsolatedPrerenderTabHelper::OnPrefetchRedirect(
+    network::SimpleURLLoader* loader,
     const GURL& original_url,
     const net::RedirectInfo& redirect_info,
     const network::mojom::URLResponseHead& response_head,
@@ -680,10 +681,14 @@ void IsolatedPrerenderTabHelper::OnPrefetchRedirect(
                      weak_factory_.GetWeakPtr()));
 
   // Cancels the current request.
+  DCHECK(page_->url_loaders_.find(loader) != page_->url_loaders_.end());
+  page_->url_loaders_.erase(page_->url_loaders_.find(loader));
+
   Prefetch();
 }
 
 void IsolatedPrerenderTabHelper::OnPrefetchComplete(
+    network::SimpleURLLoader* loader,
     const GURL& url,
     const net::IsolationInfo& isolation_info,
     std::unique_ptr<std::string> body) {
@@ -691,27 +696,28 @@ void IsolatedPrerenderTabHelper::OnPrefetchComplete(
   DCHECK(PrefetchingActive());
 
   base::UmaHistogramSparse("IsolatedPrerender.Prefetch.Mainframe.NetError",
-                           std::abs(page_->url_loader_->NetError()));
+                           std::abs(loader->NetError()));
 
-  if (page_->url_loader_->NetError() != net::OK) {
+  if (loader->NetError() != net::OK) {
     OnPrefetchStatusUpdate(url, PrefetchStatus::kPrefetchFailedNetError);
 
     for (auto& observer : observer_list_) {
-      observer.OnPrefetchCompletedWithError(url,
-                                            page_->url_loader_->NetError());
+      observer.OnPrefetchCompletedWithError(url, loader->NetError());
     }
   }
 
-  if (page_->url_loader_->NetError() == net::OK && body &&
-      page_->url_loader_->ResponseInfo()) {
-    network::mojom::URLResponseHeadPtr head =
-        page_->url_loader_->ResponseInfo()->Clone();
+  if (loader->NetError() == net::OK && body && loader->ResponseInfo()) {
+    network::mojom::URLResponseHeadPtr head = loader->ResponseInfo()->Clone();
 
     DCHECK(!head->proxy_server.is_direct());
 
     HandlePrefetchResponse(url, isolation_info, std::move(head),
                            std::move(body));
   }
+
+  DCHECK(page_->url_loaders_.find(loader) != page_->url_loaders_.end());
+  page_->url_loaders_.erase(page_->url_loaders_.find(loader));
+
   Prefetch();
 }
 

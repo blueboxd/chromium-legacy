@@ -19,7 +19,7 @@
 #include "net/test/embedded_test_server/embedded_test_server.h"
 #include "ui/base/ui_base_features.h"
 
-#if defined(OS_MACOSX)
+#if defined(OS_MAC)
 #include "ui/base/test/scoped_fake_nswindow_fullscreen.h"
 #endif
 
@@ -108,7 +108,7 @@ class KeyboardLockInteractiveBrowserTest
   base::test::ScopedFeatureList scoped_feature_list_;
   net::EmbeddedTestServer https_test_server_;
 
-#if defined(OS_MACOSX)
+#if defined(OS_MAC)
   ui::test::ScopedFakeNSWindowFullscreen fake_fullscreen_;
 #endif
 
@@ -336,7 +336,7 @@ IN_PROC_BROWSER_TEST_F(KeyboardLockInteractiveBrowserTest,
   ASSERT_FALSE(IsKeyboardLockActive());
 }
 
-#if defined(OS_MACOSX)
+#if defined(OS_MAC)
 // TODO(crbug.com/837438): Enable once browser fullscreen is reliable in tests.
 #define MAYBE_RequestedButNotActiveInBrowserFullscreen \
   DISABLED_RequestedButNotActiveInBrowserFullscreen

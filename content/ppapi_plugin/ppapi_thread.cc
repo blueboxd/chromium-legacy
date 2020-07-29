@@ -61,7 +61,7 @@
 #include "sandbox/win/src/sandbox.h"
 #endif
 
-#if defined(OS_MACOSX)
+#if defined(OS_MAC)
 #include "sandbox/mac/seatbelt_exec.h"
 #endif
 

@@ -53,6 +53,9 @@ class UpdateClientImpl : public UpdateClient {
                          const base::Version& version,
                          int reason,
                          Callback callback) override;
+  void SendRegistrationPing(const std::string& id,
+                            const base::Version& version,
+                            Callback callback) override;
 
  private:
   ~UpdateClientImpl() override;

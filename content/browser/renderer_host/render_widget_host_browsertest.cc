@@ -526,7 +526,7 @@ IN_PROC_BROWSER_TEST_F(RenderWidgetHostSitePerProcessTest,
 // where popup menus don't create a popup RenderWidget, but rather they trigger
 // a FrameHostMsg_ShowPopup to ask the browser to build and display the actual
 // popup using native controls.
-#if !defined(OS_MACOSX) && !defined(OS_ANDROID)
+#if !defined(OS_MAC) && !defined(OS_ANDROID)
 IN_PROC_BROWSER_TEST_F(RenderWidgetHostSitePerProcessTest,
                        BrowserClosesSelectPopup) {
   // Navigate to a page with a <select> element.

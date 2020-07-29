@@ -72,7 +72,7 @@ TEST_F(GoogleUpdateTest, IsOrganicFirstRunBrandCodes) {
   EXPECT_TRUE(google_brand::IsOrganicFirstRun("EUBA"));
   EXPECT_TRUE(google_brand::IsOrganicFirstRun("GGRA"));
 
-#if defined(OS_MACOSX)
+#if defined(OS_MAC)
   // An empty brand string on Mac is used for channels other than stable,
   // which are always organic.
   EXPECT_TRUE(google_brand::IsOrganicFirstRun(""));

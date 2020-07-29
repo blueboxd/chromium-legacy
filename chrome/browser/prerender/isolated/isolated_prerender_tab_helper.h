@@ -10,6 +10,7 @@
 #include <memory>
 #include <vector>
 
+#include "base/containers/unique_ptr_adapters.h"
 #include "base/macros.h"
 #include "base/memory/scoped_refptr.h"
 #include "base/memory/weak_ptr.h"
@@ -337,8 +338,11 @@ class IsolatedPrerenderTabHelper
     // prediction.
     std::map<GURL, size_t> original_prediction_ordering_;
 
-    // The url loader that does all the prefetches. Set only when active.
-    std::unique_ptr<network::SimpleURLLoader> url_loader_;
+    // The url loaders that do all the prefetches. Only active loaders are in
+    // this set.
+    std::set<std::unique_ptr<network::SimpleURLLoader>,
+             base::UniquePtrComparator>
+        url_loaders_;
 
     // An ordered list of the URLs to prefetch.
     std::vector<GURL> urls_to_prefetch_;
@@ -398,15 +402,17 @@ class IsolatedPrerenderTabHelper
   // Prefetches the front of |urls_to_prefetch_|.
   void Prefetch();
 
-  // Called when |url_loader_| encounters a redirect.
-  void OnPrefetchRedirect(const GURL& original_url,
+  // Called when |loader| encounters a redirect.
+  void OnPrefetchRedirect(network::SimpleURLLoader* loader,
+                          const GURL& original_url,
                           const net::RedirectInfo& redirect_info,
                           const network::mojom::URLResponseHead& response_head,
                           std::vector<std::string>* removed_headers);
 
-  // Called when |url_loader_| completes. |url| is the url that was requested
+  // Called when |loader| completes. |url| is the url that was requested
   // and |key| is the temporary NIK used during the request.
-  void OnPrefetchComplete(const GURL& url,
+  void OnPrefetchComplete(network::SimpleURLLoader* loader,
+                          const GURL& url,
                           const net::IsolationInfo& isolation_info,
                           std::unique_ptr<std::string> response_body);
 

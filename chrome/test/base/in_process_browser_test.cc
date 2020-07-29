@@ -73,7 +73,7 @@
 #include "net/test/embedded_test_server/embedded_test_server.h"
 #include "ui/base/ui_base_features.h"
 
-#if defined(OS_MACOSX)
+#if defined(OS_MAC)
 #include "base/mac/scoped_nsautorelease_pool.h"
 #include "chrome/test/base/scoped_bundle_swizzler_mac.h"
 #endif
@@ -201,7 +201,7 @@ void InProcessBrowserTest::Initialize() {
   CHECK(base::PathService::Override(chrome::DIR_TEST_DATA,
                                     src_dir.Append(GetChromeTestDataDir())));
 
-#if defined(OS_MACOSX)
+#if defined(OS_MAC)
   bundle_swizzler_ = std::make_unique<ScopedBundleSwizzlerMac>();
 #endif
 }
@@ -283,7 +283,7 @@ void InProcessBrowserTest::SetUp() {
   // Cookies). Without this on Mac and Linux, many tests will hang waiting for a
   // user to approve KeyChain/kwallet access. On Windows this is not needed as
   // OS APIs never block.
-#if defined(OS_MACOSX) || defined(OS_LINUX)
+#if defined(OS_MAC) || defined(OS_LINUX)
   OSCryptMocker::SetUp();
 #endif
 
@@ -343,7 +343,7 @@ void InProcessBrowserTest::TearDown() {
   com_initializer_.reset();
 #endif
   BrowserTestBase::TearDown();
-#if defined(OS_MACOSX) || defined(OS_LINUX)
+#if defined(OS_MAC) || defined(OS_LINUX)
   OSCryptMocker::TearDown();
 #endif
 
@@ -365,7 +365,7 @@ void InProcessBrowserTest::CloseBrowserSynchronously(Browser* browser) {
 
 void InProcessBrowserTest::CloseBrowserAsynchronously(Browser* browser) {
   browser->window()->Close();
-#if defined(OS_MACOSX)
+#if defined(OS_MAC)
   // BrowserWindowController depends on the auto release pool being recycled
   // in the message loop to delete itself.
   AutoreleasePool()->Recycle();
@@ -374,7 +374,7 @@ void InProcessBrowserTest::CloseBrowserAsynchronously(Browser* browser) {
 
 void InProcessBrowserTest::CloseAllBrowsers() {
   chrome::CloseAllBrowsers();
-#if defined(OS_MACOSX)
+#if defined(OS_MAC)
   // BrowserWindowController depends on the auto release pool being recycled
   // in the message loop to delete itself.
   AutoreleasePool()->Recycle();
@@ -427,7 +427,7 @@ void InProcessBrowserTest::SetScreenInstance() {
 #endif
 }
 
-#if !defined(OS_MACOSX)
+#if !defined(OS_MAC)
 void InProcessBrowserTest::OpenDevToolsWindow(
     content::WebContents* web_contents) {
   ASSERT_FALSE(content::DevToolsAgentHost::HasFor(web_contents));
@@ -479,7 +479,7 @@ Browser* InProcessBrowserTest::CreateBrowserForApp(const std::string& app_name,
   AddBlankTabAndShow(browser);
   return browser;
 }
-#endif  // !defined(OS_MACOSX)
+#endif  // !defined(OS_MAC)
 
 void InProcessBrowserTest::AddBlankTabAndShow(Browser* browser) {
   content::WindowedNotificationObserver observer(
@@ -492,7 +492,7 @@ void InProcessBrowserTest::AddBlankTabAndShow(Browser* browser) {
   browser->window()->Show();
 }
 
-#if !defined(OS_MACOSX)
+#if !defined(OS_MAC)
 base::CommandLine InProcessBrowserTest::GetCommandLineForRelaunch() {
   base::CommandLine new_command_line(
       base::CommandLine::ForCurrentProcess()->GetProgram());
@@ -547,7 +547,7 @@ void InProcessBrowserTest::PreRunTestOnMainThread() {
   ASSERT_TRUE(storage_monitor::TestStorageMonitor::CreateForBrowserTests());
 #endif
 
-#if defined(OS_MACOSX)
+#if defined(OS_MAC)
   // On Mac, without the following autorelease pool, code which is directly
   // executed (as opposed to executed inside a message loop) would autorelease
   // objects into a higher-level pool. This pool is not recycled in-sync with
@@ -565,13 +565,13 @@ void InProcessBrowserTest::PreRunTestOnMainThread() {
   if (browser_ && global_browser_set_up_function_)
     ASSERT_TRUE(global_browser_set_up_function_(browser_));
 
-#if defined(OS_MACOSX)
+#if defined(OS_MAC)
   autorelease_pool_->Recycle();
 #endif
 }
 
 void InProcessBrowserTest::PostRunTestOnMainThread() {
-#if defined(OS_MACOSX)
+#if defined(OS_MAC)
   autorelease_pool_->Recycle();
 #endif
 
@@ -608,7 +608,7 @@ void InProcessBrowserTest::QuitBrowsers() {
       FROM_HERE, base::BindOnce(&chrome::AttemptExit));
   RunUntilBrowserProcessQuits();
 
-#if defined(OS_MACOSX)
+#if defined(OS_MAC)
   // chrome::AttemptExit() will attempt to close all browsers by deleting
   // their tab contents. The last tab contents being removed triggers closing of
   // the browser window.

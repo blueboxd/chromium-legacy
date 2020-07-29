@@ -228,12 +228,12 @@ TEST_F(RemoteCopyMessageHandlerTest, ProgressNotificationWithProgressFlag) {
                 base::ASCIIToUTF16(kDeviceNameInMessage)),
             notification.title());
 
-#if defined(OS_MACOSX)
+#if defined(OS_MAC)
   // On macOS the progress status is shown in the message.
   base::string16 progress_status = notification.message();
 #else
   base::string16 progress_status = notification.progress_status();
-#endif  // defined(OS_MACOSX)
+#endif  // defined(OS_MAC)
 
 #if defined(OS_WIN)
   base::string16 expected_status = l10n_util::GetStringUTF16(
@@ -282,12 +282,12 @@ TEST_F(RemoteCopyMessageHandlerTest, ImageNotificationWithoutProgressFlag) {
   // Expect an image notification showing the image.
   auto notification = GetImageNotification();
 
-#if defined(OS_MACOSX)
+#if defined(OS_MAC)
   // On macOS we show the image as the icon instead.
   EXPECT_FALSE(notification.icon().IsEmpty());
 #else
   EXPECT_FALSE(notification.image().IsEmpty());
-#endif  // defined(OS_MACOSX)
+#endif  // defined(OS_MAC)
 
   // Calling GetDefaultStoragePartition creates tasks that need to run before
   // the ScopedFeatureList is destroyed. See crbug.com/1060869
@@ -366,12 +366,12 @@ TEST_F(RemoteCopyMessageHandlerTest, ImageNotificationWithProgressFlag) {
   // Expect an image notification showing the image.
   auto notification = GetImageNotification();
 
-#if defined(OS_MACOSX)
+#if defined(OS_MAC)
   // On macOS we show the image as the icon instead.
   EXPECT_FALSE(notification.icon().IsEmpty());
 #else
   EXPECT_FALSE(notification.image().IsEmpty());
-#endif  // defined(OS_MACOSX)
+#endif  // defined(OS_MAC)
 
   // Calling GetDefaultStoragePartition creates tasks that need to run before
   // the ScopedFeatureList is destroyed. See crbug.com/1060869

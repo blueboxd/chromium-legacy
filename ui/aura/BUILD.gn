@@ -306,6 +306,10 @@ executable("aura_demo") {
 }
 
 test("aura_unittests") {
+  if ((is_linux && !is_chromeos) || chromeos_is_browser_only) {
+    use_xvfb = true
+  }
+
   sources = [
     "../compositor_extra/shadow_unittest.cc",
     "gestures/gesture_recognizer_unittest.cc",

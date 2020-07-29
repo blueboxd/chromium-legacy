@@ -10,12 +10,12 @@ namespace sandbox {
 namespace policy {
 namespace features {
 
-#if !defined(OS_MACOSX)
+#if !defined(OS_MAC)
 // Enables network service sandbox.
 // (Only causes an effect when feature kNetworkService is enabled.)
 const base::Feature kNetworkServiceSandbox{"NetworkServiceSandbox",
                                            base::FEATURE_DISABLED_BY_DEFAULT};
-#endif  // !defined(OS_MACOSX)
+#endif  // !defined(OS_MAC)
 
 #if defined(OS_WIN)
 // Emergency "off switch" for new Windows sandbox security mitigation,

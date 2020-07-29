@@ -29,6 +29,8 @@ const char kPrefActiveVersion[] = "active_version";
 
 }  // namespace
 
+const char kPrefUpdateTime[] = "update_time";
+
 UpdaterPrefsImpl::UpdaterPrefsImpl(std::unique_ptr<ScopedPrefsLock> lock,
                                    std::unique_ptr<PrefService> prefs)
     : lock_(std::move(lock)), prefs_(std::move(prefs)) {}
@@ -81,6 +83,7 @@ std::unique_ptr<GlobalPrefs> CreateGlobalPrefs() {
   update_client::RegisterPrefs(pref_registry.get());
   pref_registry->RegisterBooleanPref(kPrefSwapping, false);
   pref_registry->RegisterStringPref(kPrefActiveVersion, "0");
+  pref_registry->RegisterTimePref(kPrefUpdateTime, base::Time());
 
   return std::make_unique<UpdaterPrefsImpl>(
       std::move(lock), pref_service_factory.Create(pref_registry));
@@ -98,6 +101,7 @@ std::unique_ptr<LocalPrefs> CreateLocalPrefs() {
   auto pref_registry = base::MakeRefCounted<PrefRegistrySimple>();
   update_client::RegisterPrefs(pref_registry.get());
   pref_registry->RegisterBooleanPref(kPrefQualified, false);
+  pref_registry->RegisterTimePref(kPrefUpdateTime, base::Time());
 
   return std::make_unique<UpdaterPrefsImpl>(
       nullptr, pref_service_factory.Create(pref_registry));

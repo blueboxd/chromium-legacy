@@ -153,9 +153,9 @@ class ForceInstalledMetricsTest : public testing::Test,
   }
 
   void SetupForceList() {
-    auto list = std::make_unique<base::Value>(base::Value::Type::LIST);
-    list->Append(base::StrCat({kExtensionId1, ";", kExtensionUpdateUrl}));
-    list->Append(base::StrCat({kExtensionId2, ";", kExtensionUpdateUrl}));
+    base::Value list(base::Value::Type::LIST);
+    list.Append(base::StrCat({kExtensionId1, ";", kExtensionUpdateUrl}));
+    list.Append(base::StrCat({kExtensionId2, ";", kExtensionUpdateUrl}));
     std::unique_ptr<base::Value> dict =
         DictionaryBuilder()
             .Set(kExtensionId1,

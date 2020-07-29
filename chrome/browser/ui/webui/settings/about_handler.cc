@@ -331,7 +331,7 @@ void AboutHandler::RegisterMessages() {
       base::BindRepeating(&AboutHandler::HandleCheckInternetConnection,
                           base::Unretained(this)));
 #endif
-#if defined(OS_MACOSX)
+#if defined(OS_MAC)
   web_ui()->RegisterMessageCallback(
       "promoteUpdater", base::BindRepeating(&AboutHandler::PromoteUpdater,
                                             base::Unretained(this)));
@@ -406,7 +406,7 @@ void AboutHandler::RefreshUpdateStatus() {
 #endif
 }
 
-#if defined(OS_MACOSX)
+#if defined(OS_MAC)
 void AboutHandler::PromoteUpdater(const base::ListValue* args) {
   version_updater_->PromoteUpdater();
 }
@@ -639,7 +639,7 @@ void AboutHandler::OnGetEndOfLifeInfo(
 void AboutHandler::RequestUpdate() {
   version_updater_->CheckForUpdate(
       base::Bind(&AboutHandler::SetUpdateStatus, base::Unretained(this)),
-#if defined(OS_MACOSX)
+#if defined(OS_MAC)
       base::Bind(&AboutHandler::SetPromotionState, base::Unretained(this)));
 #else
       VersionUpdater::PromoteCallback());
@@ -681,7 +681,7 @@ void AboutHandler::SetUpdateStatus(VersionUpdater::Status status,
   FireWebUIListener("update-status-changed", *event);
 }
 
-#if defined(OS_MACOSX)
+#if defined(OS_MAC)
 void AboutHandler::SetPromotionState(VersionUpdater::PromotionState state) {
   // Worth noting: PROMOTE_DISABLED indicates that promotion is possible,
   // there's just something else going on right now (e.g. checking for update).
@@ -707,7 +707,7 @@ void AboutHandler::SetPromotionState(VersionUpdater::PromotionState state) {
 
   FireWebUIListener("promotion-state-changed", promo_state);
 }
-#endif  // defined(OS_MACOSX)
+#endif  // defined(OS_MAC)
 
 #if defined(OS_CHROMEOS)
 void AboutHandler::OnRegulatoryLabelDirFound(

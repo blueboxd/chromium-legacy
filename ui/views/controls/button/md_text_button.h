@@ -64,7 +64,7 @@ class VIEWS_EXPORT MdTextButton : public LabelButton {
   gfx::Insets CalculateDefaultPadding() const;
 
   void UpdateTextColor();
-  virtual void UpdateBackgroundColor();
+  void UpdateBackgroundColor() override;
   void UpdateColors();
 
   // True if this button uses prominent styling (blue fill, etc.).

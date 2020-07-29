@@ -119,6 +119,7 @@ extern const base::Feature kTabSwitcherOnReturn;
 extern const base::Feature kTabToGTSAnimation;
 extern const base::Feature kTestDefaultDisabled;
 extern const base::Feature kTestDefaultEnabled;
+extern const base::Feature kTrustedWebActivityQualityEnforcement;
 extern const base::Feature kTrustedWebActivityNewDisclosure;
 extern const base::Feature kTrustedWebActivityLocationDelegation;
 extern const base::Feature kTrustedWebActivityPostMessage;

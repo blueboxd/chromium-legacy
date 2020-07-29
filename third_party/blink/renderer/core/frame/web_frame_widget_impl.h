@@ -111,6 +111,8 @@ class WebFrameWidgetImpl final : public WebFrameWidgetBase,
   void DidDetachLocalFrameTree() override;
   WebInputMethodController* GetActiveWebInputMethodController() const override;
   bool ScrollFocusedEditableElementIntoView() override;
+  void SetZoomLevelForTesting(double zoom_level) override;
+  void ResetZoomLevelForTesting() override;
 
   Frame* FocusedCoreFrame() const;
 

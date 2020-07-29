@@ -50,7 +50,7 @@ TEST(PrintBackendCupsTest, PrinterBasicInfoFromCUPS) {
 
   int num_options = 0;
   cups_option_t* options = nullptr;
-#if defined(OS_MACOSX)
+#if defined(OS_MAC)
   num_options =
       cupsAddOption(kCUPSOptPrinterInfo, "info", num_options, &options);
   num_options = cupsAddOption(kCUPSOptPrinterMakeAndModel, "description",
@@ -68,7 +68,7 @@ TEST(PrintBackendCupsTest, PrinterBasicInfoFromCUPS) {
   cupsFreeDests(/*num_dests=*/1, printer);
 
   EXPECT_EQ(kName, printer_info.printer_name);
-#if defined(OS_MACOSX)
+#if defined(OS_MAC)
   EXPECT_EQ("info", printer_info.display_name);
 #else
   EXPECT_EQ(kName, printer_info.display_name);

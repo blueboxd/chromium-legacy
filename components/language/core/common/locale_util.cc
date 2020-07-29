@@ -4,13 +4,10 @@
 
 #include "components/language/core/common/locale_util.h"
 
-#include <algorithm>
-#include <set>
-#include <vector>
+#include <stddef.h>
 
-#include "base/command_line.h"
-#include "base/macros.h"
-#include "base/strings/string_split.h"
+#include <algorithm>
+
 #include "ui/base/l10n/l10n_util.h"
 
 namespace language {
@@ -52,77 +49,51 @@ const LocaleUIFallbackPair kLocaleUIFallbackTable[] = {
     // clang-format on
 };
 
-bool LocaleCompare(const LocaleUIFallbackPair& p1, const std::string& p2) {
-  return p1.chosen_locale < p2;
-}
-
-bool GetUIFallbackLocale(const std::string& input, std::string* const output) {
-  *output = input;
-  const auto* it =
-      std::lower_bound(std::begin(kLocaleUIFallbackTable),
-                       std::end(kLocaleUIFallbackTable), input, LocaleCompare);
-  if (it != std::end(kLocaleUIFallbackTable) && it->chosen_locale == input) {
-    *output = it->fallback_locale;
-    return true;
-  }
-  return false;
+base::StringPiece GetUIFallbackLocale(base::StringPiece input) {
+  const auto* it = std::lower_bound(
+      std::begin(kLocaleUIFallbackTable), std::end(kLocaleUIFallbackTable),
+      input, [](const LocaleUIFallbackPair& p1, base::StringPiece p2) {
+        return p1.chosen_locale < p2;
+      });
+  if (it != std::end(kLocaleUIFallbackTable) && it->chosen_locale == input)
+    return it->fallback_locale;
+  return input;
 }
 
 // Checks if |locale| is one of the actual locales supported as a UI languages.
-bool IsAvailableUILocale(const std::string& locale) {
-  const std::vector<std::string>& ui_locales = l10n_util::GetAvailableLocales();
-  return std::find(ui_locales.begin(), ui_locales.end(), locale) !=
-         ui_locales.end();
-}
-
-}  // namespace
-
-void SplitIntoMainAndTail(const std::string& locale,
-                          std::string* main_part,
-                          std::string* tail_part) {
-  DCHECK(main_part);
-  DCHECK(tail_part);
-
-  std::vector<base::StringPiece> chunks = base::SplitStringPiece(
-      locale, "-", base::TRIM_WHITESPACE, base::SPLIT_WANT_ALL);
-  if (chunks.empty())
-    return;
-
-  main_part->assign(chunks[0].data(), chunks[0].size());
-  *tail_part = locale.substr(main_part->size());
-}
-
-std::string ExtractBaseLanguage(const std::string& language_code) {
-  std::string base;
-  std::string tail;
-  SplitIntoMainAndTail(language_code, &base, &tail);
-  return base;
-}
-
-bool ContainsSameBaseLanguage(const std::vector<std::string>& list,
-                              const std::string& language_code) {
-  const std::string base_language = ExtractBaseLanguage(language_code);
-  for (const auto& item : list) {
-    const std::string compare_base = ExtractBaseLanguage(item);
-    if (compare_base == base_language)
+bool IsAvailableUILocale(base::StringPiece locale) {
+  for (const auto& ui_locale : l10n_util::GetAvailableLocales()) {
+    if (ui_locale == locale)
       return true;
   }
-
   return false;
 }
 
 bool ConvertToFallbackUILocale(std::string* input_locale) {
   // 1) Convert input to a fallback, if available.
-  std::string fallback;
-  GetUIFallbackLocale(*input_locale, &fallback);
+  base::StringPiece fallback = GetUIFallbackLocale(*input_locale);
 
   // 2) Check if input is part of the UI languages.
   if (IsAvailableUILocale(fallback)) {
-    *input_locale = fallback;
+    *input_locale = std::string(fallback);
     return true;
   }
 
   return false;
+}
+
+}  // namespace
+
+std::pair<base::StringPiece, base::StringPiece> SplitIntoMainAndTail(
+    base::StringPiece locale) {
+  size_t hyphen_pos = static_cast<size_t>(
+      std::find(locale.begin(), locale.end(), '-') - locale.begin());
+  return std::make_pair(locale.substr(0U, hyphen_pos),
+                        locale.substr(hyphen_pos));
+}
+
+base::StringPiece ExtractBaseLanguage(base::StringPiece language_code) {
+  return SplitIntoMainAndTail(language_code).first;
 }
 
 bool ConvertToActualUILocale(std::string* input_locale) {
@@ -130,9 +101,9 @@ bool ConvertToActualUILocale(std::string* input_locale) {
     return true;
 
   // Check if the base language of the input is part of the UI languages.
-  const std::string base = ExtractBaseLanguage(*input_locale);
+  base::StringPiece base = ExtractBaseLanguage(*input_locale);
   if (base != *input_locale && IsAvailableUILocale(base)) {
-    *input_locale = base;
+    *input_locale = std::string(base);
     return true;
   }
 

@@ -15,7 +15,7 @@
 #include "third_party/blink/renderer/platform/instrumentation/canvas_memory_dump_provider.h"
 #include "third_party/skia/include/core/SkSurface.h"
 
-class GrContext;
+class GrDirectContext;
 
 namespace cc {
 class ImageDecodeCache;
@@ -221,7 +221,7 @@ class PLATFORM_EXPORT CanvasResourceProvider
 
   gpu::gles2::GLES2Interface* ContextGL() const;
   gpu::raster::RasterInterface* RasterInterface() const;
-  GrContext* GetGrContext() const;
+  GrDirectContext* GetGrContext() const;
   base::WeakPtr<WebGraphicsContext3DProviderWrapper> ContextProviderWrapper() {
     return context_provider_wrapper_;
   }

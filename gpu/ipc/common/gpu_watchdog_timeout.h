@@ -17,7 +17,7 @@ namespace gpu {
 #if defined(CYGPROFILE_INSTRUMENTATION)
 constexpr base::TimeDelta kGpuWatchdogTimeout =
     base::TimeDelta::FromSeconds(30);
-#elif defined(OS_MACOSX)
+#elif defined(OS_MAC)
 constexpr base::TimeDelta kGpuWatchdogTimeout =
     base::TimeDelta::FromSeconds(25);
 #elif defined(OS_WIN)

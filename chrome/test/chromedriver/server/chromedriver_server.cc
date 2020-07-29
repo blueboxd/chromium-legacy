@@ -357,7 +357,7 @@ void StartServerOnIOThread(uint16_t port,
 // to both IPv4 and IPv6 ports, or only IPv6 port. Listening to IPv4 first
 // ensures that we successfully listen to both IPv4 and IPv6.
 
-#if defined(OS_MACOSX)
+#if defined(OS_MAC)
   temp_server.reset(
       new HttpServer(url_base, whitelisted_ips, handle_request_func));
   int ipv4_status = temp_server->Start(port, allow_remote, true);
@@ -385,7 +385,7 @@ void StartServerOnIOThread(uint16_t port,
     exit(1);
   }
 
-#if !defined(OS_MACOSX)
+#if !defined(OS_MAC)
   // In some cases, binding to an IPv6 port also binds to the same IPv4 port.
   // The following code determines if it is necessary to bind to IPv4 port.
   enum class NeedIPv4 { NOT_NEEDED, UNKNOWN, NEEDED } need_ipv4;
@@ -440,7 +440,7 @@ void StartServerOnIOThread(uint16_t port,
       }
     }
   }
-#endif  // !defined(OS_MACOSX)
+#endif  // !defined(OS_MAC)
 
   if (ipv4_status != net::OK && ipv6_status != net::OK) {
     printf("Unable to start server with either IPv4 or IPv6. Exiting...\n");

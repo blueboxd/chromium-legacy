@@ -9,6 +9,7 @@
 #include "base/check.h"
 #include "base/notreached.h"
 #include "ui/base/x/selection_utils.h"
+#include "ui/gfx/x/xproto.h"
 
 namespace ui {
 
@@ -35,17 +36,11 @@ std::unique_ptr<OSExchangeDataProvider> X11OSExchangeDataProviderOzone::Clone()
   return std::move(ret);
 }
 
-bool X11OSExchangeDataProviderOzone::DispatchXEvent(x11::Event* x11_event) {
-  XEvent* xev = &x11_event->xlib_event();
-  if (xev->xany.window != static_cast<uint32_t>(x_window()))
-    return false;
-
-  switch (xev->type) {
-    case x11::SelectionRequestEvent::opcode:
-      selection_owner().OnSelectionRequest(*x11_event);
-      return true;
-    default:
-      NOTIMPLEMENTED();
+bool X11OSExchangeDataProviderOzone::DispatchXEvent(x11::Event* xev) {
+  auto* selection_request = xev->As<x11::SelectionRequestEvent>();
+  if (selection_request && selection_request->owner == x_window()) {
+    selection_owner().OnSelectionRequest(*xev);
+    return true;
   }
   return false;
 }

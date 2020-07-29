@@ -15,7 +15,7 @@
 #include "ui/base/test/ui_controls.h"
 #include "ui/events/event_constants.h"
 
-#if defined(OS_MACOSX)
+#if defined(OS_MAC)
 #include <Carbon/Carbon.h>
 #include "base/mac/mac_util.h"
 #endif
@@ -62,7 +62,7 @@ IN_PROC_BROWSER_TEST_F(GlobalCommandsApiTest, MAYBE_GlobalCommand) {
   // Activate the shortcut (Ctrl+Shift+8). This should have an effect.
   ASSERT_TRUE(ui_test_utils::SendKeyPressSync(
       incognito_browser, ui::VKEY_8, true, true, false, false));
-#elif defined(OS_MACOSX)
+#elif defined(OS_MAC)
   // ui_test_utils::SendGlobalKeyEventsAndWait() hangs the test on macOS 10.14 -
   // https://crbug.com/904403
   if (base::mac::IsAtLeastOS10_14())

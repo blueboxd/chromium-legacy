@@ -30,7 +30,7 @@ webrtc::DesktopCaptureOptions CreateDesktopCaptureOptions() {
   } else {
     options.set_allow_use_magnification_api(true);
   }
-#elif defined(OS_MACOSX)
+#elif defined(OS_MAC)
   if (base::FeatureList::IsEnabled(features::kIOSurfaceCapturer)) {
     options.set_allow_iosurface(true);
   }

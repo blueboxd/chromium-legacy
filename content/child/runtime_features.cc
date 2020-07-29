@@ -75,7 +75,7 @@ void SetRuntimeFeatureDefaultsForPlatform(
   }
 #endif
 
-#if defined(OS_MACOSX)
+#if defined(OS_MAC)
   const bool enable_canvas_2d_image_chromium =
       command_line.HasSwitch(
           blink::switches::kEnableGpuMemoryBufferCompositorResources) &&
@@ -88,7 +88,7 @@ void SetRuntimeFeatureDefaultsForPlatform(
   WebRuntimeFeatures::EnableCanvas2dImageChromium(
       enable_canvas_2d_image_chromium);
 
-#if defined(OS_MACOSX)
+#if defined(OS_MAC)
   const bool enable_web_gl_image_chromium =
       command_line.HasSwitch(
           blink::switches::kEnableGpuMemoryBufferCompositorResources) &&

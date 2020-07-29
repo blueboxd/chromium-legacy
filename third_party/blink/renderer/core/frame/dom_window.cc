@@ -545,10 +545,10 @@ void DOMWindow::DoPostMessage(scoped_refptr<SerializedScriptValue> message,
   if (options->includeUserActivation())
     user_activation = UserActivation::CreateSnapshot(source);
 
-  MessageEvent* event = MessageEvent::Create(
-      std::move(channels), std::move(message),
-      source->GetSecurityOrigin()->ToString(), String(), source,
-      user_activation, options->transferUserActivation());
+  MessageEvent* event =
+      MessageEvent::Create(std::move(channels), std::move(message),
+                           source->GetSecurityOrigin()->ToString(), String(),
+                           source, user_activation);
 
   SchedulePostMessage(event, std::move(target), source);
 }

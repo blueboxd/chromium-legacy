@@ -31,13 +31,13 @@ namespace {
 
 // Whether the NTP post-install UI is enabled. By default, this is limited to
 // Windows, Mac, and ChromeOS, but can be overridden for testing.
-#if defined(OS_WIN) || defined(OS_MACOSX) || defined(OS_CHROMEOS)
+#if defined(OS_WIN) || defined(OS_MAC) || defined(OS_CHROMEOS)
 bool g_ntp_post_install_ui_enabled = true;
 #else
 bool g_ntp_post_install_ui_enabled = false;
 #endif
 
-#if defined(OS_WIN) || defined(OS_MACOSX)
+#if defined(OS_WIN) || defined(OS_MAC)
 void ShowSettingsApiBubble(SettingsApiOverrideType type,
                            Browser* browser) {
   ToolbarActionsModel* model = ToolbarActionsModel::Get(browser->profile());
@@ -65,7 +65,7 @@ void SetNtpPostInstallUiEnabledForTesting(bool enabled) {
 }
 
 void MaybeShowExtensionControlledHomeNotification(Browser* browser) {
-#if defined(OS_WIN) || defined(OS_MACOSX)
+#if defined(OS_WIN) || defined(OS_MAC)
   ShowSettingsApiBubble(BUBBLE_TYPE_HOME_PAGE, browser);
 #endif
 }
@@ -73,7 +73,7 @@ void MaybeShowExtensionControlledHomeNotification(Browser* browser) {
 void MaybeShowExtensionControlledSearchNotification(
     content::WebContents* web_contents,
     AutocompleteMatch::Type match_type) {
-#if defined(OS_WIN) || defined(OS_MACOSX)
+#if defined(OS_WIN) || defined(OS_MAC)
   if (!AutocompleteMatch::IsSearchType(match_type) ||
       match_type == AutocompleteMatchType::SEARCH_OTHER_ENGINE) {
     return;

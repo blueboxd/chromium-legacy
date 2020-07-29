@@ -253,4 +253,22 @@ LocalFrameView* WebViewFrameWidget::GetLocalFrameViewForAnimationScrolling() {
   return nullptr;
 }
 
+void WebViewFrameWidget::SetZoomLevelForTesting(double zoom_level) {
+  DCHECK_NE(zoom_level, -INFINITY);
+  zoom_level_for_testing_ = zoom_level;
+  SetZoomLevel(zoom_level);
+}
+
+void WebViewFrameWidget::ResetZoomLevelForTesting() {
+  zoom_level_for_testing_ = -INFINITY;
+  SetZoomLevel(0);
+}
+
+void WebViewFrameWidget::SetZoomLevel(double zoom_level) {
+  // Override the zoom level with the testing one if necessary
+  if (zoom_level_for_testing_ != -INFINITY)
+    zoom_level = zoom_level_for_testing_;
+  WebFrameWidgetBase::SetZoomLevel(zoom_level);
+}
+
 }  // namespace blink

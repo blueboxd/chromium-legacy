@@ -697,10 +697,8 @@ void GaiaScreenHandler::Initialize() {
   initialized_ = true;
   // This should be called only once on page load.
   AllowJavascript();
-  if (show_on_init_) {
-    show_on_init_ = false;
+  if (show_when_ready_)
     ShowGaiaScreenIfReady();
-  }
 }
 
 void GaiaScreenHandler::RegisterMessages() {
@@ -883,7 +881,7 @@ void GaiaScreenHandler::HandleCompleteAdAuthentication(
   if (LoginDisplayHost::default_host())
     LoginDisplayHost::default_host()->SetDisplayEmail(username);
 
-  populated_account_id_ = AccountId::FromUserEmail(username);
+  set_populated_account(AccountId::FromUserEmail(username));
   DCHECK(authpolicy_login_helper_);
   Key key(password);
   key.SetLabel(kCryptohomeGaiaKeyLabel);
@@ -927,15 +925,6 @@ void GaiaScreenHandler::HandleCompleteAuthentication(
   }
 
   ContinueAuthenticationWhenCookiesAvailable();
-
-  if (test_expects_complete_login_) {
-    VLOG(2) << "Complete test login for " << sanitized_email
-            << ", requested=" << test_user_;
-
-    test_expects_complete_login_ = false;
-    test_user_.clear();
-    test_pass_.clear();
-  }
 }
 
 void GaiaScreenHandler::ContinueAuthenticationWhenCookiesAvailable() {
@@ -1093,7 +1082,7 @@ void GaiaScreenHandler::HandleShowAddUser(const base::ListValue* args) {
   // |args| can be null if it's OOBE.
   if (args)
     args->GetString(0, &email);
-  populated_account_id_ = AccountId::FromUserEmail(email);
+  set_populated_account(AccountId::FromUserEmail(email));
   OnShowAddUser();
 }
 
@@ -1158,8 +1147,7 @@ void GaiaScreenHandler::HandleSecurityTokenPinEntered(
 void GaiaScreenHandler::OnShowAddUser() {
   signin_screen_handler_->is_account_picker_showing_first_time_ = false;
   lock_screen_utils::EnforceDevicePolicyInputMethods(std::string());
-  LoadGaiaAsync(EmptyAccountId());
-  LoginDisplayHost::default_host()->StartWizard(GaiaView::kScreenId);
+  ShowGaiaAsync(EmptyAccountId());
 }
 
 void GaiaScreenHandler::DoCompleteLogin(
@@ -1192,6 +1180,15 @@ void GaiaScreenHandler::DoCompleteLogin(
   }
 
   LoginDisplayHost::default_host()->CompleteLogin(user_context);
+
+  if (test_expects_complete_login_) {
+    VLOG(2) << "Complete test login for " << typed_email
+            << ", requested=" << test_user_;
+
+    test_expects_complete_login_ = false;
+    test_user_.clear();
+    test_pass_.clear();
+  }
 }
 
 void GaiaScreenHandler::StartClearingDnsCache() {
@@ -1273,8 +1270,8 @@ void GaiaScreenHandler::SubmitLoginFormForTest() {
                                      base::NullCallback());
   }
 
-  // Test properties are cleared in HandleCompleteAuthentication because the
-  // form submission might fail and login will not be attempted after reloading
+  // Test properties are cleared in HandleCompleteLogin because the form
+  // submission might fail and login will not be attempted after reloading
   // if they are cleared here.
 }
 
@@ -1286,18 +1283,10 @@ void GaiaScreenHandler::SetSAMLPrincipalsAPIUsed(bool is_third_party_idp,
   RecordAPILogin(is_third_party_idp, is_api_used);
 }
 
-void GaiaScreenHandler::Show() {
-  ShowScreen(GaiaView::kScreenId);
-  hidden_ = false;
-}
-
-void GaiaScreenHandler::Hide() {
-  hidden_ = true;
-}
-
-void GaiaScreenHandler::LoadGaiaAsync(const AccountId& account_id) {
+void GaiaScreenHandler::ShowGaiaAsync(const AccountId& account_id) {
   if (account_id.is_valid())
     populated_account_id_ = account_id;
+  show_when_ready_ = true;
   if (gaia_silent_load_ && !populated_account_id_.is_valid()) {
     dns_cleared_ = true;
     cookies_cleared_ = true;
@@ -1307,11 +1296,6 @@ void GaiaScreenHandler::LoadGaiaAsync(const AccountId& account_id) {
     StartClearingCookies(base::Bind(&GaiaScreenHandler::ShowGaiaScreenIfReady,
                                     weak_factory_.GetWeakPtr()));
   }
-}
-
-void GaiaScreenHandler::LoadOfflineGaia(const AccountId& account_id) {
-  populated_account_id_ = account_id;
-  LoadAuthExtension(true /* force */, true /* offline */);
 }
 
 void GaiaScreenHandler::ShowSigninScreenForTest(const std::string& username,
@@ -1397,12 +1381,13 @@ void GaiaScreenHandler::CreateSamlChallengeKeyHandler() {
   saml_challenge_key_handler_ = std::make_unique<SamlChallengeKeyHandler>();
 }
 
+void GaiaScreenHandler::CancelShowGaiaAsync() {
+  show_when_ready_ = false;
+}
+
 void GaiaScreenHandler::ShowGaiaScreenIfReady() {
-  if (!initialized_) {
-    show_on_init_ = true;
-    return;
-  }
-  if (!dns_cleared_ || !cookies_cleared_ || !LoginDisplayHost::default_host()) {
+  if (!dns_cleared_ || !cookies_cleared_ || !initialized_ ||
+      !show_when_ready_ || !LoginDisplayHost::default_host()) {
     return;
   }
 
@@ -1533,7 +1518,7 @@ void GaiaScreenHandler::SetOfflineLoginIsActive(bool is_active) {
 }
 
 void GaiaScreenHandler::UpdateState(NetworkError::ErrorReason reason) {
-  if (signin_screen_handler_ && !hidden_)
+  if (signin_screen_handler_)
     signin_screen_handler_->UpdateState(reason);
 }
 

@@ -23,7 +23,7 @@ MEDIA_EXPORT extern const base::Feature kCrOSSystemAEC;
 MEDIA_EXPORT extern const base::Feature kCrOSSystemAECDeactivatedGroups;
 #endif
 
-#if defined(OS_MACOSX) || defined(OS_CHROMEOS)
+#if defined(OS_MAC) || defined(OS_CHROMEOS)
 MEDIA_EXPORT extern const base::Feature kForceEnableSystemAec;
 #endif
 

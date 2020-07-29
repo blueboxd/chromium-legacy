@@ -9,6 +9,7 @@ import android.content.pm.PackageManager;
 import android.os.RemoteException;
 import android.webkit.ValueCallback;
 
+import org.chromium.base.ThreadUtils;
 import org.chromium.base.annotations.CalledByNative;
 import org.chromium.base.annotations.JNINamespace;
 import org.chromium.base.annotations.NativeMethods;
@@ -91,6 +92,7 @@ public final class DownloadCallbackProxy {
         ValueCallback<Boolean> callback = new ValueCallback<Boolean>() {
             @Override
             public void onReceiveValue(Boolean result) {
+                ThreadUtils.assertOnUiThread();
                 if (mNativeDownloadCallbackProxy == 0) {
                     throw new IllegalStateException("Called after destroy()");
                 }

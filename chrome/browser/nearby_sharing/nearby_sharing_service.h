@@ -34,6 +34,15 @@ class NearbySharingService {
     kForeground,
   };
 
+  enum class SendSurfaceState {
+    // Default, invalid state.
+    kUnknown,
+    // Background send surface only listens to transfer update.
+    kBackground,
+    // Foreground send surface both scans and listens to transfer update.
+    kForeground,
+  };
+
   using StatusCodesCallback =
       base::OnceCallback<void(StatusCodes status_codes)>;
 
@@ -43,7 +52,8 @@ class NearbySharingService {
   // discovery.
   virtual StatusCodes RegisterSendSurface(
       TransferUpdateCallback* transfer_callback,
-      ShareTargetDiscoveredCallback* discovery_callback) = 0;
+      ShareTargetDiscoveredCallback* discovery_callback,
+      SendSurfaceState state) = 0;
 
   // Unregisters the current send surface.
   virtual StatusCodes UnregisterSendSurface(

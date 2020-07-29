@@ -39,10 +39,6 @@ struct BLINK_COMMON_EXPORT TransferableMessage : public CloneableMessage {
   // The state of user activation.
   mojom::UserActivationSnapshotPtr user_activation;
 
-  // Whether the state of user activation should be transferred to the
-  // destination frame.
-  bool transfer_user_activation = false;
-
  private:
   DISALLOW_COPY_AND_ASSIGN(TransferableMessage);
 };

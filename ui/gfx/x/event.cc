@@ -85,21 +85,6 @@ Event::Event(scoped_refptr<base::RefCountedMemory> event_bytes,
   // we parse it with ReadEvent().
   ReadBuffer buf(event_bytes);
   ReadEvent(this, connection, &buf);
-
-  _XEnq(display, reinterpret_cast<xEvent*>(xcb_event));
-  if (!XEventsQueued(display, QueuedAlready)) {
-    // If Xlib gets an event it doesn't recognize (eg. from an
-    // extension it doesn't know about), it won't add the event to the
-    // queue.  In this case, zero-out the event data.  This will set
-    // the event type to 0, which does not correspond to any event.
-    // This is safe because event handlers should always check the
-    // event type before downcasting to a concrete event.
-    memset(&xlib_event_, 0, sizeof(xlib_event_));
-    return;
-  }
-  XNextEvent(display, &xlib_event_);
-  if (xlib_event_.type == x11::GeGenericEvent::opcode)
-    XGetEventData(display, &xlib_event_.xcookie);
 }
 
 Event::Event(Event&& event) {
@@ -119,19 +104,6 @@ Event::~Event() {
 }
 
 void Event::Dealloc() {
-  if (xlib_event_.type == x11::GeGenericEvent::opcode &&
-      xlib_event_.xcookie.data) {
-    if (custom_allocated_xlib_event_) {
-      XIDeviceEvent* xiev =
-          static_cast<XIDeviceEvent*>(xlib_event_.xcookie.data);
-      delete[] xiev->valuators.mask;
-      delete[] xiev->valuators.values;
-      delete[] xiev->buttons.mask;
-      delete xiev;
-    } else {
-      XFreeEventData(xlib_event_.xcookie.display, &xlib_event_.xcookie);
-    }
-  }
   if (deleter_)
     deleter_(event_);
 }

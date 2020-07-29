@@ -103,7 +103,7 @@ TEST_F(AlternativeBrowserDriverTest, CreateCommandLineExpandsUrl) {
 TEST_F(AlternativeBrowserDriverTest, GetBrowserName) {
 #if defined(OS_WIN)
   std::string expected = "Internet Explorer";
-#elif defined(OS_MACOSX)
+#elif defined(OS_MAC)
   std::string expected = "Safari";
 #else
   std::string expected;
@@ -121,7 +121,7 @@ TEST_F(AlternativeBrowserDriverTest, GetBrowserName) {
   EXPECT_EQ("Internet Explorer", actual);
 #endif
 
-#if defined(OS_WIN) || defined(OS_MACOSX)
+#if defined(OS_WIN) || defined(OS_MAC)
   SetBrowserPath("${safari}");
   actual = driver()->GetBrowserName();
   EXPECT_EQ("Safari", actual);
@@ -139,7 +139,7 @@ TEST_F(AlternativeBrowserDriverTest, GetBrowserName) {
 TEST_F(AlternativeBrowserDriverTest, GetBrowserType) {
 #if defined(OS_WIN)
   BrowserType expected = BrowserType::kIE;
-#elif defined(OS_MACOSX)
+#elif defined(OS_MAC)
   BrowserType expected = BrowserType::kSafari;
 #else
   BrowserType expected = BrowserType::kUnknown;
@@ -175,7 +175,7 @@ TEST_F(AlternativeBrowserDriverTest, GetBrowserType) {
   EXPECT_EQ(BrowserType::kChrome, actual);
 #endif
 
-#if defined(OS_WIN) || defined(OS_MACOSX)
+#if defined(OS_WIN) || defined(OS_MAC)
   SetBrowserPath("${safari}");
   actual = driver()->GetBrowserType();
   EXPECT_EQ(BrowserType::kSafari, actual);
@@ -229,7 +229,7 @@ TEST_F(AlternativeBrowserDriverTest,
 }
 #endif  // defined(OS_WIN)
 
-#if defined(OS_MACOSX)
+#if defined(OS_MAC)
 TEST_F(AlternativeBrowserDriverTest, CreateCommandLineUsesOpen) {
   // Use `open(1)' to launch browser paths that aren't absolute.
 
@@ -294,7 +294,7 @@ TEST_F(AlternativeBrowserDriverTest, CreateCommandLineContainsUrl) {
   EXPECT_EQ("http://example.com/", cmd_line.argv()[5]);
   EXPECT_EQ("def", cmd_line.argv()[6]);
 }
-#endif  // defined(OS_MACOSX)
+#endif  // defined(OS_MAC)
 
 #if defined(OS_POSIX)
 TEST_F(AlternativeBrowserDriverTest, CreateCommandLineExpandsTilde) {

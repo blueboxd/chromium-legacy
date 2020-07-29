@@ -24,7 +24,7 @@ class TestVersionUpdater : public VersionUpdater {
   void SetReturnedStatus(Status status) { status_ = status; }
 
 // VersionUpdater implementation:
-#if defined(OS_MACOSX)
+#if defined(OS_MAC)
   void PromoteUpdater() const override {}
 #endif
 #if defined(OS_CHROMEOS)

@@ -252,7 +252,7 @@
 #include "content/browser/serial/serial_service.h"
 #endif
 
-#if defined(OS_MACOSX)
+#if defined(OS_MAC)
 #include "content/browser/frame_host/popup_menu_helper_mac.h"
 #endif
 
@@ -7269,11 +7269,11 @@ void RenderFrameHostImpl::GetHidService(
 }
 #endif
 
-IdleManager* RenderFrameHostImpl::GetIdleManagerForTesting() {
+IdleManager* RenderFrameHostImpl::GetIdleManager() {
   return idle_manager_.get();
 }
 
-void RenderFrameHostImpl::GetIdleManager(
+void RenderFrameHostImpl::BindIdleManager(
     mojo::PendingReceiver<blink::mojom::IdleManager> receiver) {
   if (!IsFeatureEnabled(blink::mojom::FeaturePolicyFeature::kIdleDetection)) {
     mojo::ReportBadMessage("Feature policy blocks access to IdleDetection.");

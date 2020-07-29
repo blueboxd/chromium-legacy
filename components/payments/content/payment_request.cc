@@ -581,6 +581,10 @@ void PaymentRequest::AreRequestedMethodsSupportedCallback(
   }
 }
 
+base::WeakPtr<PaymentRequest> PaymentRequest::GetWeakPtr() {
+  return weak_ptr_factory_.GetWeakPtr();
+}
+
 bool PaymentRequest::IsInitialized() const {
   return is_initialized_ && client_ && client_.is_bound() &&
          receiver_.is_bound();

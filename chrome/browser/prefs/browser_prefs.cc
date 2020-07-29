@@ -358,7 +358,7 @@
 #include "chrome/browser/extensions/default_apps.h"
 #endif
 
-#if defined(OS_MACOSX)
+#if defined(OS_MAC)
 #include "chrome/browser/ui/cocoa/apps/quit_with_apps_controller_mac.h"
 #include "chrome/browser/ui/cocoa/confirm_quit.h"
 #include "chrome/browser/web_applications/components/app_shim_registry_mac.h"
@@ -375,11 +375,11 @@
 #include "chrome/browser/safe_browsing/settings_reset_prompt/settings_reset_prompt_prefs_manager.h"
 #endif
 
-#if defined(OS_WIN) || defined(OS_MACOSX)
+#if defined(OS_WIN) || defined(OS_MAC)
 #include "components/os_crypt/os_crypt.h"
 #endif
 
-#if defined(OS_WIN) || defined(OS_MACOSX) || \
+#if defined(OS_WIN) || defined(OS_MAC) || \
     (defined(OS_LINUX) && !defined(OS_CHROMEOS))
 #include "chrome/browser/browser_switcher/browser_switcher_prefs.h"
 #endif
@@ -516,9 +516,9 @@ const char kBlacklistedCredentialsNormalized[] =
     "profile.blacklisted_credentials_normalized";
 
 // Deprecated 1/2020
-#if defined(OS_MACOSX)
+#if defined(OS_MAC)
 const char kKeyCreated[] = "os_crypt.key_created";
-#endif  // defined(OS_MACOSX)
+#endif  // defined(OS_MAC)
 
 const char kGCMChannelStatus[] = "gcm.channel_status";
 const char kGCMChannelPollIntervalSeconds[] = "gcm.poll_interval";
@@ -826,7 +826,7 @@ void RegisterLocalState(PrefRegistrySimple* registry) {
   chromeos::cert_provisioning::RegisterLocalStatePrefs(registry);
 #endif  // defined(OS_CHROMEOS)
 
-#if defined(OS_MACOSX)
+#if defined(OS_MAC)
   confirm_quit::RegisterLocalState(registry);
   QuitWithAppsController::RegisterPrefs(registry);
   system_media_permissions::RegisterSystemMediaPermissionStatesPrefs(registry);
@@ -1101,7 +1101,7 @@ void RegisterProfilePrefs(user_prefs::PrefRegistrySyncable* registry,
   safe_browsing::PostCleanupSettingsResetter::RegisterProfilePrefs(registry);
 #endif
 
-#if defined(OS_WIN) || defined(OS_MACOSX) || \
+#if defined(OS_WIN) || defined(OS_MAC) || \
     (defined(OS_LINUX) && !defined(OS_CHROMEOS))
   browser_switcher::BrowserSwitcherPrefs::RegisterProfilePrefs(registry);
 #endif
@@ -1175,9 +1175,9 @@ void MigrateObsoleteLocalStatePrefs(PrefService* local_state) {
   local_state->ClearPref(kLastStartupTimestamp);
 
   // Added 1/2020
-#if defined(OS_MACOSX)
+#if defined(OS_MAC)
   local_state->ClearPref(kKeyCreated);
-#endif  // defined(OS_MACOSX)
+#endif  // defined(OS_MAC)
   local_state->ClearPref(kGCMChannelStatus);
   local_state->ClearPref(kGCMChannelPollIntervalSeconds);
   local_state->ClearPref(kGCMChannelLastCheckTime);
@@ -1240,9 +1240,9 @@ void MigrateObsoleteProfilePrefs(Profile* profile) {
 
   // Added 6/2019.
   profile_prefs->ClearPref(kMediaCacheSize);
-#if defined(OS_MACOSX)
+#if defined(OS_MAC)
   profile_prefs->ClearPref(password_manager::prefs::kKeychainMigrationStatus);
-#endif  // defined(OS_MACOSX)
+#endif  // defined(OS_MAC)
 
   // Added 7/2019.
   syncer::MigrateSyncSuppressedPref(profile_prefs);

@@ -85,7 +85,7 @@ CallStackProfileParams::Process GetProcess() {
 }
 
 bool IsCurrentProcessBackgrounded() {
-#if defined(OS_MACOSX)
+#if defined(OS_MAC)
   // Port provider that returns the calling process's task port, ignoring its
   // argument.
   class SelfPortProvider : public base::PortProvider {
@@ -95,9 +95,9 @@ bool IsCurrentProcessBackgrounded() {
   };
   SelfPortProvider provider;
   return base::Process::Current().IsProcessBackgrounded(&provider);
-#else   // defined(OS_MACOSX)
+#else   // defined(OS_MAC)
   return base::Process::Current().IsProcessBackgrounded();
-#endif  // defined(OS_MACOSX)
+#endif  // defined(OS_MAC)
 }
 
 const base::RepeatingCallback<std::vector<std::unique_ptr<base::Unwinder>>()>&

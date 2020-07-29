@@ -34,7 +34,6 @@
 #include "chrome/browser/accessibility/accessibility_labels_service.h"
 #include "chrome/browser/accessibility/accessibility_labels_service_factory.h"
 #include "chrome/browser/bookmarks/bookmark_model_factory.h"
-#include "chrome/browser/bookmarks/startup_task_runner_service_factory.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/chromeos/account_manager/child_account_type_changed_user_data.h"
@@ -80,7 +79,6 @@
 #include "chrome/grit/generated_resources.h"
 #include "components/account_id/account_id.h"
 #include "components/bookmarks/browser/bookmark_model.h"
-#include "components/bookmarks/browser/startup_task_runner_service.h"
 #include "components/bookmarks/common/bookmark_pref_names.h"
 #include "components/content_settings/core/browser/host_content_settings_map.h"
 #include "components/password_manager/core/browser/password_store.h"
@@ -1116,17 +1114,12 @@ void ProfileManager::InitProfileUserPrefs(Profile* profile) {
 }
 
 void ProfileManager::RegisterTestingProfile(std::unique_ptr<Profile> profile,
-                                            bool add_to_storage,
-                                            bool start_deferred_task_runners) {
+                                            bool add_to_storage) {
   Profile* profile_ptr = profile.get();
   RegisterProfile(std::move(profile), true);
   if (add_to_storage) {
     InitProfileUserPrefs(profile_ptr);
     AddProfileToStorage(profile_ptr);
-  }
-  if (start_deferred_task_runners) {
-    StartupTaskRunnerServiceFactory::GetForProfile(profile_ptr)
-        ->StartDeferredTaskRunners();
   }
 }
 
@@ -1293,10 +1286,6 @@ void ProfileManager::DoFinalInitForServices(Profile* profile,
   // DoFinalInitForServices.
   profiles::UpdateIsProfileLockEnabledIfNeeded(profile);
 #endif
-
-  // Start the deferred task runners once the profile is loaded.
-  StartupTaskRunnerServiceFactory::GetForProfile(profile)->
-      StartDeferredTaskRunners();
 
   // Activate data reduction proxy. This creates a request context and makes a
   // URL request to check if the data reduction proxy server is reachable.

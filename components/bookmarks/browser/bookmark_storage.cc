@@ -17,6 +17,8 @@
 #include "base/json/json_string_value_serializer.h"
 #include "base/numerics/safe_conversions.h"
 #include "base/sequenced_task_runner.h"
+#include "base/task/task_traits.h"
+#include "base/task/thread_pool.h"
 #include "components/bookmarks/browser/bookmark_codec.h"
 #include "components/bookmarks/browser/bookmark_model.h"
 #include "components/bookmarks/browser/bookmark_node.h"
@@ -39,16 +41,16 @@ void BackupCallback(const base::FilePath& path) {
 // static
 constexpr base::TimeDelta BookmarkStorage::kSaveDelay;
 
-BookmarkStorage::BookmarkStorage(
-    BookmarkModel* model,
-    const base::FilePath& profile_path,
-    scoped_refptr<base::SequencedTaskRunner> sequenced_task_runner)
+BookmarkStorage::BookmarkStorage(BookmarkModel* model,
+                                 const base::FilePath& profile_path)
     : model_(model),
+      backend_task_runner_(base::ThreadPool::CreateSequencedTaskRunner(
+          {base::MayBlock(), base::TaskPriority::BEST_EFFORT,
+           base::TaskShutdownBehavior::BLOCK_SHUTDOWN})),
       writer_(profile_path.Append(kBookmarksFileName),
-              sequenced_task_runner,
+              backend_task_runner_,
               kSaveDelay,
-              "BookmarkStorage"),
-      sequenced_task_runner_(sequenced_task_runner) {}
+              "BookmarkStorage") {}
 
 BookmarkStorage::~BookmarkStorage() {
   if (writer_.HasPendingWrite())
@@ -60,7 +62,7 @@ void BookmarkStorage::ScheduleSave() {
   // JSON file.
   if (!backup_triggered_) {
     backup_triggered_ = true;
-    sequenced_task_runner_->PostTask(
+    backend_task_runner_->PostTask(
         FROM_HERE, base::BindOnce(&BackupCallback, writer_.path()));
   }
 

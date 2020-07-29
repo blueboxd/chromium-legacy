@@ -62,5 +62,4 @@ public class PasswordCheckFragmentView extends PreferenceFragmentCompat {
     private Context getStyledContext() {
         return getPreferenceManager().getContext();
     }
-
 }

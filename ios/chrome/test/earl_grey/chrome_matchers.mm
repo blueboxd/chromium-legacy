@@ -179,24 +179,12 @@ id<GREYMatcher> BookmarksNavigationBarBackButton() {
   return [ChromeMatchersAppInterface bookmarksNavigationBarBackButton];
 }
 
-id<GREYMatcher> AccountConsistencyConfirmationOkButton() {
-  return [ChromeMatchersAppInterface accountConsistencyConfirmationOKButton];
-}
-
-id<GREYMatcher> UnifiedConsentAddAccountButton() {
-  return [ChromeMatchersAppInterface unifiedConsentAddAccountButton];
-}
-
 id<GREYMatcher> AddAccountButton() {
   return [ChromeMatchersAppInterface addAccountButton];
 }
 
 id<GREYMatcher> SignOutAccountsButton() {
   return [ChromeMatchersAppInterface signOutAccountsButton];
-}
-
-id<GREYMatcher> SignOutAndClearDataAccountsButton() {
-  return [ChromeMatchersAppInterface signOutAndClearDataAccountsButton];
 }
 
 id<GREYMatcher> ClearBrowsingDataCell() {

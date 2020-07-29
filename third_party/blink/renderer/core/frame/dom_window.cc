@@ -450,7 +450,7 @@ void DOMWindow::ReportCoopAccess(v8::Isolate* isolate,
   if (coop_access_monitor_.IsEmpty())  // Fast early return. Very likely true.
     return;
 
-  DOMWindow* accessing_window = CurrentDOMWindow(isolate);
+  LocalDOMWindow* accessing_window = IncumbentDOMWindow(isolate);
   Frame* accessing_frame = accessing_window->GetFrame();
 
   // A frame might be destroyed, but its context can still be able to execute

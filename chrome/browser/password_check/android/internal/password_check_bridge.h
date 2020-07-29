@@ -25,6 +25,9 @@ class PasswordCheckBridge {
   // Called by Java to get the number of compromised credentials.
   jint GetCompromisedCredentialsCount(JNIEnv* env);
 
+  // Called by Java to get the total number of saved passwords.
+  jint GetSavedPasswordsCount(JNIEnv* env);
+
   // Called by Java to get the list of compromised credentials.
   void GetCompromisedCredentials(
       JNIEnv* env,

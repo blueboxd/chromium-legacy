@@ -28,6 +28,7 @@
 #include <string.h>
 #include <atomic>
 
+#include "base/callback_forward.h"
 #include "base/containers/span.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
@@ -371,6 +372,8 @@ class WTF_EXPORT StringImpl {
   wtf_size_t Find(char character, wtf_size_t start = 0);
   wtf_size_t Find(UChar character, wtf_size_t start = 0);
   wtf_size_t Find(CharacterMatchFunctionPtr, wtf_size_t index = 0);
+  wtf_size_t Find(base::RepeatingCallback<bool(UChar)> match_callback,
+                  wtf_size_t index = 0) const;
 
   // Find substrings.
   wtf_size_t Find(const StringView&, wtf_size_t index = 0);

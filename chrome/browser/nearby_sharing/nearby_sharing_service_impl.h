@@ -80,10 +80,9 @@ class NearbySharingServiceImpl
   void OnNearbyProcessStopped() override;
 
   // NearbyConnectionsManager::IncomingConnectionListener:
-  void OnIncomingConnection(
-      const std::string& endpoint_id,
-      const std::vector<uint8_t>& endpoint_info,
-      std::unique_ptr<NearbyConnection> connection) override;
+  void OnIncomingConnection(const std::string& endpoint_id,
+                            const std::vector<uint8_t>& endpoint_info,
+                            NearbyConnection* connection) override;
 
  private:
   bool IsEnabled();

@@ -12,7 +12,6 @@ import androidx.annotation.Nullable;
 import org.chromium.chrome.browser.ActivityTabProvider;
 import org.chromium.chrome.browser.browser_controls.BrowserControlsStateProvider;
 import org.chromium.chrome.browser.compositor.CompositorViewHolder;
-import org.chromium.chrome.browser.widget.ScrimView;
 import org.chromium.components.browser_ui.bottomsheet.BottomSheetController;
 import org.chromium.components.module_installer.builder.ModuleInterface;
 import org.chromium.content_public.browser.WebContents;
@@ -34,10 +33,9 @@ interface AutofillAssistantModuleEntry {
      */
     void start(BottomSheetController bottomSheetController,
             BrowserControlsStateProvider browserControls, CompositorViewHolder compositorViewHolder,
-            ScrimView scrimView, Context context, @NonNull WebContents webContents,
-            boolean skipOnboarding, boolean isChromeCustomTab, @NonNull String initialUrl,
-            Map<String, String> parameters, String experimentIds, @Nullable String callerAccount,
-            @Nullable String userName);
+            Context context, @NonNull WebContents webContents, boolean skipOnboarding,
+            boolean isChromeCustomTab, @NonNull String initialUrl, Map<String, String> parameters,
+            String experimentIds, @Nullable String callerAccount, @Nullable String userName);
     /**
      * Returns a {@link AutofillAssistantActionHandler} instance tied to the activity owning the
      * given bottom sheet, and scrim view.
@@ -47,10 +45,9 @@ interface AutofillAssistantModuleEntry {
      * @param browserControls provider of browser controls state
      * @param compositorViewHolder compositor view holder of the activity
      * @param activityTabProvider activity tab provider
-     * @param scrimView scrim view of the activity
      */
     AutofillAssistantActionHandler createActionHandler(Context context,
             BottomSheetController bottomSheetController,
             BrowserControlsStateProvider browserControls, CompositorViewHolder compositorViewHolder,
-            ActivityTabProvider activityTabProvider, ScrimView scrimView);
+            ActivityTabProvider activityTabProvider);
 }

@@ -622,6 +622,15 @@ TEST_F(SyncEngineImplTest, ShouldDestroyAfterInitFailure) {
   base::RunLoop().RunUntilIdle();
 }
 
+TEST_F(SyncEngineImplTest, ShouldInvalidateDataTypesOnIncomingInvalidation) {
+  InitializeBackend(/*expect_success=*/true);
+  // TODO(crbug.com/1102322): use real payload with invalidated data types.
+  backend_->OnInvalidationReceived(/*payload=*/"");
+  fake_manager_->WaitForSyncThread();
+  // Currently only one data type is expected to invalidate.
+  EXPECT_EQ(1, fake_manager_->GetInvalidationCount());
+}
+
 }  // namespace
 
 }  // namespace syncer

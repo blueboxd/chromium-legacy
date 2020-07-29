@@ -40,6 +40,42 @@ bool FakeClipboardRecentContent::HasRecentImageFromClipboard() {
   return clipboard_image_content_.has_value();
 }
 
+void FakeClipboardRecentContent::HasRecentContentFromClipboard(
+    std::set<ClipboardContentType> types,
+    HasDataCallback callback) {
+  std::set<ClipboardContentType> matching_types;
+  for (ClipboardContentType type : types) {
+    switch (type) {
+      case ClipboardContentType::URL:
+        if (GetRecentURLFromClipboard()) {
+          matching_types.insert(ClipboardContentType::URL);
+        }
+        break;
+      case ClipboardContentType::Text:
+        if (GetRecentTextFromClipboard()) {
+          matching_types.insert(ClipboardContentType::Text);
+        }
+        break;
+      case ClipboardContentType::Image:
+        if (HasRecentImageFromClipboard()) {
+          matching_types.insert(ClipboardContentType::Image);
+        }
+        break;
+    }
+  }
+  std::move(callback).Run(matching_types);
+}
+
+void FakeClipboardRecentContent::GetRecentURLFromClipboard(
+    GetRecentURLCallback callback) {
+  std::move(callback).Run(GetRecentURLFromClipboard());
+}
+
+void FakeClipboardRecentContent::GetRecentTextFromClipboard(
+    GetRecentTextCallback callback) {
+  std::move(callback).Run(GetRecentTextFromClipboard());
+}
+
 base::TimeDelta FakeClipboardRecentContent::GetClipboardContentAge() const {
   return content_age_;
 }

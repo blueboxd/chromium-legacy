@@ -12,8 +12,6 @@ source_set("bookmarks") {
     "bookmark_sync_service_factory.h",
     "managed_bookmark_service_factory.h",
     "managed_bookmark_service_factory.mm",
-    "startup_task_runner_service_factory.cc",
-    "startup_task_runner_service_factory.h",
   ]
   deps = [
     "//base",

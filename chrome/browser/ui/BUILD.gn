@@ -186,7 +186,6 @@ static_library("ui") {
     "ui_features.h",
     "uninstall_browser_prompt.h",
     "view_ids.h",
-    "web_contents_sizer.h",
     "webauthn/authenticator_request_dialog.h",
     "webui/about_ui.cc",
     "webui/about_ui.h",
@@ -2877,7 +2876,6 @@ static_library("ui") {
       "views/frame/native_browser_frame_factory_mac.mm",
       "views/tab_contents/chrome_web_contents_view_delegate_views_mac.h",
       "views/tab_contents/chrome_web_contents_view_delegate_views_mac.mm",
-      "web_contents_sizer.mm",
       "webui/help/version_updater_mac.h",
       "webui/help/version_updater_mac.mm",
       "webui/settings_utils_mac.mm",
@@ -2900,8 +2898,6 @@ static_library("ui") {
       "Carbon.framework",
       "Quartz.framework",
     ]
-  } else {  # non-Mac.
-    sources += [ "web_contents_sizer.cc" ]
   }
 
   if (is_win) {

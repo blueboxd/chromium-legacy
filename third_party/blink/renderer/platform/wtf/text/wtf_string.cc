@@ -25,6 +25,7 @@
 #include <locale.h>
 #include <stdarg.h>
 #include <algorithm>
+#include "base/callback.h"
 #include "base/strings/string_util.h"
 #include "build/build_config.h"
 #include "third_party/blink/renderer/platform/wtf/dtoa.h"
@@ -75,6 +76,11 @@ int CodeUnitCompare(const String& a, const String& b) {
 int CodeUnitCompareIgnoringASCIICase(const String& a, const char* b) {
   return CodeUnitCompareIgnoringASCIICase(a.Impl(),
                                           reinterpret_cast<const LChar*>(b));
+}
+
+wtf_size_t String::Find(base::RepeatingCallback<bool(UChar)> match_callback,
+                        wtf_size_t index) const {
+  return impl_ ? impl_->Find(match_callback, index) : kNotFound;
 }
 
 UChar32 String::CharacterStartingAt(unsigned i) const {

@@ -3257,6 +3257,18 @@ void NavigationRequest::CommitNavigation() {
   // if it wasn't done in RenderProcessHostImpl::GetProcessHostForSiteInstance.
   RenderProcessHostImpl::NotifySpareManagerAboutRecentlyUsedBrowserContext(
       render_frame_host_->GetSiteInstance()->GetBrowserContext());
+
+  if (coop_status().header_ignored_due_to_insecure_context) {
+    render_frame_host_->AddMessageToConsole(
+        blink::mojom::ConsoleMessageLevel::kError,
+        "The Cross-Origin-Opener-Policy header has been ignored, because the "
+        "origin was untrustworthy. It was defined either in the final response "
+        "or a redirect. Please deliver the response using the HTTPS protocol. "
+        "You can also use the 'localhost' origin instead. "
+        "See https://www.w3.org/TR/powerful-features/"
+        "#potentially-trustworthy-origin and "
+        "https://html.spec.whatwg.org/#the-cross-origin-opener-policy-header.");
+  }
 }
 
 void NavigationRequest::ResetExpectedProcess() {
@@ -4980,14 +4992,21 @@ void NavigationRequest::SetState(NavigationState state) {
   state_ = state;
 }
 
+// We blank out the COOP headers in a number of situations.
+// - When the headers were not sent over HTTPS.
+// - For subframes.
 void NavigationRequest::SanitizeCoopHeaders() {
-  // We blank out the COOP headers in a number of situations.
-  // - When the headers were not sent over HTTPS.
-  // - For subframes.
-  if (!IsOriginSecure(common_params_->url) || !IsInMainFrame()) {
-    response_head_->parsed_headers->cross_origin_opener_policy =
-        network::CrossOriginOpenerPolicy();
-  }
+  network::CrossOriginOpenerPolicy& coop =
+      response_head_->parsed_headers->cross_origin_opener_policy;
+  if (IsOriginSecure(common_params_->url) && IsInMainFrame())
+    return;
+
+  if (coop == network::CrossOriginOpenerPolicy())
+    return;
+  coop = network::CrossOriginOpenerPolicy();
+
+  if (!IsOriginSecure(common_params_->url))
+    coop_status_.header_ignored_due_to_insecure_context = true;
 }
 
 void NavigationRequest::UpdateCoopStatus(

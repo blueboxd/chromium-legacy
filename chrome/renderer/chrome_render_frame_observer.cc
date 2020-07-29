@@ -28,7 +28,6 @@
 #include "components/crash/core/common/crash_key.h"
 #include "components/offline_pages/buildflags/buildflags.h"
 #include "components/prerender/renderer/prerender_helper.h"
-#include "components/prerender/renderer/prerender_observer_list.h"
 #include "components/translate/content/renderer/translate_agent.h"
 #include "components/translate/core/common/translate_util.h"
 #include "components/web_cache/renderer/web_cache_impl.h"
@@ -284,30 +283,6 @@ void ChromeRenderFrameObserver::DidMeaningfulLayout(
 
 void ChromeRenderFrameObserver::OnDestruct() {
   delete this;
-}
-
-void ChromeRenderFrameObserver::SetIsPrerendering(
-    prerender::mojom::PrerenderMode mode,
-    const std::string& histogram_prefix) {
-  bool is_prerendering = mode != prerender::mojom::PrerenderMode::kNoPrerender;
-  if (is_prerendering) {
-    // If the PrerenderHelper for this frame already exists, don't create it. It
-    // can already be created for subframes during handling of
-    // RenderFrameCreated, if the parent frame was prerendering at time of
-    // subframe creation.
-    auto* prerender_helper = prerender::PrerenderHelper::Get(render_frame());
-    if (!prerender_helper) {
-      // The PrerenderHelper will destroy itself either after recording
-      // histograms or on destruction of the RenderView.
-      prerender_helper = new prerender::PrerenderHelper(render_frame(), mode,
-                                                        histogram_prefix);
-    }
-
-    prerender_helper->SetIsPrerendering(mode, histogram_prefix);
-  }
-
-  prerender::PrerenderObserverList::SetIsPrerenderingForFrame(render_frame(),
-                                                              is_prerendering);
 }
 
 void ChromeRenderFrameObserver::SetWindowFeatures(

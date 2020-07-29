@@ -90,6 +90,7 @@
 #include "components/prerender/common/prerender_types.mojom.h"
 #include "components/prerender/common/prerender_url_loader_throttle.h"
 #include "components/prerender/renderer/prerender_helper.h"
+#include "components/prerender/renderer/prerender_render_frame_observer.h"
 #include "components/prerender/renderer/prerenderer_client.h"
 #include "components/safe_browsing/buildflags.h"
 #include "components/safe_browsing/content/renderer/threat_dom_details.h"
@@ -486,6 +487,8 @@ void ChromeContentRendererClient::RenderFrameCreated(
   ChromeRenderFrameObserver* render_frame_observer =
       new ChromeRenderFrameObserver(render_frame, web_cache_impl_.get());
   service_manager::BinderRegistry* registry = render_frame_observer->registry();
+
+  new prerender::PrerenderRenderFrameObserver(render_frame);
 
   bool should_whitelist_for_content_settings =
       base::CommandLine::ForCurrentProcess()->HasSwitch(

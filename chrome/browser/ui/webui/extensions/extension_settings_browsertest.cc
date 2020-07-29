@@ -18,7 +18,6 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
-#include "chrome/browser/ui/web_contents_sizer.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/pref_names.h"
@@ -106,7 +105,7 @@ void ExtensionSettingsUIBrowserTest::ShrinkWebContentsView() {
   content::WebContents* web_contents =
       browser()->tab_strip_model()->GetActiveWebContents();
   CHECK(web_contents);
-  ResizeWebContents(web_contents, gfx::Rect(0, 0, 400, 400));
+  web_contents->Resize(gfx::Rect(0, 0, 400, 400));
 }
 
 const Extension* ExtensionSettingsUIBrowserTest::InstallExtension(

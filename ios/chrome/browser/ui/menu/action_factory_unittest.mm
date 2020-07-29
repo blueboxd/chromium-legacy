@@ -84,4 +84,22 @@ TEST_F(ActionFactoryTest, CopyAction) {
   }
 }
 
+// Tests that the delete action has the right title and image.
+TEST_F(ActionFactoryTest, DeleteAction) {
+  if (@available(iOS 13.0, *)) {
+    ActionFactory* factory =
+        [[ActionFactory alloc] initWithScenario:kTestMenuScenario];
+
+    UIImage* expectedImage = [UIImage systemImageNamed:@"trash"];
+    NSString* expectedTitle =
+        l10n_util::GetNSString(IDS_IOS_DELETE_ACTION_TITLE);
+
+    UIAction* action = [factory actionToDeleteWithBlock:^{
+    }];
+
+    EXPECT_TRUE([expectedTitle isEqualToString:action.title]);
+    EXPECT_EQ(expectedImage, action.image);
+  }
+}
+
 #endif  // defined(__IPHONE_13_0)

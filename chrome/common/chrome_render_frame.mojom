@@ -4,7 +4,6 @@
 
 module chrome.mojom;
 
-import "components/prerender/common/prerender_types.mojom";
 import "mojo/public/mojom/base/string16.mojom";
 import "third_party/blink/public/mojom/window_features/window_features.mojom";
 import "ui/gfx/geometry/mojom/geometry.mojom";
@@ -59,10 +58,4 @@ interface ChromeRenderFrame {
 
   // Requests the Media Feed Url from the renderer (if the page has one).
   GetMediaFeedURL() => (url.mojom.Url? url);
-
-  // Tells a renderer if it's currently being prerendered.  Must only be set
-  // before any navigation occurs, and only set to kNoPrerender at most once
-  // after that.
-  SetIsPrerendering(prerender.mojom.PrerenderMode mode,
-                    string histogram_prefix);
 };

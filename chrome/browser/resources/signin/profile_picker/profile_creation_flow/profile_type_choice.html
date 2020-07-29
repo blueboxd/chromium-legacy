@@ -1,4 +1,4 @@
-<style include="cr-icons">
+<style include="cr-icons profile-picker-shared">
   #backButton {
     --cr-icon-button-icon-size: 14px;
     --cr-icon-button-margin-start: 4px;
@@ -27,6 +27,11 @@
     position: relative;
     width: 100%;
   }
+
+  .title-container {
+    margin: 104px auto;
+    text-align: center;
+  }
 </style>
 
 <div id="bannerContainer"
@@ -35,4 +40,8 @@
         on-click="onTapBack_" aria-label="$i18n{backButtonLabel}">
     </cr-icon-button>
     <div id="banner"></div>
+</div>
+<div class="title-container">
+  <h2>$i18n{profileTypeChoiceTitle}</h2>
+  <h3>$i18n{profileTypeChoiceSubtitle}</h3>
 </div>

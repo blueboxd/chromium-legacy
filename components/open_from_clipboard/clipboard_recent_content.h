@@ -14,6 +14,8 @@
 #include "ui/gfx/image/image.h"
 #include "url/gurl.h"
 
+enum class ClipboardContentType { URL, Text, Image };
+
 // Helper class returning an URL if the content of the clipboard can be turned
 // into an URL, and if it estimates that the content of the clipboard is not too
 // old.
@@ -47,6 +49,28 @@ class ClipboardRecentContent {
 
   // Return if system's clipboard contains an image.
   virtual bool HasRecentImageFromClipboard() = 0;
+
+  /*
+   On iOS, iOS 14 introduces new clipboard APIs that are async. The asynchronous
+   forms of clipboard access below should be preferred.
+   */
+  using HasDataCallback =
+      base::OnceCallback<void(std::set<ClipboardContentType>)>;
+  using GetRecentURLCallback = base::OnceCallback<void(base::Optional<GURL>)>;
+  using GetRecentTextCallback =
+      base::OnceCallback<void(base::Optional<base::string16>)>;
+
+  // Returns whether the clipboard contains a URL to |HasDataCallback| if it
+  // is recent enough and has not been suppressed.
+  virtual void HasRecentContentFromClipboard(
+      std::set<ClipboardContentType> types,
+      HasDataCallback callback) = 0;
+  // Returns clipboard content as URL to |GetRecentURLCallback|, if it has a
+  // compatible type, is recent enough and has not been suppressed.
+  virtual void GetRecentURLFromClipboard(GetRecentURLCallback callback) = 0;
+  // Returns clipboard content as a string to |GetRecentTextCallback|, if it has
+  // a compatible type, is recent enough and has not been suppressed.
+  virtual void GetRecentTextFromClipboard(GetRecentTextCallback callback) = 0;
 
   // Returns how old the content of the clipboard is.
   virtual base::TimeDelta GetClipboardContentAge() const = 0;

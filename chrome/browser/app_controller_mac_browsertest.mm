@@ -697,7 +697,7 @@ IN_PROC_BROWSER_TEST_F(AppControllerMainMenuBrowserTest,
   std::unique_ptr<Profile> profile2 =
       Profile::CreateProfile(path2, NULL, Profile::CREATE_MODE_SYNCHRONOUS);
   Profile* profile2_ptr = profile2.get();
-  profile_manager->RegisterTestingProfile(std::move(profile2), false, true);
+  profile_manager->RegisterTestingProfile(std::move(profile2), false);
   bookmarks::test::WaitForBookmarkModelToLoad(
       BookmarkModelFactory::GetForBrowserContext(profile2_ptr));
 

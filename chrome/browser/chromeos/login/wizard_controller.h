@@ -173,9 +173,6 @@ class WizardController {
   void SetSharedURLLoaderFactoryForTesting(
       scoped_refptr<network::SharedURLLoaderFactory> factory);
 
-  // Resets |current_screen_| when login screen has started.
-  void LoginScreenStarted();
-
   // Configure and show GAIA password changed screen.
   void ShowGaiaPasswordChangedScreen(const AccountId& account_id,
                                      bool has_error);
@@ -273,6 +270,7 @@ class WizardController {
   void OnResetScreenExit();
   void OnDeviceModificationCanceled();
   void OnSupervisionTransitionScreenExit();
+  void OnUpdateRequiredScreenExit();
   void OnOobeFlowFinished();
   void OnPackagedLicenseScreenExit(PackagedLicenseScreen::Result result);
   void OnActiveDirectoryPasswordChangeScreenExit();

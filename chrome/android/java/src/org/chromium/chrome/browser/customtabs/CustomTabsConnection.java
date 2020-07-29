@@ -774,6 +774,22 @@ public class CustomTabsConnection {
         return null;
     }
 
+    /**
+     * Returns whether an intent is first-party with respect to its session, that is if the
+     * application linked to the session has a relation with the provided origin.
+     *
+     * @param intent The intent to verify.
+     */
+    public boolean isFirstPartyOriginForIntent(Intent intent) {
+        CustomTabsSessionToken session = CustomTabsSessionToken.getSessionTokenFromIntent(intent);
+        if (session == null) return false;
+
+        Origin origin = Origin.create(intent.getData());
+        if (origin == null) return false;
+
+        return mClientManager.isFirstPartyOriginForSession(session, origin);
+    }
+
     public int postMessage(CustomTabsSessionToken session, String message, Bundle extras) {
         int result;
         if (!mWarmupHasBeenCalled.get()) result = CustomTabsService.RESULT_FAILURE_DISALLOWED;

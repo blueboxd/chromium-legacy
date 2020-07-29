@@ -10,6 +10,7 @@ import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.not;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertTrue;
 
 import static org.chromium.base.test.util.Restriction.RESTRICTION_TYPE_NON_LOW_END_DEVICE;
 import static org.chromium.chrome.browser.customtabs.CustomTabActivityTestRule.LONG_TIMEOUT_MS;
@@ -34,6 +35,7 @@ import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.SystemClock;
+import android.provider.Browser;
 import android.support.test.InstrumentationRegistry;
 import android.view.Menu;
 import android.view.MenuItem;
@@ -273,6 +275,49 @@ public class CustomTabActivityTest {
      */
     private PendingIntent addMenuEntriesToIntent(Intent customTabIntent, int numEntries) {
         return addMenuEntriesToIntent(customTabIntent, numEntries, new Intent());
+    }
+
+    @Test
+    @SmallTest
+    public void testWhitelistedHeadersReceivedWhenConnectionVerified() throws Exception {
+        final Context context = InstrumentationRegistry.getInstrumentation()
+                                        .getTargetContext()
+                                        .getApplicationContext();
+        final Intent intent = CustomTabsTestUtils.createMinimalCustomTabIntent(context, mTestPage2);
+
+        Bundle headers = new Bundle();
+        headers.putString("bearer-token", "Some token");
+        headers.putString("redirect-url", "https://www.google.com");
+        intent.putExtra(Browser.EXTRA_HEADERS, headers);
+
+        CustomTabsSessionToken token = CustomTabsSessionToken.getSessionTokenFromIntent(intent);
+        CustomTabsConnection connection = CustomTabsConnection.getInstance();
+        connection.newSession(token);
+        connection.overridePackageNameForSessionForTesting(token, "app1");
+        TestThreadUtils.runOnUiThreadBlocking(
+                ()
+                        -> OriginVerifier.addVerificationOverride("app1",
+                                Origin.create(intent.getData()),
+                                CustomTabsService.RELATION_USE_AS_ORIGIN));
+
+        final CustomTabsSessionToken session = warmUpAndLaunchUrlWithSession(intent);
+        assertEquals(getActivity().getIntentDataProvider().getSession(), session);
+
+        final Tab tab = getActivity().getActivityTab();
+        final CallbackHelper pageLoadFinishedHelper = new CallbackHelper();
+        tab.addObserver(new EmptyTabObserver() {
+            @Override
+            public void onLoadUrl(Tab tab, LoadUrlParams params, int loadType) {
+                assertTrue(params.getVerbatimHeaders().contains("bearer-token: Some token"));
+                assertTrue(params.getVerbatimHeaders().contains(
+                        "redirect-url: https://www.google.com"));
+                pageLoadFinishedHelper.notifyCalled();
+            }
+        });
+
+        TestThreadUtils.runOnUiThreadBlockingNoException(
+                () -> getSessionDataHolder().handleIntent(intent));
+        pageLoadFinishedHelper.waitForCallback(0);
     }
 
     /**

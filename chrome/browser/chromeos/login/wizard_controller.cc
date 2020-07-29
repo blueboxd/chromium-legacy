@@ -66,6 +66,7 @@
 #include "chrome/browser/chromeos/login/screens/family_link_notice_screen.h"
 #include "chrome/browser/chromeos/login/screens/fingerprint_setup_screen.h"
 #include "chrome/browser/chromeos/login/screens/gaia_password_changed_screen.h"
+#include "chrome/browser/chromeos/login/screens/gaia_screen.h"
 #include "chrome/browser/chromeos/login/screens/gesture_navigation_screen.h"
 #include "chrome/browser/chromeos/login/screens/hid_detection_screen.h"
 #include "chrome/browser/chromeos/login/screens/kiosk_autolaunch_screen.h"
@@ -565,7 +566,9 @@ std::vector<std::unique_ptr<BaseScreen>> WizardController::CreateScreens() {
                           weak_factory_.GetWeakPtr())));
   append(std::make_unique<UpdateRequiredScreen>(
       oobe_ui->GetView<UpdateRequiredScreenHandler>(),
-      oobe_ui->GetErrorScreen()));
+      oobe_ui->GetErrorScreen(),
+      base::BindRepeating(&WizardController::OnUpdateRequiredScreenExit,
+                          weak_factory_.GetWeakPtr())));
   append(std::make_unique<AssistantOptInFlowScreen>(
       oobe_ui->GetView<AssistantOptInFlowScreenHandler>(),
       base::BindRepeating(&WizardController::OnAssistantOptInFlowScreenExit,
@@ -594,6 +597,9 @@ std::vector<std::unique_ptr<BaseScreen>> WizardController::CreateScreens() {
       oobe_ui->GetView<PackagedLicenseScreenHandler>(),
       base::BindRepeating(&WizardController::OnPackagedLicenseScreenExit,
                           weak_factory_.GetWeakPtr())));
+  auto gaia_screen = std::make_unique<GaiaScreen>();
+  gaia_screen->set_view(oobe_ui->GetView<GaiaScreenHandler>());
+  append(std::move(gaia_screen));
 
   append(std::make_unique<TpmErrorScreen>(
       oobe_ui->GetView<TpmErrorScreenHandler>()));
@@ -629,10 +635,6 @@ void WizardController::OnOwnershipStatusCheckDone(
     ShowPackagedLicenseScreen();
   else
     ShowLoginScreen();
-}
-
-void WizardController::LoginScreenStarted() {
-  SetCurrentScreen(nullptr);
 }
 
 void WizardController::ShowLoginScreen() {
@@ -1289,17 +1291,29 @@ void WizardController::OnChangedMetricsReportingState(bool enabled) {
 }
 
 void WizardController::OnDeviceModificationCanceled() {
+  current_screen_->Hide();
+  current_screen_ = nullptr;
   if (previous_screen_) {
-    SetCurrentScreen(previous_screen_);
-  } else {
-    ShowPackagedLicenseScreen();
+    if (previous_screen_ == GetScreen(GaiaView::kScreenId)) {
+      ShowLoginScreen();
+    } else {
+      SetCurrentScreen(previous_screen_);
+    }
+    return;
   }
+  ShowPackagedLicenseScreen();
 }
 
 void WizardController::OnSupervisionTransitionScreenExit() {
   OnScreenExit(SupervisionTransitionScreenView::kScreenId, kDefaultExitReason);
 
   OnOobeFlowFinished();
+}
+
+void WizardController::OnUpdateRequiredScreenExit() {
+  current_screen_->Hide();
+  current_screen_ = nullptr;
+  ShowLoginScreen();
 }
 
 void WizardController::OnPackagedLicenseScreenExit(
@@ -1622,7 +1636,8 @@ void WizardController::AdvanceToScreen(OobeScreenId screen_id) {
   } else if (screen_id == TpmErrorView::kScreenId ||
              screen_id == GaiaPasswordChangedView::kScreenId ||
              screen_id == ActiveDirectoryPasswordChangeView::kScreenId ||
-             screen_id == FamilyLinkNoticeView::kScreenId) {
+             screen_id == FamilyLinkNoticeView::kScreenId ||
+             screen_id == GaiaView::kScreenId) {
     SetCurrentScreen(GetScreen(screen_id));
   } else {
     if (is_out_of_box_) {

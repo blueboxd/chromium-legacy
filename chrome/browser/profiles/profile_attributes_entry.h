@@ -14,9 +14,11 @@
 #include "base/files/file_path.h"
 #include "base/gtest_prod_util.h"
 #include "base/macros.h"
+#include "base/optional.h"
 #include "base/strings/string16.h"
 #include "base/time/time.h"
 #include "base/values.h"
+#include "third_party/skia/include/core/SkColor.h"
 
 namespace gfx {
 class Image;
@@ -39,6 +41,12 @@ enum class NameForm {
 };
 
 enum class AccountCategory { kConsumer, kEnterprise };
+
+struct ProfileThemeColors {
+  SkColor profile_highlight_color;
+  SkColor default_avatar_fill_color;
+  SkColor default_avatar_stroke_color;
+};
 
 class ProfileAttributesEntry {
  public:
@@ -130,6 +138,9 @@ class ProfileAttributesEntry {
   bool IsSignedInWithCredentialProvider() const;
   // Returns the index of the default icon used by the profile.
   size_t GetAvatarIconIndex() const;
+  // Returns the colors specified by the profile theme. base::nullopt indicates
+  // the default colors should be used for this profile.
+  base::Optional<ProfileThemeColors> GetProfileThemeColors() const;
   // Returns the metrics bucket this profile should be recorded in.
   // Note: The bucket index is assigned once and remains the same all time. 0 is
   // reserved for the guest profile.
@@ -160,6 +171,7 @@ class ProfileAttributesEntry {
   void SetIsUsingDefaultAvatar(bool value);
   void SetIsAuthError(bool value);
   void SetAvatarIconIndex(size_t icon_index);
+  void SetProfileThemeColors(const base::Optional<ProfileThemeColors>& colors);
 
   // Unlike for other string setters, the argument is expected to be UTF8
   // encoded.
@@ -253,6 +265,10 @@ class ProfileAttributesEntry {
   double GetDouble(const char* key) const;
   bool GetBool(const char* key) const;
   int GetInteger(const char* key) const;
+
+  // Internal getter that returns one of the profile theme colors or
+  // base::nullopt if the key is not present.
+  base::Optional<SkColor> GetProfileThemeColor(const char* key) const;
 
   // Type checking. Only IsDouble is implemented because others do not have
   // callsites.

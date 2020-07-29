@@ -38,9 +38,6 @@ UNTRUSTED_TEST('UntrustedCanSpawnWorkers', async () => {
       const data = /** @type {string} */ (event.data);
       resolve(data);
     };
-    worker.onmessageerror = (event) => {
-      reject(`Error receiving message from worker: ${event}`);
-    };
     worker.onerror = function() {
       reject('There is an error with your worker');
     };

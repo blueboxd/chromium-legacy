@@ -79,6 +79,7 @@ jumbo_static_library("driver") {
     "//components/invalidation/public",
     "//components/sync:rest_of_sync",
     "//components/sync/base",
+    "//components/sync/invalidations",
     "//components/sync/js",
     "//components/sync/protocol",
     "//components/sync/protocol:util",

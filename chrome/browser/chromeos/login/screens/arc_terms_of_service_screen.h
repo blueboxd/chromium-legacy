@@ -23,6 +23,23 @@ class ArcTermsOfServiceScreen : public BaseScreen,
  public:
   enum class Result { ACCEPTED, BACK, NOT_APPLICABLE };
 
+  // This enum is tied directly to a UMA enum defined in
+  // //tools/metrics/histograms/enums.xml, and should always reflect it (do not
+  // change one without changing the other). Entries should be never modified
+  // or deleted. Only additions possible.
+  enum class UserAction {
+    kAcceptButtonClicked = 0,
+    kNextButtonClicked = 1,
+    kRetryButtonClicked = 2,
+    kBackButtonClicked = 3,
+    kMetricsLearnMoreClicked = 4,
+    kBackupRestoreLearnMoreClicked = 5,
+    kLocationServiceLearnMoreClicked = 6,
+    kPlayAutoInstallLearnMoreClicked = 7,
+    kPolicyLinkClicked = 8,
+    kMaxValue = kPolicyLinkClicked
+  };
+
   static std::string GetResultString(Result result);
 
   // Launches the ARC settings page if the user requested to review them after

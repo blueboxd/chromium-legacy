@@ -33,8 +33,6 @@ breakpoint at 2 conditional
   inline breakpoint at (2, 13) disabled
 Disable breakpoints
 breakpoint at 2 disabled conditional
-  inline breakpoint at (2, 4) disabled
-  inline breakpoint at (2, 13) disabled
 Enable breakpoints
 breakpoint at 2 conditional
   inline breakpoint at (2, 4)

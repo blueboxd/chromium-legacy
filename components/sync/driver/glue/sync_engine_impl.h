@@ -28,6 +28,7 @@
 #include "components/sync/engine/model_type_configurer.h"
 #include "components/sync/engine/sync_credentials.h"
 #include "components/sync/engine/sync_engine.h"
+#include "components/sync/invalidations/invalidations_listener.h"
 #include "components/sync/protocol/encryption.pb.h"
 #include "components/sync/protocol/sync_protocol_error.h"
 
@@ -43,7 +44,9 @@ class SyncPrefs;
 
 // The only real implementation of the SyncEngine. See that interface's
 // definition for documentation of public methods.
-class SyncEngineImpl : public SyncEngine, public InvalidationHandler {
+class SyncEngineImpl : public SyncEngine,
+                       public InvalidationHandler,
+                       public syncer::InvalidationsListener {
  public:
   using Status = SyncStatus;
 
@@ -96,6 +99,9 @@ class SyncEngineImpl : public SyncEngine, public InvalidationHandler {
       const TopicInvalidationMap& invalidation_map) override;
   std::string GetOwnerName() const override;
   void OnInvalidatorClientIdChange(const std::string& client_id) override;
+
+  // InvalidationsListener implementation.
+  void OnInvalidationReceived(const std::string& payload) override;
 
  protected:
   // The types and functions below are protected so that test

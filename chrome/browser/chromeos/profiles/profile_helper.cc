@@ -62,7 +62,7 @@ const char* kNonRiskyExtensionsIdsHashes[] = {
     "1CF709D51B2B96CF79D00447300BD3BFBE401D21",  // Mobile activation
     "40FF1103292F40C34066E023B8BE8CAE18306EAE",  // Chromeos help
     "3C654B3B6682CA194E75AD044CEDE927675DDEE8",  // Easy unlock
-    "2FCBCE08B34CCA1728A85F1EFBD9A34DD2558B2E",  // ChromeVox
+    "75C7F4B720314B6CB1B5817CD86089DB95CD2461",  // ChromeVox
 };
 
 // As defined in /chromeos/dbus/cryptohome/cryptohome_client.cc.

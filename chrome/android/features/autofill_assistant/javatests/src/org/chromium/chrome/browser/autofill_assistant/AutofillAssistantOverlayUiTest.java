@@ -11,12 +11,14 @@ import static androidx.test.espresso.matcher.ViewMatchers.isRoot;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.is;
-import static org.hamcrest.Matchers.not;
 import static org.hamcrest.Matchers.notNullValue;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertTrue;
 
 import static org.chromium.chrome.browser.autofill_assistant.AutofillAssistantUiTestUtil.checkElementExists;
 import static org.chromium.chrome.browser.autofill_assistant.AutofillAssistantUiTestUtil.getBoundingRectForElement;
 import static org.chromium.chrome.browser.autofill_assistant.AutofillAssistantUiTestUtil.getViewport;
+import static org.chromium.chrome.browser.autofill_assistant.AutofillAssistantUiTestUtil.waitForElementRemoved;
 import static org.chromium.content_public.browser.test.util.TestThreadUtils.runOnUiThreadBlocking;
 
 import android.graphics.Bitmap;
@@ -25,6 +27,7 @@ import android.graphics.Color;
 import android.graphics.Rect;
 import android.graphics.RectF;
 import android.support.test.InstrumentationRegistry;
+import android.view.View;
 
 import androidx.annotation.Nullable;
 import androidx.test.filters.MediumTest;
@@ -68,7 +71,10 @@ public class AutofillAssistantOverlayUiTest {
         mTestRule.startCustomTabActivityWithIntent(CustomTabsTestUtils.createMinimalCustomTabIntent(
                 InstrumentationRegistry.getTargetContext(),
                 mTestRule.getTestServer().getURL(TEST_PAGE)));
-        mTestRule.getActivity().getScrim().disableAnimationForTesting(true);
+        mTestRule.getActivity()
+                .getRootUiCoordinatorForTesting()
+                .getScrimCoordinator()
+                .disableAnimationForTesting(true);
     }
 
     private WebContents getWebContents() {
@@ -91,7 +97,11 @@ public class AutofillAssistantOverlayUiTest {
                 ()
                         -> new AssistantOverlayCoordinator(activity,
                                 activity.getBrowserControlsManager(),
-                                activity.getCompositorViewHolder(), activity.getScrim(), model,
+                                activity.getCompositorViewHolder(),
+                                mTestRule.getActivity()
+                                        .getRootUiCoordinatorForTesting()
+                                        .getScrimCoordinator(),
+                                model,
                                 new AutofillAssistantUiTestUtil.MockImageFetcher(
                                         overlayImage, null)));
     }
@@ -105,7 +115,7 @@ public class AutofillAssistantOverlayUiTest {
 
         assertScrimDisplayed(false);
         tapElement("touch_area_one");
-        assertThat(checkElementExists(getWebContents(), "touch_area_one"), is(false));
+        waitForElementRemoved(getWebContents(), "touch_area_one");
     }
 
     /** Tests assumptions about the full overlay. */
@@ -125,7 +135,7 @@ public class AutofillAssistantOverlayUiTest {
                 () -> model.set(AssistantOverlayModel.STATE, AssistantOverlayState.HIDDEN));
         assertScrimDisplayed(false);
         tapElement("touch_area_one");
-        assertThat(checkElementExists(getWebContents(), "touch_area_one"), is(false));
+        waitForElementRemoved(getWebContents(), "touch_area_one");
     }
 
     /** Tests assumptions about the full overlay. */
@@ -175,7 +185,8 @@ public class AutofillAssistantOverlayUiTest {
 
         // Now the partial overlay allows tapping the highlighted touch area.
         tapElement("touch_area_one");
-        assertThat(checkElementExists(getWebContents(), "touch_area_one"), is(false));
+
+        waitForElementRemoved(getWebContents(), "touch_area_one");
 
         runOnUiThreadBlocking(
                 () -> model.set(AssistantOverlayModel.TOUCHABLE_AREA, Collections.emptyList()));
@@ -203,7 +214,7 @@ public class AutofillAssistantOverlayUiTest {
         runOnUiThreadBlocking(
                 () -> model.set(AssistantOverlayModel.VISUAL_VIEWPORT, new RectF(newViewport)));
         tapElement("touch_area_two");
-        assertThat(checkElementExists(getWebContents(), "touch_area_two"), is(false));
+        waitForElementRemoved(getWebContents(), "touch_area_two");
     }
 
     /**
@@ -252,19 +263,23 @@ public class AutofillAssistantOverlayUiTest {
         // Wait for UI thread to be idle.
         onView(isRoot()).check(matches(isDisplayed()));
 
+        View scrim = mTestRule.getActivity()
+                             .getRootUiCoordinatorForTesting()
+                             .getScrimCoordinator()
+                             .getViewForTesting();
+
         // The scrim view is only attached to the view hierarchy when needed, preventing us from
         // using regular espresso facilities.
         boolean scrimInHierarchy =
-                runOnUiThreadBlocking(() -> mTestRule.getActivity().getScrim().getParent() != null);
-        if (expected && !scrimInHierarchy) {
-            throw new Exception("Expected scrim view visible, but scrim was not in view hierarchy");
-        }
-        if (scrimInHierarchy) {
-            if (expected) {
-                onView(is(mTestRule.getActivity().getScrim())).check(matches(isDisplayed()));
-            } else {
-                onView(is(mTestRule.getActivity().getScrim())).check(matches(not(isDisplayed())));
-            }
+                runOnUiThreadBlocking(() -> scrim != null && scrim.getParent() != null);
+
+        if (expected) {
+            assertTrue(
+                    "The scrim wasn't in the hierarchy but was expected to be!", scrimInHierarchy);
+            onView(is(scrim)).check(matches(isDisplayed()));
+        } else {
+            assertFalse(
+                    "The scrim was in the hierarchy but wasn't expected to be!", scrimInHierarchy);
         }
     }
 

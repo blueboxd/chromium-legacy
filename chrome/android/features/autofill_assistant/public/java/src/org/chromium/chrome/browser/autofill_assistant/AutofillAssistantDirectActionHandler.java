@@ -19,7 +19,6 @@ import org.chromium.chrome.browser.directactions.DirectActionReporter;
 import org.chromium.chrome.browser.directactions.DirectActionReporter.Definition;
 import org.chromium.chrome.browser.directactions.DirectActionReporter.Type;
 import org.chromium.chrome.browser.tab.Tab;
-import org.chromium.chrome.browser.widget.ScrimView;
 import org.chromium.components.browser_ui.bottomsheet.BottomSheetController;
 
 /**
@@ -39,7 +38,6 @@ public class AutofillAssistantDirectActionHandler implements DirectActionHandler
     private final BottomSheetController mBottomSheetController;
     private final BrowserControlsStateProvider mBrowserControls;
     private final CompositorViewHolder mCompositorViewHolder;
-    private final ScrimView mScrimView;
     private final ActivityTabProvider mActivityTabProvider;
     private final AutofillAssistantModuleEntryProvider mModuleEntryProvider;
 
@@ -49,11 +47,10 @@ public class AutofillAssistantDirectActionHandler implements DirectActionHandler
     AutofillAssistantDirectActionHandler(Context context,
             BottomSheetController bottomSheetController,
             BrowserControlsStateProvider browserControls, CompositorViewHolder compositorViewHolder,
-            ActivityTabProvider activityTabProvider, ScrimView scrimView,
+            ActivityTabProvider activityTabProvider,
             AutofillAssistantModuleEntryProvider moduleEntryProvider) {
         mContext = context;
         mBottomSheetController = bottomSheetController;
-        mScrimView = scrimView;
         mBrowserControls = browserControls;
         mCompositorViewHolder = compositorViewHolder;
         mActivityTabProvider = activityTabProvider;
@@ -229,6 +226,6 @@ public class AutofillAssistantDirectActionHandler implements DirectActionHandler
         if (entry == null) return null;
 
         return entry.createActionHandler(mContext, mBottomSheetController, mBrowserControls,
-                mCompositorViewHolder, mActivityTabProvider, mScrimView);
+                mCompositorViewHolder, mActivityTabProvider);
     }
 }

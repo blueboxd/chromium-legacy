@@ -60,7 +60,7 @@ export {BlockingRequestManager} from './autofill_page/blocking_request_manager.j
 export {PaymentsManager, PaymentsManagerImpl} from './autofill_page/payments_section.js';
 // <if expr="_google_chrome and is_win">
 export {ChromeCleanupIdleReason} from './chrome_cleanup_page/chrome_cleanup_page.js';
-export {ChromeCleanupProxyImpl} from './chrome_cleanup_page/chrome_cleanup_proxy.js';
+export {ChromeCleanupProxy, ChromeCleanupProxyImpl} from './chrome_cleanup_page/chrome_cleanup_proxy.js';
 export {CHROME_CLEANUP_DEFAULT_ITEMS_TO_SHOW} from './chrome_cleanup_page/items_to_remove_list.js';
 // </if>
 export {ClearBrowsingDataBrowserProxyImpl} from './clear_browsing_data_dialog/clear_browsing_data_browser_proxy.js';

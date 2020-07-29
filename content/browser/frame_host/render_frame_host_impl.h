@@ -2518,6 +2518,11 @@ class CONTENT_EXPORT RenderFrameHostImpl
   // the renderer process.
   bool render_frame_created_;
 
+  // Tracks whether the RenderFrame has ever been created for this
+  // RenderFrameHost or not. This starts out as false, becomes true after the
+  // first call to SetRenderFrameCreated(true), and stays true thereafter.
+  bool was_render_frame_ever_created_ = false;
+
   // When the last BeforeUnload message was sent.
   base::TimeTicks send_before_unload_start_time_;
 

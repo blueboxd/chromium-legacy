@@ -8,11 +8,6 @@
 
   #header {
     --avatar-position: 84px;
-    /**
-     * TODO(crbug.com/1076880): replace the hardcoded background color with the
-     * browser-provided one.
-     */
-    background-color: rgb(206, 234, 214);
     border-radius: 8px;
     margin: 8px;
     min-height: 128px;
@@ -81,7 +76,7 @@
   }
 </style>
 
-<div id="header">
+<div id="header" style$="[[headerStyle_]]">
   <div id="accountName">[[accountInfo_.name]]</div>
   <div class="avatar" id="workBadge">
     <iron-icon class="icon" icon="signin:work"></iron-icon>

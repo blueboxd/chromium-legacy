@@ -153,14 +153,6 @@ class ChromeMetricsServiceAccessor : public metrics::MetricsServiceAccessor {
       base::StringPiece trial_name,
       const std::vector<uint32_t>& group_name_hashes);
 
-  // Calls
-  // metrics::MetricsServiceAccessor::RegisterSyntheticFieldTrialWithNameHash()
-  // with g_browser_process->metrics_service(). See that function's declaration
-  // for details.
-  static bool RegisterSyntheticFieldTrialWithNameHash(
-      uint32_t trial_name_hash,
-      base::StringPiece group_name);
-
   // Cover for function of same name in MetricsServiceAccssor. See
   // ChromeMetricsServiceAccessor for details.
   static void SetForceIsMetricsReportingEnabledPrefLookup(bool value);

@@ -179,22 +179,31 @@
                                    (HistoryEntryItem*)item
                                                  withView:(UIView*)view
     API_AVAILABLE(ios(13.0)) {
-  return [UIContextMenuConfiguration
-      configurationWithIdentifier:nil
-                  previewProvider:nil
-                   actionProvider:^(NSArray<UIMenuElement*>* suggestedActions) {
-                     // Record that this context menu was shown to the user.
-                     RecordMenuShown(MenuScenario::HistoryEntry);
+  __weak id<HistoryEntryItemDelegate> historyItemDelegate =
+      self.historyTableViewController;
 
-                     ActionFactory* actionFactory = [[ActionFactory alloc]
-                         initWithScenario:MenuScenario::HistoryEntry];
+  UIContextMenuActionProvider actionProvider =
+      ^(NSArray<UIMenuElement*>* suggestedActions) {
+        // Record that this context menu was shown to the user.
+        RecordMenuShown(MenuScenario::HistoryEntry);
 
-                     UIAction* copyAction =
-                         [actionFactory actionToCopyURL:item.URL];
+        ActionFactory* actionFactory =
+            [[ActionFactory alloc] initWithScenario:MenuScenario::HistoryEntry];
 
-                     return [UIMenu menuWithTitle:[NSString string]
-                                         children:@[ copyAction ]];
-                   }];
+        UIAction* copyAction = [actionFactory actionToCopyURL:item.URL];
+
+        UIAction* deleteAction = [actionFactory actionToDeleteWithBlock:^{
+          [historyItemDelegate historyEntryItemDidRequestDelete:item];
+        }];
+
+        return [UIMenu menuWithTitle:[NSString string]
+                            children:@[ copyAction, deleteAction ]];
+      };
+
+  return
+      [UIContextMenuConfiguration configurationWithIdentifier:nil
+                                              previewProvider:nil
+                                               actionProvider:actionProvider];
 }
 
 @end

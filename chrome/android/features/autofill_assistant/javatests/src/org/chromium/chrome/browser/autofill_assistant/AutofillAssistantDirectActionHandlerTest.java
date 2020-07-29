@@ -71,7 +71,7 @@ public class AutofillAssistantDirectActionHandlerTest {
 
         mHandler = new AutofillAssistantDirectActionHandler(mActivity, mBottomSheetController,
                 mActivity.getBrowserControlsManager(), mActivity.getCompositorViewHolder(),
-                mActivity.getActivityTabProvider(), mActivity.getScrim(), mModuleEntryProvider);
+                mActivity.getActivityTabProvider(), mModuleEntryProvider);
 
         mSharedPreferencesManager.removeKey(
                 ChromePreferenceKeys.AUTOFILL_ASSISTANT_ONBOARDING_ACCEPTED);

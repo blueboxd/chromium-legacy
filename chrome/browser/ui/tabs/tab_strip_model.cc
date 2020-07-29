@@ -38,7 +38,6 @@
 #include "chrome/browser/ui/tabs/tab_utils.h"
 #include "chrome/browser/ui/web_applications/web_app_dialog_utils.h"
 #include "chrome/browser/ui/web_applications/web_app_launch_utils.h"
-#include "chrome/browser/ui/web_contents_sizer.h"
 #include "chrome/common/url_constants.h"
 #include "chrome/grit/generated_resources.h"
 #include "components/content_settings/core/browser/host_content_settings_map.h"
@@ -997,8 +996,8 @@ void TabStripModel::AddWebContents(
   // new background tab.
   if (WebContents* old_contents = GetActiveWebContents()) {
     if ((add_types & ADD_ACTIVE) == 0) {
-      ResizeWebContents(raw_contents,
-                        gfx::Rect(old_contents->GetContainerBounds().size()));
+      raw_contents->Resize(
+          gfx::Rect(old_contents->GetContainerBounds().size()));
     }
   }
 }

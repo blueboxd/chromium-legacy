@@ -1896,6 +1896,7 @@ jumbo_source_set("browser") {
     "web_contents/javascript_dialog_navigation_deferrer.h",
     "web_contents/web_contents_impl.cc",
     "web_contents/web_contents_impl.h",
+    "web_contents/web_contents_impl_mac.mm",
     "web_contents/web_contents_view.h",
     "web_contents/web_contents_view_aura.cc",
     "web_contents/web_contents_view_aura.h",

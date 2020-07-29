@@ -3,8 +3,7 @@
 // found in the LICENSE file.
 
 #include "chrome/browser/nearby_sharing/outgoing_share_target_info.h"
-
-#include <utility>
+#include "chrome/browser/nearby_sharing/nearby_connection.h"
 
 OutgoingShareTargetInfo::OutgoingShareTargetInfo() = default;
 OutgoingShareTargetInfo::~OutgoingShareTargetInfo() = default;
@@ -21,7 +20,6 @@ std::ostream& operator<<(std::ostream& out,
               ? share_target.endpoint_id().value()
               : "")
       << ", has_certificate: " << (share_target.certificate().has_value())
-      << ", has_connection: " << (share_target.nearby_connection() != nullptr)
-      << ">";
+      << ", has_connection: " << (share_target.connection() != nullptr) << ">";
   return out;
 }

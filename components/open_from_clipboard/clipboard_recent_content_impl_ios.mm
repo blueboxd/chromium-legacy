@@ -15,6 +15,10 @@
 #error "This file requires ARC support."
 #endif
 
+ContentType const ContentTypeURL = @"ContentTypeURL";
+ContentType const ContentTypeText = @"ContentTypeString";
+ContentType const ContentTypeImage = @"ContentTypeImage";
+
 namespace {
 // Key used to store the pasteboard's current change count. If when resuming
 // chrome the pasteboard's change count is different from the stored one, then
@@ -156,6 +160,220 @@ NSString* const kPasteboardChangeDateKey = @"PasteboardChangeDate";
   }
 
   return self.cachedImage;
+}
+
+- (void)hasContentMatchingTypes:(NSSet<ContentType>*)types
+              completionHandler:
+                  (void (^)(NSSet<ContentType>*))completionHandler {
+  [self updateIfNeeded];
+  if (![self shouldReturnValueOfClipboard]) {
+    completionHandler([NSSet set]);
+    return;
+  }
+
+  __block NSMutableDictionary<ContentType, NSNumber*>* results =
+      [[NSMutableDictionary alloc] init];
+
+  void (^checkResults)() = ^{
+    NSMutableSet<ContentType>* matchingTypes = [NSMutableSet set];
+    if ([results count] != [types count]) {
+      return;
+    }
+
+    for (ContentType type in results) {
+      if ([results[type] boolValue]) {
+        [matchingTypes addObject:type];
+      }
+    }
+    completionHandler(matchingTypes);
+  };
+
+  for (ContentType type in types) {
+    if ([type isEqualToString:ContentTypeURL]) {
+      [self hasRecentURLFromClipboardInternal:^(BOOL hasURL) {
+        results[ContentTypeURL] = [NSNumber numberWithBool:hasURL];
+        checkResults();
+      }];
+    } else if ([type isEqualToString:ContentTypeText]) {
+      [self hasRecentTextFromClipboardInternal:^(BOOL hasText) {
+        results[ContentTypeText] = [NSNumber numberWithBool:hasText];
+        checkResults();
+      }];
+    } else if ([type isEqualToString:ContentTypeImage]) {
+      [self hasRecentImageFromClipboardInternal:^(BOOL hasImage) {
+        results[ContentTypeImage] = [NSNumber numberWithBool:hasImage];
+        checkResults();
+      }];
+    }
+  }
+}
+
+- (void)hasRecentURLFromClipboardInternal:(void (^)(BOOL))callback {
+  DCHECK(callback);
+  if (@available(iOS 14, *)) {
+    // Use cached value if it exists
+    if (self.cachedURL) {
+      callback(YES);
+      return;
+    }
+
+#if defined(__IPHONE_14_0) && __IPHONE_OS_VERSION_MAX_ALLOWED >= __IPHONE_14_0
+    NSSet<UIPasteboardDetectionPattern>* urlPattern =
+        [NSSet setWithObject:UIPasteboardDetectionPatternProbableWebURL];
+    [UIPasteboard.generalPasteboard
+        detectPatternsForPatterns:urlPattern
+                completionHandler:^(
+                    NSSet<UIPasteboardDetectionPattern>* patterns,
+                    NSError* error) {
+                  callback([patterns
+                      containsObject:
+                          UIPasteboardDetectionPatternProbableWebURL]);
+                }];
+#else
+    // To prevent clipboard notification from appearing on iOS 14 with iOS 13
+    // SDK, use the -hasURLs property to check for URL existence. This will
+    // cause crbug.com/1033935 to reappear in code using this method (also see
+    // the comments in -URLFromPasteboard in this file), but that is preferable
+    // to the notificatio appearing when it shouldn't.
+    callback(UIPasteboard.generalPasteboard.hasURLs);
+#endif
+  } else {
+    callback([self recentURLFromClipboard] != nil);
+  }
+}
+
+- (void)hasRecentTextFromClipboardInternal:(void (^)(BOOL))callback {
+  DCHECK(callback);
+  if (@available(iOS 14, *)) {
+    // Use cached value if it exists
+    if (self.cachedText) {
+      callback(YES);
+      return;
+    }
+
+#if defined(__IPHONE_14_0) && __IPHONE_OS_VERSION_MAX_ALLOWED >= __IPHONE_14_0
+    NSSet<UIPasteboardDetectionPattern>* textPattern =
+        [NSSet setWithObject:UIPasteboardDetectionPatternProbableWebSearch];
+    [UIPasteboard.generalPasteboard
+        detectPatternsForPatterns:textPattern
+                completionHandler:^(
+                    NSSet<UIPasteboardDetectionPattern>* patterns,
+                    NSError* error) {
+                  callback([patterns
+                      containsObject:
+                          UIPasteboardDetectionPatternProbableWebSearch]);
+                }];
+#else
+    callback(UIPasteboard.generalPasteboard.hasStrings);
+#endif
+  } else {
+    callback([self recentTextFromClipboard] != nil);
+  }
+}
+
+- (void)hasRecentImageFromClipboardInternal:(void (^)(BOOL))callback {
+  DCHECK(callback);
+  if (@available(iOS 14, *)) {
+    // Use cached value if it exists
+    if (self.cachedImage) {
+      callback(YES);
+      return;
+    }
+
+    callback(UIPasteboard.generalPasteboard.hasImages);
+  } else {
+    callback([self recentImageFromClipboard] != nil);
+  }
+}
+
+- (void)recentURLFromClipboardAsync:(void (^)(NSURL*))callback {
+  DCHECK(callback);
+  if (@available(iOS 14, *)) {
+    [self updateIfNeeded];
+    if (![self shouldReturnValueOfClipboard]) {
+      callback(nil);
+      return;
+    }
+
+    // Use cached value if it exists.
+    if (self.cachedURL) {
+      callback(self.cachedURL);
+      return;
+    }
+
+#if defined(__IPHONE_14_0) && __IPHONE_OS_VERSION_MAX_ALLOWED >= __IPHONE_14_0
+    __weak __typeof(self) weakSelf = self;
+    NSSet<UIPasteboardDetectionPattern>* urlPattern =
+        [NSSet setWithObject:UIPasteboardDetectionPatternProbableWebURL];
+    [UIPasteboard.generalPasteboard
+        detectValuesForPatterns:urlPattern
+              completionHandler:^(
+                  NSDictionary<UIPasteboardDetectionPattern, id>* values,
+                  NSError* error) {
+                NSURL* url = [NSURL
+                    URLWithString:
+                        values[UIPasteboardDetectionPatternProbableWebURL]];
+                weakSelf.cachedURL = url;
+                callback(url);
+              }];
+#else
+    callback([self recentURLFromClipboard]);
+#endif
+  } else {
+    callback([self recentURLFromClipboard]);
+  }
+}
+
+- (void)recentTextFromClipboardAsync:(void (^)(NSString*))callback {
+  DCHECK(callback);
+  if (@available(iOS 14, *)) {
+    [self updateIfNeeded];
+    if (![self shouldReturnValueOfClipboard]) {
+      callback(nil);
+      return;
+    }
+
+    // Use cached value if it exists.
+    if (self.cachedText) {
+      callback(self.cachedText);
+      return;
+    }
+
+#if defined(__IPHONE_14_0) && __IPHONE_OS_VERSION_MAX_ALLOWED >= __IPHONE_14_0
+    __weak __typeof(self) weakSelf = self;
+    NSSet<UIPasteboardDetectionPattern>* textPattern =
+        [NSSet setWithObject:UIPasteboardDetectionPatternProbableWebSearch];
+    [UIPasteboard.generalPasteboard
+        detectValuesForPatterns:textPattern
+              completionHandler:^(
+                  NSDictionary<UIPasteboardDetectionPattern, id>* values,
+                  NSError* error) {
+                NSString* text =
+                    values[UIPasteboardDetectionPatternProbableWebSearch];
+                weakSelf.cachedText = text;
+
+                callback(text);
+              }];
+#else
+    callback([self recentTextFromClipboard]);
+#endif
+  } else {
+    callback([self recentTextFromClipboard]);
+  }
+}
+
+- (void)recentImageFromClipboardAsync:(void (^)(UIImage*))callback {
+  DCHECK(callback);
+  [self updateIfNeeded];
+  if (![self shouldReturnValueOfClipboard]) {
+    callback(nil);
+    return;
+  }
+
+  if (!self.cachedImage) {
+    self.cachedImage = UIPasteboard.generalPasteboard.image;
+  }
+  callback(self.cachedImage);
 }
 
 - (NSTimeInterval)clipboardContentAge {

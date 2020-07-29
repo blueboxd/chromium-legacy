@@ -46,12 +46,11 @@ class FakeNearbyConnectionsManager : public NearbyConnectionsManager {
   void StartDiscovery(DiscoveryListener* listener,
                       ConnectionsCallback callback) override;
   void StopDiscovery() override;
-  std::unique_ptr<NearbyConnection> Connect(
-      std::vector<uint8_t> endpoint_info,
-      const std::string& endpoint_id,
-      base::Optional<std::vector<uint8_t>> bluetooth_mac_address,
-      DataUsage data_usage,
-      ConnectionsCallback callback) override;
+  void Connect(std::vector<uint8_t> endpoint_info,
+               const std::string& endpoint_id,
+               base::Optional<std::vector<uint8_t>> bluetooth_mac_address,
+               DataUsage data_usage,
+               NearbyConnectionCallback callback) override;
   void Disconnect(const std::string& endpoint_id) override;
   void Send(const std::string& endpoint_id,
             PayloadPtr payload,

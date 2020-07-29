@@ -134,6 +134,7 @@ void InstallStageTracker::ReportInstallationStage(const ExtensionId& id,
   InstallationData& data = installation_data_map_[id];
   data.install_stage = stage;
   for (auto& observer : observers_) {
+    observer.OnExtensionInstallationStageChanged(id, stage);
     observer.OnExtensionDataChangedForTesting(id, browser_context_, data);
   }
 }

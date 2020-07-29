@@ -124,6 +124,35 @@ em::ExtensionInstallReportLogEvent_FailureReason ConvertFailureReasonToProto(
   }
 }
 
+// Helper method to convert InstallStageTracker::Stage to the Stage proto.
+em::ExtensionInstallReportLogEvent_InstallationStage
+ConvertInstallationStageToProto(extensions::InstallStageTracker::Stage stage) {
+  using Stage = extensions::InstallStageTracker::Stage;
+  switch (stage) {
+    case Stage::CREATED:
+      return em::ExtensionInstallReportLogEvent::CREATED;
+    case extensions::InstallStageTracker::Stage::NOTIFIED_FROM_MANAGEMENT:
+      return em::ExtensionInstallReportLogEvent::NOTIFIED_FROM_MANAGEMENT;
+    case Stage::NOTIFIED_FROM_MANAGEMENT_NOT_FORCED:
+      return em::ExtensionInstallReportLogEvent::
+          NOTIFIED_FROM_MANAGEMENT_NOT_FORCED;
+    case Stage::SEEN_BY_POLICY_LOADER:
+      return em::ExtensionInstallReportLogEvent::SEEN_BY_POLICY_LOADER;
+    case Stage::SEEN_BY_EXTERNAL_PROVIDER:
+      return em::ExtensionInstallReportLogEvent::SEEN_BY_EXTERNAL_PROVIDER;
+    case Stage::PENDING:
+      return em::ExtensionInstallReportLogEvent::PENDING;
+    case Stage::DOWNLOADING:
+      return em::ExtensionInstallReportLogEvent::DOWNLOADING;
+    case Stage::INSTALLING:
+      return em::ExtensionInstallReportLogEvent::INSTALLING;
+    case Stage::COMPLETE:
+      return em::ExtensionInstallReportLogEvent::COMPLETE;
+    default:
+      NOTREACHED();
+  }
+}
+
 }  // namespace
 
 ExtensionInstallEventLogCollector::ExtensionInstallEventLogCollector(
@@ -207,6 +236,16 @@ void ExtensionInstallEventLogCollector::OnExtensionInstallationFailed(
   delegate_->Add(extension_id, true /* gather_disk_space_info */,
                  std::move(event));
   delegate_->OnExtensionInstallationFinished(extension_id);
+}
+
+void ExtensionInstallEventLogCollector::OnExtensionInstallationStageChanged(
+    const extensions::ExtensionId& id,
+    extensions::InstallStageTracker::Stage stage) {
+  if (!delegate_->IsExtensionPending(id))
+    return;
+  auto event = std::make_unique<em::ExtensionInstallReportLogEvent>();
+  event->set_installation_stage(ConvertInstallationStageToProto(stage));
+  delegate_->Add(id, true /* gather_disk_space_info */, std::move(event));
 }
 
 void ExtensionInstallEventLogCollector::OnExtensionLoaded(

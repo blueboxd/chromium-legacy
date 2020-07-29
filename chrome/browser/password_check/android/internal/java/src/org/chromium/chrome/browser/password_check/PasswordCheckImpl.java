@@ -7,6 +7,7 @@ package org.chromium.chrome.browser.password_check;
 import android.content.Context;
 import android.os.Bundle;
 
+import org.chromium.base.ObserverList;
 import org.chromium.chrome.browser.password_check.PasswordCheckBridge.PasswordCheckObserver;
 import org.chromium.chrome.browser.settings.SettingsLauncher;
 import org.chromium.chrome.browser.settings.SettingsLauncherImpl;
@@ -16,9 +17,16 @@ import org.chromium.chrome.browser.settings.SettingsLauncherImpl;
  */
 class PasswordCheckImpl implements PasswordCheck, PasswordCheckObserver {
     private final PasswordCheckBridge mPasswordCheckBridge;
+    private final ObserverList<Observer> mObserverList;
+
+    private boolean mCompromisedCredentialsFetched;
+    private boolean mSavedPasswordsFetched;
 
     PasswordCheckImpl() {
+        mCompromisedCredentialsFetched = false;
+        mSavedPasswordsFetched = false;
         mPasswordCheckBridge = new PasswordCheckBridge(this);
+        mObserverList = new ObserverList<Observer>();
     }
 
     @Override
@@ -37,16 +45,63 @@ class PasswordCheckImpl implements PasswordCheck, PasswordCheckObserver {
 
     @Override
     public void onCompromisedCredentialFound(String originUrl, String username, String password) {
-        // TODO(crbug.com): Broadcast to registered observers.
+        // TODO(crbug.com/1106726): Broadcast to registered observers.
     }
 
     @Override
     public void onCompromisedCredentialsFetched(int count) {
-        // TODO(crbug.com): Broadcast to registered observers.
+        mCompromisedCredentialsFetched = true;
+        for (Observer obs : mObserverList) {
+            obs.onCompromisedCredentialsFetchCompleted();
+        }
+    }
+
+    @Override
+    public void onSavedPasswordsFetched(int count) {
+        mSavedPasswordsFetched = true;
+        for (Observer obs : mObserverList) {
+            obs.onSavedPasswordsFetchCompleted();
+        }
     }
 
     @Override
     public void removeCredential(CompromisedCredential credential) {
         // TODO(crbug.com/1106726): Call native method through bridge.
+    }
+
+    @Override
+    public void addObserver(Observer obs, boolean callImmediatelyIfReady) {
+        mObserverList.addObserver(obs);
+        if (callImmediatelyIfReady && mCompromisedCredentialsFetched) {
+            obs.onCompromisedCredentialsFetchCompleted();
+        }
+        if (callImmediatelyIfReady && mSavedPasswordsFetched) {
+            obs.onSavedPasswordsFetchCompleted();
+        }
+    }
+
+    @Override
+    public void removeObserver(Observer obs) {
+        mObserverList.removeObserver(obs);
+    }
+
+    @Override
+    public int getCompromisedCredentialsCount() {
+        return mPasswordCheckBridge.getCompromisedCredentialsCount();
+    }
+
+    @Override
+    public int getSavedPasswordsCount() {
+        return mPasswordCheckBridge.getSavedPasswordsCount();
+    }
+
+    @Override
+    public void startCheck() {
+        mPasswordCheckBridge.startCheck();
+    }
+
+    @Override
+    public void stopCheck() {
+        mPasswordCheckBridge.stopCheck();
     }
 }

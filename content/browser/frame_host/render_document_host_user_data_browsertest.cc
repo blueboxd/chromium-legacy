@@ -65,6 +65,53 @@ class Data : public RenderDocumentHostUserData<Data> {
 
 RENDER_DOCUMENT_HOST_USER_DATA_KEY_IMPL(Data)
 
+// Observer class to track the creation of RenderFrameHost objects. It is used
+// in subsequent tests.
+class RenderFrameHostCreatedObserver : public WebContentsObserver {
+ public:
+  using OnRenderFrameHostCreatedCallback =
+      base::RepeatingCallback<void(RenderFrameHost*)>;
+
+  RenderFrameHostCreatedObserver(
+      WebContents* web_contents,
+      OnRenderFrameHostCreatedCallback on_rfh_created)
+      : WebContentsObserver(web_contents),
+        on_rfh_created_(std::move(on_rfh_created)) {}
+
+  void RenderFrameCreated(RenderFrameHost* render_frame_host) override {
+    on_rfh_created_.Run(std::move(render_frame_host));
+  }
+
+ private:
+  OnRenderFrameHostCreatedCallback on_rfh_created_;
+};
+
+// Observer class to track creation of new popups. It is used
+// in subsequent tests.
+class PopupCreatedObserver : public WebContentsDelegate {
+ public:
+  using WebContentsCreatedCallback =
+      base::RepeatingCallback<void(WebContents* web_contents)>;
+
+  explicit PopupCreatedObserver(WebContentsCreatedCallback callback)
+      : callback_(std::move(callback)) {}
+
+  void AddNewContents(WebContents* source_contents,
+                      std::unique_ptr<WebContents> new_contents,
+                      const GURL& target_url,
+                      WindowOpenDisposition disposition,
+                      const gfx::Rect& initial_rect,
+                      bool user_gesture,
+                      bool* was_blocked) override {
+    callback_.Run(new_contents.get());
+    web_contents_.push_back(std::move(new_contents));
+  }
+
+ private:
+  WebContentsCreatedCallback callback_;
+  std::vector<std::unique_ptr<WebContents>> web_contents_;
+};
+
 }  // namespace
 
 class RenderDocumentHostUserDataTest : public ContentBrowserTest {
@@ -167,9 +214,12 @@ IN_PROC_BROWSER_TEST_F(RenderDocumentHostUserDataTest,
   EXPECT_NE(data_a->unique_id(), data_b->unique_id());
 }
 
-// Tests that RenderDocumentHostUserData objects are cleared when the renderer
-// process crashes even when having RenderFrameHost that still exists.
-IN_PROC_BROWSER_TEST_F(RenderDocumentHostUserDataTest, CheckForCrashedFrame) {
+// Tests that RenderDocumentHostUserData object is preserved when the renderer
+// process crashes even when RenderFrameHost still exists, but the RDHUD object
+// is cleared if the RenderFrameHost is reused for the new RenderFrame creation
+// when the previous renderer process crashes.
+IN_PROC_BROWSER_TEST_F(RenderDocumentHostUserDataTest,
+                       CrashedFrameUserDataIsPreservedAndDeletedOnReset) {
   ASSERT_TRUE(embedded_test_server()->Start());
   GURL url_a(embedded_test_server()->GetURL("a.com", "/title1.html"));
 
@@ -189,11 +239,41 @@ IN_PROC_BROWSER_TEST_F(RenderDocumentHostUserDataTest, CheckForCrashedFrame) {
   renderer_process->Shutdown(0);
   crash_observer.Wait();
 
-  // 4) Check if the RDHUD object is deleted after renderer process crashes even
-  // when RFH is around.
-  EXPECT_EQ(top_frame_host(), rfh_a);
+  // 4) RDHUD shouldn't be cleared after the renderer crash.
   EXPECT_FALSE(rfh_a->IsRenderFrameLive());
+  EXPECT_TRUE(data);
+
+  // 5) Register an observer which observes created RenderFrameHost and checks
+  // if the data is cleared when callback was run.
+  bool did_clear_user_data = false;
+  RenderFrameHostCreatedObserver observer(
+      web_contents(), base::BindRepeating(
+                          [](bool* did_clear_user_data, RenderFrameHost* rfh) {
+                            if (!Data::GetForCurrentDocument(rfh))
+                              *did_clear_user_data = true;
+                          },
+                          &did_clear_user_data));
+
+  // 6) Re-initialize RenderFrame, now RDHUD should be cleared on new
+  // RenderFrame creation after crash when
+  // RenderFrameHostImpl::SetRenderFrameCreated was called.
+  FrameTreeNode* root = web_contents()->GetFrameTree()->root();
+  root->render_manager()->InitializeMainRenderFrameForImmediateUse();
+  EXPECT_TRUE(did_clear_user_data);
+
+  // With RenderDocument, on a reload renderer crashes would give a new
+  // RenderFrameHost different from rfh_a.
+  RenderFrameHostImpl* new_rfh_a = top_frame_host();
+  EXPECT_TRUE(new_rfh_a->IsRenderFrameLive());
+
+  // 7) RDHUD should be cleared after initialization.
   EXPECT_FALSE(data);
+
+  // 8) Check RDHUD object creation after new RenderFrame creation.
+  Data::CreateForCurrentDocument(new_rfh_a);
+  base::WeakPtr<Data> new_data =
+      Data::GetForCurrentDocument(new_rfh_a)->GetWeakPtr();
+  EXPECT_TRUE(new_data);
 }
 
 // Tests that RenderDocumentHostUserData object is not cleared when speculative
@@ -653,34 +733,6 @@ IN_PROC_BROWSER_TEST_F(RenderDocumentHostUserDataTest, SameSiteNavigation) {
   EXPECT_FALSE(data);
 }
 
-namespace {
-
-class PopupCreatedObserver : public WebContentsDelegate {
- public:
-  using WebContentsCreatedCallback =
-      base::RepeatingCallback<void(WebContents* web_contents)>;
-
-  explicit PopupCreatedObserver(WebContentsCreatedCallback callback)
-      : callback_(std::move(callback)) {}
-
-  void AddNewContents(WebContents* source_contents,
-                      std::unique_ptr<WebContents> new_contents,
-                      const GURL& target_url,
-                      WindowOpenDisposition disposition,
-                      const gfx::Rect& initial_rect,
-                      bool user_gesture,
-                      bool* was_blocked) override {
-    callback_.Run(new_contents.get());
-    web_contents_.push_back(std::move(new_contents));
-  }
-
- private:
-  WebContentsCreatedCallback callback_;
-  std::vector<std::unique_ptr<WebContents>> web_contents_;
-};
-
-}  // namespace
-
 // This test ensures that the data created during the new WebContents
 // initialisation is not lost during the initial "navigation" triggered by the
 // window.open.
@@ -724,29 +776,6 @@ IN_PROC_BROWSER_TEST_F(RenderDocumentHostUserDataTest, WindowOpen) {
 
   web_contents()->SetDelegate(nullptr);
 }
-
-namespace {
-
-class RenderFrameHostCreatedObserver : public WebContentsObserver {
- public:
-  using OnRenderFrameHostCreatedCallback =
-      base::RepeatingCallback<void(RenderFrameHost*)>;
-
-  RenderFrameHostCreatedObserver(
-      WebContents* web_contents,
-      OnRenderFrameHostCreatedCallback on_rfh_created)
-      : WebContentsObserver(web_contents),
-        on_rfh_created_(std::move(on_rfh_created)) {}
-
-  void RenderFrameCreated(RenderFrameHost* render_frame_host) override {
-    on_rfh_created_.Run(std::move(render_frame_host));
-  }
-
- private:
-  OnRenderFrameHostCreatedCallback on_rfh_created_;
-};
-
-}  // namespace
 
 IN_PROC_BROWSER_TEST_F(RenderDocumentHostUserDataTest, BlankIframe) {
   ASSERT_TRUE(embedded_test_server()->Start());

@@ -166,8 +166,7 @@ std::unique_ptr<net::test_server::HttpResponse> StandardResponse(
 }
 
 // Deletes a custom search engine by swiping and tapping on the "Delete" button.
-// TODO(crbug.com/1106735): reenable this test.
-- (void)DISABLED_testDeleteCustomSearchEngineSwipeAndTap {
+- (void)testDeleteCustomSearchEngineSwipeAndTap {
   if (@available(iOS 13, *)) {
   } else {
     EARL_GREY_TEST_SKIPPED(
@@ -193,8 +192,7 @@ std::unique_ptr<net::test_server::HttpResponse> StandardResponse(
 }
 
 // Deletes a custom engine by swiping it.
-// TODO(crbug.com/1106735): reenable this test.
-- (void)DISABLED_testDeleteCustomSearchEngineSwipe {
+- (void)testDeleteCustomSearchEngineSwipe {
   [self enterSettingsWithCustomSearchEngine];
 
   id<GREYMatcher> customSearchEngineCell =

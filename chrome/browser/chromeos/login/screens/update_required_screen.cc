@@ -50,11 +50,13 @@ UpdateRequiredScreen* UpdateRequiredScreen::Get(ScreenManager* manager) {
 }
 
 UpdateRequiredScreen::UpdateRequiredScreen(UpdateRequiredView* view,
-                                           ErrorScreen* error_screen)
+                                           ErrorScreen* error_screen,
+                                           base::RepeatingClosure exit_callback)
     : BaseScreen(UpdateRequiredView::kScreenId,
                  OobeScreenPriority::SCREEN_UPDATE_REQUIRED),
       view_(view),
       error_screen_(error_screen),
+      exit_callback_(std::move(exit_callback)),
       histogram_helper_(
           std::make_unique<ErrorScreensHistogramHelper>("UpdateRequired")),
       version_updater_(std::make_unique<VersionUpdater>(this)),
@@ -374,6 +376,11 @@ void UpdateRequiredScreen::FinishExitUpdate(VersionUpdater::Result result) {
   is_updating_now_ = false;
   if (view_)
     view_->SetUIState(UpdateRequiredView::UPDATE_ERROR);
+}
+
+void UpdateRequiredScreen::Exit() {
+  DCHECK(!is_hidden());
+  exit_callback_.Run();
 }
 
 VersionUpdater* UpdateRequiredScreen::GetVersionUpdaterForTesting() {

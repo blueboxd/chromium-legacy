@@ -13,6 +13,7 @@
 #include "base/strings/utf_string_conversions.h"
 #include "base/test/metrics/histogram_tester.h"
 #include "build/build_config.h"
+#include "chrome/browser/profiles/profile_attributes_entry.h"
 #include "chrome/browser/profiles/profile_avatar_downloader.h"
 #include "chrome/browser/profiles/profile_avatar_icon_util.h"
 #include "chrome/browser/profiles/profile_info_cache.h"
@@ -912,4 +913,31 @@ TEST_F(ProfileAttributesStorageTest, ProfilesState_SingleProfile) {
       "Profile.State.LastUsed_LatentMultiProfileActive", 0);
   histogram_tester.ExpectTotalCount(
       "Profile.State.LastUsed_LatentMultiProfileOthers", 0);
+}
+
+TEST_F(ProfileAttributesStorageTest, ProfileThemeColors) {
+  AddTestingProfile();
+  base::FilePath profile_path = GetProfilePath("testing_profile_path0");
+
+  DisableObserver();  // No need to test observers in this test.
+
+  ProfileAttributesEntry* entry;
+  ASSERT_TRUE(storage()->GetProfileAttributesWithPath(profile_path, &entry));
+  EXPECT_EQ(base::nullopt, entry->GetProfileThemeColors());
+
+  ProfileThemeColors colors = {SK_ColorTRANSPARENT, SK_ColorBLACK,
+                               SK_ColorWHITE};
+  entry->SetProfileThemeColors(colors);
+  base::Optional<ProfileThemeColors> actual_colors =
+      entry->GetProfileThemeColors();
+  ASSERT_TRUE(actual_colors.has_value());
+  EXPECT_EQ(colors.profile_highlight_color,
+            actual_colors->profile_highlight_color);
+  EXPECT_EQ(colors.default_avatar_fill_color,
+            actual_colors->default_avatar_fill_color);
+  EXPECT_EQ(colors.default_avatar_stroke_color,
+            actual_colors->default_avatar_stroke_color);
+
+  entry->SetProfileThemeColors(base::nullopt);
+  EXPECT_EQ(base::nullopt, entry->GetProfileThemeColors());
 }

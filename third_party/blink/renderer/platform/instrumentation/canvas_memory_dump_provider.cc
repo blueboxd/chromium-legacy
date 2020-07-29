@@ -21,14 +21,20 @@ bool CanvasMemoryDumpProvider::OnMemoryDump(
     base::trace_event::ProcessMemoryDump* memory_dump) {
   if (args.level_of_detail ==
       base::trace_event::MemoryDumpLevelOfDetail::DETAILED) {
+    base::AutoLock auto_lock(lock_);
     for (auto* it : clients_)
       it->OnMemoryDump(memory_dump);
     return true;
   }
 
   size_t total_size = 0;
-  for (auto* it : clients_)
-    total_size += it->GetSize();
+  size_t clients_size = 0;
+  {
+    base::AutoLock auto_lock(lock_);
+    for (auto* it : clients_)
+      total_size += it->GetSize();
+    clients_size = clients_.size();
+  }
 
   auto* dump =
       memory_dump->CreateAllocatorDump("canvas/ResourceProvider/SkSurface");
@@ -37,7 +43,7 @@ bool CanvasMemoryDumpProvider::OnMemoryDump(
                   total_size);
   dump->AddScalar(base::trace_event::MemoryAllocatorDump::kNameObjectCount,
                   base::trace_event::MemoryAllocatorDump::kUnitsObjects,
-                  clients_.size());
+                  clients_size);
 
   // SkiaMemoryDumpProvider reports only sk_glyph_cache and sk_resource_cache.
   // So the SkSurface is suballocation of malloc, not SkiaDumpProvider.
@@ -50,11 +56,13 @@ bool CanvasMemoryDumpProvider::OnMemoryDump(
 }
 
 void CanvasMemoryDumpProvider::RegisterClient(CanvasMemoryDumpClient* client) {
+  base::AutoLock auto_lock(lock_);
   clients_.insert(client);
 }
 
 void CanvasMemoryDumpProvider::UnregisterClient(
     CanvasMemoryDumpClient* client) {
+  base::AutoLock auto_lock(lock_);
   DCHECK(clients_.Contains(client));
   clients_.erase(client);
 }

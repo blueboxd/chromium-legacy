@@ -6,6 +6,7 @@
 
 #include "base/memory/weak_ptr.h"
 #include "base/metrics/histogram_macros.h"
+#include "base/util/values/values_util.h"
 #include "base/values.h"
 #include "chrome/browser/chromeos/profiles/profile_helper.h"
 #include "chrome/browser/profiles/profile.h"
@@ -17,6 +18,7 @@ namespace {
 
 const char kTokenHandlePref[] = "PasswordTokenHandle";
 const char kTokenHandleStatusPref[] = "TokenHandleStatus";
+const char kTokenHandleLastCheckedPref[] = "TokenHandleLastChecked";
 
 const char kHandleStatusValid[] = "valid";
 const char kHandleStatusInvalid[] = "invalid";
@@ -24,7 +26,48 @@ const char* const kDefaultHandleStatus = kHandleStatusValid;
 
 constexpr int kMaxRetries = 3;
 
+constexpr base::TimeDelta kCacheStatusTime = base::TimeDelta::FromHours(1);
+
 const char* g_invalid_token_for_testing = nullptr;
+
+bool MaybeReturnCachedStatus(
+    const AccountId& account_id,
+    const TokenHandleUtil::TokenValidationCallback& callback) {
+  std::string saved_status;
+  if (!user_manager::known_user::GetStringPref(
+          account_id, kTokenHandleStatusPref, &saved_status)) {
+    return false;
+  }
+
+  if (saved_status == kHandleStatusValid) {
+    callback.Run(account_id, TokenHandleUtil::VALID);
+    return true;
+  }
+
+  if (saved_status == kHandleStatusInvalid) {
+    callback.Run(account_id, TokenHandleUtil::INVALID);
+    return true;
+  }
+
+  NOTREACHED();
+  return false;
+}
+
+void OnStatusChecked(const TokenHandleUtil::TokenValidationCallback& callback,
+                     const AccountId& account_id,
+                     TokenHandleUtil::TokenHandleStatus status) {
+  if (status != TokenHandleUtil::UNKNOWN) {
+    // Update last checked timestamp.
+    user_manager::known_user::SetPref(account_id, kTokenHandleLastCheckedPref,
+                                      util::TimeToValue(base::Time::Now()));
+  }
+
+  if (status == TokenHandleUtil::INVALID) {
+    user_manager::known_user::SetStringPref(account_id, kTokenHandleStatusPref,
+                                            kHandleStatusInvalid);
+  }
+  callback.Run(account_id, status);
+}
 
 }  // namespace
 
@@ -44,6 +87,22 @@ bool TokenHandleUtil::HasToken(const AccountId& account_id) {
 }
 
 // static
+bool TokenHandleUtil::IsRecentlyChecked(const AccountId& account_id) {
+  const base::Value* value;
+  if (!user_manager::known_user::GetPref(account_id,
+                                         kTokenHandleLastCheckedPref, &value)) {
+    return false;
+  }
+
+  base::Optional<base::Time> last_checked = util::ValueToTime(value);
+  if (!last_checked.has_value()) {
+    return false;
+  }
+
+  return base::Time::Now() - last_checked.value() < kCacheStatusTime;
+}
+
+// static
 bool TokenHandleUtil::ShouldObtainHandle(const AccountId& account_id) {
   const base::DictionaryValue* dict = nullptr;
   std::string token;
@@ -56,24 +115,6 @@ bool TokenHandleUtil::ShouldObtainHandle(const AccountId& account_id) {
   std::string status(kDefaultHandleStatus);
   dict->GetString(kTokenHandleStatusPref, &status);
   return kHandleStatusInvalid == status;
-}
-
-// static
-void TokenHandleUtil::DeleteHandle(const AccountId& account_id) {
-  const base::DictionaryValue* dict = nullptr;
-  if (!user_manager::known_user::FindPrefs(account_id, &dict))
-    return;
-  std::unique_ptr<base::DictionaryValue> dict_copy(dict->DeepCopy());
-  dict_copy->Remove(kTokenHandlePref, nullptr);
-  dict_copy->Remove(kTokenHandleStatusPref, nullptr);
-  user_manager::known_user::UpdatePrefs(account_id, *dict_copy.get(),
-                                        /* replace values */ true);
-}
-
-// static
-void TokenHandleUtil::MarkHandleInvalid(const AccountId& account_id) {
-  user_manager::known_user::SetStringPref(account_id, kTokenHandleStatusPref,
-                                          kHandleStatusInvalid);
 }
 
 // static
@@ -97,10 +138,15 @@ void TokenHandleUtil::CheckToken(
     return;
   }
 
+  if (IsRecentlyChecked(account_id) &&
+      MaybeReturnCachedStatus(account_id, callback)) {
+    return;
+  }
+
   // Constructor starts validation.
   validation_delegates_[token] = std::make_unique<TokenDelegate>(
       weak_factory_.GetWeakPtr(), account_id, token,
-      std::move(url_loader_factory), callback);
+      std::move(url_loader_factory), base::Bind(&OnStatusChecked, callback));
 }
 
 // static
@@ -109,11 +155,20 @@ void TokenHandleUtil::StoreTokenHandle(const AccountId& account_id,
   user_manager::known_user::SetStringPref(account_id, kTokenHandlePref, handle);
   user_manager::known_user::SetStringPref(account_id, kTokenHandleStatusPref,
                                           kHandleStatusValid);
+  user_manager::known_user::SetPref(account_id, kTokenHandleLastCheckedPref,
+                                    util::TimeToValue(base::Time::Now()));
 }
 
 // static
 void TokenHandleUtil::SetInvalidTokenForTesting(const char* token) {
   g_invalid_token_for_testing = token;
+}
+
+// static
+void TokenHandleUtil::SetLastCheckedPrefForTesting(const AccountId& account_id,
+                                                   base::Time time) {
+  user_manager::known_user::SetPref(account_id, kTokenHandleLastCheckedPref,
+                                    util::TimeToValue(time));
 }
 
 void TokenHandleUtil::OnValidationComplete(const std::string& token) {

@@ -11,7 +11,6 @@ import static androidx.test.espresso.action.ViewActions.typeText;
 import static androidx.test.espresso.assertion.ViewAssertions.doesNotExist;
 import static androidx.test.espresso.assertion.ViewAssertions.matches;
 import static androidx.test.espresso.matcher.ViewMatchers.isCompletelyDisplayed;
-import static androidx.test.espresso.matcher.ViewMatchers.withClassName;
 import static androidx.test.espresso.matcher.ViewMatchers.withEffectiveVisibility;
 import static androidx.test.espresso.matcher.ViewMatchers.withId;
 import static androidx.test.espresso.matcher.ViewMatchers.withText;
@@ -47,10 +46,10 @@ import org.chromium.chrome.browser.autofill_assistant.proto.SupportedScriptProto
 import org.chromium.chrome.browser.autofill_assistant.proto.TellProto;
 import org.chromium.chrome.browser.flags.ChromeSwitches;
 import org.chromium.chrome.browser.tabmodel.TabModelUtils;
-import org.chromium.chrome.browser.widget.ScrimView;
 import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
 import org.chromium.chrome.test.ChromeTabbedActivityTestRule;
 import org.chromium.chrome.test.util.ChromeTabUtils;
+import org.chromium.components.browser_ui.widget.scrim.ScrimCoordinator;
 import org.chromium.content_public.browser.test.util.TestThreadUtils;
 import org.chromium.net.test.EmbeddedTestServer;
 import org.chromium.ui.test.util.UiRestriction;
@@ -72,6 +71,8 @@ public class AutofillAssistantChromeTabIntegrationTest {
     private static final String TEST_PAGE_B = "form_target_website.html";
 
     private EmbeddedTestServer mTestServer;
+
+    private ScrimCoordinator mScrimCoordinator;
 
     private String getURL(String page) {
         return mTestServer.getURL(HTML_DIRECTORY + page);
@@ -95,6 +96,8 @@ public class AutofillAssistantChromeTabIntegrationTest {
         AutofillAssistantPreferencesUtil.setInitialPreferences(true);
         mTestServer = EmbeddedTestServer.createAndStartServer(InstrumentationRegistry.getContext());
         mTestRule.startMainActivityWithURL(getURL(TEST_PAGE_A));
+        mScrimCoordinator =
+                mTestRule.getActivity().getRootUiCoordinatorForTesting().getScrimCoordinator();
     }
 
     @After
@@ -127,16 +130,16 @@ public class AutofillAssistantChromeTabIntegrationTest {
         startAutofillAssistantOnTab(TEST_PAGE_A);
 
         waitUntilViewMatchesCondition(withText("Prompt"), isCompletelyDisplayed());
-        onView(withClassName(is(ScrimView.class.getName())))
+        onView(is(mScrimCoordinator.getViewForTesting()))
                 .check(matches(withEffectiveVisibility(Visibility.VISIBLE)));
 
         onView(withId(org.chromium.chrome.R.id.tab_switcher_button)).perform(click());
         waitUntilViewAssertionTrue(withText("Prompt"), doesNotExist(), DEFAULT_MAX_TIME_TO_POLL);
-        onView(withClassName(is(ScrimView.class.getName()))).check(doesNotExist());
+        onView(is(mScrimCoordinator.getViewForTesting())).check(doesNotExist());
 
         Espresso.pressBack();
         waitUntilViewMatchesCondition(withText("Prompt"), isCompletelyDisplayed());
-        onView(withClassName(is(ScrimView.class.getName())))
+        onView(is(mScrimCoordinator.getViewForTesting()))
                 .check(matches(withEffectiveVisibility(Visibility.VISIBLE)));
     }
 

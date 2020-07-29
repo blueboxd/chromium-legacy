@@ -732,6 +732,12 @@ class WebContents : public PageNavigator,
   // Get the bounds of the View, relative to the parent.
   virtual gfx::Rect GetViewBounds() = 0;
 
+  // Resize a WebContents to |new_bounds|.
+  virtual void Resize(const gfx::Rect& new_bounds) = 0;
+
+  // Get the size of a WebContents.
+  virtual gfx::Size GetSize() = 0;
+
   // Returns the current drop data, if any.
   virtual DropData* GetDropData() = 0;
 

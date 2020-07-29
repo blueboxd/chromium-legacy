@@ -3,6 +3,7 @@
 # found in the LICENSE file.
 
 import("//chrome/test/base/js2gtest.gni")
+import("//chromeos/components/web_applications/system_apps.gni")
 import("//third_party/closure_compiler/compile_js.gni")
 
 assert(is_chromeos, "Telemetry Extension is Chrome OS only")
@@ -16,12 +17,7 @@ js2gtest("browser_tests_js") {
 
   defines = [ "HAS_OUT_OF_PROC_TEST_RUNNER" ]
 
-  deps = [
-    ":browser_test_support",
-    ":trusted_test_requester",
-    ":untrusted_browsertest",
-    ":untrusted_test_handlers",
-  ]
+  deps = [ ":browser_test_support" ]
 }
 
 source_set("browser_test_support") {
@@ -46,11 +42,44 @@ source_set("browser_test_support") {
   ]
 }
 
-js_library("trusted_test_requester") {
+group("closure_compile") {
+  testonly = true
+  deps = [
+    ":trusted_browsertest_closure_compile",
+    ":untrusted_browsertest_closure_compile",
+  ]
+}
+
+js_type_check("trusted_browsertest_closure_compile") {
+  testonly = true
+  closure_flags = system_app_closure_flags
+  deps = [ ":trusted_browsertest" ]
+}
+
+js_type_check("untrusted_browsertest_closure_compile") {
+  testonly = true
+  closure_flags = system_app_closure_flags
+  deps = [ ":untrusted_browsertest" ]
+}
+
+js_library("trusted_browsertest") {
+  testonly = true
+  sources = [
+    "telemetry_extension_ui_browsertest.js",
+    "trusted_test_requester.js",
+  ]
+  deps = [ "//chromeos/components/telemetry_extension_ui/resources:trusted" ]
+  externs_list =
+      [ "//chromeos/components/web_applications/js2gtest_support.externs.js" ]
 }
 
 js_library("untrusted_browsertest") {
-}
-
-js_library("untrusted_test_handlers") {
+  testonly = true
+  sources = [
+    "untrusted_browsertest.js",
+    "untrusted_test_handlers.js",
+  ]
+  deps = [ "//chromeos/components/telemetry_extension_ui/resources:untrusted" ]
+  externs_list =
+      [ "//chromeos/components/web_applications/js2gtest_support.externs.js" ]
 }

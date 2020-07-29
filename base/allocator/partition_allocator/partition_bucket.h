@@ -68,8 +68,7 @@ struct PartitionBucket {
     return (size + kSystemPageOffsetMask) & kSystemPageBaseMask;
   }
 
-  // TODO(ajwong): Can this be made private?  https://crbug.com/787153
-  static PartitionBucket* get_sentinel_bucket();
+  BASE_EXPORT static PartitionBucket* get_sentinel_bucket();
 
   // This helper function scans a bucket's active page list for a suitable new
   // active page.  When it finds a suitable new active page (one that has

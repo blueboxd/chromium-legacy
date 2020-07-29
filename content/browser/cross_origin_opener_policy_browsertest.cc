@@ -335,6 +335,9 @@ IN_PROC_BROWSER_TEST_P(CrossOriginOpenerPolicyBrowserTest,
 
 IN_PROC_BROWSER_TEST_P(CrossOriginOpenerPolicyBrowserTest,
                        CoopIsIgnoredOverHttp) {
+  WebContentsConsoleObserver console_observer(shell()->web_contents());
+  console_observer.SetPattern("*Cross-Origin-Opener-Policy * ignored*");
+
   GURL non_coop_page(embedded_test_server()->GetURL("a.com", "/title1.html"));
   GURL coop_page = embedded_test_server()->GetURL(
       "a.com", "/set-header?Cross-Origin-Opener-Policy: same-origin");
@@ -347,6 +350,8 @@ IN_PROC_BROWSER_TEST_P(CrossOriginOpenerPolicyBrowserTest,
   EXPECT_EQ(current_frame_host()->GetSiteInstance(), initial_site_instance);
   EXPECT_EQ(current_frame_host()->cross_origin_opener_policy(),
             CoopUnsafeNone());
+
+  console_observer.Wait();
 }
 
 IN_PROC_BROWSER_TEST_P(CrossOriginOpenerPolicyBrowserTest,

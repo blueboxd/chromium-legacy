@@ -285,8 +285,10 @@ void VideoFrameFactoryImpl::CreateVideoFrame_OnImageReady(
 
   // The frames must be copied when threaded texture mailboxes are in use
   // (http://crbug.com/582170).
-  if (enable_threaded_texture_mailboxes)
-    frame->metadata()->copy_required = true;
+  if (enable_threaded_texture_mailboxes) {
+    frame->metadata()->copy_mode =
+        VideoFrameMetadata::CopyMode::kCopyToNewTexture;
+  }
 
   const bool is_surface_control =
       overlay_mode == OverlayMode::kSurfaceControlSecure ||

@@ -7,6 +7,7 @@
 #include "base/logging.h"
 #include "base/run_loop.h"
 #include "chrome/browser/chromeos/login/ui/login_display_host.h"
+#include "testing/gtest/include/gtest/gtest.h"
 
 namespace chromeos {
 
@@ -35,7 +36,7 @@ void OobeScreenExitWaiter::Wait() {
   run_loop_->Run();
   run_loop_.reset();
 
-  DCHECK_EQ(State::DONE, state_);
+  ASSERT_EQ(State::DONE, state_);
 
   oobe_ui_observer_.RemoveAll();
 }

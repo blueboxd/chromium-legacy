@@ -9,6 +9,7 @@
 #import "ios/chrome/browser/ui/authentication/signin_earlgrey_utils.h"
 #import "ios/chrome/browser/ui/authentication/signin_earlgrey_utils_app_interface.h"
 #import "ios/chrome/browser/ui/authentication/unified_consent/unified_consent_constants.h"
+#import "ios/chrome/browser/ui/settings/google_services/accounts_table_view_controller_constants.h"
 #include "ios/chrome/grit/ios_strings.h"
 #import "ios/chrome/test/earl_grey/chrome_earl_grey_ui.h"
 #import "ios/chrome/test/earl_grey/chrome_matchers.h"
@@ -22,15 +23,12 @@
 #error "This file requires ARC support."
 #endif
 
-using chrome_test_util::AccountConsistencyConfirmationOkButton;
 using chrome_test_util::ButtonWithAccessibilityLabel;
 using chrome_test_util::PrimarySignInButton;
 using chrome_test_util::SecondarySignInButton;
 using chrome_test_util::SettingsAccountButton;
 using chrome_test_util::SettingsDoneButton;
 using chrome_test_util::SignOutAccountsButton;
-using chrome_test_util::SignOutAndClearDataAccountsButton;
-using chrome_test_util::UnifiedConsentAddAccountButton;
 
 @implementation SigninEarlGreyUI
 
@@ -109,8 +107,9 @@ using chrome_test_util::UnifiedConsentAddAccountButton;
     [[EarlGrey selectElementWithMatcher:confirmationScrollViewMatcher]
         performAction:grey_scrollToContentEdge(kGREYContentEdgeBottom)];
   }
-  [[EarlGrey selectElementWithMatcher:AccountConsistencyConfirmationOkButton()]
-      performAction:grey_tap()];
+  id<GREYMatcher> buttonMatcher = [ChromeMatchersAppInterface
+      buttonWithAccessibilityLabelID:IDS_IOS_ACCOUNT_UNIFIED_CONSENT_OK_BUTTON];
+  [[EarlGrey selectElementWithMatcher:buttonMatcher] performAction:grey_tap()];
 }
 
 + (void)tapAddAccountButton {
@@ -131,8 +130,10 @@ using chrome_test_util::UnifiedConsentAddAccountButton;
     [[EarlGrey selectElementWithMatcher:confirmationScrollViewMatcher]
         performAction:grey_scrollToContentEdge(kGREYContentEdgeBottom)];
   }
-  [[EarlGrey selectElementWithMatcher:UnifiedConsentAddAccountButton()]
-      performAction:grey_tap()];
+  id<GREYMatcher> buttonMatcher = [ChromeMatchersAppInterface
+      buttonWithAccessibilityLabelID:
+          IDS_IOS_ACCOUNT_UNIFIED_CONSENT_ADD_ACCOUNT];
+  [[EarlGrey selectElementWithMatcher:buttonMatcher] performAction:grey_tap()];
 }
 
 + (void)checkSigninPromoVisibleWithMode:(SigninPromoViewMode)mode {
@@ -205,7 +206,8 @@ using chrome_test_util::UnifiedConsentAddAccountButton;
     }
     case SignOutConfirmationManagedUser:
     case SignOutConfirmationNonManagedUserWithClearedData: {
-      signOutButtonMatcher = SignOutAndClearDataAccountsButton();
+      signOutButtonMatcher = grey_accessibilityID(
+          kSettingsAccountsTableViewSignoutAndClearDataCellId);
       confirmationLabelID = IDS_IOS_DISCONNECT_DIALOG_CONTINUE_AND_CLEAR_MOBILE;
       break;
     }

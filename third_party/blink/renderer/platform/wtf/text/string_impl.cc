@@ -27,6 +27,7 @@
 
 #include <algorithm>
 #include <memory>
+#include "base/callback.h"
 #include "third_party/blink/renderer/platform/wtf/allocator/partitions.h"
 #include "third_party/blink/renderer/platform/wtf/dynamic_annotations.h"
 #include "third_party/blink/renderer/platform/wtf/leak_annotations.h"
@@ -762,6 +763,26 @@ wtf_size_t StringImpl::Find(CharacterMatchFunctionPtr match_function,
   if (Is8Bit())
     return WTF::Find(Characters8(), length_, match_function, start);
   return WTF::Find(Characters16(), length_, match_function, start);
+}
+
+wtf_size_t StringImpl::Find(base::RepeatingCallback<bool(UChar)> match_callback,
+                            wtf_size_t index) const {
+  if (Is8Bit()) {
+    const LChar* characters8 = Characters8();
+    while (index < length_) {
+      if (match_callback.Run(characters8[index]))
+        return index;
+      ++index;
+    }
+    return kNotFound;
+  }
+  const UChar* characters16 = Characters16();
+  while (index < length_) {
+    if (match_callback.Run(characters16[index]))
+      return index;
+    ++index;
+  }
+  return kNotFound;
 }
 
 template <typename SearchCharacterType, typename MatchCharacterType>

@@ -92,6 +92,7 @@ login.createScreen('ArcTermsOfServiceScreen', 'arc-tos', function() {
       }]);
 
       this.getElement_('arcPolicyLink').onclick = function() {
+        chrome.send('login.ArcTermsOfServiceScreen.userActed', ['policy-link']);
         termsView.executeScript(
             {code: 'getPrivacyPolicyLink();'}, function(results) {
               if (results && results.length == 1 &&

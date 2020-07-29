@@ -8,6 +8,12 @@
 #import <Foundation/Foundation.h>
 #import <UIKit/UIKit.h>
 
+typedef NSString* ContentType NS_TYPED_ENUM;
+
+extern ContentType const ContentTypeURL;
+extern ContentType const ContentTypeText;
+extern ContentType const ContentTypeImage;
+
 // A protocol implemented by delegates to handle clipboard changes.
 @protocol ClipboardRecentContentDelegate<NSObject>
 
@@ -43,6 +49,25 @@
 // Returns the copied image if the clipboard contains a recent image that has
 // not been suppressed. Otherwise, returns nil.
 - (UIImage*)recentImageFromClipboard;
+
+// Uses the new iOS 14 pasteboard detection pattern API to asynchronously detect
+// if the clipboard contains content (that has not been suppressed) of the
+// requested types without actually getting the contents.
+- (void)hasContentMatchingTypes:(NSSet<ContentType>*)types
+              completionHandler:
+                  (void (^)(NSSet<ContentType>*))completionHandler;
+// Uses the new iOS 14 pasteboard detection pattern API to asynchronously get a
+// copied URL from the clipboard if it has not been suppressed. Passes nil to
+// the callback otherwise.
+- (void)recentURLFromClipboardAsync:(void (^)(NSURL*))callback;
+// Uses the new iOS 14 pasteboard detection pattern API to asynchronously get a
+// copied string from the clipboard if it has not been suppressed. Passes nil to
+// the callback otherwise.
+- (void)recentTextFromClipboardAsync:(void (^)(NSString*))callback;
+// Asynchronously gets an image from the clipboard if is has not been
+// suppressed. Passes nil to the callback otherwise. This does not actually use
+// any iOS 14 APIs and could be done synchronously, but is here for consistency.
+- (void)recentImageFromClipboardAsync:(void (^)(UIImage*))callback;
 
 // Returns how old the content of the clipboard is.
 - (NSTimeInterval)clipboardContentAge;

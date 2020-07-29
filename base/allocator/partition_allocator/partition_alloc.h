@@ -503,12 +503,31 @@ struct BASE_EXPORT PartitionRoot {
 
   internal::PartitionBucket<thread_safe>* SizeToBucket(size_t size) const;
 
-  ALWAYS_INLINE internal::PartitionTag GetNewPartitionTag()
-      EXCLUSIVE_LOCKS_REQUIRED(lock_) {
+ private:
+  // Allocates memory, without any cookies / tags.
+  //
+  // |flags| and |size| are as in AllocFlags(). |allocated_size| and
+  // is_already_zeroed| are output only. |allocated_size| is guaranteed to be
+  // larger or equal to |size|.
+  ALWAYS_INLINE void* RawAlloc(int flags,
+                               size_t size,
+                               size_t* allocated_size,
+                               bool* is_already_zeroed);
+  // Frees memory, with |ptr| as returned by |RawAlloc()|.
+  ALWAYS_INLINE void RawFree(void* ptr, Page* page);
+  ALWAYS_INLINE void* AllocFromBucket(Bucket* bucket,
+                                      int flags,
+                                      size_t size,
+                                      size_t* allocated_size,
+                                      bool* is_already_zeroed)
+      EXCLUSIVE_LOCKS_REQUIRED(lock_);
+
+  ALWAYS_INLINE internal::PartitionTag GetNewPartitionTag() {
 #if ENABLE_TAG_FOR_CHECKED_PTR2 || ENABLE_TAG_FOR_MTE_CHECKED_PTR
-    ++current_partition_tag;
-    current_partition_tag += !current_partition_tag;  // Avoid 0.
-    return current_partition_tag;
+    auto tag = ++current_partition_tag;
+    tag += !tag;  // Avoid 0.
+    current_partition_tag = tag;
+    return tag;
 #else
     return 0;
 #endif
@@ -524,17 +543,19 @@ struct BASE_EXPORT PartitionRoot {
 };
 
 template <bool thread_safe>
-ALWAYS_INLINE void* PartitionRoot<thread_safe>::AllocFromBucket(Bucket* bucket,
-                                                                int flags,
-                                                                size_t size) {
-  bool zero_fill = flags & PartitionAllocZeroFill;
-  bool is_already_zeroed = false;
+ALWAYS_INLINE void* PartitionRoot<thread_safe>::AllocFromBucket(
+    Bucket* bucket,
+    int flags,
+    size_t size,
+    size_t* allocated_size,
+    bool* is_already_zeroed) {
+  *is_already_zeroed = false;
 
   Page* page = bucket->active_pages_head;
   // Check that this page is neither full nor freed.
   PA_DCHECK(page);
   PA_DCHECK(page->num_allocated_slots >= 0);
-  size_t new_slot_size = bucket->slot_size;
+  *allocated_size = bucket->slot_size;
 
   void* ret = page->freelist_head;
   if (LIKELY(ret)) {
@@ -553,7 +574,7 @@ ALWAYS_INLINE void* PartitionRoot<thread_safe>::AllocFromBucket(Bucket* bucket,
 
     PA_DCHECK(page->bucket == bucket);
   } else {
-    ret = bucket->SlowPathAlloc(this, flags, size, &is_already_zeroed);
+    ret = bucket->SlowPathAlloc(this, flags, size, is_already_zeroed);
     // TODO(palmer): See if we can afford to make this a CHECK.
     PA_DCHECK(!ret || IsValidPage(Page::FromPointer(ret)));
 
@@ -561,58 +582,16 @@ ALWAYS_INLINE void* PartitionRoot<thread_safe>::AllocFromBucket(Bucket* bucket,
       return nullptr;
 
     page = Page::FromPointer(ret);
-    if (UNLIKELY(page->get_raw_size())) {
+    // For direct mapped allocations, |bucket| is the sentinel.
+    PA_DCHECK((page->bucket == bucket) ||
+              (page->bucket->is_direct_mapped() &&
+               (bucket == Bucket::get_sentinel_bucket())));
+
+    if (UNLIKELY(page->get_raw_size_ptr())) {  // has raw size.
       PA_DCHECK(page->get_raw_size() == size);
-      new_slot_size = size;
-    } else {
-      new_slot_size = page->bucket->slot_size;
+      *allocated_size = size;
     }
   }
-  // Layout inside the slot: |[tag]|cookie|object|[empty]|cookie|
-  //                                      <--a--->
-  //                                      <------b------->
-  //                         <-----------------c---------------->
-  //   a: size
-  //   b: size_with_no_extras
-  //   c: new_slot_size
-  // Note, empty space occurs if the slot size is larger than needed to
-  // accommodate the request.
-  // The tag may or may not exist in the slot, depending on CheckedPtr
-  // implementation.
-  size_t size_with_no_extras =
-      internal::PartitionSizeAdjustSubtract(allow_extras, new_slot_size);
-  // The value given to the application is just after the tag and cookie.
-  ret = internal::PartitionPointerAdjustAdd(allow_extras, ret);
-
-#if DCHECK_IS_ON()
-  // Surround the region with 2 cookies.
-  if (allow_extras) {
-    char* char_ret = static_cast<char*>(ret);
-    internal::PartitionCookieWriteValue(char_ret - internal::kCookieSize);
-    internal::PartitionCookieWriteValue(char_ret + size_with_no_extras);
-  }
-#endif
-
-  // Fill the region kUninitializedByte (on debug builds, if not requested to 0)
-  // or 0 (if requested and not 0 already).
-  if (!zero_fill) {
-#if DCHECK_IS_ON()
-    memset(ret, kUninitializedByte, size_with_no_extras);
-#endif
-  } else if (!is_already_zeroed) {
-    memset(ret, 0, size_with_no_extras);
-  }
-
-  // Do not set tag for MTECheckedPtr in the set-tag-at-free case.
-  // It is set only at Free() time and at slot span allocation time.
-#if !ENABLE_TAG_FOR_MTE_CHECKED_PTR || !MTE_CHECKED_PTR_SET_TAG_AT_FREE
-  if (allow_extras && !bucket->is_direct_mapped()) {
-    size_t slot_size_with_no_extras = internal::PartitionSizeAdjustSubtract(
-        allow_extras, page->bucket->slot_size);
-    internal::PartitionTagSetValue(ret, slot_size_with_no_extras,
-                                   GetNewPartitionTag());
-  }
-#endif
 
   return ret;
 }
@@ -637,8 +616,16 @@ ALWAYS_INLINE void PartitionRoot<thread_safe>::Free(void* ptr) {
   PA_DCHECK(IsValidPage(page));
   auto* root = PartitionRoot<thread_safe>::FromPage(page);
   if (root->allow_extras && !page->bucket->is_direct_mapped()) {
-    size_t size_with_no_extras = internal::PartitionSizeAdjustSubtract(
-        root->allow_extras, page->bucket->slot_size);
+    // Allocated size can be:
+    // - The slot size for small buckets, up to single-slot buckets.
+    // - Stored exactly, for single-slot buckets and direct-mapped allocations.
+    size_t allocated_size = page->get_raw_size();
+    PA_DCHECK(!allocated_size || page->bucket->slot_size >= allocated_size);
+    if (!allocated_size)
+      allocated_size = page->bucket->slot_size;
+
+    size_t size_with_no_extras =
+        internal::PartitionSizeAdjustSubtract(true, allocated_size);
 #if ENABLE_TAG_FOR_MTE_CHECKED_PTR && MTE_CHECKED_PTR_SET_TAG_AT_FREE
     internal::PartitionTagIncrementValue(ptr, size_with_no_extras);
 #else
@@ -646,13 +633,19 @@ ALWAYS_INLINE void PartitionRoot<thread_safe>::Free(void* ptr) {
 #endif
   }
   ptr = internal::PartitionPointerAdjustSubtract(root->allow_extras, ptr);
+
+  root->RawFree(ptr, page);
+#endif
+}
+
+template <bool thread_safe>
+ALWAYS_INLINE void PartitionRoot<thread_safe>::RawFree(void* ptr, Page* page) {
   internal::DeferredUnmap deferred_unmap;
   {
-    ScopedGuard guard{root->lock_};
+    ScopedGuard guard{lock_};
     deferred_unmap = page->Free(ptr);
   }
   deferred_unmap.Run();
-#endif
 }
 
 // static
@@ -826,32 +819,98 @@ ALWAYS_INLINE void* PartitionRoot<thread_safe>::AllocFlags(
   return result;
 #else
   PA_DCHECK(initialized);
-  void* result;
+  void* ret;
   const bool hooks_enabled = PartitionAllocHooks::AreHooksEnabled();
   if (UNLIKELY(hooks_enabled)) {
-    if (PartitionAllocHooks::AllocationOverrideHookIfEnabled(&result, flags,
-                                                             size, type_name)) {
-      PartitionAllocHooks::AllocationObserverHookIfEnabled(result, size,
+    if (PartitionAllocHooks::AllocationOverrideHookIfEnabled(&ret, flags, size,
+                                                             type_name)) {
+      PartitionAllocHooks::AllocationObserverHookIfEnabled(ret, size,
                                                            type_name);
-      return result;
+      return ret;
     }
   }
   size_t requested_size = size;
   size = internal::PartitionSizeAdjustAdd(allow_extras, size);
   PA_CHECK(size >= requested_size);  // check for overflows
-  auto* bucket = SizeToBucket(size);
-  PA_DCHECK(bucket);
-  {
-    internal::ScopedGuard<thread_safe> guard{lock_};
-    result = AllocFromBucket(bucket, flags, size);
+
+  size_t allocated_size;
+  bool is_already_zeroed;
+  ret = RawAlloc(flags, size, &allocated_size, &is_already_zeroed);
+  if (UNLIKELY(!ret))
+    return nullptr;
+
+  // Layout inside the slot: |[tag]|cookie|object|[empty]|cookie|
+  //                                      <--a--->
+  //                                      <------b------->
+  //                         <-----------------c---------------->
+  //   a: allocated_size
+  //   b: size_with_no_extras
+  //   c: new_slot_size
+  // Note, empty space occurs if the slot size is larger than needed to
+  // accommodate the request. This doesn't apply to direct-mapped allocations
+  // and single-slot spans.
+  // The tag may or may not exist in the slot, depending on CheckedPtr
+  // implementation.
+  size_t size_with_no_extras =
+      internal::PartitionSizeAdjustSubtract(allow_extras, allocated_size);
+  // The value given to the application is just after the tag and cookie.
+  ret = internal::PartitionPointerAdjustAdd(allow_extras, ret);
+
+#if DCHECK_IS_ON()
+  // Surround the region with 2 cookies.
+  if (allow_extras) {
+    char* char_ret = static_cast<char*>(ret);
+    internal::PartitionCookieWriteValue(char_ret - internal::kCookieSize);
+    internal::PartitionCookieWriteValue(char_ret + size_with_no_extras);
   }
+#endif
+
+  // Fill the region kUninitializedByte (on debug builds, if not requested to 0)
+  // or 0 (if requested and not 0 already).
+  bool zero_fill = flags & PartitionAllocZeroFill;
+  if (!zero_fill) {
+#if DCHECK_IS_ON()
+    memset(ret, kUninitializedByte, size_with_no_extras);
+#endif
+  } else if (!is_already_zeroed) {
+    memset(ret, 0, size_with_no_extras);
+  }
+
+  // Do not set tag for MTECheckedPtr in the set-tag-at-free case.
+  // It is set only at Free() time and at slot span allocation time.
+#if !ENABLE_TAG_FOR_MTE_CHECKED_PTR || !MTE_CHECKED_PTR_SET_TAG_AT_FREE
+  bool is_direct_mapped = size > kMaxBucketed;
+  if (allow_extras && !is_direct_mapped) {
+    size_t slot_size_with_no_extras =
+        internal::PartitionSizeAdjustSubtract(allow_extras, allocated_size);
+    internal::PartitionTagSetValue(ret, slot_size_with_no_extras,
+                                   GetNewPartitionTag());
+  }
+#endif
+
   if (UNLIKELY(hooks_enabled)) {
-    PartitionAllocHooks::AllocationObserverHookIfEnabled(result, requested_size,
+    PartitionAllocHooks::AllocationObserverHookIfEnabled(ret, requested_size,
                                                          type_name);
   }
 
-  return result;
+  return ret;
 #endif
+}
+
+template <bool thread_safe>
+ALWAYS_INLINE void* PartitionRoot<thread_safe>::RawAlloc(
+    int flags,
+    size_t size,
+    size_t* allocated_size,
+    bool* is_already_zeroed) {
+  auto* bucket = SizeToBucket(size);
+  PA_DCHECK(bucket);
+
+  {
+    internal::ScopedGuard<thread_safe> guard{lock_};
+    return AllocFromBucket(bucket, flags, size, allocated_size,
+                           is_already_zeroed);
+  }
 }
 
 template <bool thread_safe>

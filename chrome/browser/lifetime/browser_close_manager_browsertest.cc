@@ -1097,8 +1097,7 @@ IN_PROC_BROWSER_TEST_F(BrowserCloseManagerBrowserTest,
         Profile::CreateProfile(path, NULL, Profile::CREATE_MODE_SYNCHRONOUS);
   }
   Profile* other_profile_ptr = other_profile.get();
-  profile_manager->RegisterTestingProfile(std::move(other_profile), true,
-                                          false);
+  profile_manager->RegisterTestingProfile(std::move(other_profile), true);
   Browser* other_profile_browser = CreateBrowser(other_profile_ptr);
 
   ASSERT_NO_FATAL_FAILURE(CreateStalledDownload(browser()));

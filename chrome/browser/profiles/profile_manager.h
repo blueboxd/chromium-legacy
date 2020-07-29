@@ -237,11 +237,9 @@ class ProfileManager : public content::NotificationObserver,
   // Register and add testing profile to the ProfileManager. Use ONLY in tests.
   // This allows the creation of Profiles outside of the standard creation path
   // for testing. If |addToStorage|, adds to ProfileAttributesStorage as well.
-  // If |start_deferred_task_runners|, starts the deferred task runners.
   // Use ONLY in tests.
   void RegisterTestingProfile(std::unique_ptr<Profile> profile,
-                              bool addToStorage,
-                              bool start_deferred_task_runners);
+                              bool add_to_storage);
 
   const base::FilePath& user_data_dir() const { return user_data_dir_; }
 

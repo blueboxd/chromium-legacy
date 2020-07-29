@@ -57,6 +57,7 @@ import org.chromium.chrome.browser.customtabs.CustomTabsTestUtils;
 import org.chromium.chrome.browser.firstrun.FirstRunStatus;
 import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
 import org.chromium.components.browser_ui.bottomsheet.BottomSheetController;
+import org.chromium.content_public.browser.test.util.CriteriaHelper;
 import org.chromium.content_public.browser.test.util.TestThreadUtils;
 import org.chromium.net.test.EmbeddedTestServer;
 
@@ -155,8 +156,14 @@ public class AutofillAssistantUiTest {
                 ()
                         -> assistantCoordinator.getModel().getOverlayModel().set(
                                 AssistantOverlayModel.STATE, AssistantOverlayState.FULL));
-        View scrim = getActivity().getScrim();
-        Assert.assertTrue(scrim.isShown());
+
+        View scrim = getActivity()
+                             .getRootUiCoordinatorForTesting()
+                             .getScrimCoordinator()
+                             .getViewForTesting();
+        CriteriaHelper.pollUiThread(
+                () -> scrim.getVisibility() == View.VISIBLE, "Scrim should be visible.");
+        Assert.assertNotEquals("The scrim should not be transparent.", scrim.getAlpha(), 0f);
 
         // TODO(crbug.com/806868): Fix test of actions carousel. This is currently broken as chips
         // are displayed in the reversed order in the actions carousel and calling

@@ -6,6 +6,7 @@
 #define THIRD_PARTY_BLINK_RENDERER_PLATFORM_INSTRUMENTATION_CANVAS_MEMORY_DUMP_PROVIDER_H_
 
 #include "base/macros.h"
+#include "base/synchronization/lock.h"
 #include "base/trace_event/memory_dump_provider.h"
 #include "third_party/blink/renderer/platform/platform_export.h"
 #include "third_party/blink/renderer/platform/wtf/allocator/allocator.h"
@@ -39,7 +40,8 @@ class PLATFORM_EXPORT CanvasMemoryDumpProvider final
  private:
   CanvasMemoryDumpProvider() = default;
 
-  WTF::HashSet<CanvasMemoryDumpClient*> clients_;
+  base::Lock lock_;
+  WTF::HashSet<CanvasMemoryDumpClient*> clients_ GUARDED_BY(lock_);
 
   DISALLOW_COPY_AND_ASSIGN(CanvasMemoryDumpProvider);
 };

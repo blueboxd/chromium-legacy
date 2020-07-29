@@ -32,7 +32,6 @@ class PrefService;
 
 namespace base {
 class FilePath;
-class SequencedTaskRunner;
 }
 
 namespace favicon_base {
@@ -76,13 +75,11 @@ class BookmarkModel : public BookmarkUndoProvider,
   explicit BookmarkModel(std::unique_ptr<BookmarkClient> client);
   ~BookmarkModel() override;
 
-  // Loads the bookmarks. This is called upon creation of the BookmarkModel. You
-  // need not invoke this directly. All load operations will be executed on
-  // |io_task_runner|. |ui_task_runner| is the task runner the model runs on.
-  void Load(PrefService* pref_service,
-            const base::FilePath& profile_path,
-            const scoped_refptr<base::SequencedTaskRunner>& io_task_runner,
-            const scoped_refptr<base::SequencedTaskRunner>& ui_task_runner);
+  // Triggers the loading of bookmarks, which is an asynchronous operation with
+  // most heavy-lifting taking place in a background sequence. Upon completion,
+  // loaded() will return true and observers will be notified via
+  // BookmarkModelLoaded().
+  void Load(PrefService* pref_service, const base::FilePath& profile_path);
 
   // Returns true if the model finished loading.
   bool loaded() const {
@@ -409,7 +406,7 @@ class BookmarkModel : public BookmarkUndoProvider,
   // Used for loading favicons.
   base::CancelableTaskTracker cancelable_task_tracker_;
 
-  // Reads/writes bookmarks to disk.
+  // Writes bookmarks to disk.
   std::unique_ptr<BookmarkStorage> store_;
 
   std::unique_ptr<TitledUrlIndex> titled_url_index_;

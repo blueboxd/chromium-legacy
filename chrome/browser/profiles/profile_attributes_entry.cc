@@ -43,6 +43,11 @@ const char kMetricsBucketIndex[] = "metrics_bucket_index";
 const char kSigninRequiredKey[] = "signin_required";
 const char kHostedDomain[] = "hosted_domain";
 
+// Profile colors info.
+const char kProfileHighlightColorKey[] = "profile_highlight_color";
+const char kDefaultAvatarFillColorKey[] = "default_avatar_fill_color";
+const char kDefaultAvatarStrokeColorKey[] = "default_avatar_stroke_color";
+
 // Low-entropy accounts info, for metrics only.
 const char kFirstAccountNameHash[] = "first_account_name_hash";
 const char kHasMultipleAccountNames[] = "has_multiple_account_names";
@@ -392,6 +397,29 @@ size_t ProfileAttributesEntry::GetAvatarIconIndex() const {
   return icon_index;
 }
 
+base::Optional<ProfileThemeColors>
+ProfileAttributesEntry::GetProfileThemeColors() const {
+  base::Optional<SkColor> profile_highlight_color =
+      GetProfileThemeColor(kProfileHighlightColorKey);
+  base::Optional<SkColor> default_avatar_fill_color =
+      GetProfileThemeColor(kDefaultAvatarFillColorKey);
+  base::Optional<SkColor> default_avatar_stroke_color =
+      GetProfileThemeColor(kDefaultAvatarStrokeColorKey);
+  if (!profile_highlight_color.has_value()) {
+    DCHECK(!default_avatar_fill_color.has_value() &&
+           !default_avatar_stroke_color.has_value());
+    return base::nullopt;
+  }
+
+  DCHECK(default_avatar_fill_color.has_value() &&
+         default_avatar_stroke_color.has_value());
+  ProfileThemeColors colors;
+  colors.profile_highlight_color = profile_highlight_color.value();
+  colors.default_avatar_fill_color = default_avatar_fill_color.value();
+  colors.default_avatar_stroke_color = default_avatar_stroke_color.value();
+  return colors;
+}
+
 size_t ProfileAttributesEntry::GetMetricsBucketIndex() {
   int bucket_index = GetInteger(kMetricsBucketIndex);
   if (bucket_index == kIntegerNotSet) {
@@ -539,6 +567,20 @@ void ProfileAttributesEntry::SetAvatarIconIndex(size_t icon_index) {
   }
 
   profile_info_cache_->NotifyOnProfileAvatarChanged(profile_path);
+}
+
+void ProfileAttributesEntry::SetProfileThemeColors(
+    const base::Optional<ProfileThemeColors>& colors) {
+  if (colors.has_value()) {
+    SetInteger(kProfileHighlightColorKey, colors->profile_highlight_color);
+    SetInteger(kDefaultAvatarFillColorKey, colors->default_avatar_fill_color);
+    SetInteger(kDefaultAvatarStrokeColorKey,
+               colors->default_avatar_stroke_color);
+  } else {
+    ClearValue(kProfileHighlightColorKey);
+    ClearValue(kDefaultAvatarFillColorKey);
+    ClearValue(kDefaultAvatarStrokeColorKey);
+  }
 }
 
 void ProfileAttributesEntry::SetHostedDomain(std::string hosted_domain) {
@@ -720,6 +762,14 @@ int ProfileAttributesEntry::GetInteger(const char* key) const {
   const base::Value* value = GetValue(key);
   if (!value || !value->is_int())
     return kIntegerNotSet;
+  return value->GetInt();
+}
+
+base::Optional<SkColor> ProfileAttributesEntry::GetProfileThemeColor(
+    const char* key) const {
+  const base::Value* value = GetValue(key);
+  if (!value || !value->is_int())
+    return base::nullopt;
   return value->GetInt();
 }
 

@@ -165,6 +165,10 @@ class SyncEngineBackend : public base::RefCountedThreadSafe<SyncEngineBackend>,
   // Notify about change in client id.
   void DoOnInvalidatorClientIdChange(const std::string& client_id);
 
+  // Forwards an invalidation to the sync manager for all data types from the
+  // |payload|.
+  void DoOnInvalidationReceived(const std::string& payload);
+
   // Returns a ListValue representing Nigori node.
   void GetNigoriNodeForDebugging(AllNodesCallback callback);
 

@@ -385,11 +385,12 @@ class RemoveHistoryTester {
  public:
   RemoveHistoryTester() {}
 
-  bool Init(TestingProfile* profile) WARN_UNUSED_RESULT {
-    if (!profile->CreateHistoryService(true, false))
-      return false;
+  bool Init(Profile* profile) WARN_UNUSED_RESULT {
     history_service_ = HistoryServiceFactory::GetForProfile(
         profile, ServiceAccessType::EXPLICIT_ACCESS);
+    if (!history_service_)
+      return false;
+
     return true;
   }
 
@@ -428,20 +429,18 @@ class RemoveFaviconTester {
  public:
   RemoveFaviconTester() {}
 
-  bool Init(TestingProfile* profile) WARN_UNUSED_RESULT {
+  bool Init(Profile* profile) WARN_UNUSED_RESULT {
     // Create the history service if it has not been created yet.
     history_service_ = HistoryServiceFactory::GetForProfile(
         profile, ServiceAccessType::EXPLICIT_ACCESS);
-    if (!history_service_) {
-      if (!profile->CreateHistoryService(true, false))
-        return false;
-      history_service_ = HistoryServiceFactory::GetForProfile(
-          profile, ServiceAccessType::EXPLICIT_ACCESS);
-    }
+    if (!history_service_)
+      return false;
 
-    profile->CreateFaviconService();
     favicon_service_ = FaviconServiceFactory::GetForProfile(
         profile, ServiceAccessType::EXPLICIT_ACCESS);
+    if (!favicon_service_)
+      return false;
+
     return true;
   }
 
@@ -1136,27 +1135,27 @@ class ClearNetworkErrorLoggingTester {
 };
 #endif  // BUILDFLAG(ENABLE_REPORTING)
 
-// Implementation of the TestingProfile that provides an SSLHostStateDelegate
-// which is required for the tests.
-class BrowsingDataRemoverTestingProfile : public TestingProfile {
- public:
-  BrowsingDataRemoverTestingProfile() {}
-  ~BrowsingDataRemoverTestingProfile() override = default;
-
-  content::SSLHostStateDelegate* GetSSLHostStateDelegate() override {
-    return StatefulSSLHostStateDelegateFactory::GetForProfile(this);
-  }
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(BrowsingDataRemoverTestingProfile);
-};
-
 // Test Class -----------------------------------------------------------------
 
 class ChromeBrowsingDataRemoverDelegateTest : public testing::Test {
  public:
-  ChromeBrowsingDataRemoverDelegateTest()
-      : profile_(new BrowsingDataRemoverTestingProfile()) {
+  ChromeBrowsingDataRemoverDelegateTest() {
+    TestingProfile::Builder profile_builder;
+    profile_builder.AddTestingFactory(
+        StatefulSSLHostStateDelegateFactory::GetInstance(),
+        StatefulSSLHostStateDelegateFactory::GetDefaultFactoryForTesting());
+    profile_builder.AddTestingFactory(
+        BookmarkModelFactory::GetInstance(),
+        BookmarkModelFactory::GetDefaultFactory());
+    profile_builder.AddTestingFactory(
+        HistoryServiceFactory::GetInstance(),
+        HistoryServiceFactory::GetDefaultFactory());
+    profile_builder.AddTestingFactory(
+        FaviconServiceFactory::GetInstance(),
+        FaviconServiceFactory::GetDefaultFactory());
+
+    profile_ = profile_builder.Build();
+
     remover_ = content::BrowserContext::GetBrowsingDataRemover(profile_.get());
 
     // Make sure the Network Service is started before making a NetworkContext.
@@ -1612,7 +1611,6 @@ TEST_F(ChromeBrowsingDataRemoverDelegateTest, ExpireBookmarkFavicons) {
   GURL bookmarked_page("http://a");
 
   TestingProfile* profile = GetProfile();
-  profile->CreateBookmarkModel(true);
   bookmarks::BookmarkModel* bookmark_model =
       BookmarkModelFactory::GetForBrowserContext(profile);
   bookmarks::test::WaitForBookmarkModelToLoad(bookmark_model);
@@ -1636,7 +1634,6 @@ TEST_F(ChromeBrowsingDataRemoverDelegateTest, DeleteBookmarks) {
   GURL bookmarked_page("http://a");
 
   TestingProfile* profile = GetProfile();
-  profile->CreateBookmarkModel(true);
   bookmarks::BookmarkModel* bookmark_model =
       BookmarkModelFactory::GetForBrowserContext(profile);
   bookmarks::test::WaitForBookmarkModelToLoad(bookmark_model);
@@ -3020,7 +3017,6 @@ TEST_F(ChromeBrowsingDataRemoverDelegateTest, NetworkErrorLogging_History) {
 // value for each of them and removing data.
 TEST_F(ChromeBrowsingDataRemoverDelegateTest, AllTypesAreGettingDeleted) {
   TestingProfile* profile = GetProfile();
-  ASSERT_TRUE(profile->CreateHistoryService(true, false));
   ASSERT_TRUE(SubresourceFilterProfileContextFactory::GetForProfile(profile));
 
   auto* map = HostContentSettingsMapFactory::GetForProfile(profile);

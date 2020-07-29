@@ -596,10 +596,12 @@
            file="${root_gen_dir}/chrome/browser/resources/settings/safety_check_page/safety_check_child.js"
            use_base_dir="false"
            compress="false" type="BINDATA" />
-  <include name="IDR_SETTINGS_SAFETY_CHECK_PAGE_SAFETY_CHECK_CHROME_CLEANER_CHILD_JS"
-           file="${root_gen_dir}/chrome/browser/resources/settings/safety_check_page/safety_check_chrome_cleaner_child.js"
-           use_base_dir="false"
-           compress="false" type="BINDATA" />
+  <if expr="is_win">
+    <include name="IDR_SETTINGS_SAFETY_CHECK_PAGE_SAFETY_CHECK_CHROME_CLEANER_CHILD_JS"
+             file="${root_gen_dir}/chrome/browser/resources/settings/safety_check_page/safety_check_chrome_cleaner_child.js"
+             use_base_dir="false"
+             compress="false" type="BINDATA" />
+  </if>
   <include name="IDR_SETTINGS_SAFETY_CHECK_PAGE_SAFETY_CHECK_EXTENSIONS_CHILD_JS"
            file="${root_gen_dir}/chrome/browser/resources/settings/safety_check_page/safety_check_extensions_child.js"
            use_base_dir="false"

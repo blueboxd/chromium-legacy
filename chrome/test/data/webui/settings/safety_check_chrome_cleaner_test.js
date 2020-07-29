@@ -5,9 +5,11 @@
 // clang-format off
 import {webUIListenerCallback} from 'chrome://resources/js/cr.m.js';
 import {flush} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
+import {ChromeCleanupProxy, ChromeCleanupProxyImpl} from 'chrome://settings/lazy_load.js';
 import {MetricsBrowserProxyImpl, Router, routes, SafetyCheckCallbackConstants, SafetyCheckChromeCleanerStatus, SafetyCheckIconStatus, SafetyCheckInteractions} from 'chrome://settings/settings.js';
 
 import {assertEquals, assertFalse, assertTrue} from '../chai_assert.js';
+import {TestBrowserProxy} from '../test_browser_proxy.m.js';
 
 import {TestMetricsBrowserProxy} from './test_metrics_browser_proxy.js';
 
@@ -62,6 +64,12 @@ function assertSafetyCheckChild({
 }
 
 suite('SafetyCheckChromeCleanerUiTests', function() {
+  /**
+   * @implements {BrowserProxy}
+   * @extends {TestBrowserProxy}
+   */
+  let chromeCleanupBrowserProxy = null;
+
   /** @type {?TestMetricsBrowserProxy} */
   let metricsBrowserProxy = null;
 
@@ -69,6 +77,11 @@ suite('SafetyCheckChromeCleanerUiTests', function() {
   let page;
 
   setup(function() {
+    chromeCleanupBrowserProxy = TestBrowserProxy.fromClass(ChromeCleanupProxy);
+    chromeCleanupBrowserProxy.setResultFor(
+        'restartComputer', Promise.resolve(0));
+    ChromeCleanupProxyImpl.instance_ = chromeCleanupBrowserProxy;
+
     metricsBrowserProxy = new TestMetricsBrowserProxy();
     MetricsBrowserProxyImpl.instance_ = metricsBrowserProxy;
 
@@ -216,7 +229,8 @@ suite('SafetyCheckChromeCleanerUiTests', function() {
     // User clicks review extensions button.
     page.$$('#safetyCheckChild').$$('#button').click();
     // TODO(crbug.com/1087263): Ensure UMA is logged.
-    // TODO(crbug.com/1087263): Ensure reboot call is done.
+    // Ensure the browser proxy call is done.
+    return chromeCleanupBrowserProxy.whenCalled('restartComputer');
   });
 
   test('chromeCleanerDisabledByAdminUiTest', function() {

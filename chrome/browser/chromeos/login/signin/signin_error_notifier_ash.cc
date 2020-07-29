@@ -54,6 +54,8 @@ namespace {
 constexpr char kProfileSigninNotificationId[] = "chrome://settings/signin/";
 constexpr char kSecondaryAccountNotificationIdSuffix[] = "/secondary-account";
 
+bool g_ignore_sync_errors_for_test_ = false;
+
 void HandleDeviceAccountReauthNotificationClick(
     base::Optional<int> button_index) {
   chrome::AttemptUserExit();
@@ -90,7 +92,8 @@ SigninErrorNotifier::SigninErrorNotifier(SigninErrorController* controller,
   error_controller_->AddObserver(this);
   const AccountId account_id =
       multi_user_util::GetAccountIdFromProfile(profile_);
-  if (TokenHandleUtil::HasToken(account_id)) {
+  if (TokenHandleUtil::HasToken(account_id) &&
+      !TokenHandleUtil::IsRecentlyChecked(account_id)) {
     token_handle_util_ = std::make_unique<TokenHandleUtil>();
     token_handle_util_->CheckToken(
         account_id, profile->GetURLLoaderFactory(),
@@ -114,12 +117,22 @@ SigninErrorNotifier::~SigninErrorNotifier() {
       << "SigninErrorNotifier::Shutdown() was not called";
 }
 
+// static
+std::unique_ptr<base::AutoReset<bool>>
+SigninErrorNotifier::IgnoreSyncErrorsForTesting() {
+  return std::make_unique<base::AutoReset<bool>>(
+      &g_ignore_sync_errors_for_test_, true);
+}
+
 void SigninErrorNotifier::Shutdown() {
   error_controller_->RemoveObserver(this);
   error_controller_ = nullptr;
 }
 
 void SigninErrorNotifier::OnErrorChanged() {
+  if (g_ignore_sync_errors_for_test_)
+    return;
+
   if (!error_controller_->HasError()) {
     NotificationDisplayService::GetForProfile(profile_)->Close(
         NotificationHandler::Type::TRANSIENT, device_account_notification_id_);
@@ -177,10 +190,6 @@ void SigninErrorNotifier::HandleDeviceAccountError() {
   // network connectivity.
   user_manager::UserManager::Get()->SaveForceOnlineSignin(
       account_id, true /* force_online_signin */);
-
-  // We need to remove the handle so it won't be checked next time session is
-  // started.
-  TokenHandleUtil::DeleteHandle(account_id);
 
   // Add an accept button to sign the user out.
   message_center::RichNotificationData data;

@@ -22,7 +22,6 @@ import org.chromium.chrome.browser.flags.ActivityType;
 import org.chromium.chrome.browser.lifecycle.Destroyable;
 import org.chromium.chrome.browser.lifecycle.NativeInitObserver;
 import org.chromium.chrome.browser.tabmodel.TabModelSelector;
-import org.chromium.chrome.browser.widget.ScrimView;
 import org.chromium.components.browser_ui.bottomsheet.BottomSheetController;
 import org.chromium.components.browser_ui.widget.MenuOrKeyboardActionController;
 
@@ -45,7 +44,6 @@ public class DirectActionInitializer implements NativeInitObserver, Destroyable 
     private final CompositorViewHolder mCompositorViewHolder;
     private final ActivityTabProvider mActivityTabProvider;
     private final TabModelSelector mTabModelSelector;
-    private final ScrimView mScrim;
 
     @ActivityType
     private int mActivityType;
@@ -71,14 +69,13 @@ public class DirectActionInitializer implements NativeInitObserver, Destroyable 
      * @param browserControls Provider of browser controls of the activity
      * @param compositorViewHolder Compositor view holder of the activity
      * @param activityTabProvider Activity tab provider
-     * @param scrim The activity's scrim view, if it exists
      */
     public DirectActionInitializer(Context context, @ActivityType int activityType,
             MenuOrKeyboardActionController actionController, Runnable goBackAction,
             TabModelSelector tabModelSelector, @Nullable FindToolbarManager findToolbarManager,
             @Nullable BottomSheetController bottomSheetController,
             BrowserControlsStateProvider browserControls, CompositorViewHolder compositorViewHolder,
-            ActivityTabProvider activityTabProvider, ScrimView scrim) {
+            ActivityTabProvider activityTabProvider) {
         mContext = context;
         mActivityType = activityType;
         mMenuOrKeyboardActionController = actionController;
@@ -89,7 +86,6 @@ public class DirectActionInitializer implements NativeInitObserver, Destroyable 
         mBrowserControls = browserControls;
         mCompositorViewHolder = compositorViewHolder;
         mActivityTabProvider = activityTabProvider;
-        mScrim = scrim;
 
         mDirectActionsRegistered = false;
     }
@@ -142,14 +138,13 @@ public class DirectActionInitializer implements NativeInitObserver, Destroyable 
      * @param browserControls Browser controls manager of the activity
      * @param compositorViewHolder Compositor view holder of the activity
      * @param activityTabProvider Activity tab provider
-     * @param scrim The activity's scrim view, if it exists
      */
     private void registerCommonChromeActions(Context context, @ActivityType int activityType,
             MenuOrKeyboardActionController actionController, Runnable goBackAction,
             TabModelSelector tabModelSelector, @Nullable FindToolbarManager findToolbarManager,
             @Nullable BottomSheetController bottomSheetController,
             BrowserControlsStateProvider browserControls, CompositorViewHolder compositorViewHolder,
-            ActivityTabProvider activityTabProvider, ScrimView scrim) {
+            ActivityTabProvider activityTabProvider) {
         mCoordinator.register(new GoBackDirectActionHandler(goBackAction));
         mCoordinator.register(
                 new FindInPageDirectActionHandler(tabModelSelector, findToolbarManager));
@@ -160,7 +155,7 @@ public class DirectActionInitializer implements NativeInitObserver, Destroyable 
         if (AutofillAssistantFacade.areDirectActionsAvailable(activityType)) {
             DirectActionHandler handler = AutofillAssistantFacade.createDirectActionHandler(context,
                     bottomSheetController, browserControls, compositorViewHolder,
-                    activityTabProvider, scrim);
+                    activityTabProvider);
             if (handler != null) mCoordinator.register(handler);
         }
     }
@@ -215,7 +210,7 @@ public class DirectActionInitializer implements NativeInitObserver, Destroyable 
                 AutofillAssistantFacade.areDirectActionsAvailable(mActivityType)
                         ? mBottomSheetController
                         : null,
-                mBrowserControls, mCompositorViewHolder, mActivityTabProvider, mScrim);
+                mBrowserControls, mCompositorViewHolder, mActivityTabProvider);
 
         if (mActivityType == ActivityType.TABBED) {
             registerTabManipulationActions(mMenuOrKeyboardActionController, mTabModelSelector);

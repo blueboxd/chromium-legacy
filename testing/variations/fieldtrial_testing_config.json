@@ -2285,6 +2285,25 @@
             ]
         }
     ],
+    "DisableOffSequenceTaskCancelation": [
+        {
+            "platforms": [
+                "android",
+                "chromeos",
+                "linux",
+                "mac",
+                "windows"
+            ],
+            "experiments": [
+                {
+                    "name": "DisableOffSequenceTaskCancelation",
+                    "disable_features": [
+                        "AllowOffSequenceTaskCancelation"
+                    ]
+                }
+            ]
+        }
+    ],
     "DnsHttpssvc": [
         {
             "platforms": [
@@ -3510,6 +3529,24 @@
                     "name": "Enabled",
                     "enable_features": [
                         "ReloadSadTab"
+                    ]
+                }
+            ]
+        }
+    ],
+    "IOSRequestDesktopByDefault": [
+        {
+            "platforms": [
+                "ios"
+            ],
+            "experiments": [
+                {
+                    "name": "DesktopEverywhere",
+                    "enable_features": [
+                        "UseDefaultUserAgentInWebClient"
+                    ],
+                    "disable_features": [
+                        "MobileGoogleSRP"
                     ]
                 }
             ]

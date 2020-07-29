@@ -21,7 +21,6 @@ std::ostream& operator<<(std::ostream& out,
               ? share_target.endpoint_id().value()
               : "")
       << ", has_certificate: " << (share_target.certificate().has_value())
-      << ", has_connection: " << (share_target.nearby_connection() != nullptr)
-      << ">";
+      << ", has_connection: " << (share_target.connection() != nullptr) << ">";
   return out;
 }

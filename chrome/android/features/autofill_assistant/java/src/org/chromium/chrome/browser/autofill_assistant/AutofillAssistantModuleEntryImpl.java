@@ -14,7 +14,6 @@ import org.chromium.chrome.browser.ActivityTabProvider;
 import org.chromium.chrome.browser.autofill_assistant.metrics.OnBoarding;
 import org.chromium.chrome.browser.browser_controls.BrowserControlsStateProvider;
 import org.chromium.chrome.browser.compositor.CompositorViewHolder;
-import org.chromium.chrome.browser.widget.ScrimView;
 import org.chromium.components.browser_ui.bottomsheet.BottomSheetController;
 import org.chromium.content_public.browser.WebContents;
 
@@ -29,10 +28,9 @@ public class AutofillAssistantModuleEntryImpl implements AutofillAssistantModule
     @Override
     public void start(BottomSheetController bottomSheetController,
             BrowserControlsStateProvider browserControls, CompositorViewHolder compositorViewHolder,
-            ScrimView scrimView, Context context, @NonNull WebContents webContents,
-            boolean skipOnboarding, boolean isChromeCustomTab, @NonNull String initialUrl,
-            Map<String, String> parameters, String experimentIds, @Nullable String callerAccount,
-            @Nullable String userName) {
+            Context context, @NonNull WebContents webContents, boolean skipOnboarding,
+            boolean isChromeCustomTab, @NonNull String initialUrl, Map<String, String> parameters,
+            String experimentIds, @Nullable String callerAccount, @Nullable String userName) {
         if (skipOnboarding) {
             AutofillAssistantMetrics.recordOnBoarding(OnBoarding.OB_NOT_SHOWN);
             AutofillAssistantClient.fromWebContents(webContents)
@@ -42,9 +40,9 @@ public class AutofillAssistantModuleEntryImpl implements AutofillAssistantModule
             return;
         }
 
-        AssistantOnboardingCoordinator onboardingCoordinator =
-                new AssistantOnboardingCoordinator(experimentIds, parameters, context,
-                        bottomSheetController, browserControls, compositorViewHolder, scrimView);
+        AssistantOnboardingCoordinator onboardingCoordinator = new AssistantOnboardingCoordinator(
+                experimentIds, parameters, context, bottomSheetController, browserControls,
+                compositorViewHolder, bottomSheetController.getScrimCoordinator());
         onboardingCoordinator.show(accepted -> {
             if (!accepted) return;
 
@@ -58,8 +56,9 @@ public class AutofillAssistantModuleEntryImpl implements AutofillAssistantModule
     public AutofillAssistantActionHandler createActionHandler(Context context,
             BottomSheetController bottomSheetController,
             BrowserControlsStateProvider browserControls, CompositorViewHolder compositorViewHolder,
-            ActivityTabProvider activityTabProvider, ScrimView scrimView) {
+            ActivityTabProvider activityTabProvider) {
         return new AutofillAssistantActionHandlerImpl(context, bottomSheetController,
-                browserControls, compositorViewHolder, activityTabProvider, scrimView);
+                browserControls, compositorViewHolder, activityTabProvider,
+                bottomSheetController.getScrimCoordinator());
     }
 }

@@ -103,6 +103,10 @@ struct CrossOriginOpenerPolicyStatus {
   // swap we potentially break the page. This is one of the case that can be
   // reported using the COOP reporting API.
   bool had_opener_before_browsing_instance_swap = false;
+
+  // This is used to warn developer the COOP header has been ignored, because
+  // the origin was not trustworthy.
+  bool header_ignored_due_to_insecure_context = false;
 };
 
 // A UI thread object that owns a navigation request until it commits. It

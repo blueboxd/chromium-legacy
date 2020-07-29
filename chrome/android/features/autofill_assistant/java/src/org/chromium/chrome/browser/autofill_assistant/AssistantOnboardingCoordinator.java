@@ -24,8 +24,8 @@ import org.chromium.chrome.browser.autofill_assistant.overlay.AssistantOverlaySt
 import org.chromium.chrome.browser.browser_controls.BrowserControlsStateProvider;
 import org.chromium.chrome.browser.compositor.CompositorViewHolder;
 import org.chromium.chrome.browser.customtabs.CustomTabActivity;
-import org.chromium.chrome.browser.widget.ScrimView;
 import org.chromium.components.browser_ui.bottomsheet.BottomSheetController;
+import org.chromium.components.browser_ui.widget.scrim.ScrimCoordinator;
 import org.chromium.ui.text.NoUnderlineClickableSpan;
 import org.chromium.ui.text.SpanApplier;
 
@@ -53,7 +53,7 @@ class AssistantOnboardingCoordinator {
     private final BottomSheetController mController;
     private final BrowserControlsStateProvider mBrowserControls;
     private final CompositorViewHolder mCompositorViewHolder;
-    private final ScrimView mScrimView;
+    private final ScrimCoordinator mScrimCoordinator;
 
     @Nullable
     private AssistantOverlayCoordinator mOverlayCoordinator;
@@ -67,14 +67,14 @@ class AssistantOnboardingCoordinator {
     AssistantOnboardingCoordinator(String experimentIds, Map<String, String> parameters,
             Context context, BottomSheetController controller,
             BrowserControlsStateProvider browserControls, CompositorViewHolder compositorViewHolder,
-            ScrimView scrimView) {
+            ScrimCoordinator scrim) {
         mExperimentIds = experimentIds;
         mParameters = parameters;
         mContext = context;
         mController = controller;
         mBrowserControls = browserControls;
         mCompositorViewHolder = compositorViewHolder;
-        mScrimView = scrimView;
+        mScrimCoordinator = scrim;
     }
 
     /**
@@ -94,7 +94,7 @@ class AssistantOnboardingCoordinator {
         // If there's a tab, cover it with an overlay.
         AssistantOverlayModel overlayModel = new AssistantOverlayModel();
         mOverlayCoordinator = new AssistantOverlayCoordinator(
-                mContext, mBrowserControls, mCompositorViewHolder, mScrimView, overlayModel);
+                mContext, mBrowserControls, mCompositorViewHolder, mScrimCoordinator, overlayModel);
         overlayModel.set(AssistantOverlayModel.STATE, AssistantOverlayState.FULL);
 
         mContent = new AssistantBottomSheetContent(mContext, () -> {

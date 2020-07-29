@@ -314,7 +314,7 @@ void NearbySharingServiceImpl::OnNearbyProcessStopped() {
 void NearbySharingServiceImpl::OnIncomingConnection(
     const std::string& endpoint_id,
     const std::vector<uint8_t>& endpoint_info,
-    std::unique_ptr<NearbyConnection> connection) {
+    NearbyConnection* connection) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   // TODO(crbug/1085068): Handle incoming connection; use CertificateManager
 }
@@ -703,7 +703,7 @@ IncomingShareTargetInfo& NearbySharingServiceImpl::GetIncomingShareTargetInfo(
 
 NearbyConnection* NearbySharingServiceImpl::GetIncomingConnection(
     const ShareTarget& share_target) {
-  return GetIncomingShareTargetInfo(share_target).nearby_connection();
+  return GetIncomingShareTargetInfo(share_target).connection();
 }
 
 OutgoingShareTargetInfo& NearbySharingServiceImpl::GetOutgoingShareTargetInfo(

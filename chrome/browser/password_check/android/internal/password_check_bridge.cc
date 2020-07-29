@@ -28,6 +28,11 @@ jint PasswordCheckBridge::GetCompromisedCredentialsCount(JNIEnv* env) {
   return 0;
 }
 
+jint PasswordCheckBridge::GetSavedPasswordsCount(JNIEnv* env) {
+  // TODO(crbug.com/1102025): implement this.
+  return 0;
+}
+
 void PasswordCheckBridge::GetCompromisedCredentials(
     JNIEnv* env,
     const base::android::JavaParamRef<jobjectArray>& credentials) {

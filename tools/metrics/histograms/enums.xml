@@ -37085,6 +37085,7 @@ Called by update_gpu_driver_bug_workaround_entries.py.-->
 
 <enum name="IOSMenuAction">
   <int value="0" label="Copy"/>
+  <int value="1" label="Delete"/>
 </enum>
 
 <enum name="IOSMenuScenario">

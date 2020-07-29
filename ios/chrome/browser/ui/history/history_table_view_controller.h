@@ -8,6 +8,7 @@
 #import "ios/chrome/browser/ui/table_view/chrome_table_view_controller.h"
 
 #include "ios/chrome/browser/ui/history/history_consumer.h"
+#import "ios/chrome/browser/ui/history/history_entry_item_delegate.h"
 
 class Browser;
 enum class UrlLoadStrategy;
@@ -21,6 +22,7 @@ enum class UrlLoadStrategy;
 // ChromeTableViewController for displaying history items.
 @interface HistoryTableViewController
     : ChromeTableViewController <HistoryConsumer,
+                                 HistoryEntryItemDelegate,
                                  UIAdaptivePresentationControllerDelegate>
 // The ViewController's Browser.
 @property(nonatomic, assign) Browser* browser;

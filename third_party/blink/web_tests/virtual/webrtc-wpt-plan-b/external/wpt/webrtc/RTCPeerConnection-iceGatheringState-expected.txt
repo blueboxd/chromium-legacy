@@ -2,11 +2,8 @@ This is a testharness.js-based test.
 PASS Initial iceGatheringState should be new
 PASS iceGatheringState should eventually become complete after setLocalDescription
 PASS setLocalDescription(reoffer) with no new transports should not cause iceGatheringState to change
-FAIL rolling back an ICE restart when gathering is complete should not result in iceGatheringState changes promise_test: Unhandled rejection with value: object "OperationError: Failed to execute 'setLocalDescription' on 'RTCPeerConnection': Rollback not supported in Plan B"
 PASS setLocalDescription(reoffer) with a new transport should cause iceGatheringState to go to "checking" and then "complete"
 FAIL sRD does not cause ICE gathering state changes promise_test: Unhandled rejection with value: object "OperationError: Failed to execute 'setRemoteDescription' on 'RTCPeerConnection': Rollback not supported in Plan B"
-FAIL setLocalDescription(rollback) of original offer should cause iceGatheringState to reach "new" when starting in "complete" promise_test: Unhandled rejection with value: object "OperationError: Failed to execute 'setLocalDescription' on 'RTCPeerConnection': Rollback not supported in Plan B"
-FAIL setLocalDescription(rollback) of original offer should cause iceGatheringState to reach "new" when starting in "gathering" promise_test: Unhandled rejection with value: object "OperationError: Failed to execute 'setLocalDescription' on 'RTCPeerConnection': Rollback not supported in Plan B"
 FAIL renegotiation that closes all transports should result in ICE gathering state "new" promise_test: Unhandled rejection with value: object "TypeError: Cannot read property 'stop' of undefined"
 FAIL connection with one data channel should eventually have connected connection state Cannot read property 'transport' of null
 Harness: the test ran to completion.

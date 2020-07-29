@@ -19,37 +19,36 @@ group("closure_compile") {
 
 js_type_check("trusted_closure_compile") {
   closure_flags = system_app_closure_flags_strict
-  deps = [
-    ":message_types",
-    ":trusted",
-  ]
+  deps = [ ":trusted" ]
 }
 
 js_type_check("untrusted_closure_compile") {
   closure_flags = system_app_closure_flags_strict
-  deps = [
-    ":message_types",
-    ":untrusted",
-  ]
+  deps = [ ":untrusted" ]
 }
 
 js_type_check("untrusted_worker_closure_compile") {
   deps = [ ":untrusted_worker" ]
 }
 
-js_library("message_types") {
-  deps = [ "../mojom:mojom_js_library_for_compile" ]
-}
-
 js_library("trusted") {
+  sources = [ "trusted.js" ]
   deps = [
-    "../mojom:mojom_js_library_for_compile",
+    ":message_types",
     "//chromeos/components/system_apps/public/js:message_pipe",
   ]
 }
 
 js_library("untrusted") {
-  deps = [ "//chromeos/components/system_apps/public/js:message_pipe" ]
+  sources = [ "untrusted.js" ]
+  deps = [
+    ":message_types",
+    "//chromeos/components/system_apps/public/js:message_pipe",
+  ]
+}
+
+js_library("message_types") {
+  deps = [ "../mojom:mojom_js_library_for_compile" ]
 }
 
 js_library("untrusted_worker") {

@@ -641,12 +641,11 @@ cr.define('cr.login', function() {
         url = appendParam(url, 'mi', 'ee');
       }
 
+      if (data.lsbReleaseBoard) {
+        url = appendParam(url, 'chromeos_board', data.lsbReleaseBoard);
+      }
       if (data.isFirstUser) {
         url = appendParam(url, 'is_first_user', 'true');
-
-        if (data.lsbReleaseBoard) {
-          url = appendParam(url, 'chromeos_board', data.lsbReleaseBoard);
-        }
       }
       if (data.obfuscatedOwnerId) {
         url = appendParam(url, 'obfuscated_owner_id', data.obfuscatedOwnerId);

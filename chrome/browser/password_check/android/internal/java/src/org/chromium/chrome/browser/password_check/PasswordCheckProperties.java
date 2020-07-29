@@ -69,27 +69,6 @@ class PasswordCheckProperties {
         int COMPROMISED_CREDENTIAL = 2;
     }
 
-    @IntDef({CheckStatus.SUCCESS, CheckStatus.RUNNING, CheckStatus.ERROR_OFFLINE,
-            CheckStatus.ERROR_NO_PASSWORDS, CheckStatus.ERROR_SIGNED_OUT,
-            CheckStatus.ERROR_QUOTA_LIMIT, CheckStatus.ERROR_UNKNOWN})
-    @Retention(RetentionPolicy.SOURCE)
-    @interface CheckStatus {
-        /** The check was completed without errors. */
-        int SUCCESS = 1;
-        /** The check is still running. */
-        int RUNNING = 2;
-        /** The check cannot run because the user is offline. */
-        int ERROR_OFFLINE = 3;
-        /** The check cannot run because the user has no passwords on this device. */
-        int ERROR_NO_PASSWORDS = 4;
-        /** The check is cannot run because the user is signed-out. */
-        int ERROR_SIGNED_OUT = 5;
-        /** The check is cannot run because the user has exceeded their quota. */
-        int ERROR_QUOTA_LIMIT = 6;
-        /** The check is cannot run for unknown reasons. */
-        int ERROR_UNKNOWN = 7;
-    }
-
     /**
      * Returns the sheet item type for a given item.
      * @param item An {@link MVCListAdapter.ListItem}.

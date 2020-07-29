@@ -15,7 +15,9 @@
 #include "content/public/browser/web_ui.h"
 #include "content/public/browser/web_ui_data_source.h"
 #include "services/network/public/mojom/content_security_policy.mojom.h"
+#include "third_party/skia/include/core/SkColor.h"
 #include "ui/base/webui/web_ui_util.h"
+#include "ui/gfx/color_utils.h"
 #include "ui/resources/grit/webui_resources.h"
 
 DiceWebSigninInterceptUI::DiceWebSigninInterceptUI(content::WebUI* web_ui)
@@ -30,6 +32,15 @@ DiceWebSigninInterceptUI::DiceWebSigninInterceptUI(content::WebUI* web_ui)
   source->AddResourcePath("signin_icons.js", IDR_SIGNIN_ICONS_JS);
   source->AddResourcePath("signin_shared_css.js", IDR_SIGNIN_SHARED_CSS_JS);
   source->AddResourcePath("signin_vars_css.js", IDR_SIGNIN_VARS_CSS_JS);
+
+  // TODO(droger): Use the color from the profile.
+  SkColor header_background_color = SkColorSetRGB(206, 234, 214);
+  SkColor header_text_color =
+      color_utils::GetColorWithMaxContrast(header_background_color);
+  source->AddString("headerBackgroundColor",
+                    color_utils::SkColorToRgbaString(header_background_color));
+  source->AddString("headerTextColor",
+                    color_utils::SkColorToRgbaString(header_text_color));
 
   // Localized strings.
   source->UseStringsJs();

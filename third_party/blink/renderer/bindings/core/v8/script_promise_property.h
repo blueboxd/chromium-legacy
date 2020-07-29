@@ -30,7 +30,6 @@ class ScriptPromiseProperty final
     : public GarbageCollected<
           ScriptPromiseProperty<ResolvedType, RejectedType>>,
       public ExecutionContextClient {
-
  public:
   enum State {
     kPending,
@@ -101,10 +100,11 @@ class ScriptPromiseProperty final
     }
     state_ = kResolved;
     resolved_ = value;
-    for (const Member<ScriptPromiseResolver>& resolver : resolvers_) {
+    HeapVector<Member<ScriptPromiseResolver>> resolvers;
+    resolvers.swap(resolvers_);
+    for (const Member<ScriptPromiseResolver>& resolver : resolvers) {
       resolver->Resolve(resolved_);
     }
-    resolvers_.clear();
   }
 
   void ResolveWithUndefined() {
@@ -115,10 +115,11 @@ class ScriptPromiseProperty final
     }
     state_ = kResolved;
     resolved_with_undefined_ = true;
-    for (const Member<ScriptPromiseResolver>& resolver : resolvers_) {
+    HeapVector<Member<ScriptPromiseResolver>> resolvers;
+    resolvers.swap(resolvers_);
+    for (const Member<ScriptPromiseResolver>& resolver : resolvers) {
       resolver->Resolve();
     }
-    resolvers_.clear();
   }
 
   template <typename PassRejectedType>
@@ -130,10 +131,11 @@ class ScriptPromiseProperty final
     }
     state_ = kRejected;
     rejected_ = value;
-    for (const Member<ScriptPromiseResolver>& resolver : resolvers_) {
+    HeapVector<Member<ScriptPromiseResolver>> resolvers;
+    resolvers.swap(resolvers_);
+    for (const Member<ScriptPromiseResolver>& resolver : resolvers) {
       resolver->Reject(rejected_);
     }
-    resolvers_.clear();
   }
 
   // Resets this property by unregistering the Promise property from the

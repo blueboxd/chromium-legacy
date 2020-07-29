@@ -32,8 +32,9 @@ function UNTRUSTED_TEST(testName, testCase) {
 }
 
 function registerTestHandlers() {
-  parentMessagePipe.registerHandler('run-test-case', (testName) => {
-    return runTestCase(/** @type {string} */ (testName));
+  parentMessagePipe.registerHandler('run-test-case', (message) => {
+    const {testName} = /** @type {{testName: !string}} */ (message);
+    return runTestCase(testName);
   });
 }
 

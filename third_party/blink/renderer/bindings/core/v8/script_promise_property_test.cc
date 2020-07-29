@@ -96,6 +96,35 @@ class GarbageCollectedHolder final : public GarbageCollectedScriptWrappable {
   Member<Property> property_;
 };
 
+class ScriptPromisePropertyResetter : public ScriptFunction {
+ public:
+  using Property =
+      ScriptPromiseProperty<Member<GarbageCollectedScriptWrappable>,
+                            Member<GarbageCollectedScriptWrappable>>;
+  static v8::Local<v8::Function> CreateFunction(ScriptState* script_state,
+                                                Property* property) {
+    auto* self = MakeGarbageCollected<ScriptPromisePropertyResetter>(
+        script_state, property);
+    return self->BindToV8Function();
+  }
+
+  ScriptPromisePropertyResetter(ScriptState* script_state, Property* property)
+      : ScriptFunction(script_state), property_(property) {}
+
+  void Trace(Visitor* visitor) const override {
+    visitor->Trace(property_);
+    ScriptFunction::Trace(visitor);
+  }
+
+ private:
+  ScriptValue Call(ScriptValue arg) override {
+    property_->Reset();
+    return ScriptValue();
+  }
+
+  const Member<Property> property_;
+};
+
 class ScriptPromisePropertyTestBase {
  public:
   ScriptPromisePropertyTestBase()
@@ -510,6 +539,48 @@ TEST_F(ScriptPromisePropertyGarbageCollectedTest, MarkAsHandled) {
     GetProperty()->Reject(reason);
     EXPECT_TRUE(promise.V8Value().As<v8::Promise>()->HasHandler());
   }
+}
+
+TEST_F(ScriptPromisePropertyGarbageCollectedTest, SyncResolve) {
+  // Call getters to create resolvers in the property.
+  GetProperty()->Promise(DOMWrapperWorld::MainWorld());
+  GetProperty()->Promise(OtherWorld());
+
+  auto* resolution =
+      MakeGarbageCollected<GarbageCollectedScriptWrappable>("hi");
+  v8::HandleScope handle_scope(GetIsolate());
+  v8::Local<v8::Object> main_v8_resolution;
+  v8::Local<v8::Object> other_v8_resolution;
+  {
+    ScriptState::Scope scope(MainScriptState());
+    main_v8_resolution = ToV8(resolution, MainScriptState()).As<v8::Object>();
+    v8::PropertyDescriptor descriptor(
+        ScriptPromisePropertyResetter::CreateFunction(MainScriptState(),
+                                                      GetProperty()),
+        v8::Undefined(GetIsolate()));
+    ASSERT_EQ(
+        v8::Just(true),
+        main_v8_resolution->DefineProperty(
+            MainScriptState()->GetContext(),
+            v8::String::NewFromUtf8Literal(GetIsolate(), "then"), descriptor));
+  }
+  {
+    ScriptState::Scope scope(OtherScriptState());
+    other_v8_resolution = ToV8(resolution, OtherScriptState()).As<v8::Object>();
+    v8::PropertyDescriptor descriptor(
+        ScriptPromisePropertyResetter::CreateFunction(OtherScriptState(),
+                                                      GetProperty()),
+        v8::Undefined(GetIsolate()));
+    ASSERT_EQ(
+        v8::Just(true),
+        other_v8_resolution->DefineProperty(
+            OtherScriptState()->GetContext(),
+            v8::String::NewFromUtf8Literal(GetIsolate(), "then"), descriptor));
+  }
+
+  // This shouldn't crash.
+  GetProperty()->Resolve(resolution);
+  EXPECT_EQ(GetProperty()->GetState(), Property::State::kPending);
 }
 
 TEST_F(ScriptPromisePropertyNonScriptWrappableResolutionTargetTest,

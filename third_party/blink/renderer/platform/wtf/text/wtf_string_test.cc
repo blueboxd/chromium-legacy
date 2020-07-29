@@ -29,6 +29,7 @@
 
 #include "base/stl_util.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/blink/renderer/platform/wtf/functional.h"
 #include "third_party/blink/renderer/platform/wtf/math_extras.h"
 
 namespace WTF {
@@ -327,6 +328,28 @@ TEST(StringTest, StringPrinter) {
   EXPECT_EQ("\"\\u30C6\\u30B9\\u30C8\"",
             ToStdStringThroughPrinter(
                 String(kUnicodeSample, base::size(kUnicodeSample))));
+}
+
+class TestMatcher {
+ public:
+  explicit TestMatcher(UChar target) : target_(target) {}
+
+  bool IsTarget(UChar ch) { return ch == target_; }
+
+ private:
+  UChar target_;
+};
+
+TEST(StringTest, FindWithCallback) {
+  String test_string1("abc");
+  String test_string2("stu");
+
+  // An instance method.
+  TestMatcher matcher('t');
+  auto callback =
+      WTF::BindRepeating(&TestMatcher::IsTarget, WTF::Passed(&matcher));
+  EXPECT_EQ(WTF::kNotFound, test_string1.Find(callback));
+  EXPECT_EQ(1U, test_string2.Find(callback));
 }
 
 }  // namespace WTF

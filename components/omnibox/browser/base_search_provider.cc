@@ -32,6 +32,15 @@
 #include "url/gurl.h"
 #include "url/origin.h"
 
+namespace {
+
+bool MatchTypeAndContentsAreEqual(const AutocompleteMatch& lhs,
+                                  const AutocompleteMatch& rhs) {
+  return lhs.contents == rhs.contents && lhs.type == rhs.type;
+}
+
+}  // namespace
+
 // SuggestionDeletionHandler -------------------------------------------------
 
 // This class handles making requests to the server in order to delete
@@ -569,8 +578,22 @@ void BaseSearchProvider::DeleteMatchFromMatches(
     // may have reformulated that. Not that while checking for matching
     // contents works for personalized suggestions, if more match types gain
     // deletion support, this algorithm may need to be re-examined.
-    if (i->contents == match.contents && i->type == match.type) {
+
+    if (MatchTypeAndContentsAreEqual(match, *i)) {
       matches_.erase(i);
+      break;
+    }
+
+    // Handle the case where the deleted match is only found within the
+    // duplicate_matches sublist.
+    std::vector<AutocompleteMatch>& duplicates = i->duplicate_matches;
+    auto it =
+        std::remove_if(duplicates.begin(), duplicates.end(),
+                       [&match](const AutocompleteMatch& duplicate) {
+                         return MatchTypeAndContentsAreEqual(match, duplicate);
+                       });
+    if (it != duplicates.end()) {
+      duplicates.erase(it, duplicates.end());
       break;
     }
   }

@@ -14,7 +14,6 @@ import org.chromium.chrome.browser.ActivityTabProvider;
 import org.chromium.chrome.browser.browser_controls.BrowserControlsStateProvider;
 import org.chromium.chrome.browser.compositor.CompositorViewHolder;
 import org.chromium.chrome.browser.tab.Tab;
-import org.chromium.chrome.browser.widget.ScrimView;
 import org.chromium.components.browser_ui.bottomsheet.BottomSheetController;
 import org.chromium.content_public.browser.WebContents;
 
@@ -41,10 +40,10 @@ class TestingAutofillAssistantModuleEntryProvider extends AutofillAssistantModul
         public MockAutofillAssistantActionHandler(Context context,
                 BottomSheetController bottomSheetController,
                 BrowserControlsStateProvider browserControls,
-                CompositorViewHolder compositorViewHolder, ActivityTabProvider activityTabProvider,
-                ScrimView scrimView) {
+                CompositorViewHolder compositorViewHolder,
+                ActivityTabProvider activityTabProvider) {
             super(context, bottomSheetController, browserControls, compositorViewHolder,
-                    activityTabProvider, scrimView);
+                    activityTabProvider, bottomSheetController.getScrimCoordinator());
         }
 
         @Override
@@ -65,7 +64,7 @@ class TestingAutofillAssistantModuleEntryProvider extends AutofillAssistantModul
         @Override
         public void start(BottomSheetController bottomSheetController,
                 BrowserControlsStateProvider browserControls,
-                CompositorViewHolder compositorViewHolder, ScrimView scrimView, Context context,
+                CompositorViewHolder compositorViewHolder, Context context,
                 @NonNull WebContents webContents, boolean skipOnboarding, boolean isChromeCustomTab,
                 @NonNull String initialUrl, Map<String, String> parameters, String experimentIds,
                 @Nullable String callerAccount, @Nullable String userName) {}
@@ -74,10 +73,10 @@ class TestingAutofillAssistantModuleEntryProvider extends AutofillAssistantModul
         public AutofillAssistantActionHandler createActionHandler(Context context,
                 BottomSheetController bottomSheetController,
                 BrowserControlsStateProvider browserControls,
-                CompositorViewHolder compositorViewHolder, ActivityTabProvider activityTabProvider,
-                ScrimView scrimView) {
+                CompositorViewHolder compositorViewHolder,
+                ActivityTabProvider activityTabProvider) {
             return new MockAutofillAssistantActionHandler(context, bottomSheetController,
-                    browserControls, compositorViewHolder, activityTabProvider, scrimView);
+                    browserControls, compositorViewHolder, activityTabProvider);
         }
     }
 

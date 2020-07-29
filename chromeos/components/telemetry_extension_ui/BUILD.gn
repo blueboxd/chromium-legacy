@@ -49,3 +49,11 @@ source_set("unit_tests") {
     "//testing/gtest",
   ]
 }
+
+group("closure_compile") {
+  testonly = true
+  deps = [
+    "resources:closure_compile",
+    "test:closure_compile",
+  ]
+}

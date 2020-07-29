@@ -138,20 +138,11 @@ id<GREYMatcher> BookmarksNavigationBarDoneButton();
 // Matcher for the back button on the Bookmarks navigation bar.
 id<GREYMatcher> BookmarksNavigationBarBackButton();
 
-// Returns matcher for the account consistency confirmation button.
-id<GREYMatcher> AccountConsistencyConfirmationOkButton();
-
-// Returns matcher for "ADD ACCOUNT" button in unified consent dialog.
-id<GREYMatcher> UnifiedConsentAddAccountButton();
-
 // Returns matcher for the add account accounts button.
 id<GREYMatcher> AddAccountButton();
 
 // Returns matcher for the sign out accounts button.
 id<GREYMatcher> SignOutAccountsButton();
-
-// Returns matcher for the sign out and clear data accounts button.
-id<GREYMatcher> SignOutAndClearDataAccountsButton();
 
 // Returns matcher for the Clear Browsing Data cell on the Privacy screen.
 id<GREYMatcher> ClearBrowsingDataCell();

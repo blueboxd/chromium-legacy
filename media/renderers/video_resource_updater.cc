@@ -841,11 +841,12 @@ VideoFrameExternalResources VideoResourceUpdater::CreateForHardwarePlanes(
   VideoFrameExternalResources external_resources;
   gfx::ColorSpace resource_color_space = video_frame->ColorSpace();
 
-  bool copy_required = video_frame->metadata()->copy_required;
+  bool copy_to_new_texture = (video_frame->metadata()->copy_mode ==
+                              VideoFrameMetadata::CopyMode::kCopyToNewTexture);
 
   GLuint target = video_frame->mailbox_holder(0).texture_target;
-  // If |copy_required| then we will copy into a GL_TEXTURE_2D target.
-  if (copy_required)
+  // If |copy_to_new_texture| then we will copy into a GL_TEXTURE_2D target.
+  if (copy_to_new_texture)
     target = GL_TEXTURE_2D;
 
   gfx::BufferFormat buffer_formats[VideoFrame::kMaxPlanes];
@@ -870,7 +871,7 @@ VideoFrameExternalResources VideoResourceUpdater::CreateForHardwarePlanes(
     if (mailbox_holder.mailbox.IsZero())
       break;
 
-    if (copy_required) {
+    if (copy_to_new_texture) {
       CopyHardwarePlane(video_frame.get(), resource_color_space, mailbox_holder,
                         &external_resources);
     } else {

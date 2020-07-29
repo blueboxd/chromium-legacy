@@ -5,7 +5,6 @@
 #ifndef CHROME_BROWSER_NEARBY_SHARING_INCOMING_SHARE_TARGET_INFO_H_
 #define CHROME_BROWSER_NEARBY_SHARING_INCOMING_SHARE_TARGET_INFO_H_
 
-#include <memory>
 #include <string>
 
 #include "base/optional.h"
@@ -41,23 +40,20 @@ class IncomingShareTargetInfo {
     return certificate_;
   }
 
-  void set_nearby_connection(std::unique_ptr<NearbyConnection> connection) {
-    connection_ = std::move(connection);
+  void set_connection(NearbyConnection* connection) {
+    connection_ = connection;
   }
 
-  NearbyConnection* nearby_connection() const { return connection_.get(); }
+  NearbyConnection* connection() const { return connection_; }
 
   void set_token(std::string token) { token_ = std::move(token); }
 
   const base::Optional<std::string>& token() const { return token_; }
 
  private:
-  friend std::ostream& operator<<(std::ostream& out,
-                                  const IncomingShareTargetInfo& share_target);
-
   base::Optional<std::string> endpoint_id_;
   base::Optional<NearbyShareDecryptedPublicCertificate> certificate_;
-  std::unique_ptr<NearbyConnection> connection_;
+  NearbyConnection* connection_;
   base::Optional<std::string> token_;
 };
 

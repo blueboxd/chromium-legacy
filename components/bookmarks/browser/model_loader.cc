@@ -11,7 +11,8 @@
 #include "base/json/json_file_value_serializer.h"
 #include "base/json/json_reader.h"
 #include "base/metrics/histogram_functions.h"
-#include "base/threading/thread_task_runner_handle.h"
+#include "base/task/task_traits.h"
+#include "base/task/thread_pool.h"
 #include "base/time/time.h"
 #include "components/bookmarks/browser/bookmark_codec.h"
 #include "components/bookmarks/browser/bookmark_load_details.h"
@@ -150,24 +151,28 @@ void LoadBookmarks(const base::FilePath& path,
 // static
 scoped_refptr<ModelLoader> ModelLoader::Create(
     const base::FilePath& profile_path,
-    base::SequencedTaskRunner* load_sequenced_task_runner,
     std::unique_ptr<BookmarkLoadDetails> details,
     LoadCallback callback) {
   // Note: base::MakeRefCounted is not available here, as ModelLoader's
   // constructor is private.
   auto model_loader = base::WrapRefCounted(new ModelLoader());
+  model_loader->backend_task_runner_ =
+      base::ThreadPool::CreateSequencedTaskRunner(
+          {base::MayBlock(), base::TaskPriority::USER_VISIBLE,
+           base::TaskShutdownBehavior::CONTINUE_ON_SHUTDOWN});
+
   // We plumb the value for kEmitExperimentalBookmarkLoadUma as retrieved on
   // the UI thread to avoid issues with TSAN bots (in case there are tests that
   // override feature toggles -not necessarily this one- while bookmark loading
   // is ongoing, which is problematic due to how feature overriding for tests is
   // implemented).
-  load_sequenced_task_runner->PostTask(
+  model_loader->backend_task_runner_->PostTaskAndReplyWithResult(
       FROM_HERE,
       base::BindOnce(
           &ModelLoader::DoLoadOnBackgroundThread, model_loader, profile_path,
           base::FeatureList::IsEnabled(kEmitExperimentalBookmarkLoadUma),
-          base::ThreadTaskRunnerHandle::Get(), std::move(details),
-          std::move(callback)));
+          std::move(details)),
+      std::move(callback));
   return model_loader;
 }
 
@@ -181,23 +186,14 @@ ModelLoader::ModelLoader()
 
 ModelLoader::~ModelLoader() = default;
 
-void ModelLoader::DoLoadOnBackgroundThread(
+std::unique_ptr<BookmarkLoadDetails> ModelLoader::DoLoadOnBackgroundThread(
     const base::FilePath& profile_path,
     bool emit_experimental_uma,
-    scoped_refptr<base::SequencedTaskRunner> main_sequenced_task_runner,
-    std::unique_ptr<BookmarkLoadDetails> details,
-    LoadCallback callback) {
+    std::unique_ptr<BookmarkLoadDetails> details) {
   LoadBookmarks(profile_path, emit_experimental_uma, details.get());
   history_bookmark_model_ = details->url_index();
   loaded_signal_.Signal();
-  main_sequenced_task_runner->PostTask(
-      FROM_HERE, base::BindOnce(&ModelLoader::OnFinishedLoad, this,
-                                std::move(details), std::move(callback)));
-}
-
-void ModelLoader::OnFinishedLoad(std::unique_ptr<BookmarkLoadDetails> details,
-                                 LoadCallback callback) {
-  std::move(callback).Run(std::move(details));
+  return details;
 }
 
 }  // namespace bookmarks

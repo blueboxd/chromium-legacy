@@ -253,6 +253,7 @@ js_library("lazy_load") {
   deps = [
     "autofill_page:autofill_section",
     "autofill_page:payments_section",
+    "chrome_cleanup_page:chrome_cleanup_proxy",
     "languages_page:languages_browser_proxy.m",
     "languages_page:languages_metrics_proxy",
     "languages_page:languages_page",

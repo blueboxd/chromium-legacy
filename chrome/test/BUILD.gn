@@ -166,7 +166,9 @@ static_library("test_support") {
 
   configs += [ "//build/config:precompiled_headers" ]
 
-  deps = []
+  deps = [
+    "//components/security_interstitials/content:security_interstitial_page",
+  ]
 
   # New deps should go in the non-iOS section below.
   public_deps = [

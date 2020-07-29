@@ -53,8 +53,8 @@ var TelemetryExtensionUIBrowserTest = class extends testing.Test {
 TEST_F('TelemetryExtensionUIBrowserTest', 'HasChromeSchemeURL', () => {
   const title = document.querySelector('title');
 
-  expectEquals(title.innerText, 'Telemetry Extension');
-  expectEquals(document.location.origin, HOST_ORIGIN);
+  assertEquals(title.innerText, 'Telemetry Extension');
+  assertEquals(document.location.origin, HOST_ORIGIN);
   testDone();
 });
 
@@ -62,7 +62,7 @@ TEST_F('TelemetryExtensionUIBrowserTest', 'HasChromeSchemeURL', () => {
 // chrome-untrusted:// iframe.
 TEST_F('TelemetryExtensionUIBrowserTest', 'HasChromeUntrustedIframe', () => {
   const iframe = document.querySelector('iframe');
-  expectTrue(iframe !== null);
+  assertNotEquals(iframe, null);
   testDone();
 });
 
@@ -71,13 +71,13 @@ TEST_F('TelemetryExtensionUIBrowserTest', 'HasChromeUntrustedIframe', () => {
 
 TEST_F(
     'TelemetryExtensionUIBrowserTest', 'UntrustedCanSpawnWorkers', async () => {
-      expectTrue(await runTestInUntrusted('UntrustedCanSpawnWorkers'));
+      await runTestInUntrusted('UntrustedCanSpawnWorkers');
       testDone();
     });
 
 TEST_F(
     'TelemetryExtensionUIBrowserTest', 'UntrustedRequestTelemetryInfo',
     async () => {
-      expectTrue(await runTestInUntrusted('UntrustedRequestTelemetryInfo'));
+      await runTestInUntrusted('UntrustedRequestTelemetryInfo');
       testDone();
     });

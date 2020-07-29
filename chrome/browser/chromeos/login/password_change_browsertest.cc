@@ -7,6 +7,7 @@
 #include <utility>
 
 #include "ash/public/cpp/login_screen_test_api.h"
+#include "base/auto_reset.h"
 #include "base/bind.h"
 #include "base/callback.h"
 #include "base/macros.h"
@@ -20,6 +21,7 @@
 #include "chrome/browser/chromeos/login/reauth_stats.h"
 #include "chrome/browser/chromeos/login/session/user_session_manager.h"
 #include "chrome/browser/chromeos/login/session/user_session_manager_test_api.h"
+#include "chrome/browser/chromeos/login/signin/signin_error_notifier_ash.h"
 #include "chrome/browser/chromeos/login/signin_specifics.h"
 #include "chrome/browser/chromeos/login/test/js_checker.h"
 #include "chrome/browser/chromeos/login/test/login_manager_mixin.h"
@@ -262,6 +264,8 @@ class PasswordChangeTokenCheck : public PasswordChangeTestBase {
   PasswordChangeTokenCheck() {
     login_mixin_.AppendRegularUsers(1);
     user_with_invalid_token_ = login_mixin_.users().back().account_id;
+    ignore_sync_errors_for_test_ =
+        SigninErrorNotifier::IgnoreSyncErrorsForTesting();
   }
 
  protected:
@@ -283,6 +287,7 @@ class PasswordChangeTokenCheck : public PasswordChangeTestBase {
   }
 
   AccountId user_with_invalid_token_;
+  std::unique_ptr<base::AutoReset<bool>> ignore_sync_errors_for_test_;
 };
 
 IN_PROC_BROWSER_TEST_F(PasswordChangeTokenCheck, LoginScreenPasswordChange) {
@@ -345,6 +350,9 @@ IN_PROC_BROWSER_TEST_F(PasswordChangeTokenCheck, PRE_Session) {
 
   // Store invalid token to triger notification in the session.
   TokenHandleUtil::StoreTokenHandle(user_with_invalid_token_, kTokenHandle);
+  // Make token not "checked recently".
+  TokenHandleUtil::SetLastCheckedPrefForTesting(user_with_invalid_token_,
+                                                base::Time());
 
   ProfileWaiter waiter;
   login_mixin_.LoginWithDefaultContext(login_mixin_.users().back());
@@ -379,6 +387,28 @@ IN_PROC_BROWSER_TEST_F(PasswordChangeTokenCheck, Session) {
   WaitForPasswordChangeScreen();
   histogram_tester.ExpectBucketCount("Login.PasswordChanged.ReauthReason",
                                      ReauthReason::INVALID_TOKEN_HANDLE, 1);
+}
+
+// Notification should not be triggered because token was checked on the login
+// screen - recently.
+IN_PROC_BROWSER_TEST_F(PasswordChangeTokenCheck, TokenRecentlyChecked) {
+  TokenHandleUtil::StoreTokenHandle(user_with_invalid_token_, kTokenHandle);
+  // Focus triggers token check.
+  ash::LoginScreenTestApi::FocusUser(user_with_invalid_token_);
+  OpenGaiaDialog(user_with_invalid_token_);
+
+  ProfileWaiter waiter;
+  login_mixin_.LoginWithDefaultContext(login_mixin_.users().back());
+  // We need to replace notification service very early to intercept reauth
+  // notification.
+  auto display_service_tester = waiter.Wait();
+
+  login_mixin_.WaitForActiveSession();
+
+  std::vector<message_center::Notification> notifications =
+      display_service_tester->GetDisplayedNotificationsForType(
+          NotificationHandler::Type::TRANSIENT);
+  ASSERT_EQ(notifications.size(), 0u);
 }
 
 }  // namespace chromeos

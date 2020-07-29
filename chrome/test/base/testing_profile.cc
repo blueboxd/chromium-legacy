@@ -54,6 +54,7 @@
 #include "chrome/browser/search_engines/template_url_service_factory.h"
 #include "chrome/browser/signin/identity_manager_factory.h"
 #include "chrome/browser/signin/signin_util.h"
+#include "chrome/browser/ssl/stateful_ssl_host_state_delegate_factory.h"
 #include "chrome/browser/sync/bookmark_sync_service_factory.h"
 #include "chrome/browser/transition_manager/full_browser_transition_manager.h"
 #include "chrome/browser/ui/zoom/chrome_zoom_level_prefs.h"
@@ -97,6 +98,7 @@
 #include "components/policy/core/common/schema.h"
 #include "components/prefs/pref_notifier_impl.h"
 #include "components/prefs/testing_pref_store.h"
+#include "components/security_interstitials/content/stateful_ssl_host_state_delegate.h"
 #include "components/signin/public/identity_manager/identity_test_utils.h"
 #include "components/sync/model/fake_sync_change_processor.h"
 #include "components/sync/model/sync_error_factory_mock.h"
@@ -199,9 +201,7 @@ std::unique_ptr<KeyedService> BuildBookmarkModel(
       new BookmarkModel(std::make_unique<ChromeBookmarkClient>(
           profile, ManagedBookmarkServiceFactory::GetForProfile(profile),
           BookmarkSyncServiceFactory::GetForProfile(profile))));
-  bookmark_model->Load(profile->GetPrefs(), profile->GetPath(),
-                       profile->GetIOTaskRunner(),
-                       content::GetUIThreadTaskRunner({}));
+  bookmark_model->Load(profile->GetPrefs(), profile->GetPath());
   return std::move(bookmark_model);
 }
 
@@ -1061,7 +1061,7 @@ storage::SpecialStoragePolicy* TestingProfile::GetSpecialStoragePolicy() {
 }
 
 content::SSLHostStateDelegate* TestingProfile::GetSSLHostStateDelegate() {
-  return nullptr;
+  return StatefulSSLHostStateDelegateFactory::GetForProfile(this);
 }
 
 content::PermissionControllerDelegate*

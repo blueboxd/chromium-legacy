@@ -690,8 +690,7 @@ public class RootUiCoordinator
         mDirectActionInitializer = new DirectActionInitializer(mActivity, activityType, mActivity,
                 mActivity::onBackPressed, tabModelSelector, mFindToolbarManager,
                 getBottomSheetController(), mActivity.getBrowserControlsManager(),
-                mActivity.getCompositorViewHolder(), mActivity.getActivityTabProvider(),
-                mScrimView);
+                mActivity.getCompositorViewHolder(), mActivity.getActivityTabProvider());
         mActivity.getLifecycleDispatcher().register(mDirectActionInitializer);
     }
 

@@ -13,7 +13,6 @@
 #include "chrome/browser/media/router/presentation/receiver_presentation_service_delegate_impl.h"  // nogncheck
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_destroyer.h"
-#include "chrome/browser/ui/web_contents_sizer.h"
 #include "content/public/browser/keyboard_event_processing_result.h"
 #include "content/public/browser/navigation_handle.h"
 #include "content/public/browser/presentation_receiver_flags.h"
@@ -165,8 +164,7 @@ void OffscreenTab::Start(const GURL& start_url,
 
   // Set initial size, if specified.
   if (!initial_size.IsEmpty()) {
-    ResizeWebContents(offscreen_tab_web_contents_.get(),
-                      gfx::Rect(initial_size));
+    offscreen_tab_web_contents_.get()->Resize(gfx::Rect(initial_size));
   }
 
   // Mute audio output.  When tab capture starts, the audio will be
@@ -310,7 +308,7 @@ void OffscreenTab::EnterFullscreenModeForTab(
   non_fullscreen_size_ =
       contents->GetRenderWidgetHostView()->GetViewBounds().size();
   if (contents->IsBeingCaptured() && !contents->GetPreferredSize().IsEmpty())
-    ResizeWebContents(contents, gfx::Rect(contents->GetPreferredSize()));
+    contents->Resize(gfx::Rect(contents->GetPreferredSize()));
 }
 
 void OffscreenTab::ExitFullscreenModeForTab(WebContents* contents) {
@@ -319,7 +317,7 @@ void OffscreenTab::ExitFullscreenModeForTab(WebContents* contents) {
   if (!in_fullscreen_mode())
     return;
 
-  ResizeWebContents(contents, gfx::Rect(non_fullscreen_size_));
+  contents->Resize(gfx::Rect(non_fullscreen_size_));
   non_fullscreen_size_ = gfx::Size();
 }
 

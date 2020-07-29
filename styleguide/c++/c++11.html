@@ -24,7 +24,8 @@ table tbody tr td:first-child {
 checkout and is part of the more general
 <a href="https://chromium.googlesource.com/chromium/src/+/master/styleguide/c++/c++.md">
 Chromium C++ style guide</a>. It summarizes the supported state of new and
-updated language and library features in recent C++ standards. This guide
+updated language and library features in recent C++ standards and the
+<a href="https://abseil.io/about/">Abseil</a> library. This guide
 applies to both Chromium and its subprojects, though subprojects can choose to
 be more restrictive if necessary for toolchain support.</i></p>
 
@@ -41,17 +42,26 @@ think it should or should not be allowed, along with links to any relevant
 previous discussion. If the list arrives at some consensus, send a codereview to
 change this file accordingly, linking to your discussion thread.</p>
 
-<p>Two years after a standard is initially supported in Chromium, style arbiters
-should make a final decision on any remaining TBD features to be banned, then
-default-allow all non-banned portions of the standard.  The current status of
-existing standards is:
+<p>If an item remains on the TBD list two years after initial support is added,
+style arbiters should explicitly move it to an appropriate allowlist or blocklist,
+allowing it if there are no obvious reasons to ban.
+The current status of existing standards and Abseil features is:
+
 <ul><li><b>C++11:</b> <i>Default allowed; see banned features below</i></li>
 <li><b>C++14:</b> <i>Default allowed; see banned features below</i></li>
 <li><b>C++17:</b> <i>Not yet supported in Chromium, unlikely before mid-2021; <a href="http://crbug.com/752720">tracking bug</a></i></li>
-<li><b>C++20:</b> <i>Not yet standardized</i></li></ul></p>
+<li><b>C++20:</b> <i>Not yet standardized</i></li>
+<li><b>Abseil:</b> Initially supported July 27, 2020; see allowed/banned/TBD features below</li>
+</ul></p>
+
 
 <h2>Table of Contents</h2>
 <ol class="toc">
+<li>Allowed Features<ol>
+    <li>Library
+      <a href="#absl-allowlist">Abseil</a>
+    </li>
+</ol></li>
 <li>Banned Features<ol>
     <li>Language
       <a href="#core-blocklist">C++11</a>
@@ -59,8 +69,15 @@ existing standards is:
     <li>Library
       <a href="#library-blocklist">C++11</a>
       <a href="#library-blocklist-14">C++14</a>
+      <a href="#absl-blocklist">Abseil</a>
     </li>
 </ol></li>
+<li>To Be Discussed<ol>
+    <li>Library
+      <a href="#absl-review">Abseil</a>
+    </li>
+</ol></li>
+</li>
 </ol>
 
 <h2 id="blocklist_banned"><a name="core-blocklist"></a>C++11 Banned Language Features</h2>
@@ -252,6 +269,212 @@ existing standards is:
 <td>Allows <code>std::chrono</code> types to be more easily constructed.</td>
 <td><a href="http://en.cppreference.com/w/cpp/chrono/operator%22%22s">std::literals::chrono_literals::operator""s</a></td>
 <td>Banned because <code>&lt;chrono&gt;</code> is banned.</td>
+</tr>
+
+</tbody>
+</table>
+
+<h2 id="allowlist_abseil"><a name="absl-allowlist"></a>Abseil Allowed Library Features</h2>
+
+<p>The following Abseil library features are allowed in the Chromium codebase.</p>
+
+<table id="allowlist_abseil_list" class="unlined striped">
+<tbody>
+
+<tr>
+<th style='width:240px;'>Feature</th>
+<th style='width:240px;'>Snippet</th>
+<th style='width:240px;'>Description</th>
+<th style='width:240px;'>Documentation Link</th>
+<th style='width:240px;'>Notes and Discussion Thread</th>
+</tr>
+
+<tr>
+<td colspan="5" style="text-align:center">TBD</td>
+</tr>
+
+</tbody>
+</table>
+
+<h2 id="blocklist_absl"><a name="absl-blocklist"></a>Abseil Banned Library Features</h2>
+
+<p>The following Abseil library features are not allowed in the Chromium codebase.</p>
+
+<table id="blocklist_absl_list" class="unlined striped">
+<tbody>
+
+<tr>
+<th style='width:240px;'>Feature</th>
+<th style='width:240px;'>Snippet</th>
+<th style='width:240px;'>Description</th>
+<th style='width:240px;'>Documentation Link</th>
+<th style='width:240px;'>Notes and Discussion Thread</th>
+</tr>
+
+<tr>
+<td>Any</td>
+<td><code>absl::any a = int{5};
+<br>EXPECT_THAT(absl::any_cast&lt;int&gt;(&a), Pointee(5));
+<br>EXPECT_EQ(absl::any_cast&lt;size_t&gt;(&a), nullptr);</code></td>
+<td>Early adaptation of C++17 std::any.</td>
+<td><a href="https://en.cppreference.com/w/cpp/utility/any">std::any</a></td>
+<td>Banned since workaround for lack of RTTI isn't compatible with the component build. <a href="http://crbug.com/1096380">Bug</a></td>
+</tr>
+
+<tr>
+<td>Command line flags</td>
+<td><code>ABSL_FLAG(bool, logs, false, "print logs to stderr");<br>app --logs=true;</code></td>
+<td>Allows programmatic access to flag values passed on the command-line to binaries.</td>
+<td><a href="https://abseil.io/docs/cpp/guides/flags">Flags Library</a></td>
+<td>Banned since workaround for lack of RTTI isn't compatible with the component build. <a href="http://crbug.com/1096380">Bug</a><br>
+Use <code>base::CommandLine</code> instead.</td>
+</tr>
+
+<tr>
+<td>Span</td>
+<td><code>absl::Span</code></td>
+<td>Early adaptation of C++20 std::span.</td>
+<td><a href="https://abseil.io/tips/93">Using absl::Span</a></td>
+<td>Banned due to being less std::-compliant than <code>base::span</code>.
+<br>Keep using <code>base::span</code>.</td>
+</tr>
+
+<tr>
+<td>string_view</td>
+<td><code>absl::string_view</code></td>
+<td>Early adaptation of C++17 std::string_view.</td>
+<td><a href="https://abseil.io/tips/1">absl::string_view</a></td>
+<td>Banned due to only working with 8-bit characters.
+Keep using <code>base::StringPiece</code> from <code>base/strings/</code>.</td>
+</tr>
+
+</tbody>
+</table>
+
+<h2 id="review_abseil"><a name="absl-review"></a>Abseil TBD Features</h2>
+
+<p>The following Abseil library features are not allowed in the Chromium codebase.
+See the top of this page on how to propose moving a feature from this list into
+the allowed or banned sections.</p>
+
+<table id="absl_review_list" class="unlined striped">
+<tbody>
+
+<tr>
+<th style='width:240px;'>Feature</th>
+<th style='width:240px;'>Snippet</th>
+<th style='width:240px;'>Description</th>
+<th style='width:240px;'>Documentation Link</th>
+<th style='width:240px;'>Notes and Discussion Thread</th>
+</tr>
+
+<tr>
+<td>128bit integer</td>
+<td><code>uint64_t a;<br>absl::uint128 v = a;</code></td>
+<td>Signed and unsigned 128-bit integer types meant to mimic intrinsic types as closely as possible.</td>
+<td><a href="https://abseil.io/docs/cpp/guides/numeric">Numerics</a></td>
+<td></td>
+</tr>
+
+<tr>
+<td>bind_front</td>
+<td><code>absl::bind_front</code></td>
+<td>Binds the first N arguments of an invocable object and stores them by value.</td>
+<td><a href="https://source.chromium.org/chromium/chromium/src/+/master:third_party/abseil-cpp/absl/functional/bind_front.h">bind_front.h</a>
+<br><a href="https://abseil.io/tips/108">Avoid std::bind</a></td>
+<td>Overlaps with <code>base::Bind</code>.</td>
+</tr>
+
+<tr>
+<td>Containers</td>
+<td><code>absl::flat_hash_map, absl::flat_hash_set,<br>absl::node_hash_map, absl::node_hash_set,<br>
+absl::btree_map, absl::btree_set,<br>absl::btree_multimap, absl::btree_multiset,<br>
+absl::InlinedVector, absl::FixedArray</code></td>
+<td>Alternatives to STL containers designed to be more efficient in the general case.</td>
+<td><a href="https://abseil.io/docs/cpp/guides/container">Containers</a><br>
+<a href="https://abseil.io/docs/cpp/guides/hash">Hash</a></td>
+<td>Supplements <code>base/containers/</code>.</td>
+</tr>
+
+<tr>
+<td>Container utilities</td>
+<td><code>auto it = absl::c_find(container, value);</code></td>
+<td>Container-based versions of algorithmic functions within C++ standard library.</td>
+<td><a href="https://source.chromium.org/chromium/chromium/src/+/master:third_party/abseil-cpp/absl/algorithm/container.h">container.h</a></td>
+<td>Overlaps with <code>base/util/ranges/algorithm.h</code>.</td>
+</tr>
+
+<tr>
+<td>FunctionRef</td>
+<td><code>absl::FunctionRef</code></td>
+<td>Type for holding a non-owning reference to an object of any invocable type.</td>
+<td><a href="https://source.chromium.org/chromium/chromium/src/+/master:third_party/abseil-cpp/absl/functional/function_ref.h">function_ref.h</a></td>
+<td></td>
+</tr>
+
+<tr>
+<td>Optional</td>
+<td><code>absl::optional</code></td>
+<td>Early adaptation of C++17 std::optional.</td>
+<td><a href="https://en.cppreference.com/w/cpp/utility/optional">std::optional</a></td>
+<td>Overlaps with <code>base::Optional</code>.</td>
+</tr>
+
+<tr>
+<td>Random</td>
+<td><code>absl::BitGen bitgen;<br>
+size_t index = absl::Uniform(bitgen, 0u, elems.size());</code></td>
+<td>Functions and utilities for generating pseudorandom data.</td>
+<td><a href="https://abseil.io/docs/cpp/guides/random">Random library</a></td>
+<td>Overlaps with <code>base/rand_util.h</code>.</td>
+</tr>
+
+<tr>
+<td>Status</td>
+<td><code>absl::Status</code></td>
+<td>Type for returning detailed errors.</td>
+<td><a href="https://source.chromium.org/chromium/chromium/src/+/master:third_party/abseil-cpp/absl/status/status.h">status.h</a></td>
+<td></td>
+</tr>
+
+<tr>
+<td>String Formatting</td>
+<td><code>absl::StrFormat</code>
+<td>A typesafe replacement for the family of printf() string formatting routines.</td>
+<td><a href="https://abseil.io/docs/cpp/guides/format">String Formatting</a>
+<td></td>
+</tr>
+
+<tr>
+<td>Strings Library</td>
+<td><code>absl::StrSplit, absl::StrJoin,<br> absl::StrCat, absl::StrAppend,<br> absl::Substitute, absl::StrContains</code></td>
+<td>Classes and utility functions for manipulating and comparing strings.</td>
+<td><a href="https://abseil.io/docs/cpp/guides/strings">String Utilities</a>
+<td>Overlaps with <code>base/strings</code>.</td>
+</tr>
+
+<tr>
+<td>Synchronization</td>
+<td><code>absl::Mutex</code></td>
+<td>Primitives for managing tasks across different threads.</td>
+<td><a href="https://abseil.io/docs/cpp/guides/synchronization">Synchronization</a></td>
+<td>Overlaps with <code>Lock</code> in <code>base/synchronization/</code>.</td>
+</tr>
+
+<tr>
+<td>Time library</td>
+<td><code>absl::Duration, absl::Time,<br> absl::TimeZone, absl::CivilDay</code></td>
+<td>Abstractions for holding time values, both in terms of absolute time and civil time.</td>
+<td><a href="https://abseil.io/docs/cpp/guides/time">Time</a></td>
+<td>Overlaps with <code>Time</code> APIs in <code>base/</code>.</td>
+</tr>
+
+<tr>
+<td>Variant</td>
+<td><code>absl::variant</code></td>
+<td>Early adaptation of C++17 std::variant.</td>
+<td><a href="https://en.cppreference.com/w/cpp/utility/variant">std::variant</a></td>
+<td></td>
 </tr>
 
 </tbody>

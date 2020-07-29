@@ -16,7 +16,7 @@ import android.view.ViewGroup;
 import android.widget.ImageButton;
 import android.widget.TextView;
 
-import org.chromium.chrome.browser.password_check.PasswordCheckProperties.CheckStatus;
+import org.chromium.chrome.browser.password_check.PasswordCheck.CheckStatus;
 import org.chromium.chrome.browser.password_check.PasswordCheckProperties.ItemType;
 import org.chromium.chrome.browser.password_check.internal.R;
 import org.chromium.components.browser_ui.widget.listmenu.BasicListMenu;

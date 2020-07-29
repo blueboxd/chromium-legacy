@@ -115,7 +115,7 @@
         TestRunner.addResult('Disable breakpoints');
         SourcesTestRunner
             .runActionAndWaitForExactBreakpointDecorations(
-                javaScriptSourceFrame, [[2, 2]],
+                javaScriptSourceFrame, [[2, 1]],
                 () => SourcesTestRunner.toggleBreakpoint(
                     javaScriptSourceFrame, 2, true))
             .then(enabledAll);

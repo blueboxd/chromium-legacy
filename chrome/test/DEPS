@@ -43,6 +43,7 @@ include_rules = [
   "+components/safe_browsing/buildflags.h",
   "+components/safe_browsing/core/db",
   "+components/search_engines",
+  "+components/security_interstitials/content",
   "+components/services/language_detection/public/cpp",
   "+components/services/quarantine",
   "+components/sessions",

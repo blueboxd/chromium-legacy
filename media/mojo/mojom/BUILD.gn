@@ -144,6 +144,10 @@ mojom("mojom") {
           mojom = "media.mojom.VideoRotation"
           cpp = "::media::VideoRotation"
         },
+        {
+          mojom = "media.mojom.CopyMode"
+          cpp = "::media::VideoFrameMetadata::CopyMode"
+        },
       ]
       traits_headers = [ "media_types_enum_mojom_traits.h" ]
     },

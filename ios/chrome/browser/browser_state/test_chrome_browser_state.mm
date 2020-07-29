@@ -14,7 +14,6 @@
 #include "base/memory/ptr_util.h"
 #include "base/path_service.h"
 #include "base/run_loop.h"
-#include "base/single_thread_task_runner.h"
 #include "base/task/post_task.h"
 #include "base/task/thread_pool.h"
 #include "base/threading/thread_task_runner_handle.h"
@@ -73,10 +72,8 @@ std::unique_ptr<KeyedService> BuildBookmarkModel(web::BrowserState* context) {
       new bookmarks::BookmarkModel(std::make_unique<BookmarkClientImpl>(
           browser_state, nullptr,
           ios::BookmarkSyncServiceFactory::GetForBrowserState(browser_state))));
-  bookmark_model->Load(
-      browser_state->GetPrefs(), browser_state->GetStatePath(),
-      browser_state->GetIOTaskRunner(),
-      base::CreateSingleThreadTaskRunner({web::WebThread::UI}));
+  bookmark_model->Load(browser_state->GetPrefs(),
+                       browser_state->GetStatePath());
   ios::BookmarkUndoServiceFactory::GetForBrowserState(browser_state)
       ->Start(bookmark_model.get());
   return bookmark_model;

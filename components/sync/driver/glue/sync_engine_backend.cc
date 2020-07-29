@@ -559,6 +559,19 @@ void SyncEngineBackend::DoOnInvalidatorClientIdChange(
   sync_manager_->UpdateInvalidationClientId(client_id);
 }
 
+void SyncEngineBackend::DoOnInvalidationReceived(const std::string& payload) {
+  // TODO(crbug.com/1082122): add a DCHECK for a feature toggle.
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  // TODO(crbug.com/1102322): use data types from active or from payload.
+  const ModelTypeSet active_datatypes{ModelType::BOOKMARKS};
+  for (const ModelType type : active_datatypes) {
+    // TODO(crbug.com/1082122): implement new InvalidationInterface for new
+    // invalidations.
+    std::unique_ptr<InvalidationInterface> inv_adapter;
+    sync_manager_->OnIncomingInvalidation(type, std::move(inv_adapter));
+  }
+}
+
 void SyncEngineBackend::GetNigoriNodeForDebugging(AllNodesCallback callback) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   nigori_controller_->GetAllNodes(std::move(callback));

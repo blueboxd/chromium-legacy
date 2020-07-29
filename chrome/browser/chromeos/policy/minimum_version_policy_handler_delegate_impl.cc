@@ -85,11 +85,11 @@ void MinimumVersionPolicyHandlerDelegateImpl::
       WizardController::default_controller();
   if (!wizard_controller)
     return;
-  chromeos::BaseScreen* screen = wizard_controller->current_screen();
-  if (screen &&
-      screen->screen_id() == chromeos::UpdateRequiredView::kScreenId) {
-    chromeos::LoginDisplayHost::default_host()->StartSignInScreen();
-  }
+  chromeos::UpdateRequiredScreen* screen =
+      chromeos::UpdateRequiredScreen::Get(wizard_controller->screen_manager());
+  if (screen->is_hidden())
+    return;
+  screen->Exit();
 }
 
 base::Version MinimumVersionPolicyHandlerDelegateImpl::GetCurrentVersion()

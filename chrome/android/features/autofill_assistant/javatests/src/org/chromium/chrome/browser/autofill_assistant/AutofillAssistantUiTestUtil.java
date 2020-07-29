@@ -618,6 +618,16 @@ class AutofillAssistantUiTestUtil {
         return result.getBoolean(0);
     }
 
+    /**
+     * Wait for an element to be removed from the web page shown by the given {@link WebContents}.
+     * @param webContents The web content to check.
+     * @param id The ID of the element to look for.
+     */
+    public static void waitForElementRemoved(WebContents webContents, String id) {
+        CriteriaHelper.pollInstrumentationThread(
+                () -> !checkElementExists(webContents, id), "Element is still on the page!");
+    }
+
     /** Checks whether the specified element is displayed in the DOM tree. */
     public static boolean checkElementIsDisplayed(WebContents webContents, String... elementIds)
             throws Exception {

@@ -16,6 +16,7 @@
 #include "base/stl_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/test/metrics/user_action_tester.h"
+#include "base/test/scoped_feature_list.h"
 #include "components/autofill/core/common/password_form.h"
 #include "components/password_manager/core/browser/fake_form_fetcher.h"
 #include "components/password_manager/core/browser/mock_password_store.h"
@@ -105,7 +106,10 @@ class FakePasswordManagerClient : public StubPasswordManagerClient {
 
 }  // namespace
 
-class CredentialsFilterTest : public SyncUsernameTestBase {
+// The bool param specifies whether features::kEnablePasswordsAccountStorage is
+// enabled.
+class CredentialsFilterTest : public SyncUsernameTestBase,
+                              public testing::WithParamInterface<bool> {
  public:
   // Flag for creating a PasswordFormManager, deciding its IsNewLogin() value.
   enum class LoginState { NEW, EXISTING };
@@ -123,6 +127,13 @@ class CredentialsFilterTest : public SyncUsernameTestBase {
         filter_(&client_,
                 base::BindRepeating(&SyncUsernameTestBase::sync_service,
                                     base::Unretained(this))) {
+    if (GetParam()) {
+      feature_list_.InitAndEnableFeature(
+          features::kEnablePasswordsAccountStorage);
+    } else {
+      feature_list_.InitAndDisableFeature(
+          features::kEnablePasswordsAccountStorage);
+    }
     fetcher_.Fetch();
   }
 
@@ -141,6 +152,8 @@ class CredentialsFilterTest : public SyncUsernameTestBase {
   }
 
  protected:
+  base::test::ScopedFeatureList feature_list_;
+
   FakePasswordManagerClient client_;
   StubPasswordManagerDriver driver_;
   PasswordForm pending_;
@@ -150,7 +163,7 @@ class CredentialsFilterTest : public SyncUsernameTestBase {
   SyncCredentialsFilter filter_;
 };
 
-TEST_F(CredentialsFilterTest, ReportFormLoginSuccess_ExistingSyncCredentials) {
+TEST_P(CredentialsFilterTest, ReportFormLoginSuccess_ExistingSyncCredentials) {
   FakeSigninAs("user@gmail.com");
   SetSyncingPasswords(true);
 
@@ -160,7 +173,7 @@ TEST_F(CredentialsFilterTest, ReportFormLoginSuccess_ExistingSyncCredentials) {
   EXPECT_EQ(1, tester.GetActionCount(kFilledAndLoginActionName));
 }
 
-TEST_F(CredentialsFilterTest, ReportFormLoginSuccess_NewSyncCredentials) {
+TEST_P(CredentialsFilterTest, ReportFormLoginSuccess_NewSyncCredentials) {
   FakeSigninAs("user@gmail.com");
   SetSyncingPasswords(true);
 
@@ -170,7 +183,7 @@ TEST_F(CredentialsFilterTest, ReportFormLoginSuccess_NewSyncCredentials) {
   EXPECT_EQ(0, tester.GetActionCount(kFilledAndLoginActionName));
 }
 
-TEST_F(CredentialsFilterTest, ReportFormLoginSuccess_GAIANotSyncCredentials) {
+TEST_P(CredentialsFilterTest, ReportFormLoginSuccess_GAIANotSyncCredentials) {
   const char kOtherUsername[] = "other_user@gmail.com";
   FakeSigninAs(kOtherUsername);
   ASSERT_NE(pending_.username_value, base::ASCIIToUTF16(kOtherUsername));
@@ -182,7 +195,7 @@ TEST_F(CredentialsFilterTest, ReportFormLoginSuccess_GAIANotSyncCredentials) {
   EXPECT_EQ(0, tester.GetActionCount(kFilledAndLoginActionName));
 }
 
-TEST_F(CredentialsFilterTest, ReportFormLoginSuccess_NotGAIACredentials) {
+TEST_P(CredentialsFilterTest, ReportFormLoginSuccess_NotGAIACredentials) {
   pending_ = SimpleNonGaiaForm("user@gmail.com");
   FakeSigninAs("user@gmail.com");
   SetSyncingPasswords(true);
@@ -193,7 +206,7 @@ TEST_F(CredentialsFilterTest, ReportFormLoginSuccess_NotGAIACredentials) {
   EXPECT_EQ(0, tester.GetActionCount(kFilledAndLoginActionName));
 }
 
-TEST_F(CredentialsFilterTest, ReportFormLoginSuccess_NotSyncing) {
+TEST_P(CredentialsFilterTest, ReportFormLoginSuccess_NotSyncing) {
   FakeSigninAs("user@gmail.com");
   SetSyncingPasswords(false);
 
@@ -203,7 +216,7 @@ TEST_F(CredentialsFilterTest, ReportFormLoginSuccess_NotSyncing) {
   EXPECT_EQ(0, tester.GetActionCount(kFilledAndLoginActionName));
 }
 
-TEST_F(CredentialsFilterTest, ShouldSave_NotSyncCredential) {
+TEST_P(CredentialsFilterTest, ShouldSave_NotSyncCredential) {
   PasswordForm form = SimpleGaiaForm("user@example.org");
 
   ASSERT_NE("user@example.org",
@@ -212,7 +225,7 @@ TEST_F(CredentialsFilterTest, ShouldSave_NotSyncCredential) {
   EXPECT_TRUE(filter_.ShouldSave(form));
 }
 
-TEST_F(CredentialsFilterTest, ShouldSave_SyncCredential) {
+TEST_P(CredentialsFilterTest, ShouldSave_SyncCredential) {
   PasswordForm form = SimpleGaiaForm("user@example.org");
 
   FakeSigninAs("user@example.org");
@@ -220,7 +233,7 @@ TEST_F(CredentialsFilterTest, ShouldSave_SyncCredential) {
   EXPECT_FALSE(filter_.ShouldSave(form));
 }
 
-TEST_F(CredentialsFilterTest, ShouldSave_SignIn_Form) {
+TEST_P(CredentialsFilterTest, ShouldSave_SignIn_Form) {
   PasswordForm form = SimpleGaiaForm("user@example.org");
   form.form_data.is_gaia_with_skip_save_password_form = true;
 
@@ -228,7 +241,7 @@ TEST_F(CredentialsFilterTest, ShouldSave_SignIn_Form) {
   EXPECT_FALSE(filter_.ShouldSave(form));
 }
 
-TEST_F(CredentialsFilterTest, ShouldSave_SyncCredential_NotSyncingPasswords) {
+TEST_P(CredentialsFilterTest, ShouldSave_SyncCredential_NotSyncingPasswords) {
   PasswordForm form = SimpleGaiaForm("user@example.org");
 
   FakeSigninAs("user@example.org");
@@ -237,7 +250,7 @@ TEST_F(CredentialsFilterTest, ShouldSave_SyncCredential_NotSyncingPasswords) {
 }
 
 #if defined(SYNC_PASSWORD_REUSE_DETECTION_ENABLED)
-TEST_F(CredentialsFilterTest, ShouldSaveGaiaPasswordHash) {
+TEST_P(CredentialsFilterTest, ShouldSaveGaiaPasswordHash) {
   PasswordForm gaia_form = SimpleGaiaForm("user@gmail.org");
   EXPECT_TRUE(filter_.ShouldSaveGaiaPasswordHash(gaia_form));
 
@@ -245,7 +258,7 @@ TEST_F(CredentialsFilterTest, ShouldSaveGaiaPasswordHash) {
   EXPECT_FALSE(filter_.ShouldSaveGaiaPasswordHash(other_form));
 }
 
-TEST_F(CredentialsFilterTest, ShouldNotSaveGaiaPasswordHashIncognito) {
+TEST_P(CredentialsFilterTest, ShouldNotSaveGaiaPasswordHashIncognito) {
   client_.SetIsIncognito(true);
   PasswordForm gaia_form = SimpleGaiaForm("user@gmail.org");
   EXPECT_FALSE(filter_.ShouldSaveGaiaPasswordHash(gaia_form));
@@ -254,7 +267,7 @@ TEST_F(CredentialsFilterTest, ShouldNotSaveGaiaPasswordHashIncognito) {
   EXPECT_FALSE(filter_.ShouldSaveGaiaPasswordHash(other_form));
 }
 
-TEST_F(CredentialsFilterTest, ShouldSaveEnterprisePasswordHash) {
+TEST_P(CredentialsFilterTest, ShouldSaveEnterprisePasswordHash) {
   PasswordForm gaia_form = SimpleGaiaForm("user@gmail.org");
   EXPECT_FALSE(filter_.ShouldSaveEnterprisePasswordHash(gaia_form));
 
@@ -266,7 +279,7 @@ TEST_F(CredentialsFilterTest, ShouldSaveEnterprisePasswordHash) {
   EXPECT_TRUE(filter_.ShouldSaveEnterprisePasswordHash(enterprise_form));
 }
 
-TEST_F(CredentialsFilterTest, ShouldNotSaveEnterprisePasswordHashIncognito) {
+TEST_P(CredentialsFilterTest, ShouldNotSaveEnterprisePasswordHashIncognito) {
   client_.SetIsIncognito(true);
   PasswordForm gaia_form = SimpleGaiaForm("user@gmail.org");
   EXPECT_FALSE(filter_.ShouldSaveEnterprisePasswordHash(gaia_form));
@@ -279,7 +292,7 @@ TEST_F(CredentialsFilterTest, ShouldNotSaveEnterprisePasswordHashIncognito) {
   EXPECT_FALSE(filter_.ShouldSaveEnterprisePasswordHash(enterprise_form));
 }
 
-TEST_F(CredentialsFilterTest, IsSyncAccountEmail) {
+TEST_P(CredentialsFilterTest, IsSyncAccountEmail) {
   FakeSigninAs("user@gmail.com");
   EXPECT_FALSE(filter_.IsSyncAccountEmail("user"));
   EXPECT_FALSE(filter_.IsSyncAccountEmail("user2@gmail.com"));
@@ -289,7 +302,7 @@ TEST_F(CredentialsFilterTest, IsSyncAccountEmail) {
   EXPECT_TRUE(filter_.IsSyncAccountEmail("user@googlemail.com"));
 }
 
-TEST_F(CredentialsFilterTest, IsSyncAccountEmailIncognito) {
+TEST_P(CredentialsFilterTest, IsSyncAccountEmailIncognito) {
   client_.SetIsIncognito(true);
   FakeSigninAs("user@gmail.com");
   EXPECT_FALSE(filter_.IsSyncAccountEmail("user"));
@@ -300,5 +313,7 @@ TEST_F(CredentialsFilterTest, IsSyncAccountEmailIncognito) {
   EXPECT_TRUE(filter_.IsSyncAccountEmail("user@googlemail.com"));
 }
 #endif  // SYNC_PASSWORD_REUSE_DETECTION_ENABLED
+
+INSTANTIATE_TEST_SUITE_P(, CredentialsFilterTest, ::testing::Bool());
 
 }  // namespace password_manager

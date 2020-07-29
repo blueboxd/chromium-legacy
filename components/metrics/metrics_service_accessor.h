@@ -51,13 +51,6 @@ class MetricsServiceAccessor {
       base::StringPiece trial_name,
       const std::vector<uint32_t>& group_name_hashes);
 
-  // Same as RegisterSyntheticFieldTrial above, but takes in the trial name as a
-  // hash rather than computing the hash from the string.
-  static bool RegisterSyntheticFieldTrialWithNameHash(
-      MetricsService* metrics_service,
-      uint32_t trial_name_hash,
-      base::StringPiece group_name);
-
   // Same as RegisterSyntheticFieldTrial above, but takes in the trial and group
   // names as hashes rather than computing those hashes from the strings.
   static bool RegisterSyntheticFieldTrialWithNameAndGroupHash(

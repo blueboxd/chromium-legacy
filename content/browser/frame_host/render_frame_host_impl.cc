@@ -2134,6 +2134,22 @@ void RenderFrameHostImpl::SetRenderFrameCreated(bool created) {
   bool was_created = render_frame_created_;
   render_frame_created_ = created;
 
+  // Clear all the user data associated with this RenderFrameHost when its
+  // RenderFrame is recreated after a crash. Checking
+  // |was_render_frame_ever_created_| guarantees that the user data isn't
+  // cleared for the initial RenderFrame creation.  Note that the user data is
+  // intentionally not cleared at the time of crash. Please refer to
+  // https://crbug.com/1099237 for more details.
+  //
+  // Clearing of user data should be called before RenderFrameCreated to ensure:
+  // - a) new new state set in RenderFrameCreated doesn't get deleted.
+  // - b) the old state is not leaked to a new RenderFrameHost.
+  if (!was_created && created && was_render_frame_ever_created_)
+    document_associated_data_.ClearAllUserData();
+
+  if (created)
+    was_render_frame_ever_created_ = true;
+
   // If the current status is different than the new status, the delegate
   // needs to be notified.
   if (created != was_created) {
@@ -2171,11 +2187,6 @@ void RenderFrameHostImpl::SetRenderFrameCreated(bool created) {
       web_ui_->InvalidateMojoConnection();
     }
   }
-
-  // Clear all the user data associated with this RenderFrameHost in case if
-  // the renderer crashes and the RenderFrameHost still stays alive.
-  if (!created)
-    document_associated_data_.ClearAllUserData();
 }
 
 void RenderFrameHostImpl::SwapIn() {

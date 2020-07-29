@@ -54,6 +54,7 @@
 #include "net/dns/mock_host_resolver.h"
 #include "net/test/embedded_test_server/http_request.h"
 #include "net/test/embedded_test_server/http_response.h"
+#include "testing/gmock/include/gmock/gmock.h"
 #include "ui/base/l10n/l10n_util.h"
 
 namespace em = enterprise_management;
@@ -69,6 +70,7 @@ using ArcGoogleLocationServiceConsent =
 using net::test_server::BasicHttpResponse;
 using net::test_server::HttpRequest;
 using net::test_server::HttpResponse;
+using ::testing::ElementsAre;
 
 namespace chromeos {
 
@@ -356,6 +358,12 @@ IN_PROC_BROWSER_TEST_F(ArcTermsOfServiceScreenTest, ClickOnMore) {
   test::OobeJS().ExpectVisiblePath({"arc-tos-root", "arcExtraContent"});
 
   EXPECT_FALSE(screen_exit_result().has_value());
+  EXPECT_THAT(histogram_tester_.GetAllSamples(
+                  "OOBE.ArcTermsOfServiceScreen.UserActions"),
+              ElementsAre(base::Bucket(
+                  static_cast<int>(
+                      ArcTermsOfServiceScreen::UserAction::kNextButtonClicked),
+                  1)));
 }
 
 // Tests that all "learn more" links opens correct popup dialog.
@@ -386,6 +394,26 @@ IN_PROC_BROWSER_TEST_F(ArcTermsOfServiceScreenTest, LearnMoreDialogs) {
         "open", {"arc-tos-root", popup_html_element_id, "helpDialog"});
   }
   EXPECT_FALSE(screen_exit_result().has_value());
+  EXPECT_THAT(
+      histogram_tester_.GetAllSamples(
+          "OOBE.ArcTermsOfServiceScreen.UserActions"),
+      ElementsAre(
+          base::Bucket(
+              static_cast<int>(
+                  ArcTermsOfServiceScreen::UserAction::kNextButtonClicked),
+              1),
+          base::Bucket(static_cast<int>(ArcTermsOfServiceScreen::UserAction::
+                                            kMetricsLearnMoreClicked),
+                       1),
+          base::Bucket(static_cast<int>(ArcTermsOfServiceScreen::UserAction::
+                                            kBackupRestoreLearnMoreClicked),
+                       1),
+          base::Bucket(static_cast<int>(ArcTermsOfServiceScreen::UserAction::
+                                            kLocationServiceLearnMoreClicked),
+                       1),
+          base::Bucket(static_cast<int>(ArcTermsOfServiceScreen::UserAction::
+                                            kPlayAutoInstallLearnMoreClicked),
+                       1)));
 }
 
 // Test that checking the "review after signing" checkbox updates pref
@@ -412,6 +440,20 @@ IN_PROC_BROWSER_TEST_F(ArcTermsOfServiceScreenTest, ReviewPlayOptions) {
   histogram_tester_.ExpectTotalCount(
       "OOBE.StepCompletionTimeByExitReason.Arc-tos.Back", 0);
   histogram_tester_.ExpectTotalCount("OOBE.StepCompletionTime.Arc_tos", 1);
+  histogram_tester_.ExpectTotalCount(
+      "OOBE.ArcTermsOfServiceScreen.ReviewFollowingSetup", 1);
+  EXPECT_THAT(
+      histogram_tester_.GetAllSamples(
+          "OOBE.ArcTermsOfServiceScreen.UserActions"),
+      ElementsAre(
+          base::Bucket(
+              static_cast<int>(
+                  ArcTermsOfServiceScreen::UserAction::kAcceptButtonClicked),
+              1),
+          base::Bucket(
+              static_cast<int>(
+                  ArcTermsOfServiceScreen::UserAction::kNextButtonClicked),
+              1)));
 }
 
 // Test whether google privacy policy can be loaded.
@@ -428,10 +470,23 @@ IN_PROC_BROWSER_TEST_F(ArcTermsOfServiceScreenTest, PrivacyPolicy) {
   EXPECT_EQ(test::GetWebViewContents({"arc-tos-root", "arcTosOverlayWebview"}),
             kPrivacyPolicyContent);
 
+  EXPECT_THAT(
+      histogram_tester_.GetAllSamples(
+          "OOBE.ArcTermsOfServiceScreen.UserActions"),
+      ElementsAre(
+          base::Bucket(
+              static_cast<int>(
+                  ArcTermsOfServiceScreen::UserAction::kNextButtonClicked),
+              1),
+          base::Bucket(
+              static_cast<int>(
+                  ArcTermsOfServiceScreen::UserAction::kPolicyLinkClicked),
+              1)));
+
   EXPECT_FALSE(screen_exit_result().has_value());
 }
 
-IN_PROC_BROWSER_TEST_F(ArcTermsOfServiceScreenTest, BackButtonClicked) {
+IN_PROC_BROWSER_TEST_F(ArcTermsOfServiceScreenTest, RetryAndBackButtonClicked) {
   // Back button is shown only in demo mode.
   WizardController::default_controller()->SimulateDemoModeSetupForTesting();
   // Accept EULA cause it is expected in case of back button pressed by
@@ -441,6 +496,7 @@ IN_PROC_BROWSER_TEST_F(ArcTermsOfServiceScreenTest, BackButtonClicked) {
   TriggerArcTosScreen();
   WaitForTermsOfServiceWebViewToLoad();
 
+  test::OobeJS().ClickOnPath({"arc-tos-root", "arcTosRetryButton"});
   test::OobeJS().ClickOnPath({"arc-tos-root", "arcTosBackButton"});
 
   WaitForScreenExitResult();
@@ -452,6 +508,18 @@ IN_PROC_BROWSER_TEST_F(ArcTermsOfServiceScreenTest, BackButtonClicked) {
   histogram_tester_.ExpectTotalCount(
       "OOBE.StepCompletionTimeByExitReason.Arc-tos.Back", 1);
   histogram_tester_.ExpectTotalCount("OOBE.StepCompletionTime.Arc_tos", 1);
+  EXPECT_THAT(
+      histogram_tester_.GetAllSamples(
+          "OOBE.ArcTermsOfServiceScreen.UserActions"),
+      ElementsAre(
+          base::Bucket(
+              static_cast<int>(
+                  ArcTermsOfServiceScreen::UserAction::kRetryButtonClicked),
+              1),
+          base::Bucket(
+              static_cast<int>(
+                  ArcTermsOfServiceScreen::UserAction::kBackButtonClicked),
+              1)));
 }
 
 // There are two checkboxes for enabling/disabling arc backup restore and

@@ -20,10 +20,8 @@
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/values.h"
 #include "build/build_config.h"
-#include "chrome/browser/bookmarks/bookmark_model_factory.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chrome_notification_types.h"
-#include "chrome/browser/history/history_service_factory.h"
 #include "chrome/browser/prefs/browser_prefs.h"
 #include "chrome/browser/prefs/incognito_mode_prefs.h"
 #include "chrome/browser/profiles/profile.h"
@@ -31,6 +29,7 @@
 #include "chrome/browser/profiles/profile_info_cache.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/profiles/profiles_state.h"
+#include "chrome/browser/signin/identity_manager_factory.h"
 #include "chrome/common/chrome_constants.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/chrome_switches.h"
@@ -40,7 +39,6 @@
 #include "chrome/test/base/testing_browser_process.h"
 #include "chrome/test/base/testing_profile.h"
 #include "components/account_id/account_id.h"
-#include "components/history/core/browser/history_service.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/common/content_switches.h"
 #include "content/public/test/browser_task_environment.h"
@@ -240,11 +238,13 @@ class ProfileManagerTest : public testing::Test {
   chromeos::ScopedCrosSettingsTestHelper cros_settings_test_helper_;
 #endif
 
-  content::BrowserTaskEnvironment task_environment_;
-
-  // The path to temporary directory used to contain the test operations.
+  // The path to temporary directory used to contain the test operations. These
+  // come before |task_environment_| to avoid issues around backend threads
+  // still using the temp directories upon teardown.
   base::ScopedTempDir temp_dir_;
   ScopedTestingLocalState local_state_;
+
+  content::BrowserTaskEnvironment task_environment_;
 
 #if defined(OS_CHROMEOS)
   chromeos::ScopedTestUserManager test_user_manager_;
@@ -377,14 +377,7 @@ TEST_F(ProfileManagerTest, UserProfileLoading) {
 
 #endif  // defined(OS_CHROMEOS)
 
-// Data race on Linux bots. http://crbug.com/789214
-#if defined(OS_LINUX)
-#define MAYBE_CreateAndUseTwoProfiles DISABLED_CreateAndUseTwoProfiles
-#else
-#define MAYBE_CreateAndUseTwoProfiles CreateAndUseTwoProfiles
-#endif
-
-TEST_F(ProfileManagerTest, MAYBE_CreateAndUseTwoProfiles) {
+TEST_F(ProfileManagerTest, CreateAndUseTwoProfiles) {
   base::FilePath dest_path1 = temp_dir_.GetPath();
   dest_path1 = dest_path1.Append(FILE_PATH_LITERAL("New Profile 1"));
 
@@ -402,24 +395,16 @@ TEST_F(ProfileManagerTest, MAYBE_CreateAndUseTwoProfiles) {
       static_cast<TestingProfile*>(profile_manager->GetProfile(dest_path2));
   ASSERT_TRUE(profile2);
 
-  // Force lazy-init of some profile services to simulate use.
-  ASSERT_TRUE(profile1->CreateHistoryService(true, false));
-  EXPECT_TRUE(HistoryServiceFactory::GetForProfile(
-      profile1, ServiceAccessType::EXPLICIT_ACCESS));
-  profile1->CreateBookmarkModel(true);
-  EXPECT_TRUE(BookmarkModelFactory::GetForBrowserContext(profile1));
-  profile2->CreateBookmarkModel(true);
-  EXPECT_TRUE(BookmarkModelFactory::GetForBrowserContext(profile2));
-  ASSERT_TRUE(profile2->CreateHistoryService(true, false));
-  EXPECT_TRUE(HistoryServiceFactory::GetForProfile(
-      profile2, ServiceAccessType::EXPLICIT_ACCESS));
+  // Access some keyed service to simulate use.
+  EXPECT_TRUE(IdentityManagerFactory::GetForProfile(profile1));
+  EXPECT_TRUE(IdentityManagerFactory::GetForProfile(profile2));
 
   // Make sure any pending tasks run before we destroy the profiles.
   content::RunAllTasksUntilIdle();
 
   TestingBrowserProcess::GetGlobal()->SetProfileManager(nullptr);
 
-  // Make sure history cleans up correctly.
+  // Make sure backend sequences clean up correctly.
   content::RunAllTasksUntilIdle();
 }
 
@@ -530,8 +515,7 @@ TEST_F(ProfileManagerTest, AddProfileToStorageCheckOmitted) {
       prefs::kSupervisedUserId, supervised_users::kChildAccountSUID);
 
   // RegisterTestingProfile adds the profile to the cache and takes ownership.
-  profile_manager->RegisterTestingProfile(std::move(supervised_profile), true,
-                                          false);
+  profile_manager->RegisterTestingProfile(std::move(supervised_profile), true);
   ASSERT_EQ(1u, storage.GetNumberOfProfiles());
   EXPECT_TRUE(storage.GetAllProfilesAttributesSortedByName()[0]->IsOmitted());
 #endif
@@ -541,7 +525,7 @@ TEST_F(ProfileManagerTest, AddProfileToStorageCheckOmitted) {
   auto nonsupervised_profile =
       std::make_unique<TestingProfile>(nonsupervised_path, nullptr);
   profile_manager->RegisterTestingProfile(std::move(nonsupervised_profile),
-                                          true, false);
+                                          true);
 
 #if BUILDFLAG(ENABLE_SUPERVISED_USERS)
   EXPECT_EQ(2u, storage.GetNumberOfProfiles());
@@ -1377,8 +1361,7 @@ TEST_F(ProfileManagerTest, LastProfileDeletedWithGuestActiveProfile) {
   builder.SetPath(ProfileManager::GetGuestProfilePath());
   std::unique_ptr<TestingProfile> guest_profile = builder.Build();
   guest_profile->set_profile_name(guest_profile_name);
-  profile_manager->RegisterTestingProfile(std::move(guest_profile), false,
-                                          false);
+  profile_manager->RegisterTestingProfile(std::move(guest_profile), false);
 
   // The Guest profile does not get added to the ProfileAttributesStorage.
   EXPECT_EQ(2u, profile_manager->GetLoadedProfiles().size());

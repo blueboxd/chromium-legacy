@@ -114,12 +114,6 @@ HUDSettingsView::HUDSettingsView() {
       GetHandleClickCallback(
           &viz::DebugRendererSettings::show_overdraw_feedback)));
   checkbox_handlers_.push_back(std::make_unique<HUDCheckboxHandler>(
-      add_checkbox(this, base::ASCIIToUTF16("Show DC layer debug borders")),
-      GetUpdateStateCallback(
-          &viz::DebugRendererSettings::show_dc_layer_debug_borders),
-      GetHandleClickCallback(
-          &viz::DebugRendererSettings::show_dc_layer_debug_borders)));
-  checkbox_handlers_.push_back(std::make_unique<HUDCheckboxHandler>(
       add_checkbox(this, base::ASCIIToUTF16("Show aggregated damage")),
       GetUpdateStateCallback(
           &viz::DebugRendererSettings::show_aggregated_damage),

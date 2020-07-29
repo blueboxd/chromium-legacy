@@ -297,6 +297,35 @@ suite('PasswordsSection', function() {
     validatePasswordList(passwordsSection, passwordList);
   });
 
+  // Regression test for crbug.com/1110290.
+  // Test verifies that if the password list is updated, all the plaintext
+  // passwords are hidden.
+  test('updatingPasswordListHidesPlaintextPasswords', function() {
+    const passwordList = [
+      createPasswordEntry({username: 'user0', id: 0}),
+      createPasswordEntry({username: 'user1', id: 1}),
+    ];
+    const passwordsSection = elementFactory.createPasswordsSection(
+        passwordManager, passwordList, []);
+
+    // Make passwords visible.
+    const passwordListItems =
+        passwordsSection.root.querySelectorAll('password-list-item');
+    assertEquals(2, passwordListItems.length);
+    passwordListItems[0].password = 'pwd0';
+    passwordListItems[1].password = 'pwd1';
+    flush();
+
+    // Remove first row and verify that the remaining password is hidden.
+    passwordList.splice(0, 1);
+    passwordManager.lastCallback.addSavedPasswordListChangedListener(
+        passwordList);
+    flush();
+    assertEquals('', getFirstPasswordListItem(passwordsSection).password);
+    assertEquals(
+        'user1', getFirstPasswordListItem(passwordsSection).entry.username);
+  });
+
   // Test verifies that removing the account copy of a duplicated password will
   // still leave the device copy present.
   test('verifyPasswordListRemoveAccountCopy', function() {

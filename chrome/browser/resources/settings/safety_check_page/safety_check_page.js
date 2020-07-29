@@ -17,10 +17,13 @@ import 'chrome://resources/polymer/v3_0/iron-flex-layout/iron-flex-layout-classe
 import 'chrome://resources/polymer/v3_0/iron-icon/iron-icon.js';
 import '../settings_shared_css.m.js';
 import './safety_check_extensions_child.js';
-import './safety_check_chrome_cleaner_child.js';
 import './safety_check_passwords_child.js';
 import './safety_check_safe_browsing_child.js';
 import './safety_check_updates_child.js';
+
+// <if expr="_google_chrome and is_win">
+import './safety_check_chrome_cleaner_child.js';
+// </if>
 
 import {assertNotReached} from 'chrome://resources/js/assert.m.js';
 import {I18nBehavior} from 'chrome://resources/js/i18n_behavior.m.js';

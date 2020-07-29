@@ -1495,7 +1495,7 @@ IN_PROC_BROWSER_TEST_F(StartupBrowserCreatorFirstRunTest, WelcomePages) {
   }
   Profile* profile1_ptr = profile1.get();
   ASSERT_TRUE(profile1_ptr);
-  profile_manager->RegisterTestingProfile(std::move(profile1), true, false);
+  profile_manager->RegisterTestingProfile(std::move(profile1), true);
 
   Browser* browser = OpenNewBrowser(profile1_ptr);
   ASSERT_TRUE(browser);
@@ -1551,7 +1551,7 @@ IN_PROC_BROWSER_TEST_F(StartupBrowserCreatorFirstRunTest,
   }
   Profile* profile1_ptr = profile1.get();
   ASSERT_TRUE(profile1_ptr);
-  profile_manager->RegisterTestingProfile(std::move(profile1), true, false);
+  profile_manager->RegisterTestingProfile(std::move(profile1), true);
 
   Browser* browser = OpenNewBrowser(profile1_ptr);
   ASSERT_TRUE(browser);

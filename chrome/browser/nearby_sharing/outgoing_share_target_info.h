@@ -10,7 +10,8 @@
 
 #include "base/optional.h"
 #include "chrome/browser/nearby_sharing/certificates/nearby_share_decrypted_public_certificate.h"
-#include "chrome/browser/nearby_sharing/nearby_connection.h"
+
+class NearbyConnection;
 
 // A description of the outgoing connection to a remote device.
 class OutgoingShareTargetInfo {
@@ -40,11 +41,11 @@ class OutgoingShareTargetInfo {
       const {
     return certificate_;
   }
-  void set_connection(std::unique_ptr<NearbyConnection> connection) {
-    connection_ = std::move(connection);
+  void set_connection(NearbyConnection* connection) {
+    connection_ = connection;
   }
 
-  NearbyConnection* nearby_connection() const { return connection_.get(); }
+  NearbyConnection* connection() const { return connection_; }
 
   void set_obfuscated_gaia_id(std::string obfuscated_gaia_id) {
     obfuscated_gaia_id_ = std::move(obfuscated_gaia_id);
@@ -65,7 +66,7 @@ class OutgoingShareTargetInfo {
  private:
   base::Optional<std::string> endpoint_id_;
   base::Optional<NearbyShareDecryptedPublicCertificate> certificate_;
-  std::unique_ptr<NearbyConnection> connection_;
+  NearbyConnection* connection_;
   base::Optional<std::string> obfuscated_gaia_id_;
   base::Optional<std::string> token_;
   bool is_connected_;

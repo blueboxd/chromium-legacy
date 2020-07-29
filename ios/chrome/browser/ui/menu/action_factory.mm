@@ -55,4 +55,14 @@
                          }];
 }
 
+- (UIAction*)actionToDeleteWithBlock:(ProceduralBlock)block {
+  UIAction* action =
+      [self actionWithTitle:l10n_util::GetNSString(IDS_IOS_DELETE_ACTION_TITLE)
+                      image:[UIImage systemImageNamed:@"trash"]
+                       type:MenuActionType::Delete
+                      block:block];
+  action.attributes = UIMenuElementAttributesDestructive;
+  return action;
+}
+
 @end

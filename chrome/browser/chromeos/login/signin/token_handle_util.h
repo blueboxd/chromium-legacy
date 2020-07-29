@@ -38,12 +38,9 @@ class TokenHandleUtil {
   // Returns true if UserManager has token handle associated with |account_id|.
   static bool HasToken(const AccountId& account_id);
 
-  // Removes token handle for |account_id| from UserManager storage.
-  static void DeleteHandle(const AccountId& account_id);
-
-  // Marks current handle as invalid, new one should be obtained at next sign
-  // in.
-  static void MarkHandleInvalid(const AccountId& account_id);
+  // Returns true if the token status for |account_id| was checked recently
+  // (within kCacheStatusTime).
+  static bool IsRecentlyChecked(const AccountId& account_id);
 
   // Indicates if token handle for |account_id| is missing or marked as invalid.
   static bool ShouldObtainHandle(const AccountId& account_id);
@@ -60,6 +57,9 @@ class TokenHandleUtil {
                                const std::string& handle);
 
   static void SetInvalidTokenForTesting(const char* token);
+
+  static void SetLastCheckedPrefForTesting(const AccountId& account_id,
+                                           base::Time time);
 
  private:
   // Associates GaiaOAuthClient::Delegate with User ID and Token.

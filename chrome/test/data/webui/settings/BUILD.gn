@@ -295,6 +295,8 @@ js_library("safety_check_chrome_cleaner_test") {
   deps = [
     ":test_metrics_browser_proxy",
     "..:chai_assert",
+    "..:test_browser_proxy.m",
+    "//chrome/browser/resources/settings:lazy_load",
     "//chrome/browser/resources/settings:settings",
   ]
   externs_list = [ "$externs_path/mocha-2.5.js" ]

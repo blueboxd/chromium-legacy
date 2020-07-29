@@ -13,6 +13,18 @@
 #include "components/keyed_service/content/browser_context_dependency_manager.h"
 #include "components/security_interstitials/content/stateful_ssl_host_state_delegate.h"
 
+namespace {
+
+std::unique_ptr<KeyedService> BuildStatefulSSLHostStateDelegate(
+    content::BrowserContext* context) {
+  Profile* profile = Profile::FromBrowserContext(context);
+  return std::make_unique<StatefulSSLHostStateDelegate>(
+      profile, profile->GetPrefs(),
+      HostContentSettingsMapFactory::GetForProfile(profile));
+}
+
+}  // namespace
+
 // static
 StatefulSSLHostStateDelegate*
 StatefulSSLHostStateDelegateFactory::GetForProfile(Profile* profile) {
@@ -24,6 +36,12 @@ StatefulSSLHostStateDelegateFactory::GetForProfile(Profile* profile) {
 StatefulSSLHostStateDelegateFactory*
 StatefulSSLHostStateDelegateFactory::GetInstance() {
   return base::Singleton<StatefulSSLHostStateDelegateFactory>::get();
+}
+
+// static
+BrowserContextKeyedServiceFactory::TestingFactory
+StatefulSSLHostStateDelegateFactory::GetDefaultFactoryForTesting() {
+  return base::BindRepeating(&BuildStatefulSSLHostStateDelegate);
 }
 
 StatefulSSLHostStateDelegateFactory::StatefulSSLHostStateDelegateFactory()
@@ -38,14 +56,15 @@ StatefulSSLHostStateDelegateFactory::~StatefulSSLHostStateDelegateFactory() =
 
 KeyedService* StatefulSSLHostStateDelegateFactory::BuildServiceInstanceFor(
     content::BrowserContext* context) const {
-  Profile* profile = Profile::FromBrowserContext(context);
-  return new StatefulSSLHostStateDelegate(
-      profile, profile->GetPrefs(),
-      HostContentSettingsMapFactory::GetForProfile(profile));
+  return BuildStatefulSSLHostStateDelegate(context).release();
 }
 
 content::BrowserContext*
 StatefulSSLHostStateDelegateFactory::GetBrowserContextToUse(
     content::BrowserContext* context) const {
   return chrome::GetBrowserContextOwnInstanceInIncognito(context);
+}
+
+bool StatefulSSLHostStateDelegateFactory::ServiceIsNULLWhileTesting() const {
+  return true;
 }

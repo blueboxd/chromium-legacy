@@ -711,8 +711,6 @@ Polymer({
    * Event handler that is invoked just before the frame is shown.
    */
   onBeforeShow() {
-    this.screenMode_ = AuthMode.DEFAULT;
-    this.loadingFrameContents_ = true;
     chrome.send('loginUIStateChanged', ['gaia-signin', true]);
 
     // Ensure that GAIA signin (or loading UI) is actually visible.

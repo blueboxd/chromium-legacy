@@ -458,6 +458,13 @@ void SyncEngineImpl::OnInvalidatorClientIdChange(const std::string& client_id) {
                      backend_, client_id));
 }
 
+void SyncEngineImpl::OnInvalidationReceived(const std::string& payload) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  sync_task_runner_->PostTask(
+      FROM_HERE, base::BindOnce(&SyncEngineBackend::DoOnInvalidationReceived,
+                                backend_, payload));
+}
+
 void SyncEngineImpl::OnCookieJarChangedDoneOnFrontendLoop(
     base::OnceClosure callback) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);

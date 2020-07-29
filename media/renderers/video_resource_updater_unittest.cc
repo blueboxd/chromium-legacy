@@ -204,7 +204,10 @@ class VideoResourceUpdaterTest : public testing::Test {
       bool needs_copy) {
     scoped_refptr<media::VideoFrame> video_frame = CreateTestHardwareVideoFrame(
         media::PIXEL_FORMAT_ARGB, GL_TEXTURE_EXTERNAL_OES);
-    video_frame->metadata()->copy_required = needs_copy;
+    if (needs_copy) {
+      video_frame->metadata()->copy_mode =
+          VideoFrameMetadata::CopyMode::kCopyToNewTexture;
+    }
     return video_frame;
   }
 

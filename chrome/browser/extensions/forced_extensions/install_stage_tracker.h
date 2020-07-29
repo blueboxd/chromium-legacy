@@ -35,7 +35,10 @@ class InstallStageTracker : public KeyedService {
   // CREATED stage.
   // Note: enum used for UMA. Do NOT reorder or remove entries. Don't forget to
   // update enums.xml (name: ExtensionInstallationStage) when adding new
-  // entries.
+  // entries. Don't forget to update device_management_backend.proto (name:
+  // ExtensionInstallReportLogEvent::InstallationStage) when adding new entries.
+  // Don't forget to update ConvertInstallationStageToProto method in
+  // ExtensionInstallEventLogCollector.
   enum class Stage {
     // Extension found in ForceInstall policy and added to
     // ExtensionManagement::settings_by_id_.
@@ -326,6 +329,10 @@ class InstallStageTracker : public KeyedService {
     virtual void OnExtensionDownloadCacheStatusRetrieved(
         const ExtensionId& id,
         ExtensionDownloaderDelegate::CacheStatus cache_status) {}
+
+    // Called when installation stage of extension is updated.
+    virtual void OnExtensionInstallationStageChanged(const ExtensionId& id,
+                                                     Stage stage) {}
   };
 
   explicit InstallStageTracker(const content::BrowserContext* context);

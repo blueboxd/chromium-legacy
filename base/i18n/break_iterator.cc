@@ -106,14 +106,14 @@ class DefaultLocaleBreakIteratorCache {
   Lock lock_;
 };
 
-static LazyInstance<DefaultLocaleBreakIteratorCache<UBRK_CHARACTER>>::
-    DestructorAtExit char_break_cache = LAZY_INSTANCE_INITIALIZER;
-static LazyInstance<DefaultLocaleBreakIteratorCache<UBRK_WORD>>::
-    DestructorAtExit word_break_cache = LAZY_INSTANCE_INITIALIZER;
-static LazyInstance<DefaultLocaleBreakIteratorCache<UBRK_SENTENCE>>::
-    DestructorAtExit sentence_break_cache = LAZY_INSTANCE_INITIALIZER;
-static LazyInstance<DefaultLocaleBreakIteratorCache<UBRK_LINE>>::
-    DestructorAtExit line_break_cache = LAZY_INSTANCE_INITIALIZER;
+static LazyInstance<DefaultLocaleBreakIteratorCache<UBRK_CHARACTER>>::Leaky
+    char_break_cache = LAZY_INSTANCE_INITIALIZER;
+static LazyInstance<DefaultLocaleBreakIteratorCache<UBRK_WORD>>::Leaky
+    word_break_cache = LAZY_INSTANCE_INITIALIZER;
+static LazyInstance<DefaultLocaleBreakIteratorCache<UBRK_SENTENCE>>::Leaky
+    sentence_break_cache = LAZY_INSTANCE_INITIALIZER;
+static LazyInstance<DefaultLocaleBreakIteratorCache<UBRK_LINE>>::Leaky
+    line_break_cache = LAZY_INSTANCE_INITIALIZER;
 
 }  // namespace
 

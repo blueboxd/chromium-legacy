@@ -6,17 +6,14 @@
 
 #include <utility>
 #include "base/no_destructor.h"
-#include "base/task/post_task.h"
 #include "components/bookmarks/browser/bookmark_model.h"
 #include "components/bookmarks/browser/bookmark_utils.h"
-#include "components/bookmarks/browser/startup_task_runner_service.h"
 #include "components/keyed_service/ios/browser_state_dependency_manager.h"
 #include "components/prefs/pref_service.h"
 #include "components/undo/bookmark_undo_service.h"
 #include "ios/chrome/browser/bookmarks/bookmark_client_impl.h"
 #include "ios/chrome/browser/bookmarks/bookmark_sync_service_factory.h"
 #import "ios/chrome/browser/bookmarks/managed_bookmark_service_factory.h"
-#include "ios/chrome/browser/bookmarks/startup_task_runner_service_factory.h"
 #include "ios/chrome/browser/browser_state/browser_state_otr_helper.h"
 #include "ios/chrome/browser/browser_state/chrome_browser_state.h"
 #include "ios/chrome/browser/history/history_service_factory.h"
@@ -52,7 +49,6 @@ BookmarkModelFactory::BookmarkModelFactory()
           BrowserStateDependencyManager::GetInstance()) {
   DependsOn(ios::BookmarkUndoServiceFactory::GetInstance());
   DependsOn(ManagedBookmarkServiceFactory::GetInstance());
-  DependsOn(ios::StartupTaskRunnerServiceFactory::GetInstance());
 }
 
 BookmarkModelFactory::~BookmarkModelFactory() {}
@@ -71,11 +67,8 @@ std::unique_ptr<KeyedService> BookmarkModelFactory::BuildServiceInstanceFor(
           browser_state,
           ManagedBookmarkServiceFactory::GetForBrowserState(browser_state),
           ios::BookmarkSyncServiceFactory::GetForBrowserState(browser_state))));
-  bookmark_model->Load(
-      browser_state->GetPrefs(), browser_state->GetStatePath(),
-      ios::StartupTaskRunnerServiceFactory::GetForBrowserState(browser_state)
-          ->GetBookmarkTaskRunner(),
-      base::CreateSingleThreadTaskRunner({web::WebThread::UI}));
+  bookmark_model->Load(browser_state->GetPrefs(),
+                       browser_state->GetStatePath());
   ios::BookmarkUndoServiceFactory::GetForBrowserState(browser_state)
       ->Start(bookmark_model.get());
   return bookmark_model;

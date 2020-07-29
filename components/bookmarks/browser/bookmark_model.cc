@@ -151,11 +151,8 @@ BookmarkModel::~BookmarkModel() {
   }
 }
 
-void BookmarkModel::Load(
-    PrefService* pref_service,
-    const base::FilePath& profile_path,
-    const scoped_refptr<base::SequencedTaskRunner>& io_task_runner,
-    const scoped_refptr<base::SequencedTaskRunner>& ui_task_runner) {
+void BookmarkModel::Load(PrefService* pref_service,
+                         const base::FilePath& profile_path) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   // If the store is non-null, it means Load was already invoked. Load should
   // only be invoked once.
@@ -164,11 +161,10 @@ void BookmarkModel::Load(
   expanded_state_tracker_ =
       std::make_unique<BookmarkExpandedStateTracker>(this, pref_service);
 
-  store_ = std::make_unique<BookmarkStorage>(this, profile_path,
-                                             io_task_runner.get());
-  // Creating ModelLoader schedules the load on |io_task_runner|.
+  store_ = std::make_unique<BookmarkStorage>(this, profile_path);
+  // Creating ModelLoader schedules the load on a backend task runner.
   model_loader_ = ModelLoader::Create(
-      profile_path.Append(kBookmarksFileName), io_task_runner.get(),
+      profile_path.Append(kBookmarksFileName),
       std::make_unique<BookmarkLoadDetails>(client_.get()),
       base::BindOnce(&BookmarkModel::DoneLoading, AsWeakPtr()));
 }

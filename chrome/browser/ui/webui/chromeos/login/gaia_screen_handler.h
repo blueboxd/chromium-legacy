@@ -58,11 +58,17 @@ class GaiaView {
 
   virtual void DisableRestrictiveProxyCheckForTest() = 0;
 
-  // Show the sign-in screen. Depending on internal state, the screen will
-  // either be shown immediately or after an asynchronous clean-up process that
+  // Loads Gaia into the webview. Depending on internal state, the Gaia will
+  // either be loaded immediately or after an asynchronous clean-up process that
   // cleans DNS cache and cookies. If available, |account_id| is used for
   // prefilling information.
-  virtual void ShowGaiaAsync(const AccountId& account_id) = 0;
+  virtual void LoadGaiaAsync(const AccountId& account_id) = 0;
+
+  virtual void LoadOfflineGaia(const AccountId& account_id) = 0;
+
+  // Shows Gaia screen.
+  virtual void Show() = 0;
+  virtual void Hide() = 0;
 
   // Show sign-in screen for the given credentials. |services| is a list of
   // services returned by userInfo call as JSON array. Should be an empty array
@@ -115,7 +121,10 @@ class GaiaScreenHandler : public BaseScreenHandler,
   // GaiaView:
   void MaybePreloadAuthExtension() override;
   void DisableRestrictiveProxyCheckForTest() override;
-  void ShowGaiaAsync(const AccountId& account_id) override;
+  void LoadGaiaAsync(const AccountId& account_id) override;
+  void LoadOfflineGaia(const AccountId& account_id) override;
+  void Show() override;
+  void Hide() override;
   void ShowSigninScreenForTest(const std::string& username,
                                const std::string& password,
                                const std::string& services) override;
@@ -251,11 +260,6 @@ class GaiaScreenHandler : public BaseScreenHandler,
                        bool using_saml,
                        const SamlPasswordAttributes& password_attributes);
 
-  // Fill GAIA account.
-  void set_populated_account(const AccountId& populated_account_id) {
-    populated_account_id_ = populated_account_id;
-  }
-
   // Kick off cookie / local storage cleanup.
   void StartClearingCookies(const base::Closure& on_clear_callback);
   void OnCookiesCleared(const base::Closure& on_clear_callback);
@@ -276,10 +280,6 @@ class GaiaScreenHandler : public BaseScreenHandler,
   // Updates the member variable and UMA histogram indicating whether the
   // Chrome Credentials Passing API was used during SAML login.
   void SetSAMLPrincipalsAPIUsed(bool is_third_party_idp, bool is_api_used);
-
-  // Cancels the request to show the sign-in screen while the asynchronous
-  // clean-up process that precedes the screen showing is in progress.
-  void CancelShowGaiaAsync();
 
   // Shows signin screen after dns cache and cookie cleanup operations finish.
   void ShowGaiaScreenIfReady();
@@ -358,6 +358,8 @@ class GaiaScreenHandler : public BaseScreenHandler,
 
   // Whether the handler has been initialized.
   bool initialized_ = false;
+
+  bool show_on_init_ = false;
 
   // True if dns cache cleanup is done.
   bool dns_cleared_ = false;
@@ -444,6 +446,8 @@ class GaiaScreenHandler : public BaseScreenHandler,
   // Whether the PIN dialog shown during the current authentication attempt was
   // canceled by the user.
   bool was_security_token_pin_canceled_ = false;
+
+  bool hidden_ = true;
 
   // Handler for |samlChallengeMachineKey| request.
   std::unique_ptr<SamlChallengeKeyHandler> saml_challenge_key_handler_;

@@ -199,7 +199,7 @@ class SyncProfileDelegate : public Profile::Delegate {
                         bool success,
                         bool is_new_profile) override {
     g_browser_process->profile_manager()->RegisterTestingProfile(
-        base::WrapUnique(profile), true, false);
+        base::WrapUnique(profile), true);
 
     // Perform any custom work needed before the profile is initialized.
     if (!on_profile_created_callback_.is_null())

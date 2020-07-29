@@ -77,19 +77,13 @@ void NearbyConnectionsManagerImpl::StopDiscovery() {
   endpoint_discovery_listener_.reset();
 }
 
-std::unique_ptr<NearbyConnection> NearbyConnectionsManagerImpl::Connect(
+void NearbyConnectionsManagerImpl::Connect(
     std::vector<uint8_t> endpoint_info,
     const std::string& endpoint_id,
     base::Optional<std::vector<uint8_t>> bluetooth_mac_address,
     DataUsage data_usage,
-    ConnectionsCallback callback) {
-  if (!nearby_connections_) {
-    std::move(callback).Run(ConnectionsStatus::kError);
-    return nullptr;
-  }
-
+    NearbyConnectionCallback callback) {
   // TOOD(crbug/1076008): Implement.
-  return nullptr;
 }
 
 void NearbyConnectionsManagerImpl::Disconnect(const std::string& endpoint_id) {

@@ -9,6 +9,8 @@ static_library("renderer") {
     "prerender_observer.h",
     "prerender_observer_list.cc",
     "prerender_observer_list.h",
+    "prerender_render_frame_observer.cc",
+    "prerender_render_frame_observer.h",
     "prerenderer_client.cc",
     "prerenderer_client.h",
   ]

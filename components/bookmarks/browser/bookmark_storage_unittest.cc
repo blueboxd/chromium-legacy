@@ -8,8 +8,6 @@
 #include "base/files/file_util.h"
 #include "base/files/scoped_temp_dir.h"
 #include "base/strings/string16.h"
-#include "base/task/task_traits.h"
-#include "base/task/thread_pool.h"
 #include "base/test/task_environment.h"
 #include "base/time/time.h"
 #include "components/bookmarks/browser/bookmark_model.h"
@@ -38,12 +36,7 @@ TEST(BookmarkStorageTest, ShouldSaveFileToDiskAfterDelay) {
 
   base::test::TaskEnvironment task_environment{
       base::test::TaskEnvironment::TimeSource::MOCK_TIME};
-
-  BookmarkStorage storage(
-      model.get(), temp_dir.GetPath(),
-      base::ThreadPool::CreateSequencedTaskRunner(
-          {base::MayBlock(), base::TaskPriority::BEST_EFFORT,
-           base::TaskShutdownBehavior::BLOCK_SHUTDOWN}));
+  BookmarkStorage storage(model.get(), temp_dir.GetPath());
 
   ASSERT_FALSE(storage.HasScheduledSaveForTesting());
   ASSERT_FALSE(base::PathExists(temp_dir.GetPath().Append(kBookmarksFileName)));
@@ -72,12 +65,7 @@ TEST(BookmarkStorageTest, ShouldSaveFileDespiteShutdownWhileScheduled) {
   {
     base::test::TaskEnvironment task_environment{
         base::test::TaskEnvironment::TimeSource::MOCK_TIME};
-
-    BookmarkStorage storage(
-        model.get(), temp_dir.GetPath(),
-        base::ThreadPool::CreateSequencedTaskRunner(
-            {base::MayBlock(), base::TaskPriority::BEST_EFFORT,
-             base::TaskShutdownBehavior::BLOCK_SHUTDOWN}));
+    BookmarkStorage storage(model.get(), temp_dir.GetPath());
 
     storage.ScheduleSave();
     ASSERT_TRUE(storage.HasScheduledSaveForTesting());
@@ -104,11 +92,7 @@ TEST(BookmarkStorageTest, ShouldGenerateBackupFileUponFirstSave) {
 
   base::test::TaskEnvironment task_environment{
       base::test::TaskEnvironment::TimeSource::MOCK_TIME};
-  BookmarkStorage storage(
-      model.get(), temp_dir.GetPath(),
-      base::ThreadPool::CreateSequencedTaskRunner(
-          {base::MayBlock(), base::TaskPriority::BEST_EFFORT,
-           base::TaskShutdownBehavior::BLOCK_SHUTDOWN}));
+  BookmarkStorage storage(model.get(), temp_dir.GetPath());
 
   // The backup file should be created upon first save, not earlier.
   task_environment.RunUntilIdle();

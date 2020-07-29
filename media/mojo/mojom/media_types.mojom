@@ -73,6 +73,12 @@ enum VideoRotation {
   kVideoRotation270,
 };
 
+// see media/base/video_frame_metadata.h for descriptions.
+enum CopyMode {
+  kCopyToNewTexture,
+  kCopyMailboxesOnly,
+};
+
 // See media/base/video_transformation.h for descriptions.
 struct VideoTransformation {
   VideoRotation rotation;
@@ -273,7 +279,8 @@ struct VideoFrameMetadata {
 
   gfx.mojom.Rect? capture_update_rect;
 
-  bool copy_required;
+  bool has_copy_mode;
+  CopyMode copy_mode;
 
   bool end_of_stream;
 

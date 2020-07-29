@@ -118,6 +118,42 @@ bool ClipboardRecentContentGeneric::HasRecentImageFromClipboard() {
       /* data_dst = */ nullptr);
 }
 
+void ClipboardRecentContentGeneric::HasRecentContentFromClipboard(
+    std::set<ClipboardContentType> types,
+    HasDataCallback callback) {
+  std::set<ClipboardContentType> matching_types;
+  for (ClipboardContentType type : types) {
+    switch (type) {
+      case ClipboardContentType::URL:
+        if (GetRecentURLFromClipboard()) {
+          matching_types.insert(ClipboardContentType::URL);
+        }
+        break;
+      case ClipboardContentType::Text:
+        if (GetRecentTextFromClipboard()) {
+          matching_types.insert(ClipboardContentType::Text);
+        }
+        break;
+      case ClipboardContentType::Image:
+        if (HasRecentImageFromClipboard()) {
+          matching_types.insert(ClipboardContentType::Image);
+        }
+        break;
+    }
+  }
+  std::move(callback).Run(matching_types);
+}
+
+void ClipboardRecentContentGeneric::GetRecentURLFromClipboard(
+    GetRecentURLCallback callback) {
+  std::move(callback).Run(GetRecentURLFromClipboard());
+}
+
+void ClipboardRecentContentGeneric::GetRecentTextFromClipboard(
+    GetRecentTextCallback callback) {
+  std::move(callback).Run(GetRecentTextFromClipboard());
+}
+
 base::TimeDelta ClipboardRecentContentGeneric::GetClipboardContentAge() const {
   const base::Time last_modified_time =
       ui::Clipboard::GetForCurrentThread()->GetLastModifiedTime();

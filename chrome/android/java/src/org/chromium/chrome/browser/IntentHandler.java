@@ -800,20 +800,28 @@ public class IntentHandler {
         StringBuilder extraHeaders = new StringBuilder();
 
         boolean fromChrome = IntentHandler.wasIntentSenderChrome(intent);
+        boolean shouldAllowNonSafelistedHeaders =
+                CustomTabsConnection.getInstance().isFirstPartyOriginForIntent(intent);
 
         for (String key : bundleExtraHeaders.keySet()) {
             String value = bundleExtraHeaders.getString(key);
 
             if (!HttpUtil.isAllowedHeader(key, value)) {
-                Log.w(TAG, "Ignoring forbidden header " + key + "in EXTRA_HEADERS.");
+                Log.w(TAG, "Ignoring forbidden header " + key + " in EXTRA_HEADERS.");
             }
 
             // Strip the custom header that can only be added by ourselves.
             if ("x-chrome-intent-type".equals(key.toLowerCase(Locale.US))) continue;
 
             if (!fromChrome) {
-                if (!IntentHandlerJni.get().isCorsSafelistedHeader(key, value)) {
-                    Log.w(TAG, "Ignoring non-CORS-safelisted header " + key + "in EXTRA_HEADERS.");
+                if (key.toLowerCase(Locale.US).startsWith("x-chrome-")) {
+                    Log.w(TAG, "Ignoring x-chrome header " + key + " in EXTRA_HEADERS.");
+                    continue;
+                }
+
+                if (!shouldAllowNonSafelistedHeaders
+                        && !IntentHandlerJni.get().isCorsSafelistedHeader(key, value)) {
+                    Log.w(TAG, "Ignoring non-CORS-safelisted header " + key + " in EXTRA_HEADERS.");
                     continue;
                 }
             }

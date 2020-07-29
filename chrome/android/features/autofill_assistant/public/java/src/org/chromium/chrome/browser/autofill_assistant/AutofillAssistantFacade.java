@@ -23,7 +23,6 @@ import org.chromium.chrome.browser.flags.ActivityType;
 import org.chromium.chrome.browser.flags.ChromeFeatureList;
 import org.chromium.chrome.browser.metrics.UmaSessionStats;
 import org.chromium.chrome.browser.tab.Tab;
-import org.chromium.chrome.browser.widget.ScrimView;
 import org.chromium.components.browser_ui.bottomsheet.BottomSheetController;
 import org.chromium.components.browser_ui.bottomsheet.BottomSheetControllerProvider;
 
@@ -108,8 +107,7 @@ public class AutofillAssistantFacade {
                         moduleEntry.start(
                                 BottomSheetControllerProvider.from(activity.getWindowAndroid()),
                                 activity.getBrowserControlsManager(),
-                                activity.getCompositorViewHolder(), activity.getScrim(), activity,
-                                tab.getWebContents(),
+                                activity.getCompositorViewHolder(), activity, tab.getWebContents(),
                                 !AutofillAssistantPreferencesUtil.getShowOnboarding(),
                                 activity instanceof CustomTabActivity, arguments.getInitialUrl(),
                                 arguments.getParameters(), arguments.getExperimentIds(),
@@ -138,9 +136,9 @@ public class AutofillAssistantFacade {
     public static DirectActionHandler createDirectActionHandler(Context context,
             BottomSheetController bottomSheetController,
             BrowserControlsStateProvider browserControls, CompositorViewHolder compositorViewHolder,
-            ActivityTabProvider activityTabProvider, ScrimView scrimView) {
+            ActivityTabProvider activityTabProvider) {
         return new AutofillAssistantDirectActionHandler(context, bottomSheetController,
-                browserControls, compositorViewHolder, activityTabProvider, scrimView,
+                browserControls, compositorViewHolder, activityTabProvider,
                 AutofillAssistantModuleEntryProvider.INSTANCE);
     }
 

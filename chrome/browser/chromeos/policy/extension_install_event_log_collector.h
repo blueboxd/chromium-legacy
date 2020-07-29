@@ -97,6 +97,9 @@ class ExtensionInstallEventLogCollector
   void OnExtensionInstallationFailed(
       const extensions::ExtensionId& extension_id,
       extensions::InstallStageTracker::FailureReason reason) override;
+  void OnExtensionInstallationStageChanged(
+      const extensions::ExtensionId& id,
+      extensions::InstallStageTracker::Stage stage) override;
 
   // Reports success events for the extensions which are requested from policy
   // and are already loaded.

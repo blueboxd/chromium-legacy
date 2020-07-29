@@ -34,6 +34,10 @@ API_AVAILABLE(ios(13.0))
 // pasteboard.
 - (UIAction*)actionToCopyURL:(const GURL)URL;
 
+// Creates a UIAction instance configured for deletion which will invoke
+// the given |block| upon being triggered.
+- (UIAction*)actionToDeleteWithBlock:(ProceduralBlock)block;
+
 @end
 
 #endif  // IOS_CHROME_BROWSER_UI_MENU_ACTION_FACTORY_H_

@@ -31,6 +31,12 @@ class PasswordCheckBridge {
          * @param count The number of compromised credentials that were found in a previous check.
          */
         void onCompromisedCredentialsFetched(int count);
+
+        /**
+         * Called when the saved passwords are read from disk.
+         * @param count The total number of saved passwords.
+         */
+        void onSavedPasswordsFetched(int count);
     }
 
     PasswordCheckBridge(PasswordCheckObserver passwordCheckObserver) {
@@ -51,6 +57,10 @@ class PasswordCheckBridge {
     }
 
     // TODO(crbug.com/1102025): Add call from native.
+    void onSavedPasswordsFetched(int count) {
+        mPasswordCheckObserver.onSavedPasswordsFetched(count);
+    }
+
     private static void insertCredential(CompromisedCredential[] credentials, int index,
             String originUrl, String username, String password, boolean phished) {
         credentials[index] = new CompromisedCredential(originUrl, username, password, phished);
@@ -77,6 +87,14 @@ class PasswordCheckBridge {
     int getCompromisedCredentialsCount() {
         return PasswordCheckBridgeJni.get().getCompromisedCredentialsCount(
                 mNativePasswordCheckBridge);
+    }
+
+    /**
+     * This can return 0 if the saved passwords haven't been fetched from the database yet.
+     * @return The total number of saved passwords.
+     */
+    int getSavedPasswordsCount() {
+        return PasswordCheckBridgeJni.get().getSavedPasswordsCount(mNativePasswordCheckBridge);
     }
 
     /**
@@ -107,6 +125,7 @@ class PasswordCheckBridge {
         void startCheck(long nativePasswordCheckBridge);
         void stopCheck(long nativePasswordCheckBridge);
         int getCompromisedCredentialsCount(long nativePasswordCheckBridge);
+        int getSavedPasswordsCount(long nativePasswordCheckBridge);
         void getCompromisedCredentials(
                 long nativePasswordCheckBridge, CompromisedCredential[] credentials);
         void destroy(long nativePasswordCheckBridge);

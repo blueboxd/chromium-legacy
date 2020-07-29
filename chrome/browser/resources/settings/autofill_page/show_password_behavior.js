@@ -26,15 +26,21 @@ export const ShowPasswordBehavior = {
     password: {
       type: String,
       value: '',
-      // If the password is initialized by the parent component, changes in
-      // visibility should be reflected there too.
-      notify: true
     },
 
     // <if expr="chromeos">
     /** @type BlockingRequestManager */
     tokenRequestManager: Object
     // </if>
+  },
+
+  observers: [
+    'resetPlaintextPasswordOnEntryChanged_(entry)',
+  ],
+
+  /** @private */
+  resetPlaintextPasswordOnEntryChanged_() {
+    this.password = '';
   },
 
   /**

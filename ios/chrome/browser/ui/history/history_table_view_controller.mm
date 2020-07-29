@@ -27,7 +27,6 @@
 #import "ios/chrome/browser/ui/history/history_entries_status_item_delegate.h"
 #include "ios/chrome/browser/ui/history/history_entry_inserter.h"
 #import "ios/chrome/browser/ui/history/history_entry_item.h"
-#import "ios/chrome/browser/ui/history/history_entry_item_delegate.h"
 #include "ios/chrome/browser/ui/history/history_menu_provider.h"
 #import "ios/chrome/browser/ui/history/history_ui_constants.h"
 #include "ios/chrome/browser/ui/history/history_ui_delegate.h"
@@ -88,7 +87,6 @@ const CGFloat kButtonHorizontalPadding = 30.0;
 
 @interface HistoryTableViewController () <HistoryEntriesStatusItemDelegate,
                                           HistoryEntryInserterDelegate,
-                                          HistoryEntryItemDelegate,
                                           TableViewTextLinkCellDelegate,
                                           TableViewURLDragDataSource,
                                           UISearchControllerDelegate,

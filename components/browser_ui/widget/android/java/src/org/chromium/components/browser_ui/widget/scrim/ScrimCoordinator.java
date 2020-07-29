@@ -87,7 +87,6 @@ public class ScrimCoordinator {
         }, scrimDelegate);
         mScrimViewBuilder = () -> {
             ScrimView view = new ScrimView(context, parent, defaultColor, mMediator);
-            view.setOnClickListener(mMediator);
             return view;
         };
     }

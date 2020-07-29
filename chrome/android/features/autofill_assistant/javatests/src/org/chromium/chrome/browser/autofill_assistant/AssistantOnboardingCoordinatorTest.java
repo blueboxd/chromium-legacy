@@ -49,6 +49,7 @@ import org.chromium.chrome.browser.flags.ChromeSwitches;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
 import org.chromium.components.browser_ui.bottomsheet.BottomSheetController;
+import org.chromium.components.browser_ui.widget.scrim.ScrimCoordinator;
 import org.chromium.content_public.browser.test.util.TestThreadUtils;
 
 import java.util.ArrayList;
@@ -74,6 +75,7 @@ public class AssistantOnboardingCoordinatorTest {
     private ChromeActivity mActivity;
     private BottomSheetController mBottomSheetController;
     private Tab mTab;
+    private ScrimCoordinator mScrimCoordinator;
 
     @Before
     public void setUp() throws Exception {
@@ -82,13 +84,16 @@ public class AssistantOnboardingCoordinatorTest {
         mBottomSheetController = TestThreadUtils.runOnUiThreadBlocking(
                 () -> AutofillAssistantUiTestUtil.getBottomSheetController(mActivity));
         mTab = mActivity.getTabModelSelector().getCurrentTab();
+        mScrimCoordinator = mCustomTabActivityTestRule.getActivity()
+                                    .getRootUiCoordinatorForTesting()
+                                    .getScrimCoordinator();
     }
 
     private AssistantOnboardingCoordinator createCoordinator(Tab tab) {
         AssistantOnboardingCoordinator coordinator =
                 new AssistantOnboardingCoordinator("", new HashMap<String, String>(), mActivity,
                         mBottomSheetController, mActivity.getBrowserControlsManager(),
-                        mActivity.getCompositorViewHolder(), mActivity.getScrim());
+                        mActivity.getCompositorViewHolder(), mScrimCoordinator);
         coordinator.disableAnimationForTesting();
         return coordinator;
     }
@@ -112,7 +117,7 @@ public class AssistantOnboardingCoordinatorTest {
         showOnboardingAndWait(coordinator, mCallback);
 
         assertTrue(TestThreadUtils.runOnUiThreadBlocking(coordinator::isInProgress));
-        onView(is(mActivity.getScrim())).check(matches(isDisplayed()));
+        onView(is(mScrimCoordinator.getViewForTesting())).check(matches(isDisplayed()));
         onView(withId(buttonToClick)).perform(scrollTo(), click());
 
         verify(mCallback).onResult(expectAccept);
@@ -145,7 +150,7 @@ public class AssistantOnboardingCoordinatorTest {
         assertFalse(TestThreadUtils.runOnUiThreadBlocking(coordinator::isInProgress));
 
         // An overlay was captured, and it is still shown.
-        onView(is(mActivity.getScrim())).check(matches(isDisplayed()));
+        onView(is(mScrimCoordinator.getViewForTesting())).check(matches(isDisplayed()));
         assertEquals(1, capturedOverlays.size());
         AssistantOverlayCoordinator overlay = capturedOverlays.get(0);
         assertNotNull(overlay);
@@ -177,7 +182,7 @@ public class AssistantOnboardingCoordinatorTest {
         AssistantOnboardingCoordinator coordinator =
                 new AssistantOnboardingCoordinator("", parameters, mActivity,
                         mBottomSheetController, mActivity.getBrowserControlsManager(),
-                        mActivity.getCompositorViewHolder(), mActivity.getScrim());
+                        mActivity.getCompositorViewHolder(), mScrimCoordinator);
         coordinator.disableAnimationForTesting();
         showOnboardingAndWait(coordinator, mCallback);
 
@@ -201,7 +206,7 @@ public class AssistantOnboardingCoordinatorTest {
         AssistantOnboardingCoordinator coordinator =
                 new AssistantOnboardingCoordinator("4363482", parameters, mActivity,
                         mBottomSheetController, mActivity.getBrowserControlsManager(),
-                        mActivity.getCompositorViewHolder(), mActivity.getScrim());
+                        mActivity.getCompositorViewHolder(), mScrimCoordinator);
         coordinator.disableAnimationForTesting();
         showOnboardingAndWait(coordinator, mCallback);
 
@@ -224,7 +229,7 @@ public class AssistantOnboardingCoordinatorTest {
         AssistantOnboardingCoordinator coordinator =
                 new AssistantOnboardingCoordinator("", parameters, mActivity,
                         mBottomSheetController, mActivity.getBrowserControlsManager(),
-                        mActivity.getCompositorViewHolder(), mActivity.getScrim());
+                        mActivity.getCompositorViewHolder(), mScrimCoordinator);
         coordinator.disableAnimationForTesting();
         showOnboardingAndWait(coordinator, mCallback);
 

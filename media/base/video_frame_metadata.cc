@@ -31,7 +31,7 @@ void VideoFrameMetadata::MergeMetadataFrom(
   MERGE_FIELD(capture_end_time, metadata_source);
   MERGE_FIELD(capture_counter, metadata_source);
   MERGE_FIELD(capture_update_rect, metadata_source);
-  MERGE_FIELD(copy_required, metadata_source);
+  MERGE_FIELD(copy_mode, metadata_source);
   MERGE_FIELD(end_of_stream, metadata_source);
   MERGE_FIELD(frame_duration, metadata_source);
   MERGE_FIELD(frame_rate, metadata_source);

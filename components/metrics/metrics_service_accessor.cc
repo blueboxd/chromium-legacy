@@ -61,15 +61,6 @@ bool MetricsServiceAccessor::RegisterSyntheticMultiGroupFieldTrial(
 }
 
 // static
-bool MetricsServiceAccessor::RegisterSyntheticFieldTrialWithNameHash(
-    MetricsService* metrics_service,
-    uint32_t trial_name_hash,
-    base::StringPiece group_name) {
-  return RegisterSyntheticFieldTrialWithNameAndGroupHash(
-      metrics_service, trial_name_hash, variations::HashName(group_name));
-}
-
-// static
 bool MetricsServiceAccessor::RegisterSyntheticFieldTrialWithNameAndGroupHash(
     MetricsService* metrics_service,
     uint32_t trial_name_hash,

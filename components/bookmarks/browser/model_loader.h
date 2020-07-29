@@ -30,12 +30,10 @@ class ModelLoader : public base::RefCountedThreadSafe<ModelLoader> {
  public:
   using LoadCallback =
       base::OnceCallback<void(std::unique_ptr<BookmarkLoadDetails>)>;
-  // Creates the ModelLoader, and schedules loading on
-  // |load_sequenced_task_runner|. |callback| is run once loading
-  // completes (on the main thread).
+  // Creates the ModelLoader, and schedules loading on a backend task runner.
+  // |callback| is run once loading completes (on the main thread).
   static scoped_refptr<ModelLoader> Create(
       const base::FilePath& profile_path,
-      base::SequencedTaskRunner* load_sequenced_task_runner,
       std::unique_ptr<BookmarkLoadDetails> details,
       LoadCallback callback);
 
@@ -55,15 +53,12 @@ class ModelLoader : public base::RefCountedThreadSafe<ModelLoader> {
   ~ModelLoader();
 
   // Performs the load on a background thread.
-  void DoLoadOnBackgroundThread(
+  std::unique_ptr<BookmarkLoadDetails> DoLoadOnBackgroundThread(
       const base::FilePath& profile_path,
       bool emit_experimental_uma,
-      scoped_refptr<base::SequencedTaskRunner> main_sequenced_task_runner,
-      std::unique_ptr<BookmarkLoadDetails> details,
-      LoadCallback callback);
+      std::unique_ptr<BookmarkLoadDetails> details);
 
-  void OnFinishedLoad(std::unique_ptr<BookmarkLoadDetails> details,
-                      LoadCallback callback);
+  scoped_refptr<base::SequencedTaskRunner> backend_task_runner_;
 
   scoped_refptr<HistoryBookmarkModel> history_bookmark_model_;
 

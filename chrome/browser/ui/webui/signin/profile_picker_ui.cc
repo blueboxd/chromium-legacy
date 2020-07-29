@@ -22,6 +22,10 @@ void AddStrings(content::WebUIDataSource* html_source) {
       {"mainViewTitle", IDS_PROFILE_PICKER_MAIN_VIEW_TITLE},
       {"mainViewSubtitle", IDS_PROFILE_PICKER_MAIN_VIEW_SUBTITLE},
       {"backButtonLabel", IDS_PROFILE_PICKER_BACK_BUTTON_LABEL},
+      {"profileTypeChoiceTitle",
+       IDS_PROFILE_PICKER_PROFILE_CREATION_FLOW_PROFILE_TYPE_CHOICE_TITLE},
+      {"profileTypeChoiceSubtitle",
+       IDS_PROFILE_PICKER_PROFILE_CREATION_FLOW_PROFILE_TYPE_CHOICE_SUBTITLE},
   };
   AddLocalizedStringsBulk(html_source, kLocalizedStrings);
 }

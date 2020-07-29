@@ -42,7 +42,7 @@ class AssistantCoordinator {
             mModel = new AssistantModel();
             mOverlayCoordinator = new AssistantOverlayCoordinator(activity,
                     activity.getBrowserControlsManager(), activity.getCompositorViewHolder(),
-                    activity.getScrim(), mModel.getOverlayModel());
+                    controller.getScrimCoordinator(), mModel.getOverlayModel());
         }
 
         mBottomBarCoordinator = new AssistantBottomBarCoordinator(activity, mModel, controller,

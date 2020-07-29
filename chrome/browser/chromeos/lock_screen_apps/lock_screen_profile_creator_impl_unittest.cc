@@ -339,9 +339,8 @@ class LockScreenProfileCreatorImplTest : public testing::Test {
     std::unique_ptr<TestingProfile> primary_profile =
         std::make_unique<TestingProfile>(user_profile_path);
     primary_profile_ = primary_profile.get();
-    profile_manager_->RegisterTestingProfile(
-        std::move(primary_profile), false /*add_to_storage*/,
-        false /*start_deferred_task_runner*/);
+    profile_manager_->RegisterTestingProfile(std::move(primary_profile),
+                                             false /*add_to_storage*/);
     InitExtensionSystem(primary_profile_);
 
     chromeos::NoteTakingHelper::Get()->SetProfileWithEnabledLockScreenApps(

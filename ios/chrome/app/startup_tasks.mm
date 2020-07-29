@@ -7,11 +7,9 @@
 #import <MediaPlayer/MediaPlayer.h>
 
 #include "base/bind.h"
-#include "components/bookmarks/browser/startup_task_runner_service.h"
 #import "ios/chrome/app/deferred_initialization_runner.h"
 #include "ios/chrome/app/intents/SearchInChromeIntent.h"
 #include "ios/chrome/browser/application_context.h"
-#include "ios/chrome/browser/bookmarks/startup_task_runner_service_factory.h"
 #include "ios/chrome/browser/browser_state/chrome_browser_state.h"
 #include "ios/chrome/browser/ios_chrome_io_thread.h"
 #import "ios/chrome/browser/omaha/omaha_service.h"
@@ -94,8 +92,6 @@ NSString* const kStartProfileStartupTaskRunners =
 
 + (void)performDeferredInitializationForBrowserState:
     (ChromeBrowserState*)browserState {
-  ios::StartupTaskRunnerServiceFactory::GetForBrowserState(browserState)
-      ->StartDeferredTaskRunners();
   ReadingListDownloadServiceFactory::GetForBrowserState(browserState)
       ->Initialize();
 }

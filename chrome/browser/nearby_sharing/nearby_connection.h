@@ -31,14 +31,15 @@ class NearbyConnection {
   // closed.
   virtual void Write(std::vector<uint8_t> bytes, WriteCallback callback) = 0;
 
-  // Closes the socket and disconnects from the remote device.
+  // Closes the socket and disconnects from the remote device. This object will
+  // be invalidated after |callback| in RegisterForDisconnection is invoked.
   virtual void Close() = 0;
 
   // Return True if the socket is closed, False otherwise.
   virtual bool IsClosed() const = 0;
 
   // Listens to the socket being closed. Invoke |callback| when the socket is
-  // closed.
+  // closed. This object will be invalidated after |callback| is invoked.
   virtual void RegisterForDisconnection(base::OnceClosure callback) = 0;
 };
 

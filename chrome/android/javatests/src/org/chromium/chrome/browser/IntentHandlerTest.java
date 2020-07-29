@@ -4,6 +4,10 @@
 
 package org.chromium.chrome.browser;
 
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertTrue;
+
 import android.content.Context;
 import android.content.Intent;
 import android.net.Uri;
@@ -15,6 +19,7 @@ import android.support.test.InstrumentationRegistry;
 import android.support.test.annotation.UiThreadTest;
 import android.support.test.rule.UiThreadTestRule;
 
+import androidx.browser.customtabs.CustomTabsService;
 import androidx.browser.customtabs.CustomTabsSessionToken;
 import androidx.test.filters.MediumTest;
 import androidx.test.filters.SmallTest;
@@ -29,13 +34,16 @@ import org.junit.runner.RunWith;
 import org.chromium.base.CollectionUtil;
 import org.chromium.base.test.BaseJUnit4ClassRunner;
 import org.chromium.base.test.util.Feature;
+import org.chromium.chrome.browser.browserservices.OriginVerifier;
 import org.chromium.chrome.browser.customtabs.CustomTabsConnection;
 import org.chromium.chrome.browser.customtabs.CustomTabsTestUtils;
 import org.chromium.chrome.browser.test.CommandLineInitRule;
 import org.chromium.chrome.browser.webapps.WebappLauncherActivity;
 import org.chromium.chrome.test.ChromeBrowserTestRule;
 import org.chromium.chrome.test.util.browser.webapps.WebappTestHelper;
+import org.chromium.components.embedder_support.util.Origin;
 import org.chromium.components.embedder_support.util.UrlConstants;
+import org.chromium.content_public.browser.test.util.TestThreadUtils;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -377,6 +385,65 @@ public class IntentHandlerTest {
 
     @Test
     @SmallTest
+    public void testExtraHeadersVerifiedOrigin() throws Exception {
+        // Check that non-whitelisted headers from extras are passed
+        // when origin is verified.
+        Context context = InstrumentationRegistry.getTargetContext();
+        Intent headersIntent = CustomTabsTestUtils.createMinimalCustomTabIntent(
+                context, "https://www.google.com/");
+
+        Bundle headers = new Bundle();
+        headers.putString("bearer-token", "Some token");
+        headers.putString("redirect-url", "https://www.google.com");
+        headersIntent.putExtra(Browser.EXTRA_HEADERS, headers);
+
+        CustomTabsSessionToken token =
+                CustomTabsSessionToken.getSessionTokenFromIntent(headersIntent);
+        CustomTabsConnection connection = CustomTabsConnection.getInstance();
+        connection.newSession(token);
+        connection.overridePackageNameForSessionForTesting(token, "app1");
+        TestThreadUtils.runOnUiThreadBlocking(
+                ()
+                        -> OriginVerifier.addVerificationOverride("app1",
+                                Origin.create(headersIntent.getData()),
+                                CustomTabsService.RELATION_USE_AS_ORIGIN));
+
+        String extraHeaders = IntentHandler.getExtraHeadersFromIntent(headersIntent);
+        assertTrue(extraHeaders.contains("bearer-token: Some token"));
+        assertTrue(extraHeaders.contains("redirect-url: https://www.google.com"));
+    }
+
+    @Test
+    @SmallTest
+    public void testExtraHeadersNonVerifiedOrigin() throws Exception {
+        // Check that non-whitelisted headers from extras are passed
+        // when origin is verified.
+        Context context = InstrumentationRegistry.getTargetContext();
+        Intent headersIntent = CustomTabsTestUtils.createMinimalCustomTabIntent(
+                context, "https://www.google.com/");
+
+        Bundle headers = new Bundle();
+        headers.putString("bearer-token", "Some token");
+        headers.putString("redirect-url", "https://www.google.com");
+        headersIntent.putExtra(Browser.EXTRA_HEADERS, headers);
+
+        CustomTabsSessionToken token =
+                CustomTabsSessionToken.getSessionTokenFromIntent(headersIntent);
+        CustomTabsConnection connection = CustomTabsConnection.getInstance();
+        connection.newSession(token);
+        connection.overridePackageNameForSessionForTesting(token, "app1");
+        TestThreadUtils.runOnUiThreadBlocking(
+                ()
+                        -> OriginVerifier.addVerificationOverride("app2",
+                                Origin.create(headersIntent.getData()),
+                                CustomTabsService.RELATION_USE_AS_ORIGIN));
+
+        String extraHeaders = IntentHandler.getExtraHeadersFromIntent(headersIntent);
+        assertNull(extraHeaders);
+    }
+
+    @Test
+    @SmallTest
     @UiThreadTest
     @Feature({"Android-AppBase"})
     public void testReferrerUrl_customTabIntentWithSession() {
@@ -520,8 +587,7 @@ public class IntentHandlerTest {
                 intent.getBooleanExtra(IntentHandler.EXTRA_OPEN_NEW_INCOGNITO_TAB, false));
 
         intent = IntentHandler.createTrustedOpenNewTabIntent(context, false);
-        Assert.assertFalse(
-                intent.getBooleanExtra(IntentHandler.EXTRA_OPEN_NEW_INCOGNITO_TAB, true));
+        assertFalse(intent.getBooleanExtra(IntentHandler.EXTRA_OPEN_NEW_INCOGNITO_TAB, true));
     }
 
     /**
@@ -538,6 +604,6 @@ public class IntentHandlerTest {
         Intent intent = WebappLauncherActivity.createIntentToLaunchForWebapp(
                 webappLauncherActivityIntent, launchData, 0);
 
-        Assert.assertFalse(mIntentHandler.shouldIgnoreIntent(intent));
+        assertFalse(mIntentHandler.shouldIgnoreIntent(intent));
     }
 }

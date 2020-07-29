@@ -41,7 +41,13 @@ class ScrimViewBinder {
             // Noop; this is not used until the anchor is set.
 
         } else if (ScrimProperties.CLICK_DELEGATE == propertyKey) {
-            // Noop; delegate methods are handled in the mediator.
+            // Attach the click listener only if one is set otherwise this will interfere with the
+            // GESTURE_DETECTOR property.
+            // TODO(mdjones): Consider including click handling as part of the more general gesture
+            //                GESTURE_DETECTOR.
+            if (model.get(ScrimProperties.CLICK_DELEGATE) != null) {
+                view.setOnClickListener((v) -> model.get(ScrimProperties.CLICK_DELEGATE).run());
+            }
 
         } else if (ScrimProperties.VISIBILITY_CALLBACK == propertyKey) {
             // Noop; callback methods are handled in the mediator.

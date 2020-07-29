@@ -9,7 +9,7 @@ import static org.chromium.chrome.browser.password_check.PasswordCheckProperties
 import static org.chromium.chrome.browser.password_check.PasswordCheckProperties.HeaderProperties.CHECK_STATUS;
 import static org.chromium.chrome.browser.password_check.PasswordCheckProperties.ITEMS;
 
-import org.chromium.chrome.browser.password_check.PasswordCheckProperties.CheckStatus;
+import org.chromium.chrome.browser.password_check.PasswordCheck.CheckStatus;
 import org.chromium.ui.modelutil.ListModel;
 import org.chromium.ui.modelutil.MVCListAdapter.ListItem;
 import org.chromium.ui.modelutil.PropertyModel;

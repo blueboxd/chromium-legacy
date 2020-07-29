@@ -12,6 +12,7 @@ import {I18nBehavior} from 'chrome://resources/js/i18n_behavior.m.js';
 import {WebUIListenerBehavior} from 'chrome://resources/js/web_ui_listener_behavior.m.js';
 import {html, Polymer} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
 
+import {ChromeCleanupProxy, ChromeCleanupProxyImpl} from '../chrome_cleanup_page/chrome_cleanup_proxy.js';
 import {MetricsBrowserProxy, MetricsBrowserProxyImpl, SafetyCheckInteractions} from '../metrics_browser_proxy.js';
 import {routes} from '../route.js';
 import {Router} from '../router.m.js';
@@ -54,11 +55,15 @@ Polymer({
     displayString_: String,
   },
 
+  /** @private {?ChromeCleanupProxy} */
+  chromeCleanupBrowserProxy_: null,
+
   /** @private {?MetricsBrowserProxy} */
   metricsBrowserProxy_: null,
 
   /** @override */
   attached: function() {
+    this.chromeCleanupBrowserProxy_ = ChromeCleanupProxyImpl.getInstance();
     this.metricsBrowserProxy_ = MetricsBrowserProxyImpl.getInstance();
 
     // Register for safety check status updates.
@@ -224,7 +229,7 @@ Polymer({
             /* dynamicParams= */ null, /* removeSearch= */ true);
         break;
       case SafetyCheckChromeCleanerStatus.REBOOT_REQUIRED:
-        // TODO(crbug.com/1087263): Implement CCT-based reboot here.
+        this.chromeCleanupBrowserProxy_.restartComputer();
         break;
       default:
         // This is a state without an action.

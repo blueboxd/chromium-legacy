@@ -330,14 +330,14 @@
           <div class="cr-row first no-outline">
             $i18n{siteSettingsFlashPermissionsEphemeral}
           </div>
-          <category-default-setting category="{{ContentSettingsTypes.PLUGINS}}"
-              toggle-off-label="$i18n{siteSettingsFlashBlockRecommended}"
-              toggle-on-label="$i18n{siteSettingsFlashAskFirst}">
-          </category-default-setting>
           <div class="cr-row-gap cr-secondary-text"
               hidden="[[!pluginsHasDiscardedExceptions_]]">
             $i18nRaw{siteSettingsFlashWildcardsUnsupported}
           </div>
+          <category-default-setting category="{{ContentSettingsTypes.PLUGINS}}"
+              toggle-off-label="$i18n{siteSettingsFlashBlockRecommended}"
+              toggle-on-label="$i18n{siteSettingsFlashAskFirst}">
+          </category-default-setting>
 <if expr="chromeos">
           <a class="cr-row inherit-color no-outline" tabindex="-1"
               target="_blank"

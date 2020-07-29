@@ -110,6 +110,7 @@
 #include "chrome/browser/feedback/feedback_uploader_factory_chrome.h"
 #include "chrome/browser/media/feeds/media_feeds_service_factory.h"
 #include "chrome/browser/metrics/desktop_session_duration/desktop_profile_session_durations_service_factory.h"
+#include "chrome/browser/profiles/profile_theme_update_service_factory.h"
 #include "chrome/browser/resource_coordinator/local_site_characteristics_data_store_factory.h"
 #include "chrome/browser/search/instant_service_factory.h"
 #include "chrome/browser/storage/storage_notification_service_factory.h"
@@ -328,6 +329,9 @@ void ChromeBrowserMainExtraPartsProfiles::
   prerender::PrerenderLinkManagerFactory::GetInstance();
   prerender::PrerenderManagerFactory::GetInstance();
   ProfileSyncServiceFactory::GetInstance();
+#if !defined(OS_ANDROID)
+  ProfileThemeUpdateServiceFactory::GetInstance();
+#endif
   ProtocolHandlerRegistryFactory::GetInstance();
   RendererUpdaterFactory::GetInstance();
 #if !defined(OS_ANDROID)

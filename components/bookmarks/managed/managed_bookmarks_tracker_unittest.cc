@@ -14,7 +14,6 @@
 #include "base/run_loop.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/test/task_environment.h"
-#include "base/threading/thread_task_runner_handle.h"
 #include "components/bookmarks/browser/bookmark_model.h"
 #include "components/bookmarks/browser/bookmark_model_observer.h"
 #include "components/bookmarks/browser/bookmark_node.h"
@@ -65,9 +64,7 @@ class ManagedBookmarksTrackerTest : public testing::Test {
 
     model_->AddObserver(&observer_);
     EXPECT_CALL(observer_, BookmarkModelLoaded(model_.get(), _));
-    model_->Load(&prefs_, scoped_temp_dir_.GetPath(),
-                 base::ThreadTaskRunnerHandle::Get(),
-                 base::ThreadTaskRunnerHandle::Get());
+    model_->Load(&prefs_, scoped_temp_dir_.GetPath());
     test::WaitForBookmarkModelToLoad(model_.get());
     Mock::VerifyAndClearExpectations(&observer_);
 
@@ -156,7 +153,7 @@ class ManagedBookmarksTrackerTest : public testing::Test {
   }
 
   base::ScopedTempDir scoped_temp_dir_;
-  base::test::SingleThreadTaskEnvironment task_environment_;
+  base::test::TaskEnvironment task_environment_;
   TestingPrefServiceSimple prefs_;
   std::unique_ptr<BookmarkModel> model_;
   MockBookmarkModelObserver observer_;

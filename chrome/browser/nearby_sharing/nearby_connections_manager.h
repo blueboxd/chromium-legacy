@@ -6,7 +6,6 @@
 #define CHROME_BROWSER_NEARBY_SHARING_NEARBY_CONNECTIONS_MANAGER_H_
 
 #include <stdint.h>
-#include <memory>
 #include <string>
 #include <vector>
 
@@ -23,6 +22,7 @@ class NearbyConnectionsManager {
   using ConnectionsStatus = location::nearby::connections::mojom::Status;
   using ConnectionsCallback =
       base::OnceCallback<void(ConnectionsStatus status)>;
+  using NearbyConnectionCallback = base::OnceCallback<void(NearbyConnection*)>;
 
   // A callback for handling incoming connections while advertising.
   class IncomingConnectionListener {
@@ -31,10 +31,9 @@ class NearbyConnectionsManager {
 
     // |endpoint_info| is returned from remote devices and should be parsed in
     // utilitiy process.
-    virtual void OnIncomingConnection(
-        const std::string& endpoint_id,
-        const std::vector<uint8_t>& endpoint_info,
-        std::unique_ptr<NearbyConnection> connection) = 0;
+    virtual void OnIncomingConnection(const std::string& endpoint_id,
+                                      const std::vector<uint8_t>& endpoint_info,
+                                      NearbyConnection* connection) = 0;
   };
 
   // A callback for handling discovered devices while discovering.
@@ -87,12 +86,12 @@ class NearbyConnectionsManager {
   virtual void StopDiscovery() = 0;
 
   // Conntects to remote |endpoint_id| through Nearby Connections.
-  virtual std::unique_ptr<NearbyConnection> Connect(
+  virtual void Connect(
       std::vector<uint8_t> endpoint_info,
       const std::string& endpoint_id,
       base::Optional<std::vector<uint8_t>> bluetooth_mac_address,
       DataUsage data_usage,
-      ConnectionsCallback callback) = 0;
+      NearbyConnectionCallback callback) = 0;
 
   // Disconnects from remote |endpoint_id| through Nearby Connections.
   virtual void Disconnect(const std::string& endpoint_id) = 0;

@@ -8,6 +8,7 @@
 #include <string>
 #include <vector>
 
+#include "base/auto_reset.h"
 #include "base/compiler_specific.h"
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
@@ -30,6 +31,8 @@ class SigninErrorNotifier : public SigninErrorController::Observer,
  public:
   SigninErrorNotifier(SigninErrorController* controller, Profile* profile);
   ~SigninErrorNotifier() override;
+
+  static std::unique_ptr<base::AutoReset<bool>> IgnoreSyncErrorsForTesting();
 
   // KeyedService:
   void Shutdown() override;

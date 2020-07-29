@@ -1,0 +1,28 @@
+This is a testharness.js-based test.
+FAIL Should be parseable in a CSS stylesheet: '(prefers-contrast)' assert_true: expected true got false
+FAIL Should be parseable in a CSS stylesheet: '(prefers-contrast: no-preference)' assert_true: expected true got false
+FAIL Should be parseable in a CSS stylesheet: '(prefers-contrast: high)' assert_true: expected true got false
+FAIL Should be parseable in a CSS stylesheet: '(prefers-contrast: low)' assert_true: expected true got false
+FAIL Should be parseable in a CSS stylesheet: '(prefers-contrast: forced)' assert_true: expected true got false
+PASS Should not be parseable in a CSS stylesheet: '(prefers-contrast: increase)'
+PASS Should not be parseable in a CSS stylesheet: '(prefers-contrast: none)'
+PASS Should not be parseable in a CSS stylesheet: '(prefers-contrast: forced high)'
+PASS Should not be parseable in a CSS stylesheet: '(prefers-contrast: forced low)'
+PASS Should not be parseable in a CSS stylesheet: '(prefers-contrast > increase)'
+PASS Should not be parseable in a CSS stylesheet: '(prefers-increased-contrast)'
+PASS Should not be parseable in a CSS stylesheet: '(prefers-decreased-contrast)'
+FAIL Should be parseable in JS: '(prefers-contrast)' assert_true: expected true got false
+FAIL Should be parseable in JS: '(prefers-contrast: no-preference)' assert_true: expected true got false
+FAIL Should be parseable in JS: '(prefers-contrast: high)' assert_true: expected true got false
+FAIL Should be parseable in JS: '(prefers-contrast: low)' assert_true: expected true got false
+FAIL Should be parseable in JS: '(prefers-contrast: forced)' assert_true: expected true got false
+PASS Should not be parseable in JS: '(prefers-contrast: increase)'
+PASS Should not be parseable in JS: '(prefers-contrast: none)'
+PASS Should not be parseable in JS: '(prefers-contrast: forced high)'
+PASS Should not be parseable in JS: '(prefers-contrast: forced low)'
+PASS Should not be parseable in JS: '(prefers-contrast > increase)'
+PASS Should not be parseable in JS: '(prefers-increased-contrast)'
+PASS Should not be parseable in JS: '(prefers-decreased-contrast)'
+FAIL Check boolean context evaluation. assert_equals: expected true but got false
+Harness: the test ran to completion.
+

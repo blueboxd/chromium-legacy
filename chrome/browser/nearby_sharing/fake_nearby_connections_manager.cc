@@ -81,15 +81,14 @@ void FakeNearbyConnectionsManager::StopDiscovery() {
   // TODO(alexchau): Implement.
 }
 
-std::unique_ptr<NearbyConnection> FakeNearbyConnectionsManager::Connect(
+void FakeNearbyConnectionsManager::Connect(
     std::vector<uint8_t> endpoint_info,
     const std::string& endpoint_id,
     base::Optional<std::vector<uint8_t>> bluetooth_mac_address,
     DataUsage data_usage,
-    ConnectionsCallback callback) {
+    NearbyConnectionCallback callback) {
   DCHECK(!IsShutdown());
   // TODO(alexchau): Implement.
-  return std::make_unique<FakeNearbyConnection>();
 }
 
 void FakeNearbyConnectionsManager::Disconnect(const std::string& endpoint_id) {

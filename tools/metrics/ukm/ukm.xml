@@ -3842,6 +3842,13 @@ be describing additional metrics about the same event.
     <summary>
       The final state of the request.
     </summary>
+    <aggregation>
+      <history>
+        <statistics>
+          <enumeration/>
+        </statistics>
+      </history>
+    </aggregation>
   </metric>
 </event>
 

@@ -164,6 +164,29 @@ class ExtensionInstallEventLogCollectorTest : public testing::Test {
     base::RunLoop().RunUntilIdle();
   }
 
+  testing::AssertionResult VerifyEventAddedSuccessfully(
+      int expected_add_count,
+      int expected_add_all_count) {
+    if (expected_add_count != delegate()->add_count()) {
+      return testing::AssertionFailure()
+             << "Expected add count: " << expected_add_count
+             << " but actual add count: " << delegate()->add_count();
+    }
+    if (expected_add_all_count != delegate()->add_for_all_count()) {
+      return testing::AssertionFailure()
+             << "Expected add all count: " << expected_add_all_count
+             << " but actual add all count: "
+             << delegate()->add_for_all_count();
+    }
+    if (delegate()->last_request().extension_id != kExtensionId1) {
+      return testing::AssertionFailure()
+             << "Expected extension id: " << kExtensionId1
+             << " but actual extension id: "
+             << delegate()->last_request().extension_id;
+    }
+    return testing::AssertionSuccess();
+  }
+
   TestingProfile* profile() { return profile_.get(); }
   extensions::ExtensionRegistry* registry() { return registry_; }
   FakeExtensionInstallEventLogCollectorDelegate* delegate() {
@@ -366,11 +389,35 @@ TEST_F(ExtensionInstallEventLogCollectorTest, InstallExtension) {
                  .SetID(kExtensionId1)
                  .Build();
   collector->OnExtensionLoaded(profile(), ext.get());
-  ASSERT_EQ(1, delegate()->add_count());
-  ASSERT_EQ(0, delegate()->add_for_all_count());
-  EXPECT_EQ(kExtensionId1, delegate()->last_request().extension_id);
+  ASSERT_TRUE(VerifyEventAddedSuccessfully(1 /*expected_add_count*/,
+                                           0 /*expected_add_all_count*/));
   EXPECT_EQ(em::ExtensionInstallReportLogEvent::SUCCESS,
             delegate()->last_request().event.event_type());
+}
+
+// Verifies that a new event is created when the installation stage is changed
+// during the installation process.
+TEST_F(ExtensionInstallEventLogCollectorTest, InstallationStageChanged) {
+  std::unique_ptr<ExtensionInstallEventLogCollector> collector =
+      std::make_unique<ExtensionInstallEventLogCollector>(
+          registry(), delegate(), profile());
+
+  // One extension installation succeeded.
+  auto ext = extensions::ExtensionBuilder(kExtensionName1)
+                 .SetID(kExtensionId1)
+                 .Build();
+  collector->OnExtensionInstallationStageChanged(
+      kExtensionId1, extensions::InstallStageTracker::Stage::DOWNLOADING);
+  ASSERT_TRUE(VerifyEventAddedSuccessfully(1 /*expected_add_count*/,
+                                           0 /*expected_add_all_count*/));
+  EXPECT_EQ(em::ExtensionInstallReportLogEvent::DOWNLOADING,
+            delegate()->last_request().event.installation_stage());
+  collector->OnExtensionInstallationStageChanged(
+      kExtensionId1, extensions::InstallStageTracker::Stage::INSTALLING);
+  EXPECT_EQ(em::ExtensionInstallReportLogEvent::INSTALLING,
+            delegate()->last_request().event.installation_stage());
+  ASSERT_TRUE(VerifyEventAddedSuccessfully(2 /*expected_add_count*/,
+                                           0 /*expected_add_all_count*/));
 }
 
 }  // namespace policy

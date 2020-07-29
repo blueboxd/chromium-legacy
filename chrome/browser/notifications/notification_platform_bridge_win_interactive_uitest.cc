@@ -65,7 +65,7 @@ Profile* CreateTestingProfile(const base::FilePath& path) {
   std::unique_ptr<Profile> profile =
       Profile::CreateProfile(path, nullptr, Profile::CREATE_MODE_SYNCHRONOUS);
   Profile* profile_ptr = profile.get();
-  profile_manager->RegisterTestingProfile(std::move(profile), true, false);
+  profile_manager->RegisterTestingProfile(std::move(profile), true);
   EXPECT_EQ(starting_number_of_profiles + 1,
             profile_manager->GetNumberOfProfiles());
   return profile_ptr;

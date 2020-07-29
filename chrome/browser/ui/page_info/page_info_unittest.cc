@@ -167,6 +167,12 @@ class PageInfoTest : public ChromeRenderViewHostTestHarness {
     incognito_page_info_.reset();
   }
 
+  TestingProfile::TestingFactories GetTestingFactories() const override {
+    return {
+        {StatefulSSLHostStateDelegateFactory::GetInstance(),
+         StatefulSSLHostStateDelegateFactory::GetDefaultFactoryForTesting()}};
+  }
+
   void SetDefaultUIExpectations(MockPageInfoUI* mock_ui) {
     // During creation |PageInfo| makes the following calls to the ui.
     EXPECT_CALL(*mock_ui, SetPermissionInfoStub());
@@ -233,6 +239,12 @@ class PageInfoTest : public ChromeRenderViewHostTestHarness {
 
   PageInfo* incognito_page_info() {
     if (!incognito_page_info_.get()) {
+      // Build the incognito profile manually in order to override testing
+      // factories.
+      TestingProfile::Builder incognito_profile_builder;
+      incognito_profile_builder.AddTestingFactories(GetTestingFactories());
+      incognito_profile_builder.BuildIncognito(profile());
+
       incognito_web_contents_ =
           content::WebContentsTester::CreateTestWebContents(
               profile()->GetPrimaryOTRProfile(), nullptr);

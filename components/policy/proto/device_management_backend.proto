@@ -2887,6 +2887,30 @@ message ExtensionInstallReportLogEvent {
     CRX_FETCH_URL_INVALID = 26;
   };
 
+  //  Stage of extension installing process. See InstallStageTracker::Stage for
+  //  more details. InstallStageTracker::Stage is the main enum and this is
+  // a copy used for reporting purposes. The entries are in the order they occur
+  // in the installation process.
+  enum InstallationStage {
+    CREATED = 0;
+
+    NOTIFIED_FROM_MANAGEMENT = 5;
+
+    NOTIFIED_FROM_MANAGEMENT_NOT_FORCED = 6;
+
+    SEEN_BY_POLICY_LOADER = 7;
+
+    SEEN_BY_EXTERNAL_PROVIDER = 8;
+
+    PENDING = 1;
+
+    DOWNLOADING = 2;
+
+    INSTALLING = 3;
+
+    COMPLETE = 4;
+  };
+
   // Timestamp, in microseconds since epoch. Set for all log
   // events.
   optional int64 timestamp = 1;
@@ -2908,6 +2932,9 @@ message ExtensionInstallReportLogEvent {
 
   // Type of failure reason. Set for event type INSTALLATION_FAILED.
   optional FailureReason failure_reason = 7;
+
+  // Stage of installation process.
+  optional InstallationStage installation_stage = 8;
 }
 
 // A single entry in the push-install log for an app.

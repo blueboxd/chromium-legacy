@@ -17,8 +17,9 @@ import org.chromium.chrome.browser.image_fetcher.ImageFetcher;
 import org.chromium.chrome.browser.image_fetcher.ImageFetcherConfig;
 import org.chromium.chrome.browser.image_fetcher.ImageFetcherFactory;
 import org.chromium.chrome.browser.util.ChromeAccessibilityUtil;
-import org.chromium.chrome.browser.widget.ScrimView;
-import org.chromium.chrome.browser.widget.ScrimView.ScrimParams;
+import org.chromium.components.browser_ui.widget.scrim.ScrimCoordinator;
+import org.chromium.components.browser_ui.widget.scrim.ScrimProperties;
+import org.chromium.ui.modelutil.PropertyModel;
 
 import java.util.List;
 
@@ -31,13 +32,13 @@ public class AssistantOverlayCoordinator {
     private final AssistantOverlayEventFilter mEventFilter;
     private final AssistantOverlayDrawable mDrawable;
     private final CompositorViewHolder mCompositorViewHolder;
-    private final ScrimView mScrim;
+    private final ScrimCoordinator mScrim;
     private final ImageFetcher mImageFetcher;
     private boolean mScrimEnabled;
 
     public AssistantOverlayCoordinator(Context context,
             BrowserControlsStateProvider browserControls, CompositorViewHolder compositorViewHolder,
-            ScrimView scrim, AssistantOverlayModel model) {
+            ScrimCoordinator scrim, AssistantOverlayModel model) {
         this(context, browserControls, compositorViewHolder, scrim, model,
                 ImageFetcherFactory.createImageFetcher(ImageFetcherConfig.DISK_CACHE_ONLY,
                         AutofillAssistantUiController.getProfile()));
@@ -45,7 +46,7 @@ public class AssistantOverlayCoordinator {
 
     public AssistantOverlayCoordinator(Context context,
             BrowserControlsStateProvider browserControls, CompositorViewHolder compositorViewHolder,
-            ScrimView scrim, AssistantOverlayModel model, ImageFetcher imageFetcher) {
+            ScrimCoordinator scrim, AssistantOverlayModel model, ImageFetcher imageFetcher) {
         mModel = model;
         mImageFetcher = imageFetcher;
         mCompositorViewHolder = compositorViewHolder;
@@ -149,13 +150,16 @@ public class AssistantOverlayCoordinator {
         if (enabled == mScrimEnabled) return;
 
         if (enabled) {
-            ScrimParams params = new ScrimParams(mCompositorViewHolder,
-                    /* showInFrontOfAnchorView= */ true,
-                    /* affectsStatusBar = */ false,
-                    /* topMargin= */ 0,
-                    /* observer= */ null);
-            params.backgroundDrawable = mDrawable;
-            params.eventFilter = mEventFilter;
+            PropertyModel params = new PropertyModel.Builder(ScrimProperties.ALL_KEYS)
+                                           .with(ScrimProperties.TOP_MARGIN, 0)
+                                           .with(ScrimProperties.AFFECTS_STATUS_BAR, false)
+                                           .with(ScrimProperties.ANCHOR_VIEW, mCompositorViewHolder)
+                                           .with(ScrimProperties.SHOW_IN_FRONT_OF_ANCHOR_VIEW, true)
+                                           .with(ScrimProperties.VISIBILITY_CALLBACK, null)
+                                           .with(ScrimProperties.CLICK_DELEGATE, null)
+                                           .with(ScrimProperties.BACKGROUND_DRAWABLE, mDrawable)
+                                           .with(ScrimProperties.GESTURE_DETECTOR, mEventFilter)
+                                           .build();
             mScrim.showScrim(params);
         } else {
             mScrim.hideScrim(/* fadeOut= */ true);

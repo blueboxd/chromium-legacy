@@ -168,6 +168,9 @@
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "ui/accessibility/ax_tree_combiner.h"
 #include "ui/base/device_form_factor.h"
+#if defined(USE_AURA)
+#include "ui/aura/window.h"
+#endif
 #include "ui/base/layout.h"
 #include "ui/base/ui_base_features.h"
 #include "ui/base/ui_base_switches.h"
@@ -188,6 +191,7 @@
 #include "content/browser/android/nfc_host.h"
 #include "content/browser/web_contents/web_contents_android.h"
 #include "services/device/public/mojom/nfc.mojom.h"
+#include "ui/android/view_android.h"
 #else  // !OS_ANDROID
 #include "content/browser/host_zoom_map_impl.h"
 #endif  // OS_ANDROID
@@ -7209,6 +7213,33 @@ const std::vector<blink::mojom::FaviconURLPtr>&
 WebContentsImpl::GetFaviconURLs() {
   return favicon_urls_;
 }
+
+// The Mac implementation  of the next two methods is in
+// web_contents_impl_mac.mm
+#if !defined(OS_MACOSX)
+
+void WebContentsImpl::Resize(const gfx::Rect& new_bounds) {
+#if defined(USE_AURA)
+  aura::Window* window = GetNativeView();
+  window->SetBounds(gfx::Rect(window->bounds().origin(), new_bounds.size()));
+#elif defined(OS_ANDROID)
+  content::RenderWidgetHostView* view = GetRenderWidgetHostView();
+  if (view)
+    view->SetBounds(new_bounds);
+#endif
+}
+
+gfx::Size WebContentsImpl::GetSize() {
+#if defined(USE_AURA)
+  aura::Window* window = GetNativeView();
+  return window->bounds().size();
+#elif defined(OS_ANDROID)
+  ui::ViewAndroid* view_android = GetNativeView();
+  return view_android->bounds().size();
+#endif
+}
+
+#endif  // !defined(OS_MACOSX)
 
 BrowserPluginEmbedder* WebContentsImpl::GetBrowserPluginEmbedder() const {
   return browser_plugin_embedder_.get();

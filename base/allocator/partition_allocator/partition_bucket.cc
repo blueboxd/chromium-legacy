@@ -552,6 +552,11 @@ void* PartitionBucket<thread_safe>::SlowPathAlloc(
   PA_DCHECK(!active_pages_head->freelist_head);
 
   PartitionPage<thread_safe>* new_page = nullptr;
+  // |new_page->bucket| will always be |this|, except when |this| is the
+  // sentinel bucket, which is used to signal a direct mapped allocation.  In
+  // this case |new_page_bucket| will be set properly later. This avoids a read
+  // for most allocations.
+  PartitionBucket* new_page_bucket = this;
   *is_already_zeroed = false;
 
   // For the PartitionRoot::Alloc() API, we have a bunch of buckets
@@ -575,6 +580,8 @@ void* PartitionBucket<thread_safe>::SlowPathAlloc(
       PartitionExcessiveAllocationSize(size);
     }
     new_page = PartitionDirectMap(root, flags, size);
+    if (new_page)
+      new_page_bucket = new_page->bucket;
     // New pages from PageAllocator are always zeroed.
     *is_already_zeroed = true;
   } else if (LIKELY(SetNewActivePage())) {
@@ -632,12 +639,8 @@ void* PartitionBucket<thread_safe>::SlowPathAlloc(
     root->OutOfMemory(size);
   }
 
-  // TODO(ajwong): Is there a way to avoid the reading of bucket here?
-  // It seems like in many of the conditional branches above, |this| ==
-  // |new_page->bucket|. Maybe pull this into another function?
-  PartitionBucket* bucket = new_page->bucket;
-  PA_DCHECK(bucket != get_sentinel_bucket());
-  bucket->active_pages_head = new_page;
+  PA_DCHECK(new_page_bucket != get_sentinel_bucket());
+  new_page_bucket->active_pages_head = new_page;
   new_page->set_raw_size(size);
 
   // If we found an active page with free slots, or an empty page, we have a

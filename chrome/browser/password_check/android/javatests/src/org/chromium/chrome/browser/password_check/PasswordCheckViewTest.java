@@ -41,7 +41,7 @@ import org.mockito.MockitoAnnotations;
 
 import org.chromium.base.test.util.CommandLineFlags;
 import org.chromium.chrome.browser.flags.ChromeSwitches;
-import org.chromium.chrome.browser.password_check.PasswordCheckProperties.CheckStatus;
+import org.chromium.chrome.browser.password_check.PasswordCheck.CheckStatus;
 import org.chromium.chrome.browser.password_check.PasswordCheckProperties.HeaderProperties;
 import org.chromium.chrome.browser.password_check.internal.R;
 import org.chromium.chrome.browser.settings.SettingsActivityTestRule;

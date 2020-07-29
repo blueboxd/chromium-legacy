@@ -19,14 +19,76 @@
 #include "components/arc/arc_prefs.h"
 #include "components/prefs/pref_service.h"
 
+namespace chromeos {
 namespace {
 
-constexpr char kUserActionAccepted[] = "accepted";
-constexpr char kUserActionBack[] = "go-back";
+constexpr char kUserActionAcceptButtonClicked[] = "accept";
+constexpr char kUserActionNextButtonClicked[] = "next";
+constexpr char kUserActionRetryButtonClicked[] = "retry";
+constexpr char kUserActionBackButtonClicked[] = "go-back";
+
+constexpr char kUserActionMetricsLearnMoreClicked[] = "metrics-learn-more";
+constexpr char kUserActionBackupRestoreLearnMoreClicked[] =
+    "backup-restore-learn-more";
+constexpr char kUserActionLocationServiceLearnMoreClicked[] =
+    "location-service-learn-more";
+constexpr char kUserActionPlayAutoInstallLearnMoreClicked[] =
+    "play-auto-install-learn-more";
+constexpr char kUserActionPolicyLinkClicked[] = "policy-link";
+
+struct ArcTosUserAction {
+  const char* name_;
+  ArcTermsOfServiceScreen::UserAction uma_name_;
+};
+
+const ArcTosUserAction actions[] = {
+    {kUserActionAcceptButtonClicked,
+     ArcTermsOfServiceScreen::UserAction::kAcceptButtonClicked},
+    {kUserActionNextButtonClicked,
+     ArcTermsOfServiceScreen::UserAction::kNextButtonClicked},
+    {kUserActionRetryButtonClicked,
+     ArcTermsOfServiceScreen::UserAction::kRetryButtonClicked},
+    {kUserActionBackButtonClicked,
+     ArcTermsOfServiceScreen::UserAction::kBackButtonClicked},
+
+    {kUserActionMetricsLearnMoreClicked,
+     ArcTermsOfServiceScreen::UserAction::kMetricsLearnMoreClicked},
+    {kUserActionBackupRestoreLearnMoreClicked,
+     ArcTermsOfServiceScreen::UserAction::kBackupRestoreLearnMoreClicked},
+
+    {kUserActionLocationServiceLearnMoreClicked,
+     ArcTermsOfServiceScreen::UserAction::kLocationServiceLearnMoreClicked},
+    {kUserActionPlayAutoInstallLearnMoreClicked,
+     ArcTermsOfServiceScreen::UserAction::kPlayAutoInstallLearnMoreClicked},
+    {kUserActionPolicyLinkClicked,
+     ArcTermsOfServiceScreen::UserAction::kPolicyLinkClicked}
+
+};
+
+void RecordArcTosScreenAction(ArcTermsOfServiceScreen::UserAction value) {
+  base::UmaHistogramEnumeration("OOBE.ArcTermsOfServiceScreen.UserActions",
+                                value);
+}
+
+bool IsArcTosUserAction(const std::string& action_id) {
+  for (const auto& el : actions) {
+    if (action_id == el.name_)
+      return true;
+  }
+  return false;
+}
+
+void RecordUserAction(const std::string& action_id) {
+  for (const auto& el : actions) {
+    if (action_id == el.name_) {
+      RecordArcTosScreenAction(el.uma_name_);
+      return;
+    }
+  }
+  NOTREACHED() << "Unexpected action id: " << action_id;
+}
 
 }  // namespace
-
-namespace chromeos {
 
 // static
 std::string ArcTermsOfServiceScreen::GetResultString(Result result) {
@@ -97,13 +159,13 @@ void ArcTermsOfServiceScreen::HideImpl() {
 }
 
 void ArcTermsOfServiceScreen::OnUserAction(const std::string& action_id) {
-  if (action_id == kUserActionAccepted) {
-    exit_callback_.Run(Result::ACCEPTED);
-  } else if (action_id == kUserActionBack) {
-    exit_callback_.Run(Result::BACK);
-  } else {
+  if (!IsArcTosUserAction(action_id)) {
     BaseScreen::OnUserAction(action_id);
+    return;
   }
+  RecordUserAction(action_id);
+  if (action_id == kUserActionBackButtonClicked)
+    exit_callback_.Run(Result::BACK);
 }
 
 void ArcTermsOfServiceScreen::OnAccept(bool review_arc_settings) {
@@ -117,7 +179,7 @@ void ArcTermsOfServiceScreen::OnAccept(bool review_arc_settings) {
     profile->GetPrefs()->SetBoolean(prefs::kShowArcSettingsOnSessionStart,
                                     true);
   }
-  HandleUserAction(kUserActionAccepted);
+  exit_callback_.Run(Result::ACCEPTED);
 }
 
 void ArcTermsOfServiceScreen::OnViewDestroyed(

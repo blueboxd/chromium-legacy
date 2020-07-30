@@ -157,6 +157,13 @@ void BrowserAccessibilityManagerWin::FireGeneratedEvent(
       aria_properties_events_.insert(node);
       break;
     case ui::AXEventGenerator::Event::CHECKED_STATE_CHANGED:
+      // https://www.w3.org/TR/core-aam-1.1/#mapping_state-property_table
+      // SelectionItem.IsSelected is set according to the True or False value of
+      // aria-checked for 'radio' and 'menuitemradio' roles.
+      if (ui::IsRadio(node->GetRole())) {
+        HandleSelectedStateChanged(uia_selection_events_, node,
+                                   IsUIANodeSelected(node));
+      }
       FireUiaPropertyChangedEvent(UIA_ToggleToggleStatePropertyId, node);
       aria_properties_events_.insert(node);
       break;
@@ -332,7 +339,10 @@ void BrowserAccessibilityManagerWin::FireGeneratedEvent(
                                   node);
       break;
     case ui::AXEventGenerator::Event::SELECTED_CHANGED:
-      HandleSelectedStateChanged(node);
+      HandleSelectedStateChanged(ia2_selection_events_, node,
+                                 IsIA2NodeSelected(node));
+      HandleSelectedStateChanged(uia_selection_events_, node,
+                                 IsUIANodeSelected(node));
       aria_properties_events_.insert(node);
       break;
     case ui::AXEventGenerator::Event::SELECTED_CHILDREN_CHANGED:
@@ -650,32 +660,142 @@ void BrowserAccessibilityManagerWin::OnAtomicUpdateFinished(
   }
 }
 
-void BrowserAccessibilityManagerWin::HandleSelectedStateChanged(
+// static
+bool BrowserAccessibilityManagerWin::IsIA2NodeSelected(
     BrowserAccessibility* node) {
-  const bool is_selected =
-      node->GetBoolAttribute(ax::mojom::BoolAttribute::kSelected);
+  return node->GetBoolAttribute(ax::mojom::BoolAttribute::kSelected);
+}
 
-  // Nodes that have selection container may support multiselect, for such nodes
-  // we add them to |selection_events_|, which FinalizeAccessibilityEvents
-  // handles selection item events firing.
-  // For nodes that do not have selection container, only single select is
-  // supported, selection item events firing are handled here.
-  if (auto* selection_container = node->PlatformGetSelectionContainer()) {
-    if (is_selected) {
-      selection_events_[selection_container].added.push_back(node);
-    } else {
-      selection_events_[selection_container].removed.push_back(node);
-    }
+// static
+bool BrowserAccessibilityManagerWin::IsUIANodeSelected(
+    BrowserAccessibility* node) {
+  // https://www.w3.org/TR/core-aam-1.1/#mapping_state-property_table
+  // SelectionItem.IsSelected is set according to the True or False value of
+  // aria-checked for 'radio' and 'menuitemradio' roles.
+  if (ui::IsRadio(node->GetRole()))
+    return node->GetData().GetCheckedState() == ax::mojom::CheckedState::kTrue;
+
+  return node->GetBoolAttribute(ax::mojom::BoolAttribute::kSelected);
+}
+
+void BrowserAccessibilityManagerWin::FireIA2SelectionEvents(
+    BrowserAccessibility* container,
+    BrowserAccessibility* only_selected_child,
+    const SelectionEvents& changes) {
+  if (only_selected_child) {
+    // Fire 'ElementSelected' on the only selected child.
+    FireWinAccessibilityEvent(EVENT_OBJECT_SELECTION, only_selected_child);
   } else {
-    if (is_selected) {
-      FireWinAccessibilityEvent(EVENT_OBJECT_SELECTION, node);
-      FireUiaAccessibilityEvent(UIA_SelectionItem_ElementSelectedEventId, node);
+    const bool container_is_multiselectable =
+        container && container->HasState(ax::mojom::State::kMultiselectable);
+    for (auto* item : changes.added) {
+      if (container_is_multiselectable)
+        FireWinAccessibilityEvent(EVENT_OBJECT_SELECTIONADD, item);
+      else
+        FireWinAccessibilityEvent(EVENT_OBJECT_SELECTION, item);
+    }
+    for (auto* item : changes.removed)
+      FireWinAccessibilityEvent(EVENT_OBJECT_SELECTIONREMOVE, item);
+  }
+}
+
+void BrowserAccessibilityManagerWin::FireUIASelectionEvents(
+    BrowserAccessibility* container,
+    BrowserAccessibility* only_selected_child,
+    const SelectionEvents& changes) {
+  if (only_selected_child) {
+    // Fire 'ElementSelected' on the only selected child.
+    FireUiaAccessibilityEvent(UIA_SelectionItem_ElementSelectedEventId,
+                              only_selected_child);
+    FireUiaPropertyChangedEvent(UIA_SelectionItemIsSelectedPropertyId,
+                                only_selected_child);
+    for (auto* item : changes.removed)
+      FireUiaPropertyChangedEvent(UIA_SelectionItemIsSelectedPropertyId, item);
+  } else {
+    // Per UIA documentation, beyond the "invalidate limit" we're supposed to
+    // fire a 'SelectionInvalidated' event.  The exact value isn't specified,
+    // but System.Windows.Automation.Provider uses a value of 20.
+    static const size_t kInvalidateLimit = 20;
+    if ((changes.added.size() + changes.removed.size()) > kInvalidateLimit) {
+      DCHECK_NE(container, nullptr);
+      FireUiaAccessibilityEvent(UIA_Selection_InvalidatedEventId, container);
     } else {
-      FireWinAccessibilityEvent(EVENT_OBJECT_SELECTIONREMOVE, node);
-      FireUiaAccessibilityEvent(
-          UIA_SelectionItem_ElementRemovedFromSelectionEventId, node);
+      const bool container_is_multiselectable =
+          container && container->HasState(ax::mojom::State::kMultiselectable);
+      for (auto* item : changes.added) {
+        if (container_is_multiselectable) {
+          FireUiaAccessibilityEvent(
+              UIA_SelectionItem_ElementAddedToSelectionEventId, item);
+        } else {
+          FireUiaAccessibilityEvent(UIA_SelectionItem_ElementSelectedEventId,
+                                    item);
+        }
+        FireUiaPropertyChangedEvent(UIA_SelectionItemIsSelectedPropertyId,
+                                    item);
+      }
+      for (auto* item : changes.removed) {
+        FireUiaAccessibilityEvent(
+            UIA_SelectionItem_ElementRemovedFromSelectionEventId, item);
+        FireUiaPropertyChangedEvent(UIA_SelectionItemIsSelectedPropertyId,
+                                    item);
+      }
     }
   }
+}
+
+// static
+void BrowserAccessibilityManagerWin::HandleSelectedStateChanged(
+    SelectionEventsMap& selection_events_map,
+    BrowserAccessibility* node,
+    bool is_selected) {
+  // If |node| belongs to a selection container, then map the events with the
+  // selection container as the key because |FinalizeSelectionEvents| needs to
+  // determine whether or not there is only one element selected in order to
+  // optimize what platform events are sent.
+  BrowserAccessibility* key = node;
+  if (auto* selection_container = node->PlatformGetSelectionContainer())
+    key = selection_container;
+
+  if (is_selected)
+    selection_events_map[key].added.push_back(node);
+  else
+    selection_events_map[key].removed.push_back(node);
+}
+
+// static
+void BrowserAccessibilityManagerWin::FinalizeSelectionEvents(
+    SelectionEventsMap& selection_events_map,
+    IsSelectedPredicate is_selected_predicate,
+    FirePlatformSelectionEventsCallback fire_platform_events_callback) {
+  for (auto&& selected : selection_events_map) {
+    BrowserAccessibility* key_node = selected.first;
+    SelectionEvents& changes = selected.second;
+
+    // Determine if |node| is a selection container with one selected child in
+    // order to optimize what platform events are sent.
+    BrowserAccessibility* container = nullptr;
+    BrowserAccessibility* only_selected_child = nullptr;
+    if (ui::IsContainerWithSelectableChildren(key_node->GetRole())) {
+      container = key_node;
+      for (auto it = container->InternalChildrenBegin();
+           it != container->InternalChildrenEnd(); ++it) {
+        auto* child = it.get();
+        if (is_selected_predicate.Run(child)) {
+          if (!only_selected_child) {
+            only_selected_child = child;
+            continue;
+          }
+
+          only_selected_child = nullptr;
+          break;
+        }
+      }
+    }
+
+    fire_platform_events_callback.Run(container, only_selected_child, changes);
+  }
+
+  selection_events_map.clear();
 }
 
 void BrowserAccessibilityManagerWin::BeforeAccessibilityEvents() {
@@ -714,56 +834,17 @@ void BrowserAccessibilityManagerWin::FinalizeAccessibilityEvents() {
   text_selection_changed_events_.clear();
 
   // Finalize selection item events.
-  for (auto&& selected : selection_events_) {
-    auto* container = selected.first;
-    auto&& changes = selected.second;
+  FinalizeSelectionEvents(
+      ia2_selection_events_, base::BindRepeating(&IsIA2NodeSelected),
+      base::BindRepeating(
+          &BrowserAccessibilityManagerWin::FireIA2SelectionEvents,
+          base::Unretained(this)));
+  FinalizeSelectionEvents(
+      uia_selection_events_, base::BindRepeating(&IsUIANodeSelected),
+      base::BindRepeating(
+          &BrowserAccessibilityManagerWin::FireUIASelectionEvents,
+          base::Unretained(this)));
 
-    // Count the number of selected items
-    size_t selected_count = 0;
-    BrowserAccessibility* first_selected_child = nullptr;
-    for (auto it = container->InternalChildrenBegin();
-         it != container->InternalChildrenEnd(); ++it) {
-      auto* child = it.get();
-      if (child->GetBoolAttribute(ax::mojom::BoolAttribute::kSelected)) {
-        if (!first_selected_child)
-          first_selected_child = child;
-        selected_count++;
-      }
-    }
-
-    if (selected_count == 1) {
-      // Fire 'ElementSelected' on the only selected child
-      FireWinAccessibilityEvent(EVENT_OBJECT_SELECTION, first_selected_child);
-      FireUiaAccessibilityEvent(UIA_SelectionItem_ElementSelectedEventId,
-                                first_selected_child);
-    } else {
-      // Per UIA documentation, beyond the "invalidate limit" we're supposed to
-      // fire a 'SelectionInvalidated' event.  The exact value isn't specified,
-      // but System.Windows.Automation.Provider uses a value of 20.
-      static const size_t kInvalidateLimit = 20;
-      if ((changes.added.size() + changes.removed.size()) > kInvalidateLimit) {
-        FireUiaAccessibilityEvent(UIA_Selection_InvalidatedEventId, container);
-      } else {
-        for (auto* item : changes.added) {
-          if (container->HasState(ax::mojom::State::kMultiselectable)) {
-            FireWinAccessibilityEvent(EVENT_OBJECT_SELECTIONADD, item);
-            FireUiaAccessibilityEvent(
-                UIA_SelectionItem_ElementAddedToSelectionEventId, item);
-          } else {
-            FireWinAccessibilityEvent(EVENT_OBJECT_SELECTION, item);
-            FireUiaAccessibilityEvent(UIA_SelectionItem_ElementSelectedEventId,
-                                      item);
-          }
-        }
-        for (auto* item : changes.removed) {
-          FireWinAccessibilityEvent(EVENT_OBJECT_SELECTIONREMOVE, item);
-          FireUiaAccessibilityEvent(
-              UIA_SelectionItem_ElementRemovedFromSelectionEventId, item);
-        }
-      }
-    }
-  }
-  selection_events_.clear();
   ignored_changed_nodes_.clear();
 }
 

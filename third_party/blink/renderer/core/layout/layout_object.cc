@@ -1670,21 +1670,6 @@ bool LayoutObject::CompositedScrollsWithRespectTo(
          this != &paint_invalidation_container;
 }
 
-void LayoutObject::InvalidatePaintRectangle(const PhysicalRect& dirty_rect) {
-  DCHECK_NE(GetDocument().Lifecycle().GetState(), DocumentLifecycle::kInPaint);
-
-  if (dirty_rect.IsEmpty())
-    return;
-
-  fragment_.SetPartialInvalidationLocalRect(
-      UnionRect(dirty_rect, fragment_.PartialInvalidationLocalRect()));
-
-  // Not using the WithoutGeometryChange version because we need to map the
-  // partial invalidated rect to visual rect in backing or the containing
-  // transform node.
-  SetShouldCheckForPaintInvalidation();
-}
-
 PhysicalRect LayoutObject::AbsoluteSelectionRect() const {
   PhysicalRect selection_rect = LocalSelectionVisualRect();
   if (!selection_rect.IsEmpty())

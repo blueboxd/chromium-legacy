@@ -170,11 +170,12 @@ Polymer({
     }
     // <if expr="chromeos">
     if (!oldRoute && loadTimeData.valueExists('isOSSettings') &&
-        loadTimeData.getBoolean('isOSSettings')) {
+        loadTimeData.getBoolean('isOSSettings') && !getSettingIdParameter()) {
       // If an OS settings subpage is opened directly (i.e the |oldRoute| is
       // null, e.g via an OS settings search result that surfaces from the
       // Chrome OS launcher), the back button should be focused since it's the
-      // first actionable element in the the subpage.
+      // first actionable element in the the subpage. An exception is when
+      // a setting is deep linked, focus that setting instead of back button.
       this.focusBackButton();
     }
     // </if>

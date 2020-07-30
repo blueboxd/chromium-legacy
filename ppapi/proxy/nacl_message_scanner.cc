@@ -353,7 +353,7 @@ bool NaClMessageScanner::ScanMessage(
   DCHECK(!new_msg_ptr->get());
 
   bool rewrite_msg =
-#if defined(OS_WIN) || defined(OS_MACOSX)
+#if defined(OS_WIN) || defined(OS_MAC)
       true;
 #else
       false;

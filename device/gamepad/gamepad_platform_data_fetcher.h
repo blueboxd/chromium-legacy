@@ -24,7 +24,7 @@
 #include "device/gamepad/nintendo_data_fetcher.h"
 #include "device/gamepad/raw_input_data_fetcher_win.h"
 #include "device/gamepad/wgi_data_fetcher_win.h"
-#elif defined(OS_MACOSX)
+#elif defined(OS_MAC)
 #include "device/gamepad/game_controller_data_fetcher_mac.h"
 #include "device/gamepad/gamepad_platform_data_fetcher_mac.h"
 #include "device/gamepad/nintendo_data_fetcher.h"
@@ -51,7 +51,7 @@ void AddGamepadPlatformDataFetchers(GamepadDataFetcherManager* manager) {
     manager->AddFactory(new WgiDataFetcherWin::Factory());
   }
 
-#elif defined(OS_MACOSX)
+#elif defined(OS_MAC)
 
   manager->AddFactory(new GameControllerDataFetcherMac::Factory());
   manager->AddFactory(new GamepadPlatformDataFetcherMac::Factory());

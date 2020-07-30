@@ -43,7 +43,7 @@
 #elif defined(OS_IOS)
 #include "net/proxy_resolution/proxy_config_service_ios.h"
 #include "net/proxy_resolution/proxy_resolver_mac.h"
-#elif defined(OS_MACOSX)
+#elif defined(OS_MAC)
 #include "net/proxy_resolution/proxy_config_service_mac.h"
 #include "net/proxy_resolution/proxy_resolver_mac.h"
 #elif defined(OS_LINUX) && !defined(OS_CHROMEOS)
@@ -59,7 +59,7 @@ namespace net {
 
 namespace {
 
-#if defined(OS_WIN) || defined(OS_IOS) || defined(OS_MACOSX) || \
+#if defined(OS_WIN) || defined(OS_APPLE) || \
     (defined(OS_LINUX) && !defined(OS_CHROMEOS))
 constexpr net::NetworkTrafficAnnotationTag kSystemProxyConfigTrafficAnnotation =
     net::DefineNetworkTrafficAnnotation("proxy_config_system", R"(
@@ -256,7 +256,7 @@ class ProxyResolverFactoryForSystem : public MultiThreadedProxyResolverFactory {
   std::unique_ptr<ProxyResolverFactory> CreateProxyResolverFactory() override {
 #if defined(OS_WIN)
     return std::make_unique<ProxyResolverFactoryWinHttp>();
-#elif defined(OS_MACOSX)
+#elif defined(OS_APPLE)
     return std::make_unique<ProxyResolverFactoryMac>();
 #else
     NOTREACHED();
@@ -265,7 +265,7 @@ class ProxyResolverFactoryForSystem : public MultiThreadedProxyResolverFactory {
   }
 
   static bool IsSupported() {
-#if defined(OS_WIN) || defined(OS_MACOSX)
+#if defined(OS_WIN) || defined(OS_APPLE)
     return true;
 #else
     return false;
@@ -1400,7 +1400,7 @@ ConfiguredProxyResolutionService::CreateSystemProxyConfigService(
 #elif defined(OS_IOS)
   return std::make_unique<ProxyConfigServiceIOS>(
       kSystemProxyConfigTrafficAnnotation);
-#elif defined(OS_MACOSX)
+#elif defined(OS_MAC)
   return std::make_unique<ProxyConfigServiceMac>(
       main_task_runner, kSystemProxyConfigTrafficAnnotation);
 #elif defined(OS_CHROMEOS)

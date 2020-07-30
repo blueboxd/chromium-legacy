@@ -2196,6 +2196,29 @@ void LayoutBox::EnsureIsReadyForPaintInvalidation() {
       FullPaintInvalidationReason());
 }
 
+void LayoutBox::InvalidatePaintRectangle(const PhysicalRect& dirty_rect) {
+  DCHECK_NE(GetDocument().Lifecycle().GetState(), DocumentLifecycle::kInPaint);
+
+  if (dirty_rect.IsEmpty())
+    return;
+
+  EnsureRareData().partial_invalidation_rect_.Unite(dirty_rect);
+  SetShouldCheckForPaintInvalidationWithoutGeometryChange();
+}
+
+void LayoutBox::ClearPartialInvalidationVisualRect() const {
+  if (rare_data_)
+    rare_data_->partial_invalidation_rect_ = PhysicalRect();
+}
+
+IntRect LayoutBox::PartialInvalidationVisualRect() const {
+  if (!rare_data_)
+    return IntRect();
+  PhysicalRect rect = rare_data_->partial_invalidation_rect_;
+  rect.Move(FirstFragment().PaintOffset());
+  return EnclosingIntRect(rect);
+}
+
 void LayoutBox::InvalidatePaint(const PaintInvalidatorContext& context) const {
   BoxPaintInvalidator(*this, context).InvalidatePaint();
 }

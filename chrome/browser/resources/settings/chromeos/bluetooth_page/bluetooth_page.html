@@ -9,6 +9,7 @@
 <link rel="import" href="../../i18n_setup.html">
 <link rel="import" href="../../prefs/prefs.html">
 <link rel="import" href="../../prefs/prefs_behavior.html">
+<link rel="import" href="../deep_linking_behavior.html">
 <link rel="import" href="../os_route.html">
 <link rel="import" href="../../router.html">
 <link rel="import" href="../../settings_page/settings_animated_pages.html">
@@ -53,7 +54,8 @@
                 checked="{{bluetoothToggleState_}}"
                 disabled$="[[!isToggleEnabled_(
                     adapterState_, stateChangeInProgress_)]]"
-                aria-label="$i18n{bluetoothToggleA11yLabel}">
+                aria-label="$i18n{bluetoothToggleA11yLabel}"
+                deep-link-focus-id$="[[Setting.kBluetoothOnOff]]">
             </cr-toggle>
           </div>
         </template>

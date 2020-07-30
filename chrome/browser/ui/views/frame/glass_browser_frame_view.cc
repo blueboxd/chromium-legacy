@@ -389,6 +389,11 @@ bool GlassBrowserFrameView::IsMaximized() const {
   return frame()->IsMaximized();
 }
 
+bool GlassBrowserFrameView::IsWebUITabStrip() const {
+  return WebUITabStripContainerView::UseTouchableTabStrip(
+      browser_view()->browser());
+}
+
 ///////////////////////////////////////////////////////////////////////////////
 // GlassBrowserFrameView, views::View overrides:
 
@@ -550,11 +555,6 @@ bool GlassBrowserFrameView::ShowCustomTitle() const {
 bool GlassBrowserFrameView::ShowSystemIcon() const {
   return !ShouldCustomDrawSystemTitlebar() &&
          browser_view()->ShouldShowWindowIcon();
-}
-
-bool GlassBrowserFrameView::IsWebUITabStrip() const {
-  return WebUITabStripContainerView::UseTouchableTabStrip(
-      browser_view()->browser());
 }
 
 bool GlassBrowserFrameView::OwnsCaptionButtons() const {

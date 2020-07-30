@@ -156,7 +156,6 @@ import org.chromium.chrome.browser.vr.ArDelegate;
 import org.chromium.chrome.browser.vr.ArDelegateProvider;
 import org.chromium.chrome.browser.vr.VrModuleProvider;
 import org.chromium.chrome.browser.webapps.addtohomescreen.AddToHomescreenCoordinator;
-import org.chromium.chrome.browser.widget.ScrimView;
 import org.chromium.chrome.modules.image_editor.ImageEditorModuleProvider;
 import org.chromium.components.bookmarks.BookmarkId;
 import org.chromium.components.browser_ui.bottomsheet.BottomSheetController;
@@ -689,13 +688,6 @@ public abstract class ChromeActivity<C extends ChromeActivityComponent>
      */
     public ManualFillingComponent getManualFillingComponent() {
         return mManualFillingComponent;
-    }
-
-    /**
-     * @return The View used to obscure content and bring focus to a foreground view.
-     */
-    public ScrimView getScrim() {
-        return mRootUiCoordinator.getScrim();
     }
 
     @Override
@@ -1387,6 +1379,7 @@ public abstract class ChromeActivity<C extends ChromeActivityComponent>
      * @return OverviewModeBehavior if this activity supports an overview mode and the
      *         OverviewModeBehavior has been initialized, null otherwise.
      */
+    @VisibleForTesting
     public @Nullable OverviewModeBehavior getOverviewModeBehavior() {
         return null;
     }
@@ -1395,7 +1388,6 @@ public abstract class ChromeActivity<C extends ChromeActivityComponent>
      * @return {@link ObservableSupplier} for the {@link OverviewModeBehavior} for this activity
      *         if it supports an overview mode, null otherwise.
      */
-    @VisibleForTesting
     public @Nullable ObservableSupplier<OverviewModeBehavior> getOverviewModeBehaviorSupplier() {
         return null;
     }

@@ -11,6 +11,7 @@
 #include "base/json/json_reader.h"
 #include "base/notreached.h"
 #include "base/optional.h"
+#include "base/strings/string_number_conversions.h"
 #include "base/strings/string_piece.h"
 #include "base/values.h"
 
@@ -58,7 +59,73 @@ base::Optional<base::Value> ParseJsonAndUnnestKey(
   return unnested;
 }
 
+// Returns a well-formed Restrictions struct from a dictionary |value|.
+// A well-formed Restrictions struct has at least one member that
+// for which calling base::Version::IsValid() will evaluate true.
+base::Optional<PpdProvider::Restrictions> ParseRestrictionsFromValue(
+    const base::Value& value) {
+  auto min_as_double = value.FindDoubleKey("minMilestone");
+  auto max_as_double = value.FindDoubleKey("maxMilestone");
+  if (!min_as_double.has_value() && !max_as_double.has_value()) {
+    return base::nullopt;
+  }
+
+  // While we don't want to deliberately store trivial base::Version
+  // members into the Restrictions struct, take heed that a
+  // calling IsValid() on a default-constructed base::Version returns
+  // false.
+  PpdProvider::Restrictions restrictions;
+  bool restrictions_is_nontrivial = false;
+  if (min_as_double.has_value()) {
+    base::Version min_milestone =
+        base::Version(base::NumberToString(int{min_as_double.value()}));
+    if (min_milestone.IsValid()) {
+      restrictions.min_milestone = min_milestone;
+      restrictions_is_nontrivial = true;
+    }
+  }
+  if (max_as_double.has_value()) {
+    base::Version max_milestone =
+        base::Version(base::NumberToString(int{max_as_double.value()}));
+    if (max_milestone.IsValid()) {
+      restrictions.max_milestone = max_milestone;
+      restrictions_is_nontrivial = true;
+    }
+  }
+
+  if (restrictions_is_nontrivial) {
+    return restrictions;
+  }
+  return base::nullopt;
+}
+
+// Returns a ParsedPrinter from a leaf |value| from Printers metadata.
+base::Optional<ParsedPrinter> ParsePrinterFromValue(const base::Value& value) {
+  const std::string* const effective_make_and_model =
+      value.FindStringKey("emm");
+  const std::string* const name = value.FindStringKey("name");
+  if (!effective_make_and_model || effective_make_and_model->empty() || !name ||
+      name->empty()) {
+    return base::nullopt;
+  }
+  ParsedPrinter printer;
+  printer.effective_make_and_model = *effective_make_and_model;
+  printer.user_visible_printer_name = *name;
+
+  const base::Value* const restrictions_value =
+      value.FindDictKey("restriction");
+  if (restrictions_value) {
+    printer.restrictions = ParseRestrictionsFromValue(*restrictions_value);
+  }
+  return printer;
+}
+
 }  // namespace
+
+ParsedPrinter::ParsedPrinter() = default;
+ParsedPrinter::~ParsedPrinter() = default;
+ParsedPrinter::ParsedPrinter(const ParsedPrinter&) = default;
+ParsedPrinter& ParsedPrinter::operator=(const ParsedPrinter&) = default;
 
 base::Optional<std::vector<std::string>> ParseLocales(
     base::StringPiece locales_json) {
@@ -105,20 +172,23 @@ base::Optional<ParsedManufacturers> ParseManufacturers(
 }
 
 base::Optional<ParsedPrinters> ParsePrinters(base::StringPiece printers_json) {
-  const auto as_value = ParseJsonAndUnnestKey(printers_json, "modelToEmm",
-                                              base::Value::Type::DICTIONARY);
-
+  const auto as_value =
+      ParseJsonAndUnnestKey(printers_json, "printers", base::Value::Type::LIST);
   if (!as_value.has_value()) {
     return base::nullopt;
   }
+
   ParsedPrinters printers;
-  for (const auto& iter : as_value.value().DictItems()) {
-    std::string printer_effective_make_and_model;
-    if (!iter.second.GetAsString(&printer_effective_make_and_model)) {
+  for (const auto& printer_value : as_value->GetList()) {
+    if (!printer_value.is_dict()) {
       continue;
     }
-    printers.push_back(
-        ParsedPrinter{iter.first, printer_effective_make_and_model});
+    base::Optional<ParsedPrinter> printer =
+        ParsePrinterFromValue(printer_value);
+    if (!printer.has_value()) {
+      continue;
+    }
+    printers.push_back(printer.value());
   }
   if (printers.empty()) {
     return base::nullopt;

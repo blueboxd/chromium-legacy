@@ -32,7 +32,8 @@ constexpr char kAllowlistedAppId[] = "bjaiihebfngildkcjkjckolinodhliff";
 constexpr char kAllowlistedAppCrxPath[] =
     "extensions/signin_screen_manual_test_app/app_signed_by_webstore.crx";
 
-Profile* GetInitialProfile() {
+// Returns the profile into which login-screen extensions are force-installed.
+Profile* GetOriginalSigninProfile() {
   return chromeos::ProfileHelper::GetSigninProfile()->GetOriginalProfile();
 }
 
@@ -64,7 +65,7 @@ class LoginScreenExtensionsLifetimeManagerTest
   void SetUpOnMainThread() override {
     MixinBasedInProcessBrowserTest::SetUpOnMainThread();
     extension_force_install_mixin_.InitWithDeviceStateMixin(
-        GetInitialProfile(), &device_state_mixin_);
+        GetOriginalSigninProfile(), &device_state_mixin_);
   }
 
   void LogIn() {
@@ -129,7 +130,7 @@ IN_PROC_BROWSER_TEST_F(LoginScreenExtensionsLifetimeManagerTest, Basic) {
   // The user locks the session. The app gets enabled and the background page
   // is loaded again.
   extensions::ExtensionBackgroundPageReadyObserver page_observer(
-      GetInitialProfile(), kAllowlistedAppId);
+      GetOriginalSigninProfile(), kAllowlistedAppId);
   LockSession();
   page_observer.Wait();
   ASSERT_TRUE(IsExtensionEnabled(kAllowlistedAppId));
@@ -157,7 +158,7 @@ IN_PROC_BROWSER_TEST_F(LoginScreenExtensionsLifetimeManagerTest,
   // The user locks the session. The app gets enabled and the background page is
   // loaded again.
   extensions::ExtensionBackgroundPageReadyObserver page_observer(
-      GetInitialProfile(), kAllowlistedAppId);
+      GetOriginalSigninProfile(), kAllowlistedAppId);
   LockSession();
   page_observer.Wait();
   ASSERT_TRUE(IsExtensionEnabled(kAllowlistedAppId));

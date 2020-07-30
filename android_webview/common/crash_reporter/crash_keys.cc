@@ -53,6 +53,9 @@ const char* const kWebViewCrashKeyAllowList[] = {
     "mojo-message-error",
     "total-discardable-memory-allocated",
 
+    // services/network
+    "network_deserialization",
+
     // GWP-ASan
     gwp_asan::kMallocCrashKey,
     gwp_asan::kPartitionAllocCrashKey,

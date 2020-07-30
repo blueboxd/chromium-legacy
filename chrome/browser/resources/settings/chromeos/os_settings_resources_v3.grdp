@@ -272,6 +272,10 @@
            use_base_dir="false"
            compress="false"
            type="BINDATA" />
+  <include name="IDR_SETTINGS_SETTING_ID_PARAM_UTIL_M_JS"
+           file="${root_gen_dir}/chrome/browser/resources/settings/setting_id_param_util.m.js"
+           use_base_dir="false"
+           compress="false" type="BINDATA" />
   <include name="IDR_OS_SETTINGS_SETTINGS_SHARED_CSS_M_JS"
            file="${root_gen_dir}/chrome/browser/resources/settings/settings_shared_css.m.js"
            use_base_dir="false"

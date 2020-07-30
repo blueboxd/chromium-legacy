@@ -41,6 +41,10 @@ export const TutorialLesson = Polymer({
 
     goalStateReached: {type: Boolean, value: false},
 
+    actions: {type: Array},
+
+    autoInteractive: {type: Boolean, value: false},
+
     // Observed properties.
 
     activeLessonNum: {type: Number, observer: 'setVisibility'},
@@ -73,7 +77,13 @@ export const TutorialLesson = Polymer({
   /** @private */
   show() {
     this.$.container.hidden = false;
-    this.$.title.focus();
+    // Shorthand for Polymer.dom(this.root).querySelector(...).
+    const focus = this.$$('[tabindex]');
+    if (!focus) {
+      throw new Error(
+          'A lesson must have an element which specifies tabindex.');
+    }
+    focus.focus();
   },
 
   /** @private */
@@ -220,7 +230,7 @@ export const TutorialLesson = Polymer({
    */
   requestSpeech(text) {
     this.dispatchEvent(
-        new CustomEvent('request-speech', {composed: true, detail: {text}}));
+        new CustomEvent('requestspeech', {composed: true, detail: {text}}));
   },
 
   /**

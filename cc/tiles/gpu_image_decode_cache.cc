@@ -2375,17 +2375,6 @@ GpuImageDecodeCache::CreateImageData(const DrawImage& draw_image,
 
   // TODO(crbug.com/910276): Change after alpha support.
   if (is_yuv) {
-    size_t y_size_bytes =
-        target_yuva_size_info.fWidthBytes[SkYUVAIndex::kY_Index] *
-        target_yuva_size_info.fSizes[SkYUVAIndex::kY_Index].height();
-    size_t u_size_bytes =
-        target_yuva_size_info.fWidthBytes[SkYUVAIndex::kU_Index] *
-        target_yuva_size_info.fSizes[SkYUVAIndex::kU_Index].height();
-    size_t v_size_bytes =
-        target_yuva_size_info.fWidthBytes[SkYUVAIndex::kV_Index] *
-        target_yuva_size_info.fSizes[SkYUVAIndex::kV_Index].height();
-    data_size = y_size_bytes + u_size_bytes + v_size_bytes;
-
     DCHECK_GE(yuv_bit_depth, 8u);
     DCHECK_LE(yuv_bit_depth, 16);
     if (yuv_bit_depth == 8)
@@ -2394,6 +2383,19 @@ GpuImageDecodeCache::CreateImageData(const DrawImage& draw_image,
       yuv_color_type = kA16_unorm_SkColorType;
     else if (allow_yuv_luminance_f16_decoding_)
       yuv_color_type = kA16_float_SkColorType;
+
+    if (upload_scale_mip_level > 0) {
+      // Scaled decode. We always promote to 4:4:4 when scaling YUV to avoid
+      // blurriness. See comment in DrawAndScaleImage() for details.
+      const base::CheckedNumeric<size_t> y_plane_size =
+          image_info.makeColorType(yuv_color_type).computeMinByteSize();
+      DCHECK(!SkImageInfo::ByteSizeOverflowed(y_plane_size.ValueOrDie()));
+      data_size = (3 * y_plane_size).ValueOrDie();
+    } else {
+      // Original size decode.
+      data_size = target_yuva_size_info.computeTotalBytes();
+      DCHECK(!SkImageInfo::ByteSizeOverflowed(data_size));
+    }
   }
 
   return base::WrapRefCounted(new ImageData(

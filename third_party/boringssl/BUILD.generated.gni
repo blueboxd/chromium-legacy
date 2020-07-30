@@ -147,6 +147,8 @@ crypto_sources = [
   "src/crypto/fipsmodule/sha/internal.h",
   "src/crypto/fipsmodule/tls/internal.h",
   "src/crypto/hkdf/hkdf.c",
+  "src/crypto/hpke/hpke.c",
+  "src/crypto/hpke/internal.h",
   "src/crypto/hrss/hrss.c",
   "src/crypto/hrss/internal.h",
   "src/crypto/internal.h",

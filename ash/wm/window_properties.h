@@ -22,6 +22,11 @@ class WindowState;
 
 // Alphabetical sort.
 
+// A property key to indicate whether this window is temporarily hidden because
+// of the window dragging.
+ASH_EXPORT extern const aura::WindowProperty<bool>* const
+    kHideDuringWindowDragging;
+
 // If this is set to true, the window stays in the same root window even if the
 // bounds outside of its root window is set.
 ASH_EXPORT extern const aura::WindowProperty<bool>* const kLockedToRootKey;

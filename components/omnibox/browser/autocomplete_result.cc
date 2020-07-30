@@ -9,7 +9,6 @@
 #include <iterator>
 #include <string>
 #include <unordered_set>
-#include <vector>
 
 #include "base/check_op.h"
 #include "base/command_line.h"
@@ -28,6 +27,7 @@
 #include "components/omnibox/browser/match_compare.h"
 #include "components/omnibox/browser/omnibox_pedal.h"
 #include "components/omnibox/browser/omnibox_pedal_provider.h"
+#include "components/omnibox/browser/omnibox_prefs.h"
 #include "components/omnibox/common/omnibox_features.h"
 #include "components/search_engines/template_url_service.h"
 #include "components/strings/grit/components_strings.h"
@@ -753,6 +753,21 @@ base::string16 AutocompleteResult::GetHeaderForGroupId(
   if (it != headers_map_.end())
     return it->second;
   return base::string16();
+}
+
+bool AutocompleteResult::IsSuggestionGroupIdHidden(PrefService* prefs,
+                                                   int suggestion_group_id) {
+  omnibox::SuggestionGroupVisibility user_preference =
+      omnibox::GetUserPreferenceForSuggestionGroupVisibility(
+          prefs, suggestion_group_id);
+
+  if (user_preference == omnibox::SuggestionGroupVisibility::HIDDEN)
+    return true;
+  if (user_preference == omnibox::SuggestionGroupVisibility::SHOWN)
+    return false;
+
+  DCHECK_EQ(user_preference, omnibox::SuggestionGroupVisibility::DEFAULT);
+  return base::Contains(hidden_group_ids_, suggestion_group_id);
 }
 
 // static

@@ -27,6 +27,7 @@ import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 import org.robolectric.annotation.Config;
 
+import org.chromium.base.supplier.ObservableSupplierImpl;
 import org.chromium.chrome.browser.browser_controls.BrowserControlsStateProvider;
 import org.chromium.chrome.browser.compositor.layouts.OverviewModeBehavior;
 import org.chromium.chrome.browser.tab.Tab;
@@ -110,6 +111,8 @@ public class TabGroupPopupUiMediatorUnitTest {
     private TabImpl mTab3;
     private PropertyModel mModel;
     private TabGroupPopupUiMediator mMediator;
+    private ObservableSupplierImpl<OverviewModeBehavior> mOverviewModeBehaviorSupplier =
+            new ObservableSupplierImpl<>();
 
     @Before
     public void setUp() {
@@ -137,11 +140,12 @@ public class TabGroupPopupUiMediatorUnitTest {
                 .addKeyboardVisibilityListener(mKeyboardVisibilityListenerCaptor.capture());
         doNothing().when(mBottomSheetController).addObserver(mBottomSheetObserver.capture());
 
+        mOverviewModeBehaviorSupplier.set(mOverviewModeBehavior);
         KeyboardVisibilityDelegate.setInstance(mKeyboardVisibilityDelegate);
         mModel = new PropertyModel(TabGroupPopupUiProperties.ALL_KEYS);
-        mMediator = new TabGroupPopupUiMediator(mModel, mTabModelSelector, mOverviewModeBehavior,
-                mBrowserControlsStateProvider, mUpdater, mTabGroupUiController,
-                mBottomSheetController);
+        mMediator = new TabGroupPopupUiMediator(mModel, mTabModelSelector,
+                mOverviewModeBehaviorSupplier, mBrowserControlsStateProvider, mUpdater,
+                mTabGroupUiController, mBottomSheetController);
     }
 
     @Test

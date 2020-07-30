@@ -165,6 +165,14 @@ class AppMenuHandlerImpl
             isByPermanentButton = true;
         }
 
+        // If the anchor view used to show the popup or the activity's decor view is not attached
+        // to window, we don't show the app menu because the window manager might have revoked
+        // the window token for this activity. See https://crbug.com/1105831.
+        if (!mDecorView.isAttachedToWindow() || !anchorView.isAttachedToWindow()
+                || !anchorView.getRootView().isAttachedToWindow()) {
+            return false;
+        }
+
         assert !(isByPermanentButton && startDragging);
 
         if (mMenu == null) {
@@ -335,12 +343,6 @@ class AppMenuHandlerImpl
     }
 
     boolean shouldShowAppMenu() {
-        // If the activity's decor view is not attached to window, we don't show the app menu
-        // because the window manager might have revoked the window token for this activity. See
-        // https://crbug.com/1105831.
-        if (!mDecorView.isAttachedToWindow()) {
-            return false;
-        }
         for (int i = 0; i < mBlockers.size(); i++) {
             if (!mBlockers.get(i).canShowAppMenu()) return false;
         }

@@ -44,16 +44,21 @@ static_library("client") {
   public_deps = [ "//remoting/base" ]
 
   deps = [
+    "//jingle:webrtc_glue",
     "//mojo/core/embedder",
     "//remoting/base:authorization",
     "//remoting/client/audio",
     "//remoting/client/input",
     "//remoting/client/notification",
     "//remoting/client/ui",
+    "//remoting/client/ui:ui_manipulation",
     "//remoting/codec:decoder",
     "//remoting/protocol",
+    "//remoting/signaling",
     "//services/network:network_service",
+    "//services/network/public/cpp",
     "//services/network/public/mojom",
+    "//third_party/libjingle_xmpp:rtc_xmllite",
     "//third_party/libyuv",
     "//third_party/webrtc_overrides:webrtc_component",
     "//ui/events:dom_keycode_converter",
@@ -96,7 +101,11 @@ source_set("unit_tests") {
 
   deps = [
     ":client",
+    "//base/test:test_support",
+    "//remoting/codec:encoder",
     "//remoting/proto",
+    "//remoting/protocol",
+    "//remoting/protocol:test_support",
     "//testing/gmock",
     "//testing/gtest",
     "//third_party/webrtc_overrides:webrtc_component",

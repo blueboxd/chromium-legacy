@@ -22,7 +22,7 @@ namespace device {
 
 namespace {
 
-#if defined(OS_MACOSX)
+#if defined(OS_MAC)
 const uint64_t kTestDeviceId = 123;
 #elif defined(OS_WIN)
 const wchar_t kTestDeviceId[] = L"123";

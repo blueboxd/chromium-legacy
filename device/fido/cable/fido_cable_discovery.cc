@@ -43,7 +43,7 @@ std::unique_ptr<BluetoothAdvertisement::Data> ConstructAdvertisementData(
   auto advertisement_data = std::make_unique<BluetoothAdvertisement::Data>(
       BluetoothAdvertisement::AdvertisementType::ADVERTISEMENT_TYPE_BROADCAST);
 
-#if defined(OS_MACOSX)
+#if defined(OS_MAC)
   auto list = std::make_unique<BluetoothAdvertisement::UUIDList>();
   list->emplace_back(kCableAdvertisementUUID16);
   list->emplace_back(fido_parsing_utils::ConvertBytesToUuid(client_eid));

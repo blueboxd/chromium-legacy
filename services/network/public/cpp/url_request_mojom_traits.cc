@@ -12,6 +12,7 @@
 #include "mojo/public/cpp/base/file_path_mojom_traits.h"
 #include "mojo/public/cpp/base/time_mojom_traits.h"
 #include "mojo/public/cpp/base/unguessable_token_mojom_traits.h"
+#include "services/network/public/cpp/crash_keys.h"
 #include "services/network/public/cpp/http_request_headers_mojom_traits.h"
 #include "services/network/public/cpp/isolation_info_mojom_traits.h"
 #include "services/network/public/cpp/network_ipc_param_traits.h"
@@ -161,13 +162,30 @@ bool StructTraits<
     network::mojom::URLRequestDataView,
     network::ResourceRequest>::Read(network::mojom::URLRequestDataView data,
                                     network::ResourceRequest* out) {
-  if (!data.ReadMethod(&out->method) || !data.ReadUrl(&out->url) ||
-      !data.ReadSiteForCookies(&out->site_for_cookies) ||
-      !data.ReadTrustedParams(&out->trusted_params) ||
-      !data.ReadRequestInitiator(&out->request_initiator) ||
-      !data.ReadIsolatedWorldOrigin(&out->isolated_world_origin) ||
-      !data.ReadReferrer(&out->referrer) ||
-      !data.ReadReferrerPolicy(&out->referrer_policy) ||
+  if (!data.ReadMethod(&out->method)) {
+    return false;
+  }
+  if (!data.ReadUrl(&out->url)) {
+    network::debug::SetDeserializationCrashKeyString("url");
+    return false;
+  }
+  if (!data.ReadSiteForCookies(&out->site_for_cookies) ||
+      !data.ReadTrustedParams(&out->trusted_params)) {
+    return false;
+  }
+  if (!data.ReadRequestInitiator(&out->request_initiator)) {
+    network::debug::SetDeserializationCrashKeyString("request_initiator");
+    return false;
+  }
+  if (!data.ReadIsolatedWorldOrigin(&out->isolated_world_origin)) {
+    network::debug::SetDeserializationCrashKeyString("isolated_world_origin");
+    return false;
+  }
+  if (!data.ReadReferrer(&out->referrer)) {
+    network::debug::SetDeserializationCrashKeyString("referrer");
+    return false;
+  }
+  if (!data.ReadReferrerPolicy(&out->referrer_policy) ||
       !data.ReadHeaders(&out->headers) ||
       !data.ReadCorsExemptHeaders(&out->cors_exempt_headers) ||
       !data.ReadPriority(&out->priority) ||
@@ -240,9 +258,19 @@ bool StructTraits<network::mojom::URLRequestBodyDataView,
 
 bool StructTraits<network::mojom::DataElementDataView, network::DataElement>::
     Read(network::mojom::DataElementDataView data, network::DataElement* out) {
-  if (!data.ReadPath(&out->path_) || !data.ReadFile(&out->file_) ||
-      !data.ReadBlobUuid(&out->blob_uuid_) ||
-      !data.ReadExpectedModificationTime(&out->expected_modification_time_)) {
+  if (!data.ReadPath(&out->path_)) {
+    network::debug::SetDeserializationCrashKeyString("data_element_path");
+    return false;
+  }
+  if (!data.ReadFile(&out->file_)) {
+    network::debug::SetDeserializationCrashKeyString("data_element_file");
+    return false;
+  }
+  if (!data.ReadBlobUuid(&out->blob_uuid_)) {
+    network::debug::SetDeserializationCrashKeyString("data_element_blob_uuid");
+    return false;
+  }
+  if (!data.ReadExpectedModificationTime(&out->expected_modification_time_)) {
     return false;
   }
   if (data.type() == network::mojom::DataElementType::kBytes) {

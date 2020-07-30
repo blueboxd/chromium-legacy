@@ -14,6 +14,7 @@ def plist_read(*args):
     plists = {
         '/$W/App Product.app/Contents/Info.plist': {
             'CFBundleIdentifier': bundle_id,
+            'CFBundleName': 'Product',
             'KSProductID': 'test.ksproduct',
             'KSChannelID-full': '-full',
         },
@@ -89,6 +90,7 @@ class TestModification(unittest.TestCase):
         plistlib.writePlist.assert_called_with(
             {
                 'CFBundleIdentifier': config.base_bundle_id,
+                'CFBundleName': 'Product',
                 'KSProductID': 'test.ksproduct',
                 'KSChannelID-full': '-full'
             },
@@ -122,6 +124,7 @@ class TestModification(unittest.TestCase):
         plistlib.writePlist.assert_called_with(
             {
                 'CFBundleIdentifier': config.base_bundle_id,
+                'CFBundleName': 'Product',
                 'KSProductID': 'test.ksproduct',
                 'KSBrandID': 'MOO',
                 'KSChannelID-full': '-full'
@@ -155,6 +158,7 @@ class TestModification(unittest.TestCase):
         plistlib.writePlist.assert_called_with(
             {
                 'CFBundleIdentifier': config.base_bundle_id,
+                'CFBundleName': 'Product',
                 'KSProductID': 'test.ksproduct',
                 'KSChannelID': 'dev',
                 'KSChannelID-full': 'dev-full'
@@ -189,6 +193,7 @@ class TestModification(unittest.TestCase):
         plistlib.writePlist.assert_called_with(
             {
                 'CFBundleIdentifier': config.base_bundle_id,
+                'CFBundleName': 'Product',
                 'KSProductID': 'test.ksproduct',
                 'KSChannelID-full': '-full',
                 'CrProductDirName': 'Farmland/Cows'
@@ -223,6 +228,7 @@ class TestModification(unittest.TestCase):
         plistlib.writePlist.assert_called_with(
             {
                 'CFBundleIdentifier': config.base_bundle_id,
+                'CFBundleName': 'Product',
                 'KSProductID': 'test.ksproduct',
                 'KSChannelID-full': '-full',
                 'CFBundleSignature': 'Mooo'
@@ -256,6 +262,7 @@ class TestModification(unittest.TestCase):
         plistlib.writePlist.assert_called_with(
             {
                 'CFBundleIdentifier': config.base_bundle_id,
+                'CFBundleName': 'Product',
                 'KSProductID': 'test.ksproduct',
                 'KSChannelID': 'beta',
                 'KSChannelID-full': 'beta-full',
@@ -339,7 +346,7 @@ class TestModification(unittest.TestCase):
                 {
                     'CFBundleIdentifier': config.base_bundle_id,
                     'CFBundleExecutable': config.app_product,
-                    'CFBundleName': config.app_product,
+                    'CFBundleName': 'Product Canary',
                     'KSProductID': 'test.ksproduct.canary',
                     'KSChannelID': 'canary',
                     'KSChannelID-full': 'canary-full',

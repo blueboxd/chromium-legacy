@@ -29,11 +29,11 @@ class WaylandSurface {
   int32_t buffer_scale() const { return buffer_scale_; }
   void set_buffer_scale(int32_t scale) { buffer_scale_ = scale; }
 
-  // gfx::AcceleratedWidget identifies a wl_surface or a ui::WaylandWindow. Note
-  // that GetWidget() and GetRootWidget() do not necessarily return the same
-  // result.
+  // Returns an id that identifies the |wl_surface_|.
+  uint32_t GetSurfaceId() const;
+  // Returns a gfx::AcceleratedWidget that identifies the WaylandWindow that
+  // this WaylandSurface belongs to.
   gfx::AcceleratedWidget GetWidget() const;
-  gfx::AcceleratedWidget GetRootWidget() const;
 
   // Initializes the WaylandSurface and returns true iff success.
   // This may return false if a wl_surface could not be created, for example.

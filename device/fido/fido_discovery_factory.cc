@@ -21,7 +21,7 @@
 #include "device/fido/win/webauthn_api.h"
 #endif  // defined(OS_WIN)
 
-#if defined(OS_MACOSX)
+#if defined(OS_MAC)
 #include "device/fido/mac/discovery.h"
 #endif  // defined(OSMACOSX)
 
@@ -66,7 +66,7 @@ std::unique_ptr<FidoDiscoveryBase> FidoDiscoveryFactory::Create(
       // TODO(https://crbug.com/825949): Add NFC support.
       return nullptr;
     case FidoTransportProtocol::kInternal:
-#if defined(OS_MACOSX) || defined(OS_CHROMEOS)
+#if defined(OS_MAC) || defined(OS_CHROMEOS)
       return MaybeCreatePlatformDiscovery();
 #else
       return nullptr;
@@ -112,7 +112,7 @@ FidoDiscoveryFactory::MaybeCreateWinWebAuthnApiDiscovery() {
 }
 #endif  // defined(OS_WIN)
 
-#if defined(OS_MACOSX)
+#if defined(OS_MAC)
 std::unique_ptr<FidoDiscoveryBase>
 FidoDiscoveryFactory::MaybeCreatePlatformDiscovery() const {
   return mac_touch_id_config_

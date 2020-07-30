@@ -22,13 +22,6 @@
 
 namespace ash {
 
-namespace {
-
-constexpr base::TimeDelta kDefaultTokenExpirationDelay =
-    base::TimeDelta::FromHours(1);
-
-}  // namespace
-
 using AmbientControllerTest = AmbientAshTestBase;
 
 TEST_F(AmbientControllerTest, ShowAmbientScreenUponLock) {
@@ -133,9 +126,10 @@ TEST_F(AmbientControllerTest, ShouldRefreshAccessTokenAfterFailure) {
   EXPECT_FALSE(IsAccessTokenRequestPending());
 
   // Token request automatically retry.
-  // The failure delay has jitter so fast forward a bit more, but before
-  // the returned token would expire again.
-  task_environment()->FastForwardBy(kDefaultTokenExpirationDelay / 2);
+  // The failure delay has jitter so fast forward a bit more.
+  constexpr base::TimeDelta kMaxTokenRefreshDelay =
+      base::TimeDelta::FromSeconds(60);
+  task_environment()->FastForwardBy(kMaxTokenRefreshDelay * 2);
   EXPECT_TRUE(IsAccessTokenRequestPending());
 
   // Clean up.

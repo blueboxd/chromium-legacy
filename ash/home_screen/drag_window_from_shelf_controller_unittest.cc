@@ -28,6 +28,7 @@
 #include "ash/wm/splitview/split_view_constants.h"
 #include "ash/wm/splitview/split_view_controller.h"
 #include "ash/wm/tablet_mode/tablet_mode_controller_test_api.h"
+#include "ash/wm/window_properties.h"
 #include "ash/wm/window_state.h"
 #include "ash/wm/window_util.h"
 #include "base/test/metrics/histogram_tester.h"
@@ -120,8 +121,45 @@ class DragWindowFromShelfControllerTest : public AshTestBase {
   DISALLOW_COPY_AND_ASSIGN(DragWindowFromShelfControllerTest);
 };
 
-// Tests that we may hide different sets of windows in different scenarios.
-TEST_F(DragWindowFromShelfControllerTest, HideWindowDuringWindowDragging) {
+// Tests that we may hide different sets of windows with a special flag
+// kHideDuringWindowDragging.
+TEST_F(DragWindowFromShelfControllerTest,
+       HideWindowDuringWindowDraggingWithFlag) {
+  UpdateDisplay("400x400");
+  const gfx::Rect shelf_bounds =
+      Shelf::ForWindow(Shell::GetPrimaryRootWindow())->GetIdealBounds();
+
+  auto window3 = CreateTestWindow();
+  auto window2 = CreateTestWindow();
+  auto window1 = CreateTestWindow();
+  EXPECT_TRUE(window1->IsVisible());
+  EXPECT_TRUE(window2->IsVisible());
+  EXPECT_TRUE(window3->IsVisible());
+  EXPECT_FALSE(window1->GetProperty(kHideDuringWindowDragging));
+  EXPECT_FALSE(window2->GetProperty(kHideDuringWindowDragging));
+  EXPECT_FALSE(window3->GetProperty(kHideDuringWindowDragging));
+
+  StartDrag(window1.get(), shelf_bounds.CenterPoint(), HotseatState::kExtended);
+  Drag(gfx::Point(200, 200), 1.f, 1.f);
+  EXPECT_TRUE(window1->IsVisible());
+  EXPECT_FALSE(window2->IsVisible());
+  EXPECT_FALSE(window3->IsVisible());
+  EXPECT_FALSE(window1->GetProperty(kHideDuringWindowDragging));
+  EXPECT_TRUE(window2->GetProperty(kHideDuringWindowDragging));
+  EXPECT_TRUE(window3->GetProperty(kHideDuringWindowDragging));
+  EndDrag(shelf_bounds.CenterPoint(), /*velocity_y=*/base::nullopt);
+  EXPECT_TRUE(window1->IsVisible());
+  EXPECT_TRUE(window2->IsVisible());
+  EXPECT_TRUE(window3->IsVisible());
+  EXPECT_FALSE(window1->GetProperty(kHideDuringWindowDragging));
+  EXPECT_FALSE(window2->GetProperty(kHideDuringWindowDragging));
+  EXPECT_FALSE(window3->GetProperty(kHideDuringWindowDragging));
+}
+
+// Tests that we may hide different sets of windows in splitview and restores
+// windows correctly after dragging.
+TEST_F(DragWindowFromShelfControllerTest,
+       HideWindowDuringWindowDraggingInSplitView) {
   UpdateDisplay("400x400");
   const gfx::Rect shelf_bounds =
       Shelf::ForWindow(Shell::GetPrimaryRootWindow())->GetIdealBounds();
@@ -133,20 +171,12 @@ TEST_F(DragWindowFromShelfControllerTest, HideWindowDuringWindowDragging) {
   EXPECT_TRUE(window2->IsVisible());
   EXPECT_TRUE(window3->IsVisible());
 
-  StartDrag(window1.get(), shelf_bounds.CenterPoint(), HotseatState::kExtended);
-  Drag(gfx::Point(200, 200), 1.f, 1.f);
-  EXPECT_TRUE(window1->IsVisible());
-  EXPECT_FALSE(window2->IsVisible());
-  EXPECT_FALSE(window3->IsVisible());
-  EndDrag(shelf_bounds.CenterPoint(), /*velocity_y=*/base::nullopt);
-  EXPECT_TRUE(window1->IsVisible());
-  EXPECT_TRUE(window2->IsVisible());
-  EXPECT_TRUE(window3->IsVisible());
-
   // In splitview mode, the snapped windows will stay visible during dragging.
   split_view_controller()->SnapWindow(window1.get(), SplitViewController::LEFT);
   split_view_controller()->SnapWindow(window2.get(),
                                       SplitViewController::RIGHT);
+
+  // Try to drag a left snapped window
   StartDrag(window1.get(), shelf_bounds.left_center(), HotseatState::kExtended);
   Drag(gfx::Point(0, 200), 1.f, 1.f);
   EXPECT_TRUE(window1->IsVisible());
@@ -156,7 +186,17 @@ TEST_F(DragWindowFromShelfControllerTest, HideWindowDuringWindowDragging) {
   EXPECT_TRUE(window1->IsVisible());
   EXPECT_TRUE(window2->IsVisible());
   EXPECT_TRUE(window3->IsVisible());
+  // Ensure that all windows are restored correctly without triggering auto
+  // snapping.
+  EXPECT_TRUE(split_view_controller()->IsWindowInSplitView(window1.get()));
+  EXPECT_EQ(split_view_controller()->GetPositionOfSnappedWindow(window1.get()),
+            SplitViewController::LEFT);
+  EXPECT_TRUE(split_view_controller()->IsWindowInSplitView(window2.get()));
+  EXPECT_EQ(split_view_controller()->GetPositionOfSnappedWindow(window2.get()),
+            SplitViewController::RIGHT);
+  EXPECT_FALSE(split_view_controller()->IsWindowInSplitView(window3.get()));
 
+  // Try to drag a right snapped window
   StartDrag(window2.get(), shelf_bounds.right_center(),
             HotseatState::kExtended);
   Drag(gfx::Point(400, 200), 1.f, 1.f);
@@ -167,6 +207,15 @@ TEST_F(DragWindowFromShelfControllerTest, HideWindowDuringWindowDragging) {
   EXPECT_TRUE(window1->IsVisible());
   EXPECT_TRUE(window2->IsVisible());
   EXPECT_TRUE(window3->IsVisible());
+  // Ensure that all windows are restored correctly without triggering auto
+  // snapping.
+  EXPECT_TRUE(split_view_controller()->IsWindowInSplitView(window1.get()));
+  EXPECT_EQ(split_view_controller()->GetPositionOfSnappedWindow(window1.get()),
+            SplitViewController::LEFT);
+  EXPECT_TRUE(split_view_controller()->IsWindowInSplitView(window2.get()));
+  EXPECT_EQ(split_view_controller()->GetPositionOfSnappedWindow(window2.get()),
+            SplitViewController::RIGHT);
+  EXPECT_FALSE(split_view_controller()->IsWindowInSplitView(window3.get()));
 }
 
 // Test home launcher is hidden during dragging.

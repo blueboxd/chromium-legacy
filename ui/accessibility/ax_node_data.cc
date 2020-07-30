@@ -755,12 +755,16 @@ ax::mojom::CheckedState AXNodeData::GetCheckedState() const {
 }
 
 void AXNodeData::SetCheckedState(ax::mojom::CheckedState checked_state) {
-  if (HasIntAttribute(ax::mojom::IntAttribute::kCheckedState))
+  if (HasCheckedState())
     RemoveIntAttribute(ax::mojom::IntAttribute::kCheckedState);
   if (checked_state != ax::mojom::CheckedState::kNone) {
     AddIntAttribute(ax::mojom::IntAttribute::kCheckedState,
                     static_cast<int32_t>(checked_state));
   }
+}
+
+bool AXNodeData::HasCheckedState() const {
+  return HasIntAttribute(ax::mojom::IntAttribute::kCheckedState);
 }
 
 ax::mojom::DefaultActionVerb AXNodeData::GetDefaultActionVerb() const {

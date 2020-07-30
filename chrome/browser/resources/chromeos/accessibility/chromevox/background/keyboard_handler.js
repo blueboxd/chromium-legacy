@@ -100,7 +100,7 @@ BackgroundKeyboardHandler = class {
 
   /**
    * Handles key up events.
-   * @param {Event} evt The key down event to process.
+   * @param {Event} evt The key up event to process.
    * @return {boolean} This value has no effect since we ignore it in
    *     SpokenFeedbackEventRewriterDelegate::HandleKeyboardEvent.
    */

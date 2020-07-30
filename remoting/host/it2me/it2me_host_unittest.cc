@@ -299,20 +299,23 @@ void It2MeHostTest::StartHost(bool enable_dialogs, bool enable_notifications) {
     // false should only be run on ChromeOS.
     it2me_host_->set_enable_notifications(enable_notifications);
   }
-  auto register_host_request =
-      std::make_unique<XmppRegisterSupportHostRequest>("fake_bot_jid");
-  auto log_to_server = std::make_unique<XmppLogToServer>(
-      ServerLogEntry::IT2ME, fake_signal_strategy.get(), "fake_bot_jid",
-      host_context_->network_task_runner());
-  auto create_signal_strategy = base::BindOnce(
+  auto create_connection_context = base::BindOnce(
       [](std::unique_ptr<SignalStrategy> signal_strategy,
-         ChromotingHostContext* unused_context) { return signal_strategy; },
+         ChromotingHostContext* host_context) {
+        auto context = std::make_unique<It2MeHost::DeferredConnectContext>();
+        context->register_request =
+            std::make_unique<XmppRegisterSupportHostRequest>("fake_bot_jid");
+        context->log_to_server = std::make_unique<XmppLogToServer>(
+            ServerLogEntry::IT2ME, signal_strategy.get(), "fake_bot_jid",
+            host_context->network_task_runner());
+        context->signal_strategy = std::move(signal_strategy);
+        return context;
+      },
       std::move(fake_signal_strategy));
-  it2me_host_->Connect(
-      host_context_->Copy(), policies_->CreateDeepCopy(),
-      std::move(dialog_factory), std::move(register_host_request),
-      std::move(log_to_server), weak_factory_.GetWeakPtr(),
-      std::move(create_signal_strategy), kTestUserName, ice_config);
+  it2me_host_->Connect(host_context_->Copy(), policies_->CreateDeepCopy(),
+                       std::move(dialog_factory), weak_factory_.GetWeakPtr(),
+                       std::move(create_connection_context), kTestUserName,
+                       ice_config);
 
   base::RunLoop run_loop;
   state_change_callback_ =

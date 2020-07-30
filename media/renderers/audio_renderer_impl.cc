@@ -661,7 +661,8 @@ void AudioRendererImpl::OnAudioDecoderStreamInitialized(bool success) {
       null_sink_->Start();  // Does nothing but reduce state bookkeeping.
       real_sink_needs_start_ = true;
     } else {
-      DCHECK(!base::FeatureList::IsEnabled(kSuspendMutedAudio));
+      // Even when kSuspendMutedAudio is enabled, we can hit this path if we are
+      // exclusively using NullAudioSink due to OnDeviceInfoReceived() failure.
       sink_->Start();
       sink_->Pause();  // Sinks play on start.
     }
@@ -733,7 +734,8 @@ void AudioRendererImpl::SetVolume(float volume) {
 
   sink_->SetVolume(volume);
   if (!null_sink_) {
-    DCHECK(!base::FeatureList::IsEnabled(kSuspendMutedAudio));
+    // Either null sink suspension is not enabled or we're already on the null
+    // sink due to failing to get device parameters.
     return;
   }
 

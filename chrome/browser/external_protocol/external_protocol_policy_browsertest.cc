@@ -51,6 +51,37 @@ IN_PROC_BROWSER_TEST_F(ExternalProtocolPolicyBrowserTest,
 }
 
 IN_PROC_BROWSER_TEST_F(ExternalProtocolPolicyBrowserTest,
+                       AutoLaunchProtocolsNullInitiatingOrigin) {
+  const char kWildcardOrigin[] = "*";
+  const char kExampleScheme[] = "custom";
+
+  base::ListValue protocol_origins_map_list;
+  // Single dictionary in the list for this test case.
+  base::DictionaryValue protocol_origins_map;
+  // Set a protocol.
+  protocol_origins_map.SetStringKey(
+      AutoLaunchProtocolsPolicyHandler::kProtocolNameKey, kExampleScheme);
+  // Set an origins list with the wildcard origin matching pattern.
+  base::ListValue origins;
+  origins.Append(kWildcardOrigin);
+  protocol_origins_map.SetKey(AutoLaunchProtocolsPolicyHandler::kOriginListKey,
+                              std::move(origins));
+  protocol_origins_map_list.Append(std::move(protocol_origins_map));
+  PolicyMap policies;
+  policies.Set(key::kAutoLaunchProtocolsFromOrigins, POLICY_LEVEL_MANDATORY,
+               POLICY_SCOPE_USER, POLICY_SOURCE_CLOUD,
+               protocol_origins_map_list.Clone(), nullptr);
+  UpdateProviderPolicy(policies);
+
+  // Calling GetBlockState with a null initiating_origin should
+  // return UNKNOWN.
+  ExternalProtocolHandler::BlockState block_state =
+      ExternalProtocolHandler::GetBlockState(kExampleScheme, nullptr,
+                                             browser()->profile());
+  EXPECT_EQ(ExternalProtocolHandler::UNKNOWN, block_state);
+}
+
+IN_PROC_BROWSER_TEST_F(ExternalProtocolPolicyBrowserTest,
                        AutoLaunchProtocolsEmptyOriginList) {
   const char kExampleScheme[] = "custom";
 

@@ -264,6 +264,13 @@ void DefaultTexture2DWrapper::GpuResources::Init(
 void DefaultTexture2DWrapper::GpuResources::PushNewTexture(
     ComD3D11Texture2D texture,
     size_t array_slice) {
+  // If init didn't complete, then signal (another) error that will probably be
+  // ignored in favor of whatever we signalled earlier.
+  if (!gl_image_ || !stream_) {
+    NotifyError(StatusCode::kDecoderInitializeNeverCompleted);
+    return;
+  }
+
   // Notify |gl_image_| that it has a new texture.  Do this unconditionally, so
   // hat we can guarantee that the image isn't null.  Nobody expects it to be,
   // and failures will be noticed only asynchronously.

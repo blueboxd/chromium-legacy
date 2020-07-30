@@ -170,7 +170,7 @@ class TrialComparisonCertVerifier::Job {
   // Called when the initial trial comparison is completed.
   void OnTrialJobCompleted(int result);
 
-#if defined(OS_MACOSX)
+#if defined(OS_APPLE)
   // On some versions of macOS, revocation checking is always force-enabled
   // for the system. For comparing with the built-in verifier to rule out
   // "expected" differences, it's necessary to retry verification with
@@ -462,7 +462,7 @@ void TrialComparisonCertVerifier::Job::OnTrialJobCompleted(int result) {
     return;
   }
 
-#if defined(OS_MACOSX)
+#if defined(OS_APPLE)
   if (primary_error_ == ERR_CERT_REVOKED && !config_.enable_rev_checking &&
       !(primary_result_.cert_status & CERT_STATUS_REV_CHECKING_ENABLED) &&
       !(trial_result_.cert_status &
@@ -528,7 +528,7 @@ void TrialComparisonCertVerifier::Job::OnTrialJobCompleted(int result) {
   FinishWithError();  // Note: Will delete |this|.
 }
 
-#if defined(OS_MACOSX)
+#if defined(OS_APPLE)
 void TrialComparisonCertVerifier::Job::
     OnMacRevCheckingReverificationJobCompleted(int result) {
   if (result == ERR_CERT_REVOKED) {

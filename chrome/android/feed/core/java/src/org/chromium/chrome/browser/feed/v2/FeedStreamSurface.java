@@ -121,31 +121,59 @@ public class FeedStreamSurface implements SurfaceActionsHandler, FeedActionsHand
     // the correct sign-in state is used if attaching the surface triggers a fetch.
 
     private static boolean sStartupCalled;
-    private static HashSet<FeedStreamSurface> sWaitingSurfaces;
+    // Tracks all the surfaces that are waiting to be attached or already attached. When
+    // |sStartupCalled| is false, |startup()| has not been called and thus all the surfaces
+    // in this set are waiting to be attached. Otherwise, all the surfaces in this set are
+    // already attached.
+    private static HashSet<FeedStreamSurface> sSurfaces;
 
     public static void startup() {
         if (sStartupCalled) return;
         sStartupCalled = true;
         FeedServiceBridge.startup();
         xSurfaceProcessScope();
-        if (sWaitingSurfaces != null) {
-            for (FeedStreamSurface surface : sWaitingSurfaces) {
+        if (sSurfaces != null) {
+            for (FeedStreamSurface surface : sSurfaces) {
                 surface.surfaceOpened();
             }
-            sWaitingSurfaces = null;
         }
     }
 
-    private static void openSurfaceAtStartup(FeedStreamSurface surface) {
-        if (sWaitingSurfaces == null) {
-            sWaitingSurfaces = new HashSet<FeedStreamSurface>();
-        }
-        sWaitingSurfaces.add(surface);
+    // Only called for cleanup during testing.
+    @VisibleForTesting
+    static void shutdownForTesting() {
+        sStartupCalled = false;
+        sSurfaces = null;
+        sXSurfaceProcessScope = null;
     }
 
-    private static void cancelOpenSurfaceAtStartup(FeedStreamSurface surface) {
-        if (sWaitingSurfaces != null) {
-            sWaitingSurfaces.remove(surface);
+    private static void trackSurface(FeedStreamSurface surface) {
+        if (sSurfaces == null) {
+            sSurfaces = new HashSet<FeedStreamSurface>();
+        }
+        sSurfaces.add(surface);
+    }
+
+    private static void untrackSurface(FeedStreamSurface surface) {
+        if (sSurfaces != null) {
+            sSurfaces.remove(surface);
+        }
+    }
+
+    /**
+     *  Clear all the data related to all surfaces.
+     */
+    public static void clearAll() {
+        if (sSurfaces != null) {
+            for (FeedStreamSurface surface : sSurfaces) {
+                surface.surfaceClosed();
+            }
+            sSurfaces = null;
+        }
+
+        ProcessScope processScope = xSurfaceProcessScope();
+        if (processScope != null) {
+            processScope.resetAccount();
         }
     }
 
@@ -645,9 +673,8 @@ public class FeedStreamSurface implements SurfaceActionsHandler, FeedActionsHand
      * the content is available, onStreamUpdated will be called.
      */
     public void surfaceOpened() {
-        if (!sStartupCalled) {
-            openSurfaceAtStartup(this);
-        } else {
+        trackSurface(this);
+        if (sStartupCalled) {
             FeedStreamSurfaceJni.get().surfaceOpened(
                     mNativeFeedStreamSurface, FeedStreamSurface.this);
         }
@@ -662,9 +689,8 @@ public class FeedStreamSurface implements SurfaceActionsHandler, FeedActionsHand
             mContentManager.removeContents(mHeaderCount, feedCount);
         }
 
-        if (!sStartupCalled) {
-            cancelOpenSurfaceAtStartup(this);
-        } else {
+        untrackSurface(this);
+        if (sStartupCalled) {
             FeedStreamSurfaceJni.get().surfaceClosed(
                     mNativeFeedStreamSurface, FeedStreamSurface.this);
         }

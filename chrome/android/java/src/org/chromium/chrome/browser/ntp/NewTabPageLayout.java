@@ -27,8 +27,6 @@ import org.chromium.base.MathUtils;
 import org.chromium.base.TraceEvent;
 import org.chromium.base.supplier.Supplier;
 import org.chromium.chrome.R;
-import org.chromium.chrome.browser.compositor.layouts.EmptyOverviewModeObserver;
-import org.chromium.chrome.browser.compositor.layouts.OverviewModeBehavior;
 import org.chromium.chrome.browser.compositor.layouts.content.InvalidationAwareThumbnailProvider;
 import org.chromium.chrome.browser.cryptids.ProbabilisticCryptidRenderer;
 import org.chromium.chrome.browser.download.DownloadOpenSource;
@@ -109,10 +107,6 @@ public class NewTabPageLayout extends LinearLayout implements TileGroup.Observer
      * With {@link #mTilesLoaded}, it's one of the 2 flags used to track initialization progress.
      */
     private boolean mHasShownView;
-
-    /** Observer for overview mode. */
-    private EmptyOverviewModeObserver mOverviewObserver;
-    private OverviewModeBehavior mOverviewModeBehavior;
 
     private boolean mSearchProviderHasLogo = true;
     private boolean mSearchProviderIsGoogle;
@@ -206,7 +200,6 @@ public class NewTabPageLayout extends LinearLayout implements TileGroup.Observer
     /**
      * Initializes the NewTabPageLayout. This must be called immediately after inflation, before
      * this object is used in any other way.
-     *
      * @param manager NewTabPageManager used to perform various actions when the user interacts
      *                with the page.
      * @param activity The activity that currently owns the new tab page
@@ -218,15 +211,13 @@ public class NewTabPageLayout extends LinearLayout implements TileGroup.Observer
      * @param uiConfig UiConfig that provides display information about this view.
      * @param tabProvider Provides the current active tab.
      * @param lifecycleDispatcher Activity lifecycle dispatcher.
-     * @param overviewModeBehavior Overview mode to observe for mode changes.
      * @param uma {@link NewTabPageUma} object recording user metrics.
      */
     public void initialize(NewTabPageManager manager, Activity activity,
             TileGroup.Delegate tileGroupDelegate, boolean searchProviderHasLogo,
             boolean searchProviderIsGoogle, ScrollDelegate scrollDelegate,
             ContextMenuManager contextMenuManager, UiConfig uiConfig, Supplier<Tab> tabProvider,
-            ActivityLifecycleDispatcher lifecycleDispatcher,
-            @Nullable OverviewModeBehavior overviewModeBehavior, NewTabPageUma uma) {
+            ActivityLifecycleDispatcher lifecycleDispatcher, NewTabPageUma uma) {
         TraceEvent.begin(TAG + ".initialize()");
         mScrollDelegate = scrollDelegate;
         mManager = manager;
@@ -281,18 +272,6 @@ public class NewTabPageLayout extends LinearLayout implements TileGroup.Observer
 
         VrModuleProvider.registerVrModeObserver(this);
         if (VrModuleProvider.getDelegate().isInVr()) onEnterVr();
-
-        mOverviewModeBehavior = overviewModeBehavior;
-        if (overviewModeBehavior != null && overviewModeBehavior.overviewVisible()) {
-            mOverviewObserver = new EmptyOverviewModeObserver() {
-                @Override
-                public void onOverviewModeFinishedHiding() {
-                    overviewModeBehavior.removeOverviewModeObserver(mOverviewObserver);
-                    mOverviewObserver = null;
-                }
-            };
-            overviewModeBehavior.addOverviewModeObserver(mOverviewObserver);
-        }
 
         manager.addDestructionObserver(NewTabPageLayout.this::onDestroy);
 
@@ -897,12 +876,6 @@ public class NewTabPageLayout extends LinearLayout implements TileGroup.Observer
 
         if (mExploreOfflineCard != null) mExploreOfflineCard.destroy();
         VrModuleProvider.unregisterVrModeObserver(this);
-        // Need to null-check compositor view holder and layout manager since they might've
-        // been cleared by now.
-        if (mOverviewObserver != null) {
-            mOverviewModeBehavior.removeOverviewModeObserver(mOverviewObserver);
-            mOverviewObserver = null;
-        }
 
         if (mSearchProviderLogoView != null) {
             mSearchProviderLogoView.destroy();

@@ -87,8 +87,7 @@ ColorModel DefaultColorModel(const CupsOptionProvider& printer) {
   if (!attr)
     return UNKNOWN_COLOR_MODEL;
 
-  const char* const value = ippGetString(attr, 0, nullptr);
-  return value ? ColorModelFromIppColor(value) : UNKNOWN_COLOR_MODEL;
+  return ColorModelFromIppColor(ippGetString(attr, 0, nullptr));
 }
 
 std::vector<ColorModel> SupportedColorModels(
@@ -146,16 +145,10 @@ void ExtractDuplexModes(const CupsOptionProvider& printer,
     if (duplex_mode != mojom::DuplexMode::kUnknownDuplexMode)
       printer_info->duplex_modes.push_back(duplex_mode);
   }
-
   ipp_attribute_t* attr = printer.GetDefaultOptionValue(kIppDuplex);
-  if (!attr) {
-    printer_info->duplex_default = mojom::DuplexMode::kUnknownDuplexMode;
-    return;
-  }
-
-  const char* const value = ippGetString(attr, 0, nullptr);
   printer_info->duplex_default =
-      value ? DuplexModeFromIpp(value) : mojom::DuplexMode::kUnknownDuplexMode;
+      attr ? DuplexModeFromIpp(ippGetString(attr, 0, nullptr))
+           : mojom::DuplexMode::kUnknownDuplexMode;
 }
 
 void CopiesRange(const CupsOptionProvider& printer,
@@ -248,8 +241,8 @@ bool CollateDefault(const CupsOptionProvider& printer) {
   if (!attr)
     return false;
 
-  const char* const name = ippGetString(attr, 0, nullptr);
-  return name ? base::StringPiece(name).compare(kCollated) == 0 : false;
+  base::StringPiece name = ippGetString(attr, 0, nullptr);
+  return name.compare(kCollated) == 0;
 }
 
 #if defined(OS_CHROMEOS)

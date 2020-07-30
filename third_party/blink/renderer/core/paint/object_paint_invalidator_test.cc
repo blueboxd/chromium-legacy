@@ -245,51 +245,6 @@ TEST_F(ObjectPaintInvalidatorTest, TraverseStackedFloatUnderCompositedInline) {
   EXPECT_TRUE(span_layer->SelfNeedsRepaint());
 }
 
-TEST_F(ObjectPaintInvalidatorTest, InvalidatePaintRectangle) {
-  SetBodyInnerHTML(
-      "<div id='target' style='width: 200px; height: 200px; background: blue'>"
-      "</div>");
-
-  GetDocument().View()->SetTracksRasterInvalidations(true);
-
-  auto* target = GetLayoutObjectByElementId("target");
-  target->InvalidatePaintRectangle(PhysicalRect(10, 10, 50, 50));
-  EXPECT_EQ(PhysicalRect(10, 10, 50, 50),
-            target->PartialInvalidationLocalRect());
-  target->InvalidatePaintRectangle(PhysicalRect(30, 30, 60, 60));
-  EXPECT_EQ(PhysicalRect(10, 10, 80, 80),
-            target->PartialInvalidationLocalRect());
-  EXPECT_TRUE(target->ShouldCheckForPaintInvalidation());
-
-  EXPECT_TRUE(IsValidDisplayItemClient(target));
-  GetDocument().View()->UpdateAllLifecyclePhasesExceptPaint(
-      DocumentUpdateReason::kTest);
-  EXPECT_EQ(PhysicalRect(), target->PartialInvalidationLocalRect());
-  EXPECT_EQ(IntRect(18, 18, 80, 80), target->PartialInvalidationVisualRect());
-  EXPECT_FALSE(IsValidDisplayItemClient(target));
-
-  target->InvalidatePaintRectangle(PhysicalRect(30, 30, 50, 80));
-  EXPECT_EQ(PhysicalRect(30, 30, 50, 80),
-            target->PartialInvalidationLocalRect());
-  GetDocument().View()->UpdateAllLifecyclePhasesExceptPaint(
-      DocumentUpdateReason::kTest);
-  // PartialInvalidationVisualRect should accumulate until painting.
-  EXPECT_EQ(IntRect(18, 18, 80, 100), target->PartialInvalidationVisualRect());
-
-  UpdateAllLifecyclePhasesForTest();
-  const auto& raster_invalidations = GetLayoutView()
-                                         .Layer()
-                                         ->GraphicsLayerBacking()
-                                         ->GetRasterInvalidationTracking()
-                                         ->Invalidations();
-  ASSERT_EQ(1u, raster_invalidations.size());
-  EXPECT_EQ(IntRect(18, 18, 80, 100), raster_invalidations[0].rect);
-  EXPECT_EQ(PaintInvalidationReason::kRectangle,
-            raster_invalidations[0].reason);
-
-  EXPECT_TRUE(IsValidDisplayItemClient(target));
-}
-
 TEST_F(ObjectPaintInvalidatorTest, Selection) {
   SetBodyInnerHTML("<img id='target' style='width: 100px; height: 100px'>");
   auto* target = GetLayoutObjectByElementId("target");

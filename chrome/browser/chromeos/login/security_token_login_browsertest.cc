@@ -21,12 +21,12 @@
 #include "chrome/browser/chromeos/certificate_provider/certificate_provider_service.h"
 #include "chrome/browser/chromeos/certificate_provider/certificate_provider_service_factory.h"
 #include "chrome/browser/chromeos/certificate_provider/test_certificate_provider_extension.h"
-#include "chrome/browser/chromeos/certificate_provider/test_certificate_provider_extension_login_screen_mixin.h"
 #include "chrome/browser/chromeos/login/existing_user_controller.h"
 #include "chrome/browser/chromeos/login/test/device_state_mixin.h"
 #include "chrome/browser/chromeos/login/test/login_manager_mixin.h"
 #include "chrome/browser/chromeos/login/test/test_predicate_waiter.h"
 #include "chrome/browser/chromeos/profiles/profile_helper.h"
+#include "chrome/browser/policy/extension_force_install_mixin.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/test/base/mixin_based_in_process_browser_test.h"
 #include "chromeos/constants/chromeos_switches.h"
@@ -43,6 +43,7 @@
 #include "components/user_manager/scoped_user_manager.h"
 #include "components/user_manager/user_manager.h"
 #include "content/public/test/browser_test.h"
+#include "extensions/common/features/simple_feature.h"
 #include "net/base/net_errors.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/boringssl/src/include/openssl/ssl.h"
@@ -74,6 +75,11 @@ constexpr char kPinDialogNoAttemptsLeftTitle[] =
 
 constexpr char kChallengeData[] = "challenge";
 
+// Returns the profile into which login-screen extensions are force-installed.
+Profile* GetOriginalSigninProfile() {
+  return chromeos::ProfileHelper::GetSigninProfile()->GetOriginalProfile();
+}
+
 // Custom implementation of the CryptohomeClient that triggers the
 // challenge-response protocol when authenticating the user.
 class ChallengeResponseFakeCryptohomeClient : public FakeCryptohomeClient {
@@ -93,9 +99,9 @@ class ChallengeResponseFakeCryptohomeClient : public FakeCryptohomeClient {
                const cryptohome::AuthorizationRequest& auth,
                const cryptohome::MountRequest& request,
                DBusMethodCallback<cryptohome::BaseReply> callback) override {
-    Profile* signin_profile = ProfileHelper::GetSigninProfile();
     CertificateProviderService* certificate_provider_service =
-        CertificateProviderServiceFactory::GetForBrowserContext(signin_profile);
+        CertificateProviderServiceFactory::GetForBrowserContext(
+            GetOriginalSigninProfile());
     // Note: The real cryptohome would call the "ChallengeKey" D-Bus method
     // exposed by Chrome via org.chromium.CryptohomeKeyDelegateInterface, but
     // we're directly requesting the extension in order to avoid extra
@@ -200,8 +206,13 @@ class SecurityTokenLoginTest : public MixinBasedInProcessBrowserTest,
 
   void SetUpOnMainThread() override {
     MixinBasedInProcessBrowserTest::SetUpOnMainThread();
-    test_certificate_provider_extension()->set_require_pin(kCorrectPin);
+    PrepareCertificateProviderExtension();
     WaitForLoginScreenWidgetShown();
+  }
+
+  void TearDownOnMainThread() override {
+    certificate_provider_extension_.reset();
+    MixinBasedInProcessBrowserTest::TearDownOnMainThread();
   }
 
   // LocalStateMixin::Delegate:
@@ -212,8 +223,8 @@ class SecurityTokenLoginTest : public MixinBasedInProcessBrowserTest,
     return login_manager_mixin_.users()[0].account_id;
   }
 
-  TestCertificateProviderExtension* test_certificate_provider_extension() {
-    return cert_provider_extension_mixin_.test_certificate_provider_extension();
+  TestCertificateProviderExtension* certificate_provider_extension() {
+    return certificate_provider_extension_.get();
   }
 
   void StartLoginAndWaitForPinDialog() {
@@ -238,6 +249,20 @@ class SecurityTokenLoginTest : public MixinBasedInProcessBrowserTest,
   void WaitForActiveSession() { login_manager_mixin_.WaitForActiveSession(); }
 
  private:
+  // Configures and installs the test certificate provider extension.
+  void PrepareCertificateProviderExtension() {
+    certificate_provider_extension_ =
+        std::make_unique<TestCertificateProviderExtension>(
+            GetOriginalSigninProfile());
+    certificate_provider_extension_->set_require_pin(kCorrectPin);
+    extension_force_install_mixin_.InitWithDeviceStateMixin(
+        GetOriginalSigninProfile(), &device_state_mixin_);
+    EXPECT_TRUE(extension_force_install_mixin_.ForceInstallFromSourceDir(
+        TestCertificateProviderExtension::GetExtensionSourcePath(),
+        TestCertificateProviderExtension::GetExtensionPemPath(),
+        ExtensionForceInstallMixin::WaitMode::kBackgroundPageFirstLoad));
+  }
+
   void RegisterChallengeResponseKey() {
     // The global user manager is not created until after the Local State is
     // initialized, but in order for the user_manager::known_user:: methods to
@@ -265,15 +290,20 @@ class SecurityTokenLoginTest : public MixinBasedInProcessBrowserTest,
     run_loop.Run();
   }
 
+  // Bypass "signin_screen" feature only enabled for allowlisted extensions.
+  extensions::SimpleFeature::ScopedThreadUnsafeAllowlistForTest
+      feature_allowlist_{TestCertificateProviderExtension::extension_id()};
+
   // Unowned (referencing a global singleton)
   ChallengeResponseFakeCryptohomeClient* const cryptohome_client_;
   DeviceStateMixin device_state_mixin_{
       &mixin_host_, DeviceStateMixin::State::OOBE_COMPLETED_CLOUD_ENROLLED};
   LoginManagerMixin login_manager_mixin_{&mixin_host_};
   LocalStateMixin local_state_mixin_{&mixin_host_, this};
-  TestCertificateProviderExtensionLoginScreenMixin
-      cert_provider_extension_mixin_{&mixin_host_, &device_state_mixin_,
-                                     /*load_extension_immediately=*/true};
+  ExtensionForceInstallMixin extension_force_install_mixin_{&mixin_host_};
+
+  std::unique_ptr<TestCertificateProviderExtension>
+      certificate_provider_extension_;
 };
 
 // Tests the successful challenge-response login flow, including entering the
@@ -340,7 +370,7 @@ IN_PROC_BROWSER_TEST_F(SecurityTokenLoginTest, WrongPinThenCorrect) {
 // Test the login failure scenario when the wrong PIN is entered several times
 // until there's no more attempt left (simulating, e.g., a smart card lockout).
 IN_PROC_BROWSER_TEST_F(SecurityTokenLoginTest, WrongPinUntilLockout) {
-  test_certificate_provider_extension()->set_remaining_pin_attempts(3);
+  certificate_provider_extension()->set_remaining_pin_attempts(3);
 
   StartLoginAndWaitForPinDialog();
 
@@ -363,8 +393,7 @@ IN_PROC_BROWSER_TEST_F(SecurityTokenLoginTest, WrongPinUntilLockout) {
 // Test the login failure scenario when the extension fails to sign the
 // challenge.
 IN_PROC_BROWSER_TEST_F(SecurityTokenLoginTest, SigningFailure) {
-  test_certificate_provider_extension()->set_should_fail_sign_digest_requests(
-      true);
+  certificate_provider_extension()->set_should_fail_sign_digest_requests(true);
 
   AuthFailureWaiter auth_failure_waiter;
   LoginScreenTestApi::ClickChallengeResponseButton(

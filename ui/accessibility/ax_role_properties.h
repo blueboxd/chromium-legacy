@@ -113,6 +113,9 @@ AX_BASE_EXPORT bool IsMenuRelated(const ax::mojom::Role role);
 // API.
 AX_BASE_EXPORT bool IsPresentational(const ax::mojom::Role role);
 
+// Returns true if the provided role belongs to a radio.
+AX_BASE_EXPORT bool IsRadio(const ax::mojom::Role role);
+
 // Returns true if the provided role supports a range-based value, such as a
 // slider.
 AX_BASE_EXPORT bool IsRangeValueSupported(const ax::mojom::Role role);

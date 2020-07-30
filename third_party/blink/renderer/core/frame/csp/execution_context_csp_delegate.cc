@@ -249,6 +249,23 @@ void ExecutionContextCSPDelegate::DidAddContentSecurityPolicies(
   if (!frame)
     return;
 
+  // Record what source was used to find main frame CSP.
+  if (frame->IsMainFrame()) {
+    for (const auto& policy : policies) {
+      switch (policy->header->source) {
+        case network::mojom::ContentSecurityPolicySource::kHTTP:
+          Count(WebFeature::kMainFrameCSPViaHTTP);
+          break;
+        case network::mojom::ContentSecurityPolicySource::kMeta:
+          Count(WebFeature::kMainFrameCSPViaMeta);
+          break;
+        case network::mojom::ContentSecurityPolicySource::kOriginPolicy:
+          Count(WebFeature::kMainFrameCSPViaOriginPolicy);
+          break;
+      }
+    }
+  }
+
   frame->GetLocalFrameHostRemote().DidAddContentSecurityPolicies(
       std::move(policies));
 }

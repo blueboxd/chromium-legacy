@@ -175,7 +175,7 @@ class DEVICE_BLUETOOTH_EXPORT BluetoothAdapter
                                              bool is_now_connected) {}
 #endif
 
-#if defined(OS_CHROMEOS)
+#if defined(OS_CHROMEOS) || defined(OS_LINUX)
     // Called when the battery level of the device has been updated.
     virtual void DeviceBatteryChanged(
         BluetoothAdapter* adapter,
@@ -597,7 +597,7 @@ class DEVICE_BLUETOOTH_EXPORT BluetoothAdapter
                                  bool new_paired_status);
 #endif
 
-#if defined(OS_CHROMEOS)
+#if defined(OS_CHROMEOS) || defined(OS_LINUX)
   void NotifyDeviceBatteryChanged(BluetoothDevice* device);
 #endif
 

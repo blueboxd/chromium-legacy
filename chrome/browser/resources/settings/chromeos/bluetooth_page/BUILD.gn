@@ -16,6 +16,7 @@ js_type_check("closure_compile") {
 
 js_library("bluetooth_page") {
   deps = [
+    "..:deep_linking_behavior",
     "..:os_route",
     "../..:router",
     "../../prefs:prefs_behavior",
@@ -36,6 +37,7 @@ js_library("bluetooth_page") {
 
 js_library("bluetooth_subpage") {
   deps = [
+    "..:deep_linking_behavior",
     "..:metrics_recorder",
     "..:os_route",
     "../..:router",
@@ -91,6 +93,7 @@ js_library("bluetooth_page.m") {
   sources = [ "$root_gen_dir/chrome/browser/resources/settings/chromeos/bluetooth_page/bluetooth_page.m.js" ]
   deps = [
     ":bluetooth_subpage.m",
+    "..:deep_linking_behavior.m",
     "..:os_route.m",
     "../..:router.m",
     "../../prefs:prefs_behavior.m",
@@ -109,6 +112,7 @@ js_library("bluetooth_page.m") {
 js_library("bluetooth_subpage.m") {
   sources = [ "$root_gen_dir/chrome/browser/resources/settings/chromeos/bluetooth_page/bluetooth_subpage.m.js" ]
   deps = [
+    "..:deep_linking_behavior.m",
     "..:metrics_recorder.m",
     "..:os_route.m",
     "../..:router.m",

@@ -174,13 +174,8 @@ no_check_targets = [
   "//remoting/base/grpc_support:*",  # 14 errors
   "//remoting/base/grpc_test_support:*",  # 1 error
   "//remoting/base:*",  # 6 errors
-  "//remoting/client/audio:*",  # 7 errors
   "//remoting/client/display:*",  # 55 errors
-  "//remoting/client/input:*",  # 17 errors
   "//remoting/client/jni:*",  # 8 errors
-  "//remoting/client/notification:*",  # 12 errors
-  "//remoting/client/ui:*",  # 13 errors
-  "//remoting/client:*",  # 20 errors
   "//remoting/codec:*",  # 32 errors
   "//remoting/host/chromeos:*",  # 10 errors
   "//remoting/host/file_transfer:*",  # 43 errors

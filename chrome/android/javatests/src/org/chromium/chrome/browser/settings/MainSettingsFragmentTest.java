@@ -25,6 +25,7 @@ import org.mockito.Mockito;
 import org.mockito.MockitoAnnotations;
 
 import org.chromium.base.test.util.CommandLineFlags;
+import org.chromium.base.test.util.DisabledTest;
 import org.chromium.base.test.util.Feature;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.about_settings.AboutChromeSettings;
@@ -376,6 +377,7 @@ public class MainSettingsFragmentTest {
     @Test
     @SmallTest
     @EnableFeatures({ChromeFeatureList.PASSWORD_CHECK})
+    @DisabledTest(message = "crbug.com/1110965")
     public void testDestroysPasswordCheck() {
         launchSettingsActivity();
         Activity activity = mMainSettings.getActivity();

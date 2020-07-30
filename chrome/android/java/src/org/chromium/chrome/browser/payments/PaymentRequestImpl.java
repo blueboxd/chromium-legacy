@@ -736,11 +736,17 @@ public class PaymentRequestImpl
 
         // Catch any time the user enters the overview mode and dismiss the payment UI.
         if (activity instanceof ChromeTabbedActivity) {
-            mOverviewModeBehavior = ((ChromeTabbedActivity) activity).getOverviewModeBehavior();
+            mOverviewModeBehavior =
+                    ((ChromeTabbedActivity) activity).getOverviewModeBehaviorSupplier().get();
+
+            assert mOverviewModeBehavior != null;
+
             if (mOverviewModeBehavior.overviewVisible()) {
                 mJourneyLogger.setNotShown(NotShownReason.OTHER);
                 disconnectFromClientWithDebugMessage(ErrorStrings.TAB_OVERVIEW_MODE);
-                if (sObserverForTest != null) sObserverForTest.onPaymentRequestServiceShowFailed();
+                if (sObserverForTest != null) {
+                    sObserverForTest.onPaymentRequestServiceShowFailed();
+                }
                 return false;
             }
             mOverviewModeBehavior.addOverviewModeObserver(mOverviewModeObserver);

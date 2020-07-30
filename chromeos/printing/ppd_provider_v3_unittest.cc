@@ -71,6 +71,14 @@ More random contents that we don't care about.
 //    implementation of PpdProvider.
 constexpr int kMethodDeferralLimitForTesting = 20;
 
+// Default manufacturers metadata used for these tests.
+const char kDefaultManufacturersJson[] = R"({
+  "filesMap": {
+    "Manufacturer A": "manufacturer_a-en.json",
+    "Manufacturer B": "manufacturer_b-en.json"
+  }
+})";
+
 // Unowned raw pointers to helper classes composed into the
 // PpdProvider at construct time. Used throughout to activate testing
 // codepaths.
@@ -244,13 +252,24 @@ class PpdProviderTest : public ::testing::Test {
              R"({
               "locales": [ "de", "en", "es" ]
              })"},
-            {"metadata_v3/manufacturers-en.json",
+            {"metadata_v3/manufacturers-en.json", kDefaultManufacturersJson},
+            {"metadata_v3/manufacturer_a-en.json",
              R"({
-                  "filesMap": {
-                    "Manufacturer A": "manufacturer_a-en.json",
-                    "Manufacturer B": "manufacturer_b-en.json"
-                  }
-                 })"},
+                "printers": [ {
+                  "name": "printer_a",
+                  "emm": "printer_a_ref"
+                }, {
+                  "name": "printer_b",
+                  "emm": "printer_b_ref"
+                } ]
+               })"},
+            {"metadata_v3/manufacturer_b-en.json",
+             R"({
+                "printers": [ {
+                  "name": "printer_c",
+                  "emm": "printer_c_ref"
+                } ]
+               })"},
             {"metadata_v2/index-01.json",
              R"([
              ["printer_a_ref", "printer_a.ppd", {"license": "fake_license"}]
@@ -281,26 +300,6 @@ class PpdProviderTest : public ::testing::Test {
             ])"},
             {"metadata_v2/usb-03f0.json", ""},
             {"metadata_v2/usb-1234.json", ""},
-            {"metadata_v2/manufacturer_a.json",
-             R"([
-            ["printer_a", "printer_a_ref"],
-            ["printer_b", "printer_b_ref"],
-            ["printer_d", "printer_d_ref"]
-            ])"},
-            {"metadata_v2/manufacturer_a.json",
-             R"([
-            ["printer_a", "printer_a_ref",
-              {"min_milestone":25.0000}],
-            ["printer_b", "printer_b_ref",
-              {"min_milestone":30.0000, "max_milestone":45.0000}],
-            ["printer_d", "printer_d_ref",
-              {"min_milestone":60.0000, "max_milestone":75.0000}]
-            ])"},
-            {"metadata_v2/manufacturer_b.json",
-             R"([
-            ["printer_c", "printer_c_ref"],
-            ["printer_e", "printer_e_ref"]
-            ])"},
             {"metadata_v2/reverse_index-en-01.json",
              R"([
              ["printer_a_ref", "manufacturer_a_en", "printer_a"]
@@ -308,13 +307,6 @@ class PpdProviderTest : public ::testing::Test {
             {"metadata_v2/reverse_index-en-19.json",
              R"([
              ])"},
-            {"metadata_v2/manufacturer_b.json",
-             R"([
-            ["printer_c", "printer_c_ref",
-              {"max_milestone":55.0000}],
-            ["printer_e", "printer_e_ref",
-              {"min_milestone":17.0000, "max_milestone":33.0000}]
-            ])"},
             {"ppds/printer_a.ppd", kCupsFilterPpdContents},
             {"ppds/printer_b.ppd", kCupsFilter2PpdContents},
             {"ppds/printer_c.ppd", "c"},
@@ -623,32 +615,26 @@ TEST_F(PpdProviderTest, UsbResolution) {
                PpdProvider::SUCCESS);
 }
 
-// For convenience a null ResolveManufacturers callback target.
-void ResolveManufacturersNop(PpdProvider::CallbackResultCode code,
-                             const std::vector<std::string>& v) {}
-
 // Test basic ResolvePrinters() functionality.  At the same time, make
 // sure we can get the PpdReference for each of the resolved printers.
 TEST_F(PpdProviderTest, ResolvePrinters) {
   auto provider =
       CreateProvider({"en", PpdCacheRunLocation::kInBackgroundThreads,
-                      PropagateLocaleToMetadataManager::kDoNotPropagate});
+                      PropagateLocaleToMetadataManager::kDoPropagate});
   StartFakePpdServer();
 
-  // Grab the manufacturer list, but don't bother to save it, we know what
-  // should be in it and we check that elsewhere.  We just need to run the
-  // resolve to populate the internal PpdProvider structures.
-  provider->ResolveManufacturers(base::BindOnce(&ResolveManufacturersNop));
+  // Same as the contents in test fixture's server_contents() above,
+  // but allows us to bypass PpdProvider::ResolveManufacturers().
+  ASSERT_TRUE(provider_backdoor_.metadata_manager->SetManufacturersForTesting(
+      kDefaultManufacturersJson));
   task_environment_.RunUntilIdle();
 
   provider->ResolvePrinters(
-      "manufacturer_a_en",
-      base::BindOnce(&PpdProviderTest::CaptureResolvePrinters,
-                     base::Unretained(this)));
+      "Manufacturer A", base::BindOnce(&PpdProviderTest::CaptureResolvePrinters,
+                                       base::Unretained(this)));
   provider->ResolvePrinters(
-      "manufacturer_b_en",
-      base::BindOnce(&PpdProviderTest::CaptureResolvePrinters,
-                     base::Unretained(this)));
+      "Manufacturer B", base::BindOnce(&PpdProviderTest::CaptureResolvePrinters,
+                                       base::Unretained(this)));
 
   task_environment_.RunUntilIdle();
   ASSERT_EQ(2UL, captured_resolve_printers_.size());
@@ -672,17 +658,22 @@ TEST_F(PpdProviderTest, ResolvePrinters) {
   ASSERT_EQ(1UL, capture1.size());
   EXPECT_EQ("printer_c", capture1[0].name);
   EXPECT_EQ("printer_c_ref", capture1[0].ppd_ref.effective_make_and_model);
-  // EXPECT_EQ(base::Version("55"), capture1[0].restrictions.max_milestone);
 }
 
-// Test that if we give a bad reference to ResolvePrinters(), we get an
-// INTERNAL_ERROR.
+// Test that if we give a bad reference to ResolvePrinters(), we get a
+// SERVER_ERROR. There's currently no feedback that indicates
+// specifically to the caller that they asked for the printers of
+// a manufacturer we didn't previously advertise.
 TEST_F(PpdProviderTest, ResolvePrintersBadReference) {
   auto provider =
       CreateProvider({"en", PpdCacheRunLocation::kInBackgroundThreads,
-                      PropagateLocaleToMetadataManager::kDoNotPropagate});
+                      PropagateLocaleToMetadataManager::kDoPropagate});
   StartFakePpdServer();
-  provider->ResolveManufacturers(base::BindOnce(&ResolveManufacturersNop));
+
+  // Same as the contents in test fixture's server_contents() above,
+  // but allows us to bypass PpdProvider::ResolveManufacturers().
+  ASSERT_TRUE(provider_backdoor_.metadata_manager->SetManufacturersForTesting(
+      kDefaultManufacturersJson));
   task_environment_.RunUntilIdle();
 
   provider->ResolvePrinters(
@@ -691,28 +682,27 @@ TEST_F(PpdProviderTest, ResolvePrintersBadReference) {
                      base::Unretained(this)));
   task_environment_.RunUntilIdle();
   ASSERT_EQ(1UL, captured_resolve_printers_.size());
-  EXPECT_EQ(PpdProvider::INTERNAL_ERROR, captured_resolve_printers_[0].first);
+  EXPECT_EQ(PpdProvider::SERVER_ERROR, captured_resolve_printers_[0].first);
 }
 
 // Test that if the server is unavailable, we get SERVER_ERRORs back out.
 TEST_F(PpdProviderTest, ResolvePrintersNoServer) {
   auto provider =
       CreateProvider({"en", PpdCacheRunLocation::kInBackgroundThreads,
-                      PropagateLocaleToMetadataManager::kDoNotPropagate});
-  StartFakePpdServer();
-  provider->ResolveManufacturers(base::BindOnce(&ResolveManufacturersNop));
+                      PropagateLocaleToMetadataManager::kDoPropagate});
+
+  // Same as the contents in test fixture's server_contents() above,
+  // but allows us to bypass PpdProvider::ResolveManufacturers().
+  ASSERT_TRUE(provider_backdoor_.metadata_manager->SetManufacturersForTesting(
+      kDefaultManufacturersJson));
   task_environment_.RunUntilIdle();
 
-  StopFakePpdServer();
-
   provider->ResolvePrinters(
-      "manufacturer_a_en",
-      base::BindOnce(&PpdProviderTest::CaptureResolvePrinters,
-                     base::Unretained(this)));
+      "Manufacturer A", base::BindOnce(&PpdProviderTest::CaptureResolvePrinters,
+                                       base::Unretained(this)));
   provider->ResolvePrinters(
-      "manufacturer_b_en",
-      base::BindOnce(&PpdProviderTest::CaptureResolvePrinters,
-                     base::Unretained(this)));
+      "Manufacturer B", base::BindOnce(&PpdProviderTest::CaptureResolvePrinters,
+                                       base::Unretained(this)));
   task_environment_.RunUntilIdle();
   ASSERT_EQ(2UL, captured_resolve_printers_.size());
   EXPECT_EQ(PpdProvider::SERVER_ERROR, captured_resolve_printers_[0].first);

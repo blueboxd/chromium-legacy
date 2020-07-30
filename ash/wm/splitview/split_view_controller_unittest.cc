@@ -47,6 +47,7 @@
 #include "ash/wm/tablet_mode/tablet_mode_controller.h"
 #include "ash/wm/tablet_mode/tablet_mode_window_drag_delegate.h"
 #include "ash/wm/tablet_mode/tablet_mode_window_resizer.h"
+#include "ash/wm/window_properties.h"
 #include "ash/wm/window_resizer.h"
 #include "ash/wm/window_state.h"
 #include "ash/wm/window_state_delegate.h"
@@ -2734,6 +2735,21 @@ TEST_P(SplitViewControllerTest, AutoSnapFromMinimizedState) {
   window2->Show();
   EXPECT_FALSE(split_view_controller()->InSplitViewMode());
   EXPECT_FALSE(split_view_controller()->IsWindowInSplitView(window2.get()));
+
+  // Nothing should happen for transient visibility changing due to dragging.
+  Shell::Get()->tablet_mode_controller()->SetEnabledForTest(true);
+  split_view_controller()->SnapWindow(window3.get(), SplitViewController::LEFT);
+  EXPECT_TRUE(split_view_controller()->InTabletSplitViewMode());
+  EXPECT_TRUE(split_view_controller()->IsWindowInSplitView(window3.get()));
+  EXPECT_EQ(split_view_controller()->GetPositionOfSnappedWindow(window3.get()),
+            SplitViewController::LEFT);
+
+  WindowState::Get(window1.get())->Minimize();
+  window1->SetProperty(kHideDuringWindowDragging, true);
+  window1->Show();
+  EXPECT_FALSE(split_view_controller()->IsWindowInSplitView(window1.get()));
+
+  window1->ClearProperty(kHideDuringWindowDragging);
 
   // Should performs auto snapping when showing a snappable window in table
   // split view mode.

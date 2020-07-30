@@ -61,9 +61,16 @@ class ShareSheetBottomSheetContent implements BottomSheetContent, OnItemClickLis
      * @param activity The activity the share sheet belongs to.
      * @param topRowModels The PropertyModels used to build the top row.
      * @param bottomRowModels The PropertyModels used to build the bottom row.
+     * @param message The message to show on top of the share sheet.
      */
     void createRecyclerViews(
-            List<PropertyModel> topRowModels, List<PropertyModel> bottomRowModels) {
+            List<PropertyModel> topRowModels, List<PropertyModel> bottomRowModels, String message) {
+        if (!message.isEmpty()) {
+            TextView messageView = this.getContentView().findViewById(R.id.message);
+            messageView.setVisibility(View.VISIBLE);
+            messageView.setText(message);
+        }
+
         RecyclerView topRow = this.getContentView().findViewById(R.id.share_sheet_chrome_apps);
         if (topRowModels != null && topRowModels.size() > 0) {
             View divider = this.getContentView().findViewById(R.id.share_sheet_divider);

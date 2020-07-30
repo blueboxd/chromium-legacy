@@ -58,6 +58,17 @@ class MockNearbySharingService : public NearbySharingService {
               Open,
               (const ShareTarget&, StatusCodesCallback),
               (override));
+  MOCK_METHOD(NearbyShareSettings*, GetSettings, (), (override));
+  MOCK_METHOD(NearbyShareHttpNotifier*, GetHttpNotifier, (), (override));
+  MOCK_METHOD(NearbyShareLocalDeviceDataManager*,
+              GetLocalDeviceDataManager,
+              (),
+              (override));
+  MOCK_METHOD(NearbyShareContactManager*, GetContactManager, (), (override));
+  MOCK_METHOD(NearbyShareCertificateManager*,
+              GetCertificateManager,
+              (),
+              (override));
 };
 
 #endif  // CHROME_BROWSER_NEARBY_SHARING_MOCK_NEARBY_SHARING_SERVICE_H_

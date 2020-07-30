@@ -90,36 +90,6 @@ gfx::ColorSpace GetColorSpace(const avifImage* image) {
   return gfx::ColorSpace::CreateREC709();
 }
 
-// Returns the SkYUVColorSpace that matches |image|->matrixCoefficients and
-// |image|->yuvRange.
-base::Optional<SkYUVColorSpace> GetSkYUVColorSpace(const avifImage* image) {
-  const auto matrix =
-      image->matrixCoefficients == AVIF_MATRIX_COEFFICIENTS_UNSPECIFIED
-          ? AVIF_MATRIX_COEFFICIENTS_BT709
-          : image->matrixCoefficients;
-  if (image->yuvRange == AVIF_RANGE_FULL) {
-    if (matrix == AVIF_MATRIX_COEFFICIENTS_BT470BG ||
-        matrix == AVIF_MATRIX_COEFFICIENTS_BT601) {
-      return kJPEG_SkYUVColorSpace;
-    }
-    // TODO(crbug.com/1108626): Expand this list with full range BT709/BT2020 at
-    // various bit depths.
-    return base::nullopt;
-  }
-
-  if (matrix == AVIF_MATRIX_COEFFICIENTS_BT470BG ||
-      matrix == AVIF_MATRIX_COEFFICIENTS_BT601) {
-    return kRec601_SkYUVColorSpace;
-  }
-  if (matrix == AVIF_MATRIX_COEFFICIENTS_BT709) {
-    return kRec709_SkYUVColorSpace;
-  }
-  if (matrix == AVIF_MATRIX_COEFFICIENTS_BT2020_NCL) {
-    return kBT2020_SkYUVColorSpace;
-  }
-  return base::nullopt;
-}
-
 // Returns whether media::PaintCanvasVideoRenderer (PCVR) can convert the YUV
 // color space of |image| to RGB.
 // media::PaintCanvasVideoRenderer::ConvertVideoFrameToRGBPixels() uses libyuv
@@ -131,15 +101,15 @@ base::Optional<SkYUVColorSpace> GetSkYUVColorSpace(const avifImage* image) {
 // full-range YUV color spaces, but we want to use the JPEG matrix coefficients
 // only for full-range BT.601 YUV.
 bool IsColorSpaceSupportedByPCVR(const avifImage* image) {
-  base::Optional<SkYUVColorSpace> yuv_color_space = GetSkYUVColorSpace(image);
-  if (!yuv_color_space)
+  SkYUVColorSpace yuv_color_space;
+  if (!GetColorSpace(image).ToSkYUVColorSpace(image->depth, &yuv_color_space))
     return false;
   if (!image->alphaPlane)
     return true;
   // libyuv supports the alpha channel only with the I420 pixel format, which is
   // 8-bit YUV 4:2:0 with kRec601_SkYUVColorSpace.
   return image->depth == 8 && image->yuvFormat == AVIF_PIXEL_FORMAT_YUV420 &&
-         *yuv_color_space == kRec601_SkYUVColorSpace &&
+         yuv_color_space == kRec601_SkYUVColorSpace &&
          image->alphaRange == AVIF_RANGE_FULL;
 }
 
@@ -405,6 +375,7 @@ void AVIFImageDecoder::DecodeToYUV() {
     const size_t dst_row_bytes = image_planes_->RowBytes(plane);
 
     if (bit_depth_ == 8) {
+      DCHECK_EQ(image_planes_->color_type(), kGray_8_SkColorType);
       const uint8_t* src = image->yuvPlanes[plane];
       uint8_t* dst = static_cast<uint8_t*>(image_planes_->Plane(plane));
       libyuv::CopyPlane(src, src_row_bytes, dst, dst_row_bytes, width, height);
@@ -472,6 +443,11 @@ bool AVIFImageDecoder::MatchesAVIFSignature(
   input.data = reinterpret_cast<const uint8_t*>(
       fast_reader.GetConsecutiveData(0, input.size, buffer));
   return avifPeekCompatibleFileType(&input);
+}
+
+gfx::ColorTransform* AVIFImageDecoder::GetColorTransformForTesting() {
+  UpdateColorTransform(GetColorSpace(decoder_->image), decoder_->image->depth);
+  return color_transform_.get();
 }
 
 void AVIFImageDecoder::DecodeSize() {
@@ -555,6 +531,22 @@ bool AVIFImageDecoder::CanReusePreviousFrameBuffer(size_t index) const {
   // will not currently be called, this is really more for the reader than any
   // functional purpose.
   return true;
+}
+
+cc::YUVSubsampling AVIFImageDecoder::GetYUVSubsampling() const {
+  DCHECK(CanDecodeToYUV());
+  switch (decoder_->image->yuvFormat) {
+    case AVIF_PIXEL_FORMAT_YUV420:
+      return cc::YUVSubsampling::k420;
+    case AVIF_PIXEL_FORMAT_YUV422:
+      return cc::YUVSubsampling::k422;
+    case AVIF_PIXEL_FORMAT_YUV444:
+      return cc::YUVSubsampling::k444;
+    case AVIF_PIXEL_FORMAT_YUV400:
+    case AVIF_PIXEL_FORMAT_NONE:
+      NOTREACHED();
+      return cc::YUVSubsampling::kUnknown;
+  }
 }
 
 bool AVIFImageDecoder::MaybeCreateDemuxer() {
@@ -678,7 +670,8 @@ bool AVIFImageDecoder::MaybeCreateDemuxer() {
   //   color space conversion, so we don't decode to YUV.
   allow_decode_to_yuv_ = yuv_format != AVIF_PIXEL_FORMAT_YUV400 &&
                          !decoder_->alphaPresent && decoded_frame_count_ == 1 &&
-                         (yuv_color_space_ = GetSkYUVColorSpace(container)) &&
+                         GetColorSpace(container).ToSkYUVColorSpace(
+                             container->depth, &yuv_color_space_.emplace()) &&
                          !ColorTransform();
   return SetSize(container->width, container->height);
 }

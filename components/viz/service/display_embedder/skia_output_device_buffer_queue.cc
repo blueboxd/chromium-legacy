@@ -35,6 +35,14 @@ SkiaOutputDeviceBufferQueue::SkiaOutputDeviceBufferQueue(
   capabilities_.only_invalidates_damage_rect = false;
   capabilities_.number_of_buffers = 3;
 
+// TODO(crbug.com/1110443): This ifdef was added to unblock SkiaRenderer GL on
+// Chrome OS, but theoretically, this should be true across all buffer queue
+// platforms. Remove this ifdef once we verify that supports_pre_transform
+// does not cause any regressions on Android.
+#if defined(OS_CHROMEOS)
+  capabilities_.supports_pre_transform = true;
+#endif  // defined(OS_CHROMEOS)
+
   // Force the number of max pending frames to one when the switch
   // "double-buffer-compositing" is passed.
   // This will keep compositing in double buffered mode assuming |buffer_queue|

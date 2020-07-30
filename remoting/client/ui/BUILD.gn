@@ -10,7 +10,10 @@ source_set("ui") {
     "fling_tracker.h",
   ]
 
-  deps = [ ":ui_manipulation" ]
+  deps = [
+    ":ui_manipulation",
+    "//base",
+  ]
 
   public_deps = [
     "//remoting/proto",
@@ -30,7 +33,7 @@ source_set("ui_manipulation") {
     "view_matrix.h",
   ]
 
-  deps = []
+  deps = [ "//base" ]
 
   public_deps = [
     "//remoting/proto",
@@ -50,6 +53,9 @@ source_set("unit_tests") {
 
   deps = [
     ":ui",
+    "//base",
+    "//base/test:test_support",
+    "//remoting/client/ui:ui_manipulation",
     "//testing/gmock",
     "//testing/gtest",
   ]

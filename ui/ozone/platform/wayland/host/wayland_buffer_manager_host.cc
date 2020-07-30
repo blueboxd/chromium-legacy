@@ -172,10 +172,10 @@ class WaylandBufferManagerHost::Surface {
 
   bool HasBuffers() const { return !buffers_.empty(); }
 
-  void OnWindowRemoved() { wayland_surface_ = nullptr; }
-  bool HasWindow() const { return !!wayland_surface_; }
+  void OnSurfaceRemoved() { wayland_surface_ = nullptr; }
+  bool HasSurface() const { return !!wayland_surface_; }
 
-  void OnWindowConfigured() {
+  void OnSurfaceConfigured() {
     if (configured_)
       return;
 
@@ -593,25 +593,26 @@ WaylandBufferManagerHost::~WaylandBufferManagerHost() {
 
 void WaylandBufferManagerHost::OnWindowAdded(WaylandWindow* window) {
   DCHECK(window);
-  surfaces_[window->GetWidget()] =
+  surfaces_[window->root_surface()] =
       std::make_unique<Surface>(window->root_surface(), connection_, this);
 }
 
 void WaylandBufferManagerHost::OnWindowRemoved(WaylandWindow* window) {
   DCHECK(window);
-  auto it = surfaces_.find(window->GetWidget());
+  auto it = surfaces_.find(window->root_surface());
   DCHECK(it != surfaces_.end());
-  if (it->second->HasBuffers())
-    it->second->OnWindowRemoved();
-  else
-    surfaces_.erase(it);
+  if (it->second->HasBuffers()) {
+    it->second->OnSurfaceRemoved();
+    surface_graveyard_.emplace_back(std::move(it->second));
+  }
+  surfaces_.erase(it);
 }
 
 void WaylandBufferManagerHost::OnWindowConfigured(WaylandWindow* window) {
   DCHECK(window);
-  auto it = surfaces_.find(window->GetWidget());
+  auto it = surfaces_.find(window->root_surface());
   DCHECK(it != surfaces_.end());
-  it->second->OnWindowConfigured();
+  it->second->OnSurfaceConfigured();
 }
 
 void WaylandBufferManagerHost::SetTerminateGpuCallback(
@@ -745,7 +746,10 @@ void WaylandBufferManagerHost::CommitBuffer(gfx::AcceleratedWidget widget,
   if (widget == gfx::kNullAcceleratedWidget) {
     error_message_ = "Invalid widget.";
   } else if (ValidateBufferIdFromGpu(buffer_id)) {
-    Surface* surface = GetSurface(widget);
+    auto* window = connection_->wayland_window_manager()->GetWindow(widget);
+    if (!window)
+      return;
+    Surface* surface = GetSurface(window->root_surface());
     if (!surface)
       return;
 
@@ -781,20 +785,39 @@ void WaylandBufferManagerHost::DestroyBuffer(gfx::AcceleratedWidget widget,
   // has been stored in the |anonymous_buffers_|.
   // 2) if the |widget| is null, always search a buffer with the |buffer_id| in
   // the |anonymous_buffers_|.
+  // 3) if the |widget| hints at a non-existing window, it's likely that the
+  // window has been destroyed. In that case, the surface containing the buffer
+  // is in the graveyard.
 
   uint32_t destroyed_count = 0u;
 
-  Surface* surface = GetSurface(widget);
-  if (surface) {
-    destroyed_count = surface->DestroyBuffer(buffer_id);
-    if (!surface->HasBuffers() && !surface->HasWindow())
-      surfaces_.erase(widget);
+  auto* window = connection_->wayland_window_manager()->GetWindow(widget);
+  if (window) {
+    // Case 1).
+    Surface* surface = GetSurface(window->root_surface());
+    if (surface) {
+      destroyed_count = surface->DestroyBuffer(buffer_id);
+      if (!surface->HasBuffers() && !surface->HasSurface())
+        surfaces_.erase(window->root_surface());
+    }
+  } else {
+    // Case 3)
+    auto it = surface_graveyard_.begin();
+    while (it != surface_graveyard_.end()) {
+      destroyed_count += (*it)->DestroyBuffer(buffer_id);
+      if (!(*it)->HasBuffers() && !(*it)->HasSurface()) {
+        surface_graveyard_.erase(it++);
+      } else {
+        ++it;
+      }
+    }
   }
 
   // Ensure that we can't destroy more than 1 buffer. This can be 0 as well
   // if no buffers are destroyed.
   DCHECK_LE(destroyed_count, 1u);
 
+  // Case 2)
   if (destroyed_count == 1u || DestroyAnonymousBuffer(buffer_id))
     return;
 
@@ -804,8 +827,8 @@ void WaylandBufferManagerHost::DestroyBuffer(gfx::AcceleratedWidget widget,
 }
 
 void WaylandBufferManagerHost::ResetSurfaceContents(
-    gfx::AcceleratedWidget widget) {
-  auto* surface = GetSurface(widget);
+    WaylandSurface* wayland_surface) {
+  auto* surface = GetSurface(wayland_surface);
   DCHECK(surface);
   surface->ResetSurfaceContents();
 }
@@ -841,8 +864,8 @@ bool WaylandBufferManagerHost::CreateBuffer(const gfx::Size& size,
 }
 
 WaylandBufferManagerHost::Surface* WaylandBufferManagerHost::GetSurface(
-    gfx::AcceleratedWidget widget) const {
-  auto it = surfaces_.find(widget);
+    WaylandSurface* wayland_surface) const {
+  auto it = surfaces_.find(wayland_surface);
   return it != surfaces_.end() ? it->second.get() : nullptr;
 }
 

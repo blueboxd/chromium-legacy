@@ -309,14 +309,13 @@ void ShillPropertyHandler::OnPropertyChanged(const std::string& key,
 // Private methods
 
 void ShillPropertyHandler::ManagerPropertiesCallback(
-    DBusMethodCallStatus call_status,
-    base::Value properties) {
-  if (call_status != DBUS_METHOD_CALL_SUCCESS) {
-    NET_LOG(ERROR) << "ManagerPropertiesCallback Failed: " << call_status;
+    base::Optional<base::Value> properties) {
+  if (!properties) {
+    NET_LOG(ERROR) << "ManagerPropertiesCallback Failed";
     return;
   }
   NET_LOG(EVENT) << "ManagerPropertiesCallback: Success";
-  for (const auto& item : properties.DictItems()) {
+  for (const auto& item : properties->DictItems()) {
     ManagerPropertyChanged(item.first, item.second);
   }
 
@@ -554,25 +553,24 @@ void ShillPropertyHandler::DisableTechnologyFailed(
 void ShillPropertyHandler::GetPropertiesCallback(
     ManagedState::ManagedType type,
     const std::string& path,
-    DBusMethodCallStatus call_status,
-    base::Value properties) {
+    base::Optional<base::Value> properties) {
   pending_updates_[type].erase(path);
-  if (call_status != DBUS_METHOD_CALL_SUCCESS) {
+  if (!properties) {
     // The shill service no longer exists.  This can happen when a network
     // has been removed.
     return;
   }
   NET_LOG(DEBUG) << "GetProperties received for " << NetworkPathId(path);
-  listener_->UpdateManagedStateProperties(type, path, properties);
+  listener_->UpdateManagedStateProperties(type, path, *properties);
 
   if (type == ManagedState::MANAGED_TYPE_NETWORK) {
     // Request IPConfig properties.
-    const base::Value* value = properties.FindKey(shill::kIPConfigProperty);
+    const base::Value* value = properties->FindKey(shill::kIPConfigProperty);
     if (value)
       RequestIPConfig(type, path, *value);
   } else if (type == ManagedState::MANAGED_TYPE_DEVICE) {
     // Clear and request IPConfig properties for each entry in IPConfigs.
-    const base::Value* value = properties.FindKey(shill::kIPConfigsProperty);
+    const base::Value* value = properties->FindKey(shill::kIPConfigsProperty);
     if (value)
       RequestIPConfigsList(type, path, *value);
   }
@@ -639,17 +637,16 @@ void ShillPropertyHandler::GetIPConfigCallback(
     ManagedState::ManagedType type,
     const std::string& path,
     const std::string& ip_config_path,
-    DBusMethodCallStatus call_status,
-    base::Value properties) {
-  if (call_status != DBUS_METHOD_CALL_SUCCESS) {
+    base::Optional<base::Value> properties) {
+  if (!properties) {
     // IP Config properties not available. Shill will emit a property change
     // when they are.
     NET_LOG(EVENT) << "Failed to get IP Config properties: " << ip_config_path
-                   << ": " << call_status << ", For: " << NetworkPathId(path);
+                   << ", For: " << NetworkPathId(path);
     return;
   }
   NET_LOG(EVENT) << "IP Config properties received: " << NetworkPathId(path);
-  listener_->UpdateIPConfigProperties(type, path, ip_config_path, properties);
+  listener_->UpdateIPConfigProperties(type, path, ip_config_path, *properties);
 }
 
 }  // namespace internal

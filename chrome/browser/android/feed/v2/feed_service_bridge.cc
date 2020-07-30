@@ -56,6 +56,11 @@ DisplayMetrics FeedServiceBridge::GetDisplayMetrics() {
   return result;
 }
 
+void FeedServiceBridge::ClearAll() {
+  JNIEnv* env = base::android::AttachCurrentThread();
+  Java_FeedServiceBridge_clearAll(env);
+}
+
 bool FeedServiceBridge::IsEnabled() {
   Profile* profile = ProfileManager::GetLastUsedProfile();
   return FeedService::IsEnabled(*profile->GetPrefs());

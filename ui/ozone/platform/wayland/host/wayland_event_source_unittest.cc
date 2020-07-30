@@ -79,7 +79,9 @@ TEST_P(WaylandEventSourceTest, CheckPointerButtonHandling) {
   uint32_t serial = 0;
   uint32_t tstamp = 0;
   wl_resource* surface_res =
-      server_.GetObject<wl::MockSurface>(window1->GetWidget())->resource();
+      server_
+          .GetObject<wl::MockSurface>(window1->root_surface()->GetSurfaceId())
+          ->resource();
   wl_resource* pointer_res = server_.seat()->pointer()->resource();
 
   wl_pointer_send_enter(pointer_res, serial++, surface_res, 0, 0);

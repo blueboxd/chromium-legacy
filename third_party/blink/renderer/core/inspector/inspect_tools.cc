@@ -14,6 +14,7 @@
 #include "third_party/blink/renderer/core/css/css_computed_style_declaration.h"
 #include "third_party/blink/renderer/core/display_lock/display_lock_utilities.h"
 #include "third_party/blink/renderer/core/dom/element.h"
+#include "third_party/blink/renderer/core/dom/node_computed_style.h"
 #include "third_party/blink/renderer/core/dom/shadow_root.h"
 #include "third_party/blink/renderer/core/dom/static_node_list.h"
 #include "third_party/blink/renderer/core/frame/local_frame.h"
@@ -410,6 +411,78 @@ GridHighlightTool::GetGridInspectorHighlightsAsJson() const {
     result->setValue("gridHighlights", std::move(highlights));
   }
   return result;
+}
+
+// SourceOrderTool -----------------------------------------------------------
+
+SourceOrderTool::SourceOrderTool(
+    Node* node,
+    std::unique_ptr<InspectorSourceOrderConfig> source_order_config)
+    : source_order_config_(std::move(source_order_config)) {
+  if (Node* locked_ancestor =
+          DisplayLockUtilities::HighestLockedExclusiveAncestor(*node)) {
+    node_ = locked_ancestor;
+  } else {
+    node_ = node;
+  }
+}
+
+void SourceOrderTool::Draw(float scale) {
+  DrawParentNode();
+
+  // Draw child outlines and labels.
+  for (Node& child_node : NodeTraversal::ChildrenOf(*node_)) {
+    // Don't draw if it's not an element or is not the direct child of the
+    // parent node.
+    if (!child_node.IsElementNode())
+      continue;
+    // Don't draw if it's not rendered/would be ignored by a screen reader.
+    if (child_node.GetComputedStyle()) {
+      bool display_none =
+          child_node.GetComputedStyle()->Display() == EDisplay::kNone;
+      bool visibility_hidden =
+          child_node.GetComputedStyle()->Visibility() == EVisibility::kHidden;
+      if (display_none || visibility_hidden)
+        continue;
+    }
+    DrawNode(&child_node);
+  }
+}
+
+void SourceOrderTool::DrawNode(Node* node) {
+  InspectorSourceOrderHighlight highlight(
+      node, source_order_config_->child_outline_color);
+  overlay_->EvaluateInOverlay("drawSourceOrder", highlight.AsProtocolValue());
+}
+
+void SourceOrderTool::DrawParentNode() {
+  InspectorSourceOrderHighlight highlight(
+      node_.Get(), source_order_config_->parent_outline_color);
+  overlay_->EvaluateInOverlay("drawSourceOrder", highlight.AsProtocolValue());
+}
+
+bool SourceOrderTool::HideOnHideHighlight() {
+  return true;
+}
+
+bool SourceOrderTool::HideOnMouseMove() {
+  return false;
+}
+
+int SourceOrderTool::GetDataResourceId() {
+  return IDR_INSPECT_TOOL_SOURCE_ORDER_JS;
+}
+
+std::unique_ptr<protocol::DictionaryValue>
+SourceOrderTool::GetNodeInspectorSourceOrderHighlightAsJson() const {
+  InspectorSourceOrderHighlight highlight(
+      node_.Get(), source_order_config_->parent_outline_color);
+  return highlight.AsProtocolValue();
+}
+
+void SourceOrderTool::Trace(Visitor* visitor) const {
+  InspectTool::Trace(visitor);
+  visitor->Trace(node_);
 }
 
 // NearbyDistanceTool ----------------------------------------------------------

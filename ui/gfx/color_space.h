@@ -304,10 +304,14 @@ class COLOR_SPACE_EXPORT ColorSpace {
   // buffer.
   const _GLcolorSpace* AsGLColorSpace() const;
 
-  // For YUV color spaces, return the closest SkYUVColorSpace.
-  // Returns true if a close match is found. Otherwise, leaves *out unchanged
-  // and returns false.
-  bool ToSkYUVColorSpace(SkYUVColorSpace* out) const;
+  // For YUV color spaces, return the closest SkYUVColorSpace. Returns true if a
+  // close match is found. Otherwise, leaves *out unchanged and returns false.
+  // If |matrix_id| is MatrixID::BT2020_NCL and |bit_depth| is provided, a bit
+  // depth appropriate SkYUVColorSpace will be provided.
+  bool ToSkYUVColorSpace(int bit_depth, SkYUVColorSpace* out) const;
+  bool ToSkYUVColorSpace(SkYUVColorSpace* out) const {
+    return ToSkYUVColorSpace(kDefaultBitDepth, out);
+  }
 
   void GetPrimaryMatrix(skcms_Matrix3x3* to_XYZD50) const;
   void GetPrimaryMatrix(SkMatrix44* to_XYZD50) const;

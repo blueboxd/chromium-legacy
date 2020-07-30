@@ -109,7 +109,8 @@ class WaylandWindowDragControllerTest : public WaylandTest,
 
   void SendDndEnter(WaylandWindow* window) {
     EXPECT_TRUE(window);
-    OfferAndEnter(server_.GetObject<wl::MockSurface>(window->GetWidget()));
+    OfferAndEnter(server_.GetObject<wl::MockSurface>(
+        window->root_surface()->GetSurfaceId()));
   }
 
   void SendDndLeave() {
@@ -124,7 +125,8 @@ class WaylandWindowDragControllerTest : public WaylandTest,
 
   void SendPointerEnter(WaylandWindow* window,
                         MockPlatformWindowDelegate* delegate) {
-    auto* surface = server_.GetObject<wl::MockSurface>(window->GetWidget());
+    auto* surface = server_.GetObject<wl::MockSurface>(
+        window->root_surface()->GetSurfaceId());
     wl_pointer_send_enter(pointer_->resource(), NextSerial(),
                           surface->resource(), 0, 0);
     EXPECT_CALL(*delegate, DispatchEvent(_)).Times(1);
@@ -135,7 +137,8 @@ class WaylandWindowDragControllerTest : public WaylandTest,
 
   void SendPointerLeave(WaylandWindow* window,
                         MockPlatformWindowDelegate* delegate) {
-    auto* surface = server_.GetObject<wl::MockSurface>(window->GetWidget());
+    auto* surface = server_.GetObject<wl::MockSurface>(
+        window->root_surface()->GetSurfaceId());
     wl_pointer_send_leave(pointer_->resource(), NextSerial(),
                           surface->resource());
     EXPECT_CALL(*delegate, DispatchEvent(_)).Times(1);

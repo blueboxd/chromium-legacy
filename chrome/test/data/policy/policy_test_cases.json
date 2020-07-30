@@ -537,10 +537,21 @@
   },
 
   "ExternalPrintServersWhitelist": {
+    "note": "This policy is deprecated, see http://crbug.com/1098046.",
     "os": ["chromeos"],
     "policy_pref_mapping_test": [
       {
         "policies": { "ExternalPrintServersWhitelist": ["id4", "id7", "id10"]},
+        "prefs": { "native_printing.external_print_servers_whitelist": {} }
+      }
+    ]
+  },
+
+  "ExternalPrintServersAllowlist": {
+    "os": ["chromeos"],
+    "policy_pref_mapping_test": [
+      {
+        "policies": { "ExternalPrintServersAllowlist": ["id4", "id7", "id10"]},
         "prefs": { "native_printing.external_print_servers_whitelist": {} }
       }
     ]

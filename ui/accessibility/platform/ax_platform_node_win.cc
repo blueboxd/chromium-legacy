@@ -5539,7 +5539,7 @@ int32_t AXPlatformNodeWin::ComputeIA2State() {
   const AXNodeData& data = GetData();
   int32_t ia2_state = IA2_STATE_OPAQUE;
 
-  if (HasIntAttribute(ax::mojom::IntAttribute::kCheckedState))
+  if (IsPlatformCheckable())
     ia2_state |= IA2_STATE_CHECKABLE;
 
   if (HasIntAttribute(ax::mojom::IntAttribute::kInvalidState) &&
@@ -7297,6 +7297,13 @@ base::string16 AXPlatformNodeWin::GetValue() const {
   return value;
 }
 
+bool AXPlatformNodeWin::IsPlatformCheckable() const {
+  if (GetData().role == ax::mojom::Role::kToggleButton)
+    return false;
+
+  return AXPlatformNodeBase::IsPlatformCheckable();
+}
+
 bool AXPlatformNodeWin::ShouldNodeHaveFocusableState(
     const AXNodeData& data) const {
   switch (data.role) {
@@ -7588,6 +7595,10 @@ base::Optional<PROPERTYID> AXPlatformNodeWin::MojoEventToUIAProperty(
     case ax::mojom::Event::kRowCollapsed:
     case ax::mojom::Event::kRowExpanded:
       return UIA_ExpandCollapseExpandCollapseStatePropertyId;
+    case ax::mojom::Event::kSelection:
+    case ax::mojom::Event::kSelectionAdd:
+    case ax::mojom::Event::kSelectionRemove:
+      return UIA_SelectionItemIsSelectedPropertyId;
     default:
       return base::nullopt;
   }

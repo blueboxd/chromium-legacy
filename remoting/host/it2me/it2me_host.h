@@ -58,8 +58,17 @@ enum It2MeHostState {
 class It2MeHost : public base::RefCountedThreadSafe<It2MeHost>,
                   public HostStatusObserver {
  public:
-  using CreateSignalStrategyCallback =
-      base::OnceCallback<std::unique_ptr<SignalStrategy>(
+  struct DeferredConnectContext {
+    DeferredConnectContext();
+    ~DeferredConnectContext();
+
+    std::unique_ptr<LogToServer> log_to_server;
+    std::unique_ptr<RegisterSupportHostRequest> register_request;
+    std::unique_ptr<SignalStrategy> signal_strategy;
+  };
+
+  using CreateDeferredConnectContext =
+      base::OnceCallback<std::unique_ptr<DeferredConnectContext>(
           ChromotingHostContext*)>;
 
   class Observer {
@@ -98,10 +107,8 @@ class It2MeHost : public base::RefCountedThreadSafe<It2MeHost>,
       std::unique_ptr<ChromotingHostContext> context,
       std::unique_ptr<base::DictionaryValue> policies,
       std::unique_ptr<It2MeConfirmationDialogFactory> dialog_factory,
-      std::unique_ptr<RegisterSupportHostRequest> register_request,
-      std::unique_ptr<LogToServer> log_to_server,
       base::WeakPtr<It2MeHost::Observer> observer,
-      CreateSignalStrategyCallback create_signal_strategy,
+      CreateDeferredConnectContext create_context,
       const std::string& username,
       const protocol::IceConfig& ice_config);
 
@@ -150,11 +157,9 @@ class It2MeHost : public base::RefCountedThreadSafe<It2MeHost>,
       It2MeConfirmationDialog::Result result);
 
   // Task posted to the network thread from Connect().
-  void ConnectOnNetworkThread(
-      const std::string& username,
-      const protocol::IceConfig& ice_config,
-      std::unique_ptr<RegisterSupportHostRequest> register_request,
-      CreateSignalStrategyCallback create_signal_strategy);
+  void ConnectOnNetworkThread(const std::string& username,
+                              const protocol::IceConfig& ice_config,
+                              CreateDeferredConnectContext create_context);
 
   // Called when the support host registration completes.
   void OnReceivedSupportID(const std::string& support_id,

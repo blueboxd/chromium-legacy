@@ -402,10 +402,16 @@ void ConvertVideoFrameToRGBPixelsTask(const VideoFrame* video_frame,
   uint8_t* pixels = static_cast<uint8_t*>(rgb_pixels) +
                     row_bytes * chunk_start * rows_per_chunk;
 
-  // TODO(hubbe): This should really default to the rec709 colorspace.
-  // https://crbug.com/828599
+  // TODO(crbug.com/828599): This should default to BT.709 color space.
   SkYUVColorSpace color_space = kRec601_SkYUVColorSpace;
   video_frame->ColorSpace().ToSkYUVColorSpace(&color_space);
+
+  // Downgrade unsupported color spaces to supported ones. libyuv doesn't have
+  // support for these, so this is best effort.
+  if (color_space == kBT2020_8bit_Full_SkYUVColorSpace)
+    color_space = kBT2020_SkYUVColorSpace;
+  else if (color_space == kRec709_Full_SkYUVColorSpace)
+    color_space = kRec709_Limited_SkYUVColorSpace;
 
   if (!video_frame->data(VideoFrame::kUPlane) &&
       !video_frame->data(VideoFrame::kVPlane)) {

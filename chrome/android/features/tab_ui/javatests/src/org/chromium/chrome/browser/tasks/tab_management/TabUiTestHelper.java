@@ -16,7 +16,6 @@ import static androidx.test.espresso.matcher.ViewMatchers.withId;
 import static androidx.test.espresso.matcher.ViewMatchers.withParent;
 
 import static org.hamcrest.Matchers.allOf;
-import static org.hamcrest.Matchers.instanceOf;
 import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.not;
 import static org.junit.Assert.assertEquals;
@@ -40,7 +39,6 @@ import androidx.annotation.Nullable;
 import androidx.recyclerview.widget.RecyclerView;
 import androidx.test.espresso.NoMatchingRootException;
 import androidx.test.espresso.NoMatchingViewException;
-import androidx.test.espresso.Root;
 import androidx.test.espresso.UiController;
 import androidx.test.espresso.ViewAction;
 import androidx.test.espresso.ViewAssertion;
@@ -50,9 +48,7 @@ import androidx.test.espresso.action.Press;
 import androidx.test.espresso.action.Swipe;
 import androidx.test.espresso.contrib.RecyclerViewActions;
 
-import org.hamcrest.Description;
 import org.hamcrest.Matcher;
-import org.hamcrest.TypeSafeMatcher;
 
 import org.chromium.base.ContextUtils;
 import org.chromium.chrome.browser.ChromeTabbedActivity;
@@ -62,7 +58,6 @@ import org.chromium.chrome.browser.tab.TabSelectionType;
 import org.chromium.chrome.browser.tabmodel.TabModel;
 import org.chromium.chrome.browser.tasks.pseudotab.PseudoTab;
 import org.chromium.chrome.browser.tasks.tab_groups.TabGroupModelFilter;
-import org.chromium.chrome.browser.widget.ScrimView;
 import org.chromium.chrome.tab_ui.R;
 import org.chromium.chrome.test.ChromeTabbedActivityTestRule;
 import org.chromium.chrome.test.util.ApplicationTestUtils;
@@ -553,48 +548,6 @@ public class TabUiTestHelper {
         CriteriaHelper.pollInstrumentationThread(jpegFile::exists,
                 "The thumbnail " + jpegFile.getName() + " is not found",
                 DEFAULT_MAX_TIME_TO_POLL * 10, DEFAULT_POLLING_INTERVAL);
-    }
-
-    /**
-     * Exit the PopupWindow dialog by clicking the outer ScrimView.
-     * @param cta  The current running activity.
-     */
-    static void clickScrimToExitDialog(ChromeTabbedActivity cta) {
-        onView(instanceOf(ScrimView.class))
-                .inRoot(new TypeSafeMatcher<Root>() {
-                    @Override
-                    protected boolean matchesSafely(Root root) {
-                        // Make sure we match the root window that takes up the whole screen.
-                        return root.getDecorView() != cta.getWindow().getDecorView()
-                                && root.getDecorView().getWidth()
-                                >= cta.getCompositorViewHolder().getWidth()
-                                && root.getDecorView().getHeight()
-                                >= cta.getCompositorViewHolder().getHeight();
-                    }
-
-                    @Override
-                    public void describeTo(Description description) {
-                        description.appendText("is full screen PopupWindow");
-                    }
-                })
-                .perform(new ViewAction() {
-                    @Override
-                    public Matcher<View> getConstraints() {
-                        return isDisplayed();
-                    }
-
-                    @Override
-                    public String getDescription() {
-                        return "click on ScrimView";
-                    }
-
-                    @Override
-                    public void perform(UiController uiController, View view) {
-                        assertTrue(view instanceof ScrimView);
-                        ScrimView scrimView = (ScrimView) view;
-                        scrimView.performClick();
-                    }
-                });
     }
 
     /**

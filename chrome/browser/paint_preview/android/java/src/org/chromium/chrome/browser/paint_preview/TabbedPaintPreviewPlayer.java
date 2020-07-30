@@ -79,10 +79,26 @@ public class TabbedPaintPreviewPlayer implements TabViewProvider, UserData {
         mTab = tab;
         mPaintPreviewTabService = PaintPreviewTabServiceFactory.getServiceInstance();
         mTabObserver = new EmptyTabObserver() {
+            private boolean mFirstPaintHappened;
+            private boolean mPageLoadFinished;
+
             @Override
             public void didFirstVisuallyNonEmptyPaint(Tab tab) {
-                if (!isShowingAndNeedsBadge()) return;
+                mFirstPaintHappened = true;
+                maybeRemovePaintPreview();
+            }
 
+            @Override
+            public void onPageLoadFinished(Tab tab, String url) {
+                mPageLoadFinished = true;
+                maybeRemovePaintPreview();
+            }
+
+            private void maybeRemovePaintPreview() {
+                if (!isShowingAndNeedsBadge() || !mFirstPaintHappened || !mPageLoadFinished) return;
+
+                mFirstPaintHappened = false;
+                mPageLoadFinished = false;
                 long delayMs = ChromeFeatureList.getFieldTrialParamByFeatureAsInt(
                         ChromeFeatureList.PAINT_PREVIEW_SHOW_ON_STARTUP, INITIAL_REMOVE_DELAY_PARAM,
                         DEFAULT_INITIAL_REMOVE_DELAY_MS);

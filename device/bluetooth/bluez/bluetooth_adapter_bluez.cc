@@ -647,18 +647,25 @@ void BluetoothAdapterBlueZ::AdapterPropertyChanged(
 }
 
 void BluetoothAdapterBlueZ::BatteryAdded(const dbus::ObjectPath& object_path) {
-  // TODO(b/160905767): Handle it by updating device battery percentage field.
+  BLUETOOTH_LOG(DEBUG) << "Battery added " << object_path.value();
+
+  UpdateDeviceBatteryLevelFromBatteryClient(object_path);
 }
 
 void BluetoothAdapterBlueZ::BatteryRemoved(
     const dbus::ObjectPath& object_path) {
-  // TODO(b/160905767): Handle it by updating device battery percentage field.
+  BLUETOOTH_LOG(DEBUG) << "Battery removed " << object_path.value();
+
+  UpdateDeviceBatteryLevelFromBatteryClient(object_path);
 }
 
 void BluetoothAdapterBlueZ::BatteryPropertyChanged(
     const dbus::ObjectPath& object_path,
     const std::string& property_name) {
-  // TODO(b/160905767): Handle it by updating device battery percentage field.
+  BLUETOOTH_LOG(DEBUG) << "Battery property changed " << object_path.value();
+
+  if (property_name == bluetooth_battery::kPercentageProperty)
+    UpdateDeviceBatteryLevelFromBatteryClient(object_path);
 }
 
 void BluetoothAdapterBlueZ::DeviceAdded(const dbus::ObjectPath& object_path) {
@@ -1874,6 +1881,31 @@ void BluetoothAdapterBlueZ::ServiceRecordErrorConnector(
   }
 
   std::move(error_callback).Run(code);
+}
+
+void BluetoothAdapterBlueZ::UpdateDeviceBatteryLevelFromBatteryClient(
+    const dbus::ObjectPath& object_path) {
+  BluetoothDevice* device = GetDeviceWithPath(object_path);
+
+  if (!device) {
+    BLUETOOTH_LOG(ERROR) << "Trying to update battery for non-existing device";
+    return;
+  }
+
+  bluez::BluetoothBatteryClient::Properties* properties =
+      bluez::BluezDBusManager::Get()
+          ->GetBluetoothBatteryClient()
+          ->GetProperties(object_path);
+
+  if (properties && properties->percentage.is_valid()) {
+    device->SetBatteryPercentage(properties->percentage.value());
+    return;
+  }
+
+  // |properties| is null or properties->percentage is not valid, that means
+  // BlueZ has removed the battery info from the device and we should clear our
+  // value as well.
+  device->SetBatteryPercentage(base::nullopt);
 }
 
 }  // namespace bluez

@@ -9,6 +9,7 @@
 #include <limits>
 #include <list>
 #include <memory>
+#include <set>
 #include <utility>
 
 #include "base/check_op.h"
@@ -18,6 +19,7 @@
 #include "base/no_destructor.h"
 #include "base/notreached.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/synchronization/lock.h"
 #include "skia/ext/skia_utils_base.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "ui/base/clipboard/clipboard_constants.h"
@@ -32,6 +34,51 @@
 #include "ui/ozone/buildflags.h"
 
 namespace ui {
+
+namespace {
+
+// Returns the registry which tracks all instances of ClipboardNonBacked in
+// existence. This allows us to determine if any arbitrary Clipboard pointer in
+// fact points to a ClipboardNonBacked instance. Only if a pointer exists in
+// this registry is it safe to cast to ClipboardNonBacked*.
+std::set<const ClipboardNonBacked*>* GetInstanceRegistry() {
+  static base::NoDestructor<std::set<const ClipboardNonBacked*>> registry;
+  return registry.get();
+}
+
+// The ClipboardNonBacked instance registry can be accessed by multiple threads.
+// Any inspection/modification of the instance registry must only be performed
+// while this lock is held.
+base::Lock& GetInstanceRegistryLock() {
+  static base::NoDestructor<base::Lock> registry_lock;
+  return *registry_lock;
+}
+
+// Registers the specified |clipboard| as an instance of ClipboardNonBacked.
+// Registration should occur during |clipboard| construction and registration
+// should be maintained until |clipboard| is destroyed. This allows us to check
+// if any arbitrary Clipboard* is safe to cast.
+void RegisterInstance(const ClipboardNonBacked* clipboard) {
+  base::AutoLock lock(GetInstanceRegistryLock());
+  GetInstanceRegistry()->insert(clipboard);
+}
+
+// Unregisters the specified |clipboard| as a instance of ClipboardNonBacked.
+// This should only be done when destroying |clipboard|.
+void UnregisterInstance(const ClipboardNonBacked* clipboard) {
+  base::AutoLock lock(GetInstanceRegistryLock());
+  GetInstanceRegistry()->erase(clipboard);
+}
+
+// Checks if |clipboard| is registered as an instance of ClipboardNonBacked.
+// Only if this method returns true is it safe to cast |clipboard| to
+// ClipboardNonBacked*.
+bool IsRegisteredInstance(const Clipboard* clipboard) {
+  base::AutoLock lock(GetInstanceRegistryLock());
+  return base::Contains(*GetInstanceRegistry(), clipboard);
+}
+
+}  // namespace
 
 // Simple, internal implementation of a clipboard, handling things like format
 // conversion, sequence numbers, etc.
@@ -294,14 +341,34 @@ Clipboard* Clipboard::Create() {
 }
 #endif
 
+// static
+ClipboardNonBacked* ClipboardNonBacked::GetForCurrentThread() {
+  auto* clipboard = Clipboard::GetForCurrentThread();
+  CHECK(IsRegisteredInstance(clipboard));  // Ensure type safety.
+  return static_cast<ClipboardNonBacked*>(clipboard);
+}
+
 // ClipboardNonBacked implementation.
 ClipboardNonBacked::ClipboardNonBacked()
     : clipboard_internal_(std::make_unique<ClipboardInternal>()) {
   DCHECK(CalledOnValidThread());
+  RegisterInstance(this);
 }
 
 ClipboardNonBacked::~ClipboardNonBacked() {
   DCHECK(CalledOnValidThread());
+  UnregisterInstance(this);
+}
+
+const ClipboardData* ClipboardNonBacked::GetClipboardData() const {
+  DCHECK(CalledOnValidThread());
+  return clipboard_internal_->GetData();
+}
+
+void ClipboardNonBacked::WriteClipboardData(
+    std::unique_ptr<ClipboardData> data) {
+  DCHECK(CalledOnValidThread());
+  clipboard_internal_->WriteData(std::move(data));
 }
 
 void ClipboardNonBacked::OnPreShutdown() {}

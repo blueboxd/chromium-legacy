@@ -22,13 +22,13 @@ WaylandSurface::~WaylandSurface() {
   }
 }
 
-gfx::AcceleratedWidget WaylandSurface::GetWidget() const {
+uint32_t WaylandSurface::GetSurfaceId() const {
   if (!surface_)
-    return gfx::kNullAcceleratedWidget;
+    return 0u;
   return surface_.id();
 }
 
-gfx::AcceleratedWidget WaylandSurface::GetRootWidget() const {
+gfx::AcceleratedWidget WaylandSurface::GetWidget() const {
   return root_window_->GetWidget();
 }
 

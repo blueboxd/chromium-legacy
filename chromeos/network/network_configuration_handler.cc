@@ -124,9 +124,9 @@ class NetworkConfigurationHandler::ProfileEntryDeleter {
   }
 
  private:
-  void GetProfileEntriesToDeleteCallback(DBusMethodCallStatus call_status,
-                                         base::Value profile_entries) {
-    if (call_status != DBUS_METHOD_CALL_SUCCESS) {
+  void GetProfileEntriesToDeleteCallback(
+      base::Optional<base::Value> profile_entries) {
+    if (!profile_entries) {
       InvokeErrorCallback(service_path_, std::move(error_callback_),
                           "GetLoadableProfileEntriesFailed");
       // ProfileEntryDeleterCompleted will delete this.
@@ -135,7 +135,7 @@ class NetworkConfigurationHandler::ProfileEntryDeleter {
       return;
     }
 
-    for (const auto& iter : profile_entries.DictItems()) {
+    for (const auto& iter : profile_entries->DictItems()) {
       std::string profile_path = StripQuotations(iter.first);
       std::string entry_path;
       if (iter.second.is_string()) {
@@ -576,9 +576,8 @@ void NetworkConfigurationHandler::SetNetworkProfileCompleted(
 void NetworkConfigurationHandler::GetPropertiesCallback(
     network_handler::ResultCallback callback,
     const std::string& service_path,
-    DBusMethodCallStatus call_status,
-    base::Value properties) {
-  if (call_status != DBUS_METHOD_CALL_SUCCESS) {
+    base::Optional<base::Value> properties) {
+  if (!properties) {
     // Because network services are added and removed frequently, we will see
     // failures regularly, so don't log these.
     std::move(callback).Run(service_path, base::nullopt);
@@ -586,25 +585,24 @@ void NetworkConfigurationHandler::GetPropertiesCallback(
   }
 
   // Get the correct name from WifiHex if necessary.
-  base::Value properties_copy = properties.Clone();
   std::string name =
-      shill_property_util::GetNameFromProperties(service_path, properties);
+      shill_property_util::GetNameFromProperties(service_path, *properties);
   if (!name.empty())
-    properties_copy.SetKey(shill::kNameProperty, base::Value(name));
+    properties->SetKey(shill::kNameProperty, base::Value(name));
 
   // Get the GUID property from NetworkState if it is not set in Shill.
   const std::string* guid =
-      properties.FindStringKey(::onc::network_config::kGUID);
+      properties->FindStringKey(::onc::network_config::kGUID);
   if (!guid || guid->empty()) {
     const NetworkState* network_state =
         network_state_handler_->GetNetworkState(service_path);
     if (network_state) {
-      properties_copy.SetKey(::onc::network_config::kGUID,
-                             base::Value(network_state->guid()));
+      properties->SetKey(::onc::network_config::kGUID,
+                         base::Value(network_state->guid()));
     }
   }
 
-  std::move(callback).Run(service_path, std::move(properties_copy));
+  std::move(callback).Run(service_path, std::move(*properties));
 }
 
 void NetworkConfigurationHandler::SetPropertiesSuccessCallback(

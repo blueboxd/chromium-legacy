@@ -91,9 +91,9 @@ public class NativePageFactory {
             if (tab.isIncognito()) return new IncognitoNewTabPage(mActivity, nativePageHost);
 
             return new NewTabPage(mActivity, mActivity.getBrowserControlsManager(),
-                    mActivity.getActivityTabProvider(), mActivity.getOverviewModeBehavior(),
-                    mActivity.getSnackbarManager(), mActivity.getLifecycleDispatcher(),
-                    mActivity.getTabModelSelector(), mActivity.isTablet(), mUma.get(),
+                    mActivity.getActivityTabProvider(), mActivity.getSnackbarManager(),
+                    mActivity.getLifecycleDispatcher(), mActivity.getTabModelSelector(),
+                    mActivity.isTablet(), mUma.get(),
                     mActivity.getNightModeStateProvider().isInNightMode(), nativePageHost, tab,
                     mBottomSheetController);
         }

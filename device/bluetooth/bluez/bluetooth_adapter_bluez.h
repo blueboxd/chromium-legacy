@@ -466,6 +466,12 @@ class DEVICE_BLUETOOTH_EXPORT BluetoothAdapterBlueZ final
                                    const std::string& error_name,
                                    const std::string& error_message);
 
+  // Updates |battery_percentage| field of a device based on its corresponding
+  // value in Battery interface. Should be called when receiving events about
+  // battery object addition, change, or removal.
+  void UpdateDeviceBatteryLevelFromBatteryClient(
+      const dbus::ObjectPath& object_path);
+
   base::OnceClosure init_callback_;
 
   bool initialized_;

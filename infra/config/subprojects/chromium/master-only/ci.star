@@ -1503,6 +1503,14 @@ ci.fyi_builder(
 )
 
 ci.fyi_builder(
+    name = 'linux-ash-chromium-builder-fyi-rel',
+    console_view_entry = ci.console_view_entry(
+        category = 'default',
+        short_name = 'lcr',
+    ),
+)
+
+ci.fyi_builder(
     name = 'linux-bfcache-rel',
     console_view_entry = ci.console_view_entry(
         category = 'linux',
@@ -1827,11 +1835,11 @@ ci.fyi_ios_builder(
         category = 'iOS|iOS13',
         short_name = 'dev',
     ),
-    caches = [xcode_cache.x11n700h],
+    caches = [xcode_cache.x11e708],
     executable = 'recipe:chromium',
     os = os.MAC_10_15,
     properties = {
-        'xcode_build_version': '11n700h',
+        'xcode_build_version': '11e708',
     },
 )
 
@@ -1841,11 +1849,11 @@ ci.fyi_ios_builder(
         category = 'iOS|iOS13',
         short_name = 'sdk13',
     ),
-    caches = [xcode_cache.x11n700h],
+    caches = [xcode_cache.x11e708],
     executable = 'recipe:chromium',
     os = os.MAC_10_15,
     properties = {
-        'xcode_build_version': '11n700h'
+        'xcode_build_version': '11e708'
     },
     schedule = '0 6,18 * * *',
     triggered_by = [],

@@ -7,7 +7,6 @@
 #include "base/bind.h"
 #include "base/run_loop.h"
 #include "base/values.h"
-#include "chromeos/dbus/dbus_method_call_status.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
 #include "chromeos/dbus/shill/shill_manager_client.h"
 #include "chromeos/network/network_handler.h"
@@ -22,35 +21,31 @@ namespace {
 constexpr const char kVpnPackage[] = "com.android.vpn";
 const base::Value kVpnPackageValue(kVpnPackage);
 
-void OnGetProperties(chromeos::DBusMethodCallStatus* call_status_out,
+void OnGetProperties(bool* success_out,
                      std::string* package_name_out,
                      base::OnceClosure callback,
-                     chromeos::DBusMethodCallStatus call_status,
-                     base::Value result) {
-  *call_status_out = call_status;
-  const base::Value* value = result.FindKeyOfType(
-      shill::kAlwaysOnVpnPackageProperty, base::Value::Type::STRING);
-  if (value != nullptr)
-    *package_name_out = value->GetString();
+                     base::Optional<base::Value> result) {
+  *success_out = result.has_value();
+  if (result) {
+    const base::Value* value = result->FindKeyOfType(
+        shill::kAlwaysOnVpnPackageProperty, base::Value::Type::STRING);
+    if (value != nullptr)
+      *package_name_out = value->GetString();
+  }
   std::move(callback).Run();
 }
 
-void CheckStatus(chromeos::DBusMethodCallStatus call_status) {
-  ASSERT_EQ(chromeos::DBUS_METHOD_CALL_SUCCESS, call_status);
-}
-
 std::string GetAlwaysOnPackageName() {
-  chromeos::DBusMethodCallStatus call_status =
-      chromeos::DBUS_METHOD_CALL_FAILURE;
+  bool success = false;
   std::string package_name;
   chromeos::ShillManagerClient* shill_manager =
       chromeos::DBusThreadManager::Get()->GetShillManagerClient();
   base::RunLoop run_loop;
   shill_manager->GetProperties(
-      base::BindOnce(&OnGetProperties, base::Unretained(&call_status),
+      base::BindOnce(&OnGetProperties, base::Unretained(&success),
                      base::Unretained(&package_name), run_loop.QuitClosure()));
   run_loop.Run();
-  CheckStatus(call_status);
+  EXPECT_TRUE(success);
   return package_name;
 }
 

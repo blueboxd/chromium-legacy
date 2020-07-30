@@ -40,7 +40,7 @@ void RegisterProfilePrefs(PrefRegistrySimple* registry) {
   registry->RegisterDictionaryPref(kSuggestionGroupVisibility);
 }
 
-SuggestionGroupVisibility GetSuggestionGroupVisibility(
+SuggestionGroupVisibility GetUserPreferenceForSuggestionGroupVisibility(
     PrefService* prefs,
     int suggestion_group_id) {
   DCHECK(prefs);
@@ -61,11 +61,10 @@ SuggestionGroupVisibility GetSuggestionGroupVisibility(
 }
 
 bool IsSuggestionGroupIdHidden(PrefService* prefs, int suggestion_group_id) {
-  // TODO(tommycli): For now, this preserves the legacy behavior of DEFAULT
-  // meaning SHOWN. Next, callsites need to have some idea of whether a group
-  // should be shown or hidden by default, likely provided by a server hint.
-  return GetSuggestionGroupVisibility(prefs, suggestion_group_id) ==
-         SuggestionGroupVisibility::HIDDEN;
+  // TODO(tommycli): Migrate all callsites to
+  // AutocompleteResult::IsSuggestionGroupIdHidden().
+  return GetUserPreferenceForSuggestionGroupVisibility(
+             prefs, suggestion_group_id) == SuggestionGroupVisibility::HIDDEN;
 }
 
 void SetSuggestionGroupVisibility(PrefService* prefs,

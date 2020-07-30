@@ -101,7 +101,7 @@ MATCHER_P2(IsAdvertisementContent,
            expected_client_eid,
            expected_uuid_formatted_client_eid,
            "") {
-#if defined(OS_MACOSX)
+#if defined(OS_MAC)
   const auto uuid_list = arg->service_uuids();
   return std::any_of(uuid_list->begin(), uuid_list->end(),
                      [this](const auto& uuid) {

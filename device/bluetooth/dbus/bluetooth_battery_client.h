@@ -63,11 +63,6 @@ class DEVICE_BLUETOOTH_EXPORT BluetoothBatteryClient : public BluezDBusClient {
   virtual void AddObserver(Observer* observer) = 0;
   virtual void RemoveObserver(Observer* observer) = 0;
 
-  // Returns the list of battery object paths associated with the given adapter
-  // identified by the D-Bus object path |adapter_path|.
-  virtual std::vector<dbus::ObjectPath> GetBatteriesForAdapter(
-      const dbus::ObjectPath& adapter_path) = 0;
-
   // Obtain the properties for the battery with object path |object_path|,
   // any values should be copied if needed.
   virtual Properties* GetProperties(const dbus::ObjectPath& object_path) = 0;

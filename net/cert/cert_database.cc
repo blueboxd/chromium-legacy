@@ -33,7 +33,7 @@ CertDatabase::CertDatabase()
     : observer_list_(new base::ObserverListThreadSafe<Observer>) {}
 
 CertDatabase::~CertDatabase() {
-#if defined(OS_MACOSX) && !defined(OS_IOS)
+#if defined(OS_MAC)
   ReleaseNotifier();
 #endif
 }

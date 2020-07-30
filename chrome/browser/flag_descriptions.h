@@ -1467,6 +1467,9 @@ extern const char kAutofillUseMobileLabelDisambiguationDescription[];
 extern const char kBackgroundTaskComponentUpdateName[];
 extern const char kBackgroundTaskComponentUpdateDescription[];
 
+extern const char kBentoOfflineName[];
+extern const char kBentoOfflineDescription[];
+
 extern const char kCCTIncognitoName[];
 extern const char kCCTIncognitoDescription[];
 

@@ -20,7 +20,7 @@ QueryTilesInternalsUIMessageHandler::QueryTilesInternalsUIMessageHandler(
     Profile* profile)
     : tile_service_(query_tiles::TileServiceFactory::GetForKey(
           profile->GetProfileKey())) {
-  DCHECK(tile_service_);
+  CHECK(tile_service_);
 }
 
 QueryTilesInternalsUIMessageHandler::~QueryTilesInternalsUIMessageHandler() =

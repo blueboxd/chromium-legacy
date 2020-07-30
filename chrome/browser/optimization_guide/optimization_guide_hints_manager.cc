@@ -115,19 +115,17 @@ bool CanProcessComponentVersion(PrefService* pref_service,
   return true;
 }
 
-// Returns whether |optimization_type| is whitelisted by the |page_hint|. If
+// Returns whether |optimization_type| is whitelisted by |optimizations|. If
 // it is whitelisted, this will return true and |optimization_metadata| will be
 // populated with the metadata provided by the hint, if applicable. If
 // |page_hint| is not provided or |optimization_type| is not whitelisted, this
 // will return false.
-bool IsOptimizationTypeSupportedByPageHint(
-    const optimization_guide::proto::PageHint* page_hint,
+bool IsOptimizationTypeAllowed(
+    const google::protobuf::RepeatedPtrField<
+        optimization_guide::proto::Optimization>& optimizations,
     optimization_guide::proto::OptimizationType optimization_type,
     optimization_guide::OptimizationMetadata* optimization_metadata) {
-  if (!page_hint)
-    return false;
-
-  for (const auto& optimization : page_hint->whitelisted_optimizations()) {
+  for (const auto& optimization : optimizations) {
     if (optimization_type != optimization.optimization_type())
       continue;
 
@@ -1056,9 +1054,9 @@ OptimizationGuideHintsManager::CanApplyOptimization(
   if (url_keyed_hint) {
     DCHECK_EQ(url_keyed_hint->page_hints_size(), 1);
     if (url_keyed_hint->page_hints_size() > 0 &&
-        IsOptimizationTypeSupportedByPageHint(&url_keyed_hint->page_hints(0),
-                                              optimization_type,
-                                              optimization_metadata)) {
+        IsOptimizationTypeAllowed(
+            url_keyed_hint->page_hints(0).whitelisted_optimizations(),
+            optimization_type, optimization_metadata)) {
       return optimization_guide::OptimizationTypeDecision::kAllowedByHint;
     }
   }
@@ -1083,12 +1081,21 @@ OptimizationGuideHintsManager::CanApplyOptimization(
     return optimization_guide::OptimizationTypeDecision::kNoHintAvailable;
   }
 
+  if (IsOptimizationTypeAllowed(loaded_hint->whitelisted_optimizations(),
+                                optimization_type, optimization_metadata)) {
+    return optimization_guide::OptimizationTypeDecision::kAllowedByHint;
+  }
+
   const optimization_guide::proto::PageHint* matched_page_hint =
       loaded_hint
           ? optimization_guide::FindPageHintForURL(navigation_url, loaded_hint)
           : nullptr;
-  return IsOptimizationTypeSupportedByPageHint(
-             matched_page_hint, optimization_type, optimization_metadata)
+  if (!matched_page_hint)
+    return optimization_guide::OptimizationTypeDecision::kNotAllowedByHint;
+
+  return IsOptimizationTypeAllowed(
+             matched_page_hint->whitelisted_optimizations(), optimization_type,
+             optimization_metadata)
              ? optimization_guide::OptimizationTypeDecision::kAllowedByHint
              : optimization_guide::OptimizationTypeDecision::kNotAllowedByHint;
 }

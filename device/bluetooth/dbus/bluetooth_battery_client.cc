@@ -65,18 +65,6 @@ class BluetoothBatteryClientImpl : public BluetoothBatteryClient,
   }
 
   // BluetoothBatteryClient override.
-  std::vector<dbus::ObjectPath> GetBatteriesForAdapter(
-      const dbus::ObjectPath& adapter_path) override {
-    std::vector<dbus::ObjectPath> object_paths, battery_paths;
-    battery_paths = object_manager_->GetObjectsWithInterface(
-        bluetooth_battery::kBluetoothBatteryInterface);
-    for (const auto& path : battery_paths)
-      object_paths.push_back(path);
-
-    return object_paths;
-  }
-
-  // BluetoothBatteryClient override.
   Properties* GetProperties(const dbus::ObjectPath& object_path) override {
     return static_cast<Properties*>(object_manager_->GetProperties(
         object_path, bluetooth_battery::kBluetoothBatteryInterface));

@@ -29,6 +29,8 @@ Applied the following patches:
   _frequency_lists.hpp and _frequency_lists.cpp
 - patches/base_utf8.diff: Replaced string utilities from utils.cpp with //base's
   UTF8 API.
+- patches/fix_overflow.diff: Fixes a bug inside scoring.cpp triggered when the
+  number of computed guesses exceeds DBL_MAX.
 - Dropped the data dictionary from the check-out, as the data will now be
   provided via component updater. The used dictionaries can be found at
   https://github.com/rianhunter/zxcvbn-cpp/tree/cf092c952cd2325ce390b2691231a8f1cb195d59/data

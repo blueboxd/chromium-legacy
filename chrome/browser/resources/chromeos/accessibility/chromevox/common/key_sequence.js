@@ -391,7 +391,7 @@ KeySequence = class {
   /**
    * Creates a KeySequence event from a generic object.
    * @param {Object} sequenceObject The object.
-   * @return {KeySequence} The created KeySequence object.
+   * @return {!KeySequence} The created KeySequence object.
    */
   static deserialize(sequenceObject) {
     const firstSequenceEvent = {};

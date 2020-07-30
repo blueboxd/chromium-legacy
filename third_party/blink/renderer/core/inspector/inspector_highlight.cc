@@ -834,12 +834,13 @@ InspectorHighlightConfig::InspectorHighlightConfig()
       color_format(ColorFormat::HEX) {}
 
 InspectorHighlight::InspectorHighlight(float scale)
-    : highlight_paths_(protocol::ListValue::create()),
+    : InspectorHighlightBase(scale),
       show_rulers_(false),
       show_extension_lines_(false),
       show_accessibility_info_(true),
-      scale_(scale),
       color_format_(ColorFormat::HEX) {}
+
+InspectorSourceOrderConfig::InspectorSourceOrderConfig() = default;
 
 InspectorGridHighlightConfig::InspectorGridHighlightConfig()
     : show_grid_extension_lines(false),
@@ -851,6 +852,162 @@ InspectorGridHighlightConfig::InspectorGridHighlightConfig()
       show_line_names(false),
       show_track_sizes(false) {}
 
+InspectorHighlightBase::InspectorHighlightBase(float scale)
+    : highlight_paths_(protocol::ListValue::create()), scale_(scale) {}
+
+InspectorHighlightBase::InspectorHighlightBase(Node* node)
+    : highlight_paths_(protocol::ListValue::create()), scale_(1.f) {
+  DCHECK(!DisplayLockUtilities::NearestLockedExclusiveAncestor(*node));
+  LocalFrameView* frame_view = node->GetDocument().View();
+  if (frame_view) {
+    scale_ = 1.f / frame_view->GetChromeClient()->WindowToViewportScalar(
+                       &frame_view->GetFrame(), 1.f);
+  }
+}
+
+bool InspectorHighlightBase::BuildNodeQuads(Node* node,
+                                            FloatQuad* content,
+                                            FloatQuad* padding,
+                                            FloatQuad* border,
+                                            FloatQuad* margin) {
+  LayoutObject* layout_object = node->GetLayoutObject();
+  if (!layout_object)
+    return false;
+
+  LocalFrameView* containing_view = layout_object->GetFrameView();
+  if (!containing_view)
+    return false;
+  if (!layout_object->IsBox() && !layout_object->IsLayoutInline() &&
+      !layout_object->IsText()) {
+    return false;
+  }
+
+  PhysicalRect content_box;
+  PhysicalRect padding_box;
+  PhysicalRect border_box;
+  PhysicalRect margin_box;
+
+  if (layout_object->IsText()) {
+    LayoutText* layout_text = ToLayoutText(layout_object);
+    PhysicalRect text_rect = layout_text->PhysicalVisualOverflowRect();
+    content_box = text_rect;
+    padding_box = text_rect;
+    border_box = text_rect;
+    margin_box = text_rect;
+  } else if (layout_object->IsBox()) {
+    LayoutBox* layout_box = ToLayoutBox(layout_object);
+
+    // LayoutBox returns the "pure" content area box, exclusive of the
+    // scrollbars (if present), which also count towards the content area in
+    // CSS.
+    const int vertical_scrollbar_width = layout_box->VerticalScrollbarWidth();
+    const int horizontal_scrollbar_height =
+        layout_box->HorizontalScrollbarHeight();
+    content_box = layout_box->PhysicalContentBoxRect();
+    content_box.SetWidth(content_box.Width() + vertical_scrollbar_width);
+    content_box.SetHeight(content_box.Height() + horizontal_scrollbar_height);
+
+    padding_box = layout_box->PhysicalPaddingBoxRect();
+    padding_box.SetWidth(padding_box.Width() + vertical_scrollbar_width);
+    padding_box.SetHeight(padding_box.Height() + horizontal_scrollbar_height);
+
+    border_box = layout_box->PhysicalBorderBoxRect();
+
+    margin_box = PhysicalRect(border_box.X() - layout_box->MarginLeft(),
+                              border_box.Y() - layout_box->MarginTop(),
+                              border_box.Width() + layout_box->MarginWidth(),
+                              border_box.Height() + layout_box->MarginHeight());
+  } else {
+    LayoutInline* layout_inline = ToLayoutInline(layout_object);
+
+    // LayoutInline's bounding box includes paddings and borders, excludes
+    // margins.
+    border_box = layout_inline->PhysicalLinesBoundingBox();
+    padding_box =
+        PhysicalRect(border_box.X() + layout_inline->BorderLeft(),
+                     border_box.Y() + layout_inline->BorderTop(),
+                     border_box.Width() - layout_inline->BorderLeft() -
+                         layout_inline->BorderRight(),
+                     border_box.Height() - layout_inline->BorderTop() -
+                         layout_inline->BorderBottom());
+    content_box =
+        PhysicalRect(padding_box.X() + layout_inline->PaddingLeft(),
+                     padding_box.Y() + layout_inline->PaddingTop(),
+                     padding_box.Width() - layout_inline->PaddingLeft() -
+                         layout_inline->PaddingRight(),
+                     padding_box.Height() - layout_inline->PaddingTop() -
+                         layout_inline->PaddingBottom());
+    // Ignore marginTop and marginBottom for inlines.
+    margin_box = PhysicalRect(
+        border_box.X() - layout_inline->MarginLeft(), border_box.Y(),
+        border_box.Width() + layout_inline->MarginWidth(), border_box.Height());
+  }
+
+  *content = layout_object->LocalRectToAbsoluteQuad(content_box);
+  *padding = layout_object->LocalRectToAbsoluteQuad(padding_box);
+  *border = layout_object->LocalRectToAbsoluteQuad(border_box);
+  *margin = layout_object->LocalRectToAbsoluteQuad(margin_box);
+
+  FrameQuadToViewport(containing_view, *content);
+  FrameQuadToViewport(containing_view, *padding);
+  FrameQuadToViewport(containing_view, *border);
+  FrameQuadToViewport(containing_view, *margin);
+
+  return true;
+}
+
+void InspectorHighlightBase::AppendQuad(const FloatQuad& quad,
+                                        const Color& fill_color,
+                                        const Color& outline_color,
+                                        const String& name) {
+  Path path = QuadToPath(quad);
+  PathBuilder builder;
+  builder.AppendPath(path, scale_);
+  AppendPath(builder.Release(), fill_color, outline_color, name);
+}
+
+void InspectorHighlightBase::AppendPath(
+    std::unique_ptr<protocol::ListValue> path,
+    const Color& fill_color,
+    const Color& outline_color,
+    const String& name) {
+  std::unique_ptr<protocol::DictionaryValue> object =
+      protocol::DictionaryValue::create();
+  object->setValue("path", std::move(path));
+  object->setString("fillColor", fill_color.Serialized());
+  if (outline_color != Color::kTransparent)
+    object->setString("outlineColor", outline_color.Serialized());
+  if (!name.IsEmpty())
+    object->setString("name", name);
+  highlight_paths_->pushValue(std::move(object));
+}
+
+InspectorSourceOrderHighlight::InspectorSourceOrderHighlight(
+    Node* node,
+    Color outline_color)
+    : InspectorHighlightBase(node) {
+  FloatQuad content, padding, border, margin;
+  if (!BuildNodeQuads(node, &content, &padding, &border, &margin))
+    return;
+  AppendQuad(border, Color::kTransparent, outline_color, "border");
+}
+
+std::unique_ptr<protocol::DictionaryValue>
+InspectorSourceOrderHighlight::AsProtocolValue() const {
+  std::unique_ptr<protocol::DictionaryValue> object =
+      protocol::DictionaryValue::create();
+  object->setValue("paths", highlight_paths_->clone());
+  return object;
+}
+
+// static
+InspectorSourceOrderConfig InspectorSourceOrderHighlight::DefaultConfig() {
+  InspectorSourceOrderConfig config;
+  config.parent_outline_color = Color(224, 90, 183, 1);
+  config.child_outline_color = Color(0, 120, 212, 1);
+  return config;
+}
+
 InspectorHighlight::InspectorHighlight(
     Node* node,
     const InspectorHighlightConfig& highlight_config,
@@ -858,18 +1015,11 @@ InspectorHighlight::InspectorHighlight(
     bool append_element_info,
     bool append_distance_info,
     bool is_locked_ancestor)
-    : highlight_paths_(protocol::ListValue::create()),
+    : InspectorHighlightBase(node),
       show_rulers_(highlight_config.show_rulers),
       show_extension_lines_(highlight_config.show_extension_lines),
       show_accessibility_info_(highlight_config.show_accessibility_info),
-      scale_(1.f),
       color_format_(highlight_config.color_format) {
-  DCHECK(!DisplayLockUtilities::NearestLockedExclusiveAncestor(*node));
-  LocalFrameView* frame_view = node->GetDocument().View();
-  if (frame_view) {
-    scale_ = 1.f / frame_view->GetChromeClient()->WindowToViewportScalar(
-                       &frame_view->GetFrame(), 1.f);
-  }
   AppendPathsForShapeOutside(node, highlight_config);
   AppendNodeHighlight(node, highlight_config);
   auto* text_node = DynamicTo<Text>(node);
@@ -981,31 +1131,6 @@ void InspectorHighlight::AddLayoutBoxToDistanceInfo(
     PhysicalRect rect(RectInRootFrame(layout_object));
     boxes_->emplace_back(RectForPhysicalRect(rect));
   }
-}
-
-void InspectorHighlight::AppendQuad(const FloatQuad& quad,
-                                    const Color& fill_color,
-                                    const Color& outline_color,
-                                    const String& name) {
-  Path path = QuadToPath(quad);
-  PathBuilder builder;
-  builder.AppendPath(path, scale_);
-  AppendPath(builder.Release(), fill_color, outline_color, name);
-}
-
-void InspectorHighlight::AppendPath(std::unique_ptr<protocol::ListValue> path,
-                                    const Color& fill_color,
-                                    const Color& outline_color,
-                                    const String& name) {
-  std::unique_ptr<protocol::DictionaryValue> object =
-      protocol::DictionaryValue::create();
-  object->setValue("path", std::move(path));
-  object->setString("fillColor", fill_color.Serialized());
-  if (outline_color != Color::kTransparent)
-    object->setString("outlineColor", outline_color.Serialized());
-  if (!name.IsEmpty())
-    object->setString("name", name);
-  highlight_paths_->pushValue(std::move(object));
 }
 
 void InspectorHighlight::AppendEventTargetQuads(
@@ -1245,96 +1370,6 @@ bool InspectorHighlight::GetContentQuads(
   result->reset(new protocol::Array<protocol::Array<double>>());
   for (FloatQuad& quad : quads)
     (*result)->emplace_back(BuildArrayForQuad(quad));
-  return true;
-}
-
-bool InspectorHighlight::BuildNodeQuads(Node* node,
-                                        FloatQuad* content,
-                                        FloatQuad* padding,
-                                        FloatQuad* border,
-                                        FloatQuad* margin) {
-  LayoutObject* layout_object = node->GetLayoutObject();
-  if (!layout_object)
-    return false;
-
-  LocalFrameView* containing_view = layout_object->GetFrameView();
-  if (!containing_view)
-    return false;
-  if (!layout_object->IsBox() && !layout_object->IsLayoutInline() &&
-      !layout_object->IsText())
-    return false;
-
-  PhysicalRect content_box;
-  PhysicalRect padding_box;
-  PhysicalRect border_box;
-  PhysicalRect margin_box;
-
-  if (layout_object->IsText()) {
-    LayoutText* layout_text = ToLayoutText(layout_object);
-    PhysicalRect text_rect = layout_text->PhysicalVisualOverflowRect();
-    content_box = text_rect;
-    padding_box = text_rect;
-    border_box = text_rect;
-    margin_box = text_rect;
-  } else if (layout_object->IsBox()) {
-    LayoutBox* layout_box = ToLayoutBox(layout_object);
-
-    // LayoutBox returns the "pure" content area box, exclusive of the
-    // scrollbars (if present), which also count towards the content area in
-    // CSS.
-    const int vertical_scrollbar_width = layout_box->VerticalScrollbarWidth();
-    const int horizontal_scrollbar_height =
-        layout_box->HorizontalScrollbarHeight();
-    content_box = layout_box->PhysicalContentBoxRect();
-    content_box.SetWidth(content_box.Width() + vertical_scrollbar_width);
-    content_box.SetHeight(content_box.Height() + horizontal_scrollbar_height);
-
-    padding_box = layout_box->PhysicalPaddingBoxRect();
-    padding_box.SetWidth(padding_box.Width() + vertical_scrollbar_width);
-    padding_box.SetHeight(padding_box.Height() + horizontal_scrollbar_height);
-
-    border_box = layout_box->PhysicalBorderBoxRect();
-
-    margin_box = PhysicalRect(border_box.X() - layout_box->MarginLeft(),
-                              border_box.Y() - layout_box->MarginTop(),
-                              border_box.Width() + layout_box->MarginWidth(),
-                              border_box.Height() + layout_box->MarginHeight());
-  } else {
-    LayoutInline* layout_inline = ToLayoutInline(layout_object);
-
-    // LayoutInline's bounding box includes paddings and borders, excludes
-    // margins.
-    border_box = layout_inline->PhysicalLinesBoundingBox();
-    padding_box =
-        PhysicalRect(border_box.X() + layout_inline->BorderLeft(),
-                     border_box.Y() + layout_inline->BorderTop(),
-                     border_box.Width() - layout_inline->BorderLeft() -
-                         layout_inline->BorderRight(),
-                     border_box.Height() - layout_inline->BorderTop() -
-                         layout_inline->BorderBottom());
-    content_box =
-        PhysicalRect(padding_box.X() + layout_inline->PaddingLeft(),
-                     padding_box.Y() + layout_inline->PaddingTop(),
-                     padding_box.Width() - layout_inline->PaddingLeft() -
-                         layout_inline->PaddingRight(),
-                     padding_box.Height() - layout_inline->PaddingTop() -
-                         layout_inline->PaddingBottom());
-    // Ignore marginTop and marginBottom for inlines.
-    margin_box = PhysicalRect(
-        border_box.X() - layout_inline->MarginLeft(), border_box.Y(),
-        border_box.Width() + layout_inline->MarginWidth(), border_box.Height());
-  }
-
-  *content = layout_object->LocalRectToAbsoluteQuad(content_box);
-  *padding = layout_object->LocalRectToAbsoluteQuad(padding_box);
-  *border = layout_object->LocalRectToAbsoluteQuad(border_box);
-  *margin = layout_object->LocalRectToAbsoluteQuad(margin_box);
-
-  FrameQuadToViewport(containing_view, *content);
-  FrameQuadToViewport(containing_view, *padding);
-  FrameQuadToViewport(containing_view, *border);
-  FrameQuadToViewport(containing_view, *margin);
-
   return true;
 }
 

@@ -13,9 +13,11 @@
 namespace chromeos {
 namespace {
 
+using ::testing::AllOf;
 using ::testing::ElementsAre;
 using ::testing::ExplainMatchResult;
 using ::testing::Field;
+using ::testing::Optional;
 using ::testing::Pair;
 using ::testing::StrEq;
 using ::testing::UnorderedElementsAre;
@@ -154,10 +156,13 @@ TEST(PpdMetadataParserTest, ParseManufacturersFailsGracefully) {
 TEST(PpdMetadataParserTest, CanParsePrinters) {
   constexpr base::StringPiece kPrintersJson = R"(
   {
-    "modelToEmm": {
-      "An die Musik": "d 547b",
-      "Auf der Donau": "d 553"
-    }
+    "printers": [ {
+      "emm": "d 547b",
+      "name": "An die Musik"
+    }, {
+      "emm": "d 553",
+      "name": "Auf der Donau"
+    } ]
   }
   )";
 
@@ -172,18 +177,18 @@ TEST(PpdMetadataParserTest, CanParsePrinters) {
 // Verifies that ParsePrinters() can parse printers and return a partial
 // list even when it encounters unexpected values.
 TEST(PpdMetadataParserTest, CanPartiallyParsePrinters) {
-  // Contains an embedded dictionary keyed on "Dearie me."
-  // ParsePrinters() shall ignore this.
+  // Contains an extra value keyed on "hello" in an otherwise valid leaf
+  // value in Printers metadata. ParsePrinters() shall ignore this.
   constexpr base::StringPiece kPrintersJson = R"(
   {
-    "modelToEmm": {
-      "Dearie me": {
-        "I didn't": "expect",
-        "to go": "deeper"
-      },
-      "Hänflings Liebeswerbung": "d 552",
-      "Auf der Donau": "d 553"
-    }
+    "printers": [ {
+      "emm": "d 552",
+      "name": "Hänflings Liebeswerbung",
+      "hello": "there!"
+    }, {
+      "emm": "d 553",
+      "name": "Auf der Donau"
+    } ]
   }
   )";
 
@@ -196,24 +201,86 @@ TEST(PpdMetadataParserTest, CanPartiallyParsePrinters) {
                   ParsedPrinterLike("Auf der Donau", "d 553")));
 }
 
-// Verifies that ParsePrinters() returns base::nullopt rather than an
-// empty container.
-TEST(PpdMetadataParserTest, ParsePrintersDoesNotReturnEmptyContainer) {
-  // Contains an embedded dictionary keyed on "Dearie me."
-  // ParsePrinters() shall ignore this, but in doing so shall make the
-  // returned ParsedPrinters empty.
+// Verifies that ParsePrinters() can parse printers and their
+// well-formed restrictions (if any are specified).
+TEST(PpdMetadataParserTest, CanParsePrintersWithRestrictions) {
+  // Specifies
+  // *  a printer with a minimum milestone,
+  // *  a printer with a maximum milestone, and
+  // *  a printer with both minimum and maximum milestones.
   constexpr base::StringPiece kPrintersJson = R"(
   {
-    "modelToEmm": {
-      "Dearie me": {
-        "I didn't": "expect",
-        "to go": "deeper"
+    "printers": [ {
+      "emm": "d 121",
+      "name": "Schäfers Klagelied",
+      "restriction": {
+        "minMilestone": 121
       }
-    }
+    }, {
+      "emm": "d 216",
+      "name": "Meeres Stille",
+      "restriction": {
+        "maxMilestone": 216
+      }
+    }, {
+      "emm": "d 257",
+      "name": "Heidenröslein",
+      "restriction": {
+        "minMilestone": 216,
+        "maxMilestone": 257
+      }
+    } ]
   }
   )";
 
-  EXPECT_FALSE(ParsePrinters(kPrintersJson).has_value());
+  const auto parsed = ParsePrinters(kPrintersJson);
+  ASSERT_TRUE(parsed.has_value());
+
+  EXPECT_THAT(
+      *parsed,
+      UnorderedElementsAre(
+          AllOf(ParsedPrinterLike("Schäfers Klagelied", "d 121"),
+                Field(&ParsedPrinter::restrictions,
+                      Optional(RestrictionsWithMinMilestone(121)))),
+          AllOf(ParsedPrinterLike("Meeres Stille", "d 216"),
+                Field(&ParsedPrinter::restrictions,
+                      Optional(RestrictionsWithMaxMilestone(216)))),
+          AllOf(
+              ParsedPrinterLike("Heidenröslein", "d 257"),
+              Field(&ParsedPrinter::restrictions,
+                    Optional(RestrictionsWithMinAndMaxMilestones(216, 257))))));
+}
+
+// Verifies that ParsePrinters() can parse printers and ignore
+// malformed restrictions.
+TEST(PpdMetadataParserTest, CanParsePrintersWithMalformedRestrictions) {
+  // Specifies a printer with invalid restrictions.
+  constexpr base::StringPiece kPrintersJson = R"(
+  {
+    "printers": [ {
+      "emm": "d 368",
+      "name": "Jägers Abendlied",
+      "restriction": {
+        "hello": "there!"
+      }
+    } ]
+  }
+  )";
+
+  const auto parsed = ParsePrinters(kPrintersJson);
+  ASSERT_TRUE(parsed.has_value());
+
+  EXPECT_THAT(*parsed,
+              UnorderedElementsAre(AllOf(
+                  ParsedPrinterLike("Jägers Abendlied", "d 368"),
+                  Field(&ParsedPrinter::restrictions, Eq(base::nullopt)))));
+}
+
+// Verifies that ParsePrinters() returns base::nullopt rather than an
+// empty container.
+TEST(PpdMetadataParserTest, ParsePrintersDoesNotReturnEmptyContainer) {
+  // No printers are specified in this otherwise valid JSON dictionary.
+  EXPECT_FALSE(ParsePrinters("{}").has_value());
 }
 
 // Verifies that ParsePrinters() returns base::nullopt on irrecoverable

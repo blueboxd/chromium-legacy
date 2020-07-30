@@ -13,6 +13,15 @@ buildflag_header("buildflags") {
   flags = [ "IS_CT_SUPPORTED=$is_ct_supported" ]
 }
 
+jumbo_component("crash_keys") {
+  sources = [
+    "crash_keys.cc",
+    "crash_keys.h",
+  ]
+  deps = [ "//base" ]
+  defines = [ "IS_NETWORK_CPP_CRASH_KEYS_IMPL" ]
+}
+
 jumbo_component("cpp") {
   output_name = "network_cpp"
 
@@ -164,6 +173,7 @@ component("cookies_mojom_support") {
     "site_for_cookies_mojom_traits.h",
   ]
   deps = [
+    ":crash_keys",
     "//net",
     "//services/network/public/mojom:cookies_mojom_shared",
   ]
@@ -241,6 +251,7 @@ jumbo_component("cpp_base") {
 
   public_deps = [
     ":cookies_mojom_support",
+    ":crash_keys",
     ":ip_address_mojom_support",
     "//services/network/public/mojom:data_pipe_interfaces",
     "//services/network/public/mojom:mutable_network_traffic_annotation_interface",

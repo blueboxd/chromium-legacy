@@ -81,6 +81,7 @@ test("weblayer_browsertests") {
   ]
 
   data_deps = [
+    "//testing/buildbot/filters:weblayer_browsertests_filters",
     "//third_party/mesa_headers",
     "//weblayer/shell:pak",
   ]

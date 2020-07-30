@@ -441,7 +441,7 @@ extern const char kUserDataSnapshotRetentionLimit[];
 #endif
 
 #if defined(OS_CHROMEOS)
-extern const char kExternalPrintServersWhitelist[];
+extern const char kExternalPrintServersAllowlist[];
 extern const char kRecommendedNativePrinters[];
 extern const char kRecommendedNativePrintersAccessMode[];
 extern const char kRecommendedNativePrintersBlacklist[];

@@ -4,8 +4,6 @@
 
 #include "ash/clipboard/clipboard_history_controller.h"
 
-#include <queue>
-
 #include "ash/accelerators/accelerator_controller_impl.h"
 #include "ash/clipboard/clipboard_history.h"
 #include "ash/clipboard/clipboard_history_menu_model_adapter.h"
@@ -17,11 +15,9 @@
 #include "base/threading/thread_task_runner_handle.h"
 #include "ui/aura/window_tree_host.h"
 #include "ui/base/accelerators/accelerator.h"
-#include "ui/base/clipboard/clipboard.h"
-#include "ui/base/clipboard/clipboard_buffer.h"
 #include "ui/base/clipboard/clipboard_constants.h"
 #include "ui/base/clipboard/clipboard_data.h"
-#include "ui/base/clipboard/scoped_clipboard_writer.h"
+#include "ui/base/clipboard/clipboard_non_backed.h"
 #include "ui/base/ime/input_method.h"
 #include "ui/base/ime/text_input_client.h"
 #include "ui/base/models/image_model.h"
@@ -94,27 +90,10 @@ ui::ImageModel GetImageModelForClipboardData(const ui::ClipboardData& item) {
 }
 
 void WriteClipboardDataToClipboard(const ui::ClipboardData& data) {
-  ui::ScopedClipboardWriter writer(ui::ClipboardBuffer::kCopyPaste);
-  if (data.format() & static_cast<int>(ui::ClipboardInternalFormat::kBitmap))
-    writer.WriteImage(data.bitmap());
-  if (data.format() & static_cast<int>(ui::ClipboardInternalFormat::kText))
-    writer.WriteText(base::UTF8ToUTF16(data.text()));
-  if (data.format() & static_cast<int>(ui::ClipboardInternalFormat::kHtml))
-    writer.WriteHTML(base::UTF8ToUTF16(data.markup_data()), data.url());
-  if (data.format() & static_cast<int>(ui::ClipboardInternalFormat::kRtf))
-    writer.WriteRTF(data.rtf_data());
-  if (data.format() &
-      static_cast<int>(ui::ClipboardInternalFormat::kBookmark)) {
-    writer.WriteBookmark(base::UTF8ToUTF16(data.bookmark_title()),
-                         data.bookmark_url());
-  }
-  if (data.format() & static_cast<int>(ui::ClipboardInternalFormat::kCustom)) {
-    const auto& custom_format = ui::ClipboardFormatType::GetWebCustomDataType();
-    DCHECK_EQ(data.custom_data_format(), custom_format.GetName());
-    writer.WritePickledData(base::Pickle(data.custom_data_data().c_str(),
-                                         data.custom_data_data().size()),
-                            custom_format);
-  }
+  auto* clipboard = ui::ClipboardNonBacked::GetForCurrentThread();
+  CHECK(clipboard);
+
+  clipboard->WriteClipboardData(std::make_unique<ui::ClipboardData>(data));
 }
 
 class ClipboardHistoryMenuDelegate : public ui::SimpleMenuModel::Delegate {
@@ -201,7 +180,8 @@ void ClipboardHistoryController::ShowMenu() {
     return;
 
   clipboard_items_ =
-      clipboard_history_->GetRecentClipboardDataWithNoDuplicates();
+      std::vector<ui::ClipboardData>(clipboard_history_->GetItems().begin(),
+                                     clipboard_history_->GetItems().end());
 
   std::unique_ptr<ui::SimpleMenuModel> menu_model =
       std::make_unique<ui::SimpleMenuModel>(menu_delegate_.get());
@@ -231,7 +211,7 @@ void ClipboardHistoryController::MenuOptionSelected(int index) {
 
   if (it == clipboard_items_.end()) {
     // The last option in the menu is used to delete history.
-    clipboard_history_->ClearHistory();
+    clipboard_history_->Clear();
     return;
   }
 

@@ -31,6 +31,7 @@
 #include "ash/wm/splitview/split_view_utils.h"
 #include "ash/wm/tablet_mode/tablet_mode_controller.h"
 #include "ash/wm/tablet_mode/tablet_mode_window_state.h"
+#include "ash/wm/window_properties.h"
 #include "ash/wm/window_resizer.h"
 #include "ash/wm/window_state.h"
 #include "ash/wm/window_transient_descendant_iterator.h"
@@ -405,22 +406,29 @@ class SplitViewController::AutoSnapController
 
   // aura::WindowObserver:
   void OnWindowVisibilityChanging(aura::Window* window, bool visible) override {
-    // TODO(toshikikikuchi): Consider avoiding to use kAnimationsDisabledKey
-    // here just for |DragWindowFromShelfController|.
-    if (visible && WindowState::Get(window) &&
-        WindowState::Get(window)->IsMinimized() &&
-        !window->GetProperty(aura::client::kAnimationsDisabledKey)) {
-      // A visible but minimized window state triggers an implicit un-minimizing
-      // by someone (e.g.
-      // |WorkspaceLayoutManager::OnChildWindowVisibilityChanged| or
-      // |WorkspaceLayoutManager::OnWindowActivating|). This emits a window
-      // state change event but it is unnecessary for to-be-snapped windows
-      // because some clients (e.g. ARC app) handle a window state change
-      // asynchronously. So in the case, we here try to snap a window before
-      // other's handling. Animation-disabled visibility changes are used for
-      // transient hide & show operations so not applicable for auto snapping.
-      AutoSnapWindowIfNeeded(window);
-    }
+    // When a minimized window's visibility changes from invisible to visible or
+    // is about to activate, it triggers an implicit un-minimizing (e.g.
+    // |WorkspaceLayoutManager::OnChildWindowVisibilityChanged| or
+    // |WorkspaceLayoutManager::OnWindowActivating|). This emits a window
+    // state change event but it is unnecessary for to-be-snapped windows
+    // because some clients (e.g. ARC app) handle a window state change
+    // asynchronously. So in the case, we here try to snap a window before
+    // other's handling to avoid the implicit un-minimizing.
+
+    // Auto snapping is applicable for window changed to be visible.
+    if (!visible)
+      return;
+
+    // Already un-minimized windows are not applicable for auto snapping.
+    if (!WindowState::Get(window) || !WindowState::Get(window)->IsMinimized())
+      return;
+
+    // Visibility changes while restoring windows after dragged is transient
+    // hide & show operations so not applicable for auto snapping.
+    if (window->GetProperty(kHideDuringWindowDragging))
+      return;
+
+    AutoSnapWindowIfNeeded(window);
   }
 
   void OnWindowAddedToRootWindow(aura::Window* window) override {

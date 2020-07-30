@@ -30,6 +30,7 @@ namespace ui {
 
 class WaylandConnection;
 class WaylandWindow;
+class WaylandSurface;
 
 // This is an internal helper representation of a wayland buffer object, which
 // the GPU process creates when CreateBuffer is called. It's used for
@@ -139,23 +140,23 @@ class WaylandBufferManagerHost : public ozone::mojom::WaylandBufferManagerHost,
                     const gfx::Rect& damage_region) override;
 
   // When a surface is hidden, the client may want to detach the buffer attached
-  // to the surface backed by |widget| to ensure Wayland does not present those
-  // contents and do not composite in a wrong way. Otherwise, users may see the
-  // contents of a hidden surface on their screens.
-  void ResetSurfaceContents(gfx::AcceleratedWidget widget);
+  // to the surface to ensure Wayland does not present those contents and do not
+  // composite in a wrong way. Otherwise, users may see the contents of a hidden
+  // surface on their screens.
+  void ResetSurfaceContents(WaylandSurface* wayland_surface);
 
   // Returns the anonymously created WaylandBuffer.
   std::unique_ptr<WaylandBuffer> PassAnonymousWlBuffer(uint32_t buffer_id);
 
  private:
   // This is an internal representation of a real surface, which holds a pointer
-  // to WaylandWindow. Also, this object holds buffers, frame callbacks and
-  // presentation callbacks for that window's surface.
+  // to WaylandSurface. Also, this object holds buffers, frame callbacks and
+  // presentation callbacks for that surface.
   class Surface;
 
   bool CreateBuffer(const gfx::Size& size, uint32_t buffer_id);
 
-  Surface* GetSurface(gfx::AcceleratedWidget widget) const;
+  Surface* GetSurface(WaylandSurface* wayland_surface) const;
 
   // Validates data sent from GPU. If invalid, returns false and sets an error
   // message to |error_message_|.
@@ -192,7 +193,14 @@ class WaylandBufferManagerHost : public ozone::mojom::WaylandBufferManagerHost,
 
   bool DestroyAnonymousBuffer(uint32_t buffer_id);
 
-  base::flat_map<gfx::AcceleratedWidget, std::unique_ptr<Surface>> surfaces_;
+  base::flat_map<WaylandSurface*, std::unique_ptr<Surface>> surfaces_;
+
+  // When a WaylandWindow/WaylandSubsurface is removed, its corresponding
+  // Surface may still have an un-released buffer and un-acked presentation.
+  // Thus, we keep removed surfaces in the graveyard. It's safe to delete them
+  // when all of the Surface's buffers are destroyed because buffer destruction
+  // is deferred till after buffers are released and presentations are acked.
+  std::list<std::unique_ptr<Surface>> surface_graveyard_;
 
   // Set when invalid data is received from the GPU process.
   std::string error_message_;

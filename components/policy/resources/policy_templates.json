@@ -1037,6 +1037,7 @@
         'UserNativePrintersAllowed',
         'ExternalPrintServers',
         'ExternalPrintServersWhitelist',
+        'ExternalPrintServersAllowlist',
         'DeviceExternalPrintServers',
         'DeviceExternalPrintServersAllowlist',
         'PrinterTypeDenyList',
@@ -21013,6 +21014,34 @@
         'type': 'array',
         'items': { 'type': 'string' },
       },
+      'deprecated': True,
+      'example_value':  ["id1", "id2", "id3"],
+      'caption': '''Enabled external print servers''',
+      'tags': [],
+      'desc': '''Specifies the subset of print servers that will be queried for server printers.
+
+      If this policy is used, only the server printers with ids matching the values in this policy are available to the user.
+
+      The ids must correspond to the "id" field in the file specified in <ph name="EXTERNAL_PRINT_SERVERS_POLICY">ExternalPrintServers</ph>.
+
+      If this policy is not set, filtering is omitted and all print servers are taken into account.
+
+      This policy is deprecated, please use <ph name="EXTERNAL_PRINT_SERVERS_ALLOWLIST">ExternalPrintServersAllowlist</ph> instead.'''
+    },
+    {
+      'name': 'ExternalPrintServersAllowlist',
+      'owners': ['file://chromeos/printing/OWNERS'],
+      'supported_on': ['chrome_os:86-'],
+      'id': 750,
+      'features': {
+        'dynamic_refresh': True,
+        'per_profile': True,
+      },
+      'type': 'list',
+      'schema': {
+        'type': 'array',
+        'items': { 'type': 'string' },
+      },
       'example_value':  ["id1", "id2", "id3"],
       'caption': '''Enabled external print servers''',
       'tags': [],
@@ -23138,6 +23167,6 @@ The recommended way to configure policy on Windows is via GPO, although provisio
   ],
   'placeholders': [],
   'deleted_policy_ids': [412, 476, 546, 562, 569, 578],
-  'highest_id_currently_used': 749,
+  'highest_id_currently_used': 750,
   'highest_atomic_group_id_currently_used': 38
 }

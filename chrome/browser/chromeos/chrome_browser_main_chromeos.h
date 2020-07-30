@@ -17,26 +17,28 @@ class AssistantClientImpl;
 class AssistantStateClient;
 class ChromeKeyboardControllerClient;
 class ImageDownloaderImpl;
-class LacrosManager;
 class SpokenFeedbackEventRewriterDelegate;
-
-namespace lock_screen_apps {
-class StateController;
-}
 
 namespace arc {
 class ArcServiceLauncher;
 }  // namespace arc
 
-namespace policy {
-class LockToSingleUserManager;
-}  // namespace policy
-
+namespace crosapi {
+class BrowserManager;
+}  // namespace crosapi
 
 namespace crostini {
 class CrostiniUnsupportedActionNotifier;
 class CrosvmMetrics;
 }  // namespace crostini
+
+namespace lock_screen_apps {
+class StateController;
+}
+
+namespace policy {
+class LockToSingleUserManager;
+}  // namespace policy
 
 namespace chromeos {
 
@@ -156,7 +158,7 @@ class ChromeBrowserMainPartsChromeos : public ChromeBrowserMainPartsLinux {
 
   std::unique_ptr<lock_screen_apps::StateController>
       lock_screen_apps_state_controller_;
-  std::unique_ptr<LacrosManager> lacros_manager_;
+  std::unique_ptr<crosapi::BrowserManager> browser_manager_;
 
   std::unique_ptr<power::SmartChargingManager> smart_charging_manager_;
 

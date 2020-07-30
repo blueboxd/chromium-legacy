@@ -120,20 +120,21 @@ class MockServerErrorJobInterceptor : public URLRequestInterceptor {
 class TestReportSenderNetworkDelegate : public NetworkDelegateImpl {
  public:
   TestReportSenderNetworkDelegate()
-      : url_request_destroyed_callback_(base::DoNothing()),
-        all_url_requests_destroyed_callback_(base::DoNothing()),
+      : url_request_destroyed_callback_(base::DoNothing::Repeatedly()),
+        all_url_requests_destroyed_callback_(base::DoNothing::Repeatedly()),
         num_requests_(0) {}
 
   void ExpectReport(const std::string& report) {
     expect_reports_.insert(report);
   }
 
-  void set_all_url_requests_destroyed_callback(const base::Closure& callback) {
-    all_url_requests_destroyed_callback_ = callback;
+  void set_all_url_requests_destroyed_callback(
+      base::RepeatingClosure callback) {
+    all_url_requests_destroyed_callback_ = std::move(callback);
   }
 
-  void set_url_request_destroyed_callback(const base::Closure& callback) {
-    url_request_destroyed_callback_ = callback;
+  void set_url_request_destroyed_callback(base::RepeatingClosure callback) {
+    url_request_destroyed_callback_ = std::move(callback);
   }
 
   void set_expect_url(const GURL& expect_url) { expect_url_ = expect_url; }
@@ -174,8 +175,8 @@ class TestReportSenderNetworkDelegate : public NetworkDelegateImpl {
   }
 
  private:
-  base::Closure url_request_destroyed_callback_;
-  base::Closure all_url_requests_destroyed_callback_;
+  base::RepeatingClosure url_request_destroyed_callback_;
+  base::RepeatingClosure all_url_requests_destroyed_callback_;
   size_t num_requests_;
   GURL expect_url_;
   std::set<std::string> expect_reports_;

@@ -328,6 +328,7 @@ class PpdMetadataManagerImpl : public PpdMetadataManager {
     if (!metadata_locale_.empty()) {
       base::SequencedTaskRunnerHandle::Get()->PostTask(
           FROM_HERE, base::BindOnce(std::move(cb), true));
+      return;
     }
 
     const PpdMetadataPathSpecifier options = {PpdMetadataType::LOCALES};
@@ -373,6 +374,7 @@ class PpdMetadataManagerImpl : public PpdMetadataManager {
     if (!metadata_name.has_value()) {
       base::SequencedTaskRunnerHandle::Get()->PostTask(
           FROM_HERE, base::BindOnce(std::move(cb), false, ParsedPrinters{}));
+      return;
     }
 
     if (MapHasValueFresherThan(cached_printers_, metadata_name.value(),

@@ -4,8 +4,8 @@
 
 #include "ash/clipboard/clipboard_history.h"
 
+#include <list>
 #include <unordered_map>
-#include <vector>
 
 #include "ash/clipboard/clipboard_history_controller.h"
 #include "ash/shell.h"
@@ -37,8 +37,8 @@ class ClipboardHistoryTest : public AshTestBase {
         Shell::Get()->clipboard_history_controller()->clipboard_history();
   }
 
-  std::vector<ui::ClipboardData> GetClipboardHistoryData() {
-    return clipboard_history_->GetRecentClipboardDataWithNoDuplicates();
+  const std::list<ui::ClipboardData>& GetClipboardHistoryData() {
+    return clipboard_history_->GetItems();
   }
 
   void WriteAndEnsureTextHistory(
@@ -52,7 +52,7 @@ class ClipboardHistoryTest : public AshTestBase {
   }
 
   void EnsureTextHistory(const std::vector<base::string16>& expected_strings) {
-    const std::vector<ui::ClipboardData> datas = GetClipboardHistoryData();
+    const std::list<ui::ClipboardData>& datas = GetClipboardHistoryData();
     EXPECT_EQ(expected_strings.size(), datas.size());
 
     int expected_strings_index = 0;
@@ -68,7 +68,7 @@ class ClipboardHistoryTest : public AshTestBase {
       ui::ScopedClipboardWriter scw(ui::ClipboardBuffer::kCopyPaste);
       scw.WriteImage(input_bitmap);
     }
-    const std::vector<ui::ClipboardData> datas = GetClipboardHistoryData();
+    const std::list<ui::ClipboardData>& datas = GetClipboardHistoryData();
     EXPECT_EQ(expected_bitmaps.size(), datas.size());
 
     int expected_bitmaps_index = 0;
@@ -90,12 +90,12 @@ class ClipboardHistoryTest : public AshTestBase {
                            ui::ClipboardFormatType::GetWebCustomDataType());
     }
 
-    const std::vector<ui::ClipboardData> datas = GetClipboardHistoryData();
+    const std::list<ui::ClipboardData> datas = GetClipboardHistoryData();
     EXPECT_EQ(1u, datas.size());
 
     std::unordered_map<base::string16, base::string16> actual_data;
-    ui::ReadCustomDataIntoMap(datas.at(0).custom_data_data().c_str(),
-                              datas.at(0).custom_data_data().size(),
+    ui::ReadCustomDataIntoMap(datas.front().custom_data_data().c_str(),
+                              datas.front().custom_data_data().size(),
                               &actual_data);
 
     EXPECT_EQ(expected_data, actual_data);
@@ -178,7 +178,7 @@ TEST_F(ClipboardHistoryTest, ClearHistoryBasic) {
     scw.WriteText(input_string);
   }
 
-  clipboard_history()->ClearHistory();
+  clipboard_history()->Clear();
   EnsureTextHistory(expected_strings);
 }
 

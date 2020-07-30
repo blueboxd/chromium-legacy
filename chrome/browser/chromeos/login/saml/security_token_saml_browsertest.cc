@@ -13,7 +13,6 @@
 #include "base/task/post_task.h"
 #include "base/values.h"
 #include "chrome/browser/chromeos/certificate_provider/test_certificate_provider_extension.h"
-#include "chrome/browser/chromeos/certificate_provider/test_certificate_provider_extension_login_screen_mixin.h"
 #include "chrome/browser/chromeos/login/saml/test_client_cert_saml_idp_mixin.h"
 #include "chrome/browser/chromeos/login/test/device_state_mixin.h"
 #include "chrome/browser/chromeos/login/test/fake_gaia_mixin.h"
@@ -24,7 +23,10 @@
 #include "chrome/browser/chromeos/login/test/session_manager_state_waiter.h"
 #include "chrome/browser/chromeos/login/ui/login_display_host.h"
 #include "chrome/browser/chromeos/login/users/test_users.h"
+#include "chrome/browser/chromeos/profiles/profile_helper.h"
 #include "chrome/browser/chromeos/scoped_test_system_nss_key_slot_mixin.h"
+#include "chrome/browser/policy/extension_force_install_mixin.h"
+#include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/webui/chromeos/login/gaia_screen_handler.h"
 #include "chrome/browser/ui/webui/chromeos/login/oobe_ui.h"
 #include "chromeos/constants/chromeos_switches.h"
@@ -35,6 +37,7 @@
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/web_ui.h"
 #include "content/public/test/browser_test.h"
+#include "extensions/common/features/simple_feature.h"
 #include "google_apis/gaia/fake_gaia.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "url/gurl.h"
@@ -69,6 +72,11 @@ std::string GetActiveUserEmail() {
   if (!user)
     return std::string();
   return user->GetAccountId().GetUserEmail();
+}
+
+// Returns the profile into which login-screen extensions are force-installed.
+Profile* GetOriginalSigninProfile() {
+  return chromeos::ProfileHelper::GetSigninProfile()->GetOriginalProfile();
 }
 
 }  // namespace
@@ -120,12 +128,16 @@ class SecurityTokenSamlTest : public OobeBaseTest {
 
   void SetUpOnMainThread() override {
     OobeBaseTest::SetUpOnMainThread();
-    cert_provider_extension_mixin_.test_certificate_provider_extension()
-        ->set_require_pin(kCorrectPin);
+    PrepareCertProviderExtension();
     gaia_mixin_.fake_gaia()->RegisterSamlUser(
         saml_test_users::kFirstUserCorpExampleComEmail,
         saml_idp_mixin_.GetSamlPageUrl());
     StartObservingLoginUiMessages();
+  }
+
+  void TearDownOnMainThread() override {
+    certificate_provider_extension_.reset();
+    OobeBaseTest::TearDownOnMainThread();
   }
 
   int pin_dialog_shown_count() const { return pin_dialog_shown_count_; }
@@ -163,6 +175,20 @@ class SecurityTokenSamlTest : public OobeBaseTest {
   }
 
  private:
+  // Configures and installs the test certificate provider extension.
+  void PrepareCertProviderExtension() {
+    certificate_provider_extension_ =
+        std::make_unique<TestCertificateProviderExtension>(
+            GetOriginalSigninProfile());
+    certificate_provider_extension_->set_require_pin(kCorrectPin);
+    extension_force_install_mixin_.InitWithDeviceStateMixin(
+        GetOriginalSigninProfile(), &device_state_mixin_);
+    EXPECT_TRUE(extension_force_install_mixin_.ForceInstallFromSourceDir(
+        TestCertificateProviderExtension::GetExtensionSourcePath(),
+        TestCertificateProviderExtension::GetExtensionPemPath(),
+        ExtensionForceInstallMixin::WaitMode::kBackgroundPageFirstLoad));
+  }
+
   // Sets up the client certificate to be automatically selected for the SAML
   // page (by default a certificate selector needs to be shown).
   void SetClientCertAutoSelectPolicy() {
@@ -198,6 +224,10 @@ class SecurityTokenSamlTest : public OobeBaseTest {
       pin_dialog_shown_run_loop_->Quit();
   }
 
+  // Bypass "signin_screen" feature only enabled for allowlisted extensions.
+  extensions::SimpleFeature::ScopedThreadUnsafeAllowlistForTest
+      feature_allowlist_{TestCertificateProviderExtension::extension_id()};
+
   ScopedTestSystemNSSKeySlotMixin system_nss_key_slot_mixin_{&mixin_host_};
   FakeGaiaMixin gaia_mixin_{&mixin_host_, embedded_test_server()};
   DeviceStateMixin device_state_mixin_{
@@ -205,9 +235,9 @@ class SecurityTokenSamlTest : public OobeBaseTest {
   TestClientCertSamlIdpMixin saml_idp_mixin_{
       &mixin_host_, &gaia_mixin_,
       /*client_cert_authorities=*/{GetClientCertCaName()}};
-  TestCertificateProviderExtensionLoginScreenMixin
-      cert_provider_extension_mixin_{&mixin_host_, &device_state_mixin_,
-                                     /*load_extension_immediately=*/true};
+  ExtensionForceInstallMixin extension_force_install_mixin_{&mixin_host_};
+  std::unique_ptr<TestCertificateProviderExtension>
+      certificate_provider_extension_;
   int pin_dialog_shown_count_ = 0;
   base::RunLoop* pin_dialog_shown_run_loop_ = nullptr;
   base::WeakPtrFactory<SecurityTokenSamlTest> weak_factory_{this};

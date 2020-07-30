@@ -9,6 +9,8 @@
 #include <ostream>
 #include <vector>
 
+#include "base/bit_cast.h"
+#include "base/strings/stringprintf.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/blink/renderer/platform/image-decoders/image_decoder_test_helpers.h"
 #include "third_party/blink/renderer/platform/wtf/shared_buffer.h"
@@ -438,7 +440,6 @@ StaticColorCheckParam kTestParams[] = {
     //  such as:
     //   sRGB ColorPrimaries, BT.2020 TransferFunction and
     //   BT.609 MatrixCoefficients
-    // TODO(ryoh): Add YUV422/444 tests.
     // TODO(ryoh): Add Mono + Alpha Images.
 };
 
@@ -468,11 +469,20 @@ void TestInvalidStaticImage(const char* avif_file, ErrorPhase error_phase) {
   }
 }
 
-void ReadYUV(const char* image_file_path,
+float HalfFloatToUnorm(uint16_t h) {
+  const uint32_t f = ((h & 0x8000) << 16) | (((h & 0x7c00) + 0x1c000) << 13) |
+                     ((h & 0x03ff) << 13);
+  return bit_cast<float>(f);
+}
+
+void ReadYUV(const char* file_name,
              const IntSize& expected_y_size,
              const IntSize& expected_uv_size,
-             SkColorType color_type) {
-  scoped_refptr<SharedBuffer> data = ReadFile(image_file_path);
+             SkColorType color_type,
+             int bit_depth,
+             gfx::Point3F* rgb_pixel = nullptr) {
+  scoped_refptr<SharedBuffer> data =
+      ReadFile("web_tests/images/resources/avif/", file_name);
   ASSERT_TRUE(data);
 
   auto decoder = CreateAVIFDecoder();
@@ -512,6 +522,78 @@ void ReadYUV(const char* image_file_path,
 
   decoder->DecodeToYUV();
   EXPECT_FALSE(decoder->Failed());
+
+  auto metadata = decoder->MakeMetadataForDecodeAcceleration();
+  EXPECT_EQ(cc::ImageType::kAVIF, metadata.image_type);
+  EXPECT_EQ(gfx::Size(size), metadata.image_size);
+  if (expected_y_size == expected_uv_size)
+    EXPECT_EQ(cc::YUVSubsampling::k444, metadata.yuv_subsampling);
+  else if (expected_y_size.Height() == expected_uv_size.Height())
+    EXPECT_EQ(cc::YUVSubsampling::k422, metadata.yuv_subsampling);
+  else
+    EXPECT_EQ(cc::YUVSubsampling::k420, metadata.yuv_subsampling);
+
+  if (!rgb_pixel)
+    return;
+
+  if (bit_depth > 8) {
+    rgb_pixel->set_x(reinterpret_cast<uint16_t*>(planes[0])[0]);
+    rgb_pixel->set_y(reinterpret_cast<uint16_t*>(planes[1])[0]);
+    rgb_pixel->set_z(reinterpret_cast<uint16_t*>(planes[2])[0]);
+  } else {
+    rgb_pixel->set_x(reinterpret_cast<uint8_t*>(planes[0])[0]);
+    rgb_pixel->set_y(reinterpret_cast<uint8_t*>(planes[1])[0]);
+    rgb_pixel->set_z(reinterpret_cast<uint8_t*>(planes[2])[0]);
+  }
+
+  if (color_type == kGray_8_SkColorType ||
+      color_type == kA16_unorm_SkColorType) {
+    const double max_channel = (1 << bit_depth) - 1;
+    rgb_pixel->set_x(rgb_pixel->x() / max_channel);
+    rgb_pixel->set_y(rgb_pixel->y() / max_channel);
+    rgb_pixel->set_z(rgb_pixel->z() / max_channel);
+  } else {
+    DCHECK_EQ(color_type, kA16_float_SkColorType);
+    rgb_pixel->set_x(HalfFloatToUnorm(rgb_pixel->x()));
+    rgb_pixel->set_y(HalfFloatToUnorm(rgb_pixel->y()));
+    rgb_pixel->set_z(HalfFloatToUnorm(rgb_pixel->z()));
+  }
+
+  // Convert our YUV pixel to RGB to avoid an excessive amounts of test
+  // expectations. We otherwise need bit_depth * yuv_sampling * color_type.
+  auto* transform = reinterpret_cast<AVIFImageDecoder*>(decoder.get())
+                        ->GetColorTransformForTesting();
+  transform->Transform(rgb_pixel, 1);
+}
+
+void TestYUVRed(const char* file_name,
+                const IntSize& expected_uv_size,
+                SkColorType color_type = kGray_8_SkColorType,
+                int bit_depth = 8) {
+  SCOPED_TRACE(base::StringPrintf("file_name=%s, color_type=%d", file_name,
+                                  int{color_type}));
+
+  constexpr IntSize kRedYSize(3, 3);
+
+  gfx::Point3F decoded_pixel;
+  ASSERT_NO_FATAL_FAILURE(ReadYUV(file_name, kRedYSize, expected_uv_size,
+                                  color_type, bit_depth, &decoded_pixel));
+
+  // Allow the RGB value to be off by one step. 1/max_value is the minimum
+  // amount of error possible if error exists for integer sources.
+  //
+  // For half float values we have additional error from precision limitations,
+  // which gets worse at the extents of [-0.5, 1] -- which is the case for our R
+  // channel since we're using a pure red source.
+  //
+  // https://en.wikipedia.org/wiki/Half-precision_floating-point_format#Precision_limitations_on_decimal_values_in_[0,_1]
+  const double kMinError = 1.0 / ((1 << bit_depth) - 1);
+  const double kError = color_type == kA16_float_SkColorType
+                            ? kMinError + std::pow(2, -11)
+                            : kMinError;
+  EXPECT_NEAR(decoded_pixel.x(), 1, kError);     // R
+  EXPECT_NEAR(decoded_pixel.y(), 0, kMinError);  // G
+  EXPECT_NEAR(decoded_pixel.z(), 0, kMinError);  // B
 }
 
 }  // namespace
@@ -588,41 +670,45 @@ TEST(StaticAVIFTests, ValidImages) {
 
 TEST(StaticAVIFTests, YUV) {
   // 3x3, YUV 4:2:0
-  ReadYUV("/images/resources/avif/red-limited-range-420-8bpc.avif",
-          IntSize(3, 3), IntSize(2, 2), kGray_8_SkColorType);
+  constexpr IntSize kUVSize420(2, 2);
+  TestYUVRed("red-limited-range-420-8bpc.avif", kUVSize420);
+  TestYUVRed("red-full-range-420-8bpc.avif", kUVSize420);
 
   // 3x3, YUV 4:2:2
-  ReadYUV("/images/resources/avif/red-limited-range-422-8bpc.avif",
-          IntSize(3, 3), IntSize(2, 3), kGray_8_SkColorType);
+  constexpr IntSize kUVSize422(2, 3);
+  TestYUVRed("red-limited-range-422-8bpc.avif", kUVSize422);
 
   // 3x3, YUV 4:4:4
-  ReadYUV("/images/resources/avif/red-limited-range-444-8bpc.avif",
-          IntSize(3, 3), IntSize(3, 3), kGray_8_SkColorType);
+  constexpr IntSize kUVSize444(3, 3);
+  TestYUVRed("red-limited-range-444-8bpc.avif", kUVSize444);
+
+  // Full range BT709 color space is uncommon, but should be supported.
+  TestYUVRed("red-full-range-bt709-444-8bpc.avif", kUVSize444);
 
   for (const auto ct : {kA16_unorm_SkColorType, kA16_float_SkColorType}) {
     // 3x3, YUV 4:2:0, 10bpc
-    ReadYUV("/images/resources/avif/red-limited-range-420-10bpc.avif",
-            IntSize(3, 3), IntSize(2, 2), ct);
+    TestYUVRed("red-limited-range-420-10bpc.avif", kUVSize420, ct, 10);
 
     // 3x3, YUV 4:2:2, 10bpc
-    ReadYUV("/images/resources/avif/red-limited-range-422-10bpc.avif",
-            IntSize(3, 3), IntSize(2, 3), ct);
+    TestYUVRed("red-limited-range-422-10bpc.avif", kUVSize422, ct, 10);
 
     // 3x3, YUV 4:4:4, 10bpc
-    ReadYUV("/images/resources/avif/red-limited-range-444-10bpc.avif",
-            IntSize(3, 3), IntSize(3, 3), ct);
+    TestYUVRed("red-limited-range-444-10bpc.avif", kUVSize444, ct, 10);
 
     // 3x3, YUV 4:2:0, 12bpc
-    ReadYUV("/images/resources/avif/red-limited-range-420-12bpc.avif",
-            IntSize(3, 3), IntSize(2, 2), ct);
+    TestYUVRed("red-limited-range-420-12bpc.avif", kUVSize420, ct, 12);
 
     // 3x3, YUV 4:2:2, 12bpc
-    ReadYUV("/images/resources/avif/red-limited-range-422-12bpc.avif",
-            IntSize(3, 3), IntSize(2, 3), ct);
+    TestYUVRed("red-limited-range-422-12bpc.avif", kUVSize422, ct, 12);
 
     // 3x3, YUV 4:4:4, 12bpc
-    ReadYUV("/images/resources/avif/red-limited-range-444-12bpc.avif",
-            IntSize(3, 3), IntSize(3, 3), ct);
+    TestYUVRed("red-limited-range-444-12bpc.avif", kUVSize444, ct, 12);
+
+    // Various common color spaces should be supported.
+    TestYUVRed("red-full-range-bt2020-pq-444-10bpc.avif", kUVSize444, ct, 10);
+    TestYUVRed("red-full-range-bt2020-pq-444-12bpc.avif", kUVSize444, ct, 12);
+    TestYUVRed("red-full-range-bt2020-hlg-444-10bpc.avif", kUVSize444, ct, 10);
+    TestYUVRed("red-full-range-bt2020-hlg-444-12bpc.avif", kUVSize444, ct, 12);
   }
 }
 

@@ -29,5 +29,6 @@ PASS getWriter() can be used
 PASS WriteParams: truncate missing size param
 PASS WriteParams: write missing data param
 PASS WriteParams: seek missing position param
+PASS write() with an invalid blob to an empty file should reject
 Harness: the test ran to completion.
 

@@ -37,6 +37,7 @@ import java.util.Set;
 // TODO(crbug/1022172): Should be package-protected once modularization is complete.
 public class ShareSheetCoordinator
         implements ActivityStateObserver, ChromeOptionShareCallback, View.OnLayoutChangeListener {
+    private static final String NO_SHARE_SHEET_MESSAGE = "";
     private final BottomSheetController mBottomSheetController;
     private final Supplier<Tab> mTabProvider;
     private final ShareSheetPropertyModelBuilder mPropertyModelBuilder;
@@ -87,6 +88,12 @@ public class ShareSheetCoordinator
     // TODO(crbug/1022172): Should be package-protected once modularization is complete.
     public void showShareSheet(
             ShareParams params, ChromeShareExtras chromeShareExtras, long shareStartTime) {
+        showShareSheetWithMessage(
+                NO_SHARE_SHEET_MESSAGE, params, chromeShareExtras, shareStartTime);
+    }
+
+    void showShareSheetWithMessage(String message, ShareParams params,
+            ChromeShareExtras chromeShareExtras, long shareStartTime) {
         Activity activity = params.getWindow().getActivity().get();
         if (activity == null) return;
 
@@ -107,7 +114,7 @@ public class ShareSheetCoordinator
         List<PropertyModel> thirdPartyApps = createBottomRowPropertyModels(
                 activity, params, contentTypes, chromeShareExtras.saveLastUsed());
 
-        mBottomSheet.createRecyclerViews(chromeFeatures, thirdPartyApps);
+        mBottomSheet.createRecyclerViews(chromeFeatures, thirdPartyApps, message);
 
         boolean shown = mBottomSheetController.requestShowContent(mBottomSheet, true);
         if (shown) {
@@ -123,6 +130,14 @@ public class ShareSheetCoordinator
             ShareParams params, ChromeShareExtras chromeShareExtras, long shareStartTime) {
         mExcludeFirstParty = true;
         showShareSheet(params, chromeShareExtras, shareStartTime);
+    }
+
+    // Used by first party features to share with only non-chrome apps along with a message.
+    @Override
+    public void showThirdPartyShareSheetWithMessage(String message, ShareParams params,
+            ChromeShareExtras chromeShareExtras, long shareStartTime) {
+        mExcludeFirstParty = true;
+        showShareSheetWithMessage(message, params, chromeShareExtras, shareStartTime);
     }
 
     List<PropertyModel> createTopRowPropertyModels(Activity activity, ShareParams shareParams,

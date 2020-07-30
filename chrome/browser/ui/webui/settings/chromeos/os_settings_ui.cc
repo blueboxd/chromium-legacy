@@ -8,7 +8,11 @@
 
 #include "ash/public/cpp/network_config_service.h"
 #include "base/metrics/histogram_functions.h"
+#include "chrome/browser/nearby_sharing/nearby_share_settings.h"
+#include "chrome/browser/nearby_sharing/nearby_sharing_service_factory.h"
+#include "chrome/browser/nearby_sharing/nearby_sharing_service_impl.h"
 #include "chrome/browser/ui/webui/managed_ui_handler.h"
+#include "chrome/browser/ui/webui/nearby_share/shared_resources.h"
 #include "chrome/browser/ui/webui/settings/chromeos/device_storage_handler.h"
 #include "chrome/browser/ui/webui/settings/chromeos/os_settings_manager.h"
 #include "chrome/browser/ui/webui/settings/chromeos/os_settings_manager_factory.h"
@@ -24,6 +28,7 @@
 #include "components/prefs/pref_service.h"
 #include "content/public/browser/web_ui_data_source.h"
 #include "mojo/public/cpp/bindings/pending_receiver.h"
+#include "mojo/public/cpp/bindings/self_owned_receiver.h"
 
 namespace chromeos {
 namespace settings {
@@ -86,6 +91,12 @@ OSSettingsUI::OSSettingsUI(content::WebUI* web_ui)
           : IDR_OS_SETTINGS_SETTINGS_HTML);
 #endif
 
+  // Register chrome://nearby resources so they are available at
+  // chrome://os-settings. This allows the sharing of resources without having
+  // to put everything in chrome://resources. This is necessary because portions
+  // of the nearby UI need to be re-used in both places.
+  RegisterNearbySharedResources(html_source);
+
   ManagedUIHandler::Initialize(web_ui, html_source);
 
   content::WebUIDataSource::Add(web_ui->GetWebContents()->GetBrowserContext(),
@@ -130,6 +141,14 @@ void OSSettingsUI::BindInterface(
             Profile::FromWebUI(web_ui()));
   }
   app_management_page_handler_factory_->Bind(std::move(receiver));
+}
+
+void OSSettingsUI::BindInterface(
+    mojo::PendingReceiver<nearby_share::mojom::NearbyShareSettings> receiver) {
+  NearbySharingService* service =
+      NearbySharingServiceFactory::GetForBrowserContext(
+          Profile::FromWebUI(web_ui()));
+  service->GetSettings()->Bind(std::move(receiver));
 }
 
 WEB_UI_CONTROLLER_TYPE_IMPL(OSSettingsUI)

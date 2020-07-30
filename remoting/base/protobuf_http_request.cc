@@ -48,23 +48,23 @@ base::TimeDelta ProtobufHttpRequest::GetRequestTimeoutDuration() const {
 void ProtobufHttpRequest::OnResponse(
     std::unique_ptr<std::string> response_body) {
   ProtobufHttpStatus url_loader_status = GetUrlLoaderStatus();
-  // Move |invalidator_| out of |this| as the callback can potentially delete
-  // |this|.
+  // Move variables out of |this| as the callback can potentially delete |this|.
   auto invalidator = std::move(invalidator_);
+  auto response_callback = std::move(response_callback_);
   if (url_loader_status.ok()) {
-    std::move(response_callback_).Run(ParseResponse(std::move(response_body)));
+    std::move(response_callback).Run(ParseResponse(std::move(response_body)));
   } else {
     // Parse the status from the response.
     protobufhttpclient::Status api_status;
     if (response_body && api_status.ParseFromString(*response_body) &&
         api_status.code() > 0) {
-      std::move(response_callback_).Run(ProtobufHttpStatus(api_status));
+      std::move(response_callback).Run(ProtobufHttpStatus(api_status));
     } else {
       // Fallback to just return the status from URL loader.
-      std::move(response_callback_).Run(url_loader_status);
+      std::move(response_callback).Run(url_loader_status);
     }
   }
-  DCHECK(!response_callback_);
+  DCHECK(!response_callback);
   std::move(invalidator).Run();
 }
 

@@ -973,7 +973,6 @@ void RenderThreadImpl::InitializeWebKit(mojo::BinderMap* binders) {
       ->SetRuntimeFeaturesDefaultsBeforeBlinkInitialization();
   SetRuntimeFeaturesDefaultsAndUpdateFromArgs(command_line);
 
-  isolate_ = blink::WebIsolate::Create();
   blink::Initialize(blink_platform_impl_.get(), binders,
                     main_thread_scheduler_.get());
 

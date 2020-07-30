@@ -273,7 +273,6 @@ class CORE_EXPORT WebFrameWidgetBase
   void DidNotAcquirePointerLock() override;
   void DidLosePointerLock() override;
   void SetCompositorVisible(bool visible) override;
-  void SetDisplayMode(mojom::blink::DisplayMode) override;
   void SetWindowSegments(WebVector<WebRect> window_segments) override;
   void SetCursor(const ui::Cursor& cursor) override;
   bool HandlingInputEvent() override;
@@ -379,6 +378,10 @@ class CORE_EXPORT WebFrameWidgetBase
   void GetStringAtPoint(const gfx::Point& point_in_local_root,
                         GetStringAtPointCallback callback) override;
 #endif
+
+  // Sets the display mode, which comes from the top-level browsing context and
+  // is applied to all widgets.
+  void SetDisplayMode(mojom::blink::DisplayMode);
 
   base::Optional<gfx::Point> GetAndResetContextMenuLocation();
 

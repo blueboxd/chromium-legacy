@@ -512,7 +512,7 @@ BluetoothDevice::GetPrimaryServicesByUUID(const BluetoothUUID& service_uuid) {
   return services;
 }
 
-#if defined(OS_CHROMEOS)
+#if defined(OS_CHROMEOS) || defined(OS_LINUX)
 void BluetoothDevice::SetBatteryPercentage(
     base::Optional<uint8_t> battery_percentage) {
   if (battery_percentage)

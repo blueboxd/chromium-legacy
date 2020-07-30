@@ -39,15 +39,27 @@ class DEVICE_BLUETOOTH_EXPORT FakeBluetoothBatteryClient
   FakeBluetoothBatteryClient();
   ~FakeBluetoothBatteryClient() override;
 
+  // Simulates a creation of a battery object.
+  void CreateBattery(const dbus::ObjectPath& path, uint8_t percentage);
+
+  // Simulates percentage change of a battery object.
+  void ChangeBatteryPercentage(const dbus::ObjectPath& path,
+                               uint8_t percentage);
+
+  // Simulates a removal of a battery object.
+  void RemoveBattery(const dbus::ObjectPath& path);
+
   // BluetoothBatteryClient overrides
   void Init(dbus::Bus* bus, const std::string& bluetooth_service_name) override;
   void AddObserver(Observer* observer) override;
   void RemoveObserver(Observer* observer) override;
-  std::vector<dbus::ObjectPath> GetBatteriesForAdapter(
-      const dbus::ObjectPath& adapter_path) override;
   Properties* GetProperties(const dbus::ObjectPath& object_path) override;
 
  private:
+  // Property callback passed when we create Properties* structures.
+  void OnPropertyChanged(const dbus::ObjectPath& object_path,
+                         const std::string& property_name);
+
   // List of observers interested in event notifications from us.
   base::ObserverList<Observer>::Unchecked observers_;
 

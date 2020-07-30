@@ -328,7 +328,7 @@ TEST_F(PrintServersProviderTest, Whitelist) {
   // Apply an empty whitelist on the top.
   auto* prefs = profile_.GetTestingPrefService();
   auto value = std::make_unique<base::ListValue>();
-  prefs->SetManagedPref(prefs::kExternalPrintServersWhitelist,
+  prefs->SetManagedPref(prefs::kExternalPrintServersAllowlist,
                         std::move(value));
   // Check the resultant list - is is supposed to be empty.
   task_environment_.RunUntilIdle();
@@ -339,7 +339,7 @@ TEST_F(PrintServersProviderTest, Whitelist) {
   value = std::make_unique<base::ListValue>();
   for (const std::string& id : kPrintServersPolicyWhitelist1)
     value->Append(base::Value(id));
-  prefs->SetManagedPref(prefs::kExternalPrintServersWhitelist,
+  prefs->SetManagedPref(prefs::kExternalPrintServersAllowlist,
                         std::move(value));
   // Check the resultant list.
   task_environment_.RunUntilIdle();

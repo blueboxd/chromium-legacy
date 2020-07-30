@@ -130,7 +130,7 @@ public class PaintPreviewPlayerTest extends DummyUiActivityTestCase {
     @DisableIf.Build(message = "Test is failing on Android P, see crbug.com/1110939.",
             sdk_is_greater_than = VERSION_CODES.O_MR1, sdk_is_less_than = VERSION_CODES.Q)
     public void linkClickTest() {
-        initPlayerManager(true);
+        initPlayerManager(false);
         final View playerHostView = mPlayerManager.getView();
 
         // Click on a link that is visible in the default viewport.
@@ -143,6 +143,28 @@ public class PaintPreviewPlayerTest extends DummyUiActivityTestCase {
         assertLinkUrl(playerHostView, 320, 4920, TEST_OUT_OF_VIEWPORT_LINK_URL);
         assertLinkUrl(playerHostView, 375, 4950, TEST_OUT_OF_VIEWPORT_LINK_URL);
         assertLinkUrl(playerHostView, 430, 4980, TEST_OUT_OF_VIEWPORT_LINK_URL);
+    }
+
+    @Test
+    @MediumTest
+    public void nestedLinkClickTest() throws Exception {
+        initPlayerManager(true);
+        final View playerHostView = mPlayerManager.getView();
+        assertLinkUrl(playerHostView, 220, 220, TEST_IN_VIEWPORT_LINK_URL);
+        assertLinkUrl(playerHostView, 300, 270, TEST_IN_VIEWPORT_LINK_URL);
+
+        UiDevice device = UiDevice.getInstance(InstrumentationRegistry.getInstrumentation());
+        int deviceHeight = device.getDisplayHeight();
+        int statusBarHeight = statusBarHeight();
+        int navigationBarHeight = navigationBarHeight();
+        int padding = 20;
+        int fromY = deviceHeight - navigationBarHeight - padding;
+        int toY = statusBarHeight + padding;
+        mLinkClickHandler.mUrl = null;
+        device.swipe(300, fromY, 300, toY, 10);
+
+        // Manually click as assertLinkUrl() doesn't handle subframe scrolls well.
+        assertLinkUrl(playerHostView, 200, 1500, TEST_OUT_OF_VIEWPORT_LINK_URL);
     }
 
     @Test
@@ -185,13 +207,8 @@ public class PaintPreviewPlayerTest extends DummyUiActivityTestCase {
         compositorErrorCallback.waitForFirst();
     }
 
-    /**
-     * Tests that scaling works and doesn't crash.
-     */
-    @Test
-    @MediumTest
-    public void scaleSmokeTest() throws Exception {
-        initPlayerManager(true);
+    private void scaleSmokeTest(boolean multiFrame) throws Exception {
+        initPlayerManager(multiFrame);
         UiDevice device = UiDevice.getInstance(InstrumentationRegistry.getInstrumentation());
 
         // Query all FrameLayout objects as the PlayerFrameView isn't recognized.
@@ -214,6 +231,24 @@ public class PaintPreviewPlayerTest extends DummyUiActivityTestCase {
             didPinch = true;
         }
         Assert.assertTrue("Failed to pinch player view.", didPinch);
+    }
+
+    /**
+     * Tests that scaling works and doesn't crash.
+     */
+    @Test
+    @MediumTest
+    public void singleFrameScaleSmokeTest() throws Exception {
+        scaleSmokeTest(false);
+    }
+
+    /**
+     * Tests that scaling works and doesn't crash with multiple frames.
+     */
+    @Test
+    @MediumTest
+    public void multiFrameScaleSmokeTest() throws Exception {
+        scaleSmokeTest(true);
     }
 
     private int statusBarHeight() {
@@ -280,10 +315,14 @@ public class PaintPreviewPlayerTest extends DummyUiActivityTestCase {
 
         FrameData childD = new FrameData(new Size(300, 500), new Rect[] {}, new String[] {},
                 new Rect[] {}, new FrameData[] {});
-        FrameData childB = new FrameData(new Size(900, 3000), new Rect[] {}, new String[] {},
-                new Rect[] {new Rect(50, 2000, 150, 2100)}, new FrameData[] {childD});
+        FrameData childB =
+                new FrameData(new Size(900, 3000), new Rect[] {new Rect(50, 2300, 250, 2800)},
+                        new String[] {TEST_OUT_OF_VIEWPORT_LINK_URL},
+                        new Rect[] {new Rect(50, 2000, 150, 2100)}, new FrameData[] {childD});
 
-        FrameData childC = new FrameData(new Size(400, 200), new Rect[] {}, new String[] {},
+        // Link is located at 200, 200.
+        FrameData childC = new FrameData(new Size(400, 200),
+                new Rect[] {new Rect(50, 50, 300, 200)}, new String[] {TEST_IN_VIEWPORT_LINK_URL},
                 new Rect[] {}, new FrameData[] {});
         FrameData childA = new FrameData(new Size(500, 300), new Rect[] {}, new String[] {},
                 new Rect[] {new Rect(50, 50, 450, 250)}, new FrameData[] {childC});
@@ -291,7 +330,7 @@ public class PaintPreviewPlayerTest extends DummyUiActivityTestCase {
         FrameData rootFrame = new FrameData(new Size(TEST_PAGE_WIDTH, TEST_PAGE_HEIGHT),
                 new Rect[] {mInViewportLinkRect, mOutOfViewportLinkRect},
                 new String[] {TEST_IN_VIEWPORT_LINK_URL, TEST_OUT_OF_VIEWPORT_LINK_URL},
-                new Rect[] {new Rect(100, 100, 600, 400), new Rect(50, 1000, 700, 2000)},
+                new Rect[] {new Rect(100, 100, 600, 400), new Rect(50, 1000, 900, 2000)},
                 new FrameData[] {childA, childB});
         Assert.assertTrue(service.createFramesForKey(TEST_DIRECTORY_KEY, TEST_URL, rootFrame));
     }

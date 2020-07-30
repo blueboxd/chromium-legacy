@@ -30,7 +30,9 @@ js_library("settings_animated_pages") {
   deps = [
     ":settings_subpage",
     "..:router",
+    "..:setting_id_param_util",
     "//ui/webui/resources/js:assert",
+    "//ui/webui/resources/js:load_time_data",
     "//ui/webui/resources/js/cr/ui:focus_without_ink",
   ]
   externs_list = [ "$externs_path/pending_polymer.js" ]
@@ -42,6 +44,7 @@ js_library("settings_section") {
 js_library("settings_subpage") {
   deps = [
     "..:router",
+    "..:setting_id_param_util",
     "//third_party/polymer/v1_0/components-chromium/iron-resizable-behavior:iron-resizable-behavior-extracted",
     "//ui/webui/resources/cr_elements/cr_search_field:cr_search_field",
     "//ui/webui/resources/js:assert",
@@ -80,8 +83,10 @@ js_library("settings_animated_pages.m") {
   deps = [
     ":settings_subpage.m",
     "..:router.m",
+    "..:setting_id_param_util.m",
     "//third_party/polymer/v3_0/components-chromium/polymer:polymer_bundled",
     "//ui/webui/resources/js:assert.m",
+    "//ui/webui/resources/js:load_time_data.m",
     "//ui/webui/resources/js/cr/ui:focus_without_ink.m",
   ]
   extra_deps = [ ":settings_animated_pages_module" ]
@@ -99,6 +104,7 @@ js_library("settings_subpage.m") {
   sources = [ "$root_gen_dir/chrome/browser/resources/settings/settings_page/settings_subpage.m.js" ]
   deps = [
     "..:router.m",
+    "..:setting_id_param_util.m",
     "//third_party/polymer/v3_0/components-chromium/iron-resizable-behavior:iron-resizable-behavior",
     "//third_party/polymer/v3_0/components-chromium/polymer:polymer_bundled",
     "//ui/webui/resources/cr_elements/cr_search_field:cr_search_field.m",
@@ -129,6 +135,7 @@ polymer_modulizer("settings_animated_pages") {
   html_type = "dom-module"
   auto_imports = [
     "chrome/browser/resources/settings/router.html|Route, Router, RouteObserverBehavior",
+    "chrome/browser/resources/settings/setting_id_param_util.html|getSettingIdParameter",
     "ui/webui/resources/html/assert.html|assert",
     "ui/webui/resources/html/polymer.html|afterNextRender, dom, DomIf, html, Polymer",
   ]
@@ -151,6 +158,7 @@ polymer_modulizer("settings_subpage") {
   migrated_imports = settings_migrated_imports
   auto_imports = settings_auto_imports + [
                    "chrome/browser/resources/settings/router.html|RouteObserverBehavior,Router",
+                   "chrome/browser/resources/settings/setting_id_param_util.html|getSettingIdParameter",
                    "third_party/polymer/v1_0/components-chromium/iron-resizable-behavior/iron-resizable-behavior.html|IronResizableBehavior",
                    "ui/webui/resources/html/assert.html|assert",
                    "ui/webui/resources/html/polymer.html|html, Polymer, afterNextRender",

@@ -1589,6 +1589,18 @@ GlobalObjectReusePolicy DocumentLoader::CalculateGlobalObjectReusePolicy(
   return GlobalObjectReusePolicy::kUseExisting;
 }
 
+WindowAgent* GetWindowAgentForOrigin(LocalFrame* frame,
+                                     SecurityOrigin* origin) {
+  // TODO(keishi): Also check if AllowUniversalAccessFromFileURLs might
+  // dynamically change.
+  bool has_potential_universal_access_privilege =
+      !frame->GetSettings()->GetWebSecurityEnabled() ||
+      frame->GetSettings()->GetAllowUniversalAccessFromFileURLs();
+  return frame->window_agent_factory().GetAgentForOrigin(
+      has_potential_universal_access_privilege,
+      V8PerIsolateData::MainThreadIsolate(), origin);
+}
+
 void DocumentLoader::CommitNavigation() {
   CHECK_GE(state_, kCommitted);
   DCHECK(frame_->GetPage());
@@ -1669,18 +1681,10 @@ void DocumentLoader::CommitNavigation() {
   // LocalDOMWindow to the Document that results from the network load. See also
   // Document::IsSecureTransitionTo.
   if (global_object_reuse_policy != GlobalObjectReusePolicy::kUseExisting) {
-    // TODO(keishi): Also check if AllowUniversalAccessFromFileURLs might
-    // dynamically change.
-    bool has_potential_universal_access_privilege =
-        !frame_->GetSettings()->GetWebSecurityEnabled() ||
-        frame_->GetSettings()->GetAllowUniversalAccessFromFileURLs();
-    auto* agent = frame_->window_agent_factory().GetAgentForOrigin(
-        has_potential_universal_access_privilege,
-        V8PerIsolateData::MainThreadIsolate(), security_origin.get());
-
     if (frame_->GetDocument())
       frame_->GetDocument()->RemoveAllEventListenersRecursively();
-    frame_->SetDOMWindow(MakeGarbageCollected<LocalDOMWindow>(*frame_, agent));
+    frame_->SetDOMWindow(MakeGarbageCollected<LocalDOMWindow>(
+        *frame_, GetWindowAgentForOrigin(frame_.Get(), security_origin.get())));
     if (origin_policy_.has_value()) {
       // Convert from WebVector<WebString> to WTF::Vector<WTF::String>
       Vector<String> ids;
@@ -1691,6 +1695,15 @@ void DocumentLoader::CommitNavigation() {
       frame_->DomWindow()->SetOriginPolicyIds(ids);
     }
   } else {
+    if (frame_->GetSettings()->GetShouldReuseGlobalForUnownedMainFrame() &&
+        frame_->IsMainFrame()) {
+      // When GetShouldReuseGlobalForUnownedMainFrame() causes a main frame's
+      // window to be reused, we should not inherit the initial empty document's
+      // Agent, which was a universal access Agent.
+      // This happens only in android webview.
+      frame_->DomWindow()->ResetWindowAgent(
+          GetWindowAgentForOrigin(frame_.Get(), security_origin.get()));
+    }
     frame_->DomWindow()->ClearForReuse();
   }
 

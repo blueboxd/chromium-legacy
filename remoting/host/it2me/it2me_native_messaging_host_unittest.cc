@@ -118,10 +118,8 @@ class MockIt2MeHost : public It2MeHost {
   void Connect(std::unique_ptr<ChromotingHostContext> context,
                std::unique_ptr<base::DictionaryValue> policies,
                std::unique_ptr<It2MeConfirmationDialogFactory> dialog_factory,
-               std::unique_ptr<RegisterSupportHostRequest> register_request,
-               std::unique_ptr<LogToServer> log_to_server,
                base::WeakPtr<It2MeHost::Observer> observer,
-               CreateSignalStrategyCallback create_signal_strategy,
+               CreateDeferredConnectContext create_connection_context,
                const std::string& username,
                const protocol::IceConfig& ice_config) override;
   void Disconnect() override;
@@ -129,8 +127,8 @@ class MockIt2MeHost : public It2MeHost {
  private:
   ~MockIt2MeHost() override = default;
 
-  void CreateSignalStrategyOnNetworkThread(
-      CreateSignalStrategyCallback create_signal_strategy);
+  void CreateConnectionContextOnNetworkThread(
+      CreateDeferredConnectContext create_connection_context);
 
   void RunSetState(It2MeHostState state);
 
@@ -141,10 +139,8 @@ void MockIt2MeHost::Connect(
     std::unique_ptr<ChromotingHostContext> context,
     std::unique_ptr<base::DictionaryValue> policies,
     std::unique_ptr<It2MeConfirmationDialogFactory> dialog_factory,
-    std::unique_ptr<RegisterSupportHostRequest> register_request,
-    std::unique_ptr<LogToServer> log_to_server,
     base::WeakPtr<It2MeHost::Observer> observer,
-    CreateSignalStrategyCallback create_signal_strategy,
+    CreateDeferredConnectContext create_connection_context,
     const std::string& username,
     const protocol::IceConfig& ice_config) {
   DCHECK(context->ui_task_runner()->BelongsToCurrentThread());
@@ -155,12 +151,11 @@ void MockIt2MeHost::Connect(
 
   host_context_ = std::move(context);
   observer_ = std::move(observer);
-  register_request_ = std::move(register_request);
 
   host_context()->network_task_runner()->PostTask(
       FROM_HERE,
-      base::BindOnce(&MockIt2MeHost::CreateSignalStrategyOnNetworkThread, this,
-                     std::move(create_signal_strategy)));
+      base::BindOnce(&MockIt2MeHost::CreateConnectionContextOnNetworkThread,
+                     this, std::move(create_connection_context)));
 
   OnPolicyUpdate(std::move(policies));
 
@@ -190,15 +185,20 @@ void MockIt2MeHost::Disconnect() {
     return;
   }
 
+  log_to_server_.reset();
+  register_request_.reset();
   signal_strategy_.reset();
 
   RunSetState(kDisconnected);
 }
 
-void MockIt2MeHost::CreateSignalStrategyOnNetworkThread(
-    CreateSignalStrategyCallback create_signal_strategy) {
+void MockIt2MeHost::CreateConnectionContextOnNetworkThread(
+    CreateDeferredConnectContext create_connection_context) {
   DCHECK(host_context()->network_task_runner()->BelongsToCurrentThread());
-  signal_strategy_ = std::move(create_signal_strategy).Run(host_context());
+  auto context = std::move(create_connection_context).Run(host_context());
+  log_to_server_ = std::move(context->log_to_server);
+  register_request_ = std::move(context->register_request);
+  signal_strategy_ = std::move(context->signal_strategy);
 }
 
 void MockIt2MeHost::RunSetState(It2MeHostState state) {

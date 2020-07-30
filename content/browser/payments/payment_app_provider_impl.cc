@@ -583,15 +583,15 @@ void OnInstallPaymentApp(
   }
 }
 
-void AbortInvokePaymentApp(WebContents* web_contents,
+void AbortInvokePaymentApp(BrowserContext* browser_context,
                            PaymentEventResponseType reason) {
   DCHECK_CURRENTLY_ON(ServiceWorkerContext::GetCoreThreadId());
-  if (!web_contents)
+  if (!browser_context)
     return;
 
   InvokeRespondWithCallback* callback =
       InvokePaymentAppCallbackRepository::GetInstance()->GetCallback(
-          web_contents->GetBrowserContext());
+          browser_context);
   if (callback)
     callback->AbortPaymentSinceOpennedWindowClosing(reason);
 }
@@ -938,7 +938,8 @@ void PaymentAppProviderImpl::OnClosingOpenedWindow(
 
   RunOrPostTaskOnThread(
       FROM_HERE, ServiceWorkerContext::GetCoreThreadId(),
-      base::BindOnce(&AbortInvokePaymentApp, web_contents, reason));
+      base::BindOnce(&AbortInvokePaymentApp, web_contents->GetBrowserContext(),
+                     reason));
 }
 
 bool PaymentAppProviderImpl::IsValidInstallablePaymentApp(

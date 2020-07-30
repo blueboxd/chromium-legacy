@@ -11,6 +11,7 @@ source_set("common") {
 
   deps = [
     "//base",
+    "//chrome/browser/ui/webui/nearby_share/public/mojom",
     "//components/pref_registry",
     "//components/prefs",
   ]

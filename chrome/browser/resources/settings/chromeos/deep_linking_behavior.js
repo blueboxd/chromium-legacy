@@ -14,11 +14,12 @@
 
 // #import {afterNextRender, Polymer} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
 // #import {assert} from 'chrome://resources/js/assert.m.js';
+// #import {getSettingIdParameter} from '../setting_id_param_util.m.js';
 // #import {loadTimeData} from 'chrome://resources/js/load_time_data.m.js';
 // #import {Router} from '../router.m.js';
 // clang-format on
 
-const kDeepLinkSettingId = 'settingId';
+/** @type {string} */
 const kDeepLinkFocusId = 'deep-link-focus-id';
 
 /** @polymerBehavior */
@@ -33,6 +34,16 @@ const kDeepLinkFocusId = 'deep-link-focus-id';
       type: Object,
       value: chromeos.settings.mojom.Setting,
     },
+
+    /**
+     * Set of settingIds that could be deep linked to. Initialized as an
+     * empty set, should be overridden with applicable settingIds.
+     * @type {!Set<!chromeos.settings.mojom.Setting>}
+     */
+    supportedSettingIds: {
+      type: Object,
+      value: () => new Set(),
+    },
   },
 
   /**
@@ -41,11 +52,10 @@ const kDeepLinkFocusId = 'deep-link-focus-id';
    * @return {?chromeos.settings.mojom.Setting}
    */
   getDeepLinkSettingId() {
-    if (!loadTimeData.getBoolean('isDeepLinkingEnabled')) {
+    const settingIdStr = getSettingIdParameter();
+    if (!settingIdStr) {
       return null;
     }
-    const settingIdStr = settings.Router.getInstance().getQueryParameters().get(
-        kDeepLinkSettingId);
     const settingIdNum = Number(settingIdStr);
     if (isNaN(settingIdNum)) {
       return null;
@@ -54,14 +64,58 @@ const kDeepLinkFocusId = 'deep-link-focus-id';
   },
 
   /**
-   * Focuses the deep linked element referred to by |settindId|.
-   * @param {chromeos.settings.mojom.Setting} settingId
+   * Focuses the deep linked element referred to by |settingId|. Returns a
+   * Promise for an object that reflects if the deep link was shown or not. The
+   * object has a boolean |deepLinkShown| and any |pendingSettingId| that
+   * couldn't be shown.
+   * @param {!chromeos.settings.mojom.Setting} settingId
+   * @return {!Promise<!{deepLinkShown: boolean, pendingSettingId:
+   *     ?chromeos.settings.mojom.Setting}>}
    */
   showDeepLink(settingId) {
     assert(loadTimeData.getBoolean('isDeepLinkingEnabled'));
-    const elToFocus = this.$$(`[${kDeepLinkFocusId}~="${settingId}"]`);
-    Polymer.RenderStatus.afterNextRender(this, () => {
-      elToFocus.focus();
+
+    return new Promise(resolve => {
+      Polymer.RenderStatus.afterNextRender(this, () => {
+        const elToFocus = this.$$(`[${kDeepLinkFocusId}~="${settingId}"]`);
+        if (!elToFocus || elToFocus.hidden) {
+          console.warn(`Element with deep link id ${settingId} not focusable.`);
+          resolve({deepLinkShown: false, pendingSettingId: settingId});
+          return;
+        }
+
+        elToFocus.focus();
+        resolve({deepLinkShown: true, pendingSettingId: settingId});
+      });
     });
-  }
+  },
+
+  /**
+   * Override this method to execute code after a supported settingId is found
+   * and before the deep link is shown. Default behavior is no op.
+   * @param {!chromeos.settings.mojom.Setting} settingId
+   */
+  beforeDeepLinkAttempt(settingId) {
+    return;
+  },
+
+  /**
+   * Checks if there are settingIds that can be linked to and attempts to show
+   * the deep link. Returns a Promise for an object that reflects if the deep
+   * link was shown or not. The object has a boolean |deepLinkShown| and any
+   * |pendingSettingId| that couldn't be shown.
+   * @return {!Promise<!{deepLinkShown: boolean, pendingSettingId:
+   *     ?chromeos.settings.mojom.Setting}>}
+   */
+  attemptDeepLink() {
+    const settingId = this.getDeepLinkSettingId();
+    if (settingId && this.supportedSettingIds.has(settingId)) {
+      this.beforeDeepLinkAttempt(settingId);
+      return this.showDeepLink(settingId);
+    }
+    // No deep link was shown since the settingId was unsupported.
+    return new Promise(resolve => {
+      resolve({deepLinkShown: false, pendingSettingId: null});
+    });
+  },
 };

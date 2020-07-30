@@ -8,6 +8,7 @@
 #include <string>
 
 #include "base/memory/scoped_refptr.h"
+#include "services/network/public/cpp/shared_url_loader_factory.h"
 #include "services/network/test/test_url_loader_factory.h"
 
 namespace google {
@@ -56,6 +57,8 @@ class ProtobufHttpTestResponder final {
   // (including cancelled requests) or null if not existing.
   network::TestURLLoaderFactory::PendingRequest& GetPendingRequest(
       size_t index);
+
+  network::TestURLLoaderFactory::PendingRequest& GetMostRecentPendingRequest();
 
   std::string GetMostRecentRequestUrl();
 

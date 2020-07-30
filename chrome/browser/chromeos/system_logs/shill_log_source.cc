@@ -9,7 +9,6 @@
 #include "base/logging.h"
 #include "base/no_destructor.h"
 #include "base/strings/string_util.h"
-#include "chromeos/dbus/dbus_method_call_status.h"
 #include "chromeos/dbus/shill/shill_device_client.h"
 #include "chromeos/dbus/shill/shill_ipconfig_client.h"
 #include "chromeos/dbus/shill/shill_manager_client.h"
@@ -104,15 +103,14 @@ void ShillLogSource::Fetch(SysLogsSourceCallback callback) {
 }
 
 void ShillLogSource::OnGetManagerProperties(
-    chromeos::DBusMethodCallStatus call_status,
-    base::Value result) {
-  if (call_status != chromeos::DBUS_METHOD_CALL_SUCCESS) {
-    LOG(ERROR) << "ManagerPropertiesCallback Failed: " << call_status;
+    base::Optional<base::Value> result) {
+  if (!result) {
+    LOG(ERROR) << "ManagerPropertiesCallback Failed";
     std::move(callback_).Run(nullptr);
     return;
   }
 
-  const base::Value* devices = result.FindListKey(shill::kDevicesProperty);
+  const base::Value* devices = result->FindListKey(shill::kDevicesProperty);
   if (devices) {
     for (const base::Value& device : devices->GetList()) {
       std::string path = GetString(&device);
@@ -126,7 +124,7 @@ void ShillLogSource::OnGetManagerProperties(
     }
   }
 
-  const base::Value* services = result.FindListKey(shill::kServicesProperty);
+  const base::Value* services = result->FindListKey(shill::kServicesProperty);
   if (services) {
     for (const base::Value& service : services->GetList()) {
       std::string path = GetString(&service);
@@ -144,13 +142,11 @@ void ShillLogSource::OnGetManagerProperties(
 }
 
 void ShillLogSource::OnGetDevice(const std::string& device_path,
-                                 chromeos::DBusMethodCallStatus call_status,
-                                 base::Value properties) {
-  if (call_status != chromeos::DBUS_METHOD_CALL_SUCCESS) {
-    LOG(ERROR) << "Get Device Properties Failed for : " << device_path << ": "
-               << call_status;
+                                 base::Optional<base::Value> properties) {
+  if (!properties) {
+    LOG(ERROR) << "Get Device Properties Failed for : " << device_path;
   } else {
-    AddDeviceAndRequestIPConfigs(device_path, properties);
+    AddDeviceAndRequestIPConfigs(device_path, *properties);
   }
   device_paths_.erase(device_path);
   CheckIfDone();
@@ -186,13 +182,12 @@ void ShillLogSource::AddDeviceAndRequestIPConfigs(
 
 void ShillLogSource::OnGetIPConfig(const std::string& device_path,
                                    const std::string& ip_config_path,
-                                   chromeos::DBusMethodCallStatus call_status,
-                                   base::Value properties) {
-  if (call_status != chromeos::DBUS_METHOD_CALL_SUCCESS) {
+                                   base::Optional<base::Value> properties) {
+  if (!properties) {
     LOG(ERROR) << "Get IPConfig Properties Failed for : " << device_path << ": "
-               << ip_config_path << " : " << call_status;
+               << ip_config_path;
   } else {
-    AddIPConfig(device_path, ip_config_path, properties);
+    AddIPConfig(device_path, ip_config_path, *properties);
   }
   // Erase a single matching entry.
   ip_config_paths_.erase(ip_config_paths_.find(ip_config_path));
@@ -211,14 +206,12 @@ void ShillLogSource::AddIPConfig(const std::string& device_path,
 }
 
 void ShillLogSource::OnGetService(const std::string& service_path,
-                                  chromeos::DBusMethodCallStatus call_status,
-                                  base::Value properties) {
-  if (call_status != chromeos::DBUS_METHOD_CALL_SUCCESS) {
-    LOG(ERROR) << "Get Service Properties Failed for : " << service_path << ": "
-               << call_status;
+                                  base::Optional<base::Value> properties) {
+  if (!properties) {
+    LOG(ERROR) << "Get Service Properties Failed for : " << service_path;
   } else {
     services_.SetKey(service_path,
-                     ScrubAndExpandProperties(service_path, properties));
+                     ScrubAndExpandProperties(service_path, *properties));
   }
   service_paths_.erase(service_path);
   CheckIfDone();

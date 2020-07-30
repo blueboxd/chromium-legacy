@@ -8,6 +8,8 @@ import android.view.View;
 
 import androidx.annotation.VisibleForTesting;
 
+import org.chromium.base.Callback;
+import org.chromium.base.supplier.ObservableSupplier;
 import org.chromium.chrome.browser.browser_controls.BrowserControlsStateProvider;
 import org.chromium.chrome.browser.compositor.layouts.EmptyOverviewModeObserver;
 import org.chromium.chrome.browser.compositor.layouts.OverviewModeBehavior;
@@ -44,8 +46,6 @@ public class TabGroupPopupUiMediator {
     private final PropertyModel mModel;
     private final TabModelObserver mTabModelObserver;
     private final TabModelSelector mTabModelSelector;
-    private final OverviewModeBehavior mOverviewModeBehavior;
-    private final OverviewModeBehavior.OverviewModeObserver mOverviewModeObserver;
     private final BrowserControlsStateProvider mBrowserControlsStateProvider;
     private final BrowserControlsStateProvider.Observer mBrowserControlsObserver;
     private final KeyboardVisibilityDelegate.KeyboardVisibilityListener mKeyboardVisibilityListener;
@@ -54,16 +54,21 @@ public class TabGroupPopupUiMediator {
     private final BottomSheetController mBottomSheetController;
     private final BottomSheetObserver mBottomSheetObserver;
 
+    private ObservableSupplier<OverviewModeBehavior> mOverviewModeBehaviorSupplier;
+    private final Callback<OverviewModeBehavior> mOverviewModeBehaviorSupplierObserver;
+    private final OverviewModeBehavior.OverviewModeObserver mOverviewModeObserver;
+    private OverviewModeBehavior mOverviewModeBehavior;
+
     private boolean mIsOverviewModeVisible;
 
     TabGroupPopupUiMediator(PropertyModel model, TabModelSelector tabModelSelector,
-            OverviewModeBehavior overviewModeBehavior,
+            ObservableSupplier<OverviewModeBehavior> overviewModeBehaviorSupplier,
             BrowserControlsStateProvider browserControlsStateProvider, TabGroupPopUiUpdater updater,
             TabGroupUiMediator.TabGroupUiController controller,
             BottomSheetController bottomSheetController) {
         mModel = model;
         mTabModelSelector = tabModelSelector;
-        mOverviewModeBehavior = overviewModeBehavior;
+        mOverviewModeBehaviorSupplier = overviewModeBehaviorSupplier;
         mBrowserControlsStateProvider = browserControlsStateProvider;
         mUiUpdater = updater;
         mTabGroupUiController = controller;
@@ -149,7 +154,21 @@ public class TabGroupPopupUiMediator {
                 maybeShowTabStrip();
             }
         };
-        mOverviewModeBehavior.addOverviewModeObserver(mOverviewModeObserver);
+
+        mOverviewModeBehaviorSupplierObserver = new Callback<OverviewModeBehavior>() {
+            @Override
+            public void onResult(OverviewModeBehavior overviewModeBehavior) {
+                assert overviewModeBehavior != null;
+
+                mOverviewModeBehavior = overviewModeBehavior;
+                mOverviewModeBehavior.addOverviewModeObserver(mOverviewModeObserver);
+
+                // TODO(crbug.com/1084528): Replace with OneShotSupplier when it is available.
+                mOverviewModeBehaviorSupplier.removeObserver(this);
+                mOverviewModeBehaviorSupplier = null;
+            }
+        };
+        mOverviewModeBehaviorSupplier.addObserver(mOverviewModeBehaviorSupplierObserver);
 
         mKeyboardVisibilityListener = new KeyboardVisibilityDelegate.KeyboardVisibilityListener() {
             private boolean mWasShowingStrip;
@@ -238,7 +257,12 @@ public class TabGroupPopupUiMediator {
     public void destroy() {
         KeyboardVisibilityDelegate.getInstance().removeKeyboardVisibilityListener(
                 mKeyboardVisibilityListener);
-        mOverviewModeBehavior.removeOverviewModeObserver(mOverviewModeObserver);
+        if (mOverviewModeBehavior != null) {
+            mOverviewModeBehavior.removeOverviewModeObserver(mOverviewModeObserver);
+        }
+        if (mOverviewModeBehaviorSupplier != null) {
+            mOverviewModeBehaviorSupplier.removeObserver(mOverviewModeBehaviorSupplierObserver);
+        }
         mTabModelSelector.getTabModelFilterProvider().removeTabModelFilterObserver(
                 mTabModelObserver);
         mBrowserControlsStateProvider.removeObserver(mBrowserControlsObserver);

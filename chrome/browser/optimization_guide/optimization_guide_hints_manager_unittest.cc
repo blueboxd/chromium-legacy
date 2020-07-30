@@ -1222,6 +1222,46 @@ TEST_F(OptimizationGuideHintsManagerTest,
 }
 
 TEST_F(OptimizationGuideHintsManagerTest,
+       CanApplyOptimizationOptimizationTypeWhitelistedAtTopLevel) {
+  optimization_guide::proto::Configuration config;
+  optimization_guide::proto::Hint* hint1 = config.add_hints();
+  hint1->set_key("somedomain.org");
+  hint1->set_key_representation(optimization_guide::proto::HOST_SUFFIX);
+  hint1->set_version("someversion");
+  optimization_guide::proto::Optimization* opt1 =
+      hint1->add_whitelisted_optimizations();
+  opt1->set_optimization_type(optimization_guide::proto::RESOURCE_LOADING);
+  optimization_guide::proto::PreviewsMetadata* opt1_metadata =
+      opt1->mutable_previews_metadata();
+  opt1_metadata->add_resource_loading_hints()->set_resource_pattern(
+      "someresource");
+  ProcessHints(config, "1.0.0.0");
+
+  hints_manager()->RegisterOptimizationTypes(
+      {optimization_guide::proto::RESOURCE_LOADING});
+
+  std::unique_ptr<content::MockNavigationHandle> navigation_handle =
+      CreateMockNavigationHandleWithOptimizationGuideWebContentsObserver(
+          url_with_hints());
+  base::RunLoop run_loop;
+  hints_manager()->OnNavigationStartOrRedirect(navigation_handle.get(),
+                                               run_loop.QuitClosure());
+  run_loop.Run();
+
+  optimization_guide::OptimizationMetadata optimization_metadata;
+  optimization_guide::OptimizationTypeDecision optimization_type_decision =
+      hints_manager()->CanApplyOptimization(
+          navigation_handle->GetURL(),
+          optimization_guide::proto::RESOURCE_LOADING, &optimization_metadata);
+  // Make sure previews metadata is populated.
+  EXPECT_EQ("someresource", optimization_metadata.previews_metadata()
+                                ->resource_loading_hints(0)
+                                .resource_pattern());
+  EXPECT_EQ(optimization_guide::OptimizationTypeDecision::kAllowedByHint,
+            optimization_type_decision);
+}
+
+TEST_F(OptimizationGuideHintsManagerTest,
        CanApplyOptimizationAndPopulatesMetadataWithFirstOptThatMatchesNoExp) {
   InitializeWithDefaultConfig("1.0.0.0");
   hints_manager()->RegisterOptimizationTypes(

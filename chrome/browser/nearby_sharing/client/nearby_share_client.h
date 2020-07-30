@@ -78,7 +78,7 @@ class NearbyShareClient {
 class NearbyShareClientFactory {
  public:
   NearbyShareClientFactory() = default;
-  ~NearbyShareClientFactory() = default;
+  virtual ~NearbyShareClientFactory() = default;
 
   virtual std::unique_ptr<NearbyShareClient> CreateInstance() = 0;
 };

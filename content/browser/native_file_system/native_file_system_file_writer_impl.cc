@@ -228,6 +228,109 @@ void NativeFileSystemFileWriterImpl::Close(CloseCallback callback) {
       std::move(callback));
 }
 
+namespace {
+
+// Writing a blob to a file consists of three operations:
+// 1) The Blob reads its data, and writes it out to a mojo data pipe producer
+//    handle. It calls BlobReaderClient::OnComplete when all data has been
+//    written.
+// 2) WriteStream reads data from the associated mojo data pipe consumer handle
+//    as long as data is available.
+// 3) All the read data is written to disk. Signalled by calling WriteCompleted.
+//
+// All of these steps are done in parallel, operating on chunks. Furthermore the
+// OnComplete call from step 1) is done over a different mojo pipe than where
+// the data is sent, making it possible for this to arrive either before or
+// after step 3) completes. To make sure we report an error when any of these
+// steps fail, this helper class waits for both the OnComplete call to arrive
+// and for the write to finish before considering the entire write operation a
+// success.
+//
+// On the other hand, as soon as we're aware of any of these steps failing, that
+// error can be propagated, as that means the operation failed.
+// In other words, this is like Promise.all, which resolves when all
+// operations succeed, or rejects as soon as any operation fails.
+//
+// This class deletes itself after calling its callback.
+class BlobReaderClient : public base::SupportsWeakPtr<BlobReaderClient>,
+                         public blink::mojom::BlobReaderClient {
+ public:
+  BlobReaderClient(
+      NativeFileSystemFileWriterImpl::WriteCallback callback,
+      mojo::PendingReceiver<blink::mojom::BlobReaderClient> receiver)
+      : callback_(std::move(callback)), receiver_(this, std::move(receiver)) {
+    receiver_.set_disconnect_handler(
+        base::BindOnce(&BlobReaderClient::OnDisconnect, AsWeakPtr()));
+  }
+
+  void OnCalculatedSize(uint64_t total_size,
+                        uint64_t expected_content_size) override {}
+  void OnComplete(int32_t status, uint64_t data_length) override {
+    DCHECK(!read_result_.has_value());
+    read_result_ = status;
+    MaybeCallCallbackAndDeleteThis();
+  }
+
+  void WriteCompleted(blink::mojom::NativeFileSystemErrorPtr result,
+                      uint64_t bytes_written) {
+    DCHECK(!write_result_);
+    write_result_ = std::move(result);
+    bytes_written_ = bytes_written;
+    MaybeCallCallbackAndDeleteThis();
+  }
+
+ private:
+  friend class base::RefCounted<BlobReaderClient>;
+  ~BlobReaderClient() override = default;
+
+  void OnDisconnect() {
+    if (!read_result_.has_value()) {
+      // Disconnected without getting a read result, treat this as read failure.
+      read_result_ = net::ERR_ABORTED;
+      MaybeCallCallbackAndDeleteThis();
+    }
+  }
+
+  void MaybeCallCallbackAndDeleteThis() {
+    // |this| is deleted right after invoking |callback_|, so |callback_| should
+    // always be valid here.
+    DCHECK(callback_);
+
+    if (read_result_.has_value() && *read_result_ != net::Error::OK) {
+      // Reading from the blob failed, report that error.
+      std::move(callback_).Run(native_file_system_error::FromFileError(
+                                   storage::NetErrorToFileError(*read_result_)),
+                               0);
+      delete this;
+      return;
+    }
+    if (!write_result_.is_null() &&
+        write_result_->status != blink::mojom::NativeFileSystemStatus::kOk) {
+      // Writing failed, report that error.
+      std::move(callback_).Run(std::move(write_result_), 0);
+      delete this;
+      return;
+    }
+    if (read_result_.has_value() && !write_result_.is_null()) {
+      // Both reading and writing succeeded, report success.
+      std::move(callback_).Run(std::move(write_result_), bytes_written_);
+      delete this;
+      return;
+    }
+    // Still waiting for the other operation to complete, so don't call the
+    // callback yet.
+  }
+
+  NativeFileSystemFileWriterImpl::WriteCallback callback_;
+  mojo::Receiver<blink::mojom::BlobReaderClient> receiver_;
+
+  base::Optional<int32_t> read_result_;
+  blink::mojom::NativeFileSystemErrorPtr write_result_;
+  uint64_t bytes_written_ = 0;
+};
+
+}  // namespace
+
 void NativeFileSystemFileWriterImpl::WriteImpl(
     uint64_t offset,
     mojo::PendingRemote<blink::mojom::Blob> data,
@@ -268,8 +371,13 @@ void NativeFileSystemFileWriterImpl::WriteImpl(
   // TODO(mek): We can do this transformation from Blob to DataPipe in the
   // renderer, and simplify the mojom exposed interface.
   mojo::Remote<blink::mojom::Blob> blob(std::move(data));
-  blob->ReadAll(std::move(producer_handle), mojo::NullRemote());
-  WriteStreamImpl(offset, std::move(consumer_handle), std::move(callback));
+  mojo::PendingRemote<blink::mojom::BlobReaderClient> reader_client;
+  auto* client = new BlobReaderClient(
+      std::move(callback), reader_client.InitWithNewPipeAndPassReceiver());
+  blob->ReadAll(std::move(producer_handle), std::move(reader_client));
+  WriteStreamImpl(
+      offset, std::move(consumer_handle),
+      base::BindOnce(&BlobReaderClient::WriteCompleted, client->AsWeakPtr()));
 }
 
 void NativeFileSystemFileWriterImpl::WriteStreamImpl(

@@ -235,6 +235,7 @@ jumbo_component("network_service") {
     "//net:extras",
     "//sandbox/policy",
     "//services/network/public/cpp",
+    "//services/network/public/cpp:crash_keys",
     "//services/network/public/cpp/cert_verifier:cert_verifier_creation",
     "//services/network/public/cpp/cert_verifier:mojo_cert_verifier",
     "//services/network/public/mojom",

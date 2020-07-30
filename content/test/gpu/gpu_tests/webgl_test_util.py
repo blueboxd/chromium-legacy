@@ -10,14 +10,17 @@ conformance_relcomps = ('third_party', 'webgl', 'src', 'sdk', 'tests')
 
 extensions_relcomps = ('content', 'test', 'data', 'gpu')
 
+# pylint: disable=star-args
 conformance_relpath = os.path.join(*conformance_relcomps)
+extensions_relpath = os.path.join(*extensions_relcomps)
+# pylint: enable=star-args
 conformance_path = os.path.join(path_util.GetChromiumSrcDir(),
                                 conformance_relpath)
-extensions_relpath = os.path.join(*extensions_relcomps)
 
 # These URL prefixes are needed because having more than one static
 # server dir is causing the base server directory to be moved up the
 # directory hierarchy.
 url_prefixes_to_trim = [
-    '/'.join(conformance_relcomps) + '/', '/'.join(extensions_relcomps) + '/'
+    '/'.join(conformance_relcomps) + '/',
+    '/'.join(extensions_relcomps) + '/',
 ]

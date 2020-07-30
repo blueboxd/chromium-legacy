@@ -1020,7 +1020,7 @@ void AXPlatformNodeBase::ComputeAttributes(PlatformAttributeList* attributes) {
   AddAttributeToList(ax::mojom::IntAttribute::kPosInSet, "posinset",
                      attributes);
 
-  if (HasIntAttribute(ax::mojom::IntAttribute::kCheckedState))
+  if (IsPlatformCheckable())
     AddAttributeToList("checkable", "true", attributes);
 
   if (IsInvisibleOrIgnored())  // Note: NVDA prefers this over INVISIBLE state.
@@ -1788,6 +1788,10 @@ bool AXPlatformNodeBase::IsText(const base::string16& text,
     return false;
   auto ch = text[is_indexed_from_end ? text_len - index - 1 : index];
   return ch != kEmbeddedCharacter;
+}
+
+bool AXPlatformNodeBase::IsPlatformCheckable() const {
+  return delegate_ && GetData().HasCheckedState();
 }
 
 void AXPlatformNodeBase::ComputeHypertextRemovedAndInserted(

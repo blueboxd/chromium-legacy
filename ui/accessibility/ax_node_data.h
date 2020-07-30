@@ -178,6 +178,7 @@ struct AX_BASE_EXPORT AXNodeData {
   // Please keep in alphabetic order.
   ax::mojom::CheckedState GetCheckedState() const;
   void SetCheckedState(ax::mojom::CheckedState checked_state);
+  bool HasCheckedState() const;
   ax::mojom::DefaultActionVerb GetDefaultActionVerb() const;
   void SetDefaultActionVerb(ax::mojom::DefaultActionVerb default_action_verb);
   ax::mojom::HasPopup GetHasPopup() const;

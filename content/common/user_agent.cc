@@ -12,6 +12,7 @@
 #include "base/strings/stringprintf.h"
 #include "base/system/sys_info.h"
 #include "build/build_config.h"
+#include "build/lacros_buildflags.h"
 #include "build/util/webkit_version.h"
 
 #if defined(OS_WIN)
@@ -120,7 +121,8 @@ std::string GetLowEntropyCpuArchitecture() {
 std::string GetOSVersion(IncludeAndroidBuildNumber include_android_build_number,
                          IncludeAndroidModel include_android_model) {
   std::string os_version;
-#if defined(OS_WIN) || defined(OS_MAC) || defined(OS_CHROMEOS)
+#if defined(OS_WIN) || defined(OS_MAC) || defined(OS_CHROMEOS) || \
+    BUILDFLAG(IS_LACROS)
   int32_t os_major_version = 0;
   int32_t os_minor_version = 0;
   int32_t os_bugfix_version = 0;
@@ -140,9 +142,9 @@ std::string GetOSVersion(IncludeAndroidBuildNumber include_android_build_number,
 #elif defined(OS_MAC)
                       "%d_%d_%d", os_major_version, os_minor_version,
                       os_bugfix_version
-#elif defined(OS_CHROMEOS)
-                      "%d.%d.%d",
-                      os_major_version, os_minor_version, os_bugfix_version
+#elif defined(OS_CHROMEOS) || BUILDFLAG(IS_LACROS)
+                      "%d.%d.%d", os_major_version, os_minor_version,
+                      os_bugfix_version
 #elif defined(OS_ANDROID)
                       "%s%s", android_version_str.c_str(),
                       android_info_str.c_str()
@@ -181,7 +183,7 @@ std::string BuildOSCpuInfoFromOSVersionAndCpuType(const std::string& os_version,
   base::StringAppendF(&os_cpu,
 #if defined(OS_MAC)
                       "%s Mac OS X %s", cpu_type.c_str(), os_version.c_str()
-#elif defined(OS_CHROMEOS)
+#elif defined(OS_CHROMEOS) || BUILDFLAG(IS_LACROS)
                       "CrOS "
                       "%s %s",
                       cpu_type.c_str(),  // e.g. i686

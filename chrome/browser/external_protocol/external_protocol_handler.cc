@@ -232,6 +232,9 @@ void OnDefaultProtocolClientWorkerFinished(
 bool IsSchemeOriginPairAllowedByPolicy(const std::string& scheme,
                                        const url::Origin* initiating_origin,
                                        PrefService* prefs) {
+  if (!initiating_origin)
+    return false;
+
   const base::ListValue* exempted_protocols =
       prefs->GetList(prefs::kAutoLaunchProtocolsFromOrigins);
   if (!exempted_protocols)

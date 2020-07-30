@@ -383,6 +383,12 @@
       <structure name="IDR_OS_SETTINGS_SEARCH_SETTINGS_JS"
                  file="search_settings.js"
                  compress="false" type="chrome_html" />
+      <structure name="IDR_OS_SETTINGS_SETTING_ID_PARAM_UTIL_HTML"
+                 file="setting_id_param_util.html"
+                 compress="false" type="chrome_html" />
+      <structure name="IDR_OS_SETTINGS_SETTING_ID_PARAM_UTIL_JS"
+                 file="setting_id_param_util.js"
+                 compress="false" type="chrome_html" />
       <structure name="IDR_OS_SETTINGS_CR_OS_SETTINGS_MAIN_HTML"
                  file="chromeos/os_settings_main/os_settings_main.html"
                  compress="false" type="chrome_html" />
@@ -412,10 +418,10 @@
                  file="settings_page_css.html"
                  compress="false" type="chrome_html" />
       <structure name="IDR_OS_SETTINGS_MAIN_PAGE_BEHAVIOR_HTML"
-                 file="settings_page/main_page_behavior.html"
+                 file="chromeos/os_settings_page/main_page_behavior.html"
                  compress="false" type="chrome_html" />
       <structure name="IDR_OS_SETTINGS_MAIN_PAGE_BEHAVIOR_JS"
-                 file="settings_page/main_page_behavior.js"
+                 file="chromeos/os_settings_page/main_page_behavior.js"
                  compress="false" type="chrome_html"
                  preprocess="true" />
       <structure name="IDR_OS_SETTINGS_SETTINGS_VARS_CSS_HTML"

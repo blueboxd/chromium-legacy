@@ -22,6 +22,7 @@ import org.chromium.chrome.browser.preferences.Pref;
 import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.chrome.browser.send_tab_to_self.SendTabToSelfShareActivity;
 import org.chromium.chrome.browser.share.ChromeShareExtras;
+import org.chromium.chrome.browser.share.link_to_text.LinkToTextCoordinator;
 import org.chromium.chrome.browser.share.qrcode.QrCodeCoordinator;
 import org.chromium.chrome.browser.share.screenshot.ScreenshotCoordinator;
 import org.chromium.chrome.browser.share.share_sheet.ShareSheetPropertyModelBuilder.ContentType;
@@ -319,8 +320,11 @@ class ChromeProvidedSharingOptionsProvider {
                         -> {
                     RecordUserAction.record("SharingHubAndroid.LinkToTextSelected");
                     recordTimeToShare(mShareStartTime);
+                    LinkToTextCoordinator linkToTextCoordinator = new LinkToTextCoordinator(
+                            mActivity, mTabProvider.get().getWindowAndroid(),
+                            mChromeOptionShareCallback, mShareParams.getUrl(),
+                            mShareParams.getText());
                     mBottomSheetController.hideContent(mBottomSheetContent, true);
-                    // TODO(1102382): Init and call link-to-text feature.
                 },
                 /*isFirstParty=*/true);
         return new FirstPartyOption(

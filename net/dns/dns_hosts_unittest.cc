@@ -112,7 +112,7 @@ TEST(DnsHostsTest, ParseHosts_CommaModeByPlatform) {
   DnsHosts actual_hosts;
   ParseHosts(kContents, &actual_hosts);
 
-#if defined(OS_MACOSX)
+#if defined(OS_APPLE)
   const ExpectedHostsEntry kEntries[] = {
     { "comma1", ADDRESS_FAMILY_IPV4, "127.0.0.1" },
     { "comma2", ADDRESS_FAMILY_IPV4, "127.0.0.1" },

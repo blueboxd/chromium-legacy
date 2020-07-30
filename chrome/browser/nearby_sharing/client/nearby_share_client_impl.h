@@ -156,7 +156,7 @@ class NearbyShareClientFactoryImpl : public NearbyShareClientFactory {
       signin::IdentityManager* identity_manager,
       scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory,
       NearbyShareHttpNotifier* notifier);
-  ~NearbyShareClientFactoryImpl();
+  ~NearbyShareClientFactoryImpl() override;
 
   NearbyShareClientFactoryImpl(NearbyShareClientFactoryImpl&) = delete;
   NearbyShareClientFactoryImpl& operator=(NearbyShareClientFactoryImpl&) =

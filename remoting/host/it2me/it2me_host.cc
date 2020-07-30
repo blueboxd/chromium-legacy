@@ -17,7 +17,6 @@
 #include "components/policy/policy_constants.h"
 #include "net/url_request/url_request_context_getter.h"
 #include "remoting/base/auto_thread.h"
-#include "remoting/base/chromium_url_request.h"
 #include "remoting/base/logging.h"
 #include "remoting/base/rsa_key_pair.h"
 #include "remoting/base/service_urls.h"
@@ -57,6 +56,10 @@ typedef ValidatingAuthenticator::ResultCallback ValidationResultCallback;
 
 }  // namespace
 
+It2MeHost::DeferredConnectContext::DeferredConnectContext() = default;
+
+It2MeHost::DeferredConnectContext::~DeferredConnectContext() = default;
+
 It2MeHost::It2MeHost() = default;
 
 It2MeHost::~It2MeHost() {
@@ -94,10 +97,8 @@ void It2MeHost::Connect(
     std::unique_ptr<ChromotingHostContext> host_context,
     std::unique_ptr<base::DictionaryValue> policies,
     std::unique_ptr<It2MeConfirmationDialogFactory> dialog_factory,
-    std::unique_ptr<RegisterSupportHostRequest> register_request,
-    std::unique_ptr<LogToServer> log_to_server,
     base::WeakPtr<It2MeHost::Observer> observer,
-    CreateSignalStrategyCallback create_signal_strategy,
+    CreateDeferredConnectContext create_context,
     const std::string& username,
     const protocol::IceConfig& ice_config) {
   DCHECK(host_context->ui_task_runner()->BelongsToCurrentThread());
@@ -105,7 +106,6 @@ void It2MeHost::Connect(
   host_context_ = std::move(host_context);
   observer_ = std::move(observer);
   confirmation_dialog_factory_ = std::move(dialog_factory);
-  log_to_server_ = std::move(log_to_server);
 
   OnPolicyUpdate(std::move(policies));
 
@@ -119,8 +119,7 @@ void It2MeHost::Connect(
   host_context_->network_task_runner()->PostTask(
       FROM_HERE,
       base::BindOnce(&It2MeHost::ConnectOnNetworkThread, this, username,
-                     ice_config, std::move(register_request),
-                     std::move(create_signal_strategy)));
+                     ice_config, std::move(create_context)));
 }
 
 void It2MeHost::Disconnect() {
@@ -132,14 +131,16 @@ void It2MeHost::Disconnect() {
 void It2MeHost::ConnectOnNetworkThread(
     const std::string& username,
     const protocol::IceConfig& ice_config,
-    std::unique_ptr<RegisterSupportHostRequest> register_request,
-    CreateSignalStrategyCallback create_signal_strategy) {
+    CreateDeferredConnectContext create_context) {
   DCHECK(host_context_->network_task_runner()->BelongsToCurrentThread());
   DCHECK_EQ(kDisconnected, state_);
 
   SetState(kStarting, ErrorCode::OK);
 
-  signal_strategy_ = std::move(create_signal_strategy).Run(host_context_.get());
+  auto connection_context = std::move(create_context).Run(host_context_.get());
+  log_to_server_ = std::move(connection_context->log_to_server);
+  signal_strategy_ = std::move(connection_context->signal_strategy);
+  DCHECK(log_to_server_);
   DCHECK(signal_strategy_);
 
   // Check the host domain policy.
@@ -163,11 +164,10 @@ void It2MeHost::ConnectOnNetworkThread(
   host_key_pair_ = RsaKeyPair::Generate();
 
   // Request registration of the host for support.
-  register_request->StartRequest(
+  register_request_ = std::move(connection_context->register_request);
+  register_request_->StartRequest(
       signal_strategy_.get(), host_key_pair_,
       base::BindOnce(&It2MeHost::OnReceivedSupportID, base::Unretained(this)));
-  // Beyond this point nothing can fail, so save the config and request.
-  register_request_ = std::move(register_request);
 
   HOST_LOG << "NAT state: " << nat_traversal_enabled_;
 
@@ -191,9 +191,8 @@ void It2MeHost::ConnectOnNetworkThread(
   scoped_refptr<protocol::TransportContext> transport_context =
       new protocol::TransportContext(
           std::make_unique<protocol::ChromiumPortAllocatorFactory>(),
-          std::make_unique<ChromiumUrlRequestFactory>(
-              host_context_->url_loader_factory()),
-          network_settings, protocol::TransportRole::SERVER);
+          host_context_->url_loader_factory(), network_settings,
+          protocol::TransportRole::SERVER);
   transport_context->set_turn_ice_config(ice_config);
 
   std::unique_ptr<protocol::SessionManager> session_manager(

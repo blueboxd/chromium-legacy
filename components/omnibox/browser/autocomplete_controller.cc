@@ -78,15 +78,21 @@ void GetMatchTypeAndExtendSubtypes(const AutocompleteMatch& match,
     if (match.provider->type() == AutocompleteProvider::TYPE_ZERO_SUGGEST &&
         (match.type == AutocompleteMatchType::SEARCH_SUGGEST ||
          match.type == AutocompleteMatchType::NAVSUGGEST)) {
+      if (match.type == AutocompleteMatchType::NAVSUGGEST) {
+        subtypes->emplace(/*SUBTYPE_ZERO_PREFIX_LOCAL_FREQUENT_URLS=*/451);
+      }
       // We abuse this subtype and use it to for zero-suggest suggestions that
       // aren't personalized by the server. That is, it indicates either
       // client-side most-likely URL suggestions or server-side suggestions
       // that depend only on the URL as context.
-      subtypes->emplace(66);
+      subtypes->emplace(/*SUBTYPE_URL_BASED=*/66);
     } else if (match.provider->type() ==
                AutocompleteProvider::TYPE_ON_DEVICE_HEAD) {
       // This subtype indicates a match from an on-device head provider.
-      subtypes->emplace(271);
+      subtypes->emplace(/*SUBTYPE_SUGGEST_2G_LITE=*/271);
+    } else if (match.provider->type() ==
+               AutocompleteProvider::TYPE_ZERO_SUGGEST_LOCAL_HISTORY) {
+      subtypes->emplace(/*SUBTYPE_ZERO_PREFIX_LOCAL_HISTORY=*/450);
     }
   }
 
@@ -106,7 +112,7 @@ void GetMatchTypeAndExtendSubtypes(const AutocompleteMatch& match,
     }
     case AutocompleteMatchType::SEARCH_SUGGEST_PERSONALIZED: {
       *type = 35;
-      subtypes->emplace(39);
+      subtypes->emplace(/*SUBTYPE_PERSONAL=*/39);
       return;
     }
     case AutocompleteMatchType::SEARCH_SUGGEST_PROFILE: {
@@ -119,40 +125,40 @@ void GetMatchTypeAndExtendSubtypes(const AutocompleteMatch& match,
       return;
     }
     case AutocompleteMatchType::SEARCH_WHAT_YOU_TYPED: {
-      subtypes->emplace(57);
+      subtypes->emplace(/*SUBTYPE_OMNIBOX_ECHO_SEARCH=*/57);
       return;
     }
     case AutocompleteMatchType::URL_WHAT_YOU_TYPED: {
-      subtypes->emplace(58);
+      subtypes->emplace(/*SUBTYPE_OMNIBOX_ECHO_URL=*/58);
       return;
     }
     case AutocompleteMatchType::SEARCH_HISTORY: {
-      subtypes->emplace(59);
+      subtypes->emplace(/*SUBTYPE_OMNIBOX_HISTORY_SEARCH=*/59);
       return;
     }
     case AutocompleteMatchType::HISTORY_URL: {
-      subtypes->emplace(60);
+      subtypes->emplace(/*SUBTYPE_OMNIBOX_HISTORY_URL=*/60);
       return;
     }
     case AutocompleteMatchType::HISTORY_TITLE: {
-      subtypes->emplace(61);
+      subtypes->emplace(/*SUBTYPE_OMNIBOX_HISTORY_TITLE=*/61);
       return;
     }
     case AutocompleteMatchType::HISTORY_BODY: {
-      subtypes->emplace(62);
+      subtypes->emplace(/*SUBTYPE_OMNIBOX_HISTORY_BODY=*/62);
       return;
     }
     case AutocompleteMatchType::HISTORY_KEYWORD: {
-      subtypes->emplace(63);
+      subtypes->emplace(/*SUBTYPE_OMNIBOX_HISTORY_KEYWORD=*/63);
       return;
     }
     case AutocompleteMatchType::BOOKMARK_TITLE: {
-      subtypes->emplace(65);
+      subtypes->emplace(/*SUBTYPE_OMNIBOX_BOOKMARK_TITLE=*/65);
       return;
     }
     case AutocompleteMatchType::NAVSUGGEST_PERSONALIZED: {
       *type = 5;
-      subtypes->emplace(39);
+      subtypes->emplace(/*SUBTYPE_PERSONAL=*/39);
       return;
     }
     case AutocompleteMatchType::CALCULATOR: {
@@ -160,15 +166,15 @@ void GetMatchTypeAndExtendSubtypes(const AutocompleteMatch& match,
       return;
     }
     case AutocompleteMatchType::CLIPBOARD_URL: {
-      subtypes->emplace(177);
+      subtypes->emplace(/*SUBTYPE_CLIPBOARD_URL=*/177);
       return;
     }
     case AutocompleteMatchType::CLIPBOARD_TEXT: {
-      subtypes->emplace(176);
+      subtypes->emplace(/*SUBTYPE_CLIPBOARD_TEXT=*/176);
       return;
     }
     case AutocompleteMatchType::CLIPBOARD_IMAGE: {
-      subtypes->emplace(327);
+      subtypes->emplace(/*SUBTYPE_CLIPBOARD_IMAGE=*/327);
       return;
     }
     case AutocompleteMatchType::TILE_SUGGESTION: {
@@ -178,7 +184,7 @@ void GetMatchTypeAndExtendSubtypes(const AutocompleteMatch& match,
     default: {
       // This value indicates a native chrome suggestion with no named subtype
       // (yet).
-      subtypes->emplace(64);
+      subtypes->emplace(/*SUBTYPE_OMNIBOX_OTHER=*/64);
     }
   }
 }
@@ -770,8 +776,11 @@ void AutocompleteController::UpdateAssociatedKeywords(
 void AutocompleteController::UpdateHeaders(AutocompleteResult* result) {
   DCHECK(result);
 
-  // Set the suggestion group ID to header mapping information.
+  // Sets the AutocompleteResult header metadata to what the ZeroSuggestProvider
+  // has fetched. In the future, if other search suggest providers also have
+  // header metadata, we will have to update this code to merge the metadata.
   result->set_headers_map(zero_suggest_provider_->headers_map());
+  result->set_hidden_group_ids(zero_suggest_provider_->hidden_group_ids());
 
   // Move all grouped matches to the bottom while maintaining the current order.
   std::stable_sort(result->begin(), result->end(),
@@ -835,12 +844,22 @@ void AutocompleteController::UpdateAssistedQueryStats(
   // Build the impressions string (the AQS part after ".").
   std::string autocompletions;
   int count = 0;
+  int num_zero_prefix_shown = 0;
   size_t last_type = base::string16::npos;
   base::flat_set<int> last_subtypes = {};
   for (const auto& match : *result) {
     auto subtypes = match.subtypes;
     size_t type = base::string16::npos;
     GetMatchTypeAndExtendSubtypes(match, &type, &subtypes);
+
+    // Count any suggestions that constitute zero-prefix suggestions.
+    if (match.subtypes.contains(/*SUBTYPE_ZERO_PREFIX_LOCAL_HISTORY=*/450) ||
+        match.subtypes.contains(
+            /*SUBTYPE_ZERO_PREFIX_LOCAL_FREQUENT_URLS=*/451) ||
+        match.subtypes.contains(/*SUBTYPE_ZERO_PREFIX=*/362)) {
+      ++num_zero_prefix_shown;
+    }
+
     if (last_type != base::string16::npos &&
         (type != last_type || subtypes != last_subtypes)) {
       AppendAvailableAutocompletion(last_type, last_subtypes, count,
@@ -869,6 +888,14 @@ void AutocompleteController::UpdateAssistedQueryStats(
         base::StringPrintf("chrome.%s.%s",
                            selected_index.c_str(),
                            autocompletions.c_str());
+
+    if (num_zero_prefix_shown > 0) {
+      // Note: 1st skipped parameter: EXPERIMENT_STATS.
+      // Note: 2nd skipped parameter: SINGLE_SEARCHBOX_CONTENT.
+      match->search_terms_args->assisted_query_stats +=
+          base::StringPrintf("...%d", num_zero_prefix_shown);
+    }
+
     match->destination_url = GURL(template_url->url_ref().ReplaceSearchTerms(
         *match->search_terms_args, template_url_service_->search_terms_data()));
   }

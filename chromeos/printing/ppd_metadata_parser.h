@@ -22,21 +22,28 @@
 #include "base/optional.h"
 #include "base/strings/string_piece_forward.h"
 #include "chromeos/chromeos_export.h"
+#include "chromeos/printing/ppd_provider.h"
 
 #ifndef CHROMEOS_PRINTING_PPD_METADATA_PARSER_H_
 #define CHROMEOS_PRINTING_PPD_METADATA_PARSER_H_
 
 namespace chromeos {
 
-struct ReverseIndexLeaf {
+struct CHROMEOS_EXPORT ReverseIndexLeaf {
   std::string manufacturer;
   std::string model;
 };
 
 // A ParsedPrinter is a value parsed from printers metadata.
-struct ParsedPrinter {
+struct CHROMEOS_EXPORT ParsedPrinter {
+  ParsedPrinter();
+  ~ParsedPrinter();
+  ParsedPrinter(const ParsedPrinter&);
+  ParsedPrinter& operator=(const ParsedPrinter&);
+
   std::string user_visible_printer_name;
   std::string effective_make_and_model;
+  base::Optional<PpdProvider::Restrictions> restrictions;
 };
 
 // Maps manufacturer names to basenames of printers metadata.

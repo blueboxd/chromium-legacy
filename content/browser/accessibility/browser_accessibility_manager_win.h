@@ -77,7 +77,40 @@ class CONTENT_EXPORT BrowserAccessibilityManagerWin
       const std::vector<ui::AXTreeObserver::Change>& changes) override;
 
  private:
-  void HandleSelectedStateChanged(BrowserAccessibility* node);
+  struct SelectionEvents {
+    std::vector<BrowserAccessibility*> added;
+    std::vector<BrowserAccessibility*> removed;
+    SelectionEvents();
+    ~SelectionEvents();
+  };
+
+  using SelectionEventsMap = std::map<BrowserAccessibility*, SelectionEvents>;
+  using IsSelectedPredicate =
+      base::RepeatingCallback<bool(BrowserAccessibility*)>;
+  using FirePlatformSelectionEventsCallback =
+      base::RepeatingCallback<void(BrowserAccessibility*,
+                                   BrowserAccessibility*,
+                                   const SelectionEvents&)>;
+
+  static bool IsIA2NodeSelected(BrowserAccessibility* node);
+  static bool IsUIANodeSelected(BrowserAccessibility* node);
+
+  void FireIA2SelectionEvents(BrowserAccessibility* container,
+                              BrowserAccessibility* only_selected_child,
+                              const SelectionEvents& changes);
+  void FireUIASelectionEvents(BrowserAccessibility* container,
+                              BrowserAccessibility* only_selected_child,
+                              const SelectionEvents& changes);
+
+  static void HandleSelectedStateChanged(
+      SelectionEventsMap& selection_events_map,
+      BrowserAccessibility* node,
+      bool is_selected);
+
+  static void FinalizeSelectionEvents(
+      SelectionEventsMap& selection_events_map,
+      IsSelectedPredicate is_selected_predicate,
+      FirePlatformSelectionEventsCallback fire_platform_events_callback);
 
   // Give BrowserAccessibilityManager::Create access to our constructor.
   friend class BrowserAccessibilityManager;
@@ -109,13 +142,8 @@ class CONTENT_EXPORT BrowserAccessibilityManagerWin
   // Keep track of selection changes so we can optimize UIA event firing.
   // Pointers are only stored for the duration of |OnAccessibilityEvents|, and
   // the map is cleared in |FinalizeAccessibilityEvents|.
-  struct SelectionEvents {
-    std::vector<BrowserAccessibility*> added;
-    std::vector<BrowserAccessibility*> removed;
-    SelectionEvents();
-    ~SelectionEvents();
-  };
-  std::map<BrowserAccessibility*, SelectionEvents> selection_events_;
+  SelectionEventsMap ia2_selection_events_;
+  SelectionEventsMap uia_selection_events_;
 
   DISALLOW_COPY_AND_ASSIGN(BrowserAccessibilityManagerWin);
 };

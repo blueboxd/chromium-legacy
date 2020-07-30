@@ -167,10 +167,6 @@ class WebWidget {
   // Returns the state of focus for the WebWidget.
   virtual bool HasFocus() { return false; }
 
-  // Sets the display mode, which comes from the top-level browsing context and
-  // is applied to all widgets.
-  virtual void SetDisplayMode(mojom::DisplayMode) {}
-
   // Sets the root widget's window segments.
   virtual void SetWindowSegments(WebVector<WebRect> window_segments) {}
 

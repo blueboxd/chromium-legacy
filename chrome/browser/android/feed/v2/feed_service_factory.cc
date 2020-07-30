@@ -44,6 +44,7 @@ class FeedServiceDelegateImpl : public FeedService::Delegate {
   DisplayMetrics GetDisplayMetrics() override {
     return FeedServiceBridge::GetDisplayMetrics();
   }
+  void ClearAll() override { FeedServiceBridge::ClearAll(); }
 };
 
 }  // namespace

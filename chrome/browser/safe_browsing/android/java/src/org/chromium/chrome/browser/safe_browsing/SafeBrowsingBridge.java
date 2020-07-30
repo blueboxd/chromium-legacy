@@ -59,6 +59,13 @@ public final class SafeBrowsingBridge {
         SafeBrowsingBridgeJni.get().setSafeBrowsingState(state);
     }
 
+    /**
+     * @return Whether there is a Google account to use for the leak detection check.
+     */
+    public static boolean hasAccountForLeakCheckRequest() {
+        return SafeBrowsingBridgeJni.get().hasAccountForLeakCheckRequest();
+    }
+
     @NativeMethods
     interface Natives {
         int umaValueForFile(String path);
@@ -68,5 +75,6 @@ public final class SafeBrowsingBridge {
         @SafeBrowsingState
         int getSafeBrowsingState();
         void setSafeBrowsingState(@SafeBrowsingState int state);
+        boolean hasAccountForLeakCheckRequest();
     }
 }

@@ -717,6 +717,28 @@ Response InspectorOverlayAgent::setShowGridOverlays(
   return Response::Success();
 }
 
+Response InspectorOverlayAgent::highlightSourceOrder(
+    std::unique_ptr<protocol::Overlay::SourceOrderConfig>
+        source_order_inspector_object,
+    Maybe<int> node_id,
+    Maybe<int> backend_node_id,
+    Maybe<String> object_id) {
+  Node* node = nullptr;
+  Response response =
+      dom_agent_->AssertNode(node_id, backend_node_id, object_id, node);
+  if (!response.IsSuccess())
+    return response;
+
+  InspectorSourceOrderConfig config = SourceOrderConfigFromInspectorObject(
+      std::move(source_order_inspector_object));
+  std::unique_ptr<InspectorSourceOrderConfig> source_order_config =
+      std::make_unique<InspectorSourceOrderConfig>(config);
+
+  SetInspectTool(MakeGarbageCollected<SourceOrderTool>(
+      node, std::move(source_order_config)));
+  return Response::Success();
+}
+
 Response InspectorOverlayAgent::highlightFrame(
     const String& frame_id,
     Maybe<protocol::DOM::RGBA> color,
@@ -796,6 +818,22 @@ Response InspectorOverlayAgent::getGridHighlightObjectsForTest(
                   InspectorHighlight::DefaultGridConfig()));
   }
   *highlights = grid_highlight_tool.GetGridInspectorHighlightsAsJson();
+  return Response::Success();
+}
+
+Response InspectorOverlayAgent::getSourceOrderHighlightObjectForTest(
+    int node_id,
+    std::unique_ptr<protocol::DictionaryValue>* result) {
+  Node* node = nullptr;
+  Response response = dom_agent_->AssertNode(node_id, node);
+  if (!response.IsSuccess())
+    return response;
+
+  auto config = std::make_unique<InspectorSourceOrderConfig>(
+      InspectorSourceOrderHighlight::DefaultConfig());
+
+  SourceOrderTool tool(node, std::move(config));
+  *result = tool.GetNodeInspectorSourceOrderHighlightAsJson();
   return Response::Success();
 }
 
@@ -1332,6 +1370,19 @@ void InspectorOverlayAgent::SetInspectTool(InspectTool* inspect_tool) {
       DisableFrameOverlay();
   }
   ScheduleUpdate();
+}
+
+InspectorSourceOrderConfig
+InspectorOverlayAgent::SourceOrderConfigFromInspectorObject(
+    std::unique_ptr<protocol::Overlay::SourceOrderConfig>
+        source_order_inspector_object) {
+  InspectorSourceOrderConfig source_order_config = InspectorSourceOrderConfig();
+  source_order_config.parent_outline_color = InspectorDOMAgent::ParseColor(
+      source_order_inspector_object->getParentOutlineColor());
+  source_order_config.child_outline_color = InspectorDOMAgent::ParseColor(
+      source_order_inspector_object->getChildOutlineColor());
+
+  return source_order_config;
 }
 
 Response InspectorOverlayAgent::HighlightConfigFromInspectorObject(

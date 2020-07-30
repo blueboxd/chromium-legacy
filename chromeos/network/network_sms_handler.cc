@@ -278,13 +278,12 @@ void NetworkSmsHandler::MessageReceived(const base::DictionaryValue& message) {
 }
 
 void NetworkSmsHandler::ManagerPropertiesCallback(
-    DBusMethodCallStatus call_status,
-    base::Value properties) {
-  if (call_status != DBUS_METHOD_CALL_SUCCESS) {
+    base::Optional<base::Value> properties) {
+  if (!properties) {
     LOG(ERROR) << "NetworkSmsHandler: Failed to get manager properties.";
     return;
   }
-  const base::Value* value = properties.FindListKey(shill::kDevicesProperty);
+  const base::Value* value = properties->FindListKey(shill::kDevicesProperty);
   if (!value) {
     LOG(ERROR) << "NetworkSmsHandler: No list value for: "
                << shill::kDevicesProperty;
@@ -312,16 +311,14 @@ void NetworkSmsHandler::UpdateDevices(const base::Value& devices) {
 
 void NetworkSmsHandler::DevicePropertiesCallback(
     const std::string& device_path,
-    DBusMethodCallStatus call_status,
-    base::Value properties) {
-  if (call_status != DBUS_METHOD_CALL_SUCCESS) {
-    LOG(ERROR) << "NetworkSmsHandler: ERROR: " << call_status
-               << " For: " << device_path;
+    base::Optional<base::Value> properties) {
+  if (!properties) {
+    LOG(ERROR) << "NetworkSmsHandler error for: " << device_path;
     return;
   }
 
   const std::string* device_type =
-      properties.FindStringKey(shill::kTypeProperty);
+      properties->FindStringKey(shill::kTypeProperty);
   if (!device_type) {
     LOG(ERROR) << "NetworkSmsHandler: No type for: " << device_path;
     return;
@@ -330,14 +327,14 @@ void NetworkSmsHandler::DevicePropertiesCallback(
     return;
 
   const std::string* service_name =
-      properties.FindStringKey(shill::kDBusServiceProperty);
+      properties->FindStringKey(shill::kDBusServiceProperty);
   if (!service_name) {
     LOG(ERROR) << "Device has no DBusService Property: " << device_path;
     return;
   }
 
   const std::string* object_path_string =
-      properties.FindStringKey(shill::kDBusObjectProperty);
+      properties->FindStringKey(shill::kDBusObjectProperty);
   if (!object_path_string) {
     LOG(ERROR) << "Device has no DBusObject Property: " << device_path;
     return;

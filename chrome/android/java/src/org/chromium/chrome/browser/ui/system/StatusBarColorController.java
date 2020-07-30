@@ -14,6 +14,8 @@ import androidx.annotation.ColorInt;
 import androidx.annotation.Nullable;
 
 import org.chromium.base.ApiCompatibilityUtils;
+import org.chromium.base.Callback;
+import org.chromium.base.supplier.ObservableSupplier;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ActivityTabProvider;
 import org.chromium.chrome.browser.ChromeActivity;
@@ -31,7 +33,6 @@ import org.chromium.chrome.browser.tabmodel.TabModelSelector;
 import org.chromium.chrome.browser.tabmodel.TabModelSelectorObserver;
 import org.chromium.chrome.browser.toolbar.ToolbarColors;
 import org.chromium.chrome.browser.toolbar.top.TopToolbarCoordinator;
-import org.chromium.chrome.browser.widget.ScrimView;
 import org.chromium.components.browser_ui.styles.ChromeColors;
 import org.chromium.ui.UiUtils;
 import org.chromium.ui.base.WindowAndroid;
@@ -67,9 +68,8 @@ public class StatusBarColorController
 
     private final Window mWindow;
     private final boolean mIsTablet;
-    private final @Nullable OverviewModeBehavior mOverviewModeBehavior;
+    private @Nullable OverviewModeBehavior mOverviewModeBehavior;
     private final StatusBarColorProvider mStatusBarColorProvider;
-    private final ScrimView.StatusBarScrimDelegate mStatusBarScrimDelegate;
     private final ActivityTabProvider.ActivityTabTabObserver mStatusBarColorTabObserver;
     private final TabModelSelectorObserver mTabModelSelectorObserver;
 
@@ -79,6 +79,8 @@ public class StatusBarColorController
     private final @ColorInt int mIncognitoDefaultThemeColor;
 
     private @Nullable TabModelSelector mTabModelSelector;
+    private ObservableSupplier<OverviewModeBehavior> mOverviewModeBehaviorSupplier;
+    private Callback<OverviewModeBehavior> mOverviewModeBehaviorSupplierObserver;
     private @Nullable OverviewModeBehavior.OverviewModeObserver mOverviewModeObserver;
     private @Nullable Tab mCurrentTab;
     private boolean mIsInOverviewMode;
@@ -100,12 +102,7 @@ public class StatusBarColorController
             ChromeActivity chromeActivity, ActivityTabProvider tabProvider) {
         mWindow = chromeActivity.getWindow();
         mIsTablet = chromeActivity.isTablet();
-        mOverviewModeBehavior = chromeActivity.getOverviewModeBehavior();
         mStatusBarColorProvider = chromeActivity;
-        mStatusBarScrimDelegate = (fraction) -> {
-            mStatusBarScrimFraction = fraction;
-            updateStatusBarColor();
-        };
 
         Resources resources = chromeActivity.getResources();
         mStandardPrimaryBgColor = ChromeColors.getPrimaryBackgroundColor(resources, false);
@@ -179,21 +176,34 @@ public class StatusBarColorController
             }
         };
 
-        if (mOverviewModeBehavior != null) {
-            mOverviewModeObserver = new EmptyOverviewModeObserver() {
-                @Override
-                public void onOverviewModeStartedShowing(boolean showToolbar) {
-                    mIsInOverviewMode = true;
-                    updateStatusBarColor();
-                }
+        mOverviewModeBehaviorSupplier = chromeActivity.getOverviewModeBehaviorSupplier();
 
+        if (mOverviewModeBehaviorSupplier != null) {
+            mOverviewModeBehaviorSupplierObserver = new Callback<OverviewModeBehavior>() {
                 @Override
-                public void onOverviewModeFinishedHiding() {
-                    mIsInOverviewMode = false;
-                    updateStatusBarColor();
+                public void onResult(OverviewModeBehavior overviewModeBehavior) {
+                    assert overviewModeBehavior != null;
+                    mOverviewModeBehavior = overviewModeBehavior;
+                    mOverviewModeObserver = new EmptyOverviewModeObserver() {
+                        @Override
+                        public void onOverviewModeStartedShowing(boolean showToolbar) {
+                            mIsInOverviewMode = true;
+                            updateStatusBarColor();
+                        }
+
+                        @Override
+                        public void onOverviewModeFinishedHiding() {
+                            mIsInOverviewMode = false;
+                            updateStatusBarColor();
+                        }
+                    };
+                    mOverviewModeBehavior.addOverviewModeObserver(mOverviewModeObserver);
+                    // TODO(crbug.com/1084528): Replace with OneShotSupplier when it is available.
+                    mOverviewModeBehaviorSupplier.removeObserver(this);
+                    mOverviewModeBehaviorSupplier = null;
                 }
             };
-            mOverviewModeBehavior.addOverviewModeObserver(mOverviewModeObserver);
+            mOverviewModeBehaviorSupplier.addObserver(mOverviewModeBehaviorSupplierObserver);
         }
 
         chromeActivity.getLifecycleDispatcher().register(this);
@@ -203,6 +213,9 @@ public class StatusBarColorController
     @Override
     public void destroy() {
         mStatusBarColorTabObserver.destroy();
+        if (mOverviewModeBehaviorSupplier != null) {
+            mOverviewModeBehaviorSupplier.removeObserver(mOverviewModeBehaviorSupplierObserver);
+        }
         if (mOverviewModeBehavior != null) {
             mOverviewModeBehavior.removeOverviewModeObserver(mOverviewModeObserver);
         }
@@ -227,6 +240,15 @@ public class StatusBarColorController
     }
 
     /**
+     * Update the scrim amount on the status bar.
+     * @param fraction The scrim fraction in range [0, 1].
+     */
+    public void setStatusBarScrimFraction(float fraction) {
+        mStatusBarScrimFraction = fraction;
+        updateStatusBarColor();
+    }
+
+    /**
      * @param tabModelSelector The {@link TabModelSelector} to check whether incognito model is
      *                         selected.
      */
@@ -234,14 +256,6 @@ public class StatusBarColorController
         assert mTabModelSelector == null : "mTabModelSelector should only be set once.";
         mTabModelSelector = tabModelSelector;
         if (mTabModelSelector != null) mTabModelSelector.addObserver(mTabModelSelectorObserver);
-    }
-
-    /**
-     * @return The {@link ScrimView.StatusBarScrimDelegate} that adjusts the status bar color based
-     *         on the scrim offset.
-     */
-    public ScrimView.StatusBarScrimDelegate getStatusBarScrimDelegate() {
-        return mStatusBarScrimDelegate;
     }
 
     public void updateStatusBarColor() {

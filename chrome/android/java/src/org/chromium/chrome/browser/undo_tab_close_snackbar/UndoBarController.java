@@ -6,6 +6,9 @@ package org.chromium.chrome.browser.undo_tab_close_snackbar;
 
 import android.content.Context;
 
+import org.chromium.base.Callback;
+import org.chromium.base.supplier.ObservableSupplier;
+import org.chromium.base.supplier.ObservableSupplierImpl;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.compositor.layouts.OverviewModeBehavior;
 import org.chromium.chrome.browser.device.DeviceClassManager;
@@ -43,6 +46,9 @@ public class UndoBarController implements SnackbarManager.SnackbarController {
     private final TabModelObserver mTabModelObserver;
     private final SnackbarManager.SnackbarManageable mSnackbarManagable;
     private final Context mContext;
+    private ObservableSupplier<OverviewModeBehavior> mOverviewModeBehaviorSupplier;
+    private Callback<OverviewModeBehavior> mOverviewModeBehaviorSupplierObserver;
+    private OverviewModeBehavior mOverviewModeBehavior;
 
     /**
      * Creates an instance of a {@link UndoBarController}.
@@ -50,15 +56,30 @@ public class UndoBarController implements SnackbarManager.SnackbarController {
      * @param selector The {@link TabModelSelector} that will be used to commit and undo tab
      *                 closures.
      * @param snackbarManageable The holder class to get the manager that helps to show up snackbar.
-     * @param overviewModeBehavior The {@link OverviewModeBehavior} to help check whether the
-     *         overview is showing or not.
+     * @param overviewModeBehaviorSupplier The {@link OverviewModeBehavior} to help check whether
+     *         the
      */
     public UndoBarController(Context context, TabModelSelector selector,
             SnackbarManager.SnackbarManageable snackbarManageable,
-            OverviewModeBehavior overviewModeBehavior) {
+            ObservableSupplierImpl<OverviewModeBehavior> overviewModeBehaviorSupplier) {
         mSnackbarManagable = snackbarManageable;
         mTabModelSelector = selector;
         mContext = context;
+        mOverviewModeBehaviorSupplier = overviewModeBehaviorSupplier;
+        mOverviewModeBehaviorSupplierObserver = new Callback<OverviewModeBehavior>() {
+            @Override
+            public void onResult(OverviewModeBehavior overviewModeBehavior) {
+                assert overviewModeBehavior != null;
+
+                mOverviewModeBehavior = overviewModeBehavior;
+                // TODO(crbug.com/1084528): Replace with OneShotSupplier when it is available.
+                mOverviewModeBehaviorSupplier.removeObserver(this);
+                mOverviewModeBehaviorSupplier = null;
+            }
+        };
+
+        overviewModeBehaviorSupplier.addObserver(mOverviewModeBehaviorSupplierObserver);
+
         mTabModelObserver = new TabModelObserver() {
             private boolean disableUndo() {
                 // If the closure happens through conditional tab strip, show the undo snack bar
@@ -66,7 +87,8 @@ public class UndoBarController implements SnackbarManager.SnackbarController {
                 if (TabUiFeatureUtilities.isConditionalTabStripEnabled()
                         && ConditionalTabStripUtils.getFeatureStatus()
                                 == ConditionalTabStripUtils.FeatureStatus.ACTIVATED
-                        && !overviewModeBehavior.overviewVisible()) {
+                        && (mOverviewModeBehavior != null
+                                && !mOverviewModeBehavior.overviewVisible())) {
                     return false;
                 }
                 // If grid tab switcher is enabled, show the undo snack bar regardless of whether
@@ -133,6 +155,9 @@ public class UndoBarController implements SnackbarManager.SnackbarController {
     public void destroy() {
         TabModel model = mTabModelSelector.getModel(false);
         if (model != null) model.removeObserver(mTabModelObserver);
+        if (mOverviewModeBehaviorSupplier != null) {
+            mOverviewModeBehaviorSupplier.removeObserver(mOverviewModeBehaviorSupplierObserver);
+        }
     }
 
     /**

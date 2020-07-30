@@ -23,9 +23,9 @@
 #include "device/fido/get_assertion_task.h"
 #include "device/fido/pin.h"
 
-#if defined(OS_MACOSX)
+#if defined(OS_MAC)
 #include "device/fido/mac/authenticator.h"
-#endif  // defined(OS_MACOSX)
+#endif  // defined(OS_MAC)
 
 #if defined(OS_WIN)
 #include "device/fido/win/authenticator.h"
@@ -355,7 +355,7 @@ void GetAssertionRequestHandler::AuthenticatorAdded(
     FidoAuthenticator* authenticator) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(my_sequence_checker_);
 
-#if defined(OS_MACOSX)
+#if defined(OS_MAC)
   // Indicate to the UI whether a GetAssertion call to Touch ID would succeed
   // or not. This needs to happen before the base AuthenticatorAdded()
   // implementation runs |notify_observer_callback_| for this callback.
@@ -364,7 +364,7 @@ void GetAssertionRequestHandler::AuthenticatorAdded(
         static_cast<fido::mac::TouchIdAuthenticator*>(authenticator)
             ->HasCredentialForGetAssertionRequest(request_);
   }
-#endif  // defined(OS_MACOSX)
+#endif  // defined(OS_MAC)
 
   FidoRequestHandlerBase::AuthenticatorAdded(discovery, authenticator);
 }

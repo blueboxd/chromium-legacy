@@ -63,7 +63,6 @@ import org.chromium.chrome.browser.ui.appmenu.AppMenuCoordinatorFactory;
 import org.chromium.chrome.browser.ui.messages.snackbar.SnackbarManager;
 import org.chromium.chrome.browser.ui.system.StatusBarColorController;
 import org.chromium.chrome.browser.vr.VrModuleProvider;
-import org.chromium.chrome.browser.widget.ScrimView;
 import org.chromium.components.browser_ui.bottomsheet.BottomSheetController;
 import org.chromium.components.browser_ui.bottomsheet.BottomSheetController.SheetState;
 import org.chromium.components.browser_ui.bottomsheet.BottomSheetControllerFactory;
@@ -131,7 +130,6 @@ public class RootUiCoordinator
     private ManagedBottomSheetController mBottomSheetController;
     private SnackbarManager mBottomSheetSnackbarManager;
 
-    private ScrimView mScrimView;
     private ScrimCoordinator mScrimCoordinator;
     private DirectActionInitializer mDirectActionInitializer;
     private List<ButtonDataProvider> mButtonDataProviders;
@@ -275,11 +273,8 @@ public class RootUiCoordinator
     public void onInflationComplete() {
         ViewGroup coordinator = mActivity.findViewById(R.id.coordinator);
         StatusBarColorController statusBarColorController = mActivity.getStatusBarColorController();
-        mScrimView = new ScrimView(mActivity,
-                statusBarColorController.getStatusBarScrimDelegate(), coordinator);
         mScrimCoordinator = new ScrimCoordinator(mActivity,
                 (fraction) -> statusBarColorController
-                        .getStatusBarScrimDelegate()
                         .setStatusBarScrimFraction(fraction),
                 coordinator,
                 ApiCompatibilityUtils.getColor(coordinator.getResources(),
@@ -300,12 +295,9 @@ public class RootUiCoordinator
         if (mAppMenuCoordinator != null) {
             mModalDialogManagerObserver = new ModalDialogManagerObserver() {
                 @Override
-                public void onDialogShown(PropertyModel model) {
+                public void onDialogAdded(PropertyModel model) {
                     mAppMenuCoordinator.getAppMenuHandler().hideAppMenu();
                 }
-
-                @Override
-                public void onDialogHidden(PropertyModel model) {}
             };
             mActivity.getModalDialogManager().addObserver(mModalDialogManagerObserver);
         }
@@ -663,11 +655,6 @@ public class RootUiCoordinator
     /** @return The {@link BottomSheetController} for this activity. */
     public ManagedBottomSheetController getBottomSheetController() {
         return mBottomSheetController;
-    }
-
-    /** @return The root coordinator / activity's primary scrim. */
-    public ScrimView getScrim() {
-        return mScrimView;
     }
 
     /** @return The {@link ScrimCoordinator} to control activity's primary scrim. */

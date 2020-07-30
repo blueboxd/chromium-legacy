@@ -63,10 +63,15 @@ ProtobufHttpTestResponder::GetPendingRequest(size_t index) {
   return (*test_url_loader_factory_.pending_requests())[index];
 }
 
+network::TestURLLoaderFactory::PendingRequest&
+ProtobufHttpTestResponder::GetMostRecentPendingRequest() {
+  base::RunLoop().RunUntilIdle();
+  DCHECK(!test_url_loader_factory_.pending_requests()->empty());
+  return test_url_loader_factory_.pending_requests()->back();
+}
+
 std::string ProtobufHttpTestResponder::GetMostRecentRequestUrl() {
-  int num_pending = GetNumPending();
-  DCHECK_LT(0, num_pending);
-  return GetPendingRequest(num_pending - 1).request.url.spec();
+  return GetMostRecentPendingRequest().request.url.spec();
 }
 
 }  // namespace remoting

@@ -64,6 +64,7 @@ public class ShareButtonController implements ButtonDataProvider, ConfigurationC
     private int mCurrentOrientation;
 
     private @Nullable Callback<Boolean> mBottomToolbarVisibilityObserver;
+
     /**
      * Creates ShareButtonController object.
      * @param context The Context for retrieving resources, etc.
@@ -108,13 +109,13 @@ public class ShareButtonController implements ButtonDataProvider, ConfigurationC
 
         mModalDialogManagerObserver = new ModalDialogManagerObserver() {
             @Override
-            public void onDialogShown(PropertyModel model) {
+            public void onDialogAdded(PropertyModel model) {
                 mButtonData.isEnabled = false;
                 notifyObservers(mButtonData.canShow);
             }
 
             @Override
-            public void onDialogHidden(PropertyModel model) {
+            public void onLastDialogDismissed() {
                 mButtonData.isEnabled = true;
                 notifyObservers(mButtonData.canShow);
             }

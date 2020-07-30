@@ -79,8 +79,6 @@ class ObjectPaintInvalidatorWithContext : public ObjectPaintInvalidator {
   void InvalidatePaintWithComputedReason(PaintInvalidationReason);
 
  private:
-  PaintInvalidationReason InvalidatePartialRect(PaintInvalidationReason);
-
   const PaintInvalidatorContext& context_;
 };
 

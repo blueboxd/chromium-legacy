@@ -94,6 +94,7 @@ js_type_check("settings_resources") {
     ":lifetime_browser_proxy",
     ":router",
     ":search_settings",
+    ":setting_id_param_util",
   ]
 }
 
@@ -133,6 +134,13 @@ js_library("search_settings") {
     "//ui/webui/resources/js:util",
   ]
   externs_list = [ "$externs_path/pending_polymer.js" ]
+}
+
+js_library("setting_id_param_util") {
+  deps = [
+    ":router",
+    "//ui/webui/resources/js:load_time_data",
+  ]
 }
 
 # Polymer 3 related rules.
@@ -201,6 +209,7 @@ js_type_check("closure_compile_local_module") {
     ":route",
     ":router.m",
     ":search_settings.m",
+    ":setting_id_param_util.m",
     ":settings",
     ":settings_routes",
     ":site_favicon",
@@ -317,6 +326,15 @@ js_library("search_settings.m") {
   extra_deps = [ ":modulize" ]
 }
 
+js_library("setting_id_param_util.m") {
+  sources = [ "$root_gen_dir/chrome/browser/resources/settings/setting_id_param_util.m.js" ]
+  deps = [
+    ":router.m",
+    "//ui/webui/resources/js:load_time_data.m",
+  ]
+  extra_deps = [ ":modulize" ]
+}
+
 js_library("settings_routes") {
   deps = [ ":router.m" ]
 }
@@ -415,6 +433,7 @@ js_modulizer("modulize") {
     "lifetime_browser_proxy.js",
     "router.js",
     "search_settings.js",
+    "setting_id_param_util.js",
   ]
   namespace_rewrites = settings_namespace_rewrites + [
                          "cr.search_highlight_utils.createEmptySearchBubble|createEmptySearchBubble",

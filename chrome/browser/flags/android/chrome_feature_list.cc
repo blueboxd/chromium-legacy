@@ -109,6 +109,7 @@ const base::Feature* kFeaturesExposedToJava[] = {
     &kAndroidPartnerCustomizationPhenotype,
     &kAndroidPayIntegrationV2,
     &kAndroidSearchEngineChoiceNotification,
+    &kBentoOffline,
     &kCastDeviceFilter,
     &kCloseTabSuggestions,
     &kCCTBackgroundTab,
@@ -309,6 +310,9 @@ const base::Feature kAndroidSearchEngineChoiceNotification{
 
 const base::Feature kBackgroundTaskComponentUpdate{
     "BackgroundTaskComponentUpdate", base::FEATURE_DISABLED_BY_DEFAULT};
+
+const base::Feature kBentoOffline{"BentoOffline",
+                                  base::FEATURE_DISABLED_BY_DEFAULT};
 
 const base::Feature kConditionalTabStripAndroid{
     "ConditionalTabStripAndroid", base::FEATURE_DISABLED_BY_DEFAULT};

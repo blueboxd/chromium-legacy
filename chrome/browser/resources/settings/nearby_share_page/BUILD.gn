@@ -31,6 +31,7 @@ js_library("nearby_share_subpage") {
     "../prefs",
     "../prefs:prefs_behavior",
     "../prefs:prefs_types",
+    "//chrome/browser/resources/nearby_share/shared:nearby_share_settings",
     "//ui/webui/resources/js:cr",
     "//ui/webui/resources/js:i18n_behavior",
   ]
@@ -74,6 +75,7 @@ js_library("nearby_share_subpage.m") {
     "../prefs:prefs.m",
     "../prefs:prefs_behavior.m",
     "../prefs:prefs_types.m",
+    "//chrome/browser/resources/nearby_share/shared:nearby_share_settings.m",
     "//ui/webui/resources/js:cr.m",
     "//ui/webui/resources/js:i18n_behavior.m",
   ]

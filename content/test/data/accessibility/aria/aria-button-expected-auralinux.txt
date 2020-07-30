@@ -1,13 +1,13 @@
 [document web]
 ++[push button] name='Button1' xml-roles:button
-++[toggle button] name='Button2' pressed checkable:true xml-roles:button
-++[toggle button] name='Button3' checkable:true xml-roles:button
+++[toggle button] name='Button2' pressed xml-roles:button
+++[toggle button] name='Button3' xml-roles:button
 ++[push button] name='Button4' haspopup:menu xml-roles:button
 ++[push button] name='Button5' xml-roles:button
 ++[push button] name='Complex button ' xml-roles:button
 ++++[static] name='Complex button '
 ++++[entry] selectable-text
-++[toggle button] name='Complex toggle button ' pressed checkable:true xml-roles:button
+++[toggle button] name='Complex toggle button ' pressed xml-roles:button
 ++++[static] name='Complex toggle button '
 ++++[entry] selectable-text
 ++[push button] name='Complex pop up button ' haspopup:menu xml-roles:button

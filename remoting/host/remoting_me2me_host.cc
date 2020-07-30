@@ -42,7 +42,6 @@
 #include "net/socket/client_socket_factory.h"
 #include "net/url_request/url_fetcher.h"
 #include "remoting/base/auto_thread_task_runner.h"
-#include "remoting/base/chromium_url_request.h"
 #include "remoting/base/constants.h"
 #include "remoting/base/logging.h"
 #include "remoting/base/oauth_token_getter_impl.h"
@@ -1397,8 +1396,10 @@ void HostProcess::InitializeSignaling() {
       context_->url_loader_factory(), false);
 
   log_to_server_ = std::make_unique<RemotingLogToServer>(
-      ServerLogEntry::ME2ME, std::make_unique<OAuthTokenGetterProxy>(
-                                 oauth_token_getter_->GetWeakPtr()));
+      ServerLogEntry::ME2ME,
+      std::make_unique<OAuthTokenGetterProxy>(
+          oauth_token_getter_->GetWeakPtr()),
+      context_->url_loader_factory());
   auto ftl_signal_strategy = std::make_unique<FtlSignalStrategy>(
       std::make_unique<OAuthTokenGetterProxy>(
           oauth_token_getter_->GetWeakPtr()),
@@ -1467,9 +1468,8 @@ void HostProcess::StartHost() {
   scoped_refptr<protocol::TransportContext> transport_context =
       new protocol::TransportContext(
           std::make_unique<protocol::ChromiumPortAllocatorFactory>(),
-          std::make_unique<ChromiumUrlRequestFactory>(
-              context_->url_loader_factory()),
-          network_settings, protocol::TransportRole::SERVER);
+          context_->url_loader_factory(), network_settings,
+          protocol::TransportRole::SERVER);
   std::unique_ptr<protocol::SessionManager> session_manager(
       new protocol::JingleSessionManager(signal_strategy_.get()));
 

@@ -116,6 +116,7 @@ class FeedService::StreamDelegateImpl : public FeedStream::Delegate {
   std::string GetLanguageTag() override {
     return service_delegate_->GetLanguageTag();
   }
+  void ClearAll() override { service_delegate_->ClearAll(); }
 
  private:
   FeedService::Delegate* service_delegate_;

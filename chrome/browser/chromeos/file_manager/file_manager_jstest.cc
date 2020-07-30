@@ -45,6 +45,10 @@ IN_PROC_BROWSER_TEST_F(FileManagerJsTest, DeviceHandlerTest) {
   RunTestURL("background/js/device_handler_unittest_gen.html");
 }
 
+IN_PROC_BROWSER_TEST_F(FileManagerJsTest, DirectoryContentsTest) {
+  RunTestURL("foreground/js/directory_contents_unittest_gen.html");
+}
+
 IN_PROC_BROWSER_TEST_F(FileManagerJsTest, DirectoryTreeTest) {
   RunTestURL("foreground/js/ui/directory_tree_unittest_gen.html");
 }

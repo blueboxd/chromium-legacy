@@ -736,7 +736,7 @@ bool AlsoUseShowMenuActionForDefaultAction(const ui::AXNodeData& data) {
   if (ui::IsNameExposedInAXValueForRole(role))
     return [self getName];
 
-  if (_node->HasIntAttribute(ax::mojom::IntAttribute::kCheckedState)) {
+  if (_node->IsPlatformCheckable()) {
     // Mixed checkbox state not currently supported in views, but could be.
     // See browser_accessibility_cocoa.mm for details.
     const auto checkedState = static_cast<ax::mojom::CheckedState>(
@@ -1201,6 +1201,17 @@ void AXPlatformNodeMac::Destroy() {
   if (native_node_)
     [native_node_ detach];
   AXPlatformNodeBase::Destroy();
+}
+
+// On Mac, the checked state is mapped to AXValue.
+bool AXPlatformNodeMac::IsPlatformCheckable() const {
+  if (GetData().role == ax::mojom::Role::kTab) {
+    // On Mac, tabs are exposed as radio buttons, and are treated as checkable.
+    // Also, the internal State::kSelected is be mapped to checked via AXValue.
+    return true;
+  }
+
+  return AXPlatformNodeBase::IsPlatformCheckable();
 }
 
 gfx::NativeViewAccessible AXPlatformNodeMac::GetNativeViewAccessible() {

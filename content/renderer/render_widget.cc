@@ -547,13 +547,6 @@ void RenderWidget::UpdateVisualProperties(
           visual_properties.screen_info.color_space);
   }
 
-  // TODO(danakj): In order to synchronize updates between local roots, the
-  // display mode should be propagated to RenderFrameProxies and down through
-  // their RenderWidgetHosts to child RenderWidgets via the VisualProperties
-  // waterfall, instead of coming to each RenderWidget independently.
-  // https://developer.mozilla.org/en-US/docs/Web/CSS/@media/display-mode
-  GetWebWidget()->SetDisplayMode(visual_properties.display_mode);
-
   if (delegate()) {
     if (size_ != visual_properties.new_size) {
       // Only hide popups when the size changes. Eg https://crbug.com/761908.

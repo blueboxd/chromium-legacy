@@ -20,6 +20,7 @@
 namespace {
 
 constexpr char kAuthorizationHeaderFormat[] = "Authorization: Bearer %s";
+constexpr char kApiKeyHeaderFormat[] = "x-goog-api-key: %s";
 
 }  // namespace
 
@@ -95,6 +96,11 @@ void ProtobufHttpClient::DoExecuteRequest(
         base::StringPrintf(kAuthorizationHeaderFormat, access_token.c_str()));
   } else {
     VLOG(1) << "Attempting to execute request without access token";
+  }
+
+  if (!request->config().api_key.empty()) {
+    resource_request->headers.AddHeaderFromString(base::StringPrintf(
+        kApiKeyHeaderFormat, request->config().api_key.c_str()));
   }
 
   std::unique_ptr<network::SimpleURLLoader> send_url_loader =

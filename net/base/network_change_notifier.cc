@@ -33,7 +33,7 @@
 #include "net/base/network_change_notifier_win.h"
 #elif defined(OS_LINUX) && !defined(OS_CHROMEOS)
 #include "net/base/network_change_notifier_linux.h"
-#elif defined(OS_MACOSX)
+#elif defined(OS_APPLE)
 #include "net/base/network_change_notifier_mac.h"
 #elif defined(OS_CHROMEOS) || defined(OS_ANDROID)
 #include "net/base/network_change_notifier_posix.h"
@@ -239,7 +239,7 @@ std::unique_ptr<NetworkChangeNotifier> NetworkChangeNotifier::CreateIfNeeded(
 #elif defined(OS_LINUX)
   return std::make_unique<NetworkChangeNotifierLinux>(
       std::unordered_set<std::string>());
-#elif defined(OS_MACOSX)
+#elif defined(OS_APPLE)
   return std::make_unique<NetworkChangeNotifierMac>();
 #elif defined(OS_FUCHSIA)
   return std::make_unique<NetworkChangeNotifierFuchsia>(
@@ -478,7 +478,7 @@ NetworkChangeNotifier::ConnectionTypeFromInterfaceList(
     if (interfaces[i].friendly_name == "Teredo Tunneling Pseudo-Interface")
       continue;
 #endif
-#if defined(OS_MACOSX)
+#if defined(OS_APPLE)
     // Ignore link-local addresses as they aren't globally routable.
     // Mac assigns these to disconnected interfaces like tunnel interfaces
     // ("utun"), airdrop interfaces ("awdl"), and ethernet ports ("en").

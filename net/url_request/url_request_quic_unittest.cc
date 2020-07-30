@@ -341,20 +341,21 @@ class CheckLoadTimingDelegate : public TestDelegate {
 class WaitForCompletionNetworkDelegate : public net::TestNetworkDelegate {
  public:
   WaitForCompletionNetworkDelegate(
-      const base::Closure& all_requests_completed_callback,
+      base::OnceClosure all_requests_completed_callback,
       size_t num_expected_requests)
-      : all_requests_completed_callback_(all_requests_completed_callback),
+      : all_requests_completed_callback_(
+            std::move(all_requests_completed_callback)),
         num_expected_requests_(num_expected_requests) {}
 
   void OnCompleted(URLRequest* request, bool started, int net_error) override {
     net::TestNetworkDelegate::OnCompleted(request, started, net_error);
     num_expected_requests_--;
     if (num_expected_requests_ == 0)
-      all_requests_completed_callback_.Run();
+      std::move(all_requests_completed_callback_).Run();
   }
 
  private:
-  const base::Closure all_requests_completed_callback_;
+  base::OnceClosure all_requests_completed_callback_;
   size_t num_expected_requests_;
   DISALLOW_COPY_AND_ASSIGN(WaitForCompletionNetworkDelegate);
 };
@@ -578,7 +579,7 @@ TEST_P(URLRequestQuicTest, CancelPushIfCached_AllCached) {
   EXPECT_FALSE(end_entry_2->HasParams());
   EXPECT_FALSE(GetOptionalNetErrorCodeFromParams(*end_entry_2));
 
-#if !defined(OS_FUCHSIA) && !defined(OS_IOS) && !defined(OS_MACOSX)
+#if !defined(OS_FUCHSIA) && !defined(OS_APPLE)
   // TODO(crbug.com/813631): Make this work on Fuchsia.
   // TODO(crbug.com/1032568): Make this work on iOS.
   // TODO(crbug.com/1087378): Flaky on Mac.

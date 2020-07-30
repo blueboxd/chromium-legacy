@@ -10,6 +10,7 @@
 
 #include "base/callback.h"
 #include "base/component_export.h"
+#include "base/optional.h"
 #include "base/values.h"
 #include "chromeos/dbus/dbus_method_call_status.h"
 

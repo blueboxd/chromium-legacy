@@ -1512,7 +1512,7 @@ TEST_F(TrialComparisonCertVerifierTest, MacUndesiredRevocationChecking) {
   EXPECT_CALL(*verify_proc2, VerifyInternal(_, _, _, _, _, _, _, _, _))
       .WillOnce(DoAll(SetArgPointee<7>(ok_result), Return(OK)));
 
-#if defined(OS_MACOSX)
+#if defined(OS_APPLE)
   // The secondary should have been called twice on Mac due to attempting
   // the kIgnoredMacUndesiredRevocationCheckingWorkaround.
   EXPECT_CALL(
@@ -1550,7 +1550,7 @@ TEST_F(TrialComparisonCertVerifierTest, MacUndesiredRevocationChecking) {
   histograms_.ExpectTotalCount("Net.CertVerifier_Job_Latency_TrialPrimary", 1);
   histograms_.ExpectTotalCount("Net.CertVerifier_Job_Latency_TrialSecondary",
                                1);
-#if defined(OS_MACOSX)
+#if defined(OS_APPLE)
   // Expect no report.
   EXPECT_EQ(0U, reports.size());
 
@@ -1585,7 +1585,7 @@ TEST_F(TrialComparisonCertVerifierTest, PrimaryRevokedSecondaryOk) {
   scoped_refptr<MockCertVerifyProc> verify_proc2 =
       base::MakeRefCounted<MockCertVerifyProc>();
   EXPECT_CALL(*verify_proc2, VerifyInternal(_, _, _, _, _, _, _, _, _))
-#if defined(OS_MACOSX)
+#if defined(OS_APPLE)
       // The secondary should have been called twice on Mac due to attempting
       // the kIgnoredMacUndesiredRevocationCheckingWorkaround.
       .Times(2)

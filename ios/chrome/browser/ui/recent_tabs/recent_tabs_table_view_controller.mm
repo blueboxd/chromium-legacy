@@ -43,6 +43,7 @@
 #import "ios/chrome/browser/ui/table_view/cells/table_view_cells_constants.h"
 #import "ios/chrome/browser/ui/table_view/cells/table_view_detail_text_item.h"
 #import "ios/chrome/browser/ui/table_view/cells/table_view_disclosure_header_footer_item.h"
+#import "ios/chrome/browser/ui/table_view/cells/table_view_illustrated_item.h"
 #import "ios/chrome/browser/ui/table_view/cells/table_view_image_item.h"
 #import "ios/chrome/browser/ui/table_view/cells/table_view_text_button_item.h"
 #import "ios/chrome/browser/ui/table_view/cells/table_view_text_item.h"
@@ -87,6 +88,7 @@ typedef NS_ENUM(NSInteger, ItemType) {
   ItemTypeOtherDevicesHeader,
   ItemTypeOtherDevicesSyncOff,
   ItemTypeOtherDevicesNoSessions,
+  ItemTypeOtherDevicesSignedOut,
   ItemTypeOtherDevicesSigninPromo,
   ItemTypeOtherDevicesSyncInProgressHeader,
   ItemTypeSessionHeader,
@@ -476,32 +478,97 @@ const int kRecentlyClosedTabsSectionIndex = 0;
         [self.tableViewModel sectionIsCollapsed:SectionIdentifierOtherDevices];
   }
 
-  // Adds Other Devices item for |state|.
-  TableViewTextItem* dummyCell = nil;
-  switch (state) {
-    case SessionsSyncUserState::USER_SIGNED_IN_SYNC_ON_WITH_SESSIONS:
-      NOTREACHED();
-      return;
-    case SessionsSyncUserState::USER_SIGNED_IN_SYNC_OFF:
-      [self addUserSignedSyncOffItem];
-      return;
-    case SessionsSyncUserState::USER_SIGNED_IN_SYNC_ON_NO_SESSIONS:
-      dummyCell = [[TableViewTextItem alloc]
-          initWithType:ItemTypeOtherDevicesNoSessions];
-      dummyCell.text =
-          l10n_util::GetNSString(IDS_IOS_OPEN_TABS_NO_SESSION_INSTRUCTIONS);
-      break;
-    case SessionsSyncUserState::USER_SIGNED_OUT:
-      [self addSigninPromoViewItem];
-      return;
-    case SessionsSyncUserState::USER_SIGNED_IN_SYNC_IN_PROGRESS:
-      // Informational text in section header. No need for a cell in the
-      // section.
-      NOTREACHED();
-      return;
+  if (base::FeatureList::IsEnabled(kIllustratedEmptyStates)) {
+    ItemType itemType;
+    NSString* itemSubtitle;
+    NSString* itemButtonText;
+    switch (state) {
+      case SessionsSyncUserState::USER_SIGNED_IN_SYNC_ON_WITH_SESSIONS:
+      case SessionsSyncUserState::USER_SIGNED_IN_SYNC_IN_PROGRESS:
+        NOTREACHED();
+        return;
+
+      case SessionsSyncUserState::USER_SIGNED_IN_SYNC_OFF:
+        itemType = ItemTypeOtherDevicesSyncOff;
+        itemSubtitle = l10n_util::GetNSString(
+            IDS_IOS_RECENT_TABS_OTHER_DEVICES_SYNC_IS_OFF_MESSAGE);
+        itemButtonText = l10n_util::GetNSString(
+            IDS_IOS_RECENT_TABS_OTHER_DEVICES_TURN_ON_SYNC);
+        break;
+
+      case SessionsSyncUserState::USER_SIGNED_IN_SYNC_ON_NO_SESSIONS:
+        itemType = ItemTypeOtherDevicesNoSessions;
+        itemSubtitle = l10n_util::GetNSString(
+            IDS_IOS_RECENT_TABS_OTHER_DEVICES_EMPTY_MESSAGE);
+        break;
+
+      case SessionsSyncUserState::USER_SIGNED_OUT:
+        [self addSigninPromoViewItem];
+        itemType = ItemTypeOtherDevicesSignedOut;
+        itemSubtitle = l10n_util::GetNSString(
+            IDS_IOS_RECENT_TABS_OTHER_DEVICES_SIGNED_OUT_MESSAGE);
+        break;
+    }
+    NSString* title =
+        l10n_util::GetNSString(IDS_IOS_RECENT_TABS_OTHER_DEVICES_EMPTY_TITLE);
+    NSString* accessibilityId =
+        kRecentTabsOtherDevicesIllustratedCellAccessibilityIdentifier;
+    TableViewIllustratedItem* illustratedItem = [self
+        createIllustratedItemWithType:itemType
+                                image:[UIImage imageNamed:@"recent_tabs_other_"
+                                                          @"devices_empty"]
+                                title:title
+                             subtitle:itemSubtitle
+                           buttonText:itemButtonText
+              accessibilityIdentifier:accessibilityId];
+    [self.tableViewModel insertItem:illustratedItem
+            inSectionWithIdentifier:SectionIdentifierOtherDevices
+                            atIndex:0];
+  } else {
+    // Adds Other Devices item for |state|.
+    TableViewTextItem* dummyCell = nil;
+    switch (state) {
+      case SessionsSyncUserState::USER_SIGNED_IN_SYNC_ON_WITH_SESSIONS:
+        NOTREACHED();
+        return;
+      case SessionsSyncUserState::USER_SIGNED_IN_SYNC_OFF:
+        [self addUserSignedSyncOffItem];
+        return;
+      case SessionsSyncUserState::USER_SIGNED_IN_SYNC_ON_NO_SESSIONS:
+        dummyCell = [[TableViewTextItem alloc]
+            initWithType:ItemTypeOtherDevicesNoSessions];
+        dummyCell.text =
+            l10n_util::GetNSString(IDS_IOS_OPEN_TABS_NO_SESSION_INSTRUCTIONS);
+        break;
+      case SessionsSyncUserState::USER_SIGNED_OUT:
+        [self addSigninPromoViewItem];
+        return;
+      case SessionsSyncUserState::USER_SIGNED_IN_SYNC_IN_PROGRESS:
+        // Informational text in section header. No need for a cell in the
+        // section.
+        NOTREACHED();
+        return;
+    }
+    [self.tableViewModel addItem:dummyCell
+         toSectionWithIdentifier:SectionIdentifierOtherDevices];
   }
-  [self.tableViewModel addItem:dummyCell
-       toSectionWithIdentifier:SectionIdentifierOtherDevices];
+}
+
+- (TableViewIllustratedItem*)createIllustratedItemWithType:(ItemType)type
+                                                     image:(UIImage*)image
+                                                     title:(NSString*)title
+                                                  subtitle:(NSString*)subtitle
+                                                buttonText:(NSString*)buttonText
+                                   accessibilityIdentifier:
+                                       (NSString*)accessibilityIdentifier {
+  TableViewIllustratedItem* illustratedItem =
+      [[TableViewIllustratedItem alloc] initWithType:type];
+  illustratedItem.image = image;
+  illustratedItem.title = title;
+  illustratedItem.subtitle = subtitle;
+  illustratedItem.buttonText = buttonText;
+  illustratedItem.accessibilityIdentifier = accessibilityIdentifier;
+  return illustratedItem;
 }
 
 - (void)addUserSignedSyncOffItem {
@@ -724,6 +791,12 @@ const int kRecentlyClosedTabsSectionIndex = 0;
   // If SigninPromo will be shown, |self.signinPromoViewMediator| must know.
   if (itemTypeSelected == ItemTypeOtherDevicesSigninPromo) {
     [self.signinPromoViewMediator signinPromoViewIsVisible];
+    if (base::FeatureList::IsEnabled(kIllustratedEmptyStates)) {
+      TableViewSigninPromoCell* signinPromoCell =
+          base::mac::ObjCCastStrict<TableViewSigninPromoCell>(cell);
+      signinPromoCell.signinPromoView.imageView.hidden = YES;
+      signinPromoCell.signinPromoView.textLabel.hidden = YES;
+    }
   }
   // Retrieve favicons for closed tabs and remote sessions.
   if (itemTypeSelected == ItemTypeRecentlyClosed ||
@@ -736,11 +809,26 @@ const int kRecentlyClosedTabsSectionIndex = 0;
   }
   // Set button action method for ItemTypeOtherDevicesSyncOff.
   if (itemTypeSelected == ItemTypeOtherDevicesSyncOff) {
-    TableViewTextButtonCell* tableViewTextButtonCell =
-        base::mac::ObjCCastStrict<TableViewTextButtonCell>(cell);
-    [tableViewTextButtonCell.button addTarget:self
-                                       action:@selector(updateSyncState)
-                             forControlEvents:UIControlEventTouchUpInside];
+    if (base::FeatureList::IsEnabled(kIllustratedEmptyStates)) {
+      TableViewIllustratedCell* illustratedCell =
+          base::mac::ObjCCastStrict<TableViewIllustratedCell>(cell);
+      [illustratedCell.button addTarget:self
+                                 action:@selector(updateSyncState)
+                       forControlEvents:UIControlEventTouchUpInside];
+    } else {
+      TableViewTextButtonCell* tableViewTextButtonCell =
+          base::mac::ObjCCastStrict<TableViewTextButtonCell>(cell);
+      [tableViewTextButtonCell.button addTarget:self
+                                         action:@selector(updateSyncState)
+                               forControlEvents:UIControlEventTouchUpInside];
+    }
+  }
+  // Hide the separator between this cell and the SignIn Promo.
+  if (itemTypeSelected == ItemTypeOtherDevicesSignedOut) {
+    // This cell should only exist when illustrated-empty-states is enabled.
+    DCHECK(base::FeatureList::IsEnabled(kIllustratedEmptyStates));
+    cell.separatorInset =
+        UIEdgeInsetsMake(0, self.tableView.bounds.size.width, 0, 0);
   }
   // Setup the cell for multiline and hide the separator.
   if (itemTypeSelected == ItemTypeRecentlyClosedEmpty) {

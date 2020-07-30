@@ -28,6 +28,7 @@
 #include "ash/wm/splitview/split_view_controller.h"
 #include "ash/wm/splitview/split_view_drag_indicators.h"
 #include "ash/wm/splitview/split_view_utils.h"
+#include "ash/wm/window_properties.h"
 #include "ash/wm/window_state.h"
 #include "ash/wm/window_transient_descendant_iterator.h"
 #include "ash/wm/window_util.h"
@@ -98,13 +99,16 @@ class DragWindowFromShelfController::WindowsHider
 
       hidden_windows_.push_back(window);
       window->AddObserver(this);
+      window->SetProperty(kHideDuringWindowDragging, true);
     }
     window_util::MinimizeAndHideWithoutAnimation(hidden_windows_);
   }
 
   ~WindowsHider() override {
-    for (auto* window : hidden_windows_)
+    for (auto* window : hidden_windows_) {
       window->RemoveObserver(this);
+      window->ClearProperty(kHideDuringWindowDragging);
+    }
     hidden_windows_.clear();
   }
 
@@ -113,6 +117,7 @@ class DragWindowFromShelfController::WindowsHider
       window->RemoveObserver(this);
       ScopedAnimationDisabler disabler(window);
       window->Show();
+      window->ClearProperty(kHideDuringWindowDragging);
     }
     hidden_windows_.clear();
   }

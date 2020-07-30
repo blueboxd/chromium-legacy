@@ -90,6 +90,7 @@ import org.chromium.base.Callback;
 import org.chromium.base.CollectionUtil;
 import org.chromium.base.IntStringCallback;
 import org.chromium.base.test.BaseJUnit4ClassRunner;
+import org.chromium.base.test.util.DisabledTest;
 import org.chromium.base.test.util.Feature;
 import org.chromium.base.test.util.ScalableTimeout;
 import org.chromium.chrome.R;
@@ -2207,6 +2208,7 @@ public class PasswordSettingsTest {
     @MediumTest
     @Feature({"Preferences"})
     @EnableFeatures({ChromeFeatureList.PASSWORD_CHECK})
+    @DisabledTest(message = "crbug.com/1110965")
     public void testDestroysPasswordCheckIfFirstInSettingsStack() {
         mBrowserTestRule.addAndSignInTestAccount();
         SettingsActivity activity = startPasswordSettingsDirectly();

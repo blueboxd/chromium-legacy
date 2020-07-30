@@ -6,18 +6,18 @@
 
 #include <utility>
 
-#include "chrome/browser/chromeos/profiles/profile_helper.h"
+#include "build/lacros_buildflags.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_list.h"
 #include "chrome/browser/ui/browser_window.h"
-#include "chrome/common/pref_names.h"
-#include "components/user_manager/user.h"
-#include "components/user_manager/user_manager.h"
 #include "ui/aura/window.h"
-#include "ui/aura/window_event_dispatcher.h"
 #include "ui/display/display.h"
 #include "ui/display/screen.h"
+
+#if !BUILDFLAG(IS_LACROS)
+#include "chrome/common/pref_names.h"
+#endif
 
 namespace {
 
@@ -25,16 +25,14 @@ namespace {
 // first run will be maximized.
 constexpr int kForceMaximizeWidthLimit = 1366;
 
-bool ShouldForceMaximizeOnFirstRun() {
-  const user_manager::User* const user =
-      user_manager::UserManager::Get()->GetActiveUser();
-  if (user) {
-    return chromeos::ProfileHelper::Get()
-        ->GetProfileByUser(user)
-        ->GetPrefs()
-        ->GetBoolean(prefs::kForceMaximizeOnFirstRun);
-  }
+bool ShouldForceMaximizeOnFirstRun(Profile* profile) {
+#if BUILDFLAG(IS_LACROS)
+  // TODO(https://crbug.com/1110548): Support the ForceMaximizeOnFirstRun policy
+  // in lacros-chrome.
   return false;
+#else
+  return profile->GetPrefs()->GetBoolean(prefs::kForceMaximizeOnFirstRun);
+#endif
 }
 
 }  // namespace
@@ -155,7 +153,7 @@ void WindowSizerChromeOS::GetTabbedBrowserBounds(
     display =
         display::Screen::GetScreen()->GetDisplayMatching(*bounds_in_screen);
   } else if (BrowserList::GetInstance()->empty() && !is_saved_bounds &&
-             (ShouldForceMaximizeOnFirstRun() ||
+             (ShouldForceMaximizeOnFirstRun(browser()->profile()) ||
               display.work_area().width() <= kForceMaximizeWidthLimit)) {
     // No browsers, no saved bounds: assume first run. Maximize if set by policy
     // or if the screen is narrower than a predetermined size.

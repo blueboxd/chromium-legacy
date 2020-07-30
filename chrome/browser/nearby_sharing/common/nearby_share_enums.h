@@ -5,6 +5,8 @@
 #ifndef CHROME_BROWSER_NEARBY_SHARING_COMMON_NEARBY_SHARE_ENUMS_H_
 #define CHROME_BROWSER_NEARBY_SHARING_COMMON_NEARBY_SHARE_ENUMS_H_
 
+#include "chrome/browser/ui/webui/nearby_share/public/mojom/nearby_share_settings.mojom.h"
+
 // Represents the advertising bluetooth power for Nearby Connections.
 enum class PowerLevel {
   kUnknown = 0,
@@ -14,28 +16,9 @@ enum class PowerLevel {
   kMaxValue = kHighPower
 };
 
-// Represents the data usage preference.
-enum class DataUsage {
-  kUnknown = 0,
-  // User is never willing to use the Internet
-  kOffline = 1,
-  // User is always willing to use the Internet
-  kOnline = 2,
-  // User is willing to use the Internet on an unmetered connection.
-  kWifiOnly = 3,
-  kMaxValue = kWifiOnly
-};
-
-// Represents the visibility of the advertisement.
-enum class Visibility {
-  kUnknown = 0,
-  // The user is not advertising to anyone.
-  kNoOne = 1,
-  // The user is visible to all contacts.
-  kAllContacts = 2,
-  // The user is only visible to selected contacts.
-  kSelectedContacts = 3,
-  kMaxValue = kSelectedContacts,
-};
+// TODO(https://crbug.com/1106369): these names are too generic for the global
+// namespace
+using DataUsage = nearby_share::mojom::DataUsage;
+using Visibility = nearby_share::mojom::Visibility;
 
 #endif  // CHROME_BROWSER_NEARBY_SHARING_COMMON_NEARBY_SHARE_ENUMS_H_

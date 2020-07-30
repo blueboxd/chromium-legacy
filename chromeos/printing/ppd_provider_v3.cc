@@ -18,6 +18,7 @@
 #include "chromeos/printing/ppd_metadata_manager.h"
 #include "chromeos/printing/ppd_provider_v3.h"
 #include "chromeos/printing/printer_config_cache.h"
+#include "chromeos/printing/printer_configuration.h"
 #include "net/base/backoff_entry.h"
 
 namespace chromeos {
@@ -178,9 +179,14 @@ class PpdProviderImpl : public PpdProvider {
           ResolvedPrintersList());
       base::SequencedTaskRunnerHandle::Get()->PostTask(FROM_HERE,
                                                        std::move(failure_cb));
+      return;
     }
 
-    // TODO(crbug.com/888189): implement this.
+    PpdMetadataManager::GetPrintersCallback manager_callback =
+        base::BindOnce(&PpdProviderImpl::OnPrintersGotten,
+                       weak_factory_.GetWeakPtr(), std::move(cb));
+    metadata_manager_->GetPrinters(manufacturer, kMaxDataAge,
+                                   std::move(manager_callback));
   }
 
   // This method depends on
@@ -252,6 +258,18 @@ class PpdProviderImpl : public PpdProvider {
     metadata_manager_->GetLocale(std::move(callback));
   }
 
+  // Evaluates true if our |version_| falls within the bounds set by
+  // |restrictions|.
+  bool CurrentVersionSatisfiesRestrictions(const Restrictions& restrictions) {
+    if ((restrictions.min_milestone.IsValid() &&
+         version_ < restrictions.min_milestone) ||
+        (restrictions.max_milestone.IsValid() &&
+         version_ > restrictions.max_milestone)) {
+      return false;
+    }
+    return true;
+  }
+
   // Callback fed to PpdMetadataManager::GetLocale().
   void OnMetadataManagerLocaleGotten(bool succeeded) {
     if (!succeeded) {
@@ -275,6 +293,34 @@ class PpdProviderImpl : public PpdProvider {
 
     // It is no longer necessary to defer public method calls.
     deferral_context_.reset();
+  }
+
+  // Callback fed to PpdMetadataManager::GetPrinters().
+  void OnPrintersGotten(ResolvePrintersCallback cb,
+                        bool succeeded,
+                        const ParsedPrinters& printers) {
+    if (!succeeded) {
+      base::SequencedTaskRunnerHandle::Get()->PostTask(
+          FROM_HERE,
+          base::BindOnce(std::move(cb), CallbackResultCode::SERVER_ERROR,
+                         ResolvedPrintersList()));
+      return;
+    }
+
+    ResolvedPrintersList printers_available_to_our_version;
+    for (const ParsedPrinter& printer : printers) {
+      if (!printer.restrictions.has_value() ||
+          CurrentVersionSatisfiesRestrictions(printer.restrictions.value())) {
+        Printer::PpdReference ppd_reference;
+        ppd_reference.effective_make_and_model =
+            printer.effective_make_and_model;
+        printers_available_to_our_version.push_back(ResolvedPpdReference{
+            printer.user_visible_printer_name, ppd_reference});
+      }
+    }
+    base::SequencedTaskRunnerHandle::Get()->PostTask(
+        FROM_HERE, base::BindOnce(std::move(cb), CallbackResultCode::SUCCESS,
+                                  printers_available_to_our_version));
   }
 
   // Locale of the browser, as returned by

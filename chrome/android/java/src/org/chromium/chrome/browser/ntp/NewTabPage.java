@@ -16,7 +16,6 @@ import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
 
-import androidx.annotation.Nullable;
 import androidx.annotation.VisibleForTesting;
 import androidx.core.view.ViewCompat;
 import androidx.recyclerview.widget.RecyclerView;
@@ -30,7 +29,6 @@ import org.chromium.base.metrics.RecordUserAction;
 import org.chromium.base.supplier.Supplier;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.browser_controls.BrowserControlsStateProvider;
-import org.chromium.chrome.browser.compositor.layouts.OverviewModeBehavior;
 import org.chromium.chrome.browser.compositor.layouts.content.InvalidationAwareThumbnailProvider;
 import org.chromium.chrome.browser.download.DownloadManagerService;
 import org.chromium.chrome.browser.feature_engagement.TrackerFactory;
@@ -141,11 +139,6 @@ public class NewTabPage implements NativePage, InvalidationAwareThumbnailProvide
     @Override
     public void onBottomControlsHeightChanged(
             int bottomControlsHeight, int bottomControlsMinHeight) {
-        updateMargins();
-    }
-
-    @Override
-    public void onTopControlsHeightChanged(int topControlsHeight, int topControlsMinHeight) {
         updateMargins();
     }
 
@@ -289,7 +282,6 @@ public class NewTabPage implements NativePage, InvalidationAwareThumbnailProvide
      * @param browserControlsStateProvider {@link BrowserControlsStateProvider} to observe for
      *         offset changes.
      * @param activityTabProvider Provides the current active tab.
-     * @param overviewModeBehavior Overview mode to observe for mode changes.
      * @param snackbarManager {@link SnackBarManager} object.
      * @param lifecycleDispatcher Activity lifecycle dispatcher.
      * @param tabModelSelector {@link TabModelSelector} object.
@@ -301,11 +293,10 @@ public class NewTabPage implements NativePage, InvalidationAwareThumbnailProvide
      * @param bottomSheetController The controller for bottom sheets, used by the feed.
      */
     public NewTabPage(Activity activity, BrowserControlsStateProvider browserControlsStateProvider,
-            Supplier<Tab> activityTabProvider, @Nullable OverviewModeBehavior overviewModeBehavior,
-            SnackbarManager snackbarManager, ActivityLifecycleDispatcher lifecycleDispatcher,
-            TabModelSelector tabModelSelector, boolean isTablet, NewTabPageUma uma,
-            boolean isInNightMode, NativePageHost nativePageHost, Tab tab,
-            BottomSheetController bottomSheetController) {
+            Supplier<Tab> activityTabProvider, SnackbarManager snackbarManager,
+            ActivityLifecycleDispatcher lifecycleDispatcher, TabModelSelector tabModelSelector,
+            boolean isTablet, NewTabPageUma uma, boolean isInNightMode,
+            NativePageHost nativePageHost, Tab tab, BottomSheetController bottomSheetController) {
         mConstructedTimeNs = System.nanoTime();
         TraceEvent.begin(TAG);
 
@@ -405,8 +396,7 @@ public class NewTabPage implements NativePage, InvalidationAwareThumbnailProvide
                 mSearchProviderHasLogo,
                 TemplateUrlServiceFactory.get().isDefaultSearchEngineGoogle(),
                 mFeedSurfaceProvider.getScrollDelegate(), mContextMenuManager,
-                mFeedSurfaceProvider.getUiConfig(), activityTabProvider, lifecycleDispatcher,
-                overviewModeBehavior, uma);
+                mFeedSurfaceProvider.getUiConfig(), activityTabProvider, lifecycleDispatcher, uma);
         TraceEvent.end(TAG);
     }
 
@@ -489,29 +479,17 @@ public class NewTabPage implements NativePage, InvalidationAwareThumbnailProvide
                 ((ViewGroup.MarginLayoutParams) view.getLayoutParams());
         if (layoutParams == null) return;
 
-        int topMargin = layoutParams.topMargin;
+        // Negative |topControlsDistanceToRest| means the controls Y position is above the rest
+        // position and the controls height is increasing with animation, while positive
+        // |topControlsDistanceToRest| means the controls Y position is below the rest position and
+        // the controls height is decreasing with animation. |getToolbarExtraYOffset()| returns
+        // the margin when the controls are at rest, so |getToolbarExtraYOffset()
+        // + topControlsDistanceToRest| will give the margin for the current animation frame.
         final int topControlsDistanceToRest = mBrowserControlsStateProvider.getContentOffset()
                 - mBrowserControlsStateProvider.getTopControlsHeight();
+        final int topMargin = getToolbarExtraYOffset() + topControlsDistanceToRest;
 
-        // Negative |topControlsDistanceToRest| means the controls Y position is above the rest
-        // position and the controls height is increasing with animation.
-        if (topControlsDistanceToRest < 0) {
-            // #getToolbarExtraYOffset() returns the margin we will set at the end of the animation.
-            // Adding |topControlsDistanceToRest| to it gives us the translation we need for each
-            // animation frame until we reach the desired position. Once |topControlsDistanceToRest|
-            // reaches 0, we are at the desired position. In the else block below, we will set the
-            // real margin and set the translation to 0.
-            view.setTranslationY(getToolbarExtraYOffset() + topControlsDistanceToRest);
-        } else {
-            // Positive |topControlsDistanceToRest| means the controls Y position is below the rest
-            // position and the controls height is decreasing with animation. We need to set the
-            // new margin (0 in this case) immediately and update translationY during the animation,
-            // which will reach 0 at the end.
-            view.setTranslationY(topControlsDistanceToRest);
-            topMargin = getToolbarExtraYOffset();
-        }
-
-        int bottomMargin = mBrowserControlsStateProvider.getBottomControlsHeight()
+        final int bottomMargin = mBrowserControlsStateProvider.getBottomControlsHeight()
                 - mBrowserControlsStateProvider.getBottomControlOffset();
 
         if (topMargin != layoutParams.topMargin || bottomMargin != layoutParams.bottomMargin) {

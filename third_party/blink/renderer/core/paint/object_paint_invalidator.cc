@@ -203,32 +203,10 @@ ObjectPaintInvalidatorWithContext::ComputePaintInvalidationReason() {
 }
 
 DISABLE_CFI_PERF
-PaintInvalidationReason
-ObjectPaintInvalidatorWithContext::InvalidatePartialRect(
-    PaintInvalidationReason reason) {
-  if (IsFullPaintInvalidationReason(reason))
-    return reason;
-
-  PhysicalRect local_rect = object_.PartialInvalidationLocalRect();
-  if (local_rect.IsEmpty())
-    return reason;
-
-  local_rect.Move(context_.fragment_data->PaintOffset());
-  auto visual_rect = EnclosingIntRect(local_rect);
-
-  object_.GetMutableForPainting().SetPartialInvalidationVisualRect(
-      UnionRect(object_.PartialInvalidationVisualRect(), visual_rect));
-
-  return PaintInvalidationReason::kRectangle;
-}
-
-DISABLE_CFI_PERF
 void ObjectPaintInvalidatorWithContext::InvalidatePaintWithComputedReason(
     PaintInvalidationReason reason) {
   DCHECK(!(context_.subtree_flags &
            PaintInvalidatorContext::kSubtreeNoInvalidation));
-
-  reason = InvalidatePartialRect(reason);
 
   if (reason == PaintInvalidationReason::kNone) {
     if (!object_.ShouldInvalidateSelection())

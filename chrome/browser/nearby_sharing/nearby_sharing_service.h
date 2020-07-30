@@ -10,8 +10,14 @@
 
 #include "base/callback.h"
 #include "base/files/file_path.h"
+#include "chrome/browser/nearby_sharing/nearby_share_settings.h"
 #include "chrome/browser/nearby_sharing/share_target_discovered_callback.h"
 #include "chrome/browser/nearby_sharing/transfer_update_callback.h"
+
+class NearbyShareContactManager;
+class NearbyShareCertificateManager;
+class NearbyShareHttpNotifier;
+class NearbyShareLocalDeviceDataManager;
 
 // This service implements Nearby Sharing on top of the Nearby Connections mojo.
 // Currently only single profile will be allowed to be bound at a time and only
@@ -94,6 +100,12 @@ class NearbySharingService {
   // Opens attachments from the remote |share_target|.
   virtual void Open(const ShareTarget& share_target,
                     StatusCodesCallback status_codes_callback) = 0;
+
+  virtual NearbyShareSettings* GetSettings() = 0;
+  virtual NearbyShareHttpNotifier* GetHttpNotifier() = 0;
+  virtual NearbyShareLocalDeviceDataManager* GetLocalDeviceDataManager() = 0;
+  virtual NearbyShareContactManager* GetContactManager() = 0;
+  virtual NearbyShareCertificateManager* GetCertificateManager() = 0;
 };
 
 #endif  // CHROME_BROWSER_NEARBY_SHARING_NEARBY_SHARING_SERVICE_H_

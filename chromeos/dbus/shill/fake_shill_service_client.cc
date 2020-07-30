@@ -160,23 +160,20 @@ void FakeShillServiceClient::RemovePropertyChangedObserver(
 void FakeShillServiceClient::GetProperties(const dbus::ObjectPath& service_path,
                                            DictionaryValueCallback callback) {
   base::DictionaryValue* nested_dict = nullptr;
-  base::DictionaryValue result_properties;
-  DBusMethodCallStatus call_status;
+  base::Optional<base::Value> result_properties;
   stub_services_.GetDictionaryWithoutPathExpansion(service_path.value(),
                                                    &nested_dict);
   if (nested_dict) {
-    result_properties = std::move(*nested_dict->CreateDeepCopy());
+    result_properties = nested_dict->Clone();
     // Remove credentials that Shill wouldn't send.
-    result_properties.RemoveKey(shill::kPassphraseProperty);
-    call_status = DBUS_METHOD_CALL_SUCCESS;
+    result_properties->RemoveKey(shill::kPassphraseProperty);
   } else {
     // This may happen if we remove services from the list.
     VLOG(2) << "Properties not found for: " << service_path.value();
-    call_status = DBUS_METHOD_CALL_FAILURE;
   }
 
-  base::OnceClosure property_update = base::BindOnce(
-      std::move(callback), call_status, std::move(result_properties));
+  base::OnceClosure property_update =
+      base::BindOnce(std::move(callback), std::move(result_properties));
   if (hold_back_service_property_updates_)
     recorded_property_updates_.push_back(std::move(property_update));
   else
@@ -333,8 +330,8 @@ void FakeShillServiceClient::GetLoadableProfileEntries(
   }
 
   base::ThreadTaskRunnerHandle::Get()->PostTask(
-      FROM_HERE, base::BindOnce(std::move(callback), DBUS_METHOD_CALL_SUCCESS,
-                                std::move(result_properties)));
+      FROM_HERE,
+      base::BindOnce(std::move(callback), std::move(result_properties)));
 }
 
 void FakeShillServiceClient::GetWiFiPassphrase(

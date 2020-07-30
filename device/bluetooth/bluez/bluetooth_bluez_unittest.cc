@@ -29,6 +29,7 @@
 #include "device/bluetooth/dbus/bluez_dbus_manager.h"
 #include "device/bluetooth/dbus/fake_bluetooth_adapter_client.h"
 #include "device/bluetooth/dbus/fake_bluetooth_agent_manager_client.h"
+#include "device/bluetooth/dbus/fake_bluetooth_battery_client.h"
 #include "device/bluetooth/dbus/fake_bluetooth_device_client.h"
 #include "device/bluetooth/dbus/fake_bluetooth_gatt_service_client.h"
 #include "device/bluetooth/dbus/fake_bluetooth_input_client.h"
@@ -130,12 +131,16 @@ class BluetoothBlueZTest : public testing::Test {
         std::make_unique<bluez::FakeBluetoothAdapterClient>();
     fake_bluetooth_adapter_client->SetSimulationIntervalMs(10);
 
+    auto fake_bluetooth_battery_client =
+        std::make_unique<bluez::FakeBluetoothBatteryClient>();
+
     auto fake_bluetooth_device_client =
         std::make_unique<bluez::FakeBluetoothDeviceClient>();
     // Use the original fake behavior for these tests.
     fake_bluetooth_device_client->set_delay_start_discovery(true);
 
     fake_bluetooth_adapter_client_ = fake_bluetooth_adapter_client.get();
+    fake_bluetooth_battery_client_ = fake_bluetooth_battery_client.get();
     fake_bluetooth_device_client_ = fake_bluetooth_device_client.get();
 
     // We need to initialize BluezDBusManager early to prevent
@@ -143,6 +148,8 @@ class BluetoothBlueZTest : public testing::Test {
     // implementations.
     dbus_setter->SetBluetoothAdapterClient(
         std::move(fake_bluetooth_adapter_client));
+    dbus_setter->SetBluetoothBatteryClient(
+        std::move(fake_bluetooth_battery_client));
     dbus_setter->SetBluetoothDeviceClient(
         std::move(fake_bluetooth_device_client));
     dbus_setter->SetBluetoothInputClient(
@@ -325,6 +332,7 @@ class BluetoothBlueZTest : public testing::Test {
  protected:
   base::test::SingleThreadTaskEnvironment task_environment_;
   bluez::FakeBluetoothAdapterClient* fake_bluetooth_adapter_client_;
+  bluez::FakeBluetoothBatteryClient* fake_bluetooth_battery_client_;
   bluez::FakeBluetoothDeviceClient* fake_bluetooth_device_client_;
   scoped_refptr<BluetoothAdapter> adapter_;
 
@@ -4516,6 +4524,39 @@ TEST_F(BluetoothBlueZTest, SetConnectionLatency) {
       GetCallback(), GetErrorCallback());
   EXPECT_EQ(3, callback_count_);
   EXPECT_EQ(2, error_callback_count_);
+}
+
+TEST_F(BluetoothBlueZTest, BatteryEvents) {
+  // Simulate the addition, removal, and change of Battery objects.
+  GetAdapter();
+
+  // Create a device that will have related battery events with.
+  fake_bluetooth_device_client_->CreateDevice(
+      dbus::ObjectPath(bluez::FakeBluetoothAdapterClient::kAdapterPath),
+      dbus::ObjectPath(bluez::FakeBluetoothDeviceClient::kLowEnergyPath));
+  BluetoothDevice* device =
+      adapter_->GetDevice(bluez::FakeBluetoothDeviceClient::kLowEnergyAddress);
+  EXPECT_TRUE(device);
+  // A new device does not have battery level set.
+  EXPECT_FALSE(device->battery_percentage().has_value());
+
+  // A battery appears, check that the device battery percentage is updated..
+  fake_bluetooth_battery_client_->CreateBattery(
+      dbus::ObjectPath(bluez::FakeBluetoothDeviceClient::kLowEnergyPath), 50);
+  EXPECT_TRUE(device->battery_percentage().has_value());
+  EXPECT_EQ(50, device->battery_percentage().value());
+
+  // Property percentage changes, check that the corresponding device also
+  // updates its battery percentage field.
+  fake_bluetooth_battery_client_->ChangeBatteryPercentage(
+      dbus::ObjectPath(bluez::FakeBluetoothDeviceClient::kLowEnergyPath), 40);
+  EXPECT_EQ(40, device->battery_percentage().value());
+
+  // Battery object disappears, check that the corresponding device gets its
+  // battery percentage field cleared.
+  fake_bluetooth_battery_client_->RemoveBattery(
+      dbus::ObjectPath(bluez::FakeBluetoothDeviceClient::kLowEnergyPath));
+  EXPECT_FALSE(device->battery_percentage().has_value());
 }
 
 }  // namespace bluez

@@ -12,6 +12,7 @@
 #include <vector>
 
 #include "base/memory/ref_counted.h"
+#include "base/optional.h"
 #include "base/test/task_environment.h"
 #include "chromeos/dbus/dbus_method_call_status.h"
 #include "chromeos/dbus/shill/shill_client_helper.h"
@@ -146,11 +147,6 @@ class ShillClientUnittestBase : public testing::Test {
   // Expects the call status to be SUCCESS.
   static void ExpectNoResultValue(bool result);
 
-  // Checks the result and expects the call status to be SUCCESS.
-  static void ExpectObjectPathResult(const dbus::ObjectPath& expected_result,
-                                     DBusMethodCallStatus call_status,
-                                     const dbus::ObjectPath& result);
-
   static void ExpectObjectPathResultWithoutStatus(
       const dbus::ObjectPath& expected_result,
       const dbus::ObjectPath& result);
@@ -164,8 +160,7 @@ class ShillClientUnittestBase : public testing::Test {
   // Checks the result and expects the call status to be SUCCESS.
   static void ExpectDictionaryValueResult(
       const base::DictionaryValue* expected_result,
-      DBusMethodCallStatus call_status,
-      base::Value result);
+      base::Optional<base::Value> result);
 
   // Expects the |expected_result| to match the |result|.
   static void ExpectDictionaryValueResultWithoutStatus(

@@ -2540,6 +2540,11 @@ const char kBackgroundTaskComponentUpdateName[] =
 const char kBackgroundTaskComponentUpdateDescription[] =
     "Schedule component updates with BackgroundTaskScheduler";
 
+const char kBentoOfflineName[] =
+    "Enables an experiment for Offline Bento content on Android";
+const char kBentoOfflineDescription[] =
+    "Enables displaying Bento content on the offline page for Android.";
+
 const char kCCTIncognitoName[] = "Chrome Custom Tabs Incognito mode";
 const char kCCTIncognitoDescription[] =
     "Enables incognito mode for Chrome Custom Tabs, on Android.";

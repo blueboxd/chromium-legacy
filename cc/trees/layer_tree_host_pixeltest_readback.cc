@@ -420,12 +420,7 @@ ReadbackTestConfig const kTestConfigs[] = {
     ReadbackTestConfig{TestRendererType::kSoftware, TestReadBackType::kBitmap},
     ReadbackTestConfig{TestRendererType::kGL, TestReadBackType::kTexture},
     ReadbackTestConfig{TestRendererType::kGL, TestReadBackType::kBitmap},
-    // TODO(crbug.com/1046788): The skia readback path doesn't support
-    // RGBA_TEXTURE readback requests yet. Don't run these tests on platforms
-    // that have UseSkiaForGLReadback enabled by default.
-    //
-    // ReadbackTestConfig{TestRendererType::kSkiaGL,
-    //                    TestReadBackType::kTexture},
+    ReadbackTestConfig{TestRendererType::kSkiaGL, TestReadBackType::kTexture},
     ReadbackTestConfig{TestRendererType::kSkiaGL, TestReadBackType::kBitmap},
 #if defined(ENABLE_CC_VULKAN_TESTS)
     ReadbackTestConfig{TestRendererType::kSkiaVk, TestReadBackType::kBitmap},
@@ -445,12 +440,7 @@ ReadbackTestConfig const kMaybeVulkanTestConfigs[] = {
     ReadbackTestConfig{TestRendererType::kSoftware, TestReadBackType::kBitmap},
     ReadbackTestConfig{TestRendererType::kGL, TestReadBackType::kTexture},
     ReadbackTestConfig{TestRendererType::kGL, TestReadBackType::kBitmap},
-    // TODO(crbug.com/1046788): The skia readback path doesn't support
-    // RGBA_TEXTURE readback requests yet. Don't run these tests on platforms
-    // that have UseSkiaForGLReadback enabled by default.
-    //
-    // ReadbackTestConfig{TestRendererType::kSkiaGL,
-    //                    TestReadBackType::kTexture},
+    ReadbackTestConfig{TestRendererType::kSkiaGL, TestReadBackType::kTexture},
     ReadbackTestConfig{TestRendererType::kSkiaGL, TestReadBackType::kBitmap},
 #if defined(ENABLE_CC_VULKAN_TESTS) && !defined(THREAD_SANITIZER) && \
     !defined(MEMORY_SANITIZER)

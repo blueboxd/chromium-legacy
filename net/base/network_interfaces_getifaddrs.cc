@@ -24,7 +24,7 @@
 #include "net/base/net_errors.h"
 #include "net/base/network_interfaces_posix.h"
 
-#if defined(OS_MACOSX) && !defined(OS_IOS)
+#if defined(OS_MAC)
 #include <net/if_media.h>
 #include <netinet/in_var.h>
 #include <sys/ioctl.h>
@@ -43,7 +43,7 @@ void freeifaddrs(struct ifaddrs* __ptr) __attribute__((weak_import));
 namespace net {
 namespace internal {
 
-#if defined(OS_MACOSX) && !defined(OS_IOS)
+#if defined(OS_MAC)
 
 // MacOSX implementation of IPAttributesGetter which calls ioctl() on socket to
 // retrieve IP attributes.
@@ -130,7 +130,7 @@ IPAttributesGetterMac::GetNetworkInterfaceType(const ifaddrs* if_addr) {
   return NetworkChangeNotifier::CONNECTION_UNKNOWN;
 }
 
-#endif  // defined(OS_MACOSX) && !defined(OS_IOS)
+#endif  // defined(OS_MAC)
 
 bool IfaddrsToNetworkInterfaceList(int policy,
                                    const ifaddrs* interfaces,
@@ -246,7 +246,7 @@ bool GetNetworkList(NetworkInterfaceList* networks, int policy) {
 
   std::unique_ptr<internal::IPAttributesGetter> ip_attributes_getter;
 
-#if defined(OS_MACOSX) && !defined(OS_IOS)
+#if defined(OS_MAC)
   ip_attributes_getter = std::make_unique<internal::IPAttributesGetterMac>();
 #endif
 

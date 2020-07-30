@@ -29,6 +29,7 @@ import androidx.recyclerview.widget.RecyclerView;
 
 import com.google.protobuf.ByteString;
 
+import org.junit.After;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
@@ -45,12 +46,15 @@ import org.robolectric.annotation.Config;
 import org.chromium.base.Callback;
 import org.chromium.base.test.BaseRobolectricTestRunner;
 import org.chromium.base.test.util.JniMocker;
+import org.chromium.chrome.browser.AppHooks;
+import org.chromium.chrome.browser.AppHooksImpl;
 import org.chromium.chrome.browser.help.HelpAndFeedback;
 import org.chromium.chrome.browser.native_page.NativePageNavigationDelegate;
 import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.chrome.browser.tab.MockTab;
 import org.chromium.chrome.browser.ui.messages.snackbar.SnackbarManager;
 import org.chromium.chrome.browser.xsurface.FeedActionsHandler;
+import org.chromium.chrome.browser.xsurface.ProcessScope;
 import org.chromium.chrome.test.util.browser.Features;
 import org.chromium.components.browser_ui.bottomsheet.BottomSheetController;
 import org.chromium.components.feed.proto.FeedUiProto.Slice;
@@ -63,7 +67,7 @@ import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
 
-/** Unit tests for {@link FeedStreamSurface}. */
+/** Unit tests for {@link FeedStreamSeSurface}. */
 @RunWith(BaseRobolectricTestRunner.class)
 @Config(manifest = Config.NONE)
 public class FeedStreamSurfaceTest {
@@ -105,6 +109,11 @@ public class FeedStreamSurfaceTest {
     @Mock
     private FeedStreamSurface.Natives mFeedStreamSurfaceJniMock;
 
+    @Mock
+    private AppHooksImpl mAppHooks;
+    @Mock
+    private ProcessScope mProcessScope;
+
     @Before
     public void setUp() throws Exception {
         MockitoAnnotations.initMocks(this);
@@ -116,6 +125,10 @@ public class FeedStreamSurfaceTest {
         when(mFeedServiceBridgeJniMock.getLoadMoreTriggerLookahead())
                 .thenReturn(LOAD_MORE_TRIGGER_LOOKAHEAD);
 
+        when(mAppHooks.getExternalSurfaceProcessScope(any())).thenReturn(mProcessScope);
+
+        AppHooks.setInstanceForTesting(mAppHooks);
+
         Profile.setLastUsedProfileForTesting(mProfileMock);
         mFeedStreamSurface = new FeedStreamSurface(mActivity, false, mSnackbarManager,
                 mPageNavigationDelegate, mBottomSheetController, mHelpAndFeedback);
@@ -124,6 +137,12 @@ public class FeedStreamSurfaceTest {
         mRecyclerView = (RecyclerView) mFeedStreamSurface.getView();
         mLayoutManager = new FakeLinearLayoutManager(mActivity);
         mRecyclerView.setLayoutManager(mLayoutManager);
+    }
+
+    @After
+    public void tearDown() {
+        FeedStreamSurface.shutdownForTesting();
+        AppHooks.setInstanceForTesting(null);
     }
 
     @Test
@@ -453,10 +472,7 @@ public class FeedStreamSurfaceTest {
 
     @Test
     @SmallTest
-    public void testSurfaceClosed() {
-        FeedListContentManager mContentManager =
-                mFeedStreamSurface.getFeedListContentManagerForTesting();
-
+    public void testRemoveContentsOnSurfaceClosed() {
         // Set 2 header views first.
         View v0 = new View(mActivity);
         View v1 = new View(mActivity);
@@ -540,6 +556,42 @@ public class FeedStreamSurfaceTest {
         mFeedStreamSurface.navigateIncognitoTab("");
         verify(mFeedStreamSurfaceJniMock)
                 .loadMore(anyLong(), any(FeedStreamSurface.class), any(Callback.class));
+    }
+
+    @Test
+    @SmallTest
+    public void testSurfaceOpenedAndClosed() {
+        // Calling surfaceOpened() before startup() should not trigger native open call.
+        mFeedStreamSurface.surfaceOpened();
+        verify(mFeedStreamSurfaceJniMock, never())
+                .surfaceOpened(anyLong(), any(FeedStreamSurface.class));
+
+        // Calling surfaceClosed() before startup() should not trigger native open call.
+        mFeedStreamSurface.surfaceClosed();
+        verify(mFeedStreamSurfaceJniMock, never())
+                .surfaceClosed(anyLong(), any(FeedStreamSurface.class));
+
+        FeedStreamSurface.startup();
+
+        // Calling surfaceOpened() after startup() should trigger native open call.
+        mFeedStreamSurface.surfaceOpened();
+        verify(mFeedStreamSurfaceJniMock).surfaceOpened(anyLong(), any(FeedStreamSurface.class));
+
+        // Calling surfaceClosed() after startup() should trigger native open call.
+        mFeedStreamSurface.surfaceClosed();
+        verify(mFeedStreamSurfaceJniMock).surfaceClosed(anyLong(), any(FeedStreamSurface.class));
+    }
+
+    @Test
+    @SmallTest
+    public void testClearAll() {
+        FeedStreamSurface.startup();
+        mFeedStreamSurface.surfaceOpened();
+        verify(mFeedStreamSurfaceJniMock).surfaceOpened(anyLong(), any(FeedStreamSurface.class));
+
+        FeedStreamSurface.clearAll();
+        verify(mFeedStreamSurfaceJniMock).surfaceClosed(anyLong(), any(FeedStreamSurface.class));
+        verify(mProcessScope).resetAccount();
     }
 
     private SliceUpdate createSliceUpdateForExistingSlice(String sliceId) {

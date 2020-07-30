@@ -66,6 +66,7 @@ class GlassBrowserFrameView : public BrowserNonClientFrameView,
   gfx::ImageSkia GetFaviconForTabIconView() override;
 
   bool IsMaximized() const;
+  bool IsWebUITabStrip() const;
 
   // Visual height of the titlebar when the window is maximized (i.e. excluding
   // the area above the top of the screen).
@@ -122,7 +123,6 @@ class GlassBrowserFrameView : public BrowserNonClientFrameView,
   bool ShowCustomIcon() const;
   bool ShowCustomTitle() const;
   bool ShowSystemIcon() const;
-  bool IsWebUITabStrip() const;
 
   // Returns true if caption buttons are present on the frame (as opposed to
   // somewhere else, or not present at all). In some modes, the frame can "lend"

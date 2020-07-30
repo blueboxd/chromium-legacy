@@ -361,7 +361,8 @@ CanvasResourceProvider* OffscreenCanvas::GetOrCreateResourceProvider() {
   IntSize surface_size(width(), height());
   const bool can_use_gpu =
       SharedGpuContext::IsGpuCompositingEnabled() &&
-      (Is3d() || RuntimeEnabledFeatures::Accelerated2dCanvasEnabled());
+      (Is3d() || (RuntimeEnabledFeatures::Accelerated2dCanvasEnabled() &&
+                  !context_->CreationAttributes().will_read_frequently));
   const bool composited_mode =
       (Is3d() ? RuntimeEnabledFeatures::WebGLImageChromiumEnabled()
               : RuntimeEnabledFeatures::Canvas2dImageChromiumEnabled());

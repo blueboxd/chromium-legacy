@@ -84,10 +84,10 @@ public class AutofillProviderTest {
         ArrayList<FormFieldData> fields = new ArrayList<FormFieldData>(1);
         fields.add(FormFieldData.createFormFieldData(null, null, null, null, false, null, null,
                 null, null, null, false, false, 0, null, 10 /* left */, 20 /* top */,
-                300 /* right */, 60 /*bottom*/, null, null));
+                300 /* right */, 60 /*bottom*/, null, null, true));
         fields.add(FormFieldData.createFormFieldData(null, null, null, null, false, null, null,
                 null, null, null, false, false, 0, null, 20 /* left */, 100 /* top */,
-                400 /* right */, 200 /*bottom*/, null, null));
+                400 /* right */, 200 /*bottom*/, null, null, true));
         FormData formData = new FormData(null, null, fields);
         mAutofillProvider.transformFormFieldToContainViewCoordinates(formData);
         RectF result = formData.mFields.get(0).getBoundsInContainerViewCoordinates();

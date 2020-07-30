@@ -137,7 +137,7 @@ void WaylandToplevelWindow::Hide() {
 
   // Detach buffer from surface in order to completely shutdown menus and
   // tooltips, and release resources.
-  connection()->buffer_manager_host()->ResetSurfaceContents(GetWidget());
+  connection()->buffer_manager_host()->ResetSurfaceContents(root_surface());
 }
 
 bool WaylandToplevelWindow::IsVisible() const {

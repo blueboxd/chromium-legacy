@@ -7,7 +7,7 @@
 
 #include "build/build_config.h"
 
-#if defined(OS_MACOSX)
+#if defined(OS_APPLE)
 #include <CoreFoundation/CoreFoundation.h>
 #endif
 
@@ -134,7 +134,7 @@ class NET_EXPORT ProxyServer {
     return ProxyServer(SCHEME_DIRECT, HostPortPair());
   }
 
-#if defined(OS_MACOSX)
+#if defined(OS_APPLE)
   // Utility function to pull out a host/port pair from a dictionary and return
   // it as a ProxyServer object. Pass in a dictionary that has a  value for the
   // host key and optionally a value for the port key. In the error condition

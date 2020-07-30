@@ -164,12 +164,12 @@ class PrintServersProviderImpl : public PrintServersProvider {
     }
     profile_ = profile;
     pref_change_registrar_.Init(profile->GetPrefs());
-    // Bind UpdateWhitelist() method and call it once.
+    // Bind UpdateAllowlist() method and call it once.
     pref_change_registrar_.Add(
-        prefs::kExternalPrintServersWhitelist,
-        base::BindRepeating(&PrintServersProviderImpl::UpdateWhitelist,
+        prefs::kExternalPrintServersAllowlist,
+        base::BindRepeating(&PrintServersProviderImpl::UpdateAllowlist,
                             base::Unretained(this)));
-    UpdateWhitelist();
+    UpdateAllowlist();
   }
 
   void AddObserver(PrintServersProvider::Observer* observer) override {
@@ -228,16 +228,16 @@ class PrintServersProviderImpl : public PrintServersProvider {
     return true;
   }
 
-  // Called when a new whitelist is available.
-  void UpdateWhitelist() {
+  // Called when a new allowlist is available.
+  void UpdateAllowlist() {
     whitelist_.clear();
     whitelist_is_set_ = false;
     // Fetch and parse the whitelist.
     const PrefService::Preference* pref = profile_->GetPrefs()->FindPreference(
-        prefs::kExternalPrintServersWhitelist);
+        prefs::kExternalPrintServersAllowlist);
     if (pref != nullptr && !pref->IsDefaultValue()) {
       const base::ListValue* list =
-          profile_->GetPrefs()->GetList(prefs::kExternalPrintServersWhitelist);
+          profile_->GetPrefs()->GetList(prefs::kExternalPrintServersAllowlist);
       if (list != nullptr) {
         whitelist_is_set_ = true;
         for (const base::Value& value : *list) {
@@ -339,7 +339,7 @@ class PrintServersProviderImpl : public PrintServersProvider {
 // static
 void PrintServersProvider::RegisterProfilePrefs(
     user_prefs::PrefRegistrySyncable* registry) {
-  registry->RegisterListPref(prefs::kExternalPrintServersWhitelist);
+  registry->RegisterListPref(prefs::kExternalPrintServersAllowlist);
 }
 
 // static

@@ -4155,13 +4155,19 @@ void RenderFrameImpl::DidCommitNavigation(
   // newly committed document starts any subresource fetches.  In particular,
   // this needs to happen before invoking
   // RenderFrameObserver::ReadyToCommitNavigation below.
-  //
-  // Note that |pending_loader_factories_| might be missing in some cases - one
-  // example is when committing an empty document synchronously, without a
-  // roundtrip to the browser process - this is what happens as a result of
-  // `window.open('', '_blank').
-  if (pending_loader_factories_)
+  if (pending_loader_factories_) {
+    // Commits triggered by the browser process should always provide
+    // |pending_loader_factories_|.
     loader_factories_ = std::move(pending_loader_factories_);
+  } else if (!loader_factories_) {
+    // When committing an initial empty document synchronously (e,g, in response
+    // to |window.open('', '_blank')|) we won't get |pending_loader_factories_|
+    // from the browser.  In such cases we expect to always have a local parent
+    // or opener - we should eagerly inherit the factories from them (so that
+    // even if the opener gets closed, our factories will be correctly
+    // initialized).
+    loader_factories_ = GetLoaderFactoryBundleFromCreator();
+  }
 
   // TODO(dgozman): call DidStartNavigation in various places where we call
   // CommitNavigation() on the frame.

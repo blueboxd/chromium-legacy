@@ -255,12 +255,12 @@ public final class BrowserViewController
     }
 
     @Override
-    public void onDialogShown(PropertyModel model) {
+    public void onDialogAdded(PropertyModel model) {
         onDialogVisibilityChanged(true);
     }
 
     @Override
-    public void onDialogHidden(PropertyModel model) {
+    public void onLastDialogDismissed() {
         onDialogVisibilityChanged(false);
     }
 

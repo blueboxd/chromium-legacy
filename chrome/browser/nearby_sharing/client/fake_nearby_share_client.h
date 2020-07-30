@@ -113,7 +113,7 @@ class FakeNearbyShareClient : public NearbyShareClient {
 class FakeNearbyShareClientFactory : public NearbyShareClientFactory {
  public:
   FakeNearbyShareClientFactory();
-  ~FakeNearbyShareClientFactory();
+  ~FakeNearbyShareClientFactory() override;
 
  public:
   // Returns all FakeNearbyShareClient instances created by CreateInstance().

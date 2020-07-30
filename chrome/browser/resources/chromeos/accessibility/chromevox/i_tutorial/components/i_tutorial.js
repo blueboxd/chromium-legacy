@@ -93,6 +93,83 @@ Polymer({
       type: Array,
       value: [
         {
+          content:
+              ['Welcome to the ChromeVox tutorial. We noticed this might be ' +
+               'your first time using ChromeVox, so let\'s quickly cover the ' +
+               `basics. When you're ready, use the space bar to move to the ` +
+               'next lesson.'],
+          medium: InteractionMedium.KEYBOARD,
+          curriculums: [Curriculum.OOBE],
+          actions: [
+            {type: 'key_sequence', value: {keys: {keyCode: [32 /* Space */]}}}
+          ],
+          autoInteractive: true,
+        },
+
+        {
+          content: [
+            `Let's learn how to navigate the tutorial first. ` +
+                'In ChromeVox, the Search key is the modifier key. ' +
+                'Most ChromeVox shortcuts start with the Search key. ' +
+                'On the Chromebook, the Search key is immediately above the ' +
+                `left Shift key. When you're ready, try finding and ` +
+                'pressing the search key on your keyboard',
+          ],
+          medium: InteractionMedium.KEYBOARD,
+          curriculums: [Curriculum.OOBE],
+          actions: [{
+            type: 'key_sequence',
+            value: {skipStripping: false, keys: {keyCode: [91 /* Search*/]}},
+            afterActionMsg: 'You found the search key!',
+          }],
+          autoInteractive: true,
+        },
+
+        {
+          content: [
+            `Now that you know where the search key is, let's learn ` +
+                'some basic navigation. While holding search, use the arrow ' +
+                'keys to move ChromeVox around the screen. Press Search + ' +
+                'right arrow to move to the next instruction',
+            'You can use Search + right arrow and search + left arrow to ' +
+                'navigate the tutorial. Now press Search + right arrow again.',
+            'If you reach an item you want to click, press Search + Space. ' +
+                'Try doing so now to move to the next lesson',
+          ],
+          medium: InteractionMedium.KEYBOARD,
+          curriculums: [Curriculum.OOBE],
+          actions: [
+            {
+              type: 'key_sequence',
+              value: {cvoxModifier: true, keys: {keyCode: [39]}},
+              afterActionMsg: 'Great! You pressed Search + right arrow.'
+            },
+            {
+              type: 'key_sequence',
+              value: {cvoxModifier: true, keys: {keyCode: [39]}},
+            },
+            {
+              type: 'key_sequence',
+              value: {cvoxModifier: true, keys: {keyCode: [32]}},
+              afterActionMsg: 'Great! You pressed Search + space',
+            }
+          ],
+          autoInteractive: true,
+        },
+
+        {
+          title: 'Basic orientation complete!',
+          content: [
+            'Well done! You have learned the basics of ChromeVox. You can ' +
+                `now continue browsing the tutorial with what you've ` +
+                'learned, or exit by finding and pressing the Quit Tutorial ' +
+                'button',
+          ],
+          medium: InteractionMedium.KEYBOARD,
+          curriculums: [Curriculum.OOBE],
+        },
+
+        {
           title: 'On, Off, and Stop',
           content: [
             'To temporarily stop ChromeVox from speaking, press the Control ' +
@@ -100,7 +177,7 @@ Polymer({
             'To turn ChromeVox on or off, use Control+Alt+Z.',
           ],
           medium: InteractionMedium.KEYBOARD,
-          curriculums: [Curriculum.OOBE, Curriculum.NEW_USER],
+          curriculums: [Curriculum.NEW_USER],
         },
 
         {
@@ -113,7 +190,7 @@ Polymer({
                 'left Shift key.',
           ],
           medium: InteractionMedium.KEYBOARD,
-          curriculums: [Curriculum.OOBE, Curriculum.NEW_USER],
+          curriculums: [Curriculum.NEW_USER],
         },
 
         {
@@ -126,7 +203,7 @@ Polymer({
             'If you reach an item you want to click, press Search + Space.',
           ],
           medium: InteractionMedium.KEYBOARD,
-          curriculums: [Curriculum.OOBE, Curriculum.NEW_USER],
+          curriculums: [Curriculum.NEW_USER],
           practiceTitle: 'Basic Navigation Practice',
           practiceInstructions:
               'Try using basic navigation to navigate through the items ' +
@@ -289,6 +366,8 @@ Polymer({
       this.curriculum = Curriculum.EXPERIENCED_USER;
     } else if (id === 'developerButton') {
       this.curriculum = Curriculum.DEVELOPER;
+    } else if (id === 'oobeButton') {
+      this.curriculum = Curriculum.OOBE;
     } else {
       throw new Error('Invalid target for chooseCurriculum: ' + evt.target.id);
     }
@@ -320,6 +399,11 @@ Polymer({
     // Lessons observe activeLessonNum. When updated, lessons automatically
     // update their visibility.
     this.activeLessonNum = this.includedLessons[index].lessonNum;
+
+    const lesson = this.includedLessons[this.activeLessonIndex];
+    if (lesson.autoInteractive) {
+      this.startInteractiveMode(lesson.actions);
+    }
   },
 
 
@@ -465,6 +549,13 @@ Polymer({
 
   /** @private */
   exit() {
-    this.dispatchEvent(new CustomEvent('tutorial-close', {}));
+    this.dispatchEvent(new CustomEvent('closetutorial', {}));
+  },
+
+  // Interactive mode.
+
+  startInteractiveMode(actions) {
+    this.dispatchEvent(new CustomEvent(
+        'startinteractivemode', {composed: true, detail: {actions}}));
   },
 });

@@ -10,8 +10,8 @@
 #include <string>
 
 #include "base/memory/weak_ptr.h"
+#include "base/optional.h"
 #include "base/values.h"
-#include "chromeos/dbus/dbus_method_call_status.h"
 #include "components/feedback/system_logs/system_logs_source.h"
 
 namespace system_logs {
@@ -28,23 +28,19 @@ class ShillLogSource : public SystemLogsSource {
   void Fetch(SysLogsSourceCallback callback) override;
 
  private:
-  void OnGetManagerProperties(chromeos::DBusMethodCallStatus call_status,
-                              base::Value result);
+  void OnGetManagerProperties(base::Optional<base::Value> result);
   void OnGetDevice(const std::string& device_path,
-                   chromeos::DBusMethodCallStatus call_status,
-                   base::Value properties);
+                   base::Optional<base::Value> properties);
   void AddDeviceAndRequestIPConfigs(const std::string& device_path,
                                     const base::Value& properties);
   void OnGetIPConfig(const std::string& device_path,
                      const std::string& ip_config_path,
-                     chromeos::DBusMethodCallStatus call_status,
-                     base::Value properties);
+                     base::Optional<base::Value> properties);
   void AddIPConfig(const std::string& device_path,
                    const std::string& ip_config_path,
                    const base::Value& properties);
   void OnGetService(const std::string& service_path,
-                    chromeos::DBusMethodCallStatus call_status,
-                    base::Value properties);
+                    base::Optional<base::Value> properties);
   // Scrubs |properties| for PII data based on the |object_path|. Also expands
   // UIData from JSON into a dictionary if present.
   base::Value ScrubAndExpandProperties(const std::string& object_path,

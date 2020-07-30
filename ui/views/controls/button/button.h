@@ -106,6 +106,8 @@ class VIEWS_EXPORT Button : public InkDropHostView,
   int tag() const { return tag_; }
   void set_tag(int tag) { tag_ = tag; }
 
+  void set_listener(ButtonListener* listener) { listener_ = listener; }
+
   void SetAccessibleName(const base::string16& name);
   const base::string16& GetAccessibleName() const;
 
@@ -233,7 +235,7 @@ class VIEWS_EXPORT Button : public InkDropHostView,
   // Construct the Button with a Listener. The listener can be null. This can be
   // true of buttons that don't have a listener - e.g. menubuttons where there's
   // no default action and checkboxes.
-  explicit Button(ButtonListener* listener);
+  explicit Button(ButtonListener* listener = nullptr);
 
   // Called when the button has been clicked or tapped and should request focus
   // if necessary.

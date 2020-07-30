@@ -71,14 +71,13 @@ void NetworkProfileHandler::RemoveObserver(NetworkProfileObserver* observer) {
 }
 
 void NetworkProfileHandler::GetManagerPropertiesCallback(
-    DBusMethodCallStatus call_status,
-    base::Value properties) {
-  if (DBUS_METHOD_CALL_FAILURE) {
+    base::Optional<base::Value> properties) {
+  if (!properties) {
     LOG(ERROR) << "Error when requesting manager properties.";
     return;
   }
 
-  const base::Value* profiles = properties.FindKey(shill::kProfilesProperty);
+  const base::Value* profiles = properties->FindKey(shill::kProfilesProperty);
   if (!profiles) {
     LOG(ERROR) << "Manager properties returned from Shill don't contain "
                << "the field " << shill::kProfilesProperty;

@@ -14,6 +14,7 @@ goog.provide('ChromeVoxStateObserver');
 goog.require('cursors.Cursor');
 goog.require('cursors.Range');
 goog.require('BrailleKeyEvent');
+goog.require('UserActionMonitor');
 
 /**
  * An interface implemented by objects that want to observe ChromeVox state
@@ -54,6 +55,8 @@ ChromeVoxState = function() {
 
   /** @private {!Array<!chrome.accessibilityPrivate.ScreenRect>} */
   this.focusBounds_ = [];
+  /** @private {UserActionMonitor} */
+  this.userActionMonitor_ = null;
 };
 
 /**
@@ -138,7 +141,34 @@ ChromeVoxState.prototype = {
       type: chrome.accessibilityPrivate.FocusType.GLOW,
       color: constants.FOCUS_COLOR
     }]);
-  }
+  },
+
+  /**
+   * Gets the user action monitor.
+   * @return {UserActionMonitor}
+   */
+  getUserActionMonitor() {
+    return this.userActionMonitor_;
+  },
+
+  /**
+   * Creates a new user action monitor.
+   * @param {!Array<{
+   *    type: string,
+   *    value: (string|Object),
+   *    beforeActionMsg: (string|undefined),
+   *    afterActionMsg: (string|undefined)
+   * }>} actions
+   * @param {function(): void} callback
+   */
+  createUserActionMonitor(actions, callback) {
+    this.userActionMonitor_ = new UserActionMonitor(actions, callback);
+  },
+
+  /** Destroys the user action monitor */
+  destroyUserActionMonitor() {
+    this.userActionMonitor_ = null;
+  },
 };
 
 /** @type {!Array<ChromeVoxStateObserver>} */

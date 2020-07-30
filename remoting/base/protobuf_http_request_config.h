@@ -19,7 +19,7 @@ class MessageLite;
 namespace remoting {
 
 // Common configurations for unary and stream protobuf http requests. Caller
-// needs to set all fields in this struct.
+// needs to set all fields in this struct unless otherwise documented.
 struct ProtobufHttpRequestConfig {
   explicit ProtobufHttpRequestConfig(
       const net::NetworkTrafficAnnotationTag& traffic_annotation);
@@ -32,6 +32,9 @@ struct ProtobufHttpRequestConfig {
   std::unique_ptr<google::protobuf::MessageLite> request_message;
   std::string path;
   bool authenticated = true;
+
+  // Optional. Only needed when the request requires an API key.
+  std::string api_key;
 };
 
 }  // namespace remoting

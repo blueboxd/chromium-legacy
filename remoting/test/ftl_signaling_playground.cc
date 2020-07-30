@@ -22,7 +22,6 @@
 #include "base/task/post_task.h"
 #include "base/time/time.h"
 #include "jingle/glue/thread_wrapper.h"
-#include "remoting/base/chromium_url_request.h"
 #include "remoting/base/grpc_support/grpc_async_unary_request.h"
 #include "remoting/base/logging.h"
 #include "remoting/base/oauth_token_getter_impl.h"
@@ -256,9 +255,8 @@ void FtlSignalingPlayground::InitializeTransport() {
       protocol::NetworkSettings::NAT_TRAVERSAL_FULL);
   auto transport_context = base::MakeRefCounted<protocol::TransportContext>(
       std::make_unique<protocol::ChromiumPortAllocatorFactory>(),
-      std::make_unique<ChromiumUrlRequestFactory>(
-          url_loader_factory_owner_->GetURLLoaderFactory()),
-      network_settings, transport_role_);
+      url_loader_factory_owner_->GetURLLoaderFactory(), network_settings,
+      transport_role_);
   auto close_callback =
       base::BindOnce(&FtlSignalingPlayground::AsyncTearDownAndRunCallback,
                      base::Unretained(this));

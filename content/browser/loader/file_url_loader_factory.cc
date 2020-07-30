@@ -38,6 +38,7 @@
 #include "content/public/common/content_switches.h"
 #include "mojo/public/cpp/bindings/receiver.h"
 #include "mojo/public/cpp/bindings/remote.h"
+#include "mojo/public/cpp/bindings/self_owned_receiver.h"
 #include "mojo/public/cpp/system/data_pipe.h"
 #include "mojo/public/cpp/system/data_pipe_producer.h"
 #include "mojo/public/cpp/system/file_data_source.h"
@@ -787,12 +788,21 @@ FileURLLoaderFactory::FileURLLoaderFactory(
     const base::FilePath& profile_path,
     scoped_refptr<SharedCorsOriginAccessList> shared_cors_origin_access_list,
     base::TaskPriority task_priority)
+    : FileURLLoaderFactory(
+          profile_path,
+          std::move(shared_cors_origin_access_list),
+          base::ThreadPool::CreateSequencedTaskRunner(
+              {base::MayBlock(), task_priority,
+               base::TaskShutdownBehavior::SKIP_ON_SHUTDOWN})) {}
+
+FileURLLoaderFactory::FileURLLoaderFactory(
+    const base::FilePath& profile_path,
+    scoped_refptr<SharedCorsOriginAccessList> shared_cors_origin_access_list,
+    scoped_refptr<base::SequencedTaskRunner> task_runner)
     : profile_path_(profile_path),
       shared_cors_origin_access_list_(
           std::move(shared_cors_origin_access_list)),
-      task_runner_(base::ThreadPool::CreateSequencedTaskRunner(
-          {base::MayBlock(), task_priority,
-           base::TaskShutdownBehavior::SKIP_ON_SHUTDOWN})) {}
+      task_runner_(std::move(task_runner)) {}
 
 FileURLLoaderFactory::~FileURLLoaderFactory() = default;
 
@@ -891,10 +901,14 @@ void FileURLLoaderFactory::CreateLoaderAndStartInternal(
 }
 
 void FileURLLoaderFactory::Clone(
-    mojo::PendingReceiver<network::mojom::URLLoaderFactory> loader) {
+    mojo::PendingReceiver<network::mojom::URLLoaderFactory> pending_receiver) {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
 
-  receivers_.Add(this, std::move(loader));
+  std::unique_ptr<content::FileURLLoaderFactory> new_factory(
+      new content::FileURLLoaderFactory(
+          profile_path_, shared_cors_origin_access_list_, task_runner_));
+  mojo::MakeSelfOwnedReceiver(std::move(new_factory),
+                              std::move(pending_receiver));
 }
 
 void CreateFileURLLoaderBypassingSecurityChecks(

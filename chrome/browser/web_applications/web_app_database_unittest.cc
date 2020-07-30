@@ -5,11 +5,11 @@
 #include "chrome/browser/web_applications/web_app_database.h"
 
 #include <memory>
+#include <random>
 #include <string>
 #include <utility>
 #include <vector>
 
-#include "base/bind_helpers.h"
 #include "base/run_loop.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/utf_string_conversions.h"
@@ -39,6 +39,25 @@ namespace {
 
 const int kIconSize = 64;
 
+class RandomHelper {
+ public:
+  explicit RandomHelper(const uint32_t seed)
+      :  // Seed of 0 and 1 generate the same sequence, so skip 0.
+        generator_(seed + 1),
+        distribution_(0u, UINT32_MAX) {}
+
+  uint32_t next_uint() { return distribution_(generator_); }
+
+  // Return an unsigned int between 0 (inclusive) and bound (exclusive).
+  uint32_t next_uint(uint32_t bound) { return next_uint() % bound; }
+
+  bool next_bool() { return next_uint() & 1u; }
+
+ private:
+  std::default_random_engine generator_;
+  std::uniform_int_distribution<uint32_t> distribution_;
+};
+
 }  // namespace
 
 class WebAppDatabaseTest : public WebAppTest {
@@ -51,7 +70,7 @@ class WebAppDatabaseTest : public WebAppTest {
     test_registry_controller_->SetUp(profile());
   }
 
-  static apps::FileHandlers CreateFileHandlers(int suffix) {
+  static apps::FileHandlers CreateFileHandlers(uint32_t suffix) {
     apps::FileHandlers file_handlers;
 
     for (unsigned int i = 0; i < 5; ++i) {
@@ -80,7 +99,7 @@ class WebAppDatabaseTest : public WebAppTest {
   }
 
   static std::vector<apps::ProtocolHandlerInfo> CreateProtocolHandlers(
-      int suffix) {
+      uint32_t suffix) {
     std::vector<apps::ProtocolHandlerInfo> protocol_handlers;
 
     for (unsigned int i = 0; i < 5; ++i) {
@@ -99,7 +118,7 @@ class WebAppDatabaseTest : public WebAppTest {
 
   static std::vector<WebApplicationShortcutsMenuItemInfo> CreateShortcutInfos(
       const std::string& base_url,
-      int suffix) {
+      uint32_t suffix) {
     std::vector<WebApplicationShortcutsMenuItemInfo> shortcut_infos;
     for (unsigned int i = 0; i < 3; ++i) {
       std::string suffix_str =
@@ -135,31 +154,33 @@ class WebAppDatabaseTest : public WebAppTest {
   }
 
   static std::unique_ptr<WebApp> CreateWebApp(const std::string& base_url,
-                                              int suffix) {
-    const auto launch_url = base_url + base::NumberToString(suffix);
+                                              const uint32_t seed) {
+    RandomHelper random(seed);
+
+    const std::string seed_str = base::NumberToString(seed);
+    const auto launch_url = base_url + seed_str;
     const AppId app_id = GenerateAppIdFromURL(GURL(launch_url));
-    const std::string name = "Name" + base::NumberToString(suffix);
-    const std::string description =
-        "Description" + base::NumberToString(suffix);
-    const std::string scope =
-        base_url + "/scope" + base::NumberToString(suffix);
-    const base::Optional<SkColor> theme_color = suffix;
-    const base::Optional<SkColor> background_color = 2 * suffix;
-    const base::Optional<SkColor> synced_theme_color = suffix ^ UINT_MAX;
+    const std::string name = "Name" + seed_str;
+    const std::string description = "Description" + seed_str;
+    const std::string scope = base_url + "/scope" + seed_str;
+    const base::Optional<SkColor> theme_color = random.next_uint();
+    const base::Optional<SkColor> background_color = random.next_uint();
+    const base::Optional<SkColor> synced_theme_color = random.next_uint();
     auto app = std::make_unique<WebApp>(app_id);
 
     // Generate all possible permutations of field values in a random way:
-    if (suffix & 1)
+    if (random.next_bool())
       app->AddSource(Source::kSystem);
-    if (suffix & 2)
+    if (random.next_bool())
       app->AddSource(Source::kPolicy);
-    if (suffix & 4)
+    if (random.next_bool())
       app->AddSource(Source::kWebAppStore);
-    if (suffix & 8)
+    if (random.next_bool())
       app->AddSource(Source::kSync);
-    if (suffix & 16)
+    if (random.next_bool())
       app->AddSource(Source::kDefault);
-    if ((suffix & 31) == 0)
+    // Must always be at least one source.
+    if (!app->HasAnySources())
       app->AddSource(Source::kSync);
 
     app->SetName(name);
@@ -168,74 +189,79 @@ class WebAppDatabaseTest : public WebAppTest {
     app->SetScope(GURL(scope));
     app->SetThemeColor(theme_color);
     app->SetBackgroundColor(background_color);
-    app->SetIsLocallyInstalled(!(suffix & 2));
-    app->SetIsInSyncInstall(!(suffix & 4));
-    app->SetUserDisplayMode((suffix & 1) ? DisplayMode::kBrowser
-                                         : DisplayMode::kStandalone);
+    app->SetIsLocallyInstalled(random.next_bool());
+    app->SetIsInSyncInstall(random.next_bool());
+    app->SetUserDisplayMode(random.next_bool() ? DisplayMode::kBrowser
+                                               : DisplayMode::kStandalone);
 
-    // 2*suffix time to make it different from install time
     const base::Time last_launch_time =
-        base::Time::UnixEpoch() + 2 * base::TimeDelta::FromMilliseconds(suffix);
+        base::Time::UnixEpoch() +
+        base::TimeDelta::FromMilliseconds(random.next_uint());
     app->SetLastLaunchTime(last_launch_time);
 
     const base::Time install_time =
-        base::Time::UnixEpoch() + base::TimeDelta::FromMilliseconds(suffix);
+        base::Time::UnixEpoch() +
+        base::TimeDelta::FromMilliseconds(random.next_uint());
     app->SetInstallTime(install_time);
 
     const DisplayMode display_modes[4] = {
         DisplayMode::kBrowser, DisplayMode::kMinimalUi,
         DisplayMode::kStandalone, DisplayMode::kFullscreen};
-    app->SetDisplayMode(display_modes[(suffix >> 4) & 3]);
+    app->SetDisplayMode(display_modes[random.next_uint(4)]);
 
-    std::vector<DisplayMode> display_mode_override;
-    display_mode_override.push_back(display_modes[suffix & 3]);
-    display_mode_override.push_back(display_modes[(suffix + 1) & 3]);
-    display_mode_override.push_back(display_modes[(suffix + 2) & 3]);
-    app->SetDisplayModeOverride(display_mode_override);
+    // Add only unique display modes.
+    std::set<DisplayMode> display_mode_override;
+    int num_display_mode_override_tries = random.next_uint(5);
+    for (int i = 0; i < num_display_mode_override_tries; i++)
+      display_mode_override.insert(display_modes[random.next_uint(4)]);
+    app->SetDisplayModeOverride(std::vector<DisplayMode>(
+        display_mode_override.begin(), display_mode_override.end()));
 
     const SquareSizePx size = 256;
-    const int num_icons = suffix % 10;
+    const int num_icons = random.next_uint(10);
     std::vector<WebApplicationIconInfo> icon_infos(num_icons);
     for (int i = 0; i < num_icons; i++) {
       WebApplicationIconInfo icon;
-      icon.url = GURL(base_url + "/icon" + base::NumberToString(suffix));
-      if (suffix % 2 == 0)
+      icon.url =
+          GURL(base_url + "/icon" + base::NumberToString(random.next_uint()));
+      if (random.next_bool())
         icon.square_size_px = size;
 
-      if (i % 3 == 0)
+      int purpose = random.next_uint(3);
+      if (purpose == 0)
         icon.purpose = blink::Manifest::ImageResource::Purpose::ANY;
-      if (i % 3 == 1)
+      if (purpose == 1)
         icon.purpose = blink::Manifest::ImageResource::Purpose::MASKABLE;
-      // if (i % 3 == 2), leave purpose unset. Should default to ANY.
+      // if (purpose == 2), leave purpose unset. Should default to ANY.
 
       icon_infos[i] = icon;
     }
     app->SetIconInfos(icon_infos);
     app->SetDownloadedIconSizes({size});
-    app->SetIsGeneratedIcon(suffix & 1);
+    app->SetIsGeneratedIcon(random.next_bool());
 
-    app->SetFileHandlers(CreateFileHandlers(suffix));
-    app->SetProtocolHandlers(CreateProtocolHandlers(suffix));
+    app->SetFileHandlers(CreateFileHandlers(random.next_uint()));
+    app->SetProtocolHandlers(CreateProtocolHandlers(random.next_uint()));
 
-    const int num_additional_search_terms = suffix & 7;
+    const int num_additional_search_terms = random.next_uint(8);
     std::vector<std::string> additional_search_terms(
         num_additional_search_terms);
     for (int i = 0; i < num_additional_search_terms; ++i) {
       additional_search_terms[i] =
-          "Foo_" + base::NumberToString(suffix) + "_" + base::NumberToString(i);
+          "Foo_" + seed_str + "_" + base::NumberToString(i);
     }
     app->SetAdditionalSearchTerms(std::move(additional_search_terms));
 
-    app->SetShortcutInfos(CreateShortcutInfos(base_url, suffix));
+    app->SetShortcutInfos(CreateShortcutInfos(base_url, random.next_uint()));
     app->SetDownloadedShortcutsMenuIconsSizes(
         CreateDownloadedShortcutsMenuIconsSizes());
 
     if (IsChromeOs()) {
       auto chromeos_data = base::make_optional<WebAppChromeOsData>();
-      chromeos_data->show_in_launcher = suffix & 0b0001;
-      chromeos_data->show_in_search = suffix & 0b0010;
-      chromeos_data->show_in_management = suffix & 0b0100;
-      chromeos_data->is_disabled = suffix & 0b1000;
+      chromeos_data->show_in_launcher = random.next_bool();
+      chromeos_data->show_in_search = random.next_bool();
+      chromeos_data->show_in_management = random.next_bool();
+      chromeos_data->is_disabled = random.next_bool();
       app->SetWebAppChromeOsData(std::move(chromeos_data));
     }
 

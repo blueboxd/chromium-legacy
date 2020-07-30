@@ -31,6 +31,7 @@ source_set("input") {
     ":normalizing_input_filter",
     "//remoting/base",
     "//remoting/client/ui:ui_manipulation",
+    "//remoting/protocol",
     "//third_party/webrtc_overrides:webrtc_component",
     "//ui/events:dom_keycode_converter",
   ]
@@ -56,6 +57,7 @@ source_set("normalizing_input_filter") {
 
   deps = [
     "//remoting/base",
+    "//remoting/protocol",
     "//third_party/webrtc_overrides:webrtc_component",
     "//ui/events:dom_keycode_converter",
   ]
@@ -78,7 +80,9 @@ source_set("unit_tests") {
   deps = [
     ":input",
     ":normalizing_input_filter_unit_tests",
+    "//base",
     "//remoting/proto",
+    "//remoting/protocol:test_support",
     "//testing/gmock",
     "//testing/gtest",
     "//third_party/webrtc_overrides:webrtc_component",
@@ -103,9 +107,12 @@ source_set("normalizing_input_filter_unit_tests") {
 
   deps = [
     ":input",
+    "//remoting/client/input:normalizing_input_filter",
     "//remoting/proto",
+    "//remoting/protocol:test_support",
     "//testing/gmock",
     "//testing/gtest",
     "//third_party/webrtc_overrides:webrtc_component",
+    "//ui/events:dom_keycode_converter",
   ]
 }

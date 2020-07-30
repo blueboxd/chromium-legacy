@@ -107,8 +107,15 @@ void GlassBrowserCaptionButtonContainer::OnWidgetBoundsChanged(
 }
 
 void GlassBrowserCaptionButtonContainer::UpdateButtonVisibility() {
-  const bool is_maximized = frame_view_->IsMaximized();
-  restore_button_->SetVisible(is_maximized);
-  maximize_button_->SetVisible(!is_maximized);
+  if (frame_view_->IsWebUITabStrip()) {
+    // In tablet mode, all windows are effectively full-screen and cannot be
+    // restored, so don't show either button.
+    restore_button_->SetVisible(false);
+    maximize_button_->SetVisible(false);
+  } else {
+    const bool is_maximized = frame_view_->IsMaximized();
+    restore_button_->SetVisible(is_maximized);
+    maximize_button_->SetVisible(!is_maximized);
+  }
   InvalidateLayout();
 }

@@ -34,6 +34,11 @@ public final class FeedServiceBridge {
         return result;
     }
 
+    @CalledByNative
+    public static void clearAll() {
+        FeedStreamSurface.clearAll();
+    }
+
     /** Called at startup to trigger creation of |FeedService|. */
     public static void startup() {
         FeedServiceBridgeJni.get().startup();

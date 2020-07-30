@@ -351,10 +351,4 @@
   <structure name="IDR_WEBUI_MANAGED_FOOTNOTE_JS"
              file="cr_components/managed_footnote/managed_footnote.js"
              type="chrome_html" />
-  <structure name="IDR_WEBUI_NEARBY_SHARE_NEARBY_ONBOARDING_PAGE_HTML"
-           file="cr_components/nearby_share/nearby_onboarding_page.html"
-           type="chrome_html" />
-  <structure name="IDR_WEBUI_NEARBY_SHARE_NEARBY_ONBOARDING_PAGE_JS"
-           file="cr_components/nearby_share/nearby_onboarding_page.js"
-           type="chrome_html" />
 </grit-part>

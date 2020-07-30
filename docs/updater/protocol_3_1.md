@@ -1,8 +1,8 @@
 # Omaha Protocol (V3.1)
 This document describes version 3.1 of the Omaha Client-Server Protocol.
 Previous versions are described at:
- * (Version 3)[https://github.com/google/omaha/blob/master/doc/ServerProtocolV3.md]
- * (Version 2)[https://github.com/google/omaha/blob/master/doc/ServerProtocolV2.md]
+ * [Version 3](https://github.com/google/omaha/blob/master/doc/ServerProtocolV3.md)
+ * [Version 2](https://github.com/google/omaha/blob/master/doc/ServerProtocolV2.md)
  * Version 1 of the protocol was never publicly deployed.
 
 [TOC]

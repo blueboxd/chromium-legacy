@@ -252,7 +252,7 @@ void It2MeNativeMessagingHost::ProcessConnect(
   bool terminate_upon_input = false;
   message->GetBoolean("terminateUponInput", &terminate_upon_input);
 
-  It2MeHost::CreateSignalStrategyCallback create_signal_strategy;
+  It2MeHost::CreateDeferredConnectContext create_connection_context;
   std::unique_ptr<RegisterSupportHostRequest> register_host_request;
   std::unique_ptr<LogToServer> log_to_server;
   if (use_signaling_proxy) {
@@ -262,43 +262,56 @@ void It2MeNativeMessagingHost::ProcessConnect(
     }
     auto signal_strategy = CreateDelegatedSignalStrategy(message.get());
     if (signal_strategy) {
-      register_host_request =
-          std::make_unique<XmppRegisterSupportHostRequest>(kRemotingBotJid);
-      log_to_server = std::make_unique<XmppLogToServer>(
-          ServerLogEntry::IT2ME, signal_strategy.get(), kRemotingBotJid,
-          host_context_->network_task_runner());
-      create_signal_strategy = base::BindOnce(
-          [](std::unique_ptr<SignalStrategy> signal_strategy,
-             ChromotingHostContext* unused_context) { return signal_strategy; },
+      create_connection_context = base::BindOnce(
+          [](std::unique_ptr<remoting::SignalStrategy> signal_strategy,
+             ChromotingHostContext* context) {
+            auto connection_context =
+                std::make_unique<It2MeHost::DeferredConnectContext>();
+            connection_context->register_request =
+                std::make_unique<XmppRegisterSupportHostRequest>(
+                    kRemotingBotJid);
+            connection_context->log_to_server =
+                std::make_unique<XmppLogToServer>(
+                    ServerLogEntry::IT2ME, signal_strategy.get(),
+                    kRemotingBotJid, context->network_task_runner());
+            connection_context->signal_strategy = std::move(signal_strategy);
+            return connection_context;
+          },
           std::move(signal_strategy));
     }
   } else {
     if (!username.empty()) {
       std::string access_token = ExtractAccessToken(message.get());
-      create_signal_strategy = base::BindOnce(
+      create_connection_context = base::BindOnce(
           [](const std::string& username, const std::string& access_token,
-             ChromotingHostContext* host_context)
-              -> std::unique_ptr<SignalStrategy> {
-            return std::make_unique<FtlSignalStrategy>(
-                std::make_unique<PassthroughOAuthTokenGetter>(username,
-                                                              access_token),
-                host_context->url_loader_factory(),
-                std::make_unique<FtlClientUuidDeviceIdProvider>());
+             ChromotingHostContext* host_context) {
+            auto connection_context =
+                std::make_unique<It2MeHost::DeferredConnectContext>();
+            connection_context->signal_strategy =
+                std::make_unique<FtlSignalStrategy>(
+                    std::make_unique<PassthroughOAuthTokenGetter>(username,
+                                                                  access_token),
+                    host_context->url_loader_factory(),
+                    std::make_unique<FtlClientUuidDeviceIdProvider>());
+            connection_context->register_request =
+                std::make_unique<RemotingRegisterSupportHostRequest>(
+                    std::make_unique<PassthroughOAuthTokenGetter>(username,
+                                                                  access_token),
+                    host_context->url_loader_factory());
+            connection_context->log_to_server =
+                std::make_unique<RemotingLogToServer>(
+                    ServerLogEntry::IT2ME,
+                    std::make_unique<PassthroughOAuthTokenGetter>(username,
+                                                                  access_token),
+                    host_context->url_loader_factory());
+            return connection_context;
           },
           username, access_token);
-
-      register_host_request =
-          std::make_unique<RemotingRegisterSupportHostRequest>(
-              std::make_unique<PassthroughOAuthTokenGetter>(username,
-                                                            access_token));
-      log_to_server = std::make_unique<RemotingLogToServer>(
-          ServerLogEntry::IT2ME, std::make_unique<PassthroughOAuthTokenGetter>(
-                                     username, access_token));
     } else {
       LOG(ERROR) << "'userName' not found in request.";
     }
   }
-  if (!create_signal_strategy) {
+  if (!create_connection_context) {
     SendErrorAndExit(std::move(response), ErrorCode::INCOMPATIBLE_PROTOCOL);
     return;
   }
@@ -330,9 +343,8 @@ void It2MeNativeMessagingHost::ProcessConnect(
 #endif
   it2me_host_->Connect(host_context_->Copy(), std::move(policies),
                        std::make_unique<It2MeConfirmationDialogFactory>(),
-                       std::move(register_host_request),
-                       std::move(log_to_server), weak_ptr_,
-                       std::move(create_signal_strategy), username, ice_config);
+                       weak_ptr_, std::move(create_connection_context),
+                       username, ice_config);
 
   SendMessageToClient(std::move(response));
 }

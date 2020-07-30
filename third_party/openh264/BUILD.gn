@@ -65,7 +65,7 @@ if (use_assembler) {
     sources = openh264_common_sources_asm_x86
     defines = asm_defines
     if (current_cpu == "x86") {
-      defines += [ "X86_32" ]
+      defines += [ "X86_32", "X86_32_PICASM" ]
     } else {  # x64
       if (is_mac) {
         defines += [
@@ -86,7 +86,7 @@ if (use_assembler) {
     sources = openh264_processing_sources_asm_x86
     defines = asm_defines
     if (current_cpu == "x86") {
-      defines += [ "X86_32" ]
+      defines += [ "X86_32", "X86_32_PICASM" ]
     } else {  # x64
       if (is_mac) {
         defines += [
@@ -107,7 +107,7 @@ if (use_assembler) {
     sources = openh264_encoder_sources_asm_x86
     defines = asm_defines
     if (current_cpu == "x86") {
-      defines += [ "X86_32" ]
+      defines += [ "X86_32", "X86_32_PICASM" ]
     } else {  # x64
       if (is_mac) {
         defines += [

@@ -21,7 +21,7 @@
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
-#if defined(OS_MACOSX)
+#if defined(OS_APPLE)
 #include "base/mac/scoped_nsautorelease_pool.h"
 #endif
 
@@ -94,7 +94,7 @@ class UploadFileElementReaderTest : public testing::TestWithParam<bool>,
         length, expected_modification_time);
   }
 
-#if defined(OS_MACOSX)
+#if defined(OS_APPLE)
   // May be needed to avoid leaks on OSX.
   base::mac::ScopedNSAutoreleasePool scoped_pool_;
 #endif

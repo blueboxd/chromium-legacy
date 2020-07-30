@@ -8,6 +8,7 @@
 #include <stddef.h>
 
 #include <map>
+#include <vector>
 
 #include "build/build_config.h"
 #include "components/omnibox/browser/autocomplete_match.h"
@@ -19,6 +20,7 @@
 class AutocompleteInput;
 class AutocompleteProvider;
 class AutocompleteProviderClient;
+class PrefService;
 class TemplateURLService;
 
 // All matches from all providers for a particular query.  This also tracks
@@ -166,6 +168,11 @@ class AutocompleteResult {
   // empty string if no header is found.
   base::string16 GetHeaderForGroupId(int suggestion_group_id) const;
 
+  // Returns whether or not |suggestion_group_id| should be collapsed in the UI.
+  // This method takes into account both the user's stored |prefs| as well as
+  // the server-provided visibility hint for |suggestion_group_id|.
+  bool IsSuggestionGroupIdHidden(PrefService* prefs, int suggestion_group_id);
+
   // Logs metrics for when |new_result| replaces |old_result| asynchronously.
   // |old_result| a list of the comparators for the old matches.
   static void LogAsynchronousUpdateMetrics(
@@ -174,6 +181,10 @@ class AutocompleteResult {
 
   void set_headers_map(const SearchSuggestionParser::HeadersMap& headers_map) {
     headers_map_ = headers_map;
+  }
+
+  void set_hidden_group_ids(const std::vector<int>& hidden_group_ids) {
+    hidden_group_ids_ = hidden_group_ids;
   }
 
  private:
@@ -258,8 +269,12 @@ class AutocompleteResult {
 
   ACMatches matches_;
 
-  // The map of suggestion group IDs to headers.
+  // The server supplied map of suggestion group IDs to header labels.
   SearchSuggestionParser::HeadersMap headers_map_;
+
+  // The server supplied list of group IDs that should be hidden-by-default.
+  // Typical size is 0 to 3, from one provider. That's why it's not a set.
+  std::vector<int> hidden_group_ids_;
 };
 
 #endif  // COMPONENTS_OMNIBOX_BROWSER_AUTOCOMPLETE_RESULT_H_

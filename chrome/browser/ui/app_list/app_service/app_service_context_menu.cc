@@ -11,7 +11,7 @@
 #include "chrome/browser/apps/app_service/app_service_proxy.h"
 #include "chrome/browser/apps/app_service/app_service_proxy_factory.h"
 #include "chrome/browser/apps/app_service/menu_util.h"
-#include "chrome/browser/chromeos/crosapi/lacros_manager.h"
+#include "chrome/browser/chromeos/crosapi/browser_manager.h"
 #include "chrome/browser/chromeos/crostini/crostini_manager.h"
 #include "chrome/browser/chromeos/crostini/crostini_terminal.h"
 #include "chrome/browser/chromeos/crostini/crostini_util.h"
@@ -127,7 +127,7 @@ void AppServiceContextMenu::ExecuteCommand(int command_id, int event_flags) {
 
     case ash::APP_CONTEXT_MENU_NEW_WINDOW:
       if (app_type_ == apps::mojom::AppType::kLacros)
-        LacrosManager::Get()->NewWindow();
+        crosapi::BrowserManager::Get()->NewWindow();
       else
         controller()->CreateNewWindow(/*incognito=*/false);
       break;

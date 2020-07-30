@@ -11,7 +11,7 @@
 #if defined(USE_NSS_CERTS)
 #include <cert.h>
 #include <pk11pub.h>
-#elif defined(OS_MACOSX) && !defined(OS_IOS)
+#elif defined(OS_MAC)
 #include <Security/Security.h>
 #endif
 
@@ -35,7 +35,7 @@
 #include "net/cert/internal/trust_store_nss.h"
 #include "net/cert/known_roots_nss.h"
 #include "net/cert/scoped_nss_types.h"
-#elif defined(OS_MACOSX) && !defined(OS_IOS)
+#elif defined(OS_MAC)
 #include "net/cert/internal/trust_store_mac.h"
 #include "net/cert/x509_util_mac.h"
 #elif defined(OS_FUCHSIA)
@@ -150,7 +150,7 @@ CreateSslSystemTrustStoreNSSWithNoUserSlots() {
       trustSSL, TrustStoreNSS::DisallowTrustForCertsOnUserSlots()));
 }
 
-#elif defined(OS_MACOSX) && !defined(OS_IOS)
+#elif defined(OS_MAC)
 
 class SystemTrustStoreMac : public BaseSystemTrustStore {
  public:

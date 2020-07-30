@@ -573,6 +573,15 @@ bool WebFrameWidgetBase::ShouldAckSyntheticInputImmediately() {
 void WebFrameWidgetBase::UpdateVisualProperties(
     const VisualProperties& visual_properties) {
   SetZoomLevel(visual_properties.zoom_level);
+
+  // TODO(danakj): In order to synchronize updates between local roots, the
+  // display mode should be propagated to RenderFrameProxies and down through
+  // their RenderWidgetHosts to child WebFrameWidgetBase via the
+  // VisualProperties waterfall, instead of coming to each WebFrameWidgetBase
+  // independently.
+  // https://developer.mozilla.org/en-US/docs/Web/CSS/@media/display-mode
+  SetDisplayMode(visual_properties.display_mode);
+
   Client()->UpdateVisualProperties(visual_properties);
 }
 

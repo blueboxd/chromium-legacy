@@ -117,10 +117,7 @@ cast_source_set("audio") {
       "cast_audio_manager_alsa.cc",
       "cast_audio_manager_alsa.h",
     ]
-    deps += [
-      ":audio_buildflags",
-      "//content/public/browser",
-    ]
+    deps += [ ":audio_buildflags" ]
   }
 
   if (is_android) {

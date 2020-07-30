@@ -27,8 +27,7 @@ class PrefetchedMainframeResponseContainer;
 
 // Intercepts prerender navigations that are eligible to be isolated.
 class IsolatedPrerenderURLLoaderInterceptor
-    : public content::URLLoaderRequestInterceptor,
-      public AvailabilityProber::Delegate {
+    : public content::URLLoaderRequestInterceptor {
  public:
   explicit IsolatedPrerenderURLLoaderInterceptor(int frame_tree_node_id);
   ~IsolatedPrerenderURLLoaderInterceptor() override;
@@ -61,14 +60,6 @@ class IsolatedPrerenderURLLoaderInterceptor
   bool MaybeInterceptNoStatePrefetchNavigation(
       const network::ResourceRequest& tentative_resource_request);
 
-  // AvailabilityProber::Delegate:
-  bool ShouldSendNextProbe() override;
-  bool IsResponseSuccess(net::Error net_error,
-                         const network::mojom::URLResponseHead* head,
-                         std::unique_ptr<std::string> body) override;
-
-  void StartProbe(const GURL& url, base::OnceClosure on_success_callback);
-
   // Called when the probe finishes with |success|.
   void OnProbeComplete(base::OnceClosure on_success_callback, bool success);
 
@@ -82,12 +73,8 @@ class IsolatedPrerenderURLLoaderInterceptor
   // The url that |MaybeCreateLoader| is called with.
   GURL url_;
 
-  // Probes the origin to establish that it is reachable before
-  // attempting to reuse a cached prefetch.
-  std::unique_ptr<AvailabilityProber> origin_prober_;
-
-  // The time when probing was started. Only set when |origin_prober_| is not
-  // null. Used to calculate probe latency which is reported to the tab helper.
+  // The time when probing was started. Used to calculate probe latency which is
+  // reported to the tab helper.
   base::Optional<base::TimeTicks> probe_start_time_;
 
   // The time when we started waiting for cookies to be copied, delaying the

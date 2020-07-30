@@ -24,6 +24,7 @@ source_set("audio") {
   deps = [
     "//base",
     "//remoting/base",
+    "//remoting/protocol",
   ]
 
   libs = []
@@ -44,7 +45,10 @@ source_set("test_support") {
     "fake_async_audio_data_supplier.h",
   ]
 
-  deps = [ "//base" ]
+  deps = [
+    "//base",
+    "//remoting/client/audio",
+  ]
 }
 
 source_set("unit_tests") {
@@ -59,6 +63,7 @@ source_set("unit_tests") {
 
   deps = [
     ":audio",
+    "//base",
     "//remoting/proto",
     "//testing/gmock",
     "//testing/gtest",

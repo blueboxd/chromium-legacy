@@ -373,6 +373,8 @@ const char kNTPHelpURL[] =
     // "What's New" promo that runs a command can be added here by calling
     // self.dispatcher.
     if (notificationPromo->command() == kSetDefaultBrowserCommand) {
+      base::RecordAction(
+          base::UserMetricsAction("IOS.DefaultBrowserNTPPromoTapped"));
       [[UIApplication sharedApplication]
                     openURL:
                         [NSURL URLWithString:UIApplicationOpenSettingsURLString]

@@ -40,4 +40,25 @@ avifenc -r f -d 10 -y 444 -s 0 red.png red-full-range-444-10bpc.avif
 avifenc -r f -d 12 -y 444 -s 0 red.png red-full-range-444-12bpc.avif
 ```
 
+### red-full-range-(bt709|bt2020)-(pq|hlg)-444-(10|12)bpc.avif
+These are all generated from red.png with the appropriate avifenc command line:
+
+BT.709:
+```
+avifenc -r f -d  8 -y 444 -s 0 --nclx 1/1/1 red.png red-full-range-bt709-pq-444-8bpc.avif
+```
+
+PQ:
+```
+avifenc -r f -d 10 -y 444 -s 0 --nclx 9/16/9 red.png red-full-range-bt2020-pq-444-10bpc.avif
+avifenc -r f -d 10 -y 444 -s 0 --nclx 9/16/9 red.png red-full-range-bt2020-pq-444-12bpc.avif
+```
+
+HLG:
+```
+avifenc -r f -d 10 -y 444 -s 0 --nclx 9/18/9 red.png red-full-range-bt2020-pq-444-10bpc.avif
+avifenc -r f -d 10 -y 444 -s 0 --nclx 9/18/9 red.png red-full-range-bt2020-pq-444-12bpc.avif
+```
+
+
 ### TODO(crbug.com/960620): Figure out how the rest of files were generated.

@@ -63,6 +63,8 @@ class FeedService : public KeyedService {
     virtual std::string GetLanguageTag() = 0;
     // Returns display metrics for the device.
     virtual DisplayMetrics GetDisplayMetrics() = 0;
+    // Clear all stored data.
+    virtual void ClearAll() = 0;
   };
 
   // Construct a FeedService given an already constructed FeedStream.

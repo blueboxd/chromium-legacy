@@ -944,17 +944,17 @@
       ],
     },
   },
-  'xcode_11n700h': {
+  'xcode_11e708': {
     '$mixin_append': {
       'args': [
         '--xcode-build-version',
-        '11n700h'
+        '11e708'
       ],
     },
     'swarming': {
       'named_caches': [
         {
-          'name': 'xcode_ios_11n700h',
+          'name': 'xcode_ios_11e708',
           'path': 'Xcode.app',
         },
       ],

@@ -54,12 +54,11 @@ std::string GetErrorNameForShillError(const std::string& shill_error_name) {
 
 void GetPropertiesCallback(const std::string& device_path,
                            network_handler::ResultCallback callback,
-                           DBusMethodCallStatus call_status,
-                           base::Value result) {
-  if (call_status != DBUS_METHOD_CALL_SUCCESS) {
-    NET_LOG(ERROR) << "GetProperties failed: " << NetworkPathId(device_path)
-                   << " Status: " << call_status;
+                           base::Optional<base::Value> result) {
+  if (!result) {
+    NET_LOG(ERROR) << "GetProperties failed: " << NetworkPathId(device_path);
     std::move(callback).Run(device_path, base::nullopt);
+    return;
   }
   std::move(callback).Run(device_path, std::move(result));
 }

@@ -44,18 +44,6 @@ const NSInteger kSigninPromoMargin = 8;
   return self;
 }
 
-- (void)layoutSubviews {
-  // Adjust the text label preferredMaxLayoutWidth according self.frame.width,
-  // so the text will adjust its height and not its width.
-  CGFloat parentWidth = CGRectGetWidth(self.bounds);
-  _signinPromoView.textLabel.preferredMaxLayoutWidth =
-      parentWidth - 2 * _signinPromoView.horizontalPadding;
-
-  // Re-layout with the new preferred width to allow the label to adjust its
-  // height.
-  [super layoutSubviews];
-}
-
 - (void)prepareForReuse {
   [super prepareForReuse];
   [_signinPromoView prepareForReuse];

@@ -67,6 +67,10 @@ RenderFrameHostAndroid::RenderFrameHostAndroid(
       interface_provider_remote_(std::move(interface_provider_remote)) {}
 
 RenderFrameHostAndroid::~RenderFrameHostAndroid() {
+  // Avoid unnecessarily creating the java object from the destructor.
+  if (obj_.is_uninitialized())
+    return;
+
   ScopedJavaLocalRef<jobject> jobj = GetJavaObject();
   if (!jobj.is_null()) {
     Java_RenderFrameHostImpl_clearNativePtr(AttachCurrentThread(), jobj);

@@ -421,10 +421,13 @@ TEST_F(PpdMetadataManagerTest, CanGetPrinters) {
   GetFakeCache()->SetFetchResponseForTesting(
       "metadata_v3/Manufacturer_A-en.json", R"(
       {
-        "modelToEmm": {
-          "Some Printer A": "some emm a",
-          "Some Printer B": "some emm b"
-        }
+        "printers": [ {
+          "emm": "some emm a",
+          "name": "Some Printer A"
+        }, {
+          "emm": "some emm b",
+          "name": "Some Printer B"
+        } ]
       }
   )");
 

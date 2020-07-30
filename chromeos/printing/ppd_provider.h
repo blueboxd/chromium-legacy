@@ -107,6 +107,7 @@ class CHROMEOS_EXPORT PpdProvider : public base::RefCounted<PpdProvider> {
   };
 
   // Defines the limitations on when we show a particular PPD
+  // TODO(crbug.com/888189): this belongs in the parsing header.
   struct Restrictions {
     // Minimum milestone for ChromeOS build
     base::Version min_milestone = base::Version("0.0");

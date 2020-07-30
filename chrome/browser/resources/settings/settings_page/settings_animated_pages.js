@@ -63,6 +63,15 @@ Polymer({
       return;
     }
 
+    // <if expr="chromeos">
+    // If the setting ID parameter is present, don't focus anything since
+    // a setting element will be deep linked and focused.
+    if (loadTimeData.valueExists('isOSSettings') &&
+        loadTimeData.getBoolean('isOSSettings') && getSettingIdParameter()) {
+      return;
+    }
+    // </if>
+
     // Call focusBackButton() on the selected subpage, only if:
     //  1) Not a direct navigation (such that the search box stays focused), and
     //  2) Not a "back" navigation, in which case the anchor element should be

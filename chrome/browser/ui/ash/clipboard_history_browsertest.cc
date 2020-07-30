@@ -2,6 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include <list>
+
 #include "ash/clipboard/clipboard_history.h"
 #include "ash/clipboard/clipboard_history_controller.h"
 #include "ash/shell.h"
@@ -34,11 +36,11 @@ class ClipboardHistoryWithMultiProfileBrowserTest
         .WriteText(base::ASCIIToUTF16(text));
   }
 
-  std::vector<ui::ClipboardData> GetClipboardData() const {
+  const std::list<ui::ClipboardData>& GetClipboardData() const {
     return ash::Shell::Get()
         ->clipboard_history_controller()
         ->clipboard_history()
-        ->GetRecentClipboardDataWithNoDuplicates();
+        ->GetItems();
   }
 
   AccountId account_id1_;
@@ -60,9 +62,9 @@ IN_PROC_BROWSER_TEST_F(ClipboardHistoryWithMultiProfileBrowserTest,
   SetClipboardText(copypaste_data1);
 
   {
-    const std::vector<ui::ClipboardData> data = GetClipboardData();
+    const std::list<ui::ClipboardData>& data = GetClipboardData();
     EXPECT_EQ(1u, data.size());
-    EXPECT_EQ(copypaste_data1, data[0].text());
+    EXPECT_EQ(copypaste_data1, data.front().text());
   }
 
   // Log in as the user2. The clipboard history should be empty.
@@ -75,9 +77,9 @@ IN_PROC_BROWSER_TEST_F(ClipboardHistoryWithMultiProfileBrowserTest,
   SetClipboardText(copypaste_data2);
 
   {
-    const std::vector<ui::ClipboardData> data = GetClipboardData();
+    const std::list<ui::ClipboardData>& data = GetClipboardData();
     EXPECT_EQ(1u, data.size());
-    EXPECT_EQ(copypaste_data2, data[0].text());
+    EXPECT_EQ(copypaste_data2, data.front().text());
   }
 
   // Switch to the user1.
@@ -88,12 +90,15 @@ IN_PROC_BROWSER_TEST_F(ClipboardHistoryWithMultiProfileBrowserTest,
   SetClipboardText(copypaste_data3);
 
   {
-    const std::vector<ui::ClipboardData> data = GetClipboardData();
+    const std::list<ui::ClipboardData>& data = GetClipboardData();
     EXPECT_EQ(2u, data.size());
 
     // Note that items in |data| follow the time ordering. The most recent item
     // is always the first one.
-    EXPECT_EQ(copypaste_data3, data[0].text());
-    EXPECT_EQ(copypaste_data1, data[1].text());
+    auto it = data.begin();
+    EXPECT_EQ(copypaste_data3, it->text());
+
+    std::advance(it, 1u);
+    EXPECT_EQ(copypaste_data1, it->text());
   }
 }

@@ -131,18 +131,16 @@ void OnDictionaryValueMethod(
     ShillClientHelper::DictionaryValueCallback callback,
     dbus::Response* response) {
   if (!response) {
-    std::move(callback).Run(DBUS_METHOD_CALL_FAILURE,
-                            base::Value(base::Value::Type::DICTIONARY));
+    std::move(callback).Run(base::nullopt);
     return;
   }
   dbus::MessageReader reader(response);
   std::unique_ptr<base::Value> value(dbus::PopDataAsValue(&reader));
   if (!value.get() || !value->is_dict()) {
-    std::move(callback).Run(DBUS_METHOD_CALL_FAILURE,
-                            base::Value(base::Value::Type::DICTIONARY));
+    std::move(callback).Run(base::nullopt);
     return;
   }
-  std::move(callback).Run(DBUS_METHOD_CALL_SUCCESS, std::move(*value));
+  std::move(callback).Run(std::move(*value));
 }
 
 // Handles responses for methods without results.

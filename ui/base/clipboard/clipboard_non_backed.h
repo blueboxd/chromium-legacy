@@ -8,11 +8,13 @@
 #include <stddef.h>
 #include <stdint.h>
 
+#include "base/component_export.h"
 #include "base/macros.h"
 #include "ui/base/clipboard/clipboard.h"
 
 namespace ui {
 
+class ClipboardData;
 class ClipboardInternal;
 
 // In-memory clipboard implementation not backed by an underlying platform.
@@ -21,9 +23,23 @@ class ClipboardInternal;
 // ClipboardWin on Windows or ClipboardMac on MacOS. As this isn't backed by an
 // underlying platform, the clipboard data isn't persisted after an instance
 // goes away.
-class ClipboardNonBacked : public Clipboard {
+class COMPONENT_EXPORT(UI_BASE_CLIPBOARD) ClipboardNonBacked
+    : public Clipboard {
+ public:
+  // Returns the in-memory clipboard for the current thread. Note that this
+  // method must *only* be used when the caller is sure that the clipboard for
+  // the current thread is in fact an instance of ClipboardNonBacked.
+  static ClipboardNonBacked* GetForCurrentThread();
+
+  // Returns the current ClipboardData.
+  const ClipboardData* GetClipboardData() const;
+
+  // Writes the current ClipboardData.
+  void WriteClipboardData(std::unique_ptr<ClipboardData> data);
+
  private:
   friend class Clipboard;
+  friend class ClipboardNonBackedTest;
   ClipboardNonBacked();
   ~ClipboardNonBacked() override;
 

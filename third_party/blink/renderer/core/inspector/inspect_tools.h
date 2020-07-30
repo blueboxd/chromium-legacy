@@ -96,6 +96,30 @@ class NodeHighlightTool : public InspectTool {
 
 // -----------------------------------------------------------------------------
 
+class SourceOrderTool : public InspectTool {
+ public:
+  SourceOrderTool(
+      Node* node,
+      std::unique_ptr<InspectorSourceOrderConfig> source_order_config);
+  std::unique_ptr<protocol::DictionaryValue>
+  GetNodeInspectorSourceOrderHighlightAsJson() const;
+
+ private:
+  bool HideOnHideHighlight() override;
+  bool HideOnMouseMove() override;
+  int GetDataResourceId() override;
+  void Draw(float scale) override;
+  void DrawNode(Node* node);
+  void DrawParentNode();
+  void Trace(Visitor* visitor) const override;
+
+  Member<Node> node_;
+  std::unique_ptr<InspectorSourceOrderConfig> source_order_config_;
+  DISALLOW_COPY_AND_ASSIGN(SourceOrderTool);
+};
+
+// -----------------------------------------------------------------------------
+
 class GridHighlightTool : public InspectTool {
  public:
   GridHighlightTool() = default;

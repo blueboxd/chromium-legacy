@@ -61,7 +61,7 @@ class ChallengeResponseAuthKeysLoaderBrowserTest : public OobeBaseTest {
     challenge_response_auth_keys_loader_->SetMaxWaitTimeForTesting(
         base::TimeDelta::Max());
 
-    cert_provider_extension_ =
+    certificate_provider_extension_ =
         std::make_unique<TestCertificateProviderExtension>(GetProfile());
     extension_force_install_mixin_.InitWithDeviceStateMixin(
         GetProfile(), &device_state_mixin_);
@@ -71,7 +71,7 @@ class ChallengeResponseAuthKeysLoaderBrowserTest : public OobeBaseTest {
   }
 
   void TearDownOnMainThread() override {
-    cert_provider_extension_.reset();
+    certificate_provider_extension_.reset();
     if (!should_delete_loader_after_shutdown_)
       challenge_response_auth_keys_loader_.reset();
     OobeBaseTest::TearDownOnMainThread();
@@ -158,7 +158,8 @@ class ChallengeResponseAuthKeysLoaderBrowserTest : public OobeBaseTest {
 
   DeviceStateMixin device_state_mixin_{
       &mixin_host_, DeviceStateMixin::State::OOBE_COMPLETED_CLOUD_ENROLLED};
-  std::unique_ptr<TestCertificateProviderExtension> cert_provider_extension_;
+  std::unique_ptr<TestCertificateProviderExtension>
+      certificate_provider_extension_;
   ExtensionForceInstallMixin extension_force_install_mixin_{&mixin_host_};
 
   std::unique_ptr<ChallengeResponseAuthKeysLoader>

@@ -27,6 +27,7 @@ class AXPlatformNodeMac : public AXPlatformNodeBase {
 
   // AXPlatformNodeBase.
   void Destroy() override;
+  bool IsPlatformCheckable() const override;
 
  protected:
   void AddAttributeToList(const char* name,

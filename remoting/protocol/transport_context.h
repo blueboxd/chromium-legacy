@@ -16,13 +16,15 @@
 #include "remoting/protocol/network_settings.h"
 #include "remoting/protocol/transport.h"
 
+namespace network {
+class SharedURLLoaderFactory;
+}  // namespace network
+
 namespace rtc {
 class NetworkManager;
 }  // namespace rtc
 
 namespace remoting {
-
-class UrlRequestFactory;
 
 namespace protocol {
 
@@ -39,10 +41,11 @@ class TransportContext : public base::RefCountedThreadSafe<TransportContext> {
 
   static scoped_refptr<TransportContext> ForTests(TransportRole role);
 
-  TransportContext(std::unique_ptr<PortAllocatorFactory> port_allocator_factory,
-                   std::unique_ptr<UrlRequestFactory> url_request_factory,
-                   const NetworkSettings& network_settings,
-                   TransportRole role);
+  TransportContext(
+      std::unique_ptr<PortAllocatorFactory> port_allocator_factory,
+      scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory,
+      const NetworkSettings& network_settings,
+      TransportRole role);
 
   void set_turn_ice_config(const IceConfig& ice_config) {
     // If an external entity is providing the ICE Config, then disable the
@@ -74,9 +77,6 @@ class TransportContext : public base::RefCountedThreadSafe<TransportContext> {
   PortAllocatorFactory* port_allocator_factory() {
     return port_allocator_factory_.get();
   }
-  UrlRequestFactory* url_request_factory() {
-    return url_request_factory_.get();
-  }
   const NetworkSettings& network_settings() const { return network_settings_; }
   TransportRole role() const { return role_; }
   rtc::NetworkManager* network_manager() const { return network_manager_; }
@@ -94,7 +94,7 @@ class TransportContext : public base::RefCountedThreadSafe<TransportContext> {
   void OnIceConfig(const IceConfig& ice_config);
 
   std::unique_ptr<PortAllocatorFactory> port_allocator_factory_;
-  std::unique_ptr<UrlRequestFactory> url_request_factory_;
+  scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory_;
   NetworkSettings network_settings_;
   TransportRole role_;
 

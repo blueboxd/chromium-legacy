@@ -259,6 +259,13 @@ class AX_EXPORT AXPlatformNodeBase : public AXPlatformNode {
   // See AXNode::IsText().
   bool IsText() const;
 
+  // Determines whether an element should be exposed with checkable state, and
+  // possibly the checked state. Examples are check box and radio button.
+  // Objects that are exposed as toggle buttons use the platform pressed state
+  // in some platform APIs, and should not be exposed as checkable. They don't
+  // expose the platform equivalent of the internal checked state.
+  virtual bool IsPlatformCheckable() const;
+
   bool HasFocus();
 
   // If this node is a leaf, returns the visible accessible name of this node.

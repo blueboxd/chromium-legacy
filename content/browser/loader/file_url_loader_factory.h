@@ -39,7 +39,6 @@ class CONTENT_EXPORT FileURLLoaderFactory
       base::TaskPriority task_priority);
   ~FileURLLoaderFactory() override;
 
- private:
   // network::mojom::URLLoaderFactory:
   void CreateLoaderAndStart(
       mojo::PendingReceiver<network::mojom::URLLoader> loader,
@@ -50,8 +49,14 @@ class CONTENT_EXPORT FileURLLoaderFactory
       mojo::PendingRemote<network::mojom::URLLoaderClient> client,
       const net::MutableNetworkTrafficAnnotationTag& traffic_annotation)
       override;
-  void Clone(
-      mojo::PendingReceiver<network::mojom::URLLoaderFactory> loader) override;
+  void Clone(mojo::PendingReceiver<network::mojom::URLLoaderFactory>
+                 pending_receiver) override;
+
+ private:
+  FileURLLoaderFactory(
+      const base::FilePath& profile_path,
+      scoped_refptr<SharedCorsOriginAccessList> shared_cors_origin_access_list,
+      scoped_refptr<base::SequencedTaskRunner> task_runner);
 
   void CreateLoaderAndStartInternal(
       const network::ResourceRequest request,
@@ -63,7 +68,6 @@ class CONTENT_EXPORT FileURLLoaderFactory
   const scoped_refptr<SharedCorsOriginAccessList>
       shared_cors_origin_access_list_;
   const scoped_refptr<base::SequencedTaskRunner> task_runner_;
-  mojo::ReceiverSet<network::mojom::URLLoaderFactory> receivers_;
 
   THREAD_CHECKER(thread_checker_);
 

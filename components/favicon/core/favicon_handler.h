@@ -32,41 +32,40 @@ class CoreFaviconService;
 // FaviconHandler works with FaviconDriver to fetch the specific type of
 // favicon.
 //
-// FetchFavicon requests the favicon from the favicon service which in turn
-// requests the favicon from the history database. At this point
-// we only know the URL of the page, and not necessarily the url of the
-// favicon. To ensure we handle reloading stale favicons as well as
-// reloading a favicon on page reload we always request the favicon from
-// history regardless of whether the active favicon is valid.
+// FetchFavicon() requests favicons from CoreFaviconService. CoreFaviconService
+// is typically backed by a database (such as HistoryService) and
+// asynchronously returns results. At this point FaviconHandler only knows the
+// url of the page, and not necessarily the url of the favicon(s). To ensure
+// FaviconHandler handles reloading stale favicons as well as reloading a
+// favicon on page reload Faviconhandler always requests the favicon from the
+// CoreFaviconService regardless of whether the active favicon is valid.
 //
 // After the navigation two types of events are delivered (which is
-// first depends upon who is faster): notification from the history
-// db on our request for the favicon
-// (OnFaviconDataForInitialURLFromFaviconService), or a message from the
-// renderer giving us the URL of the favicon for the page (SetFaviconURL).
-// . If the history db has a valid up to date favicon for the page, we update
-//   the current page and use the favicon.
-// . When we receive the favicon url if it matches that of the current page
-//   and the current page's favicon is set, we do nothing (everything is
-//   ok).
-// . On the other hand if the database does not know the favicon for url, or
-//   the favicon is out date, or the URL from the renderer does not match that
-//   of the current page we proceed to DownloadFaviconOrAskHistory. Before we
-//   invoke DownloadFaviconOrAskHistory we wait until we've received both
-//   the favicon url and the callback from history. We wait to ensure we
-//   truly know both the favicon url and the state of the database.
+// first depends upon who is faster): notification from the CoreFaviconService
+// of the request for the favicon
+// (OnFaviconDataForInitialURLFromFaviconService), or the favicon urls from
+// the page (OnUpdateCandidates()).
+// . If CoreFaviconService has a valid up to date favicon for the page, use it.
+// . When OnUpdateCandidates() is called, if it matches that of the current page
+//   and the current page's favicon is set, do nothing (everything is up to
+//   date).
+// . On the other hand, if CoreFaviconService does not know the favicon for
+//   url, or the favicon is out date, or the favicon urls do not match,
+//   then download the favicon. Downloading only happens once
+//   CoreFaviconService has completed the request *and* the set of urls is
+//   known.
 //
-// DownloadFaviconOrAskHistory does the following:
-// . If we have a valid favicon, but it is expired we ask the renderer to
-//   download the favicon.
-// . Otherwise we ask the history database to update the mapping from
-//   page url to favicon url and call us back with the favicon. Remember, it is
-//   possible for the db to already have the favicon, just not the mapping
-//   between page to favicon url. The callback for this is OnFaviconData.
+// DownloadCurrentCandidateOrAskFaviconService() does the following:
+// . If the current favicon is valid but expired, download a new icon.
+// . Otherwise ask CoreFaviconService to update the mapping from page url to
+//   favicon url and call us back with the favicon. Remember, it is
+//   possible for the CoreFaviconService to already have the favicon, just not
+//   the mapping between page and favicon url. The callback for this is
+//   OnFaviconData().
 //
-// OnFaviconData either updates the favicon of the current page (if the
-// db knew about the favicon), or requests the renderer to download the
-// favicon.
+// OnFaviconData() either updates the favicon of the current page (if
+// CoreFaviconService knew about the favicon), or requests the renderer to
+// download the favicon.
 //
 // When the renderer downloads favicons, it considers the entire list of
 // favicon candidates, if |download_largest_favicon_| is true, the largest

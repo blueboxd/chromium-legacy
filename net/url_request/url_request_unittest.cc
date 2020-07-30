@@ -153,7 +153,7 @@
 #include "base/win/scoped_com_initializer.h"
 #endif
 
-#if defined(OS_MACOSX)
+#if defined(OS_APPLE)
 #include "base/mac/mac_util.h"
 #endif
 
@@ -10006,7 +10006,7 @@ static bool SystemSupportsOCSPStapling() {
     return true;
 #if defined(OS_ANDROID)
   return false;
-#elif defined(OS_MACOSX)
+#elif defined(OS_APPLE)
   // The SecTrustSetOCSPResponse function exists since macOS 10.9+, but does
   // not actually do anything until 10.12.
   if (base::mac::IsAtLeastOS10_12())
@@ -10680,7 +10680,7 @@ TEST_F(HTTPSEVCRLSetTest, MissingCRLSetAndRevokedOCSP) {
     // TODO(https://crbug.com/410574): Handle this in builtin verifier too?
     EXPECT_EQ(0u, cert_status & CERT_STATUS_ALL_ERRORS);
   } else {
-#if defined(OS_MACOSX)
+#if defined(OS_APPLE)
     if (!base::mac::IsAtLeastOS10_12()) {
       // On older macOS versions, revocation failures might also end up with
       // CERT_STATUS_NO_REVOCATION_MECHANISM status added. (See comment for

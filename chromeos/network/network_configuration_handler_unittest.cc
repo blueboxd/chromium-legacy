@@ -223,9 +223,8 @@ class NetworkConfigurationHandlerTest : public testing::Test {
   }
 
   void ManagerGetPropertiesCallback(const std::string& success_callback_name,
-                                    DBusMethodCallStatus call_status,
-                                    base::Value result) {
-    if (call_status == chromeos::DBUS_METHOD_CALL_SUCCESS)
+                                    base::Optional<base::Value> result) {
+    if (result)
       success_callback_name_ = success_callback_name;
     manager_get_properties_ = std::move(result);
   }
@@ -326,10 +325,10 @@ class NetworkConfigurationHandlerTest : public testing::Test {
 
   bool GetReceivedStringManagerProperty(const std::string& key,
                                         std::string* result) {
-    if (manager_get_properties_.is_none())
+    if (!manager_get_properties_ || manager_get_properties_->is_none())
       return false;
     const base::Value* value =
-        manager_get_properties_.FindKeyOfType(key, base::Value::Type::STRING);
+        manager_get_properties_->FindKeyOfType(key, base::Value::Type::STRING);
     if (!value)
       return false;
     *result = value->GetString();
@@ -353,7 +352,7 @@ class NetworkConfigurationHandlerTest : public testing::Test {
   std::string success_callback_name_;
   std::string get_properties_path_;
   base::Value get_properties_;
-  base::Value manager_get_properties_;
+  base::Optional<base::Value> manager_get_properties_;
   std::string create_service_path_;
 };
 

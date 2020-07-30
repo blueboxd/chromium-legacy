@@ -1130,9 +1130,8 @@ IN_PROC_BROWSER_TEST_F(ProcessManagerBrowserTest,
         OpenPopup(main_frame, GURL(url::kAboutBlankURL));
     EXPECT_NE(popup, tab);
 
-    content::ConsoleObserverDelegate console_observer(
-        popup, "Not allowed to navigate top frame to*");
-    popup->SetDelegate(&console_observer);
+    content::WebContentsConsoleObserver console_observer(popup);
+    console_observer.SetPattern("Not allowed to navigate top frame to*");
     EXPECT_TRUE(ExecuteScript(
         popup, "location.href = '" + nested_urls[1].spec() + "';"));
     console_observer.Wait();

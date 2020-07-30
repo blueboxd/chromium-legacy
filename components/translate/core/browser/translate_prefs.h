@@ -14,6 +14,7 @@
 #include "base/feature_list.h"
 #include "base/gtest_prod_util.h"
 #include "base/macros.h"
+#include "base/strings/string_piece.h"
 #include "base/time/time.h"
 #include "build/build_config.h"
 #include "components/prefs/scoped_user_pref_update.h"
@@ -74,7 +75,7 @@ class TranslateAcceptLanguages;
 class DenialTimeUpdate {
  public:
   DenialTimeUpdate(PrefService* prefs,
-                   const std::string& language,
+                   base::StringPiece language,
                    size_t max_denial_count);
   ~DenialTimeUpdate();
 
@@ -180,9 +181,9 @@ class TranslatePrefs {
   // whitelist, the accepted/denied counts, and whether Translate is enabled.
   void ResetToDefaults();
 
-  bool IsBlockedLanguage(const std::string& original_language) const;
-  void BlockLanguage(const std::string& original_language);
-  void UnblockLanguage(const std::string& original_language);
+  bool IsBlockedLanguage(base::StringPiece original_language) const;
+  void BlockLanguage(base::StringPiece original_language);
+  void UnblockLanguage(base::StringPiece original_language);
 
   // Adds the language to the language list at chrome://settings/languages.
   // If the param |force_blocked| is set to true, the language is added to the
@@ -190,9 +191,9 @@ class TranslatePrefs {
   // If force_blocked is set to false, the language is added to the blocked list
   // if the language list does not already contain another language with the
   // same base language.
-  void AddToLanguageList(const std::string& language, bool force_blocked);
+  void AddToLanguageList(base::StringPiece language, bool force_blocked);
   // Removes the language from the language list at chrome://settings/languages.
-  void RemoveFromLanguageList(const std::string& language);
+  void RemoveFromLanguageList(base::StringPiece language);
 
   // Rearranges the given language inside the language list.
   // The direction of the move is specified as a RearrangeSpecifier.
@@ -202,7 +203,7 @@ class TranslatePrefs {
   // the current UI. This is required because the full language list contains
   // some languages that might not be enabled in the current UI and we need to
   // skip those languages while rearranging the list.
-  void RearrangeLanguage(const std::string& language,
+  void RearrangeLanguage(base::StringPiece language,
                          RearrangeSpecifier where,
                          int offset,
                          const std::vector<std::string>& enabled_languages);
@@ -223,9 +224,9 @@ class TranslatePrefs {
       bool translate_allowed,
       std::vector<TranslateLanguageInfo>* languages);
 
-  bool IsSiteBlacklisted(const std::string& site) const;
-  void BlacklistSite(const std::string& site);
-  void RemoveSiteFromBlacklist(const std::string& site);
+  bool IsSiteBlacklisted(base::StringPiece site) const;
+  void BlacklistSite(base::StringPiece site);
+  void RemoveSiteFromBlacklist(base::StringPiece site);
 
   std::vector<std::string> GetBlacklistedSitesBetween(base::Time begin,
                                                       base::Time end) const;
@@ -233,48 +234,45 @@ class TranslatePrefs {
 
   bool HasWhitelistedLanguagePairs() const;
 
-  bool IsLanguagePairWhitelisted(const std::string& original_language,
-                                 const std::string& target_language);
-  void WhitelistLanguagePair(const std::string& original_language,
-                             const std::string& target_language);
-  void RemoveLanguagePairFromWhitelist(const std::string& original_language,
-                                       const std::string& target_language);
-
-  // Will return true if at least one site has been blacklisted.
-  bool HasBlacklistedSites() const;
+  bool IsLanguagePairWhitelisted(base::StringPiece original_language,
+                                 base::StringPiece target_language);
+  void WhitelistLanguagePair(base::StringPiece original_language,
+                             base::StringPiece target_language);
+  void RemoveLanguagePairFromWhitelist(base::StringPiece original_language,
+                                       base::StringPiece target_language);
 
   // These methods are used to track how many times the user has denied the
   // translation for a specific language. (So we can present a UI to black-list
   // that language if the user keeps denying translations).
-  int GetTranslationDeniedCount(const std::string& language) const;
-  void IncrementTranslationDeniedCount(const std::string& language);
-  void ResetTranslationDeniedCount(const std::string& language);
+  int GetTranslationDeniedCount(base::StringPiece language) const;
+  void IncrementTranslationDeniedCount(base::StringPiece language);
+  void ResetTranslationDeniedCount(base::StringPiece language);
 
   // These methods are used to track how many times the user has ignored the
   // translation bubble for a specific language.
-  int GetTranslationIgnoredCount(const std::string& language) const;
-  void IncrementTranslationIgnoredCount(const std::string& language);
-  void ResetTranslationIgnoredCount(const std::string& language);
+  int GetTranslationIgnoredCount(base::StringPiece language) const;
+  void IncrementTranslationIgnoredCount(base::StringPiece language);
+  void ResetTranslationIgnoredCount(base::StringPiece language);
 
   // These methods are used to track how many times the user has accepted the
   // translation for a specific language. (So we can present a UI to white-list
   // that language if the user keeps accepting translations).
-  int GetTranslationAcceptedCount(const std::string& language) const;
-  void IncrementTranslationAcceptedCount(const std::string& language);
-  void ResetTranslationAcceptedCount(const std::string& language);
+  int GetTranslationAcceptedCount(base::StringPiece language) const;
+  void IncrementTranslationAcceptedCount(base::StringPiece language);
+  void ResetTranslationAcceptedCount(base::StringPiece language);
 
 #if defined(OS_ANDROID) || defined(OS_IOS)
   // These methods are used to track how many times the auto-always translation
   // has been triggered for a specific language.
-  int GetTranslationAutoAlwaysCount(const std::string& language) const;
-  void IncrementTranslationAutoAlwaysCount(const std::string& language);
-  void ResetTranslationAutoAlwaysCount(const std::string& language);
+  int GetTranslationAutoAlwaysCount(base::StringPiece language) const;
+  void IncrementTranslationAutoAlwaysCount(base::StringPiece language);
+  void ResetTranslationAutoAlwaysCount(base::StringPiece language);
 
   // These methods are used to track how many times the auto-never translation
   // has been triggered for a specific language.
-  int GetTranslationAutoNeverCount(const std::string& language) const;
-  void IncrementTranslationAutoNeverCount(const std::string& language);
-  void ResetTranslationAutoNeverCount(const std::string& language);
+  int GetTranslationAutoNeverCount(base::StringPiece language) const;
+  void IncrementTranslationAutoNeverCount(base::StringPiece language);
+  void ResetTranslationAutoNeverCount(base::StringPiece language);
 #endif
 
 #if defined(OS_ANDROID)
@@ -285,10 +283,10 @@ class TranslatePrefs {
 #endif
 
   // Update the last time on closing the Translate UI without translation.
-  void UpdateLastDeniedTime(const std::string& language);
+  void UpdateLastDeniedTime(base::StringPiece language);
 
   // Returns true if translation is denied too often.
-  bool IsTooOftenDenied(const std::string& language) const;
+  bool IsTooOftenDenied(base::StringPiece language) const;
 
   // Resets the prefs of denial state. Only used internally for diagnostics.
   void ResetDenialState();
@@ -297,8 +295,8 @@ class TranslatePrefs {
   void GetLanguageList(std::vector<std::string>* languages) const;
 
   bool CanTranslateLanguage(TranslateAcceptLanguages* accept_languages,
-                            const std::string& language);
-  bool ShouldAutoTranslate(const std::string& original_language,
+                            base::StringPiece language);
+  bool ShouldAutoTranslate(base::StringPiece original_language,
                            std::string* target_language);
 
   // Stores and retrieves the last-observed translate target language. Used to
@@ -359,11 +357,9 @@ class TranslatePrefs {
   void ClearWhitelistedLanguagePairs();
 
   // |pref_id| is the name of a list pref.
-  bool IsValueBlacklisted(const char* pref_id, const std::string& value) const;
-  void BlacklistValue(const char* pref_id, const std::string& value);
-  void RemoveValueFromBlacklist(const char* pref_id, const std::string& value);
-  bool IsValueInList(const base::ListValue* list,
-                     const std::string& value) const;
+  bool IsValueBlacklisted(const char* pref_id, base::StringPiece value) const;
+  void BlacklistValue(const char* pref_id, base::StringPiece value);
+  void RemoveValueFromBlacklist(const char* pref_id, base::StringPiece value);
   size_t GetListSize(const char* pref_id) const;
 
   bool IsDictionaryEmpty(const char* pref_id) const;
@@ -372,7 +368,7 @@ class TranslatePrefs {
   // aren't any other languages from the same family in the list that are
   // supported.
   void PurgeUnsupportedLanguagesInLanguageFamily(
-      const std::string& language,
+      base::StringPiece language,
       std::vector<std::string>* list);
 
   // Path to the preference storing the accept languages.

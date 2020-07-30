@@ -4,6 +4,8 @@
 
 #import "ios/chrome/browser/ui/whats_new/default_browser_promo_coordinator.h"
 
+#include "base/metrics/user_metrics.h"
+#include "base/metrics/user_metrics_action.h"
 #import "ios/chrome/browser/ui/whats_new/default_browser_promo_view_controller.h"
 #import "ios/chrome/common/ui/confirmation_alert/confirmation_alert_action_handler.h"
 #import "ios/chrome/common/ui/elements/popover_label_view_controller.h"
@@ -13,6 +15,16 @@
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."
 #endif
+
+namespace {
+
+// Enum actions for the IOS.DefaultBrowserFullscreenPromo UMA metric.
+enum IOSDefaultBrowserFullscreenPromoAction {
+  ACTION_BUTTON = 0,
+  CANCEL,
+}
+
+}  // namespace
 
 @interface DefaultBrowserPromoCoordinator () <ConfirmationAlertActionHandler>
 
@@ -52,10 +64,12 @@
 #pragma mark - ConfirmationAlertActionHandler
 
 - (void)confirmationAlertDismissAction {
+  UMA_HISTOGRAM_ENUMERATION("IOS.DefaultBrowserFullscreenPromo", CANCEL);
   [self.handler hidePromo];
 }
 
 - (void)confirmationAlertPrimaryAction {
+  UMA_HISTOGRAM_ENUMERATION("IOS.DefaultBrowserFullscreenPromo", ACTION_BUTTON);
   [[UIApplication sharedApplication]
                 openURL:[NSURL URLWithString:UIApplicationOpenSettingsURLString]
                 options:{}
@@ -65,6 +79,8 @@
 }
 
 - (void)confirmationAlertLearnMoreAction {
+  base::RecordAction(base::UserMetricsAction(
+      "IOS.DefaultBrowserFullscreenPromoMoreInfoTapped"));
   NSString* message =
       l10n_util::GetNSString(IDS_IOS_DEFAULT_BROWSER_LEARN_MORE_MESSAGE);
   self.learnMoreViewController =

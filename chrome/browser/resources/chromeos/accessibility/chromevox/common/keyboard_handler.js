@@ -8,6 +8,7 @@ goog.require('ChromeVox');
 goog.require('KeyMap');
 goog.require('KeySequence');
 goog.require('KeyUtil');
+goog.require('ChromeVoxState');
 
 /**
  * @fileoverview Handles user keyboard input events.
@@ -85,6 +86,15 @@ ChromeVoxKbHandler.sortKeyToFunctionsTable_ = function(keyToFunctionsTable) {
  */
 ChromeVoxKbHandler.basicKeyDownActionsListener = function(evt) {
   const keySequence = KeyUtil.keyEventToKeySequence(evt);
+  const chromeVoxState = ChromeVoxState.instance;
+  const monitor = chromeVoxState ? chromeVoxState.getUserActionMonitor() : null;
+  if (monitor && !monitor.onKeySequence(keySequence)) {
+    // UserActionMonitor returns true if this key sequence was matched. If a
+    // key sequence is matched by the UserActionMonitor, allow it to process.
+    // Otherwise, prevent the default action.
+    return false;
+  }
+
   let functionName;
   if (ChromeVoxKbHandler.handlerKeyMap != undefined) {
     functionName = ChromeVoxKbHandler.handlerKeyMap.commandForKey(keySequence);

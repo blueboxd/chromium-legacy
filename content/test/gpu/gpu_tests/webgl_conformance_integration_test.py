@@ -65,6 +65,15 @@ def _CompareVersion(version1, version2):
   return cmp(ver_num1[0:size], ver_num2[0:size])
 
 
+class WebGLTestArgs(object):
+  """Struct-like class for passing args to a WebGLConformance test."""
+
+  def __init__(self, webgl_version=None, extension=None, extension_list=None):
+    self.webgl_version = webgl_version
+    self.extension = extension
+    self.extension_list = extension_list
+
+
 class WebGLConformanceIntegrationTest(gpu_integration_test.GpuIntegrationTest):
 
   _webgl_version = None
@@ -114,7 +123,8 @@ class WebGLConformanceIntegrationTest(gpu_integration_test.GpuIntegrationTest):
         test_path_with_args += '?webglVersion=' + str(cls._webgl_version)
       yield (test_path.replace(os.path.sep, '/'),
              os.path.join(webgl_test_util.conformance_relpath,
-                          test_path_with_args), ('_RunConformanceTest'))
+                          test_path_with_args), ('_RunConformanceTest',
+                                                 WebGLTestArgs()))
 
     #
     # Extension tests
@@ -124,13 +134,17 @@ class WebGLConformanceIntegrationTest(gpu_integration_test.GpuIntegrationTest):
     yield ('WebglExtension_TestCoverage',
            os.path.join(webgl_test_util.extensions_relpath,
                         'webgl_extension_test.html'),
-           ('_RunExtensionCoverageTest', extension_tests, cls._webgl_version))
+           ('_RunExtensionCoverageTest',
+            WebGLTestArgs(webgl_version=cls._webgl_version,
+                          extension_list=extension_tests)))
     # Individual extension tests.
     for extension in extension_tests:
       yield ('WebglExtension_%s' % extension,
              os.path.join(webgl_test_util.extensions_relpath,
                           'webgl_extension_test.html'),
-             ('_RunExtensionTest', extension, cls._webgl_version))
+             ('_RunExtensionTest',
+              WebGLTestArgs(webgl_version=cls._webgl_version,
+                            extension=extension)))
 
   @classmethod
   def _GetExtensionList(cls):
@@ -202,8 +216,10 @@ class WebGLConformanceIntegrationTest(gpu_integration_test.GpuIntegrationTest):
   def RunActualGpuTest(self, test_path, *args):
     # This indirection allows these tests to trampoline through
     # _RunGpuTest.
+    assert len(args) == 2
     test_name = args[0]
-    getattr(self, test_name)(test_path, *args[1:])
+    test_args = args[1]
+    getattr(self, test_name)(test_path, test_args)
 
   def _VerifyGLBackend(self, gpu_info):
     # Verify that Chrome's GL backend matches if a specific one was requested
@@ -280,20 +296,17 @@ class WebGLConformanceIntegrationTest(gpu_integration_test.GpuIntegrationTest):
     elif not self._DidWebGLTestSucceed(self.tab):
       self.fail(self._WebGLTestMessages(self.tab))
 
-  def _RunConformanceTest(self, test_path, *args):
-    del args  # Unused in conformance tests.
+  def _RunConformanceTest(self, test_path, _):
     self._NavigateTo(test_path, conformance_harness_script)
     self._CheckTestCompletion()
 
-  def _RunExtensionCoverageTest(self, test_path, *args):
+  def _RunExtensionCoverageTest(self, test_path, test_args):
     self._NavigateTo(test_path, _GetExtensionHarnessScript())
     self.tab.action_runner.WaitForJavaScriptCondition(
         'window._loaded', timeout=self._GetTestTimeout())
-    extension_list = args[0]
-    webgl_version = args[1]
-    context_type = "webgl2" if webgl_version == 2 else "webgl"
+    context_type = "webgl2" if test_args.webgl_version == 2 else "webgl"
     extension_list_string = "["
-    for extension in extension_list:
+    for extension in test_args.extension_list:
       extension_list_string = extension_list_string + extension + ", "
     extension_list_string = extension_list_string + "]"
     self.tab.action_runner.EvaluateJavaScript(
@@ -302,16 +315,14 @@ class WebGLConformanceIntegrationTest(gpu_integration_test.GpuIntegrationTest):
         context_type=context_type)
     self._CheckTestCompletion()
 
-  def _RunExtensionTest(self, test_path, *args):
+  def _RunExtensionTest(self, test_path, test_args):
     self._NavigateTo(test_path, _GetExtensionHarnessScript())
     self.tab.action_runner.WaitForJavaScriptCondition(
         'window._loaded', timeout=self._GetTestTimeout())
-    extension = args[0]
-    webgl_version = args[1]
-    context_type = "webgl2" if webgl_version == 2 else "webgl"
+    context_type = "webgl2" if test_args.webgl_version == 2 else "webgl"
     self.tab.action_runner.EvaluateJavaScript(
         'checkExtension({{ extension }}, {{ context_type }})',
-        extension=extension,
+        extension=test_args.extension,
         context_type=context_type)
     self._CheckTestCompletion()
 

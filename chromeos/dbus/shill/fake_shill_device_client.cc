@@ -607,11 +607,10 @@ void FakeShillDeviceClient::PassStubDeviceProperties(
   const base::Value* device_properties =
       stub_devices_.FindDictKey(device_path.value());
   if (!device_properties) {
-    std::move(callback).Run(DBUS_METHOD_CALL_FAILURE,
-                            base::Value(base::Value::Type::DICTIONARY));
+    std::move(callback).Run(base::nullopt);
     return;
   }
-  std::move(callback).Run(DBUS_METHOD_CALL_SUCCESS, device_properties->Clone());
+  std::move(callback).Run(device_properties->Clone());
 }
 
 // Posts a task to run a void callback with status code |status|.

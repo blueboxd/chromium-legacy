@@ -489,12 +489,11 @@ std::unique_ptr<ArcAppIcon::ReadResult> ArcAppIcon::ReadFile(
     ui::ScaleFactor scale_factor,
     bool resize_allowed,
     const base::FilePath& path) {
-  DCHECK(!path.empty());
-  DCHECK(base::PathExists(path));
-
-  // Read the file from disk.
+  // Read the file from disk. Sometimes, the file could be deleted, e.g. when
+  // running unit tests, so check whether the file exists again.
   std::string unsafe_icon_data;
-  if (!base::ReadFileToString(path, &unsafe_icon_data) ||
+  if (path.empty() || !base::PathExists(path) ||
+      !base::ReadFileToString(path, &unsafe_icon_data) ||
       unsafe_icon_data.empty()) {
     VLOG(2) << "Failed to read an ARC icon from file " << path.MaybeAsASCII();
 
@@ -519,10 +518,12 @@ std::unique_ptr<ArcAppIcon::ReadResult> ArcAppIcon::ReadFiles(
     bool resize_allowed,
     const base::FilePath& foreground_path,
     const base::FilePath& background_path) {
-  // Read the file from disk.
+  // Read the file from disk. Sometimes, the file could be deleted, e.g. when
+  // running unit tests, so check whether the file exists again.
   std::string unsafe_foreground_icon_data;
   std::string unsafe_background_icon_data;
-  if (!base::ReadFileToString(foreground_path, &unsafe_foreground_icon_data) ||
+  if (foreground_path.empty() || !base::PathExists(foreground_path) ||
+      !base::ReadFileToString(foreground_path, &unsafe_foreground_icon_data) ||
       unsafe_foreground_icon_data.empty()) {
     VLOG(2) << "Failed to read an ARC icon from file "
             << foreground_path.MaybeAsASCII();
@@ -536,7 +537,8 @@ std::unique_ptr<ArcAppIcon::ReadResult> ArcAppIcon::ReadFiles(
         std::vector<std::string>() /* unsafe_icon_data */);
   }
 
-  if (!base::ReadFileToString(background_path, &unsafe_background_icon_data) ||
+  if (background_path.empty() || !base::PathExists(background_path) ||
+      !base::ReadFileToString(background_path, &unsafe_background_icon_data) ||
       unsafe_background_icon_data.empty()) {
     VLOG(2) << "Failed to read an ARC icon from file "
             << background_path.MaybeAsASCII();

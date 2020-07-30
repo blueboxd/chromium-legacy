@@ -242,7 +242,7 @@ id<GREYMatcher> TitleOfTestPage() {
 
 // Tests that there is a text cell in the Recently Closed section when it's
 // empty (Only with illustrated-empty-states flag enabled).
-- (void)testEmptyState {
+- (void)testRecentlyClosedEmptyState {
   OpenRecentTabsPanel();
 
   id<GREYInteraction> detailTextCell = [EarlGrey
@@ -255,6 +255,27 @@ id<GREYMatcher> TitleOfTestPage() {
   } else {
     [detailTextCell assertWithMatcher:grey_nil()];
   }
+}
+
+// Test that the Cold Mode Signin promo is visible in the Other Devices section
+// (and with illustrated-empty-states enabled, there is the illustrated cell)
+- (void)testOtherDevicesDefaultEmptyState {
+  OpenRecentTabsPanel();
+
+  id<GREYInteraction> illustratedCell = [EarlGrey
+      selectElementWithMatcher:
+          grey_allOf(
+              grey_accessibilityID(
+                  kRecentTabsOtherDevicesIllustratedCellAccessibilityIdentifier),
+              grey_sufficientlyVisible(), nil)];
+  if (base::FeatureList::IsEnabled(kIllustratedEmptyStates)) {
+    [illustratedCell assertWithMatcher:grey_notNil()];
+  } else {
+    [illustratedCell assertWithMatcher:grey_nil()];
+  }
+
+  [SigninEarlGreyUI checkSigninPromoVisibleWithMode:SigninPromoViewModeColdState
+                                        closeButton:NO];
 }
 
 @end

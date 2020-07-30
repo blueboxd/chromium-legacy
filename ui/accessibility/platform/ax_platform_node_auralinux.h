@@ -239,6 +239,7 @@ class AX_EXPORT AXPlatformNodeAuraLinux : public AXPlatformNodeBase {
 
   // AXPlatformNodeBase overrides.
   void Init(AXPlatformNodeDelegate* delegate) override;
+  bool IsPlatformCheckable() const override;
 
   bool IsNameExposed();
 

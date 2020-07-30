@@ -21,7 +21,7 @@
 
 #if defined(OS_ANDROID)
 #include "device/bluetooth/test/bluetooth_test_android.h"
-#elif defined(OS_MACOSX)
+#elif defined(OS_MAC)
 #include "device/bluetooth/test/bluetooth_test_mac.h"
 #elif defined(OS_WIN)
 #include "device/bluetooth/test/bluetooth_test_win.h"
@@ -174,7 +174,7 @@ using BluetoothRemoteGattCharacteristicTestWinrtOnly =
     BluetoothRemoteGattCharacteristicTest;
 #endif
 
-#if defined(OS_ANDROID) || defined(OS_MACOSX)
+#if defined(OS_ANDROID) || defined(OS_MAC)
 #define MAYBE_GetIdentifier GetIdentifier
 #else
 #define MAYBE_GetIdentifier DISABLED_GetIdentifier
@@ -252,7 +252,7 @@ TEST_F(BluetoothRemoteGattCharacteristicTest, MAYBE_GetIdentifier) {
   EXPECT_NE(char5->GetIdentifier(), char6->GetIdentifier());
 }
 
-#if defined(OS_ANDROID) || defined(OS_MACOSX)
+#if defined(OS_ANDROID) || defined(OS_MAC)
 #define MAYBE_GetUUID GetUUID
 #else
 #define MAYBE_GetUUID DISABLED_GetUUID
@@ -301,7 +301,7 @@ TEST_F(BluetoothRemoteGattCharacteristicTest, MAYBE_GetUUID) {
   EXPECT_EQ(uuid2, char3->GetUUID());
 }
 
-#if defined(OS_ANDROID) || defined(OS_MACOSX)
+#if defined(OS_ANDROID) || defined(OS_MAC)
 #define MAYBE_GetProperties GetProperties
 #else
 #define MAYBE_GetProperties DISABLED_GetProperties
@@ -341,7 +341,7 @@ TEST_F(BluetoothRemoteGattCharacteristicTest, MAYBE_GetProperties) {
   EXPECT_EQ(7, properties2);
 }
 
-#if defined(OS_ANDROID) || defined(OS_MACOSX)
+#if defined(OS_ANDROID) || defined(OS_MAC)
 #define MAYBE_GetService GetService
 #else
 #define MAYBE_GetService DISABLED_GetService
@@ -362,7 +362,7 @@ TEST_F(BluetoothRemoteGattCharacteristicTest, MAYBE_GetService) {
   EXPECT_EQ(service_, characteristic2_->GetService());
 }
 
-#if defined(OS_ANDROID) || defined(OS_MACOSX)
+#if defined(OS_ANDROID) || defined(OS_MAC)
 #define MAYBE_ReadRemoteCharacteristic_Empty ReadRemoteCharacteristic_Empty
 #else
 #define MAYBE_ReadRemoteCharacteristic_Empty \
@@ -399,7 +399,7 @@ TEST_F(BluetoothRemoteGattCharacteristicTest,
   EXPECT_EQ(empty_vector, characteristic1_->GetValue());
 }
 
-#if defined(OS_ANDROID) || defined(OS_MACOSX)
+#if defined(OS_ANDROID) || defined(OS_MAC)
 #define MAYBE_WriteRemoteCharacteristic_Empty WriteRemoteCharacteristic_Empty
 #else
 #define MAYBE_WriteRemoteCharacteristic_Empty \
@@ -441,7 +441,7 @@ TEST_F(BluetoothRemoteGattCharacteristicTest,
   base::RunLoop().RunUntilIdle();
 }
 
-#if defined(OS_ANDROID) || defined(OS_MACOSX)
+#if defined(OS_ANDROID) || defined(OS_MAC)
 #define MAYBE_DeprecatedWriteRemoteCharacteristic_Empty \
   DeprecatedWriteRemoteCharacteristic_Empty
 #else
@@ -478,7 +478,7 @@ TEST_F(BluetoothRemoteGattCharacteristicTest,
   EXPECT_EQ(empty_vector, last_write_value_);
 }
 
-#if defined(OS_ANDROID) || defined(OS_MACOSX)
+#if defined(OS_ANDROID) || defined(OS_MAC)
 #define MAYBE_Retry_ReadRemoteCharacteristic_DuringDestruction_Fails \
   Retry_ReadRemoteCharacteristic_DuringDestruction_Fails
 #else
@@ -520,7 +520,7 @@ TEST_F(BluetoothRemoteGattCharacteristicTest,
             last_gatt_error_code_);
 }
 
-#if defined(OS_ANDROID) || defined(OS_MACOSX)
+#if defined(OS_ANDROID) || defined(OS_MAC)
 #define MAYBE_Retry_WriteRemoteCharacteristic_DuringDestruction_Fails \
   Retry_WriteRemoteCharacteristic_DuringDestruction_Fails
 #else
@@ -571,7 +571,7 @@ TEST_F(BluetoothRemoteGattCharacteristicTest,
   loop.Run();
 }
 
-#if defined(OS_ANDROID) || defined(OS_MACOSX)
+#if defined(OS_ANDROID) || defined(OS_MAC)
 #define MAYBE_Retry_DeprecatedWriteRemoteCharacteristic_DuringDestruction_Fails \
   Retry_DeprecatedWriteRemoteCharacteristic_DuringDestruction_Fails
 #else
@@ -656,7 +656,7 @@ TEST_F(BluetoothRemoteGattCharacteristicTest,
 
 // TODO(crbug.com/663131): Enable test on windows when disconnection is
 // implemented.
-#if defined(OS_ANDROID) || defined(OS_MACOSX)
+#if defined(OS_ANDROID) || defined(OS_MAC)
 #define MAYBE_ReadRemoteCharacteristic_Disconnected \
   ReadRemoteCharacteristic_Disconnected
 #else
@@ -794,7 +794,7 @@ TEST_F(BluetoothRemoteGattCharacteristicTest,
 
 // TODO(crbug.com/663131): Enable test on windows when disconnection is
 // implemented.
-#if defined(OS_ANDROID) || defined(OS_MACOSX)
+#if defined(OS_ANDROID) || defined(OS_MAC)
 #define MAYBE_WriteRemoteCharacteristic_Disconnected \
   WriteRemoteCharacteristic_Disconnected
 #else
@@ -851,7 +851,7 @@ TEST_F(BluetoothRemoteGattCharacteristicTest,
 
 // TODO(crbug.com/663131): Enable test on windows when disconnection is
 // implemented.
-#if defined(OS_ANDROID) || defined(OS_MACOSX)
+#if defined(OS_ANDROID) || defined(OS_MAC)
 #define MAYBE_DeprecatedWriteRemoteCharacteristic_Disconnected \
   DeprecatedWriteRemoteCharacteristic_Disconnected
 #else
@@ -900,7 +900,7 @@ TEST_F(BluetoothRemoteGattCharacteristicTest,
 #endif  // defined(OS_ANDROID)
 }
 
-#if defined(OS_ANDROID) || defined(OS_MACOSX)
+#if defined(OS_ANDROID) || defined(OS_MAC)
 #define MAYBE_ReadRemoteCharacteristic ReadRemoteCharacteristic
 #else
 #define MAYBE_ReadRemoteCharacteristic DISABLED_ReadRemoteCharacteristic
@@ -946,7 +946,7 @@ static void TestCallback(
   std::move(callback).Run(value);
 }
 
-#if defined(OS_ANDROID) || defined(OS_MACOSX)
+#if defined(OS_ANDROID) || defined(OS_MAC)
 #define MAYBE_ReadRemoteCharacteristic_GattCharacteristicValueChangedNotCalled \
   ReadRemoteCharacteristic_GattCharacteristicValueChangedNotCalled
 #else
@@ -993,7 +993,7 @@ TEST_F(BluetoothRemoteGattCharacteristicTest,
   EXPECT_TRUE(observer.last_changed_characteristic_value().empty());
 }
 
-#if defined(OS_ANDROID) || defined(OS_MACOSX)
+#if defined(OS_ANDROID) || defined(OS_MAC)
 #define MAYBE_WriteRemoteCharacteristic WriteRemoteCharacteristic
 #else
 #define MAYBE_WriteRemoteCharacteristic DISABLED_WriteRemoteCharacteristic
@@ -1037,7 +1037,7 @@ TEST_F(BluetoothRemoteGattCharacteristicTest, MAYBE_WriteRemoteCharacteristic) {
   loop.Run();
 }
 
-#if defined(OS_ANDROID) || defined(OS_MACOSX)
+#if defined(OS_ANDROID) || defined(OS_MAC)
 #define MAYBE_DeprecatedWriteRemoteCharacteristic \
   DeprecatedWriteRemoteCharacteristic
 #else
@@ -1077,7 +1077,7 @@ TEST_F(BluetoothRemoteGattCharacteristicTest,
   EXPECT_EQ(test_vector, last_write_value_);
 }
 
-#if defined(OS_ANDROID) || defined(OS_MACOSX)
+#if defined(OS_ANDROID) || defined(OS_MAC)
 #define MAYBE_ReadRemoteCharacteristic_Twice ReadRemoteCharacteristic_Twice
 #else
 #define MAYBE_ReadRemoteCharacteristic_Twice \
@@ -1127,7 +1127,7 @@ TEST_F(BluetoothRemoteGattCharacteristicTest,
   EXPECT_EQ(empty_vector, characteristic1_->GetValue());
 }
 
-#if defined(OS_ANDROID) || defined(OS_MACOSX)
+#if defined(OS_ANDROID) || defined(OS_MAC)
 #define MAYBE_WriteRemoteCharacteristic_Twice WriteRemoteCharacteristic_Twice
 #else
 #define MAYBE_WriteRemoteCharacteristic_Twice \
@@ -1186,7 +1186,7 @@ TEST_F(BluetoothRemoteGattCharacteristicTest,
   loop2.Run();
 }
 
-#if defined(OS_ANDROID) || defined(OS_MACOSX)
+#if defined(OS_ANDROID) || defined(OS_MAC)
 #define MAYBE_DeprecatedWriteRemoteCharacteristic_Twice \
   DeprecatedWriteRemoteCharacteristic_Twice
 #else
@@ -1236,7 +1236,7 @@ TEST_F(BluetoothRemoteGattCharacteristicTest,
   EXPECT_EQ(empty_vector, last_write_value_);
 }
 
-#if defined(OS_ANDROID) || defined(OS_MACOSX)
+#if defined(OS_ANDROID) || defined(OS_MAC)
 #define MAYBE_ReadRemoteCharacteristic_MultipleCharacteristics \
   ReadRemoteCharacteristic_MultipleCharacteristics
 #else
@@ -1286,7 +1286,7 @@ TEST_F(BluetoothRemoteGattCharacteristicTest,
   EXPECT_EQ(test_vector2, characteristic2_->GetValue());
 }
 
-#if defined(OS_ANDROID) || defined(OS_MACOSX)
+#if defined(OS_ANDROID) || defined(OS_MAC)
 #define MAYBE_WriteRemoteCharacteristic_MultipleCharacteristics \
   WriteRemoteCharacteristic_MultipleCharacteristics
 #else
@@ -1353,7 +1353,7 @@ TEST_F(BluetoothRemoteGattCharacteristicTest,
   loop2.Run();
 }
 
-#if defined(OS_ANDROID) || defined(OS_MACOSX)
+#if defined(OS_ANDROID) || defined(OS_MAC)
 #define MAYBE_DeprecatedWriteRemoteCharacteristic_MultipleCharacteristics \
   DeprecatedWriteRemoteCharacteristic_MultipleCharacteristics
 #else
@@ -1411,7 +1411,7 @@ TEST_F(BluetoothRemoteGattCharacteristicTest,
   // TODO(591740): Remove if define for OS_ANDROID in this test.
 }
 
-#if defined(OS_ANDROID) || defined(OS_MACOSX)
+#if defined(OS_ANDROID) || defined(OS_MAC)
 #define MAYBE_RemoteCharacteristic_Nested_Read_Read \
   RemoteCharacteristic_Nested_Read_Read
 #else
@@ -1463,7 +1463,7 @@ TEST_F(BluetoothRemoteGattCharacteristicTest,
   EXPECT_EQ(test_vector_2, characteristic1_->GetValue());
 }
 
-#if defined(OS_ANDROID) || defined(OS_MACOSX)
+#if defined(OS_ANDROID) || defined(OS_MAC)
 #define MAYBE_RemoteCharacteristic_Nested_Write_Write \
   RemoteCharacteristic_Nested_Write_Write
 #else
@@ -1520,7 +1520,7 @@ TEST_F(BluetoothRemoteGattCharacteristicTest,
   loop.Run();
 }
 
-#if defined(OS_ANDROID) || defined(OS_MACOSX)
+#if defined(OS_ANDROID) || defined(OS_MAC)
 #define MAYBE_RemoteCharacteristic_Nested_DeprecatedWrite_DeprecatedWrite \
   RemoteCharacteristic_Nested_DeprecatedWrite_DeprecatedWrite
 #else
@@ -1571,7 +1571,7 @@ TEST_F(BluetoothRemoteGattCharacteristicTest,
   EXPECT_EQ(test_vector_2, last_write_value_);
 }
 
-#if defined(OS_ANDROID) || defined(OS_MACOSX)
+#if defined(OS_ANDROID) || defined(OS_MAC)
 #define MAYBE_RemoteCharacteristic_Nested_Read_Write \
   RemoteCharacteristic_Nested_Read_Write
 #else
@@ -1632,7 +1632,7 @@ TEST_F(BluetoothRemoteGattCharacteristicTest,
   loop.Run();
 }
 
-#if defined(OS_ANDROID) || defined(OS_MACOSX)
+#if defined(OS_ANDROID) || defined(OS_MAC)
 #define MAYBE_RemoteCharacteristic_Nested_Read_DeprecatedWrite \
   RemoteCharacteristic_Nested_Read_DeprecatedWrite
 #else
@@ -1686,7 +1686,7 @@ TEST_F(BluetoothRemoteGattCharacteristicTest,
   EXPECT_EQ(test_vector_2, last_write_value_);
 }
 
-#if defined(OS_ANDROID) || defined(OS_MACOSX)
+#if defined(OS_ANDROID) || defined(OS_MAC)
 #define MAYBE_RemoteCharacteristic_Nested_Write_Read \
   RemoteCharacteristic_Nested_Write_Read
 #else
@@ -1745,7 +1745,7 @@ TEST_F(BluetoothRemoteGattCharacteristicTest,
   loop.Run();
 }
 
-#if defined(OS_ANDROID) || defined(OS_MACOSX)
+#if defined(OS_ANDROID) || defined(OS_MAC)
 #define MAYBE_RemoteCharacteristic_Nested_DeprecatedWrite_Read \
   RemoteCharacteristic_Nested_DeprecatedWrite_Read
 #else
@@ -1799,7 +1799,7 @@ TEST_F(BluetoothRemoteGattCharacteristicTest,
   EXPECT_EQ(test_vector_2, characteristic1_->GetValue());
 }
 
-#if defined(OS_ANDROID) || defined(OS_MACOSX)
+#if defined(OS_ANDROID) || defined(OS_MAC)
 #define MAYBE_ReadError ReadError
 #else
 #define MAYBE_ReadError DISABLED_ReadError
@@ -1832,7 +1832,7 @@ TEST_F(BluetoothRemoteGattCharacteristicTest, MAYBE_ReadError) {
   EXPECT_EQ(0, observer.gatt_characteristic_value_changed_count());
 }
 
-#if defined(OS_ANDROID) || defined(OS_MACOSX)
+#if defined(OS_ANDROID) || defined(OS_MAC)
 #define MAYBE_WriteError WriteError
 #else
 #define MAYBE_WriteError DISABLED_WriteError
@@ -1871,7 +1871,7 @@ TEST_F(BluetoothRemoteGattCharacteristicTest, MAYBE_WriteError) {
   loop.Run();
 }
 
-#if defined(OS_ANDROID) || defined(OS_MACOSX)
+#if defined(OS_ANDROID) || defined(OS_MAC)
 #define MAYBE_DeprecatedWriteError DeprecatedWriteError
 #else
 #define MAYBE_DeprecatedWriteError DISABLED_DeprecatedWriteError
@@ -2019,7 +2019,7 @@ TEST_F(BluetoothRemoteGattCharacteristicTest,
   EXPECT_EQ(0, error_callback_count_);
 }
 
-#if defined(OS_ANDROID) || defined(OS_MACOSX)
+#if defined(OS_ANDROID) || defined(OS_MAC)
 #define MAYBE_ReadRemoteCharacteristic_ReadPending \
   ReadRemoteCharacteristic_ReadPending
 #else
@@ -2064,7 +2064,7 @@ TEST_F(BluetoothRemoteGattCharacteristicTest,
   EXPECT_EQ(0, error_callback_count_);
 }
 
-#if defined(OS_ANDROID) || defined(OS_MACOSX)
+#if defined(OS_ANDROID) || defined(OS_MAC)
 #define MAYBE_WriteRemoteCharacteristic_WritePending \
   WriteRemoteCharacteristic_WritePending
 #else
@@ -2120,7 +2120,7 @@ TEST_F(BluetoothRemoteGattCharacteristicTest,
   loop1.Run();
 }
 
-#if defined(OS_ANDROID) || defined(OS_MACOSX)
+#if defined(OS_ANDROID) || defined(OS_MAC)
 #define MAYBE_DeprecatedWriteRemoteCharacteristic_WritePending \
   DeprecatedWriteRemoteCharacteristic_WritePending
 #else
@@ -2166,7 +2166,7 @@ TEST_F(BluetoothRemoteGattCharacteristicTest,
   EXPECT_EQ(0, error_callback_count_);
 }
 
-#if defined(OS_ANDROID) || defined(OS_MACOSX)
+#if defined(OS_ANDROID) || defined(OS_MAC)
 #define MAYBE_ReadRemoteCharacteristic_WritePending \
   ReadRemoteCharacteristic_WritePending
 #else
@@ -2222,7 +2222,7 @@ TEST_F(BluetoothRemoteGattCharacteristicTest,
   loop1.Run();
 }
 
-#if defined(OS_ANDROID) || defined(OS_MACOSX)
+#if defined(OS_ANDROID) || defined(OS_MAC)
 #define MAYBE_ReadRemoteCharacteristic_DeprecatedWritePending \
   ReadRemoteCharacteristic_DeprecatedWritePending
 #else
@@ -2268,7 +2268,7 @@ TEST_F(BluetoothRemoteGattCharacteristicTest,
   EXPECT_EQ(0, error_callback_count_);
 }
 
-#if defined(OS_ANDROID) || defined(OS_MACOSX)
+#if defined(OS_ANDROID) || defined(OS_MAC)
 #define MAYBE_WriteRemoteCharacteristic_ReadPending \
   WriteRemoteCharacteristic_ReadPending
 #else
@@ -2323,7 +2323,7 @@ TEST_F(BluetoothRemoteGattCharacteristicTest,
   loop1.Run();
 }
 
-#if defined(OS_ANDROID) || defined(OS_MACOSX)
+#if defined(OS_ANDROID) || defined(OS_MAC)
 #define MAYBE_DeprecatedWriteRemoteCharacteristic_ReadPending \
   DeprecatedWriteRemoteCharacteristic_ReadPending
 #else
@@ -2369,7 +2369,7 @@ TEST_F(BluetoothRemoteGattCharacteristicTest,
   EXPECT_EQ(0, error_callback_count_);
 }
 
-#if defined(OS_ANDROID) || defined(OS_MACOSX)
+#if defined(OS_ANDROID) || defined(OS_MAC)
 #define MAYBE_Notification_During_ReadRemoteCharacteristic \
   Notification_During_ReadRemoteCharacteristic
 #else
@@ -2406,37 +2406,37 @@ TEST_F(BluetoothRemoteGattCharacteristicTest,
   SimulateGattCharacteristicChanged(characteristic1_, notification_value);
   base::RunLoop().RunUntilIdle();
 
-#if defined(OS_MACOSX)
+#if defined(OS_MAC)
   // Because macOS uses the same event for notifications and read value
   // responses, we can't know what the event was for. Because there is a pending
   // read request we assume is a read request on macOS.
   EXPECT_EQ(notification_value, last_read_value_);
   EXPECT_EQ(notification_value, characteristic1_->GetValue());
   EXPECT_EQ(0, observer.gatt_characteristic_value_changed_count());
-#else   // !defined(OS_MACOSX)
+#else   // !defined(OS_MAC)
   EXPECT_EQ(std::vector<uint8_t>(), last_read_value_);
   EXPECT_EQ(notification_value, characteristic1_->GetValue());
   EXPECT_EQ(1, observer.gatt_characteristic_value_changed_count());
-#endif  // defined(OS_MACOSX)
+#endif  // defined(OS_MAC)
 
   observer.Reset();
   std::vector<uint8_t> read_value = {222};
   SimulateGattCharacteristicRead(characteristic1_, read_value);
   base::RunLoop().RunUntilIdle();
-#if defined(OS_MACOSX)
+#if defined(OS_MAC)
   // There are no pending read requests anymore so we assume the event
   // was a notification.
   EXPECT_EQ(notification_value, last_read_value_);
   EXPECT_EQ(read_value, characteristic1_->GetValue());
   EXPECT_EQ(1, observer.gatt_characteristic_value_changed_count());
-#else   // !defined(OS_MACOSX)
+#else   // !defined(OS_MAC)
   EXPECT_EQ(read_value, last_read_value_);
   EXPECT_EQ(read_value, characteristic1_->GetValue());
   EXPECT_EQ(0, observer.gatt_characteristic_value_changed_count());
-#endif  // defined(OS_MACOSX)
+#endif  // defined(OS_MAC)
 }
 
-#if defined(OS_ANDROID) || defined(OS_MACOSX)
+#if defined(OS_ANDROID) || defined(OS_MAC)
 #define MAYBE_Notification_During_WriteRemoteCharacteristic \
   Notification_During_WriteRemoteCharacteristic
 #else
@@ -2488,7 +2488,7 @@ TEST_F(BluetoothRemoteGattCharacteristicTest,
   loop.Run();
 }
 
-#if defined(OS_ANDROID) || defined(OS_MACOSX)
+#if defined(OS_ANDROID) || defined(OS_MAC)
 #define MAYBE_Notification_During_DeprecatedWriteRemoteCharacteristic \
   Notification_During_DeprecatedWriteRemoteCharacteristic
 #else
@@ -2534,7 +2534,7 @@ TEST_F(BluetoothRemoteGattCharacteristicTest,
   EXPECT_EQ(write_value, last_write_value_);
 }
 
-#if defined(OS_ANDROID) || defined(OS_MACOSX)
+#if defined(OS_ANDROID) || defined(OS_MAC)
 #define MAYBE_StartNotifySession_NoNotifyOrIndicate \
   StartNotifySession_NoNotifyOrIndicate
 #else
@@ -2568,7 +2568,7 @@ TEST_F(BluetoothRemoteGattCharacteristicTest,
             last_gatt_error_code_);
 }
 
-#if defined(OS_ANDROID) || defined(OS_MACOSX)
+#if defined(OS_ANDROID) || defined(OS_MAC)
 #define MAYBE_StartNotifySession_NoConfigDescriptor \
   StartNotifySession_NoConfigDescriptor
 #else
@@ -2602,7 +2602,7 @@ TEST_F(BluetoothRemoteGattCharacteristicTest,
             last_gatt_error_code_);
 }
 
-#if defined(OS_ANDROID) || defined(OS_MACOSX)
+#if defined(OS_ANDROID) || defined(OS_MAC)
 #define MAYBE_StartNotifySession_MultipleConfigDescriptor \
   StartNotifySession_MultipleConfigDescriptor
 #else
@@ -2693,7 +2693,7 @@ TEST_F(BluetoothRemoteGattCharacteristicTest,
   ASSERT_EQ(0u, notify_sessions_.size());
 }
 
-#if defined(OS_ANDROID) || defined(OS_MACOSX)
+#if defined(OS_ANDROID) || defined(OS_MAC)
 #define MAYBE_StartNotifySession StartNotifySession
 #else
 #define MAYBE_StartNotifySession DISABLED_StartNotifySession
@@ -2712,7 +2712,7 @@ TEST_F(BluetoothRemoteGattCharacteristicTest, MAYBE_StartNotifySession) {
       /* properties: NOTIFY */ 0x10, NotifyValueState::NOTIFY));
 }
 
-#if defined(OS_ANDROID) || defined(OS_MACOSX)
+#if defined(OS_ANDROID) || defined(OS_MAC)
 #define MAYBE_StartNotifySession_OnIndicate StartNotifySession_OnIndicate
 #else
 #define MAYBE_StartNotifySession_OnIndicate \
@@ -2734,7 +2734,7 @@ TEST_F(BluetoothRemoteGattCharacteristicTest,
       /* properties: INDICATE */ 0x20, NotifyValueState::INDICATE));
 }
 
-#if defined(OS_ANDROID) || defined(OS_MACOSX)
+#if defined(OS_ANDROID) || defined(OS_MAC)
 #define MAYBE_StartNotifySession_OnNotifyAndIndicate \
   StartNotifySession_OnNotifyAndIndicate
 #else
@@ -2759,7 +2759,7 @@ TEST_F(BluetoothRemoteGattCharacteristicTest,
       NotifyValueState::NOTIFY));
 }
 
-#if defined(OS_ANDROID) || defined(OS_MACOSX)
+#if defined(OS_ANDROID) || defined(OS_MAC)
 #define MAYBE_StartNotifySession_Multiple StartNotifySession_Multiple
 #else
 #define MAYBE_StartNotifySession_Multiple DISABLED_StartNotifySession_Multiple
@@ -2809,7 +2809,7 @@ TEST_F(BluetoothRemoteGattCharacteristicTest,
   EXPECT_TRUE(notify_sessions_[1]->IsActive());
 }
 
-#if defined(OS_ANDROID) || defined(OS_MACOSX)
+#if defined(OS_ANDROID) || defined(OS_MAC)
 #define MAYBE_StartNotifySessionError_Multiple StartNotifySessionError_Multiple
 #else
 #define MAYBE_StartNotifySessionError_Multiple \
@@ -2891,7 +2891,7 @@ TEST_F(BluetoothRemoteGattCharacteristicTest,
             last_gatt_error_code_);
 }
 
-#if defined(OS_ANDROID) || defined(OS_MACOSX)
+#if defined(OS_ANDROID) || defined(OS_MAC)
 #define MAYBE_StartNotifySession_BeforeDeleted StartNotifySession_BeforeDeleted
 #else
 #define MAYBE_StartNotifySession_BeforeDeleted \
@@ -2946,7 +2946,7 @@ TEST_F(BluetoothRemoteGattCharacteristicTest,
   EXPECT_FALSE(notify_sessions_[0]->IsActive());
 }
 
-#if defined(OS_MACOSX)
+#if defined(OS_MAC)
 #define MAYBE_StartNotifySession_Reentrant_Success_Success \
   StartNotifySession_Reentrant_Success_Success
 #else
@@ -3038,7 +3038,7 @@ TEST_P(BluetoothRemoteGattCharacteristicTestWin32Only,
 }
 #endif
 
-#if defined(OS_ANDROID) || defined(OS_MACOSX)
+#if defined(OS_ANDROID) || defined(OS_MAC)
 #define MAYBE_StopNotifySession StopNotifySession
 #else
 #define MAYBE_StopNotifySession DISABLED_StopNotifySession
@@ -3070,7 +3070,7 @@ TEST_F(BluetoothRemoteGattCharacteristicTest, MAYBE_StopNotifySession) {
   EXPECT_FALSE(characteristic1_->IsNotifying());
 }
 
-#if defined(OS_ANDROID) || defined(OS_MACOSX)
+#if defined(OS_ANDROID) || defined(OS_MAC)
 #define MAYBE_StopNotifySession_SessionDeleted StopNotifySession_SessionDeleted
 #else
 #define MAYBE_StopNotifySession_SessionDeleted \
@@ -3104,7 +3104,7 @@ TEST_F(BluetoothRemoteGattCharacteristicTest,
   EXPECT_FALSE(characteristic1_->IsNotifying());
 }
 
-#if defined(OS_ANDROID) || defined(OS_MACOSX)
+#if defined(OS_ANDROID) || defined(OS_MAC)
 #define MAYBE_StopNotifySession_SessionDeleted2 \
   StopNotifySession_SessionDeleted2
 #else
@@ -3174,7 +3174,7 @@ TEST_F(BluetoothRemoteGattCharacteristicTest,
   EXPECT_FALSE(characteristic1_->IsNotifying());
 }
 
-#if defined(OS_ANDROID) || defined(OS_MACOSX)
+#if defined(OS_ANDROID) || defined(OS_MAC)
 #define MAYBE_StopNotifySession_Cancelled StopNotifySession_Cancelled
 #else
 #define MAYBE_StopNotifySession_Cancelled DISABLED_StopNotifySession_Cancelled
@@ -3208,7 +3208,7 @@ TEST_F(BluetoothRemoteGattCharacteristicTest,
   DeleteDevice(device_);  // TODO(576906) delete only the characteristic.
 }
 
-#if defined(OS_ANDROID) || defined(OS_MACOSX)
+#if defined(OS_ANDROID) || defined(OS_MAC)
 #define MAYBE_StopNotifySession_AfterDeleted StopNotifySession_AfterDeleted
 #else
 #define MAYBE_StopNotifySession_AfterDeleted \
@@ -3255,7 +3255,7 @@ TEST_F(BluetoothRemoteGattCharacteristicTest,
   EXPECT_FALSE(notify_sessions_[0]->IsActive());
 }
 
-#if defined(OS_ANDROID) || defined(OS_MACOSX)
+#if defined(OS_ANDROID) || defined(OS_MAC)
 #define MAYBE_StopNotifySession_OnIndicate StopNotifySession_OnIndicate
 #else
 #define MAYBE_StopNotifySession_OnIndicate DISABLED_StopNotifySession_OnIndicate
@@ -3289,7 +3289,7 @@ TEST_F(BluetoothRemoteGattCharacteristicTest,
   EXPECT_FALSE(characteristic1_->IsNotifying());
 }
 
-#if defined(OS_ANDROID) || defined(OS_MACOSX)
+#if defined(OS_ANDROID) || defined(OS_MAC)
 #define MAYBE_StopNotifySession_OnNotifyAndIndicate \
   StopNotifySession_OnNotifyAndIndicate
 #else
@@ -3327,7 +3327,7 @@ TEST_F(BluetoothRemoteGattCharacteristicTest,
   EXPECT_FALSE(characteristic1_->IsNotifying());
 }
 
-#if defined(OS_ANDROID) || defined(OS_MACOSX)
+#if defined(OS_ANDROID) || defined(OS_MAC)
 #define MAYBE_StopNotifySession_Error StopNotifySession_Error
 #else
 #define MAYBE_StopNotifySession_Error DISABLED_StopNotifySession_Error
@@ -3363,7 +3363,7 @@ TEST_F(BluetoothRemoteGattCharacteristicTest, MAYBE_StopNotifySession_Error) {
   EXPECT_FALSE(characteristic1_->IsNotifying());
 }
 
-#if defined(OS_ANDROID) || defined(OS_MACOSX)
+#if defined(OS_ANDROID) || defined(OS_MAC)
 #define MAYBE_StopNotifySession_Multiple1 StopNotifySession_Multiple1
 #else
 #define MAYBE_StopNotifySession_Multiple1 DISABLED_StopNotifySession_Multiple1
@@ -3419,7 +3419,7 @@ TEST_F(BluetoothRemoteGattCharacteristicTest,
   EXPECT_FALSE(characteristic1_->IsNotifying());
 }
 
-#if defined(OS_ANDROID) || defined(OS_MACOSX)
+#if defined(OS_ANDROID) || defined(OS_MAC)
 #define MAYBE_StopNotifySession_Multiple2 StopNotifySession_Multiple2
 #else
 #define MAYBE_StopNotifySession_Multiple2 DISABLED_StopNotifySession_Multiple2
@@ -3486,7 +3486,7 @@ TEST_F(BluetoothRemoteGattCharacteristicTest,
   EXPECT_FALSE(characteristic1_->IsNotifying());
 }
 
-#if defined(OS_ANDROID) || defined(OS_MACOSX)
+#if defined(OS_ANDROID) || defined(OS_MAC)
 #define MAYBE_StopNotifySession_StopStart StopNotifySession_StopStart
 #else
 #define MAYBE_StopNotifySession_StopStart DISABLED_StopNotifySession_StopStart
@@ -3546,7 +3546,7 @@ TEST_F(BluetoothRemoteGattCharacteristicTest,
   EXPECT_TRUE(characteristic1_->IsNotifying());
 }
 
-#if defined(OS_ANDROID) || defined(OS_MACOSX)
+#if defined(OS_ANDROID) || defined(OS_MAC)
 #define MAYBE_StopNotifySession_StartStopStart StopNotifySession_StartStopStart
 #else
 #define MAYBE_StopNotifySession_StartStopStart \
@@ -3610,7 +3610,7 @@ TEST_F(BluetoothRemoteGattCharacteristicTest,
   EXPECT_TRUE(characteristic1_->IsNotifying());
 }
 
-#if defined(OS_ANDROID) || defined(OS_MACOSX)
+#if defined(OS_ANDROID) || defined(OS_MAC)
 #define MAYBE_StopNotifySession_StopStopStart StopNotifySession_StopStopStart
 #else
 #define MAYBE_StopNotifySession_StopStopStart \
@@ -3685,7 +3685,7 @@ TEST_F(BluetoothRemoteGattCharacteristicTest,
   EXPECT_TRUE(characteristic1_->IsNotifying());
 }
 
-#if defined(OS_ANDROID) || defined(OS_MACOSX)
+#if defined(OS_ANDROID) || defined(OS_MAC)
 #define MAYBE_StopNotifySession_Reentrant_Success_Stop \
   StopNotifySession_Reentrant_Success_Stop
 #else
@@ -3740,7 +3740,7 @@ TEST_F(BluetoothRemoteGattCharacteristicTest,
   EXPECT_FALSE(characteristic1_->IsNotifying());
 }
 
-#if defined(OS_ANDROID) || defined(OS_MACOSX)
+#if defined(OS_ANDROID) || defined(OS_MAC)
 #define MAYBE_StopNotifySession_Reentrant_Stop_StartSuccess \
   StopNotifySession_Reentrant_Stop_StartSuccess
 #else
@@ -3796,7 +3796,7 @@ TEST_F(BluetoothRemoteGattCharacteristicTest,
   EXPECT_TRUE(characteristic1_->IsNotifying());
 }
 
-#if defined(OS_ANDROID) || defined(OS_MACOSX)
+#if defined(OS_ANDROID) || defined(OS_MAC)
 #define MAYBE_StopNotifySession_Reentrant_Stop_StartError \
   StopNotifySession_Reentrant_Stop_StartError
 #else
@@ -3850,7 +3850,7 @@ TEST_F(BluetoothRemoteGattCharacteristicTest,
   EXPECT_FALSE(characteristic1_->IsNotifying());
 }
 
-#if defined(OS_MACOSX) || defined(OS_WIN)
+#if defined(OS_MAC) || defined(OS_WIN)
 #define MAYBE_GattCharacteristicAdded GattCharacteristicAdded
 #else
 #define MAYBE_GattCharacteristicAdded DISABLED_GattCharacteristicAdded
@@ -3874,7 +3874,7 @@ TEST_F(BluetoothRemoteGattCharacteristicTest, MAYBE_GattCharacteristicAdded) {
   EXPECT_EQ(1, observer.gatt_services_discovered_count());
 }
 
-#if defined(OS_ANDROID) || defined(OS_MACOSX)
+#if defined(OS_ANDROID) || defined(OS_MAC)
 #define MAYBE_GattCharacteristicValueChanged GattCharacteristicValueChanged
 #else
 #define MAYBE_GattCharacteristicValueChanged \
@@ -3982,7 +3982,7 @@ TEST_F(BluetoothRemoteGattCharacteristicTest,
 
 // Tests that closing the GATT connection during a characteristic
 // value notification is safe.
-#if defined(OS_ANDROID) || defined(OS_MACOSX)
+#if defined(OS_ANDROID) || defined(OS_MAC)
 #define MAYBE_GattCharacteristicValueChanged_DisconnectDuring \
   GattCharacteristicValueChanged_DisconnectDuring
 #else
@@ -4252,7 +4252,7 @@ TEST_F(BluetoothRemoteGattCharacteristicTest,
             last_gatt_error_code_);
 }
 
-#if defined(OS_MACOSX)
+#if defined(OS_MAC)
 #define MAYBE_WriteWithoutResponseOnlyCharacteristic_WriteRemoteCharacteristicDuringDisconnect \
   WriteWithoutResponseOnlyCharacteristic_WriteRemoteCharacteristicDuringDisconnect
 #else
@@ -4297,7 +4297,7 @@ TEST_F(
   loop.Run();
 }
 
-#if defined(OS_MACOSX)
+#if defined(OS_MAC)
 #define MAYBE_WriteWithoutResponseOnlyCharacteristic_DeprecatedWriteRemoteCharacteristicDuringDisconnect \
   WriteWithoutResponseOnlyCharacteristic_DeprecatedWriteRemoteCharacteristicDuringDisconnect
 #else
@@ -4336,7 +4336,7 @@ TEST_F(
 
 // Tests that closing the GATT connection when a characteristic value write
 // fails due to a disconnect is safe.
-#if defined(OS_ANDROID) || defined(OS_MACOSX)
+#if defined(OS_ANDROID) || defined(OS_MAC)
 #define MAYBE_WriteWithoutResponseOnlyCharacteristic_CloseConnectionDuringDisconnect \
   WriteWithoutResponseOnlyCharacteristic_CloseConnectionDuringDisconnect
 #else
@@ -4378,7 +4378,7 @@ TEST_F(
 
 // Tests that closing the GATT connection when a characteristic value write
 // fails due to a disconnect is safe.
-#if defined(OS_ANDROID) || defined(OS_MACOSX)
+#if defined(OS_ANDROID) || defined(OS_MAC)
 #define MAYBE_DeprecatedWriteWithoutResponseOnlyCharacteristic_CloseConnectionDuringDisconnect \
   DeprecatedWriteWithoutResponseOnlyCharacteristic_CloseConnectionDuringDisconnect
 #else
@@ -4415,7 +4415,7 @@ TEST_F(
   loop.Run();
 }
 
-#if defined(OS_MACOSX)
+#if defined(OS_MAC)
 #define MAYBE_WriteWithoutResponseOnlyCharacteristic_DisconnectCalledDuringWriteRemoteCharacteristic \
   WriteWithoutResponseOnlyCharacteristic_DisconnectCalledDuringWriteRemoteCharacteristic
 #else
@@ -4456,7 +4456,7 @@ TEST_F(
   base::RunLoop().RunUntilIdle();
 }
 
-#if defined(OS_MACOSX)
+#if defined(OS_MAC)
 #define MAYBE_DeprecatedWriteWithoutResponseOnlyCharacteristic_DisconnectCalledDuringWriteRemoteCharacteristic \
   DeprecatedWriteWithoutResponseOnlyCharacteristic_DisconnectCalledDuringWriteRemoteCharacteristic
 #else
@@ -4490,7 +4490,7 @@ TEST_F(
   base::RunLoop().RunUntilIdle();
 }
 
-#if defined(OS_MACOSX)
+#if defined(OS_MAC)
 #define MAYBE_WriteWithoutResponseOnlyCharacteristic_DisconnectCalledBeforeWriteRemoteCharacteristic \
   WriteWithoutResponseOnlyCharacteristic_DisconnectCalledBeforeWriteRemoteCharacteristic
 #else
@@ -4531,7 +4531,7 @@ TEST_F(
   base::RunLoop().RunUntilIdle();
 }
 
-#if defined(OS_MACOSX)
+#if defined(OS_MAC)
 #define MAYBE_DeprecatedWriteWithoutResponseOnlyCharacteristic_DisconnectCalledBeforeWriteRemoteCharacteristic \
   DeprecatedWriteWithoutResponseOnlyCharacteristic_DisconnectCalledBeforeWriteRemoteCharacteristic
 #else
@@ -4651,7 +4651,7 @@ TEST_F(BluetoothRemoteGattCharacteristicTest,
   base::RunLoop().RunUntilIdle();
 }
 
-#if defined(OS_MACOSX)
+#if defined(OS_MAC)
 // Tests to receive a services changed notification from macOS, while
 // discovering descriptors. This test simulate having 2 descriptor scan at the
 // same time. Only once both descriptor scanning is done, the gatt device is
@@ -4714,9 +4714,9 @@ TEST_F(BluetoothRemoteGattCharacteristicTest,
   EXPECT_EQ(1, observer.gatt_service_changed_count());
   EXPECT_EQ(1, observer.device_changed_count());
 }
-#endif  // defined(OS_MACOSX)
+#endif  // defined(OS_MAC)
 
-#if defined(OS_MACOSX)
+#if defined(OS_MAC)
 // Simulates to receive an extra discovery descriptor notifications from  macOS.
 // Those notifications should be ignored.
 // Android: This test doesn't apply to Android because there is no services
@@ -4765,7 +4765,7 @@ TEST_F(BluetoothRemoteGattCharacteristicTest, ExtraDidDiscoverDescriptorsCall) {
   SimulateDidDiscoverDescriptorsMac(characteristic);  // Extra system call.
   EXPECT_EQ(2, observer.device_changed_count());
 }
-#endif  // defined(OS_MACOSX)
+#endif  // defined(OS_MAC)
 
 #if defined(OS_WIN)
 INSTANTIATE_TEST_SUITE_P(All,

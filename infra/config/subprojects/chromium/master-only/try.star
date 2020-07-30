@@ -325,7 +325,7 @@ try_.chromium_linux_builder(
 )
 
 try_.chromium_linux_builder(
-    name = 'linux-lacros-rel',
+    name = 'linux-lacros-fyi-rel',
 )
 
 try_.chromium_linux_builder(
@@ -638,10 +638,10 @@ try_.chromium_mac_ios_builder(
 try_.chromium_mac_ios_builder(
     name = 'ios13-sdk-simulator',
     executable = 'recipe:chromium_trybot',
-    caches = [xcode_cache.x11n700h],
+    caches = [xcode_cache.x11e708],
     os = os.MAC_10_15,
     properties = {
-        'xcode_build_version': '11n700h'
+        'xcode_build_version': '11e708'
     }
 )
 

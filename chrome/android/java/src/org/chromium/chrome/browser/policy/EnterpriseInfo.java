@@ -41,8 +41,8 @@ public final class EnterpriseInfo {
     private boolean mSkipAsyncCheckForTesting;
 
     static class OwnedState {
-        boolean mDeviceOwned;
-        boolean mProfileOwned;
+        final boolean mDeviceOwned;
+        final boolean mProfileOwned;
 
         public OwnedState(boolean isDeviceOwned, boolean isProfileOwned) {
             mDeviceOwned = isDeviceOwned;

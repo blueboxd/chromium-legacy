@@ -65,6 +65,7 @@ class FeedStream : public FeedStreamApi,
     virtual bool IsOffline() = 0;
     virtual DisplayMetrics GetDisplayMetrics() = 0;
     virtual std::string GetLanguageTag() = 0;
+    virtual void ClearAll() = 0;
   };
 
   // Forwards to |feed::TranslateWireResponse()| by default. Can be overridden

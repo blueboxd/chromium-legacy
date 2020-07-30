@@ -38,7 +38,6 @@ import org.chromium.base.ContextUtils;
 import org.chromium.base.IntentUtils;
 import org.chromium.base.Log;
 import org.chromium.base.MemoryPressureListener;
-import org.chromium.base.ObserverList;
 import org.chromium.base.ThreadUtils;
 import org.chromium.base.TraceEvent;
 import org.chromium.base.library_loader.LibraryLoader;
@@ -63,7 +62,6 @@ import org.chromium.chrome.browser.compositor.layouts.LayoutManagerChrome;
 import org.chromium.chrome.browser.compositor.layouts.LayoutManagerChromePhone;
 import org.chromium.chrome.browser.compositor.layouts.LayoutManagerChromeTablet;
 import org.chromium.chrome.browser.compositor.layouts.OverviewModeBehavior;
-import org.chromium.chrome.browser.compositor.layouts.OverviewModeBehavior.OverviewModeObserver;
 import org.chromium.chrome.browser.compositor.layouts.OverviewModeController;
 import org.chromium.chrome.browser.compositor.layouts.OverviewModeState;
 import org.chromium.chrome.browser.compositor.layouts.phone.StackLayout;
@@ -284,6 +282,9 @@ public class ChromeTabbedActivity extends ChromeActivity<ChromeActivityComponent
      */
     private boolean mOverviewShownOnStart;
 
+    private final ObservableSupplierImpl<OverviewModeBehavior> mOverviewModeBehaviorSupplier =
+            new ObservableSupplierImpl<>();
+    private OverviewModeController mOverviewModeController;
     private OverviewModeBehavior.OverviewModeObserver mOverviewModeObserver;
 
     private ObservableSupplierImpl<EphemeralTabCoordinator> mEphemeralTabCoordinatorSupplier =
@@ -309,97 +310,6 @@ public class ChromeTabbedActivity extends ChromeActivity<ChromeActivityComponent
             getTabModelSelector().getModel(true).closeAllTabs(false, false);
         }
     };
-
-    private final OverviewModeControllerContainer mOverviewModeController =
-            new OverviewModeControllerContainer();
-
-    private static class OverviewModeControllerContainer
-            implements OverviewModeObserver, OverviewModeController {
-        private OverviewModeController mInternalOverviewModeController;
-        private ObserverList<OverviewModeObserver> mOverviewModeObserverList = new ObserverList<>();
-        private final ObservableSupplierImpl<OverviewModeBehavior> mOverviewModeBehaviorSupplier =
-                new ObservableSupplierImpl<>();
-
-        @Override
-        public boolean overviewVisible() {
-            return mInternalOverviewModeController != null
-                    && mInternalOverviewModeController.overviewVisible();
-        }
-
-        @Override
-        public void addOverviewModeObserver(OverviewModeObserver observer) {
-            mOverviewModeObserverList.addObserver(observer);
-        }
-
-        @Override
-        public void removeOverviewModeObserver(OverviewModeObserver observer) {
-            mOverviewModeObserverList.removeObserver(observer);
-        }
-
-        @Override
-        public void hideOverview(boolean animate) {
-            if (mInternalOverviewModeController != null) {
-                mInternalOverviewModeController.hideOverview(animate);
-            }
-        }
-
-        @Override
-        public void showOverview(boolean animate) {
-            if (mInternalOverviewModeController != null) {
-                mInternalOverviewModeController.showOverview(animate);
-            }
-        }
-
-        @Override
-        public void onOverviewModeStartedShowing(boolean showToolbar) {
-            for (OverviewModeObserver observer : mOverviewModeObserverList) {
-                observer.onOverviewModeStartedShowing(showToolbar);
-            }
-        }
-
-        @Override
-        public void onOverviewModeFinishedShowing() {
-            for (OverviewModeObserver observer : mOverviewModeObserverList) {
-                observer.onOverviewModeFinishedShowing();
-            }
-        }
-
-        @Override
-        public void onOverviewModeStateChanged(
-                @OverviewModeState int overviewModeState, boolean showTabSwitcherToolbar) {
-            for (OverviewModeObserver observer : mOverviewModeObserverList) {
-                observer.onOverviewModeStateChanged(overviewModeState, showTabSwitcherToolbar);
-            }
-        }
-
-        @Override
-        public void onOverviewModeStartedHiding(boolean showToolbar, boolean delayAnimation) {
-            for (OverviewModeObserver observer : mOverviewModeObserverList) {
-                observer.onOverviewModeStartedHiding(showToolbar, delayAnimation);
-            }
-        }
-
-        @Override
-        public void onOverviewModeFinishedHiding() {
-            for (OverviewModeObserver observer : mOverviewModeObserverList) {
-                observer.onOverviewModeFinishedHiding();
-            }
-        }
-
-        /**
-         * Provide an internal implementation to use for {@link OverviewModeController}.
-         * @param overviewModeController The internal implementation to use.
-         */
-        void overrideOverviewModeController(OverviewModeController overviewModeController) {
-            if (mInternalOverviewModeController != null) {
-                mInternalOverviewModeController.removeOverviewModeObserver(this);
-            }
-
-            mInternalOverviewModeController = overviewModeController;
-            mInternalOverviewModeController.addOverviewModeObserver(this);
-            mOverviewModeBehaviorSupplier.set(overviewModeController);
-        }
-    }
 
     private class TabbedAssistStatusHandler extends AssistStatusHandler {
         public TabbedAssistStatusHandler(Activity activity) {
@@ -758,7 +668,8 @@ public class ChromeTabbedActivity extends ChromeActivity<ChromeActivityComponent
                     showStartSurfaceSupplier);
 
             if (!TabUiFeatureUtilities.supportInstantStart(isTablet())) {
-                assert !mOverviewModeController.overviewVisible();
+                assert !(mOverviewModeController != null
+                        && mOverviewModeController.overviewVisible());
             }
         }
     }
@@ -808,7 +719,10 @@ public class ChromeTabbedActivity extends ChromeActivity<ChromeActivityComponent
     private void addOverviewModeObserverPreNative() {
         try (TraceEvent e = TraceEvent.scoped(
                      "ChromeTabbedActivity.addOverviewModeObserverPreNative")) {
-            mOverviewModeController.overrideOverviewModeController(mLayoutManager);
+            mOverviewModeController = mLayoutManager;
+            mOverviewModeBehaviorSupplier.set(mOverviewModeController);
+
+            // TODO(crbug.com/1108496): Move this to the assistant code.
             mOverviewModeObserver = new EmptyOverviewModeObserver() {
                 @Override
                 public void onOverviewModeStartedShowing(boolean showToolbar) {
@@ -835,10 +749,12 @@ public class ChromeTabbedActivity extends ChromeActivity<ChromeActivityComponent
                 addOverviewModeObserverPreNative();
             }
 
+            // TODO(crbug.com/1108496): This does not seem to be related to OverviewMode. Move this
+            // to a proper place.
             if (ChromeFeatureList.isEnabled(ChromeFeatureList.TAB_ENGAGEMENT_REPORTING_ANDROID)) {
                 // The lifecycle of this object is managed by the lifecycle dispatcher.
                 new JourneyManager(getTabModelSelector(), getLifecycleDispatcher(),
-                        getOverviewModeBehavior(), new EngagementTimeUtil());
+                        mOverviewModeController, new EngagementTimeUtil());
             }
         }
     }
@@ -1032,7 +948,7 @@ public class ChromeTabbedActivity extends ChromeActivity<ChromeActivityComponent
 
     @Override
     public @Nullable ObservableSupplier<OverviewModeBehavior> getOverviewModeBehaviorSupplier() {
-        return mOverviewModeController.mOverviewModeBehaviorSupplier;
+        return mOverviewModeBehaviorSupplier;
     }
 
     /**
@@ -1579,8 +1495,8 @@ public class ChromeTabbedActivity extends ChromeActivity<ChromeActivityComponent
         mContentContainer = (ViewGroup) findViewById(android.R.id.content);
         mControlContainer = (ToolbarControlContainer) findViewById(R.id.control_container);
 
-        mUndoBarPopupController = new UndoBarController(
-                this, mTabModelSelectorImpl, this::getSnackbarManager, getOverviewModeBehavior());
+        mUndoBarPopupController = new UndoBarController(this, mTabModelSelectorImpl,
+                this::getSnackbarManager, mOverviewModeBehaviorSupplier);
 
         mInactivityTracker = new ChromeInactivityTracker(
                 ChromePreferenceKeys.TABBED_ACTIVITY_LAST_BACKGROUNDED_TIME_MS_PREF);
@@ -1674,8 +1590,8 @@ public class ChromeTabbedActivity extends ChromeActivity<ChromeActivityComponent
     public AppMenuPropertiesDelegate createAppMenuPropertiesDelegate() {
         return new TabbedAppMenuPropertiesDelegate(this, getActivityTabProvider(),
                 getMultiWindowModeStateDispatcher(), getTabModelSelector(), getToolbarManager(),
-                getWindow().getDecorView(), this,
-                mOverviewModeController.mOverviewModeBehaviorSupplier, mBookmarkBridgeSupplier);
+                getWindow().getDecorView(), this, mOverviewModeBehaviorSupplier,
+                mBookmarkBridgeSupplier);
     }
 
     @Override
@@ -2105,7 +2021,11 @@ public class ChromeTabbedActivity extends ChromeActivity<ChromeActivityComponent
         if (isNTP && ReturnToChromeExperimentsUtil.shouldShowStartSurfaceAsTheHomePage()
                 && !isTablet()) {
             getTabModelSelector().selectModel(incognito);
-            showOverview(OverviewModeState.SHOWING_HOMEPAGE);
+
+            if (TabUiFeatureUtilities.supportInstantStart(isTablet())
+                    || getTabModelSelector().isTabStateInitialized()) {
+                showOverview(OverviewModeState.SHOWING_HOMEPAGE);
+            }
             return true;
         }
         return false;

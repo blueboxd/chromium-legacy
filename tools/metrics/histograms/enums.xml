@@ -21299,6 +21299,7 @@ Called by update_document_policy_enum.py.-->
   <int value="747" label="AuthServerAllowlist"/>
   <int value="748" label="InsecureFormsWarningsEnabled"/>
   <int value="749" label="SpellcheckLanguageBlocklist"/>
+  <int value="750" label="ExternalPrintServersAllowlist"/>
 </enum>
 
 <enum name="EnterprisePolicyDeviceIdValidity">
@@ -28570,6 +28571,9 @@ Called by update_use_counter_feature_enum.py.-->
   <int value="3356" label="ConversionAPIAll"/>
   <int value="3357" label="ImpressionRegistration"/>
   <int value="3358" label="ConversionRegistration"/>
+  <int value="3359" label="MainFrameCSPViaHTTP"/>
+  <int value="3360" label="MainFrameCSPViaMeta"/>
+  <int value="3361" label="MainFrameCSPViaOriginPolicy"/>
 </enum>
 
 <enum name="FeaturePolicyAllowlistType">
@@ -31889,6 +31893,8 @@ Called by update_feature_policy_enum.py.-->
       label="PocketLab; f000aa32-0452-4000-b000-000000000000"/>
   <int value="252638028" label="fe9c"/>
   <int value="253001319" label="fe84"/>
+  <int value="265147461"
+      label="Root Robot; 48c5d828-ac2a-442d-97a3-0c9822b04979"/>
   <int value="267848299" label="fe3e"/>
   <int value="270670950" label="fe62"/>
   <int value="272049750"
@@ -37024,6 +37030,11 @@ Called by update_gpu_driver_bug_workaround_entries.py.-->
   <int value="3" label="Store Busy"/>
 </enum>
 
+<enum name="IOSDefaultBrowserFullscreenPromoAction">
+  <int value="0" label="Action Button"/>
+  <int value="1" label="Cancel"/>
+</enum>
+
 <enum name="IOSDeviceThermalState">
   <int value="0" label="Unknown"/>
   <int value="1" label="Nominal"/>
@@ -40155,6 +40166,7 @@ from previous Chrome versions.
   <int value="-1715180530"
       label="OmniboxUIExperimentShowSuffixOnAllSearchSuggestions:disabled"/>
   <int value="-1714128884" label="disable-launcher-search-provider-api"/>
+  <int value="-1713602121" label="BentoOffline:enabled"/>
   <int value="-1713564656" label="ProtectSyncCredentialOnReauth:enabled"/>
   <int value="-1711751318" label="enable-data-reduction-proxy-lo-fi-preview"/>
   <int value="-1710772665" label="disable-my-files-navigation"/>
@@ -40961,6 +40973,7 @@ from previous Chrome versions.
       label="kAutofillRationalizeRepeatedServerPredictions:disabled"/>
   <int value="-894214299" label="fill-on-account-select:enabled"/>
   <int value="-894185031" label="HighDynamicRange:disabled"/>
+  <int value="-893673593" label="BentoOffline:disabled"/>
   <int value="-892428689" label="ManualPasswordGenerationAndroid:enabled"/>
   <int value="-891856063" label="MidiManagerAndroid:enabled"/>
   <int value="-889670978" label="AssistantRoutines:disabled"/>

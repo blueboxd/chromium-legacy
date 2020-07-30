@@ -601,7 +601,9 @@ class DEVICE_BLUETOOTH_EXPORT BluetoothDevice {
   // Aborts all the previous prepare writes in a reliable write session.
   virtual void AbortWrite(base::OnceClosure callback,
                           AbortWriteErrorCallback error_callback) = 0;
+#endif
 
+#if defined(OS_CHROMEOS) || defined(OS_LINUX)
   // Set the remaining battery of the device to show in the UI. This value must
   // be between 0 and 100, inclusive.
   // TODO(https://crbug.com/973237): Battery percentage is populated by
@@ -780,7 +782,7 @@ class DEVICE_BLUETOOTH_EXPORT BluetoothDevice {
   // a device type for display when |name_| is empty.
   base::string16 GetAddressWithLocalizedDeviceTypeName() const;
 
-#if defined(OS_CHROMEOS)
+#if defined(OS_CHROMEOS) || defined(OS_LINUX)
   // Remaining battery level of the device.
   // TODO(https://crbug.com/973237): This field is different from others because
   // it is not filled by the platform. In the future, when there is a unified

@@ -172,6 +172,11 @@ class CORE_EXPORT InspectorOverlayAgent final
       protocol::Maybe<int> backend_node_id,
       protocol::Maybe<String> object_id,
       protocol::Maybe<String> selector_list) override;
+  protocol::Response highlightSourceOrder(
+      std::unique_ptr<protocol::Overlay::SourceOrderConfig>,
+      protocol::Maybe<int> node_id,
+      protocol::Maybe<int> backend_node_id,
+      protocol::Maybe<String> object_id) override;
   protocol::Response hideHighlight() override;
   protocol::Response highlightFrame(
       const String& frame_id,
@@ -186,6 +191,9 @@ class CORE_EXPORT InspectorOverlayAgent final
       std::unique_ptr<protocol::DictionaryValue>* highlight) override;
   protocol::Response getGridHighlightObjectsForTest(
       std::unique_ptr<protocol::Array<int>> node_ids,
+      std::unique_ptr<protocol::DictionaryValue>* highlights) override;
+  protocol::Response getSourceOrderHighlightObjectForTest(
+      int node_id,
       std::unique_ptr<protocol::DictionaryValue>* highlights) override;
   protocol::Response setShowHinge(
       protocol::Maybe<protocol::Overlay::HingeConfig> hinge_config) override;
@@ -243,6 +251,9 @@ class CORE_EXPORT InspectorOverlayAgent final
   void LoadFrameForTool(int data_resource_id);
   void EnsureEnableFrameOverlay();
   void DisableFrameOverlay();
+  InspectorSourceOrderConfig SourceOrderConfigFromInspectorObject(
+      std::unique_ptr<protocol::Overlay::SourceOrderConfig>
+          source_order_inspector_object);
   protocol::Response HighlightConfigFromInspectorObject(
       protocol::Maybe<protocol::Overlay::HighlightConfig>
           highlight_inspector_object,

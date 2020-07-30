@@ -5,7 +5,6 @@
 #include "components/language/core/browser/language_prefs.h"
 
 #include <algorithm>
-#include <set>
 #include <string>
 #include <utility>
 #include <vector>
@@ -50,30 +49,31 @@ LanguagePrefs::LanguagePrefs(PrefService* user_prefs) : prefs_(user_prefs) {
   ResetEmptyFluentLanguagesToDefault();
 }
 
-bool LanguagePrefs::IsFluent(const std::string& language) const {
-  std::string canonical_lang = language;
+bool LanguagePrefs::IsFluent(base::StringPiece language) const {
+  std::string canonical_lang(language);
   language::ToTranslateLanguageSynonym(&canonical_lang);
   const base::Value* fluents =
       prefs_->GetList(language::prefs::kFluentLanguages);
-  return base::Contains(fluents->GetList(), base::Value(canonical_lang));
+  return base::Contains(fluents->GetList(),
+                        base::Value(std::move(canonical_lang)));
 }
 
-void LanguagePrefs::SetFluent(const std::string& language) {
+void LanguagePrefs::SetFluent(base::StringPiece language) {
   if (IsFluent(language))
     return;
-  std::string canonical_lang = language;
+  std::string canonical_lang(language);
   language::ToTranslateLanguageSynonym(&canonical_lang);
   ListPrefUpdate update(prefs_, language::prefs::kFluentLanguages);
   update->Append(std::move(canonical_lang));
 }
 
-void LanguagePrefs::ClearFluent(const std::string& language) {
+void LanguagePrefs::ClearFluent(base::StringPiece language) {
   if (NumFluentLanguages() <= 1)  // Never remove last fluent language.
     return;
-  std::string canonical_lang = language;
+  std::string canonical_lang(language);
   language::ToTranslateLanguageSynonym(&canonical_lang);
   ListPrefUpdate update(prefs_, language::prefs::kFluentLanguages);
-  update->EraseListValue(base::Value(canonical_lang));
+  update->EraseListValue(base::Value(std::move(canonical_lang)));
 }
 
 void LanguagePrefs::ResetFluentLanguagesToDefaults() {
@@ -86,23 +86,24 @@ void LanguagePrefs::ResetEmptyFluentLanguagesToDefault() {
     ResetFluentLanguagesToDefaults();
 }
 
+// static
 base::Value LanguagePrefs::GetDefaultFluentLanguages() {
-  std::set<std::string> languages;
+  typename base::Value::ListStorage languages;
 #if defined(OS_CHROMEOS)
   // Preferred languages.
   std::string language = language::kFallbackInputMethodLocale;
   language::ToTranslateLanguageSynonym(&language);
-  languages.insert(std::move(language));
+  languages.push_back(base::Value(std::move(language)));
 #else
   // Accept languages.
 #pragma GCC diagnostic push
 // See comment above the |break;| in the loop just below for why.
 #pragma GCC diagnostic ignored "-Wunreachable-code"
-  for (std::string language :
+  for (std::string& language :
        base::SplitString(l10n_util::GetStringUTF8(IDS_ACCEPT_LANGUAGES), ",",
                          base::TRIM_WHITESPACE, base::SPLIT_WANT_ALL)) {
     language::ToTranslateLanguageSynonym(&language);
-    languages.insert(std::move(language));
+    languages.push_back(base::Value(std::move(language)));
 
     // crbug.com/958348: The default value for Accept-Language *should* be the
     // same as the one for Fluent Languages. However, Accept-Language contains
@@ -118,11 +119,12 @@ base::Value LanguagePrefs::GetDefaultFluentLanguages() {
 #pragma GCC diagnostic pop
   }
 #endif
-  base::Value language_values(base::Value::Type::LIST);
-  for (const std::string& language : languages)
-    language_values.Append(language);
 
-  return language_values;
+  std::sort(languages.begin(), languages.end());
+  languages.erase(std::unique(languages.begin(), languages.end()),
+                  languages.end());
+
+  return base::Value(std::move(languages));
 }
 
 size_t LanguagePrefs::NumFluentLanguages() const {

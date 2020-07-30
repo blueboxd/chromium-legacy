@@ -42,9 +42,9 @@ class ShillClientHelper {
 
   // A callback to handle responses for methods with Value of type DICTIONARY
   // results.
-  using DictionaryValueCallback =
-      base::OnceCallback<void(DBusMethodCallStatus call_status,
-                              base::Value result)>;
+  // TODO(crbug.com/1109627): Consider renaming this since it is no longer a
+  // DictionaryValue.
+  using DictionaryValueCallback = DBusMethodCallback<base::Value>;
 
   // A callback to handle responses for methods with Value of type DICTIONARY
   // results. This is used by CallDictionaryValueMethodWithErrorCallback.

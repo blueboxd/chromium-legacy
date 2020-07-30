@@ -589,7 +589,9 @@ the following hard constraints:
     an ordinal value, all fields or methods must explicitly specify an ordinal
     value.
 * For an *N*-field struct or *N*-method interface, the set of explicitly
-    assigned ordinal values must be limited to the range *[0, N-1]*.
+    assigned ordinal values must be limited to the range *[0, N-1]*. Interfaces
+    should include placeholder methods to fill the ordinal positions of removed
+    methods (for example "Unused_Message_7@7()" or "RemovedMessage@42()", etc).
 
 You may reorder fields, but you must ensure that the ordinal values of existing
 fields remain unchanged. For example, the following struct remains

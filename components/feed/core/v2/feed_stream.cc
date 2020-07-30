@@ -536,6 +536,8 @@ void FeedStream::BackgroundRefreshComplete(LoadStreamTask::Result result) {
 }
 
 void FeedStream::ClearAll() {
+  delegate_->ClearAll();
+
   metrics_reporter_->OnClearAll(clock_->Now() - GetLastFetchTime());
 
   task_queue_.AddTask(std::make_unique<ClearAllTask>(this));

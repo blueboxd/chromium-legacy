@@ -405,7 +405,13 @@ public class AwAutofillTest {
         public void setTransformation(Matrix matrix) {}
 
         @Override
-        public void setVisibility(int visibility) {}
+        public void setVisibility(int visibility) {
+            mVisibility = visibility;
+        }
+
+        public int getVisibility() {
+            return mVisibility;
+        }
 
         @Override
         public void setSelected(boolean state) {}
@@ -448,6 +454,8 @@ public class AwAutofillTest {
         private int mDimensScrollX;
         private int mDimensScrollY;
         private Bundle mBundle;
+        // Initializes to the value AutofillProvider will never use.
+        private int mVisibility = View.GONE;
     }
 
     // crbug.com/776230: On Android L, declaring variables of unsupported classes causes an error.
@@ -1934,6 +1942,32 @@ public class AwAutofillTest {
         pollDatalistPopupShown(2);
         TestThreadUtils.runOnUiThreadBlocking(() -> { mAwContents.hideAutofillPopup(); });
         assertNull(mAutofillProvider.getDatalistPopupForTesting());
+    }
+
+    @Test
+    @SmallTest
+    @Feature({"AndroidWebView"})
+    public void testVisibility() throws Throwable {
+        final String data = "<html><head></head><body><form action='a.html' name='formname'>"
+                + "<input type='text' id='text1' name='username'>"
+                + "<input type='text' name='email' id='text2' style='display: none;'/>"
+                + "</form></body></html>";
+        final String url = mWebServer.setResponse(FILE, data, null);
+        loadUrlSync(url);
+        int cnt = 0;
+        executeJavaScriptAndWaitForResult("document.getElementById('text1').select();");
+        dispatchDownAndUpKeyEvents(KeyEvent.KEYCODE_A);
+
+        cnt += waitForCallbackAndVerifyTypes(cnt,
+                new Integer[] {AUTOFILL_CANCEL, AUTOFILL_VIEW_ENTERED, AUTOFILL_SESSION_STARTED,
+                        AUTOFILL_VALUE_CHANGED});
+        invokeOnProvideAutoFillVirtualStructure();
+        TestViewStructure viewStructure = mTestValues.testViewStructure;
+        assertNotNull(viewStructure);
+        assertEquals(2, viewStructure.getChildCount());
+        // Verifies the visibility set correctly.
+        assertEquals(View.VISIBLE, viewStructure.getChild(0).getVisibility());
+        assertEquals(View.INVISIBLE, viewStructure.getChild(1).getVisibility());
     }
 
     private void pollJavascriptResult(String script, String expectedResult) throws Throwable {

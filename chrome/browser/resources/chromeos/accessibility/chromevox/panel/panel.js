@@ -111,6 +111,20 @@ Panel = class {
      */
     Panel.tutorial_ = new Tutorial();
 
+    /**
+     * @type {Object}
+     * @private
+     */
+    Panel.iTutorial = {
+      // Closure needs this to know about the showNextLesson function.
+      // Otherwise, Closure fires an error whenever calling showNextLesson().
+      showNextLesson: () => {
+        throw new Error(
+            'iTutorial should be assigned to the <i-tutorial> ' +
+            'element before calling showNextLesson()');
+      }
+    };
+
     Panel.setPendingCallback(null);
     Panel.updateFromPrefs();
 
@@ -1116,16 +1130,33 @@ Panel = class {
         tutorialElement.setAttribute('id', 'i-tutorial');
         tutorialContainer.appendChild(tutorialElement);
         document.body.appendChild(tutorialContainer);
+        Panel.iTutorial = tutorialElement;
 
         // Add listeners. These are custom events fired from custom components.
-        $('i-tutorial')
-            .addEventListener('tutorial-close', Panel.onCloseTutorial);
-        $('i-tutorial').addEventListener('request-speech', (evt) => {
+        $('i-tutorial').addEventListener('closetutorial', (evt) => {
+          // Ensure UserActionMonitor is destroyed before closing tutorial.
+          const background =
+              chrome.extension
+                  .getBackgroundPage()['ChromeVoxState']['instance'];
+          background.destroyUserActionMonitor();
+          Panel.onCloseTutorial();
+        });
+        $('i-tutorial').addEventListener('requestspeech', (evt) => {
           const text = evt.detail.text;
           const background = chrome.extension.getBackgroundPage();
           const cvox = background['ChromeVox'];
           cvox.tts.speak(
               text, background.QueueMode.FLUSH, {'doNotInterrupt': true});
+        });
+        $('i-tutorial').addEventListener('startinteractivemode', (evt) => {
+          const actions = evt.detail.actions;
+          const background =
+              chrome.extension
+                  .getBackgroundPage()['ChromeVoxState']['instance'];
+          background.createUserActionMonitor(actions, () => {
+            background.destroyUserActionMonitor();
+            Panel.iTutorial.showNextLesson();
+          });
         });
       }
 

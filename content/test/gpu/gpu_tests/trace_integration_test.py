@@ -229,17 +229,6 @@ class TraceIntegrationTest(gpu_integration_test.GpuIntegrationTest):
     ])
     return default_args
 
-  def _GetOverlayBotConfigHelper(self):
-    system_info = self.browser.GetSystemInfo()
-    if not system_info:
-      raise Exception("Browser doesn't support GetSystemInfo")
-    gpu = system_info.gpu.devices[0]
-    if not gpu:
-      raise Exception("System Info doesn't have a gpu")
-    os_version_name = self.browser.platform.GetOSVersionName()
-    return self.GetOverlayBotConfig(os_version_name, gpu.vendor_id,
-                                    gpu.device_id)
-
   def _GetAndAssertOverlayBotConfig(self):
     overlay_bot_config = self.GetOverlayBotConfig()
     if overlay_bot_config is None:

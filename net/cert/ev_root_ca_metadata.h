@@ -16,7 +16,7 @@
 #include "net/base/net_export.h"
 #include "net/cert/x509_certificate.h"
 
-#if defined(USE_NSS_CERTS) || defined(OS_WIN) || defined(OS_MACOSX) || \
+#if defined(USE_NSS_CERTS) || defined(OS_WIN) || defined(OS_APPLE) || \
     defined(OS_FUCHSIA)
 // When not defined, the EVRootCAMetadata singleton is a dumb placeholder
 // implementation that will fail all EV lookup operations.

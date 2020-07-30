@@ -18,6 +18,16 @@ namespace blink {
 class Color;
 
 enum class ColorFormat { RGB, HEX, HSL };
+struct CORE_EXPORT InspectorSourceOrderConfig {
+  USING_FAST_MALLOC(InspectorSourceOrderConfig);
+
+ public:
+  InspectorSourceOrderConfig();
+
+  Color parent_outline_color;
+  Color child_outline_color;
+};
+
 struct CORE_EXPORT InspectorGridHighlightConfig {
   USING_FAST_MALLOC(InspectorGridHighlightConfig);
 
@@ -76,7 +86,42 @@ struct InspectorHighlightContrastInfo {
   String font_weight;
 };
 
-class CORE_EXPORT InspectorHighlight {
+class InspectorHighlightBase {
+ public:
+  explicit InspectorHighlightBase(float scale);
+  explicit InspectorHighlightBase(Node*);
+  void AppendPath(std::unique_ptr<protocol::ListValue> path,
+                  const Color& fill_color,
+                  const Color& outline_color,
+                  const String& name = String());
+  void AppendQuad(const FloatQuad&,
+                  const Color& fill_color,
+                  const Color& outline_color = Color::kTransparent,
+                  const String& name = String());
+  virtual std::unique_ptr<protocol::DictionaryValue> AsProtocolValue()
+      const = 0;
+
+ protected:
+  static bool BuildNodeQuads(Node*,
+                             FloatQuad* content,
+                             FloatQuad* padding,
+                             FloatQuad* border,
+                             FloatQuad* margin);
+  std::unique_ptr<protocol::ListValue> highlight_paths_;
+  float scale_;
+};
+
+class CORE_EXPORT InspectorSourceOrderHighlight
+    : public InspectorHighlightBase {
+  STACK_ALLOCATED();
+
+ public:
+  InspectorSourceOrderHighlight(Node*, Color);
+  static InspectorSourceOrderConfig DefaultConfig();
+  std::unique_ptr<protocol::DictionaryValue> AsProtocolValue() const override;
+};
+
+class CORE_EXPORT InspectorHighlight : public InspectorHighlightBase {
   STACK_ALLOCATED();
 
  public:
@@ -97,26 +142,12 @@ class CORE_EXPORT InspectorHighlight {
       std::unique_ptr<protocol::Array<protocol::Array<double>>>*);
   static InspectorHighlightConfig DefaultConfig();
   static InspectorGridHighlightConfig DefaultGridConfig();
-
-  void AppendPath(std::unique_ptr<protocol::ListValue> path,
-                  const Color& fill_color,
-                  const Color& outline_color,
-                  const String& name = String());
-  void AppendQuad(const FloatQuad&,
-                  const Color& fill_color,
-                  const Color& outline_color = Color::kTransparent,
-                  const String& name = String());
   void AppendEventTargetQuads(Node* event_target_node,
                               const InspectorHighlightConfig&);
-  std::unique_ptr<protocol::DictionaryValue> AsProtocolValue() const;
+  std::unique_ptr<protocol::DictionaryValue> AsProtocolValue() const override;
 
  private:
   static bool BuildSVGQuads(Node*, Vector<FloatQuad>& quads);
-  static bool BuildNodeQuads(Node*,
-                             FloatQuad* content,
-                             FloatQuad* padding,
-                             FloatQuad* border,
-                             FloatQuad* margin);
   void AppendNodeHighlight(Node*, const InspectorHighlightConfig&);
   void AppendPathsForShapeOutside(Node*, const InspectorHighlightConfig&);
 
@@ -131,12 +162,10 @@ class CORE_EXPORT InspectorHighlight {
   std::unique_ptr<protocol::DOM::BoxModel> model_;
   std::unique_ptr<protocol::DictionaryValue> distance_info_;
   std::unique_ptr<protocol::DictionaryValue> element_info_;
-  std::unique_ptr<protocol::ListValue> highlight_paths_;
   std::unique_ptr<protocol::ListValue> grid_info_;
   bool show_rulers_;
   bool show_extension_lines_;
   bool show_accessibility_info_;
-  float scale_;
   ColorFormat color_format_;
 };
 

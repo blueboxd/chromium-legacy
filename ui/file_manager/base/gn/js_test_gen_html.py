@@ -57,6 +57,11 @@ def _process_deps(unique_deps, html_import, target_name):
     # Map file_manager files:
     dep = dep.replace('ui/file_manager/',
                       'chrome://file_manager_test/ui/file_manager/', 1)
+
+    # Extern files from closure in //third_party/
+    closure = 'third_party/closure_compiler/externs/'
+    dep = dep.replace(closure, 'chrome://file_manager_test/%s' % closure, 1)
+
     # WebUI files (both Polymer and non-Polymer):
     dep = dep.replace('ui/webui/resources/', 'chrome://resources/', 1)
 

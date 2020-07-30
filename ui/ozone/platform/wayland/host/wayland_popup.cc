@@ -64,7 +64,7 @@ void WaylandPopup::Hide() {
 
   // Detach buffer from surface in order to completely shutdown popups and
   // tooltips, and release resources.
-  connection()->buffer_manager_host()->ResetSurfaceContents(GetWidget());
+  connection()->buffer_manager_host()->ResetSurfaceContents(root_surface());
 }
 
 bool WaylandPopup::IsVisible() const {

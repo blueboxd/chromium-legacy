@@ -26,9 +26,7 @@ TEST_F(SVGExternalDocumentCacheTest, GetDocumentBeforeLoadComplete) {
   main_resource.Complete("<html><body></body></html>");
 
   const char kSVGUrl[] = "https://example.com/svg.svg";
-  SimRequest::Params params;
-  params.response_http_headers = {{"Content-Type", "application/xml"}};
-  SimSubresourceRequest svg_resource(kSVGUrl, "application/xml", params);
+  SimSubresourceRequest svg_resource(kSVGUrl, "application/xml");
   DummyCacheClient* client = MakeGarbageCollected<DummyCacheClient>();
 
   // Request a resource from the cache.

@@ -132,13 +132,7 @@ INSTANTIATE_TEST_SUITE_P(
                     TestMode::kClamshellWithForcedTabletFirstRun));
 
 // Ensure a working flow for the gesture navigation screen.
-// TODO(crbug.com/1109714): Test fails/crashes on MSAN.
-#if defined(MEMORY_SANITIZER)
-#define MAYBE_FlowTest DISABLED_FlowTest
-#else
-#define MAYBE_FlowTest FlowTest
-#endif
-IN_PROC_BROWSER_TEST_P(GestureNavigationScreenTest, MAYBE_FlowTest) {
+IN_PROC_BROWSER_TEST_P(GestureNavigationScreenTest, FlowTest) {
   ShowGestureNavigationScreen();
   OobeScreenWaiter(GestureNavigationScreenView::kScreenId).Wait();
 

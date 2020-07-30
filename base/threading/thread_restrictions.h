@@ -149,6 +149,7 @@ class CategorizedWorkerPool;
 class DesktopCaptureDevice;
 class InProcessUtilityThread;
 class NestedMessagePumpAndroid;
+class NetworkServiceInstancePrivate;
 class PepperPrintSettingsManagerImpl;
 class RenderProcessHostImpl;
 class RenderWidgetHostViewMac;
@@ -382,6 +383,7 @@ class BASE_EXPORT ScopedAllowBlocking {
   friend class blink::DiskDataAllocator;
   friend class chromeos::MojoUtils;  // http://crbug.com/1055467
   friend class content::BrowserProcessSubThread;
+  friend class content::NetworkServiceInstancePrivate;
   friend class content::PepperPrintSettingsManagerImpl;
   friend class content::RenderProcessHostImpl;
   friend class content::RenderWidgetHostViewMac;  // http://crbug.com/121917

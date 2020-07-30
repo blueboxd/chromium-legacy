@@ -202,6 +202,8 @@ void BluezDBusManager::InitializeClients() {
                                                    bluetooth_service_name);
   client_bundle_->bluetooth_agent_manager_client()->Init(
       GetSystemBus(), bluetooth_service_name);
+  client_bundle_->bluetooth_battery_client()->Init(GetSystemBus(),
+                                                   bluetooth_service_name);
   client_bundle_->bluetooth_device_client()->Init(GetSystemBus(),
                                                   bluetooth_service_name);
   client_bundle_->bluetooth_gatt_characteristic_client()->Init(
@@ -340,6 +342,12 @@ void BluezDBusManagerSetter::SetBluetoothAgentManagerClient(
     std::unique_ptr<BluetoothAgentManagerClient> client) {
   bluez::BluezDBusManager::Get()
       ->client_bundle_->bluetooth_agent_manager_client_ = std::move(client);
+}
+
+void BluezDBusManagerSetter::SetBluetoothBatteryClient(
+    std::unique_ptr<BluetoothBatteryClient> client) {
+  bluez::BluezDBusManager::Get()->client_bundle_->bluetooth_battery_client_ =
+      std::move(client);
 }
 
 void BluezDBusManagerSetter::SetBluetoothDebugManagerClient(

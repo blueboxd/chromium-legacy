@@ -50,6 +50,7 @@
 #include "remoting/test/fake_port_allocator.h"
 #include "remoting/test/fake_socket_factory.h"
 #include "remoting/test/scroll_frame_generator.h"
+#include "services/network/public/cpp/shared_url_loader_factory.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace remoting {

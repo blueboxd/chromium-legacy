@@ -97,10 +97,12 @@ void GeolocationHandler::OnPropertyChanged(const std::string& key,
 // Private methods
 
 void GeolocationHandler::ManagerPropertiesCallback(
-    DBusMethodCallStatus call_status,
-    base::Value properties) {
+    base::Optional<base::Value> properties) {
+  if (!properties)
+    return;
+
   const base::Value* value =
-      properties.FindKey(shill::kEnabledTechnologiesProperty);
+      properties->FindKey(shill::kEnabledTechnologiesProperty);
   if (value)
     HandlePropertyChanged(shill::kEnabledTechnologiesProperty, *value);
 }
@@ -142,15 +144,15 @@ void GeolocationHandler::RequestGeolocationObjects() {
                      weak_ptr_factory_.GetWeakPtr()));
 }
 
-void GeolocationHandler::GeolocationCallback(DBusMethodCallStatus call_status,
-                                             base::Value properties) {
-  if (call_status != DBUS_METHOD_CALL_SUCCESS) {
-    LOG(ERROR) << "Failed to get Geolocation data: " << call_status;
+void GeolocationHandler::GeolocationCallback(
+    base::Optional<base::Value> properties) {
+  if (!properties) {
+    LOG(ERROR) << "Failed to get Geolocation data";
     return;
   }
   wifi_access_points_.clear();
   cell_towers_.clear();
-  if (properties.DictEmpty())
+  if (properties->DictEmpty())
     return;  // No enabled devices, don't update received time.
 
   // Dictionary<device_type, entry_list>
@@ -162,7 +164,7 @@ void GeolocationHandler::GeolocationCallback(DBusMethodCallStatus call_status,
   //   kGeoCellTowersProperty: [ {kGeoCellIdProperty: cell_id_value, ...}, ... ]
   // }
   for (auto* device_type : kDevicePropertyNames) {
-    const base::Value* entry_list = properties.FindKey(device_type);
+    const base::Value* entry_list = properties->FindKey(device_type);
     if (!entry_list) {
       continue;
     }

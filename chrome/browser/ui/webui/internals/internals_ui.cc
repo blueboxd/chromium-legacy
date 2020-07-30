@@ -26,9 +26,11 @@ InternalsUI::InternalsUI(content::WebUI* web_ui)
   // Add your sub-URL internals WebUI here.
   // Keep this set of sub-URLs in sync with |kChromeInternalsPathURLs|.
 #if defined(OS_ANDROID)
-  // chrome://internals/query-tiles
+  // chrome://internals/notifications
   AddNotificationsInternals(web_ui);
-  AddQueryTilesInternals(web_ui);
+  // chrome://internals/query-tiles
+  if (!profile_->IsOffTheRecord())
+    AddQueryTilesInternals(web_ui);
 #else
   // chrome://internals/web-app
   WebAppInternalsPageHandlerImpl::AddPageResources(source_);

@@ -1007,6 +1007,48 @@ IN_PROC_BROWSER_TEST_F(ContextMenuBrowserTest,
                              IDC_CONTENT_CONTEXT_INSPECTELEMENT}));
 }
 
+#if !defined(OS_MAC)
+// Check whether correct non-located context menu shows up for image element
+// with height more than visual viewport bounds.
+IN_PROC_BROWSER_TEST_F(ContextMenuBrowserTest,
+                       NonLocatedContextMenuOnLargeImageElement) {
+  ASSERT_TRUE(embedded_test_server()->Start());
+  GURL image_url(
+      "data:text/html,<html><img src=\"http://example.test/cat.jpg\" "
+      "width=\"200\" height=\"10000\" tabindex=\"-1\" /></html>");
+  ui_test_utils::NavigateToURL(browser(), image_url);
+
+  // Open and close a context menu.
+  ContextMenuWaiter menu_observer;
+  content::WebContents* tab =
+      browser()->tab_strip_model()->GetActiveWebContents();
+
+  // Focus on the image element with height more than visual viewport bounds
+  // and center of element falls outside viewport area.
+  content::SimulateMouseClickAt(tab, /*modifier=*/0,
+                                blink::WebMouseEvent::Button::kLeft,
+                                gfx::Point(15, 15));
+
+  // Simulate non-located context menu on image element with Shift + F10.
+  content::SimulateKeyPress(tab, ui::DomKey::F10, ui::DomCode::F10,
+                            ui::VKEY_F10, /*control=*/false, /*shift=*/true,
+                            /*alt=*/false, /*command=*/false);
+  menu_observer.WaitForMenuOpenAndClose();
+
+  // Verify that the expected context menu items are present.
+  //
+  // Note that the assertion below doesn't use exact matching via
+  // testing::ElementsAre, because some platforms may include unexpected extra
+  // elements (e.g. an extra separator and IDC=100 has been observed on some Mac
+  // bots).
+  EXPECT_THAT(menu_observer.GetCapturedCommandIds(),
+              testing::IsSupersetOf({IDC_CONTENT_CONTEXT_OPENIMAGENEWTAB,
+                                     IDC_CONTENT_CONTEXT_COPYIMAGE,
+                                     IDC_CONTENT_CONTEXT_COPYIMAGELOCATION,
+                                     IDC_CONTENT_CONTEXT_SAVEIMAGEAS}));
+}
+#endif
+
 // Check filename on clicking "Save Link As" is ignored for cross origin.
 IN_PROC_BROWSER_TEST_F(ContextMenuBrowserTest, SuggestedFileNameCrossOrigin) {
   // Register observer.

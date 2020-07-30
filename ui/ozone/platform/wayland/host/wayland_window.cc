@@ -78,8 +78,10 @@ void WaylandWindow::UpdateBufferScale(bool update_bounds) {
 }
 
 gfx::AcceleratedWidget WaylandWindow::GetWidget() const {
-  DCHECK(root_surface_);
-  return root_surface_->GetWidget();
+  // TODO(https://crbug.com/1110354): We should not use wl_surface id as widget.
+  // Wayland Server can reuse ids for wl_surface but AcceleratedWidgets are not
+  // expected to be reused very soon.
+  return root_surface_->GetSurfaceId();
 }
 
 void WaylandWindow::SetPointerFocus(bool focus) {

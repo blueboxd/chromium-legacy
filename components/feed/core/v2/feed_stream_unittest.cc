@@ -539,6 +539,7 @@ class FeedStreamTest : public testing::Test, public FeedStream::Delegate {
     return result;
   }
   std::string GetLanguageTag() override { return "en-US"; }
+  void ClearAll() override {}
 
   // For tests.
 

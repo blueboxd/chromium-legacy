@@ -12,6 +12,7 @@
 #include "base/bind.h"
 #include "base/environment.h"
 #include "base/feature_list.h"
+#include "base/files/file.h"
 #include "base/message_loop/message_pump_type.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/no_destructor.h"
@@ -21,6 +22,7 @@
 #include "base/synchronization/waitable_event.h"
 #include "base/threading/sequence_local_storage_slot.h"
 #include "base/threading/thread.h"
+#include "base/threading/thread_restrictions.h"
 #include "build/build_config.h"
 #include "content/browser/browser_main_loop.h"
 #include "content/browser/network_service_client.h"
@@ -237,6 +239,25 @@ static NetworkServiceClient* g_client = nullptr;
 
 }  // namespace
 
+class NetworkServiceInstancePrivate {
+ public:
+  // Opens the specified file, blocking until the file is open. Used to open
+  // files specified by network::switches::kLogNetLog or
+  // network::switches::kSSLKeyLogFile. Since these arguments can be used to
+  // debug startup behavior, asynchronously opening the file on another thread
+  // would result in losing data, hence the need for blocking open operations.
+  // |file_flags| specifies the flags passed to the base::File constructor call.
+  //
+  // ThreadRestrictions needs to be able to friend the class/method to allow
+  // blocking, but can't friend CONTENT_EXPORT methods, so have it friend
+  // NetworkServiceInstancePrivate instead of GetNetworkService().
+  static base::File BlockingOpenFile(const base::FilePath& path,
+                                     int file_flags) {
+    base::ScopedAllowBlocking allow_blocking;
+    return base::File(path, file_flags);
+  }
+};
+
 network::mojom::NetworkService* GetNetworkService() {
   if (!g_network_service_remote)
     g_network_service_remote = new mojo::Remote<network::mojom::NetworkService>;
@@ -319,18 +340,16 @@ network::mojom::NetworkService* GetNetworkService() {
         base::FilePath log_path =
             command_line->GetSwitchValuePath(network::switches::kLogNetLog);
 
-        base::DictionaryValue client_constants =
-            GetContentClient()->browser()->GetNetLogConstants();
-
-        base::File file(
+        base::File file = NetworkServiceInstancePrivate::BlockingOpenFile(
             log_path, base::File::FLAG_CREATE_ALWAYS | base::File::FLAG_WRITE);
         if (!file.IsValid()) {
           LOG(ERROR) << "Failed opening NetLog: " << log_path.value();
         } else {
           (*g_network_service_remote)
-              ->StartNetLog(std::move(file),
-                            GetNetCaptureModeFromCommandLine(*command_line),
-                            std::move(client_constants));
+              ->StartNetLog(
+                  std::move(file),
+                  GetNetCaptureModeFromCommandLine(*command_line),
+                  GetContentClient()->browser()->GetNetLogConstants());
         }
       }
 
@@ -359,8 +378,9 @@ network::mojom::NetworkService* GetNetworkService() {
       }
 
       if (!ssl_key_log_path.empty()) {
-        base::File file(ssl_key_log_path,
-                        base::File::FLAG_OPEN_ALWAYS | base::File::FLAG_APPEND);
+        base::File file = NetworkServiceInstancePrivate::BlockingOpenFile(
+            ssl_key_log_path,
+            base::File::FLAG_OPEN_ALWAYS | base::File::FLAG_APPEND);
         if (!file.IsValid()) {
           LOG(ERROR) << "Failed opening SSL key log file: "
                      << ssl_key_log_path.value();

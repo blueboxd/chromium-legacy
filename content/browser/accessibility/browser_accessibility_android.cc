@@ -117,7 +117,7 @@ base::string16 BrowserAccessibilityAndroid::GetValue() const {
 }
 
 bool BrowserAccessibilityAndroid::IsCheckable() const {
-  return HasIntAttribute(ax::mojom::IntAttribute::kCheckedState);
+  return GetData().HasCheckedState();
 }
 
 bool BrowserAccessibilityAndroid::IsChecked() const {

@@ -70,22 +70,20 @@ class NetworkCertMigrator::MigrationTask
   }
 
   void MigrateNetwork(const std::string& service_path,
-                      DBusMethodCallStatus call_status,
-                      base::Value properties) {
+                      base::Optional<base::Value> properties) {
     if (!cert_migrator_) {
       VLOG(2) << "NetworkCertMigrator already destroyed. Aborting migration.";
       return;
     }
 
-    if (call_status != DBUS_METHOD_CALL_SUCCESS) {
-      NET_LOG(ERROR) << "GetProperties failed: " << NetworkPathId(service_path)
-                     << " Status: " << call_status;
+    if (!properties) {
+      NET_LOG(ERROR) << "GetProperties failed: " << NetworkPathId(service_path);
       return;
     }
 
     base::DictionaryValue new_properties;
     MigrateClientCertProperties(service_path,
-                                base::Value::AsDictionaryValue(properties),
+                                base::Value::AsDictionaryValue(*properties),
                                 &new_properties);
 
     if (new_properties.empty())

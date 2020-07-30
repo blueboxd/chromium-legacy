@@ -14,7 +14,7 @@
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "base/observer_list.h"
-#include "chromeos/dbus/dbus_method_call_status.h"
+#include "base/optional.h"
 #include "chromeos/dbus/shill/shill_property_changed_observer.h"
 #include "chromeos/network/network_handler.h"
 #include "chromeos/network/network_profile.h"
@@ -33,8 +33,7 @@ class COMPONENT_EXPORT(CHROMEOS_NETWORK) NetworkProfileHandler
   void AddObserver(NetworkProfileObserver* observer);
   void RemoveObserver(NetworkProfileObserver* observer);
 
-  void GetManagerPropertiesCallback(DBusMethodCallStatus call_status,
-                                    base::Value properties);
+  void GetManagerPropertiesCallback(base::Optional<base::Value> properties);
 
   // ShillPropertyChangedObserver overrides
   void OnPropertyChanged(const std::string& name,

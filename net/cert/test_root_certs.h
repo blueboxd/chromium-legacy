@@ -15,7 +15,7 @@
 #if defined(OS_WIN)
 #include <windows.h>
 #include "base/win/wincrypt_shim.h"
-#elif defined(OS_MACOSX)
+#elif defined(OS_APPLE)
 #include <CoreFoundation/CFArray.h>
 #include <Security/SecTrust.h>
 #include "base/mac/scoped_cftyperef.h"
@@ -58,7 +58,7 @@ class NET_EXPORT TestRootCerts {
   // Returns true if there are no certificates that have been marked trusted.
   bool IsEmpty() const;
 
-#if defined(OS_MACOSX)
+#if defined(OS_APPLE)
   CFArrayRef temporary_roots() const { return temporary_roots_; }
 
   // Modifies the root certificates of |trust_ref| to include the
@@ -90,7 +90,7 @@ class NET_EXPORT TestRootCerts {
 
 #if defined(OS_WIN)
   HCERTSTORE temporary_roots_;
-#elif defined(OS_MACOSX)
+#elif defined(OS_APPLE)
   base::ScopedCFTypeRef<CFMutableArrayRef> temporary_roots_;
   TrustStoreInMemory test_trust_store_;
 #elif defined(OS_FUCHSIA) || defined(OS_LINUX) || defined(OS_CHROMEOS)

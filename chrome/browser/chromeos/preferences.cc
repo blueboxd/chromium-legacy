@@ -27,7 +27,7 @@
 #include "chrome/browser/chromeos/accessibility/magnification_manager.h"
 #include "chrome/browser/chromeos/base/locale_util.h"
 #include "chrome/browser/chromeos/child_accounts/parent_access_code/parent_access_service.h"
-#include "chrome/browser/chromeos/crosapi/lacros_util.h"
+#include "chrome/browser/chromeos/crosapi/browser_util.h"
 #include "chrome/browser/chromeos/drive/file_system_util.h"
 #include "chrome/browser/chromeos/first_run/help_app_first_run_field_trial.h"
 #include "chrome/browser/chromeos/input_method/input_method_syncer.h"
@@ -183,7 +183,7 @@ void Preferences::RegisterProfilePrefs(
   // Some classes register their own prefs.
   TurnSyncOnHelper::RegisterProfilePrefs(registry);
   input_method::InputMethodSyncer::RegisterProfilePrefs(registry);
-  lacros_util::RegisterProfilePrefs(registry);
+  crosapi::browser_util::RegisterProfilePrefs(registry);
 
   std::string hardware_keyboard_id;
   // TODO(yusukes): Remove the runtime hack.

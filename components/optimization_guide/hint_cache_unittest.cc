@@ -853,7 +853,8 @@ TEST_F(HintCacheTest, ProcessHintsNoUpdateData) {
   EXPECT_FALSE(hint_cache()->ProcessAndCacheHints(&hints, nullptr));
 }
 
-TEST_F(HintCacheTest, ProcessHintsWithNoPageHintsAndUpdateData) {
+TEST_F(HintCacheTest,
+       ProcessHintsWithNoPageHintsOrWhitelistedOptimizationsAndUpdateData) {
   const int kMemoryCacheSize = 5;
   CreateAndInitializeHintCache(kMemoryCacheSize);
 
@@ -869,6 +870,28 @@ TEST_F(HintCacheTest, ProcessHintsWithNoPageHintsAndUpdateData) {
   EXPECT_FALSE(hint_cache()->ProcessAndCacheHints(&hints, update_data.get()));
   // Verify there is 1 store entries: 1 for the metadata entry.
   EXPECT_EQ(1ul, update_data->TakeUpdateEntries()->size());
+}
+
+TEST_F(HintCacheTest,
+       ProcessHintsWithNoPageHintsButHasWhitelistedOptimizationsAndUpdateData) {
+  const int kMemoryCacheSize = 5;
+  CreateAndInitializeHintCache(kMemoryCacheSize);
+
+  proto::Hint hint;
+  hint.set_key("whatever.com");
+  hint.set_key_representation(proto::HOST_SUFFIX);
+  hint.add_whitelisted_optimizations()->set_optimization_type(
+      optimization_guide::proto::DEFER_ALL_SCRIPT);
+
+  google::protobuf::RepeatedPtrField<proto::Hint> hints;
+  *(hints.Add()) = hint;
+
+  std::unique_ptr<StoreUpdateData> update_data =
+      StoreUpdateData::CreateComponentStoreUpdateData(base::Version("1.0.0"));
+  EXPECT_TRUE(hint_cache()->ProcessAndCacheHints(&hints, update_data.get()));
+  // Verify there is 1 store entries: 1 for the metadata entry plus the 1
+  // added hint entry.
+  EXPECT_EQ(2ul, update_data->TakeUpdateEntries()->size());
 }
 
 TEST_F(HintCacheTest, ProcessHintsWithPageHintsAndUpdateData) {
@@ -893,7 +916,7 @@ TEST_F(HintCacheTest, ProcessHintsWithPageHintsAndUpdateData) {
       StoreUpdateData::CreateComponentStoreUpdateData(base::Version("1.0.0"));
   EXPECT_TRUE(hint_cache()->ProcessAndCacheHints(&hints, update_data.get()));
   // Verify there are 2 store entries: 1 for the metadata entry plus
-  // the 1 added hint entries.
+  // the 1 added hint entry.
   EXPECT_EQ(2ul, update_data->TakeUpdateEntries()->size());
 }
 

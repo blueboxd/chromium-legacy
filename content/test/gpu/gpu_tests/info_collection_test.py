@@ -8,6 +8,15 @@ import os
 import sys
 
 
+class InfoCollectionTestArgs(object):
+  """Struct-like class for passing args to an InfoCollection test."""
+
+  def __init__(self, expected_vendor_id_str=None, expected_device_id_strs=None):
+    self.gpu = None
+    self.expected_vendor_id_str = expected_vendor_id_str
+    self.expected_device_id_strs = expected_device_id_strs
+
+
 class InfoCollectionTest(gpu_integration_test.GpuIntegrationTest):
   @classmethod
   def Name(cls):
@@ -26,15 +35,15 @@ class InfoCollectionTest(gpu_integration_test.GpuIntegrationTest):
 
   @classmethod
   def GenerateGpuTests(cls, options):
-    yield ('InfoCollection_basic', '_', ('_RunBasicTest', {
-        'expected_vendor_id_str':
-        options.expected_vendor_id,
-        'expected_device_id_strs':
-        options.expected_device_ids,
-    }))
+    yield ('InfoCollection_basic', '_',
+           ('_RunBasicTest',
+            InfoCollectionTestArgs(
+                expected_vendor_id_str=options.expected_vendor_id,
+                expected_device_id_strs=options.expected_device_ids)))
     yield ('InfoCollection_direct_composition', '_',
-           ('_RunDirectCompositionTest', {}))
-    yield ('InfoCollection_dx12_vulkan', '_', ('_RunDX12VulkanTest', {}))
+           ('_RunDirectCompositionTest', InfoCollectionTestArgs()))
+    yield ('InfoCollection_dx12_vulkan', '_', ('_RunDX12VulkanTest',
+                                               InfoCollectionTestArgs()))
 
   @classmethod
   def SetUpProcess(cls):
@@ -54,18 +63,16 @@ class InfoCollectionTest(gpu_integration_test.GpuIntegrationTest):
 
     assert len(args) == 2
     test_func = args[0]
-    kwargs = args[1]
-    assert 'gpu' not in kwargs
-    kwargs['gpu'] = system_info.gpu
-    getattr(self, test_func)(**kwargs)
+    test_args = args[1]
+    assert test_args.gpu is None
+    test_args.gpu = system_info.gpu
+    getattr(self, test_func)(test_args)
 
   ######################################
   # Helper functions for the tests below
 
-  def _RunBasicTest(self, gpu, expected_vendor_id_str, expected_device_id_strs,
-                    **kwargs):
-    del kwargs  # Any unused extra arguments that got passed in.
-    device = gpu.devices[0]
+  def _RunBasicTest(self, test_args):
+    device = test_args.gpu.devices[0]
     if not device:
       self.fail("System Info doesn't have a gpu")
 
@@ -73,12 +80,13 @@ class InfoCollectionTest(gpu_integration_test.GpuIntegrationTest):
     detected_device_id = device.device_id
 
     # Gather the expected IDs passed on the command line
-    if expected_vendor_id_str is None or expected_device_id_strs is []:
+    if (not test_args.expected_vendor_id_str
+        or not test_args.expected_device_id_strs):
       self.fail("Missing --expected-[vendor|device]-id command line args")
 
-    expected_vendor_id = int(expected_vendor_id_str, 16)
+    expected_vendor_id = int(test_args.expected_vendor_id_str, 16)
     expected_device_ids = [
-        int(id_str, 16) for id_str in expected_device_id_strs
+        int(id_str, 16) for id_str in test_args.expected_device_id_strs
     ]
 
     # Check expected and detected GPUs match
@@ -90,12 +98,11 @@ class InfoCollectionTest(gpu_integration_test.GpuIntegrationTest):
       self.fail('Device ID mismatch, expected %s but got %s.' %
                 (expected_device_ids, detected_device_id))
 
-  def _RunDirectCompositionTest(self, gpu, **kwargs):
-    del kwargs  # Any unused extra arguments that got passed in.
+  def _RunDirectCompositionTest(self, test_args):
     os_name = self.browser.platform.GetOSName()
     if os_name and os_name.lower() == 'win':
       overlay_bot_config = self.GetOverlayBotConfig()
-      aux_attributes = gpu.aux_attributes
+      aux_attributes = test_args.gpu.aux_attributes
       if not aux_attributes:
         self.fail('GPU info does not have aux_attributes.')
       for field, expected in overlay_bot_config.iteritems():
@@ -105,8 +112,7 @@ class InfoCollectionTest(gpu_integration_test.GpuIntegrationTest):
               '%s mismatch, expected %s but got %s.' %
               (field, self._ValueToStr(expected), self._ValueToStr(detected)))
 
-  def _RunDX12VulkanTest(self, **kwargs):
-    del kwargs  # Any unused extra arguments that got passed in.
+  def _RunDX12VulkanTest(self, _):
     os_name = self.browser.platform.GetOSName()
     if os_name and os_name.lower() == 'win':
       self.RestartBrowserIfNecessaryWithArgs(

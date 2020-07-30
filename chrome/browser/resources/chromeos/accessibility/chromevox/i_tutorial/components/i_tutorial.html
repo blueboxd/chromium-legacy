@@ -101,6 +101,7 @@ h1 {
     hidden$="[[ shouldHideMainMenu(activeScreen) ]]">
   <h1 id="mainMenuHeader" tabindex="-1">[[ chooseYourExperience ]]</h1>
   <div id="mainMenuButtons">
+    <cr-button id="oobeButton" on-click="chooseCurriculum">OOBE</cr-button>
     <cr-button id="newUserButton" on-click="chooseCurriculum">
       [[ newUser ]]
     </cr-button>
@@ -138,6 +139,8 @@ h1 {
     practice-state="[[ lesson.practiceState ]]"
     hints="[[ lesson.hints ]]"
     events="[[ lesson.events ]]"
+    actions="[[ lesson.actions ]]"
+    auto-interactive="[[ lesson.autoInteractive ]]"
     active-lesson-num="[[ activeLessonNum ]]">
     </tutorial-lesson>
   </template>

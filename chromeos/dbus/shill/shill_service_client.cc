@@ -51,8 +51,7 @@ void OnGetDictionaryError(const std::string& method_name,
   else
     LOG(ERROR) << log_string;
 
-  std::move(callback).Run(DBUS_METHOD_CALL_FAILURE,
-                          base::Value(base::Value::Type::DICTIONARY));
+  std::move(callback).Run(base::nullopt);
 }
 
 // The ShillServiceClient implementation.
@@ -92,7 +91,7 @@ class ShillServiceClientImpl : public ShillServiceClient {
     GetHelper(service_path)
         ->CallDictionaryValueMethodWithErrorCallback(
             &method_call,
-            base::BindOnce(callback_adapted, DBUS_METHOD_CALL_SUCCESS),
+            AdaptDictionaryValueCallbackWithoutStatus(callback_adapted),
             base::BindOnce(&OnGetDictionaryError, "GetProperties", service_path,
                            callback_adapted));
   }
@@ -201,7 +200,7 @@ class ShillServiceClientImpl : public ShillServiceClient {
     GetHelper(service_path)
         ->CallDictionaryValueMethodWithErrorCallback(
             &method_call,
-            base::BindOnce(callback_adapted, DBUS_METHOD_CALL_SUCCESS),
+            AdaptDictionaryValueCallbackWithoutStatus(callback_adapted),
             base::BindOnce(&OnGetDictionaryError, "GetLoadableProfileEntries",
                            service_path, callback_adapted));
   }
@@ -261,6 +260,15 @@ class ShillServiceClientImpl : public ShillServiceClient {
                             base::DoNothing());
     helpers_.erase(object_path.value());
     delete helper;
+  }
+
+  static ShillClientHelper::DictionaryValueCallbackWithoutStatus
+  AdaptDictionaryValueCallbackWithoutStatus(
+      ShillClientHelper::DictionaryValueCallback callback) {
+    return base::BindOnce(
+        [](ShillClientHelper::DictionaryValueCallback callback,
+           base::Value result) { std::move(callback).Run(std::move(result)); },
+        std::move(callback));
   }
 
   dbus::Bus* bus_;

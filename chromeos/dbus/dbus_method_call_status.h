@@ -22,14 +22,6 @@ class ObjectPath;
 
 namespace chromeos {
 
-// DEPRECATED. Migrating to DBusMethodCallback style.
-// TODO(hidehiko): Remove this when migration is completed.
-// An enum to describe whether or not a DBus method call succeeded.
-enum DBusMethodCallStatus {
-  DBUS_METHOD_CALL_FAILURE,
-  DBUS_METHOD_CALL_SUCCESS,
-};
-
 // Callback to handle response of methods with result.
 // If the method returns multiple values, std::tuple<...> will be used.
 // In case of error, nullopt should be passed.

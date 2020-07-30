@@ -34,11 +34,10 @@ TranslateAcceptLanguages::TranslateAcceptLanguages(
 TranslateAcceptLanguages::~TranslateAcceptLanguages() {}
 
 // static
-bool TranslateAcceptLanguages::CanBeAcceptLanguage(
-    const std::string& language) {
+bool TranslateAcceptLanguages::CanBeAcceptLanguage(base::StringPiece language) {
   SCOPED_UMA_HISTOGRAM_TIMER("Translate.AcceptLanguages.CanBeAcceptDuration");
 
-  std::string accept_language = language;
+  std::string accept_language(language);
   language::ToChromeLanguageSynonym(&accept_language);
 
   const std::string locale =
@@ -47,8 +46,9 @@ bool TranslateAcceptLanguages::CanBeAcceptLanguage(
   return l10n_util::IsLanguageAccepted(locale, accept_language);
 }
 
-bool TranslateAcceptLanguages::IsAcceptLanguage(const std::string& language) {
-  std::string accept_language = language;
+bool TranslateAcceptLanguages::IsAcceptLanguage(
+    base::StringPiece language) const {
+  std::string accept_language(language);
   language::ToChromeLanguageSynonym(&accept_language);
   return accept_languages_.find(accept_language) != accept_languages_.end();
 }

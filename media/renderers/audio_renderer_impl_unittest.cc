@@ -1401,6 +1401,47 @@ TEST_F(AudioRendererImplTest, BitstreamEndOfStream) {
   SetMediaClient(nullptr);
 }
 
+TEST_F(AudioRendererImplTest, MutedPlaybackBadDeviceInfo) {
+  base::test::ScopedFeatureList scoped_feature_list_;
+  scoped_feature_list_.InitAndEnableFeature(kSuspendMutedAudio);
+
+  mock_sink_ = base::MakeRefCounted<MockAudioRendererSink>(
+      std::string(), OUTPUT_DEVICE_STATUS_ERROR_NOT_AUTHORIZED,
+      AudioParameters());
+  renderer_ = std::make_unique<AudioRendererImpl>(
+      main_thread_task_runner_, mock_sink_.get(),
+      base::BindRepeating(&AudioRendererImplTest::CreateAudioDecoderForTest,
+                          base::Unretained(this)),
+      &media_log_, nullptr);
+  testing::Mock::VerifyAndClearExpectations(&demuxer_stream_);
+  ConfigureDemuxerStream(true);
+
+  EXPECT_CALL(*mock_sink_, SetVolume(0)).Times(0);
+  renderer_->SetVolume(0);
+
+  // Playback startup should use never touch our passed in sink, since an
+  // internal NullAudioSink is always used for bad device info.
+  EXPECT_CALL(*mock_sink_, Start()).Times(0);
+  Initialize();
+  Preroll();
+  StartTicking();
+
+  EXPECT_CALL(*mock_sink_, Pause()).Times(0);
+  StopTicking();
+  EXPECT_CALL(*mock_sink_, Play()).Times(0);
+  StartTicking();
+  testing::Mock::VerifyAndClearExpectations(mock_sink_.get());
+
+  EXPECT_CALL(*mock_sink_, SetVolume(1)).Times(0);
+  EXPECT_CALL(*mock_sink_, Start()).Times(0);
+  EXPECT_CALL(*mock_sink_, Play()).Times(0);
+  renderer_->SetVolume(1);
+
+  EXPECT_CALL(*mock_sink_, Pause()).Times(0);
+  StopTicking();
+  EXPECT_CALL(*mock_sink_, Stop()).Times(0);
+}
+
 TEST_F(AudioRendererImplTest, BasicMutedPlayback) {
   base::test::ScopedFeatureList scoped_feature_list_;
   scoped_feature_list_.InitAndEnableFeature(kSuspendMutedAudio);

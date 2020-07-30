@@ -377,6 +377,10 @@ class CORE_EXPORT ExecutionContext : public Supplementable<ExecutionContext>,
   explicit ExecutionContext(v8::Isolate* isolate, Agent*);
   ~ExecutionContext() override;
 
+  // Resetting the Agent is only necessary for a special case related to the
+  // GetShouldReuseGlobalForUnownedMainFrame() Setting.
+  void ResetAgent(Agent* agent) { agent_ = agent; }
+
  private:
   // ConsoleLogger implementation.
   void AddConsoleMessageImpl(mojom::ConsoleMessageSource,
@@ -395,7 +399,7 @@ class CORE_EXPORT ExecutionContext : public Supplementable<ExecutionContext>,
 
   SecurityContext security_context_;
 
-  const Member<Agent> agent_;
+  Member<Agent> agent_;
 
   bool DispatchErrorEventInternal(ErrorEvent*, SanitizeScriptErrors);
 

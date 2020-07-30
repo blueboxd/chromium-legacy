@@ -6,9 +6,13 @@
 #include "base/files/file_path.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/safe_browsing/android/jni_headers/SafeBrowsingBridge_jni.h"
+#include "chrome/browser/signin/identity_manager_factory.h"
+#include "components/password_manager/core/browser/leak_detection/authenticated_leak_check.h"
+#include "components/password_manager/core/common/password_manager_pref_names.h"
 #include "components/prefs/pref_service.h"
 #include "components/safe_browsing/core/common/safe_browsing_prefs.h"
 #include "components/safe_browsing/core/file_type_policies.h"
+#include "components/signin/public/identity_manager/identity_manager.h"
 
 using base::android::JavaParamRef;
 
@@ -60,6 +64,15 @@ static void JNI_SafeBrowsingBridge_SetSafeBrowsingState(JNIEnv* env,
                                                         jint state) {
   return safe_browsing::SetSafeBrowsingState(
       GetPrefService(), static_cast<SafeBrowsingState>(state));
+}
+
+static jboolean JNI_SafeBrowsingBridge_HasAccountForLeakCheckRequest(
+    JNIEnv* env) {
+  signin::IdentityManager* identity_manager =
+      IdentityManagerFactory::GetForProfile(
+          ProfileManager::GetLastUsedProfile());
+  return password_manager::AuthenticatedLeakCheck::HasAccountForRequest(
+      identity_manager);
 }
 
 }  // namespace safe_browsing

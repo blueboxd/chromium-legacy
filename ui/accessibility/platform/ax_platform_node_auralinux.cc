@@ -3051,10 +3051,8 @@ void AXPlatformNodeAuraLinux::GetAtkState(AtkStateSet* atk_state_set) {
           static_cast<int32_t>(ax::mojom::InvalidState::kFalse))
     atk_state_set_add_state(atk_state_set, ATK_STATE_INVALID_ENTRY);
 #if defined(ATK_216)
-  if (data.HasIntAttribute(ax::mojom::IntAttribute::kCheckedState) &&
-      data.role != ax::mojom::Role::kToggleButton) {
+  if (IsPlatformCheckable())
     atk_state_set_add_state(atk_state_set, ATK_STATE_CHECKABLE);
-  }
   if (data.HasIntAttribute(ax::mojom::IntAttribute::kHasPopup))
     atk_state_set_add_state(atk_state_set, ATK_STATE_HAS_POPUP);
 #endif
@@ -3266,6 +3264,13 @@ void AXPlatformNodeAuraLinux::Init(AXPlatformNodeDelegate* delegate) {
   // Only create the AtkObject if we know enough information.
   if (GetData().role != ax::mojom::Role::kUnknown)
     GetOrCreateAtkObject();
+}
+
+bool AXPlatformNodeAuraLinux::IsPlatformCheckable() const {
+  if (GetData().role == ax::mojom::Role::kToggleButton)
+    return false;
+
+  return AXPlatformNodeBase::IsPlatformCheckable();
 }
 
 void AXPlatformNodeAuraLinux::EnsureAtkObjectIsValid() {
@@ -4426,9 +4431,9 @@ AtkAttributeSet* AXPlatformNodeAuraLinux::GetAtkAttributes() {
 AtkStateType AXPlatformNodeAuraLinux::GetAtkStateTypeForCheckableNode() {
   if (GetData().GetCheckedState() == ax::mojom::CheckedState::kMixed)
     return ATK_STATE_INDETERMINATE;
-  if (GetData().role == ax::mojom::Role::kToggleButton)
-    return ATK_STATE_PRESSED;
-  return ATK_STATE_CHECKED;
+  if (IsPlatformCheckable())
+    return ATK_STATE_CHECKED;
+  return ATK_STATE_PRESSED;
 }
 
 // AtkDocumentHelpers

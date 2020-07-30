@@ -20,6 +20,7 @@ Polymer({
   behaviors: [
     I18nBehavior,
     CrScrollableBehavior,
+    DeepLinkingBehavior,
     ListPropertyUpdateBehavior,
     settings.RouteObserverBehavior,
   ],
@@ -142,7 +143,7 @@ Polymer({
 
     /**
      * Used by FocusRowBehavior to track the last focused element on a row.
-     * @private
+     * @private {?Object}
      */
     lastFocused_: Object,
 
@@ -151,6 +152,31 @@ Polymer({
      * @private
      */
     listBlurred_: Boolean,
+
+    /**
+     * Contains the settingId of any deep link that wasn't able to be shown,
+     * null otherwise.
+     * @private {?chromeos.settings.mojom.Setting}
+     */
+    pendingSettingId_: {
+      type: chromeos.settings.mojom.Setting,
+      value: null,
+    },
+
+    /**
+     * Used by DeepLinkingBehavior to focus this page's deep links.
+     * @type {!Set<!chromeos.settings.mojom.Setting>}
+     */
+    supportedSettingIds: {
+      type: Object,
+      value: () => new Set([
+        chromeos.settings.mojom.Setting.kBluetoothOnOff,
+        chromeos.settings.mojom.Setting.kBluetoothConnectToDevice,
+        chromeos.settings.mojom.Setting.kBluetoothDisconnectFromDevice,
+        chromeos.settings.mojom.Setting.kBluetoothPairDevice,
+        chromeos.settings.mojom.Setting.kBluetoothUnpairDevice,
+      ]),
+    },
   },
 
   observers: [
@@ -165,6 +191,25 @@ Polymer({
    * @private
    */
   updateTimerId_: undefined,
+
+  /**
+   * Overridden from DeepLinkingBehavior.
+   * @param {!chromeos.settings.mojom.Setting} settingId
+   */
+  beforeDeepLinkAttempt(settingId) {
+    // If lastFocused_ is an internal element of a Focus Row (such as the menu
+    // button on a paired device), FocusRowBehavior prevents the Focus Row from
+    // being focused. We clear lastFocused_ so that we can focus the row (such
+    // as a paired/unpaired device).
+    if (settingId ==
+            chromeos.settings.mojom.Setting.kBluetoothConnectToDevice ||
+        settingId ==
+            chromeos.settings.mojom.Setting.kBluetoothDisconnectFromDevice ||
+        settingId == chromeos.settings.mojom.Setting.kBluetoothPairDevice ||
+        settingId == chromeos.settings.mojom.Setting.kBluetoothUnpairDevice) {
+      this.lastFocused_ = null;
+    }
+  },
 
   /** @override */
   detached() {
@@ -181,8 +226,23 @@ Polymer({
    * @protected
    */
   currentRouteChanged(route) {
+    // Any navigation resets the previous attempt to deep link.
+    this.pendingSettingId_ = null;
     this.updateDiscovery_();
     this.startOrStopRefreshingDeviceList_();
+
+    // Does not apply to this page.
+    if (route != settings.routes.BLUETOOTH_DEVICES) {
+      return;
+    }
+
+    this.attemptDeepLink().then(result => {
+      if (!result.deepLinkShown && result.pendingSettingId) {
+        // Store any deep link settingId that wasn't shown so we can try again
+        // in refreshBluetoothList_.
+        this.pendingSettingId_ = result.pendingSettingId;
+      }
+    });
   },
 
   /** @private */
@@ -479,6 +539,18 @@ Polymer({
     };
     this.bluetooth.getDevices(filter, devices => {
       this.deviceList_ = devices;
+
+      // Check if we have yet to focus a deep-linked element.
+      if (!this.pendingSettingId_) {
+        return;
+      }
+
+      this.beforeDeepLinkAttempt(this.pendingSettingId_);
+      this.showDeepLink(this.pendingSettingId_).then(result => {
+        if (result.deepLinkShown) {
+          this.pendingSettingId_ = null;
+        }
+      });
     });
   },
 

@@ -15,6 +15,7 @@ import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.chrome.browser.ChromeActivity;
 import org.chromium.chrome.browser.ChromeTabbedActivity;
 import org.chromium.chrome.browser.ThemeColorProvider;
+import org.chromium.chrome.browser.compositor.layouts.OverviewModeBehavior;
 import org.chromium.chrome.browser.compositor.layouts.content.TabContentManager;
 import org.chromium.chrome.browser.flags.ChromeFeatureList;
 import org.chromium.chrome.browser.lifecycle.ActivityLifecycleDispatcher;
@@ -114,8 +115,8 @@ public class TabGroupUiCoordinator implements TabGroupUiMediator.ResetHandler, T
 
         mMediator = new TabGroupUiMediator(activity, visibilityController, this, mModel,
                 tabModelSelector, activity,
-                ((ChromeTabbedActivity) activity).getOverviewModeBehavior(), mThemeColorProvider,
-                dialogController, activity.getLifecycleDispatcher(), activity);
+                ((ChromeTabbedActivity) activity).getOverviewModeBehaviorSupplier(),
+                mThemeColorProvider, dialogController, activity.getLifecycleDispatcher(), activity);
 
         TabGroupUtils.startObservingForCreationIPH();
 
@@ -228,8 +229,10 @@ public class TabGroupUiCoordinator implements TabGroupUiMediator.ResetHandler, T
     }
 
     private void recordSessionCount() {
-        if (mActivity.getOverviewModeBehavior() != null
-                && mActivity.getOverviewModeBehavior().overviewVisible()) {
+        OverviewModeBehavior overviewModeBehavior =
+                (OverviewModeBehavior) mActivity.getOverviewModeBehaviorSupplier().get();
+
+        if (overviewModeBehavior != null && overviewModeBehavior.overviewVisible()) {
             return;
         }
 

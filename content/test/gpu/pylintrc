@@ -1,19 +1,14 @@
 [MESSAGES CONTROL]
 
 # Disable the message, report, category or checker with the given id(s).
-# TODO(crbug.com/1076144): Shrink this list to as small as possible.
-disable=fixme,
+disable=duplicate-code,
+        fixme,
         invalid-name,
         locally-disabled,
         locally-enabled,
         missing-docstring,
-        star-args,
         too-few-public-methods,
-        too-many-function-args,
-        too-many-instance-attributes,
-        too-many-public-methods,
-        too-many-statements,
-        duplicate-code
+        too-many-instance-attributes
 
 # Pylint, or at least v1.5.6, does not properly handle adding comments between
 # lines of disable= entries, nor does it allow multiple disable= lines, so
@@ -41,10 +36,20 @@ disable=fixme,
 # There are valid cases where we want to selectively enable/disable lint errors
 # in a particular file/scope, e.g. allowing protected access in unittests.
 
+# missing-docstring
+# Docstrings are important, and proper use of them should be enforced. However,
+# requiring a docstring on *every* method and class is overkill, as many are
+# self-documenting due to being short and well-named.
+
 # too-few-public-methods
 # This is supposedly to catch "functions disguised as classes", but we have
 # never had issues with that. We do, however, use a handful of struct-like
 # classes, which this complains about.
+
+# too-many-instance-attributes
+# Only ends up complaining about struct-like classes. So, like
+# too-few-public-methods, leave disabled instead of disabling on a per-class
+# basis.
 
 # Other notes
 

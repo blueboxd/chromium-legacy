@@ -365,7 +365,7 @@ base::NativeLibrary GSSAPISharedLibrary::LoadSharedLibrary(
     num_lib_names = 1;
   } else {
     static const char* const kDefaultLibraryNames[] = {
-#if defined(OS_MACOSX)
+#if defined(OS_APPLE)
       "/System/Library/Frameworks/GSS.framework/GSS"
 #elif defined(OS_OPENBSD)
       "libgssapi.so"          // Heimdal - OpenBSD

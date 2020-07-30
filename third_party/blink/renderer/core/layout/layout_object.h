@@ -282,19 +282,9 @@ class CORE_EXPORT LayoutObject : public ImageResourceObserver,
   using DisplayItemClient::IsValid;
   using DisplayItemClient::GetPaintInvalidationReason;
 
-  void ClearPartialInvalidationVisualRect() const final {
-    return GetMutableForPainting()
-        .FirstFragment()
-        .SetPartialInvalidationVisualRect(IntRect());
-  }
-
   DOMNodeId OwnerNodeId() const final;
 
  public:
-  IntRect PartialInvalidationVisualRect() const final {
-    return FirstFragment().PartialInvalidationVisualRect();
-  }
-
   String DebugName() const final;
 
   // End of DisplayItemClient methods.
@@ -1898,11 +1888,6 @@ class CORE_EXPORT LayoutObject : public ImageResourceObserver,
 
   bool CanBeCompositedForDirectReasons() const;
 
-  // Invalidate the raster of a specific sub-rectangle within the object. The
-  // rect is in the object's local coordinate space. This is useful e.g. when
-  // a small region of a canvas changes.
-  void InvalidatePaintRectangle(const PhysicalRect&);
-
   // Returns the rect that should have raster invalidated whenever this object
   // changes. The rect is in the coordinate space of the document's scrolling
   // contents. This method deals with outlines and overflow.
@@ -2406,12 +2391,6 @@ class CORE_EXPORT LayoutObject : public ImageResourceObserver,
       layout_object_.AddSubtreePaintPropertyUpdateReason(reason);
     }
 
-    void SetPartialInvalidationVisualRect(const IntRect& r) {
-      DCHECK_EQ(layout_object_.GetDocument().Lifecycle().GetState(),
-                DocumentLifecycle::kInPrePaint);
-      FirstFragment().SetPartialInvalidationVisualRect(r);
-    }
-
     void InvalidateClipPathCache() { layout_object_.InvalidateClipPathCache(); }
 
     void UpdateInsideBlockingTouchEventHandler(bool inside) {
@@ -2529,10 +2508,6 @@ class CORE_EXPORT LayoutObject : public ImageResourceObserver,
     SetShouldDoFullPaintInvalidationWithoutGeometryChange(
         PaintInvalidationReason::kBackground);
     bitfields_.SetBackgroundNeedsFullPaintInvalidation(true);
-  }
-
-  PhysicalRect PartialInvalidationLocalRect() const {
-    return fragment_.PartialInvalidationLocalRect();
   }
 
   void InvalidateIfControlStateChanged(ControlState);

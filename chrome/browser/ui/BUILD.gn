@@ -4,6 +4,7 @@
 
 import("//build/config/buildflags_paint_preview.gni")
 import("//build/config/chromecast_build.gni")
+import("//build/config/chromeos/ui_mode.gni")
 import("//build/config/compiler/compiler.gni")
 import("//build/config/crypto.gni")
 import("//build/config/features.gni")
@@ -1336,6 +1337,8 @@ static_library("ui") {
       "webui/nearby_internals/nearby_internals_ui.h",
       "webui/nearby_share/nearby_share_dialog_ui.cc",
       "webui/nearby_share/nearby_share_dialog_ui.h",
+      "webui/nearby_share/shared_resources.cc",
+      "webui/nearby_share/shared_resources.h",
       "webui/new_tab_page/new_tab_page_handler.cc",
       "webui/new_tab_page/new_tab_page_handler.h",
       "webui/new_tab_page/new_tab_page_ui.cc",
@@ -1473,6 +1476,7 @@ static_library("ui") {
     ]
     deps += [
       "//base/util/values:values_util",
+      "//build:lacros_buildflags",
       "//chrome/app/vector_icons",
       "//chrome/browser:theme_properties",
       "//chrome/browser/media/router",
@@ -1488,6 +1492,7 @@ static_library("ui") {
       "//chrome/browser/ui/webui/app_management:mojo_bindings",
       "//chrome/browser/ui/webui/internals/web_app:mojo_bindings",
       "//chrome/browser/ui/webui/nearby_share:mojom",
+      "//chrome/browser/ui/webui/nearby_share/public/mojom",
       "//chrome/common:buildflags",
       "//chrome/common/media_router/mojom:media_router",
       "//chrome/common/search:generate_chrome_colors_info",
@@ -2441,6 +2446,7 @@ static_library("ui") {
       "//ash/public/cpp/resources:ash_public_unscaled_resources",
       "//ash/public/cpp/vector_icons",
       "//ash/shortcut_viewer",
+      "//build:lacros_buildflags",
       "//chrome/app:generated_resources",
       "//chrome/browser/chromeos",
       "//chrome/browser/chromeos:backdrop_wallpaper_proto",
@@ -2562,6 +2568,14 @@ static_library("ui") {
     if (use_cras) {
       defines += [ "USE_CRAS" ]
     }
+  }
+
+  # TODO(crbug.com/1052397): Rename GN variable. This is the lacros browser.
+  if (chromeos_is_browser_only) {
+    sources += [
+      "window_sizer/window_sizer_chromeos.cc",
+      "window_sizer/window_sizer_chromeos.h",
+    ]
   }
 
   if (is_win || is_mac || is_desktop_linux || is_chromeos) {

@@ -821,11 +821,11 @@ bool FidoDeviceAuthenticator::IsWinNativeApiAuthenticator() const {
 }
 #endif  // defined(OS_WIN)
 
-#if defined(OS_MACOSX)
+#if defined(OS_MAC)
 bool FidoDeviceAuthenticator::IsTouchIdAuthenticator() const {
   return false;
 }
-#endif  // defined(OS_MACOSX)
+#endif  // defined(OS_MAC)
 
 void FidoDeviceAuthenticator::SetTaskForTesting(
     std::unique_ptr<FidoTask> task) {

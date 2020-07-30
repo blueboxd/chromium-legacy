@@ -33,7 +33,7 @@ KeyUtil = class {
    * Convert a key event into a Key Sequence representation.
    *
    * @param {Event|SimpleKeyEvent} keyEvent The keyEvent to convert.
-   * @return {KeySequence} A key sequence representation of the key event.
+   * @return {!KeySequence} A key sequence representation of the key event.
    */
   static keyEventToKeySequence(keyEvent) {
     const util = KeyUtil;

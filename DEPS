@@ -195,11 +195,11 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling Skia
   # and whatever else without interference from each other.
-  'skia_revision': '96d6c6f04dcb1f8e6510fd49daab1987f99c4d61',
+  'skia_revision': '398c654ce7be28edb9cbcf649e75d8b8bf1f6776',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling V8
   # and whatever else without interference from each other.
-  'v8_revision': 'cdda9dfefd8f20c6996955946a7a328aa2d0fcee',
+  'v8_revision': 'd640d034e825d2fea0d9316041e56cd3e63f8402',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling swarming_client
   # and whatever else without interference from each other.
@@ -207,11 +207,11 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling ANGLE
   # and whatever else without interference from each other.
-  'angle_revision': 'd019af80a3a9470c6d5abd07d280f1816b527af8',
+  'angle_revision': 'cc846039201d3e7cd05d503ce49acbba2bd4f784',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling SwiftShader
   # and whatever else without interference from each other.
-  'swiftshader_revision': '28e801ad3afb9ed467d805be49ad2d87b5504f2a',
+  'swiftshader_revision': '08a3cc4cfbaab73a59899d83ba82ab373f61cc87',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling PDFium
   # and whatever else without interference from each other.
@@ -222,7 +222,7 @@ vars = {
   #
   # Note this revision should be updated with
   # third_party/boringssl/roll_boringssl.py, not roll-dep.
-  'boringssl_revision': 'eda849d2e6e6a15a5a4dc728568ec12f21ebfb6d',
+  'boringssl_revision': '70fee172042c9727f98ea2e6659eb77336e0dc7f',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling google-toolbox-for-mac
   # and whatever else without interference from each other.
@@ -246,7 +246,7 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling freetype
   # and whatever else without interference from each other.
-  'freetype_revision': '3273521f408938e0088258bda62d280d6e5967eb',
+  'freetype_revision': '986a340dd52825ceaa142ae19473de0ee52d57f2',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling HarfBuzz
   # and whatever else without interference from each other.
@@ -258,7 +258,7 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling catapult
   # and whatever else without interference from each other.
-  'catapult_revision': '14ca9390e34a03dc5723e202d330978635666c95',
+  'catapult_revision': '395d1d531f44227754f8e26a55b7b3f88660078b',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling libFuzzer
   # and whatever else without interference from each other.
@@ -318,7 +318,7 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling feed
   # and whatever else without interference from each other.
-  'dawn_revision': 'ab04da48f45db878e8e160c12d514acc37411606',
+  'dawn_revision': '03cf7c3eaeaf79325e23937aa7a3069e148fe2aa',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling feed
   # and whatever else without interference from each other.
@@ -545,7 +545,7 @@ deps = {
   },
 
   'src/ios/third_party/material_components_ios/src': {
-      'url': Var('chromium_git') + '/external/github.com/material-components/material-components-ios.git' + '@' + '1b68b485221f21a1a4ee4655f3971a3b56b769e4',
+      'url': Var('chromium_git') + '/external/github.com/material-components/material-components-ios.git' + '@' + '1f46b8b02d62ffc92ed45fb9b1d1d133ecf79623',
       'condition': 'checkout_ios',
   },
 
@@ -895,7 +895,7 @@ deps = {
   },
 
   'src/third_party/depot_tools':
-    Var('chromium_git') + '/chromium/tools/depot_tools.git' + '@' + '7291750ae258773233f671ae7c93a5bc4a388831',
+    Var('chromium_git') + '/chromium/tools/depot_tools.git' + '@' + '343f63643b432ace2d2d4c253c6c327bb18c03ea',
 
   'src/third_party/devtools-frontend/src':
     Var('chromium_git') + '/devtools/devtools-frontend' + '@' + Var('devtools_frontend_revision'),

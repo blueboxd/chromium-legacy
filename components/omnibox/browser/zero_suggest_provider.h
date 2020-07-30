@@ -79,10 +79,15 @@ class ZeroSuggestProvider : public BaseSearchProvider {
     return results_.experiment_stats;
   }
 
-  // Returns the map of suggestion group Ids to headers corresponding to the
+  // Returns the map of suggestion group IDs to headers corresponding to the
   // latest |results_|.
   const SearchSuggestionParser::HeadersMap& headers_map() const {
     return results_.headers_map;
+  }
+
+  // Returns the hidden group IDs corresponding to the latest |results_|.
+  const std::vector<int> hidden_group_ids() const {
+    return results_.hidden_group_ids;
   }
 
  private:

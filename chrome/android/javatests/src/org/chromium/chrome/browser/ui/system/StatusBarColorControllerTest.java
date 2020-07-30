@@ -156,8 +156,7 @@ public class StatusBarColorControllerTest {
 
         // Set scrim.
         TestThreadUtils.runOnUiThreadBlocking(
-                () -> statusBarColorController.getStatusBarScrimDelegate()
-                        .setStatusBarScrimFraction(.5f));
+                () -> statusBarColorController.setStatusBarScrimFraction(.5f));
 
         if (Build.VERSION.SDK_INT < Build.VERSION_CODES.M) {
             // If we're already darkening the color for Android L, scrim shouldn't be applied.
@@ -172,7 +171,7 @@ public class StatusBarColorControllerTest {
 
         TestThreadUtils.runOnUiThreadBlocking(() -> {
             // Remove scrim.
-            statusBarColorController.getStatusBarScrimDelegate().setStatusBarScrimFraction(.0f);
+            statusBarColorController.setStatusBarScrimFraction(.0f);
             // Set the status indicator color to the default, i.e. transparent.
             statusBarColorController.onStatusIndicatorColorChanged(Color.TRANSPARENT);
         });

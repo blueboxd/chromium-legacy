@@ -42,8 +42,7 @@ void FakeShillIPConfigClient::GetProperties(
   if (!dict)
     return;
   base::ThreadTaskRunnerHandle::Get()->PostTask(
-      FROM_HERE, base::BindOnce(std::move(callback), DBUS_METHOD_CALL_SUCCESS,
-                                dict->Clone()));
+      FROM_HERE, base::BindOnce(std::move(callback), dict->Clone()));
 }
 
 void FakeShillIPConfigClient::SetProperty(const dbus::ObjectPath& ipconfig_path,

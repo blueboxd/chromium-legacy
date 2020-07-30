@@ -11,7 +11,7 @@
 #include "build/branding_buildflags.h"
 #include "chrome/browser/apps/app_service/app_icon_factory.h"
 #include "chrome/browser/apps/app_service/menu_util.h"
-#include "chrome/browser/chromeos/crosapi/lacros_manager.h"
+#include "chrome/browser/chromeos/crosapi/browser_manager.h"
 #include "chrome/grit/chrome_unscaled_resources.h"
 #include "chrome/grit/generated_resources.h"
 #include "chromeos/constants/chromeos_features.h"
@@ -71,9 +71,9 @@ apps::mojom::IconKeyPtr LacrosApps::NewIconKey(State state) {
 void LacrosApps::Connect(
     mojo::PendingRemote<apps::mojom::Subscriber> subscriber_remote,
     apps::mojom::ConnectOptionsPtr opts) {
-  bool is_ready = LacrosManager::Get()->IsReady();
+  bool is_ready = crosapi::BrowserManager::Get()->IsReady();
   if (!is_ready) {
-    LacrosManager::Get()->SetLoadCompleteCallback(base::BindOnce(
+    crosapi::BrowserManager::Get()->SetLoadCompleteCallback(base::BindOnce(
         &LacrosApps::OnLoadComplete, weak_factory_.GetWeakPtr()));
   }
   std::vector<apps::mojom::AppPtr> apps;
@@ -108,7 +108,7 @@ void LacrosApps::Launch(const std::string& app_id,
                         apps::mojom::LaunchSource launch_source,
                         int64_t display_id) {
   DCHECK_EQ(extension_misc::kLacrosAppId, app_id);
-  LacrosManager::Get()->NewWindow();
+  crosapi::BrowserManager::Get()->NewWindow();
 }
 
 void LacrosApps::GetMenuModel(const std::string& app_id,

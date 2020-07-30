@@ -5,8 +5,10 @@
 #include "third_party/blink/renderer/core/page/context_menu_controller.h"
 
 #include "base/optional.h"
+#include "build/build_config.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/blink/public/common/context_menu_data/edit_flags.h"
+#include "third_party/blink/public/common/input/web_keyboard_event.h"
 #include "third_party/blink/public/common/input/web_menu_source_type.h"
 #include "third_party/blink/public/platform/web_rect.h"
 #include "third_party/blink/public/web/web_context_menu_data.h"
@@ -600,6 +602,38 @@ TEST_F(ContextMenuControllerTest, ShowNonLocatedContextMenuEvent) {
   context_menu_data = GetWebFrameClient().GetContextMenuData();
   EXPECT_EQ(context_menu_data.selected_text, "Sample Input Text");
 }
+
+#if !defined(OS_MAC)
+// Mac has no way to open a context menu based on a keyboard event.
+TEST_F(ContextMenuControllerTest,
+       ValidateNonLocatedContextMenuOnLargeImageElement) {
+  GetDocument()->documentElement()->setInnerHTML(
+      "<img src=\"http://example.test/cat.jpg\" id=\"sample_image\" "
+      "width=\"200\" height=\"10000\" tabindex=\"-1\" />");
+
+  Document* document = GetDocument();
+  Element* image_element = document->getElementById("sample_image");
+  // Set focus on the image element.
+  image_element->focus();
+  document->UpdateStyleAndLayout(DocumentUpdateReason::kTest);
+
+  // Simulate Shift + F10 key event.
+  WebKeyboardEvent key_event(WebInputEvent::Type::kRawKeyDown,
+                             WebInputEvent::kShiftKey,
+                             WebInputEvent::GetStaticTimeStampForTests());
+
+  key_event.windows_key_code = ui::VKEY_F10;
+  GetWebView()->MainFrameWidget()->HandleInputEvent(
+      WebCoalescedInputEvent(key_event, ui::LatencyInfo()));
+  key_event.SetType(WebInputEvent::Type::kKeyUp);
+  GetWebView()->MainFrameWidget()->HandleInputEvent(
+      WebCoalescedInputEvent(key_event, ui::LatencyInfo()));
+
+  WebContextMenuData context_menu_data =
+      GetWebFrameClient().GetContextMenuData();
+  EXPECT_EQ(context_menu_data.media_type, ContextMenuDataMediaType::kImage);
+}
+#endif
 
 TEST_F(ContextMenuControllerTest, SelectionRectClipped) {
   GetDocument()->documentElement()->setInnerHTML(

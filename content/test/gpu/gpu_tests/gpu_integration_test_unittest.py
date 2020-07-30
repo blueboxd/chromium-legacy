@@ -30,6 +30,10 @@ from telemetry.testing import run_browser_tests
 path_util.AddDirToPathIfNeeded(path_util.GetChromiumSrcDir(), 'tools', 'perf')
 from chrome_telemetry_build import chromium_config
 
+# Unittest test cases are defined as public methods, so ignore complaints about
+# having too many.
+# pylint: disable=too-many-public-methods
+
 VENDOR_NVIDIA = 0x10DE
 VENDOR_AMD = 0x1002
 VENDOR_INTEL = 0x8086

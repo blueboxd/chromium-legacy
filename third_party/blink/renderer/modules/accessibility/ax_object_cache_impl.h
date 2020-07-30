@@ -163,6 +163,10 @@ class MODULES_EXPORT AXObjectCacheImpl
   // without producing any layout or other notifications.
   void HandleFrameRectsChanged(Document&) override;
 
+  // Invalidates the bounding box, which can be later retrieved by
+  // GetAllObjectsWithChangedBounds.
+  void InvalidateBoundingBox(const LayoutObject*) override;
+
   const AtomicString& ComputedRoleForNode(Node*) override;
   String ComputedNameForNode(Node*) override;
 
@@ -281,6 +285,11 @@ class MODULES_EXPORT AXObjectCacheImpl
   }
 
   AXObject* GetActiveAriaModalDialog() const;
+
+  // Retrieves a vector of all AXObjects whose bounding boxes may have changed
+  // since the last query. Clears the vector so that the next time it's
+  // called, it will only retrieve objects that have changed since now.
+  HeapVector<Member<AXObject>> GetAllObjectsWithChangedBounds();
 
  protected:
   void PostPlatformNotification(
@@ -489,6 +498,10 @@ class MODULES_EXPORT AXObjectCacheImpl
 
   // Maps ids to their object's autofill state.
   HashMap<AXID, WebAXAutofillState> autofill_state_map_;
+
+  // The set of node IDs whose bounds has changed since the last time
+  // GetAllObjectsWithChangedBounds was called.
+  HashSet<AXID> changed_bounds_ids_;
 
   // The source of the event that is currently being handled.
   ax::mojom::blink::EventFrom active_event_from_ =

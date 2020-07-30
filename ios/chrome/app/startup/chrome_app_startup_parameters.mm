@@ -77,6 +77,8 @@ enum SearchExtensionAction {
 
 }  // namespace
 
+NSString* const kLastHTTPURLOpenTime = @"lastHTTPURLOpenTime";
+
 @implementation ChromeAppStartupParameters {
   NSString* _secureSourceApp;
   NSString* _declaredSourceApp;
@@ -184,6 +186,12 @@ enum SearchExtensionAction {
     }
     UMA_HISTOGRAM_ENUMERATION(kUMAMobileSessionStartActionHistogram, action,
                               MOBILE_SESSION_START_ACTION_COUNT);
+
+    if (action == START_ACTION_OPEN_HTTP_FROM_OS ||
+        action == START_ACTION_OPEN_HTTPS_FROM_OS) {
+      [[NSUserDefaults standardUserDefaults] setObject:[NSDate date]
+                                                forKey:kLastHTTPURLOpenTime];
+    }
 
     if (!externalURL.is_valid())
       return nil;

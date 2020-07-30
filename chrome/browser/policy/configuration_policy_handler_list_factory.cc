@@ -915,9 +915,6 @@ const PolicyToPreferenceMapEntry kSimplePolicyMap[] = {
   { key::kUserNativePrintersAllowed,
     prefs::kUserNativePrintersAllowed,
     base::Value::Type::BOOLEAN },
-  { key::kExternalPrintServersWhitelist,
-    prefs::kExternalPrintServersWhitelist,
-    base::Value::Type::LIST },
   { key::kAllowedLanguages,
     prefs::kAllowedLanguages,
     base::Value::Type::LIST },
@@ -1755,6 +1752,13 @@ std::unique_ptr<ConfigurationPolicyHandlerList> BuildHandlerList(
           chrome_schema));
   handlers->AddHandler(
       std::make_unique<SystemFeaturesDisableListPolicyHandler>());
+  handlers->AddHandler(std::make_unique<SimpleDeprecatingPolicyHandler>(
+      std::make_unique<SimplePolicyHandler>(
+          key::kExternalPrintServersWhitelist,
+          prefs::kExternalPrintServersAllowlist, base::Value::Type::LIST),
+      std::make_unique<SimplePolicyHandler>(
+          key::kExternalPrintServersAllowlist,
+          prefs::kExternalPrintServersAllowlist, base::Value::Type::LIST)));
 #if defined(USE_CUPS)
   handlers->AddHandler(std::make_unique<extensions::ExtensionListPolicyHandler>(
       key::kPrintingAPIExtensionsWhitelist,

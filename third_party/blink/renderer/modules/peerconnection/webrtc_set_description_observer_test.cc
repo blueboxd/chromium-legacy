@@ -124,7 +124,7 @@ class ObserverHandlerWrapper {
     run_loop.Run();
   }
   void InvokeLocalHandlerOnSuccessOnSignalingThread(base::RunLoop* run_loop) {
-    local_handler_->OnSuccess();
+    local_handler_->OnSetLocalDescriptionComplete(webrtc::RTCError::OK());
     run_loop->Quit();
   }
 
@@ -140,7 +140,7 @@ class ObserverHandlerWrapper {
   }
   void InvokeLocalHandlerOnFailureOnSignalingThread(webrtc::RTCError error,
                                                     base::RunLoop* run_loop) {
-    local_handler_->OnFailure(std::move(error));
+    local_handler_->OnSetLocalDescriptionComplete(std::move(error));
     run_loop->Quit();
   }
 

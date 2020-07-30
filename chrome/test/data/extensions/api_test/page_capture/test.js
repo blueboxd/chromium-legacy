@@ -19,7 +19,7 @@ function waitForCurrentTabLoaded(callback) {
       callback();
       return;
     }
-    setTimeout(function() {
+    window.setTimeout(function() {
       waitForCurrentTabLoaded(callback);
     }, 100);
   });
@@ -39,10 +39,10 @@ function testPageCapture(data, isFile) {
       assertTrue(text.indexOf('logo.png') != -1);
     }
     // Run the GC so the blob is deleted.
-    setTimeout(function() {
-      gc();
+    window.setTimeout(function() {
+      window.gc();
     });
-    setTimeout(function() {
+    window.setTimeout(function() {
       chrome.test.notifyPass();
     }, 0);
   };

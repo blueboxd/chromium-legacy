@@ -8,8 +8,8 @@
 namespace autofill {
 namespace structured_address {
 
-// Regular expression pattern to match a single word.
-extern const char kSingleWordRe[];
+// List of name separators.
+extern const char kNameSeparators[];
 
 }  // namespace structured_address
 }  // namespace autofill

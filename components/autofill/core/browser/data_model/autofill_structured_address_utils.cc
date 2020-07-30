@@ -13,6 +13,7 @@
 #include "base/debug/alias.h"
 #include "base/debug/dump_without_crashing.h"
 #include "base/strings/strcat.h"
+#include "components/autofill/core/browser/data_model/autofill_structured_address_regex_provider.h"
 
 namespace autofill {
 namespace structured_address {
@@ -45,9 +46,13 @@ const RE2* Re2RegExCache::GetRegEx(const std::string& pattern) {
   return result.first->second.get();
 }
 
-std::unique_ptr<const RE2> BuildRegExFromPattern(std::string pattern) {
+std::unique_ptr<const RE2> BuildRegExFromPattern(const std::string& pattern) {
   RE2::Options opt;
-  opt.set_case_sensitive(false);
+  // By default, patters are case sensitive.
+  // Note that, the named-capture-group patterns build with
+  // |CaptureTypeWithPattern()| apply a flag to make the matching case
+  // insensitive.
+  opt.set_case_sensitive(true);
 
   auto regex = std::make_unique<const RE2>(pattern, opt);
 
@@ -108,12 +113,17 @@ bool ParseValueByRegularExpression(
   return true;
 }
 
-bool IsPartialMatch(const std::string& value, const std::string& pattern) {
-  const RE2* regex = Re2RegExCache::Instance()->GetRegEx(pattern);
-  if (!regex || !regex->ok())
-    return false;
+bool IsPartialMatch(const std::string& value, RegEx regex) {
+  return IsPartialMatch(
+      value, StructuredAddressesRegExProvider::Instance()->GetRegEx(regex));
+}
 
-  return RE2::PartialMatch(value, *regex);
+bool IsPartialMatch(const std::string& value, const std::string& pattern) {
+  return IsPartialMatch(value, Re2RegExCache::Instance()->GetRegEx(pattern));
+}
+
+bool IsPartialMatch(const std::string& value, const RE2* expression) {
+  return RE2::PartialMatch(value, *expression);
 }
 
 std::vector<std::string> GetAllPartialMatches(const std::string& value,
@@ -172,7 +182,8 @@ std::string CaptureTypeWithPattern(const ServerFieldType& type,
       quantifier = "";
   }
 
-  return base::StrCat({"(?:(?P<", AutofillType(type).ToString(), ">", pattern,
+  // By adding an "i" in the first group, the capturing is case insensitive.
+  return base::StrCat({"(?i:(?P<", AutofillType(type).ToString(), ">", pattern,
                        ")(?:", options.separator, "))", quantifier});
 }
 

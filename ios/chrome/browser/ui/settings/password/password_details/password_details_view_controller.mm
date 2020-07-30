@@ -4,6 +4,7 @@
 
 #import "ios/chrome/browser/ui/settings/password/password_details/password_details_view_controller.h"
 
+#include "base/ios/ios_util.h"
 #include "base/mac/foundation_util.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/strings/sys_string_conversions.h"
@@ -19,6 +20,7 @@
 #import "ios/chrome/browser/ui/table_view/cells/table_view_cells_constants.h"
 #import "ios/chrome/browser/ui/table_view/cells/table_view_text_edit_item.h"
 #import "ios/chrome/browser/ui/table_view/cells/table_view_text_item.h"
+#include "ios/chrome/browser/ui/util/uikit_ui_util.h"
 #import "ios/chrome/common/ui/colors/UIColor+cr_semantic_colors.h"
 #import "ios/chrome/common/ui/colors/semantic_color_names.h"
 #import "ios/chrome/common/ui/reauthentication/reauthentication_module.h"
@@ -80,6 +82,13 @@ typedef NS_ENUM(NSInteger, ReauthenticationReason) {
   [super viewDidLoad];
   self.tableView.accessibilityIdentifier = kPasswordDetailsViewControllerId;
   self.tableView.allowsSelectionDuringEditing = YES;
+
+  UILabel* titleLabel = [[UILabel alloc] init];
+  titleLabel.lineBreakMode = NSLineBreakByTruncatingHead;
+  titleLabel.font = [UIFont preferredFontForTextStyle:UIFontTextStyleHeadline];
+  titleLabel.adjustsFontForContentSizeCategory = YES;
+  titleLabel.text = self.password.origin;
+  self.navigationItem.titleView = titleLabel;
 }
 
 - (void)viewDidDisappear:(BOOL)animated {
@@ -97,20 +106,21 @@ typedef NS_ENUM(NSInteger, ReauthenticationReason) {
     return;
   }
 
-  [super editButtonPressed];
-
-  if (!self.tableView.editing) {
-    // TODO:(crbug.com/1075494) - Update |_password| accordingly.
-    [self.delegate passwordDetailsViewController:self
-                          didEditPasswordDetails:self.password];
+  if (self.tableView.editing) {
+    // If password value was changed show confirmation dialog before saving
+    // password. Editing mode will be exited only if user confirm saving.
+    if (self.password.password != self.passwordTextItem.textFieldValue) {
+      [self.handler showPasswordEditDialogWithOrigin:self.password.origin];
+      return;
+    }
   }
 
+  [super editButtonPressed];
   [self reloadData];
 }
 
 - (void)loadModel {
   [super loadModel];
-  self.title = self.password.origin;
 
   TableViewModel* model = self.tableViewModel;
   [model addSectionWithIdentifier:SectionIdentifierPassword];
@@ -304,7 +314,7 @@ typedef NS_ENUM(NSInteger, ReauthenticationReason) {
 // Called when user tapped Delete button during editing. It means presented
 // password should be deleted.
 - (void)deleteItems:(NSArray<NSIndexPath*>*)indexPaths {
-  // TODO:(crbug.com/1075494) - Show Confirmation dialog and delete password.
+  [self.handler showPasswordDeleteDialogWithOrigin:self.password.origin];
 }
 
 - (BOOL)shouldHideToolbar {
@@ -392,10 +402,17 @@ typedef NS_ENUM(NSInteger, ReauthenticationReason) {
       return l10n_util::GetNSString(
           IDS_IOS_SETTINGS_PASSWORD_REAUTH_REASON_COPY);
     case ReauthenticationReasonEdit:
-      // TODO:(crbug.com/1075494) - Add custom string for edit.
       return l10n_util::GetNSString(
-          IDS_IOS_SETTINGS_PASSWORD_REAUTH_REASON_SHOW);
+          IDS_IOS_SETTINGS_PASSWORD_REAUTH_REASON_EDIT);
   }
+}
+
+- (void)passwordEditingConfirmed {
+  self.password.password = self.passwordTextItem.textFieldValue;
+  [self.delegate passwordDetailsViewController:self
+                        didEditPasswordDetails:self.password];
+  [super editButtonPressed];
+  [self reloadData];
 }
 
 #pragma mark - Actions

@@ -72,7 +72,6 @@ const char kMalwareWarningDetails[] =
 - (AppLaunchConfiguration)appConfigurationForTestCase {
   AppLaunchConfiguration config;
   config.features_enabled.push_back(safe_browsing::kSafeBrowsingAvailableOnIOS);
-  config.features_enabled.push_back(web::features::kSSLCommittedInterstitials);
 
   // Use commandline args to insert fake unsafe URLs into the Safe Browsing
   // database.

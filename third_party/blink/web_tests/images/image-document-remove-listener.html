@@ -13,7 +13,7 @@ async_test(function(t) {
         try {
             newWindow.removeEventListener("resize", 2);
         } catch (e) {
-            assert_equals(e.message, "Failed to execute 'removeEventListener' on 'EventTarget': The callback provided as parameter 2 is not an object.");
+            assert_equals(e.message, "Failed to execute 'removeEventListener' on 'EventTarget': parameter 2 is not of type 'Object'.");
         }
     });
 });

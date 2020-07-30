@@ -62,6 +62,7 @@
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "ui/events/keycodes/keyboard_codes.h"
 #include "ui/gfx/geometry/rect.h"
+#include "ui/gfx/geometry/size.h"
 #include "ui/gfx/geometry/vector2d.h"
 #include "v8/include/v8.h"
 
@@ -502,7 +503,7 @@ void PDFiumEngine::PageOffsetUpdated(const pp::Point& page_offset) {
   page_offset_ = page_offset;
 }
 
-void PDFiumEngine::PluginSizeUpdated(const pp::Size& size) {
+void PDFiumEngine::PluginSizeUpdated(const gfx::Size& size) {
   CancelPaints();
 
   plugin_size_ = size;
@@ -653,11 +654,11 @@ void PDFiumEngine::AppendPage(PDFEngine* engine, int index) {
   // Unload and delete the blank page before appending.
   pages_[index]->Unload();
   pages_[index]->set_calculated_links(false);
-  pp::Size curr_page_size = GetPageSize(index);
+  gfx::Size curr_page_size = GetPageSize(index);
   FPDFPage_Delete(doc(), index);
   FPDF_ImportPages(doc(), static_cast<PDFiumEngine*>(engine)->doc(), "1",
                    index);
-  pp::Size new_page_size = GetPageSize(index);
+  gfx::Size new_page_size = GetPageSize(index);
   if (curr_page_size != new_page_size) {
     DCHECK(document_loaded_);
     LoadPageInfo();
@@ -2044,7 +2045,7 @@ void PDFiumEngine::InvalidateAllPages() {
   StopFind();
   DCHECK(document_loaded_);
   RefreshCurrentDocumentLayout();
-  client_->Invalidate(pp::Rect(plugin_size_));
+  client_->Invalidate(pp::Rect(PPSizeFromSize(plugin_size_)));
 }
 
 std::string PDFiumEngine::GetSelectedText() {
@@ -2463,11 +2464,11 @@ int PDFiumEngine::GetDuplexType() {
   return static_cast<int>(FPDF_VIEWERREF_GetDuplex(doc()));
 }
 
-bool PDFiumEngine::GetPageSizeAndUniformity(pp::Size* size) {
+bool PDFiumEngine::GetPageSizeAndUniformity(gfx::Size* size) {
   if (pages_.empty())
     return false;
 
-  pp::Size page_size = GetPageSize(0);
+  gfx::Size page_size = GetPageSize(0);
   for (size_t i = 1; i < pages_.size(); ++i) {
     if (page_size != GetPageSize(i))
       return false;
@@ -2497,7 +2498,7 @@ void PDFiumEngine::AppendBlankPages(size_t num_pages) {
   }
 
   // Create blank pages with the same size as the first page.
-  pp::Size page_0_size = GetPageSize(0);
+  gfx::Size page_0_size = GetPageSize(0);
   double page_0_width_in_points =
       ConvertUnitDouble(page_0_size.width(), kPixelsPerInch, kPointsPerInch);
   double page_0_height_in_points =
@@ -2651,7 +2652,7 @@ void PDFiumEngine::ProposeNextDocumentLayout() {
 }
 
 void PDFiumEngine::UpdateDocumentLayout(DocumentLayout* layout) {
-  std::vector<pp::Size> page_sizes = LoadPageSizes(layout->options());
+  std::vector<gfx::Size> page_sizes = LoadPageSizes(layout->options());
   if (page_sizes.empty())
     return;
 
@@ -2662,9 +2663,9 @@ void PDFiumEngine::UpdateDocumentLayout(DocumentLayout* layout) {
   }
 }
 
-std::vector<pp::Size> PDFiumEngine::LoadPageSizes(
+std::vector<gfx::Size> PDFiumEngine::LoadPageSizes(
     const DocumentLayout::Options& layout_options) {
-  std::vector<pp::Size> page_sizes;
+  std::vector<gfx::Size> page_sizes;
   if (!doc_loader_)
     return page_sizes;
   if (pages_.empty() && document_loaded_)
@@ -2695,8 +2696,8 @@ std::vector<pp::Size> PDFiumEngine::LoadPageSizes(
 
     // TODO(crbug.com/1013800): It'd be better if page size were independent of
     // layout options, and handled in the layout code.
-    pp::Size size = page_available ? GetPageSizeForLayout(i, layout_options)
-                                   : default_page_size_;
+    gfx::Size size = page_available ? GetPageSizeForLayout(i, layout_options)
+                                    : default_page_size_;
     EnlargePage(layout_options, i, new_page_count, &size);
     page_sizes.push_back(size);
   }
@@ -2800,7 +2801,7 @@ void PDFiumEngine::CalculateVisiblePages() {
   doc_loader_->ClearPendingRequests();
 
   visible_pages_.clear();
-  pp::Rect visible_rect(plugin_size_);
+  pp::Rect visible_rect(PPSizeFromSize(plugin_size_));
   for (int i = 0; i < static_cast<int>(pages_.size()); ++i) {
     // Check an entire PageScreenRect, since we might need to repaint side
     // borders and shadows even if the page itself is not visible.
@@ -2870,14 +2871,14 @@ bool PDFiumEngine::CheckPageAvailable(int index, std::vector<int>* pending) {
   return true;
 }
 
-pp::Size PDFiumEngine::GetPageSize(int index) {
+gfx::Size PDFiumEngine::GetPageSize(int index) {
   return GetPageSizeForLayout(index, layout_.options());
 }
 
-pp::Size PDFiumEngine::GetPageSizeForLayout(
+gfx::Size PDFiumEngine::GetPageSizeForLayout(
     int index,
     const DocumentLayout::Options& layout_options) {
-  pp::Size size;
+  gfx::Size size;
   double width_in_points = 0;
   double height_in_points = 0;
   int rv = FPDF_GetPageSizeByIndex(doc(), index, &width_in_points,
@@ -2901,7 +2902,7 @@ pp::Size PDFiumEngine::GetPageSizeForLayout(
         break;
     }
 
-    size = pp::Size(width_in_pixels, height_in_pixels);
+    size = gfx::Size(width_in_pixels, height_in_pixels);
   }
   return size;
 }
@@ -2924,7 +2925,7 @@ draw_utils::PageInsetSizes PDFiumEngine::GetInsetSizes(
 void PDFiumEngine::EnlargePage(const DocumentLayout::Options& layout_options,
                                size_t page_index,
                                size_t num_of_pages,
-                               pp::Size* page_size) const {
+                               gfx::Size* page_size) const {
   draw_utils::PageInsetSizes inset_sizes =
       GetInsetSizes(layout_options, page_index, num_of_pages);
   page_size->Enlarge(inset_sizes.left + inset_sizes.right,
@@ -3520,8 +3521,8 @@ void PDFiumEngine::GetRegion(const pp::Point& location,
 
   pp::Point offset_location = location + page_offset_;
   // TODO: update this when we support BIDI and scrollbars can be on the left.
-  if (!buffer ||
-      !pp::Rect(page_offset_, plugin_size_).Contains(offset_location)) {
+  if (!buffer || !pp::Rect(page_offset_, PPSizeFromSize(plugin_size_))
+                      .Contains(offset_location)) {
     region = nullptr;
     return;
   }
@@ -3562,7 +3563,7 @@ void PDFiumEngine::OnSelectionPositionChanged() {
   client_->SelectionChanged(left, right);
 }
 
-pp::Size PDFiumEngine::ApplyDocumentLayout(
+gfx::Size PDFiumEngine::ApplyDocumentLayout(
     const DocumentLayout::Options& options) {
   // We need to return early if the layout would not change, otherwise calling
   // client_->ScrollToPage() would send another "viewport" message, triggering

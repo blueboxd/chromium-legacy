@@ -7,6 +7,7 @@
 #include "base/base64.h"
 #include "base/bind.h"
 #include "base/logging.h"
+#include "base/metrics/histogram_functions.h"
 #include "base/strings/string_util.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "chrome/browser/chromeos/login/quick_unlock/pin_storage_cryptohome.h"
@@ -30,6 +31,9 @@ namespace quick_unlock {
 namespace {
 
 constexpr int kSaltByteSize = 16;
+
+// PIN auto submit backfill only for 6 digits PINs.
+constexpr int kPinAutosubmitBackfillLength = 6;
 constexpr int kPinAutosubmitMaxPinLength = 12;
 
 QuickUnlockStorage* GetPrefsBackend(const AccountId& account_id) {
@@ -42,6 +46,11 @@ void PostResponse(PinBackend::BoolCallback result, bool value) {
 }
 
 PinBackend* g_instance_ = nullptr;
+
+// UMA Metrics
+void RecordUMAHistogram(PinBackend::BackfillEvent event) {
+  base::UmaHistogramEnumeration("Ash.Login.PinAutosubmit.Backfill", event);
+}
 
 }  // namespace
 
@@ -398,6 +407,10 @@ void PinBackend::UpdatePinAutosubmitOnSet(const AccountId& account_id,
   if (!IsPinAutosubmitFeatureEnabled())
     return;
 
+  // A PIN is being set when the auto submit feature is present. This user
+  // does not need to be backfilled.
+  user_manager::known_user::PinAutosubmitSetBackfillNotNeeded(account_id);
+
   const bool autosubmit_enabled =
       PrefService(account_id)->GetBoolean(prefs::kPinUnlockAutosubmitEnabled) &&
       pin_length <= kPinAutosubmitMaxPinLength;
@@ -428,11 +441,55 @@ void PinBackend::UpdatePinAutosubmitOnSuccessfulTryAuth(
   if (!IsPinAutosubmitFeatureEnabled())
     return;
 
+  // Backfill the auto submit preference if the PIN that was authenticated was
+  // set before the auto submit feature existed.
+  PinAutosubmitBackfill(account_id, pin_length);
+
   const bool autosubmit_enabled =
       PrefService(account_id)->GetBoolean(prefs::kPinUnlockAutosubmitEnabled) &&
       pin_length <= kPinAutosubmitMaxPinLength;
   if (autosubmit_enabled)
     user_manager::known_user::SetUserPinLength(account_id, pin_length);
+}
+
+void PinBackend::PinAutosubmitBackfill(const AccountId& account_id,
+                                       size_t pin_length) {
+  if (!IsPinAutosubmitBackfillFeatureEnabled() ||
+      !IsPinAutosubmitFeatureEnabled()) {
+    return;
+  }
+
+  // Don't backfill if its not necessary & Prevent future backfill attempts.
+  if (!user_manager::known_user::PinAutosubmitIsBackfillNeeded(account_id))
+    return;
+  user_manager::known_user::PinAutosubmitSetBackfillNotNeeded(account_id);
+
+  // Dont backfill if there is a user value set for the pref.
+  if (PrefService(account_id)
+          ->GetUserPrefValue(prefs::kPinUnlockAutosubmitEnabled) != nullptr)
+    return;
+
+  // Disabled if not allowed by policy. Since 'kPinUnlockAutosubmitEnabled'
+  // is enabled by default, it is only false when recommended/mandatory by
+  // policy.
+  if (!PrefService(account_id)
+           ->GetBoolean(prefs::kPinUnlockAutosubmitEnabled)) {
+    RecordUMAHistogram(BackfillEvent::kDisabledDueToPolicy);
+    PrefService(account_id)
+        ->SetBoolean(prefs::kPinUnlockAutosubmitEnabled, false);
+    return;
+  }
+
+  // Only enable auto submit for six digits PINs.
+  if (pin_length != kPinAutosubmitBackfillLength) {
+    RecordUMAHistogram(BackfillEvent::kDisabledDueToPinLength);
+    PrefService(account_id)
+        ->SetBoolean(prefs::kPinUnlockAutosubmitEnabled, false);
+  } else {
+    RecordUMAHistogram(BackfillEvent::kEnabled);
+    PrefService(account_id)
+        ->SetBoolean(prefs::kPinUnlockAutosubmitEnabled, true);
+  }
 }
 
 }  // namespace quick_unlock

@@ -151,13 +151,14 @@ bool WebLocalFrameImpl::FindForTesting(int identifier,
                                        bool forward,
                                        bool new_session,
                                        bool force,
-                                       bool wrap_within_frame) {
+                                       bool wrap_within_frame,
+                                       bool async) {
   auto options = mojom::blink::FindOptions::New();
   options->match_case = match_case;
   options->forward = forward;
   options->new_session = new_session;
   options->force = force;
-  options->run_synchronously_for_testing = true;
+  options->run_synchronously_for_testing = !async;
   bool result = find_in_page_->FindInternal(identifier, search_text, *options,
                                             wrap_within_frame, nullptr);
   find_in_page_->StopFinding(

@@ -381,7 +381,8 @@ TEST_F(RenderViewImplDownloadURLTest, DownloadUrlLimit) {
 TEST_F(RenderFrameImplTest, NoCrashWhenDeletingFrameDuringFind) {
   frame()->GetWebFrame()->FindForTesting(
       1, "foo", true /* match_case */, true /* forward */,
-      true /* new_session */, true /* force */, false /* wrap_within_frame */);
+      true /* new_session */, true /* force */, false /* wrap_within_frame */,
+      false /* async */);
 
   UnfreezableFrameMsg_Delete delete_message(
       0, FrameDeleteIntention::kNotMainFrame);

@@ -13,6 +13,7 @@ class Browser;
 enum class UrlLoadStrategy;
 
 @protocol ApplicationCommands;
+@protocol RecentTabsMenuProvider;
 @protocol RecentTabsTableViewControllerDelegate;
 @protocol RecentTabsPresentationDelegate;
 @protocol TableViewFaviconDataSource;
@@ -41,6 +42,10 @@ enum class UrlLoadStrategy;
 
 // Data source for images.
 @property(nonatomic, weak) id<TableViewFaviconDataSource> imageDataSource;
+
+// Provider of menu configurations for the recentTabs component.
+@property(nonatomic, weak) id<RecentTabsMenuProvider> menuProvider
+    API_AVAILABLE(ios(13.0));
 
 // Initializers.
 - (instancetype)init NS_DESIGNATED_INITIALIZER;

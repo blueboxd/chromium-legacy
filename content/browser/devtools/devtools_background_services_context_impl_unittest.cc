@@ -110,6 +110,12 @@ class DevToolsBackgroundServicesContextTest
 
   void TearDown() override { context_->RemoveObserver(this); }
 
+  mojo::Remote<storage::mojom::ServiceWorkerStorageControl>& storage_control() {
+    return embedded_worker_test_helper_.context()
+        ->registry()
+        ->GetRemoteStorageControl();
+  }
+
  protected:
   MOCK_METHOD1(OnEventReceived,
                void(const devtools::proto::BackgroundServiceEvent& event));
@@ -271,6 +277,7 @@ TEST_F(DevToolsBackgroundServicesContextTest, GetLoggedEvents) {
   // "Log" some events and wait for them to finish.
   LogTestBackgroundServiceEvent("f1");
   LogTestBackgroundServiceEvent("f2");
+  storage_control().FlushForTesting();
 
   // Check the values.
   auto feature_events = GetLoggedBackgroundServiceEvents();
@@ -366,12 +373,14 @@ TEST_F(DevToolsBackgroundServicesContextTest, ClearLoggedEvents) {
   // "Log" some events and wait for them to finish.
   LogTestBackgroundServiceEvent("f1");
   LogTestBackgroundServiceEvent("f2");
+  storage_control().FlushForTesting();
 
   // Check the values.
   auto feature_events = GetLoggedBackgroundServiceEvents();
   ASSERT_EQ(feature_events.size(), 2u);
 
   ClearLoggedBackgroundServiceEvents();
+  storage_control().FlushForTesting();
 
   // Should be empty now.
   feature_events = GetLoggedBackgroundServiceEvents();

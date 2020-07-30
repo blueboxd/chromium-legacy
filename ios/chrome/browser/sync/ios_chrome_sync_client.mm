@@ -195,6 +195,12 @@ IOSChromeSyncClient::GetInvalidationService() {
   return nullptr;
 }
 
+syncer::SyncInvalidationsService*
+IOSChromeSyncClient::GetSyncInvalidationsService() {
+  // TODO(crbug.com/1082122): implement sync invalidations on iOS.
+  return nullptr;
+}
+
 syncer::TrustedVaultClient* IOSChromeSyncClient::GetTrustedVaultClient() {
   return trusted_vault_client_.get();
 }

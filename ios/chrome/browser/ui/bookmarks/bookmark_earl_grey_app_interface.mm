@@ -324,16 +324,6 @@
   return prefs->GetInteger(prefs::kIosBookmarkSigninPromoDisplayedCount);
 }
 
-+ (NSString*)setupFakeIdentity {
-  FakeChromeIdentity* identity =
-      [FakeChromeIdentity identityWithEmail:@"foo1@gmail.com"
-                                     gaiaID:@"foo1ID"
-                                       name:@"Fake Foo 1"];
-  ios::FakeChromeIdentityService::GetInstanceFromChromeProvider()->AddIdentity(
-      identity);
-  return identity.userEmail;
-}
-
 #pragma mark - Helpers
 
 + (bookmarks::BookmarkModel*)bookmarkModel {

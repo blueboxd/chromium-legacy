@@ -105,6 +105,14 @@ _CONFIG = [
             'base::RepeatingCallback',
             'base::RepeatingClosure',
 
+            # //base/cancelable_callback.h
+            'base::CancelableOnceCallback',
+            'base::CancelableOnceClosure',
+            'base::CancelableRepeatingCallback',
+            'base::CancelableRepeatingClosure',
+            'base::CancelableCallback',
+            'base::CancelableClosure',
+
             # //base/mac/scoped_nsobject.h
             'base::scoped_nsobject',
 

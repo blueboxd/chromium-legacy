@@ -31,6 +31,7 @@
 #include "components/sync/engine/sync_backend_registrar.h"
 #include "components/sync/engine/sync_manager.h"
 #include "components/sync/engine/sync_manager_factory.h"
+#include "components/sync/invalidations/switches.h"
 #include "components/sync/model_impl/forwarding_model_type_controller_delegate.h"
 #include "components/sync/nigori/nigori_model_type_processor.h"
 #include "components/sync/nigori/nigori_storage_impl.h"
@@ -560,8 +561,9 @@ void SyncEngineBackend::DoOnInvalidatorClientIdChange(
 }
 
 void SyncEngineBackend::DoOnInvalidationReceived(const std::string& payload) {
-  // TODO(crbug.com/1082122): add a DCHECK for a feature toggle.
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  DCHECK(
+      base::FeatureList::IsEnabled(switches::kSubscribeForSyncInvalidations));
   // TODO(crbug.com/1102322): use data types from active or from payload.
   const ModelTypeSet active_datatypes{ModelType::BOOKMARKS};
   for (const ModelType type : active_datatypes) {

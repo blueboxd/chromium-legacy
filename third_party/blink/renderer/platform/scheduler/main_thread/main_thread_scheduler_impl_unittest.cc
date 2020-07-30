@@ -3408,7 +3408,15 @@ TEST_F(MainThreadSchedulerImplWithInitalVirtualTimeTest, VirtualTimeOverride) {
   EXPECT_EQ(base::Time::Now(), base::Time::FromJsTime(1000000.0));
 }
 
-TEST_F(MainThreadSchedulerImplTest, CompositingAfterInput) {
+class MainThreadSchedulerImplWithCompositingAfterInputPrioritizationTest
+    : public MainThreadSchedulerImplTest {
+ public:
+  MainThreadSchedulerImplWithCompositingAfterInputPrioritizationTest()
+      : MainThreadSchedulerImplTest({kPrioritizeCompositingAfterInput}, {}) {}
+};
+
+TEST_F(MainThreadSchedulerImplWithCompositingAfterInputPrioritizationTest,
+       CompositingAfterInput) {
   Vector<String> run_order;
   PostTestTasks(&run_order, "P1 T1 C1");
   base::RunLoop().RunUntilIdle();

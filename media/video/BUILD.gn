@@ -39,6 +39,8 @@ source_set("video") {
     "video_decode_accelerator.h",
     "video_encode_accelerator.cc",
     "video_encode_accelerator.h",
+    "video_encode_accelerator_adapter.cc",
+    "video_encode_accelerator_adapter.h",
     "video_encoder_info.cc",
     "video_encoder_info.h",
   ]

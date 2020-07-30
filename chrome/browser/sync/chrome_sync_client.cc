@@ -36,6 +36,7 @@
 #include "chrome/browser/sync/profile_sync_service_factory.h"
 #include "chrome/browser/sync/send_tab_to_self_sync_service_factory.h"
 #include "chrome/browser/sync/session_sync_service_factory.h"
+#include "chrome/browser/sync/sync_invalidations_service_factory.h"
 #include "chrome/browser/sync/user_event_service_factory.h"
 #include "chrome/browser/themes/theme_service.h"
 #include "chrome/browser/themes/theme_service_factory.h"
@@ -542,6 +543,11 @@ invalidation::InvalidationService* ChromeSyncClient::GetInvalidationService() {
   if (provider)
     return provider->GetInvalidationService();
   return nullptr;
+}
+
+syncer::SyncInvalidationsService*
+ChromeSyncClient::GetSyncInvalidationsService() {
+  return SyncInvalidationsServiceFactory::GetForProfile(profile_);
 }
 
 scoped_refptr<syncer::ExtensionsActivity>

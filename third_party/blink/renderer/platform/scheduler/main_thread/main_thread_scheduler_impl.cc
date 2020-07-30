@@ -574,6 +574,9 @@ MainThreadSchedulerImpl::SchedulingSettings::SchedulingSettings() {
       base::FeatureList::IsEnabled(
           kPrioritizeCompositingAndLoadingDuringEarlyLoading);
 
+  prioritize_compositing_after_input =
+      base::FeatureList::IsEnabled(kPrioritizeCompositingAfterInput);
+
   if (use_resource_fetch_priority ||
       use_resource_priorities_only_during_loading) {
     base::FieldTrialParams params;
@@ -1001,7 +1004,8 @@ void MainThreadSchedulerImpl::SetSchedulerKeepActive(bool keep_active) {
 }
 
 void MainThreadSchedulerImpl::OnMainFrameRequestedForInput() {
-  SetPrioritizeCompositingAfterInput(true);
+  SetPrioritizeCompositingAfterInput(
+      scheduling_settings().prioritize_compositing_after_input);
 }
 
 bool MainThreadSchedulerImpl::SchedulerKeepActive() {

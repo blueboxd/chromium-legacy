@@ -193,17 +193,17 @@ TEST(AutofillStructuredAddressUtils, TestGetPlaceholderToken) {
 }
 
 TEST(AutofillStructuredAddressUtils, CaptureTypeWithPattern) {
-  EXPECT_EQ("(?:(?P<NAME_FULL>abs\\w)(?:\\s|$))?",
+  EXPECT_EQ("(?i:(?P<NAME_FULL>abs\\w)(?:\\s+|$))?",
             CaptureTypeWithPattern(NAME_FULL, {"abs", "\\w"},
                                    {.quantifier = MATCH_OPTIONAL}));
-  EXPECT_EQ("(?:(?P<NAME_FULL>abs\\w)(?:\\s|$))",
+  EXPECT_EQ("(?i:(?P<NAME_FULL>abs\\w)(?:\\s+|$))",
             CaptureTypeWithPattern(NAME_FULL, {"abs", "\\w"}));
-  EXPECT_EQ("(?:(?P<NAME_FULL>abs\\w)(?:\\s|$))??",
+  EXPECT_EQ("(?i:(?P<NAME_FULL>abs\\w)(?:\\s+|$))??",
             CaptureTypeWithPattern(NAME_FULL, "abs\\w",
                                    {.quantifier = MATCH_LAZY_OPTIONAL}));
-  EXPECT_EQ("(?:(?P<NAME_FULL>abs\\w)(?:\\s|$))",
+  EXPECT_EQ("(?i:(?P<NAME_FULL>abs\\w)(?:\\s+|$))",
             CaptureTypeWithPattern(NAME_FULL, "abs\\w"));
-  EXPECT_EQ("(?:(?P<NAME_FULL>abs\\w)(?:_))",
+  EXPECT_EQ("(?i:(?P<NAME_FULL>abs\\w)(?:_))",
             CaptureTypeWithPattern(NAME_FULL, "abs\\w", {.separator = "_"}));
 }
 

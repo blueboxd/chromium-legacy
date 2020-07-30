@@ -169,6 +169,11 @@ bool IsPinAutosubmitFeatureEnabled() {
   return base::FeatureList::IsEnabled(features::kQuickUnlockPinAutosubmit);
 }
 
+bool IsPinAutosubmitBackfillFeatureEnabled() {
+  return base::FeatureList::IsEnabled(
+      features::kQuickUnlockPinAutosubmitBackfill);
+}
+
 void DisablePinByPolicyForTesting(bool disable) {
   disable_pin_by_policy_for_testing_ = disable;
 }

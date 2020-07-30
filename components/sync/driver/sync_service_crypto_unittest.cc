@@ -26,6 +26,7 @@ namespace {
 
 using testing::_;
 using testing::Eq;
+using testing::Ne;
 
 sync_pb::EncryptedData MakeEncryptedData(
     const std::string& passphrase,
@@ -282,6 +283,46 @@ class SyncServiceCryptoTest : public testing::Test {
   SyncServiceCrypto crypto_;
 };
 
+// Happy case where no user action is required upon startup.
+TEST_F(SyncServiceCryptoTest, ShouldRequireNoUserAction) {
+  crypto_.SetSyncEngine(CoreAccountInfo(), &engine_);
+  EXPECT_FALSE(crypto_.IsPassphraseRequired());
+  EXPECT_FALSE(crypto_.IsTrustedVaultKeyRequired());
+  EXPECT_TRUE(crypto_.IsTrustedVaultKeyRequiredStateKnown());
+}
+
+TEST_F(SyncServiceCryptoTest, ShouldSetUpNewCustomPassphrase) {
+  const std::string kTestPassphrase = "somepassphrase";
+
+  crypto_.SetSyncEngine(CoreAccountInfo(), &engine_);
+  ASSERT_FALSE(crypto_.IsPassphraseRequired());
+  ASSERT_FALSE(crypto_.IsUsingSecondaryPassphrase());
+  ASSERT_FALSE(crypto_.IsEncryptEverythingEnabled());
+  ASSERT_THAT(crypto_.GetPassphraseType(),
+              Ne(PassphraseType::kCustomPassphrase));
+
+  EXPECT_CALL(engine_, SetEncryptionPassphrase(kTestPassphrase));
+  crypto_.SetEncryptionPassphrase(kTestPassphrase);
+
+  // Mimic completion of the procedure in the sync engine.
+  EXPECT_CALL(notify_observers_cb_, Run());
+  crypto_.OnPassphraseTypeChanged(PassphraseType::kCustomPassphrase,
+                                  base::Time::Now());
+  // The current implementation notifies observers again upon
+  // crypto_.OnEncryptedTypesChanged(). This may change in the future.
+  EXPECT_CALL(notify_observers_cb_, Run());
+  crypto_.OnEncryptedTypesChanged(syncer::EncryptableUserTypes(),
+                                  /*encrypt_everything=*/true);
+  EXPECT_CALL(reconfigure_cb_, Run(CONFIGURE_REASON_CRYPTO));
+  crypto_.OnPassphraseAccepted();
+
+  EXPECT_FALSE(crypto_.IsPassphraseRequired());
+  EXPECT_TRUE(crypto_.IsEncryptEverythingEnabled());
+  ASSERT_THAT(crypto_.GetPassphraseType(),
+              Eq(PassphraseType::kCustomPassphrase));
+  EXPECT_TRUE(crypto_.IsUsingSecondaryPassphrase());
+}
+
 TEST_F(SyncServiceCryptoTest, ShouldExposePassphraseRequired) {
   const std::string kTestPassphrase = "somepassphrase";
 
@@ -308,7 +349,7 @@ TEST_F(SyncServiceCryptoTest, ShouldExposePassphraseRequired) {
   EXPECT_CALL(engine_, SetDecryptionPassphrase(kTestPassphrase))
       .WillOnce([&](const std::string&) { crypto_.OnPassphraseAccepted(); });
   // The current implementation issues two reconfigurations: one immediately
-  // after checking the passphase in the UI thread and a second time later when
+  // after checking the passphrase in the UI thread and a second time later when
   // the engine confirms with OnPassphraseAccepted().
   EXPECT_CALL(reconfigure_cb_, Run(CONFIGURE_REASON_CRYPTO)).Times(2);
   EXPECT_TRUE(crypto_.SetDecryptionPassphrase(kTestPassphrase));

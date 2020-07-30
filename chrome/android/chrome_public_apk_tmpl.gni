@@ -274,14 +274,20 @@ template("chrome_public_common_apk_or_module_tmpl") {
         loadable_modules = []
       }
       loadable_modules += [ "$root_out_dir/libchrome_crashpad_handler.so" ]
-      library_always_compress = [
+      if (!defined(library_always_compress)) {
+        library_always_compress = []
+      }
+      library_always_compress += [
         "libchrome_crashpad_handler.so",
         "libchromium_android_linker.so",
       ]
 
       # Adds "crazy." prefix to avoid libraries being extracted when installed.
       if (use_chromium_linker) {
-        library_renames = [
+        if (!defined(library_renames)) {
+          library_renames = []
+        }
+        library_renames += [
           "libchrome.so",
           "libchromefortest.so",
         ]

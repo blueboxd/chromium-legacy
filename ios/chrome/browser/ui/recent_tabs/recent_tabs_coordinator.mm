@@ -12,10 +12,14 @@
 #import "ios/chrome/browser/main/browser.h"
 #include "ios/chrome/browser/ui/commands/application_commands.h"
 #include "ios/chrome/browser/ui/commands/command_dispatcher.h"
+#import "ios/chrome/browser/ui/menu/action_factory.h"
+#import "ios/chrome/browser/ui/menu/menu_histograms.h"
 #import "ios/chrome/browser/ui/recent_tabs/recent_tabs_mediator.h"
+#import "ios/chrome/browser/ui/recent_tabs/recent_tabs_menu_provider.h"
 #import "ios/chrome/browser/ui/recent_tabs/recent_tabs_presentation_delegate.h"
 #import "ios/chrome/browser/ui/recent_tabs/recent_tabs_table_view_controller.h"
 #import "ios/chrome/browser/ui/recent_tabs/recent_tabs_transitioning_delegate.h"
+#import "ios/chrome/browser/ui/table_view/cells/table_view_url_item.h"
 #import "ios/chrome/browser/ui/table_view/feature_flags.h"
 #import "ios/chrome/browser/ui/table_view/table_view_navigation_controller.h"
 #import "ios/chrome/browser/ui/table_view/table_view_navigation_controller_constants.h"
@@ -26,7 +30,8 @@
 #error "This file requires ARC support."
 #endif
 
-@interface RecentTabsCoordinator ()<RecentTabsPresentationDelegate>
+@interface RecentTabsCoordinator () <RecentTabsMenuProvider,
+                                     RecentTabsPresentationDelegate>
 // Completion block called once the recentTabsViewController is dismissed.
 @property(nonatomic, copy) ProceduralBlock completion;
 // Mediator being managed by this Coordinator.
@@ -55,6 +60,10 @@
       HandlerForProtocol(dispatcher, ApplicationCommands);
   recentTabsTableViewController.handler = handler;
   recentTabsTableViewController.presentationDelegate = self;
+
+  if (@available(iOS 13.0, *)) {
+    recentTabsTableViewController.menuProvider = self;
+  }
 
   // Adds the "Done" button and hooks it up to |stop|.
   UIBarButtonItem* dismissButton = [[UIBarButtonItem alloc]
@@ -161,6 +170,43 @@
     weakSelf.completion = nil;
   };
   [self stop];
+}
+
+#pragma mark - RecentTabsMenuProvider
+
+- (UIContextMenuConfiguration*)contextMenuConfigurationForItem:
+    (TableViewURLItem*)item API_AVAILABLE(ios(13.0)) {
+  return [UIContextMenuConfiguration
+      configurationWithIdentifier:nil
+                  previewProvider:nil
+                   actionProvider:^(NSArray<UIMenuElement*>* suggestedActions) {
+                     // Record that this context menu was shown to the user.
+                     RecordMenuShown(MenuScenario::kRecentTabsEntry);
+
+                     ActionFactory* actionFactory = [[ActionFactory alloc]
+                         initWithScenario:MenuScenario::kRecentTabsEntry];
+
+                     UIAction* copyAction =
+                         [actionFactory actionToCopyURL:item.URL];
+
+                     return [UIMenu menuWithTitle:@"" children:@[ copyAction ]];
+                   }];
+}
+
+- (UIContextMenuConfiguration*)
+    contextMenuConfigurationForHeaderWithSectionIdentifier:
+        (NSInteger)sectionIdentifier API_AVAILABLE(ios(13.0)) {
+  return [UIContextMenuConfiguration
+      configurationWithIdentifier:nil
+                  previewProvider:nil
+                   actionProvider:^(NSArray<UIMenuElement*>* suggestedActions) {
+                     // Record that this context menu was shown to the user.
+                     RecordMenuShown(MenuScenario::kRecentTabsEntry);
+
+                     // TODO(crbug.com/1093302): Implement this.
+
+                     return [UIMenu menuWithTitle:@"" children:@[]];
+                   }];
 }
 
 @end

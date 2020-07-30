@@ -40,6 +40,8 @@
 #import "ios/chrome/browser/policy/policy_features.h"
 #include "ios/chrome/browser/policy_url_blocking/policy_url_blocking_service.h"
 #include "ios/chrome/browser/reading_list/reading_list_model_factory.h"
+#import "ios/chrome/browser/safe_browsing/real_time_url_lookup_service_factory.h"
+#import "ios/chrome/browser/safe_browsing/verdict_cache_manager_factory.h"
 #include "ios/chrome/browser/search_engines/template_url_service_factory.h"
 #include "ios/chrome/browser/signin/about_signin_internals_factory.h"
 #include "ios/chrome/browser/signin/account_consistency_service_factory.h"
@@ -124,6 +126,7 @@ void EnsureBrowserStateKeyedServiceFactoriesBuilt() {
   ModelTypeStoreServiceFactory::GetInstance();
   ProfileSyncServiceFactory::GetInstance();
   ReadingListModelFactory::GetInstance();
+  RealTimeUrlLookupServiceFactory::GetInstance();
   SigninBrowserStateInfoUpdaterFactory::GetInstance();
   SigninClientFactory::GetInstance();
   SnapshotCacheFactory::GetInstance();
@@ -132,6 +135,7 @@ void EnsureBrowserStateKeyedServiceFactoriesBuilt() {
   TranslateAcceptLanguagesFactory::GetInstance();
   UnifiedConsentServiceFactory::GetInstance();
   UrlLanguageHistogramFactory::GetInstance();
+  VerdictCacheManagerFactory::GetInstance();
 
   if (IsURLBlocklistEnabled()) {
     PolicyBlocklistServiceFactory::GetInstance();

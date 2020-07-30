@@ -3,6 +3,8 @@
 // found in the LICENSE file.
 
 #include "ios/chrome/browser/passwords/ios_chrome_password_check_manager.h"
+
+#include "base/strings/utf_string_conversions.h"
 #include "components/keyed_service/core/service_access_type.h"
 #include "components/password_manager/core/common/password_manager_pref_names.h"
 #include "components/prefs/pref_service.h"
@@ -64,6 +66,23 @@ PasswordCheckState ConvertBulkCheckState(State state) {
   }
   NOTREACHED();
   return PasswordCheckState::kIdle;
+}
+
+// Function which returns duplicates of passed form.
+std::vector<autofill::PasswordForm> GetDuplicatesOfForm(
+    const autofill::PasswordForm& form,
+    SavedPasswordsView passwords) {
+  std::vector<autofill::PasswordForm> duplicates;
+  auto tie = [](const auto& form) {
+    return std::tie(form.signon_realm, form.username_value,
+                    form.password_value);
+  };
+
+  for (const auto& item : passwords) {
+    if (tie(item) == tie(form))
+      duplicates.emplace_back(item);
+  }
+  return duplicates;
 }
 }  // namespace
 
@@ -130,6 +149,34 @@ password_manager::SavedPasswordsPresenter::SavedPasswordsView
 IOSChromePasswordCheckManager::GetSavedPasswordsFor(
     const CredentialWithPassword& credential) const {
   return compromised_credentials_manager_.GetSavedPasswordsFor(credential);
+}
+
+void IOSChromePasswordCheckManager::EditPasswordForm(
+    const autofill::PasswordForm& form,
+    base::StringPiece password) {
+  saved_passwords_presenter_.EditPassword(form, base::UTF8ToUTF16(password));
+}
+
+void IOSChromePasswordCheckManager::EditCompromisedPasswordForm(
+    const autofill::PasswordForm& form,
+    base::StringPiece password) {
+  compromised_credentials_manager_.UpdateCompromisedCredentials(
+      password_manager::CredentialView(form), password);
+}
+
+void IOSChromePasswordCheckManager::DeletePasswordForm(
+    const autofill::PasswordForm& form) {
+  auto duplicates =
+      GetDuplicatesOfForm(form, saved_passwords_presenter_.GetSavedPasswords());
+  for (auto& duplicate : duplicates) {
+    password_store_->RemoveLogin(duplicate);
+  }
+}
+
+void IOSChromePasswordCheckManager::DeleteCompromisedPasswordForm(
+    const autofill::PasswordForm& form) {
+  compromised_credentials_manager_.RemoveCompromisedCredential(
+      password_manager::CredentialView(form));
 }
 
 void IOSChromePasswordCheckManager::OnSavedPasswordsChanged(

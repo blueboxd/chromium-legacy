@@ -838,6 +838,11 @@ std::vector<std::unique_ptr<autofill::PasswordForm>> CopyOf(
   _passwordIssuesCoordinator = nil;
 }
 
+- (BOOL)willHandlePasswordDeletion:(const autofill::PasswordForm&)password {
+  [self passwordDetailsTableViewController:nil deletePassword:password];
+  return YES;
+}
+
 #pragma mark - Private methods
 
 // Shows loading spinner background view.
@@ -1398,6 +1403,13 @@ std::vector<std::unique_ptr<autofill::PasswordForm>> CopyOf(
                  addTarget:self
                     action:@selector(didTapPasswordCheckInfoButton:)
           forControlEvents:UIControlEventTouchUpInside];
+      break;
+    }
+    case ItemTypeSavedPassword:
+    case ItemTypeBlocked: {
+      TableViewDetailTextCell* textCell =
+          base::mac::ObjCCastStrict<TableViewDetailTextCell>(cell);
+      textCell.textLabel.lineBreakMode = NSLineBreakByTruncatingHead;
       break;
     }
   }

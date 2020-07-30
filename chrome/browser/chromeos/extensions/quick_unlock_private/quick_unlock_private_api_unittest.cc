@@ -18,6 +18,7 @@
 #include "base/strings/strcat.h"
 #include "base/strings/string_piece_forward.h"
 #include "base/test/bind_test_util.h"
+#include "base/test/metrics/histogram_tester.h"
 #include "base/test/scoped_feature_list.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "chrome/browser/chromeos/login/easy_unlock/easy_unlock_service_factory.h"
@@ -515,6 +516,31 @@ class QuickUnlockPrivateUnitTest
     return user_manager::known_user::GetUserPinLength(account_id);
   }
 
+  void ClearExposedPinLength() {
+    const AccountId account_id =
+        AccountId::FromUserEmailGaiaId(kTestUserEmail, kTestUserGaiaId);
+    user_manager::known_user::SetUserPinLength(account_id, 0);
+  }
+
+  bool IsBackfillNeeded() {
+    const AccountId account_id =
+        AccountId::FromUserEmailGaiaId(kTestUserEmail, kTestUserGaiaId);
+    return user_manager::known_user::PinAutosubmitIsBackfillNeeded(account_id);
+  }
+
+  void SetBackfillNotNeeded() {
+    const AccountId account_id =
+        AccountId::FromUserEmailGaiaId(kTestUserEmail, kTestUserGaiaId);
+    user_manager::known_user::PinAutosubmitSetBackfillNotNeeded(account_id);
+  }
+
+  void SetBackfillNeededForTests() {
+    const AccountId account_id =
+        AccountId::FromUserEmailGaiaId(kTestUserEmail, kTestUserGaiaId);
+    user_manager::known_user::PinAutosubmitSetBackfillNeededForTests(
+        account_id);
+  }
+
   void OnUpdateUserPods() {
     const AccountId account_id =
         AccountId::FromUserEmailGaiaId(kTestUserEmail, kTestUserGaiaId);
@@ -524,6 +550,23 @@ class QuickUnlockPrivateUnitTest
   void SetPin(const std::string& pin) {
     RunSetModes(QuickUnlockModeList{QuickUnlockMode::QUICK_UNLOCK_MODE_PIN},
                 {pin});
+  }
+
+  void SetPinForBackfillTests(const std::string& pin) {
+    // No PIN set. By default IsBackfillNeeded should return true.
+    ASSERT_EQ(IsBackfillNeeded(), true);
+
+    // Set PIN. Backfill must be marked as 'not needed' internally by the API.
+    SetPin(pin);
+    ASSERT_EQ(IsBackfillNeeded(), false);
+    ASSERT_EQ(HasUserValueForPinAutosubmitPref(), false);
+
+    // Set 'backfill needed' and clear the exposed length to simulate a PIN that
+    // was set before the PIN auto submit feature existed.
+    SetBackfillNeededForTests();
+    ClearExposedPinLength();
+    ASSERT_EQ(IsBackfillNeeded(), true);
+    ASSERT_EQ(GetExposedPinLength(), 0);
   }
 
   void ClearPin() { RunSetModes(QuickUnlockModeList{}, CredentialList{}); }
@@ -1020,6 +1063,76 @@ TEST_P(QuickUnlockPrivateUnitTest, PinAutosubmitClearLengthOnUiUpdate) {
 TEST_P(QuickUnlockPrivateUnitTest, PinAutosubmitFeatureGuard) {
   const bool feature_enabled = IsAutosubmitFeatureEnabled();
   EXPECT_EQ(quick_unlock::IsPinAutosubmitFeatureEnabled(), feature_enabled);
+}
+
+// Tests that the backfill operation sets a user value for the auto submit pref
+// for users who have set a PIN in a version of Chrome OS that did not support
+// auto submit.
+TEST_P(QuickUnlockPrivateUnitTest, PinAutosubmitBackfillDefaultPinLength) {
+  base::HistogramTester histogram_tester;
+  const bool feature_enabled = IsAutosubmitFeatureEnabled();
+  if (!feature_enabled)
+    return;
+
+  SetPinForBackfillTests("123456");
+
+  // A successful authentication attempt will backfill the user value.
+  EXPECT_TRUE(TryAuthenticate("123456"));
+  EXPECT_EQ(GetExposedPinLength(), 6);
+  EXPECT_TRUE(HasUserValueForPinAutosubmitPref());
+  EXPECT_TRUE(GetAutosubmitPrefVal());
+  EXPECT_FALSE(IsBackfillNeeded());
+
+  histogram_tester.ExpectUniqueSample(
+      "Ash.Login.PinAutosubmit.Backfill",
+      quick_unlock::PinBackend::BackfillEvent::kEnabled, 1);
+}
+
+// No backfill operation if the PIN is longer than 6 digits.
+TEST_P(QuickUnlockPrivateUnitTest, PinAutosubmitBackfillNonDefaultPinLength) {
+  base::HistogramTester histogram_tester;
+  const bool feature_enabled = IsAutosubmitFeatureEnabled();
+  if (!feature_enabled)
+    return;
+
+  SetPinForBackfillTests("1234567");
+
+  // A successful authentication attempt will backfill the user value to false.
+  EXPECT_TRUE(TryAuthenticate("1234567"));
+  EXPECT_EQ(GetExposedPinLength(), 0);
+  EXPECT_TRUE(HasUserValueForPinAutosubmitPref());
+  EXPECT_FALSE(GetAutosubmitPrefVal());
+  EXPECT_FALSE(IsBackfillNeeded());
+
+  histogram_tester.ExpectUniqueSample(
+      "Ash.Login.PinAutosubmit.Backfill",
+      quick_unlock::PinBackend::BackfillEvent::kDisabledDueToPinLength, 1);
+}
+
+// Tests that the backfill operation sets a user value for the auto submit pref
+// to false for enterprise users even with a default length of 6.
+TEST_P(QuickUnlockPrivateUnitTest, PinAutosubmitBackfillEnterprise) {
+  base::HistogramTester histogram_tester;
+  const bool feature_enabled = IsAutosubmitFeatureEnabled();
+  if (!feature_enabled)
+    return;
+
+  // Enterprise users have auto submit disabled by default.
+  test_pref_service_->SetManagedPref(prefs::kPinUnlockAutosubmitEnabled,
+                                     std::make_unique<base::Value>(false));
+
+  SetPinForBackfillTests("123456");
+
+  // A successful authentication attempt will backfill the user value to false.
+  EXPECT_TRUE(TryAuthenticate("123456"));
+  EXPECT_EQ(GetExposedPinLength(), 0);
+  EXPECT_TRUE(HasUserValueForPinAutosubmitPref());
+  EXPECT_FALSE(GetAutosubmitPrefVal());
+  EXPECT_FALSE(IsBackfillNeeded());
+
+  histogram_tester.ExpectUniqueSample(
+      "Ash.Login.PinAutosubmit.Backfill",
+      quick_unlock::PinBackend::BackfillEvent::kDisabledDueToPolicy, 1);
 }
 
 INSTANTIATE_TEST_SUITE_P(

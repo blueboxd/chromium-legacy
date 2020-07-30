@@ -269,7 +269,7 @@ QUIC_FLAG(bool, FLAGS_quic_restart_flag_quic_enable_tls_resumption_v3, false)
 QUIC_FLAG(bool, FLAGS_quic_reloadable_flag_quic_bbr2_ignore_inflight_lo, false)
 
 // If true, support for IETF QUIC 0-rtt is enabled.
-QUIC_FLAG(bool, FLAGS_quic_reloadable_flag_quic_enable_zero_rtt_for_tls, true)
+QUIC_FLAG(bool, FLAGS_quic_restart_flag_quic_enable_zero_rtt_for_tls_v2, true)
 
 // If true, default on PTO which unifies TLP + RTO loss recovery.
 QUIC_FLAG(bool, FLAGS_quic_reloadable_flag_quic_default_on_pto, false)
@@ -377,7 +377,7 @@ QUIC_FLAG(
 // If true, try to coalesce packet of higher space with retransmissions to
 // mitigate RTT inflations.
 QUIC_FLAG(bool,
-          FLAGS_quic_reloadable_flag_quic_coalesced_packet_of_higher_space,
+          FLAGS_quic_reloadable_flag_quic_coalesced_packet_of_higher_space2,
           false)
 
 // If true, record the received min_ack_delay in transport parameters to QUIC
@@ -437,4 +437,13 @@ QUIC_FLAG(bool,
 // Simplify the ACK code in quic_received_packet_manager.
 QUIC_FLAG(bool,
           FLAGS_quic_reloadable_flag_quic_simplify_received_packet_manager_ack,
+          false)
+
+// If true, when TLPR copt is used, enable half RTT as first PTO timeout.
+QUIC_FLAG(bool, FLAGS_quic_reloadable_flag_quic_use_half_rtt_as_first_pto, true)
+
+// If true, enable overshooting detection when the DTOS connection option is
+// supplied.
+QUIC_FLAG(bool,
+          FLAGS_quic_reloadable_flag_quic_enable_overshooting_detection,
           false)

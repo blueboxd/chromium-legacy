@@ -5,6 +5,7 @@
 #include "chromeos/components/local_search_service/inverted_index_search.h"
 
 #include "base/strings/utf_string_conversions.h"
+#include "base/test/task_environment.h"
 #include "chromeos/components/local_search_service/test_utils.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -25,13 +26,18 @@ using TermOccurrence = std::vector<std::pair<std::string, uint32_t>>;
 }  // namespace
 
 class InvertedIndexSearchTest : public testing::Test {
+ public:
   void SetUp() override {
     search_ = std::make_unique<InvertedIndexSearch>(IndexId::kCrosSettings,
                                                     nullptr /* local_state */);
   }
+  void Wait() { task_environment_.RunUntilIdle(); }
 
  protected:
   std::unique_ptr<InvertedIndexSearch> search_;
+  base::test::TaskEnvironment task_environment_{
+      base::test::TaskEnvironment::MainThreadType::DEFAULT,
+      base::test::TaskEnvironment::ThreadPoolExecutionMode::QUEUED};
 };
 
 TEST_F(InvertedIndexSearchTest, Add) {
@@ -43,6 +49,7 @@ TEST_F(InvertedIndexSearchTest, Add) {
 
   const std::vector<Data> data = CreateTestData(data_to_register);
   search_->AddOrUpdate(data);
+  Wait();
   EXPECT_EQ(search_->GetSize(), 2u);
 
   {
@@ -98,6 +105,7 @@ TEST_F(InvertedIndexSearchTest, Update) {
 
   const std::vector<Data> data = CreateTestData(data_to_register);
   search_->AddOrUpdate(data);
+  Wait();
   EXPECT_EQ(search_->GetSize(), 2u);
 
   const std::map<std::string, std::vector<ContentWithId>> data_to_update = {
@@ -108,6 +116,7 @@ TEST_F(InvertedIndexSearchTest, Update) {
 
   const std::vector<Data> updated_data = CreateTestData(data_to_update);
   search_->AddOrUpdate(updated_data);
+  Wait();
   EXPECT_EQ(search_->GetSize(), 3u);
 
   {
@@ -146,9 +155,11 @@ TEST_F(InvertedIndexSearchTest, Delete) {
 
   const std::vector<Data> data = CreateTestData(data_to_register);
   search_->AddOrUpdate(data);
+  Wait();
   EXPECT_EQ(search_->GetSize(), 2u);
 
   EXPECT_EQ(search_->Delete({"id1", "id3"}), 1u);
+  Wait();
 
   {
     const TermOccurrence doc_with_freq =
@@ -176,8 +187,10 @@ TEST_F(InvertedIndexSearchTest, Find) {
 
   // Data is added and then deleted from index, making the index empty.
   search_->AddOrUpdate(data);
+  Wait();
   EXPECT_EQ(search_->GetSize(), 2u);
   EXPECT_EQ(search_->Delete({"id1", "id2"}), 2u);
+  Wait();
   EXPECT_EQ(search_->GetSize(), 0u);
 
   EXPECT_EQ(
@@ -187,6 +200,7 @@ TEST_F(InvertedIndexSearchTest, Find) {
 
   // Index is populated again, but query is empty.
   search_->AddOrUpdate(data);
+  Wait();
   EXPECT_EQ(search_->GetSize(), 2u);
 
   EXPECT_EQ(search_->Find(base::UTF8ToUTF16(""), /*max_results=*/10, &results),

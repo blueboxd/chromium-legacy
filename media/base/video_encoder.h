@@ -36,6 +36,7 @@ class MEDIA_EXPORT VideoEncoder {
  public:
   struct MEDIA_EXPORT Options {
     Options();
+    Options(const Options&);
     ~Options();
     base::Optional<uint64_t> bitrate;
     double framerate = 30.0;
@@ -81,7 +82,7 @@ class MEDIA_EXPORT VideoEncoder {
   // including before Encode() returns.
   // Encode() does not expect EOS frames, use Flush() to finalize the stream
   // and harvest the outputs.
-  virtual void Encode(scoped_refptr<const VideoFrame> frame,
+  virtual void Encode(scoped_refptr<VideoFrame> frame,
                       bool key_frame,
                       StatusCB done_cb) = 0;
 

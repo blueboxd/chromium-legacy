@@ -463,6 +463,11 @@ COMPONENT_EXPORT(CHROME_FEATURES) extern const base::Feature kQuickUnlockPin;
 COMPONENT_EXPORT(CHROME_FEATURES)
 extern const base::Feature kQuickUnlockPinAutosubmit;
 
+// TODO(crbug.com/1104164) - Remove this once most
+// users have their preferences backfilled.
+COMPONENT_EXPORT(CHROME_FEATURES)
+extern const base::Feature kQuickUnlockPinAutosubmitBackfill;
+
 COMPONENT_EXPORT(CHROME_FEATURES)
 extern const base::Feature kQuickUnlockPinSignin;
 

@@ -75,7 +75,8 @@ INSTANTIATE_TEST_SUITE_P(PersistentBackground,
 INSTANTIATE_TEST_SUITE_P(EventPage,
                          DeclarativeNetRequestLazyAPItest,
                          ::testing::Values(ContextType::kEventPage));
-INSTANTIATE_TEST_SUITE_P(ServiceWorker,
+// Flaky (https://crbug.com/1111240)
+INSTANTIATE_TEST_SUITE_P(DISABLED_ServiceWorker,
                          DeclarativeNetRequestLazyAPItest,
                          ::testing::Values(ContextType::kServiceWorker));
 

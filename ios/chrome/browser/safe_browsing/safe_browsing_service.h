@@ -14,6 +14,10 @@ namespace base {
 class FilePath;
 }
 
+namespace network {
+class SharedURLLoaderFactory;
+}
+
 namespace safe_browsing {
 enum class ResourceType;
 class SafeBrowsingUrlCheckerImpl;
@@ -49,6 +53,10 @@ class SafeBrowsingService
 
   // Returns true if |url| has a scheme that is handled by Safe Browsing.
   virtual bool CanCheckUrl(const GURL& url) const = 0;
+
+  // Returns the SharedURLLoaderFactory used for Safe Browsing network requests.
+  virtual scoped_refptr<network::SharedURLLoaderFactory>
+  GetURLLoaderFactory() = 0;
 
  protected:
   SafeBrowsingService() = default;

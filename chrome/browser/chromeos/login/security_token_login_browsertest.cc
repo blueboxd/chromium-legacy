@@ -206,7 +206,6 @@ class SecurityTokenLoginTest : public MixinBasedInProcessBrowserTest,
 
   void SetUpOnMainThread() override {
     MixinBasedInProcessBrowserTest::SetUpOnMainThread();
-    PrepareCertificateProviderExtension();
     WaitForLoginScreenWidgetShown();
   }
 
@@ -236,6 +235,16 @@ class SecurityTokenLoginTest : public MixinBasedInProcessBrowserTest,
     pin_dialog_waiting_run_loop.Run();
   }
 
+  void WaitForChallengeResponseLabel(const std::string& awaited_label) {
+    test::TestPredicateWaiter waiter(base::BindRepeating(
+        [](const AccountId& account_id, const std::string& awaited_label) {
+          return LoginScreenTestApi::GetChallengeResponseLabel(account_id) ==
+                 base::UTF8ToUTF16(awaited_label);
+        },
+        GetChallengeResponseAccountId(), awaited_label));
+    waiter.Wait();
+  }
+
   void WaitForPinDialogTitle(const std::string& awaited_title) {
     test::TestPredicateWaiter waiter(base::BindRepeating(
         [](const std::string& awaited_title) {
@@ -248,7 +257,6 @@ class SecurityTokenLoginTest : public MixinBasedInProcessBrowserTest,
 
   void WaitForActiveSession() { login_manager_mixin_.WaitForActiveSession(); }
 
- private:
   // Configures and installs the test certificate provider extension.
   void PrepareCertificateProviderExtension() {
     certificate_provider_extension_ =
@@ -263,6 +271,7 @@ class SecurityTokenLoginTest : public MixinBasedInProcessBrowserTest,
         ExtensionForceInstallMixin::WaitMode::kBackgroundPageFirstLoad));
   }
 
+ private:
   void RegisterChallengeResponseKey() {
     // The global user manager is not created until after the Local State is
     // initialized, but in order for the user_manager::known_user:: methods to
@@ -309,6 +318,8 @@ class SecurityTokenLoginTest : public MixinBasedInProcessBrowserTest,
 // Tests the successful challenge-response login flow, including entering the
 // correct PIN.
 IN_PROC_BROWSER_TEST_F(SecurityTokenLoginTest, Basic) {
+  PrepareCertificateProviderExtension();
+
   // The user pod is displayed with the challenge-response "start" button
   // instead of the password input field.
   EXPECT_TRUE(LoginScreenTestApi::FocusUser(GetChallengeResponseAccountId()));
@@ -335,8 +346,24 @@ IN_PROC_BROWSER_TEST_F(SecurityTokenLoginTest, Basic) {
   WaitForActiveSession();
 }
 
+// Test the login failure scenario when the certificate provider extension is
+// missing.
+IN_PROC_BROWSER_TEST_F(SecurityTokenLoginTest, MissingExtension) {
+  EXPECT_EQ(LoginScreenTestApi::GetChallengeResponseLabel(
+                GetChallengeResponseAccountId()),
+            base::UTF8ToUTF16(kChallengeResponseLoginLabel));
+
+  LoginScreenTestApi::ClickChallengeResponseButton(
+      GetChallengeResponseAccountId());
+  // An error will be shown after the login attempt gets rejected (note that the
+  // rejection happens before the actual authentication begins, which is why
+  // AuthFailureWaiter cannot be used in this test).
+  WaitForChallengeResponseLabel(kChallengeResponseErrorLabel);
+}
+
 // Test the login failure scenario when the PIN dialog gets canceled.
 IN_PROC_BROWSER_TEST_F(SecurityTokenLoginTest, PinCancel) {
+  PrepareCertificateProviderExtension();
   StartLoginAndWaitForPinDialog();
 
   // The PIN dialog is canceled. The login attempt is aborted.
@@ -356,6 +383,7 @@ IN_PROC_BROWSER_TEST_F(SecurityTokenLoginTest, PinCancel) {
 // Test the successful login scenario when the correct PIN was entered only on
 // the second attempt.
 IN_PROC_BROWSER_TEST_F(SecurityTokenLoginTest, WrongPinThenCorrect) {
+  PrepareCertificateProviderExtension();
   StartLoginAndWaitForPinDialog();
 
   // A wrong PIN is entered, and an error is shown in the PIN dialog.
@@ -370,6 +398,7 @@ IN_PROC_BROWSER_TEST_F(SecurityTokenLoginTest, WrongPinThenCorrect) {
 // Test the login failure scenario when the wrong PIN is entered several times
 // until there's no more attempt left (simulating, e.g., a smart card lockout).
 IN_PROC_BROWSER_TEST_F(SecurityTokenLoginTest, WrongPinUntilLockout) {
+  PrepareCertificateProviderExtension();
   certificate_provider_extension()->set_remaining_pin_attempts(3);
 
   StartLoginAndWaitForPinDialog();
@@ -393,6 +422,7 @@ IN_PROC_BROWSER_TEST_F(SecurityTokenLoginTest, WrongPinUntilLockout) {
 // Test the login failure scenario when the extension fails to sign the
 // challenge.
 IN_PROC_BROWSER_TEST_F(SecurityTokenLoginTest, SigningFailure) {
+  PrepareCertificateProviderExtension();
   certificate_provider_extension()->set_should_fail_sign_digest_requests(true);
 
   AuthFailureWaiter auth_failure_waiter;

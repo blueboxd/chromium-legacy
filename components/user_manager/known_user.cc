@@ -14,6 +14,7 @@
 #include "base/time/time.h"
 #include "base/util/values/values_util.h"
 #include "base/values.h"
+#include "components/account_id/account_id.h"
 #include "components/prefs/pref_registry_simple.h"
 #include "components/prefs/scoped_user_pref_update.h"
 #include "components/user_manager/user_manager.h"
@@ -87,6 +88,9 @@ const char kLastInputMethod[] = "last_input_method";
 // Key of the PIN auto submit length.
 const char kPinAutosubmitLength[] = "pin_autosubmit_length";
 
+// Key for the PIN auto submit backfill needed indicator.
+const char kPinAutosubmitBackfillNeeded[] = "pin_autosubmit_backfill_needed";
+
 // List containing all the known user preferences keys.
 const char* kReservedKeys[] = {kCanonicalEmail,
                                kGAIAIdKey,
@@ -106,7 +110,8 @@ const char* kReservedKeys[] = {kCanonicalEmail,
                                kOfflineSigninLimit,
                                kIsEnterpriseManaged,
                                kLastInputMethod,
-                               kPinAutosubmitLength};
+                               kPinAutosubmitLength,
+                               kPinAutosubmitBackfillNeeded};
 
 PrefService* GetLocalState() {
   if (!UserManager::IsInitialized())
@@ -688,6 +693,23 @@ int GetUserPinLength(const AccountId& account_id) {
   if (GetIntegerPref(account_id, kPinAutosubmitLength, &pin_length))
     return pin_length;
   return 0;
+}
+
+bool PinAutosubmitIsBackfillNeeded(const AccountId& account_id) {
+  bool backfill_needed;
+  if (GetBooleanPref(account_id, kPinAutosubmitBackfillNeeded,
+                     &backfill_needed))
+    return backfill_needed;
+  // If the pref is not set, the pref needs to be backfilled.
+  return true;
+}
+
+void PinAutosubmitSetBackfillNotNeeded(const AccountId& account_id) {
+  SetBooleanPref(account_id, kPinAutosubmitBackfillNeeded, false);
+}
+
+void PinAutosubmitSetBackfillNeededForTests(const AccountId& account_id) {
+  SetBooleanPref(account_id, kPinAutosubmitBackfillNeeded, true);
 }
 
 void RemovePrefs(const AccountId& account_id) {

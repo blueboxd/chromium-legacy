@@ -534,7 +534,7 @@ void ProfileSyncService::StartUpSlowEngineComponents() {
 
   engine_ = sync_client_->GetSyncApiComponentFactory()->CreateSyncEngine(
       debug_identifier_, sync_client_->GetInvalidationService(),
-      sync_prefs_.AsWeakPtr());
+      sync_client_->GetSyncInvalidationsService(), sync_prefs_.AsWeakPtr());
 
   // Clear any old errors the first time sync starts.
   if (!user_settings_->IsFirstSetupComplete()) {

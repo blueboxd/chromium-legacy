@@ -12,7 +12,7 @@
 #include "pdf/draw_utils/coordinates.h"
 #include "pdf/page_orientation.h"
 #include "ppapi/cpp/rect.h"
-#include "ppapi/cpp/size.h"
+#include "ui/gfx/geometry/size.h"
 
 namespace pp {
 class Var;
@@ -104,7 +104,7 @@ class DocumentLayout final {
   void clear_dirty() { dirty_ = false; }
 
   // Returns the layout's total size.
-  const pp::Size& size() const { return size_; }
+  const gfx::Size& size() const { return size_; }
 
   size_t page_count() const { return page_layouts_.size(); }
 
@@ -124,12 +124,12 @@ class DocumentLayout final {
   // Computes layout that represent |page_sizes| formatted for single view.
   //
   // TODO(kmoon): Control layout type using an option.
-  void ComputeSingleViewLayout(const std::vector<pp::Size>& page_sizes);
+  void ComputeSingleViewLayout(const std::vector<gfx::Size>& page_sizes);
 
   // Computes layout that represent |page_sizes| formatted for two-up view.
   //
   // TODO(kmoon): Control layout type using an option.
-  void ComputeTwoUpViewLayout(const std::vector<pp::Size>& page_sizes);
+  void ComputeTwoUpViewLayout(const std::vector<gfx::Size>& page_sizes);
 
  private:
   // Layout of a single page.
@@ -158,7 +158,7 @@ class DocumentLayout final {
   bool dirty_ = false;
 
   // Layout's total size.
-  pp::Size size_;
+  gfx::Size size_;
 
   std::vector<PageLayout> page_layouts_;
 };

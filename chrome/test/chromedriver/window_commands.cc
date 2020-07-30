@@ -113,8 +113,6 @@ MouseEventType StringToMouseEventType(std::string action_type) {
     return kReleasedMouseEventType;
   else if (action_type == "pointerMove")
     return kMovedMouseEventType;
-  else if (action_type == "scroll")
-    return kWheelMouseEventType;
   else if (action_type == "pause")
     return kPauseMouseEventType;
   else
@@ -1212,11 +1210,10 @@ Status ProcessInputActionSequence(
   const base::DictionaryValue* parameters;
   std::string pointer_type;
   if (!action_sequence->GetString("type", &type) ||
-      ((type != "key") && (type != "pointer") && (type != "wheel") &&
-       (type != "none"))) {
-    return Status(kInvalidArgument,
-                  "'type' must be one of the strings 'key', 'pointer', 'wheel' "
-                  "or 'none'");
+      ((type != "key") && (type != "pointer") && (type != "none"))) {
+    return Status(
+        kInvalidArgument,
+        "'type' must be one of the strings 'key', 'pointer' or 'none'");
   }
 
   if (!action_sequence->GetString("id", &id))
@@ -1358,29 +1355,18 @@ Status ProcessInputActionSequence(
                         "'value' must be a single Unicode code point");
         action->SetString("value", key);
       }
-    } else if (type == "pointer" || type == "wheel") {
+    } else if (type == "pointer") {
+      action->SetString("pointerType", pointer_type);
       std::string subtype;
-      if (type == "pointer") {
-        if (!action_item->GetString("type", &subtype) ||
-            (subtype != "pointerUp" && subtype != "pointerDown" &&
-             subtype != "pointerMove" && subtype != "pointerCancel" &&
-             subtype != "pause")) {
-          return Status(kInvalidArgument,
-                        "type of pointer action must be the string "
-                        "'pointerUp', 'pointerDown', 'pointerMove' or "
-                        "'pause'");
-        }
-      } else {
-        if (!action_item->GetString("type", &subtype) ||
-            (subtype != "scroll" && subtype != "pause")) {
-          return Status(
-              kInvalidArgument,
-              "type of action must be the string 'scroll' or 'pause'");
-        }
-      }
+      if (!action_item->GetString("type", &subtype) ||
+          (subtype != "pointerUp" && subtype != "pointerDown" &&
+           subtype != "pointerMove" && subtype != "pointerCancel" &&
+           subtype != "pause"))
+        return Status(kInvalidArgument,
+                      "type of action must be the string 'pointerUp', "
+                      "'pointerDown', 'pointerMove' or 'pause'");
 
       action->SetString("subtype", subtype);
-      action->SetString("pointerType", pointer_type);
 
       if (subtype == "pointerDown" || subtype == "pointerUp") {
         if (pointer_type == "mouse" || pointer_type == "pen") {
@@ -1397,7 +1383,7 @@ Status ProcessInputActionSequence(
             return status;
           action->SetString("button", button_str);
         }
-      } else if (subtype == "pointerMove" || subtype == "scroll") {
+      } else if (subtype == "pointerMove") {
         int x;
         if (!action_item->GetInteger("x", &x))
           return Status(kInvalidArgument, "'x' must be an int");
@@ -1435,17 +1421,6 @@ Status ProcessInputActionSequence(
         Status status = ProcessPauseAction(action_item, action.get());
         if (status.IsError())
           return status;
-
-        if (subtype == "scroll") {
-          int delta_x;
-          if (!action_item->GetInteger("deltaX", &delta_x))
-            return Status(kInvalidArgument, "'delta x' must be an int");
-          int delta_y;
-          if (!action_item->GetInteger("deltaY", &delta_y))
-            return Status(kInvalidArgument, "'delta y' must be an int");
-          action->SetInteger("deltaX", delta_x);
-          action->SetInteger("deltaY", delta_y);
-        }
       } else if (subtype == "pause") {
         Status status = ProcessPauseAction(action_item, action.get());
         if (status.IsError())
@@ -1547,7 +1522,7 @@ Status ExecutePerformActions(Session* session,
           pointer_id_set.insert(id);
           action_input_states.push_back(input_state);
 
-          if (type == "pointer" || type == "wheel") {
+          if (type == "pointer") {
             Status status = WindowViewportSize(
                 session, web_view, &viewport_width, &viewport_height);
             if (status.IsError())
@@ -1607,11 +1582,13 @@ Status ExecutePerformActions(Session* session,
                   return status;
               }
             }
-          } else if (type == "pointer" || type == "wheel") {
+          } else if (type == "pointer") {
+            std::string pointer_type;
+            action->GetString("pointerType", &pointer_type);
             double x = 0, y = 0;
             OriginType origin = kViewPort;
             std::string element_id;
-            if (action_type == "pointerMove" || action_type == "scroll") {
+            if (action_type == "pointerMove") {
               action->GetDouble("x", &x);
               action->GetDouble("y", &y);
               const base::DictionaryValue* origin_dict;
@@ -1646,34 +1623,8 @@ Status ExecutePerformActions(Session* session,
               duration = 0;
               GetOptionalInt(action, "duration", &duration);
               tick_duration = std::max(tick_duration, duration);
-
-              if (action_type == "scroll") {
-                int delta_x = 0, delta_y = 0;
-                action->GetInteger("deltaX", &delta_x);
-                action->GetInteger("deltaY", &delta_y);
-                std::vector<MouseEvent> dispatch_wheel_events;
-                MouseEvent event(StringToMouseEventType(action_type),
-                                 StringToMouseButton(button_type[id]),
-                                 action_locations[id].x(),
-                                 action_locations[id].y(), 0, buttons[id], 0);
-                event.modifiers = session->sticky_modifiers;
-                event.delta_x = delta_x;
-                event.delta_y = delta_y;
-                buttons[id] |= StringToModifierMouseButton(button_type[id]);
-                session->mouse_position = WebPoint(event.x, event.y);
-                session->input_cancel_list.emplace_back(
-                    action_input_states[j], &event, nullptr, nullptr);
-                dispatch_wheel_events.push_back(event);
-                Status status = web_view->DispatchMouseEvents(
-                    dispatch_wheel_events, session->GetCurrentFrameId(),
-                    async_dispatch_event);
-                if (status.IsError())
-                  return status;
-              }
             }
 
-            std::string pointer_type;
-            action->GetString("pointerType", &pointer_type);
             if (pointer_type == "mouse" || pointer_type == "pen") {
               if (action_type != "pause") {
                 std::vector<MouseEvent> dispatch_mouse_events;

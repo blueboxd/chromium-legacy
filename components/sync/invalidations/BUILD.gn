@@ -9,8 +9,11 @@ static_library("invalidations") {
     "fcm_handler.cc",
     "fcm_handler.h",
     "invalidations_listener.h",
-    "sync_invalidations_service.cc",
+    "switches.cc",
+    "switches.h",
     "sync_invalidations_service.h",
+    "sync_invalidations_service_impl.cc",
+    "sync_invalidations_service_impl.h",
   ]
 
   public_deps = [
@@ -18,4 +21,16 @@ static_library("invalidations") {
     "//components/gcm_driver",
     "//components/keyed_service/core",
   ]
+}
+
+static_library("test_support") {
+  testonly = true
+  sources = [
+    "mock_sync_invalidations_service.cc",
+    "mock_sync_invalidations_service.h",
+  ]
+
+  public_deps = [ "//components/sync/invalidations" ]
+
+  deps = [ "//testing/gmock" ]
 }

@@ -549,7 +549,7 @@ source_set("unit_tests") {
     "//components/signin/public/identity_manager:test_support",
     "//components/sync/base:test_support",
     "//components/sync/driver:test_support",
-    "//components/sync/invalidations",
+    "//components/sync/invalidations:test_support",
     "//components/sync/js:test_support",
     "//components/sync_preferences",
     "//components/sync_preferences:test_support",

@@ -34,6 +34,7 @@
 #include "components/sync/driver/sync_driver_switches.h"
 #include "components/sync/driver/syncable_service_based_model_type_controller.h"
 #include "components/sync/engine/sync_engine.h"
+#include "components/sync/invalidations/sync_invalidations_service.h"
 #include "components/sync/model/model_type_store_service.h"
 #include "components/sync/model_impl/forwarding_model_type_controller_delegate.h"
 #include "components/sync/model_impl/proxy_model_type_controller_delegate.h"
@@ -360,9 +361,10 @@ std::unique_ptr<syncer::SyncEngine>
 ProfileSyncComponentsFactoryImpl::CreateSyncEngine(
     const std::string& name,
     invalidation::InvalidationService* invalidator,
+    syncer::SyncInvalidationsService* sync_invalidation_service,
     const base::WeakPtr<syncer::SyncPrefs>& sync_prefs) {
   return std::make_unique<syncer::SyncEngineImpl>(
-      name, invalidator, sync_prefs,
+      name, invalidator, sync_invalidation_service, sync_prefs,
       sync_client_->GetModelTypeStoreService()->GetSyncDataPath());
 }
 

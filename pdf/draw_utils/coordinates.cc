@@ -8,7 +8,9 @@
 #include <algorithm>
 
 #include "base/check_op.h"
+#include "pdf/ppapi_migration/geometry_conversions.h"
 #include "ppapi/cpp/point.h"
+#include "ui/gfx/geometry/size.h"
 
 namespace chrome_pdf {
 namespace draw_utils {
@@ -24,7 +26,7 @@ void CenterRectHorizontally(int doc_width, pp::Rect* rect) {
   rect->set_x((doc_width - rect->width()) / 2);
 }
 
-void ExpandDocumentSize(const pp::Size& rect_size, pp::Size* doc_size) {
+void ExpandDocumentSize(const gfx::Size& rect_size, gfx::Size* doc_size) {
   int width_diff = std::max(0, rect_size.width() - doc_size->width());
   doc_size->Enlarge(width_diff, rect_size.height());
 }
@@ -81,9 +83,9 @@ PageInsetSizes GetPageInsetsForTwoUpView(
   return two_up_insets;
 }
 
-pp::Rect GetRectForSingleView(const pp::Size& rect_size,
-                              const pp::Size& document_size) {
-  pp::Rect page_rect({0, document_size.height()}, rect_size);
+pp::Rect GetRectForSingleView(const gfx::Size& rect_size,
+                              const gfx::Size& document_size) {
+  pp::Rect page_rect({0, document_size.height()}, PPSizeFromSize(rect_size));
   CenterRectHorizontally(document_size.width(), &page_rect);
   return page_rect;
 }
@@ -143,7 +145,7 @@ pp::Rect GetBottomFillRect(const pp::Rect& page_rect,
                   bottom_separator);
 }
 
-pp::Rect GetLeftRectForTwoUpView(const pp::Size& rect_size,
+pp::Rect GetLeftRectForTwoUpView(const gfx::Size& rect_size,
                                  const pp::Point& position) {
   DCHECK_LE(rect_size.width(), position.x());
 
@@ -151,7 +153,7 @@ pp::Rect GetLeftRectForTwoUpView(const pp::Size& rect_size,
                   rect_size.width(), rect_size.height());
 }
 
-pp::Rect GetRightRectForTwoUpView(const pp::Size& rect_size,
+pp::Rect GetRightRectForTwoUpView(const gfx::Size& rect_size,
                                   const pp::Point& position) {
   return pp::Rect(position.x(), position.y(), rect_size.width(),
                   rect_size.height());

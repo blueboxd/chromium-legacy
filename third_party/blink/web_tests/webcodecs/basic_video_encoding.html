@@ -27,32 +27,9 @@ async function createFrame(width, height, ts) {
   return new VideoFrame({ timestamp: ts }, imageBitmap);
 }
 
-promise_test(async function() {
-  const init = {
-    output : () => { return true; }
-  };
-  const params = {
-    codec : "vp8",
-    width: 123,
-    height: 321,
-    bitrate: 1e6,
-    framerate: 24,
-  };
-  let encoder = new VideoEncoder(init);
-  encoder.configure(params);
-  encoder.close();
-  encoder = new VideoEncoder(init);
-  params.width = null;
-  try {
-    encoder.configure(params);
-  } catch (e) {
-    assert_equals(e.name, "InvalidStateError");
-  };
-}, "Initialization");
-
-promise_test(async function() {
-  let w = 256;
-  let h = 256;
+async function encode_test(codec, profile, acc) {
+  let w = 640;
+  let h = 480;
   let next_ts = 0
   let frames_to_encode = 20;
   let frames_processed = 0;
@@ -71,8 +48,9 @@ promise_test(async function() {
     error: (e) => { console.log(e.message); }
   };
   const params = {
-    codec : "vp9",
-    profile : "vp09.00.10.08",
+    codec : codec,
+    profile : profile,
+    acceleration: acc,
     width : w,
     height : h,
     bitrate: 10e6,
@@ -88,7 +66,20 @@ promise_test(async function() {
   await encoder.flush();
   encoder.close();
   assert_equals(frames_processed, frames_to_encode);
-}, "EncodeFrame");
+}
+
+promise_test(encode_test.bind(null, "vp9", "vp09.00.10.08", "allow"),
+    "encoding vp9");
+
+promise_test(encode_test.bind(null, "vp8", null, "allow"),
+    "encoding vp8");
+
+
+/* Uncomment this for manual testing, before we have GPU tests for that
+promise_test(encode_test.
+  bind(null, "avc1.42001E", "avc1.42001E", "require"),
+  "encoding avc1.42001E");
+*/
 
 </script>
 </body>

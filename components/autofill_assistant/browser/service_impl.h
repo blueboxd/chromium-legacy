@@ -39,7 +39,8 @@ class ServiceImpl : public Service {
                                              Client* client);
 
   // |context| and |token_fetcher| must remain valid for the lifetime of the
-  // service instance.
+  // service instance. Will enable authentication unless disabled via the
+  // autofill-assistant-auth command line flag.
   ServiceImpl(const std::string& api_key,
               const GURL& server_url,
               content::BrowserContext* context,
@@ -48,6 +49,16 @@ class ServiceImpl : public Service {
               const std::string& country_code,
               const DeviceContext& device_context,
               const Client* client);
+  // Same as above, but allows overriding authentication settings.
+  ServiceImpl(const std::string& api_key,
+              const GURL& server_url,
+              content::BrowserContext* context,
+              AccessTokenFetcher* token_fetcher,
+              const std::string& locale,
+              const std::string& country_code,
+              const DeviceContext& device_context,
+              const Client* client,
+              bool auth_enabled);
   ~ServiceImpl() override;
 
   // Get scripts for a given |url|, which should be a valid URL.

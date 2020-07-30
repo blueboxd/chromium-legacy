@@ -20,7 +20,21 @@ namespace structured_address {
 // values in an AddressComponent tree.
 enum class RegEx {
   kSingleWord,
-  kLastRegEx = kSingleWord,
+  kParseSeparatedCjkName,
+  kParseCommonCjkTwoCharacterLastName,
+  kParseKoreanTwoCharacterLastName,
+  kParseCjkSingleCharacterLastName,
+  kMatchCjkNameCharacteristics,
+  kMatchHispanicCommonNameCharacteristics,
+  kMatchHispanicLastNameConjuctionCharacteristics,
+  kParseOnlyLastName,
+  kParseLastCommaFirstMiddleName,
+  kParseFirstMiddleLastName,
+  kParseHispanicLastName,
+  kParseHispanicFullName,
+  kParseLastNameIntoSecondLastName,
+  kMatchMiddleNameInitialsCharacteristics,
+  kLastRegEx = kParseLastNameIntoSecondLastName,
 };
 
 // This singleton class builds and caches the regular expressions for value
@@ -73,4 +87,5 @@ class StructuredAddressesRegExProvider {
 }  // namespace structured_address
 
 }  // namespace autofill
-#endif  // COMPONENTS_AUTOFILL_CORE_BROWSER_DATA_MODEL_AUTOFILL_STRUCTURED_ADDRESS_PATTERN_REGEX_H_
+
+#endif  // COMPONENTS_AUTOFILL_CORE_BROWSER_DATA_MODEL_AUTOFILL_STRUCTURED_ADDRESS_REGEX_PROVIDER_H_

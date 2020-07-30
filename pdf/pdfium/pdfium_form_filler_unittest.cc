@@ -9,6 +9,7 @@
 #include "ppapi/c/pp_point.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "third_party/pdfium/public/fpdf_annot.h"
+#include "ui/gfx/geometry/size.h"
 
 using testing::InSequence;
 
@@ -131,7 +132,7 @@ TEST_F(FormFillerTest, FormOnFocusChange) {
       &client, FILE_PATH_LITERAL("annotation_form_fields.pdf"));
   ASSERT_TRUE(engine);
   ASSERT_EQ(2, engine->GetNumberOfPages());
-  engine->PluginSizeUpdated(pp::Size(60, 40));
+  engine->PluginSizeUpdated(gfx::Size(60, 40));
 
   {
     InSequence sequence;

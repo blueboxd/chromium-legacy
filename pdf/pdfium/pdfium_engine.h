@@ -41,6 +41,10 @@
 #include "third_party/pdfium/public/fpdfview.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 
+namespace gfx {
+class Size;
+}  // namespace gfx
+
 namespace chrome_pdf {
 
 class KeyboardInputEvent;
@@ -79,7 +83,7 @@ class PDFiumEngine : public PDFEngine,
   // PDFEngine implementation.
   bool New(const char* url, const char* headers) override;
   void PageOffsetUpdated(const pp::Point& page_offset) override;
-  void PluginSizeUpdated(const pp::Size& size) override;
+  void PluginSizeUpdated(const gfx::Size& size) override;
   void ScrolledToXPosition(int position) override;
   void ScrolledToYPosition(int position) override;
   void PrePaint() override;
@@ -106,7 +110,8 @@ class PDFiumEngine : public PDFEngine,
   void RotateCounterclockwise() override;
   void SetTwoUpView(bool enable) override;
   void DisplayAnnotations(bool display) override;
-  pp::Size ApplyDocumentLayout(const DocumentLayout::Options& options) override;
+  gfx::Size ApplyDocumentLayout(
+      const DocumentLayout::Options& options) override;
   std::string GetSelectedText() override;
   bool CanEditText() override;
   bool HasEditableText() override;
@@ -148,7 +153,7 @@ class PDFiumEngine : public PDFEngine,
   bool GetPrintScaling() override;
   int GetCopiesToPrint() override;
   int GetDuplexType() override;
-  bool GetPageSizeAndUniformity(pp::Size* size) override;
+  bool GetPageSizeAndUniformity(gfx::Size* size) override;
   void AppendBlankPages(size_t num_pages) override;
   void AppendPage(PDFEngine* engine, int index) override;
   std::vector<uint8_t> GetSaveData() override;
@@ -289,7 +294,7 @@ class PDFiumEngine : public PDFEngine,
   //
   // TODO(kmoon): LoadPageSizes() is a bit misnomer, but LoadPageInfo() is
   // taken right now...
-  std::vector<pp::Size> LoadPageSizes(
+  std::vector<gfx::Size> LoadPageSizes(
       const DocumentLayout::Options& layout_options);
 
   void LoadBody();
@@ -317,9 +322,9 @@ class PDFiumEngine : public PDFEngine,
 
   // Helper function to get a given page's size in pixels.  This is not part of
   // PDFiumPage because we might not have that structure when we need this.
-  pp::Size GetPageSize(int index);
-  pp::Size GetPageSizeForLayout(int index,
-                                const DocumentLayout::Options& layout_options);
+  gfx::Size GetPageSize(int index);
+  gfx::Size GetPageSizeForLayout(int index,
+                                 const DocumentLayout::Options& layout_options);
 
   // Helper function for getting the inset sizes for the current layout. If
   // two-up view is enabled, the configuration of inset sizes depends on
@@ -336,7 +341,7 @@ class PDFiumEngine : public PDFEngine,
   void EnlargePage(const DocumentLayout::Options& layout_options,
                    size_t page_index,
                    size_t num_of_pages,
-                   pp::Size* page_size) const;
+                   gfx::Size* page_size) const;
 
   // Similar to EnlargePage(), but insets a |rect|. Also multiplies the inset
   // sizes by |multiplier|, using the ceiling of the result.
@@ -641,7 +646,7 @@ class PDFiumEngine : public PDFEngine,
   // The offset of the page into the viewport.
   pp::Point page_offset_;
   // The plugin size in screen coordinates.
-  pp::Size plugin_size_;
+  gfx::Size plugin_size_;
   double current_zoom_ = 1.0;
 
   std::unique_ptr<DocumentLoader> doc_loader_;  // Main document's loader.
@@ -723,7 +728,7 @@ class PDFiumEngine : public PDFEngine,
 
   std::unique_ptr<PDFiumPermissions> permissions_;
 
-  pp::Size default_page_size_;
+  gfx::Size default_page_size_;
 
   // Timer for touch long press detection.
   base::OneShotTimer touch_timer_;

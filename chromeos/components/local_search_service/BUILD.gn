@@ -41,6 +41,7 @@ source_set("local_search_service") {
     "//components/keyed_service/content:content",
     "//components/metrics:metrics",
     "//components/prefs",
+    "//content/public/browser",
     "//ui/gfx",
   ]
 }

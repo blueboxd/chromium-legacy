@@ -46,6 +46,7 @@ constexpr char kExampleCom[] = "https://example.com";
 constexpr char kUsername1[] = "alice";
 
 constexpr char kPassword1[] = "s3cre3t";
+constexpr char kPassword2[] = "bett3r_S3cre3t";
 
 using autofill::PasswordForm;
 using password_manager::BulkLeakCheckServiceInterface;
@@ -318,4 +319,73 @@ TEST_F(IOSChromePasswordCheckManagerTest, NotifyObserversAboutStateChanges) {
   static_cast<BulkLeakCheckServiceInterface::Observer*>(&manager())
       ->OnStateChanged(BulkLeakCheckServiceInterface::State::kRunning);
   RunUntilIdle();
+}
+
+// Tests password deleted.
+TEST_F(IOSChromePasswordCheckManagerTest, DeletePassword) {
+  PasswordForm form = MakeSavedPassword(kExampleCom, kUsername1);
+  store().AddLogin(form);
+  RunUntilIdle();
+
+  store().AddCompromisedCredentials(
+      MakeCompromised(kExampleCom, kUsername1, base::TimeDelta::FromMinutes(1),
+                      CompromiseType::kLeaked));
+  RunUntilIdle();
+  EXPECT_THAT(
+      manager().GetCompromisedCredentials(),
+      ElementsAre(ExpectCompromisedCredential(
+          kExampleCom, kUsername1, kPassword1, base::TimeDelta::FromMinutes(1),
+          CompromiseTypeFlags::kCredentialLeaked)));
+
+  manager().DeleteCompromisedPasswordForm(form);
+  RunUntilIdle();
+
+  EXPECT_THAT(manager().GetCompromisedCredentials(), IsEmpty());
+}
+
+// Tests duplicated passwords deleted.
+TEST_F(IOSChromePasswordCheckManagerTest, DeleteDuplicatedPasswords) {
+  std::vector<PasswordForm> passwords = {
+      MakeSavedPassword(kExampleCom, kUsername1, kPassword1, "element_1"),
+      MakeSavedPassword(kExampleCom, kUsername1, kPassword1, "element_2")};
+
+  store().AddLogin(passwords[0]);
+  store().AddLogin(passwords[1]);
+  RunUntilIdle();
+  EXPECT_EQ(2u, store().stored_passwords().at(kExampleCom).size());
+
+  manager().DeletePasswordForm(passwords[0]);
+  RunUntilIdle();
+  EXPECT_TRUE(store().stored_passwords().at(kExampleCom).empty());
+}
+
+// Tests password value is updated properly.
+TEST_F(IOSChromePasswordCheckManagerTest, EditPassword) {
+  store().AddLogin(MakeSavedPassword(kExampleCom, kUsername1));
+  RunUntilIdle();
+
+  manager().EditPasswordForm(store().stored_passwords().at(kExampleCom).at(0),
+                             kPassword2);
+  RunUntilIdle();
+
+  EXPECT_EQ(base::UTF8ToUTF16(kPassword2),
+            store().stored_passwords().at(kExampleCom).at(0).password_value);
+}
+
+// Tests compromised password value is updated properly.
+TEST_F(IOSChromePasswordCheckManagerTest, EditCompromisedPassword) {
+  PasswordForm form = MakeSavedPassword(kExampleCom, kUsername1);
+  store().AddLogin(form);
+  RunUntilIdle();
+
+  store().AddCompromisedCredentials(
+      MakeCompromised(kExampleCom, kUsername1, base::TimeDelta::FromMinutes(1),
+                      CompromiseType::kLeaked));
+  RunUntilIdle();
+
+  manager().EditCompromisedPasswordForm(form, kPassword2);
+  RunUntilIdle();
+
+  EXPECT_EQ(base::UTF8ToUTF16(kPassword2),
+            store().stored_passwords().at(kExampleCom).at(0).password_value);
 }

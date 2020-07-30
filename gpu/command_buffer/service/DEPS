@@ -14,5 +14,9 @@ include_rules = [
 specific_include_rules = {
   "image_reader_gl_owner_unittest\.cc": [
     "+media/base/media_switches.h",
+    "+media/base/android/media_codec_util.h",
+  ],
+  "image_reader_gl_owner\.cc": [
+    "+media/base/android/media_codec_util.h",
   ],
 }

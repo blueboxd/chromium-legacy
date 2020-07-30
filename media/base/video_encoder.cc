@@ -16,6 +16,7 @@ VideoEncoder::VideoEncoder() = default;
 VideoEncoder::~VideoEncoder() = default;
 
 VideoEncoder::Options::Options() = default;
+VideoEncoder::Options::Options(const Options&) = default;
 VideoEncoder::Options::~Options() = default;
 
 }  // namespace media

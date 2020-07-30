@@ -34,6 +34,7 @@
 #import "ios/chrome/browser/ui/commands/open_new_tab_command.h"
 #import "ios/chrome/browser/ui/commands/show_signin_command.h"
 #import "ios/chrome/browser/ui/recent_tabs/recent_tabs_constants.h"
+#import "ios/chrome/browser/ui/recent_tabs/recent_tabs_menu_provider.h"
 #import "ios/chrome/browser/ui/recent_tabs/recent_tabs_presentation_delegate.h"
 #import "ios/chrome/browser/ui/recent_tabs/recent_tabs_table_view_controller_delegate.h"
 #include "ios/chrome/browser/ui/recent_tabs/synced_sessions.h"
@@ -51,6 +52,7 @@
 #import "ios/chrome/browser/ui/table_view/chrome_table_view_styler.h"
 #import "ios/chrome/browser/ui/table_view/table_view_favicon_data_source.h"
 #include "ios/chrome/browser/ui/ui_feature_flags.h"
+#import "ios/chrome/browser/ui/util/menu_util.h"
 #include "ios/chrome/browser/ui/util/ui_util.h"
 #import "ios/chrome/browser/ui/util/uikit_ui_util.h"
 #import "ios/chrome/browser/url_loading/url_loading_browser_agent.h"
@@ -115,6 +117,7 @@ const int kRecentlyClosedTabsSectionIndex = 0;
                                              SigninPresenter,
                                              SyncPresenter,
                                              TableViewURLDragDataSource,
+                                             UIContextMenuInteractionDelegate,
                                              UIGestureRecognizerDelegate> {
   std::unique_ptr<synced_sessions::SyncedSessions> _syncedSessions;
 }
@@ -855,18 +858,58 @@ const int kRecentlyClosedTabsSectionIndex = 0;
   for (UIGestureRecognizer* recognizer in header.gestureRecognizers) {
     [header removeGestureRecognizer:recognizer];
   }
+
   // Gesture recognizer for long press context menu.
-  UILongPressGestureRecognizer* longPress =
-      [[UILongPressGestureRecognizer alloc]
-          initWithTarget:self
-                  action:@selector(handleLongPress:)];
-  [header addGestureRecognizer:longPress];
+  if (!IsNativeContextMenuEnabled()) {
+    UILongPressGestureRecognizer* longPress =
+        [[UILongPressGestureRecognizer alloc]
+            initWithTarget:self
+                    action:@selector(handleLongPress:)];
+    [header addGestureRecognizer:longPress];
+  } else if (@available(iOS 13, *)) {
+    [header addInteraction:[[UIContextMenuInteraction alloc]
+                               initWithDelegate:self]];
+  }
   // Gesture recognizer for header collapsing/expanding.
   UITapGestureRecognizer* tapGesture =
       [[UITapGestureRecognizer alloc] initWithTarget:self
                                               action:@selector(handleTap:)];
   [header addGestureRecognizer:tapGesture];
   return header;
+}
+
+- (UIContextMenuConfiguration*)tableView:(UITableView*)tableView
+    contextMenuConfigurationForRowAtIndexPath:(NSIndexPath*)indexPath
+                                        point:(CGPoint)point
+    API_AVAILABLE(ios(13.0)) {
+  if (!IsNativeContextMenuEnabled()) {
+    // Returning nil will allow the gesture to be captured and show the old
+    // context menus.
+    return nil;
+  }
+
+  NSInteger itemType = [self.tableViewModel itemTypeForIndexPath:indexPath];
+  if (itemType != ItemTypeRecentlyClosed && itemType != ItemTypeSessionTabData)
+    return nil;
+
+  TableViewItem* item = [self.tableViewModel itemAtIndexPath:indexPath];
+  TableViewURLItem* URLItem = base::mac::ObjCCastStrict<TableViewURLItem>(item);
+
+  return [self.menuProvider contextMenuConfigurationForItem:URLItem];
+}
+
+#pragma mark - UIContextMenuInteractionDelegate
+
+- (UIContextMenuConfiguration*)contextMenuInteraction:
+                                   (UIContextMenuInteraction*)interaction
+                       configurationForMenuAtLocation:(CGPoint)location
+    API_AVAILABLE(ios(13.0)) {
+  UIView* header = [interaction view];
+  NSInteger tappedHeaderSectionIdentifier = header.tag;
+
+  return
+      [self.menuProvider contextMenuConfigurationForHeaderWithSectionIdentifier:
+                             tappedHeaderSectionIdentifier];
 }
 
 #pragma mark - TableViewURLDragDataSource

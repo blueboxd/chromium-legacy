@@ -8,6 +8,7 @@
 #include <string>
 
 #include "ios/chrome/browser/safe_browsing/safe_browsing_service.h"
+#include "services/network/test/test_url_loader_factory.h"
 
 // A fake SafeBrowsingService whose database treats URLs from host
 // safe.browsing.unsafe.chromium.test as unsafe, and treats all other URLs as
@@ -30,9 +31,13 @@ class FakeSafeBrowsingService : public SafeBrowsingService {
       safe_browsing::ResourceType resource_type,
       web::WebState* web_state) override;
   bool CanCheckUrl(const GURL& url) const override;
+  scoped_refptr<network::SharedURLLoaderFactory> GetURLLoaderFactory() override;
 
  protected:
   ~FakeSafeBrowsingService() override;
+
+ private:
+  network::TestURLLoaderFactory url_loader_factory_;
 };
 
 #endif  // IOS_CHROME_BROWSER_SAFE_BROWSING_FAKE_SAFE_BROWSING_SERVICE_H_

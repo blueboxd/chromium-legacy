@@ -32,10 +32,11 @@ class SyncApiComponentFactoryMock : public SyncApiComponentFactory {
                    const DataTypeEncryptionHandler*,
                    ModelTypeConfigurer*,
                    DataTypeManagerObserver*));
-  MOCK_METHOD3(CreateSyncEngine,
+  MOCK_METHOD4(CreateSyncEngine,
                std::unique_ptr<SyncEngine>(
                    const std::string& name,
                    invalidation::InvalidationService* invalidator,
+                   syncer::SyncInvalidationsService* sync_invalidations_service,
                    const base::WeakPtr<SyncPrefs>& sync_prefs));
 };
 

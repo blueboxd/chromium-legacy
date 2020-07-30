@@ -279,7 +279,7 @@ void PageCaptureSaveAsMHTMLFunction::ReturnSuccess(int64_t file_size) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
   WebContents* web_contents = GetWebContents();
-  if (!web_contents) {
+  if (!web_contents || !render_frame_host()) {
     ReturnFailure(kTabClosedError);
     return;
   }

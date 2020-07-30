@@ -12,6 +12,10 @@
 class IOSChromePasswordCheckManager;
 @protocol PasswordIssuesConsumer;
 
+namespace autofill {
+struct PasswordForm;
+}
+
 // This mediator fetches and organises the credentials for its consumer.
 @interface PasswordIssuesMediator : NSObject <SuccessfulReauthTimeAccessor>
 
@@ -21,6 +25,9 @@ class IOSChromePasswordCheckManager;
 - (instancetype)init NS_UNAVAILABLE;
 
 @property(nonatomic, weak) id<PasswordIssuesConsumer> consumer;
+
+// Deletes password from the password store.
+- (void)deletePassword:(const autofill::PasswordForm&)password;
 
 @end
 

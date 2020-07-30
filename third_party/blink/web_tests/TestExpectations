@@ -1232,7 +1232,6 @@ crbug.com/875235 virtual/layout_ng_fieldset/external/wpt/css/css-contain/contain
 crbug.com/875235 virtual/layout_ng_fieldset/external/wpt/css/vendor-imports/mozilla/mozilla-central-reftests/contain/contain-size-multicol-002.html [ Crash Failure ]
 crbug.com/875235 virtual/layout_ng_fieldset/external/wpt/css/vendor-imports/mozilla/mozilla-central-reftests/contain/contain-size-multicol-003.html [ Failure ]
 crbug.com/875235 virtual/layout_ng_fieldset/external/wpt/html/rendering/non-replaced-elements/the-fieldset-and-legend-elements/fieldset-flexbox.html [ Pass ]
-crbug.com/875235 virtual/layout_ng_fieldset/external/wpt/html/rendering/non-replaced-elements/the-fieldset-and-legend-elements/fieldset-grid.html [ Crash Pass ]
 crbug.com/875235 virtual/layout_ng_fieldset/external/wpt/html/rendering/non-replaced-elements/the-fieldset-and-legend-elements/fieldset-multicol.html [ Failure ]
 crbug.com/875235 virtual/layout_ng_fieldset/external/wpt/html/rendering/non-replaced-elements/the-fieldset-and-legend-elements/fieldset-percentage-block-size.html [ Failure ]
 crbug.com/875235 virtual/layout_ng_fieldset/external/wpt/html/rendering/non-replaced-elements/the-fieldset-and-legend-elements/fieldset-transform-translatez.html [ Failure ]
@@ -2674,8 +2673,8 @@ crbug.com/27659 external/wpt/css/css-ruby/ruby-line-breaking-003.html [ Failure 
 crbug.com/27659 external/wpt/css/css-ruby/ruby-whitespace-001.html [ Failure ]
 crbug.com/27659 external/wpt/css/css-ruby/ruby-whitespace-002.html [ Failure ]
 
-# WebRTC: Perfect Negotiation is flaky on all platform
-crbug.com/1072928 external/wpt/webrtc/RTCPeerConnection-perfect-negotiation.https.html [ Failure Timeout ]
+# WebRTC: Perfect Negotiation times out in Plan B. This is expected.
+crbug.com/980872 virtual/webrtc-wpt-plan-b/external/wpt/webrtc/RTCPeerConnection-perfect-negotiation.https.html [ Timeout ]
 
 crbug.com/1074547 external/wpt/css/css-transitions/transitioncancel-002.html [ Timeout ]
 
@@ -2700,9 +2699,6 @@ crbug.com/1110512 external/wpt/css/css-pseudo/selection-contenteditable-011.html
 crbug.com/1105958 external/wpt/payment-request/payment-is-showing.https.html [ Timeout ]
 
 # ====== New tests from wpt-importer added here ======
-crbug.com/626703 [ Linux ] virtual/web-components-v0-disabled/external/wpt/html/semantics/embedded-content/the-iframe-element/iframe_sandbox_navigation_download_allow_downloads.sub.tentative.html [ Timeout ]
-crbug.com/626703 [ Mac ] virtual/web-components-v0-disabled/external/wpt/html/semantics/embedded-content/the-iframe-element/iframe_sandbox_navigation_download_allow_downloads.sub.tentative.html [ Timeout ]
-crbug.com/626703 [ Win ] virtual/web-components-v0-disabled/external/wpt/html/semantics/embedded-content/the-iframe-element/iframe_sandbox_navigation_download_allow_downloads.sub.tentative.html [ Timeout ]
 crbug.com/626703 [ Linux ] external/wpt/html/semantics/embedded-content/the-iframe-element/iframe_sandbox_navigation_download_allow_downloads.sub.tentative.html [ Timeout ]
 crbug.com/626703 [ Mac ] external/wpt/html/semantics/embedded-content/the-iframe-element/iframe_sandbox_navigation_download_allow_downloads.sub.tentative.html [ Timeout ]
 crbug.com/626703 [ Win ] external/wpt/html/semantics/embedded-content/the-iframe-element/iframe_sandbox_navigation_download_allow_downloads.sub.tentative.html [ Timeout ]
@@ -6871,4 +6867,6 @@ crbug.com/1107944 [ Mac ] http/tests/devtools/tracing/timeline-paint/timeline-pa
 crbug.com/1011811 http/tests/devtools/modules-load-initial.js [ Pass Failure ]
 
 crbug.com/1092794 fast/canvas/OffscreenCanvas-2d-placeholder-willReadFrequently.html [ Pass Failure ]
-crbug.com/1092794 virtual/gpu/fast/canvas/OffscreenCanvas-2d-placeholder-willReadFrequently.html [ Pass Failure ]
+
+# Sheriff 2020-07-30
+crbug.com/1111287 http/tests/devtools/sources/debugger-breakpoints/breakpoint-with-sourcemap-dart.js [ Pass Failure ]

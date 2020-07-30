@@ -5,38 +5,23 @@
 #ifndef COMPONENTS_SYNC_INVALIDATIONS_SYNC_INVALIDATIONS_SERVICE_H_
 #define COMPONENTS_SYNC_INVALIDATIONS_SYNC_INVALIDATIONS_SERVICE_H_
 
-#include <memory>
-#include <string>
-
 #include "components/keyed_service/core/keyed_service.h"
 
-namespace gcm {
-class GCMDriver;
-}
-
-namespace instance_id {
-class InstanceIDDriver;
-}
-
 namespace syncer {
-class FCMHandler;
+class InvalidationsListener;
 
 // Service which is used to register with FCM. It is used to obtain an FCM token
 // which is used to send invalidations from the server. The service also
 // provides incoming invalidations handling and an interface to subscribe to
-// invalidations.
+// invalidations. To subscribe for invalidations a new InvalidationsListener
+// should be added.
 class SyncInvalidationsService : public KeyedService {
  public:
-  SyncInvalidationsService(gcm::GCMDriver* gcm_driver,
-                           instance_id::InstanceIDDriver* instance_id_driver,
-                           const std::string& sender_id,
-                           const std::string& app_id);
-  ~SyncInvalidationsService() override;
-
-  void Shutdown() override;
-
- private:
-  std::unique_ptr<FCMHandler> fcm_handler_;
+  // Add or remove a new listener which will be notified on each new incoming
+  // invalidation. |listener| must not be nullptr. If there is no such
+  // |listener| then RemoveListener will do nothing.
+  virtual void AddListener(InvalidationsListener* listener) = 0;
+  virtual void RemoveListener(InvalidationsListener* listener) = 0;
 };
 
 }  // namespace syncer

@@ -5,6 +5,7 @@
 #include "pdf/document_layout.h"
 
 #include "testing/gtest/include/gtest/gtest.h"
+#include "ui/gfx/geometry/size.h"
 
 namespace chrome_pdf {
 
@@ -21,12 +22,8 @@ class DocumentLayoutTest : public testing::Test {
 };
 
 // TODO(kmoon): Need to use this with EXPECT_PRED2 instead of just using
-// EXPECT_EQ, due to ADL issues with pp::Size's operator== (defined in global
+// EXPECT_EQ, due to ADL issues with pp::Rect's operator== (defined in global
 // namespace, instead of in "pp").
-inline bool PpSizeEq(const pp::Size& lhs, const pp::Size& rhs) {
-  return lhs == rhs;
-}
-
 inline bool PpRectEq(const pp::Rect& lhs, const pp::Rect& rhs) {
   return lhs == rhs;
 }
@@ -147,20 +144,20 @@ TEST_F(DocumentLayoutTest, DefaultConstructor) {
             PageOrientation::kOriginal);
   EXPECT_FALSE(layout_.options().two_up_view_enabled());
   EXPECT_FALSE(layout_.dirty());
-  EXPECT_PRED2(PpSizeEq, layout_.size(), pp::Size(0, 0));
+  EXPECT_EQ(layout_.size(), gfx::Size(0, 0));
   EXPECT_EQ(layout_.page_count(), 0u);
 }
 
 TEST_F(DocumentLayoutTest, SetOptionsDoesNotRecomputeLayout) {
-  layout_.ComputeSingleViewLayout({pp::Size(100, 200)});
-  EXPECT_PRED2(PpSizeEq, layout_.size(), pp::Size(100, 200));
+  layout_.ComputeSingleViewLayout({gfx::Size(100, 200)});
+  EXPECT_EQ(layout_.size(), gfx::Size(100, 200));
 
   DocumentLayout::Options options;
   options.RotatePagesClockwise();
   layout_.SetOptions(options);
   EXPECT_EQ(layout_.options().default_page_orientation(),
             PageOrientation::kClockwise90);
-  EXPECT_PRED2(PpSizeEq, layout_.size(), pp::Size(100, 200));
+  EXPECT_EQ(layout_.size(), gfx::Size(100, 200));
 }
 
 TEST_F(DocumentLayoutTest, DirtySetOnOptionsChange) {
@@ -193,7 +190,7 @@ TEST_F(DocumentLayoutTest, DirtyNotSetOnSameOptions) {
 }
 
 TEST_F(DocumentLayoutTest, ComputeSingleViewLayout) {
-  std::vector<pp::Size> page_sizes{
+  std::vector<gfx::Size> page_sizes{
       {300, 400}, {400, 500}, {300, 400}, {200, 300}};
   layout_.ComputeSingleViewLayout(page_sizes);
   ASSERT_EQ(4u, layout_.page_count());
@@ -209,7 +206,7 @@ TEST_F(DocumentLayoutTest, ComputeSingleViewLayout) {
                layout_.page_bounds_rect(2));
   EXPECT_PRED2(PpRectEq, pp::Rect(105, 1315, 190, 290),
                layout_.page_bounds_rect(3));
-  EXPECT_PRED2(PpSizeEq, pp::Size(400, 1612), layout_.size());
+  EXPECT_EQ(gfx::Size(400, 1612), layout_.size());
 
   page_sizes = {{240, 300}, {320, 400}, {250, 360}, {300, 600}, {270, 555}};
   layout_.ComputeSingleViewLayout(page_sizes);
@@ -229,12 +226,12 @@ TEST_F(DocumentLayoutTest, ComputeSingleViewLayout) {
                layout_.page_bounds_rect(3));
   EXPECT_PRED2(PpRectEq, pp::Rect(30, 1679, 260, 545),
                layout_.page_bounds_rect(4));
-  EXPECT_PRED2(PpSizeEq, pp::Size(320, 2231), layout_.size());
+  EXPECT_EQ(gfx::Size(320, 2231), layout_.size());
 }
 
 TEST_F(DocumentLayoutTest, ComputeTwoUpViewLayout) {
   // Test case where the widest page is on the right.
-  std::vector<pp::Size> page_sizes{
+  std::vector<gfx::Size> page_sizes{
       {826, 1066}, {1066, 826}, {826, 1066}, {826, 900}};
   layout_.ComputeTwoUpViewLayout(page_sizes);
   ASSERT_EQ(4u, layout_.page_count());
@@ -250,7 +247,7 @@ TEST_F(DocumentLayoutTest, ComputeTwoUpViewLayout) {
                layout_.page_bounds_rect(2));
   EXPECT_PRED2(PpRectEq, pp::Rect(1067, 1069, 820, 890),
                layout_.page_bounds_rect(3));
-  EXPECT_PRED2(PpSizeEq, pp::Size(2132, 2132), layout_.size());
+  EXPECT_EQ(gfx::Size(2132, 2132), layout_.size());
 
   // Test case where the widest page is on the left.
   page_sizes = {{1066, 826}, {820, 1056}, {820, 890}, {826, 1066}};
@@ -268,7 +265,7 @@ TEST_F(DocumentLayoutTest, ComputeTwoUpViewLayout) {
                layout_.page_bounds_rect(2));
   EXPECT_PRED2(PpRectEq, pp::Rect(1067, 1059, 820, 1056),
                layout_.page_bounds_rect(3));
-  EXPECT_PRED2(PpSizeEq, pp::Size(2132, 2122), layout_.size());
+  EXPECT_EQ(gfx::Size(2132, 2122), layout_.size());
 
   // Test case where there's an odd # of pages.
   page_sizes = {{200, 300}, {400, 200}, {300, 600}, {250, 500}, {300, 400}};
@@ -289,49 +286,49 @@ TEST_F(DocumentLayoutTest, ComputeTwoUpViewLayout) {
                layout_.page_bounds_rect(3));
   EXPECT_PRED2(PpRectEq, pp::Rect(105, 903, 290, 390),
                layout_.page_bounds_rect(4));
-  EXPECT_PRED2(PpSizeEq, pp::Size(800, 1300), layout_.size());
+  EXPECT_EQ(gfx::Size(800, 1300), layout_.size());
 }
 
 TEST_F(DocumentLayoutTest, DirtySetOnSingleViewLayoutInputChange) {
-  layout_.ComputeSingleViewLayout({pp::Size(100, 200)});
+  layout_.ComputeSingleViewLayout({gfx::Size(100, 200)});
   EXPECT_TRUE(layout_.dirty());
   layout_.clear_dirty();
   EXPECT_FALSE(layout_.dirty());
 
-  layout_.ComputeSingleViewLayout({pp::Size(100, 200)});
+  layout_.ComputeSingleViewLayout({gfx::Size(100, 200)});
   EXPECT_FALSE(layout_.dirty());
 
-  layout_.ComputeSingleViewLayout({pp::Size(200, 100)});
+  layout_.ComputeSingleViewLayout({gfx::Size(200, 100)});
   EXPECT_TRUE(layout_.dirty());
   layout_.clear_dirty();
 
-  layout_.ComputeSingleViewLayout({pp::Size(200, 100), pp::Size(300, 300)});
+  layout_.ComputeSingleViewLayout({gfx::Size(200, 100), gfx::Size(300, 300)});
   EXPECT_TRUE(layout_.dirty());
   layout_.clear_dirty();
 
-  layout_.ComputeSingleViewLayout({pp::Size(200, 100)});
+  layout_.ComputeSingleViewLayout({gfx::Size(200, 100)});
   EXPECT_TRUE(layout_.dirty());
 }
 
 TEST_F(DocumentLayoutTest, DirtySetOnTwoUpViewLayoutInputChange) {
-  layout_.ComputeTwoUpViewLayout({pp::Size(100, 200), pp::Size(200, 100)});
+  layout_.ComputeTwoUpViewLayout({gfx::Size(100, 200), gfx::Size(200, 100)});
   EXPECT_TRUE(layout_.dirty());
   layout_.clear_dirty();
   EXPECT_FALSE(layout_.dirty());
 
-  layout_.ComputeTwoUpViewLayout({pp::Size(100, 200), pp::Size(200, 100)});
+  layout_.ComputeTwoUpViewLayout({gfx::Size(100, 200), gfx::Size(200, 100)});
   EXPECT_FALSE(layout_.dirty());
 
-  layout_.ComputeTwoUpViewLayout({pp::Size(200, 100), pp::Size(100, 200)});
+  layout_.ComputeTwoUpViewLayout({gfx::Size(200, 100), gfx::Size(100, 200)});
   EXPECT_TRUE(layout_.dirty());
   layout_.clear_dirty();
 
   layout_.ComputeTwoUpViewLayout(
-      {pp::Size(200, 100), pp::Size(100, 200), pp::Size(300, 300)});
+      {gfx::Size(200, 100), gfx::Size(100, 200), gfx::Size(300, 300)});
   EXPECT_TRUE(layout_.dirty());
   layout_.clear_dirty();
 
-  layout_.ComputeTwoUpViewLayout({pp::Size(200, 100), pp::Size(100, 200)});
+  layout_.ComputeTwoUpViewLayout({gfx::Size(200, 100), gfx::Size(100, 200)});
   EXPECT_TRUE(layout_.dirty());
 }
 

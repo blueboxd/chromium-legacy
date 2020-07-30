@@ -46,10 +46,10 @@ public class PolicyUrlFilteringTest {
     private String mFooTestUrl;
     private String mBarTestUrl;
     private static final String sFooTestFilePath = "/foo.html";
-    private static final String sFooWhitelistFilter = "localhost" + sFooTestFilePath;
+    private static final String sFooAllowlistFilter = "localhost" + sFooTestFilePath;
 
-    private static final String sBlacklistPolicyName = "com.android.browser:URLBlacklist";
-    private static final String sWhitelistPolicyName = "com.android.browser:URLWhitelist";
+    private static final String sBlocklistPolicyName = "com.android.browser:URLBlocklist";
+    private static final String sAllowlistPolicyName = "com.android.browser:URLAllowlist";
 
     @Before
     public void setUp() throws Exception {
@@ -77,7 +77,7 @@ public class PolicyUrlFilteringTest {
     @Feature({"AndroidWebView", "Policy"})
     // Run in single process only. crbug.com/615484
     @OnlyRunIn(SINGLE_PROCESS)
-    public void testBlacklistedUrl() throws Throwable {
+    public void testBlocklistedUrl() throws Throwable {
         final AwPolicyProvider testProvider =
                 new AwPolicyProvider(mActivityTestRule.getActivity().getApplicationContext());
         TestThreadUtils.runOnUiThreadBlocking(
@@ -92,20 +92,20 @@ public class PolicyUrlFilteringTest {
                 mContentsClient.getOnReceivedErrorHelper().getErrorCode());
     }
 
-    // Tests getting a successful navigation with a whitelist.
+    // Tests getting a successful navigation with an allowlist.
     // clang-format off
     @Test
     @MediumTest
     @Feature({"AndroidWebView", "Policy"})
     @Policies.Add({
-            @Policies.Item(key = sBlacklistPolicyName, stringArray = {"*"}),
-            @Policies.Item(key = sWhitelistPolicyName, stringArray = {sFooWhitelistFilter})
+            @Policies.Item(key = sBlocklistPolicyName, stringArray = {"*"}),
+            @Policies.Item(key = sAllowlistPolicyName, stringArray = {sFooAllowlistFilter})
     })
     @OnlyRunIn(SINGLE_PROCESS) // http://crbug.com/660517
-    public void testWhitelistedUrl() throws Throwable {
+    public void testAllowlistedUrl() throws Throwable {
         navigateAndCheckOutcome(mFooTestUrl, 0 /* error count before */, 0 /* error count after */);
 
-        // Make sure it goes through the blacklist
+        // Make sure it goes through the blocklist
         navigateAndCheckOutcome(mBarTestUrl, 0 /* error count before */, 1 /* error count after */);
         Assert.assertEquals(ErrorCodeConversionHelper.ERROR_CONNECT,
                 mContentsClient.getOnReceivedErrorHelper().getErrorCode());
@@ -116,8 +116,8 @@ public class PolicyUrlFilteringTest {
     @Test
     @SmallTest
     @Feature({"AndroidWebView", "Policy"})
-    @Policies.Add({
-            @Policies.Item(key = sBlacklistPolicyName, string = "shouldBeAJsonArrayNotAString")})
+    @Policies.
+    Add({ @Policies.Item(key = sBlocklistPolicyName, string = "shouldBeAJsonArrayNotAString") })
     public void testBadPolicyValue() throws Exception {
         navigateAndCheckOutcome(mFooTestUrl, 0 /* error count before */, 0 /* error count after */);
         // At the moment this test is written, a failure is a crash, a success is no crash.
@@ -151,11 +151,9 @@ public class PolicyUrlFilteringTest {
     }
 
     private void setFilteringPolicy(final AwPolicyProvider testProvider,
-            final String[] blacklistUrls, final String[] whitelistUrls) {
-        final PolicyData[] policies = {
-            new PolicyData.StrArray(sBlacklistPolicyName, blacklistUrls),
-            new PolicyData.StrArray(sWhitelistPolicyName, whitelistUrls)
-        };
+            final String[] blocklistUrls, final String[] allowlistUrls) {
+        final PolicyData[] policies = {new PolicyData.StrArray(sBlocklistPolicyName, blocklistUrls),
+                new PolicyData.StrArray(sAllowlistPolicyName, allowlistUrls)};
 
         AbstractAppRestrictionsProvider.setTestRestrictions(
                 PolicyData.asBundle(Arrays.asList(policies)));

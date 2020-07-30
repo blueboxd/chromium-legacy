@@ -86,7 +86,7 @@ bool IsSolidColorPaint(const PaintFlags& flags) {
   // https://crbug.com/922899.
   // TODO(andrescj): remove this condition once that bug is fixed.
   is_solid_color = (is_solid_color && SkColorGetA(flags.getColor()) == 255);
-#endif  // OS_MACOSX
+#endif  // OS_MAC
 
   return is_solid_color;
 }
@@ -171,7 +171,7 @@ void CheckIfSolidColor(const SkCanvas& canvas,
   // https://crbug.com/922899.
   // TODO(andrescj): remove this condition once that bug is fixed.
   solid_color_candidate = (solid_color_candidate && alpha == 255);
-#endif  // OS_MACOSX
+#endif  // OS_MAC
 
   if (solid_color_candidate) {
     CalculateSolidColor(color /* src_color */, blendmode,

@@ -737,10 +737,10 @@ void OutOfProcessInstance::GetPrintPresetOptionsFromDocument(
   options->duplex =
       static_cast<PP_PrivateDuplexMode_Dev>(engine_->GetDuplexType());
   options->copies = engine_->GetCopiesToPrint();
-  pp::Size uniform_page_size;
+  gfx::Size uniform_page_size;
   options->is_page_size_uniform =
       PP_FromBool(engine_->GetPageSizeAndUniformity(&uniform_page_size));
-  options->uniform_page_size = uniform_page_size;
+  options->uniform_page_size = PPSizeFromSize(uniform_page_size);
 }
 
 void OutOfProcessInstance::EnableAccessibility() {
@@ -1747,7 +1747,8 @@ void OutOfProcessInstance::HandleViewportMessage(
     DocumentLayout::Options layout_options;
     layout_options.FromVar(layout_options_var);
     // TODO(crbug.com/1013800): Eliminate need to get document size from here.
-    document_size_ = engine_->ApplyDocumentLayout(layout_options);
+    document_size_ =
+        PPSizeFromSize(engine_->ApplyDocumentLayout(layout_options));
     OnGeometryChanged(zoom_, device_scale_);
   }
 
@@ -1993,7 +1994,7 @@ void OutOfProcessInstance::OnGeometryChanged(double old_zoom,
 
   CalculateBackgroundParts();
   engine_->PageOffsetUpdated(available_area_.point());
-  engine_->PluginSizeUpdated(available_area_.size());
+  engine_->PluginSizeUpdated(SizeFromPPSize(available_area_.size()));
 
   if (document_size_.IsEmpty())
     return;

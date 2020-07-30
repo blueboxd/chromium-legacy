@@ -27,6 +27,7 @@ FCMHandler::FCMHandler(gcm::GCMDriver* gcm_driver,
 
 FCMHandler::~FCMHandler() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  DCHECK(listeners_.empty());
   StopListening();
 }
 

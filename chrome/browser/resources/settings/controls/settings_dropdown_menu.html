@@ -39,7 +39,7 @@
     </template>
     <select class="md-select" id="dropdownMenu" on-change="onChange_"
         aria-label$="[[label]]"
-        disabled="[[shouldDisableMenu_(disabled, menuOptions, pref.*)]]">
+        disabled="[[shouldDisableMenu_(disabled, menuOptions.*, pref.*)]]">
       <template is="dom-repeat" items="[[menuOptions]]">
         <option value="[[item.value]]">[[item.name]]</option>
       </template>

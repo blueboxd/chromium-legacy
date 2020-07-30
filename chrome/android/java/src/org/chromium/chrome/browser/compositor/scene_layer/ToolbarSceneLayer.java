@@ -215,12 +215,6 @@ public class ToolbarSceneLayer extends SceneOverlayLayer implements SceneOverlay
         return false;
     }
 
-    @Override
-    public void tabTitleChanged(int tabId, String title) {}
-
-    @Override
-    public void tabStateInitialized() {}
-
     @NativeMethods
     interface Natives {
         long init(ToolbarSceneLayer caller);

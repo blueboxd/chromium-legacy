@@ -120,6 +120,7 @@ TEST_F(FCMHandlerTest, ShouldPropagatePayloadToListener) {
 
   EXPECT_CALL(mock_listener, OnInvalidationReceived(kPayloadValue));
   fcm_handler_.OnMessage(kSyncInvalidationsAppId, gcm_message);
+  fcm_handler_.RemoveListener(&mock_listener);
 }
 
 }  // namespace

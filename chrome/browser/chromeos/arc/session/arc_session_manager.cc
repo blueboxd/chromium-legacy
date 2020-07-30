@@ -532,7 +532,7 @@ void ArcSessionManager::OnSessionStopped(ArcStopReason reason,
 
   // TODO(crbug.com/625923): Use |reason| to report more detailed errors.
   if (arc_sign_in_timer_.IsRunning())
-    OnProvisioningFinished(ProvisioningResult::ARC_STOPPED);
+    OnProvisioningFinished(ProvisioningResult::ARC_STOPPED, nullptr);
 
   for (auto& observer : observer_list_)
     observer.OnArcSessionStopped(reason);
@@ -543,11 +543,6 @@ void ArcSessionManager::OnSessionStopped(ArcStopReason reason,
 void ArcSessionManager::OnSessionRestarting() {
   for (auto& observer : observer_list_)
     observer.OnArcSessionRestarting();
-}
-
-void ArcSessionManager::OnProvisioningFinished(ProvisioningResult result) {
-  // TODO(mhasank) update all callers to use the second overload
-  OnProvisioningFinished(result, nullptr);
 }
 
 void ArcSessionManager::OnProvisioningFinished(
@@ -912,7 +907,7 @@ void ArcSessionManager::StopAndEnableArc() {
 
 void ArcSessionManager::OnArcSignInTimeout() {
   LOG(ERROR) << "Timed out waiting for first sign in.";
-  OnProvisioningFinished(ProvisioningResult::OVERALL_SIGN_IN_TIMEOUT);
+  OnProvisioningFinished(ProvisioningResult::OVERALL_SIGN_IN_TIMEOUT, nullptr);
 }
 
 void ArcSessionManager::CancelAuthCode() {

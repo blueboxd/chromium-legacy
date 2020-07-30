@@ -171,6 +171,7 @@ TEST_F(TextFinderTest, FindTextAutosizing) {
   WebString search_text(String("FindMe"));
   auto find_options =
       mojom::blink::FindOptions::New();  // Default + add testing flag.
+  find_options->run_synchronously_for_testing = true;
   bool wrap_within_frame = true;
 
   // Set viewport scale to 20 in order to simulate zoom-in

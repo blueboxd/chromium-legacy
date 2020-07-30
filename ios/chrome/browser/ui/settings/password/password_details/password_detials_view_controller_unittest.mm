@@ -35,6 +35,11 @@
 // Test class that conforms to PasswordDetailsHanler in order to test the
 // presenter methods are called correctly.
 @interface FakePasswordDetailsHandler : NSObject <PasswordDetailsHandler>
+
+@property(nonatomic, assign) BOOL deletionCalled;
+
+@property(nonatomic, assign) BOOL editingCalled;
+
 @end
 
 @implementation FakePasswordDetailsHandler
@@ -46,12 +51,23 @@
 - (void)showPasscodeDialog {
 }
 
+- (void)showPasswordDeleteDialogWithOrigin:(NSString*)origin {
+  self.deletionCalled = YES;
+}
+
+- (void)showPasswordEditDialogWithOrigin:(NSString*)origin {
+  self.editingCalled = YES;
+}
+
 @end
 
 // Test class that conforms to PasswordDetailsViewControllerDelegate in order to
 // test the delegate methods are called correctly.
 @interface FakePasswordDetailsDelegate
     : NSObject <PasswordDetailsViewControllerDelegate>
+
+@property(nonatomic, strong) PasswordDetails* password;
+
 @end
 
 @implementation FakePasswordDetailsDelegate
@@ -59,6 +75,7 @@
 - (void)passwordDetailsViewController:
             (PasswordDetailsViewController*)viewController
                didEditPasswordDetails:(PasswordDetails*)password {
+  self.password = password;
 }
 
 @end
@@ -145,7 +162,6 @@ TEST_F(PasswordDetailsViewControllerTest, TestPassword) {
   EXPECT_EQ(1, NumberOfSections());
   EXPECT_EQ(3, NumberOfItemsInSection(0));
 
-  EXPECT_NSEQ(@"example.com", controller().title);
   CheckEditCellText(@"http://www.example.com/", 0, 0);
   CheckEditCellText(@"test@egmail.com", 0, 1);
   CheckEditCellText(kMaskedPassword, 0, 2);
@@ -158,7 +174,6 @@ TEST_F(PasswordDetailsViewControllerTest, TestCompromisedPassword) {
   EXPECT_EQ(3, NumberOfItemsInSection(0));
   EXPECT_EQ(2, NumberOfItemsInSection(1));
 
-  EXPECT_NSEQ(@"example.com", controller().title);
   CheckEditCellText(@"http://www.example.com/", 0, 0);
   CheckEditCellText(@"test@egmail.com", 0, 1);
   CheckEditCellText(kMaskedPassword, 0, 2);
@@ -246,4 +261,64 @@ TEST_F(PasswordDetailsViewControllerTest, TestEditingReauthFailed) {
   [passwordDetails editButtonPressed];
   EXPECT_FALSE(passwordDetails.tableView.editing);
   CheckEditCellText(kMaskedPassword, 0, 2);
+}
+
+// Tests that delete button trigger showing password delete dialog.
+TEST_F(PasswordDetailsViewControllerTest, TestPasswordDelete) {
+  SetPassword();
+
+  EXPECT_FALSE(handler().deletionCalled);
+  PasswordDetailsViewController* passwordDetails =
+      base::mac::ObjCCastStrict<PasswordDetailsViewController>(controller());
+  [passwordDetails editButtonPressed];
+  [[UIApplication sharedApplication]
+      sendAction:passwordDetails.deleteButton.action
+              to:passwordDetails.deleteButton.target
+            from:nil
+        forEvent:nil];
+  EXPECT_TRUE(handler().deletionCalled);
+}
+
+// Tests password editing. User confirmed this action.
+TEST_F(PasswordDetailsViewControllerTest, TestEditPasswordConfirmed) {
+  SetPassword();
+
+  PasswordDetailsViewController* passwordDetails =
+      base::mac::ObjCCastStrict<PasswordDetailsViewController>(controller());
+  [passwordDetails editButtonPressed];
+  EXPECT_FALSE(handler().editingCalled);
+  EXPECT_FALSE(delegate().password);
+  EXPECT_TRUE(passwordDetails.tableView.editing);
+
+  TableViewTextEditItem* cell =
+      static_cast<TableViewTextEditItem*>(GetTableViewItem(0, 2));
+  cell.textFieldValue = @"new_password";
+
+  [passwordDetails editButtonPressed];
+  EXPECT_TRUE(handler().editingCalled);
+
+  [passwordDetails passwordEditingConfirmed];
+  EXPECT_TRUE(delegate().password);
+
+  EXPECT_NSEQ(@"new_password", delegate().password.password);
+  EXPECT_FALSE(passwordDetails.tableView.editing);
+}
+
+// Tests  password editing. User cancelled this action.
+TEST_F(PasswordDetailsViewControllerTest, TestEditPasswordCancel) {
+  SetPassword();
+
+  PasswordDetailsViewController* passwordDetails =
+      base::mac::ObjCCastStrict<PasswordDetailsViewController>(controller());
+  [passwordDetails editButtonPressed];
+  EXPECT_FALSE(delegate().password);
+  EXPECT_TRUE(passwordDetails.tableView.editing);
+
+  TableViewTextEditItem* cell =
+      static_cast<TableViewTextEditItem*>(GetTableViewItem(0, 2));
+  cell.textFieldValue = @"new_password";
+
+  [passwordDetails editButtonPressed];
+  EXPECT_FALSE(delegate().password);
+  EXPECT_TRUE(passwordDetails.tableView.editing);
 }

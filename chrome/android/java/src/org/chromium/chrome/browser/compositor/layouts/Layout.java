@@ -397,18 +397,6 @@ public abstract class Layout implements TabContentManager.ThumbnailChangeListene
     protected void notifySizeChanged(float width, float height, @Orientation int orientation) {}
 
     /**
-     * Notify the a title has changed.
-     *
-     * @param tabId The id of the tab that has changed.
-     * @param title The new title.
-     */
-    public void tabTitleChanged(int tabId, String title) {
-        for (int i = 0; i < mSceneOverlays.size(); i++) {
-            mSceneOverlays.get(i).tabTitleChanged(tabId, title);
-        }
-    }
-
-    /**
      * Sets the managers needed to for the layout to get information from outside. The managers
      * are tailored to be called from the GL thread.
      *
@@ -673,15 +661,6 @@ public abstract class Layout implements TabContentManager.ThumbnailChangeListene
      * @param tabId The id of the restored tab.
      */
     public void onTabRestored(long time, int tabId) { }
-
-    /**
-     * Called when the TabModelSelector has been initialized with an accurate tab count.
-     */
-    public void onTabStateInitialized() {
-        for (int i = 0; i < mSceneOverlays.size(); i++) {
-            mSceneOverlays.get(i).tabStateInitialized();
-        }
-    }
 
     /**
      * Called when the current tabModel switched (e.g. standard -> incognito).

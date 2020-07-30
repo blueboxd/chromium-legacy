@@ -45,6 +45,18 @@ TabSearchPageHandler::TabSearchPageHandler(
 
 TabSearchPageHandler::~TabSearchPageHandler() = default;
 
+void TabSearchPageHandler::CloseTab(int32_t tab_id) {
+  base::Optional<TabDetails> optional_details = GetTabDetails(tab_id);
+  if (!optional_details)
+    return;
+
+  const TabDetails& details = optional_details.value();
+  bool tab_closed = details.tab_strip_model->CloseWebContentsAt(
+      details.index, TabStripModel::CLOSE_CREATE_HISTORICAL_TAB);
+  if (tab_closed)
+    NotifyTabsChanged();
+}
+
 void TabSearchPageHandler::GetProfileTabs(GetProfileTabsCallback callback) {
   auto profile_tabs = tab_search::mojom::ProfileTabs::New();
   Profile* profile = browser_->profile();
@@ -65,6 +77,26 @@ void TabSearchPageHandler::GetProfileTabs(GetProfileTabsCallback callback) {
   std::move(callback).Run(std::move(profile_tabs));
 }
 
+base::Optional<TabSearchPageHandler::TabDetails>
+TabSearchPageHandler::GetTabDetails(int32_t tab_id) {
+  Profile* profile = browser_->profile();
+  for (auto* browser : *BrowserList::GetInstance()) {
+    if (browser->profile() != profile) {
+      continue;
+    }
+
+    TabStripModel* tab_strip_model = browser->tab_strip_model();
+    for (int index = 0; index < tab_strip_model->count(); ++index) {
+      content::WebContents* contents = tab_strip_model->GetWebContentsAt(index);
+      if (extensions::ExtensionTabUtil::GetTabId(contents) == tab_id) {
+        return TabDetails(browser, tab_strip_model, index);
+      }
+    }
+  }
+
+  return base::nullopt;
+}
+
 void TabSearchPageHandler::GetTabGroups(GetTabGroupsCallback callback) {
   // TODO(crbug.com/1096120): Implement this when we can get theme color from
   // browser
@@ -73,22 +105,14 @@ void TabSearchPageHandler::GetTabGroups(GetTabGroupsCallback callback) {
 
 void TabSearchPageHandler::SwitchToTab(
     tab_search::mojom::SwitchToTabInfoPtr switch_to_tab_info) {
-  Profile* profile = browser_->profile();
-  for (auto* browser : *BrowserList::GetInstance()) {
-    if (browser->profile() != profile) {
-      continue;
-    }
-    TabStripModel* tab_strip_model = browser->tab_strip_model();
-    for (int index = 0; index < tab_strip_model->count(); ++index) {
-      content::WebContents* contents = tab_strip_model->GetWebContentsAt(index);
-      if (extensions::ExtensionTabUtil::GetTabId(contents) ==
-          switch_to_tab_info->tab_id) {
-        tab_strip_model->ActivateTabAt(index);
-        browser->window()->Activate();
-        return;
-      }
-    }
-  }
+  base::Optional<TabDetails> optional_details =
+      GetTabDetails(switch_to_tab_info->tab_id);
+  if (!optional_details)
+    return;
+
+  const TabDetails& details = optional_details.value();
+  details.tab_strip_model->ActivateTabAt(details.index);
+  details.browser->window()->Activate();
 }
 
 tab_search::mojom::TabPtr TabSearchPageHandler::GetTabData(

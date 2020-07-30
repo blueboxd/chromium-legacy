@@ -99,6 +99,7 @@ enum class StatusCode : StatusCodeType {
   kEncoderUnsupportedCodec = 0x00000605,
   kEncoderUnsupportedConfig = 0x00000606,
   kEncoderInitializationError = 0x00000607,
+  kEncoderFailedFlush = 0x00000608,
 
   // Special codes
   kGenericErrorPleaseRemove = 0x79999999,

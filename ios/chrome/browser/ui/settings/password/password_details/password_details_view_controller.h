@@ -30,6 +30,9 @@
 // with password.
 @property(nonatomic, weak) id<ReauthenticationProtocol> reauthModule;
 
+// Called by coordinator when the user confirmed password editing from alert.
+- (void)passwordEditingConfirmed;
+
 @end
 
 #endif  // IOS_CHROME_BROWSER_UI_SETTINGS_PASSWORD_PASSWORD_DETAILS_PASSWORD_DETAILS_VIEW_CONTROLLER_H_

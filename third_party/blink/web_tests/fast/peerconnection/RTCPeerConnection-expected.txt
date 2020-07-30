@@ -11,7 +11,7 @@ PASS new RTCPeerConnection(null); did not throw exception.
 PASS new RTCPeerConnection(undefined); did not throw exception.
 PASS new RTCPeerConnection({}); did not throw exception.
 PASS new RTCPeerConnection(); did not throw exception.
-PASS new RTCPeerConnection(''); threw exception TypeError: Failed to construct 'RTCPeerConnection': parameter 1 ('configuration') is not an object..
+PASS new RTCPeerConnection(''); threw exception TypeError: Failed to construct 'RTCPeerConnection': cannot convert to dictionary..
 PASS new RTCPeerConnection({iceServers:[]}); did not throw exception.
 PASS new RTCPeerConnection({iceServers:[{url:'stun:foo.com'}]}); did not throw exception.
 PASS new RTCPeerConnection({iceServers:[{url:'turn:foo.com', username:'x', credential:'x'}]}); did not throw exception.

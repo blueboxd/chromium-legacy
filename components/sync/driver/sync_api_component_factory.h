@@ -24,6 +24,7 @@ class DataTypeEncryptionHandler;
 class DataTypeManager;
 class DataTypeManagerObserver;
 class SyncEngine;
+class SyncInvalidationsService;
 class SyncPrefs;
 
 // This factory provides sync driver code with the model type specific sync/api
@@ -40,10 +41,16 @@ class SyncApiComponentFactory {
       ModelTypeConfigurer* configurer,
       DataTypeManagerObserver* observer) = 0;
 
-  // Creating this in the factory helps us mock it out in testing.
+  // Creating this in the factory helps us mock it out in testing. |invalidator|
+  // and |sync_invalidation_service| are different invalidations. SyncEngine
+  // handles incoming invalidations from both of them (if provided).
+  // |sync_invalidation_service| is a new sync-specific invalidations service
+  // and it may be nullptr if it is disabled or not supported. In future, there
+  // will leave only one invalidation service.
   virtual std::unique_ptr<SyncEngine> CreateSyncEngine(
       const std::string& name,
       invalidation::InvalidationService* invalidator,
+      syncer::SyncInvalidationsService* sync_invalidation_service,
       const base::WeakPtr<SyncPrefs>& sync_prefs) = 0;
 };
 

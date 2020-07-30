@@ -5,6 +5,7 @@
 #include "chromeos/components/local_search_service/inverted_index_search.h"
 
 #include <utility>
+#include <vector>
 
 #include "base/i18n/rtl.h"
 #include "base/optional.h"
@@ -54,22 +55,18 @@ uint64_t InvertedIndexSearch::GetSize() {
 
 void InvertedIndexSearch::AddOrUpdate(
     const std::vector<local_search_service::Data>& data) {
+  std::vector<std::pair<std::string, std::vector<Token>>> documents;
   for (const Data& d : data) {
     const std::vector<Token> document_tokens = ExtractDocumentTokens(d);
     DCHECK(!document_tokens.empty());
-    inverted_index_->AddDocument(d.id, document_tokens);
+    documents.push_back({d.id, document_tokens});
   }
-
+  inverted_index_->AddDocuments(documents);
   inverted_index_->BuildInvertedIndex();
 }
 
 uint32_t InvertedIndexSearch::Delete(const std::vector<std::string>& ids) {
-  uint32_t num_deleted = 0u;
-  for (const auto& id : ids) {
-    DCHECK(!id.empty());
-    num_deleted += inverted_index_->RemoveDocument(id);
-  }
-
+  uint32_t num_deleted = inverted_index_->RemoveDocuments(ids);
   inverted_index_->BuildInvertedIndex();
   return num_deleted;
 }

@@ -891,7 +891,7 @@ void SpdyStream::QueueNextDataFrame() {
     session_->EnqueueGreasedFrame(GetWeakPtr());
   }
 
-  net_log_.AddEvent(NetLogEventType::HTTP2_SESSION_SEND_DATA, [&] {
+  session_->net_log().AddEvent(NetLogEventType::HTTP2_SESSION_SEND_DATA, [&] {
     return NetLogSpdyDataParams(stream_id_, effective_len, end_stream);
   });
 

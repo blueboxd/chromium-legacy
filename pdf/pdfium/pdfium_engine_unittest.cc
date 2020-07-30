@@ -19,6 +19,7 @@
 #include "ppapi/cpp/size.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "ui/gfx/geometry/size.h"
 
 namespace chrome_pdf {
 namespace {
@@ -31,7 +32,7 @@ using ::testing::Return;
 using ::testing::StrictMock;
 
 MATCHER_P2(LayoutWithSize, width, height, "") {
-  return arg.size() == pp::Size(width, height);
+  return arg.size() == gfx::Size(width, height);
 }
 
 MATCHER_P(LayoutWithOptions, options, "") {
@@ -181,12 +182,12 @@ TEST_F(PDFiumEngineTest, ApplyDocumentLayoutAvoidsInfiniteLoop) {
 
   DocumentLayout::Options options;
   EXPECT_CALL(client, ScrollToPage(-1)).Times(0);
-  CompareSize({343, 1664}, engine->ApplyDocumentLayout(options));
+  EXPECT_EQ(gfx::Size(343, 1664), engine->ApplyDocumentLayout(options));
 
   options.RotatePagesClockwise();
   EXPECT_CALL(client, ScrollToPage(-1)).Times(1);
-  CompareSize({343, 1463}, engine->ApplyDocumentLayout(options));
-  CompareSize({343, 1463}, engine->ApplyDocumentLayout(options));
+  EXPECT_EQ(gfx::Size(343, 1463), engine->ApplyDocumentLayout(options));
+  EXPECT_EQ(gfx::Size(343, 1463), engine->ApplyDocumentLayout(options));
 }
 
 TEST_F(PDFiumEngineTest, GetDocumentAttachmentInfo) {
@@ -850,7 +851,7 @@ TEST_F(PDFiumEngineTabbingTest, MaintainViewportWhenFocusIsUpdated) {
       &client, FILE_PATH_LITERAL("annotation_form_fields.pdf"));
   ASSERT_TRUE(engine);
   ASSERT_EQ(2, engine->GetNumberOfPages());
-  engine->PluginSizeUpdated(pp::Size(60, 40));
+  engine->PluginSizeUpdated(gfx::Size(60, 40));
 
   {
     InSequence sequence;
@@ -903,7 +904,7 @@ TEST_F(PDFiumEngineTabbingTest, ScrollFocusedAnnotationIntoView) {
       &client, FILE_PATH_LITERAL("annotation_form_fields.pdf"));
   ASSERT_TRUE(engine);
   ASSERT_EQ(2, engine->GetNumberOfPages());
-  engine->PluginSizeUpdated(pp::Size(60, 40));
+  engine->PluginSizeUpdated(gfx::Size(60, 40));
 
   {
     InSequence sequence;

@@ -140,8 +140,4 @@ const GURL GetFrenchUrl() {
   return [BookmarkEarlGreyAppInterface numberOfTimesPromoAlreadySeen];
 }
 
-- (NSString*)setupFakeIdentity {
-  return [BookmarkEarlGreyAppInterface setupFakeIdentity];
-}
-
 @end

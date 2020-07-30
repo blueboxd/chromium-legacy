@@ -7,7 +7,6 @@ package org.chromium.chrome.browser.compositor.layouts;
 import android.content.Context;
 import android.graphics.PointF;
 import android.graphics.RectF;
-import android.os.Handler;
 import android.os.SystemClock;
 import android.util.SparseArray;
 import android.view.MotionEvent;
@@ -486,8 +485,6 @@ public class LayoutManager implements LayoutUpdateHost, LayoutProvider,
         };
 
         if (mNextActiveLayout != null) startShowing(mNextActiveLayout, true);
-
-        updateLayoutForTabModelSelector();
 
         mTabModelSelectorObserver = new EmptyTabModelSelectorObserver() {
             @Override
@@ -987,33 +984,6 @@ public class LayoutManager implements LayoutUpdateHost, LayoutProvider,
 
     private @Orientation int getOrientation() {
         return mHost.getWidth() > mHost.getHeight() ? Orientation.LANDSCAPE : Orientation.PORTRAIT;
-    }
-
-    /**
-     * Updates the Layout for the state of the {@link TabModelSelector} after initialization.
-     * If the TabModelSelector is not yet initialized when this function is called, a
-     * {@link org.chromium.chrome.browser.tabmodel.TabModelSelectorObserver} is created to
-     * listen for when it is ready.
-     */
-    private void updateLayoutForTabModelSelector() {
-        if (mTabModelSelector.isTabStateInitialized() && getActiveLayout() != null) {
-            getActiveLayout().onTabStateInitialized();
-        } else {
-            mTabModelSelector.addObserver(new EmptyTabModelSelectorObserver() {
-                @Override
-                public void onTabStateInitialized() {
-                    if (getActiveLayout() != null) getActiveLayout().onTabStateInitialized();
-
-                    final EmptyTabModelSelectorObserver observer = this;
-                    new Handler().post(new Runnable() {
-                        @Override
-                        public void run() {
-                            mTabModelSelector.removeObserver(observer);
-                        }
-                    });
-                }
-            });
-        }
     }
 
     @VisibleForTesting

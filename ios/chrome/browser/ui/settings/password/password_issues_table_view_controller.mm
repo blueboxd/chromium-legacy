@@ -116,6 +116,21 @@ typedef NS_ENUM(NSInteger, ItemType) {
   [tableView deselectRowAtIndexPath:indexPath animated:YES];
 }
 
+- (UITableViewCell*)tableView:(UITableView*)tableView
+        cellForRowAtIndexPath:(NSIndexPath*)indexPath {
+  UITableViewCell* cell = [super tableView:tableView
+                     cellForRowAtIndexPath:indexPath];
+  switch ([self.tableViewModel itemTypeForIndexPath:indexPath]) {
+    case ItemTypePassword: {
+      TableViewDetailTextCell* textCell =
+          base::mac::ObjCCastStrict<TableViewDetailTextCell>(cell);
+      textCell.textLabel.lineBreakMode = NSLineBreakByTruncatingHead;
+      break;
+    }
+  }
+  return cell;
+}
+
 #pragma mark - PasswordIssuesConsumer
 
 - (void)setPasswordIssues:(NSArray<id<PasswordIssue>>*)passwords {

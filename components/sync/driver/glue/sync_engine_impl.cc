@@ -30,14 +30,21 @@
 #include "components/sync/engine/sync_engine_host.h"
 #include "components/sync/engine/sync_manager_factory.h"
 #include "components/sync/engine/sync_string_conversions.h"
+#include "components/sync/invalidations/fcm_handler.h"
+#include "components/sync/invalidations/sync_invalidations_service.h"
 
 namespace syncer {
 
-SyncEngineImpl::SyncEngineImpl(const std::string& name,
-                               invalidation::InvalidationService* invalidator,
-                               const base::WeakPtr<SyncPrefs>& sync_prefs,
-                               const base::FilePath& sync_data_folder)
-    : name_(name), sync_prefs_(sync_prefs), invalidator_(invalidator) {
+SyncEngineImpl::SyncEngineImpl(
+    const std::string& name,
+    invalidation::InvalidationService* invalidator,
+    SyncInvalidationsService* sync_invalidations_service,
+    const base::WeakPtr<SyncPrefs>& sync_prefs,
+    const base::FilePath& sync_data_folder)
+    : name_(name),
+      sync_prefs_(sync_prefs),
+      invalidator_(invalidator),
+      sync_invalidations_service_(sync_invalidations_service) {
   backend_ = base::MakeRefCounted<SyncEngineBackend>(
       name_, sync_data_folder, weak_ptr_factory_.GetWeakPtr());
 }
@@ -154,6 +161,12 @@ void SyncEngineImpl::Shutdown(ShutdownReason reason) {
     }
     invalidator_->UnregisterInvalidationHandler(this);
     invalidator_ = nullptr;
+  }
+  if (sync_invalidations_service_) {
+    // It's safe to call RemoveListener even if AddListener wasn't called
+    // before.
+    sync_invalidations_service_->RemoveListener(this);
+    sync_invalidations_service_ = nullptr;
   }
   last_enabled_types_.Clear();
   invalidation_handler_registered_ = false;
@@ -314,6 +327,10 @@ void SyncEngineImpl::HandleInitializationSuccessOnFrontendLoop(
     OnInvalidatorStateChange(invalidator_->GetInvalidatorState());
   }
 
+  if (sync_invalidations_service_) {
+    sync_invalidations_service_->AddListener(this);
+  }
+
   host_->OnEngineInitialized(initial_types, js_backend, debug_info_listener,
                              birthday, bag_of_chips, /*success=*/true);
 }
@@ -441,6 +458,7 @@ void SyncEngineImpl::SetInvalidationsForSessionsEnabled(bool enabled) {
   bool success = invalidator_->UpdateInterestedTopics(
       this, ModelTypeSetToTopicSet(enabled_for_invalidation));
   DCHECK(success);
+  // TODO(crbug.com/1102312): update enabled data types for sync invalidations.
 }
 
 void SyncEngineImpl::GetNigoriNodeForDebugging(AllNodesCallback callback) {
@@ -460,6 +478,7 @@ void SyncEngineImpl::OnInvalidatorClientIdChange(const std::string& client_id) {
 
 void SyncEngineImpl::OnInvalidationReceived(const std::string& payload) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  // TODO(crbug.com/1082122): check that sync engine is fully initialized.
   sync_task_runner_->PostTask(
       FROM_HERE, base::BindOnce(&SyncEngineBackend::DoOnInvalidationReceived,
                                 backend_, payload));

@@ -130,7 +130,7 @@ void VpxVideoEncoder::Initialize(VideoCodecProfile profile,
   std::move(done_cb).Run(Status());
 }
 
-void VpxVideoEncoder::Encode(scoped_refptr<const VideoFrame> frame,
+void VpxVideoEncoder::Encode(scoped_refptr<VideoFrame> frame,
                              bool key_frame,
                              StatusCB done_cb) {
   Status status;

@@ -25,6 +25,8 @@ class SyncClientMock : public SyncClient {
   MOCK_METHOD0(GetPasswordStateChangedCallback, base::RepeatingClosure());
 
   MOCK_METHOD0(GetInvalidationService, invalidation::InvalidationService*());
+  MOCK_METHOD0(GetSyncInvalidationsService,
+               syncer::SyncInvalidationsService*());
   MOCK_METHOD0(GetTrustedVaultClient, TrustedVaultClient*());
   MOCK_METHOD0(GetExtensionsActivity, scoped_refptr<ExtensionsActivity>());
   MOCK_METHOD1(GetSyncableServiceForType,

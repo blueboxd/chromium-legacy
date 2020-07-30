@@ -152,8 +152,8 @@ PASS dictionaryTest.set({callbackFunctionMember: {}}) threw exception TypeError:
 
 
 Test for passing invalid dictionary values
-PASS dictionaryTest.set(42) threw exception TypeError: Failed to execute 'set' on 'DictionaryTest': parameter 1 ('testingDictionary') is not an object..
-PASS dictionaryTest.set('string') threw exception TypeError: Failed to execute 'set' on 'DictionaryTest': parameter 1 ('testingDictionary') is not an object..
+PASS dictionaryTest.set(42) threw exception TypeError: Failed to execute 'set' on 'DictionaryTest': cannot convert to dictionary..
+PASS dictionaryTest.set('string') threw exception TypeError: Failed to execute 'set' on 'DictionaryTest': cannot convert to dictionary..
 
 
 Test for [Clamp] and [EnforceRange] member

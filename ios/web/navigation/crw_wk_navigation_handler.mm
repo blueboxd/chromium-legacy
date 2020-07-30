@@ -1252,8 +1252,15 @@ void ReportOutOfSyncURLInDidStartProvisionalNavigation(
     if (!item)
       item = self.navigationManagerImpl->GetVisibleItem();
 
-    userAgentType = self.webStateImpl->GetUserAgentForNextNavigation(
-        net::GURLWithNSURL(navigationAction.request.URL));
+    if (item && item->GetTransitionType() & ui::PAGE_TRANSITION_FORWARD_BACK) {
+      // When navigating forward to a restored page, the WKNavigationAction is
+      // of type reload and not BackForward. The item is correctly set a
+      // back/forward, so it is possible to use it.
+      userAgentType = item->GetUserAgentType();
+    } else {
+      userAgentType = self.webStateImpl->GetUserAgentForNextNavigation(
+          net::GURLWithNSURL(navigationAction.request.URL));
+    }
   }
 
   if (item && web::GetWebClient()->IsAppSpecificURL(item->GetVirtualURL())) {

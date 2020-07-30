@@ -111,7 +111,7 @@ class ProfileSyncServiceStartupTest : public testing::Test {
   FakeSyncEngine* SetUpFakeSyncEngine() {
     auto sync_engine = std::make_unique<FakeSyncEngine>();
     FakeSyncEngine* sync_engine_raw = sync_engine.get();
-    ON_CALL(*component_factory(), CreateSyncEngine(_, _, _))
+    ON_CALL(*component_factory(), CreateSyncEngine(_, _, _, _))
         .WillByDefault(Return(ByMove(std::move(sync_engine))));
     return sync_engine_raw;
   }
@@ -119,7 +119,7 @@ class ProfileSyncServiceStartupTest : public testing::Test {
   MockSyncEngine* SetUpMockSyncEngine() {
     auto sync_engine = std::make_unique<NiceMock<MockSyncEngine>>();
     MockSyncEngine* sync_engine_raw = sync_engine.get();
-    ON_CALL(*component_factory(), CreateSyncEngine(_, _, _))
+    ON_CALL(*component_factory(), CreateSyncEngine(_, _, _, _))
         .WillByDefault(Return(ByMove(std::move(sync_engine))));
     return sync_engine_raw;
   }
@@ -477,7 +477,7 @@ TEST_F(ProfileSyncServiceStartupTest, ManagedStartup) {
   CreateSyncService(ProfileSyncService::MANUAL_START);
 
   // Service should not be started by Initialize() since it's managed.
-  EXPECT_CALL(*component_factory(), CreateSyncEngine(_, _, _)).Times(0);
+  EXPECT_CALL(*component_factory(), CreateSyncEngine(_, _, _, _)).Times(0);
   EXPECT_CALL(*component_factory(), CreateDataTypeManager(_, _, _, _, _, _))
       .Times(0);
   sync_service()->Initialize();

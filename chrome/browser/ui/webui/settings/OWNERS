@@ -1,6 +1,7 @@
 file://chrome/browser/resources/settings/OWNERS
 
-per-file people_handler*=tangltom@chromium.org
+per-file people_handler*=msalama@chromium.org
+per-file people_handler*=treib@chromium.org
 
 per-file *site_settings*=msramek@chromium.org
 per-file *site_settings*=sauski@google.com

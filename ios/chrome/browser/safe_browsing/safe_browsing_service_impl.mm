@@ -15,6 +15,10 @@
 #include "components/safe_browsing/core/browser/url_checker_delegate.h"
 #include "components/safe_browsing/core/common/safebrowsing_constants.h"
 #include "components/safe_browsing/core/db/v4_local_database_manager.h"
+#include "components/safe_browsing/core/features.h"
+#include "components/safe_browsing/core/realtime/url_lookup_service.h"
+#import "ios/chrome/browser/browser_state/chrome_browser_state.h"
+#import "ios/chrome/browser/safe_browsing/real_time_url_lookup_service_factory.h"
 #import "ios/chrome/browser/safe_browsing/url_checker_delegate_impl.h"
 #include "ios/web/public/thread/web_task_traits.h"
 #include "ios/web/public/thread/web_thread.h"
@@ -83,15 +87,28 @@ std::unique_ptr<safe_browsing::SafeBrowsingUrlCheckerImpl>
 SafeBrowsingServiceImpl::CreateUrlChecker(
     safe_browsing::ResourceType resource_type,
     web::WebState* web_state) {
+  bool can_perform_full_url_lookup = false;
+  safe_browsing::RealTimeUrlLookupService* url_lookup_service = nullptr;
+  if (base::FeatureList::IsEnabled(safe_browsing::kRealTimeUrlLookupEnabled)) {
+    url_lookup_service = RealTimeUrlLookupServiceFactory::GetForBrowserState(
+        ChromeBrowserState::FromBrowserState(web_state->GetBrowserState()));
+    can_perform_full_url_lookup =
+        url_lookup_service && url_lookup_service->CanPerformFullURLLookup();
+  }
   return std::make_unique<safe_browsing::SafeBrowsingUrlCheckerImpl>(
       resource_type, url_checker_delegate_, web_state->CreateDefaultGetter(),
-      /*real_time_lookup_enabled=*/false,
+      can_perform_full_url_lookup,
       /*can_rt_check_subresource_url=*/false,
-      /*url_lookup_service_on_ui=*/nullptr);
+      url_lookup_service ? url_lookup_service->GetWeakPtr() : nullptr);
 }
 
 bool SafeBrowsingServiceImpl::CanCheckUrl(const GURL& url) const {
   return safe_browsing_db_manager_->CanCheckUrl(url);
+}
+
+scoped_refptr<network::SharedURLLoaderFactory>
+SafeBrowsingServiceImpl::GetURLLoaderFactory() {
+  return shared_url_loader_factory_;
 }
 
 void SafeBrowsingServiceImpl::SetUpURLLoaderFactory(
@@ -102,7 +119,12 @@ void SafeBrowsingServiceImpl::SetUpURLLoaderFactory(
   url_loader_factory_params->process_id = network::mojom::kBrowserProcessId;
   url_loader_factory_params->is_corb_enabled = false;
   network_context_client_->CreateURLLoaderFactory(
-      std::move(receiver), std::move(url_loader_factory_params));
+      url_loader_factory_.BindNewPipeAndPassReceiver(),
+      std::move(url_loader_factory_params));
+  url_loader_factory_->Clone(std::move(receiver));
+  shared_url_loader_factory_ =
+      base::MakeRefCounted<network::WeakWrapperSharedURLLoaderFactory>(
+          url_loader_factory_.get());
 }
 
 void SafeBrowsingServiceImpl::UpdateSafeBrowsingEnabledState() {

@@ -129,10 +129,10 @@ class MODULES_EXPORT WebRtcSetDescriptionObserverHandlerImpl
   DISALLOW_COPY_AND_ASSIGN(WebRtcSetDescriptionObserverHandlerImpl);
 };
 
-// An implementation of webrtc::SetSessionDescriptionObserver for performing the
-// operations of WebRtcSetDescriptionObserverHandlerImpl.
+// An implementation of webrtc::SetLocalDescriptionObserverInterface for
+// performing the operations of WebRtcSetDescriptionObserverHandlerImpl.
 class MODULES_EXPORT WebRtcSetLocalDescriptionObserverHandler
-    : public webrtc::SetSessionDescriptionObserver {
+    : public webrtc::SetLocalDescriptionObserverInterface {
  public:
   static scoped_refptr<WebRtcSetLocalDescriptionObserverHandler> Create(
       scoped_refptr<base::SingleThreadTaskRunner> main_task_runner,
@@ -142,10 +142,9 @@ class MODULES_EXPORT WebRtcSetLocalDescriptionObserverHandler
       scoped_refptr<WebRtcSetDescriptionObserver> observer,
       bool surface_receivers_only);
 
-  // webrtc::SetSessionDescriptionObserver implementation. Implementation calls
-  // WebRtcSetDescriptionObserverHandlerImpl::OnSetDescriptionComplete().
-  void OnSuccess() override;
-  void OnFailure(webrtc::RTCError error) override;
+  // webrtc::SetLocalDescriptionObserverInterface implementation. Implementation
+  // calls WebRtcSetDescriptionObserverHandlerImpl::OnSetDescriptionComplete().
+  void OnSetLocalDescriptionComplete(webrtc::RTCError error) override;
 
  protected:
   WebRtcSetLocalDescriptionObserverHandler(

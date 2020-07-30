@@ -204,6 +204,18 @@ void WKBasedNavigationManagerImpl::AddPendingItem(
     current_item_url = target_url;
   }
 
+  // Restore the UserAgent when navigating forward to a Session restoration URL.
+  if (navigation_type & ui::PAGE_TRANSITION_RELOAD &&
+      !(navigation_type & ui::PAGE_TRANSITION_FORWARD_BACK) &&
+      web::wk_navigation_util::IsRestoreSessionUrl(current_item_url) &&
+      GetNavigationItemFromWKItem(current_wk_item) &&
+      GetNavigationItemFromWKItem(current_wk_item)->GetUserAgentType() !=
+          UserAgentType::NONE &&
+      wk_navigation_util::URLNeedsUserAgentType(pending_item_->GetURL())) {
+    pending_item_->SetUserAgentType(
+        GetNavigationItemFromWKItem(current_wk_item)->GetUserAgentType());
+  }
+
   BOOL isCurrentURLSameAsPending = NO;
   if (base::FeatureList::IsEnabled(web::features::kUseJSForErrorPage)) {
     isCurrentURLSameAsPending =

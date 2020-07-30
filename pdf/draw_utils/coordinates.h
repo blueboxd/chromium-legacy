@@ -11,6 +11,10 @@
 
 #include "ppapi/cpp/rect.h"
 
+namespace gfx {
+class Size;
+}  // namespace gfx
+
 namespace pp {
 class Point;
 }
@@ -48,7 +52,7 @@ void CenterRectHorizontally(int doc_width, pp::Rect* rect);
 // Given |rect_size|, sets the width of |doc_size| to the max of |rect_size|'s
 // width and |doc_size|'s width. Also adds the height of |rect_size| to
 // |doc_size|'s height.
-void ExpandDocumentSize(const pp::Size& rect_size, pp::Size* doc_size);
+void ExpandDocumentSize(const gfx::Size& rect_size, gfx::Size* doc_size);
 
 // Given |page_rect_bottom| and |bottom_rect| in the same coordinate space,
 // return a pp::Rect object representing the portion of |bottom_rect| that is
@@ -76,8 +80,8 @@ PageInsetSizes GetPageInsetsForTwoUpView(
 
 // Given |rect_size| and |document_size| create a horizontally centered
 // pp::Rect placed at the bottom of the current document.
-pp::Rect GetRectForSingleView(const pp::Size& rect_size,
-                              const pp::Size& document_size);
+pp::Rect GetRectForSingleView(const gfx::Size& rect_size,
+                              const gfx::Size& document_size);
 
 // Given |rect| in document coordinates, a |position| in screen coordinates,
 // and a |zoom| factor, returns the rectangle in screen coordinates (i.e.
@@ -125,12 +129,12 @@ pp::Rect GetBottomFillRect(const pp::Rect& page_rect,
 // Given |rect_size|, create a pp::Rect where the top-right corner lies at
 // |position|. The width of |rect_size| must be less than or equal to the x
 // value for |position|.
-pp::Rect GetLeftRectForTwoUpView(const pp::Size& rect_size,
+pp::Rect GetLeftRectForTwoUpView(const gfx::Size& rect_size,
                                  const pp::Point& position);
 
 // Given |rect_size|, create a pp::Rect where the top-left corner lies at
 // |position|.
-pp::Rect GetRightRectForTwoUpView(const pp::Size& rect_size,
+pp::Rect GetRightRectForTwoUpView(const gfx::Size& rect_size,
                                   const pp::Point& position);
 
 }  // namespace draw_utils

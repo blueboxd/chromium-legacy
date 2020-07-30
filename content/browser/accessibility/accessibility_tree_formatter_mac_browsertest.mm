@@ -122,6 +122,17 @@ IN_PROC_BROWSER_TEST_F(AccessibilityTreeFormatterMacBrowserTest,
 }
 
 IN_PROC_BROWSER_TEST_F(AccessibilityTreeFormatterMacBrowserTest,
+                       Filters_NoWildcardProperty) {
+  TestAndCheck(R"~~(data:text/html,
+                    <input class='classolasso'>)~~",
+               {"AXDOMClassList"},
+               R"~~(AXWebArea AXDOMClassList=[]
+++AXGroup AXDOMClassList=[]
+++++AXTextField AXDOMClassList=['classolasso']
+)~~");
+}
+
+IN_PROC_BROWSER_TEST_F(AccessibilityTreeFormatterMacBrowserTest,
                        LineIndexFilter) {
   TestAndCheck(R"~~(data:text/html,
                     <input class='input_at_3rd_line'>

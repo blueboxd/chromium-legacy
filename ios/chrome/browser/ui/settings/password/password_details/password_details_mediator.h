@@ -30,6 +30,9 @@ struct PasswordForm;
 // Consumer of this mediator.
 @property(nonatomic, weak) id<PasswordDetailsConsumer> consumer;
 
+// Password passed to the mediator.
+@property(nonatomic, readonly) autofill::PasswordForm password;
+
 // Disconnects the mediator from all observers.
 - (void)disconnect;
 

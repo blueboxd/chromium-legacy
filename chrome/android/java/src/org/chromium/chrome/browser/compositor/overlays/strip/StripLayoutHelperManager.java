@@ -6,13 +6,17 @@ package org.chromium.chrome.browser.compositor.overlays.strip;
 
 import android.content.Context;
 import android.content.res.Resources;
+import android.graphics.Bitmap;
 import android.graphics.RectF;
+import android.os.Handler;
 import android.os.SystemClock;
 
 import androidx.annotation.VisibleForTesting;
 
+import org.chromium.base.supplier.Supplier;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.compositor.LayerTitleCache;
+import org.chromium.chrome.browser.compositor.TitleCache;
 import org.chromium.chrome.browser.compositor.layouts.LayoutManager;
 import org.chromium.chrome.browser.compositor.layouts.LayoutRenderHost;
 import org.chromium.chrome.browser.compositor.layouts.LayoutUpdateHost;
@@ -26,11 +30,13 @@ import org.chromium.chrome.browser.compositor.overlays.SceneOverlay;
 import org.chromium.chrome.browser.compositor.scene_layer.SceneOverlayLayer;
 import org.chromium.chrome.browser.compositor.scene_layer.TabStripSceneLayer;
 import org.chromium.chrome.browser.tab.Tab;
+import org.chromium.chrome.browser.tab.TabCreationState;
 import org.chromium.chrome.browser.tab.TabLaunchType;
 import org.chromium.chrome.browser.tab.TabSelectionType;
 import org.chromium.chrome.browser.tabmodel.EmptyTabModelSelectorObserver;
 import org.chromium.chrome.browser.tabmodel.TabCreatorManager;
 import org.chromium.chrome.browser.tabmodel.TabModel;
+import org.chromium.chrome.browser.tabmodel.TabModelObserver;
 import org.chromium.chrome.browser.tabmodel.TabModelSelector;
 import org.chromium.chrome.browser.tabmodel.TabModelSelectorObserver;
 import org.chromium.chrome.browser.tabmodel.TabModelSelectorTabModelObserver;
@@ -86,6 +92,11 @@ public class StripLayoutHelperManager implements SceneOverlay {
                     tabModelSwitched(newModel.isIncognito());
                 }
             };
+
+    private TabModelObserver mTabModelObserver;
+
+    private final String mDefaultTitle;
+    private final Supplier<TitleCache> mTitleCacheSupplier;
 
     private class TabStripEventHandler implements GestureHandler {
         @Override
@@ -143,15 +154,18 @@ public class StripLayoutHelperManager implements SceneOverlay {
 
     /**
      * Creates an instance of the {@link StripLayoutHelperManager}.
-     * @param context           The current Android {@link Context}.
-     * @param updateHost        The parent {@link LayoutUpdateHost}.
-     * @param renderHost        The {@link LayoutRenderHost}.
+     * @param context The current Android {@link Context}.
+     * @param updateHost The parent {@link LayoutUpdateHost}.
+     * @param renderHost The {@link LayoutRenderHost}.
+     * @param titleCacheSupplier A supplier of the title cache.
      */
-    public StripLayoutHelperManager(
-            Context context, LayoutUpdateHost updateHost, LayoutRenderHost renderHost) {
+    public StripLayoutHelperManager(Context context, LayoutUpdateHost updateHost,
+            LayoutRenderHost renderHost, Supplier<TitleCache> titleCacheSupplier) {
         mUpdateHost = updateHost;
+        mTitleCacheSupplier = titleCacheSupplier;
         mTabStripTreeProvider = new TabStripSceneLayer(context);
         mTabStripEventHandler = new TabStripEventHandler();
+        mDefaultTitle = context.getString(R.string.tab_loading_default_title);
         mEventFilter =
                 new AreaGestureEventFilter(context, mTabStripEventHandler, null, false, false);
 
@@ -192,6 +206,9 @@ public class StripLayoutHelperManager implements SceneOverlay {
         mIncognitoHelper.destroy();
         mNormalHelper.destroy();
         if (mTabModelSelector != null) {
+            mTabModelSelector.getTabModelFilterProvider().removeTabModelFilterObserver(
+                    mTabModelObserver);
+
             mTabModelSelector.removeObserver(mTabModelSelectorObserver);
             mTabModelSelectorTabModelObserver.destroy();
             mTabModelSelectorTabObserver.destroy();
@@ -317,7 +334,29 @@ public class StripLayoutHelperManager implements SceneOverlay {
             TabCreatorManager tabCreatorManager) {
         if (mTabModelSelector == modelSelector) return;
 
+        mTabModelObserver = new TabModelObserver() {
+            @Override
+            public void didAddTab(
+                    Tab tab, @TabLaunchType int launchType, @TabCreationState int creationState) {
+                updateTitleForTab(tab);
+            }
+        };
+        modelSelector.getTabModelFilterProvider().addTabModelFilterObserver(mTabModelObserver);
+
         mTabModelSelector = modelSelector;
+
+        if (mTabModelSelector.isTabStateInitialized()) {
+            updateModelSwitcherButton();
+        } else {
+            mTabModelSelector.addObserver(new EmptyTabModelSelectorObserver() {
+                @Override
+                public void onTabStateInitialized() {
+                    updateModelSwitcherButton();
+                    new Handler().post(() -> mTabModelSelector.removeObserver(this));
+                }
+            });
+        }
+
         mNormalHelper.setTabModel(mTabModelSelector.getModel(false),
                 tabCreatorManager.getTabCreator(false));
         mIncognitoHelper.setTabModel(mTabModelSelector.getModel(true),
@@ -408,14 +447,27 @@ public class StripLayoutHelperManager implements SceneOverlay {
             public void onCrash(Tab tab) {
                 getStripLayoutHelper(tab.isIncognito()).tabPageLoadFinished(tab.getId());
             }
+
+            @Override
+            public void onTitleUpdated(Tab tab) {
+                updateTitleForTab(tab);
+            }
+
+            @Override
+            public void onFaviconUpdated(Tab tab, Bitmap icon) {
+                updateTitleForTab(tab);
+            }
         };
 
         mTabModelSelector.addObserver(mTabModelSelectorObserver);
     }
 
-    @Override
-    public void tabTitleChanged(int tabId, String title) {
-        getActiveStripLayoutHelper().tabTitleChanged(tabId, title);
+    private void updateTitleForTab(Tab tab) {
+        if (mTitleCacheSupplier.get() == null) return;
+
+        String title = mTitleCacheSupplier.get().getUpdatedTitle(tab, mDefaultTitle);
+        getStripLayoutHelper(tab.isIncognito()).tabTitleChanged(tab.getId(), title);
+        mUpdateHost.requestUpdate();
     }
 
     public float getHeight() {
@@ -453,11 +505,6 @@ public class StripLayoutHelperManager implements SceneOverlay {
     @Override
     public boolean handlesTabCreating() {
         return false;
-    }
-
-    @Override
-    public void tabStateInitialized() {
-        updateModelSwitcherButton();
     }
 
     private void tabModelSwitched(boolean incognito) {

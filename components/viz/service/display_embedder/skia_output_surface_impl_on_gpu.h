@@ -26,7 +26,6 @@
 #include "gpu/command_buffer/common/mailbox.h"
 #include "gpu/command_buffer/common/sync_token.h"
 #include "gpu/command_buffer/service/shared_context_state.h"
-#include "gpu/command_buffer/service/shared_image_representation.h"
 #include "gpu/command_buffer/service/sync_point_manager.h"
 #include "gpu/ipc/service/context_url.h"
 #include "gpu/ipc/service/display_context.h"
@@ -46,7 +45,6 @@ class GLSurface;
 
 namespace gpu {
 class SharedImageRepresentationFactory;
-class SharedImageFactory;
 class SyncPointClientState;
 }
 
@@ -206,7 +204,7 @@ class SkiaOutputSurfaceImplOnGpu
     num_readbacks_pending_--;
   }
 
-  gpu::MemoryTracker* GetMemoryTracker() { return memory_tracker_; }
+  gpu::MemoryTracker* GetMemoryTracker() { return memory_tracker_.get(); }
 
  private:
   class OffscreenSurface;
@@ -227,12 +225,6 @@ class SkiaOutputSurfaceImplOnGpu
   // It will do nothing when Vulkan is used.
   bool MakeCurrent(bool need_fbo0);
   void MarkContextLost(ContextLostReason reason);
-
-  void DestroySharedImageOnImplThread(
-      std::unique_ptr<gpu::SharedImageRepresentationSkia> representation,
-      scoped_refptr<gpu::SharedContextState> context_state,
-      const gpu::SyncToken& sync_token,
-      bool is_lost);
 
   void PullTextureUpdates(std::vector<gpu::SyncToken> sync_token);
 
@@ -285,10 +277,9 @@ class SkiaOutputSurfaceImplOnGpu
   SkiaOutputSurfaceDependency* const dependency_;
   scoped_refptr<gpu::gles2::FeatureInfo> feature_info_;
   scoped_refptr<gpu::SyncPointClientState> sync_point_client_state_;
-  gpu::MemoryTracker* memory_tracker_;
+  std::unique_ptr<gpu::MemoryTracker> memory_tracker_;
   std::unique_ptr<gpu::SharedImageRepresentationFactory>
       shared_image_representation_factory_;
-  std::unique_ptr<gpu::SharedImageFactory> shared_image_factory_;
   VulkanContextProvider* const vulkan_context_provider_;
   DawnContextProvider* const dawn_context_provider_;
   const RendererSettings renderer_settings_;

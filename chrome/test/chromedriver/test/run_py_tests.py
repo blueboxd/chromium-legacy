@@ -950,26 +950,6 @@ class ChromeDriverTest(ChromeDriverBaseTestWithWebServer):
     self.assertAlmostEqual(115, rect['x'], delta=1)
     self.assertAlmostEqual(145, rect['y'], delta=1)
 
-  def testActionsWheelScroll(self):
-    self._driver.Load(self.GetHttpUrlForFile('/chromedriver/empty.html'))
-    self._driver.ExecuteScript(
-        'document.body.innerHTML = "<div>old</div>";'
-        'var div = document.getElementsByTagName("div")[0];'
-        'div.style["width"] = "100px";'
-        'div.style["height"] = "1000px";'
-        'div.addEventListener("wheel", function() {'
-        '  var div = document.getElementsByTagName("div")[0];'
-        '  div.innerHTML="new<br>";'
-        '});'
-        'return div;')
-    actions = ({"actions": [{
-      "type":"wheel",
-      "actions":[{"type": "scroll", "x": 10, "y": 10, "deltaX": 5,
-                  "deltaY": 15}],
-      "id": "wheel1"}]})
-    self._driver.PerformActions(actions)
-    self.assertEquals(1, len(self._driver.FindElements('tag name', 'br')))
-
   def testActionsTouchTap(self):
     self._driver.Load(self.GetHttpUrlForFile('/chromedriver/empty.html'))
     self._driver.ExecuteScript(

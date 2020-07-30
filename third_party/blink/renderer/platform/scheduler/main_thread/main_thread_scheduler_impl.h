@@ -132,6 +132,9 @@ class PLATFORM_EXPORT MainThreadSchedulerImpl
     // (crbug.com/971191)
     bool prioritize_compositing_and_loading_during_early_loading;
 
+    // Prioritise one BeginMainFrame after an input task.
+    bool prioritize_compositing_after_input;
+
     // Contains a mapping from net::RequestPriority to TaskQueue::QueuePriority
     // when use_resource_fetch_priority is enabled.
     std::array<base::sequence_manager::TaskQueue::QueuePriority,

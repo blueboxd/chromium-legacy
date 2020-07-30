@@ -13,12 +13,20 @@ class IOSChromePasswordCheckManager;
 @class PasswordIssuesCoordinator;
 @class ReauthenticationModule;
 
+namespace autofill {
+struct PasswordForm;
+}
+
 // Delegate for PasswordIssuesCoordinator.
 @protocol PasswordIssuesCoordinatorDelegate
 
 // Called when the view controller is removed from navigation controller.
 - (void)passwordIssuesCoordinatorDidRemove:
     (PasswordIssuesCoordinator*)coordinator;
+
+// Called when the user deleted password. Returns whether presenter will
+// handle it or not.
+- (BOOL)willHandlePasswordDeletion:(const autofill::PasswordForm&)password;
 
 @end
 

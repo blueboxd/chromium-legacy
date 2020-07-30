@@ -712,6 +712,12 @@ const base::Feature kQuickUnlockPin{"QuickUnlockPin",
 const base::Feature kQuickUnlockPinAutosubmit{
     "QuickUnlockPinAutosubmit", base::FEATURE_DISABLED_BY_DEFAULT};
 
+// TODO(crbug.com/1104164) - Remove this once most
+// users have their preferences backfilled.
+// Controls whether the PIN auto submit backfill operation should be performed.
+const base::Feature kQuickUnlockPinAutosubmitBackfill{
+    "QuickUnlockPinAutosubmitBackfill", base::FEATURE_ENABLED_BY_DEFAULT};
+
 // Enables pin on the login screen.
 const base::Feature kQuickUnlockPinSignin{"QuickUnlockPinSignin",
                                           base::FEATURE_DISABLED_BY_DEFAULT};

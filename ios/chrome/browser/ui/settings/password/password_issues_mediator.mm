@@ -4,6 +4,7 @@
 
 #import "ios/chrome/browser/ui/settings/password/password_issues_mediator.h"
 
+#include "components/password_manager/core/browser/ui/compromised_credentials_manager.h"
 #include "ios/chrome/browser/passwords/password_check_observer_bridge.h"
 #import "ios/chrome/browser/ui/settings/password/password_issue_with_form.h"
 #import "ios/chrome/browser/ui/settings/password/password_issues_consumer.h"
@@ -46,6 +47,21 @@
     return;
   _consumer = consumer;
   [self fetchPasswordIssues];
+}
+
+- (void)deletePassword:(const autofill::PasswordForm&)password {
+  for (const auto& credential : _compromisedCredentials) {
+    if (std::tie(credential.signon_realm, credential.username,
+                 credential.password) == std::tie(password.signon_realm,
+                                                  password.username_value,
+                                                  password.password_value)) {
+      _manager->DeleteCompromisedPasswordForm(password);
+      return;
+    }
+  }
+  _manager->DeletePasswordForm(password);
+  // TODO:(crbug.com/1075494) - Update list of compromised passwords without
+  // awaiting compromisedCredentialsDidChange.
 }
 
 #pragma mark - PasswordCheckObserver

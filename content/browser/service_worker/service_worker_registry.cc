@@ -556,7 +556,7 @@ void ServiceWorkerRegistry::GetUserData(int64_t registration_id,
     }
   }
 
-  storage()->GetUserData(
+  GetRemoteStorageControl()->GetUserData(
       registration_id, keys,
       base::BindOnce(&ServiceWorkerRegistry::DidGetUserData,
                      weak_factory_.GetWeakPtr(), std::move(callback)));
@@ -575,7 +575,7 @@ void ServiceWorkerRegistry::GetUserDataByKeyPrefix(
     return;
   }
 
-  storage()->GetUserDataByKeyPrefix(
+  GetRemoteStorageControl()->GetUserDataByKeyPrefix(
       registration_id, key_prefix,
       base::BindOnce(&ServiceWorkerRegistry::DidGetUserData,
                      weak_factory_.GetWeakPtr(), std::move(callback)));
@@ -595,7 +595,7 @@ void ServiceWorkerRegistry::GetUserKeysAndDataByKeyPrefix(
     return;
   }
 
-  storage()->GetUserKeysAndDataByKeyPrefix(
+  GetRemoteStorageControl()->GetUserKeysAndDataByKeyPrefix(
       registration_id, key_prefix,
       base::BindOnce(&ServiceWorkerRegistry::DidGetUserKeysAndData,
                      weak_factory_.GetWeakPtr(), std::move(callback)));
@@ -629,7 +629,7 @@ void ServiceWorkerRegistry::StoreUserData(
         storage::mojom::ServiceWorkerUserData::New(kv.first, kv.second));
   }
 
-  storage()->StoreUserData(
+  GetRemoteStorageControl()->StoreUserData(
       registration_id, origin, std::move(user_data),
       base::BindOnce(&ServiceWorkerRegistry::DidStoreUserData,
                      weak_factory_.GetWeakPtr(), std::move(callback)));
@@ -655,7 +655,7 @@ void ServiceWorkerRegistry::ClearUserData(int64_t registration_id,
     }
   }
 
-  storage()->ClearUserData(
+  GetRemoteStorageControl()->ClearUserData(
       registration_id, keys,
       base::BindOnce(&ServiceWorkerRegistry::DidClearUserData,
                      weak_factory_.GetWeakPtr(), std::move(callback)));
@@ -682,7 +682,7 @@ void ServiceWorkerRegistry::ClearUserDataByKeyPrefixes(
     }
   }
 
-  storage()->ClearUserDataByKeyPrefixes(
+  GetRemoteStorageControl()->ClearUserDataByKeyPrefixes(
       registration_id, key_prefixes,
       base::BindOnce(&ServiceWorkerRegistry::DidClearUserData,
                      weak_factory_.GetWeakPtr(), std::move(callback)));
@@ -699,7 +699,7 @@ void ServiceWorkerRegistry::ClearUserDataForAllRegistrationsByKeyPrefix(
     return;
   }
 
-  storage()->ClearUserDataForAllRegistrationsByKeyPrefix(
+  GetRemoteStorageControl()->ClearUserDataForAllRegistrationsByKeyPrefix(
       key_prefix,
       base::BindOnce(&ServiceWorkerRegistry::DidClearUserData,
                      weak_factory_.GetWeakPtr(), std::move(callback)));

@@ -298,9 +298,22 @@ class MockPeerConnectionImpl : public webrtc::DummyPeerConnection {
                    const RTCOfferAnswerOptions& options) override;
   void CreateAnswer(webrtc::CreateSessionDescriptionObserver* observer,
                     const RTCOfferAnswerOptions& options) override;
+  // TODO(hbos): Remove once no longer mandatory to implement.
   MOCK_METHOD2(SetLocalDescription,
                void(webrtc::SetSessionDescriptionObserver* observer,
                     webrtc::SessionDescriptionInterface* desc));
+  void SetLocalDescription(
+      std::unique_ptr<webrtc::SessionDescriptionInterface> desc,
+      rtc::scoped_refptr<webrtc::SetLocalDescriptionObserverInterface> observer)
+      override {
+    SetLocalDescriptionForMock(&desc, &observer);
+  }
+  // Work-around due to MOCK_METHOD being unable to handle move-only arguments.
+  MOCK_METHOD2(
+      SetLocalDescriptionForMock,
+      void(std::unique_ptr<webrtc::SessionDescriptionInterface>* desc,
+           rtc::scoped_refptr<webrtc::SetLocalDescriptionObserverInterface>*
+               observer));
   void SetLocalDescriptionWorker(
       webrtc::SetSessionDescriptionObserver* observer,
       webrtc::SessionDescriptionInterface* desc);

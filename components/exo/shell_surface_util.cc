@@ -178,7 +178,6 @@ Surface* GetTargetSurfaceForLocatedEvent(
     if (!main_surface)
       return nullptr;
   }
-  DCHECK_EQ(window, static_cast<aura::Window*>(original_event->target()));
 
   // Create a clone of the event as targeter may update it during the
   // search.

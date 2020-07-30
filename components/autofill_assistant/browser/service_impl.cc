@@ -102,14 +102,13 @@ ServiceImpl::ServiceImpl(const std::string& api_key,
                          const std::string& locale,
                          const std::string& country_code,
                          const DeviceContext& device_context,
-                         const Client* client)
+                         const Client* client,
+                         bool auth_enabled)
     : context_(context),
       api_key_(api_key),
       access_token_fetcher_(access_token_fetcher),
       fetching_token_(false),
-      auth_enabled_("false" !=
-                    base::CommandLine::ForCurrentProcess()->GetSwitchValueASCII(
-                        switches::kAutofillAssistantAuth)),
+      auth_enabled_(auth_enabled),
       client_context_(
           CreateClientContext(locale, country_code, device_context)),
       client_(client),
@@ -125,6 +124,27 @@ ServiceImpl::ServiceImpl(const std::string& api_key,
   script_action_server_url_ = server_url.ReplaceComponents(action_replacements);
   VLOG(1) << "Using script domain " << script_action_server_url_.host();
 }
+
+ServiceImpl::ServiceImpl(const std::string& api_key,
+                         const GURL& server_url,
+                         content::BrowserContext* context,
+                         AccessTokenFetcher* access_token_fetcher,
+                         const std::string& locale,
+                         const std::string& country_code,
+                         const DeviceContext& device_context,
+                         const Client* client)
+    : ServiceImpl(
+          api_key,
+          server_url,
+          context,
+          access_token_fetcher,
+          locale,
+          country_code,
+          device_context,
+          client,
+          /* auth_enabled = */ "false" !=
+              base::CommandLine::ForCurrentProcess()->GetSwitchValueASCII(
+                  switches::kAutofillAssistantAuth)) {}
 
 ServiceImpl::~ServiceImpl() {}
 

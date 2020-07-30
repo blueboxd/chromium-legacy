@@ -99,7 +99,7 @@ int GetIPv4AddressFromIndex(int socket, uint32_t index, uint32_t* address) {
   return OK;
 }
 
-#endif  // OS_MACOSX
+#endif  // OS_APPLE
 
 #if defined(OS_MAC)
 

@@ -402,7 +402,8 @@ TEST_F(ArcSessionManagerTest, ArcInitialStartFirstProvisioning) {
 
   EXPECT_FALSE(start_handler.was_called());
 
-  arc_session_manager()->OnProvisioningFinished(ProvisioningResult::SUCCESS);
+  arc_session_manager()->OnProvisioningFinished(ProvisioningResult::SUCCESS,
+                                                nullptr);
   EXPECT_TRUE(start_handler.was_called());
 
   arc_session_manager()->Shutdown();
@@ -423,7 +424,8 @@ TEST_F(ArcSessionManagerTest, ArcInitialStartNextProvisioning) {
   ArcInitialStartHandler start_handler(arc_session_manager());
 
   arc_session_manager()->RequestEnable();
-  arc_session_manager()->OnProvisioningFinished(ProvisioningResult::SUCCESS);
+  arc_session_manager()->OnProvisioningFinished(ProvisioningResult::SUCCESS,
+                                                nullptr);
   EXPECT_FALSE(start_handler.was_called());
 
   arc_session_manager()->Shutdown();
@@ -547,7 +549,8 @@ TEST_F(ArcSessionManagerTest, Provisioning_Success) {
   EXPECT_FALSE(arc_session_manager()->IsPlaystoreLaunchRequestedForTesting());
 
   // Emulate successful provisioning.
-  arc_session_manager()->OnProvisioningFinished(ProvisioningResult::SUCCESS);
+  arc_session_manager()->OnProvisioningFinished(ProvisioningResult::SUCCESS,
+                                                nullptr);
   EXPECT_TRUE(prefs->GetBoolean(prefs::kArcSignedIn));
   EXPECT_EQ(ArcSessionManager::State::ACTIVE, arc_session_manager()->state());
   EXPECT_TRUE(arc_session_manager()->IsPlaystoreLaunchRequestedForTesting());
@@ -570,7 +573,8 @@ TEST_F(ArcSessionManagerTest, PlayStoreSuppressed) {
   // Second start, no fetching code is expected.
   EXPECT_EQ(ArcSessionManager::State::ACTIVE, arc_session_manager()->state());
   EXPECT_FALSE(arc_session_manager()->IsPlaystoreLaunchRequestedForTesting());
-  arc_session_manager()->OnProvisioningFinished(ProvisioningResult::SUCCESS);
+  arc_session_manager()->OnProvisioningFinished(ProvisioningResult::SUCCESS,
+                                                nullptr);
   // Completing the provisioning resets this flag.
   EXPECT_FALSE(prefs->GetBoolean(prefs::kArcProvisioningInitiatedFromOobe));
   EXPECT_EQ(ArcSessionManager::State::ACTIVE, arc_session_manager()->state());
@@ -618,7 +622,7 @@ TEST_F(ArcSessionManagerTest, Provisioning_Restart) {
 
   // Report failure.
   arc_session_manager()->OnProvisioningFinished(
-      ProvisioningResult::GMS_NETWORK_ERROR);
+      ProvisioningResult::GMS_NETWORK_ERROR, nullptr);
   // On error, UI to send feedback is showing. In that case,
   // the ARC is still necessary to run on background for gathering the logs.
   EXPECT_TRUE(prefs->GetBoolean(prefs::kArcSignedIn));
@@ -750,7 +754,8 @@ TEST_F(ArcSessionManagerTest, ClearArcTransitionOnShutdown) {
             arc_session_manager()->state());
   arc_session_manager()->OnTermsOfServiceNegotiatedForTesting(true);
   arc_session_manager()->StartArcForTesting();
-  arc_session_manager()->OnProvisioningFinished(ProvisioningResult::SUCCESS);
+  arc_session_manager()->OnProvisioningFinished(ProvisioningResult::SUCCESS,
+                                                nullptr);
 
   EXPECT_EQ(
       static_cast<int>(ArcSupervisionTransition::NO_TRANSITION),
@@ -785,7 +790,8 @@ TEST_F(ArcSessionManagerTest, ClearArcTransitionOnArcDataRemoval) {
             arc_session_manager()->state());
   arc_session_manager()->OnTermsOfServiceNegotiatedForTesting(true);
   arc_session_manager()->StartArcForTesting();
-  arc_session_manager()->OnProvisioningFinished(ProvisioningResult::SUCCESS);
+  arc_session_manager()->OnProvisioningFinished(ProvisioningResult::SUCCESS,
+                                                nullptr);
 
   EXPECT_EQ(ArcSupervisionTransition::NO_TRANSITION,
             arc::GetSupervisionTransition(profile()));
@@ -812,13 +818,13 @@ TEST_F(ArcSessionManagerTest, IgnoreSecondErrorReporting) {
 
   // Report some failure that does not stop the bridge.
   arc_session_manager()->OnProvisioningFinished(
-      ProvisioningResult::GMS_SIGN_IN_FAILED);
+      ProvisioningResult::GMS_SIGN_IN_FAILED, nullptr);
   EXPECT_EQ(ArcSessionManager::State::ACTIVE, arc_session_manager()->state());
 
   // Try to send another error that stops the bridge if sent first. It should
   // be ignored.
   arc_session_manager()->OnProvisioningFinished(
-      ProvisioningResult::CHROME_SERVER_COMMUNICATION_ERROR);
+      ProvisioningResult::CHROME_SERVER_COMMUNICATION_ERROR, nullptr);
   EXPECT_EQ(ArcSessionManager::State::ACTIVE, arc_session_manager()->state());
 
   arc_session_manager()->Shutdown();
@@ -838,7 +844,8 @@ TEST_F(ArcSessionManagerTest, IsDirectlyStartedFalse) {
             arc_session_manager()->state());
   arc_session_manager()->OnTermsOfServiceNegotiatedForTesting(true);
   arc_session_manager()->StartArcForTesting();
-  arc_session_manager()->OnProvisioningFinished(ProvisioningResult::SUCCESS);
+  arc_session_manager()->OnProvisioningFinished(ProvisioningResult::SUCCESS,
+                                                nullptr);
   EXPECT_EQ(ArcSessionManager::State::ACTIVE, arc_session_manager()->state());
   EXPECT_FALSE(arc_session_manager()->is_directly_started());
   arc_session_manager()->Shutdown();
@@ -877,7 +884,8 @@ TEST_F(ArcSessionManagerTest, IsDirectlyStartedOnInternalRestart) {
             arc_session_manager()->state());
   arc_session_manager()->OnTermsOfServiceNegotiatedForTesting(true);
   arc_session_manager()->StartArcForTesting();
-  arc_session_manager()->OnProvisioningFinished(ProvisioningResult::SUCCESS);
+  arc_session_manager()->OnProvisioningFinished(ProvisioningResult::SUCCESS,
+                                                nullptr);
   EXPECT_FALSE(arc_session_manager()->is_directly_started());
   EXPECT_EQ(ArcSessionManager::State::ACTIVE, arc_session_manager()->state());
   EXPECT_FALSE(arc_session_manager()->is_directly_started());
@@ -1137,7 +1145,8 @@ TEST_P(ArcSessionManagerPolicyTest, SkippingTerms) {
 
   arc_session_manager()->StartArcForTesting();
   EXPECT_EQ(ArcSessionManager::State::ACTIVE, arc_session_manager()->state());
-  arc_session_manager()->OnProvisioningFinished(ProvisioningResult::SUCCESS);
+  arc_session_manager()->OnProvisioningFinished(ProvisioningResult::SUCCESS,
+                                                nullptr);
 
   // Play Store app is launched unless the Terms screen was suppressed or Tos is
   // accepted during OOBE.
@@ -1215,7 +1224,7 @@ TEST_F(ArcSessionManagerKioskTest, AuthFailure) {
       base::Bind([](bool* terminated) { *terminated = true; }, &terminated));
 
   arc_session_manager()->OnProvisioningFinished(
-      ProvisioningResult::CHROME_SERVER_COMMUNICATION_ERROR);
+      ProvisioningResult::CHROME_SERVER_COMMUNICATION_ERROR, nullptr);
   EXPECT_TRUE(terminated);
 }
 
@@ -1251,7 +1260,7 @@ TEST_F(ArcSessionManagerPublicSessionTest, AuthFailure) {
                           &terminated));
 
   arc_session_manager()->OnProvisioningFinished(
-      ProvisioningResult::CHROME_SERVER_COMMUNICATION_ERROR);
+      ProvisioningResult::CHROME_SERVER_COMMUNICATION_ERROR, nullptr);
   EXPECT_FALSE(terminated);
   EXPECT_EQ(ArcSessionManager::State::STOPPED, arc_session_manager()->state());
 }
@@ -1525,7 +1534,7 @@ TEST_P(ArcSessionRetryTest, ContainerRestarted) {
   arc_session_manager()->StartArcForTesting();
   EXPECT_EQ(ArcSessionManager::State::ACTIVE, arc_session_manager()->state());
 
-  arc_session_manager()->OnProvisioningFinished(GetParam().error);
+  arc_session_manager()->OnProvisioningFinished(GetParam().error, nullptr);
 
   // In case of permanent error data removal request is scheduled.
   EXPECT_EQ(GetParam().data_removed,
@@ -1553,7 +1562,8 @@ TEST_P(ArcSessionRetryTest, ContainerRestarted) {
   EXPECT_EQ(ArcSessionManager::State::ACTIVE, arc_session_manager()->state());
 
   // Successful retry keeps ARC++ container running.
-  arc_session_manager()->OnProvisioningFinished(ProvisioningResult::SUCCESS);
+  arc_session_manager()->OnProvisioningFinished(ProvisioningResult::SUCCESS,
+                                                nullptr);
   EXPECT_EQ(ArcSessionManager::State::ACTIVE, arc_session_manager()->state());
 
   arc_session_manager()->Shutdown();

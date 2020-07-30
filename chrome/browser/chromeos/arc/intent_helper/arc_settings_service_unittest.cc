@@ -163,7 +163,8 @@ TEST_F(ArcSettingsServiceTest,
   EXPECT_FALSE(
       profile()->GetPrefs()->GetBoolean(prefs::kArcInitialSettingsPending));
 
-  arc_session_manager()->OnProvisioningFinished(ProvisioningResult::SUCCESS);
+  arc_session_manager()->OnProvisioningFinished(ProvisioningResult::SUCCESS,
+                                                nullptr);
 
   EXPECT_TRUE(
       profile()->GetPrefs()->GetBoolean(prefs::kArcInitialSettingsPending));
@@ -201,7 +202,8 @@ TEST_F(ArcSettingsServiceTest,
                   ->GetBroadcastsForAction(kActionLocaionEnabled)
                   .empty());
 
-  arc_session_manager()->OnProvisioningFinished(ProvisioningResult::SUCCESS);
+  arc_session_manager()->OnProvisioningFinished(ProvisioningResult::SUCCESS,
+                                                nullptr);
 
   EXPECT_FALSE(
       profile()->GetPrefs()->GetBoolean(prefs::kArcInitialSettingsPending));

@@ -7,7 +7,7 @@
 namespace autofill {
 namespace structured_address {
 
-const char kSingleWordRe[] = "(?:\\w+)";
+const char kNameSeparators[] = " -";
 
 }  // namespace structured_address
 }  // namespace autofill

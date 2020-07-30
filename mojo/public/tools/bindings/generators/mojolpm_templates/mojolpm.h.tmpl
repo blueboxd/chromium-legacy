@@ -183,7 +183,7 @@ bool HandleRemoteCall(
 bool HandleAssociatedRemoteCall(
   const {{proto_type}}::AssociatedRemoteCall& input);
 
-bool AddResponse(
+bool HandleResponse(
   const {{proto_type}}::ReceiverResponse& response);{{"\n"-}}
 {%-     for method in interface.methods %}
 bool HandleRemoteCall(
@@ -192,7 +192,11 @@ bool HandleRemoteCall(
 
 bool HandleAssociatedRemoteCall(
   uint32_t instance_id,
-  const {{proto_type}}::{{interface.name}}_{{method.name}}& input);{{"\n"-}}
+  const {{proto_type}}::{{interface.name}}_{{method.name}}& input);
+
+bool HandleResponse(
+  uint32_t callback_id,
+  const {{proto_type}}::{{interface.name}}_{{method.name}}Response& input);{{"\n"-}}
 {%-     endfor %}
 {%-   endif %}
 {%- endfor -%}

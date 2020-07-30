@@ -93,6 +93,20 @@ class PinBackend {
   // need for individual observers.
   int GetExposedPinLength(const AccountId& account_id);
 
+  // TODO(crbug.com/1104164) - Remove this once most users have their
+  // preferences backfilled.
+  // These values are persisted to logs. Entries should not be renumbered and
+  // numeric values should never be reused. Must coincide with the enum
+  // PinAutosubmitBackfillEvent on enums.xml
+  enum class BackfillEvent {
+    // Successfully set the user preference on the server
+    kEnabled = 0,
+    // Possible errors to keep track of.
+    kDisabledDueToPolicy = 1,
+    kDisabledDueToPinLength = 2,
+    kMaxValue = kDisabledDueToPinLength,
+  };
+
  private:
   // Called when we know if the cryptohome supports PIN.
   void OnIsCryptohomeBackendSupported(bool is_supported);
@@ -136,6 +150,13 @@ class PinBackend {
   // through a confirmation dialog immediately.
   void UpdatePinAutosubmitOnSuccessfulTryAuth(const AccountId& account_id,
                                               size_t pin_length);
+
+  // PIN auto submit backfill operation for users with existing PINs.
+  // TODO(crbug.com/1104164) - Remove this once most users have their
+  // preferences backfilled.
+  // Backfill PIN auto submit preferences for users who already have a pin, but
+  // had it set up before the pin auto submit feature was released.
+  void PinAutosubmitBackfill(const AccountId& account_id, size_t pin_length);
 
   // True if still trying to determine which backend should be used.
   bool resolving_backend_ = true;

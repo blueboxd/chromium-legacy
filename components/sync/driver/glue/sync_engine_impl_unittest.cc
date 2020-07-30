@@ -5,6 +5,9 @@
 #include "components/sync/driver/glue/sync_engine_impl.h"
 
 #include <cstddef>
+#include <map>
+#include <set>
+#include <string>
 #include <utility>
 
 #include "base/bind.h"
@@ -39,6 +42,9 @@
 #include "components/sync/engine/passive_model_worker.h"
 #include "components/sync/engine/sync_engine_host_stub.h"
 #include "components/sync/engine/sync_manager_factory.h"
+#include "components/sync/invalidations/mock_sync_invalidations_service.h"
+#include "components/sync/invalidations/switches.h"
+#include "components/sync/invalidations/sync_invalidations_service.h"
 #include "components/sync/test/callback_counter.h"
 #include "components/sync_preferences/pref_service_syncable.h"
 #include "components/sync_preferences/testing_pref_service_syncable.h"
@@ -47,6 +53,9 @@
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "url/gurl.h"
+
+using testing::NiceMock;
+using testing::NotNull;
 
 namespace syncer {
 
@@ -188,7 +197,8 @@ class SyncEngineImplTest : public testing::Test {
     ON_CALL(invalidator_, UpdateInterestedTopics(testing::_, testing::_))
         .WillByDefault(testing::Return(true));
     backend_ = std::make_unique<SyncEngineImpl>(
-        "dummyDebugName", &invalidator_, sync_prefs_->AsWeakPtr(),
+        "dummyDebugName", &invalidator_, GetSyncInvalidationsService(),
+        sync_prefs_->AsWeakPtr(),
         temp_dir_.GetPath().Append(base::FilePath(kTestSyncDir)));
 
     fake_manager_factory_ = std::make_unique<FakeSyncManagerFactory>(
@@ -270,6 +280,12 @@ class SyncEngineImplTest : public testing::Test {
   }
 
  protected:
+  // Used to initialize SyncEngineImpl. Returns nullptr if there is no sync
+  // invalidations service enabled.
+  virtual SyncInvalidationsService* GetSyncInvalidationsService() {
+    return nullptr;
+  }
+
   void DownloadReady(ModelTypeSet succeeded_types, ModelTypeSet failed_types) {
     engine_types_.PutAll(succeeded_types);
     std::move(quit_loop_).Run();
@@ -302,6 +318,22 @@ class SyncEngineImplTest : public testing::Test {
   ModelTypeSet enabled_types_;
   base::OnceClosure quit_loop_;
   testing::NiceMock<MockInvalidationService> invalidator_;
+};
+
+class SyncEngineImplWithSyncInvalidationsTest : public SyncEngineImplTest {
+ public:
+  SyncEngineImplWithSyncInvalidationsTest() {
+    override_features_.InitAndEnableFeature(
+        switches::kSubscribeForSyncInvalidations);
+  }
+
+ protected:
+  SyncInvalidationsService* GetSyncInvalidationsService() override {
+    return &mock_instance_id_driver_;
+  }
+
+  base::test::ScopedFeatureList override_features_;
+  NiceMock<MockSyncInvalidationsService> mock_instance_id_driver_;
 };
 
 // Test basic initialization with no initial types (first time initialization).
@@ -622,7 +654,9 @@ TEST_F(SyncEngineImplTest, ShouldDestroyAfterInitFailure) {
   base::RunLoop().RunUntilIdle();
 }
 
-TEST_F(SyncEngineImplTest, ShouldInvalidateDataTypesOnIncomingInvalidation) {
+TEST_F(SyncEngineImplWithSyncInvalidationsTest,
+       ShouldInvalidateDataTypesOnIncomingInvalidation) {
+  EXPECT_CALL(mock_instance_id_driver_, AddListener(backend_.get()));
   InitializeBackend(/*expect_success=*/true);
   // TODO(crbug.com/1102322): use real payload with invalidated data types.
   backend_->OnInvalidationReceived(/*payload=*/"");

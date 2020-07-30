@@ -1010,15 +1010,16 @@ TEST_F(NigoriSyncBridgeImplTest,
   EXPECT_THAT(bridge()->GetData(), HasCustomPassphraseNigori());
 
   // Mimic commit completion.
-  EXPECT_CALL(*observer(), OnPassphraseAccepted());
-  EXPECT_CALL(*observer(), OnEncryptedTypesChanged(
-                               /*encrypted_types=*/EncryptableUserTypes(),
-                               /*encrypt_everything=*/true));
-  EXPECT_CALL(*observer(), OnCryptographerStateChanged(
-                               NotNull(), /*has_pending_keys=*/false));
+  testing::InSequence seq;
   EXPECT_CALL(*observer(),
               OnPassphraseTypeChanged(PassphraseType::kCustomPassphrase,
                                       /*passphrase_time=*/Not(NullTime())));
+  EXPECT_CALL(*observer(), OnCryptographerStateChanged(
+                               NotNull(), /*has_pending_keys=*/false));
+  EXPECT_CALL(*observer(), OnEncryptedTypesChanged(
+                               /*encrypted_types=*/EncryptableUserTypes(),
+                               /*encrypt_everything=*/true));
+  EXPECT_CALL(*observer(), OnPassphraseAccepted());
   EXPECT_CALL(*observer(), OnBootstrapTokenUpdated(Ne(std::string()),
                                                    PASSPHRASE_BOOTSTRAP_TOKEN));
   EXPECT_THAT(bridge()->ApplySyncChanges(base::nullopt), Eq(base::nullopt));

@@ -452,6 +452,7 @@ interface CSSKeyframesRule : CSSRule
     attribute @@toStringTag
     getter cssRules
     getter name
+    method @@iterator
     method appendRule
     method constructor
     method deleteRule
@@ -2704,6 +2705,7 @@ interface HTMLFontElement : HTMLElement
     setter size
 interface HTMLFormControlsCollection : HTMLCollection
     attribute @@toStringTag
+    method @@iterator
     method constructor
     method namedItem
 interface HTMLFormElement : HTMLElement
@@ -5537,6 +5539,7 @@ interface RTCTrackEvent : Event
 interface RadioNodeList : NodeList
     attribute @@toStringTag
     getter value
+    method @@iterator
     method constructor
     setter value
 interface Range
@@ -9370,7 +9373,6 @@ interface webkitSpeechGrammar
     attribute @@toStringTag
     getter src
     getter weight
-    method constructor
     setter src
     setter weight
 interface webkitSpeechGrammarList
@@ -9379,7 +9381,6 @@ interface webkitSpeechGrammarList
     method @@iterator
     method addFromString
     method addFromUri
-    method constructor
     method item
 interface webkitSpeechRecognition : EventTarget
     attribute @@toStringTag
@@ -9400,7 +9401,6 @@ interface webkitSpeechRecognition : EventTarget
     getter onspeechstart
     getter onstart
     method abort
-    method constructor
     method start
     method stop
     setter continuous
@@ -9423,14 +9423,12 @@ interface webkitSpeechRecognitionError : Event
     attribute @@toStringTag
     getter error
     getter message
-    method constructor
 interface webkitSpeechRecognitionEvent : Event
     attribute @@toStringTag
     getter emma
     getter interpretation
     getter resultIndex
     getter results
-    method constructor
 interface webkitURL
     static method createObjectURL
     static method revokeObjectURL
@@ -9464,25 +9462,17 @@ interface webkitURL
     attribute GCController
     attribute accessibilityController
     attribute chrome
-    attribute closed
     attribute console
     attribute eventSender
-    attribute frames
     attribute gamepadController
     attribute globalThis
     attribute internals
-    attribute length
-    attribute location
-    attribute opener
-    attribute parent
     attribute propertyNamesInGlobal
-    attribute self
     attribute testRunner
     attribute textInputController
-    attribute top
-    attribute window
     getter caches
     getter clientInformation
+    getter closed
     getter crypto
     getter customElements
     getter defaultStatus
@@ -9492,12 +9482,15 @@ interface webkitURL
     getter event
     getter external
     getter frameElement
+    getter frames
     getter history
     getter indexedDB
     getter innerHeight
     getter innerWidth
     getter isSecureContext
+    getter length
     getter localStorage
+    getter location
     getter locationbar
     getter menubar
     getter name
@@ -9611,11 +9604,13 @@ interface webkitURL
     getter onwebkitanimationstart
     getter onwebkittransitionend
     getter onwheel
+    getter opener
     getter origin
     getter outerHeight
     getter outerWidth
     getter pageXOffset
     getter pageYOffset
+    getter parent
     getter performance
     getter personalbar
     getter screen
@@ -9626,15 +9621,18 @@ interface webkitURL
     getter scrollX
     getter scrollY
     getter scrollbars
+    getter self
     getter sessionStorage
     getter speechSynthesis
     getter status
     getter statusbar
     getter styleMedia
     getter toolbar
+    getter top
     getter trustedTypes
     getter visualViewport
     getter webkitStorageInfo
+    getter window
     method NodeFilter
     method alert
     method atob
@@ -9684,8 +9682,11 @@ interface webkitURL
     setter devicePixelRatio
     setter event
     setter external
+    setter frames
     setter innerHeight
     setter innerWidth
+    setter length
+    setter location
     setter locationbar
     setter menubar
     setter name
@@ -9798,11 +9799,13 @@ interface webkitURL
     setter onwebkitanimationstart
     setter onwebkittransitionend
     setter onwheel
+    setter opener
     setter origin
     setter outerHeight
     setter outerWidth
     setter pageXOffset
     setter pageYOffset
+    setter parent
     setter performance
     setter personalbar
     setter screen
@@ -9813,6 +9816,7 @@ interface webkitURL
     setter scrollX
     setter scrollY
     setter scrollbars
+    setter self
     setter status
     setter statusbar
     setter toolbar

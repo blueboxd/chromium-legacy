@@ -339,6 +339,8 @@ message {{interface.name}} {
   }
 
   message ReceiverResponse {
+    required uint32 id = 1;
+
     oneof response {
 {%-     for method in interface.methods %}
       {{interface.name}}_{{method.name}}Response m_{{method.name|camel_to_under}}_response = {{loop.index + 2}};

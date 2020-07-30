@@ -127,7 +127,10 @@
 
 - (void)passwordDetailsCoordinator:(PasswordDetailsCoordinator*)coordinator
                     deletePassword:(const autofill::PasswordForm&)password {
-  // TODO:(crbug.com/1075494) - Delete password.
+  if (![self.delegate willHandlePasswordDeletion:password]) {
+    [self.mediator deletePassword:password];
+    [self.baseNavigationController popViewControllerAnimated:YES];
+  }
 }
 
 @end

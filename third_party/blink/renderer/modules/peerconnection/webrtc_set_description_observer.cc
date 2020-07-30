@@ -154,11 +154,7 @@ WebRtcSetLocalDescriptionObserverHandler::
 WebRtcSetLocalDescriptionObserverHandler::
     ~WebRtcSetLocalDescriptionObserverHandler() = default;
 
-void WebRtcSetLocalDescriptionObserverHandler::OnSuccess() {
-  handler_impl_->OnSetDescriptionComplete(webrtc::RTCError::OK());
-}
-
-void WebRtcSetLocalDescriptionObserverHandler::OnFailure(
+void WebRtcSetLocalDescriptionObserverHandler::OnSetLocalDescriptionComplete(
     webrtc::RTCError error) {
   handler_impl_->OnSetDescriptionComplete(std::move(error));
 }

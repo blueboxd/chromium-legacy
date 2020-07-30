@@ -31,11 +31,14 @@
 #ifndef THIRD_PARTY_BLINK_RENDERER_CORE_EDITING_FINDER_TEXT_FINDER_H_
 #define THIRD_PARTY_BLINK_RENDERER_CORE_EDITING_FINDER_TEXT_FINDER_H_
 
+#include "base/cancelable_callback.h"
 #include "base/macros.h"
-#include "third_party/blink/public/mojom/frame/find_in_page.mojom-blink-forward.h"
+#include "third_party/blink/public/mojom/frame/find_in_page.mojom-blink.h"
+#include "third_party/blink/public/platform/web_string.h"
 #include "third_party/blink/renderer/core/core_export.h"
 #include "third_party/blink/renderer/platform/geometry/float_rect.h"
 #include "third_party/blink/renderer/platform/heap/handle.h"
+#include "third_party/blink/renderer/platform/heap/persistent.h"
 #include "third_party/blink/renderer/platform/wtf/text/wtf_string.h"
 #include "third_party/blink/renderer/platform/wtf/vector.h"
 
@@ -45,7 +48,6 @@ class FindTaskController;
 class LocalFrame;
 class Range;
 class WebLocalFrameImpl;
-class WebString;
 
 class CORE_EXPORT TextFinder final : public GarbageCollected<TextFinder> {
  public:
@@ -137,6 +139,18 @@ class CORE_EXPORT TextFinder final : public GarbageCollected<TextFinder> {
   void Trace(Visitor*) const;
 
  private:
+  // Context needed by asynchronous tasks used for beforematch and scrolling.
+  struct AsyncScrollContext {
+    // Copy of parameters to Find() so that it can be called again later.
+    int identifier;
+    WebString search_text;
+    mojom::blink::FindOptions options;
+    bool wrap_within_frame;
+
+    // Range to fire beforematch on and scroll to.
+    Persistent<Range> range;
+  };
+
   // Notifies the delegate about a new selection rect.
   void ReportFindInPageSelection(const gfx::Rect& selection_rect,
                                  int active_match_ordinal,
@@ -184,6 +198,9 @@ class CORE_EXPORT TextFinder final : public GarbageCollected<TextFinder> {
     DCHECK(owner_frame_);
     return *owner_frame_;
   }
+
+  void FireBeforematchEvent(std::unique_ptr<AsyncScrollContext> context);
+  void Scroll(std::unique_ptr<AsyncScrollContext> context);
 
   Member<WebLocalFrameImpl> owner_frame_;
 
@@ -236,6 +253,8 @@ class CORE_EXPORT TextFinder final : public GarbageCollected<TextFinder> {
   // Determines if the rects in the find-in-page matches cache of this frame
   // are invalid and should be recomputed.
   bool find_match_rects_are_valid_;
+
+  base::CancelableOnceClosure scroll_task_;
 
   DISALLOW_COPY_AND_ASSIGN(TextFinder);
 };

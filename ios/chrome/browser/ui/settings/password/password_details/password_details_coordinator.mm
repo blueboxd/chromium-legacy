@@ -5,9 +5,11 @@
 #import "ios/chrome/browser/ui/settings/password/password_details/password_details_coordinator.h"
 
 #include "base/mac/foundation_util.h"
+#include "base/strings/sys_string_conversions.h"
 #include "components/autofill/core/common/password_form.h"
 #include "components/strings/grit/components_strings.h"
 #import "ios/chrome/browser/main/browser.h"
+#import "ios/chrome/browser/ui/alert_coordinator/action_sheet_coordinator.h"
 #import "ios/chrome/browser/ui/alert_coordinator/alert_coordinator.h"
 #import "ios/chrome/browser/ui/commands/application_commands.h"
 #import "ios/chrome/browser/ui/commands/open_new_tab_command.h"
@@ -44,6 +46,9 @@
 
 // Modal alert for interactions with password.
 @property(nonatomic, strong) AlertCoordinator* alertCoordinator;
+
+// The action sheet coordinator, if one is currently being shown.
+@property(nonatomic, strong) ActionSheetCoordinator* actionSheetCoordinator;
 
 @end
 
@@ -84,6 +89,7 @@
                                                passwordCheckManager:_manager];
   self.mediator.consumer = self.viewController;
   self.viewController.handler = self;
+  self.viewController.delegate = self.mediator;
   self.viewController.commandsDispatcher = self.dispatcher;
   self.viewController.reauthModule = self.reauthenticationModule;
 
@@ -108,11 +114,11 @@
       l10n_util::GetNSString(IDS_IOS_SETTINGS_SET_UP_SCREENLOCK_TITLE);
   NSString* message =
       l10n_util::GetNSString(IDS_IOS_SETTINGS_SET_UP_SCREENLOCK_CONTENT);
-  self.alertCoordinator = [[AlertCoordinator alloc]
-      initWithBaseViewController:self.baseViewController
-                         browser:self.browser
-                           title:title
-                         message:message];
+  self.alertCoordinator =
+      [[AlertCoordinator alloc] initWithBaseViewController:self.viewController
+                                                   browser:self.browser
+                                                     title:title
+                                                   message:message];
 
   __weak __typeof(self) weakSelf = self;
   OpenNewTabCommand* command =
@@ -131,6 +137,63 @@
                  style:UIAlertActionStyleDefault];
 
   [self.alertCoordinator start];
+}
+
+- (void)showPasswordDeleteDialogWithOrigin:(NSString*)origin {
+  NSString* message =
+      l10n_util::GetNSStringF(IDS_IOS_DELETE_COMPROMISED_PASSWORD_DESCRIPTION,
+                              base::SysNSStringToUTF16(origin));
+  self.actionSheetCoordinator = [[ActionSheetCoordinator alloc]
+      initWithBaseViewController:self.viewController
+                         browser:self.browser
+                           title:nil
+                         message:message
+                   barButtonItem:nil];
+
+  __weak __typeof(self) weakSelf = self;
+
+  [self.actionSheetCoordinator
+      addItemWithTitle:l10n_util::GetNSString(IDS_IOS_CONFIRM_PASSWORD_DELETION)
+                action:^{
+                  [weakSelf.delegate
+                      passwordDetailsCoordinator:weakSelf
+                                  deletePassword:weakSelf.mediator.password];
+                }
+                 style:UIAlertActionStyleDestructive];
+
+  [self.actionSheetCoordinator
+      addItemWithTitle:l10n_util::GetNSString(IDS_IOS_CANCEL_PASSWORD_DELETION)
+                action:nil
+                 style:UIAlertActionStyleCancel];
+
+  [self.actionSheetCoordinator start];
+}
+
+- (void)showPasswordEditDialogWithOrigin:(NSString*)origin {
+  NSString* message = l10n_util::GetNSStringF(IDS_IOS_EDIT_PASSWORD_DESCRIPTION,
+                                              base::SysNSStringToUTF16(origin));
+  self.actionSheetCoordinator = [[ActionSheetCoordinator alloc]
+      initWithBaseViewController:self.viewController
+                         browser:self.browser
+                           title:nil
+                         message:message
+                   barButtonItem:nil];
+
+  __weak __typeof(self) weakSelf = self;
+
+  [self.actionSheetCoordinator
+      addItemWithTitle:l10n_util::GetNSString(IDS_IOS_CONFIRM_PASSWORD_EDIT)
+                action:^{
+                  [weakSelf.viewController passwordEditingConfirmed];
+                }
+                 style:UIAlertActionStyleDefault];
+
+  [self.actionSheetCoordinator
+      addItemWithTitle:l10n_util::GetNSString(IDS_IOS_CANCEL_PASSWORD_EDIT)
+                action:nil
+                 style:UIAlertActionStyleCancel];
+
+  [self.actionSheetCoordinator start];
 }
 
 @end

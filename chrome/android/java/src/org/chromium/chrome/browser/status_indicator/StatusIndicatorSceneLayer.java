@@ -124,12 +124,6 @@ class StatusIndicatorSceneLayer extends SceneOverlayLayer implements SceneOverla
     @Override
     public void getVirtualViews(List<VirtualView> views) {}
 
-    @Override
-    public void tabTitleChanged(int tabId, String title) {}
-
-    @Override
-    public void tabStateInitialized() {}
-
     @NativeMethods
     interface Natives {
         long init(StatusIndicatorSceneLayer caller);

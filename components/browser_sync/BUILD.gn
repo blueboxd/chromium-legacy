@@ -27,6 +27,7 @@ static_library("browser_sync") {
     "//components/prefs",
     "//components/reading_list/features:flags",
     "//components/send_tab_to_self",
+    "//components/sync/invalidations",
     "//components/sync_bookmarks",
     "//components/sync_sessions",
     "//components/sync_user_events",

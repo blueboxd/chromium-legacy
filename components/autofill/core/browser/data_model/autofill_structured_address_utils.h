@@ -21,6 +21,8 @@
 namespace autofill {
 namespace structured_address {
 
+enum class RegEx;
+
 // Enum to express the few quantifiers needed to parse values.
 enum MatchQuantifier {
   // The capture group is required.
@@ -39,7 +41,7 @@ struct CaptureOptions {
   // By default, a group must be either followed by a space-like character (\s)
   // or it must be the last group in the line. The separator is allowed to be
   // empty.
-  std::string separator = "\\s|$";
+  std::string separator = "\\s+|$";
   // Indicates if the group is required, optional or even lazy optional.
   MatchQuantifier quantifier = MATCH_REQUIRED;
 };
@@ -55,7 +57,7 @@ class Re2RegExCache {
   static Re2RegExCache* Instance();
 
   // Returns a pointer to a constant compiled expression that matches |pattern|
-  // case-insensitively.
+  // case-sensitively.
   const RE2* GetRegEx(const std::string& pattern);
 
 #ifdef UNIT_TEST
@@ -96,11 +98,18 @@ bool ParseValueByRegularExpression(
     const RE2* regex,
     std::map<std::string, std::string>* result_map);
 
-// Returns a compiled case insensitive regular expression for |pattern|.
-std::unique_ptr<const RE2> BuildRegExFromPattern(std::string pattern);
+// Returns a compiled case sensitive regular expression for |pattern|.
+std::unique_ptr<const RE2> BuildRegExFromPattern(const std::string& pattern);
+
+// Returns true if |value| can be matched by the enumuerated RegEx |regex|.
+bool IsPartialMatch(const std::string& value, RegEx regex);
 
 // Returns true if |value| can be matched with |pattern|.
 bool IsPartialMatch(const std::string& value, const std::string& pattern);
+
+// Same as above, but accepts a compiled regular expression instead of the
+// pattern.
+bool IsPartialMatch(const std::string& value, const RE2* expression);
 
 // Returns a vector that contains all partial matches of |pattern| in |value|;
 std::vector<std::string> GetAllPartialMatches(const std::string& value,

@@ -10,6 +10,7 @@
 #include "chrome/browser/ui/tabs/tab_group.h"
 #include "chrome/browser/ui/tabs/tab_group_model.h"
 #include "chrome/browser/ui/tabs/tab_group_theme.h"
+#include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/browser/ui/tabs/tab_strip_model_observer.h"
 #include "chrome/browser/ui/webui/tab_search/tab_search.mojom.h"
 #include "mojo/public/cpp/bindings/pending_receiver.h"
@@ -33,6 +34,7 @@ class TabSearchPageHandler : public tab_search::mojom::PageHandler,
   ~TabSearchPageHandler() override;
 
   // tab_search::mojom::PageHandler:
+  void CloseTab(int32_t tab_id) override;
   void GetProfileTabs(GetProfileTabsCallback callback) override;
   void GetTabGroups(GetTabGroupsCallback callback) override;
   void SwitchToTab(
@@ -54,9 +56,21 @@ class TabSearchPageHandler : public tab_search::mojom::PageHandler,
   void SetTimerForTesting(std::unique_ptr<base::RetainingOneShotTimer> timer);
 
  private:
+  // Encapsulates tab details to facilitate performing an action on a tab.
+  struct TabDetails {
+    TabDetails(Browser* browser, TabStripModel* tab_strip_model, int index)
+        : browser(browser), tab_strip_model(tab_strip_model), index(index) {}
+
+    Browser* browser;
+    TabStripModel* tab_strip_model;
+    int index;
+  };
+
   tab_search::mojom::TabPtr GetTabData(TabStripModel* tab_strip_model,
                                        content::WebContents* contents,
                                        int index);
+  // Returns tab details required to perform an action on the tab.
+  base::Optional<TabDetails> GetTabDetails(int32_t tab_id);
 
   // Schedule a timer to call TabsChanged() when it times out
   // in order to reduce numbers of RPC.

@@ -672,7 +672,7 @@ TEST_F(RTCPeerConnectionHandlerTest, setLocalDescription) {
               TrackSetSessionDescription(pc_handler_.get(), String(kDummySdp),
                                          String(kDummySdpType),
                                          PeerConnectionTracker::SOURCE_LOCAL));
-  EXPECT_CALL(*mock_peer_connection_, SetLocalDescription(_, _));
+  EXPECT_CALL(*mock_peer_connection_, SetLocalDescriptionForMock(_, _));
 
   pc_handler_->SetLocalDescription(nullptr /*RTCVoidRequest*/, description);
   RunMessageLoopsUntilIdle();

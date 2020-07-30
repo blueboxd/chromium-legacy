@@ -56,6 +56,7 @@ class ChromeSyncClient : public browser_sync::BrowserSyncClient {
       syncer::SyncService* sync_service) override;
   syncer::TrustedVaultClient* GetTrustedVaultClient() override;
   invalidation::InvalidationService* GetInvalidationService() override;
+  syncer::SyncInvalidationsService* GetSyncInvalidationsService() override;
   BookmarkUndoService* GetBookmarkUndoService() override;
   scoped_refptr<syncer::ExtensionsActivity> GetExtensionsActivity() override;
   base::WeakPtr<syncer::SyncableService> GetSyncableServiceForType(

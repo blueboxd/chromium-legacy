@@ -12,12 +12,12 @@
 #include <vector>
 
 #include "base/gtest_prod_util.h"
+#include "base/memory/weak_ptr.h"
 #include "base/strings/string16.h"
 #include "chromeos/components/local_search_service/shared_structs.h"
 
 namespace chromeos {
 namespace local_search_service {
-
 // A posting is a list of WeightedPosition.
 using Posting = std::vector<WeightedPosition>;
 
@@ -27,6 +27,26 @@ using PostingList = std::unordered_map<std::string, Posting>;
 // A tuple that stores a document ID, token's positions and token's TF-IDF
 // score.
 using TfidfResult = std::tuple<std::string, Posting, float>;
+
+// A map from document IDs to their length.
+using DocLength = std::unordered_map<std::string, uint32_t>;
+
+// A map from terms to their PostingList.
+using Dictionary = std::unordered_map<base::string16, PostingList>;
+
+// A set of terms.
+using TermSet = std::unordered_set<base::string16>;
+
+// Data structure to store TF-IDF cache keyed by terms.
+using TfidfCache = std::unordered_map<base::string16, std::vector<TfidfResult>>;
+
+// Tuple to store document state variables.
+using DocumentStateVariables = std::tuple<DocLength, Dictionary, TermSet>;
+
+// A vector that stores documents to update. If the token vector is empty, the
+// corresponding document will be deleted.
+using DocumentToUpdate =
+    std::vector<std::pair<std::string, std::vector<Token>>>;
 
 // InvertedIndex stores the inverted index for local search. It provides the
 // abilities to add/remove documents, find term, etc. Before this class can be
@@ -49,18 +69,17 @@ class InvertedIndex {
       double prefix_threshold,
       double block_threshold) const;
 
-  // Adds a new document to the inverted index. If the document ID is already in
+  // Adds new documents to the inverted index. If the document ID is already in
   // the index, remove the existing and add the new one. All tokens must be
   // unique (have unique content). This function doesn't modify any cache. It
   // only adds documents and tokens to the index.
-  void AddDocument(const std::string& document_id,
-                   const std::vector<Token>& tokens);
+  void AddDocuments(const DocumentToUpdate& documents);
 
-  // Removes a document from the inverted index. Do nothing if document_id is
+  // Removes documents from the inverted index. Do nothing if the document id is
   // not in the index. Returns number of documents deleted.
   // This function doesn't modify any cache. It only removes
   // documents and tokens from the index.
-  uint32_t RemoveDocument(const std::string& document_id);
+  uint32_t RemoveDocuments(const std::vector<std::string>& document_ids);
 
   // Gets TF-IDF scores for a term. This function returns the TF-IDF score from
   // the cache.
@@ -82,21 +101,40 @@ class InvertedIndex {
  private:
   friend class InvertedIndexTest;
 
-  // Calculates TF-IDF scores for a term.
-  std::vector<TfidfResult> CalculateTfidf(const base::string16& term);
+  // This is the single function that actually changes state variables. In
+  // summary, it schedules all heavy-duty work to workers, and it does so one at
+  // the time. Moreover, document-updating request takes precedence over
+  // index-building request
+  void InvertedIndexController();
+
+  // Called on the main thread after BuildTfidf is completed.
+  void OnBuildTfidfComplete(TfidfCache&& new_cache);
+
+  // Called on the main thread after UpdateDocuments is completed.
+  void OnUpdateDocumentsComplete(
+      DocumentStateVariables&& document_state_variables);
 
   // Set of the terms that are needed to be update in |tfidf_cache_|.
-  std::unordered_set<base::string16> terms_to_be_updated_;
+  TermSet terms_to_be_updated_;
   // Contains the length of the document (the number of terms in the document).
   // The size of this map will always equal to the number of documents in the
   // index.
-  std::unordered_map<std::string, int> doc_length_;
+  DocLength doc_length_;
   // A map from term to PostingList.
-  std::unordered_map<base::string16, PostingList> dictionary_;
+  Dictionary dictionary_;
   // Contains the TF-IDF scores for all the term in the index.
-  std::unordered_map<base::string16, std::vector<TfidfResult>> tfidf_cache_;
+  TfidfCache tfidf_cache_;
+  // Stores the documents that need to be updated.
+  DocumentToUpdate documents_to_update_;
   // Number of documents when the index was built.
   uint32_t num_docs_from_last_update_ = 0;
+  bool request_to_build_index_ = false;
+  bool update_in_progress_ = false;
+  bool index_building_in_progress_ = false;
+
+  SEQUENCE_CHECKER(sequence_checker_);
+
+  base::WeakPtrFactory<InvertedIndex> weak_ptr_factory_{this};
 };
 
 }  // namespace local_search_service

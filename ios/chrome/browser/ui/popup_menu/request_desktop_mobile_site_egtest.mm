@@ -13,6 +13,7 @@
 #import "ios/chrome/test/earl_grey/chrome_matchers.h"
 #import "ios/chrome/test/earl_grey/chrome_test_case.h"
 #import "ios/testing/earl_grey/earl_grey_test.h"
+#include "ios/web/common/features.h"
 #include "ios/web/common/user_agent.h"
 #include "ios/web/public/test/http_server/data_response_provider.h"
 #import "ios/web/public/test/http_server/http_server.h"
@@ -261,6 +262,48 @@ class UserAgentResponseProvider : public web::DataResponseProvider {
                  }),
              @"Page did not reload");
   [ChromeEarlGrey waitForWebStateContainingText:kMobileSiteLabel];
+}
+
+// Tests that navigating forward to a page not using the default mode from a
+// restored session is using the mode used in the past session.
+- (void)testNavigateForwardToDesktopMode {
+  BOOL isMobileByDefault = web::features::UseWebClientDefaultUserAgent()
+                               ? ![ChromeEarlGrey isIPadIdiom]
+                               : YES;
+
+  std::unique_ptr<web::DataResponseProvider> provider(
+      new UserAgentResponseProvider());
+  web::test::SetUpHttpServer(std::move(provider));
+
+  // Load the page in the non-default mode.
+  [ChromeEarlGrey loadURL:web::test::HttpServer::MakeUrl("http://1.com")];
+  [ChromeEarlGrey waitForWebStateContainingText:isMobileByDefault
+                                                    ? kMobileSiteLabel
+                                                    : kDesktopSiteLabel];
+
+  [ChromeEarlGreyUI openToolsMenu];
+  [isMobileByDefault ? RequestDesktopButton() : RequestMobileButton()
+      performAction:grey_tap()];
+  [ChromeEarlGrey waitForWebStateContainingText:isMobileByDefault
+                                                    ? kDesktopSiteLabel
+                                                    : kMobileSiteLabel];
+
+  // Go back to NTP to restore the session from there.
+  [ChromeEarlGrey goBack];
+  [ChromeEarlGrey triggerRestoreViaTabGridRemoveAllUndo];
+
+  // Make sure that the NTP is displayed.
+  [[EarlGrey selectElementWithMatcher:chrome_test_util::FakeOmnibox()]
+      assertWithMatcher:grey_sufficientlyVisible()];
+
+  // The session is restored, navigate forward and check the mode.
+  [ChromeEarlGrey goForward];
+  [ChromeEarlGrey waitForWebStateContainingText:isMobileByDefault
+                                                    ? kDesktopSiteLabel
+                                                    : kMobileSiteLabel];
+  [ChromeEarlGreyUI openToolsMenu];
+  [isMobileByDefault ? RequestMobileButton() : RequestDesktopButton()
+      assertWithMatcher:grey_notNil()];
 }
 
 // Tests that requesting mobile site of a page works and the user agent

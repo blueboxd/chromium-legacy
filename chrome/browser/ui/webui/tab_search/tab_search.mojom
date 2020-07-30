@@ -55,7 +55,10 @@ interface PageHandlerFactory {
 
 // Browser-side handler for requests from WebUI page.
 interface PageHandler {
-  // Get tabs grouped by windows for the current profile
+  // Close a specific tab.
+  CloseTab(int32 tab_id);
+
+  // Get tabs grouped by windows for the current profile.
   GetProfileTabs() => (ProfileTabs profile_tabs);
 
   // Get tab groups for the current profile.
@@ -71,4 +74,3 @@ interface Page {
   // added/changed/removed/navigated to new URL
   TabsChanged();
 };
-

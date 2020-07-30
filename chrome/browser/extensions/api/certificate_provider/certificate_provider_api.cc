@@ -296,8 +296,9 @@ CertificateProviderInternalReportCertificatesFunction::Run() {
   }
 
   // TODO(crbug.com/1046860): Remove logging after stabilizing the feature.
-  VLOG(1) << "Certificates provided by extension " << extension()->id() << ": "
-          << cert_infos.size() << ", rejected " << rejected_certificates.size();
+  LOG(WARNING) << "Certificates provided by extension " << extension()->id()
+               << ": " << cert_infos.size() << ", rejected "
+               << rejected_certificates.size();
 
   service->SetCertificatesProvidedByExtension(extension_id(), cert_infos);
 
@@ -322,8 +323,8 @@ CertificateProviderStopPinRequestFunction::Run() {
   EXTENSION_FUNCTION_VALIDATE(params);
 
   // TODO(crbug.com/1046860): Remove logging after stabilizing the feature.
-  VLOG(1) << "Handling PIN stop request from extension " << extension()->id()
-          << " error " << params->details.error_type;
+  LOG(WARNING) << "Handling PIN stop request from extension "
+               << extension()->id() << " error " << params->details.error_type;
 
   chromeos::CertificateProviderService* const service =
       chromeos::CertificateProviderServiceFactory::GetForBrowserContext(
@@ -337,13 +338,13 @@ CertificateProviderStopPinRequestFunction::Run() {
       // This might happen if the user closed the dialog while extension was
       // processing the input.
       // TODO(crbug.com/1046860): Remove logging after stabilizing the feature.
-      VLOG(1) << "PIN stop request failed: "
-              << kCertificateProviderNoActiveDialog;
+      LOG(WARNING) << "PIN stop request failed: "
+                   << kCertificateProviderNoActiveDialog;
       return RespondNow(Error(kCertificateProviderNoActiveDialog));
     }
 
     // TODO(crbug.com/1046860): Remove logging after stabilizing the feature.
-    VLOG(1) << "PIN stop request succeeded";
+    LOG(WARNING) << "PIN stop request succeeded";
     return RespondNow(NoArguments());
   }
 
@@ -369,12 +370,13 @@ CertificateProviderStopPinRequestFunction::Run() {
       return RespondLater();
   }
   // TODO(crbug.com/1046860): Remove logging after stabilizing the feature.
-  VLOG(1) << "PIN stop request failed: " << error_result;
+  LOG(WARNING) << "PIN stop request failed: " << error_result;
   return RespondNow(Error(std::move(error_result)));
 }
 
 void CertificateProviderStopPinRequestFunction::OnPinRequestStopped() {
-  VLOG(1) << "PIN stop request succeeded";
+  // TODO(crbug.com/1046860): Remove logging after stabilizing the feature.
+  LOG(WARNING) << "PIN stop request succeeded";
   Respond(NoArguments());
 }
 
@@ -447,10 +449,10 @@ ExtensionFunction::ResponseAction CertificateProviderRequestPinFunction::Run() {
   }
 
   // TODO(crbug.com/1046860): Remove logging after stabilizing the feature.
-  VLOG(1) << "Starting PIN request from extension " << extension()->id()
-          << " signRequestId " << params->details.sign_request_id << " type "
-          << params->details.request_type << " error "
-          << params->details.error_type << " attempts " << attempts_left;
+  LOG(WARNING) << "Starting PIN request from extension " << extension()->id()
+               << " signRequestId " << params->details.sign_request_id
+               << " type " << params->details.request_type << " error "
+               << params->details.error_type << " attempts " << attempts_left;
 
   const chromeos::PinDialogManager::RequestPinResult result =
       service->pin_dialog_manager()->RequestPin(
@@ -474,7 +476,7 @@ ExtensionFunction::ResponseAction CertificateProviderRequestPinFunction::Run() {
       break;
   }
   // TODO(crbug.com/1046860): Remove logging after stabilizing the feature.
-  VLOG(1) << "PIN request failed: " << error_result;
+  LOG(WARNING) << "PIN request failed: " << error_result;
   return RespondNow(Error(std::move(error_result)));
 }
 
@@ -487,13 +489,13 @@ void CertificateProviderRequestPinFunction::OnInputReceived(
   DCHECK(service);
   if (!value.empty()) {
     // TODO(crbug.com/1046860): Remove logging after stabilizing the feature.
-    VLOG(1) << "PIN request succeeded";
+    LOG(WARNING) << "PIN request succeeded";
     api::certificate_provider::PinResponseDetails details;
     details.user_input = std::make_unique<std::string>(value);
     create_results->Append(details.ToValue());
   } else {
     // TODO(crbug.com/1046860): Remove logging after stabilizing the feature.
-    VLOG(1) << "PIN request canceled";
+    LOG(WARNING) << "PIN request canceled";
   }
 
   Respond(ArgumentList(std::move(create_results)));
@@ -529,9 +531,9 @@ CertificateProviderSetCertificatesFunction::Run() {
   }
 
   // TODO(crbug.com/1046860): Remove logging after stabilizing the feature.
-  VLOG(1) << "Certificates provided by extension " << extension()->id() << ": "
-          << accepted_certificates.size() << ", rejected "
-          << rejected_certificates_count;
+  LOG(WARNING) << "Certificates provided by extension " << extension()->id()
+               << ": " << accepted_certificates.size() << ", rejected "
+               << rejected_certificates_count;
 
   chromeos::CertificateProviderService* const service =
       chromeos::CertificateProviderServiceFactory::GetForBrowserContext(

@@ -8,6 +8,7 @@
 #include "base/ios/ios_util.h"
 #import "ios/chrome/browser/ui/authentication/signin/signin_constants.h"
 #import "ios/chrome/browser/ui/authentication/signin_earl_grey_ui.h"
+#import "ios/chrome/browser/ui/authentication/signin_earlgrey_utils.h"
 #import "ios/chrome/browser/ui/bookmarks/bookmark_earl_grey.h"
 #import "ios/chrome/browser/ui/bookmarks/bookmark_earl_grey_ui.h"
 #import "ios/chrome/browser/ui/bookmarks/bookmark_ui_constants.h"
@@ -16,6 +17,7 @@
 #import "ios/chrome/test/earl_grey/chrome_earl_grey_ui.h"
 #import "ios/chrome/test/earl_grey/chrome_matchers.h"
 #import "ios/chrome/test/earl_grey/chrome_test_case.h"
+#import "ios/public/provider/chrome/browser/signin/fake_chrome_identity.h"
 #import "ios/testing/earl_grey/earl_grey_test.h"
 #include "ui/base/l10n/l10n_util.h"
 
@@ -148,7 +150,7 @@ using chrome_test_util::SecondarySignInButton;
   [BookmarkEarlGreyUI openBookmarks];
 
   // Set up a fake identity.
-  [BookmarkEarlGrey setupFakeIdentity];
+  [SigninEarlGreyUtils addFakeIdentity:[SigninEarlGreyUtils fakeIdentity1]];
 
   // Check that promo is visible.
   [BookmarkEarlGrey verifyPromoAlreadySeen:NO];
@@ -179,8 +181,9 @@ using chrome_test_util::SecondarySignInButton;
 - (void)testSignInPromoWithWarmStateUsingSecondaryButton {
   [BookmarkEarlGrey setupStandardBookmarks];
   [BookmarkEarlGreyUI openBookmarks];
-  // Set up a fake identity.
-  NSString* identityEmail = [BookmarkEarlGrey setupFakeIdentity];
+
+  FakeChromeIdentity* fakeIdentity = [SigninEarlGreyUtils fakeIdentity1];
+  [SigninEarlGreyUtils addFakeIdentity:fakeIdentity];
 
   // Check that sign-in promo view are visible.
   [BookmarkEarlGrey verifyPromoAlreadySeen:NO];
@@ -194,7 +197,7 @@ using chrome_test_util::SecondarySignInButton;
       performAction:grey_tap()];
 
   // Select the identity to dismiss the identity chooser.
-  [SigninEarlGreyUI selectIdentityWithEmail:identityEmail];
+  [SigninEarlGreyUI selectIdentityWithEmail:fakeIdentity.userEmail];
 
   // Tap the CANCEL button.
   [[EarlGrey selectElementWithMatcher:grey_accessibilityID(

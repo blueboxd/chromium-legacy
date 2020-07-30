@@ -48,6 +48,7 @@ class IOSChromeSyncClient : public browser_sync::BrowserSyncClient {
   syncer::DataTypeController::TypeVector CreateDataTypeControllers(
       syncer::SyncService* sync_service) override;
   invalidation::InvalidationService* GetInvalidationService() override;
+  syncer::SyncInvalidationsService* GetSyncInvalidationsService() override;
   syncer::TrustedVaultClient* GetTrustedVaultClient() override;
   BookmarkUndoService* GetBookmarkUndoService() override;
   scoped_refptr<syncer::ExtensionsActivity> GetExtensionsActivity() override;

@@ -6,6 +6,7 @@
 
 #include "base/test/bind_test_util.h"
 #include "base/timer/mock_timer.h"
+#include "chrome/browser/extensions/extension_tab_util.h"
 #include "chrome/browser/ui/browser_commands.h"
 #include "chrome/browser/ui/browser_list.h"
 #include "chrome/test/base/browser_with_test_window_test.h"
@@ -282,6 +283,21 @@ TEST_F(TabSearchPageHandlerTest, TabsNotChanged) {
   AddTabWithTitle(browser4(), GURL(kTabUrl2),
                   kTabName2);  // Will not kick off timer.
   ASSERT_FALSE(IsTimerRunning());
+}
+
+TEST_F(TabSearchPageHandlerTest, CloseTab) {
+  AddTabWithTitle(browser1(), GURL(kTabUrl1), kTabName1);
+  AddTabWithTitle(browser2(), GURL(kTabUrl2), kTabName2);
+  AddTabWithTitle(browser2(), GURL(kTabUrl2), kTabName2);
+  ASSERT_EQ(1, browser1()->tab_strip_model()->count());
+  ASSERT_EQ(2, browser2()->tab_strip_model()->count());
+
+  int tab_id = extensions::ExtensionTabUtil::GetTabId(
+      browser2()->tab_strip_model()->GetWebContentsAt(0));
+  EXPECT_CALL(page_, TabsChanged()).Times(1);
+  handler()->CloseTab(tab_id);
+  ASSERT_EQ(1, browser1()->tab_strip_model()->count());
+  ASSERT_EQ(1, browser2()->tab_strip_model()->count());
 }
 
 }  // namespace

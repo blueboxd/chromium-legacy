@@ -605,7 +605,8 @@
   },
   "pageCapture": {
     "dependencies": ["permission:pageCapture"],
-    "contexts": ["blessed_extension"]
+    "contexts": ["blessed_extension"],
+    "disallow_for_service_workers": true
   },
   "passwordsPrivate": [{
     "dependencies": ["permission:passwordsPrivate"],

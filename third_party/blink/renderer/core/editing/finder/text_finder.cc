@@ -78,35 +78,6 @@ static void ScrollToVisible(Range* match) {
   const EphemeralRangeInFlatTree range(match);
   const Node& first_node = *match->FirstNode();
 
-  if (RuntimeEnabledFeatures::BeforeMatchEventEnabled()) {
-    // Find-in-page matches can't span multiple block-level elements (because
-    // the text will be broken by newlines between blocks), so first we find the
-    // block-level element which contains the match.
-    // This means we only need to traverse up from one node in the range, in
-    // this case we are traversing from the start position of the range.
-    Element* enclosing_block =
-        EnclosingBlock(range.StartPosition(), kCannotCrossEditingBoundary);
-    // Note that we don't check the `range.EndPosition()` since we just activate
-    // the beginning of the range. In find-in-page cases, the end position is
-    // the same since the matches cannot cross block boundaries. However, in
-    // scroll-to-text, the range might be different, but we still just activate
-    // the beginning of the range. See
-    // https://github.com/WICG/display-locking/issues/125 for more details.
-    auto& event = *Event::CreateBubble(event_type_names::kBeforematch);
-    if (enclosing_block) {
-      enclosing_block->DispatchEvent(event);
-    } else {
-      match->FirstNode()->DispatchEvent(event);
-    }
-    // TODO(jarhar): Consider what to do based on DOM/style modifications made
-    // by the beforematch event here and write tests for it once we decide on a
-    // behavior here: https://github.com/WICG/display-locking/issues/150
-  }
-
-  // The beforematch event may detach the target element from the DOM.
-  if (!first_node.isConnected())
-    return;
-
   if (RuntimeEnabledFeatures::CSSContentVisibilityEnabled()) {
     // TODO(vmpstr): Rework this, since it is only used for bookkeeping.
     DisplayLockUtilities::ActivateFindInPageMatchRangeIfNeeded(range);
@@ -192,19 +163,22 @@ bool TextFinder::Find(int identifier,
     InvalidatePaintForTickmarks();
     return false;
   }
-  ScrollToVisible(active_match_);
 
-  // If the user is browsing a page with autosizing, adjust the zoom to the
-  // column where the next hit has been found. Doing this when autosizing is
-  // not set will result in a zoom reset on small devices.
-  if (OwnerFrame()
-          .GetFrame()
-          ->GetDocument()
-          ->GetTextAutosizer()
-          ->PageNeedsAutosizing()) {
-    OwnerFrame().LocalRoot()->FrameWidget()->ZoomToFindInPageRect(
-        OwnerFrame().GetFrameView()->ConvertToRootFrame(
-            ComputeTextRect(EphemeralRange(active_match_.Get()))));
+  std::unique_ptr<AsyncScrollContext> scroll_context =
+      std::make_unique<AsyncScrollContext>();
+  scroll_context->identifier = identifier;
+  scroll_context->search_text = search_text;
+  scroll_context->options = options;
+  scroll_context->wrap_within_frame = wrap_within_frame;
+  scroll_context->range = active_match_.Get();
+  if (options.run_synchronously_for_testing) {
+    FireBeforematchEvent(std::move(scroll_context));
+  } else {
+    scroll_task_.Reset(WTF::Bind(&TextFinder::FireBeforematchEvent,
+                                 WrapWeakPersistent(this),
+                                 std::move(scroll_context)));
+    GetFrame()->GetDocument()->EnqueueAnimationFrameTask(
+        scroll_task_.callback());
   }
 
   bool was_active_frame = current_active_match_frame_;
@@ -771,6 +745,86 @@ void TextFinder::Trace(Visitor* visitor) const {
   visitor->Trace(find_task_controller_);
   visitor->Trace(active_match_);
   visitor->Trace(find_matches_cache_);
+}
+
+void TextFinder::FireBeforematchEvent(
+    std::unique_ptr<AsyncScrollContext> context) {
+  // During the async step, the match may have been removed from the dom.
+  if (context->range->collapsed()) {
+    // If the range we were going to scroll to was removed, then we should
+    // continue to search for the next match.
+    // We don't need to worry about the case where another Find has already been
+    // initiated, because if it was, then the task to run this would have been
+    // canceled.
+    active_match_ = context->range;
+    Find(context->identifier, context->search_text, context->options,
+         context->wrap_within_frame, nullptr);
+    return;
+  }
+
+  if (RuntimeEnabledFeatures::BeforeMatchEventEnabled()) {
+    // Find-in-page matches can't span multiple block-level elements (because
+    // the text will be broken by newlines between blocks), so first we find the
+    // block-level element which contains the match.
+    // This means we only need to traverse up from one node in the range, in
+    // this case we are traversing from the start position of the range.
+    Element* enclosing_block = EnclosingBlock(context->range->StartPosition(),
+                                              kCannotCrossEditingBoundary);
+    // Note that we don't check the `range.EndPosition()` since we just activate
+    // the beginning of the range. In find-in-page cases, the end position is
+    // the same since the matches cannot cross block boundaries. However, in
+    // scroll-to-text, the range might be different, but we still just activate
+    // the beginning of the range. See
+    // https://github.com/WICG/display-locking/issues/125 for more details.
+    if (enclosing_block) {
+      enclosing_block->DispatchEvent(
+          *Event::CreateBubble(event_type_names::kBeforematch));
+    }
+    // TODO(jarhar): Consider what to do based on DOM/style modifications made
+    // by the beforematch event here and write tests for it once we decide on a
+    // behavior here: https://github.com/WICG/display-locking/issues/150
+  }
+
+  if (context->options.run_synchronously_for_testing) {
+    // We need to update style and layout to account for script modifying
+    // dom/style before scrolling when we are running synchronously.
+    GetFrame()->GetDocument()->UpdateStyleAndLayout(
+        DocumentUpdateReason::kFindInPage);
+    Scroll(std::move(context));
+  } else {
+    scroll_task_.Reset(WTF::Bind(&TextFinder::Scroll, WrapWeakPersistent(this),
+                                 std::move(context)));
+    GetFrame()->GetDocument()->EnqueueAnimationFrameTask(
+        scroll_task_.callback());
+  }
+}
+
+void TextFinder::Scroll(std::unique_ptr<AsyncScrollContext> context) {
+  // The beforematch event, as well as any other script that may have run during
+  // the async step, may have removed the matching text from the dom, in which
+  // case we shouldn't scroll to it.
+  if (context->range->collapsed()) {
+    // If the range we were going to scroll to was removed, then we should
+    // continue to search for the next match.
+    // We don't need to worry about the case where another Find has already been
+    // initiated, because if it was, then the task to run this would have been
+    // canceled.
+    active_match_ = context->range;
+    Find(context->identifier, context->search_text, context->options,
+         context->wrap_within_frame, nullptr);
+    return;
+  }
+
+  ScrollToVisible(context->range);
+
+  // If the user is browsing a page with autosizing, adjust the zoom to the
+  // column where the next hit has been found. Doing this when autosizing is
+  // not set will result in a zoom reset on small devices.
+  if (GetFrame()->GetDocument()->GetTextAutosizer()->PageNeedsAutosizing()) {
+    OwnerFrame().LocalRoot()->FrameWidget()->ZoomToFindInPageRect(
+        OwnerFrame().GetFrameView()->ConvertToRootFrame(
+            ComputeTextRect(EphemeralRange(context->range))));
+  }
 }
 
 }  // namespace blink

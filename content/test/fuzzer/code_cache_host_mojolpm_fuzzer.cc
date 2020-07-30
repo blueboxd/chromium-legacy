@@ -233,7 +233,7 @@ class CodeCacheHostFuzzerContext : public mojolpm::Context {
 
     receiver_bound.Wait();
 
-    mojolpm::AddRemote(id, std::move(remote));
+    AddInstance(id, std::move(remote));
   }
 
  private:
@@ -262,7 +262,6 @@ class CodeCacheHostTestcase : public mojolpm::TestcaseBase {
   ~CodeCacheHostTestcase() override;
   bool IsFinished() override;
   void NextAction() override;
-  int NextResponseIndex(mojolpm::TypeId type) override;
 };
 
 CodeCacheHostTestcase::CodeCacheHostTestcase(
@@ -314,13 +313,6 @@ void CodeCacheHostTestcase::NextAction() {
       }
     }
   }
-}
-
-int CodeCacheHostTestcase::NextResponseIndex(mojolpm::TypeId) {
-  // CodeCacheHost doesn't take any pending_receiver<X> parameters, so
-  // we do not need to handle fuzzing response types at all in this
-  // fuzzer.
-  return 0;
 }
 
 void run_testcase(

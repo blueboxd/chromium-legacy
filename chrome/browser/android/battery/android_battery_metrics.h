@@ -27,6 +27,11 @@ class AndroidBatteryMetrics : public base::PowerObserver {
   void UpdateDrainMetricsEnabled();
   void CaptureAndReportDrain();
 
+  // Whether or not we've seen at least two consecutive capacity drops while
+  // Chrome was the foreground app. Battery drain reported prior to this could
+  // be caused by a different app.
+  bool IsMeasuringDrainExclusively() const;
+
   // Battery drain is captured and reported periodically in this interval while
   // the device is on battery power and Chrome is the foreground activity.
   static constexpr base::TimeDelta kDrainMetricsInterval =
@@ -39,6 +44,10 @@ class AndroidBatteryMetrics : public base::PowerObserver {
   int last_remaining_capacity_uah_ = 0;
   base::RepeatingTimer drain_metrics_timer_;
   int skipped_timers_ = 0;
+
+  // Number of consecutive charge drops seen while the app has been in the
+  // foreground.
+  int observed_capacity_drops_ = 0;
 
   SEQUENCE_CHECKER(sequence_checker_);
 

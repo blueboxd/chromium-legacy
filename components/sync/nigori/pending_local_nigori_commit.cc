@@ -87,13 +87,13 @@ class CustomPassphraseSetter : public PendingLocalNigoriCommit {
                  SyncEncryptionHandler::Observer* observer) override {
     DCHECK(!state.pending_keys.has_value());
 
-    observer->OnPassphraseAccepted();
     observer->OnPassphraseTypeChanged(PassphraseType::kCustomPassphrase,
                                       state.custom_passphrase_time);
     observer->OnCryptographerStateChanged(state.cryptographer.get(),
                                           /*has_pending_keys=*/false);
     observer->OnEncryptedTypesChanged(EncryptableUserTypes(),
                                       /*encrypt_everything=*/true);
+    observer->OnPassphraseAccepted();
 
     UMA_HISTOGRAM_BOOLEAN("Sync.CustomEncryption", true);
   }

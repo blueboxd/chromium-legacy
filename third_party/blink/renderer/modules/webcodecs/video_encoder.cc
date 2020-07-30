@@ -8,6 +8,7 @@
 
 #include "base/bind.h"
 #include "base/callback.h"
+#include "base/logging.h"
 #include "base/macros.h"
 #include "media/base/video_codecs.h"
 #include "media/base/video_color_space.h"
@@ -15,6 +16,10 @@
 #if BUILDFLAG(ENABLE_LIBVPX)
 #include "media/video/vpx_video_encoder.h"
 #endif
+#include "media/base/async_destroy_video_encoder.h"
+#include "media/video/gpu_video_accelerator_factories.h"
+#include "media/video/video_encode_accelerator_adapter.h"
+#include "third_party/blink/public/platform/platform.h"
 #include "third_party/blink/public/platform/task_type.h"
 #include "third_party/blink/renderer/bindings/core/v8/script_function.h"
 #include "third_party/blink/renderer/bindings/core/v8/script_promise.h"
@@ -29,8 +34,32 @@
 #include "third_party/blink/renderer/modules/webcodecs/encoded_video_metadata.h"
 #include "third_party/blink/renderer/platform/bindings/exception_state.h"
 #include "third_party/blink/renderer/platform/bindings/script_state.h"
+#include "third_party/blink/renderer/platform/scheduler/public/thread.h"
 
 namespace blink {
+
+namespace {
+std::unique_ptr<media::VideoEncoder> CreateAcceleratedVideoEncoder() {
+  auto* gpu_factories = Platform::Current()->GetGpuFactories();
+  if (!gpu_factories || !gpu_factories->IsGpuVideoAcceleratorEnabled())
+    return nullptr;
+
+  auto task_runner = Thread::MainThread()->GetTaskRunner();
+  return std::make_unique<
+      media::AsyncDestroyVideoEncoder<media::VideoEncodeAcceleratorAdapter>>(
+      std::make_unique<media::VideoEncodeAcceleratorAdapter>(
+          gpu_factories, std::move(task_runner)));
+}
+
+std::unique_ptr<media::VpxVideoEncoder> CreateVpxVideoEncoder() {
+#if BUILDFLAG(ENABLE_LIBVPX)
+  return std::make_unique<media::VpxVideoEncoder>();
+#else
+  return nullptr;
+#endif  // BUILDFLAG(ENABLE_LIBVPX)
+}
+
+}  // namespace
 
 // static
 VideoEncoder* VideoEncoder::Create(ScriptState* script_state,
@@ -75,7 +104,7 @@ void VideoEncoder::configure(const VideoEncoderConfig* config,
   EnqueueRequest(request);
 }
 
-void VideoEncoder::encode(const VideoFrame* frame,
+void VideoEncoder::encode(VideoFrame* frame,
                           const VideoEncoderEncodeOptions* opts,
                           ExceptionState& exception_state) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
@@ -163,36 +192,32 @@ void VideoEncoder::CallErrorCallback(DOMExceptionCode code,
 
 void VideoEncoder::EnqueueRequest(Request* request) {
   requests_.push_back(request);
-
-  if (requests_.size() == 1)
-    ProcessRequests();
+  ProcessRequests();
 }
 
 void VideoEncoder::ProcessRequests() {
-  if (requests_.empty())
-    return;
-
-  Request* request = requests_.TakeFirst();
-  DCHECK(request);
-  switch (request->type) {
-    case Request::Type::kConfigure:
-      ProcessConfigure(request);
-      break;
-    case Request::Type::kEncode:
-      ProcessEncode(request);
-      break;
-    case Request::Type::kFlush:
-      ProcessFlush(request);
-      break;
-    default:
-      NOTREACHED();
+  while (!requests_.empty() && !stall_request_processing_) {
+    Request* request = requests_.TakeFirst();
+    DCHECK(request);
+    switch (request->type) {
+      case Request::Type::kConfigure:
+        ProcessConfigure(request);
+        break;
+      case Request::Type::kEncode:
+        ProcessEncode(request);
+        break;
+      case Request::Type::kFlush:
+        ProcessFlush(request);
+        break;
+      default:
+        NOTREACHED();
+    }
   }
 }
 
 void VideoEncoder::ProcessEncode(Request* request) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   DCHECK_EQ(request->type, Request::Type::kEncode);
-  DCHECK(media_encoder_);
 
   auto done_callback = [](VideoEncoder* self, Request* req,
                           media::Status status) {
@@ -206,6 +231,12 @@ void VideoEncoder::ProcessEncode(Request* request) {
     self->ProcessRequests();
   };
 
+  if (!media_encoder_) {
+    CallErrorCallback(DOMExceptionCode::kOperationError,
+                      "Encoder is not configured");
+    return;
+  }
+
   bool keyframe = request->encodeOpts->hasKeyFrameNonNull() &&
                   request->encodeOpts->keyFrameNonNull();
   media_encoder_->Encode(request->frame->frame(), keyframe,
@@ -218,6 +249,7 @@ void VideoEncoder::ProcessConfigure(Request* request) {
   DCHECK_EQ(request->type, Request::Type::kConfigure);
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   auto* config = request->config.Get();
+  AccelerationPreference acc_pref = AccelerationPreference::kAllow;
 
   if (media_encoder_) {
     CallErrorCallback(DOMExceptionCode::kOperationError,
@@ -225,28 +257,69 @@ void VideoEncoder::ProcessConfigure(Request* request) {
     return;
   }
 
-  auto codec_type = media::StringToVideoCodec(config->codec().Utf8());
+  if (config->hasAcceleration()) {
+    std::string preference = config->acceleration().Utf8();
+    if (preference == "deny") {
+      acc_pref = AccelerationPreference::kDeny;
+    } else if (preference == "require") {
+      acc_pref = AccelerationPreference::kRequire;
+    } else if (preference == "allow") {
+      acc_pref = AccelerationPreference::kAllow;
+    } else {
+      CallErrorCallback(DOMExceptionCode::kNotFoundError,
+                        "Unknown acceleration type");
+      return;
+    }
+  }
+
+  std::string codec_str = config->codec().Utf8();
+  std::string profile_str = config->profile().Utf8();
+  auto codec_type = media::StringToVideoCodec(codec_str);
   if (codec_type == media::kUnknownVideoCodec) {
     CallErrorCallback(DOMExceptionCode::kNotFoundError, "Unknown codec type");
     return;
   }
+
+  // TODO(ezemtsov): Put the encoder creation logic below in a separate class or
+  // method.
   media::VideoCodecProfile profile = media::VIDEO_CODEC_PROFILE_UNKNOWN;
-#if BUILDFLAG(ENABLE_LIBVPX)
   if (codec_type == media::kCodecVP8) {
-    media_encoder_ = std::make_unique<media::VpxVideoEncoder>();
+    if (acc_pref == AccelerationPreference::kRequire) {
+      CallErrorCallback(DOMExceptionCode::kNotFoundError,
+                        "Accelerated vp8 is not supported");
+      return;
+    }
+    media_encoder_ = CreateVpxVideoEncoder();
     profile = media::VP8PROFILE_ANY;
   } else if (codec_type == media::kCodecVP9) {
     uint8_t level = 0;
     media::VideoColorSpace color_space;
-    if (!ParseNewStyleVp9CodecID(config->profile().Utf8(), &profile, &level,
-                                 &color_space)) {
+    if (!ParseNewStyleVp9CodecID(profile_str, &profile, &level, &color_space)) {
       CallErrorCallback(DOMExceptionCode::kNotFoundError,
                         "Invalid vp9 profile");
       return;
     }
-    media_encoder_ = std::make_unique<media::VpxVideoEncoder>();
+    if (acc_pref == AccelerationPreference::kRequire) {
+      CallErrorCallback(DOMExceptionCode::kNotFoundError,
+                        "Accelerated vp9 is not supported");
+      return;
+    }
+    media_encoder_ = CreateVpxVideoEncoder();
+  } else if (codec_type == media::kCodecH264) {
+    codec_type = media::kCodecH264;
+    uint8_t level = 0;
+    if (!ParseAVCCodecId(profile_str, &profile, &level)) {
+      CallErrorCallback(DOMExceptionCode::kNotFoundError,
+                        "Invalid AVC profile");
+      return;
+    }
+    if (acc_pref == AccelerationPreference::kDeny) {
+      CallErrorCallback(DOMExceptionCode::kNotFoundError,
+                        "Software h264 is not supported yet");
+      return;
+    }
+    media_encoder_ = CreateAcceleratedVideoEncoder();
   }
-#endif  // BUILDFLAG(ENABLE_LIBVPX)
 
   if (!media_encoder_) {
     CallErrorCallback(DOMExceptionCode::kNotFoundError,
@@ -271,6 +344,8 @@ void VideoEncoder::ProcessConfigure(Request* request) {
       std::string msg = "Encoder initialization error: " + status.message();
       self->CallErrorCallback(DOMExceptionCode::kOperationError, msg.c_str());
     }
+    self->stall_request_processing_ = false;
+    self->ProcessRequests();
   };
 
   media::VideoEncoder::Options options;
@@ -279,15 +354,15 @@ void VideoEncoder::ProcessConfigure(Request* request) {
   options.width = frame_size_.width();
   options.framerate = config->framerate();
   options.threads = 1;
+  stall_request_processing_ = true;
   media_encoder_->Initialize(profile, options, output_cb,
                              WTF::Bind(done_callback, WrapWeakPersistent(this),
                                        WrapPersistent(request)));
-}
+}  // namespace blink
 
 void VideoEncoder::ProcessFlush(Request* request) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   DCHECK_EQ(request->type, Request::Type::kFlush);
-  DCHECK(media_encoder_);
 
   auto done_callback = [](VideoEncoder* self, Request* req,
                           media::Status status) {
@@ -304,9 +379,19 @@ void VideoEncoder::ProcessFlush(Request* request) {
       self->CallErrorCallback(ex);
       req->resolver.Release()->Reject(ex);
     }
+    self->stall_request_processing_ = false;
     self->ProcessRequests();
   };
 
+  if (!media_encoder_) {
+    auto* ex = MakeGarbageCollected<DOMException>(
+        DOMExceptionCode::kOperationError, "Encoder is not configured");
+    CallErrorCallback(ex);
+    request->resolver.Release()->Reject(ex);
+    return;
+  }
+
+  stall_request_processing_ = true;
   media_encoder_->Flush(WTF::Bind(done_callback, WrapWeakPersistent(this),
                                   WrapPersistentIfNeeded(request)));
 }

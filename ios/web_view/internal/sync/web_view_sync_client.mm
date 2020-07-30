@@ -73,7 +73,9 @@ std::unique_ptr<WebViewSyncClient> WebViewSyncClient::Create(
       WebViewDeviceInfoSyncServiceFactory::GetForBrowserState(browser_state),
       WebViewProfileInvalidationProviderFactory::GetForBrowserState(
           browser_state)
-          ->GetInvalidationService());
+          ->GetInvalidationService(),
+      /*sync_invalidations_service=*/nullptr);
+  // TODO(crbug.com/1082122): implement sync invalidations on iOS platform.
 }
 
 WebViewSyncClient::WebViewSyncClient(
@@ -85,7 +87,8 @@ WebViewSyncClient::WebViewSyncClient(
     signin::IdentityManager* identity_manager,
     syncer::ModelTypeStoreService* model_type_store_service,
     syncer::DeviceInfoSyncService* device_info_sync_service,
-    invalidation::InvalidationService* invalidation_service)
+    invalidation::InvalidationService* invalidation_service,
+    syncer::SyncInvalidationsService* sync_invalidations_service)
     : profile_web_data_service_(profile_web_data_service),
       account_web_data_service_(account_web_data_service),
       profile_password_store_(profile_password_store),
@@ -94,7 +97,8 @@ WebViewSyncClient::WebViewSyncClient(
       identity_manager_(identity_manager),
       model_type_store_service_(model_type_store_service),
       device_info_sync_service_(device_info_sync_service),
-      invalidation_service_(invalidation_service) {
+      invalidation_service_(invalidation_service),
+      sync_invalidations_service_(sync_invalidations_service) {
   component_factory_ =
       std::make_unique<browser_sync::ProfileSyncComponentsFactoryImpl>(
           this, version_info::Channel::STABLE,
@@ -168,6 +172,11 @@ BookmarkUndoService* WebViewSyncClient::GetBookmarkUndoService() {
 
 invalidation::InvalidationService* WebViewSyncClient::GetInvalidationService() {
   return invalidation_service_;
+}
+
+syncer::SyncInvalidationsService*
+WebViewSyncClient::GetSyncInvalidationsService() {
+  return sync_invalidations_service_;
 }
 
 syncer::TrustedVaultClient* WebViewSyncClient::GetTrustedVaultClient() {

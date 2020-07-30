@@ -177,6 +177,10 @@ const base::Feature kPrioritizeCompositingAndLoadingDuringEarlyLoading{
     "PrioritizeCompositingAndLoadingDuringEarlyLoading",
     base::FEATURE_DISABLED_BY_DEFAULT};
 
+// Prioritizes one BeginMainFrame after input.
+const base::Feature kPrioritizeCompositingAfterInput{
+    "PrioritizeCompositingAfterInput", base::FEATURE_DISABLED_BY_DEFAULT};
+
 // Enable setting high priority database task type from field trial parameters.
 const base::Feature kHighPriorityDatabaseTaskType{
     "HighPriorityDatabaseTaskType", base::FEATURE_DISABLED_BY_DEFAULT};

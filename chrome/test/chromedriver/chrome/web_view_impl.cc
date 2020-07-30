@@ -72,8 +72,6 @@ const char* GetAsString(MouseEventType type) {
       return "mouseReleased";
     case kMovedMouseEventType:
       return "mouseMoved";
-    case kWheelMouseEventType:
-      return "mouseWheel";
     default:
       return "";
   }
@@ -563,8 +561,7 @@ Status WebViewImpl::DispatchMouseEvents(const std::vector<MouseEvent>& events,
   Status status(kOk);
   for (auto it = events.begin(); it != events.end(); ++it) {
     base::DictionaryValue params;
-    std::string type = GetAsString(it->type);
-    params.SetString("type", type);
+    params.SetString("type", GetAsString(it->type));
     params.SetInteger("x", it->x);
     params.SetInteger("y", it->y);
     params.SetInteger("modifiers", it->modifiers);
@@ -572,10 +569,6 @@ Status WebViewImpl::DispatchMouseEvents(const std::vector<MouseEvent>& events,
     params.SetInteger("buttons", it->buttons);
     params.SetInteger("clickCount", it->click_count);
     params.SetString("pointerType", GetAsString(it->pointer_type));
-    if (type == "mouseWheel") {
-      params.SetInteger("deltaX", it->delta_x);
-      params.SetInteger("deltaY", it->delta_y);
-    }
 
     const bool last_event = (it == events.end() - 1);
     if (async_dispatch_events || !last_event) {

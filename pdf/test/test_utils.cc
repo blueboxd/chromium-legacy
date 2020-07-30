@@ -31,9 +31,4 @@ void CompareRect(const pp::FloatRect& expected_rect,
   EXPECT_FLOAT_EQ(expected_rect.height(), given_rect.height());
 }
 
-void CompareSize(const pp::Size& expected_size, const pp::Size& given_size) {
-  EXPECT_EQ(expected_size.width(), given_size.width());
-  EXPECT_EQ(expected_size.height(), given_size.height());
-}
-
 }  // namespace chrome_pdf

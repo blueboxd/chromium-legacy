@@ -246,6 +246,16 @@ void USER_MANAGER_EXPORT SetUserPinLength(const AccountId& account_id,
 // Returns the user's PIN length if available, otherwise 0.
 int USER_MANAGER_EXPORT GetUserPinLength(const AccountId& account_id);
 
+// Whether the user needs to have their pin auto submit preferences backfilled.
+// TODO(crbug.com/1104164) - Remove this once most users have their
+// preferences backfilled.
+bool USER_MANAGER_EXPORT
+PinAutosubmitIsBackfillNeeded(const AccountId& account_id);
+void USER_MANAGER_EXPORT
+PinAutosubmitSetBackfillNotNeeded(const AccountId& account_id);
+void USER_MANAGER_EXPORT
+PinAutosubmitSetBackfillNeededForTests(const AccountId& account_id);
+
 // Removes all user preferences associated with |account_id|.
 // Not exported as code should not be calling this outside this component
 void RemovePrefs(const AccountId& account_id);

@@ -9,6 +9,7 @@
 #include "components/safe_browsing/core/db/test_database_manager.h"
 #import "ios/chrome/browser/safe_browsing/url_checker_delegate_impl.h"
 #include "ios/web/public/thread/web_thread.h"
+#include "services/network/public/cpp/weak_wrapper_shared_url_loader_factory.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."
@@ -77,4 +78,10 @@ FakeSafeBrowsingService::CreateUrlChecker(
 bool FakeSafeBrowsingService::CanCheckUrl(const GURL& url) const {
   return url.SchemeIsHTTPOrHTTPS() || url.SchemeIs(url::kFtpScheme) ||
          url.SchemeIsWSOrWSS();
+}
+
+scoped_refptr<network::SharedURLLoaderFactory>
+FakeSafeBrowsingService::GetURLLoaderFactory() {
+  return base::MakeRefCounted<network::WeakWrapperSharedURLLoaderFactory>(
+      &url_loader_factory_);
 }

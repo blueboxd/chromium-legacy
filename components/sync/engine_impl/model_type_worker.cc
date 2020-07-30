@@ -14,6 +14,7 @@
 #include "base/format_macros.h"
 #include "base/guid.h"
 #include "base/logging.h"
+#include "base/metrics/histogram_functions.h"
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
 #include "base/threading/thread_restrictions.h"
@@ -108,6 +109,10 @@ ModelTypeWorker::ModelTypeWorker(
 }
 
 ModelTypeWorker::~ModelTypeWorker() {
+  base::UmaHistogramCounts1000(
+      std::string("Sync.UndecryptedEntitiesOnDataTypeDisabled.") +
+          ModelTypeToHistogramSuffix(type_),
+      entries_pending_decryption_.size());
   model_type_processor_->DisconnectSync();
 }
 

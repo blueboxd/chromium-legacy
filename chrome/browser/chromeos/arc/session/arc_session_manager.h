@@ -207,8 +207,6 @@ class ArcSessionManager : public ArcSessionRunner::Observer,
   // On provisioning completion (regardless of whether successfully done or
   // not), this is called with its status. On success, called with
   // ProvisioningResult::SUCCESS, otherwise |result| is the error reason.
-  void OnProvisioningFinished(ProvisioningResult result);
-
   void OnProvisioningFinished(ProvisioningResult result,
                               mojom::ArcSignInErrorPtr error);
 

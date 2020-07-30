@@ -257,7 +257,8 @@ class CORE_EXPORT WebLocalFrameImpl final
                       bool forward,
                       bool force,
                       bool new_session,
-                      bool wrap_within_frame) override;
+                      bool wrap_within_frame,
+                      bool async) override;
   void SetTickmarks(const WebVector<WebRect>&) override;
   WebNode ContextMenuNode() const override;
   void CopyImageAtForTesting(const gfx::Point&) override;

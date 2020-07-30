@@ -43,6 +43,7 @@ class SafeBrowsingServiceImpl : public SafeBrowsingService {
       safe_browsing::ResourceType resource_type,
       web::WebState* web_state) override;
   bool CanCheckUrl(const GURL& url) const override;
+  scoped_refptr<network::SharedURLLoaderFactory> GetURLLoaderFactory() override;
 
  private:
   // A helper class for enabling/disabling Safe Browsing and maintaining state
@@ -120,8 +121,16 @@ class SafeBrowsingServiceImpl : public SafeBrowsingService {
   // Enables or disables Safe Browsing, depending on the current state of
   // preferences.
   void UpdateSafeBrowsingEnabledState();
+
   // This is the UI thread remote for IOThreadState's network context.
   mojo::Remote<network::mojom::NetworkContext> network_context_client_;
+
+  // The URLLoaderFactory used for Safe Browsing network requests.
+  mojo::Remote<network::mojom::URLLoaderFactory> url_loader_factory_;
+
+  // A SharedURLLoaderFactory that wraps |url_loader_factory_|.
+  scoped_refptr<network::WeakWrapperSharedURLLoaderFactory>
+      shared_url_loader_factory_;
 
   // Constructed on the UI thread, but otherwise its methods are only called on
   // the IO thread.

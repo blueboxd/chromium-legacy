@@ -4,6 +4,7 @@
 
 #import "ios/chrome/browser/ui/settings/password/password_details/password_details_mediator.h"
 
+#include "base/strings/sys_string_conversions.h"
 #include "components/autofill/core/common/password_form.h"
 #include "ios/chrome/browser/passwords/password_check_observer_bridge.h"
 #import "ios/chrome/browser/ui/settings/password/password_details/password_details.h"
@@ -19,8 +20,6 @@ using CompromisedCredentialsView =
 
 @interface PasswordDetailsMediator () <PasswordCheckObserver,
                                        PasswordDetailsViewControllerDelegate> {
-  autofill::PasswordForm _password;
-
   // Password Check manager.
   IOSChromePasswordCheckManager* _manager;
 
@@ -60,7 +59,16 @@ using CompromisedCredentialsView =
 - (void)passwordDetailsViewController:
             (PasswordDetailsViewController*)viewController
                didEditPasswordDetails:(PasswordDetails*)password {
-  // TODO:(crbug.com/1075494) - Edit password accordingly.
+  if ([password.password length] != 0) {
+    password.compromised
+        ? _manager->EditCompromisedPasswordForm(
+              _password, base::SysNSStringToUTF8(password.password))
+        : _manager->EditPasswordForm(
+              _password, base::SysNSStringToUTF8(password.password));
+    _password.password_value = base::SysNSStringToUTF16(password.password);
+  } else {
+    [self fetchPasswordWith:_manager->GetCompromisedCredentials()];
+  }
 }
 
 #pragma mark - PasswordCheckObserver

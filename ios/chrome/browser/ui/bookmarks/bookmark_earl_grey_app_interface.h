@@ -69,9 +69,6 @@
 // Returns the number of times a Promo has been seen.
 + (int)numberOfTimesPromoAlreadySeen;
 
-// Sets up a FakeIdentity and returns the email of this Identity.
-+ (NSString*)setupFakeIdentity;
-
 @end
 
 #endif  // IOS_CHROME_BROWSER_UI_BOOKMARKS_BOOKMARK_EARL_GREY_APP_INTERFACE_H_

@@ -8,6 +8,7 @@
 #include <bitset>
 #include <cstddef>
 #include <string>
+#include <type_traits>
 #include <utility>
 
 #include "base/check_op.h"
@@ -42,6 +43,9 @@ EnumSet<E, Min, Max> Difference(EnumSet<E, Min, Max> set1,
 template <typename E, E MinEnumValue, E MaxEnumValue>
 class EnumSet {
  private:
+  static_assert(
+      std::is_enum<E>::value,
+      "First template parameter of EnumSet must be an enumeration type");
   using enum_underlying_type = std::underlying_type_t<E>;
 
   static constexpr enum_underlying_type GetUnderlyingValue(E value) {

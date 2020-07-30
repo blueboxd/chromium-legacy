@@ -56,7 +56,8 @@ class WebViewSyncClientTest : public PlatformTest {
                 identity_test_environment_.identity_manager(),
                 &model_type_store_service_,
                 &device_info_sync_service_,
-                &invalidation_service_) {
+                &invalidation_service_,
+                /*sync_invalidations_service=*/nullptr) {
     pref_service_.registry()->RegisterBooleanPref(
         prefs::kSavingBrowserHistoryDisabled, true);
     pref_service_.registry()->RegisterDictionaryPref(

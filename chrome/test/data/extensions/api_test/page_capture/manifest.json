@@ -4,8 +4,7 @@
   "manifest_version": 2,
   "description": "Tests that the pageCapture extension API work.",
   "background": {
-    "scripts": ["test.js"],
-    "persistent": true
+    "page": "background.html"
   },
   "permissions": ["pageCapture", "tabs"]
 }

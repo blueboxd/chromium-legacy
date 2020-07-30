@@ -32,7 +32,8 @@ class WebViewSyncClient : public browser_sync::BrowserSyncClient {
       signin::IdentityManager* identity_manager,
       syncer::ModelTypeStoreService* model_type_store_service,
       syncer::DeviceInfoSyncService* device_info_sync_service,
-      invalidation::InvalidationService* invalidation_service);
+      invalidation::InvalidationService* invalidation_service,
+      syncer::SyncInvalidationsService* sync_invalidations_service);
   ~WebViewSyncClient() override;
 
   // BrowserSyncClient implementation.
@@ -51,6 +52,7 @@ class WebViewSyncClient : public browser_sync::BrowserSyncClient {
   syncer::DataTypeController::TypeVector CreateDataTypeControllers(
       syncer::SyncService* sync_service) override;
   invalidation::InvalidationService* GetInvalidationService() override;
+  syncer::SyncInvalidationsService* GetSyncInvalidationsService() override;
   syncer::TrustedVaultClient* GetTrustedVaultClient() override;
   BookmarkUndoService* GetBookmarkUndoService() override;
   scoped_refptr<syncer::ExtensionsActivity> GetExtensionsActivity() override;
@@ -73,6 +75,7 @@ class WebViewSyncClient : public browser_sync::BrowserSyncClient {
   syncer::ModelTypeStoreService* model_type_store_service_;
   syncer::DeviceInfoSyncService* device_info_sync_service_;
   invalidation::InvalidationService* invalidation_service_;
+  syncer::SyncInvalidationsService* sync_invalidations_service_;
 
   // TODO(crbug.com/915154): Revert to SyncApiComponentFactory once common
   // controller creation is moved elsewhere.

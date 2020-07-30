@@ -7,6 +7,7 @@
 #include "pdf/test/test_utils.h"
 #include "ppapi/cpp/point.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "ui/gfx/geometry/size.h"
 
 namespace chrome_pdf {
 namespace draw_utils {
@@ -58,24 +59,24 @@ TEST(CoordinateTest, CenterRectHorizontally) {
 }
 
 TEST(CoordinateTest, ExpandDocumentSize) {
-  pp::Size doc_size(100, 400);
+  gfx::Size doc_size(100, 400);
 
   // Test various expansion sizes.
-  pp::Size rect_size(100, 200);
+  gfx::Size rect_size(100, 200);
   ExpandDocumentSize(rect_size, &doc_size);
-  CompareSize({100, 600}, doc_size);
+  EXPECT_EQ(gfx::Size(100, 600), doc_size);
 
   rect_size.SetSize(200, 150);
   ExpandDocumentSize(rect_size, &doc_size);
-  CompareSize({200, 750}, doc_size);
+  EXPECT_EQ(gfx::Size(200, 750), doc_size);
 
   rect_size.SetSize(100, 300);
   ExpandDocumentSize(rect_size, &doc_size);
-  CompareSize({200, 1050}, doc_size);
+  EXPECT_EQ(gfx::Size(200, 1050), doc_size);
 
   rect_size.SetSize(250, 400);
   ExpandDocumentSize(rect_size, &doc_size);
-  CompareSize({250, 1450}, doc_size);
+  EXPECT_EQ(gfx::Size(250, 1450), doc_size);
 }
 
 TEST(CoordinateTest, GetBottomGapBetweenRects) {

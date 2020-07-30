@@ -305,7 +305,17 @@ bool AccessibilityTreeFormatter::MatchesPropertyFilters(
     bool default_result) {
   bool allow = default_result;
   for (const auto& filter : property_filters) {
-    if (base::MatchPattern(text, filter.match_str)) {
+    // Either
+    //   1) the line matches a filter pattern, for example, AXSubrole=* filter
+    //      will match AXSubrole=AXTerm line or
+    //   2) a property on the line is exactly equal to the filter pattern, for
+    //      example, AXSubrole filter will match AXSubrole=AXTerm line.
+    if (base::MatchPattern(text, filter.match_str) ||
+        (filter.match_str.length() > 0 &&
+         filter.match_str.find('=') == std::string::npos &&
+         filter.match_str[filter.match_str.length() - 1] != '*' &&
+         base::MatchPattern(text,
+                            filter.match_str + base::ASCIIToUTF16("=*")))) {
       switch (filter.type) {
         case PropertyFilter::ALLOW_EMPTY:
           allow = true;

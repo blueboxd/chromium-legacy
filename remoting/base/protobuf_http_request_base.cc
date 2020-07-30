@@ -6,6 +6,7 @@
 
 #include "net/base/net_errors.h"
 #include "remoting/base/protobuf_http_request_config.h"
+#include "remoting/base/scoped_protobuf_http_request.h"
 #include "services/network/public/cpp/simple_url_loader.h"
 
 namespace remoting {
@@ -22,6 +23,12 @@ ProtobufHttpRequestBase::~ProtobufHttpRequestBase() {
          request_deadline_ >= base::TimeTicks::Now())
       << "The request must have been deleted before the deadline.";
 #endif  // DCHECK_IS_ON()
+}
+
+std::unique_ptr<ScopedProtobufHttpRequest>
+ProtobufHttpRequestBase::CreateScopedRequest() {
+  return std::make_unique<ScopedProtobufHttpRequest>(base::BindOnce(
+      &ProtobufHttpRequestBase::Invalidate, weak_factory_.GetWeakPtr()));
 }
 
 ProtobufHttpStatus ProtobufHttpRequestBase::GetUrlLoaderStatus() const {
@@ -61,6 +68,14 @@ void ProtobufHttpRequestBase::StartRequest(
                         base::TimeDelta::FromMilliseconds(500);
   }
 #endif  // DCHECK_IS_ON()
+}
+
+void ProtobufHttpRequestBase::Invalidate() {
+  // This is not necessarily true if the request has never been added to a
+  // client.
+  if (invalidator_) {
+    std::move(invalidator_).Run();
+  }
 }
 
 }  // namespace remoting

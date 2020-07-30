@@ -21,7 +21,7 @@
 #include "mojo/core/configuration.h"
 #include "mojo/core/core.h"
 
-#if defined(OS_MACOSX) && !defined(OS_IOS)
+#if defined(OS_MAC)
 #include "base/mac/mach_logging.h"
 #elif defined(OS_WIN)
 #include "base/win/win_util.h"
@@ -102,7 +102,7 @@ Channel::Message::Message(size_t capacity,
 #elif defined(OS_FUCHSIA)
   // On Fuchsia we serialize handle types into the extra header space.
   extra_header_size = max_handles_ * sizeof(HandleInfoEntry);
-#elif defined(OS_MACOSX) && !defined(OS_IOS)
+#elif defined(OS_MAC)
   // On OSX, some of the platform handles may be mach ports, which are
   // serialised into the message buffer. Since there could be a mix of fds and
   // mach ports, we store the mach ports as an <index, port> pair (of uint32_t),
@@ -152,7 +152,7 @@ Channel::Message::Message(size_t capacity,
     // Initialize all handles to invalid values.
     for (size_t i = 0; i < max_handles_; ++i)
       handles_[i].handle = base::win::HandleToUint32(INVALID_HANDLE_VALUE);
-#elif defined(OS_MACOSX) && !defined(OS_IOS)
+#elif defined(OS_MAC)
     mach_ports_header_ =
         reinterpret_cast<MachPortsExtraHeader*>(mutable_extra_header());
     mach_ports_header_->num_ports = 0;
@@ -229,7 +229,7 @@ Channel::MessagePtr Channel::Message::Deserialize(
   uint32_t max_handles = extra_header_size / sizeof(HandleEntry);
 #elif defined(OS_FUCHSIA)
   uint32_t max_handles = extra_header_size / sizeof(HandleInfoEntry);
-#elif defined(OS_MACOSX) && !defined(OS_IOS)
+#elif defined(OS_MAC)
   if (extra_header_size > 0 &&
       extra_header_size < sizeof(MachPortsExtraHeader)) {
     DLOG(ERROR) << "Decoding invalid message: " << extra_header_size << " < "
@@ -324,7 +324,7 @@ void Channel::Message::ExtendPayload(size_t new_payload_size) {
 // payload buffer has been relocated.
 #if defined(OS_WIN)
       handles_ = reinterpret_cast<HandleEntry*>(mutable_extra_header());
-#elif defined(OS_MACOSX) && !defined(OS_IOS)
+#elif defined(OS_MAC)
       mach_ports_header_ =
           reinterpret_cast<MachPortsExtraHeader*>(mutable_extra_header());
 #endif
@@ -430,7 +430,7 @@ void Channel::Message::SetHandles(
   }
 #endif  // defined(OS_WIN)
 
-#if defined(OS_MACOSX) && !defined(OS_IOS)
+#if defined(OS_MAC)
   if (mach_ports_header_) {
     for (size_t i = 0; i < max_handles_; ++i) {
       mach_ports_header_->entries[i] = {0};

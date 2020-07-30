@@ -128,11 +128,6 @@ class VariationsFieldTrialCreator {
   // Returns the locale that was used for evaluating trials.
   const std::string& application_locale() const { return application_locale_; }
 
-  // Returns the short hardware class value used to evaluate variations hardware
-  // class filters. Only implemented on CrOS and Android - returns empty string
-  // on other platforms.
-  static std::string GetShortHardwareClass();
-
  private:
   // Loads the seed from the variations store into |seed|, and records metrics
   // about the loaded seed. Returns true on success, in which case |seed| will

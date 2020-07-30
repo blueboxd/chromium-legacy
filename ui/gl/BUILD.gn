@@ -214,7 +214,7 @@ jumbo_component("gl") {
       "shared_gl_fence_egl.h",
     ]
 
-    if (is_linux || use_ozone) {
+    if (is_linux || is_chromeos || use_ozone) {
       sources += [
         "gl_image_native_pixmap.cc",
         "gl_image_native_pixmap.h",
@@ -499,7 +499,7 @@ jumbo_static_library("test_support") {
     "//ui/base",
   ]
 
-  if (is_linux) {
+  if (is_linux || is_chromeos) {
     deps += [ "//ui/platform_window/common" ]
   }
 

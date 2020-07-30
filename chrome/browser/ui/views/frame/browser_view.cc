@@ -336,7 +336,7 @@ bool GetGestureCommand(ui::GestureEvent* event, int* command) {
       return true;
     }
   }
-#endif  // OS_MACOSX
+#endif  // OS_MAC
   return false;
 }
 
@@ -1316,7 +1316,7 @@ void BrowserView::FullscreenStateChanged() {
     base::ThreadTaskRunnerHandle::Get()->PostTask(
         FROM_HERE, std::move(restore_pre_fullscreen_bounds_callback_));
   }
-#endif  // OS_MACOSX
+#endif  // OS_MAC
 }
 
 void BrowserView::SetToolbarButtonProvider(ToolbarButtonProvider* provider) {
@@ -3130,7 +3130,7 @@ void BrowserView::ProcessFullscreen(bool fullscreen,
   // transition out of the fullscreen workspace; see http://crbug.com/1039874
   if (!fullscreen && restore_pre_fullscreen_bounds_callback_)
     std::move(restore_pre_fullscreen_bounds_callback_).Run();
-#endif  // !OS_MACOSX
+#endif  // !OS_MAC
 
   // Enable immersive before the browser refreshes its list of enabled commands.
   const bool should_stay_in_immersive =

@@ -1800,5 +1800,40 @@ TEST_F(FeedStreamTest, MultipleOfflineBadgesWithSameUrl) {
             surface.GetDataStoreEntries());
 }
 
+TEST_F(FeedStreamTest, SendsClientInstanceId) {
+  stream_->GetMetadata()->SetConsistencyToken("token");
+
+  // Store is empty, so we should fallback to a network request.
+  response_translator_.InjectResponse(MakeTypicalInitialModelState());
+  TestSurface surface(stream_.get());
+  WaitForIdleTaskQueue();
+
+  ASSERT_EQ(1, network_.send_query_call_count);
+  ASSERT_TRUE(network_.query_request_sent);
+
+  // Instance ID is a random token. Verify it is not empty.
+  std::string first_instance_id = network_.query_request_sent->feed_request()
+                                      .client_info()
+                                      .client_instance_id();
+  EXPECT_NE("", first_instance_id);
+
+  // LoadMore, and verify the same token is used.
+  response_translator_.InjectResponse(MakeTypicalNextPageState(2));
+  stream_->LoadMore(surface.GetSurfaceId(), base::DoNothing());
+  WaitForIdleTaskQueue();
+
+  ASSERT_EQ(2, network_.send_query_call_count);
+  EXPECT_EQ(first_instance_id, network_.query_request_sent->feed_request()
+                                   .client_info()
+                                   .client_instance_id());
+
+  // Trigger a ClearAll to verify the instance ID changes.
+  stream_->OnSignedOut();
+  const std::string new_instance_id =
+      stream_->GetRequestMetadata().client_instance_id;
+  ASSERT_NE("", new_instance_id);
+  ASSERT_NE(first_instance_id, new_instance_id);
+}
+
 }  // namespace
 }  // namespace feed

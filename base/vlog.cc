@@ -126,55 +126,55 @@ int VlogInfo::GetMaxVlogLevel() const {
 
 bool MatchVlogPattern(const base::StringPiece& string,
                       const base::StringPiece& vlog_pattern) {
-  base::StringPiece p(vlog_pattern);
-  base::StringPiece s(string);
-  // Consume characters until the next star.
-  while (!p.empty() && !s.empty() && (p[0] != '*')) {
-    switch (p[0]) {
-      // A slash (forward or back) must match a slash (forward or back).
-      case '/':
-      case '\\':
-        if ((s[0] != '/') && (s[0] != '\\'))
-          return false;
-        break;
+  base::StringPiece pat(vlog_pattern);
+  base::StringPiece str(string);
 
-      // A '?' matches anything.
-      case '?':
-        break;
-
-      // Anything else must match literally.
-      default:
-        if (p[0] != s[0])
-          return false;
-        break;
+  // The code implements the glob matching using a greedy approach described in
+  // https://research.swtch.com/glob.
+  size_t s = 0, nexts = 0;
+  size_t p = 0, nextp = 0;
+  size_t slen = str.size(), plen = pat.size();
+  while (s < slen || p < plen) {
+    if (p < plen) {
+      switch (pat[p]) {
+        // A slash (forward or back) must match a slash (forward or back).
+        case '/':
+        case '\\':
+          if (s < slen && (str[s] == '/' || str[s] == '\\')) {
+            p++, s++;
+            continue;
+          }
+          break;
+        // A '?' matches anything.
+        case '?':
+          if (s < slen) {
+            p++, s++;
+            continue;
+          }
+          break;
+        case '*':
+          nextp = p;
+          nexts = s + 1;
+          p++;
+          continue;
+        // Anything else must match literally.
+        default:
+          if (s < slen && str[s] == pat[p]) {
+            p++, s++;
+            continue;
+          }
+          break;
+      }
     }
-    p.remove_prefix(1), s.remove_prefix(1);
+    // Mismatch - maybe restart.
+    if (0 < nexts && nexts <= slen) {
+      p = nextp;
+      s = nexts;
+      continue;
+    }
+    return false;
   }
-
-  // An empty pattern here matches only an empty string.
-  if (p.empty())
-    return s.empty();
-
-  // Coalesce runs of consecutive stars.  There should be at least
-  // one.
-  while (!p.empty() && (p[0] == '*'))
-    p.remove_prefix(1);
-
-  // Since we moved past the stars, an empty pattern here matches
-  // anything.
-  if (p.empty())
-    return true;
-
-  // Since we moved past the stars and p is non-empty, if some
-  // non-empty substring of s matches p, then we ourselves match.
-  while (!s.empty()) {
-    if (MatchVlogPattern(s, p))
-      return true;
-    s.remove_prefix(1);
-  }
-
-  // Otherwise, we couldn't find a match.
-  return false;
+  return true;
 }
 
 }  // namespace logging

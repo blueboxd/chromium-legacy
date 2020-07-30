@@ -76,7 +76,11 @@ const PrefsForManagedContentSettingsMapEntry
         {prefs::kManagedWebUsbBlockedForUrls, ContentSettingsType::USB_GUARD,
          CONTENT_SETTING_BLOCK},
         {prefs::kManagedLegacyCookieAccessAllowedForDomains,
-         ContentSettingsType::LEGACY_COOKIE_ACCESS, CONTENT_SETTING_ALLOW}};
+         ContentSettingsType::LEGACY_COOKIE_ACCESS, CONTENT_SETTING_ALLOW},
+        {prefs::kManagedSerialAskForUrls, ContentSettingsType::SERIAL_GUARD,
+         CONTENT_SETTING_ASK},
+        {prefs::kManagedSerialBlockedForUrls, ContentSettingsType::SERIAL_GUARD,
+         CONTENT_SETTING_BLOCK}};
 
 class VectorRuleIterator : public RuleIterator {
  public:
@@ -135,7 +139,9 @@ const PolicyProvider::PrefsForManagedDefaultMapEntry
         {ContentSettingsType::USB_GUARD,
          prefs::kManagedDefaultWebUsbGuardSetting},
         {ContentSettingsType::LEGACY_COOKIE_ACCESS,
-         prefs::kManagedDefaultLegacyCookieAccessSetting}};
+         prefs::kManagedDefaultLegacyCookieAccessSetting},
+        {ContentSettingsType::SERIAL_GUARD,
+         prefs::kManagedDefaultSerialGuardSetting}};
 
 // static
 void PolicyProvider::RegisterProfilePrefs(
@@ -161,6 +167,9 @@ void PolicyProvider::RegisterProfilePrefs(
   registry->RegisterListPref(prefs::kManagedWebUsbBlockedForUrls);
   registry->RegisterListPref(
       prefs::kManagedLegacyCookieAccessAllowedForDomains);
+  registry->RegisterListPref(prefs::kManagedSerialAskForUrls);
+  registry->RegisterListPref(prefs::kManagedSerialBlockedForUrls);
+
   // Preferences for default content setting policies. If a policy is not set of
   // the corresponding preferences below is set to CONTENT_SETTING_DEFAULT.
   registry->RegisterIntegerPref(prefs::kManagedDefaultAdsSetting,
@@ -188,6 +197,8 @@ void PolicyProvider::RegisterProfilePrefs(
   registry->RegisterIntegerPref(prefs::kManagedDefaultWebUsbGuardSetting,
                                 CONTENT_SETTING_DEFAULT);
   registry->RegisterIntegerPref(prefs::kManagedDefaultLegacyCookieAccessSetting,
+                                CONTENT_SETTING_DEFAULT);
+  registry->RegisterIntegerPref(prefs::kManagedDefaultSerialGuardSetting,
                                 CONTENT_SETTING_DEFAULT);
 }
 
@@ -224,6 +235,9 @@ PolicyProvider::PolicyProvider(PrefService* prefs) : prefs_(prefs) {
   pref_change_registrar_.Add(prefs::kManagedWebUsbBlockedForUrls, callback);
   pref_change_registrar_.Add(prefs::kManagedLegacyCookieAccessAllowedForDomains,
                              callback);
+  pref_change_registrar_.Add(prefs::kManagedSerialAskForUrls, callback);
+  pref_change_registrar_.Add(prefs::kManagedSerialBlockedForUrls, callback);
+
   // The following preferences are only used to indicate if a default content
   // setting is managed and to hold the managed default setting value. If the
   // value for any of the following preferences is set then the corresponding
@@ -250,6 +264,8 @@ PolicyProvider::PolicyProvider(PrefService* prefs) : prefs_(prefs) {
   pref_change_registrar_.Add(prefs::kManagedDefaultWebUsbGuardSetting,
                              callback);
   pref_change_registrar_.Add(prefs::kManagedDefaultLegacyCookieAccessSetting,
+                             callback);
+  pref_change_registrar_.Add(prefs::kManagedDefaultSerialGuardSetting,
                              callback);
 }
 
@@ -549,7 +565,11 @@ void PolicyProvider::OnPreferenceChanged(const std::string& name) {
       name == prefs::kManagedPluginsBlockedForUrls ||
       name == prefs::kManagedPopupsAllowedForUrls ||
       name == prefs::kManagedPopupsBlockedForUrls ||
-      name == prefs::kManagedLegacyCookieAccessAllowedForDomains) {
+      name == prefs::kManagedWebUsbAskForUrls ||
+      name == prefs::kManagedWebUsbBlockedForUrls ||
+      name == prefs::kManagedLegacyCookieAccessAllowedForDomains ||
+      name == prefs::kManagedSerialAskForUrls ||
+      name == prefs::kManagedSerialBlockedForUrls) {
     ReadManagedContentSettings(true);
     ReadManagedDefaultSettings();
   }

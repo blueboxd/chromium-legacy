@@ -49,7 +49,7 @@ test("components_unittests") {
     use_xvfb = true
   }
 
-  if (is_android || is_linux || is_mac || is_win) {
+  if (is_android || is_linux || is_chromeos || is_mac || is_win) {
     data = [ "test/data/" ]
   }
 
@@ -320,7 +320,7 @@ test("components_unittests") {
     deps += [ ":components_tests_pak_bundle_data" ]
   }
 
-  if (is_mac || is_linux) {
+  if (is_mac || is_linux || is_chromeos) {
     data_deps += [ "//content/shell:pak" ]
   }
 
@@ -675,7 +675,7 @@ if (!is_ios && !is_fuchsia) {
       ]
     }
 
-    if (is_linux) {
+    if (is_linux || is_chromeos) {
       # content_extractor_browsertest is a standalone content extraction tool built as
       # a MANUAL component_browsertest.
       sources += [ "dom_distiller/standalone/content_extractor_browsertest.cc" ]

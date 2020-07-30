@@ -116,7 +116,7 @@ class ServiceProcessControlBrowserTest
 #if defined(OS_MAC)
     // ForceServiceProcessShutdown removes the process from launched on Mac.
     ForceServiceProcessShutdown("", 0);
-#endif  // OS_MACOSX
+#endif  // OS_MAC
 
     if (service_process_.IsValid()) {
       int exit_code;

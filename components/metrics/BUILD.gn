@@ -400,7 +400,7 @@ static_library("demographics_test_support") {
   ]
 }
 
-if (is_linux) {
+if (is_linux || is_chromeos) {
   static_library("serialization") {
     sources = [
       "serialization/metric_sample.cc",
@@ -493,7 +493,7 @@ source_set("unit_tests") {
     ]
   }
 
-  if (is_linux) {
+  if (is_linux || is_chromeos) {
     sources += [ "serialization/serialization_utils_unittest.cc" ]
     deps += [ ":serialization" ]
   }

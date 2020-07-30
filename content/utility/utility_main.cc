@@ -133,7 +133,7 @@ int UtilityMain(const MainFunctionParams& parameters) {
   // our behalf due to the zygote sandbox.
   if (parameters.zygote_child)
     tracing::EnableStartupTracingIfNeeded();
-#endif  // OS_POSIX && !OS_ANDROID && !!OS_MACOSX
+#endif  // OS_POSIX && !OS_ANDROID && !OS_MAC
 
   // Both utility process and service utility process would come
   // here, but the later is launched without connection to service manager, so

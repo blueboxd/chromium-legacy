@@ -53,7 +53,7 @@ static_library("browser") {
 
   data_deps = []
 
-  if (is_linux) {
+  if (is_linux || is_chromeos) {
     sources += [
       "../zygote/nacl_fork_delegate_linux.cc",
       "../zygote/nacl_fork_delegate_linux.h",
@@ -95,7 +95,7 @@ source_set("unit_tests") {
     "//net:test_support",
   ]
 
-  if (is_linux) {
+  if (is_linux || is_chromeos) {
     sources += [ "../zygote/nacl_fork_delegate_linux_unittest.cc" ]
   }
 }

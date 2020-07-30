@@ -23,7 +23,7 @@ if (enable_js_type_check) {
       "memory_internals:closure_compile",
       "reset_password:closure_compile",
     ]
-    if (is_linux || is_win || is_mac) {
+    if (is_linux || is_chromeos || is_win || is_mac) {
       deps += [
         "bluetooth_internals:closure_compile",
         "bookmarks:closure_compile",
@@ -56,7 +56,7 @@ if (enable_js_type_check) {
         "welcome:closure_compile",
       ]
     }
-    if (is_win || is_android || is_linux) {
+    if (is_win || is_android || is_linux || is_chromeos) {
       deps += [ "sandbox_internals:closure_compile" ]
     }
     if (is_chromeos) {
@@ -96,7 +96,7 @@ if (enable_js_type_check) {
     # but because Window bots don't depend on Java, |closure_compile| is off on
     # Windows. Adding |is_linux| so that these targets are type-checked on at
     # least one platform.
-    if (is_win || is_linux) {
+    if (is_win || is_linux || is_chromeos) {
       deps += [ "conflicts:closure_compile" ]
     }
   }

@@ -180,9 +180,15 @@ class SSLClientCertificateSelectorMultiProfileTest
   }
 
   void SetUpOnMainThread() override {
+    SSLClientCertificateSelectorTest::SetUpOnMainThread();
+
     browser_1_ = CreateIncognitoBrowser();
 
-    SSLClientCertificateSelectorTest::SetUpOnMainThread();
+    gfx::NativeWindow window = browser_1_->window()->GetNativeWindow();
+    views::Widget* widget = views::Widget::GetWidgetForNativeWindow(window);
+    ASSERT_NE(nullptr, widget);
+    views::test::WidgetActivationWaiter waiter(widget, true);
+    waiter.Wait();
 
     auth_requestor_1_ =
         new StrictMock<SSLClientAuthRequestorMock>(cert_request_info_1_);
@@ -196,12 +202,6 @@ class SSLClientCertificateSelectorMultiProfileTest
         auth_requestor_1_->CreateDelegate());
     selector_1_->Init();
     selector_1_->Show();
-
-    gfx::NativeWindow window = browser_1_->window()->GetNativeWindow();
-    views::Widget* widget = views::Widget::GetWidgetForNativeWindow(window);
-    ASSERT_NE(nullptr, widget);
-    views::test::WidgetActivationWaiter waiter(widget, true);
-    waiter.Wait();
 
     ASSERT_TRUE(selector_1_->GetSelectedCert());
     EXPECT_EQ(cert_identity_1_->certificate(),
@@ -224,17 +224,18 @@ class SSLClientCertificateSelectorMultiProfileTest
 };
 
 IN_PROC_BROWSER_TEST_F(SSLClientCertificateSelectorTest, SelectNone) {
-  EXPECT_CALL(*auth_requestor_.get(), CancelCertificateSelection());
+  EXPECT_CALL(*auth_requestor_, CancelCertificateSelection());
 
   // Let the mock get checked on destruction.
 }
 
 IN_PROC_BROWSER_TEST_F(SSLClientCertificateSelectorTest, Escape) {
   base::HistogramTester histograms;
-  EXPECT_CALL(*auth_requestor_.get(), CertificateSelected(nullptr, nullptr));
+  EXPECT_CALL(*auth_requestor_, CertificateSelected(nullptr, nullptr));
 
   EXPECT_TRUE(ui_test_utils::SendKeyPressSync(
       browser(), ui::VKEY_ESCAPE, false, false, false, false));
+  auth_requestor_->WaitForCompletion();
 
   histograms.ExpectUniqueSample(kClientCertSelectHistogramName,
                                 ClientCertSelectionResult::kUserCancel, 1);
@@ -244,12 +245,13 @@ IN_PROC_BROWSER_TEST_F(SSLClientCertificateSelectorTest, Escape) {
 
 IN_PROC_BROWSER_TEST_F(SSLClientCertificateSelectorTest, SelectDefault) {
   base::HistogramTester histograms;
-  EXPECT_CALL(*auth_requestor_.get(),
+  EXPECT_CALL(*auth_requestor_,
               CertificateSelected(cert_identity_1_->certificate(),
                                   cert_identity_1_->ssl_private_key()));
 
   EXPECT_TRUE(ui_test_utils::SendKeyPressSync(
       browser(), ui::VKEY_RETURN, false, false, false, false));
+  auth_requestor_->WaitForCompletion();
 
   histograms.ExpectUniqueSample(kClientCertSelectHistogramName,
                                 ClientCertSelectionResult::kUserSelect, 1);
@@ -259,9 +261,10 @@ IN_PROC_BROWSER_TEST_F(SSLClientCertificateSelectorTest, SelectDefault) {
 
 IN_PROC_BROWSER_TEST_F(SSLClientCertificateSelectorTest, CloseTab) {
   base::HistogramTester histograms;
-  EXPECT_CALL(*auth_requestor_.get(), CancelCertificateSelection());
+  EXPECT_CALL(*auth_requestor_, CancelCertificateSelection());
 
   browser()->tab_strip_model()->CloseAllTabs();
+  auth_requestor_->WaitForCompletion();
 
   histograms.ExpectBucketCount(kClientCertSelectHistogramName,
                                ClientCertSelectionResult::kUserCloseTab, 1);
@@ -273,11 +276,13 @@ IN_PROC_BROWSER_TEST_F(SSLClientCertificateSelectorMultiTabTest, Escape) {
   // auth_requestor_1_ should get selected automatically by the
   // SSLClientAuthObserver when selector_2_ is accepted, since both 1 & 2 have
   // the same host:port.
-  EXPECT_CALL(*auth_requestor_1_.get(), CertificateSelected(nullptr, nullptr));
-  EXPECT_CALL(*auth_requestor_2_.get(), CertificateSelected(nullptr, nullptr));
+  EXPECT_CALL(*auth_requestor_1_, CertificateSelected(nullptr, nullptr));
+  EXPECT_CALL(*auth_requestor_2_, CertificateSelected(nullptr, nullptr));
 
   EXPECT_TRUE(ui_test_utils::SendKeyPressSync(
       browser(), ui::VKEY_ESCAPE, false, false, false, false));
+  auth_requestor_1_->WaitForCompletion();
+  auth_requestor_2_->WaitForCompletion();
 
   Mock::VerifyAndClear(auth_requestor_.get());
   Mock::VerifyAndClear(auth_requestor_1_.get());
@@ -285,17 +290,17 @@ IN_PROC_BROWSER_TEST_F(SSLClientCertificateSelectorMultiTabTest, Escape) {
 
   // Now let the default selection for auth_requestor_ mock get checked on
   // destruction.
-  EXPECT_CALL(*auth_requestor_.get(), CancelCertificateSelection());
+  EXPECT_CALL(*auth_requestor_, CancelCertificateSelection());
 }
 
 IN_PROC_BROWSER_TEST_F(SSLClientCertificateSelectorMultiTabTest, SelectSecond) {
   // auth_requestor_1_ should get selected automatically by the
   // SSLClientAuthObserver when selector_2_ is accepted, since both 1 & 2 have
   // the same host:port.
-  EXPECT_CALL(*auth_requestor_1_.get(),
+  EXPECT_CALL(*auth_requestor_1_,
               CertificateSelected(cert_identity_2_->certificate(),
                                   cert_identity_2_->ssl_private_key()));
-  EXPECT_CALL(*auth_requestor_2_.get(),
+  EXPECT_CALL(*auth_requestor_2_,
               CertificateSelected(cert_identity_2_->certificate(),
                                   cert_identity_2_->ssl_private_key()));
 
@@ -314,6 +319,8 @@ IN_PROC_BROWSER_TEST_F(SSLClientCertificateSelectorMultiTabTest, SelectSecond) {
 
   EXPECT_TRUE(ui_test_utils::SendKeyPressSync(
       browser(), ui::VKEY_RETURN, false, false, false, false));
+  auth_requestor_1_->WaitForCompletion();
+  auth_requestor_2_->WaitForCompletion();
 
   Mock::VerifyAndClear(auth_requestor_.get());
   Mock::VerifyAndClear(auth_requestor_1_.get());
@@ -321,36 +328,38 @@ IN_PROC_BROWSER_TEST_F(SSLClientCertificateSelectorMultiTabTest, SelectSecond) {
 
   // Now let the default selection for auth_requestor_ mock get checked on
   // destruction.
-  EXPECT_CALL(*auth_requestor_.get(), CancelCertificateSelection());
+  EXPECT_CALL(*auth_requestor_, CancelCertificateSelection());
 }
 
 IN_PROC_BROWSER_TEST_F(SSLClientCertificateSelectorMultiProfileTest, Escape) {
-  EXPECT_CALL(*auth_requestor_1_.get(), CertificateSelected(nullptr, nullptr));
+  EXPECT_CALL(*auth_requestor_1_, CertificateSelected(nullptr, nullptr));
 
   EXPECT_TRUE(ui_test_utils::SendKeyPressSync(
       browser_1_, ui::VKEY_ESCAPE, false, false, false, false));
+  auth_requestor_1_->WaitForCompletion();
 
   Mock::VerifyAndClear(auth_requestor_.get());
   Mock::VerifyAndClear(auth_requestor_1_.get());
 
   // Now let the default selection for auth_requestor_ mock get checked on
   // destruction.
-  EXPECT_CALL(*auth_requestor_.get(), CancelCertificateSelection());
+  EXPECT_CALL(*auth_requestor_, CancelCertificateSelection());
 }
 
 IN_PROC_BROWSER_TEST_F(SSLClientCertificateSelectorMultiProfileTest,
                        SelectDefault) {
-  EXPECT_CALL(*auth_requestor_1_.get(),
+  EXPECT_CALL(*auth_requestor_1_,
               CertificateSelected(cert_identity_1_->certificate(),
                                   cert_identity_1_->ssl_private_key()));
 
   EXPECT_TRUE(ui_test_utils::SendKeyPressSync(
       browser_1_, ui::VKEY_RETURN, false, false, false, false));
+  auth_requestor_1_->WaitForCompletion();
 
   Mock::VerifyAndClear(auth_requestor_.get());
   Mock::VerifyAndClear(auth_requestor_1_.get());
 
   // Now let the default selection for auth_requestor_ mock get checked on
   // destruction.
-  EXPECT_CALL(*auth_requestor_.get(), CancelCertificateSelection());
+  EXPECT_CALL(*auth_requestor_, CancelCertificateSelection());
 }

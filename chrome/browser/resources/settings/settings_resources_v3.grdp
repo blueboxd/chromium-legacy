@@ -664,9 +664,8 @@
            file="${root_gen_dir}/chrome/browser/resources/settings/settings_main/settings_main.js"
            use_base_dir="false"
            compress="false" type="BINDATA" />
-  <include name="IDR_SETTINGS_SETTINGS_PAGE_MAIN_PAGE_BEHAVIOR_M_JS"
-           file="${root_gen_dir}/chrome/browser/resources/settings/settings_page/main_page_behavior.m.js"
-           use_base_dir="false"
+  <include name="IDR_SETTINGS_SETTINGS_PAGE_MAIN_PAGE_BEHAVIOR_JS"
+           file="settings_page/main_page_behavior.js"
            compress="false" type="BINDATA" />
   <include name="IDR_SETTINGS_SETTINGS_PAGE_SETTINGS_ANIMATED_PAGES_M_JS"
            file="${root_gen_dir}/chrome/browser/resources/settings/settings_page/settings_animated_pages.m.js"

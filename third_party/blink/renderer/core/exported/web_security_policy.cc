@@ -66,6 +66,13 @@ void WebSecurityPolicy::RegisterURLSchemeAsFirstPartyWhenTopLevel(
   SchemeRegistry::RegisterURLSchemeAsFirstPartyWhenTopLevel(scheme);
 }
 
+void WebSecurityPolicy::
+    RegisterURLSchemeAsFirstPartyWhenTopLevelEmbeddingSecure(
+        const WebString& scheme) {
+  SchemeRegistry::RegisterURLSchemeAsFirstPartyWhenTopLevelEmbeddingSecure(
+      scheme);
+}
+
 void WebSecurityPolicy::AddOriginAccessAllowListEntry(
     const WebURL& source_origin,
     const WebString& destination_protocol,

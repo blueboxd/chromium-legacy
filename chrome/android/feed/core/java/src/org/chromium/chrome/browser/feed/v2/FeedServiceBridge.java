@@ -44,6 +44,10 @@ public final class FeedServiceBridge {
         FeedServiceBridgeJni.get().startup();
     }
 
+    public static String getClientInstanceId() {
+        return FeedServiceBridgeJni.get().getClientInstanceId();
+    }
+
     /** Retrieves the config value for load_more_trigger_lookahead. */
     public static int getLoadMoreTriggerLookahead() {
         return FeedServiceBridgeJni.get().getLoadMoreTriggerLookahead();
@@ -54,5 +58,6 @@ public final class FeedServiceBridge {
         boolean isEnabled();
         void startup();
         int getLoadMoreTriggerLookahead();
+        String getClientInstanceId();
     }
 }

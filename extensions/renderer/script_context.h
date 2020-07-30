@@ -210,10 +210,11 @@ class ScriptContext {
 
   // Used to determine the "effective" URL in context classification, such as to
   // associate an about:blank frame in an extension context with its extension.
-  // If |document_url| is an about: URL, returns the "owner" of the about:
-  // frame (i.e., the one that can access it). This may not be the immediate
-  // parent. Returns |document_url| if it is not an about: URL, if
-  // |match_about_blank| is false, or if a suitable parent cannot be found.
+  // If |document_url| is an about: or data: URL, returns the URL of the first
+  // frame without an about: or data: URL that matches the initiator origin.
+  // This may not be the immediate parent. Returns |document_url| if it is not
+  // an about: URL, if |match_about_blank| is false, or if a suitable parent
+  // cannot be found.
   // Will not check parent contexts that cannot be accessed (as is the case
   // for sandboxed frames).
   static GURL GetEffectiveDocumentURLForContext(blink::WebLocalFrame* frame,
@@ -221,15 +222,18 @@ class ScriptContext {
                                                 bool match_about_blank);
 
   // Used to determine the "effective" URL for extension script injection.
-  // If |document_url| is an about: URL, returns the "owner" of the about:
-  // frame (i.e., the one that can access it). This may not be the immediate
-  // parent. Returns |document_url| if it is not an about: URL, if
-  // |match_about_blank| is false, or if a suitable parent cannot be found.
+  // If |document_url| is an about: or data: URL, returns the URL of the first
+  // frame without an about: or data: URL that matches the initiator origin.
+  // This may not be the immediate parent. Returns |document_url| if it is not
+  // an about: or data: URL, if the corresponding |match_about_blank| or
+  // |match_data_urls| is false, or if a suitable parent cannot be found.
   // Considers parent contexts that cannot be accessed (as is the case for
   // sandboxed frames).
+  // TODO(devlin): Enum-ify match_about_* here.
   static GURL GetEffectiveDocumentURLForInjection(blink::WebLocalFrame* frame,
                                                   const GURL& document_url,
-                                                  bool match_about_blank);
+                                                  bool match_about_blank,
+                                                  bool match_data_urls);
 
   // Grants a set of content capabilities to this context.
   void set_content_capabilities(APIPermissionSet capabilities) {

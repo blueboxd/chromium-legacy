@@ -510,6 +510,7 @@
         'DefaultWebBluetoothGuardSetting',
         'DefaultKeygenSetting',
         'DefaultWebUsbGuardSetting',
+        'DefaultSerialGuardSetting',
         'AutoSelectCertificateForUrls',
         'CookiesAllowedForUrls',
         'CookiesBlockedForUrls',
@@ -534,6 +535,8 @@
         "WebUsbAllowDevicesForUrls",
         'WebUsbAskForUrls',
         'WebUsbBlockedForUrls',
+        'SerialAskForUrls',
+        'SerialBlockedForUrls',
       ],
     },
     {
@@ -5859,6 +5862,92 @@
       For detailed information on valid <ph name="URL_LABEL">url</ph> patterns, please see https://cloud.google.com/docs/chrome-enterprise/policies/url-patterns.''',
     },
     {
+      'name': 'DefaultSerialGuardSetting',
+      'owners': ['reillyg@chromium.org'],
+      'type': 'int-enum',
+      'schema': {
+        'type': 'integer',
+        'enum': [ 2, 3 ],
+      },
+      'items': [
+        {
+          'name': 'BlockSerial',
+          'value': 2,
+          'caption': '''Do not allow any site to request access to serial ports via the Serial API''',
+        },
+        {
+          'name': 'AskSerial',
+          'value': 3,
+          'caption': '''Allow sites to ask the user to grant access to a serial port''',
+        },
+      ],
+      'supported_on': ['chrome_os:86-', 'chrome.*:86-'],
+      'features': {
+        'dynamic_refresh': True,
+        'per_profile': True,
+      },
+      'example_value': 2,
+      'id': 751,
+      'caption': '''Control use of the Serial API''',
+      'tags': ['website-sharing'],
+      'desc': '''Setting the policy to 3 lets websites ask for access to serial ports. Setting the policy to 2 denies access to serial ports.
+
+      Leaving it unset lets websites ask for access, but users can change this setting.''',
+    },
+    {
+      'name': 'SerialAskForUrls',
+      'owners': ['reillyg@chromium.org'],
+      'type': 'list',
+      'schema': {
+        'type': 'array',
+        'items': { 'type': 'string' },
+      },
+      'supported_on': ['chrome_os:86-', 'chrome.*:86-'],
+      'features': {
+        'dynamic_refresh': True,
+        'per_profile': True,
+      },
+      'example_value': ['https://www.example.com', '[*.]example.edu'],
+      'id': 752,
+      'caption': '''Allow the Serial API on these sites''',
+      'tags': ['website-sharing'],
+      'desc': '''Setting the policy lets you list the URL patterns that specify which sites can ask users to grant them access to a serial port.
+
+      Leaving the policy unset means <ph name="DEFAULT_SERIAL_GUARD_SETTING_POLICY_NAME">DefaultSerialGuardSetting</ph> applies for all sites, if it's set. If not, users' personal settings apply.
+
+      For URL patterns which do not match the policy <ph name="SERIAL_BLOCKED_FOR_URLS_POLICY_NAME">SerialBlockedForUrls</ph> (if there is a match), <ph name="DEFAULT_SERIAL_GUARD_SETTING_POLICY_NAME">DefaultSerialGuardSetting</ph> (if set), or the users' personal settings take precedence, in that order.
+
+      URL patterns must not conflict with <ph name="SERIAL_BLOCKED_FOR_URLS_POLICY_NAME">SerialBlockedForUrls</ph>. Neither policy takes precedence if a URL matches with both.
+
+      For detailed information on valid <ph name="URL_LABEL">url</ph> patterns, please see https://cloud.google.com/docs/chrome-enterprise/policies/url-patterns.''',
+    },
+    {
+      'name': 'SerialBlockedForUrls',
+      'owners': ['reillyg@chromium.org'],
+      'type': 'list',
+      'schema': {
+        'type': 'array',
+        'items': { 'type': 'string' },
+      },
+      'supported_on': ['chrome_os:86-', 'chrome.*:86-'],
+      'features': {
+        'dynamic_refresh': True,
+        'per_profile': True,
+      },
+      'example_value': ['https://www.example.com', '[*.]example.edu'],
+      'id': 753,
+      'caption': '''Block the Serial API on these sites''',
+      'tags': [],
+      'desc': '''Setting the policy lets you list the URL patterns that specify which sites can't ask users to grant them access to a serial port.
+
+      Leaving the policy unset means <ph name="DEFAULT_SERIAL_GUARD_SETTING_POLICY_NAME">DefaultSerialGuardSetting</ph> applies for all sites, if it's set. If not, the user's personal setting applies.
+
+      For URL patterns which do not match the policy <ph name="SERIAL_ASK_FOR_URLS_POLICY_NAME">SerialAskForUrls</ph> (if there is a match), <ph name="DEFAULT_SERIAL_GUARD_SETTING_POLICY_NAME">DefaultSerialGuardSetting</ph> (if set), or the users' personal settings take precedence, in that order.
+
+      URL patterns can't conflict with <ph name="SERIAL_ASK_FOR_URLS_POLICY_NAME">SerialAskForUrls</ph>. Neither policy takes precedence if a URL matches with both.
+
+      For detailed information on valid <ph name="URL_LABEL">url</ph> patterns, please see https://cloud.google.com/docs/chrome-enterprise/policies/url-patterns.''',
+    },{
       'name': 'AutoSelectCertificateForUrls',
       'owners': ['file://components/policy/resources/OWNERS'],
       'type': 'list',
@@ -23167,6 +23256,6 @@ The recommended way to configure policy on Windows is via GPO, although provisio
   ],
   'placeholders': [],
   'deleted_policy_ids': [412, 476, 546, 562, 569, 578],
-  'highest_id_currently_used': 750,
+  'highest_id_currently_used': 753,
   'highest_atomic_group_id_currently_used': 38
 }

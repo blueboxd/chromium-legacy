@@ -622,7 +622,7 @@ DownloadInterruptReason BaseFile::AnnotateWithSourceInformationSync(
 
   return QuarantineFileResultToReason(result);
 }
-#else  // !OS_WIN && !OS_MACOSX && !OS_LINUX
+#else  // !OS_WIN && !OS_APPLE && !OS_LINUX
 DownloadInterruptReason BaseFile::AnnotateWithSourceInformationSync(
     const std::string& client_guid,
     const GURL& source_url,

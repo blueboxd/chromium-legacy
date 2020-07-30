@@ -32,6 +32,8 @@
 #include "third_party/blink/renderer/core/frame/settings.h"
 #include "third_party/blink/renderer/core/frame/visual_viewport.h"
 #include "third_party/blink/renderer/core/frame/web_local_frame_impl.h"
+#include "third_party/blink/renderer/core/html/portal/document_portals.h"
+#include "third_party/blink/renderer/core/html/portal/portal_contents.h"
 #include "third_party/blink/renderer/core/input/context_menu_allowed_scope.h"
 #include "third_party/blink/renderer/core/input/event_handler.h"
 #include "third_party/blink/renderer/core/layout/hit_test_location.h"
@@ -76,8 +78,7 @@ namespace blink {
 namespace {
 
 // Iterate the remote children that will be controlled by the widget. Skip over
-// any LocalFrames since they will have their own Widget controlling
-// RemoteFrames below it.
+// any RemoteFrames have have another LocalFrame as their parent.
 void ForEachRemoteFrameChildrenControlledByWidget(
     Frame* frame,
     const base::RepeatingCallback<void(RemoteFrame*)>& callback) {
@@ -85,7 +86,21 @@ void ForEachRemoteFrameChildrenControlledByWidget(
        child = child->Tree().NextSibling()) {
     if (auto* remote_frame = DynamicTo<RemoteFrame>(child)) {
       callback.Run(remote_frame);
-      ForEachRemoteFrameChildrenControlledByWidget(child, callback);
+      ForEachRemoteFrameChildrenControlledByWidget(remote_frame, callback);
+    }
+  }
+
+  // The first call to ForEachRemoteFrameChildrenControlledByWidget will be
+  // with a LocalFrame. Iterate on any portals owned by that frame. Portals
+  // on descendant LocalFrame will be owned by that widget so we don't need
+  // to descend into LocalFrames.
+  if (auto* local_frame = DynamicTo<LocalFrame>(frame)) {
+    if (Document* document = local_frame->GetDocument()) {
+      for (PortalContents* portal :
+           DocumentPortals::From(*document).GetPortals()) {
+        if (RemoteFrame* remote_frame = portal->GetFrame())
+          callback.Run(remote_frame);
+      }
     }
   }
 }
@@ -581,6 +596,22 @@ void WebFrameWidgetBase::UpdateVisualProperties(
   // independently.
   // https://developer.mozilla.org/en-US/docs/Web/CSS/@media/display-mode
   SetDisplayMode(visual_properties.display_mode);
+
+  bool capture_sequence_number_changed =
+      visual_properties.capture_sequence_number !=
+      last_capture_sequence_number_;
+  if (capture_sequence_number_changed) {
+    last_capture_sequence_number_ = visual_properties.capture_sequence_number;
+
+    // Send the capture sequence number to RemoteFrames that are below the
+    // local root for this widget.
+    ForEachRemoteFrameControlledByWidget(WTF::BindRepeating(
+        [](uint32_t capture_sequence_number, RemoteFrame* remote_frame) {
+          remote_frame->Client()->UpdateCaptureSequenceNumber(
+              capture_sequence_number);
+        },
+        visual_properties.capture_sequence_number));
+  }
 
   Client()->UpdateVisualProperties(visual_properties);
 }

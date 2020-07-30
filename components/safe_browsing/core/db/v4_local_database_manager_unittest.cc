@@ -1311,47 +1311,6 @@ TEST_F(V4LocalDatabaseManagerTest, TestCheckDownloadUrlWithOneBlacklisted) {
   EXPECT_TRUE(client.on_check_download_urls_result_called());
 }
 
-TEST_F(V4LocalDatabaseManagerTest, DeleteUnusedStoreFileDoesNotExist) {
-  auto store_file_path = base_dir_.GetPath().AppendASCII("AnyIpMalware.store");
-  ASSERT_FALSE(base::PathExists(store_file_path));
-
-  // Reset the database manager so that DeleteUnusedStoreFiles is called.
-  ResetLocalDatabaseManager();
-  WaitForTasksOnTaskRunner();
-  ASSERT_FALSE(base::PathExists(store_file_path));
-}
-
-TEST_F(V4LocalDatabaseManagerTest, DeleteUnusedStoreFileSuccess) {
-  auto store_file_path = base_dir_.GetPath().AppendASCII("AnyIpMalware.store");
-  ASSERT_FALSE(base::PathExists(store_file_path));
-
-  // Now write an empty file.
-  base::WriteFile(store_file_path, "", 0);
-  ASSERT_TRUE(base::PathExists(store_file_path));
-
-  // Reset the database manager so that DeleteUnusedStoreFiles is called.
-  ResetLocalDatabaseManager();
-  WaitForTasksOnTaskRunner();
-  ASSERT_FALSE(base::PathExists(store_file_path));
-}
-
-TEST_F(V4LocalDatabaseManagerTest, DeleteUnusedStoreFileRandomFileNotDeleted) {
-  auto random_store_file_path = base_dir_.GetPath().AppendASCII("random.store");
-  ASSERT_FALSE(base::PathExists(random_store_file_path));
-
-  // Now write an empty file.
-  base::WriteFile(random_store_file_path, "", 0);
-  ASSERT_TRUE(base::PathExists(random_store_file_path));
-
-  // Reset the database manager so that DeleteUnusedStoreFiles is called.
-  ResetLocalDatabaseManager();
-  WaitForTasksOnTaskRunner();
-  ASSERT_TRUE(base::PathExists(random_store_file_path));
-
-  // Cleanup
-  base::DeleteFile(random_store_file_path);
-}
-
 TEST_F(V4LocalDatabaseManagerTest, NotificationOnUpdate) {
   base::RunLoop run_loop;
   auto callback_subscription =

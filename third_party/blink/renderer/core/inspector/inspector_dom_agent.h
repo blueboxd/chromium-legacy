@@ -76,7 +76,7 @@ class CORE_EXPORT InspectorDOMAgent final
     virtual ~DOMListener() = default;
     virtual void DidAddDocument(Document*) = 0;
     virtual void DidRemoveDocument(Document*) = 0;
-    virtual void DidRemoveDOMNode(Node*) = 0;
+    virtual void WillRemoveDOMNode(Node*) = 0;
     virtual void DidModifyDOMAttr(Element*) = 0;
   };
 

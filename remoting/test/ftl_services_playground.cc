@@ -19,12 +19,10 @@
 #include "base/path_service.h"
 #include "base/run_loop.h"
 #include "base/task/post_task.h"
-#include "remoting/base/grpc_support/grpc_async_unary_request.h"
 #include "remoting/base/oauth_token_getter_impl.h"
 #include "remoting/base/protobuf_http_status.h"
 #include "remoting/base/url_request_context_getter.h"
-#include "remoting/proto/ftl/v1/ftl_services.grpc.pb.h"
-#include "remoting/signaling/ftl_grpc_context.h"
+#include "remoting/proto/ftl/v1/ftl_messages.pb.h"
 #include "remoting/test/cli_util.h"
 #include "remoting/test/test_device_id_provider.h"
 #include "remoting/test/test_oauth_token_getter.h"
@@ -121,7 +119,8 @@ void FtlServicesPlayground::ResetServices(base::OnceClosure on_done) {
 
   message_subscription_.reset();
   messaging_client_ = std::make_unique<FtlMessagingClient>(
-      token_getter_.get(), registration_manager_.get(), &signaling_tracker_);
+      token_getter_.get(), url_loader_factory_owner_->GetURLLoaderFactory(),
+      registration_manager_.get(), &signaling_tracker_);
   message_subscription_ = messaging_client_->RegisterMessageCallback(
       base::BindRepeating(&FtlServicesPlayground::OnMessageReceived,
                           weak_factory_.GetWeakPtr()));
@@ -145,11 +144,7 @@ void FtlServicesPlayground::OnSignInGaiaResponse(
     base::OnceClosure on_done,
     const ProtobufHttpStatus& status) {
   if (!status.ok()) {
-    // TODO(yuweih): Clean this up.
-    HandleGrpcStatusError(
-        std::move(on_done),
-        grpc::Status(static_cast<grpc::StatusCode>(status.error_code()),
-                     status.error_message()));
+    HandleStatusError(std::move(on_done), status);
     return;
   }
 
@@ -170,10 +165,11 @@ void FtlServicesPlayground::PullMessages(base::OnceClosure on_done) {
                      weak_factory_.GetWeakPtr(), std::move(on_done)));
 }
 
-void FtlServicesPlayground::OnPullMessagesResponse(base::OnceClosure on_done,
-                                                   const grpc::Status& status) {
+void FtlServicesPlayground::OnPullMessagesResponse(
+    base::OnceClosure on_done,
+    const ProtobufHttpStatus& status) {
   if (!status.ok()) {
-    HandleGrpcStatusError(std::move(on_done), status);
+    HandleStatusError(std::move(on_done), status);
     return;
   }
   std::move(on_done).Run();
@@ -230,10 +226,9 @@ void FtlServicesPlayground::DoSendMessage(const std::string& receiver_id,
 
 void FtlServicesPlayground::OnSendMessageResponse(
     base::OnceCallback<void(bool)> on_continue,
-    const grpc::Status& status) {
+    const ProtobufHttpStatus& status) {
   if (!status.ok()) {
-    HandleGrpcStatusError(base::BindOnce(std::move(on_continue), false),
-                          status);
+    HandleStatusError(base::BindOnce(std::move(on_continue), false), status);
     return;
   }
 
@@ -278,20 +273,20 @@ void FtlServicesPlayground::OnReceiveMessagesStreamReady() {
 }
 
 void FtlServicesPlayground::OnReceiveMessagesStreamClosed(
-    const grpc::Status& status) {
+    const ProtobufHttpStatus& status) {
   base::OnceClosure callback = std::move(receive_messages_done_callback_);
   bool is_callback_null = callback.is_null();
   if (is_callback_null) {
     callback = base::DoNothing::Once();
   }
-  if (status.error_code() == grpc::StatusCode::CANCELLED) {
+  if (status.error_code() == ProtobufHttpStatus::Code::CANCELLED) {
     printf("ReceiveMessages stream canceled by client.\n");
     std::move(callback).Run();
     return;
   }
 
   if (!status.ok()) {
-    HandleGrpcStatusError(std::move(callback), status);
+    HandleStatusError(std::move(callback), status);
   } else {
     printf("Stream closed by server.\n");
     std::move(callback).Run();
@@ -304,10 +299,11 @@ void FtlServicesPlayground::OnReceiveMessagesStreamClosed(
   }
 }
 
-void FtlServicesPlayground::HandleGrpcStatusError(base::OnceClosure on_done,
-                                                  const grpc::Status& status) {
+void FtlServicesPlayground::HandleStatusError(
+    base::OnceClosure on_done,
+    const ProtobufHttpStatus& status) {
   DCHECK(!status.ok());
-  if (status.error_code() == grpc::StatusCode::UNAUTHENTICATED) {
+  if (status.error_code() == ProtobufHttpStatus::Code::UNAUTHENTICATED) {
     if (NeedsManualSignin()) {
       printf(
           "Request is unauthenticated. You should run SignInGaia first if "
@@ -318,7 +314,7 @@ void FtlServicesPlayground::HandleGrpcStatusError(base::OnceClosure on_done,
         return;
       }
     }
-    VLOG(0) << "Grpc request failed to authenticate. "
+    VLOG(0) << "Request failed to authenticate. "
             << "Trying to reauthenticate...";
     token_getter_->ResetWithAuthenticationFlow(
         base::BindOnce(&FtlServicesPlayground::ResetServices,

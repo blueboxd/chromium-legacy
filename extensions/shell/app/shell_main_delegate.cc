@@ -33,7 +33,7 @@
 #endif  // OS_LINUX
 #if defined(OS_POSIX) && !defined(OS_MAC) && !defined(OS_ANDROID)
 #include "components/nacl/zygote/nacl_fork_delegate_linux.h"
-#endif  // OS_POSIX && !OS_MACOSX && !OS_ANDROID
+#endif  // OS_POSIX && !OS_MAC && !OS_ANDROID
 #endif  // BUILDFLAG(ENABLE_NACL)
 
 #if defined(OS_WIN)
@@ -189,7 +189,7 @@ void ShellMainDelegate::ZygoteStarting(
   nacl::AddNaClZygoteForkDelegates(delegates);
 #endif  // BUILDFLAG(ENABLE_NACL)
 }
-#endif  // OS_POSIX && !OS_MACOSX && !OS_ANDROID
+#endif  // OS_POSIX && !OS_MAC && !OS_ANDROID
 
 #if defined(OS_LINUX) && !defined(OS_CHROMEOS)
 void ShellMainDelegate::ZygoteForked() {

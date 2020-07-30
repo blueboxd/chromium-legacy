@@ -863,7 +863,7 @@ void CanvasResourceWebGPUSharedImage::EndAccess() {
 GrBackendTexture CanvasResourceWebGPUSharedImage::CreateGrTexture() const {
   GrDawnTextureInfo info = {};
   info.fTexture = texture();
-#ifdef OS_MACOSX
+#if defined(OS_MAC)
   info.fFormat = wgpu::TextureFormat::BGRA8Unorm;
 #else
   info.fFormat = wgpu::TextureFormat::RGBA8Unorm;

@@ -765,7 +765,7 @@ TEST_F(ExtensionMessageBubbleTest, SettingsApiControllerTest) {
 #if defined(OS_MAC)
   // On Mac, this API is limited to trunk.
   ScopedCurrentChannel scoped_channel(version_info::Channel::UNKNOWN);
-#endif  // OS_MACOSX
+#endif  // OS_MAC
 
   Init();
 
@@ -1202,7 +1202,7 @@ TEST_F(ExtensionMessageBubbleTest, MAYBE_ProxyOverriddenControllerTest) {
 #if defined(OS_MAC)
   // On Mac, this API is limited to trunk.
   ScopedCurrentChannel scoped_channel(version_info::Channel::UNKNOWN);
-#endif  // OS_MACOSX
+#endif  // OS_MAC
 
   Init();
   ExtensionPrefs* prefs = ExtensionPrefs::Get(profile());

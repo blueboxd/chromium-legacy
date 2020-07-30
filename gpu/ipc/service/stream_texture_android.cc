@@ -213,7 +213,7 @@ bool StreamTexture::CopyTexImage(unsigned target) {
 void StreamTexture::OnFrameAvailable() {
   has_pending_frame_ = true;
 
-  if (!has_listener_ || !channel_)
+  if (!has_listener_ || !channel_ || !texture_owner_)
     return;
 
   // We haven't received size for first time yet from the MediaPlayer we will

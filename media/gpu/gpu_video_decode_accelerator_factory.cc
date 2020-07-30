@@ -86,34 +86,8 @@ gpu::VideoDecodeAcceleratorCapabilities GetDecoderCapabilitiesInternal(
 // static
 MEDIA_GPU_EXPORT std::unique_ptr<GpuVideoDecodeAcceleratorFactory>
 GpuVideoDecodeAcceleratorFactory::Create(
-    const GetGLContextCallback& get_gl_context_cb,
-    const MakeGLContextCurrentCallback& make_context_current_cb,
-    const BindGLImageCallback& bind_image_cb) {
-  return base::WrapUnique(new GpuVideoDecodeAcceleratorFactory(
-      get_gl_context_cb, make_context_current_cb, bind_image_cb,
-      GetContextGroupCallback(), AndroidOverlayMojoFactoryCB(),
-      CreateAbstractTextureCallback()));
-}
-
-// static
-MEDIA_GPU_EXPORT std::unique_ptr<GpuVideoDecodeAcceleratorFactory>
-GpuVideoDecodeAcceleratorFactory::CreateWithGLES2Decoder(
-    const GetGLContextCallback& get_gl_context_cb,
-    const MakeGLContextCurrentCallback& make_context_current_cb,
-    const BindGLImageCallback& bind_image_cb,
-    const GetContextGroupCallback& get_context_group_cb,
-    const AndroidOverlayMojoFactoryCB& overlay_factory_cb,
-    const CreateAbstractTextureCallback& create_abstract_texture_cb) {
-  return base::WrapUnique(new GpuVideoDecodeAcceleratorFactory(
-      get_gl_context_cb, make_context_current_cb, bind_image_cb,
-      get_context_group_cb, overlay_factory_cb, create_abstract_texture_cb));
-}
-
-// static
-MEDIA_GPU_EXPORT std::unique_ptr<GpuVideoDecodeAcceleratorFactory>
-GpuVideoDecodeAcceleratorFactory::CreateWithNoGL() {
-  return Create(GetGLContextCallback(), MakeGLContextCurrentCallback(),
-                BindGLImageCallback());
+    const GpuVideoDecodeGLClient& gl_client) {
+  return base::WrapUnique(new GpuVideoDecodeAcceleratorFactory(gl_client));
 }
 
 // static
@@ -200,8 +174,8 @@ GpuVideoDecodeAcceleratorFactory::CreateDXVAVDA(
   std::unique_ptr<VideoDecodeAccelerator> decoder;
   DVLOG(0) << "Initializing DXVA HW decoder for windows.";
   decoder.reset(new DXVAVideoDecodeAccelerator(
-      get_gl_context_cb_, make_context_current_cb_, bind_image_cb_, workarounds,
-      gpu_preferences, media_log));
+      gl_client_.get_context, gl_client_.make_context_current,
+      gl_client_.bind_image, workarounds, gpu_preferences, media_log));
   return decoder;
 }
 #endif
@@ -216,8 +190,8 @@ GpuVideoDecodeAcceleratorFactory::CreateV4L2VDA(
   scoped_refptr<V4L2Device> device = V4L2Device::Create();
   if (device.get()) {
     decoder.reset(new V4L2VideoDecodeAccelerator(
-        gl::GLSurfaceEGL::GetHardwareDisplay(), get_gl_context_cb_,
-        make_context_current_cb_, device));
+        gl::GLSurfaceEGL::GetHardwareDisplay(), gl_client_.get_context,
+        gl_client_.make_context_current, device));
   }
   return decoder;
 }
@@ -231,8 +205,8 @@ GpuVideoDecodeAcceleratorFactory::CreateV4L2SVDA(
   scoped_refptr<V4L2Device> device = V4L2Device::Create();
   if (device.get()) {
     decoder.reset(new V4L2SliceVideoDecodeAccelerator(
-        device, gl::GLSurfaceEGL::GetHardwareDisplay(), bind_image_cb_,
-        make_context_current_cb_));
+        device, gl::GLSurfaceEGL::GetHardwareDisplay(), gl_client_.bind_image,
+        gl_client_.make_context_current));
   }
   return decoder;
 }
@@ -245,8 +219,8 @@ GpuVideoDecodeAcceleratorFactory::CreateVaapiVDA(
     const gpu::GpuPreferences& gpu_preferences,
     MediaLog* media_log) const {
   std::unique_ptr<VideoDecodeAccelerator> decoder;
-  decoder.reset(new VaapiVideoDecodeAccelerator(make_context_current_cb_,
-                                                bind_image_cb_));
+  decoder.reset(new VaapiVideoDecodeAccelerator(gl_client_.make_context_current,
+                                                gl_client_.bind_image));
   return decoder;
 }
 #endif
@@ -258,25 +232,14 @@ GpuVideoDecodeAcceleratorFactory::CreateVTVDA(
     const gpu::GpuPreferences& gpu_preferences,
     MediaLog* media_log) const {
   std::unique_ptr<VideoDecodeAccelerator> decoder;
-  decoder.reset(new VTVideoDecodeAccelerator(bind_image_cb_, media_log));
+  decoder.reset(new VTVideoDecodeAccelerator(gl_client_, media_log));
   return decoder;
 }
 #endif
 
 GpuVideoDecodeAcceleratorFactory::GpuVideoDecodeAcceleratorFactory(
-    const GetGLContextCallback& get_gl_context_cb,
-    const MakeGLContextCurrentCallback& make_context_current_cb,
-    const BindGLImageCallback& bind_image_cb,
-    const GetContextGroupCallback& get_context_group_cb,
-    const AndroidOverlayMojoFactoryCB& overlay_factory_cb,
-    const CreateAbstractTextureCallback& create_abstract_texture_cb)
-    : get_gl_context_cb_(get_gl_context_cb),
-      make_context_current_cb_(make_context_current_cb),
-      bind_image_cb_(bind_image_cb),
-      get_context_group_cb_(get_context_group_cb),
-      overlay_factory_cb_(overlay_factory_cb),
-      create_abstract_texture_cb_(create_abstract_texture_cb) {}
-
+    const GpuVideoDecodeGLClient& gl_client)
+    : gl_client_(gl_client) {}
 GpuVideoDecodeAcceleratorFactory::~GpuVideoDecodeAcceleratorFactory() = default;
 
 }  // namespace media

@@ -378,6 +378,59 @@ TEST_F(ProtobufHttpClientTest, RequestTimeout_ReturnsDeadlineExceeded) {
   ASSERT_FALSE(client_.HasPendingRequests());
 }
 
+TEST_F(ProtobufHttpClientTest, DeletesRequestHolderWhenRequestIsCanceled) {
+  ExpectCallWithToken(/* success= */ true);
+
+  MockEchoResponseCallback never_called_response_callback;
+
+  auto request = CreateDefaultTestRequest();
+  request->SetResponseCallback(never_called_response_callback.Get());
+  auto scoped_holder = request->CreateScopedRequest();
+  client_.ExecuteRequest(std::move(request));
+
+  // Verify request.
+  ASSERT_TRUE(client_.HasPendingRequests());
+  ASSERT_TRUE(test_url_loader_factory_.IsPending(kTestFullUrl));
+  scoped_holder.reset();
+  ASSERT_FALSE(test_url_loader_factory_.IsPending(kTestFullUrl));
+  ASSERT_FALSE(client_.HasPendingRequests());
+
+  // Try to respond.
+  test_url_loader_factory_.AddResponse(kTestFullUrl,
+                                       CreateSerializedEchoResponse());
+  // |never_called_response_callback| should not be called.
+  base::RunLoop().RunUntilIdle();
+}
+
+TEST_F(ProtobufHttpClientTest, DeletesRequestHolderAfterResponseIsReceived) {
+  base::RunLoop run_loop;
+
+  ExpectCallWithToken(/* success= */ true);
+
+  MockEchoResponseCallback response_callback;
+  EXPECT_CALL(response_callback, Run(HasErrorCode(ProtobufHttpStatus::Code::OK),
+                                     IsDefaultResponseText()))
+      .WillOnce([&]() { run_loop.Quit(); });
+
+  auto request = CreateDefaultTestRequest();
+  request->SetResponseCallback(response_callback.Get());
+  auto scoped_holder = request->CreateScopedRequest();
+  client_.ExecuteRequest(std::move(request));
+
+  // Verify request.
+  ASSERT_TRUE(client_.HasPendingRequests());
+  ASSERT_TRUE(test_url_loader_factory_.IsPending(kTestFullUrl));
+
+  // Try to respond.
+  test_url_loader_factory_.AddResponse(kTestFullUrl,
+                                       CreateSerializedEchoResponse());
+  run_loop.Run();
+
+  ASSERT_FALSE(test_url_loader_factory_.IsPending(kTestFullUrl));
+  ASSERT_FALSE(client_.HasPendingRequests());
+  scoped_holder.reset();
+}
+
 // Stream request tests.
 
 TEST_F(ProtobufHttpClientTest, StartStreamRequestAndDecodeMessages) {

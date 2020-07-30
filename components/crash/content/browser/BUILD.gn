@@ -28,7 +28,7 @@ source_set("browser") {
     "//content/public/common",
   ]
 
-  if (is_linux || is_android) {
+  if (is_linux || is_chromeos || is_android) {
     set_sources_assignment_filter([])
 
     # Want this file on both Linux and Android.

@@ -1082,7 +1082,7 @@ static_library("extensions") {
       "//components/enterprise",
       "//components/keep_alive_registry",
     ]
-    if (is_linux) {
+    if (is_linux || is_chromeos) {
       sources += [
         "api/enterprise_reporting_private/device_info_fetcher_linux.cc",
         "api/enterprise_reporting_private/device_info_fetcher_linux.h",
@@ -1121,7 +1121,7 @@ static_library("extensions") {
     ]
   }
 
-  if (is_linux) {
+  if (is_linux || is_chromeos) {
     deps += [ "//third_party/fontconfig" ]
 
     if (use_dbus) {

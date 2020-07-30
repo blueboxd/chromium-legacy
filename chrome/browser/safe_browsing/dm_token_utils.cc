@@ -12,7 +12,9 @@
 #include "components/policy/core/common/cloud/cloud_policy_client.h"
 #include "components/user_manager/user.h"
 #else
+#include "chrome/browser/browser_process.h"
 #include "chrome/browser/policy/chrome_browser_cloud_management_controller.h"
+#include "chrome/browser/policy/chrome_browser_policy_connector.h"
 #include "components/enterprise/browser/controller/browser_dm_token_storage.h"
 #endif
 
@@ -43,8 +45,9 @@ policy::DMToken GetDMToken(Profile* profile) {
                                policy_manager->core()->client()->dm_token());
   }
 #else
-  if (dm_token.is_empty() &&
-      policy::ChromeBrowserCloudManagementController::IsEnabled()) {
+  if (dm_token.is_empty() && g_browser_process->browser_policy_connector()
+                                 ->chrome_browser_cloud_management_controller()
+                                 ->IsEnabled()) {
     dm_token = policy::BrowserDMTokenStorage::Get()->RetrieveDMToken();
   }
 #endif

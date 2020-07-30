@@ -758,9 +758,17 @@ using chrome_test_util::TappableBookmarkNodeWithLabel;
   // Reopen bookmarks.
   [BookmarkEarlGreyUI openBookmarks];
 
-  // Ensure the root node is opened, by verifying Mobile Bookmarks is seen in a
-  // table cell.
-  [BookmarkEarlGreyUI verifyBookmarkFolderIsSeen:@"Mobile Bookmarks"];
+  if (base::FeatureList::IsEnabled(kIllustratedEmptyStates)) {
+    // Ensure the root node is opened, by verifying that there isn't a Back
+    // button in the navigation bar.
+    [[EarlGrey selectElementWithMatcher:chrome_test_util::
+                                            BookmarksNavigationBarBackButton()]
+        assertWithMatcher:grey_nil()];
+  } else {
+    // Ensure the root node is opened, by verifying Mobile Bookmarks is seen in
+    // a table cell.
+    [BookmarkEarlGreyUI verifyBookmarkFolderIsSeen:@"Mobile Bookmarks"];
+  }
 }
 
 - (void)testCachePositionIsRecreatedWhenNodeIsMoved {

@@ -23,7 +23,7 @@ var invalidStyleColor = 'rgb(255, 0, 0)';
 
 var number = document.getElementById('number');
 number.focus();
-debug('Initial state. The elment has no value.');
+debug('Initial state. The element has no value.');
 shouldNotBe('colorOf(number)', 'invalidStyleColor');
 shouldBeFalse('number.validity.badInput');
 
@@ -40,8 +40,8 @@ shouldNotBe('colorOf(number)', 'invalidStyleColor');
 shouldBeFalse('number.validity.badInput');
 shouldBeEqualToString('number.value', '-1');
 
-debug("Type '-' additionally. The element becomes badInput again.");
-document.execCommand('InsertText', false, '-');
+debug("Type 'e' additionally. The element becomes badInput again.");
+document.execCommand('InsertText', false, 'e');
 shouldBe('colorOf(number)', 'invalidStyleColor');
 shouldBeTrue('number.validity.badInput');
 shouldBeEqualToString('number.value', '');
@@ -50,10 +50,10 @@ debug("The element losts focus. The element state should not be changed.");
 document.getElementById('another').focus();
 shouldBe('colorOf(number)', 'invalidStyleColor');
 shouldBeTrue('number.validity.badInput');
-// Visible value is '-1-'.
+// Visible value is '-1e'.
 number.focus();
 document.execCommand('SelectAll');
-shouldBeEqualToString('document.getSelection().toString()', '-1-');
+shouldBeEqualToString('document.getSelection().toString()', '-1e');
 shouldBeEqualToString('number.value', '');
 
 debug("The element losts a renderer. The element state should not be changed.");
@@ -64,8 +64,8 @@ number.focus();
 debug('A bad input should be cleared by value="".');
 shouldBeEqualToString('number.value = ""; document.execCommand("SelectAll"); document.getSelection().toString()', '');
 
-debug('Setting a valud value via |value| IDL attribute should clear badInput.');
-document.execCommand('InsertText', false, 'non-number');
+debug('Setting a valid value via |value| IDL attribute should clear badInput.');
+document.execCommand('InsertText', false, '-'); // Incomplete number
 shouldBeTrue('number.validity.badInput');
 shouldBeFalse('number.checkValidity()');
 number.value = '123';

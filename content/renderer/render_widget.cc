@@ -562,22 +562,6 @@ void RenderWidget::UpdateVisualProperties(
     browser_controls_params_ = visual_properties.browser_controls_params;
   }
 
-  if (for_frame()) {
-    bool capture_sequence_number_changed =
-        visual_properties.capture_sequence_number !=
-        last_capture_sequence_number_;
-    if (capture_sequence_number_changed) {
-      last_capture_sequence_number_ = visual_properties.capture_sequence_number;
-
-      // Propagate changes down to child local root RenderWidgets and
-      // BrowserPlugins in other frame trees/processes.
-      for (auto& observer : render_frame_proxies_) {
-        observer.UpdateCaptureSequenceNumber(
-            visual_properties.capture_sequence_number);
-      }
-    }
-  }
-
   layer_tree_host_->SetBrowserControlsParams(
       visual_properties.browser_controls_params);
 

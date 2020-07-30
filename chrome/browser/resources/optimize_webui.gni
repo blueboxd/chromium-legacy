@@ -13,7 +13,7 @@ template("node") {
       "//third_party/node/node_modules.tar.gz.sha1",
     ]
 
-    if (is_linux) {
+    if (is_linux || is_chromeos) {
       inputs += [ "//third_party/node/linux/node-linux-x64.tar.gz.sha1" ]
     }
     if (is_win) {

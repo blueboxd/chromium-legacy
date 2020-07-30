@@ -14,12 +14,9 @@ constexpr int kColumnSetId = 0;
 
 class BulletView : public views::View {
  public:
-  explicit BulletView(SkColor color) : color_(color) {}
+  BulletView() = default;
 
   void OnPaint(gfx::Canvas* canvas) override;
-
- private:
-  SkColor color_;
 
   DISALLOW_COPY_AND_ASSIGN(BulletView);
 };
@@ -35,7 +32,8 @@ void BulletView::OnPaint(gfx::Canvas* canvas) {
 
   cc::PaintFlags flags;
   flags.setStyle(cc::PaintFlags::kFill_Style);
-  flags.setColor(color_);
+  flags.setColor(views::style::GetColor(*this, views::style::CONTEXT_LABEL,
+                                        views::style::STYLE_PRIMARY));
   flags.setAntiAlias(true);
 
   canvas->DrawPath(path, flags);
@@ -76,6 +74,6 @@ void BulletedLabelListView::AddLabel(const base::string16& text) {
   label->SetMultiLine(true);
   label->SetHorizontalAlignment(gfx::ALIGN_LEFT);
 
-  layout->AddView(std::make_unique<BulletView>(label->GetEnabledColor()));
+  layout->AddView(std::make_unique<BulletView>());
   layout->AddView(std::move(label));
 }

@@ -18,6 +18,7 @@
 #include "third_party/blink/public/common/feature_policy/feature_policy_features.h"
 #include "third_party/blink/public/common/frame/user_activation_update_source.h"
 #include "third_party/blink/public/common/messaging/transferable_message.h"
+#include "third_party/blink/public/common/tokens/portal_token.h"
 #include "third_party/blink/public/mojom/ad_tagging/ad_frame.mojom-shared.h"
 #include "third_party/blink/public/mojom/blob/blob_url_store.mojom-shared.h"
 #include "third_party/blink/public/mojom/commit_result/commit_result.mojom-shared.h"
@@ -608,7 +609,7 @@ class WebLocalFrame : public WebFrame {
   using OnPortalActivatedCallback =
       base::OnceCallback<void(mojom::PortalActivateResult)>;
   virtual void OnPortalActivated(
-      const base::UnguessableToken& portal_token,
+      const PortalToken& portal_token,
       CrossVariantMojoAssociatedRemote<mojom::PortalInterfaceBase> portal,
       CrossVariantMojoAssociatedReceiver<mojom::PortalClientInterfaceBase>
           portal_client,

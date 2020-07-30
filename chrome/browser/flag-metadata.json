@@ -3187,6 +3187,11 @@
     "expiry_milestone": 85
   },
   {
+    "name": "omnibox-clobber-is-zero-suggest-entrypoint",
+    "owners": [ "tommycli", "chrome-omnibox-team@google.com" ],
+    "expiry_milestone": 95
+  },
+  {
     "name": "omnibox-compact-suggestions",
     "owners": [ "ender", "chrome-omnibox-team@google.com" ],
     "expiry_milestone": 87
@@ -3298,6 +3303,11 @@
   },
   {
     "name": "omnibox-rich-autocompletion-min-char",
+    "owners": [ "manukh", "chrome-omnibox-team@google.com" ],
+    "expiry_milestone": 95
+  },
+  {
+    "name": "omnibox-rich-autocompletion-show-additional-text",
     "owners": [ "manukh", "chrome-omnibox-team@google.com" ],
     "expiry_milestone": 95
   },

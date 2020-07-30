@@ -331,9 +331,9 @@ void InspectorDOMAgent::Unbind(Node* node, NodeToIdMap* nodes_map) {
     }
   }
 
-  nodes_map->erase(node);
   if (dom_listener_)
-    dom_listener_->DidRemoveDOMNode(node);
+    dom_listener_->WillRemoveDOMNode(node);
+  nodes_map->erase(node);
 
   bool children_requested = children_requested_.Contains(id);
   if (children_requested) {

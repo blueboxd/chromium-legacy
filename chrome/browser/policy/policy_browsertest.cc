@@ -2628,7 +2628,7 @@ INSTANTIATE_TEST_SUITE_P(
     AudioSandboxEnabledTest,
     ::testing::Values(/*policy::key::kAudioSandboxEnabled=*/base::nullopt));
 
-#endif  //  defined(OS_WIN) || defined (OS_MACOSX) || (defined(OS_LINUX) &&
+#endif  //  defined(OS_WIN) || defined (OS_MAC) || (defined(OS_LINUX) &&
         //  !defined(OS_CHROMEOS))
 
 }  // namespace policy

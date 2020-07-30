@@ -204,7 +204,7 @@ PermissionsData::PageAccess UserScriptInjector::CanExecuteOnFrame(
   GURL effective_document_url =
       ScriptContext::GetEffectiveDocumentURLForInjection(
           web_frame, web_frame->GetDocument().Url(),
-          script_->match_about_blank());
+          script_->match_about_blank(), script_->match_data_urls());
 
   return injection_host->CanExecuteOnFrame(
       effective_document_url,

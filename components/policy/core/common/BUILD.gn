@@ -207,7 +207,7 @@ jumbo_source_set("internal") {
   }
 
   # Compile on Linux for fuzzer and since code is reused on Chrome OS.
-  if (is_win || is_linux) {
+  if (is_win || is_linux || is_chromeos) {
     sources += [
       "preg_parser.cc",
       "preg_parser.h",
@@ -407,7 +407,7 @@ source_set("unit_tests") {
     "schema_unittest.cc",
     "values_util_unittest.cc",
   ]
-  if (is_win || is_linux) {
+  if (is_win || is_linux || is_chromeos) {
     sources += [
       "preg_parser_unittest.cc",
       "registry_dict_unittest.cc",
@@ -463,7 +463,7 @@ source_set("unit_tests") {
       configs += [ "//build/config/compiler:enable_arc" ]
     }
   }
-  if (is_win || is_linux) {
+  if (is_win || is_linux || is_chromeos) {
     # Needed by policy_loader_win_unittest.cc and preg_parser_unittest.cc
     data = [ "//chrome/test/data/policy/" ]
   }
@@ -494,7 +494,7 @@ source_set("unit_tests") {
   }
 }
 
-if (is_win || is_linux) {
+if (is_win || is_linux || is_chromeos) {
   fuzzer_test("preg_parser_fuzzer") {
     sources = [ "preg_parser_fuzzer.cc" ]
     seed_corpus = "//chrome/test/data/policy/gpo/fuzzer_corpus"

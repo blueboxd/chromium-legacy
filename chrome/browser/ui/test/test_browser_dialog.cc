@@ -133,7 +133,7 @@ bool TestBrowserDialog::VerifyUi() {
   }
   if (is_active)
     dialog_widget->Activate();
-#endif  // OS_MACOSX
+#endif  // OS_MAC
 
   if (!should_verify_dialog_bounds_)
     return true;

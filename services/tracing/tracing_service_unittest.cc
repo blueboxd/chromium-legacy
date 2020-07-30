@@ -6,6 +6,7 @@
 #include <utility>
 
 #include "base/bind.h"
+#include "base/json/json_reader.h"
 #include "base/macros.h"
 #include "base/run_loop.h"
 #include "base/strings/string_number_conversions.h"
@@ -20,6 +21,7 @@
 #include "services/tracing/public/cpp/perfetto/perfetto_config.h"
 #include "services/tracing/public/cpp/perfetto/perfetto_platform.h"
 #include "services/tracing/public/cpp/perfetto/perfetto_traced_process.h"
+#include "services/tracing/public/cpp/perfetto/trace_packet_tokenizer.h"
 #include "services/tracing/public/cpp/traced_process_impl.h"
 #include "services/tracing/public/cpp/tracing_features.h"
 #include "services/tracing/public/mojom/perfetto_service.mojom.h"
@@ -27,6 +29,7 @@
 #include "services/tracing/public/mojom/tracing_service.mojom.h"
 #include "services/tracing/tracing_service.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/perfetto/include/perfetto/ext/tracing/core/trace_packet.h"
 #include "third_party/perfetto/include/perfetto/tracing/data_source.h"
 #include "third_party/perfetto/include/perfetto/tracing/tracing.h"
 #include "third_party/perfetto/protos/perfetto/common/trace_stats.pb.h"
@@ -267,6 +270,53 @@ TEST_F(TracingServiceTest, PerfettoClientConsumer) {
 
   // Read and verify the data.
   EXPECT_EQ(kNumPackets, ReadAndCountTestPackets(*session));
+}
+
+TEST_F(TracingServiceTest, PerfettoClientConsumerLegacyJson) {
+  // Set up API bindings.
+  EnableClientApiConsumer();
+
+  // Start a tracing session with legacy JSON exporting.
+  auto session = perfetto::Tracing::NewTrace();
+  perfetto::TraceConfig perfetto_config = GetDefaultPerfettoConfig(
+      base::trace_event::TraceConfig(), /*privacy_filtering_enabled=*/false,
+      /*convert_to_legacy_json=*/true);
+  session->Setup(perfetto_config);
+  session->Start();
+
+  // Stop the session and wait for it to stop. Note that we can't use the
+  // blocking API here because the service runs on the current sequence.
+  base::RunLoop wait_for_stop_loop;
+  session->SetOnStopCallback(
+      [&wait_for_stop_loop] { wait_for_stop_loop.Quit(); });
+  session->Stop();
+  wait_for_stop_loop.Run();
+
+  // Read and verify the JSON data.
+  base::RunLoop wait_for_data_loop;
+  TracePacketTokenizer tokenizer;
+  std::string json;
+  session->ReadTrace([&wait_for_data_loop, &tokenizer, &json](
+                         perfetto::TracingSession::ReadTraceCallbackArgs args) {
+    if (args.size) {
+      auto packets = tokenizer.Parse(
+          reinterpret_cast<const uint8_t*>(args.data), args.size);
+      for (const auto& packet : packets) {
+        for (const auto& slice : packet.slices()) {
+          json += std::string(reinterpret_cast<const char*>(slice.start),
+                              slice.size);
+        }
+      }
+    }
+    if (!args.has_more)
+      wait_for_data_loop.Quit();
+  });
+  wait_for_data_loop.Run();
+  DCHECK(!tokenizer.has_more());
+
+  auto result = base::DictionaryValue::From(
+      base::Value::ToUniquePtrValue(*base::JSONReader::Read(json)));
+  EXPECT_TRUE(result->HasKey("traceEvents"));
 }
 
 class CustomDataSource : public perfetto::DataSource<CustomDataSource> {

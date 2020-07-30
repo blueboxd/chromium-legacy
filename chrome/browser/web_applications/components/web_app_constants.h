@@ -5,6 +5,8 @@
 #ifndef CHROME_BROWSER_WEB_APPLICATIONS_COMPONENTS_WEB_APP_CONSTANTS_H_
 #define CHROME_BROWSER_WEB_APPLICATIONS_COMPONENTS_WEB_APP_CONSTANTS_H_
 
+#include <vector>
+
 #include "components/services/app_service/public/mojom/types.mojom-forward.h"
 #include "third_party/blink/public/mojom/manifest/display_mode.mojom.h"
 
@@ -175,11 +177,15 @@ constexpr int kWebAppIconSmall = 32;
 using DisplayMode = blink::mojom::DisplayMode;
 
 // When user_display_mode indicates a user preference for opening in
-// a browser tab, we open in a browser tab. Otherwise, we open in a standalone
+// a browser tab, we open in a browser tab. If the developer has specified
+// the app should utilize more advanced display modes and/or fallback chain,
+// attempt honor those preferences. Otherwise, we open in a standalone
 // window (for app_display_mode 'standalone' or 'fullscreen'), or a minimal-ui
 // window (for app_display_mode 'browser' or 'minimal-ui').
-DisplayMode ResolveEffectiveDisplayMode(DisplayMode app_display_mode,
-                                        DisplayMode user_display_mode);
+DisplayMode ResolveEffectiveDisplayMode(
+    DisplayMode app_display_mode,
+    const std::vector<DisplayMode>& app_display_mode_overrides,
+    DisplayMode user_display_mode);
 
 apps::mojom::LaunchContainer ConvertDisplayModeToAppLaunchContainer(
     DisplayMode display_mode);

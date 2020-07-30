@@ -159,7 +159,7 @@ void ShowPrintJobConfirmationDialog(gfx::NativeWindow parent,
 task_manager::TaskManagerTableModel* ShowTaskManagerViews(Browser* browser);
 void HideTaskManagerViews();
 
-#endif  // OS_MACOSX
+#endif  // OS_MAC
 
 #if defined(TOOLKIT_VIEWS)
 

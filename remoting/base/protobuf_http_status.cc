@@ -75,6 +75,9 @@ ProtobufHttpStatus::Code NetErrorToClientCode(net::Error net_error) {
 const ProtobufHttpStatus& ProtobufHttpStatus::OK =
     ProtobufHttpStatus(Code::OK, "OK");
 
+const ProtobufHttpStatus& ProtobufHttpStatus::CANCELLED =
+    ProtobufHttpStatus(Code::CANCELLED, "Cancelled");
+
 ProtobufHttpStatus::ProtobufHttpStatus(net::HttpStatusCode http_status_code)
     : error_code_(HttpStatusCodeToClientCode(http_status_code)),
       error_message_(net::GetHttpReasonPhrase(http_status_code)) {}

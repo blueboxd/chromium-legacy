@@ -2215,6 +2215,8 @@ IntRect LayoutBox::PartialInvalidationVisualRect() const {
   if (!rare_data_)
     return IntRect();
   PhysicalRect rect = rare_data_->partial_invalidation_rect_;
+  if (rect.IsEmpty())
+    return IntRect();
   rect.Move(FirstFragment().PaintOffset());
   return EnclosingIntRect(rect);
 }

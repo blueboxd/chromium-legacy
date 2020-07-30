@@ -435,7 +435,7 @@ bool SynchronizedMinidumpManager::HasDumps() {
   // Check if any files are in minidump directory
   base::DirReaderPosix reader(dump_path_.value().c_str());
   if (!reader.IsValid()) {
-    DLOG(FATAL) << "Could not open minidump dir: " << dump_path_.value();
+    DLOG(ERROR) << "Could not open minidump dir: " << dump_path_.value();
     return false;
   }
 

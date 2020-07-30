@@ -162,6 +162,7 @@
 #include "net/cert/cert_database.h"
 #include "net/cert/cert_status_flags.h"
 #include "net/cert/mock_cert_verifier.h"
+#include "net/cert/test_root_certs.h"
 #include "net/cert/x509_certificate.h"
 #include "net/cert/x509_util.h"
 #include "net/dns/mock_host_resolver.h"
@@ -5721,6 +5722,7 @@ class SSLUITestNoCert : public SSLUITest,
 
   void SetUpCommandLine(base::CommandLine* command_line) override {
     command_line->AppendSwitch(switches::kDisableTestCerts);
+    net::TestRootCerts::GetInstance()->Clear();
     SSLUITest::SetUpCommandLine(command_line);
   }
 

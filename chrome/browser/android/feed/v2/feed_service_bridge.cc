@@ -18,6 +18,16 @@
 #include "components/feed/core/v2/public/feed_service.h"
 
 namespace feed {
+namespace {
+
+FeedService* GetFeedService() {
+  Profile* profile = ProfileManager::GetLastUsedProfile();
+  if (!profile)
+    return nullptr;
+  return FeedServiceFactory::GetForBrowserContext(profile);
+}
+
+}  // namespace
 
 static jboolean JNI_FeedServiceBridge_IsEnabled(JNIEnv* env) {
   return FeedServiceBridge::IsEnabled();
@@ -26,15 +36,21 @@ static jboolean JNI_FeedServiceBridge_IsEnabled(JNIEnv* env) {
 static void JNI_FeedServiceBridge_Startup(JNIEnv* env) {
   // Trigger creation FeedService, since we need to handle certain browser
   // events, like sign-in/sign-out, even if the Feed isn't visible.
-  Profile* profile = ProfileManager::GetLastUsedProfile();
-  if (!profile)
-    return;
-
-  FeedServiceFactory::GetForBrowserContext(profile);
+  GetFeedService();
 }
 
 static int JNI_FeedServiceBridge_GetLoadMoreTriggerLookahead(JNIEnv* env) {
   return GetFeedConfig().load_more_trigger_lookahead;
+}
+
+static base::android::ScopedJavaLocalRef<jstring>
+JNI_FeedServiceBridge_GetClientInstanceId(JNIEnv* env) {
+  FeedService* service = GetFeedService();
+  std::string instance_id;
+  if (service) {
+    instance_id = service->GetStream()->GetClientInstanceId();
+  }
+  return base::android::ConvertUTF8ToJavaString(env, instance_id);
 }
 
 std::string FeedServiceBridge::GetLanguageTag() {

@@ -18,10 +18,6 @@ namespace arc {
 struct ArcFeatures;
 }
 
-namespace features {
-extern const base::Feature kUmaShortHWClass;
-}
-
 namespace metrics {
 class CachedMetricsProfile;
 class ChromeUserMetricsExtension;
@@ -111,9 +107,6 @@ class ChromeOSMetricsProvider : public metrics::MetricsProvider {
   // valid value only if |registered_user_count_at_log_initialization_| is
   // true.
   uint64_t user_count_at_log_initialization_;
-
-  // Short Hardware class. This value identifies the board of the hardware.
-  std::string hardware_class_;
 
   // Hardware class (e.g., hardware qualification ID). This value identifies
   // the configured system components such as CPU, WiFi adapter, etc.

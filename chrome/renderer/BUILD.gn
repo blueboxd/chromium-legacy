@@ -241,7 +241,7 @@ static_library("renderer") {
       "//ppapi/shared_impl",
     ]
 
-    if (is_linux) {
+    if (is_linux || is_chromeos) {
       deps += [ "//components/services/font/public/cpp" ]
     }
   }

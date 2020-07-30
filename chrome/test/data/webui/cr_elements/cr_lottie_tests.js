@@ -236,12 +236,20 @@ suite('cr_lottie_test', function() {
     await waitForInitializeEvent;
     await waitForPlayingEvent;
 
+    const waitForStoppedEvent =
+        test_util.eventToPromise('cr-lottie-stopped', crLottieElement);
     waitForInitializeEvent =
         test_util.eventToPromise('cr-lottie-initialized', crLottieElement);
     waitForPlayingEvent =
         test_util.eventToPromise('cr-lottie-playing', crLottieElement);
 
     crLottieElement.animationUrl = SAMPLE_LOTTIE_BLUE;
+
+    // The previous animation should be cleared and stopped between loading.
+    // Unfortunately since the offscreen canvas is rendered asynchronously,
+    // there is no way to grab a frame in between events and have it guaranteed
+    // to be the empty frame. At least wait for the `cr-lottie-stopped` event.
+    await waitForStoppedEvent;
 
     await waitForInitializeEvent;
     await waitForPlayingEvent;

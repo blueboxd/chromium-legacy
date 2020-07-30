@@ -32,6 +32,7 @@
 #include "components/sync/nigori/nigori.h"
 #include "components/sync/nigori/nigori_test_utils.h"
 #include "components/sync/test/fake_server/fake_server_nigori_helper.h"
+#include "components/sync/trusted_vault/standalone_trusted_vault_client.h"
 #include "content/public/test/browser_test.h"
 #include "content/public/test/test_launcher.h"
 #include "crypto/ec_private_key.h"
@@ -49,6 +50,8 @@ using syncer::KeyParamsForTesting;
 using syncer::Pbkdf2KeyParamsForTesting;
 using testing::NotNull;
 using testing::SizeIs;
+
+const char kGaiaId[] = "gaia_id_for_user_gmail.com";
 
 MATCHER_P(IsDataEncryptedWith, key_params, "") {
   const sync_pb::EncryptedData& encrypted_data = arg;
@@ -88,7 +91,6 @@ MATCHER_P4(StatusLabelsMatch,
 GURL GetTrustedVaultRetrievalURL(
     const net::test_server::EmbeddedTestServer& test_server,
     const std::vector<uint8_t>& encryption_key) {
-  const char kGaiaId[] = "gaia_id_for_user_gmail.com";
   // encryption_keys_retrieval.html would populate encryption key to sync
   // service upon loading. Key is provided as part of URL and needs to be
   // encoded with Base64, because |encryption_key| is binary.
@@ -425,10 +427,7 @@ IN_PROC_BROWSER_TEST_F(SingleClientNigoriSyncTestWithNotAwaitQuiescence,
 
 class SingleClientNigoriWithWebApiTest : public SyncTest {
  public:
-  SingleClientNigoriWithWebApiTest() : SyncTest(SINGLE_CLIENT) {
-    override_features_.InitAndEnableFeature(
-        switches::kSyncSupportTrustedVaultPassphrase);
-  }
+  SingleClientNigoriWithWebApiTest() : SyncTest(SINGLE_CLIENT) {}
   ~SingleClientNigoriWithWebApiTest() override = default;
 
   // InProcessBrowserTest:
@@ -445,8 +444,6 @@ class SingleClientNigoriWithWebApiTest : public SyncTest {
   }
 
  private:
-  base::test::ScopedFeatureList override_features_;
-
   DISALLOW_COPY_AND_ASSIGN(SingleClientNigoriWithWebApiTest);
 };
 
@@ -507,6 +504,12 @@ IN_PROC_BROWSER_TEST_F(SingleClientNigoriWithWebApiTest,
       sync_ui_util::GetStatusLabels(GetProfile(0)),
       StatusLabelsMatch(sync_ui_util::SYNCED, IDS_SYNC_ACCOUNT_SYNCING,
                         IDS_SETTINGS_EMPTY_STRING, sync_ui_util::NO_ACTION));
+
+#if !defined(OS_CHROMEOS)
+  // Verify the profile-menu error string is empty.
+  EXPECT_EQ(sync_ui_util::NO_SYNC_ERROR,
+            sync_ui_util::GetAvatarSyncErrorType(GetProfile(0)));
+#endif  // !defined(OS_CHROMEOS)
 }
 
 IN_PROC_BROWSER_TEST_F(SingleClientNigoriWithWebApiTest,
@@ -551,8 +554,21 @@ IN_PROC_BROWSER_TEST_F(SingleClientNigoriWithWebApiTest,
   EXPECT_FALSE(GetSyncService(0)
                    ->GetUserSettings()
                    ->IsTrustedVaultKeyRequiredForPreferredDataTypes());
+  EXPECT_FALSE(GetSyncService(0)
+                   ->GetUserSettings()
+                   ->IsTrustedVaultRecoverabilityDegraded());
   EXPECT_TRUE(GetSyncService(0)->GetActiveDataTypes().Has(syncer::PASSWORDS));
   EXPECT_FALSE(sync_ui_util::ShouldShowSyncKeysMissingError(GetSyncService(0)));
+  EXPECT_THAT(
+      sync_ui_util::GetStatusLabels(GetProfile(0)),
+      StatusLabelsMatch(sync_ui_util::SYNCED, IDS_SYNC_ACCOUNT_SYNCING,
+                        IDS_SETTINGS_EMPTY_STRING, sync_ui_util::NO_ACTION));
+
+#if !defined(OS_CHROMEOS)
+  // Verify the profile-menu error string is empty.
+  EXPECT_EQ(sync_ui_util::NO_SYNC_ERROR,
+            sync_ui_util::GetAvatarSyncErrorType(GetProfile(0)));
+#endif  // !defined(OS_CHROMEOS)
 }
 
 IN_PROC_BROWSER_TEST_F(
@@ -878,6 +894,56 @@ IN_PROC_BROWSER_TEST_F(SingleClientNigoriWithWebApiFromUntrustedOriginTest,
   EXPECT_TRUE(GetSyncService(0)
                   ->GetUserSettings()
                   ->IsTrustedVaultKeyRequiredForPreferredDataTypes());
+}
+
+class SingleClientNigoriWithRecoverySyncTest : public SyncTest {
+ public:
+  SingleClientNigoriWithRecoverySyncTest() : SyncTest(SINGLE_CLIENT) {
+    override_features_.InitAndEnableFeature(
+        switches::kSyncSupportTrustedVaultPassphraseRecovery);
+  }
+
+  ~SingleClientNigoriWithRecoverySyncTest() override = default;
+
+ private:
+  base::test::ScopedFeatureList override_features_;
+
+  DISALLOW_COPY_AND_ASSIGN(SingleClientNigoriWithRecoverySyncTest);
+};
+
+IN_PROC_BROWSER_TEST_F(SingleClientNigoriWithRecoverySyncTest,
+                       ShouldReportDegradedTrustedVaultRecoverability) {
+  const std::vector<uint8_t> kTestEncryptionKey = {1, 2, 3, 4};
+
+  // Mimic the account being already using a trusted vault passphrase.
+  SetNigoriInFakeServer(BuildTrustedVaultNigoriSpecifics({kTestEncryptionKey}),
+                        GetFakeServer());
+
+  // Mimic the key being available upon startup but recoverability degraded.
+  ASSERT_TRUE(SetupClients());
+  static_cast<syncer::StandaloneTrustedVaultClient*>(
+      GetSyncService(0)->GetSyncClientForTest()->GetTrustedVaultClient())
+      ->SetRecoverabilityDegradedForTesting();
+  GetSyncService(0)->AddTrustedVaultDecryptionKeysFromWeb(
+      kGaiaId, {kTestEncryptionKey}, /*last_key_version=*/1);
+  ASSERT_TRUE(SetupSync());
+
+  ASSERT_EQ(syncer::PassphraseType::kTrustedVaultPassphrase,
+            GetSyncService(0)->GetUserSettings()->GetPassphraseType());
+  ASSERT_FALSE(GetSyncService(0)
+                   ->GetUserSettings()
+                   ->IsTrustedVaultKeyRequiredForPreferredDataTypes());
+  ASSERT_FALSE(sync_ui_util::ShouldShowSyncKeysMissingError(GetSyncService(0)));
+
+  EXPECT_TRUE(GetSyncService(0)
+                  ->GetUserSettings()
+                  ->IsTrustedVaultRecoverabilityDegraded());
+
+  // No messages expected in settings.
+  EXPECT_THAT(
+      sync_ui_util::GetStatusLabels(GetProfile(0)),
+      StatusLabelsMatch(sync_ui_util::SYNCED, IDS_SYNC_ACCOUNT_SYNCING,
+                        IDS_SETTINGS_EMPTY_STRING, sync_ui_util::NO_ACTION));
 }
 
 }  // namespace

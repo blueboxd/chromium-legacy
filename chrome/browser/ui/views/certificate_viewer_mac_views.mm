@@ -5,67 +5,37 @@
 #import <Cocoa/Cocoa.h>
 #import <SecurityInterface/SFCertificatePanel.h>
 
-#include "base/bind.h"
 #include "base/mac/foundation_util.h"
 #include "base/mac/scoped_cftyperef.h"
 #import "base/mac/scoped_nsobject.h"
-#include "base/memory/weak_ptr.h"
+#include "base/notreached.h"
 #include "chrome/browser/certificate_viewer.h"
-#include "components/constrained_window/constrained_window_views.h"
 #include "components/remote_cocoa/browser/window.h"
-#include "components/web_modal/web_contents_modal_dialog_manager.h"
-#include "content/public/browser/web_contents.h"
 #include "net/cert/x509_certificate.h"
 #include "net/cert/x509_util_ios_and_mac.h"
 #include "net/cert/x509_util_mac.h"
-#include "ui/views/widget/widget.h"
-#include "ui/views/widget/widget_delegate.h"
-
-@interface SFCertificatePanel (SystemPrivate)
-// A system-private interface that dismisses a panel whose sheet was started by
-// -beginSheetForWindow:
-//        modalDelegate:
-//       didEndSelector:
-//          contextInfo:
-//         certificates:
-//            showGroup:
-// as though the user clicked the button identified by returnCode. Verified
-// present in 10.8.
-- (void)_dismissWithCode:(NSInteger)code;
-@end
 
 @interface SSLCertificateViewerMac : NSObject
-
 // Initializes |certificates_| with the certificate chain for a given
 // certificate.
-- (instancetype)initWithCertificate:(net::X509Certificate*)certificate
-                     forWebContents:(content::WebContents*)webContents;
+- (instancetype)initWithCertificate:(net::X509Certificate*)certificate;
 
 // Shows the certificate viewer as a Cocoa sheet.
 - (void)showCertificateSheet:(NSWindow*)window;
 
-// Closes the certificate viewer sheet.
-- (void)closeCertificateSheet;
-
-- (void)setOverlayWindow:(views::Widget*)overlayWindow;
-
-// Closes the certificate viewer Cocoa sheet.
+// Called when the certificate viewer Cocoa sheet is closed.
 - (void)sheetDidEnd:(NSWindow*)parent
          returnCode:(NSInteger)returnCode
             context:(void*)context;
 @end
 
 @implementation SSLCertificateViewerMac {
-  // The corresponding list of certificates.
   base::scoped_nsobject<NSArray> _certificates;
   base::scoped_nsobject<SFCertificatePanel> _panel;
-
-  // Invisible overlay window used to block interaction with the tab underneath.
-  views::Widget* _overlayWindow;
+  NSWindow* _remoteViewsCloneWindow;
 }
 
-- (instancetype)initWithCertificate:(net::X509Certificate*)certificate
-                     forWebContents:(content::WebContents*)webContents {
+- (instancetype)initWithCertificate:(net::X509Certificate*)certificate {
   if ((self = [super init])) {
     base::ScopedCFTypeRef<CFArrayRef> certChain(
         net::x509_util::CreateSecCertificateArrayForX509Certificate(
@@ -119,6 +89,15 @@
 }
 
 - (void)showCertificateSheet:(NSWindow*)window {
+  // TODO(https://crbug.com/913303): The certificate viewer's interface to
+  // Cocoa should be wrapped in a mojo interface in order to allow
+  // instantiating across processes. As a temporary solution, create a
+  // transparent in-process window to the front.
+  if (remote_cocoa::IsWindowRemote(window)) {
+    _remoteViewsCloneWindow =
+        remote_cocoa::CreateInProcessTransparentClone(window);
+    window = _remoteViewsCloneWindow;
+  }
   [_panel beginSheetForWindow:window
                 modalDelegate:self
                didEndSelector:@selector(sheetDidEnd:returnCode:context:)
@@ -127,83 +106,20 @@
                     showGroup:YES];
 }
 
-- (void)closeCertificateSheet {
-  // Closing the sheet using -[NSApp endSheet:] doesn't work so use the private
-  // method. If the sheet is already closed then this is a call on nil and thus
-  // a no-op.
-  [_panel _dismissWithCode:NSModalResponseCancel];
-}
-
 - (void)sheetDidEnd:(NSWindow*)parent
          returnCode:(NSInteger)returnCode
             context:(void*)context {
-  _overlayWindow->Close();  // Asynchronously releases |self|.
+  [_remoteViewsCloneWindow close];
+  _remoteViewsCloneWindow = nil;
   _panel.reset();
-}
-
-- (void)setOverlayWindow:(views::Widget*)overlayWindow {
-  _overlayWindow = overlayWindow;
 }
 
 @end
 
-namespace {
-
-// A fully transparent, borderless web-modal dialog used to display the
-// OS-provided window-modal sheet that displays certificate information.
-class CertificateAnchorWidgetDelegate : public views::WidgetDelegateView {
- public:
-  CertificateAnchorWidgetDelegate(content::WebContents* web_contents,
-                                  net::X509Certificate* cert)
-      : certificate_viewer_([[SSLCertificateViewerMac alloc]
-            initWithCertificate:cert
-                 forWebContents:web_contents]) {
-    constrained_window::ShowWebModalDialogWithOverlayViews(
-        this, web_contents,
-        base::BindOnce(&CertificateAnchorWidgetDelegate::ShowSheet,
-                       weak_factory_.GetWeakPtr()));
-  }
-
-  ~CertificateAnchorWidgetDelegate() override {
-    // Note that the SFCertificatePanel takes a reference to its delegate in its
-    // -beginSheetForWindow:... method (bad SFCertificatePanel!) so break the
-    // retain cycle by explicitly canceling the dialog.
-    [certificate_viewer_ closeCertificateSheet];
-    [remote_views_clone_window_ close];
-  }
-
-  // WidgetDelegate:
-  ui::ModalType GetModalType() const override { return ui::MODAL_TYPE_CHILD; }
-
- private:
-  void ShowSheet(views::Widget* overlay_window) {
-    NSWindow* overlay_ns_window =
-        overlay_window->GetNativeWindow().GetNativeNSWindow();
-    // TODO(https://crbug.com/913303): The certificate viewer's interface to
-    // Cocoa should be wrapped in a mojo interface in order to allow
-    // instantiating across processes. As a temporary solution, create a
-    // transparent in-process window to the front.
-    if (remote_cocoa::IsWindowRemote(overlay_ns_window)) {
-      remote_views_clone_window_ =
-          remote_cocoa::CreateInProcessTransparentClone(overlay_ns_window);
-      overlay_ns_window = remote_views_clone_window_;
-    }
-    [certificate_viewer_ showCertificateSheet:overlay_ns_window];
-    [certificate_viewer_ setOverlayWindow:overlay_window];
-  }
-
-  base::scoped_nsobject<SSLCertificateViewerMac> certificate_viewer_;
-  NSWindow* remote_views_clone_window_ = nil;
-  base::WeakPtrFactory<CertificateAnchorWidgetDelegate> weak_factory_{this};
-
-  DISALLOW_COPY_AND_ASSIGN(CertificateAnchorWidgetDelegate);
-};
-
-}  // namespace
-
 void ShowCertificateViewer(content::WebContents* web_contents,
                            gfx::NativeWindow parent,
                            net::X509Certificate* cert) {
-  // Shows a new widget, which owns the delegate.
-  new CertificateAnchorWidgetDelegate(web_contents, cert);
+  base::scoped_nsobject<SSLCertificateViewerMac> viewer(
+      [[SSLCertificateViewerMac alloc] initWithCertificate:cert]);
+  [viewer showCertificateSheet:parent.GetNativeNSWindow()];
 }

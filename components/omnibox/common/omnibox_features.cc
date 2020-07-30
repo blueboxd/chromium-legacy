@@ -216,6 +216,14 @@ const base::Feature kOmniboxMaxURLMatches{
 const base::Feature kDynamicMaxAutocomplete{"OmniboxDynamicMaxAutocomplete",
                                             base::FEATURE_DISABLED_BY_DEFAULT};
 
+// If enabled, when the user clears the whole omnibox text (i.e. via Backspace),
+// Chrome will request ZeroSuggest suggestions. Note, this flag merely adds a
+// new ZeroSuggest entrypoint. ZeroSuggest still must be enabled on the proper
+// page classification (either by default or via a separate flag), or else this
+// flag will do nothing.
+const base::Feature kClobberIsZeroSuggestEntrypoint{
+    "OmniboxClobberIsZeroSuggestEntrypoint", base::FEATURE_DISABLED_BY_DEFAULT};
+
 // If enabled, ranks the local zero-prefix suggestions based on frecency
 // (combined frequency and recency).
 const base::Feature kOmniboxLocalZeroSuggestFrecencyRanking{

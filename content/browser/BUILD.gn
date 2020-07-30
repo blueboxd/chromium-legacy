@@ -2051,7 +2051,7 @@ jumbo_source_set("browser") {
     deps += [ "//ui/events" ]
   }
 
-  if (is_linux) {
+  if (is_linux || is_chromeos) {
     sources += [
       "font_service.cc",
       "font_service.h",
@@ -2092,7 +2092,7 @@ jumbo_source_set("browser") {
     deps += [ "//chromecast:chromecast_buildflags" ]
   }
 
-  if (is_chromecast && is_linux) {
+  if (is_chromecast && (is_linux || is_chromeos)) {
     sources += [
       "tracing/cast_tracing_agent.cc",
       "tracing/cast_tracing_agent.h",
@@ -2338,7 +2338,7 @@ jumbo_source_set("browser") {
     } else if (use_pangocairo) {
       sources += [ "renderer_host/pepper/pepper_truetype_font_list_pango.cc" ]
     }
-    if (is_linux) {
+    if (is_linux || is_chromeos) {
       deps += [ "//components/services/font:ppapi_fontconfig_matching" ]
     }
   }
@@ -2376,7 +2376,7 @@ jumbo_source_set("browser") {
     }
   }
 
-  if (is_linux && use_aura) {
+  if ((is_linux || is_chromeos) && use_aura) {
     deps += [ "//third_party/fontconfig" ]
   }
 
@@ -2714,7 +2714,7 @@ jumbo_source_set("browser") {
     ]
   }
 
-  if (is_linux && use_dbus) {
+  if ((is_linux || is_chromeos) && use_dbus) {
     deps += [ "//dbus" ]
   }
 

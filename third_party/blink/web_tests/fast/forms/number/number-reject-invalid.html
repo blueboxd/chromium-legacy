@@ -12,9 +12,21 @@ else
 <input id="input-en" lang="en-us" type="number">
 
 <script>
-function displayValueForKeyInput(inputElement, keyInputs) {
+function displayValueForKeyInput(inputElement, keyInputs, optionalOldString) {
     inputElement.value = '';
     inputElement.focus();
+    if (optionalOldString) {
+        let caretPosition = optionalOldString.indexOf('|');
+        if (caretPosition < 0)
+          caretPosition = optionalOldString.length;
+        else
+          optionalOldString = optionalOldString.substr(0, caretPosition) + optionalOldString.substr(caretPosition + 1);
+        document.execCommand('InsertText', false, optionalOldString);
+        inputElement.type = "text";
+        inputElement.selectionStart = caretPosition;
+        inputElement.selectionEnd = caretPosition;
+        inputElement.type = "number";
+    }
     document.execCommand('InsertText', false, keyInputs);
     inputElement.select();
     return window.getSelection().toString();
@@ -39,6 +51,33 @@ debug('English number input should accept ASCII digits and full stop, and no com
 var englishInput = document.getElementById('input-en');
 shouldBeEqualToString('displayValueForKeyInput(englishInput, "1234.56")', '1234.56');
 shouldBeEqualToString('displayValueForKeyInput(englishInput, "-1234,56")', '-123456');
+shouldBeEqualToString('displayValueForKeyInput(englishInput, " 1234.56 ")', '1234.56');
+shouldBeEqualToString('displayValueForKeyInput(englishInput, "123,456,789E+10")', '123456789E+10');
+shouldBeEqualToString('displayValueForKeyInput(englishInput, ".", "1|e2")', '1.e2');
+shouldBeEqualToString('displayValueForKeyInput(englishInput, ".", "1e2|")', '1e2');
+shouldBeEqualToString('displayValueForKeyInput(englishInput, ".", "|-12")', '-12');
+shouldBeEqualToString('displayValueForKeyInput(englishInput, ".", "|1e-12")', '.1e-12');
+shouldBeEqualToString('displayValueForKeyInput(englishInput, "e", "12|34")', '12e34');
+shouldBeEqualToString('displayValueForKeyInput(englishInput, "e", "12|3e4")', '123e4');
+shouldBeEqualToString('displayValueForKeyInput(englishInput, "e", "123|.4")', '123.4');
+shouldBeEqualToString('displayValueForKeyInput(englishInput, "e", "12.3|4")', '12.3e4');
+shouldBeEqualToString('displayValueForKeyInput(englishInput, "+", "12|34")', '12+34');
+shouldBeEqualToString('displayValueForKeyInput(englishInput, "+", "-1|2e-34")', '-12e-34');
+shouldBeEqualToString('displayValueForKeyInput(englishInput, "+", "|1234")', '+1234');
+shouldBeEqualToString('displayValueForKeyInput(englishInput, "-", "123e|4")', '123e-4');
+shouldBeEqualToString('displayValueForKeyInput(englishInput, "-", "1|23e4")', '123e4');
+shouldBeEqualToString('displayValueForKeyInput(englishInput, "-", "123e4|")', '123e4');
+shouldBeEqualToString('displayValueForKeyInput(englishInput, "9", "|-1")', '-1');
+shouldBeEqualToString('displayValueForKeyInput(englishInput, "9", "-|1")', '-91');
+shouldBeEqualToString('displayValueForKeyInput(englishInput, "9", "1e|+2")', '1e+2');
+shouldBeEqualToString('displayValueForKeyInput(englishInput, "9", "1e+|2")', '1e+92');
+// Invalid
 shouldBeEqualToString('displayValueForKeyInput(englishInput, " abcdef ")', 'e');
+shouldBeEqualToString('displayValueForKeyInput(englishInput, "+1-2")', '+1-2');
+shouldBeEqualToString('displayValueForKeyInput(englishInput, "+1-2+2-3")', '+1-223');
+shouldBeEqualToString('displayValueForKeyInput(englishInput, "0-123-123+123")', '0-123-123123');
+shouldBeEqualToString('displayValueForKeyInput(englishInput, "10e123123e1231233e")', '10e1231231231233');
+shouldBeEqualToString('displayValueForKeyInput(englishInput, "1e2eee")', '1e2');
+shouldBeEqualToString('displayValueForKeyInput(englishInput, "1e1e1e1e")', '1e111');
 </script>
 </body>

@@ -14,10 +14,6 @@
 #include "components/performance_manager/public/graph/graph_registered.h"
 #include "components/performance_manager/public/graph/worker_node.h"
 
-namespace base {
-class UnguessableToken;
-}  // namespace base
-
 namespace performance_manager {
 namespace execution_context {
 
@@ -46,8 +42,8 @@ class ExecutionContextRegistryImpl
   const ExecutionContext* GetExecutionContextByToken(
       const ExecutionContextToken& token) override;
   const FrameNode* GetFrameNodeByFrameToken(const FrameToken& token) override;
-  const WorkerNode* GetWorkerNodeByDevToolsToken(
-      const base::UnguessableToken& token) override;
+  const WorkerNode* GetWorkerNodeByWorkerToken(
+      const WorkerToken& token) override;
   const ExecutionContext* GetExecutionContextForFrameNode(
       const FrameNode* frame_node) override;
   const ExecutionContext* GetExecutionContextForWorkerNode(

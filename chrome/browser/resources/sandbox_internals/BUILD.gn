@@ -8,7 +8,7 @@ js_type_check("closure_compile") {
   if (is_win) {
     deps = [ ":sandbox_internals_win" ]
   }
-  if (is_android || is_linux) {
+  if (is_android || is_linux || is_chromeos) {
     deps = [ ":sandbox_internals" ]
   }
 }

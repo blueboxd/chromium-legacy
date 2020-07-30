@@ -158,7 +158,7 @@ class ShellAddedObserver {
   DISALLOW_COPY_AND_ASSIGN(ShellAddedObserver);
 };
 
-#if defined OS_MACOSX
+#if defined(OS_MAC)
 // An observer of the RenderWidgetHostViewCocoa which is the NSView
 // corresponding to the page.
 class RenderWidgetHostViewCocoaObserver {

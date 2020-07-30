@@ -83,7 +83,7 @@ enum class SandboxType {
 #endif
 
 #if !defined(OS_MAC)
-  // Hosts WebRTC for Sharing Service, uses kUtility on OS_MACOSX.
+  // Hosts WebRTC for Sharing Service, uses kUtility on OS_MAC.
   kSharingService,
 #endif
 

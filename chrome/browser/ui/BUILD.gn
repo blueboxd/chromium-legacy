@@ -628,7 +628,7 @@ static_library("ui") {
     ]
   }
 
-  if (is_win || is_android || is_linux) {
+  if (is_win || is_android || is_linux || is_chromeos) {
     sources += [
       "webui/sandbox/sandbox_internals_ui.cc",
       "webui/sandbox/sandbox_internals_ui.h",
@@ -3047,7 +3047,7 @@ static_library("ui") {
     # to fail on this variant. Since this target is only referenced (but not
     # compiled) on this variant, it's okay to add this "incorrect" dependency
     # to Cast Linux builds so that `gn check` passes.
-    if (toolkit_views || (is_chromecast && is_linux)) {
+    if (toolkit_views || (is_chromecast && (is_linux || is_chromeos))) {
       public_deps += [
         "//ui/views",
         "//ui/views/controls/webview",
@@ -3139,7 +3139,7 @@ static_library("ui") {
     }
   }
 
-  if (is_linux) {  # Both desktop Linux and ChromeOS.
+  if (is_linux || is_chromeos) {  # Both desktop Linux and ChromeOS.
     sources += [
       "certificate_dialogs.cc",
       "certificate_dialogs.h",
@@ -3743,6 +3743,8 @@ static_library("ui") {
       "views/sharing/sharing_dialog_view.h",
       "views/sharing/sharing_icon_view.cc",
       "views/sharing/sharing_icon_view.h",
+      "views/ssl_client_certificate_selector.cc",
+      "views/ssl_client_certificate_selector.h",
       "views/status_bubble_views.cc",
       "views/status_bubble_views.h",
       "views/storage/storage_pressure_bubble_view.cc",
@@ -3953,7 +3955,7 @@ static_library("ui") {
       ]
     }
 
-    if (is_linux) {
+    if (is_linux || is_chromeos) {
       sources += [
         "views/process_singleton_dialog_linux.cc",
         "views/status_icons/status_tray_linux.cc",
@@ -3974,8 +3976,6 @@ static_library("ui") {
         "views/frame/browser_view_commands_mac.mm",
         "views/policy/enterprise_startup_dialog_mac_util.h",
         "views/policy/enterprise_startup_dialog_mac_util.mm",
-        "views/ssl_client_certificate_selector_mac.h",
-        "views/ssl_client_certificate_selector_mac.mm",
       ]
 
       # The Views task manager is not used on Mac - a native Cocoa
@@ -3988,8 +3988,6 @@ static_library("ui") {
       sources += [
         "views/create_application_shortcut_view.cc",
         "views/create_application_shortcut_view.h",
-        "views/ssl_client_certificate_selector.cc",
-        "views/ssl_client_certificate_selector.h",
       ]
     }
 

@@ -158,7 +158,7 @@ if (is_android) {
 
     defines = [ "CRONET_TESTS_IMPLEMENTATION" ]
 
-    if (is_linux && !is_component_build) {
+    if ((is_linux || is_chromeos) && !is_component_build) {
       public_configs = [ "//build/config/gcc:rpath_for_built_shared_libraries" ]
     }
   }
@@ -253,7 +253,7 @@ if (is_android) {
       "//components/cronet",
       "//components/cronet/native:cronet_native_headers",
     ]
-    if (is_linux && !is_component_build) {
+    if ((is_linux || is_chromeos) && !is_component_build) {
       public_configs = [ "//build/config/gcc:rpath_for_built_shared_libraries" ]
     }
   }

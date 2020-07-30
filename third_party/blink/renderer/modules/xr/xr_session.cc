@@ -200,52 +200,31 @@ Vector<device::mojom::blink::EntityTypeForHitTest> GetEntityTypesForHitTest(
   return result;
 }
 
-// Helper that will remove all entries present in the |id_to_hit_test_source|
-// that map to nullptr due to usage of WeakPtr.
-// T can be either XRHitTestSource or XRTransientInputHitTestSource.
 template <typename T>
-void CleanUpUnusedHitTestSourcesHelper(
-    HeapHashMap<uint64_t, WeakMember<T>>* id_to_hit_test_source) {
-  DCHECK(id_to_hit_test_source);
-
-  // Gather all IDs of unused hit test sources for non-transient input
-  // sources.
+HashSet<uint64_t> GetIdsOfUnusedHitTestSources(
+    const HeapHashMap<uint64_t, WeakMember<T>>& id_to_hit_test_source,
+    const HashSet<uint64_t>& all_ids) {
+  // Gather all IDs of unused hit test sources:
   HashSet<uint64_t> unused_hit_test_source_ids;
-  for (auto& id_and_hit_test_source : *id_to_hit_test_source) {
-    if (!id_and_hit_test_source.value) {
-      unused_hit_test_source_ids.insert(id_and_hit_test_source.key);
+  for (auto& id : all_ids) {
+    if (!base::Contains(id_to_hit_test_source, id)) {
+      unused_hit_test_source_ids.insert(id);
     }
   }
 
-  // Remove all of the unused hit test sources.
-  id_to_hit_test_source->RemoveAll(unused_hit_test_source_ids);
-}
-
-// Helper that will validate that the passed in |hit_test_source| exists in
-// |id_to_hit_test_source| map. The entry can be present but map to nullptr due
-// to usage of WeakPtr - in that case, the entry will be removed.
-// T can be either XRHitTestSource or XRTransientInputHitTestSource.
-template <typename T>
-bool ValidateHitTestSourceExistsHelper(
-    HeapHashMap<uint64_t, WeakMember<T>>* id_to_hit_test_source,
-    T* hit_test_source) {
-  DCHECK(id_to_hit_test_source);
-  DCHECK(hit_test_source);
-
-  auto it = id_to_hit_test_source->find(hit_test_source->id());
-  if (it == id_to_hit_test_source->end()) {
-    return false;
-  }
-
-  if (!it->value) {
-    id_to_hit_test_source->erase(it);
-    return false;
-  }
-
-  return true;
+  return unused_hit_test_source_ids;
 }
 
 }  // namespace
+
+#define DCHECK_HIT_TEST_SOURCES()                                         \
+  do {                                                                    \
+    DCHECK_EQ(hit_test_source_ids_.size(),                                \
+              hit_test_source_ids_to_hit_test_sources_.size());           \
+    DCHECK_EQ(                                                            \
+        hit_test_source_for_transient_input_ids_.size(),                  \
+        hit_test_source_ids_to_transient_input_hit_test_sources_.size()); \
+  } while (0)
 
 constexpr char XRSession::kNoRigidTransformSpecified[];
 constexpr char XRSession::kUnableToRetrieveMatrix[];
@@ -903,6 +882,7 @@ void XRSession::OnSubscribeToHitTestResult(
 
   hit_test_source_ids_to_hit_test_sources_.insert(subscription_id,
                                                   hit_test_source);
+  hit_test_source_ids_.insert(subscription_id);
 
   resolver->Resolve(hit_test_source);
 }
@@ -929,6 +909,7 @@ void XRSession::OnSubscribeToHitTestForTransientInputResult(
 
   hit_test_source_ids_to_transient_input_hit_test_sources_.insert(
       subscription_id, hit_test_source);
+  hit_test_source_for_transient_input_ids_.insert(subscription_id);
 
   resolver->Resolve(hit_test_source);
 }
@@ -1068,15 +1049,30 @@ void XRSession::ProcessAnchorsData(
 }
 
 void XRSession::CleanUpUnusedHitTestSources() {
-  CleanUpUnusedHitTestSourcesHelper(&hit_test_source_ids_to_hit_test_sources_);
+  auto unused_hit_test_source_ids = GetIdsOfUnusedHitTestSources(
+      hit_test_source_ids_to_hit_test_sources_, hit_test_source_ids_);
+  for (auto id : unused_hit_test_source_ids) {
+    xr_->xrEnvironmentProviderRemote()->UnsubscribeFromHitTest(id);
+  }
 
-  CleanUpUnusedHitTestSourcesHelper(
-      &hit_test_source_ids_to_transient_input_hit_test_sources_);
+  hit_test_source_ids_.RemoveAll(unused_hit_test_source_ids);
+
+  auto unused_transient_hit_source_ids = GetIdsOfUnusedHitTestSources(
+      hit_test_source_ids_to_transient_input_hit_test_sources_,
+      hit_test_source_for_transient_input_ids_);
+  for (auto id : unused_transient_hit_source_ids) {
+    xr_->xrEnvironmentProviderRemote()->UnsubscribeFromHitTest(id);
+  }
+
+  hit_test_source_for_transient_input_ids_.RemoveAll(
+      unused_transient_hit_source_ids);
+
+  DCHECK_HIT_TEST_SOURCES();
 
   DVLOG(3) << __func__ << ": Number of active hit test sources: "
-           << hit_test_source_ids_to_hit_test_sources_.size()
+           << hit_test_source_ids_.size()
            << ", number of active hit test sources for transient input: "
-           << hit_test_source_ids_to_transient_input_hit_test_sources_.size();
+           << hit_test_source_for_transient_input_ids_.size();
 }
 
 void XRSession::ProcessHitTestData(
@@ -1084,6 +1080,9 @@ void XRSession::ProcessHitTestData(
         hit_test_subscriptions_data) {
   DVLOG(2) << __func__;
 
+  // Application's code can just drop references to hit test sources w/o first
+  // canceling them - ensure that we communicate that the subscriptions are no
+  // longer present to the device.
   CleanUpUnusedHitTestSources();
 
   if (hit_test_subscriptions_data) {
@@ -1873,39 +1872,53 @@ void XRSession::OnExitPresent() {
   }
 }
 
-bool XRSession::ValidateHitTestSourceExists(XRHitTestSource* hit_test_source) {
-  return ValidateHitTestSourceExistsHelper(
-      &hit_test_source_ids_to_hit_test_sources_, hit_test_source);
+bool XRSession::ValidateHitTestSourceExists(
+    XRHitTestSource* hit_test_source) const {
+  DCHECK(hit_test_source);
+  return base::Contains(hit_test_source_ids_, hit_test_source->id());
 }
 
 bool XRSession::ValidateHitTestSourceExists(
-    XRTransientInputHitTestSource* hit_test_source) {
-  return ValidateHitTestSourceExistsHelper(
-      &hit_test_source_ids_to_transient_input_hit_test_sources_,
-      hit_test_source);
+    XRTransientInputHitTestSource* hit_test_source) const {
+  DCHECK(hit_test_source);
+  return base::Contains(hit_test_source_for_transient_input_ids_,
+                        hit_test_source->id());
 }
 
 bool XRSession::RemoveHitTestSource(XRHitTestSource* hit_test_source) {
+  DVLOG(2) << __func__;
+
   DCHECK(hit_test_source);
-  bool result = ValidateHitTestSourceExistsHelper(
-      &hit_test_source_ids_to_hit_test_sources_, hit_test_source);
+
+  DCHECK_HIT_TEST_SOURCES();
 
   hit_test_source_ids_to_hit_test_sources_.erase(hit_test_source->id());
+  hit_test_source_ids_.erase(hit_test_source->id());
 
-  return result;
+  xr_->xrEnvironmentProviderRemote()->UnsubscribeFromHitTest(
+      hit_test_source->id());
+
+  DCHECK_HIT_TEST_SOURCES();
+
+  return true;
 }
 
 bool XRSession::RemoveHitTestSource(
     XRTransientInputHitTestSource* hit_test_source) {
   DCHECK(hit_test_source);
-  bool result = ValidateHitTestSourceExistsHelper(
-      &hit_test_source_ids_to_transient_input_hit_test_sources_,
-      hit_test_source);
+
+  DCHECK_HIT_TEST_SOURCES();
 
   hit_test_source_ids_to_transient_input_hit_test_sources_.erase(
       hit_test_source->id());
+  hit_test_source_for_transient_input_ids_.erase(hit_test_source->id());
 
-  return result;
+  xr_->xrEnvironmentProviderRemote()->UnsubscribeFromHitTest(
+      hit_test_source->id());
+
+  DCHECK_HIT_TEST_SOURCES();
+
+  return true;
 }
 
 void XRSession::SetXRDisplayInfo(

@@ -8,6 +8,7 @@
 
 #include <string>
 
+#include "components/exo/wayland/wayland_display_output.h"
 #include "components/exo/wm_helper.h"
 #include "ui/display/manager/managed_display_info.h"
 #include "ui/display/screen.h"
@@ -15,14 +16,16 @@
 namespace exo {
 namespace wayland {
 
-WaylandDisplayObserver::WaylandDisplayObserver(int64_t id,
+WaylandDisplayObserver::WaylandDisplayObserver(WaylandDisplayOutput* output,
                                                wl_resource* output_resource)
-    : id_(id), output_resource_(output_resource) {
+    : output_(output), output_resource_(output_resource) {
+  output_->RegisterOutput(output_resource_);
   display::Screen::GetScreen()->AddObserver(this);
   SendDisplayMetrics();
 }
 
 WaylandDisplayObserver::~WaylandDisplayObserver() {
+  output_->UnregisterOutput(output_resource_);
   display::Screen::GetScreen()->RemoveObserver(this);
 }
 
@@ -34,7 +37,7 @@ void WaylandDisplayObserver::AddScaleObserver(ScaleObserver* scale_observer) {
 void WaylandDisplayObserver::OnDisplayMetricsChanged(
     const display::Display& display,
     uint32_t changed_metrics) {
-  if (id_ != display.id())
+  if (output_->id() != display.id())
     return;
 
   // There is no need to check DISPLAY_METRIC_PRIMARY because when primary
@@ -54,8 +57,8 @@ void WaylandDisplayObserver::OnDisplayMetricsChanged(
 
 void WaylandDisplayObserver::SendDisplayMetrics() {
   display::Display display;
-  bool rv =
-      display::Screen::GetScreen()->GetDisplayWithDisplayId(id_, &display);
+  bool rv = display::Screen::GetScreen()->GetDisplayWithDisplayId(output_->id(),
+                                                                  &display);
   DCHECK(rv);
 
   const display::ManagedDisplayInfo& info =

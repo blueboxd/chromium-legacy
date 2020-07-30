@@ -61,14 +61,8 @@ std::unique_ptr<ui::LayerTreeOwner> CreateAnimationLayerOwner(
 void TakeScreenshot(
     aura::Window* root,
     viz::CopyOutputRequest::CopyOutputRequestCallback on_screenshot_taken) {
-  // We don't take a screenshot of the root because that will be a screenshot of
-  // a screenshot when the starting desk screenshot layer is placed on top of
-  // everything. The container `kShellWindowId_ScreenRotationContainer` is
-  // created for the purpose of taking screenshots of the screen content while
-  // performing the screen rotation animation.
-  // TODO(afakhry): Consider renaming this container.
   auto* screenshot_layer =
-      root->GetChildById(kShellWindowId_ScreenRotationContainer)->layer();
+      root->GetChildById(kShellWindowId_ScreenAnimationContainer)->layer();
 
   const gfx::Rect request_bounds(screenshot_layer->size());
   auto screenshot_request = std::make_unique<viz::CopyOutputRequest>(

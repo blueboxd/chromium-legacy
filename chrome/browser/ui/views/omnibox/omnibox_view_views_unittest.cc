@@ -37,6 +37,7 @@
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/blink/public/common/input/web_input_event.h"
 #include "third_party/blink/public/common/input/web_keyboard_event.h"
+#include "third_party/blink/public/common/input/web_mouse_event.h"
 #include "third_party/metrics_proto/omnibox_event.pb.h"
 #include "ui/base/clipboard/clipboard.h"
 #include "ui/base/clipboard/scoped_clipboard_writer.h"
@@ -1735,6 +1736,27 @@ TEST_P(OmniboxViewViewsHideOnInteractionAndRevealOnHoverTest,
                                  kSimplifiedDomainDisplayUrlHostnameAndScheme));
   EXPECT_FALSE(IsSubdomainTransparent(
       omnibox_view(), kSimplifiedDomainDisplayUrlSubdomainAndScheme));
+}
+
+// Tests that mouse clicks do not count as user interactions and elide the URL.
+TEST_P(OmniboxViewViewsHideOnInteractionAndRevealOnHoverTest, MouseClick) {
+  SetUpSimplifiedDomainTest();
+
+  content::MockNavigationHandle navigation;
+  navigation.set_is_same_document(false);
+  omnibox_view()->DidFinishNavigation(&navigation);
+  ASSERT_NO_FATAL_FAILURE(ExpectUnelidedFromSimplifiedDomain(
+      omnibox_view()->GetRenderText(),
+      gfx::Range(kSimplifiedDomainDisplayUrlScheme.size(),
+                 kSimplifiedDomainDisplayUrl.size())));
+
+  // Simulate a mouse click and check that the fade-out animation does not run.
+  blink::WebMouseEvent event;
+  event.SetType(blink::WebInputEvent::Type::kMouseDown);
+  omnibox_view()->DidGetUserInteraction(event);
+  OmniboxViewViews::ElideAnimation* elide_animation =
+      omnibox_view()->GetElideAfterInteractionAnimationForTesting();
+  EXPECT_FALSE(elide_animation);
 }
 
 // Tests that simplified domain elisions are re-applied when the omnibox's

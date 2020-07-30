@@ -180,7 +180,7 @@ bool CompareContent(const feedstore::Content& a, const feedstore::Content& b) {
 
 feedwire::ClientInfo CreateClientInfo(const RequestMetadata& request_metadata) {
   feedwire::ClientInfo client_info;
-  // TODO(harringtond): Fill out client_instance_id.
+  client_info.set_client_instance_id(request_metadata.client_instance_id);
 
   feedwire::DisplayInfo& display_info = *client_info.add_display_info();
   display_info.set_screen_density(request_metadata.display_metrics.density);

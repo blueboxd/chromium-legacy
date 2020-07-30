@@ -38,7 +38,7 @@ MEDIA_GPU_EXPORT bool InitializeVideoToolbox();
 class VTVideoDecodeAccelerator : public VideoDecodeAccelerator,
                                  public base::trace_event::MemoryDumpProvider {
  public:
-  VTVideoDecodeAccelerator(const BindGLImageCallback& bind_image_cb,
+  VTVideoDecodeAccelerator(const GpuVideoDecodeGLClient& gl_client_,
                            MediaLog* media_log);
 
   ~VTVideoDecodeAccelerator() override;
@@ -194,7 +194,7 @@ class VTVideoDecodeAccelerator : public VideoDecodeAccelerator,
   //
   // GPU thread state.
   //
-  BindGLImageCallback bind_image_cb_;
+  const GpuVideoDecodeGLClient gl_client_;
   MediaLog* media_log_;
 
   VideoDecodeAccelerator::Client* client_ = nullptr;

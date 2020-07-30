@@ -969,12 +969,15 @@ void RootWindowController::CreateContainers() {
   aura::Window* root = GetRootWindow();
   root_window_layout_manager_ = new RootWindowLayoutManager(root);
 
-  // For screen rotation animation: add a NOT_DRAWN layer in between the
-  // root_window's layer and its current children so that we only need to
-  // initiate two LayerAnimationSequences. One for the new layers and one for
-  // the old layers.
-  aura::Window* screen_rotation_container = CreateContainer(
-      kShellWindowId_ScreenRotationContainer, "ScreenRotationContainer", root);
+  // Add a NOT_DRAWN layer in between the root_window's layer and its current
+  // children so that we only need to initiate two LayerAnimationSequences for
+  // fullscreen animations such as the screen rotation animation and the desk
+  // switch animation. Those animations take a screenshot of this container,
+  // stack it ontop and animate the screenshot instead of the individual
+  // elements.
+  aura::Window* screen_rotation_container =
+      CreateContainer(kShellWindowId_ScreenAnimationContainer,
+                      "ScreenAnimationContainer", root);
 
   // Everything that needs to be included in the docked magnifier, when enabled,
   // should be a descendant of MagnifiedContainer. The DockedMagnifierContainer

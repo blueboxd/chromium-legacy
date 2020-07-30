@@ -16,7 +16,7 @@
 #include "mojo/public/cpp/system/platform_handle.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
-#if defined(OS_MACOSX) && !defined(OS_IOS)
+#if defined(OS_MAC)
 #include <mach/mach_vm.h>
 #endif
 
@@ -39,7 +39,7 @@ enum class HandleType {
 #if defined(OS_POSIX) || defined(OS_FUCHSIA)
   kFileDescriptor,
 #endif
-#if defined(OS_MACOSX) && !defined(OS_IOS)
+#if defined(OS_MAC)
   kMachPort,
 #endif
 };
@@ -68,14 +68,14 @@ class PlatformHandleTest : public testing::Test,
 #if defined(OS_FUCHSIA)
     if (GetParam() == HandleType::kHandle)
       test_type_ = TestType::kSharedMemory;
-#elif defined(OS_MACOSX) && !defined(OS_IOS)
+#elif defined(OS_MAC)
     if (GetParam() == HandleType::kMachPort)
       test_type_ = TestType::kSharedMemory;
 #endif
 
     if (test_type_ == TestType::kFile)
       test_handle_ = SetUpFile();
-#if defined(OS_FUCHSIA) || (defined(OS_MACOSX) && !defined(OS_IOS))
+#if defined(OS_FUCHSIA) || defined(OS_MAC)
     else
       test_handle_ = SetUpSharedMemory();
 #endif
@@ -87,7 +87,7 @@ class PlatformHandleTest : public testing::Test,
   std::string GetObjectContents(PlatformHandle& handle) {
     if (test_type_ == TestType::kFile)
       return GetFileContents(handle);
-#if defined(OS_FUCHSIA) || (defined(OS_MACOSX) && !defined(OS_IOS))
+#if defined(OS_FUCHSIA) || defined(OS_MAC)
     return GetSharedMemoryContents(handle);
 #else
     NOTREACHED();
@@ -144,7 +144,7 @@ class PlatformHandleTest : public testing::Test,
     return contents;
   }
 
-#if defined(OS_FUCHSIA) || (defined(OS_MACOSX) && !defined(OS_IOS))
+#if defined(OS_FUCHSIA) || defined(OS_MAC)
   // Creates a shared memory region with some test data in it. Leaves the
   // handle open and returns it as a generic PlatformHandle.
   PlatformHandle SetUpSharedMemory() {
@@ -166,7 +166,7 @@ class PlatformHandleTest : public testing::Test,
         region_handle(
 #if defined(OS_FUCHSIA)
             handle.GetHandle().get()
-#elif defined(OS_MACOSX) && !defined(OS_IOS)
+#elif defined(OS_MAC)
             handle.GetMachSendRight().get()
 #endif
                 );
@@ -188,7 +188,7 @@ class PlatformHandleTest : public testing::Test,
 
     return contents;
   }
-#endif  // defined(OS_FUCHSIA) || (defined(OS_MACOSX) && !defined(OS_IOS))
+#endif  // defined(OS_FUCHSIA) || defined(OS_MAC)
 
   base::ScopedTempDir temp_dir_;
   TestType test_type_;
@@ -252,7 +252,7 @@ INSTANTIATE_TEST_SUITE_P(All,
 #elif defined(OS_FUCHSIA)
                          testing::Values(HandleType::kHandle,
                                          HandleType::kFileDescriptor)
-#elif defined(OS_MACOSX) && !defined(OS_IOS)
+#elif defined(OS_MAC)
                          testing::Values(HandleType::kFileDescriptor,
                                          HandleType::kMachPort)
 #elif defined(OS_POSIX)

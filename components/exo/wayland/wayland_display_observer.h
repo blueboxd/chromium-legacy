@@ -16,6 +16,7 @@ struct wl_resource;
 
 namespace exo {
 namespace wayland {
+class WaylandDisplayOutput;
 
 class WaylandDisplayObserver : public display::DisplayObserver {
  public:
@@ -29,7 +30,8 @@ class WaylandDisplayObserver : public display::DisplayObserver {
     ~ScaleObserver() override {}
   };
 
-  WaylandDisplayObserver(int64_t id, wl_resource* output_resource);
+  WaylandDisplayObserver(WaylandDisplayOutput* output,
+                         wl_resource* output_resource);
   ~WaylandDisplayObserver() override;
   void AddScaleObserver(ScaleObserver* scale_observer);
   bool HasScaleObserver(ScaleObserver* scale_observer) const;
@@ -44,8 +46,8 @@ class WaylandDisplayObserver : public display::DisplayObserver {
   // compensate for the rotation of an output device.
   wl_output_transform OutputTransform(display::Display::Rotation rotation);
 
-  // The ID of the display being observed.
-  const int64_t id_;
+  // Output.
+  WaylandDisplayOutput* output_;
 
   // The output resource associated with the display.
   wl_resource* const output_resource_;

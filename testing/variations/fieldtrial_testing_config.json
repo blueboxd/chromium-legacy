@@ -2468,12 +2468,12 @@
                 {
                     "name": "Enabled",
                     "params": {
-                        "BlockExtensionList": "",
-                        "SilentBlockExtensionList": "exe,scr,msi,vb,dmg,pkg,crx",
+                        "BlockExtensionList": "mix_dl_blocked_for_testing",
+                        "SilentBlockExtensionList": "mix_dl_silently_blocked_for_testing",
                         "TreatBlockListAsAllowlist": "false",
                         "TreatSilentBlockListAsAllowlist": "false",
                         "TreatWarnListAsAllowlist": "false",
-                        "WarnExtensionList": "zip,iso,rar,7z,tar,gz,bz2"
+                        "WarnExtensionList": "exe,scr,msi,vb,dmg,pkg,crx"
                     },
                     "enable_features": [
                         "TreatUnsafeDownloadsAsActive"

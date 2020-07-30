@@ -124,16 +124,16 @@ bool HardwareDisplayPlaneManagerAtomic::Commit(
   for (uint32_t crtc : crtcs) {
     int idx = LookupCrtcIndex(crtc);
 
-#if defined(COMMIT_CTM_ON_PAGE_FLIP)
+#if defined(COMMIT_PROPERTIES_ON_PAGE_FLIP)
     // Apply all CRTC properties in the page-flip so we don't block the
     // swap chain for a vsync.
     // TODO(dnicoara): See if we can apply these properties async using
     // DRM_MODE_ATOMIC_ASYNC_UPDATE flag when committing.
+    AddPropertyIfValid(request, crtc, crtc_state_[idx].properties.degamma_lut);
+    AddPropertyIfValid(request, crtc, crtc_state_[idx].properties.gamma_lut);
     AddPropertyIfValid(request, crtc, crtc_state_[idx].properties.ctm);
 #endif
 
-    AddPropertyIfValid(request, crtc, crtc_state_[idx].properties.degamma_lut);
-    AddPropertyIfValid(request, crtc, crtc_state_[idx].properties.gamma_lut);
     AddPropertyIfValid(request, crtc,
                        crtc_state_[idx].properties.background_color);
   }
@@ -144,6 +144,13 @@ bool HardwareDisplayPlaneManagerAtomic::Commit(
     }
   } else {
     plane_list->plane_list.swap(plane_list->old_plane_list);
+  }
+
+  uint32_t flags = 0;
+  if (test_only) {
+    flags = DRM_MODE_ATOMIC_TEST_ONLY;
+  } else {
+    flags = DRM_MODE_ATOMIC_NONBLOCK;
   }
 
   // After we perform the atomic commit, and if the caller has requested an
@@ -165,8 +172,6 @@ bool HardwareDisplayPlaneManagerAtomic::Commit(
       }
     }
 
-    const uint32_t flags =
-        test_only ? DRM_MODE_ATOMIC_TEST_ONLY : DRM_MODE_ATOMIC_NONBLOCK;
     if (!drm_->CommitProperties(plane_list->atomic_property_set.get(), flags,
                                 crtcs.size(), page_flip_request)) {
       if (!test_only) {
@@ -312,13 +317,51 @@ HardwareDisplayPlaneManagerAtomic::CreatePlane(uint32_t plane_id) {
 bool HardwareDisplayPlaneManagerAtomic::CommitColorMatrix(
     const CrtcProperties& crtc_props) {
   DCHECK(crtc_props.ctm.id);
-#if !defined(COMMIT_CTM_ON_PAGE_FLIP)
+#if !defined(COMMIT_PROPERTIES_ON_PAGE_FLIP)
   ScopedDrmAtomicReqPtr property_set(drmModeAtomicAlloc());
   int ret = drmModeAtomicAddProperty(property_set.get(), crtc_props.id,
                                      crtc_props.ctm.id, crtc_props.ctm.value);
   if (ret < 0) {
     LOG(ERROR) << "Failed to set CTM property for crtc=" << crtc_props.id;
     return false;
+  }
+
+  // If we try to do this in a non-blocking fashion this can return EBUSY since
+  // there is a pending page flip. Do a blocking commit (the same as the legacy
+  // API) to ensure the properties are applied.
+  // TODO(dnicoara): Should cache these values locally and aggregate them with
+  // the page flip event otherwise this "steals" a vsync to apply the property.
+  return drm_->CommitProperties(property_set.get(), 0, 0, nullptr);
+#else
+  return true;
+#endif
+}
+
+bool HardwareDisplayPlaneManagerAtomic::CommitGammaCorrection(
+    const CrtcProperties& crtc_props) {
+  DCHECK(crtc_props.degamma_lut.id || crtc_props.gamma_lut.id);
+#if !defined(COMMIT_PROPERTIES_ON_PAGE_FLIP)
+  ScopedDrmAtomicReqPtr property_set(drmModeAtomicAlloc());
+  if (crtc_props.degamma_lut.id) {
+    int ret = drmModeAtomicAddProperty(property_set.get(), crtc_props.id,
+                                       crtc_props.degamma_lut.id,
+                                       crtc_props.degamma_lut.value);
+    if (ret < 0) {
+      LOG(ERROR) << "Failed to set DEGAMMA_LUT property for crtc="
+                 << crtc_props.id;
+      return false;
+    }
+  }
+
+  if (crtc_props.gamma_lut.id) {
+    int ret = drmModeAtomicAddProperty(property_set.get(), crtc_props.id,
+                                       crtc_props.gamma_lut.id,
+                                       crtc_props.gamma_lut.value);
+    if (ret < 0) {
+      LOG(ERROR) << "Failed to set GAMMA_LUT property for crtc="
+                 << crtc_props.id;
+      return false;
+    }
   }
 
   // If we try to do this in a non-blocking fashion this can return EBUSY since

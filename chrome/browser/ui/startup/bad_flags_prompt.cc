@@ -98,7 +98,7 @@ static const char* kBadFlags[] = {
     // This flag is only used for performance tests in mac, to ensure that
     // calculated values are reliable. Should not be used elsewhere.
     switches::kUseHighGPUThreadPriorityForPerfTests,
-#endif  // OS_MACOSX
+#endif  // OS_MAC
 
     // These flags control Blink feature state, which is not supported and is
     // intended only for use by Chromium developers.

@@ -11,7 +11,7 @@ cast_source_set("net") {
     "net_util_cast.h",
   ]
 
-  if (is_linux) {
+  if (is_linux || is_chromeos) {
     sources += [
       "network_change_notifier_factory_cast.cc",
       "network_change_notifier_factory_cast.h",

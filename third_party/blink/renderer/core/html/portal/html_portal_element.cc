@@ -55,7 +55,7 @@ namespace blink {
 
 HTMLPortalElement::HTMLPortalElement(
     Document& document,
-    const base::UnguessableToken& portal_token,
+    const PortalToken& portal_token,
     mojo::PendingAssociatedRemote<mojom::blink::Portal> remote_portal,
     mojo::PendingAssociatedReceiver<mojom::blink::PortalClient>
         portal_client_receiver)
@@ -389,7 +389,7 @@ void HTMLPortalElement::setOnmessageerror(EventListener* listener) {
   SetAttributeEventListener(event_type_names::kMessageerror, listener);
 }
 
-const base::UnguessableToken& HTMLPortalElement::GetToken() const {
+const PortalToken& HTMLPortalElement::GetToken() const {
   DCHECK(portal_ && portal_->IsValid());
   return portal_->GetToken();
 }
@@ -457,7 +457,7 @@ Node::InsertionNotificationRequest HTMLPortalElement::InsertedInto(
         client_receiver = client.InitWithNewEndpointAndPassReceiver();
 
     RemoteFrame* portal_frame;
-    base::UnguessableToken portal_token;
+    PortalToken portal_token;
     std::tie(portal_frame, portal_token) =
         GetDocument().GetFrame()->Client()->CreatePortal(
             this, std::move(portal_receiver), std::move(client));

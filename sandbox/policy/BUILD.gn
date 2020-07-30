@@ -27,7 +27,7 @@ component("policy") {
     "//base",
     "//sandbox:common",
   ]
-  if (is_linux) {
+  if (is_linux || is_chromeos) {
     sources += [
       "linux/bpf_audio_policy_linux.cc",
       "linux/bpf_audio_policy_linux.h",

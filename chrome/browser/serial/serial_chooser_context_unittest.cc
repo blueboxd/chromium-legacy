@@ -4,6 +4,7 @@
 
 #include "chrome/browser/serial/serial_chooser_context.h"
 
+#include "base/json/json_reader.h"
 #include "base/run_loop.h"
 #include "base/scoped_observer.h"
 #include "base/test/metrics/histogram_tester.h"
@@ -12,7 +13,9 @@
 #include "chrome/browser/serial/serial_chooser_histograms.h"
 #include "chrome/test/base/testing_profile.h"
 #include "components/content_settings/core/browser/host_content_settings_map.h"
+#include "components/content_settings/core/common/pref_names.h"
 #include "components/permissions/test/chooser_context_base_mock_permission_observer.h"
+#include "components/sync_preferences/testing_pref_service_syncable.h"
 #include "content/public/test/browser_task_environment.h"
 #include "services/device/public/cpp/test/fake_serial_port_manager.h"
 #include "services/device/public/mojom/serial.mojom.h"
@@ -55,7 +58,7 @@ class SerialChooserContextTest : public testing::Test {
   SerialChooserContextTest& operator=(SerialChooserContextTest&) = delete;
 
   device::FakeSerialPortManager& port_manager() { return port_manager_; }
-  Profile* profile() { return &profile_; }
+  TestingProfile* profile() { return &profile_; }
   SerialChooserContext* context() { return context_; }
   permissions::MockPermissionObserver& permission_observer() {
     return permission_observer_;
@@ -334,4 +337,91 @@ TEST_F(SerialChooserContextTest, GuardPermission) {
   std::vector<std::unique_ptr<permissions::ChooserContextBase::Object>>
       all_origin_objects = context()->GetAllGrantedObjects();
   EXPECT_EQ(0u, all_origin_objects.size());
+}
+
+TEST_F(SerialChooserContextTest, PolicyGuardPermission) {
+  const auto origin = url::Origin::Create(GURL("https://google.com"));
+
+  auto port = device::mojom::SerialPortInfo::New();
+  port->token = base::UnguessableToken::Create();
+  context()->GrantPortPermission(origin, origin, *port);
+
+  auto* prefs = profile()->GetTestingPrefService();
+  prefs->SetManagedPref(prefs::kManagedDefaultSerialGuardSetting,
+                        std::make_unique<base::Value>(CONTENT_SETTING_BLOCK));
+  EXPECT_FALSE(context()->CanRequestObjectPermission(origin, origin));
+  EXPECT_FALSE(context()->HasPortPermission(origin, origin, *port));
+
+  std::vector<std::unique_ptr<permissions::ChooserContextBase::Object>>
+      objects = context()->GetGrantedObjects(origin, origin);
+  EXPECT_EQ(0u, objects.size());
+
+  std::vector<std::unique_ptr<permissions::ChooserContextBase::Object>>
+      all_origin_objects = context()->GetAllGrantedObjects();
+  EXPECT_EQ(0u, all_origin_objects.size());
+}
+
+TEST_F(SerialChooserContextTest, PolicyAskForUrls) {
+  const auto kFooOrigin = url::Origin::Create(GURL("https://foo.origin"));
+  const auto kBarOrigin = url::Origin::Create(GURL("https://bar.origin"));
+
+  auto port = device::mojom::SerialPortInfo::New();
+  port->token = base::UnguessableToken::Create();
+  context()->GrantPortPermission(kFooOrigin, kFooOrigin, *port);
+  context()->GrantPortPermission(kBarOrigin, kBarOrigin, *port);
+
+  // Set the default to "ask" so that the policy being tested overrides it.
+  auto* prefs = profile()->GetTestingPrefService();
+  prefs->SetManagedPref(prefs::kManagedDefaultSerialGuardSetting,
+                        std::make_unique<base::Value>(CONTENT_SETTING_BLOCK));
+  prefs->SetManagedPref(prefs::kManagedSerialAskForUrls,
+                        base::JSONReader::ReadDeprecated(R"(
+    [ "https://foo.origin" ]
+  )"));
+
+  EXPECT_TRUE(context()->CanRequestObjectPermission(kFooOrigin, kFooOrigin));
+  EXPECT_TRUE(context()->HasPortPermission(kFooOrigin, kFooOrigin, *port));
+  EXPECT_FALSE(context()->CanRequestObjectPermission(kBarOrigin, kBarOrigin));
+  EXPECT_FALSE(context()->HasPortPermission(kBarOrigin, kBarOrigin, *port));
+
+  std::vector<std::unique_ptr<permissions::ChooserContextBase::Object>>
+      objects = context()->GetGrantedObjects(kFooOrigin, kFooOrigin);
+  EXPECT_EQ(1u, objects.size());
+  objects = context()->GetGrantedObjects(kBarOrigin, kBarOrigin);
+  EXPECT_EQ(0u, objects.size());
+
+  std::vector<std::unique_ptr<permissions::ChooserContextBase::Object>>
+      all_origin_objects = context()->GetAllGrantedObjects();
+  EXPECT_EQ(1u, all_origin_objects.size());
+}
+
+TEST_F(SerialChooserContextTest, PolicyBlockedForUrls) {
+  const auto kFooOrigin = url::Origin::Create(GURL("https://foo.origin"));
+  const auto kBarOrigin = url::Origin::Create(GURL("https://bar.origin"));
+
+  auto port = device::mojom::SerialPortInfo::New();
+  port->token = base::UnguessableToken::Create();
+  context()->GrantPortPermission(kFooOrigin, kFooOrigin, *port);
+  context()->GrantPortPermission(kBarOrigin, kBarOrigin, *port);
+
+  auto* prefs = profile()->GetTestingPrefService();
+  prefs->SetManagedPref(prefs::kManagedSerialBlockedForUrls,
+                        base::JSONReader::ReadDeprecated(R"(
+    [ "https://foo.origin" ]
+  )"));
+
+  EXPECT_FALSE(context()->CanRequestObjectPermission(kFooOrigin, kFooOrigin));
+  EXPECT_FALSE(context()->HasPortPermission(kFooOrigin, kFooOrigin, *port));
+  EXPECT_TRUE(context()->CanRequestObjectPermission(kBarOrigin, kBarOrigin));
+  EXPECT_TRUE(context()->HasPortPermission(kBarOrigin, kBarOrigin, *port));
+
+  std::vector<std::unique_ptr<permissions::ChooserContextBase::Object>>
+      objects = context()->GetGrantedObjects(kFooOrigin, kFooOrigin);
+  EXPECT_EQ(0u, objects.size());
+  objects = context()->GetGrantedObjects(kBarOrigin, kBarOrigin);
+  EXPECT_EQ(1u, objects.size());
+
+  std::vector<std::unique_ptr<permissions::ChooserContextBase::Object>>
+      all_origin_objects = context()->GetAllGrantedObjects();
+  EXPECT_EQ(1u, all_origin_objects.size());
 }

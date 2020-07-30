@@ -10,6 +10,15 @@
  *
  */
 
+// Maximum length supported by auto submit
+const AutosubmitMaxLength = 12;
+
+// Possible errors that might occur with the respective i18n string.
+const AutoSubmitErrorStringsName = {
+  PinIncorrect: 'pinAutoSubmitPinIncorrect',
+  PinTooLong: 'pinAutoSubmitLongPinError',
+};
+
 Polymer({
   is: 'settings-pin-autosubmit-dialog',
 
@@ -25,12 +34,12 @@ Polymer({
     },
 
     /**
-     * Whether the entered PIN is incorrect.
-     * @private
+     * Possible errors that might occur. Null when there are no errors to show.
+     * @private {?string}
      */
-    pinIncorrect_: {
-      type: Boolean,
-      value: false,
+    error_: {
+      type: String,
+      value: null,
     },
 
     /**
@@ -70,7 +79,7 @@ Polymer({
   },
 
   observers: [
-    'updateButtonState_(pinIncorrect_, requestInProcess_, pinValue_)',
+    'updateButtonState_(error_, requestInProcess_, pinValue_)',
   ],
 
   /** @override */
@@ -90,7 +99,7 @@ Polymer({
   resetState() {
     this.requestInProcess_ = false;
     this.pinValue_ = '';
-    this.pinIncorrect_ = false;
+    this.error_ = null;
   },
 
   /** @private */
@@ -99,14 +108,21 @@ Polymer({
   },
 
   /**
-   * Reset the PIN field after error.
+   * Update error notice when more digits are inserted.
+   * @param {!CustomEvent<{pin: string}>} e Custom event containing the new pin
    * @private
    */
-  onPinChange_() {
-    if (this.pinIncorrect_) {
-      this.pinValue_ = '';
-      this.pinIncorrect_ = false;
+  onPinChange_(e) {
+    if (e && e.detail && e.detail.pin) {
+      this.pinValue_ = e.detail.pin;
     }
+
+    if (this.pinValue_ && this.pinValue_.length > AutosubmitMaxLength) {
+      this.error_ = AutoSubmitErrorStringsName.PinTooLong;
+      return;
+    }
+
+    this.error_ = null;
   },
 
   /**
@@ -114,6 +130,12 @@ Polymer({
    * @private
    */
   onPinSubmit_() {
+    // Prevent submission through 'ENTER' if the 'Submit' button is disabled
+    this.updateButtonState_();
+    if (this.confirmButtonDisabled_) {
+      return;
+    }
+
     // Make a request to enable pin autosubmit.
     this.requestInProcess_ = true;
     this.quickUnlockPrivate.setPinAutosubmitEnabled(
@@ -152,16 +174,26 @@ Polymer({
       this.close();
       return;
     }
-
+    // The entered PIN was incorrect.
     this.pinValue_ = '';
     this.requestInProcess_ = false;
-    this.pinIncorrect_ = true;
+    this.error_ = AutoSubmitErrorStringsName.PinIncorrect;
     this.$.pinKeyboard.focusInput();
   },
 
   /** @private */
   updateButtonState_() {
-    this.confirmButtonDisabled_ = this.requestInProcess_ ||
-        this.pinIncorrect_ || (this.pinValue_ && this.pinValue_.length === 0);
+    this.confirmButtonDisabled_ =
+        this.requestInProcess_ || !!this.error_ || !this.pinValue_;
+  },
+
+  /**
+   * Error message to be shown on the dialog when the PIN is
+   * incorrect, or if its too long to activate auto submit.
+   * @param {?String} error - i18n String
+   * @private
+   */
+  getErrorMessageString_(error) {
+    return error ? this.i18n(error) : '';
   },
 });

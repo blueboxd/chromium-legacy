@@ -12,7 +12,7 @@ namespace switches {
 
 const char kUseMockKeychain[] = "use-mock-keychain";
 
-#endif  // OS_MACOSX
+#endif  // OS_APPLE
 
 }  // namespace switches
 }  // namespace os_crypt

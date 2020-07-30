@@ -219,9 +219,7 @@ class HardwareDisplayPlaneManager {
 
   virtual bool CommitColorMatrix(const CrtcProperties& crtc_props) = 0;
 
-  // Derived classes hook to commit the Gamma correction properties. By default
-  // it does nothing, and they will be taken on the next Commit() page flip.
-  virtual bool CommitGammaCorrection(const CrtcProperties& crtc_props);
+  virtual bool CommitGammaCorrection(const CrtcProperties& crtc_props) = 0;
 
   // Object containing the connection to the graphics device and wraps the API
   // calls to control it. Not owned.

@@ -39,7 +39,7 @@ bool BeginTracing(const std::string& category_patterns) WARN_UNUSED_RESULT;
 bool BeginTracingWithTraceConfig(
     const base::trace_event::TraceConfig& trace_config) WARN_UNUSED_RESULT;
 
-typedef base::Callback<void()> StartTracingDoneCallback;
+typedef base::OnceCallback<void()> StartTracingDoneCallback;
 bool BeginTracingWithTraceConfig(
     const base::trace_event::TraceConfig& trace_config,
     StartTracingDoneCallback start_tracing_done_callback) WARN_UNUSED_RESULT;

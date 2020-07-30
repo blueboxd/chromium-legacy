@@ -122,7 +122,7 @@ ScopedMessagePipeHandle MultiprocessTestHelper::StartChildWithExtraSwitch(
 #if !defined(OS_FUCHSIA)
     case LaunchType::NAMED_CHILD:
     case LaunchType::NAMED_PEER: {
-#if defined(OS_MACOSX)
+#if defined(OS_MAC)
       server_name = NamedPlatformChannel::ServerNameFromUTF8(
           "mojo.test." + base::NumberToString(base::RandUint64()));
 #elif defined(OS_POSIX)

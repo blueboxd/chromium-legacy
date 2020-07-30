@@ -846,6 +846,9 @@ extern const char kOmniboxAssistantVoiceSearchDescription[];
 extern const char kOmniboxAutocompleteTitlesName[];
 extern const char kOmniboxAutocompleteTitlesDescription[];
 
+extern const char kOmniboxClobberIsZeroSuggestEntrypointName[];
+extern const char kOmniboxClobberIsZeroSuggestEntrypointDescription[];
+
 extern const char kOmniboxCompactSuggestionsName[];
 extern const char kOmniboxCompactSuggestionsDescription[];
 
@@ -876,6 +879,8 @@ extern const char kOmniboxRichAutocompletionName[];
 extern const char kOmniboxRichAutocompletionDescription[];
 extern const char kOmniboxRichAutocompletionMinCharName[];
 extern const char kOmniboxRichAutocompletionMinCharDescription[];
+extern const char kOmniboxRichAutocompletionShowAdditionalTextName[];
+extern const char kOmniboxRichAutocompletionShowAdditionalTextDescription[];
 
 extern const char kOmniboxOnFocusSuggestionsName[];
 extern const char kOmniboxOnFocusSuggestionsDescription[];

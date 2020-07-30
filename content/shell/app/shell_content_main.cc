@@ -26,4 +26,4 @@ int ContentMain(int argc,
   params.argv = argv;
   return content::ContentMain(params);
 }
-#endif  // OS_MACOSX
+#endif  // OS_MAC

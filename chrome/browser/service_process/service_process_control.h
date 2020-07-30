@@ -138,7 +138,7 @@ class ServiceProcessControl : public UpgradeObserver {
 
 #if !defined(OS_MAC)
     void DoDetectLaunched();
-#endif  // !OS_MACOSX
+#endif  // !OS_MAC
 
     void DoRun();
     void Notify();

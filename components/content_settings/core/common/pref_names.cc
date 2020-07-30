@@ -51,6 +51,8 @@ const char kManagedDefaultWebUsbGuardSetting[] =
     "profile.managed_default_content_settings.web_usb_guard";
 const char kManagedDefaultLegacyCookieAccessSetting[] =
     "profile.managed_default_content_settings.legacy_cookie_access";
+const char kManagedDefaultSerialGuardSetting[] =
+    "profile.managed_default_content_settings.serial_guard";
 
 // Preferences that are exclusively used to store managed
 // content settings patterns.
@@ -93,6 +95,9 @@ const char kManagedWebUsbBlockedForUrls[] =
     "profile.managed_web_usb_blocked_for_urls";
 const char kManagedLegacyCookieAccessAllowedForDomains[] =
     "profile.managed_legacy_cookie_access_allowed_for_domains";
+const char kManagedSerialAskForUrls[] = "profile.managed_serial_ask_for_urls";
+const char kManagedSerialBlockedForUrls[] =
+    "profile.managed_serial_blocked_for_urls";
 
 // Boolean indicating whether the quiet UX is enabled for notification
 // permission requests.

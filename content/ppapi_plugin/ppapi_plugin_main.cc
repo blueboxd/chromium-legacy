@@ -140,7 +140,7 @@ int PpapiPluginMain(const MainFunctionParams& parameters) {
   // the zygote sandbox.
   if (parameters.zygote_child)
     tracing::EnableStartupTracingIfNeeded();
-#endif  // OS_POSIX && !OS_ANDROID && !!OS_MACOSX
+#endif  // OS_POSIX && !OS_ANDROID && !OS_MAC
 
 #if defined(OS_WIN)
   if (!base::win::IsUser32AndGdi32Available())

@@ -45,6 +45,6 @@ const char kCheckAccessibilityPermissionSwitchName[] =
     "check-accessibility-permission";
 const char kCheckScreenRecordingPermissionSwitchName[] =
     "check-screen-recording-permission";
-#endif  // defined OS_MACOSX
+#endif  // defined OS_APPLE
 
 }  // namespace remoting

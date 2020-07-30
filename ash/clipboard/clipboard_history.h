@@ -64,7 +64,8 @@ class ASH_EXPORT ClipboardHistory : public ui::ClipboardObserver,
   void OnClipboardDataChanged() override;
 
  private:
-  void CommitData(ui::ClipboardData data);
+  // Adds |data| to the clipboard history associated with |account_id|.
+  void CommitData(const AccountId& account_id, ui::ClipboardData data);
   void Pause();
   void Resume();
 
@@ -80,6 +81,9 @@ class ASH_EXPORT ClipboardHistory : public ui::ClipboardObserver,
   // Clipboard history is mapped by account ID to store different items per
   // account when multiprofile is used. Lists of items are sorted by recency.
   std::map<AccountId, std::list<ui::ClipboardData>> items_by_account_id_;
+
+  // Factory to create WeakPtrs used to debounce calls to CommitData().
+  base::WeakPtrFactory<ClipboardHistory> commit_data_weak_factory_{this};
 };
 
 }  // namespace ash

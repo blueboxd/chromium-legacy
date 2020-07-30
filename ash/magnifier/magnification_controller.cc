@@ -650,7 +650,7 @@ bool MagnificationController::RedrawDIP(const gfx::PointF& position_in_dip,
         root_window_->GetChildById(kShellWindowId_ImeWindowParentContainer)};
 
     aura::Window* display_identification_highlight =
-        root_window_->GetChildById(kShellWindowId_ScreenRotationContainer)
+        root_window_->GetChildById(kShellWindowId_ScreenAnimationContainer)
             ->GetChildById(kShellWindowId_DisplayIdentificationHighlightWindow);
 
     if (display_identification_highlight)

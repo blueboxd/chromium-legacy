@@ -287,6 +287,23 @@ void Locale::SetLocaleData(const Vector<String, kDecimalSymbolsSize>& symbols,
   builder.Append(negative_prefix_);
   builder.Append(negative_suffix_);
   acceptable_number_characters_ = builder.ToString();
+
+  // Check if we can use single character filtering. We can if all symbols are
+  // 1 character and there's no suffix. Since plus sign is optional, allow
+  // zero length positive prefix.
+  uses_single_char_number_filtering_ = false;
+  if (decimal_symbols_[kDecimalSeparatorIndex].length() == 1 &&
+      (positive_prefix_.length() == 0 || positive_prefix_.length() == 1) &&
+      negative_prefix_.length() == 1 && positive_suffix_.length() == 0 &&
+      negative_suffix_.length() == 0) {
+    uses_single_char_number_filtering_ = true;
+    for (wtf_size_t i = 0; i <= 9; ++i) {
+      if (decimal_symbols_[i].length() != 1) {
+        uses_single_char_number_filtering_ = false;
+        break;
+      }
+    }
+  }
 }
 
 String Locale::ConvertToLocalizedNumber(const String& input) {
@@ -450,6 +467,68 @@ String Locale::StripInvalidNumberCharacters(const String& input,
 String Locale::LocalizedDecimalSeparator() {
   InitializeLocaleData();
   return decimal_symbols_[kDecimalSeparatorIndex];
+}
+
+bool Locale::UsesSingleCharNumberFiltering() {
+  return uses_single_char_number_filtering_;
+}
+
+static bool IsE(UChar ch) {
+  return ch == 'e' || ch == 'E';
+}
+
+bool Locale::IsSignPrefix(UChar ch) {
+  if (ch == '+' || ch == '-')
+    return true;
+  if (negative_prefix_.length() == 1 && ch == negative_prefix_[0])
+    return true;
+  if (positive_prefix_.length() == 1 && ch == positive_prefix_[0])
+    return true;
+
+  return false;
+}
+
+bool Locale::HasTwoSignChars(const String& str) {
+  auto pos =
+      str.Find(WTF::BindRepeating(&Locale::IsSignPrefix, WTF::Passed(this)));
+  if (pos == kNotFound)
+    return false;
+  return str.Find(WTF::BindRepeating(&Locale::IsSignPrefix, WTF::Passed(this)),
+                  pos + 1) != kNotFound;
+}
+
+bool Locale::HasSignNotAfterE(const String& str) {
+  auto pos =
+      str.Find(WTF::BindRepeating(&Locale::IsSignPrefix, WTF::Passed(this)));
+  if (pos == kNotFound)
+    return false;
+  return pos == 0 || !IsE(str[pos - 1]);
+}
+
+bool Locale::IsDigit(UChar ch) {
+  // Alwoays allow 0 - 9
+  if (ch >= '0' && ch <= '9')
+    return true;
+  // Check each digit otherwise
+  String ch_str(&ch, 1);
+  return (ch_str == decimal_symbols_[0] || ch_str == decimal_symbols_[1] ||
+          ch_str == decimal_symbols_[2] || ch_str == decimal_symbols_[3] ||
+          ch_str == decimal_symbols_[4] || ch_str == decimal_symbols_[5] ||
+          ch_str == decimal_symbols_[6] || ch_str == decimal_symbols_[7] ||
+          ch_str == decimal_symbols_[8] || ch_str == decimal_symbols_[9]);
+}
+
+// Is the character a decimal separator?
+bool Locale::IsDecimalSeparator(UChar ch) {
+  if (ch == '.')
+    return true;
+  return LocalizedDecimalSeparator() == String(&ch, 1);
+}
+
+// Is there a decimal separator in a string?
+bool Locale::HasDecimalSeparator(const String& str) {
+  return str.Find(WTF::BindRepeating(&Locale::IsDecimalSeparator,
+                                     WTF::Passed(this))) != kNotFound;
 }
 
 String Locale::FormatDateTime(const DateComponents& date,

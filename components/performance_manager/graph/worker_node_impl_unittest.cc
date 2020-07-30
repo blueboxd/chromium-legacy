@@ -49,17 +49,16 @@ TEST_F(WorkerNodeImplTest, ConstProperties) {
   const std::string kTestBrowserContextId =
       base::UnguessableToken::Create().ToString();
   auto process = CreateNode<ProcessNodeImpl>();
-  static const base::UnguessableToken kTestDevToolsToken =
-      base::UnguessableToken::Create();
+  static const WorkerToken kTestWorkerToken = WorkerToken::Create();
 
   auto worker_impl = CreateNode<WorkerNodeImpl>(
-      kWorkerType, process.get(), kTestBrowserContextId, kTestDevToolsToken);
+      kWorkerType, process.get(), kTestBrowserContextId, kTestWorkerToken);
 
   // Test private interface.
   EXPECT_EQ(worker_impl->browser_context_id(), kTestBrowserContextId);
   EXPECT_EQ(worker_impl->worker_type(), kWorkerType);
   EXPECT_EQ(worker_impl->process_node(), process.get());
-  EXPECT_EQ(worker_impl->dev_tools_token(), kTestDevToolsToken);
+  EXPECT_EQ(worker_impl->worker_token(), kTestWorkerToken);
 
   // Test public interface.
   const WorkerNode* worker = worker_impl.get();
@@ -67,7 +66,7 @@ TEST_F(WorkerNodeImplTest, ConstProperties) {
   EXPECT_EQ(worker->GetBrowserContextID(), kTestBrowserContextId);
   EXPECT_EQ(worker->GetWorkerType(), kWorkerType);
   EXPECT_EQ(worker->GetProcessNode(), process.get());
-  EXPECT_EQ(worker->GetDevToolsToken(), kTestDevToolsToken);
+  EXPECT_EQ(worker->GetWorkerToken(), kTestWorkerToken);
 }
 
 TEST_F(WorkerNodeImplTest, OnFinalResponseURLDetermined) {

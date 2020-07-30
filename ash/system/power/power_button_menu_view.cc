@@ -7,6 +7,7 @@
 #include <memory>
 
 #include "ash/display/screen_orientation_controller.h"
+#include "ash/login/login_screen_controller.h"
 #include "ash/public/cpp/ash_features.h"
 #include "ash/public/cpp/new_window_delegate.h"
 #include "ash/resources/vector_icons/vector_icons.h"
@@ -177,8 +178,7 @@ void PowerButtonMenuView::RecreateItems() {
   const bool create_sign_out = login_status != LoginStatus::NOT_LOGGED_IN;
   const bool create_lock_screen = login_status != LoginStatus::LOCKED &&
                                   session_controller->CanLockScreen();
-  const bool create_feedback = login_status != LoginStatus::NOT_LOGGED_IN &&
-                               login_status != LoginStatus::LOCKED &&
+  const bool create_feedback = login_status != LoginStatus::LOCKED &&
                                login_status != LoginStatus::KIOSK_APP;
 
   add_remove_item(
@@ -212,11 +212,12 @@ void PowerButtonMenuView::Layout() {
   rect.Offset(x_offset, y_offset);
   power_off_item_->SetBoundsRect(rect);
 
+  const int padding_between_items_with_border =
+      kPaddingBetweenMenuItems -
+      2 * PowerButtonMenuItemView::kItemBorderThickness;
+  x_offset = rect.width() + padding_between_items_with_border;
+
   if (sign_out_item_) {
-    const int padding_between_items_with_border =
-        kPaddingBetweenMenuItems -
-        2 * PowerButtonMenuItemView::kItemBorderThickness;
-    x_offset = rect.width() + padding_between_items_with_border;
     rect.Offset(x_offset, 0);
     sign_out_item_->SetBoundsRect(rect);
 
@@ -224,11 +225,10 @@ void PowerButtonMenuView::Layout() {
       rect.Offset(x_offset, 0);
       lock_screen_item_->SetBoundsRect(rect);
     }
-
-    if (feedback_item_) {
-      rect.Offset(x_offset, 0);
-      feedback_item_->SetBoundsRect(rect);
-    }
+  }
+  if (feedback_item_) {
+    rect.Offset(x_offset, 0);
+    feedback_item_->SetBoundsRect(rect);
   }
 }
 
@@ -253,15 +253,15 @@ gfx::Size PowerButtonMenuView::CalculatePreferredSize() const {
 
   int width =
       PowerButtonMenuItemView::kMenuItemWidth + 2 * kMenuItemHorizontalPadding;
+  const int one_item_x_offset =
+      PowerButtonMenuItemView::kMenuItemWidth + kPaddingBetweenMenuItems;
   if (sign_out_item_) {
-    const int one_item_x_offset =
-        PowerButtonMenuItemView::kMenuItemWidth + kPaddingBetweenMenuItems;
-    width += one_item_x_offset;
-    if (lock_screen_item_)
       width += one_item_x_offset;
-    if (feedback_item_)
-      width += one_item_x_offset;
+      if (lock_screen_item_)
+        width += one_item_x_offset;
   }
+  if (feedback_item_)
+    width += one_item_x_offset;
   menu_size.set_width(width);
   return menu_size;
 }
@@ -282,7 +282,16 @@ void PowerButtonMenuView::ButtonPressed(views::Button* sender,
     shell->session_controller()->LockScreen();
   } else if (sender == feedback_item_) {
     RecordMenuActionHistogram(PowerButtonMenuActionType::kFeedback);
-    NewWindowDelegate::GetInstance()->OpenFeedbackPage();
+    if (shell->session_controller()->login_status() ==
+        LoginStatus::NOT_LOGGED_IN) {
+      // There is a special flow for feedback while in login screen, therefore
+      // we trigger the same handler associated with the feedback accelerator
+      // from the login screen to bring up the feedback dialog.
+      shell->login_screen_controller()->HandleAccelerator(
+          LoginAcceleratorAction::kShowFeedback);
+    } else {
+      NewWindowDelegate::GetInstance()->OpenFeedbackPage();
+    }
   } else {
     NOTREACHED() << "Invalid sender";
   }

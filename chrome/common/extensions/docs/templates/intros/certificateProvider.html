@@ -8,11 +8,12 @@ Typical usage of this API to expose client certificates to Chrome OS follows the
   <li>The Extension registers for the events
     $(ref:onCertificatesUpdateRequested) and $(ref:onSignatureRequested).
   </li>
-  <li>The Extension calls $(setCertificates) to provide the initial list of
+  <li>The Extension calls $(ref:setCertificates) to provide the initial list of
     certificates after the initialization.
   </li>
   <li>The Extension monitors the changes in the list of available certificates
-    and calls $(setCertificates) to notify the browser about every such change.
+    and calls $(ref:setCertificates) to notify the browser about every such
+    change.
   </li>
   <li>During a TLS handshake, the browser receives a client certificate request.
     With an $(ref:onCertificatesUpdateRequested) event, the browser asks the

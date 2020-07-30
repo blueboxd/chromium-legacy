@@ -70,7 +70,7 @@ source_set("unittests") {
     sources += [ "chromeos/cursor_controller_unittest.cc" ]
   }
 
-  if (is_linux) {
+  if (is_linux || is_chromeos) {
     deps += [ "//ui/events/ozone/evdev:unittests" ]
   }
 }

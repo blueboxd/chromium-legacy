@@ -909,7 +909,7 @@ class EVENTS_EXPORT KeyEvent : public Event {
   mutable DomKey key_ = DomKey::NONE;
 
   static KeyEvent* last_key_event_;
-#if defined(USE_X11)
+#if defined(USE_X11) || defined(USE_OZONE)
   static KeyEvent* last_ibus_key_event_;
 #endif
 };

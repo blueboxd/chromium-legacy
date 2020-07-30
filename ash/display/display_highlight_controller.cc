@@ -39,7 +39,7 @@ std::unique_ptr<views::Widget> CreateHighlightWidget(
 
   aura::Window* root = Shell::GetRootWindowForDisplayId(display_id);
 
-  params.parent = root->GetChildById(kShellWindowId_ScreenRotationContainer);
+  params.parent = root->GetChildById(kShellWindowId_ScreenAnimationContainer);
   params.bounds = root->GetBoundsInRootWindow();
   params.name = "DisplayIdentificationHighlight";
 

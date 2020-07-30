@@ -10,6 +10,7 @@
 #include "base/macros.h"
 #include "base/strings/string16.h"
 #include "ui/views/controls/button/button.h"
+#include "ui/views/controls/button/image_button.h"
 #include "ui/views/view.h"
 
 namespace views {
@@ -96,11 +97,15 @@ class AuthenticatorRequestSheetView : public views::View,
   // Updates the illustration icon shown on the sheet.
   void UpdateIconImageFromModel();
 
+  // Updates the icon color.
+  void UpdateIconColors();
+
   // views::View:
   void OnThemeChanged() override;
 
   std::unique_ptr<AuthenticatorRequestSheetModel> model_;
   views::Button* back_arrow_button_ = nullptr;
+  views::ImageButton* back_arrow_ = nullptr;
   views::View* step_specific_content_ = nullptr;
   NonAccessibleImageView* step_illustration_ = nullptr;
   views::Label* error_label_ = nullptr;

@@ -606,17 +606,15 @@ class DEVICE_BLUETOOTH_EXPORT BluetoothDevice {
 #if defined(OS_CHROMEOS) || defined(OS_LINUX)
   // Set the remaining battery of the device to show in the UI. This value must
   // be between 0 and 100, inclusive.
-  // TODO(https://crbug.com/973237): Battery percentage is populated by
-  // ash::GattBatteryPoller and used only by Chrome OS. In the future, when
-  // there is a unified Mojo service, this logic will be moved to
-  // BluetoothDeviceInfo.
+  // TODO(http://b/160905785): Battery percentage is populated by
+  // ash::HfpBatteryListener, ash::HidBatteryListener, and
+  // device::BluetoothAdapterBlueZ. When Battery information is entirely
+  // consolidated in BlueZ's Battery API, only device::BluetoothAdapterBlueZ
+  // should have control over this field with the value originating from a
+  // single source, the BlueZ Battery API..
   void SetBatteryPercentage(base::Optional<uint8_t> battery_percentage);
 
   // Returns the remaining battery for the device.
-  // TODO(https://crbug.com/973237): Battery percentage is populated by
-  // ash::GattBatteryPoller and used only by Chrome OS. In the future, when
-  // there is a unified Mojo service, this logic will be moved to
-  // BluetoothDeviceInfo.
   const base::Optional<uint8_t>& battery_percentage() const {
     return battery_percentage_;
   }

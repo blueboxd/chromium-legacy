@@ -56,7 +56,7 @@ bool ContextMenuContentTypeWebView::SupportsGroup(int group) {
           auto* web_view_guest =
               extensions::WebViewGuest::FromWebContents(source_web_contents());
           // Note that this check might not be sufficient to hide dev tools
-          // items on OS_MACOSX if we start supporting <webview> inside
+          // items on OS_MAC if we start supporting <webview> inside
           // component extensions.
           // For a list of places where <webview>/GuestViews are supported, see:
           // https://goo.gl/xfJkwp.

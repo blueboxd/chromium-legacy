@@ -203,7 +203,6 @@ crbug.com/774873 [ Win ] virtual/exotic-color-space/images/color-profile-border-
 
 crbug.com/1098369 fast/canvas/OffscreenCanvas-copyImage.html [ Pass Failure ]
 
-crbug.com/1011060 virtual/gpu/fast/canvas/bug382588.html [ Pass Failure ]
 crbug.com/1011060 virtual/gpu/fast/canvas/canvas-lost-gpu-context.html [ Pass Failure Crash ]
 crbug.com/1106590 virtual/gpu/fast/canvas/canvas-path-non-invertible-transform.html [ Pass Crash ]
 
@@ -6711,7 +6710,6 @@ crbug.com/1091843 fast/canvas/color-space/canvas-createImageBitmap-p3.html [ Pas
 crbug.com/1093198 external/wpt/webrtc/RTCPeerConnection-addIceCandidate-timing [ Pass Failure ]
 
 # Sheriff 2020-06-09
-crbug.com/1090180 virtual/gpu/fast/canvas/canvas-gpu-consistency.html [ Failure ]
 crbug.com/1093003 [ Mac ] external/wpt/html/rendering/replaced-elements/embedded-content/cross-domain-iframe.sub.html [ Pass Failure ]
 
 # Sheriff 2020-06-10
@@ -6870,3 +6868,5 @@ crbug.com/1092794 fast/canvas/OffscreenCanvas-2d-placeholder-willReadFrequently.
 
 # Sheriff 2020-07-30
 crbug.com/1111287 http/tests/devtools/sources/debugger-breakpoints/breakpoint-with-sourcemap-dart.js [ Pass Failure ]
+
+crbug.com/1111410 http/tests/serviceworker/service-worker-gc.html [ Pass Failure ]

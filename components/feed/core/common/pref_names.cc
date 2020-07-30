@@ -40,6 +40,7 @@ const char kThrottlerLastRequestTime[] =
 const char kDebugStreamData[] = "feedv2.debug_stream_data";
 const char kRequestSchedule[] = "feedv2.request_schedule";
 const char kMetricsData[] = "feedv2.metrics_data";
+const char kClientInstanceId[] = "feedv2.client_instance_id";
 
 }  // namespace prefs
 
@@ -57,6 +58,7 @@ void RegisterProfilePrefs(PrefRegistrySimple* registry) {
   registry->RegisterStringPref(feed::prefs::kDebugStreamData, std::string());
   registry->RegisterDictionaryPref(feed::prefs::kRequestSchedule);
   registry->RegisterDictionaryPref(feed::prefs::kMetricsData);
+  registry->RegisterStringPref(feed::prefs::kClientInstanceId, "");
   UserClassifier::RegisterProfilePrefs(registry);
 }
 

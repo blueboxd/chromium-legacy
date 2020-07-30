@@ -169,13 +169,13 @@ bool SharedImageRepresentationSkiaVkAndroid::BeginAccess(
   }
 
   sync_fd = gl::MergeFDs(std::move(sync_fd), std::move(init_read_fence));
-  VkSemaphore begin_access_semaphore = VK_NULL_HANDLE;
+  DCHECK(begin_access_semaphore_ == VK_NULL_HANDLE);
   if (sync_fd.is_valid()) {
-    begin_access_semaphore = vk_implementation()->ImportSemaphoreHandle(
+    begin_access_semaphore_ = vk_implementation()->ImportSemaphoreHandle(
         vk_device(),
         SemaphoreHandle(VK_EXTERNAL_SEMAPHORE_HANDLE_TYPE_SYNC_FD_BIT,
                         std::move(sync_fd)));
-    if (begin_access_semaphore == VK_NULL_HANDLE) {
+    if (begin_access_semaphore_ == VK_NULL_HANDLE) {
       DLOG(ERROR) << "Failed to import semaphore from sync_fd.";
       return false;
     }
@@ -187,17 +187,18 @@ bool SharedImageRepresentationSkiaVkAndroid::BeginAccess(
 
     if (end_access_semaphore_ == VK_NULL_HANDLE) {
       DLOG(ERROR) << "Failed to create the external semaphore.";
-      if (begin_access_semaphore != VK_NULL_HANDLE) {
-        vkDestroySemaphore(vk_device(), begin_access_semaphore,
+      if (begin_access_semaphore_ != VK_NULL_HANDLE) {
+        vkDestroySemaphore(vk_device(), begin_access_semaphore_,
                            nullptr /* pAllocator */);
+        begin_access_semaphore_ = VK_NULL_HANDLE;
       }
       return false;
     }
   }
 
-  if (begin_access_semaphore != VK_NULL_HANDLE) {
+  if (begin_access_semaphore_ != VK_NULL_HANDLE) {
     begin_semaphores->emplace_back();
-    begin_semaphores->back().initVulkan(begin_access_semaphore);
+    begin_semaphores->back().initVulkan(begin_access_semaphore_);
   }
   if (end_semaphores) {
     end_semaphores->emplace_back();
@@ -224,14 +225,24 @@ void SharedImageRepresentationSkiaVkAndroid::EndAccess(bool readonly) {
     android_backing()->EndWrite(std::move(sync_fd));
   }
 
+  std::vector<VkSemaphore> semaphores;
+  semaphores.reserve(2);
+  if (begin_access_semaphore_ != VK_NULL_HANDLE) {
+    semaphores.emplace_back(begin_access_semaphore_);
+    begin_access_semaphore_ = VK_NULL_HANDLE;
+  }
   if (end_access_semaphore_ != VK_NULL_HANDLE) {
+    semaphores.emplace_back(end_access_semaphore_);
+    end_access_semaphore_ = VK_NULL_HANDLE;
+  }
+  if (!semaphores.empty()) {
     VulkanFenceHelper* fence_helper = context_state_->vk_context_provider()
                                           ->GetDeviceQueue()
                                           ->GetFenceHelper();
-    fence_helper->EnqueueSemaphoreCleanupForSubmittedWork(
-        end_access_semaphore_);
-    end_access_semaphore_ = VK_NULL_HANDLE;
+    fence_helper->EnqueueSemaphoresCleanupForSubmittedWork(
+        std::move(semaphores));
   }
+
   mode_ = RepresentationAccessMode::kNone;
 }
 

@@ -2220,13 +2220,12 @@ void InspectorCSSAgent::DidAddDocument(Document* document) {
 
 void InspectorCSSAgent::DidRemoveDocument(Document* document) {}
 
-void InspectorCSSAgent::DidRemoveDOMNode(Node* node) {
-  if (!node)
-    return;
+void InspectorCSSAgent::WillRemoveDOMNode(Node* node) {
+  DCHECK(node);
 
   int node_id = dom_agent_->BoundNodeId(node);
-  if (node_id)
-    node_id_to_forced_pseudo_state_.erase(node_id);
+  DCHECK(node_id);
+  node_id_to_forced_pseudo_state_.erase(node_id);
 
   NodeToInspectorStyleSheet::iterator it =
       node_to_inspector_style_sheet_.find(node);

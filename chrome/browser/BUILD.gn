@@ -4402,7 +4402,7 @@ static_library("browser") {
     ]
   }
 
-  if (is_linux) {
+  if (is_linux || is_chromeos) {
     sources += [
       "chrome_browser_main_linux.cc",
       "chrome_browser_main_linux.h",
@@ -4497,7 +4497,7 @@ static_library("browser") {
     sources += [ "hang_monitor/hang_crash_dump.cc" ]
   }
 
-  if (is_win || is_linux) {
+  if (is_win || is_linux || is_chromeos) {
     sources += [
       "renderer_context_menu/spelling_options_submenu_observer.cc",
       "renderer_context_menu/spelling_options_submenu_observer.h",
@@ -4586,6 +4586,8 @@ static_library("browser") {
       "platform_util.cc",
       "policy/chrome_browser_cloud_management_controller.cc",
       "policy/chrome_browser_cloud_management_controller.h",
+      "policy/chrome_browser_cloud_management_controller_desktop.cc",
+      "policy/chrome_browser_cloud_management_controller_desktop.h",
       "policy/chrome_browser_cloud_management_register_watcher.cc",
       "policy/chrome_browser_cloud_management_register_watcher.h",
       "policy/cloud/user_policy_signin_service.cc",
@@ -4652,7 +4654,7 @@ static_library("browser") {
     ]
   }
 
-  if (is_win || is_mac || is_linux) {
+  if (is_win || is_mac || is_linux || is_chromeos) {
     sources += [
       "crash_upload_list/crash_upload_list_crashpad.cc",
       "crash_upload_list/crash_upload_list_crashpad.h",
@@ -4790,7 +4792,7 @@ static_library("browser") {
     if (is_mac) {
       sources += [ "printing/printer_manager_dialog_mac.mm" ]
     }
-    if (is_linux) {
+    if (is_linux || is_chromeos) {
       sources += [ "printing/printer_manager_dialog_linux.cc" ]
     }
     if (is_win || enable_print_preview) {

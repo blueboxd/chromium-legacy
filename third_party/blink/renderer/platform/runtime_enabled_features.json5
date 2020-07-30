@@ -655,10 +655,6 @@
       settable_from_internals: true,
     },
     {
-      name: "DisplayOverride",
-      status: "test",
-    },
-    {
       name: "DocumentCookie",
     },
     {
@@ -1936,6 +1932,10 @@
       status: "experimental",
     },
     {
+      name: "WebAppManifestDisplayOverride",
+      status: "test",
+    },
+    {
       name: "WebAssemblySimd",
       origin_trial_feature_name: "WebAssemblySimd",
       status: "experimental",
@@ -2017,7 +2017,7 @@
     {
       name: "WebHID",
       origin_trial_feature_name: "WebHID",
-      status: "experimental",
+      status: {"Android": "", "default": "experimental"},
     },
     {
       name: "WebNFC",

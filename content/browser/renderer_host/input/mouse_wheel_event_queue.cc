@@ -132,7 +132,7 @@ void MouseWheelEventQueue::ProcessMouseWheelAck(
       scroll_update.data.scroll_update.delta_y =
           event_sent_for_gesture_ack_->event.delta_x;
     } else
-#endif  // OS_MACOSX
+#endif  // OS_MAC
     {
       scroll_update.data.scroll_update.delta_x =
           event_sent_for_gesture_ack_->event.delta_x;

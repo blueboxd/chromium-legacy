@@ -200,10 +200,8 @@ Polymer({
 
   /** @private */
   onPasswordPromptDialogClose_() {
-    console.log('\n\n\n onPasswordPromptDialogClose_ \n\n\n');
     this.showPasswordPromptDialog_ = false;
     if (!this.setModes_) {
-      console.log('\n\n\n navigateToPreviousRoute \n\n\n');
       settings.Router.getInstance().navigateToPreviousRoute();
     }
   },

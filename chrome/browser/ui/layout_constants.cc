@@ -55,7 +55,8 @@ int GetLayoutConstant(LayoutConstant constant) {
     case LOCATION_BAR_ELEMENT_PADDING:
       return touch_ui ? 3 : 2;
     case LOCATION_BAR_HEIGHT:
-      if (OmniboxFieldTrial::RichAutocompletionTwoLineOmnibox())
+      if (OmniboxFieldTrial::RichAutocompletionShowAdditionalText() &&
+          OmniboxFieldTrial::RichAutocompletionTwoLineOmnibox())
         return touch_ui ? 52 : 40;
       return touch_ui ? 36 : 28;
     case LOCATION_BAR_ICON_SIZE:

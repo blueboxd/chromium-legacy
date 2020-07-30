@@ -70,7 +70,7 @@ void VerifyRendererExitCodeIsSignal(
 }
 
 }  // namespace
-#endif  // OS_MACOSX || OS_LINUX
+#endif  // OS_MAC || OS_LINUX
 
 // This test class verifies that metrics reporting works correctly for various
 // renderer behaviors such as page loads, recording crashed tabs, and browser

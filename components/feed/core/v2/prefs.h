@@ -41,6 +41,9 @@ PersistentMetricsData GetPersistentMetricsData(PrefService& pref_service);
 void SetPersistentMetricsData(const PersistentMetricsData& data,
                               PrefService& pref_service);
 
+std::string GetClientInstanceId(PrefService& pref_service);
+void ClearClientInstanceId(PrefService& pref_service);
+
 }  // namespace prefs
 }  // namespace feed
 

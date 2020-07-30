@@ -21,7 +21,7 @@ namespace blink {
 
 PortalActivateEvent* PortalActivateEvent::Create(
     LocalFrame* frame,
-    const base::UnguessableToken& predecessor_portal_token,
+    const PortalToken& predecessor_portal_token,
     mojo::PendingAssociatedRemote<mojom::blink::Portal> predecessor_portal,
     mojo::PendingAssociatedReceiver<mojom::blink::PortalClient>
         predecessor_portal_client_receiver,
@@ -44,7 +44,7 @@ PortalActivateEvent* PortalActivateEvent::Create(
 
 PortalActivateEvent::PortalActivateEvent(
     Document* document,
-    const base::UnguessableToken& predecessor_portal_token,
+    const PortalToken& predecessor_portal_token,
     mojo::PendingAssociatedRemote<mojom::blink::Portal> predecessor_portal,
     mojo::PendingAssociatedReceiver<mojom::blink::PortalClient>
         predecessor_portal_client_receiver,

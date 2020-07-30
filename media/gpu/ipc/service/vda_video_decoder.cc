@@ -69,13 +69,15 @@ std::unique_ptr<VideoDecodeAccelerator> CreateAndInitializeVda(
     VideoDecodeAccelerator::Client* client,
     MediaLog* media_log,
     const VideoDecodeAccelerator::Config& config) {
+  GpuVideoDecodeGLClient gl_client;
+  gl_client.get_context = base::BindRepeating(
+      &CommandBufferHelper::GetGLContext, command_buffer_helper);
+  gl_client.make_context_current = base::BindRepeating(
+      &CommandBufferHelper::MakeContextCurrent, command_buffer_helper);
+  gl_client.bind_image = base::BindRepeating(&BindImage, command_buffer_helper);
+
   std::unique_ptr<GpuVideoDecodeAcceleratorFactory> factory =
-      GpuVideoDecodeAcceleratorFactory::Create(
-          base::BindRepeating(&CommandBufferHelper::GetGLContext,
-                              command_buffer_helper),
-          base::BindRepeating(&CommandBufferHelper::MakeContextCurrent,
-                              command_buffer_helper),
-          base::BindRepeating(&BindImage, command_buffer_helper));
+      GpuVideoDecodeAcceleratorFactory::Create(gl_client);
   // Note: GpuVideoDecodeAcceleratorFactory may create and initialize more than
   // one VDA. It is therefore important that VDAs do not call client methods
   // from Initialize().

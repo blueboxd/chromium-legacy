@@ -23,6 +23,7 @@ import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 
+import org.chromium.base.test.util.DisabledTest;
 import org.chromium.chrome.browser.share.share_sheet.ChromeOptionShareCallback;
 import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
 import org.chromium.ui.base.WindowAndroid;
@@ -59,6 +60,7 @@ public class LinkToTextCoordinatorTest {
 
     @Test
     @SmallTest
+    @DisabledTest(message = "https://crbug.com/1111408")
     public void getTextToShareTest() {
         String selector = "selector";
         String expectedTextToShare = "\"selection\"\nwww.example.com:~:text=selector";
@@ -69,6 +71,7 @@ public class LinkToTextCoordinatorTest {
 
     @Test
     @SmallTest
+    @DisabledTest(message = "https://crbug.com/1111408")
     public void getTextToShareTest_EmptySelector() {
         String selector = "";
         String expectedTextToShare = "\"selection\"\nwww.example.com";
@@ -79,6 +82,7 @@ public class LinkToTextCoordinatorTest {
 
     @Test
     @SmallTest
+    @DisabledTest(message = "https://crbug.com/1111408")
     public void onSelectorReadyTest() {
         LinkToTextCoordinator coordinator = new LinkToTextCoordinator(
                 mContext, mWindow, mShareCallback, VISIBLE_URL, SELECTED_TEXT);

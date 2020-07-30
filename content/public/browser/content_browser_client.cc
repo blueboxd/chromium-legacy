@@ -35,6 +35,7 @@
 #include "content/public/browser/url_loader_request_interceptor.h"
 #include "content/public/browser/vpn_service_proxy.h"
 #include "content/public/browser/web_contents.h"
+#include "content/public/common/content_features.h"
 #include "content/public/common/url_utils.h"
 #include "media/audio/audio_manager.h"
 #include "media/mojo/mojom/media_service.mojom.h"
@@ -976,7 +977,7 @@ base::FilePath ContentBrowserClient::GetSandboxedStorageServiceDataDirectory() {
 }
 
 bool ContentBrowserClient::ShouldSandboxAudioService() {
-  return false;
+  return base::FeatureList::IsEnabled(features::kAudioServiceSandbox);
 }
 
 blink::PreviewsState ContentBrowserClient::DetermineAllowedPreviews(

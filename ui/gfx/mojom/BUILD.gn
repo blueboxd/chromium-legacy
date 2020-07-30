@@ -212,7 +212,7 @@ mojom("mojom") {
 
 mojom("native_handle_types") {
   sources = [ "native_handle_types.mojom" ]
-  if (is_linux || use_ozone) {
+  if (is_linux || is_chromeos || use_ozone) {
     enabled_features = [ "supports_native_pixmap" ]
   }
   public_deps = [ "//mojo/public/mojom/base" ]

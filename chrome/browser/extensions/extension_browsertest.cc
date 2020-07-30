@@ -740,7 +740,7 @@ ExtensionHost* ExtensionBrowserTest::FindHostWithPath(ProcessManager* manager,
   ExtensionHost* result_host = nullptr;
   int num_hosts = 0;
   for (ExtensionHost* host : manager->background_hosts()) {
-    if (host->GetURL().path() == path) {
+    if (host->GetLastCommittedURL().path() == path) {
       EXPECT_FALSE(result_host);
       result_host = host;
     }

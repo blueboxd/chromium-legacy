@@ -67,6 +67,50 @@ using CreateAbstractTextureCallback =
         unsigned /* GLenum */ format,
         unsigned /* GLenum */ type)>;
 
+// OpenGL callbacks made by VideoDecodeAccelerator sub-classes.
+struct MEDIA_GPU_EXPORT GpuVideoDecodeGLClient {
+  GpuVideoDecodeGLClient();
+  ~GpuVideoDecodeGLClient();
+  GpuVideoDecodeGLClient(const GpuVideoDecodeGLClient&);
+  GpuVideoDecodeGLClient& operator=(const GpuVideoDecodeGLClient&);
+
+  // Return current GLContext.
+  using GetGLContextCallback = base::RepeatingCallback<gl::GLContext*(void)>;
+
+  // Make the applicable GL context current. To be called by VDAs before
+  // executing any GL calls. Return true on success, false otherwise.
+  using MakeGLContextCurrentCallback = base::RepeatingCallback<bool(void)>;
+
+  // Bind |image| to |client_texture_id| given |texture_target|. If
+  // |can_bind_to_sampler| is true, then the image may be used as a sampler
+  // directly, otherwise a copy to a staging buffer is required.
+  // Return true on success, false otherwise.
+  using BindGLImageCallback =
+      base::RepeatingCallback<bool(uint32_t client_texture_id,
+                                   uint32_t texture_target,
+                                   const scoped_refptr<gl::GLImage>& image,
+                                   bool can_bind_to_sampler)>;
+
+  // Return a ContextGroup*, if one is available.
+  using GetContextGroupCallback =
+      base::RepeatingCallback<gpu::gles2::ContextGroup*(void)>;
+
+  // Callback to return current GLContext, if available.
+  GetGLContextCallback get_context;
+
+  // Callback for making the relevant context current for GL calls.
+  MakeGLContextCurrentCallback make_context_current;
+
+  // Callback to bind a GLImage to a given texture id and target.
+  BindGLImageCallback bind_image;
+
+  // Callback to return a ContextGroup*.
+  GetContextGroupCallback get_context_group;
+
+  // Callback to return a DecoderContext*.
+  CreateAbstractTextureCallback create_abstract_texture;
+};
+
 // Convert vector of VDA::SupportedProfile to vector of
 // SupportedVideoDecoderConfig.
 MEDIA_GPU_EXPORT SupportedVideoDecoderConfigs ConvertFromSupportedProfiles(

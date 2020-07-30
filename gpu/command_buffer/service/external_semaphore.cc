@@ -200,10 +200,4 @@ VkSemaphore ExternalSemaphore::GetVkSemaphore() {
   return semaphore_;
 }
 
-VkSemaphore ExternalSemaphore::TakeVkSemaphore() {
-  VkSemaphore semaphore = GetVkSemaphore();
-  semaphore_ = VK_NULL_HANDLE;
-  return semaphore;
-}
-
 }  // namespace gpu

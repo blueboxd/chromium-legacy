@@ -17,7 +17,7 @@
 #include "chrome/browser/web_applications/components/web_app_ui_manager.h"
 #include "chrome/common/chrome_features.h"
 
-#if defined(OS_MACOSX)
+#if defined(OS_MAC)
 #include "chrome/browser/web_applications/components/app_shim_registry_mac.h"
 #endif
 
@@ -66,7 +66,7 @@ void OsIntegrationManager::SetSubsystems(
 void OsIntegrationManager::Start() {
   DCHECK(registrar_);
 
-#if defined(OS_MACOSX)
+#if defined(OS_MAC)
   // Ensure that all installed apps are included in the AppShimRegistry when the
   // profile is loaded. This is redundant, because apps are registered when they
   // are installed. It is necessary, however, because app registration was added
@@ -94,7 +94,7 @@ void OsIntegrationManager::InstallOsHooks(
     return;
   }
 
-#if defined(OS_MACOSX)
+#if defined(OS_MAC)
   AppShimRegistry::Get()->OnAppInstalledForProfile(app_id, profile_->GetPath());
 #endif
 
@@ -210,7 +210,7 @@ void OsIntegrationManager::OnShortcutsCreated(
 }
 
 void OsIntegrationManager::DeleteSharedAppShims(const AppId& app_id) {
-#if defined(OS_MACOSX)
+#if defined(OS_MAC)
   bool delete_multi_profile_shortcuts =
       AppShimRegistry::Get()->OnAppUninstalledForProfile(app_id,
                                                          profile_->GetPath());

@@ -28,7 +28,7 @@ import("//v8/gni/v8.gni")
 
 if (is_android) {
   import("//build/config/android/rules.gni")
-} else if (is_linux) {
+} else if (is_linux || is_chromeos) {
   import("//build/linux/extract_symbols.gni")
 } else if (is_mac) {
   import("//build/apple/tweak_info_plist.gni")
@@ -131,7 +131,7 @@ if (!is_android && !is_mac) {
     deps = [ "//printing/buildflags" ]
 
     data = [ "$root_out_dir/resources.pak" ]
-    if (is_linux || is_win) {
+    if (is_linux || is_chromeos || is_win) {
       data_deps = [ "//chrome:packed_resources" ]
     }
 
@@ -211,7 +211,7 @@ if (!is_android && !is_mac) {
       sources += [ "app/chrome_exe_main_aura.cc" ]
     }
 
-    if (is_linux) {
+    if (is_linux || is_chromeos) {
       sources += [
         "app/chrome_dll_resource.h",
         "app/chrome_main.cc",
@@ -1556,7 +1556,7 @@ if (enable_resource_whitelist_generation) {
   }
 }
 
-if (is_linux) {
+if (is_linux || is_chromeos) {
   if (is_official_build) {
     group("linux_symbols") {
       deps = [

@@ -51,7 +51,6 @@ import org.chromium.chrome.browser.ui.tablet.emptybackground.EmptyBackgroundView
 import org.chromium.chrome.browser.vr.VrModuleProvider;
 import org.chromium.components.browser_ui.bottomsheet.EmptyBottomSheetObserver;
 import org.chromium.ui.base.DeviceFormFactor;
-import org.chromium.ui.base.WindowAndroid;
 
 /**
  * A {@link RootUiCoordinator} variant that controls tabbed-mode specific UI.
@@ -257,7 +256,7 @@ public class TabbedRootUiCoordinator extends RootUiCoordinator implements Native
         mIntentWithEffect.removeObserver(mIntentWithEffectObserver);
         mIntentWithEffectObserver = null;
 
-        WindowAndroid window = mActivity.getWindowAndroid();
+        if (mActivity == null) return;
         mToolbarButtonInProductHelpController =
                 new ToolbarButtonInProductHelpController(mActivity, mAppMenuCoordinator,
                         mActivity.getLifecycleDispatcher(), mActivity.getActivityTabProvider());

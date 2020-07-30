@@ -208,6 +208,6 @@ void DesktopDisplayInfo::LoadCurrentDisplayInfo() {
   }
 #endif  // OS_WIN
 }
-#endif  // !OS_MACOSX
+#endif  // !OS_APPLE
 
 }  // namespace remoting

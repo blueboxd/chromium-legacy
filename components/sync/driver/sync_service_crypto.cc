@@ -17,6 +17,7 @@
 #include "components/sync/base/sync_prefs.h"
 #include "components/sync/driver/sync_driver_switches.h"
 #include "components/sync/driver/sync_service.h"
+#include "components/sync/engine/sync_engine_switches.h"
 #include "components/sync/engine/sync_string_conversions.h"
 #include "components/sync/nigori/nigori.h"
 
@@ -64,6 +65,11 @@ class EmptyTrustedVaultClient : public TrustedVaultClient {
 
   void MarkKeysAsStale(const CoreAccountInfo& account_info,
                        base::OnceCallback<void(bool)> cb) override {
+    std::move(cb).Run(false);
+  }
+
+  void GetIsRecoverabilityDegraded(const CoreAccountInfo& account_info,
+                                   base::OnceCallback<void(bool)> cb) override {
     std::move(cb).Run(false);
   }
 };
@@ -241,6 +247,7 @@ bool SyncServiceCrypto::IsPassphraseRequired() const {
     case RequiredUserAction::kFetchingTrustedVaultKeys:
     case RequiredUserAction::kTrustedVaultKeyRequired:
     case RequiredUserAction::kTrustedVaultKeyRequiredButFetching:
+    case RequiredUserAction::kTrustedVaultRecoverabilityDegraded:
       return false;
     case RequiredUserAction::kPassphraseRequiredForDecryption:
     case RequiredUserAction::kPassphraseRequiredForEncryption:
@@ -262,6 +269,12 @@ bool SyncServiceCrypto::IsTrustedVaultKeyRequired() const {
              RequiredUserAction::kTrustedVaultKeyRequired ||
          state_.required_user_action ==
              RequiredUserAction::kTrustedVaultKeyRequiredButFetching;
+}
+
+bool SyncServiceCrypto::IsTrustedVaultRecoverabilityDegraded() const {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  return state_.required_user_action ==
+         RequiredUserAction::kTrustedVaultRecoverabilityDegraded;
 }
 
 void SyncServiceCrypto::EnableEncryptEverything() {
@@ -290,6 +303,7 @@ void SyncServiceCrypto::SetEncryptionPassphrase(const std::string& passphrase) {
   switch (state_.required_user_action) {
     case RequiredUserAction::kUnknownDuringInitialization:
     case RequiredUserAction::kNone:
+    case RequiredUserAction::kTrustedVaultRecoverabilityDegraded:
       break;
     case RequiredUserAction::kPassphraseRequiredForDecryption:
     case RequiredUserAction::kFetchingTrustedVaultKeys:
@@ -372,6 +386,7 @@ bool SyncServiceCrypto::IsTrustedVaultKeyRequiredStateKnown() const {
     case RequiredUserAction::kTrustedVaultKeyRequired:
     case RequiredUserAction::kTrustedVaultKeyRequiredButFetching:
     case RequiredUserAction::kPassphraseRequiredForEncryption:
+    case RequiredUserAction::kTrustedVaultRecoverabilityDegraded:
       return true;
   }
   NOTREACHED();
@@ -402,6 +417,7 @@ bool SyncServiceCrypto::HasCryptoError() const {
   switch (state_.required_user_action) {
     case RequiredUserAction::kUnknownDuringInitialization:
     case RequiredUserAction::kNone:
+    case RequiredUserAction::kTrustedVaultRecoverabilityDegraded:
       return false;
     case RequiredUserAction::kFetchingTrustedVaultKeys:
     case RequiredUserAction::kTrustedVaultKeyRequired:
@@ -495,6 +511,7 @@ void SyncServiceCrypto::OnTrustedVaultKeyAccepted() {
     case RequiredUserAction::kNone:
     case RequiredUserAction::kPassphraseRequiredForDecryption:
     case RequiredUserAction::kPassphraseRequiredForEncryption:
+    case RequiredUserAction::kTrustedVaultRecoverabilityDegraded:
       return;
     case RequiredUserAction::kFetchingTrustedVaultKeys:
     case RequiredUserAction::kTrustedVaultKeyRequired:
@@ -557,9 +574,19 @@ void SyncServiceCrypto::OnCryptographerStateChanged(
 void SyncServiceCrypto::OnPassphraseTypeChanged(PassphraseType type,
                                                 base::Time passphrase_time) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+
   DVLOG(1) << "Passphrase type changed to " << PassphraseTypeToString(type);
+
   state_.cached_passphrase_type = type;
   state_.cached_explicit_passphrase_time = passphrase_time;
+
+  // Clear recoverability degraded state in case a custom passphrase was set.
+  if (type != PassphraseType::kTrustedVaultPassphrase &&
+      state_.required_user_action ==
+          RequiredUserAction::kTrustedVaultRecoverabilityDegraded) {
+    UpdateRequiredUserActionAndNotify(RequiredUserAction::kNone);
+  }
+
   notify_observers_.Run();
 }
 
@@ -597,6 +624,7 @@ void SyncServiceCrypto::OnTrustedVaultClientKeysChanged() {
     case RequiredUserAction::kNone:
     case RequiredUserAction::kPassphraseRequiredForDecryption:
     case RequiredUserAction::kPassphraseRequiredForEncryption:
+    case RequiredUserAction::kTrustedVaultRecoverabilityDegraded:
       // If no trusted vault keys are required, there's nothing to do. If they
       // later are required, a fetch will be triggered in
       // OnTrustedVaultKeyRequired().
@@ -739,8 +767,50 @@ void SyncServiceCrypto::UpdateRequiredUserActionAndNotify(
     RequiredUserAction new_required_user_action) {
   DCHECK_NE(new_required_user_action,
             RequiredUserAction::kUnknownDuringInitialization);
+
+  if (state_.required_user_action == new_required_user_action) {
+    return;
+  }
+
   state_.required_user_action = new_required_user_action;
   notify_required_user_action_changed_.Run();
+
+  if (state_.required_user_action == RequiredUserAction::kNone &&
+      state_.cached_passphrase_type ==
+          PassphraseType::kTrustedVaultPassphrase &&
+      base::FeatureList::IsEnabled(
+          switches::kSyncSupportTrustedVaultPassphraseRecovery)) {
+    trusted_vault_client_->GetIsRecoverabilityDegraded(
+        state_.account_info,
+        base::BindOnce(&SyncServiceCrypto::GetIsRecoverabilityDegradedCompleted,
+                       weak_factory_.GetWeakPtr()));
+  }
+}
+
+void SyncServiceCrypto::GetIsRecoverabilityDegradedCompleted(
+    bool is_recoverability_degraded) {
+  if (state_.cached_passphrase_type !=
+      PassphraseType::kTrustedVaultPassphrase) {
+    DCHECK_NE(state_.required_user_action,
+              RequiredUserAction::kTrustedVaultRecoverabilityDegraded);
+    return;
+  }
+
+  // Transition from non-degraded to degraded recoverability.
+  if (is_recoverability_degraded &&
+      state_.required_user_action == RequiredUserAction::kNone) {
+    UpdateRequiredUserActionAndNotify(
+        RequiredUserAction::kTrustedVaultRecoverabilityDegraded);
+    notify_observers_.Run();
+  }
+
+  // Transition from degraded to non-degraded recoverability.
+  if (!is_recoverability_degraded &&
+      state_.required_user_action ==
+          RequiredUserAction::kTrustedVaultRecoverabilityDegraded) {
+    UpdateRequiredUserActionAndNotify(RequiredUserAction::kNone);
+    notify_observers_.Run();
+  }
 }
 
 }  // namespace syncer

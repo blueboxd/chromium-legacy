@@ -97,6 +97,7 @@ class URLSchemesRegistry final {
   URLSchemesSet service_worker_schemes;
   URLSchemesSet fetch_api_schemes;
   URLSchemesSet first_party_when_top_level_schemes;
+  URLSchemesSet first_party_when_top_level_with_secure_embedded_schemes;
   URLSchemesMap<SchemeRegistry::PolicyAreas, PolicyAreasHashTraits>
       content_security_policy_bypassing_schemes;
   URLSchemesSet secure_context_bypassing_schemes;
@@ -340,6 +341,30 @@ bool SchemeRegistry::ShouldTreatURLSchemeAsFirstPartyWhenTopLevel(
     return false;
   return GetURLSchemesRegistry().first_party_when_top_level_schemes.Contains(
       scheme);
+}
+
+void SchemeRegistry::RegisterURLSchemeAsFirstPartyWhenTopLevelEmbeddingSecure(
+    const String& scheme) {
+  DCHECK_EQ(scheme, scheme.LowerASCII());
+  GetMutableURLSchemesRegistry()
+      .first_party_when_top_level_with_secure_embedded_schemes.insert(scheme);
+}
+
+bool SchemeRegistry::
+    ShouldTreatURLSchemeAsFirstPartyWhenTopLevelEmbeddingSecure(
+        const String& top_level_scheme,
+        const String& child_scheme) {
+  DCHECK_EQ(top_level_scheme, top_level_scheme.LowerASCII());
+  DCHECK_EQ(child_scheme, child_scheme.LowerASCII());
+  // Matches GURL::SchemeIsCryptographic used by
+  // RenderFrameHostImpl::ComputeIsolationInfoInternal
+  if (child_scheme != "https" && child_scheme != "wss")
+    return false;
+  if (top_level_scheme.IsEmpty())
+    return false;
+  return GetURLSchemesRegistry()
+      .first_party_when_top_level_with_secure_embedded_schemes.Contains(
+          top_level_scheme);
 }
 
 void SchemeRegistry::RegisterURLSchemeAsAllowedForReferrer(

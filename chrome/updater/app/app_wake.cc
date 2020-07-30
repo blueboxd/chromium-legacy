@@ -20,17 +20,19 @@ namespace updater {
 // ControlService interface.
 class AppWake : public App {
  public:
-  AppWake() = default;
+  AppWake() : service_(CreateControlService()) {}
 
  private:
   ~AppWake() override = default;
 
   // Overrides for App.
   void FirstTaskRun() override;
+
+  scoped_refptr<ControlService> service_;
 };
 
 void AppWake::FirstTaskRun() {
-  CreateControlService()->Run(base::BindOnce(&AppWake::Shutdown, this, 0));
+  service_->Run(base::BindOnce(&AppWake::Shutdown, this, 0));
 }
 
 scoped_refptr<App> MakeAppWake() {

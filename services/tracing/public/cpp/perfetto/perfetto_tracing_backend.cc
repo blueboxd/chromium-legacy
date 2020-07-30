@@ -416,8 +416,23 @@ class ConsumerEndpoint : public perfetto::ConsumerEndpoint,
     }
     drainer_ = std::make_unique<mojo::DataPipeDrainer>(
         this, std::move(consumer_handle));
-    tokenizer_ = std::make_unique<TracePacketTokenizer>();
+    trace_data_complete_ = false;
     read_buffers_complete_ = false;
+
+    // Convert to legacy JSON if needed.
+    for (const auto& data_source : trace_config_.data_sources()) {
+      if (data_source.config().has_chrome_config() &&
+          data_source.config().chrome_config().convert_to_legacy_json()) {
+        tracing_session_host_->DisableTracingAndEmitJson(
+            /*agent_label_filter=*/"", std::move(producer_handle),
+            /*privacy_filter_enabled=*/false,
+            base::BindOnce(&ConsumerEndpoint::OnReadBuffersComplete,
+                           base::Unretained(this)));
+        return;
+      }
+    }
+
+    tokenizer_ = std::make_unique<TracePacketTokenizer>();
     tracing_session_host_->ReadBuffers(
         std::move(producer_handle),
         base::BindOnce(&ConsumerEndpoint::OnReadBuffersComplete,
@@ -523,16 +538,28 @@ class ConsumerEndpoint : public perfetto::ConsumerEndpoint,
   // mojo::DataPipeDrainer::Client implementation:
   void OnDataAvailable(const void* data, size_t num_bytes) override {
     DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-    auto packets =
-        tokenizer_->Parse(reinterpret_cast<const uint8_t*>(data), num_bytes);
-    if (!packets.empty())
+    if (tokenizer_) {
+      // Protobuf-format data.
+      auto packets =
+          tokenizer_->Parse(reinterpret_cast<const uint8_t*>(data), num_bytes);
+      if (!packets.empty())
+        consumer_->OnTraceData(std::move(packets), /*has_more=*/true);
+    } else {
+      // Legacy JSON-format data.
+      std::vector<perfetto::TracePacket> packets;
+      packets.emplace_back();
+      packets.back().AddSlice(data, num_bytes);
       consumer_->OnTraceData(std::move(packets), /*has_more=*/true);
+    }
   }
 
   void OnDataComplete() override {
     DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-    DCHECK(!tokenizer_->has_more());
-    tokenizer_.reset();
+    if (tokenizer_) {
+      DCHECK(!tokenizer_->has_more());
+      tokenizer_.reset();
+    }
+    trace_data_complete_ = true;
     MaybeFinishTraceData();
   }
 
@@ -583,7 +610,7 @@ class ConsumerEndpoint : public perfetto::ConsumerEndpoint,
 
   void MaybeFinishTraceData() {
     DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-    if (!read_buffers_complete_ || tokenizer_)
+    if (!read_buffers_complete_ || !trace_data_complete_)
       return;
     consumer_->OnTraceData({}, /*has_more=*/false);
   }
@@ -599,6 +626,7 @@ class ConsumerEndpoint : public perfetto::ConsumerEndpoint,
 
   std::unique_ptr<TracePacketTokenizer> tokenizer_;
   bool read_buffers_complete_ = false;
+  bool trace_data_complete_ = false;
   uint32_t observed_events_mask_ = 0;
 
   base::WeakPtrFactory<ConsumerEndpoint> weak_factory_{this};

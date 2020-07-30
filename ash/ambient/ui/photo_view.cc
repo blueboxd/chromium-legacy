@@ -12,9 +12,11 @@
 #include "ash/ambient/ui/ambient_background_image_view.h"
 #include "ash/ambient/ui/ambient_view_delegate.h"
 #include "ash/assistant/ui/assistant_view_ids.h"
-#include "base/metrics/histogram_macros.h"
+#include "ash/public/cpp/metrics_util.h"
+#include "base/metrics/histogram_functions.h"
 #include "ui/aura/window.h"
 #include "ui/compositor/animation_metrics_reporter.h"
+#include "ui/compositor/animation_throughput_reporter.h"
 #include "ui/compositor/layer.h"
 #include "ui/compositor/scoped_layer_animation_settings.h"
 #include "ui/gfx/image/image_skia_operations.h"
@@ -27,6 +29,10 @@ namespace {
 
 constexpr char kPhotoTransitionSmoothness[] =
     "Ash.AmbientMode.AnimationSmoothness.PhotoTransition";
+
+void ReportSmoothness(int value) {
+  base::UmaHistogramPercentage(kPhotoTransitionSmoothness, value);
+}
 
 gfx::ImageSkia ResizeImage(const gfx::ImageSkia& image,
                            const gfx::Size& view_size) {
@@ -58,10 +64,7 @@ gfx::ImageSkia ResizeImage(const gfx::ImageSkia& image,
 }  // namespace
 
 // PhotoView ------------------------------------------------------------------
-PhotoView::PhotoView(AmbientViewDelegate* delegate)
-    : delegate_(delegate),
-      metrics_reporter_(std::make_unique<ui::HistogramPercentageMetricsReporter<
-                            kPhotoTransitionSmoothness>>()) {
+PhotoView::PhotoView(AmbientViewDelegate* delegate) : delegate_(delegate) {
   DCHECK(delegate_);
   SetID(AssistantViewID::kAmbientPhotoView);
   Init();
@@ -132,8 +135,12 @@ void PhotoView::StartTransitionAnimation() {
     animation.SetTweenType(gfx::Tween::LINEAR);
     animation.SetPreemptionStrategy(
         ui::LayerAnimator::IMMEDIATELY_SET_NEW_TARGET);
-    animation.SetAnimationMetricsReporter(metrics_reporter_.get());
     animation.CacheRenderSurface();
+
+    ui::AnimationThroughputReporter reporter(
+        animation.GetAnimator(),
+        metrics_util::ForSmoothness(base::BindRepeating(ReportSmoothness)));
+
     visible_layer->SetOpacity(0.0f);
   }
 
@@ -144,10 +151,14 @@ void PhotoView::StartTransitionAnimation() {
     animation.SetTweenType(gfx::Tween::LINEAR);
     animation.SetPreemptionStrategy(
         ui::LayerAnimator::IMMEDIATELY_SET_NEW_TARGET);
-    animation.SetAnimationMetricsReporter(metrics_reporter_.get());
     animation.CacheRenderSurface();
     // For simplicity, only observe one animation.
     animation.AddObserver(this);
+
+    ui::AnimationThroughputReporter reporter(
+        animation.GetAnimator(),
+        metrics_util::ForSmoothness(base::BindRepeating(ReportSmoothness)));
+
     invisible_layer->SetOpacity(1.0f);
   }
 }

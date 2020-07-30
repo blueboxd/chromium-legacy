@@ -13,7 +13,8 @@
 #include "third_party/blink/renderer/platform/loader/cors/cors.h"
 #include "third_party/blink/renderer/platform/loader/fetch/cached_metadata_handler.h"
 #include "third_party/blink/renderer/platform/loader/fetch/fetch_context.h"
-#include "third_party/blink/renderer/platform/loader/fetch/memory_cache.h"
+#include "third_party/blink/renderer/platform/loader/fetch/fetch_initiator_type_names.h"
+#include "third_party/blink/renderer/platform/loader/fetch/fetch_parameters.h"
 #include "third_party/blink/renderer/platform/loader/fetch/resource_load_info.h"
 #include "third_party/blink/renderer/platform/loader/fetch/resource_load_timing.h"
 #include "third_party/blink/renderer/platform/loader/fetch/resource_request.h"
@@ -24,23 +25,23 @@
 namespace blink {
 
 void WorkerMainScriptLoader::Start(
-    const KURL& request_script_url,
+    FetchParameters& fetch_params,
     std::unique_ptr<WorkerMainScriptLoadParameters>
         worker_main_script_load_params,
-    const ResourceLoaderOptions& options,
-    mojom::RequestContextType request_context,
-    network::mojom::RequestDestination request_destination,
     FetchContext* fetch_context,
+    ResourceLoadObserver* resource_loade_observer,
     CrossVariantMojoRemote<mojom::ResourceLoadInfoNotifierInterfaceBase>
         resource_load_info_notifier,
     WorkerMainScriptLoaderClient* client) {
   DCHECK(base::FeatureList::IsEnabled(
       features::kLoadMainScriptForPlzDedicatedWorkerByParams));
+  DCHECK(resource_loade_observer);
   DCHECK(client);
-  initial_request_url_ = request_script_url;
+  initial_request_.CopyFrom(fetch_params.GetResourceRequest());
+  resource_loader_options_ = fetch_params.Options();
+  initial_request_url_ = fetch_params.GetResourceRequest().Url();
   last_request_url_ = initial_request_url_;
-  request_context_ = request_context;
-  request_destination_ = request_destination;
+  resource_load_observer_ = resource_loade_observer;
   fetch_context_ = fetch_context;
   client_ = client;
   resource_load_info_ = blink::mojom::ResourceLoadInfo::New();
@@ -54,34 +55,45 @@ void WorkerMainScriptLoader::Start(
   // TODO(crbug.com/929370): Support CSP check to post violation reports for
   // worker top-level scripts, if off-the-main-thread fetch is enabled.
 
-  size_t redirect_count =
-      worker_main_script_load_params->redirect_responses.size();
-  for (size_t i = 0; i < redirect_count; ++i) {
-    auto& redirect_info = worker_main_script_load_params->redirect_infos[i];
-    auto& redirect_response =
-        worker_main_script_load_params->redirect_responses[i];
-    last_request_url_ = KURL(redirect_info.new_url);
-    NotifyRedirectionReceived(std::move(redirect_response), redirect_info);
+  resource_load_observer_->WillSendRequest(
+      initial_request_.InspectorId(), initial_request_,
+      /*redirect_response=*/ResourceResponse(), ResourceType::kScript,
+      resource_loader_options_.initiator_info);
+
+  if (!worker_main_script_load_params->redirect_responses.empty()) {
+    HandleRedirections(worker_main_script_load_params->redirect_infos,
+                       worker_main_script_load_params->redirect_responses);
   }
 
   WebURLResponse response;
   auto response_head = std::move(worker_main_script_load_params->response_head);
   Platform::Current()->PopulateURLResponse(
       WebURL(last_request_url_), *response_head, &response,
-      response_head->ssl_info.has_value(), -1 /* request_id */);
+      response_head->ssl_info.has_value(), /*request_id=*/-1);
   resource_response_ = response.ToResourceResponse();
+  NotifyResponseReceived(std::move(response_head));
 
   if (resource_response_.IsHTTP() &&
       !cors::IsOkStatus(resource_response_.HttpStatusCode())) {
     client_->OnFailedLoadingWorkerMainScript();
+    resource_load_observer_->DidFailLoading(
+        initial_request_.Url(), initial_request_.InspectorId(),
+        ResourceError(net::ERR_FAILED, last_request_url_, base::nullopt),
+        resource_response_.EncodedDataLength(),
+        ResourceLoadObserver::IsInternalRequest(
+            resource_loader_options_.initiator_info.name ==
+            fetch_initiator_type_names::kInternal));
     return;
   }
 
+  resource_load_observer_->DidReceiveResponse(
+      initial_request_.InspectorId(), initial_request_, resource_response_,
+      /*resource=*/nullptr,
+      ResourceLoadObserver::ResponseSource::kNotFromMemoryCache);
   script_encoding_ =
       resource_response_.TextEncodingName().IsEmpty()
           ? UTF8Encoding()
           : WTF::TextEncoding(resource_response_.TextEncodingName());
-  NotifyResponseReceived(std::move(response_head));
 
   url_loader_remote_.Bind(std::move(
       worker_main_script_load_params->url_loader_client_endpoints->url_loader));
@@ -148,8 +160,9 @@ void WorkerMainScriptLoader::OnComplete(
   // Reports resource timing info for the worker main script.
   scoped_refptr<ResourceTimingInfo> timing_info =
       ResourceTimingInfo::Create(g_empty_atom, base::TimeTicks::Now(),
-                                 request_context_, request_destination_);
-  const int64_t encoded_data_length = GetResponse().EncodedDataLength();
+                                 initial_request_.GetRequestContext(),
+                                 initial_request_.GetRequestDestination());
+  const int64_t encoded_data_length = resource_response_.EncodedDataLength();
   timing_info->SetInitialURL(initial_request_url_);
   timing_info->SetFinalResponse(resource_response_);
   timing_info->SetLoadResponseEnd(status.completion_time);
@@ -166,13 +179,13 @@ SingleCachedMetadataHandler*
 WorkerMainScriptLoader::CreateCachedMetadataHandler() {
   // Currently we support the metadata caching only for HTTP family.
   if (!initial_request_url_.ProtocolIsInHTTPFamily() ||
-      !GetResponse().CurrentRequestUrl().ProtocolIsInHTTPFamily()) {
+      !resource_response_.CurrentRequestUrl().ProtocolIsInHTTPFamily()) {
     return nullptr;
   }
 
   std::unique_ptr<CachedMetadataSender> cached_metadata_sender =
       CachedMetadataSender::Create(
-          GetResponse(), blink::mojom::CodeCacheType::kJavascript,
+          resource_response_, blink::mojom::CodeCacheType::kJavascript,
           SecurityOrigin::Create(initial_request_url_));
   return MakeGarbageCollected<ScriptCachedMetadataHandler>(
       script_encoding_, std::move(cached_metadata_sender));
@@ -180,6 +193,7 @@ WorkerMainScriptLoader::CreateCachedMetadataHandler() {
 
 void WorkerMainScriptLoader::Trace(Visitor* visitor) const {
   visitor->Trace(fetch_context_);
+  visitor->Trace(resource_load_observer_);
   visitor->Trace(client_);
 }
 
@@ -225,8 +239,12 @@ void WorkerMainScriptLoader::OnReadable(MojoResult) {
       return;
   }
 
-  if (bytes_read > 0)
-    client_->DidReceiveData(base::make_span(buffer, bytes_read));
+  if (bytes_read > 0) {
+    base::span<const char> span = base::make_span(buffer, bytes_read);
+    client_->DidReceiveData(span);
+    resource_load_observer_->DidReceiveData(initial_request_.InspectorId(),
+                                            span);
+  }
 
   rv = data_pipe_->EndReadData(bytes_read);
   DCHECK_EQ(rv, MOJO_RESULT_OK);
@@ -246,16 +264,61 @@ void WorkerMainScriptLoader::NotifyCompletionIfAppropriate() {
   WorkerMainScriptLoaderClient* client = client_.Get();
   client_.Clear();
 
-  if (status_.error_code == net::OK)
+  if (status_.error_code == net::OK) {
     client->OnFinishedLoadingWorkerMainScript();
-  else
+    resource_load_observer_->DidFinishLoading(
+        initial_request_.InspectorId(), base::TimeTicks::Now(),
+        resource_response_.EncodedDataLength(),
+        resource_response_.DecodedBodyLength(),
+        /*should_report_corb_blocking=*/false);
+  } else {
     client->OnFailedLoadingWorkerMainScript();
+    resource_load_observer_->DidFailLoading(
+        last_request_url_, initial_request_.InspectorId(),
+        ResourceError(status_.error_code, last_request_url_, base::nullopt),
+        resource_response_.EncodedDataLength(),
+        ResourceLoadObserver::IsInternalRequest(
+            ResourceLoadObserver::IsInternalRequest(
+                resource_loader_options_.initiator_info.name ==
+                fetch_initiator_type_names::kInternal)));
+  }
 }
 
 void WorkerMainScriptLoader::OnConnectionClosed() {
   if (!has_received_completion_) {
     OnComplete(network::URLLoaderCompletionStatus(net::ERR_ABORTED));
     return;
+  }
+}
+
+void WorkerMainScriptLoader::HandleRedirections(
+    std::vector<net::RedirectInfo>& redirect_infos,
+    std::vector<network::mojom::URLResponseHeadPtr>& redirect_responses) {
+  DCHECK_EQ(redirect_infos.size(), redirect_responses.size());
+  for (size_t i = 0; i < redirect_infos.size(); ++i) {
+    auto& redirect_info = redirect_infos[i];
+    auto& redirect_response = redirect_responses[i];
+    last_request_url_ = KURL(redirect_info.new_url);
+
+    std::unique_ptr<ResourceRequest> new_request =
+        initial_request_.CreateRedirectRequest(
+            KURL(redirect_info.new_url),
+            AtomicString::FromUTF8(redirect_info.new_method.data(),
+                                   redirect_info.new_method.length()),
+            redirect_info.new_site_for_cookies,
+            AtomicString::FromUTF8(redirect_info.new_referrer.data(),
+                                   redirect_info.new_referrer.length()),
+            NetToMojoReferrerPolicy(redirect_info.new_referrer_policy),
+            /*skip_service_worker=*/false);
+    WebURLResponse response;
+    Platform::Current()->PopulateURLResponse(
+        WebURL(last_request_url_), *redirect_response, &response,
+        redirect_response->ssl_info.has_value(), /*request_id=*/-1);
+    resource_load_observer_->WillSendRequest(
+        new_request->InspectorId(), *new_request, response.ToResourceResponse(),
+        ResourceType::kScript, resource_loader_options_.initiator_info);
+
+    NotifyRedirectionReceived(std::move(redirect_response), redirect_info);
   }
 }
 
@@ -305,7 +368,8 @@ void WorkerMainScriptLoader::NotifyCompleteReceived(
   if (resource_loader_info_notifier_) {
     resource_load_info_->network_info = blink::mojom::CommonNetworkInfo::New();
     resource_load_info_->original_url = initial_request_url_;
-    resource_load_info_->request_destination = request_destination_;
+    resource_load_info_->request_destination =
+        initial_request_.GetRequestDestination();
     resource_load_info_->was_cached = status.exists_in_cache;
     resource_load_info_->net_error = status.error_code;
     resource_load_info_->total_received_bytes = status.encoded_data_length;

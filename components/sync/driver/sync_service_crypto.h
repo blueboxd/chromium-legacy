@@ -48,6 +48,7 @@ class SyncServiceCrypto : public SyncEncryptionHandler::Observer,
   bool IsPassphraseRequired() const;
   bool IsUsingSecondaryPassphrase() const;
   bool IsTrustedVaultKeyRequired() const;
+  bool IsTrustedVaultRecoverabilityDegraded() const;
   void EnableEncryptEverything();
   bool IsEncryptEverythingEnabled() const;
   void SetEncryptionPassphrase(const std::string& passphrase);
@@ -107,6 +108,9 @@ class SyncServiceCrypto : public SyncEncryptionHandler::Observer,
     // via IsTrustedVaultKeyRequired() but there's an ongoing fetch that may
     // resolve the issue.
     kTrustedVaultKeyRequiredButFetching,
+    // No keys are required locally but user action is recommended to improve
+    // recoverability.
+    kTrustedVaultRecoverabilityDegraded,
   };
 
   // Observer method invoked by TrustedVaultClient when its content changes.
@@ -130,6 +134,10 @@ class SyncServiceCrypto : public SyncEncryptionHandler::Observer,
   // |notify_required_user_action_changed_|.
   void UpdateRequiredUserActionAndNotify(
       RequiredUserAction new_required_user_action);
+
+  // Completion callback function for
+  // TrustedVaultClient::GetIsRecoverabilityDegraded().
+  void GetIsRecoverabilityDegradedCompleted(bool is_recoverability_degraded);
 
   // Calls SyncServiceBase::NotifyObservers(). Never null.
   const base::RepeatingClosure notify_observers_;

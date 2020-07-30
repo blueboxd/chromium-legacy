@@ -482,14 +482,14 @@ bool VTVideoDecodeAccelerator::FrameOrder::operator()(
 }
 
 VTVideoDecodeAccelerator::VTVideoDecodeAccelerator(
-    const BindGLImageCallback& bind_image_cb,
+    const GpuVideoDecodeGLClient& gl_client,
     MediaLog* media_log)
-    : bind_image_cb_(bind_image_cb),
+    : gl_client_(gl_client),
       media_log_(media_log),
       gpu_task_runner_(base::ThreadTaskRunnerHandle::Get()),
       decoder_thread_("VTDecoderThread"),
       weak_this_factory_(this) {
-  DCHECK(bind_image_cb_);
+  DCHECK(gl_client_.bind_image);
 
   callback_.decompressionOutputCallback = OutputThunk;
   callback_.decompressionOutputRefCon = this;
@@ -1191,8 +1191,8 @@ void VTVideoDecodeAccelerator::ReusePictureBuffer(int32_t picture_id) {
 
   // Drop references to allow the underlying buffer to be released.
   PictureInfo* picture_info = it->second.get();
-  bind_image_cb_.Run(picture_info->client_texture_id, GL_TEXTURE_RECTANGLE_ARB,
-                     nullptr, false);
+  gl_client_.bind_image.Run(picture_info->client_texture_id,
+                            GL_TEXTURE_RECTANGLE_ARB, nullptr, false);
   picture_info->gl_image = nullptr;
   picture_info->bitstream_id = 0;
 
@@ -1386,8 +1386,8 @@ bool VTVideoDecodeAccelerator::SendFrame(const Frame& frame) {
   gfx::ColorSpace color_space = GetImageBufferColorSpace(frame.image);
   gl_image->SetColorSpaceForYUVToRGBConversion(color_space);
 
-  if (!bind_image_cb_.Run(picture_info->client_texture_id,
-                          GL_TEXTURE_RECTANGLE_ARB, gl_image, false)) {
+  if (!gl_client_.bind_image.Run(picture_info->client_texture_id,
+                                 GL_TEXTURE_RECTANGLE_ARB, gl_image, false)) {
     DLOG(ERROR) << "Failed to bind image";
     NotifyError(PLATFORM_FAILURE, SFT_PLATFORM_ERROR);
     return false;

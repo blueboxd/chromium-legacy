@@ -18,7 +18,7 @@ interface SafeArchiveAnalyzer {
                  mojo_base.mojom.File temporary_file)
       => (SafeArchiveAnalyzerResults results);
 
-  // Build flag FULL_SAFE_BROWSING, on OS_MACOSX: Analyze the |dmg_file|
+  // Build flag FULL_SAFE_BROWSING, on OS_MAC: Analyze the |dmg_file|
   // for malicious download protection.
   AnalyzeDmgFile(mojo_base.mojom.File dmg_file)
       => (SafeArchiveAnalyzerResults results);

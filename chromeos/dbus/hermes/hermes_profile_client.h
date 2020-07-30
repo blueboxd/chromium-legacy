@@ -24,6 +24,12 @@ namespace chromeos {
 // HermesProfileClient is used to talk to Hermes profile objects.
 class COMPONENT_EXPORT(HERMES_CLIENT) HermesProfileClient {
  public:
+  class TestInterface {
+   public:
+    // Clears the Profile properties for the given path.
+    virtual void ClearProfile(const dbus::ObjectPath& carrier_profile_path) = 0;
+  };
+
   // Hermes profile properties.
   class Properties : public dbus::PropertySet {
    public:
@@ -86,6 +92,9 @@ class COMPONENT_EXPORT(HERMES_CLIENT) HermesProfileClient {
   // |carrier_profile_path|.
   virtual Properties* GetProperties(
       const dbus::ObjectPath& carrier_profile_path) = 0;
+
+  // Returns an instance of Hermes Profile Test interface.
+  virtual TestInterface* GetTestInterface() = 0;
 
   // Creates and initializes the global instance.
   static void Initialize(dbus::Bus* bus);

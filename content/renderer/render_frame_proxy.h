@@ -143,7 +143,6 @@ class CONTENT_EXPORT RenderFrameProxy : public IPC::Listener,
   void OnPageScaleFactorChanged(float page_scale_factor,
                                 bool is_pinch_gesture_active);
   void OnVisibleViewportSizeChanged(const gfx::Size& visible_viewport_size);
-  void UpdateCaptureSequenceNumber(uint32_t capture_sequence_number);
 
   // Pass replicated information, such as security origin, to this
   // RenderFrameProxy's WebRemoteFrame.
@@ -197,6 +196,7 @@ class CONTENT_EXPORT RenderFrameProxy : public IPC::Listener,
       const blink::ViewportIntersectionState& intersection_state) override;
   base::UnguessableToken GetDevToolsFrameToken() override;
   void ZoomLevelChanged(double zoom_level) override;
+  void UpdateCaptureSequenceNumber(uint32_t capture_sequence_number) override;
 
   void DidStartLoading();
 

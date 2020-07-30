@@ -113,7 +113,7 @@ if (is_chromeos) {
       "printing_metrics.idl",
     ]
   }
-} else if (is_linux || is_win) {
+} else if (is_linux || is_chromeos || is_win) {
   schema_sources_ += [ "input_ime.json" ]
 }
 

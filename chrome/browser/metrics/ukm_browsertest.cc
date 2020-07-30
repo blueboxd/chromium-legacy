@@ -44,7 +44,6 @@
 #include "components/ukm/ukm_service.h"
 #include "components/ukm/ukm_test_helper.h"
 #include "components/unified_consent/unified_consent_service.h"
-#include "components/variations/service/variations_field_trial_creator.h"
 #include "components/version_info/version_info.h"
 #include "content/public/browser/browsing_data_remover.h"
 #include "content/public/common/content_switches.h"
@@ -609,14 +608,8 @@ IN_PROC_BROWSER_TEST_F(UkmBrowserTest, LogProtoData) {
                                version_info::GetVersionNumber(),
                                base::CompareCase::SENSITIVE));
 
-// Chrome OS hardware class comes from a different API than on other platforms.
-#if defined(OS_CHROMEOS)
-  EXPECT_EQ(variations::VariationsFieldTrialCreator::GetShortHardwareClass(),
-            report->system_profile().hardware().hardware_class());
-#else   // !defined(OS_CHROMEOS)
   EXPECT_EQ(base::SysInfo::HardwareModelName(),
             report->system_profile().hardware().hardware_class());
-#endif  // defined(OS_CHROMEOS)
 
   harness->service()->GetUserSettings()->SetSyncRequested(false);
   CloseBrowserSynchronously(sync_browser);

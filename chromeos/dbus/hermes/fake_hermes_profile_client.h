@@ -18,9 +18,11 @@ namespace chromeos {
 
 // Fake implementation for HermesProfileClient.
 class COMPONENT_EXPORT(HERMES_CLIENT) FakeHermesProfileClient
-    : public HermesProfileClient {
+    : public HermesProfileClient,
+      public HermesProfileClient::TestInterface {
  public:
-  struct Properties : public HermesProfileClient::Properties {
+  class Properties : public HermesProfileClient::Properties {
+   public:
     explicit Properties(const PropertyChangedCallback& callback);
     ~Properties() override;
 
@@ -34,18 +36,20 @@ class COMPONENT_EXPORT(HERMES_CLIENT) FakeHermesProfileClient
 
   FakeHermesProfileClient();
   FakeHermesProfileClient(const FakeHermesProfileClient&) = delete;
+  FakeHermesProfileClient& operator=(const FakeHermesProfileClient&) = delete;
   ~FakeHermesProfileClient() override;
+
+  // HermesProfileClient::TestInterface:
+  void ClearProfile(const dbus::ObjectPath& carrier_profile_path) override;
 
   // HermesProfileClient:
   void EnableCarrierProfile(const dbus::ObjectPath& object_path,
                             HermesResponseCallback callback) override;
   void DisableCarrierProfile(const dbus::ObjectPath& object_path,
                              HermesResponseCallback callback) override;
-
   HermesProfileClient::Properties* GetProperties(
       const dbus::ObjectPath& object_path) override;
-
-  FakeHermesProfileClient& operator=(const FakeHermesProfileClient&) = delete;
+  HermesProfileClient::TestInterface* GetTestInterface() override;
 
  private:
   void UpdateCellularDevice(HermesProfileClient::Properties* properties);

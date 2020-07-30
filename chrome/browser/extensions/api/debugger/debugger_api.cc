@@ -433,7 +433,7 @@ bool DebuggerFunction::InitAgentHost(std::string* error) {
             ->GetBackgroundHostForExtension(*debuggee_.extension_id);
     if (extension_host) {
       if (extension()->permissions_data()->IsRestrictedUrl(
-              extension_host->GetURL(), error)) {
+              extension_host->GetLastCommittedURL(), error)) {
         return false;
       }
       agent_host_ =

@@ -16,7 +16,6 @@ class BluetoothAdapter;
 
 namespace ash {
 
-class GattBatteryController;
 class HfpBatteryListener;
 class HidBatteryListener;
 
@@ -34,7 +33,6 @@ class ASH_EXPORT PeripheralBatteryTracker {
 
   scoped_refptr<device::BluetoothAdapter> adapter_;
 
-  std::unique_ptr<GattBatteryController> gatt_battery_controller_;
   std::unique_ptr<HfpBatteryListener> hfp_battery_listener_;
   std::unique_ptr<HidBatteryListener> hid_battery_listener_;
 

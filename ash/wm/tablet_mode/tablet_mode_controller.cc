@@ -1182,7 +1182,7 @@ void TabletModeController::TakeScreenshot(aura::Window* top_window) {
       &TabletModeController::FinishInitTabletMode, weak_factory_.GetWeakPtr()));
 
   auto* screenshot_window = top_window->GetRootWindow()->GetChildById(
-      kShellWindowId_ScreenRotationContainer);
+      kShellWindowId_ScreenAnimationContainer);
   base::OnceClosure callback = screenshot_set_callback_.callback();
 
   aura::Window* root_window = top_window->GetRootWindow();

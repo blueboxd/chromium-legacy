@@ -28,24 +28,6 @@
 
 namespace remoting {
 
-namespace {
-
-SignalStrategy::Error GrpcStatusToSignalingError(const grpc::Status& status) {
-  switch (status.error_code()) {
-    case grpc::StatusCode::OK:
-      return SignalStrategy::Error::OK;
-    case grpc::StatusCode::PERMISSION_DENIED:
-    case grpc::StatusCode::UNAUTHENTICATED:
-      return SignalStrategy::Error::AUTHENTICATION_FAILED;
-    default:
-      // There are so many errors that gRPC can report, so just generalize them
-      // as NETWORK_ERROR.
-      return SignalStrategy::Error::NETWORK_ERROR;
-  }
-}
-
-}  // namespace
-
 class FtlSignalStrategy::Core {
  public:
   Core(std::unique_ptr<OAuthTokenGetter> oauth_token_getter,
@@ -73,7 +55,7 @@ class FtlSignalStrategy::Core {
   void OnSignInGaiaResponse(const ProtobufHttpStatus& status);
   void StartReceivingMessages();
   void OnReceiveMessagesStreamStarted();
-  void OnReceiveMessagesStreamClosed(const grpc::Status& status);
+  void OnReceiveMessagesStreamClosed(const ProtobufHttpStatus& status);
   void OnMessageReceived(const ftl::Id& sender_id,
                          const std::string& sender_registration_id,
                          const ftl::ChromotingMessage& message);
@@ -83,11 +65,9 @@ class FtlSignalStrategy::Core {
                        MessagingClient::DoneCallback callback);
   void OnSendMessageResponse(const SignalingAddress& receiver,
                              const std::string& stanza_id,
-                             const grpc::Status& status);
+                             const ProtobufHttpStatus& status);
 
   // Returns true if the status is handled.
-  void HandleGrpcStatusError(const base::Location& location,
-                             const grpc::Status& status);
   void HandleProtobufHttpStatusError(const base::Location& location,
                                      const ProtobufHttpStatus& status);
 
@@ -327,13 +307,13 @@ void FtlSignalStrategy::Core::OnReceiveMessagesStreamStarted() {
 }
 
 void FtlSignalStrategy::Core::OnReceiveMessagesStreamClosed(
-    const grpc::Status& status) {
+    const ProtobufHttpStatus& status) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  if (status.error_code() == grpc::StatusCode::CANCELLED) {
+  if (status.error_code() == ProtobufHttpStatus::Code::CANCELLED) {
     LOG(WARNING) << "ReceiveMessages stream closed with CANCELLED code.";
   }
   DCHECK(!status.ok());
-  HandleGrpcStatusError(FROM_HERE, status);
+  HandleProtobufHttpStatusError(FROM_HERE, status);
 }
 
 void FtlSignalStrategy::Core::OnMessageReceived(
@@ -401,19 +381,20 @@ void FtlSignalStrategy::Core::SendMessageImpl(
 void FtlSignalStrategy::Core::OnSendMessageResponse(
     const SignalingAddress& receiver,
     const std::string& stanza_id,
-    const grpc::Status& status) {
+    const ProtobufHttpStatus& status) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   if (status.ok()) {
     return;
   }
 
-  if (status.error_code() == grpc::StatusCode::UNAUTHENTICATED) {
-    HandleGrpcStatusError(FROM_HERE, status);
+  if (status.error_code() == ProtobufHttpStatus::Code::UNAUTHENTICATED) {
+    HandleProtobufHttpStatusError(FROM_HERE, status);
     return;
   }
 
   LOG(ERROR) << "Failed to send message to peer. Error code: "
-             << status.error_code() << ", message: " << status.error_message();
+             << static_cast<int>(status.error_code())
+             << ", message: " << status.error_message();
 
   if (stanza_id.empty()) {
     // If the message sent was not related to signaling, then exit early.
@@ -427,21 +408,6 @@ void FtlSignalStrategy::Core::OnSendMessageResponse(
   error_iq->SetAttr(jingle_xmpp::QN_FROM, receiver.id());
   error_iq->SetAttr(jingle_xmpp::QN_TO, local_address_.id());
   OnStanza(receiver, std::move(error_iq));
-}
-
-void FtlSignalStrategy::Core::HandleGrpcStatusError(
-    const base::Location& location,
-    const grpc::Status& status) {
-  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  DCHECK(!status.ok());
-  error_ = GrpcStatusToSignalingError(status);
-  LOG(ERROR) << "Received gRPC error. Error code: " << status.error_code()
-             << ", message: " << status.error_message()
-             << ", location: " << location.ToString();
-  if (status.error_code() == grpc::StatusCode::UNAUTHENTICATED) {
-    oauth_token_getter_->InvalidateCache();
-  }
-  Disconnect();
 }
 
 void FtlSignalStrategy::Core::HandleProtobufHttpStatusError(
@@ -508,7 +474,7 @@ FtlSignalStrategy::FtlSignalStrategy(
       oauth_token_getter.get(), url_loader_factory,
       std::move(device_id_provider));
   auto messaging_client = std::make_unique<FtlMessagingClient>(
-      oauth_token_getter.get(), registration_manager.get(),
+      oauth_token_getter.get(), url_loader_factory, registration_manager.get(),
       &signaling_tracker_);
   CreateCore(std::move(oauth_token_getter), std::move(registration_manager),
              std::move(messaging_client));

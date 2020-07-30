@@ -380,7 +380,7 @@ static_library("common") {
         "service_process_util.cc",
         "service_process_util.h",
       ]
-      if (is_linux) {
+      if (is_linux || is_chromeos) {
         sources += [ "service_process_util_linux.cc" ]
       }
       if (is_mac) {
@@ -488,7 +488,7 @@ static_library("common") {
     public_deps += [ "//chrome/common/safe_browsing" ]
   }
 
-  if (is_linux) {
+  if (is_linux || is_chromeos) {
     sources += [
       "auto_start_linux.cc",
       "auto_start_linux.h",
@@ -632,7 +632,7 @@ static_library("constants") {
     # implemented in //ui/base, so we need that dependency.
     deps += [ "//ui/base" ]
   }
-  if (is_linux) {
+  if (is_linux || is_chromeos) {
     sources += [ "chrome_paths_linux.cc" ]
   }
   if (is_mac) {

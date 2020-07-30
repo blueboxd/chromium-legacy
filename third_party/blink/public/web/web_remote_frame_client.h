@@ -65,6 +65,9 @@ class WebRemoteFrameClient {
   // to the remote's associated view.
   virtual void ZoomLevelChanged(double zoom_level) {}
 
+  // Called when the local root's capture sequence number has changed.
+  virtual void UpdateCaptureSequenceNumber(uint32_t sequence_number) {}
+
  protected:
   virtual ~WebRemoteFrameClient() = default;
 };

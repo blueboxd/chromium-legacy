@@ -217,7 +217,7 @@ void LoadV8SnapshotFile() {
                                                kSnapshotType);
     return;
   }
-#endif  // OS_POSIX && !OS_MACOSX
+#endif  // OS_POSIX && !OS_MAC
 
   gin::V8Initializer::LoadV8Snapshot(kSnapshotType);
 }

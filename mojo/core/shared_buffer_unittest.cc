@@ -194,10 +194,8 @@ DEFINE_TEST_CLIENT_TEST_WITH_PIPE(ReceiveAndEditBufferParent,
   });
 }
 
-#if defined(OS_ANDROID) || defined(OS_MACOSX)
+#if defined(OS_ANDROID)
 // Android multi-process tests are not executing the new process. This is flaky.
-// Passing shared memory handles between cousins is not currently supported on
-// OSX.
 #define MAYBE_PassHandleBetweenCousins DISABLED_PassHandleBetweenCousins
 #else
 #define MAYBE_PassHandleBetweenCousins PassHandleBetweenCousins

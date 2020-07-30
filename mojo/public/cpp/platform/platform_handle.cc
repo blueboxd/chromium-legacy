@@ -17,7 +17,7 @@
 #include <zircon/status.h>
 
 #include "base/fuchsia/fuchsia_logging.h"
-#elif defined(OS_MACOSX) && !defined(OS_IOS)
+#elif defined(OS_MAC)
 #include <mach/mach_vm.h>
 
 #include "base/mac/mach_logging.h"
@@ -57,7 +57,7 @@ zx::handle CloneHandle(const zx::handle& handle) {
     ZX_DLOG(ERROR, result) << "zx_duplicate_handle";
   return std::move(dupe);
 }
-#elif defined(OS_MACOSX) && !defined(OS_IOS)
+#elif defined(OS_MAC)
 base::mac::ScopedMachSendRight CloneMachPort(
     const base::mac::ScopedMachSendRight& mach_port) {
   DCHECK(mach_port.is_valid());
@@ -93,7 +93,7 @@ PlatformHandle::PlatformHandle(base::win::ScopedHandle handle)
 #elif defined(OS_FUCHSIA)
 PlatformHandle::PlatformHandle(zx::handle handle)
     : type_(Type::kHandle), handle_(std::move(handle)) {}
-#elif defined(OS_MACOSX) && !defined(OS_IOS)
+#elif defined(OS_MAC)
 PlatformHandle::PlatformHandle(base::mac::ScopedMachSendRight mach_port)
     : type_(Type::kMachSend), mach_send_(std::move(mach_port)) {}
 PlatformHandle::PlatformHandle(base::mac::ScopedMachReceiveRight mach_port)
@@ -119,7 +119,7 @@ PlatformHandle& PlatformHandle::operator=(PlatformHandle&& other) {
   handle_ = std::move(other.handle_);
 #elif defined(OS_FUCHSIA)
   handle_ = std::move(other.handle_);
-#elif defined(OS_MACOSX) && !defined(OS_IOS)
+#elif defined(OS_MAC)
   mach_send_ = std::move(other.mach_send_);
   mach_receive_ = std::move(other.mach_receive_);
 #endif
@@ -154,7 +154,7 @@ void PlatformHandle::ToMojoPlatformHandle(PlatformHandle handle,
       out_handle->value = handle.TakeHandle().release();
       break;
     }
-#elif defined(OS_MACOSX) && !defined(OS_IOS)
+#elif defined(OS_MAC)
     if (handle.is_mach_send()) {
       out_handle->type = MOJO_PLATFORM_HANDLE_TYPE_MACH_SEND_RIGHT;
       out_handle->value = static_cast<uint64_t>(handle.ReleaseMachSendRight());
@@ -194,7 +194,7 @@ PlatformHandle PlatformHandle::FromMojoPlatformHandle(
 #elif defined(OS_FUCHSIA)
   if (handle->type == MOJO_PLATFORM_HANDLE_TYPE_FUCHSIA_HANDLE)
     return PlatformHandle(zx::handle(handle->value));
-#elif defined(OS_MACOSX) && !defined(OS_IOS)
+#elif defined(OS_MAC)
   if (handle->type == MOJO_PLATFORM_HANDLE_TYPE_MACH_SEND_RIGHT) {
     return PlatformHandle(base::mac::ScopedMachSendRight(
         static_cast<mach_port_t>(handle->value)));
@@ -218,7 +218,7 @@ void PlatformHandle::reset() {
   handle_.Close();
 #elif defined(OS_FUCHSIA)
   handle_.reset();
-#elif defined(OS_MACOSX) && !defined(OS_IOS)
+#elif defined(OS_MAC)
   mach_send_.reset();
   mach_receive_.reset();
 #endif
@@ -235,7 +235,7 @@ void PlatformHandle::release() {
   ignore_result(handle_.Take());
 #elif defined(OS_FUCHSIA)
   ignore_result(handle_.release());
-#elif defined(OS_MACOSX) && !defined(OS_IOS)
+#elif defined(OS_MAC)
   ignore_result(mach_send_.release());
   ignore_result(mach_receive_.release());
 #endif
@@ -252,7 +252,7 @@ PlatformHandle PlatformHandle::Clone() const {
   if (is_valid_handle())
     return PlatformHandle(CloneHandle(handle_));
   return PlatformHandle(CloneFD(fd_));
-#elif defined(OS_MACOSX) && !defined(OS_IOS)
+#elif defined(OS_MAC)
   if (is_valid_mach_send())
     return PlatformHandle(CloneMachPort(mach_send_));
   CHECK(!is_valid_mach_receive()) << "Cannot clone Mach receive rights";

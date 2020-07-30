@@ -194,7 +194,7 @@ void LocationBarView::Init() {
   omnibox_view_ = AddChildView(std::move(omnibox_view));
 
   // Initiate the Omnibox additional-text label.
-  if (OmniboxFieldTrial::IsRichAutocompletionEnabled()) {
+  if (OmniboxFieldTrial::RichAutocompletionShowAdditionalText()) {
     // TODO (manukh) When the titles UI is disabled,
     // |omnibox_additional_text_view| will only contain URLs and never page
     // titles. It can safely be styled with STYLE_LINK. When the titles UI is
@@ -595,7 +595,7 @@ void LocationBarView::Layout() {
 
   // Compute widths needed for location bar.
   int location_needed_width = omnibox_view_->GetTextWidth();
-  if (OmniboxFieldTrial::IsRichAutocompletionEnabled()) {
+  if (OmniboxFieldTrial::RichAutocompletionShowAdditionalText()) {
     // Calculate location_needed_width based on the omnibox view and omnibox
     // additional text widths. If RichAutocompletionTwoLineOmnibox is enabled,
     // location_needed_width only needs to be large enough to contain the
@@ -648,31 +648,32 @@ void LocationBarView::Layout() {
 
   // If rich autocompletion is enabled, split |location_bounds| for the
   // |omnibox_view_| and |omnibox_additional_text_view_|.
-  if (OmniboxFieldTrial::RichAutocompletionTwoLineOmnibox()) {
-    // Split vertically.
-    auto omnibox_bounds = location_bounds;
-    omnibox_bounds.set_height(location_bounds.height() / 2);
-    omnibox_view_->SetBoundsRect(omnibox_bounds);
-    auto omnibox_additional_text_bounds = omnibox_bounds;
-    omnibox_additional_text_bounds.set_x(location_bounds.x() + 3);
-    omnibox_additional_text_bounds.set_y(omnibox_bounds.bottom());
-    omnibox_additional_text_view_->SetBoundsRect(
-        omnibox_additional_text_bounds);
+  if (OmniboxFieldTrial::RichAutocompletionShowAdditionalText()) {
+    if (OmniboxFieldTrial::RichAutocompletionTwoLineOmnibox()) {
+      // Split vertically.
+      auto omnibox_bounds = location_bounds;
+      omnibox_bounds.set_height(location_bounds.height() / 2);
+      omnibox_view_->SetBoundsRect(omnibox_bounds);
+      auto omnibox_additional_text_bounds = omnibox_bounds;
+      omnibox_additional_text_bounds.set_x(location_bounds.x() + 3);
+      omnibox_additional_text_bounds.set_y(omnibox_bounds.bottom());
+      omnibox_additional_text_view_->SetBoundsRect(
+          omnibox_additional_text_bounds);
 
-  } else if (OmniboxFieldTrial::IsRichAutocompletionEnabled() &&
-             !omnibox_view_->GetText().empty()) {
-    // Split horizontally.
-    auto omnibox_bounds = location_bounds;
-    omnibox_bounds.set_width(std::min(
-        omnibox_view_->GetUnelidedTextWidth() + 10, location_bounds.width()));
-    omnibox_view_->SetBoundsRect(omnibox_bounds);
-    auto omnibox_additional_text_bounds = location_bounds;
-    omnibox_additional_text_bounds.set_x(omnibox_bounds.x() +
-                                         omnibox_bounds.width());
-    omnibox_additional_text_bounds.set_width(
-        std::max(location_bounds.width() - omnibox_bounds.width(), 0));
-    omnibox_additional_text_view_->SetBoundsRect(
-        omnibox_additional_text_bounds);
+    } else if (!omnibox_view_->GetText().empty()) {
+      // Split horizontally.
+      auto omnibox_bounds = location_bounds;
+      omnibox_bounds.set_width(std::min(
+          omnibox_view_->GetUnelidedTextWidth() + 10, location_bounds.width()));
+      omnibox_view_->SetBoundsRect(omnibox_bounds);
+      auto omnibox_additional_text_bounds = location_bounds;
+      omnibox_additional_text_bounds.set_x(omnibox_bounds.x() +
+                                           omnibox_bounds.width());
+      omnibox_additional_text_bounds.set_width(
+          std::max(location_bounds.width() - omnibox_bounds.width(), 0));
+      omnibox_additional_text_view_->SetBoundsRect(
+          omnibox_additional_text_bounds);
+    }
 
   } else {
     omnibox_view_->SetBoundsRect(location_bounds);
@@ -704,7 +705,7 @@ void LocationBarView::ChildPreferredSizeChanged(views::View* child) {
 
 void LocationBarView::SetOmniboxAdditionalText(const base::string16& text) {
   DCHECK(OmniboxFieldTrial::IsRichAutocompletionEnabled() || text.empty());
-  if (!OmniboxFieldTrial::IsRichAutocompletionEnabled())
+  if (!OmniboxFieldTrial::RichAutocompletionShowAdditionalText())
     return;
   auto wrappedText =
       text.empty() ? text

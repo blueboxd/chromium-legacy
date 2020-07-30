@@ -291,7 +291,13 @@ std::unique_ptr<net::test_server::HttpResponse> CancelOnRequest(
 // Tests the case where the request is cancelled by a layer above the
 // URLRequest, which passes the error on ResourceLoader teardown, rather than in
 // response to call to AsyncResourceHandler::OnResponseComplete.
-IN_PROC_BROWSER_TEST_F(LoaderBrowserTest, SyncXMLHttpRequest_Cancelled) {
+// Failed on Android M builder. See crbug/1111427.
+#if defined(OS_ANDROID)
+#define MAYBE_SyncXMLHttpRequest_Cancelled DISABLED_SyncXMLHttpRequest_Cancelled
+#else
+#define MAYBE_SyncXMLHttpRequest_Cancelled SyncXMLHttpRequest_Cancelled
+#endif
+IN_PROC_BROWSER_TEST_F(LoaderBrowserTest, MAYBE_SyncXMLHttpRequest_Cancelled) {
   // If network service is running in-process, we can't simulate a crash.
   if (IsInProcessNetworkService())
     return;

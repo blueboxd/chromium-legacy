@@ -58,6 +58,8 @@ class TrustedVaultClientAndroid : public syncer::TrustedVaultClient {
   void RemoveAllStoredKeys() override;
   void MarkKeysAsStale(const CoreAccountInfo& account_info,
                        base::OnceCallback<void(bool)> cb) override;
+  void GetIsRecoverabilityDegraded(const CoreAccountInfo& account_info,
+                                   base::OnceCallback<void(bool)> cb) override;
 
  private:
   // Struct representing an in-flight FetchKeys() call invoked from C++.

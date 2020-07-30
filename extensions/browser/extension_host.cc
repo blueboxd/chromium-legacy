@@ -188,8 +188,8 @@ void ExtensionHost::OnNetworkRequestDone(uint64_t request_id) {
     observer.OnNetworkRequestDone(this, request_id);
 }
 
-const GURL& ExtensionHost::GetURL() const {
-  return host_contents()->GetURL();
+const GURL& ExtensionHost::GetLastCommittedURL() const {
+  return host_contents()->GetLastCommittedURL();
 }
 
 void ExtensionHost::LoadInitialURL() {

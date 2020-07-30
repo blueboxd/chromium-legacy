@@ -181,7 +181,7 @@ IN_PROC_BROWSER_TEST_F(WebrtcAudioPrivateTest, GetSinks) {
     EXPECT_TRUE(dict->HasKey("sampleRate"));
   }
 }
-#endif  // OS_MACOSX
+#endif  // OS_MAC
 
 IN_PROC_BROWSER_TEST_F(WebrtcAudioPrivateTest, GetAssociatedSink) {
   // Get the list of input devices. We can cheat in the unit test and

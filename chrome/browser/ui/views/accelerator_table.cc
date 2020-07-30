@@ -158,7 +158,7 @@ const AcceleratorMapping kAcceleratorMap[] = {
 
 #if BUILDFLAG(GOOGLE_CHROME_BRANDING) && !defined(OS_MAC)
     {ui::VKEY_I, ui::EF_SHIFT_DOWN | ui::EF_ALT_DOWN, IDC_FEEDBACK},
-#endif  // BUILDFLAG(GOOGLE_CHROME_BRANDING) && !OS_MACOSX
+#endif  // BUILDFLAG(GOOGLE_CHROME_BRANDING) && !OS_MAC
     {ui::VKEY_N, ui::EF_SHIFT_DOWN | ui::EF_PLATFORM_ACCELERATOR,
      IDC_NEW_INCOGNITO_WINDOW},
     {ui::VKEY_T, ui::EF_PLATFORM_ACCELERATOR, IDC_NEW_TAB},
@@ -207,7 +207,7 @@ const AcceleratorMapping kAcceleratorMap[] = {
      IDC_ZOOM_MINUS},
     {ui::VKEY_OEM_PLUS, ui::EF_SHIFT_DOWN | ui::EF_CONTROL_DOWN, IDC_ZOOM_PLUS},
 #endif  // !OS_CHROMEOS
-#endif  // !OS_MACOSX
+#endif  // !OS_MAC
 };
 
 const int kRepeatableCommandIds[] = {

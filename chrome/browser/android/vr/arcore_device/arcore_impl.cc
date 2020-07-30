@@ -906,6 +906,8 @@ ArCoreImpl::GetHitTestSubscriptionResult(
     const mojom::XRRay& native_origin_ray,
     const std::vector<mojom::EntityTypeForHitTest>& entity_types,
     const gfx::Transform& mojo_from_native_origin) {
+  DVLOG(3) << __func__ << ": id=" << id;
+
   // Transform the ray according to the latest transform based on the XRSpace
   // used in hit test subscription.
 
@@ -1067,13 +1069,16 @@ base::Optional<gfx::Transform> ArCoreImpl::GetMojoFromNativeOrigin(
 }
 
 void ArCoreImpl::UnsubscribeFromHitTest(uint64_t subscription_id) {
-  auto it = hit_test_subscription_id_to_data_.find(
-      HitTestSubscriptionId(subscription_id));
-  if (it == hit_test_subscription_id_to_data_.end()) {
-    return;
-  }
+  DVLOG(2) << __func__ << ": subscription_id=" << subscription_id;
 
-  hit_test_subscription_id_to_data_.erase(it);
+  // Hit test subscription ID space is the same for transient and non-transient
+  // hit test sources, so we can attempt to remove it from both collections (it
+  // will succeed only for one of them anyway).
+
+  hit_test_subscription_id_to_data_.erase(
+      HitTestSubscriptionId(subscription_id));
+  hit_test_subscription_id_to_transient_hit_test_data_.erase(
+      HitTestSubscriptionId(subscription_id));
 }
 
 HitTestSubscriptionId ArCoreImpl::CreateHitTestSubscriptionId() {

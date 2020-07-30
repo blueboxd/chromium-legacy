@@ -304,7 +304,6 @@ void BackGestureEventHandler::OnGestureEvent(GestureConsumer* consumer,
 bool BackGestureEventHandler::MaybeHandleBackGesture(
     ui::GestureEvent* event,
     const gfx::Point& screen_location) {
-  DCHECK(features::IsSwipingFromLeftEdgeToGoBackEnabled());
   switch (event->type()) {
     case ui::ET_GESTURE_TAP_DOWN:
       going_back_started_ = CanStartGoingBack(screen_location);
@@ -420,8 +419,6 @@ bool BackGestureEventHandler::MaybeHandleBackGesture(
 
 bool BackGestureEventHandler::CanStartGoingBack(
     const gfx::Point& screen_location) {
-  DCHECK(features::IsSwipingFromLeftEdgeToGoBackEnabled());
-
   Shell* shell = Shell::Get();
   if (!shell->tablet_mode_controller()->InTabletMode())
     return false;

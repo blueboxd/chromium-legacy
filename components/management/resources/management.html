@@ -1,0 +1,33 @@
+<!DOCTYPE HTML>
+<html dir="$i18n{textdirection}" lang="$i18n{language}">
+<head>
+  <meta charset="utf-8">
+  <link rel="stylesheet" href="chrome://resources/css/text_defaults.css">
+  <link rel="stylesheet" href="management.css">
+    <!-- TODO(crbug.com/487000): Remove this once injected by web. -->
+  <script src="chrome://resources/js/ios/web_ui.js"></script>
+  <script src="chrome://resources/js/load_time_data.js"></script>
+  <script src="chrome://resources/js/util.js"></script>
+  <script src="strings.js"></script>
+  <script src="management.js"></script>
+
+  <script>
+    /**
+     * Checks whether the browser is managed.
+     * Since the $18n{} can't be in the JS file, the status should be
+     * injected at the loading time.
+     * @return {boolean} True if the browser is managed, false otherwise.
+    */
+    function isManaged() {
+      return $i18n{isManaged};
+    }
+  </script>
+</head>
+<body>
+  <div id="managed-info" class="hidden">
+    <div id="main-message">$i18n{managementMessage}</div>
+    <div id="secondary-message">$i18n{managedInfo}</div>
+  </div>
+  <div id="unmanaged-info" class="hidden">$i18n{unmanagedInfo}</div>
+</body>
+</html>

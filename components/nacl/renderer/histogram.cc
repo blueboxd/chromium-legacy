@@ -68,11 +68,11 @@ void HistogramEnumerateOsArch(const std::string& sandbox_isa) {
   };
 
   NaClOSArch os_arch = kNaClOSArchMax;
-#if OS_LINUX
+#if defined(OS_LINUX)
   os_arch = kNaClLinux32;
-#elif OS_MACOSX
+#elif defined(OS_MAC)
   os_arch = kNaClMac32;
-#elif OS_WIN
+#elif defined(OS_WIN)
   os_arch = kNaClWin32;
 #endif
 

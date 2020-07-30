@@ -89,3 +89,58 @@ TEST(ZlibTest, DeflateStored) {
   ASSERT_EQ(result, Z_OK);
   EXPECT_EQ(input, decompressed);
 }
+
+TEST(ZlibTest, StreamingInflate) {
+  uint8_t comp_buf[4096], decomp_buf[4096];
+  z_stream comp_strm, decomp_strm;
+  int ret;
+
+  std::vector<uint8_t> src;
+  for (size_t i = 0; i < 1000; i++) {
+    for (size_t j = 0; j < 40; j++) {
+      src.push_back(j);
+    }
+  }
+
+  // Deflate src into comp_buf.
+  comp_strm.zalloc = Z_NULL;
+  comp_strm.zfree = Z_NULL;
+  comp_strm.opaque = Z_NULL;
+  ret = deflateInit(&comp_strm, Z_BEST_COMPRESSION);
+  ASSERT_EQ(ret, Z_OK);
+  comp_strm.next_out = comp_buf;
+  comp_strm.avail_out = sizeof(comp_buf);
+  comp_strm.next_in = src.data();
+  comp_strm.avail_in = src.size();
+  ret = deflate(&comp_strm, Z_FINISH);
+  ASSERT_EQ(ret, Z_STREAM_END);
+  size_t comp_sz = sizeof(comp_buf) - comp_strm.avail_out;
+
+  // Inflate comp_buf one 4096-byte buffer at a time.
+  decomp_strm.zalloc = Z_NULL;
+  decomp_strm.zfree = Z_NULL;
+  decomp_strm.opaque = Z_NULL;
+  ret = inflateInit(&decomp_strm);
+  ASSERT_EQ(ret, Z_OK);
+  decomp_strm.next_in = comp_buf;
+  decomp_strm.avail_in = comp_sz;
+
+  while (decomp_strm.avail_in > 0) {
+    decomp_strm.next_out = decomp_buf;
+    decomp_strm.avail_out = sizeof(decomp_buf);
+    ret = inflate(&decomp_strm, Z_FINISH);
+    ASSERT_TRUE(ret == Z_OK || ret == Z_STREAM_END || ret == Z_BUF_ERROR);
+
+    // Verify the output bytes.
+    size_t num_out = sizeof(decomp_buf) - decomp_strm.avail_out;
+    for (size_t i = 0; i < num_out; i++) {
+      EXPECT_EQ(decomp_buf[i], src[decomp_strm.total_out - num_out + i]);
+    }
+  }
+
+  // Cleanup memory (i.e. makes ASAN bot happy).
+  ret = deflateEnd(&comp_strm);
+  EXPECT_EQ(ret, Z_OK);
+  ret = inflateEnd(&decomp_strm);
+  EXPECT_EQ(ret, Z_OK);
+}

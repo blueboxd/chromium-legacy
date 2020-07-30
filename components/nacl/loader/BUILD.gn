@@ -106,7 +106,7 @@ test("nacl_loader_unittests") {
   }
 }
 
-if (is_linux) {
+if (is_linux || is_chromeos) {
   executable("nacl_helper") {
     sources = [
       "nacl_helper_linux.cc",

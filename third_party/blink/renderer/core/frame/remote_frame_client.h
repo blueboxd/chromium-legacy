@@ -44,6 +44,8 @@ class RemoteFrameClient : public FrameClient {
 
   virtual void ZoomLevelChanged(double zoom_level) = 0;
 
+  virtual void UpdateCaptureSequenceNumber(uint32_t sequence_number) = 0;
+
   virtual void UpdateRemoteViewportIntersection(
       const ViewportIntersectionState& intersection_state) = 0;
 

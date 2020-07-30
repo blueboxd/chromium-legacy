@@ -1053,8 +1053,13 @@ TEST_P(WebMediaPlayerMSTest, RotationChange) {
               DoReadyStateChanged(WebMediaPlayer::kReadyStateHaveMetadata));
   EXPECT_CALL(*this,
               DoReadyStateChanged(WebMediaPlayer::kReadyStateHaveEnoughData));
+  // Expect SizeChanged happens 3 times for the 3 rotation changes because the
+  // natural size changes on each rotation change. However, CheckSizeChanged
+  // checks the compositor size, which is pre-rotation and is the same for the
+  // 3 rotation changes.
   EXPECT_CALL(*this,
-              CheckSizeChanged(gfx::Size(kStandardWidth, kStandardHeight)));
+              CheckSizeChanged(gfx::Size(kStandardWidth, kStandardHeight)))
+      .Times(3);
   message_loop_controller_.RunAndWaitForStatus(
       media::PipelineStatus::PIPELINE_OK);
   // The exact ordering of delayed vs non-delayed tasks is not defined.

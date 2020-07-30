@@ -246,11 +246,9 @@ AdsPageLoadMetricsObserver::OnCommit(
       navigation_handle->GetReloadType() != content::ReloadType::NONE;
 
   aggregate_frame_data_->UpdateForNavigation(
-      navigation_handle->GetRenderFrameHost(), true /* frame_navigated */,
-      true /* record_frame_metrics */);
+      navigation_handle->GetRenderFrameHost(), true /* frame_navigated */);
   main_frame_data_->UpdateForNavigation(navigation_handle->GetRenderFrameHost(),
-                                        true /* frame_navigated */,
-                                        true /* record_frame_metrics */);
+                                        true /* frame_navigated */);
 
   // The main frame is never considered an ad.
   ad_frames_data_[navigation_handle->GetFrameTreeNodeId()] =
@@ -391,8 +389,7 @@ void AdsPageLoadMetricsObserver::UpdateAdFrameData(
 
   if (should_create_new_frame_data) {
     if (previous_data) {
-      previous_data->UpdateForNavigation(ad_host, frame_navigated,
-                                         true /* record_frame_metrics */);
+      previous_data->UpdateForNavigation(ad_host, frame_navigated);
       return;
     }
     ad_frames_data_storage_.emplace_back(
@@ -400,8 +397,7 @@ void AdsPageLoadMetricsObserver::UpdateAdFrameData(
         heavy_ad_threshold_noise_provider_->GetNetworkThresholdNoiseForFrame());
     ad_data_iterator = --ad_frames_data_storage_.end();
     ad_data = &*ad_data_iterator;
-    ad_data->UpdateForNavigation(ad_host, frame_navigated,
-                                 true /* record_frame_metrics */);
+    ad_data->UpdateForNavigation(ad_host, frame_navigated);
   }
 
   // Maybe update frame depth based on the new ad frames distance to the ad
@@ -443,33 +439,6 @@ void AdsPageLoadMetricsObserver::OnDidFinishSubFrameNavigation(
   // granting security permissions.
   content::RenderFrameHost* frame_host =
       FindFrameMaybeUnsafe(navigation_handle);
-
-  // We want to reset the FrameData for an ad after heavy ads fires, so that we
-  // can trigger on subsequent navigations if the page tries to serve another ad
-  // in the frame.
-  if (navigation_handle->IsErrorPage() &&
-      navigation_handle->GetNetErrorCode() == net::ERR_BLOCKED_BY_CLIENT) {
-    const auto& id_and_data = ad_frames_data_.find(frame_tree_node_id);
-    if (id_and_data != ad_frames_data_.end() &&
-        id_and_data->second != ad_frames_data_storage_.end() &&
-        id_and_data->second->heavy_ad_status_with_noise() !=
-            FrameData::HeavyAdStatus::kNone) {
-      RecordPerFrameHistograms(*id_and_data->second);
-      id_and_data->second->RecordAdFrameLoadUkmEvent(
-          GetDelegate().GetSourceId());
-      ad_frames_data_storage_.erase(id_and_data->second);
-      ad_frames_data_.erase(id_and_data);
-      ad_frames_data_storage_.emplace_back(
-          frame_tree_node_id, heavy_ad_threshold_noise_provider_
-                                  ->GetNetworkThresholdNoiseForFrame());
-      auto ad_data_iterator = --ad_frames_data_storage_.end();
-      FrameData* ad_data = &*ad_data_iterator;
-      ad_frames_data_[frame_tree_node_id] = ad_data_iterator;
-      ad_data->UpdateForNavigation(frame_host, true /*frame_navigated=*/,
-                                   false /*record_frame_metrics=*/);
-      return;
-    }
-  }
 
   bool is_adframe = client->GetThrottleManager()->IsFrameTaggedAsAd(frame_host);
 

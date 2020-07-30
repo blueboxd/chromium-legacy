@@ -416,6 +416,7 @@ bool RichAutocompletionTwoLineOmnibox();
 bool RichAutocompletionShowTitles();
 bool RichAutocompletionAutocompleteNonPrefix();
 size_t RichAutocompletionAutocompleteNonPrefixMinChar();
+bool RichAutocompletionShowAdditionalText();
 
 // On Device Head Suggestions feature and its helper functions.
 bool IsOnDeviceHeadSuggestEnabledForIncognito();
@@ -538,6 +539,7 @@ extern const char kRichAutocompletionTwoLineOmniboxParam[];
 extern const char kRichAutocompletionShowTitlesParam[];
 extern const char kRichAutocompletionAutocompleteNonPrefixParam[];
 extern const char kRichAutocompletionAutocompleteNonPrefixMinCharParam[];
+extern const char kRichAutocompletionShowAdditionalTextParam[];
 
 // Parameter names used by image search experiment that shows thumbnail in front
 // of the Omnibox clipboard image search suggestion.

@@ -161,9 +161,9 @@ class TestWebContents : public WebContentsImpl, public WebContentsTester {
 
   base::UnguessableToken GetAudioGroupId() override;
 
-  const base::UnguessableToken& CreatePortal(
+  const blink::PortalToken& CreatePortal(
       std::unique_ptr<WebContents> portal_web_contents) override;
-  WebContents* GetPortalContents(const base::UnguessableToken&) override;
+  WebContents* GetPortalContents(const blink::PortalToken&) override;
 
   void OnWebPreferencesChanged() override;
 

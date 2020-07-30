@@ -41,13 +41,23 @@ class ClipboardHistoryTest : public AshTestBase {
     return clipboard_history_->GetItems();
   }
 
+  // Writes |input_strings| to the clipboard buffer and ensures that
+  // |expected_strings| are retained in history. If |in_same_sequence| is true,
+  // writes to the buffer will be performed in the same task sequence.
   void WriteAndEnsureTextHistory(
       const std::vector<base::string16>& input_strings,
-      const std::vector<base::string16>& expected_strings) {
+      const std::vector<base::string16>& expected_strings,
+      bool in_same_sequence = false) {
     for (const auto& input_string : input_strings) {
-      ui::ScopedClipboardWriter scw(ui::ClipboardBuffer::kCopyPaste);
-      scw.WriteText(input_string);
+      {
+        ui::ScopedClipboardWriter scw(ui::ClipboardBuffer::kCopyPaste);
+        scw.WriteText(input_string);
+      }
+      if (!in_same_sequence)
+        base::RunLoop().RunUntilIdle();
     }
+    if (in_same_sequence)
+      base::RunLoop().RunUntilIdle();
     EnsureTextHistory(expected_strings);
   }
 
@@ -62,11 +72,17 @@ class ClipboardHistoryTest : public AshTestBase {
     }
   }
 
+  // Writes |input_bitmaps| to the clipboard buffer and ensures that
+  // |expected_bitmaps| are retained in history. Writes to the buffer are
+  // performed in different task sequences to simulate real world behavior.
   void WriteAndEnsureBitmapHistory(std::vector<SkBitmap>& input_bitmaps,
                                    std::vector<SkBitmap>& expected_bitmaps) {
     for (const auto& input_bitmap : input_bitmaps) {
-      ui::ScopedClipboardWriter scw(ui::ClipboardBuffer::kCopyPaste);
-      scw.WriteImage(input_bitmap);
+      {
+        ui::ScopedClipboardWriter scw(ui::ClipboardBuffer::kCopyPaste);
+        scw.WriteImage(input_bitmap);
+      }
+      base::RunLoop().RunUntilIdle();
     }
     const std::list<ui::ClipboardData>& datas = GetClipboardHistoryData();
     EXPECT_EQ(expected_bitmaps.size(), datas.size());
@@ -78,6 +94,9 @@ class ClipboardHistoryTest : public AshTestBase {
     }
   }
 
+  // Writes |input_data| to the clipboard buffer and ensures that
+  // |expected_data| is retained in history. After writing to the buffer, the
+  // current task sequence is run to idle to simulate real world behavior.
   void WriteAndEnsureCustomDataHistory(
       const std::unordered_map<base::string16, base::string16>& input_data,
       const std::unordered_map<base::string16, base::string16>& expected_data) {
@@ -89,6 +108,7 @@ class ClipboardHistoryTest : public AshTestBase {
       scw.WritePickledData(input_data_pickle,
                            ui::ClipboardFormatType::GetWebCustomDataType());
     }
+    base::RunLoop().RunUntilIdle();
 
     const std::list<ui::ClipboardData> datas = GetClipboardHistoryData();
     EXPECT_EQ(1u, datas.size());
@@ -135,6 +155,21 @@ TEST_F(ClipboardHistoryTest, DuplicateBasic) {
 
   // Test that only one thing is saved.
   WriteAndEnsureTextHistory(input_strings, expected_strings);
+}
+
+// Tests that if multiple things are copied in the same task sequence, only the
+// most recent thing is saved.
+TEST_F(ClipboardHistoryTest, InSameSequenceBasic) {
+  std::vector<base::string16> input_strings{base::UTF8ToUTF16("test1"),
+                                            base::UTF8ToUTF16("test2"),
+                                            base::UTF8ToUTF16("test3")};
+  // Because |input_strings| will be copied in the same task sequence, history
+  // should only retain the most recent thing.
+  std::vector<base::string16> expected_strings{base::UTF8ToUTF16("test3")};
+
+  // Test that only the most recent thing is saved.
+  WriteAndEnsureTextHistory(input_strings, expected_strings,
+                            /*in_same_sequence=*/true);
 }
 
 // Tests the ordering of history is in reverse chronological order.

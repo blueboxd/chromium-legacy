@@ -218,7 +218,7 @@ struct GPU_EXPORT OverlayInfo {
 
 #if defined(OS_MAC)
 GPU_EXPORT bool ValidateMacOSSpecificTextureTarget(int target);
-#endif  // OS_MACOSX
+#endif  // OS_MAC
 
 struct GPU_EXPORT GPUInfo {
   struct GPU_EXPORT GPUDevice {
@@ -373,7 +373,7 @@ struct GPU_EXPORT GPUInfo {
   // Enum describing which texture target is used for native GpuMemoryBuffers on
   // MacOS. Valid values are GL_TEXTURE_2D and GL_TEXTURE_RECTANGLE_ARB.
   uint32_t macos_specific_texture_target;
-#endif  // OS_MACOSX
+#endif  // OS_MAC
 
 #if defined(OS_WIN)
   // The information returned by the DirectX Diagnostics Tool.

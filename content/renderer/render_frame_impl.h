@@ -607,7 +607,7 @@ class CONTENT_EXPORT RenderFrameImpl
       const url::Origin& source_origin,
       const base::Optional<url::Origin>& target_origin) override;
   void OnPortalActivated(
-      const base::UnguessableToken& portal_token,
+      const blink::PortalToken& portal_token,
       mojo::PendingAssociatedRemote<blink::mojom::Portal> portal,
       mojo::PendingAssociatedReceiver<blink::mojom::PortalClient> portal_client,
       blink::TransferableMessage data,
@@ -657,14 +657,14 @@ class CONTENT_EXPORT RenderFrameImpl
       const blink::FramePolicy& frame_policy,
       const blink::WebFrameOwnerProperties& frame_owner_properties,
       blink::mojom::FrameOwnerElementType frame_owner_element_type) override;
-  std::pair<blink::WebRemoteFrame*, base::UnguessableToken> CreatePortal(
+  std::pair<blink::WebRemoteFrame*, blink::PortalToken> CreatePortal(
       blink::CrossVariantMojoAssociatedReceiver<
           blink::mojom::PortalInterfaceBase> portal_endpoint,
       blink::CrossVariantMojoAssociatedRemote<
           blink::mojom::PortalClientInterfaceBase> client_endpoint,
       const blink::WebElement& portal_element) override;
   blink::WebRemoteFrame* AdoptPortal(
-      const base::UnguessableToken& portal_token,
+      const blink::PortalToken& portal_token,
       const blink::WebElement& portal_element) override;
   blink::WebFrame* FindFrame(const blink::WebString& name) override;
   void WillDetach() override;

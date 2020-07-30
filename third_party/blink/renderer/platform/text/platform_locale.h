@@ -73,6 +73,34 @@ class PLATFORM_EXPORT Locale {
   // Returns localized decimal separator, e.g. "." for English, "," for French.
   String LocalizedDecimalSeparator();
 
+  // Does the locale use single character filtering to do additional number
+  // input validation?
+  bool UsesSingleCharNumberFiltering();
+
+  // Is the character a sign prefix? Accepts both of standard -+ and localized
+  // signs.
+  bool IsSignPrefix(UChar ch);
+
+  // Are there 2 sign characters in a string? Accepts both of standard -+ and
+  // localized signs.
+  bool HasTwoSignChars(const String& str);
+
+  // Is there a sign character that is not after an "E". Accepts both of
+  // standard -+ and localized signs.
+  bool HasSignNotAfterE(const String& str);
+
+  // Is the character a digit? Accepts both of standard 0-9 and localized
+  // digits.
+  bool IsDigit(UChar ch);
+
+  // Is the character a decimal separator? Accepts both of standard dot and
+  // localized separator.
+  bool IsDecimalSeparator(UChar ch);
+
+  // Is there a decimal separator in a string? Accepts both of standard dot and
+  // localized separator.
+  bool HasDecimalSeparator(const String& str);
+
   // Returns date format in Unicode TR35 LDML[1] containing day of month,
   // month, and year, e.g. "dd/mm/yyyy"
   // [1] LDML http://unicode.org/reports/tr35/#Date_Format_Patterns
@@ -185,6 +213,9 @@ class PLATFORM_EXPORT Locale {
   String negative_suffix_;
   String acceptable_number_characters_;
   bool has_locale_data_;
+  // Does the locale use single character filtering to do additional number
+  // input validation?
+  bool uses_single_char_number_filtering_;
 
   DISALLOW_COPY_AND_ASSIGN(Locale);
 };

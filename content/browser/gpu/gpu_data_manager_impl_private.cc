@@ -85,7 +85,7 @@
 #endif
 #if defined(OS_MAC)
 #include <ApplicationServices/ApplicationServices.h>
-#endif  // OS_MACOSX
+#endif  // OS_MAC
 #if defined(OS_WIN)
 #include "base/base_paths_win.h"
 #include "base/win/windows_version.h"
@@ -362,7 +362,7 @@ void DisplayReconfigCallback(CGDirectDisplayID display,
   if (gpu_changed)
     manager->HandleGpuSwitch();
 }
-#endif  // OS_MACOSX
+#endif  // OS_MAC
 
 // Block all domains' use of 3D APIs for this many milliseconds if
 // approaching a threshold where system stability might be compromised.
@@ -519,7 +519,7 @@ GpuDataManagerImplPrivate::GpuDataManagerImplPrivate(GpuDataManagerImpl* owner)
 
 #if defined(OS_MAC)
   CGDisplayRegisterReconfigurationCallback(DisplayReconfigCallback, owner_);
-#endif  // OS_MACOSX
+#endif  // OS_MAC
 
   // For testing only.
   if (command_line->HasSwitch(switches::kDisableDomainBlockingFor3DAPIs))
@@ -1178,7 +1178,7 @@ void GpuDataManagerImplPrivate::AppendGpuCommandLine(
         command_line->AppendSwitch(switches::kOverrideUseSoftwareGLForTests);
     }
   }
-#endif  // !OS_MACOSX
+#endif  // !OS_MAC
 }
 
 void GpuDataManagerImplPrivate::UpdateGpuPreferences(

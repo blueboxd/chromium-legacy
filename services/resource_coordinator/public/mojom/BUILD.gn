@@ -20,7 +20,7 @@ mojom_component("mojom") {
   ]
 
   enabled_features = []
-  if (is_linux || is_android) {
+  if (is_linux || is_chromeos || is_android) {
     enabled_features += [ "private_swap_info" ]
   }
 }

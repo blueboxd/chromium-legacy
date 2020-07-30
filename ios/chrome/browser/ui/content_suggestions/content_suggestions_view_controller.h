@@ -14,6 +14,7 @@
 @protocol ContentSuggestionsCommands;
 @protocol ContentSuggestionsDataSource;
 @protocol ContentSuggestionsHeaderSynchronizing;
+@protocol ContentSuggestionsMenuProvider;
 @protocol ContentSuggestionsMetricsRecording;
 @protocol ContentSuggestionsViewControllerAudience;
 @protocol DiscoverFeedMenuCommands;
@@ -53,6 +54,10 @@ extern NSString* const
 @property(nonatomic, weak) id<DiscoverFeedMenuCommands> discoverFeedMenuHandler;
 @property(nonatomic, weak) id<ContentSuggestionsMetricsRecording>
     metricsRecorder;
+
+// Provider of menu configurations for the contentSuggestions component.
+@property(nonatomic, weak) id<ContentSuggestionsMenuProvider> menuProvider
+    API_AVAILABLE(ios(13.0));
 
 - (void)setDataSource:(id<ContentSuggestionsDataSource>)dataSource;
 - (void)setDispatcher:(id<SnackbarCommands>)dispatcher;

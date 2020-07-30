@@ -43,13 +43,12 @@ std::unique_ptr<WebAuthnHoverButton> CreateHoverButtonForListItem(
     views::ButtonListener* listener,
     bool is_two_line_item,
     ItemType item_type = ItemType::kButton) {
-  // Derive the icon color from the text color of an enabled label.
-  auto color_reference_label = std::make_unique<views::Label>(
-      base::string16(), CONTEXT_BODY_TEXT_SMALL, views::style::STYLE_PRIMARY);
-  const SkColor icon_color = color_utils::DeriveDefaultIconColor(
-      color_reference_label->GetEnabledColor());
 
   auto item_image = std::make_unique<views::ImageView>();
+  // TODO - Icon color should be set and updated in OnThemeChanged
+  const SkColor icon_color = color_utils::DeriveDefaultIconColor(
+      views::style::GetColor(*item_image, views::style::CONTEXT_LABEL,
+                             views::style::STYLE_PRIMARY));
   if (vector_icon) {
     constexpr int kIconSize = 20;
     item_image->SetImage(

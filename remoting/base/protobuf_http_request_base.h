@@ -13,6 +13,7 @@
 #include "base/memory/weak_ptr.h"
 #include "base/time/time.h"
 #include "remoting/base/protobuf_http_status.h"
+#include "remoting/base/scoped_protobuf_http_request.h"
 
 namespace network {
 
@@ -36,6 +37,11 @@ class ProtobufHttpRequestBase {
   explicit ProtobufHttpRequestBase(
       std::unique_ptr<ProtobufHttpRequestConfig> config);
   virtual ~ProtobufHttpRequestBase();
+
+  // Creates an ScopedProtobufHttpRequest instance that will cancel the
+  // request once the instance is deleted. It will be no-op if the request is
+  // not in the client's pending request list.
+  std::unique_ptr<ScopedProtobufHttpRequest> CreateScopedRequest();
 
   const ProtobufHttpRequestConfig& config() const { return *config_; }
 
@@ -68,11 +74,15 @@ class ProtobufHttpRequestBase {
                     std::unique_ptr<network::SimpleURLLoader> url_loader,
                     base::OnceClosure invalidator);
 
+  void Invalidate();
+
   std::unique_ptr<ProtobufHttpRequestConfig> config_;
 
 #if DCHECK_IS_ON()
   base::TimeTicks request_deadline_;
 #endif  // DCHECK_IS_ON()
+
+  base::WeakPtrFactory<ProtobufHttpRequestBase> weak_factory_{this};
 };
 
 }  // namespace remoting

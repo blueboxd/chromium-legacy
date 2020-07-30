@@ -321,7 +321,8 @@ GpuArcVideoDecodeAccelerator::InitializeTask(
   vda_config.output_mode =
       media::VideoDecodeAccelerator::Config::OutputMode::IMPORT;
 
-  auto vda_factory = media::GpuVideoDecodeAcceleratorFactory::CreateWithNoGL();
+  auto vda_factory = media::GpuVideoDecodeAcceleratorFactory::Create(
+      media::GpuVideoDecodeGLClient());
   vda_ = vda_factory->CreateVDA(
       this, vda_config, gpu::GpuDriverBugWorkarounds(), gpu_preferences_);
   if (!vda_) {

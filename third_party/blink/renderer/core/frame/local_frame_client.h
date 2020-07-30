@@ -42,6 +42,7 @@
 #include "third_party/blink/public/common/feature_policy/feature_policy.h"
 #include "third_party/blink/public/common/loader/loading_behavior_flag.h"
 #include "third_party/blink/public/common/navigation/triggering_event_info.h"
+#include "third_party/blink/public/common/tokens/portal_token.h"
 #include "third_party/blink/public/common/user_agent/user_agent_metadata.h"
 #include "third_party/blink/public/mojom/frame/navigation_initiator.mojom-blink-forward.h"
 #include "third_party/blink/public/mojom/portal/portal.mojom-blink-forward.h"
@@ -244,7 +245,7 @@ class CORE_EXPORT LocalFrameClient : public FrameClient {
   // Creates a portal for the |HTMLPortalElement| and binds the other end of the
   // |mojo::PendingAssociatedReceiver<mojom::blink::Portal>|. Returns a pair of
   // a RemoteFrame and a token that identifies the portal.
-  virtual std::pair<RemoteFrame*, base::UnguessableToken> CreatePortal(
+  virtual std::pair<RemoteFrame*, PortalToken> CreatePortal(
       HTMLPortalElement*,
       mojo::PendingAssociatedReceiver<mojom::blink::Portal>,
       mojo::PendingAssociatedRemote<mojom::blink::PortalClient>) = 0;

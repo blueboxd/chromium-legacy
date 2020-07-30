@@ -227,8 +227,9 @@ DisplayPlacement CalculateDisplayPlacement(const DisplayInfo& parent,
 // corners and |rect|'s top corners when the rects don't overlap vertically.
 int64_t SquaredDistanceBetweenRects(const gfx::Rect& ref,
                                     const gfx::Rect& rect) {
-  if (ref.Intersects(rect))
-    return 0;
+  gfx::Rect intersection_rect = gfx::IntersectRects(ref, rect);
+  if (!intersection_rect.IsEmpty())
+    return -(intersection_rect.width() * intersection_rect.height());
 
   CoordinateRotation degrees = ComputeCoordinateRotationRefTop(ref, rect);
   gfx::Rect top_rect(CoordinateRotateRect(ref, degrees));

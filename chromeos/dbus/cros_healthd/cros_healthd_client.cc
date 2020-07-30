@@ -32,8 +32,10 @@ class CrosHealthdClientImpl : public CrosHealthdClient {
   mojo::Remote<cros_healthd::mojom::CrosHealthdServiceFactory>
   BootstrapMojoConnection(
       BootstrapMojoConnectionCallback result_callback) override {
-    mojo::PlatformChannel platform_channel;
+    // Invalidate any pending attempts to bootstrap the mojo connection.
+    bootstrap_weak_ptr_factory_.InvalidateWeakPtrs();
 
+    mojo::PlatformChannel platform_channel;
     // Prepare a Mojo invitation to send through |platform_channel|.
     mojo::OutgoingInvitation invitation;
     // Include an initial Mojo pipe in the invitation.
@@ -51,19 +53,10 @@ class CrosHealthdClientImpl : public CrosHealthdClient {
         mojo::PendingRemote<cros_healthd::mojom::CrosHealthdServiceFactory>(
             std::move(pipe), 0u /* version */));
 
-    dbus::MethodCall method_call(
-        diagnostics::kCrosHealthdServiceInterface,
-        diagnostics::kCrosHealthdBootstrapMojoConnectionMethod);
-    dbus::MessageWriter writer(&method_call);
-    base::ScopedFD fd =
-        platform_channel.TakeRemoteEndpoint().TakePlatformHandle().TakeFD();
-    writer.AppendFileDescriptor(fd.get());
-    writer.AppendBool(/*is_chrome=*/true);
-    cros_healthd_service_proxy_->CallMethod(
-        &method_call, dbus::ObjectProxy::TIMEOUT_USE_DEFAULT,
-        base::BindOnce(
-            &CrosHealthdClientImpl::OnBootstrapMojoConnectionResponse,
-            weak_ptr_factory_.GetWeakPtr(), std::move(result_callback)));
+    cros_healthd_service_proxy_->WaitForServiceToBeAvailable(base::BindOnce(
+        &CrosHealthdClientImpl::OnDbusServiceAvailable,
+        bootstrap_weak_ptr_factory_.GetWeakPtr(), std::move(result_callback),
+        std::move(platform_channel)));
 
     return cros_healthd_service_factory;
   }
@@ -77,6 +70,32 @@ class CrosHealthdClientImpl : public CrosHealthdClient {
  private:
   dbus::ObjectProxy* cros_healthd_service_proxy_ = nullptr;
 
+  // When the service is available, attempt to bootstrap the mojo connection.
+  void OnDbusServiceAvailable(BootstrapMojoConnectionCallback result_callback,
+                              mojo::PlatformChannel platform_channel,
+                              bool success) {
+    // The service is not available.
+    if (!success) {
+      std::move(result_callback).Run(false);
+      return;
+    }
+
+    dbus::MethodCall method_call(
+        diagnostics::kCrosHealthdServiceInterface,
+        diagnostics::kCrosHealthdBootstrapMojoConnectionMethod);
+    dbus::MessageWriter writer(&method_call);
+    base::ScopedFD fd =
+        platform_channel.TakeRemoteEndpoint().TakePlatformHandle().TakeFD();
+    writer.AppendFileDescriptor(fd.get());
+    writer.AppendBool(/*is_chrome=*/true);
+    cros_healthd_service_proxy_->CallMethod(
+        &method_call, dbus::ObjectProxy::TIMEOUT_USE_DEFAULT,
+        base::BindOnce(
+            &CrosHealthdClientImpl::OnBootstrapMojoConnectionResponse,
+            bootstrap_weak_ptr_factory_.GetWeakPtr(),
+            std::move(result_callback)));
+  }
+
   // Passes the success/failure of |dbus_response| on to |result_callback|.
   void OnBootstrapMojoConnectionResponse(
       BootstrapMojoConnectionCallback result_callback,
@@ -85,8 +104,9 @@ class CrosHealthdClientImpl : public CrosHealthdClient {
     std::move(result_callback).Run(success);
   }
 
-  // Must be last class member.
-  base::WeakPtrFactory<CrosHealthdClientImpl> weak_ptr_factory_{this};
+  // Must be last class member. This WeakPtrFactory is specifically for the
+  // bootstrapping callbacks.
+  base::WeakPtrFactory<CrosHealthdClientImpl> bootstrap_weak_ptr_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(CrosHealthdClientImpl);
 };

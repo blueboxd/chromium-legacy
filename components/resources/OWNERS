@@ -20,6 +20,7 @@ per-file neterror*=mmenke@chromium.org
 per-file neterror*=file://net/OWNERS
 per-file ntp_tiles_dev_ui_resources.grdp=file://components/ntp_tiles/OWNERS
 per-file ntp_tiles_resources.grdp=file://components/ntp_tiles/OWNERS
+per-file management_resources.grdp=file://components/management/OWNERS
 per-file welcome_scaled_resources.grdp=file://ui/webui/PLATFORM_OWNERS
 per-file offline_pages_resources.grdp=file://components/offline_pages/OWNERS
 per-file policy_resources.grdp=file://components/policy/OWNERS

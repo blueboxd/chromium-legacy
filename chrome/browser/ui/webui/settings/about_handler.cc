@@ -643,7 +643,7 @@ void AboutHandler::RequestUpdate() {
       base::Bind(&AboutHandler::SetPromotionState, base::Unretained(this)));
 #else
       VersionUpdater::PromoteCallback());
-#endif  // OS_MACOSX
+#endif  // OS_MAC
 }
 
 void AboutHandler::SetUpdateStatus(VersionUpdater::Status status,

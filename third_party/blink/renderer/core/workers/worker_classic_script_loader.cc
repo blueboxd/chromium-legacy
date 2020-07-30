@@ -45,6 +45,7 @@
 #include "third_party/blink/renderer/platform/loader/fetch/resource_loader_options.h"
 #include "third_party/blink/renderer/platform/loader/fetch/resource_response.h"
 #include "third_party/blink/renderer/platform/loader/fetch/text_resource_decoder_options.h"
+#include "third_party/blink/renderer/platform/loader/fetch/unique_identifier.h"
 #include "third_party/blink/renderer/platform/network/content_security_policy_response_headers.h"
 #include "third_party/blink/renderer/platform/network/http_names.h"
 #include "third_party/blink/renderer/platform/network/network_utils.h"
@@ -156,22 +157,6 @@ void WorkerClassicScriptLoader::LoadTopLevelScriptAsynchronously(
   url_ = url;
   fetch_client_settings_object_fetcher_ = fetch_client_settings_object_fetcher;
   is_top_level_script_ = true;
-  ResourceLoaderOptions resource_loader_options;
-
-  // Use WorkerMainScriptLoader to load the main script for dedicated workers
-  // (PlzDedicatedWorker) and shared workers.
-  if (worker_main_script_load_params) {
-    DCHECK(base::FeatureList::IsEnabled(
-        features::kLoadMainScriptForPlzDedicatedWorkerByParams));
-    worker_main_script_loader_ = MakeGarbageCollected<WorkerMainScriptLoader>();
-    worker_main_script_loader_->Start(
-        url, std::move(worker_main_script_load_params), resource_loader_options,
-        request_context, destination,
-        &fetch_client_settings_object_fetcher_->Context(),
-        std::move(resource_load_info_notifier), this);
-    return;
-  }
-
   ResourceRequest request(url);
   request.SetHttpMethod(http_names::kGET);
   request.SetExternalRequestStateFromRequestorAddressSpace(
@@ -183,6 +168,26 @@ void WorkerClassicScriptLoader::LoadTopLevelScriptAsynchronously(
   request.SetMode(request_mode);
   request.SetCredentialsMode(credentials_mode);
 
+  // Use WorkerMainScriptLoader to load the main script for dedicated workers
+  // (PlzDedicatedWorker) and shared workers.
+  if (worker_main_script_load_params) {
+    DCHECK(base::FeatureList::IsEnabled(
+        features::kLoadMainScriptForPlzDedicatedWorkerByParams));
+
+    request.SetInspectorId(CreateUniqueIdentifier());
+    request.SetReferrerString(Referrer::NoReferrer());
+    request.SetPriority(ResourceLoadPriority::kHigh);
+    FetchParameters fetch_params(std::move(request), ResourceLoaderOptions());
+    worker_main_script_loader_ = MakeGarbageCollected<WorkerMainScriptLoader>();
+    worker_main_script_loader_->Start(
+        fetch_params, std::move(worker_main_script_load_params),
+        &fetch_client_settings_object_fetcher_->Context(),
+        fetch_client_settings_object_fetcher->GetResourceLoadObserver(),
+        std::move(resource_load_info_notifier), this);
+    return;
+  }
+
+  ResourceLoaderOptions resource_loader_options;
   need_to_cancel_ = true;
   resource_loader_options.reject_coep_unsafe_none = reject_coep_unsafe_none;
   if (blob_url_loader_factory) {

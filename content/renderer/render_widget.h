@@ -378,10 +378,6 @@ class CONTENT_EXPORT RenderWidget
     return max_size_for_auto_resize_;
   }
 
-  uint32_t capture_sequence_number() const {
-    return last_capture_sequence_number_;
-  }
-
   viz::FrameSinkId GetFrameSinkIdAtPoint(const gfx::PointF& point,
                                          gfx::PointF* local_point);
 
@@ -723,8 +719,6 @@ class CONTENT_EXPORT RenderWidget
   bool is_pinch_gesture_active_from_mainframe_ = false;
 
   gfx::Rect compositor_visible_rect_;
-
-  uint32_t last_capture_sequence_number_ = 0u;
 
   DISALLOW_COPY_AND_ASSIGN(RenderWidget);
 };

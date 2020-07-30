@@ -157,7 +157,7 @@ sk_sp<SkPromiseImageTexture> ExternalVkImageSkiaRepresentation::BeginAccess(
 
   for (auto& external_semaphore : begin_access_semaphores_) {
     DCHECK(external_semaphore);
-    VkSemaphore semaphore = external_semaphore.TakeVkSemaphore();
+    VkSemaphore semaphore = external_semaphore.GetVkSemaphore();
     DCHECK(semaphore != VK_NULL_HANDLE);
     // The ownership of semaphore is passed to caller.
     begin_semaphores->emplace_back();

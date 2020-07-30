@@ -15,6 +15,15 @@ Polymer({
   properties: {
     /** @private */
     showPowerwashDialog_: Boolean,
+
+    /**
+     * Used by DeepLinkingBehavior to focus this page's deep links.
+     * @type {!Set<!chromeos.settings.mojom.Setting>}
+     */
+    supportedSettingIds: {
+      type: Object,
+      value: () => new Set([chromeos.settings.mojom.Setting.kPowerwash]),
+    },
   },
 
   /** @private */
@@ -45,9 +54,6 @@ Polymer({
       return;
     }
 
-    const settingId = this.getDeepLinkSettingId();
-    if (settingId === chromeos.settings.mojom.Setting.kPowerwash) {
-      this.showDeepLink(settingId);
-    }
+    this.attemptDeepLink();
   },
 });

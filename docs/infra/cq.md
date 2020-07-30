@@ -63,7 +63,7 @@ The Chromium CQ supports a variety of options that can change what it checks.
 ### What exactly does the CQ run?
 
 CQ runs the jobs specified in [commit-queue.cfg][2]. See
-[`cq-builders.md`](https://chromium.googlesource.com/chromium/src/+/master/src/infra/config/generated/cq-builders.md)
+[`cq-builders.md`](../../infra/config/generated/cq-builders.md)
 for an auto generated file with links to information about the builders on the
 CQ.
 
@@ -180,4 +180,4 @@ infra-dev@chromium.org, or file a [trooper bug](https://g.co/bugatrooper).
 
 
 [1]: https://chromium.googlesource.com/chromium/tools/depot_tools/+/HEAD/git_footers.py
-[2]: ../../infra/config/commit-queue.cfg
+[2]: ../../infra/config/generated/commit-queue.cfg

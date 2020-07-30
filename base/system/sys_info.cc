@@ -83,7 +83,7 @@ bool SysInfo::IsLowEndDeviceImpl() {
 }
 #endif
 
-#if !defined(OS_APPLE) && !defined(OS_ANDROID)
+#if !defined(OS_APPLE) && !defined(OS_ANDROID) && !defined(OS_CHROMEOS)
 std::string SysInfo::HardwareModelName() {
   return std::string();
 }

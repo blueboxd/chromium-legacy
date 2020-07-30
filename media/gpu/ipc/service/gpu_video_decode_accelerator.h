@@ -106,6 +106,9 @@ class GpuVideoDecodeAccelerator
   // Sets the texture to cleared.
   void SetTextureCleared(const Picture& picture);
 
+  // OpenGL Callback methods.
+  GpuVideoDecodeGLClient gl_client_;
+
   // Route ID to communicate with the host.
   const int32_t host_route_id_;
 
@@ -116,21 +119,6 @@ class GpuVideoDecodeAccelerator
 
   // The underlying VideoDecodeAccelerator.
   std::unique_ptr<VideoDecodeAccelerator> video_decode_accelerator_;
-
-  // Callback to return current GLContext, if available.
-  GetGLContextCallback get_gl_context_cb_;
-
-  // Callback for making the relevant context current for GL calls.
-  MakeGLContextCurrentCallback make_context_current_cb_;
-
-  // Callback to bind a GLImage to a given texture id and target.
-  BindGLImageCallback bind_image_cb_;
-
-  // Callback to return a ContextGroup*.
-  GetContextGroupCallback get_context_group_cb_;
-
-  // Callback to return a DecoderContext*.
-  CreateAbstractTextureCallback create_abstract_texture_cb_;
 
   // The texture dimensions as requested by ProvidePictureBuffers().
   gfx::Size texture_dimensions_;

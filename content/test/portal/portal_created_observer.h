@@ -44,7 +44,7 @@ class PortalCreatedObserver : public mojom::FrameHostInterceptorForTesting {
       mojo::PendingAssociatedReceiver<blink::mojom::Portal> portal,
       mojo::PendingAssociatedRemote<blink::mojom::PortalClient> client,
       CreatePortalCallback callback) override;
-  void AdoptPortal(const base::UnguessableToken& portal_token,
+  void AdoptPortal(const blink::PortalToken& portal_token,
                    AdoptPortalCallback callback) override;
 
   // Wait until a portal is created (either newly or through adoption).

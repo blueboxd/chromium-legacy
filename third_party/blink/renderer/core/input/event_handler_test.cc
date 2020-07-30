@@ -1346,7 +1346,7 @@ TEST_F(EventHandlerSimTest, RightClickNoGestures) {
 }
 
 // https://crbug.com/976557 tracks the fix for re-enabling this test on Mac.
-#ifdef OS_MACOSX
+#if defined(OS_MAC)
 #define MAYBE_GestureTapWithScrollSnaps DISABLED_GestureTapWithScrollSnaps
 #else
 #define MAYBE_GestureTapWithScrollSnaps GestureTapWithScrollSnaps

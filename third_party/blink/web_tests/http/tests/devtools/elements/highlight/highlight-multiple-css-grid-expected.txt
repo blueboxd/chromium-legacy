@@ -6,28 +6,28 @@ This test verifies the position and size of the highlight rectangles overlayed o
       "rotationAngle": -90,
       "columnTrackSizes": [
         {
-          "computedSize": 50,
-          "authoredSize": "50px",
           "x": 173,
-          "y": 383
+          "y": 383,
+          "computedSize": 50,
+          "authoredSize": "50px"
         },
         {
-          "computedSize": 200,
-          "authoredSize": "20%",
           "x": 173,
-          "y": 233
+          "y": 233,
+          "computedSize": 200,
+          "authoredSize": "20%"
         }
       ],
       "rowTrackSizes": [
         {
-          "computedSize": 25,
           "x": 185.5,
-          "y": 408
+          "y": 408,
+          "computedSize": 25
         },
         {
-          "computedSize": 25,
           "x": 225.5,
-          "y": 408
+          "y": 408,
+          "computedSize": 25
         }
       ],
       "rows": [
@@ -122,6 +122,34 @@ This test verifies the position and size of the highlight rectangles overlayed o
         62.5,
         275
       ],
+      "positiveRowLineNumberPositions": [
+        {
+          "x": 118,
+          "y": 408
+        },
+        {
+          "x": 150.5,
+          "y": 408
+        },
+        {
+          "x": 183,
+          "y": 408
+        }
+      ],
+      "positiveColumnLineNumberPositions": [
+        {
+          "x": 173,
+          "y": 1198
+        },
+        {
+          "x": 173,
+          "y": 1135.5
+        },
+        {
+          "x": 173,
+          "y": 923
+        }
+      ],
       "negativeRowLineNumberOffsets": [
         0
       ],
@@ -129,6 +157,26 @@ This test verifies the position and size of the highlight rectangles overlayed o
         0,
         62.5,
         275
+      ],
+      "negativeRowLineNumberPositions": [
+        {
+          "x": 173,
+          "y": 133
+        }
+      ],
+      "negativeColumnLineNumberPositions": [
+        {
+          "x": 238,
+          "y": 408
+        },
+        {
+          "x": 238,
+          "y": 1135.5
+        },
+        {
+          "x": 238,
+          "y": 923
+        }
       ],
       "areaNames": {},
       "rowLineNameOffsets": [],
@@ -170,28 +218,28 @@ This test verifies the position and size of the highlight rectangles overlayed o
       "rotationAngle": -90,
       "columnTrackSizes": [
         {
-          "computedSize": 50,
-          "authoredSize": "50px",
           "x": 108,
-          "y": 1183
+          "y": 1183,
+          "computedSize": 50,
+          "authoredSize": "50px"
         },
         {
-          "computedSize": 1200,
-          "authoredSize": "1200px",
           "x": 108,
-          "y": 508
+          "y": 508,
+          "computedSize": 1200,
+          "authoredSize": "1200px"
         }
       ],
       "rowTrackSizes": [
         {
-          "computedSize": 100,
           "x": 158,
-          "y": 1208
+          "y": 1208,
+          "computedSize": 100
         },
         {
-          "computedSize": 100,
           "x": 278,
-          "y": 1208
+          "y": 1208,
+          "computedSize": 100
         }
       ],
       "rows": [
@@ -286,6 +334,34 @@ This test verifies the position and size of the highlight rectangles overlayed o
         75,
         1300
       ],
+      "positiveRowLineNumberPositions": [
+        {
+          "x": 108,
+          "y": 1208
+        },
+        {
+          "x": 218,
+          "y": 1208
+        },
+        {
+          "x": 328,
+          "y": 1208
+        }
+      ],
+      "positiveColumnLineNumberPositions": [
+        {
+          "x": 108,
+          "y": 1208
+        },
+        {
+          "x": 108,
+          "y": 1133
+        },
+        {
+          "x": 108,
+          "y": -92
+        }
+      ],
       "negativeRowLineNumberOffsets": [
         0
       ],
@@ -293,6 +369,26 @@ This test verifies the position and size of the highlight rectangles overlayed o
         0,
         75,
         1300
+      ],
+      "negativeRowLineNumberPositions": [
+        {
+          "x": 108,
+          "y": -92
+        }
+      ],
+      "negativeColumnLineNumberPositions": [
+        {
+          "x": 328,
+          "y": 1208
+        },
+        {
+          "x": 328,
+          "y": 1133
+        },
+        {
+          "x": 328,
+          "y": -92
+        }
       ],
       "areaNames": {},
       "rowLineNameOffsets": [],

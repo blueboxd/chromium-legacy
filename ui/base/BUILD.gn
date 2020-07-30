@@ -352,7 +352,7 @@ jumbo_component("base") {
       "user_activity/user_activity_observer.h",
     ]
 
-    if (is_linux) {
+    if (is_linux || is_chromeos) {
       sources += [
         "accelerators/menu_label_accelerator_util_linux.cc",
         "accelerators/menu_label_accelerator_util_linux.h",
@@ -402,7 +402,7 @@ jumbo_component("base") {
     sources += [ "pointer/pointer_device_android.cc" ]
   } else if (is_ios) {
     sources += [ "pointer/pointer_device_ios.cc" ]
-  } else if (is_linux) {
+  } else if (is_linux || is_chromeos) {
     sources += [ "pointer/pointer_device_linux.cc" ]
   } else {
     # Empty implementation for all other cases.
@@ -513,11 +513,11 @@ jumbo_component("base") {
     }
   }
 
-  if (use_aura && is_linux) {
+  if (use_aura && (is_linux || is_chromeos)) {
     sources += [ "resource/resource_bundle_auralinux.cc" ]
   }
 
-  if (is_linux) {
+  if (is_linux || is_chromeos) {
     deps += [ "//third_party/fontconfig" ]
   }
 
@@ -966,7 +966,7 @@ test("ui_base_unittests") {
     ]
     deps += [ "//components/system_media_controls:test_support" ]
 
-    if (is_linux) {
+    if (is_linux || is_chromeos) {
       sources +=
           [ "accelerators/menu_label_accelerator_util_linux_unittest.cc" ]
     }
@@ -1125,7 +1125,7 @@ test("ui_base_unittests") {
     deps += [ "//ui/events:dom_keycode_converter" ]
   }
 
-  if (is_android || is_linux || is_mac || is_win || is_fuchsia) {
+  if (is_android || is_linux || is_chromeos || is_mac || is_win || is_fuchsia) {
     # TODO(brettw): We should be able to depend on //ui/resources:ui_test_pak
     # instead of depending directly on the non-test .pak files, but depending
     # on ui_test_pak seems to have no effect.
@@ -1138,7 +1138,7 @@ test("ui_base_unittests") {
       "//ui/resources:ui_test_pak",  # TODO(brettw): this does nothing.
     ]
   }
-  if (is_linux || is_win || is_fuchsia) {
+  if (is_linux || is_chromeos || is_win || is_fuchsia) {
     data += [
       # TODO(brettw): Remove these two lines.
       "$root_out_dir/ui/en-US.pak",
@@ -1174,7 +1174,7 @@ if (is_win) {
   }
 }
 
-if (is_linux) {
+if (is_linux || is_chromeos) {
   # This source set defines linux wm role names and must not have any external
   # dependencies and be kept as minimal as possible.
   source_set("wm_role_names") {

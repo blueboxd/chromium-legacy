@@ -98,7 +98,7 @@ source_set("geolocation") {
   if (is_chromeos || (is_linux && !use_dbus)) {
     sources -= [ "wifi_data_provider_linux.cc" ]
   }
-  if (is_linux && use_dbus) {
+  if ((is_linux || is_chromeos) && use_dbus) {
     sources -= [ "empty_wifi_data_provider.cc" ]
     deps += [ "//dbus" ]
   }

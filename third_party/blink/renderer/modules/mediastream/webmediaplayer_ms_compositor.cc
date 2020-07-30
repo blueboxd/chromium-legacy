@@ -134,6 +134,16 @@ scoped_refptr<media::VideoFrame> CopyFrame(
   return new_frame;
 }
 
+gfx::Size RotationAdjustedSize(media::VideoRotation rotation,
+                               const gfx::Size& size) {
+  if (rotation == media::VIDEO_ROTATION_90 ||
+      rotation == media::VIDEO_ROTATION_270) {
+    return gfx::Size(size.height(), size.width());
+  }
+
+  return size;
+}
+
 }  // anonymous namespace
 
 WebMediaPlayerMSCompositor::WebMediaPlayerMSCompositor(
@@ -584,15 +594,17 @@ void WebMediaPlayerMSCompositor::SetCurrentFrame(
     media::VideoRotation current_video_rotation =
         current_frame_->metadata()->rotation.value_or(media::VIDEO_ROTATION_0);
 
+    has_frame_size_changed =
+        RotationAdjustedSize(*new_rotation, frame->natural_size()) !=
+        RotationAdjustedSize(current_video_rotation,
+                             current_frame_->natural_size());
+
     if (current_video_rotation == *new_rotation) {
       new_rotation.reset();
     }
 
     if (*new_opacity == media::IsOpaque(current_frame_->format()))
       new_opacity.reset();
-
-    has_frame_size_changed =
-        frame->natural_size() != current_frame_->natural_size();
   }
 
   current_frame_ = std::move(frame);

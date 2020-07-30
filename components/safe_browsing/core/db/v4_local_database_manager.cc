@@ -37,13 +37,6 @@ const int64_t kFullHashExpiryTimeInMinutes = 60;
 const ThreatSeverity kLeastSeverity =
     std::numeric_limits<ThreatSeverity>::max();
 
-// The list of the name of any store files that are no longer used and can be
-// safely deleted from the disk. There's no overlap allowed between the files
-// on this list and the list returned by GetListInfos().
-const char* const kStoreFileNamesToDelete[] = {
-    "AnyIpMalware.store", "ChromeFilenameClientIncident.store",
-    "UrlSuspiciousSiteId.store"};
-
 ListInfos GetListInfos() {
 // NOTE(vakh): When adding a store here, add the corresponding store-specific
 // histograms also.
@@ -291,11 +284,6 @@ V4LocalDatabaseManager::V4LocalDatabaseManager(
                               base::TaskShutdownBehavior::SKIP_ON_SHUTDOWN})) {
   DCHECK(!base_path_.empty());
   DCHECK(!list_infos_.empty());
-
-  DeleteUnusedStoreFiles();
-
-  DVLOG(1) << "V4LocalDatabaseManager::V4LocalDatabaseManager: "
-           << "base_path_: " << base_path_.AsUTF8Unsafe();
 }
 
 V4LocalDatabaseManager::~V4LocalDatabaseManager() {
@@ -635,32 +623,6 @@ void V4LocalDatabaseManager::DatabaseUpdated() {
         FROM_HERE, CreateTaskTraits(ThreadID::UI),
         base::BindOnce(
             &SafeBrowsingDatabaseManager::NotifyDatabaseUpdateFinished, this));
-  }
-}
-
-void V4LocalDatabaseManager::DeleteUnusedStoreFiles() {
-  for (auto* const store_filename_to_delete : kStoreFileNamesToDelete) {
-    // Is the file marked for deletion also being used for a valid V4Store?
-    auto it = std::find_if(std::begin(list_infos_), std::end(list_infos_),
-                           [&store_filename_to_delete](ListInfo const& li) {
-                             return li.filename() == store_filename_to_delete;
-                           });
-    if (list_infos_.end() == it) {
-      const base::FilePath store_path =
-          base_path_.AppendASCII(store_filename_to_delete);
-      bool path_exists = base::PathExists(store_path);
-      base::UmaHistogramBoolean("SafeBrowsing.V4UnusedStoreFileExists" +
-                                    GetUmaSuffixForStore(store_path),
-                                path_exists);
-      if (!path_exists) {
-        continue;
-      }
-      task_runner_->PostTask(
-          FROM_HERE, base::BindOnce(base::GetDeleteFileCallback(), store_path));
-    } else {
-      NOTREACHED() << "Trying to delete a store file that's in use: "
-                   << store_filename_to_delete;
-    }
   }
 }
 

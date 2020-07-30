@@ -56,6 +56,10 @@ class FeedStreamApi {
   virtual void SetArticlesListVisible(bool is_visible) = 0;
   virtual bool IsArticlesListVisible() = 0;
 
+  // Returns the client_instance_id. This value is reset whenever the feed
+  // stream is cleared (on sign-in, sign-out, and some data clear events).
+  virtual std::string GetClientInstanceId() = 0;
+
   // Invoked by RefreshTaskScheduler's scheduled task.
   virtual void ExecuteRefreshTask() = 0;
 

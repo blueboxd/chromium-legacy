@@ -259,7 +259,7 @@ jumbo_component("network_service") {
     deps += [ "//components/certificate_transparency" ]
   }
 
-  if (is_linux) {
+  if (is_linux || is_chromeos) {
     deps += [ "//sandbox/linux:sandbox_services" ]
   }
 

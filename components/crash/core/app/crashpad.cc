@@ -127,7 +127,7 @@ void InitializeCrashpadImpl(bool initial_client,
     DCHECK(browser_process);
 #else
 #error Port.
-#endif  // OS_MACOSX
+#endif  // OS_APPLE
   } else {
     DCHECK(!browser_process);
   }
@@ -155,7 +155,7 @@ void InitializeCrashpadImpl(bool initial_client,
     crashpad::CrashpadInfo::GetCrashpadInfo()
         ->set_system_crash_reporter_forwarding(crashpad::TriState::kDisabled);
   }
-#endif  // OS_MACOSX
+#endif  // OS_APPLE
 
   crashpad::AnnotationList::Register();
 

@@ -1442,6 +1442,15 @@ const char kOmniboxAutocompleteTitlesDescription[] =
     "Allows autocompleting bookmark, history, and document suggestions when the"
     " user input is a prefix of their titles, as opposed to their URLs.";
 
+const char kOmniboxClobberIsZeroSuggestEntrypointName[] =
+    "Omnibox Clobber is ZeroSuggest Entrypoint";
+const char kOmniboxClobberIsZeroSuggestEntrypointDescription[] =
+    "If enabled, when the user clears the whole omnibox text (i.e. via "
+    "Backspace), Chrome will request ZeroSuggest suggestions. Note, this flag "
+    "merely adds a new ZeroSuggest entrypoint. ZeroSuggest still must be "
+    "enabled on the proper page classification (either by default or via a "
+    "separate flag), or else this flag will do nothing.";
+
 const char kOmniboxCompactSuggestionsName[] = "Omnibox: Compact suggestions";
 const char kOmniboxCompactSuggestionsDescription[] =
     "Conserve the space for Omnibox Suggestions by slightly reducing their "
@@ -1506,6 +1515,11 @@ const char kOmniboxRichAutocompletionMinCharName[] =
     "Omnibox Rich Autocompletion Min Characters";
 const char kOmniboxRichAutocompletionMinCharDescription[] =
     "Specifies min input character length to trigger rich autocompletion.";
+const char kOmniboxRichAutocompletionShowAdditionalTextName[] =
+    "Omnibox Rich Autocompletion Show Additional Text";
+const char kOmniboxRichAutocompletionShowAdditionalTextDescription[] =
+    "Show the suggestion title or URL additional text when the input matches "
+    "the URL or title respectively. Defaults to true.";
 
 const char kOmniboxOnFocusSuggestionsName[] = "Omnibox on-focus suggestions";
 const char kOmniboxOnFocusSuggestionsDescription[] =

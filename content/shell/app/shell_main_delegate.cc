@@ -61,7 +61,7 @@
 #if defined(OS_MAC)
 #include "content/shell/app/paths_mac.h"
 #include "content/shell/app/shell_main_delegate_mac.h"
-#endif  // OS_MACOSX
+#endif  // OS_MAC
 
 #if defined(OS_WIN)
 #include <windows.h>
@@ -167,7 +167,7 @@ bool ShellMainDelegate::BasicStartupComplete(int* exit_code) {
   OverrideSourceRootPath();
   EnsureCorrectResolutionSettings();
   OverrideBundleID();
-#endif  // OS_MACOSX
+#endif  // OS_MAC
 
   InitLogging(command_line);
 

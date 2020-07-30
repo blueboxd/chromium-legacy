@@ -23,11 +23,13 @@ class TracingControllerAndroid {
   bool StartTracing(JNIEnv* env,
                     const base::android::JavaParamRef<jobject>& obj,
                     const base::android::JavaParamRef<jstring>& categories,
-                    const base::android::JavaParamRef<jstring>& trace_options);
+                    const base::android::JavaParamRef<jstring>& trace_options,
+                    bool use_protobuf);
   void StopTracing(JNIEnv* env,
                    const base::android::JavaParamRef<jobject>& obj,
                    const base::android::JavaParamRef<jstring>& jfilepath,
-                   bool compressfile,
+                   bool compress_file,
+                   bool use_protobuf,
                    const base::android::JavaParamRef<jobject>& callback);
   bool GetKnownCategoriesAsync(
       JNIEnv* env,

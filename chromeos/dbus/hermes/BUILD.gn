@@ -21,6 +21,8 @@ source_set("hermes_clients") {
   sources = [
     "hermes_clients.cc",
     "hermes_clients.h",
+    "hermes_euicc_client.cc",
+    "hermes_euicc_client.h",
     "hermes_manager_client.cc",
     "hermes_manager_client.h",
     "hermes_profile_client.cc",
@@ -40,6 +42,8 @@ source_set("hermes_fakes") {
   ]
 
   sources = [
+    "fake_hermes_euicc_client.cc",
+    "fake_hermes_euicc_client.h",
     "fake_hermes_manager_client.cc",
     "fake_hermes_manager_client.h",
     "fake_hermes_profile_client.cc",
@@ -64,7 +68,7 @@ source_set("test_support") {
   sources = [
     "hermes_client_test_base.cc",
     "hermes_client_test_base.h",
-    "hermes_manager_client_unittest.cc",
+    "hermes_euicc_client_unittest.cc",
     "hermes_profile_client_unittest.cc",
     "hermes_test_utils.cc",
     "hermes_test_utils.h",

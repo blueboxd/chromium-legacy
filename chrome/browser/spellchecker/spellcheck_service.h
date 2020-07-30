@@ -92,7 +92,7 @@ class SpellcheckService : public KeyedService,
   // dictionaries used for spellcheck.
   static void GetDictionaries(content::BrowserContext* browser_context,
                               std::vector<Dictionary>* dictionaries);
-#endif  // !OS_MACOSX
+#endif  // !OS_MAC
 
   // Signals the event attached by AttachTestEvent() to report the specified
   // event to browser tests. This function is called by this class and its

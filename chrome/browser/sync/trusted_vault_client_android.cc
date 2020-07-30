@@ -129,3 +129,11 @@ void TrustedVaultClientAndroid::MarkKeysAsStale(
   Java_TrustedVaultClient_markKeysAsStale(env, reinterpret_cast<intptr_t>(this),
                                           java_account_info);
 }
+
+void TrustedVaultClientAndroid::GetIsRecoverabilityDegraded(
+    const CoreAccountInfo& account_info,
+    base::OnceCallback<void(bool)> cb) {
+  // TODO(crbug.com/1100279): Needs implementation.
+  NOTIMPLEMENTED();
+  std::move(cb).Run(false);
+}

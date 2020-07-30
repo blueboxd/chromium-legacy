@@ -33,7 +33,7 @@ jumbo_component("devices") {
     "touchscreen_device.h",
   ]
 
-  if (is_linux) {
+  if (is_linux || is_chromeos) {
     sources += [
       "device_util_linux.cc",
       "device_util_linux.h",

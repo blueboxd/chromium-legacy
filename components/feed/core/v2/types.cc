@@ -68,6 +68,11 @@ base::Optional<DebugStreamData> UnpickleDebugStreamData(
 
 }  // namespace
 
+RequestMetadata::RequestMetadata() = default;
+RequestMetadata::~RequestMetadata() = default;
+RequestMetadata::RequestMetadata(RequestMetadata&&) = default;
+RequestMetadata& RequestMetadata::operator=(RequestMetadata&&) = default;
+
 NetworkResponseInfo::NetworkResponseInfo() = default;
 NetworkResponseInfo::~NetworkResponseInfo() = default;
 NetworkResponseInfo::NetworkResponseInfo(const NetworkResponseInfo&) = default;

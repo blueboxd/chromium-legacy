@@ -27,6 +27,9 @@ class IOSTrustedVaultClient : public syncer::TrustedVaultClient {
   void RemoveAllStoredKeys() override;
   void MarkKeysAsStale(const CoreAccountInfo& account_info,
                        base::OnceCallback<void(bool)> callback) override;
+  void GetIsRecoverabilityDegraded(
+      const CoreAccountInfo& account_info,
+      base::OnceCallback<void(bool)> callback) override;
 
   // Not copyable or movable
   IOSTrustedVaultClient(const IOSTrustedVaultClient&) = delete;

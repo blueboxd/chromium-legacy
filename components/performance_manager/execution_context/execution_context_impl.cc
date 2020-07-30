@@ -128,7 +128,7 @@ class WorkerExecutionContext
     // The casting is safe because ExecutionContext guarantees it has the same
     // layout as base::UnguessableToken.
     return *reinterpret_cast<const ExecutionContextToken*>(
-        &node_->dev_tools_token());
+        &node_->worker_token().value());
   }
 
  protected:

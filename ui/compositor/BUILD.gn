@@ -262,7 +262,7 @@ test("compositor_unittests") {
     "//ui/resources",
   ]
 
-  if (is_linux) {
+  if (is_linux || is_chromeos) {
     deps += [ "//third_party/mesa_headers" ]
   }
 }

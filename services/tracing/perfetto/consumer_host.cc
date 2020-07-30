@@ -25,6 +25,7 @@
 #include "mojo/public/cpp/bindings/self_owned_receiver.h"
 #include "mojo/public/cpp/system/wait.h"
 #include "services/tracing/perfetto/perfetto_service.h"
+#include "services/tracing/public/cpp/perfetto/perfetto_session.h"
 #include "services/tracing/public/cpp/trace_event_args_allowlist.h"
 #include "third_party/perfetto/include/perfetto/ext/trace_processor/export_json.h"
 #include "third_party/perfetto/include/perfetto/ext/tracing/core/observable_events.h"
@@ -403,7 +404,11 @@ void ConsumerHost::TracingSession::DisableTracingAndEmitJson(
       perfetto::trace_processor::TraceProcessorStorage::CreateInstance(
           processor_config);
 
-  DisableTracing();
+  if (tracing_enabled_) {
+    DisableTracing();
+  } else {
+    host_->consumer_endpoint()->ReadBuffers();
+  }
 }
 
 void ConsumerHost::TracingSession::ExportJson() {
@@ -550,19 +555,8 @@ void ConsumerHost::TracingSession::OnTraceStats(
     std::move(request_buffer_usage_callback_).Run(false, 0.0f, false);
     return;
   }
-
-  const perfetto::TraceStats::BufferStats& buf_stats = stats.buffer_stats()[0];
-  size_t bytes_in_buffer = buf_stats.bytes_written() - buf_stats.bytes_read() -
-                           buf_stats.bytes_overwritten() +
-                           buf_stats.padding_bytes_written() -
-                           buf_stats.padding_bytes_cleared();
-  double percent_full =
-      bytes_in_buffer / static_cast<double>(buf_stats.buffer_size());
-  percent_full = base::ClampToRange(percent_full, 0.0, 1.0);
-  bool data_loss = buf_stats.chunks_overwritten() > 0 ||
-                   buf_stats.chunks_discarded() > 0 ||
-                   buf_stats.abi_violations() > 0 ||
-                   buf_stats.trace_writer_packet_loss() > 0;
+  double percent_full = GetTraceBufferUsage(stats);
+  bool data_loss = HasLostData(stats);
   std::move(request_buffer_usage_callback_).Run(true, percent_full, data_loss);
 }
 

@@ -255,7 +255,7 @@ jumbo_source_set("common_sources") {
     public_deps += [ "//media/capture/video/chromeos/public" ]
   }
 
-  if (is_linux) {
+  if (is_linux || is_chromeos) {
     sources += [
       "zygote/sandbox_support_linux.h",
       "zygote/send_zygote_child_ping_linux.h",

@@ -149,12 +149,6 @@ bool WebRtcTestBase::GetUserMediaAndAccept(
       tab_contents, kAudioVideoCallConstraints);
 }
 
-bool WebRtcTestBase::GetUserMediaAndAcceptIfPrompted(
-    content::WebContents* tab_contents) const {
-  return GetUserMediaWithSpecificConstraintsAndAcceptIfPrompted(
-      tab_contents, kAudioVideoCallConstraints);
-}
-
 bool WebRtcTestBase::GetUserMediaWithSpecificConstraintsAndAccept(
     content::WebContents* tab_contents,
     const std::string& constraints) const {

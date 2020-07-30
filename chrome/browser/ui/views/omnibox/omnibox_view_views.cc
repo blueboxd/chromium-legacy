@@ -1791,6 +1791,13 @@ void OmniboxViewViews::DidGetUserInteraction(
     return;
   }
 
+  // Exclude mouse clicks from triggering the simplified domain elision. Mouse
+  // clicks can be done idly and aren't a good signal of real intent to interact
+  // with the page. Plus, it can be jarring when the URL elides when the user
+  // clicks on a link only to immediately come back as the navigation occurs.
+  if (blink::WebInputEvent::IsMouseEventType(event.GetType()))
+    return;
+
   // Exclude modifier keys to prevent keyboard shortcuts (such as switching
   // tabs) from eliding the URL. We don't want to count these shortcuts as
   // interactions with the page content.

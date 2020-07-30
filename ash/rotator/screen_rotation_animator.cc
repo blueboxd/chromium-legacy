@@ -86,7 +86,7 @@ int GetRotationFactor(display::Display::Rotation initial_rotation,
 }
 
 aura::Window* GetScreenRotationContainer(aura::Window* root_window) {
-  return root_window->GetChildById(kShellWindowId_ScreenRotationContainer);
+  return root_window->GetChildById(kShellWindowId_ScreenAnimationContainer);
 }
 
 // Returns true if the rotation between |initial_rotation| and |new_rotation| is

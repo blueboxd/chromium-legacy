@@ -601,6 +601,10 @@ class RenderTextTest : public testing::Test {
     test_api()->SetGlyphWidth(test_width);
   }
 
+  void SetGlyphHeight(float test_height) {
+    test_api()->SetGlyphHeight(test_height);
+  }
+
   bool ShapeRunWithFont(const base::string16& text,
                         const Font& font,
                         const FontRenderParams& render_params,
@@ -4430,6 +4434,84 @@ TEST_F(RenderTextTest, DefaultLineHeights) {
        {headline_font, title_font, body1_font, body2_font, button_font}) {
     render_text->SetFontList(font);
     EXPECT_EQ(font.GetHeight(), render_text->GetStringSizeF().height());
+  }
+}
+
+TEST_F(RenderTextTest, TextSize) {
+  // Set a fractional glyph size to trigger floating rounding logic.
+  const float kGlyphWidth = 1.2;
+  const float kGlyphHeight = 9.2;
+  SetGlyphWidth(kGlyphWidth);
+  SetGlyphHeight(kGlyphHeight);
+
+  RenderText* render_text = GetRenderText();
+  for (size_t text_length = 0; text_length < 10; ++text_length) {
+    render_text->SetText(ASCIIToUTF16(std::string(text_length, 'x')));
+
+    // Ensures that conversion from float to integer ceils the values.
+    const float expected_width = text_length * kGlyphWidth;
+    const float expected_height = kGlyphHeight;
+    const int expected_ceiled_width = std::ceil(expected_width);
+    const int expected_ceiled_height = std::ceil(expected_height);
+
+    EXPECT_FLOAT_EQ(expected_width, render_text->GetStringSizeF().width());
+    EXPECT_FLOAT_EQ(expected_height, render_text->GetStringSizeF().height());
+    EXPECT_EQ(expected_ceiled_width, render_text->GetStringSize().width());
+    EXPECT_EQ(expected_ceiled_height, render_text->GetStringSize().height());
+
+    EXPECT_FLOAT_EQ(expected_width, render_text->TotalLineWidth());
+
+    // With cursor disabled, the content width is the same as string width.
+    render_text->SetCursorEnabled(false);
+    EXPECT_FLOAT_EQ(expected_width, render_text->GetContentWidthF());
+    EXPECT_EQ(expected_ceiled_width, render_text->GetContentWidth());
+
+    render_text->SetCursorEnabled(true);
+    // The cursor is drawn one pixel beyond the int-enclosing text bounds.
+    EXPECT_FLOAT_EQ(expected_ceiled_width + 1, render_text->GetContentWidthF());
+    EXPECT_EQ(expected_ceiled_width + 1, render_text->GetContentWidth());
+  }
+}
+
+TEST_F(RenderTextTest, TextSizeMultiline) {
+  // Set a fractional glyph size to trigger floating rounding logic.
+  const float kGlyphWidth = 1.2;
+  const float kGlyphHeight = 9.2;
+  SetGlyphWidth(kGlyphWidth);
+  SetGlyphHeight(kGlyphHeight);
+
+  RenderText* render_text = GetRenderText();
+  render_text->SetMultiline(true);
+
+  for (size_t line = 0; line < 10; ++line) {
+    if (line != 0)
+      render_text->AppendText(ASCIIToUTF16("\n"));
+    const int text_length = line;
+    render_text->AppendText(ASCIIToUTF16(std::string(text_length, 'x')));
+
+    // Ensures that conversion from float to integer ceils the values.
+    const float expected_width = text_length * kGlyphWidth;
+    const float expected_height = (line + 1) * kGlyphHeight;
+    const int expected_ceiled_width = std::ceil(expected_width);
+    const int expected_ceiled_height = std::ceil(expected_height);
+
+    EXPECT_FLOAT_EQ(expected_width, render_text->GetStringSizeF().width());
+    EXPECT_FLOAT_EQ(expected_height, render_text->GetStringSizeF().height());
+    EXPECT_EQ(expected_ceiled_width, render_text->GetStringSize().width());
+    EXPECT_EQ(expected_ceiled_height, render_text->GetStringSize().height());
+
+    const int total_glyphs = render_text->text().length();
+    EXPECT_FLOAT_EQ(total_glyphs * kGlyphWidth, render_text->TotalLineWidth());
+
+    // With cursor disabled, the content width is the same as string width.
+    render_text->SetCursorEnabled(false);
+    EXPECT_FLOAT_EQ(expected_width, render_text->GetContentWidthF());
+    EXPECT_EQ(expected_ceiled_width, render_text->GetContentWidth());
+
+    render_text->SetCursorEnabled(true);
+    // The cursor is drawn one pixel beyond the int-enclosing text bounds.
+    EXPECT_FLOAT_EQ(expected_ceiled_width + 1, render_text->GetContentWidthF());
+    EXPECT_EQ(expected_ceiled_width + 1, render_text->GetContentWidth());
   }
 }
 

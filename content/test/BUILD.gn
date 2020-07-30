@@ -483,7 +483,7 @@ jumbo_static_library("test_support") {
   }
 
   # HID support is not available without udev.
-  is_linux_without_udev = is_linux && !use_udev
+  is_linux_without_udev = (is_linux || is_chromeos) && !use_udev
   if (!is_linux_without_udev && !is_android) {
     sources += [
       "../browser/hid/hid_test_utils.cc",
@@ -597,7 +597,7 @@ jumbo_static_library("test_support") {
     ]
   }
 
-  if (is_linux) {
+  if (is_linux || is_chromeos) {
     deps += [ "//ui/platform_window/common" ]
   }
 
@@ -1315,7 +1315,7 @@ test("content_browsertests") {
     }
   }
 
-  if (is_android || is_linux || is_mac || is_win) {
+  if (is_android || is_linux || is_chromeos || is_mac || is_win) {
     data += [
       "$root_out_dir/content_shell.pak",
       "data/",
@@ -1323,7 +1323,7 @@ test("content_browsertests") {
     ]
   }
 
-  if (is_linux || is_mac || is_win) {
+  if (is_linux || is_chromeos || is_mac || is_win) {
     sources += [
       "../browser/media/capture/content_capture_device_browsertest_base.cc",
       "../browser/media/capture/content_capture_device_browsertest_base.h",
@@ -1385,7 +1385,7 @@ test("content_browsertests") {
     configs += [ "//build/config/win:delayloads" ]
   }
 
-  if (is_linux) {
+  if (is_linux || is_chromeos) {
     sources += [
       "../browser/utility_process_sandbox_browsertest.cc",
       "../browser/zygote_host/zygote_browsertest.cc",
@@ -1459,7 +1459,7 @@ test("content_browsertests") {
   }
 
   # HID support is not available without udev.
-  is_linux_without_udev = is_linux && !use_udev
+  is_linux_without_udev = (is_linux || is_chromeos) && !use_udev
   if (!is_linux_without_udev && !is_android) {
     sources += [
       "../browser/hid/hid_browsertest.cc",
@@ -1598,7 +1598,7 @@ static_library("run_all_unittests") {
     ":test_support",
     "//base/test:test_support",
   ]
-  if (is_linux) {
+  if (is_linux || is_chromeos) {
     deps += [ "//services/service_manager/embedder:set_process_title_linux" ]
   }
 }
@@ -2076,7 +2076,7 @@ test("content_unittests") {
         [ "../browser/accessibility/browser_accessibility_android_unittest.cc" ]
   }
 
-  if (is_android || is_linux || is_mac || is_win || is_fuchsia) {
+  if (is_android || is_linux || is_chromeos || is_mac || is_win || is_fuchsia) {
     data = [
       "$root_out_dir/content_shell.pak",
       "data/",
@@ -2283,7 +2283,7 @@ test("content_unittests") {
     }
   }
 
-  if (is_linux) {
+  if (is_linux || is_chromeos) {
     if (use_dbus) {
       deps += [ "//dbus:test_support" ]
     }
@@ -2373,7 +2373,7 @@ test("content_unittests") {
   }
 
   # HID support is not available without udev.
-  is_linux_without_udev = is_linux && !use_udev
+  is_linux_without_udev = (is_linux || is_chromeos) && !use_udev
   if (!is_linux_without_udev && !is_android) {
     sources += [
       "../browser/hid/hid_service_unittest.cc",
@@ -2424,7 +2424,7 @@ test("content_unittests") {
     deps += [ "//ui/gfx/x" ]
   }
 
-  if (is_linux) {
+  if (is_linux || is_chromeos) {
     sources += [ "../../services/service_manager/embedder/set_process_title_linux_unittest.cc" ]
     deps += [ "//services/service_manager/embedder:set_process_title_linux" ]
   }

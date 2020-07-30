@@ -2345,7 +2345,7 @@
         'mixins': [
           'intel_iris_5100',
           'limited_capacity_bot',
-          'mac_10.16_beta',
+          'mac_11.0_beta',
         ],
         'test_suites': {
           'gtest_tests': 'chromium_mac_gtests_no_nacl',

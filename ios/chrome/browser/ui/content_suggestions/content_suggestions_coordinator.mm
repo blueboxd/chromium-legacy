@@ -33,11 +33,13 @@
 #import "ios/chrome/browser/ui/commands/browser_commands.h"
 #import "ios/chrome/browser/ui/commands/command_dispatcher.h"
 #import "ios/chrome/browser/ui/commands/open_new_tab_command.h"
+#import "ios/chrome/browser/ui/content_suggestions/cells/content_suggestions_most_visited_item.h"
 #import "ios/chrome/browser/ui/content_suggestions/content_suggestions_data_sink.h"
 #import "ios/chrome/browser/ui/content_suggestions/content_suggestions_feature.h"
 #import "ios/chrome/browser/ui/content_suggestions/content_suggestions_header_synchronizer.h"
 #import "ios/chrome/browser/ui/content_suggestions/content_suggestions_header_view_controller.h"
 #import "ios/chrome/browser/ui/content_suggestions/content_suggestions_mediator.h"
+#import "ios/chrome/browser/ui/content_suggestions/content_suggestions_menu_provider.h"
 #import "ios/chrome/browser/ui/content_suggestions/content_suggestions_metrics_recorder.h"
 #import "ios/chrome/browser/ui/content_suggestions/content_suggestions_view_controller.h"
 #import "ios/chrome/browser/ui/content_suggestions/content_suggestions_view_controller_audience.h"
@@ -46,6 +48,8 @@
 #import "ios/chrome/browser/ui/content_suggestions/ntp_home_mediator.h"
 #import "ios/chrome/browser/ui/content_suggestions/ntp_home_metrics.h"
 #import "ios/chrome/browser/ui/content_suggestions/theme_change_delegate.h"
+#import "ios/chrome/browser/ui/menu/action_factory.h"
+#import "ios/chrome/browser/ui/menu/menu_histograms.h"
 #import "ios/chrome/browser/ui/ntp/new_tab_page_header_constants.h"
 #import "ios/chrome/browser/ui/ntp/notification_promo_whats_new.h"
 #import "ios/chrome/browser/ui/overscroll_actions/overscroll_actions_controller.h"
@@ -64,6 +68,7 @@
 #endif
 
 @interface ContentSuggestionsCoordinator () <
+    ContentSuggestionsMenuProvider,
     ContentSuggestionsViewControllerAudience,
     DiscoverFeedMenuCommands,
     OverscrollActionsControllerDelegate,
@@ -215,6 +220,10 @@
       self.browser->GetCommandDispatcher(), SnackbarCommands);
   self.suggestionsViewController.dispatcher = dispatcher;
   self.suggestionsViewController.discoverFeedMenuHandler = self;
+
+  if (@available(iOS 13.0, *)) {
+    self.suggestionsViewController.menuProvider = self;
+  }
 
   self.NTPMediator.consumer = self.headerController;
   // TODO(crbug.com/1045047): Use HandlerForProtocol after commands protocol
@@ -417,6 +426,28 @@
 }
 - (void)locationBarDidResignFirstResponder {
   [self.NTPMediator locationBarDidResignFirstResponder];
+}
+
+#pragma mark - ThemeChangeDelegate
+
+- (UIContextMenuConfiguration*)contextMenuConfigurationForItem:
+    (ContentSuggestionsMostVisitedItem*)item API_AVAILABLE(ios(13.0)) {
+  return [UIContextMenuConfiguration
+      configurationWithIdentifier:nil
+                  previewProvider:nil
+                   actionProvider:^(NSArray<UIMenuElement*>* suggestedActions) {
+                     // Record that this context menu was shown to the user.
+                     RecordMenuShown(MenuScenario::kContentSuggestionsEntry);
+
+                     ActionFactory* actionFactory = [[ActionFactory alloc]
+                         initWithScenario:MenuScenario::
+                                              kContentSuggestionsEntry];
+
+                     UIAction* copyAction =
+                         [actionFactory actionToCopyURL:item.URL];
+
+                     return [UIMenu menuWithTitle:@"" children:@[ copyAction ]];
+                   }];
 }
 
 @end

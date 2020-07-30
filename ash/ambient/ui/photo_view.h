@@ -18,10 +18,6 @@ namespace gfx {
 class ImageSkia;
 }  // namespace gfx
 
-namespace ui {
-class AnimationMetricsReporter;
-}  // namespace ui
-
 namespace ash {
 
 class AmbientBackgroundImageView;
@@ -62,8 +58,6 @@ class ASH_EXPORT PhotoView : public views::View,
   // Note that we should be careful when using |delegate_|, as there is no
   // strong guarantee on the life cycle.
   AmbientViewDelegate* const delegate_ = nullptr;
-
-  std::unique_ptr<ui::AnimationMetricsReporter> metrics_reporter_;
 
   // Image containers used for animation. Owned by view hierarchy.
   AmbientBackgroundImageView* image_views_[2]{nullptr, nullptr};

@@ -483,7 +483,8 @@ cr.define('settings_people_page_quick_unlock', function() {
       let confirmButton = null;
       let cancelButton = null;
       let pinKeyboard = null;
-      let wrongPinDiv = null;
+      let errorDiv = null;
+      let errorMsg = null;
 
       setup(function() {
         PolymerTest.clearBody();
@@ -502,22 +503,36 @@ cr.define('settings_people_page_quick_unlock', function() {
 
         // Get the elements.
         pinKeyboard = getFromElement('#pinKeyboard');
-        wrongPinDiv = getFromElement('#invalidPinError');
+        errorDiv = getFromElement('#errorDiv');
         cancelButton = getFromElement('#cancelButton');
         confirmButton = getFromElement('#confirmButton');
+        errorMsg = getFromElement('#errorMessage');
 
         assertTrue(isVisible(cancelButton));
         assertTrue(isVisible(confirmButton));
       });
 
       test('WrongPinShowsError', function() {
-        assertFalse(isVisible(wrongPinDiv));
+        assertFalse(isVisible(errorDiv));
         pinKeyboard.value = '1234';
         assertFalse(confirmButton.disabled);
         confirmButton.click();
         assertFalse(quickUnlockPrivateApi.pinAutosubmitEnabled);
-        assertTrue(isVisible(wrongPinDiv));
+        assertTrue(isVisible(errorDiv));
+        assertEquals(errorMsg.innerText, 'Incorrect PIN');
         assertTrue(confirmButton.disabled);
+      });
+
+      // PINs longer than 12 digits are not supported and cannot activate
+      // auto submit.
+      test('LongPinShowsError', function() {
+        assertFalse(isVisible(errorDiv));
+        pinKeyboard.value = '123456789012';  // 12 digits still ok
+        assertFalse(confirmButton.disabled);
+        pinKeyboard.value = '1234567890123';  // 13 digits - Not ok
+        assertTrue(confirmButton.disabled);
+        assertTrue(isVisible(errorDiv));
+        assertEquals(errorMsg.innerText, 'PIN must be 12 digits or less');
       });
 
       test('RightPinActivatesAutosubmit', function() {

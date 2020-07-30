@@ -3,20 +3,18 @@
 // found in the LICENSE file.
 
 // clang-format off
-// #import {assert} from 'chrome://resources/js/assert.m.js';
-// #import {beforeNextRender} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
-// #import {ensureLazyLoaded} from '../ensure_lazy_loaded.js';
-// #import {Route, Router, MinimumRoutes} from '../router.m.js';
+import {assert} from 'chrome://resources/js/assert.m.js';
+import {beforeNextRender} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
+import {ensureLazyLoaded} from '../ensure_lazy_loaded.js';
+import {Route, Router, MinimumRoutes} from '../router.m.js';
 // clang-format on
 
-// TODO(dpapad): Fully migrate this file to polymer 3.
-cr.define('settings', function() {
   /**
    * @enum {string}
    * A categorization of every possible Settings URL, necessary for implementing
    * a finite state machine.
    */
-  /* #export */ const RouteState = {
+  export const RouteState = {
     // Initial state before anything has loaded yet.
     INITIAL: 'initial',
     // A dialog that has a dedicated URL (e.g. /importData).
@@ -31,16 +29,16 @@ cr.define('settings', function() {
   };
 
   /**
-   * @param {?settings.Route} route
-   * @return {!settings.RouteState}
+   * @param {?Route} route
+   * @return {!RouteState}
    */
   function classifyRoute(route) {
     if (!route) {
       return RouteState.INITIAL;
     }
-    const routes = /** @type {!settings.MinimumRoutes} */ (
-        settings.Router.getInstance().getRoutes());
-    if (route === routes.BASIC || route === routes.ABOUT) {
+    const routes = /** @type {!MinimumRoutes} */ (
+        Router.getInstance().getRoutes());
+    if (route === routes.BASIC) {
       return RouteState.TOP_LEVEL;
     }
     if (route.isSubpage()) {
@@ -58,7 +56,7 @@ cr.define('settings', function() {
    * container. At most one section should be expanded at any given time.
    * @polymerBehavior
    */
-  /* #export */ const MainPageBehavior = {
+  export const MainPageBehavior = {
     properties: {
       /**
        * Whether a search operation is in progress or previous search results
@@ -77,7 +75,7 @@ cr.define('settings', function() {
 
     /**
      * A map holding all valid state transitions.
-     * @private {!Map<!settings.RouteState, !settings.RouteState>}
+     * @private {!Map<!RouteState, !RouteState>}
      */
     validTransitions_: (function() {
       const allStates = new Set([
@@ -109,7 +107,7 @@ cr.define('settings', function() {
 
     /**
      * Method to be defined by users of MainPageBehavior.
-     * @param {!settings.Route} route
+     * @param {!Route} route
      * @return {boolean} Whether the given route is part of |this| page.
      */
     containsRoute(route) {
@@ -129,7 +127,7 @@ cr.define('settings', function() {
       }
 
       if (!this.inSearchMode) {
-        const route = settings.Router.getInstance().getCurrentRoute();
+        const route = Router.getInstance().getCurrentRoute();
         if (this.containsRoute(route) &&
             classifyRoute(route) === RouteState.SECTION) {
           // Re-fire the showing-section event to trigger settings-main
@@ -141,13 +139,13 @@ cr.define('settings', function() {
     },
 
     /**
-     * @param {!settings.Route} route
+     * @param {!Route} route
      * @return {boolean}
      * @private
      */
     shouldExpandAdvanced_(route) {
-      const routes = /** @type {!settings.MinimumRoutes} */ (
-          settings.Router.getInstance().getRoutes());
+      const routes = /** @type {!MinimumRoutes} */ (
+          Router.getInstance().getRoutes());
       return this.tagName === 'SETTINGS-BASIC-PAGE' &&
           routes.ADVANCED && routes.ADVANCED.contains(route);
     },
@@ -158,7 +156,7 @@ cr.define('settings', function() {
      * Note: If the section resides within "advanced" settings, a
      * 'hide-container' event is fired (necessary to avoid flashing). Callers
      * are responsible for firing a 'show-container' event.
-     * @param {!settings.Route} route
+     * @param {!Route} route
      * @return {!Promise<!SettingsSectionElement>}
      * @private
      */
@@ -169,7 +167,7 @@ cr.define('settings', function() {
       }
 
       // The function to use to wait for <dom-if>s to render.
-      const waitFn = Polymer.RenderStatus.beforeNextRender.bind(null, this);
+      const waitFn = beforeNextRender.bind(null, this);
 
       return new Promise(resolve => {
         if (this.shouldExpandAdvanced_(route)) {
@@ -188,7 +186,7 @@ cr.define('settings', function() {
     },
 
     /**
-     * @param {!settings.Route} route
+     * @param {!Route} route
      * @private
      */
     enterSubpage_(route) {
@@ -199,11 +197,7 @@ cr.define('settings', function() {
 
       // Explicitly load the lazy_load.html module, since all subpages reside in
       // the lazy loaded module.
-      // Polymer 2 codepath
-      /* #ignore */ Polymer.importHref('/lazy_load.html', () => {});
-
-      // Polymer 3 codepath, do not delete next line comment.
-      // #polymer3 ensureLazyLoaded();
+      ensureLazyLoaded();
 
       this.ensureSectionForRoute_(route).then(section => {
         section.classList.add('expanded');
@@ -215,7 +209,7 @@ cr.define('settings', function() {
     },
 
     /**
-     * @param {!settings.Route} oldRoute
+     * @param {!Route} oldRoute
      * @return {!Promise<void>}
      * @private
      */
@@ -225,7 +219,7 @@ cr.define('settings', function() {
       this.classList.remove('showing-subpage');
       return new Promise((res, rej) => {
         requestAnimationFrame(() => {
-          if (settings.Router.getInstance().lastRouteChangeWasPopstate()) {
+          if (Router.getInstance().lastRouteChangeWasPopstate()) {
             this.scroller.scrollTop = this.lastScrollTop_;
           }
           this.fire('showing-main-page');
@@ -235,7 +229,7 @@ cr.define('settings', function() {
     },
 
     /**
-     * @param {!settings.Route} route
+     * @param {!Route} route
      * @private
      */
     scrollToSection_(route) {
@@ -250,8 +244,8 @@ cr.define('settings', function() {
     /**
      * Detects which state transition is appropriate for the given new/old
      * routes.
-     * @param {!settings.Route} newRoute
-     * @param {settings.Route} oldRoute
+     * @param {!Route} newRoute
+     * @param {Route} oldRoute
      * @private
      */
     getStateTransition_(newRoute, oldRoute) {
@@ -285,8 +279,8 @@ cr.define('settings', function() {
     },
 
     /**
-     * @param {!settings.Route} newRoute
-     * @param {settings.Route} oldRoute
+     * @param {!Route} newRoute
+     * @param {Route} oldRoute
      */
     currentRouteChanged(newRoute, oldRoute) {
       const transition = this.getStateTransition_(newRoute, oldRoute);
@@ -328,7 +322,7 @@ cr.define('settings', function() {
 
           // Scroll to the corresponding section, only if the user explicitly
           // navigated to a section (via the menu).
-          if (!settings.Router.getInstance().lastRouteChangeWasPopstate()) {
+          if (!Router.getInstance().lastRouteChangeWasPopstate()) {
             this.scrollToSection_(newRoute);
           }
         } else if (newState === RouteState.SUBPAGE) {
@@ -395,7 +389,3 @@ cr.define('settings', function() {
           this.$$(`settings-section[section="${section}"]`));
     },
   };
-
-  // #cr_define_end
-  return {MainPageBehavior, RouteState};
-});

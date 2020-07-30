@@ -16,10 +16,10 @@
 #include "chrome/browser/enterprise/reporting/reporting_delegate_factory_desktop.h"
 #include "components/policy/core/common/cloud/cloud_policy_client.h"
 
-class DeviceIdentityProvider;
 class PrefService;
 
 namespace network {
+class NetworkConnectionTracker;
 class SharedURLLoaderFactory;
 }
 
@@ -27,22 +27,11 @@ namespace enterprise_reporting {
 class ReportScheduler;
 }
 
-namespace instance_id {
-class InstanceIDDriver;
-}
-
-namespace invalidation {
-class FCMInvalidationService;
-}
-
 namespace policy {
 class ChromeBrowserCloudManagementRegistrar;
 class ConfigurationPolicyProvider;
 class MachineLevelUserCloudPolicyManager;
 class MachineLevelUserCloudPolicyFetcher;
-class ChromeBrowserCloudManagementRegisterWatcher;
-class MachineLevelDeviceAccountInitializerHelper;
-class CloudPolicyInvalidator;
 
 // A class that setups and manages all CBCM related features.
 class ChromeBrowserCloudManagementController
@@ -68,6 +57,86 @@ class ChromeBrowserCloudManagementController
                                                      // message.
   };
 
+  class Delegate {
+   public:
+    using NetworkConnectionTrackerGetter =
+        base::RepeatingCallback<network::NetworkConnectionTracker*()>;
+
+    Delegate() = default;
+    Delegate(const Delegate&) = delete;
+    Delegate& operator=(const Delegate&) = delete;
+    virtual ~Delegate() = default;
+
+    // Sets the platform-specific DM token storage delegate;
+    virtual void SetDMTokenStorageDelegate() = 0;
+
+    // Platform-specific check whether Chrome browser cloud management is
+    // enabled.
+    // TODO(crbug.com/1111435): This needs to be an instance method because iOS
+    // needs custom logic to determine whether CBCM is enabled. After it is
+    // fully launched on iOS, however, this can be moved back to the base class
+    // as a static method.
+    virtual bool IsEnabled() = 0;
+
+    // Returns the platform-specific DIR_USER_DATA value to pass to the
+    // PathService.
+    virtual int GetUserDataDirKey() = 0;
+
+    // Returns the platform-specific file path, if any, of the browser policy
+    // cache file that is fetched by external binaries. For example, on Windows,
+    // the external policy cache is fetched by Google Update.
+    virtual base::FilePath GetExternalPolicyPath() = 0;
+
+    // Returns a RepeatingCallback to get the platform-specific
+    // NetworkConnectionTracker.
+    virtual NetworkConnectionTrackerGetter
+    CreateNetworkConnectionTrackerGetter() = 0;
+
+    // Initializes the OAuth2 token service factory for policy invalidations.
+    virtual void InitializeOAuthTokenFactory(
+        scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory,
+        PrefService* local_state) = 0;
+
+    // Creates the RegisterWatcher. Only needed on desktop for now.
+    virtual void StartWatchingRegistration(
+        ChromeBrowserCloudManagementController* controller) = 0;
+
+    // Returns true if enrollment was successful.
+    virtual bool WaitUntilPolicyEnrollmentFinished() = 0;
+
+    // Returns true if the startup dialog is showing.
+    virtual bool IsEnterpriseStartupDialogShowing() = 0;
+
+    // Starts the policy invalidation service.
+    virtual void OnServiceAccountSet(CloudPolicyClient* client,
+                                     const std::string& account_email) = 0;
+
+    // Performs clean-up during shutdown.
+    virtual void ShutDown() = 0;
+
+    // Gets the platform-specific machine-level policy manager.
+    virtual MachineLevelUserCloudPolicyManager*
+    GetMachineLevelUserCloudPolicyManager() = 0;
+
+    // Gets the platform-specific device management service.
+    virtual DeviceManagementService* GetDeviceManagementService() = 0;
+
+    // Gets the platform-specific URL loader factory.
+    virtual scoped_refptr<network::SharedURLLoaderFactory>
+    GetSharedURLLoaderFactory() = 0;
+
+    // Creates and returns a ReportScheduler for enterprise reporting. Delegates
+    // must pass the platform-specific factory that should be used to
+    // instantiate the delegates for the reporting objects.
+    virtual std::unique_ptr<enterprise_reporting::ReportScheduler>
+    CreateReportScheduler(CloudPolicyClient* client) = 0;
+
+    // Sets the SharedURLLoaderFactory that this object will use to make
+    // requests to GAIA.
+    virtual void SetGaiaURLLoaderFactory(
+        scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory) = 0;
+  };
+
   class Observer {
    public:
     virtual ~Observer() {}
@@ -86,16 +155,18 @@ class ChromeBrowserCloudManagementController
   // Directory name under the user-data-dir where the policy data is stored.
   static const base::FilePath::CharType kPolicyDir[];
 
+  explicit ChromeBrowserCloudManagementController(
+      std::unique_ptr<ChromeBrowserCloudManagementController::Delegate>
+          delegate);
+  ~ChromeBrowserCloudManagementController() override;
+
   // The Chrome browser cloud management is only enabled on Chrome by default.
   // However, it can be enabled on Chromium by command line switch for test and
   // development purpose.
-  static bool IsEnabled();
+  bool IsEnabled();
 
-  ChromeBrowserCloudManagementController();
-  ~ChromeBrowserCloudManagementController() override;
-
-  static std::unique_ptr<MachineLevelUserCloudPolicyManager>
-  CreatePolicyManager(ConfigurationPolicyProvider* platform_provider);
+  std::unique_ptr<MachineLevelUserCloudPolicyManager> CreatePolicyManager(
+      ConfigurationPolicyProvider* platform_provider);
 
   void Init(PrefService* local_state,
             scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory);
@@ -120,8 +191,8 @@ class ChromeBrowserCloudManagementController
   // Early cleanup during browser shutdown process
   void ShutDown();
 
-  // Sets the SharedURLLoaderFactory that this object will use to make requests
-  // to GAIA.
+  // Sets the SharedURLLoaderFactory that this will be used to make requests to
+  // GAIA.
   void SetGaiaURLLoaderFactory(
       scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory);
 
@@ -144,28 +215,13 @@ class ChromeBrowserCloudManagementController
       scoped_refptr<base::SequencedTaskRunner> task_runner);
   void CreateReportScheduler();
 
-  // Called by the DeviceAccountInitializer when the device service account is
-  // ready.
-  void AccountInitCallback(const std::string& account_email, bool success);
-
-  // Starts the services required for Policy Invalidations over FCM to be
-  // enabled.
-  void StartInvalidations();
-
   base::ObserverList<Observer, true>::Unchecked observers_;
 
-  // TODO(crbug.com/1092442): Move the delegate factory ownership to
-  // ChromeBrowserCloudManagementController's delegate after CBCMController has
-  // been split into delegates and moved to components.
-  enterprise_reporting::ReportingDelegateFactoryDesktop delegate_factory_;
+  std::unique_ptr<Delegate> delegate_;
 
   std::unique_ptr<ChromeBrowserCloudManagementRegistrar>
       cloud_management_registrar_;
   std::unique_ptr<MachineLevelUserCloudPolicyFetcher> policy_fetcher_;
-  // This is an observer of the controller and needs to be declared after the
-  // |observers_|.
-  std::unique_ptr<ChromeBrowserCloudManagementRegisterWatcher>
-      cloud_management_register_watcher_;
 
   // Time at which the enrollment process was started.  Used to log UMA metric.
   base::Time enrollment_start_time_;
@@ -173,17 +229,6 @@ class ChromeBrowserCloudManagementController
   std::unique_ptr<enterprise_reporting::ReportScheduler> report_scheduler_;
 
   std::unique_ptr<policy::CloudPolicyClient> cloud_policy_client_;
-
-  std::unique_ptr<MachineLevelDeviceAccountInitializerHelper>
-      account_initializer_helper_;
-
-  scoped_refptr<network::SharedURLLoaderFactory> gaia_url_loader_factory_;
-
-  // These objects are all involved in Policy Invalidations.
-  std::unique_ptr<DeviceIdentityProvider> identity_provider_;
-  std::unique_ptr<instance_id::InstanceIDDriver> device_instance_id_driver_;
-  std::unique_ptr<invalidation::FCMInvalidationService> invalidation_service_;
-  std::unique_ptr<CloudPolicyInvalidator> policy_invalidator_;
 
   DISALLOW_COPY_AND_ASSIGN(ChromeBrowserCloudManagementController);
 };

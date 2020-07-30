@@ -1175,7 +1175,7 @@ class CONTENT_EXPORT RenderFrameHostImpl
   void OnPortalCreatedForTesting(std::unique_ptr<Portal> portal);
 
   // Look up a portal by its token (as received from the renderer process).
-  Portal* FindPortalByToken(const base::UnguessableToken& portal_token);
+  Portal* FindPortalByToken(const blink::PortalToken& portal_token);
 
   // Called when a Portal needs to be destroyed.
   void DestroyPortal(Portal* portal);
@@ -1909,7 +1909,7 @@ class CONTENT_EXPORT RenderFrameHostImpl
       mojo::PendingAssociatedReceiver<blink::mojom::Portal> pending_receiver,
       mojo::PendingAssociatedRemote<blink::mojom::PortalClient> client,
       CreatePortalCallback callback) override;
-  void AdoptPortal(const base::UnguessableToken& portal_token,
+  void AdoptPortal(const blink::PortalToken& portal_token,
                    AdoptPortalCallback callback) override;
   void CreateNewWidget(
       mojo::PendingAssociatedReceiver<blink::mojom::WidgetHost>

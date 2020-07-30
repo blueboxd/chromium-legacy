@@ -81,7 +81,7 @@ if (enable_nacl) {
       "//url",
     ]
 
-    if (is_linux) {
+    if (is_linux || is_chromeos) {
       sources += [
         "nacl_paths.cc",
         "nacl_paths.h",

@@ -69,7 +69,9 @@ class ExtensionHost : public DeferredStartRenderHost,
   content::BrowserContext* browser_context() { return browser_context_; }
 
   ViewType extension_host_type() const { return extension_host_type_; }
-  const GURL& GetURL() const;
+
+  // Returns the last committed URL of the associated WebContents.
+  const GURL& GetLastCommittedURL() const;
 
   // Returns true if the render view is initialized and didn't crash.
   bool IsRenderViewLive() const;

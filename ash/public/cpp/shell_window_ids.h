@@ -18,9 +18,11 @@ enum ShellWindowId {
   // Used to indicate no shell window id.
   kShellWindowId_Invalid = -1,
 
-  // The screen rotation container in between root window and its children, used
-  // for screen rotation animation.
-  kShellWindowId_ScreenRotationContainer = 0,
+  // This container is used for animations which take a screenshot of the
+  // contents, place them on top of the root and animate the screenshot layer.
+  // We can't take a screenshot of the root itself, otherwise subsequent
+  // screenshots will screenshot previous screenshots.
+  kShellWindowId_ScreenAnimationContainer = 0,
 
   // The magnified container which contains everything that would be magnified
   // when docked magnifier is enabled.
@@ -170,7 +172,7 @@ enum ShellWindowId {
   // The topmost container, used for power off animation.
   kShellWindowId_PowerButtonAnimationContainer,
 
-  kShellWindowId_MinContainer = kShellWindowId_ScreenRotationContainer,
+  kShellWindowId_MinContainer = kShellWindowId_ScreenAnimationContainer,
   kShellWindowId_MaxContainer = kShellWindowId_PowerButtonAnimationContainer,
 };
 

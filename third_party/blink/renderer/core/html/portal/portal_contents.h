@@ -12,6 +12,7 @@
 #include "mojo/public/cpp/bindings/pending_associated_receiver.h"
 #include "mojo/public/cpp/bindings/pending_associated_remote.h"
 #include "services/network/public/mojom/referrer_policy.mojom-shared.h"
+#include "third_party/blink/public/common/tokens/portal_token.h"
 #include "third_party/blink/public/mojom/portal/portal.mojom-blink.h"
 #include "third_party/blink/renderer/platform/heap/garbage_collected.h"
 
@@ -38,7 +39,7 @@ class PortalContents : public GarbageCollected<PortalContents>,
  public:
   PortalContents(
       HTMLPortalElement& portal_element,
-      const base::UnguessableToken& portal_token,
+      const PortalToken& portal_token,
       mojo::PendingAssociatedRemote<mojom::blink::Portal> remote_portal,
       mojo::PendingAssociatedReceiver<mojom::blink::PortalClient>
           portal_client_receiver);
@@ -52,7 +53,7 @@ class PortalContents : public GarbageCollected<PortalContents>,
 
   // Returns an unguessable token which uniquely identifies the contents, if
   // valid.
-  const base::UnguessableToken& GetToken() const { return portal_token_; }
+  const PortalToken& GetToken() const { return portal_token_; }
 
   // Returns the RemoteFrame associated with this portal, if any.
   RemoteFrame* GetFrame() const;
@@ -112,7 +113,7 @@ class PortalContents : public GarbageCollected<PortalContents>,
 
   // Uniquely identifies the portal, this token is used by the browser process
   // to reference this portal when communicating with the renderer.
-  base::UnguessableToken portal_token_;
+  PortalToken portal_token_;
 
   mojo::AssociatedRemote<mojom::blink::Portal> remote_portal_;
   mojo::AssociatedReceiver<mojom::blink::PortalClient> portal_client_receiver_;

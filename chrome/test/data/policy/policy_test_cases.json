@@ -2250,6 +2250,24 @@
     ]
   },
 
+  "DefaultSerialGuardSetting": {
+    "os": ["win", "linux", "mac", "chromeos"],
+    "policy_pref_mapping_test": [
+      {
+        "policies": { "DefaultSerialGuardSetting": 2 },
+        "prefs": { "profile.managed_default_content_settings.serial_guard": { "value": 2 } },
+        "indicator_tests": [{ "pref": "profile.managed_default_content_settings_serial_ports", "selector": "[content-setting=serial-ports]", "value": "block" }],
+        "note": "TODO(bartfab): Flag this with can_be_recommended when http://crbug.com/106682 is fixed."
+      },
+      {
+        "policies": { "DefaultSerialGuardSetting": 3 },
+        "prefs": { "profile.managed_default_content_settings.serial_guard": { "value": 3 } },
+        "indicator_tests": [{ "pref": "profile.managed_default_content_settings.serial_ports", "selector": "[content-setting=serial-ports]", "value": "ask" }],
+        "note": "TODO(bartfab): Flag this with can_be_recommended when http://crbug.com/106682 is fixed."
+      }
+    ]
+  },
+
   "AutoSelectCertificateForUrls": {
     "os": ["win", "linux", "mac", "chromeos"],
     "policy_pref_mapping_test": [
@@ -2616,6 +2634,28 @@
       {
         "policies": {"WebUsbBlockedForUrls": ["[*.]google.com"]},
         "prefs": { "profile.managed_web_usb_blocked_for_urls": {} },
+        "note": "TODO(reillyg): Add indicator tests. TODO(bartfab): Flag this with can_be_recommended when http://crbug.com/106682 is fixed."
+      }
+    ]
+  },
+
+  "SerialAskForUrls": {
+    "os": ["win", "linux", "mac", "chromeos"],
+    "policy_pref_mapping_test": [
+      {
+        "policies": {"SerialAskForUrls": ["[*.].com"]},
+        "prefs": { "profile.managed_serial_ask_for_urls": {}},
+        "note": "TODO(reillyg): Add indicator tests. TODO(bartfab): Flag this with can_be_recommended when http://crbug.com/106682 is fixed."
+      }
+    ]
+  },
+
+  "SerialBlockedForUrls": {
+    "os": ["win", "linux", "mac", "chromeos"],
+    "policy_pref_mapping_test": [
+      {
+        "policies": {"SerialBlockedForUrls": ["[*.]google.com"]},
+        "prefs": { "profile.managed_serial_blocked_for_urls": {} },
         "note": "TODO(reillyg): Add indicator tests. TODO(bartfab): Flag this with can_be_recommended when http://crbug.com/106682 is fixed."
       }
     ]

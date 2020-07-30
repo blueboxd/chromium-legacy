@@ -1494,14 +1494,39 @@ TEST_P(LayoutBoxTest,
 // crbug.com/1108270
 TEST_P(LayoutBoxTest, MenuListIntrinsicBlockSize) {
   SetBodyInnerHTML(R"HTML(
-<style>
-.hidden { content-visibility: hidden; }
-</style>
-<select id=container class=hidden>
-)HTML");
+    <style>
+      .hidden { content-visibility: hidden; }
+    </style>
+    <select id=container class=hidden>
+  )HTML");
   GetDocument().View()->UpdateAllLifecyclePhasesExceptPaint(
       DocumentUpdateReason ::kTest);
   // The test passes if no crash.
+}
+
+TEST_P(LayoutBoxTest, PartialInvalidationRect) {
+  SetBodyInnerHTML(R"HTML(
+    <style>body { margin : 0 }</style>
+    <div id="target" style="margin: 10.5px; width: 100px; height: 100px"></div>
+  )HTML");
+
+  auto* target = GetLayoutBoxByElementId("target");
+  auto* display_item_client = static_cast<const DisplayItemClient*>(target);
+  EXPECT_EQ(IntRect(), display_item_client->PartialInvalidationVisualRect());
+  EXPECT_FALSE(target->HasPartialInvalidationRect());
+
+  target->InvalidatePaintRectangle(PhysicalRect(10, 20, 30, 40));
+  EXPECT_TRUE(target->HasPartialInvalidationRect());
+  EXPECT_EQ(IntRect(20, 30, 31, 41),
+            display_item_client->PartialInvalidationVisualRect());
+  target->InvalidatePaintRectangle(PhysicalRect(20, 30, 40, 50));
+  EXPECT_TRUE(target->HasPartialInvalidationRect());
+  EXPECT_EQ(IntRect(20, 30, 51, 61),
+            display_item_client->PartialInvalidationVisualRect());
+
+  display_item_client->ClearPartialInvalidationVisualRect();
+  EXPECT_FALSE(target->HasPartialInvalidationRect());
+  EXPECT_EQ(IntRect(), display_item_client->PartialInvalidationVisualRect());
 }
 
 }  // namespace blink

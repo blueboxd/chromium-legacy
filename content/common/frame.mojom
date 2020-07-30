@@ -42,6 +42,7 @@ import "third_party/blink/public/mojom/portal/portal.mojom";
 import "third_party/blink/public/mojom/loader/referrer.mojom";
 import "third_party/blink/public/mojom/service_worker/controller_service_worker.mojom";
 import "third_party/blink/public/mojom/service_worker/service_worker_container.mojom";
+import "third_party/blink/public/mojom/tokens/portal_token.mojom";
 import "third_party/blink/public/mojom/widget/visual_properties.mojom";
 import "third_party/blink/public/mojom/window_features/window_features.mojom";
 import "ui/accessibility/mojom/ax_tree_update.mojom";
@@ -203,7 +204,7 @@ interface FrameNavigationControl {
   // for the predecessor (identified by |portal_token|) was adopted by the
   // current frame.
   OnPortalActivated(
-      mojo_base.mojom.UnguessableToken portal_token,
+      blink.mojom.PortalToken portal_token,
       pending_associated_remote<blink.mojom.Portal> portal,
       pending_associated_receiver<blink.mojom.PortalClient> portal_client,
       blink.mojom.TransferableMessage data)
@@ -393,7 +394,7 @@ interface FrameHost {
       pending_associated_remote<blink.mojom.PortalClient> client)
       => (int32 proxy_routing_id,
           FrameReplicationState initial_replicated_state,
-          mojo_base.mojom.UnguessableToken portal_token,
+          blink.mojom.PortalToken portal_token,
           mojo_base.mojom.UnguessableToken frame_token,
           mojo_base.mojom.UnguessableToken devtools_frame_token);
 
@@ -405,7 +406,7 @@ interface FrameHost {
   // |frame_token| - the unique identifier of the RenderFrameProxy
   // |devtools_frame_token| - the unique identifier of the frame node in the
   //                          frame tree
-  [Sync] AdoptPortal(mojo_base.mojom.UnguessableToken portal_token)
+  [Sync] AdoptPortal(blink.mojom.PortalToken portal_token)
       => (int32 proxy_routing_id,
           viz.mojom.FrameSinkId frame_sink_id,
           FrameReplicationState replicated_state,

@@ -66,7 +66,7 @@ class InProcessTraceController {
       tracing::StartTracingDoneCallback start_tracing_done_callback) {
     DCHECK_CURRENTLY_ON(BrowserThread::UI);
     return content::TracingController::GetInstance()->StartTracing(
-        trace_config, start_tracing_done_callback);
+        trace_config, std::move(start_tracing_done_callback));
   }
 
   bool EndTracing(std::string* json_trace_output) {
@@ -123,7 +123,7 @@ bool BeginTracingWithTraceConfig(
     const base::trace_event::TraceConfig& trace_config,
     tracing::StartTracingDoneCallback start_tracing_done_callback) {
   return InProcessTraceController::GetInstance()->BeginTracing(
-      trace_config, start_tracing_done_callback);
+      trace_config, std::move(start_tracing_done_callback));
 }
 
 bool EndTracing(std::string* json_trace_output) {

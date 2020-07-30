@@ -26,7 +26,7 @@ namespace {
 typedef CGLPixelFormatObj PlatformPixelFormatObj;
 #else
 typedef void* PlatformPixelFormatObj;
-#endif  // OS_MACOSX
+#endif  // OS_MAC
 
 PlatformPixelFormatObj g_discrete_pixel_format_obj = nullptr;
 
@@ -45,7 +45,7 @@ void ForceDiscreteGPU() {
   GLint num_pixel_formats = 0;
   CGLChoosePixelFormat(attribs, &g_discrete_pixel_format_obj,
                        &num_pixel_formats);
-#endif  // OS_MACOSX
+#endif  // OS_MAC
 }
 
 }  // namespace anonymous
@@ -75,7 +75,7 @@ bool SwitchableGPUsSupported(const GPUInfo& gpu_info,
            gpu_info.secondary_gpus[0].vendor_id == kVendorIntel));
 #else
   return false;
-#endif  // OS_MACOSX
+#endif  // OS_MAC
 }
 
 void InitializeSwitchableGPUs(
@@ -95,7 +95,7 @@ void StopForceDiscreteGPU() {
     CGLReleasePixelFormat(g_discrete_pixel_format_obj);
     g_discrete_pixel_format_obj = nullptr;
   }
-#endif  // OS_MACOSX
+#endif  // OS_MAC
 }
 
 }  // namespace gpu

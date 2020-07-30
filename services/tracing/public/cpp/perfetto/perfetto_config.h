@@ -21,7 +21,8 @@ namespace tracing {
 
 perfetto::TraceConfig COMPONENT_EXPORT(TRACING_CPP) GetDefaultPerfettoConfig(
     const base::trace_event::TraceConfig& chrome_config,
-    bool privacy_filtering_enabled = false);
+    bool privacy_filtering_enabled = false,
+    bool convert_to_legacy_json = false);
 
 // Creates a perfetto trace config with only the data sources included in
 // |source_names| and enabled by |trace_config|. Passing empty set will add all
@@ -31,7 +32,8 @@ perfetto::TraceConfig COMPONENT_EXPORT(TRACING_CPP)
     GetPerfettoConfigWithDataSources(
         const base::trace_event::TraceConfig& chrome_config,
         const std::set<std::string>& source_names,
-        bool privacy_filtering_enabled = false);
+        bool privacy_filtering_enabled = false,
+        bool convert_to_legacy_json = false);
 
 }  // namespace tracing
 

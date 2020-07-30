@@ -356,9 +356,6 @@ aura::Window* GetTopWindow() {
 }
 
 bool ShouldMinimizeTopWindowOnBack() {
-  if (!features::IsSwipingFromLeftEdgeToGoBackEnabled())
-    return false;
-
   Shell* shell = Shell::Get();
   if (!shell->tablet_mode_controller()->InTabletMode())
     return false;

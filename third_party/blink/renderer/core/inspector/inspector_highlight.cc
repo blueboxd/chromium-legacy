@@ -409,6 +409,28 @@ std::unique_ptr<protocol::DictionaryValue> BuildGridHighlightConfigInfo(
   return grid_config_info;
 }
 
+// Swaps |left| and |top| of an offset.
+PhysicalOffset Transpose(PhysicalOffset& offset) {
+  return PhysicalOffset(offset.top, offset.left);
+}
+
+PhysicalOffset LocalToAbsolutePoint(LayoutGrid* layout_grid,
+                                    PhysicalOffset local,
+                                    float scale) {
+  PhysicalOffset abs_number_pos = layout_grid->LocalToAbsolutePoint(local);
+  abs_number_pos.Scale(scale);
+  return abs_number_pos;
+}
+
+std::unique_ptr<protocol::DictionaryValue> BuildPosition(
+    PhysicalOffset position) {
+  std::unique_ptr<protocol::DictionaryValue> result =
+      protocol::DictionaryValue::create();
+  result->setDouble("x", position.left);
+  result->setDouble("y", position.top);
+  return result;
+}
+
 std::unique_ptr<protocol::ListValue> BuildGridTrackSizes(
     LayoutGrid* layout_grid,
     GridTrackSizingDirection direction,
@@ -422,34 +444,120 @@ std::unique_ptr<protocol::ListValue> BuildGridTrackSizes(
   const Vector<LayoutUnit>& alt_positions = direction == kForRows
                                                 ? layout_grid->ColumnPositions()
                                                 : layout_grid->RowPositions();
-  LayoutUnit first_offset = alt_positions.front();
+  LayoutUnit alt_axis_pos = alt_positions.front();
   for (unsigned i = 1; i < positions.size(); i++) {
     LayoutUnit current_position = positions.at(i);
     LayoutUnit prev_position = positions.at(i - 1);
     LayoutUnit gap_offset = i < positions.size() - 1 ? gap : LayoutUnit();
     LayoutUnit width = current_position - prev_position - gap_offset;
-    LayoutUnit label_pos = prev_position + width / 2;
-    std::unique_ptr<protocol::DictionaryValue> size_info =
-        protocol::DictionaryValue::create();
+    LayoutUnit main_axis_pos = prev_position + width / 2;
     auto adjusted_size = AdjustForAbsoluteZoom::AdjustFloat(
         width * scale, layout_grid->StyleRef());
+    PhysicalOffset track_size_pos(main_axis_pos, alt_axis_pos);
+    if (direction == kForRows)
+      track_size_pos = Transpose(track_size_pos);
+    std::unique_ptr<protocol::DictionaryValue> size_info =
+        BuildPosition(LocalToAbsolutePoint(layout_grid, track_size_pos, scale));
     size_info->setDouble("computedSize", adjusted_size);
     if (i - 1 < authored_values->size()) {
       size_info->setString("authoredSize", authored_values->at(i - 1));
     }
-    PhysicalOffset local_arrow_pos(
-        direction == kForColumns ? label_pos : first_offset,
-        direction == kForColumns ? first_offset : label_pos);
-    PhysicalOffset abs_arrow_pos =
-        layout_grid->LocalToAbsolutePoint(local_arrow_pos);
-    size_info->setDouble("x", abs_arrow_pos.left * scale);
-    size_info->setDouble("y", abs_arrow_pos.top * scale);
     sizes->pushValue(std::move(size_info));
   }
 
   return sizes;
 }
 
+std::unique_ptr<protocol::ListValue> BuildGridPositiveLineNumberPositions(
+    LayoutGrid* layout_grid,
+    const Vector<LayoutUnit>& track_positions,
+    const LayoutUnit& grid_gap,
+    GridTrackSizingDirection direction,
+    float scale) {
+  std::unique_ptr<protocol::ListValue> number_positions =
+      protocol::ListValue::create();
+
+  const Vector<LayoutUnit>& alt_positions = direction == kForRows
+                                                ? layout_grid->ColumnPositions()
+                                                : layout_grid->RowPositions();
+  LayoutUnit alt_axis_pos = alt_positions.front();
+
+  // Find index of the first explicit Grid Line.
+  size_t first_explicit_index =
+      layout_grid->ExplicitGridStartForDirection(direction);
+
+  LayoutUnit first_offset = track_positions.front();
+  // Go line by line, calculating the offset to fall in the middle of gaps
+  // if needed.
+  for (size_t i = first_explicit_index; i < track_positions.size(); ++i) {
+    LayoutUnit gapOffset = grid_gap / 2;
+    // No need for a gap offset if there is no gap, or the first line is
+    // explicit, or this is the last line.
+    if (grid_gap == 0 || i == 0 || i == track_positions.size() - 1) {
+      gapOffset = LayoutUnit();
+    }
+    PhysicalOffset number_position(
+        track_positions.at(i) - gapOffset - first_offset, alt_axis_pos);
+    if (direction == kForRows)
+      number_position = Transpose(number_position);
+    number_positions->pushValue(BuildPosition(
+        LocalToAbsolutePoint(layout_grid, number_position, scale)));
+  }
+
+  return number_positions;
+}
+
+std::unique_ptr<protocol::ListValue> BuildGridNegativeLineNumberPositions(
+    LayoutGrid* layout_grid,
+    const Vector<LayoutUnit>& trackPositions,
+    const LayoutUnit& grid_gap,
+    GridTrackSizingDirection direction,
+    float scale) {
+  std::unique_ptr<protocol::ListValue> number_positions =
+      protocol::ListValue::create();
+
+  const Vector<LayoutUnit>& alt_positions = direction == kForRows
+                                                ? layout_grid->ColumnPositions()
+                                                : layout_grid->RowPositions();
+  LayoutUnit alt_axis_pos = alt_positions.back();
+
+  // This is the number of tracks from the start of the grid, to the end of the
+  // explicit grid (including any leading implicit tracks).
+  size_t explicit_grid_end_track_count =
+      layout_grid->ExplicitGridEndForDirection(direction);
+
+  LayoutUnit first_offset = trackPositions.front();
+
+  // Always start negative numbers at the first line.
+  std::unique_ptr<protocol::DictionaryValue> pos =
+      protocol::DictionaryValue::create();
+  PhysicalOffset number_position(first_offset, alt_axis_pos);
+  if (direction == kForRows)
+    number_position = Transpose(number_position);
+  number_positions->pushValue(
+      BuildPosition(LocalToAbsolutePoint(layout_grid, number_position, scale)));
+
+  // Then go line by line, calculating the offset to fall in the middle of gaps
+  // if needed.
+  for (size_t i = 1; i <= explicit_grid_end_track_count; i++) {
+    LayoutUnit gapOffset = grid_gap / 2;
+    if (grid_gap == 0 || (i == explicit_grid_end_track_count &&
+                          i == trackPositions.size() - 1)) {
+      gapOffset = LayoutUnit();
+    }
+    PhysicalOffset number_position(
+        trackPositions.at(i) - gapOffset - first_offset, alt_axis_pos);
+    if (direction == kForRows)
+      number_position = Transpose(number_position);
+    number_positions->pushValue(BuildPosition(
+        LocalToAbsolutePoint(layout_grid, number_position, scale)));
+  }
+
+  return number_positions;
+}
+
+// Deprecated in favor of BuildGridPositiveLineNumberPositions; it will be
+// removed once the frontend is updated.
 std::unique_ptr<protocol::ListValue> BuildGridPositiveLineNumberOffsets(
     LayoutGrid* layout_grid,
     const Vector<LayoutUnit>& trackPositions,
@@ -482,6 +590,8 @@ std::unique_ptr<protocol::ListValue> BuildGridPositiveLineNumberOffsets(
   return number_offsets;
 }
 
+// Deprecated in favor of BuildGridNegativeLineNumberPositions; it will be
+// removed once the frontend is updated.
 std::unique_ptr<protocol::ListValue> BuildGridNegativeLineNumberOffsets(
     LayoutGrid* layout_grid,
     const Vector<LayoutUnit>& trackPositions,
@@ -769,8 +879,10 @@ std::unique_ptr<protocol::DictionaryValue> BuildGridInfo(
   grid_info->setValue("columns", column_builder.Release());
   grid_info->setValue("columnGaps", column_gap_builder.Release());
 
-  // Positive Row and column Line offsets
+  // Positive Row and column Line positions
   if (grid_highlight_config.show_positive_line_numbers) {
+    // TODO (alexrudenko): offsets should be removed once the frontend is using
+    // positions.
     grid_info->setValue("positiveRowLineNumberOffsets",
                         BuildGridPositiveLineNumberOffsets(
                             layout_grid, rows, row_gap, kForRows, scale));
@@ -778,10 +890,19 @@ std::unique_ptr<protocol::DictionaryValue> BuildGridInfo(
         "positiveColumnLineNumberOffsets",
         BuildGridPositiveLineNumberOffsets(layout_grid, columns, column_gap,
                                            kForColumns, scale));
+    grid_info->setValue("positiveRowLineNumberPositions",
+                        BuildGridPositiveLineNumberPositions(
+                            layout_grid, rows, row_gap, kForRows, scale));
+    grid_info->setValue(
+        "positiveColumnLineNumberPositions",
+        BuildGridPositiveLineNumberPositions(layout_grid, columns, column_gap,
+                                             kForColumns, scale));
   }
 
-  // Negative Row and column Line offsets
+  // Negative Row and column Line positions
   if (grid_highlight_config.show_negative_line_numbers) {
+    // TODO (alexrudenko): offsets should be removed once the frontend is using
+    // positions.
     grid_info->setValue("negativeRowLineNumberOffsets",
                         BuildGridNegativeLineNumberOffsets(
                             layout_grid, rows, row_gap, kForRows, scale));
@@ -789,6 +910,14 @@ std::unique_ptr<protocol::DictionaryValue> BuildGridInfo(
         "negativeColumnLineNumberOffsets",
         BuildGridNegativeLineNumberOffsets(layout_grid, columns, column_gap,
                                            kForColumns, scale));
+
+    grid_info->setValue("negativeRowLineNumberPositions",
+                        BuildGridNegativeLineNumberPositions(
+                            layout_grid, rows, row_gap, kForRows, scale));
+    grid_info->setValue(
+        "negativeColumnLineNumberPositions",
+        BuildGridNegativeLineNumberPositions(layout_grid, columns, column_gap,
+                                             kForColumns, scale));
   }
 
   // Area names

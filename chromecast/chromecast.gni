@@ -117,7 +117,7 @@ declare_args() {
 
   # Set to true to enable external Mojo services to communicate with services
   # within cast_shell.
-  enable_external_mojo_services = is_linux
+  enable_external_mojo_services = is_linux || is_chromeos
 
   # Support Perfetto tracing of processes that depend on entry points in
   # //chromecast/external_mojo/external_service_support
@@ -127,7 +127,7 @@ declare_args() {
   audio_input_sample_rate = 16000
 
   # Whether use unix sockets in Cast input/output stream.
-  use_unix_sockets = is_linux
+  use_unix_sockets = is_linux || is_chromeos
 
   # Set to true to enable audio capture service for audio input.
   enable_audio_capture_service = false

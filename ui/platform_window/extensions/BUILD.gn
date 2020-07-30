@@ -19,7 +19,7 @@ source_set("extensions") {
     "//ui/platform_window",
   ]
 
-  if (is_linux) {
+  if (is_linux || is_chromeos) {
     sources += [
       "x11_extension.cc",
       "x11_extension.h",

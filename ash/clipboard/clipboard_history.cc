@@ -69,12 +69,24 @@ void ClipboardHistory::OnClipboardDataChanged() {
   const auto* clipboard_data = clipboard->GetClipboardData();
   CHECK(clipboard_data);
 
-  CommitData(ui::ClipboardData(*clipboard_data));
+  // We post commit |clipboard_data| at the end of the current task sequence to
+  // debounce the case where multiple copies are programmatically performed.
+  // Since only the most recent copy will be at the top of the clipboard, the
+  // user will likely be unaware of the intermediate copies that took place
+  // opaquely in the same task sequence and would be confused to see them in
+  // history. A real world example would be copying the URL from the address bar
+  // in the browser. First a short form of the URL is copied, followed
+  // immediately by the long form URL.
+  commit_data_weak_factory_.InvalidateWeakPtrs();
+  base::SequencedTaskRunnerHandle::Get()->PostTask(
+      FROM_HERE, base::BindOnce(&ClipboardHistory::CommitData,
+                                commit_data_weak_factory_.GetWeakPtr(),
+                                GetActiveAccountId(), *clipboard_data));
 }
 
-void ClipboardHistory::CommitData(ui::ClipboardData data) {
-  std::list<ui::ClipboardData>& items =
-      items_by_account_id_[GetActiveAccountId()];
+void ClipboardHistory::CommitData(const AccountId& account_id,
+                                  ui::ClipboardData data) {
+  std::list<ui::ClipboardData>& items = items_by_account_id_[account_id];
 
   // If |data| is already contained in |items|, at *most* we need to move it to
   // the front to retain sort order by recency.

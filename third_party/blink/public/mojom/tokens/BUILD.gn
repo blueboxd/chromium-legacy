@@ -11,6 +11,7 @@ mojom_component("tokens") {
 
   sources = [
     "frame_token.mojom",
+    "portal_token.mojom",
     "worker_tokens.mojom",
   ]
 
@@ -22,6 +23,10 @@ mojom_component("tokens") {
           cpp = "::blink::DedicatedWorkerToken"
         },
         {
+          mojom = "blink.mojom.PortalToken"
+          cpp = "::blink::PortalToken"
+        },
+        {
           mojom = "blink.mojom.ServiceWorkerToken"
           cpp = "::blink::ServiceWorkerToken"
         },
@@ -31,6 +36,7 @@ mojom_component("tokens") {
         },
       ]
       traits_headers = [
+        "//third_party/blink/public/common/tokens/portal_token_mojom_traits.h",
         "//third_party/blink/public/common/tokens/worker_tokens_mojom_traits.h",
       ]
     },

@@ -41,6 +41,7 @@
 #include "content/public/common/content_client.h"
 #include "content/public/common/url_constants.h"
 #include "services/tracing/public/cpp/perfetto/perfetto_config.h"
+#include "services/tracing/public/cpp/perfetto/perfetto_session.h"
 #include "third_party/perfetto/include/perfetto/tracing/tracing.h"
 #include "third_party/perfetto/protos/perfetto/common/trace_stats.gen.h"
 
@@ -49,7 +50,7 @@ namespace {
 constexpr char kStreamFormat[] = "stream_format";
 constexpr char kStreamFormatProtobuf[] = "protobuf";
 constexpr char kStreamFormatJSON[] = "json";
-perfetto::TracingSession* g_tracing_session;
+perfetto::TracingSession* g_tracing_session = nullptr;
 
 void OnGotCategories(WebUIDataSource::GotDataCallback callback,
                      const std::set<std::string>& categorySet) {
@@ -112,18 +113,8 @@ bool GetTraceBufferUsage(WebUIDataSource::GotDataCallback callback) {
           perfetto::protos::gen::TraceStats trace_stats;
           if (args.success &&
               trace_stats.ParseFromArray(args.trace_stats_data.data(),
-                                         args.trace_stats_data.size()) &&
-              trace_stats.buffer_stats_size()) {
-            // Note: Chrome's configs only use a single buffer.
-            const perfetto::protos::gen::TraceStats::BufferStats& buf_stats =
-                trace_stats.buffer_stats()[0];
-            size_t bytes_in_buffer = buf_stats.bytes_written() -
-                                     buf_stats.bytes_read() -
-                                     buf_stats.bytes_overwritten() +
-                                     buf_stats.padding_bytes_written() -
-                                     buf_stats.padding_bytes_cleared();
-            double percent_full =
-                bytes_in_buffer / static_cast<double>(buf_stats.buffer_size());
+                                         args.trace_stats_data.size())) {
+            double percent_full = tracing::GetTraceBufferUsage(trace_stats);
             usage = base::NumberToString(percent_full);
           }
           std::move(*shared_callback)

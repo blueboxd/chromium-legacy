@@ -80,7 +80,7 @@ void NormalizeInitState(gpu::gles2::GLES2DecoderTestBase::InitState* init) {
       init->extensions += kVAOExtensions[1];
 #else
       init->extensions += kVAOExtensions[2];
-#endif  // OS_MACOSX
+#endif  // OS_MAC
     }
   } else {
     // Make sure we don't set up an invalid InitState.

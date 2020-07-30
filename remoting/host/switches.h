@@ -71,7 +71,7 @@ extern const char kCheckAccessibilityPermissionSwitchName[];
 
 // Command line switch to check for Screen Recording permission.
 extern const char kCheckScreenRecordingPermissionSwitchName[];
-#endif  // defined OS_MACOSX
+#endif  // defined OS_APPLE
 
 }  // namespace remoting
 

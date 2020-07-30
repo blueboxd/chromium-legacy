@@ -312,39 +312,6 @@ REGISTER_TYPED_TEST_SUITE_P(SequencedTaskRunnerTest,
                             DelayedTaskAfterLongTask,
                             DelayedTaskAfterManyLongTasks);
 
-template <typename TaskRunnerTestDelegate>
-class SequencedTaskRunnerDelayedTest
-    : public SequencedTaskRunnerTest<TaskRunnerTestDelegate> {};
-
-TYPED_TEST_SUITE_P(SequencedTaskRunnerDelayedTest);
-
-// This test posts a delayed task, and checks that the task is run later than
-// the specified time.
-TYPED_TEST_P(SequencedTaskRunnerDelayedTest, DelayedTaskBasic) {
-  const int kTaskCount = 1;
-  const TimeDelta kDelay = TimeDelta::FromMilliseconds(100);
-
-  this->delegate_.StartTaskRunner();
-  const scoped_refptr<SequencedTaskRunner> task_runner =
-      this->delegate_.GetTaskRunner();
-
-  Time time_before_run = Time::Now();
-  this->task_tracker_->PostWrappedDelayedNonNestableTask(task_runner.get(),
-                                                         OnceClosure(), kDelay);
-  this->task_tracker_->WaitForCompletedTasks(kTaskCount);
-  this->delegate_.StopTaskRunner();
-  Time time_after_run = Time::Now();
-
-  EXPECT_TRUE(CheckNonNestableInvariants(this->task_tracker_->GetTaskEvents(),
-                                         kTaskCount));
-  EXPECT_LE(kDelay, time_after_run - time_before_run);
-}
-
-// SequencedTaskRunnerDelayedTest tests that the |delay| parameter of
-// is used to actually wait for |delay| ms before executing the task.
-// This is not mandatory for a SequencedTaskRunner to be compliant.
-REGISTER_TYPED_TEST_SUITE_P(SequencedTaskRunnerDelayedTest, DelayedTaskBasic);
-
 }  // namespace base
 
 #endif  // BASE_TEST_SEQUENCED_TASK_RUNNER_TEST_TEMPLATE_H_

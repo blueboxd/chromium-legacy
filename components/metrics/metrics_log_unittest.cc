@@ -15,6 +15,7 @@
 #include "base/metrics/bucket_ranges.h"
 #include "base/metrics/sample_vector.h"
 #include "base/strings/string_number_conversions.h"
+#include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
 #include "base/system/sys_info.h"
 #include "base/time/time.h"
@@ -73,6 +74,24 @@ class TestMetricsLog : public MetricsLog {
  private:
   DISALLOW_COPY_AND_ASSIGN(TestMetricsLog);
 };
+
+// Returns the expected hardware class for a metrics log.
+std::string GetExpectedHardwareClass() {
+#if defined(OS_CHROMEOS)
+  // Currently, we are relying on base/ implementation for functionality on our
+  // side which can be fragile if in the future someone decides to change that.
+  // This replicates the logic to get the hardware class for ChromeOS and this
+  // result should match with the result by calling
+  // base::SysInfo::HardwareModelName().
+  std::string board = base::SysInfo::GetLsbReleaseBoard();
+  const size_t index = board.find("-signed-");
+  if (index != std::string::npos)
+    board.resize(index);
+  return base::ToUpperASCII(board);
+#else
+  return base::SysInfo::HardwareModelName();
+#endif
+}
 
 }  // namespace
 
@@ -163,7 +182,7 @@ TEST_F(MetricsLogTest, BasicRecord) {
   hardware->set_cpu_architecture(base::SysInfo::OperatingSystemArchitecture());
 #endif
   hardware->set_system_ram_mb(base::SysInfo::AmountOfPhysicalMemoryMB());
-  hardware->set_hardware_class(base::SysInfo::HardwareModelName());
+  hardware->set_hardware_class(GetExpectedHardwareClass());
 #if defined(OS_WIN)
   hardware->set_dll_base(reinterpret_cast<uint64_t>(CURRENT_MODULE()));
 #endif

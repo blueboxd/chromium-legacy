@@ -50,9 +50,8 @@ void PortalCreatedObserver::CreatePortal(
   DidCreatePortal();
 }
 
-void PortalCreatedObserver::AdoptPortal(
-    const base::UnguessableToken& portal_token,
-    AdoptPortalCallback callback) {
+void PortalCreatedObserver::AdoptPortal(const blink::PortalToken& portal_token,
+                                        AdoptPortalCallback callback) {
   Portal* portal = render_frame_host_impl_->FindPortalByToken(portal_token);
   PortalInterceptorForTesting* portal_interceptor =
       PortalInterceptorForTesting::Create(render_frame_host_impl_, portal);

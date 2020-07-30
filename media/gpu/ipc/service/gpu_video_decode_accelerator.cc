@@ -180,13 +180,14 @@ GpuVideoDecodeAccelerator::GpuVideoDecodeAccelerator(
       overlay_factory_cb_(overlay_factory_cb) {
   DCHECK(stub_);
   stub_->AddDestructionObserver(this);
-  get_gl_context_cb_ = base::BindRepeating(&GetGLContext, stub_->AsWeakPtr());
-  make_context_current_cb_ =
+  gl_client_.get_context =
+      base::BindRepeating(&GetGLContext, stub_->AsWeakPtr());
+  gl_client_.make_context_current =
       base::BindRepeating(&MakeDecoderContextCurrent, stub_->AsWeakPtr());
-  bind_image_cb_ = base::BindRepeating(&BindImage, stub_->AsWeakPtr());
-  get_context_group_cb_ =
+  gl_client_.bind_image = base::BindRepeating(&BindImage, stub_->AsWeakPtr());
+  gl_client_.get_context_group =
       base::BindRepeating(&GetContextGroup, stub_->AsWeakPtr());
-  create_abstract_texture_cb_ =
+  gl_client_.create_abstract_texture =
       base::BindRepeating(&CreateAbstractTexture, stub_->AsWeakPtr());
 }
 
@@ -367,16 +368,12 @@ bool GpuVideoDecodeAccelerator::Initialize(
 #if !defined(OS_WIN)
   // Ensure we will be able to get a GL context at all before initializing
   // non-Windows VDAs.
-  if (!make_context_current_cb_.Run())
+  if (!gl_client_.make_context_current.Run())
     return false;
 #endif
 
   std::unique_ptr<GpuVideoDecodeAcceleratorFactory> vda_factory =
-      GpuVideoDecodeAcceleratorFactory::CreateWithGLES2Decoder(
-          get_gl_context_cb_, make_context_current_cb_, bind_image_cb_,
-          get_context_group_cb_, overlay_factory_cb_,
-          create_abstract_texture_cb_);
-
+      GpuVideoDecodeAcceleratorFactory::Create(gl_client_);
   if (!vda_factory) {
     LOG(ERROR) << "Failed creating the VDA factory";
     return false;

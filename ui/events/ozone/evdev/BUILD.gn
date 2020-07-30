@@ -6,7 +6,7 @@ import("//build/config/chromeos/args.gni")
 import("//build/config/linux/pkg_config.gni")
 import("//build/config/ui.gni")
 
-assert(use_ozone && is_linux)
+assert(use_ozone && (is_linux || is_chromeos))
 
 visibility = [ ":*" ]
 

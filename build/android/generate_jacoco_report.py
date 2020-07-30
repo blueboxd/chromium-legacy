@@ -41,16 +41,16 @@ _PARTIAL_PACKAGE_NAMES = ['com/google', 'org/chromium']
 
 _SOURCES_JSON_FILES_SUFFIX = '__jacoco_sources.json'
 # These should match the jar class files generated in internal_rules.gni
-_DEVICE_CLASS_FILE_SUFFIX = 'device_filter.jar'
-_HOST_CLASS_FILE_SUFFIX = 'host_filter.jar'
+_DEVICE_CLASS_EXCLUDE_SUFFIX = 'host_filter.jar'
+_HOST_CLASS_EXCLUDE_SUFFIX = 'device_filter.jar'
 
 
 def _GenerateReportOutputArgs(args,
                               class_files,
-                              class_jar_suffix,
+                              class_jar_exclude,
                               report_name=None,
                               report_file=None):
-  cmd = _CreateClassfileArgs(class_files, class_jar_suffix)
+  cmd = _CreateClassfileArgs(class_files, class_jar_exclude)
   if args.format == 'html':
     report_dir = os.path.join(args.output_dir, report_name)
     if not os.path.exists(report_dir):
@@ -64,19 +64,19 @@ def _GenerateReportOutputArgs(args,
   return cmd
 
 
-def _CreateClassfileArgs(class_files, suffix):
+def _CreateClassfileArgs(class_files, exclude_suffix):
   """Returns a list of files that don't have a given suffix.
 
   Args:
     class_files: A list of class files.
-    suffix: Suffix to look for.
+    exclude_suffix: Suffix to look for to exclude.
 
   Returns:
     A list of files that don't use the suffix.
   """
   result_class_files = []
   for f in class_files:
-    if not f.endswith(suffix):
+    if not f.endswith(exclude_suffix):
       result_class_files += ['--classfiles', f]
 
   return result_class_files
@@ -216,10 +216,10 @@ def main():
     junit_coverage_file = args.output_junit_coverage_file
 
     device_cmd = cmd + _GenerateReportOutputArgs(
-        args, class_files, _DEVICE_CLASS_FILE_SUFFIX, 'device_report',
+        args, class_files, _DEVICE_CLASS_EXCLUDE_SUFFIX, 'device_report',
         temp_device_file)
     host_cmd = cmd + _GenerateReportOutputArgs(
-        args, class_files, _HOST_CLASS_FILE_SUFFIX, 'host_report',
+        args, class_files, _HOST_CLASS_EXCLUDE_SUFFIX, 'host_report',
         temp_host_file)
 
     device_exit_code = cmd_helper.RunCmd(device_cmd)

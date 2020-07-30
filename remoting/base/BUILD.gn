@@ -52,6 +52,8 @@ source_set("base") {
     "rsa_key_pair.h",
     "running_samples.cc",
     "running_samples.h",
+    "scoped_protobuf_http_request.cc",
+    "scoped_protobuf_http_request.h",
     "scoped_sc_handle_win.h",
     "service_urls.cc",
     "service_urls.h",

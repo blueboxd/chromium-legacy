@@ -48,10 +48,13 @@ class StandaloneTrustedVaultClient : public TrustedVaultClient {
   void RemoveAllStoredKeys() override;
   void MarkKeysAsStale(const CoreAccountInfo& account_info,
                        base::OnceCallback<void(bool)> cb) override;
+  void GetIsRecoverabilityDegraded(const CoreAccountInfo& account_info,
+                                   base::OnceCallback<void(bool)> cb) override;
 
   // Runs |cb| when all requests have completed.
   void WaitForFlushForTesting(base::OnceClosure cb) const;
   bool IsInitializationTriggeredForTesting() const;
+  void SetRecoverabilityDegradedForTesting();
 
  private:
   void TriggerLazyInitializationIfNeeded();
@@ -64,6 +67,8 @@ class StandaloneTrustedVaultClient : public TrustedVaultClient {
   // |backend_| constructed lazily in the UI thread, used in
   // |backend_task_runner_| and destroyed (refcounted) on any thread.
   scoped_refptr<StandaloneTrustedVaultBackend> backend_;
+
+  bool is_recoverability_degraded_for_testing_ = false;
 };
 
 }  // namespace syncer

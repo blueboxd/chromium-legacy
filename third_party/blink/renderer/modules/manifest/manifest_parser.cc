@@ -310,7 +310,7 @@ blink::mojom::DisplayMode ManifestParser::ParseDisplay(
 Vector<mojom::blink::DisplayMode> ManifestParser::ParseDisplayOverride(
     const JSONObject* object) {
   Vector<mojom::blink::DisplayMode> display_override;
-  if (!RuntimeEnabledFeatures::DisplayOverrideEnabled())
+  if (!RuntimeEnabledFeatures::WebAppManifestDisplayOverrideEnabled())
     return display_override;
 
   JSONValue* json_value = object->Get("display_override");

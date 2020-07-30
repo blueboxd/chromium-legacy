@@ -115,10 +115,9 @@ base::WritableSharedMemoryRegion Broker::GetWritableSharedMemoryRegion(
     return base::WritableSharedMemoryRegion();
   }
 
-#if !defined(OS_POSIX) || defined(OS_ANDROID) || \
-    (defined(OS_MACOSX) && !defined(OS_IOS))
-  // Non-POSIX systems, as well as Android, and non-iOS Mac, only use a single
-  // handle to represent a writable region.
+#if !defined(OS_POSIX) || defined(OS_ANDROID) || defined(OS_MAC)
+  // Non-POSIX systems, as well as Android and Mac, only use a single handle to
+  // represent a writable region.
   constexpr size_t kNumExpectedHandles = 1;
 #else
   constexpr size_t kNumExpectedHandles = 2;

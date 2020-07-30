@@ -556,7 +556,7 @@ static_library("content_shell_lib") {
     deps += [ "//gin" ]
   }
 
-  if (is_linux) {
+  if (is_linux || is_chromeos) {
     deps += [ "//services/service_manager/tests:sandbox_status_service" ]
   }
 
@@ -625,7 +625,7 @@ static_library("content_shell_lib") {
     deps += [ "//chromeos/dbus" ]
   }
 
-  if (is_linux) {
+  if (is_linux || is_chromeos) {
     deps += [ "//build/config/freetype" ]
   }
 
@@ -782,12 +782,12 @@ if (is_android) {
       }
     }
 
-    if (is_win || is_linux) {
+    if (is_win || is_linux || is_chromeos) {
       data_deps +=
           [ "//third_party/crashpad/crashpad/handler:crashpad_handler" ]
     }
 
-    if (is_linux && !is_component_build) {
+    if ((is_linux || is_chromeos) && !is_component_build) {
       # Set rpath to find our own libfreetype even in a non-component build.
       configs += [ "//build/config/gcc:rpath_for_built_shared_libraries" ]
     }

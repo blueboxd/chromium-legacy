@@ -111,7 +111,7 @@ class PerformanceManagerImpl : public PerformanceManager {
       const std::string& browser_context_id,
       WorkerNode::WorkerType worker_type,
       ProcessNodeImpl* process_node,
-      const base::UnguessableToken& dev_tools_token);
+      const WorkerToken& worker_token);
 
   // Destroys a node returned from the creation functions above. May be called
   // from any sequence.

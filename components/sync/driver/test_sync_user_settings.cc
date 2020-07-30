@@ -179,6 +179,10 @@ bool TestSyncUserSettings::IsTrustedVaultKeyRequiredForPreferredDataTypes()
   return trusted_vault_key_required_for_preferred_data_types_;
 }
 
+bool TestSyncUserSettings::IsTrustedVaultRecoverabilityDegraded() const {
+  return false;
+}
+
 bool TestSyncUserSettings::IsUsingSecondaryPassphrase() const {
   return using_secondary_passphrase_;
 }

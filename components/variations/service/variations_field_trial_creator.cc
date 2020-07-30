@@ -240,7 +240,10 @@ VariationsFieldTrialCreator::GetClientFilterableStateForVersion(
       ConvertProductChannelToStudyChannel(client_->GetChannelForVariations());
   state->form_factor = GetCurrentFormFactor();
   state->platform = GetPlatform();
-  state->hardware_class = GetShortHardwareClass();
+  // TODO(crbug/1111131): Expand to other platforms.
+#if defined(OS_CHROMEOS) || defined(OS_ANDROID)
+  state->hardware_class = base::SysInfo::HardwareModelName();
+#endif
 #if defined(OS_ANDROID)
   // This is set on Android only currently, because the IsLowEndDevice() API
   // on other platforms has no intrinsic meaning outside of a field trial that
@@ -372,24 +375,6 @@ void VariationsFieldTrialCreator::OverrideCachedUIStrings() {
     bundle->OverrideLocaleStringResource(it.first, it.second);
 
   overridden_strings_map_.clear();
-}
-
-// static
-std::string VariationsFieldTrialCreator::GetShortHardwareClass() {
-#if defined(OS_CHROMEOS)
-  std::string board = base::SysInfo::GetLsbReleaseBoard();
-  // GetLsbReleaseBoard() may be suffixed with a "-signed-" and other extra
-  // info. Strip it.
-  const size_t index = board.find("-signed-");
-  if (index != std::string::npos)
-    board.resize(index);
-
-  return base::ToUpperASCII(board);
-#elif defined(OS_ANDROID)
-  return base::SysInfo::HardwareModelName();
-#else
-  return std::string();
-#endif
 }
 
 bool VariationsFieldTrialCreator::LoadSeed(VariationsSeed* seed,

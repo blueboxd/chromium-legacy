@@ -594,6 +594,7 @@ class CORE_EXPORT WebFrameWidgetBase
   Vector<mojom::blink::EditCommandPtr> edit_commands_;
 
   base::Optional<gfx::Point> host_context_menu_location_;
+  uint32_t last_capture_sequence_number_ = 0u;
 
   friend class WebViewImpl;
   friend class ReportTimeSwapPromise;

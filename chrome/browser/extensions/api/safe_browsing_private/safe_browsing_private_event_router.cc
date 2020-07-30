@@ -56,6 +56,7 @@
 #include "components/user_manager/user_manager.h"
 #else
 #include "chrome/browser/policy/chrome_browser_cloud_management_controller.h"
+#include "chrome/browser/policy/chrome_browser_policy_connector.h"
 #include "components/enterprise/browser/controller/browser_dm_token_storage.h"
 #endif
 
@@ -932,7 +933,9 @@ bool SafeBrowsingPrivateEventRouter::IsRealtimeReportingAvailable() {
   auto* user = GetChromeOSUser();
   return user && user->IsAffiliated();
 #else
-  return policy::ChromeBrowserCloudManagementController::IsEnabled();
+  return g_browser_process->browser_policy_connector()
+      ->chrome_browser_cloud_management_controller()
+      ->IsEnabled();
 #endif
 }
 

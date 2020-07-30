@@ -1,0 +1,22 @@
+/* Copyright 2020 The Chromium Authors. All rights reserved.
+ * Use of this source code is governed by a BSD-style license that can be
+ * found in the LICENSE file.
+ */
+
+/* TODO(crbug.com/1108981): adjust the style when the design is finalized. */
+body {
+  color: var(--primary-color);
+  font-size: 2em;
+  margin: 10%;
+  min-width: 500;  /* Wrap content to screen on mobile. */
+  text-align: start;
+  width: 80%;
+}
+
+#main-message {
+  margin-bottom: 2em;
+}
+
+.hidden {
+  display: none;
+}

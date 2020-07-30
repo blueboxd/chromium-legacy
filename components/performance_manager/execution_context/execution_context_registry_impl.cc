@@ -114,13 +114,13 @@ const FrameNode* ExecutionContextRegistryImpl::GetFrameNodeByFrameToken(
   return ec->GetFrameNode();
 }
 
-const WorkerNode* ExecutionContextRegistryImpl::GetWorkerNodeByDevToolsToken(
-    const base::UnguessableToken& token) {
+const WorkerNode* ExecutionContextRegistryImpl::GetWorkerNodeByWorkerToken(
+    const WorkerToken& token) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  // The casting is safe because ExecutionContext guarantees it has the same
-  // layout as base::UnguessableToken.
+  // The casting is safe because ExecutionContextToken guarantees it has the
+  // same layout as base::UnguessableToken.
   auto* ec = GetExecutionContextByToken(
-      *reinterpret_cast<const ExecutionContextToken*>(&token));
+      *reinterpret_cast<const ExecutionContextToken*>(&token.value()));
   if (!ec)
     return nullptr;
   return ec->GetWorkerNode();
@@ -181,13 +181,8 @@ void ExecutionContextRegistryImpl::OnWorkerNodeAdded(
   auto* ec = GetOrCreateExecutionContextForWorkerNode(worker_node);
   DCHECK(ec);
 
-  // Unfortunately, in tests workers do not always have a valid dev tools token.
-  // TODO: Transition to using custom worker tokens (like FrameToken), and
-  // get rid of this conditional.
-  if (!ec->GetToken().value().is_empty()) {
-    auto result = execution_contexts_.insert(ec);
-    DCHECK(result.second);  // Inserted.
-  }
+  auto result = execution_contexts_.insert(ec);
+  DCHECK(result.second);  // Inserted.
 
   for (auto& observer : observers_)
     observer.OnExecutionContextAdded(ec);
@@ -201,13 +196,8 @@ void ExecutionContextRegistryImpl::OnBeforeWorkerNodeRemoved(
   for (auto& observer : observers_)
     observer.OnBeforeExecutionContextRemoved(ec);
 
-  // Unfortunately, in tests workers do not always have a valid dev tools token.
-  // TODO: Transition to using custom worker tokens (like FrameToken), and
-  // get rid of this conditional.
-  if (!ec->GetToken().value().is_empty()) {
-    size_t erased = execution_contexts_.erase(ec);
-    DCHECK_EQ(1u, erased);
-  }
+  size_t erased = execution_contexts_.erase(ec);
+  DCHECK_EQ(1u, erased);
 }
 
 ////////////////////////////////////////////////////////////////////////////////

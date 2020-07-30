@@ -128,7 +128,7 @@ bool SessionService::ShouldNewWindowStartSession() {
       // On OSX, a new window should not start a new session if it was opened
       // from the dock or the menubar.
       && !app_controller_mac::IsOpeningNewWindow()
-#endif  // OS_MACOSX
+#endif  // OS_MAC
   ) {
     return true;
   }

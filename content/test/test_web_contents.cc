@@ -458,18 +458,18 @@ base::UnguessableToken TestWebContents::GetAudioGroupId() {
   return audio_group_id_;
 }
 
-const base::UnguessableToken& TestWebContents::CreatePortal(
+const blink::PortalToken& TestWebContents::CreatePortal(
     std::unique_ptr<WebContents> web_contents) {
   auto portal =
       std::make_unique<Portal>(GetMainFrame(), std::move(web_contents));
-  const base::UnguessableToken& token = portal->portal_token();
+  const blink::PortalToken& token = portal->portal_token();
   portal->CreateProxyAndAttachPortal();
   GetMainFrame()->OnPortalCreatedForTesting(std::move(portal));
   return token;
 }
 
 WebContents* TestWebContents::GetPortalContents(
-    const base::UnguessableToken& portal_token) {
+    const blink::PortalToken& portal_token) {
   Portal* portal = GetMainFrame()->FindPortalByToken(portal_token);
   if (!portal)
     return nullptr;

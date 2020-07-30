@@ -11,6 +11,8 @@
 #include "base/strings/string16.h"
 #include "base/test/metrics/histogram_tester.h"
 #include "base/threading/thread_task_runner_handle.h"
+#include "chrome/browser/policy/chrome_browser_cloud_management_controller.h"
+#include "chrome/browser/policy/chrome_browser_cloud_management_controller_desktop.h"
 #include "chrome/browser/ui/enterprise_startup_dialog.h"
 #include "components/enterprise/browser/controller/fake_browser_dm_token_storage.h"
 #include "content/public/test/browser_task_environment.h"
@@ -36,7 +38,10 @@ constexpr char kClientId[] = "client-id";
 class FakeChromeBrowserCloudManagementController
     : public ChromeBrowserCloudManagementController {
  public:
-  FakeChromeBrowserCloudManagementController() = default;
+  explicit FakeChromeBrowserCloudManagementController(
+      std::unique_ptr<ChromeBrowserCloudManagementController::Delegate>
+          delegate)
+      : ChromeBrowserCloudManagementController(std::move(delegate)) {}
   void FireNotification(bool succeeded) {
     NotifyPolicyRegisterFinished(succeeded);
   }
@@ -86,7 +91,9 @@ class MockEnterpriseStartupDialog : public EnterpriseStartupDialog {
 class ChromeBrowserCloudManagementRegisterWatcherTest : public ::testing::Test {
  public:
   ChromeBrowserCloudManagementRegisterWatcherTest()
-      : watcher_(&controller_),
+      : controller_(
+            std::make_unique<ChromeBrowserCloudManagementControllerDesktop>()),
+        watcher_(&controller_),
         dialog_(std::make_unique<MockEnterpriseStartupDialog>()),
         dialog_ptr_(dialog_.get()) {
     storage_.SetEnrollmentToken(kEnrollmentToken);

@@ -5704,10 +5704,10 @@
         'variants': [
           'SIM_IPHONE_7_13_6',
           'SIM_IPHONE_X_13_6',
-          'SIM_IPAD_PRO_13_6',
+          'SIM_IPAD_PRO_2ND_GEN_13_6',
           'SIM_IPAD_6_GEN_13_6',
           'SIM_IPHONE_X_12_4',
-          'SIM_IPAD_PRO_12_4',
+          'SIM_IPAD_PRO_2ND_GEN_12_4',
           'SIM_IPAD_6_GEN_12_4',
         ]
       },
@@ -5745,7 +5745,7 @@
           'SIM_IPHONE_X_13_6',
           'SIM_IPAD_AIR_2_13_6',
           'SIM_IPHONE_X_12_4',
-          'SIM_IPAD_PRO_12_4',
+          'SIM_IPAD_PRO_2ND_GEN_12_4',
           'SIM_IPAD_6_GEN_12_4',
         ]
       },
@@ -5825,12 +5825,14 @@
           # 14.0 Sims
           'SIM_IPHONE_X_14_0',
           'SIM_IPAD_AIR_2_14_0',
+          'SIM_IPAD_PRO_2ND_GEN_14_0',
           # 13.6 Sims
           'SIM_IPHONE_X_13_6',
           'SIM_IPAD_AIR_2_13_6',
+          'SIM_IPAD_PRO_2ND_GEN_13_6',
           # 12.4 Sims
           'SIM_IPHONE_X_12_4',
-          'SIM_IPAD_PRO_12_4',
+          'SIM_IPAD_PRO_2ND_GEN_12_4',
           'SIM_IPAD_6_GEN_12_4',
         ]
       },

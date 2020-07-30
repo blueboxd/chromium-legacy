@@ -27,7 +27,7 @@ declare_args() {
   enable_snap_package = false
 }
 
-assert(is_linux)
+assert(is_linux || is_chromeos)
 
 packaging_files_executables = [
   "$root_out_dir/chrome",

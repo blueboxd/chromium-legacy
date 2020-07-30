@@ -13,4 +13,4 @@ declare_args() {
   allow_critical_memory_pressure_handling_in_foreground = is_chromecast
 }
 
-enable_screen_capture = is_linux || is_mac || is_win || is_android
+enable_screen_capture = is_linux || is_chromeos || is_mac || is_win || is_android

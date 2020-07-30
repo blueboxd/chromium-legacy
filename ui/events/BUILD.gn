@@ -311,7 +311,7 @@ jumbo_component("events") {
   if (use_ozone || use_x11) {
     sources += [ "events_default.cc" ]
 
-    if (is_linux) {
+    if (is_linux || is_chromeos) {
       # TODO(https://crbug.com/1099225): refactor X11 kbd hook and implement
       # that for Ozone.
       sources += [ "keyboard_hook_linux.cc" ]

@@ -320,12 +320,13 @@ def _OptimizeWithR8(options,
     base_has_imported_lib = False
     if options.desugar_jdk_libs_json:
       existing_files = build_utils.FindInDirectory(base_dex_context.staging_dir)
+      jdk_dex_output = os.path.join(base_dex_context.staging_dir,
+                                    'classes%d.dex' % (len(existing_files) + 1))
       base_has_imported_lib = dex_jdk_libs.DexJdkLibJar(
           options.r8_path, options.min_api, options.desugar_jdk_libs_json,
           options.desugar_jdk_libs_jar,
-          options.desugared_library_keep_rule_output,
-          os.path.join(base_dex_context.staging_dir,
-                       'classes%d.dex' % (len(existing_files) + 1)))
+          options.desugared_library_keep_rule_output, jdk_dex_output,
+          options.warnings_as_errors)
 
     base_dex_context.CreateOutput(base_has_imported_lib,
                                   options.desugared_library_keep_rule_output)

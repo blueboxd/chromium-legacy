@@ -113,23 +113,23 @@
         ],
         'identifier': 'iPad Air (3rd generation) 14.0'
     },
-    'SIM_IPAD_PRO_12_4': {
+    'SIM_IPAD_PRO_2ND_GEN_12_4': {
         'args': [
           '--platform',
-          'iPad Pro (12.9-inch)',
+          'iPad Pro (12.9-inch) (2nd generation)',
           '--version',
           '12.4',
         ],
-        'identifier': 'iPad Pro (12.9-inch) 12.4'
+        'identifier': 'iPad Pro (12.9-inch) (2nd generation) 12.4'
     },
-    'SIM_IPAD_PRO_13_6': {
+    'SIM_IPAD_PRO_2ND_GEN_13_6': {
         'args': [
           '--platform',
-          'iPad Pro (12.9-inch)',
+          'iPad Pro (12.9-inch) (2nd generation)',
           '--version',
           '13.6',
         ],
-        'identifier': 'iPad Pro (12.9-inch) 13.6'
+        'identifier': 'iPad Pro (12.9-inch) (2nd generation) 13.6'
     },
     # In Xcode 12, "iPad Pro (12.9-inch)" requires a generation suffix in
     # "platform" arg.

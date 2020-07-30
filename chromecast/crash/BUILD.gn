@@ -125,7 +125,7 @@ test("cast_crash_unittests") {
       "//testing/gmock",
       "//testing/gtest",
     ]
-  } else if (is_linux) {
+  } else if (is_linux || is_chromeos) {
     sources = [
       "cast_crashdump_uploader_unittest.cc",
       "linux/dummy_minidump_generator_unittest.cc",

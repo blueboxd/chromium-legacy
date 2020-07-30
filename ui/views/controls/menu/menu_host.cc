@@ -173,11 +173,6 @@ void MenuHost::ShowMenuHost(bool do_capture) {
     } else {
       GetGestureRecognizer()->CancelActiveTouchesExcept(nullptr);
     }
-#if defined(MACOSX)
-    // Cancel existing touches, so we don't miss some touch release/cancel
-    // events due to the menu taking capture.
-    GetGestureRecognizer()->CancelActiveTouchesExcept(nullptr);
-#endif  // defined (OS_MACOSX)
     // If MenuHost has no parent widget, it needs to call Show to get focus,
     // so that it will get keyboard events.
     if (owner_ == nullptr)

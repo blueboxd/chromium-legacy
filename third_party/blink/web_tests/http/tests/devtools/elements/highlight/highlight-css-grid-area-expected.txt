@@ -100,30 +100,30 @@ grid-with-areas{
       "rotationAngle": 0,
       "columnTrackSizes": [
         {
-          "computedSize": 195.5,
-          "authoredSize": "1fr",
           "x": 97.75,
-          "y": 0
+          "y": 0,
+          "computedSize": 195.5,
+          "authoredSize": "1fr"
         },
         {
-          "computedSize": 195.5,
-          "authoredSize": "1fr",
           "x": 303.25,
-          "y": 0
+          "y": 0,
+          "computedSize": 195.5,
+          "authoredSize": "1fr"
         }
       ],
       "rowTrackSizes": [
         {
-          "computedSize": 295.5,
-          "authoredSize": "1fr",
           "x": 0,
-          "y": 147.75
+          "y": 147.75,
+          "computedSize": 295.5,
+          "authoredSize": "1fr"
         },
         {
-          "computedSize": 295.5,
-          "authoredSize": "1fr",
           "x": 0,
-          "y": 453.25
+          "y": 453.25,
+          "computedSize": 295.5,
+          "authoredSize": "1fr"
         }
       ],
       "rows": [
@@ -218,6 +218,34 @@ grid-with-areas{
         200.5,
         401
       ],
+      "positiveRowLineNumberPositions": [
+        {
+          "x": 0,
+          "y": 0
+        },
+        {
+          "x": 0,
+          "y": 300.5
+        },
+        {
+          "x": 0,
+          "y": 601
+        }
+      ],
+      "positiveColumnLineNumberPositions": [
+        {
+          "x": 0,
+          "y": 0
+        },
+        {
+          "x": 200.5,
+          "y": 0
+        },
+        {
+          "x": 401,
+          "y": 0
+        }
+      ],
       "negativeRowLineNumberOffsets": [
         0,
         300.5,
@@ -227,6 +255,34 @@ grid-with-areas{
         0,
         200.5,
         401
+      ],
+      "negativeRowLineNumberPositions": [
+        {
+          "x": 401,
+          "y": 0
+        },
+        {
+          "x": 401,
+          "y": 300.5
+        },
+        {
+          "x": 401,
+          "y": 601
+        }
+      ],
+      "negativeColumnLineNumberPositions": [
+        {
+          "x": 0,
+          "y": 601
+        },
+        {
+          "x": 200.5,
+          "y": 601
+        },
+        {
+          "x": 401,
+          "y": 601
+        }
       ],
       "areaNames": {
         "header": [

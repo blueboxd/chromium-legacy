@@ -170,6 +170,8 @@ source_set("headers") {
     "switches.h",
     "tokens/frame_token.h",
     "tokens/frame_token_mojom_traits.h",
+    "tokens/portal_token.h",
+    "tokens/portal_token_mojom_traits.h",
     "tokens/token_mojom_traits_helper.h",
     "tokens/worker_tokens.h",
     "tokens/worker_tokens_mojom_traits.h",

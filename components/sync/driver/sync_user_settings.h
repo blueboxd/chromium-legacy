@@ -109,8 +109,11 @@ class SyncUserSettings {
   // encrypted data types.
   virtual bool IsTrustedVaultKeyRequired() const = 0;
   // Whether trusted vault keys are required for encryption or decryption to
-  // proceed for any currently enabled data type.
+  // proceed for currently enabled data types.
   virtual bool IsTrustedVaultKeyRequiredForPreferredDataTypes() const = 0;
+  // Whether recoverability of the trusted vault keys is degraded and user
+  // action is required, affecting currently enabled data types.
+  virtual bool IsTrustedVaultRecoverabilityDegraded() const = 0;
   // Whether a "secondary" passphrase is in use (aka explicit passphrase), which
   // means either a custom or a frozen implicit passphrase.
   virtual bool IsUsingSecondaryPassphrase() const = 0;

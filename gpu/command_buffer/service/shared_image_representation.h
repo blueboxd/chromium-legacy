@@ -296,7 +296,7 @@ class GPU_GLES2_EXPORT SharedImageRepresentationSkia
  protected:
   // Begin the write access. The implementations should insert semaphores into
   // begin_semaphores vector which client will wait on before writing the
-  // backing. The ownership of begin_semaphores will be passed to client.
+  // backing. The ownership of begin_semaphores is not passed to client.
   // The implementations can also optionally insert semaphores into
   // end_semaphores. If using end_semaphores, the client must submit them with
   // drawing operations which use the backing. The ownership of end_semaphores
@@ -319,7 +319,7 @@ class GPU_GLES2_EXPORT SharedImageRepresentationSkia
 
   // Begin the read access. The implementations should insert semaphores into
   // begin_semaphores vector which client will wait on before reading the
-  // backing. The ownership of begin_semaphores will be passed to client.
+  // backing. The ownership of begin_semaphores is not passed to client.
   // The implementations can also optionally insert semaphores into
   // end_semaphores. If using end_semaphores, the client must submit them with
   // drawing operations which use the backing. The ownership of end_semaphores

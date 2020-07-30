@@ -16,6 +16,80 @@
 #include "content/public/test/browser_test.h"
 #include "ui/base/clipboard/scoped_clipboard_writer.h"
 
+namespace {
+
+void SetClipboardText(const std::string& text) {
+  ui::ScopedClipboardWriter(ui::ClipboardBuffer::kCopyPaste)
+      .WriteText(base::ASCIIToUTF16(text));
+
+  // ClipboardHistory will post a task to process clipboard data in order to
+  // debounce multiple clipboard writes occurring in sequence. Here we give
+  // ClipboardHistory the chance to run its posted tasks before proceeding.
+  base::RunLoop().RunUntilIdle();
+}
+
+const std::list<ui::ClipboardData>& GetClipboardData() {
+  return ash::Shell::Get()
+      ->clipboard_history_controller()
+      ->clipboard_history()
+      ->GetItems();
+}
+
+bool IsClipboardDataListExpected(
+    const std::list<ui::ClipboardData>& clipboard_data,
+    const std::vector<std::string>& expected_text_data) {
+  if (clipboard_data.size() != expected_text_data.size())
+    return false;
+
+  auto iter = clipboard_data.cbegin();
+  int index = 0;
+  while (iter != clipboard_data.cend()) {
+    if (iter->text() != expected_text_data[index])
+      return false;
+
+    iter++;
+    index++;
+  }
+
+  return true;
+}
+
+}  // namespace
+
+class ClipboardHistoryBrowserTest : public InProcessBrowserTest {
+ public:
+  ClipboardHistoryBrowserTest() : InProcessBrowserTest() {
+    feature_list_.InitAndEnableFeature(chromeos::features::kClipboardHistory);
+  }
+
+ private:
+  base::test::ScopedFeatureList feature_list_;
+};
+
+// Verify clipboard history's basic feature, i.e. recording clipboard data and
+// returning data following the most recent ordering
+// (https://crbug.com/1109263).
+IN_PROC_BROWSER_TEST_F(ClipboardHistoryBrowserTest, VerifyBasics) {
+  const std::string unique_data1("A");
+  SetClipboardText(unique_data1);
+
+  const int iteration = 10;
+  const std::string unique_data2("B");
+  const std::string unique_data3("C");
+
+  // Save duplicate data multiple times.
+  for (int i = 0; i < iteration; i++) {
+    SetClipboardText(unique_data2);
+    SetClipboardText(unique_data3);
+  }
+
+  const std::list<ui::ClipboardData> data = GetClipboardData();
+  const std::vector<std::string> expected_text_data = {
+      unique_data3, unique_data2, unique_data1};
+
+  EXPECT_TRUE(IsClipboardDataListExpected(data, expected_text_data));
+}
+
 // Verify clipboard history's features in the multiprofile environment.
 class ClipboardHistoryWithMultiProfileBrowserTest
     : public chromeos::LoginManagerTest {
@@ -31,18 +105,6 @@ class ClipboardHistoryWithMultiProfileBrowserTest
   ~ClipboardHistoryWithMultiProfileBrowserTest() override = default;
 
  protected:
-  void SetClipboardText(const std::string& text) {
-    ui::ScopedClipboardWriter(ui::ClipboardBuffer::kCopyPaste)
-        .WriteText(base::ASCIIToUTF16(text));
-  }
-
-  const std::list<ui::ClipboardData>& GetClipboardData() const {
-    return ash::Shell::Get()
-        ->clipboard_history_controller()
-        ->clipboard_history()
-        ->GetItems();
-  }
-
   AccountId account_id1_;
   AccountId account_id2_;
   chromeos::LoginManagerMixin login_mixin_{&mixin_host_};

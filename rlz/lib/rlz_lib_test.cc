@@ -573,7 +573,7 @@ TEST_F(RlzLibTest, SendFinancialPing) {
     return;
 
 #if defined(RLZ_NETWORK_IMPLEMENTATION_CHROME_NET)
-#if defined(OS_MACOSX)
+#if defined(OS_APPLE)
   base::mac::ScopedNSAutoreleasePool pool;
 #endif
 
@@ -624,7 +624,7 @@ TEST_F(RlzLibTest, SendFinancialPingDuringShutdown) {
   if (!rlz_lib::SupplementaryBranding::GetBrand().empty())
     return;
 
-#if defined(OS_MACOSX)
+#if defined(OS_APPLE)
   base::mac::ScopedNSAutoreleasePool pool;
 #endif
 

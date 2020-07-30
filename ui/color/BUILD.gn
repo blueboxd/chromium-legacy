@@ -87,7 +87,7 @@ jumbo_component("mixers") {
     sources += [ "cros/native_color_mixers.cc" ]
   } else if (is_fuchsia) {
     sources += [ "fuchsia/native_color_mixers.cc" ]
-  } else if (is_linux) {
+  } else if (is_linux || is_chromeos) {
     sources += [ "linux/native_color_mixers.cc" ]
   } else if (is_mac) {
     frameworks = [ "AppKit.framework" ]

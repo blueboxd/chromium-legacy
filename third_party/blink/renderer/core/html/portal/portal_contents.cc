@@ -26,7 +26,7 @@ namespace blink {
 
 PortalContents::PortalContents(
     HTMLPortalElement& portal_element,
-    const base::UnguessableToken& portal_token,
+    const PortalToken& portal_token,
     mojo::PendingAssociatedRemote<mojom::blink::Portal> remote_portal,
     mojo::PendingAssociatedReceiver<mojom::blink::PortalClient>
         portal_client_receiver)
@@ -169,7 +169,7 @@ void PortalContents::Destroy() {
     portal_element_->PortalContentsWillBeDestroyed(this);
     portal_element_ = nullptr;
   }
-  portal_token_ = base::UnguessableToken();
+  portal_token_ = PortalToken::Null();
   remote_portal_.reset();
   portal_client_receiver_.reset();
   DocumentPortals::From(GetDocument()).DeregisterPortalContents(this);

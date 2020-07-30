@@ -254,6 +254,9 @@ void TabDragControllerTest::AddTabsAndResetBrowser(Browser* browser,
   }
   browser->window()->Show();
   StopAnimating(GetTabStripForBrowser(browser));
+  BrowserView::GetBrowserViewForBrowser(browser)
+      ->GetWidget()
+      ->LayoutRootViewIfNecessary();
   ResetIDs(browser->tab_strip_model(), 0);
 }
 
@@ -455,7 +458,7 @@ class DetachToBrowserTabDragControllerTest
     // be obscured by other windows if there are any. This should be fixed in
     // order to be consistent with other platforms.
     EXPECT_TRUE(ui_test_utils::BringBrowserWindowToFront(browser()));
-#endif  // OS_MACOSX
+#endif  // OS_MAC
   }
 
   InputSource input_source() const {

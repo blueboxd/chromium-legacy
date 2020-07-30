@@ -410,6 +410,8 @@ void SetRuntimeFeaturesFromChromiumFeatures() {
           {"TrustedDOMTypes", features::kTrustedDOMTypes, kEnableOnly},
           {"UserAgentClientHint", features::kUserAgentClientHint,
            kUseFeatureState},
+          {"WebAppManifestDisplayOverride",
+           features::kWebAppManifestDisplayOverride, kUseFeatureState},
 
       };
   for (const auto& mapping : runtimeFeatureNameToChromiumFeatureMapping) {

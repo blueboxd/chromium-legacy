@@ -50,6 +50,7 @@
 
 #if !defined(OS_ANDROID) && !defined(OS_CHROMEOS)
 #include "chrome/browser/policy/chrome_browser_cloud_management_controller.h"
+#include "chrome/browser/policy/chrome_browser_cloud_management_controller_desktop.h"
 #include "components/policy/core/common/cloud/machine_level_user_cloud_policy_manager.h"
 #endif
 
@@ -63,7 +64,8 @@ ChromeBrowserPolicyConnector::ChromeBrowserPolicyConnector()
     : BrowserPolicyConnector(base::Bind(&BuildHandlerList)) {
 #if !defined(OS_ANDROID) && !defined(OS_CHROMEOS)
   chrome_browser_cloud_management_controller_ =
-      std::make_unique<ChromeBrowserCloudManagementController>();
+      std::make_unique<ChromeBrowserCloudManagementController>(
+          std::make_unique<ChromeBrowserCloudManagementControllerDesktop>());
 #endif
 }
 
@@ -134,7 +136,7 @@ ChromeBrowserPolicyConnector::CreatePolicyProviders() {
 #if !defined(OS_ANDROID) && !defined(OS_CHROMEOS)
   std::unique_ptr<MachineLevelUserCloudPolicyManager>
       machine_level_user_cloud_policy_manager =
-          ChromeBrowserCloudManagementController::CreatePolicyManager(
+          chrome_browser_cloud_management_controller_->CreatePolicyManager(
               platform_provider_);
   if (machine_level_user_cloud_policy_manager) {
     machine_level_user_cloud_policy_manager_ =

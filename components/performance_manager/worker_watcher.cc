@@ -13,6 +13,7 @@
 #include "components/performance_manager/graph/worker_node_impl.h"
 #include "components/performance_manager/performance_manager_impl.h"
 #include "components/performance_manager/process_node_source.h"
+#include "third_party/blink/public/common/tokens/worker_tokens.h"
 
 namespace performance_manager {
 
@@ -150,12 +151,11 @@ void WorkerWatcher::OnWorkerCreated(
     content::GlobalFrameRoutingId ancestor_render_frame_host_id) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
-  // TODO(https://crbug.com/993029): Plumb through the URL, and make a
-  // strongly-typed WorkerToken instead of using DevToolsToken.
+  // TODO(https://crbug.com/993029): Plumb through the URL.
   auto worker_node = PerformanceManagerImpl::CreateWorkerNode(
       browser_context_id_, WorkerNode::WorkerType::kDedicated,
       process_node_source_->GetProcessNode(worker_process_id),
-      dedicated_worker_token.value());
+      WorkerToken(dedicated_worker_token.value()));
   auto insertion_result = dedicated_worker_nodes_.emplace(
       dedicated_worker_token, std::move(worker_node));
   DCHECK(insertion_result.second);
@@ -196,12 +196,14 @@ void WorkerWatcher::OnFinalResponseURLDetermined(
 void WorkerWatcher::OnWorkerCreated(
     const blink::SharedWorkerToken& shared_worker_token,
     int worker_process_id,
-    const base::UnguessableToken& dev_tools_token) {
+    const base::UnguessableToken& /* dev_tools_token */) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
   auto worker_node = PerformanceManagerImpl::CreateWorkerNode(
       browser_context_id_, WorkerNode::WorkerType::kShared,
-      process_node_source_->GetProcessNode(worker_process_id), dev_tools_token);
+      process_node_source_->GetProcessNode(worker_process_id),
+      WorkerToken(shared_worker_token.value()));
+
   bool inserted =
       shared_worker_nodes_.emplace(shared_worker_token, std::move(worker_node))
           .second;
@@ -254,11 +256,11 @@ void WorkerWatcher::OnVersionStartedRunning(
     const content::ServiceWorkerRunningInfo& running_info) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
-  // TODO(pmonette): Plumb in the DevTools token.
+  // TODO(chrisha): Plumb in the ServiceWorkerToken.
   auto worker_node = PerformanceManagerImpl::CreateWorkerNode(
       browser_context_id_, WorkerNode::WorkerType::kService,
       process_node_source_->GetProcessNode(running_info.render_process_id),
-      base::UnguessableToken());
+      WorkerToken::Create());
   bool inserted =
       service_worker_nodes_.emplace(version_id, std::move(worker_node)).second;
   DCHECK(inserted);

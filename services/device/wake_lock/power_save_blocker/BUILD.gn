@@ -40,7 +40,7 @@ source_set("power_save_blocker") {
       "//chromeos/dbus/power",
       "//chromeos/dbus/power:power_manager_proto",
     ]
-  } else if (is_linux && use_dbus) {
+  } else if ((is_linux || is_chromeos) && use_dbus) {
     sources += [ "power_save_blocker_linux.cc" ]
     deps += [
       "//dbus",

@@ -53,8 +53,13 @@ void FakeHermesProfileClient::Properties::Set(
   }
 }
 
-FakeHermesProfileClient::FakeHermesProfileClient() {}
+FakeHermesProfileClient::FakeHermesProfileClient() = default;
 FakeHermesProfileClient::~FakeHermesProfileClient() = default;
+
+void FakeHermesProfileClient::ClearProfile(
+    const dbus::ObjectPath& carrier_profile_path) {
+  properties_map_.erase(carrier_profile_path);
+}
 
 void FakeHermesProfileClient::EnableCarrierProfile(
     const dbus::ObjectPath& object_path,
@@ -75,9 +80,8 @@ void FakeHermesProfileClient::EnableCarrierProfile(
                                   HermesResponseStatus::kErrorAlreadyEnabled));
     return;
   }
-  for (PropertiesMap::iterator it = properties_map_.begin();
-       it != properties_map_.end(); it++) {
-    it->second.get()->state().ReplaceValue(hermes::profile::State::kInactive);
+  for (auto& item : properties_map_) {
+    item.second.get()->state().ReplaceValue(hermes::profile::State::kInactive);
   }
   properties->state().ReplaceValue(hermes::profile::State::kActive);
 
@@ -121,7 +125,7 @@ void FakeHermesProfileClient::DisableCarrierProfile(
 
 HermesProfileClient::Properties* FakeHermesProfileClient::GetProperties(
     const dbus::ObjectPath& object_path) {
-  PropertiesMap::iterator it = properties_map_.find(object_path);
+  auto it = properties_map_.find(object_path);
   if (it != properties_map_.end()) {
     return it->second.get();
   }
@@ -132,6 +136,11 @@ HermesProfileClient::Properties* FakeHermesProfileClient::GetProperties(
                           base::Unretained(this), object_path)));
   properties_map_[object_path] = std::move(properties);
   return properties_map_[object_path].get();
+}
+
+HermesProfileClient::TestInterface*
+FakeHermesProfileClient::GetTestInterface() {
+  return this;
 }
 
 // Updates the Shill Cellular device properties so that they match the given

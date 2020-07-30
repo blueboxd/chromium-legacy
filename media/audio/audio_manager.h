@@ -44,7 +44,7 @@ class MEDIA_EXPORT AudioManager {
   // AudioLogFactory; as such |audio_log_factory| must outlive the AudioManager.
   //
   // The manager will use |audio_thread->GetTaskRunner()| for audio IO.
-  // On OS_MACOSX, CoreAudio requires that |audio_thread->GetTaskRunner()|
+  // On OS_MAC, CoreAudio requires that |audio_thread->GetTaskRunner()|
   // must belong to the main thread of the process, which in our case is sadly
   // the browser UI thread. Failure to execute calls on the right thread leads
   // to crashes and odd behavior. See http://crbug.com/158170.

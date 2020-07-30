@@ -39,9 +39,9 @@ const char kDoneCommand[] = "DONE";
 const int kAdbFailure = 1;
 const int kAdbSuccess = 0;
 
-typedef base::Callback<void(int, const std::string&)> CommandCallback;
-typedef base::Callback<void(int, net::StreamSocket*)> SocketCallback;
-typedef base::Callback<void(const std::string&)> ParserCallback;
+typedef base::RepeatingCallback<void(int, const std::string&)> CommandCallback;
+typedef base::RepeatingCallback<void(int, net::StreamSocket*)> SocketCallback;
+typedef base::RepeatingCallback<void(const std::string&)> ParserCallback;
 
 std::string EncodeMessage(const std::string& message) {
   static const char kHexChars[] = "0123456789ABCDEF";

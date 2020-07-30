@@ -198,6 +198,13 @@ bool SyncUserSettingsImpl::IsTrustedVaultKeyRequiredForPreferredDataTypes()
   return IsEncryptedDatatypeEnabled() && crypto_->IsTrustedVaultKeyRequired();
 }
 
+bool SyncUserSettingsImpl::IsTrustedVaultRecoverabilityDegraded() const {
+  // TODO(crbug.com/1081649): This should verify that at least one sync entity
+  // is affected.
+  return IsEncryptedDatatypeEnabled() &&
+         crypto_->IsTrustedVaultRecoverabilityDegraded();
+}
+
 bool SyncUserSettingsImpl::IsUsingSecondaryPassphrase() const {
   return crypto_->IsUsingSecondaryPassphrase();
 }

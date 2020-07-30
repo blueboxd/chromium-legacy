@@ -66,6 +66,14 @@ class TrustedVaultClient {
   // when accounts cookies deleted by the user action.
   virtual void RemoveAllStoredKeys() = 0;
 
+  // Returns whether recoverability of the keys is degraded and user action is
+  // required to add a new method. This may be called frequently and
+  // implementations are responsible for implementing caching and possibly
+  // throttling.
+  virtual void GetIsRecoverabilityDegraded(
+      const CoreAccountInfo& account_info,
+      base::OnceCallback<void(bool)> cb) = 0;
+
  private:
   DISALLOW_COPY_AND_ASSIGN(TrustedVaultClient);
 };

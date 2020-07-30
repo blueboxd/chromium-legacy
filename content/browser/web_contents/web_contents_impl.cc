@@ -2179,7 +2179,8 @@ const WebPreferences WebContentsImpl::ComputeWebPreferences() {
   prefs.accelerated_2d_canvas_enabled =
       !command_line.HasSwitch(switches::kDisableAccelerated2dCanvas);
   prefs.new_canvas_2d_api_enabled =
-      command_line.HasSwitch(switches::kEnableNewCanvas2DAPI);
+      command_line.HasSwitch(switches::kEnableNewCanvas2DAPI) ||
+      base::FeatureList::IsEnabled(features::kEnableNewCanvas2DAPI);
   prefs.antialiased_2d_canvas_disabled =
       command_line.HasSwitch(switches::kDisable2dCanvasAntialiasing);
   prefs.antialiased_clips_2d_canvas_enabled =
@@ -7214,7 +7215,7 @@ WebContentsImpl::GetFaviconURLs() {
 
 // The Mac implementation  of the next two methods is in
 // web_contents_impl_mac.mm
-#if !defined(OS_MACOSX)
+#if !defined(OS_MAC)
 
 void WebContentsImpl::Resize(const gfx::Rect& new_bounds) {
 #if defined(USE_AURA)
@@ -7237,7 +7238,7 @@ gfx::Size WebContentsImpl::GetSize() {
 #endif
 }
 
-#endif  // !defined(OS_MACOSX)
+#endif  // !defined(OS_MAC)
 
 BrowserPluginEmbedder* WebContentsImpl::GetBrowserPluginEmbedder() const {
   return browser_plugin_embedder_.get();

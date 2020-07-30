@@ -1952,12 +1952,12 @@ LocalFrame* WebLocalFrameImpl::CreateChildFrame(
   return webframe_child->GetFrame();
 }
 
-std::pair<RemoteFrame*, base::UnguessableToken> WebLocalFrameImpl::CreatePortal(
+std::pair<RemoteFrame*, PortalToken> WebLocalFrameImpl::CreatePortal(
     HTMLPortalElement* portal,
     mojo::PendingAssociatedReceiver<mojom::blink::Portal> portal_receiver,
     mojo::PendingAssociatedRemote<mojom::blink::PortalClient> portal_client) {
   WebRemoteFrame* portal_frame;
-  base::UnguessableToken portal_token;
+  PortalToken portal_token;
   std::tie(portal_frame, portal_token) = client_->CreatePortal(
       std::move(portal_receiver), std::move(portal_client), portal);
   return {To<WebRemoteFrameImpl>(portal_frame)->GetFrame(), portal_token};
@@ -2476,7 +2476,7 @@ bool WebLocalFrameImpl::ShouldSuppressKeyboardForFocusedElement() {
 }
 
 void WebLocalFrameImpl::OnPortalActivated(
-    const base::UnguessableToken& portal_token,
+    const PortalToken& portal_token,
     CrossVariantMojoAssociatedRemote<mojom::blink::PortalInterfaceBase> portal,
     CrossVariantMojoAssociatedReceiver<mojom::blink::PortalClientInterfaceBase>
         portal_client,

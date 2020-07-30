@@ -905,7 +905,8 @@ VisualCursorDirection RenderText::GetVisualDirectionOfLogicalBeginning() {
 
 Size RenderText::GetStringSize() {
   const SizeF size_f = GetStringSizeF();
-  return Size(base::ClampCeil(size_f.width()), size_f.height());
+  return Size(base::ClampCeil(size_f.width()),
+              base::ClampCeil(size_f.height()));
 }
 
 float RenderText::TotalLineWidth() {
@@ -1177,10 +1178,6 @@ SelectionModel RenderText::GetSelectionModelForSelectionStart() const {
     return selection_model_;
   return SelectionModel(sel.start(),
                         sel.is_reversed() ? CURSOR_BACKWARD : CURSOR_FORWARD);
-}
-
-RectF RenderText::GetStringRect() {
-  return RectF(PointF(ToViewPoint(PointF(), CURSOR_FORWARD)), GetStringSizeF());
 }
 
 const Vector2d& RenderText::GetUpdatedDisplayOffset() {

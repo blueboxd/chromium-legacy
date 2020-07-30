@@ -388,7 +388,7 @@ bool StructTraits<gpu::mojom::GpuInfoDataView, gpu::GPUInfo>::Read(
     return false;
   }
   out->macos_specific_texture_target = data.macos_specific_texture_target();
-#endif  // OS_MACOSX
+#endif  // OS_MAC
   out->jpeg_decode_accelerator_supported =
       data.jpeg_decode_accelerator_supported();
 

@@ -19,7 +19,7 @@
 #include "rlz/win/lib/lib_mutex.h"
 #endif
 
-#if defined(OS_MACOSX)
+#if defined(OS_APPLE)
 #include "base/mac/scoped_nsautorelease_pool.h"
 #endif
 
@@ -103,7 +103,7 @@ class ScopedRlzValueStoreLock {
   std::unique_ptr<RlzValueStore> store_;
 #if defined(OS_WIN)
   LibMutex lock_;
-#elif defined(OS_MACOSX)
+#elif defined(OS_APPLE)
   base::mac::ScopedNSAutoreleasePool autorelease_pool_;
 #endif
 };

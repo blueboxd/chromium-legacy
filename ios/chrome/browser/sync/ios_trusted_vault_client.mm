@@ -62,6 +62,13 @@ void IOSTrustedVaultClient::RemoveAllStoredKeys() {
 void IOSTrustedVaultClient::MarkKeysAsStale(
     const CoreAccountInfo& account_info,
     base::OnceCallback<void(bool)> callback) {
-  // TODO(crbug.com/1019685): needs implementation.
+  // TODO(crbug.com/1100278): Needs implementation.
+  std::move(callback).Run(false);
+}
+
+void IOSTrustedVaultClient::GetIsRecoverabilityDegraded(
+    const CoreAccountInfo& account_info,
+    base::OnceCallback<void(bool)> callback) {
+  // TODO(crbug.com/1100278): Needs implementation.
   std::move(callback).Run(false);
 }

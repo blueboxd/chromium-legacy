@@ -9,6 +9,27 @@
 
 namespace web_app {
 
+namespace {
+
+// Note: This can never return kBrowser. This is because the user has
+// specified that the web app should be displayed in a window, and thus
+// the lowest fallback that we can go to is kMinimalUi.
+DisplayMode ResolveAppDisplayModeForStandaloneLaunchContainer(
+    DisplayMode app_display_mode) {
+  switch (app_display_mode) {
+    case DisplayMode::kBrowser:
+    case DisplayMode::kMinimalUi:
+      return DisplayMode::kMinimalUi;
+    case DisplayMode::kUndefined:
+      NOTREACHED();
+      FALLTHROUGH;
+    case DisplayMode::kStandalone:
+    case DisplayMode::kFullscreen:
+      return DisplayMode::kStandalone;
+  }
+}
+}  // namespace
+
 static_assert(Source::kMinValue == 0, "Source enum should be zero based");
 
 static_assert(OsHookType::kShortcuts == 0,
@@ -19,8 +40,10 @@ bool IsSuccess(InstallResultCode code) {
          code == InstallResultCode::kSuccessAlreadyInstalled;
 }
 
-DisplayMode ResolveEffectiveDisplayMode(DisplayMode app_display_mode,
-                                        DisplayMode user_display_mode) {
+DisplayMode ResolveEffectiveDisplayMode(
+    DisplayMode app_display_mode,
+    const std::vector<DisplayMode>& app_display_mode_overrides,
+    DisplayMode user_display_mode) {
   switch (user_display_mode) {
     case DisplayMode::kBrowser:
       return user_display_mode;
@@ -33,17 +56,16 @@ DisplayMode ResolveEffectiveDisplayMode(DisplayMode app_display_mode,
       break;
   }
 
-  switch (app_display_mode) {
-    case DisplayMode::kBrowser:
-    case DisplayMode::kMinimalUi:
-      return DisplayMode::kMinimalUi;
-    case DisplayMode::kUndefined:
-      NOTREACHED();
-      FALLTHROUGH;
-    case DisplayMode::kStandalone:
-    case DisplayMode::kFullscreen:
-      return DisplayMode::kStandalone;
+  for (const DisplayMode& app_display_mode_override :
+       app_display_mode_overrides) {
+    DisplayMode resolved_display_mode =
+        ResolveAppDisplayModeForStandaloneLaunchContainer(
+            app_display_mode_override);
+    if (resolved_display_mode == app_display_mode_override)
+      return resolved_display_mode;
   }
+
+  return ResolveAppDisplayModeForStandaloneLaunchContainer(app_display_mode);
 }
 
 apps::mojom::LaunchContainer ConvertDisplayModeToAppLaunchContainer(

@@ -130,7 +130,7 @@ void RlzLibTestNoMachineStateHelper::SetUp() {
 #if defined(OS_WIN)
   ASSERT_NO_FATAL_FAILURE(
       InitializeRegistryOverridesForTesting(&override_manager_));
-#elif defined(OS_MACOSX)
+#elif defined(OS_APPLE)
   base::mac::ScopedNSAutoreleasePool pool;
 #endif  // defined(OS_WIN)
 #if defined(OS_POSIX)

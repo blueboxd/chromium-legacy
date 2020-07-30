@@ -52,12 +52,12 @@ mojom("interfaces") {
     "test_support.test-mojom",
   ]
 
-  if (is_linux) {
+  if (is_linux || is_chromeos) {
     sources += [ "sandbox_status.test-mojom" ]
   }
 }
 
-if (is_linux) {
+if (is_linux || is_chromeos) {
   source_set("sandbox_status_service") {
     testonly = true
     sources = [

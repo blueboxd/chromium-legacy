@@ -117,7 +117,7 @@ TEST_F(ExecutionContextRegistryImplTest, RegistryWorks) {
 
   // Expect the WorkerExecutionContext implementation to work.
   EXPECT_EQ(ExecutionContextType::kWorkerNode, worker_ec->GetType());
-  EXPECT_EQ(worker->dev_tools_token(), worker_ec->GetToken().value());
+  EXPECT_EQ(worker->worker_token().value(), worker_ec->GetToken().value());
   EXPECT_EQ(worker->url(), worker_ec->GetUrl());
   EXPECT_FALSE(worker_ec->GetFrameNode());
   EXPECT_EQ(worker, worker_ec->GetWorkerNode());
@@ -139,7 +139,7 @@ TEST_F(ExecutionContextRegistryImplTest, RegistryWorks) {
   EXPECT_EQ(frame1, registry_->GetFrameNodeByFrameToken(frame1->frame_token()));
   EXPECT_EQ(frame2, registry_->GetFrameNodeByFrameToken(frame2->frame_token()));
   EXPECT_EQ(worker,
-            registry_->GetWorkerNodeByDevToolsToken(worker->dev_tools_token()));
+            registry_->GetWorkerNodeByWorkerToken(worker->worker_token()));
 
   // Querying an invalid token or a random token should fail.
   EXPECT_FALSE(registry_->GetExecutionContextByToken(
@@ -150,10 +150,8 @@ TEST_F(ExecutionContextRegistryImplTest, RegistryWorks) {
       FrameToken(base::UnguessableToken::Null())));
   EXPECT_FALSE(registry_->GetFrameNodeByFrameToken(
       FrameToken(base::UnguessableToken::Create())));
-  EXPECT_FALSE(
-      registry_->GetWorkerNodeByDevToolsToken(base::UnguessableToken::Null()));
-  EXPECT_FALSE(registry_->GetWorkerNodeByDevToolsToken(
-      base::UnguessableToken::Create()));
+  EXPECT_FALSE(registry_->GetWorkerNodeByWorkerToken(WorkerToken::Null()));
+  EXPECT_FALSE(registry_->GetWorkerNodeByWorkerToken(WorkerToken::Create()));
 
   // Destroy nodes one by one and expect observer notifications.
   EXPECT_CALL(obs, OnBeforeExecutionContextRemoved(worker_ec));

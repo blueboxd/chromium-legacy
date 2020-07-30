@@ -2637,7 +2637,7 @@ void RenderFrameImpl::OnVisualStateRequest(uint64_t id) {
 }
 
 void RenderFrameImpl::OnPortalActivated(
-    const base::UnguessableToken& portal_token,
+    const blink::PortalToken& portal_token,
     mojo::PendingAssociatedRemote<blink::mojom::Portal> portal,
     mojo::PendingAssociatedReceiver<blink::mojom::PortalClient> portal_client,
     blink::TransferableMessage data,
@@ -3948,7 +3948,7 @@ blink::WebLocalFrame* RenderFrameImpl::CreateChildFrame(
   return web_frame;
 }
 
-std::pair<blink::WebRemoteFrame*, base::UnguessableToken>
+std::pair<blink::WebRemoteFrame*, blink::PortalToken>
 RenderFrameImpl::CreatePortal(
     blink::CrossVariantMojoAssociatedReceiver<blink::mojom::PortalInterfaceBase>
         portal_endpoint,
@@ -3957,7 +3957,7 @@ RenderFrameImpl::CreatePortal(
     const blink::WebElement& portal_element) {
   int proxy_routing_id = MSG_ROUTING_NONE;
   FrameReplicationState initial_replicated_state;
-  base::UnguessableToken portal_token;
+  blink::PortalToken portal_token;
   base::UnguessableToken frame_token;
   base::UnguessableToken devtools_frame_token;
   GetFrameHost()->CreatePortal(std::move(portal_endpoint),
@@ -3972,7 +3972,7 @@ RenderFrameImpl::CreatePortal(
 }
 
 blink::WebRemoteFrame* RenderFrameImpl::AdoptPortal(
-    const base::UnguessableToken& portal_token,
+    const blink::PortalToken& portal_token,
     const blink::WebElement& portal_element) {
   int proxy_routing_id = MSG_ROUTING_NONE;
   base::UnguessableToken frame_token;

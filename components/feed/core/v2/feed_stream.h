@@ -122,6 +122,7 @@ class FeedStream : public FeedStreamApi,
   void DetachSurface(SurfaceInterface*) override;
   void SetArticlesListVisible(bool is_visible) override;
   bool IsArticlesListVisible() override;
+  std::string GetClientInstanceId() override;
   void ExecuteRefreshTask() override;
   void LoadMore(SurfaceId surface_id,
                 base::OnceCallback<void(bool)> callback) override;
@@ -227,7 +228,7 @@ class FeedStream : public FeedStreamApi,
 
   const base::Clock* GetClock() const { return clock_; }
   const base::TickClock* GetTickClock() const { return tick_clock_; }
-  RequestMetadata GetRequestMetadata() const;
+  RequestMetadata GetRequestMetadata();
 
   WireResponseTranslator* GetWireResponseTranslator() const {
     return wire_response_translator_;

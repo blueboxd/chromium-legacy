@@ -1,6 +1,5 @@
 <style include="signin-dialog-shared">
   :host {
-    color: var(--cr-primary-text-color);
     display: flex;
     flex-direction: column;
     height: 100%;
@@ -9,7 +8,7 @@
   #header {
     --avatar-position: 84px;
     border-radius: 8px;
-    margin: 8px;
+    margin: 8px 8px 16px;
     min-height: 128px;
     position: relative;
   }
@@ -27,6 +26,7 @@
 
   .avatar {
     --avatar-size: 60px;
+    border: 2px solid var(--md-background-color);
     border-radius: 50%;
     height: var(--avatar-size);
     position: absolute;
@@ -44,8 +44,7 @@
 
   #workBadge > iron-icon {
     --work-icon-size: 36px;
-    /** Use dark color for dark mode */
-    color: var(--md-background-color);
+    color: white;
     height: var(--work-icon-size);
     margin: auto;
     width: var(--work-icon-size);
@@ -58,6 +57,7 @@
   }
 
   #body {
+    color: var(--cr-secondary-text-color);
     flex-grow: 1;
     font-size: 13px;
     line-height: 20px;
@@ -65,6 +65,7 @@
   }
 
   #title {
+    color: var(--cr-primary-text-color);
     font-size: 15px;
     font-weight: 500;
     line-height: 22px;

@@ -63,7 +63,7 @@ class CONTENT_EXPORT ScreenlockMonitorDeviceSource
 #if defined(OS_MAC)
   void StartListeningForScreenlock();
   void StopListeningForScreenlock();
-#endif  // OS_MACOSX
+#endif  // OS_MAC
 
 #if defined(OS_CHROMEOS)
   class ScreenLockListener : public session_manager::SessionManagerObserver {

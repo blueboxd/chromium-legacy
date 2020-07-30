@@ -272,7 +272,7 @@ static_library("test_support") {
     ]
   }
 
-  if (is_linux) {
+  if (is_linux || is_chromeos) {
     public_deps += [ "//crypto:platform" ]
   }
 
@@ -1202,8 +1202,6 @@ if (!is_android) {
       "../browser/ssl/ocsp_browsertest.cc",
       "../browser/ssl/security_state_tab_helper_browsertest.cc",
       "../browser/ssl/ssl_browsertest.cc",
-      "../browser/ssl/ssl_client_certificate_selector_test.cc",
-      "../browser/ssl/ssl_client_certificate_selector_test.h",
       "../browser/ssl/stateful_ssl_host_state_delegate_test.cc",
       "../browser/storage/durable_storage_browsertest.cc",
       "../browser/storage_access_api/api_browsertest.cc",
@@ -1659,7 +1657,7 @@ if (!is_android) {
         }
       }
 
-      if (is_win || is_linux) {
+      if (is_win || is_linux || is_chromeos) {
         sources += [ "../browser/nacl_host/test/nacl_gdb_browsertest.cc" ]
         data_deps += [ "//chrome/browser/nacl_host/test:mock_nacl_gdb" ]
       }
@@ -1668,7 +1666,7 @@ if (!is_android) {
         # browser process as needed by this test. See http://crbug.com/157312.
         sources -= [ "../browser/nacl_host/test/gdb_debug_stub_browsertest.cc" ]
       }
-      if (is_linux) {
+      if (is_linux || is_chromeos) {
         data_deps += [ "//components/nacl/loader:nacl_helper" ]
 
         if (enable_nacl_nonsfi) {
@@ -2123,7 +2121,7 @@ if (!is_android) {
       }
     }
 
-    if (is_linux && !is_component_build) {
+    if ((is_linux || is_chromeos) && !is_component_build) {
       # Set rpath to find the CDM adapter even in a non-component build.
       configs += [ "//build/config/gcc:rpath_for_built_shared_libraries" ]
     }
@@ -2684,9 +2682,7 @@ if (!is_android) {
         "../browser/ui/cocoa/share_menu_controller_browsertest.mm",
         "../browser/ui/cocoa/task_manager_mac_browsertest.mm",
         "../browser/ui/cocoa/touchbar/browser_window_touch_bar_controller_browsertest.mm",
-        "../browser/ui/views/certificate_viewer_mac_browsertest.mm",
         "../browser/ui/views/frame/browser_non_client_frame_view_mac_browsertest.cc",
-        "../browser/ui/views/ssl_client_certificate_selector_mac_browsertest.mm",
         "../common/profiler/stack_sampling_browsertest.cc",
 
         # TODO(crbug/845389): Re-Enable the following, which were temporarily
@@ -2749,7 +2745,7 @@ if (!is_android) {
       ]
       deps += [ "//components/wifi:test_support" ]
     }
-    if (is_linux || is_win) {
+    if (is_linux || is_chromeos || is_win) {
       sources += [
         # This test is for the spelling options submenu that's only for Windows,
         # ChromeOS, and Linux.
@@ -2801,7 +2797,7 @@ if (!is_android) {
         ]
       }
     }
-    if (is_linux && is_asan && is_lsan) {
+    if ((is_linux || is_chromeos) && is_asan && is_lsan) {
       # TODO(crbug.com/793426): Fix the flakiness on Linux Asan Lsan bot.
       sources -= [ "../browser/media/encrypted_media_browsertest.cc" ]
     }
@@ -2911,7 +2907,7 @@ if (!is_android) {
   }
 }
 
-if (is_linux || is_mac || is_win) {
+if (is_linux || is_chromeos || is_mac || is_win) {
   import("//tools/binary_size/sizes.gni")
 
   group("browser_tests_apprtc") {
@@ -3799,7 +3795,7 @@ test("unit_tests") {
       "$root_gen_dir/chrome/android/chrome_apk_paks/resources.pak",
     ]
   }
-  if (is_linux || is_win) {
+  if (is_linux || is_chromeos || is_win) {
     data_deps += [ "//chrome:packed_resources" ]
   }
   if (is_win) {
@@ -5363,13 +5359,13 @@ test("unit_tests") {
   } else {
     sources -= [ "../browser/password_manager/password_store_x_unittest.cc" ]
   }
-  if (is_linux && use_aura) {
+  if ((is_linux || is_chromeos) && use_aura) {
     deps += [ "//ui/aura:test_support" ]
     if (use_dbus) {
       deps += [ "//dbus:test_support" ]
     }
   }
-  if (is_linux && is_chrome_branded && current_cpu == "x86") {
+  if ((is_linux || is_chromeos) && is_chrome_branded && current_cpu == "x86") {
     ldflags = [ "-Wl,--strip-debug" ]
   }
   if (is_mac) {
@@ -5984,7 +5980,7 @@ if (!is_android) {
     }
 
     configs += [ "//build/config:precompiled_headers" ]
-    if (is_linux && !is_component_build) {
+    if ((is_linux || is_chromeos) && !is_component_build) {
       configs += [ "//build/config/gcc:rpath_for_built_shared_libraries" ]
     }
 
@@ -6009,7 +6005,7 @@ if (!is_android) {
       "$root_out_dir/test_page.css.mock-http-headers",
     ]
     data += js2gtest_js_libraries
-    if (is_linux) {
+    if (is_linux || is_chromeos) {
       data += [ "$root_out_dir/libppapi_tests.so" ]
     }
 
@@ -6075,7 +6071,7 @@ if (!is_android) {
       "//third_party/mesa_headers",
       "//ui/resources:ui_test_pak_data",
     ]
-    if (is_linux || is_win) {
+    if (is_linux || is_chromeos || is_win) {
       data_deps += [ "//chrome:packed_resources" ]
     }
 
@@ -6119,6 +6115,7 @@ if (!is_android) {
         "../browser/ui/views/passwords/password_bubble_interactive_uitest.cc",
         "../browser/ui/views/permission_bubble/permission_bubble_interactive_uitest.cc",
         "../browser/ui/views/sad_tab_view_interactive_uitest.cc",
+        "../browser/ui/views/ssl_client_certificate_selector_browsertest.cc",
         "../browser/ui/views/status_icons/status_tray_state_changer_interactive_uitest_win.cc",
         "../browser/ui/views/tabs/tab_drag_controller_interactive_uitest.cc",
         "../browser/ui/views/tabs/tab_drag_controller_interactive_uitest.h",
@@ -6153,10 +6150,6 @@ if (!is_android) {
       }
       if (is_mac) {
         deps += [ "//content/test:browsertest_support" ]
-      } else {
-        sources += [
-          "../browser/ui/views/ssl_client_certificate_selector_browsertest.cc",
-        ]
       }
       if (is_win && use_aura) {
         sources += [
@@ -6617,7 +6610,7 @@ if (!is_fuchsia && !is_android) {
       "//third_party/mesa_headers",
     ]
 
-    if (is_linux || is_win) {
+    if (is_linux || is_chromeos || is_win) {
       data_deps += [ "//chrome:packed_resources" ]
     }
 
@@ -6810,7 +6803,7 @@ if (!is_fuchsia && !is_android) {
       "//third_party/catapult/web_page_replay_go/deterministic.js",
     ]
 
-    if (is_linux || is_win) {
+    if (is_linux || is_chromeos || is_win) {
       data_deps = [ "//chrome:packed_resources" ]
     }
 

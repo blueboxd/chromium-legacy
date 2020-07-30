@@ -35,7 +35,7 @@ BrowserWindowHistogramHelper::BrowserWindowHistogramHelper(
         base::TimeTicks::Now());
     return;
   }
-#endif  // OS_MACOSX
+#endif  // OS_MAC
 
   scoped_observer_.Add(compositor);
 }

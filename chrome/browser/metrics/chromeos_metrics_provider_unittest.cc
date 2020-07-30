@@ -218,29 +218,8 @@ TEST_F(ChromeOSMetricsProviderTest, HasLinkedAndroidPhoneAndEnabledFeatures) {
       system_profile.linked_android_phone_data().is_messages_enabled());
 }
 
-TEST_F(ChromeOSMetricsProviderTest, DisableUmaShortHwClass) {
-  const std::string expected_full_hw_class = "feature_disabled";
-  scoped_feature_list_.InitAndDisableFeature(features::kUmaShortHWClass);
-  fake_statistics_provider_.SetMachineStatistic("hardware_class",
-                                                expected_full_hw_class);
-
-  TestChromeOSMetricsProvider provider;
-  provider.OnDidCreateMetricsLog();
-  metrics::SystemProfileProto system_profile;
-  provider.ProvideSystemProfileMetrics(&system_profile);
-
-  ASSERT_TRUE(system_profile.has_hardware());
-  std::string proto_full_hw_class =
-      system_profile.hardware().full_hardware_class();
-
-  // If disabled, the two hardware classes should be equal to each other.
-  EXPECT_EQ(system_profile.hardware().hardware_class(), proto_full_hw_class);
-  EXPECT_EQ(expected_full_hw_class, proto_full_hw_class);
-}
-
-TEST_F(ChromeOSMetricsProviderTest, EnableUmaShortHwClass) {
+TEST_F(ChromeOSMetricsProviderTest, FullHardwareClass) {
   const std::string expected_full_hw_class = "feature_enabled";
-  scoped_feature_list_.InitAndEnableFeature(features::kUmaShortHWClass);
   fake_statistics_provider_.SetMachineStatistic("hardware_class",
                                                 expected_full_hw_class);
 
@@ -253,7 +232,5 @@ TEST_F(ChromeOSMetricsProviderTest, EnableUmaShortHwClass) {
   std::string proto_full_hw_class =
       system_profile.hardware().full_hardware_class();
 
-  // If enabled, the two hardware strings should be different.
-  EXPECT_NE(system_profile.hardware().hardware_class(), proto_full_hw_class);
   EXPECT_EQ(expected_full_hw_class, proto_full_hw_class);
 }

@@ -4,10 +4,13 @@
 
 #include "ui/views/animation/ink_drop_host_view.h"
 
+#include <memory>
+
 #include "base/macros.h"
 #include "base/memory/ptr_util.h"
 #include "build/build_config.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "ui/compositor/layer.h"
 #include "ui/events/event.h"
 #include "ui/events/event_constants.h"
 #include "ui/events/event_handler.h"
@@ -18,8 +21,11 @@
 #include "ui/gfx/color_palette.h"
 #include "ui/gfx/geometry/point.h"
 #include "ui/gfx/geometry/size.h"
+#include "ui/views/animation/ink_drop_impl.h"
 #include "ui/views/animation/test/ink_drop_host_view_test_api.h"
+#include "ui/views/animation/test/ink_drop_impl_test_api.h"
 #include "ui/views/animation/test/test_ink_drop.h"
+#include "ui/views/controls/highlight_path_generator.h"
 
 namespace views {
 namespace test {
@@ -285,6 +291,86 @@ TEST_F(InkDropHostViewTest, HighlightedChangedFired) {
           [](bool* called) { *called = true; }, &callback_called));
   host_view_.OnInkDropHighlightedChanged();
   EXPECT_TRUE(callback_called);
+}
+
+// A very basic InkDropHostView that only changes the GetInkDropBaseColor to
+// avoid hitting a NOTREACHED.
+class BasicTestInkDropHostView : public InkDropHostView {
+ public:
+  BasicTestInkDropHostView() = default;
+  BasicTestInkDropHostView(const BasicTestInkDropHostView&) = delete;
+  BasicTestInkDropHostView& operator=(const BasicTestInkDropHostView&) = delete;
+  ~BasicTestInkDropHostView() override = default;
+
+ protected:
+  // InkDropHostView:
+  SkColor GetInkDropBaseColor() const override {
+    return gfx::kPlaceholderColor;
+  }
+};
+
+// Tests the existence of layer clipping or layer masking when certain path
+// generators are applied on an InkDropHostView.
+class InkDropHostViewClippingTest : public testing::Test {
+ public:
+  InkDropHostViewClippingTest() : host_view_test_api_(&host_view_) {
+    // Set up an InkDropHostView. Clipping is based on the size of the view, so
+    // make sure the size is non empty.
+    host_view_test_api_.SetInkDropMode(InkDropMode::ON);
+    host_view_.SetSize(gfx::Size(20, 20));
+
+    // The root layer of the ink drop is created the first time GetInkDrop is
+    // called and then kept alive until the host view is destroyed.
+    ink_drop_ = static_cast<InkDropImpl*>(host_view_.GetInkDrop());
+    ink_drop_test_api_ = std::make_unique<test::InkDropImplTestApi>(ink_drop_);
+  }
+  InkDropHostViewClippingTest(const InkDropHostViewClippingTest&) = delete;
+  InkDropHostViewClippingTest& operator=(const InkDropHostViewClippingTest&) =
+      delete;
+  ~InkDropHostViewClippingTest() override = default;
+
+  ui::Layer* GetRootLayer() { return ink_drop_test_api_->GetRootLayer(); }
+
+ protected:
+  // Test target.
+  BasicTestInkDropHostView host_view_;
+
+  // Provides internal access to |host_view_| test target.
+  InkDropHostViewTestApi host_view_test_api_;
+
+  InkDropImpl* ink_drop_ = nullptr;
+
+  // Provides internal access to |host_view_|'s ink drop.
+  std::unique_ptr<test::InkDropImplTestApi> ink_drop_test_api_;
+};
+
+// Tests that by default (no highlight path generator applied), the root layer
+// will be masked.
+TEST_F(InkDropHostViewClippingTest, DefaultInkDropMasksRootLayer) {
+  ink_drop_->SetHovered(true);
+  EXPECT_TRUE(GetRootLayer()->layer_mask_layer());
+  EXPECT_TRUE(GetRootLayer()->clip_rect().IsEmpty());
+}
+
+// Tests that when adding a non empty highlight path generator, the root layer
+// is clipped instead of masked.
+TEST_F(InkDropHostViewClippingTest,
+       HighlightPathGeneratorClipsRootLayerWithoutMask) {
+  views::InstallRectHighlightPathGenerator(&host_view_);
+  ink_drop_->SetHovered(true);
+  EXPECT_FALSE(GetRootLayer()->layer_mask_layer());
+  EXPECT_FALSE(GetRootLayer()->clip_rect().IsEmpty());
+}
+
+// An empty highlight path generator is used for views who do not want their
+// highlight or ripple constrained by their size. Test that the views' ink
+// drop root layers have neither a clip or mask.
+TEST_F(InkDropHostViewClippingTest,
+       EmptyHighlightPathGeneratorUsesNeitherMaskNorClipsRootLayer) {
+  views::InstallEmptyHighlightPathGenerator(&host_view_);
+  ink_drop_->SetHovered(true);
+  EXPECT_FALSE(GetRootLayer()->layer_mask_layer());
+  EXPECT_TRUE(GetRootLayer()->clip_rect().IsEmpty());
 }
 
 }  // namespace test

@@ -12,12 +12,12 @@ if (is_android) {
 }
 
 declare_args() {
-  compile_suid_client = is_linux
+  compile_suid_client = is_linux || is_chromeos
 
-  compile_credentials = is_linux
+  compile_credentials = is_linux || is_chromeos
 
   # On Android, use plain GTest.
-  use_base_test_suite = is_linux
+  use_base_test_suite = is_linux || is_chromeos
 }
 
 if (is_nacl_nonsfi) {
@@ -297,7 +297,7 @@ if (is_android) {
   }
 }
 
-if (is_linux) {
+if (is_linux || is_chromeos) {
   # The setuid sandbox for Linux.
   executable("chrome_sandbox") {
     sources = [

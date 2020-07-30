@@ -41,6 +41,8 @@ class ProtobufHttpStatus {
 
   // An OK pre-defined instance.
   static const ProtobufHttpStatus& OK;
+  // A CANCELLED pre-defined instance.
+  static const ProtobufHttpStatus& CANCELLED;
 
   explicit ProtobufHttpStatus(net::HttpStatusCode http_status_code);
   explicit ProtobufHttpStatus(net::Error net_error);

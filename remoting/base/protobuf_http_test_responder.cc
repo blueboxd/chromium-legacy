@@ -4,6 +4,8 @@
 
 #include "remoting/base/protobuf_http_test_responder.h"
 
+#include <algorithm>
+
 #include "base/macros.h"
 #include "base/run_loop.h"
 #include "net/http/http_status_code.h"
@@ -14,9 +16,31 @@
 
 namespace remoting {
 
+namespace {
+
+protobufhttpclient::Status ToProtobufStatus(const ProtobufHttpStatus& status) {
+  protobufhttpclient::Status result;
+  result.set_code(static_cast<int>(status.error_code()));
+  result.set_message(status.error_message());
+  return result;
+}
+
+}  // namespace
+
 ProtobufHttpTestResponder::ProtobufHttpTestResponder() = default;
 
 ProtobufHttpTestResponder::~ProtobufHttpTestResponder() = default;
+
+// static
+bool ProtobufHttpTestResponder::ParseRequestMessage(
+    const network::ResourceRequest& resource_request,
+    google::protobuf::MessageLite* out_message) {
+  std::string unified_data;
+  for (const auto& data_element : *resource_request.request_body->elements()) {
+    unified_data.append(data_element.bytes(), data_element.length());
+  }
+  return out_message->ParseFromString(unified_data);
+}
 
 scoped_refptr<network::SharedURLLoaderFactory>
 ProtobufHttpTestResponder::GetUrlLoaderFactory() {
@@ -39,16 +63,58 @@ void ProtobufHttpTestResponder::AddResponseToMostRecentRequestUrl(
 void ProtobufHttpTestResponder::AddError(
     const std::string& url,
     const ProtobufHttpStatus& error_status) {
-  protobufhttpclient::Status status;
-  status.set_code(static_cast<int>(error_status.error_code()));
-  status.set_message(error_status.error_message());
-  test_url_loader_factory_.AddResponse(url, status.SerializeAsString(),
-                                       net::HTTP_INTERNAL_SERVER_ERROR);
+  test_url_loader_factory_.AddResponse(
+      url, ToProtobufStatus(error_status).SerializeAsString(),
+      net::HTTP_INTERNAL_SERVER_ERROR);
 }
 
 void ProtobufHttpTestResponder::AddErrorToMostRecentRequestUrl(
     const ProtobufHttpStatus& error_status) {
   AddError(GetMostRecentRequestUrl(), error_status);
+}
+
+void ProtobufHttpTestResponder::AddStreamResponse(
+    const std::string& url,
+    const std::vector<const google::protobuf::MessageLite*>& messages,
+    const ProtobufHttpStatus& status) {
+  protobufhttpclient::StreamBody messages_body;
+  for (const auto* message : messages) {
+    messages_body.add_messages(message->SerializeAsString());
+  }
+  std::string stream_data = messages_body.SerializeAsString();
+  protobufhttpclient::StreamBody status_body;
+  *status_body.mutable_status() = ToProtobufStatus(status);
+  stream_data += status_body.SerializeAsString();
+  test_url_loader_factory_.AddResponse(url, stream_data);
+}
+
+void ProtobufHttpTestResponder::AddStreamResponseToMostRecentRequestUrl(
+    const std::vector<const google::protobuf::MessageLite*>& messages,
+    const ProtobufHttpStatus& status) {
+  AddStreamResponse(GetMostRecentRequestUrl(), messages, status);
+}
+
+bool ProtobufHttpTestResponder::GetRequestMessage(
+    const std::string& url,
+    google::protobuf::MessageLite* out_message) {
+  base::RunLoop().RunUntilIdle();
+  auto pending_request_it = std::find_if(
+      test_url_loader_factory_.pending_requests()->rbegin(),
+      test_url_loader_factory_.pending_requests()->rend(),
+      [url](const network::TestURLLoaderFactory::PendingRequest& request) {
+        return request.request.url.spec() == url;
+      });
+  if (pending_request_it ==
+      test_url_loader_factory_.pending_requests()->rend()) {
+    return false;
+  }
+  return ParseRequestMessage(pending_request_it->request, out_message);
+}
+
+bool ProtobufHttpTestResponder::GetMostRecentRequestMessage(
+    google::protobuf::MessageLite* out_message) {
+  return ParseRequestMessage(GetMostRecentPendingRequest().request,
+                             out_message);
 }
 
 int ProtobufHttpTestResponder::GetNumPending() {

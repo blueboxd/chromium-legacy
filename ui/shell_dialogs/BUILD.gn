@@ -34,7 +34,7 @@ jumbo_component("shell_dialogs") {
     "shell_dialogs_export.h",
   ]
 
-  if (is_linux) {
+  if (is_linux || is_chromeos) {
     sources += [
       "shell_dialog_linux.cc",
       "shell_dialog_linux.h",

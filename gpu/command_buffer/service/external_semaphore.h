@@ -46,10 +46,6 @@ class ExternalSemaphore {
   // Get a VkSemaphore. The ownership is not transferred to caller.
   VkSemaphore GetVkSemaphore();
 
-  // Take the VkSemaphore. The ownership is transferred to caller. The caller is
-  // responsible for releasing it.
-  VkSemaphore TakeVkSemaphore();
-
   bool is_valid() const { return context_provider_ && handle_.is_valid(); }
   SemaphoreHandle handle() { return handle_.Duplicate(); }
 

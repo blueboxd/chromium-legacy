@@ -306,7 +306,7 @@ test("exo_unittests") {
 
   data_deps = []
 
-  if (is_linux) {
+  if (is_linux || is_chromeos) {
     deps += [ "//components/exo/wayland:unit_tests" ]
   }
 

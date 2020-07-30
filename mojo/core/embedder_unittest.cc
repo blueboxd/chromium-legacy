@@ -346,7 +346,7 @@ DEFINE_TEST_CLIENT_TEST_WITH_PIPE(MultiprocessSharedMemoryClient,
   EXPECT_EQ(MOJO_RESULT_INVALID_ARGUMENT, MojoClose(sb1));
 }
 
-#if defined(OS_MACOSX)
+#if defined(OS_MAC)
 
 enum class HandleType {
   POSIX,
@@ -423,7 +423,7 @@ DEFINE_TEST_CLIENT_TEST_WITH_PIPE(MultiprocessMixMachAndFdsClient,
   WriteMessage(client_mp, "bye");
 }
 
-#endif  // defined(OS_MACOSX)
+#endif  // defined(OS_MAC)
 
 #endif  // !defined(OS_IOS)
 

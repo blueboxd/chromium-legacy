@@ -563,9 +563,6 @@ class GFX_EXPORT RenderText {
   void set_shadows(const ShadowValues& shadows) { shadows_ = shadows; }
   const ShadowValues& shadows() const { return shadows_; }
 
-  // Returns rectangle surrounding the current string (from origin to size)
-  RectF GetStringRect();
-
   // Get the visual bounds containing the logical substring within the |range|.
   // If |range| is empty, the result is empty. These bounds could be visually
   // discontinuous if the substring is split by a LTR/RTL level change.
@@ -819,6 +816,8 @@ class GFX_EXPORT RenderText {
 
   // Fixed width of glyphs. This should only be set in test environments.
   float glyph_width_for_test_ = 0;
+  // Fixed height of glyphs. This should only be set in test environments.
+  float glyph_height_for_test_ = 0;
 
  private:
   friend class test::RenderTextTestApi;
@@ -872,10 +871,13 @@ class GFX_EXPORT RenderText {
   virtual bool GetDecoratedTextForRange(const Range& range,
                                         DecoratedText* decorated_text) = 0;
 
-  // Specify the width of a glyph for test. The width of glyphs is very
-  // platform-dependent and environment-dependent. Otherwise multiline text
+  // Specify the width/height of a glyph for test. The width/height of glyphs is
+  // very platform-dependent and environment-dependent. Otherwise multiline text
   // will become really flaky.
   void set_glyph_width_for_test(float width) { glyph_width_for_test_ = width; }
+  void set_glyph_height_for_test(float height) {
+    glyph_height_for_test_ = height;
+  }
 
   // Logical UTF-16 string data to be drawn.
   base::string16 text_;

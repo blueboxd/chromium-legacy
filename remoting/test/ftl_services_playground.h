@@ -39,9 +39,6 @@ class FtlServicesPlayground {
   void StartAndAuthenticate();
 
  private:
-  using Registration =
-      google::internal::communications::instantmessaging::v1::Registration;
-
   void StartLoop();
   void ResetServices(base::OnceClosure on_done);
 
@@ -51,24 +48,24 @@ class FtlServicesPlayground {
 
   void PullMessages(base::OnceClosure on_done);
   void OnPullMessagesResponse(base::OnceClosure on_done,
-                              const grpc::Status& status);
+                              const ProtobufHttpStatus& status);
   void SendMessage(base::OnceClosure on_done);
   void DoSendMessage(const std::string& receiver_id,
                      const std::string& registration_id,
                      base::OnceClosure on_done,
                      bool should_keep_running);
   void OnSendMessageResponse(base::OnceCallback<void(bool)> on_continue,
-                             const grpc::Status& status);
+                             const ProtobufHttpStatus& status);
   void StartReceivingMessages(base::OnceClosure on_done);
   void StopReceivingMessages(base::OnceClosure on_done);
   void OnMessageReceived(const ftl::Id& sender_id,
                          const std::string& sender_registration_id,
                          const ftl::ChromotingMessage& message);
   void OnReceiveMessagesStreamReady();
-  void OnReceiveMessagesStreamClosed(const grpc::Status& status);
+  void OnReceiveMessagesStreamClosed(const ProtobufHttpStatus& status);
 
-  void HandleGrpcStatusError(base::OnceClosure on_done,
-                             const grpc::Status& status);
+  void HandleStatusError(base::OnceClosure on_done,
+                         const ProtobufHttpStatus& status);
 
   std::unique_ptr<test::TestTokenStorage> storage_;
   std::unique_ptr<test::TestOAuthTokenGetter> token_getter_;

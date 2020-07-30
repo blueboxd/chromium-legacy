@@ -264,7 +264,7 @@ class CORE_EXPORT WebLocalFrameImpl final
   void CopyImageAtForTesting(const gfx::Point&) override;
   void UsageCountChromeLoadTimes(const WebString& metric) override;
   void OnPortalActivated(
-      const base::UnguessableToken& portal_token,
+      const PortalToken& portal_token,
       CrossVariantMojoAssociatedRemote<mojom::blink::PortalInterfaceBase>
           portal,
       CrossVariantMojoAssociatedReceiver<
@@ -389,7 +389,7 @@ class CORE_EXPORT WebLocalFrameImpl final
 
   LocalFrame* CreateChildFrame(const AtomicString& name,
                                HTMLFrameOwnerElement*);
-  std::pair<RemoteFrame*, base::UnguessableToken> CreatePortal(
+  std::pair<RemoteFrame*, PortalToken> CreatePortal(
       HTMLPortalElement*,
       mojo::PendingAssociatedReceiver<mojom::blink::Portal>,
       mojo::PendingAssociatedRemote<mojom::blink::PortalClient>);

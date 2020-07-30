@@ -67,7 +67,7 @@ source_set("ppapi_plugin_sources") {
     "//ui/gfx/geometry",
   ]
 
-  if (is_linux) {
+  if (is_linux || is_chromeos) {
     deps += [ "//components/services/font/public/cpp" ]
   }
 

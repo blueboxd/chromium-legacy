@@ -65,6 +65,7 @@ import java.util.List;
  */
 public class WebLayerShellActivity extends FragmentActivity {
     private static final String NON_INCOGNITO_PROFILE_NAME = "DefaultProfile";
+    private static final String EXTRA_WEBVIEW_COMPAT = "EXTRA_WEBVIEW_COMPAT";
 
     private static class ContextMenuCreator
             implements View.OnCreateContextMenuListener, MenuItem.OnMenuItemClickListener {
@@ -146,12 +147,20 @@ public class WebLayerShellActivity extends FragmentActivity {
     @Override
     protected void onCreate(final Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        boolean enableWebViewCompat = getIntent().getBooleanExtra(EXTRA_WEBVIEW_COMPAT, false);
+        if (enableWebViewCompat) {
+            WebLayer.initializeWebViewCompatibilityMode(getApplicationContext());
+        }
         LinearLayout mainView = new LinearLayout(this);
         mainView.setOrientation(LinearLayout.VERTICAL);
         TextView versionText = new TextView(this);
         versionText.setPadding(10, 0, 0, 0);
-        versionText.setText(getString(
-                R.string.version, WebLayer.getVersion(), WebLayer.getSupportedFullVersion(this)));
+        String versionString = getString(
+                R.string.version, WebLayer.getVersion(), WebLayer.getSupportedFullVersion(this));
+        if (enableWebViewCompat) {
+            versionString += " | WebView Compat";
+        }
+        versionText.setText(versionString);
         mainView.addView(versionText,
                 new LinearLayout.LayoutParams(
                         LayoutParams.MATCH_PARENT, LayoutParams.WRAP_CONTENT));
@@ -191,6 +200,10 @@ public class WebLayerShellActivity extends FragmentActivity {
             popup.getMenu()
                     .findItem(R.id.translate_menu_id)
                     .setVisible(mBrowser.getActiveTab().canTranslate());
+            popup.getMenu().findItem(R.id.webview_compat_menu_id).setVisible(!enableWebViewCompat);
+            popup.getMenu()
+                    .findItem(R.id.no_webview_compat_menu_id)
+                    .setVisible(enableWebViewCompat);
             popup.setOnMenuItemClickListener(item -> {
                 if (item.getItemId() == R.id.reload_menu_id) {
                     mBrowser.getActiveTab().getNavigationController().reload();
@@ -259,6 +272,14 @@ public class WebLayerShellActivity extends FragmentActivity {
                                              Toast.LENGTH_SHORT)
                                         .show();
                             });
+                }
+
+                if (item.getItemId() == R.id.webview_compat_menu_id) {
+                    restartShell(true);
+                }
+
+                if (item.getItemId() == R.id.no_webview_compat_menu_id) {
+                    restartShell(false);
                 }
 
                 return false;
@@ -549,5 +570,17 @@ public class WebLayerShellActivity extends FragmentActivity {
             }
         }
         super.onBackPressed();
+    }
+
+    @SuppressWarnings("checkstyle:SystemExitCheck") // Allowed since this shouldn't be a crash.
+    private void restartShell(boolean enableWebViewCompat) {
+        finish();
+
+        Intent intent = new Intent();
+        intent.setClassName(getPackageName(), getClass().getName());
+        intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+        intent.putExtra(EXTRA_WEBVIEW_COMPAT, enableWebViewCompat);
+        startActivity(intent);
+        System.exit(0);
     }
 }

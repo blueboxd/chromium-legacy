@@ -28,7 +28,7 @@ action("make_file_types_protobuf") {
     target_arch = "win"
   } else if (is_mac) {
     target_arch = "mac"
-  } else if (is_linux) {
+  } else if (is_linux || is_chromeos) {
     target_arch = "linux"
   } else {
     # This will cause the script to fail.

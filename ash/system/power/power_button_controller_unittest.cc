@@ -799,13 +799,14 @@ TEST_F(PowerButtonControllerTest, MouseClickToDismissMenu) {
 
 // Tests the menu items according to the login and screen locked status.
 TEST_F(PowerButtonControllerTest, MenuItemsToLoginAndLockedStatus) {
-  // No sign out, lock screen and feedback items if user is not logged in.
+  // Should have feedback but not sign out and lock screen items if there is no
+  // user signed in.
   ClearLogin();
   Shell::Get()->UpdateAfterLoginStatusChange(LoginStatus::NOT_LOGGED_IN);
   OpenPowerButtonMenu();
   EXPECT_FALSE(power_button_test_api_->MenuHasSignOutItem());
   EXPECT_FALSE(power_button_test_api_->MenuHasLockScreenItem());
-  EXPECT_FALSE(power_button_test_api_->MenuHasFeedbackItem());
+  EXPECT_TRUE(power_button_test_api_->MenuHasFeedbackItem());
   TapToDismissPowerButtonMenu();
 
   // Should have sign out and feedback items if in guest mode (or, generally,

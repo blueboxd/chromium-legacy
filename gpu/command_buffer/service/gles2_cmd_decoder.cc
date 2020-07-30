@@ -116,7 +116,7 @@
 #include <IOSurface/IOSurface.h>
 // Note that this must be included after gl_bindings.h to avoid conflicts.
 #include <OpenGL/CGLIOSurface.h>
-#endif  // OS_MACOSX
+#endif  // OS_MAC
 
 #if defined(USE_OZONE)
 #include "ui/base/ui_base_features.h"  // nogncheck

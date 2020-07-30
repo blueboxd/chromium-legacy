@@ -423,7 +423,7 @@ IN_PROC_BROWSER_TEST_P(CustomTabBarViewBrowserTest,
 
 // Right-click menu on CustomTabBar should have Copy URL option.
 // TODO(crbug.com/988323): Times out on Mac.
-#if defined(OS_MACOSX)
+#if defined(OS_MAC)
 #define MAYBE_RightClickMenuShowsCopyUrl DISABLED_RightClickMenuShowsCopyUrl
 #else
 #define MAYBE_RightClickMenuShowsCopyUrl RightClickMenuShowsCopyUrl

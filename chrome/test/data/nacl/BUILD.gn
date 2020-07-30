@@ -86,7 +86,7 @@ group("nacl") {
       ":sysconf_nprocessors_onln_test($glibc)",
     ]
   }
-  if (is_linux && enable_nacl_nonsfi) {
+  if ((is_linux || is_chromeos) && enable_nacl_nonsfi) {
     nonsfi = "//build/toolchain/nacl:newlib_pnacl_nonsfi"
     data_deps += [
       ":irt_exception_test($nonsfi)",
@@ -428,7 +428,7 @@ if (is_nacl && !is_nacl_nonsfi) {
   }
 }
 
-if (is_linux && is_clang) {
+if ((is_linux || is_chromeos) && is_clang) {
   if (target_cpu == "x86") {
     arch = "x86_32"
   } else if (target_cpu == "x64") {

@@ -732,9 +732,10 @@ IN_PROC_BROWSER_TEST_F(ProcessMemoryMetricsEmitterTest,
         base::trace_event::TraceConfigMemoryTestUtil::
             GetTraceConfig_EmptyTriggers());
     ASSERT_TRUE(tracing::BeginTracingWithTraceConfig(
-        trace_config, Bind(&OnStartTracingDoneCallback,
-                           base::trace_event::MemoryDumpLevelOfDetail::DETAILED,
-                           run_loop.QuitClosure())));
+        trace_config,
+        BindOnce(&OnStartTracingDoneCallback,
+                 base::trace_event::MemoryDumpLevelOfDetail::DETAILED,
+                 run_loop.QuitClosure())));
     run_loop.Run();
   }
 

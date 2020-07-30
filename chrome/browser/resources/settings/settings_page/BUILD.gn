@@ -4,26 +4,14 @@
 
 import("//third_party/closure_compiler/compile_js.gni")
 import("//tools/polymer/polymer.gni")
-import("//ui/webui/resources/tools/js_modulizer.gni")
 import("../settings.gni")
 
 js_type_check("closure_compile") {
   deps = [
-    ":main_page_behavior",
     ":settings_animated_pages",
     ":settings_section",
     ":settings_subpage",
   ]
-}
-
-js_library("main_page_behavior") {
-  deps = [
-    ":settings_section",
-    "..:router",
-    "//ui/webui/resources/js:assert",
-    "//ui/webui/resources/js:util",
-  ]
-  externs_list = [ "$externs_path/pending.js" ]
 }
 
 js_library("settings_animated_pages") {
@@ -58,16 +46,16 @@ js_library("settings_subpage") {
 
 js_type_check("closure_compile_module") {
   is_polymer3 = true
+  closure_flags = settings_closure_flags
   deps = [
-    ":main_page_behavior.m",
+    ":main_page_behavior",
     ":settings_animated_pages.m",
     ":settings_section.m",
     ":settings_subpage.m",
   ]
 }
 
-js_library("main_page_behavior.m") {
-  sources = [ "$root_gen_dir/chrome/browser/resources/settings/settings_page/main_page_behavior.m.js" ]
+js_library("main_page_behavior") {
   deps = [
     ":settings_section.m",
     "..:router.m",
@@ -75,7 +63,6 @@ js_library("main_page_behavior.m") {
     "//ui/webui/resources/js:assert.m",
     "//ui/webui/resources/js:util.m",
   ]
-  extra_deps = [ ":modulize" ]
 }
 
 js_library("settings_animated_pages.m") {
@@ -122,7 +109,6 @@ import("//tools/polymer/polymer.gni")
 
 group("polymer3_elements") {
   public_deps = [
-    ":modulize",
     ":settings_animated_pages_module",
     ":settings_section_module",
     ":settings_subpage_module",
@@ -166,11 +152,4 @@ polymer_modulizer("settings_subpage") {
                  ]
   namespace_rewrites = settings_namespace_rewrites +
                        [ "Polymer.IronResizableBehavior|IronResizableBehavior" ]
-}
-
-import("//ui/webui/resources/tools/js_modulizer.gni")
-
-js_modulizer("modulize") {
-  input_files = [ "main_page_behavior.js" ]
-  namespace_rewrites = settings_namespace_rewrites
 }

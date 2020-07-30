@@ -531,8 +531,6 @@ class RenderViewImplScaleFactorTest : public RenderViewImplTest {
     visual_properties.compositor_viewport_pixel_rect = gfx::Rect(200, 200);
     visual_properties.visible_viewport_size = visual_properties.new_size;
     visual_properties.auto_resize_enabled = main_widget()->auto_resize_mode();
-    visual_properties.capture_sequence_number =
-        main_widget()->capture_sequence_number();
     visual_properties.min_size_for_auto_resize =
         main_widget()->min_size_for_auto_resize();
     visual_properties.max_size_for_auto_resize =

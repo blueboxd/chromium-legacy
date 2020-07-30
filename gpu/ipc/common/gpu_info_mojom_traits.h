@@ -348,7 +348,7 @@ struct StructTraits<gpu::mojom::GpuInfoDataView, gpu::GPUInfo> {
   static uint32_t macos_specific_texture_target(const gpu::GPUInfo& input) {
     return input.macos_specific_texture_target;
   }
-#endif  // OS_MACOSX
+#endif  // OS_MAC
 
 #if defined(OS_WIN)
   static const gpu::DxDiagNode& dx_diagnostics(const gpu::GPUInfo& input) {

@@ -792,7 +792,7 @@ float TouchEvent::ComputeRotationAngle() const {
 
 // static
 KeyEvent* KeyEvent::last_key_event_ = nullptr;
-#if defined(USE_X11)
+#if defined(USE_X11) || defined(USE_OZONE)
 KeyEvent* KeyEvent::last_ibus_key_event_ = nullptr;
 #endif
 
@@ -995,7 +995,7 @@ bool KeyEvent::IsRepeated(KeyEvent** last_key_event) {
 }
 
 KeyEvent** KeyEvent::GetLastKeyEvent() {
-#if defined(USE_X11)
+#if defined(USE_X11) || defined(USE_OZONE)
   // Use a different static variable for key events that have non standard
   // state masks as it may be reposted by an IME. IBUS-GTK uses this field
   // to detect the re-posted event for example. crbug.com/385873.

@@ -244,6 +244,10 @@ bool FeedStream::IsArticlesListVisible() {
   return profile_prefs_->GetBoolean(prefs::kArticlesListVisible);
 }
 
+std::string FeedStream::GetClientInstanceId() {
+  return prefs::GetClientInstanceId(*profile_prefs_);
+}
+
 bool FeedStream::IsFeedEnabledByEnterprisePolicy() {
   return profile_prefs_->GetBoolean(prefs::kEnableSnippets);
 }
@@ -476,11 +480,12 @@ LoadStreamStatus FeedStream::ShouldMakeFeedQueryRequest(bool is_load_more,
   return LoadStreamStatus::kNoStatus;
 }
 
-RequestMetadata FeedStream::GetRequestMetadata() const {
+RequestMetadata FeedStream::GetRequestMetadata() {
   RequestMetadata result;
   result.chrome_info = chrome_info_;
   result.display_metrics = delegate_->GetDisplayMetrics();
   result.language_tag = delegate_->GetLanguageTag();
+  result.client_instance_id = GetClientInstanceId();
   return result;
 }
 
@@ -536,8 +541,8 @@ void FeedStream::BackgroundRefreshComplete(LoadStreamTask::Result result) {
 }
 
 void FeedStream::ClearAll() {
+  prefs::ClearClientInstanceId(*profile_prefs_);
   delegate_->ClearAll();
-
   metrics_reporter_->OnClearAll(clock_->Now() - GetLastFetchTime());
 
   task_queue_.AddTask(std::make_unique<ClearAllTask>(this));

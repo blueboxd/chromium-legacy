@@ -54,7 +54,7 @@
 #include "base/mac/scoped_nsautorelease_pool.h"
 #include "base/message_loop/message_pump_mac.h"
 #include "third_party/blink/public/web/web_view.h"
-#endif  // OS_MACOSX
+#endif  // OS_MAC
 
 #if defined(OS_CHROMEOS)
 #include "chromeos/system/core_scheduling.h"
@@ -112,7 +112,7 @@ int RendererMain(const MainFunctionParams& parameters) {
 
 #if defined(OS_MAC)
   base::mac::ScopedNSAutoreleasePool* pool = parameters.autorelease_pool;
-#endif  // OS_MACOSX
+#endif  // OS_MAC
 
 #if defined(OS_CHROMEOS)
   // As Zygote process starts up earlier than browser process gets its own
@@ -210,7 +210,7 @@ int RendererMain(const MainFunctionParams& parameters) {
       TRACE_EVENT_ASYNC_BEGIN1("startup", "RendererMain", 0, "zygote_child",
                                true);
     }
-#endif  // OS_POSIX && !OS_ANDROID && !!OS_MACOSX
+#endif  // OS_POSIX && !OS_ANDROID && !OS_MAC
 
     if (need_sandbox)
       should_run_loop = platform.EnableSandbox();

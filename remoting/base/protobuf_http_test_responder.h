@@ -6,6 +6,7 @@
 #define REMOTING_BASE_PROTOBUF_HTTP_TEST_RESPONDER_H_
 
 #include <string>
+#include <vector>
 
 #include "base/memory/scoped_refptr.h"
 #include "services/network/public/cpp/shared_url_loader_factory.h"
@@ -16,10 +17,6 @@ namespace protobuf {
 class MessageLite;
 }  // namespace protobuf
 }  // namespace google
-
-namespace network {
-class SharedURLLoaderFactory;
-}  // namespace network
 
 namespace remoting {
 
@@ -35,6 +32,10 @@ class ProtobufHttpTestResponder final {
   ProtobufHttpTestResponder& operator=(const ProtobufHttpTestResponder&) =
       delete;
 
+  static bool ParseRequestMessage(
+      const network::ResourceRequest& resource_request,
+      google::protobuf::MessageLite* out_message);
+
   // Returns the URL loader factory to be used to create the ProtobufHttpClient.
   // Note that the returned factory *can't be used* after |this| is deleted.
   scoped_refptr<network::SharedURLLoaderFactory> GetUrlLoaderFactory();
@@ -47,6 +48,22 @@ class ProtobufHttpTestResponder final {
       const google::protobuf::MessageLite& response_message);
   void AddError(const std::string& url, const ProtobufHttpStatus& error_status);
   void AddErrorToMostRecentRequestUrl(const ProtobufHttpStatus& error_status);
+
+  // Adds response to a pending stream then immediately closes it with |status|.
+  void AddStreamResponse(
+      const std::string& url,
+      const std::vector<const google::protobuf::MessageLite*>& messages,
+      const ProtobufHttpStatus& status);
+  void AddStreamResponseToMostRecentRequestUrl(
+      const std::vector<const google::protobuf::MessageLite*>& messages,
+      const ProtobufHttpStatus& status);
+
+  // Gets the most recent request message matching the URL and writes it to
+  // |out_message|. Returns true if the request message is successfully
+  // retrieved.
+  bool GetRequestMessage(const std::string& url,
+                         google::protobuf::MessageLite* out_message);
+  bool GetMostRecentRequestMessage(google::protobuf::MessageLite* out_message);
 
   // Gets number of pending requests. Unlike
   // network::TestURLLoaderFactory::NumPending(), this method also counts

@@ -7,6 +7,8 @@
 
 #include "base/memory/scoped_refptr.h"
 #include "net/http/http_response_headers.h"
+#include "net/url_request/referrer_policy.h"
+#include "services/network/public/mojom/referrer_policy.mojom-shared.h"
 #include "third_party/blink/public/common/common_export.h"
 
 namespace blink {
@@ -15,6 +17,9 @@ namespace blink {
 // revalidated or not cached.
 BLINK_COMMON_EXPORT bool AlwaysAccessNetwork(
     const scoped_refptr<net::HttpResponseHeaders>& headers);
+
+BLINK_COMMON_EXPORT network::mojom::ReferrerPolicy NetToMojoReferrerPolicy(
+    net::ReferrerPolicy net_policy);
 
 }  // namespace blink
 

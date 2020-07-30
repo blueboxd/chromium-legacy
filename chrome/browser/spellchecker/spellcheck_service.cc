@@ -221,7 +221,7 @@ void SpellcheckService::GetDictionaries(
     dictionaries->push_back(dictionary);
   }
 }
-#endif  // !OS_MACOSX
+#endif  // !OS_MAC
 
 // static
 bool SpellcheckService::SignalStatusEvent(

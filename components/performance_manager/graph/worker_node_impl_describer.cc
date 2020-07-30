@@ -42,8 +42,7 @@ base::Value WorkerNodeImplDescriber::DescribeWorkerNodeData(
 
   base::Value ret(base::Value::Type::DICTIONARY);
   ret.SetKey("browser_context_id", base::Value(impl->browser_context_id()));
-  ret.SetKey("dev_tools_token",
-             base::Value(impl->dev_tools_token().ToString()));
+  ret.SetKey("worker_token", base::Value(impl->worker_token().ToString()));
   ret.SetKey("url", base::Value(impl->url().spec()));
   ret.SetKey("worker_type",
              base::Value(WorkerTypeToString(impl->worker_type())));

@@ -46,7 +46,6 @@
 #include "components/user_manager/user_manager.h"
 #include "components/user_manager/user_type.h"
 #include "components/variations/hashing.h"
-#include "components/variations/service/variations_field_trial_creator.h"
 #include "third_party/metrics_proto/chrome_user_metrics_extension.pb.h"
 #include "ui/display/display.h"
 #include "ui/events/event_utils.h"
@@ -81,16 +80,6 @@ bool IsFeatureEnabled(
 }
 
 }  // namespace
-
-namespace features {
-
-// Populates hardware class field in system_profile proto with the
-// short hardware class if enabled. If disabled, hardware class will have same
-// value as full hardware class.
-const base::Feature kUmaShortHWClass{"UmaShortHWClass",
-                                     base::FEATURE_ENABLED_BY_DEFAULT};
-
-}  // namespace features
 
 ChromeOSMetricsProvider::ChromeOSMetricsProvider(
     metrics::MetricsLogUploader::MetricServiceType service_type)
@@ -138,10 +127,6 @@ ChromeOSMetricsProvider::GetEnrollmentStatus() {
 }
 
 void ChromeOSMetricsProvider::Init() {
-  if (base::FeatureList::IsEnabled(features::kUmaShortHWClass)) {
-    hardware_class_ =
-        variations::VariationsFieldTrialCreator::GetShortHardwareClass();
-  }
   if (profile_provider_ != nullptr)
     profile_provider_->Init();
 }
@@ -190,7 +175,6 @@ void ChromeOSMetricsProvider::ProvideSystemProfileMetrics(
 
   metrics::SystemProfileProto::Hardware* hardware =
       system_profile_proto->mutable_hardware();
-  hardware->set_hardware_class(hardware_class_);
   hardware->set_full_hardware_class(full_hardware_class_);
   display::Display::TouchSupport has_touch =
       ui::GetInternalDisplayTouchSupport();
@@ -325,10 +309,6 @@ void ChromeOSMetricsProvider::UpdateMultiProfileUserCount(
 void ChromeOSMetricsProvider::SetFullHardwareClass(
     base::OnceClosure callback,
     std::string full_hardware_class) {
-  if (!base::FeatureList::IsEnabled(features::kUmaShortHWClass)) {
-    DCHECK(hardware_class_.empty());
-    hardware_class_ = full_hardware_class;
-  }
   full_hardware_class_ = full_hardware_class;
   std::move(callback).Run();
 }

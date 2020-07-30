@@ -426,7 +426,7 @@ target(link_target_type, "renderer") {
     ]
   }
 
-  if (is_linux) {
+  if (is_linux || is_chromeos) {
     deps += [ "//components/services/font/public/cpp" ]
   }
 
@@ -622,7 +622,7 @@ target(link_target_type, "renderer") {
     ]
   }
 
-  if (is_linux || is_android) {
+  if (is_linux || is_chromeos || is_android) {
     deps += [ "//sandbox:sandbox_buildflags" ]
   }
 

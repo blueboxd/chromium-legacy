@@ -159,11 +159,11 @@ class MockFrameHost : public mojom::FrameHost {
                     mojo::PendingAssociatedRemote<blink::mojom::PortalClient>,
                     CreatePortalCallback callback) override {
     std::move(callback).Run(MSG_ROUTING_NONE, FrameReplicationState(),
-                            base::UnguessableToken(), base::UnguessableToken(),
-                            base::UnguessableToken());
+                            blink::PortalToken::Null(),
+                            base::UnguessableToken(), base::UnguessableToken());
   }
 
-  void AdoptPortal(const base::UnguessableToken&,
+  void AdoptPortal(const blink::PortalToken&,
                    AdoptPortalCallback callback) override {
     std::move(callback).Run(MSG_ROUTING_NONE, viz::FrameSinkId(),
                             FrameReplicationState(), base::UnguessableToken(),

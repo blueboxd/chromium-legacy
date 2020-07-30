@@ -19,13 +19,22 @@ import java.lang.annotation.Target;
  *
  * When this annotation is specified multiple times, each condition is 'or'ed together. In the
  * following either baz or sdk > 22 will cause the test case to be disabled.
- * @DisableIf.Build(supported_abis_includes = "baz")
- * @DisableIf.Build(sdk_is_greater_than = 22)
+ * <code>
+ * \@DisableIf.Build(supported_abis_includes = "baz")
+ * \@DisableIf.Build(sdk_is_greater_than = 22)
+ * </code>
+ * In the following either baz or tablet will cause the test case to be disabled.
+ * <code>
+ * \@DisableIf.Build(supported_abis_includes = "baz")
+ * \@DisableIf.Device(type = {UiDisableIf.TABLET})
+ * </code>
  *
  * When multiple arguments are specified for a single annotation, each condition is 'and'ed
  * together. In the following both baz and sdk > 22 will need to be true for this test case to be
  * disabled.
- * @DisableIf.Build(supported_abis_includes = "baz", sdk_is_greater_than = 22)
+ * <code>
+ * \@DisableIf.Build(supported_abis_includes = "baz", sdk_is_greater_than = 22)
+ * </code>
  */
 public class DisableIf {
     /** Containing annotations type to wrap {@link DisableIf.Build}. */

@@ -453,7 +453,7 @@ template("test") {
       _executable = target_name
       _gen_runner_target = "${target_name}__runner"
 
-      if (is_linux && defined(invoker.use_xvfb)) {
+      if ((is_linux || is_chromeos) && defined(invoker.use_xvfb)) {
         _use_xvfb = invoker.use_xvfb
       } else {
         _use_xvfb = false
@@ -523,7 +523,7 @@ template("test") {
         "//build/win:default_exe_manifest",
       ]
 
-      if (is_linux || is_mac || is_win) {
+      if (is_linux || is_chromeos || is_mac || is_win) {
         write_runtime_deps = _runtime_deps_file
         deps += [ ":$_gen_runner_target" ]
       }

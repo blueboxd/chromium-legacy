@@ -175,6 +175,9 @@ class OmniboxViewViews : public OmniboxView,
       UserInteractionAndHover);
   FRIEND_TEST_ALL_PREFIXES(
       OmniboxViewViewsHideOnInteractionAndRevealOnHoverTest,
+      MouseClick);
+  FRIEND_TEST_ALL_PREFIXES(
+      OmniboxViewViewsHideOnInteractionAndRevealOnHoverTest,
       BoundsChanged);
   FRIEND_TEST_ALL_PREFIXES(OmniboxViewViewsRevealOnHoverTest, BoundsChanged);
   FRIEND_TEST_ALL_PREFIXES(

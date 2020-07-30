@@ -21,7 +21,6 @@ import org.chromium.base.annotations.CalledByNative;
 import org.chromium.base.annotations.JNINamespace;
 import org.chromium.content_public.browser.ScreenOrientationDelegate;
 import org.chromium.content_public.browser.ScreenOrientationProvider;
-import org.chromium.content_public.common.ScreenOrientationConstants;
 import org.chromium.device.mojom.ScreenOrientationLockType;
 import org.chromium.ui.base.WindowAndroid;
 import org.chromium.ui.display.DisplayAndroid;
@@ -152,14 +151,8 @@ public class ScreenOrientationProviderImpl
             mDefaultWebOrientation = mDefaultOrientationOverrides.get(activity);
         }
 
-        int defaultOrientation = ActivityInfo.SCREEN_ORIENTATION_UNSPECIFIED;
-
-        // Activities opened from a shortcut may have EXTRA_ORIENTATION set. In
-        // which case, we want to use that as the default orientation.
-        int orientation = activity.getIntent().getIntExtra(
-                ScreenOrientationConstants.EXTRA_ORIENTATION, mDefaultWebOrientation);
-        defaultOrientation = getOrientationFromWebScreenOrientations(
-                (byte) orientation, window, activity);
+        int defaultOrientation =
+                getOrientationFromWebScreenOrientations(mDefaultWebOrientation, window, activity);
 
         try {
             if (defaultOrientation == ActivityInfo.SCREEN_ORIENTATION_UNSPECIFIED) {

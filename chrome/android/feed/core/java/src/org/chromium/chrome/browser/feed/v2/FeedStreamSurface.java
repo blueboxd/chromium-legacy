@@ -181,7 +181,6 @@ public class FeedStreamSurface implements SurfaceActionsHandler, FeedActionsHand
      * Provides logging and context for all surfaces.
      *
      * TODO(rogerm): Find a more global home for this.
-     * TODO(rogerm): implement getClientInstanceId.
      */
     private static class FeedSurfaceDependencyProvider implements SurfaceDependencyProvider {
         FeedSurfaceDependencyProvider() {}
@@ -203,6 +202,11 @@ public class FeedStreamSurface implements SurfaceActionsHandler, FeedActionsHand
         @Override
         public int[] getExperimentIds() {
             return FeedStreamSurfaceJni.get().getExperimentIds();
+        }
+
+        @Override
+        public String getClientInstanceId() {
+            return FeedServiceBridge.getClientInstanceId();
         }
     }
 

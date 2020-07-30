@@ -11,25 +11,27 @@
 #include "base/callback_forward.h"
 #include "base/macros.h"
 #include "remoting/proto/ftl/v1/ftl_messages.pb.h"
-#include "third_party/grpc/src/include/grpcpp/support/status.h"
 
 namespace remoting {
 
-class ScopedGrpcServerStream;
+class ScopedProtobufHttpRequest;
+class ProtobufHttpStatus;
 
 // Interface for starting or closing the server stream to receive messages from
 // FTL backend.
 class MessageReceptionChannel {
  public:
   using StreamOpener =
-      base::RepeatingCallback<std::unique_ptr<ScopedGrpcServerStream>(
+      base::RepeatingCallback<std::unique_ptr<ScopedProtobufHttpRequest>(
           base::OnceClosure on_channel_ready,
           const base::RepeatingCallback<void(
-              const ftl::ReceiveMessagesResponse&)>& on_incoming_msg,
-          base::OnceCallback<void(const grpc::Status&)> on_channel_closed)>;
+              std::unique_ptr<ftl::ReceiveMessagesResponse>)>& on_incoming_msg,
+          base::OnceCallback<void(const ProtobufHttpStatus&)>
+              on_channel_closed)>;
   using MessageCallback =
-      base::RepeatingCallback<void(const ftl::InboxMessage&)>;
-  using DoneCallback = base::OnceCallback<void(const grpc::Status& status)>;
+      base::RepeatingCallback<void(const ftl::InboxMessage& message)>;
+  using DoneCallback =
+      base::OnceCallback<void(const ProtobufHttpStatus& status)>;
 
   MessageReceptionChannel() = default;
   virtual ~MessageReceptionChannel() = default;

@@ -20,7 +20,6 @@
 #include "remoting/signaling/signaling_address.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#include "third_party/grpc/src/include/grpcpp/grpcpp.h"
 #include "third_party/libjingle_xmpp/xmllite/xmlelement.h"
 #include "third_party/libjingle_xmpp/xmpp/constants.h"
 
@@ -125,7 +124,7 @@ class FakeMessagingClient : public MessagingClient {
     }
   }
 
-  void RejectReceivingMessages(const grpc::Status& status) {
+  void RejectReceivingMessages(const ProtobufHttpStatus& status) {
     DCHECK(is_receiving_messages_);
     std::vector<DoneCallback> on_closed_callbacks;
     on_closed_callbacks.swap(on_closed_callbacks_);
@@ -144,9 +143,9 @@ class FakeMessagingClient : public MessagingClient {
 
 class FakeRegistrationManager : public RegistrationManager {
  public:
-  using SignInCallback =
-      base::RepeatingCallback<grpc::Status(std::string* out_registration_id,
-                                           std::string* out_auth_token)>;
+  using SignInCallback = base::RepeatingCallback<ProtobufHttpStatus(
+      std::string* out_registration_id,
+      std::string* out_auth_token)>;
 
   FakeRegistrationManager() = default;
   ~FakeRegistrationManager() override = default;
@@ -331,7 +330,7 @@ TEST_F(FtlSignalStrategyTest, StartStream_Failure) {
 
   signal_strategy_->Connect();
   messaging_client_->RejectReceivingMessages(
-      grpc::Status(grpc::StatusCode::UNAVAILABLE, "unavailable"));
+      ProtobufHttpStatus(ProtobufHttpStatus::Code::UNAVAILABLE, "unavailable"));
 
   ASSERT_EQ(2u, state_history_.size());
   ASSERT_EQ(SignalStrategy::State::CONNECTING, state_history_[0]);
@@ -353,7 +352,7 @@ TEST_F(FtlSignalStrategyTest, StreamRemotelyClosed) {
   signal_strategy_->Connect();
   messaging_client_->AcceptReceivingMessages();
   messaging_client_->RejectReceivingMessages(
-      grpc::Status(grpc::StatusCode::UNAVAILABLE, "unavailable"));
+      ProtobufHttpStatus(ProtobufHttpStatus::Code::UNAVAILABLE, "unavailable"));
 
   ASSERT_EQ(3u, state_history_.size());
   ASSERT_EQ(SignalStrategy::State::CONNECTING, state_history_[0]);
@@ -381,7 +380,7 @@ TEST_F(FtlSignalStrategyTest, SendStanza_Success) {
                                 const ftl::ChromotingMessage& message,
                                 MessagingClient::DoneCallback on_done) {
         ASSERT_EQ(stanza_string, message.xmpp().stanza());
-        std::move(on_done).Run(grpc::Status::OK);
+        std::move(on_done).Run(ProtobufHttpStatus::OK);
       });
   signal_strategy_->SendStanza(std::move(stanza));
 }
@@ -401,8 +400,8 @@ TEST_F(FtlSignalStrategyTest, SendStanza_AuthError) {
       .WillOnce([](const std::string&, const std::string&,
                    const ftl::ChromotingMessage& message,
                    MessagingClient::DoneCallback on_done) {
-        std::move(on_done).Run(
-            grpc::Status(grpc::StatusCode::UNAUTHENTICATED, "unauthenticated"));
+        std::move(on_done).Run(ProtobufHttpStatus(
+            ProtobufHttpStatus::Code::UNAUTHENTICATED, "unauthenticated"));
       });
   signal_strategy_->SendStanza(std::move(stanza));
 
@@ -412,8 +411,7 @@ TEST_F(FtlSignalStrategyTest, SendStanza_AuthError) {
   ASSERT_EQ(SignalStrategy::State::DISCONNECTED, state_history_[2]);
 
   ASSERT_EQ(SignalStrategy::State::DISCONNECTED, signal_strategy_->GetState());
-  ASSERT_EQ(SignalStrategy::Error::AUTHENTICATION_FAILED,
-            signal_strategy_->GetError());
+  ASSERT_EQ(SignalStrategy::Error::NETWORK_ERROR, signal_strategy_->GetError());
   ASSERT_FALSE(signal_strategy_->IsSignInError());
 }
 
@@ -431,8 +429,8 @@ TEST_F(FtlSignalStrategyTest, SendStanza_NetworkError) {
       .WillOnce([](const std::string&, const std::string&,
                    const ftl::ChromotingMessage& message,
                    MessagingClient::DoneCallback on_done) {
-        std::move(on_done).Run(
-            grpc::Status(grpc::StatusCode::UNAVAILABLE, "unavailable"));
+        std::move(on_done).Run(ProtobufHttpStatus(
+            ProtobufHttpStatus::Code::UNAVAILABLE, "unavailable"));
       });
   signal_strategy_->SendStanza(std::move(stanza));
 
@@ -532,7 +530,7 @@ TEST_F(FtlSignalStrategyTest, SendMessage_Success) {
                                   const ftl::ChromotingMessage& message,
                                   MessagingClient::DoneCallback on_done) {
         ASSERT_EQ(message_payload, message.xmpp().stanza());
-        std::move(on_done).Run(grpc::Status::OK);
+        std::move(on_done).Run(ProtobufHttpStatus::OK);
       });
 
   signal_strategy_->SendMessage(
@@ -553,8 +551,8 @@ TEST_F(FtlSignalStrategyTest, SendMessage_AuthError) {
       .WillOnce([](const std::string&, const std::string&,
                    const ftl::ChromotingMessage& message,
                    MessagingClient::DoneCallback on_done) {
-        std::move(on_done).Run(
-            grpc::Status(grpc::StatusCode::UNAUTHENTICATED, "unauthenticated"));
+        std::move(on_done).Run(ProtobufHttpStatus(
+            ProtobufHttpStatus::Code::UNAUTHENTICATED, "unauthenticated"));
       });
 
   ftl::ChromotingMessage message;
@@ -569,8 +567,7 @@ TEST_F(FtlSignalStrategyTest, SendMessage_AuthError) {
   ASSERT_EQ(SignalStrategy::State::DISCONNECTED, state_history_[2]);
 
   ASSERT_EQ(SignalStrategy::State::DISCONNECTED, signal_strategy_->GetState());
-  ASSERT_EQ(SignalStrategy::Error::AUTHENTICATION_FAILED,
-            signal_strategy_->GetError());
+  ASSERT_EQ(SignalStrategy::Error::NETWORK_ERROR, signal_strategy_->GetError());
   ASSERT_FALSE(signal_strategy_->IsSignInError());
 }
 
@@ -585,8 +582,8 @@ TEST_F(FtlSignalStrategyTest, SendMessage_NetworkError) {
       .WillOnce([](const std::string&, const std::string&,
                    const ftl::ChromotingMessage& message,
                    MessagingClient::DoneCallback on_done) {
-        std::move(on_done).Run(
-            grpc::Status(grpc::StatusCode::UNAVAILABLE, "unavailable"));
+        std::move(on_done).Run(ProtobufHttpStatus(
+            ProtobufHttpStatus::Code::UNAVAILABLE, "unavailable"));
       });
 
   ftl::ChromotingMessage message;

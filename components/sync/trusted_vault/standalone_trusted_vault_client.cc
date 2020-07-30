@@ -77,6 +77,14 @@ void StandaloneTrustedVaultClient::MarkKeysAsStale(
   std::move(cb).Run(false);
 }
 
+void StandaloneTrustedVaultClient::GetIsRecoverabilityDegraded(
+    const CoreAccountInfo& account_info,
+    base::OnceCallback<void(bool)> cb) {
+  // TODO(crbug.com/1081649): Implement logic.
+  NOTIMPLEMENTED();
+  std::move(cb).Run(is_recoverability_degraded_for_testing_);
+}
+
 void StandaloneTrustedVaultClient::WaitForFlushForTesting(
     base::OnceClosure cb) const {
   backend_task_runner_->PostTaskAndReply(FROM_HERE, base::DoNothing(),
@@ -97,6 +105,10 @@ void StandaloneTrustedVaultClient::TriggerLazyInitializationIfNeeded() {
 
 bool StandaloneTrustedVaultClient::IsInitializationTriggeredForTesting() const {
   return backend_ != nullptr;
+}
+
+void StandaloneTrustedVaultClient::SetRecoverabilityDegradedForTesting() {
+  is_recoverability_degraded_for_testing_ = true;
 }
 
 }  // namespace syncer

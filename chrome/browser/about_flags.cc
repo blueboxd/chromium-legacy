@@ -211,7 +211,7 @@
 
 #if defined(OS_MAC)
 #include "chrome/browser/ui/browser_dialogs.h"
-#endif  // OS_MACOSX
+#endif  // OS_MAC
 
 #if BUILDFLAG(ENABLE_EXTENSIONS)
 #include "extensions/common/extension_features.h"
@@ -1064,6 +1064,22 @@ const FeatureEntry::FeatureVariation
                 {"RichAutocompletionAutocompleteTitlesMinChar", "5"},
                 {"RichAutocompletionAutocompleteNonPrefixMinChar", "5"}},
             2,
+            nullptr,
+        }};
+
+const FeatureEntry::FeatureVariation
+    kOmniboxRichAutocompletionShowAdditionalTextVariations[] = {
+        {
+            "Show Additional Text",
+            (FeatureEntry::FeatureParam[]){},
+            0,
+            nullptr,
+        },
+        {
+            "Hide Additional Text",
+            (FeatureEntry::FeatureParam[]){
+                {"RichAutocompletionAutocompleteShowAdditionalText", "false"}},
+            1,
             nullptr,
         }};
 
@@ -2754,7 +2770,7 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kHostedAppQuitNotificationName,
      flag_descriptions::kHostedAppQuitNotificationDescription, kOsMac,
      SINGLE_VALUE_TYPE(switches::kHostedAppQuitNotification)},
-#endif  // OS_MACOSX
+#endif  // OS_MAC
 #if defined(OS_ANDROID)
     {"translate-force-trigger-on-english",
      flag_descriptions::kTranslateForceTriggerOnEnglishName,
@@ -3043,7 +3059,7 @@ const FeatureEntry kFeatureEntries[] = {
     {"mac-v2-gpu-sandbox", flag_descriptions::kMacV2GPUSandboxName,
      flag_descriptions::kMacV2GPUSandboxDescription, kOsMac,
      FEATURE_VALUE_TYPE(features::kMacV2GPUSandbox)},
-#endif  // OS_MACOSX
+#endif  // OS_MAC
 #if BUILDFLAG(ENABLE_VR)
     {"webxr-incubations", flag_descriptions::kWebXrIncubationsName,
      flag_descriptions::kWebXrIncubationsDescription, kOsAll,
@@ -3404,7 +3420,7 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kImmersiveFullscreenName,
      flag_descriptions::kImmersiveFullscreenDescription, kOsMac,
      FEATURE_VALUE_TYPE(features::kImmersiveFullscreen)},
-#endif  // OS_MACOSX
+#endif  // OS_MAC
     {"rewrite-leveldb-on-deletion",
      flag_descriptions::kRewriteLevelDBOnDeletionName,
      flag_descriptions::kRewriteLevelDBOnDeletionDescription, kOsAll,
@@ -3612,6 +3628,11 @@ const FeatureEntry kFeatureEntries[] = {
      FEATURE_VALUE_TYPE(omnibox::kOmniboxTabSwitchSuggestions)},
 #endif  // defined(OS_ANDROID)
 
+    {"omnibox-clobber-is-zero-suggest-entrypoint",
+     flag_descriptions::kOmniboxClobberIsZeroSuggestEntrypointName,
+     flag_descriptions::kOmniboxClobberIsZeroSuggestEntrypointDescription,
+     kOsAll, FEATURE_VALUE_TYPE(omnibox::kClobberIsZeroSuggestEntrypoint)},
+
     {"omnibox-on-device-head-suggestions-incognito",
      flag_descriptions::kOmniboxOnDeviceHeadSuggestionsIncognitoName,
      flag_descriptions::kOmniboxOnDeviceHeadSuggestionsIncognitoDescription,
@@ -3724,6 +3745,14 @@ const FeatureEntry kFeatureEntries[] = {
      FEATURE_WITH_PARAMS_VALUE_TYPE(omnibox::kRichAutocompletion,
                                     kOmniboxRichAutocompletionMinCharVariations,
                                     "OmniboxBundledExperimentV1")},
+    {"omnibox-rich-autocompletion-show-additional-text",
+     flag_descriptions::kOmniboxRichAutocompletionShowAdditionalTextName,
+     flag_descriptions::kOmniboxRichAutocompletionShowAdditionalTextDescription,
+     kOsDesktop,
+     FEATURE_WITH_PARAMS_VALUE_TYPE(
+         omnibox::kRichAutocompletion,
+         kOmniboxRichAutocompletionShowAdditionalTextVariations,
+         "OmniboxBundledExperimentV1")},
 #endif  // defined(OS_LINUX) || defined(OS_MAC) || defined(OS_WIN)
 
     {"enable-speculative-service-worker-start-on-query-input",
@@ -4867,11 +4896,6 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kAppServiceIntentHandlingName,
      flag_descriptions::kAppServiceIntentHandlingDescription, kOsCrOS,
      FEATURE_VALUE_TYPE(features::kAppServiceIntentHandling)},
-
-    {"ash-swiping-from-left-edge-to-go-back",
-     flag_descriptions::kAshSwipingFromLeftEdgeToGoBackName,
-     flag_descriptions::kAshSwipingFromLeftEdgeToGoBackDescription, kOsCrOS,
-     FEATURE_VALUE_TYPE(ash::features::kSwipingFromLeftEdgeToGoBack)},
 
     {"use-fake-device-for-media-stream",
      flag_descriptions::kUseFakeDeviceForMediaStreamName,

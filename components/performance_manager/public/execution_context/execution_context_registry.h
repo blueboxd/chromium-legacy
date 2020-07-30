@@ -7,15 +7,11 @@
 
 #include "components/performance_manager/public/execution_context/execution_context_token.h"
 #include "components/performance_manager/public/graph/frame_node.h"
-
-namespace base {
-class UnguessableToken;
-}  // namespace base
+#include "components/performance_manager/public/graph/worker_node.h"
 
 namespace performance_manager {
 
 class Graph;
-class WorkerNode;
 
 namespace execution_context {
 
@@ -56,8 +52,8 @@ class ExecutionContextRegistry {
 
   // Does a typed lookup of a WorkerNode ExecutionContext by its DevToolsToken,
   // returns nullptr if no such WorkerNode exists.
-  virtual const WorkerNode* GetWorkerNodeByDevToolsToken(
-      const base::UnguessableToken& token) = 0;
+  virtual const WorkerNode* GetWorkerNodeByWorkerToken(
+      const WorkerToken& token) = 0;
 
   // Returns the ExecutionContext associated with a node.
   virtual const ExecutionContext* GetExecutionContextForFrameNode(

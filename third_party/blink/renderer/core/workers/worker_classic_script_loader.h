@@ -166,6 +166,9 @@ class CORE_EXPORT WorkerClassicScriptLoader final
   base::OnceClosure finished_callback_;
 
   Member<ThreadableLoader> threadable_loader_;
+
+  // These are used only when
+  // features::kLoadMainScriptForPlzDedicatedWorkerByParams is enabled.
   Member<WorkerMainScriptLoader> worker_main_script_loader_;
   String response_encoding_;
   std::unique_ptr<TextResourceDecoder> decoder_;

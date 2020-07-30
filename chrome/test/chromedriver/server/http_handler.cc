@@ -137,7 +137,7 @@ HttpHandler::HttpHandler(const std::string& url_base)
       command_map_(new CommandMap()) {}
 
 HttpHandler::HttpHandler(
-    const base::Closure& quit_func,
+    const base::RepeatingClosure& quit_func,
     const scoped_refptr<base::SingleThreadTaskRunner> io_task_runner,
     const std::string& url_base,
     int adb_port)

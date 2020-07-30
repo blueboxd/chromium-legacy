@@ -7,6 +7,7 @@
 import("//build/config/android/config.gni")
 import("//build/config/android/copy_ex.gni")
 import("//build/config/compiler/compiler.gni")
+import("//build/config/compute_inputs_for_analyze.gni")
 import("//build/config/coverage/coverage.gni")
 import("//build/config/dcheck_always_on.gni")
 import("//build/config/python.gni")
@@ -1058,6 +1059,7 @@ if (enable_java_templates) {
           "//build/android:prepare_android_lint_cache",
           invoker.build_config_dep,
         ]
+        inputs += [ invoker.build_config ]
         _rebased_build_config =
             rebase_path(invoker.build_config, root_build_dir)
 
@@ -1065,10 +1067,12 @@ if (enable_java_templates) {
         _baseline = "//build/android/lint/baseline.xml"
         _rebased_baseline = rebase_path(_baseline, root_build_dir)
 
-        inputs += [
-          _baseline,
-          invoker.build_config,
-        ]
+        if (compute_inputs_for_analyze) {
+          # The baseline file is included in lint.py as a depfile dep. Since
+          # removing it regenerates the file, it is useful to not have this as
+          # a gn input during local development. Add it only for bots' analyze.
+          inputs += [ _baseline ]
+        }
 
         args += [
           "--manifest-path=@FileArg($_rebased_build_config:deps_info:lint_android_manifest)",
@@ -1737,6 +1741,9 @@ if (enable_java_templates) {
         rebase_path(invoker.output, root_build_dir),
         "--min-api=${invoker.min_sdk_version}",
       ]
+      if (treat_warnings_as_errors) {
+        args += [ "--warnings-as-errors" ]
+      }
     }
   }
 

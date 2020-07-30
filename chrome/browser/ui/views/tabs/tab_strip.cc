@@ -543,7 +543,8 @@ class TabStrip::TabDragContextImpl : public TabDragContext {
   int GetTabAreaWidth() const override { return tab_strip_->GetTabAreaWidth(); }
 
   int GetTabDragAreaWidth() const override {
-    return tab_strip_->width() - tab_strip_->FrameGrabWidth();
+    return std::max(tab_strip_->CalculateAvailableWidthForTabs(),
+                    tab_strip_->GetTabAreaWidth());
   }
 
   int TabDragAreaBeginX() const override {

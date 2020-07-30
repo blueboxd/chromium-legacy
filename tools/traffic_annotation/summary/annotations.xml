@@ -109,6 +109,9 @@ Refer to README.md for content description and update process.
  <item id="feed_image_fetcher" hash_code="87439531" type="0" deprecated="2019-01-04" content_hash_code="26756208" file_path=""/>
  <item id="floc_id_provider_impl" hash_code="103052331" type="1" second_id="13704791" content_hash_code="41421380" os_list="linux,windows" semantics_fields="2,3,4" policy_fields="3" file_path="chrome/browser/federated_learning/floc_id_provider_impl.cc"/>
  <item id="floc_remote_permission_service" hash_code="13704791" type="2" content_hash_code="86293622" os_list="linux,windows" semantics_fields="1,5" policy_fields="1,2,4" file_path="chrome/browser/federated_learning/floc_remote_permission_service.cc"/>
+ <item id="ftl_messaging_client_ack_messages" hash_code="55663676" type="0" content_hash_code="20913627" os_list="linux,windows" file_path="remoting/signaling/ftl_messaging_client.cc"/>
+ <item id="ftl_messaging_client_receive_messages" hash_code="136248372" type="0" content_hash_code="36609143" os_list="linux,windows" file_path="remoting/signaling/ftl_messaging_client.cc"/>
+ <item id="ftl_messaging_client_send_messages" hash_code="48924790" type="0" content_hash_code="6841587" os_list="linux,windows" file_path="remoting/signaling/ftl_messaging_client.cc"/>
  <item id="ftl_registration_manager" hash_code="38256901" type="0" content_hash_code="12581281" os_list="linux,windows" file_path="remoting/signaling/ftl_registration_manager.cc"/>
  <item id="gaia_auth_check_connection_info" hash_code="4598626" type="0" content_hash_code="57347000" os_list="linux,windows" file_path="google_apis/gaia/gaia_auth_fetcher.cc"/>
  <item id="gaia_auth_exchange_cookies" hash_code="134289752" type="0" deprecated="2018-09-11" content_hash_code="66433230" file_path=""/>

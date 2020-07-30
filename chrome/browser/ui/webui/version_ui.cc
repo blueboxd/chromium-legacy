@@ -172,7 +172,7 @@ void VersionUI::AddVersionDetailStrings(content::WebUIDataSource* html_source) {
   html_source->AddString(version_ui::kOSType, base::mac::GetOSDisplayName());
 #elif !defined(OS_CHROMEOS)
   html_source->AddString(version_ui::kOSType, version_info::GetOSType());
-#endif  // OS_MACOSX
+#endif  // OS_MAC
 
 #if defined(OS_ANDROID)
   html_source->AddString(version_ui::kOSVersion,

@@ -290,9 +290,9 @@ class XRSession final
   // existing. Intended to be used by XRFrame to implement
   // XRFrame.getHitTestResults() &
   // XRFrame.getHitTestResultsForTransientInput().
-  bool ValidateHitTestSourceExists(XRHitTestSource* hit_test_source);
+  bool ValidateHitTestSourceExists(XRHitTestSource* hit_test_source) const;
   bool ValidateHitTestSourceExists(
-      XRTransientInputHitTestSource* hit_test_source);
+      XRTransientInputHitTestSource* hit_test_source) const;
 
   // Removes hit test source (effectively unsubscribing from the hit test).
   // Intended to be used by hit test source interfaces (XRHitTestSource and
@@ -479,13 +479,27 @@ class XRSession final
 
   // Mapping of hit test source ids (aka hit test subscription ids) to hit test
   // sources. Hit test source has to be stored via weak member - JavaScript side
-  // will communicate that it's no longer interested in the subscription by
+  // can communicate that it's no longer interested in the subscription by
   // dropping all its references to the hit test source & we need to make sure
-  // that we don't keep the XRHitTestSources alive.
+  // that we don't keep the XRHitTestSources alive. HeapHashMap entries will
+  // automatically be removed when the hit test sources get reclaimed, so we
+  // need to maintain additional sets with their IDs to be able to clean them up
+  // on the device - this is done in |hit_test_source_ids_| and
+  // |hit_test_source_for_transient_input_ids_|.
+  // For the specifics of HeapHashMap<Key, WeakMember<Value>> behavior, see:
+  // https://chromium.googlesource.com/chromium/src/+/master/third_party/blink/renderer/platform/heap/BlinkGCAPIReference.md#weak-collections
   HeapHashMap<uint64_t, WeakMember<XRHitTestSource>>
       hit_test_source_ids_to_hit_test_sources_;
   HeapHashMap<uint64_t, WeakMember<XRTransientInputHitTestSource>>
       hit_test_source_ids_to_transient_input_hit_test_sources_;
+
+  // The entries in the above hash sets will be automatically removed by garbage
+  // collection once the application drops all references to them. To avoid
+  // introducing pre-finalizers on hit test sources, store the set of IDs that
+  // we know about. We will then subsequently cross-reference the sets with hash
+  // maps and notify the device about hit test sources that are no longer alive.
+  HashSet<uint64_t> hit_test_source_ids_;
+  HashSet<uint64_t> hit_test_source_for_transient_input_ids_;
 
   Vector<XRViewData> views_;
 

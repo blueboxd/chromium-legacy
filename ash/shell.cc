@@ -1023,10 +1023,8 @@ void Shell::Init(
   event_transformation_handler_.reset(new EventTransformationHandler);
   AddPreTargetHandler(event_transformation_handler_.get());
 
-  if (features::IsSwipingFromLeftEdgeToGoBackEnabled()) {
-    back_gesture_event_handler_ = std::make_unique<BackGestureEventHandler>();
-    AddPreTargetHandler(back_gesture_event_handler_.get());
-  }
+  back_gesture_event_handler_ = std::make_unique<BackGestureEventHandler>();
+  AddPreTargetHandler(back_gesture_event_handler_.get());
 
   toplevel_window_event_handler_ =
       std::make_unique<ToplevelWindowEventHandler>();

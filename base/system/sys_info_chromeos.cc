@@ -166,6 +166,18 @@ ChromeOSVersionInfo& GetChromeOSVersionInfo() {
 }  // namespace
 
 // static
+std::string SysInfo::HardwareModelName() {
+  std::string board = GetLsbReleaseBoard();
+  // GetLsbReleaseBoard() may be suffixed with a "-signed-" and other extra
+  // info. Strip it.
+  const size_t index = board.find("-signed-");
+  if (index != std::string::npos)
+    board.resize(index);
+
+  return base::ToUpperASCII(board);
+}
+
+// static
 void SysInfo::OperatingSystemVersionNumbers(int32_t* major_version,
                                             int32_t* minor_version,
                                             int32_t* bugfix_version) {

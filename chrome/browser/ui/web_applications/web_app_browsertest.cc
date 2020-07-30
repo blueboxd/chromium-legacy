@@ -8,6 +8,7 @@
 #include "base/strings/utf_string_conversions.h"
 #include "base/test/metrics/histogram_tester.h"
 #include "base/test/metrics/user_action_tester.h"
+#include "base/test/scoped_feature_list.h"
 #include "base/time/time.h"
 #include "build/build_config.h"
 #include "chrome/app/chrome_command_ids.h"
@@ -43,6 +44,7 @@
 #include "chrome/common/web_application_info.h"
 #include "chrome/test/base/ui_test_utils.h"
 #include "components/sessions/core/tab_restore_service.h"
+#include "content/public/common/content_features.h"
 #include "content/public/test/browser_test.h"
 #include "content/public/test/browser_test_utils.h"
 #include "content/public/test/test_utils.h"
@@ -120,11 +122,13 @@ class WebAppBrowserTest : public WebAppControllerBrowserTest {
 // to enable manifest parsing.
 class WebAppBrowserTest_DisplayOverride : public WebAppBrowserTest {
  public:
-  void SetUpCommandLine(base::CommandLine* command_line) override {
-    WebAppBrowserTest::SetUpCommandLine(command_line);
-    command_line->AppendSwitchASCII(switches::kEnableBlinkFeatures,
-                                    "DisplayOverride");
+  WebAppBrowserTest_DisplayOverride() {
+    scoped_feature_list_.InitAndEnableFeature(
+        features::kWebAppManifestDisplayOverride);
   }
+
+ private:
+  base::test::ScopedFeatureList scoped_feature_list_;
 };
 
 using WebAppTabRestoreBrowserTest = WebAppBrowserTest;

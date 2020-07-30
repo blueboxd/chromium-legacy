@@ -86,7 +86,7 @@ mojom("device_service") {
   disable_variants = true
 
   enabled_features = []
-  if (is_linux && use_udev) {
+  if ((is_linux || is_chromeos) && use_udev) {
     enabled_features += [ "enable_input_device_manager" ]
   }
 

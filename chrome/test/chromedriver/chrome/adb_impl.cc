@@ -85,8 +85,9 @@ void ExecuteCommandOnIOThread(
     const std::string& command, scoped_refptr<ResponseBuffer> response_buffer,
     int port) {
   CHECK(base::CurrentIOThread::IsSet());
-  AdbClientSocket::AdbQuery(port, command,
-      base::Bind(&ResponseBuffer::OnResponse, response_buffer));
+  AdbClientSocket::AdbQuery(
+      port, command,
+      base::BindRepeating(&ResponseBuffer::OnResponse, response_buffer));
 }
 
 void SendFileOnIOThread(const std::string& device_serial,
@@ -97,7 +98,7 @@ void SendFileOnIOThread(const std::string& device_serial,
   CHECK(base::CurrentIOThread::IsSet());
   AdbClientSocket::SendFile(
       port, device_serial, filename, content,
-      base::Bind(&ResponseBuffer::OnResponse, response_buffer));
+      base::BindRepeating(&ResponseBuffer::OnResponse, response_buffer));
 }
 
 std::string GetSerialFromEnvironment() {

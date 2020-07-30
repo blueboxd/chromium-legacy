@@ -104,7 +104,7 @@ class NewSubViewAddedObserver : content::RenderWidgetHostViewCocoaObserver {
 
   DISALLOW_COPY_AND_ASSIGN(NewSubViewAddedObserver);
 };
-#endif  // OS_MACOSX
+#endif  // OS_MAC
 
 class WebViewInteractiveTest : public extensions::PlatformAppBrowserTest {
  public:
@@ -601,7 +601,7 @@ class WebViewPointerLockInteractiveTest : public WebViewInteractiveTest {};
 // with WebViewInteractiveTest (see crbug.com/582562).
 class DISABLED_WebViewPopupInteractiveTest : public WebViewInteractiveTest {};
 
-// ui_test_utils::SendMouseMoveSync doesn't seem to work on OS_MACOSX, and
+// ui_test_utils::SendMouseMoveSync doesn't seem to work on OS_MAC, and
 // likely won't work on many other platforms as well, so for now this test
 // is for Windows and Linux only. As of Sept 17th, 2013 this test is disabled
 // on Windows due to flakines, see http://crbug.com/293445.
@@ -1741,7 +1741,7 @@ IN_PROC_BROWSER_TEST_F(WebViewImeInteractiveTest,
                                             &value));
   EXPECT_EQ("A B C D", value);
 }
-#endif  //  OS_MACOSX
+#endif  //  OS_MAC
 
 // This test verifies that focusing an input inside a <webview> will put the
 // guest process's render widget into a monitoring mode for composition range

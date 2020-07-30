@@ -508,7 +508,7 @@ jumbo_source_set("browser_sources") {
     sources += [ "remote_cocoa.h" ]
   }
 
-  if (is_linux) {
+  if (is_linux || is_chromeos) {
     sources += [ "zygote_host/zygote_host_linux.h" ]
   }
 

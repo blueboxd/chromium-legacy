@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<issues format="5" by="lint 4.0.0" client="cli" variant="all" version="4.0.0">
+<issues format="5" by="lint 4.0.1" client="cli" variant="all" version="4.0.1">
 
     <issue
         id="MissingSuperCall"
@@ -254,7 +254,7 @@
         errorLine2="                                                    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~">
         <location
             file="weblayer/browser/java/org/chromium/weblayer_private/BrowserViewController.java"
-            line="272"
+            line="294"
             column="53"/>
     </issue>
 
@@ -265,7 +265,7 @@
         errorLine2="                                                              ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~">
         <location
             file="chrome/android/java/src/org/chromium/chrome/browser/contextualsearch/ContextualSearchManager.java"
-            line="454"
+            line="460"
             column="63"/>
     </issue>
 
@@ -276,7 +276,7 @@
         errorLine2="                                   ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~">
         <location
             file="chrome/android/java/src/org/chromium/chrome/browser/contextualsearch/ContextualSearchManager.java"
-            line="778"
+            line="784"
             column="36"/>
     </issue>
 
@@ -287,7 +287,7 @@
         errorLine2="                                                       ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~">
         <location
             file="chrome/android/java/src/org/chromium/chrome/browser/contextualsearch/ContextualSearchManager.java"
-            line="1364"
+            line="1375"
             column="56"/>
     </issue>
 
@@ -298,7 +298,7 @@
         errorLine2="                                   ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~">
         <location
             file="chrome/android/java/src/org/chromium/chrome/browser/contextualsearch/ContextualSearchManager.java"
-            line="1587"
+            line="1598"
             column="36"/>
     </issue>
 
@@ -309,7 +309,7 @@
         errorLine2="                                   ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~">
         <location
             file="chrome/android/java/src/org/chromium/chrome/browser/contextualsearch/ContextualSearchManager.java"
-            line="1622"
+            line="1633"
             column="36"/>
     </issue>
 
@@ -331,7 +331,7 @@
         errorLine2="                       ~~">
         <location
             file="chrome/browser/tab/java/src/org/chromium/chrome/browser/tab/state/CriticalPersistedTabData.java"
-            line="203"
+            line="219"
             column="24"/>
     </issue>
 
@@ -342,7 +342,7 @@
         errorLine2="                                                ~~">
         <location
             file="chrome/browser/download/android/java/src/org/chromium/chrome/browser/download/dialogs/DownloadLaterDialogHelper.java"
-            line="118"
+            line="117"
             column="49"/>
     </issue>
 
@@ -375,7 +375,7 @@
         errorLine2="               ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~">
         <location
             file="components/browser_ui/media/android/java/src/org/chromium/components/browser_ui/media/MediaSessionHelper.java"
-            line="423"
+            line="425"
             column="16"/>
     </issue>
 
@@ -408,7 +408,7 @@
         errorLine2="               ~">
         <location
             file="chrome/browser/safety_check/android/java/src/org/chromium/chrome/browser/safety_check/SafetyCheckProperties.java"
-            line="61"
+            line="72"
             column="16"/>
     </issue>
 
@@ -419,7 +419,7 @@
         errorLine2="                       ~">
         <location
             file="chrome/browser/safety_check/android/java/src/org/chromium/chrome/browser/safety_check/SafetyCheckProperties.java"
-            line="94"
+            line="105"
             column="24"/>
     </issue>
 
@@ -430,7 +430,7 @@
         errorLine2="               ~">
         <location
             file="chrome/browser/safety_check/android/java/src/org/chromium/chrome/browser/safety_check/SafetyCheckProperties.java"
-            line="99"
+            line="110"
             column="16"/>
     </issue>
 
@@ -452,7 +452,7 @@
         errorLine2="                      ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~">
         <location
             file="chrome/android/java/src/org/chromium/chrome/browser/sync/settings/SyncSettingsUtils.java"
-            line="111"
+            line="112"
             column="23"/>
     </issue>
 
@@ -463,7 +463,7 @@
         errorLine2="                      ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~">
         <location
             file="chrome/android/java/src/org/chromium/chrome/browser/sync/settings/SyncSettingsUtils.java"
-            line="112"
+            line="113"
             column="23"/>
     </issue>
 
@@ -540,7 +540,7 @@
         errorLine2="                                              ~">
         <location
             file="chrome/android/java/src/org/chromium/chrome/browser/toolbar/ToolbarManager.java"
-            line="485"
+            line="487"
             column="47"/>
     </issue>
 
@@ -705,7 +705,7 @@
         errorLine2="                                                      ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~">
         <location
             file="chrome/android/java/src/org/chromium/chrome/browser/payments/AndroidPaymentAppFinder.java"
-            line="577"
+            line="588"
             column="55"/>
     </issue>
 
@@ -1046,7 +1046,7 @@
         errorLine2="                          ~~~~~~~">
         <location
             file="chrome/android/java/src/org/chromium/chrome/browser/omnibox/suggestions/AutocompleteMediator.java"
-            line="236"
+            line="238"
             column="27"/>
     </issue>
 
@@ -1057,7 +1057,7 @@
         errorLine2="                              ~~~~~~~">
         <location
             file="chrome/android/java/src/org/chromium/chrome/browser/omnibox/suggestions/AutocompleteMediator.java"
-            line="237"
+            line="239"
             column="31"/>
     </issue>
 
@@ -1068,7 +1068,7 @@
         errorLine2="                              ~~~~~~~">
         <location
             file="chrome/android/java/src/org/chromium/chrome/browser/omnibox/suggestions/AutocompleteMediator.java"
-            line="238"
+            line="240"
             column="31"/>
     </issue>
 
@@ -1079,7 +1079,7 @@
         errorLine2="                             ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~">
         <location
             file="chrome/android/java/src/org/chromium/chrome/browser/omnibox/suggestions/AutocompleteMediator.java"
-            line="465"
+            line="470"
             column="30"/>
     </issue>
 
@@ -1090,7 +1090,7 @@
         errorLine2="                                                ~~~~~~~~~~~~~~~~~~">
         <location
             file="chrome/android/java/src/org/chromium/chrome/browser/omnibox/suggestions/AutocompleteMediator.java"
-            line="557"
+            line="562"
             column="49"/>
     </issue>
 
@@ -1101,7 +1101,7 @@
         errorLine2="                                       ~~~~~~~~~~~~~~~">
         <location
             file="chrome/android/java/src/org/chromium/chrome/browser/omnibox/suggestions/AutocompleteMediator.java"
-            line="558"
+            line="563"
             column="40"/>
     </issue>
 
@@ -1112,7 +1112,7 @@
         errorLine2="                                                                  ~~~~~~">
         <location
             file="chrome/android/java/src/org/chromium/chrome/browser/omnibox/suggestions/AutocompleteMediator.java"
-            line="573"
+            line="578"
             column="67"/>
     </issue>
 
@@ -1123,7 +1123,7 @@
         errorLine2="                        ~~~~~~~~~~~">
         <location
             file="chrome/android/java/src/org/chromium/chrome/browser/omnibox/suggestions/AutocompleteMediator.java"
-            line="611"
+            line="616"
             column="25"/>
     </issue>
 
@@ -1134,7 +1134,7 @@
         errorLine2="                                                                        ~~~~~~~~">
         <location
             file="chrome/android/java/src/org/chromium/chrome/browser/omnibox/suggestions/AutocompleteMediator.java"
-            line="628"
+            line="633"
             column="73"/>
     </issue>
 
@@ -1145,7 +1145,7 @@
         errorLine2="                                                                      ~~~~~~~~~~~~~~">
         <location
             file="chrome/android/java/src/org/chromium/chrome/browser/omnibox/suggestions/AutocompleteMediator.java"
-            line="649"
+            line="654"
             column="71"/>
     </issue>
 
@@ -1156,7 +1156,7 @@
         errorLine2="                                                   ~~~~~~~~~~~~~~~">
         <location
             file="chrome/android/java/src/org/chromium/chrome/browser/omnibox/suggestions/AutocompleteMediator.java"
-            line="667"
+            line="672"
             column="52"/>
     </issue>
 
@@ -1167,7 +1167,7 @@
         errorLine2="                       ~~~~~~~">
         <location
             file="chrome/android/java/src/org/chromium/chrome/browser/omnibox/suggestions/AutocompleteMediator.java"
-            line="687"
+            line="692"
             column="24"/>
     </issue>
 
@@ -1178,7 +1178,7 @@
         errorLine2="                              ~~~~~~~">
         <location
             file="chrome/android/java/src/org/chromium/chrome/browser/omnibox/suggestions/AutocompleteMediator.java"
-            line="688"
+            line="693"
             column="31"/>
     </issue>
 
@@ -1189,7 +1189,7 @@
         errorLine2="                              ~~~~~~">
         <location
             file="chrome/android/java/src/org/chromium/chrome/browser/omnibox/suggestions/AutocompleteMediator.java"
-            line="689"
+            line="694"
             column="31"/>
     </issue>
 
@@ -1200,7 +1200,7 @@
         errorLine2="                                                                     ~~~~~~">
         <location
             file="chrome/android/java/src/org/chromium/chrome/browser/omnibox/suggestions/AutocompleteMediator.java"
-            line="698"
+            line="703"
             column="70"/>
     </issue>
 
@@ -1211,7 +1211,7 @@
         errorLine2="                                          ~~~~~~~~">
         <location
             file="chrome/android/java/src/org/chromium/chrome/browser/omnibox/suggestions/AutocompleteMediator.java"
-            line="706"
+            line="711"
             column="43"/>
     </issue>
 
@@ -1222,7 +1222,7 @@
         errorLine2="                                               ~~~~~~">
         <location
             file="chrome/android/java/src/org/chromium/chrome/browser/omnibox/suggestions/AutocompleteMediator.java"
-            line="708"
+            line="713"
             column="48"/>
     </issue>
 
@@ -1233,7 +1233,7 @@
         errorLine2="                           ~~~~~~">
         <location
             file="chrome/android/java/src/org/chromium/chrome/browser/omnibox/suggestions/AutocompleteMediator.java"
-            line="731"
+            line="736"
             column="28"/>
     </issue>
 
@@ -1244,7 +1244,7 @@
         errorLine2="                                                        ~~~~~~">
         <location
             file="chrome/android/java/src/org/chromium/chrome/browser/omnibox/suggestions/AutocompleteMediator.java"
-            line="849"
+            line="854"
             column="57"/>
     </issue>
 
@@ -1255,7 +1255,7 @@
         errorLine2="                                    ~~~~~~~~~~~~~">
         <location
             file="chrome/android/java/src/org/chromium/chrome/browser/omnibox/suggestions/AutocompleteMediator.java"
-            line="936"
+            line="941"
             column="37"/>
     </issue>
 
@@ -1266,7 +1266,7 @@
         errorLine2="                              ~~~~~~~">
         <location
             file="chrome/android/java/src/org/chromium/chrome/browser/omnibox/suggestions/AutocompleteMediator.java"
-            line="937"
+            line="942"
             column="31"/>
     </issue>
 
@@ -1277,7 +1277,7 @@
         errorLine2="                                   ~~~~~~~~~~~~~~~">
         <location
             file="chrome/android/java/src/org/chromium/chrome/browser/omnibox/suggestions/AutocompleteMediator.java"
-            line="958"
+            line="963"
             column="36"/>
     </issue>
 
@@ -1288,7 +1288,7 @@
         errorLine2="                       ~~~~~~~">
         <location
             file="chrome/android/java/src/org/chromium/chrome/browser/omnibox/suggestions/AutocompleteMediator.java"
-            line="973"
+            line="978"
             column="24"/>
     </issue>
 
@@ -1299,7 +1299,7 @@
         errorLine2="                               ~~~~~~~~~~~~~~~~~~">
         <location
             file="chrome/android/java/src/org/chromium/chrome/browser/omnibox/suggestions/AutocompleteMediator.java"
-            line="975"
+            line="980"
             column="32"/>
     </issue>
 
@@ -1310,7 +1310,7 @@
         errorLine2="                                                                ~~~~~~~~~~~">
         <location
             file="chrome/android/java/src/org/chromium/chrome/browser/omnibox/suggestions/AutocompleteMediator.java"
-            line="975"
+            line="980"
             column="65"/>
     </issue>
 
@@ -1321,7 +1321,7 @@
         errorLine2="                                                                                  ~~~~~~~~">
         <location
             file="chrome/android/java/src/org/chromium/chrome/browser/omnibox/suggestions/AutocompleteMediator.java"
-            line="1155"
+            line="1160"
             column="83"/>
     </issue>
 
@@ -1332,7 +1332,7 @@
         errorLine2="                           ~~~~~~~">
         <location
             file="chrome/android/java/src/org/chromium/chrome/browser/omnibox/suggestions/AutocompleteMediator.java"
-            line="1156"
+            line="1161"
             column="28"/>
     </issue>
 
@@ -1343,7 +1343,7 @@
         errorLine2="                           ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~">
         <location
             file="clank/java/src/com/google/android/apps/chrome/autofill/AutofillDataProvider.java"
-            line="180"
+            line="181"
             column="28"/>
     </issue>
 
@@ -1354,7 +1354,7 @@
         errorLine2="                                                ^">
         <location
             file="clank/java/src/com/google/android/apps/chrome/autofill/AutofillDataProvider.java"
-            line="187"
+            line="188"
             column="49"/>
     </issue>
 
@@ -1365,7 +1365,7 @@
         errorLine2="                           ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~">
         <location
             file="clank/java/src/com/google/android/apps/chrome/autofill/AutofillDataProvider.java"
-            line="212"
+            line="213"
             column="28"/>
     </issue>
 
@@ -1376,7 +1376,7 @@
         errorLine2="                                        ^">
         <location
             file="clank/java/src/com/google/android/apps/chrome/autofill/AutofillDataProvider.java"
-            line="215"
+            line="216"
             column="41"/>
     </issue>
 
@@ -1387,7 +1387,7 @@
         errorLine2="                           ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~">
         <location
             file="clank/java/src/com/google/android/apps/chrome/autofill/AutofillDataProvider.java"
-            line="318"
+            line="319"
             column="28"/>
     </issue>
 
@@ -1398,7 +1398,7 @@
         errorLine2="                           ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~">
         <location
             file="clank/java/src/com/google/android/apps/chrome/autofill/AutofillDataProvider.java"
-            line="339"
+            line="340"
             column="28"/>
     </issue>
 
@@ -1442,7 +1442,7 @@
         errorLine2="              ~~~~~~~~~">
         <location
             file="chrome/android/java/src/org/chromium/chrome/browser/payments/AutofillPaymentInstrument.java"
-            line="196"
+            line="195"
             column="15"/>
     </issue>
 
@@ -1453,7 +1453,7 @@
         errorLine2="              ~~~~~~~~">
         <location
             file="chrome/android/java/src/org/chromium/chrome/browser/payments/AutofillPaymentInstrument.java"
-            line="199"
+            line="198"
             column="15"/>
     </issue>
 
@@ -2615,50 +2615,6 @@
     <issue
         id="VisibleForTests"
         message="This method should only be accessed from tests or within private scope"
-        errorLine1="            updateContentViewPadding(model, view.getDecoratedSuggestionView());"
-        errorLine2="                                                 ~~~~~~~~~~~~~~~~~~~~~~~~~~">
-        <location
-            file="chrome/android/java/src/org/chromium/chrome/browser/omnibox/suggestions/base/BaseSuggestionViewBinder.java"
-            line="50"
-            column="50"/>
-    </issue>
-
-    <issue
-        id="VisibleForTests"
-        message="This method should only be accessed from tests or within private scope"
-        errorLine1="            updateContentViewPadding(model, view.getDecoratedSuggestionView());"
-        errorLine2="                                                 ~~~~~~~~~~~~~~~~~~~~~~~~~~">
-        <location
-            file="chrome/android/java/src/org/chromium/chrome/browser/omnibox/suggestions/base/BaseSuggestionViewBinder.java"
-            line="53"
-            column="50"/>
-    </issue>
-
-    <issue
-        id="VisibleForTests"
-        message="This method should only be accessed from tests or within private scope"
-        errorLine1="            updateContentViewPadding(model, view.getDecoratedSuggestionView());"
-        errorLine2="                                                 ~~~~~~~~~~~~~~~~~~~~~~~~~~">
-        <location
-            file="chrome/android/java/src/org/chromium/chrome/browser/omnibox/suggestions/base/BaseSuggestionViewBinder.java"
-            line="55"
-            column="50"/>
-    </issue>
-
-    <issue
-        id="VisibleForTests"
-        message="This method should only be accessed from tests or within private scope"
-        errorLine1="            updateContentViewPadding(model, view.getDecoratedSuggestionView());"
-        errorLine2="                                                 ~~~~~~~~~~~~~~~~~~~~~~~~~~">
-        <location
-            file="chrome/android/java/src/org/chromium/chrome/browser/omnibox/suggestions/base/BaseSuggestionViewBinder.java"
-            line="59"
-            column="50"/>
-    </issue>
-
-    <issue
-        id="VisibleForTests"
-        message="This method should only be accessed from tests or within private scope"
         errorLine1="        if (suggestion.hasTabMatch()) {"
         errorLine2="                       ~~~~~~~~~~~">
         <location
@@ -2861,7 +2817,7 @@
         errorLine2="                                       ~~~~~~~~~~~~~~~~~~~">
         <location
             file="chrome/android/java/src/org/chromium/chrome/browser/bookmarks/BookmarkPromoHeader.java"
-            line="235"
+            line="239"
             column="40"/>
     </issue>
 
@@ -2916,7 +2872,7 @@
         errorLine2="                                                        ~~~~~~~~~~~~">
         <location
             file="weblayer/browser/java/org/chromium/weblayer_private/BrowserImpl.java"
-            line="244"
+            line="257"
             column="57"/>
     </issue>
 
@@ -2927,7 +2883,7 @@
         errorLine2="                                                                            ~~~~~~~~~~~~">
         <location
             file="weblayer/browser/java/org/chromium/weblayer_private/BrowserImpl.java"
-            line="368"
+            line="381"
             column="77"/>
     </issue>
 
@@ -3136,7 +3092,7 @@
         errorLine2="             ~~~~~~~~~">
         <location
             file="chrome/android/java/src/org/chromium/chrome/browser/payments/CardEditor.java"
-            line="788"
+            line="796"
             column="14"/>
     </issue>
 
@@ -3147,7 +3103,7 @@
         errorLine2="             ~~~~~~~~">
         <location
             file="chrome/android/java/src/org/chromium/chrome/browser/payments/CardEditor.java"
-            line="790"
+            line="798"
             column="14"/>
     </issue>
 
@@ -3158,7 +3114,7 @@
         errorLine2="                 ~~~~~~~">
         <location
             file="chrome/android/java/src/org/chromium/chrome/browser/payments/CardEditor.java"
-            line="808"
+            line="816"
             column="18"/>
     </issue>
 
@@ -3191,7 +3147,7 @@
         errorLine2="                      ~~~~~~~~~~~~~~~~~~~~~">
         <location
             file="chrome/android/java/src/org/chromium/chrome/browser/ChromeActivity.java"
-            line="746"
+            line="739"
             column="23"/>
     </issue>
 
@@ -3202,7 +3158,7 @@
         errorLine2="            ~~~~~~~~~~~~~~">
         <location
             file="clank/java/src/org/chromium/chrome/browser/customtabs/ChromeCustomTabsConnection.java"
-            line="226"
+            line="228"
             column="13"/>
     </issue>
 
@@ -3213,7 +3169,7 @@
         errorLine2="                    ~~~~~~~~~~~~~~~~~~">
         <location
             file="clank/java/src/org/chromium/chrome/browser/customtabs/ChromeCustomTabsConnection.java"
-            line="244"
+            line="246"
             column="21"/>
     </issue>
 
@@ -3224,7 +3180,7 @@
         errorLine2="                ~~~~~~~~~~~~~~">
         <location
             file="clank/java/src/org/chromium/chrome/browser/customtabs/ChromeCustomTabsConnection.java"
-            line="278"
+            line="280"
             column="17"/>
     </issue>
 
@@ -3235,7 +3191,7 @@
         errorLine2="                ~~~~~~~~~~~~~~">
         <location
             file="clank/java/src/org/chromium/chrome/browser/customtabs/ChromeCustomTabsConnection.java"
-            line="285"
+            line="287"
             column="17"/>
     </issue>
 
@@ -3246,7 +3202,7 @@
         errorLine2="                ~~~~~~~~~~~~~~">
         <location
             file="clank/java/src/org/chromium/chrome/browser/customtabs/ChromeCustomTabsConnection.java"
-            line="291"
+            line="293"
             column="17"/>
     </issue>
 
@@ -3257,7 +3213,7 @@
         errorLine2="                ~~~~~~~~~~~~~~">
         <location
             file="clank/java/src/org/chromium/chrome/browser/customtabs/ChromeCustomTabsConnection.java"
-            line="299"
+            line="301"
             column="17"/>
     </issue>
 
@@ -3268,7 +3224,7 @@
         errorLine2="                ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~">
         <location
             file="clank/java/src/org/chromium/chrome/browser/customtabs/ChromeCustomTabsConnection.java"
-            line="312"
+            line="314"
             column="17"/>
     </issue>
 
@@ -3279,7 +3235,7 @@
         errorLine2="                ~~~~~~~~~~~~~~">
         <location
             file="clank/java/src/org/chromium/chrome/browser/customtabs/ChromeCustomTabsConnection.java"
-            line="389"
+            line="391"
             column="17"/>
     </issue>
 
@@ -3290,7 +3246,7 @@
         errorLine2="                             ~~~~~~~~~~~~~~">
         <location
             file="clank/java/src/org/chromium/chrome/browser/customtabs/ChromeCustomTabsConnection.java"
-            line="400"
+            line="402"
             column="30"/>
     </issue>
 
@@ -3301,7 +3257,7 @@
         errorLine2="                  ~~~~~~~~~~~~~~">
         <location
             file="clank/java/src/org/chromium/chrome/browser/customtabs/ChromeCustomTabsConnection.java"
-            line="862"
+            line="863"
             column="19"/>
     </issue>
 
@@ -3323,7 +3279,7 @@
         errorLine2="            ~~~~~~~~~~~~~~~">
         <location
             file="chrome/android/java/src/org/chromium/chrome/browser/page_info/ChromePageInfoControllerDelegate.java"
-            line="104"
+            line="108"
             column="13"/>
     </issue>
 
@@ -3334,7 +3290,7 @@
         errorLine2="                                          ~~~~~~">
         <location
             file="chrome/android/java/src/org/chromium/chrome/browser/page_info/ChromePageInfoControllerDelegate.java"
-            line="104"
+            line="108"
             column="43"/>
     </issue>
 
@@ -3345,7 +3301,7 @@
         errorLine2="                                                  ~~~~~~~~~~~~~~~~~">
         <location
             file="chrome/android/java/src/org/chromium/chrome/browser/page_info/ChromePageInfoControllerDelegate.java"
-            line="113"
+            line="117"
             column="51"/>
     </issue>
 
@@ -3356,7 +3312,7 @@
         errorLine2="                                                         ~~~~~~~~~~~~~~~~~">
         <location
             file="chrome/android/java/src/org/chromium/chrome/browser/page_info/ChromePageInfoControllerDelegate.java"
-            line="115"
+            line="119"
             column="58"/>
     </issue>
 
@@ -3367,19 +3323,8 @@
         errorLine2="                                                                  ~~~~~~~~~~~~~~~~~~~~~">
         <location
             file="chrome/android/java/src/org/chromium/chrome/browser/ChromeTabbedActivity.java"
-            line="896"
+            line="816"
             column="67"/>
-    </issue>
-
-    <issue
-        id="VisibleForTests"
-        message="This method should only be accessed from tests or within private scope"
-        errorLine1="                || ConditionalTabStripUtils.getOptOutIndicator()) {"
-        errorLine2="                                            ~~~~~~~~~~~~~~~~~~">
-        <location
-            file="chrome/android/java/src/org/chromium/chrome/browser/ChromeTabbedActivity.java"
-            line="980"
-            column="45"/>
     </issue>
 
     <issue
@@ -3664,7 +3609,7 @@
         errorLine2="                                           ~~~~~~~~~~">
         <location
             file="chrome/android/java/src/org/chromium/chrome/browser/omnibox/suggestions/DropdownItemViewInfoListBuilder.java"
-            line="272"
+            line="276"
             column="44"/>
     </issue>
 
@@ -3675,7 +3620,7 @@
         errorLine2="                                          ~~~~~~~~~~">
         <location
             file="chrome/android/java/src/org/chromium/chrome/browser/omnibox/suggestions/DropdownItemViewInfoListBuilder.java"
-            line="273"
+            line="277"
             column="43"/>
     </issue>
 
@@ -3686,7 +3631,7 @@
         errorLine2="                                                                                ~~~~~~~~~~">
         <location
             file="chrome/android/java/src/org/chromium/chrome/browser/omnibox/suggestions/DropdownItemViewInfoListBuilder.java"
-            line="393"
+            line="397"
             column="81"/>
     </issue>
 
@@ -3697,7 +3642,7 @@
         errorLine2="                                                                                     ~~~~~~~">
         <location
             file="chrome/android/java/src/org/chromium/chrome/browser/omnibox/suggestions/DropdownItemViewInfoListBuilder.java"
-            line="414"
+            line="418"
             column="86"/>
     </issue>
 
@@ -3990,17 +3935,6 @@
     <issue
         id="VisibleForTests"
         message="This method should only be accessed from tests or within private scope"
-        errorLine1="        NavigationEntry entry = nController.getEntryAtIndex(index);"
-        errorLine2="                                            ~~~~~~~~~~~~~~~">
-        <location
-            file="components/external_intents/android/java/src/org/chromium/components/external_intents/ExternalNavigationHandler.java"
-            line="1767"
-            column="45"/>
-    </issue>
-
-    <issue
-        id="VisibleForTests"
-        message="This method should only be accessed from tests or within private scope"
         errorLine1="        return FeedConfiguration.getFeedServerEndpoint();"
         errorLine2="                                 ~~~~~~~~~~~~~~~~~~~~~">
         <location
@@ -4128,17 +4062,6 @@
             file="chrome/android/java/src/org/chromium/chrome/browser/offlinepages/GetPagesByNamespaceForLivePageSharingCallback.java"
             line="36"
             column="22"/>
-    </issue>
-
-    <issue
-        id="VisibleForTests"
-        message="This method should only be accessed from tests or within private scope"
-        errorLine1="            mIsNightModeForceEnabled ="
-        errorLine2="            ~~~~~~~~~~~~~~~~~~~~~~~~">
-        <location
-            file="chrome/android/java/src/org/chromium/chrome/browser/night_mode/GlobalNightModeStateProviderHolder.java"
-            line="30"
-            column="13"/>
     </issue>
 
     <issue
@@ -4500,30 +4423,8 @@
         errorLine2="                                  ~~~~~~~~~~~~">
         <location
             file="chrome/android/java/src/org/chromium/chrome/browser/ntp/NewTabPage.java"
-            line="340"
+            line="331"
             column="35"/>
-    </issue>
-
-    <issue
-        id="VisibleForTests"
-        message="This method should only be accessed from tests or within private scope"
-        errorLine1="        NavigationEntry entry = controller.getEntryAtIndex(index);"
-        errorLine2="                                           ~~~~~~~~~~~~~~~">
-        <location
-            file="chrome/android/java/src/org/chromium/chrome/browser/ntp/NewTabPage.java"
-            line="468"
-            column="44"/>
-    </issue>
-
-    <issue
-        id="VisibleForTests"
-        message="This method should only be accessed from tests or within private scope"
-        errorLine1="        NavigationEntry entry = controller.getEntryAtIndex(index);"
-        errorLine2="                                           ~~~~~~~~~~~~~~~">
-        <location
-            file="chrome/android/feed/core/java/src/org/chromium/chrome/browser/feed/NtpStreamLifecycleManager.java"
-            line="121"
-            column="44"/>
     </issue>
 
     <issue
@@ -4731,7 +4632,7 @@
         errorLine2="                     ~~~~~~~">
         <location
             file="chrome/android/java/src/org/chromium/chrome/browser/compositor/bottombar/OverlayPanel.java"
-            line="501"
+            line="523"
             column="22"/>
     </issue>
 
@@ -5149,18 +5050,18 @@
         errorLine2="                                             ~~~~~~~~~~~~~~~~~">
         <location
             file="clank/java/src/com/google/android/apps/chrome/init/ProcessInitializationHandlerInternal.java"
-            line="38"
+            line="44"
             column="46"/>
     </issue>
 
     <issue
         id="VisibleForTests"
         message="This method should only be accessed from tests or within private scope"
-        errorLine1="        LocationUtils.setFactory(new LocationUtils.Factory() {"
+        errorLine1="        LocationUtils.setFactory(() -> new LocationUtilsInternal(mExternalAuthUtils));"
         errorLine2="                      ~~~~~~~~~~">
         <location
             file="clank/java/src/com/google/android/apps/chrome/init/ProcessInitializationHandlerInternal.java"
-            line="43"
+            line="51"
             column="23"/>
     </issue>
 
@@ -5310,28 +5211,6 @@
     <issue
         id="VisibleForTests"
         message="This method should only be accessed from tests or within private scope"
-        errorLine1="                NavigationEntry entry = controller.getEntryAtIndex(index);"
-        errorLine2="                                                   ~~~~~~~~~~~~~~~">
-        <location
-            file="chrome/android/java/src/org/chromium/chrome/browser/dom_distiller/ReaderModeManager.java"
-            line="314"
-            column="52"/>
-    </issue>
-
-    <issue
-        id="VisibleForTests"
-        message="This method should only be accessed from tests or within private scope"
-        errorLine1="                    if (controller.getEntryAtIndex(mLastDistillerPageIndex) != null) {"
-        errorLine2="                                   ~~~~~~~~~~~~~~~">
-        <location
-            file="chrome/android/java/src/org/chromium/chrome/browser/dom_distiller/ReaderModeManager.java"
-            line="342"
-            column="36"/>
-    </issue>
-
-    <issue
-        id="VisibleForTests"
-        message="This method should only be accessed from tests or within private scope"
         errorLine1="        String distillerUrl = DomDistillerUrlUtils.getDistillerViewUrlFromUrl("
         errorLine2="                                                   ~~~~~~~~~~~~~~~~~~~~~~~~~~">
         <location
@@ -5380,7 +5259,7 @@
         errorLine2="        ~~~~~">
         <location
             file="clank/java/src/com/google/android/apps/chrome/omaha/RequestGeneratorImpl.java"
-            line="33"
+            line="36"
             column="9"/>
     </issue>
 
@@ -5424,7 +5303,7 @@
         errorLine2="                        ~~~~~~~~~~~~~~~~~~~~~~~~~">
         <location
             file="chrome/browser/share/android/java/src/org/chromium/chrome/browser/share/share_sheet/ShareSheetPropertyModelBuilder.java"
-            line="196"
+            line="202"
             column="25"/>
     </issue>
 
@@ -5622,7 +5501,7 @@
         errorLine2="                                       ~~~~~~~~~~~~~~~~~~~">
         <location
             file="chrome/android/java/src/org/chromium/chrome/browser/sync/settings/SyncSettingsUtils.java"
-            line="81"
+            line="82"
             column="40"/>
     </issue>
 
@@ -5701,28 +5580,6 @@
             file="chrome/android/java/src/org/chromium/chrome/browser/download/SystemDownloadNotifier.java"
             line="270"
             column="50"/>
-    </issue>
-
-    <issue
-        id="VisibleForTests"
-        message="This method should only be accessed from tests or within private scope"
-        errorLine1="                mActivity.getTabModelSelector(), mActivity.getOverviewModeBehaviorSupplier());"
-        errorLine2="                                                           ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~">
-        <location
-            file="chrome/android/java/src/org/chromium/chrome/browser/tabbed_mode/TabbedRootUiCoordinator.java"
-            line="150"
-            column="60"/>
-    </issue>
-
-    <issue
-        id="VisibleForTests"
-        message="This method should only be accessed from tests or within private scope"
-        errorLine1="                    mActivity.getOverviewModeBehaviorSupplier());"
-        errorLine2="                              ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~">
-        <location
-            file="chrome/android/java/src/org/chromium/chrome/browser/tabbed_mode/TabbedRootUiCoordinator.java"
-            line="202"
-            column="31"/>
     </issue>
 
     <issue
@@ -6601,7 +6458,7 @@
         errorLine2="            ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~">
         <location
             file="clank/java/src/com/google/android/apps/chrome/location/LocationUtilsInternal.java"
-            line="92"
+            line="96"
             column="13"/>
     </issue>
 
@@ -6612,7 +6469,7 @@
         errorLine2="        ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~">
         <location
             file="clank/java/src/com/google/android/apps/chrome/location/LocationUtilsInternal.java"
-            line="124"
+            line="123"
             column="9"/>
     </issue>
 
@@ -6623,7 +6480,7 @@
         errorLine2="                                      ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~">
         <location
             file="clank/java/src/com/google/android/apps/chrome/location/LocationUtilsInternal.java"
-            line="130"
+            line="129"
             column="39"/>
     </issue>
 
@@ -6634,7 +6491,7 @@
         errorLine2="                                      ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~">
         <location
             file="clank/java/src/com/google/android/apps/chrome/location/LocationUtilsInternal.java"
-            line="144"
+            line="143"
             column="39"/>
     </issue>
 

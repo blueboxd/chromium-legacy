@@ -1218,7 +1218,7 @@ void RenderFrameHostImpl::OnPortalCreatedForTesting(
 }
 
 Portal* RenderFrameHostImpl::FindPortalByToken(
-    const base::UnguessableToken& portal_token) {
+    const blink::PortalToken& portal_token) {
   auto it =
       std::find_if(portals_.begin(), portals_.end(), [&](const auto& portal) {
         return portal->portal_token() == portal_token;
@@ -4943,9 +4943,8 @@ void RenderFrameHostImpl::CreatePortal(
                           (*it)->GetDevToolsFrameToken());
 }
 
-void RenderFrameHostImpl::AdoptPortal(
-    const base::UnguessableToken& portal_token,
-    AdoptPortalCallback callback) {
+void RenderFrameHostImpl::AdoptPortal(const blink::PortalToken& portal_token,
+                                      AdoptPortalCallback callback) {
   Portal* portal = FindPortalByToken(portal_token);
   if (!portal) {
     mojo::ReportBadMessage("Unknown portal_token when adopting portal.");

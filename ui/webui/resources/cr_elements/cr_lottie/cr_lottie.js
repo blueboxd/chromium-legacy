@@ -10,6 +10,7 @@
  * initialized.
  * Fires a 'cr-lottie-playing' event when the animation starts playing.
  * Fires a 'cr-lottie-paused' event when the animation has paused.
+ * Fires a 'cr-lottie-stopped' event when animation has stopped.
  * Fires a 'cr-lottie-resized' event when the canvas the animation is being
  * drawn on is resized.
  */
@@ -153,7 +154,10 @@ Polymer({
       this.xhr_.abort();
       this.xhr_ = null;
     }
-    this.isAnimationLoaded_ = false;
+    if (this.isAnimationLoaded_) {
+      this.worker_.postMessage({control: {stop: true}});
+      this.isAnimationLoaded_ = false;
+    }
     this.sendXmlHttpRequest_(
         this.animationUrl, 'json', this.initAnimation_.bind(this));
   },
@@ -262,6 +266,8 @@ Polymer({
       this.fire('cr-lottie-playing');
     } else if (event.data.name === 'paused') {
       this.fire('cr-lottie-paused');
+    } else if (event.data.name === 'stopped') {
+      this.fire('cr-lottie-stopped');
     } else if (event.data.name === 'resized') {
       this.fire('cr-lottie-resized', event.data.size);
     }

@@ -112,7 +112,7 @@ class MOJO_SYSTEM_IMPL_EXPORT Channel
       char padding[6];
     };
 
-#if defined(OS_MACOSX) && !defined(OS_IOS)
+#if defined(OS_MAC)
     struct MachPortsEntry {
       // The PlatformHandle::Type.
       uint8_t type;
@@ -227,7 +227,7 @@ class MOJO_SYSTEM_IMPL_EXPORT Channel
 #if defined(OS_WIN)
     // On Windows, handles are serialised into the extra header section.
     HandleEntry* handles_ = nullptr;
-#elif defined(OS_MACOSX) && !defined(OS_IOS)
+#elif defined(OS_MAC)
     // On OSX, handles are serialised into the extra header section.
     MachPortsExtraHeader* mach_ports_header_ = nullptr;
 #endif

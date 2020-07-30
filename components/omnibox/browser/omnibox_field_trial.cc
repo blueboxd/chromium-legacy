@@ -770,6 +770,13 @@ size_t OmniboxFieldTrial::RichAutocompletionAutocompleteNonPrefixMinChar() {
       kRichAutocompletionAutocompleteNonPrefixMinCharParam, 0);
 }
 
+bool OmniboxFieldTrial::RichAutocompletionShowAdditionalText() {
+  return OmniboxFieldTrial::IsRichAutocompletionEnabled() &&
+         base::GetFieldTrialParamByFeatureAsBool(
+             omnibox::kRichAutocompletion,
+             kRichAutocompletionShowAdditionalTextParam, true);
+}
+
 bool OmniboxFieldTrial::IsOnDeviceHeadSuggestEnabledForIncognito() {
   return base::FeatureList::IsEnabled(omnibox::kOnDeviceHeadProviderIncognito);
 }
@@ -956,6 +963,8 @@ const char OmniboxFieldTrial::kRichAutocompletionAutocompleteNonPrefixParam[] =
 const char
     OmniboxFieldTrial::kRichAutocompletionAutocompleteNonPrefixMinCharParam[] =
         "RichAutocompletionAutocompleteNonPrefixMinChar";
+const char OmniboxFieldTrial::kRichAutocompletionShowAdditionalTextParam[] =
+    "RichAutocompletionAutocompleteShowAdditionalText";
 
 const char OmniboxFieldTrial::kImageSearchSuggestionThumbnail[] =
     "ImageSearchSuggestionThumbnail";

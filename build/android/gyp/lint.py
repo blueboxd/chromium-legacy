@@ -333,6 +333,7 @@ def main():
 
   possible_depfile_deps = (args.srcjars + args.resource_zips + sources +
                            resource_sources + [
+                               args.baseline,
                                args.manifest_path,
                            ])
   depfile_deps = [p for p in possible_depfile_deps if p]

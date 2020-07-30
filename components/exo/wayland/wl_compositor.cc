@@ -12,14 +12,17 @@
 #include "components/exo/buffer.h"
 #include "components/exo/display.h"
 #include "components/exo/surface.h"
+#include "components/exo/wayland/server.h"
 #include "components/exo/wayland/server_util.h"
 #include "third_party/skia/include/core/SkRegion.h"
+#include "ui/display/types/display_constants.h"
 
 #if defined(OS_CHROMEOS)
 #include "components/exo/wayland/zwp_linux_explicit_synchronization.h"
 #endif
 
 namespace exo {
+class Server;
 namespace wayland {
 namespace {
 
@@ -202,8 +205,8 @@ const struct wl_surface_interface surface_implementation = {
 void compositor_create_surface(wl_client* client,
                                wl_resource* resource,
                                uint32_t id) {
-  std::unique_ptr<Surface> surface =
-      GetUserDataAs<Display>(resource)->CreateSurface();
+  Display* display = GetUserDataAs<Display>(resource);
+  std::unique_ptr<Surface> surface = display->CreateSurface();
 
   wl_resource* surface_resource = wl_resource_create(
       client, &wl_surface_interface, wl_resource_get_version(resource), id);

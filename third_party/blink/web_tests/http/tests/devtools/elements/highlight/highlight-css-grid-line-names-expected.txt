@@ -100,48 +100,48 @@ grid-with-line-names{
       "rotationAngle": 0,
       "columnTrackSizes": [
         {
-          "computedSize": 100,
-          "authoredSize": "100px",
           "x": 50,
-          "y": 0
+          "y": 0,
+          "computedSize": 100,
+          "authoredSize": "100px"
         },
         {
-          "computedSize": 500,
-          "authoredSize": "500px",
           "x": 360,
-          "y": 0
+          "y": 0,
+          "computedSize": 500,
+          "authoredSize": "500px"
         },
         {
-          "computedSize": 20,
-          "authoredSize": "20px",
           "x": 630,
-          "y": 0
+          "y": 0,
+          "computedSize": 20,
+          "authoredSize": "20px"
         }
       ],
       "rowTrackSizes": [
         {
-          "computedSize": 200,
-          "authoredSize": "200px",
           "x": 0,
-          "y": 100
+          "y": 100,
+          "computedSize": 200,
+          "authoredSize": "200px"
         },
         {
-          "computedSize": 200,
-          "authoredSize": "200px",
           "x": 0,
-          "y": 310
+          "y": 310,
+          "computedSize": 200,
+          "authoredSize": "200px"
         },
         {
-          "computedSize": 200,
-          "authoredSize": "200px",
           "x": 0,
-          "y": 520
+          "y": 520,
+          "computedSize": 200,
+          "authoredSize": "200px"
         },
         {
-          "computedSize": 200,
-          "authoredSize": "200px",
           "x": 0,
-          "y": 730
+          "y": 730,
+          "computedSize": 200,
+          "authoredSize": "200px"
         }
       ],
       "rows": [
@@ -314,6 +314,46 @@ grid-with-line-names{
         615,
         640
       ],
+      "positiveRowLineNumberPositions": [
+        {
+          "x": 0,
+          "y": 0
+        },
+        {
+          "x": 0,
+          "y": 205
+        },
+        {
+          "x": 0,
+          "y": 415
+        },
+        {
+          "x": 0,
+          "y": 625
+        },
+        {
+          "x": 0,
+          "y": 830
+        }
+      ],
+      "positiveColumnLineNumberPositions": [
+        {
+          "x": 0,
+          "y": 0
+        },
+        {
+          "x": 105,
+          "y": 0
+        },
+        {
+          "x": 615,
+          "y": 0
+        },
+        {
+          "x": 640,
+          "y": 0
+        }
+      ],
       "negativeRowLineNumberOffsets": [
         0,
         205,
@@ -326,6 +366,46 @@ grid-with-line-names{
         105,
         615,
         640
+      ],
+      "negativeRowLineNumberPositions": [
+        {
+          "x": 640,
+          "y": 0
+        },
+        {
+          "x": 640,
+          "y": 205
+        },
+        {
+          "x": 640,
+          "y": 415
+        },
+        {
+          "x": 640,
+          "y": 625
+        },
+        {
+          "x": 640,
+          "y": 830
+        }
+      ],
+      "negativeColumnLineNumberPositions": [
+        {
+          "x": 0,
+          "y": 830
+        },
+        {
+          "x": 105,
+          "y": 830
+        },
+        {
+          "x": 615,
+          "y": 830
+        },
+        {
+          "x": 640,
+          "y": 830
+        }
       ],
       "areaNames": {},
       "rowLineNameOffsets": [

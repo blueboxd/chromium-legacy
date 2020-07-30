@@ -13,7 +13,8 @@ enum class MenuScenario {
   kBookmarkEntry = 1,
   kReadingListEntry = 2,
   kRecentTabsEntry = 3,
-  kMaxValue = kRecentTabsEntry
+  kContentSuggestionsEntry = 4,
+  kMaxValue = kContentSuggestionsEntry
 };
 
 // Records a menu shown histogram metric for the |scenario|.

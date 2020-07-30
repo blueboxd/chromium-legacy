@@ -411,6 +411,7 @@ class HarfBuzzLineBreaker {
   HarfBuzzLineBreaker(size_t max_width,
                       int min_baseline,
                       float min_height,
+                      float glyph_height_for_test,
                       WordWrapBehavior word_wrap_behavior,
                       const base::string16& text,
                       const BreakList<size_t>* words,
@@ -418,6 +419,7 @@ class HarfBuzzLineBreaker {
       : max_width_((max_width == 0) ? SK_ScalarMax : SkIntToScalar(max_width)),
         min_baseline_(min_baseline),
         min_height_(min_height),
+        glyph_height_for_test_(glyph_height_for_test),
         word_wrap_behavior_(word_wrap_behavior),
         text_(text),
         words_(words),
@@ -516,7 +518,12 @@ class HarfBuzzLineBreaker {
                   return run_list_.logical_to_visual(s1.run) <
                          run_list_.logical_to_visual(s2.run);
                 });
-      line->size.set_height(std::max(min_height_, max_descent_ + max_ascent_));
+
+      line->size.set_height(
+          glyph_height_for_test_
+              ? glyph_height_for_test_
+              : std::max(min_height_, max_descent_ + max_ascent_));
+
       line->baseline = std::max(min_baseline_, SkScalarRoundToInt(max_ascent_));
       line->preceding_heights = base::ClampCeil(total_size_.height());
       // Subtract newline segment's width from |total_size_| because it's not
@@ -733,6 +740,7 @@ class HarfBuzzLineBreaker {
   const SkScalar max_width_;
   const int min_baseline_;
   const float min_height_;
+  const float glyph_height_for_test_;
   const WordWrapBehavior word_wrap_behavior_;
   const base::string16& text_;
   const BreakList<size_t>* const words_;
@@ -1336,8 +1344,14 @@ void ShapeRunWithFont(const ShapeRunWithFontInput& in,
     if (in.obscured)
       out->width += in.obscured_glyph_spacing;
 
+    // When subpixel positioning is not enabled, glyph width is rounded to avoid
+    // fractional width. Disable this conversion when a glyph width is provided
+    // for testing. Using an integral glyph width has the same behavior as
+    // disabling the subpixel positioning.
+    const bool force_subpixel_for_test = in.glyph_width_for_test != 0;
+
     // Round run widths if subpixel positioning is off to match native behavior.
-    if (!in.render_params.subpixel_positioning)
+    if (!in.render_params.subpixel_positioning && !force_subpixel_for_test)
       out->width = std::round(out->width);
   }
 
@@ -1670,7 +1684,7 @@ void RenderTextHarfBuzz::EnsureLayout() {
     HarfBuzzLineBreaker line_breaker(
         display_rect().width(),
         DetermineBaselineCenteringText(height, font_list()), height,
-        word_wrap_behavior(), GetDisplayText(),
+        glyph_height_for_test_, word_wrap_behavior(), GetDisplayText(),
         multiline() ? &GetLineBreaks() : nullptr, *run_list);
 
     if (multiline())

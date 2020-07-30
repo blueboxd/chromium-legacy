@@ -9,6 +9,7 @@
 #include "services/network/public/mojom/ip_address_space.mojom-blink.h"
 #include "services/network/public/mojom/referrer_policy.mojom-blink.h"
 #include "third_party/blink/public/common/features.h"
+#include "third_party/blink/public/common/loader/network_utils.h"
 #include "third_party/blink/renderer/core/inspector/console_message.h"
 #include "third_party/blink/renderer/core/origin_trials/origin_trial_context.h"
 #include "third_party/blink/renderer/core/workers/worker_global_scope.h"
@@ -16,6 +17,7 @@
 #include "third_party/blink/renderer/platform/loader/fetch/fetch_client_settings_object.h"
 #include "third_party/blink/renderer/platform/loader/fetch/resource_fetcher.h"
 #include "third_party/blink/renderer/platform/loader/fetch/resource_fetcher_properties.h"
+#include "third_party/blink/renderer/platform/loader/fetch/unique_identifier.h"
 #include "third_party/blink/renderer/platform/network/content_security_policy_response_headers.h"
 #include "third_party/blink/renderer/platform/network/http_names.h"
 #include "third_party/blink/renderer/platform/network/mime/mime_type_registry.h"
@@ -46,18 +48,18 @@ void WorkerModuleScriptFetcher::Fetch(
   std::unique_ptr<WorkerMainScriptLoadParameters>
       worker_main_script_load_params =
           global_scope_->TakeWorkerMainScriptLoadingParametersForModules();
-  ResourceLoaderOptions resource_loader_options;
   if (worker_main_script_load_params) {
     DCHECK(base::FeatureList::IsEnabled(
         features::kLoadMainScriptForPlzDedicatedWorkerByParams));
     DCHECK_EQ(level_, ModuleGraphLevel::kTopLevelModuleFetch);
+
+    fetch_params.MutableResourceRequest().SetInspectorId(
+        CreateUniqueIdentifier());
     worker_main_script_loader_ = MakeGarbageCollected<WorkerMainScriptLoader>();
     worker_main_script_loader_->Start(
-        fetch_params.Url(), std::move(worker_main_script_load_params),
-        resource_loader_options,
-        fetch_params.GetResourceRequest().GetRequestContext(),
-        fetch_params.GetResourceRequest().GetRequestDestination(),
+        fetch_params, std::move(worker_main_script_load_params),
         &fetch_client_settings_object_fetcher->Context(),
+        fetch_client_settings_object_fetcher->GetResourceLoadObserver(),
         global_scope_->CloneResourceLoadInfoNotifier(), this);
     return;
   }

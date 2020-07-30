@@ -13,6 +13,7 @@
 #include "chrome/browser/web_applications/components/web_app_helpers.h"
 #include "chrome/browser/web_applications/components/web_app_prefs_utils.h"
 #include "chrome/common/chrome_features.h"
+#include "content/public/common/content_features.h"
 
 namespace web_app {
 
@@ -266,7 +267,12 @@ DisplayMode AppRegistrar::GetAppEffectiveDisplayMode(
     return DisplayMode::kUndefined;
   }
 
-  return ResolveEffectiveDisplayMode(app_display_mode, user_display_mode);
+  std::vector<DisplayMode> display_mode_overrides;
+  if (base::FeatureList::IsEnabled(features::kWebAppManifestDisplayOverride))
+    display_mode_overrides = GetAppDisplayModeOverride(app_id);
+
+  return ResolveEffectiveDisplayMode(app_display_mode, display_mode_overrides,
+                                     user_display_mode);
 }
 
 bool AppRegistrar::IsInExperimentalTabbedWindowMode(const AppId& app_id) const {

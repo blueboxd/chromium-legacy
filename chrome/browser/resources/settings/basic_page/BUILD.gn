@@ -22,7 +22,7 @@ js_library("basic_page") {
     "../prefs:prefs_behavior.m",
     "../safety_check_page:safety_check_page",
     "../search_page",
-    "../settings_page:main_page_behavior.m",
+    "../settings_page:main_page_behavior",
     "//ui/webui/resources/js:load_time_data.m",
   ]
 }

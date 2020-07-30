@@ -9,10 +9,10 @@ import("//ui/ozone/ozone.gni")
 visibility = [ "//ui/ozone/*" ]
 
 declare_args() {
-  # TODO(crbug.com/1015184, crbug.com/854753): Enable by default once the CTM
-  # setting works as expected, i.e.: without glitches and independently of the
-  # de/gamna tables.
-  drm_commit_ctm_on_page_flip = true
+  # Enables commiting of CRTC properties on page flip events.
+  # This is not enabled by default because of a bug on Intel:
+  # https://crbug.com/854753
+  drm_commit_properties_on_page_flip = false
 }
 
 source_set("gbm") {
@@ -171,8 +171,8 @@ source_set("gbm") {
 
   defines = [ "OZONE_IMPLEMENTATION" ]
 
-  if (drm_commit_ctm_on_page_flip) {
-    defines += [ "COMMIT_CTM_ON_PAGE_FLIP" ]
+  if (drm_commit_properties_on_page_flip) {
+    defines += [ "COMMIT_PROPERTIES_ON_PAGE_FLIP" ]
   }
 }
 
@@ -208,7 +208,7 @@ source_set("gbm_unittests") {
     "//ui/ozone/common",
   ]
 
-  if (drm_commit_ctm_on_page_flip) {
-    defines = [ "COMMIT_CTM_ON_PAGE_FLIP" ]
+  if (drm_commit_properties_on_page_flip) {
+    defines = [ "COMMIT_PROPERTIES_ON_PAGE_FLIP" ]
   }
 }

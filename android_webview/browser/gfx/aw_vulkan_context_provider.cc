@@ -92,6 +92,10 @@ AwVulkanContextProvider::AwVulkanContextProvider() {
 AwVulkanContextProvider::~AwVulkanContextProvider() {
   DCHECK_EQ(g_vulkan_context_provider, this);
   g_vulkan_context_provider = nullptr;
+
+  draw_context_.reset();
+  gr_context_.reset();
+
   device_queue_->Destroy();
   device_queue_ = nullptr;
 }

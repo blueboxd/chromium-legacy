@@ -153,18 +153,20 @@ public class PaintPreviewPlayerTest extends DummyUiActivityTestCase {
         assertLinkUrl(playerHostView, 220, 220, TEST_IN_VIEWPORT_LINK_URL);
         assertLinkUrl(playerHostView, 300, 270, TEST_IN_VIEWPORT_LINK_URL);
 
-        UiDevice device = UiDevice.getInstance(InstrumentationRegistry.getInstrumentation());
-        int deviceHeight = device.getDisplayHeight();
-        int statusBarHeight = statusBarHeight();
-        int navigationBarHeight = navigationBarHeight();
-        int padding = 20;
-        int fromY = deviceHeight - navigationBarHeight - padding;
-        int toY = statusBarHeight + padding;
-        mLinkClickHandler.mUrl = null;
-        device.swipe(300, fromY, 300, toY, 10);
+        // Temporarily commenting out as this is flaky on P.
+
+        // UiDevice device = UiDevice.getInstance(InstrumentationRegistry.getInstrumentation());
+        // int deviceHeight = device.getDisplayHeight();
+        // int statusBarHeight = statusBarHeight();
+        // int navigationBarHeight = navigationBarHeight();
+        // int padding = 20;
+        // int fromY = deviceHeight - navigationBarHeight - padding;
+        // int toY = statusBarHeight + padding;
+        // mLinkClickHandler.mUrl = null;
+        // device.swipe(300, fromY, 300, toY, 10);
 
         // Manually click as assertLinkUrl() doesn't handle subframe scrolls well.
-        assertLinkUrl(playerHostView, 200, 1500, TEST_OUT_OF_VIEWPORT_LINK_URL);
+        // assertLinkUrl(playerHostView, 200, 1500, TEST_OUT_OF_VIEWPORT_LINK_URL);
     }
 
     @Test

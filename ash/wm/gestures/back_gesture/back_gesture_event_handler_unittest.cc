@@ -13,7 +13,6 @@
 #include "ash/home_screen/home_screen_controller.h"
 #include "ash/keyboard/ui/keyboard_ui_controller.h"
 #include "ash/keyboard/ui/test/keyboard_test_util.h"
-#include "ash/public/cpp/ash_features.h"
 #include "ash/public/cpp/keyboard/keyboard_controller.h"
 #include "ash/screen_util.h"
 #include "ash/session/session_controller_impl.h"
@@ -33,7 +32,6 @@
 #include "ash/wm/workspace/backdrop_controller.h"
 #include "ash/wm/workspace/workspace_layout_manager.h"
 #include "ash/wm/workspace_controller.h"
-#include "base/test/scoped_feature_list.h"
 #include "ui/aura/client/aura_constants.h"
 #include "ui/base/accelerators/accelerator.h"
 #include "ui/base/accelerators/test_accelerator_target.h"
@@ -62,7 +60,6 @@ class BackGestureEventHandlerTest : public AshTestBase {
     }
     AshTestBase::SetUp(std::move(delegate));
 
-    feature_list_.InitAndEnableFeature(features::kSwipingFromLeftEdgeToGoBack);
     RecreateTopWindow(AppType::BROWSER);
     TabletModeControllerTestApi().EnterTabletMode();
   }
@@ -119,7 +116,6 @@ class BackGestureEventHandlerTest : public AshTestBase {
 
  private:
   bool can_go_back_;
-  base::test::ScopedFeatureList feature_list_;
   std::unique_ptr<aura::Window> top_window_;
 };
 

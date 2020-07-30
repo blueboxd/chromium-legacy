@@ -405,6 +405,14 @@ void ChromeContentRendererClient::RenderThreadStarted() {
   if (command_line->HasSwitch(switches::kEnableNetBenchmarking))
     thread->RegisterExtension(extensions_v8::NetBenchmarkingExtension::Get());
 
+  // chrome: is also to be permitted to embeds https:// things and have them
+  // treated as first-party.
+  // See
+  // ChromeContentBrowserClient::ShouldTreatURLSchemeAsFirstPartyWhenTopLevel
+  WebString chrome_scheme(WebString::FromASCII(content::kChromeUIScheme));
+  WebSecurityPolicy::RegisterURLSchemeAsFirstPartyWhenTopLevelEmbeddingSecure(
+      chrome_scheme);
+
   // chrome-native: is a scheme used for placeholder navigations that allow
   // UIs to be drawn with platform native widgets instead of HTML.  These pages
   // should not be accessible.  No code should be runnable in these pages,

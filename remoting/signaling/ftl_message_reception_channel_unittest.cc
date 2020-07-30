@@ -19,8 +19,8 @@
 #include "base/test/mock_callback.h"
 #include "base/test/task_environment.h"
 #include "base/threading/sequenced_task_runner_handle.h"
-#include "remoting/base/grpc_support/scoped_grpc_server_stream.h"
-#include "remoting/base/grpc_test_support/grpc_test_util.h"
+#include "remoting/base/protobuf_http_status.h"
+#include "remoting/base/scoped_protobuf_http_request.h"
 #include "remoting/proto/ftl/v1/ftl_messages.pb.h"
 #include "remoting/signaling/ftl_grpc_context.h"
 #include "remoting/signaling/mock_signaling_tracker.h"
@@ -37,27 +37,28 @@ using ::testing::Invoke;
 using ::testing::Property;
 using ::testing::Return;
 
-using ReceiveMessagesResponseCallback =
-    base::RepeatingCallback<void(const ftl::ReceiveMessagesResponse&)>;
-using StatusCallback = base::OnceCallback<void(const grpc::Status&)>;
+using ReceiveMessagesResponseCallback = base::RepeatingCallback<void(
+    std::unique_ptr<ftl::ReceiveMessagesResponse>)>;
+using StatusCallback = base::OnceCallback<void(const ProtobufHttpStatus&)>;
 
 // Fake stream implementation to allow probing if a stream is closed by client.
-class FakeScopedGrpcServerStream : public ScopedGrpcServerStream {
+class FakeScopedProtobufHttpRequest : public ScopedProtobufHttpRequest {
  public:
-  FakeScopedGrpcServerStream() : ScopedGrpcServerStream(nullptr) {}
-  ~FakeScopedGrpcServerStream() override = default;
+  FakeScopedProtobufHttpRequest()
+      : ScopedProtobufHttpRequest(base::DoNothing::Once()) {}
+  ~FakeScopedProtobufHttpRequest() override = default;
 
-  base::WeakPtr<FakeScopedGrpcServerStream> GetWeakPtr() {
+  base::WeakPtr<FakeScopedProtobufHttpRequest> GetWeakPtr() {
     return weak_factory_.GetWeakPtr();
   }
 
  private:
-  base::WeakPtrFactory<FakeScopedGrpcServerStream> weak_factory_{this};
-  DISALLOW_COPY_AND_ASSIGN(FakeScopedGrpcServerStream);
+  base::WeakPtrFactory<FakeScopedProtobufHttpRequest> weak_factory_{this};
+  DISALLOW_COPY_AND_ASSIGN(FakeScopedProtobufHttpRequest);
 };
 
-std::unique_ptr<FakeScopedGrpcServerStream> CreateFakeServerStream() {
-  return std::make_unique<FakeScopedGrpcServerStream>();
+std::unique_ptr<FakeScopedProtobufHttpRequest> CreateFakeServerStream() {
+  return std::make_unique<FakeScopedProtobufHttpRequest>();
 }
 
 // Creates a gmock EXPECT_CALL action that:
@@ -66,9 +67,9 @@ std::unique_ptr<FakeScopedGrpcServerStream> CreateFakeServerStream() {
 //   3. Writes the WeakPtr to the fake server stream to |optional_out_stream|
 //      if it is provided.
 template <typename OnStreamOpenedLambda>
-decltype(auto) StartStream(
-    OnStreamOpenedLambda on_stream_opened,
-    base::WeakPtr<FakeScopedGrpcServerStream>* optional_out_stream = nullptr) {
+decltype(auto) StartStream(OnStreamOpenedLambda on_stream_opened,
+                           base::WeakPtr<FakeScopedProtobufHttpRequest>*
+                               optional_out_stream = nullptr) {
   return [=](base::OnceClosure on_channel_ready,
              const ReceiveMessagesResponseCallback& on_incoming_msg,
              StatusCallback on_channel_closed) {
@@ -89,11 +90,23 @@ base::OnceClosure NotReachedClosure() {
   return base::BindOnce([]() { NOTREACHED(); });
 }
 
-base::RepeatingCallback<void(const grpc::Status&)> NotReachedStatusCallback(
-    const base::Location& location) {
-  return base::BindLambdaForTesting([=](const grpc::Status& status) {
+base::RepeatingCallback<void(const ProtobufHttpStatus&)>
+NotReachedStatusCallback(const base::Location& location) {
+  return base::BindLambdaForTesting([=](const ProtobufHttpStatus& status) {
     NOTREACHED() << "Location: " << location.ToString()
-                 << ", status code: " << status.error_code();
+                 << ", status code: " << static_cast<int>(status.error_code());
+  });
+}
+
+base::OnceCallback<void(const ProtobufHttpStatus&)>
+CheckStatusThenQuitRunLoopCallback(
+    const base::Location& from_here,
+    ProtobufHttpStatus::Code expected_status_code,
+    base::RunLoop* run_loop) {
+  return base::BindLambdaForTesting([=](const ProtobufHttpStatus& status) {
+    ASSERT_EQ(expected_status_code, status.error_code())
+        << "Incorrect status code. Location: " << from_here.ToString();
+    run_loop->QuitWhenIdle();
   });
 }
 
@@ -167,13 +180,14 @@ TEST_F(FtlMessageReceptionChannelTest,
               const ReceiveMessagesResponseCallback& on_incoming_msg,
               StatusCallback on_channel_closed) {
             std::move(on_channel_closed)
-                .Run(grpc::Status(grpc::StatusCode::UNAUTHENTICATED, ""));
+                .Run(ProtobufHttpStatus(
+                    ProtobufHttpStatus::Code::UNAUTHENTICATED, ""));
           }));
 
   channel_->StartReceivingMessages(
       NotReachedClosure(),
-      test::CheckStatusThenQuitRunLoopCallback(
-          FROM_HERE, grpc::StatusCode::UNAUTHENTICATED, &run_loop));
+      CheckStatusThenQuitRunLoopCallback(
+          FROM_HERE, ProtobufHttpStatus::Code::UNAUTHENTICATED, &run_loop));
 
   run_loop.Run();
 }
@@ -200,7 +214,7 @@ TEST_F(FtlMessageReceptionChannelTest,
        TestStartReceivingMessages_RecoverableStreamError) {
   base::RunLoop run_loop;
 
-  base::WeakPtr<FakeScopedGrpcServerStream> old_stream;
+  base::WeakPtr<FakeScopedProtobufHttpRequest> old_stream;
   EXPECT_CALL(mock_stream_opener_, Run(_, _, _))
       .WillOnce(StartStream(
           [&](base::OnceClosure on_channel_ready,
@@ -210,7 +224,8 @@ TEST_F(FtlMessageReceptionChannelTest,
             ASSERT_EQ(0, GetRetryFailureCount());
 
             std::move(on_channel_closed)
-                .Run(grpc::Status(grpc::StatusCode::UNAVAILABLE, ""));
+                .Run(ProtobufHttpStatus(ProtobufHttpStatus::Code::UNAVAILABLE,
+                                        ""));
 
             ASSERT_EQ(1, GetRetryFailureCount());
             ASSERT_NEAR(FtlGrpcContext::kBackoffInitialDelay.InSecondsF(),
@@ -295,22 +310,22 @@ TEST_F(FtlMessageReceptionChannelTest, StreamsTwoMessages) {
               StatusCallback on_channel_closed) {
             std::move(on_channel_ready).Run();
 
-            ftl::ReceiveMessagesResponse response;
-            *response.mutable_inbox_message() = message_1;
-            on_incoming_msg.Run(response);
-            response.Clear();
+            auto response = std::make_unique<ftl::ReceiveMessagesResponse>();
+            *response->mutable_inbox_message() = message_1;
+            on_incoming_msg.Run(std::move(response));
 
-            *response.mutable_inbox_message() = message_2;
-            on_incoming_msg.Run(response);
-            response.Clear();
+            response = std::make_unique<ftl::ReceiveMessagesResponse>();
+            *response->mutable_inbox_message() = message_2;
+            on_incoming_msg.Run(std::move(response));
 
-            std::move(on_channel_closed).Run(grpc::Status::CANCELLED);
+            std::move(on_channel_closed).Run(ProtobufHttpStatus::CANCELLED);
           }));
 
   channel_->StartReceivingMessages(
       base::DoNothing(),
-      test::CheckStatusThenQuitRunLoopCallback(
-          FROM_HERE, grpc::StatusCode::CANCELLED, &run_loop));
+      CheckStatusThenQuitRunLoopCallback(
+          FROM_HERE, ProtobufHttpStatus::ProtobufHttpStatus::Code::CANCELLED,
+          &run_loop));
 
   run_loop.Run();
 }
@@ -330,9 +345,9 @@ TEST_F(FtlMessageReceptionChannelTest, ReceivedOnePong_OnChannelActiveTwice) {
               const ReceiveMessagesResponseCallback& on_incoming_msg,
               StatusCallback on_channel_closed) {
             std::move(on_channel_ready).Run();
-            ftl::ReceiveMessagesResponse response;
-            response.mutable_pong();
-            on_incoming_msg.Run(response);
+            auto response = std::make_unique<ftl::ReceiveMessagesResponse>();
+            response->mutable_pong();
+            on_incoming_msg.Run(std::move(response));
           }));
 
   channel_->StartReceivingMessages(base::DoNothing(),
@@ -344,7 +359,7 @@ TEST_F(FtlMessageReceptionChannelTest, ReceivedOnePong_OnChannelActiveTwice) {
 TEST_F(FtlMessageReceptionChannelTest, NoPongWithinTimeout_ResetsStream) {
   base::RunLoop run_loop;
 
-  base::WeakPtr<FakeScopedGrpcServerStream> old_stream;
+  base::WeakPtr<FakeScopedProtobufHttpRequest> old_stream;
   EXPECT_CALL(mock_stream_opener_, Run(_, _, _))
       .WillOnce(StartStream(
           [&](base::OnceClosure on_channel_ready,
@@ -385,7 +400,7 @@ TEST_F(FtlMessageReceptionChannelTest, NoPongWithinTimeout_ResetsStream) {
 TEST_F(FtlMessageReceptionChannelTest, ServerClosesStream_ResetsStream) {
   base::RunLoop run_loop;
 
-  base::WeakPtr<FakeScopedGrpcServerStream> old_stream;
+  base::WeakPtr<FakeScopedProtobufHttpRequest> old_stream;
   EXPECT_CALL(mock_stream_opener_, Run(_, _, _))
       .WillOnce(StartStream(
           [&](base::OnceClosure on_channel_ready,
@@ -395,7 +410,7 @@ TEST_F(FtlMessageReceptionChannelTest, ServerClosesStream_ResetsStream) {
             std::move(on_channel_ready).Run();
 
             // Close the stream with OK.
-            std::move(on_channel_closed).Run(grpc::Status::OK);
+            std::move(on_channel_closed).Run(ProtobufHttpStatus::OK);
           },
           &old_stream))
       .WillOnce(StartStream(
@@ -436,7 +451,9 @@ TEST_F(FtlMessageReceptionChannelTest, TimeoutIncreasesToMaximum) {
             // Otherwise send UNAVAILABLE to reset the stream.
 
             std::move(on_channel_closed)
-                .Run(grpc::Status(grpc::StatusCode::UNAVAILABLE, ""));
+                .Run(ProtobufHttpStatus(
+                    ProtobufHttpStatus::ProtobufHttpStatus::Code::UNAVAILABLE,
+                    ""));
 
             int new_failure_count = GetRetryFailureCount();
             ASSERT_LT(failure_count, new_failure_count);
@@ -467,7 +484,7 @@ TEST_F(FtlMessageReceptionChannelTest,
        StartStreamFailsWithUnRecoverableErrorAndRetry_TimeoutApplied) {
   base::RunLoop run_loop;
 
-  base::WeakPtr<FakeScopedGrpcServerStream> old_stream;
+  base::WeakPtr<FakeScopedProtobufHttpRequest> old_stream;
   EXPECT_CALL(mock_stream_opener_, Run(_, _, _))
       .WillOnce(StartStream(
           [&](base::OnceClosure on_channel_ready,
@@ -477,7 +494,9 @@ TEST_F(FtlMessageReceptionChannelTest,
             ASSERT_EQ(0, GetRetryFailureCount());
 
             std::move(on_channel_closed)
-                .Run(grpc::Status(grpc::StatusCode::UNAUTHENTICATED, ""));
+                .Run(ProtobufHttpStatus(ProtobufHttpStatus::ProtobufHttpStatus::
+                                            Code::UNAUTHENTICATED,
+                                        ""));
 
             ASSERT_EQ(1, GetRetryFailureCount());
             ASSERT_NEAR(FtlGrpcContext::kBackoffInitialDelay.InSecondsF(),
@@ -502,8 +521,9 @@ TEST_F(FtlMessageReceptionChannelTest,
 
   channel_->StartReceivingMessages(
       base::DoNothing(),
-      base::BindLambdaForTesting([&](const grpc::Status& status) {
-        ASSERT_EQ(grpc::StatusCode::UNAUTHENTICATED, status.error_code());
+      base::BindLambdaForTesting([&](const ProtobufHttpStatus& status) {
+        ASSERT_EQ(ProtobufHttpStatus::ProtobufHttpStatus::Code::UNAUTHENTICATED,
+                  status.error_code());
         channel_->StartReceivingMessages(run_loop.QuitClosure(),
                                          NotReachedStatusCallback(FROM_HERE));
       }));

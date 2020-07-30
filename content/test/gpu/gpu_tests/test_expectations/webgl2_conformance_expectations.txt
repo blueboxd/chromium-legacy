@@ -286,6 +286,9 @@ crbug.com/angleproject/2424 [ d3d11 win amd ] deqp/functional/gles3/texturespeci
 crbug.com/angleproject/2424 [ d3d11 win amd ] deqp/functional/gles3/texturespecification/teximage3d_unpack_params.html [ Failure ]
 crbug.com/angleproject/2424 [ d3d11 win amd ] deqp/functional/gles3/texturespecification/texsubimage3d_unpack_params.html [ Failure ]
 
+# AMD texture handling has become flaky.
+crbug.com/1110951 [ d3d11 win amd ] conformance/textures/misc/texture-sub-image-cube-maps.html [ RetryOnFailure ]
+
 # Have seen this time out. Think it may be because it's currently
 # the first test that runs in the shard, and the browser might not
 # be coming up correctly.

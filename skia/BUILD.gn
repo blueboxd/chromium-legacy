@@ -148,7 +148,7 @@ config("skia_library_config") {
   }
 
   # Settings for text blitting, chosen to approximate the system browser.
-  if (is_linux) {
+  if (is_linux || is_chromeos) {
     defines += [
       "SK_GAMMA_EXPONENT=1.2",
       "SK_GAMMA_CONTRAST=0.2",
@@ -223,7 +223,7 @@ source_set("skcms") {
   # LLVM automatically sets the equivalent of GCC's -mfp16-format=ieee on ARM
   # builds by default, while GCC itself does not. We need it to enable support
   # for half-precision floating point data types used by SKCMS on ARM.
-  if (is_linux && !is_clang && current_cpu == "arm") {
+  if ((is_linux || is_chromeos) && !is_clang && current_cpu == "arm") {
     cflags += [ "-mfp16-format=ieee" ]
   }
 
@@ -454,7 +454,7 @@ component("skia") {
     set_sources_assignment_filter(sources_assignment_filter)
   }
 
-  if (is_linux) {
+  if (is_linux || is_chromeos) {
     sources += [
       "//third_party/skia/src/ports/SkFontConfigInterface.cpp",
       "//third_party/skia/src/ports/SkFontConfigInterface_direct.cpp",
@@ -463,7 +463,7 @@ component("skia") {
     ]
   }
 
-  if (is_linux || is_android) {
+  if (is_linux || is_chromeos || is_android) {
     sources += [
       # Retain the files for the SkFontMgr_Android on linux to emulate android
       # fonts. See content/zygote/zygote_main_linux.cc
@@ -541,7 +541,7 @@ component("skia") {
     ]
   }
 
-  if (is_linux) {
+  if (is_linux || is_chromeos) {
     deps += [
       "//third_party/expat",
       "//third_party/fontconfig",

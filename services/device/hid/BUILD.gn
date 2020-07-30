@@ -41,7 +41,7 @@ source_set("hid") {
     "//services/device/public/mojom",
   ]
 
-  if (is_linux && use_udev) {
+  if ((is_linux || is_chromeos) && use_udev) {
     sources += [
       "hid_service_linux.cc",
       "hid_service_linux.h",

@@ -247,6 +247,10 @@ fHXdC808L+jJ0zgOBlJbbCM3TliiVqDE6Lcc3GShA1mrjvGmAy05e1ejgGZYX7c5
 C97TFZS6CD+9uC2FV4RWJuO56kCGlDVLI3/iwIThtywvDt0qKnSsGA==
 -----END RSA PRIVATE KEY-----"""
 
+# The obfuscated_customer_id that will be served in device policy PolicyData
+# responses.
+OBFUSCATED_CUSTOMER_ID = 'policy_testserver_customer_id'
+
 class PolicyRequestHandler(BaseHTTPServer.BaseHTTPRequestHandler):
   """Decodes and handles device management requests from clients.
 
@@ -1237,6 +1241,12 @@ class PolicyRequestHandler(BaseHTTPServer.BaseHTTPRequestHandler):
     user_affiliation_ids = policy.get('user_affiliation_ids')
     if user_affiliation_ids:
       policy_data.user_affiliation_ids.extend(user_affiliation_ids)
+
+    if msg.policy_type == 'google/chromeos/device':
+      # Fill |obfuscated_customer_id| for PolicyData in device policy fetches.
+      # Verified Access attestation using the Enterprise Machine Key (EMK)
+      # requires it since https://crbug.com/1073974.
+      policy_data.obfuscated_customer_id = OBFUSCATED_CUSTOMER_ID
 
     response.policy_data = policy_data.SerializeToString()
 

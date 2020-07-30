@@ -68,7 +68,7 @@ static_assert(base::size(kRecoverySha2Hash) == crypto::kSHA256Length,
 const base::FilePath::CharType kRecoveryFileName[] =
 #if defined(OS_WIN)
     FILE_PATH_LITERAL("ChromeRecovery.exe");
-#else  // OS_LINUX, OS_MACOSX, etc.
+#else  // OS_LINUX, OS_MAC, etc.
     FILE_PATH_LITERAL("ChromeRecovery");
 #endif
 

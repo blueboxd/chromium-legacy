@@ -33,7 +33,7 @@ group("all") {
   if (!is_android) {
     data_deps += [ ":cast_shell" ]
   }
-  if (is_linux) {
+  if (is_linux || is_chromeos) {
     deps += [
       "//chromecast/browser/webview/client:wayland_webview_client",
       "//chromecast/tracing",
@@ -106,7 +106,7 @@ cast_test_group("cast_tests") {
     tests += [ "//media/gpu:video_decode_accelerator_tests" ]
   }
 
-  if (is_linux) {
+  if (is_linux || is_chromeos) {
     tests += [
       "//chromecast/crash:cast_crash_unittests",
       "//components/exo:exo_unittests",
@@ -122,7 +122,7 @@ cast_test_group("cast_tests") {
     filters += [ sandbox_linux_unittests_filter ]
   }
 
-  if (is_linux || is_fuchsia) {
+  if (is_linux || is_chromeos || is_fuchsia) {
     tests += [ "//chromecast/media/cma/backend:cast_audio_backend_unittests" ]
     cast_audio_backend_unittests_filter = {
       test_name = "cast_audio_backend_unittests"

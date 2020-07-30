@@ -407,7 +407,7 @@ int GpuMain(const MainFunctionParams& parameters) {
   // our behalf due to the zygote sandbox.
   if (parameters.zygote_child)
     tracing::EnableStartupTracingIfNeeded();
-#endif  // OS_POSIX && !OS_ANDROID && !!OS_MACOSX
+#endif  // OS_POSIX && !OS_ANDROID && !OS_MAC
 
 #if defined(OS_MAC)
   // A GPUEjectPolicy of 'wait' is set in the Info.plist of the browser

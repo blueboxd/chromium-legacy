@@ -108,7 +108,7 @@ IN_PROC_BROWSER_TEST_F(StartupBrowserCreatorTest, LastUsedProfileActivated) {
   ASSERT_TRUE(new_browser);
   EXPECT_FALSE(new_browser->window()->IsActive());
 }
-#endif  // !OS_MACOSX && !OS_CHROMEOS
+#endif  // !OS_MAC && !OS_CHROMEOS
 
 #if defined(USE_AURA)
 class StartupPagePrefSetterMainExtraParts : public ChromeBrowserMainExtraParts {

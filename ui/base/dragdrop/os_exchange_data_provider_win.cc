@@ -980,15 +980,24 @@ HRESULT DataObjectImpl::SetData(
 
   STGMEDIUM* local_medium = new STGMEDIUM;
   if (should_release) {
+    // Ownership of the original data in `medium` is transferred to `this`.
     *local_medium = *medium;
   } else {
+    // Ownership of `medium` remains with the caller. To prevent lifetime
+    // issues, perform a deep copy of `medium`.
     DuplicateMedium(format_etc->cfFormat, medium, local_medium);
   }
 
   auto info = std::make_unique<DataObjectImpl::StoredDataInfo>(*format_etc,
                                                                local_medium);
   info->medium->tymed = format_etc->tymed;
-  info->owns_medium = !!should_release;
+
+  // Since the medium is copied if |should_release| is false, it should be
+  // released whether that flag is true or not.
+  // TODO(crbug.com/1107806): Remove owns_medium, because its value is always
+  // true.
+  info->owns_medium = true;
+
   // Make newly added data appear first.
   // TODO(dcheng): Make various setters agree whether elements should be
   // prioritized from front to back or back to front.

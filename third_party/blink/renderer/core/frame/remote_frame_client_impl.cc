@@ -144,6 +144,11 @@ void RemoteFrameClientImpl::ZoomLevelChanged(double zoom_level) {
   web_frame_->Client()->ZoomLevelChanged(zoom_level);
 }
 
+void RemoteFrameClientImpl::UpdateCaptureSequenceNumber(
+    uint32_t sequence_number) {
+  web_frame_->Client()->UpdateCaptureSequenceNumber(sequence_number);
+}
+
 void RemoteFrameClientImpl::UpdateRemoteViewportIntersection(
     const ViewportIntersectionState& intersection_state) {
   web_frame_->Client()->UpdateRemoteViewportIntersection(intersection_state);

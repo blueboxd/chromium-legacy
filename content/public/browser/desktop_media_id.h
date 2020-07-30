@@ -36,7 +36,7 @@ struct CONTENT_EXPORT DesktopMediaID {
   // Returns the Window that was previously registered using
   // RegisterNativeWindow(), else nullptr.
   static gfx::NativeWindow GetNativeWindowById(const DesktopMediaID& id);
-#endif  // USE_AURA || OS_MACOSX
+#endif  // USE_AURA || OS_MAC
 
   constexpr DesktopMediaID() = default;
 

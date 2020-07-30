@@ -144,7 +144,7 @@ target(link_target_type, "child") {
     ]
   }
 
-  if (is_linux) {
+  if (is_linux || is_chromeos) {
     deps += [
       "//components/services/font/public/cpp",
       "//components/services/font/public/mojom",

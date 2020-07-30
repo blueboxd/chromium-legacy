@@ -4,7 +4,7 @@
 
 import("//build/config/ui.gni")
 
-assert(is_linux)
+assert(is_linux || is_chromeos)
 
 component("common") {
   output_name = "platform_window_common"

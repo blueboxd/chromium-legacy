@@ -21300,6 +21300,9 @@ Called by update_document_policy_enum.py.-->
   <int value="748" label="InsecureFormsWarningsEnabled"/>
   <int value="749" label="SpellcheckLanguageBlocklist"/>
   <int value="750" label="ExternalPrintServersAllowlist"/>
+  <int value="751" label="DefaultSerialGuardSetting"/>
+  <int value="752" label="SerialAskForUrls"/>
+  <int value="753" label="SerialBlockedForUrls"/>
 </enum>
 
 <enum name="EnterprisePolicyDeviceIdValidity">
@@ -37118,6 +37121,7 @@ Called by update_gpu_driver_bug_workaround_entries.py.-->
   <int value="1" label="Bookmark Entry"/>
   <int value="2" label="ReadingList Entry"/>
   <int value="3" label="RecentTabs Entry"/>
+  <int value="4" label="ContentSuggestions Entry"/>
 </enum>
 
 <enum name="IOSNTPImpression">
@@ -41250,6 +41254,8 @@ from previous Chrome versions.
   <int value="-593536514" label="ExperimentalTabController:enabled"/>
   <int value="-591874964" label="LiteVideo:enabled"/>
   <int value="-589096918" label="ash-enable-fullscreen-app-list"/>
+  <int value="-588669613"
+      label="OmniboxClobberIsZeroSuggestEntrypoint:enabled"/>
   <int value="-582870536" label="BluetoothNextHandsfreeProfile:enabled"/>
   <int value="-579192400" label="disable-input-view"/>
   <int value="-577982497" label="CupsPrintersUiOverhaul:enabled"/>
@@ -42212,6 +42218,8 @@ from previous Chrome versions.
   <int value="480677983" label="WebXRARDOMOverlay:disabled"/>
   <int value="481506759" label="ServiceWorkerScriptStreaming:enabled"/>
   <int value="482232604" label="PercentBasedScrolling:enabled"/>
+  <int value="482429100"
+      label="OmniboxClobberIsZeroSuggestEntrypoint:disabled"/>
   <int value="485957747" label="finch-seed-ignore-pending-download"/>
   <int value="487810392" label="EnablePalmOnToolTypePalm:enabled"/>
   <int value="491334698" label="ConditionalTabStripAndroid:enabled"/>

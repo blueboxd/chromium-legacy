@@ -26,6 +26,6 @@ base::OnceClosure& GetBeforeShowFirstRunDialogHookForTesting();
 
 }  // namespace first_run
 
-#endif  // OS_MACOSX || DESKTOP_LINUX
+#endif  // OS_MAC || DESKTOP_LINUX
 
 #endif  // CHROME_BROWSER_FIRST_RUN_FIRST_RUN_DIALOG_H_

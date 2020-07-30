@@ -25,6 +25,8 @@ uint64_t XRHitTestSource::id() const {
 }
 
 void XRHitTestSource::cancel(ExceptionState& exception_state) {
+  DVLOG(2) << __func__;
+
   if (!xr_session_->RemoveHitTestSource(this)) {
     exception_state.ThrowDOMException(DOMExceptionCode::kInvalidStateError,
                                       kCannotCancelHitTestSource);

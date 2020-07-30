@@ -39,16 +39,26 @@ enum EffectiveUrlFlags {
   kAllowInaccessibleParents = 1 << 0,
   // Allow matching on about:-scheme frames.
   kAllowAboutFrames = 1 << 1,
+  // Allow matching on data:-scheme frames.
+  kAllowDataFrames = 1 << 2,
 };
 
 GURL GetEffectiveDocumentURL(blink::WebLocalFrame* frame,
                              const GURL& document_url,
                              int flags) {
-  // Common scenario. If the frame is not an about:-page or we don't allow
-  // about:-scheme frames, just return |document_url| (supposedly the URL of the
-  // frame).
+  // Common scenario: The frame is not an about: or data: frame, or we don't
+  // match the relevant type. Just return |document_url| (supposedly the URL
+  // of the frame).
   bool match_about_frames = (flags & kAllowAboutFrames) != 0;
-  if (!match_about_frames || !document_url.SchemeIs(url::kAboutScheme))
+  bool match_data_urls = (flags & kAllowDataFrames) != 0;
+
+  auto should_traverse_tree = [match_about_frames,
+                               match_data_urls](const GURL& url) {
+    return (match_about_frames && url.SchemeIs(url::kAboutScheme)) ||
+           (match_data_urls && url.SchemeIs(url::kDataScheme));
+  };
+
+  if (!should_traverse_tree(document_url))
     return document_url;
 
   // For about: frames, the "security origin" is that of the controlling frame.
@@ -91,6 +101,7 @@ GURL GetEffectiveDocumentURL(blink::WebLocalFrame* frame,
   // their parent frame/window. So, traverse the frame/window hierarchy to find
   // the closest non-about:-page and return its URL.
   blink::WebFrame* parent = frame;
+  GURL parent_url;
   blink::WebDocument parent_document;
   base::flat_set<blink::WebFrame*> already_visited_frames;
   do {
@@ -138,8 +149,11 @@ GURL GetEffectiveDocumentURL(blink::WebLocalFrame* frame,
       // example.com, but the parent tuple origin is a.com.
       return document_url;
     }
-  } while (GURL(parent_document.Url()).SchemeIs(url::kAboutScheme));
 
+    parent_url = GURL(parent_document.Url());
+  } while (should_traverse_tree(parent_url));
+
+  DCHECK(!parent_url.is_empty());
   DCHECK(!parent_document.IsNull());
 
   // We should know that the frame can access the parent document (unless we
@@ -147,7 +161,7 @@ GURL GetEffectiveDocumentURL(blink::WebLocalFrame* frame,
   // frame, and we checked the frame access above.
   DCHECK(allow_inaccessible_parents ||
          web_frame_origin.CanAccess(parent_document.GetSecurityOrigin()));
-  return parent_document.Url();
+  return parent_url;
 }
 
 std::string GetContextTypeDescriptionString(Feature::Context context_type) {
@@ -452,13 +466,17 @@ GURL ScriptContext::GetEffectiveDocumentURLForContext(
 GURL ScriptContext::GetEffectiveDocumentURLForInjection(
     blink::WebLocalFrame* frame,
     const GURL& document_url,
-    bool match_about_blank) {
+    bool match_about_blank,
+    bool match_data_urls) {
   // We explicitly allow inaccessible parents here. Extensions should still be
   // able to inject into a sandboxed iframe if it has access to the embedding
   // origin.
   int flags = kAllowInaccessibleParents;
   if (match_about_blank)
     flags |= kAllowAboutFrames;
+  if (match_data_urls)
+    flags |= kAllowDataFrames;
+
   return GetEffectiveDocumentURL(frame, document_url, flags);
 }
 

@@ -466,10 +466,13 @@ ANDROID_NEXUS_5X_WEBVIEW = PerfPlatform(
     'Android Nexus5X WebView Perf', 'Android AOSP MOB30K',
     _ANDROID_NEXUS_5X_WEBVIEW_BENCHMARK_CONFIGS, 16, 'android',
     run_reference_build=False)
-ANDROID_PIXEL2 = PerfPlatform(
-    'android-pixel2-perf', 'Android OPM1.171019.021',
-    _ANDROID_PIXEL2_BENCHMARK_CONFIGS, 35, 'android',
-    executables=_ANDROID_PIXEL2_EXECUTABLE_CONFIGS)
+ANDROID_PIXEL2 = PerfPlatform('android-pixel2-perf',
+                              'Android OPM1.171019.021',
+                              _ANDROID_PIXEL2_BENCHMARK_CONFIGS,
+                              35,
+                              'android',
+                              executables=_ANDROID_PIXEL2_EXECUTABLE_CONFIGS,
+                              run_reference_build=False)
 ANDROID_PIXEL2_WEBVIEW = PerfPlatform(
     'android-pixel2_webview-perf', 'Android OPM1.171019.021',
     _ANDROID_PIXEL2_WEBVIEW_BENCHMARK_CONFIGS, 21, 'android',

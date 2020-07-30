@@ -20,6 +20,7 @@
 #include "third_party/blink/public/mojom/loader/resource_load_info_notifier.mojom.h"
 #include "third_party/blink/public/platform/cross_variant_mojo_util.h"
 #include "third_party/blink/renderer/platform/heap/member.h"
+#include "third_party/blink/renderer/platform/loader/fetch/resource_load_observer.h"
 #include "third_party/blink/renderer/platform/loader/fetch/resource_response.h"
 #include "third_party/blink/renderer/platform/loader/fetch/response_body_loader_client.h"
 #include "third_party/blink/renderer/platform/platform_export.h"
@@ -30,6 +31,7 @@
 namespace blink {
 
 class FetchContext;
+class FetchParameters;
 class SingleCachedMetadataHandler;
 class WorkerMainScriptLoaderClient;
 struct ResourceLoaderOptions;
@@ -46,13 +48,11 @@ class PLATFORM_EXPORT WorkerMainScriptLoader final
 
   // Starts to load the main script.
   void Start(
-      const KURL& request_script_url,
+      FetchParameters& fetch_params,
       std::unique_ptr<WorkerMainScriptLoadParameters>
           worker_main_script_load_params,
-      const ResourceLoaderOptions& options,
-      mojom::RequestContextType request_context,
-      network::mojom::RequestDestination request_destination,
       FetchContext* fetch_context,
+      ResourceLoadObserver* resource_loade_observer,
       CrossVariantMojoRemote<mojom::ResourceLoadInfoNotifierInterfaceBase>
           resource_load_info_notifier,
       WorkerMainScriptLoaderClient* client);
@@ -90,6 +90,9 @@ class PLATFORM_EXPORT WorkerMainScriptLoader final
   void OnReadable(MojoResult);
   void NotifyCompletionIfAppropriate();
   void OnConnectionClosed();
+  void HandleRedirections(
+      std::vector<net::RedirectInfo>& redirect_infos,
+      std::vector<network::mojom::URLResponseHeadPtr>& redirect_responses);
 
   // Methods used to notify the loading stats.
   void NotifyResponseReceived(network::mojom::URLResponseHeadPtr response_head);
@@ -103,9 +106,10 @@ class PLATFORM_EXPORT WorkerMainScriptLoader final
 
   Member<FetchContext> fetch_context_;
   Member<WorkerMainScriptLoaderClient> client_;
+  Member<ResourceLoadObserver> resource_load_observer_;
 
-  mojom::RequestContextType request_context_;
-  network::mojom::RequestDestination request_destination_;
+  ResourceRequest initial_request_;
+  ResourceLoaderOptions resource_loader_options_;
   KURL initial_request_url_;
   KURL last_request_url_;
   ResourceResponse resource_response_;

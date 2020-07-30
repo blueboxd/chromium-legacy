@@ -390,4 +390,4 @@ void ServiceProcessControl::Launcher::DoRun() {
         FROM_HERE, base::BindOnce(&Launcher::Notify, this));
   }
 }
-#endif  // !OS_MACOSX
+#endif  // !OS_MAC

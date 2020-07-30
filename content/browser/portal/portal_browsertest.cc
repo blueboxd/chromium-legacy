@@ -1395,7 +1395,7 @@ class NavigationControlInterceptorBadPortalActivateResult
   }
 
   void OnPortalActivated(
-      const base::UnguessableToken& portal_token,
+      const blink::PortalToken& portal_token,
       mojo::PendingAssociatedRemote<blink::mojom::Portal> portal,
       mojo::PendingAssociatedReceiver<blink::mojom::PortalClient> portal_client,
       blink::TransferableMessage data,

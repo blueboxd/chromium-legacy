@@ -1,4 +1,4 @@
-﻿<?xml version="1.0" encoding="utf-8"?>
+<?xml version="1.0" encoding="utf-8"?>
 
 <grit latest_public_release="0" current_release="1"
       output_all_resource_defines="false" source_lang_id="en" enc_check="möl">
@@ -319,7 +319,7 @@
       <part file="undo_strings.grdp" />
       <part file="version_ui_strings.grdp" />
 
-      <if expr="not is_android and not is_ios">
+      <if expr="not is_android">
         <part file="management_strings.grdp" />
       </if>
       <if expr="is_android">

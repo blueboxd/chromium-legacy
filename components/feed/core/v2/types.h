@@ -30,8 +30,14 @@ ContentRevision ToContentRevision(const std::string& str);
 
 // Metadata sent with Feed requests.
 struct RequestMetadata {
+  RequestMetadata();
+  ~RequestMetadata();
+  RequestMetadata(RequestMetadata&&);
+  RequestMetadata& operator=(RequestMetadata&&);
+
   ChromeInfo chrome_info;
   std::string language_tag;
+  std::string client_instance_id;
   DisplayMetrics display_metrics;
 };
 

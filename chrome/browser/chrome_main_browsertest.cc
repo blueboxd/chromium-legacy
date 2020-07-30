@@ -113,4 +113,4 @@ IN_PROC_BROWSER_TEST_F(ChromeMainTest, SecondLaunchFromIncognitoWithNormalUrl) {
   ASSERT_EQ(1u, chrome::GetTabbedBrowserCount(profile));
 }
 
-#endif  // !OS_MACOSX
+#endif  // !OS_MAC

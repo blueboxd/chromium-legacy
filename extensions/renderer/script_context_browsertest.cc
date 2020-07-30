@@ -20,11 +20,17 @@ class ScriptContextTest : public ChromeRenderViewTest {
  protected:
   GURL GetEffectiveDocumentURLForContext(WebLocalFrame* frame) {
     return ScriptContext::GetEffectiveDocumentURLForContext(
-        frame, frame->GetDocument().Url(), true);
+        frame, frame->GetDocument().Url(), /*match_about_blank=*/true);
   }
   GURL GetEffectiveDocumentURLForInjection(WebLocalFrame* frame) {
     return ScriptContext::GetEffectiveDocumentURLForInjection(
-        frame, frame->GetDocument().Url(), true);
+        frame, frame->GetDocument().Url(),
+        /*match_about_blank=*/true, /*match_data_urls=*/true);
+  }
+  GURL GetEffectiveURLForInjectionWithoutMatchingData(WebLocalFrame* frame) {
+    return ScriptContext::GetEffectiveDocumentURLForInjection(
+        frame, frame->GetDocument().Url(),
+        /*match_about_blank=*/true, /*match_data_urls=*/false);
   }
 };
 
@@ -33,6 +39,7 @@ TEST_F(ScriptContextTest, GetEffectiveDocumentURL) {
   GURL different_url("http://example.net/");
   GURL blank_url("about:blank");
   GURL srcdoc_url("about:srcdoc");
+  GURL data_url("data:text/html,<html>Hi</html>");
 
   const char frame_html[] =
       R"(<iframe name='frame1' srcdoc="
@@ -42,11 +49,17 @@ TEST_F(ScriptContextTest, GetEffectiveDocumentURL) {
          <iframe name='frame2' sandbox='' srcdoc="
            <iframe name='frame2_1'></iframe>
          "></iframe>
-         <iframe name='frame3'></iframe>)";
+         <iframe name='frame3'></iframe>
+         <iframe name='frame4' src="data:text/html,<html>Hi</html>"></iframe>
+         <iframe name='frame5'
+             src="data:text/html,<html>Hi</html>"
+             sandbox=''></iframe>)";
 
   const char frame3_html[] =
       R"(<iframe name='frame3_1'></iframe>
-         <iframe name='frame3_2' sandbox=''></iframe>)";
+         <iframe name='frame3_2' sandbox=''></iframe>
+         <iframe name='frame3_3'
+             src="data:text/html,<html>Hi</html>"></iframe>)";
 
   WebLocalFrame* frame = GetMainFrame();
   ASSERT_TRUE(frame);
@@ -73,6 +86,12 @@ TEST_F(ScriptContextTest, GetEffectiveDocumentURL) {
   WebLocalFrame* frame3 = frame2->NextSibling()->ToWebLocalFrame();
   ASSERT_TRUE(frame3);
   ASSERT_EQ("frame3", frame3->AssignedName());
+  WebLocalFrame* frame4 = frame3->NextSibling()->ToWebLocalFrame();
+  ASSERT_TRUE(frame4);
+  ASSERT_EQ("frame4", frame4->AssignedName());
+  WebLocalFrame* frame5 = frame4->NextSibling()->ToWebLocalFrame();
+  ASSERT_TRUE(frame5);
+  ASSERT_EQ("frame5", frame5->AssignedName());
 
   // Load a blank document in a frame from a different origin.
   content::RenderFrame::FromWebFrame(frame3)->LoadHTMLString(
@@ -86,6 +105,9 @@ TEST_F(ScriptContextTest, GetEffectiveDocumentURL) {
   WebLocalFrame* frame3_2 = frame3_1->NextSibling()->ToWebLocalFrame();
   ASSERT_TRUE(frame3_2);
   ASSERT_EQ("frame3_2", frame3_2->AssignedName());
+  WebLocalFrame* frame3_3 = frame3_2->NextSibling()->ToWebLocalFrame();
+  ASSERT_TRUE(frame3_3);
+  ASSERT_EQ("frame3_3", frame3_3->AssignedName());
 
   // Top-level frame
   EXPECT_EQ(top_url, GetEffectiveDocumentURLForContext(frame));
@@ -110,6 +132,22 @@ TEST_F(ScriptContextTest, GetEffectiveDocumentURL) {
   EXPECT_EQ(blank_url, GetEffectiveDocumentURLForContext(frame2_1));
   EXPECT_EQ(top_url, GetEffectiveDocumentURLForInjection(frame2_1));
 
+  // top -> data URL = same URL when classifying contexts, but inherited when
+  // injecting scripts.
+  EXPECT_EQ(data_url, GetEffectiveDocumentURLForContext(frame4));
+  EXPECT_EQ(top_url, GetEffectiveDocumentURLForInjection(frame4));
+  // Sanity-check: without matching data: URLs, the original URL should be
+  // returned.
+  EXPECT_EQ(data_url, GetEffectiveURLForInjectionWithoutMatchingData(frame4));
+
+  // top -> sandboxed data URL = same URL when classifying contexts, but
+  // inherited when injecting scripts.
+  EXPECT_EQ(data_url, GetEffectiveDocumentURLForContext(frame5));
+  EXPECT_EQ(top_url, GetEffectiveDocumentURLForInjection(frame5));
+  // Sanity-check: without matching data: URLs, the original URL should be
+  // returned.
+  EXPECT_EQ(data_url, GetEffectiveURLForInjectionWithoutMatchingData(frame5));
+
   // top -> different origin = different origin
   EXPECT_EQ(different_url, GetEffectiveDocumentURLForContext(frame3));
   EXPECT_EQ(different_url, GetEffectiveDocumentURLForInjection(frame3));
@@ -121,6 +159,10 @@ TEST_F(ScriptContextTest, GetEffectiveDocumentURL) {
   // injecting scripts.
   EXPECT_EQ(blank_url, GetEffectiveDocumentURLForContext(frame3_2));
   EXPECT_EQ(different_url, GetEffectiveDocumentURLForInjection(frame3_2));
+  // top -> different origin -> data URL = same URL when classifying contexts,
+  // but inherited (from different origin) url when injecting scripts.
+  EXPECT_EQ(data_url, GetEffectiveDocumentURLForContext(frame3_3));
+  EXPECT_EQ(different_url, GetEffectiveDocumentURLForInjection(frame3_3));
 }
 
 TEST_F(ScriptContextTest, GetMainWorldContextForFrame) {

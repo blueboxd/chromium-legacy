@@ -111,7 +111,7 @@ class CONTENT_EXPORT Portal : public blink::mojom::Portal,
                    base::OnceCallback<void(bool)> callback) override;
 
   // Returns the token which uniquely identifies this Portal.
-  const base::UnguessableToken& portal_token() const { return portal_token_; }
+  const blink::PortalToken& portal_token() const { return portal_token_; }
 
   // Returns the devtools frame token for the portal's main frame.
   base::UnguessableToken GetDevToolsFrameToken() const;
@@ -195,7 +195,7 @@ class CONTENT_EXPORT Portal : public blink::mojom::Portal,
 
   // Uniquely identifies the portal, this token is used by the browser process
   // to reference this portal when communicating with the renderer.
-  const base::UnguessableToken portal_token_;
+  const blink::PortalToken portal_token_;
 
   // Receives messages from the outer (host) frame.
   mojo::AssociatedReceiver<blink::mojom::Portal> receiver_{this};

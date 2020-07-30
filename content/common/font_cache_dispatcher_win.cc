@@ -11,6 +11,7 @@
 
 #include "base/logging.h"
 #include "base/macros.h"
+#include "base/numerics/checked_math.h"
 #include "base/stl_util.h"
 #include "base/strings/string16.h"
 #include "base/thread_annotations.h"
@@ -43,15 +44,16 @@ class FontCache {
     DCHECK(ret);
 
     base::string16 font_name = font.lfFaceName;
-    int ref_count_inc = 1;
+    bool inc_ref_count = true;
     if (!base::Contains(dispatcher_font_map_[dispatcher], font_name)) {
       // Requested font is new to cache.
       dispatcher_font_map_[dispatcher].push_back(font_name);
     } else {
-      ref_count_inc = 0;
+      inc_ref_count = false;
     }
 
-    if (cache_[font_name].ref_count_ == 0) {  // Requested font is new to cache.
+    if (cache_[font_name].ref_count_.ValueOrDie() == 0) {
+      // Requested font is new to cache.
       cache_[font_name].ref_count_ = 1;
     } else {  // Requested font is already in cache, release old handles.
       SelectObject(cache_[font_name].dc_, cache_[font_name].old_font_);
@@ -61,7 +63,9 @@ class FontCache {
     cache_[font_name].font_ = font_handle;
     cache_[font_name].dc_ = hdc;
     cache_[font_name].old_font_ = old_font;
-    cache_[font_name].ref_count_ += ref_count_inc;
+    if (inc_ref_count) {
+      cache_[font_name].ref_count_++;
+    }
   }
 
   void ReleaseCachedFonts(FontCacheDispatcher* dispatcher) {
@@ -86,7 +90,7 @@ class FontCache {
 
     dispatcher_font_map_.erase(it);
     for (FontNameToElement::iterator i = cache_.begin(); i != cache_.end(); ) {
-      if (i->second.ref_count_ == 0) {
+      if (i->second.ref_count_.ValueOrDie() == 0) {
         cache_.erase(i++);
       } else {
         ++i;
@@ -115,7 +119,7 @@ class FontCache {
     HFONT font_;
     HGDIOBJ old_font_;
     HDC dc_;
-    int ref_count_;
+    base::CheckedNumeric<size_t> ref_count_;
   };
   friend struct base::DefaultSingletonTraits<FontCache>;
 

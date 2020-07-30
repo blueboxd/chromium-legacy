@@ -67,30 +67,12 @@ void xdg_positioner_set_anchor_rect(wl_client* client,
 void xdg_positioner_set_anchor(wl_client* client,
                                wl_resource* resource,
                                uint32_t anchor) {
-  if (((anchor & XDG_POSITIONER_ANCHOR_LEFT) &&
-       (anchor & XDG_POSITIONER_ANCHOR_RIGHT)) ||
-      ((anchor & XDG_POSITIONER_ANCHOR_TOP) &&
-       (anchor & XDG_POSITIONER_ANCHOR_BOTTOM))) {
-    wl_resource_post_error(resource, XDG_POSITIONER_ERROR_INVALID_INPUT,
-                           "same-axis values are not allowed");
-    return;
-  }
-
   GetUserDataAs<WaylandPositioner>(resource)->SetAnchor(anchor);
 }
 
 void xdg_positioner_set_gravity(wl_client* client,
                                 wl_resource* resource,
                                 uint32_t gravity) {
-  if (((gravity & XDG_POSITIONER_GRAVITY_LEFT) &&
-       (gravity & XDG_POSITIONER_GRAVITY_RIGHT)) ||
-      ((gravity & XDG_POSITIONER_GRAVITY_TOP) &&
-       (gravity & XDG_POSITIONER_GRAVITY_BOTTOM))) {
-    wl_resource_post_error(resource, XDG_POSITIONER_ERROR_INVALID_INPUT,
-                           "same-axis values are not allowed");
-    return;
-  }
-
   GetUserDataAs<WaylandPositioner>(resource)->SetGravity(gravity);
 }
 

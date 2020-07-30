@@ -64,9 +64,9 @@ TEST_F(DialogDelegateUnittest, Test) {
   EXPECT_TRUE(delegate->ShouldCenterDialogTitleText());
   EXPECT_FALSE(delegate->ShouldCloseDialogOnEscape());
 
-  EXPECT_FALSE(delegate->CanCloseDialog());
+  EXPECT_FALSE(delegate->OnDialogCloseRequested());
   delegate->set_can_close(true);
-  EXPECT_TRUE(delegate->CanCloseDialog());
+  EXPECT_TRUE(delegate->OnDialogCloseRequested());
 
   delegate->OnDialogClosed(std::string());
   close_callback_wait.Run();

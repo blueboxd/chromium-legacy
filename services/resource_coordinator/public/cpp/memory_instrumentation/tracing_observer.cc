@@ -204,7 +204,7 @@ void TracingObserver::MemoryMapsAsValueInto(
                                               is_argument_filtering_enabled));
 
 // The following stats are only well defined on Linux-derived OSes.
-#if !defined(OS_MACOSX) && !defined(OS_WIN)
+#if !defined(OS_MAC) && !defined(OS_WIN)
     value->BeginDictionary("bs");  // byte stats
     value->SetString(
         "pss",

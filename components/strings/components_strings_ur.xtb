@@ -123,6 +123,7 @@
 <translation id="1430915738399379752">پرنٹ کریں</translation>
 <translation id="1442386063175183758">دایاں گیٹ فولڈ</translation>
 <translation id="1442987760062738829">سوراخ کریں</translation>
+<translation id="1447067628680007684">(x86_64)</translation>
 <translation id="1453974140256777690">‏جو ٹیکسٹ آپ پیسٹ یا منسلک کرتے ہیں اسے تجزیہ کیلئے Google کلاؤڈ یا فریق ثالث کو بھیجا جاتا ہے۔ مثال کے طور پر، اسے حساس ڈیٹا کیلئے اسکین کیا جا سکتا ہے۔</translation>
 <translation id="1455413310270022028">صافی</translation>
 <translation id="1462245070427461050">JIS B9</translation>
@@ -1148,6 +1149,7 @@
 <translation id="5705882733397021510">واپس جائیں</translation>
 <translation id="57094364128775171">مضبوط پاس ورڈ تجویز کریں…</translation>
 <translation id="5710435578057952990">اس ویب سائٹ کی شناخت کی توثیق نہیں ہوئی ہے۔</translation>
+<translation id="571403275720188526">(arm64)</translation>
 <translation id="5720705177508910913">حالیہ صارف</translation>
 <translation id="5728056243719941842">C5 ‎(Envelope‎)‎</translation>
 <translation id="5730040223043577876">‏اگر آپ نے اپنا پاس ورڈ دیگر سائٹس پر دوبارہ استعمال کیا ہے تو Chrome آپ کو اپنا پاس ورڈ ری سیٹ کرنے کی تجویز کرتا ہے۔</translation>
@@ -1197,6 +1199,7 @@
 <translation id="5921639886840618607">‏کارڈ کو Google اکاؤنٹ میں محفوظ کریں؟</translation>
 <translation id="5922853866070715753">تقریباً مکمل ہو گیا</translation>
 <translation id="5932224571077948991">سائٹ دخل انداز یا گمراہ کن اشتہارات دکھاتی ہے</translation>
+<translation id="5938793338444039872">Troy</translation>
 <translation id="5946937721014915347"><ph name="SITE_NAME" /> کھل رہی ہے…</translation>
 <translation id="5951495562196540101">صارف اکاؤنٹ کے ذریعے اندراج نہیں کر سکتے (پیکیج شدہ لائسنس دستیاب ہے)۔</translation>
 <translation id="5967592137238574583">رابطے کی معلومات میں ترمیم کریں</translation>
@@ -1365,6 +1368,7 @@
 <translation id="6646269444027925224">{COUNT,plural, =0{کوئی سائٹ نہیں}=1{‏1 سائٹ سے (آپ اپنے Google اکاؤنٹ سے سائن آؤٹ نہیں ہوں گے)}other{‏# سائٹس سے (آپ اپنے Google اکاؤنٹ سے سائن آؤٹ نہیں ہوں گے)}}</translation>
 <translation id="6652101503459149953">‏Windows Hello کا استعمال کریں</translation>
 <translation id="6657585470893396449">پاس ورڈ</translation>
+<translation id="666259744093848177">‏(x86_64 ترجمہ کردہ)</translation>
 <translation id="6665553082534466207">دائیں طرف تین سوراخ</translation>
 <translation id="6671697161687535275">‏Chromium سے فارم کی تجویز ہٹائیں؟</translation>
 <translation id="6685834062052613830">سائن آؤٹ کریں اور سیٹ اپ مکمل کریں</translation>

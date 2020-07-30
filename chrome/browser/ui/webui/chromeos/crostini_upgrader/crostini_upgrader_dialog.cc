@@ -103,22 +103,11 @@ void CrostiniUpgraderDialog::SetDeletionClosureForTesting(
   deletion_closure_for_testing_ = std::move(deletion_closure_for_testing);
 }
 
-bool CrostiniUpgraderDialog::CanCloseDialog() const {
-  // TODO(929571): If other WebUI Dialogs also need to let the WebUI control
-  // closing logic, we should find a more general solution.
-
+bool CrostiniUpgraderDialog::OnDialogCloseRequested() {
   if (deletion_closure_for_testing_) {
     // Running in a test.
     return true;
   }
-  // Disallow closing without WebUI consent.
-  //
-  // Note that while the function name |CanCloseDialog| does not indicate the
-  // intend to close the dialog, but it is indeed only called when we are
-  // closing it, so requesting closing the page here is appropriate. One might
-  // think we should actually do all of this in |OnDialogCloseRequested|
-  // instead, but unfortunately that function is called after the web content is
-  // closed.
   return upgrader_ui_ == nullptr || upgrader_ui_->RequestClosePage();
 }
 

@@ -269,6 +269,7 @@ test("components_unittests") {
       "//components/performance_manager:unit_tests",
       "//components/permissions:unit_tests",
       "//components/policy/content:unit_tests",
+      "//components/prerender/browser:unit_tests",
       "//components/previews/content:unit_tests",
       "//components/query_tiles:unit_tests",
       "//components/safe_browsing/content/password_protection:password_protection_unittest",

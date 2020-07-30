@@ -37,39 +37,6 @@ std::unique_ptr<OSExchangeDataProvider> OSExchangeDataProviderX11::Clone()
   return std::move(ret);
 }
 
-void OSExchangeDataProviderX11::SetFileContents(
-    const base::FilePath& filename,
-    const std::string& file_contents) {
-  DCHECK(!filename.empty());
-  DCHECK(!base::Contains(format_map(), gfx::GetAtom(kMimeTypeMozillaURL)));
-
-  set_file_contents_name(filename);
-
-  // Direct save handling is a complicated juggling affair between this class,
-  // SelectionFormat, and DesktopDragDropClientAuraX11. The general idea behind
-  // the protocol is this:
-  // - The source window sets its XdndDirectSave0 window property to the
-  //   proposed filename.
-  // - When a target window receives the drop, it updates the XdndDirectSave0
-  //   property on the source window to the filename it would like the contents
-  //   to be saved to and then requests the XdndDirectSave0 type from the
-  //   source.
-  // - The source is supposed to copy the file here and return success (S),
-  //   failure (F), or error (E).
-  // - In this case, failure means the destination should try to populate the
-  //   file itself by copying the data from application/octet-stream. To make
-  //   things simpler for Chrome, we always 'fail' and let the destination do
-  //   the work.
-  std::string failure("F");
-  InsertData(gfx::GetAtom("XdndDirectSave0"),
-             scoped_refptr<base::RefCountedMemory>(
-                 base::RefCountedString::TakeString(&failure)));
-  std::string file_contents_copy = file_contents;
-  InsertData(gfx::GetAtom("application/octet-stream"),
-             scoped_refptr<base::RefCountedMemory>(
-                 base::RefCountedString::TakeString(&file_contents_copy)));
-}
-
 bool OSExchangeDataProviderX11::DispatchXEvent(x11::Event* xev) {
   auto* selection = xev->As<x11::SelectionRequestEvent>();
   if (selection && selection->owner == x_window()) {

@@ -33,7 +33,7 @@ class ShapeDetectionService : public mojom::ShapeDetectionService {
  private:
   mojo::Receiver<mojom::ShapeDetectionService> receiver_;
 
-#if defined(OS_MACOSX)
+#if defined(OS_MAC)
   void* vision_framework_;
 #endif
 

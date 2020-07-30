@@ -12,6 +12,7 @@
 #include "base/json/json_writer.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/values.h"
+#include "base/win/registry.h"
 #include "chrome/credential_provider/common/gcp_strings.h"
 #include "chrome/credential_provider/gaiacp/gcp_utils.h"
 #include "chrome/credential_provider/gaiacp/gcpw_strings.h"
@@ -42,6 +43,12 @@ const wchar_t kLastUserPolicyRefreshTimeRegKey[] = L"last_policy_refresh_time";
 
 // Maximum number of retries if a HTTP call to the backend fails.
 constexpr unsigned int kMaxNumHttpRetries = 1;
+
+// Registry key to control whether cloud policies feature is enabled.
+const wchar_t kCloudPoliciesEnabledRegKey[] = L"cloud_policies_enabled";
+
+// True when cloud policies feature is enabled.
+bool g_cloud_policies_enabled = false;
 
 // Get the path to the directory where the policies will be stored for the user
 // with |sid|.
@@ -99,9 +106,16 @@ UserPoliciesManager** UserPoliciesManager::GetInstanceStorage() {
   return &instance_storage;
 }
 
-UserPoliciesManager::UserPoliciesManager() : fetch_status_(S_OK) {}
+UserPoliciesManager::UserPoliciesManager() : fetch_status_(S_OK) {
+  g_cloud_policies_enabled =
+      GetGlobalFlagOrDefault(kCloudPoliciesEnabledRegKey, 0) == 1;
+}
 
 UserPoliciesManager::~UserPoliciesManager() = default;
+
+bool UserPoliciesManager::CloudPoliciesEnabled() const {
+  return g_cloud_policies_enabled;
+}
 
 GURL UserPoliciesManager::GetGcpwServiceUserPoliciesUrl(
     const base::string16& sid) {
@@ -223,6 +237,10 @@ bool UserPoliciesManager::GetUserPolicies(const base::string16& sid,
   *user_policies = UserPolicies::FromValue(*policy_data);
 
   return true;
+}
+
+void UserPoliciesManager::SetCloudPoliciesEnabledForTesting(bool value) {
+  g_cloud_policies_enabled = value;
 }
 
 HRESULT UserPoliciesManager::GetLastFetchStatusForTesting() const {

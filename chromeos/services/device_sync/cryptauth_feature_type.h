@@ -67,8 +67,15 @@ enum class CryptAuthFeatureType {
   kSmsConnectClientSupported = 14,
   kSmsConnectClientEnabled = 15,
 
+  // Phone Hub, which allows users to view phone metadata and send commands to
+  // their phone directly from the Chrome OS UI.
+  kPhoneHubHostSupported = 16,
+  kPhoneHubHostEnabled = 17,
+  kPhoneHubClientSupported = 18,
+  kPhoneHubClientEnabled = 19,
+
   // Used for UMA logs.
-  kMaxValue = kSmsConnectClientEnabled
+  kMaxValue = kPhoneHubClientEnabled
 };
 
 const base::flat_set<CryptAuthFeatureType>& GetAllCryptAuthFeatureTypes();

@@ -38,7 +38,6 @@
 #include "third_party/blink/renderer/core/css/resolver/font_builder.h"
 #include "third_party/blink/renderer/core/dom/document.h"
 #include "third_party/blink/renderer/core/dom/element.h"
-#include "third_party/blink/renderer/core/style/cached_ua_style.h"
 
 namespace blink {
 
@@ -134,12 +133,6 @@ class CORE_EXPORT StyleResolverState {
   void SetLayoutParentStyle(scoped_refptr<const ComputedStyle>);
   const ComputedStyle* LayoutParentStyle() const {
     return layout_parent_style_.get();
-  }
-
-  void CacheUserAgentBorderAndBackground();
-
-  const CachedUAStyle* GetCachedUAStyle() const {
-    return cached_ua_style_.get();
   }
 
   ElementStyleResources& GetElementStyleResources() {
@@ -268,8 +261,6 @@ class CORE_EXPORT StyleResolverState {
   PseudoElementStyleRequest::RequestType pseudo_request_type_;
 
   FontBuilder font_builder_;
-
-  std::unique_ptr<CachedUAStyle> cached_ua_style_;
 
   ElementStyleResources element_style_resources_;
   Element* pseudo_element_;

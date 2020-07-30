@@ -164,6 +164,9 @@
 
       Als er geen beleid is ingesteld of het beleid is ingesteld op 'False', wordt Fast Transition niet gebruikt.
       Als het beleid is ingesteld op 'True', wordt Fast Transition gebruikt wanneer dit wordt ondersteund door het draadloze toegangspunt.</translation>
+<translation id="1240722269871366886">Met dit beleid kan <ph name="PRODUCT_OS_NAME" /> emoji's voorstellen als gebruikers tekst typen met hun virtuele of fysieke toetsenborden.
+      Als dit beleid is ingesteld op True, is de functie ingeschakeld en kunnen gebruikers het wijzigen.
+      Dit beleid is standaard ingesteld op False. Er worden geen suggesties voor emoji's weergegeven en gebruikers kunnen dit niet overschrijven.</translation>
 <translation id="1243570869342663665">SafeSites-filters voor content voor volwassenen beheren.</translation>
 <translation id="1257550411839719984">Standaardmap voor downloads instellen</translation>
 <translation id="1265053460044691532">De offline inlogtijd beperken voor een gebruiker die is geverifieerd via SAML</translation>
@@ -934,6 +937,7 @@ Als dit beleid niet is ingesteld, is het privacyscherm in eerste instantie uitge
       Wanneer dit beleid niet is geconfigureerd of is ingesteld op 'True', kunnen gebruikers Network File Shares gebruiken.
 
       Wanneer dit beleid is ingesteld op 'False', kunnen gebruikers Network File Shares niet gebruiken.</translation>
+<translation id="2435052056904485763">Toelatingslijst voor Kerberos-delegatieserver</translation>
 <translation id="2440773021691931148">Hiermee worden hardwarestatistieken en -ID's over de stroomstatus gerapporteerd.
 
       Als het beleid is ingesteld op False of niet is ingesteld, worden de statistieken niet gerapporteerd.
@@ -1718,17 +1722,6 @@ Als dit beleid is ingesteld op False, gebruikt <ph name="PRODUCT_NAME" /> geen n
 <translation id="355118380775352753">Websites die worden geopend in de alternatieve browser</translation>
 <translation id="3554498762428140109">Native occlusie van vensters inschakelen</translation>
 <translation id="3554984410014457319">De Google Assistent laten luisteren naar de spraakactiveringszin</translation>
-<translation id="3557208865710006939">Talen voor spellingcontrole worden gedwongen ingeschakeld. Niet-herkende talen in de lijst worden genegeerd.
-
-      Als je dit beleid inschakelt, wordt de spellingcontrole ingeschakeld voor de gespecificeerde talen, naast de talen waarvoor de gebruiker de spellingcontrole heeft ingeschakeld.
-
-      Als je dit beleid niet instelt of als je het beleid uitschakelt, worden de gebruikersvoorkeuren voor de spellingcontrole niet gewijzigd.
-
-      Als het beleid <ph name="SPELLCHECK_ENABLED_POLICY_NAME" /> is ingesteld op False, heeft dit beleid geen effect.
-
-      Als een taal is opgenomen in zowel dit beleid als het beleid <ph name="SPELLCHECK_LANGUAGE_BLACKLIST_POLICY_NAME" />, heeft dit beleid voorrang en wordt de taal voor spellingcontrole ingeschakeld.
-
-      De volgende talen worden momenteel ondersteund: af, bg, ca, cs, da, de, el, en-AU, en-CA, en-GB, en-US, es, es-419, es-AR, es-ES, es-MX, es-US, et, fa, fo, fr, he, hi, hr, hu, id, it, ko, lt, lv, nb, nl, pl, pt-BR, pt-PT, ro, ru, sh, sk, sl, sq, sr, sv, ta, tg, tr, uk, vi.</translation>
 <translation id="356579196325389849">Gebruikers kunnen het releasekanaal voor Chrome OS configureren.</translation>
 <translation id="3575011234198230041">HTTP-verificatie</translation>
 <translation id="3577251398714997599">Advertentie-instellingen voor sites met opdringerige advertenties</translation>
@@ -2399,6 +2392,21 @@ Als dit beleid is ingesteld op False, gebruikt <ph name="PRODUCT_NAME" /> geen n
       Als dit beleid wordt afgedwongen, kunnen pagina's UITSLUITEND worden geopend in de incognitomodus. De optie 'Afgedwongen' werkt niet voor Android in Chrome.</translation>
 <translation id="4600786265870346112">Grote muisaanwijzer inschakelen</translation>
 <translation id="4604931264910482931">Zwarte lijst voor systeemeigen berichten configureren</translation>
+<translation id="4607416370554533118">Als je het beleid instelt, kun je een lijst met URL-patronen opgeven van sites waarvoor Chrome automatisch een clientcertificaat kan selecteren. De waarde is een matrix van JSON-woordenboeken met tekenreeksen, elk met de indeling <ph name="AUTO_SELECT_CERTIFICATE_FOR_URLS_EXAMPLE" />, waarbij <ph name="URL_PATTERN_PLACEHOLDER" /> een patroon voor het instellen van content is. <ph name="FILTER_PLACEHOLDER" /> beperkt de clientcertificaten waaruit de browser automatisch kan kiezen. Onafhankelijk van het filter worden alleen certificaten geselecteerd die overeenkomen met het certificaatverzoek van de server.
+
+      Voorbeelden voor het gebruik van het gedeelte <ph name="FILTER_PLACEHOLDER" />:
+
+      * Als <ph name="FILTER_PLACEHOLDER" /> is ingesteld op <ph name="AUTO_SELECT_CERTIFICATE_FOR_URLS_FILTER_EXAMPLE" />, worden er alleen clientcertificaten geselecteerd die zijn uitgegeven door een certificaat met de CommonName <ph name="ISSUER_CN_PLACEHOLDER" />.
+
+      * Als <ph name="FILTER_PLACEHOLDER" /> zowel het gedeelte <ph name="ISSUER_STRING_VALUE" /> als het gedeelte <ph name="SUBJECT_STRING_VALUE" /> bevat, worden alleen clientcertificaten geselecteerd die aan beide voorwaarden voldoen.
+
+      * Als <ph name="FILTER_PLACEHOLDER" /> een gedeelte <ph name="SUBJECT_STRING_VALUE" /> met de waarde <ph name="FILTER_STRING_ORGANIZATION" /> bevat, moet een certificaat ten minste één organisatie hebben die overeenkomt met de opgegeven waarde om te worden geselecteerd.
+
+      * Als <ph name="FILTER_PLACEHOLDER" /> een gedeelte <ph name="SUBJECT_STRING_VALUE" /> met een waarde <ph name="FILTER_STRING_ORGANIZATIONAL_UNIT" /> bevat, moet een certificaat ten minste één organisatie-eenheid hebben die overeenkomt met de opgegeven waarde om te worden geselecteerd.
+
+      * Als <ph name="FILTER_PLACEHOLDER" /> is ingesteld op <ph name="EMPTY_DICTIONARY" />, wordt de selectie van clientcertificaten niet verder beperkt. Houd er rekening mee dat filters die door de webserver worden geleverd, nog steeds van toepassing zijn.
+
+      Als je het beleid niet instelt, worden clientcertificaten voor geen enkele site automatisch geselecteerd.</translation>
 <translation id="4617338332148204752">De metatagcontrole in <ph name="PRODUCT_FRAME_NAME" /> overslaan</translation>
 <translation id="462134014569484584">Met dit beleid wordt de <ph name="PLUGIN_VM_NAME" />-licentiesleutel voor dit apparaat opgegeven.</translation>
 <translation id="4625915093043961294">Witte lijst voor het installeren van extensies configureren</translation>
@@ -2515,6 +2523,13 @@ Als dit beleid is ingesteld op False, gebruikt <ph name="PRODUCT_NAME" /> geen n
 
       Als je het beleid instelt, kunnen gebruikers het niet wijzigen. Als je het beleid niet instelt, kunnen gebruikers zelf aangeven of de plank automatisch moet worden verborgen.</translation>
 <translation id="4812714598405913256">Bericht voor vervaldatum voor automatische updates configureren voor het beleid DeviceMinimumVersion</translation>
+<translation id="481492486938162195">Dit beleid is beëindigd. Gebruik in plaats daarvan het beleid '<ph name="AUTH_NEGOCIATE_DELEGATE_ALLOWLIST_POLICY_NAME" />'.
+
+          Servers die <ph name="PRODUCT_NAME" /> mag machtigen.
+
+          Gebruik bij meerdere servernamen een komma als scheidingsteken. Jokertekens (*) zijn toegestaan.
+
+          Als je dit beleid niet instelt, machtigt <ph name="PRODUCT_NAME" /> niet voor inloggegevens van gebruikers, zelfs niet als een server wordt gedetecteerd als intranet.</translation>
 <translation id="4816674326202173458">Toestaan dat Enterprise-gebruiker zowel primair als secundair is (standaardgedrag voor niet-beheerde gebruikers)</translation>
 <translation id="4826326557828204741">Actie die moet worden ondernomen wanneer de vertraging voor inactief wordt bereikt bij gebruik op accuvermogen</translation>
 <translation id="482803100714220060">Volledige URL's weergeven</translation>
@@ -5313,6 +5328,13 @@ Dit beleid wordt verwijderd in M75.</translation>
       Als dit beleid is ingesteld op False of niet is ingesteld, worden de formulierbesturingselementen ingeschakeld als ze worden gelanceerd in M81, M82 en M83.
 
       Dit beleid wordt na Chrome 84 verwijderd.</translation>
+<translation id="8937562488500723400">Regelt of goedkeuring op basis van KDC-beleid wordt gerespecteerd om te bepalen of <ph name="KERBEROS" />-tickets worden gedelegeerd.
+
+          Als dit beleid is ingesteld op True, respecteert de HTTP-verificatie de goedkeuring op basis van KDC-beleid (dat wil zeggen, Chrome delegeert inloggegevens alleen als het KDC-beleid <ph name="OK_AS_DELEGATE" /> instelt op een serviceticket). Zie https://tools.ietf.org/html/rfc5896.html voor meer informatie. De service moet ook overeenkomen met het beleid 'AuthNegotiateDelegateAllowlist'.
+
+          Als dit beleid niet is ingesteld of is ingesteld op False, wordt het KDC-beleid genegeerd op ondersteunde platforms en wordt alleen het beleid 'AuthNegotiateDelegateAllowlist' gerespecteerd.
+
+          Op Windows wordt het KDC-beleid altijd gerespecteerd.</translation>
 <translation id="8938932171964587769">Beëindigd in M69. Gebruik in plaats hiervan
       OverrideSecurityRestrictionsOnInsecureOrigin.
 
@@ -5432,6 +5454,27 @@ Dit beleid wordt verwijderd in M75.</translation>
       Als je het beleid instelt, gebruikt <ph name="PRODUCT_NAME" /> de door jou opgegeven cachegrootte, ongeacht of gebruikers de optie '--disk-cache-size' hebben opgegeven. (Waarden onder enkele megabytes worden naar boven afgerond.)
 
       Als dit beleid niet is ingesteld, gebruikt <ph name="PRODUCT_NAME" /> de standaardgrootte. Gebruikers kunnen deze instelling wijzigen met behulp van de optie '--disk-cache-size'.</translation>
+<translation id="9057444687284972605">Hiermee kun je een lijst met URL-patronen opgeven om sites te specificeren. Hiervoor wordt automatisch een clientcertificaat geselecteerd op het inlogscherm in het frame waarin het SAML-proces wordt gehost als de site vraagt om een certificaat. Een gebruiksvoorbeeld is de configuratie van een certificaat voor het hele apparaat dat wordt gepresenteerd aan de SAML IdP.
+
+      De waarde is een matrix van JSON-woordenboeken met tekenreeksen, elk met de indeling <ph name="AUTO_SELECT_CERTIFICATE_FOR_URLS_EXAMPLE" />, waarbij <ph name="URL_PATTERN_PLACEHOLDER" /> een patroon voor het instellen van content is. <ph name="FILTER_PLACEHOLDER" /> beperkt de clientcertificaten waaruit de browser automatisch kan kiezen. Onafhankelijk van het filter worden alleen certificaten geselecteerd die overeenkomen met het certificaatverzoek van de server.
+
+      Voorbeelden voor het gebruik van het gedeelte <ph name="FILTER_PLACEHOLDER" />:
+
+      * Als <ph name="FILTER_PLACEHOLDER" /> is ingesteld op <ph name="AUTO_SELECT_CERTIFICATE_FOR_URLS_FILTER_EXAMPLE" />, worden er alleen clientcertificaten geselecteerd die zijn uitgegeven door een certificaat met de CommonName <ph name="ISSUER_CN_PLACEHOLDER" />.
+
+      * Als <ph name="FILTER_PLACEHOLDER" /> zowel het gedeelte <ph name="ISSUER_STRING_VALUE" /> als het gedeelte <ph name="SUBJECT_STRING_VALUE" /> bevat, worden alleen clientcertificaten geselecteerd die aan beide voorwaarden voldoen.
+
+      * Als <ph name="FILTER_PLACEHOLDER" /> een gedeelte <ph name="SUBJECT_STRING_VALUE" /> met de waarde <ph name="FILTER_STRING_ORGANIZATION" /> bevat, moet een certificaat ten minste één organisatie hebben die overeenkomt met de opgegeven waarde om te worden geselecteerd.
+
+      * Als <ph name="FILTER_PLACEHOLDER" /> een gedeelte <ph name="SUBJECT_STRING_VALUE" /> met een waarde <ph name="FILTER_STRING_ORGANIZATIONAL_UNIT" /> bevat, moet een certificaat ten minste één organisatie-eenheid hebben die overeenkomt met de opgegeven waarde om te worden geselecteerd.
+
+      * Als <ph name="FILTER_PLACEHOLDER" /> is ingesteld op <ph name="EMPTY_DICTIONARY" />, wordt de selectie van clientcertificaten niet verder beperkt. Houd er rekening mee dat filters die door de webserver worden geleverd, nog steeds van toepassing zijn.
+
+
+
+      Als dit beleid niet wordt ingesteld, wordt voor geen enkele site automatische selectie uitgevoerd.
+
+      Ga naar https://cloud.google.com/docs/chrome-enterprise/policies/url-patterns voor gedetailleerde informatie over geldige URL-patronen.</translation>
 <translation id="9062348747995618422">Als je het beleid instelt, kun je een lijst met URL-patronen instellen om op te geven welke sites de <ph name="FLASH_PLUGIN_NAME" />-plug-in mogen uitvoeren.
 
       Als je het beleid niet instelt, is <ph name="DEFAULT_PLUGINS_SETTING_POLICY_NAME" />, indien ingesteld, van toepassing op alle sites. Zo niet, dan gelden de persoonlijke instellingen van de gebruiker.

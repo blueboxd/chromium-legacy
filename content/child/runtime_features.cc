@@ -221,8 +221,6 @@ void SetRuntimeFeaturesFromChromiumFeatures() {
     {wf::EnableWebXRPlaneDetection, features::kWebXrIncubations, kEnableOnly},
     {wf::EnableWebXRReflectionEstimation, features::kWebXrIncubations,
      kEnableOnly},
-    {wf::EnableUserActivationPostMessageTransfer,
-     features::kUserActivationPostMessageTransfer, kUseFeatureState},
     {wf::EnableUserActivationSameOriginVisibility,
      features::kUserActivationSameOriginVisibility, kUseFeatureState},
     {wf::EnableExpensiveBackgroundTimerThrottling,

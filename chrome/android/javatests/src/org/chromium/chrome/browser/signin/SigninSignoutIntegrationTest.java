@@ -48,6 +48,7 @@ import org.chromium.chrome.test.util.browser.signin.AccountManagerTestRule;
 import org.chromium.components.signin.GAIAServiceType;
 import org.chromium.components.signin.identitymanager.ConsentLevel;
 import org.chromium.components.signin.metrics.SigninAccessPoint;
+import org.chromium.content_public.browser.test.util.CriteriaHelper;
 import org.chromium.content_public.browser.test.util.TestThreadUtils;
 import org.chromium.ui.test.util.DisableAnimationsTestRule;
 
@@ -110,16 +111,17 @@ public class SigninSignoutIntegrationTest {
     public void testSignIn() {
         Account account = mAccountManagerTestRule.addAccountAndWaitForSeeding(
                 AccountManagerTestRule.TEST_ACCOUNT_EMAIL);
-        ActivityUtils.waitForActivity(
+        SigninActivity signinActivity = ActivityUtils.waitForActivity(
                 InstrumentationRegistry.getInstrumentation(), SigninActivity.class, () -> {
                     SigninActivityLauncher.get().launchActivity(
                             mActivityTestRule.getActivity(), SigninAccessPoint.SETTINGS);
                 });
         assertSignedOut();
-        onView(withId(R.id.positive_button)).perform(click());
+        TestThreadUtils.runOnUiThreadBlocking(
+                () -> { signinActivity.findViewById(R.id.positive_button).performClick(); });
+        CriteriaHelper.pollUiThread(this::assertSignedIn);
         verify(mSignInStateObserverMock).onSignedIn();
         verify(mSignInStateObserverMock, never()).onSignedOut();
-        assertSignedIn();
         TestThreadUtils.runOnUiThreadBlocking(() -> {
             Assert.assertEquals(account.name,
                     mSigninManager.getIdentityManager()

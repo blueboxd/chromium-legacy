@@ -436,7 +436,9 @@ scoped_refptr<ServiceWorkerVersion> CreateNewServiceWorkerVersion(
     const GURL& script_url,
     blink::mojom::ScriptType script_type) {
   scoped_refptr<ServiceWorkerVersion> version;
-  base::RunLoop run_loop;
+  // See comments in CreateNewServiceWorkerRegistration() why nestable tasks
+  // allowed.
+  base::RunLoop run_loop(base::RunLoop::Type::kNestableTasksAllowed);
   registry->CreateNewVersion(
       std::move(registration), script_url, script_type,
       base::BindLambdaForTesting(

@@ -123,6 +123,7 @@
 <translation id="1430915738399379752">प्रिंट करें</translation>
 <translation id="1442386063175183758">दायां गेट फ़ोल्ड</translation>
 <translation id="1442987760062738829">पंच</translation>
+<translation id="1447067628680007684">(x86_64)</translation>
 <translation id="1453974140256777690">आप जो लेख चिपकाते हैं या अटैच करते हैं उसे विश्लेषण के लिए 'Google क्लाउड' या तीसरे पक्षों को भेजा जाता है. उदाहरण के लिए, इसे संवेदनशील डेटा की जांच के लिए स्कैन किया जा सकता है.</translation>
 <translation id="1455413310270022028">इरेज़र</translation>
 <translation id="1462245070427461050">JIS B9</translation>
@@ -1142,6 +1143,7 @@
 <translation id="5705882733397021510">वापस जाएं</translation>
 <translation id="57094364128775171">मज़बूत पासवर्ड सुझाएं…</translation>
 <translation id="5710435578057952990">इस वेबसाइट की पहचान सत्यापित नहीं की गई है.</translation>
+<translation id="571403275720188526">(arm64)</translation>
 <translation id="5720705177508910913">मौजूदा उपयोगकर्ता</translation>
 <translation id="5728056243719941842">सी5 (एन्वेलॉप)</translation>
 <translation id="5730040223043577876">अगर आपने अपने पासवर्ड का दूसरी साइटों पर दोबारा इस्तेमाल किया है, तो Chrome आपको उसे रीसेट करने का सुझाव देता है.</translation>
@@ -1191,6 +1193,7 @@
 <translation id="5921639886840618607">कार्ड को Google खाते में सेव करें?</translation>
 <translation id="5922853866070715753">करीब-करीब हो गया है</translation>
 <translation id="5932224571077948991">साइट में तंग करने वाले या गुमराह करने वाले विज्ञापन दिखाई देते हैं</translation>
+<translation id="5938793338444039872">ट्रॉय</translation>
 <translation id="5946937721014915347"><ph name="SITE_NAME" /> को खोला जा रहा है…</translation>
 <translation id="5951495562196540101">उपभोक्ता खाते (पैकेज किया गया लाइसेंस मौजूद है) के साथ नामांकन नहीं कर सकते.</translation>
 <translation id="5967592137238574583">संपर्क जानकारी में बदलाव करें</translation>
@@ -1358,6 +1361,7 @@
 <translation id="6646269444027925224">{COUNT,plural, =0{कोई नहीं}=1{1 साइट से (आप अपने Google खाते से साइन आउट नहीं होंगे)}one{# साइटों से (आप अपने Google खाते से साइन आउट नहीं होंगे)}other{# साइटों से (आप अपने Google खाते से साइन आउट नहीं होंगे)}}</translation>
 <translation id="6652101503459149953">Windows Hello का इस्तेमाल करें</translation>
 <translation id="6657585470893396449">पासवर्ड</translation>
+<translation id="666259744093848177">(x86_64 का अनुवाद किया गया)</translation>
 <translation id="6665553082534466207">दाईं ओर ट्रिपल पंच</translation>
 <translation id="6671697161687535275">क्रोमियम से फ़ॉर्म सुझाव निकालें?</translation>
 <translation id="6685834062052613830">प्रस्थान करें और सेटअप पूरा करें</translation>

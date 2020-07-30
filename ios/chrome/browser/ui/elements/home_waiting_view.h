@@ -2,18 +2,18 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef IOS_CHROME_BROWSER_UI_BOOKMARKS_BOOKMARK_HOME_WAITING_VIEW_H_
-#define IOS_CHROME_BROWSER_UI_BOOKMARKS_BOOKMARK_HOME_WAITING_VIEW_H_
+#ifndef IOS_CHROME_BROWSER_UI_ELEMENTS_HOME_WAITING_VIEW_H_
+#define IOS_CHROME_BROWSER_UI_ELEMENTS_HOME_WAITING_VIEW_H_
 
 #import <UIKit/UIKit.h>
 
 #include "base/ios/block_types.h"
 
-// Displays a waiting UI for BookmarkHomeHandsetController.
-// It displays a gray background and an activity indicator.
+// Displays a waiting UI.
+// It displays an activity indicator with an optional colored background.
 // The activity indicator appears after a delay, starting from the moment
 // |startWaiting| is called.
-@interface BookmarkHomeWaitingView : UIView
+@interface HomeWaitingView : UIView
 
 - (instancetype)initWithFrame:(CGRect)frame backgroundColor:(UIColor*)color;
 
@@ -28,4 +28,4 @@
 
 @end
 
-#endif  // IOS_CHROME_BROWSER_UI_BOOKMARKS_BOOKMARK_HOME_WAITING_VIEW_H_
+#endif  // IOS_CHROME_BROWSER_UI_ELEMENTS_HOME_WAITING_VIEW_H_

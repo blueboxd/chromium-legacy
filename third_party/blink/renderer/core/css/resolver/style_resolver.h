@@ -134,8 +134,6 @@ class CORE_EXPORT StyleResolver final : public GarbageCollected<StyleResolver> {
   void SetRuleUsageTracker(StyleRuleUsageTracker*);
   void UpdateMediaType();
 
-  static bool HasAuthorBackground(const StyleResolverState&);
-
   static bool CanReuseBaseComputedStyle(const StyleResolverState& state);
 
   scoped_refptr<ComputedStyle> StyleForInterpolations(
@@ -242,7 +240,6 @@ class CORE_EXPORT StyleResolver final : public GarbageCollected<StyleResolver> {
 
   void ApplyCallbackSelectors(StyleResolverState&);
 
-  bool HasAuthorBorder(const StyleResolverState&);
   Document& GetDocument() const { return *document_; }
   bool WasViewportResized() const { return was_viewport_resized_; }
 

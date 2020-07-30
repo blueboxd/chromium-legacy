@@ -1,6 +1,7 @@
 <?xml version="1.0" ?>
 <!DOCTYPE translationbundle>
 <translationbundle lang="vi">
+<translation id="1060499346270045814">{NUM_HOURS,plural, =1{Chromium kiểm tra để phát hiện phần mềm không mong muốn một lần một tuần. Lần kiểm tra gần đây nhất: 1 giờ trước.}other{Chromium kiểm tra để phát hiện phần mềm không mong muốn một lần một tuần. Lần kiểm tra gần đây nhất: {NUM_HOURS} giờ trước.}}</translation>
 <translation id="1065672644894730302">Không thể đọc tùy chọn của bạn. Một số tính năng có thể không khả dụng và các thay đổi đối với tùy chọn sẽ không được lưu.</translation>
 <translation id="1098170124587656448">Chromium có thể giúp bảo vệ bạn trước các sự cố rò rỉ dữ liệu, tiện ích độc hại và những vấn đề khác</translation>
 <translation id="1104942323762546749">Chromium muốn xuất các mật khẩu của bạn. Hãy nhập mật khẩu Windows để cho phép thực hiện việc này.</translation>
@@ -38,6 +39,7 @@
 <translation id="2711502716910134313">Thẻ Chromium</translation>
 <translation id="2718390899429598676">Để bảo mật hơn, Chromium sẽ mã hóa dữ liệu của bạn.</translation>
 <translation id="2770231113462710648">Thay đổi trình duyệt mặc định thành:</translation>
+<translation id="2797461000988640326">{NUM_MINS,plural, =1{Chromium kiểm tra để phát hiện phần mềm không mong muốn một lần một tuần. Lần kiểm tra gần đây nhất: 1 phút trước.}other{Chromium kiểm tra để phát hiện phần mềm không mong muốn một lần một tuần. Lần kiểm tra gần đây nhất: {NUM_MINS} phút trước.}}</translation>
 <translation id="2799223571221894425">Chạy lại</translation>
 <translation id="2847479871509788944">Xóa khỏi Chromium...</translation>
 <translation id="2885378588091291677">Trình quản lý tác vụ</translation>
@@ -47,6 +49,7 @@
 <translation id="3032706164202344641">Chromium không thể kiểm tra mật khẩu của bạn. Hãy thử lại sau.</translation>
 <translation id="3032787606318309379">Đang thêm vào Chromium...</translation>
 <translation id="3068515742935458733">Giúp cải thiện Chromium bằng cách gửi báo cáo sự cố và <ph name="UMA_LINK" /> tới Google</translation>
+<translation id="3086207596048762442">Chromium kiểm tra để phát hiện phần mềm không mong muốn một lần một tuần</translation>
 <translation id="3103660991484857065">Trình cài đặt không thể giải nén tệp lưu trữ. Hãy tải xuống Chromium lại lần nữa.</translation>
 <translation id="3130323860337406239">Chromium đang sử dụng micrô của bạn.</translation>
 <translation id="3155163173539279776">Chạy lại Chromium</translation>
@@ -166,6 +169,7 @@ Một số tính năng có thể không khả dụng. Hãy chỉ định thư m�
 <translation id="6847869444787758381">Chromium cho bạn biết mật khẩu của bạn có bị đánh cắp hay không</translation>
 <translation id="6857782730669500492">Chromium - <ph name="PAGE_TITLE" /></translation>
 <translation id="6863361426438995919">Google Pay (đã sao chép vào Chromium)</translation>
+<translation id="6863846675160669383">{NUM_DAYS,plural, =1{Chromium kiểm tra để phát hiện phần mềm không mong muốn một lần một tuần. Lần kiểm tra gần đây nhất: 1 ngày trước.}other{Chromium kiểm tra để phát hiện phần mềm không mong muốn một lần một tuần. Lần kiểm tra gần đây nhất: {NUM_DAYS} ngày trước.}}</translation>
 <translation id="6893813176749746474">Chromium đã được cập nhật nhưng bạn đã không sử dụng trình duyệt này trong ít nhất 30 ngày.</translation>
 <translation id="6964305034639999644">Mở liên kết trong cửa sổ ẩn danh của Chromium</translation>
 <translation id="6990124437352146030">Chromium cần có quyền truy cập vào micrô của bạn cho trang web này</translation>
@@ -230,6 +234,7 @@ Chromium không thể khôi phục cài đặt của bạn.</translation>
 <translation id="8621669128220841554">Không thể cài đặt do xảy ra lỗi không xác định. Hãy tải xuống Chromium lại lần nữa.</translation>
 <translation id="8697124171261953979">Tiện ích này cũng điều khiển trang nào được hiển thị khi bạn khởi động Chromium hoặc tìm kiếm từ Thanh địa chỉ.</translation>
 <translation id="8704119203788522458">Đây là Chromium của bạn</translation>
+<translation id="8705191560707593947">Chromium kiểm tra để phát hiện phần mềm không mong muốn một lần một tuần. Lần kiểm tra gần đây nhất: hôm qua.</translation>
 <translation id="8796602469536043152">Chromium cần có quyền truy cập vào máy ảnh và micrô của bạn cho trang web này</translation>
 <translation id="8803635938069941624">Điều khoản Chromium OS</translation>
 <translation id="8821041990367117597">Chromium không thể đồng bộ hóa dữ liệu của bạn vì chi tiết đăng nhập tài khoản của bạn đã cũ.</translation>
@@ -245,6 +250,7 @@ Chromium không thể khôi phục cài đặt của bạn.</translation>
 <translation id="91086099826398415">Mở liên kết trong thẻ mới của Chromium</translation>
 <translation id="911206726377975832">Bạn cũng muốn xóa dữ liệu duyệt web của mình?</translation>
 <translation id="9158494823179993217">Quản trị viên hệ thống của bạn đã định cấu hình Chromium để mở một trình duyệt thay thế khi truy cập vào <ph name="TARGET_URL_HOSTNAME" />.</translation>
+<translation id="9164845895615421500">Chromium kiểm tra để phát hiện phần mềm không mong muốn một lần một tuần. Lần kiểm tra gần đây nhất: vài phút trước.</translation>
 <translation id="9190841055450128916">Chromium (mDNS-In)</translation>
 <translation id="9191317372410544836">Hãy dùng Không gian Chromium để sắp xếp dữ liệu duyệt web một cách gọn gàng trên thiết bị này</translation>
 <translation id="93478295209880648">Chromium có thể không hoạt động chính xác do không được hỗ trợ trên Windows XP hoặc Windows Vista nữa</translation>

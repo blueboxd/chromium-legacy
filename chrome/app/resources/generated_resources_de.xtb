@@ -164,7 +164,7 @@
 <translation id="1195558154361252544">Benachrichtigungen werden automatisch für alle Websites blockiert, außer für diejenigen, die Sie zulassen</translation>
 <translation id="1197088940767939838">Orange</translation>
 <translation id="1197979282329025000">Beim Abrufen der Druckerfunktionen für Drucker "<ph name="PRINTER_NAME" />" ist ein Fehler aufgetreten. Dieser Drucker konnte nicht mit <ph name="CLOUD_PRINT_NAME" /> registriert werden.</translation>
-<translation id="119944043368869598">Alle löschen</translation>
+<translation id="119944043368869598">Alle entfernen</translation>
 <translation id="1199814941632954229">Es werden Zertifikate für diese Zertifikatprofile bereitgestellt</translation>
 <translation id="1201402288615127009">Weiter</translation>
 <translation id="1202596434010270079">Die Kiosk-App wurde aktualisiert. Bitte entfernen Sie den USB-Stick.</translation>
@@ -1667,7 +1667,7 @@ Servernachricht: <ph name="SERVER_MSG" /></translation>
 <translation id="3016641847947582299">Komponente aktualisiert</translation>
 <translation id="3017079585324758401">Hintergrund</translation>
 <translation id="3019285239893817657">Taste zur Unterseite</translation>
-<translation id="3020183492814296499">Verknüpfungen</translation>
+<translation id="3020183492814296499">Tastenkombinationen</translation>
 <translation id="3020990233660977256">Seriennummer: <ph name="SERIAL_NUMBER" /></translation>
 <translation id="3021065318976393105">Im Akkubetrieb</translation>
 <translation id="3021066826692793094">Schmetterling</translation>
@@ -1761,7 +1761,7 @@ Servernachricht: <ph name="SERVER_MSG" /></translation>
 <translation id="3149510190863420837">Chrome-Apps</translation>
 <translation id="3150693969729403281">Sicherheitscheck jetzt durchführen</translation>
 <translation id="3150927491400159470">Vollständiges Aktualisieren (Hard Reload)</translation>
-<translation id="315116470104423982">Mobilfunk</translation>
+<translation id="315116470104423982">Mobile Daten</translation>
 <translation id="3151539355209957474">Startzeit</translation>
 <translation id="3151562827395986343">Cache leeren sowie Verlauf, Cookies und andere Daten löschen</translation>
 <translation id="3151786313568798007">Ausrichtung</translation>
@@ -1799,7 +1799,7 @@ Servernachricht: <ph name="SERVER_MSG" /></translation>
 <translation id="3200310363903241381">{COUNT,plural, =1{Chrome empfiehlt, dieses Passwort jetzt zu prüfen}other{Chrome empfiehlt, diese Passwörter jetzt zu prüfen}}</translation>
 <translation id="3201422919974259695">Verfügbare USB-Geräte werden hier angezeigt.</translation>
 <translation id="3202131003361292969">Pfad</translation>
-<translation id="3202173864863109533">Der Ton dieses Tabs wird stummgeschaltet.</translation>
+<translation id="3202173864863109533">Der Ton dieses Tabs ist stummgeschaltet.</translation>
 <translation id="3208321278970793882">App</translation>
 <translation id="3208584281581115441">Jetzt prüfen</translation>
 <translation id="3208703785962634733">Nicht bestätigt</translation>
@@ -2797,7 +2797,7 @@ Möchten Sie <ph name="CONTROL_PANEL_APPLET_NAME" /> starten?</translation>
 <translation id="4444512841222467874">Wenn kein Speicherplatz freigegeben wird, können Nutzer und Daten automatisch entfernt werden.</translation>
 <translation id="4446933390699670756">Gespiegelt</translation>
 <translation id="4449948729197510913">Ihr Nutzername gehört zum Unternehmenskonto Ihrer Organisation. Wenn Sie Geräte für das Konto registrieren möchten, müssen Sie zuerst in der Admin-Konsole die Domaininhaberschaft verifizieren. Sie benötigen Administratorberechtigungen für das zu verifizierende Konto.</translation>
-<translation id="4449996769074858870">Auf diesem Tab wird Audio wiedergegeben.</translation>
+<translation id="4449996769074858870">In diesem Tab wird Audio wiedergegeben.</translation>
 <translation id="4450974146388585462">Diagnose</translation>
 <translation id="4451479197788154834">Ihr Passwort ist auf diesem Gerät und in Ihrem Google-Konto gespeichert</translation>
 <translation id="4451757071857432900">Auf Websites blockiert, die aufdringliche oder irreführende Werbung anzeigen (empfohlen)</translation>
@@ -4049,7 +4049,6 @@ Möchten Sie <ph name="CONTROL_PANEL_APPLET_NAME" /> starten?</translation>
 <translation id="6056710589053485679">Normales Aktualisieren</translation>
 <translation id="6057312498756061228">Diese Datei ist zu groß für eine Sicherheitsprüfung. Sie können Dateien mit einer Größe von bis zu 50 MB öffnen.</translation>
 <translation id="6057381398996433816">Diese Website darf keine Bewegungs- und Lichtsensoren verwenden.</translation>
-<translation id="6058567592298841668">Virtuelle Maschine (Plug-in): <ph name="PLUGIN_VM_NAME" /></translation>
 <translation id="6059652578941944813">Zertifikathierarchie</translation>
 <translation id="6059925163896151826">USB-Geräte</translation>
 <translation id="6061882183774845124">Link an meine Geräte senden</translation>
@@ -4179,7 +4178,7 @@ Möchten Sie <ph name="CONTROL_PANEL_APPLET_NAME" /> starten?</translation>
 <translation id="6224481128663248237">Formatierung abgeschlossen</translation>
 <translation id="622537739776246443">Profil wird gelöscht</translation>
 <translation id="6225475702458870625">Datenverbindung von Ihrem <ph name="PHONE_NAME" /> verfügbar</translation>
-<translation id="6226777517901268232">Private Schlüsseldatei (optional)</translation>
+<translation id="6226777517901268232">Datei mit privatem Schlüssel (optional)</translation>
 <translation id="6227280783235722609">Erweiterung</translation>
 <translation id="6228691855869374890">Diese Website hat vollständige Kontrolle über MIDI-Geräte.</translation>
 <translation id="6229849828796482487">WLAN-Verbindung trennen</translation>
@@ -4478,6 +4477,7 @@ Möchten Sie <ph name="CONTROL_PANEL_APPLET_NAME" /> starten?</translation>
 <translation id="6602956230557165253">Verwenden Sie zum Navigieren den Rechts- und Linkspfeil.</translation>
 <translation id="6605847144724004692">Noch nicht von Nutzern bewertet.</translation>
 <translation id="6607831829715835317">Weitere Too&amp;ls</translation>
+<translation id="6608012008902909398">Details der Softwareprüfung des Geräts anzeigen lassen</translation>
 <translation id="6611972847767394631">Hier finden Sie Ihre Tabs</translation>
 <translation id="6612358246767739896">Geschützte Inhalte</translation>
 <translation id="6615455863669487791">Anzeigen</translation>
@@ -4774,7 +4774,7 @@ Möchten Sie <ph name="CONTROL_PANEL_APPLET_NAME" /> starten?</translation>
 <translation id="6979044105893951891">Verwaltete Gastsitzungen starten und beenden</translation>
 <translation id="6979440798594660689">Stummschalten (Standard)</translation>
 <translation id="6979737339423435258">Gesamte Zeit</translation>
-<translation id="6981982820502123353">Bedienungsh.</translation>
+<translation id="6981982820502123353">Bedienungshilfen</translation>
 <translation id="6983507711977005608">Verbindung mit Instant Tethering-Netzwerk trennen</translation>
 <translation id="6983783921975806247">Registrierte OID</translation>
 <translation id="6984299437918708277">Wählen Sie ein Bild aus, das auf der Anmeldeseite für Ihr Konto zu sehen sein soll</translation>
@@ -5963,7 +5963,7 @@ Speichern Sie Ihre Schlüsseldatei an einem sicheren Ort. Sie benötigen die Dat
 <translation id="8448729345478502352">Die Elemente auf dem Bildschirm vergrößern oder verkleinern</translation>
 <translation id="8449008133205184768">Einfügen und Formatvorlage anpassen</translation>
 <translation id="8449036207308062757">Speicherplatz verwalten</translation>
-<translation id="84501823665211008">Emoji-Vorschläge anzeigen</translation>
+<translation id="84501823665211008">Emoji-Vorschläge einblenden</translation>
 <translation id="8452135315243592079">Keine SIM-Karte vorhanden</translation>
 <translation id="8455026683977728932">Fehler bei der Aktivierung der ADB-Illustration</translation>
 <translation id="845702320058262034">Verbindung nicht möglich. Kontrollieren Sie, ob Bluetooth auf Ihrem Smartphone aktiviert ist.</translation>
@@ -6245,7 +6245,7 @@ Speichern Sie Ihre Schlüsseldatei an einem sicheren Ort. Sie benötigen die Dat
 <translation id="8798441408945964110">Name des Anbieters</translation>
 <translation id="8800004011501252845">Ziele werden angezeigt für</translation>
 <translation id="8800034312320686233">Website funktioniert nicht?</translation>
-<translation id="880069872639153240">Sie erhalten Vorschläge für Emojis basierend auf Ihrer Eingabe</translation>
+<translation id="880069872639153240">Vorschläge für Emojis basierend auf Ihrer Eingabe erhalten</translation>
 <translation id="8803953437405899238">Neuen Tab mit nur einem Klick öffnen</translation>
 <translation id="8804999695258552249">{NUM_TABS,plural, =1{Tab in ein anderes Fenster verschieben}other{Tabs in ein anderes Fenster verschieben}}</translation>
 <translation id="8805140816472474147">Synchronisierungseinstellungen bestätigen, um die Synchronisierung zu starten.</translation>

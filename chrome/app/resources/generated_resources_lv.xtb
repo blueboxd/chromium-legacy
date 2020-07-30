@@ -4053,7 +4053,6 @@ Vai vēlaties palaist rīku <ph name="CONTROL_PANEL_APPLET_NAME" />?</translatio
 <translation id="6056710589053485679">Veikt normālo atkārtoto ielādi</translation>
 <translation id="6057312498756061228">Šis fails ir pārāk liels, lai tam veiktu drošības pārbaudi. Varat atvērt failus, kuru lielums nepārsniedz 50 MB.</translation>
 <translation id="6057381398996433816">Šajā vietnē ir bloķēta kustību un gaismas sensoru izmantošana.</translation>
-<translation id="6058567592298841668">Spraudņa virtuālā mašīna: <ph name="PLUGIN_VM_NAME" /></translation>
 <translation id="6059652578941944813">Sertifikātu hierarhija</translation>
 <translation id="6059925163896151826">USB ierīces</translation>
 <translation id="6061882183774845124">Sūtīt saiti uz jūsu ierīcēm</translation>
@@ -4482,6 +4481,7 @@ Vai vēlaties palaist rīku <ph name="CONTROL_PANEL_APPLET_NAME" />?</translatio
 <translation id="6602956230557165253">Lai pārvietotos, izmantojiet kreiso un labo bulttaustiņu.</translation>
 <translation id="6605847144724004692">Vēl nav novērtējis neviens lietotājs.</translation>
 <translation id="6607831829715835317">Vairā&amp;k rīku</translation>
+<translation id="6608012008902909398">Rādīt detalizētu informāciju par ierīces programmatūras pārbaudi</translation>
 <translation id="6611972847767394631">Jūsu cilnes ir pieejamas šeit</translation>
 <translation id="6612358246767739896">Aizsargāts saturs</translation>
 <translation id="6615455863669487791">Rādīt man</translation>

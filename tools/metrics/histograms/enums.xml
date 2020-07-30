@@ -24071,6 +24071,7 @@ Called by update_extension_histograms.py.-->
       label="AUTOTESTPRIVATE_STARTTHROUGHPUTTRACKERDATACOLLECTION"/>
   <int value="1493"
       label="AUTOTESTPRIVATE_STOPTHROUGHPUTTRACKERDATACOLLECTION"/>
+  <int value="1494" label="INPUTMETHODPRIVATE_GETAUTOCORRECTRANGE"/>
 </enum>
 
 <enum name="ExtensionIconState">
@@ -28568,9 +28569,6 @@ Called by update_use_counter_feature_enum.py.-->
       label="CrossBrowsingContextGroupMainFrameNulledNonEmptyNameAccessed"/>
   <int value="3354" label="PositionSticky"/>
   <int value="3355" label="CommaSeparatorInAllowAttribute"/>
-  <int value="3356" label="ConversionAPIAll"/>
-  <int value="3357" label="ImpressionRegistration"/>
-  <int value="3358" label="ConversionRegistration"/>
   <int value="3359" label="MainFrameCSPViaHTTP"/>
   <int value="3360" label="MainFrameCSPViaMeta"/>
   <int value="3361" label="MainFrameCSPViaOriginPolicy"/>
@@ -37118,6 +37116,7 @@ Called by update_gpu_driver_bug_workaround_entries.py.-->
 <enum name="IOSMenuScenario">
   <int value="0" label="History Entry"/>
   <int value="1" label="Bookmark Entry"/>
+  <int value="2" label="ReadingList Entry"/>
 </enum>
 
 <enum name="IOSNTPImpression">

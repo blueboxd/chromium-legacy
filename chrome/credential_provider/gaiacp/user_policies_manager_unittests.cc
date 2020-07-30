@@ -49,7 +49,7 @@ void GcpUserPoliciesFetchAndReadTest::SetUp() {
 
   policies_.enable_dm_enrollment = std::get<0>(GetParam());
   policies_.enable_gcpw_auto_update = std::get<1>(GetParam());
-  policies_.gcpw_pinned_version = std::get<2>(GetParam());
+  policies_.gcpw_pinned_version = GcpwVersion(std::get<2>(GetParam()));
   policies_.enable_multi_user_login = std::get<3>(GetParam());
   policies_.validity_period_days = std::get<4>(GetParam());
 
@@ -118,7 +118,7 @@ TEST_P(GcpUserPoliciesFetchAndReadTest, RegistryValuesWin) {
   policies_value.SetBoolKey("enable_gcpw_auto_update",
                             policies_.enable_gcpw_auto_update);
   policies_value.SetStringKey("gcpw_pinned_version",
-                              policies_.gcpw_pinned_version);
+                              policies_.gcpw_pinned_version.ToString());
   std::string expected_response;
   base::JSONWriter::Write(policies_value, &expected_response);
 

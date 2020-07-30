@@ -1,6 +1,7 @@
 <?xml version="1.0" ?>
 <!DOCTYPE translationbundle>
 <translationbundle lang="ur">
+<translation id="1060499346270045814">{NUM_HOURS,plural, =1{‏Chromium ہفتے میں ایک بار غیر مطلوبہ سافٹ ویئر کو چیک کرتا ہے۔ آخری بار چیک کیا گیا: 1 گھنٹہ پہلے۔}other{‏Chromium ہفتے میں ایک بار غیر مطلوبہ سافٹ ویئر کو چیک کرتا ہے۔ آخری بار چیک کیا گیا: {NUM_HOURS} گھنٹے پہلے۔}}</translation>
 <translation id="1065672644894730302">آپ کی ترجیحات کو نہیں پڑھا جا سکتا ہے۔
 
 کچھ خصوصیات غیر دستیاب ہو سکتی ہیں اور ترجیحات میں تبدیلیاں محفوظ نہیں ہونگی۔</translation>
@@ -40,6 +41,7 @@
 <translation id="2711502716910134313">‏Chromium ٹیب</translation>
 <translation id="2718390899429598676">‏اضافی سیکیورٹی کیلئے، Chromium آپ کا ڈیٹا مرموز کر دے گا۔</translation>
 <translation id="2770231113462710648">ڈیفالٹ براؤزر کو اس میں تبدیل کریں:</translation>
+<translation id="2797461000988640326">{NUM_MINS,plural, =1{‏Chromium ہفتے میں ایک بار غیر مطلوبہ سافٹ ویئر کو چیک کرتا ہے۔ آخری بار چیک کیا گیا: 1 منٹ پہلے۔}other{‏Chromium ہفتے میں ایک بار غیر مطلوبہ سافٹ ویئر کو چیک کرتا ہے۔ آخری بار چیک کیا گیا: {NUM_MINS} منٹ پہلے۔}}</translation>
 <translation id="2799223571221894425">دوبارہ شروع کریں</translation>
 <translation id="2847479871509788944">‏Chromium سے ہٹائیں…</translation>
 <translation id="2885378588091291677">ٹاسک مینیجر</translation>
@@ -49,6 +51,7 @@
 <translation id="3032706164202344641">‏Chromium آپ کے پاس ورڈز چیک نہیں کر سکتا ہے۔ بعد میں دوبارہ کوشش کریں۔</translation>
 <translation id="3032787606318309379">‏Chromium میں شامل کیا جا رہا ہے…</translation>
 <translation id="3068515742935458733">‏Google کو کریش کی رپورٹیں اور <ph name="UMA_LINK" /> بھیج کر Chromium کو بہتر بنانے میں مدد کریں</translation>
+<translation id="3086207596048762442">‏Chromium ہفتے میں ایک بار غیر مطلوبہ سافٹ ویئر کو چیک کرتا ہے</translation>
 <translation id="3103660991484857065">‏انسٹالر آرکائیو کا کمپریشن ختم کرنے میں ناکام ہوگیا۔ براہ کرم Chromium کو دوبارہ ڈاؤن لوڈ کریں۔</translation>
 <translation id="3130323860337406239">‏Chromium آپ کا مائیکروفون استعمال کر رہا ہے۔</translation>
 <translation id="3155163173539279776">‏Chromium کو دوبارہ شروع کریں</translation>
@@ -168,6 +171,7 @@
 <translation id="6847869444787758381">‏Chromium آپ کو بتاتا ہے کہ آیا آپ کے پاس ورڈز کے ساتھ کبھی چھیڑ چھاڑ کی گئی ہے</translation>
 <translation id="6857782730669500492">Chromium - <ph name="PAGE_TITLE" />‎</translation>
 <translation id="6863361426438995919">‏Google Pay ‏(Chromium میں کاپی کر دیا گیا)</translation>
+<translation id="6863846675160669383">{NUM_DAYS,plural, =1{‏Chromium ہفتے میں ایک بار غیر مطلوبہ سافٹ ویئر کو چیک کرتا ہے۔ آخری بار چیک کیا گیا: 1 دن پہلے۔}other{‏Chromium ہفتے میں ایک بار غیر مطلوبہ سافٹ ویئر کو چیک کرتا ہے۔ آخری بار چیک کیا گیا: {NUM_DAYS} دن پہلے۔}}</translation>
 <translation id="6893813176749746474">‏Chromium کو اپ ڈیٹ کر دیا گیا ہے لیکن آپ نے کم از کم 30 دن سے اسے استعمال نہیں کیا ہے۔</translation>
 <translation id="6964305034639999644">‏لنک کو Chromium &amp;پوشیدگی ونڈو میں کھولیں</translation>
 <translation id="6990124437352146030">‏Chromium کو اس سائٹ کیلئے آپ کے مائیکروفون تک رسائی کی اجازت درکار ہے</translation>
@@ -232,6 +236,7 @@ Chromium آپ کی ترتیبات کو بازیافت کرنے سے قاصر ہ�
 <translation id="8621669128220841554">‏غیر متعین خرابی کی وجہ سے انسٹالیشن ناکام ہوگیا۔ براہ کرم Chromium دوبارہ ڈاؤن لوڈ کریں۔</translation>
 <translation id="8697124171261953979">‏یہ آپ کی جانب سے Chromium شروع کیے جانے یا اومنی باکس سے تلاش کیے جانے پر دکھائی دینے والے صفحہ کو کنٹرول بھی کرتا ہے۔</translation>
 <translation id="8704119203788522458">‏یہ آپ کا Chromium ہے</translation>
+<translation id="8705191560707593947">‏Chromium ہفتے میں ایک بار غیر مطلوبہ سافٹ ویئر کو چیک کرتا ہے۔ آخری بار چیک کیا گیا: گزشتہ کل۔</translation>
 <translation id="8796602469536043152">‏Chromium کو اس سائٹ کیلئے آپ کے کیمرے اور مائیکروفون تک رسائی کی اجازت درکار ہے</translation>
 <translation id="8803635938069941624">‏Chromium OS کی شرائط</translation>
 <translation id="8821041990367117597">‏Chromium آپ کے اکاؤنٹ کی سائن ان تفصیلات پرانی ہونے کی وجہ سے آپ کے ڈیٹا کی مطابقت پذیری نہیں کر سکا۔</translation>
@@ -247,6 +252,7 @@ Chromium آپ کی ترتیبات کو بازیافت کرنے سے قاصر ہ�
 <translation id="91086099826398415">‏لنک کو نئے Chromium &amp;ٹیب میں کھولیں</translation>
 <translation id="911206726377975832">نیز آپ کا براؤزنگ ڈیٹا حذف کریں؟</translation>
 <translation id="9158494823179993217">‏آپ کے سسٹم کے منتظم نے <ph name="TARGET_URL_HOSTNAME" /> تک رسائی حاصل کرنے کے لیے Chromium کو ایک متبادل براؤزر کھولنے کے لیے کنفیگر کیا ہے۔</translation>
+<translation id="9164845895615421500">‏Chromium ہفتے میں ایک بار غیر مطلوبہ سافٹ ویئر کو چیک کرتا ہے۔ آخری بار چیک کیا گیا: ایک لمحہ پہلے۔</translation>
 <translation id="9190841055450128916">‎Chromium (mDNS-In)‎</translation>
 <translation id="9191317372410544836">‏اس آلے پر اپنی براؤزنگ کو منظم رکھنے کے لیےChromium Spaces کا استعمال کریں</translation>
 <translation id="93478295209880648">‏ممکن ہے کہ Chromium ٹھیک طریقے سے کام نہ کرے کیونکہ یہ اب Windows XP یا Windows Vista پر تعاون یافتہ نہیں ہے</translation>

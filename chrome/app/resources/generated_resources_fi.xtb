@@ -4050,7 +4050,6 @@ Julkinen eksponentti (<ph name="PUBLIC_EXPONENT_NUM_BITS" /> bittiä):
 <translation id="6056710589053485679">Normaali päivitys</translation>
 <translation id="6057312498756061228">Tämä tiedosto on liian iso turvatarkistukseen. Voit avata korkeintaan 50 Mt:n kokoisia tiedostoja.</translation>
 <translation id="6057381398996433816">Tältä sivustolta on estetty liikkeen- tai valontunnistimien käyttö.</translation>
-<translation id="6058567592298841668">Liitettävä virtuaalikone: <ph name="PLUGIN_VM_NAME" /></translation>
 <translation id="6059652578941944813">Varmennehierarkia</translation>
 <translation id="6059925163896151826">USB-laitteet</translation>
 <translation id="6061882183774845124">Lähetä linkki laitteillesi</translation>
@@ -4481,6 +4480,7 @@ Julkinen eksponentti (<ph name="PUBLIC_EXPONENT_NUM_BITS" /> bittiä):
 <translation id="6602956230557165253">Siirry vasemmalla ja oikealla nuolinäppäimellä.</translation>
 <translation id="6605847144724004692">Ei vielä käyttäjien arvioita</translation>
 <translation id="6607831829715835317">&amp;Lisää työkaluja</translation>
+<translation id="6608012008902909398">Näytä laitteen ohjelmistotarkistuksen tiedot</translation>
 <translation id="6611972847767394631">Löydät välilehdet täältä</translation>
 <translation id="6612358246767739896">Suojattu sisältö</translation>
 <translation id="6615455863669487791">Näytä</translation>

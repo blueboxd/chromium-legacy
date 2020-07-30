@@ -11,7 +11,7 @@
 
 #if defined(OS_LINUX)
 #include "services/device/serial/serial_device_enumerator_linux.h"
-#elif defined(OS_MACOSX)
+#elif defined(OS_MAC)
 #include "services/device/serial/serial_device_enumerator_mac.h"
 #elif defined(OS_WIN)
 #include "services/device/serial/serial_device_enumerator_win.h"
@@ -24,7 +24,7 @@ std::unique_ptr<SerialDeviceEnumerator> SerialDeviceEnumerator::Create(
     scoped_refptr<base::SingleThreadTaskRunner> ui_task_runner) {
 #if defined(OS_LINUX)
   return SerialDeviceEnumeratorLinux::Create();
-#elif defined(OS_MACOSX)
+#elif defined(OS_MAC)
   return std::make_unique<SerialDeviceEnumeratorMac>();
 #elif defined(OS_WIN)
   return std::make_unique<SerialDeviceEnumeratorWin>(std::move(ui_task_runner));
@@ -66,7 +66,7 @@ base::Optional<base::FilePath> SerialDeviceEnumerator::GetPathFromToken(
   if (it == ports_.end())
     return base::nullopt;
 
-#if defined(OS_MACOSX)
+#if defined(OS_MAC)
   if (use_alternate_path)
     return it->second->alternate_path;
 #endif

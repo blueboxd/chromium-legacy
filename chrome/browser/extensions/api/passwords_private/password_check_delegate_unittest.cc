@@ -27,6 +27,7 @@
 #include "chrome/browser/password_manager/bulk_leak_check_service_factory.h"
 #include "chrome/browser/password_manager/password_store_factory.h"
 #include "chrome/common/extensions/api/passwords_private.h"
+#include "chrome/common/url_constants.h"
 #include "chrome/test/base/testing_profile.h"
 #include "components/keyed_service/core/keyed_service.h"
 #include "components/password_manager/core/browser/bulk_leak_check_service.h"
@@ -229,6 +230,16 @@ class PasswordCheckDelegateTest : public ::testing::Test {
   TestPasswordStore& store() { return *store_; }
   BulkLeakCheckService* service() { return bulk_leak_check_service_; }
   PasswordCheckDelegate& delegate() { return delegate_; }
+
+  void EnableWellKnownChangePasswordFeatureFlag() {
+    scoped_feature_list_.Reset();
+    scoped_feature_list_.InitWithFeatures(
+        {
+            password_manager::features::kPasswordCheck,
+            password_manager::features::kWellKnownChangePassword,
+        },
+        {});
+  }
 
  private:
   content::BrowserTaskEnvironment task_env_{
@@ -1035,6 +1046,71 @@ TEST_F(PasswordCheckDelegateTest,
   delegate.StartPasswordCheck(callback1.Get());
   delegate.StartPasswordCheck(callback2.Get());
   RunUntilIdle();
+}
+
+TEST_F(PasswordCheckDelegateTest,
+       WellKnownChangePasswordUrlFeatureFlag_enabled) {
+  EnableWellKnownChangePasswordFeatureFlag();
+
+  store().AddLogin(MakeSavedPassword(kExampleCom, kUsername1));
+  store().AddCompromisedCredentials(
+      MakeCompromised(kExampleCom, kUsername1, base::TimeDelta::FromMinutes(1),
+                      CompromiseType::kLeaked));
+
+  RunUntilIdle();
+  GURL change_password_url(
+      *delegate().GetCompromisedCredentials().at(0).change_password_url);
+  EXPECT_EQ(change_password_url.path(), chrome::kWellKnownChangePasswordPath);
+}
+
+TEST_F(PasswordCheckDelegateTest,
+       WellKnownChangePasswordUrlFeatureFlagEnabled_androidrealm) {
+  EnableWellKnownChangePasswordFeatureFlag();
+
+  store().AddLogin(
+      MakeSavedAndroidPassword(kExampleApp, kUsername1, "", kExampleCom));
+  store().AddCompromisedCredentials(
+      MakeCompromised(MakeAndroidRealm(kExampleApp), kUsername1,
+                      base::TimeDelta::FromDays(3), CompromiseType::kPhished));
+
+  store().AddLogin(MakeSavedAndroidPassword(kExampleApp, kUsername2,
+                                            "Example App", kExampleCom));
+  store().AddCompromisedCredentials(
+      MakeCompromised(MakeAndroidRealm(kExampleApp), kUsername2,
+                      base::TimeDelta::FromDays(3), CompromiseType::kPhished));
+
+  RunUntilIdle();
+  EXPECT_EQ(delegate().GetCompromisedCredentials().at(0).change_password_url,
+            nullptr);
+  EXPECT_EQ(
+      GURL(*delegate().GetCompromisedCredentials().at(1).change_password_url)
+          .path(),
+      chrome::kWellKnownChangePasswordPath);
+}
+
+TEST_F(PasswordCheckDelegateTest,
+       WellKnownChangePasswordUrlFeatureFlagDisabled_androidrealm) {
+  store().AddLogin(MakeSavedAndroidPassword(kExampleApp, kUsername2,
+                                            "Example App", kExampleCom));
+  store().AddCompromisedCredentials(
+      MakeCompromised(MakeAndroidRealm(kExampleApp), kUsername2,
+                      base::TimeDelta::FromDays(3), CompromiseType::kPhished));
+
+  RunUntilIdle();
+  EXPECT_EQ(*delegate().GetCompromisedCredentials().at(0).change_password_url,
+            kExampleCom);
+}
+
+TEST_F(PasswordCheckDelegateTest,
+       WellKnownChangePasswordUrlFeatureFlag_disabled) {
+  store().AddLogin(MakeSavedPassword(kExampleCom, kUsername1));
+  store().AddCompromisedCredentials(
+      MakeCompromised(kExampleCom, kUsername1, base::TimeDelta::FromMinutes(1),
+                      CompromiseType::kLeaked));
+  RunUntilIdle();
+  GURL change_password_url(
+      *delegate().GetCompromisedCredentials().at(0).change_password_url);
+  EXPECT_NE(change_password_url.path(), chrome::kWellKnownChangePasswordPath);
 }
 
 }  // namespace extensions

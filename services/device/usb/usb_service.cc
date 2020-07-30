@@ -54,7 +54,7 @@ std::unique_ptr<UsbService> UsbService::Create() {
     return base::WrapUnique(new UsbServiceWin());
   else
     return base::WrapUnique(new UsbServiceImpl());
-#elif defined(OS_MACOSX)
+#elif defined(OS_MAC)
   return base::WrapUnique(new UsbServiceImpl());
 #else
   return nullptr;

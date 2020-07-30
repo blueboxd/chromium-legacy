@@ -104,6 +104,7 @@
 <translation id="1853692000353488670">Neuer Inkognitotab</translation>
 <translation id="1856325424225101786">Lite-Modus zurücksetzen?</translation>
 <translation id="1868024384445905608">In Chrome sind Downloads jetzt noch schneller</translation>
+<translation id="1874760110381325409">Sie werden mit Ihrem Google-Konto angemeldet\n(die Chrome-Synchronisierung wird dabei nicht aktiviert)</translation>
 <translation id="1883903952484604915">Meine Dateien</translation>
 <translation id="1919950603503897840">Kontakte auswählen</translation>
 <translation id="1925021887439448749">Benutzerdefinierte Webadresse eingeben</translation>
@@ -227,6 +228,7 @@ Berühren und halten Sie ein Wort, um eine Suche damit zu starten. Sie können I
 <translation id="281504910091592009">Gespeicherte Passwörter in Ihrem <ph name="BEGIN_LINK" />Google-Konto<ph name="END_LINK" /> ansehen und verwalten</translation>
 <translation id="2818669890320396765">Melden Sie sich an und aktivieren Sie die Synchronisierung, um Ihre Lesezeichen auf allen Ihren Geräten zu sehen</translation>
 <translation id="2827278682606527653">Feedkartenmenü halb geöffnet</translation>
+<translation id="2841216154655874070">{NUM_DAYS,plural, =1{Geprüft vor 1 Tag}other{Geprüft vor # Tagen}}</translation>
 <translation id="2842985007712546952">Übergeordneter Ordner</translation>
 <translation id="2860954141821109167">Prüfen Sie, ob auf diesem Gerät eine Telefon-App aktiviert ist</translation>
 <translation id="2870560284913253234">Website</translation>
@@ -350,7 +352,7 @@ Berühren und halten Sie ein Wort, um eine Suche damit zu starten. Sie können I
 <translation id="3775705724665058594">An meine Geräte senden</translation>
 <translation id="3778956594442850293">Zum Startbildschirm hinzugefügt</translation>
 <translation id="3789841737615482174">Installieren</translation>
-<translation id="3810838688059735925">Videos</translation>
+<translation id="3810838688059735925">Video</translation>
 <translation id="3810973564298564668">Verwalten</translation>
 <translation id="381841723434055211">Telefonnummern</translation>
 <translation id="3819178904835489326"><ph name="NUMBER_OF_DOWNLOADS" /> Downloads gelöscht</translation>
@@ -702,6 +704,7 @@ Einige Websites schalten möglicherweise Werbeanzeigen, deren Auswahl nicht dara
 <translation id="6532866250404780454">In Chrome aufgerufene Websites werden nicht angezeigt. Alle Timer für Websites werden gelöscht.</translation>
 <translation id="6534565668554028783">Die Antwort von Google hat zu lange gedauert</translation>
 <translation id="6539092367496845964">Ein Fehler ist aufgetreten. Versuchen Sie es später noch einmal.</translation>
+<translation id="6541983376925655882">{NUM_HOURS,plural, =1{Geprüft vor 1 Stunde}other{Geprüft vor # Stunden}}</translation>
 <translation id="6545017243486555795">Alle Daten löschen</translation>
 <translation id="6560414384669816528">Suche mit Sogou</translation>
 <translation id="656065428026159829">Mehr anzeigen</translation>
@@ -733,6 +736,7 @@ Einige Websites schalten möglicherweise Werbeanzeigen, deren Auswahl nicht dara
 <translation id="6697492270171225480">Vorschläge für ähnliche Seiten anzeigen, wenn eine Seite nicht gefunden werden kann</translation>
 <translation id="6698801883190606802">Synchronisierte Daten verwalten</translation>
 <translation id="6699370405921460408">Google-Server optimieren die Seiten, die Sie besuchen.</translation>
+<translation id="670498945988402717">Gestern geprüft</translation>
 <translation id="6710213216561001401">Zurück</translation>
 <translation id="671481426037969117">Ihr <ph name="FQDN" />-Timer ist abgelaufen. Morgen startet er neu.</translation>
 <translation id="6738867403308150051">Wird heruntergeladen...</translation>
@@ -758,7 +762,7 @@ Einige Websites schalten möglicherweise Werbeanzeigen, deren Auswahl nicht dara
 <translation id="6955535239952325894">Diese Einstellung ist bei verwalteten Browsern deaktiviert</translation>
 <translation id="6963766334940102469">Lesezeichen löschen</translation>
 <translation id="6979737339423435258">Gesamte Zeit</translation>
-<translation id="6981982820502123353">Bedienungsh.</translation>
+<translation id="6981982820502123353">Bedienungshilfen</translation>
 <translation id="6989267951144302301">Fehler beim Download</translation>
 <translation id="6990079615885386641">App aus dem Play Store abrufen: <ph name="APP_ACTION" /></translation>
 <translation id="6995899638241819463">Warnen, wenn Passwörter durch eine Datenpanne preisgegeben werden</translation>
@@ -771,6 +775,7 @@ Einige Websites schalten möglicherweise Werbeanzeigen, deren Auswahl nicht dara
 <translation id="7063006564040364415">Verbindung zum Synchronisierungsserver konnte nicht hergestellt werden.</translation>
 <translation id="7071521146534760487">Konto verwalten</translation>
 <translation id="7077143737582773186">SD-Karte</translation>
+<translation id="7080806333218412752">Sendet URLs an Safe Browsing, um sie zu prüfen. Sendet außerdem eine kleine Auswahl von Seiten, Downloads, Erweiterungsaktivitäten und Systeminformationen, um die Erkennung neuer Bedrohungen zu verbessern. Verknüpft diese Daten vorübergehend mit Ihrem Google-Konto, sofern Sie angemeldet sind, um Sie in Google-Apps zu schützen.</translation>
 <translation id="7121362699166175603">Löscht den Verlauf und Autovervollständigungen in der Adressleiste. Unter <ph name="BEGIN_LINK" />myactivity.google.com<ph name="END_LINK" /> sind möglicherweise weitere Arten von Browserverlaufsdaten für Ihr Google-Konto gespeichert.</translation>
 <translation id="7128355412245153445">Sie können sich Ihre Top-Websites und aktuelle Meldungen anzeigen lassen, wenn Sie die Schaltfläche "Startbildschirm" antippen</translation>
 <translation id="7138678301420049075">Sonstiges</translation>
@@ -780,6 +785,7 @@ Einige Websites schalten möglicherweise Werbeanzeigen, deren Auswahl nicht dara
 <translation id="7173114856073700355">Einstellungen öffnen</translation>
 <translation id="7177466738963138057">Dies kann später in den Einstellungen geändert werden</translation>
 <translation id="7180611975245234373">Aktualisieren</translation>
+<translation id="7187993566681480880">Schützt Sie in Chrome und erhöht möglicherweise die Sicherheit in anderen Google-Apps, wenn Sie angemeldet sind.</translation>
 <translation id="7189372733857464326">Warten auf Abschluss der Google Play-Dienste-Aktualisierung</translation>
 <translation id="7191430249889272776">Tab im Hintergrund geöffnet</translation>
 <translation id="723171743924126238">Bilder auswählen</translation>
@@ -891,6 +897,7 @@ Einige Websites schalten möglicherweise Werbeanzeigen, deren Auswahl nicht dara
 <translation id="8027863900915310177">Speicherort auswählen</translation>
 <translation id="8035133914807600019">Neuer Ordner…</translation>
 <translation id="8037750541064988519"><ph name="DAYS" /> Tage übrig</translation>
+<translation id="8037801708772278989">Gerade eben geprüft</translation>
 <translation id="804335162455518893">SD-Karte nicht gefunden</translation>
 <translation id="805047784848435650">Basierend auf Ihrem Browserverlauf</translation>
 <translation id="8051695050440594747"><ph name="MEGABYTES" /> MB verfügbar</translation>
@@ -1031,6 +1038,7 @@ Einige Websites schalten möglicherweise Werbeanzeigen, deren Auswahl nicht dara
 <translation id="9137013805542155359">Original anzeigen</translation>
 <translation id="9155898266292537608">Sie können auch kurz auf ein Wort tippen, um eine Suche zu starten</translation>
 <translation id="9169507124922466868">Navigationsverlauf ist halb geöffnet</translation>
+<translation id="9199368092038462496">{NUM_MINS,plural, =1{Geprüft vor 1 Minute}other{Geprüft vor # Minuten}}</translation>
 <translation id="9204836675896933765">Noch 1 Datei</translation>
 <translation id="9206873250291191720">A</translation>
 <translation id="9209888181064652401">Anrufe nicht möglich</translation>

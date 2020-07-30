@@ -1474,7 +1474,7 @@ DEFINE_IPC_CHANNEL_MOJO_TEST_CLIENT_WITH_CUSTOM_FIXTURE(DropAssociatedRequest,
   DestroyProxy();
 }
 
-#if !defined(OS_MACOSX)
+#if !defined(OS_APPLE)
 // TODO(wez): On Mac we need to set up a MachPortBroker before we can transfer
 // Mach ports (which underpin Sharedmemory on Mac) across IPC.
 
@@ -1598,7 +1598,7 @@ DEFINE_IPC_CHANNEL_MOJO_TEST_CLIENT(
 
   Close();
 }
-#endif  // !defined(OS_MACOSX)
+#endif  // !defined(OS_APPLE)
 
 #if defined(OS_POSIX) || defined(OS_FUCHSIA)
 

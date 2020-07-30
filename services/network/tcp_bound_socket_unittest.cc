@@ -226,7 +226,7 @@ TEST_F(TCPBoundSocketTest, BindError) {
 //
 // Don't run on Apple platforms because this pattern ends in a connect timeout
 // on OSX (after 25+ seconds) instead of connection refused.
-#if !defined(OS_MACOSX) && !defined(OS_IOS)
+#if !defined(OS_APPLE)
 TEST_F(TCPBoundSocketTest, ConnectError) {
   mojo::Remote<mojom::TCPBoundSocket> bound_socket1;
   net::IPEndPoint bound_address1;
@@ -248,7 +248,7 @@ TEST_F(TCPBoundSocketTest, ConnectError) {
                     &connected_socket, mojo::NullRemote(),
                     &client_socket_receive_handle, &client_socket_send_handle));
 }
-#endif  // !defined(OS_MACOSX) && !defined(OS_IOS)
+#endif  // !defined(OS_APPLE)
 
 // Test listen failure.
 
@@ -258,7 +258,7 @@ TEST_F(TCPBoundSocketTest, ConnectError) {
 //
 // Apple platforms don't allow binding multiple TCP sockets to the same port
 // even with SO_REUSEADDR enabled.
-#if !defined(OS_WIN) && !defined(OS_MACOSX) && !defined(OS_IOS)
+#if !defined(OS_WIN) && !defined(OS_APPLE)
 TEST_F(TCPBoundSocketTest, ListenError) {
   // Bind a socket.
   mojo::Remote<mojom::TCPBoundSocket> bound_socket1;
@@ -285,7 +285,7 @@ TEST_F(TCPBoundSocketTest, ListenError) {
   EXPECT_TRUE(result == net::ERR_ADDRESS_IN_USE ||
               result == net::ERR_INVALID_ARGUMENT);
 }
-#endif  // !defined(OS_WIN) && !defined(OS_MACOSX) && !defined(OS_IOS)
+#endif  // !defined(OS_WIN) && !defined(OS_APPLE)
 
 // Test the case bind succeeds, and transfer some data.
 TEST_F(TCPBoundSocketTest, ReadWrite) {

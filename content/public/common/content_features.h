@@ -149,7 +149,6 @@ CONTENT_EXPORT extern const base::Feature kTouchpadAsyncPinchEvents;
 CONTENT_EXPORT extern const base::Feature kTouchpadOverscrollHistoryNavigation;
 CONTENT_EXPORT extern const base::Feature kTrustedDOMTypes;
 CONTENT_EXPORT extern const base::Feature kUseFramePriorityInRenderProcessHost;
-CONTENT_EXPORT extern const base::Feature kUserActivationPostMessageTransfer;
 CONTENT_EXPORT extern const base::Feature kUserActivationSameOriginVisibility;
 CONTENT_EXPORT extern const base::Feature kUserAgentClientHint;
 CONTENT_EXPORT extern const base::Feature kVideoPlaybackQuality;

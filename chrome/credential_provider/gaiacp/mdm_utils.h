@@ -96,10 +96,10 @@ class GoogleUploadDeviceDetailsNeededForTesting {
   ~GoogleUploadDeviceDetailsNeededForTesting();
 };
 
-// If MdmEnrollmentEnabled returns true, this function verifies that the machine
-// is enrolled to MDM AND that the server to which it is enrolled is the same
-// as the one specified in |kGlobalMdmUrlRegKey|, otherwise returns false.
-bool NeedsToEnrollWithMdm();
+// This function returns true if the user identified by |sid| is allowed to
+// enroll with MDM and the device is not currently enrolled with the MDM server
+// specified in |kGlobalMdmUrlRegKey|.
+bool NeedsToEnrollWithMdm(const base::string16& sid);
 
 // Checks user properties to determine whether last upload device details
 // attempt succeeded for the given user.
@@ -108,6 +108,9 @@ bool UploadDeviceDetailsNeeded(const base::string16& sid);
 // Checks whether the |kRegMdmUrl| is set on this machine and points
 // to a valid URL. Returns false otherwise.
 bool MdmEnrollmentEnabled();
+
+// Get the URL used to enroll with MDM.
+base::string16 GetMdmUrl();
 
 // Checks whether the |kRegEscrowServiceServerUrl| is not empty on this
 // machine.

@@ -161,6 +161,9 @@ Bei verwalteten Geräten sind standardmäßig keine Modi für das schnelle Entsp
 
       Ist diese Richtlinie nicht festgelegt oder auf "false" gesetzt, wird "Fast Transition" nicht verwendet.
       Ist die Richtlinie auf "true" gesetzt, wird "Fast Transition" verwendet, wenn dies vom WLAN-Zugangspunkt unterstützt wird.</translation>
+<translation id="1240722269871366886">Diese Richtlinie ermöglicht <ph name="PRODUCT_OS_NAME" />, Emojis vorzuschlagen, wenn Nutzer Text mit ihrer Bildschirmtastatur oder physischen Tastatur eingeben.
+      Wenn diese Richtlinie auf "true" gesetzt ist, wird die Funktion aktiviert und kann vom Nutzer geändert werden.
+      Standardmäßig ist diese Richtlinie auf "false" gesetzt. Es werden keine Emojis vorgeschlagen und Nutzer können diese Einstellung nicht ändern.</translation>
 <translation id="1243570869342663665">Filterung von Inhalten nur für Erwachsene durch "SafeSites" konfigurieren.</translation>
 <translation id="1257550411839719984">Standard-Downloadverzeichnis festlegen</translation>
 <translation id="1265053460044691532">Zeit beschränken, für die sich ein über SAML authentifizierter Nutzer offline anmelden kann</translation>
@@ -924,6 +927,7 @@ Ist sie nicht konfiguriert, ist der Datenschutzbildschirm anfangs deaktiviert, N
       Wenn diese Richtlinie nicht konfiguriert oder auf "true" eingestellt ist, können Nutzer die Funktion "Netzwerkfreigaben" verwenden.
 
       Wenn diese Richtlinie auf "false" eingestellt, können Nutzer die Funktion "Netzwerkfreigaben" nicht verwenden.</translation>
+<translation id="2435052056904485763">Zulassungsliste für Kerberos-Bevollmächtigungs-Server</translation>
 <translation id="2440773021691931148">Hiermit können Hardwarestatistiken und Kennzeichnungen im Zusammenhang mit der Stromversorgung gemeldet werden.
 
       Wird die Richtlinie auf "false" gesetzt oder nicht konfiguriert, werden keine Statistiken gemeldet.
@@ -1711,17 +1715,6 @@ Wenn diese Einstellung auf "Aus" oder kein Wert festgelegt wird, wird der einges
 <translation id="355118380775352753">Websites, die in einem alternativen Browser geöffnet werden sollen</translation>
 <translation id="3554498762428140109">Native Fenster-Okklusion aktivieren</translation>
 <translation id="3554984410014457319">Google Assistant erlauben, bei Gesprächen zuzuhören und so zu prüfen, ob die Wortgruppe für die Sprachaktivierung genannt wird</translation>
-<translation id="3557208865710006939">Damit werden Sprachen für die Rechtschreibprüfung erzwungen. Sprachen in der Liste, die nicht erkannt werden, werden ignoriert.
-
-      Wenn diese Richtlinie aktiviert ist, wird die Rechtschreibprüfung für die angegebenen Sprachen aktiviert, und zwar zusätzlich zu den Sprachen, für die der Nutzer die Rechtschreibprüfung aktiviert hat.
-
-      Ist sie deaktiviert oder nicht konfiguriert, bleiben die Einstellungen des Nutzers für die Rechtschreibprüfung unverändert.
-
-      Wenn die Richtlinie "<ph name="SPELLCHECK_ENABLED_POLICY_NAME" />" auf "false" gesetzt ist, hat diese Richtlinie keine Auswirkungen.
-
-      Sollte eine Sprache sowohl in dieser Richtlinie als auch in der Richtlinie "<ph name="SPELLCHECK_LANGUAGE_BLACKLIST_POLICY_NAME" />" enthalten sein, hat diese Richtlinie Vorrang und die Sprache wird für die Rechtschreibprüfung aktiviert.
-
-      Aktuell werden die folgenden Sprachen unterstützt: af, bg, ca, cs, da, de, el, en-AU, en-CA, en-GB, en-US, es, es-419, es-AR, es-ES, es-MX, es-US, et, fa, fo, fr, he, hi, hr, hu, id, it, ko, lt, lv, nb, nl, pl, pt-BR, pt-PT, ro, ru, sh, sk, sl, sq, sr, sv, ta, tg, tr, uk, vi.</translation>
 <translation id="356579196325389849">Nutzer dürfen die Chrome OS-Release-Version konfigurieren</translation>
 <translation id="3575011234198230041">HTTP-Authentifizierung</translation>
 <translation id="3577251398714997599">Einstellungen für Werbung für Websites mit aufdringlichen Werbeanzeigen</translation>
@@ -2380,6 +2373,21 @@ Diese Richtlinie hat keine Auswirkungen darauf, ob die lokalen Nutzerdaten auf d
       Mit dem Wert "Forced" können Seiten ausschließlich im Inkognitomodus geöffnet werden. Der Wert "Forced" funktioniert nicht bei Android Apps, die auf Chrome ausgeführt werden.</translation>
 <translation id="4600786265870346112">Großen Cursor aktivieren</translation>
 <translation id="4604931264910482931">Schwarze Liste für natives Messaging konfigurieren</translation>
+<translation id="4607416370554533118">Mit dieser Richtlinie können Sie eine Liste von URL-Mustern erstellen, die Websites angeben, für die Chrome automatisch ein Clientzertifikat auswählen kann. Der Wert ist ein Array von String-JSON-Wörterbüchern. Jedes Wörterbuch muss das Format <ph name="AUTO_SELECT_CERTIFICATE_FOR_URLS_EXAMPLE" /> haben, wobei <ph name="URL_PATTERN_PLACEHOLDER" /> ein Muster zum Festlegen der Inhalte ist. <ph name="FILTER_PLACEHOLDER" /> schränkt ein, aus welchen Clientzertifikaten der Browser automatisch auswählt. Unabhängig vom Filter werden nur Zertifikate ausgewählt, die mit der Zertifizierungsanforderung des Servers übereinstimmen.
+
+      Beispiele für die Verwendung des Abschnitts <ph name="FILTER_PLACEHOLDER" />:
+
+      * Wenn für <ph name="FILTER_PLACEHOLDER" /> <ph name="AUTO_SELECT_CERTIFICATE_FOR_URLS_FILTER_EXAMPLE" /> festgelegt ist, werden nur Clientzertifikate ausgewählt, die über ein Zertifikat mit dem CommonName <ph name="ISSUER_CN_PLACEHOLDER" /> ausgestellt wurden.
+
+      * Wenn <ph name="FILTER_PLACEHOLDER" /> sowohl den Abschnitt <ph name="ISSUER_STRING_VALUE" /> als auch den Abschnitt <ph name="SUBJECT_STRING_VALUE" /> enthält, werden nur Clientzertifikate ausgewählt, die beide Bedingungen erfüllen.
+
+      * Wenn <ph name="FILTER_PLACEHOLDER" /> einen <ph name="SUBJECT_STRING_VALUE" />-Abschnitt mit dem Wert <ph name="FILTER_STRING_ORGANIZATION" /> enthält, muss ein Zertifikat mindestens eine Organisation haben, die mit dem angegebenen Wert übereinstimmt, um ausgewählt zu werden.
+
+      * Wenn <ph name="FILTER_PLACEHOLDER" /> einen <ph name="SUBJECT_STRING_VALUE" />-Abschnitt mit einem <ph name="FILTER_STRING_ORGANIZATIONAL_UNIT" />-Wert enthält, muss ein Zertifikat mindestens eine Organisationseinheit haben, die mit dem angegebenen Wert übereinstimmt, um ausgewählt zu werden.
+
+      * Wenn für <ph name="FILTER_PLACEHOLDER" /> <ph name="EMPTY_DICTIONARY" /> festgelegt ist, wird die Auswahl der Clientzertifikate nicht zusätzlich eingeschränkt. Beachten Sie, dass vom Webserver bereitgestellte Filter weiterhin gelten.
+
+      Wenn die Richtlinie nicht konfiguriert ist, findet für keine Website eine automatische Auswahl statt.</translation>
 <translation id="4617338332148204752">Metatag-Überprüfung in <ph name="PRODUCT_FRAME_NAME" /> überspringen</translation>
 <translation id="462134014569484584">Mit dieser Richtlinie wird der <ph name="PLUGIN_VM_NAME" />-Lizenzschlüssel für dieses Gerät angegeben.</translation>
 <translation id="4625915093043961294">Weiße Liste für Installation von Erweiterungen konfigurieren</translation>
@@ -2496,6 +2504,13 @@ Diese Richtlinie hat keine Auswirkungen darauf, ob die lokalen Nutzerdaten auf d
 
       Wenn Sie diese Richtlinie konfigurieren, kann sie von Nutzern nicht geändert werden. Falls die Richtlinie nicht konfiguriert ist, können Nutzer selbst entscheiden, ob die Ablage automatisch ausgeblendet werden soll.</translation>
 <translation id="4812714598405913256">Meldung zum Ablaufdatum für die automatische Aktualisierung für die Richtlinie DeviceMinimumVersion konfigurieren</translation>
+<translation id="481492486938162195">Diese Richtlinie wurde eingestellt. Bitte verwenden Sie stattdessen die Richtlinie "<ph name="AUTH_NEGOCIATE_DELEGATE_ALLOWLIST_POLICY_NAME" />".
+
+          Server, an die <ph name="PRODUCT_NAME" /> weiterleiten kann.
+
+          Trennen Sie mehrere Servernamen durch Kommas. Platzhalter (*) sind zulässig.
+
+          Wenn Sie diese Richtlinie nicht konfigurieren, leitet <ph name="PRODUCT_NAME" /> keine Anmeldedaten von Nutzern weiter, auch nicht an Server innerhalb eines Intranets.</translation>
 <translation id="4816674326202173458">Unternehmensnutzer sowohl als primären als auch als sekundären Nutzer zulassen (Standardverhalten für nicht verwaltete Nutzer)</translation>
 <translation id="4826326557828204741">Auszuführende Aktion beim Erreichen der Leerlaufverzögerung während des Akkubetriebs</translation>
 <translation id="482803100714220060">Vollständige URLs anzeigen</translation>
@@ -5283,6 +5298,13 @@ Nutzer können diese Einstellung weder ändern noch überschreiben.</translation
       Wird sie auf "False" gesetzt oder nicht konfiguriert, werden die Formularsteuerelemente bei ihrer Einführung in M81, M82 und M83 aktiviert.
 
       Diese Richtlinie wird nach Chrome 84 entfernt.</translation>
+<translation id="8937562488500723400">Diese Richtlinie legt fest, ob bei der Entscheidung über die Delegation von <ph name="KERBEROS" />-Tickets die Genehmigung durch die KDC-Richtlinie berücksichtigt wird.
+
+          Wenn diese Richtlinie auf "true" gesetzt ist, wird bei der HTTP-Authentifizierung die Genehmigung durch die KDC-Richtlinie berücksichtigt. Chrome delegiert also nur dann Anmeldedaten, wenn KDC "<ph name="OK_AS_DELEGATE" />" für ein Dienstticket festlegt. Weitere Informationen finden Sie unter https://tools.ietf.org/html/rfc5896.html. Der Dienst sollte auch der Richtlinie "AuthNegotiateDelegateAllowlist" entsprechen.
+
+          Falls die Richtlinie nicht konfiguriert oder auf "false" gesetzt ist, wird die KDC-Richtlinie auf unterstützten Plattformen ignoriert und nur die Richtlinie "AuthNegotiateDelegateAllowlist" berücksichtigt.
+
+          Unter Windows wird die KDC-Richtlinie immer umgesetzt.</translation>
 <translation id="8938932171964587769">Eingestellt in M69. Verwenden Sie stattdessen
       "OverrideSecurityRestrictionsOnInsecureOrigin".
 
@@ -5399,6 +5421,27 @@ Nutzer können diese Einstellung weder ändern noch überschreiben.</translation
       Wenn Sie die Richtlinie festlegen, verwendet <ph name="PRODUCT_NAME" /> die von Ihnen angegebene Cachegröße unabhängig davon, ob Nutzer das Flag "--disk-cache-size" angeben oder nicht. Werte, die kleiner als einige Megabyte sind, werden aufgerundet.
 
       Wenn die Richtlinie nicht eingestellt ist, verwendet <ph name="PRODUCT_NAME" /> die Standardgröße. Nutzer können diese Einstellung mit dem Flag "--disk-cache-size" ändern.</translation>
+<translation id="9057444687284972605">Mit dieser Richtlinie können Sie eine Liste mit URL-Mustern festlegen und so angeben, für welche Websites auf dem Anmeldebildschirm im Frame, in dem der SAML-Flow gehostet wird, automatisch ein Clientzertifikat ausgewählt wird, wenn die Website ein Zertifikat anfordert. Zum Beispiel kann damit ein geräteübergreifendes Zertifikat konfiguriert werden, das dem SAML-IdP präsentiert wird.
+
+      Der Wert ist ein Array von String-JSON-Wörterbüchern. Jedes Wörterbuch muss das Format <ph name="AUTO_SELECT_CERTIFICATE_FOR_URLS_EXAMPLE" /> haben, wobei <ph name="URL_PATTERN_PLACEHOLDER" /> ein Muster zum Festlegen der Inhalte ist. <ph name="FILTER_PLACEHOLDER" /> schränkt ein, aus welchen Clientzertifikaten der Browser automatisch auswählt. Unabhängig vom Filter werden nur Zertifikate ausgewählt, die mit der Zertifizierungsanforderung des Servers übereinstimmen.
+
+      Beispiele für die Verwendung des Abschnitts <ph name="FILTER_PLACEHOLDER" />:
+
+      * Wenn für <ph name="FILTER_PLACEHOLDER" /> <ph name="AUTO_SELECT_CERTIFICATE_FOR_URLS_FILTER_EXAMPLE" /> festgelegt ist, werden nur Clientzertifikate ausgewählt, die über ein Zertifikat mit dem CommonName <ph name="ISSUER_CN_PLACEHOLDER" /> ausgestellt wurden.
+
+      * Wenn <ph name="FILTER_PLACEHOLDER" /> sowohl den Abschnitt <ph name="ISSUER_STRING_VALUE" /> als auch den Abschnitt <ph name="SUBJECT_STRING_VALUE" /> enthält, werden nur Clientzertifikate ausgewählt, die beide Bedingungen erfüllen.
+
+      * Wenn <ph name="FILTER_PLACEHOLDER" /> einen <ph name="SUBJECT_STRING_VALUE" />-Abschnitt mit dem Wert <ph name="FILTER_STRING_ORGANIZATION" /> enthält, muss ein Zertifikat mindestens eine Organisation haben, die mit dem angegebenen Wert übereinstimmt, um ausgewählt zu werden.
+
+      * Wenn <ph name="FILTER_PLACEHOLDER" /> einen <ph name="SUBJECT_STRING_VALUE" />-Abschnitt mit einem <ph name="FILTER_STRING_ORGANIZATIONAL_UNIT" />-Wert enthält, muss ein Zertifikat mindestens eine Organisationseinheit haben, die mit dem angegebenen Wert übereinstimmt, um ausgewählt zu werden.
+
+      * Wenn für <ph name="FILTER_PLACEHOLDER" /> <ph name="EMPTY_DICTIONARY" /> festgelegt ist, wird die Auswahl der Clientzertifikate nicht zusätzlich eingeschränkt. Beachten Sie, dass vom Webserver bereitgestellte Filter weiterhin gelten.
+
+
+
+      Ist diese Richtlinie nicht konfiguriert, erfolgt keine automatische Auswahl für Websites.
+
+      Genaue Informationen zu gültigen URL-Mustern finden Sie unter https://cloud.google.com/docs/chrome-enterprise/policies/url-patterns.</translation>
 <translation id="9062348747995618422">Wenn diese Richtlinie konfiguriert ist, können Sie eine Liste mit URL-Mustern erstellen, die die Websites angeben, die das <ph name="FLASH_PLUGIN_NAME" />-Plug-in ausführen dürfen.
 
       Wenn die Richtlinie nicht konfiguriert ist, gilt <ph name="DEFAULT_PLUGINS_SETTING_POLICY_NAME" /> für alle Websites, sofern konfiguriert. Falls nicht, wird die persönliche Einstellung des Nutzers verwendet.

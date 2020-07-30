@@ -54,7 +54,7 @@ SyncReader::SyncReader(
       renderer_callback_count_(0),
       renderer_missed_callback_count_(0),
       trailing_renderer_missed_callback_count_(0),
-#if defined(OS_MACOSX) || defined(OS_CHROMEOS)
+#if defined(OS_MAC) || defined(OS_CHROMEOS)
       maximum_wait_time_(params.GetBufferDuration() / 2),
 #else
       // TODO(dalecurtis): Investigate if we can reduce this on all platforms.

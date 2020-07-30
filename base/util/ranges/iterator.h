@@ -5,8 +5,8 @@
 #ifndef BASE_UTIL_RANGES_ITERATOR_H_
 #define BASE_UTIL_RANGES_ITERATOR_H_
 
-#include <iterator>
 #include <type_traits>
+#include <utility>
 
 #include "base/util/ranges/functional.h"
 
@@ -43,57 +43,6 @@ struct projected {
 
   IndirectResultT operator*() const;  // not defined
 };
-
-namespace ranges {
-
-namespace internal {
-
-using std::begin;
-template <typename Range>
-constexpr auto Begin(Range&& range)
-    -> decltype(begin(std::forward<Range>(range))) {
-  return begin(std::forward<Range>(range));
-}
-
-using std::end;
-template <typename Range>
-constexpr auto End(Range&& range) -> decltype(end(std::forward<Range>(range))) {
-  return end(std::forward<Range>(range));
-}
-
-}  // namespace internal
-
-// Simplified implementation of C++20's std::ranges::begin.
-// As opposed to std::ranges::begin, this implementation does not prefer a
-// member begin() over a free standing begin(), does not check whether begin()
-// returns an iterator, does not inhibit ADL and is not constexpr.
-//
-// The trailing return type and dispatch to the internal implementation is
-// necessary to be SFINAE friendly.
-//
-// Reference: https://wg21.link/range.access.begin
-template <typename Range>
-constexpr auto begin(Range&& range)
-    -> decltype(internal::Begin(std::forward<Range>(range))) {
-  return internal::Begin(std::forward<Range>(range));
-}
-
-// Simplified implementation of C++20's std::ranges::end.
-// As opposed to std::ranges::end, this implementation does not prefer a
-// member end() over a free standing end(), does not check whether end()
-// returns an iterator, does not inhibit ADL and is not constexpr.
-//
-// The trailing return type and dispatch to the internal implementation is
-// necessary to be SFINAE friendly.
-//
-// Reference: - https://wg21.link/range.access.end
-template <typename Range>
-constexpr auto end(Range&& range)
-    -> decltype(internal::End(std::forward<Range>(range))) {
-  return internal::End(std::forward<Range>(range));
-}
-
-}  // namespace ranges
 
 }  // namespace util
 

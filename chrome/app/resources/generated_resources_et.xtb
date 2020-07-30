@@ -2440,7 +2440,7 @@ kasutades juhtpaneeli funktsiooni <ph name="CONTROL_PANEL_APPLET_NAME" />.
 <translation id="3949790930165450333"><ph name="DEVICE_NAME" /> (<ph name="DEVICE_ID" />)</translation>
 <translation id="394984172568887996">Imporditud IE'st</translation>
 <translation id="3949981384795585075">{NUM_APPS,plural, =1{See rakendus võib olla ohtlik}other{Need rakendused võivad olla ohtlikud}}</translation>
-<translation id="3950820424414687140">Sisselogimine</translation>
+<translation id="3950820424414687140">Logige sisse</translation>
 <translation id="3953834000574892725">Minu kontod</translation>
 <translation id="3954354850384043518">Pooleli</translation>
 <translation id="3954469006674843813"><ph name="WIDTH" /> × <ph name="HEIGHT" /> (<ph name="REFRESH_RATE" /> hertsi)</translation>
@@ -4053,7 +4053,6 @@ kasutades juhtpaneeli funktsiooni <ph name="CONTROL_PANEL_APPLET_NAME" />.
 <translation id="6056710589053485679">Tavaline uuestilaadimine</translation>
 <translation id="6057312498756061228">See fail on turvakontrolli jaoks liiga suur. Saate avada kuni 50 MB faile.</translation>
 <translation id="6057381398996433816">Saidil pole lubatud liikumis- ja valgusandureid kasutada.</translation>
-<translation id="6058567592298841668">Pistikprogrammi virtuaalmasin: <ph name="PLUGIN_VM_NAME" /></translation>
 <translation id="6059652578941944813">Sertifikaatide hierarhia</translation>
 <translation id="6059925163896151826">USB-seadmed</translation>
 <translation id="6061882183774845124">Saatke link oma seadmetesse</translation>

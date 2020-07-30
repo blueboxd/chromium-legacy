@@ -5,7 +5,7 @@
 #include "build/build_config.h"
 
 #if defined(OS_POSIX)
-#if defined(OS_MACOSX)
+#if defined(OS_APPLE)
 extern "C" {
 #include <sandbox.h>
 }
@@ -37,7 +37,7 @@ extern "C" {
 #include "base/macros.h"
 #endif
 
-#if defined(OS_MACOSX)
+#if defined(OS_APPLE)
 #include "sandbox/mac/seatbelt.h"
 #endif
 
@@ -179,7 +179,7 @@ DEFINE_IPC_CHANNEL_MOJO_TEST_CLIENT_WITH_CUSTOM_FIXTURE(
   SendFdsClientCommon("SendFdsClient", st.st_ino);
 }
 
-#if defined(OS_MACOSX)
+#if defined(OS_APPLE)
 // Test that FDs are correctly sent to a sandboxed process.
 // TODO(port): Make this test cross-platform.
 TEST_F(IPCSendFdsTest, DescriptorTestSandboxed) {
@@ -211,7 +211,7 @@ DEFINE_IPC_CHANNEL_MOJO_TEST_CLIENT_WITH_CUSTOM_FIXTURE(
   // See if we can receive a file descriptor.
   SendFdsClientCommon("SendFdsSandboxedClient", st.st_ino);
 }
-#endif  // defined(OS_MACOSX)
+#endif  // defined(OS_APPLE)
 
 }  // namespace
 

@@ -104,6 +104,7 @@
 <translation id="1853692000353488670">Thẻ ẩn danh mới</translation>
 <translation id="1856325424225101786">Đặt lại Chế độ thu gọn?</translation>
 <translation id="1868024384445905608">Giờ đây, Chrome tải tệp xuống còn nhanh hơn nữa</translation>
+<translation id="1874760110381325409">Bạn sẽ đăng nhập bằng Tài khoản Google của mình\n(thao tác này sẽ không bật Chrome Sync)</translation>
 <translation id="1883903952484604915">Tệp của tôi</translation>
 <translation id="1919950603503897840">Chọn mục liên hệ</translation>
 <translation id="1925021887439448749">Nhập địa chỉ web tùy chỉnh</translation>
@@ -227,6 +228,7 @@ Chạm và giữ từ bất kỳ để tìm kiếm. Để điều chỉnh nội 
 <translation id="281504910091592009">Xem và quản lý các mật khẩu đã lưu trong <ph name="BEGIN_LINK" />Tài khoản Google<ph name="END_LINK" /> của bạn</translation>
 <translation id="2818669890320396765">Để sử dụng dấu trang trên tất cả các thiết bị, hãy đăng nhập và bật tính năng đồng bộ hóa</translation>
 <translation id="2827278682606527653">Trình đơn thẻ nguồn cấp dữ liệu mở ở nửa dưới của màn hình</translation>
+<translation id="2841216154655874070">{NUM_DAYS,plural, =1{Đã kiểm tra 1 ngày trước}other{Đã kiểm tra # ngày trước}}</translation>
 <translation id="2842985007712546952">Thư mục mẹ</translation>
 <translation id="2860954141821109167">Hãy đảm bảo bạn đã bật ứng dụng điện thoại trên thiết bị này</translation>
 <translation id="2870560284913253234">Trang web</translation>
@@ -702,6 +704,7 @@ Ví dụ: một số trang web có thể phản hồi yêu cầu này bằng cá
 <translation id="6532866250404780454">Các trang web bạn truy cập trên Chrome sẽ không hiển thị. Tất cả lịch hẹn giờ trên trang web sẽ bị xóa.</translation>
 <translation id="6534565668554028783">Google mất quá nhiều thời gian để phản hồi</translation>
 <translation id="6539092367496845964">Đã xảy ra lỗi. Hãy thử lại sau.</translation>
+<translation id="6541983376925655882">{NUM_HOURS,plural, =1{Đã kiểm tra 1 giờ trước}other{Đã kiểm tra # giờ trước}}</translation>
 <translation id="6545017243486555795">Xóa tất cả dữ liệu</translation>
 <translation id="6560414384669816528">Tìm kiếm với Sogou</translation>
 <translation id="656065428026159829">Xem thêm</translation>
@@ -733,6 +736,7 @@ Ví dụ: một số trang web có thể phản hồi yêu cầu này bằng cá
 <translation id="6697492270171225480">Hiển thị phần đề xuất các trang tương tự khi không tìm thấy một trang</translation>
 <translation id="6698801883190606802">Quản lý dữ liệu đã đồng bộ hóa</translation>
 <translation id="6699370405921460408">Máy chủ của Google sẽ tối ưu hóa các trang bạn truy cập.</translation>
+<translation id="670498945988402717">Đã kiểm tra hôm qua</translation>
 <translation id="6710213216561001401">Trước đó</translation>
 <translation id="671481426037969117">Thời gian hẹn giờ của <ph name="FQDN" /> đã hết. Thời gian hẹn giờ sẽ bắt đầu lại vào ngày mai.</translation>
 <translation id="6738867403308150051">Đang tải xuống...</translation>
@@ -771,6 +775,7 @@ Ví dụ: một số trang web có thể phản hồi yêu cầu này bằng cá
 <translation id="7063006564040364415">Không thể kết nối với máy chủ đồng bộ hóa.</translation>
 <translation id="7071521146534760487">Quản lý tài khoản</translation>
 <translation id="7077143737582773186">Thẻ SD</translation>
+<translation id="7080806333218412752">Gửi URL để tính năng Duyệt web an toàn kiểm tra. Đồng thời gửi một mẫu nhỏ dữ liệu hoạt động trên các trang, tệp đã tải xuống, tiện ích và thông tin hệ thống để giúp phát hiện các mối đe dọa mới. Tạm thời liên kết dữ liệu này với Tài khoản Google của bạn sau khi bạn đăng nhập để bảo vệ bạn trên các ứng dụng Google.</translation>
 <translation id="7121362699166175603">Xóa lịch sử duyệt web và nội dung tự động hoàn thành trong thanh địa chỉ. Tài khoản Google của bạn có thể có các dạng lịch sử duyệt web khác tại <ph name="BEGIN_LINK" />myactivity.google.com<ph name="END_LINK" />.</translation>
 <translation id="7128355412245153445">Xem các trang web hàng đầu và những tin gần đây bất cứ khi nào bạn nhấn vào nút Trang chủ</translation>
 <translation id="7138678301420049075">Khác</translation>
@@ -780,6 +785,7 @@ Ví dụ: một số trang web có thể phản hồi yêu cầu này bằng cá
 <translation id="7173114856073700355">Mở phần Cài đặt</translation>
 <translation id="7177466738963138057">Bạn có thể thay đổi cài đặt này sau trong Cài đặt</translation>
 <translation id="7180611975245234373">Làm mới</translation>
+<translation id="7187993566681480880">Giúp bạn an toàn trên Chrome và có thể dùng để tăng cường bảo mật cho bạn trong các ứng dụng khác của Google sau khi đăng nhập.</translation>
 <translation id="7189372733857464326">Đợi Dịch vụ của Google Play cập nhật xong</translation>
 <translation id="7191430249889272776">Thẻ được mở dưới nền.</translation>
 <translation id="723171743924126238">Chọn hình ảnh</translation>
@@ -891,6 +897,7 @@ Ví dụ: một số trang web có thể phản hồi yêu cầu này bằng cá
 <translation id="8027863900915310177">Chọn vị trí lưu tệp tải xuống</translation>
 <translation id="8035133914807600019">Thư mục mới...</translation>
 <translation id="8037750541064988519">Còn <ph name="DAYS" /> ngày</translation>
+<translation id="8037801708772278989">Vừa kiểm tra xong</translation>
 <translation id="804335162455518893">Không tìm thấy thẻ SD</translation>
 <translation id="805047784848435650">Dựa trên lịch sử duyệt web của bạn</translation>
 <translation id="8051695050440594747">Còn <ph name="MEGABYTES" /> MB</translation>
@@ -1031,6 +1038,7 @@ Ví dụ: một số trang web có thể phản hồi yêu cầu này bằng cá
 <translation id="9137013805542155359">Hiển thị văn bản gốc</translation>
 <translation id="9155898266292537608">Bạn cũng có thể tìm kiếm bằng cách nhấn nhanh vào một từ</translation>
 <translation id="9169507124922466868">Lịch sử di chuyển đang mở ở nửa dưới màn hình</translation>
+<translation id="9199368092038462496">{NUM_MINS,plural, =1{Đã kiểm tra 1 phút trước}other{Đã kiểm tra # phút trước}}</translation>
 <translation id="9204836675896933765">Còn lại 1 tệp</translation>
 <translation id="9206873250291191720">A</translation>
 <translation id="9209888181064652401">Không thể gọi điện</translation>

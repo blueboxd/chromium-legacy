@@ -28,7 +28,6 @@
 #include "chrome/browser/net/profile_network_context_service.h"
 #include "chrome/browser/net/profile_network_context_service_factory.h"
 #include "chrome/browser/prerender/isolated/isolated_prerender_features.h"
-#include "chrome/browser/prerender/isolated/isolated_prerender_origin_prober.h"
 #include "chrome/browser/prerender/isolated/isolated_prerender_proxy_configurator.h"
 #include "chrome/browser/prerender/isolated/isolated_prerender_service.h"
 #include "chrome/browser/prerender/isolated/isolated_prerender_service_factory.h"
@@ -319,8 +318,7 @@ std::unique_ptr<net::ClientCertStore> CreateCertStore() {
 class IsolatedPrerenderBrowserTest
     : public InProcessBrowserTest,
       public prerender::PrerenderHandle::Observer,
-      public net::test_server::EmbeddedTestServerConnectionListener,
-      public IsolatedPrerenderOriginProber::ProbeURLOverrideDelegate {
+      public net::test_server::EmbeddedTestServerConnectionListener {
  public:
   IsolatedPrerenderBrowserTest() {
     origin_server_ = std::make_unique<net::EmbeddedTestServer>(
@@ -354,13 +352,6 @@ class IsolatedPrerenderBrowserTest
         net::EmbeddedTestServer::TYPE_HTTP);
     http_server_->ServeFilesFromSourceDirectory("chrome/test/data");
     EXPECT_TRUE(http_server_->Start());
-
-    canary_server_ = std::make_unique<net::EmbeddedTestServer>(
-        net::EmbeddedTestServer::TYPE_HTTP);
-    canary_server_->RegisterRequestHandler(
-        base::BindRepeating(&IsolatedPrerenderBrowserTest::HandleCanaryRequest,
-                            base::Unretained(this)));
-    EXPECT_TRUE(canary_server_->Start());
   }
 
   void SetUp() override {
@@ -398,12 +389,6 @@ class IsolatedPrerenderBrowserTest
     host_resolver()->AddRule("insecure.com", "127.0.0.1");
     host_resolver()->AddRule("a.test", "127.0.0.1");
     host_resolver()->AddRule("b.test", "127.0.0.1");
-
-    host_resolver()->AddSimulatedFailure("baddnsprobe.a.test");
-  }
-
-  GURL OverrideProbeURL(const GURL& url) override {
-    return GURL("https://baddnsprobe.a.test");
   }
 
   void SetUpCommandLine(base::CommandLine* cmd) override {
@@ -463,14 +448,6 @@ class IsolatedPrerenderBrowserTest
     run_loop.Run();
 
     return std::move(config_client.config_);
-  }
-
-  void WaitForCanaryCheck() {
-    IsolatedPrerenderService* service =
-        IsolatedPrerenderServiceFactory::GetForProfile(browser()->profile());
-    while (!service->origin_prober()->IsCanaryCheckCompleteForTesting()) {
-      base::RunLoop().RunUntilIdle();
-    }
   }
 
   bool RequestHasClientHints(const net::test_server::HttpRequest& request) {
@@ -602,8 +579,6 @@ class IsolatedPrerenderBrowserTest
     return origin_server_->GetURL("badprobe.a.test", path);
   }
 
-  GURL GetCanaryServerURL() const { return canary_server_->GetURL("/"); }
-
  private:
   std::unique_ptr<net::test_server::HttpResponse> HandleOriginRequest(
       const net::test_server::HttpRequest& request) {
@@ -716,18 +691,6 @@ class IsolatedPrerenderBrowserTest
     return resp;
   }
 
-  std::unique_ptr<net::test_server::HttpResponse> HandleCanaryRequest(
-      const net::test_server::HttpRequest& request) {
-    if (request.GetURL().spec().find("favicon") != std::string::npos)
-      return nullptr;
-
-    std::unique_ptr<net::test_server::BasicHttpResponse> resp =
-        std::make_unique<net::test_server::BasicHttpResponse>();
-    resp->set_code(net::HTTP_OK);
-    resp->set_content("OK");
-    return resp;
-  }
-
   void MonitorProxyResourceRequestOnUIThread(
       const net::test_server::HttpRequest& request) {
     DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
@@ -803,7 +766,6 @@ class IsolatedPrerenderBrowserTest
   std::unique_ptr<net::EmbeddedTestServer> origin_server_;
   std::unique_ptr<net::EmbeddedTestServer> config_server_;
   std::unique_ptr<net::EmbeddedTestServer> http_server_;
-  std::unique_ptr<net::EmbeddedTestServer> canary_server_;
 
   std::vector<net::test_server::HttpRequest> origin_server_requests_;
   std::vector<net::test_server::HttpRequest> proxy_server_requests_;
@@ -1822,60 +1784,13 @@ IN_PROC_BROWSER_TEST_F(
   EXPECT_EQ(1U, found_reports);
 }
 
-class ProbingEnabled_CanaryOff_HTTPHead_IsolatedPrerenderBrowserTest
+class ProbingEnabledIsolatedPrerenderBrowserTest
     : public IsolatedPrerenderBrowserTest {
  public:
   void SetFeatures() override {
     IsolatedPrerenderBrowserTest::SetFeatures();
-    scoped_feature_list_.InitAndEnableFeatureWithParameters(
-        features::kIsolatePrerendersMustProbeOrigin,
-        {{"do_canary", "false"}, {"probe_type", "http_head"}});
-  }
-
- private:
-  base::test::ScopedFeatureList scoped_feature_list_;
-};
-
-class ProbingEnabled_CanaryOff_DNS_IsolatedPrerenderBrowserTest
-    : public IsolatedPrerenderBrowserTest {
- public:
-  void SetFeatures() override {
-    IsolatedPrerenderBrowserTest::SetFeatures();
-    scoped_feature_list_.InitAndEnableFeatureWithParameters(
-        features::kIsolatePrerendersMustProbeOrigin,
-        {{"do_canary", "false"}, {"probe_type", "dns"}});
-  }
-
- private:
-  base::test::ScopedFeatureList scoped_feature_list_;
-};
-
-class ProbingEnabled_CanaryOn_CanaryGood_IsolatedPrerenderBrowserTest
-    : public IsolatedPrerenderBrowserTest {
- public:
-  void SetFeatures() override {
-    IsolatedPrerenderBrowserTest::SetFeatures();
-    scoped_feature_list_.InitAndEnableFeatureWithParameters(
-        features::kIsolatePrerendersMustProbeOrigin,
-        {{"do_canary", "true"},
-         {"probe_type", "http_head"},
-         {"canary_url", GetCanaryServerURL().spec()}});
-  }
-
- private:
-  base::test::ScopedFeatureList scoped_feature_list_;
-};
-
-class ProbingEnabled_CanaryOn_CanaryBad_IsolatedPrerenderBrowserTest
-    : public IsolatedPrerenderBrowserTest {
- public:
-  void SetFeatures() override {
-    IsolatedPrerenderBrowserTest::SetFeatures();
-    scoped_feature_list_.InitAndEnableFeatureWithParameters(
-        features::kIsolatePrerendersMustProbeOrigin,
-        {{"do_canary", "true"},
-         {"probe_type", "http_head"},
-         {"canary_url", "http://invalid.com"}});
+    scoped_feature_list_.InitAndEnableFeature(
+        features::kIsolatePrerendersMustProbeOrigin);
   }
 
  private:
@@ -1895,9 +1810,8 @@ class ProbingDisabledIsolatedPrerenderBrowserTest
   base::test::ScopedFeatureList scoped_feature_list_;
 };
 
-IN_PROC_BROWSER_TEST_F(
-    ProbingEnabled_CanaryOff_HTTPHead_IsolatedPrerenderBrowserTest,
-    DISABLE_ON_WIN_MAC_CHROMEOS(ProbeGood)) {
+IN_PROC_BROWSER_TEST_F(ProbingEnabledIsolatedPrerenderBrowserTest,
+                       DISABLE_ON_WIN_MAC_CHROMEOS(ProbeGood)) {
   SetDataSaverEnabled(true);
   GURL starting_page = GetOriginServerURL("/simple.html");
   ui_test_utils::NavigateToURL(browser(), starting_page);
@@ -1965,371 +1879,12 @@ IN_PROC_BROWSER_TEST_F(
   EXPECT_LT(probe_latency_ms.value(), 1000);
 }
 
-IN_PROC_BROWSER_TEST_F(
-    ProbingEnabled_CanaryOff_HTTPHead_IsolatedPrerenderBrowserTest,
-    DISABLE_ON_WIN_MAC_CHROMEOS(ProbeBad)) {
+IN_PROC_BROWSER_TEST_F(ProbingEnabledIsolatedPrerenderBrowserTest,
+                       DISABLE_ON_WIN_MAC_CHROMEOS(ProbeBad)) {
   SetDataSaverEnabled(true);
   GURL starting_page = GetOriginServerURL("/simple.html");
   ui_test_utils::NavigateToURL(browser(), starting_page);
   WaitForUpdatedCustomProxyConfig();
-
-  IsolatedPrerenderTabHelper* tab_helper =
-      IsolatedPrerenderTabHelper::FromWebContents(GetWebContents());
-
-  GURL eligible_link_bad_probe = GetOriginServerURLWithBadProbe("/title2.html");
-
-  TestTabHelperObserver tab_helper_observer(tab_helper);
-  tab_helper_observer.SetExpectedSuccessfulURLs({eligible_link_bad_probe});
-
-  base::RunLoop run_loop;
-  tab_helper_observer.SetOnPrefetchSuccessfulClosure(run_loop.QuitClosure());
-
-  GURL doc_url("https://www.google.com/search?q=test");
-  MakeNavigationPrediction(doc_url, {eligible_link_bad_probe});
-
-  // This run loop will quit when all the prefetch responses have been
-  // successfully done and processed.
-  run_loop.Run();
-
-  // Navigate to the prefetched page, this also triggers UKM recording.
-  size_t starting_origin_request_count = OriginServerRequestCount();
-  ui_test_utils::NavigateToURL(browser(), eligible_link_bad_probe);
-
-  // The probe and a request for the page should have hit the origin server,
-  // since the prefetched page couldn't be used.
-  EXPECT_EQ(starting_origin_request_count + 2, OriginServerRequestCount());
-
-  EXPECT_EQ(base::UTF8ToUTF16("Title Of Awesomeness"),
-            GetWebContents()->GetTitle());
-
-  ASSERT_TRUE(tab_helper->after_srp_metrics());
-  ASSERT_TRUE(tab_helper->after_srp_metrics()->prefetch_status_.has_value());
-  // 2 is the value of "prefetch used, probe failed". The test does not
-  // reference the enum directly to ensure that casting the enum to an int went
-  // cleanly, and to provide an extra review point if the value should ever
-  // accidentally change in the future, which it never should.
-  EXPECT_EQ(2, static_cast<int>(
-                   tab_helper->after_srp_metrics()->prefetch_status_.value()));
-
-  base::Optional<base::TimeDelta> probe_latency =
-      tab_helper->after_srp_metrics()->probe_latency_;
-  ASSERT_TRUE(probe_latency.has_value());
-  EXPECT_GT(probe_latency.value(), base::TimeDelta());
-
-  // Navigate again to trigger UKM recording.
-  ui_test_utils::NavigateToURL(browser(), GURL("about:blank"));
-  base::RunLoop().RunUntilIdle();
-
-  // 2 = |PrefetchStatus::kPrefetchNotUsedProbeFailed|.
-  EXPECT_EQ(base::Optional<int64_t>(2),
-            GetUKMMetric(eligible_link_bad_probe,
-                         ukm::builders::PrefetchProxy_AfterSRPClick::kEntryName,
-                         ukm::builders::PrefetchProxy_AfterSRPClick::
-                             kSRPClickPrefetchStatusName));
-  // The actual probe latency is hard to deterministically test for. Just make
-  // sure it is set within reasonable bounds.
-  base::Optional<int64_t> probe_latency_ms = GetUKMMetric(
-      eligible_link_bad_probe,
-      ukm::builders::PrefetchProxy_AfterSRPClick::kEntryName,
-      ukm::builders::PrefetchProxy_AfterSRPClick::kProbeLatencyMsName);
-  EXPECT_NE(base::nullopt, probe_latency_ms);
-  EXPECT_GT(probe_latency_ms.value(), 0);
-  EXPECT_LT(probe_latency_ms.value(), 1000);
-}
-
-IN_PROC_BROWSER_TEST_F(
-    ProbingEnabled_CanaryOff_DNS_IsolatedPrerenderBrowserTest,
-    DISABLE_ON_WIN_MAC_CHROMEOS(ProbeGood)) {
-  SetDataSaverEnabled(true);
-  GURL starting_page = GetOriginServerURL("/simple.html");
-  ui_test_utils::NavigateToURL(browser(), starting_page);
-  WaitForUpdatedCustomProxyConfig();
-
-  IsolatedPrerenderTabHelper* tab_helper =
-      IsolatedPrerenderTabHelper::FromWebContents(GetWebContents());
-
-  GURL eligible_link = GetOriginServerURL("/title2.html");
-
-  TestTabHelperObserver tab_helper_observer(tab_helper);
-  tab_helper_observer.SetExpectedSuccessfulURLs({eligible_link});
-
-  base::RunLoop run_loop;
-  tab_helper_observer.SetOnPrefetchSuccessfulClosure(run_loop.QuitClosure());
-
-  GURL doc_url("https://www.google.com/search?q=test");
-  MakeNavigationPrediction(doc_url, {eligible_link});
-
-  // This run loop will quit when all the prefetch responses have been
-  // successfully done and processed.
-  run_loop.Run();
-
-  // Navigate to the prefetched page, this also triggers UKM recording.
-  size_t starting_origin_request_count = OriginServerRequestCount();
-  ui_test_utils::NavigateToURL(browser(), eligible_link);
-
-  // Nothing more should have hit the origin server.
-  EXPECT_EQ(starting_origin_request_count, OriginServerRequestCount());
-
-  EXPECT_EQ(base::UTF8ToUTF16("Title Of Awesomeness"),
-            GetWebContents()->GetTitle());
-
-  ASSERT_TRUE(tab_helper->after_srp_metrics());
-  ASSERT_TRUE(tab_helper->after_srp_metrics()->prefetch_status_.has_value());
-  // 1 is the value of "prefetch used, probe success". The test does not
-  // reference the enum directly to ensure that casting the enum to an int went
-  // cleanly, and to provide an extra review point if the value should ever
-  // accidentally change in the future, which it never should.
-  EXPECT_EQ(1, static_cast<int>(
-                   tab_helper->after_srp_metrics()->prefetch_status_.value()));
-
-  base::Optional<base::TimeDelta> probe_latency =
-      tab_helper->after_srp_metrics()->probe_latency_;
-  ASSERT_TRUE(probe_latency.has_value());
-  EXPECT_GT(probe_latency.value(), base::TimeDelta());
-
-  // Navigate again to trigger UKM recording.
-  ui_test_utils::NavigateToURL(browser(), GURL("about:blank"));
-  base::RunLoop().RunUntilIdle();
-
-  // 1 = |PrefetchStatus::kPrefetchUsedProbeSuccess|.
-  EXPECT_EQ(base::Optional<int64_t>(1),
-            GetUKMMetric(eligible_link,
-                         ukm::builders::PrefetchProxy_AfterSRPClick::kEntryName,
-                         ukm::builders::PrefetchProxy_AfterSRPClick::
-                             kSRPClickPrefetchStatusName));
-  // The actual probe latency is hard to deterministically test for. Just make
-  // sure it is set within reasonable bounds.
-  base::Optional<int64_t> probe_latency_ms = GetUKMMetric(
-      eligible_link, ukm::builders::PrefetchProxy_AfterSRPClick::kEntryName,
-      ukm::builders::PrefetchProxy_AfterSRPClick::kProbeLatencyMsName);
-  EXPECT_NE(base::nullopt, probe_latency_ms);
-  EXPECT_GT(probe_latency_ms.value(), 0);
-  EXPECT_LT(probe_latency_ms.value(), 1000);
-}
-
-IN_PROC_BROWSER_TEST_F(
-    ProbingEnabled_CanaryOff_DNS_IsolatedPrerenderBrowserTest,
-    DISABLE_ON_WIN_MAC_CHROMEOS(ProbeBad)) {
-  SetDataSaverEnabled(true);
-  GURL starting_page = GetOriginServerURL("/simple.html");
-  ui_test_utils::NavigateToURL(browser(), starting_page);
-  WaitForUpdatedCustomProxyConfig();
-
-  IsolatedPrerenderService* service =
-      IsolatedPrerenderServiceFactory::GetForProfile(browser()->profile());
-  service->origin_prober()->SetProbeURLOverrideDelegateOverrideForTesting(this);
-
-  IsolatedPrerenderTabHelper* tab_helper =
-      IsolatedPrerenderTabHelper::FromWebContents(GetWebContents());
-
-  GURL eligible_link = GetOriginServerURLWithBadProbe("/title2.html");
-
-  TestTabHelperObserver tab_helper_observer(tab_helper);
-  tab_helper_observer.SetExpectedSuccessfulURLs({eligible_link});
-
-  base::RunLoop run_loop;
-  tab_helper_observer.SetOnPrefetchSuccessfulClosure(run_loop.QuitClosure());
-
-  GURL doc_url("https://www.google.com/search?q=test");
-  MakeNavigationPrediction(doc_url, {eligible_link});
-
-  // This run loop will quit when all the prefetch responses have been
-  // successfully done and processed.
-  run_loop.Run();
-
-  // Navigate to the prefetched page, this also triggers UKM recording.
-  size_t starting_origin_request_count = OriginServerRequestCount();
-  ui_test_utils::NavigateToURL(browser(), eligible_link);
-
-  // The request for the page should have hit the origin server, since the
-  // prefetched page couldn't be used.
-  EXPECT_EQ(starting_origin_request_count + 1, OriginServerRequestCount());
-
-  EXPECT_EQ(base::UTF8ToUTF16("Title Of Awesomeness"),
-            GetWebContents()->GetTitle());
-
-  ASSERT_TRUE(tab_helper->after_srp_metrics());
-  ASSERT_TRUE(tab_helper->after_srp_metrics()->prefetch_status_.has_value());
-  // 2 is the value of "prefetch used, probe failed". The test does not
-  // reference the enum directly to ensure that casting the enum to an int went
-  // cleanly, and to provide an extra review point if the value should ever
-  // accidentally change in the future, which it never should.
-  EXPECT_EQ(2, static_cast<int>(
-                   tab_helper->after_srp_metrics()->prefetch_status_.value()));
-
-  base::Optional<base::TimeDelta> probe_latency =
-      tab_helper->after_srp_metrics()->probe_latency_;
-  ASSERT_TRUE(probe_latency.has_value());
-  EXPECT_GT(probe_latency.value(), base::TimeDelta());
-
-  // Navigate again to trigger UKM recording.
-  ui_test_utils::NavigateToURL(browser(), GURL("about:blank"));
-  base::RunLoop().RunUntilIdle();
-
-  // 2 = |PrefetchStatus::kPrefetchNotUsedProbeFailed|.
-  EXPECT_EQ(base::Optional<int64_t>(2),
-            GetUKMMetric(eligible_link,
-                         ukm::builders::PrefetchProxy_AfterSRPClick::kEntryName,
-                         ukm::builders::PrefetchProxy_AfterSRPClick::
-                             kSRPClickPrefetchStatusName));
-  // The actual probe latency is hard to deterministically test for. Just make
-  // sure it is set within reasonable bounds.
-  base::Optional<int64_t> probe_latency_ms = GetUKMMetric(
-      eligible_link, ukm::builders::PrefetchProxy_AfterSRPClick::kEntryName,
-      ukm::builders::PrefetchProxy_AfterSRPClick::kProbeLatencyMsName);
-  EXPECT_NE(base::nullopt, probe_latency_ms);
-  EXPECT_GT(probe_latency_ms.value(), 0);
-  EXPECT_LT(probe_latency_ms.value(), 1000);
-}
-
-// No probe should be done because the Canary Check is successful.
-IN_PROC_BROWSER_TEST_F(
-    ProbingEnabled_CanaryOn_CanaryGood_IsolatedPrerenderBrowserTest,
-    DISABLE_ON_WIN_MAC_CHROMEOS(CanaryCheckGood)) {
-  SetDataSaverEnabled(true);
-  GURL starting_page = GetOriginServerURL("/simple.html");
-  ui_test_utils::NavigateToURL(browser(), starting_page);
-  WaitForUpdatedCustomProxyConfig();
-  WaitForCanaryCheck();
-
-  IsolatedPrerenderTabHelper* tab_helper =
-      IsolatedPrerenderTabHelper::FromWebContents(GetWebContents());
-
-  GURL eligible_link = GetOriginServerURL("/title2.html");
-
-  TestTabHelperObserver tab_helper_observer(tab_helper);
-  tab_helper_observer.SetExpectedSuccessfulURLs({eligible_link});
-
-  base::RunLoop run_loop;
-  tab_helper_observer.SetOnPrefetchSuccessfulClosure(run_loop.QuitClosure());
-
-  GURL doc_url("https://www.google.com/search?q=test");
-  MakeNavigationPrediction(doc_url, {eligible_link});
-
-  // This run loop will quit when all the prefetch responses have been
-  // successfully done and processed.
-  run_loop.Run();
-
-  // Navigate to the prefetched page, this also triggers UKM recording.
-  size_t starting_origin_request_count = OriginServerRequestCount();
-  ui_test_utils::NavigateToURL(browser(), eligible_link);
-
-  // No probe should have hit the origin server.
-  EXPECT_EQ(starting_origin_request_count, OriginServerRequestCount());
-
-  EXPECT_EQ(base::UTF8ToUTF16("Title Of Awesomeness"),
-            GetWebContents()->GetTitle());
-
-  ASSERT_TRUE(tab_helper->after_srp_metrics());
-  ASSERT_TRUE(tab_helper->after_srp_metrics()->prefetch_status_.has_value());
-  // 0 is the value of "prefetch used, no probe". The test does not
-  // reference the enum directly to ensure that casting the enum to an int went
-  // cleanly, and to provide an extra review point if the value should ever
-  // accidentally change in the future, which it never should.
-  EXPECT_EQ(0, static_cast<int>(
-                   tab_helper->after_srp_metrics()->prefetch_status_.value()));
-
-  base::Optional<base::TimeDelta> probe_latency =
-      tab_helper->after_srp_metrics()->probe_latency_;
-  EXPECT_FALSE(probe_latency.has_value());
-
-  // Navigate again to trigger UKM recording.
-  ui_test_utils::NavigateToURL(browser(), GURL("about:blank"));
-  base::RunLoop().RunUntilIdle();
-
-  // 0 = |PrefetchStatus::kPrefetchUsedNoProbe|.
-  EXPECT_EQ(base::Optional<int64_t>(0),
-            GetUKMMetric(eligible_link,
-                         ukm::builders::PrefetchProxy_AfterSRPClick::kEntryName,
-                         ukm::builders::PrefetchProxy_AfterSRPClick::
-                             kSRPClickPrefetchStatusName));
-  base::Optional<int64_t> probe_latency_ms = GetUKMMetric(
-      eligible_link, ukm::builders::PrefetchProxy_AfterSRPClick::kEntryName,
-      ukm::builders::PrefetchProxy_AfterSRPClick::kProbeLatencyMsName);
-  EXPECT_EQ(base::nullopt, probe_latency_ms);
-}
-
-// A probe should be done because the canary check failed.
-IN_PROC_BROWSER_TEST_F(
-    ProbingEnabled_CanaryOn_CanaryBad_IsolatedPrerenderBrowserTest,
-    DISABLE_ON_WIN_MAC_CHROMEOS(CanaryCheckBad_ProbeGood)) {
-  SetDataSaverEnabled(true);
-  GURL starting_page = GetOriginServerURL("/simple.html");
-  ui_test_utils::NavigateToURL(browser(), starting_page);
-  WaitForUpdatedCustomProxyConfig();
-  WaitForCanaryCheck();
-
-  IsolatedPrerenderTabHelper* tab_helper =
-      IsolatedPrerenderTabHelper::FromWebContents(GetWebContents());
-
-  GURL eligible_link = GetOriginServerURL("/title2.html");
-
-  TestTabHelperObserver tab_helper_observer(tab_helper);
-  tab_helper_observer.SetExpectedSuccessfulURLs({eligible_link});
-
-  base::RunLoop run_loop;
-  tab_helper_observer.SetOnPrefetchSuccessfulClosure(run_loop.QuitClosure());
-
-  GURL doc_url("https://www.google.com/search?q=test");
-  MakeNavigationPrediction(doc_url, {eligible_link});
-
-  // This run loop will quit when all the prefetch responses have been
-  // successfully done and processed.
-  run_loop.Run();
-
-  // Navigate to the prefetched page, this also triggers UKM recording.
-  size_t starting_origin_request_count = OriginServerRequestCount();
-  ui_test_utils::NavigateToURL(browser(), eligible_link);
-
-  // Only the probe should have hit the origin server.
-  EXPECT_EQ(starting_origin_request_count + 1, OriginServerRequestCount());
-
-  EXPECT_EQ(base::UTF8ToUTF16("Title Of Awesomeness"),
-            GetWebContents()->GetTitle());
-
-  ASSERT_TRUE(tab_helper->after_srp_metrics());
-  ASSERT_TRUE(tab_helper->after_srp_metrics()->prefetch_status_.has_value());
-  // 1 is the value of "prefetch used, probe success". The test does not
-  // reference the enum directly to ensure that casting the enum to an int went
-  // cleanly, and to provide an extra review point if the value should ever
-  // accidentally change in the future, which it never should.
-  EXPECT_EQ(1, static_cast<int>(
-                   tab_helper->after_srp_metrics()->prefetch_status_.value()));
-
-  base::Optional<base::TimeDelta> probe_latency =
-      tab_helper->after_srp_metrics()->probe_latency_;
-  ASSERT_TRUE(probe_latency.has_value());
-  EXPECT_GT(probe_latency.value(), base::TimeDelta());
-
-  // Navigate again to trigger UKM recording.
-  ui_test_utils::NavigateToURL(browser(), GURL("about:blank"));
-  base::RunLoop().RunUntilIdle();
-
-  // 1 = |PrefetchStatus::kPrefetchUsedProbeSuccess|.
-  EXPECT_EQ(base::Optional<int64_t>(1),
-            GetUKMMetric(eligible_link,
-                         ukm::builders::PrefetchProxy_AfterSRPClick::kEntryName,
-                         ukm::builders::PrefetchProxy_AfterSRPClick::
-                             kSRPClickPrefetchStatusName));
-  // The actual probe latency is hard to deterministically test for. Just make
-  // sure it is set within reasonable bounds.
-  base::Optional<int64_t> probe_latency_ms = GetUKMMetric(
-      eligible_link, ukm::builders::PrefetchProxy_AfterSRPClick::kEntryName,
-      ukm::builders::PrefetchProxy_AfterSRPClick::kProbeLatencyMsName);
-  EXPECT_NE(base::nullopt, probe_latency_ms);
-  EXPECT_GT(probe_latency_ms.value(), 0);
-  EXPECT_LT(probe_latency_ms.value(), 1000);
-}
-
-// A probe should be done because the canary check failed.
-IN_PROC_BROWSER_TEST_F(
-    ProbingEnabled_CanaryOn_CanaryBad_IsolatedPrerenderBrowserTest,
-    DISABLE_ON_WIN_MAC_CHROMEOS(CanaryCheckbad_ProbeBad)) {
-  SetDataSaverEnabled(true);
-  GURL starting_page = GetOriginServerURL("/simple.html");
-  ui_test_utils::NavigateToURL(browser(), starting_page);
-  WaitForUpdatedCustomProxyConfig();
-  WaitForCanaryCheck();
 
   IsolatedPrerenderTabHelper* tab_helper =
       IsolatedPrerenderTabHelper::FromWebContents(GetWebContents());
@@ -2972,16 +2527,14 @@ class ProbingAndNSPEnabledIsolatedPrerenderBrowserTest
 
   void SetFeatures() override {
     IsolatedPrerenderBrowserTest::SetFeatures();
-    scoped_feature_list_.InitAndEnableFeature(
-        blink::features::kLightweightNoStatePrefetch);
-    probing_scoped_feature_list_.InitAndEnableFeatureWithParameters(
-        features::kIsolatePrerendersMustProbeOrigin,
-        {{"do_canary", "false"}, {"probe_type", "http_head"}});
+    scoped_feature_list_.InitWithFeatures(
+        {features::kIsolatePrerendersMustProbeOrigin,
+         blink::features::kLightweightNoStatePrefetch},
+        {});
   }
 
  private:
   base::test::ScopedFeatureList scoped_feature_list_;
-  base::test::ScopedFeatureList probing_scoped_feature_list_;
 };
 
 IN_PROC_BROWSER_TEST_F(ProbingAndNSPEnabledIsolatedPrerenderBrowserTest,

@@ -104,6 +104,7 @@
 <translation id="1853692000353488670">ନୂଆ ଇନ୍‌କଗ୍ନିଟୋ ଟାବ୍</translation>
 <translation id="1856325424225101786">ଲାଇଟ୍‌ ମୋଡ୍‌ ରିସେଟ୍‌ କରିବେ?</translation>
 <translation id="1868024384445905608">ପୂର୍ବାପେକ୍ଷା Chrome ବର୍ତ୍ତମାନ ଦ୍ରୁତତର ଭାବେ ଫାଇଲ୍‌ଗୁଡ଼ିକ ଡାଉନ୍‌ଲୋଡ୍‌ କରୁଛି</translation>
+<translation id="1874760110381325409">ଆପଣ ଆପଣଙ୍କ Google ଆକାଉଣ୍ଟ ମାଧ୍ୟମରେ ସାଇନ୍ ଇନ୍ ହେବେ\n(ଏହା Chrome ସିଙ୍କ୍ ଚାଲୁ କରିବ ନାହିଁ)</translation>
 <translation id="1883903952484604915">ମୋ ଫାଇଲ୍‌ଗୁଡ଼ିକ</translation>
 <translation id="1919950603503897840">ଯୋଗାଯୋଗଗୁଡ଼ିକ ଚୟନ କରନ୍ତୁ</translation>
 <translation id="1925021887439448749">ଏକ କଷ୍ଟମ୍ ୱେବ୍ ଠିକଣା ଲେଖନ୍ତୁ</translation>
@@ -227,6 +228,7 @@
 <translation id="281504910091592009">ଆପଣଙ୍କର <ph name="BEGIN_LINK" />Google ଆକାଉଣ୍ଟ<ph name="END_LINK" />ରେ ସେଭ୍ ହୋ‍ଇଥିବା ପାସ୍‌ୱର୍ଡଗୁଡ଼ିକୁ ଦେଖନ୍ତୁ ଓ ପରିଚାଳନା କରନ୍ତୁ।</translation>
 <translation id="2818669890320396765">ଆପଣଙ୍କର ସମସ୍ତ ଡିଭାଇସ୍‌ରେ ବୁକ୍‍ମାର୍କଗୁଡ଼ିକ ପ୍ରାପ୍ତ କରିବାକୁ, ସାଇନ୍‌ ଇନ୍‌ କରନ୍ତୁ ଏବଂ ସିଙ୍କ୍‌ ଚାଲୁ କରନ୍ତୁ</translation>
 <translation id="2827278682606527653">Feed card menu half height</translation>
+<translation id="2841216154655874070">{NUM_DAYS,plural, =1{1 ଦିନ ପୂର୍ବେ ଯାଞ୍ଚ କରାଯାଇଛି}other{# ଦିନ ପୂର୍ବେ ଯାଞ୍ଚ କରାଯାଇଛି}}</translation>
 <translation id="2842985007712546952">ମୁଖ୍ୟ ଫୋଲ୍ଡର୍‌</translation>
 <translation id="2860954141821109167">ଏହି ଡିଭାଇସ୍‍‍ରେ ଫୋନ୍ ଆପ୍ ସକ୍ଷମ ଅଛି ବୋଲି ସୁନିଶ୍ଚିତ କରନ୍ତୁ</translation>
 <translation id="2870560284913253234">ସାଇଟ୍</translation>
@@ -702,6 +704,7 @@
 <translation id="6532866250404780454">Chromeରେ ଆପଣ ଯେଉଁ ସାଇଟ୍‌ଗୁଡ଼ିକୁ ଯାଆନ୍ତି ସେଗୁଡ଼ିକ ଦେଖାଇବ ନାହିଁ। ସମସ୍ତ ସାଇଟ୍‍ ଟାଇମର୍‌ ଡିଲିଟ୍‍ କରାଯିବ।</translation>
 <translation id="6534565668554028783">Google ପ୍ରତିକ୍ରିୟା ଦେବାକୁ ବହୁତ ସମୟ ନେଉଛି</translation>
 <translation id="6539092367496845964">କିଛି ଭୁଲ ହୋଇଗଲା। ପରେ ପୁଣି ଚେଷ୍ଟା କରନ୍ତୁ।</translation>
+<translation id="6541983376925655882">{NUM_HOURS,plural, =1{1 ଘଣ୍ଟା ପୂର୍ବେ ଯାଞ୍ଚ କରାଯାଇଛି}other{# ଘଣ୍ଟା ପୂର୍ବେ ଯାଞ୍ଚ କରାଯାଇଛି}}</translation>
 <translation id="6545017243486555795">ସମସ୍ତ ଡାଟା ଖାଲି କରନ୍ତୁ</translation>
 <translation id="6560414384669816528">Sogouରେ ସନ୍ଧାନ କରନ୍ତୁ</translation>
 <translation id="656065428026159829">ଅଧିକ ଦେଖନ୍ତୁ</translation>
@@ -733,6 +736,7 @@
 <translation id="6697492270171225480">ଯେତେବେଳେ କୌଣସି ପୃଷ୍ଠା ମିଳୁନାହିଁ, ସେତେବେଳେ ମେଳ ହେଉଥିବା ପୃଷ୍ଠାଗୁଡ଼ିକ ଦେଖାନ୍ତୁ</translation>
 <translation id="6698801883190606802">ସିଙ୍କ୍‌ ହୋ‍ଇଥିବା ଡାଟା ପରିଚାଳନା କରନ୍ତୁ</translation>
 <translation id="6699370405921460408">ଆପଣ ଯାଉଥିବା ପୃଷ୍ଠାଗୁଡ଼ିକୁ Google ସର୍ଭର୍‌ଗୁଡ଼ିକ ଅପ୍ଟିମାଇଜ୍‌ କରିବ।</translation>
+<translation id="670498945988402717">ଗତକାଲି ଯାଞ୍ଚ କରାଯାଇଛି</translation>
 <translation id="6710213216561001401">ପୂର୍ବବର୍ତ୍ତୀ</translation>
 <translation id="671481426037969117">ଆପଣଙ୍କର <ph name="FQDN" /> ଟାଇମର୍‌ର ସମୟ ସମାପ୍ତ ହୋଇଗଲା। ଏହା ଆସନ୍ତାକାଲି କାର୍ଯ୍ୟାରମ୍ଭ କରିବ।</translation>
 <translation id="6738867403308150051">ଡାଉନ୍‍‍‍ଲୋଡ୍ ହେଉଛି…</translation>
@@ -771,6 +775,7 @@
 <translation id="7063006564040364415">ସିଙ୍କ ସର୍ଭର ସହ ସଂଯୋଗ କରାଯାଇପାରିଲା ନାହିଁ।</translation>
 <translation id="7071521146534760487">ଆକାଉଣ୍ଟ ପରିଚାଳନା କରନ୍ତୁ</translation>
 <translation id="7077143737582773186">SD କାର୍ଡ</translation>
+<translation id="7080806333218412752">URLଗୁଡ଼ିକ ଯାଞ୍ଚ କରିବା ପାଇଁ ସେଗୁଡ଼ିକୁ ସୁରକ୍ଷିତ ବ୍ରାଉଜିଂକୁ ପଠାଏ। ନୂଆ ବିପଦଗୁଡ଼ିକୁ ଖୋଜି ପାଇବାରେ ସାହାଯ୍ୟ କରିବାକୁ ପୃଷ୍ଠାଗୁଡ଼ିକର ଏକ ଛୋଟ ନମୁନା, ଡାଉନଲୋଡ୍, ଏକ୍ସଟେନସନ୍ କାର୍ଯ୍ୟକଳାପ ଏବଂ ସିଷ୍ଟମ୍ ସୂଚନା ମଧ୍ୟ ପଠାଏ। ସମଗ୍ର Google ଆପରେ ଆପଣଙ୍କୁ ସୁରକ୍ଷା ଦେବା ପାଇଁ, ଆପଣ ସାଇନ୍ ଇନ୍ ହେଲେ ଏହି ଡାଟାକୁ ଆପଣଙ୍କ Google ଆକାଉଣ୍ଟରେ ଅସ୍ଥାୟୀ ଭାବରେ ଲିଙ୍କ୍ କରେ।</translation>
 <translation id="7121362699166175603">ଠିକଣା ବାର୍‍‍ରେ ଥିବା ଇତିବୃତ୍ତି ଓ ସ୍ୱତଃପୂରଣଗୁଡ଼ିକୁ ଖାଲି କରେ। ଆପଣଙ୍କର Google ଆକାଉଣ୍ଟର ବାଉଜିଂ ଇତିବୃତ୍ତି <ph name="BEGIN_LINK" />myactivity.google.com<ph name="END_LINK" />ରେ ଅନ୍ୟ ଫର୍ମରେ ଥାଇପାରେ।</translation>
 <translation id="7128355412245153445">ଯେତେବେଳେ ବି ଆପଣ ହୋମ୍ ବଟନ୍ ଟାପ୍ କରନ୍ତି, ଆପଣଙ୍କ ଶ୍ରେଷ୍ଠ ସାଇଟ୍ ଏବଂ ବର୍ତ୍ତମାନର କାହାଣୀଗୁଡ଼ିକ ଦେଖନ୍ତି</translation>
 <translation id="7138678301420049075">ଅନ୍ୟ</translation>
@@ -780,6 +785,7 @@
 <translation id="7173114856073700355">ସେଟିଂସ୍ ଖୋଲନ୍ତୁ</translation>
 <translation id="7177466738963138057">ଆପଣ ଏହାକୁ ପରେ ସେଟିଂସ୍‌ରେ ପରିବର୍ତ୍ତନ କରିପାରିବେ।</translation>
 <translation id="7180611975245234373">ରିଫ୍ରେଶ୍</translation>
+<translation id="7187993566681480880">ଯେତେବେଳେ ଆପଣ ସାଇନ୍ ଇନ୍ କରନ୍ତି ଏହା ଆପଣଙ୍କୁ Chromeରେ ସୁରକ୍ଷିତ ରଖେ ଏବଂ ଅନ୍ୟ Google ଆପଗୁଡ଼ିକରେ ଆପଣଙ୍କ ସୁରକ୍ଷାକୁ ଉନ୍ନତ କରିବା ପାଇଁ ବ୍ୟବହାର କରାଯାଇପାରେ।</translation>
 <translation id="7189372733857464326">ଅପ୍‍‍ଡେଟ୍ ସମାପ୍ତ କରିବାକୁ Google Play ସେବାଗୁଡ଼ିକ ପାଇଁ ଅପେକ୍ଷା କରାଯାଉଛି</translation>
 <translation id="7191430249889272776">ପୃଷ୍ଠପଟରେ ଟାବ୍‌ ଖୋଲାଅଛି।</translation>
 <translation id="723171743924126238">ଛବିଗୁଡ଼ିକ ଚୟନ କରନ୍ତୁ</translation>
@@ -891,6 +897,7 @@
 <translation id="8027863900915310177">କେଉଁଠାରେ ଡାଉନଲୋଡ୍ କରିବେ ତାହା ବାଛନ୍ତୁ</translation>
 <translation id="8035133914807600019">ନୂଆ ଫୋଲ୍ଡର…</translation>
 <translation id="8037750541064988519"><ph name="DAYS" /> ଦିନ ବାକି ଅଛି</translation>
+<translation id="8037801708772278989">ଏବେ ଯାଞ୍ଚ କରାଯାଇଛି</translation>
 <translation id="804335162455518893">SD କାର୍ଡ ମିଳିଲା ନାହିଁ</translation>
 <translation id="805047784848435650">ଆପଣଙ୍କର ବ୍ରାଉଜିଂ ଗତିବିଧି ଆଧାରରେ</translation>
 <translation id="8051695050440594747"><ph name="MEGABYTES" /> MB ଉପଲବ୍ଧ ଅଛି</translation>
@@ -1031,6 +1038,7 @@
 <translation id="9137013805542155359">ମୂଳ ଲେଖା ଦେଖାନ୍ତୁ</translation>
 <translation id="9155898266292537608">ଆପଣ ଏକ ଶଦ୍ଦ ଉପରେ କେବଳ ଏକ ଟାପ୍‌ କରି ଶୀଘ୍ର ଖୋଜିପାରିବେ</translation>
 <translation id="9169507124922466868">ନାଭିଗେସନ୍ ଇତିହାସ ଅଧା ଖୋଲା ଅଛି</translation>
+<translation id="9199368092038462496">{NUM_MINS,plural, =1{1 ମିନିଟ୍ ପୂର୍ବେ ଯାଞ୍ଚ କରାଯାଇଛି}other{# ମିନିଟ୍ ପୂର୍ବେ ଯାଞ୍ଚ କରାଯାଇଛି}}</translation>
 <translation id="9204836675896933765">1 ଫାଇଲ୍‌ ବାକି ଅଛି</translation>
 <translation id="9206873250291191720">ଅ</translation>
 <translation id="9209888181064652401">କଲ୍ କରାଯାଇପାରିବ ନାହିଁ</translation>

@@ -163,6 +163,9 @@
 
       정책이 설정되지 않거나 False로 설정되면 빠른 전환이 사용되지 않습니다.
       True로 설정하면 무선 액세스 포인트에서 지원하는 경우 빠른 전환이 사용됩니다.</translation>
+<translation id="1240722269871366886">이 정책을 사용하면 <ph name="PRODUCT_OS_NAME" />에서 사용자가 가상 키보드 또는 물리 키보드로 텍스트를 입력할 때 그림 이모티콘을 제안할 수 있습니다.
+      정책을 True로 설정하면 이 기능이 사용 설정되며 사용자가 변경할 수 있습니다.
+      이 정책은 기본적으로 False로 설정되어 있어 추천 그림 이모티콘이 표시되지 않으며 사용자는 이를 재정의할 수 없습니다.</translation>
 <translation id="1243570869342663665">SafeSites 성인용 콘텐츠 필터링을 관리합니다.</translation>
 <translation id="1257550411839719984">기본 다운로드 디렉터리 설정</translation>
 <translation id="1265053460044691532">SAML을 통해 인증한 사용자가 오프라인에서 로그인할 수 있는 기간을 제한</translation>
@@ -953,6 +956,7 @@ False로 설정하면 개인정보 보호 화면은 항상 사용 중지됩니�
       이 정책이 구성되어 있지 않거나 True로 설정되어 있으면 사용자가 네트워크 파일 공유를 사용할 수 있습니다.
 
       이 정책이 False로 설정되어 있으면 사용자가 네트워크 파일 공유를 사용할 수 없게 됩니다.</translation>
+<translation id="2435052056904485763">Kerberos 위임 서버 허용 목록</translation>
 <translation id="2440773021691931148">전원과 관련된 하드웨어 통계 및 식별자를 보고합니다.
 
       정책이 False로 설정되거나 설정되지 않으면 통계가 보고되지 않습니다.
@@ -1740,17 +1744,6 @@ False로 설정하면 <ph name="PRODUCT_NAME" />에서 기본 알림을 사용�
 <translation id="355118380775352753">대체 브라우저에서 열리는 웹사이트</translation>
 <translation id="3554498762428140109">네이티브 창 오클루전 사용 설정</translation>
 <translation id="3554984410014457319">Google 어시스턴트가 음성 활성화 문구를 감지하도록 허용</translation>
-<translation id="3557208865710006939">맞춤법 검사 언어를 강제 사용 설정합니다. 목록에서 인식할 수 없는 언어는 무시됩니다.
-
-      정책을 사용 설정하면 사용자가 맞춤법 검사를 사용 설정한 언어 외에도 지정된 언어의 맞춤법 검사가 사용 설정됩니다.
-
-      정책을 설정하지 않거나 사용 중지하면 사용자의 맞춤법 검사 환경설정이 변경되지 않습니다.
-
-      <ph name="SPELLCHECK_ENABLED_POLICY_NAME" /> 정책이 false로 설정되어 있으면 이 정책이 효력을 갖지 않습니다.
-
-      언어가 이 정책과 <ph name="SPELLCHECK_LANGUAGE_BLACKLIST_POLICY_NAME" /> 정책에 모두 포함된 경우 이 정책이 우선순위를 가지며 맞춤법 검사 언어가 사용 설정됩니다.
-
-      현재 지원되는 언어는 af, bg, ca, cs, da, de, el, en-AU, en-CA, en-GB, en-US, es, es-419, es-AR, es-ES, es-MX, es-US, et, fa, fo, fr, he, hi, hr, hu, id, it, ko, lt, lv, nb, nl, pl, pt-BR, pt-PT, ro, ru, sh, sk, sl, sq, sr, sv, ta, tg, tr, uk, vi입니다.</translation>
 <translation id="356579196325389849">사용자가 Chrome OS 출시 채널을 구성할 수 있습니다.</translation>
 <translation id="3575011234198230041">HTTP 인증</translation>
 <translation id="3577251398714997599">방해가 되는 광고가 포함된 사이트의 광고 설정</translation>
@@ -2422,6 +2415,21 @@ False로 설정하면 <ph name="PRODUCT_NAME" />에서 기본 알림을 사용�
       '강제 사용'이 선택되어 있으면 페이지가 시크릿 모드로만 열릴 수 있습니다. '강제 사용'은 Android-on-Chrome에서는 작동하지 않습니다.</translation>
 <translation id="4600786265870346112">큰 커서 사용</translation>
 <translation id="4604931264910482931">기본 메시지 차단 목록 설정</translation>
+<translation id="4607416370554533118">정책을 설정하면 Chrome에서 클라이언트 인증서를 자동으로 선택할 사이트를 지정하는 URL 패턴 목록을 작성할 수 있습니다. 값은 각각 <ph name="AUTO_SELECT_CERTIFICATE_FOR_URLS_EXAMPLE" /> 형식의 stringified JSON 사전 배열이며, 여기에서 <ph name="URL_PATTERN_PLACEHOLDER" />은 콘텐츠 설정 패턴입니다. <ph name="FILTER_PLACEHOLDER" />는 브라우저에서 자동으로 선택할 클라이언트 인증서를 제한합니다. 필터와 관계없이 서버의 인증서 요청과 일치하는 인증서만 선택됩니다.
+
+      <ph name="FILTER_PLACEHOLDER" /> 섹션 사용의 예:
+
+      * <ph name="FILTER_PLACEHOLDER" />를 <ph name="AUTO_SELECT_CERTIFICATE_FOR_URLS_FILTER_EXAMPLE" />으로 설정하면 CommonName이 <ph name="ISSUER_CN_PLACEHOLDER" />인 인증서에서 발급한 클라이언트 인증서만 선택됩니다.
+
+      * <ph name="FILTER_PLACEHOLDER" />에 <ph name="ISSUER_STRING_VALUE" /> 및 <ph name="SUBJECT_STRING_VALUE" /> 섹션이 모두 포함된 경우 두 조건을 모두 만족하는 클라이언트 인증서만 선택됩니다.
+
+      * <ph name="FILTER_PLACEHOLDER" />에 <ph name="FILTER_STRING_ORGANIZATION" /> 값이 있는 <ph name="SUBJECT_STRING_VALUE" /> 섹션이 포함된 경우 선택되려면 인증서에 지정된 값과 일치하는 조직이 하나 이상 있어야 합니다.
+
+      * <ph name="FILTER_PLACEHOLDER" />에 <ph name="FILTER_STRING_ORGANIZATIONAL_UNIT" /> 값이 있는 <ph name="SUBJECT_STRING_VALUE" /> 섹션이 포함된 경우 선택되려면 인증서에 지정된 값과 일치하는 조직 단위가 하나 이상 있어야 합니다.
+
+      * <ph name="FILTER_PLACEHOLDER" />를 <ph name="EMPTY_DICTIONARY" />로 설정하면 클라이언트 인증서 선택에 추가로 적용되는 제한은 없습니다. 웹 서버에서 제공한 필터가 계속 적용됩니다.
+
+      정책을 설정하지 않으면 어느 사이트에서도 자동으로 인증서가 선택되지 않습니다.</translation>
 <translation id="4617338332148204752"><ph name="PRODUCT_FRAME_NAME" />에서 메타 태그 검사 건너뛰기</translation>
 <translation id="462134014569484584">이 정책은 이 기기의 <ph name="PLUGIN_VM_NAME" /> 라이선스 키를 지정합니다.</translation>
 <translation id="4625915093043961294">확장 프로그램 설치 허용목록 설정</translation>
@@ -2539,6 +2547,13 @@ False로 설정하면 <ph name="PRODUCT_NAME" />에서 기본 알림을 사용�
 
       정책을 설정하면 사용자가 변경할 수 없습니다. 정책을 설정하지 않으면 사용자가 실행기의 자동 숨김 여부를 결정합니다.</translation>
 <translation id="4812714598405913256">DeviceMinimumVersion 정책의 자동 업데이트 만료 메시지 구성</translation>
+<translation id="481492486938162195">이 정책은 지원 중단되었으므로 '<ph name="AUTH_NEGOCIATE_DELEGATE_ALLOWLIST_POLICY_NAME" />' 정책을 대신 사용하세요.
+
+          <ph name="PRODUCT_NAME" />에서 위임할 수 있는 서버입니다.
+
+          서로 다른 서버 이름은 쉼표로 구분하세요. 와일드 카드(*)를 사용할 수 있습니다.
+
+          이 정책을 설정하지 않으면 서버가 인트라넷으로 감지되더라도 <ph name="PRODUCT_NAME" />에서 사용자 인증 정보를 위임하지 않습니다.</translation>
 <translation id="4816674326202173458">기업 사용자에게 기본 사용자 및 보조 사용자 모두 허용(관리 대상 사용자가 아닌 경우 기본 동작임)</translation>
 <translation id="4826326557828204741">배터리 전원으로 기기를 실행하는 동안 유휴 지연 시간에 도달했을 때 실행할 작업입니다.</translation>
 <translation id="482803100714220060">전체 URL 표시</translation>
@@ -5380,6 +5395,13 @@ Windows에서는 GPO를 통해 정책을 설정하는 것이 좋습니다. 하�
       정책이 False로 설정되거나 설정되어 있지 않으면 M81, M82, M83에서 실행될 때 새로워진 양식 컨트롤 요소가 사용 설정됩니다.
 
       이 정책은 Chrome 84 이후 삭제됩니다.</translation>
+<translation id="8937562488500723400">KDC 정책에 의한 승인을 인정할지 지정하여 <ph name="KERBEROS" /> 티켓을 위임할지 결정합니다.
+
+          이 정책을 True로 설정하면 HTTP 인증에서 KDC 정책에 의한 승인을 인정합니다. 즉, Chrome은 KDC가 서비스 티켓에 <ph name="OK_AS_DELEGATE" />를 설정하는 경우에만 사용자 인증 정보를 위임합니다. 자세한 내용은 https://tools.ietf.org/html/rfc5896.html을 참고하세요. 서비스는 'AuthNegotiateDelegateAllowlist' 정책과도 일치해야 합니다.
+
+          정책을 설정하지 않거나 False로 설정하면 지원되는 플랫폼에서 KDC 정책이 무시되고 'AuthNegotiateDelegateAllowlist' 정책만 인정됩니다.
+
+          Windows에서는 KDC 정책이 항상 인정됩니다.</translation>
 <translation id="8938932171964587769">M69에서 지원이 중단되었습니다. 대신
       OverrideSecurityRestrictionsOnInsecureOrigin을 사용하시기 바랍니다.
 
@@ -5497,6 +5519,27 @@ Windows에서는 GPO를 통해 정책을 설정하는 것이 좋습니다. 하�
       정책을 설정하면 <ph name="PRODUCT_NAME" />에서 사용자가 --disk-cache-size 플래그를 지정한 여부와 관계없이 제공된 캐시 크기를 사용합니다. 몇 MB 이하의 값은 반올림됩니다.
 
       이 정책이 설정되지 않으면 <ph name="PRODUCT_NAME" />에서 기본 크기를 사용합니다. 사용자는 --disk-cache-size 플래그를 통해 기본 크기를 변경할 수 있습니다.</translation>
+<translation id="9057444687284972605">사이트에서 인증서를 요청하는 경우 SAML 절차를 호스팅하는 프레임의 로그인 화면에서 클라이언트 인증서가 자동으로 선택되는 사이트를 지정하는 URL 패턴 목록을 지정하도록 합니다. 예를 들어 SAML IdP에 제시될 기기 수준 인증서를 구성하는 데 사용할 수 있습니다.
+
+      값은 각각 <ph name="AUTO_SELECT_CERTIFICATE_FOR_URLS_EXAMPLE" /> 형식의 stringified JSON 사전 배열이며, 여기에서 <ph name="URL_PATTERN_PLACEHOLDER" />은 콘텐츠 설정 패턴입니다. <ph name="FILTER_PLACEHOLDER" />는 브라우저에서 자동으로 선택할 클라이언트 인증서를 제한합니다. 필터와 관계없이 서버의 인증서 요청과 일치하는 인증서만 선택됩니다.
+
+      <ph name="FILTER_PLACEHOLDER" /> 섹션 사용의 예:
+
+      * <ph name="FILTER_PLACEHOLDER" />를 <ph name="AUTO_SELECT_CERTIFICATE_FOR_URLS_FILTER_EXAMPLE" />으로 설정하면 CommonName이 <ph name="ISSUER_CN_PLACEHOLDER" />인 인증서에서 발급한 클라이언트 인증서만 선택됩니다.
+
+      * <ph name="FILTER_PLACEHOLDER" />에 <ph name="ISSUER_STRING_VALUE" /> 및 <ph name="SUBJECT_STRING_VALUE" /> 섹션이 모두 포함된 경우 두 조건을 모두 만족하는 클라이언트 인증서만 선택됩니다.
+
+      * <ph name="FILTER_PLACEHOLDER" />에 <ph name="FILTER_STRING_ORGANIZATION" /> 값이 있는 <ph name="SUBJECT_STRING_VALUE" /> 섹션이 포함된 경우 선택되려면 인증서에 지정된 값과 일치하는 조직이 하나 이상 있어야 합니다.
+
+      * <ph name="FILTER_PLACEHOLDER" />에 <ph name="FILTER_STRING_ORGANIZATIONAL_UNIT" /> 값이 있는 <ph name="SUBJECT_STRING_VALUE" /> 섹션이 포함된 경우 선택되려면 인증서에 지정된 값과 일치하는 조직 단위가 하나 이상 있어야 합니다.
+
+      * <ph name="FILTER_PLACEHOLDER" />를 <ph name="EMPTY_DICTIONARY" />로 설정하면 클라이언트 인증서 선택에 추가로 적용되는 제한은 없습니다. 웹 서버에서 제공한 필터가 계속 적용됩니다.
+
+
+
+      이 정책을 설정하지 않으면 어떠한 사이트에서도 인증서가 자동으로 선택되지 않습니다.
+
+      유효한 URL 패턴을 자세히 알아보려면 https://cloud.google.com/docs/chrome-enterprise/policies/url-patterns를 참고하세요.</translation>
 <translation id="9062348747995618422">정책을 설정하면 <ph name="FLASH_PLUGIN_NAME" /> 플러그인 실행이 가능한 사이트를 지정하는 URL 패턴 목록을 설정할 수 있습니다.
 
       정책을 설정하지 않은 경우 <ph name="DEFAULT_PLUGINS_SETTING_POLICY_NAME" />이(가) 설정되어 있으면 모든 사이트에 적용됩니다. 설정되어 있지 않다면 사용자의 개인 설정이 적용됩니다.

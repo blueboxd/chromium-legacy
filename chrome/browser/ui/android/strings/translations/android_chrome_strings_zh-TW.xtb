@@ -104,6 +104,7 @@
 <translation id="1853692000353488670">新增無痕式分頁</translation>
 <translation id="1856325424225101786">要重設精簡模式嗎？</translation>
 <translation id="1868024384445905608">Chrome 現在的檔案下載速度更快了</translation>
+<translation id="1874760110381325409">你將使用自己的 Google 帳戶登入\n(這項操作不會開啟 Chrome 同步功能)</translation>
 <translation id="1883903952484604915">我的檔案</translation>
 <translation id="1919950603503897840">選取聯絡人</translation>
 <translation id="1925021887439448749">輸入自訂網址</translation>
@@ -227,6 +228,7 @@
 <translation id="281504910091592009">你可以查看及管理 <ph name="BEGIN_LINK" />Google 帳戶<ph name="END_LINK" />中儲存的密碼</translation>
 <translation id="2818669890320396765">如要將書籤同步到所有裝置，請登入並開啟同步處理功能</translation>
 <translation id="2827278682606527653">Feed card menu half height</translation>
+<translation id="2841216154655874070">{NUM_DAYS,plural, =1{已在 1 天前檢查}other{已在 # 天前檢查}}</translation>
 <translation id="2842985007712546952">上層資料夾</translation>
 <translation id="2860954141821109167">請確認此裝置已啟用手機應用程式</translation>
 <translation id="2870560284913253234">網站</translation>
@@ -702,6 +704,7 @@
 <translation id="6532866250404780454">數位健康將不會顯示你透過 Chrome 造訪的網站。所有網站計時器也將遭到刪除。</translation>
 <translation id="6534565668554028783">Google 的回應時間過長</translation>
 <translation id="6539092367496845964">發生錯誤，請稍後再試。</translation>
+<translation id="6541983376925655882">{NUM_HOURS,plural, =1{已在 1 小時前檢查}other{已在 # 小時前檢查}}</translation>
 <translation id="6545017243486555795">清除所有資料</translation>
 <translation id="6560414384669816528">使用 Sogou 搜尋</translation>
 <translation id="656065428026159829">顯示更多</translation>
@@ -733,6 +736,7 @@
 <translation id="6697492270171225480">找不到網頁時顯示類似的網頁建議</translation>
 <translation id="6698801883190606802">管理同步資料</translation>
 <translation id="6699370405921460408">Google 伺服器會針對你造訪的網頁進行最佳化處理。</translation>
+<translation id="670498945988402717">昨天已檢查</translation>
 <translation id="6710213216561001401">返回</translation>
 <translation id="671481426037969117">「<ph name="FQDN" />」計時器已結束計時，將於明天重新開始。</translation>
 <translation id="6738867403308150051">下載中…</translation>
@@ -771,6 +775,7 @@
 <translation id="7063006564040364415">無法連線至同步處理伺服器。</translation>
 <translation id="7071521146534760487">管理帳戶</translation>
 <translation id="7077143737582773186">SD 卡</translation>
+<translation id="7080806333218412752">可將網址傳送至安全瀏覽功能進行檢查。同時也會傳送少量網頁、下載內容、擴充功能活動及系統資訊，以協助找出新的威脅。當你登入 Google 帳戶後，系統會將這些資料暫時連結至你的帳戶，以便在你使用各項 Google 應用程式時提供保護。</translation>
 <translation id="7121362699166175603">將歷史記錄和自動即時查詢從網址列中清除。你的 Google 帳戶可能會儲存其他形式的瀏覽記錄，請參閱 <ph name="BEGIN_LINK" />myactivity.google.com<ph name="END_LINK" />。</translation>
 <translation id="7128355412245153445">只要輕觸首頁按鈕即可查看常用網站和近期報導</translation>
 <translation id="7138678301420049075">其他</translation>
@@ -780,6 +785,7 @@
 <translation id="7173114856073700355">開啟設定</translation>
 <translation id="7177466738963138057">日後可前往設定頁面進行變更</translation>
 <translation id="7180611975245234373">重新整理</translation>
+<translation id="7187993566681480880">在已登入帳戶的狀態下，能確保你持續享有安全無虞的 Chrome 使用體驗，也有助於提升其他 Google 應用程式的安全機制。</translation>
 <translation id="7189372733857464326">正在等待 Google Play 服務完成更新</translation>
 <translation id="7191430249889272776">已在背景開啟分頁。</translation>
 <translation id="723171743924126238">選取圖片</translation>
@@ -891,6 +897,7 @@
 <translation id="8027863900915310177">選擇下載位置</translation>
 <translation id="8035133914807600019">新資料夾…</translation>
 <translation id="8037750541064988519">還剩 <ph name="DAYS" /> 天</translation>
+<translation id="8037801708772278989">剛才已檢查</translation>
 <translation id="804335162455518893">找不到 SD 卡</translation>
 <translation id="805047784848435650">根據你的瀏覽記錄獨家推薦</translation>
 <translation id="8051695050440594747"><ph name="MEGABYTES" /> MB 可用空間</translation>
@@ -1031,6 +1038,7 @@
 <translation id="9137013805542155359">顯示原文</translation>
 <translation id="9155898266292537608">快速輕觸字詞也可以展開搜尋</translation>
 <translation id="9169507124922466868">已在畫面下半部顯示瀏覽記錄</translation>
+<translation id="9199368092038462496">{NUM_MINS,plural, =1{已在 1 分鐘前檢查}other{已在 # 分鐘前檢查}}</translation>
 <translation id="9204836675896933765">還剩 1 個檔案</translation>
 <translation id="9206873250291191720">A</translation>
 <translation id="9209888181064652401">無法撥打電話</translation>

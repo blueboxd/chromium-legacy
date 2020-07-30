@@ -172,7 +172,7 @@ void GeolocationProviderImpl::OnClientsChanged() {
   } else {
     if (!IsRunning()) {
       base::Thread::Options options;
-#if defined(OS_MACOSX)
+#if defined(OS_MAC)
       options.message_pump_type = base::MessagePumpType::NS_RUNLOOP;
 #endif
       StartWithOptions(options);

@@ -28,6 +28,7 @@ import java.io.StringWriter;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.Locale;
 import java.util.concurrent.atomic.AtomicInteger;
 
 /**
@@ -183,8 +184,32 @@ public class ChromeStrictMode {
             initializeStrictModeWatch(threadInterceptor);
         }
 
-        KnownViolations.addExemptions(threadInterceptor);
+        addExemptions(threadInterceptor);
         threadInterceptor.build().install(threadPolicy.build());
         StrictMode.setVmPolicy(vmPolicy.build());
+    }
+
+    public static void addExemptions(ThreadStrictModeInterceptor.Builder threadInterceptor) {
+        KnownViolations.addExemptions(threadInterceptor);
+
+        // Ignore strict mode violations due to SharedPreferences.
+        threadInterceptor.ignoreExternalClass(
+                Violation.DETECT_DISK_IO, "android.content.SharedPreferences");
+        threadInterceptor.ignoreExternalMethod(
+                Violation.DETECT_DISK_IO, "android.app.ContextImpl#getSharedPreferences");
+
+        // Ignore strict mode violations due to xposed.
+        threadInterceptor.ignoreExternalPackage(
+                Violation.DETECT_ALL_KNOWN, "re.dobv.android.xposed");
+
+        // WebView code must be strict mode clean on all devices. Since Chrome uploads strict mode
+        // violations but WebView does not, detect strict mode violations which originate from
+        // org.chromium.content in Chrome for all devices in order to provide extra strict mode
+        // coverage for webview. Ignore for now strict mode violations in other packages for
+        // non-Nexus, non-Pixel devices to improve the signal to noise ratio.
+        String lowercaseModel = Build.MODEL.toLowerCase(Locale.US);
+        if (!lowercaseModel.contains("nexus") && !lowercaseModel.contains("pixel")) {
+            threadInterceptor.onlyDetectViolationsForPackage("org.chromium.content");
+        }
     }
 }

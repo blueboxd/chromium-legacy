@@ -161,6 +161,9 @@
 
       ポリシーを設定しないか false に設定した場合、高速切り替えは使用されません。
       true に設定した場合、ワイヤレス アクセス ポイントが対応していれば高速切り替えが使用されます。</translation>
+<translation id="1240722269871366886">このポリシーでは、<ph name="PRODUCT_OS_NAME" /> で、ユーザーが仮想または物理キーボードを使用してテキストを入力するときに、絵文字の候補を表示できるようにします。
+      このポリシーを true に設定した場合、この機能は有効になり、ユーザーは設定を変更できます。
+      このポリシーのデフォルトの設定は false で、絵文字の候補は表示されず、ユーザーがオーバーライドすることはできません。</translation>
 <translation id="1243570869342663665">セーフサイトのアダルト コンテンツの除外を制御する。</translation>
 <translation id="1257550411839719984">デフォルトのダウンロード ディレクトリを設定する</translation>
 <translation id="1265053460044691532">SAML 経由で認証されたユーザーがオフラインでログインできる時間を制限する</translation>
@@ -934,6 +937,7 @@
       このポリシーが未設定または True に設定されている場合、ユーザーはネットワーク ファイル共有を使用できます。
 
       このポリシーが False に設定されている場合、ユーザーはネットワーク ファイル共有を使用できません。</translation>
+<translation id="2435052056904485763">Kerberos 委任サーバーの許可リスト</translation>
 <translation id="2440773021691931148">電源に関連するハードウェアの統計情報と識別子を報告します。
 
       このポリシーが false または未設定の場合、統計情報は報告されません。
@@ -1718,17 +1722,6 @@ False に設定した場合、<ph name="PRODUCT_NAME" /> はネイティブ通�
 <translation id="355118380775352753">代替ブラウザで開くウェブサイト</translation>
 <translation id="3554498762428140109">ネイティブ ウィンドウ オクルージョンを有効にする</translation>
 <translation id="3554984410014457319">Google アシスタントで音声サービスの起動ワードを有効にする</translation>
-<translation id="3557208865710006939">言語のスペルチェックを自動的に有効にします。指定した言語のうち認識されないものは無視されます。
-
-      このポリシーを有効にした場合は、ユーザーがスペルチェックを有効にした言語に加え、指定された言語のスペルチェックが有効になります。
-
-      このポリシーが未設定または無効の場合、ユーザーのスペルチェック設定がそのまま適用されます。
-
-      <ph name="SPELLCHECK_ENABLED_POLICY_NAME" /> ポリシーが false に設定されている場合、このポリシーは無視されます。
-
-      言語がこのポリシーと <ph name="SPELLCHECK_LANGUAGE_BLACKLIST_POLICY_NAME" /> ポリシーの両方に指定されている場合は、このポリシーが優先され、言語のスペルチェックは有効となります。
-
-      現在サポートされている言語は、af、bg、ca、cs、da、de、el、en-AU、en-CA、en-GB、en-US、es、es-419、es-AR、es-ES、es-MX、es-US、et、fa、fo、fr、he、hi、hr、hu、id、it、ko、lt、lv、nb、nl、pl、pt-BR、pt-PT、ro、ru、sh、sk、sl、sq、sr、sv、ta、tg、tr、uk、vi です。</translation>
 <translation id="356579196325389849">ユーザーにより Chrome OS のリリース チャンネルが設定されることがあります</translation>
 <translation id="3575011234198230041">HTTP 認証</translation>
 <translation id="3577251398714997599">煩わしい広告を含むサイトでの広告表示に関する設定</translation>
@@ -2389,6 +2382,21 @@ False に設定した場合、<ph name="PRODUCT_NAME" /> はネイティブ通�
       「Forced」を選択した場合は、シークレット モードでのみページを開くことができます。「Forced」は Android-on-Chrome では機能しません。</translation>
 <translation id="4600786265870346112">大きいカーソルを有効にする</translation>
 <translation id="4604931264910482931">ネイティブ メッセージングのブラックリストを設定する</translation>
+<translation id="4607416370554533118">このポリシーでは、Chrome でクライアント証明書を自動的に選択できるサイトを指定する URL パターンのリストを作成できます。値は文字列変換した JSON 辞書の配列で、それぞれ <ph name="AUTO_SELECT_CERTIFICATE_FOR_URLS_EXAMPLE" /> の形式で指定します。<ph name="URL_PATTERN_PLACEHOLDER" /> は、コンテンツを設定するパターンです。<ph name="FILTER_PLACEHOLDER" /> は、ブラウザで自動的に選択されるクライアント証明書の発行元を限定するフィルタです。なお、フィルタの設定にかかわらず、サーバーの証明書リクエストに一致する証明書のみが選択されます。
+
+      <ph name="FILTER_PLACEHOLDER" /> セクションの使用例:
+
+      * <ph name="FILTER_PLACEHOLDER" /> に <ph name="AUTO_SELECT_CERTIFICATE_FOR_URLS_FILTER_EXAMPLE" /> を設定した場合、発行元の CommonName が <ph name="ISSUER_CN_PLACEHOLDER" /> のクライアント証明書のみが選択されます。
+
+      * <ph name="FILTER_PLACEHOLDER" /> に <ph name="ISSUER_STRING_VALUE" /> と <ph name="SUBJECT_STRING_VALUE" /> の両方のセクションを含めた場合は、両方の条件を満たすクライアント証明書のみが選択されます。
+
+      * <ph name="FILTER_PLACEHOLDER" /> に <ph name="SUBJECT_STRING_VALUE" /> セクションと <ph name="FILTER_STRING_ORGANIZATION" /> の値を含めた場合は、指定した値に一致する組織を少なくとも 1 つ含む証明書が選択されます。
+
+      * <ph name="FILTER_PLACEHOLDER" /> に <ph name="SUBJECT_STRING_VALUE" /> セクションと <ph name="FILTER_STRING_ORGANIZATIONAL_UNIT" /> の値を含めた場合は、指定した値に一致する組織部門を少なくとも 1 つ含む証明書が選択されます。
+
+      * <ph name="FILTER_PLACEHOLDER" /> に <ph name="EMPTY_DICTIONARY" /> を設定した場合、クライアント証明書の選択に追加の条件は適用されません。ウェブサーバーによって提供されたフィルタは引き続き適用されます。
+
+      このポリシーを未設定のままにした場合、どのサイトについても証明書の自動選択は行われません。</translation>
 <translation id="4617338332148204752"><ph name="PRODUCT_FRAME_NAME" /> でのメタ タグ チェックをスキップする</translation>
 <translation id="462134014569484584">このポリシーでは、このデバイスの <ph name="PLUGIN_VM_NAME" /> のライセンスキーを指定します。</translation>
 <translation id="4625915093043961294">拡張機能インストールのホワイトリストを設定する</translation>
@@ -2504,6 +2512,13 @@ False に設定した場合、<ph name="PRODUCT_NAME" /> はネイティブ通�
 <translation id="4807950475297505572">十分な空き容量に達するまで、前回のログインから時間が経っているユーザーを順に削除する</translation>
 <translation id="4812270373673968774">このポリシーを [常に使用] に設定した場合、<ph name="PRODUCT_OS_NAME" /> シェルフが自動的に非表示になります。このポリシーを [使用しない] に設定した場合、シェルフが非表示になることがなくなります。このポリシーを設定した場合、ユーザーは設定を変更できません。設定しない場合、シェルフが自動的に非表示になるかどうかをユーザーが指定します。</translation>
 <translation id="4812714598405913256">DeviceMinimumVersion ポリシー用の自動更新の有効期限に関するメッセージを設定する</translation>
+<translation id="481492486938162195">このポリシーはサポートが終了しています。代わりに <ph name="AUTH_NEGOCIATE_DELEGATE_ALLOWLIST_POLICY_NAME" /> ポリシーを使用してください。
+
+          <ph name="PRODUCT_NAME" /> に委任を許可するサーバーです。
+
+          複数のサーバー名を入力するときはカンマで区切ります。ワイルドカード（*）を使用できます。
+
+          このポリシーを未設定のままにした場合、<ph name="PRODUCT_NAME" /> では、イントラネットとしてサーバーが検出されても、ユーザーの認証情報は委任されません。</translation>
 <translation id="4816674326202173458">企業ユーザーがメイン ユーザーとしてもセカンダリ ユーザーとしても操作できるようにする（管理対象ユーザー以外のユーザーに対するデフォルトの動作）</translation>
 <translation id="4826326557828204741">バッテリー電源での実行時、アイドル時間に到達したときに行う操作</translation>
 <translation id="482803100714220060">URL 全体を表示する</translation>
@@ -5264,6 +5279,13 @@ False に設定した場合、<ph name="PRODUCT_NAME" /> はネイティブ通�
       このポリシーを False に設定するか未設定のままにした場合、M81、M82、M83 でリリースされている新しいフォーム コントロール要素が有効になります。
 
       このポリシーは、Chrome 84 以降で削除されます。</translation>
+<translation id="8937562488500723400"><ph name="KERBEROS" /> チケットの委任の決定に KDC ポリシーによる承認を適用するかどうかを管理します。
+
+          このポリシーを true に設定した場合、HTTP 認証で KDC ポリシーによる承認が適用されます。つまり、Chrome では、KDC によりサービス チケットで <ph name="OK_AS_DELEGATE" /> が設定されている場合のみ、認証情報が委任されます。詳しくは、https://tools.ietf.org/html/rfc5896.html をご覧ください。サービスは「AuthNegotiateDelegateAllowlist」ポリシーにも一致する必要があります。
+
+          このポリシーを設定しない場合や false に設定した場合、KDC ポリシーはサポートされているプラットフォームで無視され、「AuthNegotiateDelegateAllowlist」ポリシーのみが適用されます。
+
+          Windows では、KDC ポリシーが常に適用されます。</translation>
 <translation id="8938932171964587769">このポリシーは M69 でサポート終了となりました。代わりに
       OverrideSecurityRestrictionsOnInsecureOrigin を使用してください。
 
@@ -5380,6 +5402,27 @@ False に設定した場合、<ph name="PRODUCT_NAME" /> はネイティブ通�
       このポリシーを設定した場合、<ph name="PRODUCT_NAME" /> では、ユーザーが「--disk-cache-size」フラグを指定しているかどうかにかかわらず、設定したキャッシュ サイズが使用されます（数メガバイト小さいと判断された値は、適正な値に引き上げられて処理されます）。
 
       設定しない場合、<ph name="PRODUCT_NAME" /> ではデフォルトのサイズが使用されます。ユーザーは「--disk-cache-size」フラグを使ってこの設定を変更できます。</translation>
+<translation id="9057444687284972605">SAML フローをホストするログイン画面のフレームで、サイトから証明書をリクエストされた場合に、どのサイトであればクライアント証明書を自動的に選択するかを URL パターンのリストで指定できます。使用例としては、SAML IdP に提示するデバイス全体の証明書を設定するケースが挙げられます。
+
+      値は文字列変換した JSON 辞書の配列で、それぞれ <ph name="AUTO_SELECT_CERTIFICATE_FOR_URLS_EXAMPLE" /> の形式で指定します。<ph name="URL_PATTERN_PLACEHOLDER" /> は、コンテンツを設定するパターンです。<ph name="FILTER_PLACEHOLDER" /> は、ブラウザで自動的に選択されるクライアント証明書の発行元を限定するフィルタです。なお、フィルタの設定にかかわらず、サーバーの証明書リクエストに一致する証明書のみが選択されます。
+
+      <ph name="FILTER_PLACEHOLDER" /> セクションの使用例:
+
+      * <ph name="FILTER_PLACEHOLDER" /> に <ph name="AUTO_SELECT_CERTIFICATE_FOR_URLS_FILTER_EXAMPLE" /> を設定した場合、発行元の CommonName が <ph name="ISSUER_CN_PLACEHOLDER" /> のクライアント証明書のみが選択されます。
+
+      * <ph name="FILTER_PLACEHOLDER" /> に <ph name="ISSUER_STRING_VALUE" /> と <ph name="SUBJECT_STRING_VALUE" /> の両方のセクションを含めた場合は、両方の条件を満たすクライアント証明書のみが選択されます。
+
+      * <ph name="FILTER_PLACEHOLDER" /> に <ph name="SUBJECT_STRING_VALUE" /> セクションと <ph name="FILTER_STRING_ORGANIZATION" /> の値を含めた場合は、指定した値に一致する組織を少なくとも 1 つ含む証明書が選択されます。
+
+      * <ph name="FILTER_PLACEHOLDER" /> に <ph name="SUBJECT_STRING_VALUE" /> セクションと <ph name="FILTER_STRING_ORGANIZATIONAL_UNIT" /> の値を含めた場合は、指定した値に一致する組織部門を少なくとも 1 つ含む証明書が選択されます。
+
+      * <ph name="FILTER_PLACEHOLDER" /> に <ph name="EMPTY_DICTIONARY" /> を設定した場合、クライアント証明書の選択に追加の条件は適用されません。ウェブサーバーによって提供されたフィルタは引き続き適用されます。
+
+
+
+      このポリシーを設定しない場合、どのサイトに対しても自動選択は行われません。
+
+      有効な URL パターンについて詳しくは、https://cloud.google.com/docs/chrome-enterprise/policies/url-patterns をご覧ください。</translation>
 <translation id="9062348747995618422">このポリシーでは、<ph name="FLASH_PLUGIN_NAME" /> プラグインの実行を許可するサイトの URL パターンリストを指定できます。
       このポリシーを未設定のままにした場合、<ph name="DEFAULT_PLUGINS_SETTING_POLICY_NAME" /> が設定されていればその設定がすべてのサイトで使用され、設定されていなければユーザーの個人設定が適用されます。
 

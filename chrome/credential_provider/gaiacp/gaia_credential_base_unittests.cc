@@ -2212,18 +2212,19 @@ INSTANTIATE_TEST_SUITE_P(
 
 // Tests various sign in scenarios with consumer and non-consumer domains.
 // Parameters are:
-// 1. Is mdm enrollment enabled.
-// 2. The mdm_aca reg key setting:
-//    - 0: Set reg key to 0.
-//    - 1: Set reg key to 1.
-//    - 2: Don't set reg key.
-// 3. Whether the mdm_aca reg key is set to 1 or 0.
-// 4. Whether an existing associated user is already present.
-// 5. Whether the user being created (or existing) uses a consumer account.
+// 1. bool : Is mdm enrollment enabled.
+// 2. int  : The mdm_aca reg key setting:
+//         - 0: Set reg key to 0.
+//         - 1: Set reg key to 1.
+//         - 2: Don't set reg key.
+// 3. bool : Whether an existing associated user is already present.
+// 4. bool : Whether the user being created (or existing) uses a consumer
+//           account.
+// 5. bool : Whether cloud policies are enabled.
 class GcpGaiaCredentialBaseConsumerEmailTest
     : public GcpGaiaCredentialBaseTest,
-      public ::testing::WithParamInterface<std::tuple<bool, int, bool, bool>> {
-};
+      public ::testing::WithParamInterface<
+          std::tuple<bool, int, bool, bool, bool>> {};
 
 TEST_P(GcpGaiaCredentialBaseConsumerEmailTest, ConsumerEmailSignin) {
   USES_CONVERSION;
@@ -2231,13 +2232,22 @@ TEST_P(GcpGaiaCredentialBaseConsumerEmailTest, ConsumerEmailSignin) {
   const int mdm_consumer_accounts_reg_key_setting = std::get<1>(GetParam());
   const bool user_created = std::get<2>(GetParam());
   const bool user_is_consumer = std::get<3>(GetParam());
+  const bool cloud_policies_enabled = std::get<4>(GetParam());
 
   FakeAssociatedUserValidator validator;
   FakeInternetAvailabilityChecker internet_checker;
   GoogleMdmEnrollmentStatusForTesting force_success(true);
+  FakeDevicePoliciesManager fake_device_policies_manager(
+      cloud_policies_enabled);
 
-  if (mdm_enabled)
-    ASSERT_EQ(S_OK, SetGlobalFlagForTesting(kRegEnableDmEnrollment, 1));
+  if (cloud_policies_enabled) {
+    DevicePolicies policies;
+    policies.enable_dm_enrollment = mdm_enabled;
+    fake_device_policies_manager.SetDevicePolicies(policies);
+  } else {
+    ASSERT_EQ(S_OK, SetGlobalFlagForTesting(kRegEnableDmEnrollment,
+                                            mdm_enabled ? 1 : 0));
+  }
 
   const bool mdm_consumer_accounts_reg_key_set =
       mdm_consumer_accounts_reg_key_setting >= 0 &&
@@ -2307,6 +2317,7 @@ INSTANTIATE_TEST_SUITE_P(All,
                          GcpGaiaCredentialBaseConsumerEmailTest,
                          ::testing::Combine(::testing::Bool(),
                                             ::testing::Values(0, 1, 2),
+                                            ::testing::Bool(),
                                             ::testing::Bool(),
                                             ::testing::Bool()));
 

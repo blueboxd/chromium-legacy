@@ -4053,7 +4053,6 @@ Anda dapat mengelola setelan akun ini dengan menginstal aplikasi Family Link di 
 <translation id="6056710589053485679">Muat Ulang Normal</translation>
 <translation id="6057312498756061228">File ini terlalu besar untuk pemeriksaan keamanan. Anda dapat membuka file hingga 50 MB.</translation>
 <translation id="6057381398996433816">Situs ini diblokir agar tidak menggunakan sensor gerakan dan sensor cahaya.</translation>
-<translation id="6058567592298841668">Mesin Virtual Plugin: <ph name="PLUGIN_VM_NAME" /></translation>
 <translation id="6059652578941944813">Hierarki Sertifikat</translation>
 <translation id="6059925163896151826">Perangkat USB</translation>
 <translation id="6061882183774845124">Kirim link ke perangkat Anda</translation>
@@ -4482,6 +4481,7 @@ Anda dapat mengelola setelan akun ini dengan menginstal aplikasi Family Link di 
 <translation id="6602956230557165253">Gunakan tombol panah kiri dan kanan untuk bernavigasi.</translation>
 <translation id="6605847144724004692">Belum diberi rating oleh pengguna.</translation>
 <translation id="6607831829715835317">Fitur &amp;lainnya</translation>
+<translation id="6608012008902909398">Tampilkan detail pemeriksaan software perangkat</translation>
 <translation id="6611972847767394631">Temukan tab Anda di sini</translation>
 <translation id="6612358246767739896">Konten dilindungi</translation>
 <translation id="6615455863669487791">Tunjukkan</translation>

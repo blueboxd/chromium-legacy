@@ -166,7 +166,7 @@ SQLiteCursor::SQLiteCursor(const std::vector<std::string>& column_names,
       column_names_(column_names),
       service_(service),
       count_(-1),
-      test_observer_(NULL) {}
+      test_observer_(nullptr) {}
 
 SQLiteCursor::~SQLiteCursor() {
 }

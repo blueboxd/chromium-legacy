@@ -104,7 +104,7 @@ class WebUITabStripWebView : public views::WebView {
           data.custom_data.at(base::ASCIIToUTF16(kWebUITabIdDataType)),
           &tab_id);
       return found_tab_id && extensions::ExtensionTabUtil::GetTabById(
-                                 tab_id, browser_context(), false, nullptr);
+                                 tab_id, GetBrowserContext(), false, nullptr);
     }
 
     if (data.custom_data.find(base::ASCIIToUTF16(kWebUITabGroupIdDataType)) !=
@@ -112,7 +112,7 @@ class WebUITabStripWebView : public views::WebView {
       std::string group_id = base::UTF16ToUTF8(
           data.custom_data.at(base::ASCIIToUTF16(kWebUITabGroupIdDataType)));
       Browser* found_browser = tab_strip_ui::GetBrowserWithGroupId(
-          Profile::FromBrowserContext(browser_context()), group_id);
+          Profile::FromBrowserContext(GetBrowserContext()), group_id);
       return found_browser != nullptr;
     }
 

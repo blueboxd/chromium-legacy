@@ -4053,7 +4053,6 @@
 <translation id="6056710589053485679">通常の再読み込み</translation>
 <translation id="6057312498756061228">このファイルはセキュリティ チェックには大きすぎます。開けるファイルは 50 MB までです。</translation>
 <translation id="6057381398996433816">このサイトではモーション センサーと光センサーの使用がブロックされています。</translation>
-<translation id="6058567592298841668">プラグイン仮想マシン: <ph name="PLUGIN_VM_NAME" /></translation>
 <translation id="6059652578941944813">証明書の階層</translation>
 <translation id="6059925163896151826">USB デバイス</translation>
 <translation id="6061882183774845124">リンクをデバイスに送信</translation>
@@ -4482,6 +4481,7 @@
 <translation id="6602956230557165253">ナビゲートするには左右の矢印キーを使用します。</translation>
 <translation id="6605847144724004692">まだ評価されていません。</translation>
 <translation id="6607831829715835317">その他のツール(&amp;L)</translation>
+<translation id="6608012008902909398">デバイスのソフトウェア確認の詳細を表示</translation>
 <translation id="6611972847767394631">ここからタブを確認できます</translation>
 <translation id="6612358246767739896">保護されたコンテンツ</translation>
 <translation id="6615455863669487791">表示</translation>

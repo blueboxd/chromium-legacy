@@ -1,6 +1,7 @@
 <?xml version="1.0" ?>
 <!DOCTYPE translationbundle>
 <translationbundle lang="zh-CN">
+<translation id="1060499346270045814">{NUM_HOURS,plural, =1{Chromium 会以每周 1 次的频率检查是否有垃圾软件。上次检查时间：1 小时前。}other{Chromium 会以每周 1 次的频率检查是否有垃圾软件。上次检查时间：{NUM_HOURS} 小时前。}}</translation>
 <translation id="1065672644894730302">系统无法读取您的偏好设置。某些功能可能无法使用，并且对偏好设置所做的更改不会保存。</translation>
 <translation id="1098170124587656448">Chromium 有助于保护您免受数据泄露、不良扩展程序等问题的影响</translation>
 <translation id="1104942323762546749">Chromium 想导出您的密码。请输入您的 Windows 密码以允许此操作。</translation>
@@ -38,6 +39,7 @@
 <translation id="2711502716910134313">Chromium 标签页</translation>
 <translation id="2718390899429598676">为了提高安全性，Chromium 将对您的数据进行加密。</translation>
 <translation id="2770231113462710648">将默认浏览器更改为：</translation>
+<translation id="2797461000988640326">{NUM_MINS,plural, =1{Chromium 会以每周 1 次的频率检查是否有垃圾软件。上次检查时间：1 分钟前。}other{Chromium 会以每周 1 次的频率检查是否有垃圾软件。上次检查时间：{NUM_MINS} 分钟前。}}</translation>
 <translation id="2799223571221894425">重新启动</translation>
 <translation id="2847479871509788944">从Chromium中移除…</translation>
 <translation id="2885378588091291677">任务管理器</translation>
@@ -47,6 +49,7 @@
 <translation id="3032706164202344641">Chromium 无法检查您的密码。请稍后重试。</translation>
 <translation id="3032787606318309379">正在添加到 Chromium...</translation>
 <translation id="3068515742935458733">将崩溃报告和<ph name="UMA_LINK" />发送给Google，帮助我们完善Chromium。</translation>
+<translation id="3086207596048762442">Chromium 会以每周 1 次的频率检查是否有垃圾软件</translation>
 <translation id="3103660991484857065">安装程序解压缩归档失败。请重新下载 Chromium。</translation>
 <translation id="3130323860337406239">Chromium 正在使用您的麦克风。</translation>
 <translation id="3155163173539279776">重新启动 Chromium</translation>
@@ -166,6 +169,7 @@
 <translation id="6847869444787758381">Chromium 会让您知道您的密码是否曾被泄露</translation>
 <translation id="6857782730669500492">Chromium - <ph name="PAGE_TITLE" /></translation>
 <translation id="6863361426438995919">Google Pay（已复制到 Chromium）</translation>
+<translation id="6863846675160669383">{NUM_DAYS,plural, =1{Chromium 会以每周 1 次的频率检查是否有垃圾软件。上次检查时间：1 天前。}other{Chromium 会以每周 1 次的频率检查是否有垃圾软件。上次检查时间：{NUM_DAYS} 天前。}}</translation>
 <translation id="6893813176749746474">Chromium 已更新，但您已经至少 30 天未使用它了。</translation>
 <translation id="6964305034639999644">在 Chromium 无痕式窗口中打开链接(&amp;G)</translation>
 <translation id="6990124437352146030">Chromium 需要获得相应权限，才能允许此网站使用您的麦克风</translation>
@@ -230,6 +234,7 @@ Chromium 无法恢复您的设置。</translation>
 <translation id="8621669128220841554">未指定的错误导致安装失败。请重新下载 Chromium。</translation>
 <translation id="8697124171261953979">它还能够控制您启动Chromium后或通过多功能框进行搜索时系统显示的页面。</translation>
 <translation id="8704119203788522458">这是您的专属Chromium</translation>
+<translation id="8705191560707593947">Chromium 会以每周 1 次的频率检查是否有垃圾软件。上次检查时间：昨天。</translation>
 <translation id="8796602469536043152">Chromium 需要获得相应权限，才能允许此网站使用您的摄像头和麦克风</translation>
 <translation id="8803635938069941624">Chromium操作系统条款</translation>
 <translation id="8821041990367117597">由于您的帐号登录详细信息已过期，Chromium无法同步您的数据。</translation>
@@ -245,6 +250,7 @@ Chromium 无法恢复您的设置。</translation>
 <translation id="91086099826398415">在 Chromium 新标签页中打开链接(&amp;T)</translation>
 <translation id="911206726377975832">同时删除您的浏览数据吗？</translation>
 <translation id="9158494823179993217">您的系统管理员已将 Chromium 配置为使用备用浏览器访问 <ph name="TARGET_URL_HOSTNAME" />。</translation>
+<translation id="9164845895615421500">Chromium 会以每周 1 次的频率检查是否有垃圾软件。上次检查时间：刚才。</translation>
 <translation id="9190841055450128916">Chromium (mDNS-In)</translation>
 <translation id="9191317372410544836">使用 Chromium Space 整理您在此设备上的浏览活动数据</translation>
 <translation id="93478295209880648">Chromium 可能无法正常运行，因为它不再支持 Windows XP 和 Windows Vista</translation>

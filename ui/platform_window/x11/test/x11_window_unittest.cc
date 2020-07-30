@@ -65,6 +65,7 @@ class TestPlatformWindowDelegate : public PlatformWindowDelegate {
   void OnAcceleratedWidgetAvailable(gfx::AcceleratedWidget widget) override {
     widget_ = widget;
   }
+  void OnWillDestroyAcceleratedWidget() override {}
   void OnAcceleratedWidgetDestroyed() override {
     widget_ = gfx::kNullAcceleratedWidget;
   }

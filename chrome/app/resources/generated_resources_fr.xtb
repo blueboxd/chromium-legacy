@@ -2440,7 +2440,7 @@ Souhaitez-vous lancer <ph name="CONTROL_PANEL_APPLET_NAME" /> ?</translation>
 <translation id="3949790930165450333"><ph name="DEVICE_NAME" /> (<ph name="DEVICE_ID" />)</translation>
 <translation id="394984172568887996">Importés depuis IE</translation>
 <translation id="3949981384795585075">{NUM_APPS,plural, =1{Cette application peut être dangereuse}one{Cette application peut être dangereuse}other{Ces applications peuvent être dangereuses}}</translation>
-<translation id="3950820424414687140">Ouvrir une session</translation>
+<translation id="3950820424414687140">Connexion</translation>
 <translation id="3953834000574892725">Mes comptes</translation>
 <translation id="3954354850384043518">En cours</translation>
 <translation id="3954469006674843813"><ph name="WIDTH" /> x <ph name="HEIGHT" /> (<ph name="REFRESH_RATE" /> hertz)</translation>
@@ -4054,7 +4054,6 @@ Assurez-vous de ne pas dévoiler d'informations sensibles.</translation>
 <translation id="6056710589053485679">Actualisation normale</translation>
 <translation id="6057312498756061228">Impossible de vérifier si ce fichier est sûr, car il est trop volumineux. Vous ne pouvez pas ouvrir de fichiers de plus de 50 Mo.</translation>
 <translation id="6057381398996433816">L'utilisation des capteurs de mouvement ou de lumière a été bloquée pour ce site.</translation>
-<translation id="6058567592298841668">Plug-in de machine virtuelle : <ph name="PLUGIN_VM_NAME" /></translation>
 <translation id="6059652578941944813">Hiérarchie des certificats</translation>
 <translation id="6059925163896151826">Appareils USB</translation>
 <translation id="6061882183774845124">Envoyer le lien vers vos appareils</translation>
@@ -4483,6 +4482,7 @@ Assurez-vous de ne pas dévoiler d'informations sensibles.</translation>
 <translation id="6602956230557165253">Utilisez les touches fléchées gauche et droite pour naviguer.</translation>
 <translation id="6605847144724004692">Aucune note d'utilisateurs reçue.</translation>
 <translation id="6607831829715835317">Plus d'outi&amp;ls</translation>
+<translation id="6608012008902909398">Afficher plus d'informations sur la détection des logiciels indésirables</translation>
 <translation id="6611972847767394631">Retrouvez vos onglets ici</translation>
 <translation id="6612358246767739896">Contenu protégé</translation>
 <translation id="6615455863669487791">Démonstration</translation>

@@ -218,7 +218,7 @@
 <translation id="1251480783646955802">Esta acción borrará <ph name="TOTAL_USAGE" /> de datos almacenados por sitios y apps instaladas</translation>
 <translation id="1252987234827889034">Se produjo un error en el perfil</translation>
 <translation id="1254593899333212300">Conexión directa a Internet</translation>
-<translation id="1259152067760398571">La verificación de seguridad se ejecutó ayer</translation>
+<translation id="1259152067760398571">Ayer se ejecutó la verificación de seguridad</translation>
 <translation id="1260451001046713751">Siempre permitir ventanas emergentes y redireccionamientos de <ph name="HOST" /></translation>
 <translation id="1261380933454402672">Moderada</translation>
 <translation id="126156426083987769">Hubo un problema con las licencias del dispositivo en el modo de demostración.</translation>
@@ -584,7 +584,7 @@
 <translation id="1700845716982723710">Desactivar el Modo ambiente</translation>
 <translation id="1701062906490865540">Eliminar a esta persona</translation>
 <translation id="1703331064825191675">Ya no tendrás que preocuparte por tus contraseñas</translation>
-<translation id="1704970325597567340">La verificación de seguridad se ejecutó el <ph name="DATE" /></translation>
+<translation id="1704970325597567340">El <ph name="DATE" />, se ejecutó la verificación de seguridad</translation>
 <translation id="1706391837335750954">Agente de resolución de DNS disponible</translation>
 <translation id="1706586824377653884">Agregado por el administrador</translation>
 <translation id="1706625117072057435">Niveles de zoom</translation>
@@ -776,7 +776,7 @@
 <translation id="192494336144674234">Abrir con</translation>
 <translation id="1925017091976104802">Presiona <ph name="MODIFIER_KEY_DESCRIPTION" /> para copiar</translation>
 <translation id="1925021887439448749">Ingresa una dirección web personalizada</translation>
-<translation id="1925124445985510535">La verificación de seguridad se ejecutó a las <ph name="TIME" /></translation>
+<translation id="1925124445985510535">A las <ph name="TIME" />, se ejecutó la verificación de seguridad</translation>
 <translation id="1926339101652878330">Esta configuración se controla por medio de una política de la empresa. Ponte en contacto con tu administrador para obtener más información.</translation>
 <translation id="1927632033341042996">Dedo <ph name="NEW_FINGER_NUMBER" /></translation>
 <translation id="192817607445937251">PIN de bloqueo de pantalla</translation>
@@ -1903,7 +1903,7 @@ Para administrar la configuración de esta cuenta, instala la app de Family Lin
 <translation id="3341703758641437857">Permitir el acceso a las URL del archivo</translation>
 <translation id="3342361181740736773">"<ph name="TRIGGERING_EXTENSION_NAME" />" desea quitar esta extensión.</translation>
 <translation id="3345135638360864351">No se pudo enviar la solicitud de acceso al sitio a <ph name="NAME" />. Vuelve a intentarlo.</translation>
-<translation id="3345634917232014253">La verificación de seguridad se ejecutó recientemente</translation>
+<translation id="3345634917232014253">Hace un momento, se ejecutó la verificación de seguridad</translation>
 <translation id="3345886924813989455">No se ha encontrado el navegador compatible</translation>
 <translation id="3347086966102161372">Copiar dirección de la imagen</translation>
 <translation id="3348038390189153836">Se detectó un dispositivo removible.</translation>
@@ -3604,7 +3604,7 @@ Para administrar la configuración de esta cuenta, instala la app de Family Lin
 <translation id="5497251278400702716">Este archivo</translation>
 <translation id="5499313591153584299">Este archivo puede dañar el equipo.</translation>
 <translation id="5499453227627332024">Hay una actualización disponible para tu contenedor de Linux. También puedes actualizarlo más tarde desde la app de Configuración.</translation>
-<translation id="5500709606820808700">La verificación de seguridad se ejecutó hoy</translation>
+<translation id="5500709606820808700">Hoy se ejecutó la verificación de seguridad</translation>
 <translation id="5502500733115278303">Importado desde Firefox</translation>
 <translation id="5503982651688210506">Seguir permitiendo que <ph name="HOST" /> use y mueva la cámara y use el micrófono</translation>
 <translation id="5505264765875738116">Los sitios no podrán preguntarte si quieres recibir notificaciones</translation>
@@ -4050,7 +4050,6 @@ Para administrar la configuración de esta cuenta, instala la app de Family Lin
 <translation id="6056710589053485679">Volver a cargar normalmente</translation>
 <translation id="6057312498756061228">Este archivo es demasiado grande para hacer un control de seguridad. Se permite abrir archivos de hasta 50 MB.</translation>
 <translation id="6057381398996433816">Este sitio no tiene permiso para usar los sensores de movimiento y luz.</translation>
-<translation id="6058567592298841668">Máquina virtual de complementos: <ph name="PLUGIN_VM_NAME" /></translation>
 <translation id="6059652578941944813">Jerarquía de certificados</translation>
 <translation id="6059925163896151826">Dispositivos USB</translation>
 <translation id="6061882183774845124">Enviar vínculo a tus dispositivos</translation>
@@ -4256,7 +4255,7 @@ Para administrar la configuración de esta cuenta, instala la app de Family Lin
 <translation id="6309510305002439352">Se apagó el micrófono</translation>
 <translation id="6311220991371174222">No se puede iniciar Chrome porque se produjo un error al abrir tu perfil. Intenta reiniciar Chrome.</translation>
 <translation id="6312403991423642364">Error de red desconocido</translation>
-<translation id="6312567056350025599">{NUM_DAYS,plural, =1{La verificación de seguridad se ejecutó hace 1 día}other{La verificación de seguridad se ejecutó hace {NUM_DAYS} días}}</translation>
+<translation id="6312567056350025599">{NUM_DAYS,plural, =1{Se ejecutó hace 1 día la verificación de seguridad}other{Se ejecutó hace {NUM_DAYS} días la verificación de seguridad}}</translation>
 <translation id="6312638141433622592">Ofrece mostrar artículos en el modo de lectura, cuando sea compatible</translation>
 <translation id="6313641880021325787">SALIR DE RV</translation>
 <translation id="6313950457058510656">Desactivar la Conexión instantánea mediante dispositivo móvil</translation>
@@ -4479,6 +4478,7 @@ Para administrar la configuración de esta cuenta, instala la app de Family Lin
 <translation id="6602956230557165253">Utiliza las teclas de flecha hacia la izquierda y derecha para navegar.</translation>
 <translation id="6605847144724004692">Todavía no tiene una calificación de los usuarios.</translation>
 <translation id="6607831829715835317">Más herramientas</translation>
+<translation id="6608012008902909398">Mostrar detalles sobre la verificación de software en el dispositivo</translation>
 <translation id="6611972847767394631">Encuentra tus pestañas aquí</translation>
 <translation id="6612358246767739896">Contenido protegido</translation>
 <translation id="6615455863669487791">Mostrarme</translation>
@@ -5109,7 +5109,7 @@ Para administrar la configuración de esta cuenta, instala la app de Family Lin
 <translation id="7400839060291901923">Configurar la conexión en tu <ph name="PHONE_NAME" /></translation>
 <translation id="7401778920660465883">Descartar este mensaje</translation>
 <translation id="7403642243184989645">Descarga de recursos</translation>
-<translation id="7405938989981604410">{NUM_HOURS,plural, =1{La verificación de seguridad se ejecutó hace 1 hora}other{La verificación de seguridad se ejecutó hace {NUM_HOURS} horas}}</translation>
+<translation id="7405938989981604410">{NUM_HOURS,plural, =1{Se ejecutó hace 1 hora la verificación de seguridad}other{Se ejecutó hace {NUM_HOURS} horas la verificación de seguridad}}</translation>
 <translation id="740624631517654988">Ventana emergente (pop-up) bloqueada</translation>
 <translation id="7407430846095439694">Importar y vincular</translation>
 <translation id="7407504355934009739">La mayoría de las personas bloquean las notificaciones de este sitio</translation>

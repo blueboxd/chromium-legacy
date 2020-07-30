@@ -153,6 +153,9 @@
 
       如果不設定這項政策或設為 False，系統不會使用「快速轉換」。
       如果將這項政策設為 True，只要無線存取點支援「快速轉換」，系統便會使用該功能。</translation>
+<translation id="1240722269871366886">這項政策可讓 <ph name="PRODUCT_OS_NAME" />在使用者透過虛擬鍵盤或實體鍵盤輸入文字時提供表情符號建議。
+      如果將這項政策設為 True，系統會啟用這項功能，且使用者將可變更這項設定。
+      這項政策的預設值為 False，系統不會提供任何表情符號建議，且使用者無法覆寫這項設定。</translation>
 <translation id="1243570869342663665">控制安全網站成人內容篩選設定。</translation>
 <translation id="1257550411839719984">設定預設的下載目錄</translation>
 <translation id="1265053460044691532">限制透過 SAML 驗證的使用者可離線登入的時間</translation>
@@ -905,6 +908,7 @@
       如果未設定這項政策，或是將這項政策設定為「True」，使用者將可以使用網路檔案共用功能。
 
       如果將這項政策設定為「False」，則使用者將無法使用網路檔案共用功能。</translation>
+<translation id="2435052056904485763">Kerberos 委派伺服器允許清單</translation>
 <translation id="2440773021691931148">回報與電源相關的硬體統計資料和 ID。
 
       如果將這項政策設為 False 或不予設定，系統將不會回報統計資料。
@@ -1684,17 +1688,6 @@
 <translation id="355118380775352753">要在替代瀏覽器中開啟的網站</translation>
 <translation id="3554498762428140109">啟用原生視窗遮蔽功能</translation>
 <translation id="3554984410014457319">允許 Google 助理聽取語音啟動字詞</translation>
-<translation id="3557208865710006939">這項政策會強制啟用指定語言的拼字檢查功能。系統會忽略該清單中無法辨識的語言。
-
-      如果啟用這項政策，除了使用者已啟用拼字檢查功能的語言外，系統還會針對指定的語言啟用拼字檢查功能。
-
-      如果停用或不設定這項政策，則使用者的拼字檢查偏好設定不會受到任何影響。
-
-      如果將 <ph name="SPELLCHECK_ENABLED_POLICY_NAME" /> 政策設為 False，這項政策就不會有任何作用。
-
-      如果某個語言同時列在這項政策和 <ph name="SPELLCHECK_LANGUAGE_BLACKLIST_POLICY_NAME" /> 政策中，系統會優先執行這項政策，為該語言啟用拼字檢查功能。
-
-      拼字檢查功能目前支援的語言如下：af、bg、ca、cs、da、de、el、en-AU、en-CA、en-GB、en-US、es、es-419、es-AR、es-ES、es-MX、es-US、et、fa、fo、fr、he、hi、hr、hu、id、it、ko、lt、lv、nb、nl、pl、pt-BR、pt-PT、ro、ru、sh、sk、sl、sq、sr、sv、ta、tg、tr、uk、vi。</translation>
 <translation id="356579196325389849">使用者可以設定 Chrome 作業系統發布版本</translation>
 <translation id="3575011234198230041">HTTP 驗證</translation>
 <translation id="3577251398714997599">含侵入式廣告的網站的廣告設定</translation>
@@ -2354,6 +2347,21 @@
       如果設為「強制」，使用者只能以無痕模式開啟網頁。請注意，「強制」選項不適用於 Chrome Android 版。</translation>
 <translation id="4600786265870346112">啟用大型游標</translation>
 <translation id="4604931264910482931">設定內建訊息傳遞黑名單</translation>
+<translation id="4607416370554533118">你可以透過這項政策建立網址模式清單，用於指定 Chrome 可自動選取用戶端憑證的網站。政策的值是字串化的 JSON 條目陣列，每個條目的格式都是 <ph name="AUTO_SELECT_CERTIFICATE_FOR_URLS_EXAMPLE" />，其中 <ph name="URL_PATTERN_PLACEHOLDER" /> 是內容設定格式。<ph name="FILTER_PLACEHOLDER" /> 會限制瀏覽器可自動選取的用戶端憑證。無論是否設定篩選器，瀏覽器都只會選取符合伺服器憑證要求的憑證。
+
+      <ph name="FILTER_PLACEHOLDER" /> 區段的實際應用範例：
+
+      * 如果將 <ph name="FILTER_PLACEHOLDER" /> 設為 <ph name="AUTO_SELECT_CERTIFICATE_FOR_URLS_FILTER_EXAMPLE" />，瀏覽器只會選取由 CommonName <ph name="ISSUER_CN_PLACEHOLDER" /> 憑證所核發的用戶端憑證。
+
+      * 如果 <ph name="FILTER_PLACEHOLDER" /> 包含<ph name="ISSUER_STRING_VALUE" />和<ph name="SUBJECT_STRING_VALUE" />區段，則瀏覽器只會選取同時符合兩個條件的用戶端憑證。
+
+      * 如果 <ph name="FILTER_PLACEHOLDER" /> 包含值為<ph name="FILTER_STRING_ORGANIZATION" />的<ph name="SUBJECT_STRING_VALUE" />區段，憑證必須有至少一個機構與指定值相符，才會納入選取範圍。
+
+      * 如果 <ph name="FILTER_PLACEHOLDER" /> 包含值為<ph name="FILTER_STRING_ORGANIZATIONAL_UNIT" />的<ph name="SUBJECT_STRING_VALUE" />區段，憑證必須有至少一個機構單位與指定值相符，才會納入選取範圍。
+
+      * 如果將 <ph name="FILTER_PLACEHOLDER" /> 設為 <ph name="EMPTY_DICTIONARY" />，則瀏覽器在選取用戶端憑證時不會受到額外限制。請注意，由網路伺服器所提供的篩選器仍然適用。
+
+      如果未設定這項政策，Chrome 不會自動選取任何網站的用戶端憑證。</translation>
 <translation id="4617338332148204752">在 <ph name="PRODUCT_FRAME_NAME" /> 內略過中繼標記檢查</translation>
 <translation id="462134014569484584">這項政策會為這部裝置指定 <ph name="PLUGIN_VM_NAME" /> 授權金鑰。</translation>
 <translation id="4625915093043961294">設定擴充功能安裝許可清單</translation>
@@ -2470,6 +2478,13 @@
 
       如果設定這項政策，使用者將無法變更。如果未設定，使用者可自行決定是否要自動隱藏檔案櫃。</translation>
 <translation id="4812714598405913256">設定 DeviceMinimumVersion 政策的自動更新期限訊息</translation>
+<translation id="481492486938162195">這項政策已遭淘汰，請改用「<ph name="AUTH_NEGOCIATE_DELEGATE_ALLOWLIST_POLICY_NAME" />」政策。
+
+          <ph name="PRODUCT_NAME" /> 可委派的目標伺服器。
+
+          請以半形逗號分隔伺服器名稱，可使用萬用字元 (*)。
+
+          如果不設定這項政策，即使 <ph name="PRODUCT_NAME" /> 偵測到內部網路伺服器，也不會委派使用者憑證。</translation>
 <translation id="4816674326202173458">允許企業使用者成為主要或次要使用者 (非管理化環境中使用者的預設行為)</translation>
 <translation id="4826326557828204741">使用電池電源的情況下，系統在達到閒置延遲時間時所採取的動作</translation>
 <translation id="482803100714220060">顯示完整網址</translation>
@@ -2930,7 +2945,7 @@
 
       將這項政策設為非空白的字串時：
       如果 <ph name="DEVICE_MINIMUM_VERSION_POLICY_NAME" /> 政策中提及的警告時間已過，且系統已禁止任何使用者登入裝置，登入畫面上即會顯示這則訊息。
-      如果 <ph name="DEVICE_MINIMUM_VERSION_POLICY_NAME" /> 政策中提及的警告時間還沒到，系統會在使用者登入後，於 Chrome 管理頁面上顯示這則訊息。
+      如果 <ph name="DEVICE_MINIMUM_VERSION_POLICY_NAME" /> 政策中提及的警告時間還沒過，系統會在使用者登入後，於 Chrome 管理頁面上顯示這則訊息。
 
       如果不設定這項政策或設為空白，系統會在以上兩種情況中，向使用者顯示預設的自動更新期限訊息。
       自動更新期限訊息必須是不包含任何格式設定的純文字，而且不可有任何標記。</translation>
@@ -5246,6 +5261,13 @@
       如果將這項政策設為 False 或不去設定，系統可能啟用 M81、M82 和 M83 版的表單控制項元素，也可能使用舊版元素。
 
       這項政策將在 Chrome 第 84 版後移除。</translation>
+<translation id="8937562488500723400">控管是否要按照 KDC 政策的核准結果來決定 <ph name="KERBEROS" /> 票證的委派設定。
+
+          如果這項政策的設定為 True，HTTP 驗證會遵循 KDC 政策的核准結果。只有在 KDC 為服務票證設定 <ph name="OK_AS_DELEGATE" /> 時，Chrome 才會委派憑證。詳情請見 https://tools.ietf.org/html/rfc5896.html。服務也必須符合「AuthNegotiateDelegateAllowlist」政策。
+
+          如果不設定這項政策或設為 False，支援平台會忽略 KDC 政策，只遵循「AuthNegotiateDelegateAllowlist」政策。
+
+          在 Windows 上，系統一律會遵循 KDC 政策。</translation>
 <translation id="8938932171964587769">這項政策自 M69 起已淘汰，請改用 OverrideSecurityRestrictionsOnInsecureOrigin。
 
 這項政策可指定要視為安全內容的來源 (網址) 或主機名稱模式 (例如「*.example.com」)，清單中的內容來源將不會套用針對不安全來源所設的安全性限制。
@@ -5349,6 +5371,27 @@
       如果設定這項政策，無論使用者是否指定 --disk-cache-size 旗標，<ph name="PRODUCT_NAME" /> 都會使用你提供的快取大小 (MB 以下的值會進位為 MB)。
 
       如果未設定，<ph name="PRODUCT_NAME" /> 會使用預設大小，使用者可透過 --disk-cache-size 旗標來變更這項設定。</translation>
+<translation id="9057444687284972605">你可以設定網址模式清單，指定在 SAML 流程代管架構的登入畫面中，系統要為哪些網站自動選取用戶端憑證 (如果網站要求憑證的話)。實際應用範例：設定要提供給 SAML IdP 的裝置通用憑證。
+
+      政策的值是字串化的 JSON 條目陣列，每個條目的格式都是 <ph name="AUTO_SELECT_CERTIFICATE_FOR_URLS_EXAMPLE" />，其中 <ph name="URL_PATTERN_PLACEHOLDER" /> 是內容設定格式。<ph name="FILTER_PLACEHOLDER" /> 會限制瀏覽器可自動選取的用戶端憑證。無論是否設定篩選器，瀏覽器都只會選取符合伺服器憑證要求的憑證。
+
+      <ph name="FILTER_PLACEHOLDER" /> 區段的實際應用範例：
+
+      * 如果將 <ph name="FILTER_PLACEHOLDER" /> 設為 <ph name="AUTO_SELECT_CERTIFICATE_FOR_URLS_FILTER_EXAMPLE" />，瀏覽器只會選取由 CommonName <ph name="ISSUER_CN_PLACEHOLDER" /> 憑證所核發的用戶端憑證。
+
+      * 如果 <ph name="FILTER_PLACEHOLDER" /> 包含<ph name="ISSUER_STRING_VALUE" />和<ph name="SUBJECT_STRING_VALUE" />區段，則瀏覽器只會選取同時符合兩個條件的用戶端憑證。
+
+      * 如果 <ph name="FILTER_PLACEHOLDER" /> 包含值為<ph name="FILTER_STRING_ORGANIZATION" />的<ph name="SUBJECT_STRING_VALUE" />區段，憑證必須有至少一個機構與指定值相符，才會納入選取範圍。
+
+      * 如果 <ph name="FILTER_PLACEHOLDER" /> 包含值為<ph name="FILTER_STRING_ORGANIZATIONAL_UNIT" />的<ph name="SUBJECT_STRING_VALUE" />區段，憑證必須有至少一個機構單位與指定值相符，才會納入選取範圍。
+
+      * 如果將 <ph name="FILTER_PLACEHOLDER" /> 設為 <ph name="EMPTY_DICTIONARY" />，則瀏覽器在選取用戶端憑證時不會受到額外限制。請注意，由網路伺服器所提供的篩選器仍然適用。
+
+
+
+      如果不設定這項政策，系統不會為任何網站自動選取憑證。
+
+      如果想進一步瞭解有效的網址模式，請參閱 https://cloud.google.com/docs/chrome-enterprise/policies/url-patterns。</translation>
 <translation id="9062348747995618422">你可以透過這項政策設定網址模式清單，用於指定可執行 <ph name="FLASH_PLUGIN_NAME" /> 外掛程式的網站。
 
       如果未設定這項政策，系統會針對所有網站套用 <ph name="DEFAULT_PLUGINS_SETTING_POLICY_NAME" /> 政策 (如果已設定)。否則系統會套用使用者的個人設定。

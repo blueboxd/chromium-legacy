@@ -24,6 +24,7 @@
 #include "chrome/credential_provider/gaiacp/mdm_utils.h"
 #include "chrome/credential_provider/gaiacp/os_user_manager.h"
 #include "chrome/credential_provider/gaiacp/reg_utils.h"
+#include "chrome/credential_provider/gaiacp/user_policies_manager.h"
 #include "chrome/credential_provider/gaiacp/win_http_url_fetcher.h"
 
 namespace credential_provider {
@@ -231,14 +232,20 @@ bool AssociatedUserValidator::IsOnlineLoginStale(
   base::StringToInt64(last_login_millis, &last_login_millis_int64);
 
   DWORD validity_period_days;
-  hr = GetGlobalFlag(base::UTF8ToUTF16(kKeyValidityPeriodInDays),
-                     &validity_period_days);
-  if (FAILED(hr)) {
-    LOGFN(VERBOSE) << "GetGlobalFlag for " << kKeyValidityPeriodInDays
-                   << " failed. hr=" << putHR(hr);
-    // Fallback to the less obstructive option to not enforce login via google
-    // when fetching the registry entry fails.
-    return false;
+  if (UserPoliciesManager::Get()->CloudPoliciesEnabled()) {
+    UserPolicies user_policies;
+    UserPoliciesManager::Get()->GetUserPolicies(sid, &user_policies);
+    validity_period_days = user_policies.validity_period_days;
+  } else {
+    hr = GetGlobalFlag(base::UTF8ToUTF16(kKeyValidityPeriodInDays),
+                       &validity_period_days);
+    if (FAILED(hr)) {
+      LOGFN(VERBOSE) << "GetGlobalFlag for " << kKeyValidityPeriodInDays
+                     << " failed. hr=" << putHR(hr);
+      // Fallback to the less obstructive option to not enforce login via google
+      // when fetching the registry entry fails.
+      return false;
+    }
   }
 
   int64_t validity_period_in_millis =
@@ -531,9 +538,9 @@ AssociatedUserValidator::GetAuthEnforceReason(const base::string16& sid) {
     return AssociatedUserValidator::EnforceAuthReason::ONLINE_LOGIN_STALE;
   }
 
-  // If mdm enrollment is needed, then force a reauth for all users so
-  // that they enroll.
-  if (NeedsToEnrollWithMdm())
+  // Force a reauth only for this user if mdm enrollment is needed, so that they
+  // enroll.
+  if (NeedsToEnrollWithMdm(sid))
     return AssociatedUserValidator::EnforceAuthReason::NOT_ENROLLED_WITH_MDM;
 
   if (PasswordRecoveryEnabled()) {

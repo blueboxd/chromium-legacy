@@ -566,6 +566,7 @@ TEST_F(ServiceWorkerContainerHostTest, Controller) {
   scoped_refptr<ServiceWorkerVersion> version = new ServiceWorkerVersion(
       registration1_.get(), GURL("https://www.example.com/sw.js"),
       blink::mojom::ScriptType::kClassic, 1 /* version_id */,
+      mojo::PendingRemote<storage::mojom::ServiceWorkerLiveVersionRef>(),
       helper_->context()->AsWeakPtr());
   version->set_fetch_handler_existence(
       ServiceWorkerVersion::FetchHandlerExistence::EXISTS);
@@ -602,6 +603,7 @@ TEST_F(ServiceWorkerContainerHostTest, UncontrolledWithMatchingRegistration) {
   scoped_refptr<ServiceWorkerVersion> version = new ServiceWorkerVersion(
       registration1_.get(), GURL("https://www.example.com/sw.js"),
       blink::mojom::ScriptType::kClassic, 1 /* version_id */,
+      mojo::PendingRemote<storage::mojom::ServiceWorkerLiveVersionRef>(),
       helper_->context()->AsWeakPtr());
   registration1_->SetInstallingVersion(version);
 
@@ -686,6 +688,7 @@ TEST_F(ServiceWorkerContainerHostTest, AllowsServiceWorker) {
       base::MakeRefCounted<ServiceWorkerVersion>(
           registration1_.get(), GURL("https://www.example.com/sw.js"),
           blink::mojom::ScriptType::kClassic, 1 /* version_id */,
+          mojo::PendingRemote<storage::mojom::ServiceWorkerLiveVersionRef>(),
           helper_->context()->AsWeakPtr());
   registration1_->SetActiveVersion(version);
 
@@ -1142,7 +1145,9 @@ void ServiceWorkerContainerHostTest::TestBackForwardCachedClientsAreNotExposed(
     scoped_refptr<ServiceWorkerVersion> version =
         base::MakeRefCounted<ServiceWorkerVersion>(
             registration1_.get(), url, blink::mojom::ScriptType::kClassic,
-            1 /* version_id */, helper_->context()->AsWeakPtr());
+            1 /* version_id */,
+            mojo::PendingRemote<storage::mojom::ServiceWorkerLiveVersionRef>(),
+            helper_->context()->AsWeakPtr());
     registration1_->SetActiveVersion(version);
 
     ServiceWorkerRemoteContainerEndpoint remote_endpoint;
@@ -1244,6 +1249,7 @@ TEST_F(ServiceWorkerContainerHostTestWithBackForwardCache, ControlleeEvents) {
   scoped_refptr<ServiceWorkerVersion> version = new ServiceWorkerVersion(
       registration1_.get(), GURL("https://www.example.com/sw.js"),
       blink::mojom::ScriptType::kClassic, 1 /* version_id */,
+      mojo::PendingRemote<storage::mojom::ServiceWorkerLiveVersionRef>(),
       helper_->context()->AsWeakPtr());
   version->set_fetch_handler_existence(
       ServiceWorkerVersion::FetchHandlerExistence::EXISTS);
@@ -1298,6 +1304,7 @@ TEST_F(ServiceWorkerContainerHostTest, UpdateServiceWorkerOnDestruction) {
   auto version1 = base::MakeRefCounted<ServiceWorkerVersion>(
       registration1_.get(), GURL("https://www.example.com/sw.js"),
       blink::mojom::ScriptType::kClassic, 1 /* version_id */,
+      mojo::PendingRemote<storage::mojom::ServiceWorkerLiveVersionRef>(),
       helper_->context()->AsWeakPtr());
   version1->set_fetch_handler_existence(
       ServiceWorkerVersion::FetchHandlerExistence::EXISTS);
@@ -1307,6 +1314,7 @@ TEST_F(ServiceWorkerContainerHostTest, UpdateServiceWorkerOnDestruction) {
   auto version2 = base::MakeRefCounted<ServiceWorkerVersion>(
       registration2_.get(), GURL("https://www.example.com/sw.js"),
       blink::mojom::ScriptType::kClassic, 2 /* version_id */,
+      mojo::PendingRemote<storage::mojom::ServiceWorkerLiveVersionRef>(),
       helper_->context()->AsWeakPtr());
   version2->set_fetch_handler_existence(
       ServiceWorkerVersion::FetchHandlerExistence::EXISTS);
@@ -1335,6 +1343,7 @@ TEST_F(ServiceWorkerContainerHostTest, HintToUpdateServiceWorker) {
   auto version1 = base::MakeRefCounted<ServiceWorkerVersion>(
       registration1_.get(), GURL("https://www.example.com/sw.js"),
       blink::mojom::ScriptType::kClassic, 1 /* version_id */,
+      mojo::PendingRemote<storage::mojom::ServiceWorkerLiveVersionRef>(),
       helper_->context()->AsWeakPtr());
   version1->set_fetch_handler_existence(
       ServiceWorkerVersion::FetchHandlerExistence::EXISTS);
@@ -1373,6 +1382,7 @@ TEST_F(ServiceWorkerContainerHostTest,
   auto version1 = base::MakeRefCounted<ServiceWorkerVersion>(
       registration1_.get(), GURL("https://www.example.com/sw.js"),
       blink::mojom::ScriptType::kClassic, 1 /* version_id */,
+      mojo::PendingRemote<storage::mojom::ServiceWorkerLiveVersionRef>(),
       helper_->context()->AsWeakPtr());
   version1->set_fetch_handler_existence(
       ServiceWorkerVersion::FetchHandlerExistence::EXISTS);
@@ -1400,6 +1410,7 @@ TEST_F(ServiceWorkerContainerHostTest, HintToUpdateServiceWorkerMultiple) {
   auto version1 = base::MakeRefCounted<ServiceWorkerVersion>(
       registration1_.get(), GURL("https://www.example.com/sw.js"),
       blink::mojom::ScriptType::kClassic, 1 /* version_id */,
+      mojo::PendingRemote<storage::mojom::ServiceWorkerLiveVersionRef>(),
       helper_->context()->AsWeakPtr());
   version1->set_fetch_handler_existence(
       ServiceWorkerVersion::FetchHandlerExistence::EXISTS);
@@ -1409,6 +1420,7 @@ TEST_F(ServiceWorkerContainerHostTest, HintToUpdateServiceWorkerMultiple) {
   auto version2 = base::MakeRefCounted<ServiceWorkerVersion>(
       registration2_.get(), GURL("https://www.example.com/sw.js"),
       blink::mojom::ScriptType::kClassic, 2 /* version_id */,
+      mojo::PendingRemote<storage::mojom::ServiceWorkerLiveVersionRef>(),
       helper_->context()->AsWeakPtr());
   version2->set_fetch_handler_existence(
       ServiceWorkerVersion::FetchHandlerExistence::EXISTS);
@@ -1418,6 +1430,7 @@ TEST_F(ServiceWorkerContainerHostTest, HintToUpdateServiceWorkerMultiple) {
   auto version3 = base::MakeRefCounted<ServiceWorkerVersion>(
       registration3_.get(), GURL("https://other.example.com/sw.js"),
       blink::mojom::ScriptType::kClassic, 3 /* version_id */,
+      mojo::PendingRemote<storage::mojom::ServiceWorkerLiveVersionRef>(),
       helper_->context()->AsWeakPtr());
   version3->set_fetch_handler_existence(
       ServiceWorkerVersion::FetchHandlerExistence::EXISTS);

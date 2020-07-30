@@ -309,7 +309,7 @@ void SupervisedUserService::AddPermissionRequestCreator(
 SupervisedUserService::SupervisedUserService(Profile* profile)
     : profile_(profile),
       active_(false),
-      delegate_(NULL),
+      delegate_(nullptr),
       is_profile_active_(false),
       did_init_(false),
       did_shutdown_(false),

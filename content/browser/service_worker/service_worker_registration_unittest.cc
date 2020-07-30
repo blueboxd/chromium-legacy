@@ -250,11 +250,15 @@ TEST_F(ServiceWorkerRegistrationTest, SetAndUnsetVersions) {
   scoped_refptr<ServiceWorkerVersion> version_1 =
       base::MakeRefCounted<ServiceWorkerVersion>(
           registration.get(), kScript, blink::mojom::ScriptType::kClassic,
-          version_1_id, context()->AsWeakPtr());
+          version_1_id,
+          mojo::PendingRemote<storage::mojom::ServiceWorkerLiveVersionRef>(),
+          context()->AsWeakPtr());
   scoped_refptr<ServiceWorkerVersion> version_2 =
       base::MakeRefCounted<ServiceWorkerVersion>(
           registration.get(), kScript, blink::mojom::ScriptType::kClassic,
-          version_2_id, context()->AsWeakPtr());
+          version_2_id,
+          mojo::PendingRemote<storage::mojom::ServiceWorkerLiveVersionRef>(),
+          context()->AsWeakPtr());
 
   RegistrationListener listener;
   registration->AddListener(&listener);
@@ -1264,11 +1268,15 @@ TEST_F(ServiceWorkerRegistrationObjectHostTest, SetVersionAttributes) {
   scoped_refptr<ServiceWorkerVersion> version_1 =
       base::MakeRefCounted<ServiceWorkerVersion>(
           registration, kScriptUrl, blink::mojom::ScriptType::kClassic,
-          version_1_id, context()->AsWeakPtr());
+          version_1_id,
+          mojo::PendingRemote<storage::mojom::ServiceWorkerLiveVersionRef>(),
+          context()->AsWeakPtr());
   scoped_refptr<ServiceWorkerVersion> version_2 =
       base::MakeRefCounted<ServiceWorkerVersion>(
           registration, kScriptUrl, blink::mojom::ScriptType::kClassic,
-          version_2_id, context()->AsWeakPtr());
+          version_2_id,
+          mojo::PendingRemote<storage::mojom::ServiceWorkerLiveVersionRef>(),
+          context()->AsWeakPtr());
 
   // Set an active worker.
   registration->SetActiveVersion(version_1);

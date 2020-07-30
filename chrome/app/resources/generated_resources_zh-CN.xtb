@@ -4048,7 +4048,6 @@
 <translation id="6056710589053485679">正常重新加载</translation>
 <translation id="6057312498756061228">这个文件太大，无法进行安全检查。您只能打开不超过 50 MB 的文件。</translation>
 <translation id="6057381398996433816">此网站已被禁止使用动态传感器和光传感器。</translation>
-<translation id="6058567592298841668">插件虚拟机：<ph name="PLUGIN_VM_NAME" /></translation>
 <translation id="6059652578941944813">证书层次结构</translation>
 <translation id="6059925163896151826">USB 设备</translation>
 <translation id="6061882183774845124">将链接发送到您的设备</translation>
@@ -4477,6 +4476,7 @@
 <translation id="6602956230557165253">使用左右箭头键进行导航。</translation>
 <translation id="6605847144724004692">还没有任何用户给出评分。</translation>
 <translation id="6607831829715835317">更多工具(&amp;L)</translation>
+<translation id="6608012008902909398">显示与设备软件检查有关的详情</translation>
 <translation id="6611972847767394631">您可在此处找到自己的标签页</translation>
 <translation id="6612358246767739896">受保护的内容</translation>
 <translation id="6615455863669487791">演示一下</translation>

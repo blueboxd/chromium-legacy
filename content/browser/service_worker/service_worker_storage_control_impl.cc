@@ -132,12 +132,20 @@ void ServiceWorkerStorageControlImpl::Bind(
 void ServiceWorkerStorageControlImpl::OnNoLiveVersion(int64_t version_id) {
   auto it = live_versions_.find(version_id);
   DCHECK(it != live_versions_.end());
-  storage_->PurgeResources(it->second->purgeable_resources());
+  if (purge_resources_when_no_live_versions_ &&
+      it->second->purgeable_resources().size() > 0) {
+    storage_->PurgeResources(it->second->purgeable_resources());
+  }
   live_versions_.erase(it);
 }
 
 void ServiceWorkerStorageControlImpl::LazyInitializeForTest() {
   storage_->LazyInitializeForTest();
+}
+
+void ServiceWorkerStorageControlImpl::
+    EnableResourcePurgingOnNoLiveVersionForTest() {
+  purge_resources_when_no_live_versions_ = true;
 }
 
 void ServiceWorkerStorageControlImpl::GetRegisteredOrigins(
@@ -472,9 +480,11 @@ ServiceWorkerStorageControlImpl::CreateLiveVersionReference(
 void ServiceWorkerStorageControlImpl::MaybePurgeResources(
     int64_t version_id,
     const std::vector<int64_t>& purgeable_resources) {
-  if (version_id == blink::mojom::kInvalidServiceWorkerVersionId ||
-      purgeable_resources.size() == 0)
+  if (!purge_resources_when_no_live_versions_ ||
+      version_id == blink::mojom::kInvalidServiceWorkerVersionId ||
+      purgeable_resources.size() == 0) {
     return;
+  }
 
   if (base::Contains(live_versions_, version_id)) {
     live_versions_[version_id]->set_purgeable_resources(

@@ -466,6 +466,8 @@ void LabelButton::AddedToWidget() {
     paint_as_active_subscription_ =
         GetWidget()->RegisterPaintAsActiveChangedCallback(base::BindRepeating(
             &LabelButton::VisualStateChanged, base::Unretained(this)));
+    // Set the initial state correctly.
+    VisualStateChanged();
   }
 }
 
@@ -546,10 +548,11 @@ gfx::Size LabelButton::GetUnclampedSizeWithoutLabel() const {
 }
 
 Button::ButtonState LabelButton::GetVisualState() const {
-  const bool force_disabled =
-      PlatformStyle::kInactiveWidgetControlsAppearDisabled && GetWidget() &&
-      !GetWidget()->ShouldPaintAsActive();
-  return force_disabled ? STATE_DISABLED : GetState();
+  const auto* widget = GetWidget();
+  if (PlatformStyle::kInactiveWidgetControlsAppearDisabled && widget &&
+      widget->CanActivate() && !widget->ShouldPaintAsActive())
+    return STATE_DISABLED;
+  return GetState();
 }
 
 void LabelButton::VisualStateChanged() {

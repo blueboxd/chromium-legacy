@@ -7,7 +7,6 @@
 #include "base/bind.h"
 #include "chrome/browser/data_reduction_proxy/data_reduction_proxy_chrome_settings.h"
 #include "chrome/browser/data_reduction_proxy/data_reduction_proxy_chrome_settings_factory.h"
-#include "chrome/browser/prerender/isolated/isolated_prerender_origin_prober.h"
 #include "chrome/browser/prerender/isolated/isolated_prerender_params.h"
 #include "chrome/browser/prerender/isolated/isolated_prerender_proxy_configurator.h"
 #include "chrome/browser/prerender/isolated/isolated_prerender_subresource_manager.h"
@@ -20,8 +19,7 @@
 IsolatedPrerenderService::IsolatedPrerenderService(Profile* profile)
     : profile_(profile),
       proxy_configurator_(
-          std::make_unique<IsolatedPrerenderProxyConfigurator>()),
-      origin_prober_(std::make_unique<IsolatedPrerenderOriginProber>(profile)) {
+          std::make_unique<IsolatedPrerenderProxyConfigurator>()) {
   DataReductionProxyChromeSettings* drp_settings =
       DataReductionProxyChromeSettingsFactory::GetForBrowserContext(profile_);
   if (drp_settings)

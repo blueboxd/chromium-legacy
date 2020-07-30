@@ -11,6 +11,8 @@ source_set("elements") {
     "fade_truncating_label.mm",
     "gray_highlight_button.h",
     "gray_highlight_button.mm",
+    "home_waiting_view.h",
+    "home_waiting_view.mm",
     "selector_picker_presentation_controller.h",
     "selector_picker_presentation_controller.mm",
     "selector_picker_view_controller.h",
@@ -28,6 +30,8 @@ source_set("elements") {
   deps = [
     "//base",
     "//ios/chrome/browser/ui:feature_flags",
+    "//ios/chrome/browser/ui/colors",
+    "//ios/chrome/browser/ui/material_components",
     "//ios/chrome/browser/ui/util",
     "//ios/chrome/common/ui/colors",
   ]

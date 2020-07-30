@@ -353,7 +353,7 @@ bool ChromeNativeAppWindowViewsAuraAsh::GetAcceleratorForCommandId(
 ///////////////////////////////////////////////////////////////////////////////
 // ExclusiveAccessContext implementation:
 Profile* ChromeNativeAppWindowViewsAuraAsh::GetProfile() {
-  return Profile::FromBrowserContext(web_view()->browser_context());
+  return Profile::FromBrowserContext(web_view()->GetBrowserContext());
 }
 
 bool ChromeNativeAppWindowViewsAuraAsh::IsFullscreen() const {

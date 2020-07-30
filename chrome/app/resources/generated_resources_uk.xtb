@@ -2656,7 +2656,7 @@
 <translation id="4249373718504745892">Доступ цієї сторінки до ваших камери та мікрофона заблоковано.</translation>
 <translation id="424963718355121712">Додатки мають встановлюватися з хосту, на якому вони працюють</translation>
 <translation id="4250229828105606438">Знімок екрана</translation>
-<translation id="4250680216510889253">ні</translation>
+<translation id="4250680216510889253">Ні</translation>
 <translation id="4252035718262427477">Веб-сторінка, один файл (веб-пакет)</translation>
 <translation id="4252852543720145436">Ідентифікатори захищеного вмісту</translation>
 <translation id="4252899949534773101">Bluetooth вимкнено</translation>
@@ -4053,7 +4053,6 @@
 <translation id="6056710589053485679">Звичайне перезавантаження</translation>
 <translation id="6057312498756061228">Не вдається перевірити безпеку цього файлу, оскільки він завеликий. Ви можете відкривати файли розміром до 50 МБ.</translation>
 <translation id="6057381398996433816">Цьому сайту заборонено використовувати датчики руху та світла.</translation>
-<translation id="6058567592298841668">Віртуальна машина плагіна: <ph name="PLUGIN_VM_NAME" /></translation>
 <translation id="6059652578941944813">Ієрархія сертифіката</translation>
 <translation id="6059925163896151826">Пристрої USB</translation>
 <translation id="6061882183774845124">Надіслати посилання на пристрої</translation>
@@ -4482,6 +4481,7 @@
 <translation id="6602956230557165253">Використовуйте ліву та праву клавіші зі стрілками для навігації.</translation>
 <translation id="6605847144724004692">Ще немає оцінок користувачів.</translation>
 <translation id="6607831829715835317">Інші інстру&amp;менти</translation>
+<translation id="6608012008902909398">Докладніше про перевірку програмного забезпечення на пристрої</translation>
 <translation id="6611972847767394631">Знайдіть свої вкладки тут</translation>
 <translation id="6612358246767739896">Захищений вміст</translation>
 <translation id="6615455863669487791">Показати</translation>

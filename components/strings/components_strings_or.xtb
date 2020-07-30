@@ -123,6 +123,7 @@
 <translation id="1430915738399379752">ପ୍ରିଣ୍ଟ କରନ୍ତୁ</translation>
 <translation id="1442386063175183758">ଡାହାଣ ପଟରେ ଗେଟ୍ ଫୋଲ୍ଡ</translation>
 <translation id="1442987760062738829">ପଞ୍ଚ୍</translation>
+<translation id="1447067628680007684">(x86_64)</translation>
 <translation id="1453974140256777690">ଆପଣ ପେଷ୍ଟ କିମ୍ବା ଆଟାଚ୍ କରିଥିବା ଟେକ୍ସଟକୁ ବିଶ୍ଳେଷଣ ପାଇଁ Google Cloud କିମ୍ବା ତୃତୀୟ ପକ୍ଷଗୁଡ଼ିକୁ ପଠାଯାଏ। ଉଦାହରଣ ସ୍ଵରୂପ, ଏହାକୁ ସମ୍ବେଦନଶୀଳ ଡାଟା ପାଇଁ ସ୍କାନ୍ କରାଯାଇପାରେ।</translation>
 <translation id="1455413310270022028">ଇରେଜର୍</translation>
 <translation id="1462245070427461050">JIS B9</translation>
@@ -1131,6 +1132,7 @@
 <translation id="5705882733397021510">ପଛକୁ ଫେରନ୍ତୁ</translation>
 <translation id="57094364128775171">ଜଟିଳ ପାସ୍‌ୱର୍ଡ ପରାମର୍ଶ କରନ୍ତୁ…</translation>
 <translation id="5710435578057952990">ଏହି ସାଇଟ୍ ଗୋଟିକର ପରିଚୟକରଣ ଯାଞ୍ଚ କରାଯାଇ ନାହିଁ ।</translation>
+<translation id="571403275720188526">(arm64)</translation>
 <translation id="5720705177508910913">ବର୍ତ୍ତମାନର ଉପଯୋଗକର୍ତ୍ତା</translation>
 <translation id="5728056243719941842">C5 (ଏନଭଲପ୍)</translation>
 <translation id="5730040223043577876">ଯଦି ଆପଣ ଆପଣଙ୍କର ପାସ୍‍ୱର୍ଡ ଅନ୍ୟ ସାଇଟ୍‍‍ରେ ପୁନଃବ୍ୟବହାର କରିଛନ୍ତି, ତେବେ Chrome ଏହାକୁ ରିସେଟ୍ କରିବା ପାଇଁ ସୁପାରିଶ୍ କରୁଛି।</translation>
@@ -1180,6 +1182,7 @@
 <translation id="5921639886840618607">Google ଆକାଉଣ୍ଟରେ କାର୍ଡ ସେଭ୍‌ କରିବେ?</translation>
 <translation id="5922853866070715753">ପ୍ରାୟ ହୋଇଗଲାଣି!</translation>
 <translation id="5932224571077948991">ସାଇଟ୍, ଅନଧିକାର ପ୍ରବେଶ କରିଥିବା କିମ୍ବା ବିଭ୍ରାନ୍ତିକର ବିଜ୍ଞାପନ ଦେଖାଉଛି</translation>
+<translation id="5938793338444039872">ଟ୍ରୟ</translation>
 <translation id="5946937721014915347"><ph name="SITE_NAME" /> ଖୋଲୁଛି…</translation>
 <translation id="5951495562196540101">ଉପଭୋକ୍ତାଙ୍କ ଆକାଉଣ୍ଟ (ପ୍ୟାକେଜ୍‌ ହୋ‍ଇଥିବା ଲାଇସେନ୍ସ ଉପଲବ୍ଧ ଅଛି ) ନାମାଙ୍କନ କରାଯାଇପାରିବ ନାହିଁ।</translation>
 <translation id="5967592137238574583">ଯୋଗାଯୋଗ ସୂଚନା ଏଡିଟ୍ କରନ୍ତୁ</translation>
@@ -1346,6 +1349,7 @@
 <translation id="6646269444027925224">{COUNT,plural, =0{କୌଣସିଟି ନୁହେଁ}=1{1ଟି ସାଇଟ୍‌ରୁ (ଆପଣ ନିଜ Google Accountରୁ ସାଇନ୍ ଆଉଟ୍ ହେବେ ନାହିଁ)}other{#ଟି ସାଇଟ୍‌ରୁ (ଆପଣ ନିଜ Google Accountରୁ ସାଇନ୍ ଆଉଟ୍ ହେବେ ନାହିଁ)}}</translation>
 <translation id="6652101503459149953">Windows Hello ବ୍ୟବହାର କରନ୍ତୁ</translation>
 <translation id="6657585470893396449">ପାସ୍‌ୱର୍ଡ</translation>
+<translation id="666259744093848177">(x86_64 ଅନୁବାଦ କରାଯାଇଛି)</translation>
 <translation id="6665553082534466207">ଡାହାଣ ପଟରେ ତିନୋଟି ପଞ୍ଚ୍</translation>
 <translation id="6671697161687535275">Chromiumରୁ ପରାମର୍ଶରୁ କାଢ଼ି ଦେବେ?</translation>
 <translation id="6685834062052613830">ସାଇନ୍‌ ଆଉଟ୍‌ କରନ୍ତୁ ଏବଂ ସେଟ୍‌ଅପ୍‌ ସମ୍ପୂର୍ଣ୍ଣ କରନ୍ତୁ</translation>

@@ -14,7 +14,7 @@
 <translation id="1084365883616172403">Kirim Facebook selesai.</translation>
 <translation id="1103523840287552314">Selalu terjemahkan <ph name="LANGUAGE" /></translation>
 <translation id="1104948393051856124">Terima &amp; Lanjutkan</translation>
-<translation id="1105578556867525047">Ubah sandi di Situs</translation>
+<translation id="1105578556867525047">Ubah Sandi di Situs</translation>
 <translation id="1112015203684611006">Gagal mencetak.</translation>
 <translation id="1125564390852150847">Buat tab baru.</translation>
 <translation id="1145536944570833626">Hapus data yang sudah ada.</translation>
@@ -255,6 +255,7 @@ Selama dalam mode Samaran, situs tidak dapat menggunakan cookie untuk melihat ak
 <translation id="3929457972718048006">Alamat</translation>
 <translation id="3943492037546055397">Sandi</translation>
 <translation id="3967822245660637423">Download selesai</translation>
+<translation id="3968505803272650567">Kelola Minat</translation>
 <translation id="3989635538409502728">Keluar</translation>
 <translation id="399419089947468503">Terjadi Error Saat Menyinkronkan Sandi</translation>
 <translation id="3995521777587992544">Status progres pemuatan halaman, <ph name="EMAIL" /> telah dimuat.</translation>
@@ -498,6 +499,7 @@ Situs tidak dapat menggunakan cookie untuk melihat aktivitas penjelajahan Anda d
 <translation id="6807889908376551050">Tampilkan Semua...</translation>
 <translation id="681368974849482173">Item dibuat</translation>
 <translation id="6831043979455480757">Terjemahkan</translation>
+<translation id="6841409746189899007">Tautkan ke Teks</translation>
 <translation id="6851516051005285358">Minta Situs Desktop</translation>
 <translation id="6856384753476268833">Dikelola oleh organisasi Anda.</translation>
 <translation id="6858855187367714033">Dipindai</translation>

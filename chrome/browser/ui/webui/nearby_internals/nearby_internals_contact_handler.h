@@ -1,0 +1,62 @@
+// Copyright 2020 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
+#ifndef CHROME_BROWSER_UI_WEBUI_NEARBY_INTERNALS_NEARBY_INTERNALS_CONTACT_HANDLER_H_
+#define CHROME_BROWSER_UI_WEBUI_NEARBY_INTERNALS_NEARBY_INTERNALS_CONTACT_HANDLER_H_
+
+#include <set>
+#include <string>
+#include <vector>
+
+#include "base/memory/weak_ptr.h"
+#include "base/optional.h"
+#include "base/scoped_observer.h"
+#include "chrome/browser/nearby_sharing/contacts/nearby_share_contact_manager.h"
+#include "chrome/browser/nearby_sharing/proto/rpc_resources.pb.h"
+#include "content/public/browser/web_ui_message_handler.h"
+
+namespace base {
+class ListValue;
+}  // namespace base
+
+// WebUIMessageHandler for Contact Messages to pass messages to the
+// chrome://nearby-internals Contact tab.
+class NearbyInternalsContactHandler
+    : public content::WebUIMessageHandler,
+      public NearbyShareContactManager::Observer {
+ public:
+  NearbyInternalsContactHandler();
+  NearbyInternalsContactHandler(const NearbyInternalsContactHandler&) = delete;
+  NearbyInternalsContactHandler& operator=(
+      const NearbyInternalsContactHandler&) = delete;
+  ~NearbyInternalsContactHandler() override;
+
+  // content::WebUIMessageHandler:
+  void RegisterMessages() override;
+  void OnJavascriptAllowed() override;
+  void OnJavascriptDisallowed() override;
+
+ private:
+  // NearbyShareContactManager::Observer:
+  void OnContactsUpdated(
+      bool contacts_list_changed,
+      bool contacts_added_to_allowlist,
+      bool contacts_removed_from_allowlist,
+      const std::set<std::string>& allowed_contact_ids,
+      const base::Optional<std::vector<nearbyshare::proto::ContactRecord>>&
+          contacts) override;
+
+  // Message handler callback that requests a contacts download from the contact
+  // manager.
+  void HandleDownloadContacts(const base::ListValue* args);
+
+  // TODO(julietlevesque): Add observer functionality for
+  // NearbyShareContactManager observer in order to pass Contact messages to
+  // front-end.
+  ScopedObserver<NearbyShareContactManager, NearbyShareContactManager::Observer>
+      observer_{this};
+  base::WeakPtrFactory<NearbyInternalsContactHandler> weak_ptr_factory_{this};
+};
+
+#endif  // CHROME_BROWSER_UI_WEBUI_NEARBY_INTERNALS_NEARBY_INTERNALS_CONTACT_HANDLER_H_

@@ -390,12 +390,6 @@ class WebAXObject {
                                       SkMatrix44& container_transform,
                                       bool* clips_children = nullptr) const;
 
-  // Retrieves a vector of all WebAXObjects in this document whose
-  // bounding boxes may have changed since the last query. Can be called
-  // on any object.
-  BLINK_EXPORT void GetAllObjectsWithChangedBounds(
-      WebVector<WebAXObject>& out_changed_bounds_objects) const;
-
   // Blink-internal DOM Node ID. Currently used for PDF exporting.
   BLINK_EXPORT int GetDOMNodeId() const;
 

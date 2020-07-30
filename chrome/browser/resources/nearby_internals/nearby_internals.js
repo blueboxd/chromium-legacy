@@ -7,6 +7,7 @@ import 'chrome://resources/polymer/v3_0/iron-location/iron-location.js';
 import 'chrome://resources/polymer/v3_0/iron-pages/iron-pages.js';
 import './http_tab.js';
 import './logging_tab.js';
+import './contact_tab.js';
 import {html, Polymer} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
 
 Polymer({
@@ -32,7 +33,7 @@ Polymer({
     /** @private */
     tabNames_: {
       type: Array,
-      value: () => ['Logs', 'HTTP Messages'],
+      value: () => ['Logs', 'HTTP Messages', 'Contacts'],
       readonly: true,
     },
 

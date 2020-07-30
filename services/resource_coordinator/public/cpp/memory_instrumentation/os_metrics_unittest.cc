@@ -12,7 +12,7 @@
 #include "build/build_config.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
-#if defined(OS_MACOSX)
+#if defined(OS_MAC)
 #include <libgen.h>
 #include <mach-o/dyld.h>
 #endif
@@ -140,7 +140,7 @@ TEST(OSMetricsTest, GivesNonZeroResults) {
   EXPECT_GT(dump.platform_private_footprint->rss_anon_bytes, 0u);
 #elif defined(OS_WIN)
   EXPECT_GT(dump.platform_private_footprint->private_bytes, 0u);
-#elif defined(OS_MACOSX)
+#elif defined(OS_MAC)
   EXPECT_GT(dump.platform_private_footprint->internal_bytes, 0u);
 #endif
 }
@@ -305,7 +305,7 @@ TEST(OSMetricsTest, TestWinModuleReading) {
 }
 #endif  // defined(OS_WIN)
 
-#if defined(OS_MACOSX)
+#if defined(OS_MAC)
 namespace {
 
 void CheckMachORegions(const std::vector<mojom::VmRegionPtr>& maps) {
@@ -346,6 +346,6 @@ TEST(OSMetricsTest, DISABLED_TestMachOReading) {
   maps = OSMetrics::GetProcessModules(base::kNullProcessId);
   CheckMachORegions(maps);
 }
-#endif  // defined(OS_MACOSX)
+#endif  // defined(OS_MAC)
 
 }  // namespace memory_instrumentation

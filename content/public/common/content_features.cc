@@ -702,11 +702,6 @@ const base::Feature kTrustedDOMTypes{"TrustedDOMTypes",
 const base::Feature kUseFramePriorityInRenderProcessHost{
     "UseFramePriorityInRenderProcessHost", base::FEATURE_DISABLED_BY_DEFAULT};
 
-// Allows developers transfer user activation state to any target window in the
-// frame tree.
-const base::Feature kUserActivationPostMessageTransfer{
-    "UserActivationPostMessageTransfer", base::FEATURE_DISABLED_BY_DEFAULT};
-
 // Allows user activation propagation to all frames having the same origin as
 // the activation notifier frame.  This is an intermediate measure before we
 // have an iframe attribute to declaratively allow user activation propagation

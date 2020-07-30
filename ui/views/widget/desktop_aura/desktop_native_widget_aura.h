@@ -98,6 +98,9 @@ class VIEWS_EXPORT DesktopNativeWidgetAura
   // we are being activated/deactivated.
   void HandleActivationChanged(bool active);
 
+  // Called before the window tree host will close.
+  void OnHostWillClose();
+
   // Overridden from internal::NativeWidgetPrivate:
   gfx::NativeWindow GetNativeWindow() const override;
 

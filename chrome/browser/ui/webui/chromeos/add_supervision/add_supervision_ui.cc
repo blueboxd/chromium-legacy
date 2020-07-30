@@ -121,12 +121,12 @@ void AddSupervisionDialog::GetDialogSize(gfx::Size* size) const {
   size->SetSize(kDialogWidthPx, kDialogHeightPx);
 }
 
-bool AddSupervisionDialog::CanCloseDialog() const {
+bool AddSupervisionDialog::OnDialogCloseRequested() {
   bool showing_confirm_dialog = MaybeShowConfirmSignoutDialog();
   return !showing_confirm_dialog;
 }
 
-bool AddSupervisionDialog::OnDialogCloseRequested() {
+bool AddSupervisionDialog::DeprecatedOnDialogCloseRequested() {
   // Record UMA metric that user has closed the Add Supervision dialog.
   AddSupervisionMetricsRecorder::GetInstance()->RecordAddSupervisionEnrollment(
       AddSupervisionMetricsRecorder::EnrollmentState::kClosed);

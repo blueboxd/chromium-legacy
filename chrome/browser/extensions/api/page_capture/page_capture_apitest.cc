@@ -22,6 +22,7 @@
 #include "extensions/browser/extension_dialog_auto_confirm.h"
 #include "extensions/common/permissions/permission_set.h"
 #include "extensions/common/permissions/permissions_data.h"
+#include "extensions/common/scoped_worker_based_extensions_channel.h"
 #include "extensions/common/url_pattern_set.h"
 #include "extensions/test/extension_test_message_listener.h"
 #include "extensions/test/result_catcher.h"
@@ -31,23 +32,56 @@
 #include "chromeos/login/login_state/login_state.h"
 #endif  // defined(OS_CHROMEOS)
 
-using extensions::Extension;
-using extensions::ExtensionActionRunner;
-using extensions::PageCaptureSaveAsMHTMLFunction;
-using extensions::ResultCatcher;
-using extensions::ScopedTestDialogAutoConfirm;
+namespace extensions {
 
-class ExtensionPageCaptureApiTest : public extensions::ExtensionApiTest {
+using ContextType = ExtensionApiTest::ContextType;
+
+class ExtensionPageCaptureApiTest
+    : public ExtensionApiTest,
+      public testing::WithParamInterface<ContextType> {
  public:
+  void SetUp() override {
+    ExtensionApiTest::SetUp();
+    // Service Workers are currently only available on certain channels, so set
+    // the channel for those tests.
+    if (GetParam() == ContextType::kServiceWorker)
+      current_channel_ = std::make_unique<ScopedWorkerBasedExtensionsChannel>();
+  }
+
   void SetUpCommandLine(base::CommandLine* command_line) override {
-    extensions::ExtensionApiTest::SetUpCommandLine(command_line);
+    ExtensionApiTest::SetUpCommandLine(command_line);
     command_line->AppendSwitchASCII(switches::kJavaScriptFlags, "--expose-gc");
   }
+
   void SetUpOnMainThread() override {
-    extensions::ExtensionApiTest::SetUpOnMainThread();
+    ExtensionApiTest::SetUpOnMainThread();
     host_resolver()->AddRule("*", "127.0.0.1");
   }
+
+  bool RunTest(const std::string& extension_name) {
+    return RunTestWithArg(extension_name, nullptr);
+  }
+
+  bool RunTestWithArg(const std::string& extension_name,
+                      const char* custom_arg) {
+    int browser_test_flags = kFlagNone;
+    if (GetParam() == ContextType::kServiceWorker)
+      browser_test_flags |= kFlagRunAsServiceWorkerBasedExtension;
+
+    return RunExtensionTestWithFlagsAndArg(extension_name, custom_arg,
+                                           browser_test_flags, kFlagNone);
+  }
+
+ private:
+  std::unique_ptr<ScopedWorkerBasedExtensionsChannel> current_channel_;
 };
+
+INSTANTIATE_TEST_SUITE_P(PersistentBackground,
+                         ExtensionPageCaptureApiTest,
+                         ::testing::Values(ContextType::kPersistentBackground));
+INSTANTIATE_TEST_SUITE_P(ServiceWorker,
+                         ExtensionPageCaptureApiTest,
+                         ::testing::Values(ContextType::kServiceWorker));
 
 class PageCaptureSaveAsMHTMLDelegate
     : public PageCaptureSaveAsMHTMLFunction::TestDelegate {
@@ -85,14 +119,19 @@ class PageCaptureSaveAsMHTMLDelegate
 #define MAYBE_SaveAsMHTML SaveAsMHTML
 #endif
 
-IN_PROC_BROWSER_TEST_F(ExtensionPageCaptureApiTest, MAYBE_SaveAsMHTML) {
+IN_PROC_BROWSER_TEST_P(ExtensionPageCaptureApiTest, MAYBE_SaveAsMHTML) {
   ASSERT_TRUE(StartEmbeddedTestServer());
   PageCaptureSaveAsMHTMLDelegate delegate;
-  ASSERT_TRUE(
-      RunExtensionTestWithArg("page_capture", "ONLY_PAGE_CAPTURE_PERMISSION"))
+  ASSERT_TRUE(RunTestWithArg("page_capture", "ONLY_PAGE_CAPTURE_PERMISSION"))
       << message_;
   // Make sure the MHTML data gets written to the temporary file.
   ASSERT_FALSE(delegate.temp_file_.empty());
+
+  // Garbage collection in SW-based extensions doesn't clean up the temp
+  // file.
+  if (GetParam() == ContextType::kServiceWorker)
+    return;
+
   // Flush the message loops to make sure the delete happens.
   content::RunAllTasksUntilIdle();
   content::RunAllPendingInMessageLoop(content::BrowserThread::IO);
@@ -102,13 +141,19 @@ IN_PROC_BROWSER_TEST_F(ExtensionPageCaptureApiTest, MAYBE_SaveAsMHTML) {
   ASSERT_FALSE(base::PathExists(delegate.temp_file_));
 }
 
-IN_PROC_BROWSER_TEST_F(ExtensionPageCaptureApiTest,
+IN_PROC_BROWSER_TEST_P(ExtensionPageCaptureApiTest,
                        MAYBE_SaveAsMHTMLWithActiveTabWithFileAccess) {
   ASSERT_TRUE(StartEmbeddedTestServer());
   PageCaptureSaveAsMHTMLDelegate delegate;
-  ASSERT_TRUE(RunExtensionTest("page_capture")) << message_;
+  ASSERT_TRUE(RunTest("page_capture")) << message_;
   // Make sure the MHTML data gets written to the temporary file.
   ASSERT_FALSE(delegate.temp_file_.empty());
+
+  // Garbage collection in SW-based extensions doesn't clean up the temp
+  // file.
+  if (GetParam() == ContextType::kServiceWorker)
+    return;
+
   // Flush the message loops to make sure the delete happens.
   content::RunAllTasksUntilIdle();
   content::RunAllPendingInMessageLoop(content::BrowserThread::IO);
@@ -119,28 +164,35 @@ IN_PROC_BROWSER_TEST_F(ExtensionPageCaptureApiTest,
 }
 
 #if defined(OS_CHROMEOS)
-IN_PROC_BROWSER_TEST_F(ExtensionPageCaptureApiTest,
+IN_PROC_BROWSER_TEST_P(ExtensionPageCaptureApiTest,
                        PublicSessionRequestAllowed) {
   ASSERT_TRUE(StartEmbeddedTestServer());
   PageCaptureSaveAsMHTMLDelegate delegate;
   chromeos::ScopedTestPublicSessionLoginState login_state;
   // Resolve Permission dialog with Allow.
   ScopedTestDialogAutoConfirm auto_confirm(ScopedTestDialogAutoConfirm::ACCEPT);
-  ASSERT_TRUE(RunExtensionTest("page_capture")) << message_;
+  ASSERT_TRUE(RunTest("page_capture")) << message_;
   ASSERT_FALSE(delegate.temp_file_.empty());
+
+  // Garbage collection in SW-based extensions doesn't clean up the temp
+  // file.
+  if (GetParam() == ContextType::kServiceWorker)
+    return;
+
   content::RunAllTasksUntilIdle();
   content::RunAllPendingInMessageLoop(content::BrowserThread::IO);
   base::ScopedAllowBlockingForTesting allow_blocking;
   ASSERT_FALSE(base::PathExists(delegate.temp_file_));
 }
 
-IN_PROC_BROWSER_TEST_F(ExtensionPageCaptureApiTest,
+IN_PROC_BROWSER_TEST_P(ExtensionPageCaptureApiTest,
                        PublicSessionRequestDenied) {
   ASSERT_TRUE(StartEmbeddedTestServer());
   chromeos::ScopedTestPublicSessionLoginState login_state;
   // Resolve Permission dialog with Deny.
   ScopedTestDialogAutoConfirm auto_confirm(ScopedTestDialogAutoConfirm::CANCEL);
-  ASSERT_TRUE(RunExtensionTestWithArg("page_capture", "REQUEST_DENIED"))
-      << message_;
+  ASSERT_TRUE(RunTestWithArg("page_capture", "REQUEST_DENIED")) << message_;
 }
 #endif  // defined(OS_CHROMEOS)
+
+}  // namespace extensions

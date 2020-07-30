@@ -7,13 +7,17 @@
 #include "base/macros.h"
 #include "third_party/blink/renderer/core/css/css_color_value.h"
 #include "third_party/blink/renderer/core/css/css_computed_style_declaration.h"
+#include "third_party/blink/renderer/core/css/css_grid_auto_repeat_value.h"
+#include "third_party/blink/renderer/core/css/css_grid_integer_repeat_value.h"
 #include "third_party/blink/renderer/core/css/css_property_names.h"
+#include "third_party/blink/renderer/core/css/css_value.h"
 #include "third_party/blink/renderer/core/display_lock/display_lock_utilities.h"
 #include "third_party/blink/renderer/core/dom/pseudo_element.h"
 #include "third_party/blink/renderer/core/frame/local_frame_view.h"
 #include "third_party/blink/renderer/core/frame/visual_viewport.h"
 #include "third_party/blink/renderer/core/geometry/dom_rect.h"
 #include "third_party/blink/renderer/core/inspector/dom_traversal_utils.h"
+#include "third_party/blink/renderer/core/inspector/inspector_css_cascade.h"
 #include "third_party/blink/renderer/core/inspector/inspector_dom_agent.h"
 #include "third_party/blink/renderer/core/layout/adjust_for_absolute_zoom.h"
 #include "third_party/blink/renderer/core/layout/geometry/physical_offset.h"
@@ -409,7 +413,8 @@ std::unique_ptr<protocol::ListValue> BuildGridTrackSizes(
     LayoutGrid* layout_grid,
     GridTrackSizingDirection direction,
     float scale,
-    LayoutUnit gap) {
+    LayoutUnit gap,
+    const Vector<String>* authored_values) {
   std::unique_ptr<protocol::ListValue> sizes = protocol::ListValue::create();
   const Vector<LayoutUnit>& positions = direction == kForRows
                                             ? layout_grid->RowPositions()
@@ -429,6 +434,9 @@ std::unique_ptr<protocol::ListValue> BuildGridTrackSizes(
     auto adjusted_size = AdjustForAbsoluteZoom::AdjustFloat(
         width * scale, layout_grid->StyleRef());
     size_info->setDouble("computedSize", adjusted_size);
+    if (i - 1 < authored_values->size()) {
+      size_info->setString("authoredSize", authored_values->at(i - 1));
+    }
     PhysicalOffset local_arrow_pos(
         direction == kForColumns ? label_pos : first_offset,
         direction == kForColumns ? first_offset : label_pos);
@@ -606,12 +614,69 @@ int GetRotationAngle(LayoutGrid* layout_grid) {
   return bearing - local_vector_bearing;
 }
 
+// Gets the list of authored track size values resolving repeat() functions
+// and skipping line names.
+Vector<String> GetAuthoredGridTrackSizes(const CSSValue* value,
+                                         size_t auto_repeat_count) {
+  Vector<String> result;
+
+  if (!value)
+    return result;
+
+  // TODO (alexrudenko): this would not handle track sizes defined using CSS
+  // variables.
+  const CSSValueList* value_list = DynamicTo<CSSValueList>(value);
+
+  if (!value_list)
+    return result;
+
+  for (auto list_value : *value_list) {
+    if (auto* grid_auto_repeat_value =
+            DynamicTo<cssvalue::CSSGridAutoRepeatValue>(list_value.Get())) {
+      Vector<String> repeated_track_sizes;
+      for (auto auto_repeat_value : To<CSSValueList>(*list_value)) {
+        if (!auto_repeat_value->IsGridLineNamesValue())
+          repeated_track_sizes.push_back(auto_repeat_value->CssText());
+      }
+      // There could be only one auto repeat value in a |value_list|, therefore,
+      // resetting auto_repeat_count to zero after inserting repeated values.
+      for (; auto_repeat_count; --auto_repeat_count)
+        result.AppendVector(repeated_track_sizes);
+      continue;
+    }
+
+    if (auto* repeated_values =
+            DynamicTo<cssvalue::CSSGridIntegerRepeatValue>(list_value.Get())) {
+      size_t repetitions = repeated_values->Repetitions();
+      for (size_t i = 0; i < repetitions; ++i) {
+        for (auto repeated_value : *repeated_values) {
+          if (repeated_value->IsGridLineNamesValue())
+            continue;
+          result.push_back(repeated_value->CssText());
+        }
+      }
+      continue;
+    }
+
+    if (list_value->IsGridLineNamesValue())
+      continue;
+
+    result.push_back(list_value->CssText());
+  }
+
+  return result;
+}
+
 std::unique_ptr<protocol::DictionaryValue> BuildGridInfo(
-    LocalFrameView* containing_view,
-    LayoutGrid* layout_grid,
+    Node* node,
     const InspectorGridHighlightConfig& grid_highlight_config,
     float scale,
     bool isPrimary) {
+  LocalFrameView* containing_view = node->GetDocument().View();
+  LayoutObject* layout_object = node->GetLayoutObject();
+  DCHECK(layout_object);
+  LayoutGrid* layout_grid = ToLayoutGrid(layout_object);
+
   std::unique_ptr<protocol::DictionaryValue> grid_info =
       protocol::DictionaryValue::create();
 
@@ -626,12 +691,25 @@ std::unique_ptr<protocol::DictionaryValue> BuildGridInfo(
                     layout_grid->GridItemOffset(kForColumns);
 
   if (grid_highlight_config.show_track_sizes) {
+    Element* element = DynamicTo<Element>(node);
+    DCHECK(element);
+    InspectorCSSCascade cascade(element, kPseudoIdNone);
+    // TODO (alexrudenko): caching might be required. Currently, the style
+    // resolver is used only for grid layouts when show_track_sizes is on.
+    Vector<String> column_authored_values = GetAuthoredGridTrackSizes(
+        cascade.GetCascadedProperty(CSSPropertyID::kGridTemplateColumns),
+        layout_grid->AutoRepeatCountForDirection(kForColumns));
+    Vector<String> row_authored_values = GetAuthoredGridTrackSizes(
+        cascade.GetCascadedProperty(CSSPropertyID::kGridTemplateRows),
+        layout_grid->AutoRepeatCountForDirection(kForRows));
+
     grid_info->setValue(
         "columnTrackSizes",
-        BuildGridTrackSizes(layout_grid, kForColumns, scale, column_gap));
-    grid_info->setValue(
-        "rowTrackSizes",
-        BuildGridTrackSizes(layout_grid, kForRows, scale, row_gap));
+        BuildGridTrackSizes(layout_grid, kForColumns, scale, column_gap,
+                            &column_authored_values));
+    grid_info->setValue("rowTrackSizes",
+                        BuildGridTrackSizes(layout_grid, kForRows, scale,
+                                            row_gap, &row_authored_values));
   }
 
   PathBuilder row_builder;
@@ -744,8 +822,7 @@ std::unique_ptr<protocol::DictionaryValue> BuildGridInfo(
 }
 
 std::unique_ptr<protocol::DictionaryValue> BuildGridInfo(
-    LocalFrameView* containing_view,
-    LayoutGrid* layout_grid,
+    Node* node,
     const InspectorHighlightConfig& highlight_config,
     float scale,
     bool isPrimary) {
@@ -755,12 +832,10 @@ std::unique_ptr<protocol::DictionaryValue> BuildGridInfo(
         std::make_unique<InspectorGridHighlightConfig>();
     grid_config->cell_color = highlight_config.css_grid;
     grid_config->cell_border_dash = true;
-    return BuildGridInfo(containing_view, layout_grid, *grid_config, scale,
-                         isPrimary);
+    return BuildGridInfo(node, *grid_config, scale, isPrimary);
   }
 
-  return BuildGridInfo(containing_view, layout_grid,
-                       *(highlight_config.grid_highlight_config), scale,
+  return BuildGridInfo(node, *(highlight_config.grid_highlight_config), scale,
                        isPrimary);
 }
 
@@ -1201,9 +1276,7 @@ void InspectorHighlight::AppendNodeHighlight(
   }
   grid_info_ = protocol::ListValue::create();
   if (layout_object->IsLayoutGrid()) {
-    grid_info_->pushValue(BuildGridInfo(node->GetDocument().View(),
-                                        ToLayoutGrid(layout_object),
-                                        highlight_config, scale_, true));
+    grid_info_->pushValue(BuildGridInfo(node, highlight_config, scale_, true));
   }
 }
 
@@ -1392,8 +1465,7 @@ std::unique_ptr<protocol::DictionaryValue> InspectorGridHighlight(
     return nullptr;
 
   std::unique_ptr<protocol::DictionaryValue> grid_info =
-      BuildGridInfo(node->GetDocument().View(), ToLayoutGrid(layout_object),
-                    config, scale, true);
+      BuildGridInfo(node, config, scale, true);
   return grid_info;
 }
 

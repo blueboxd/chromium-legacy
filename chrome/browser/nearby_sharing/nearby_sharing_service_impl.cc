@@ -19,6 +19,8 @@
 #include "chrome/browser/nearby_sharing/nearby_connections_manager.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/signin/identity_manager_factory.h"
+#include "chrome/browser/nearby_sharing/client/nearby_share_client_impl.h"
+#include "chrome/browser/profiles/profile.h"
 #include "chrome/services/sharing/public/cpp/advertisement.h"
 #include "chrome/services/sharing/public/mojom/nearby_connections_types.mojom.h"
 #include "components/prefs/pref_service.h"

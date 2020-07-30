@@ -248,6 +248,8 @@ ServiceWorkerVersion::ServiceWorkerVersion(
     const GURL& script_url,
     blink::mojom::ScriptType script_type,
     int64_t version_id,
+    mojo::PendingRemote<storage::mojom::ServiceWorkerLiveVersionRef>
+        remote_reference,
     base::WeakPtr<ServiceWorkerContextCore> context)
     : version_id_(version_id),
       registration_id_(registration->id()),
@@ -264,7 +266,8 @@ ServiceWorkerVersion::ServiceWorkerVersion(
       tick_clock_(base::DefaultTickClock::GetInstance()),
       clock_(base::DefaultClock::GetInstance()),
       ping_controller_(this),
-      validator_(std::make_unique<blink::TrialTokenValidator>()) {
+      validator_(std::make_unique<blink::TrialTokenValidator>()),
+      remote_reference_(std::move(remote_reference)) {
   DCHECK_NE(blink::mojom::kInvalidServiceWorkerVersionId, version_id);
   DCHECK(context_);
   DCHECK(registration);

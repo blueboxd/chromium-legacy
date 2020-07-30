@@ -149,6 +149,9 @@ Per ulteriori informazioni sui contesti sicuri, visita il sito https://www.w3.or
 
       Se la norma non è impostata o è impostata su false, Fast Transition non viene utilizzato.
       Se è impostata su true, Fast Transition viene utilizzato quando il punto di accesso wireless lo supporta.</translation>
+<translation id="1240722269871366886">Questo criterio consente a <ph name="PRODUCT_OS_NAME" /> di suggerire le emoji quando gli utenti digitano il testo sulle tastiere fisiche o virtuali.
+      Se questo criterio viene impostato su vero, la funzionalità verrà attivata e gli utenti potranno modificarla.
+      Per impostazione predefinita questo criterio è impostato su falso, il che significa che non vengono suggerite emoji e gli utenti non possono ignorarlo.</translation>
 <translation id="1243570869342663665">Controlla il filtro dei contenuti per adulti di SafeSites.</translation>
 <translation id="1257550411839719984">Imposta directory di download predefinita</translation>
 <translation id="1265053460044691532">Limita il tempo per cui un utente autenticato tramite SAML può eseguire l'accesso offline</translation>
@@ -917,6 +920,7 @@ Se questo criterio non viene impostato, la Schermata sulla privacy verrà inizia
       Quando questa norma non è configurata o è impostata su True, gli utenti possono utilizzare la funzione Condivisioni file di rete.
 
       Quando questa norma è impostata su False, gli utenti non possono utilizzare la funzione Condivisioni file di rete.</translation>
+<translation id="2435052056904485763">Lista consentita server di delega Kerberos</translation>
 <translation id="2440773021691931148">Consente di segnalare statistiche hardware e identificatori relativi all'alimentazione.
 
       Se il criterio viene impostato su false o non viene impostato, le statistiche non vengono segnalate.
@@ -1705,17 +1709,6 @@ Se questa norma viene impostata su False o non viene impostata, i ritardi di ges
 <translation id="355118380775352753">Siti web da aprire in un browser alternativo</translation>
 <translation id="3554498762428140109">Attiva Copertura finestra nativa</translation>
 <translation id="3554984410014457319">Consente all'Assistente Google di ascoltare la frase di attivazione vocale</translation>
-<translation id="3557208865710006939">Forza l'attivazione delle lingue per correttore ortografico. Le lingue non riconosciute nell'elenco verranno ignorate.
-
-      Se il criterio è attivato, il correttore ortografico verrà attivato per le lingue specificate, oltre alle lingue per le quali l'utente ha attivato il correttore ortografico.
-
-      Se il criterio non è impostato o se viene disattivato, le preferenze sul correttore ortografico dell'utente rimarranno invariate.
-
-      Se il criterio <ph name="SPELLCHECK_ENABLED_POLICY_NAME" /> è impostato su false, questo criterio non avrà effetto.
-
-      Se una lingua è inclusa sia in questo criterio che nel criterio <ph name="SPELLCHECK_LANGUAGE_BLACKLIST_POLICY_NAME" />, questo criterio avrà la priorità e verrà attivata la lingua per il correttore ortografico.
-
-      Le lingue attualmente supportate sono: af, bg, ca, cs, da, de, el, en-AU, en-CA, en-GB, en-US, es, es-419, es-AR, es-ES, es-MX, es-US, et, fa, fo, fr, he, hi, hr, hu, id, it, ko, lt, lv, nb, nl, pl, pt-BR, pt-PT, ro, ru, sh, sk, sl, sq, sr, sv, ta, tg, tr, uk, vi.</translation>
 <translation id="356579196325389849">Gli utenti possono configurare il canale di rilascio di Chrome OS</translation>
 <translation id="3575011234198230041">Autenticazione HTTP</translation>
 <translation id="3577251398714997599">Impostazione annunci per i siti con annunci invasivi</translation>
@@ -2374,6 +2367,21 @@ Se questa norma non viene impostata, verranno utilizzate le dimensioni predefini
       Se viene selezionata l'opzione "Forzata", è possibile aprire le pagine SOLTANTO in Modalità di navigazione in incognito. Tieni presente che l'opzione "Forzata" non funziona per Android-on-Chrome.</translation>
 <translation id="4600786265870346112">Attivazione del puntatore grande</translation>
 <translation id="4604931264910482931">Configura lista nera di messaggi nativi</translation>
+<translation id="4607416370554533118">La configurazione del criterio consente di creare un elenco di pattern URL che specifica i siti per cui Chrome può selezionare automaticamente un certificato client. Il valore è un array di dizionari JSON sotto forma di stringa, ognuno nel formato <ph name="AUTO_SELECT_CERTIFICATE_FOR_URLS_EXAMPLE" />, dove <ph name="URL_PATTERN_PLACEHOLDER" /> rappresenta un pattern di impostazioni contenuti. <ph name="FILTER_PLACEHOLDER" /> consente di limitare i certificati client che il browser può selezionare automaticamente. Indipendentemente dal filtro, vengono selezionati solo certificati che soddisfano la richiesta di certificato del server.
+
+      Esempi di utilizzo della sezione <ph name="FILTER_PLACEHOLDER" />:
+
+      * Quando <ph name="FILTER_PLACEHOLDER" /> è impostato su <ph name="AUTO_SELECT_CERTIFICATE_FOR_URLS_FILTER_EXAMPLE" />, vengono selezionati solo i certificati client emessi da un certificato con valore CommonName uguale a <ph name="ISSUER_CN_PLACEHOLDER" />.
+
+      * Quando <ph name="FILTER_PLACEHOLDER" /> contiene entrambe le sezioni <ph name="ISSUER_STRING_VALUE" /> e <ph name="SUBJECT_STRING_VALUE" />, vengono selezionati solo i certificati client che soddisfano entrambe le condizioni.
+
+      * Quando <ph name="FILTER_PLACEHOLDER" /> contiene una sezione <ph name="SUBJECT_STRING_VALUE" /> con valore <ph name="FILTER_STRING_ORGANIZATION" />, un certificato richiede almeno un'organizzazione corrispondente al valore specificato per essere selezionato.
+
+      * Quando <ph name="FILTER_PLACEHOLDER" /> contiene una sezione <ph name="SUBJECT_STRING_VALUE" /> con un valore <ph name="FILTER_STRING_ORGANIZATIONAL_UNIT" />, un certificato richiede almeno un'unità organizzativa corrispondente al valore specificato per essere selezionato.
+
+      * Quando <ph name="FILTER_PLACEHOLDER" /> è impostato su <ph name="EMPTY_DICTIONARY" />, la selezione dei certificati client non viene limitata ulteriormente. Nota: si applicano ancora i filtri forniti dal server web.
+
+      Se il criterio non viene configurato, non viene eseguita la selezione automatica per nessun sito.</translation>
 <translation id="4617338332148204752">Salta il controllo dei metatag in <ph name="PRODUCT_FRAME_NAME" /></translation>
 <translation id="462134014569484584">Questo criterio consente di specificare il codice licenza <ph name="PLUGIN_VM_NAME" /> di questo dispositivo.</translation>
 <translation id="4625915093043961294">Configura la whitelist per l'installazione delle estensioni</translation>
@@ -2490,6 +2498,13 @@ Se questa norma non viene impostata, verranno utilizzate le dimensioni predefini
 
       Se il criterio è configurato, gli utenti non possono apportare modifiche. Se non è configurato, gli utenti possono decidere se lo shelf viene nascosto automaticamente.</translation>
 <translation id="4812714598405913256">Configura il messaggio della scadenza dell'aggiornamento automatico per il criterio DeviceMinimumVersion</translation>
+<translation id="481492486938162195">Questo criterio è deprecato, al suo posto utilizza "<ph name="AUTH_NEGOCIATE_DELEGATE_ALLOWLIST_POLICY_NAME" />".
+
+          Server a cui <ph name="PRODUCT_NAME" /> potrebbe delegare le credenziali utente.
+
+          Separa più nomi di server con virgole. Sono ammessi i caratteri jolly (*).
+
+          Se questo criterio non viene impostato, <ph name="PRODUCT_NAME" /> non delegherà le credenziali utente, anche se viene rilevato un server come Intranet.</translation>
 <translation id="4816674326202173458">Consenti all'utente aziendale di essere l'utente principale e secondario (comportamento predefinito per gli utenti non gestiti)</translation>
 <translation id="4826326557828204741">Azione da compiere quando il ritardo di inattività viene raggiunto durante l'utilizzo della batteria</translation>
 <translation id="482803100714220060">Mostra URL completi</translation>
@@ -3143,7 +3158,7 @@ Se il criterio viene configurato, gli utenti non possono apportare modifiche. Gl
 
           Se il criterio viene attivato o se non viene configurato, la voce del menu contestuale per il tuo provider di ricerca predefinito è disponibile.
 
-          Il valore del criterio viene applicato solo se il criterio <ph name="DEFAULT_SEARCH_PROVIDER_ENABLED_POLICY_NAME" /> viene attivato e non altrimenti.</translation>
+          Il valore del criterio viene applicato solo se il criterio <ph name="DEFAULT_SEARCH_PROVIDER_ENABLED_POLICY_NAME" /> viene attivato e non è applicabile in caso contrario.</translation>
 <translation id="5697306356229823047">Segnala utenti dispositivo</translation>
 <translation id="5699487516670033016">Consente di specificare la durata in ore della cache. La cache viene utilizzata per velocizzare l'accesso. Contiene dati generali (nome del gruppo di lavoro e così via) riguardo alle aree di autenticazione delle affiliate, come le aree di autenticazione ritenute attendibili dall'area di autenticazione della macchina. Nessun dato specifico dell'utente o delle aree di autenticazione delle affiliate viene memorizzato nella cache. Se il dispositivo viene riavviato, la cache viene svuotata.
 
@@ -3317,7 +3332,7 @@ Se il criterio viene configurato, gli utenti non possono apportare modifiche. Gl
        Valori validi: • 0 = disattivata• 1 = attivata• 2 = riquadro d'ingrandimento ancorato attivato
 
           Nota: se specificato, <ph name="DEVICE_LOGIN_SCREEN_SCREEN_MAGNIFIER_TYPE_POLICY_NAME" /> sostituisce questo criterio.</translation>
-<translation id="6015281292796053435">Questo criterio consente di stabilire se segnalare o meno le informazioni di Navigazione sicura, incluso il numero dell'avviso di Navigazione sicura e il numero del relativo click-through.
+<translation id="6015281292796053435">Questo criterio consente di stabilire se segnalare o meno le informazioni di Navigazione sicura, inclusi il numero dell'avviso di Navigazione sicura e il numero del relativo click-through.
 
       Se il criterio <ph name="CLOUD_REPORTING_ENABLED_POLICY_NAME" /> non viene configurato o viene disattivato, viene ignorato.
 
@@ -5277,6 +5292,13 @@ Se la norma non viene impostata o viene impostata su false, la posizione non vie
       Se questo criterio viene impostato su False o non viene impostato, gli elementi di controllo modulo verranno attivati come nel lancio delle versioni M81, M82 e M83.
 
       Questo criterio verrà rimosso nelle versioni successive alla versione 84 di Chrome.</translation>
+<translation id="8937562488500723400">Controlla se l'approvazione della norma KDC viene rispettata per decidere se delegare i ticket <ph name="KERBEROS" />.
+
+          Se questo criterio viene impostato su vero, l'autenticazione HTTP rispetta l'approvazione da parte della norma KDC, ad esempio Chrome delega solo le credenziali se il KDC imposta <ph name="OK_AS_DELEGATE" /> su un ticket di servizio. Per ulteriori informazioni, consulta https://tools.ietf.org/html/rfc5896.html. Il servizio deve corrispondere anche al criterio "AuthNegotiateDelegateAllowlist".
+
+          Se questo criterio non viene impostato o viene impostato su falso, la norma KDC viene ignorata sulle piattaforme supportate e il verrà rispettato solo il criterio "AuthNegotiateDelegateAllowlist".
+
+          Su Windows la norma KDC viene sempre rispettata.</translation>
 <translation id="8938932171964587769">Ritirata in M69. Utilizza la norma OverrideSecurityRestrictionsOnInsecureOrigin.
 
 Questa norma consente di specificare un elenco di origini (URL) o di schemi di nomi host (ad esempio "*.example.com") a cui non vengono applicate limitazioni di sicurezza previste per le origini non sicure.
@@ -5380,6 +5402,27 @@ https://www.w3.org/TR/secure-contexts/
       Se imposti il criterio, <ph name="PRODUCT_NAME" /> utilizza la dimensione della cache da te fornita, indipendentemente dalla specificazione del flag --disk-cache-size da parte degli utenti. I valori inferiori ad alcuni megabyte vengono arrotondati.
 
       Se non viene impostato, <ph name="PRODUCT_NAME" /> utilizza la dimensione predefinita. Gli utenti possono modificare l'impostazione utilizzando il flag --disk-cache-size.</translation>
+<translation id="9057444687284972605">Consente di specificare un elenco di pattern URL relativi ai siti per i quali viene selezionato automaticamente un certificato client nella schermata di accesso all'interno del frame che ospita il flusso SAML, se il sito richiede un certificato. Un esempio di utilizzo è la configurazione di un certificato a livello di dispositivo da presentare all'IdP SAML.
+
+      Il valore è un array di dizionari JSON sotto forma di stringa, ognuno nel formato <ph name="AUTO_SELECT_CERTIFICATE_FOR_URLS_EXAMPLE" />, dove <ph name="URL_PATTERN_PLACEHOLDER" /> rappresenta un pattern di impostazioni contenuti. <ph name="FILTER_PLACEHOLDER" /> consente di limitare i certificati client che il browser può selezionare automaticamente. Indipendentemente dal filtro, vengono selezionati solo certificati che soddisfano la richiesta di certificato del server.
+
+      Esempi di utilizzo della sezione <ph name="FILTER_PLACEHOLDER" />:
+
+      * Quando <ph name="FILTER_PLACEHOLDER" /> è impostato su <ph name="AUTO_SELECT_CERTIFICATE_FOR_URLS_FILTER_EXAMPLE" />, vengono selezionati solo i certificati client emessi da un certificato con valore CommonName uguale a <ph name="ISSUER_CN_PLACEHOLDER" />.
+
+      * Quando <ph name="FILTER_PLACEHOLDER" /> contiene entrambe le sezioni <ph name="ISSUER_STRING_VALUE" /> e <ph name="SUBJECT_STRING_VALUE" />, vengono selezionati solo i certificati client che soddisfano entrambe le condizioni.
+
+      * Quando <ph name="FILTER_PLACEHOLDER" /> contiene una sezione <ph name="SUBJECT_STRING_VALUE" /> con valore <ph name="FILTER_STRING_ORGANIZATION" />, un certificato richiede almeno un'organizzazione corrispondente al valore specificato per essere selezionato.
+
+      * Quando <ph name="FILTER_PLACEHOLDER" /> contiene una sezione <ph name="SUBJECT_STRING_VALUE" /> con un valore <ph name="FILTER_STRING_ORGANIZATIONAL_UNIT" />, un certificato richiede almeno un'unità organizzativa corrispondente al valore specificato per essere selezionato.
+
+      * Quando <ph name="FILTER_PLACEHOLDER" /> è impostato su <ph name="EMPTY_DICTIONARY" />, la selezione dei certificati client non viene limitata ulteriormente. Nota: si applicano ancora i filtri forniti dal server web.
+
+
+
+      Se questo criterio non è impostato, la selezione automatica non avviene per nessun sito.
+
+      Per informazioni dettagliate sui pattern URL validi, visita la pagina https://cloud.google.com/docs/chrome-enterprise/policies/url-patterns.</translation>
 <translation id="9062348747995618422">Se il criterio viene configurato, puoi impostare un elenco di pattern URL che specificano i siti che possono eseguire il plug-in <ph name="FLASH_PLUGIN_NAME" />.
 
       Se il criterio non viene configurato, viene applicato il criterio <ph name="DEFAULT_PLUGINS_SETTING_POLICY_NAME" /> per tutti i siti, se impostato. In caso contrario, viene applicata l'impostazione personale dell'utente.

@@ -29,7 +29,7 @@ void ClearOid(gss_OID dest) {
   if (!dest)
     return;
   dest->length = 0;
-  dest->elements = NULL;
+  dest->elements = nullptr;
 }
 
 void SetOid(gss_OID dest, const void* src, size_t length) {

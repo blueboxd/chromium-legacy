@@ -2380,7 +2380,7 @@ myaccount.google.com/activitycontrols/search پر تبدیل کر سکتے ہي�
 <translation id="3882165008614329320">کیمرے یا فائل سے لی گئی موجودہ ویڈیو</translation>
 <translation id="3886446263141354045">اس سائٹ تک رسائی حاصل کرنے کی آپ کی درخواست <ph name="NAME" /> کو بھیج دی گئی ہے</translation>
 <translation id="3888550877729210209"><ph name="LOCK_SCREEN_APP_NAME" /> کے ساتھ نوٹس لیے جا رہے ہیں</translation>
-<translation id="3891563564777705449">{0,plural, =1{1 ہفتہ کے اندر آلہ اپ ڈیٹ کریں}other{# ہفتے کے اندر آلہ اپ ڈیٹ کریں}}</translation>
+<translation id="3891563564777705449">{0,plural, =1{1 ہفتے کے اندر آلہ اپ ڈیٹ کریں}other{# ہفتے کے اندر آلہ اپ ڈیٹ کریں}}</translation>
 <translation id="3892414795099177503">‏OpenVPN / L2TP شامل کریں…</translation>
 <translation id="3893536212201235195">اپنی ایکسیسبیلٹی کی ترتیبات پڑھیں اور تبدیل کریں</translation>
 <translation id="3893630138897523026">‏ChromeVox (صوتی تاثرات)</translation>
@@ -4054,7 +4054,6 @@ myaccount.google.com/activitycontrols/search پر تبدیل کر سکتے ہي�
 <translation id="6056710589053485679">عام ری لوڈ</translation>
 <translation id="6057312498756061228">‏یہ فائل سیکیورٹی چیک کے لئے بہت بڑی ہے۔ آپ ‎50 MB تک کی فائلز کھول سکتے ہیں۔</translation>
 <translation id="6057381398996433816">اس سائٹ کو موشن اور لائٹ سینسرز استعمال کرنے سے مسدود کر دیا گيا ہے۔</translation>
-<translation id="6058567592298841668">پلگ ان ورچوئل مشین: <ph name="PLUGIN_VM_NAME" /></translation>
 <translation id="6059652578941944813">سرٹیفکیٹ کے مراتب</translation>
 <translation id="6059925163896151826">‏USB آلات</translation>
 <translation id="6061882183774845124">لنک اپنے آلات پر بھیجیں</translation>
@@ -4437,7 +4436,7 @@ myaccount.google.com/activitycontrols/search پر تبدیل کر سکتے ہي�
 <translation id="6535331821390304775">وابستہ ایپ میں اس قسم کے لنکس کو کھولنے کے لیے ہمیشہ <ph name="ORIGIN" /> کو اجازت دیں</translation>
 <translation id="654039047105555694"><ph name="BEGIN_BOLD" />نوٹ:<ph name="END_BOLD" /> صرف اس وقت فعال کریں جب آپ کو معلوم ہو کہ آپ کیا کر رہے ہیں یا اگر آپ سے ایسا کرنے کو کہا گیا ہو، کیونکہ ڈیٹا جمع کرنے سے کارکردگی کم ہو سکتی ہے۔</translation>
 <translation id="6541638731489116978">اس سائٹ کو آپ کے موشن سینسرز تک رسائی حاصل کرنے سے مسدود کر دیا گیا ہے۔</translation>
-<translation id="6545407738986370057">{0,plural, =1{1 ہفتے کے اندر آلہ واپس کریں}other{# ہفتے کے اندر آلہ کی واپس کریں}}</translation>
+<translation id="6545407738986370057">{0,plural, =1{1 ہفتے کے اندر آلہ واپس کریں}other{# ہفتے کے اندر آلہ واپس کریں}}</translation>
 <translation id="6545665334409411530">تکرار کی شرح</translation>
 <translation id="6545864417968258051">بلوٹوتھ اسکیننگ</translation>
 <translation id="6545867563032584178">‏Mac سسٹم کی ترجیحات میں مائیکروفون آف ہے</translation>
@@ -4483,6 +4482,7 @@ myaccount.google.com/activitycontrols/search پر تبدیل کر سکتے ہي�
 <translation id="6602956230557165253">نیویگیٹ کرنے کیلئے بائیں اور دائیں تیر کے نشانات کی کلیدیں استعمال کریں۔</translation>
 <translation id="6605847144724004692">ابھی تک کسی صارف نے درجہ بندی نہیں کی۔</translation>
 <translation id="6607831829715835317">مزید &amp;ٹولز</translation>
+<translation id="6608012008902909398">آلے کے سافٹ ویئر کی جانچ کی تفصیلات دکھائیں</translation>
 <translation id="6611972847767394631">یہاں اپنے ٹیبز تلاش کریں</translation>
 <translation id="6612358246767739896">تحفظ یافتہ مواد</translation>
 <translation id="6615455863669487791">مجھے دکھائیں</translation>

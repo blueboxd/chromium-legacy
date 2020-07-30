@@ -337,6 +337,11 @@ void Pointer::OnSurfaceDestroying(Surface* surface) {
 // ui::EventHandler overrides:
 
 void Pointer::OnMouseEvent(ui::MouseEvent* event) {
+  // Nothing to report to a client nor have to update the pointer when capture
+  // changes.
+  if (event->type() == ui::ET_MOUSE_CAPTURE_CHANGED)
+    return;
+
   seat_->SetLastLocation(event->root_location());
 
   Surface* target = GetEffectiveTargetForEvent(event);
@@ -358,7 +363,7 @@ void Pointer::OnMouseEvent(ui::MouseEvent* event) {
 
   TRACE_EXO_INPUT_EVENT(event);
 
-  if (event->IsMouseEvent() && event->type() != ui::ET_MOUSE_CAPTURE_CHANGED) {
+  if (event->IsMouseEvent()) {
     // Generate motion event if location changed. We need to check location
     // here as mouse movement can generate both "moved" and "entered" events
     // but OnPointerMotion should only be called if location changed since
@@ -444,7 +449,6 @@ void Pointer::OnMouseEvent(ui::MouseEvent* event) {
     case ui::ET_MOUSE_DRAGGED:
     case ui::ET_MOUSE_ENTERED:
     case ui::ET_MOUSE_EXITED:
-    case ui::ET_MOUSE_CAPTURE_CHANGED:
       break;
     default:
       NOTREACHED();

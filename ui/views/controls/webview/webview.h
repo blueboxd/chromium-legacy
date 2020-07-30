@@ -42,11 +42,12 @@ class WEBVIEW_EXPORT WebView : public View,
  public:
   METADATA_HEADER(WebView);
 
-  explicit WebView(content::BrowserContext* browser_context);
+  explicit WebView(content::BrowserContext* browser_context = nullptr);
   ~WebView() override;
 
-  // This creates a WebContents if none is yet associated with this WebView. The
-  // WebView owns this implicitly created WebContents.
+  // This creates a WebContents if |kBrowserContext| has been set and there is
+  // not yet a WebContents associated with this WebView, otherwise it will
+  // return a nullptr.
   content::WebContents* GetWebContents();
 
   // WebView does not assume ownership of WebContents set via this method, only
@@ -59,7 +60,8 @@ class WEBVIEW_EXPORT WebView : public View,
   // widget or restore the normal WebContentsView.
   void SetEmbedFullscreenWidgetMode(bool mode);
 
-  content::BrowserContext* browser_context() { return browser_context_; }
+  content::BrowserContext* GetBrowserContext();
+  void SetBrowserContext(content::BrowserContext* browser_context);
 
   // Loads the initial URL to display in the attached WebContents. Creates the
   // WebContents if none is attached yet. Note that this is intended as a

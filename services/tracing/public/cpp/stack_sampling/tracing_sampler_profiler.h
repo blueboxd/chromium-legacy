@@ -167,7 +167,7 @@ class COMPONENT_EXPORT(TRACING_CPP) TracingSamplerProfiler {
   // Returns whether of not the sampler profiling is able to unwind the stack
   // on this platform.
   constexpr static bool IsStackUnwindingSupported() {
-#if defined(OS_MACOSX) || defined(OS_WIN) && defined(_WIN64) ||     \
+#if defined(OS_MAC) || defined(OS_WIN) && defined(_WIN64) ||      \
     (defined(OS_ANDROID) && BUILDFLAG(CAN_UNWIND_WITH_CFI_TABLE) && \
      defined(OFFICIAL_BUILD))
     return true;

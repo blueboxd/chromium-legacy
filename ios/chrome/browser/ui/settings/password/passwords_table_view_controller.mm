@@ -42,6 +42,7 @@
 #import "ios/chrome/browser/signin/chrome_identity_service_observer_bridge.h"
 #include "ios/chrome/browser/sync/sync_setup_service_factory.h"
 #include "ios/chrome/browser/system_flags.h"
+#import "ios/chrome/browser/ui/elements/home_waiting_view.h"
 #import "ios/chrome/browser/ui/settings/cells/settings_cells_constants.h"
 #import "ios/chrome/browser/ui/settings/cells/settings_check_cell.h"
 #import "ios/chrome/browser/ui/settings/cells/settings_check_item.h"
@@ -231,6 +232,9 @@ std::vector<std::unique_ptr<autofill::PasswordForm>> CopyOf(
   // Boolean containing whether the export operation is ready. This implies that
   // the exporter is idle and there is at least one saved passwords to export.
   BOOL _exportReady;
+  // Boolean indicating if password forms have been received for the first time.
+  // Used to show a loading indicator while waiting for the store response.
+  BOOL _didReceiveSavedForms;
   // Alert informing the user that passwords are being prepared for
   // export.
   UIAlertController* _preparingPasswordsAlert;
@@ -240,14 +244,20 @@ std::vector<std::unique_ptr<autofill::PasswordForm>> CopyOf(
 
 // Object handling passwords export operations.
 @property(nonatomic, strong) PasswordExporter* passwordExporter;
+
 // Current passwords search term.
 @property(nonatomic, copy) NSString* searchTerm;
+
 // The scrim view that covers the table view when search bar is focused with
 // empty search term. Tapping on the scrim view will dismiss the search bar.
 @property(nonatomic, strong) UIControl* scrimView;
+
 // Example headers for calculating headers' heights.
 @property(nonatomic, strong)
     NSMutableDictionary<Class, UITableViewHeaderFooterView*>* exampleHeaders;
+
+// The loading spinner background which appears when loading passwords.
+@property(nonatomic, strong) HomeWaitingView* spinnerView;
 
 @end
 
@@ -303,6 +313,12 @@ std::vector<std::unique_ptr<autofill::PasswordForm>> CopyOf(
   self.tableView.allowsMultipleSelectionDuringEditing = YES;
   self.tableView.accessibilityIdentifier = kPasswordsTableViewId;
 
+  // With no header on first appearance, UITableView adds a 35 points space at
+  // the beginning of the table view. This space remains after this table view
+  // reloads with headers. Setting a small tableHeaderView avoids this.
+  self.tableView.tableHeaderView =
+      [[UIView alloc] initWithFrame:CGRectMake(0, 0, 0, CGFLOAT_MIN)];
+
   // SearchController Configuration.
   // Init the searchController with nil so the results are displayed on the same
   // TableView.
@@ -338,6 +354,10 @@ std::vector<std::unique_ptr<autofill::PasswordForm>> CopyOf(
            forControlEvents:UIControlEventTouchUpInside];
 
   [self loadModel];
+
+  if (!_didReceiveSavedForms) {
+    [self showLoadingSpinnerBackground];
+  }
 }
 
 - (void)viewWillAppear:(BOOL)animated {
@@ -384,6 +404,11 @@ std::vector<std::unique_ptr<autofill::PasswordForm>> CopyOf(
 
 - (void)loadModel {
   [super loadModel];
+
+  if (!_didReceiveSavedForms) {
+    return;
+  }
+
   TableViewModel* model = self.tableViewModel;
 
   // Save passwords switch and manage account message. Only show this section
@@ -688,7 +713,10 @@ std::vector<std::unique_ptr<autofill::PasswordForm>> CopyOf(
     _savedPasswordDuplicates.clear();
     _blockedPasswordDuplicates.clear();
   }
+  _didReceiveSavedForms = YES;
+  [self hideLoadingSpinnerBackground];
   if (results.empty()) {
+    [self reloadData];
     return;
   }
   for (auto& form : results) {
@@ -811,6 +839,36 @@ std::vector<std::unique_ptr<autofill::PasswordForm>> CopyOf(
 }
 
 #pragma mark - Private methods
+
+// Shows loading spinner background view.
+- (void)showLoadingSpinnerBackground {
+  if (!self.spinnerView) {
+    self.spinnerView =
+        [[HomeWaitingView alloc] initWithFrame:self.tableView.bounds
+                               backgroundColor:UIColor.clearColor];
+    [self.spinnerView startWaiting];
+  }
+  self.navigationItem.searchController.searchBar.userInteractionEnabled = NO;
+  self.tableView.backgroundView = self.spinnerView;
+}
+
+// Hide the loading spinner if it is showing.
+- (void)hideLoadingSpinnerBackground {
+  if (self.spinnerView) {
+    [self.spinnerView stopWaitingWithCompletion:^{
+      [UIView animateWithDuration:0.2
+          animations:^{
+            self.spinnerView.alpha = 0.0;
+          }
+          completion:^(BOOL finished) {
+            self.navigationItem.searchController.searchBar
+                .userInteractionEnabled = YES;
+            self.tableView.backgroundView = nil;
+            self.spinnerView = nil;
+          }];
+    }];
+  }
+}
 
 // Dismisses the search controller when there's a touch event on the scrim.
 - (void)dismissSearchController:(UIControl*)sender {

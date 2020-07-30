@@ -342,7 +342,13 @@ if (is_mac) {
 
     executable("symupload") {
       sources = [
+        "breakpad/src/common/mac/HTTPGetRequest.m",
         "breakpad/src/common/mac/HTTPMultipartUpload.m",
+        "breakpad/src/common/mac/HTTPPutRequest.m",
+        "breakpad/src/common/mac/HTTPRequest.m",
+        "breakpad/src/common/mac/HTTPSimplePostRequest.m",
+        "breakpad/src/common/mac/SymbolCollectorClient.m",
+        "breakpad/src/common/mac/encoding_util.m",
         "breakpad/src/tools/mac/symupload/symupload.m",
       ]
 
@@ -1032,6 +1038,8 @@ if (is_ios) {
       "breakpad/src/common/convert_UTF.h",
       "breakpad/src/common/long_string_dictionary.cc",
       "breakpad/src/common/mac/HTTPMultipartUpload.m",
+      "breakpad/src/common/mac/HTTPRequest.m",
+      "breakpad/src/common/mac/encoding_util.m",
       "breakpad/src/common/mac/file_id.cc",
       "breakpad/src/common/mac/file_id.h",
       "breakpad/src/common/mac/macho_id.cc",

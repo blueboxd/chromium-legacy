@@ -104,6 +104,7 @@
 <translation id="1853692000353488670">ახალი ინკოგნიტო ჩანართი</translation>
 <translation id="1856325424225101786">გსურთ Lite რეჟიმის გადაყენება?</translation>
 <translation id="1868024384445905608">Chrome ახლა უფრო სწრაფად ჩამოტვირთავს ფაილებს</translation>
+<translation id="1874760110381325409">სისტემაში თქვენი Google ანგარიშით შეხვალთ\n(ეს მოქმედება არ ჩართავს Chrome სინქრონიზაციას)</translation>
 <translation id="1883903952484604915">ჩემი ფაილები</translation>
 <translation id="1919950603503897840">კონტაქტების არჩევა</translation>
 <translation id="1925021887439448749">შეიყვანეთ მორგებული ვებ-მისამართი</translation>
@@ -227,6 +228,7 @@
 <translation id="281504910091592009">ნახეთ და მართეთ შენახული პაროლები თქვენს <ph name="BEGIN_LINK" />Google ანგარიშში<ph name="END_LINK" /></translation>
 <translation id="2818669890320396765">თქვენს ყველა მოწყობილობაზე არსებულ სანიშნეებზე წვდომისთვის შედით სისტემაში და ჩართეთ სინქრონიზაცია</translation>
 <translation id="2827278682606527653">არხის ბარათის მენიუ ნახევარ სიმაღლეზე</translation>
+<translation id="2841216154655874070">{NUM_DAYS,plural, =1{შემოწმდა 1 დღის წინ}other{შემოწმდა # დღის წინ}}</translation>
 <translation id="2842985007712546952">ზედა საქაღალდე</translation>
 <translation id="2860954141821109167">დარწმუნდით, რომ ამ მოწყობილობაზე ჩართულია ტელეფონის აპი</translation>
 <translation id="2870560284913253234">საიტი</translation>
@@ -702,6 +704,7 @@
 <translation id="6532866250404780454">Chrome-იდან მონახულებული ვებსაიტები არ გამოჩნდება. ვებსაიტების ყველა ტაიმერი წაიშლება.</translation>
 <translation id="6534565668554028783">Google-ს რეაგირებისთვის მეტისმეტად ბევრი დრო დასჭირდა</translation>
 <translation id="6539092367496845964">წარმოიქმნა შეფერხება. ცადეთ მოგვიანებით.</translation>
+<translation id="6541983376925655882">{NUM_HOURS,plural, =1{შემოწმდა 1 საათის წინ}other{შემოწმდა # საათის წინ}}</translation>
 <translation id="6545017243486555795">ყველა მონაცემის გასუფთავება</translation>
 <translation id="6560414384669816528">ძიების Sogou-ს მეშვეობით განხორციელება</translation>
 <translation id="656065428026159829">მეტის ნახვა</translation>
@@ -733,6 +736,7 @@
 <translation id="6697492270171225480">მსგავსი გვერდების შემოთავაზებების ჩვენება, როცა გვერდი ვერ მოიძებნება</translation>
 <translation id="6698801883190606802">სინქრონიზებული მონაცემების მართვა</translation>
 <translation id="6699370405921460408">Google-ის სერვერები მოახდენს თქვენ მიერ მონახულებული გვერდების ოპტიმიზაციას.</translation>
+<translation id="670498945988402717">შემოწმდა გუშინ</translation>
 <translation id="6710213216561001401">წინა</translation>
 <translation id="671481426037969117">თქვენი <ph name="FQDN" />-ის ტაიმერი ამოიწურა. ხვალ ის ხელახლა დაიწყება.</translation>
 <translation id="6738867403308150051">ჩამოტვირთვა…</translation>
@@ -771,6 +775,7 @@
 <translation id="7063006564040364415">ვერ ვუკავშირდებით სინქრონიზაციის სერვერს.</translation>
 <translation id="7071521146534760487">ანგარიშის მართვა</translation>
 <translation id="7077143737582773186">SD ბარათი</translation>
+<translation id="7080806333218412752">URL-ები შესამოწმებლად გაეგზავნება Safe Browsing-ს. ახალი საფრთხეების აღმოჩენის ხელშეწყობის მიზნით, გაიგზავნება გვერდების, ჩამოტვირთვების, გაფართოებათა აქტივობისა და სისტემის ინფორმაციის მცირე ნიმუშებიც. Google აპებში თქვენი დაცვის მიზნით, ეს მონაცემები დროებით მიებმება თქვენს Google ანგარიშს, როცა სისტემაში შესული ხართ.</translation>
 <translation id="7121362699166175603">მისამართთა ზოლში გაასუფთავებს ისტორიასა და ავტომატურ დასრულებებს. თქვენს Google ანგარიშში შეიძლება ინახებოდეს სხვა ტიპის დათვალიერების ისტორიაც, რომელიც ხელმისაწვდომია მისამართზე: <ph name="BEGIN_LINK" />myactivity.google.com<ph name="END_LINK" />.</translation>
 <translation id="7128355412245153445">იხილეთ ყველაზე პოპულარული საიტები და ბოლოდროინდელი ამბები მთავარ ეკრანზე გადასვლის ღილაკზე ყოველი შეხებისას.</translation>
 <translation id="7138678301420049075">სხვა</translation>
@@ -780,6 +785,7 @@
 <translation id="7173114856073700355">პარამეტრების გახსნა</translation>
 <translation id="7177466738963138057">ამის მოგვიანებით შეცვლა შეგიძლიათ პარამეტრებიდან</translation>
 <translation id="7180611975245234373">განახლება</translation>
+<translation id="7187993566681480880">უზრუნველყოფს თქვენს უსაფრთხოებას Chrome-ში და Google-ის სხვა აპებში, როცა სისტემაში შესული ხართ.</translation>
 <translation id="7189372733857464326">Google Play Services-ის განახლების დასრულების მოლოდინში</translation>
 <translation id="7191430249889272776">ჩანართი გაიხსნა ფონურ რეჟიმში.</translation>
 <translation id="723171743924126238">აირჩიეთ სურათები</translation>
@@ -891,6 +897,7 @@
 <translation id="8027863900915310177">აირჩიეთ, სად გსურთ ჩამოტვირთვა</translation>
 <translation id="8035133914807600019">ახალი საქაღალდე…</translation>
 <translation id="8037750541064988519">დარჩენილია <ph name="DAYS" /> დღე</translation>
+<translation id="8037801708772278989">შემოწმდა რამდენიმე წამის წინ</translation>
 <translation id="804335162455518893">SD ბარათი ვერ მოიძებნა</translation>
 <translation id="805047784848435650">თქვენი დათვალიერების ისტორიის საფუძველზე</translation>
 <translation id="8051695050440594747">ხელმისაწვდომია <ph name="MEGABYTES" /> მბაიტი</translation>
@@ -1031,6 +1038,7 @@
 <translation id="9137013805542155359">ორიგინალის ჩვენება</translation>
 <translation id="9155898266292537608">ძიება სიტყვაზე სწრაფად შეხებითაც შეგიძლიათ</translation>
 <translation id="9169507124922466868">ნავიგაციის ისტორია ნახევრადგახსნილია</translation>
+<translation id="9199368092038462496">{NUM_MINS,plural, =1{შემოწმდა 1 წუთის წინ}other{შემოწმდა # წუთის წინ}}</translation>
 <translation id="9204836675896933765">დარჩენილია 1 ფაილი</translation>
 <translation id="9206873250291191720">A</translation>
 <translation id="9209888181064652401">დარეკვა ვერ ხერხდება</translation>

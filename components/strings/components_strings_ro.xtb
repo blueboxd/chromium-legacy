@@ -123,6 +123,7 @@
 <translation id="1430915738399379752">Printează</translation>
 <translation id="1442386063175183758">Îndoire tip fereastră spre dreapta</translation>
 <translation id="1442987760062738829">Perforare</translation>
+<translation id="1447067628680007684">(x86_64)</translation>
 <translation id="1453974140256777690">Textul pe care îl introduci sau atașezi este trimis la Google Cloud sau la terți spre analiză. De exemplu, se pot căuta date sensibile.</translation>
 <translation id="1455413310270022028">Radieră</translation>
 <translation id="1462245070427461050">JIS B9</translation>
@@ -1143,6 +1144,7 @@ Permiți ca <ph name="EMBEDDED_URL" /> să folosească cookie-uri și date privi
 <translation id="5705882733397021510">Înapoi</translation>
 <translation id="57094364128775171">Sugerează o parolă puternică…</translation>
 <translation id="5710435578057952990">Identitatea acestui site nu a fost confirmată.</translation>
+<translation id="571403275720188526">(arm64)</translation>
 <translation id="5720705177508910913">Utilizator curent</translation>
 <translation id="5728056243719941842">C5 (Plic)</translation>
 <translation id="5730040223043577876">Chrome îți recomandă să resetezi parola dacă ai folosit-o și pe alte site-uri.</translation>
@@ -1192,6 +1194,7 @@ Permiți ca <ph name="EMBEDDED_URL" /> să folosească cookie-uri și date privi
 <translation id="5921639886840618607">Salvezi cardul în Contul Google?</translation>
 <translation id="5922853866070715753">Aproape finalizat</translation>
 <translation id="5932224571077948991">Site-ul afișează anunțuri deranjante sau înșelătoare</translation>
+<translation id="5938793338444039872">Troy</translation>
 <translation id="5946937721014915347">Se deschide <ph name="SITE_NAME" />…</translation>
 <translation id="5951495562196540101">Nu te poți înscrie cu contul de consumator (este disponibilă o licență din pachet).</translation>
 <translation id="5967592137238574583">Editează informațiile de contact</translation>
@@ -1359,6 +1362,7 @@ Permiți ca <ph name="EMBEDDED_URL" /> să folosească cookie-uri și date privi
 <translation id="6646269444027925224">{COUNT,plural, =0{Niciunul}=1{De pe un site (nu te va deconecta de la Contul Google)}few{De pe # site-uri (nu te va deconecta de la Contul Google)}other{De pe # de site-uri (nu te va deconecta de la Contul Google)}}</translation>
 <translation id="6652101503459149953">Folosește Windows Hello</translation>
 <translation id="6657585470893396449">Parolă</translation>
+<translation id="666259744093848177">(x86_64 translated)</translation>
 <translation id="6665553082534466207">Perforare triplă în dreapta</translation>
 <translation id="6671697161687535275">Elimini sugestia pentru formular din Chromium?</translation>
 <translation id="6685834062052613830">Deconectează-te și finalizează configurarea</translation>

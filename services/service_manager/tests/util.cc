@@ -86,7 +86,7 @@ mojom::ConnectResult LaunchAndConnectToProcess(
   options.handles_to_inherit = handle_passing_info;
 #elif defined(OS_FUCHSIA)
   options.handles_to_transfer = handle_passing_info;
-#elif defined(OS_MACOSX)
+#elif defined(OS_MAC)
   options.mach_ports_for_rendezvous = handle_passing_info;
 #elif defined(OS_POSIX)
   options.fds_to_remap = handle_passing_info;

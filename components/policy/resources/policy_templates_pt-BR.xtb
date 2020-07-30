@@ -1716,17 +1716,6 @@ Se esta política for definida como falsa, o <ph name="PRODUCT_NAME" /> não usa
 <translation id="355118380775352753">Sites que serão abertos no navegador alternativo</translation>
 <translation id="3554498762428140109">Ativar a oclusão de janelas nativas</translation>
 <translation id="3554984410014457319">Permitir que a frase de ativação por voz seja ouvida pelo Google Assistente</translation>
-<translation id="3557208865710006939">Força a ativação da verificação ortográfica de idiomas. Os idiomas não reconhecidos incluídos na lista serão ignorados.
-
-      Se esta política for ativada, a verificação ortográfica será ativada para os idiomas especificados, além dos idiomas para os quais o usuário tiver ativado a verificação.
-
-      Se esta política não for definida ou for desativada, não haverá alterações nas preferências de verificação ortográfica do usuário.
-
-      Se a política <ph name="SPELLCHECK_ENABLED_POLICY_NAME" /> for definida como falsa, esta política não terá efeito.
-
-      Se um idioma for incluído tanto nesta política quanto na <ph name="SPELLCHECK_LANGUAGE_BLACKLIST_POLICY_NAME" />, esta política terá prioridade, e a verificação ortográfica do idioma será ativada.
-
-      Os idiomas compatíveis no momento são: af, bg, ca, cs, da, de, el, en-AU, en-CA, en-GB, en-US, es, es-419, es-AR, es-ES, es-MX, es-US, et, fa, fo, fr, he, hi, hr, hu, id, it, ko, lt, lv, nb, nl, pl, pt-BR, pt-PT, ro, ru, sh, sk, sl, sq, sr, sv, ta, tg, tr, uk, vi.</translation>
 <translation id="356579196325389849">Os usuários podem configurar o canal de lançamento do Chrome OS</translation>
 <translation id="3575011234198230041">Autenticação HTTP</translation>
 <translation id="3577251398714997599">Configurações de anúncios para sites com anúncios invasivos</translation>
@@ -2977,7 +2966,7 @@ O campo <ph name="PROXY_MODE_PROXY_SETTINGS_FIELD" /> permite que você especifi
 <translation id="5445596354079213552">Esta política só será eficaz quando o dispositivo tiver atingido a data de expiração da atualização automática e não atender mais os requisitos mínimos permitidos pela versão do <ph name="PRODUCT_OS_NAME" /> definidos pela <ph name="DEVICE_MINIMUM_VERSION_POLICY_NAME" />.
 
       Quando esta política for definida como uma string não vazia:
-      Se o tempo de aviso mencionado na política <ph name="DEVICE_MINIMUM_VERSION_POLICY_NAME" /> tiver expirado, essa mensagem será exibida na tela de login quando o dispositivo for bloqueado para login.
+      Se o tempo de aviso mencionado na política <ph name="DEVICE_MINIMUM_VERSION_POLICY_NAME" /> tiver expirado, essa mensagem será exibida na tela de login quando o dispositivo for bloqueado para login.+
       Se o tempo de aviso mencionado na política <ph name="DEVICE_MINIMUM_VERSION_POLICY_NAME" /> não tiver expirado, a mensagem será exibida na página de gerenciamento do Chrome depois que o usuário fizer login.
 
       Se esta política não for definida ou for configurada como vazia, a mensagem padrão de expiração da atualização automática será exibida ao usuário em ambos os casos acima.

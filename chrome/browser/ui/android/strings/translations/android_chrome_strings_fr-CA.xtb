@@ -104,6 +104,7 @@
 <translation id="1853692000353488670">Nouvel onglet de navigation privée</translation>
 <translation id="1856325424225101786">Réinitialiser le mode simplifié?</translation>
 <translation id="1868024384445905608">Chrome télécharge maintenant les fichiers plus rapidement</translation>
+<translation id="1874760110381325409">Vous serez connecté avec votre compte Google\n(cela n'activera pas la synchronisation Chrome)</translation>
 <translation id="1883903952484604915">Mes fichiers</translation>
 <translation id="1919950603503897840">Sélectionner des contacts</translation>
 <translation id="1925021887439448749">Entrer une adresse Web personnalisée</translation>
@@ -227,6 +228,7 @@ Maintenez le doigt sur un mot pour effectuer une recherche sur celui-ci. Pour af
 <translation id="281504910091592009">Affichez et gérez les mots de passe enregistrés dans votre <ph name="BEGIN_LINK" />compte google<ph name="END_LINK" /></translation>
 <translation id="2818669890320396765">Pour synchroniser vos favoris sur tous vos appareils, connectez-vous et activez la synchronisation</translation>
 <translation id="2827278682606527653">Le menu de la carte du flux est ouvert à mi-hauteur</translation>
+<translation id="2841216154655874070">{NUM_DAYS,plural, =1{Dernière vérification : il y a 1 jour}one{Dernière vérification : il y a # jour}other{Dernière vérification : il y a # jours}}</translation>
 <translation id="2842985007712546952">Dossier parent</translation>
 <translation id="2860954141821109167">Assurez-vous qu'une application de téléphonie est activée sur cet appareil</translation>
 <translation id="2870560284913253234">Site</translation>
@@ -702,6 +704,7 @@ Par exemple, certains sites Web peuvent répondre à cette demande en diffusant 
 <translation id="6532866250404780454">Les sites que vous visitez dans Chrome ne s'afficheront pas. Toutes les minuteries de site seront supprimées.</translation>
 <translation id="6534565668554028783">Google a pris trop de temps à répondre</translation>
 <translation id="6539092367496845964">Une erreur s'est produite. Réessayez plus tard.</translation>
+<translation id="6541983376925655882">{NUM_HOURS,plural, =1{Dernière vérification : il y a 1 heure}one{Dernière vérification : il y a # heure}other{Dernière vérification : il y a # heures}}</translation>
 <translation id="6545017243486555795">Effacer toutes les données</translation>
 <translation id="6560414384669816528">Utiliser Sogou pour les recherches</translation>
 <translation id="656065428026159829">En voir plus</translation>
@@ -733,6 +736,7 @@ Par exemple, certains sites Web peuvent répondre à cette demande en diffusant 
 <translation id="6697492270171225480">Afficher des suggestions de pages similaires lorsqu'une page ne peut pas être trouvée</translation>
 <translation id="6698801883190606802">Gérer les données synchronisées</translation>
 <translation id="6699370405921460408">Les serveurs de Google optimiseront les pages que vous consultez.</translation>
+<translation id="670498945988402717">Dernière vérification : hier</translation>
 <translation id="6710213216561001401">Précédent</translation>
 <translation id="671481426037969117">Votre minuterie <ph name="FQDN" /> a expiré. Elle recommencera demain.</translation>
 <translation id="6738867403308150051">Téléchargement en cours…</translation>
@@ -771,6 +775,7 @@ Par exemple, certains sites Web peuvent répondre à cette demande en diffusant 
 <translation id="7063006564040364415">Échec de connexion au serveur de synchronisation.</translation>
 <translation id="7071521146534760487">Gérer le compte</translation>
 <translation id="7077143737582773186">Carte SD</translation>
+<translation id="7080806333218412752">Il envoie des URL à la navigation sécurisée pour les vérifier. Il transmet également un petit échantillon de pages, de téléchargements, de l'activité des extensions et de données système afin de cerner les nouvelles menaces. De même, pour vous protéger dans l'ensemble des applications Google, il associe temporairement ces données à votre compte Google lorsque vous êtes connecté.</translation>
 <translation id="7121362699166175603">Efface l'historique et les saisies semi-automatiques dans la barre d'adresse. D'autres formes d'historique de navigation peuvent exister sur votre compte Google à l'adresse <ph name="BEGIN_LINK" />myactivity.google.com<ph name="END_LINK" />.</translation>
 <translation id="7128355412245153445">Consultez vos sites les plus fréquentés et vos histoires récentes lorsque vous appuyez sur la touche d'accueil</translation>
 <translation id="7138678301420049075">Autre</translation>
@@ -780,6 +785,7 @@ Par exemple, certains sites Web peuvent répondre à cette demande en diffusant 
 <translation id="7173114856073700355">Ouvrir les paramètres</translation>
 <translation id="7177466738963138057">Vous pourrez modifier cet élément plus tard dans les paramètres</translation>
 <translation id="7180611975245234373">Actualiser</translation>
+<translation id="7187993566681480880">Il vous protège dans Chrome et peut être utilisé pour améliorer votre sécurité dans d'autres applications Google lorsque vous êtes connecté à votre compte.</translation>
 <translation id="7189372733857464326">Attente de la fin de la mise à jour des services Google Play en cours…</translation>
 <translation id="7191430249889272776">Onglet ouvert en arrière-plan.</translation>
 <translation id="723171743924126238">Sélectionner des images</translation>
@@ -891,6 +897,7 @@ Par exemple, certains sites Web peuvent répondre à cette demande en diffusant 
 <translation id="8027863900915310177">Choisissez l'endroit où enregistrer le téléchargement</translation>
 <translation id="8035133914807600019">Nouveau dossier...</translation>
 <translation id="8037750541064988519">Il reste <ph name="DAYS" /> jours</translation>
+<translation id="8037801708772278989">Dernière vérification : maintenant</translation>
 <translation id="804335162455518893">Carte SD introuvable</translation>
 <translation id="805047784848435650">En fonction de votre historique de navigation</translation>
 <translation id="8051695050440594747"><ph name="MEGABYTES" /> Mo disponible(s)</translation>
@@ -1031,6 +1038,7 @@ Par exemple, certains sites Web peuvent répondre à cette demande en diffusant 
 <translation id="9137013805542155359">Afficher l'original</translation>
 <translation id="9155898266292537608">Vous pouvez également effectuer une recherche d'un simple toucher sur un mot</translation>
 <translation id="9169507124922466868">L'historique de navigation est ouvert à moitié</translation>
+<translation id="9199368092038462496">{NUM_MINS,plural, =1{Dernière vérification : il y a 1 minute}one{Dernière vérification : il y a # minute}other{Dernière vérification : il y a # minutes}}</translation>
 <translation id="9204836675896933765">1 fichier restant</translation>
 <translation id="9206873250291191720">A</translation>
 <translation id="9209888181064652401">Impossible de faire des appels</translation>

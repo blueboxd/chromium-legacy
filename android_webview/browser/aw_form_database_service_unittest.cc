@@ -30,7 +30,7 @@ class AwFormDatabaseServiceTest : public Test {
   void SetUp() override {
     ASSERT_TRUE(temp_dir_.CreateUniqueTempDir());
     env_ = AttachCurrentThread();
-    ASSERT_TRUE(env_ != NULL);
+    ASSERT_TRUE(env_);
 
     service_.reset(new AwFormDatabaseService(temp_dir_.GetPath()));
   }

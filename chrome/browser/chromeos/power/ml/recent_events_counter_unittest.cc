@@ -65,6 +65,46 @@ TEST(RecentEventsCounterTest, TimeTestConsecutiveMinutes) {
   }
 }
 
+// Tests that, when logging a slightly-newer event, stale buckets are cleared.
+TEST(RecentEventsCounterTest, SomeBucketsStale) {
+  base::TimeDelta minute = base::TimeDelta::FromMinutes(1);
+  RecentEventsCounter counter(base::TimeDelta::FromHours(1), 60);
+
+  // Start with 60 buckets covering [0, 60), with 1 event per bucket.
+  for (int i = 0; i < 60; i++) {
+    counter.Log(i * minute);
+  }
+  CHECK_EQ(counter.GetTotal(59.5 * minute), 60);
+
+  // Logging an event at 64 should advance this to [5, 65), with:
+  // * 55 buckets covering [5, 60) with 1 event each
+  // * 4 buckets covering [60, 64) with 0 events each
+  // * 1 bucket covering [64, 65) with 1 event each
+  // Total: 56
+  counter.Log(64 * minute);
+  EXPECT_EQ(counter.GetTotal(64.5 * minute), 56);
+}
+
+// Tests that, when logging an event more than `duration` newer than any
+// previous event, all buckets are cleared (since all will be stale).
+TEST(RecentEventsCounterTest, AllBucketsStale) {
+  base::TimeDelta minute = base::TimeDelta::FromMinutes(1);
+  RecentEventsCounter counter(base::TimeDelta::FromHours(1), 60);
+
+  // Start with 60 buckets covering [0, 60), with 1 event per bucket.
+  for (int i = 0; i < 60; i++) {
+    counter.Log(i * minute);
+  }
+  CHECK_EQ(counter.GetTotal(59.5 * minute), 60);
+
+  // Logging an event at 124 should advance this to [65, 125), with:
+  // * 59 buckets covering [65, 124) with 0 events each
+  // * 1 bucket covering [124, 125) with 1 event each
+  // Total: 1
+  counter.Log(124 * minute);
+  EXPECT_EQ(counter.GetTotal(124.5 * minute), 1);
+}
+
 }  // namespace ml
 }  // namespace power
 }  // namespace chromeos

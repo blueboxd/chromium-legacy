@@ -163,6 +163,9 @@
 
       Si no se configura la política o se establece como falsa, no se usará la "Transición rápida".
       Si se configura como verdadera, la "Transición rápida" se usará cuando el punto de acceso inalámbrico lo permita.</translation>
+<translation id="1240722269871366886">Esta política permite que <ph name="PRODUCT_OS_NAME" /> sugiera emojis cuando los usuarios escriben texto con el teclado físico o el virtual.
+      Si la estableces como verdadera, se habilitará la función; los usuarios podrán cambiarla.
+      De forma predeterminada, la política se establece como falsa, los usuarios no pueden anularla y no se sugiere ningún emoji.</translation>
 <translation id="1243570869342663665">Controlar el filtro de contenido para adultos de SafeSites.</translation>
 <translation id="1257550411839719984">Establecer el directorio de descarga predeterminado</translation>
 <translation id="1265053460044691532">Permite limitar el tiempo durante el cual un usuario autenticado mediante SAML puede acceder sin conexión.</translation>
@@ -661,21 +664,21 @@ Si la inhabilitas, se inhabilitará el desplazamiento de la página web a fragme
 
       Cuando se configura esta política con una lista no vacía:
       Si ninguna de las entradas tiene un valor de <ph name="CHROMEOS_VERSION_PROPERTY_NAME" /> mayor que la versión actual del dispositivo, no se aplicarán restricciones y se revocarán las restricciones existentes.
-      Si al menos una de las entradas tiene un valor de <ph name="CHROMEOS_VERSION_PROPERTY_NAME" /> mayor que la versión actual, se seleccionará la entrada más resistente, cuya versión es la más cercana a la actual.
+      Si al menos una de las entradas tiene un valor de <ph name="CHROMEOS_VERSION_PROPERTY_NAME" /> mayor que la versión actual, se seleccionará la entrada más resistente cuya versión sea la mayor y más cercana a la actual.
       En caso de conflicto, se le dará preferencia a la versión con el menor valor de <ph name="WARNING_PERIOD_PROPERTY_NAME" /> o <ph name="AUE_WARNING_PERIOD_PROPERTY_NAME" />, y se aplicará la política conforme a esa entrada.
 
-      Si la versión actual se vuelve obsoleta durante la sesión de usuario, y la red actual limita las actualizaciones automáticas, se mostrará una notificación en pantalla para solicitar que se actualice el dispositivo en el período especificado en el valor de <ph name="WARNING_PERIOD_PROPERTY_NAME" /> de la notificación.
-      Si la red actual permite las actualizaciones automáticas, y el dispositivo debe actualizarse en el período especificado en el valor de <ph name="WARNING_PERIOD_PROPERTY_NAME" />, no se mostrarán notificaciones.
+      Si la versión actual se vuelve obsoleta durante la sesión de usuario y la red actual limita las actualizaciones automáticas, se mostrará una notificación en pantalla solicitando la actualización del dispositivo en el período especificado en el valor de <ph name="WARNING_PERIOD_PROPERTY_NAME" /> de la notificación.
+      Si la red actual permite las actualizaciones automáticas y el dispositivo debe actualizarse en el período especificado en <ph name="WARNING_PERIOD_PROPERTY_NAME" />, no se mostrarán notificaciones.
       El valor de <ph name="WARNING_PERIOD_PROPERTY_NAME" /> comienza a partir de que se aplica la política.
-      Si no se actualiza el dispositivo para cuando caduca el valor de <ph name="WARNING_PERIOD_PROPERTY_NAME" />, se forzará al usuario a salir de la sesión.
-      Si se descubre que la versión actual es obsoleta al momento de acceder con el período especificado en el valor de <ph name="WARNING_PERIOD_PROPERTY_NAME" /> vencido, el usuario deberá actualizar el dispositivo para poder acceder.
+      Si no se actualiza el dispositivo para cuando caduca <ph name="WARNING_PERIOD_PROPERTY_NAME" />, se forzará al usuario a salir de la sesión.
+      Si se advierte que la versión actual es obsoleta al momento de acceder con <ph name="WARNING_PERIOD_PROPERTY_NAME" /> vencido, el usuario deberá actualizar el dispositivo para poder acceder.
 
-      Si la versión actual se vuelve obsoleta durante la sesión de usuario, y el dispositivo alcanzó la fecha de vencimiento de las actualizaciones automáticas, se mostrará una notificación en pantalla para solicitar que se devuelva el dispositivo en el período especificado en el valor de <ph name="AUE_WARNING_PERIOD_PROPERTY_NAME" />.
-      Si se descubre que el dispositivo alcanzó la fecha de vencimiento de las actualizaciones automáticas al momento de acceder con el período especificado en el valor de <ph name="AUE_WARNING_PERIOD_PROPERTY_NAME" /> vencido, se bloqueará el acceso al dispositivo para todos los usuarios.
+      Si la versión actual se vuelve obsoleta durante la sesión de usuario y el dispositivo alcanzó la fecha de vencimiento de las actualizaciones automáticas, se mostrará una notificación en pantalla indicando que el dispositivo deberá devolverse en el período especificado en <ph name="AUE_WARNING_PERIOD_PROPERTY_NAME" />.
+      Si se advierte que el dispositivo alcanzó la fecha de vencimiento de las actualizaciones automáticas al momento de acceder con <ph name="AUE_WARNING_PERIOD_PROPERTY_NAME" /> vencido, se bloqueará el acceso al dispositivo para todos los usuarios.
 
       Si no estableces esta política o la estableces como vacía, no se aplicarán restricciones, se revocarán las existentes, y el usuario podrá acceder independientemente de la versión de <ph name="PRODUCT_OS_NAME" />.
 
-      Aquí, el valor de <ph name="CHROMEOS_VERSION_PROPERTY_NAME" /> puede ser exacto, como "13305.0.0" o el prefijo de una versión, como "13305".
+      Aquí el valor de <ph name="CHROMEOS_VERSION_PROPERTY_NAME" /> puede ser exacto, como "13305.0.0", o el prefijo de una versión, como "13305".
       Los valores <ph name="WARNING_PERIOD_PROPERTY_NAME" /> y <ph name="AUE_WARNING_PERIOD_PROPERTY_NAME" /> son opcionales y se especifican en número de días. El valor predeterminado de esos valores es 0 días, lo que significa que no hay un período de advertencia.</translation>
 <translation id="2104418465060359056">Enviar información de extensiones y complementos</translation>
 <translation id="2106627642643925514">Anula el modo de impresión con PIN predeterminado. Si el modo no está disponible, se ignorará esta política.</translation>
@@ -768,9 +771,9 @@ Esta política no se aplica a las aplicaciones de kiosko; estas se migran de for
       Si estableces la política, los usuarios no podrán cambiarla. Si no se establece o se establece como falsa, no tiene ningún efecto.</translation>
 <translation id="2200041405904405884">Permite especificar los hosts de mensajería nativa que no están sujetos a la lista de elementos bloqueados.
 
-          Un valor de asterisco (*) en una lista de elementos bloqueados significa que todos los hosts de mensajería nativa están en la lista de elementos bloqueados, y solo se cargarán los hosts de mensajería nativa que figuren en la lista de elementos permitidos.
+          Un valor de asterisco (*) en una lista de elementos bloqueados significa que todos los hosts de mensajería nativa están en la lista de elementos bloqueados y solo se cargarán los hosts de mensajería nativa que figuren en la lista de elementos permitidos.
 
-          De forma predeterminada, se permiten todos los hosts de mensajería nativa. Sin embargo, si se agregaron todos los hosts a la lista de elementos bloqueados mediante una política, se puede utilizar la lista de elementos permitidos para anular esa política.</translation>
+          De forma predeterminada, se permiten todos los hosts de mensajería nativa. Sin embargo, si todos los hosts de mensajería nativa se bloquearon mediante una política, se puede utilizar la lista de elementos permitidos para anular la política.</translation>
 <translation id="2200698565850397198">Configura la lista de elementos bloqueados para la mensajería nativa</translation>
 <translation id="2201555246697292490">Configurar la lista blanca de mensajería nativa</translation>
 <translation id="2204753382813641270">Controlar opción para ocultar archivos automáticamente</translation>
@@ -946,6 +949,7 @@ Si no la estableces, inicialmente se inhabilitará la pantalla de privacidad, pe
       Cuando no se configura o se establece como verdadera, los usuarios podrán usar esta función.
 
       Cuando se establece como falsa, los usuarios no podrán usar esta función.</translation>
+<translation id="2435052056904485763">Lista de servidores de delegación de Kerberos permitidos</translation>
 <translation id="2440773021691931148">Envía informes sobre las estadísticas de hardware y los identificadores relacionados con la energía.
 
       Si se establece la política como falsa o no se establece, no se enviará un informe con las estadísticas.
@@ -1730,17 +1734,6 @@ Si se establece como falsa, <ph name="PRODUCT_NAME" /> no podrá usar notificaci
 <translation id="355118380775352753">Sitios web que se abren en un navegador alternativo</translation>
 <translation id="3554498762428140109">Habilitar la oclusión de ventanas nativas</translation>
 <translation id="3554984410014457319">Permitir que el Asistente de Google escuche la frase de activación de voz</translation>
-<translation id="3557208865710006939">Permite la habilitación forzosa del corrector ortográfico de idiomas. Se omitirán los idiomas que no se reconozcan en la lista.
-
-      Si se habilita esta política, se habilitará el corrector ortográfico para los idiomas especificados, además de los idiomas en los que el usuario haya habilitado el corrector ortográfico.
-
-      Si esta política no se configura o se inhabilita, no se implementarán cambios en las preferencias del usuario con respecto al corrector ortográfico.
-
-      Si se establece la política <ph name="SPELLCHECK_ENABLED_POLICY_NAME" /> como falsa, esta no tendrá efecto.
-
-      Si un idioma aparece en esta política y en la política <ph name="SPELLCHECK_LANGUAGE_BLACKLIST_POLICY_NAME" />, esta política tendrá prioridad, y se habilitará el corrector ortográfico para este idioma.
-
-      Actualmente, los idiomas compatibles son los siguientes: af, bg, ca, cs, da, de, el, en-AU, en-CA, en-GB, en-US, es, es-419, es-AR, es-ES, es-MX, es-US, et, fa, fo, fr, he, hi, hr, hu, id, it, ko, lt, lv, nb, nl, pl, pt-BR, pt-PT, ro, ru, sh, sk, sl, sq, sr, sv, ta, tg, tr, uk, vi.</translation>
 <translation id="356579196325389849">Los usuarios pueden configurar un canal de versiones del Sistema operativo Chrome</translation>
 <translation id="3575011234198230041">Autenticación HTTP</translation>
 <translation id="3577251398714997599">Configuración de anuncios para sitios con anuncios intrusivos</translation>
@@ -2403,6 +2396,21 @@ Si se establece como falsa, <ph name="PRODUCT_NAME" /> no podrá usar notificaci
       Si se asigna el valor Forzado (Forced), es posible que las páginas se abran SOLO en modo Incógnito. Ten en cuenta que la opción Forzado (Forced) no funciona para Android-on-Chrome.</translation>
 <translation id="4600786265870346112">Habilita el cursor grande.</translation>
 <translation id="4604931264910482931">Configurar la lista negra de mensajería nativa</translation>
+<translation id="4607416370554533118">Si estableces la política, podrás crear una lista de patrones de URL que especifiquen los sitios para los cuales Chrome podrá seleccionar un certificado de cliente automáticamente. El valor es un arreglo de diccionarios convertidos en strings de JSON. Cada diccionario debe tener el formato <ph name="AUTO_SELECT_CERTIFICATE_FOR_URLS_EXAMPLE" />, donde <ph name="URL_PATTERN_PLACEHOLDER" /> es un patrón de configuración de contenido. <ph name="FILTER_PLACEHOLDER" /> restringe los certificados de cliente entre los cuales el navegador seleccionará automáticamente. Más allá del filtro, solo se seleccionarán certificados que se ajusten a la solicitud del servidor.
+
+      A continuación se incluyen ejemplos de uso de la sección <ph name="FILTER_PLACEHOLDER" />:
+
+      * Si estableces <ph name="FILTER_PLACEHOLDER" /> en <ph name="AUTO_SELECT_CERTIFICATE_FOR_URLS_FILTER_EXAMPLE" />, solo se seleccionarán certificados de cliente emitidos por un certificado con el CommonName <ph name="ISSUER_CN_PLACEHOLDER" />.
+
+      * Si <ph name="FILTER_PLACEHOLDER" /> incluye las secciones <ph name="ISSUER_STRING_VALUE" /> y <ph name="SUBJECT_STRING_VALUE" />, solo se seleccionarán certificados de cliente que cumplan con ambas condiciones.
+
+      * Si <ph name="FILTER_PLACEHOLDER" /> incluye la sección <ph name="SUBJECT_STRING_VALUE" /> con el valor <ph name="FILTER_STRING_ORGANIZATION" />, el certificado deberá contar con al menos una unidad organizacional que coincida con el valor indicado para ser elegido.
+
+      * Si <ph name="FILTER_PLACEHOLDER" /> incluye una sección <ph name="SUBJECT_STRING_VALUE" /> con el valor <ph name="FILTER_STRING_ORGANIZATIONAL_UNIT" />, el certificado deberá contar con al menos una unidad organizacional que coincida con el valor indicado para ser elegido.
+
+      * Si estableces <ph name="FILTER_PLACEHOLDER" /> como <ph name="EMPTY_DICTIONARY" />, no se aplicarán restricciones adicionales a la selección de certificados de cliente. Ten en cuenta que se seguirán aplicando los filtros que proporciona el servidor web.
+
+      Si no estableces la política, no se implementará la selección automática para ningún sitio.</translation>
 <translation id="4617338332148204752">Omitir la comprobación de metaetiquetas en <ph name="PRODUCT_FRAME_NAME" /></translation>
 <translation id="462134014569484584">Esta política especifica la clave de licencia de <ph name="PLUGIN_VM_NAME" /> para este dispositivo.</translation>
 <translation id="4625915093043961294">Configurar la lista blanca de instalación de extensiones</translation>
@@ -2516,7 +2524,14 @@ Si se establece como falsa, <ph name="PRODUCT_NAME" /> no podrá usar notificaci
 <translation id="4812270373673968774">Si estableces la política como "siempre", se ocultará la biblioteca de <ph name="PRODUCT_OS_NAME" /> de forma automática. Si la estableces como "nunca", no se ocultará nunca la biblioteca de forma automática.
 
       Si estableces la política, los usuarios no podrán cambiarla. Si no la estableces, los usuarios podrán decidir si se oculta la biblioteca de forma automática.</translation>
-<translation id="4812714598405913256">Configura el mensaje de la fecha de vencimiento de las actualizaciones automáticas para la política DeviceMinimumVersion</translation>
+<translation id="4812714598405913256">Configura el mensaje sobre el vencimiento de las actualizaciones automáticas para la política DeviceMinimumVersion</translation>
+<translation id="481492486938162195">Esta política dejó de estar disponible. En su lugar, utiliza la política "<ph name="AUTH_NEGOCIATE_DELEGATE_ALLOWLIST_POLICY_NAME" />".
+
+          Indica los servidores a los que puede delegar el producto <ph name="PRODUCT_NAME" />.
+
+          Los nombres de los servidores se separan con comas. Se permite el uso de caracteres comodín (*).
+
+          Si no estableces esta política, <ph name="PRODUCT_NAME" /> no delegará las credenciales de usuario aunque un servidor se detecte como Intranet.</translation>
 <translation id="4816674326202173458">Permitir que el usuario de empresa sea principal y secundario (comportamiento predeterminado para usuarios no administrados)</translation>
 <translation id="4826326557828204741">Acción a realizar si se alcanza la demora de inactividad mientras el dispositivo funciona con batería</translation>
 <translation id="482803100714220060">Muestra las URL completas</translation>
@@ -2787,15 +2802,15 @@ Si se establece como falsa, <ph name="PRODUCT_NAME" /> no podrá usar notificaci
 
           Si esta política se configura como falsa, la actividad de audio no evitará que el usuario se considere inactivo.</translation>
 <translation id="5245671702326993331">Permite las notificaciones nativas</translation>
-<translation id="524637053580639111">A partir de M82, esta política no estará disponible. En su lugar, utiliza DeviceMinimumVersion.
+<translation id="524637053580639111">A partir de M82, esta política no está disponible. En su lugar, utiliza DeviceMinimumVersion.
 
-      Configura el requisito de la versión mínima permitida de <ph name="PRODUCT_NAME" />. Las versiones que se describen a continuación se consideran obsoletas, y el dispositivo no permitirá que el usuario acceda sin antes actualizar el SO.
+      Configura el requisito de la versión mínima permitida de <ph name="PRODUCT_NAME" />. Las versiones que se describen a continuación se consideran obsoletas y el dispositivo no permitirá que el usuario acceda sin antes actualizar el SO.
 
       Si la versión actual se vuelve obsoleta durante la sesión de usuario, se forzará al usuario a salir.
 
-      Si no se establece esta política, no se aplicarán restricciones, y el usuario podrá acceder independientemente de la versión de <ph name="PRODUCT_NAME" />.
+      Si no se establece esta política, no se aplicarán restricciones y el usuario podrá acceder independientemente de la versión de <ph name="PRODUCT_NAME" />.
 
-      Aquí, la "versión" puede ser una exacta, como "61.0.3163.120" o el prefijo de una versión, como "61.0".  </translation>
+      Aquí la "versión" puede ser exacta, como "61.0.3163.120", o el prefijo de una versión, como "61.0".  </translation>
 <translation id="5247006254130721952">Bloquear las descargas peligrosas</translation>
 <translation id="5248863213023520115">Establece los tipos de encriptación que se permiten cuando se solicitan tickets de Kerberos desde un servidor de <ph name="MS_AD_NAME" />.
 
@@ -2973,14 +2988,14 @@ Si se establece como falsa, <ph name="PRODUCT_NAME" /> no podrá usar notificaci
       Si se le asigna el valor "Permitir cargas y descargas", <ph name="PRODUCT_NAME" /> se comportará conforme a las reglas que se describen en "Permitir descargas" y "Permitir cargas".
       </translation>
 <translation id="5442026853063570579">Esta política también controla el acceso a las Opciones para desarrolladores de Android. Si estableces esta política como "DeveloperToolsDisallowed" (valor 2), los usuarios no pueden acceder a las Opciones para desarrolladores. Si la estableces con otro valor o la dejas sin establecer, los usuarios pueden acceder a las Opciones para desarrolladores al presionar siete veces el número de versión en la app de Configuración de Android.</translation>
-<translation id="5445596354079213552">Esta política solo es válida si el dispositivo alcanzó la fecha de vencimiento de las actualizaciones automáticas y no cumple con la versión mínima permitida de <ph name="PRODUCT_OS_NAME" /> que se estableció en la política <ph name="DEVICE_MINIMUM_VERSION_POLICY_NAME" />.
+<translation id="5445596354079213552">Esta política solo es válida si se alcanzó la fecha de vencimiento de las actualizaciones automáticas para el dispositivo y no se cumple el requisito de versión mínima permitida de <ph name="PRODUCT_OS_NAME" /> que se estableció en la política <ph name="DEVICE_MINIMUM_VERSION_POLICY_NAME" />.
 
       Cuando estableces esta política con una string no vacía:
       Si caducó el tiempo de advertencia que se menciona en la política <ph name="DEVICE_MINIMUM_VERSION_POLICY_NAME" />, se mostrará este mensaje en la pantalla de acceso cuando se bloquee el acceso al dispositivo para todos los usuarios.
       Si no caducó el tiempo de advertencia que se menciona en la política <ph name="DEVICE_MINIMUM_VERSION_POLICY_NAME" />, se mostrará este mensaje en la página de administración de Chrome después de que el usuario acceda.
 
-      Si no estableces esta política o la estableces como vacía, se mostrará al usuario el mensaje predeterminado de la fecha de vencimiento de las actualizaciones automáticas en los dos casos descritos anteriormente.
-      El mensaje no debe tener ningún tipo de formato. No se permite ningún lenguaje de marcado.</translation>
+      Si no estableces esta política o la estableces como vacía, se mostrará al usuario el mensaje predeterminado sobre el vencimiento de las actualizaciones automáticas en los dos casos descritos anteriormente.
+      El mensaje sobre el vencimiento de las actualizaciones automáticas debe emplear texto sin formato. No puede incluir lenguaje de marcado.</translation>
 <translation id="5445719321399313760">Si estableces la política como verdadera o no la estableces, <ph name="PRODUCT_NAME" /> podrá mostrarles a los usuarios información de productos en pestaña completa.
 
       Si la estableces como falsa, <ph name="PRODUCT_NAME" /> no podrá mostrar información de productos en pestaña completa.
@@ -4547,9 +4562,9 @@ Si se selecciona "U2F_EXTENDED", el segundo factor integrado proporcionará func
 
           Permite especificar los hosts de mensajería nativa que no están sujetos a la lista de elementos bloqueados.
 
-          Un valor de asterisco (*) en una lista de elementos bloqueados significa que todos los hosts de mensajería nativa están en la lista de elementos bloqueados, y solo se cargarán los hosts de mensajería nativa que figuren en la lista de elementos permitidos.
+          Un valor de asterisco (*) en una lista de elementos bloqueados significa que todos los hosts de mensajería nativa están en la lista de elementos bloqueados y solo se cargarán los hosts de mensajería nativa que figuren en la lista de elementos permitidos.
 
-          De forma predeterminada, se permiten todos los hosts de mensajería nativa. Sin embargo, si se agregaron todos los hosts a la lista de elementos bloqueados mediante una política, se puede utilizar la lista de elementos permitidos para anular esa política.</translation>
+          De forma predeterminada, se permiten todos los hosts de mensajería nativa. Sin embargo, si todos los hosts de mensajería nativa se bloquearon mediante una política, se puede utilizar la lista de elementos permitidos para anular la política.</translation>
 <translation id="7818131573217430250">Establece el estado predeterminado del modo de contraste alto en la pantalla de acceso.</translation>
 <translation id="7832907442895199611">Esta política deja de estar disponible en la versión M83. En su lugar, utiliza SafeBrowsingProtectionLevel.
 
@@ -5341,6 +5356,13 @@ Si no la estableces, inicialmente se inhabilitará la pantalla de privacidad, pe
       Si se establece esta política como falsa o no se establece, se inhabilitarán los elementos de los controles de formulario cuando se lancen en las versiones M81, M82 y M83.
 
       Después de Chrome 84, se quitará esta política.</translation>
+<translation id="8937562488500723400">Controla si se respeta la aprobación de la política de KDC para decidir si se deben delegar los tickets de <ph name="KERBEROS" />.
+
+          Si estableces esta política como verdadera, la autenticación de HTTP respetará la aprobación de la política de KDC, es decir, solo delegará credenciales si KDC establece <ph name="OK_AS_DELEGATE" /> en un ticket de servicio. Consulta https://tools.ietf.org/html/rfc5896.html para obtener más información. El servicio también debe coincidir con la política "AuthNegotiateDelegateAllowlist".
+
+          Si no estableces esta política o la estableces como falsa, se ignorará la política de KDC en las plataformas compatibles y solo se respetará la política "AuthNegotiateDelegateAllowlist".
+
+          En Windows, siempre se respeta la política de KDC.</translation>
 <translation id="8938932171964587769">Dejó de estar disponible en M69. En su lugar, utiliza
       OverrideSecurityRestrictionsOnInsecureOrigin.
 
@@ -5458,6 +5480,27 @@ Si no la estableces, inicialmente se inhabilitará la pantalla de privacidad, pe
       Si estableces la política, <ph name="PRODUCT_NAME" /> usará el tamaño del almacenamiento en caché que proporciones, independientemente de que los usuarios hayan especificado o no la función experimental --disk-cache-size. (Los valores expresados en megabytes se redondearán hacia arriba).
 
       Si no estableces la política, <ph name="PRODUCT_NAME" /> usará el tamaño predeterminado. Los usuarios podrán cambiar la configuración mediante la función experimental --disk-cache-size.</translation>
+<translation id="9057444687284972605">Te permite configurar una lista de patrones de URL donde se indiquen los sitios para los que se selecciona automáticamente un certificado de cliente en la pantalla de acceso, en el marco que aloja el flujo de SAML, si el sitio solicita un certificado. Por ejemplo, se puede configurar un certificado para todo el dispositivo que se presente en el IdP de SAML.
+
+      El valor es un arreglo de diccionarios convertidos en strings de JSON. Cada diccionario debe tener el formato <ph name="AUTO_SELECT_CERTIFICATE_FOR_URLS_EXAMPLE" />, donde <ph name="URL_PATTERN_PLACEHOLDER" /> es un patrón de configuración de contenido. <ph name="FILTER_PLACEHOLDER" /> restringe los certificados de cliente entre los cuales el navegador seleccionará automáticamente. Más allá del filtro, solo se seleccionarán certificados que se ajusten a la solicitud del servidor.
+
+      A continuación se incluyen ejemplos de uso de la sección <ph name="FILTER_PLACEHOLDER" />:
+
+      * Si estableces <ph name="FILTER_PLACEHOLDER" /> en <ph name="AUTO_SELECT_CERTIFICATE_FOR_URLS_FILTER_EXAMPLE" />, solo se seleccionarán certificados de cliente emitidos por un certificado con el CommonName <ph name="ISSUER_CN_PLACEHOLDER" />.
+
+      * Si <ph name="FILTER_PLACEHOLDER" /> incluye las secciones <ph name="ISSUER_STRING_VALUE" /> y <ph name="SUBJECT_STRING_VALUE" />, solo se seleccionarán certificados de cliente que cumplan con ambas condiciones.
+
+      * Si <ph name="FILTER_PLACEHOLDER" /> incluye la sección <ph name="SUBJECT_STRING_VALUE" /> con el valor <ph name="FILTER_STRING_ORGANIZATION" />, el certificado deberá contar con al menos una unidad organizacional que coincida con el valor indicado para ser elegido.
+
+      * Si <ph name="FILTER_PLACEHOLDER" /> incluye una sección <ph name="SUBJECT_STRING_VALUE" /> con el valor <ph name="FILTER_STRING_ORGANIZATIONAL_UNIT" />, el certificado deberá contar con al menos una unidad organizacional que coincida con el valor indicado para ser elegido.
+
+      * Si estableces <ph name="FILTER_PLACEHOLDER" /> como <ph name="EMPTY_DICTIONARY" />, no se aplicarán restricciones adicionales a la selección de certificados de cliente. Ten en cuenta que se seguirán aplicando los filtros que proporciona el servidor web.
+
+
+
+      Si no se configura esta política, no se implementará la selección automática para ningún sitio.
+
+      Para obtener información detallada sobre los patrones de URL válidos, consulta https://cloud.google.com/docs/chrome-enterprise/policies/url-patterns.</translation>
 <translation id="9062348747995618422">Si estableces la política, podrás especificar una lista de patrones de URL que indiquen los sitios que pueden ejecutar el complemento <ph name="FLASH_PLUGIN_NAME" />.
 
       Si no estableces la política, se aplicará <ph name="DEFAULT_PLUGINS_SETTING_POLICY_NAME" /> (si se establece) para todos los sitios. De lo contrario se aplicará la configuración personal del usuario.

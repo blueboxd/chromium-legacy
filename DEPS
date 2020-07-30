@@ -195,7 +195,7 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling Skia
   # and whatever else without interference from each other.
-  'skia_revision': '398c654ce7be28edb9cbcf649e75d8b8bf1f6776',
+  'skia_revision': '94cefeff50d2a108295c51f22ad097b37c3ac5f9',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling V8
   # and whatever else without interference from each other.
@@ -207,7 +207,7 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling ANGLE
   # and whatever else without interference from each other.
-  'angle_revision': 'cc846039201d3e7cd05d503ce49acbba2bd4f784',
+  'angle_revision': 'fd60950e59a3260d829584554f6dfec6149886a7',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling SwiftShader
   # and whatever else without interference from each other.
@@ -215,7 +215,7 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling PDFium
   # and whatever else without interference from each other.
-  'pdfium_revision': '1f73c4f9367e7355630754bfc2708eae8c160679',
+  'pdfium_revision': '29cb43d47b7af9682cb862abc865ca51a7a11324',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling BoringSSL
   # and whatever else without interference from each other.
@@ -258,7 +258,7 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling catapult
   # and whatever else without interference from each other.
-  'catapult_revision': '395d1d531f44227754f8e26a55b7b3f88660078b',
+  'catapult_revision': '37f9135726f476b7bcd765537683ee4e606a91a5',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling libFuzzer
   # and whatever else without interference from each other.
@@ -266,7 +266,7 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling devtools-frontend
   # and whatever else without interference from each other.
-  'devtools_frontend_revision': '4a89ed360b5f0549063b55e053a02deebcee7862',
+  'devtools_frontend_revision': 'ce8858814b6c54d287ac3d7eefdb495db0f2e98e',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling libprotobuf-mutator
   # and whatever else without interference from each other.
@@ -831,7 +831,7 @@ deps = {
   },
 
   'src/third_party/breakpad/breakpad':
-    Var('chromium_git') + '/breakpad/breakpad.git' + '@' + '2757a2c9c819fcae3784576aef0c8400c7ad06d7',
+    Var('chromium_git') + '/breakpad/breakpad.git' + '@' + 'a740aa2625df2c0ed21ed7118bd8ab5faec375b8',
 
   'src/third_party/byte_buddy': {
       'packages': [

@@ -89,6 +89,12 @@ const cryptauth::GcmDeviceInfo& GcmDeviceInfoProviderImpl::GetGcmDeviceInfo()
           cryptauth::SoftwareFeature::MAGIC_TETHER_CLIENT);
     }
 
+    // Phone Hub is only supported if the associated flag is enabled.
+    if (features::IsPhoneHubEnabled()) {
+      gcm_device_info.add_supported_software_features(
+          cryptauth::SoftwareFeature::PHONE_HUB_CLIENT);
+    }
+
     return gcm_device_info;
   }());
 

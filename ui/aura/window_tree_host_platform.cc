@@ -261,6 +261,8 @@ void WindowTreeHostPlatform::OnAcceleratedWidgetAvailable(
     WindowTreeHost::OnAcceleratedWidgetAvailable();
 }
 
+void WindowTreeHostPlatform::OnWillDestroyAcceleratedWidget() {}
+
 void WindowTreeHostPlatform::OnAcceleratedWidgetDestroyed() {
   gfx::AcceleratedWidget widget = compositor()->ReleaseAcceleratedWidget();
   DCHECK_EQ(widget, widget_);

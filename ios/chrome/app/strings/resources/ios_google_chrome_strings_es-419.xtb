@@ -46,6 +46,7 @@
 <translation id="6676840375528380067">¿Quieres borrar tus datos de Chrome de este dispositivo?</translation>
 <translation id="7165736900384873061">Usar el escáner QR en Google Chrome</translation>
 <translation id="7172660552945675509">Sugerencia: <ph name="BEGIN_LINK" />Lleva Chrome a tu Dock<ph name="END_LINK" /></translation>
+<translation id="7173114856073700355">Abrir la configuración</translation>
 <translation id="7173660919484573146">Chrome usa Face ID para garantizar el acceso autorizado a tus contraseñas.</translation>
 <translation id="7261678641327190792">Chrome no puede revisar las contraseñas</translation>
 <translation id="7265369419224458312">Accede aquí a las pestañas que abriste en la computadora. Abre Chrome en la computadora, accede al menú y selecciona "Acceder a Chrome…".</translation>
@@ -59,5 +60,5 @@
 <translation id="8370517070665726704">Copyright <ph name="YEAR" /> Google LLC. Todos los derechos reservados.</translation>
 <translation id="840168496893712993">Algunos complementos causan bloqueos en Chrome. Prueba a desinstalarlos.</translation>
 <translation id="8459495907675268833">Los datos seleccionados se quitaron de Chrome y los dispositivos sincronizados. Es posible que tu cuenta de Google tenga otros formularios del historial de navegación, como las búsquedas y la actividad de otros servicios de Google en history.google.com.</translation>
-<translation id="8540666473246803645">Google Chrome</translation>
+<translation id="8540666473246803645">Google Chrome</translation>
 </translationbundle>

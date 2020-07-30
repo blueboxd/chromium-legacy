@@ -16,6 +16,7 @@
 #include "base/win/scoped_handle.h"
 #include "chrome/credential_provider/gaiacp/associated_user_validator.h"
 #include "chrome/credential_provider/gaiacp/chrome_availability_checker.h"
+#include "chrome/credential_provider/gaiacp/device_policies_manager.h"
 #include "chrome/credential_provider/gaiacp/event_logging_api_manager.h"
 #include "chrome/credential_provider/gaiacp/event_logs_upload_manager.h"
 #include "chrome/credential_provider/gaiacp/gem_device_details_manager.h"
@@ -25,6 +26,7 @@
 #include "chrome/credential_provider/gaiacp/password_recovery_manager.h"
 #include "chrome/credential_provider/gaiacp/scoped_lsa_policy.h"
 #include "chrome/credential_provider/gaiacp/scoped_user_profile.h"
+#include "chrome/credential_provider/gaiacp/user_policies_manager.h"
 #include "chrome/credential_provider/gaiacp/win_http_url_fetcher.h"
 
 namespace base {
@@ -582,6 +584,41 @@ class FakeEventLogsUploadManager : public EventLogsUploadManager {
  private:
   EventLogsUploadManager* original_manager_ = nullptr;
   FakeEventLoggingApiManager api_manager_;
+};
+
+///////////////////////////////////////////////////////////////////////////////
+
+class FakeUserPoliciesManager : public UserPoliciesManager {
+ public:
+  explicit FakeUserPoliciesManager(bool cloud_policies_enabled);
+  ~FakeUserPoliciesManager() override;
+
+  // Specify the policy to use for a user.
+  void SetUserPolicies(const base::string16& sid, const UserPolicies& policies);
+
+  bool GetUserPolicies(const base::string16& sid,
+                       UserPolicies* policies) override;
+
+ private:
+  UserPoliciesManager* original_manager_ = nullptr;
+  std::map<base::string16, UserPolicies> user_policies_;
+};
+
+///////////////////////////////////////////////////////////////////////////////
+
+class FakeDevicePoliciesManager : public DevicePoliciesManager {
+ public:
+  explicit FakeDevicePoliciesManager(bool cloud_policies_enabled);
+  ~FakeDevicePoliciesManager() override;
+
+  // Specify the policy to use for the device.
+  void SetDevicePolicies(const DevicePolicies& policies);
+
+  void GetDevicePolicies(DevicePolicies* device_policies) override;
+
+ private:
+  DevicePoliciesManager* original_manager_ = nullptr;
+  DevicePolicies device_policies_;
 };
 
 }  // namespace credential_provider

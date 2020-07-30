@@ -94,7 +94,7 @@ std::unique_ptr<icu::Collator> GetICUCollator() {
   std::unique_ptr<icu::Collator> collator_;
   collator_.reset(icu::Collator::createInstance(error));
   if (U_FAILURE(error))
-    collator_.reset(NULL);
+    collator_.reset(nullptr);
 
   return collator_;
 }
@@ -105,9 +105,9 @@ BookmarkBridge::BookmarkBridge(JNIEnv* env,
                                const JavaRef<jobject>& obj,
                                const JavaRef<jobject>& j_profile)
     : weak_java_ref_(env, obj),
-      bookmark_model_(NULL),
-      managed_bookmark_service_(NULL),
-      partner_bookmarks_shim_(NULL) {
+      bookmark_model_(nullptr),
+      managed_bookmark_service_(nullptr),
+      partner_bookmarks_shim_(nullptr) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   profile_ = ProfileAndroid::FromProfileAndroid(j_profile);
   bookmark_model_ = BookmarkModelFactory::GetForBrowserContext(profile_);
@@ -1118,7 +1118,7 @@ void BookmarkBridge::PartnerShimLoaded(PartnerBookmarksShim* shim) {
 }
 
 void BookmarkBridge::ShimBeingDeleted(PartnerBookmarksShim* shim) {
-  partner_bookmarks_shim_ = NULL;
+  partner_bookmarks_shim_ = nullptr;
 }
 
 void BookmarkBridge::ReorderChildren(

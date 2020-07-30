@@ -15,7 +15,7 @@
 #include "net/test/test_data_directory.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
-#if defined(OS_MACOSX) && !defined(OS_IOS)
+#if defined(OS_MAC)
 #include "net/cert/cert_verify_proc_mac.h"
 #include "net/cert/internal/trust_store_mac.h"
 #endif
@@ -104,7 +104,7 @@ TEST(TrialComparisonCertVerifierMojoTest, SendReportDebugInfo) {
   net::CertVerifyResult trial_result;
   trial_result.verified_cert = chain2;
 
-#if defined(OS_MACOSX) && !defined(OS_IOS)
+#if defined(OS_MAC)
   constexpr uint32_t kExpectedTrustResult = 4;
   constexpr int32_t kExpectedResultCode = -12345;
   std::vector<net::CertVerifyProcMac::ResultDebugData::CertEvidenceInfo>
@@ -169,7 +169,7 @@ TEST(TrialComparisonCertVerifierMojoTest, SendReportDebugInfo) {
             std::string(report.sct_list.begin(), report.sct_list.end()));
 
   ASSERT_TRUE(report.debug_info);
-#if defined(OS_MACOSX) && !defined(OS_IOS)
+#if defined(OS_MAC)
   ASSERT_TRUE(report.debug_info->mac_platform_debug_info);
   EXPECT_EQ(kExpectedTrustResult,
             report.debug_info->mac_platform_debug_info->trust_result);

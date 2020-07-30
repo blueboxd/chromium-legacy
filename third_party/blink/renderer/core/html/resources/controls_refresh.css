@@ -114,17 +114,6 @@ input[type="range" i]:disabled {
   color: #c5c5c5;
 }
 
-input[type="search" i]::-webkit-search-cancel-button {
-  -webkit-appearance: none;
-  background-image: -webkit-image-set(url(images/clear_icon.svg) 1x);
-  background-repeat: no-repeat;
-  background-position: center;
-  background-size: contain;
-  height: 1.125em;
-  margin-inline-end: 1px;
-  width: 1.125em;
-}
-
 meter::-webkit-meter-inner-element:-internal-shadow-host-has-appearance {
   display: grid;
   grid-template-rows: 1fr [line1] 2fr [line2] 1fr;

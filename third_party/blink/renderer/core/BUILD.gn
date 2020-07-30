@@ -1152,6 +1152,7 @@ jumbo_source_set("unit_tests") {
     "input/scroll_snap_test.cc",
     "input/touch_action_test.cc",
     "input/touch_event_manager_test.cc",
+    "inspector/inspector_css_cascade_test.cc",
     "inspector/inspector_session_state_test.cc",
     "inspector/main_thread_debugger_test.cc",
     "inspector/protocol_parser_test.cc",

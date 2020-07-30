@@ -123,6 +123,7 @@
 <translation id="1430915738399379752">In</translation>
 <translation id="1442386063175183758">Gấp dạng cửa bên phải</translation>
 <translation id="1442987760062738829">Đục lỗ</translation>
+<translation id="1447067628680007684">(x86_64)</translation>
 <translation id="1453974140256777690">Văn bản bạn dán hoặc đính kèm được gửi đến Google Cloud hoặc bên thứ ba để phân tích. Ví dụ: văn bản đó có thể được quét tìm dữ liệu nhạy cảm.</translation>
 <translation id="1455413310270022028">Tẩy</translation>
 <translation id="1462245070427461050">JIS B9</translation>
@@ -1145,6 +1146,7 @@ Nếu bạn từ chối, các tùy chọn cài đặt quyền riêng tư của b
 <translation id="5705882733397021510">Quay lại</translation>
 <translation id="57094364128775171">Đề xuất mật khẩu mạnh…</translation>
 <translation id="5710435578057952990">Nhận dạng trang web này chưa được xác minh.</translation>
+<translation id="571403275720188526">(arm64)</translation>
 <translation id="5720705177508910913">Người dùng hiện tại</translation>
 <translation id="5728056243719941842">C5 (Phong bì)</translation>
 <translation id="5730040223043577876">Chrome khuyên bạn nên đặt lại mật khẩu của mình nếu đã sử dụng lại mật khẩu này trên các trang web khác.</translation>
@@ -1194,6 +1196,7 @@ Nếu bạn từ chối, các tùy chọn cài đặt quyền riêng tư của b
 <translation id="5921639886840618607">Bạn có muốn lưu thẻ vào Tài khoản Google không?</translation>
 <translation id="5922853866070715753">Sắp hoàn tất</translation>
 <translation id="5932224571077948991">Trang web hiển thị quảng cáo xâm nhập hoặc quảng cáo gây hiểu nhầm</translation>
+<translation id="5938793338444039872">Troy</translation>
 <translation id="5946937721014915347">Đang mở <ph name="SITE_NAME" />…</translation>
 <translation id="5951495562196540101">Không thể đăng ký bằng tài khoản người dùng thông thường (có sẵn giấy phép theo gói).</translation>
 <translation id="5967592137238574583">Chỉnh sửa thông tin liên hệ</translation>
@@ -1361,6 +1364,7 @@ Nếu bạn từ chối, các tùy chọn cài đặt quyền riêng tư của b
 <translation id="6646269444027925224">{COUNT,plural, =0{Không có}=1{Của 1 trang web (bạn sẽ không bị đăng xuất khỏi Tài khoản Google của mình)}other{Của # trang web (bạn sẽ không bị đăng xuất khỏi Tài khoản Google của mình)}}</translation>
 <translation id="6652101503459149953">Sử dụng Windows Hello</translation>
 <translation id="6657585470893396449">Mật khẩu</translation>
+<translation id="666259744093848177">(x86_64 bản dịch)</translation>
 <translation id="6665553082534466207">Đục 3 lỗ bên phải</translation>
 <translation id="6671697161687535275">Bạn muốn xóa đề xuất biểu mẫu khỏi Chromium?</translation>
 <translation id="6685834062052613830">Đăng xuất và hoàn thành quá trình thiết lập</translation>

@@ -61,9 +61,7 @@ class COMPONENT_EXPORT(UI_BASE_X) XOSExchangeDataProvider
   }
 
   // Overridden from OSExchangeDataProvider:
-#if defined(USE_OZONE)
   std::unique_ptr<OSExchangeDataProvider> Clone() const override;
-#endif
   void MarkOriginatedFromRenderer() override;
   bool DidOriginateFromRenderer() const override;
   void SetString(const base::string16& data) override;

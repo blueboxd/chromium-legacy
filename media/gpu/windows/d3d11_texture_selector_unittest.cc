@@ -43,14 +43,21 @@ class D3D11TextureSelectorUnittest : public ::testing::Test {
     return result;
   }
 
+  enum class ZeroCopyEnabled { kFalse = 0, kTrue = 1 };
+  enum class ZeroCopyDisabledByWorkaround { kFalse = 0, kTrue = 1 };
+
   std::unique_ptr<TextureSelector> CreateWithDefaultGPUInfo(
       DXGI_FORMAT decoder_output_format,
-      bool zero_copy_enabled = true,
-      TextureSelector::HDRMode hdr_mode = TextureSelector::HDRMode::kSDROnly) {
+      ZeroCopyEnabled zero_copy_enabled = ZeroCopyEnabled::kTrue,
+      TextureSelector::HDRMode hdr_mode = TextureSelector::HDRMode::kSDROnly,
+      ZeroCopyDisabledByWorkaround zero_copy_disabled_by_workaround =
+          ZeroCopyDisabledByWorkaround::kFalse) {
     gpu::GpuPreferences prefs;
-    prefs.enable_zero_copy_dxgi_video = zero_copy_enabled;
+    prefs.enable_zero_copy_dxgi_video =
+        zero_copy_enabled == ZeroCopyEnabled::kTrue;
     gpu::GpuDriverBugWorkarounds workarounds;
-    workarounds.disable_dxgi_zero_copy_video = false;
+    workarounds.disable_dxgi_zero_copy_video =
+        zero_copy_disabled_by_workaround == ZeroCopyDisabledByWorkaround::kTrue;
     auto media_log = std::make_unique<NullMediaLog>();
     return TextureSelector::Create(prefs, workarounds, decoder_output_format,
                                    hdr_mode, &format_checker_, media_log.get());
@@ -74,31 +81,56 @@ TEST_F(D3D11TextureSelectorUnittest, NV12BindsToNV12) {
   EXPECT_CALL(format_checker_, CheckOutputFormatSupport(_)).Times(0);
   auto tex_sel = CreateWithDefaultGPUInfo(DXGI_FORMAT_NV12);
 
-  // TODO(liberato): check "binds", somehow.
   EXPECT_EQ(tex_sel->PixelFormat(), PIXEL_FORMAT_NV12);
   EXPECT_EQ(tex_sel->OutputDXGIFormat(), DXGI_FORMAT_NV12);
+  EXPECT_FALSE(tex_sel->WillCopyForTesting());
+}
+
+TEST_F(D3D11TextureSelectorUnittest, NV12CopiesToNV12WithoutSharingSupport) {
+  // EXPECT_CALL(format_checker_, CheckOutputFormatSupport(_)).Times(1);
+  auto tex_sel =
+      CreateWithDefaultGPUInfo(DXGI_FORMAT_NV12, ZeroCopyEnabled::kFalse);
+
+  EXPECT_EQ(tex_sel->PixelFormat(), PIXEL_FORMAT_NV12);
+  EXPECT_EQ(tex_sel->OutputDXGIFormat(), DXGI_FORMAT_NV12);
+  EXPECT_TRUE(tex_sel->WillCopyForTesting());
+}
+
+TEST_F(D3D11TextureSelectorUnittest, NV12CopiesToNV12WithWorkaround) {
+  // Nothing should ask about VideoProcessor support, since we're binding.
+  EXPECT_CALL(format_checker_, CheckOutputFormatSupport(_)).Times(0);
+  auto tex_sel = CreateWithDefaultGPUInfo(
+      DXGI_FORMAT_NV12, ZeroCopyEnabled::kTrue,
+      TextureSelector::HDRMode::kSDROnly, ZeroCopyDisabledByWorkaround::kTrue);
+
+  EXPECT_EQ(tex_sel->PixelFormat(), PIXEL_FORMAT_NV12);
+  EXPECT_EQ(tex_sel->OutputDXGIFormat(), DXGI_FORMAT_NV12);
+  EXPECT_TRUE(tex_sel->WillCopyForTesting());
 }
 
 TEST_F(D3D11TextureSelectorUnittest, P010CopiesToFP16InHDR) {
   // Allow all output formats, since it should prefer fp16 if possible.
   AllowFormatCheckerSupportExcept({});
-  auto tex_sel = CreateWithDefaultGPUInfo(DXGI_FORMAT_P010, true,
-                                          TextureSelector::HDRMode::kSDROrHDR);
+  auto tex_sel =
+      CreateWithDefaultGPUInfo(DXGI_FORMAT_P010, ZeroCopyEnabled::kTrue,
+                               TextureSelector::HDRMode::kSDROrHDR);
 
-  // TODO(liberato): check "copies", somehow.
   EXPECT_EQ(tex_sel->PixelFormat(), PIXEL_FORMAT_ARGB);
   EXPECT_EQ(tex_sel->OutputDXGIFormat(), DXGI_FORMAT_R16G16B16A16_FLOAT);
+  EXPECT_TRUE(tex_sel->WillCopyForTesting());
   // TODO(liberato): Check output color space, somehow.
 }
 
 TEST_F(D3D11TextureSelectorUnittest, P010CopiesTo10BitRGBInHDR) {
   // 10 bit RGB should be the second choice, if fp16 isn't available.
   AllowFormatCheckerSupportExcept({DXGI_FORMAT_R16G16B16A16_FLOAT});
-  auto tex_sel = CreateWithDefaultGPUInfo(DXGI_FORMAT_P010, true,
-                                          TextureSelector::HDRMode::kSDROrHDR);
+  auto tex_sel =
+      CreateWithDefaultGPUInfo(DXGI_FORMAT_P010, ZeroCopyEnabled::kTrue,
+                               TextureSelector::HDRMode::kSDROrHDR);
 
   EXPECT_EQ(tex_sel->PixelFormat(), PIXEL_FORMAT_ARGB);
   EXPECT_EQ(tex_sel->OutputDXGIFormat(), DXGI_FORMAT_R10G10B10A2_UNORM);
+  EXPECT_TRUE(tex_sel->WillCopyForTesting());
 }
 
 TEST_F(D3D11TextureSelectorUnittest, P010BindsToP010InHDR) {
@@ -106,25 +138,28 @@ TEST_F(D3D11TextureSelectorUnittest, P010BindsToP010InHDR) {
   // should bind P010 directly.
   AllowFormatCheckerSupportExcept(
       {DXGI_FORMAT_R16G16B16A16_FLOAT, DXGI_FORMAT_R10G10B10A2_UNORM});
-  auto tex_sel = CreateWithDefaultGPUInfo(DXGI_FORMAT_P010, true,
-                                          TextureSelector::HDRMode::kSDROrHDR);
+  auto tex_sel =
+      CreateWithDefaultGPUInfo(DXGI_FORMAT_P010, ZeroCopyEnabled::kTrue,
+                               TextureSelector::HDRMode::kSDROrHDR);
 
   EXPECT_EQ(tex_sel->PixelFormat(), PIXEL_FORMAT_NV12);
   EXPECT_EQ(tex_sel->OutputDXGIFormat(), DXGI_FORMAT_P010);
+  EXPECT_FALSE(tex_sel->WillCopyForTesting());
 }
 
 TEST_F(D3D11TextureSelectorUnittest, P010CopiesTo8BitInSDR) {
   // Should copy to 8 bit RGB if the video processor can do it, if we're not in
   // HDR mode.
   AllowFormatCheckerSupportExcept({});
-  auto tex_sel = CreateWithDefaultGPUInfo(DXGI_FORMAT_P010, true,
-                                          TextureSelector::HDRMode::kSDROnly);
+  auto tex_sel =
+      CreateWithDefaultGPUInfo(DXGI_FORMAT_P010, ZeroCopyEnabled::kTrue,
+                               TextureSelector::HDRMode::kSDROnly);
 
-  // TODO(liberato): check "copies", somehow.
   EXPECT_EQ(tex_sel->PixelFormat(), PIXEL_FORMAT_ARGB);
   // Note that this might also produce 8 bit rgb, but for now always
   // tries for fp16.
   EXPECT_EQ(tex_sel->OutputDXGIFormat(), DXGI_FORMAT_B8G8R8A8_UNORM);
+  EXPECT_TRUE(tex_sel->WillCopyForTesting());
   // TODO(liberato): Check output color space, somehow.
 }
 
@@ -132,11 +167,13 @@ TEST_F(D3D11TextureSelectorUnittest, P010BindsToP010InSDR) {
   // Should bind P010 if the video processor can't convert to RGB8, if we're not
   // int HDR mode.
   AllowFormatCheckerSupportExcept({DXGI_FORMAT_B8G8R8A8_UNORM});
-  auto tex_sel = CreateWithDefaultGPUInfo(DXGI_FORMAT_P010, true,
-                                          TextureSelector::HDRMode::kSDROnly);
+  auto tex_sel =
+      CreateWithDefaultGPUInfo(DXGI_FORMAT_P010, ZeroCopyEnabled::kTrue,
+                               TextureSelector::HDRMode::kSDROnly);
 
   EXPECT_EQ(tex_sel->PixelFormat(), PIXEL_FORMAT_NV12);
   EXPECT_EQ(tex_sel->OutputDXGIFormat(), DXGI_FORMAT_P010);
+  EXPECT_FALSE(tex_sel->WillCopyForTesting());
 }
 
 }  // namespace media

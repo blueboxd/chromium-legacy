@@ -102,11 +102,13 @@ paddedGrid{
       "columnTrackSizes": [
         {
           "computedSize": 50,
+          "authoredSize": "50px",
           "x": 173,
           "y": 383
         },
         {
           "computedSize": 200,
+          "authoredSize": "20%",
           "x": 173,
           "y": 233
         }
@@ -363,11 +365,13 @@ nestedGrid{
       "columnTrackSizes": [
         {
           "computedSize": 50,
+          "authoredSize": "50px",
           "x": 228,
           "y": 1083
         },
         {
           "computedSize": 200,
+          "authoredSize": "20%",
           "x": 228,
           "y": 958
         }

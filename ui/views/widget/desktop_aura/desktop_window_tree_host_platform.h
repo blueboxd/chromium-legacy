@@ -117,6 +117,7 @@ class VIEWS_EXPORT DesktopWindowTreeHostPlatform
   void OnClosed() override;
   void OnWindowStateChanged(ui::PlatformWindowState new_state) override;
   void OnCloseRequest() override;
+  void OnWillDestroyAcceleratedWidget() override;
   void OnActivationChanged(bool active) override;
   base::Optional<gfx::Size> GetMinimumSizeForWindow() override;
   base::Optional<gfx::Size> GetMaximumSizeForWindow() override;

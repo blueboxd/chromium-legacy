@@ -189,7 +189,9 @@ class InputMethodEngine : public InputMethodEngineBase,
       uint32_t after,
       const std::vector<ui::ImeTextSpan>& text_spans) override;
 
-  const gfx::Rect GetAutocorrectCharacterBounds() override;
+  gfx::Range GetAutocorrectRange() override;
+
+  gfx::Rect GetAutocorrectCharacterBounds() override;
 
   bool SetAutocorrectRange(const base::string16& autocorrect_text,
                            uint32_t start,

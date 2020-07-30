@@ -92,18 +92,7 @@ void CrostiniInstallerDialog::AdjustWidgetInitParams(
                                                 shelf_id.Serialize());
 }
 
-bool CrostiniInstallerDialog::CanCloseDialog() const {
-  // TODO(929571): If other WebUI Dialogs also need to let the WebUI control
-  // closing logic, we should find a more general solution.
-
-  // Disallow closing without WebUI consent.
-  //
-  // Note that while the function name |CanCloseDialog| does not indicate the
-  // intend to close the dialog, but it is indeed only called when we are
-  // closing it, so requesting closing the page here is appropriate. One might
-  // think we should actually do all of this in |OnDialogCloseRequested|
-  // instead, but unfortunately that function is called after the web content is
-  // closed.
+bool CrostiniInstallerDialog::OnDialogCloseRequested() {
   return installer_ui_ == nullptr || installer_ui_->RequestClosePage();
 }
 

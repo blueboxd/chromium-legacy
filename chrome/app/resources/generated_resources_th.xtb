@@ -2656,7 +2656,7 @@
 <translation id="4249373718504745892">หน้าเว็บนี้ถูกบล็อกไม่ให้เข้าถึงกล้องถ่ายรูปและไมโครโฟนของคุณ</translation>
 <translation id="424963718355121712">แอปต้องได้รับบริการจากโฮสต์ที่แอปนั้นมีผลกระทบ</translation>
 <translation id="4250229828105606438">ภาพหน้าจอ</translation>
-<translation id="4250680216510889253">ไม่มี</translation>
+<translation id="4250680216510889253">ไม่</translation>
 <translation id="4252035718262427477">หน้าเว็บ ไฟล์เดียว (Web Bundle)</translation>
 <translation id="4252852543720145436">ตัวระบุเนื้อหาที่ได้รับความคุ้มครอง</translation>
 <translation id="4252899949534773101">บลูทูธปิดอยู่</translation>
@@ -3453,7 +3453,7 @@
 <translation id="5300719150368506519">ส่ง URL ของหน้าที่คุณเข้าชมไปยัง Google</translation>
 <translation id="5301751748813680278">เข้าสู่ระบบในฐานะผู้มาเยือน</translation>
 <translation id="5301954838959518834">ตกลง เข้าใจแล้ว</translation>
-<translation id="5302048478445481009">ภาษา </translation>
+<translation id="5302048478445481009">ภาษา</translation>
 <translation id="5302932258331363306">แสดงการใช้แทน</translation>
 <translation id="5305688511332277257">ไม่มีการติดตั้ง</translation>
 <translation id="5307030433605830021">ไม่รองรับแหล่งที่มา</translation>
@@ -4053,7 +4053,6 @@
 <translation id="6056710589053485679">โหลดซ้ำตามปกติ</translation>
 <translation id="6057312498756061228">ไฟล์นี้ใหญ่เกินไปสำหรับการตรวจสอบความปลอดภัย ไฟล์ที่เปิดต้องมีขนาดไม่เกิน 50 MB</translation>
 <translation id="6057381398996433816">เว็บไซต์นี้ถูกบล็อกไม่ให้ใช้เซ็นเซอร์ตรวจจับการเคลื่อนไหวและแสง</translation>
-<translation id="6058567592298841668">เครื่องเสมือนของปลั๊กอิน: <ph name="PLUGIN_VM_NAME" /></translation>
 <translation id="6059652578941944813">ลำดับชั้นใบรับรอง</translation>
 <translation id="6059925163896151826">อุปกรณ์ USB</translation>
 <translation id="6061882183774845124">ส่งลิงก์ไปที่อุปกรณ์ของคุณ</translation>
@@ -4482,6 +4481,7 @@
 <translation id="6602956230557165253">ใช้แป้นลูกศรซ้ายและขวาเพื่อนำทาง</translation>
 <translation id="6605847144724004692">ยังไม่มีผู้ใช้ให้คะแนน</translation>
 <translation id="6607831829715835317">เ&amp;ครื่องมือเพิ่มเติม</translation>
+<translation id="6608012008902909398">แสดงรายละเอียดของการตรวจสอบซอฟต์แวร์ของอุปกรณ์</translation>
 <translation id="6611972847767394631">ค้นหาแท็บของคุณที่นี่</translation>
 <translation id="6612358246767739896">เนื้อหาที่ได้รับความคุ้มครอง</translation>
 <translation id="6615455863669487791">แสดงให้ฉันเห็น</translation>

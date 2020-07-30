@@ -7,6 +7,7 @@
 
 #include "base/strings/string16.h"
 #include "chrome/browser/sharesheet/sharesheet_controller.h"
+#include "components/services/app_service/public/mojom/types.mojom.h"
 #include "ui/gfx/image/image.h"
 #include "ui/views/view.h"
 
@@ -30,8 +31,12 @@ class ShareAction {
   // |root_view| and |controller| will stay alive and visible until either
   // ShareAction::OnClosing is called, or the ShareAction calls
   // |controller|->ShareActionCompleted().
+  //
+  // |intent| contains the data (including the file URLs) for the share action
+  // to parse and interpret if needed for its UI and functionality.
   virtual void LaunchAction(SharesheetController* controller,
-                            views::View* root_view) = 0;
+                            views::View* root_view,
+                            apps::mojom::IntentPtr intent) = 0;
 
   // OnClosing informs the ShareAction when the sharesheet with |controller| is
   // closed. This occurs when the user presses the back button out of the share

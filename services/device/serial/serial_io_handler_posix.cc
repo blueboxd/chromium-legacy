@@ -36,7 +36,7 @@ struct termios2 {
 
 #endif  // defined(OS_LINUX)
 
-#if defined(OS_MACOSX)
+#if defined(OS_MAC)
 #include <IOKit/serial/ioss.h>
 #endif
 
@@ -66,7 +66,7 @@ bool BitrateToSpeedConstant(int bitrate, speed_t* speed) {
     BITRATE_TO_SPEED_CASE(9600)
     BITRATE_TO_SPEED_CASE(19200)
     BITRATE_TO_SPEED_CASE(38400)
-#if !defined(OS_MACOSX)
+#if !defined(OS_MAC)
     BITRATE_TO_SPEED_CASE(57600)
     BITRATE_TO_SPEED_CASE(115200)
     BITRATE_TO_SPEED_CASE(230400)
@@ -179,7 +179,7 @@ bool SerialIoHandlerPosix::ConfigurePortImpl() {
 
   DCHECK(options().bitrate);
   speed_t bitrate_opt = B0;
-#if defined(OS_MACOSX)
+#if defined(OS_MAC)
   bool need_iossiospeed = false;
 #endif
   if (BitrateToSpeedConstant(options().bitrate, &bitrate_opt)) {
@@ -196,7 +196,7 @@ bool SerialIoHandlerPosix::ConfigurePortImpl() {
     config.c_cflag &= ~CBAUD;
     config.c_cflag |= CBAUDEX;
     config.c_ispeed = config.c_ospeed = options().bitrate;
-#elif defined(OS_MACOSX)
+#elif defined(OS_MAC)
     // cfsetispeed and cfsetospeed sometimes work for custom baud rates on OS
     // X but the IOSSIOSPEED ioctl is more reliable but has to be done after
     // the rest of the port parameters are set or else it will be overwritten.
@@ -273,7 +273,7 @@ bool SerialIoHandlerPosix::ConfigurePortImpl() {
     return false;
   }
 
-#if defined(OS_MACOSX)
+#if defined(OS_MAC)
   if (need_iossiospeed) {
     speed_t bitrate = options().bitrate;
     if (ioctl(file().GetPlatformFile(), IOSSIOSPEED, &bitrate) == -1) {

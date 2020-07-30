@@ -284,9 +284,6 @@ bool PaintInvalidator::InvalidatePaint(
         PaintInvalidatorContext::kSubtreeInvalidationChecking;
   }
 
-  if (AXObjectCache* cache = object.GetDocument().ExistingAXObjectCache())
-    cache->InvalidateBoundingBox(&object);
-
   return reason != PaintInvalidationReason::kNone;
 }
 

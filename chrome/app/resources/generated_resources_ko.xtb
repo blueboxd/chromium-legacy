@@ -4051,7 +4051,6 @@
 <translation id="6056710589053485679">일반 새로고침</translation>
 <translation id="6057312498756061228">파일이 너무 커서 보안 확인을 할 수 없습니다. 최대 50MB 크기의 파일을 열 수 있습니다.</translation>
 <translation id="6057381398996433816">모션 센서 및 조도 센서 사용이 차단된 사이트입니다.</translation>
-<translation id="6058567592298841668">플러그인 가상 머신: <ph name="PLUGIN_VM_NAME" /></translation>
 <translation id="6059652578941944813">인증서 계층</translation>
 <translation id="6059925163896151826">USB 기기</translation>
 <translation id="6061882183774845124">기기로 링크 전송</translation>
@@ -4480,6 +4479,7 @@
 <translation id="6602956230557165253">오른쪽/왼쪽 화살표 키를 사용하여 탐색합니다.</translation>
 <translation id="6605847144724004692">아직 사용자 평가가 없습니다.</translation>
 <translation id="6607831829715835317">도구 더보기</translation>
+<translation id="6608012008902909398">기기 소프트웨어 확인 세부정보 표시</translation>
 <translation id="6611972847767394631">여기에서 탭 찾아보기</translation>
 <translation id="6612358246767739896">보호된 콘텐츠</translation>
 <translation id="6615455863669487791">보기</translation>

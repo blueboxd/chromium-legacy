@@ -147,15 +147,6 @@ void StyleResolverState::SetLayoutParentStyle(
   layout_parent_style_ = std::move(parent_style);
 }
 
-void StyleResolverState::CacheUserAgentBorderAndBackground() {
-  // LayoutTheme only needs the cached style if it has an appearance,
-  // and constructing it is expensive so we avoid it if possible.
-  if (!Style()->HasAppearance())
-    return;
-
-  cached_ua_style_ = std::make_unique<CachedUAStyle>(Style());
-}
-
 void StyleResolverState::LoadPendingResources() {
   if (pseudo_request_type_ == PseudoElementStyleRequest::kForComputedStyle ||
       (ParentStyle() && ParentStyle()->IsEnsuredInDisplayNone()) ||

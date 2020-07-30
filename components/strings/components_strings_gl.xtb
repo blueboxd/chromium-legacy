@@ -123,6 +123,7 @@
 <translation id="1430915738399379752">Imprimir</translation>
 <translation id="1442386063175183758">Dobrez en ventá na parte dereita</translation>
 <translation id="1442987760062738829">Perforación</translation>
+<translation id="1447067628680007684">(x86_64)</translation>
 <translation id="1453974140256777690">O texto que pegas ou anexas envíase a Google Cloud ou a terceiros para analizalo. Por exemplo, poderíase comprobar se contén datos confidenciais.</translation>
 <translation id="1455413310270022028">Borrador</translation>
 <translation id="1462245070427461050">JIS B9</translation>
@@ -1142,6 +1143,7 @@ En caso contrario, a configuración de privacidade impedirao. Se o permites, o c
 <translation id="5705882733397021510">Volver</translation>
 <translation id="57094364128775171">Suxerir contrasinal seguro…</translation>
 <translation id="5710435578057952990">Non se verificou a identidade deste sitio web.</translation>
+<translation id="571403275720188526">(arm64)</translation>
 <translation id="5720705177508910913">Usuario actual</translation>
 <translation id="5728056243719941842">C5 (sobre)</translation>
 <translation id="5730040223043577876">Chrome recoméndache que restablezas o contrasinal se o reutilizaches noutros sitios.</translation>
@@ -1191,6 +1193,7 @@ En caso contrario, a configuración de privacidade impedirao. Se o permites, o c
 <translation id="5921639886840618607">Queres gardar a tarxeta na Conta de Google?</translation>
 <translation id="5922853866070715753">Case está listo</translation>
 <translation id="5932224571077948991">O sitio mostra anuncios enganosos ou intrusivos</translation>
+<translation id="5938793338444039872">Troy</translation>
 <translation id="5946937721014915347">Abrindo <ph name="SITE_NAME" />…</translation>
 <translation id="5951495562196540101">Non se pode realizar a inscrición coa conta de uso particular (licenza en paquete dispoñible).</translation>
 <translation id="5967592137238574583">Edita a información de contacto</translation>
@@ -1358,6 +1361,7 @@ En caso contrario, a configuración de privacidade impedirao. Se o permites, o c
 <translation id="6646269444027925224">{COUNT,plural, =0{Ningún}=1{De 1 sitio (non se pechará sesión na túa conta de Google)}other{De # sitios (non se pechará sesión na túa conta de Google)}}</translation>
 <translation id="6652101503459149953">Usar Windows Hello</translation>
 <translation id="6657585470893396449">Contrasinal</translation>
+<translation id="666259744093848177">(x86_64 traducido)</translation>
 <translation id="6665553082534466207">Tres perforacións na parte dereita</translation>
 <translation id="6671697161687535275">Queres eliminar a túa suxestión de formulario de Chromium?</translation>
 <translation id="6685834062052613830">Pecha sesión e finaliza o proceso de configuración</translation>

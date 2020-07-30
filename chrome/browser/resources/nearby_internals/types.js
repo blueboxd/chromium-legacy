@@ -58,3 +58,16 @@ export const Direction = {
  *            direction: !Direction}}
  */
 export let HttpMessage;
+
+/**
+ * The ContactUpdate message object sent by NearbyInternalsContactsHandler
+ * chrome/browser/ui/webui/nearby_internals/nearby_internals_contact_handler.cc.
+ * @typedef {{time: number,
+ *            contacts_passed: boolean,
+ *            contacts_list_changed: boolean,
+ *            contacts_added_to_allowlist: boolean,
+ *            contacts_removed_from_allowlist: boolean,
+ *            allowed_ids: string,
+ *            contact_records: string}}
+ */
+export let ContactUpdate;

@@ -152,6 +152,9 @@ Secara default, tidak ada mode buka kunci cepat yang tersedia untuk perangkat ya
 
       Jika kebijakan tidak disetel atau disetel ke false, Transisi Cepat tidak dapat digunakan.
       Jika disetel ke true, Transisi Cepat dapat digunakan saat titik akses nirkabel mendukungnya.</translation>
+<translation id="1240722269871366886">Kebijakan ini memungkinkan <ph name="PRODUCT_OS_NAME" /> menyarankan emoji saat pengguna mengetikkan teks dengan keyboard virtual atau fisik.
+      Jika kebijakan ini disetel ke benar (true), fitur akan diaktifkan, dan pengguna dapat mengubahnya.
+      Kebijakan ini disetel ke salah (false) secara default, emoji tidak akan disarankan dan pengguna tidak dapat menggantinya.</translation>
 <translation id="1243570869342663665">Mengontrol pemfilteran konten khusus dewasa SafeSites.</translation>
 <translation id="1257550411839719984">Setel direktori download default</translation>
 <translation id="1265053460044691532">Batasi waktu bagi pengguna yang diautentikasi melalui SAML untuk dapat masuk saat offline.</translation>
@@ -668,7 +671,7 @@ Jika Anda menonaktifkan kebijakan ini, scroll halaman web ke fragmen teks terten
 
       Jika kebijakan ini tidak disetel atau dibiarkan kosong, tidak ada batasan yang akan diterapkan, batasan yang ada akan dicabut, dan pengguna dapat login, berapa pun versi <ph name="PRODUCT_OS_NAME" />.
 
-      <ph name="CHROMEOS_VERSION_PROPERTY_NAME" /> di sini bisa merupakan versi yang tepat seperti '13305.0.0' atau awalan versi '13305'.
+      <ph name="CHROMEOS_VERSION_PROPERTY_NAME" /> di sini bisa merupakan versi yang tepat seperti '13305.0.0' atau awalan versi, seperti '13305'.
       <ph name="WARNING_PERIOD_PROPERTY_NAME" /> dan <ph name="AUE_WARNING_PERIOD_PROPERTY_NAME" /> adalah nilai opsional yang ditentukan dalam jumlah hari. Nilai defaultnya adalah 0 hari, yang artinya tidak ada periode peringatan.</translation>
 <translation id="2104418465060359056">Melaporkan informasi Ekstensi dan Plugin</translation>
 <translation id="2106627642643925514">Mengganti mode pencetakan PIN default. Jika mode ini tidak tersedia, kebijakan ini akan diabaikan.</translation>
@@ -939,6 +942,7 @@ Jika kebijakan ini tidak ditetapkan, layar privasi mula-mula akan dinonaktifkan 
       Jika kebijakan ini tidak dikonfigurasi atau disetel ke True, pengguna dapat menggunakan fitur Berbagi File Jaringan.
 
       Jika kebijakan ini disetel ke False, pengguna tidak dapat menggunakan fitur Berbagi File Jaringan.</translation>
+<translation id="2435052056904485763">Daftar server delegasi Kerberos yang diizinkan</translation>
 <translation id="2440773021691931148">Melaporkan ID dan statistik hardware yang terkait dengan daya.
 
       Jika kebijakan ditetapkan ke false atau tidak ditetapkan, statistik tidak akan dilaporkan.
@@ -1729,17 +1733,6 @@ Jika ditetapkan ke False, <ph name="PRODUCT_NAME" /> tidak akan menggunakan noti
 <translation id="355118380775352753">Situs yang akan dibuka di browser alternatif</translation>
 <translation id="3554498762428140109">Mengaktifkan Penghalangan Jendela Native</translation>
 <translation id="3554984410014457319">Mengizinkan Asisten Google mendengarkan frasa aktivasi suara</translation>
-<translation id="3557208865710006939">Mengaktifkan secara paksa bahasa pemeriksaan ejaan. Bahasa yang tidak dikenal dalam daftar tersebut akan diabaikan.
-
-      Jika kebijakan ini diaktifkan, fitur periksa ejaan akan diaktifkan untuk bahasa yang ditentukan, dan juga untuk bahasa yang fitur periksa ejaannya telah diaktifkan oleh pengguna.
-
-      Jika kebijakan ini tidak ditetapkan, atau dinonaktifkan, tidak akan ada perubahan pada preferensi fitur periksa ejaan pengguna.
-
-      Jika kebijakan <ph name="SPELLCHECK_ENABLED_POLICY_NAME" /> ditetapkan ke false, kebijakan ini tidak akan berpengaruh.
-
-      Jika suatu bahasa tercantum dalam kebijakan ini dan juga kebijakan <ph name="SPELLCHECK_LANGUAGE_BLACKLIST_POLICY_NAME" />, maka kebijakan ini diprioritaskan dan bahasa pemeriksaan ejaan diaktifkan.
-
-      Bahasa yang didukung saat ini adalah: af, bg, ca, cs, da, de, el, en-AU, en-CA, en-GB, en-US, es, es-419, es-AR, es-ES, es-MX, es-US, et, fa, fo, fr, he, hi, hr, hu, id, it, ko, lt, lv, nb, nl, pl, pt-BR, pt-PT, ro, ru, sh, sk, sl, sq, sr, sv, ta, tg, tr, uk, vi.</translation>
 <translation id="356579196325389849">Pengguna dapat mengonfigurasi saluran rilis Chrome OS</translation>
 <translation id="3575011234198230041">Autentikasi HTTP</translation>
 <translation id="3577251398714997599">Setelan iklan untuk situs yang menayangkan iklan mengganggu</translation>
@@ -2402,6 +2395,21 @@ Jika kebijakan ini tidak disetel, setelan default-nya tidak diizinkan bagi pengg
       Jika 'Forced' dipilih, halaman dapat dibuka HANYA dalam mode Samaran. Perhatikan bahwa 'Paksa' tidak berfungsi pada Android di Chrome</translation>
 <translation id="4600786265870346112">Aktifkan kursor besar</translation>
 <translation id="4604931264910482931">Konfigurasikan daftar hitam perpesanan asli</translation>
+<translation id="4607416370554533118">Menyetel kebijakan memungkinkan Anda membuat daftar pola URL yang menentukan untuk situs mana Chrome dapat memilih sertifikat klien secara otomatis. Nilai berupa array kamus dengan string JSON, dan setiap kamus memiliki bentuk <ph name="AUTO_SELECT_CERTIFICATE_FOR_URLS_EXAMPLE" />, dengan pola setelan kontennya berupa <ph name="URL_PATTERN_PLACEHOLDER" />. <ph name="FILTER_PLACEHOLDER" /> akan membatasi sertifikat klien yang dapat dipilih browser secara otomatis. Terlepas dari filter, hanya sertifikat yang cocok dengan permintaan sertifikat server yang akan dipilih.
+
+      Contoh untuk penggunaan bagian <ph name="FILTER_PLACEHOLDER" />:
+
+      * Jika <ph name="FILTER_PLACEHOLDER" /> disetel ke <ph name="AUTO_SELECT_CERTIFICATE_FOR_URLS_FILTER_EXAMPLE" />, hanya sertifikat klien yang diterbitkan oleh sertifikat dengan CommonName <ph name="ISSUER_CN_PLACEHOLDER" /> yang akan dipilih.
+
+      * Jika <ph name="FILTER_PLACEHOLDER" /> berisi bagian <ph name="ISSUER_STRING_VALUE" /> dan <ph name="SUBJECT_STRING_VALUE" />, hanya sertifikat klien yang memenuhi kedua kondisi yang akan dipilih.
+
+      * Jika <ph name="FILTER_PLACEHOLDER" /> berisi bagian <ph name="SUBJECT_STRING_VALUE" /> dengan nilai <ph name="FILTER_STRING_ORGANIZATION" />, sertifikat perlu minimal satu organisasi yang cocok dengan nilai yang ditentukan agar dapat dipilih.
+
+      * Jika <ph name="FILTER_PLACEHOLDER" /> berisi bagian <ph name="SUBJECT_STRING_VALUE" /> dengan nilai <ph name="FILTER_STRING_ORGANIZATIONAL_UNIT" />, sertifikat perlu minimal satu unit organisasi yang cocok dengan nilai yang ditentukan agar dapat dipilih.
+
+      * Jika <ph name="FILTER_PLACEHOLDER" /> disetel ke <ph name="EMPTY_DICTIONARY" />, pemilihan sertifikat klien tidak akan dibatasi lebih lanjut. Perhatikan bahwa filter yang diberikan oleh server web masih berlaku.
+
+      Jika kebijakan tidak disetel, tidak akan ada pemilihan otomatis untuk situs apa pun.</translation>
 <translation id="4617338332148204752">Lewati pemeriksaan tag meta pada <ph name="PRODUCT_FRAME_NAME" /></translation>
 <translation id="462134014569484584">Kebijakan ini menetapkan kunci lisensi <ph name="PLUGIN_VM_NAME" /> untuk perangkat ini.</translation>
 <translation id="4625915093043961294">Mengonfigurasi daftar putih pemasangan ekstensi</translation>
@@ -2518,6 +2526,13 @@ Jika kebijakan ini dinonaktifkan atau tidak disetel, situs tidak akan dapat mena
 
       Jika Anda menetapkan kebijakan, pengguna tidak dapat mengubahnya. Jika tidak ditetapkan, pengguna akan menentukan untuk menyembunyikan rak secara otomatis atau tidak.</translation>
 <translation id="4812714598405913256">Mengonfigurasi pesan batas akhir update otomatis untuk kebijakan DeviceMinimumVersion</translation>
+<translation id="481492486938162195">Kebijakan ini tidak digunakan lagi. Sebagai gantinya, gunakan kebijakan '<ph name="AUTH_NEGOCIATE_DELEGATE_ALLOWLIST_POLICY_NAME" />'.
+
+          Server yang mungkin didelegasikan <ph name="PRODUCT_NAME" />.
+
+          Pisahkan beberapa nama server dengan koma. Karakter pengganti (*) diizinkan.
+
+          Jika kebijakan ini tidak disetel, <ph name="PRODUCT_NAME" /> tidak akan mendelegasikan kredensial pengguna meskipun server terdeteksi sebagai Intranet.</translation>
 <translation id="4816674326202173458">Memungkinkan pengguna perusahaan menjadi primer dan sekunder (Perilaku default untuk pengguna yang tidak dikelola)</translation>
 <translation id="4826326557828204741">Tindakan yang diperlukan saat penundaan nganggur tercapai ketika menjalankan daya baterai</translation>
 <translation id="482803100714220060">Menampilkan URL Lengkap</translation>
@@ -2985,7 +3000,7 @@ Jika kebijakan ini dinonaktifkan atau tidak disetel, situs tidak akan dapat mena
       Jika waktu peringatan yang disebutkan dalam kebijakan <ph name="DEVICE_MINIMUM_VERSION_POLICY_NAME" /> telah berakhir, pesan ini akan ditampilkan di layar login saat perangkat diblokir bagi siapa pun yang ingin login.
       Jika waktu peringatan yang disebutkan dalam kebijakan <ph name="DEVICE_MINIMUM_VERSION_POLICY_NAME" /> belum berakhir, pesan ini akan ditampilkan di halaman pengelolaan Chrome setelah pengguna login.
 
-      Jika kebijakan ini tidak disetel atau disetel ke kosong, pesan default tentang batas akhir update otomatis akan ditampilkan kepada pengguna dalam kedua kasus di atas.
+      Jika kebijakan ini tidak disetel atau disetel ke kosong, pesan default tentang batas akhir update otomatis akan ditampilkan kepada pengguna dalam kedua situasi di atas.
       Pesan batas akhir update otomatis harus berupa teks biasa tanpa format apa pun. Markup tidak diizinkan.</translation>
 <translation id="5445719321399313760">Jika kebijakan disetel ke Benar (True) atau tidak disetel, <ph name="PRODUCT_NAME" /> akan diizinkan menampilkan informasi produk kepada pengguna sebagai konten tab penuh.
 
@@ -5318,6 +5333,13 @@ Pengguna tidak dapat mengubah atau mengganti setelan ini.</translation>
       Jika kebijakan ini ditetapkan ke False atau tidak ditetapkan, elemen kontrol formulir akan diaktifkan saat diluncurkan di M81, M82, dan M83.
 
       Kebijakan ini akan dihapus setelah Chrome 84.</translation>
+<translation id="8937562488500723400">Mengontrol apakah persetujuan oleh kebijakan KDC dipatuhi untuk menentukan pendelegasian tiket <ph name="KERBEROS" />.
+
+          Jika kebijakan ini disetel ke benar (true), autentikasi HTTP akan mematuhi persetujuan oleh kebijakan KDC, yaitu Chrome hanya akan mendelegasikan kredensial jika KDS menyetel <ph name="OK_AS_DELEGATE" /> pada tiket layanan. Buka https://tools.ietf.org/html/rfc5896.html untuk informasi selengkapnya. Layanan juga harus cocok dengan kebijakan 'AuthNegotiateDelegateAllowlist'.
+
+          Jika kebijakan ini tidak disetel atau disetel ke salah (false), kebijakan KDC akan diabaikan di platform yang didukung, dan hanya kebijakan 'AuthNegotiateDelegateAllowlist' yang akan dipatuhi.
+
+          Di Windows, kebijakan KDC selalu dipatuhi.</translation>
 <translation id="8938932171964587769">Tidak digunakan lagi di M69. Sebagai gantinya, gunakan OverrideSecurityRestrictionsOnInsecureOrigin.
 
       Kebijakan ini menentukan daftar asal (URL) atau pola hostname (seperti "*.example.com") yang tidak dikenai pembatasan keamanan untuk asal yang tidak aman.
@@ -5420,6 +5442,27 @@ Pengguna tidak dapat mengubah atau mengganti setelan ini.</translation>
       Jika kebijakan ditetapkan, <ph name="PRODUCT_NAME" /> akan menggunakan ukuran cache yang Anda sediakan, baik pengguna menentukan tanda --ukuran-cache-disk maupun tidak. (Nilai yang kurang dari beberapa megabyte dibulatkan ke atas.)
 
       Jika tidak ditetapkan, <ph name="PRODUCT_NAME" /> akan menggunakan ukuran default. Pengguna dapat mengubah setelan tersebut menggunakan tanda --ukuran-cache-disk.</translation>
+<translation id="9057444687284972605">Memungkinkan Anda menetapkan daftar pola URL yang menentukan situs tempat sertifikat klien dipilih secara otomatis di layar login dalam frame yang menghosting alur SAML, jika situs tersebut meminta sertifikat. Contoh penggunaan adalah ketika mengonfigurasikan sertifikat di seluruh perangkat untuk ditampilkan ke SAML IdP.
+
+      Nilai berupa array kamus dengan string JSON, dan setiap kamus memiliki bentuk <ph name="AUTO_SELECT_CERTIFICATE_FOR_URLS_EXAMPLE" />, dengan pola setelan kontennya berupa <ph name="URL_PATTERN_PLACEHOLDER" />. <ph name="FILTER_PLACEHOLDER" /> akan membatasi sertifikat klien yang dapat dipilih browser secara otomatis. Terlepas dari filter, hanya sertifikat yang cocok dengan permintaan sertifikat server yang akan dipilih.
+
+      Contoh untuk penggunaan bagian <ph name="FILTER_PLACEHOLDER" />:
+
+      * Jika <ph name="FILTER_PLACEHOLDER" /> disetel ke <ph name="AUTO_SELECT_CERTIFICATE_FOR_URLS_FILTER_EXAMPLE" />, hanya sertifikat klien yang diterbitkan oleh sertifikat dengan CommonName <ph name="ISSUER_CN_PLACEHOLDER" /> yang akan dipilih.
+
+      * Jika <ph name="FILTER_PLACEHOLDER" /> berisi bagian <ph name="ISSUER_STRING_VALUE" /> dan <ph name="SUBJECT_STRING_VALUE" />, hanya sertifikat klien yang memenuhi kedua kondisi yang akan dipilih.
+
+      * Jika <ph name="FILTER_PLACEHOLDER" /> berisi bagian <ph name="SUBJECT_STRING_VALUE" /> dengan nilai <ph name="FILTER_STRING_ORGANIZATION" />, sertifikat perlu minimal satu organisasi yang cocok dengan nilai yang ditentukan agar dapat dipilih.
+
+      * Jika <ph name="FILTER_PLACEHOLDER" /> berisi bagian <ph name="SUBJECT_STRING_VALUE" /> dengan nilai <ph name="FILTER_STRING_ORGANIZATIONAL_UNIT" />, sertifikat perlu minimal satu unit organisasi yang cocok dengan nilai yang ditentukan agar dapat dipilih.
+
+      * Jika <ph name="FILTER_PLACEHOLDER" /> disetel ke <ph name="EMPTY_DICTIONARY" />, pemilihan sertifikat klien tidak akan dibatasi lebih lanjut. Perhatikan bahwa filter yang diberikan oleh server web masih berlaku.
+
+
+
+      Jika kebijakan ini tidak disetel, pemilihan otomatis tidak akan dilakukan untuk situs apa pun.
+
+      Untuk informasi mendetail tentang pola URL yang valid, lihat https://cloud.google.com/docs/chrome-enterprise/policies/url-patterns.</translation>
 <translation id="9062348747995618422">Jika menyetel kebijakan, Anda akan dapat menyetel daftar pola URL yang menentukan situs yang dapat menjalankan plugin <ph name="FLASH_PLUGIN_NAME" />.
 
       Tidak menyetel kebijakan berarti <ph name="DEFAULT_PLUGINS_SETTING_POLICY_NAME" /> akan berlaku untuk semua situs, jika disetel. Jika tidak, setelan pribadi pengguna akan digunakan.

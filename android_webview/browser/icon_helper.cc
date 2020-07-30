@@ -30,9 +30,8 @@ const int kLargestIconSize = 192;
 
 IconHelper::IconHelper(WebContents* web_contents)
     : WebContentsObserver(web_contents),
-      listener_(NULL),
-      missing_favicon_urls_() {
-}
+      listener_(nullptr),
+      missing_favicon_urls_() {}
 
 IconHelper::~IconHelper() {
 }

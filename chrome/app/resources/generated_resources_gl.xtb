@@ -4052,7 +4052,6 @@ Instala a aplicación Family Link no teu dispositivo e poderás xestionar a conf
 <translation id="6056710589053485679">Recarga normal</translation>
 <translation id="6057312498756061228">Este ficheiro é demasiado grande para realizar unha comprobación de seguranza. Podes abrir ficheiros de ata 50 MB.</translation>
 <translation id="6057381398996433816">Bloqueouse a posibilidade de que este sitio utilice os sensores de movemento e luz.</translation>
-<translation id="6058567592298841668">Máquina virtual do complemento: <ph name="PLUGIN_VM_NAME" /></translation>
 <translation id="6059652578941944813">Xerarquía de certificados</translation>
 <translation id="6059925163896151826">Dispositivos USB</translation>
 <translation id="6061882183774845124">Enviar ligazón aos teus dispositivos</translation>
@@ -4481,6 +4480,7 @@ Instala a aplicación Family Link no teu dispositivo e poderás xestionar a conf
 <translation id="6602956230557165253">Utiliza as teclas de frecha cara á esquerda e cara á dereita para desprazarte.</translation>
 <translation id="6605847144724004692">Ningún usuario valorou a extensión.</translation>
 <translation id="6607831829715835317">Máis &amp;ferramentas</translation>
+<translation id="6608012008902909398">Mostrar detalles da comprobación do software do dispositivo</translation>
 <translation id="6611972847767394631">Atopa aquí as túas pestanas</translation>
 <translation id="6612358246767739896">Contido protexido</translation>
 <translation id="6615455863669487791">Mostrar</translation>

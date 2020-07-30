@@ -125,6 +125,7 @@
 <translation id="1430915738399379752">ముద్రించు</translation>
 <translation id="1442386063175183758">కుడివైపు గేట్ ఫోల్డ్</translation>
 <translation id="1442987760062738829">రంధ్రం</translation>
+<translation id="1447067628680007684">(x86_64)</translation>
 <translation id="1453974140256777690">మీరు పేస్ట్ చేసిన లేదా జోడించిన టెక్స్ట్ Google క్లౌడ్ లేదా థర్డ్ పార్టీలకు విశ్లేషణ కోసం పంపబడుతుంది. ఉదాహరణకు, ఇది సున్నితమైన వ్యక్తిగత సమాచారం కోసం స్కాన్ చేయబడవచ్చు.</translation>
 <translation id="1455413310270022028">ఎరేజర్</translation>
 <translation id="1462245070427461050">JIS B9</translation>
@@ -798,7 +799,7 @@
 <translation id="4234495348042597185"><ph name="BEGIN_LINK" /><ph name="SITE" />కు వెళ్లండి<ph name="END_LINK" /></translation>
 <translation id="4235360514405112390">చెల్లుతుంది</translation>
 <translation id="4250431568374086873">ఈ సైట్‌కు మీ కనెక్షన్ పూర్తి స్థాయిలో సురక్షితంగా లేదు</translation>
-<translation id="4250680216510889253">కాదు</translation>
+<translation id="4250680216510889253">లేదు</translation>
 <translation id="4253168017788158739">గమనిక</translation>
 <translation id="425582637250725228">మీరు చేసిన మార్పులు సేవ్ అయ్యి ఉండకపోవచ్చు.</translation>
 <translation id="4258748452823770588">చెల్లని సంతకం</translation>
@@ -1145,6 +1146,7 @@
 <translation id="5705882733397021510">వెనుకకు వెళ్లు</translation>
 <translation id="57094364128775171">బలమైన పాస్‌వర్డ్‌ను సూచించండి…</translation>
 <translation id="5710435578057952990">ఈ వెబ్‍‌సైట్ యొక్క గుర్తింపు నిర్థారించబడలేదు.</translation>
+<translation id="571403275720188526">(arm64)</translation>
 <translation id="5720705177508910913">ప్రస్తుత వినియోగదారు</translation>
 <translation id="5728056243719941842">C5 (ఎన్వలప్)</translation>
 <translation id="5730040223043577876">మీరు మీ పాస్‌వర్డ్‌ని ఇతర సైట్‌లలో తిరిగి ఉపయోగించినట్లయితే దీనిని రీసెట్ చేయాల్సిందిగా Chrome సిఫార్సు చేస్తోంది.</translation>
@@ -1194,6 +1196,7 @@
 <translation id="5921639886840618607">Google ఖాతాకు కార్డ్‌ను సేవ్ చేయాలా?</translation>
 <translation id="5922853866070715753">దాదాపు పూర్తయింది</translation>
 <translation id="5932224571077948991">సైట్ అనుచితమైన లేదా తప్పుదారి పట్టించే ప్రకటనలను చూపుతుంది</translation>
+<translation id="5938793338444039872">Troy</translation>
 <translation id="5946937721014915347"><ph name="SITE_NAME" /> తెరవబడుతోంది…</translation>
 <translation id="5951495562196540101">వినియోగదారు ఖాతాతో నమోదు చేయడం సాధ్యపడదు (ప్యాకేజ్డ్ లైసెన్స్ అందుబాటులో ఉంది).</translation>
 <translation id="5967592137238574583">సంప్రదింపు సమాచారాన్ని సవరించండి</translation>
@@ -1361,6 +1364,7 @@
 <translation id="6646269444027925224">{COUNT,plural, =0{ఏవీ లేవు}=1{1 సైట్ నుండి (మీరు మీ Google ఖాతా నుండి సైన్ అవుట్ చేయబడరు)}other{# సైట్‌ల నుండి (మీరు మీ Google ఖాతా నుండి సైన్ అవుట్ చేయబడరు)}}</translation>
 <translation id="6652101503459149953">Windows Helloను ఉపయోగించండి</translation>
 <translation id="6657585470893396449">పాస్‌వర్డ్</translation>
+<translation id="666259744093848177">(x86_64 అనువదించబడినది)</translation>
 <translation id="6665553082534466207">కుడివైపు మూడు రంధ్రాలు</translation>
 <translation id="6671697161687535275">Chromium నుండి ఫారమ్ సూచనను తీసివేయాలా?</translation>
 <translation id="6685834062052613830">సైన్ అవుట్ చేసి, సెటప్‌ను పూర్తి చేయండి</translation>

@@ -46,6 +46,7 @@
 <translation id="6676840375528380067">Törli Chrome-adatait az eszközről?</translation>
 <translation id="7165736900384873061">A Google Chrome QR-olvasójának használata</translation>
 <translation id="7172660552945675509">Tipp: <ph name="BEGIN_LINK" />Helyezze át a Chrome-ot a Dockra<ph name="END_LINK" /></translation>
+<translation id="7173114856073700355">Beállítások megnyitása</translation>
 <translation id="7173660919484573146">A Chrome a Face ID segítségével ellenőrzi a jogosultságot a jelszavakhoz való hozzáféréshez.</translation>
 <translation id="7261678641327190792">A Chrome nem tudja ellenőrizni a jelszavakat</translation>
 <translation id="7265369419224458312">Itt is hozzáférhet a számítógépen megnyitott lapokhoz. Ehhez elég elindítani a Chrome-ot számítógépén, megnyitni a menüt, majd a „Bejelentkezés a Chrome-ba…” lehetőséget választani.</translation>
@@ -59,5 +60,5 @@
 <translation id="8370517070665726704">Copyright <ph name="YEAR" /> Google LLC. Minden jog fenntartva.</translation>
 <translation id="840168496893712993">Bizonyos bővítmények a Chrome összeomlását eredményezik. Próbálja meg eltávolítani őket.</translation>
 <translation id="8459495907675268833">A kiválasztott adatokat eltávolítottuk a Chrome-ból és a szinkronizált eszközökről. Előfordulhat, hogy Google-fiókjában (a history.google.com címen) még szerepelnek a böngészési előzmények egyéb formái, így például a keresések és egyéb tevékenységek más Google-szolgáltatásokból.</translation>
-<translation id="8540666473246803645">Google Chrome</translation>
+<translation id="8540666473246803645">Google Chrome</translation>
 </translationbundle>

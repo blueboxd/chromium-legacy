@@ -105,7 +105,7 @@ jlong JNI_ChromeBrowserProvider_ConvertJLongObjectToPrimitive(
   ScopedJavaLocalRef<jclass> jlong_clazz = GetClass(env, "java/lang/Long");
   jmethodID long_value = MethodID::Get<MethodID::TYPE_INSTANCE>(
       env, jlong_clazz.obj(), "longValue", "()J");
-  return env->CallLongMethod(long_obj.obj(), long_value, NULL);
+  return env->CallLongMethod(long_obj.obj(), long_value, nullptr);
 }
 
 jboolean JNI_ChromeBrowserProvider_ConvertJBooleanObjectToPrimitive(
@@ -115,7 +115,7 @@ jboolean JNI_ChromeBrowserProvider_ConvertJBooleanObjectToPrimitive(
       GetClass(env, "java/lang/Boolean");
   jmethodID boolean_value = MethodID::Get<MethodID::TYPE_INSTANCE>(
       env, jboolean_clazz.obj(), "booleanValue", "()Z");
-  return env->CallBooleanMethod(boolean_object.obj(), boolean_value, NULL);
+  return env->CallBooleanMethod(boolean_object.obj(), boolean_value, nullptr);
 }
 
 base::Time ConvertJlongToTime(jlong value) {
@@ -130,7 +130,7 @@ jint JNI_ChromeBrowserProvider_ConvertJIntegerToJint(
       GetClass(env, "java/lang/Integer");
   jmethodID int_value = MethodID::Get<MethodID::TYPE_INSTANCE>(
       env, jinteger_clazz.obj(), "intValue", "()I");
-  return env->CallIntMethod(integer_obj.obj(), int_value, NULL);
+  return env->CallIntMethod(integer_obj.obj(), int_value, nullptr);
 }
 
 // ------------- Utility methods used by tasks ------------- //
@@ -185,7 +185,7 @@ class AddBookmarkTask : public BookmarkModelTask {
     // Check if the bookmark already exists.
     const BookmarkNode* node = model->GetMostRecentlyAddedUserNodeForURL(gurl);
     if (!node) {
-      const BookmarkNode* parent_node = NULL;
+      const BookmarkNode* parent_node = nullptr;
       if (parent_id >= 0)
         parent_node = bookmarks::GetBookmarkNodeByID(model.get(), parent_id);
       if (!parent_node)
@@ -408,7 +408,7 @@ class QueryBookmarksFromAPITask : public HistoryProviderTask {
  public:
   QueryBookmarksFromAPITask(AndroidHistoryProviderService* service,
                             base::CancelableTaskTracker* cancelable_tracker)
-      : HistoryProviderTask(service, cancelable_tracker), result_(NULL) {}
+      : HistoryProviderTask(service, cancelable_tracker), result_(nullptr) {}
 
   history::AndroidStatement* Run(
       const std::vector<history::HistoryAndBookmarkRow::ColumnID>& projections,
@@ -607,7 +607,8 @@ class QuerySearchTermsFromAPITask : public SearchTermTask {
   QuerySearchTermsFromAPITask(AndroidHistoryProviderService* service,
                               base::CancelableTaskTracker* cancelable_tracker,
                               Profile* profile)
-      : SearchTermTask(service, cancelable_tracker, profile), result_(NULL) {}
+      : SearchTermTask(service, cancelable_tracker, profile),
+        result_(nullptr) {}
 
   history::AndroidStatement* Run(
       const std::vector<history::SearchRow::ColumnID>& projections,
@@ -943,7 +944,7 @@ ScopedJavaLocalRef<jobject> ChromeBrowserProvider::QueryBookmarkFromAPI(
 }
 
 // Updates the bookmarks with the given column values. The value is not given if
-// it is NULL.
+// it is nullptr.
 jint ChromeBrowserProvider::UpdateBookmarkFromAPI(
     JNIEnv* env,
     const JavaParamRef<jobject>& obj,
@@ -1006,7 +1007,7 @@ jint ChromeBrowserProvider::RemoveHistoryFromAPI(
 }
 
 // Add the search term with the given column values. The value is not given if
-// it is NULL.
+// it is nullptr.
 jlong ChromeBrowserProvider::AddSearchTermFromAPI(
     JNIEnv* env,
     const JavaParamRef<jobject>& obj,
@@ -1082,7 +1083,7 @@ ScopedJavaLocalRef<jobject> ChromeBrowserProvider::QuerySearchTermFromAPI(
 }
 
 // Updates the search terms with the given column values. The value is not
-// given if it is NULL.
+// given if it is nullptr.
 jint ChromeBrowserProvider::UpdateSearchTermFromAPI(
     JNIEnv* env,
     const JavaParamRef<jobject>& obj,

@@ -71,7 +71,7 @@ class GuestOsRegistryService : public KeyedService {
 
   class Registration {
    public:
-    Registration(const std::string app_id, const base::Value* pref);
+    Registration(const std::string app_id, const base::Value pref);
     Registration(Registration&& registration) = default;
     Registration& operator=(Registration&& registration) = default;
     ~Registration();

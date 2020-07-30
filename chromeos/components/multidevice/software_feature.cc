@@ -29,6 +29,10 @@ SoftwareFeature FromCryptAuthFeature(
       return SoftwareFeature::kMessagesForWebHost;
     case cryptauth::SoftwareFeature::SMS_CONNECT_CLIENT:
       return SoftwareFeature::kMessagesForWebClient;
+    case cryptauth::SoftwareFeature::PHONE_HUB_HOST:
+      return SoftwareFeature::kPhoneHubHost;
+    case cryptauth::SoftwareFeature::PHONE_HUB_CLIENT:
+      return SoftwareFeature::kPhoneHubClient;
     case cryptauth::SoftwareFeature::UNKNOWN_FEATURE:
       NOTREACHED();
   }
@@ -57,6 +61,10 @@ cryptauth::SoftwareFeature ToCryptAuthFeature(
       return cryptauth::SoftwareFeature::SMS_CONNECT_HOST;
     case SoftwareFeature::kMessagesForWebClient:
       return cryptauth::SoftwareFeature::SMS_CONNECT_CLIENT;
+    case SoftwareFeature::kPhoneHubHost:
+      return cryptauth::SoftwareFeature::PHONE_HUB_HOST;
+    case SoftwareFeature::kPhoneHubClient:
+      return cryptauth::SoftwareFeature::PHONE_HUB_CLIENT;
   }
 
   NOTREACHED();
@@ -88,6 +96,12 @@ std::ostream& operator<<(std::ostream& stream, const SoftwareFeature& feature) {
       break;
     case SoftwareFeature::kMessagesForWebClient:
       stream << "[Messages for Web client]";
+      break;
+    case SoftwareFeature::kPhoneHubHost:
+      stream << "[Phone Hub host]";
+      break;
+    case SoftwareFeature::kPhoneHubClient:
+      stream << "[Phone Hub client]";
       break;
   }
   return stream;

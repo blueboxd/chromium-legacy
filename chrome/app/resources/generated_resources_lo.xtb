@@ -4051,7 +4051,6 @@
 <translation id="6056710589053485679">ໂຫຼດຄືນໃໝ່ປົກກະຕິ</translation>
 <translation id="6057312498756061228">ໄຟລ໌ນີ້ໃຫຍ່ເກີນໄປສຳລັບການກວດສອບຄວາມປອດໄພ. ທ່ານສາມາດເປີດໄຟລ໌ໄດ້ບໍ່ເກີນ 50 MB.</translation>
 <translation id="6057381398996433816">ເວັບໄຊນີ້ໄດ້ຖືກບລັອກບໍ່ໃຫ້ໃຊ້ເຊັນເຊີກວດຈັບການເຄື່ອນໄຫວ ແລະ ແສງແລ້ວ.</translation>
-<translation id="6058567592298841668">ເຄື່ອງສະເໝືອນຈິງຂອງປລັກອິນ: <ph name="PLUGIN_VM_NAME" /></translation>
 <translation id="6059652578941944813">ລໍາດັບໃບຮັບຮອງ</translation>
 <translation id="6059925163896151826">ອຸປະກອນ USB</translation>
 <translation id="6061882183774845124">ສົ່ງລິ້ງຫາອຸປະກອນຂອງທ່ານ</translation>
@@ -4480,6 +4479,7 @@
 <translation id="6602956230557165253">ໃຊ້ປຸ່ມລູກສອນຊ້າຍ ແລະຂວາ ເພື່ອກໍານົດທິດທາງ.</translation>
 <translation id="6605847144724004692">ບໍ່ມີຜູ້ໃຊ້ໃດໃຫ້ຄະແນນເທື່ອ.</translation>
 <translation id="6607831829715835317">ເຄື່ອງມືເພີ່ມເຕີມ</translation>
+<translation id="6608012008902909398">ສະແດງລາຍລະອຽດການກວດຊອບແວຂອງອຸປະກອນ</translation>
 <translation id="6611972847767394631">ຊອກຫາແຖບຂອງທ່ານຢູ່ທີ່ນີ້</translation>
 <translation id="6612358246767739896">ເນື້ອ​ໃນ​ທີ່ຖືກ​ປົກ​ປ້ອງ</translation>
 <translation id="6615455863669487791">ສະ​ແດງຂ້ອຍ</translation>

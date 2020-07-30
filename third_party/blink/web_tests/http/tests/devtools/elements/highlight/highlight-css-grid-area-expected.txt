@@ -101,11 +101,13 @@ grid-with-areas{
       "columnTrackSizes": [
         {
           "computedSize": 195.5,
+          "authoredSize": "1fr",
           "x": 97.75,
           "y": 0
         },
         {
           "computedSize": 195.5,
+          "authoredSize": "1fr",
           "x": 303.25,
           "y": 0
         }
@@ -113,11 +115,13 @@ grid-with-areas{
       "rowTrackSizes": [
         {
           "computedSize": 295.5,
+          "authoredSize": "1fr",
           "x": 0,
           "y": 147.75
         },
         {
           "computedSize": 295.5,
+          "authoredSize": "1fr",
           "x": 0,
           "y": 453.25
         }

@@ -48,8 +48,8 @@ class AddSupervisionDialog : public SystemWebDialogDelegate {
   // ui::WebDialogDelegate:
   ui::ModalType GetDialogModalType() const override;
   void GetDialogSize(gfx::Size* size) const override;
-  bool CanCloseDialog() const override;
   bool OnDialogCloseRequested() override;
+  bool DeprecatedOnDialogCloseRequested() override;
   bool ShouldCloseDialogOnEscape() const override;
 
  protected:

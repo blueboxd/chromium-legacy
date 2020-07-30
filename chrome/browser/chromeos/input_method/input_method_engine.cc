@@ -471,7 +471,15 @@ bool InputMethodEngine::SetCompositionRange(
   return input_context->SetCompositionRange(before, after, text_spans);
 }
 
-const gfx::Rect InputMethodEngine::GetAutocorrectCharacterBounds() {
+gfx::Range InputMethodEngine::GetAutocorrectRange() {
+  ui::IMEInputContextHandlerInterface* input_context =
+      ui::IMEBridge::Get()->GetInputContextHandler();
+  if (!input_context)
+    return gfx::Range();
+  return input_context->GetAutocorrectRange();
+}
+
+gfx::Rect InputMethodEngine::GetAutocorrectCharacterBounds() {
   ui::IMEInputContextHandlerInterface* input_context =
       ui::IMEBridge::Get()->GetInputContextHandler();
   if (!input_context)

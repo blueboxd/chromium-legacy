@@ -235,7 +235,7 @@ class DeviceService : public mojom::DeviceService {
 #endif
 
 #if (defined(OS_LINUX) && defined(USE_UDEV)) || defined(OS_WIN) || \
-    defined(OS_MACOSX)
+    defined(OS_MAC)
   // Requests for the SerialPortManager interface must be bound to
   // |serial_port_manager_| on |serial_port_manager_task_runner_| and it will
   // be destroyed on that sequence.

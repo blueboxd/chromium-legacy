@@ -144,8 +144,14 @@ views::CloseRequestResult WebDialogView::OnWindowCloseRequested() {
   // Don't close UI if |delegate_| does not allow users to close it by
   // clicking on "x" button or pressing Escape shortcut key on hosting
   // dialog.
-  if (!delegate_->CanCloseDialog() && !close_contents_called_)
-    return views::CloseRequestResult::kCannotClose;
+  if (!is_attempting_close_dialog_ && !delegate_->OnDialogCloseRequested()) {
+    if (!close_contents_called_)
+      return views::CloseRequestResult::kCannotClose;
+    // This is a web dialog, if the WebContents has been closed, there is no
+    // reason to keep the dialog alive.
+    LOG(ERROR) << "delegate tries to stop closing when CloseContents() has "
+                  "been called";
+  }
 
   // If CloseContents() is called before CanClose(), which is called by
   // RenderViewHostImpl::ClosePageIgnoringUnloadEvents, it indicates
@@ -169,7 +175,7 @@ views::CloseRequestResult WebDialogView::OnWindowCloseRequested() {
 // WebDialogView, views::WidgetDelegate implementation:
 
 bool WebDialogView::OnCloseRequested(Widget::ClosedReason close_reason) {
-  return !delegate_ || delegate_->OnDialogCloseRequested();
+  return !delegate_ || delegate_->DeprecatedOnDialogCloseRequested();
 }
 
 bool WebDialogView::CanResize() const {

@@ -49,6 +49,9 @@ class COMPONENT_EXPORT(PLATFORM_WINDOW) PlatformWindowDelegate {
 
   virtual void OnAcceleratedWidgetAvailable(gfx::AcceleratedWidget widget) = 0;
 
+  // Notifies the delegate that the widget is about to be destroyed.
+  virtual void OnWillDestroyAcceleratedWidget() = 0;
+
   // Notifies the delegate that the widget cannot be used anymore until
   // a new widget is made available through OnAcceleratedWidgetAvailable().
   // Must not be called when the PlatformWindow is being destroyed.

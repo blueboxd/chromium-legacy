@@ -104,6 +104,7 @@
 <translation id="1853692000353488670">Uusi incognito-välilehti</translation>
 <translation id="1856325424225101786">Palautetaanko yksinkertaistettu tila?</translation>
 <translation id="1868024384445905608">Chrome lataa tiedostot nyt nopeammin</translation>
+<translation id="1874760110381325409">Sinut kirjataan sisään Google-tililläsi\n(tämä ei laita päälle Chromen synkronointia)</translation>
 <translation id="1883903952484604915">Omat tiedostot</translation>
 <translation id="1919950603503897840">Valitse kontaktit</translation>
 <translation id="1925021887439448749">Lisää muokattu verkko-osoite</translation>
@@ -227,6 +228,7 @@ Hae sanaa koskettamalla sitä pitkään. Jos haluat tarkentaa hakuasi, valitse e
 <translation id="281504910091592009">Katso ja ylläpidä <ph name="BEGIN_LINK" />Google-tilille<ph name="END_LINK" /> tallennettuja salasanoja</translation>
 <translation id="2818669890320396765">Kirjaudu sisään ja ota synkronointi käyttöön, niin voit käyttää kirjanmerkkejäsi kaikilla laitteilla</translation>
 <translation id="2827278682606527653">Fiidikorttien valikko puolivälin korkuinen</translation>
+<translation id="2841216154655874070">{NUM_DAYS,plural, =1{Tarkistettu 1 päivä sitten}other{Tarkistettu # päivää sitten}}</translation>
 <translation id="2842985007712546952">Ylätason kansio</translation>
 <translation id="2860954141821109167">Varmista, että puhelinsovellus on käytössä tällä laitteella</translation>
 <translation id="2870560284913253234">Sivusto</translation>
@@ -702,6 +704,7 @@ Jotkin verkkosivustot voivat vastata tähän pyyntöön esimerkiksi näyttämäl
 <translation id="6532866250404780454">Chromessa käyttämäsi sivustot eivät näy. Kaikki sivuston ajastimet poistetaan.</translation>
 <translation id="6534565668554028783">Google ei vastannut riittävän nopeasti.</translation>
 <translation id="6539092367496845964">Jotain meni vikaan. Yritä myöhemmin uudelleen.</translation>
+<translation id="6541983376925655882">{NUM_HOURS,plural, =1{Tarkistettu 1 tunti sitten}other{Tarkistettu # tuntia sitten}}</translation>
 <translation id="6545017243486555795">Poista kaikki tiedot</translation>
 <translation id="6560414384669816528">Käytä Sogouta</translation>
 <translation id="656065428026159829">Katso lisää</translation>
@@ -733,6 +736,7 @@ Jotkin verkkosivustot voivat vastata tähän pyyntöön esimerkiksi näyttämäl
 <translation id="6697492270171225480">Näytä ehdotuksia samankaltaisista sivuista, kun sivua ei löydy</translation>
 <translation id="6698801883190606802">Hallinnoi synkronoituja tietoja</translation>
 <translation id="6699370405921460408">Googlen palvelimet optimoivat sivut, joilla käyt.</translation>
+<translation id="670498945988402717">Tarkistettu eilen</translation>
 <translation id="6710213216561001401">Edellinen</translation>
 <translation id="671481426037969117">Ajastimesta (<ph name="FQDN" />) loppui aika. Se alkaa alusta huomenna.</translation>
 <translation id="6738867403308150051">Ladataan…</translation>
@@ -771,6 +775,7 @@ Jotkin verkkosivustot voivat vastata tähän pyyntöön esimerkiksi näyttämäl
 <translation id="7063006564040364415">Synkronointipalvelimeen ei saada yhteyttä.</translation>
 <translation id="7071521146534760487">Hallinnoi tiliä</translation>
 <translation id="7077143737582773186">Secure Digital</translation>
+<translation id="7080806333218412752">Lähettää URL-osoitteita Selaussuojan tarkistettavaksi. Lähettää myös pienen näytteen sivuista, latauksista, laajennustoiminnasta ja järjestelmätiedoista auttaakseen löytämään uusia uhkia. Linkittää tämän datan väliaikaisesti Google-tilillesi ollessasi sisäänkirjautunut, jotta se voi suojella sinua kaikissa Googlen sovelluksissa.</translation>
 <translation id="7121362699166175603">Tyhjentää historian ja osoitekentän automaattiset täydennykset. Google-tililläsi voi olla muita selaushistoriatietoja osoitteessa <ph name="BEGIN_LINK" />myactivity.google.com<ph name="END_LINK" />.</translation>
 <translation id="7128355412245153445">Näet suosituimmat sivustosi ja tuoreet jutut napauttaessasi aloitusnäyttöpainiketta</translation>
 <translation id="7138678301420049075">Muu</translation>
@@ -780,6 +785,7 @@ Jotkin verkkosivustot voivat vastata tähän pyyntöön esimerkiksi näyttämäl
 <translation id="7173114856073700355">Avaa asetukset</translation>
 <translation id="7177466738963138057">Voit muuttaa tätä myöhemmin Asetuksista.</translation>
 <translation id="7180611975245234373">Päivitä</translation>
+<translation id="7187993566681480880">Pitää sinut turvassa Chromessa ja voi parantaa suojaustasi muissa Google-sovelluksissa, kun olet sisäänkirjautuneena.</translation>
 <translation id="7189372733857464326">Odotetaan Google Play Palveluiden päivittymistä</translation>
 <translation id="7191430249889272776">Välilehti avattiin taustalla.</translation>
 <translation id="723171743924126238">Valitse kuvat</translation>
@@ -891,6 +897,7 @@ Jotkin verkkosivustot voivat vastata tähän pyyntöön esimerkiksi näyttämäl
 <translation id="8027863900915310177">Valitse latauspaikka</translation>
 <translation id="8035133914807600019">Uusi kansio…</translation>
 <translation id="8037750541064988519"><ph name="DAYS" /> päivää jäljellä</translation>
+<translation id="8037801708772278989">Tarkistettu juuri äsken</translation>
 <translation id="804335162455518893">SD-korttia ei löydy</translation>
 <translation id="805047784848435650">Selaushistoriasi perusteella</translation>
 <translation id="8051695050440594747"><ph name="MEGABYTES" /> Mt käytettävissä</translation>
@@ -1031,6 +1038,7 @@ Jotkin verkkosivustot voivat vastata tähän pyyntöön esimerkiksi näyttämäl
 <translation id="9137013805542155359">Näytä alkuperäinen</translation>
 <translation id="9155898266292537608">Voit hakea myös napauttamalla sanaa nopeasti.</translation>
 <translation id="9169507124922466868">Navigointihistoria on puoliksi auki</translation>
+<translation id="9199368092038462496">{NUM_MINS,plural, =1{Tarkistettu 1 minuutti sitten}other{Tarkistettu # minuuttia sitten}}</translation>
 <translation id="9204836675896933765">1 tiedosto jäljellä</translation>
 <translation id="9206873250291191720">A</translation>
 <translation id="9209888181064652401">Puheluiden soittaminen ei onnistu</translation>

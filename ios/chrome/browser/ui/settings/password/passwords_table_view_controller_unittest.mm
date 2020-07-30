@@ -107,6 +107,11 @@ class PasswordsTableViewControllerTest
             }));
 
     CreateController();
+
+    // Inject some fake passwords to pass the loading state.
+    PasswordsTableViewController* passwords_controller =
+        static_cast<PasswordsTableViewController*>(controller());
+    [passwords_controller setPasswordsForms:{}];
   }
 
   int GetSectionIndex(PasswordsSections section) {

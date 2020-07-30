@@ -1885,9 +1885,6 @@
       implied_by: ["ExperimentalProductivityFeatures"]
     },
     {
-      name: "UserActivationPostMessageTransfer",
-    },
-    {
       name: "UserActivationSameOriginVisibility",
     },
     {

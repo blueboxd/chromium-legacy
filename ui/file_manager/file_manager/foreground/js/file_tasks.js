@@ -96,8 +96,8 @@ class FileTasks {
       progressCenter) {
     let tasks = [];
 
-    // getFileTasks supports only native entries.
-    entries = entries.filter(util.isNativeEntry);
+    // Cannot use fake entries with getFileTasks.
+    entries = entries.filter(e => !util.isFakeEntry(e));
     if (entries.length !== 0) {
       tasks = await new Promise(
           fulfill => chrome.fileManagerPrivate.getFileTasks(entries, fulfill));

@@ -19,8 +19,6 @@ blink_core_sources("rendering") {
     "border_image_length_box.h",
     "border_style.h",
     "border_value.h",
-    "cached_ua_style.cc",
-    "cached_ua_style.h",
     "clip_path_operation.h",
     "computed_style.cc",
     "computed_style.h",

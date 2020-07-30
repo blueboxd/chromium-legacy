@@ -3360,7 +3360,7 @@
     },
     {
       "id": 339,
-      "description": "Array textures trigger crash on Intel driver 20.19.15.*",
+      "description": "Binding video decoder textures triggers crash on Intel driver 20.19.15.*",
       "cr_bugs": [971952],
       "os": {
         "type": "win",
@@ -3379,12 +3379,12 @@
         "value2": "20.19.15.4380"
       },
       "features": [
-        "use_single_video_decoder_texture"
+        "disable_dxgi_zero_copy_video"
       ]
     },
     {
       "id": 340,
-      "description": "Array textures trigger crash on Intel driver 10.18.15.*",
+      "description": "Binding video decoder textures triggers crash on Intel driver 10.18.15.*",
       "cr_bugs": [971952],
       "os": {
         "type": "win",
@@ -3403,7 +3403,7 @@
         "value2": "10.18.15.4293"
       },
       "features": [
-        "use_single_video_decoder_texture"
+        "disable_dxgi_zero_copy_video"
       ]
     },
     {

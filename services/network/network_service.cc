@@ -680,7 +680,7 @@ void NetworkService::SetCryptConfig(mojom::CryptConfigPtr crypt_config) {
 }
 #endif
 
-#if defined(OS_WIN) || (defined(OS_MACOSX) && !defined(OS_IOS))
+#if defined(OS_WIN) || defined(OS_MAC)
 void NetworkService::SetEncryptionKey(const std::string& encryption_key) {
   OSCrypt::SetRawEncryptionKey(encryption_key);
 }

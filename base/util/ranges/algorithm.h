@@ -13,20 +13,13 @@
 #include "base/util/ranges/functional.h"
 #include "base/util/ranges/iterator.h"
 #include "base/util/ranges/ranges.h"
+#include "base/util/ranges/ranges_internal.h"
 
 namespace util {
+
 namespace ranges {
 
 namespace internal {
-
-// Helper to express preferences in an overload set. If more than one overload
-// are available for a given set of parameters the overload with the higher
-// priority will be chosen.
-template <size_t I>
-struct priority_tag : priority_tag<I - 1> {};
-
-template <>
-struct priority_tag<0> {};
 
 // Returns a transformed version of the unary predicate `pred` applying `proj`
 // to its argument before invoking `pred` on it.

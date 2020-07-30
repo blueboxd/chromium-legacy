@@ -1085,13 +1085,6 @@ bool FrameFetchContext::SendConversionRequestInsteadOfRedirecting(
   GetFrame()->GetRemoteNavigationAssociatedInterfaces()->GetInterface(
       &conversion_host);
   conversion_host->RegisterConversion(std::move(conversion));
-
-  // Log use counters once we have a conversion.
-  UseCounter::Count(document_->domWindow(),
-                    mojom::blink::WebFeature::kConversionAPIAll);
-  UseCounter::Count(document_->domWindow(),
-                    mojom::blink::WebFeature::kConversionRegistration);
-
   return true;
 }
 

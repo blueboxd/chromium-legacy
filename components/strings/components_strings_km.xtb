@@ -124,6 +124,7 @@
 <translation id="1430915738399379752">បោះពុម្ព</translation>
 <translation id="1442386063175183758">បត់ភ្ជិត​ផ្ទាំង​ខាងស្ដាំ</translation>
 <translation id="1442987760062738829">ចោះ</translation>
+<translation id="1447067628680007684">(x86_64)</translation>
 <translation id="1453974140256777690">អត្ថបទ​ដែលអ្នក​ដាក់ចូល ឬ​ភ្ជាប់​ត្រូវបានផ្ញើ​ទៅ Google Cloud ឬ​ភាគីទីបី​ដើម្បី​វិភាគ​។ ឧទាហរណ៍ អត្ថបទនោះ​អាចត្រូវបាន​ស្កេន ដើម្បីរកមើល​ទិន្នន័យ​រសើប​។</translation>
 <translation id="1455413310270022028">ជ័រលុប</translation>
 <translation id="1462245070427461050">JIS B9</translation>
@@ -1149,6 +1150,7 @@
 <translation id="5705882733397021510">ថយក្រោយ</translation>
 <translation id="57094364128775171">ណែនាំ​ពាក្យសម្ងាត់​ខ្លាំង…</translation>
 <translation id="5710435578057952990">អត្តសញ្ញាណគេហទំព័រនេះមិនអាចត្រូវបានផ្ទៀងផ្ទាត់ទេ។</translation>
+<translation id="571403275720188526">(arm64)</translation>
 <translation id="5720705177508910913">អ្នកប្រើបច្ចុប្បន្ន</translation>
 <translation id="5728056243719941842">C5 (ស្រោម​សំបុត្រ)</translation>
 <translation id="5730040223043577876">Chrome ណែនាំឱ្យ​កំណត់​ពាក្យសម្ងាត់​របស់អ្នក​ឡើងវិញ ប្រសិនបើ​អ្នកបាន​ប្រើ​វា​ម្តងទៀត​នៅលើ​ទំព័រផ្សេង​។</translation>
@@ -1198,6 +1200,7 @@
 <translation id="5921639886840618607">រក្សាទុក​កាត​ទៅក្នុង​គណនី Google ?</translation>
 <translation id="5922853866070715753">ជិត​រួចរាល់​ហើយ</translation>
 <translation id="5932224571077948991">គេហទំព័រ​បង្ហាញ​ការផ្សាយពាណិជ្ជកម្ម​ដែលនាំឱ្យយល់ច្រឡំ ឬរំខាន</translation>
+<translation id="5938793338444039872">Troy</translation>
 <translation id="5946937721014915347">កំពុងបើក <ph name="SITE_NAME" />…</translation>
 <translation id="5951495562196540101">មិន​អាច​ចុះឈ្មោះ​ដោយប្រើគណនី​អ្នក​ប្រើប្រាស់​បានទេ (មាន​អាជ្ញាបណ្ណ​ពាក់ព័ន្ធ)។</translation>
 <translation id="5967592137238574583">កែសម្រួល​ព័ត៌មាន​ទំនាក់ទំនង</translation>
@@ -1365,6 +1368,7 @@
 <translation id="6646269444027925224">{COUNT,plural, =0{គ្មាន}=1{ពីទំព័រ 1 (អ្នក​នឹង​មិនចាក​ចេញ​ពី​គណនី Google របស់អ្នក​ទេ)}other{ពីទំព័រ # (អ្នក​នឹង​មិនចាក​ចេញ​ពី​គណនី Google របស់អ្នក​ទេ)}}</translation>
 <translation id="6652101503459149953">ប្រើ Windows Hello</translation>
 <translation id="6657585470893396449">ពាក្យសម្ងាត់</translation>
+<translation id="666259744093848177">(x86_64 ដែលបានបកប្រែ)</translation>
 <translation id="6665553082534466207">ចោះ​បីរន្ធ​ខាងស្ដាំ</translation>
 <translation id="6671697161687535275">យកការផ្តល់យោបល់ទម្រង់ចេញពី Chromium ឬ?</translation>
 <translation id="6685834062052613830">ចាកចេញ និងបញ្ចប់ការដំឡើង</translation>

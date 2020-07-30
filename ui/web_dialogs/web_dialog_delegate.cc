@@ -20,15 +20,15 @@ void WebDialogDelegate::GetMinimumDialogSize(gfx::Size* size) const {
   GetDialogSize(size);
 }
 
-bool WebDialogDelegate::CanCloseDialog() const {
-  return true;
-}
-
 bool WebDialogDelegate::CanResizeDialog() const {
   return true;
 }
 
 bool WebDialogDelegate::OnDialogCloseRequested() {
+  return true;
+}
+
+bool WebDialogDelegate::DeprecatedOnDialogCloseRequested() {
   return true;
 }
 

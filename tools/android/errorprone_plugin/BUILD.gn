@@ -16,9 +16,7 @@ java_binary("errorprone_plugin") {
     "src/org/chromium/tools/errorprone/plugin/NoAndroidAsyncTaskCheck.java",
     "src/org/chromium/tools/errorprone/plugin/NoDynamicStringsInTraceEventCheck.java",
     "src/org/chromium/tools/errorprone/plugin/NoRedundantFieldInitCheck.java",
-
-    # TODO(crbug.com/1104558): Fix.
-    #"src/org/chromium/tools/errorprone/plugin/NoSynchronizedMethodCheck.java",
+    "src/org/chromium/tools/errorprone/plugin/NoSynchronizedMethodCheck.java",
     "src/org/chromium/tools/errorprone/plugin/NoSynchronizedThisCheck.java",
     "src/org/chromium/tools/errorprone/plugin/TestClassNameCheck.java",
   ]

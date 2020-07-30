@@ -34,7 +34,7 @@ class BookmarkModelSQLHandlerTest : public testing::Test {
  public:
   BookmarkModelSQLHandlerTest()
       : profile_manager_(TestingBrowserProcess::GetGlobal()),
-        bookmark_model_(NULL) {}
+        bookmark_model_(nullptr) {}
   ~BookmarkModelSQLHandlerTest() override {}
 
  protected:

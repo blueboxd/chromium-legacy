@@ -163,16 +163,16 @@ class LauncherSearch {
               {currentDirectoryURL: entry.toURL()}, undefined, /* App ID */
               LaunchType.FOCUS_SAME_OR_CREATE);
         } else {
-          // getFileTasks supports only native entries.
-          if (!util.isNativeEntry(entry)) {
+          // getFileTasks does not support fake entries.
+          if (util.isFakeEntry(entry)) {
             return;
           }
           // If the file is not directory, try to execute default task.
           chrome.fileManagerPrivate.getFileTasks([entry], tasks => {
             // Select default task.
             let defaultTask = null;
-            for (var i = 0; i < tasks.length; i++) {
-              var task = tasks[i];
+            for (let i = 0; i < tasks.length; i++) {
+              const task = tasks[i];
               if (task.isDefault) {
                 defaultTask = task;
                 break;
@@ -183,8 +183,8 @@ class LauncherSearch {
             // one which is not generic file handler as default task.
             // TODO(yawano) Share task execution logic with file_tasks.js.
             if (!defaultTask) {
-              for (var i = 0; i < tasks.length; i++) {
-                var task = tasks[i];
+              for (let i = 0; i < tasks.length; i++) {
+                const task = tasks[i];
                 if (!task.isGenericFileHandler) {
                   defaultTask = task;
                   break;

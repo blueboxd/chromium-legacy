@@ -57,7 +57,9 @@ X11WholeScreenMoveLoop::X11WholeScreenMoveLoop(X11MoveLoopDelegate* delegate)
       grabbed_pointer_(false),
       canceled_(false) {}
 
-X11WholeScreenMoveLoop::~X11WholeScreenMoveLoop() = default;
+X11WholeScreenMoveLoop::~X11WholeScreenMoveLoop() {
+  EndMoveLoop();
+}
 
 void X11WholeScreenMoveLoop::DispatchMouseMovement() {
   if (!last_motion_in_screen_)

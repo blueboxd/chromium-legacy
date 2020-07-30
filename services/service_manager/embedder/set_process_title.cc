@@ -8,7 +8,7 @@
 
 #include "build/build_config.h"
 
-#if defined(OS_POSIX) && !defined(OS_MACOSX) && !defined(OS_SOLARIS)
+#if defined(OS_POSIX) && !defined(OS_MAC) && !defined(OS_SOLARIS)
 #include <limits.h>
 #include <stdlib.h>
 #include <unistd.h>
@@ -16,7 +16,7 @@
 #include <string>
 
 #include "base/command_line.h"
-#endif  // defined(OS_POSIX) && !defined(OS_MACOSX) && !defined(OS_SOLARIS)
+#endif  // defined(OS_POSIX) && !defined(OS_MAC) && !defined(OS_SOLARIS)
 
 #if defined(OS_LINUX)
 #include <sys/prctl.h>
@@ -33,7 +33,7 @@
 namespace service_manager {
 
 // TODO(jrg): Find out if setproctitle or equivalent is available on Android.
-#if defined(OS_POSIX) && !defined(OS_MACOSX) && !defined(OS_SOLARIS) && \
+#if defined(OS_POSIX) && !defined(OS_MAC) && !defined(OS_SOLARIS) && \
     !defined(OS_ANDROID) && !defined(OS_FUCHSIA)
 
 void SetProcessTitleFromCommandLine(const char** main_argv) {

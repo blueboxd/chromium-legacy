@@ -123,6 +123,7 @@
 <translation id="1430915738399379752">列印</translation>
 <translation id="1442386063175183758">右半邊對折</translation>
 <translation id="1442987760062738829">打孔</translation>
+<translation id="1447067628680007684">(x86_64)</translation>
 <translation id="1453974140256777690">系統會將你貼上或附加的文字傳送到 Google Cloud 或第三方進行分析。舉例來說，Google Cloud 或第三方可能會掃描文字，檢查是否含有機密資料。</translation>
 <translation id="1455413310270022028">橡皮擦</translation>
 <translation id="1462245070427461050">JIS B9</translation>
@@ -966,7 +967,7 @@
 <translation id="5040262127954254034">隱私權</translation>
 <translation id="5043480802608081735">你複製的連結</translation>
 <translation id="5045550434625856497">密碼不正確</translation>
-<translation id="5056549851600133418">推薦給你的文章</translation>
+<translation id="5056549851600133418">為你推薦的文章</translation>
 <translation id="5061227663725596739">你是不是要前往 <ph name="LOOKALIKE_DOMAIN" />？</translation>
 <translation id="5068524481479508725">A10</translation>
 <translation id="5068778127327928576">{NUM_COOKIES,plural, =1{(目前使用 1 個 Cookie)}other{(目前使用 # 個 Cookie)}}</translation>
@@ -1134,6 +1135,7 @@
 <translation id="5705882733397021510">返回</translation>
 <translation id="57094364128775171">建議高強度密碼…</translation>
 <translation id="5710435578057952990">此網頁的身分未經驗證。</translation>
+<translation id="571403275720188526">(arm64)</translation>
 <translation id="5720705177508910913">目前使用者</translation>
 <translation id="5728056243719941842">C5 (信封)</translation>
 <translation id="5730040223043577876">如果你在其他網站上重複使用過你的密碼，Chrome 會建議你重設密碼。</translation>
@@ -1183,6 +1185,7 @@
 <translation id="5921639886840618607">要將這張卡片儲存到 Google 帳戶嗎？</translation>
 <translation id="5922853866070715753">即將完成</translation>
 <translation id="5932224571077948991">網站顯示干擾性或誤導性廣告</translation>
+<translation id="5938793338444039872">Troy</translation>
 <translation id="5946937721014915347">正在開啟 <ph name="SITE_NAME" />…</translation>
 <translation id="5951495562196540101">無法透過個人帳戶註冊 (有封裝授權)。</translation>
 <translation id="5967592137238574583">編輯聯絡資訊</translation>
@@ -1350,6 +1353,7 @@
 <translation id="6646269444027925224">{COUNT,plural, =0{無}=1{1 個網站 (你不會因此登出 Google 帳戶)}other{# 個網站 (你不會因此登出 Google 帳戶)}}</translation>
 <translation id="6652101503459149953">使用 Windows Hello</translation>
 <translation id="6657585470893396449">密碼</translation>
+<translation id="666259744093848177">(已翻譯 x86_64)</translation>
 <translation id="6665553082534466207">三孔 (右側)</translation>
 <translation id="6671697161687535275">要從 Chromium 中移除表單填寫建議嗎？</translation>
 <translation id="6685834062052613830">請登出並完成設定程序</translation>

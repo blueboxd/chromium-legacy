@@ -4051,7 +4051,6 @@
 <translation id="6056710589053485679">تحديث عادية</translation>
 <translation id="6057312498756061228">إنّ حجم هذا الملف كبير جدًا بالنسبة إلى فحص الأمان. يمكنك فتح ملفات لا يزيد حجمها عن 50 ميغابايت.</translation>
 <translation id="6057381398996433816">تم حظر هذا الموقع من استخدام أجهزة استشعار الإضاءة والحركة.</translation>
-<translation id="6058567592298841668">آلة افتراضية للمكوّن الإضافي: <ph name="PLUGIN_VM_NAME" /></translation>
 <translation id="6059652578941944813">التسلسل الهرمي للشهادة</translation>
 <translation id="6059925163896151826">‏أجهزة USB</translation>
 <translation id="6061882183774845124">إرسال الرابط إلى الأجهزة</translation>
@@ -4481,6 +4480,7 @@
 <translation id="6602956230557165253">استخدام مفتاحي السهمين لليمين واليسار للتنقل.</translation>
 <translation id="6605847144724004692">لم يتم التقييم بواسطة أي مستخدمين بعد.</translation>
 <translation id="6607831829715835317">المزيد من &amp;الأدوات</translation>
+<translation id="6608012008902909398">عرض تفاصيل التحقُّق من برامج الجهاز</translation>
 <translation id="6611972847767394631">ستجد علامات التبويب هنا</translation>
 <translation id="6612358246767739896">المحتوى المحمي</translation>
 <translation id="6615455863669487791">عرض</translation>

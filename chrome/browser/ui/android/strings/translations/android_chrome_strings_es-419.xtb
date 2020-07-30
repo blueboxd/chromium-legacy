@@ -104,6 +104,7 @@
 <translation id="1853692000353488670">Nueva pestaña de incógnito</translation>
 <translation id="1856325424225101786">¿Quieres restablecer el modo lite?</translation>
 <translation id="1868024384445905608">Ahora Chrome descarga los archivos más rápido</translation>
+<translation id="1874760110381325409">Accederás con tu Cuenta de Google\n(esta acción no activará la Sincronización de Chrome)</translation>
 <translation id="1883903952484604915">Mis archivos</translation>
 <translation id="1919950603503897840">Seleccionar contactos</translation>
 <translation id="1925021887439448749">Ingresa una dirección web personalizada</translation>
@@ -227,6 +228,7 @@ Para buscar una palabra, mantenla presionada. Si quieres definir mejor la búsqu
 <translation id="281504910091592009">Ver y administrar las contraseñas guardadas en tu <ph name="BEGIN_LINK" />cuenta de Google<ph name="END_LINK" /></translation>
 <translation id="2818669890320396765">Para que tus favoritos estén en todos tus dispositivos, accede a tu cuenta y activa la sincronización</translation>
 <translation id="2827278682606527653">Feed card menu half height</translation>
+<translation id="2841216154655874070">{NUM_DAYS,plural, =1{Se verificó hace 1 día}other{Se verificó hace # días}}</translation>
 <translation id="2842985007712546952">Carpeta principal</translation>
 <translation id="2860954141821109167">Comprueba que este dispositivo tenga una app de teléfono habilitada</translation>
 <translation id="2870560284913253234">Sitio</translation>
@@ -702,6 +704,7 @@ Por ejemplo, algunos sitios web pueden responder a la solicitud mediante anuncio
 <translation id="6532866250404780454">No se mostrarán los sitios que visites en Chrome. Se borrarán todos los temporizadores.</translation>
 <translation id="6534565668554028783">Google tardó demasiado en responder</translation>
 <translation id="6539092367496845964">Se produjo un error; vuelve a intentarlo más tarde.</translation>
+<translation id="6541983376925655882">{NUM_HOURS,plural, =1{Se verificó hace 1 hora}other{Se verificó hace # horas}}</translation>
 <translation id="6545017243486555795">Borrar todos los datos</translation>
 <translation id="6560414384669816528">Buscar con Sogou</translation>
 <translation id="656065428026159829">Ver más</translation>
@@ -733,6 +736,7 @@ Por ejemplo, algunos sitios web pueden responder a la solicitud mediante anuncio
 <translation id="6697492270171225480">Mostrar sugerencias para páginas similares cuando no se puede encontrar una específica</translation>
 <translation id="6698801883190606802">Administrar datos sincronizados</translation>
 <translation id="6699370405921460408">Los servidores de Google optimizarán las páginas que visites.</translation>
+<translation id="670498945988402717">Se verificó ayer</translation>
 <translation id="6710213216561001401">Anterior</translation>
 <translation id="671481426037969117">Se agotó el temporizador de <ph name="FQDN" />. Volverá a empezar mañana.</translation>
 <translation id="6738867403308150051">Descargando…</translation>
@@ -771,6 +775,7 @@ Por ejemplo, algunos sitios web pueden responder a la solicitud mediante anuncio
 <translation id="7063006564040364415">No se pudo establecer conexión con el servidor de sincronización.</translation>
 <translation id="7071521146534760487">Administrar cuenta</translation>
 <translation id="7077143737582773186">Tarjeta SD</translation>
+<translation id="7080806333218412752">Envía las URL a la Navegación segura para revisarlas. También envía una pequeña muestra de páginas, descargas, información del sistema y actividad de extensiones para ayudar a descubrir nuevas amenazas. Vincula estos datos de manera temporal con tu Cuenta de Google cuando accedes a ella para protegerte en todas las apps de Google.</translation>
 <translation id="7121362699166175603">Borra el historial y las sugerencias de autocompletado en la barra de direcciones. Es posible que tu cuenta de Google tenga otros formularios del historial de navegación en <ph name="BEGIN_LINK" />myactivity.google.com<ph name="END_LINK" />.</translation>
 <translation id="7128355412245153445">Mira tus historias recientes y sitios populares cuando presionas el botón de inicio</translation>
 <translation id="7138678301420049075">Otros</translation>
@@ -780,6 +785,7 @@ Por ejemplo, algunos sitios web pueden responder a la solicitud mediante anuncio
 <translation id="7173114856073700355">Abrir la configuración</translation>
 <translation id="7177466738963138057">Puedes cambiar esta opción más tarde en Configuración</translation>
 <translation id="7180611975245234373">Actualizar</translation>
+<translation id="7187993566681480880">Te protege en Chrome y puede usarse para mejorar tu seguridad en otras apps de Google cuando accedes a tu cuenta.</translation>
 <translation id="7189372733857464326">Esperando que los servicios de Google Play terminen de actualizarse</translation>
 <translation id="7191430249889272776">Pestaña abierta en segundo plano</translation>
 <translation id="723171743924126238">Seleccionar imágenes</translation>
@@ -891,6 +897,7 @@ Por ejemplo, algunos sitios web pueden responder a la solicitud mediante anuncio
 <translation id="8027863900915310177">Elige dónde descargarlo</translation>
 <translation id="8035133914807600019">Nueva carpeta…</translation>
 <translation id="8037750541064988519"><ph name="DAYS" /> días restantes</translation>
+<translation id="8037801708772278989">Se verificó recién</translation>
 <translation id="804335162455518893">No se encontró la tarjeta SD</translation>
 <translation id="805047784848435650">Según tu historial de navegación</translation>
 <translation id="8051695050440594747"><ph name="MEGABYTES" /> MB disponibles</translation>
@@ -1031,6 +1038,7 @@ Por ejemplo, algunos sitios web pueden responder a la solicitud mediante anuncio
 <translation id="9137013805542155359">Mostrar original</translation>
 <translation id="9155898266292537608">También puedes presionar brevemente la palabra para realizar una búsqueda</translation>
 <translation id="9169507124922466868">El historial de navegación está abierto a la mitad</translation>
+<translation id="9199368092038462496">{NUM_MINS,plural, =1{Se verificó hace 1 minuto}other{Se verificó hace # minutos}}</translation>
 <translation id="9204836675896933765">Queda 1 archivo</translation>
 <translation id="9206873250291191720">A</translation>
 <translation id="9209888181064652401">No se pueden realizar llamadas</translation>

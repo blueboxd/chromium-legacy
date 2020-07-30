@@ -16,7 +16,7 @@
 
 #if defined(OS_LINUX) && defined(USE_UDEV)
 #include "services/device/hid/hid_service_linux.h"
-#elif defined(OS_MACOSX)
+#elif defined(OS_MAC)
 #include "services/device/hid/hid_service_mac.h"
 #elif defined(OS_WIN)
 #include "services/device/hid/hid_service_win.h"
@@ -36,7 +36,7 @@ constexpr base::TaskTraits HidService::kBlockingTaskTraits;
 std::unique_ptr<HidService> HidService::Create() {
 #if defined(OS_LINUX) && defined(USE_UDEV)
   return base::WrapUnique(new HidServiceLinux());
-#elif defined(OS_MACOSX)
+#elif defined(OS_MAC)
   return base::WrapUnique(new HidServiceMac());
 #elif defined(OS_WIN)
   return base::WrapUnique(new HidServiceWin());

@@ -346,7 +346,7 @@
 <translation id="1420834118113404499">Leseni za maudhui</translation>
 <translation id="1420920093772172268"><ph name="TURN_ON_BLUETOOTH_LINK" /> uruhusu kuoanisha</translation>
 <translation id="1422159345171879700">Pakia Hati Zisizo Salama</translation>
-<translation id="1426410128494586442">Ndio</translation>
+<translation id="1426410128494586442">Ndiyo</translation>
 <translation id="142655739075382478"><ph name="APP_NAME" /> imezuiwa</translation>
 <translation id="1426870617281699524">Bofya Jaribu Tena na ukubali kidokezo kwenye kompyuta yako</translation>
 <translation id="1427179946227469514">Kiwango cha sauti ya kusoma maandishi kwa sauti</translation>
@@ -2437,7 +2437,7 @@ Ungependa kuanza <ph name="CONTROL_PANEL_APPLET_NAME" />?</translation>
 <translation id="3949790930165450333"><ph name="DEVICE_NAME" /> (<ph name="DEVICE_ID" />)</translation>
 <translation id="394984172568887996">Zilizoingizwa Kutoka IE</translation>
 <translation id="3949981384795585075">{NUM_APPS,plural, =1{Huenda programu hii ni hatari}other{Huenda programu hizi ni hatari}}</translation>
-<translation id="3950820424414687140">Ingia</translation>
+<translation id="3950820424414687140">Ingia katika akaunti</translation>
 <translation id="3953834000574892725">Akaunti zangu</translation>
 <translation id="3954354850384043518">Unaendelea</translation>
 <translation id="3954469006674843813"><ph name="WIDTH" /> x <ph name="HEIGHT" /> (Hezi <ph name="REFRESH_RATE" />)</translation>
@@ -4048,7 +4048,6 @@ Ungependa kuanza <ph name="CONTROL_PANEL_APPLET_NAME" />?</translation>
 <translation id="6056710589053485679">Upakiaji upya wa Kawaida</translation>
 <translation id="6057312498756061228">Faili hii ni kubwa mno kwa hivyo haiwezi kufanyiwa ukaguzi wa usalama. Unaweza kufungua faili za hadi MB 50.</translation>
 <translation id="6057381398996433816">Tovuti hii imezuiwa ili isitumie vitambuzi vya mwangaza na mwendo.</translation>
-<translation id="6058567592298841668">Mashine Dhahania ya Programu Jalizi: <ph name="PLUGIN_VM_NAME" /></translation>
 <translation id="6059652578941944813">Hadhi ya Vyeti:</translation>
 <translation id="6059925163896151826">Vifaa vya USB</translation>
 <translation id="6061882183774845124">Tuma kiungo kwenye vifaa vyako</translation>

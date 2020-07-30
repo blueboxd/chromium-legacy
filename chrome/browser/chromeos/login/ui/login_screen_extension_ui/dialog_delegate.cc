@@ -52,7 +52,7 @@ void DialogDelegate::GetDialogSize(gfx::Size* size) const {
                     kRelativeScreenHeight * screen_size.height());
 }
 
-bool DialogDelegate::CanCloseDialog() const {
+bool DialogDelegate::OnDialogCloseRequested() {
   return can_close_;
 }
 

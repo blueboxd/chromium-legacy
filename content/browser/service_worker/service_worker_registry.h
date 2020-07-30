@@ -344,11 +344,14 @@ class CONTENT_EXPORT ServiceWorkerRegistry {
       blink::mojom::ServiceWorkerRegistrationOptions options,
       NewRegistrationCallback callback,
       int64_t registration_id);
-  void DidGetNewVersionId(scoped_refptr<ServiceWorkerRegistration> registration,
-                          const GURL& script_url,
-                          blink::mojom::ScriptType script_type,
-                          NewVersionCallback callback,
-                          int64_t version_id);
+  void DidGetNewVersionId(
+      scoped_refptr<ServiceWorkerRegistration> registration,
+      const GURL& script_url,
+      blink::mojom::ScriptType script_type,
+      NewVersionCallback callback,
+      int64_t version_id,
+      mojo::PendingRemote<storage::mojom::ServiceWorkerLiveVersionRef>
+          version_reference);
 
   void ScheduleDeleteAndStartOver();
 

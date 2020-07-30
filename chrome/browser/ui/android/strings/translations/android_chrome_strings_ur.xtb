@@ -104,6 +104,7 @@
 <translation id="1853692000353488670">نیا پوشیدگی ٹیب</translation>
 <translation id="1856325424225101786">لائٹ موڈ ری سیٹ کریں؟</translation>
 <translation id="1868024384445905608">‏Chrome اب فائلز کو مزید تیزی سے ڈاؤن لوڈ کرتا ہے</translation>
+<translation id="1874760110381325409">‏آپ اپنے Google اکاؤنٹ سے سائن ان ہو جائیں گے\n(اس سے Chrome Sync آن نہیں ہوگا)</translation>
 <translation id="1883903952484604915">میری فائلز</translation>
 <translation id="1919950603503897840">رابطے منتخب کریں</translation>
 <translation id="1925021887439448749">حسب ضرورت ویب پتہ درج کریں</translation>
@@ -227,6 +228,7 @@
 <translation id="281504910091592009">‏اپنے <ph name="BEGIN_LINK" />Google اکاؤنٹ<ph name="END_LINK" /> میں محفوظ کردہ پاس ورڈز دیکھیں اور ان کا نظم کریں</translation>
 <translation id="2818669890320396765">اپنے سبھی آلات پر اپنے بُک مارکس حاصل کرنے کیلئے، سائن ان کریں اور سِنک کو آن کریں</translation>
 <translation id="2827278682606527653">نصف اونچائی پر فیڈ کارڈ مینو</translation>
+<translation id="2841216154655874070">{NUM_DAYS,plural, =1{1 دن پہلے چیک کیا گیا}other{# دن پہلے چیک کیا گیا}}</translation>
 <translation id="2842985007712546952">پیرینٹ فولڈر</translation>
 <translation id="2860954141821109167">یہ یقینی بنائیں کہ اس آلے پر کوئی فون ایپ فعال ہے</translation>
 <translation id="2870560284913253234">سائٹ</translation>
@@ -702,6 +704,7 @@
 <translation id="6532866250404780454">‏Chrome میں آپ کی ملاحظہ کردہ سائٹس نہیں دکھائی دیں گی۔ سائٹ کے سبھی ٹائمرز حذف کر دیے جائیں گے۔</translation>
 <translation id="6534565668554028783">‏Google کو جواب دینے میں کافی وقت لگا</translation>
 <translation id="6539092367496845964">کچھ غلط ہو گیا۔ بعد میں دوبارہ کوشش کریں۔</translation>
+<translation id="6541983376925655882">{NUM_HOURS,plural, =1{1 گھنٹہ پہلے چیک کیا گیا}other{# گھنٹے پہلے چیک کیا گیا}}</translation>
 <translation id="6545017243486555795">سبھی ڈیٹا صاف کریں</translation>
 <translation id="6560414384669816528">‏Sogou کے ساتھ تلاش کریں</translation>
 <translation id="656065428026159829">مزید دیکھیں</translation>
@@ -733,6 +736,7 @@
 <translation id="6697492270171225480">صفحہ نہ مل پانے کی صورت میں ملتے جلتے صفحات کے لیے تجاویز دکھائیں</translation>
 <translation id="6698801883190606802">مطابقت پذیر ڈیٹا کا نظم کریں</translation>
 <translation id="6699370405921460408">‏Google سرورز آپ کے ملاحظہ کیے جانے والے صفحات کو بہتر بنائیں گے۔</translation>
+<translation id="670498945988402717">گزشتہ کل چیک کیا گیا</translation>
 <translation id="6710213216561001401">گزشتہ</translation>
 <translation id="671481426037969117">آپ کا <ph name="FQDN" /> ٹائمر بند ہو گیا ہے۔ یہ کل دوبارہ شروع ہو جائے گا۔</translation>
 <translation id="6738867403308150051">ڈاؤن لوڈ ہو رہے ہیں…</translation>
@@ -771,6 +775,7 @@
 <translation id="7063006564040364415">مطابقت پذیری سرور سے منسلک نہیں کیا جا سکا۔</translation>
 <translation id="7071521146534760487">اکاؤنٹ کا نظم کریں</translation>
 <translation id="7077143737582773186">‏SD کارڈ</translation>
+<translation id="7080806333218412752">‏چیک کرنے کے لیے URLs کو محفوظ براؤزنگ کو بھیجتا ہے۔ نئے خطرات کا پتہ لگانے میں مدد کے لیے صفحات، ڈاؤن لوڈز، ایکسٹینشن کی سرگرمی اور سسٹم کی معلومات کا چھوٹا سا نمونہ بھی بھیجتا ہے۔ Google ایپس پر آپ کی حفاظت کرنے کے لیے آپ کے سائن ان ہونے پر آپ کے Google اکاؤنٹ سے اس ڈیٹا کو عارضی طور پر لنک کرتا ہے۔</translation>
 <translation id="7121362699166175603">‏پتہ بار میں موجود سرگزشت اور خودکار تکمیلات کو صاف کر دیتا ہے۔ ممکن ہے کہ <ph name="BEGIN_LINK" />myactivity.google<ph name="END_LINK" /> پر آپ کے Google اکاؤنٹ میں براؤزنگ کی سرگزشت کی دیگر شکلیں موجود ہوں۔</translation>
 <translation id="7128355412245153445">جب بھی آپ ہوم بٹن پر تھپتھپائیں تو اپنی سر فہرست سائٹس اور حالیہ کہانیاں دیکھیں</translation>
 <translation id="7138678301420049075">دوسرا</translation>
@@ -780,6 +785,7 @@
 <translation id="7173114856073700355">ترتیبات کھولیں</translation>
 <translation id="7177466738963138057">آپ بعد میں ترتیبات میں اسے تبدیل کر سکتے ہیں</translation>
 <translation id="7180611975245234373">ریفریش کریں</translation>
+<translation id="7187993566681480880">‏آپ کے سائن ان ہونے پر آپ کو Chrome پر محفوظ رکھتا ہے اور دیگر Google ایپس میں آپ کی سیکیورٹی کو بہتر بنانے کے لیے استعمال کیا جا سکتا ہے۔</translation>
 <translation id="7189372733857464326">‏Google Play سروسز کی جانب سے اپ ڈیٹ مکمل کرنے کا انتظار ہے</translation>
 <translation id="7191430249889272776">ٹیب پس منظر میں کھلا ہے۔</translation>
 <translation id="723171743924126238">تصاویر منتخب کریں</translation>
@@ -891,6 +897,7 @@
 <translation id="8027863900915310177">منتخب کریں کہ کہاں پر ڈاؤن لوڈ کرنا ہے</translation>
 <translation id="8035133914807600019">نیا فولڈر…</translation>
 <translation id="8037750541064988519"><ph name="DAYS" /> دن باقی</translation>
+<translation id="8037801708772278989">ابھی چیک کیا گيا</translation>
 <translation id="804335162455518893">‏SD کارڈ نہیں ملا</translation>
 <translation id="805047784848435650">آپ کی براؤزنگ سرگزشت کی بنیاد پر</translation>
 <translation id="8051695050440594747">‏<ph name="MEGABYTES" /> MB دستیاب ہے</translation>
@@ -1031,6 +1038,7 @@
 <translation id="9137013805542155359">اصل دکھائیں</translation>
 <translation id="9155898266292537608">آپ کسی لفظ پر فوری تھپتھپاہٹ سے بھی تلاش کر سکتے ہیں</translation>
 <translation id="9169507124922466868">نیویگیشن کی سرگزشت آدھی کھلی ہوئی ہے</translation>
+<translation id="9199368092038462496">{NUM_MINS,plural, =1{1 منٹ پہلے چیک کیا گيا}other{# منٹ پہلے چیک کیا گیا}}</translation>
 <translation id="9204836675896933765">1 فائل باقی ہے</translation>
 <translation id="9206873250291191720">A</translation>
 <translation id="9209888181064652401">کالز نہیں کی جا سکیں</translation>

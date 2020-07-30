@@ -8,10 +8,13 @@ import("//tools/polymer/html_to_js.gni")
 js_type_check("closure_compile") {
   is_polymer3 = true
   deps = [
+    ":contact_object",
+    ":contact_tab",
     ":http_message_object",
     ":http_tab",
     ":log_object",
     ":logging_tab",
+    ":nearby_contact_browser_proxy",
     ":nearby_http_browser_proxy",
     ":nearby_internals",
     ":nearby_logs_browser_proxy",
@@ -21,10 +24,13 @@ js_type_check("closure_compile") {
 
 js_library("nearby_internals") {
   deps = [
+    ":contact_object",
+    ":contact_tab",
     ":http_message_object",
     ":http_tab",
     ":log_object",
     ":logging_tab",
+    ":nearby_contact_browser_proxy",
     ":nearby_http_browser_proxy",
     ":nearby_logs_browser_proxy",
     ":types",
@@ -89,8 +95,35 @@ js_library("types") {
 js_library("shared_style") {
 }
 
+js_library("contact_tab") {
+  deps = [
+    ":contact_object",
+    ":nearby_contact_browser_proxy",
+    ":types",
+    "//third_party/polymer/v3_0/components-chromium/polymer:polymer_bundled",
+    "//ui/webui/resources/js:cr.m",
+    "//ui/webui/resources/js:web_ui_listener_behavior.m",
+  ]
+}
+
+js_library("contact_object") {
+  deps = [
+    ":types",
+    "//third_party/polymer/v3_0/components-chromium/polymer:polymer_bundled",
+  ]
+}
+
+js_library("nearby_contact_browser_proxy") {
+  deps = [
+    ":types",
+    "//ui/webui/resources/js:cr.m",
+  ]
+}
+
 html_to_js("web_components") {
   js_files = [
+    "contact_object.js",
+    "contact_tab.js",
     "http_message_object.js",
     "http_tab.js",
     "log_object.js",

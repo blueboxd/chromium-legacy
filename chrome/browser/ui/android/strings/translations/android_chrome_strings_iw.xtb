@@ -104,6 +104,7 @@
 <translation id="1853692000353488670">כרטיסייה חדשה לגלישה בסתר</translation>
 <translation id="1856325424225101786">לאפס את מצב הטעינה המהירה?</translation>
 <translation id="1868024384445905608">‏הורדת קבצים ב-Chrome מתבצעת עכשיו מהר יותר</translation>
+<translation id="1874760110381325409">‏המערכת תכניס אותך באמצעות חשבון Google שלך‏\n(הפעולה הזו לא תגרום להפעלה של סנכרון Chrome).</translation>
 <translation id="1883903952484604915">הקבצים שלי</translation>
 <translation id="1919950603503897840">בחירת אנשי קשר</translation>
 <translation id="1925021887439448749">הזן כתובת אינטרנט מותאמת אישית</translation>
@@ -227,6 +228,7 @@
 <translation id="281504910091592009">‏הצגה וניהול של סיסמאות שמורות ב<ph name="BEGIN_LINK" />חשבון Google<ph name="END_LINK" /></translation>
 <translation id="2818669890320396765">כדי לקבל גישה אל הסימניות שלך בכל המכשירים, יש להיכנס לחשבון ולהפעיל את הסנכרון</translation>
 <translation id="2827278682606527653">תפריט כרטיס הפיד נפתח בחצי מגובה המסך</translation>
+<translation id="2841216154655874070">{NUM_DAYS,plural, =1{התבצעה בדיקה אתמול}two{התבצעה בדיקה לפני יומיים}many{התבצעה בדיקה לפני # ימים}other{התבצעה בדיקה לפני # ימים}}</translation>
 <translation id="2842985007712546952">תיקיית אב</translation>
 <translation id="2860954141821109167">יש לוודא שמופעלת במכשיר הזה אפליקציית טלפון</translation>
 <translation id="2870560284913253234">אתר</translation>
@@ -702,6 +704,7 @@
 <translation id="6532866250404780454">‏אתרים שנכנסים אליהם ב-Chrome לא יופיעו. כל הטיימרים של האתרים יימחקו.</translation>
 <translation id="6534565668554028783">‏ל-Google נדרש זמן רב מדי להגיב</translation>
 <translation id="6539092367496845964">משהו השתבש. יש לנסות שוב מאוחר יותר.</translation>
+<translation id="6541983376925655882">{NUM_HOURS,plural, =1{התבצעה בדיקה לפני שעה אחת}two{התבצעה בדיקה לפני שעתיים}many{התבצעה בדיקה לפני # שעות}other{התבצעה בדיקה לפני # שעות}}</translation>
 <translation id="6545017243486555795">נקה את כל הנתונים</translation>
 <translation id="6560414384669816528">‏השתמש ב-Sogou לחיפוש</translation>
 <translation id="656065428026159829">אפשרויות נוספות</translation>
@@ -733,6 +736,7 @@
 <translation id="6697492270171225480">הצגת הצעות לדפים דומים אם דף מסוים לא נמצא</translation>
 <translation id="6698801883190606802">ניהול נתונים מסונכרנים</translation>
 <translation id="6699370405921460408">‏כשנכנסים לדפים בזמן הגלישה, הם עוברים אופטימיזציה על ידי השרתים של Google.</translation>
+<translation id="670498945988402717">התבצעה בדיקה אתמול</translation>
 <translation id="6710213216561001401">הקודם</translation>
 <translation id="671481426037969117">זמן השימוש באפליקציה <ph name="FQDN" /> הסתיים. הטיימר יופעל מחדש מחר ואז אפשר יהיה להשתמש שוב באפליקציה.</translation>
 <translation id="6738867403308150051">מוריד...</translation>
@@ -771,6 +775,7 @@
 <translation id="7063006564040364415">לא ניתן היה להתחבר אל שרת הסנכרון.</translation>
 <translation id="7071521146534760487">ניהול חשבון</translation>
 <translation id="7077143737582773186">‏כרטיס SD</translation>
+<translation id="7080806333218412752">‏כתובות URL נשלחות לבדיקה על ידי 'גלישה בטוחה'. בנוסף, נשלחת דוגמית קטנה הכוללת דפים, הורדות, פעילות של תוספים ופרטי מערכת במטרה לאתר איומים חדשים. כדי להגן עליך בכל האפליקציות של Google, הנתונים האלה מקושרים באופן זמני לחשבון Google שלך. ההגנה הזו פעילה רק אם נכנסים לחשבון.</translation>
 <translation id="7121362699166175603">‏ניקוי ההיסטוריה וההשלמות האוטומטיות בשורת כתובת האתר. ייתכן שלחשבון Google שלך יהיו צורות אחרות של היסטוריית גלישה בכתובת <ph name="BEGIN_LINK" />myactivity.google.com<ph name="END_LINK" />.</translation>
 <translation id="7128355412245153445">אתרים מובילים ומאמרים עדכניים יוצגו לאחר הקשה על לחצן דף הבית</translation>
 <translation id="7138678301420049075">אחר</translation>
@@ -780,6 +785,7 @@
 <translation id="7173114856073700355">פתיחת ההגדרות</translation>
 <translation id="7177466738963138057">אפשר לשנות את ההגדרה הזו מאוחר יותר ב'הגדרות'</translation>
 <translation id="7180611975245234373">רענון</translation>
+<translation id="7187993566681480880">‏המערכת מגינה עליך ב-Chrome ועשויה לשפר את האבטחה שלך באפליקציות אחרות של Google. ההגנה הזו פעילה רק אם נכנסים לחשבון.</translation>
 <translation id="7189372733857464326">‏המערכת ממתינה שיסתיים העדכון של שירותי Google Play</translation>
 <translation id="7191430249889272776">הכרטיסייה נפתחה ברקע.</translation>
 <translation id="723171743924126238">בחר תמונות</translation>
@@ -891,6 +897,7 @@
 <translation id="8027863900915310177">בחירת המיקום להורדה</translation>
 <translation id="8035133914807600019">תיקייה חדשה…</translation>
 <translation id="8037750541064988519">נותרו <ph name="DAYS" /> ימים</translation>
+<translation id="8037801708772278989">התבצעה בדיקה עכשיו</translation>
 <translation id="804335162455518893">‏לא נמצא כרטיס SD</translation>
 <translation id="805047784848435650">על סמך היסטוריית הגלישה שלך</translation>
 <translation id="8051695050440594747">‏‎<ph name="MEGABYTES" /> MB זמינים</translation>
@@ -1031,6 +1038,7 @@
 <translation id="9137013805542155359">הצג מקור</translation>
 <translation id="9155898266292537608">אפשר גם להתחיל חיפוש על-ידי הקשה קצרה על מילה</translation>
 <translation id="9169507124922466868">היסטוריית הניווט פתוחה למחצה</translation>
+<translation id="9199368092038462496">{NUM_MINS,plural, =1{התבצעה בדיקה לפני דקה אחת}two{התבצעה בדיקה לפני # דקות}many{התבצעה בדיקה לפני # דקות}other{התבצעה בדיקה לפני # דקות}}</translation>
 <translation id="9204836675896933765">נותר קובץ אחד</translation>
 <translation id="9206873250291191720">א</translation>
 <translation id="9209888181064652401">לא ניתן לבצע שיחות</translation>

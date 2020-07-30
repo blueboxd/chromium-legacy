@@ -52,7 +52,7 @@ class AddSupervisionMetricsRecorderTest : public InProcessBrowserTest {
 
   void CloseAddSupervisionDialog() {
     bool out_close_dialog =
-        AddSupervisionDialog::GetInstance()->OnDialogCloseRequested();
+        AddSupervisionDialog::GetInstance()->DeprecatedOnDialogCloseRequested();
     EXPECT_TRUE(out_close_dialog);
     CloseNowForTesting();
   }

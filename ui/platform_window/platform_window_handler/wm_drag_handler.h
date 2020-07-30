@@ -55,9 +55,6 @@ class WM_PLATFORM_EXPORT WmDragHandler {
 
   // Cancels the drag.
   virtual void CancelDrag() = 0;
-
- protected:
-  virtual ~WmDragHandler() {}
 };
 
 WM_PLATFORM_EXPORT void SetWmDragHandler(PlatformWindow* platform_window,

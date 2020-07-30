@@ -92,7 +92,7 @@
 <translation id="1323433172918577554">Mehr anzeigen</translation>
 <translation id="132390688737681464">Adressen speichern und ausfüllen</translation>
 <translation id="1330449323196174374">Linksseitige Fensterfaltung</translation>
-<translation id="1333989956347591814">Ihre Aktivitäten <ph name="BEGIN_EMPHASIS" />sind eventuell weiterhin sichtbar<ph name="END_EMPHASIS" /> für:
+<translation id="1333989956347591814">Ihre Aktivität <ph name="BEGIN_EMPHASIS" />bleibt eventuell sichtbar<ph name="END_EMPHASIS" /> für:
         <ph name="BEGIN_LIST" />
           <ph name="LIST_ITEM" />Von Ihnen besuchte Websites
           <ph name="LIST_ITEM" />Ihren Arbeitgeber oder Ihre Bildungseinrichtung
@@ -123,6 +123,7 @@
 <translation id="1430915738399379752">Drucken</translation>
 <translation id="1442386063175183758">Rechtsseitige Fensterfaltung</translation>
 <translation id="1442987760062738829">Lochen</translation>
+<translation id="1447067628680007684">(x86_64)</translation>
 <translation id="1453974140256777690">Eingefügter oder angehängter Text wird zur Analyse an Google Cloud oder Dritte gesendet. Er wird beispielsweise auf sensible Daten geprüft.</translation>
 <translation id="1455413310270022028">Radierer</translation>
 <translation id="1462245070427461050">JIS B9</translation>
@@ -1132,6 +1133,7 @@ Sie werden sonst gemäß Ihren Datenschutzeinstellungen blockiert. Wenn Cookies 
 <translation id="5705882733397021510">Zurück</translation>
 <translation id="57094364128775171">Starkes Passwort vorschlagen…</translation>
 <translation id="5710435578057952990">Die Identität dieser Website wurde nicht verifiziert.</translation>
+<translation id="571403275720188526">(arm64)</translation>
 <translation id="5720705177508910913">Aktueller Nutzer</translation>
 <translation id="5728056243719941842">C5 (Umschlag)</translation>
 <translation id="5730040223043577876">Chrome empfiehlt, Ihr Passwort zurückzusetzen, wenn Sie es auf anderen Websites verwendet haben.</translation>
@@ -1181,6 +1183,7 @@ Sie werden sonst gemäß Ihren Datenschutzeinstellungen blockiert. Wenn Cookies 
 <translation id="5921639886840618607">Karte im Google-Konto speichern?</translation>
 <translation id="5922853866070715753">Fast fertig</translation>
 <translation id="5932224571077948991">Website zeigt aufdringliche oder irreführende Werbung an</translation>
+<translation id="5938793338444039872">Troy</translation>
 <translation id="5946937721014915347"><ph name="SITE_NAME" /> wird geöffnet…</translation>
 <translation id="5951495562196540101">Registrierung mit Kundenkonto nicht möglich (Paketlizenz verfügbar).</translation>
 <translation id="5967592137238574583">Kontaktdaten bearbeiten</translation>
@@ -1348,6 +1351,7 @@ Sie werden sonst gemäß Ihren Datenschutzeinstellungen blockiert. Wenn Cookies 
 <translation id="6646269444027925224">{COUNT,plural, =0{Keine}=1{1 Website (Anmeldung in Google-Konto bleibt erhalten)}other{# Websites (Anmeldung in Google-Konto bleibt erhalten)}}</translation>
 <translation id="6652101503459149953">Windows Hello verwenden</translation>
 <translation id="6657585470893396449">Passwort</translation>
+<translation id="666259744093848177">(x86_64 übersetzt)</translation>
 <translation id="6665553082534466207">Dreifache Lochung rechts</translation>
 <translation id="6671697161687535275">Vorschlag für das Formular aus Chromium entfernen?</translation>
 <translation id="6685834062052613830">Abmelden und Einrichtung abschließen</translation>

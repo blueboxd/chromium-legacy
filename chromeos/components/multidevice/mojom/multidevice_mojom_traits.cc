@@ -161,6 +161,10 @@ EnumTraits<chromeos::multidevice::mojom::SoftwareFeature,
       return chromeos::multidevice::mojom::SoftwareFeature::SMS_CONNECT_HOST;
     case chromeos::multidevice::SoftwareFeature::kMessagesForWebClient:
       return chromeos::multidevice::mojom::SoftwareFeature::SMS_CONNECT_CLIENT;
+    case chromeos::multidevice::SoftwareFeature::kPhoneHubHost:
+      return chromeos::multidevice::mojom::SoftwareFeature::PHONE_HUB_HOST;
+    case chromeos::multidevice::SoftwareFeature::kPhoneHubClient:
+      return chromeos::multidevice::mojom::SoftwareFeature::PHONE_HUB_CLIENT;
   }
 
   NOTREACHED();
@@ -195,6 +199,12 @@ bool EnumTraits<chromeos::multidevice::mojom::SoftwareFeature,
       return true;
     case chromeos::multidevice::mojom::SoftwareFeature::SMS_CONNECT_CLIENT:
       *out = chromeos::multidevice::SoftwareFeature::kMessagesForWebClient;
+      return true;
+    case chromeos::multidevice::mojom::SoftwareFeature::PHONE_HUB_HOST:
+      *out = chromeos::multidevice::SoftwareFeature::kPhoneHubHost;
+      return true;
+    case chromeos::multidevice::mojom::SoftwareFeature::PHONE_HUB_CLIENT:
+      *out = chromeos::multidevice::SoftwareFeature::kPhoneHubClient;
       return true;
   }
 

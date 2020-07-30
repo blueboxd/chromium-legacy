@@ -581,6 +581,43 @@
           }
         ]
       }, {
+        "name": "getAutocorrectRange",
+        "type": "function",
+        "description": "Get the autocorrected word's bounds.",
+        "parameters": [
+          {
+            "name": "parameters",
+            "type": "object",
+            "properties": {
+              "contextID": {
+                "description": "ID of the autocorrected context.",
+                "type": "integer"
+              }
+            }
+          },
+          {
+            "type": "function",
+            "name": "callback",
+            "description": "Called with the bounds of the autocorrect word when the operation completes. On failure, $(ref:runtime.lastError) is set.",
+            "parameters": [
+              {
+                "name": "autocorrectCharacterBounds",
+                "type": "object",
+                "properties": {
+                  "start": {
+                    "description": "The start index of the autocorrected word's bounds.",
+                    "type": "integer"
+                  },
+                  "end": {
+                    "description": "The end index of the autocorrected word's bounds.",
+                    "type": "integer"
+                  }
+                }
+              }
+            ]
+          }
+        ]
+      }, {
         "name": "getAutocorrectCharacterBounds",
         "type": "function",
         "description": "Get the screen coordinates of the autocorrected word's bounds.",

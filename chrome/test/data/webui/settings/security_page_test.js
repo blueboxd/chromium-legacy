@@ -10,7 +10,7 @@ import {SafeBrowsingSetting} from 'chrome://settings/lazy_load.js';
 import {MetricsBrowserProxyImpl, PrivacyElementInteractions,PrivacyPageBrowserProxyImpl, Router, routes, SecureDnsMode, SyncBrowserProxyImpl} from 'chrome://settings/settings.js';
 
 import {assertEquals, assertFalse, assertTrue} from '../chai_assert.js';
-import {flushTasks} from '../test_util.m.js';
+import {flushTasks, isChildVisible} from '../test_util.m.js';
 
 import {TestMetricsBrowserProxy} from './test_metrics_browser_proxy.js';
 import {TestPrivacyPageBrowserProxy} from './test_privacy_page_browser_proxy.js';
@@ -18,7 +18,7 @@ import {TestSyncBrowserProxy} from './test_sync_browser_proxy.m.js';
 
 // clang-format on
 
-suite('CrSettingsSecurityPageTestWithEnhanced', function() {
+suite('CrSettingsSecurityPageTest', function() {
   /** @type {!TestMetricsBrowserProxy} */
   let testMetricsBrowserProxy;
 
@@ -98,9 +98,8 @@ suite('CrSettingsSecurityPageTestWithEnhanced', function() {
     assertEquals(PrivacyElementInteractions.MANAGE_CERTIFICATES, result);
   });
 
-  test('ManageSecurityKeysSubpageRoute', function() {
-    page.$$('#security-keys-subpage-trigger').click();
-    assertEquals(Router.getInstance().getCurrentRoute(), routes.SECURITY_KEYS);
+  test('ManageSecurityKeysSubpageVisible', function() {
+    assertTrue(isChildVisible(page, '#security-keys-subpage-trigger'));
   });
 
   test('LogSafeBrowsingExtendedToggle', async function() {
@@ -391,12 +390,13 @@ suite('CrSettingsSecurityPageTestWithEnhanced', function() {
 });
 
 
-suite('CrSettingsSecurityPageTestWithoutEnhanced', function() {
+suite('CrSettingsSecurityPageTest_FlagsDisabled', function() {
   /** @type {!SettingsSecurityPageElement} */
   let page;
 
   suiteSetup(function() {
     loadTimeData.overrideValues({
+      enableSecurityKeysSubpage: false,
       safeBrowsingEnhancedEnabled: false,
     });
   });
@@ -433,7 +433,11 @@ suite('CrSettingsSecurityPageTestWithoutEnhanced', function() {
     page.remove();
   });
 
-  test('enhancedHiddenWhenDisbled', function() {
-    assertTrue(page.$$('#safeBrowsingEnhanced').hidden);
+  test('EnhancedHiddenWhenDisbled', function() {
+    assertFalse(isChildVisible(page, '#safeBrowsingEnhanced'));
+  });
+
+  test('ManageSecurityKeysSubpageHidden', function() {
+    assertFalse(isChildVisible(page, '#security-keys-subpage-trigger'));
   });
 });

@@ -44,7 +44,6 @@ std::unique_ptr<TextureSelector> TextureSelector::Create(
     MediaLog* media_log) {
   bool supports_nv12_decode_swap_chain =
       gl::DirectCompositionSurfaceWin::IsDecodeSwapChainSupported();
-  bool needs_texture_copy = !SupportsZeroCopy(gpu_preferences, workarounds);
 
   VideoPixelFormat output_pixel_format;
   DXGI_FORMAT output_dxgi_format;
@@ -151,17 +150,11 @@ std::unique_ptr<TextureSelector> TextureSelector::Create(
   }
 
   // If we're trying to produce an output texture that's different from what
-  // the decoder is providing, then we need to copy it.
-  needs_texture_copy = (decoder_output_format != output_dxgi_format);
-
-  // Force texture copy on if requested for debugging.
-  if (base::FeatureList::IsEnabled(kD3D11VideoDecoderAlwaysCopy))
-    needs_texture_copy = true;
-
-  // TODO(crbug.com/971952): |use_single_video_decoder_texture| is used to force
-  // a texture copy, to see if it fixes the issue.  If so, it'll be renamed.
-  if (workarounds.use_single_video_decoder_texture)
-    needs_texture_copy = true;
+  // the decoder is providing, then we need to copy it.  If sharing decoder
+  // textures is not allowed, then copy either way.
+  bool needs_texture_copy = !SupportsZeroCopy(gpu_preferences, workarounds) ||
+                            (decoder_output_format != output_dxgi_format) ||
+               base::FeatureList::IsEnabled(kD3D11VideoDecoderAlwaysCopy);
 
   MEDIA_LOG(INFO, media_log)
       << "D3D11VideoDecoder output color space: "
@@ -192,6 +185,10 @@ std::unique_ptr<Texture2DWrapper> TextureSelector::CreateTextureWrapper(
     gfx::Size size) {
   // TODO(liberato): If the output format is rgb, then create a pbuffer wrapper.
   return std::make_unique<DefaultTexture2DWrapper>(size, OutputDXGIFormat());
+}
+
+bool TextureSelector::WillCopyForTesting() const {
+  return false;
 }
 
 CopyTextureSelector::CopyTextureSelector(
@@ -237,6 +234,10 @@ std::unique_ptr<Texture2DWrapper> CopyTextureSelector::CreateTextureWrapper(
       size, std::make_unique<DefaultTexture2DWrapper>(size, OutputDXGIFormat()),
       std::make_unique<VideoProcessorProxy>(video_device, device_context),
       out_texture, output_color_space_);
+}
+
+bool CopyTextureSelector::WillCopyForTesting() const {
+  return true;
 }
 
 }  // namespace media

@@ -99,7 +99,7 @@ TEST(ServiceProcessLauncherTest, MAYBE_StartJoin) {
   EXPECT_EQ(1u, service_process_launcher_delegate.get_and_clear_adjust_count());
 }
 
-#if !defined(OS_POSIX) || defined(OS_MACOSX)
+#if !defined(OS_POSIX) || defined(OS_MAC)
 // Verify that if ServiceProcessLauncher cannot launch a process running the
 // service from the specified path, then we are able to clean up without e.g.
 // double-freeing the platform-channel handle reserved for the peer.
@@ -125,7 +125,7 @@ TEST(ServiceProcessLauncherTest, FailToLaunchProcess) {
   launcher.reset();
   task_environment.RunUntilIdle();
 }
-#endif  //  !defined(OS_POSIX) || defined(OS_MACOSX)
+#endif  //  !defined(OS_POSIX) || defined(OS_MAC)
 
 }  // namespace
 }  // namespace service_manager

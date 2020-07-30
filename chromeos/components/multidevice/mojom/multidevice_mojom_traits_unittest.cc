@@ -93,7 +93,9 @@ TEST(DeviceSyncMojomEnumTraitsTest, SoftwareFeature) {
           chromeos::multidevice::SoftwareFeature::kInstantTetheringHost,
           chromeos::multidevice::SoftwareFeature::kInstantTetheringClient,
           chromeos::multidevice::SoftwareFeature::kMessagesForWebHost,
-          chromeos::multidevice::SoftwareFeature::kMessagesForWebClient};
+          chromeos::multidevice::SoftwareFeature::kMessagesForWebClient,
+          chromeos::multidevice::SoftwareFeature::kPhoneHubHost,
+          chromeos::multidevice::SoftwareFeature::kPhoneHubClient};
 
   for (auto feature_in : kTestSoftwareFeatures) {
     chromeos::multidevice::SoftwareFeature feature_out;

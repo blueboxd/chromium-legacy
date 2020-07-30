@@ -6787,6 +6787,61 @@ TEST_F(SurfaceAggregatorValidSurfaceTest, OverlayOccludingDamageRect) {
     EXPECT_EQ(gfx::Rect(60, 0, 14, 40),
               video_sqs->occluding_damage_rect.value());
   }
+
+  // Add a quad on top of video quad
+  child_surface_quads = std::vector<Quad>(
+      {Quad::SolidColorQuad(SK_ColorRED, gfx::Rect(0, 0, 50, 50)),
+       Quad::YUVVideoQuad(gfx::Rect(0, 0, 100, 100))});
+
+  child_surface_passes =
+      std::vector<Pass>({Pass(child_surface_quads, /*size*/ gfx::Size(100, 100),
+                              /*damage_rect*/ gfx::Rect(0, 0, 100, 100))});
+
+  // Frame #5 - Child surface contains a quad other than the video
+  {
+    CompositorFrame child_surface_frame = MakeEmptyCompositorFrame();
+    AddPasses(&child_surface_frame.render_pass_list, child_surface_passes,
+              &child_surface_frame.metadata.referenced_surfaces);
+    child_sink_->SubmitCompositorFrame(child_local_surface_id,
+                                       std::move(child_surface_frame));
+
+    // No change in root frame
+    auto aggregated_frame = AggregateFrame(root_surface_id);
+
+    auto* output_root_pass = aggregated_frame.render_pass_list.back().get();
+    // Only the video quad (10, 0, 80, 80) is damaged
+    EXPECT_EQ(gfx::Rect(10, 0, 80, 80), output_root_pass->damage_rect);
+
+    const SharedQuadState* video_sqs =
+        output_root_pass->quad_list.back()->shared_quad_state;
+    // The underlay optimization doesn't apply with multiple
+    // possibly damaged quads
+    EXPECT_FALSE(video_sqs->occluding_damage_rect.has_value());
+  }
+  // Frame #6 - Child surface contains an undamaged quad other than the video
+  {
+    CompositorFrame child_surface_frame = MakeEmptyCompositorFrame();
+    AddPasses(&child_surface_frame.render_pass_list, child_surface_passes,
+              &child_surface_frame.metadata.referenced_surfaces);
+    auto* render_pass = child_surface_frame.render_pass_list[0].get();
+    auto* surface_quad_sqs = render_pass->shared_quad_state_list.front();
+    surface_quad_sqs->no_damage = true;
+
+    child_sink_->SubmitCompositorFrame(child_local_surface_id,
+                                       std::move(child_surface_frame));
+
+    // No change in root frame
+    auto aggregated_frame = AggregateFrame(root_surface_id);
+
+    auto* output_root_pass = aggregated_frame.render_pass_list.back().get();
+    // Only the video quad (10, 0, 80, 80) is damaged
+    EXPECT_EQ(gfx::Rect(10, 0, 80, 80), output_root_pass->damage_rect);
+
+    const SharedQuadState* video_sqs =
+        output_root_pass->quad_list.back()->shared_quad_state;
+    // No occluding damage
+    EXPECT_EQ(gfx::Rect(), video_sqs->occluding_damage_rect.value());
+  }
 }
 
 // Tests that quads outside the damage rect are not ignored for cached render

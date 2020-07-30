@@ -123,6 +123,7 @@
 <translation id="1430915738399379752">Печать</translation>
 <translation id="1442386063175183758">Фальцовка правой четверти</translation>
 <translation id="1442987760062738829">Отверстие</translation>
+<translation id="1447067628680007684">(x86_64)</translation>
 <translation id="1453974140256777690">Введенный или прикрепленный вами текст передается на проверку в Google Cloud или сторонние сервисы. В частности, он может быть просканирован на наличие конфиденциальных данных.</translation>
 <translation id="1455413310270022028">Ластик</translation>
 <translation id="1462245070427461050">JIS B9</translation>
@@ -962,7 +963,7 @@
 <translation id="5031870354684148875">О Переводчике Google</translation>
 <translation id="503498442187459473">Сайт <ph name="HOST" /> запрашивает доступ к камере и микрофону.</translation>
 <translation id="5039804452771397117">Разрешить</translation>
-<translation id="5040262127954254034">Личные данные</translation>
+<translation id="5040262127954254034">Конфиденциальность</translation>
 <translation id="5043480802608081735">Скопированная ссылка</translation>
 <translation id="5045550434625856497">Неправильный пароль</translation>
 <translation id="5056549851600133418">Статьи для вас</translation>
@@ -1133,6 +1134,7 @@
 <translation id="5705882733397021510">Назад</translation>
 <translation id="57094364128775171">Сгенерировать надежный пароль</translation>
 <translation id="5710435578057952990">Идентификационные данные этого сайта не проверены.</translation>
+<translation id="571403275720188526">(arm64)</translation>
 <translation id="5720705177508910913">Текущий пользователь</translation>
 <translation id="5728056243719941842">C5 (конверт)</translation>
 <translation id="5730040223043577876">Chrome рекомендует сбросить пароль, если вы использовали его на других сайтах.</translation>
@@ -1182,6 +1184,7 @@
 <translation id="5921639886840618607">Сохранить карту в аккаунте Google?</translation>
 <translation id="5922853866070715753">Почти готово…</translation>
 <translation id="5932224571077948991">Сайт показывает навязчивую или вводящую в заблуждение рекламу</translation>
+<translation id="5938793338444039872">Troy</translation>
 <translation id="5946937721014915347">Загрузка <ph name="SITE_NAME" />…</translation>
 <translation id="5951495562196540101">Регистрация невозможна, так как тип аккаунта не соответствует лицензии на устройстве.</translation>
 <translation id="5967592137238574583">Измените контактную информацию</translation>
@@ -1349,6 +1352,7 @@
 <translation id="6646269444027925224">{COUNT,plural, =0{Нет}=1{С 1 сайта (вы останетесь в аккаунте Google)}one{С # сайта (вы останетесь в аккаунте Google)}few{С # сайтов (вы останетесь в аккаунте Google)}many{С # сайтов (вы останетесь в аккаунте Google)}other{С # сайта (вы останетесь в аккаунте Google)}}</translation>
 <translation id="6652101503459149953">Использовать Windows Hello</translation>
 <translation id="6657585470893396449">Пароль</translation>
+<translation id="666259744093848177">(код конвертирован с языка для архитектуры x86_64)</translation>
 <translation id="6665553082534466207">Три отверстия справа</translation>
 <translation id="6671697161687535275">Удалить подсказку из Chromium?</translation>
 <translation id="6685834062052613830">Выйдите из аккаунта и завершите настройку</translation>

@@ -12,6 +12,8 @@
 @protocol ReadingListDataSource;
 @protocol ReadingListListViewControllerAudience;
 @protocol ReadingListListViewControllerDelegate;
+@protocol ReadingListMenuProvider;
+
 class Browser;
 
 // View controller that displays reading list items in a table view.
@@ -27,6 +29,9 @@ class Browser;
 @property(nonatomic, weak) id<ReadingListDataSource> dataSource;
 // The browser.
 @property(nonatomic, assign) Browser* browser;
+// Provider of menu configurations for the readingList component.
+@property(nonatomic, weak) id<ReadingListMenuProvider> menuProvider
+    API_AVAILABLE(ios(13.0));
 
 // Initializers.
 - (instancetype)init NS_DESIGNATED_INITIALIZER;

@@ -104,6 +104,7 @@
 <translation id="1853692000353488670">Жаңа жасырын қойынды</translation>
 <translation id="1856325424225101786">Lite режимі бастапқы күйге қайтарылсын ба?</translation>
 <translation id="1868024384445905608">Chrome енді файлдарды жылдам жүктеп алады</translation>
+<translation id="1874760110381325409">Google есептік жазбаңызға кіресіз\n(Chrome Sync іске қосылмайды).</translation>
 <translation id="1883903952484604915">Файлдарым</translation>
 <translation id="1919950603503897840">Контактілерді таңдау</translation>
 <translation id="1925021887439448749">Арнаулы веб-мекенжайды енгізу</translation>
@@ -227,6 +228,7 @@
 <translation id="281504910091592009"><ph name="BEGIN_LINK" />Google есептік жазбаңызда<ph name="END_LINK" /> сақталған құпия сөздерді көру және басқару</translation>
 <translation id="2818669890320396765">Бетбелгілерді барлық құрылғылардан пайдалану үшін есептік жазбаға кіріп, синхрондау функциясын қосыңыз</translation>
 <translation id="2827278682606527653">Фид картасының мәзірі жартылай ашылды.</translation>
+<translation id="2841216154655874070">{NUM_DAYS,plural, =1{1 күн бұрын тексерілді.}other{# күн бұрын тексерілді.}}</translation>
 <translation id="2842985007712546952">Түпкі қалта</translation>
 <translation id="2860954141821109167">Бұл құрылғыда телефон қолданбасы қосулы екенін тексеріңіз.</translation>
 <translation id="2870560284913253234">Сайт</translation>
@@ -702,6 +704,7 @@ Google есептік жазбасының шолу тарихы басқа Goog
 <translation id="6532866250404780454">Chrome браузерінде ашқан сайттар көрсетілмейді. Барлық сайт таймерлері жойылады.</translation>
 <translation id="6534565668554028783">Google ұзақ уақыт жауап бермеуде</translation>
 <translation id="6539092367496845964">Бірдеңе дұрыс болмады. Кейінірек қайталап көріңіз.</translation>
+<translation id="6541983376925655882">{NUM_HOURS,plural, =1{1 сағат бұрын тексерілді.}other{# сағат бұрын тексерілді.}}</translation>
 <translation id="6545017243486555795">Барлық деректерді өшіру</translation>
 <translation id="6560414384669816528">Sogou қызметімен іздеу</translation>
 <translation id="656065428026159829">Басқаларын көру</translation>
@@ -733,6 +736,7 @@ Google есептік жазбасының шолу тарихы басқа Goog
 <translation id="6697492270171225480">Бет табылмағанда, ұқсас нұсқаларды ұсыну</translation>
 <translation id="6698801883190606802">Синхрондалған деректерді басқару</translation>
 <translation id="6699370405921460408">Google серверлері сіз кірген беттерді оңтайландырады.</translation>
+<translation id="670498945988402717">Кеше тексерілді.</translation>
 <translation id="6710213216561001401">Алдыңғы</translation>
 <translation id="671481426037969117"><ph name="FQDN" /> таймерінің уақыты бітті. Ол ертең қайта басталады.</translation>
 <translation id="6738867403308150051">Жүктелуде…</translation>
@@ -771,6 +775,7 @@ Google есептік жазбасының шолу тарихы басқа Goog
 <translation id="7063006564040364415">Синхрондау серверіне қосылу мүмкін емес.</translation>
 <translation id="7071521146534760487">Есептік жазбаны басқару</translation>
 <translation id="7077143737582773186">SD картасы</translation>
+<translation id="7080806333218412752">Оларды тексеру үшін URL сілтемелерін "Қауіпсіз шолу" функциясына жібереді. Сонымен қатар жаңа қауіптерді анықтауға көмектесу үшін беттердің шағын үлгісін, жүктеп алынған файлдарды, кеңейтім әрекетін және жүйе туралы ақпаратты жібереді. Google қолданбаларында сізді қорғау үшін, есептік жазбаға кірген кезіңізде, деректердің сілтемелерін уақытша байланыстырады.</translation>
 <translation id="7121362699166175603">Мекенжай жолағында тарих пен автотолтыруларды өшіреді. <ph name="BEGIN_LINK" />myactivity.google.com<ph name="END_LINK" /> сайтында Google есептік жазбасымен шолу тарихының басқа да үлгілері болуы мүмкін.</translation>
 <translation id="7128355412245153445">Негізгі экран түймесін түрткен кезде, үздік сайттар мен соңғы жаңалықтарды көру</translation>
 <translation id="7138678301420049075">Басқа</translation>
@@ -780,6 +785,7 @@ Google есептік жазбасының шолу тарихы басқа Goog
 <translation id="7173114856073700355">Параметрлерді ашу</translation>
 <translation id="7177466738963138057">Мұны кейінірек "Параметрлер" бөлімінде өзгертуге болады</translation>
 <translation id="7180611975245234373">Жаңарту</translation>
+<translation id="7187993566681480880">Есептік жазбаға кірген болсаңыз, сізді Chrome браузерінде қорғайды және басқа Google қолданбаларында қауіпсіздігіңізді жақсартуға пайдаланылуы мүмкін.</translation>
 <translation id="7189372733857464326">Google Play қызметтерінің жаңартылып бітуі күтілуде</translation>
 <translation id="7191430249889272776">Қойынды фонда ашылды.</translation>
 <translation id="723171743924126238">Кескіндерді таңдау</translation>
@@ -891,6 +897,7 @@ Google есептік жазбасының шолу тарихы басқа Goog
 <translation id="8027863900915310177">Жүктеп алу орнын таңдаңыз</translation>
 <translation id="8035133914807600019">Жаңа қалта…</translation>
 <translation id="8037750541064988519"><ph name="DAYS" /> күн қалды</translation>
+<translation id="8037801708772278989">Жаңа ғана тексерілді</translation>
 <translation id="804335162455518893">SD картасы табылмады</translation>
 <translation id="805047784848435650">Шолу тарихы негізінде</translation>
 <translation id="8051695050440594747"><ph name="MEGABYTES" /> МБ бос орын бар</translation>
@@ -1031,6 +1038,7 @@ Google есептік жазбасының шолу тарихы басқа Goog
 <translation id="9137013805542155359">Түпнұсқаны көрсету</translation>
 <translation id="9155898266292537608">Сонымен қатар сөзді түрту арқылы іздеуге болады</translation>
 <translation id="9169507124922466868">Навигация тарихы жартылай ашық.</translation>
+<translation id="9199368092038462496">{NUM_MINS,plural, =1{1 минут бұрын тексерілді}other{# минут бұрын тексерілді}}</translation>
 <translation id="9204836675896933765">1 файл қалды</translation>
 <translation id="9206873250291191720">A</translation>
 <translation id="9209888181064652401">Қоңырау шалу мүмкін емес</translation>

@@ -379,10 +379,6 @@ void WebRuntimeFeatures::EnableScriptedSpeechSynthesis(bool enable) {
   RuntimeEnabledFeatures::SetScriptedSpeechSynthesisEnabled(enable);
 }
 
-void WebRuntimeFeatures::EnableUserActivationPostMessageTransfer(bool enable) {
-  RuntimeEnabledFeatures::SetUserActivationPostMessageTransferEnabled(enable);
-}
-
 void WebRuntimeFeatures::EnableUserActivationSameOriginVisibility(bool enable) {
   RuntimeEnabledFeatures::SetUserActivationSameOriginVisibilityEnabled(enable);
 }

@@ -126,7 +126,7 @@ const base::Feature kSplitAuthCacheByNetworkIsolationKey{
 // Enable usage of hardcoded DoH upgrade mapping for use in automatic mode.
 const base::Feature kDnsOverHttpsUpgrade {
   "DnsOverHttpsUpgrade",
-#if defined(OS_CHROMEOS) || defined(OS_MACOSX) || defined(OS_ANDROID) || \
+#if defined(OS_CHROMEOS) || defined(OS_MAC) || defined(OS_ANDROID) || \
     defined(OS_WIN)
       base::FEATURE_ENABLED_BY_DEFAULT
 #else

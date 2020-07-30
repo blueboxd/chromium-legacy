@@ -812,6 +812,7 @@ TEST_F(ServiceWorkerJobTest, UnregisterWaitingSetsRedundant) {
   // waiting worker until Update is implemented.
   scoped_refptr<ServiceWorkerVersion> version = new ServiceWorkerVersion(
       registration.get(), script_url, blink::mojom::ScriptType::kClassic, 1L,
+      mojo::PendingRemote<storage::mojom::ServiceWorkerLiveVersionRef>(),
       helper_->context()->AsWeakPtr());
   ASSERT_EQ(blink::ServiceWorkerStatusCode::kOk,
             StartServiceWorker(version.get()));
@@ -1755,7 +1756,9 @@ TEST_F(ServiceWorkerUpdateJobTest, Update_ScriptUrlChanged) {
   // Add a waiting version with a new script.
   scoped_refptr<ServiceWorkerVersion> version = new ServiceWorkerVersion(
       registration.get(), new_script, blink::mojom::ScriptType::kClassic,
-      2L /* dummy version id */, helper_->context()->AsWeakPtr());
+      2L /* dummy version id */,
+      mojo::PendingRemote<storage::mojom::ServiceWorkerLiveVersionRef>(),
+      helper_->context()->AsWeakPtr());
   registration->SetWaitingVersion(version);
 
   // Setup the new script response.

@@ -8,6 +8,7 @@
 #include "base/containers/flat_map.h"
 #include "base/no_destructor.h"
 #include "base/stl_util.h"
+#include "chromeos/constants/chromeos_features.h"
 #include "crypto/sha2.h"
 
 namespace chromeos {
@@ -27,6 +28,8 @@ const char kMagicTetherClientSupportedString[] =
     "MAGIC_TETHER_CLIENT_SUPPORTED";
 const char kSmsConnectHostSupportedString[] = "SMS_CONNECT_HOST_SUPPORTED";
 const char kSmsConnectClientSupportedString[] = "SMS_CONNECT_CLIENT_SUPPORTED";
+const char kPhoneHubHostSupportedString[] = "PHONE_HUB_HOST_SUPPORTED";
+const char kPhoneHubClientSupportedString[] = "PHONE_HUB_CLIENT_SUPPORTED";
 
 const char kBetterTogetherHostEnabledString[] = "BETTER_TOGETHER_HOST";
 const char kBetterTogetherClientEnabledString[] = "BETTER_TOGETHER_CLIENT";
@@ -36,58 +39,86 @@ const char kMagicTetherHostEnabledString[] = "MAGIC_TETHER_HOST";
 const char kMagicTetherClientEnabledString[] = "MAGIC_TETHER_CLIENT";
 const char kSmsConnectHostEnabledString[] = "SMS_CONNECT_HOST";
 const char kSmsConnectClientEnabledString[] = "SMS_CONNECT_CLIENT";
+const char kPhoneHubHostEnabledString[] = "PHONE_HUB_HOST";
+const char kPhoneHubClientEnabledString[] = "PHONE_HUB_CLIENT";
 
 }  // namespace
 
 const base::flat_set<CryptAuthFeatureType>& GetAllCryptAuthFeatureTypes() {
-  static const base::flat_set<CryptAuthFeatureType> feature_set{
-      CryptAuthFeatureType::kBetterTogetherHostSupported,
-      CryptAuthFeatureType::kBetterTogetherClientSupported,
-      CryptAuthFeatureType::kEasyUnlockHostSupported,
-      CryptAuthFeatureType::kEasyUnlockClientSupported,
-      CryptAuthFeatureType::kMagicTetherHostSupported,
-      CryptAuthFeatureType::kMagicTetherClientSupported,
-      CryptAuthFeatureType::kSmsConnectHostSupported,
-      CryptAuthFeatureType::kSmsConnectClientSupported,
-      CryptAuthFeatureType::kBetterTogetherHostEnabled,
-      CryptAuthFeatureType::kBetterTogetherClientEnabled,
-      CryptAuthFeatureType::kEasyUnlockHostEnabled,
-      CryptAuthFeatureType::kEasyUnlockClientEnabled,
-      CryptAuthFeatureType::kMagicTetherHostEnabled,
-      CryptAuthFeatureType::kMagicTetherClientEnabled,
-      CryptAuthFeatureType::kSmsConnectHostEnabled,
-      CryptAuthFeatureType::kSmsConnectClientEnabled};
+  static const base::NoDestructor<base::flat_set<CryptAuthFeatureType>>
+      feature_set([] {
+        base::flat_set<CryptAuthFeatureType> feature_set{
+            CryptAuthFeatureType::kBetterTogetherHostSupported,
+            CryptAuthFeatureType::kBetterTogetherClientSupported,
+            CryptAuthFeatureType::kEasyUnlockHostSupported,
+            CryptAuthFeatureType::kEasyUnlockClientSupported,
+            CryptAuthFeatureType::kMagicTetherHostSupported,
+            CryptAuthFeatureType::kMagicTetherClientSupported,
+            CryptAuthFeatureType::kSmsConnectHostSupported,
+            CryptAuthFeatureType::kSmsConnectClientSupported,
+            CryptAuthFeatureType::kBetterTogetherHostEnabled,
+            CryptAuthFeatureType::kBetterTogetherClientEnabled,
+            CryptAuthFeatureType::kEasyUnlockHostEnabled,
+            CryptAuthFeatureType::kEasyUnlockClientEnabled,
+            CryptAuthFeatureType::kMagicTetherHostEnabled,
+            CryptAuthFeatureType::kMagicTetherClientEnabled,
+            CryptAuthFeatureType::kSmsConnectHostEnabled,
+            CryptAuthFeatureType::kSmsConnectClientEnabled};
+        if (features::IsPhoneHubEnabled()) {
+          feature_set.insert(CryptAuthFeatureType::kPhoneHubClientSupported);
+          feature_set.insert(CryptAuthFeatureType::kPhoneHubClientEnabled);
+          feature_set.insert(CryptAuthFeatureType::kPhoneHubHostEnabled);
+          feature_set.insert(CryptAuthFeatureType::kPhoneHubClientEnabled);
+        }
+        return feature_set;
+      }());
 
-  return feature_set;
+  return *feature_set;
 }
 
 const base::flat_set<CryptAuthFeatureType>&
 GetSupportedCryptAuthFeatureTypes() {
-  static const base::flat_set<CryptAuthFeatureType> supported_set{
-      CryptAuthFeatureType::kBetterTogetherHostSupported,
-      CryptAuthFeatureType::kBetterTogetherClientSupported,
-      CryptAuthFeatureType::kEasyUnlockHostSupported,
-      CryptAuthFeatureType::kEasyUnlockClientSupported,
-      CryptAuthFeatureType::kMagicTetherHostSupported,
-      CryptAuthFeatureType::kMagicTetherClientSupported,
-      CryptAuthFeatureType::kSmsConnectHostSupported,
-      CryptAuthFeatureType::kSmsConnectClientSupported};
+  static const base::NoDestructor<base::flat_set<CryptAuthFeatureType>>
+      supported_set([] {
+        base::flat_set<CryptAuthFeatureType> supported_set{
+            CryptAuthFeatureType::kBetterTogetherHostSupported,
+            CryptAuthFeatureType::kBetterTogetherClientSupported,
+            CryptAuthFeatureType::kEasyUnlockHostSupported,
+            CryptAuthFeatureType::kEasyUnlockClientSupported,
+            CryptAuthFeatureType::kMagicTetherHostSupported,
+            CryptAuthFeatureType::kMagicTetherClientSupported,
+            CryptAuthFeatureType::kSmsConnectHostSupported,
+            CryptAuthFeatureType::kSmsConnectClientSupported};
+        if (features::IsPhoneHubEnabled()) {
+          supported_set.insert(CryptAuthFeatureType::kPhoneHubHostSupported);
+          supported_set.insert(CryptAuthFeatureType::kPhoneHubClientSupported);
+        }
+        return supported_set;
+      }());
 
-  return supported_set;
+  return *supported_set;
 }
 
 const base::flat_set<CryptAuthFeatureType>& GetEnabledCryptAuthFeatureTypes() {
-  static const base::flat_set<CryptAuthFeatureType> enabled_set{
-      CryptAuthFeatureType::kBetterTogetherHostEnabled,
-      CryptAuthFeatureType::kBetterTogetherClientEnabled,
-      CryptAuthFeatureType::kEasyUnlockHostEnabled,
-      CryptAuthFeatureType::kEasyUnlockClientEnabled,
-      CryptAuthFeatureType::kMagicTetherHostEnabled,
-      CryptAuthFeatureType::kMagicTetherClientEnabled,
-      CryptAuthFeatureType::kSmsConnectHostEnabled,
-      CryptAuthFeatureType::kSmsConnectClientEnabled};
+  static const base::NoDestructor<base::flat_set<CryptAuthFeatureType>>
+      enabled_set([] {
+        base::flat_set<CryptAuthFeatureType> enabled_set{
+            CryptAuthFeatureType::kBetterTogetherHostEnabled,
+            CryptAuthFeatureType::kBetterTogetherClientEnabled,
+            CryptAuthFeatureType::kEasyUnlockHostEnabled,
+            CryptAuthFeatureType::kEasyUnlockClientEnabled,
+            CryptAuthFeatureType::kMagicTetherHostEnabled,
+            CryptAuthFeatureType::kMagicTetherClientEnabled,
+            CryptAuthFeatureType::kSmsConnectHostEnabled,
+            CryptAuthFeatureType::kSmsConnectClientEnabled};
+        if (features::IsPhoneHubEnabled()) {
+          enabled_set.insert(CryptAuthFeatureType::kPhoneHubHostEnabled);
+          enabled_set.insert(CryptAuthFeatureType::kPhoneHubClientEnabled);
+        }
+        return enabled_set;
+      }());
 
-  return enabled_set;
+  return *enabled_set;
 }
 
 const base::flat_set<std::string>& GetAllCryptAuthFeatureTypeStrings() {
@@ -136,6 +167,14 @@ const char* CryptAuthFeatureTypeToString(CryptAuthFeatureType feature_type) {
       return kSmsConnectClientSupportedString;
     case CryptAuthFeatureType::kSmsConnectClientEnabled:
       return kSmsConnectClientEnabledString;
+    case CryptAuthFeatureType::kPhoneHubHostSupported:
+      return kPhoneHubHostSupportedString;
+    case CryptAuthFeatureType::kPhoneHubHostEnabled:
+      return kPhoneHubHostEnabledString;
+    case CryptAuthFeatureType::kPhoneHubClientSupported:
+      return kPhoneHubClientSupportedString;
+    case CryptAuthFeatureType::kPhoneHubClientEnabled:
+      return kPhoneHubClientEnabledString;
   }
 }
 
@@ -173,6 +212,14 @@ base::Optional<CryptAuthFeatureType> CryptAuthFeatureTypeFromString(
     return CryptAuthFeatureType::kSmsConnectClientSupported;
   if (feature_type_string == kSmsConnectClientEnabledString)
     return CryptAuthFeatureType::kSmsConnectClientEnabled;
+  if (feature_type_string == kPhoneHubHostSupportedString)
+    return CryptAuthFeatureType::kPhoneHubHostSupported;
+  if (feature_type_string == kPhoneHubHostEnabledString)
+    return CryptAuthFeatureType::kPhoneHubHostEnabled;
+  if (feature_type_string == kPhoneHubClientSupportedString)
+    return CryptAuthFeatureType::kPhoneHubClientSupported;
+  if (feature_type_string == kPhoneHubClientEnabledString)
+    return CryptAuthFeatureType::kPhoneHubClientEnabled;
 
   return base::nullopt;
 }
@@ -256,8 +303,18 @@ multidevice::SoftwareFeature CryptAuthFeatureTypeToSoftwareFeature(
 
     case CryptAuthFeatureType::kSmsConnectClientSupported:
       FALLTHROUGH;
-    case CryptAuthFeatureType::kSmsConnectClientEnabled:;
+    case CryptAuthFeatureType::kSmsConnectClientEnabled:
       return multidevice::SoftwareFeature::kMessagesForWebClient;
+
+    case CryptAuthFeatureType::kPhoneHubHostSupported:
+      FALLTHROUGH;
+    case CryptAuthFeatureType::kPhoneHubHostEnabled:
+      return multidevice::SoftwareFeature::kPhoneHubHost;
+
+    case CryptAuthFeatureType::kPhoneHubClientSupported:
+      FALLTHROUGH;
+    case CryptAuthFeatureType::kPhoneHubClientEnabled:
+      return multidevice::SoftwareFeature::kPhoneHubClient;
   }
 }
 
@@ -280,6 +337,10 @@ CryptAuthFeatureType CryptAuthFeatureTypeFromSoftwareFeature(
       return CryptAuthFeatureType::kSmsConnectHostEnabled;
     case multidevice::SoftwareFeature::kMessagesForWebClient:
       return CryptAuthFeatureType::kSmsConnectClientEnabled;
+    case multidevice::SoftwareFeature::kPhoneHubHost:
+      return CryptAuthFeatureType::kPhoneHubHostEnabled;
+    case multidevice::SoftwareFeature::kPhoneHubClient:
+      return CryptAuthFeatureType::kPhoneHubClientEnabled;
   }
 }
 

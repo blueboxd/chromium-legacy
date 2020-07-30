@@ -102,9 +102,10 @@ class ServiceWorkerControlleeRequestHandlerTest : public testing::Test {
     options.scope = scope_;
     registration_ =
         new ServiceWorkerRegistration(options, 1L, context()->AsWeakPtr());
-    version_ = new ServiceWorkerVersion(registration_.get(), script_url_,
-                                        blink::mojom::ScriptType::kClassic, 1L,
-                                        context()->AsWeakPtr());
+    version_ = new ServiceWorkerVersion(
+        registration_.get(), script_url_, blink::mojom::ScriptType::kClassic,
+        1L, mojo::PendingRemote<storage::mojom::ServiceWorkerLiveVersionRef>(),
+        context()->AsWeakPtr());
     context()->storage()->LazyInitializeForTest();
 
     std::vector<storage::mojom::ServiceWorkerResourceRecordPtr> records;

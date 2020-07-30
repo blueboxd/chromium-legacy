@@ -26,10 +26,12 @@
 #import "ios/chrome/browser/ui/reading_list/reading_list_list_item_updater.h"
 #import "ios/chrome/browser/ui/reading_list/reading_list_list_view_controller_audience.h"
 #import "ios/chrome/browser/ui/reading_list/reading_list_list_view_controller_delegate.h"
+#import "ios/chrome/browser/ui/reading_list/reading_list_menu_provider.h"
 #import "ios/chrome/browser/ui/reading_list/reading_list_toolbar_button_commands.h"
 #import "ios/chrome/browser/ui/reading_list/reading_list_toolbar_button_manager.h"
 #import "ios/chrome/browser/ui/table_view/cells/table_view_text_header_footer_item.h"
 #include "ios/chrome/browser/ui/ui_feature_flags.h"
+#import "ios/chrome/browser/ui/util/menu_util.h"
 #import "ios/chrome/browser/ui/util/uikit_ui_util.h"
 #include "ios/chrome/grit/ios_strings.h"
 #include "ui/base/l10n/l10n_util_mac.h"
@@ -215,11 +217,13 @@ ReadingListSelectionState GetSelectionStateForSelectedCounts(
   // tableView.
 
   // Add gesture recognizer for the context menu.
-  UILongPressGestureRecognizer* longPressRecognizer =
-      [[UILongPressGestureRecognizer alloc]
-          initWithTarget:self
-                  action:@selector(handleLongPress:)];
-  [self.tableView addGestureRecognizer:longPressRecognizer];
+  if (!IsNativeContextMenuEnabled()) {
+    UILongPressGestureRecognizer* longPressRecognizer =
+        [[UILongPressGestureRecognizer alloc]
+            initWithTarget:self
+                    action:@selector(handleLongPress:)];
+    [self.tableView addGestureRecognizer:longPressRecognizer];
+  }
 
   if (DragAndDropIsEnabled()) {
     self.dragDropHandler = [[TableViewURLDragDropHandler alloc] init];
@@ -300,6 +304,21 @@ ReadingListSelectionState GetSelectionStateForSelectedCounts(
 - (BOOL)tableView:(UITableView*)tableView
     canEditRowAtIndexPath:(NSIndexPath*)indexPath {
   return [self.tableViewModel itemAtIndexPath:indexPath].type == ItemTypeItem;
+}
+
+- (UIContextMenuConfiguration*)tableView:(UITableView*)tableView
+    contextMenuConfigurationForRowAtIndexPath:(NSIndexPath*)indexPath
+                                        point:(CGPoint)point
+    API_AVAILABLE(ios(13.0)) {
+  if (!IsNativeContextMenuEnabled()) {
+    // Returning nil will allow the gesture to be captured and show the old
+    // context menus.
+    return nil;
+  }
+
+  return [self.menuProvider
+      contextMenuConfigurationForItem:[self.tableViewModel
+                                          itemAtIndexPath:indexPath]];
 }
 
 #pragma mark - TableViewURLDragDataSource

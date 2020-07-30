@@ -37,6 +37,72 @@ public interface ThreadStrictModeInterceptor {
         private @Nullable Consumer<Violation> mCustomPenalty;
 
         /**
+         * Ignores all StrictMode violations for which the passed-in package is not part of the
+         * stack trace.
+         */
+        public Builder onlyDetectViolationsForPackage(final String filterPackageName) {
+            mWhitelistEntries.add(violation -> {
+                return doesStackTraceContainPackage(violation, filterPackageName)
+                        ? null
+                        : Violation.DETECT_ALL_KNOWN;
+            });
+            return this;
+        }
+
+        /**
+         * Ignore a violation that occurs outside of your app.
+         *
+         * @param violationType A mask containing one or more of the DETECT_* constants.
+         * @param packageName The name of the package to ignore StrictMode violations
+         *     for example, "org.chromium.foo"
+         */
+        public Builder ignoreExternalPackage(int violationType, final String packageName) {
+            mWhitelistEntries.add(violation -> {
+                if ((violation.violationType() & violationType) == 0) {
+                    return null;
+                }
+                return doesStackTraceContainPackage(violation, packageName) ? violationType : null;
+            });
+            return this;
+        }
+
+        /**
+         * Returns whether the passed-in {@link Violation}'s stack trace contains a stack
+         * frame within the passed-in package.
+         */
+        private static boolean doesStackTraceContainPackage(
+                Violation violation, String packageName) {
+            for (StackTraceElement frame : violation.stackTrace()) {
+                if (frame.getClassName().startsWith(packageName)) {
+                    return true;
+                }
+            }
+            return false;
+        }
+
+        /**
+         * Ignore a violation that occurs outside of your app.
+         *
+         * @param violationType A mask containing one or more of the DETECT_* constants.
+         * @param className The name of the class to ignore StrictMode violations
+         *     for example, "org.chromium.foo.ThreadStrictModeInterceptor"
+         */
+        public Builder ignoreExternalClass(int violationType, final String className) {
+            mWhitelistEntries.add(violation -> {
+                if ((violation.violationType() & violationType) == 0) {
+                    return null;
+                }
+                for (StackTraceElement frame : violation.stackTrace()) {
+                    if (frame.getClassName().equals(className)) {
+                        return violationType;
+                    }
+                }
+                return null;
+            });
+            return this;
+        }
+
+        /**
          * Ignore a violation that occurs outside of your app.
          *
          * @param violationType A mask containing one or more of the DETECT_* constants.

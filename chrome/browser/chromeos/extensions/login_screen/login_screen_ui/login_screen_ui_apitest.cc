@@ -41,11 +41,11 @@ class LoginScreenUiApitest : public LoginScreenApitestBase {
     return UiHandler::Get(false)->HasOpenWindow(extension_id_);
   }
 
-  bool CanCloseDialog() const {
+  bool OnDialogCloseRequested() const {
     return UiHandler::Get(false)
         ->GetWindowForTesting(extension_id_)
         ->GetDialogDelegateForTesting()
-        ->CanCloseDialog();
+        ->OnDialogCloseRequested();
   }
 
   bool ShouldShowCloseButton() const {
@@ -72,7 +72,7 @@ IN_PROC_BROWSER_TEST_F(LoginScreenUiApitest, ExtensionCanOpenWindow) {
   ASSERT_TRUE(HasOpenWindow());
   // userCanClose defaults to false
   EXPECT_TRUE(IsMovementDisabled());
-  EXPECT_FALSE(CanCloseDialog());
+  EXPECT_FALSE(OnDialogCloseRequested());
   EXPECT_FALSE(ShouldShowCloseButton());
 }
 
@@ -96,7 +96,7 @@ IN_PROC_BROWSER_TEST_F(LoginScreenUiApitest, UserCanCloseWindow) {
   SetUpLoginScreenExtensionAndRunTest(kUserCanCloseWindow);
   ASSERT_TRUE(HasOpenWindow());
   EXPECT_TRUE(IsMovementDisabled());
-  EXPECT_TRUE(CanCloseDialog());
+  EXPECT_TRUE(OnDialogCloseRequested());
   EXPECT_TRUE(ShouldShowCloseButton());
 }
 
@@ -104,7 +104,7 @@ IN_PROC_BROWSER_TEST_F(LoginScreenUiApitest, UserCannotCloseWindow) {
   SetUpLoginScreenExtensionAndRunTest(kUserCannotCloseWindow);
   ASSERT_TRUE(HasOpenWindow());
   EXPECT_TRUE(IsMovementDisabled());
-  EXPECT_FALSE(CanCloseDialog());
+  EXPECT_FALSE(OnDialogCloseRequested());
   EXPECT_FALSE(ShouldShowCloseButton());
 }
 

@@ -470,11 +470,15 @@ INSTANTIATE_TEST_SUITE_P(All,
 // 7. bool - Password Recovery is enabled.
 // 8. bool - Contains stored password.
 // 9. bool - Last online login is stale.
-// 10. bool - Uploaded device deails.
+// 10. bool - Uploaded device details.
+// 11. bool - Cloud policies enabled.
+// 12. bool - Cloud policy of whether user is allowed to enroll in Mdm.
 class AssociatedUserValidatorUserAccessBlockingTest
     : public AssociatedUserValidatorTest,
       public ::testing::WithParamInterface<
           std::tuple<CREDENTIAL_PROVIDER_USAGE_SCENARIO,
+                     bool,
+                     bool,
                      bool,
                      bool,
                      bool,
@@ -507,7 +511,14 @@ TEST_P(AssociatedUserValidatorUserAccessBlockingTest, BlockUserAccessAsNeeded) {
   const bool contains_stored_password = std::get<7>(GetParam());
   const bool is_last_login_stale = std::get<8>(GetParam());
   const bool uploaded_device_details = std::get<9>(GetParam());
+  const bool cloud_policies_enabled = std::get<10>(GetParam());
+  const bool user_allowed_dm_enrollment = std::get<11>(GetParam());
+
   GoogleMdmEnrolledStatusForTesting forced_status(mdm_enrolled);
+  FakeUserPoliciesManager fake_user_policies_manager(cloud_policies_enabled);
+
+  UserPolicies user_policies;
+  user_policies.enable_dm_enrollment = user_allowed_dm_enrollment;
 
   FakeAssociatedUserValidator validator;
   fake_internet_checker()->SetHasInternetConnection(
@@ -546,15 +557,20 @@ TEST_P(AssociatedUserValidatorUserAccessBlockingTest, BlockUserAccessAsNeeded) {
     base::string16 last_online_login_millis = base::NumberToString16(
         last_online_login.ToDeltaSinceWindowsEpoch().InMilliseconds());
     int validity_period_in_days = 10;
-    DWORD validity_period_in_days_dword =
-        static_cast<DWORD>(validity_period_in_days);
     ASSERT_EQ(S_OK, SetUserProperty(
                         (BSTR)sid,
                         base::UTF8ToUTF16(kKeyLastSuccessfulOnlineLoginMillis),
                         last_online_login_millis));
-    ASSERT_EQ(S_OK, SetGlobalFlagForTesting(
-                        base::UTF8ToUTF16(kKeyValidityPeriodInDays),
-                        validity_period_in_days_dword));
+
+    if (cloud_policies_enabled) {
+      user_policies.validity_period_days = validity_period_in_days;
+    } else {
+      DWORD validity_period_in_days_dword =
+          static_cast<DWORD>(validity_period_in_days);
+      ASSERT_EQ(S_OK, SetGlobalFlagForTesting(
+                          base::UTF8ToUTF16(kKeyValidityPeriodInDays),
+                          validity_period_in_days_dword));
+    }
 
     // Advance the time that is more than the offline validity period.
     TimeClockOverrideValue::current_time_ =
@@ -568,6 +584,10 @@ TEST_P(AssociatedUserValidatorUserAccessBlockingTest, BlockUserAccessAsNeeded) {
     EXPECT_TRUE(SUCCEEDED(
         policy->StorePrivateData(store_key.c_str(), L"encrypted_data")));
     EXPECT_TRUE(policy->PrivateDataExists(store_key.c_str()));
+  }
+
+  if (cloud_policies_enabled) {
+    fake_user_policies_manager.SetUserPolicies((BSTR)sid, user_policies);
   }
 
   ASSERT_EQ(S_OK, SetUserProperty((BSTR)sid, kRegDeviceDetailsUploadStatus,
@@ -589,11 +609,17 @@ TEST_P(AssociatedUserValidatorUserAccessBlockingTest, BlockUserAccessAsNeeded) {
 
   DWORD reg_value = 0;
 
+  bool mdm_enrollment_required = (mdm_url_set && !mdm_enrolled);
+  if (cloud_policies_enabled) {
+    mdm_enrollment_required =
+        mdm_enrollment_required && user_allowed_dm_enrollment;
+  }
+
   bool is_get_auth_enforced =
       is_user_associated &&
       ((!internet_available && is_last_login_stale) ||
        (internet_available &&
-        ((mdm_url_set && !mdm_enrolled) || !token_handle_valid ||
+        (mdm_enrollment_required || !token_handle_valid ||
          !uploaded_device_details ||
          (password_recovery_enabled && !contains_stored_password))));
 
@@ -620,6 +646,8 @@ INSTANTIATE_TEST_SUITE_P(
                                          CPUS_UNLOCK_WORKSTATION,
                                          CPUS_CHANGE_PASSWORD,
                                          CPUS_CREDUI),
+                       ::testing::Bool(),
+                       ::testing::Bool(),
                        ::testing::Bool(),
                        ::testing::Bool(),
                        ::testing::Bool(),

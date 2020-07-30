@@ -4048,7 +4048,6 @@ Du kan administrere innstillingene for denne kontoen ved å installere Family Li
 <translation id="6056710589053485679">Normal innlasting på nytt</translation>
 <translation id="6057312498756061228">Denne filen er for stor til at en sikkerhetssjekk kan utføres. Du kan åpne filer på opptil 50 MB.</translation>
 <translation id="6057381398996433816">Dette nettstedet er blokkert fra å bruke bevegelses- og lyssensorer.</translation>
-<translation id="6058567592298841668">Virtuell maskin for programtillegg: <ph name="PLUGIN_VM_NAME" /></translation>
 <translation id="6059652578941944813">Sertifikathierarki</translation>
 <translation id="6059925163896151826">USB-enheter</translation>
 <translation id="6061882183774845124">Send link til enhetene dine</translation>
@@ -5853,7 +5852,7 @@ Jeg tror ikke det er nødvendig å blokkere dette nettstedet.</translation>
 <translation id="8289128870594824098">Diskstørrelse</translation>
 <translation id="8291967909914612644">Land for leverandøren av hjemmeenheten</translation>
 <translation id="8294431847097064396">Kilde</translation>
-<translation id="8297006494302853456">Svak</translation>
+<translation id="8297006494302853456">Svakt</translation>
 <translation id="8299319456683969623">Du er for øyeblikket ikke på nett.</translation>
 <translation id="8300011035382349091">Rediger bokmerket for denne fanen</translation>
 <translation id="8300374739238450534">Midnattsblå</translation>
@@ -6009,7 +6008,7 @@ Jeg tror ikke det er nødvendig å blokkere dette nettstedet.</translation>
 <translation id="8509646642152301857">Nedlastingen av ordboken for stavekontroll mislyktes.</translation>
 <translation id="8512476990829870887">Avslutt prosessen</translation>
 <translation id="851263357009351303">Tillat alltid <ph name="HOST" /> å vise bilder</translation>
-<translation id="8513108775083588393">Automatisk rotasjon</translation>
+<translation id="8513108775083588393">Autorotasjon</translation>
 <translation id="8514746246728959655">Prøv en annen sikkerhetsnøkkel</translation>
 <translation id="8521475323816527629">Finn appene dine raskt</translation>
 <translation id="8523493869875972733">Behold endringene</translation>

@@ -46,6 +46,7 @@
 <translation id="6676840375528380067">Vai dzēst jūsu Chrome datus no šīs ierīces?</translation>
 <translation id="7165736900384873061">Darba sākšana ar Google Chrome QR skeneri</translation>
 <translation id="7172660552945675509">Padoms. <ph name="BEGIN_LINK" />Pārvietojiet pārlūku Chrome uz savu doku<ph name="END_LINK" />.</translation>
+<translation id="7173114856073700355">Atvērt iestatījumus</translation>
 <translation id="7173660919484573146">Chrome izmanto Face ID, lai jūsu parolēm varētu piekļūt tikai pilnvarotas personas.</translation>
 <translation id="7261678641327190792">Pārlūkprogrammā Chrome nevar pārbaudīt jūsu paroles.</translation>
 <translation id="7265369419224458312">Šeit varat piekļūt cilnēm, kas ir atvērtas jūsu datorā. Vienkārši atveriet pārlūku Chrome savā datorā, pārejiet uz izvēlni un atlasiet “Pierakstīties pakalpojumā Chrome…”</translation>
@@ -59,5 +60,5 @@
 <translation id="8370517070665726704">Autortiesības: <ph name="YEAR" /> Google LLC. Visas tiesības paturētas.</translation>
 <translation id="840168496893712993">Daži papildinājumi var izraisīt pārlūka Chrome avarēšanu. Lūdzu, atinstalējiet tos.</translation>
 <translation id="8459495907675268833">Atlasītie dati ir noņemti no pārlūka Chrome un sinhronizētajām ierīcēm. Jūsu Google kontam vietnē history.google.com var būt citu veidu pārlūkošanas vēstures dati, piemēram, meklēšanas vaicājumi un darbības citos Google pakalpojumos.</translation>
-<translation id="8540666473246803645">Google Chrome</translation>
+<translation id="8540666473246803645">Google Chrome</translation>
 </translationbundle>

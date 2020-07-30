@@ -1629,33 +1629,6 @@ void StyleResolver::CascadeAndApplyMatchedProperties(StyleResolverState& state,
   DCHECK(!state.GetFontBuilder().FontDirty());
 }
 
-bool StyleResolver::HasAuthorBackground(const StyleResolverState& state) {
-  const CachedUAStyle* cached_ua_style = state.GetCachedUAStyle();
-  if (!cached_ua_style)
-    return false;
-
-  FillLayer old_fill = cached_ua_style->background_layers;
-  FillLayer new_fill = state.Style()->BackgroundLayers();
-  // Exclude background-repeat from comparison by resetting it.
-  old_fill.SetRepeatX(EFillRepeat::kNoRepeatFill);
-  old_fill.SetRepeatY(EFillRepeat::kNoRepeatFill);
-  new_fill.SetRepeatX(EFillRepeat::kNoRepeatFill);
-  new_fill.SetRepeatY(EFillRepeat::kNoRepeatFill);
-
-  return (old_fill != new_fill || cached_ua_style->background_color !=
-                                      state.Style()->BackgroundColor());
-}
-
-bool StyleResolver::HasAuthorBorder(const StyleResolverState& state) {
-  const CachedUAStyle* cached_ua_style = state.GetCachedUAStyle();
-  return cached_ua_style &&
-         (cached_ua_style->border_image != state.Style()->BorderImage() ||
-          !cached_ua_style->BorderColorEquals(*state.Style()) ||
-          !cached_ua_style->BorderWidthEquals(*state.Style()) ||
-          !cached_ua_style->BorderRadiiEquals(*state.Style()) ||
-          !cached_ua_style->BorderStyleEquals(*state.Style()));
-}
-
 void StyleResolver::ApplyCallbackSelectors(StyleResolverState& state) {
   RuleSet* watched_selectors_rule_set =
       GetDocument().GetStyleEngine().WatchedSelectorsRuleSet();

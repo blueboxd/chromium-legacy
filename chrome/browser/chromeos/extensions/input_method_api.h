@@ -283,6 +283,24 @@ class InputMethodPrivateSetSelectionRangeFunction : public ExtensionFunction {
                              INPUTMETHODPRIVATE_SETSELECTIONRANGE)
 };
 
+class InputMethodPrivateGetAutocorrectRangeFunction : public ExtensionFunction {
+ public:
+  InputMethodPrivateGetAutocorrectRangeFunction(
+      const InputMethodPrivateGetAutocorrectRangeFunction&) = delete;
+  InputMethodPrivateGetAutocorrectRangeFunction& operator=(
+      const InputMethodPrivateGetAutocorrectRangeFunction&) = delete;
+  InputMethodPrivateGetAutocorrectRangeFunction() = default;
+
+ protected:
+  ~InputMethodPrivateGetAutocorrectRangeFunction() override = default;
+  // ExtensionFunction:
+  ResponseAction Run() override;
+
+ private:
+  DECLARE_EXTENSION_FUNCTION("inputMethodPrivate.getAutocorrectRange",
+                             INPUTMETHODPRIVATE_GETAUTOCORRECTRANGE)
+};
+
 class InputMethodPrivateGetAutocorrectCharacterBoundsFunction
     : public ExtensionFunction {
  public:

@@ -333,6 +333,19 @@ chrome.inputMethodPrivate.setSettings = function(engineID, settings, callback) {
 chrome.inputMethodPrivate.setCompositionRange = function(parameters, callback) {};
 
 /**
+ * Get the autocorrected word's bounds.
+ * @param {{
+ *   contextID: number
+ * }} parameters
+ * @param {function({
+ *   start: number,
+ *   end: number
+ * }): void} callback Called with the bounds of the autocorrect word when the
+ *     operation completes. On failure, $(ref:runtime.lastError) is set.
+ */
+chrome.inputMethodPrivate.getAutocorrectRange = function(parameters, callback) {};
+
+/**
  * Get the screen coordinates of the autocorrected word's bounds.
  * @param {{
  *   contextID: number
@@ -342,8 +355,8 @@ chrome.inputMethodPrivate.setCompositionRange = function(parameters, callback) {
  *   y: number,
  *   width: number,
  *   height: number
- * }): void=} callback Called with screen coordinates of the autocorrect word
- *     when the operation completes. On failure, chrome.runtime.lastError is
+ * }): void} callback Called with screen coordinates of the autocorrect word
+ *     when the operation completes. On failure, $(ref:runtime.lastError) is
  *     set.
  */
 chrome.inputMethodPrivate.getAutocorrectCharacterBounds = function(parameters, callback) {};

@@ -104,6 +104,7 @@
 <translation id="1853692000353488670">Jauna inkognito cilne</translation>
 <translation id="1856325424225101786">Vai atiestatīt vienkāršoto režīmu?</translation>
 <translation id="1868024384445905608">Tagad pārlūkā Chrome faili tiek lejupielādēti ātrāk.</translation>
+<translation id="1874760110381325409">Jūs būsiet pierakstījies savā Google kontā\n(Chrome sinhronizācija netiks ieslēgta)</translation>
 <translation id="1883903952484604915">Mani faili</translation>
 <translation id="1919950603503897840">Kontaktpersonu atlase</translation>
 <translation id="1925021887439448749">Ievadiet pielāgotu tīmekļa adresi</translation>
@@ -227,6 +228,7 @@ Nospiediet un turiet jebkuru vārdu, lai to meklētu. Lai precizētu meklēšanu
 <translation id="281504910091592009">Skatiet un pārvaldiet saglabātās paroles savā <ph name="BEGIN_LINK" />Google kontā<ph name="END_LINK" /></translation>
 <translation id="2818669890320396765">Lai grāmatzīmes būtu pieejamas visās jūsu ierīcēs, pierakstieties un ieslēdziet sinhronizāciju.</translation>
 <translation id="2827278682606527653">Ir atvērta puse no plūsmas kartītes izvēlnes</translation>
+<translation id="2841216154655874070">{NUM_DAYS,plural, =1{Pārbaudīts: pirms 1 dienas}zero{Pārbaudīts: pirms # dienām}one{Pārbaudīts: pirms # dienas}other{Pārbaudīts: pirms # dienām}}</translation>
 <translation id="2842985007712546952">Vecākmape</translation>
 <translation id="2860954141821109167">Šajā ierīcē jābūt iespējotai tālruņa lietotnei</translation>
 <translation id="2870560284913253234">Vietne</translation>
@@ -702,6 +704,7 @@ Piemēram, dažas vietnes, reaģējot uz šo pieprasījumu, var rādīt jums rek
 <translation id="6532866250404780454">Netiks rādītas vietnes, ko apmeklējat pārlūkā Chrome. Tiks izdzēsti visi vietņu taimeri.</translation>
 <translation id="6534565668554028783">Google pārāk ilgi nereaģēja</translation>
 <translation id="6539092367496845964">Radās kļūda. Vēlāk mēģiniet vēlreiz.</translation>
+<translation id="6541983376925655882">{NUM_HOURS,plural, =1{Pārbaudīts: pirms 1 stundas}zero{Pārbaudīts: pirms # stundām}one{Pārbaudīts: pirms # stundas}other{Pārbaudīts: pirms # stundām}}</translation>
 <translation id="6545017243486555795">Notīrīt visus datus</translation>
 <translation id="6560414384669816528">Meklēšana, izmantojot Sogou</translation>
 <translation id="656065428026159829">Skatīt vairāk</translation>
@@ -733,6 +736,7 @@ Piemēram, dažas vietnes, reaģējot uz šo pieprasījumu, var rādīt jums rek
 <translation id="6697492270171225480">Ja lapu neizdotas atrast, rāda ieteikumus par līdzīgām lapām</translation>
 <translation id="6698801883190606802">Pārvaldīt sinhronizētos datus</translation>
 <translation id="6699370405921460408">Google serveri optimizēs jūsu apmeklētās lapas.</translation>
+<translation id="670498945988402717">Pārbaudīts: vakar</translation>
 <translation id="6710213216561001401">Iepriekšējais</translation>
 <translation id="671481426037969117">Jūsu lietotnes <ph name="FQDN" /> taimera laiks ir beidzies. Tas atkal sāksies rīt.</translation>
 <translation id="6738867403308150051">Notiek lejupielāde…</translation>
@@ -771,6 +775,7 @@ Piemēram, dažas vietnes, reaģējot uz šo pieprasījumu, var rādīt jums rek
 <translation id="7063006564040364415">Nevarēja izveidot savienojumu ar sinhronizācijas serveri.</translation>
 <translation id="7071521146534760487">Pārvaldīt kontu</translation>
 <translation id="7077143737582773186">SD karte</translation>
+<translation id="7080806333218412752">Vietrāži URL tiek sūtīti uz funkciju Droša pārlūkošana, lai tos pārbaudītu. Lai palīdzētu atklāt jaunus draudus, tiek nosūtīti arī nelieli datu paraugi, kas ietver lapas, lejupielādes, paplašinājumu aktivitāti un sistēmas informāciju. Lai aizsargātu jūs dažādās Google lietotnēs, šie dati tiek īslaicīgi saistīti ar jūsu Google kontu, kad esat pierakstījies.</translation>
 <translation id="7121362699166175603">Notīra vēsturi un automātiskās pabeigšanas datus adreses joslā. Jūsu Google kontam var būt cita veida pārlūkošanas vēstures dati vietnē <ph name="BEGIN_LINK" />myactivity.google.com<ph name="END_LINK" />.</translation>
 <translation id="7128355412245153445">Skatiet vietnes, ko apmeklējat visbiežāk, kā arī jaunākos stāstus katru reizi, kad pieskaraties pogai Sākums.</translation>
 <translation id="7138678301420049075">Cits</translation>
@@ -780,6 +785,7 @@ Piemēram, dažas vietnes, reaģējot uz šo pieprasījumu, var rādīt jums rek
 <translation id="7173114856073700355">Atvērt iestatījumus</translation>
 <translation id="7177466738963138057">Vēlāk varēsiet to mainīt iestatījumos</translation>
 <translation id="7180611975245234373">Atsvaidzināt</translation>
+<translation id="7187993566681480880">Tiek nodrošināta jūsu aizsardzība pārlūkprogrammā Chrome. Šis režīms var tikt izmantots jūsu drošības uzlabošanai citās Google lietotnēs, kad esat pierakstījies.</translation>
 <translation id="7189372733857464326">Gaida, kad tiks pabeigta Google Play pakalpojumu atjaunināšana</translation>
 <translation id="7191430249889272776">Cilne tika atvērta fonā.</translation>
 <translation id="723171743924126238">Atlasīt attēlus</translation>
@@ -891,6 +897,7 @@ Piemēram, dažas vietnes, reaģējot uz šo pieprasījumu, var rādīt jums rek
 <translation id="8027863900915310177">Izvēlieties lejupielādes vietu</translation>
 <translation id="8035133914807600019">Jauna mape…</translation>
 <translation id="8037750541064988519">Atlikušas <ph name="DAYS" /> dienas</translation>
+<translation id="8037801708772278989">Pārbaudīts: tikko</translation>
 <translation id="804335162455518893">SD karte nav atrasta</translation>
 <translation id="805047784848435650">Pamatā ir jūsu pārlūkošanas vēsture</translation>
 <translation id="8051695050440594747">Ir pieejami <ph name="MEGABYTES" /> MB</translation>
@@ -1031,6 +1038,7 @@ Piemēram, dažas vietnes, reaģējot uz šo pieprasījumu, var rādīt jums rek
 <translation id="9137013805542155359">Rādīt oriģinālo</translation>
 <translation id="9155898266292537608">Varat arī meklēt, ātri pieskaroties vārdam</translation>
 <translation id="9169507124922466868">Navigācijas vēsture ir atvērta līdz pusei.</translation>
+<translation id="9199368092038462496">{NUM_MINS,plural, =1{Pārbaudīts: pirms 1 minūtes}zero{Pārbaudīts: pirms # minūtēm}one{Pārbaudīts: pirms # minūtes}other{Pārbaudīts: pirms # minūtēm}}</translation>
 <translation id="9204836675896933765">Atlicis 1 fails</translation>
 <translation id="9206873250291191720">A</translation>
 <translation id="9209888181064652401">Nevar zvanīt</translation>

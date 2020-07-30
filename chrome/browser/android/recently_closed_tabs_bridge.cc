@@ -156,7 +156,7 @@ void RecentlyClosedTabsBridge::TabRestoreServiceChanged(
 
 void RecentlyClosedTabsBridge::TabRestoreServiceDestroyed(
     sessions::TabRestoreService* service) {
-  tab_restore_service_ = NULL;
+  tab_restore_service_ = nullptr;
 }
 
 void RecentlyClosedTabsBridge::EnsureTabRestoreService() {
@@ -165,7 +165,7 @@ void RecentlyClosedTabsBridge::EnsureTabRestoreService() {
 
   tab_restore_service_ = TabRestoreServiceFactory::GetForProfile(profile_);
 
-  // TabRestoreServiceFactory::GetForProfile() can return NULL (e.g. in
+  // TabRestoreServiceFactory::GetForProfile() can return nullptr (e.g. in
   // incognito mode).
   if (tab_restore_service_) {
     // This does nothing if the tabs have already been loaded or they

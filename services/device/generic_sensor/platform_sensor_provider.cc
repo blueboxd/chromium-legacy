@@ -4,7 +4,7 @@
 
 #include "services/device/generic_sensor/platform_sensor_provider.h"
 
-#if defined(OS_MACOSX)
+#if defined(OS_MAC)
 #include "services/device/generic_sensor/platform_sensor_provider_mac.h"
 #elif defined(OS_ANDROID)
 #include "services/device/generic_sensor/platform_sensor_provider_android.h"
@@ -23,7 +23,7 @@ namespace device {
 
 // static
 std::unique_ptr<PlatformSensorProvider> PlatformSensorProvider::Create() {
-#if defined(OS_MACOSX)
+#if defined(OS_MAC)
   return std::make_unique<PlatformSensorProviderMac>();
 #elif defined(OS_ANDROID)
   return std::make_unique<PlatformSensorProviderAndroid>();

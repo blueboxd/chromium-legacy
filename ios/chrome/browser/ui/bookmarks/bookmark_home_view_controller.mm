@@ -35,7 +35,6 @@
 #import "ios/chrome/browser/ui/bookmarks/bookmark_home_consumer.h"
 #import "ios/chrome/browser/ui/bookmarks/bookmark_home_mediator.h"
 #import "ios/chrome/browser/ui/bookmarks/bookmark_home_shared_state.h"
-#import "ios/chrome/browser/ui/bookmarks/bookmark_home_waiting_view.h"
 #include "ios/chrome/browser/ui/bookmarks/bookmark_interaction_controller.h"
 #import "ios/chrome/browser/ui/bookmarks/bookmark_interaction_controller_delegate.h"
 #include "ios/chrome/browser/ui/bookmarks/bookmark_model_bridge_observer.h"
@@ -50,6 +49,7 @@
 #import "ios/chrome/browser/ui/commands/application_commands.h"
 #import "ios/chrome/browser/ui/commands/browser_commands.h"
 #import "ios/chrome/browser/ui/commands/command_dispatcher.h"
+#import "ios/chrome/browser/ui/elements/home_waiting_view.h"
 #import "ios/chrome/browser/ui/keyboard/UIKeyCommand+Chrome.h"
 #import "ios/chrome/browser/ui/material_components/utils.h"
 #import "ios/chrome/browser/ui/menu/action_factory.h"
@@ -209,7 +209,7 @@ std::vector<GURL> GetUrlsToOpen(const std::vector<const BookmarkNode*>& nodes) {
 
 // The loading spinner background which appears when loading the BookmarkModel
 // or syncing.
-@property(nonatomic, strong) BookmarkHomeWaitingView* spinnerView;
+@property(nonatomic, strong) HomeWaitingView* spinnerView;
 
 // The action sheet coordinator, if one is currently being shown.
 @property(nonatomic, strong) AlertCoordinator* actionSheetCoordinator;
@@ -1407,9 +1407,9 @@ std::vector<GURL> GetUrlsToOpen(const std::vector<const BookmarkNode*>& nodes) {
 // Shows loading spinner background view.
 - (void)showLoadingSpinnerBackground {
   if (!self.spinnerView) {
-    self.spinnerView = [[BookmarkHomeWaitingView alloc]
-          initWithFrame:self.sharedState.tableView.bounds
-        backgroundColor:UIColor.clearColor];
+    self.spinnerView =
+        [[HomeWaitingView alloc] initWithFrame:self.sharedState.tableView.bounds
+                               backgroundColor:UIColor.clearColor];
     [self.spinnerView startWaiting];
   }
   self.tableView.backgroundView = self.spinnerView;

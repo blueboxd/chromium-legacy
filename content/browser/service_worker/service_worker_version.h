@@ -29,6 +29,7 @@
 #include "base/time/tick_clock.h"
 #include "base/time/time.h"
 #include "base/timer/timer.h"
+#include "components/services/storage/public/mojom/service_worker_storage_control.mojom.h"
 #include "content/browser/frame_host/back_forward_cache_metrics.h"
 #include "content/browser/service_worker/embedded_worker_instance.h"
 #include "content/browser/service_worker/embedded_worker_status.h"
@@ -192,11 +193,14 @@ class CONTENT_EXPORT ServiceWorkerVersion
 
   // The constructor should be called only from ServiceWorkerRegistry other than
   // tests.
-  ServiceWorkerVersion(ServiceWorkerRegistration* registration,
-                       const GURL& script_url,
-                       blink::mojom::ScriptType script_type,
-                       int64_t version_id,
-                       base::WeakPtr<ServiceWorkerContextCore> context);
+  ServiceWorkerVersion(
+      ServiceWorkerRegistration* registration,
+      const GURL& script_url,
+      blink::mojom::ScriptType script_type,
+      int64_t version_id,
+      mojo::PendingRemote<storage::mojom::ServiceWorkerLiveVersionRef>
+          remote_reference,
+      base::WeakPtr<ServiceWorkerContextCore> context);
 
   int64_t version_id() const { return version_id_; }
   int64_t registration_id() const { return registration_id_; }
@@ -1085,6 +1089,11 @@ class CONTENT_EXPORT ServiceWorkerVersion
 
   mojo::PendingReceiver<blink::mojom::ReportingObserver>
       reporting_observer_receiver_;
+
+  // Lives while the ServiceWorkerVersion is alive.
+  // See comments at the definition of storage::mojom::ServiceWorkerVersionRef
+  // for more details.
+  mojo::Remote<storage::mojom::ServiceWorkerLiveVersionRef> remote_reference_;
 
   base::WeakPtrFactory<ServiceWorkerVersion> weak_factory_{this};
 

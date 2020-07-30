@@ -57,7 +57,7 @@ class COMPONENT_EXPORT(
   FRIEND_TEST_ALL_PREFIXES(heap_profiling::ProfilingJsonExporterTest,
                            MemoryMaps);
 
-#if defined(OS_MACOSX)
+#if defined(OS_MAC)
   static std::vector<mojom::VmRegionPtr> GetProcessModules(base::ProcessId);
 #endif
 

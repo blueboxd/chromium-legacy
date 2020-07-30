@@ -27,7 +27,7 @@
 #include "services/video_capture/virtual_device_enabled_device_factory.h"
 #include "services/viz/public/cpp/gpu/gpu.h"
 
-#if defined(OS_MACOSX)
+#if defined(OS_MAC)
 #include "media/capture/video/mac/video_capture_device_factory_mac.h"
 #endif
 
@@ -142,7 +142,7 @@ void VideoCaptureServiceImpl::ConnectToVideoSourceProvider(
 }
 
 void VideoCaptureServiceImpl::SetRetryCount(int32_t count) {
-#if defined(OS_MACOSX)
+#if defined(OS_MAC)
   media::VideoCaptureDeviceFactoryMac::SetGetDevicesInfoRetryCount(count);
 #endif
 }

@@ -181,7 +181,7 @@ class VIZ_SERVICE_EXPORT SurfaceAggregator {
       const SurfaceId& surface_id,
       const RoundedCornerInfo& rounded_corner_info,
       const gfx::Rect& occluding_damage_rect,
-      bool occluding_damage_rect_valid);
+      DrawQuad* quad_with_occluding_damage_rect);
 
   // Recursively walks through the render pass and updates the
   // |can_use_backdrop_filter_cache| flag on all RenderPassDrawQuads(RPDQ).
@@ -257,11 +257,12 @@ class VIZ_SERVICE_EXPORT SurfaceAggregator {
   void UnionSurfaceDamageRectsOnTop(const gfx::Rect& surface_rect,
                                     const gfx::Transform& target_transform,
                                     const RenderPass* pass);
-  bool ProcessSurfaceOccludingDamage(const Surface* surface,
-                                     const RenderPassList& render_pass_list,
-                                     const gfx::Transform& target_transform,
-                                     const RenderPass* dest_pass,
-                                     gfx::Rect* occluding_damage_rect);
+  DrawQuad* ProcessSurfaceOccludingDamage(
+      const Surface* surface,
+      const RenderPassList& render_pass_list,
+      const gfx::Transform& target_transform,
+      const RenderPass* dest_pass,
+      gfx::Rect* occluding_damage_rect);
   bool RenderPassNeedsFullDamage(const RenderPass* pass) const;
   bool IsRootSurface(const Surface* surface) const;
 

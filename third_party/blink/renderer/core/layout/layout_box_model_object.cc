@@ -754,6 +754,12 @@ bool LayoutBoxModelObject::HasAutoHeightOrContainingBlockWithAutoHeight(
           this_box->HasOverrideContainingBlockContentLogicalHeight()) {
         return this_box->OverrideContainingBlockContentLogicalHeight() ==
                LayoutUnit(-1);
+      } else if (this_box && this_box->GetCachedLayoutResult() &&
+                 !this_box->GetBoxLayoutExtraInput()) {
+        return this_box->GetCachedLayoutResult()
+                   ->GetConstraintSpaceForCaching()
+                   .AvailableSize()
+                   .block_size == LayoutUnit(-1);
       }
       return !cb->HasDefiniteLogicalHeight();
     }

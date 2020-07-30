@@ -52,6 +52,8 @@ class MEDIA_GPU_EXPORT TextureSelector {
   VideoPixelFormat PixelFormat() const { return pixel_format_; }
   DXGI_FORMAT OutputDXGIFormat() const { return output_dxgifmt_; }
 
+  virtual bool WillCopyForTesting() const;
+
  private:
   friend class CopyTextureSelector;
 
@@ -75,6 +77,8 @@ class MEDIA_GPU_EXPORT CopyTextureSelector : public TextureSelector {
       ComD3D11VideoDevice video_device,
       ComD3D11DeviceContext,
       gfx::Size size) override;
+
+  bool WillCopyForTesting() const override;
 
  private:
   base::Optional<gfx::ColorSpace> output_color_space_;

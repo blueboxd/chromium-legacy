@@ -1155,4 +1155,55 @@ uint64_t FakeEventLogsUploadManager::GetNumLogsUploaded() {
   return num_event_logs_uploaded_;
 }
 
+///////////////////////////////////////////////////////////////////////////////
+
+FakeUserPoliciesManager::FakeUserPoliciesManager(bool cloud_policies_enabled)
+    : original_manager_(*GetInstanceStorage()) {
+  *GetInstanceStorage() = this;
+  SetCloudPoliciesEnabledForTesting(cloud_policies_enabled);
+}
+
+FakeUserPoliciesManager::~FakeUserPoliciesManager() {
+  *GetInstanceStorage() = original_manager_;
+}
+
+void FakeUserPoliciesManager::SetUserPolicies(const base::string16& sid,
+                                              const UserPolicies& policies) {
+  user_policies_[sid] = policies;
+}
+
+bool FakeUserPoliciesManager::GetUserPolicies(const base::string16& sid,
+                                              UserPolicies* policies) {
+  if (user_policies_.find(sid) != user_policies_.end()) {
+    *policies = user_policies_[sid];
+    return true;
+  }
+
+  return false;
+}
+
+///////////////////////////////////////////////////////////////////////////////
+
+FakeDevicePoliciesManager::FakeDevicePoliciesManager(
+    bool cloud_policies_enabled)
+    : original_manager_(*GetInstanceStorage()) {
+  *GetInstanceStorage() = this;
+  UserPoliciesManager::Get()->SetCloudPoliciesEnabledForTesting(
+      cloud_policies_enabled);
+}
+
+FakeDevicePoliciesManager::~FakeDevicePoliciesManager() {
+  *GetInstanceStorage() = original_manager_;
+}
+
+void FakeDevicePoliciesManager::SetDevicePolicies(
+    const DevicePolicies& policies) {
+  device_policies_ = policies;
+}
+
+void FakeDevicePoliciesManager::GetDevicePolicies(
+    DevicePolicies* device_policies) {
+  *device_policies = device_policies_;
+}
+
 }  // namespace credential_provider

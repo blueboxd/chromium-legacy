@@ -9,9 +9,14 @@
 #include "base/strings/sys_string_conversions.h"
 #include "components/crash/core/common/crash_keys.h"
 #include "ios/chrome/app/startup/ios_chrome_main.h"
+#include "ios/chrome/app/startup/ios_enable_sandbox_dump_buildflags.h"
 #include "ios/chrome/browser/crash_report/breakpad_helper.h"
 #include "ios/chrome/common/channel_info.h"
 #include "ios/testing/perf/startupLoggers.h"
+
+#if BUILDFLAG(IOS_ENABLE_SANDBOX_DUMP)
+#include "ios/chrome/app/startup/sandbox_dump.h"  // nogncheck
+#endif  // BUILDFLAG(IOS_ENABLE_SANDBOX_DUMP)
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."
@@ -72,6 +77,13 @@ int RunUIApplicationMain(int argc, char* argv[]) {
 int main(int argc, char* argv[]) {
   IOSChromeMain::InitStartTime();
   startup_loggers::RegisterAppStartTime();
+
+#if BUILDFLAG(IOS_ENABLE_SANDBOX_DUMP)
+  // Dumps the sandbox if needed. This must be called as soon as possible,
+  // before actions are done on the sandbox.
+  // This is a blocking call.
+  DumpSandboxIfRequested();
+#endif  // BUILDFLAG(IOS_ENABLE_SANDBOX_DUMP)
 
   // Set NSUserDefaults keys to force pseudo-RTL if needed.
   SetTextDirectionIfPseudoRTLEnabled();

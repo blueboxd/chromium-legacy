@@ -4051,7 +4051,6 @@
 <translation id="6056710589053485679">正常重新載入</translation>
 <translation id="6057312498756061228">這個檔案的大小過大，無法進行安全性檢查。可開啟的檔案大小上限為 50 MB。</translation>
 <translation id="6057381398996433816">這個網站已遭封鎖，無法使用動作感應器和光源感應器。</translation>
-<translation id="6058567592298841668">外掛程式虛擬機器：<ph name="PLUGIN_VM_NAME" /></translation>
 <translation id="6059652578941944813">憑證階層</translation>
 <translation id="6059925163896151826">USB 裝置</translation>
 <translation id="6061882183774845124">將連結傳送至裝置</translation>
@@ -4480,6 +4479,7 @@
 <translation id="6602956230557165253">使用向左鍵和向右鍵瀏覽。</translation>
 <translation id="6605847144724004692">還沒有任何使用者給予評分。</translation>
 <translation id="6607831829715835317">更多工具(&amp;L)</translation>
+<translation id="6608012008902909398">顯示裝置軟體檢查的詳細資料</translation>
 <translation id="6611972847767394631">你可以在這裡找到已開啟的分頁</translation>
 <translation id="6612358246767739896">受保護內容</translation>
 <translation id="6615455863669487791">顯示</translation>

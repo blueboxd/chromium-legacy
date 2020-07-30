@@ -38,7 +38,7 @@
 #include "services/network/tcp_server_socket.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
-#if defined(OS_MACOSX) && !defined(OS_IOS)
+#if defined(OS_MAC)
 #include "base/mac/mac_util.h"
 #endif
 
@@ -575,7 +575,7 @@ TEST_F(TCPSocketTest, SocketClosed) {
   int result = observer()->WaitForWriteError();
   bool result_ok = result == net::ERR_CONNECTION_RESET ||
                    result == net::ERR_CONNECTION_ABORTED;
-#if defined(OS_MACOSX) && !defined(OS_IOS)
+#if defined(OS_MAC)
   // On some macOS kernels, send() on a closing TCP socket can return
   // EPROTOTYPE, which is unknown to the net stack and gets mapped to
   // net::ERR_FAILED.

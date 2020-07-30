@@ -2,12 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#import "ios/chrome/browser/ui/bookmarks/bookmark_home_waiting_view.h"
+#import "ios/chrome/browser/ui/elements/home_waiting_view.h"
 
 #import <MaterialComponents/MaterialActivityIndicator.h>
 #import <MaterialComponents/MaterialPalettes.h>
 
-#import "ios/chrome/browser/ui/bookmarks/bookmark_utils_ios.h"
 #import "ios/chrome/browser/ui/colors/MDCPalette+CrAdditions.h"
 #import "ios/chrome/browser/ui/material_components/activity_indicator.h"
 #import "ios/chrome/browser/ui/util/rtl_geometry.h"
@@ -16,12 +15,12 @@
 #error "This file requires ARC support."
 #endif
 
-@interface BookmarkHomeWaitingView ()<MDCActivityIndicatorDelegate>
+@interface HomeWaitingView () <MDCActivityIndicatorDelegate>
 @property(nonatomic, retain) MDCActivityIndicator* activityIndicator;
 @property(nonatomic, copy) ProceduralBlock animateOutCompletionBlock;
 @end
 
-@implementation BookmarkHomeWaitingView
+@implementation HomeWaitingView
 
 @synthesize activityIndicator = _activityIndicator;
 @synthesize animateOutCompletionBlock = _animateOutCompletionBlock;

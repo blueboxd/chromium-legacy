@@ -6,6 +6,7 @@
 #define CHROME_CREDENTIAL_PROVIDER_GAIACP_USER_POLICIES_H_
 
 #include "base/values.h"
+#include "chrome/credential_provider/gaiacp/gcpw_version.h"
 
 namespace credential_provider {
 
@@ -18,7 +19,7 @@ struct UserPolicies {
   bool enable_gcpw_auto_update;
 
   // The GCPW version to pin the device to.
-  std::string gcpw_pinned_version;
+  GcpwVersion gcpw_pinned_version;
 
   // If set to disabled only 1 GCPW user can be created on the device.
   bool enable_multi_user_login;

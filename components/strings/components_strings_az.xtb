@@ -123,6 +123,7 @@
 <translation id="1430915738399379752">Çap edin</translation>
 <translation id="1442386063175183758">Sağ küncə qatlayın</translation>
 <translation id="1442987760062738829">Deşik açın</translation>
+<translation id="1447067628680007684">(x86_64)</translation>
 <translation id="1453974140256777690">Yapışdırdığınız və ya əlavə etdiyiniz mətn təhlil üçün Google Cloud'a və ya üçüncü tərəflərə göndərilir. Məsələn, onlar həssas dataya görə skanlana bilər.</translation>
 <translation id="1455413310270022028">Pozan</translation>
 <translation id="1462245070427461050">JIS B9</translation>
@@ -1140,6 +1141,7 @@
 <translation id="5705882733397021510">Geri qayıdın</translation>
 <translation id="57094364128775171">Güclü parol təklif edin…</translation>
 <translation id="5710435578057952990">Bu veb saytın identifikasiyası doğrulanmamışdır.</translation>
+<translation id="571403275720188526">(arm64)</translation>
 <translation id="5720705177508910913">Cari istifadəçi</translation>
 <translation id="5728056243719941842">C5 (Zərf)</translation>
 <translation id="5730040223043577876">Parolunuzdan digər saytlarda təkrar istifadə etmisinizsə, Chrome onu sıfırlamağınızı tövsiyə edir.</translation>
@@ -1189,6 +1191,7 @@
 <translation id="5921639886840618607">Kart Google Hesabında yadda saxlanılsın?</translation>
 <translation id="5922853866070715753">Demək olar ki, hazırdır</translation>
 <translation id="5932224571077948991">Sayt intruziv və ya aldadıcı reklamlar göstərir</translation>
+<translation id="5938793338444039872">Troy</translation>
 <translation id="5946937721014915347"><ph name="SITE_NAME" /> açılır…</translation>
 <translation id="5951495562196540101">Müştəri hesabı (toplu lisenziya əlçatandır) ilə qeydiyyatdan keçmək mümkün deyil.</translation>
 <translation id="5967592137238574583">Kontakt Məlumatını Redaktə Edin</translation>
@@ -1356,6 +1359,7 @@
 <translation id="6646269444027925224">{COUNT,plural, =0{Yoxdur}=1{1 saytdan (Google Hesabınızdan çıxmayacaqsınız)}other{ # saytdan (Google Hesabınızdan çıxmayacaqsınız)}}</translation>
 <translation id="6652101503459149953">Windows Hello işlədin</translation>
 <translation id="6657585470893396449">Parol</translation>
+<translation id="666259744093848177">(x86_64 tərcümə edilib)</translation>
 <translation id="6665553082534466207">Sağdan üçlü deşik açın</translation>
 <translation id="6671697161687535275">Təkliflər Chromium'dan silinsin?</translation>
 <translation id="6685834062052613830">Çıxın və quraşdırmanı tamamlayın</translation>

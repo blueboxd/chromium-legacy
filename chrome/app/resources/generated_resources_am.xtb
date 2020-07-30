@@ -2439,7 +2439,7 @@
 <translation id="3949790930165450333"><ph name="DEVICE_NAME" /> (<ph name="DEVICE_ID" />)</translation>
 <translation id="394984172568887996">ከIE የመጣ</translation>
 <translation id="3949981384795585075">{NUM_APPS,plural, =1{ይህ መተግበሪያ አደገኛ ሊሆን ይችላል}one{እነዚህ መተግበሪያዎች አደገኛ ሊሆኑ ይችላሉ}other{እነዚህ መተግበሪያዎች አደገኛ ሊሆኑ ይችላሉ}}</translation>
-<translation id="3950820424414687140">ይግቡ</translation>
+<translation id="3950820424414687140">በመለያ ይግቡ</translation>
 <translation id="3953834000574892725">የእኔ መለያዎች</translation>
 <translation id="3954354850384043518">በሂደት ላይ</translation>
 <translation id="3954469006674843813"><ph name="WIDTH" /> x <ph name="HEIGHT" /> (<ph name="REFRESH_RATE" /> ኸርዝ)</translation>
@@ -4050,7 +4050,6 @@
 <translation id="6056710589053485679">መደበኛ ዳግም መጫን</translation>
 <translation id="6057312498756061228">ይህ ፋይል ለደህንነት ፍተሻ በጣም ትልቅ ነው። እስከ 50 ሜባ የሚያህሉ ፋይሎችን መክፈት ይችላሉ።</translation>
 <translation id="6057381398996433816">ይህ ጣቢያ የእንቅስቃሴ እና የብርሃን ዳሳሾችን እንዳይጠቀም ታግዷል።</translation>
-<translation id="6058567592298841668">የተሰኪ ምናባዊ ማሽን፦ <ph name="PLUGIN_VM_NAME" /></translation>
 <translation id="6059652578941944813">የሰርቲፊኬት ተዋረድ</translation>
 <translation id="6059925163896151826">የዩኤስቢ መሣሪያዎች</translation>
 <translation id="6061882183774845124">አገናኝ ወደ የእርስዎ መሣሪያዎች ይላኩ</translation>

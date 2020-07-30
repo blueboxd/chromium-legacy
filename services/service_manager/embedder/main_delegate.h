@@ -36,7 +36,7 @@ class COMPONENT_EXPORT(SERVICE_MANAGER_EMBEDDER) MainDelegate {
  public:
   // Extra parameters passed to MainDelegate::Initialize.
   struct InitializeParams {
-#if defined(OS_MACOSX)
+#if defined(OS_MAC)
     // The outermost autorelease pool, allocated by internal service manager
     // logic. This is guaranteed to live throughout the extent of Run().
     base::mac::ScopedNSAutoreleasePool* autorelease_pool = nullptr;

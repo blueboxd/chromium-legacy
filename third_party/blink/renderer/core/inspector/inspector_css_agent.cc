@@ -74,6 +74,7 @@
 #include "third_party/blink/renderer/core/html/html_head_element.h"
 #include "third_party/blink/renderer/core/inspector/identifiers_factory.h"
 #include "third_party/blink/renderer/core/inspector/inspected_frames.h"
+#include "third_party/blink/renderer/core/inspector/inspector_css_cascade.h"
 #include "third_party/blink/renderer/core/inspector/inspector_history.h"
 #include "third_party/blink/renderer/core/inspector/inspector_network_agent.h"
 #include "third_party/blink/renderer/core/inspector/inspector_resource_container.h"
@@ -1002,7 +1003,6 @@ Response InspectorCSSAgent::getMatchedStylesForNode(
   if (!response.IsSuccess())
     return response;
 
-  Element* original_element = element;
   PseudoId element_pseudo_id = element->GetPseudoId();
   if (element_pseudo_id) {
     element = element->ParentOrShadowHostElement();
@@ -1022,21 +1022,11 @@ Response InspectorCSSAgent::getMatchedStylesForNode(
     stylesheet->SyncTextIfNeeded();
   }
 
-  // Update style and layout tree because AnimationsForNode below requires that.
-  // It is done this early because it also does UpdateActiveStyle() which is
-  // necessary for collecting an up-to-date set of rules.
-  document.UpdateStyleAndLayoutTreeForNode(element);
-
-  // FIXME: It's really gross for the inspector to reach in and access
-  // StyleResolver directly here. We need to provide the Inspector better APIs
-  // to get this information without grabbing at internal style classes!
-  StyleResolver& style_resolver = document.GetStyleResolver();
+  InspectorCSSCascade cascade(element, element_pseudo_id);
 
   // Matched rules.
-  RuleIndexList* matched_rules = style_resolver.PseudoCSSRulesForElement(
-      element, element_pseudo_id, StyleResolver::kAllCSSRules);
-  *matched_css_rules = BuildArrayForMatchedRuleList(
-      matched_rules, original_element, kPseudoIdNone);
+  *matched_css_rules =
+      BuildArrayForMatchedRuleList(cascade.MatchedRules(), kPseudoIdNone);
 
   // Pseudo elements.
   if (element_pseudo_id)
@@ -1051,51 +1041,34 @@ Response InspectorCSSAgent::getMatchedStylesForNode(
 
   *pseudo_id_matches =
       std::make_unique<protocol::Array<protocol::CSS::PseudoElementMatches>>();
-  for (PseudoId pseudo_id = kFirstPublicPseudoId;
-       pseudo_id < kAfterLastInternalPseudoId;
-       pseudo_id = static_cast<PseudoId>(pseudo_id + 1)) {
-    if (!PseudoElement::IsWebExposed(pseudo_id, element))
-      continue;
-    // If the pseudo-element doesn't exist, exclude UA rules to avoid cluttering
-    // all elements.
-    unsigned rules_to_include = element->GetPseudoElement(pseudo_id)
-                                    ? StyleResolver::kAllCSSRules
-                                    : StyleResolver::kAllButUACSSRules;
-    RuleIndexList* matched_rules = style_resolver.PseudoCSSRulesForElement(
-        element, pseudo_id, rules_to_include);
-    if (matched_rules && matched_rules->size()) {
-      pseudo_id_matches->fromJust()->emplace_back(
-          protocol::CSS::PseudoElementMatches::create()
-              .setPseudoType(
-                  InspectorDOMAgent::ProtocolPseudoElementType(pseudo_id))
-              .setMatches(BuildArrayForMatchedRuleList(matched_rules, element,
-                                                       pseudo_id))
-              .build());
-    }
+
+  for (InspectorCSSMatchedRules* match : cascade.PseudoElementRules()) {
+    pseudo_id_matches->fromJust()->emplace_back(
+        protocol::CSS::PseudoElementMatches::create()
+            .setPseudoType(
+                InspectorDOMAgent::ProtocolPseudoElementType(match->pseudo_id))
+            .setMatches(BuildArrayForMatchedRuleList(match->matched_rules,
+                                                     match->pseudo_id))
+            .build());
   }
 
   // Inherited styles.
   *inherited_entries =
       std::make_unique<protocol::Array<protocol::CSS::InheritedStyleEntry>>();
-  Element* parent_element = element->ParentOrShadowHostElement();
-  while (parent_element) {
-    RuleIndexList* parent_matched_rules = style_resolver.CssRulesForElement(
-        parent_element, StyleResolver::kAllCSSRules);
+  for (InspectorCSSMatchedRules* match : cascade.ParentRules()) {
     std::unique_ptr<protocol::CSS::InheritedStyleEntry> entry =
         protocol::CSS::InheritedStyleEntry::create()
             .setMatchedCSSRules(BuildArrayForMatchedRuleList(
-                parent_matched_rules, parent_element, kPseudoIdNone))
+                match->matched_rules, match->pseudo_id))
             .build();
-    if (parent_element->style() && parent_element->style()->length()) {
+    if (match->element->style() && match->element->style()->length()) {
       InspectorStyleSheetForInlineStyle* style_sheet =
-          AsInspectorStyleSheet(parent_element);
+          AsInspectorStyleSheet(match->element);
       if (style_sheet)
         entry->setInlineStyle(
             style_sheet->BuildObjectForStyle(style_sheet->InlineStyle()));
     }
-
     inherited_entries->fromJust()->emplace_back(std::move(entry));
-    parent_element = parent_element->ParentOrShadowHostElement();
   }
 
   *css_keyframes_rules = AnimationsForNode(element);
@@ -2153,7 +2126,6 @@ std::unique_ptr<protocol::CSS::CSSRule> InspectorCSSAgent::BuildObjectForRule(
 std::unique_ptr<protocol::Array<protocol::CSS::RuleMatch>>
 InspectorCSSAgent::BuildArrayForMatchedRuleList(
     RuleIndexList* rule_list,
-    Element* element,
     PseudoId matches_for_pseudo_id) {
   auto result = std::make_unique<protocol::Array<protocol::CSS::RuleMatch>>();
   if (!rule_list)

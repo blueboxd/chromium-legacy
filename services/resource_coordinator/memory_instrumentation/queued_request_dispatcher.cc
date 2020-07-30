@@ -21,7 +21,7 @@
 #include "services/resource_coordinator/memory_instrumentation/switches.h"
 #include "services/resource_coordinator/public/cpp/memory_instrumentation/global_memory_dump.h"
 
-#if defined(OS_MACOSX) && !defined(OS_IOS)
+#if defined(OS_MAC)
 #include "base/mac/mac_util.h"
 #endif
 
@@ -47,7 +47,7 @@ uint32_t CalculatePrivateFootprintKb(const mojom::RawOSMemDump& os_dump,
   uint64_t rss_anon_bytes = os_dump.platform_private_footprint->rss_anon_bytes;
   uint64_t vm_swap_bytes = os_dump.platform_private_footprint->vm_swap_bytes;
   return (rss_anon_bytes + vm_swap_bytes) / 1024;
-#elif defined(OS_MACOSX)
+#elif defined(OS_MAC)
   if (base::mac::IsAtLeastOS10_12()) {
     uint64_t phys_footprint_bytes =
         os_dump.platform_private_footprint->phys_footprint_bytes;
@@ -475,7 +475,7 @@ void QueuedRequestDispatcher::Finalize(QueuedRequest* request,
     mojom::OSMemDumpPtr os_dump = nullptr;
     if (raw_os_dump) {
       uint64_t shared_resident_kb = 0;
-#if defined(OS_MACOSX)
+#if defined(OS_MAC)
       // The resident, anonymous shared memory for each process is only relevant
       // on macOS.
       const auto process_graph_it =

@@ -1824,7 +1824,7 @@ Pots gestionar la configuració d'aquest compte instal·lant l'aplicació Family
 <translation id="3239373508713281971">S'ha suprimit el límit de temps per a <ph name="APP_NAME" /></translation>
 <translation id="3241680850019875542">Seleccioneu el directori arrel de l'extensió que voleu empaquetar. Per actualitzar una extensió, cal que seleccioneu també el fitxer de clau privada que s'utilitzarà.</translation>
 <translation id="3244294424315804309">Continua silenciant el so</translation>
-<translation id="3246107497225150582">{0,plural, =1{Actualitza el dispositiu en 1 dia}other{Actualitza el dispositiu en # dies}}</translation>
+<translation id="3246107497225150582">{0,plural, =1{Tens 1 dia per actualitzar el dispositiu}other{Tens # dies per actualitzar el dispositiu}}</translation>
 <translation id="324849028894344899"><ph name="WINDOW_TITLE" />: error de la xarxa</translation>
 <translation id="3248902735035392926">La seguretat és important. Dedica ara un moment a <ph name="BEGIN_LINK" />consultar les extensions<ph name="END_LINK" />.</translation>
 <translation id="3251759466064201842">&lt;No forma part del certificat&gt;</translation>
@@ -4053,7 +4053,6 @@ Assegureu-vos que no es pugui accedir a informació sensible.</translation>
 <translation id="6056710589053485679">Torna a carregar de manera normal</translation>
 <translation id="6057312498756061228">Aquest fitxer és massa gran per fer-hi una comprovació de seguretat. Pots obrir fitxers de fins a 50 MB.</translation>
 <translation id="6057381398996433816">No es permet que aquest lloc web utilitzi els sensors de llum i moviment.</translation>
-<translation id="6058567592298841668">Connector de màquina virtual: <ph name="PLUGIN_VM_NAME" /></translation>
 <translation id="6059652578941944813">Jerarquia del certificat</translation>
 <translation id="6059925163896151826">Dispositius USB</translation>
 <translation id="6061882183774845124">Envia l'enllaç als teus dispositius</translation>

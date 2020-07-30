@@ -111,6 +111,14 @@ GREYElementInteraction* GetInteractionForPasswordsExportConfirmAlert(
       inRoot:grey_accessibilityID(kPasswordsExportConfirmViewId)];
 }
 
+// Matcher for "Saved Passwords" header in the password list.
+id<GREYMatcher> SavedPasswordsHeaderMatcher() {
+  return grey_allOf(
+      grey_accessibilityLabel(
+          l10n_util::GetNSString(IDS_IOS_SETTINGS_PASSWORDS_SAVED_HEADING)),
+      grey_accessibilityTrait(UIAccessibilityTraitHeader), nullptr);
+}
+
 // Matcher for a UITextField inside a SettingsSearchCell.
 id<GREYMatcher> SearchTextField() {
   return grey_accessibilityID(kPasswordsSearchBarId);
@@ -583,11 +591,8 @@ void TapEdit() {
 
   // Check that the current view is now the list view, by locating the header
   // of the list of passwords.
-  [[EarlGrey selectElementWithMatcher:
-                 grey_allOf(grey_accessibilityLabel(l10n_util::GetNSString(
-                                IDS_IOS_SETTINGS_PASSWORDS_SAVED_HEADING)),
-                            grey_accessibilityTrait(UIAccessibilityTraitHeader),
-                            nullptr)] assertWithMatcher:grey_notNil()];
+  [[EarlGrey selectElementWithMatcher:SavedPasswordsHeaderMatcher()]
+      assertWithMatcher:grey_notNil()];
 
   // Verify that the deletion was propagated to the PasswordStore.
   GREYAssertEqual(0, [PasswordSettingsAppInterface passwordStoreResultsCount],
@@ -641,11 +646,8 @@ void TapEdit() {
 
   // Check that the current view is now the list view, by locating the header
   // of the list of passwords.
-  [[EarlGrey selectElementWithMatcher:
-                 grey_allOf(grey_accessibilityLabel(l10n_util::GetNSString(
-                                IDS_IOS_SETTINGS_PASSWORDS_SAVED_HEADING)),
-                            grey_accessibilityTrait(UIAccessibilityTraitHeader),
-                            nullptr)] assertWithMatcher:grey_notNil()];
+  [[EarlGrey selectElementWithMatcher:SavedPasswordsHeaderMatcher()]
+      assertWithMatcher:grey_notNil()];
 
   // Verify that the deletion was propagated to the PasswordStore.
   GREYAssertEqual(0, [PasswordSettingsAppInterface passwordStoreResultsCount],
@@ -1352,6 +1354,11 @@ void TapEdit() {
                   @"Unexpected PasswordStore results.");
 
   OpenPasswordSettings();
+
+  // Wait for the loading indicator to disappear, and the sections to be on
+  // screen, before scrolling.
+  [[EarlGrey selectElementWithMatcher:SavedPasswordsHeaderMatcher()]
+      assertWithMatcher:grey_notNil()];
 
   // Aim at an entry almost at the end of the list.
   constexpr int kRemoteIndex = kPasswordsCount - 2;

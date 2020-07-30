@@ -48,6 +48,17 @@
                file="${root_gen_dir}\chrome\browser\resources\nearby_internals\shared_style.js"
                use_base_dir="false"
                type="BINDATA"/>
+      <include name="IDR_NEARBY_INTERNALS_CONTACT_OBJECT_JS"
+               file="${root_gen_dir}\chrome\browser\resources\nearby_internals\contact_object.js"
+               use_base_dir="false"
+               type="BINDATA"/>
+      <include name="IDR_NEARBY_INTERNALS_CONTACT_TAB_JS"
+               file="${root_gen_dir}\chrome\browser\resources\nearby_internals\contact_tab.js"
+               use_base_dir="false"
+               type="BINDATA"/>
+       <include name="IDR_NEARBY_INTERNALS_NEARBY_CONTACT_BROWSER_PROXY_JS"
+               file="nearby_contact_browser_proxy.js"
+               type="BINDATA"/>
     </includes>
   </release>
 </grit>

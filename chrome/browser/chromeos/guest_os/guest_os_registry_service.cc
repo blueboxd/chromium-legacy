@@ -111,14 +111,14 @@ base::Value LocaleStringsProtoToDictionary(
   return result;
 }
 
-// Construct a registration based on the given App proto.
+// Populate |pref_registration| based on the given App proto.
 // |name| should be |app.name()| in Dictionary form.
-base::Value AppPrefRegistrationFromApp(GuestOsRegistryService::VmType vm_type,
-                                       const std::string& vm_name,
-                                       const std::string& container_name,
-                                       const vm_tools::apps::App& app,
-                                       base::Value name) {
-  base::Value pref_registration(base::Value::Type::DICTIONARY);
+void PopulatePrefRegistrationFromApp(base::Value& pref_registration,
+                                     GuestOsRegistryService::VmType vm_type,
+                                     const std::string& vm_name,
+                                     const std::string& container_name,
+                                     const vm_tools::apps::App& app,
+                                     base::Value name) {
   pref_registration.SetKey(guest_os::prefs::kAppDesktopFileIdKey,
                            base::Value(app.desktop_file_id()));
   pref_registration.SetIntKey(guest_os::prefs::kAppVmTypeKey,
@@ -146,8 +146,6 @@ base::Value AppPrefRegistrationFromApp(GuestOsRegistryService::VmType vm_type,
                            base::Value(app.startup_notify()));
   pref_registration.SetKey(guest_os::prefs::kAppPackageIdKey,
                            base::Value(app.package_id()));
-
-  return pref_registration;
 }
 
 // This is the companion to GuestOsRegistryService::SetCurrentTime().
@@ -313,7 +311,10 @@ void SetLocaleStrings(App::LocaleStrings* locale_strings,
   }
 }
 
-GuestOsRegistryService::Registration GetTerminalRegistration() {
+// Creates a Terminal registration using partial values from prefs such as
+// last_launch_time.
+GuestOsRegistryService::Registration GetTerminalRegistration(
+    const base::Value* pref) {
   std::string locale =
       l10n_util::NormalizeLocale(g_browser_process->GetApplicationLocale());
   vm_tools::apps::App app;
@@ -326,22 +327,22 @@ GuestOsRegistryService::Registration GetTerminalRegistration() {
       {"linux", "terminal", "crostini",
        l10n_util::GetStringUTF8(IDS_CROSTINI_TERMINAL_APP_SEARCH_TERMS)});
 
-  base::Value pref = AppPrefRegistrationFromApp(
+  base::Value pref_registration =
+      pref ? pref->Clone() : base::Value(base::Value::Type::DICTIONARY);
+  PopulatePrefRegistrationFromApp(
+      pref_registration,
       GuestOsRegistryService::VmType::ApplicationList_VmType_TERMINA,
       crostini::kCrostiniDefaultVmName, crostini::kCrostiniDefaultContainerName,
       app, ProtoToDictionary(app.name()));
   return GuestOsRegistryService::Registration(
-      crostini::kCrostiniTerminalSystemAppId, &pref);
+      crostini::kCrostiniTerminalSystemAppId, std::move(pref_registration));
 }
 
 }  // namespace
 
 GuestOsRegistryService::Registration::Registration(std::string app_id,
-                                                   const base::Value* pref)
-    : app_id_(std::move(app_id)) {
-  DCHECK(pref);
-  pref_ = pref->Clone();
-}
+                                                   base::Value pref)
+    : app_id_(std::move(app_id)), pref_(std::move(pref)) {}
 
 GuestOsRegistryService::Registration::~Registration() = default;
 
@@ -544,14 +545,17 @@ GuestOsRegistryService::GetAllRegisteredApps() const {
   const base::DictionaryValue* apps =
       prefs_->GetDictionary(guest_os::prefs::kGuestOsRegistry);
   std::map<std::string, GuestOsRegistryService::Registration> result;
-  for (const auto& item : apps->DictItems()) {
-    result.emplace(item.first, Registration(item.first, &item.second));
-  }
+  // Register Terminal by merging optional prefs with app values.
   // TODO(crbug.com/1028898): Register Terminal as a System App rather than a
   // crostini app.
-  if (!apps->FindKey(crostini::kCrostiniTerminalSystemAppId)) {
-    result.emplace(crostini::kCrostiniTerminalSystemAppId,
-                   GetTerminalRegistration());
+  result.emplace(crostini::kCrostiniTerminalSystemAppId,
+                 GetTerminalRegistration(
+                     apps->FindKeyOfType(crostini::kCrostiniTerminalSystemAppId,
+                                         base::Value::Type::DICTIONARY)));
+  for (const auto& item : apps->DictItems()) {
+    if (item.first != crostini::kCrostiniTerminalSystemAppId) {
+      result.emplace(item.first, Registration(item.first, item.second.Clone()));
+    }
   }
   return result;
 }
@@ -571,18 +575,19 @@ GuestOsRegistryService::GetRegisteredApps(VmType vm_type) const {
 
 base::Optional<GuestOsRegistryService::Registration>
 GuestOsRegistryService::GetRegistration(const std::string& app_id) const {
-  if (app_id == crostini::kCrostiniTerminalSystemAppId)
-    return GetTerminalRegistration();
-
   const base::DictionaryValue* apps =
       prefs_->GetDictionary(guest_os::prefs::kGuestOsRegistry);
+
+  if (app_id == crostini::kCrostiniTerminalSystemAppId) {
+    return GetTerminalRegistration(apps->FindKeyOfType(
+        crostini::kCrostiniTerminalSystemAppId, base::Value::Type::DICTIONARY));
+  }
+
   const base::Value* pref_registration =
       apps->FindKeyOfType(app_id, base::Value::Type::DICTIONARY);
-
-
   if (!pref_registration)
     return base::nullopt;
-  return base::make_optional<Registration>(app_id, pref_registration);
+  return base::make_optional<Registration>(app_id, pref_registration->Clone());
 }
 
 void GuestOsRegistryService::RecordStartupMetrics() {
@@ -707,7 +712,7 @@ void GuestOsRegistryService::ClearApplicationList(
     for (const auto& item : apps->DictItems()) {
       if (item.first == crostini::kCrostiniTerminalSystemAppId)
         continue;
-      Registration registration(item.first, &item.second);
+      Registration registration(item.first, item.second.Clone());
       if (vm_type != registration.VmType())
         continue;
       if (vm_name != registration.VmName())
@@ -775,9 +780,10 @@ void GuestOsRegistryService::UpdateApplicationList(
           app.desktop_file_id(), app_list.vm_name(), app_list.container_name());
       new_app_ids.insert(app_id);
 
-      base::Value pref_registration = AppPrefRegistrationFromApp(
-          app_list.vm_type(), app_list.vm_name(), app_list.container_name(),
-          app, std::move(name));
+      base::Value pref_registration(base::Value::Type::DICTIONARY);
+      PopulatePrefRegistrationFromApp(
+          pref_registration, app_list.vm_type(), app_list.vm_name(),
+          app_list.container_name(), app, std::move(name));
 
       base::Value* old_app = apps->FindKey(app_id);
       if (old_app && EqualsExcludingTimestamps(pref_registration, *old_app))

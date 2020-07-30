@@ -123,6 +123,7 @@
 <translation id="1430915738399379752">Друк</translation>
 <translation id="1442386063175183758">Зігнути за типом "ворота праворуч"</translation>
 <translation id="1442987760062738829">Пробити отвір</translation>
+<translation id="1447067628680007684">(x86_64)</translation>
 <translation id="1453974140256777690">Текст, який ви вставляєте або долучаєте, надсилається на платформу Google Cloud або стороннім сервісам на аналіз. Наприклад, його можуть сканувати на наявність конфіденційних даних.</translation>
 <translation id="1455413310270022028">Гумка</translation>
 <translation id="1462245070427461050">JIS B9</translation>
@@ -796,7 +797,7 @@
 <translation id="4234495348042597185"><ph name="BEGIN_LINK" />Перейти на сайт <ph name="SITE" /><ph name="END_LINK" /></translation>
 <translation id="4235360514405112390">Дійсний</translation>
 <translation id="4250431568374086873">Ваше з’єднання з цим сайтом не повністю захищене</translation>
-<translation id="4250680216510889253">ні</translation>
+<translation id="4250680216510889253">Ні</translation>
 <translation id="4253168017788158739">Примітка</translation>
 <translation id="425582637250725228">Внесені зміни, можливо, не буде збережено.</translation>
 <translation id="4258748452823770588">Недійсний підпис</translation>
@@ -1143,6 +1144,7 @@
 <translation id="5705882733397021510">Назад</translation>
 <translation id="57094364128775171">Запропонувати надійний пароль…</translation>
 <translation id="5710435578057952990">Ідентифікаційну інформацію цього веб-сайта не було перевірено.</translation>
+<translation id="571403275720188526">(arm64)</translation>
 <translation id="5720705177508910913">Поточний користувач</translation>
 <translation id="5728056243719941842">C5 (конверт)</translation>
 <translation id="5730040223043577876">Chrome радить скинути пароль, якщо ви застосовували його на інших сайтах.</translation>
@@ -1192,6 +1194,7 @@
 <translation id="5921639886840618607">Зберегти картку в обліковому записі Google?</translation>
 <translation id="5922853866070715753">Майже готово</translation>
 <translation id="5932224571077948991">Сайт показує нав’язливі чи оманливі оголошення</translation>
+<translation id="5938793338444039872">Troy</translation>
 <translation id="5946937721014915347">Відкривається <ph name="SITE_NAME" />…</translation>
 <translation id="5951495562196540101">Не вдається зареєструватися за допомогою особистого облікового запису користувача (ліцензію отримано в комплекті з пристроєм).</translation>
 <translation id="5967592137238574583">Змініть контактну інформацію</translation>
@@ -1359,6 +1362,7 @@
 <translation id="6646269444027925224">{COUNT,plural, =0{Немає}=1{З 1 сайту (ви не вийдете з облікового запису Google)}one{З # сайту (ви не вийдете з облікового запису Google)}few{З # сайтів (ви не вийдете з облікового запису Google)}many{З # сайтів (ви не вийдете з облікового запису Google)}other{З # сайту (ви не вийдете з облікового запису Google)}}</translation>
 <translation id="6652101503459149953">Використовувати Windows Hello</translation>
 <translation id="6657585470893396449">Пароль</translation>
+<translation id="666259744093848177">(x86_64 перекладено)</translation>
 <translation id="6665553082534466207">Пробити три отвори праворуч</translation>
 <translation id="6671697161687535275">Видалити пропозицію автозаповнення форм із Chromium?</translation>
 <translation id="6685834062052613830">Вийдіть з облікового запису та завершіть процедуру налаштування</translation>

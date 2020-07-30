@@ -113,10 +113,7 @@ class SQLiteCursorTest : public testing::Test,
 
 class CallbackHelper : public base::RefCountedThreadSafe<CallbackHelper> {
  public:
-  CallbackHelper()
-      : success_(false),
-        statement_(NULL) {
-  }
+  CallbackHelper() : success_(false), statement_(nullptr) {}
 
   bool success() const {
     return success_;
@@ -132,7 +129,7 @@ class CallbackHelper : public base::RefCountedThreadSafe<CallbackHelper> {
   }
 
   void OnQueryResult(AndroidStatement* statement) {
-    success_ = statement != NULL;
+    success_ = !!statement;
     statement_ = statement;
     base::RunLoop::QuitCurrentWhenIdleDeprecated();
   }
@@ -205,20 +202,21 @@ TEST_F(SQLiteCursorTest, Run) {
       service_.get());
   cursor->set_test_observer(this);
   JNIEnv* env = base::android::AttachCurrentThread();
-  EXPECT_EQ(1, cursor->GetCount(env, NULL));
-  EXPECT_EQ(0, cursor->MoveTo(env, NULL, 0));
+  EXPECT_EQ(1, cursor->GetCount(env, nullptr));
+  EXPECT_EQ(0, cursor->MoveTo(env, nullptr, 0));
   EXPECT_EQ(row.url().spec(), base::android::ConvertJavaStringToUTF8(
-      cursor->GetString(env, NULL, 0)).c_str());
+                                  cursor->GetString(env, nullptr, 0))
+                                  .c_str());
   EXPECT_EQ(history::ToDatabaseTime(row.last_visit_time()),
-      cursor->GetLong(env, NULL, 1));
-  EXPECT_EQ(row.visit_count(), cursor->GetInt(env, NULL, 2));
+            cursor->GetLong(env, nullptr, 1));
+  EXPECT_EQ(row.visit_count(), cursor->GetInt(env, nullptr, 2));
   base::android::ScopedJavaLocalRef<jbyteArray> data =
-      cursor->GetBlob(env, NULL, 3);
+      cursor->GetBlob(env, nullptr, 3);
   std::vector<uint8_t> out;
   base::android::JavaByteArrayToByteVector(env, data, &out);
   EXPECT_EQ(data_bytes->data().size(), out.size());
   EXPECT_EQ(data_bytes->data()[0], out[0]);
-  cursor->Destroy(env, NULL);
+  cursor->Destroy(env, nullptr);
   // Cursor::Destroy posts the task in UI thread, run Message loop to release
   // the statement, delete SQLiteCursor itself etc.
   content::RunAllPendingInMessageLoop();

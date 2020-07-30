@@ -163,6 +163,9 @@
 
       Si cette règle n'est pas configurée, la transition rapide n'est pas utilisée.
       Si elle est définie sur "True", la transition rapide est utilisée lorsque le point d'accès sans fil accepte cette fonctionnalité.</translation>
+<translation id="1240722269871366886">Cette règle permet à <ph name="PRODUCT_OS_NAME" /> de suggérer des emoji lorsque l'utilisateur saisit du texte sur un clavier virtuel ou physique.
+      Si cette règle est définie sur "True", la fonctionnalité est activée, et l'utilisateur peut la modifier.
+      Cette règle est définie par défaut sur "False". Aucun emoji n'est alors suggéré, et l'utilisateur ne peut pas ignorer ce paramètre.</translation>
 <translation id="1243570869342663665">Contrôler le filtrage SafeSites des contenus réservés aux adultes.</translation>
 <translation id="1257550411839719984">Définir le répertoire de téléchargement par défaut</translation>
 <translation id="1265053460044691532">Limiter la durée pendant laquelle un utilisateur authentifié via SAML peut se connecter hors connexion</translation>
@@ -962,6 +965,7 @@ Si elle n'est pas définie, l'écran de confidentialité est désactivé initial
       Si cette règle n'est pas configurée ou définie sur "True", les utilisateurs peuvent utiliser la fonctionnalité Partages de fichiers en réseau.
 
       Si cette règle est définie sur "False", les utilisateurs ne peuvent pas utiliser la fonctionnalité Partages de fichiers en réseau.</translation>
+<translation id="2435052056904485763">Liste d'autorisation des serveurs de délégation Kerberos</translation>
 <translation id="2440773021691931148">Envoie des rapports sur les statistiques et identifiants matériels associés à l'alimentation.
 
       Si la règle est définie sur "False" ou n'est pas définie, les statistiques ne seront pas envoyées.
@@ -1744,17 +1748,6 @@ Si elle est définie sur "False", <ph name="PRODUCT_NAME" /> n'utilise pas les n
 <translation id="355118380775352753">Sites Web à ouvrir dans le navigateur secondaire</translation>
 <translation id="3554498762428140109">Activer le recouvrement par la fenêtre native</translation>
 <translation id="3554984410014457319">Autoriser l'Assistant Google à écouter l'expression d'activation des commandes vocales</translation>
-<translation id="3557208865710006939">Force l'activation de la vérification orthographique pour certaines langues. Les langues non reconnues dans la liste seront ignorées.
-
-      Si vous activez cette règle, la vérification orthographique sera activée pour les langues spécifiées, en plus des langues pour lesquelles l'utilisateur a activé la vérification orthographique.
-
-      Si vous ne configurez pas cette règle ou si vous la désactivez, aucune modification ne sera apportée aux préférences de vérification orthographique de l'utilisateur.
-
-      Si la règle <ph name="SPELLCHECK_ENABLED_POLICY_NAME" /> est définie sur "false", cette règle n'aura aucun effet.
-
-      Si une langue est incluse à la fois dans cette règle et dans la règle <ph name="SPELLCHECK_LANGUAGE_BLACKLIST_POLICY_NAME" />, cette règle est prioritaire, et la vérification orthographique est activée pour cette langue.
-
-      Actuellement, les langues compatibles sont les suivantes : af, bg, ca, cs, da, de, el, en-AU, en-CA, en-GB, en-US, es, es-419, es-AR, es-ES, es-MX, es-US, et, fa, fo, fr, he, hi, hr, hu, id, it, ko, lt, lv, nb, nl, pl, pt-BR, pt-PT, ro, ru, sh, sk, sl, sq, sr, sv, ta, tg, tr, uk et vi.</translation>
 <translation id="356579196325389849">Les utilisateurs peuvent configurer la version disponible de Chrome OS</translation>
 <translation id="3575011234198230041">Authentification HTTP</translation>
 <translation id="3577251398714997599">Paramètre des annonces pour les sites présentant des annonces intrusives</translation>
@@ -2426,6 +2419,21 @@ Si cette règle n'est pas configurée, l'utilisateur peut décider d'afficher ou
       Si l'option "Forcé" est sélectionnée, l'utilisateur peut ouvrir des pages UNIQUEMENT en mode navigation privée. Sachez que l'option "Forcé" ne fonctionne pas avec un appareil Android sur Chrome.</translation>
 <translation id="4600786265870346112">Activer le grand curseur</translation>
 <translation id="4604931264910482931">Configurer la liste noire de messagerie native</translation>
+<translation id="4607416370554533118">Permet de définir une liste de formats d'URL indiquant les sites pour lesquels Chrome peut sélectionner automatiquement un certificat client. Cette valeur doit être un ensemble de dictionnaires convertis en chaînes JSON, chacun d'entre eux se présentant sous la forme <ph name="AUTO_SELECT_CERTIFICATE_FOR_URLS_EXAMPLE" />, où <ph name="URL_PATTERN_PLACEHOLDER" /> correspond à un schéma de paramètre de contenu. Le filtre <ph name="FILTER_PLACEHOLDER" /> limite les certificats client parmi lesquels le navigateur effectue une sélection automatique. Indépendamment du filtre, seuls les certificats correspondant à la demande de certificat du serveur sont sélectionnés.
+
+      Exemples pour l'utilisation de la section <ph name="FILTER_PLACEHOLDER" /> :
+
+      * Lorsque le filtre <ph name="FILTER_PLACEHOLDER" /> est défini sur <ph name="AUTO_SELECT_CERTIFICATE_FOR_URLS_FILTER_EXAMPLE" />, seuls les certificats client émis par un certificat dont la valeur CommonName est <ph name="ISSUER_CN_PLACEHOLDER" /> sont sélectionnés.
+
+      * Lorsque le filtre <ph name="FILTER_PLACEHOLDER" /> contient à la fois une section <ph name="ISSUER_STRING_VALUE" /> et une section <ph name="SUBJECT_STRING_VALUE" />, le certificat client doit satisfaire les deux conditions pour être sélectionné.
+
+      * Lorsque le filtre <ph name="FILTER_PLACEHOLDER" /> contient une section <ph name="SUBJECT_STRING_VALUE" /> avec la valeur <ph name="FILTER_STRING_ORGANIZATION" />, le certificat doit contenir au moins une organisation correspondant à la valeur spécifiée pour être sélectionné.
+
+      * Lorsque le filtre <ph name="FILTER_PLACEHOLDER" /> contient une section <ph name="SUBJECT_STRING_VALUE" /> avec la valeur <ph name="FILTER_STRING_ORGANIZATIONAL_UNIT" />, le certificat doit contenir au moins une unité organisationnelle correspondant à la valeur spécifiée pour être sélectionné.
+
+      * Lorsque le filtre <ph name="FILTER_PLACEHOLDER" /> est défini sur <ph name="EMPTY_DICTIONARY" />, la sélection de certificats client ne fait pas l'objet de restrictions supplémentaires. Notez que les filtres fournis par le serveur Web restent appliqués.
+
+      Si cette règle n'est pas configurée, aucune sélection automatique n'est effectuée pour aucun site.</translation>
 <translation id="4617338332148204752">Ignorer la vérification des balises Meta dans <ph name="PRODUCT_FRAME_NAME" /></translation>
 <translation id="462134014569484584">Cette règle définit la clé de licence <ph name="PLUGIN_VM_NAME" /> pour cet appareil.</translation>
 <translation id="4625915093043961294">Configurer la liste blanche d'installation des extensions</translation>
@@ -2543,6 +2551,13 @@ Si cette règle n'est pas configurée, l'utilisateur peut décider d'afficher ou
 
       Si vous configurez cette règle, les utilisateurs ne peuvent pas la modifier. Si cette règle n'est pas configurée, les utilisateurs choisissent si l'étagère doit être masquée automatiquement ou non.</translation>
 <translation id="4812714598405913256">Configurer le message concernant l'expiration de la mise à jour automatique pour la règle DeviceMinimumVersion</translation>
+<translation id="481492486938162195">Cette règle est obsolète (veuillez utiliser la règle <ph name="AUTH_NEGOCIATE_DELEGATE_ALLOWLIST_POLICY_NAME" /> à la place).
+
+          Serveurs auxquels <ph name="PRODUCT_NAME" /> peut accorder une délégation.
+
+          Séparez les noms des serveurs par une virgule. Les caractères génériques (*) sont autorisés.
+
+          Si cette règle n'est pas définie, <ph name="PRODUCT_NAME" /> ne délègue pas les identifiants de l'utilisateur, même si le serveur est identifié comme faisant partie de l'intranet.</translation>
 <translation id="4816674326202173458">Autoriser l'utilisateur d'entreprise à être à la fois un utilisateur principal et un utilisateur secondaire (comportement par défaut pour les utilisateurs non gérés)</translation>
 <translation id="4826326557828204741">Définit l'action à effectuer si le délai d'inactivité est atteint lorsque l'appareil fonctionne sur batterie.</translation>
 <translation id="482803100714220060">Affiche les URL complètes</translation>
@@ -5346,6 +5361,13 @@ Si vous activez ce paramètre, <ph name="PRODUCT_NAME" /> et les applications AR
       Si cette règle est définie sur "False" ou n'est pas définie, les éléments de contrôle de formulaire seront activés à mesure de leur lancement pour les versions M81, M82 et M83.
 
       Cette règle sera supprimée après Chrome 84.</translation>
+<translation id="8937562488500723400">Vérifie si l'approbation par la règle KDC est respectée pour décider si les tickets <ph name="KERBEROS" /> doivent être délégués.
+
+          Si cette règle est définie sur "True", l'authentification HTTP respecte l'approbation par la règle KDC. Autrement dit, Chrome ne doit déléguer les identifiants que si la règle KDC définit <ph name="OK_AS_DELEGATE" /> sur un ticket de service. Pour en savoir plus, consultez la page https://tools.ietf.org/html/rfc5896.html. Le service et la règle "AuthNegotiateDelegateAllowlist" doivent également correspondre.
+
+          Si cette règle n'est pas configurée ou si elle est définie sur "False", la règle KDC est ignorée sur les plates-formes compatibles, et seule la règle "AuthNegotiateDelegateAllowlist" est respectée.
+
+          Sous Windows, la règle KDC est toujours respectée.</translation>
 <translation id="8938932171964587769">Cette règle a été abandonnée dans la version M69. Veuillez utiliser la règle
       OverrideSecurityRestrictionsOnInsecureOrigin à la place.
 
@@ -5463,6 +5485,27 @@ Si vous activez ce paramètre, <ph name="PRODUCT_NAME" /> et les applications AR
       Si vous configurez cette règle, <ph name="PRODUCT_NAME" /> utilise la taille de cache que vous indiquez, que l'utilisateur ait spécifié ou non l'option "--disk-cache-size". (Toute valeur inférieure à quelques mégaoctets est arrondie.)
 
       Si cette règle n'est pas configurée, <ph name="PRODUCT_NAME" /> utilise la taille de cache par défaut. L'utilisateur peut modifier ce paramètre à l'aide de l'option "--disk-cache-size".</translation>
+<translation id="9057444687284972605">Vous permet de spécifier une liste de formats d'URL indiquant les sites pour lesquels un certificat client est sélectionné automatiquement sur l'écran de connexion (dans le cadre où se trouve le flux SAML), si le site en demande un. Par exemple, vous pouvez configurer un certificat applicable à l'intégralité de l'appareil afin de le présenter au fournisseur d'identité SAML.
+
+      Cette valeur doit être un ensemble de dictionnaires convertis en chaînes JSON, chacun d'entre eux se présentant sous la forme <ph name="AUTO_SELECT_CERTIFICATE_FOR_URLS_EXAMPLE" />, où <ph name="URL_PATTERN_PLACEHOLDER" /> correspond à un schéma de paramètre de contenu. Le filtre <ph name="FILTER_PLACEHOLDER" /> limite les certificats client parmi lesquels le navigateur effectue une sélection automatique. Indépendamment du filtre, seuls les certificats correspondant à la demande de certificat du serveur sont sélectionnés.
+
+      Exemples pour l'utilisation de la section <ph name="FILTER_PLACEHOLDER" /> :
+
+      * Lorsque le filtre <ph name="FILTER_PLACEHOLDER" /> est défini sur <ph name="AUTO_SELECT_CERTIFICATE_FOR_URLS_FILTER_EXAMPLE" />, seuls les certificats client émis par un certificat dont la valeur CommonName est <ph name="ISSUER_CN_PLACEHOLDER" /> sont sélectionnés.
+
+      * Lorsque le filtre <ph name="FILTER_PLACEHOLDER" /> contient à la fois une section <ph name="ISSUER_STRING_VALUE" /> et une section <ph name="SUBJECT_STRING_VALUE" />, le certificat client doit satisfaire les deux conditions pour être sélectionné.
+
+      * Lorsque le filtre <ph name="FILTER_PLACEHOLDER" /> contient une section <ph name="SUBJECT_STRING_VALUE" /> avec la valeur <ph name="FILTER_STRING_ORGANIZATION" />, le certificat doit contenir au moins une organisation correspondant à la valeur spécifiée pour être sélectionné.
+
+      * Lorsque le filtre <ph name="FILTER_PLACEHOLDER" /> contient une section <ph name="SUBJECT_STRING_VALUE" /> avec la valeur <ph name="FILTER_STRING_ORGANIZATIONAL_UNIT" />, le certificat doit contenir au moins une unité organisationnelle correspondant à la valeur spécifiée pour être sélectionné.
+
+      * Lorsque le filtre <ph name="FILTER_PLACEHOLDER" /> est défini sur <ph name="EMPTY_DICTIONARY" />, la sélection de certificats client ne fait pas l'objet de restrictions supplémentaires. Notez que les filtres fournis par le serveur Web restent appliqués.
+
+
+
+      Si cette règle n'est pas définie, la sélection automatique n'est effectuée pour aucun site.
+
+      Pour en savoir plus sur les formats d'URL valides, veuillez consulter cette page : https://cloud.google.com/docs/chrome-enterprise/policies/url-patterns.</translation>
 <translation id="9062348747995618422">Permet d'établir une liste de formats d'URL indiquant les sites autorisés à exécuter le plug-in <ph name="FLASH_PLUGIN_NAME" />.
 
       Si cette règle n'est pas configurée, la règle <ph name="DEFAULT_PLUGINS_SETTING_POLICY_NAME" /> s'applique pour tous les sites, à condition qu'elle soit définie. Si ce n'est pas le cas, le paramètre spécifié par l'utilisateur s'applique.

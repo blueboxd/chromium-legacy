@@ -108,11 +108,9 @@ std::string VideoEncodeAccelerator::Config::AsHumanReadableString() const {
 }
 
 bool VideoEncodeAccelerator::Config::HasTemporalLayer() const {
-  for (const auto& sl : spatial_layers) {
-    if (sl.num_of_temporal_layers > 1u)
-      return true;
-  }
-  return false;
+  return std::any_of(
+      spatial_layers.begin(), spatial_layers.end(),
+      [](const SpatialLayer& sl) { return sl.num_of_temporal_layers > 1u; });
 }
 
 bool VideoEncodeAccelerator::Config::HasSpatialLayer() const {

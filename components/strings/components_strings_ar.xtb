@@ -123,6 +123,7 @@
 <translation id="1430915738399379752">طباعة</translation>
 <translation id="1442386063175183758">الطي على شكل بوابة يمينًا</translation>
 <translation id="1442987760062738829">ثقب</translation>
+<translation id="1447067628680007684">(x86_64)</translation>
 <translation id="1453974140256777690">‏يتم إرسال النص الذي تلصقه أو ترفقه إلى Google Cloud أو جهات خارجية للتحليل. على سبيل المثال، قد يتم فحص هذا الملف بحثًا عن بيانات حسّاسة.</translation>
 <translation id="1455413310270022028">ممحاة</translation>
 <translation id="1462245070427461050">JIS B9</translation>
@@ -1145,6 +1146,7 @@
 <translation id="5705882733397021510">رجوع</translation>
 <translation id="57094364128775171">اقتراح كلمة مرور قوية…</translation>
 <translation id="5710435578057952990">لم  يتمّ التحقق من هوية هذا الموقع.</translation>
+<translation id="571403275720188526">(arm64)</translation>
 <translation id="5720705177508910913">المستخدم الحالي</translation>
 <translation id="5728056243719941842">‏C5 (مغلف)</translation>
 <translation id="5730040223043577876">‏يُوصي Chrome بإعادة تحديد كلمة المرور في حال إعادة استخدامها في مواقع إلكترونية أخرى.</translation>
@@ -1194,6 +1196,7 @@
 <translation id="5921639886840618607">‏هل تريد حفظ البطاقة في حساب Google؟</translation>
 <translation id="5922853866070715753">أوشكْت على الانتهاء.</translation>
 <translation id="5932224571077948991">يعرض الموقع الإلكتروني إعلانات مضلِّلة أو غير مرغوب فيها</translation>
+<translation id="5938793338444039872">Troy</translation>
 <translation id="5946937721014915347">جارٍ فتح <ph name="SITE_NAME" />…</translation>
 <translation id="5951495562196540101">لا يمكن التسجيل باستخدام حساب المستهلك (الترخيص المجمّع متوفّر).</translation>
 <translation id="5967592137238574583">تعديل معلومات الاتصال</translation>
@@ -1361,6 +1364,7 @@
 <translation id="6646269444027925224">{COUNT,plural, =0{بدون}=1{‏من موقع إلكتروني واحد (لن يتم تسجيل خروجك من حسابك على Google)}two{‏من موقعي ويب (#) (لن يتم تسجيل خروجك من حسابك على Google)}few{‏من # مواقع إلكترونية (لن يتم تسجيل خروجك من حسابك على Google)}many{‏من # موقع إلكتروني (لن يتم تسجيل خروجك من حسابك على Google)}other{‏من # موقع إلكتروني (لن يتم تسجيل خروجك من حسابك على Google)}}</translation>
 <translation id="6652101503459149953">‏استخدام Windows Hello</translation>
 <translation id="6657585470893396449">كلمة المرور</translation>
+<translation id="666259744093848177">‏(معالج x86_64 مُترجَم)</translation>
 <translation id="6665553082534466207">عمل ثلاثة ثقوب يمينًا</translation>
 <translation id="6671697161687535275">‏هل تريد إزالة اقتراح النموذج من Chromium؟</translation>
 <translation id="6685834062052613830">الخروج وإكمال الإعداد</translation>

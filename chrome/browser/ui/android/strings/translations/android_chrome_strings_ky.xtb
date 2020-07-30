@@ -104,6 +104,7 @@
 <translation id="1853692000353488670">Жаңы жашыруун өтмөк</translation>
 <translation id="1856325424225101786">Жөнөкөй режим кайра коюлсунбу?</translation>
 <translation id="1868024384445905608">Chrome эми файлдарды ылдамыраак жүктөп баштады</translation>
+<translation id="1874760110381325409">Google аккаунтуңуз менен киресиз\n(Chrome шайкештирүү күйгүзүлбөйт)</translation>
 <translation id="1883903952484604915">Менин файлдарым</translation>
 <translation id="1919950603503897840">Байланыштарды тандоо</translation>
 <translation id="1925021887439448749">Жеке веб дарегин киргизиңиз</translation>
@@ -227,6 +228,7 @@
 <translation id="281504910091592009"><ph name="BEGIN_LINK" />Google аккаунтуңузда<ph name="END_LINK" /> сакталган сырсөздөрдү көрүп, башкарыңыз</translation>
 <translation id="2818669890320396765">Кыстармаларыңызды бардык түзмөктөрүңүздө колдонуу үчүн, аккаунтуңузга кирип, шайкештирүүнү күйгүзүңүз</translation>
 <translation id="2827278682606527653">Түрмөктөгү меню экрандын жарымына чейин ачылды</translation>
+<translation id="2841216154655874070">{NUM_DAYS,plural, =1{1 күн мурда текшерилди}other{# күн мурда текшерилди}}</translation>
 <translation id="2842985007712546952">Түпкү куржун</translation>
 <translation id="2860954141821109167">Телефон колдонмосу бул түзмөктө иштетилгенин текшериңиз</translation>
 <translation id="2870560284913253234">Сайт</translation>
@@ -702,6 +704,7 @@ Google аккаунтуңуздун башка Google кызматтарынан
 <translation id="6532866250404780454">Chrome'до кирген сайттарыңыз көрүнбөйт. Бардык сайттардагы таймерлер өчүрүлөт.</translation>
 <translation id="6534565668554028783">Google'дун жооп берүүсү өтө узакка созулуп кетти</translation>
 <translation id="6539092367496845964">Бир жерден ката кетти. Бир аздан кийин кайталап көрүңүз.</translation>
+<translation id="6541983376925655882">{NUM_HOURS,plural, =1{1 саат мурда текшерилди}other{# саат мурда текшерилди}}</translation>
 <translation id="6545017243486555795">Бардык дайын-даректерди өчүрүү</translation>
 <translation id="6560414384669816528">Sogou менен издөө</translation>
 <translation id="656065428026159829">Дагы көрүү</translation>
@@ -733,6 +736,7 @@ Google аккаунтуңуздун башка Google кызматтарынан
 <translation id="6697492270171225480">Барак табылбай жатканда окшош барактар сунушталсын</translation>
 <translation id="6698801883190606802">Шайкештирилген дайындарды башкаруу</translation>
 <translation id="6699370405921460408">Google серверлери сиз кирген барактарды оптималдаштырат.</translation>
+<translation id="670498945988402717">Кечээ текшерилди</translation>
 <translation id="6710213216561001401">Мурунку</translation>
 <translation id="671481426037969117"><ph name="FQDN" /> таймериңиздин убакыты бүттү. Ал эртең кайра башталат.</translation>
 <translation id="6738867403308150051">Жүктөлүп алынууда…</translation>
@@ -771,6 +775,7 @@ Google аккаунтуңуздун башка Google кызматтарынан
 <translation id="7063006564040364415">Шайкештештирүү серверине туташкан жок.</translation>
 <translation id="7071521146534760487">Аккаунтту башкаруу</translation>
 <translation id="7077143737582773186">SD-карта</translation>
+<translation id="7080806333218412752">URL даректерин текшерүү үчүн Коопсуз серептөөгө жөнөтөт. Барактардын чакан үлгүлөрүн, жүктөлүп алынган файлдарды, кеңейтүүлөрдүн аракеттерин жана тутум маалыматын жөнөтүп, жаңы коркунучтарды аныктоого жардам берет. Google колдонмолорунда коопсуздугуңузду коргоо үчүн аккаунтуңуз менен кирип турганда бул маалыматты Google аккаунтуңуз менен байланыштырат.</translation>
 <translation id="7121362699166175603">Таржымал жана дарек тилкесиндеги автоматтык түрдө бүтүрүлгөн сөздөр тазаланат. Google аккаунтуңуздун серептөө таржымалынын башка түрлөрү <ph name="BEGIN_LINK" />myactivity.google.com<ph name="END_LINK" /> дарегинде болушу мүмкүн.</translation>
 <translation id="7128355412245153445">Башкы бет баскычын таптаган сайын эң көп колдонгон сайттарыңыз жана акыркы окуяларыңыз көрүнөт</translation>
 <translation id="7138678301420049075">Башка</translation>
@@ -780,6 +785,7 @@ Google аккаунтуңуздун башка Google кызматтарынан
 <translation id="7173114856073700355">Жөндөөлөрдү ачуу</translation>
 <translation id="7177466738963138057">Муну кийинчерээк Жөндөөлөрдөн өзгөртсөңүз болот</translation>
 <translation id="7180611975245234373">Жаңылоо</translation>
+<translation id="7187993566681480880">Аккаунтуңузга киргенде Chrome'до жана башка Google колдонмолорунда коопсуздугуңузду коргоп турат.</translation>
 <translation id="7189372733857464326">Google Play кызматтары жаңыртылууда</translation>
 <translation id="7191430249889272776">Өтмөк фондо ачылды.</translation>
 <translation id="723171743924126238">Сүрөттөрдү тандаңыз</translation>
@@ -891,6 +897,7 @@ Google аккаунтуңуздун башка Google кызматтарынан
 <translation id="8027863900915310177">Кайда жүктөлүп алынарын тандаңыз</translation>
 <translation id="8035133914807600019">Жаңы куржун…</translation>
 <translation id="8037750541064988519"><ph name="DAYS" /> күн калды</translation>
+<translation id="8037801708772278989">Жаңы эле текшерилди</translation>
 <translation id="804335162455518893">SD-карта табылган жок</translation>
 <translation id="805047784848435650">Серептөө таржымалыңыздын негизинде</translation>
 <translation id="8051695050440594747"><ph name="MEGABYTES" />Мб жеткиликтүү</translation>
@@ -1031,6 +1038,7 @@ Google аккаунтуңуздун башка Google кызматтарынан
 <translation id="9137013805542155359">Түпверсиясын көрсөтүү</translation>
 <translation id="9155898266292537608">Ошондой эле сөзду таптап коюп, издесеңиз болот</translation>
 <translation id="9169507124922466868">Чабыттоо таржымалынын жарымы жабык</translation>
+<translation id="9199368092038462496">{NUM_MINS,plural, =1{1 мүнөт мурда текшерилди}other{# мүнөт мурда текшерилди}}</translation>
 <translation id="9204836675896933765">1 файл калды</translation>
 <translation id="9206873250291191720">А</translation>
 <translation id="9209888181064652401">Чалуу аткарылбай жатат</translation>

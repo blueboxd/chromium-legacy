@@ -13,7 +13,7 @@
 #include "net/der/encode_values.h"
 #include "net/der/parse_values.h"
 
-#if defined(OS_MACOSX) && !defined(OS_IOS)
+#if defined(OS_MAC)
 #include "net/cert/cert_verify_proc_mac.h"
 #include "net/cert/internal/trust_store_mac.h"
 #endif
@@ -74,7 +74,7 @@ void TrialComparisonCertVerifierMojo::OnSendTrialReport(
     const net::CertVerifyResult& trial_result) {
   network::mojom::CertVerifierDebugInfoPtr debug_info =
       network::mojom::CertVerifierDebugInfo::New();
-#if defined(OS_MACOSX) && !defined(OS_IOS)
+#if defined(OS_MAC)
   auto* mac_platform_debug_info =
       net::CertVerifyProcMac::ResultDebugData::Get(&primary_result);
   if (mac_platform_debug_info) {

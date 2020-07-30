@@ -7,501 +7,601 @@ This test verifies that huge CSS grids can be highlighted with the grid Highligh
       "columnTrackSizes": [
         {
           "computedSize": 5,
+          "authoredSize": "5px",
           "x": 10.5,
           "y": 8
         },
         {
           "computedSize": 5,
+          "authoredSize": "5px",
           "x": 20.5,
           "y": 8
         },
         {
           "computedSize": 5,
+          "authoredSize": "5px",
           "x": 30.5,
           "y": 8
         },
         {
           "computedSize": 5,
+          "authoredSize": "5px",
           "x": 40.5,
           "y": 8
         },
         {
           "computedSize": 5,
+          "authoredSize": "5px",
           "x": 50.5,
           "y": 8
         },
         {
           "computedSize": 5,
+          "authoredSize": "5px",
           "x": 60.5,
           "y": 8
         },
         {
           "computedSize": 5,
+          "authoredSize": "5px",
           "x": 70.5,
           "y": 8
         },
         {
           "computedSize": 5,
+          "authoredSize": "5px",
           "x": 80.5,
           "y": 8
         },
         {
           "computedSize": 5,
+          "authoredSize": "5px",
           "x": 90.5,
           "y": 8
         },
         {
           "computedSize": 5,
+          "authoredSize": "5px",
           "x": 100.5,
           "y": 8
         },
         {
           "computedSize": 5,
+          "authoredSize": "5px",
           "x": 110.5,
           "y": 8
         },
         {
           "computedSize": 5,
+          "authoredSize": "5px",
           "x": 120.5,
           "y": 8
         },
         {
           "computedSize": 5,
+          "authoredSize": "5px",
           "x": 130.5,
           "y": 8
         },
         {
           "computedSize": 5,
+          "authoredSize": "5px",
           "x": 140.5,
           "y": 8
         },
         {
           "computedSize": 5,
+          "authoredSize": "5px",
           "x": 150.5,
           "y": 8
         },
         {
           "computedSize": 5,
+          "authoredSize": "5px",
           "x": 160.5,
           "y": 8
         },
         {
           "computedSize": 5,
+          "authoredSize": "5px",
           "x": 170.5,
           "y": 8
         },
         {
           "computedSize": 5,
+          "authoredSize": "5px",
           "x": 180.5,
           "y": 8
         },
         {
           "computedSize": 5,
+          "authoredSize": "5px",
           "x": 190.5,
           "y": 8
         },
         {
           "computedSize": 5,
+          "authoredSize": "5px",
           "x": 200.5,
           "y": 8
         },
         {
           "computedSize": 5,
+          "authoredSize": "5px",
           "x": 210.5,
           "y": 8
         },
         {
           "computedSize": 5,
+          "authoredSize": "5px",
           "x": 220.5,
           "y": 8
         },
         {
           "computedSize": 5,
+          "authoredSize": "5px",
           "x": 230.5,
           "y": 8
         },
         {
           "computedSize": 5,
+          "authoredSize": "5px",
           "x": 240.5,
           "y": 8
         },
         {
           "computedSize": 5,
+          "authoredSize": "5px",
           "x": 250.5,
           "y": 8
         },
         {
           "computedSize": 5,
+          "authoredSize": "5px",
           "x": 260.5,
           "y": 8
         },
         {
           "computedSize": 5,
+          "authoredSize": "5px",
           "x": 270.5,
           "y": 8
         },
         {
           "computedSize": 5,
+          "authoredSize": "5px",
           "x": 280.5,
           "y": 8
         },
         {
           "computedSize": 5,
+          "authoredSize": "5px",
           "x": 290.5,
           "y": 8
         },
         {
           "computedSize": 5,
+          "authoredSize": "5px",
           "x": 300.5,
           "y": 8
         },
         {
           "computedSize": 5,
+          "authoredSize": "5px",
           "x": 310.5,
           "y": 8
         },
         {
           "computedSize": 5,
+          "authoredSize": "5px",
           "x": 320.5,
           "y": 8
         },
         {
           "computedSize": 5,
+          "authoredSize": "5px",
           "x": 330.5,
           "y": 8
         },
         {
           "computedSize": 5,
+          "authoredSize": "5px",
           "x": 340.5,
           "y": 8
         },
         {
           "computedSize": 5,
+          "authoredSize": "5px",
           "x": 350.5,
           "y": 8
         },
         {
           "computedSize": 5,
+          "authoredSize": "5px",
           "x": 360.5,
           "y": 8
         },
         {
           "computedSize": 5,
+          "authoredSize": "5px",
           "x": 370.5,
           "y": 8
         },
         {
           "computedSize": 5,
+          "authoredSize": "5px",
           "x": 380.5,
           "y": 8
         },
         {
           "computedSize": 5,
+          "authoredSize": "5px",
           "x": 390.5,
           "y": 8
         },
         {
           "computedSize": 5,
+          "authoredSize": "5px",
           "x": 400.5,
           "y": 8
         },
         {
           "computedSize": 5,
+          "authoredSize": "5px",
           "x": 410.5,
           "y": 8
         },
         {
           "computedSize": 5,
+          "authoredSize": "5px",
           "x": 420.5,
           "y": 8
         },
         {
           "computedSize": 5,
+          "authoredSize": "5px",
           "x": 430.5,
           "y": 8
         },
         {
           "computedSize": 5,
+          "authoredSize": "5px",
           "x": 440.5,
           "y": 8
         },
         {
           "computedSize": 5,
+          "authoredSize": "5px",
           "x": 450.5,
           "y": 8
         },
         {
           "computedSize": 5,
+          "authoredSize": "5px",
           "x": 460.5,
           "y": 8
         },
         {
           "computedSize": 5,
+          "authoredSize": "5px",
           "x": 470.5,
           "y": 8
         },
         {
           "computedSize": 5,
+          "authoredSize": "5px",
           "x": 480.5,
           "y": 8
         },
         {
           "computedSize": 5,
+          "authoredSize": "5px",
           "x": 490.5,
           "y": 8
         },
         {
           "computedSize": 5,
+          "authoredSize": "5px",
           "x": 500.5,
           "y": 8
         },
         {
           "computedSize": 5,
+          "authoredSize": "5px",
           "x": 510.5,
           "y": 8
         },
         {
           "computedSize": 5,
+          "authoredSize": "5px",
           "x": 520.5,
           "y": 8
         },
         {
           "computedSize": 5,
+          "authoredSize": "5px",
           "x": 530.5,
           "y": 8
         },
         {
           "computedSize": 5,
+          "authoredSize": "5px",
           "x": 540.5,
           "y": 8
         },
         {
           "computedSize": 5,
+          "authoredSize": "5px",
           "x": 550.5,
           "y": 8
         },
         {
           "computedSize": 5,
+          "authoredSize": "5px",
           "x": 560.5,
           "y": 8
         },
         {
           "computedSize": 5,
+          "authoredSize": "5px",
           "x": 570.5,
           "y": 8
         },
         {
           "computedSize": 5,
+          "authoredSize": "5px",
           "x": 580.5,
           "y": 8
         },
         {
           "computedSize": 5,
+          "authoredSize": "5px",
           "x": 590.5,
           "y": 8
         },
         {
           "computedSize": 5,
+          "authoredSize": "5px",
           "x": 600.5,
           "y": 8
         },
         {
           "computedSize": 5,
+          "authoredSize": "5px",
           "x": 610.5,
           "y": 8
         },
         {
           "computedSize": 5,
+          "authoredSize": "5px",
           "x": 620.5,
           "y": 8
         },
         {
           "computedSize": 5,
+          "authoredSize": "5px",
           "x": 630.5,
           "y": 8
         },
         {
           "computedSize": 5,
+          "authoredSize": "5px",
           "x": 640.5,
           "y": 8
         },
         {
           "computedSize": 5,
+          "authoredSize": "5px",
           "x": 650.5,
           "y": 8
         },
         {
           "computedSize": 5,
+          "authoredSize": "5px",
           "x": 660.5,
           "y": 8
         },
         {
           "computedSize": 5,
+          "authoredSize": "5px",
           "x": 670.5,
           "y": 8
         },
         {
           "computedSize": 5,
+          "authoredSize": "5px",
           "x": 680.5,
           "y": 8
         },
         {
           "computedSize": 5,
+          "authoredSize": "5px",
           "x": 690.5,
           "y": 8
         },
         {
           "computedSize": 5,
+          "authoredSize": "5px",
           "x": 700.5,
           "y": 8
         },
         {
           "computedSize": 5,
+          "authoredSize": "5px",
           "x": 710.5,
           "y": 8
         },
         {
           "computedSize": 5,
+          "authoredSize": "5px",
           "x": 720.5,
           "y": 8
         },
         {
           "computedSize": 5,
+          "authoredSize": "5px",
           "x": 730.5,
           "y": 8
         },
         {
           "computedSize": 5,
+          "authoredSize": "5px",
           "x": 740.5,
           "y": 8
         },
         {
           "computedSize": 5,
+          "authoredSize": "5px",
           "x": 750.5,
           "y": 8
         },
         {
           "computedSize": 5,
+          "authoredSize": "5px",
           "x": 760.5,
           "y": 8
         },
         {
           "computedSize": 5,
+          "authoredSize": "5px",
           "x": 770.5,
           "y": 8
         },
         {
           "computedSize": 5,
+          "authoredSize": "5px",
           "x": 780.5,
           "y": 8
         },
         {
           "computedSize": 5,
+          "authoredSize": "5px",
           "x": 790.5,
           "y": 8
         },
         {
           "computedSize": 5,
+          "authoredSize": "5px",
           "x": 800.5,
           "y": 8
         },
         {
           "computedSize": 5,
+          "authoredSize": "5px",
           "x": 810.5,
           "y": 8
         },
         {
           "computedSize": 5,
+          "authoredSize": "5px",
           "x": 820.5,
           "y": 8
         },
         {
           "computedSize": 5,
+          "authoredSize": "5px",
           "x": 830.5,
           "y": 8
         },
         {
           "computedSize": 5,
+          "authoredSize": "5px",
           "x": 840.5,
           "y": 8
         },
         {
           "computedSize": 5,
+          "authoredSize": "5px",
           "x": 850.5,
           "y": 8
         },
         {
           "computedSize": 5,
+          "authoredSize": "5px",
           "x": 860.5,
           "y": 8
         },
         {
           "computedSize": 5,
+          "authoredSize": "5px",
           "x": 870.5,
           "y": 8
         },
         {
           "computedSize": 5,
+          "authoredSize": "5px",
           "x": 880.5,
           "y": 8
         },
         {
           "computedSize": 5,
+          "authoredSize": "5px",
           "x": 890.5,
           "y": 8
         },
         {
           "computedSize": 5,
+          "authoredSize": "5px",
           "x": 900.5,
           "y": 8
         },
         {
           "computedSize": 5,
+          "authoredSize": "5px",
           "x": 910.5,
           "y": 8
         },
         {
           "computedSize": 5,
+          "authoredSize": "5px",
           "x": 920.5,
           "y": 8
         },
         {
           "computedSize": 5,
+          "authoredSize": "5px",
           "x": 930.5,
           "y": 8
         },
         {
           "computedSize": 5,
+          "authoredSize": "5px",
           "x": 940.5,
           "y": 8
         },
         {
           "computedSize": 5,
+          "authoredSize": "5px",
           "x": 950.5,
           "y": 8
         },
         {
           "computedSize": 5,
+          "authoredSize": "5px",
           "x": 960.5,
           "y": 8
         },
         {
           "computedSize": 5,
+          "authoredSize": "5px",
           "x": 970.5,
           "y": 8
         },
         {
           "computedSize": 5,
+          "authoredSize": "5px",
           "x": 980.5,
           "y": 8
         },
         {
           "computedSize": 5,
+          "authoredSize": "5px",
           "x": 990.5,
           "y": 8
         },
         {
           "computedSize": 5,
+          "authoredSize": "5px",
           "x": 1000.5,
           "y": 8
         }
@@ -509,501 +609,601 @@ This test verifies that huge CSS grids can be highlighted with the grid Highligh
       "rowTrackSizes": [
         {
           "computedSize": 5,
+          "authoredSize": "5px",
           "x": 8,
           "y": 10.5
         },
         {
           "computedSize": 5,
+          "authoredSize": "5px",
           "x": 8,
           "y": 20.5
         },
         {
           "computedSize": 5,
+          "authoredSize": "5px",
           "x": 8,
           "y": 30.5
         },
         {
           "computedSize": 5,
+          "authoredSize": "5px",
           "x": 8,
           "y": 40.5
         },
         {
           "computedSize": 5,
+          "authoredSize": "5px",
           "x": 8,
           "y": 50.5
         },
         {
           "computedSize": 5,
+          "authoredSize": "5px",
           "x": 8,
           "y": 60.5
         },
         {
           "computedSize": 5,
+          "authoredSize": "5px",
           "x": 8,
           "y": 70.5
         },
         {
           "computedSize": 5,
+          "authoredSize": "5px",
           "x": 8,
           "y": 80.5
         },
         {
           "computedSize": 5,
+          "authoredSize": "5px",
           "x": 8,
           "y": 90.5
         },
         {
           "computedSize": 5,
+          "authoredSize": "5px",
           "x": 8,
           "y": 100.5
         },
         {
           "computedSize": 5,
+          "authoredSize": "5px",
           "x": 8,
           "y": 110.5
         },
         {
           "computedSize": 5,
+          "authoredSize": "5px",
           "x": 8,
           "y": 120.5
         },
         {
           "computedSize": 5,
+          "authoredSize": "5px",
           "x": 8,
           "y": 130.5
         },
         {
           "computedSize": 5,
+          "authoredSize": "5px",
           "x": 8,
           "y": 140.5
         },
         {
           "computedSize": 5,
+          "authoredSize": "5px",
           "x": 8,
           "y": 150.5
         },
         {
           "computedSize": 5,
+          "authoredSize": "5px",
           "x": 8,
           "y": 160.5
         },
         {
           "computedSize": 5,
+          "authoredSize": "5px",
           "x": 8,
           "y": 170.5
         },
         {
           "computedSize": 5,
+          "authoredSize": "5px",
           "x": 8,
           "y": 180.5
         },
         {
           "computedSize": 5,
+          "authoredSize": "5px",
           "x": 8,
           "y": 190.5
         },
         {
           "computedSize": 5,
+          "authoredSize": "5px",
           "x": 8,
           "y": 200.5
         },
         {
           "computedSize": 5,
+          "authoredSize": "5px",
           "x": 8,
           "y": 210.5
         },
         {
           "computedSize": 5,
+          "authoredSize": "5px",
           "x": 8,
           "y": 220.5
         },
         {
           "computedSize": 5,
+          "authoredSize": "5px",
           "x": 8,
           "y": 230.5
         },
         {
           "computedSize": 5,
+          "authoredSize": "5px",
           "x": 8,
           "y": 240.5
         },
         {
           "computedSize": 5,
+          "authoredSize": "5px",
           "x": 8,
           "y": 250.5
         },
         {
           "computedSize": 5,
+          "authoredSize": "5px",
           "x": 8,
           "y": 260.5
         },
         {
           "computedSize": 5,
+          "authoredSize": "5px",
           "x": 8,
           "y": 270.5
         },
         {
           "computedSize": 5,
+          "authoredSize": "5px",
           "x": 8,
           "y": 280.5
         },
         {
           "computedSize": 5,
+          "authoredSize": "5px",
           "x": 8,
           "y": 290.5
         },
         {
           "computedSize": 5,
+          "authoredSize": "5px",
           "x": 8,
           "y": 300.5
         },
         {
           "computedSize": 5,
+          "authoredSize": "5px",
           "x": 8,
           "y": 310.5
         },
         {
           "computedSize": 5,
+          "authoredSize": "5px",
           "x": 8,
           "y": 320.5
         },
         {
           "computedSize": 5,
+          "authoredSize": "5px",
           "x": 8,
           "y": 330.5
         },
         {
           "computedSize": 5,
+          "authoredSize": "5px",
           "x": 8,
           "y": 340.5
         },
         {
           "computedSize": 5,
+          "authoredSize": "5px",
           "x": 8,
           "y": 350.5
         },
         {
           "computedSize": 5,
+          "authoredSize": "5px",
           "x": 8,
           "y": 360.5
         },
         {
           "computedSize": 5,
+          "authoredSize": "5px",
           "x": 8,
           "y": 370.5
         },
         {
           "computedSize": 5,
+          "authoredSize": "5px",
           "x": 8,
           "y": 380.5
         },
         {
           "computedSize": 5,
+          "authoredSize": "5px",
           "x": 8,
           "y": 390.5
         },
         {
           "computedSize": 5,
+          "authoredSize": "5px",
           "x": 8,
           "y": 400.5
         },
         {
           "computedSize": 5,
+          "authoredSize": "5px",
           "x": 8,
           "y": 410.5
         },
         {
           "computedSize": 5,
+          "authoredSize": "5px",
           "x": 8,
           "y": 420.5
         },
         {
           "computedSize": 5,
+          "authoredSize": "5px",
           "x": 8,
           "y": 430.5
         },
         {
           "computedSize": 5,
+          "authoredSize": "5px",
           "x": 8,
           "y": 440.5
         },
         {
           "computedSize": 5,
+          "authoredSize": "5px",
           "x": 8,
           "y": 450.5
         },
         {
           "computedSize": 5,
+          "authoredSize": "5px",
           "x": 8,
           "y": 460.5
         },
         {
           "computedSize": 5,
+          "authoredSize": "5px",
           "x": 8,
           "y": 470.5
         },
         {
           "computedSize": 5,
+          "authoredSize": "5px",
           "x": 8,
           "y": 480.5
         },
         {
           "computedSize": 5,
+          "authoredSize": "5px",
           "x": 8,
           "y": 490.5
         },
         {
           "computedSize": 5,
+          "authoredSize": "5px",
           "x": 8,
           "y": 500.5
         },
         {
           "computedSize": 5,
+          "authoredSize": "5px",
           "x": 8,
           "y": 510.5
         },
         {
           "computedSize": 5,
+          "authoredSize": "5px",
           "x": 8,
           "y": 520.5
         },
         {
           "computedSize": 5,
+          "authoredSize": "5px",
           "x": 8,
           "y": 530.5
         },
         {
           "computedSize": 5,
+          "authoredSize": "5px",
           "x": 8,
           "y": 540.5
         },
         {
           "computedSize": 5,
+          "authoredSize": "5px",
           "x": 8,
           "y": 550.5
         },
         {
           "computedSize": 5,
+          "authoredSize": "5px",
           "x": 8,
           "y": 560.5
         },
         {
           "computedSize": 5,
+          "authoredSize": "5px",
           "x": 8,
           "y": 570.5
         },
         {
           "computedSize": 5,
+          "authoredSize": "5px",
           "x": 8,
           "y": 580.5
         },
         {
           "computedSize": 5,
+          "authoredSize": "5px",
           "x": 8,
           "y": 590.5
         },
         {
           "computedSize": 5,
+          "authoredSize": "5px",
           "x": 8,
           "y": 600.5
         },
         {
           "computedSize": 5,
+          "authoredSize": "5px",
           "x": 8,
           "y": 610.5
         },
         {
           "computedSize": 5,
+          "authoredSize": "5px",
           "x": 8,
           "y": 620.5
         },
         {
           "computedSize": 5,
+          "authoredSize": "5px",
           "x": 8,
           "y": 630.5
         },
         {
           "computedSize": 5,
+          "authoredSize": "5px",
           "x": 8,
           "y": 640.5
         },
         {
           "computedSize": 5,
+          "authoredSize": "5px",
           "x": 8,
           "y": 650.5
         },
         {
           "computedSize": 5,
+          "authoredSize": "5px",
           "x": 8,
           "y": 660.5
         },
         {
           "computedSize": 5,
+          "authoredSize": "5px",
           "x": 8,
           "y": 670.5
         },
         {
           "computedSize": 5,
+          "authoredSize": "5px",
           "x": 8,
           "y": 680.5
         },
         {
           "computedSize": 5,
+          "authoredSize": "5px",
           "x": 8,
           "y": 690.5
         },
         {
           "computedSize": 5,
+          "authoredSize": "5px",
           "x": 8,
           "y": 700.5
         },
         {
           "computedSize": 5,
+          "authoredSize": "5px",
           "x": 8,
           "y": 710.5
         },
         {
           "computedSize": 5,
+          "authoredSize": "5px",
           "x": 8,
           "y": 720.5
         },
         {
           "computedSize": 5,
+          "authoredSize": "5px",
           "x": 8,
           "y": 730.5
         },
         {
           "computedSize": 5,
+          "authoredSize": "5px",
           "x": 8,
           "y": 740.5
         },
         {
           "computedSize": 5,
+          "authoredSize": "5px",
           "x": 8,
           "y": 750.5
         },
         {
           "computedSize": 5,
+          "authoredSize": "5px",
           "x": 8,
           "y": 760.5
         },
         {
           "computedSize": 5,
+          "authoredSize": "5px",
           "x": 8,
           "y": 770.5
         },
         {
           "computedSize": 5,
+          "authoredSize": "5px",
           "x": 8,
           "y": 780.5
         },
         {
           "computedSize": 5,
+          "authoredSize": "5px",
           "x": 8,
           "y": 790.5
         },
         {
           "computedSize": 5,
+          "authoredSize": "5px",
           "x": 8,
           "y": 800.5
         },
         {
           "computedSize": 5,
+          "authoredSize": "5px",
           "x": 8,
           "y": 810.5
         },
         {
           "computedSize": 5,
+          "authoredSize": "5px",
           "x": 8,
           "y": 820.5
         },
         {
           "computedSize": 5,
+          "authoredSize": "5px",
           "x": 8,
           "y": 830.5
         },
         {
           "computedSize": 5,
+          "authoredSize": "5px",
           "x": 8,
           "y": 840.5
         },
         {
           "computedSize": 5,
+          "authoredSize": "5px",
           "x": 8,
           "y": 850.5
         },
         {
           "computedSize": 5,
+          "authoredSize": "5px",
           "x": 8,
           "y": 860.5
         },
         {
           "computedSize": 5,
+          "authoredSize": "5px",
           "x": 8,
           "y": 870.5
         },
         {
           "computedSize": 5,
+          "authoredSize": "5px",
           "x": 8,
           "y": 880.5
         },
         {
           "computedSize": 5,
+          "authoredSize": "5px",
           "x": 8,
           "y": 890.5
         },
         {
           "computedSize": 5,
+          "authoredSize": "5px",
           "x": 8,
           "y": 900.5
         },
         {
           "computedSize": 5,
+          "authoredSize": "5px",
           "x": 8,
           "y": 910.5
         },
         {
           "computedSize": 5,
+          "authoredSize": "5px",
           "x": 8,
           "y": 920.5
         },
         {
           "computedSize": 5,
+          "authoredSize": "5px",
           "x": 8,
           "y": 930.5
         },
         {
           "computedSize": 5,
+          "authoredSize": "5px",
           "x": 8,
           "y": 940.5
         },
         {
           "computedSize": 5,
+          "authoredSize": "5px",
           "x": 8,
           "y": 950.5
         },
         {
           "computedSize": 5,
+          "authoredSize": "5px",
           "x": 8,
           "y": 960.5
         },
         {
           "computedSize": 5,
+          "authoredSize": "5px",
           "x": 8,
           "y": 970.5
         },
         {
           "computedSize": 5,
+          "authoredSize": "5px",
           "x": 8,
           "y": 980.5
         },
         {
           "computedSize": 5,
+          "authoredSize": "5px",
           "x": 8,
           "y": 990.5
         },
         {
           "computedSize": 5,
+          "authoredSize": "5px",
           "x": 8,
           "y": 1000.5
         }

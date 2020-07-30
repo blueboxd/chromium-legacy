@@ -1864,7 +1864,7 @@ Puoi gestire le impostazioni dell'account installando l'app Family Link su quest
 <translation id="3289668031376215426">Maiuscole automatiche</translation>
 <translation id="3289856944988573801">Per verificare la disponibilità di aggiornamenti, utilizza una rete Ethernet o Wi-Fi.</translation>
 <translation id="3290356915286466215">Non protetta</translation>
-<translation id="3292264722181603749"><ph name="DOMAIN" /> sta disattivando il debug ADB, che ripristinerà il dispositivo. Effettua il backup dei tuoi file prima di riavviare il dispositivo.</translation>
+<translation id="3292264722181603749"><ph name="DOMAIN" /> sta disattivando il debug ADB. Questa operazione ripristinerà il dispositivo. Effettua il backup dei tuoi file prima di riavviare il dispositivo.</translation>
 <translation id="3293644607209440645">Invia questa pagina</translation>
 <translation id="32939749466444286">Il container Linux non è stato avviato. Riprova.</translation>
 <translation id="3294437725009624529">Ospite</translation>
@@ -4052,7 +4052,6 @@ Puoi gestire le impostazioni dell'account installando l'app Family Link su quest
 <translation id="6056710589053485679">Ricaricamento normale</translation>
 <translation id="6057312498756061228">Il file è troppo grande per essere sottoposto a un controllo di sicurezza. La dimensione massima dei file che puoi aprire è di 50 MB.</translation>
 <translation id="6057381398996433816">A questo sito è stato impedito di usare i sensori di movimento e della luce.</translation>
-<translation id="6058567592298841668">Plugin Virtual Machine: <ph name="PLUGIN_VM_NAME" /></translation>
 <translation id="6059652578941944813">Gerarchia certificati</translation>
 <translation id="6059925163896151826">Dispositivi USB</translation>
 <translation id="6061882183774845124">Invia link ai tuoi dispositivi</translation>
@@ -4481,6 +4480,7 @@ Puoi gestire le impostazioni dell'account installando l'app Family Link su quest
 <translation id="6602956230557165253">Utilizza i tasti freccia sinistra e destra per spostarti.</translation>
 <translation id="6605847144724004692">Nessuna valutazione disponibile.</translation>
 <translation id="6607831829715835317">A&amp;ltri strumenti</translation>
+<translation id="6608012008902909398">Mostra i dettagli del controllo software del dispositivo</translation>
 <translation id="6611972847767394631">Trova le tue schede qui</translation>
 <translation id="6612358246767739896">Contenuti protetti</translation>
 <translation id="6615455863669487791">Mostrami</translation>

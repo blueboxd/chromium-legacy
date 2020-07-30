@@ -28,6 +28,7 @@
 #include "chrome/browser/password_manager/password_store_factory.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/common/extensions/api/passwords_private.h"
+#include "chrome/common/url_constants.h"
 #include "chrome/grit/generated_resources.h"
 #include "components/autofill/core/common/password_form.h"
 #include "components/keyed_service/core/service_access_type.h"
@@ -39,6 +40,7 @@
 #include "components/password_manager/core/browser/ui/compromised_credentials_manager.h"
 #include "components/password_manager/core/browser/ui/credential_utils.h"
 #include "components/password_manager/core/browser/ui/saved_passwords_presenter.h"
+#include "components/password_manager/core/common/password_manager_features.h"
 #include "components/password_manager/core/common/password_manager_pref_names.h"
 #include "components/prefs/pref_service.h"
 #include "components/url_formatter/elide_url.h"
@@ -64,6 +66,21 @@ using CompromisedCredentialsView =
 using SavedPasswordsView =
     password_manager::SavedPasswordsPresenter::SavedPasswordsView;
 using State = password_manager::BulkLeakCheckService::State;
+
+std::unique_ptr<std::string> GetChangePasswordUrl(const std::string& url) {
+  // If the WellKnownChangePassword flag is enabled, replace the
+  // change_password_url to the well-known path. The
+  // WellKnownChangePasswordNavigationThrottle will continue process it.
+  if (!base::FeatureList::IsEnabled(
+          password_manager::features::kWellKnownChangePassword)) {
+    return std::make_unique<std::string>(url);
+  }
+  GURL origin = GURL(url).GetOrigin();
+  GURL::Replacements replacements;
+  replacements.SetPathStr(chrome::kWellKnownChangePasswordPath);
+  return std::make_unique<std::string>(
+      origin.ReplaceComponents(replacements).spec());
+}
 
 }  // namespace
 
@@ -266,7 +283,7 @@ PasswordCheckDelegate::GetCompromisedCredentials() {
         api_credential.formatted_origin = android_form.app_display_name;
         api_credential.detailed_origin = android_form.app_display_name;
         api_credential.change_password_url =
-            std::make_unique<std::string>(android_form.affiliated_web_realm);
+            GetChangePasswordUrl(android_form.affiliated_web_realm);
       } else {
         // In case no affiliation information could be obtained show the
         // formatted package name to the user. An empty change_password_url will
@@ -290,7 +307,7 @@ PasswordCheckDelegate::GetCompromisedCredentials() {
           base::UTF16ToUTF8(url_formatter::FormatUrlForSecurityDisplay(
               credential.url.GetOrigin()));
       api_credential.change_password_url =
-          std::make_unique<std::string>(credential.url.GetOrigin().spec());
+          GetChangePasswordUrl(credential.url.GetOrigin().spec());
     }
 
     api_credential.id =

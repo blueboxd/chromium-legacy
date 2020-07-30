@@ -104,6 +104,7 @@
 <translation id="1853692000353488670">新しいシークレット タブ</translation>
 <translation id="1856325424225101786">ライトモードをリセットしますか？</translation>
 <translation id="1868024384445905608">Chrome でのファイルのダウンロードがさらに速くなりました</translation>
+<translation id="1874760110381325409">Google アカウントでログインします\n（Chrome 同期は有効になりません）</translation>
 <translation id="1883903952484604915">マイファイル</translation>
 <translation id="1919950603503897840">連絡先を選択</translation>
 <translation id="1925021887439448749">カスタムのウェブアドレスを入力</translation>
@@ -227,6 +228,7 @@
 <translation id="281504910091592009"><ph name="BEGIN_LINK" />Google アカウント<ph name="END_LINK" />での保存パスワードの表示と管理</translation>
 <translation id="2818669890320396765">お使いのどのデバイスでも同じブックマークを使用するには、ログインして同期を有効にします</translation>
 <translation id="2827278682606527653">フィードカード メニューが画面の下半分に開いています</translation>
+<translation id="2841216154655874070">{NUM_DAYS,plural, =1{前回の確認: 1 日前}other{前回の確認: # 日前}}</translation>
 <translation id="2842985007712546952">親フォルダ</translation>
 <translation id="2860954141821109167">このデバイスで通話アプリが有効になっていることを確認してください</translation>
 <translation id="2870560284913253234">サイト</translation>
@@ -702,6 +704,7 @@
 <translation id="6532866250404780454">Chrome でアクセスしたサイトは表示されなくなり、サイトに設定したタイマーはすべて削除されます。</translation>
 <translation id="6534565668554028783">Google からの応答に時間がかかりすぎています</translation>
 <translation id="6539092367496845964">エラーが発生しました。しばらくしてからもう一度お試しください。</translation>
+<translation id="6541983376925655882">{NUM_HOURS,plural, =1{前回の確認: 1 時間前}other{前回の確認: # 時間前}}</translation>
 <translation id="6545017243486555795">すべてのデータを削除</translation>
 <translation id="6560414384669816528">Sogou で検索します</translation>
 <translation id="656065428026159829">もっと見る</translation>
@@ -733,6 +736,7 @@
 <translation id="6697492270171225480">ページが見つからない場合に類似のページを候補として表示する</translation>
 <translation id="6698801883190606802">同期データを管理</translation>
 <translation id="6699370405921460408">アクセスするページを Google のサーバーで最適化します。</translation>
+<translation id="670498945988402717">前回の確認: 昨日</translation>
 <translation id="6710213216561001401">前へ</translation>
 <translation id="671481426037969117"><ph name="FQDN" /> のタイマーが切れました。タイマーはまた明日開始されます。</translation>
 <translation id="6738867403308150051">ダウンロードしています…</translation>
@@ -771,6 +775,7 @@
 <translation id="7063006564040364415">同期サーバーに接続できませんでした。</translation>
 <translation id="7071521146534760487">アカウントを管理</translation>
 <translation id="7077143737582773186">SD カード</translation>
+<translation id="7080806333218412752">セーフ ブラウジングに URL を送信して安全性を確認します。また、新たな脅威を発見するため、ページ、ダウンロード、拡張機能のアクティビティ、システム情報の一部のサンプルも送信します。ログイン時には、このデータを一時的に Google アカウントにリンクして、すべての Google アプリを安全に利用できるように保護します。</translation>
 <translation id="7121362699166175603">アドレスバーの履歴とオートコンプリートを削除します。お使いの Google アカウントの <ph name="BEGIN_LINK" />myactivity.google.com<ph name="END_LINK" /> に、他の形式の閲覧履歴が記録されている場合があります。</translation>
 <translation id="7128355412245153445">ホームボタンをタップして、よく使用するサイトや最新の記事を表示できます</translation>
 <translation id="7138678301420049075">その他</translation>
@@ -780,6 +785,7 @@
 <translation id="7173114856073700355">設定を開く</translation>
 <translation id="7177466738963138057">これは後から [設定] で変更できます</translation>
 <translation id="7180611975245234373">更新</translation>
+<translation id="7187993566681480880">ログイン時に、Chrome を安全に利用できるようにするほか、他の Google アプリのセキュリティ強化に使用されることがあります。</translation>
 <translation id="7189372733857464326">Google Play 開発者サービスの更新完了を待機しています</translation>
 <translation id="7191430249889272776">バックグラウンドでタブを開きました。</translation>
 <translation id="723171743924126238">画像を選択</translation>
@@ -891,6 +897,7 @@
 <translation id="8027863900915310177">保存先を選択してください</translation>
 <translation id="8035133914807600019">新しいフォルダ...</translation>
 <translation id="8037750541064988519">残り <ph name="DAYS" /> 日</translation>
+<translation id="8037801708772278989">前回の確認: たった今</translation>
 <translation id="804335162455518893">SD カードが見つかりません</translation>
 <translation id="805047784848435650">閲覧履歴から</translation>
 <translation id="8051695050440594747"><ph name="MEGABYTES" /> MB 利用可</translation>
@@ -1031,6 +1038,7 @@
 <translation id="9137013805542155359">原文のページを表示</translation>
 <translation id="9155898266292537608">単語をタップするだけでも検索できます</translation>
 <translation id="9169507124922466868">ナビゲーション履歴が半分開いています</translation>
+<translation id="9199368092038462496">{NUM_MINS,plural, =1{前回の確認: 1 分前}other{前回の確認: # 分前}}</translation>
 <translation id="9204836675896933765">残り 1 ファイル</translation>
 <translation id="9206873250291191720">A</translation>
 <translation id="9209888181064652401">通話ができません</translation>

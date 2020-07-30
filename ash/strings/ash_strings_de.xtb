@@ -20,7 +20,7 @@ Hier sind ein paar Dinge, die du tun kannst, um loszulegen.</translation>
 <translation id="1178581264944972037">Pause</translation>
 <translation id="1190609913194133056">Benachrichtigungscenter</translation>
 <translation id="1195412055398077112">Overscan</translation>
-<translation id="119944043368869598">Alle löschen</translation>
+<translation id="119944043368869598">Alle entfernen</translation>
 <translation id="1199716647557067911">Möchten Sie den Schalterzugriff wirklich deaktivieren?</translation>
 <translation id="121097972571826261">Weiter um ein Wort</translation>
 <translation id="1229194443904279055">Auswahl beenden</translation>
@@ -192,7 +192,7 @@ Hier sind ein paar Dinge, die du tun kannst, um loszulegen.</translation>
 <translation id="3105990244222795498"><ph name="DEVICE_NAME" /> (Bluetooth)</translation>
 <translation id="3126069444801937830">Zum Aktualisieren neu starten</translation>
 <translation id="3139942575505304791">Desktop 1</translation>
-<translation id="315116470104423982">Mobilfunk</translation>
+<translation id="315116470104423982">Mobile Daten</translation>
 <translation id="3151786313568798007">Ausrichtung</translation>
 <translation id="3153444934357957346">Bei der Mehrfachanmeldung sind maximal <ph name="MULTI_PROFILE_USER_LIMIT" /> Konten zulässig.</translation>
 <translation id="3154351730702813399">Der Geräteadministrator überwacht unter Umständen Ihre Browseraktivitäten.</translation>
@@ -334,7 +334,7 @@ Hier sind ein paar Dinge, die du tun kannst, um loszulegen.</translation>
 <translation id="4774338217796918551">Du darfst das Gerät um <ph name="COME_BACK_TIME" /> wieder verwenden.</translation>
 <translation id="4776917500594043016">Passwort für <ph name="USER_EMAIL_ADDRESS" /></translation>
 <translation id="4778095205580009397">In Demositzungen ist Google Assistant nicht verfügbar.</translation>
-<translation id="479989351350248267">Suchen</translation>
+<translation id="479989351350248267">Suchtaste</translation>
 <translation id="4804818685124855865">Verbindung trennen</translation>
 <translation id="4814539958450445987">Anmeldebildschirm</translation>
 <translation id="4831034276697007977">Möchten Sie automatische Klicks wirklich deaktivieren?</translation>
@@ -506,7 +506,7 @@ Hier sind ein paar Dinge, die du tun kannst, um loszulegen.</translation>
 <translation id="6919251195245069855">Ihre Smartcard wurde nicht erkannt. Bitte versuchen Sie es noch einmal.</translation>
 <translation id="6945221475159498467">Auswählen</translation>
 <translation id="6972754398087986839">Erste Schritte</translation>
-<translation id="6981982820502123353">Bedienungsh.</translation>
+<translation id="6981982820502123353">Bedienungshilfen</translation>
 <translation id="698231206551913481">Durch das Entfernen des Nutzers werden alle mit ihm verknüpften Dateien und lokalen Daten endgültig gelöscht.</translation>
 <translation id="7015766095477679451">Um <ph name="COME_BACK_TIME" /> kannst du weitermachen.</translation>
 <translation id="7025533177575372252"><ph name="DEVICE_NAME" /> mit Ihrem Smartphone verbinden</translation>

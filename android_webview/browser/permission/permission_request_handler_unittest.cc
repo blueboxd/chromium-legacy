@@ -50,7 +50,7 @@ class TestPermissionRequestHandlerClient
     int64_t resources;
   };
 
-  TestPermissionRequestHandlerClient() : request_(NULL) {}
+  TestPermissionRequestHandlerClient() : request_(nullptr) {}
 
   void OnPermissionRequest(base::android::ScopedJavaLocalRef<jobject> j_request,
                            AwPermissionRequest* request) override {
@@ -73,19 +73,19 @@ class TestPermissionRequestHandlerClient
   const Permission& canceled_permission() { return canceled_permission_; }
 
   void Grant() {
-    request_->OnAccept(NULL, NULL, true);
+    request_->OnAccept(nullptr, nullptr, true);
     request_->DeleteThis();
-    request_ = NULL;
+    request_ = nullptr;
   }
 
   void Deny() {
-    request_->OnAccept(NULL, NULL, false);
+    request_->OnAccept(nullptr, nullptr, false);
     request_->DeleteThis();
-    request_ = NULL;
+    request_ = nullptr;
   }
 
   void Reset() {
-    request_ = NULL;
+    request_ = nullptr;
     requested_permission_ = Permission();
     canceled_permission_ = Permission();
   }
@@ -100,7 +100,7 @@ class TestPermissionRequestHandlerClient
 class TestPermissionRequestHandler : public PermissionRequestHandler {
  public:
   TestPermissionRequestHandler(PermissionRequestHandlerClient* client)
-      : PermissionRequestHandler(client, NULL) {}
+      : PermissionRequestHandler(client, nullptr) {}
 
   const std::vector<base::WeakPtr<AwPermissionRequest>> requests() {
     return requests_;
@@ -258,7 +258,7 @@ TEST_F(PermissionRequestHandlerTest, TestPreauthorizePermission) {
   // Permission should granted without asking PermissionRequestHandlerClient.
   handler()->SendRequest(delegate());
   EXPECT_TRUE(allowed());
-  EXPECT_EQ(NULL, client()->request());
+  EXPECT_EQ(nullptr, client()->request());
 
   // Only ask one preauthorized resource, permission should granted
   // without asking PermissionRequestHandlerClient.
@@ -270,7 +270,7 @@ TEST_F(PermissionRequestHandlerTest, TestPreauthorizePermission) {
   client()->Reset();
   handler()->SendRequest(std::move(delegate));
   EXPECT_TRUE(allowed());
-  EXPECT_EQ(NULL, client()->request());
+  EXPECT_EQ(nullptr, client()->request());
 }
 
 TEST_F(PermissionRequestHandlerTest, TestOriginNotPreauthorized) {
@@ -323,7 +323,7 @@ TEST_F(PermissionRequestHandlerTest, TestPreauthorizeMultiplePermission) {
                           base::Unretained(this))));
   handler()->SendRequest(std::move(delegate));
   EXPECT_TRUE(allowed());
-  EXPECT_EQ(NULL, client()->request());
+  EXPECT_EQ(nullptr, client()->request());
 }
 
 }  // namespace android_webview

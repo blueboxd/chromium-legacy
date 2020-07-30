@@ -39,7 +39,7 @@ class TestWebDialogViewWebDialogDelegate
   }
 
   // ui::WebDialogDelegate
-  bool CanCloseDialog() const override { return true; }
+  bool OnDialogCloseRequested() override { return true; }
   bool ShouldCloseDialogOnEscape() const override { return close_on_escape_; }
   ui::ModalType GetDialogModalType() const override {
     return ui::MODAL_TYPE_WINDOW;

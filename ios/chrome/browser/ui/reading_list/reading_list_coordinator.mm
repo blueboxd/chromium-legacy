@@ -21,13 +21,17 @@
 #include "ios/chrome/browser/reading_list/reading_list_model_factory.h"
 #import "ios/chrome/browser/ui/commands/application_commands.h"
 #import "ios/chrome/browser/ui/commands/command_dispatcher.h"
+#import "ios/chrome/browser/ui/menu/action_factory.h"
+#import "ios/chrome/browser/ui/menu/menu_histograms.h"
 #import "ios/chrome/browser/ui/reading_list/context_menu/reading_list_context_menu_coordinator.h"
 #import "ios/chrome/browser/ui/reading_list/context_menu/reading_list_context_menu_delegate.h"
 #import "ios/chrome/browser/ui/reading_list/context_menu/reading_list_context_menu_params.h"
+#import "ios/chrome/browser/ui/reading_list/reading_list_list_item.h"
 #import "ios/chrome/browser/ui/reading_list/reading_list_list_item_factory.h"
 #import "ios/chrome/browser/ui/reading_list/reading_list_list_view_controller_audience.h"
 #import "ios/chrome/browser/ui/reading_list/reading_list_list_view_controller_delegate.h"
 #import "ios/chrome/browser/ui/reading_list/reading_list_mediator.h"
+#import "ios/chrome/browser/ui/reading_list/reading_list_menu_provider.h"
 #import "ios/chrome/browser/ui/reading_list/reading_list_table_view_controller.h"
 #import "ios/chrome/browser/ui/table_view/feature_flags.h"
 #import "ios/chrome/browser/ui/table_view/table_view_animator.h"
@@ -50,6 +54,7 @@
 #endif
 
 @interface ReadingListCoordinator () <ReadingListContextMenuDelegate,
+                                      ReadingListMenuProvider,
                                       ReadingListListViewControllerAudience,
                                       ReadingListListViewControllerDelegate,
                                       UIViewControllerTransitioningDelegate>
@@ -112,6 +117,11 @@
   self.tableViewController.audience = self;
   self.tableViewController.dataSource = self.mediator;
   self.tableViewController.browser = self.browser;
+
+  if (@available(iOS 13.0, *)) {
+    self.tableViewController.menuProvider = self;
+  }
+
   itemFactory.accessibilityDelegate = self.tableViewController;
 
   // Add the "Done" button and hook it up to |stop|.
@@ -404,6 +414,27 @@ animationControllerForDismissedController:(UIViewController*)dismissed {
   }
 
   [self stop];
+}
+
+#pragma mark - ReadingListMenuProvider
+
+- (UIContextMenuConfiguration*)contextMenuConfigurationForItem:
+    (id<ReadingListListItem>)item API_AVAILABLE(ios(13.0)) {
+  return [UIContextMenuConfiguration
+      configurationWithIdentifier:nil
+                  previewProvider:nil
+                   actionProvider:^(NSArray<UIMenuElement*>* suggestedActions) {
+                     // Record that this context menu was shown to the user.
+                     RecordMenuShown(MenuScenario::kReadingListEntry);
+
+                     ActionFactory* actionFactory = [[ActionFactory alloc]
+                         initWithScenario:MenuScenario::kReadingListEntry];
+
+                     UIAction* copyAction =
+                         [actionFactory actionToCopyURL:item.entryURL];
+
+                     return [UIMenu menuWithTitle:@"" children:@[ copyAction ]];
+                   }];
 }
 
 @end

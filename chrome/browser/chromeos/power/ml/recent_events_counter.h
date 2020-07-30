@@ -19,12 +19,13 @@ namespace ml {
 // the last hour.
 //
 // Rather than remembering the time stamp for each event, the event times are
-// bucketed. The buckets initially evenly divide a time period of |duration_|,
-// starting at base::TimeDelta(). For logging at a time later than |duration_|,
-// the buckets are reused, using the logging time modulo the |duration_| in the
-// calculation of the bucket to be used. The total is calculated by keeping
-// track of the |first_bucket_index_| and |first_bucket_time_| and zeroing
-// buckets with stale data.
+// bucketed. The number of requested buckets must exactly divide a time period
+// of |duration_| (within the precision of TimeDelta), and initially start at
+// base::TimeDelta(). For logging at a time later than |duration_|, the buckets
+// are reused, using the logging time modulo the |duration_| in the calculation
+// of the bucket to be used. The total is calculated by keeping track of the
+// |first_bucket_index_| and |first_bucket_time_| and zeroing buckets with stale
+// data.
 //
 // The bucketing determines the time precision of the count. This
 // means that the actual time period counted may be up to one bucket length

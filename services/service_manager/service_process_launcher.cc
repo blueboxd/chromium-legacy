@@ -217,14 +217,14 @@ base::ProcessId ServiceProcessLauncher::ProcessState::LaunchInBackground(
       {STDOUT_FILENO, STDOUT_FILENO},
       {STDERR_FILENO, STDERR_FILENO},
   };
-#if defined(OS_MACOSX)
+#if defined(OS_MAC)
   options.fds_to_remap = fd_mapping;
   options.mach_ports_for_rendezvous = handle_passing_info;
 #else
   handle_passing_info.insert(handle_passing_info.end(), fd_mapping.begin(),
                              fd_mapping.end());
   options.fds_to_remap = handle_passing_info;
-#endif  // defined(OS_MACOSX)
+#endif  // defined(OS_MAC)
 #endif
   DVLOG(2) << "Launching child with command line: "
            << child_command_line->GetCommandLineString();

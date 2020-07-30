@@ -123,6 +123,7 @@
 <translation id="1430915738399379752">அச்சிடுக</translation>
 <translation id="1442386063175183758">ரைட் கேட் ஃபோல்டு</translation>
 <translation id="1442987760062738829">பஞ்ச்</translation>
+<translation id="1447067628680007684">(x86_64)</translation>
 <translation id="1453974140256777690">நீங்கள் ஒட்டும்/இணைக்கும் உரை Google கிளவுடுக்கோ மூன்றாம் தரப்பினருக்கோ ஆய்வுக்காக அனுப்பப்படும். எடுத்துக்காட்டாக, பாதுகாக்க வேண்டிய தரவு உள்ளதா என்று கண்டறிவதற்காக அது ஸ்கேன் செய்யப்படலாம்.</translation>
 <translation id="1455413310270022028">எரேஸர்</translation>
 <translation id="1462245070427461050">JIS B9</translation>
@@ -1139,6 +1140,7 @@
 <translation id="5705882733397021510">பின்செல்</translation>
 <translation id="57094364128775171">வலுவான கடவுச்சொல்லைப் பரிந்துரைசெய்…</translation>
 <translation id="5710435578057952990">இந்த தளத்தின் அடையாளம் சரிபார்க்கப்படவில்லை.</translation>
+<translation id="571403275720188526">(arm64)</translation>
 <translation id="5720705177508910913">நடப்புப் பயனர்</translation>
 <translation id="5728056243719941842">C5 (என்வலப்)</translation>
 <translation id="5730040223043577876">பிற தளங்களில் உங்கள் கடவுச்சொல்லை மீண்டும் பயன்படுத்தினால், அதை மீட்டமைக்கும்படி Chrome பரிந்துரைக்கிறது.</translation>
@@ -1188,6 +1190,7 @@
 <translation id="5921639886840618607">Google கணக்கில் கார்டைச் சேமிக்கவா?</translation>
 <translation id="5922853866070715753">கிட்டத்தட்ட முடிந்துவிட்டது</translation>
 <translation id="5932224571077948991">குறுக்கிடும் அல்லது தவறாக வழிநடத்தும் விளம்பரங்களை தளம் காண்பிக்கிறது</translation>
+<translation id="5938793338444039872">Troy</translation>
 <translation id="5946937721014915347"><ph name="SITE_NAME" />ஐத் திறக்கிறது…</translation>
 <translation id="5951495562196540101">நுகர்வோர் கணக்கில் பதிவுசெய்ய முடியவில்லை (தொகுக்கப்பட்ட உரிமம் உள்ளது).</translation>
 <translation id="5967592137238574583">தொடர்புத் தகவலைத் திருத்தவும்</translation>
@@ -1354,6 +1357,7 @@
 <translation id="6646269444027925224">{COUNT,plural, =0{எதுவுமில்லை}=1{1 தளத்திலிருந்து (உங்கள் Google கணக்கிலிருந்து வெளியேறமாட்டீர்கள்)}other{# தளங்களிலிருந்து (உங்கள் Google கணக்கிலிருந்து வெளியேறமாட்டீர்கள்)}}</translation>
 <translation id="6652101503459149953">Windows Helloவைப் பயன்படுத்து</translation>
 <translation id="6657585470893396449">கடவுச்சொல்</translation>
+<translation id="666259744093848177">(x86_64க்கு ஏற்றவாறு மாற்றியமைக்கப்பட்டது)</translation>
 <translation id="6665553082534466207">டிரிப்பில் பஞ்ச் ரைட்</translation>
 <translation id="6671697161687535275">Chromium இலிருந்து படிவப் பரிந்துரையை அகற்றவா?</translation>
 <translation id="6685834062052613830">வெளியேறி, அமைப்பை முடிக்கவும்</translation>

@@ -293,7 +293,7 @@ class CORE_EXPORT InspectorCSSAgent final
   std::unique_ptr<protocol::CSS::RuleUsage> BuildCoverageInfo(CSSStyleRule*,
                                                               bool);
   std::unique_ptr<protocol::Array<protocol::CSS::RuleMatch>>
-  BuildArrayForMatchedRuleList(RuleIndexList*, Element*, PseudoId);
+  BuildArrayForMatchedRuleList(RuleIndexList*, PseudoId);
   std::unique_ptr<protocol::CSS::CSSStyle> BuildObjectForAttributesStyle(
       Element*);
 

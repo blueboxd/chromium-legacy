@@ -762,16 +762,8 @@ jumbo_component("views") {
           "//ui/base/x",
           "//ui/platform_window/x11",
         ]
-        public += [
-          "widget/desktop_aura/desktop_drag_drop_client_aurax11.h",
-          "widget/desktop_aura/desktop_screen_x11.h",
-          "widget/desktop_aura/desktop_window_tree_host_x11.h",
-        ]
-        sources += [
-          "widget/desktop_aura/desktop_drag_drop_client_aurax11.cc",
-          "widget/desktop_aura/desktop_screen_x11.cc",
-          "widget/desktop_aura/desktop_window_tree_host_x11.cc",
-        ]
+        public += [ "widget/desktop_aura/desktop_screen_x11.h" ]
+        sources += [ "widget/desktop_aura/desktop_screen_x11.cc" ]
       } else if (is_win) {
         public += [ "widget/desktop_aura/desktop_window_tree_host_win.h" ]
         sources += [
@@ -786,11 +778,7 @@ jumbo_component("views") {
       }
       if (use_ozone) {
         public += [ "widget/desktop_aura/desktop_screen_ozone.h" ]
-        sources += [
-          "widget/desktop_aura/desktop_drag_drop_client_ozone.cc",
-          "widget/desktop_aura/desktop_drag_drop_client_ozone.h",
-          "widget/desktop_aura/desktop_screen_ozone.cc",
-        ]
+        sources += [ "widget/desktop_aura/desktop_screen_ozone.cc" ]
       }
       if (is_linux) {
         public += [ "widget/desktop_aura/desktop_window_tree_host_linux.h" ]
@@ -812,6 +800,8 @@ jumbo_component("views") {
           "widget/desktop_aura/window_move_client_platform.h",
         ]
         sources += [
+          "widget/desktop_aura/desktop_drag_drop_client_ozone.cc",
+          "widget/desktop_aura/desktop_drag_drop_client_ozone.h",
           "widget/desktop_aura/desktop_window_tree_host_platform.cc",
           "widget/desktop_aura/window_move_client_platform.cc",
         ]
@@ -1294,7 +1284,6 @@ test("views_unittests") {
       ]
       if (use_x11) {
         sources += [
-          "widget/desktop_aura/desktop_drag_drop_client_aurax11_unittest.cc",
           "widget/desktop_aura/desktop_screen_x11_unittest.cc",
           "widget/desktop_aura/x11_drag_drop_client_unittest.cc",
         ]
@@ -1397,9 +1386,11 @@ source_set("views_interactive_ui_tests") {
 
   if (use_x11) {
     sources += [
-      "widget/desktop_aura/desktop_window_tree_host_x11_interactive_uitest.cc",
       "widget/desktop_aura/x11_topmost_window_finder_interactive_uitest.cc",
     ]
+  }
+
+  if (use_x11 || ozone_platform_x11) {
     deps += [
       "//ui/base/x:test_support",
       "//ui/events/platform/x11:x11",

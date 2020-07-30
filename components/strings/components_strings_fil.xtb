@@ -123,6 +123,7 @@
 <translation id="1430915738399379752">I-print</translation>
 <translation id="1442386063175183758">Right gate fold</translation>
 <translation id="1442987760062738829">Punch</translation>
+<translation id="1447067628680007684">(x86_64)</translation>
 <translation id="1453974140256777690">Ipinapadala sa Google Cloud o mga third party para sa pagsusuri ang text na na-paste o na-attach mo. Halimbawa, posible itong i-scan para sa sensitibong data.</translation>
 <translation id="1455413310270022028">Pambura</translation>
 <translation id="1462245070427461050">JIS B9</translation>
@@ -1145,6 +1146,7 @@ Kung ayaw mo, iba-block ito ng iyong mga setting ng privacy. Papayagan nito ang 
 <translation id="5705882733397021510">Bumalik</translation>
 <translation id="57094364128775171">Magmungkahi ng malakas na password...</translation>
 <translation id="5710435578057952990">Ang pagkilala ng website na ito ay hindi natukoy.</translation>
+<translation id="571403275720188526">(arm64)</translation>
 <translation id="5720705177508910913">Kasalukuyang user</translation>
 <translation id="5728056243719941842">C5 (Envelope)</translation>
 <translation id="5730040223043577876">Inirerekomenda ng Chrome na i-reset ang iyong password kung ginamit mo ito sa iba pang site.</translation>
@@ -1194,6 +1196,7 @@ Kung ayaw mo, iba-block ito ng iyong mga setting ng privacy. Papayagan nito ang 
 <translation id="5921639886840618607">I-save ang card sa Google Account?</translation>
 <translation id="5922853866070715753">Malapit nang matapos</translation>
 <translation id="5932224571077948991">Nagpapakita ang site ng mga nakakasagabal o nakakapanlinlang na ad</translation>
+<translation id="5938793338444039872">Troy</translation>
 <translation id="5946937721014915347">Binubuksan ang <ph name="SITE_NAME" />…</translation>
 <translation id="5951495562196540101">Hindi maka-enroll gamit ang account ng consumer (may available na naka-package na lisensya).</translation>
 <translation id="5967592137238574583">I-edit ang Impormasyon ng Contact</translation>
@@ -1361,6 +1364,7 @@ Kung ayaw mo, iba-block ito ng iyong mga setting ng privacy. Papayagan nito ang 
 <translation id="6646269444027925224">{COUNT,plural, =0{Wala}=1{Mula sa 1 site (hindi ka masa-sign out sa iyong Google Account)}one{Mula sa # site (hindi ka masa-sign out sa iyong Google Account)}other{Mula sa # na site (hindi ka masa-sign out sa iyong Google Account)}}</translation>
 <translation id="6652101503459149953">Gamitin ang Windows Hello</translation>
 <translation id="6657585470893396449">Password</translation>
+<translation id="666259744093848177">(na-translate sa x86_64)</translation>
 <translation id="6665553082534466207">Triple punch right</translation>
 <translation id="6671697161687535275">Gusto mo bang alisin ang form para sa suhestyon sa Chromium?</translation>
 <translation id="6685834062052613830">Mag-sign out at kumpletuhin ang setup</translation>

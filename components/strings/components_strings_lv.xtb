@@ -123,6 +123,7 @@
 <translation id="1430915738399379752">Drukāt</translation>
 <translation id="1442386063175183758">Abpusējs locījums pa labi</translation>
 <translation id="1442987760062738829">Caurums</translation>
+<translation id="1447067628680007684">(x86_64)</translation>
 <translation id="1453974140256777690">Jūsu ielīmētais vai pievienotais teksts tiek nosūtīts uz Google mākoni vai trešajām pusēm, lai veiktu analīzi. Teksts var tikt pārmeklēts, piemēram, vai lai konstatētu, vai tajā ir ietverti sensitīvi dati.</translation>
 <translation id="1455413310270022028">Dzēšgumija</translation>
 <translation id="1462245070427461050">JIS B9</translation>
@@ -1142,6 +1143,7 @@ Pretējā gadījumā šī iespēja būtu liegta saskaņā ar jūsu konfidenciali
 <translation id="5705882733397021510">Atpakaļ</translation>
 <translation id="57094364128775171">Ieteikt drošu paroli…</translation>
 <translation id="5710435578057952990">Tīmekļa vietnes identitāte nav apstiprināta.</translation>
+<translation id="571403275720188526">(arm64)</translation>
 <translation id="5720705177508910913">Pašreizējais lietotājs</translation>
 <translation id="5728056243719941842">C5 (aploksne)</translation>
 <translation id="5730040223043577876">Chrome iesaka atiestatīt jūsu paroli, ja izmantojāt to citās vietnēs.</translation>
@@ -1191,6 +1193,7 @@ Pretējā gadījumā šī iespēja būtu liegta saskaņā ar jūsu konfidenciali
 <translation id="5921639886840618607">Vai saglabāt kartes datus Google kontā?</translation>
 <translation id="5922853866070715753">Gandrīz pabeigts</translation>
 <translation id="5932224571077948991">Vietnē tiek rādītas traucējošas vai maldinošas reklāmas</translation>
+<translation id="5938793338444039872">Troy</translation>
 <translation id="5946937721014915347">Notiek vietnes <ph name="SITE_NAME" /> atvēršana...</translation>
 <translation id="5951495562196540101">Neizdevās reģistrēt, izmantojot patērētāja kontu (pieejama komplektā iekļauta licence).</translation>
 <translation id="5967592137238574583">Kontaktinformācijas rediģēšana</translation>
@@ -1358,6 +1361,7 @@ Pretējā gadījumā šī iespēja būtu liegta saskaņā ar jūsu konfidenciali
 <translation id="6646269444027925224">{COUNT,plural, =0{Nav}=1{No 1 vietnes (jūs netiksiet izrakstīts no sava Google konta)}zero{No # vietnēm (jūs netiksiet izrakstīts no sava Google konta)}one{No # vietnes (jūs netiksiet izrakstīts no sava Google konta)}other{No # vietnēm (jūs netiksiet izrakstīts no sava Google konta)}}</translation>
 <translation id="6652101503459149953">Izmantot Windows Hello</translation>
 <translation id="6657585470893396449">Parole</translation>
+<translation id="666259744093848177">(x86_64, tulkots)</translation>
 <translation id="6665553082534466207">Trīs caurumi labajā pusē</translation>
 <translation id="6671697161687535275">Vai noņemt veidlapas ieteikumu no pārlūka Chromium?</translation>
 <translation id="6685834062052613830">Izrakstieties un pabeidziet iestatīšanu</translation>

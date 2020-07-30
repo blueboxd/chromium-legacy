@@ -24,7 +24,7 @@
 #include "services/audio/service_metrics.h"
 #include "services/audio/system_info.h"
 
-#if defined(OS_MACOSX)
+#if defined(OS_APPLE)
 #include "media/audio/mac/audio_device_listener_mac.h"
 #endif
 
@@ -158,7 +158,7 @@ void Service::BindTestingApi(
 
 void Service::InitializeDeviceMonitor() {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
-#if defined(OS_MACOSX)
+#if defined(OS_APPLE)
   if (audio_device_listener_mac_)
     return;
 

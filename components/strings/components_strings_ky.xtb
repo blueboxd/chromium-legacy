@@ -123,6 +123,7 @@
 <translation id="1430915738399379752">Басып чыгаруу</translation>
 <translation id="1442386063175183758">Оң бүктөлүшүн чаптоо</translation>
 <translation id="1442987760062738829">Тешүү</translation>
+<translation id="1447067628680007684">(x86_64)</translation>
 <translation id="1453974140256777690">Сиз чаптаган же тиркеген билдирүү Google Булутка же үчүнчү тараптын кызматтарына талдоо үчүн жөнөтүлөт. Мисалы, анда купуя маалыматтын болуусу текшерилет.</translation>
 <translation id="1455413310270022028">Өчүргүч</translation>
 <translation id="1462245070427461050">JIS B9 (45mm x 64mm)</translation>
@@ -1144,6 +1145,7 @@
 <translation id="5705882733397021510">Артка кайтуу</translation>
 <translation id="57094364128775171">Татаал сырсөз сунушталсын…</translation>
 <translation id="5710435578057952990">Бул сайттын аныктыгы ырасталбай жатат.</translation>
+<translation id="571403275720188526">(arm64)</translation>
 <translation id="5720705177508910913">Учурдагы колдонуучу</translation>
 <translation id="5728056243719941842">C5 (Конверт)</translation>
 <translation id="5730040223043577876">Сырсөзүңүздү башка сайттарда колдонгон болсоңуз, Chrome аны өзгөртүүнү сунуштайт.</translation>
@@ -1193,6 +1195,7 @@
 <translation id="5921639886840618607">Карта Google аккаунтуңузда сакталсынбы?</translation>
 <translation id="5922853866070715753">Бүткөнү калды</translation>
 <translation id="5932224571077948991">Сайт тажатма же адаштыруучу жарнамаларды көрсөтүп жатат</translation>
+<translation id="5938793338444039872">Troy</translation>
 <translation id="5946937721014915347"><ph name="SITE_NAME" /> ачылууда…</translation>
 <translation id="5951495562196540101">Аккаунт түзмөктүн уруксаттамасына дал келбегендиктен аны менен катталууга болбойт.</translation>
 <translation id="5967592137238574583">Байланыш маалыматын түзөтүү</translation>
@@ -1360,6 +1363,7 @@
 <translation id="6646269444027925224">{COUNT,plural, =0{Бирөө да жок}=1{1 сайттан (Google аккаунтуңуздан чыгарылбайсыз)}other{# сайттан (Google аккаунтуңуздан чыгарылбайсыз)}}</translation>
 <translation id="6652101503459149953">Windows Hello функциясын колдонуу</translation>
 <translation id="6657585470893396449">Сырсөз</translation>
+<translation id="666259744093848177">(x86_64 которулду)</translation>
 <translation id="6665553082534466207">Оң жагын үч жолу тешүү</translation>
 <translation id="6671697161687535275">Форма сунушу Chromium'дан алынып салынсынбы?</translation>
 <translation id="6685834062052613830">Каттоо эсебинен чыгып, жөндөөнү аягына чыгарыңыз</translation>

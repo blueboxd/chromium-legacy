@@ -163,6 +163,9 @@
 
       Nếu không đặt hoặc đặt chính sách này thành false, bạn không thể sử dụng tính năng Chuyển đổi nhanh.
       Nếu đặt chính sách này thành true, bạn có thể sử dụng tính năng Chuyển đổi nhanh khi điểm truy cập không dây hỗ trợ tính năng này.</translation>
+<translation id="1240722269871366886">Chính sách này cho phép <ph name="PRODUCT_OS_NAME" /> đề xuất biểu tượng cảm xúc khi người dùng nhập văn bản bằng bàn phím ảo hoặc bàn phím vật lý.
+      Nếu bạn đặt chính sách này thành true, thì tính năng này sẽ được bật và người dùng có thể thay đổi tùy chọn này.
+      Theo mặc định, chính sách này được đặt thành false, khi đó sẽ không có biểu tượng cảm xúc đề xuất và người dùng không thể ghi đè chính sách này.</translation>
 <translation id="1243570869342663665">Kiểm soát tùy chọn lọc nội dung người lớn của SafeSites.</translation>
 <translation id="1257550411839719984">Đặt thư mục tải xuống mặc định</translation>
 <translation id="1265053460044691532">Hạn chế thời gian người dùng được xác thực qua SAML có thể đăng nhập ngoại tuyến</translation>
@@ -950,6 +953,7 @@ Nếu bạn không đặt chính sách này, thì màn hình bảo vệ quyền 
       Khi chưa định cấu hình chính sách này hoặc khi đặt chính sách thành True, người dùng sẽ có thể sử dụng tính năng Chia sẻ tệp trong mạng.
 
       Khi đặt chính sách này thành False, người dùng sẽ không thể sử dụng tính năng Chia sẻ tệp trong mạng.</translation>
+<translation id="2435052056904485763">Danh sách cho phép máy chủ ủy quyền Kerberos</translation>
 <translation id="2440773021691931148">Báo cáo thống kê phần cứng và mã nhận dạng liên quan đến nguồn.
 
       Nếu bạn không đặt chính sách này hoặc đặt thành false, thì số liệu thống kê sẽ không được báo cáo.
@@ -1739,17 +1743,6 @@ Nếu đặt thành False, thì <ph name="PRODUCT_NAME" /> sẽ không sử dụ
 <translation id="355118380775352753">Các trang web sẽ mở trong trình duyệt thay thế</translation>
 <translation id="3554498762428140109">Bật tính năng Che kín cửa sổ gốc</translation>
 <translation id="3554984410014457319">Cho phép Trợ lý Google nghe cụm từ kích hoạt bằng giọng nói</translation>
-<translation id="3557208865710006939">Buộc bật ngôn ngữ có tính năng kiểm tra chính tả. Các ngôn ngữ không nhận dạng được trong danh sách đó sẽ bị bỏ qua.
-
-      Nếu bạn bật chính sách này, thì tính năng kiểm tra chính tả sẽ được bật cho các ngôn ngữ đã chỉ định, ngoài các ngôn ngữ mà người dùng đã bật tính năng kiểm tra chính tả.
-
-      Nếu bạn tắt hoặc không đặt chính sách này, thì sẽ không có sự thay đổi nào đối với tùy chọn kiểm tra chính tả của người dùng.
-
-      Nếu bạn đặt chính sách <ph name="SPELLCHECK_ENABLED_POLICY_NAME" /> thành false, thì chính sách này sẽ không có hiệu lực.
-
-      Nếu một ngôn ngữ có trong cả chính sách này lẫn chính sách <ph name="SPELLCHECK_LANGUAGE_BLACKLIST_POLICY_NAME" />, thì chính sách này được ưu tiên và ngôn ngữ có tính năng kiểm tra chính tả đó sẽ được bật.
-
-      Các ngôn ngữ hiện được hỗ trợ là: tiếng Afrikaans - Nam Phi, tiếng Bulgaria, tiếng Catalan, tiếng Séc, tiếng Đan Mạch, tiếng Đức, tiếng Hy Lạp, tiếng Anh - Úc, tiếng Anh - Canada, tiếng Anh - Anh, tiếng Anh - Mỹ, tiếng Tây Ban Nha, tiếng Tây Ban Nha-419, tiếng Tây Ban Nha - Argentina, tiếng Tây Ban Nha - Tây Ban Nha, tiếng Tây Ban Nha - Mexico, tiếng Tây Ban Nha - Mỹ, tiếng Estonia, tiếng Ba Tư, tiếng Faroe, tiếng Pháp, tiếng Do Thái, tiếng Hindi, tiếng Croatia, tiếng Hungary, tiếng Indonesia, tiếng Ý, tiếng Hàn, tiếng Lithuania, tiếng Latvia, tiếng Bokmål, tiếng Hà Lan, tiếng Ba Lan, tiếng Bồ Đào Nha - Brazil, tiếng Bồ Đào Nha - Bồ Đào Nha, tiếng Rumani, tiếng Nga, tiếng Serbo - Croatia, tiếng Slovak, tiếng Slovenia, tiếng Albania, tiếng Serbia, tiếng Thụy Điển, tiếng Tamil, tiếng Tajik, tiếng Thổ Nhĩ Kỳ, tiếng Ukraina, tiếng Việt.</translation>
 <translation id="356579196325389849">Người dùng có thể định cấu hình kênh phát hành Chrome OS</translation>
 <translation id="3575011234198230041">Xác thực HTTP</translation>
 <translation id="3577251398714997599">Cài đặt quảng cáo cho các trang web chứa quảng cáo xâm nhập</translation>
@@ -2420,6 +2413,21 @@ Nếu đặt thành False, thì <ph name="PRODUCT_NAME" /> sẽ không sử dụ
       Nếu bạn chọn 'Bắt buộc', người dùng CHỈ có thể mở trang ở chế độ ẩn danh. Xin lưu ý rằng tùy chọn 'Bắt buộc' không hoạt động trên Android-on-Chrome</translation>
 <translation id="4600786265870346112">Bật con trỏ lớn</translation>
 <translation id="4604931264910482931">Định cấu hình danh sách cấm nhắn tin gốc</translation>
+<translation id="4607416370554533118">Khi đặt chính sách này, bạn có thể tạo danh sách các mẫu URL chỉ định trang web mà Chrome có thể tự động chọn chứng chỉ máy khách. Giá trị là một mảng từ điển JSON phân thành chuỗi, mỗi mảng có dạng <ph name="AUTO_SELECT_CERTIFICATE_FOR_URLS_EXAMPLE" />, trong đó <ph name="URL_PATTERN_PLACEHOLDER" /> là mẫu thông tin cài đặt nội dung. <ph name="FILTER_PLACEHOLDER" /> giới hạn các chứng chỉ máy khách mà trình duyệt sẽ tự động chọn. Bất kể bộ lọc là gì, chỉ các chứng chỉ khớp với yêu cầu chứng chỉ của máy chủ mới được chọn.
+
+      Ví dụ về cách sử dụng phần <ph name="FILTER_PLACEHOLDER" />:
+
+      * Khi bạn đặt <ph name="FILTER_PLACEHOLDER" /> thành <ph name="AUTO_SELECT_CERTIFICATE_FOR_URLS_FILTER_EXAMPLE" />, chỉ các chứng chỉ máy khách do chứng chỉ có CommonName <ph name="ISSUER_CN_PLACEHOLDER" /> cấp mới được chọn.
+
+      * Khi <ph name="FILTER_PLACEHOLDER" /> chứa phần <ph name="ISSUER_STRING_VALUE" /> và <ph name="SUBJECT_STRING_VALUE" />, chỉ các chứng chỉ máy khách thỏa mãn cả hai điều kiện mới được chọn.
+
+      * Khi <ph name="FILTER_PLACEHOLDER" /> chứa phần <ph name="SUBJECT_STRING_VALUE" /> với giá trị <ph name="FILTER_STRING_ORGANIZATION" />, chứng chỉ phải có ít nhất một tổ chức khớp với giá trị đã chỉ định thì mới được chọn.
+
+      * Khi <ph name="FILTER_PLACEHOLDER" /> chứa phần <ph name="SUBJECT_STRING_VALUE" /> với giá trị <ph name="FILTER_STRING_ORGANIZATIONAL_UNIT" />, chứng chỉ phải có ít nhất một đơn vị tổ chức khớp với giá trị đã chỉ định thì mới được chọn.
+
+      * Khi bạn đặt <ph name="FILTER_PLACEHOLDER" /> thành <ph name="EMPTY_DICTIONARY" />, việc chọn chứng chỉ máy khách sẽ không có các hạn chế bổ sung. Xin lưu ý rằng các bộ lọc mà máy chủ web cung cấp sẽ vẫn áp dụng.
+
+      Nếu bạn không đặt chính sách này, thì sẽ không có trang web nào được thực hiện thao tác tự động chọn.</translation>
 <translation id="4617338332148204752">Bỏ qua kiểm tra thẻ meta trong <ph name="PRODUCT_FRAME_NAME" /></translation>
 <translation id="462134014569484584">Chính sách này chỉ định khóa cấp phép <ph name="PLUGIN_VM_NAME" /> cho thiết bị này.</translation>
 <translation id="4625915093043961294">Định cấu hình danh sách trắng cài đặt tiện ích</translation>
@@ -2537,6 +2545,13 @@ Nếu đặt thành False, thì <ph name="PRODUCT_NAME" /> sẽ không sử dụ
 
       Nếu bạn đặt chính sách này, thì người dùng sẽ không thể thay đổi được. Nếu bạn không đặt chính sách này, thì người dùng sẽ quyết định xem kệ có tự động ẩn hay không.</translation>
 <translation id="4812714598405913256">Định cấu hình thông báo hết thời hạn tự động cập nhật cho chính sách DeviceMinimumVersion</translation>
+<translation id="481492486938162195">Chính sách này không dùng nữa, vui lòng sử dụng chính sách "<ph name="AUTH_NEGOCIATE_DELEGATE_ALLOWLIST_POLICY_NAME" />".
+
+          Các máy chủ mà <ph name="PRODUCT_NAME" /> có thể ủy quyền.
+
+          Phân tách tên của các máy chủ bằng dấu phẩy. Cho phép sử dụng ký tự đại diện (*).
+
+          Nếu bạn không đặt chính sách này, thì <ph name="PRODUCT_NAME" /> sẽ không ủy quyền thông tin đăng nhập của người dùng ngay cả khi máy chủ được phát hiện là mạng nội bộ.</translation>
 <translation id="4816674326202173458">Cho phép người dùng doanh nghiệp trở thành người dùng vừa chính vừa phụ  (Hành vi mặc định cho người dùng không được quản lý)</translation>
 <translation id="4826326557828204741">Tác vụ sẽ thực hiện khi đạt độ trễ không hoạt động trong khi chạy bằng nguồn pin</translation>
 <translation id="482803100714220060">Hiển thị URL đầy đủ</translation>
@@ -5372,6 +5387,13 @@ Bạn nên định cấu hình chính sách trên Windows qua GPO, mặc dù vi�
       Nếu bạn không đặt hoặc đặt chính sách này thành False, thì các thành phần điều khiển biểu mẫu sẽ bật khi được triển khai trong phiên bản M81, M82 và M83.
 
       Chính sách này sẽ bị xóa sau Chrome 84.</translation>
+<translation id="8937562488500723400">Kiểm soát xem có áp dụng kết quả phê duyệt theo chính sách KDC để quyết định việc ủy quyền vé <ph name="KERBEROS" /> hay không.
+
+          Nếu bạn đặt chính sách này thành true, thì quá trình xác thực HTTP sẽ áp dụng kết quả phê duyệt theo chính sách KDC, tức là Chrome chỉ ủy quyền thông tin đăng nhập nếu KDC đặt <ph name="OK_AS_DELEGATE" /> trên một vé dịch vụ. Vui lòng truy cập vào https://tools.ietf.org/html/rfc5896.html để biết thêm thông tin. Dịch vụ cũng phải khớp với chính sách ''AuthNegotiateDelegateAllowlist".
+
+          Nếu bạn không đặt hoặc đặt chính sách này thành false, thì chính sách KDC sẽ bị bỏ qua trên các nền tảng được hỗ trợ và chính sách "AuthNegotiateDelegateAllowlist" sẽ được áp dụng.
+
+          Chính sách KDC luôn áp dụng trên Windows.</translation>
 <translation id="8938932171964587769">Không còn dùng trong M69. Thay vào đó, hãy sử dụng
       OverrideSecurityRestrictionsOnInsecureOrigin.
 
@@ -5489,6 +5511,27 @@ Bạn nên định cấu hình chính sách trên Windows qua GPO, mặc dù vi�
       Nếu bạn đặt chính sách này, thì <ph name="PRODUCT_NAME" /> sẽ sử dụng kích thước bộ nhớ đệm mà bạn cung cấp, cho dù người dùng có chỉ định cờ --disk-cache-size hay không. (Giá trị dưới vài megabyte được làm tròn lên.)
 
       Nếu bạn không đặt chính sách này, thì <ph name="PRODUCT_NAME" /> sẽ sử dụng kích thước mặc định. Người dùng có thể thay đổi tùy chọn cài đặt đó bằng cờ --disk-cache-size.</translation>
+<translation id="9057444687284972605">Cho phép bạn chỉ định danh sách mẫu URL. Những mẫu URL này chỉ định các trang web có chứng chỉ máy khách được chọn tự động trên màn hình đăng nhập trong khung lưu trữ quy trình SAML, nếu trang web yêu cầu chứng chỉ. Một ví dụ về cách sử dụng là định cấu hình một chứng chỉ cho toàn thiết bị sẽ hiển thị với SAML IdP.
+
+      Giá trị là một mảng từ điển JSON phân thành chuỗi, mỗi mảng có dạng <ph name="AUTO_SELECT_CERTIFICATE_FOR_URLS_EXAMPLE" />, trong đó <ph name="URL_PATTERN_PLACEHOLDER" /> là mẫu thông tin cài đặt nội dung. <ph name="FILTER_PLACEHOLDER" /> giới hạn các chứng chỉ máy khách mà trình duyệt sẽ tự động chọn. Bất kể bộ lọc là gì, chỉ các chứng chỉ khớp với yêu cầu chứng chỉ của máy chủ mới được chọn.
+
+      Ví dụ về cách sử dụng phần <ph name="FILTER_PLACEHOLDER" />:
+
+      * Khi bạn đặt <ph name="FILTER_PLACEHOLDER" /> thành <ph name="AUTO_SELECT_CERTIFICATE_FOR_URLS_FILTER_EXAMPLE" />, chỉ các chứng chỉ máy khách do chứng chỉ có CommonName <ph name="ISSUER_CN_PLACEHOLDER" /> cấp mới được chọn.
+
+      * Khi <ph name="FILTER_PLACEHOLDER" /> chứa phần <ph name="ISSUER_STRING_VALUE" /> và <ph name="SUBJECT_STRING_VALUE" />, chỉ các chứng chỉ máy khách thỏa mãn cả hai điều kiện mới được chọn.
+
+      * Khi <ph name="FILTER_PLACEHOLDER" /> chứa phần <ph name="SUBJECT_STRING_VALUE" /> với giá trị <ph name="FILTER_STRING_ORGANIZATION" />, chứng chỉ phải có ít nhất một tổ chức khớp với giá trị đã chỉ định thì mới được chọn.
+
+      * Khi <ph name="FILTER_PLACEHOLDER" /> chứa phần <ph name="SUBJECT_STRING_VALUE" /> với giá trị <ph name="FILTER_STRING_ORGANIZATIONAL_UNIT" />, chứng chỉ phải có ít nhất một đơn vị tổ chức khớp với giá trị đã chỉ định thì mới được chọn.
+
+      * Khi bạn đặt <ph name="FILTER_PLACEHOLDER" /> thành <ph name="EMPTY_DICTIONARY" />, việc chọn chứng chỉ máy khách sẽ không có các hạn chế bổ sung. Xin lưu ý rằng các bộ lọc mà máy chủ web cung cấp sẽ vẫn áp dụng.
+
+
+
+      Nếu bạn không đặt chính sách này, thì sẽ không có trang web nào được thực hiện thao tác tự động chọn.
+
+      Để biết thông tin chi tiết về mẫu URL hợp lệ, vui lòng truy cập vào https://cloud.google.com/docs/chrome-enterprise/policies/url-patterns.</translation>
 <translation id="9062348747995618422">Nếu đặt chính sách này, bạn có thể thiết lập danh sách các mẫu URL chỉ định những trang web có thể chạy plugin <ph name="FLASH_PLUGIN_NAME" />.
 
       Nếu bạn không đặt chính sách này, thì <ph name="DEFAULT_PLUGINS_SETTING_POLICY_NAME" /> (nếu được đặt) sẽ áp dụng cho tất cả trang web. Nếu không, tùy chọn cài đặt cá nhân của người dùng sẽ được áp dụng.

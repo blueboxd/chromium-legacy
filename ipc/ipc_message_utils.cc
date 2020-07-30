@@ -23,7 +23,7 @@
 #include "ipc/ipc_message_attachment_set.h"
 #include "ipc/ipc_mojo_param_traits.h"
 
-#if defined(OS_MACOSX) && !defined(OS_IOS)
+#if defined(OS_MAC)
 #include "ipc/mach_port_mac.h"
 #endif
 
@@ -931,7 +931,7 @@ void ParamTraits<base::subtle::PlatformSharedMemoryRegion>::Write(
 #elif defined(OS_FUCHSIA)
   zx::vmo vmo = const_cast<param_type&>(p).PassPlatformHandle();
   WriteParam(m, vmo);
-#elif defined(OS_MACOSX) && !defined(OS_IOS)
+#elif defined(OS_MAC)
   base::mac::ScopedMachSendRight h =
       const_cast<param_type&>(p).PassPlatformHandle();
   MachPortMac mach_port_mac(h.get());
@@ -985,7 +985,7 @@ bool ParamTraits<base::subtle::PlatformSharedMemoryRegion>::Read(
     return false;
   *r = base::subtle::PlatformSharedMemoryRegion::Take(std::move(vmo), mode,
                                                       size, guid);
-#elif defined(OS_MACOSX) && !defined(OS_IOS)
+#elif defined(OS_MAC)
   MachPortMac mach_port_mac;
   if (!ReadParam(m, iter, &mach_port_mac))
     return false;
@@ -1045,7 +1045,7 @@ void ParamTraits<base::subtle::PlatformSharedMemoryRegion>::Log(
 #elif defined(OS_WIN)
   l->append("Handle: ");
   LogParam(p.GetPlatformHandle(), l);
-#elif defined(OS_MACOSX) && !defined(OS_IOS)
+#elif defined(OS_MAC)
   l->append("Mach port: ");
   LogParam(p.GetPlatformHandle(), l);
 #elif defined(OS_ANDROID)

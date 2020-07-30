@@ -46,6 +46,7 @@
 <translation id="6676840375528380067">Supprimer vos données Chrome sur cet appareil ?</translation>
 <translation id="7165736900384873061">Commencer à utiliser le lecteur de code QR Google Chrome</translation>
 <translation id="7172660552945675509">Conseil : <ph name="BEGIN_LINK" />Placez Chrome dans le dock.<ph name="END_LINK" /></translation>
+<translation id="7173114856073700355">Paramètres</translation>
 <translation id="7173660919484573146">Chrome utilise Face ID pour autoriser l'accès à vos mots de passe.</translation>
 <translation id="7261678641327190792">Chrome ne parvient pas à vérifier vos mots de passe</translation>
 <translation id="7265369419224458312">Accédez ici aux onglets ouverts sur votre ordinateur. Il vous suffit d'ouvrir Chrome sur votre ordinateur, d'accéder au menu, puis de sélectionner "Se connecter à Chrome".</translation>
@@ -59,5 +60,5 @@
 <translation id="8370517070665726704">© <ph name="YEAR" /> Google LLC. Tous droits réservés.</translation>
 <translation id="840168496893712993">Certains modules complémentaires entraînent le plantage de Chrome. Veuillez essayer de les désinstaller.</translation>
 <translation id="8459495907675268833">Les données sélectionnées ont été supprimées de Chrome et des appareils synchronisés. Votre compte Google conserve peut-être d'autres formes d'historique de navigation sur la page history.google.com concernant, par exemple, vos recherches ou vos activités via d'autres services Google.</translation>
-<translation id="8540666473246803645">Google Chrome</translation>
+<translation id="8540666473246803645">Google Chrome</translation>
 </translationbundle>

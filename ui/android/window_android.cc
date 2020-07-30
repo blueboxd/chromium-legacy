@@ -120,7 +120,7 @@ void WindowAndroid::AttachCompositor(WindowAndroidCompositor* compositor) {
 }
 
 void WindowAndroid::DetachCompositor() {
-  compositor_ = NULL;
+  compositor_ = nullptr;
   for (WindowAndroidObserver& observer : observer_list_)
     observer.OnDetachCompositor();
   observer_list_.Clear();

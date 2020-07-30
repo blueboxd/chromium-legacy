@@ -173,7 +173,7 @@ Ako je stavka "<ph name="SERVICE_SCRIPT_NAME" />" već označena, uklonite oznak
 <translation id="858006550102277544">Komentar</translation>
 <translation id="8743328882720071828">Želite li dopustiti da <ph name="CLIENT_USERNAME" /> vidi ovo računalo i upravlja njime?</translation>
 <translation id="8747048596626351634">Sesija je pala ili njeno pokretanje nije uspjelo. Ako ~/.chrome-remote-desktop-session postoji na udaljenom računaru, provjerite je li pokrenuo dugotrajan postupak u prednjem planu kao što je okruženje radne površine ili upravitelj prozora.</translation>
-<translation id="8804164990146287819">Pravila o privatnosti</translation>
+<translation id="8804164990146287819">Pravila privatnosti</translation>
 <translation id="9111855907838866522">Povezani ste sa svojim uređajem za daljinsko upravljanje. Da otvorite meni, dodirnite ekran s četiri prsta.</translation>
 <translation id="9126115402994542723">Nemoj ponovo tražiti PIN prilikom povezivanja na host računar s ovog uređaja.</translation>
 <translation id="916856682307586697">Pokreni zadani XSession</translation>

@@ -104,6 +104,7 @@
 <translation id="1853692000353488670">Nieuw incognitotabblad</translation>
 <translation id="1856325424225101786">Lite-versie resetten?</translation>
 <translation id="1868024384445905608">Chrome downloadt bestanden nu sneller</translation>
+<translation id="1874760110381325409">Je wordt ingelogd met je Google-account\n(hierdoor wordt Chrome-synchronisatie niet ingeschakeld)</translation>
 <translation id="1883903952484604915">Mijn bestanden</translation>
 <translation id="1919950603503897840">Contacten selecteren</translation>
 <translation id="1925021887439448749">Aangepast webadres opgeven</translation>
@@ -227,6 +228,7 @@ Tik op een woord en houd dit vast om te zoeken. Selecteer meer of minder woorden
 <translation id="281504910091592009">Bekijk en beheer opgeslagen wachtwoorden in je <ph name="BEGIN_LINK" />Google-account<ph name="END_LINK" /></translation>
 <translation id="2818669890320396765">Log in en schakel synchronisatie in om op al je apparaten toegang tot je bookmarks te hebben</translation>
 <translation id="2827278682606527653">Feedkaartmenu halve hoogte</translation>
+<translation id="2841216154655874070">{NUM_DAYS,plural, =1{1 dag geleden gecheckt}other{# dagen geleden gecheckt}}</translation>
 <translation id="2842985007712546952">Bovenliggende map</translation>
 <translation id="2860954141821109167">Zorg ervoor dat een telefoon-app is ingeschakeld op dit apparaat</translation>
 <translation id="2870560284913253234">Site</translation>
@@ -702,6 +704,7 @@ Zo kunnen sommige websites op dit verzoek reageren door advertenties weer te gev
 <translation id="6532866250404780454">Sites die je in Chrome bezoekt, worden niet weergegeven. Alle sitetimers worden verwijderd.</translation>
 <translation id="6534565668554028783">Het duurt te lang voordat Google reageert</translation>
 <translation id="6539092367496845964">Er is iets misgegaan. Probeer het later opnieuw.</translation>
+<translation id="6541983376925655882">{NUM_HOURS,plural, =1{1 uur geleden gecheckt}other{# uur geleden gecheckt}}</translation>
 <translation id="6545017243486555795">Alle gegevens wissen</translation>
 <translation id="6560414384669816528">Zoeken met Sogou</translation>
 <translation id="656065428026159829">Meer weergeven</translation>
@@ -733,6 +736,7 @@ Zo kunnen sommige websites op dit verzoek reageren door advertenties weer te gev
 <translation id="6697492270171225480">Suggesties voor vergelijkbare pagina's weergeven wanneer een pagina niet wordt gevonden</translation>
 <translation id="6698801883190606802">Gesynchroniseerde gegevens beheren</translation>
 <translation id="6699370405921460408">De Google-servers optimaliseren de pagina's die je bezoekt.</translation>
+<translation id="670498945988402717">Gisteren gecheckt</translation>
 <translation id="6710213216561001401">Vorige</translation>
 <translation id="671481426037969117">Je <ph name="FQDN" />-timer is afgelopen. Deze begint morgen opnieuw.</translation>
 <translation id="6738867403308150051">Downloaden...</translation>
@@ -771,6 +775,7 @@ Zo kunnen sommige websites op dit verzoek reageren door advertenties weer te gev
 <translation id="7063006564040364415">Kan geen verbinding maken met synchronisatieserver.</translation>
 <translation id="7071521146534760487">Account beheren</translation>
 <translation id="7077143737582773186">SD-kaart</translation>
+<translation id="7080806333218412752">Stuurt URL's naar Safe Browsing om deze te checken. Stuurt ook een klein gedeelte pagina's, downloads, extensie-activiteit en systeeminformatie om nieuwe dreigingen te kunnen detecteren. Koppelt deze gegevens tijdelijk aan je Google-account als je bent ingelogd om je te beschermen binnen de Google-apps.</translation>
 <translation id="7121362699166175603">Hiermee worden de geschiedenis en automatische aanvullingen voor de adresbalk gewist. Er kunnen andere vormen van browsegeschiedenis zijn opgeslagen voor je Google-account op <ph name="BEGIN_LINK" />myactivity.google.com<ph name="END_LINK" />.</translation>
 <translation id="7128355412245153445">Zie je topsites en recente artikelen als je op de startknop tikt</translation>
 <translation id="7138678301420049075">Overige</translation>
@@ -780,6 +785,7 @@ Zo kunnen sommige websites op dit verzoek reageren door advertenties weer te gev
 <translation id="7173114856073700355">Instellingen openen</translation>
 <translation id="7177466738963138057">Je kunt dit later wijzigen in Instellingen</translation>
 <translation id="7180611975245234373">Vernieuwen</translation>
+<translation id="7187993566681480880">Beschermt je op Chrome en kan worden gebruikt om de beveiliging in andere Google-apps te verbeteren als je bent ingelogd.</translation>
 <translation id="7189372733857464326">Wachten tot Google Play-services is geüpdatet</translation>
 <translation id="7191430249889272776">Tabblad op de achtergrond geopend.</translation>
 <translation id="723171743924126238">Afbeeldingen selecteren</translation>
@@ -891,6 +897,7 @@ Zo kunnen sommige websites op dit verzoek reageren door advertenties weer te gev
 <translation id="8027863900915310177">Kies waar je wilt downloaden</translation>
 <translation id="8035133914807600019">Nieuwe map…</translation>
 <translation id="8037750541064988519"><ph name="DAYS" /> dagen resterend</translation>
+<translation id="8037801708772278989">Zojuist gecheckt</translation>
 <translation id="804335162455518893">SD-kaart niet gevonden</translation>
 <translation id="805047784848435650">Op basis van je browsegeschiedenis</translation>
 <translation id="8051695050440594747"><ph name="MEGABYTES" /> MB beschikbaar</translation>
@@ -1031,6 +1038,7 @@ Zo kunnen sommige websites op dit verzoek reageren door advertenties weer te gev
 <translation id="9137013805542155359">Origineel weergeven</translation>
 <translation id="9155898266292537608">Je kunt ook zoeken door kort op een woord te tikken</translation>
 <translation id="9169507124922466868">Navigatiegeschiedenis is half geopend</translation>
+<translation id="9199368092038462496">{NUM_MINS,plural, =1{1 minuut geleden gecheckt}other{# minuten geleden gecheckt}}</translation>
 <translation id="9204836675896933765">1 bestand over</translation>
 <translation id="9206873250291191720">A</translation>
 <translation id="9209888181064652401">Kan niet bellen</translation>

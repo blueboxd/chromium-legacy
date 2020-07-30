@@ -831,6 +831,78 @@ INSTANTIATE_TEST_SUITE_P(
                        ::testing::Bool(),
                        ::testing::Bool()));
 
+// Test creation of new users when multi user mode is enabled/disabled through
+// either registry or by cloud policy of existing user.
+// Parameters are:
+// 1. bool : Whether multi user mode is enabled in the registry.
+// 2. bool : Whether cloud policies feature is enabled.
+// 3. bool : Whether multi user policy is enabled for the existing user through
+//           cloud polcies.
+class GcpGaiaCredentialBaseMultiUserCloudPolicyTest
+    : public GcpCredentialProviderTest,
+      public ::testing::WithParamInterface<std::tuple<bool, bool, bool>> {};
+
+TEST_P(GcpGaiaCredentialBaseMultiUserCloudPolicyTest, CanCreateNewUsers) {
+  USES_CONVERSION;
+  bool reg_multi_user_enabled = std::get<0>(GetParam());
+  bool cloud_policies_enabled = std::get<1>(GetParam());
+  bool cloud_multi_user_enabled = std::get<2>(GetParam());
+
+  GoogleMdmEnrolledStatusForTesting force_success(true);
+  FakeUserPoliciesManager fake_user_policies_manager(cloud_policies_enabled);
+
+  // Create a fake user that is already associated so when the user tries to
+  // sign on and create a new user, it fails if multi user mode is disabled.
+  ASSERT_EQ(S_OK, SetGlobalFlagForTesting(kRegMdmAllowConsumerAccounts, 1));
+  CComBSTR sid;
+  ASSERT_EQ(S_OK, fake_os_user_manager()->CreateTestOSUser(
+                      L"foo_registered", L"password", L"name", L"comment",
+                      L"gaia-id-registered", base::string16(), &sid));
+
+  // Set multi user mode in registry.
+  ASSERT_EQ(S_OK, SetGlobalFlagForTesting(kRegMdmSupportsMultiUser,
+                                          reg_multi_user_enabled ? 1 : 0));
+
+  // Set multi user mode with cloud policy for the existing user.
+  if (cloud_policies_enabled) {
+    UserPolicies user_policies;
+    user_policies.enable_multi_user_login = cloud_multi_user_enabled;
+    fake_user_policies_manager.SetUserPolicies((BSTR)sid, user_policies);
+  }
+
+  // Populate the associated users list. The created user's token handle
+  // should be valid so that no reauth credential is created.
+  fake_associated_user_validator()->StartRefreshingTokenHandleValidity();
+
+  // Set the other user tile so that we can get the anonymous credential
+  // that may try to sign in a user.
+  fake_user_array()->SetAccountOptions(CPAO_EMPTY_LOCAL);
+
+  // Create provider and start logon.
+  Microsoft::WRL::ComPtr<ICredentialProviderCredential> cred;
+
+  ASSERT_EQ(S_OK, InitializeProviderAndGetCredential(0, &cred));
+
+  ASSERT_EQ(S_OK, StartLogonProcessAndWait());
+
+  if ((cloud_policies_enabled ? cloud_multi_user_enabled
+                              : reg_multi_user_enabled)) {
+    // Sign in should succeed for the new user.
+    ASSERT_EQ(S_OK, FinishLogonProcess(true, true, 0));
+  } else {
+    // Sign in should fail with an error stating that no new users can be
+    // created.
+    ASSERT_EQ(S_OK,
+              FinishLogonProcess(false, false, IDS_ADD_USER_DISALLOWED_BASE));
+  }
+}
+
+INSTANTIATE_TEST_SUITE_P(All,
+                         GcpGaiaCredentialBaseMultiUserCloudPolicyTest,
+                         ::testing::Combine(::testing::Bool(),
+                                            ::testing::Bool(),
+                                            ::testing::Bool()));
+
 }  // namespace testing
 
 }  // namespace credential_provider

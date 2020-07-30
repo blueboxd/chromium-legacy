@@ -4052,7 +4052,6 @@ Exponente público (<ph name="PUBLIC_EXPONENT_NUM_BITS" /> bits):
 <translation id="6056710589053485679">Volver a cargar normalmente</translation>
 <translation id="6057312498756061228">Este archivo es demasiado grande para una comprobación de seguridad. Puedes abrir archivos de hasta 50 MB.</translation>
 <translation id="6057381398996433816">Este sitio web no tiene permiso para usar los sensores de luz y movimiento.</translation>
-<translation id="6058567592298841668">Complemento de máquina virtual: <ph name="PLUGIN_VM_NAME" /></translation>
 <translation id="6059652578941944813">Jerarquía de certificados</translation>
 <translation id="6059925163896151826">Dispositivos USB</translation>
 <translation id="6061882183774845124">Enviar el enlace a tus dispositivos</translation>
@@ -4481,6 +4480,7 @@ Exponente público (<ph name="PUBLIC_EXPONENT_NUM_BITS" /> bits):
 <translation id="6602956230557165253">Utiliza las teclas de flecha hacia la izquierda y hacia la derecha para desplazarte.</translation>
 <translation id="6605847144724004692">Los usuarios aún no han valorado esta extensión.</translation>
 <translation id="6607831829715835317">Más herramientas</translation>
+<translation id="6608012008902909398">Mostrar detalles de la comprobación del software del dispositivo</translation>
 <translation id="6611972847767394631">Aquí están tus pestañas</translation>
 <translation id="6612358246767739896">Contenido protegido</translation>
 <translation id="6615455863669487791">Ver</translation>

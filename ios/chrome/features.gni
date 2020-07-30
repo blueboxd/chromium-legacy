@@ -10,4 +10,7 @@ declare_args() {
 
   # Enable MetricKit in Chrome to collect runtime data.
   ios_enable_metrickit = false
+
+  # Enable an experimental option to dump sandbox.
+  ios_enable_sandbox_dump = false
 }

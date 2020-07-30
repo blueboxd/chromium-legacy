@@ -43,13 +43,11 @@ class COMPONENT_EXPORT(UI_BASE_IME) MockIMEInputContextHandler
       uint32_t before,
       uint32_t after,
       const std::vector<ui::ImeTextSpan>& text_spans) override;
-
+  gfx::Range GetAutocorrectRange() override;
   gfx::Rect GetAutocorrectCharacterBounds() override;
-
   bool SetAutocorrectRange(const base::string16& autocorrect_text,
                            uint32_t start,
                            uint32_t end) override;
-
   bool SetSelectionRange(uint32_t start, uint32_t end) override;
 #endif
 

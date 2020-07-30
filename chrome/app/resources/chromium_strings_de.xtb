@@ -1,6 +1,7 @@
 <?xml version="1.0" ?>
 <!DOCTYPE translationbundle>
 <translationbundle lang="de">
+<translation id="1060499346270045814">{NUM_HOURS,plural, =1{Chromium prüft Ihr Gerät einmal pro Woche auf unerwünschte Software. Zuletzt geprüft: vor 1 Stunde.}other{Chromium prüft Ihr Gerät einmal pro Woche auf unerwünschte Software. Zuletzt geprüft: vor {NUM_HOURS} Stunden.}}</translation>
 <translation id="1065672644894730302">Ihre Einstellungen können nicht gelesen werden. Einige Funktionen sind möglicherweise nicht verfügbar und Änderungen an Einstellungen werden nicht gespeichert.</translation>
 <translation id="1098170124587656448">Chromium kann dazu beitragen, Sie beispielsweise vor Datenpannen und schädlichen Erweiterungen zu schützen</translation>
 <translation id="1104942323762546749">Chromium möchte Ihre Passwörter exportieren. Wenn Sie dies zulassen möchten, geben Sie Ihr Windows-Passwort ein.</translation>
@@ -38,6 +39,7 @@
 <translation id="2711502716910134313">Chromium-Tab</translation>
 <translation id="2718390899429598676">Chromium verschlüsselt Ihre Daten zur Erhöhung der Sicherheit.</translation>
 <translation id="2770231113462710648">Standardbrowser ändern in:</translation>
+<translation id="2797461000988640326">{NUM_MINS,plural, =1{Chromium prüft Ihr Gerät einmal pro Woche auf unerwünschte Software. Zuletzt geprüft: vor 1 Minute.}other{Chromium prüft Ihr Gerät einmal pro Woche auf unerwünschte Software. Zuletzt geprüft: vor {NUM_MINS} Minuten.}}</translation>
 <translation id="2799223571221894425">Neu starten</translation>
 <translation id="2847479871509788944">Aus Chromium entfernen...</translation>
 <translation id="2885378588091291677">Task-Manager</translation>
@@ -47,6 +49,7 @@
 <translation id="3032706164202344641">Chromium kann Ihre Passwörter nicht prüfen. Versuchen Sie es später noch einmal.</translation>
 <translation id="3032787606318309379">Wird zu Chromium hinzugefügt...</translation>
 <translation id="3068515742935458733">Absturzberichte und <ph name="UMA_LINK" /> zur Verbesserung von Chromium an Google senden</translation>
+<translation id="3086207596048762442">Chromium prüft Ihr Gerät einmal pro Woche auf unerwünschte Software</translation>
 <translation id="3103660991484857065">Das Installationsprogramm konnte das Archiv nicht dekomprimieren. Bitte laden Sie Chromium erneut herunter.</translation>
 <translation id="3130323860337406239">Chromium verwendet Ihr Mikrofon.</translation>
 <translation id="3155163173539279776">Chromium neu starten</translation>
@@ -166,6 +169,7 @@ Einige Funktionen stehen möglicherweise nicht zur Verfügung. Geben Sie bitte e
 <translation id="6847869444787758381">Chromium wird Sie informieren, sollten Ihre Passwörter nicht mehr sicher sein</translation>
 <translation id="6857782730669500492">Chromium – <ph name="PAGE_TITLE" /></translation>
 <translation id="6863361426438995919">Google Pay (in Chromium kopiert)</translation>
+<translation id="6863846675160669383">{NUM_DAYS,plural, =1{Chromium prüft Ihr Gerät einmal pro Woche auf unerwünschte Software. Zuletzt geprüft: vor 1 Tag.}other{Chromium prüft Ihr Gerät einmal pro Woche auf unerwünschte Software. Zuletzt geprüft: vor {NUM_DAYS} Tagen.}}</translation>
 <translation id="6893813176749746474">Chromium wurde aktualisiert, Sie haben den Browser jedoch mindestens 30 Tage nicht verwendet.</translation>
 <translation id="6964305034639999644">Link in Chromium-Inkognitofenster öffnen</translation>
 <translation id="6990124437352146030">Chromium benötigt für diese Website die Berechtigung, auf Ihr Mikrofon zuzugreifen</translation>
@@ -229,6 +233,7 @@ Chromium kann Ihre Einstellungen nicht wiederherstellen.</translation>
 <translation id="8621669128220841554">Die Installation konnte aufgrund eines undefinierten Fehlers nicht abgeschlossen werden. Bitte laden Sie Chromium erneut herunter.</translation>
 <translation id="8697124171261953979">Die Erweiterung legt auch fest, welche Seite beim Start von Chromium oder bei der Suche über die Omnibox angezeigt wird.</translation>
 <translation id="8704119203788522458">Dies ist Ihr persönlicher Chromium-Browser</translation>
+<translation id="8705191560707593947">Chromium prüft Ihr Gerät einmal pro Woche auf unerwünschte Software. Zuletzt geprüft: gestern.</translation>
 <translation id="8796602469536043152">Chromium benötigt für diese Website die Berechtigung, auf Ihre Kamera und Ihr Mikrofon zuzugreifen</translation>
 <translation id="8803635938069941624">Chromium OS-Nutzungsbedingungen</translation>
 <translation id="8821041990367117597">Chromium konnte Ihre Daten nicht synchronisieren, da die Anmeldedaten Ihres Kontos nicht mehr aktuell sind.</translation>
@@ -244,6 +249,7 @@ Chromium kann Ihre Einstellungen nicht wiederherstellen.</translation>
 <translation id="91086099826398415">Link in neuem Chromium-Tab öffnen</translation>
 <translation id="911206726377975832">Auch die Browserdaten löschen?</translation>
 <translation id="9158494823179993217">Ihr Systemadministrator hat Chromium so konfiguriert, dass ein alternativer Browser für den Zugriff auf <ph name="TARGET_URL_HOSTNAME" /> geöffnet wird.</translation>
+<translation id="9164845895615421500">Chromium prüft Ihr Gerät einmal pro Woche auf unerwünschte Software. Zuletzt geprüft: vor Kurzem.</translation>
 <translation id="9190841055450128916">Chromium (mDNS-In)</translation>
 <translation id="9191317372410544836">Mit Chromium Spaces können Sie auf diesem Gerät organisierter surfen</translation>
 <translation id="93478295209880648">Chromium funktioniert unter Umständen nicht ordnungsgemäß, da es unter Windows XP und Windows Vista nicht mehr unterstützt wird</translation>

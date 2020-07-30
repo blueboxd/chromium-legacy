@@ -633,7 +633,7 @@
 <translation id="5921587111466148855">অধ্যায়</translation>
 <translation id="5937336320314038555">{COUNT,plural, =1{সমান}one{#টি সমান চিহ্ন}other{#টি সমান চিহ্ন}}</translation>
 <translation id="5948123859135882163">কাঠামোগত এবং শব্দের মধ্যে গাণিতিক এক্সপ্রেশনের ব্যাখ্যা টগল করে</translation>
-<translation id="5955304353782037793">app</translation>
+<translation id="5955304353782037793">অ্যাপ</translation>
 <translation id="5956928062748260866">ডায়ালগ</translation>
 <translation id="5963413905009737549">বিভাগ</translation>
 <translation id="5968607524793740041">সংশ্লিষ্ট মেনু দেখান</translation>
@@ -924,6 +924,7 @@
 <translation id="8345569862449483843">{COUNT,plural, =1{পাউন্ড}one{#টি পাউন্ড চিহ্ন}other{#টি পাউন্ড চিহ্ন}}</translation>
 <translation id="8378855320830505539">অঞ্চল</translation>
 <translation id="8382679411218029383">স্বতসম্পূর্ণ ইনলাইন এবং তালিকা</translation>
+<translation id="8394908167088220973">মিডিয়া প্লে করুন/বিরতি</translation>
 <translation id="8428213095426709021">সেটিংস</translation>
 <translation id="8428603554127842284">স্তর <ph name="DEPTH" /></translation>
 <translation id="8430049249787218991">mnubr</translation>

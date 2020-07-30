@@ -104,6 +104,7 @@
 <translation id="1853692000353488670">కొత్త అజ్ఞాత ట్యాబ్</translation>
 <translation id="1856325424225101786">లైట్ మోడ్‌ని రీసెట్ చేయాలా?</translation>
 <translation id="1868024384445905608">Chrome ఇప్పుడు ఫైల్‌లను మరింత వేగంగా డౌన్‌లోడ్ చేస్తుంది</translation>
+<translation id="1874760110381325409">మీరు మీ Google ఖాతాతో సైన్ ఇన్ చేస్తారు\n(ఇది Chrome సమకాలీకరణను ఆన్ చేయదు)</translation>
 <translation id="1883903952484604915">నా ఫైల్‌లు</translation>
 <translation id="1919950603503897840">పరిచయాలను ఎంచుకోండి</translation>
 <translation id="1925021887439448749">అనుకూల వెబ్ చిరునామాను నమోదు చేయండి</translation>
@@ -227,6 +228,7 @@
 <translation id="281504910091592009">మీ <ph name="BEGIN_LINK" />Google ఖాతా<ph name="END_LINK" />లో సేవ్ చేసిన పాస్‌వర్డ్‌లను చూడండి మరియు నిర్వహించండి</translation>
 <translation id="2818669890320396765">ఇక ఎప్పుడు ఎక్కడ బుక్‌మార్క్‌లను సెట్‌ చేసినా ఆటోమాటిక్‌గా మీ అన్ని పరికరాలలోనూ పొందాలనుకుంటే, సైన్ ఇన్ చేసి, సమకాలీకరణ ఎంపికను ఆన్ చేయండి</translation>
 <translation id="2827278682606527653">Feed card menu half height</translation>
+<translation id="2841216154655874070">{NUM_DAYS,plural, =1{1 రోజు క్రితం తనిఖీ చేసింది}other{# రోజుల క్రితం తనిఖీ చేసింది}}</translation>
 <translation id="2842985007712546952">మూల ఫోల్డర్</translation>
 <translation id="2860954141821109167">ఈ పరికరంలో ఫోన్ యాప్ ప్రారంభించబడిందని నిర్ధారించుకోండి</translation>
 <translation id="2870560284913253234">సైట్</translation>
@@ -702,6 +704,7 @@
 <translation id="6532866250404780454">మీరు Chromeలో సందర్శించిన సైట్‌లు చూపబడవు. అన్ని సైట్ టైమర్‌లు తొలగించబడతాయి.</translation>
 <translation id="6534565668554028783">Google ప్రతిస్పందించడానికి చాలా ఎక్కువ సమయం తీసుకుంది</translation>
 <translation id="6539092367496845964">ఏదో తప్పు జరిగింది. తర్వాత మళ్లీ ప్రయత్నించండి.</translation>
+<translation id="6541983376925655882">{NUM_HOURS,plural, =1{1 గంట క్రితం తనిఖీ చేసింది}other{# గంటల క్రితం తనిఖీ చేసింది}}</translation>
 <translation id="6545017243486555795">మొత్తం డేటాను తీసివేయి</translation>
 <translation id="6560414384669816528">Sogouతో వెతకండి</translation>
 <translation id="656065428026159829">మరిన్ని చూడండి</translation>
@@ -733,6 +736,7 @@
 <translation id="6697492270171225480">పేజీ కనుగొనబడనప్పుడు అటువంటి పేజీల కోసం సూచనలను చూపుతుంది</translation>
 <translation id="6698801883190606802">సమకాలీకరించిన డేటాను నిర్వహించండి</translation>
 <translation id="6699370405921460408">మీరు సందర్శించే పేజీలను Google సర్వర్‌లు ఆప్టిమైజ్ చేస్తాయి.</translation>
+<translation id="670498945988402717">నిన్న తనిఖీ చేసింది</translation>
 <translation id="6710213216561001401">మునుపటి</translation>
 <translation id="671481426037969117">మీ <ph name="FQDN" /> టైమర్ పూర్తయింది. అది మళ్లీ రేపు ప్రారంభమవుతుంది.</translation>
 <translation id="6738867403308150051">డౌన్‌లోడ్ చేస్తోంది...</translation>
@@ -771,6 +775,7 @@
 <translation id="7063006564040364415">సింక్ సర్వర్‌కు కనెక్ట్ చేయడం సాధ్యపడలేదు.</translation>
 <translation id="7071521146534760487">ఖాతాను నిర్వహిస్తుంది</translation>
 <translation id="7077143737582773186">SD కార్డ్</translation>
+<translation id="7080806333218412752">URLలను తనిఖీ చేయడానికి వాటిని సురక్షిత బ్రౌజింగ్‌కు పంపుతుంది. కొత్త రకం ప్రమాదాలను గుర్తించడంలో సహాయపడటానికి కొన్ని నమూనా పేజీలు, డౌన్‌లోడ్‌లు, ఎక్స్‌టెన్షన్ యాక్టివిటీ, సిస్టమ్ సమాచారాన్ని కూడా పంపుతుంది. మీరు సైన్ ఇన్ చేసి ఉన్నప్పుడు, మిమ్మల్ని అన్ని Google యాప్‌లలో కాపాడటానికి ఈ డేటాను తాత్కాలికంగా మీ Google ఖాతాకు లింక్ చేస్తుంది.</translation>
 <translation id="7121362699166175603">చిరునామా బార్‌లో చరిత్ర, స్వీయపూరింపులను తొలగిస్తుంది. మీ Google ఖాతా <ph name="BEGIN_LINK" />myactivity.google.com<ph name="END_LINK" />లో ఇతర రూపాల్లో ఉన్న బ్రౌజింగ్ చరిత్రను కలిగి ఉండవచ్చు.</translation>
 <translation id="7128355412245153445">మీరు హోమ్ బటన్‌ను ట్యాప్ చేసినప్పుడల్లా మీ టాప్ సైట్‌లు, ఇటీవలి కథనాలను చూస్తారు</translation>
 <translation id="7138678301420049075">ఇతర</translation>
@@ -780,6 +785,7 @@
 <translation id="7173114856073700355">సెట్టింగ్‌లను తెరువు</translation>
 <translation id="7177466738963138057">మీరు దీన్ని తర్వాత సెట్టింగ్‌లలో మార్చవచ్చు</translation>
 <translation id="7180611975245234373">రిఫ్రెష్ చేయి</translation>
+<translation id="7187993566681480880">Chromeలో మిమ్మల్ని సురక్షితంగా ఉంచుతుంది, మీరు సైన్ ఇన్ చేసినప్పుడు ఇతర Google యాప్‌లలో మీ భద్రతను మెరుగుపరచడానికి ఉపయోగించబడవచ్చు.</translation>
 <translation id="7189372733857464326">Google Play సేవల నవీకరణ పూర్తి కావడానికి వేచి ఉంది</translation>
 <translation id="7191430249889272776">బ్యాక్‌గ్రౌండ్‌లో ట్యాబ్ తెరవబడింది.</translation>
 <translation id="723171743924126238">చిత్రాలను ఎంచుకోండి</translation>
@@ -891,6 +897,7 @@
 <translation id="8027863900915310177">ఎక్కడ డౌన్‌లోడ్ చేయాలో ఎంచుకోండి</translation>
 <translation id="8035133914807600019">కొత్త ఫోల్డర్…</translation>
 <translation id="8037750541064988519"><ph name="DAYS" /> రోజులు మిగిలి ఉంది</translation>
+<translation id="8037801708772278989">ఇప్పుడే తనిఖీ చేసింది</translation>
 <translation id="804335162455518893">SD కార్డ్ కనుగొనబడలేదు</translation>
 <translation id="805047784848435650">మీ బ్రౌజింగ్ చరిత్ర ఆధారంగా</translation>
 <translation id="8051695050440594747"><ph name="MEGABYTES" /> MB అందుబాటులో ఉంది</translation>
@@ -1031,6 +1038,7 @@
 <translation id="9137013805542155359">అసలును చూపించు</translation>
 <translation id="9155898266292537608">ఒక పదంపై నొక్కడం ద్వారా కూడా మీరు త్వరగా వెతకవచ్చు</translation>
 <translation id="9169507124922466868">నావిగేషన్ చరిత్ర సగం తెరిచి ఉంది</translation>
+<translation id="9199368092038462496">{NUM_MINS,plural, =1{1 నిమిషం క్రితం తనిఖీ చేసింది}other{# నిమిషాల క్రితం తనిఖీ చేసింది}}</translation>
 <translation id="9204836675896933765">1 ఫైల్ మిగిలి ఉంది</translation>
 <translation id="9206873250291191720">A</translation>
 <translation id="9209888181064652401">కాల్‌లను చేయడం సాధ్యం కాదు</translation>

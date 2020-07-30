@@ -8,6 +8,7 @@ source_set("ranges") {
     "functional.h",
     "iterator.h",
     "ranges.h",
+    "ranges_internal.h",
   ]
 }
 
@@ -16,7 +17,7 @@ source_set("unittests") {
   sources = [
     "algorithm_unittest.cc",
     "functional_unittest.cc",
-    "iterator_unittest.cc",
+    "ranges_unittest.cc",
   ]
 
   deps = [

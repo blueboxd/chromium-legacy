@@ -1306,7 +1306,6 @@ _VALID_OS_MACROS = (
     'OS_IOS',
     'OS_LINUX',
     'OS_MAC',
-    'OS_MACOSX',
     'OS_NACL',
     'OS_NACL_NONSFI',
     'OS_NACL_SFI',

@@ -4053,7 +4053,6 @@ Bạn có thể quản lý các tùy chọn cài đặt của tài khoản này 
 <translation id="6056710589053485679">Tải lại bình thường</translation>
 <translation id="6057312498756061228">Hệ thống không thể kiểm tra bảo mật do tệp này có dung lượng quá lớn. Bạn có thể mở tệp có dung lượng tối đa là 50 MB.</translation>
 <translation id="6057381398996433816">Trang web này đã bị chặn sử dụng cảm biến chuyển động và ánh sáng của thiết bị.</translation>
-<translation id="6058567592298841668">Máy ảo plugin: <ph name="PLUGIN_VM_NAME" /></translation>
 <translation id="6059652578941944813">Hệ thống cấp bậc của Chứng chỉ</translation>
 <translation id="6059925163896151826">Thiết bị USB</translation>
 <translation id="6061882183774845124">Gửi đường dẫn liên kết tới thiết bị của bạn</translation>
@@ -4482,6 +4481,7 @@ Bạn có thể quản lý các tùy chọn cài đặt của tài khoản này 
 <translation id="6602956230557165253">Sử dụng các phím mũi tên trái và phải để điều hướng.</translation>
 <translation id="6605847144724004692">Chưa có người dùng nào xếp hạng.</translation>
 <translation id="6607831829715835317">Côn&amp;g cụ khác</translation>
+<translation id="6608012008902909398">Hiển thị thông tin chi tiết về quá trình kiểm tra phần mềm thiết bị</translation>
 <translation id="6611972847767394631">Tìm các thẻ của bạn ở đây</translation>
 <translation id="6612358246767739896">Nội dung được bảo vệ</translation>
 <translation id="6615455863669487791">Hiển thị cho tôi</translation>

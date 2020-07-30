@@ -366,6 +366,12 @@ bool InputMethodChromeOS::SetCompositionRange(
   }
 }
 
+gfx::Range InputMethodChromeOS::GetAutocorrectRange() {
+  if (IsTextInputTypeNone())
+    return gfx::Range();
+  return GetTextInputClient()->GetAutocorrectRange();
+}
+
 gfx::Rect InputMethodChromeOS::GetAutocorrectCharacterBounds() {
   if (IsTextInputTypeNone())
     return gfx::Rect();

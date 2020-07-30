@@ -71,12 +71,6 @@ class WEB_DIALOGS_EXPORT WebDialogDelegate {
   // Gets the JSON string input to use when showing the dialog.
   virtual std::string GetDialogArgs() const = 0;
 
-  // Returns true to signal that the dialog can be closed. Specialized
-  // WebDialogDelegate subclasses can override this default behavior to allow
-  // the close to be blocked until the user corrects mistakes, accepts an
-  // agreement, etc.
-  virtual bool CanCloseDialog() const;
-
   // Returns true if the dialog can ever be resized. Default implementation
   // returns true.
   virtual bool CanResizeDialog() const;
@@ -93,6 +87,13 @@ class WEB_DIALOGS_EXPORT WebDialogDelegate {
   // closed.  If this returns true, the dialog is closed, otherwise the
   // dialog remains open. Default implementation returns true.
   virtual bool OnDialogCloseRequested();
+  // Use `OnDialogCloseRequested()` instead. This one is called too late in the
+  // closing process, so returning false here will leave you a half-broken
+  // dialog. Currently, `AddSupervisionDialog` relies on this to record
+  // histogram correctly.
+  //
+  // TODO(crbug.com/1110759): remove this function.
+  virtual bool DeprecatedOnDialogCloseRequested();
 
   // A callback to notify the delegate that the dialog is about to close due to
   // the user pressing the ESC key.

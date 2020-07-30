@@ -47,6 +47,19 @@ constexpr gfx::Insets kButtonRowInsets(0, 64, 32, 64);
 constexpr int kWindowWidth = 768;
 constexpr int kWindowHeight = 636;
 
+// There's no point showing a retry button if it is guaranteed to still fail.
+bool ShowRetryButton(plugin_vm::PluginVmInstaller::FailureReason reason) {
+  switch (reason) {
+    case plugin_vm::PluginVmInstaller::FailureReason::NOT_ALLOWED:
+    case plugin_vm::PluginVmInstaller::FailureReason::DLC_INTERNAL:
+    case plugin_vm::PluginVmInstaller::FailureReason::DLC_NEED_REBOOT:
+    case plugin_vm::PluginVmInstaller::FailureReason::DLC_UNSUPPORTED:
+      return false;
+    default:
+      return true;
+  }
+}
+
 }  // namespace
 
 void plugin_vm::ShowPluginVmInstallerView(Profile* profile) {
@@ -436,12 +449,9 @@ int PluginVmInstallerView::GetCurrentDialogButtons() const {
       return ui::DIALOG_BUTTON_CANCEL | ui::DIALOG_BUTTON_OK;
     case State::kError:
       DCHECK(reason_);
-      switch (*reason_) {
-        case plugin_vm::PluginVmInstaller::FailureReason::NOT_ALLOWED:
-          return ui::DIALOG_BUTTON_CANCEL;
-        default:
-          return ui::DIALOG_BUTTON_CANCEL | ui::DIALOG_BUTTON_OK;
-      }
+      if (ShowRetryButton(*reason_))
+        return ui::DIALOG_BUTTON_CANCEL | ui::DIALOG_BUTTON_OK;
+      return ui::DIALOG_BUTTON_CANCEL;
   }
 }
 
@@ -464,16 +474,10 @@ base::string16 PluginVmInstallerView::GetCurrentDialogButtonLabel(
     }
     case State::kError: {
       DCHECK(reason_);
-      switch (*reason_) {
-        case plugin_vm::PluginVmInstaller::FailureReason::NOT_ALLOWED:
-          DCHECK_EQ(button, ui::DIALOG_BUTTON_CANCEL);
-          return l10n_util::GetStringUTF16(IDS_APP_CANCEL);
-        default:
-          return l10n_util::GetStringUTF16(
-              button == ui::DIALOG_BUTTON_OK
-                  ? IDS_PLUGIN_VM_INSTALLER_RETRY_BUTTON
-                  : IDS_APP_CANCEL);
-      }
+      DCHECK(ShowRetryButton(*reason_) || button == ui::DIALOG_BUTTON_CANCEL);
+      return l10n_util::GetStringUTF16(
+          button == ui::DIALOG_BUTTON_OK ? IDS_PLUGIN_VM_INSTALLER_RETRY_BUTTON
+                                         : IDS_APP_CANCEL);
     }
   }
 }

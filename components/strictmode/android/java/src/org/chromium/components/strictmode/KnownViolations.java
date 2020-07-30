@@ -44,6 +44,8 @@ public final class KnownViolations {
                         DETECT_DISK_READ, "android.app.ActivityThread#parseCSCAppResource");
                 exemptions.ignoreExternalMethod(
                         DETECT_DISK_READ, "android.app.ActivityThread#performLaunchActivity");
+                exemptions.ignoreExternalMethod(DETECT_DISK_READ, "android.widget.Toast#makeText");
+                exemptions.ignoreExternalMethod(DETECT_DISK_READ, "android.widget.Toast#show");
                 exemptions.ignoreExternalMethod(DETECT_DISK_READ,
                         "com.samsung.android.knox.custom.ProKioskManager#getProKioskState");
                 if (model.equals("sm-g9350")) {
@@ -55,6 +57,10 @@ public final class KnownViolations {
                             DETECT_DISK_IO, "android.content.res.Resources#loadDrawable");
                     exemptions.ignoreExternalMethod(
                             DETECT_DISK_WRITE, "android.app.ActivityThread#performLaunchActivity");
+                }
+                if (Build.VERSION.SDK_INT <= 27) {
+                    exemptions.ignoreExternalMethod(DETECT_DISK_READ,
+                            "com.android.server.am.ActivityManagerService#startActivity");
                 }
                 break;
             case "oneplus":
@@ -97,6 +103,11 @@ public final class KnownViolations {
         } else if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
             exemptions.ignoreExternalMethod(
                     DETECT_DISK_WRITE, "android.content.ClipboardManager#setPrimaryClip");
+        }
+
+        if (Build.VERSION.SDK_INT == Build.VERSION_CODES.O
+                || Build.VERSION.SDK_INT == Build.VERSION_CODES.O_MR1) {
+            exemptions.ignoreExternalMethod(DETECT_DISK_READ, "dalvik.system.DexPathList#toString");
         }
     }
 

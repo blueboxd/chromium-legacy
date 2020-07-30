@@ -19,6 +19,9 @@ class UserPoliciesManager {
   // Get the user policies manager instance.
   static UserPoliciesManager* Get();
 
+  // Return true if cloud policies feature is enabled.
+  bool CloudPoliciesEnabled() const;
+
   // Fetch the policies for the user from GCPW backend with |sid| using
   // |access_token| for authentication and authorization and saves it in file
   // storage replacing any previously fetched versions.
@@ -35,10 +38,14 @@ class UserPoliciesManager {
 
   // Retrieves the policies for the user with |sid| from local storage. Returns
   // the default user policy if policy not fetched or on any error.
-  bool GetUserPolicies(const base::string16& sid, UserPolicies* user_policies);
+  virtual bool GetUserPolicies(const base::string16& sid,
+                               UserPolicies* user_policies);
 
   // For testing only return the status of the last policy fetch.
   HRESULT GetLastFetchStatusForTesting() const;
+
+  // For testing manually control if the cloud policies feature is enabled.
+  void SetCloudPoliciesEnabledForTesting(bool value);
 
  protected:
   // Returns the storage used for the instance pointer.

@@ -123,6 +123,7 @@
 <translation id="1430915738399379752">Друк</translation>
 <translation id="1442386063175183758">Згіб "вароты" справа</translation>
 <translation id="1442987760062738829">Дзірка</translation>
+<translation id="1447067628680007684">(x86_64)</translation>
 <translation id="1453974140256777690">Тэкст, які вы ўстаўляеце або далучаеце, перасылаецца для аналізу ў Google Cloud або трэцім бакам: напрыклад, для праверкі на наяўнасць канфідэнцыяльных даных.</translation>
 <translation id="1455413310270022028">Сцірка</translation>
 <translation id="1462245070427461050">JIS B9</translation>
@@ -1144,6 +1145,7 @@
 <translation id="5705882733397021510">Назад</translation>
 <translation id="57094364128775171">Прапанаваць надзейны пароль…</translation>
 <translation id="5710435578057952990">Сапраўднасць гэтага вэб-сайта не была спраўджана.</translation>
+<translation id="571403275720188526">(arm64)</translation>
 <translation id="5720705177508910913">Бягучы карыстальнік</translation>
 <translation id="5728056243719941842">C5 (канверт)</translation>
 <translation id="5730040223043577876">Chrome рэкамендуе скінуць ваш пароль, калі вы карысталіся ім на іншых сайтах.</translation>
@@ -1193,6 +1195,7 @@
 <translation id="5921639886840618607">Захаваць картку ва Уліковы запіс Google?</translation>
 <translation id="5922853866070715753">Амаль гатова</translation>
 <translation id="5932224571077948991">Сайт паказвае назойлівую рэкламу або рэкламу, якая ўводзіць у зман</translation>
+<translation id="5938793338444039872">Troy</translation>
 <translation id="5946937721014915347">Адкрываецца <ph name="SITE_NAME" />…</translation>
 <translation id="5951495562196540101">Не ўдалося зарэгістраваць з дапамогай уліковага запісу спажыўца (даступна пакетная ліцэнзія).</translation>
 <translation id="5967592137238574583">Рэдагаваць кантактныя звесткі</translation>
@@ -1360,6 +1363,7 @@
 <translation id="6646269444027925224">{COUNT,plural, =0{Няма}=1{З 1 сайта (вы не выйдзеце з Уліковага запісу Google)}one{З # сайта (вы не выйдзеце з Уліковага запісу Google)}few{З # сайтаў (вы не выйдзеце з Уліковага запісу Google)}many{З # сайтаў (вы не выйдзеце з Уліковага запісу Google)}other{З # сайта (вы не выйдзеце з Уліковага запісу Google)}}</translation>
 <translation id="6652101503459149953">Выкарыстоўваць Windows Hello</translation>
 <translation id="6657585470893396449">Пароль</translation>
+<translation id="666259744093848177">(x86_64, пераклад)</translation>
 <translation id="6665553082534466207">Тры дзіркі справа</translation>
 <translation id="6671697161687535275">Выдаліць прапанову аўтазапаўнення форм з Chromium?</translation>
 <translation id="6685834062052613830">Выйдзіце і завяршыце наладжванне</translation>

@@ -104,6 +104,7 @@
 <translation id="1853692000353488670">ແຖບບໍ່ເຜີຍຕົວຕົນໃໝ່</translation>
 <translation id="1856325424225101786">ຣີເຊັດໂໝດ Lite ບໍ?</translation>
 <translation id="1868024384445905608">ດຽວນີ້ Chrome ດາວໂຫຼດໄຟລ໌ໄດ້ໄວກວ່າເກົ່າ</translation>
+<translation id="1874760110381325409">ທ່ານຈະເຂົ້າສູ່ລະບົບດ້ວຍບັນຊີ Google\n(ນີ້ຈະບໍ່ເປີດ Chrome Sync)</translation>
 <translation id="1883903952484604915">ໄຟລ໌ຂອງຂ້ອຍ</translation>
 <translation id="1919950603503897840">ເລືອກລາຍຊື່ຜູ້ຕິດຕໍ່</translation>
 <translation id="1925021887439448749">ປ້ອນທີ່ຢູ່ເວັບແບບກຳນົດເອງ</translation>
@@ -227,6 +228,7 @@
 <translation id="281504910091592009">ເບິ່ງ ແລະ ຈັດການລະຫັດຜ່ານທີ່ບັນທຶກໄວ້ໃນ <ph name="BEGIN_LINK" />ບັນຊີ Google<ph name="END_LINK" /> ຂອງທ່ານ</translation>
 <translation id="2818669890320396765">ເພື່ອໃຊ້ບຸກມາກຂອງທ່ານຢູ່ໃນທຸກອຸປະກອນຂອງທ່ານ, ກະລຸນາເຂົ້າສູ່ລະບົບ ແລະ ເປີດການຊິ້ງຂໍ້ມູນກ່ອນ</translation>
 <translation id="2827278682606527653">ເມນູບັດຟີດເປີດໄວ້ເຄິ່ງລວງສູງ</translation>
+<translation id="2841216154655874070">{NUM_DAYS,plural, =1{ກວດແລ້ວເມື່ອ 1 ມື້ກ່ອນ}other{ກວດແລ້ວເມື່ອ # ມື້ກ່ອນ}}</translation>
 <translation id="2842985007712546952">ໂຟ​ລ​ເດີ​ພໍ່​ແມ່</translation>
 <translation id="2860954141821109167">ກວດໃຫ້ແນ່ໃຈວ່າໄດ້ເປີດນຳໃຊ້ແອັບໂທລະສັບໃນອຸປະກອນນີ້ແລ້ວ</translation>
 <translation id="2870560284913253234">ເວັບ​ໄຊທ໌</translation>
@@ -702,6 +704,7 @@
 <translation id="6532866250404780454">ເວັບໄຊທີ່ທ່ານເຂົ້າເບິ່ງໃນ Chrome ຈະບໍ່ສະແດງ. ລະບົບຈະລຶບໂມງນັບຖອຍຫຼັງຂອງເວັບໄຊທັງໝົດ.</translation>
 <translation id="6534565668554028783">Google ໃຊ້ເວລາດົນເກີນໄປໃນການຕອບ</translation>
 <translation id="6539092367496845964">ມີບາງຢ່າງຜິດພາດ. ລອງໃໝ່ໃນພາຍຫລັງ.</translation>
+<translation id="6541983376925655882">{NUM_HOURS,plural, =1{ກວດແລ້ວເມື່ອ 1 ຊົ່ວໂມງກ່ອນ}other{ກວດແລ້ວເມື່ອ # ຊົ່ວໂມງກ່ອນ}}</translation>
 <translation id="6545017243486555795">ລຶບລ້າງທຸກຂໍ້ມູນ</translation>
 <translation id="6560414384669816528">ຊອກຫາດ້ວຍ Sogou</translation>
 <translation id="656065428026159829">ເບິ່ງເພີ່ມເຕີມ</translation>
@@ -733,6 +736,7 @@
 <translation id="6697492270171225480">ສະແດງການແນະນຳສຳລັບໜ້າຄ້າຍຄືກັນເມື່ອຊອກບໍ່ເຫັນໜ້າໃດໜຶ່ງ</translation>
 <translation id="6698801883190606802">ຈັດການຂໍ້ມູນທີ່ຊິງຄ໌ແລ້ວ</translation>
 <translation id="6699370405921460408">ເຊີບເວີ Google ຈະປັບໜ້າເວັບທີ່ທ່ານເຂົ້າເບິ່ງໃຫ້ເໝາະສົມ.</translation>
+<translation id="670498945988402717">ກວດແລ້ວມື້ວານນີ້</translation>
 <translation id="6710213216561001401">ຜ່ານມາ</translation>
 <translation id="671481426037969117">ເວລາແອັບ <ph name="FQDN" /> ຂອງທ່ານໝົດແລ້ວ. ມັນຈະເລີ່ມໃໝ່ໃນມື້ອື່ນ.</translation>
 <translation id="6738867403308150051">ກໍາລັງດາວ​ໂຫຼດ...</translation>
@@ -771,6 +775,7 @@
 <translation id="7063006564040364415">ບໍ່​ສາ​ມາດ​ເຊື່ອມ​ຕໍ່​ກັບ​ເຊີບເວີຊິງຄ໌ໄດ້​.</translation>
 <translation id="7071521146534760487">ຈັດການບັນຊີ</translation>
 <translation id="7077143737582773186">SD ກາດ</translation>
+<translation id="7080806333218412752">ສົ່ງ URL ໄປໃຫ້ Safe Browsing ກວດເບິ່ງພວກມັນ. ນອກນັ້ນຍັງສົ່ງຕົວຢ່າງນ້ອຍໆຂອງໜ້າ, ການດາວໂຫຼດ, ການເຄື່ອນໄຫວຂອງສ່ວນຂະຫຍາຍ ແລະ ຂໍ້ມູນລະບົບເພື່ອຊ່ວຍຄົ້ນຫາອັນຕະລາຍໃໝ່ໆ. ເຊື່ອມໂຍງຂໍ້ມູນນີ້ຊົ່ວຄາວກັບບັນຊີ Google ຂອງທ່ານເມື່ອທ່ານເຂົ້າສູ່ລະບົບ ເພື່ອປົກປ້ອງທ່ານໃນທົ່ວແອັບຕ່າງໆຂອງ Google.</translation>
 <translation id="7121362699166175603">ລຶບລ້າງປະຫວັດ ແລະ ການປະກອບຂໍ້ມູນອັດຕະໂນມັດໃນແຖບທີ່ຢູ່. ບັນຊີ Google ຂອງທ່ານອາດຈະມີຮູບແບບອື່ນຂອງປະຫວັດການທ່ອງເວັບຢູ່ <ph name="BEGIN_LINK" />myactivity.google.com<ph name="END_LINK" />.</translation>
 <translation id="7128355412245153445">ເບິ່ງເວັບໄຊຍອດນິຍົມ ແລະ ເລື່ອງລາວຫຼ້າສຸດໃນທຸກເມື່ອທີ່ທ່ານແຕະປຸ່ມໜ້າທໍາອິດ</translation>
 <translation id="7138678301420049075">ອື່ນໆ</translation>
@@ -780,6 +785,7 @@
 <translation id="7173114856073700355">ເປີດການຕັ້ງຄ່າ</translation>
 <translation id="7177466738963138057">ທ່ານສາມາດປ່ຽນສິ່ງນີ້ໄດ້ພາຍຫຼັງໃນການຕັ້ງຄ່າ</translation>
 <translation id="7180611975245234373">ຣີເຟຣຊ</translation>
+<translation id="7187993566681480880">ຮັກສາໃຫ້ທ່ານປອດໄພໃນ Chrome ແລະ ອາດຈະຖືກໃຊ້ເພື່ອປັບປຸງຄວາມປອດໄພໃນແອັບອື່ນຂອງ Google ເມື່ອທ່ານເຂົ້າສູ່ລະບົບ.</translation>
 <translation id="7189372733857464326">ກຳລັງລໍຖ້າ Google Play Services ສຳເລັດການອັບເດດ</translation>
 <translation id="7191430249889272776">ແຖບທີ່ເປີດຢູ່ໃນພື້ນຫຼັງ.</translation>
 <translation id="723171743924126238">ເລືອກຮູບ</translation>
@@ -891,6 +897,7 @@
 <translation id="8027863900915310177">ເລືອກບ່ອນທີ່ຈະດາວໂຫຼດ</translation>
 <translation id="8035133914807600019">ໂຟ​ລ​ເດີ​ໃໝ່...</translation>
 <translation id="8037750541064988519">ຍັງເຫຼືອ <ph name="DAYS" /> ມື້</translation>
+<translation id="8037801708772278989">ຫາກໍກວດແລ້ວຕອນນີ້</translation>
 <translation id="804335162455518893">ບໍ່ພົບແຜ່ນ SD</translation>
 <translation id="805047784848435650">ອີງໃສ່ປະຫວັດການທ່ອງເວັບຂອງທ່ານ</translation>
 <translation id="8051695050440594747">ຍັງເຫຼືອ <ph name="MEGABYTES" /> MB</translation>
@@ -1031,6 +1038,7 @@
 <translation id="9137013805542155359">ສະແດງຕົ້ນສະບັບ</translation>
 <translation id="9155898266292537608">ທ່ານສາມາດຊອກຫາດ້ວຍການແຕະດ່ວນໃສ່ຄຳສັບໃດໜຶ່ງໄດ້ເຊັ່ນກັນ</translation>
 <translation id="9169507124922466868">ປະຫວັດການນຳທາງເປີດຢູ່ເຄິ່ງໜຶ່ງ</translation>
+<translation id="9199368092038462496">{NUM_MINS,plural, =1{ກວດແລ້ວເມື່ອ 1 ນາທີກ່ອນ}other{ກວດແລ້ວເມື່ອ # ນາທີກ່ອນ}}</translation>
 <translation id="9204836675896933765">ຍັງເຫຼືອ 1 ໄຟລ໌</translation>
 <translation id="9206873250291191720">ກ</translation>
 <translation id="9209888181064652401">ບໍ່ສາມາດໂທອອກໄດ້</translation>

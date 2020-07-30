@@ -166,7 +166,7 @@ void ServiceWorkerRegistry::CreateNewVersion(
     NewVersionCallback callback) {
   DCHECK_CURRENTLY_ON(ServiceWorkerContext::GetCoreThreadId());
   DCHECK(registration);
-  storage()->GetNewVersionId(base::BindOnce(
+  GetRemoteStorageControl()->GetNewVersionId(base::BindOnce(
       &ServiceWorkerRegistry::DidGetNewVersionId, weak_factory_.GetWeakPtr(),
       std::move(registration), script_url, script_type, std::move(callback)));
 }
@@ -485,7 +485,7 @@ void ServiceWorkerRegistry::UpdateLastUpdateCheckTime(
     base::Time last_update_check_time,
     StatusCallback callback) {
   DCHECK_CURRENTLY_ON(ServiceWorkerContext::GetCoreThreadId());
-  storage()->UpdateLastUpdateCheckTime(
+  GetRemoteStorageControl()->UpdateLastUpdateCheckTime(
       registration_id, origin, last_update_check_time,
       CreateDatabaseStatusCallback(std::move(callback)));
 }
@@ -496,7 +496,7 @@ void ServiceWorkerRegistry::UpdateNavigationPreloadEnabled(
     bool enable,
     StatusCallback callback) {
   DCHECK_CURRENTLY_ON(ServiceWorkerContext::GetCoreThreadId());
-  storage()->UpdateNavigationPreloadEnabled(
+  GetRemoteStorageControl()->UpdateNavigationPreloadEnabled(
       registration_id, origin, enable,
       CreateDatabaseStatusCallback(std::move(callback)));
 }
@@ -507,7 +507,7 @@ void ServiceWorkerRegistry::UpdateNavigationPreloadHeader(
     const std::string& value,
     StatusCallback callback) {
   DCHECK_CURRENTLY_ON(ServiceWorkerContext::GetCoreThreadId());
-  storage()->UpdateNavigationPreloadHeader(
+  GetRemoteStorageControl()->UpdateNavigationPreloadHeader(
       registration_id, origin, value,
       CreateDatabaseStatusCallback(std::move(callback)));
 }
@@ -515,7 +515,7 @@ void ServiceWorkerRegistry::UpdateNavigationPreloadHeader(
 void ServiceWorkerRegistry::StoreUncommittedResourceId(int64_t resource_id,
                                                        const GURL& origin) {
   DCHECK_CURRENTLY_ON(ServiceWorkerContext::GetCoreThreadId());
-  storage()->StoreUncommittedResourceId(
+  GetRemoteStorageControl()->StoreUncommittedResourceId(
       resource_id, origin,
       base::BindOnce(&ServiceWorkerRegistry::DidWriteUncommittedResourceIds,
                      weak_factory_.GetWeakPtr()));
@@ -530,7 +530,7 @@ void ServiceWorkerRegistry::DoomUncommittedResource(int64_t resource_id) {
 void ServiceWorkerRegistry::DoomUncommittedResources(
     const std::vector<int64_t>& resource_ids) {
   DCHECK_CURRENTLY_ON(ServiceWorkerContext::GetCoreThreadId());
-  storage()->DoomUncommittedResources(
+  GetRemoteStorageControl()->DoomUncommittedResources(
       resource_ids,
       base::BindOnce(&ServiceWorkerRegistry::DidDoomUncommittedResourceIds,
                      weak_factory_.GetWeakPtr(), resource_ids));
@@ -831,8 +831,10 @@ ServiceWorkerRegistry::GetOrCreateRegistration(
   scoped_refptr<ServiceWorkerVersion> version =
       context_->GetLiveVersion(data.version_id);
   if (!version) {
+    // TODO(crbug.com/1055677): Pass ServiceWorkerLiveVersionRef
     version = base::MakeRefCounted<ServiceWorkerVersion>(
         registration.get(), data.script, data.script_type, data.version_id,
+        mojo::PendingRemote<storage::mojom::ServiceWorkerLiveVersionRef>(),
         context_->AsWeakPtr());
     version->set_fetch_handler_existence(
         data.has_fetch_handler
@@ -1323,15 +1325,18 @@ void ServiceWorkerRegistry::DidGetNewVersionId(
     const GURL& script_url,
     blink::mojom::ScriptType script_type,
     NewVersionCallback callback,
-    int64_t version_id) {
+    int64_t version_id,
+    mojo::PendingRemote<storage::mojom::ServiceWorkerLiveVersionRef>
+        version_reference) {
   DCHECK_CURRENTLY_ON(ServiceWorkerContext::GetCoreThreadId());
   if (version_id == blink::mojom::kInvalidServiceWorkerVersionId) {
     std::move(callback).Run(nullptr);
     return;
   }
-  std::move(callback).Run(base::MakeRefCounted<ServiceWorkerVersion>(
+  auto version = base::MakeRefCounted<ServiceWorkerVersion>(
       registration.get(), script_url, script_type, version_id,
-      context_->AsWeakPtr()));
+      std::move(version_reference), context_->AsWeakPtr());
+  std::move(callback).Run(std::move(version));
 }
 
 void ServiceWorkerRegistry::ScheduleDeleteAndStartOver() {

@@ -4053,7 +4053,6 @@ Mesaj de la server: <ph name="SERVER_MSG" /></translation>
 <translation id="6056710589053485679">Reîncărcați normal</translation>
 <translation id="6057312498756061228">Acest fișier este prea mare pentru verificarea de securitate. Poți să deschizi fișiere de maximum 50 MB.</translation>
 <translation id="6057381398996433816">Acest site nu are permisiunea de a folosi senzorii de mișcare și de lumină.</translation>
-<translation id="6058567592298841668">Mașina virtuală cu plugin: <ph name="PLUGIN_VM_NAME" /></translation>
 <translation id="6059652578941944813">Ierarhie de certificate</translation>
 <translation id="6059925163896151826">Dispozitive USB</translation>
 <translation id="6061882183774845124">Trimite linkul pe dispozitivele tale</translation>
@@ -4482,6 +4481,7 @@ Mesaj de la server: <ph name="SERVER_MSG" /></translation>
 <translation id="6602956230557165253">Utilizați butoanele săgeată la stânga și la dreapta pentru a naviga.</translation>
 <translation id="6605847144724004692">Nu a fost încă evaluat de utilizatori.</translation>
 <translation id="6607831829715835317">Mai multe instru&amp;mente</translation>
+<translation id="6608012008902909398">Afișează detalii despre verificarea software-ului de pe dispozitiv</translation>
 <translation id="6611972847767394631">Regăsește filele aici</translation>
 <translation id="6612358246767739896">Conținut protejat</translation>
 <translation id="6615455863669487791">Afișează</translation>

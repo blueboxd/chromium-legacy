@@ -14,6 +14,7 @@
 #include "chrome/browser/sharesheet/share_action.h"
 #include "chrome/browser/sharesheet/sharesheet_service_delegate.h"
 #include "chrome/browser/sharesheet/sharesheet_types.h"
+#include "components/services/app_service/public/cpp/intent_util.h"
 #include "ui/display/types/display_constants.h"
 #include "ui/views/view.h"
 
@@ -29,6 +30,8 @@ SharesheetService::~SharesheetService() = default;
 
 void SharesheetService::ShowBubble(views::View* bubble_anchor_view,
                                    apps::mojom::IntentPtr intent) {
+  DCHECK(intent->action == apps_util::kIntentActionSend ||
+         intent->action == apps_util::kIntentActionSendMultiple);
   auto sharesheet_service_delegate =
       std::make_unique<SharesheetServiceDelegate>(
           delegate_counter_++, std::move(bubble_anchor_view), this);
@@ -92,7 +95,7 @@ void SharesheetService::OnTargetSelected(uint32_t delegate_id,
     if (share_action == nullptr)
       return;
     delegate->OnActionLaunched();
-    share_action->LaunchAction(delegate, share_action_view);
+    share_action->LaunchAction(delegate, share_action_view, std::move(intent));
   } else if (type == TargetType::kApp) {
     auto launch_source = apps::mojom::LaunchSource::kFromSharesheet;
     app_service_proxy_->LaunchAppWithIntent(

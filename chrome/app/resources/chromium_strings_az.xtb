@@ -1,6 +1,7 @@
 <?xml version="1.0" ?>
 <!DOCTYPE translationbundle>
 <translationbundle lang="az">
+<translation id="1060499346270045814">{NUM_HOURS,plural, =1{Chromium arzuolunmaz proqram olub-olmadığını həftədə bir dəfə yoxlayır. Son yoxlanma: 1 saat əvvəl.}other{Chromium arzuolunmaz proqram olub-olmadığını həftədə bir dəfə yoxlayır. Son yoxlanma: {NUM_HOURS} saat əvvəl.}}</translation>
 <translation id="1065672644894730302">Tərcihləriniz oxuna bilmir.
 
 Bəzi funksiyalar əlçatmaz ola bilər ki, nəticədə tərcihlərə edilən dəyişikliklər saxlanmaya bilər.</translation>
@@ -40,6 +41,7 @@ Bəzi funksiyalar əlçatmaz ola bilər ki, nəticədə tərcihlərə edilən d�
 <translation id="2711502716910134313">Chromium Paneli</translation>
 <translation id="2718390899429598676">Əlavə təhlükəsizlik üçün, Chromium datanızı şifrələyəcək.</translation>
 <translation id="2770231113462710648">Defolt brauzeri dəyişin:</translation>
+<translation id="2797461000988640326">{NUM_MINS,plural, =1{Chromium arzuolunmaz proqram olub-olmadığını həftədə bir dəfə yoxlayır. Son yoxlanma: 1 dəqiqə əvvəl.}other{Chromium arzuolunmaz proqram olub-olmadığını həftədə bir dəfə yoxlayır. Son yoxlanma: {NUM_MINS} dəqiqə əvvəl.}}</translation>
 <translation id="2799223571221894425">Yenidən başladın</translation>
 <translation id="2847479871509788944">Chromium'dan silin...</translation>
 <translation id="2885378588091291677">Tapşırıq Meneceri</translation>
@@ -49,6 +51,7 @@ Bəzi funksiyalar əlçatmaz ola bilər ki, nəticədə tərcihlərə edilən d�
 <translation id="3032706164202344641">Chromium parollarınızı yoxlaya bilmir. Sonra yenidən cəhd edin.</translation>
 <translation id="3032787606318309379">Xrom durub ...</translation>
 <translation id="3068515742935458733">Qəza raportlarını və <ph name="UMA_LINK" /> linkini Google'a göndərməklə Chromium'un daha keyfiyyətli olmasına yardım olun</translation>
+<translation id="3086207596048762442">Chromium arzuolunmaz proqram olub-olmadığını həftədə bir dəfə yoxlayır</translation>
 <translation id="3103660991484857065">Quraşdırıcı arxivi dekompres edə bilmədi. Chromium'u yenidən endirməyiniz xahiş olunur.</translation>
 <translation id="3130323860337406239">Chromium mikrofonunuzu istifadə edir.</translation>
 <translation id="3155163173539279776">Chromium'u yenidən başladın</translation>
@@ -166,6 +169,7 @@ Bəzi funksiyalar əlçatmaz ola bilər. Xüsusi profil direktoriyası göstəri
 <translation id="6847869444787758381">Chromium parollarınızın oğurlanıb-oğurlanmadığı haqqında Sizə məlumat verir</translation>
 <translation id="6857782730669500492">Chromium - <ph name="PAGE_TITLE" /></translation>
 <translation id="6863361426438995919">Google Pay (Chromium'a kopyalandı)</translation>
+<translation id="6863846675160669383">{NUM_DAYS,plural, =1{Chromium arzuolunmaz proqram olub-olmadığını həftədə bir dəfə yoxlayır. Son yoxlanma 1 gün əvvəl.}other{Chromium arzuolunmaz proqram olub-olmadığını həftədə bir dəfə yoxlayır. Son yoxlanma: {NUM_DAYS} gün əvvəl.}}</translation>
 <translation id="6893813176749746474">Xrom yeniləndi, lakin ən azı 30 gün üçün istifadə etməmişlər.</translation>
 <translation id="6964305034639999644">Linki gizli Chromium pəncərəsində açın</translation>
 <translation id="6990124437352146030">Chromium bu sayt üçün mikrofona giriş tələb edir</translation>
@@ -228,6 +232,7 @@ Bəzi funksiyalar əlçatmaz ola bilər. Xüsusi profil direktoriyası göstəri
 <translation id="8621669128220841554">Naməlum xəta üzündən quraşdırmaq alınmadı. Chromium'u yenidən endirin.</translation>
 <translation id="8697124171261953979">O, həmçinin Chromium'u başlatdığınız zaman və ya Omnibox'dan axtarış etdiyiniz zaman göstərilən səhifəyə nəzarət edir.</translation>
 <translation id="8704119203788522458">Bu, Sizin Chromium'dur</translation>
+<translation id="8705191560707593947">Chromium arzuolunmaz proqram olub-olmadığını həftədə bir dəfə yoxlayır. Son dəfə yoxlanılıb: dünən.</translation>
 <translation id="8796602469536043152">Chromium bu sayt üçün kamera və mikrofona giriş icazəsi tələb edir</translation>
 <translation id="8803635938069941624">Chromium OS şərtləri</translation>
 <translation id="8821041990367117597">Chromium datanızı sinxronizasiya edə bilmir, çünki hesaba giriş məlumatlarınız köhnədir.</translation>
@@ -243,6 +248,7 @@ Bəzi funksiyalar əlçatmaz ola bilər. Xüsusi profil direktoriyası göstəri
 <translation id="91086099826398415">Linki Yeni Chromium tabında açın</translation>
 <translation id="911206726377975832">Brauzinq datanız da silinsin?</translation>
 <translation id="9158494823179993217">Sistem administratoru Chromium'u <ph name="TARGET_URL_HOSTNAME" /> ünvanına daxil olmaq məqsədilə alternativ brauzer açmaq üçün konfiqurasiya edib.</translation>
+<translation id="9164845895615421500">Chromium arzuolunmaz proqram olub-olmadığını həftədə bir dəfə yoxlayır. Son yoxlanma: 1 saniyə əvvəl.</translation>
 <translation id="9190841055450128916">Chromium (mDNS-In)</translation>
 <translation id="9191317372410544836">Bu cihazda baxışın yaxşı təşkil olunması üçün Chromium Sahələr istifadə edin</translation>
 <translation id="93478295209880648">Chromium düzgün işləməyə bilər, çünki daha Windows XP və ya Windows Vista'da dəstəklənmir</translation>

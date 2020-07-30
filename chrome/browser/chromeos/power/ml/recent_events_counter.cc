@@ -4,6 +4,8 @@
 
 #include "chrome/browser/chromeos/power/ml/recent_events_counter.h"
 
+#include <algorithm>
+
 #include "base/check_op.h"
 
 namespace chromeos {
@@ -15,6 +17,7 @@ RecentEventsCounter::RecentEventsCounter(base::TimeDelta duration,
     : duration_(duration), num_buckets_(num_buckets) {
   DCHECK_GT(num_buckets_, 0);
   bucket_duration_ = duration_ / num_buckets_;
+  DCHECK_EQ(duration_, bucket_duration_ * num_buckets_);
   event_count_.resize(num_buckets_, 0);
 }
 
@@ -35,20 +38,27 @@ void RecentEventsCounter::Log(base::TimeDelta timestamp) {
     return;
   }
 
-  // The event is later than the current window for the existing data.
-  event_count_[bucket_index] = 1;
-
-  for (int i = first_bucket_index_; i != bucket_index;
-       i = (i + 1) % num_buckets_) {
-    event_count_[i] = 0;
+  if (timestamp >= first_bucket_time_ + 2 * duration_) {
+    // The event is later than the current window for the existing data, by MORE
+    // than `duration` -> zero all the buckets.
+    std::fill(event_count_.begin(), event_count_.end(), 0);
+  } else {
+    // The event is later than the current window for the existing data, by LESS
+    // than `duration` -> zero the buckets between the old `first_bucket_index_`
+    // and this event's `bucket_index`.
+    for (int i = first_bucket_index_; i != bucket_index;
+         i = (i + 1) % num_buckets_) {
+      event_count_[i] = 0;
+    }
   }
+
+  event_count_[bucket_index] = 1;
   first_bucket_index_ = (bucket_index + 1) % num_buckets_;
 
-  int num_cycles = floor(timestamp / duration_);
-  base::TimeDelta cycle_start = num_cycles * duration_;
-  int extra_buckets = floor((timestamp - cycle_start) / bucket_duration_);
-  first_bucket_time_ = cycle_start + extra_buckets * bucket_duration_ +
-                       bucket_duration_ - duration_;
+  // Move the first bucket time such that |bucket_index| is the last bucket in
+  // the period [first_bucket_time_, first_bucket_time_ + duration_).
+  first_bucket_time_ =
+      timestamp - (timestamp % bucket_duration_) + bucket_duration_ - duration_;
 }
 
 int RecentEventsCounter::GetTotal(base::TimeDelta now) {
@@ -73,13 +83,9 @@ int RecentEventsCounter::GetTotal(base::TimeDelta now) {
 int RecentEventsCounter::GetBucketIndex(base::TimeDelta timestamp) const {
   DCHECK_GE(timestamp, base::TimeDelta());
 
-  int num_cycles = floor(timestamp / duration_);
-  base::TimeDelta cycle_start = num_cycles * duration_;
-  int index = floor((timestamp - cycle_start) / bucket_duration_);
-  if (index >= num_buckets_) {
-    return num_buckets_ - 1;
-  }
+  int index = (timestamp % duration_) / bucket_duration_;
   DCHECK_GE(index, 0);
+  DCHECK_LT(index, num_buckets_);
   return index;
 }
 

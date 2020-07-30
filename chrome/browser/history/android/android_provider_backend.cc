@@ -233,12 +233,12 @@ AndroidStatement* AndroidProviderBackend::QueryHistoryAndBookmarks(
     const std::vector<base::string16>& selection_args,
     const std::string& sort_order) {
   if (projections.empty())
-    return NULL;
+    return nullptr;
 
   ScopedTransaction transaction(history_db_, favicon_db_);
 
   if (!EnsureInitializedAndUpdated())
-    return NULL;
+    return nullptr;
 
   transaction.Commit();
 
@@ -533,10 +533,10 @@ AndroidStatement* AndroidProviderBackend::QuerySearchTerms(
     const std::vector<base::string16>& selection_args,
     const std::string& sort_order) {
   if (projections.empty())
-    return NULL;
+    return nullptr;
 
   if (!EnsureInitializedAndUpdated())
-    return NULL;
+    return nullptr;
 
   std::string sql;
   sql.append("SELECT ");
@@ -559,7 +559,7 @@ AndroidStatement* AndroidProviderBackend::QuerySearchTerms(
   BindStatement(selection_args, statement.get(), &count);
   if (!statement->is_valid()) {
     LOG(ERROR) << db_->GetErrorMessage();
-    return NULL;
+    return nullptr;
   }
   sql::Statement* result = statement.release();
   return new AndroidStatement(result, -1);
@@ -658,7 +658,7 @@ SearchTermID AndroidProviderBackend::InsertSearchTerm(
   if (!AddSearchTerm(values))
     return 0;
 
-  SearchTermID id = history_db_->GetSearchTerm(values.search_term(), NULL);
+  SearchTermID id = history_db_->GetSearchTerm(values.search_term(), nullptr);
   if (!id)
     // Note the passed in Time() will be changed in UpdateSearchTermTable().
     id = history_db_->AddSearchTerm(values.search_term(), base::Time());
@@ -761,7 +761,7 @@ bool AndroidProviderBackend::UpdateVisitedURLs() {
   }
 
   while (urls_statement.Step()) {
-    if (history_db_->GetAndroidURLRow(urls_statement.ColumnInt64(0), NULL))
+    if (history_db_->GetAndroidURLRow(urls_statement.ColumnInt64(0), nullptr))
       continue;
     if (!history_db_->AddAndroidURLRow(urls_statement.ColumnString(3),
                                        urls_statement.ColumnInt64(0)))
@@ -777,7 +777,7 @@ bool AndroidProviderBackend::UpdateVisitedURLs() {
     // The last_visit_time and the created time should be same when the visit
     // count is 0, this behavior is also required by the Android CTS.
     // The created_time could be set to the last_visit_time only when the type
-    // of the 'created' column is NULL because the left join is used in query
+    // of the 'created' column is nullptr because the left join is used in query
     // and there is no row in the visit table when the visit count is 0.
     base::Time last_visit_time =
         base::Time::FromInternalValue(statement.ColumnInt64(1));
@@ -798,7 +798,7 @@ bool AndroidProviderBackend::UpdateRemovedURLs() {
 }
 
 bool AndroidProviderBackend::UpdateBookmarks() {
-  if (backend_client_ == NULL) {
+  if (!backend_client_) {
     LOG(ERROR) << "HistoryClient is not available";
     return false;
   }
@@ -811,7 +811,7 @@ bool AndroidProviderBackend::UpdateBookmarks() {
   std::vector<URLID> url_ids;
   for (std::vector<URLAndTitle>::const_iterator i = pinned_urls.begin();
        i != pinned_urls.end(); ++i) {
-    URLID url_id = history_db_->GetRowForURL(i->url, NULL);
+    URLID url_id = history_db_->GetRowForURL(i->url, nullptr);
     if (url_id == 0) {
       URLRow url_row(i->url);
       url_row.set_title(i->title);
@@ -850,7 +850,7 @@ bool AndroidProviderBackend::UpdateFavicon() {
 
   favicon::IconMapping icon_mapping;
   while (enumerator.GetNextIconMapping(&icon_mapping)) {
-    URLID url_id = history_db_->GetRowForURL(icon_mapping.page_url, NULL);
+    URLID url_id = history_db_->GetRowForURL(icon_mapping.page_url, nullptr);
     if (url_id == 0) {
       LOG(ERROR) << "Can not find favicon's page url";
       continue;
@@ -1140,7 +1140,7 @@ AndroidStatement* AndroidProviderBackend::QueryHistoryAndBookmarksInternal(
   BindStatement(selection_args, statement.get(), &count);
   if (!statement->is_valid()) {
     LOG(ERROR) << db_->GetErrorMessage();
-    return NULL;
+    return nullptr;
   }
   sql::Statement* result = statement.release();
   return new AndroidStatement(result, replaced_index);
@@ -1160,7 +1160,7 @@ bool AndroidProviderBackend::DeleteHistoryInternal(
       deleted_rows.reset(new URLRows);
     deleted_rows->push_back(url_row);
     if (favicon_db_ &&
-        favicon_db_->GetIconMappingsForPageURL(url_row.url(), NULL)) {
+        favicon_db_->GetIconMappingsForPageURL(url_row.url(), nullptr)) {
       if (!favicons)
         favicons.reset(new std::set<GURL>);
       favicons->insert(url_row.url());
@@ -1221,7 +1221,7 @@ bool AndroidProviderBackend::AddSearchTerm(const SearchRow& values) {
     if (!visit_handler_->Update(bookmark_row, table_id_rows))
       return false;
 
-    if (!history_db_->GetKeywordSearchTermRow(url_row.id(), NULL))
+    if (!history_db_->GetKeywordSearchTermRow(url_row.id(), nullptr))
       if (!history_db_->SetKeywordSearchTermsForURL(url_row.id(),
                values.keyword_id(), values.search_term()))
         return false;

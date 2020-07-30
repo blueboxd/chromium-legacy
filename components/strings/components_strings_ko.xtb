@@ -123,6 +123,7 @@
 <translation id="1430915738399379752">인쇄</translation>
 <translation id="1442386063175183758">오른쪽 게이트 폴드</translation>
 <translation id="1442987760062738829">펀칭</translation>
+<translation id="1447067628680007684">(x86_64)</translation>
 <translation id="1453974140256777690">붙여넣거나 첨부하는 텍스트는 분석을 위해 Google Cloud 또는 타사로 전송됩니다. 예를 들어, 민감한 정보를 찾기 위해 텍스트를 스캔할 수 있습니다.</translation>
 <translation id="1455413310270022028">지우개</translation>
 <translation id="1462245070427461050">JIS B9</translation>
@@ -1134,6 +1135,7 @@
 <translation id="5705882733397021510">뒤로</translation>
 <translation id="57094364128775171">강력한 비밀번호 추천...</translation>
 <translation id="5710435578057952990">이 웹사이트의 주소가 확인되지 않았습니다.</translation>
+<translation id="571403275720188526">(arm64)</translation>
 <translation id="5720705177508910913">현재 사용자</translation>
 <translation id="5728056243719941842">C5(봉투)</translation>
 <translation id="5730040223043577876">다른 사이트에서 비밀번호를 재사용했다면 비밀번호를 재설정하는 것이 좋습니다.</translation>
@@ -1183,6 +1185,7 @@
 <translation id="5921639886840618607">카드를 Google 계정에 저장하시겠습니까?</translation>
 <translation id="5922853866070715753">거의 완료되었습니다</translation>
 <translation id="5932224571077948991">사이트에서 방해가 되거나 사용자를 현혹하는 광고를 표시함</translation>
+<translation id="5938793338444039872">Troy</translation>
 <translation id="5946937721014915347"><ph name="SITE_NAME" /> 여는 중…</translation>
 <translation id="5951495562196540101">일반 계정으로 등록할 수 없습니다(패키지 라이선스 사용 가능).</translation>
 <translation id="5967592137238574583">연락처 정보 수정</translation>
@@ -1350,6 +1353,7 @@
 <translation id="6646269444027925224">{COUNT,plural, =0{없음}=1{사이트 1개(Google 계정에서 로그아웃되지 않음)}other{사이트 #개(Google 계정에서 로그아웃되지 않음)}}</translation>
 <translation id="6652101503459149953">Windows Hello 사용</translation>
 <translation id="6657585470893396449">비밀번호</translation>
+<translation id="666259744093848177">(x86_64 번역 버전)</translation>
 <translation id="6665553082534466207">오른쪽 3공 펀칭</translation>
 <translation id="6671697161687535275">Chromium에서 자동완성 항목 추천을 삭제하시겠습니까?</translation>
 <translation id="6685834062052613830">로그아웃 후 설정 완료</translation>

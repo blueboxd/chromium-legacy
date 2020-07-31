@@ -19,6 +19,7 @@
 #import "ios/chrome/app/application_delegate/startup_information.h"
 #import "ios/chrome/app/application_delegate/tab_opening.h"
 #include "ios/chrome/app/application_mode.h"
+#import "ios/chrome/app/intents/OpenInChromeIncognitoIntent.h"
 #import "ios/chrome/app/intents/OpenInChromeIntent.h"
 #import "ios/chrome/app/intents/SearchInChromeIntent.h"
 #import "ios/chrome/app/spotlight/actions_spotlight_manager.h"
@@ -54,6 +55,11 @@ NSString* const kShortcutNewSearch = @"OpenNewSearch";
 NSString* const kShortcutNewIncognitoSearch = @"OpenIncognitoSearch";
 NSString* const kShortcutVoiceSearch = @"OpenVoiceSearch";
 NSString* const kShortcutQRScanner = @"OpenQRScanner";
+
+// Constants for Siri shortcut.
+NSString* const kSiriShortcutOpenInChrome = @"OpenInChromeIntent";
+NSString* const kSiriShortcutSearchInChrome = @"SearchInChromeIntent";
+NSString* const kSiriShortcutOpenInIncognito = @"OpenInChromeIncognitoIntent";
 
 }  // namespace
 
@@ -143,7 +149,7 @@ NSString* const kShortcutQRScanner = @"OpenQRScanner";
       return YES;
     }
   } else if ([userActivity.activityType
-                 isEqualToString:@"SearchInChromeIntent"]) {
+                 isEqualToString:kSiriShortcutSearchInChrome]) {
     base::RecordAction(UserMetricsAction("IOSLaunchedBySearchInChromeIntent"));
 
     AppStartupParameters* startupParams = [[AppStartupParameters alloc]
@@ -166,7 +172,7 @@ NSString* const kShortcutQRScanner = @"OpenQRScanner";
     webpageURL =
         [NSURL URLWithString:base::SysUTF8ToNSString(kChromeUINewTabURL)];
   } else if ([userActivity.activityType
-                 isEqualToString:@"OpenInChromeIntent"]) {
+                 isEqualToString:kSiriShortcutOpenInChrome]) {
     base::RecordAction(UserMetricsAction("IOSLaunchedByOpenInChromeIntent"));
     OpenInChromeIntent* intent = base::mac::ObjCCastStrict<OpenInChromeIntent>(
         userActivity.interaction.intent);
@@ -182,6 +188,28 @@ NSString* const kShortcutQRScanner = @"OpenQRScanner";
                                               completeURL:webpageGURL];
     [connectionInformation setStartupParameters:startupParams];
     webpageURL = intent.url;
+  } else if ([userActivity.activityType
+                 isEqualToString:kSiriShortcutOpenInIncognito]) {
+    base::RecordAction(UserMetricsAction("IOSLaunchedByOpenInIncognitoIntent"));
+    OpenInChromeIncognitoIntent* intent =
+        base::mac::ObjCCastStrict<OpenInChromeIncognitoIntent>(
+            userActivity.interaction.intent);
+
+    if (!intent.urls || intent.urls.count == 0) {
+      return NO;
+    }
+
+    std::vector<GURL> URLs;
+    for (NSURL* URL in intent.urls) {
+      URLs.push_back(net::GURLWithNSURL(URL));
+    }
+
+    AppStartupParameters* startupParams =
+        [[AppStartupParameters alloc] initWithURLs:URLs];
+    startupParams.launchInIncognito = YES;
+    [connectionInformation setStartupParameters:startupParams];
+    return YES;
+
   } else {
     // Do nothing for unknown activity type.
     return NO;
@@ -282,8 +310,39 @@ NSString* const kShortcutQRScanner = @"OpenQRScanner";
   // Do not load the external URL if the user has not accepted the terms of
   // service. This corresponds to the case when the user installed Chrome,
   // has never launched it and attempts to open an external URL in Chrome.
-  if ([startupInformation isPresentingFirstRunUI])
+  if ([startupInformation isPresentingFirstRunUI]) {
     return;
+  }
+
+  if (!connectionInformation.startupParameters.URLs.empty()) {
+    ApplicationModeForTabOpening mode =
+        connectionInformation.startupParameters.launchInIncognito
+            ? ApplicationModeForTabOpening::INCOGNITO
+            : ApplicationModeForTabOpening::NORMAL;
+
+    BOOL dismissOmnibox = [[connectionInformation startupParameters]
+                              postOpeningAction] != FOCUS_OMNIBOX;
+
+    // Using a weak reference to |connectionInformation| to solve a memory leak
+    // issue. |tabOpener| and |connectionInformation| are the same object in
+    // some cases (SceneController). This retains the object while the block
+    // exists. Then this block is passed around and in some cases it ends up
+    // stored in BrowserViewController. This results in a memory leak that looks
+    // like this: SceneController -> BrowserViewWrangler -> BrowserCoordinator
+    // -> BrowserViewController -> SceneController
+    __weak id<ConnectionInformation> weakConnectionInfo = connectionInformation;
+
+    [tabOpener
+        dismissModalsAndOpenMultipleTabsInMode:mode
+                                          URLs:weakConnectionInfo
+                                                   .startupParameters.URLs
+                                dismissOmnibox:dismissOmnibox
+                                    completion:^{
+                                      weakConnectionInfo.startupParameters =
+                                          nil;
+                                    }];
+    return;
+  }
 
   GURL externalURL = connectionInformation.startupParameters.externalURL;
   // Check if it's an U2F call. If so, route it to correct tab.

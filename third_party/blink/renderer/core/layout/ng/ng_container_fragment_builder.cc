@@ -73,12 +73,17 @@ void NGContainerFragmentBuilder::PropagateChildData(
         if (!containing_block_fragment)
           containing_block_fragment = fragment;
 
+        LogicalOffset containing_block_offset =
+            descendant.containing_block_offset.ConvertToLogical(
+                GetWritingMode(), Direction(), child.Size(), PhysicalSize());
+        containing_block_offset += child_offset;
+
         NGLogicalStaticPosition static_position =
             descendant.static_position.ConvertToLogical(
                 GetWritingMode(), Direction(), PhysicalSize());
         oof_positioned_fragmentainer_descendants_.emplace_back(
             descendant.node, static_position, descendant.inline_container,
-            /* needs_block_offset_adjustment */ false,
+            /* needs_block_offset_adjustment */ false, containing_block_offset,
             containing_block_fragment);
       }
     }

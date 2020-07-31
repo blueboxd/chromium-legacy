@@ -165,7 +165,12 @@ void ExternalSemaphore::Reset() {
   }
 
   if (gl_semaphore_ != 0) {
-    if (gl::GLApi* api = gl::g_current_gl_context)
+    auto* current_gl = gl::g_current_gl_context_tls->Get();
+    auto* api = current_gl->Driver ? current_gl->Api : nullptr;
+    // We assume there is always one GL context current. If there isn't a
+    // GL context current, we assume the last GL context is destroyed, in that
+    // case, we will skip glDeleteSemaphoresEXT().
+    if (api)
       api->glDeleteSemaphoresEXTFn(1, &gl_semaphore_);
   }
 
@@ -181,12 +186,6 @@ unsigned int ExternalSemaphore::GetGLSemaphore() {
     gl_semaphore_ = ImportSemaphoreHandleToGLSemaphore(handle_.Duplicate());
   }
   return gl_semaphore_;
-}
-
-unsigned int ExternalSemaphore::TakeGLSemaphore() {
-  auto gl_semaphore = GetGLSemaphore();
-  gl_semaphore_ = 0;
-  return gl_semaphore;
 }
 
 VkSemaphore ExternalSemaphore::GetVkSemaphore() {

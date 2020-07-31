@@ -46,7 +46,51 @@ PaintPreviewTracker::PaintPreviewTracker(
       embedding_token_(embedding_token),
       is_main_frame_(is_main_frame),
       scroll_(SkISize::Make(0, 0)) {}
-PaintPreviewTracker::~PaintPreviewTracker() = default;
+
+PaintPreviewTracker::~PaintPreviewTracker() {
+  DCHECK(states_.empty());
+}
+
+void PaintPreviewTracker::Save() {
+  states_.push_back(matrix_);
+}
+
+void PaintPreviewTracker::SetMatrix(const SkMatrix& matrix) {
+  matrix_ = matrix;
+}
+
+void PaintPreviewTracker::Restore() {
+  if (states_.size() == 0) {
+    DLOG(ERROR) << "No state to restore";
+    return;
+  }
+  matrix_ = states_.back();
+  states_.pop_back();
+}
+
+void PaintPreviewTracker::Concat(const SkMatrix& matrix) {
+  if (matrix.isIdentity())
+    return;
+  matrix_.preConcat(matrix);
+}
+
+void PaintPreviewTracker::Scale(SkScalar x, SkScalar y) {
+  if (x != 1 || y != 1) {
+    matrix_.preScale(x, y);
+  }
+}
+
+void PaintPreviewTracker::Rotate(SkScalar degrees) {
+  SkMatrix m;
+  m.setRotate(degrees);
+  Concat(m);
+}
+
+void PaintPreviewTracker::Translate(SkScalar x, SkScalar y) {
+  if (x || y) {
+    matrix_.preTranslate(x, y);
+  }
+}
 
 uint32_t PaintPreviewTracker::CreateContentForRemoteFrame(
     const gfx::Rect& rect,
@@ -95,8 +139,34 @@ void PaintPreviewTracker::AddGlyphs(const SkTextBlob* blob) {
   }
 }
 
-void PaintPreviewTracker::AnnotateLink(const GURL& url, const gfx::Rect& rect) {
-  links_.push_back(mojom::LinkData::New(url, rect));
+void PaintPreviewTracker::AnnotateLink(const GURL& url, const SkRect& rect) {
+  SkRect out_rect;
+  matrix_.mapRect(&out_rect, rect);
+  links_.push_back(mojom::LinkData::New(
+      url, gfx::Rect(out_rect.x(), out_rect.y(), out_rect.width(),
+                     out_rect.height())));
+}
+
+uint32_t PaintPreviewTracker::TransformContentForRemoteFrame(uint32_t old_id) {
+  if (matrix_.isIdentity())
+    return old_id;
+
+  auto pic_it = subframe_pics_.find(old_id);
+  if (pic_it == subframe_pics_.end())
+    return old_id;
+
+  SkRect out_rect;
+  matrix_.mapRect(&out_rect, pic_it->second->cullRect());
+
+  base::UnguessableToken embedding_token =
+      content_id_to_embedding_token_[old_id];
+  uint32_t new_id = CreateContentForRemoteFrame(
+      gfx::Rect(out_rect.x(), out_rect.y(), out_rect.width(),
+                out_rect.height()),
+      embedding_token);
+  subframe_pics_.erase(old_id);
+  content_id_to_embedding_token_.erase(old_id);
+  return new_id;
 }
 
 void PaintPreviewTracker::CustomDataToSkPictureCallback(SkCanvas* canvas,

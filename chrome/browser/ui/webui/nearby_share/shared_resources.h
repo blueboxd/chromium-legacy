@@ -11,5 +11,6 @@ extern const char kNearbyShareGeneratedPath[];
 
 void RegisterNearbySharedMojoResources(content::WebUIDataSource* data_source);
 void RegisterNearbySharedResources(content::WebUIDataSource* data_source);
+void RegisterNearbySharedStrings(content::WebUIDataSource* data_source);
 
 #endif  // CHROME_BROWSER_UI_WEBUI_NEARBY_SHARE_SHARED_RESOURCES_H_

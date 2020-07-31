@@ -181,13 +181,13 @@ TEST_F(HintCacheTest, ComponentUpdate) {
 
   proto::Hint hint1;
   hint1.set_key("subdomain.domain.org");
-  hint1.set_key_representation(proto::HOST_SUFFIX);
+  hint1.set_key_representation(proto::HOST);
   proto::Hint hint2;
   hint2.set_key("host.domain.org");
-  hint2.set_key_representation(proto::HOST_SUFFIX);
+  hint2.set_key_representation(proto::HOST);
   proto::Hint hint3;
   hint3.set_key("otherhost.subdomain.domain.org");
-  hint3.set_key_representation(proto::HOST_SUFFIX);
+  hint3.set_key_representation(proto::HOST);
 
   update_data->MoveHintIntoUpdateData(std::move(hint1));
   update_data->MoveHintIntoUpdateData(std::move(hint2));
@@ -201,8 +201,8 @@ TEST_F(HintCacheTest, ComponentUpdate) {
 
   // Matched
   EXPECT_TRUE(hint_cache()->HasHint("otherhost.subdomain.domain.org"));
-  EXPECT_TRUE(hint_cache()->HasHint("host.subdomain.domain.org"));
-  EXPECT_TRUE(hint_cache()->HasHint("subhost.host.subdomain.domain.org"));
+  EXPECT_TRUE(hint_cache()->HasHint("host.domain.org"));
+  EXPECT_TRUE(hint_cache()->HasHint("subdomain.domain.org"));
 }
 
 TEST_F(HintCacheTest, ComponentUpdateWithSameVersionIgnored) {
@@ -248,13 +248,13 @@ TEST_F(HintCacheTest, ComponentUpdateWithLaterVersionProcessed) {
 
   proto::Hint hint1;
   hint1.set_key("subdomain.domain.org");
-  hint1.set_key_representation(proto::HOST_SUFFIX);
+  hint1.set_key_representation(proto::HOST);
   proto::Hint hint2;
   hint2.set_key("host.domain.org");
-  hint2.set_key_representation(proto::HOST_SUFFIX);
+  hint2.set_key_representation(proto::HOST);
   proto::Hint hint3;
   hint3.set_key("otherhost.subdomain.domain.org");
-  hint3.set_key_representation(proto::HOST_SUFFIX);
+  hint3.set_key_representation(proto::HOST);
 
   update_data_1->MoveHintIntoUpdateData(std::move(hint1));
   update_data_1->MoveHintIntoUpdateData(std::move(hint2));
@@ -268,8 +268,8 @@ TEST_F(HintCacheTest, ComponentUpdateWithLaterVersionProcessed) {
 
   // Matched
   EXPECT_TRUE(hint_cache()->HasHint("otherhost.subdomain.domain.org"));
-  EXPECT_TRUE(hint_cache()->HasHint("host.subdomain.domain.org"));
-  EXPECT_TRUE(hint_cache()->HasHint("subhost.host.subdomain.domain.org"));
+  EXPECT_TRUE(hint_cache()->HasHint("host.domain.org"));
+  EXPECT_TRUE(hint_cache()->HasHint("subdomain.domain.org"));
 
   std::unique_ptr<StoreUpdateData> update_data_2 =
       hint_cache()->MaybeCreateUpdateDataForComponentHints(version_2);
@@ -277,13 +277,13 @@ TEST_F(HintCacheTest, ComponentUpdateWithLaterVersionProcessed) {
 
   proto::Hint hint4;
   hint4.set_key("subdomain.domain2.org");
-  hint4.set_key_representation(proto::HOST_SUFFIX);
+  hint4.set_key_representation(proto::HOST);
   proto::Hint hint5;
   hint5.set_key("host.domain2.org");
-  hint5.set_key_representation(proto::HOST_SUFFIX);
+  hint5.set_key_representation(proto::HOST);
   proto::Hint hint6;
   hint6.set_key("otherhost.subdomain.domain2.org");
-  hint6.set_key_representation(proto::HOST_SUFFIX);
+  hint6.set_key_representation(proto::HOST);
 
   update_data_2->MoveHintIntoUpdateData(std::move(hint4));
   update_data_2->MoveHintIntoUpdateData(std::move(hint5));
@@ -300,8 +300,8 @@ TEST_F(HintCacheTest, ComponentUpdateWithLaterVersionProcessed) {
 
   // Matched
   EXPECT_TRUE(hint_cache()->HasHint("otherhost.subdomain.domain2.org"));
-  EXPECT_TRUE(hint_cache()->HasHint("host.subdomain.domain2.org"));
-  EXPECT_TRUE(hint_cache()->HasHint("subhost.host.subdomain.domain2.org"));
+  EXPECT_TRUE(hint_cache()->HasHint("subdomain.domain2.org"));
+  EXPECT_TRUE(hint_cache()->HasHint("host.domain2.org"));
 }
 
 TEST_F(HintCacheTest, ComponentHintsAvailableAfterRestart) {
@@ -319,13 +319,13 @@ TEST_F(HintCacheTest, ComponentHintsAvailableAfterRestart) {
 
       proto::Hint hint1;
       hint1.set_key("subdomain.domain.org");
-      hint1.set_key_representation(proto::HOST_SUFFIX);
+      hint1.set_key_representation(proto::HOST);
       proto::Hint hint2;
       hint2.set_key("host.domain.org");
-      hint2.set_key_representation(proto::HOST_SUFFIX);
+      hint2.set_key_representation(proto::HOST);
       proto::Hint hint3;
       hint3.set_key("otherhost.subdomain.domain.org");
-      hint3.set_key_representation(proto::HOST_SUFFIX);
+      hint3.set_key_representation(proto::HOST);
 
       update_data->MoveHintIntoUpdateData(std::move(hint1));
       update_data->MoveHintIntoUpdateData(std::move(hint2));
@@ -342,8 +342,8 @@ TEST_F(HintCacheTest, ComponentHintsAvailableAfterRestart) {
 
     // Matched
     EXPECT_TRUE(hint_cache()->HasHint("otherhost.subdomain.domain.org"));
-    EXPECT_TRUE(hint_cache()->HasHint("host.subdomain.domain.org"));
-    EXPECT_TRUE(hint_cache()->HasHint("subhost.host.subdomain.domain.org"));
+    EXPECT_TRUE(hint_cache()->HasHint("host.domain.org"));
+    EXPECT_TRUE(hint_cache()->HasHint("subdomain.domain.org"));
 
     DestroyHintCache();
   }
@@ -363,13 +363,13 @@ TEST_F(HintCacheTest, ComponentHintsUpdatableAfterRestartWithPurge) {
 
     proto::Hint hint1;
     hint1.set_key("subdomain.domain.org");
-    hint1.set_key_representation(proto::HOST_SUFFIX);
+    hint1.set_key_representation(proto::HOST);
     proto::Hint hint2;
     hint2.set_key("host.domain.org");
-    hint2.set_key_representation(proto::HOST_SUFFIX);
+    hint2.set_key_representation(proto::HOST);
     proto::Hint hint3;
     hint3.set_key("otherhost.subdomain.domain.org");
-    hint3.set_key_representation(proto::HOST_SUFFIX);
+    hint3.set_key_representation(proto::HOST);
 
     update_data->MoveHintIntoUpdateData(std::move(hint1));
     update_data->MoveHintIntoUpdateData(std::move(hint2));
@@ -383,8 +383,8 @@ TEST_F(HintCacheTest, ComponentHintsUpdatableAfterRestartWithPurge) {
 
     // Matched
     EXPECT_TRUE(hint_cache()->HasHint("otherhost.subdomain.domain.org"));
-    EXPECT_TRUE(hint_cache()->HasHint("host.subdomain.domain.org"));
-    EXPECT_TRUE(hint_cache()->HasHint("subhost.host.subdomain.domain.org"));
+    EXPECT_TRUE(hint_cache()->HasHint("host.domain.org"));
+    EXPECT_TRUE(hint_cache()->HasHint("subdomain.domain.org"));
 
     DestroyHintCache();
   }
@@ -405,13 +405,13 @@ TEST_F(HintCacheTest, ComponentHintsNotRetainedAfterRestartWithPurge) {
 
       proto::Hint hint1;
       hint1.set_key("subdomain.domain.org");
-      hint1.set_key_representation(proto::HOST_SUFFIX);
+      hint1.set_key_representation(proto::HOST);
       proto::Hint hint2;
       hint2.set_key("host.domain.org");
-      hint2.set_key_representation(proto::HOST_SUFFIX);
+      hint2.set_key_representation(proto::HOST);
       proto::Hint hint3;
       hint3.set_key("otherhost.subdomain.domain.org");
-      hint3.set_key_representation(proto::HOST_SUFFIX);
+      hint3.set_key_representation(proto::HOST);
 
       update_data->MoveHintIntoUpdateData(std::move(hint1));
       update_data->MoveHintIntoUpdateData(std::move(hint2));
@@ -430,9 +430,8 @@ TEST_F(HintCacheTest, ComponentHintsNotRetainedAfterRestartWithPurge) {
     bool should_match = (i == 0);
     EXPECT_EQ(hint_cache()->HasHint("otherhost.subdomain.domain.org"),
               should_match);
-    EXPECT_EQ(hint_cache()->HasHint("host.subdomain.domain.org"), should_match);
-    EXPECT_EQ(hint_cache()->HasHint("subhost.host.subdomain.domain.org"),
-              should_match);
+    EXPECT_EQ(hint_cache()->HasHint("subdomain.domain.org"), should_match);
+    EXPECT_EQ(hint_cache()->HasHint("host.domain.org"), should_match);
 
     DestroyHintCache();
   }
@@ -451,7 +450,7 @@ TEST_F(HintCacheTest, TestMemoryCacheLeastRecentlyUsedPurge) {
   for (int i = 0; i < kTestHintCount; ++i) {
     proto::Hint hint;
     hint.set_key(GetHostDomainOrg(i));
-    hint.set_key_representation(proto::HOST_SUFFIX);
+    hint.set_key_representation(proto::HOST);
     update_data->MoveHintIntoUpdateData(std::move(hint));
   }
 
@@ -491,7 +490,7 @@ TEST_F(HintCacheTest, TestHostNotInCache) {
   for (int i = 0; i < kTestHintCount; ++i) {
     proto::Hint hint;
     hint.set_key(GetHostDomainOrg(i));
-    hint.set_key_representation(proto::HOST_SUFFIX);
+    hint.set_key_representation(proto::HOST);
     update_data->MoveHintIntoUpdateData(std::move(hint));
   }
 
@@ -512,16 +511,14 @@ TEST_F(HintCacheTest, TestMemoryCacheLoadCallback) {
   std::string hint_key = "subdomain.domain.org";
   proto::Hint hint;
   hint.set_key(hint_key);
-  hint.set_key_representation(proto::HOST_SUFFIX);
+  hint.set_key_representation(proto::HOST);
   update_data->MoveHintIntoUpdateData(std::move(hint));
 
   UpdateComponentHints(std::move(update_data));
 
-  EXPECT_FALSE(
-      hint_cache()->GetHostKeyedHintIfLoaded("host.subdomain.domain.org"));
-  LoadHint("host.subdomain.domain.org");
-  EXPECT_TRUE(
-      hint_cache()->GetHostKeyedHintIfLoaded("host.subdomain.domain.org"));
+  EXPECT_FALSE(hint_cache()->GetHostKeyedHintIfLoaded("subdomain.domain.org"));
+  LoadHint("subdomain.domain.org");
+  EXPECT_TRUE(hint_cache()->GetHostKeyedHintIfLoaded("subdomain.domain.org"));
 
   EXPECT_TRUE(GetLoadedHint());
   EXPECT_EQ(hint_key, GetLoadedHint()->key());
@@ -538,7 +535,7 @@ TEST_F(HintCacheTest, StoreValidFetchedHints) {
       std::make_unique<proto::GetHintsResponse>();
 
   proto::Hint* hint = get_hints_response->add_hints();
-  hint->set_key_representation(proto::HOST_SUFFIX);
+  hint->set_key_representation(proto::HOST);
   hint->set_key("host.domain.org");
   proto::PageHint* page_hint = hint->add_page_hints();
   page_hint->set_page_pattern("page pattern");
@@ -579,7 +576,7 @@ TEST_F(HintCacheTest, StoreValidFetchedHintsWithServerProvidedExpiryTime) {
 
   // Set server-provided expiration time.
   proto::Hint* hint = get_hints_response->add_hints();
-  hint->set_key_representation(proto::HOST_SUFFIX);
+  hint->set_key_representation(proto::HOST);
   hint->set_key("host.domain.org");
   hint->mutable_max_cache_duration()->set_seconds(kFetchedHintExpirationSecs);
   proto::PageHint* page_hint = hint->add_page_hints();
@@ -614,7 +611,7 @@ TEST_F(HintCacheTest, StoreValidFetchedHintsWithDefaultExpiryTime) {
       std::make_unique<proto::GetHintsResponse>();
 
   proto::Hint* hint = get_hints_response->add_hints();
-  hint->set_key_representation(proto::HOST_SUFFIX);
+  hint->set_key_representation(proto::HOST);
   hint->set_key("host.domain.org");
   proto::PageHint* page_hint = hint->add_page_hints();
   page_hint->set_page_pattern("page pattern");
@@ -691,14 +688,14 @@ TEST_F(HintCacheTest, PurgeExpiredFetchedHints) {
 
   std::string host = "shouldpurge.com";
   proto::Hint* hint1 = get_hints_response->add_hints();
-  hint1->set_key_representation(proto::HOST_SUFFIX);
+  hint1->set_key_representation(proto::HOST);
   hint1->set_key(host);
   hint1->mutable_max_cache_duration()->set_seconds(cache_duration_in_secs);
   proto::PageHint* page_hint1 = hint1->add_page_hints();
   page_hint1->set_page_pattern("page pattern");
   std::string host2 = "notpurged.com";
   proto::Hint* hint2 = get_hints_response->add_hints();
-  hint2->set_key_representation(proto::HOST_SUFFIX);
+  hint2->set_key_representation(proto::HOST);
   hint2->set_key(host2);
   hint2->mutable_max_cache_duration()->set_seconds(cache_duration_in_secs * 2);
   proto::PageHint* page_hint2 = hint2->add_page_hints();
@@ -738,7 +735,7 @@ TEST_F(HintCacheTest, ClearFetchedHints) {
 
   std::string host = "host.com";
   proto::Hint* hint = get_hints_response->add_hints();
-  hint->set_key_representation(proto::HOST_SUFFIX);
+  hint->set_key_representation(proto::HOST);
   hint->set_key(host);
   proto::PageHint* page_hint = hint->add_page_hints();
   page_hint->set_page_pattern("page pattern");
@@ -820,7 +817,7 @@ TEST_F(HintCacheTest, URLsWithNoURLKeyedHints) {
 
   std::string host = "host.com";
   proto::Hint* hint = get_hints_response->add_hints();
-  hint->set_key_representation(proto::HOST_SUFFIX);
+  hint->set_key_representation(proto::HOST);
   hint->set_key(host);
   proto::PageHint* page_hint = hint->add_page_hints();
   page_hint->set_page_pattern("page pattern");
@@ -843,7 +840,7 @@ TEST_F(HintCacheTest, ProcessHintsNoUpdateData) {
 
   proto::Hint hint;
   hint.set_key("whatever.com");
-  hint.set_key_representation(proto::HOST_SUFFIX);
+  hint.set_key_representation(proto::HOST);
   proto::PageHint* page_hint = hint.add_page_hints();
   page_hint->set_page_pattern("foo.org/*/one/");
 
@@ -860,7 +857,7 @@ TEST_F(HintCacheTest,
 
   proto::Hint hint;
   hint.set_key("whatever.com");
-  hint.set_key_representation(proto::HOST_SUFFIX);
+  hint.set_key_representation(proto::HOST);
 
   google::protobuf::RepeatedPtrField<proto::Hint> hints;
   *(hints.Add()) = hint;
@@ -902,14 +899,14 @@ TEST_F(HintCacheTest, ProcessHintsWithPageHintsAndUpdateData) {
 
   proto::Hint hint;
   hint.set_key("foo.org");
-  hint.set_key_representation(proto::HOST_SUFFIX);
+  hint.set_key_representation(proto::HOST);
   proto::PageHint* page_hint = hint.add_page_hints();
   page_hint->set_page_pattern("foo.org/*/one/");
   *(hints.Add()) = hint;
 
   proto::Hint no_page_hints_hint;
-  no_page_hints_hint.set_key("whatever.com");
-  no_page_hints_hint.set_key_representation(proto::HOST_SUFFIX);
+  no_page_hints_hint.set_key("nopagehints.com");
+  no_page_hints_hint.set_key_representation(proto::HOST);
   *(hints.Add()) = no_page_hints_hint;
 
   std::unique_ptr<StoreUpdateData> update_data =

@@ -11,6 +11,7 @@
 #include "base/strings/string_number_conversions.h"
 #include "chrome/browser/themes/theme_properties.h"
 #include "chrome/browser/ui/views/chrome_layout_provider.h"
+#include "chrome/browser/ui/views/feature_promos/feature_promo_bubble_params.h"
 #include "chrome/browser/ui/views/feature_promos/feature_promo_bubble_timeout.h"
 #include "components/variations/variations_associated_data.h"
 #include "ui/base/l10n/l10n_util.h"
@@ -39,11 +40,7 @@ constexpr gfx::Insets kBubbleContentsInsets(12, 16);
 
 }  // namespace
 
-FeaturePromoBubbleView::CreateParams::CreateParams() = default;
-FeaturePromoBubbleView::CreateParams::~CreateParams() = default;
-FeaturePromoBubbleView::CreateParams::CreateParams(CreateParams&&) = default;
-
-FeaturePromoBubbleView::FeaturePromoBubbleView(CreateParams params)
+FeaturePromoBubbleView::FeaturePromoBubbleView(FeaturePromoBubbleParams params)
     : BubbleDialogDelegateView(params.anchor_view, params.arrow),
       activation_action_(params.activation_action),
       feature_promo_bubble_timeout_(std::move(params.timeout)),
@@ -118,7 +115,8 @@ FeaturePromoBubbleView::FeaturePromoBubbleView(CreateParams params)
     body_label->SetHorizontalAlignment(gfx::ALIGN_LEFT);
   }
 
-  if (params.activation_action == ActivationAction::DO_NOT_ACTIVATE) {
+  if (params.activation_action ==
+      FeaturePromoBubbleParams::ActivationAction::DO_NOT_ACTIVATE) {
     SetCanActivate(false);
     set_shadow(views::BubbleBorder::BIG_SHADOW);
   }
@@ -141,7 +139,8 @@ FeaturePromoBubbleView::FeaturePromoBubbleView(CreateParams params)
 FeaturePromoBubbleView::~FeaturePromoBubbleView() = default;
 
 // static
-FeaturePromoBubbleView* FeaturePromoBubbleView::Create(CreateParams params) {
+FeaturePromoBubbleView* FeaturePromoBubbleView::Create(
+    FeaturePromoBubbleParams params) {
   return new FeaturePromoBubbleView(std::move(params));
 }
 
@@ -165,7 +164,8 @@ void FeaturePromoBubbleView::OnMouseExited(const ui::MouseEvent& event) {
 
 gfx::Rect FeaturePromoBubbleView::GetBubbleBounds() {
   gfx::Rect bounds = BubbleDialogDelegateView::GetBubbleBounds();
-  if (activation_action_ == ActivationAction::DO_NOT_ACTIVATE) {
+  if (activation_action_ ==
+      FeaturePromoBubbleParams::ActivationAction::DO_NOT_ACTIVATE) {
     if (base::i18n::IsRTL())
       bounds.Offset(5, 0);
     else

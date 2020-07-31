@@ -292,7 +292,7 @@ be describing additional metrics about the same event.
   <owner>johnidel@chromium.org</owner>
   <owner>jkarlin@chromium.org</owner>
   <summary>
-    Recorded when a page has loadded non-zero ad bytes, and the page is being
+    Recorded when a page has loaded non-zero ad bytes, and the page is being
     destroyed/navigated.
   </summary>
   <metric name="AdBytes">

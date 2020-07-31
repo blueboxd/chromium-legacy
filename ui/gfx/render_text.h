@@ -564,11 +564,13 @@ class GFX_EXPORT RenderText {
   const ShadowValues& shadows() const { return shadows_; }
 
   // Get the visual bounds containing the logical substring within the |range|.
-  // If |range| is empty, the result is empty. These bounds could be visually
-  // discontinuous if the substring is split by a LTR/RTL level change.
-  // These bounds are in local coordinates, but may be outside the visible
-  // region if the text is longer than the textfield. Subsequent text, cursor,
-  // or bounds changes may invalidate returned values.
+  // If |range| is empty, the result is empty. This method rounds internally so
+  // the returned bounds may be slightly larger than the |range|, but are
+  // guaranteed not to be smaller. These bounds could be visually discontinuous
+  // if the substring is split by a LTR/RTL level change. These bounds are in
+  // local coordinates, but may be outside the visible region if the text is
+  // longer than the textfield. Subsequent text, cursor, or bounds changes may
+  // invalidate returned values.
   virtual std::vector<Rect> GetSubstringBounds(const Range& range) = 0;
 
   // Gets the horizontal span (relative to the left of the text, not the view)

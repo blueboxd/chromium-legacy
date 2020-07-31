@@ -48,7 +48,7 @@ namespace {
 using CSCollectionViewItem = CollectionViewItem<SuggestedContent>;
 const CGFloat kMostVisitedBottomMargin = 13;
 const CGFloat kCardBorderRadius = 11;
-
+const CGFloat kDiscoverFeedContentWith = 430;
 }
 
 NSString* const kContentSuggestionsMostVisitedAccessibilityIdentifierPrefix =
@@ -492,8 +492,7 @@ NSString* const kContentSuggestionsMostVisitedAccessibilityIdentifierPrefix =
   UIEdgeInsets parentInset = [super collectionView:collectionView
                                             layout:collectionViewLayout
                             insetForSectionAtIndex:section];
-  if ([self.collectionUpdater isHeaderSection:section] ||
-      [self.collectionUpdater isDiscoverSection:section]) {
+  if ([self.collectionUpdater isHeaderSection:section]) {
     parentInset.top = 0;
     parentInset.left = 0;
     parentInset.right = 0;
@@ -506,6 +505,13 @@ NSString* const kContentSuggestionsMostVisitedAccessibilityIdentifierPrefix =
     if ([self.collectionUpdater isMostVisitedSection:section]) {
       parentInset.bottom = kMostVisitedBottomMargin;
     }
+  } else if ([self.collectionUpdater isDiscoverSection:section]) {
+    // TODO(crbug.com/1085419): Get card width from Mulder.
+    CGFloat feedCardWidth = kDiscoverFeedContentWith;
+    CGFloat margin =
+        MAX(0, (collectionView.frame.size.width - feedCardWidth) / 2);
+    parentInset.left = margin;
+    parentInset.right = margin;
   } else if (self.styler.cellStyle == MDCCollectionViewCellStyleCard) {
     CGFloat collectionWidth = collectionView.bounds.size.width;
     CGFloat maxCardWidth =

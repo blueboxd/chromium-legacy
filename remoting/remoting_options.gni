@@ -6,7 +6,7 @@ import("//build/config/chrome_build.gni")
 import("//build/config/ui.gni")
 
 enable_remoting_host =
-    is_win || (is_linux && (is_chromeos || use_x11)) || is_mac
+    is_win || (is_chromeos || (is_linux && use_x11)) || is_mac
 enable_me2me_host = is_win || (is_linux && !is_chromeos && use_x11) || is_mac
 
 # Enable the multi-process host on Windows by default.

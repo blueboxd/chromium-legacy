@@ -252,7 +252,7 @@
       <description summary="sends the layout_mode">
 	Sends the layout_mode used by the server.
       </description>
-      <arg name="layout_mode" type="int" summary="layout_mode enum"/>
+      <arg name="layout_mode" type="uint" summary="layout_mode enum"/>
     </event>
 
     <request name="get_remote_output" since="29">

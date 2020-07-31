@@ -14,7 +14,6 @@
 <translation id="1084365883616172403">Facebook पोस्ट पूर्ण केले.</translation>
 <translation id="1103523840287552314">नेहमी भाषांतर करा <ph name="LANGUAGE" /></translation>
 <translation id="1104948393051856124">स्वीकारा आणि सुरू ठेवा</translation>
-<translation id="1105578556867525047">वेबसाइट वर पासवर्ड बदला</translation>
 <translation id="1112015203684611006">प्रिंट अयशस्वी झाले.</translation>
 <translation id="1125564390852150847">नवीन टॅब तयार करा.</translation>
 <translation id="1145536944570833626">विद्यमान डेटा हटवा.</translation>
@@ -246,7 +245,6 @@
 <translation id="3783017676699494206">इमेज सेव्ह करा</translation>
 <translation id="3789841737615482174">स्थापना करा</translation>
 <translation id="3803696231112616155">ही साइट भाषांतरित करण्यासाठी ऑफर</translation>
-<translation id="3836313059960742452">{COUNT,plural, =0{पासवर्ड धोक्यात आलेले नाहीत}=1{{COUNT} पासवर्ड धोक्यात आला आहे}other{{COUNT} पासवर्ड धोक्यात आले आहेत}}</translation>
 <translation id="385051799172605136">मागील</translation>
 <translation id="3892144330757387737">तुमचा इतिहास तुम्हाला येथे सापडेल</translation>
 <translation id="3897092660631435901">मेनू</translation>
@@ -334,6 +332,7 @@
 <translation id="4901778704868714008">सेव्ह करा…</translation>
 <translation id="4904877109095351937">वाचले चिन्हांकित करा</translation>
 <translation id="4930268273022498155">सद्य डेटा हटवा. <ph name="USER_EMAIL1" /> वर परत स्विच करून तुम्ही तो रिट्रीव्ह करू शकता.</translation>
+<translation id="4930714375720679147">सुरू करा</translation>
 <translation id="4941089862236492464">क्षमस्व, तुमचा आयटम शेअर करताना समस्या आली.</translation>
 <translation id="4944543191714094452">या पेजमध्ये शोधा…</translation>
 <translation id="4945756290001680296">पासवर्ड सेटिंग्ज अ‍ॅक्सेस करा</translation>
@@ -612,6 +611,7 @@
 <translation id="8073670137947914548">डाउनलोड पूर्ण झाले</translation>
 <translation id="8073872304774253879">शोध आणि ब्राउझ करणे उत्तम बनवा</translation>
 <translation id="8076014560081431679">सेव्ह केलेल्या साइट सेटिंग्ज हटविल्या जाणार नाहीत आणि कदाचित आपल्या ब्राउझिंग सवयी दर्शवेल. <ph name="BEGIN_LINK" />अधिक जाणून घ्या<ph name="END_LINK" /></translation>
+<translation id="8105368624971345109">बंद करा</translation>
 <translation id="8114753159095730575">फाइल डाउनलोड उपलब्ध आहे. स्क्रीनच्या तळाशी पर्याय उपलब्ध आहेत.</translation>
 <translation id="8131740175452115882">पुष्टी करा</translation>
 <translation id="8197543752516192074">पेजचे भाषांतर करा</translation>

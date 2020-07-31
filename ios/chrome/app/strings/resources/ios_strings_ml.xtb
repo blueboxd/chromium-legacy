@@ -14,7 +14,6 @@
 <translation id="1084365883616172403">Facebook പങ്കിടൽ പൂർത്തിയായി.</translation>
 <translation id="1103523840287552314"><ph name="LANGUAGE" /> എല്ലായ്പ്പോഴും വിവര്‍ത്തനം ചെയ്യുക </translation>
 <translation id="1104948393051856124">അംഗീകരിച്ച് തുടരുക</translation>
-<translation id="1105578556867525047">വെബ്‌സൈറ്റിൽ പാസ്‌വേഡ് മാറ്റുക</translation>
 <translation id="1112015203684611006">പ്രിന്റിംഗ് പരാജയപ്പെട്ടു.</translation>
 <translation id="1125564390852150847">പുതിയ ടാബ് സൃഷ്‌ടിക്കുക.</translation>
 <translation id="1145536944570833626">നിലവിലുള്ള വിവരങ്ങൾ ഇല്ലാതാക്കുക.</translation>
@@ -23,6 +22,7 @@
 <translation id="1176932207622159128">ചിത്രം സംരക്ഷിക്കാൻ കഴിയില്ല.</translation>
 <translation id="1180526666083833456">ഉപകരണങ്ങളിലുടനീളം സമന്വയിപ്പിക്കുകയും വ്യക്തിപരമാക്കുകയും ചെയ്യുക.</translation>
 <translation id="1181037720776840403">നീക്കംചെയ്യൂ</translation>
+<translation id="1185569544548277362">ശ്രദ്ധിക്കുക: ഇപ്പോൾ Chrome നിങ്ങൾക്ക് ഡിഫോൾട്ടാക്കാം. <ph name="BEGIN_LINK" />ക്രമീകരണം തുറക്കുക<ph name="END_LINK" /></translation>
 <translation id="1207113853726624428">പുതിയ തിരയൽ</translation>
 <translation id="1209206284964581585">ഇപ്പോഴത്തേയ്‌ക്ക് മറയ്‌ക്കുക</translation>
 <translation id="1219674500290482172">ഇന്‍റര്‍നെറ്റിലേക്ക് കണക്റ്റുചെയ്യാൻ കഴിയില്ല.</translation>
@@ -245,7 +245,6 @@
 <translation id="3783017676699494206">ചിത്രം സംരക്ഷിക്കുക</translation>
 <translation id="3789841737615482174">ഇന്‍സ്റ്റാൾ ചെയ്യുക</translation>
 <translation id="3803696231112616155">ഈ സൈറ്റ് വിവർത്തനം ചെയ്യാനുള്ള അനുമതി</translation>
-<translation id="3836313059960742452">{COUNT,plural, =0{പാസ്‌വേഡുകളൊന്നും അപഹരിച്ചിട്ടില്ല}=1{{COUNT} പാസ്‌വേഡ് അപഹരിക്കപ്പെട്ടു}other{{COUNT} പാസ്‍വേഡുകൾ അപഹരിക്കപ്പെട്ടു}}</translation>
 <translation id="385051799172605136">പിന്നോട്ട്</translation>
 <translation id="3892144330757387737">നിങ്ങളുടെ ചരിത്രം ഇവിടെ കാണാം</translation>
 <translation id="3897092660631435901">മെനു</translation>
@@ -332,6 +331,7 @@
 <translation id="4901778704868714008">സംരക്ഷിക്കുക...</translation>
 <translation id="4904877109095351937">വായിച്ചതായി അടയാളപ്പെടുത്തുക</translation>
 <translation id="4930268273022498155">നിലവിലുള്ള വിവരങ്ങൾ ഇല്ലാതാക്കുക. <ph name="USER_EMAIL1" /> എന്നതിലേക്ക് വീണ്ടും മാറുന്നതിലൂടെ നിങ്ങൾക്ക് ഇത് വീണ്ടെടുക്കാം.</translation>
+<translation id="4930714375720679147">ഓണാക്കുക</translation>
 <translation id="4941089862236492464">ക്ഷമിക്കണം, നിങ്ങളുടെ ഇനം പങ്കിടുന്നതിൽ ഒരു പ്രശ്‌നമുണ്ടായിരുന്നു.</translation>
 <translation id="4944543191714094452">പേജില്‍ കണ്ടെത്തുക…</translation>
 <translation id="4945756290001680296">പാസ്‌വേഡ് ക്രമീകരണം ആക്‌സസ് ചെയ്യുക</translation>
@@ -610,6 +610,7 @@
 <translation id="8073670137947914548">ഡൗൺലോഡ് പൂർത്തിയായി</translation>
 <translation id="8073872304774253879">തിരയലുകളും ബ്രൗസിംഗും മികച്ചതാക്കൂ</translation>
 <translation id="8076014560081431679">സംരക്ഷിച്ച സൈറ്റ് ക്രമീകരണം ഇല്ലാതാക്കപ്പെടില്ല, ഇത് നിങ്ങളുടെ ബ്രൗസിംഗ് രീതികളെ പ്രതിഫലിപ്പിക്കാനുമിടയുണ്ട്. <ph name="BEGIN_LINK" />കൂടുതലറിയുക<ph name="END_LINK" /></translation>
+<translation id="8105368624971345109">ഓഫാക്കുക</translation>
 <translation id="8114753159095730575">ഫയൽ ഡൗൺലോഡ് ചെയ്യൽ ലഭ്യമാണ്. സ്ക്രീനിന്റെ ചുവടെ ഓപ്ഷനുകളുണ്ട്.</translation>
 <translation id="8131740175452115882">സ്ഥിരീകരിക്കുക</translation>
 <translation id="8197543752516192074">പേജ് വിവർത്തനം ചെയ്യുക</translation>
@@ -639,6 +640,7 @@
 <translation id="8524799873541103884"><ph name="NUMBER_OF_OPEN_TABS" />-ൽ <ph name="FIRST_VISIBLE_TAB" /> മുതൽ <ph name="LAST_VISIBLE_TAB" /> വരെയുള്ള <ph name="INCOGNITO" /> ആൾമാറാട്ട ടാബുകൾ</translation>
 <translation id="8529767659511976195">പുതിയത്</translation>
 <translation id="8532105204136943229">കാലഹരണപ്പെടുന്ന വർഷം</translation>
+<translation id="8533166274275423134">മറ്റൊരിടത്ത് തുറന്നിട്ടുണ്ട്</translation>
 <translation id="8534481786647257214">Google+ പങ്കിടൽ പൂർത്തിയായി.</translation>
 <translation id="8548878600947630424">പേജിൽ കണ്ടെത്തുക...</translation>
 <translation id="8574235780160508979">Chrome-ന്റെ സേവന നിബന്ധനകളിൽ മാർച്ച് 31-ന് മാറ്റം വരുന്നു. <ph name="BEGIN_LINK" />അവലോകനം ചെയ്യുക<ph name="END_LINK" /></translation>

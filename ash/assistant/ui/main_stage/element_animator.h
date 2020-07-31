@@ -34,7 +34,7 @@ class ElementAnimator {
   // value, it should be safe to circumnavigate this DCHECK.
   constexpr static float kMinimumAnimateOutOpacity = 0.0001f;
 
-  ElementAnimator(views::View* animated_view);
+  explicit ElementAnimator(views::View* animated_view);
   virtual ~ElementAnimator() = default;
 
   // Fade out the current element, meaning it will still be visible but

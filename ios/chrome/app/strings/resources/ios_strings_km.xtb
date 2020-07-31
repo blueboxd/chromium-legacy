@@ -14,7 +14,6 @@
 <translation id="1084365883616172403">ការបង្ហោះតាម Facebook បានបញ្ចប់។</translation>
 <translation id="1103523840287552314">បកប្រែ <ph name="LANGUAGE" /> ជានិច្ច</translation>
 <translation id="1104948393051856124">ព្រមទទួល និងបន្ត</translation>
-<translation id="1105578556867525047">ប្ដូរពាក្យសម្ងាត់នៅលើគេហទំព័រ</translation>
 <translation id="1112015203684611006">បានបរាជ័យក្នុងការបោះពុម្ព</translation>
 <translation id="1125564390852150847">បង្កើតផ្ទាំងថ្មី</translation>
 <translation id="1145536944570833626">លុបទិន្នន័យដែលមានស្រាប់។</translation>
@@ -23,6 +22,7 @@
 <translation id="1176932207622159128">មិនអាចរក្សាទុករូបភាព</translation>
 <translation id="1180526666083833456">ធ្វើសមកាលកម្ម និង​កំណត់​ផ្ទាល់​ខ្លួន​នៅលើ​ឧបករណ៍​នានា។</translation>
 <translation id="1181037720776840403">ដកចេញ</translation>
+<translation id="1185569544548277362">ថ្មី៖ អ្នកអាចកំណត់ Chrome ជាកម្មវិធី​រុករក​តាមអ៊ីនធឺណិតលំនាំដើម​របស់អ្នក។ <ph name="BEGIN_LINK" />បើកការកំណត់<ph name="END_LINK" /></translation>
 <translation id="1207113853726624428">ការស្វែងរក​ថ្មី</translation>
 <translation id="1209206284964581585">លាក់ឥឡូវនេះ</translation>
 <translation id="1219674500290482172">មិនអាចភ្ជាប់ទៅអ៊ីនធឺណិតទេ។</translation>
@@ -245,7 +245,6 @@
 <translation id="3783017676699494206">រក្សាទុករូបភាព</translation>
 <translation id="3789841737615482174">តំឡើង</translation>
 <translation id="3803696231112616155">ផ្ដល់ការបកប្រែ​គេហទំព័រនេះ</translation>
-<translation id="3836313059960742452">{COUNT,plural, =0{មិនមាន​ពាក្យសម្ងាត់​ដែលរងការលុកលុយ​ទេ}=1{ពាក្យសម្ងាត់​ដែលរងការលុកលុយ {COUNT}}other{ពាក្យសម្ងាត់​ដែលរងការលុកលុយ {COUNT}}}</translation>
 <translation id="385051799172605136">ថយក្រោយ</translation>
 <translation id="3892144330757387737">អ្នក​នឹងឃើញ​ប្រវត្តិ​របស់អ្នក​នៅទីនេះ</translation>
 <translation id="3897092660631435901">ម៉ឺនុយ</translation>
@@ -332,6 +331,7 @@
 <translation id="4901778704868714008">រក្សាទុក...</translation>
 <translation id="4904877109095351937">សម្គាល់​ថា​បាន​អាន</translation>
 <translation id="4930268273022498155">លុបទិន្នន័យដែលមានស្រាប់។ អ្នកអាចទាញយកវាបាន ដោយធ្វើការផ្លាស់ប្តូរទៅ <ph name="USER_EMAIL1" /> វិញ។</translation>
+<translation id="4930714375720679147">បើក</translation>
 <translation id="4941089862236492464">សូមទោស មានបញ្ហាក្នុងការចែករំលែកធាតុរបស់អ្នក។</translation>
 <translation id="4944543191714094452">ស្វែងរក​ក្នុង​ទំព័រ…</translation>
 <translation id="4945756290001680296">ចូលប្រើការកំណត់​ពាក្យសម្ងាត់</translation>
@@ -610,6 +610,7 @@ Handoff ត្រូវបើកដំណើរការនៅក្នុងផ
 <translation id="8073670137947914548">បានបញ្ចប់​ការទាញយក</translation>
 <translation id="8073872304774253879">ធ្វើឱ្យ​ការស្វែងរក និង​ការរុករក​ប្រសើរ​ជាងមុន</translation>
 <translation id="8076014560081431679">ការកំណត់គេហទំព័រដែលបានរក្សាទុកនឹងមិនត្រូវបានលុបនោះទេ ហើយវាអាចនឹងឆ្លុះបញ្ចាំងពីទម្លាប់រុករករបស់អ្នក។ <ph name="BEGIN_LINK" />ស្វែងយល់បន្ថែំម<ph name="END_LINK" /></translation>
+<translation id="8105368624971345109">បិទ</translation>
 <translation id="8114753159095730575">អាចទាញយកឯកសារ​បានហើយ។ មានជម្រើស​នៅ​ក្បែរ​ផ្នែកខាងក្រោមនៃ​អេក្រង់។</translation>
 <translation id="8131740175452115882">អះអាង</translation>
 <translation id="8197543752516192074">បកប្រែទំព័រ</translation>
@@ -639,6 +640,7 @@ Handoff ត្រូវបើកដំណើរការនៅក្នុងផ
 <translation id="8524799873541103884">ផ្ទាំង <ph name="INCOGNITO" /> <ph name="FIRST_VISIBLE_TAB" /> តាមរយៈ <ph name="LAST_VISIBLE_TAB" /> នៃ <ph name="NUMBER_OF_OPEN_TABS" /></translation>
 <translation id="8529767659511976195">ថ្មី</translation>
 <translation id="8532105204136943229">ឆ្នាំផុតកំណត់</translation>
+<translation id="8533166274275423134">បានបើក​នៅកន្លែងផ្សេង</translation>
 <translation id="8534481786647257214">ការបង្ហោះតាម Google+ បានបញ្ចប់។</translation>
 <translation id="8548878600947630424">ស្វែងរកក្នុងទំព័រ...</translation>
 <translation id="8574235780160508979">លក្ខខណ្ឌប្រើប្រាស់​របស់ Chrome នឹងផ្លាស់ប្ដូរនៅថ្ងៃទី 31 ខែមីនា។ <ph name="BEGIN_LINK" />សូម​ពិនិត្យមើល<ph name="END_LINK" /></translation>

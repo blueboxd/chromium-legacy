@@ -1363,7 +1363,7 @@
 <translation id="6646269444027925224">{COUNT,plural, =0{Жоқ}=1{1 сайттан (Google есептік жазбаңыздан шықпайсыз)}other{# сайттан (Google есептік жазбаңыздан шықпайсыз)}}</translation>
 <translation id="6652101503459149953">Windows Hello қолдану</translation>
 <translation id="6657585470893396449">Құпия сөз</translation>
-<translation id="666259744093848177">(x86_64 translated)</translation>
+<translation id="666259744093848177">(x86_64 үшін аударылған)</translation>
 <translation id="6665553082534466207">Оң жағын үш рет тесу</translation>
 <translation id="6671697161687535275">Chromium жүйесінен нысан ұсынысын алып тастау керек пе?</translation>
 <translation id="6685834062052613830">Жүйеден шығып, орнатуды аяқтаңыз</translation>
@@ -1645,6 +1645,7 @@
 <translation id="7791011319128895129">Шығарылмаған</translation>
 <translation id="7791196057686275387">Қабаттау</translation>
 <translation id="7791543448312431591">Қосу</translation>
+<translation id="7792318290931435557">Бір бетті көру</translation>
 <translation id="7798389633136518089">Саясатты бұлт қызметі орнатпағандықтан, еленбейді</translation>
 <translation id="7800304661137206267">Байланыс хабар аутентификациясы мен негізгі ауыстыру жүйесі ретіндегі <ph name="KX" /> үшін <ph name="CIPHER" /> көмегімен <ph name="MAC" /> арқылы шифрланған.</translation>
 <translation id="7802523362929240268">Сайт заңды</translation>
@@ -1740,6 +1741,7 @@
 <translation id="8220146938470311105">C7/C6 (Envelope)</translation>
 <translation id="8221250263817408492">Жаңа ғана құпия сөзіңізді алаяқтық сайтқа енгіздіңіз. Chromium осы құпия сөз енгізілген <ph name="WEBSITE_1" /> және тағы басқа сайттарға кіріп, оны дереу өзгертуге кеңес береді.</translation>
 <translation id="8225771182978767009">Бұл компьютерді орнатқан адам осы сайтты бөгеуді ұйғарды.</translation>
+<translation id="8228419419708659934">Екі бетті көру</translation>
 <translation id="822964464349305906"><ph name="TYPE_1" />, <ph name="TYPE_2" /></translation>
 <translation id="8232343881378637145">Платформа температурасы</translation>
 <translation id="8238581221633243064">Бетті жаңа инкогнито қойындысында ашу</translation>

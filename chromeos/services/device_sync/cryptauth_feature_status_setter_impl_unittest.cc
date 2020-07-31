@@ -14,8 +14,8 @@
 #include "base/optional.h"
 #include "base/timer/mock_timer.h"
 #include "chromeos/services/device_sync/cryptauth_client.h"
+#include "chromeos/services/device_sync/cryptauth_feature_type.h"
 #include "chromeos/services/device_sync/cryptauth_key_bundle.h"
-#include "chromeos/services/device_sync/fake_cryptauth_gcm_manager.h"
 #include "chromeos/services/device_sync/feature_status_change.h"
 #include "chromeos/services/device_sync/mock_cryptauth_client.h"
 #include "chromeos/services/device_sync/network_request_error.h"
@@ -23,7 +23,6 @@
 #include "chromeos/services/device_sync/proto/cryptauth_common.pb.h"
 #include "chromeos/services/device_sync/proto/cryptauth_devicesync.pb.h"
 #include "chromeos/services/device_sync/proto/cryptauth_v2_test_util.h"
-#include "chromeos/services/device_sync/public/cpp/fake_client_app_metadata_provider.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace chromeos {
@@ -50,9 +49,8 @@ const cryptauthv2::RequestContext& GetRequestContext() {
       cryptauthv2::BuildRequestContext(
           CryptAuthKeyBundle::KeyBundleNameEnumToString(
               CryptAuthKeyBundle::Name::kDeviceSyncBetterTogether),
-          GetClientMetadata(),
-          cryptauthv2::GetClientAppMetadataForTest().instance_id(),
-          cryptauthv2::GetClientAppMetadataForTest().instance_id_token()));
+          GetClientMetadata(), cryptauthv2::kTestInstanceId,
+          cryptauthv2::kTestInstanceIdToken));
   return *request_context;
 }
 
@@ -122,8 +120,7 @@ class DeviceSyncCryptAuthFeatureStatusSetterImplTest
 
   DeviceSyncCryptAuthFeatureStatusSetterImplTest()
       : mock_client_factory_(
-            MockCryptAuthClientFactory::MockType::MAKE_NICE_MOCKS),
-        fake_gcm_manager_(cryptauthv2::kTestGcmRegistrationId) {
+            MockCryptAuthClientFactory::MockType::MAKE_NICE_MOCKS) {
     mock_client_factory_.AddObserver(this);
   }
 
@@ -137,8 +134,8 @@ class DeviceSyncCryptAuthFeatureStatusSetterImplTest
     mock_timer_ = mock_timer.get();
 
     feature_status_setter_ = CryptAuthFeatureStatusSetterImpl::Factory::Create(
-        &fake_client_app_metadata_provider_, &mock_client_factory_,
-        &fake_gcm_manager_, std::move(mock_timer));
+        cryptauthv2::kTestInstanceId, cryptauthv2::kTestInstanceIdToken,
+        &mock_client_factory_, std::move(mock_timer));
   }
 
   // MockCryptAuthClientFactory::Observer:
@@ -164,32 +161,6 @@ class DeviceSyncCryptAuthFeatureStatusSetterImplTest
         base::BindOnce(&DeviceSyncCryptAuthFeatureStatusSetterImplTest::
                            OnSetFeatureStatusFailure,
                        base::Unretained(this)));
-  }
-
-  void HandleClientAppMetadataRequest(RequestAction request_action) {
-    ASSERT_FALSE(
-        fake_client_app_metadata_provider_.metadata_requests().empty());
-    EXPECT_EQ(cryptauthv2::kTestGcmRegistrationId,
-              fake_client_app_metadata_provider_.metadata_requests()
-                  .back()
-                  .gcm_registration_id);
-    switch (request_action) {
-      case RequestAction::kSucceed:
-        std::move(fake_client_app_metadata_provider_.metadata_requests()
-                      .back()
-                      .callback)
-            .Run(cryptauthv2::GetClientAppMetadataForTest());
-        return;
-      case RequestAction::kFail:
-        std::move(fake_client_app_metadata_provider_.metadata_requests()
-                      .back()
-                      .callback)
-            .Run(base::nullopt /* client_app_metadata */);
-        return;
-      case RequestAction::kTimeout:
-        mock_timer_->Fire();
-        return;
-    }
   }
 
   void HandleNextBatchSetFeatureStatusesRequest(
@@ -226,11 +197,6 @@ class DeviceSyncCryptAuthFeatureStatusSetterImplTest
         mock_timer_->Fire();
         break;
     }
-  }
-
-  void VerifyNumberOfClientAppMetadataFetchAttempts(size_t num_attempts) {
-    EXPECT_EQ(num_attempts,
-              fake_client_app_metadata_provider_.metadata_requests().size());
   }
 
   void VerifyResults(
@@ -270,9 +236,7 @@ class DeviceSyncCryptAuthFeatureStatusSetterImplTest
   // base::nullopt indicates a success.
   std::vector<base::Optional<NetworkRequestError>> results_;
 
-  FakeClientAppMetadataProvider fake_client_app_metadata_provider_;
   MockCryptAuthClientFactory mock_client_factory_;
-  FakeCryptAuthGCMManager fake_gcm_manager_;
   base::MockOneShotTimer* mock_timer_ = nullptr;
 
   std::unique_ptr<CryptAuthFeatureStatusSetter> feature_status_setter_;
@@ -281,63 +245,45 @@ class DeviceSyncCryptAuthFeatureStatusSetterImplTest
 };
 
 TEST_F(DeviceSyncCryptAuthFeatureStatusSetterImplTest, Test) {
-  // Queue up 6 requests before any finish. They should be processed
+  // Queue up 4 requests before any finish. They should be processed
   // sequentially.
-  SetFeatureStatus("device_id_1",
-                   multidevice::SoftwareFeature::kSmartLockClient,
-                   FeatureStatusChange::kDisable);
-  SetFeatureStatus("device_id_2",
-                   multidevice::SoftwareFeature::kInstantTetheringHost,
-                   FeatureStatusChange::kEnableNonExclusively);
-  SetFeatureStatus("device_id_3", multidevice::SoftwareFeature::kSmartLockHost,
+  SetFeatureStatus("device_id_1", multidevice::SoftwareFeature::kSmartLockHost,
                    FeatureStatusChange::kEnableExclusively);
+  SetFeatureStatus("device_id_2",
+                   multidevice::SoftwareFeature::kInstantTetheringClient,
+                   FeatureStatusChange::kDisable);
+  SetFeatureStatus("device_id_3",
+                   multidevice::SoftwareFeature::kInstantTetheringClient,
+                   FeatureStatusChange::kDisable);
   SetFeatureStatus("device_id_4",
-                   multidevice::SoftwareFeature::kInstantTetheringClient,
-                   FeatureStatusChange::kDisable);
-  SetFeatureStatus("device_id_5",
-                   multidevice::SoftwareFeature::kInstantTetheringClient,
-                   FeatureStatusChange::kDisable);
-  SetFeatureStatus("device_id_6",
                    multidevice::SoftwareFeature::kBetterTogetherHost,
                    FeatureStatusChange::kEnableNonExclusively);
 
   // base::nullopt indicates a success.
   std::vector<base::Optional<NetworkRequestError>> expected_results;
 
-  // Timeout waiting for ClientAppMetadata.
-  HandleClientAppMetadataRequest(RequestAction::kTimeout);
-  expected_results.push_back(NetworkRequestError::kUnknown);
-
-  // Fail ClientAppMetadata fetch.
-  HandleClientAppMetadataRequest(RequestAction::kFail);
-  expected_results.push_back(NetworkRequestError::kUnknown);
-
   // Timeout waiting for BatchSetFeatureStatuses.
-  HandleClientAppMetadataRequest(RequestAction::kSucceed);
   HandleNextBatchSetFeatureStatusesRequest(
-      SmartLockHostExclusivelyEnabledRequest("device_id_3"),
+      SmartLockHostExclusivelyEnabledRequest("device_id_1"),
       RequestAction::kTimeout);
   expected_results.push_back(NetworkRequestError::kUnknown);
 
   // Fail BatchSetFeatureStatuses call with "Bad Request".
   HandleNextBatchSetFeatureStatusesRequest(
-      InstantTetherClientDisabledRequest("device_id_4"), RequestAction::kFail,
+      InstantTetherClientDisabledRequest("device_id_2"), RequestAction::kFail,
       NetworkRequestError::kBadRequest);
   expected_results.push_back(NetworkRequestError::kBadRequest);
 
   // Succeed disabling InstantTethering client.
   HandleNextBatchSetFeatureStatusesRequest(
-      InstantTetherClientDisabledRequest("device_id_5"),
+      InstantTetherClientDisabledRequest("device_id_3"),
       RequestAction::kSucceed);
   expected_results.push_back(base::nullopt);
 
   // Succeed enabling BetterTogether host.
   HandleNextBatchSetFeatureStatusesRequest(
-      BetterTogetherHostEnabledRequest("device_id_6"), RequestAction::kSucceed);
+      BetterTogetherHostEnabledRequest("device_id_4"), RequestAction::kSucceed);
   expected_results.push_back(base::nullopt);
-
-  // There was 1 timeout, 1 failed attempt, and 1 successful attempt.
-  VerifyNumberOfClientAppMetadataFetchAttempts(3u);
 
   VerifyResults(expected_results);
 }

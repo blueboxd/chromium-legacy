@@ -6,8 +6,13 @@
 
 #include "ash/public/cpp/resources/grit/ash_public_unscaled_resources.h"
 #include "base/feature_list.h"
+#include "base/i18n/number_formatting.h"
 #include "base/no_destructor.h"
 #include "base/strings/utf_string_conversions.h"
+#include "chrome/browser/browser_process.h"
+#include "chrome/browser/browser_process_platform_part.h"
+#include "chrome/browser/chromeos/policy/browser_policy_connector_chromeos.h"
+#include "chrome/browser/chromeos/policy/minimum_version_policy_handler.h"
 #include "chrome/browser/chromeos/profiles/profile_helper.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/webui/metrics_handler.h"
@@ -17,6 +22,7 @@
 #include "chrome/browser/ui/webui/webui_util.h"
 #include "chrome/browser/web_applications/system_web_app_manager.h"
 #include "chrome/common/url_constants.h"
+#include "chrome/common/webui_url_constants.h"
 #include "chrome/grit/browser_resources.h"
 #include "chrome/grit/chromium_strings.h"
 #include "chrome/grit/generated_resources.h"
@@ -52,6 +58,45 @@ void AddSearchInSettingsStrings(content::WebUIDataSource* html_source) {
   html_source->AddBoolean(
       "newOsSettingsSearch",
       base::FeatureList::IsEnabled(::chromeos::features::kNewOsSettingsSearch));
+}
+
+void AddUpdateRequiredEolStrings(content::WebUIDataSource* html_source) {
+  policy::BrowserPolicyConnectorChromeOS* connector =
+      g_browser_process->platform_part()->browser_policy_connector_chromeos();
+  policy::MinimumVersionPolicyHandler* handler =
+      connector->GetMinimumVersionPolicyHandler();
+
+  // |eol_return_banner_text| contains the update required end of life banner
+  // text which is left empty when the banner should not be shown.
+  base::string16 eol_return_banner_text;
+  if (handler && handler->IsUpdateRequiredEol()) {
+    base::Optional<int> days = handler->GetTimeRemainingInDays();
+    // We only need to show the banner if less than equal to one week remains to
+    // reach the update required deadline.
+    if (days && days.value() <= 7) {
+      // |days| could have value equal to zero if we are very close to the
+      // deadline.
+      int days_remaining = days.value() ? days.value() : 1;
+      base::string16 domain_name =
+          base::UTF8ToUTF16(connector->GetEnterpriseDisplayDomain());
+      base::string16 link_url =
+          base::UTF8ToUTF16(chrome::kChromeUIManagementURL);
+      if (days_remaining == 1) {
+        eol_return_banner_text = l10n_util::GetStringFUTF16(
+            IDS_SETTINGS_UPDATE_REQUIRED_EOL_BANNER_LAST_DAY, domain_name,
+            link_url);
+      } else if (days_remaining == 7) {
+        eol_return_banner_text = l10n_util::GetStringFUTF16(
+            IDS_SETTINGS_UPDATE_REQUIRED_EOL_BANNER_ONE_WEEK, domain_name,
+            link_url);
+      } else {
+        eol_return_banner_text = l10n_util::GetStringFUTF16(
+            IDS_SETTINGS_UPDATE_REQUIRED_EOL_BANNER_DAYS, domain_name,
+            base::FormatNumber(days_remaining), link_url);
+      }
+    }
+  }
+  html_source->AddString("updateRequiredEolBannerText", eol_return_banner_text);
 }
 
 }  // namespace
@@ -148,6 +193,7 @@ void MainSection::AddLoadTimeData(content::WebUIDataSource* html_source) {
 
   AddSearchInSettingsStrings(html_source);
   AddChromeOSUserStrings(html_source);
+  AddUpdateRequiredEolStrings(html_source);
 
   policy_indicator::AddLocalizedStrings(html_source);
 }

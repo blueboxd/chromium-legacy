@@ -23,6 +23,7 @@
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_split.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/system/sys_info.h"
 #include "base/task/task_traits.h"
 #include "base/task/thread_pool.h"
 #include "base/threading/scoped_blocking_call.h"
@@ -94,6 +95,39 @@ void SetLaunchOnLoginPref(bool launch_on_login) {
 bool GetLaunchOnLoginPref() {
   return ProfileManager::GetPrimaryUserProfile()->GetPrefs()->GetBoolean(
       browser_util::kLaunchOnLoginPref);
+}
+
+// Checks that the stateful parition is executable. Returns true if it is.
+// Otherwise presents a warning dialog for the developer.
+bool VerifyStatefulPartitionIsExecutable() {
+  struct statvfs buf;
+  {
+    base::ScopedBlockingCall scoped_blocking_call(
+        FROM_HERE, base::BlockingType::MAY_BLOCK);
+    if (statvfs("/mnt/stateful_partition", &buf) < 0) {
+      PLOG(ERROR) << "statvfs() failed";
+      return false;
+    }
+  }
+  const bool is_executable = !(buf.f_flag & ST_NOEXEC);
+  if (is_executable)
+    return true;
+
+  message_center::MessageCenter* message_center =
+      message_center::MessageCenter::Get();
+  std::string notification_id = "stateful_noexec";
+  message_center->AddNotification(ash::CreateSystemNotification(
+      message_center::NOTIFICATION_TYPE_SIMPLE, notification_id,
+      base::ASCIIToUTF16("Cannot launch lacros-chrome"),
+      base::ASCIIToUTF16("/mnt/stateful_partition is marked as noexec."),
+      base::string16(),  // display_source
+      GURL(),
+      message_center::NotifierId(message_center::NotifierType::SYSTEM_COMPONENT,
+                                 notification_id),
+      message_center::RichNotificationData(),
+      /*delegate=*/nullptr, gfx::VectorIcon(),
+      message_center::SystemNotificationWarningLevel::NORMAL));
+  return false;
 }
 
 }  // namespace
@@ -222,31 +256,9 @@ bool BrowserManager::Start() {
     // common case where the device has been restarted and the partition is no
     // longer executable. We cannot simply check the return value of
     // base::LaunchProcess as that actually returns success.
-    struct statvfs buf;
-    {
-      base::ScopedBlockingCall scoped_blocking_call(
-          FROM_HERE, base::BlockingType::MAY_BLOCK);
-      if (statvfs("/mnt/stateful_partition", &buf) < 0) {
-        PLOG(ERROR) << "statvfs() failed";
-        return false;
-      }
-    }
-    const bool exec = !(buf.f_flag & ST_NOEXEC);
-    if (!exec) {
-      message_center::MessageCenter* message_center =
-          message_center::MessageCenter::Get();
-      std::string notification_id = "stateful_noexec";
-      message_center->AddNotification(ash::CreateSystemNotification(
-          message_center::NOTIFICATION_TYPE_SIMPLE, notification_id,
-          base::ASCIIToUTF16("Cannot launch lacros-chrome"),
-          base::ASCIIToUTF16("/mnt/stateful_partition is marked as noexec."),
-          base::string16(),  // display_source
-          GURL(),
-          message_center::NotifierId(
-              message_center::NotifierType::SYSTEM_COMPONENT, notification_id),
-          message_center::RichNotificationData(),
-          /*delegate=*/nullptr, gfx::VectorIcon(),
-          message_center::SystemNotificationWarningLevel::NORMAL));
+    if (base::SysInfo::IsRunningOnChromeOS() &&
+        !VerifyStatefulPartitionIsExecutable()) {
+      return false;
     }
   }
 

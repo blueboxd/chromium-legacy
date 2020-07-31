@@ -14,7 +14,8 @@ namespace {
 
 constexpr char kFlocVersion[] = "1.0.0";
 
-constexpr size_t kNumberOfBitsInFloc = 16;
+// This is only for experimentation and won't be served to websites.
+constexpr size_t kNumberOfBitsInFloc = 50;
 static_assert(kNumberOfBitsInFloc > 0 &&
                   kNumberOfBitsInFloc <= std::numeric_limits<uint64_t>::digits,
               "Number of bits in the floc id must be greater than 0 and no "

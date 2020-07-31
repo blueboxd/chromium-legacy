@@ -27,8 +27,7 @@ declare_args() {
   # TODO(crbug/1006769): Switch to perfetto's client library.
   use_perfetto_client_library = false
 
-  # If true, it assumes that //third_party/abseil-cpp is an available
-  # dependency for googletest.
+  # Allows googletest to pretty-print various absl types.
   gtest_enable_absl_printers = false
 }
 

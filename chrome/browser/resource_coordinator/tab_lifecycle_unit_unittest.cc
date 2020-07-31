@@ -21,8 +21,6 @@
 #include "chrome/browser/notifications/notification_permission_context.h"
 #include "chrome/browser/resource_coordinator/intervention_policy_database.h"
 #include "chrome/browser/resource_coordinator/lifecycle_unit_observer.h"
-#include "chrome/browser/resource_coordinator/local_site_characteristics_data_unittest_utils.h"
-#include "chrome/browser/resource_coordinator/local_site_characteristics_webcontents_observer.h"
 #include "chrome/browser/resource_coordinator/tab_helper.h"
 #include "chrome/browser/resource_coordinator/tab_lifecycle_observer.h"
 #include "chrome/browser/resource_coordinator/tab_lifecycle_unit_external.h"
@@ -40,6 +38,7 @@
 #include "chrome/browser/usb/usb_chooser_context.h"
 #include "chrome/browser/usb/usb_chooser_context_factory.h"
 #include "chrome/browser/usb/usb_tab_helper.h"
+#include "chrome/test/base/chrome_render_view_host_test_harness.h"
 #include "chrome/test/base/testing_profile.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/common/referrer.h"
@@ -93,7 +92,7 @@ class MockLifecycleUnitObserver : public LifecycleUnitObserver {
   DISALLOW_COPY_AND_ASSIGN(MockLifecycleUnitObserver);
 };
 
-class TabLifecycleUnitTest : public testing::ChromeTestHarnessWithLocalDB {
+class TabLifecycleUnitTest : public ChromeRenderViewHostTestHarness {
  protected:
   using TabLifecycleUnit = TabLifecycleUnitSource::TabLifecycleUnit;
 
@@ -108,7 +107,7 @@ class TabLifecycleUnitTest : public testing::ChromeTestHarnessWithLocalDB {
   }
 
   void SetUp() override {
-    ChromeTestHarnessWithLocalDB::SetUp();
+    ChromeRenderViewHostTestHarness::SetUp();
 
     metrics::DesktopSessionDurationTracker::Initialize();
     usage_clock_ = std::make_unique<UsageClock>();
@@ -139,12 +138,6 @@ class TabLifecycleUnitTest : public testing::ChromeTestHarnessWithLocalDB {
     tab_strip_model_->AppendWebContents(std::move(second_web_contents),
                                         /*foreground=*/true);
     raw_second_web_contents->WasHidden();
-
-    testing::WaitForLocalDBEntryToBeInitialized(
-        web_contents_,
-        base::BindRepeating([]() { base::RunLoop().RunUntilIdle(); }));
-
-    testing::ExpireLocalDBObservationWindows(web_contents_);
   }
 
   void TearDown() override {
@@ -153,12 +146,8 @@ class TabLifecycleUnitTest : public testing::ChromeTestHarnessWithLocalDB {
     tab_strip_model_.reset();
     usage_clock_.reset();
     metrics::DesktopSessionDurationTracker::CleanupForTesting();
-    ChromeTestHarnessWithLocalDB::TearDown();
+    ChromeRenderViewHostTestHarness::TearDown();
   }
-
-  void TestCannotDiscardBasedOnHeuristicUsage(
-      DecisionFailureReason failure_reason,
-      void (SiteCharacteristicsDataWriter::*notify_feature_usage_method)());
 
   // Create a new test WebContents and append it to the tab strip to allow
   // testing discarding operations on it. The returned WebContents is in the

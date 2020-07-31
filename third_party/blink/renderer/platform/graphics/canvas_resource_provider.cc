@@ -32,6 +32,42 @@
 #include "third_party/skia/include/gpu/GrDirectContext.h"
 
 namespace blink {
+
+class FlushForImageListener {
+  // With deferred rendering it's possible for a drawImage operation on a canvas
+  // to trigger a copy-on-write if another canvas has a read reference to it.
+  // This can cause serious regressions due to extra allocations:
+  // crbug.com/1030108. FlushForImageListener keeps a list of all active 2d
+  // contexts on a thread and notifies them when one is attempting copy-on
+  // write. If the notified context has a read reference to the canvas
+  // attempting a copy-on-write it then flushes so as to make the copy-on-write
+  // unnecessary.
+ public:
+  static FlushForImageListener* GetFlushForImageListener();
+  void AddObserver(CanvasResourceProvider* observer) {
+    observers_.AddObserver(observer);
+  }
+
+  void RemoveObserver(CanvasResourceProvider* observer) {
+    observers_.RemoveObserver(observer);
+  }
+
+  void NotifyFlushForImage(cc::PaintImage::ContentId content_id) {
+    for (CanvasResourceProvider& obs : observers_)
+      obs.OnFlushForImage(content_id);
+  }
+
+ private:
+  friend class WTF::ThreadSpecific<FlushForImageListener>;
+  base::ObserverList<CanvasResourceProvider> observers_;
+};
+
+static FlushForImageListener* GetFlushForImageListener() {
+  DEFINE_THREAD_SAFE_STATIC_LOCAL(ThreadSpecific<FlushForImageListener>,
+                                  flush_for_image_listener, ());
+  return flush_for_image_listener;
+}
+
 namespace {
 
 bool IsGMBAllowed(IntSize size,
@@ -206,11 +242,15 @@ class CanvasResourceProviderSharedImage : public CanvasResourceProvider {
                                                      ->GetCapabilities()
                                                      .supports_oop_raster) {
     resource_ = NewOrRecycledResource();
+    GetFlushForImageListener()->AddObserver(this);
+
     if (resource_)
       EnsureWriteAccess();
   }
 
-  ~CanvasResourceProviderSharedImage() override {}
+  ~CanvasResourceProviderSharedImage() override {
+    GetFlushForImageListener()->RemoveObserver(this);
+  }
 
   bool IsAccelerated() const final { return is_accelerated_; }
   bool SupportsDirectCompositing() const override { return true; }
@@ -354,6 +394,16 @@ class CanvasResourceProviderSharedImage : public CanvasResourceProvider {
     if (IsGpuContextLost())
       return;
 
+    // Because the cached snapshot is about to be cleared we'll record its
+    // content_id to be used by the FlushForImageListener.
+    // ShouldReplaceTargetBuffer needs this ID in order to let other contexts
+    // know to flush to avoid unnecessary copy-on-writes.
+    PaintImage::ContentId content_id = PaintImage::kInvalidContentId;
+    if (cached_snapshot_) {
+      content_id =
+          cached_snapshot_->PaintImageForCurrentFrame().GetContentIdForFrame(
+              0u);
+    }
     // Since the resource will be updated, the cached snapshot is no longer
     // valid. Note that it is important to release this reference here to not
     // trigger copy-on-write below from the resource ref in the snapshot.
@@ -365,7 +415,7 @@ class CanvasResourceProviderSharedImage : public CanvasResourceProvider {
     // We don't need to do copy-on-write for the resource here since writes to
     // the GMB are deferred until it needs to be dispatched to the display
     // compositor via ProduceCanvasResource.
-    if (is_accelerated_ && ShouldReplaceTargetBuffer()) {
+    if (is_accelerated_ && ShouldReplaceTargetBuffer(content_id)) {
       DCHECK(!current_resource_has_write_access_)
           << "Write access must be released before sharing the resource";
 
@@ -454,7 +504,8 @@ class CanvasResourceProviderSharedImage : public CanvasResourceProvider {
     ri->EndRasterCHROMIUM();
   }
 
-  bool ShouldReplaceTargetBuffer() {
+  bool ShouldReplaceTargetBuffer(
+      PaintImage::ContentId content_id = PaintImage::kInvalidContentId) {
     // If the canvas is single buffered, concurrent read/writes to the resource
     // are allowed. Note that we ignore the resource lost case as well since
     // that only indicates that we did not get a sync token for read/write
@@ -474,8 +525,12 @@ class CanvasResourceProviderSharedImage : public CanvasResourceProvider {
     // Its possible to have deferred work in skia which uses this resource. Try
     // flushing once to see if that releases the read refs. We can avoid a copy
     // by queuing this work before writing to this resource.
-    if (is_accelerated_)
+    if (is_accelerated_) {
+      // Another context may have a read reference to this resource. Flush the
+      // deferred queue in that context so that we don't need to copy.
+      GetFlushForImageListener()->NotifyFlushForImage(content_id);
       surface_->flushAndSubmit();
+    }
 
     return !resource_->HasOneRef();
   }
@@ -1087,6 +1142,15 @@ void CanvasResourceProvider::OnContextDestroyed() {
     DCHECK(skia_canvas_);
     skia_canvas_->reset_image_provider();
     canvas_image_provider_.reset();
+  }
+}
+
+void CanvasResourceProvider::OnFlushForImage(PaintImage::ContentId content_id) {
+  if (Canvas()) {
+    MemoryManagedPaintCanvas* canvas =
+        static_cast<MemoryManagedPaintCanvas*>(Canvas());
+    if (canvas->IsCachingImage(content_id))
+      this->FlushCanvas();
   }
 }
 

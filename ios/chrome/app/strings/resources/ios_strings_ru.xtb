@@ -14,7 +14,6 @@
 <translation id="1084365883616172403">Опубликовано в Facebook.</translation>
 <translation id="1103523840287552314">Всегда переводить <ph name="LANGUAGE" /></translation>
 <translation id="1104948393051856124">Продолжить</translation>
-<translation id="1105578556867525047">Сменить пароль на сайте</translation>
 <translation id="1112015203684611006">Ошибка печати</translation>
 <translation id="1125564390852150847">Создать вкладку</translation>
 <translation id="1145536944570833626">Удалить сохраненные данные.</translation>
@@ -245,7 +244,6 @@
 <translation id="3783017676699494206">Сохранить изображение</translation>
 <translation id="3789841737615482174">Установить</translation>
 <translation id="3803696231112616155">Предлагать переводить этот сайт</translation>
-<translation id="3836313059960742452">{COUNT,plural, =0{Нет раскрытых паролей}=1{{COUNT} пароль раскрыт}one{{COUNT} пароль раскрыт}few{{COUNT} пароля раскрыты}many{{COUNT} паролей раскрыты}other{{COUNT} пароля раскрыто}}</translation>
 <translation id="385051799172605136">Назад</translation>
 <translation id="3892144330757387737">Здесь вы найдете свою историю</translation>
 <translation id="3897092660631435901">Меню</translation>
@@ -332,6 +330,7 @@
 <translation id="4901778704868714008">Сохранить</translation>
 <translation id="4904877109095351937">Отметить как прочитанное</translation>
 <translation id="4930268273022498155">Удалить сохраненные данные. Чтобы снова получить к ним доступ, переключитесь на аккаунт <ph name="USER_EMAIL1" />.</translation>
+<translation id="4930714375720679147">Включить</translation>
 <translation id="4941089862236492464">Не удалось опубликовать запись.</translation>
 <translation id="4944543191714094452">Найти на странице…</translation>
 <translation id="4945756290001680296">Доступ к настройкам паролей</translation>
@@ -610,6 +609,7 @@
 <translation id="8073670137947914548">Скачивание завершено</translation>
 <translation id="8073872304774253879">Улучшить функции поиска и просмотра страниц</translation>
 <translation id="8076014560081431679">Настройки сайтов не изменятся, поэтому данные о вашей работе в Интернете сохранятся. <ph name="BEGIN_LINK" />Подробнее…<ph name="END_LINK" /></translation>
+<translation id="8105368624971345109">Отключить</translation>
 <translation id="8114753159095730575">Файл доступен для скачивания. Параметры указаны в нижней части экрана.</translation>
 <translation id="8131740175452115882">Подтвердить</translation>
 <translation id="8197543752516192074">Перевести страницу</translation>

@@ -14,7 +14,6 @@
 <translation id="1084365883616172403">Facebook-færsla birt.</translation>
 <translation id="1103523840287552314">Þýða alltaf <ph name="LANGUAGE" /></translation>
 <translation id="1104948393051856124">Samþykkja og halda áfram</translation>
-<translation id="1105578556867525047">Breyta aðgangsorði á vefsvæði</translation>
 <translation id="1112015203684611006">Prentun tókst ekki.</translation>
 <translation id="1125564390852150847">Búa til nýjan flipa.</translation>
 <translation id="1145536944570833626">Eyða fyrirliggjandi gögnum.</translation>
@@ -246,7 +245,6 @@ Vefsvæði geta ekki notað fótsporin þín til að sjá vafranotkun þína á 
 <translation id="3783017676699494206">Vista mynd</translation>
 <translation id="3789841737615482174">Setja upp</translation>
 <translation id="3803696231112616155">Bjóðast til að þýða þetta vefsvæði</translation>
-<translation id="3836313059960742452">{COUNT,plural, =0{Engin aðgangsorð í hættu}=1{{COUNT} aðgangsorð í hættu}one{{COUNT} aðgangsorð í hættu}other{{COUNT} aðgangsorð í hættu}}</translation>
 <translation id="385051799172605136">Til baka</translation>
 <translation id="3892144330757387737">Þú finnur ferilinn þinn hér</translation>
 <translation id="3897092660631435901">Valmynd</translation>
@@ -333,6 +331,7 @@ Til að breyta þessari stillingu skaltu <ph name="BEGIN_LINK" />endurstilla sam
 <translation id="4901778704868714008">Vista...</translation>
 <translation id="4904877109095351937">Merkja sem lesið</translation>
 <translation id="4930268273022498155">Eyða fyrirliggjandi gögnum. Þú getur sótt þau með því að skipta aftur yfir í <ph name="USER_EMAIL1" />.</translation>
+<translation id="4930714375720679147">Kveikja</translation>
 <translation id="4941089862236492464">Því miður kom upp vandamál við að deila atriðinu.</translation>
 <translation id="4944543191714094452">Finna á síðu…</translation>
 <translation id="4945756290001680296">Opna stillingar fyrir aðgangsorð</translation>
@@ -611,6 +610,7 @@ Vefsvæði geta notað fótspor til að sjá vafranotkun þína á mismunandi ve
 <translation id="8073670137947914548">Niðurhali lokið</translation>
 <translation id="8073872304774253879">Bæta leit og vefskoðun</translation>
 <translation id="8076014560081431679">Vistuðum stillingum vefsvæða verður ekki eytt og þær kunna að endurspegla vefnotkun þína. <ph name="BEGIN_LINK" />Frekari upplýsingar<ph name="END_LINK" /></translation>
+<translation id="8105368624971345109">Slökkva</translation>
 <translation id="8114753159095730575">Hægt er að sækja skrá. Valkostir eru í boði neðarlega á skjánum.</translation>
 <translation id="8131740175452115882">Staðfesta</translation>
 <translation id="8197543752516192074">Þýða síðu</translation>

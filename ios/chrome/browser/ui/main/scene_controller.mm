@@ -79,6 +79,7 @@
 #import "ios/public/provider/chrome/browser/user_feedback/user_feedback_provider.h"
 #include "ios/web/public/thread/web_task_traits.h"
 #import "ios/web/public/web_state.h"
+#import "net/base/mac/url_conversions.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."
@@ -1353,6 +1354,55 @@ const char kMultiWindowOpenInNewWindowHistogram[] =
                          dismissOmnibox:dismissOmnibox];
 }
 
+- (void)dismissModalsAndOpenMultipleTabsInMode:
+            (ApplicationModeForTabOpening)targetMode
+                                          URLs:(const std::vector<GURL>&)URLs
+                                dismissOmnibox:(BOOL)dismissOmnibox
+                                    completion:(ProceduralBlock)completion {
+  __weak SceneController* weakSelf = self;
+
+  std::vector<GURL> copyURLs = URLs;
+
+  id<BrowserInterface> targetInterface =
+      [self extractInterfaceBaseOnMode:targetMode];
+
+  web::WebState* currentWebState =
+      targetInterface.browser->GetWebStateList()->GetActiveWebState();
+
+  if (currentWebState) {
+    web::NavigationManager* navigation_manager =
+        currentWebState->GetNavigationManager();
+    // Check if the current tab is in the procress of restoration and whether it
+    // is an NTP. If so, add the tabs-opening action to the
+    // RestoreCompletionCallback queue so that the tabs are opened only after
+    // the NTP finishes restoring. This is to avoid an edge where multiple tabs
+    // are trying to open in the middle of NTP restoration, as this will cause
+    // all tabs trying to load into the same NTP, causing a race condition that
+    // results in wrong behavior.
+    if (navigation_manager->IsRestoreSessionInProgress() &&
+        IsURLNtp(currentWebState->GetVisibleURL())) {
+      navigation_manager->AddRestoreCompletionCallback(base::BindOnce(^{
+        [self
+            dismissModalDialogsWithCompletion:^{
+              [weakSelf openMultipleTabsInMode:targetMode
+                                          URLs:copyURLs
+                                    completion:completion];
+            }
+                               dismissOmnibox:dismissOmnibox];
+      }));
+      return;
+    }
+  }
+
+  [self
+      dismissModalDialogsWithCompletion:^{
+        [weakSelf openMultipleTabsInMode:targetMode
+                                    URLs:copyURLs
+                              completion:completion];
+      }
+                         dismissOmnibox:dismissOmnibox];
+}
+
 - (void)openTabFromLaunchWithParams:(URLOpenerParams*)params
                  startupInformation:(id<StartupInformation>)startupInformation
                            appState:(AppState*)appState {
@@ -1508,6 +1558,61 @@ const char kMultiWindowOpenInNewWindowHistogram[] =
   ios::GetChromeBrowserProvider()->LogIfModalViewsArePresented();
 }
 
+- (void)openMultipleTabsInMode:
+            (ApplicationModeForTabOpening)tabOpeningTargetMode
+                          URLs:(const std::vector<GURL>&)URLs
+                    completion:(ProceduralBlock)completion {
+  [self recursiveOpenURLs:URLs
+                   inMode:tabOpeningTargetMode
+             currentIndex:0
+               totalCount:URLs.size()
+               completion:completion];
+}
+
+// Call |dismissModalsAndOpenSelectedTabInMode| recursively to open the list of
+// URLs contained in |URLs|. Achieved through chaining
+// |dismissModalsAndOpenSelectedTabInMode| in its completion handler.
+- (void)recursiveOpenURLs:(const std::vector<GURL>&)URLs
+                   inMode:(ApplicationModeForTabOpening)mode
+             currentIndex:(size_t)currentIndex
+               totalCount:(size_t)totalCount
+               completion:(ProceduralBlock)completion {
+  if (currentIndex >= totalCount) {
+    if (completion) {
+      completion();
+    }
+    return;
+  }
+
+  GURL webpageGURL = URLs.at(currentIndex);
+
+  __weak SceneController* weakSelf = self;
+
+  if (!webpageGURL.is_valid()) {
+    [self recursiveOpenURLs:URLs
+                     inMode:mode
+               currentIndex:(currentIndex + 1)
+                 totalCount:totalCount
+                 completion:completion];
+    return;
+  }
+
+  UrlLoadParams param = UrlLoadParams::InNewTab(webpageGURL, webpageGURL);
+  std::vector<GURL> copyURLs = URLs;
+
+  [self dismissModalsAndOpenSelectedTabInMode:mode
+                            withUrlLoadParams:param
+                               dismissOmnibox:YES
+                                   completion:^{
+                                     [weakSelf
+                                         recursiveOpenURLs:copyURLs
+                                                    inMode:mode
+                                              currentIndex:(currentIndex + 1)
+                                                totalCount:totalCount
+                                                completion:completion];
+                                   }];
+}
+
 // Opens a tab in the target BVC, and switches to it in a way that's appropriate
 // to the current UI, based on the |dismissModals| flag:
 // - If a modal dialog is showing and |dismissModals| is NO, the selected tab of
@@ -1548,7 +1653,6 @@ const char kMultiWindowOpenInNewWindowHistogram[] =
 
   // Commands are only allowed on NTP.
   DCHECK(IsURLNtp(urlLoadParams.web_params.url) || !startupCompletion);
-
   ProceduralBlock tabOpenedCompletion = nil;
   if (startupCompletion && completion) {
     tabOpenedCompletion = ^{
@@ -1697,7 +1801,6 @@ const char kMultiWindowOpenInNewWindowHistogram[] =
         ->Load(newTabParams);
     return;
   }
-
   // Otherwise, load |urlLoadParams| in the current tab.
   UrlLoadParams sameTabParams = urlLoadParams;
   sameTabParams.disposition = WindowOpenDisposition::CURRENT_TAB;
@@ -1971,6 +2074,28 @@ const char kMultiWindowOpenInNewWindowHistogram[] =
         connectionInformation:self
            startupInformation:self.mainController];
   }
+}
+
+- (id<BrowserInterface>)extractInterfaceBaseOnMode:
+    (ApplicationModeForTabOpening)targetMode {
+  ApplicationMode applicationMode;
+
+  if (targetMode == ApplicationModeForTabOpening::CURRENT) {
+    applicationMode = self.interfaceProvider.currentInterface.incognito
+                          ? ApplicationMode::INCOGNITO
+                          : ApplicationMode::NORMAL;
+  } else if (targetMode == ApplicationModeForTabOpening::NORMAL) {
+    applicationMode = ApplicationMode::NORMAL;
+  } else {
+    applicationMode = ApplicationMode::INCOGNITO;
+  }
+
+  id<BrowserInterface> targetInterface =
+      applicationMode == ApplicationMode::NORMAL
+          ? self.interfaceProvider.mainInterface
+          : self.interfaceProvider.incognitoInterface;
+
+  return targetInterface;
 }
 
 #pragma mark - Handling of destroying the incognito BrowserState

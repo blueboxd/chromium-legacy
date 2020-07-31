@@ -1161,7 +1161,6 @@
 <translation id="2408955596600435184">請輸入你的 PIN 碼</translation>
 <translation id="241082044617551207">不明的外掛程式</translation>
 <translation id="2412593942846481727">有可用的更新</translation>
-<translation id="2414499877591062094">啟用 PIN 碼自動提交</translation>
 <translation id="2416435988630956212">鍵盤功能鍵</translation>
 <translation id="241727068219398187">系統已採用你在 <ph name="TIME" />設定的 Google 密碼針對資料進行加密處理。加密的資料不包括 Google Pay 的付款方式和地址。</translation>
 <translation id="2419131370336513030">查看已安裝的應用程式</translation>
@@ -3396,7 +3395,6 @@
 <translation id="5241128660650683457">讀取你在造訪的網站上產生的所有資料</translation>
 <translation id="5242724311594467048">啟用「<ph name="EXTENSION_NAME" />」？</translation>
 <translation id="5243522832766285132">請稍後再試</translation>
-<translation id="5244406554036143958">請輸入 PIN 碼以啟用自動提交功能</translation>
 <translation id="5244474230056479698">同步到 <ph name="EMAIL" /></translation>
 <translation id="5245610266855777041">登入學校帳戶即可開始使用</translation>
 <translation id="5246282308050205996"><ph name="APP_NAME" /> 當機了，請按一下這個提示框來重新啟動應用程式。</translation>

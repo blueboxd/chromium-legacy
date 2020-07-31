@@ -20,6 +20,7 @@ class ScriptState;
 class ImageBitmapOptions;
 class ImageDecoder;
 class ImageDecoderInit;
+class ImageFrameExternal;
 class ImageTrackExternal;
 class ReadableStreamBytesConsumer;
 class ScriptPromiseResolver;
@@ -101,7 +102,8 @@ class MODULES_EXPORT ImageDecoderExternal final : public ScriptWrappable,
     Member<ScriptPromiseResolver> resolver;
     uint32_t frame_index;
     bool complete_frames_only;
-    bool complete = false;
+    Member<ImageFrameExternal> result;
+    Member<DOMException> exception;
   };
   HeapVector<Member<DecodeRequest>> pending_decodes_;
   HeapVector<Member<ScriptPromiseResolver>> pending_metadata_decodes_;

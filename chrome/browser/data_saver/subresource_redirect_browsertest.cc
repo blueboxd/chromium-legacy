@@ -30,7 +30,6 @@
 #include "components/optimization_guide/optimization_metadata.h"
 #include "components/optimization_guide/proto/hints.pb.h"
 #include "components/optimization_guide/proto/public_image_metadata.pb.h"
-#include "components/optimization_guide/test_hints_component_creator.h"
 #include "components/ukm/test_ukm_recorder.h"
 #include "content/public/test/browser_test.h"
 #include "content/public/test/browser_test_utils.h"
@@ -391,9 +390,6 @@ class SubresourceRedirectBrowserTest : public InProcessBrowserTest {
   // Whether the embedded test servers should return failure.
   bool https_server_image_fail_ = false;
   bool compression_server_fail_ = false;
-
-  optimization_guide::testing::TestHintsComponentCreator
-      test_hints_component_creator_;
 
   DISALLOW_COPY_AND_ASSIGN(SubresourceRedirectBrowserTest);
 };

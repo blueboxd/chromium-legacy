@@ -1291,9 +1291,6 @@ extern const char kTabOutlinesInLowContrastThemesDescription[];
 extern const char kTintCompositedContentName[];
 extern const char kTintCompositedContentDescription[];
 
-extern const char kTLS13HardeningForLocalAnchorsName[];
-extern const char kTLS13HardeningForLocalAnchorsDescription[];
-
 extern const char kTopChromeTouchUiName[];
 extern const char kTopChromeTouchUiDescription[];
 

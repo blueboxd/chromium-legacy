@@ -19,7 +19,7 @@ group("extensions") {
     ":ppapi_tests_extensions_popup($newlib)",
     ":ppapi_tests_extensions_socket_permissions($newlib)",
   ]
-  if ((target_cpu == "x86" || target_cpu == "x64") && is_linux &&
+  if ((target_cpu == "x86" || target_cpu == "x64") && (is_linux || is_chromeos) &&
       enable_nacl_nonsfi) {
     nonsfi = "//build/toolchain/nacl:newlib_pnacl_nonsfi"
     data_deps += [ ":ppapi_tests_extensions_packaged_app($nonsfi)" ]

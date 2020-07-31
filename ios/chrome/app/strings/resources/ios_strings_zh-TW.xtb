@@ -14,7 +14,6 @@
 <translation id="1084365883616172403">已順利發布到 Facebook。</translation>
 <translation id="1103523840287552314">一律翻譯<ph name="LANGUAGE" /></translation>
 <translation id="1104948393051856124">接受並繼續</translation>
-<translation id="1105578556867525047">變更網站上的密碼</translation>
 <translation id="1112015203684611006">列印失敗。</translation>
 <translation id="1125564390852150847">新增分頁。</translation>
 <translation id="1145536944570833626">刪除現有資料。</translation>
@@ -245,7 +244,6 @@
 <translation id="3783017676699494206">儲存圖片</translation>
 <translation id="3789841737615482174">安裝</translation>
 <translation id="3803696231112616155">針對這個網站提供翻譯選項</translation>
-<translation id="3836313059960742452">{COUNT,plural, =0{沒有任何密碼遭外洩}=1{有 {COUNT} 組密碼遭外洩}other{有 {COUNT} 組密碼遭外洩}}</translation>
 <translation id="385051799172605136">返回</translation>
 <translation id="3892144330757387737">這裡會顯示你的歷史記錄</translation>
 <translation id="3897092660631435901">選單</translation>
@@ -332,6 +330,7 @@
 <translation id="4901778704868714008">儲存...</translation>
 <translation id="4904877109095351937">標示為已讀取</translation>
 <translation id="4930268273022498155">刪除現有資料。你可以切換回 <ph name="USER_EMAIL1" />，重新取得現有資料。</translation>
+<translation id="4930714375720679147">開啟</translation>
 <translation id="4941089862236492464">很抱歉，分享您的項目時發生問題。</translation>
 <translation id="4944543191714094452">在網頁中尋找…</translation>
 <translation id="4945756290001680296">存取密碼設定</translation>
@@ -610,6 +609,7 @@
 <translation id="8073670137947914548">下載完成</translation>
 <translation id="8073872304774253879">改善搜尋和瀏覽體驗</translation>
 <translation id="8076014560081431679">已儲存的網站設定不會遭到刪除，而且可能會反映您的瀏覽習慣。<ph name="BEGIN_LINK" />瞭解詳情<ph name="END_LINK" /></translation>
+<translation id="8105368624971345109">關閉</translation>
 <translation id="8114753159095730575">可下載檔案，相關選項位於畫面底部。</translation>
 <translation id="8131740175452115882">確認</translation>
 <translation id="8197543752516192074">翻譯網頁</translation>

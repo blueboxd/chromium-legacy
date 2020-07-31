@@ -189,6 +189,8 @@ bool HintsFetcher::FetchOptimizationGuideServiceHints(
   request_context_ = request_context;
 
   proto::GetHintsRequest get_hints_request;
+  // TODO(crbug/1110487): Add supported key representations once server supports
+  // sending HOST-keyed hints.
 
   for (const auto& optimization_type : optimization_types)
     get_hints_request.add_supported_optimizations(optimization_type);

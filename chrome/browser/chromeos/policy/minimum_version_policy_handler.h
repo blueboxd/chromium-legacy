@@ -24,11 +24,11 @@ namespace base {
 class Clock;
 class DictionaryValue;
 class Time;
-}
+}  // namespace base
 
 namespace chromeos {
 class UpdateRequiredNotification;
-}
+}  // namespace chromeos
 
 namespace policy {
 
@@ -166,6 +166,10 @@ class MinimumVersionPolicyHandler
   // Returns true if an update is required and the device has reached
   // End Of Life (Auto Update Expiration).
   bool IsUpdateRequiredEol() const;
+
+  // Returns the number of days to deadline if update is required and deadline
+  // has not been reached. Returns null if update is not required.
+  base::Optional<int> GetTimeRemainingInDays();
 
   // Callback used in tests and invoked after end-of-life status has been
   // fetched from the update_engine.

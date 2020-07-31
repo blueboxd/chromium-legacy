@@ -43,7 +43,7 @@ source_set("display") {
     libs = [ "GLESv2" ]
   }
 
-  if (is_linux) {
+  if (is_linux || is_chromeos) {
     libs = [ "GL" ]
   }
 

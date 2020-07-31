@@ -46,4 +46,9 @@ void MemoryManagedPaintCanvas::UpdateMemoryUsage(const cc::PaintImage& image) {
     set_needs_flush_callback_.Run();
 }
 
+bool MemoryManagedPaintCanvas::IsCachingImage(
+    const cc::PaintImage::ContentId content_id) const {
+  return cached_image_ids_.Contains(content_id);
+}
+
 }  // namespace blink

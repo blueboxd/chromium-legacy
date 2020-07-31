@@ -680,6 +680,9 @@ const flags_ui::FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kEnableFullPageScreenshotName,
      flag_descriptions::kEnableFullPageScreenshotDescription, flags_ui::kOsIos,
      FEATURE_VALUE_TYPE(kEnableFullPageScreenshot)},
+    {"scroll-to-text-ios", flag_descriptions::kScrollToTextIOSName,
+     flag_descriptions::kScrollToTextIOSDescription, flags_ui::kOsIos,
+     FEATURE_VALUE_TYPE(web::features::kScrollToTextIOS)},
 };
 
 bool SkipConditionalFeatureEntry(const flags_ui::FeatureEntry& entry) {

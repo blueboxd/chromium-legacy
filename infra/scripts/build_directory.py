@@ -52,7 +52,7 @@ def GetBuildOutputDirectory(src_dir=None, cros_board=None):
   assert not cros_board, "'cros_board' not supported on this platform"
 
   if sys.platform == 'cygwin' or sys.platform.startswith('win') or (
-      sys.platorm == 'darwin'):
+      sys.platform == 'darwin'):
     return os.path.join(src_dir, 'out')
 
   raise NotImplementedError('Unexpected platform %s' % sys.platform)

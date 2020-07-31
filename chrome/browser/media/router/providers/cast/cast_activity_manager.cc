@@ -222,7 +222,8 @@ void CastActivityManager::DoLaunchSession(DoLaunchSessionParams params) {
                      weak_ptr_factory_.GetWeakPtr(), route_id, sink,
                      cast_source));
   logger_->LogInfo(mojom::LogCategory::kRoute, kLoggerComponent,
-                   "Launched a session", sink.id(), cast_source.source_id(),
+                   "Sent a Launch Session request.", sink.id(),
+                   cast_source.source_id(),
                    MediaRoute::GetPresentationIdFromMediaRouteId(route_id));
 
   std::move(params.callback)
@@ -579,6 +580,11 @@ void CastActivityManager::OnSessionAddedOrUpdated(const MediaSinkInternal& sink,
 void CastActivityManager::OnSessionRemoved(const MediaSinkInternal& sink) {
   auto activity_it = FindActivityBySink(sink);
   if (activity_it != activities_.end()) {
+    logger_->LogInfo(
+        mojom::LogCategory::kRoute, kLoggerComponent,
+        "Session removed by the receiver.", sink.sink().id(),
+        MediaRoute::GetMediaSourceIdFromMediaRouteId(activity_it->first),
+        MediaRoute::GetPresentationIdFromMediaRouteId(activity_it->first));
     RemoveActivity(activity_it, PresentationConnectionState::TERMINATED,
                    PresentationConnectionCloseReason::CLOSED);
   }
@@ -756,16 +762,13 @@ void CastActivityManager::HandleLaunchSessionResponse(
     SendFailedToCastIssue(sink.sink().id(), route_id);
     return;
   }
-  logger_->LogInfo(mojom::LogCategory::kRoute, kLoggerComponent,
-                   "Received a LaunchSession response with status OK.",
-                   sink.id(), cast_source.source_id(),
-                   MediaRoute::GetPresentationIdFromMediaRouteId(route_id));
 
   auto session = CastSession::From(sink, *response.receiver_status);
   if (!session) {
     logger_->LogError(mojom::LogCategory::kRoute, kLoggerComponent,
-                      "Unable to get session from launch response", sink.id(),
-                      cast_source.source_id(),
+                      "Unable to get session from launch response. Cast "
+                      "session is not launched.",
+                      sink.id(), cast_source.source_id(),
                       MediaRoute::GetPresentationIdFromMediaRouteId(route_id));
     RemoveActivity(activity_it, PresentationConnectionState::CLOSED,
                    PresentationConnectionCloseReason::CONNECTION_ERROR);
@@ -787,6 +790,10 @@ void CastActivityManager::HandleLaunchSessionResponse(
 
   activity_it->second->SetOrUpdateSession(*session, sink, hash_token_);
   NotifyAllOnRoutesUpdated();
+  logger_->LogInfo(mojom::LogCategory::kRoute, kLoggerComponent,
+                   "Successfully Launched the session.", sink.id(),
+                   cast_source.source_id(),
+                   MediaRoute::GetPresentationIdFromMediaRouteId(route_id));
 }
 
 void CastActivityManager::HandleStopSessionResponse(
@@ -808,14 +815,16 @@ void CastActivityManager::HandleStopSessionResponse(
     std::move(callback).Run(base::nullopt, RouteRequestResult::OK);
 
     logger_->LogInfo(mojom::LogCategory::kRoute, kLoggerComponent,
-                     "Terminated a route successfully.", "",
-                     MediaRoute::GetMediaSourceIdFromMediaRouteId(route_id),
+                     "Terminated a route successfully after receiving "
+                     "StopSession response OK.",
+                     "", MediaRoute::GetMediaSourceIdFromMediaRouteId(route_id),
                      MediaRoute::GetPresentationIdFromMediaRouteId(route_id));
   } else {
-    std::move(callback).Run("Failed to terminate route",
-                            RouteRequestResult::UNKNOWN_ERROR);
-    logger_->LogError(mojom::LogCategory::kRoute, kLoggerComponent,
-                      "Failed to terminate route.", "",
+    std::string error_msg =
+        "StopSession response is not OK. Failed to terminate route.";
+    std::move(callback).Run(error_msg, RouteRequestResult::UNKNOWN_ERROR);
+    logger_->LogError(mojom::LogCategory::kRoute, kLoggerComponent, error_msg,
+                      "",
                       MediaRoute::GetMediaSourceIdFromMediaRouteId(route_id),
                       MediaRoute::GetPresentationIdFromMediaRouteId(route_id));
   }

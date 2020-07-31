@@ -183,6 +183,23 @@ const tests = [
     twoPageViewButton.click();
   },
 
+  function testShowAnnotationsToggle() {
+    const toolbar = createToolbar();
+
+    const showAnnotationsButton =
+        toolbar.shadowRoot.querySelector('#show-annotations-button');
+    chrome.test.assertFalse(
+        showAnnotationsButton.querySelector('iron-icon').hidden);
+
+    toolbar.addEventListener('display-annotations-changed', (e) => {
+      chrome.test.assertEq(false, e.detail);
+      chrome.test.assertTrue(
+          showAnnotationsButton.querySelector('iron-icon').hidden);
+      chrome.test.succeed();
+    });
+    showAnnotationsButton.click();
+  },
+
   function testSidenavToggleButton() {
     const toolbar = createToolbar();
     toolbar.addEventListener(

@@ -40,8 +40,6 @@ class CRWNavigationItemStorageTest : public PlatformTest {
     [item_storage_
         setDisplayState:web::PageDisplayState(CGPointZero, UIEdgeInsetsZero,
                                               0.0, 0.0, 0.0)];
-    [item_storage_
-        setPOSTData:[@"Test data" dataUsingEncoding:NSUTF8StringEncoding]];
     [item_storage_ setHTTPRequestHeaders:@{@"HeaderKey" : @"HeaderValue"}];
     [item_storage_ setUserAgentType:web::UserAgentType::DESKTOP];
   }
@@ -79,8 +77,6 @@ TEST_F(CRWNavigationItemStorageTest, Histograms) {
   [storage setTitle:base::UTF8ToUTF16(std::string(5120, 'd'))];
   [storage setDisplayState:web::PageDisplayState(CGPointZero, UIEdgeInsetsZero,
                                                  0.0, 0.0, 0.0)];
-  [storage setPOSTData:[NSData dataWithBytes:std::string(1024, 'd').c_str()
-                                      length:1024]];
   [storage setHTTPRequestHeaders:@{
     @"HeaderKey1" : @"HeaderValue1",
     @"HeaderKey2" : @"HeaderValue2",
@@ -104,8 +100,6 @@ TEST_F(CRWNavigationItemStorageTest, Histograms) {
       web::kNavigationItemSerializedTitleSizeHistogram, 5 /*KB*/, 1);
   histogram_tester.ExpectBucketCount(
       web::kNavigationItemSerializedDisplayStateSizeHistogram, 0 /*KB*/, 1);
-  histogram_tester.ExpectBucketCount(
-      web::kNavigationItemSerializedPostDataSizeHistogram, 1 /*KB*/, 1);
   histogram_tester.ExpectBucketCount(
       web::kNavigationItemSerializedRequestHeadersSizeHistogram, 1 /*KB*/, 1);
 }

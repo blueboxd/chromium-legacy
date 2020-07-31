@@ -294,9 +294,11 @@ struct TraceInCollectionTrait<kNoWeakHandling,
     }
   };
 
-  using TraceImpl = typename std::conditional<EphemeronHelper::is_ephemeron,
-                                              TraceImplEphemerons,
-                                              TraceImplDefault>::type;
+  using TraceImpl = typename std::conditional<
+      EphemeronHelper::is_ephemeron &&
+          WTF::IsTraceable<typename EphemeronHelper::ValueType>::value,
+      TraceImplEphemerons,
+      TraceImplDefault>::type;
 };
 
 template <typename Key, typename Value, typename Traits>

@@ -539,6 +539,16 @@ void CaptionBubble::OnErrorChanged() {
   Redraw();
 }
 
+void CaptionBubble::OnReadyChanged() {
+  // There is a bug in RenderText in which the label text must not be empty when
+  // it is displayed, or otherwise subsequent calculation of the number of lines
+  // (CaptionBubble::GetNumLinesInLabel) will be incorrect. The label text here
+  // is set to a space character.
+  // TODO(1055150): Fix the bug in RenderText and then remove this workaround.
+  label_->SetText(base::ASCIIToUTF16("\u0020"));
+  UpdateBubbleAndWaitTextVisibility();
+}
+
 void CaptionBubble::OnIsExpandedChanged() {
   expand_button_->SetVisible(!is_expanded_);
   collapse_button_->SetVisible(is_expanded_);
@@ -566,14 +576,14 @@ void CaptionBubble::UpdateBubbleVisibility() {
     // Hide the widget if there is no room for it or the model is closed.
     if (GetWidget()->IsVisible())
       GetWidget()->Hide();
-  } else if (label_->GetText().size() > 0 || model_->HasError()) {
-    // Show the widget if it has text or an error to display. Only show the
-    // widget if it isn't already visible. Always calling Widget::Show() will
-    // mean the widget gets focus each time.
+  } else if (model_->IsReady() || model_->HasError()) {
+    // Show the widget if it is ready to receive transcriptions or it has an
+    // error to display. Only show the widget if it isn't already visible.
+    // Always calling Widget::Show() will mean the widget gets focus each time.
     if (!GetWidget()->IsVisible())
       GetWidget()->Show();
   } else if (GetWidget()->IsVisible()) {
-    // No text and no error. Hide it.
+    // Not ready and no error. Hide it.
     GetWidget()->Hide();
   }
 }

@@ -300,15 +300,10 @@ class ClientHintsBrowserTest : public policy::PolicyTest,
   // Verify that the user is not notified that cookies or JavaScript were
   // blocked on the webpage due to the checks done by client hints.
   void VerifyContentSettingsNotNotified() const {
-    content::WebContents* web_contents =
-        browser()->tab_strip_model()->GetActiveWebContents();
-    EXPECT_FALSE(content_settings::TabSpecificContentSettings::FromWebContents(
-                     web_contents)
-                     ->IsContentBlocked(ContentSettingsType::COOKIES));
-
-    EXPECT_FALSE(content_settings::TabSpecificContentSettings::FromWebContents(
-                     web_contents)
-                     ->IsContentBlocked(ContentSettingsType::JAVASCRIPT));
+    auto* tscs = content_settings::TabSpecificContentSettings::GetForFrame(
+        browser()->tab_strip_model()->GetActiveWebContents()->GetMainFrame());
+    EXPECT_FALSE(tscs->IsContentBlocked(ContentSettingsType::COOKIES));
+    EXPECT_FALSE(tscs->IsContentBlocked(ContentSettingsType::JAVASCRIPT));
   }
 
   void SetExpectedEffectiveConnectionType(

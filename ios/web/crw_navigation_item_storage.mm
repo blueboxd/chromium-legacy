@@ -25,7 +25,6 @@ NSString* const kNavigationItemStorageReferrerPolicyKey = @"referrerPolicy";
 NSString* const kNavigationItemStorageTimestampKey = @"timestamp";
 NSString* const kNavigationItemStorageTitleKey = @"title";
 NSString* const kNavigationItemStoragePageDisplayStateKey = @"state";
-NSString* const kNavigationItemStoragePOSTDataKey = @"POSTData";
 NSString* const kNavigationItemStorageHTTPRequestHeadersKey = @"httpHeaders";
 NSString* const kNavigationItemStorageSkipRepostFormConfirmationKey =
     @"skipResubmitDataConfirmation";
@@ -43,8 +42,6 @@ const char kNavigationItemSerializedTitleSizeHistogram[] =
     "Session.WebStates.NavigationItem.SerializedTitleSize";
 const char kNavigationItemSerializedDisplayStateSizeHistogram[] =
     "Session.WebStates.NavigationItem.SerializedDisplayStateSize";
-const char kNavigationItemSerializedPostDataSizeHistogram[] =
-    "Session.WebStates.NavigationItem.SerializedPostDataSize";
 const char kNavigationItemSerializedRequestHeadersSizeHistogram[] =
     "Session.WebStates.NavigationItem.SerializedRequestHeadersSize";
 
@@ -69,7 +66,6 @@ const char kNavigationItemSerializedRequestHeadersSizeHistogram[] =
   [description
       appendFormat:@"userAgentType : %s, ",
                    web::GetUserAgentTypeDescription(_userAgentType).c_str()];
-  [description appendFormat:@"POSTData : %@, ", _POSTData];
   [description appendFormat:@"HTTPRequestHeaders : %@", _HTTPRequestHeaders];
   return description;
 }
@@ -145,8 +141,6 @@ const char kNavigationItemSerializedRequestHeadersSizeHistogram[] =
     _shouldSkipRepostFormConfirmation =
         [aDecoder decodeBoolForKey:
                       web::kNavigationItemStorageSkipRepostFormConfirmationKey];
-    _POSTData =
-        [aDecoder decodeObjectForKey:web::kNavigationItemStoragePOSTDataKey];
     _HTTPRequestHeaders = [aDecoder
         decodeObjectForKey:web::kNavigationItemStorageHTTPRequestHeadersKey];
   }
@@ -222,13 +216,6 @@ const char kNavigationItemSerializedRequestHeadersSizeHistogram[] =
       aCoder, web::kNavigationItemStorageUserAgentTypeKey, userAgent);
   serializedSizeInBytes += userAgent.size();
   // No need to log the user agent type size, because it's a set of constants.
-
-  [aCoder encodeObject:_POSTData forKey:web::kNavigationItemStoragePOSTDataKey];
-  int serializedPostDataSizeInBytes = _POSTData.length;
-  serializedSizeInBytes += serializedPostDataSizeInBytes;
-  base::UmaHistogramMemoryKB(
-      web::kNavigationItemSerializedPostDataSizeHistogram,
-      serializedPostDataSizeInBytes / 1024);
 
   [aCoder encodeObject:_HTTPRequestHeaders
                 forKey:web::kNavigationItemStorageHTTPRequestHeadersKey];

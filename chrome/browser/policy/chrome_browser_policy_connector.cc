@@ -49,8 +49,8 @@
 #endif
 
 #if !defined(OS_ANDROID) && !defined(OS_CHROMEOS)
-#include "chrome/browser/policy/chrome_browser_cloud_management_controller.h"
 #include "chrome/browser/policy/chrome_browser_cloud_management_controller_desktop.h"
+#include "components/enterprise/browser/controller/chrome_browser_cloud_management_controller.h"
 #include "components/policy/core/common/cloud/machine_level_user_cloud_policy_manager.h"
 #endif
 

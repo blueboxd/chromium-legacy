@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "components/performance_manager/decorators/site_data_recorder.h"
+#include "components/performance_manager/public/decorators/site_data_recorder.h"
 
 #include "base/time/time.h"
 #include "components/performance_manager/graph/node_attached_data_impl.h"
@@ -10,6 +10,7 @@
 #include "components/performance_manager/persistence/site_data/site_data_cache.h"
 #include "components/performance_manager/persistence/site_data/site_data_cache_factory.h"
 #include "components/performance_manager/persistence/site_data/site_data_writer.h"
+#include "components/performance_manager/public/persistence/site_data/site_data_reader.h"
 
 namespace performance_manager {
 
@@ -74,6 +75,11 @@ class SiteDataNodeData : public NodeAttachedDataImpl<SiteDataNodeData>,
     return writer_.get();
   }
 
+  SiteDataReader* reader() const override {
+    DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+    return reader_.get();
+  }
+
  private:
   // The features tracked by the SiteDataRecorder class.
   enum class FeatureType {
@@ -110,6 +116,7 @@ class SiteDataNodeData : public NodeAttachedDataImpl<SiteDataNodeData>,
   base::TimeTicks loaded_time_;
 
   std::unique_ptr<SiteDataWriter> writer_;
+  std::unique_ptr<SiteDataReader> reader_;
 
   SEQUENCE_CHECKER(sequence_checker_);
 
@@ -131,6 +138,7 @@ void SiteDataNodeData::OnMainFrameUrlChanged(const GURL& url,
     return;
 
   writer_ = data_cache_->GetWriterForOrigin(origin);
+  reader_ = data_cache_->GetReaderForOrigin(origin);
 
   // The writer is assumed to be in an unloaded state by default, set the proper
   // loading state if necessary.
@@ -193,6 +201,7 @@ void SiteDataNodeData::Reset() {
     loaded_time_ = base::TimeTicks();
   }
   writer_.reset();
+  reader_.reset();
 }
 
 bool SiteDataNodeData::ShouldIgnoreFeatureUsageEvent(FeatureType feature_type) {
@@ -336,6 +345,12 @@ void SiteDataRecorder::SetPageNodeDataCache(const PageNode* page_node) {
 
 SiteDataNodeData::Data::Data() = default;
 SiteDataNodeData::Data::~Data() = default;
+
+// static
+const SiteDataRecorder::Data* SiteDataRecorder::Data::FromPageNode(
+    const PageNode* page_node) {
+  return SiteDataNodeData::Get(PageNodeImpl::FromNode(page_node));
+}
 
 // static
 SiteDataRecorder::Data* SiteDataRecorder::Data::GetForTesting(

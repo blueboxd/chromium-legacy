@@ -23,6 +23,7 @@
 <translation id="3344973607274501920">Chromium nuk mund t'i kontrollonte fjalëkalimet e tua. Provo të kontrollosh lidhjen e internetit.</translation>
 <translation id="3639997914391704523">Chromium mund t'i kontrollojë fjalëkalimet e tua kur të identifikohesh me "Llogarinë tënde të Google".</translation>
 <translation id="3805899903892079518">Chromium nuk ka qasje te fotografitë apo videot e tua. Aktivizo qasjen te Cilësimet e iOS &gt; Privatësia &gt; Fotografitë.</translation>
+<translation id="4166206055865952171">Bëje Chromium shfletuesin tënd të parazgjedhur</translation>
 <translation id="4555020257205549924">Kur ky funksion është i aktivizuar, Chromium do të ofrojë që të përkthejë faqet e shkruara në gjuhë të tjera duke përdorur "Përkthe me Google". <ph name="BEGIN_LINK" />Mëso më shumë<ph name="END_LINK" /></translation>
 <translation id="4681781466797808448">Aktivizo skanerin e Chromium</translation>
 <translation id="4787850887676698916">Skedat që ke hapur në Chromium në pajisjet e tjera do të shfaqen këtu.</translation>
@@ -39,10 +40,15 @@
 <translation id="6604711459180487467">Merr një përvojë më të mirë në Chromium bazuar në vendndodhjen tënde.</translation>
 <translation id="6820823224820483452">Chromium nuk mund t'i kontrollonte të gjitha fjalëkalimet. Provo sërish nesër.</translation>
 <translation id="7099326575020694068">Chromium nuk mund ta përdorë kamerën tënde në modalitetin e "Pamjes së ndarë"</translation>
+<translation id="7118091470949186573">Tani mund të përdorësh Chromium sa herë që troket te lidhjet në mesazhe, dokumente dhe aplikacione të tjera.</translation>
 <translation id="7173114856073700355">Hap cilësimet</translation>
 <translation id="7208566199746267865">Chromium të kursen kohë duke i sjellë llogaritë e tua në ueb. Mund të shtosh ose heqësh llogari te "Cilësimet".</translation>
 <translation id="7269362888766543920">Disa përbërës shtesë shkaktojnë ndërprerje aksidentale të Chromium. Provo t'i çinstalosh ata.</translation>
 <translation id="7337881442233988129">Chromium</translation>
+<translation id="7349905826685622881">Për ta bërë Chromium shfletuesin e parazgjedhur:
+        1. Hap "Cilësimet". 
+        2. Trokit tek "Aplikacioni i parazgjedhur i shfletuesit".
+        3. Zgjidh Chromium.</translation>
 <translation id="7357211569052832586">Të dhënat e zgjedhura janë hequr nga Chromium dhe nga pajisjet e sinkronizuara. Llogaria jote e Google mund të ketë forma të tjera të historikut të shfletimit, si kërkimet dhe aktivitetet nga shërbimet e tjera të Google në history.google.com.</translation>
 <translation id="7400689562045506105">Përdore Chromium kudo</translation>
 <translation id="766897673682622022">Fjalëkalimi yt është ekspozuar në një nxjerrje të paautorizuar të të dhënave. Chromium rekomandon që ta ndryshosh fjalëkalimin tani.</translation>

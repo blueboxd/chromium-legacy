@@ -7,10 +7,8 @@
     },
     "filter_terrain_svg": {
       "ci_095": 0.574,
-      "_comment": "crbug.com/1053614",
       "avg": 33.202,
-      "cpu_wall_time_ratio": 0.368,
-      "experimental": true
+      "cpu_wall_time_ratio": 0.368
     },
     "web_animation_value_type_transform_complex": {
       "ci_095": 1.704,
@@ -70,10 +68,8 @@
     },
     "css_value_type_shadow": {
       "ci_095": 1.482,
-      "_comment": "crbug.com/1093313",
       "avg": 56.704,
-      "cpu_wall_time_ratio": 0.414,
-      "experimental": true
+      "cpu_wall_time_ratio": 0.414
     },
     "nvidia_vertex_buffer_object": {
       "ci_095": 3.605,
@@ -109,10 +105,8 @@
     },
     "css_value_type_shadow": {
       "ci_095": 18.3,
-      "_comment": "crbug.com/1093313",
       "avg": 65.502,
-      "cpu_wall_time_ratio": 0.585,
-      "experimental": true
+      "cpu_wall_time_ratio": 0.585
     },
     "animometer_webgl_attrib_arrays": {
       "ci_095": 0.44,

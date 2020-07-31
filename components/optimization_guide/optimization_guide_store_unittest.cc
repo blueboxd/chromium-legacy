@@ -31,8 +31,8 @@ namespace {
 constexpr char kDefaultComponentVersion[] = "1.0.0";
 constexpr char kUpdateComponentVersion[] = "2.0.0";
 
-std::string GetHostSuffix(size_t id) {
-  // Host suffix alternates between two different domain types depending on
+std::string GetHost(size_t id) {
+  // Host alternates between two different domain types depending on
   // whether the id is odd or even.
   if (id % 2 == 0) {
     return "domain" + base::NumberToString(id) + ".org";
@@ -110,13 +110,13 @@ class OptimizationGuideStoreTest : public testing::Test {
           OptimizationGuideStore::GetComponentHintEntryKeyPrefix(
               base::Version(kDefaultComponentVersion));
       for (size_t i = 0; i < component_hint_count.value(); ++i) {
-        std::string host_suffix = GetHostSuffix(i);
-        StoreEntry& entry = db_store_[component_hint_key_prefix + host_suffix];
+        std::string host = GetHost(i);
+        StoreEntry& entry = db_store_[component_hint_key_prefix + host];
         entry.set_entry_type(static_cast<proto::StoreEntryType>(
             OptimizationGuideStore::StoreEntryType::kComponentHint));
         proto::Hint* hint = entry.mutable_hint();
-        hint->set_key(host_suffix);
-        hint->set_key_representation(proto::HOST_SUFFIX);
+        hint->set_key(host);
+        hint->set_key_representation(proto::HOST);
         proto::PageHint* page_hint = hint->add_page_hints();
         page_hint->set_page_pattern("page pattern " + base::NumberToString(i));
       }
@@ -140,10 +140,10 @@ class OptimizationGuideStoreTest : public testing::Test {
   void SeedComponentUpdateData(StoreUpdateData* update_data,
                                size_t component_hint_count) {
     for (size_t i = 0; i < component_hint_count; ++i) {
-      std::string host_suffix = GetHostSuffix(i);
+      std::string host = GetHost(i);
       proto::Hint hint;
-      hint.set_key(host_suffix);
-      hint.set_key_representation(proto::HOST_SUFFIX);
+      hint.set_key(host);
+      hint.set_key_representation(proto::HOST);
       proto::PageHint* page_hint = hint.add_page_hints();
       page_hint->set_page_pattern("page pattern " + base::NumberToString(i));
       update_data->MoveHintIntoUpdateData(std::move(hint));
@@ -153,10 +153,10 @@ class OptimizationGuideStoreTest : public testing::Test {
   void SeedFetchedUpdateData(StoreUpdateData* update_data,
                              size_t fetched_hint_count) {
     for (size_t i = 0; i < fetched_hint_count; ++i) {
-      std::string host_suffix = GetHostSuffix(i);
+      std::string host = GetHost(i);
       proto::Hint hint;
-      hint.set_key(host_suffix);
-      hint.set_key_representation(proto::HOST_SUFFIX);
+      hint.set_key(host);
+      hint.set_key_representation(proto::HOST);
       proto::PageHint* page_hint = hint.add_page_hints();
       page_hint->set_page_pattern("page pattern " + base::NumberToString(i));
       update_data->MoveHintIntoUpdateData(std::move(hint));
@@ -178,13 +178,13 @@ class OptimizationGuideStoreTest : public testing::Test {
   void SeedHostModelFeaturesUpdateData(StoreUpdateData* update_data,
                                        size_t host_model_features_count) {
     for (size_t i = 0; i < host_model_features_count; i++) {
-      std::string host_suffix = GetHostSuffix(i);
+      std::string host = GetHost(i);
       proto::HostModelFeatures host_model_features;
       proto::ModelFeature* model_feature =
           host_model_features.add_model_features();
       model_feature->set_feature_name("host_feat1");
       model_feature->set_double_value(2.0);
-      host_model_features.set_host(host_suffix);
+      host_model_features.set_host(host);
       update_data->CopyHostModelFeaturesIntoUpdateData(host_model_features);
     }
   }
@@ -391,9 +391,9 @@ class OptimizationGuideStoreTest : public testing::Test {
         OptimizationGuideStore::GetComponentHintEntryKeyPrefix(
             base::Version(version));
     for (int i = 0; i < count; ++i) {
-      std::string host_suffix = GetHostSuffix(i);
+      std::string host = GetHost(i);
       OptimizationGuideStore::EntryKey hint_entry_key =
-          component_hint_entry_key_prefix + host_suffix;
+          component_hint_entry_key_prefix + host;
       const auto& hint_entry = db_store_.find(hint_entry_key);
       if (hint_entry == db_store_.end()) {
         FAIL() << "No entry found for component hint: " << hint_entry_key;
@@ -403,7 +403,7 @@ class OptimizationGuideStoreTest : public testing::Test {
         FAIL() << "Component hint entry does not have hint: " << hint_entry_key;
       }
 
-      EXPECT_EQ(hint_entry->second.hint().key(), host_suffix);
+      EXPECT_EQ(hint_entry->second.hint().key(), host);
     }
   }
 
@@ -1271,10 +1271,10 @@ TEST_F(OptimizationGuideStoreTest, LoadHintSuccessInitialData) {
   // Verify that all component hints in the initial data can successfully be
   // loaded from the store.
   for (size_t i = 0; i < hint_count; ++i) {
-    std::string host_suffix = GetHostSuffix(i);
+    std::string host = GetHost(i);
     OptimizationGuideStore::EntryKey hint_entry_key;
-    if (!guide_store()->FindHintEntryKey(host_suffix, &hint_entry_key)) {
-      FAIL() << "Hint entry not found for host suffix: " << host_suffix;
+    if (!guide_store()->FindHintEntryKey(host, &hint_entry_key)) {
+      FAIL() << "Hint entry not found for host: " << host;
     }
 
     guide_store()->LoadHint(
@@ -1290,7 +1290,7 @@ TEST_F(OptimizationGuideStoreTest, LoadHintSuccessInitialData) {
       FAIL() << "Loaded hint was null for entry key: " << hint_entry_key;
     }
 
-    EXPECT_EQ(last_loaded_hint()->hint()->key(), host_suffix);
+    EXPECT_EQ(last_loaded_hint()->hint()->key(), host);
     EXPECT_FALSE(last_loaded_hint()->expiry_time().has_value());
   }
 }
@@ -1313,10 +1313,10 @@ TEST_F(OptimizationGuideStoreTest, LoadHintSuccessUpdateData) {
   // Verify that all component hints within a successful component update can
   // be loaded from the store.
   for (size_t i = 0; i < update_hint_count; ++i) {
-    std::string host_suffix = GetHostSuffix(i);
+    std::string host = GetHost(i);
     OptimizationGuideStore::EntryKey hint_entry_key;
-    if (!guide_store()->FindHintEntryKey(host_suffix, &hint_entry_key)) {
-      FAIL() << "Hint entry not found for host suffix: " << host_suffix;
+    if (!guide_store()->FindHintEntryKey(host, &hint_entry_key)) {
+      FAIL() << "Hint entry not found for host: " << host;
     }
 
     guide_store()->LoadHint(
@@ -1332,7 +1332,7 @@ TEST_F(OptimizationGuideStoreTest, LoadHintSuccessUpdateData) {
       FAIL() << "Loaded hint was null for entry key: " << hint_entry_key;
     }
 
-    EXPECT_EQ(last_loaded_hint()->hint()->key(), host_suffix);
+    EXPECT_EQ(last_loaded_hint()->hint()->key(), host);
     EXPECT_FALSE(last_loaded_hint()->expiry_time().has_value());
   }
 }
@@ -1342,11 +1342,11 @@ TEST_F(OptimizationGuideStoreTest, FindHintEntryKeyOnUnavailableStore) {
   SeedInitialData(MetadataSchemaState::kValid, initial_hint_count);
   CreateDatabase();
 
-  std::string host_suffix = GetHostSuffix(0);
+  std::string host = GetHost(0);
   OptimizationGuideStore::EntryKey hint_entry_key;
 
   // Verify that hint entry keys can't be found when the store is unavailable.
-  EXPECT_FALSE(guide_store()->FindHintEntryKey(host_suffix, &hint_entry_key));
+  EXPECT_FALSE(guide_store()->FindHintEntryKey(host, &hint_entry_key));
 }
 
 TEST_F(OptimizationGuideStoreTest, FindHintEntryKeyInitialData) {
@@ -1360,10 +1360,9 @@ TEST_F(OptimizationGuideStoreTest, FindHintEntryKeyInitialData) {
   // as being found and hints that are not containd within the initial data are
   // properly reported as not being found.
   for (size_t i = 0; i < hint_count * 2; ++i) {
-    std::string host_suffix = GetHostSuffix(i);
+    std::string host = GetHost(i);
     OptimizationGuideStore::EntryKey hint_entry_key;
-    bool success =
-        guide_store()->FindHintEntryKey(host_suffix, &hint_entry_key);
+    bool success = guide_store()->FindHintEntryKey(host, &hint_entry_key);
     EXPECT_EQ(success, i < hint_count);
   }
 }
@@ -1387,10 +1386,9 @@ TEST_F(OptimizationGuideStoreTest, FindHintEntryKeyUpdateData) {
   // by the store as being found and hints that are not containd within the
   // component update are properly reported as not being found.
   for (size_t i = 0; i < update_hint_count * 2; ++i) {
-    std::string host_suffix = GetHostSuffix(i);
+    std::string host = GetHost(i);
     OptimizationGuideStore::EntryKey hint_entry_key;
-    bool success =
-        guide_store()->FindHintEntryKey(host_suffix, &hint_entry_key);
+    bool success = guide_store()->FindHintEntryKey(host, &hint_entry_key);
     EXPECT_EQ(success, i < update_hint_count);
   }
 }
@@ -1420,10 +1418,9 @@ TEST_F(OptimizationGuideStoreTest, FindHintEntryKeyForFetchedHints) {
   UpdateFetchedHints(std::move(update_data));
 
   for (size_t i = 0; i < update_hint_count; ++i) {
-    std::string host_suffix = GetHostSuffix(i);
+    std::string host = GetHost(i);
     OptimizationGuideStore::EntryKey hint_entry_key;
-    bool success =
-        guide_store()->FindHintEntryKey(host_suffix, &hint_entry_key);
+    bool success = guide_store()->FindHintEntryKey(host, &hint_entry_key);
     EXPECT_EQ(success, i < update_hint_count);
   }
 }
@@ -1446,11 +1443,11 @@ TEST_F(OptimizationGuideStoreTest,
 
   proto::Hint hint1;
   hint1.set_key("domain1.org");
-  hint1.set_key_representation(proto::HOST_SUFFIX);
+  hint1.set_key_representation(proto::HOST);
   update_data->MoveHintIntoUpdateData(std::move(hint1));
   proto::Hint hint2;
   hint2.set_key("host.domain2.org");
-  hint2.set_key_representation(proto::HOST_SUFFIX);
+  hint2.set_key_representation(proto::HOST);
   update_data->MoveHintIntoUpdateData(std::move(hint2));
 
   UpdateComponentHints(std::move(update_data));
@@ -1460,26 +1457,26 @@ TEST_F(OptimizationGuideStoreTest,
   update_data = guide_store()->CreateUpdateDataForFetchedHints(update_time);
 
   proto::Hint hint;
-  hint.set_key("domain2.org");
-  hint.set_key_representation(proto::HOST_SUFFIX);
+  hint.set_key("host.domain2.org");
+  hint.set_key_representation(proto::HOST);
   update_data->MoveHintIntoUpdateData(std::move(hint));
 
   UpdateFetchedHints(std::move(update_data));
 
   // Hint for host.domain2.org should be a fetched hint ("3_" prefix)
   // as fetched hints take priority.
-  std::string host_suffix = "host.domain2.org";
+  std::string host = "host.domain2.org";
   OptimizationGuideStore::EntryKey hint_entry_key;
-  if (!guide_store()->FindHintEntryKey(host_suffix, &hint_entry_key)) {
-    FAIL() << "Hint entry not found for host suffix: " << host_suffix;
+  if (!guide_store()->FindHintEntryKey(host, &hint_entry_key)) {
+    FAIL() << "Hint entry not found for host: " << host;
   }
 
-  EXPECT_EQ(hint_entry_key, "3_domain2.org");
+  EXPECT_EQ(hint_entry_key, "3_host.domain2.org");
 
-  host_suffix = "subdomain.domain1.org";
+  host = "domain1.org";
 
-  if (!guide_store()->FindHintEntryKey(host_suffix, &hint_entry_key)) {
-    FAIL() << "Hint entry not found for host suffix: " << host_suffix;
+  if (!guide_store()->FindHintEntryKey(host, &hint_entry_key)) {
+    FAIL() << "Hint entry not found for host: " << host;
   }
 
   EXPECT_EQ(hint_entry_key, "2_2.0.0_domain1.org");
@@ -1502,11 +1499,11 @@ TEST_F(OptimizationGuideStoreTest, ClearFetchedHints) {
 
   proto::Hint hint1;
   hint1.set_key("domain1.org");
-  hint1.set_key_representation(proto::HOST_SUFFIX);
+  hint1.set_key_representation(proto::HOST);
   update_data->MoveHintIntoUpdateData(std::move(hint1));
   proto::Hint hint2;
   hint2.set_key("host.domain2.org");
-  hint2.set_key_representation(proto::HOST_SUFFIX);
+  hint2.set_key_representation(proto::HOST);
   update_data->MoveHintIntoUpdateData(std::move(hint2));
 
   UpdateComponentHints(std::move(update_data));
@@ -1516,30 +1513,30 @@ TEST_F(OptimizationGuideStoreTest, ClearFetchedHints) {
   update_data = guide_store()->CreateUpdateDataForFetchedHints(update_time);
 
   proto::Hint fetched_hint1;
-  fetched_hint1.set_key("domain2.org");
-  fetched_hint1.set_key_representation(proto::HOST_SUFFIX);
+  fetched_hint1.set_key("host.domain2.org");
+  fetched_hint1.set_key_representation(proto::HOST);
   update_data->MoveHintIntoUpdateData(std::move(fetched_hint1));
   proto::Hint fetched_hint2;
   fetched_hint2.set_key("domain3.org");
-  fetched_hint2.set_key_representation(proto::HOST_SUFFIX);
+  fetched_hint2.set_key_representation(proto::HOST);
   update_data->MoveHintIntoUpdateData(std::move(fetched_hint2));
 
   UpdateFetchedHints(std::move(update_data));
 
   // Hint for host.domain2.org should be a fetched hint ("3_" prefix)
   // as fetched hints take priority.
-  std::string host_suffix = "host.domain2.org";
+  std::string host = "host.domain2.org";
   OptimizationGuideStore::EntryKey hint_entry_key;
-  if (!guide_store()->FindHintEntryKey(host_suffix, &hint_entry_key)) {
-    FAIL() << "Hint entry not found for host suffix: " << host_suffix;
+  if (!guide_store()->FindHintEntryKey(host, &hint_entry_key)) {
+    FAIL() << "Hint entry not found for host: " << host;
   }
 
-  EXPECT_EQ(hint_entry_key, "3_domain2.org");
+  EXPECT_EQ(hint_entry_key, "3_host.domain2.org");
 
-  host_suffix = "subdomain.domain1.org";
+  host = "domain1.org";
 
-  if (!guide_store()->FindHintEntryKey(host_suffix, &hint_entry_key)) {
-    FAIL() << "Hint entry not found for host suffix: " << host_suffix;
+  if (!guide_store()->FindHintEntryKey(host, &hint_entry_key)) {
+    FAIL() << "Hint entry not found for host: " << host;
   }
 
   EXPECT_EQ(hint_entry_key, "2_2.0.0_domain1.org");
@@ -1549,13 +1546,13 @@ TEST_F(OptimizationGuideStoreTest, ClearFetchedHints) {
   histogram_tester.ExpectBucketCount(
       "OptimizationGuide.ClearFetchedHints.StoreAvailable", true, 1);
 
-  host_suffix = "domain1.org";
+  host = "domain1.org";
   // Component hint should still exist.
-  EXPECT_TRUE(guide_store()->FindHintEntryKey(host_suffix, &hint_entry_key));
+  EXPECT_TRUE(guide_store()->FindHintEntryKey(host, &hint_entry_key));
 
-  host_suffix = "domain3.org";
+  host = "domain3.org";
   // Fetched hint should not still exist.
-  EXPECT_FALSE(guide_store()->FindHintEntryKey(host_suffix, &hint_entry_key));
+  EXPECT_FALSE(guide_store()->FindHintEntryKey(host, &hint_entry_key));
 
   // Add Components back - newer version.
   base::Version version3("3.0.0");
@@ -1565,29 +1562,29 @@ TEST_F(OptimizationGuideStoreTest, ClearFetchedHints) {
   ASSERT_TRUE(update_data2);
 
   proto::Hint new_hint2;
-  new_hint2.set_key("domain2.org");
-  new_hint2.set_key_representation(proto::HOST_SUFFIX);
+  new_hint2.set_key("host.domain2.org");
+  new_hint2.set_key_representation(proto::HOST);
   update_data2->MoveHintIntoUpdateData(std::move(new_hint2));
 
   UpdateComponentHints(std::move(update_data2));
 
-  host_suffix = "host.domain2.org";
-  EXPECT_TRUE(guide_store()->FindHintEntryKey(host_suffix, &hint_entry_key));
+  host = "host.domain2.org";
+  EXPECT_TRUE(guide_store()->FindHintEntryKey(host, &hint_entry_key));
 
   update_data = guide_store()->CreateUpdateDataForFetchedHints(update_time);
   proto::Hint new_hint;
   new_hint.set_key("domain1.org");
-  new_hint.set_key_representation(proto::HOST_SUFFIX);
+  new_hint.set_key_representation(proto::HOST);
   update_data->MoveHintIntoUpdateData(std::move(new_hint));
 
   UpdateFetchedHints(std::move(update_data));
 
   // Add fetched hints to the store that overlap with the same hosts as the
   // initial set.
-  host_suffix = "subdomain.domain1.org";
+  host = "domain1.org";
 
-  if (!guide_store()->FindHintEntryKey(host_suffix, &hint_entry_key)) {
-    FAIL() << "Hint entry not found for host suffix: " << host_suffix;
+  if (!guide_store()->FindHintEntryKey(host, &hint_entry_key)) {
+    FAIL() << "Hint entry not found for host: " << host;
   }
 
   EXPECT_EQ(hint_entry_key, "3_domain1.org");
@@ -1610,11 +1607,11 @@ TEST_F(OptimizationGuideStoreTest, FetchHintsPurgeExpiredFetchedHints) {
 
   proto::Hint hint1;
   hint1.set_key("domain1.org");
-  hint1.set_key_representation(proto::HOST_SUFFIX);
+  hint1.set_key_representation(proto::HOST);
   update_data->MoveHintIntoUpdateData(std::move(hint1));
   proto::Hint hint2;
   hint2.set_key("host.domain2.org");
-  hint2.set_key_representation(proto::HOST_SUFFIX);
+  hint2.set_key_representation(proto::HOST);
   update_data->MoveHintIntoUpdateData(std::move(hint2));
 
   UpdateComponentHints(std::move(update_data));
@@ -1625,13 +1622,13 @@ TEST_F(OptimizationGuideStoreTest, FetchHintsPurgeExpiredFetchedHints) {
 
   proto::Hint fetched_hint1;
   fetched_hint1.set_key("domain2.org");
-  fetched_hint1.set_key_representation(proto::HOST_SUFFIX);
+  fetched_hint1.set_key_representation(proto::HOST);
   fetched_hint1.mutable_max_cache_duration()->set_seconds(
       base::TimeDelta::FromDays(7).InSeconds());
   update_data->MoveHintIntoUpdateData(std::move(fetched_hint1));
   proto::Hint fetched_hint2;
   fetched_hint2.set_key("domain3.org");
-  fetched_hint2.set_key_representation(proto::HOST_SUFFIX);
+  fetched_hint2.set_key_representation(proto::HOST);
   fetched_hint1.mutable_max_cache_duration()->set_seconds(
       base::TimeDelta::FromDays(7).InSeconds());
   update_data->MoveHintIntoUpdateData(std::move(fetched_hint2));
@@ -1643,13 +1640,13 @@ TEST_F(OptimizationGuideStoreTest, FetchHintsPurgeExpiredFetchedHints) {
 
   proto::Hint fetched_hint3;
   fetched_hint1.set_key("domain4.org");
-  fetched_hint1.set_key_representation(proto::HOST_SUFFIX);
+  fetched_hint1.set_key_representation(proto::HOST);
   fetched_hint1.mutable_max_cache_duration()->set_seconds(
       base::TimeDelta::FromDays(-7).InSeconds());
   update_data->MoveHintIntoUpdateData(std::move(fetched_hint1));
   proto::Hint fetched_hint4;
   fetched_hint2.set_key("domain5.org");
-  fetched_hint2.set_key_representation(proto::HOST_SUFFIX);
+  fetched_hint2.set_key_representation(proto::HOST);
   fetched_hint2.mutable_max_cache_duration()->set_seconds(
       base::TimeDelta::FromDays(-7).InSeconds());
   update_data->MoveHintIntoUpdateData(std::move(fetched_hint2));
@@ -1682,11 +1679,11 @@ TEST_F(OptimizationGuideStoreTest, FetchedHintsLoadExpiredHint) {
 
   proto::Hint hint1;
   hint1.set_key("domain1.org");
-  hint1.set_key_representation(proto::HOST_SUFFIX);
+  hint1.set_key_representation(proto::HOST);
   update_data->MoveHintIntoUpdateData(std::move(hint1));
   proto::Hint hint2;
   hint2.set_key("host.domain2.org");
-  hint2.set_key_representation(proto::HOST_SUFFIX);
+  hint2.set_key_representation(proto::HOST);
   update_data->MoveHintIntoUpdateData(std::move(hint2));
 
   UpdateComponentHints(std::move(update_data));
@@ -1695,26 +1692,26 @@ TEST_F(OptimizationGuideStoreTest, FetchedHintsLoadExpiredHint) {
   update_data = guide_store()->CreateUpdateDataForFetchedHints(update_time);
 
   proto::Hint fetched_hint1;
-  fetched_hint1.set_key("domain2.org");
-  fetched_hint1.set_key_representation(proto::HOST_SUFFIX);
+  fetched_hint1.set_key("host.domain2.org");
+  fetched_hint1.set_key_representation(proto::HOST);
   fetched_hint1.mutable_max_cache_duration()->set_seconds(
       base::TimeDelta().FromDays(-10).InSeconds());
   update_data->MoveHintIntoUpdateData(std::move(fetched_hint1));
   proto::Hint fetched_hint2;
   fetched_hint2.set_key("domain3.org");
-  fetched_hint2.set_key_representation(proto::HOST_SUFFIX);
+  fetched_hint2.set_key_representation(proto::HOST);
   update_data->MoveHintIntoUpdateData(std::move(fetched_hint2));
 
   UpdateFetchedHints(std::move(update_data));
 
   // Hint for host.domain2.org should be a fetched hint ("3_" prefix)
   // as fetched hints take priority.
-  std::string host_suffix = "host.domain2.org";
+  std::string host = "host.domain2.org";
   OptimizationGuideStore::EntryKey hint_entry_key;
-  if (!guide_store()->FindHintEntryKey(host_suffix, &hint_entry_key)) {
-    FAIL() << "Hint entry not found for host suffix: " << host_suffix;
+  if (!guide_store()->FindHintEntryKey(host, &hint_entry_key)) {
+    FAIL() << "Hint entry not found for host: " << host;
   }
-  EXPECT_EQ(hint_entry_key, "3_domain2.org");
+  EXPECT_EQ(hint_entry_key, "3_host.domain2.org");
   guide_store()->LoadHint(
       hint_entry_key, base::BindOnce(&OptimizationGuideStoreTest::OnHintLoaded,
                                      base::Unretained(this)));
@@ -1747,11 +1744,11 @@ TEST_F(OptimizationGuideStoreTest, FetchedHintsLoadPopulatesExpiryTime) {
 
   proto::Hint hint1;
   hint1.set_key("domain1.org");
-  hint1.set_key_representation(proto::HOST_SUFFIX);
+  hint1.set_key_representation(proto::HOST);
   update_data->MoveHintIntoUpdateData(std::move(hint1));
   proto::Hint hint2;
   hint2.set_key("host.domain2.org");
-  hint2.set_key_representation(proto::HOST_SUFFIX);
+  hint2.set_key_representation(proto::HOST);
   update_data->MoveHintIntoUpdateData(std::move(hint2));
 
   UpdateComponentHints(std::move(update_data));
@@ -1760,26 +1757,26 @@ TEST_F(OptimizationGuideStoreTest, FetchedHintsLoadPopulatesExpiryTime) {
   update_data = guide_store()->CreateUpdateDataForFetchedHints(update_time);
 
   proto::Hint fetched_hint1;
-  fetched_hint1.set_key("domain2.org");
-  fetched_hint1.set_key_representation(proto::HOST_SUFFIX);
+  fetched_hint1.set_key("host.domain2.org");
+  fetched_hint1.set_key_representation(proto::HOST);
   fetched_hint1.mutable_max_cache_duration()->set_seconds(
       base::TimeDelta().FromDays(10).InSeconds());
   update_data->MoveHintIntoUpdateData(std::move(fetched_hint1));
   proto::Hint fetched_hint2;
   fetched_hint2.set_key("domain3.org");
-  fetched_hint2.set_key_representation(proto::HOST_SUFFIX);
+  fetched_hint2.set_key_representation(proto::HOST);
   update_data->MoveHintIntoUpdateData(std::move(fetched_hint2));
 
   UpdateFetchedHints(std::move(update_data));
 
   // Hint for host.domain2.org should be a fetched hint ("3_" prefix)
   // as fetched hints take priority.
-  std::string host_suffix = "host.domain2.org";
+  std::string host = "host.domain2.org";
   OptimizationGuideStore::EntryKey hint_entry_key;
-  if (!guide_store()->FindHintEntryKey(host_suffix, &hint_entry_key)) {
-    FAIL() << "Hint entry not found for host suffix: " << host_suffix;
+  if (!guide_store()->FindHintEntryKey(host, &hint_entry_key)) {
+    FAIL() << "Hint entry not found for host: " << host;
   }
-  EXPECT_EQ(hint_entry_key, "3_domain2.org");
+  EXPECT_EQ(hint_entry_key, "3_host.domain2.org");
   guide_store()->LoadHint(
       hint_entry_key, base::BindOnce(&OptimizationGuideStoreTest::OnHintLoaded,
                                      base::Unretained(this)));
@@ -1978,10 +1975,10 @@ TEST_F(OptimizationGuideStoreTest, FindEntryKeyForHostModelFeatures) {
   UpdateHostModelFeatures(std::move(update_data));
 
   for (size_t i = 0; i < update_host_model_features_count; ++i) {
-    std::string host_suffix = GetHostSuffix(i);
+    std::string host = GetHost(i);
     OptimizationGuideStore::EntryKey entry_key;
     bool success =
-        guide_store()->FindHostModelFeaturesEntryKey(host_suffix, &entry_key);
+        guide_store()->FindHostModelFeaturesEntryKey(host, &entry_key);
     EXPECT_EQ(success, i < update_host_model_features_count);
   }
 }
@@ -2006,10 +2003,10 @@ TEST_F(OptimizationGuideStoreTest, LoadHostModelFeaturesForHost) {
   UpdateHostModelFeatures(std::move(update_data));
 
   for (size_t i = 0; i < update_host_model_features_count; ++i) {
-    std::string host_suffix = GetHostSuffix(i);
+    std::string host = GetHost(i);
     OptimizationGuideStore::EntryKey entry_key;
     bool success =
-        guide_store()->FindHostModelFeaturesEntryKey(host_suffix, &entry_key);
+        guide_store()->FindHostModelFeaturesEntryKey(host, &entry_key);
     EXPECT_TRUE(success);
 
     guide_store()->LoadHostModelFeatures(
@@ -2025,7 +2022,7 @@ TEST_F(OptimizationGuideStoreTest, LoadHostModelFeaturesForHost) {
              << entry_key;
     }
 
-    EXPECT_EQ(last_loaded_host_model_features()->host(), host_suffix);
+    EXPECT_EQ(last_loaded_host_model_features()->host(), host);
   }
 }
 
@@ -2062,7 +2059,7 @@ TEST_F(OptimizationGuideStoreTest, LoadAllHostModelFeatures) {
   // Build a list of the hosts that are stored in the store.
   base::flat_set<std::string> hosts = {};
   for (size_t i = 0; i < update_host_model_features_count; i++)
-    hosts.insert(GetHostSuffix(i));
+    hosts.insert(GetHost(i));
 
   // Make sure all of the hosts of the host model features are returned.
   for (const auto& host_model_features : *all_host_model_features)
@@ -2089,10 +2086,9 @@ TEST_F(OptimizationGuideStoreTest, ClearHostModelFeatures) {
   UpdateHostModelFeatures(std::move(update_data));
 
   for (size_t i = 0; i < update_host_model_features_count; ++i) {
-    std::string host_suffix = GetHostSuffix(i);
+    std::string host = GetHost(i);
     OptimizationGuideStore::EntryKey entry_key;
-    EXPECT_TRUE(
-        guide_store()->FindHostModelFeaturesEntryKey(host_suffix, &entry_key));
+    EXPECT_TRUE(guide_store()->FindHostModelFeaturesEntryKey(host, &entry_key));
   }
 
   // Remove the host model features from the OptimizationGuideStore.
@@ -2101,10 +2097,10 @@ TEST_F(OptimizationGuideStoreTest, ClearHostModelFeatures) {
       "OptimizationGuide.ClearHostModelFeatures.StoreAvailable", true, 1);
 
   for (size_t i = 0; i < update_host_model_features_count; ++i) {
-    std::string host_suffix = GetHostSuffix(i);
+    std::string host = GetHost(i);
     OptimizationGuideStore::EntryKey entry_key;
     EXPECT_FALSE(
-        guide_store()->FindHostModelFeaturesEntryKey(host_suffix, &entry_key));
+        guide_store()->FindHostModelFeaturesEntryKey(host, &entry_key));
   }
 }
 
@@ -2128,20 +2124,19 @@ TEST_F(OptimizationGuideStoreTest, PurgeExpiredHostModelFeatures) {
   UpdateHostModelFeatures(std::move(update_data));
 
   for (size_t i = 0; i < update_host_model_features_count; ++i) {
-    std::string host_suffix = GetHostSuffix(i);
+    std::string host = GetHost(i);
     OptimizationGuideStore::EntryKey entry_key;
-    EXPECT_TRUE(
-        guide_store()->FindHostModelFeaturesEntryKey(host_suffix, &entry_key));
+    EXPECT_TRUE(guide_store()->FindHostModelFeaturesEntryKey(host, &entry_key));
   }
 
   // Remove expired host model features from the opt. guide store.
   PurgeExpiredHostModelFeatures();
 
   for (size_t i = 0; i < update_host_model_features_count; ++i) {
-    std::string host_suffix = GetHostSuffix(i);
+    std::string host = GetHost(i);
     OptimizationGuideStore::EntryKey entry_key;
     EXPECT_FALSE(
-        guide_store()->FindHostModelFeaturesEntryKey(host_suffix, &entry_key));
+        guide_store()->FindHostModelFeaturesEntryKey(host, &entry_key));
   }
 }
 

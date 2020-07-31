@@ -51,7 +51,7 @@ TEST(OptimizationGuideSwitchesTest, ParseComponentConfigFromCommandLine) {
   optimization_guide::proto::Configuration config;
   optimization_guide::proto::Hint* hint = config.add_hints();
   hint->set_key("somedomain.org");
-  hint->set_key_representation(optimization_guide::proto::HOST_SUFFIX);
+  hint->set_key_representation(optimization_guide::proto::HOST);
 
   std::string encoded_config;
   config.SerializeToString(&encoded_config);

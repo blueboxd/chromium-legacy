@@ -14,7 +14,6 @@
 <translation id="1084365883616172403">‏Facebook کی اشاعت مکمل ہوگئی۔</translation>
 <translation id="1103523840287552314"><ph name="LANGUAGE" /> کو ہمیشہ ترجمہ کریں</translation>
 <translation id="1104948393051856124">قبول کریں اور جاری رکھیں</translation>
-<translation id="1105578556867525047">ویب سائٹ پر پاس ورڈ تبدیل کریں</translation>
 <translation id="1112015203684611006">پرنٹنگ ناکام۔</translation>
 <translation id="1125564390852150847">نیا ٹیب بنائیں۔</translation>
 <translation id="1145536944570833626">موجودہ ڈیٹا کو حذف کریں۔</translation>
@@ -245,7 +244,6 @@
 <translation id="3783017676699494206">تصویر محفوظ کریں</translation>
 <translation id="3789841737615482174">انسٹال کریں</translation>
 <translation id="3803696231112616155">اس سائٹ کا ترجمہ کرنے کی پیشکش کریں</translation>
-<translation id="3836313059960742452">{COUNT,plural, =0{کوئی متاثرہ پاس ورڈ نہیں}=1{{COUNT} متاثرہ پاس ورڈ}other{{COUNT} متاثرہ پاس ورڈز}}</translation>
 <translation id="385051799172605136">پیچھے</translation>
 <translation id="3892144330757387737">آپ کو اپنی سرگزشت یہاں ملے گی</translation>
 <translation id="3897092660631435901">مینو</translation>
@@ -332,6 +330,7 @@
 <translation id="4901778704868714008">محفوظ کریں...</translation>
 <translation id="4904877109095351937">پڑھے ہوئے کے بطور نشان زد کریں</translation>
 <translation id="4930268273022498155">موجودہ ڈیٹا حذف کریں۔ آپ <ph name="USER_EMAIL1" /> پر واپس سوئچ کر کے اس کی بازیابی کر سکتے ہیں۔</translation>
+<translation id="4930714375720679147">آن کریں</translation>
 <translation id="4941089862236492464">معذرت، آپ کے آئٹم کا اشتراک کرتے ہوئے ایک مسئلہ پیش آگیا۔</translation>
 <translation id="4944543191714094452">صفحہ میں تلاش کریں…</translation>
 <translation id="4945756290001680296">پاس ورڈ کی ترتیبات تک رسائی حاصل کریں</translation>
@@ -610,6 +609,7 @@ Handoff ترتیبات کے عام سیکشن میں بھی فعال ہونی ض
 <translation id="8073670137947914548">ڈاؤن لوڈ کا عمل مکمل ہو گیا</translation>
 <translation id="8073872304774253879">تلاشوں اور براؤزنگ کو بہتر بنائیں</translation>
 <translation id="8076014560081431679">محفوظ کردہ سائٹ کی ترتیبات حذف نہیں کی جائیں گی اور یہ آپ کے براؤزنگ کی عادات کی عکاسی کر سکتی ہے۔ <ph name="BEGIN_LINK" />مزید جانیں<ph name="END_LINK" /></translation>
+<translation id="8105368624971345109">آف کریں</translation>
 <translation id="8114753159095730575">فائل ڈاؤن لوڈ دستیاب ہے۔ اختیارات اسکرین کے نچلے حصے کے قریب دستیاب ہیں۔</translation>
 <translation id="8131740175452115882">تصدیق کریں</translation>
 <translation id="8197543752516192074">صفحہ کا ترجمہ کریں</translation>

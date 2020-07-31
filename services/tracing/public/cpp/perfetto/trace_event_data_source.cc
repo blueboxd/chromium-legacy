@@ -39,6 +39,7 @@
 #include "services/tracing/public/cpp/perfetto/macros.h"
 #include "services/tracing/public/cpp/perfetto/perfetto_producer.h"
 #include "services/tracing/public/cpp/perfetto/perfetto_traced_process.h"
+#include "services/tracing/public/cpp/perfetto/system_producer.h"
 #include "services/tracing/public/cpp/perfetto/trace_time.h"
 #include "services/tracing/public/cpp/perfetto/traced_value_proto_writer.h"
 #include "services/tracing/public/cpp/perfetto/track_event_thread_local_event_sink.h"
@@ -1132,6 +1133,23 @@ void TraceEventDataSource::EmitTrackDescriptor() {
   if (process_type != ChromeProcessDescriptor::PROCESS_UNSPECIFIED) {
     chrome_process->set_process_type(process_type);
   }
+
+#if defined(OS_ANDROID)
+  // Host app package name is only recorded if privacy filtering is disabled or
+  // this is a system trace.
+  if (!privacy_filtering_enabled_ ||
+      producer_ == PerfettoTracedProcess::Get()->system_producer()) {
+    // Host app package name is used to group information from different
+    // processes that "belong" to the same WebView app.
+    // TODO(b/161983088): only write this for WebView since this information is
+    // not useful in other cases.
+    if (process_type == ChromeProcessDescriptor::PROCESS_RENDERER ||
+        process_type == ChromeProcessDescriptor::PROCESS_BROWSER) {
+      chrome_process->set_host_app_package_name(
+          base::android::BuildInfo::GetInstance()->host_package_name());
+    }
+  }
+#endif  // defined(OS_ANDROID)
 
   // TODO(eseckler): Set other fields on |chrome_process|.
 

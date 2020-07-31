@@ -415,9 +415,11 @@ CollectedCookiesViews::CollectedCookiesViews(content::WebContents* web_contents)
 }
 
 std::unique_ptr<views::View> CollectedCookiesViews::CreateAllowedPane() {
+  // This captures a snapshot of the allowed cookies of the current page so we
+  // are fine using WebContents::GetMainFrame() here
   content_settings::TabSpecificContentSettings* content_settings =
-      content_settings::TabSpecificContentSettings::FromWebContents(
-          web_contents_);
+      content_settings::TabSpecificContentSettings::GetForFrame(
+          web_contents_->GetMainFrame());
 
   // Create the controls that go into the pane.
   auto allowed_label = std::make_unique<views::Label>(
@@ -473,8 +475,8 @@ std::unique_ptr<views::View> CollectedCookiesViews::CreateAllowedPane() {
 
 std::unique_ptr<views::View> CollectedCookiesViews::CreateBlockedPane() {
   content_settings::TabSpecificContentSettings* content_settings =
-      content_settings::TabSpecificContentSettings::FromWebContents(
-          web_contents_);
+      content_settings::TabSpecificContentSettings::GetForFrame(
+          web_contents_->GetMainFrame());
 
   Profile* profile =
       Profile::FromBrowserContext(web_contents_->GetBrowserContext());

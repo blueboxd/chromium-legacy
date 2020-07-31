@@ -18,7 +18,6 @@
 #include "base/time/tick_clock.h"
 #include "base/time/time.h"
 #include "chrome/browser/browser_process.h"
-#include "chrome/browser/resource_coordinator/local_site_characteristics_data_unittest_utils.h"
 #include "chrome/browser/resource_coordinator/tab_helper.h"
 #include "chrome/browser/resource_coordinator/tab_load_tracker.h"
 #include "chrome/browser/resource_coordinator/tab_manager_web_contents_data.h"
@@ -47,8 +46,7 @@ constexpr TabLoadTracker::LoadingState UNLOADED = LoadingState::UNLOADED;
 constexpr TabLoadTracker::LoadingState LOADING = LoadingState::LOADING;
 constexpr TabLoadTracker::LoadingState LOADED = LoadingState::LOADED;
 
-class TabManagerStatsCollectorTest
-    : public testing::ChromeTestHarnessWithLocalDB {
+class TabManagerStatsCollectorTest : public ChromeRenderViewHostTestHarness {
  protected:
   TabManagerStatsCollectorTest()
       : scoped_context_(
@@ -89,12 +87,8 @@ class TabManagerStatsCollectorTest
     return tab_manager()->GetWebContentsData(contents);
   }
 
-  void RestoreTab(WebContents* contents) {
-    tab_manager()->OnWillRestoreTab(contents);
-  }
-
   void SetUp() override {
-    ChromeTestHarnessWithLocalDB::SetUp();
+    ChromeRenderViewHostTestHarness::SetUp();
 
     // Call the tab manager so that it is created right away.
     tab_manager();
@@ -103,33 +97,7 @@ class TabManagerStatsCollectorTest
   void TearDown() override {
     task_runner_->RunUntilIdle();
     scoped_context_.reset();
-    ChromeTestHarnessWithLocalDB::TearDown();
-  }
-
-  std::unique_ptr<WebContents> CreateWebContentsForUKM(ukm::SourceId id) {
-    std::unique_ptr<WebContents> contents(CreateTestWebContents());
-    ResourceCoordinatorTabHelper::CreateForWebContents(contents.get());
-    ResourceCoordinatorTabHelper::FromWebContents(contents.get())
-        ->SetUkmSourceIdForTest(id);
-    return contents;
-  }
-
-  std::unique_ptr<WebContents> CreateDiscardableWebContents(ukm::SourceId id) {
-    std::unique_ptr<WebContents> web_contents = CreateWebContentsForUKM(id);
-
-    // Commit an URL and mark the tab as "loaded" to allow discarding.
-    content::WebContentsTester::For(web_contents.get())
-        ->NavigateAndCommit(GURL("https://www.example.com"));
-    TabLoadTracker::Get()->TransitionStateForTesting(web_contents.get(),
-                                                     LoadingState::LOADED);
-
-    base::RepeatingClosure run_loop_cb = base::BindRepeating(
-        &base::TestMockTimeTaskRunner::RunUntilIdle, task_runner_);
-
-    testing::WaitForLocalDBEntryToBeInitialized(web_contents.get(),
-                                                run_loop_cb);
-    testing::ExpireLocalDBObservationWindows(web_contents.get());
-    return web_contents;
+    ChromeRenderViewHostTestHarness::TearDown();
   }
 
   scoped_refptr<base::TestMockTimeTaskRunner> task_runner_ =

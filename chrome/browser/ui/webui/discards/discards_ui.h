@@ -13,10 +13,6 @@
 #include "mojo/public/cpp/bindings/pending_receiver.h"
 #include "ui/webui/mojo_web_ui_controller.h"
 
-namespace resource_coordinator {
-class LocalSiteCharacteristicsDataStoreInspector;
-}  // namespace resource_coordinator
-
 // Controller for chrome://discards. Corresponding resources are in
 // file://chrome/browser/resources/discards.
 class DiscardsUI : public ui::MojoWebUIController {
@@ -42,8 +38,7 @@ class DiscardsUI : public ui::MojoWebUIController {
  private:
   std::unique_ptr<discards::mojom::DetailsProvider> ui_handler_;
   std::unique_ptr<discards::mojom::SiteDataProvider> site_data_provider_;
-  resource_coordinator::LocalSiteCharacteristicsDataStoreInspector*
-      data_store_inspector_;
+  std::string profile_id_;
 
   WEB_UI_CONTROLLER_TYPE_DECL();
 

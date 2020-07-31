@@ -68,7 +68,8 @@ class MediaStreamDevicesControllerTest : public WebRtcTestBase {
   const GURL& example_url() const { return example_url_; }
 
   TabSpecificContentSettings* GetContentSettings() {
-    return TabSpecificContentSettings::FromWebContents(GetWebContents());
+    return TabSpecificContentSettings::GetForFrame(
+        GetWebContents()->GetMainFrame());
   }
 
   const std::string& example_audio_id() const { return example_audio_id_; }

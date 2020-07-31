@@ -14,7 +14,6 @@
 <translation id="1084365883616172403">Facebook पोस्ट पूरा भयो।</translation>
 <translation id="1103523840287552314">सँधै अनुवाद गर्नुहोस् <ph name="LANGUAGE" /></translation>
 <translation id="1104948393051856124">स्वीकार गर्नुहोस् र जारी राख्नुहोस्</translation>
-<translation id="1105578556867525047">वेबसाइटमा गई पासवर्ड बदल्नुहोस्</translation>
 <translation id="1112015203684611006">छाप्न सकिएन।</translation>
 <translation id="1125564390852150847">नयाँ ट्याब सिर्जना गर्नुहोस्।</translation>
 <translation id="1145536944570833626">विद्यमान डेटा मेट्नुहोस्।</translation>
@@ -245,7 +244,6 @@
 <translation id="3783017676699494206">छवि सुरक्षित गर्नुहोस्</translation>
 <translation id="3789841737615482174">स्थापना गर्नुहोस्</translation>
 <translation id="3803696231112616155">यो साइट अनुवाद गर्ने प्रस्ताव गर्नुहोस्</translation>
-<translation id="3836313059960742452">{COUNT,plural, =0{अरूले कुनै पनि पासवर्ड देखेका छैनन्}=1{अरूले {COUNT} वटा पासवर्ड देखेका छन्}other{अरूले {COUNT} वटा पासवर्ड देखेका छन्}}</translation>
 <translation id="385051799172605136">पछाडि जानुहोस्</translation>
 <translation id="3892144330757387737">तपाईंले गर्नुभएका क्रियाकलापको इतिहास यहाँ देखिने छ</translation>
 <translation id="3897092660631435901">मेनु</translation>
@@ -331,6 +329,7 @@
 <translation id="4901778704868714008">सुरक्षित गर्नुहोस्...</translation>
 <translation id="4904877109095351937">पढिसकिएको भनी चिन्ह लगाउनुहोस्</translation>
 <translation id="4930268273022498155">विद्यमान डेटा मेट्नुहोस्। तपाईं फेरि <ph name="USER_EMAIL1" /> मा बदलेर त्यो डेटा प्राप्त गर्न सक्नुहुन्छ।</translation>
+<translation id="4930714375720679147">सक्रिय गर्नुहोस्</translation>
 <translation id="4941089862236492464">माफ गर्नुहोस्, तपाईंको वस्तु साझेदारी गर्दा समस्या भयो।</translation>
 <translation id="4944543191714094452">पृष्ठमा फेला पार्नुहोस्…</translation>
 <translation id="4945756290001680296">पासवर्डका सेटिङहरूमाथि पहुँच राख्नुहोस्</translation>
@@ -608,6 +607,7 @@
 <translation id="8073670137947914548">डाउनलोड पूरा भयो</translation>
 <translation id="8073872304774253879">खोज तथा ब्राउजिङलाई अझ राम्रा बनाउनुहोस्</translation>
 <translation id="8076014560081431679">सुरक्षित गरिएका साइटका सेटिङहरूलाई मेटाइने छैन र त्यसले तपाईँको ब्राउज गर्ने बानीलाई झल्काउन सक्छ। <ph name="BEGIN_LINK" />थप जान्नुहोस्<ph name="END_LINK" /></translation>
+<translation id="8105368624971345109">निष्क्रिय पार्नुहोस्</translation>
 <translation id="8114753159095730575">डाउनलोड गर्न फाइल उपलब्ध छ। स्क्रिनको फेदनजिकै विकल्पहरू उपलब्ध छन्।</translation>
 <translation id="8131740175452115882">निश्चित</translation>
 <translation id="8197543752516192074">पृष्ठ अनुवाद गर्नुहोस्</translation>

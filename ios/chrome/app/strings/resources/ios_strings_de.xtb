@@ -14,7 +14,6 @@
 <translation id="1084365883616172403">Facebook-Beitrag gepostet</translation>
 <translation id="1103523840287552314"><ph name="LANGUAGE" /> immer übersetzen</translation>
 <translation id="1104948393051856124">Akzeptieren &amp; weiter</translation>
-<translation id="1105578556867525047">Passwort auf der Website ändern</translation>
 <translation id="1112015203684611006">Fehler beim Drucken.</translation>
 <translation id="1125564390852150847">Neuen Tab erstellen.</translation>
 <translation id="1145536944570833626">Vorhandene Daten löschen</translation>
@@ -245,7 +244,6 @@ Wenn der Inkognitomodus aktiviert ist, können Websites Cookies nicht verwenden,
 <translation id="3783017676699494206">Bild speichern</translation>
 <translation id="3789841737615482174">Installieren</translation>
 <translation id="3803696231112616155">Übersetzung für diese Seite anbieten</translation>
-<translation id="3836313059960742452">{COUNT,plural, =0{Keine Passwörter gehackt}=1{{COUNT} Passwort gehackt}other{{COUNT} Passwörter gehackt}}</translation>
 <translation id="385051799172605136">Zurück</translation>
 <translation id="3892144330757387737">Hier wird Ihr Verlauf angezeigt</translation>
 <translation id="3897092660631435901">Menü</translation>
@@ -332,6 +330,7 @@ Wenn Sie diese Einstellung ändern möchten, <ph name="BEGIN_LINK" />setzen Sie 
 <translation id="4901778704868714008">Wird gespeichert...</translation>
 <translation id="4904877109095351937">Als gelesen markieren</translation>
 <translation id="4930268273022498155">Vorhandene Daten werden gelöscht. Wenn Sie Ihre vorhandenen Daten abrufen möchten, wechseln Sie zurück zu <ph name="USER_EMAIL1" />.</translation>
+<translation id="4930714375720679147">Aktivieren</translation>
 <translation id="4941089862236492464">Beim Teilen ist ein Fehler aufgetreten.</translation>
 <translation id="4944543191714094452">Auf Seite suchen…</translation>
 <translation id="4945756290001680296">Auf Passworteinstellungen zugreifen</translation>
@@ -610,6 +609,7 @@ Websites können Cookies verwenden, um Ihre Browseraktivitäten auf anderen Webs
 <translation id="8073670137947914548">Download abgeschlossen</translation>
 <translation id="8073872304774253879">Suchanfragen und das Surfen verbessern</translation>
 <translation id="8076014560081431679">Gespeicherte Website-Einstellungen werden nicht gelöscht und können möglicherweise Ihre Surfgewohnheiten wiedergeben. <ph name="BEGIN_LINK" />Weitere Informationen<ph name="END_LINK" /></translation>
+<translation id="8105368624971345109">Deaktivieren</translation>
 <translation id="8114753159095730575">Dateidownload verfügbar. Optionen stehen unten auf dem Bildschirm zur Verfügung.</translation>
 <translation id="8131740175452115882">Bestätigen</translation>
 <translation id="8197543752516192074">Seite übersetzen</translation>

@@ -134,6 +134,12 @@
     <structure name="IDR_WEBUI_CHROMEOS_CELLULAR_SETUP_CELLULAR_SETUP_JS"
                file="cr_components/chromeos/cellular_setup/cellular_setup.js"
                type="chrome_html" />
+    <structure name="IDR_WEBUI_CHROMEOS_CELLULAR_SETUP_PSIM_FLOW_HTML"
+               file="cr_components/chromeos/cellular_setup/psim_flow_ui.html"
+               type="chrome_html" />
+    <structure name="IDR_WEBUI_CHROMEOS_CELLULAR_SETUP_PSIM_FLOW_JS"
+               file="cr_components/chromeos/cellular_setup/psim_flow_ui.js"
+               type="chrome_html" />
     <structure name="IDR_WEBUI_CHROMEOS_CELLULAR_SETUP_MOJO_INTERFACE_PROVIDER_HTML"
                file="cr_components/chromeos/cellular_setup/mojo_interface_provider.html"
                type="chrome_html" />

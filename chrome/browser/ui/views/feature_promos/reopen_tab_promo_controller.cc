@@ -14,6 +14,7 @@
 #include "chrome/browser/ui/in_product_help/reopen_tab_in_product_help.h"
 #include "chrome/browser/ui/in_product_help/reopen_tab_in_product_help_factory.h"
 #include "chrome/browser/ui/toolbar/app_menu_model.h"
+#include "chrome/browser/ui/views/feature_promos/feature_promo_bubble_params.h"
 #include "chrome/browser/ui/views/feature_promos/feature_promo_bubble_timeout.h"
 #include "chrome/browser/ui/views/feature_promos/feature_promo_bubble_view.h"
 #include "chrome/browser/ui/views/frame/browser_view.h"
@@ -58,7 +59,7 @@ void ReopenTabPromoController::ShowPromo() {
       browser_view_->GetAccelerator(IDC_RESTORE_TAB, &accelerator);
   DCHECK(has_accelerator);
 
-  FeaturePromoBubbleView::CreateParams bubble_params;
+  FeaturePromoBubbleParams bubble_params;
   bubble_params.body_string_specifier = IDS_REOPEN_TAB_PROMO;
   bubble_params.screenreader_string_specifier =
       IDS_REOPEN_TAB_PROMO_SCREENREADER;

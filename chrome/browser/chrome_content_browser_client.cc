@@ -2306,6 +2306,14 @@ void ChromeContentBrowserClient::AppendExtraCommandLineSwitches(
         command_line->AppendSwitch(
             blink::switches::kUserAgentClientHintDisable);
       }
+
+#if defined(OS_ANDROID)
+      // Communicating to content/ for BackForwardCache.
+      if (prefs->HasPrefPath(policy::policy_prefs::kBackForwardCacheEnabled) &&
+          !prefs->GetBoolean(policy::policy_prefs::kBackForwardCacheEnabled)) {
+        command_line->AppendSwitch(switches::kDisableBackForwardCache);
+      }
+#endif  // defined(OS_ANDROID)
     }
 
     MaybeAppendBlinkSettingsSwitchForFieldTrial(browser_command_line,

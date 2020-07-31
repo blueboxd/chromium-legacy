@@ -75,13 +75,14 @@ void PopupBlockerTabHelper::DidFinishNavigation(
 }
 
 void PopupBlockerTabHelper::HidePopupNotification() {
-  auto* tscs = content_settings::TabSpecificContentSettings::FromWebContents(
-      web_contents());
+  auto* tscs = content_settings::TabSpecificContentSettings::GetForFrame(
+      web_contents()->GetMainFrame());
   if (tscs)
     tscs->ClearPopupsBlocked();
 }
 
 void PopupBlockerTabHelper::AddBlockedPopup(
+    content::RenderFrameHost* source_frame,
     std::unique_ptr<PopupNavigationDelegate> delegate,
     const blink::mojom::WindowFeatures& window_features,
     PopupBlockType block_type) {
@@ -93,9 +94,17 @@ void PopupBlockerTabHelper::AddBlockedPopup(
   next_id_++;
   blocked_popups_[id] = std::make_unique<BlockedRequest>(
       std::move(delegate), window_features, block_type);
-  content_settings::TabSpecificContentSettings::FromWebContents(web_contents())
-      ->OnContentBlocked(ContentSettingsType::POPUPS);
+
+  // TODO(carlscab): TabSpecificContentSettings is really
+  // PageSpecificContentSettings so it does not matter that we use the
+  // source_frame here and the main frame in HidePopupNotification
+  auto* content_settings =
+      content_settings::TabSpecificContentSettings::GetForFrame(source_frame);
+  if (content_settings) {
+    content_settings->OnContentBlocked(ContentSettingsType::POPUPS);
+  }
   auto* raw_delegate = blocked_popups_[id]->delegate.get();
+
   manager_.NotifyObservers(id, raw_delegate->GetURL());
 
   raw_delegate->OnPopupBlocked(web_contents(), GetBlockedPopupsCount());

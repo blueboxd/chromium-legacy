@@ -672,26 +672,6 @@ Si ce paramètre n'est pas défini, les utilisateurs peuvent ouvrir normalement 
 <translation id="2082205219176343977">Configurer la version Chrome minimale autorisée de l'appareil.</translation>
 <translation id="209586405398070749">Version stable</translation>
 <translation id="2098658257603918882">Autoriser l'envoi de statistiques d'utilisation et de rapports d'erreur</translation>
-<translation id="210034539800365161">Permet de configurer la version minimale autorisée requise de <ph name="PRODUCT_OS_NAME" />.
-
-      Lorsque cette règle est définie sur des entrées de la liste :
-      Si aucune des entrées de la liste ne possède une "<ph name="CHROMEOS_VERSION_PROPERTY_NAME" />" ultérieure à la version actuelle de l'appareil, aucune restriction n'est alors appliquée, et les restrictions existantes sont révoquées.
-      Si au moins une entrée possède une "<ph name="CHROMEOS_VERSION_PROPERTY_NAME" />" ultérieure à la version actuelle, l'entrée choisie est celle qui est la plus performante et dont la version est supérieure et la plus proche de la version actuelle.
-      En cas de conflit, la préférence est donnée à celle dont la "<ph name="WARNING_PERIOD_PROPERTY_NAME" />" ou la "<ph name="AUE_WARNING_PERIOD_PROPERTY_NAME" />" est la plus réduite. De plus, la règle est appliquée avec cette entrée.
-
-      Si la version actuelle devient obsolète pendant la session utilisateur et que le réseau actuel limite les mises à jour automatiques, une notification s'affiche à l'écran pour inviter l'utilisateur à mettre à jour l'appareil dans la "<ph name="WARNING_PERIOD_PROPERTY_NAME" />" qui lui est indiquée.
-      En revanche, si le réseau actuel autorise les mises à jour automatiques et que l'appareil doit être mis à jour dans la "<ph name="WARNING_PERIOD_PROPERTY_NAME" />" définie, aucune notification ne s'affiche.
-      La "<ph name="WARNING_PERIOD_PROPERTY_NAME" />" commence à partir de l'application de la règle.
-      Si l'appareil n'est pas mis à jour avant la fin de la "<ph name="WARNING_PERIOD_PROPERTY_NAME" />", l'utilisateur est déconnecté de la session.
-      Si la version actuelle s'avère obsolète au moment de la connexion, et si la "<ph name="WARNING_PERIOD_PROPERTY_NAME" />" est arrivée à expiration, l'utilisateur doit mettre à jour l'appareil avant de se connecter.
-
-      Si la version actuelle devient obsolète pendant la session utilisateur et que la date d'expiration des mises à jour automatiques associée à l'appareil est atteinte, une notification s'affiche à l'écran pour appliquer de nouveau la "<ph name="AUE_WARNING_PERIOD_PROPERTY_NAME" />" à l'appareil.
-      Si la date d'expiration des mises à jour automatiques associée à l'appareil est atteinte au moment de la connexion et que la "<ph name="AUE_WARNING_PERIOD_PROPERTY_NAME" />" est arrivée à expiration, aucun utilisateur ne peut se connecter à l'appareil.
-
-      Si cette règle n'est pas configurée ou si aucune entrée ne figure dans la liste, aucune restriction n'est appliquée, les restrictions existantes sont révoquées, et l'utilisateur peut se connecter quelle que soit la version de <ph name="PRODUCT_OS_NAME" />.
-
-      Dans le cas présent, "<ph name="CHROMEOS_VERSION_PROPERTY_NAME" />" peut désigner une version exacte telle que "13305.0.0" ou le préfixe d'une version tel que "13305".
-      Les "<ph name="WARNING_PERIOD_PROPERTY_NAME" />" et "<ph name="AUE_WARNING_PERIOD_PROPERTY_NAME" />" sont des valeurs facultatives exprimées en nombre de jours. Elles sont définies par défaut sur 0 jour, ce qui signifie qu'il n'y a pas de période d'avertissement.</translation>
 <translation id="2104418465060359056">Enregistrer les informations des extensions et des plug-ins</translation>
 <translation id="2106627642643925514">Remplace le mode d'impression par code défini par défaut. Si le mode est indisponible, cette règle est ignorée.</translation>
 <translation id="2107601598727098402">
@@ -4650,13 +4630,6 @@ au maximum si un utilisateur se sert de l'appareil.
 
       Vous pouvez spécifier cette URL comme suit : <ph name="GOOGLE_SEARCH_URL" />.</translation>
 <translation id="7895553628261067384">Accès à distance</translation>
-<translation id="7898879331506985900">Cette règle permet d'assurer la transition vers la version M86, de laquelle elle sera supprimée.
-
-      La règle par défaut de Chrome en matière d'URL de provenance est renforcée. L'objectif est de favoriser une transition progressive de sa valeur actuelle (no-referrer-when-downgrade) à une nouvelle valeur plus sécurisée (strict-origin-when-cross-origin) afin d'obtenir une version M80 stable.
-
-      Avant le déploiement, cette règle n'a aucun d'effet. Après le déploiement, lorsque cette règle est activée, la règle par défaut de Chrome en matière d'URL de provenance reprend sa valeur antérieure à celle de la version M80 (no-referrer-when-downgrade).
-
-      Cette règle est désactivée par défaut.</translation>
 <translation id="7902040092815978832">Afficher le clavier numérique pour la saisie du mot de passe</translation>
 <translation id="7912255076272890813">Configurer les types d'applications ou d'extensions autorisés</translation>
 <translation id="7922358664346625612">Laisser le dernier onglet ouvert dans Chrome.</translation>

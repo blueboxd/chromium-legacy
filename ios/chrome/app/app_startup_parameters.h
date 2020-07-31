@@ -36,6 +36,10 @@ class GURL;
 // |externalURL|.
 @property(nonatomic, readonly, assign) const GURL& completeURL;
 
+// The list of URLs to open. First URL in the vector is the same
+// as |externalURL|.
+@property(nonatomic, readonly, assign) const std::vector<GURL>& URLs;
+
 // The URL query string parameters in the case that the app was launched as a
 // result of Universal Link navigation. The map associates query string
 // parameters with their corresponding value.
@@ -63,6 +67,8 @@ class GURL;
     NS_DESIGNATED_INITIALIZER;
 
 - (instancetype)initWithUniversalLink:(const GURL&)universalLink;
+
+- (instancetype)initWithURLs:(const std::vector<GURL>&)URLs;
 
 @end
 

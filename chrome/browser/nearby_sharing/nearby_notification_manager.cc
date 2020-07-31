@@ -4,11 +4,11 @@
 
 #include "chrome/browser/nearby_sharing/nearby_notification_manager.h"
 
+#include "base/strings/strcat.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/app/vector_icons/vector_icons.h"
 #include "chrome/browser/nearby_sharing/nearby_sharing_service.h"
 #include "chrome/browser/notifications/notification_display_service.h"
-#include "chrome/browser/notifications/notification_display_service_factory.h"
 #include "chrome/grit/generated_resources.h"
 #include "content/public/browser/browser_thread.h"
 #include "ui/base/l10n/l10n_util.h"
@@ -119,16 +119,44 @@ base::string16 GetProgressNotificationTitle(const ShareTarget& share_target) {
   return l10n_util::GetStringFUTF16(resource_id, attachments, device_name);
 }
 
+base::string16 GetSuccessNotificationTitle(const ShareTarget& share_target) {
+  int resource_id = share_target.is_incoming
+                        ? IDS_NEARBY_NOTIFICATION_RECEIVE_SUCCESS_TITLE
+                        : IDS_NEARBY_NOTIFICATION_SEND_SUCCESS_TITLE;
+  base::string16 attachments = GetAttachmentsString(share_target);
+  base::string16 device_name = base::ASCIIToUTF16(share_target.device_name);
+
+  return l10n_util::GetStringFUTF16(resource_id, attachments, device_name);
+}
+
+base::string16 GetFailureNotificationTitle(const ShareTarget& share_target) {
+  int resource_id = share_target.is_incoming
+                        ? IDS_NEARBY_NOTIFICATION_RECEIVE_FAILURE_TITLE
+                        : IDS_NEARBY_NOTIFICATION_SEND_FAILURE_TITLE;
+  base::string16 attachments = GetAttachmentsString(share_target);
+  base::string16 device_name = base::ASCIIToUTF16(share_target.device_name);
+
+  return l10n_util::GetStringFUTF16(resource_id, attachments, device_name);
+}
+
 base::string16 GetConnectionRequestNotificationMessage(
     const ShareTarget& share_target,
     const TransferMetadata& transfer_metadata) {
   base::string16 attachments = GetAttachmentsString(share_target);
   base::string16 device_name = base::ASCIIToUTF16(share_target.device_name);
-  // TODO(crbug.com/1102348): Show |transfer_metadata.token()| if present.
 
-  return l10n_util::GetStringFUTF16(
+  base::string16 message = l10n_util::GetStringFUTF16(
       IDS_NEARBY_NOTIFICATION_CONNECTION_REQUEST_MESSAGE, device_name,
       attachments);
+
+  if (transfer_metadata.token()) {
+    base::string16 token = l10n_util::GetStringFUTF16(
+        IDS_NEARBY_SECURE_CONNECTION_ID,
+        base::UTF8ToUTF16(*transfer_metadata.token()));
+    message = base::StrCat({message, base::UTF8ToUTF16("\n"), token});
+  }
+
+  return message;
 }
 
 gfx::Image GetImageFromShareTarget(const ShareTarget& share_target) {
@@ -139,10 +167,11 @@ gfx::Image GetImageFromShareTarget(const ShareTarget& share_target) {
 }  // namespace
 
 NearbyNotificationManager::NearbyNotificationManager(
-    Profile* profile,
+    NotificationDisplayService* notification_display_service,
     NearbySharingService* nearby_service)
-    : profile_(profile), nearby_service_(nearby_service) {
-  DCHECK(profile_);
+    : notification_display_service_(notification_display_service),
+      nearby_service_(nearby_service) {
+  DCHECK(notification_display_service_);
   DCHECK(nearby_service_);
   nearby_service_->RegisterReceiveSurface(
       this, NearbySharingService::ReceiveSurfaceState::kBackground);
@@ -220,7 +249,7 @@ void NearbyNotificationManager::ShowProgress(
   notification_actions.emplace_back(l10n_util::GetStringUTF16(IDS_APP_CANCEL));
   notification.set_buttons(notification_actions);
 
-  NotificationDisplayServiceFactory::GetForProfile(profile_)->Display(
+  notification_display_service_->Display(
       NotificationHandler::Type::NEARBY_SHARE, notification,
       /*metadata=*/nullptr);
 }
@@ -249,7 +278,7 @@ void NearbyNotificationManager::ShowConnectionRequest(
       l10n_util::GetStringUTF16(IDS_NEARBY_NOTIFICATION_DECLINE_ACTION));
   notification.set_buttons(notification_actions);
 
-  NotificationDisplayServiceFactory::GetForProfile(profile_)->Display(
+  notification_display_service_->Display(
       NotificationHandler::Type::NEARBY_SHARE, notification,
       /*metadata=*/nullptr);
 }
@@ -264,20 +293,38 @@ void NearbyNotificationManager::ShowOnboarding() {
   notification.set_message(
       l10n_util::GetStringUTF16(IDS_NEARBY_NOTIFICATION_ONBOARDING_MESSAGE));
 
-  NotificationDisplayServiceFactory::GetForProfile(profile_)->Display(
+  notification_display_service_->Display(
       NotificationHandler::Type::NEARBY_SHARE, notification,
       /*metadata=*/nullptr);
 }
 
 void NearbyNotificationManager::ShowSuccess(const ShareTarget& share_target) {
-  // TODO(crbug.com/1102348): Show success notification.
+  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
+
+  message_center::Notification notification =
+      CreateNearbyNotification(kNearbyNotificationId);
+  notification.set_title(GetSuccessNotificationTitle(share_target));
+
+  // TODO(crbug.com/1102348): Show content specific actions and preview images.
+
+  notification_display_service_->Display(
+      NotificationHandler::Type::NEARBY_SHARE, notification,
+      /*metadata=*/nullptr);
 }
 
 void NearbyNotificationManager::ShowFailure(const ShareTarget& share_target) {
-  // TODO(crbug.com/1102348): Show failure notification.
+  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
+
+  message_center::Notification notification =
+      CreateNearbyNotification(kNearbyNotificationId);
+  notification.set_title(GetFailureNotificationTitle(share_target));
+
+  notification_display_service_->Display(
+      NotificationHandler::Type::NEARBY_SHARE, notification,
+      /*metadata=*/nullptr);
 }
 
 void NearbyNotificationManager::CloseTransfer() {
-  NotificationDisplayServiceFactory::GetForProfile(profile_)->Close(
-      NotificationHandler::Type::NEARBY_SHARE, kNearbyNotificationId);
+  notification_display_service_->Close(NotificationHandler::Type::NEARBY_SHARE,
+                                       kNearbyNotificationId);
 }

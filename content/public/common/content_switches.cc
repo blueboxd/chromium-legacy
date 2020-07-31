@@ -105,6 +105,9 @@ const char kDisableBackgroundingOccludedWindowsForTesting[] =
 const char kDisableBackgroundTimerThrottling[] =
     "disable-background-timer-throttling";
 
+// Disables the BackForwardCache feature.
+const char kDisableBackForwardCache[] = "disable-back-forward-cache";
+
 // Disable one or more Blink runtime-enabled features.
 // Use names from runtime_enabled_features.json5, separated by commas.
 // Applied after kEnableBlinkFeatures, and after other flags that change these

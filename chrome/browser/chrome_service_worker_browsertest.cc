@@ -219,11 +219,11 @@ IN_PROC_BROWSER_TEST_F(ChromeServiceWorkerTest,
       embedded_test_server()->GetURL("/scope/done.html"));
   EXPECT_EQ(expected_title2, title_watcher2.WaitAndGetTitle());
 
-  content::WebContents* web_contents =
-      browser()->tab_strip_model()->GetActiveWebContents();
-  EXPECT_TRUE(content_settings::TabSpecificContentSettings::FromWebContents(
-                  web_contents)
-                  ->IsContentBlocked(ContentSettingsType::JAVASCRIPT));
+  content::RenderFrameHost* main_frame =
+      browser()->tab_strip_model()->GetActiveWebContents()->GetMainFrame();
+  EXPECT_TRUE(
+      content_settings::TabSpecificContentSettings::GetForFrame(main_frame)
+          ->IsContentBlocked(ContentSettingsType::JAVASCRIPT));
 }
 
 IN_PROC_BROWSER_TEST_F(ChromeServiceWorkerTest,

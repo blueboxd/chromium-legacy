@@ -1633,6 +1633,7 @@
 <translation id="7791011319128895129">未發佈</translation>
 <translation id="7791196057686275387">綑綁式釘裝</translation>
 <translation id="7791543448312431591">新增</translation>
+<translation id="7792318290931435557">單頁檢視</translation>
 <translation id="7798389633136518089">由於政策並非透過雲端來源設定，因此已忽略。</translation>
 <translation id="7800304661137206267">連線採用 <ph name="CIPHER" /> 加密，並設有 <ph name="MAC" /> 訊息驗證及 <ph name="KX" /> 金鑰交換機制。</translation>
 <translation id="7802523362929240268">合法網站</translation>
@@ -1728,6 +1729,7 @@
 <translation id="8220146938470311105">C7/C6 (信封)</translation>
 <translation id="8221250263817408492">您剛才在欺詐網站上輸入了密碼。Chromium 建議前往 <ph name="WEBSITE_1" /> 以及其他您使用此密碼的網站，並立即變更密碼。</translation>
 <translation id="8225771182978767009">設定此電腦的用戶已封鎖此網站。</translation>
+<translation id="8228419419708659934">雙頁檢視</translation>
 <translation id="822964464349305906"><ph name="TYPE_1" />、<ph name="TYPE_2" /></translation>
 <translation id="8232343881378637145">平台溫度</translation>
 <translation id="8238581221633243064">在新無痕式分頁中開啟網頁</translation>

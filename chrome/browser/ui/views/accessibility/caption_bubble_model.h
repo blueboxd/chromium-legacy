@@ -57,7 +57,10 @@ class CaptionBubbleModel : public content::WebContentsObserver {
   // observer.
   void Close();
 
+  void OnReady();
+
   bool IsClosed() const { return is_closed_; }
+  bool IsReady() const { return is_ready_; }
   bool HasError() const { return has_error_; }
   std::string GetFullText() const { return final_text_ + partial_text_; }
 
@@ -75,6 +78,9 @@ class CaptionBubbleModel : public content::WebContentsObserver {
 
   // Whether the bubble has been closed by the user.
   bool is_closed_ = false;
+
+  // Whether bubble is ready to receive transcriptions.
+  bool is_ready_ = false;
 
   // Whether an error should be displayed one the bubble.
   bool has_error_ = false;

@@ -25,7 +25,6 @@
 #include "chrome/common/render_messages.h"
 #include "chrome/renderer/chrome_render_thread_observer.h"
 #include "components/error_page/common/error.h"
-#include "components/error_page/common/error_page_params.h"
 #include "components/error_page/common/localized_error.h"
 #include "components/error_page/common/net_error_info.h"
 #include "components/grit/components_resources.h"
@@ -76,7 +75,6 @@ using content::RenderThread;
 using content::kUnreachableWebDataURL;
 using error_page::DnsProbeStatus;
 using error_page::DnsProbeStatusToString;
-using error_page::ErrorPageParams;
 using error_page::LocalizedError;
 
 namespace {
@@ -249,7 +247,6 @@ LocalizedError::PageState NetErrorHelper::GenerateLocalizedErrorPage(
     const error_page::Error& error,
     bool is_failed_post,
     bool can_show_network_diagnostics_dialog,
-    std::unique_ptr<ErrorPageParams> params,
     std::string* error_html) const {
   error_html->clear();
 
@@ -266,8 +263,7 @@ LocalizedError::PageState NetErrorHelper::GenerateLocalizedErrorPage(
       error.stale_copy_in_cache(), can_show_network_diagnostics_dialog,
       ChromeRenderThreadObserver::is_incognito_process(),
       IsOfflineContentOnNetErrorFeatureEnabled(), IsAutoFetchFeatureEnabled(),
-      IsRunningInForcedAppMode(), RenderThread::Get()->GetLocale(),
-      std::move(params));
+      IsRunningInForcedAppMode(), RenderThread::Get()->GetLocale());
   DCHECK(!template_html.empty()) << "unable to load template.";
   // "t" is the id of the template's root node.
   *error_html =
@@ -293,8 +289,7 @@ LocalizedError::PageState NetErrorHelper::UpdateErrorPage(
       error.stale_copy_in_cache(), can_show_network_diagnostics_dialog,
       ChromeRenderThreadObserver::is_incognito_process(),
       IsOfflineContentOnNetErrorFeatureEnabled(), IsAutoFetchFeatureEnabled(),
-      IsRunningInForcedAppMode(), RenderThread::Get()->GetLocale(),
-      std::unique_ptr<ErrorPageParams>());
+      IsRunningInForcedAppMode(), RenderThread::Get()->GetLocale());
 
   std::string json;
   JSONWriter::Write(page_state.strings, &json);

@@ -308,7 +308,9 @@ public class AndroidPaymentAppFinder implements ManifestVerifyCallback {
                 ChromeActivity.fromWebContents(mFactoryDelegate.getParams().getWebContents());
         if (!PaymentOptionsUtils.requestAnyInformation(
                     mFactoryDelegate.getParams().getPaymentOptions())
-                && activity != null) {
+                && activity != null
+                && PaymentFeatureList.isEnabled(
+                        PaymentFeatureList.WEB_PAYMENTS_APP_STORE_BILLING)) {
             findAppStoreBillingApp(activity, allInstalledPaymentApps);
         }
 

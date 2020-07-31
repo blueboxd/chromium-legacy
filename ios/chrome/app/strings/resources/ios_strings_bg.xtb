@@ -14,7 +14,6 @@
 <translation id="1084365883616172403">Публикацията във Facebook е завършена.</translation>
 <translation id="1103523840287552314">Винаги да се превежда от <ph name="LANGUAGE" /></translation>
 <translation id="1104948393051856124">Приемам и напред</translation>
-<translation id="1105578556867525047">Промяна на паролата на уебсайта</translation>
 <translation id="1112015203684611006">Неуспешно отпечатване.</translation>
 <translation id="1125564390852150847">Създаване на нов раздел.</translation>
 <translation id="1145536944570833626">Изтриване на съществуващите данни.</translation>
@@ -246,7 +245,6 @@
 <translation id="3783017676699494206">Запазване на изобрaжението</translation>
 <translation id="3789841737615482174">Инсталиране</translation>
 <translation id="3803696231112616155">Предлагане да се преведе този сайт</translation>
-<translation id="3836313059960742452">{COUNT,plural, =0{Няма компрометирани пароли}=1{{COUNT} компрометирана парола}other{{COUNT} компрометирани пароли}}</translation>
 <translation id="385051799172605136">Назад</translation>
 <translation id="3892144330757387737">Тук ще се показва историята ви</translation>
 <translation id="3897092660631435901">Меню</translation>
@@ -333,6 +331,7 @@
 <translation id="4901778704868714008">Запазване...</translation>
 <translation id="4904877109095351937">Означаване като прочетено</translation>
 <translation id="4930268273022498155">Изтриване на съществуващите данни. Можете да ги извлечете, като превключите обратно към <ph name="USER_EMAIL1" />.</translation>
+<translation id="4930714375720679147">Включване</translation>
 <translation id="4941089862236492464">При споделянето на елемента възникна проблем.</translation>
 <translation id="4944543191714094452">Търсене в страницата…</translation>
 <translation id="4945756290001680296">Достъп до настройките за паролите</translation>
@@ -611,6 +610,7 @@
 <translation id="8073670137947914548">Изтеглянето завърши</translation>
 <translation id="8073872304774253879">Подобряване на търсенията и сърфирането</translation>
 <translation id="8076014560081431679">Запазените настройки за сайтове няма да бъдат изтрити и може да отразяват навиците ви при сърфиране. <ph name="BEGIN_LINK" />Научете повече<ph name="END_LINK" /></translation>
+<translation id="8105368624971345109">Изключване</translation>
 <translation id="8114753159095730575">Наличен е файл за изтегляне. Съответните опции са достъпни в долната част на екрана.</translation>
 <translation id="8131740175452115882">Потвърждаване</translation>
 <translation id="8197543752516192074">Превод на страницата</translation>

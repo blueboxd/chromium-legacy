@@ -45,6 +45,8 @@ ImageDecoderExternal::DecodeRequest::DecodeRequest(
 
 void ImageDecoderExternal::DecodeRequest::Trace(Visitor* visitor) const {
   visitor->Trace(resolver);
+  visitor->Trace(result);
+  visitor->Trace(exception);
 }
 
 // static
@@ -104,6 +106,12 @@ ImageDecoderExternal::ImageDecoderExternal(ScriptState* script_state,
     buffer = DOMArrayPiece(init->data().GetAsArrayBufferView().View());
   } else {
     NOTREACHED();
+    return;
+  }
+
+  if (!buffer.ByteLengthAsSizeT()) {
+    exception_state.ThrowDOMException(DOMExceptionCode::kConstraintError,
+                                      "No image data provided");
     return;
   }
 
@@ -301,19 +309,17 @@ void ImageDecoderExternal::MaybeSatisfyPendingDecodes() {
       if (request->frame_index >= frame_count_)
         continue;
     } else if (request->frame_index >= frame_count_) {
-      request->complete = true;
       // TODO(crbug.com/1073995): Include frameIndex in rejection?
-      request->resolver->Reject(MakeGarbageCollected<DOMException>(
-          DOMExceptionCode::kConstraintError, "Frame index out of range"));
+      request->exception = MakeGarbageCollected<DOMException>(
+          DOMExceptionCode::kConstraintError, "Frame index out of range");
       continue;
     }
 
     auto* image = decoder_->DecodeFrameBufferAtIndex(request->frame_index);
     if (decoder_->Failed() || !image) {
-      request->complete = true;
       // TODO(crbug.com/1073995): Include frameIndex in rejection?
-      request->resolver->Reject(MakeGarbageCollected<DOMException>(
-          DOMExceptionCode::kConstraintError, "Failed to decode frame"));
+      request->exception = MakeGarbageCollected<DOMException>(
+          DOMExceptionCode::kConstraintError, "Failed to decode frame");
       continue;
     }
 
@@ -330,10 +336,9 @@ void ImageDecoderExternal::MaybeSatisfyPendingDecodes() {
     auto sk_image = is_complete ? image->FinalizePixelsAndGetImage()
                                 : SkImage::MakeFromBitmap(image->Bitmap());
     if (!sk_image) {
-      request->complete = true;
       // TODO(crbug.com/1073995): Include frameIndex in rejection?
-      request->resolver->Reject(MakeGarbageCollected<DOMException>(
-          DOMExceptionCode::kOperationError, "Failed decode frame"));
+      request->exception = MakeGarbageCollected<DOMException>(
+          DOMExceptionCode::kOperationError, "Failed to decode frame");
       continue;
     }
 
@@ -362,19 +367,36 @@ void ImageDecoderExternal::MaybeSatisfyPendingDecodes() {
         decoder_->FrameDurationAtIndex(request->frame_index).InMicroseconds());
     result->setOrientation(decoder_->Orientation().Orientation());
     result->setComplete(is_complete);
-    request->complete = true;
-    request->resolver->Resolve(result);
+    request->result = result;
   }
 
   auto* new_end =
       std::remove_if(pending_decodes_.begin(), pending_decodes_.end(),
-                     [](const auto& request) { return request->complete; });
+                     [](const auto& request) {
+                       return request->result || request->exception;
+                     });
+
+  // Copy completed requests to a new local vector to avoid reentrancy issues
+  // when resolving and rejecting the promises.
+  HeapVector<Member<DecodeRequest>> completed_decodes;
+  completed_decodes.AppendRange(new_end, pending_decodes_.end());
   pending_decodes_.Shrink(
       static_cast<wtf_size_t>(new_end - pending_decodes_.begin()));
+
+  // Note: Promise resolution may invoke calls into this class.
+  for (auto& request : completed_decodes) {
+    if (request->exception)
+      request->resolver->Reject(request->exception);
+    else
+      request->resolver->Resolve(request->result);
+  }
 }
 
 void ImageDecoderExternal::MaybeSatisfyPendingMetadataDecodes() {
   DCHECK(decoder_);
+  if (!decoder_->IsSizeAvailable() && !decoder_->Failed())
+    return;
+
   DCHECK(decoder_->Failed() || decoder_->IsDecodedSizeAvailable());
   for (auto& resolver : pending_metadata_decodes_)
     resolver->Resolve();
@@ -382,17 +404,19 @@ void ImageDecoderExternal::MaybeSatisfyPendingMetadataDecodes() {
 }
 
 void ImageDecoderExternal::MaybeUpdateMetadata() {
+  // Since we always create the decoder at construction, we need to wait until
+  // at least the size is available before signaling that metadata has been
+  // retrieved.
+  if (!decoder_->IsSizeAvailable() || decoder_->Failed()) {
+    MaybeSatisfyPendingMetadataDecodes();
+    return;
+  }
+
   const size_t decoded_frame_count = decoder_->FrameCount();
   if (decoder_->Failed()) {
     MaybeSatisfyPendingMetadataDecodes();
     return;
   }
-
-  // Since we always create the decoder at construction, we need to wait until
-  // at least the size is available before signaling that metadata has been
-  // retrieved.
-  if (!decoder_->IsSizeAvailable())
-    return;
 
   frame_count_ = static_cast<uint32_t>(decoded_frame_count);
 

@@ -389,7 +389,7 @@ TEST_P(GcpReauthCredentialGlsTest, GetUserGlsCommandLine) {
     if (set_email_for_reauth) {
       ASSERT_EQ(
           gcpw_path,
-          base::StringPrintf("embedded/reauth/windows?device_id=%s&show_tos=%d",
+          base::StringPrintf("embedded/setup/windows?device_id=%s&show_tos=%d",
                              device_id.c_str(), is_tos_accepted ? 0 : 1));
     } else {
       ASSERT_EQ(

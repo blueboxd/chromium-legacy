@@ -165,8 +165,8 @@
       Als er geen beleid is ingesteld of het beleid is ingesteld op 'False', wordt Fast Transition niet gebruikt.
       Als het beleid is ingesteld op 'True', wordt Fast Transition gebruikt wanneer dit wordt ondersteund door het draadloze toegangspunt.</translation>
 <translation id="1240722269871366886">Met dit beleid kan <ph name="PRODUCT_OS_NAME" /> emoji's voorstellen als gebruikers tekst typen met hun virtuele of fysieke toetsenborden.
-      Als dit beleid is ingesteld op True, is de functie ingeschakeld en kunnen gebruikers het wijzigen.
-      Dit beleid is standaard ingesteld op False. Er worden geen suggesties voor emoji's weergegeven en gebruikers kunnen dit niet overschrijven.</translation>
+      Als dit beleid is ingesteld op 'waar', is de functie ingeschakeld en kunnen gebruikers het wijzigen.
+      Dit beleid is standaard ingesteld op 'onwaar'. Er worden geen suggesties voor emoji's weergegeven en gebruikers kunnen dit niet overschrijven.</translation>
 <translation id="1243570869342663665">SafeSites-filters voor content voor volwassenen beheren.</translation>
 <translation id="1257550411839719984">Standaardmap voor downloads instellen</translation>
 <translation id="1265053460044691532">De offline inlogtijd beperken voor een gebruiker die is geverifieerd via SAML</translation>
@@ -207,7 +207,7 @@
 <translation id="138847842893090358">OS-updatestatus rapporten</translation>
 <translation id="1390901586107713894">Hiermee kun je aangeven welke extensies gebruikers NIET kunnen installeren. Extensies die al zijn geïnstalleerd, worden uitgeschakeld als ze op de blokkeringslijst staan. De gebruiker kan ze niet weer inschakelen. Als een extensie die is uitgeschakeld op basis van de blokkeringslijst, van die lijst wordt verwijderd, wordt de extensie automatisch weer ingeschakeld.
 
-          De waarde '*' op de blokkeringslijst betekent dat alle extensies worden geblokkeerd, tenzij ze expliciet worden vermeld op de toelatingslijst.
+          De waarde * op de blokkeringslijst betekent dat alle extensies worden geblokkeerd, tenzij ze expliciet worden vermeld op de toelatingslijst.
 
           Als je dit beleid niet instelt, kan de gebruiker elke extensie installeren in <ph name="PRODUCT_NAME" />.</translation>
 <translation id="1393485621820363363">Zakelijke apparaatprinters ingeschakeld</translation>
@@ -648,26 +648,6 @@ Als je dit beleid uitschakelt, wordt op de webpagina naar specifieke tekstfragme
 <translation id="2082205219176343977">Configureer de minimaal toegestane Chrome-versie voor het apparaat.</translation>
 <translation id="209586405398070749">Stabiel kanaal</translation>
 <translation id="2098658257603918882">Rapportage van gebruiks- en crashgegevens inschakelen</translation>
-<translation id="210034539800365161">Hiermee configureer je de vereiste voor de minimaal toegestane versie van <ph name="PRODUCT_OS_NAME" />.
-
-      Als dit beleid is ingesteld op een niet-lege lijst:
-      Als geen van de items een <ph name="CHROMEOS_VERSION_PROPERTY_NAME" /> hoger dan de huidige versie van het apparaat heeft, worden er geen beperkingen toegepast en worden bestaande beperkingen ingetrokken.
-      Als ten minste één van de items een <ph name="CHROMEOS_VERSION_PROPERTY_NAME" /> hoger dan de huidige versie van het apparaat heeft, wordt het sterkste item gekozen waarvan de versie het dichtst in de buurt van de huidige versie komt.
-      In geval van een conflict wordt de voorkeur gegeven aan het item met de kortere <ph name="WARNING_PERIOD_PROPERTY_NAME" /> of <ph name="AUE_WARNING_PERIOD_PROPERTY_NAME" /> en wordt het beleid toegepast met dat item.
-
-      Als de huidige versie verouderd raakt tijdens een gebruikerssessie en automatische updates door het huidige netwerk worden beperkt, wordt er een melding op het scherm weergegeven dat de gebruiker het apparaat moet updaten binnen de <ph name="WARNING_PERIOD_PROPERTY_NAME" /> in de melding.
-      Er worden geen meldingen weergegeven als automatische updates door het huidige netwerk zijn toegestaan en het apparaat moet worden geüpdatet binnen de <ph name="WARNING_PERIOD_PROPERTY_NAME" />.
-      De <ph name="WARNING_PERIOD_PROPERTY_NAME" /> start vanaf het moment dat het beleid wordt toegepast.
-      Als het apparaat niet wordt geüpdatet voordat de <ph name="WARNING_PERIOD_PROPERTY_NAME" /> is verlopen, wordt de gebruiker uitgelogd van de sessie.
-      Als blijkt dat de huidige versie verouderd is op het moment dat de gebruiker inlogt terwijl de <ph name="WARNING_PERIOD_PROPERTY_NAME" /> is verlopen, moet de gebruiker het apparaat updaten voordat hij of zij inlogt.
-
-      Als de huidige versie verouderd raakt tijdens een gebruikerssessie en het apparaat de vervaldatum voor automatische updates heeft bereikt, wordt er een melding op het scherm weergegeven dat de gebruiker het apparaat moet retourneren binnen de <ph name="AUE_WARNING_PERIOD_PROPERTY_NAME" />.
-      Als het apparaat de vervaldatum voor het controleren op automatische updates heeft bereikt op het moment dat de gebruiker inlogt en de <ph name="AUE_WARNING_PERIOD_PROPERTY_NAME" /> is verlopen, wordt het apparaat geblokkeerd zodat gebruikers niet kunnen inloggen.
-
-      Als dit beleid niet is ingesteld of is ingesteld op een lege waarde, worden er geen beperkingen toegepast, worden bestaande beperkingen ingetrokken en kan de gebruiker inloggen ongeacht de versie van <ph name="PRODUCT_OS_NAME" />.
-
-      <ph name="CHROMEOS_VERSION_PROPERTY_NAME" /> kan in dit geval een exacte versie zijn (zoals '13305.0.0') of een versievoorvoegsel (zoals '13305').
-      De <ph name="WARNING_PERIOD_PROPERTY_NAME" /> en <ph name="AUE_WARNING_PERIOD_PROPERTY_NAME" /> zijn optionele waarden die worden gespecificeerd als een aantal dagen. De standaardwaarde is 0 dagen, wat inhoudt dat er geen waarschuwingsperiode is.</translation>
 <translation id="2104418465060359056">Gegevens over extensies en plug-ins rapporteren</translation>
 <translation id="2106627642643925514">Hiermee wordt de standaardmodus voor afdrukken met pincode overschreven. Als de modus niet beschikbaar is, wordt dit beleid genegeerd.</translation>
 <translation id="2107601598727098402">
@@ -4623,13 +4603,6 @@ Geheugengegevens worden in alle gevallen aan de pagina gerapporteerd, afgezien v
 
       Je kunt de zoek-URL van Google opgeven als: <ph name="GOOGLE_SEARCH_URL" />.</translation>
 <translation id="7895553628261067384">Externe toegang</translation>
-<translation id="7898879331506985900">Dit bedrijfsbeleid is voor kortdurende aanpassing en wordt verwijderd in M86.
-
-      Het standaardbeleid van Chrome voor verwijzende URL's wordt versterkt van de huidige waarde 'no-referrer-when-downgrade' naar de beter beveiligde waarde 'strict-origin-when-cross-origin' via een geleidelijke uitrol die de stabiele versie M80 target.
-
-      Vóór de uitrol heeft dit bedrijfsbeleid geen effect. Als dit bedrijfsbeleid na de uitrol is ingeschakeld, wordt het standaardbeleid van Chrome voor verwijzende URL's ingesteld op de waarde 'no-referrer-when-downgrade' die vóór M80 van kracht was.
-
-      Dit bedrijfsbeleid is standaard uitgeschakeld.</translation>
 <translation id="7902040092815978832">Numeriek toetsenbord weergeven voor wachtwoord</translation>
 <translation id="7912255076272890813">Toegestane typen apps/extensies configureren</translation>
 <translation id="7922358664346625612">Laatste tabblad open houden in Chrome.</translation>
@@ -5330,9 +5303,9 @@ Dit beleid wordt verwijderd in M75.</translation>
       Dit beleid wordt na Chrome 84 verwijderd.</translation>
 <translation id="8937562488500723400">Regelt of goedkeuring op basis van KDC-beleid wordt gerespecteerd om te bepalen of <ph name="KERBEROS" />-tickets worden gedelegeerd.
 
-          Als dit beleid is ingesteld op True, respecteert de HTTP-verificatie de goedkeuring op basis van KDC-beleid (dat wil zeggen, Chrome delegeert inloggegevens alleen als het KDC-beleid <ph name="OK_AS_DELEGATE" /> instelt op een serviceticket). Zie https://tools.ietf.org/html/rfc5896.html voor meer informatie. De service moet ook overeenkomen met het beleid 'AuthNegotiateDelegateAllowlist'.
+          Als dit beleid is ingesteld op 'waar', respecteert de HTTP-verificatie de goedkeuring op basis van KDC-beleid (dat wil zeggen, Chrome delegeert inloggegevens alleen als het KDC-beleid <ph name="OK_AS_DELEGATE" /> instelt op een serviceticket). Zie https://tools.ietf.org/html/rfc5896.html voor meer informatie. De service moet ook overeenkomen met het beleid 'AuthNegotiateDelegateAllowlist'.
 
-          Als dit beleid niet is ingesteld of is ingesteld op False, wordt het KDC-beleid genegeerd op ondersteunde platforms en wordt alleen het beleid 'AuthNegotiateDelegateAllowlist' gerespecteerd.
+          Als dit beleid niet is ingesteld of is ingesteld op 'onwaar', wordt het KDC-beleid genegeerd op ondersteunde platforms en wordt alleen het beleid 'AuthNegotiateDelegateAllowlist' gerespecteerd.
 
           Op Windows wordt het KDC-beleid altijd gerespecteerd.</translation>
 <translation id="8938932171964587769">Beëindigd in M69. Gebruik in plaats hiervan

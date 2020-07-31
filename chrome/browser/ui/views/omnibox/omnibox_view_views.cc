@@ -2275,19 +2275,15 @@ void OmniboxViewViews::OnTemplateURLServiceChanged() {
 
 gfx::Range OmniboxViewViews::GetSimplifiedDomainBounds(
     std::vector<gfx::Range>* ranges_surrounding_simplified_domain) {
-  // If provided, |ranges_surrounding_simplified_domain| should be empty.
-  DCHECK(!ranges_surrounding_simplified_domain ||
-         ranges_surrounding_simplified_domain->empty());
+  DCHECK(ranges_surrounding_simplified_domain);
+  DCHECK(ranges_surrounding_simplified_domain->empty());
 
   base::string16 text = GetText();
   url::Component host = GetHostComponentAfterTrivialSubdomain();
-  if (ranges_surrounding_simplified_domain) {
-    ranges_surrounding_simplified_domain->emplace_back(host.end(), text.size());
-  }
+  ranges_surrounding_simplified_domain->emplace_back(host.end(), text.size());
 
   if (!OmniboxFieldTrial::ShouldElideToRegistrableDomain()) {
-    if (ranges_surrounding_simplified_domain)
-      ranges_surrounding_simplified_domain->emplace_back(0, host.begin);
+    ranges_surrounding_simplified_domain->emplace_back(0, host.begin);
     return gfx::Range(host.begin, host.end());
   }
 
@@ -2298,18 +2294,14 @@ gfx::Range OmniboxViewViews::GetSimplifiedDomainBounds(
           url, net::registry_controlled_domains::INCLUDE_PRIVATE_REGISTRIES);
 
   if (simplified_domain.empty()) {
-    if (ranges_surrounding_simplified_domain)
-      ranges_surrounding_simplified_domain->emplace_back(0, host.begin);
+    ranges_surrounding_simplified_domain->emplace_back(0, host.begin);
     return gfx::Range(host.begin, host.end());
   }
 
   size_t simplified_domain_pos =
       text.find(base::ASCIIToUTF16(simplified_domain));
   DCHECK_NE(simplified_domain_pos, std::string::npos);
-  if (ranges_surrounding_simplified_domain) {
-    ranges_surrounding_simplified_domain->emplace_back(0,
-                                                       simplified_domain_pos);
-  }
+  ranges_surrounding_simplified_domain->emplace_back(0, simplified_domain_pos);
   return gfx::Range(simplified_domain_pos, host.end());
 }
 
@@ -2379,9 +2371,12 @@ void OmniboxViewViews::ElideURL() {
          OmniboxFieldTrial::ShouldRevealPathQueryRefOnHover());
   DCHECK(IsURLEligibleForSimplifiedDomainEliding());
 
+  std::vector<gfx::Range> ranges_surrounding_simplified_domain;
+  gfx::Range simplified_domain_bounds =
+      GetSimplifiedDomainBounds(&ranges_surrounding_simplified_domain);
+
   // The simplified domain string must be a substring of the current display
   // text in order to elide to it.
-  gfx::Range simplified_domain_bounds = GetSimplifiedDomainBounds(nullptr);
   if (GetRenderText()->GetDisplayText().find(GetText().substr(
           simplified_domain_bounds.start(), simplified_domain_bounds.end())) ==
       std::string::npos) {
@@ -2417,6 +2412,12 @@ void OmniboxViewViews::ElideURL() {
   GetRenderText()->SetDisplayOffset(
       GetRenderText()->GetUpdatedDisplayOffset().x() -
       (simplified_domain_rect.x() - old_bounds.x()));
+
+  // GetSubstringBounds() rounds outward internally, so there may be small
+  // portions of text still showing. Set the ranges surrounding the simplified
+  // domain to transparent so that these artifacts don't show.
+  for (const auto& range : ranges_surrounding_simplified_domain)
+    ApplyColor(SK_ColorTRANSPARENT, range);
 }
 
 void OmniboxViewViews::ShowFullURL() {

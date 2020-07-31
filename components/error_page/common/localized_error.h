@@ -19,8 +19,6 @@ class DictionaryValue;
 
 namespace error_page {
 
-struct ErrorPageParams;
-
 class LocalizedError {
  public:
   // Information about elements shown on the error page.
@@ -56,8 +54,7 @@ class LocalizedError {
       bool auto_fetch_feature_enabled,
       bool is_kiosk_mode,  // whether device is currently in single app (kiosk)
                            // mode
-      const std::string& locale,
-      std::unique_ptr<error_page::ErrorPageParams> params);
+      const std::string& locale);
 
   // Returns a description of the encountered error.
   static base::string16 GetErrorDetails(const std::string& error_domain,

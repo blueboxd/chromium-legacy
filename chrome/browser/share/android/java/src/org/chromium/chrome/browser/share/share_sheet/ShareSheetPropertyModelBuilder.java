@@ -28,6 +28,7 @@ import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -44,7 +45,7 @@ import java.util.Set;
 // TODO(crbug/1022172): Should be package-protected once modularization is complete.
 public class ShareSheetPropertyModelBuilder {
     @IntDef({ContentType.LINK_PAGE_VISIBLE, ContentType.LINK_PAGE_NOT_VISIBLE, ContentType.TEXT,
-            ContentType.IMAGE, ContentType.OTHER_FILE_TYPE, ContentType.HIGHLIGHTED_TEXT})
+            ContentType.IMAGE, ContentType.HIGHLIGHTED_TEXT, ContentType.OTHER_FILE_TYPE})
     @Retention(RetentionPolicy.SOURCE)
     @interface ContentType {
         int LINK_PAGE_VISIBLE = 0;
@@ -229,14 +230,14 @@ public class ShareSheetPropertyModelBuilder {
                     ShareHelper.getShareLinkAppCompatibilityIntent(), 0);
         }
         List<ResolveInfo> resolveInfoList = new ArrayList<>();
-        if (contentTypes.contains(ContentType.LINK_PAGE_NOT_VISIBLE)
-                || contentTypes.contains(ContentType.LINK_PAGE_VISIBLE)
-                || contentTypes.contains(ContentType.TEXT)) {
+        if (!Collections.disjoint(contentTypes,
+                    Arrays.asList(ContentType.LINK_PAGE_NOT_VISIBLE, ContentType.LINK_PAGE_VISIBLE,
+                            ContentType.TEXT, ContentType.HIGHLIGHTED_TEXT))) {
             resolveInfoList.addAll(mPackageManager.queryIntentActivities(
                     ShareHelper.getShareLinkAppCompatibilityIntent(), 0));
         }
-        if (contentTypes.contains(ContentType.IMAGE)
-                || contentTypes.contains(ContentType.OTHER_FILE_TYPE)) {
+        if (!Collections.disjoint(
+                    contentTypes, Arrays.asList(ContentType.IMAGE, ContentType.OTHER_FILE_TYPE))) {
             resolveInfoList.addAll(mPackageManager.queryIntentActivities(
                     ShareHelper.createShareFileAppCompatibilityIntent(fileContentType), 0));
         }

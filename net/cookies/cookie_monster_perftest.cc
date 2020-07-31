@@ -28,8 +28,7 @@ namespace net {
 namespace {
 
 const int kNumCookies = 20000;
-const char kCookieLine[] = "A  = \"b=;\\\"\"  ;secure;;;";
-const char kGoogleURL[] = "http://www.foo.com";
+const char kCookieLine[] = "A  = \"b=;\\\"\"  ;secure;;; samesite=none";
 
 static constexpr char kMetricPrefixParsedCookie[] = "ParsedCookie.";
 static constexpr char kMetricPrefixCookieMonster[] = "CookieMonster.";
@@ -106,7 +105,8 @@ class SetCookieCallback : public CookieTestCallback {
 
  private:
   void Run(CookieAccessResult result) {
-    EXPECT_TRUE(result.status.IsInclude());
+    EXPECT_TRUE(result.status.IsInclude())
+        << "result.status: " << result.status.GetDebugString();
     CookieTestCallback::Run();
   }
   CookieOptions options_;
@@ -178,7 +178,7 @@ TEST_F(CookieMonsterTest, TestAddCookiesOnSingleHost) {
   auto cm = std::make_unique<CookieMonster>(nullptr, nullptr);
   std::vector<std::string> cookies;
   for (int i = 0; i < kNumCookies; i++) {
-    cookies.push_back(base::StringPrintf("a%03d=b", i));
+    cookies.push_back(base::StringPrintf("a%03d=b; SameSite=None; Secure", i));
   }
 
   SetCookieCallback setCookieCallback;
@@ -187,9 +187,10 @@ TEST_F(CookieMonsterTest, TestAddCookiesOnSingleHost) {
   auto reporter = SetUpCookieMonsterReporter("single_host");
   base::ElapsedTimer add_timer;
 
+  const GURL kGoogleURL = GURL("https://www.foo.com");
   for (std::vector<std::string>::const_iterator it = cookies.begin();
        it != cookies.end(); ++it) {
-    setCookieCallback.SetCookie(cm.get(), GURL(kGoogleURL), *it);
+    setCookieCallback.SetCookie(cm.get(), kGoogleURL, *it);
   }
   reporter.AddResult(kMetricAddTimeMs, add_timer.Elapsed().InMillisecondsF());
 
@@ -198,7 +199,7 @@ TEST_F(CookieMonsterTest, TestAddCookiesOnSingleHost) {
   base::ElapsedTimer query_timer;
   for (std::vector<std::string>::const_iterator it = cookies.begin();
        it != cookies.end(); ++it) {
-    getCookieListCallback.GetCookieList(cm.get(), GURL(kGoogleURL));
+    getCookieListCallback.GetCookieList(cm.get(), kGoogleURL);
   }
   reporter.AddResult(kMetricQueryTimeMs,
                      query_timer.Elapsed().InMillisecondsF());
@@ -250,7 +251,8 @@ TEST_F(CookieMonsterTest, TestDomainTree) {
   auto cm = std::make_unique<CookieMonster>(nullptr, nullptr);
   GetCookieListCallback getCookieListCallback;
   SetCookieCallback setCookieCallback;
-  const char domain_cookie_format_tree[] = "a=b; domain=%s";
+  const char domain_cookie_format_tree[] =
+      "a=b; domain=%s; samesite=none; secure";
   const std::string domain_base("top.com");
 
   std::vector<std::string> domain_list;
@@ -323,7 +325,8 @@ TEST_F(CookieMonsterTest, TestDomainLine) {
   domain_list.push_back("b.a.b.a.top.com");
   EXPECT_EQ(4u, domain_list.size());
 
-  const char domain_cookie_format_line[] = "a%03d=b; domain=%s";
+  const char domain_cookie_format_line[] =
+      "a%03d=b; domain=%s; samesite=none; secure";
   for (int i = 0; i < 8; i++) {
     for (std::vector<std::string>::const_iterator it = domain_list.begin();
          it != domain_list.end(); it++) {
@@ -445,8 +448,8 @@ TEST_F(CookieMonsterTest, TestGCTimes) {
         test_case.num_cookies, test_case.num_old_cookies, 0, 0,
         CookieMonster::kSafeFromGlobalPurgeDays * 2);
 
-    GURL gurl("http://foo.com");
-    std::string cookie_line("z=3");
+    GURL gurl("https://foo.com");
+    std::string cookie_line("z=3; samesite=none; secure");
     // Trigger the Garbage collection we're allowed.
     setCookieCallback.SetCookie(cm.get(), gurl, cookie_line);
 

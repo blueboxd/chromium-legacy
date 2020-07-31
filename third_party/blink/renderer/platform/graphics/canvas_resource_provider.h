@@ -11,8 +11,10 @@
 #include "third_party/blink/renderer/platform/graphics/canvas_resource.h"
 #include "third_party/blink/renderer/platform/graphics/identifiability_paint_op_digest.h"
 #include "third_party/blink/renderer/platform/graphics/image_orientation.h"
+#include "third_party/blink/renderer/platform/graphics/memory_managed_paint_recorder.h"
 #include "third_party/blink/renderer/platform/graphics/paint/paint_recorder.h"
 #include "third_party/blink/renderer/platform/instrumentation/canvas_memory_dump_provider.h"
+#include "third_party/blink/renderer/platform/wtf/thread_specific.h"
 #include "third_party/skia/include/core/SkSurface.h"
 
 class GrDirectContext;
@@ -58,6 +60,7 @@ class WebGraphicsContext3DProviderWrapper;
 
 class PLATFORM_EXPORT CanvasResourceProvider
     : public WebGraphicsContext3DProviderWrapper::DestructionObserver,
+      public base::CheckedObserver,
       public CanvasMemoryDumpClient {
  public:
   // These values are persisted to logs. Entries should not be renumbered and
@@ -255,6 +258,8 @@ class PLATFORM_EXPORT CanvasResourceProvider
   SkSurface::ContentChangeMode mode_ = SkSurface::kRetain_ContentChangeMode;
 
  private:
+  friend class FlushForImageListener;
+  void OnFlushForImage(cc::PaintImage::ContentId content_id);
   virtual sk_sp<SkSurface> CreateSkSurface() const = 0;
   virtual scoped_refptr<CanvasResource> CreateResource();
   virtual bool UseOopRasterization() { return false; }
@@ -282,7 +287,7 @@ class PLATFORM_EXPORT CanvasResourceProvider
   const bool is_origin_top_left_;
   std::unique_ptr<CanvasImageProvider> canvas_image_provider_;
   std::unique_ptr<cc::SkiaPaintCanvas> skia_canvas_;
-  std::unique_ptr<PaintRecorder> recorder_;
+  std::unique_ptr<MemoryManagedPaintRecorder> recorder_;
 
   bool needs_flush_ = false;
 

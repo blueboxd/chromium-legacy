@@ -14,7 +14,6 @@
 <translation id="1084365883616172403">Η ανάρτηση στο Facebook ολοκληρώθηκε.</translation>
 <translation id="1103523840287552314">Να μεταφράζονται πάντα τα <ph name="LANGUAGE" /></translation>
 <translation id="1104948393051856124">Αποδοχή και συνέχεια</translation>
-<translation id="1105578556867525047">Αλλαγή κωδικού πρόσβασης στον ιστότοπο</translation>
 <translation id="1112015203684611006">Η εκτύπωση απέτυχε.</translation>
 <translation id="1125564390852150847">Δημιουργία νέας καρτέλας.</translation>
 <translation id="1145536944570833626">Διαγραφή υπαρχόντων δεδομένων.</translation>
@@ -246,7 +245,6 @@
 <translation id="3783017676699494206">Αποθήκευση εικόνας</translation>
 <translation id="3789841737615482174">Εγκατάσταση</translation>
 <translation id="3803696231112616155">Πρόταση για μετάφραση αυτού του ιστοτόπου</translation>
-<translation id="3836313059960742452">{COUNT,plural, =0{Δεν παραβιάστηκαν κωδικοί πρόσβασης.}=1{Παραβιάστηκε {COUNT} κωδικός πρόσβασης.}other{Παραβιάστηκαν {COUNT} κωδικοί πρόσβασης.}}</translation>
 <translation id="385051799172605136">Πίσω</translation>
 <translation id="3892144330757387737">Εδώ θα βρείτε το ιστορικό σας</translation>
 <translation id="3897092660631435901">Μενού</translation>
@@ -333,6 +331,7 @@
 <translation id="4901778704868714008">Αποθήκευση…</translation>
 <translation id="4904877109095351937">Επισήμ. ως αναγνωσμένων</translation>
 <translation id="4930268273022498155">Διαγραφή υπαρχόντων δεδομένων. Μπορείτε να τα επαναφέρετε επιστρέφοντας στον λογαριασμό <ph name="USER_EMAIL1" />.</translation>
+<translation id="4930714375720679147">Ενεργοποίηση</translation>
 <translation id="4941089862236492464">Παρουσιάστηκε πρόβλημα με την κοινοποίηση του στοιχείου σας.</translation>
 <translation id="4944543191714094452">Εύρεση στη σελίδα…</translation>
 <translation id="4945756290001680296">Πρόσβαση στις ρυθμίσεις κωδικού πρόσβασης</translation>
@@ -612,6 +611,7 @@
 <translation id="8073670137947914548">Η λήψη ολοκληρώθηκε</translation>
 <translation id="8073872304774253879">Βελτιώστε τις αναζητήσεις και την περιήγηση</translation>
 <translation id="8076014560081431679">Οι αποθηκευμένες ρυθμίσεις ιστότοπου δεν θα διαγραφούν και ενδέχεται να υποδεικνύουν τις συνήθειες περιήγησής σας. <ph name="BEGIN_LINK" />Μάθετε περισσότερα<ph name="END_LINK" /></translation>
+<translation id="8105368624971345109">Απενεργοποίηση</translation>
 <translation id="8114753159095730575">Η λήψη του αρχείου είναι διαθέσιμη. Οι διαθέσιμες επιλογές βρίσκονται κοντά στο κάτω μέρος της οθόνης.</translation>
 <translation id="8131740175452115882">Επιβεβαίωση</translation>
 <translation id="8197543752516192074">Μετάφραση σελίδας</translation>

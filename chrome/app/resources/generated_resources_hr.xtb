@@ -1162,7 +1162,6 @@ Postavkama računa možete upravljati tako da instalirate aplikaciju Family Link
 <translation id="2408955596600435184">Unesite PIN</translation>
 <translation id="241082044617551207">Nepoznati dodatak</translation>
 <translation id="2412593942846481727">Dostupno je ažuriranje</translation>
-<translation id="2414499877591062094">Omogući automatsko slanje PIN-a</translation>
 <translation id="2416435988630956212">Funkcijske tipke na tipkovnici</translation>
 <translation id="241727068219398187">Podaci su kriptirani vašom Google zaporkom od
           <ph name="TIME" />. To ne uključuje načine plaćanja i adrese s Google Paya.</translation>
@@ -3405,7 +3404,6 @@ Postavkama računa možete upravljati tako da instalirate aplikaciju Family Link
 <translation id="5241128660650683457">čitati sve vaše podatke s web-lokacija koje posjetite</translation>
 <translation id="5242724311594467048">Omogućiti proširenje "<ph name="EXTENSION_NAME" />"?</translation>
 <translation id="5243522832766285132">Pokušajte ponovo za nekoliko trenutaka.</translation>
-<translation id="5244406554036143958">Unesite PIN da biste omogućili automatsko slanje</translation>
 <translation id="5244474230056479698">Sinkronizira se s računom <ph name="EMAIL" /></translation>
 <translation id="5245610266855777041">Početak rada sa školskim računom</translation>
 <translation id="5246282308050205996">Aplikacija <ph name="APP_NAME" /> srušila se. Kliknite ovaj balon za ponovno pokretanje aplikacije.</translation>

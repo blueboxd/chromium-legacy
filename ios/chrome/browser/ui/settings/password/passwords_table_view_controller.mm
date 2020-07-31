@@ -259,6 +259,9 @@ std::vector<std::unique_ptr<autofill::PasswordForm>> CopyOf(
 // The loading spinner background which appears when loading passwords.
 @property(nonatomic, strong) HomeWaitingView* spinnerView;
 
+// Current state of the Password Check.
+@property(nonatomic, assign) PasswordCheckUIState passwordCheckState;
+
 @end
 
 @implementation PasswordsTableViewController
@@ -439,16 +442,16 @@ std::vector<std::unique_ptr<autofill::PasswordForm>> CopyOf(
           password_manager::features::kPasswordCheck)) {
     // Password check.
     [model addSectionWithIdentifier:SectionIdentifierPasswordCheck];
-    if (!_passwordProblemsItem) {
-      _passwordProblemsItem = [self passwordProblemsItem];
-    }
+    _passwordProblemsItem = [self passwordProblemsItem];
+
     [model addItem:_passwordProblemsItem
         toSectionWithIdentifier:SectionIdentifierPasswordCheck];
-    if (!_checkForProblemsItem) {
-      _checkForProblemsItem = [self checkForProblemsItem];
-    }
+    _checkForProblemsItem = [self checkForProblemsItem];
+
     [model addItem:_checkForProblemsItem
         toSectionWithIdentifier:SectionIdentifierPasswordCheck];
+    [self updatePasswordCheckButtonWithState:_passwordCheckState];
+    [self updatePasswordCheckStatusLabelWithState:_passwordCheckState];
   }
 
   // Saved passwords.
@@ -700,6 +703,7 @@ std::vector<std::unique_ptr<autofill::PasswordForm>> CopyOf(
 #pragma mark - PasswordsConsumer
 
 - (void)setPasswordCheckUIState:(PasswordCheckUIState)state {
+  _passwordCheckState = state;
   [self updatePasswordCheckButtonWithState:state];
   [self updatePasswordCheckStatusLabelWithState:state];
 }

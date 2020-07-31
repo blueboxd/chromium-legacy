@@ -72,6 +72,10 @@ namespace base {
 class SingleThreadTaskRunner;
 }
 
+namespace gfx {
+class ColorSpace;
+}
+
 namespace gpu {
 class GpuMemoryBufferManager;
 }
@@ -678,6 +682,8 @@ class BLINK_PLATFORM_EXPORT Platform {
   virtual media::GpuVideoAcceleratorFactories* GetGpuFactories() {
     return nullptr;
   }
+
+  virtual void SetRenderingColorSpace(const gfx::ColorSpace& color_space) {}
 
   // Renderer Memory Metrics ----------------------------------------------
 

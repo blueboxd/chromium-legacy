@@ -55,6 +55,7 @@
 #include "content/public/browser/storage_partition.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/common/child_process_host.h"
+#include "content/public/common/content_features.h"
 #include "content/public/common/content_switches.h"
 #include "third_party/blink/public/mojom/permissions/permission_status.mojom.h"
 #include "third_party/blink/public/mojom/push_messaging/push_messaging_status.mojom.h"
@@ -589,7 +590,7 @@ void PushMessagingServiceImpl::SubscribeFromDocument(
       ContentSettingsType::NOTIFICATIONS, render_frame_host, requesting_origin,
       user_gesture,
       base::BindOnce(&PushMessagingServiceImpl::DoSubscribe,
-                     weak_factory_.GetWeakPtr(), app_identifier,
+                     weak_factory_.GetWeakPtr(), std::move(app_identifier),
                      std::move(options), std::move(callback), render_process_id,
                      render_frame_id));
 }
@@ -627,7 +628,8 @@ void PushMessagingServiceImpl::SubscribeFromWorker(
     return;
   }
 
-  DoSubscribe(app_identifier, std::move(options), std::move(register_callback),
+  DoSubscribe(std::move(app_identifier), std::move(options),
+              std::move(register_callback),
               /* render_process_id= */ -1, /* render_frame_id= */ -1,
               CONTENT_SETTING_ALLOW);
 }
@@ -653,7 +655,7 @@ bool PushMessagingServiceImpl::SupportNonVisibleMessages() {
 }
 
 void PushMessagingServiceImpl::DoSubscribe(
-    const PushMessagingAppIdentifier& app_identifier,
+    PushMessagingAppIdentifier app_identifier,
     blink::mojom::PushSubscriptionOptionsPtr options,
     RegisterCallback register_callback,
     int render_process_id,
@@ -679,7 +681,8 @@ void PushMessagingServiceImpl::DoSubscribe(
     content::RenderFrameHost* main_frame =
         GetMainFrameForRenderFrameHost(render_frame_host);
 
-    if (base::FeatureList::IsEnabled(kPushMessagingDisallowSenderIDs)) {
+    if (base::FeatureList::IsEnabled(
+            features::kPushMessagingDisallowSenderIDs)) {
       if (main_frame) {
         main_frame->AddMessageToConsole(
             blink::mojom::ConsoleMessageLevel::kError,
@@ -698,11 +701,21 @@ void PushMessagingServiceImpl::DoSubscribe(
 
   IncreasePushSubscriptionCount(1, true /* is_pending */);
 
+  // Set time to live for GCM registration
+  base::TimeDelta ttl = base::TimeDelta();
+
+  if (base::FeatureList::IsEnabled(
+          features::kPushSubscriptionWithExpirationTime)) {
+    app_identifier.set_expiration_time(
+        base::Time::Now() + kPushSubscriptionExpirationPeriodTimeDelta);
+    DCHECK(app_identifier.expiration_time());
+    ttl = kPushSubscriptionExpirationPeriodTimeDelta;
+  }
+
   GetInstanceIDDriver()
       ->GetInstanceID(app_identifier.app_id())
       ->GetToken(NormalizeSenderInfo(application_server_key_string), kGCMScope,
-                 base::TimeDelta() /* time_to_live */,
-                 std::map<std::string, std::string>() /* options */,
+                 ttl, std::map<std::string, std::string>() /* options */,
                  {} /* flags */,
                  base::BindOnce(&PushMessagingServiceImpl::DidSubscribe,
                                 weak_factory_.GetWeakPtr(), app_identifier,
@@ -714,12 +727,12 @@ void PushMessagingServiceImpl::SubscribeEnd(
     RegisterCallback callback,
     const std::string& subscription_id,
     const GURL& endpoint,
+    const base::Optional<base::Time>& expiration_time,
     const std::vector<uint8_t>& p256dh,
     const std::vector<uint8_t>& auth,
     blink::mojom::PushRegistrationStatus status) {
-  std::move(callback).Run(subscription_id, endpoint,
-                          base::nullopt /* expiration_time*/, p256dh, auth,
-                          status);
+  std::move(callback).Run(subscription_id, endpoint, expiration_time, p256dh,
+                          auth, status);
 }
 
 void PushMessagingServiceImpl::SubscribeEndWithError(
@@ -727,6 +740,7 @@ void PushMessagingServiceImpl::SubscribeEndWithError(
     blink::mojom::PushRegistrationStatus status) {
   SubscribeEnd(std::move(callback), std::string() /* subscription_id */,
                GURL::EmptyGURL() /* endpoint */,
+               base::nullopt /* expiration_time */,
                std::vector<uint8_t>() /* p256dh */,
                std::vector<uint8_t>() /* auth */, status);
 }
@@ -793,6 +807,7 @@ void PushMessagingServiceImpl::DidSubscribeWithEncryptionInfo(
   IncreasePushSubscriptionCount(1, false /* is_pending */);
 
   SubscribeEnd(std::move(callback), subscription_id, endpoint,
+               app_identifier.expiration_time(),
                std::vector<uint8_t>(p256dh.begin(), p256dh.end()),
                std::vector<uint8_t>(auth_secret.begin(), auth_secret.end()),
                blink::mojom::PushRegistrationStatus::SUCCESS_FROM_PUSH_SERVICE);
@@ -800,8 +815,6 @@ void PushMessagingServiceImpl::DidSubscribeWithEncryptionInfo(
 
 // GetSubscriptionInfo methods -------------------------------------------------
 
-// TODO(crbug.com/1104215): Get |expiration_time| from |app_identifier|, where
-// it is stored in profile preferences
 void PushMessagingServiceImpl::GetSubscriptionInfo(
     const GURL& origin,
     int64_t service_worker_registration_id,
@@ -822,10 +835,12 @@ void PushMessagingServiceImpl::GetSubscriptionInfo(
 
   const GURL endpoint = CreateEndpoint(subscription_id);
   const std::string& app_id = app_identifier.app_id();
+  base::Optional<base::Time> expiration_time = app_identifier.expiration_time();
+
   base::OnceCallback<void(bool)> validate_cb =
       base::BindOnce(&PushMessagingServiceImpl::DidValidateSubscription,
                      weak_factory_.GetWeakPtr(), app_id, sender_id, endpoint,
-                     std::move(callback));
+                     expiration_time, std::move(callback));
 
   if (PushMessagingAppIdentifier::UseInstanceID(app_id)) {
     GetInstanceIDDriver()->GetInstanceID(app_id)->ValidateToken(
@@ -842,6 +857,7 @@ void PushMessagingServiceImpl::DidValidateSubscription(
     const std::string& app_id,
     const std::string& sender_id,
     const GURL& endpoint,
+    const base::Optional<base::Time>& expiration_time,
     SubscriptionInfoCallback callback,
     bool is_valid) {
   if (!is_valid) {
@@ -855,19 +871,20 @@ void PushMessagingServiceImpl::DidValidateSubscription(
   GetEncryptionInfoForAppId(
       app_id, sender_id,
       base::BindOnce(&PushMessagingServiceImpl::DidGetEncryptionInfo,
-                     weak_factory_.GetWeakPtr(), endpoint,
+                     weak_factory_.GetWeakPtr(), endpoint, expiration_time,
                      std::move(callback)));
 }
 
 void PushMessagingServiceImpl::DidGetEncryptionInfo(
     const GURL& endpoint,
+    const base::Optional<base::Time>& expiration_time,
     SubscriptionInfoCallback callback,
     std::string p256dh,
     std::string auth_secret) const {
   // I/O errors might prevent the GCM Driver from retrieving a key-pair.
   bool is_valid = !p256dh.empty();
   std::move(callback).Run(
-      is_valid, endpoint, base::nullopt /* expiration_time */,
+      is_valid, endpoint, expiration_time,
       std::vector<uint8_t>(p256dh.begin(), p256dh.end()),
       std::vector<uint8_t>(auth_secret.begin(), auth_secret.end()));
 }

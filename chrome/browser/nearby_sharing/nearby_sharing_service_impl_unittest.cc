@@ -19,6 +19,8 @@
 #include "chrome/browser/nearby_sharing/mock_nearby_process_manager.h"
 #include "chrome/browser/nearby_sharing/mock_nearby_sharing_decoder.h"
 #include "chrome/browser/nearby_sharing/nearby_connections_manager.h"
+#include "chrome/browser/notifications/notification_display_service_factory.h"
+#include "chrome/browser/notifications/notification_display_service_tester.h"
 #include "chrome/services/sharing/public/proto/wire_format.pb.h"
 #include "chrome/test/base/testing_browser_process.h"
 #include "chrome/test/base/testing_profile.h"
@@ -172,8 +174,13 @@ class NearbySharingServiceImplTest : public testing::Test {
       const std::string& profile_name) {
     Profile* profile = profile_manager_.CreateTestingProfile(profile_name);
     fake_nearby_connections_manager_ = new FakeNearbyConnectionsManager();
+    notification_tester_ =
+        std::make_unique<NotificationDisplayServiceTester>(profile);
+    NotificationDisplayService* notification_display_service =
+        NotificationDisplayServiceFactory::GetForProfile(profile);
     auto service = std::make_unique<NearbySharingServiceImpl>(
-        &prefs_, profile, base::WrapUnique(fake_nearby_connections_manager_),
+        &prefs_, notification_display_service, profile,
+        base::WrapUnique(fake_nearby_connections_manager_),
         &mock_nearby_process_manager_);
 
     // Allow the posted task to fetch the BluetoothAdapter to finish.
@@ -214,6 +221,7 @@ class NearbySharingServiceImplTest : public testing::Test {
   TestingProfileManager profile_manager_{TestingBrowserProcess::GetGlobal()};
   sync_preferences::TestingPrefServiceSyncable prefs_;
   FakeNearbyConnectionsManager* fake_nearby_connections_manager_ = nullptr;
+  std::unique_ptr<NotificationDisplayServiceTester> notification_tester_;
   std::unique_ptr<NearbySharingServiceImpl> service_;
   std::unique_ptr<FakeFastInitiationManagerFactory>
       fast_initiation_manager_factory_;

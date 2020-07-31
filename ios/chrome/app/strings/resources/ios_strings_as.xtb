@@ -14,7 +14,6 @@
 <translation id="1084365883616172403">ফেচবুক প’ষ্ট দিয়া হ’ল।</translation>
 <translation id="1103523840287552314"><ph name="LANGUAGE" /> সদাই অনুবাদ কৰক</translation>
 <translation id="1104948393051856124">গ্ৰহণ কৰক আৰু অব্যাহত ৰাখক</translation>
-<translation id="1105578556867525047">ৱেবছাইটত পাছৱৰ্ড সলনি কৰক</translation>
 <translation id="1112015203684611006">প্ৰিণ্টিং কৰিব পৰা নগ'ল।</translation>
 <translation id="1125564390852150847">নতুন টেব সৃষ্টি কৰক।</translation>
 <translation id="1145536944570833626">পূর্বে থকা ডেটা মচক।</translation>
@@ -245,7 +244,6 @@
 <translation id="3783017676699494206">ছবি ছেভ কৰক</translation>
 <translation id="3789841737615482174">ইনষ্টল কৰক</translation>
 <translation id="3803696231112616155">এই ছাইটটো অনুবাদ কৰাৰ প্ৰস্তাৱ দিয়ক</translation>
-<translation id="3836313059960742452">{COUNT,plural, =0{কোনো পাছৱৰ্ড হেক হোৱা নাই}=1{{COUNT} টা পাছৱৰ্ড হেক হৈছে}one{{COUNT} টা পাছৱৰ্ড হেক হৈছে}other{{COUNT} টা পাছৱৰ্ড হেক হৈছে}}</translation>
 <translation id="385051799172605136">উভতি যাওক</translation>
 <translation id="3892144330757387737">ইয়াত আপুনি নিজৰ ইতিহাস বিচাৰি পাব</translation>
 <translation id="3897092660631435901">মেনু</translation>
@@ -332,6 +330,7 @@
 <translation id="4901778704868714008">ছেভ কৰক...</translation>
 <translation id="4904877109095351937">পঢ়া হিচাপে চিহ্নিত কৰক</translation>
 <translation id="4930268273022498155">পূৰ্বৰে পৰা থকা ডেটা মচক। আপুনি <ph name="USER_EMAIL1" />লৈ ঘূৰি গৈ ইয়াক পুনৰুদ্ধাৰ কৰিব পাৰে।</translation>
+<translation id="4930714375720679147">অন কৰক</translation>
 <translation id="4941089862236492464">দুঃখিত, আপোনাৰ বস্তুটো শ্বেয়াৰ কৰাত কিবা সমস্যা হৈছে।</translation>
 <translation id="4944543191714094452">পৃষ্ঠাখনত বিচাৰক…</translation>
 <translation id="4945756290001680296">পাছৱৰ্ড ছেটিংসমূহত এক্সেছ কৰক</translation>
@@ -607,6 +606,7 @@
 <translation id="8073670137947914548">ডাউনল’ড সম্পূর্ণ হ’ল</translation>
 <translation id="8073872304774253879">সন্ধানসমূহ আৰু ব্ৰাউজিং উন্নত কৰক</translation>
 <translation id="8076014560081431679">ছেভ কৰি ৰখা ছাইটৰ ছেটিংসমূহ মচা নহয় আৰু ই আপোনাৰ ব্ৰাউজিঙৰ আচৰণ প্ৰতিফলন কৰিব পাৰে। <ph name="BEGIN_LINK" />অধিক জানক<ph name="END_LINK" /></translation>
+<translation id="8105368624971345109">অফ কৰক</translation>
 <translation id="8114753159095730575">ফাইল ডাউনল’ড উপলব্ধ। স্ক্ৰীণৰ তলৰ অংশৰ কাষত থকা বিকল্পসমূহ।</translation>
 <translation id="8131740175452115882">নিশ্চিত কৰক</translation>
 <translation id="8197543752516192074">পৃষ্ঠা অনুবাদ কৰক</translation>

@@ -1162,7 +1162,6 @@
 <translation id="2408955596600435184">Внесете го вашиот PIN</translation>
 <translation id="241082044617551207">Непознат приклучок</translation>
 <translation id="2412593942846481727">Достапно е ажурирање</translation>
-<translation id="2414499877591062094">Овозможи користење PIN-код за автоматско испраќање</translation>
 <translation id="2416435988630956212">Функциски копчиња на тастатурата</translation>
 <translation id="241727068219398187">Податоците се шифрирани со вашата лозинка на Google од
           <ph name="TIME" />. Тоа не ги вклучува начините на плаќање и адресите од Google Pay.</translation>
@@ -3405,7 +3404,6 @@
 <translation id="5241128660650683457">Читајте ги сите ваши податоци на веб-локациите што ги посетувате</translation>
 <translation id="5242724311594467048">Да се овозможи „<ph name="EXTENSION_NAME" />“?</translation>
 <translation id="5243522832766285132">Обидете се повторно наскоро</translation>
-<translation id="5244406554036143958">Внесете го PIN-кодот за да се овозможи автоматско испраќање</translation>
 <translation id="5244474230056479698">Синхронизирање со <ph name="EMAIL" /></translation>
 <translation id="5245610266855777041">Започнете со училишна сметка</translation>
 <translation id="5246282308050205996"><ph name="APP_NAME" /> падна. Кликнете на балонот за да ја рестартирате апликацијата.</translation>

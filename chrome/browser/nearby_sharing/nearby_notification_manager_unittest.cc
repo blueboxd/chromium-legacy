@@ -7,6 +7,7 @@
 #include <memory>
 #include <vector>
 
+#include "base/strings/strcat.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/test/scoped_feature_list.h"
 #include "chrome/app/vector_icons/vector_icons.h"
@@ -15,6 +16,7 @@
 #include "chrome/browser/nearby_sharing/share_target.h"
 #include "chrome/browser/nearby_sharing/transfer_metadata.h"
 #include "chrome/browser/nearby_sharing/transfer_metadata_builder.h"
+#include "chrome/browser/notifications/notification_display_service_factory.h"
 #include "chrome/browser/notifications/notification_display_service_tester.h"
 #include "chrome/grit/generated_resources.h"
 #include "chrome/test/base/testing_profile.h"
@@ -43,8 +45,7 @@ class NearbyNotificationManagerTest : public testing::Test {
     scoped_feature_list_.InitAndEnableFeature(features::kNearbySharing);
     notification_tester_ =
         std::make_unique<NotificationDisplayServiceTester>(&profile_);
-    manager_ = std::make_unique<NearbyNotificationManager>(&profile_,
-                                                           &nearby_service_);
+    manager_ = CreateManager();
   }
   ~NearbyNotificationManagerTest() override = default;
 
@@ -53,6 +54,13 @@ class NearbyNotificationManagerTest : public testing::Test {
   std::vector<message_center::Notification> GetDisplayedNotifications() {
     return notification_tester_->GetDisplayedNotificationsForType(
         NotificationHandler::Type::NEARBY_SHARE);
+  }
+
+  std::unique_ptr<NearbyNotificationManager> CreateManager() {
+    NotificationDisplayService* notification_display_service =
+        NotificationDisplayServiceFactory::GetForProfile(&profile_);
+    return std::make_unique<NearbyNotificationManager>(
+        notification_display_service, &nearby_service_);
   }
 
  protected:
@@ -64,13 +72,13 @@ class NearbyNotificationManagerTest : public testing::Test {
   std::unique_ptr<NearbyNotificationManager> manager_;
 };
 
-struct ProgressNotificationTestParamInternal {
+struct AttachmentsTestParamInternal {
   std::vector<TextAttachment::Type> text_attachments;
   std::vector<FileAttachment::Type> file_attachments;
   int expected_resource_id;
 };
 
-ProgressNotificationTestParamInternal kProgressNotificationTestParams[] = {
+AttachmentsTestParamInternal kAttachmentsTestParams[] = {
     // No attachments.
     {{}, {}, IDS_NEARBY_UNKNOWN_ATTACHMENTS},
 
@@ -108,16 +116,17 @@ ProgressNotificationTestParamInternal kProgressNotificationTestParams[] = {
      IDS_NEARBY_FILE_ATTACHMENTS_UNKNOWN},
 };
 
-using ProgressNotificationTestParam =
-    std::tuple<ProgressNotificationTestParamInternal, bool>;
+using AttachmentsTestParam = std::tuple<AttachmentsTestParamInternal, bool>;
 
-class NearbyNotificationManagerProgressNotificationTest
+class NearbyNotificationManagerAttachmentsTest
     : public NearbyNotificationManagerTest,
-      public testing::WithParamInterface<ProgressNotificationTestParam> {};
+      public testing::WithParamInterface<AttachmentsTestParam> {};
+
+using ConnectionRequestTestParam = std::tuple<TransferMetadata::Status, bool>;
 
 class NearbyNotificationManagerConnectionRequestTest
     : public NearbyNotificationManagerTest,
-      public testing::WithParamInterface<TransferMetadata::Status> {};
+      public testing::WithParamInterface<ConnectionRequestTestParam> {};
 
 }  // namespace
 
@@ -142,8 +151,7 @@ TEST_F(NearbyNotificationManagerTest, RegistersAsBackgroundSurfaces) {
           testing::SaveArg<0>(&send_transfer_callback),
           testing::SaveArg<1>(&send_discovery_callback),
           testing::Return(NearbySharingService::StatusCodes::kOk)));
-  manager_ =
-      std::make_unique<NearbyNotificationManager>(&profile_, &nearby_service_);
+  manager_ = CreateManager();
 
   EXPECT_EQ(manager(), receive_transfer_callback);
   EXPECT_EQ(manager(), send_transfer_callback);
@@ -221,8 +229,8 @@ TEST_F(NearbyNotificationManagerTest, ShowProgress_UpdatesProgress) {
   EXPECT_EQ(100.0 * progress, notification.progress());
 }
 
-TEST_P(NearbyNotificationManagerProgressNotificationTest, Test) {
-  const ProgressNotificationTestParamInternal& param = std::get<0>(GetParam());
+TEST_P(NearbyNotificationManagerAttachmentsTest, ShowProgress) {
+  const AttachmentsTestParamInternal& param = std::get<0>(GetParam());
   bool is_incoming = std::get<1>(GetParam());
 
   std::string device_name = "device";
@@ -256,21 +264,98 @@ TEST_P(NearbyNotificationManagerProgressNotificationTest, Test) {
   EXPECT_EQ(expected, notification.title());
 }
 
+TEST_P(NearbyNotificationManagerAttachmentsTest, ShowSuccess) {
+  const AttachmentsTestParamInternal& param = std::get<0>(GetParam());
+  bool is_incoming = std::get<1>(GetParam());
+
+  std::string device_name = "device";
+  ShareTarget share_target;
+  share_target.device_name = device_name;
+  share_target.is_incoming = is_incoming;
+
+  for (TextAttachment::Type type : param.text_attachments)
+    share_target.text_attachments.push_back(CreateTextAttachment(type));
+
+  for (FileAttachment::Type type : param.file_attachments)
+    share_target.file_attachments.push_back(CreateFileAttachment(type));
+
+  manager()->ShowSuccess(share_target);
+
+  int expected_resource_id = is_incoming
+                                 ? IDS_NEARBY_NOTIFICATION_RECEIVE_SUCCESS_TITLE
+                                 : IDS_NEARBY_NOTIFICATION_SEND_SUCCESS_TITLE;
+  size_t total = param.text_attachments.size() + param.file_attachments.size();
+  base::string16 expected = l10n_util::GetStringFUTF16(
+      expected_resource_id,
+      l10n_util::GetPluralStringFUTF16(param.expected_resource_id, total),
+      base::ASCIIToUTF16(device_name));
+
+  std::vector<message_center::Notification> notifications =
+      GetDisplayedNotifications();
+  ASSERT_EQ(1u, notifications.size());
+
+  const message_center::Notification& notification = notifications[0];
+  EXPECT_EQ(expected, notification.title());
+}
+
+TEST_P(NearbyNotificationManagerAttachmentsTest, ShowFailure) {
+  const AttachmentsTestParamInternal& param = std::get<0>(GetParam());
+  bool is_incoming = std::get<1>(GetParam());
+
+  std::string device_name = "device";
+  ShareTarget share_target;
+  share_target.device_name = device_name;
+  share_target.is_incoming = is_incoming;
+
+  for (TextAttachment::Type type : param.text_attachments)
+    share_target.text_attachments.push_back(CreateTextAttachment(type));
+
+  for (FileAttachment::Type type : param.file_attachments)
+    share_target.file_attachments.push_back(CreateFileAttachment(type));
+
+  manager()->ShowFailure(share_target);
+
+  int expected_resource_id = is_incoming
+                                 ? IDS_NEARBY_NOTIFICATION_RECEIVE_FAILURE_TITLE
+                                 : IDS_NEARBY_NOTIFICATION_SEND_FAILURE_TITLE;
+  size_t total = param.text_attachments.size() + param.file_attachments.size();
+  base::string16 expected = l10n_util::GetStringFUTF16(
+      expected_resource_id,
+      l10n_util::GetPluralStringFUTF16(param.expected_resource_id, total),
+      base::ASCIIToUTF16(device_name));
+
+  std::vector<message_center::Notification> notifications =
+      GetDisplayedNotifications();
+  ASSERT_EQ(1u, notifications.size());
+
+  const message_center::Notification& notification = notifications[0];
+  EXPECT_EQ(expected, notification.title());
+}
+
 INSTANTIATE_TEST_SUITE_P(
-    NearbyNotificationManagerProgressNotificationTest,
-    NearbyNotificationManagerProgressNotificationTest,
-    testing::Combine(testing::ValuesIn(kProgressNotificationTestParams),
+    NearbyNotificationManagerAttachmentsTest,
+    NearbyNotificationManagerAttachmentsTest,
+    testing::Combine(testing::ValuesIn(kAttachmentsTestParams),
                      testing::Bool()));
 
 TEST_P(NearbyNotificationManagerConnectionRequestTest,
        ShowConnectionRequest_ShowsNotification) {
+  TransferMetadata::Status status = std::get<0>(GetParam());
+  bool with_token = std::get<1>(GetParam());
+
   std::string device_name = "device";
+  std::string token = "3141";
+
   ShareTarget share_target;
   share_target.device_name = device_name;
   share_target.file_attachments.push_back(
       CreateFileAttachment(FileAttachment::Type::kImage));
-  TransferMetadata transfer_metadata =
-      TransferMetadataBuilder().set_status(GetParam()).build();
+
+  TransferMetadataBuilder transfer_metadata_builder;
+  transfer_metadata_builder.set_status(status);
+  if (with_token)
+    transfer_metadata_builder.set_token(token);
+  TransferMetadata transfer_metadata = transfer_metadata_builder.build();
 
   manager()->ShowConnectionRequest(share_target, transfer_metadata);
 
@@ -287,7 +372,13 @@ TEST_P(NearbyNotificationManagerConnectionRequestTest,
       IDS_NEARBY_NOTIFICATION_CONNECTION_REQUEST_MESSAGE,
       base::ASCIIToUTF16(device_name),
       l10n_util::GetPluralStringFUTF16(IDS_NEARBY_FILE_ATTACHMENTS_IMAGES, 1));
-  // TODO(crbug.com/1102348): Verify |transfer_metadata.token()| if present.
+
+  if (with_token) {
+    expected_message = base::StrCat(
+        {expected_message, base::UTF8ToUTF16("\n"),
+         l10n_util::GetStringFUTF16(IDS_NEARBY_SECURE_CONNECTION_ID,
+                                    base::UTF8ToUTF16(token))});
+  }
 
   EXPECT_EQ(message_center::NOTIFICATION_TYPE_SIMPLE, notification.type());
   EXPECT_EQ(expected_title, notification.title());
@@ -301,7 +392,7 @@ TEST_P(NearbyNotificationManagerConnectionRequestTest,
             notification.display_source());
 
   std::vector<base::string16> expected_button_titles;
-  if (GetParam() == TransferMetadata::Status::kAwaitingLocalConfirmation) {
+  if (status == TransferMetadata::Status::kAwaitingLocalConfirmation) {
     expected_button_titles.push_back(
         l10n_util::GetStringUTF16(IDS_NEARBY_NOTIFICATION_RECEIVE_ACTION));
   }
@@ -319,8 +410,10 @@ TEST_P(NearbyNotificationManagerConnectionRequestTest,
 INSTANTIATE_TEST_SUITE_P(
     NearbyNotificationManagerConnectionRequestTest,
     NearbyNotificationManagerConnectionRequestTest,
-    testing::Values(TransferMetadata::Status::kAwaitingLocalConfirmation,
-                    TransferMetadata::Status::kAwaitingRemoteAcceptance));
+    testing::Combine(
+        testing::Values(TransferMetadata::Status::kAwaitingLocalConfirmation,
+                        TransferMetadata::Status::kAwaitingRemoteAcceptance),
+        testing::Bool()));
 
 TEST_F(NearbyNotificationManagerTest, ShowOnboarding_ShowsNotification) {
   manager()->ShowOnboarding();
@@ -348,12 +441,44 @@ TEST_F(NearbyNotificationManagerTest, ShowOnboarding_ShowsNotification) {
 
 TEST_F(NearbyNotificationManagerTest, ShowSuccess_ShowsNotification) {
   manager()->ShowSuccess(ShareTarget());
-  // TODO(crbug.com/1102348): Verify success notification.
+
+  std::vector<message_center::Notification> notifications =
+      GetDisplayedNotifications();
+  ASSERT_EQ(1u, notifications.size());
+
+  const message_center::Notification& notification = notifications[0];
+  EXPECT_EQ(message_center::NOTIFICATION_TYPE_SIMPLE, notification.type());
+
+  EXPECT_EQ(base::string16(), notification.message());
+  EXPECT_TRUE(notification.icon().IsEmpty());
+  EXPECT_EQ(GURL(), notification.origin_url());
+  EXPECT_FALSE(notification.never_timeout());
+  EXPECT_FALSE(notification.renotify());
+  EXPECT_EQ(&kNearbyShareIcon, &notification.vector_small_image());
+  EXPECT_EQ(l10n_util::GetStringUTF16(IDS_NEARBY_NOTIFICATION_SOURCE),
+            notification.display_source());
+  EXPECT_EQ(0u, notification.buttons().size());
 }
 
 TEST_F(NearbyNotificationManagerTest, ShowFailure_ShowsNotification) {
   manager()->ShowFailure(ShareTarget());
-  // TODO(crbug.com/1102348): Verify failure notification.
+
+  std::vector<message_center::Notification> notifications =
+      GetDisplayedNotifications();
+  ASSERT_EQ(1u, notifications.size());
+
+  const message_center::Notification& notification = notifications[0];
+  EXPECT_EQ(message_center::NOTIFICATION_TYPE_SIMPLE, notification.type());
+
+  EXPECT_EQ(base::string16(), notification.message());
+  EXPECT_TRUE(notification.icon().IsEmpty());
+  EXPECT_EQ(GURL(), notification.origin_url());
+  EXPECT_FALSE(notification.never_timeout());
+  EXPECT_FALSE(notification.renotify());
+  EXPECT_EQ(&kNearbyShareIcon, &notification.vector_small_image());
+  EXPECT_EQ(l10n_util::GetStringUTF16(IDS_NEARBY_NOTIFICATION_SOURCE),
+            notification.display_source());
+  EXPECT_EQ(0u, notification.buttons().size());
 }
 
 TEST_F(NearbyNotificationManagerTest,

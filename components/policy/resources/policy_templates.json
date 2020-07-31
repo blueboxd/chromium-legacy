@@ -21136,7 +21136,6 @@
       'label': '''Set memory limit for Chrome instances''',
     },
     {
-      # TODO(https://crbug.com/1012400): Remove this policy in M86.
       'id': 626,
       'name': 'TLS13HardeningForLocalAnchorsEnabled',
       'owners': ['file://net/ssl/OWNERS'],
@@ -21149,7 +21148,7 @@
         'dynamic_refresh': True,
         'per_profile': True,
       },
-      'supported_on': ['chrome.*:79-', 'chrome_os:79-', 'android:79-'],
+      'supported_on': ['chrome.*:79-85', 'chrome_os:79-85', 'android:79-85'],
       'caption': '''Enable a TLS 1.3 security feature for local trust anchors.''',
       'tags': ['system-security'],
       'desc': '''This policy controls a security feature in TLS 1.3 which protects connections against downgrade attacks. It is backwards-compatible and will not affect connections to compliant TLS 1.2 servers or proxies. However, older versions of some TLS-intercepting proxies have an implementation flaw which causes them to be incompatible.
@@ -21158,7 +21157,7 @@
 
       If this policy is set to False, <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> will disable these security protections for connections authenticated with locally-installed CA certificates. These protections are always enabled for connections authenticated with publicly-trusted CA certificates.
 
-      The default value for this policy was changed in <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> 81 from false to true. Affected proxies are expected to fail connections with an error code of ERR_TLS13_DOWNGRADE_DETECTED. Administrators who need more time to upgrade affected proxies may use this policy to temporarily disable this security feature. This policy will be removed after version 85.
+      The default value for this policy was changed in <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> 81 from false to true. Affected proxies are expected to fail connections with an error code of ERR_TLS13_DOWNGRADE_DETECTED. Administrators who need more time to upgrade affected proxies may use this policy to temporarily disable this security feature. This policy was removed in version 86.
       '''
     },
     {
@@ -22380,6 +22379,34 @@ If you disable this policy, web page scrolling to specific text fragments via UR
           ''',
     },
     {
+      'name': 'BackForwardCacheEnabled',
+      'owners': ['chrome-bfcache@google.com'],
+      'type': 'main',
+      'schema': { 'type': 'boolean' },
+      'supported_on': ['android:86-'],
+      'features': {
+        'per_profile': False,
+        'dynamic_refresh': True,
+      },
+      'example_value': True,
+      'id': 758,
+      'caption': '''Control the <ph name="PRODUCT_NAME">BackForwardCache</ph> feature.''',
+      'tags': [],
+      'desc': '''When enabled the <ph name="PRODUCT_NAME">BackForwardCache</ph> feature causes web pages to be preserved in its current state (document tree, script, etc.) into the back-forward cache when navigated away from the page.
+          If we navigated back to the page, the page will be restored from the back-forward cache, showing it in the state it was in when cached before.
+
+          This feature might break some websites that does not expect itself to
+          get cached, particularly websites that depend on unload handlers being
+          fired when navigated away from the page, as the unload event will
+          not be dispatched when navigated away from a page and it gets saved
+          in the back-forward cache.
+
+          If this policy is set to enabled or not set, the <ph name="PRODUCT_NAME">BackForwardCache</ph> feature will be enabled.
+
+          If this policy is set to disabled then the feature will be force disabled.
+          ''',
+    },
+    {
       'name': 'PinUnlockAutosubmitEnabled',
       'owners': ['rrsilva@google.com', 'cros-oac@google.com'],
       'future': True,
@@ -23417,6 +23444,6 @@ The recommended way to configure policy on Windows is via GPO, although provisio
   ],
   'placeholders': [],
   'deleted_policy_ids': [412, 476, 546, 562, 569, 578],
-  'highest_id_currently_used': 757,
+  'highest_id_currently_used': 758,
   'highest_atomic_group_id_currently_used': 39
 }

@@ -14,7 +14,6 @@
 <translation id="1084365883616172403">Completouse a publicación de Facebook.</translation>
 <translation id="1103523840287552314">Traducir sempre o <ph name="LANGUAGE" /></translation>
 <translation id="1104948393051856124">Aceptar e continuar</translation>
-<translation id="1105578556867525047">Cambiar contrasinal no sitio web</translation>
 <translation id="1112015203684611006">Erro impresión</translation>
 <translation id="1125564390852150847">Crear pestana nova</translation>
 <translation id="1145536944570833626">Elimina os datos existentes.</translation>
@@ -246,7 +245,6 @@ Co modo de incógnito activado, non poden utilizalas para ver a túa actividade 
 <translation id="3783017676699494206">Gardar imaxe</translation>
 <translation id="3789841737615482174">Instalar</translation>
 <translation id="3803696231112616155">Ofrecer traducir este sitio</translation>
-<translation id="3836313059960742452">{COUNT,plural, =0{Non hai ningún contrasinal vulnerado}=1{Hai {COUNT} contrasinal vulnerado}other{Hai {COUNT} contrasinais vulnerados}}</translation>
 <translation id="385051799172605136">Atrás</translation>
 <translation id="3892144330757387737">Aquí atoparás o teu historial</translation>
 <translation id="3897092660631435901">Menú</translation>
@@ -333,6 +331,7 @@ Para cambiar esta opción de configuración, deberás <ph name="BEGIN_LINK" />re
 <translation id="4901778704868714008">Gardar…</translation>
 <translation id="4904877109095351937">Marcar como lidos</translation>
 <translation id="4930268273022498155">Elimina os datos existentes. Podes recuperalos volvendo cambiar á conta <ph name="USER_EMAIL1" />.</translation>
+<translation id="4930714375720679147">Activar</translation>
 <translation id="4941089862236492464">Produciuse un problema ao compartir o teu elemento.</translation>
 <translation id="4944543191714094452">Buscar o contido na páxina…</translation>
 <translation id="4945756290001680296">Acceder á configuración do contrasinal</translation>
@@ -611,6 +610,7 @@ Tamén poden utilizalas para ver a túa actividade de navegación en varios siti
 <translation id="8073670137947914548">A descarga finalizou</translation>
 <translation id="8073872304774253879">Mellorar as buscas e a navegación</translation>
 <translation id="8076014560081431679">As opcións de configuración dos sitios gardados non se eliminarán e quizais se reflictan os teus hábitos de navegación. <ph name="BEGIN_LINK" />Máis información<ph name="END_LINK" /></translation>
+<translation id="8105368624971345109">Desactivar</translation>
 <translation id="8114753159095730575">Podes descargar ficheiros. Tes opcións dispoñibles na parte inferior da pantalla.</translation>
 <translation id="8131740175452115882">Confirmar</translation>
 <translation id="8197543752516192074">Traducir páxina</translation>

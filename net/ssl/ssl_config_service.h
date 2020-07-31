@@ -43,10 +43,6 @@ struct NET_EXPORT SSLContextConfig {
   // Ex: To disable TLS_RSA_WITH_RC4_128_MD5, specify 0x0004, while to
   // disable TLS_ECDH_ECDSA_WITH_RC4_128_SHA, specify 0xC002.
   std::vector<uint16_t> disabled_cipher_suites;
-
-  // If true, enables TLS 1.3 downgrade hardening for connections using
-  // local trust anchors. (Hardening for known roots is always enabled.)
-  bool tls13_hardening_for_local_anchors_enabled = true;
 };
 
 // The interface for retrieving global SSL configuration.  This interface

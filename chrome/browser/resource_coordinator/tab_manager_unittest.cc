@@ -29,8 +29,6 @@
 #include "chrome/browser/metrics/desktop_session_duration/desktop_session_duration_tracker.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/resource_coordinator/background_tab_navigation_throttle.h"
-#include "chrome/browser/resource_coordinator/local_site_characteristics_data_unittest_utils.h"
-#include "chrome/browser/resource_coordinator/local_site_characteristics_webcontents_observer.h"
 #include "chrome/browser/resource_coordinator/tab_helper.h"
 #include "chrome/browser/resource_coordinator/tab_lifecycle_unit.h"
 #include "chrome/browser/resource_coordinator/tab_lifecycle_unit_external.h"
@@ -46,6 +44,7 @@
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/browser/ui/tabs/test_tab_strip_model_delegate.h"
 #include "chrome/common/url_constants.h"
+#include "chrome/test/base/chrome_render_view_host_test_harness.h"
 #include "chrome/test/base/test_browser_window.h"
 #include "chrome/test/base/testing_profile.h"
 #include "components/variations/variations_associated_data.h"
@@ -110,7 +109,7 @@ class FakeOfflineNetworkChangeNotifier : public net::NetworkChangeNotifier {
 
 }  // namespace
 
-class TabManagerTest : public testing::ChromeTestHarnessWithLocalDB {
+class TabManagerTest : public ChromeRenderViewHostTestHarness {
  public:
   TabManagerTest()
       : scoped_context_(
@@ -133,14 +132,11 @@ class TabManagerTest : public testing::ChromeTestHarnessWithLocalDB {
     base::RepeatingClosure run_loop_cb = base::BindRepeating(
         &base::TestMockTimeTaskRunner::RunUntilIdle, task_runner_);
 
-    testing::WaitForLocalDBEntryToBeInitialized(web_contents.get(),
-                                                run_loop_cb);
-    testing::ExpireLocalDBObservationWindows(web_contents.get());
     return web_contents;
   }
 
   void SetUp() override {
-    ChromeTestHarnessWithLocalDB::SetUp();
+    ChromeRenderViewHostTestHarness::SetUp();
     tab_manager_ = g_browser_process->GetTabManager();
   }
 
@@ -164,7 +160,7 @@ class TabManagerTest : public testing::ChromeTestHarnessWithLocalDB {
     nav_handle3_.reset();
 
     // WebContents must be deleted before
-    // ChromeTestHarnessWithLocalDB::TearDown() deletes the
+    // ChromeRenderViewHostTestHarness::TearDown() deletes the
     // RenderProcessHost.
     contents1_.reset();
     contents2_.reset();
@@ -176,7 +172,7 @@ class TabManagerTest : public testing::ChromeTestHarnessWithLocalDB {
 
     task_runner_->RunUntilIdle();
     scoped_context_.reset();
-    ChromeTestHarnessWithLocalDB::TearDown();
+    ChromeRenderViewHostTestHarness::TearDown();
   }
 
   void PrepareTabs(const char* url1 = kTestUrl,

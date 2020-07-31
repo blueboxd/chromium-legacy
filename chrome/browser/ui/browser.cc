@@ -1437,9 +1437,12 @@ bool Browser::ShouldAllowRunningInsecureContent(
     // Note: this is a browser-side-translation of the call to
     // DidBlockContentType from inside
     // ContentSettingsObserver::allowRunningInsecureContent.
+    // TODO(https://crbug.com/1103176): Plumb the actual frame reference here
+    // (MixedContentNavigationThrottle::ShouldBlockNavigation has
+    // |mixed_content_frame| reference)
     content_settings::TabSpecificContentSettings* tab_settings =
-        content_settings::TabSpecificContentSettings::FromWebContents(
-            web_contents);
+        content_settings::TabSpecificContentSettings::GetForFrame(
+            web_contents->GetMainFrame());
     DCHECK(tab_settings);
     tab_settings->OnContentBlocked(ContentSettingsType::MIXEDSCRIPT);
   }
@@ -2129,9 +2132,10 @@ void Browser::RequestPpapiBrokerPermission(
     return;
   }
 
+  // TODO(https://crbug.com/1103176): Plumb the actual frame reference here
   content_settings::TabSpecificContentSettings* tab_content_settings =
-      content_settings::TabSpecificContentSettings::FromWebContents(
-          web_contents);
+      content_settings::TabSpecificContentSettings::GetForFrame(
+          web_contents->GetMainFrame());
 
   HostContentSettingsMap* content_settings =
       HostContentSettingsMapFactory::GetForProfile(profile);
@@ -2160,7 +2164,9 @@ void Browser::RequestPpapiBrokerPermission(
   base::RecordAction(allowed
                          ? base::UserMetricsAction("PPAPI.BrokerSettingAllow")
                          : base::UserMetricsAction("PPAPI.BrokerSettingDeny"));
-  tab_content_settings->SetPepperBrokerAllowed(allowed);
+  if (tab_content_settings) {
+    tab_content_settings->SetPepperBrokerAllowed(allowed);
+  }
   std::move(callback).Run(allowed);
 #endif
 }

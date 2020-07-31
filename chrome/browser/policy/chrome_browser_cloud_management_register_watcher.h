@@ -14,8 +14,8 @@
 #include "base/optional.h"
 #include "base/run_loop.h"
 #include "base/time/time.h"
-#include "chrome/browser/policy/chrome_browser_cloud_management_controller.h"
 #include "chrome/browser/ui/enterprise_startup_dialog.h"
+#include "components/enterprise/browser/controller/chrome_browser_cloud_management_controller.h"
 
 class ChromeBrowserCloudManagementRegisterWatcherTest;
 

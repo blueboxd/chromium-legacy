@@ -7700,13 +7700,7 @@
   },
 
   "TLS13HardeningForLocalAnchorsEnabled": {
-    "os": ["win", "linux", "mac", "chromeos", "android"],
-    "policy_pref_mapping_test": [
-      {
-        "policies": { "TLS13HardeningForLocalAnchorsEnabled": true },
-        "prefs": { "ssl.tls13_hardening_for_local_anchors": { "local_state": true } }
-      }
-    ]
+    "note": "This policy is retired, see https://crbug.com/1012400."
   },
 
   "CorsMitigationList": {
@@ -7897,6 +7891,20 @@
       {
         "policies": { "DeviceChannelDowngradeBehavior": 0 },
         "prefs": { "cros.system.channelDowngradeBehavior": {} }
+      }
+    ]
+  },
+  "BackForwardCacheEnabled": {
+    "os": ["android"],
+    "policy_pref_mapping_test": [
+      {
+        "policies": { "BackForwardCacheEnabled": true },
+        "prefs": {
+          "policy.back_forward_cache_enabled": {
+            "local_state":  true,
+            "value": true
+          }
+        }
       }
     ]
   }

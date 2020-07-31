@@ -43,14 +43,14 @@ TestHintsComponentCreator::~TestHintsComponentCreator() {
 optimization_guide::HintsComponentInfo
 TestHintsComponentCreator::CreateHintsComponentInfoWithPageHints(
     optimization_guide::proto::OptimizationType optimization_type,
-    const std::vector<std::string>& page_hint_host_suffixes,
+    const std::vector<std::string>& page_hint_hosts,
     const std::string& page_pattern,
     const std::vector<std::string>& resource_blocking_patterns) {
   optimization_guide::proto::Configuration config;
-  for (const auto& page_hint_site : page_hint_host_suffixes) {
+  for (const auto& page_hint_site : page_hint_hosts) {
     optimization_guide::proto::Hint* hint = config.add_hints();
     hint->set_key(page_hint_site);
-    hint->set_key_representation(optimization_guide::proto::HOST_SUFFIX);
+    hint->set_key_representation(optimization_guide::proto::HOST);
     hint->set_version(GetDefaultHintVersionString());
 
     optimization_guide::proto::PageHint* page_hint = hint->add_page_hints();
@@ -73,14 +73,12 @@ TestHintsComponentCreator::CreateHintsComponentInfoWithPageHints(
   // Always stick something with no hint version in here.
   optimization_guide::proto::Hint* no_version_hint = config.add_hints();
   no_version_hint->set_key("noversion.com");
-  no_version_hint->set_key_representation(
-      optimization_guide::proto::HOST_SUFFIX);
+  no_version_hint->set_key_representation(optimization_guide::proto::HOST);
   no_version_hint->add_page_hints()->set_page_pattern("*");
   // Always stick something with a bad hint version in here.
   optimization_guide::proto::Hint* bad_version_hint = config.add_hints();
   bad_version_hint->set_key("badversion.com");
-  bad_version_hint->set_key_representation(
-      optimization_guide::proto::HOST_SUFFIX);
+  bad_version_hint->set_key_representation(optimization_guide::proto::HOST);
   bad_version_hint->set_version("notaversion");
   bad_version_hint->add_page_hints()->set_page_pattern("*");
 
@@ -90,13 +88,13 @@ TestHintsComponentCreator::CreateHintsComponentInfoWithPageHints(
 optimization_guide::HintsComponentInfo
 TestHintsComponentCreator::CreateHintsComponentInfoWithExperimentalPageHints(
     optimization_guide::proto::OptimizationType optimization_type,
-    const std::vector<std::string>& page_hint_host_suffixes,
+    const std::vector<std::string>& page_hint_hosts,
     const std::vector<std::string>& experimental_resource_patterns) {
   optimization_guide::proto::Configuration config;
-  for (const auto& page_hint_site : page_hint_host_suffixes) {
+  for (const auto& page_hint_site : page_hint_hosts) {
     optimization_guide::proto::Hint* hint = config.add_hints();
     hint->set_key(page_hint_site);
-    hint->set_key_representation(optimization_guide::proto::HOST_SUFFIX);
+    hint->set_key_representation(optimization_guide::proto::HOST);
     hint->set_version(GetDefaultHintVersionString());
 
     optimization_guide::proto::PageHint* page_hint = hint->add_page_hints();
@@ -119,14 +117,12 @@ TestHintsComponentCreator::CreateHintsComponentInfoWithExperimentalPageHints(
   // Always stick something with no hint version in here.
   optimization_guide::proto::Hint* no_version_hint = config.add_hints();
   no_version_hint->set_key("noversion.com");
-  no_version_hint->set_key_representation(
-      optimization_guide::proto::HOST_SUFFIX);
+  no_version_hint->set_key_representation(optimization_guide::proto::HOST);
   no_version_hint->add_page_hints()->set_page_pattern("*");
   // Always stick something with a bad hint version in here.
   optimization_guide::proto::Hint* bad_version_hint = config.add_hints();
   bad_version_hint->set_key("badversion.com");
-  bad_version_hint->set_key_representation(
-      optimization_guide::proto::HOST_SUFFIX);
+  bad_version_hint->set_key_representation(optimization_guide::proto::HOST);
   bad_version_hint->set_version("notaversion");
   bad_version_hint->add_page_hints()->set_page_pattern("*");
 
@@ -136,14 +132,14 @@ TestHintsComponentCreator::CreateHintsComponentInfoWithExperimentalPageHints(
 optimization_guide::HintsComponentInfo
 TestHintsComponentCreator::CreateHintsComponentInfoWithMixPageHints(
     optimization_guide::proto::OptimizationType optimization_type,
-    const std::vector<std::string>& page_hint_host_suffixes,
+    const std::vector<std::string>& page_hint_hosts,
     const std::vector<std::string>& experimental_resource_patterns,
     const std::vector<std::string>& default_resource_patterns) {
   optimization_guide::proto::Configuration config;
-  for (const auto& page_hint_site : page_hint_host_suffixes) {
+  for (const auto& page_hint_site : page_hint_hosts) {
     optimization_guide::proto::Hint* hint = config.add_hints();
     hint->set_key(page_hint_site);
-    hint->set_key_representation(optimization_guide::proto::HOST_SUFFIX);
+    hint->set_key_representation(optimization_guide::proto::HOST);
     hint->set_version(GetDefaultHintVersionString());
 
     optimization_guide::proto::PageHint* page_hint = hint->add_page_hints();
@@ -184,14 +180,12 @@ TestHintsComponentCreator::CreateHintsComponentInfoWithMixPageHints(
   // Always stick something with no hint version in here.
   optimization_guide::proto::Hint* no_version_hint = config.add_hints();
   no_version_hint->set_key("noversion.com");
-  no_version_hint->set_key_representation(
-      optimization_guide::proto::HOST_SUFFIX);
+  no_version_hint->set_key_representation(optimization_guide::proto::HOST);
   no_version_hint->add_page_hints()->set_page_pattern("*");
   // Always stick something with a bad hint version in here.
   optimization_guide::proto::Hint* bad_version_hint = config.add_hints();
   bad_version_hint->set_key("badversion.com");
-  bad_version_hint->set_key_representation(
-      optimization_guide::proto::HOST_SUFFIX);
+  bad_version_hint->set_key_representation(optimization_guide::proto::HOST);
   bad_version_hint->set_version("notaversion");
   bad_version_hint->add_page_hints()->set_page_pattern("*");
 

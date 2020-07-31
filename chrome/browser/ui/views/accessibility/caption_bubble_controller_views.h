@@ -38,6 +38,8 @@ class CaptionBubbleControllerViews : public CaptionBubbleController,
   CaptionBubbleControllerViews& operator=(const CaptionBubbleControllerViews&) =
       delete;
 
+  bool OnSpeechRecognitionReady(content::WebContents* web_contents) override;
+
   // Called when a transcription is received from the service. Returns whether
   // the transcription result was set on the caption bubble successfully.
   // Transcriptions will halt if this returns false.

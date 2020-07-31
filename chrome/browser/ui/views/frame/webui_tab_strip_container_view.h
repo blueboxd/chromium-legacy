@@ -38,6 +38,7 @@ class WebView;
 }  // namespace views
 
 class Browser;
+class BrowserView;
 
 class WebUITabStripContainerView : public TabStripUIEmbedder,
                                    public gfx::AnimationDelegate,
@@ -45,7 +46,7 @@ class WebUITabStripContainerView : public TabStripUIEmbedder,
                                    public views::ButtonListener,
                                    public views::ViewObserver {
  public:
-  WebUITabStripContainerView(Browser* browser,
+  WebUITabStripContainerView(BrowserView* browser_view,
                              views::View* tab_contents_container,
                              views::View* drag_handle,
                              views::View* omnibox);
@@ -65,10 +66,6 @@ class WebUITabStripContainerView : public TabStripUIEmbedder,
 
   // Control button. Must only be called once.
   std::unique_ptr<views::View> CreateTabCounter();
-
-  // Should be called on BrowserView re-layout. If IPH is showing,
-  // updates the promo for the new tab counter location.
-  void UpdatePromoBubbleBounds();
 
   // Clicking the tab counter button opens and closes the container with
   // an animation, so it is unsuitable for an interactive test. This

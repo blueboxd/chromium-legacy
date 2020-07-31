@@ -355,8 +355,7 @@ int AdjustedFocusRingOffset(int offset) {
 
 }  // namespace
 
-int GraphicsContext::FocusRingOutsetExtent(int offset,
-                                           int width) {
+int GraphicsContext::FocusRingOutsetExtent(int offset, int width) {
   // Unlike normal outlines (whole width is outside of the offset), focus
   // rings can be drawn with the center of the path aligned with the offset, so
   // only half of the width is outside of the offset.
@@ -1268,13 +1267,7 @@ void GraphicsContext::Scale(float x, float y) {
 
 void GraphicsContext::SetURLForRect(const KURL& link,
                                     const IntRect& dest_rect) {
-  DCHECK(canvas_ || tracker_);
-
-  // Intercept URL rects when painting previews.
-  if (IsPaintingPreview() && tracker_) {
-    tracker_->AnnotateLink(GURL(link), dest_rect);
-    return;
-  }
+  DCHECK(canvas_);
 
   sk_sp<SkData> url(SkData::MakeWithCString(link.GetString().Utf8().c_str()));
   canvas_->Annotate(cc::PaintCanvas::AnnotationType::URL, dest_rect,
@@ -1283,13 +1276,7 @@ void GraphicsContext::SetURLForRect(const KURL& link,
 
 void GraphicsContext::SetURLFragmentForRect(const String& dest_name,
                                             const IntRect& rect) {
-  DCHECK(canvas_ || tracker_);
-
-  // Intercept URL rects when painting previews.
-  if (IsPaintingPreview() && tracker_) {
-    tracker_->AnnotateLink(GURL(dest_name.Utf8()), rect);
-    return;
-  }
+  DCHECK(canvas_);
 
   sk_sp<SkData> sk_dest_name(SkData::MakeWithCString(dest_name.Utf8().c_str()));
   canvas_->Annotate(cc::PaintCanvas::AnnotationType::LINK_TO_DESTINATION, rect,
@@ -1299,6 +1286,10 @@ void GraphicsContext::SetURLFragmentForRect(const String& dest_name,
 void GraphicsContext::SetURLDestinationLocation(const String& name,
                                                 const IntPoint& location) {
   DCHECK(canvas_);
+
+  // Paint previews don't make use of linked destinations.
+  if (tracker_)
+    return;
 
   SkRect rect = SkRect::MakeXYWH(location.X(), location.Y(), 0, 0);
   sk_sp<SkData> sk_name(SkData::MakeWithCString(name.Utf8().c_str()));

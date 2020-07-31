@@ -72,7 +72,16 @@ export class ContentController {
   /** @abstract */
   rotateCounterclockwise() {}
 
-  /** @abstract */
+  /**
+   * @param {boolean} displayAnnotations
+   * @abstract
+   */
+  setDisplayAnnotations(displayAnnotations) {}
+
+  /**
+   * @param {boolean} enableTwoUpView
+   * @abstract
+   */
   setTwoUpView(enableTwoUpView) {}
 
   /** Triggers printing of the current document. */
@@ -261,6 +270,14 @@ export class PluginController extends ContentController {
   /** @override */
   rotateCounterclockwise() {
     this.postMessage_({type: 'rotateCounterclockwise'});
+  }
+
+  /** @override */
+  setDisplayAnnotations(displayAnnotations) {
+    this.postMessage_({
+      type: 'displayAnnotations',
+      display: displayAnnotations,
+    });
   }
 
   /** @override */

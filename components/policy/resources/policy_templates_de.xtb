@@ -638,26 +638,6 @@ Wenn diese Richtlinie verwendet wird, werden dem Nutzer alle Drucker mit Ausnahm
 <translation id="2082205219176343977">Konfigurieren Sie die für das Gerät erforderliche Mindestversion von Chrome.</translation>
 <translation id="209586405398070749">Stabiler Kanal</translation>
 <translation id="2098658257603918882">Berichte mit Nutzungs- und Absturzdaten erstellen</translation>
-<translation id="210034539800365161">Mit dieser Richtlinie wird die Anforderung an die zulässige Mindestversion von <ph name="PRODUCT_OS_NAME" /> konfiguriert.
-
-      Wenn diese Richtlinie auf eine nicht leere Liste festgelegt wird, passiert Folgendes:
-Wenn der Wert für <ph name="CHROMEOS_VERSION_PROPERTY_NAME" /> bei keinem Eintrag höher als die aktuelle Version auf dem Gerät ist, gelten keine Einschränkungen und bestehende Einschränkungen werden aufgehoben.
-      Wenn der Wert für <ph name="CHROMEOS_VERSION_PROPERTY_NAME" /> bei mindestens einem Eintrag höher als die aktuelle Version ist, wird der stärkste Eintrag ausgewählt, dessen Version der aktuellen Version am nächsten kommt.
-      Bei einem Konflikt hat der Eintrag mit dem niedrigeren Wert für <ph name="WARNING_PERIOD_PROPERTY_NAME" /> oder <ph name="AUE_WARNING_PERIOD_PROPERTY_NAME" /> Vorrang und die Richtlinie wird mit diesem Eintrag angewendet.
-
-      Wenn die aktuelle Version während einer Nutzersitzung durch eine neue abgelöst wird, das aktuelle Netzwerk automatische Updates aber nicht zulässt, erscheint auf dem Bildschirm eine Benachrichtigung, dass das Gerät innerhalb der angezeigten <ph name="WARNING_PERIOD_PROPERTY_NAME" />-Frist aktualisiert werden muss.
-      Es werden keine Benachrichtigungen angezeigt, wenn das aktuelle Netzwerk automatische Updates zulässt. Das Gerät muss innerhalb der <ph name="WARNING_PERIOD_PROPERTY_NAME" />-Frist aktualisiert werden.
-      Die <ph name="WARNING_PERIOD_PROPERTY_NAME" />-Frist beginnt mit dem Anwenden der Richtlinie.
-      Wenn das Gerät bis zum Ablauf der <ph name="WARNING_PERIOD_PROPERTY_NAME" />-Frist nicht aktualisiert wird, wird der Nutzer von der Sitzung abgemeldet.
-      Wenn die <ph name="WARNING_PERIOD_PROPERTY_NAME" />-Frist abgelaufen ist und bei der Anmeldung festgestellt wird, dass die aktuelle Version veraltet ist, muss der Nutzer das Gerät zuerst aktualisieren, bevor er sich anmelden kann.
-
-      Wenn die aktuelle Version während einer Nutzersitzung durch eine neue abgelöst wird und das Ablaufdatum für die automatische Aktualisierung erreicht wurde, erscheint auf dem Bildschirm eine Benachrichtigung, dass das Gerät innerhalb der <ph name="AUE_WARNING_PERIOD_PROPERTY_NAME" />-Frist zurückgegeben werden muss.
-      Wenn die <ph name="AUE_WARNING_PERIOD_PROPERTY_NAME" />-Frist abgelaufen ist und bei der Anmeldung festgestellt wird, dass das Ablaufdatum für die automatische Aktualisierung erreicht ist, können sich auf dem Gerät keine Nutzer mehr anmelden.
-
-      Wenn diese Richtlinie nicht konfiguriert oder eine leere Liste festgelegt ist, gelten keine Einschränkungen, bestehende Einschränkungen werden aufgehoben und der Nutzer kann sich unabhängig von der <ph name="PRODUCT_OS_NAME" />-Version anmelden.
-
-      Mit <ph name="CHROMEOS_VERSION_PROPERTY_NAME" /> ist entweder eine exakte Versionsangabe wie "13305.0.0" oder ein Versionspräfix wie "13305" gemeint.
-      Die Werte für <ph name="WARNING_PERIOD_PROPERTY_NAME" /> und <ph name="AUE_WARNING_PERIOD_PROPERTY_NAME" /> sind optional und werden in Tagen angegeben. Der Standardwert liegt bei 0 Tagen.</translation>
 <translation id="2104418465060359056">Daten von Erweiterungen und Plug-ins erfassen</translation>
 <translation id="2106627642643925514">Hiermit wird der Standardmodus für den PIN-Druck überschrieben. Wenn der Modus nicht verfügbar ist, wird diese Richtlinie ignoriert.</translation>
 <translation id="2107601598727098402">
@@ -4599,13 +4579,6 @@ Es findet keine Prüfung auf gefährliche Ressourcen wie Phishing, Malware oder 
 
       Sie können die Such-URL von Google so angeben: <ph name="GOOGLE_SEARCH_URL" />.</translation>
 <translation id="7895553628261067384">Remotezugriff</translation>
-<translation id="7898879331506985900">Diese Richtlinie kann nur übergangsweise verwendet werden und wird in M86 entfernt.
-
-      Die standardmäßige Verweisrichtlinie in Chrome wird verschärft. Hierzu wird der Standardwert von "no-referrer-when-downgrade" zum sichereren Wert "strict-origin-when-cross-origin" geändert. Die Umstellung erfolgt graduell und soll mit M80 (stabil) abgeschlossen sein.
-
-      Bis zur Einführung hat diese Richtlinie keine Auswirkungen. Wird sie nach der Einführung aktiviert, wird die standardmäßige Verweisrichtlinie in Chrome auf den Wert aus den Versionen vor M80 zurückgesetzt, also auf "no-referrer-when-downgrade".
-
-      Diese Richtlinie ist standardmäßig deaktiviert.</translation>
 <translation id="7902040092815978832">Numerische Tastatur für Passwort anzeigen</translation>
 <translation id="7912255076272890813">Zulässige App- bzw. Erweiterungstypen konfigurieren</translation>
 <translation id="7922358664346625612">Letzten in Chrome geöffneten Tab beibehalten.</translation>

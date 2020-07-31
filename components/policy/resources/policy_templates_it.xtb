@@ -631,26 +631,6 @@ Questa norma viene rispettata soltanto se la norma "DefaultSearchProviderEnabled
 <translation id="2082205219176343977">Configura la versione minima di Chrome consentita per il dispositivo.</translation>
 <translation id="209586405398070749">Canale stabile</translation>
 <translation id="2098658257603918882">Attiva rapporti sull'utilizzo e sui dati relativi agli arresti anomali</translation>
-<translation id="210034539800365161">Consente di configurare il requisito della versione minima consentita di <ph name="PRODUCT_OS_NAME" />.
-
-      Se per questo criterio viene impostato un elenco non vuoto:
-      Se nessuna voce ha un valore <ph name="CHROMEOS_VERSION_PROPERTY_NAME" /> superiore alla versione corrente del dispositivo, non vengono applicate limitazioni e le limitazioni esistenti vengono revocate.
-      Se almeno una voce ha un valore <ph name="CHROMEOS_VERSION_PROPERTY_NAME" /> superiore alla versione corrente, viene scelta la voce più forte la cui versione è superiore e più simile a quella corrente.
-      In caso di conflitto, si preferisce la voce con il valore <ph name="WARNING_PERIOD_PROPERTY_NAME" /> o <ph name="AUE_WARNING_PERIOD_PROPERTY_NAME" /> inferiore e il criterio viene applicato usando tale voce.
-
-      Se la versione corrente diventa obsoleta durante la sessione utente e la rete corrente limita gli aggiornamenti automatici, sullo schermo viene mostrata una notifica che invita l'utente ad aggiornare il dispositivo entro il periodo indicato nel valore <ph name="WARNING_PERIOD_PROPERTY_NAME" /> mostrato nella notifica.
-      Se la rete corrente consente gli aggiornamenti automatici, non viene mostrata alcuna notifica e il dispositivo deve essere aggiornato entro il periodo indicato nel valore <ph name="WARNING_PERIOD_PROPERTY_NAME" />.
-      Il periodo indicato nel valore <ph name="WARNING_PERIOD_PROPERTY_NAME" /> parte dal momento in cui viene applicato il criterio.
-      Se il dispositivo non viene aggiornato entro la scadenza del periodo indicato nel valore <ph name="WARNING_PERIOD_PROPERTY_NAME" />, l'utente viene disconnesso dalla sessione.
-      Se la versione corrente risulta obsoleta al momento dell'accesso con periodo <ph name="WARNING_PERIOD_PROPERTY_NAME" /> scaduto, all'utente viene richiesto di aggiornare il dispositivo prima di accedere.
-
-      Se la versione corrente diventa obsoleta durante la sessione utente e il dispositivo ha raggiunto la scadenza dell'aggiornamento automatico, sullo schermo viene mostrata una notifica che invita l'utente a restituire il dispositivo entro il periodo indicato nel valore <ph name="AUE_WARNING_PERIOD_PROPERTY_NAME" />.
-      Se risulta che il dispositivo ha raggiunto la scadenza dell'aggiornamento automatico al momento dell'accesso con periodo <ph name="AUE_WARNING_PERIOD_PROPERTY_NAME" /> scaduto, il dispositivo viene bloccato e nessun utente può eseguire l'accesso.
-
-      Se questo criterio non viene impostato o viene lasciato vuoto, non vengono applicate limitazioni, vengono revocate quelle esistenti e l'utente può accedere qualunque sia la versione di <ph name="PRODUCT_OS_NAME" />.
-
-      Il valore <ph name="CHROMEOS_VERSION_PROPERTY_NAME" /> può essere una versione esatta, ad esempio "13305.0.0", oppure un prefisso di versione, ad esempio "13305".
-      I valori <ph name="WARNING_PERIOD_PROPERTY_NAME" /> e <ph name="AUE_WARNING_PERIOD_PROPERTY_NAME" /> sono facoltativi e specificati in numero di giorni. Il valore predefinito è 0 giorni, a indicare nessun periodo di avviso.</translation>
 <translation id="2104418465060359056">Segnala i dati delle estensioni e dei plug-in</translation>
 <translation id="2106627642643925514">Consente di sostituire la modalità di stampa PIN predefinita. Se la modalità non è disponibile, questa norma viene ignorata.</translation>
 <translation id="2107601598727098402">
@@ -4594,13 +4574,6 @@ Per informazioni dettagliate sui pattern <ph name="URL_LABEL" /> validi, visita 
 
       Puoi specificare l'URL di ricerca di Google come: <ph name="GOOGLE_SEARCH_URL" />.</translation>
 <translation id="7895553628261067384">Accesso remoto</translation>
-<translation id="7898879331506985900">Questo criterio aziendale è finalizzato al periodo di transizione e verrà rimosso nella versione M86.
-
-      Il criterio relativo al referrer predefinito di Chrome sarà rafforzato passando dal relativo valore corrente no-referrer-when-downgrade al più sicuro strict-origin-when-cross-origin tramite un rilascio graduale della release stabile di M80.
-
-      Prima del lancio, questo criterio aziendale non avrà alcun effetto. Dopo il lancio, una volta attivato questo criterio aziendale, il criterio relativo al referrer predefinito di Chrome verrà impostato sul suo valore della pre-release M80, no-referrer-when-downgrade.
-
-      Questo criterio aziendale è disattivato per impostazione predefinita.</translation>
 <translation id="7902040092815978832">Mostra la tastiera numerica per la password</translation>
 <translation id="7912255076272890813">Configura tipi di app/estensioni consentiti</translation>
 <translation id="7922358664346625612">Mantieni l'ultima scheda aperta in Chrome.</translation>
@@ -5292,13 +5265,13 @@ Se la norma non viene impostata o viene impostata su false, la posizione non vie
       Se questo criterio viene impostato su False o non viene impostato, gli elementi di controllo modulo verranno attivati come nel lancio delle versioni M81, M82 e M83.
 
       Questo criterio verrà rimosso nelle versioni successive alla versione 84 di Chrome.</translation>
-<translation id="8937562488500723400">Controlla se l'approvazione della norma KDC viene rispettata per decidere se delegare i ticket <ph name="KERBEROS" />.
+<translation id="8937562488500723400">Controlla se l'approvazione del criterio KDC viene rispettata per decidere se delegare i ticket <ph name="KERBEROS" />.
 
-          Se questo criterio viene impostato su vero, l'autenticazione HTTP rispetta l'approvazione da parte della norma KDC, ad esempio Chrome delega solo le credenziali se il KDC imposta <ph name="OK_AS_DELEGATE" /> su un ticket di servizio. Per ulteriori informazioni, consulta https://tools.ietf.org/html/rfc5896.html. Il servizio deve corrispondere anche al criterio "AuthNegotiateDelegateAllowlist".
+          Se questo criterio viene impostato su vero, l'autenticazione HTTP rispetta l'approvazione da parte del criterio KDC, ad esempio Chrome delega solo le credenziali se il KDC imposta <ph name="OK_AS_DELEGATE" /> su un ticket di servizio. Per ulteriori informazioni, consulta https://tools.ietf.org/html/rfc5896.html. Il servizio deve corrispondere anche al criterio "AuthNegotiateDelegateAllowlist".
 
-          Se questo criterio non viene impostato o viene impostato su falso, la norma KDC viene ignorata sulle piattaforme supportate e il verrà rispettato solo il criterio "AuthNegotiateDelegateAllowlist".
+          Se questo criterio non viene impostato o viene impostato su falso, il criterio KDC viene ignorato sulle piattaforme supportate e verrà rispettato solo il criterio "AuthNegotiateDelegateAllowlist".
 
-          Su Windows la norma KDC viene sempre rispettata.</translation>
+          Su Windows il criterio KDC viene sempre rispettato.</translation>
 <translation id="8938932171964587769">Ritirata in M69. Utilizza la norma OverrideSecurityRestrictionsOnInsecureOrigin.
 
 Questa norma consente di specificare un elenco di origini (URL) o di schemi di nomi host (ad esempio "*.example.com") a cui non vengono applicate limitazioni di sicurezza previste per le origini non sicure.

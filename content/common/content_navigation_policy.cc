@@ -6,9 +6,11 @@
 
 #include <bitset>
 
+#include "base/command_line.h"
 #include "base/metrics/field_trial_params.h"
 #include "base/system/sys_info.h"
 #include "content/public/common/content_features.h"
+#include "content/public/common/content_switches.h"
 
 namespace content {
 
@@ -33,6 +35,12 @@ bool DeviceHasEnoughMemoryForBackForwardCache() {
 bool IsBackForwardCacheEnabled() {
   if (!DeviceHasEnoughMemoryForBackForwardCache())
     return false;
+
+  if (base::CommandLine::InitializedForCurrentProcess() &&
+      base::CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kDisableBackForwardCache)) {
+    return false;
+  }
   // The feature needs to be checked last, because checking the feature
   // activates the field trial and assigns the client either to a control or an
   // experiment group - such assignment should be final.

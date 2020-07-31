@@ -58,7 +58,12 @@ class NearbySharePrivateCertificate {
       nearbyshare::proto::EncryptedMetadata unencrypted_metadata,
       std::set<std::vector<uint8_t>> consumed_salts);
 
-  NearbySharePrivateCertificate(NearbySharePrivateCertificate&&);
+  NearbySharePrivateCertificate(const NearbySharePrivateCertificate& other);
+  NearbySharePrivateCertificate& operator=(
+      const NearbySharePrivateCertificate& other);
+  NearbySharePrivateCertificate(NearbySharePrivateCertificate&& other);
+  NearbySharePrivateCertificate& operator=(
+      NearbySharePrivateCertificate&& other);
 
   virtual ~NearbySharePrivateCertificate();
 

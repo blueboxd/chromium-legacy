@@ -1428,10 +1428,10 @@ NSString* kDevViewSourceKey = @"DevViewSource";
 
 #pragma mark - SafetyCheckCoordinatorDelegate
 
-- (void)safetyCheckCoordinatorViewControllerWasRemoved:
-    (SafetyCheckCoordinator*)coordinator {
+- (void)safetyCheckCoordinatorDidRemove:(SafetyCheckCoordinator*)coordinator {
   DCHECK_EQ(_safetyCheckCoordinator, coordinator);
   [_safetyCheckCoordinator stop];
+  _safetyCheckCoordinator.delegate = nil;
   _safetyCheckCoordinator = nil;
 }
 

@@ -160,6 +160,11 @@
 - (void)compromisedCredentialsDidChange:
     (password_manager::CompromisedCredentialsManager::CredentialsView)
         credentials {
+  // Compromised passwords changes has no effect on UI while check is running.
+  if (_passwordCheckManager->GetPasswordCheckState() ==
+      PasswordCheckState::kRunning)
+    return;
+
   DCHECK(self.consumer);
   [self.consumer setPasswordCheckUIState:
                      [self computePasswordCheckUIStateWith:_currentState]];

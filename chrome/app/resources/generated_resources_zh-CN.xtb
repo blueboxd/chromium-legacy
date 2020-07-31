@@ -1158,7 +1158,6 @@
 <translation id="2408955596600435184">输入您的 PIN 码</translation>
 <translation id="241082044617551207">未知插件</translation>
 <translation id="2412593942846481727">有可用的更新</translation>
-<translation id="2414499877591062094">启用自动提交 PIN 码的功能</translation>
 <translation id="2416435988630956212">键盘功能键</translation>
 <translation id="241727068219398187">数据已于 <ph name="TIME" />使用您的 Google 密码加密。这并不包括 Google Pay 中的付款方式和地址。</translation>
 <translation id="2419131370336513030">查看已安装的应用</translation>
@@ -3393,7 +3392,6 @@
 <translation id="5241128660650683457">读取您在访问的网站上的所有数据</translation>
 <translation id="5242724311594467048">要启用“<ph name="EXTENSION_NAME" />”吗？</translation>
 <translation id="5243522832766285132">请稍后重试</translation>
-<translation id="5244406554036143958">请输入您的 PIN 码，以启用自动提交功能</translation>
 <translation id="5244474230056479698">同步到 <ph name="EMAIL" /></translation>
 <translation id="5245610266855777041">开始使用学校帐号</translation>
 <translation id="5246282308050205996">“<ph name="APP_NAME" />”崩溃了。点击此信息框，以重启该应用。</translation>

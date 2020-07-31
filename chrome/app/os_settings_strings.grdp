@@ -18,6 +18,15 @@
   <message name="IDS_SETTINGS_SECONDARY_USER_BANNER" desc="Banner displayed in settings page when the user is secondary in a multi-profile session.">
     Some settings belonging to <ph name="PRIMARY_EMAIL">$1<ex>john@google.com</ex></ph> are being shared with you. These settings only affect your account when using multiple sign-in.
   </message>
+  <message name="IDS_SETTINGS_UPDATE_REQUIRED_EOL_BANNER_DAYS" desc="Banner displayed in OS settings page in case update is required by policy but device has reached end-of-life and the days remaining to return the device back to the enterprise is greater than one and less than seven.">
+      <ph name="DOMAIN">$1<ex>example.com</ex></ph> requires you to back up your data and return this device within <ph name="DAYS_COUNT">$2<ex>10</ex></ph> days.<ph name="LINK_BEGIN">&lt;a target="_blank" href="$3<ex>https://google.com/</ex>"&gt;</ph>See details<ph name="LINK_END">&lt;/a&gt;</ph>
+  </message>
+  <message name="IDS_SETTINGS_UPDATE_REQUIRED_EOL_BANNER_LAST_DAY" desc="Banner displayed in OS settings page in case update is required by policy but device has reached end-of-life and it is the last day to return the device back to the enterprise.">
+      <ph name="DOMAIN">$1<ex>example.com</ex></ph> requires you to back up your data and return this device today.<ph name="LINK_BEGIN">&lt;a target="_blank" href="$2<ex>https://google.com/</ex>"&gt;</ph>See details<ph name="LINK_END">&lt;/a&gt;</ph>
+  </message>
+  <message name="IDS_SETTINGS_UPDATE_REQUIRED_EOL_BANNER_ONE_WEEK" desc="Banner displayed in OS settings page in case update is required by policy but device has reached end-of-life and the days remaining to return the device back to the enterprise is equal to seven.">
+      <ph name="DOMAIN">$1<ex>example.com</ex></ph> requires you to back up your data and return this device within 1 week.<ph name="LINK_BEGIN">&lt;a target="_blank" href="$2<ex>https://google.com/</ex>"&gt;</ph>See details<ph name="LINK_END">&lt;/a&gt;</ph>
+  </message>
 
   <!-- Settings Search Box -->
   <message name="IDS_OS_SEARCH_RESULT_ROW_A11Y_RESULT_SELECTED" desc="ChromeVox alert to indicate the position number of a selected result in a list of search results and the selected result text itself, and that the user can press enter to navigate to section described by the search result.">

@@ -307,11 +307,11 @@ class ExpandOwnersTest(unittest.TestCase):
     expand_owners.ExpandHistogramsOWNERS(histograms_without_file_paths)
     self.assertEqual(histograms_without_file_paths, expected_histograms)
 
-  def testExpandOwnersWithoutValidFirstOwner(self):
-    """Checks that an error is raised when the first owner is not valid.
+  def testExpandOwnersWithoutValidPrimaryOwner_OwnersPath(self):
+    """Checks that an error is raised when the primary owner is a file path.
 
-    A valid first owner is an individual's email address, e.g. rae@gmail.com,
-    or the owner placeholder.
+    A valid primary owner is an individual's email address, e.g. rae@google.com,
+    sam@chromium.org, or the owner placeholder.
     """
     histograms_without_valid_first_owner = xml.dom.minidom.parseString("""
 <histograms>
@@ -326,8 +326,54 @@ class ExpandOwnersTest(unittest.TestCase):
 
     with self.assertRaisesRegexp(
         expand_owners.Error,
-        'The histogram Caffeination must have a valid first owner, i.e. an '
-        'individual\'s email address.'):
+        'The histogram Caffeination must have a valid first owner, i.e. a '
+        'person with an @google.com or @chromium.org email address.'):
+      expand_owners.ExpandHistogramsOWNERS(histograms_without_valid_first_owner)
+
+  def testExpandOwnersWithoutValidPrimaryOwner_TeamEmail(self):
+    """Checks that an error is raised when the primary owner is a team.
+
+    A valid primary owner is an individual's email address, e.g. rae@google.com,
+    sam@chromium.org, or the owner placeholder.
+    """
+    histograms_without_valid_first_owner = xml.dom.minidom.parseString("""
+<histograms>
+
+<histogram name="Caffeination" units="mg">
+  <owner>coffee-team@google.com</owner>
+  <summary>I like coffee.</summary>
+</histogram>
+
+</histograms>
+""")
+
+    with self.assertRaisesRegexp(
+        expand_owners.Error,
+        'The histogram Caffeination must have a valid first owner, i.e. a '
+        'person with an @google.com or @chromium.org email address.'):
+      expand_owners.ExpandHistogramsOWNERS(histograms_without_valid_first_owner)
+
+  def testExpandOwnersWithoutValidPrimaryOwner_InvalidEmail(self):
+    """Checks that an error is raised when the primary owner's email is invalid.
+
+    A valid primary owner is an individual's email address, e.g. rae@google.com,
+    sam@chromium.org, or the owner placeholder.
+    """
+    histograms_without_valid_first_owner = xml.dom.minidom.parseString("""
+<histograms>
+
+<histogram name="Caffeination" units="mg">
+  <owner>alex@coffee.com</owner>
+  <summary>I like coffee.</summary>
+</histogram>
+
+</histograms>
+""")
+
+    with self.assertRaisesRegexp(
+        expand_owners.Error,
+        'The histogram Caffeination must have a valid first owner, i.e. a '
+        'person with an @google.com or @chromium.org email address.'):
       expand_owners.ExpandHistogramsOWNERS(histograms_without_valid_first_owner)
 
   def testExpandOwnersWithFakeFilePath(self):

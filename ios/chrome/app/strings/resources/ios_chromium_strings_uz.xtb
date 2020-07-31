@@ -23,6 +23,7 @@ Buning uchun kompyuteringizda Chromium brauzerini oching va menyudan “Chromium
 <translation id="3344973607274501920">Chromium parollaringizni tekshira olmadi. Internet aloqasini tekshiring.</translation>
 <translation id="3639997914391704523">Google hisobingizga kirsangiz, Chromium parollaringizni tekshira oladi.</translation>
 <translation id="3805899903892079518">Chromium rasm va videolaringizni ko‘ra olmayapti. “Sozlamalar &gt; Maxfiylik &gt; Rasmlar” oynasi orqali ruxsat bering.</translation>
+<translation id="4166206055865952171">Chromium brauzerini asosiy qilib belgilang</translation>
 <translation id="4555020257205549924">Agar bu funksiya yoniq bo‘lsa, Chromium sahifalarni Google Tarjimon xizmati yordamida tarjima qilishni taklif qiladi. <ph name="BEGIN_LINK" />Batafsil...<ph name="END_LINK" /></translation>
 <translation id="4681781466797808448">Chromium skanerini ochish</translation>
 <translation id="4787850887676698916">Boshqa qurilmalaringizda ochilgan Chromium sahifalari shu yerda ko‘rsatiladi.</translation>
@@ -39,10 +40,15 @@ Buning uchun kompyuteringizda Chromium brauzerini oching va menyudan “Chromium
 <translation id="6604711459180487467">Joylashuv axboroti bilan Chromium yanada ko‘proq imkoniyatlarga ega bo‘ladi.</translation>
 <translation id="6820823224820483452">Chromium barcha parollarni tekshira olmadi. Ertaga qayta urining.</translation>
 <translation id="7099326575020694068">Chromium kamerangizdan Split View rejimida foydalana olmaydi</translation>
+<translation id="7118091470949186573">Siz endi Chrome brauzerini har doim xabarlar, hujjatlar va boshqa ilovalardagi havolalar ustiga bosib ishga tushirishingiz mumkin.</translation>
 <translation id="7173114856073700355">Sozlamalarni ochish</translation>
 <translation id="7208566199746267865">Chromium xizmatlariga kirishda har safar foydalanuvchi nomi va parol kiritishingiz shart emas. Chromium qurilmada saqlangan hisoblardan foydalanadi. Ularni sozlamalar orqali boshqarishingiz mumkin.</translation>
 <translation id="7269362888766543920">Ba’zi kengaytmalar Chromium brauzerini ishdan chiqaradi. Ularni o‘chirib tashlang.</translation>
 <translation id="7337881442233988129">Chromium</translation>
+<translation id="7349905826685622881">Chromium brauzerini asosiy qilish uchun:
+        1. Sozlamalarni oching. 
+        2. Asosiy brauzer ilovasi ustiga bosing.
+        3. Chromium brauzerini tanlang.</translation>
 <translation id="7357211569052832586">Tanlangan ma’lumotlar Chromium va sinxronlangan qurilmalardan o‘chirildi. Google hisobingiz orqali amalga oshirilgan qidiruvlar, brauzer tarixi va boshqa internetdagi faoliyatingizni history.google.com sahifasi orqali ko‘rishingiz mumkin.</translation>
 <translation id="7400689562045506105">Chromium doim yoningizda</translation>
 <translation id="766897673682622022">Parolingiz oshkor qilingan. Chromimum parolni hoziroq yangilashni tavsiya qiladi.</translation>

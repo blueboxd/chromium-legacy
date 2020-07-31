@@ -42,7 +42,7 @@
       MeasureAs=IndexedDBWrite,
       RaisesException,
       RuntimeEnabled=IDBPutAll
-    ] sequence<IDBRequest> putAll(sequence<any> values);
+    ] IDBRequest putAll(sequence<any> values);
 
     [CallWith=ScriptState, MeasureAs=IndexedDBWrite, NewObject, RaisesException]
     IDBRequest add(any value, optional any key);

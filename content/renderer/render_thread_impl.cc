@@ -2144,6 +2144,7 @@ void RenderThreadImpl::OnRendererForegrounded() {
 }
 
 void RenderThreadImpl::ReleaseFreeMemory() {
+  TRACE_EVENT0("blink", "RenderThreadImpl::ReleaseFreeMemory()");
   base::allocator::ReleaseFreeMemory();
   discardable_memory_allocator_->ReleaseFreeMemory();
 

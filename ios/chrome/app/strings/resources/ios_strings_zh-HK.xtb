@@ -14,7 +14,6 @@
 <translation id="1084365883616172403">已順利發布到 Facebook。</translation>
 <translation id="1103523840287552314">永遠翻譯<ph name="LANGUAGE" /></translation>
 <translation id="1104948393051856124">接受並繼續</translation>
-<translation id="1105578556867525047">變更網站上的密碼</translation>
 <translation id="1112015203684611006">無法列印。</translation>
 <translation id="1125564390852150847">新增分頁。</translation>
 <translation id="1145536944570833626">刪除現有資料。</translation>
@@ -23,6 +22,7 @@
 <translation id="1176932207622159128">無法儲存圖片</translation>
 <translation id="1180526666083833456">在所有裝置上保持同步，並享受個人化體驗。</translation>
 <translation id="1181037720776840403">移除</translation>
+<translation id="1185569544548277362">新功能：您可將 Chrome 設定為預設瀏覽器。<ph name="BEGIN_LINK" />開啟設定<ph name="END_LINK" /></translation>
 <translation id="1207113853726624428">新搜尋</translation>
 <translation id="1209206284964581585">暫時隱藏</translation>
 <translation id="1219674500290482172">無法連線至網際網路。</translation>
@@ -245,7 +245,6 @@
 <translation id="3783017676699494206">儲存圖片</translation>
 <translation id="3789841737615482174">安裝</translation>
 <translation id="3803696231112616155">為此網站提供翻譯選項</translation>
-<translation id="3836313059960742452">{COUNT,plural, =0{沒有密碼被盜用}=1{{COUNT} 個密碼已被盜用}other{{COUNT} 個密碼已被盜用}}</translation>
 <translation id="385051799172605136">返回</translation>
 <translation id="3892144330757387737">您可在此查看記錄</translation>
 <translation id="3897092660631435901">選單</translation>
@@ -332,6 +331,7 @@
 <translation id="4901778704868714008">儲存…</translation>
 <translation id="4904877109095351937">標示為已閱讀</translation>
 <translation id="4930268273022498155">刪除現有資料。您可以切換回 <ph name="USER_EMAIL1" /> 以擷取現有資料。</translation>
+<translation id="4930714375720679147">開啟</translation>
 <translation id="4941089862236492464">很抱歉，分享您的項目時發生問題。</translation>
 <translation id="4944543191714094452">從網頁中尋找…</translation>
 <translation id="4945756290001680296">存取密碼設定</translation>
@@ -610,6 +610,7 @@
 <translation id="8073670137947914548">已經下載完成</translation>
 <translation id="8073872304774253879">改善搜尋和瀏覽體驗</translation>
 <translation id="8076014560081431679">系統不會刪除已儲存的網站設定，這可能會反映您的瀏覽習慣。<ph name="BEGIN_LINK" />瞭解詳情<ph name="END_LINK" /></translation>
+<translation id="8105368624971345109">關閉</translation>
 <translation id="8114753159095730575">您可以下載檔案。可用選項喺螢幕底部附近。</translation>
 <translation id="8131740175452115882">確定</translation>
 <translation id="8197543752516192074">翻譯網頁</translation>
@@ -639,6 +640,7 @@
 <translation id="8524799873541103884">第 <ph name="FIRST_VISIBLE_TAB" /> 至 <ph name="LAST_VISIBLE_TAB" /> 個<ph name="INCOGNITO" />分頁，共 <ph name="NUMBER_OF_OPEN_TABS" /> 個</translation>
 <translation id="8529767659511976195">新功能</translation>
 <translation id="8532105204136943229">到期年份</translation>
+<translation id="8533166274275423134">已在其他視窗開啟</translation>
 <translation id="8534481786647257214">已順利發布到 Google+。</translation>
 <translation id="8548878600947630424">從網頁中尋找…</translation>
 <translation id="8574235780160508979">Chrome 的《服務條款》將於 3 月 31 日變更。<ph name="BEGIN_LINK" />請查看詳情<ph name="END_LINK" /></translation>

@@ -87,6 +87,7 @@
 #include "chrome/browser/ui/views/extensions/extension_keybinding_registry_views.h"
 #include "chrome/browser/ui/views/extensions/extensions_toolbar_container.h"
 #include "chrome/browser/ui/views/eye_dropper/eye_dropper.h"
+#include "chrome/browser/ui/views/feature_promos/feature_promo_controller.h"
 #include "chrome/browser/ui/views/find_bar_host.h"
 #include "chrome/browser/ui/views/frame/app_menu_button.h"
 #include "chrome/browser/ui/views/frame/browser_view_layout.h"
@@ -541,10 +542,14 @@ BrowserView::BrowserView(std::unique_ptr<Browser> browser)
   tab_strip_region_view_ = top_container_->AddChildView(
       std::make_unique<TabStripRegionView>(std::move(tabstrip)));
 
-  // Must be destroyed before the tab strip.
+  feature_promo_controller_ =
+      std::make_unique<FeaturePromoController>(browser_->profile());
+
+  // Must be destroyed before the tab strip and |feature_promo_controller_|.
   tab_groups_iph_controller_ = std::make_unique<TabGroupsIPHController>(
-      browser_.get(), base::BindRepeating(&TabStrip::GetTabViewForPromoAnchor,
-                                          base::Unretained(tabstrip_)));
+      browser_.get(), feature_promo_controller_.get(),
+      base::BindRepeating(&TabStrip::GetTabViewForPromoAnchor,
+                          base::Unretained(tabstrip_)));
 
   // Create WebViews early so |webui_tab_strip_| can observe their size.
   auto devtools_web_view =
@@ -2688,10 +2693,7 @@ void BrowserView::Layout() {
         ->UpdateAnchorPosition();
   }
 
-#if BUILDFLAG(ENABLE_WEBUI_TAB_STRIP)
-  if (webui_tab_strip_)
-    webui_tab_strip_->UpdatePromoBubbleBounds();
-#endif  // BUILDFLAG(ENABLE_WEBUI_TAB_STRIP)
+  feature_promo_controller_->UpdateBubbleForAnchorBoundsChange();
 }
 
 void BrowserView::OnGestureEvent(ui::GestureEvent* event) {
@@ -2888,7 +2890,7 @@ void BrowserView::MaybeInitializeWebUITabStrip() {
       // downloads bar.
       webui_tab_strip_ = top_container_->AddChildView(
           std::make_unique<WebUITabStripContainerView>(
-              browser_.get(), contents_container_, top_container_,
+              this, contents_container_, top_container_,
               GetLocationBarView()->omnibox_view()));
       loading_bar_ = top_container_->AddChildView(
           std::make_unique<TopContainerLoadingBar>(browser_.get()));

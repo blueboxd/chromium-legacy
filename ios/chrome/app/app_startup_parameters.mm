@@ -17,6 +17,7 @@
 @implementation AppStartupParameters {
   GURL _externalURL;
   GURL _completeURL;
+  std::vector<GURL> _URLs;
 }
 
 @synthesize externalURLParams = _externalURLParams;
@@ -40,6 +41,20 @@
   if (self) {
     _externalURL = externalURL;
     _completeURL = completeURL;
+  }
+  return self;
+}
+
+- (instancetype)initWithURLs:(const std::vector<GURL>&)URLs {
+  if (URLs.empty()) {
+    self = [self initWithExternalURL:GURL(kChromeUINewTabURL)
+                         completeURL:GURL(kChromeUINewTabURL)];
+  } else {
+    self = [self initWithExternalURL:URLs.front() completeURL:URLs.front()];
+  }
+
+  if (self) {
+    _URLs = URLs;
   }
   return self;
 }

@@ -48,6 +48,13 @@ static_library("enterprise") {
       "//net",
     ]
   }
+
+  if (!is_android && !is_chromeos) {
+    sources += [
+      "browser/controller/chrome_browser_cloud_management_controller.cc",
+      "browser/controller/chrome_browser_cloud_management_controller.h",
+    ]
+  }
 }
 
 static_library("test_support") {

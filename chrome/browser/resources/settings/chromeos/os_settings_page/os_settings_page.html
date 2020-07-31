@@ -2,6 +2,7 @@
 
 <link rel="import" href="chrome://resources/cr_elements/cr_button/cr_button.html">
 <link rel="import" href="chrome://resources/cr_elements/hidden_style_css.html">
+<link rel="import" href="chrome://resources/cr_elements/icons.html">
 <link rel="import" href="chrome://resources/cr_elements/shared_vars_css.html">
 <link rel="import" href="chrome://resources/html/web_ui_listener_behavior.html">
 <link rel="import" href="main_page_behavior.html">
@@ -25,6 +26,10 @@
 <dom-module id="os-settings-page">
   <template>
     <style include="settings-page-styles cr-hidden-style settings-shared">
+      :host {
+        --google-yellow-50: #fef7e0;
+      }
+
       :host([is-subpage-animating]) {
         /* Prevent an unwanted horizontal scrollbar when transitioning back from
          * a sub-page. */
@@ -39,6 +44,21 @@
         display: flex;
         margin-bottom: var(--cr-section-vertical-margin);
         margin-top: var(--cr-section-vertical-margin);
+      }
+
+      .eol-warning-icon {
+        align-items: center;
+        background: var(--google-yellow-50);
+        border-radius: 50%;
+        display: flex;
+        height: 40px;
+        justify-content: center;
+        margin-inline-end: var(--cr-section-padding);
+        width: 40px;
+      }
+
+      .eol-warning-icon iron-icon {
+        margin: 0;
       }
 
       #advancedToggle {
@@ -97,6 +117,22 @@
     <template is="dom-if" if="[[showBasicPage_(
         currentRoute_, inSearchMode, hasExpandedSection_)]]">
       <div id="basicPage">
+        <template is="dom-if" if="[[computeShowUpdateRequiredEolBanner_(
+            hasExpandedSection_, showUpdateRequiredEolBanner_)]]">
+          <div id="updateRequiredEolBanner"
+              class="settings-box two-line banner">
+            <div class="eol-warning-icon">
+              <iron-icon icon="cr20:banner-warning"></iron-icon>
+            </div>
+            <settings-localized-link id="bannerText" class="start"
+                localized-string="$i18n{updateRequiredEolBannerText}">
+            </settings-localized-link>
+            <cr-icon-button title="$i18n{close}" id="closeUpdateRequiredEol"
+                class="icon-clear" on-click="onCloseEolBannerClicked_"
+                aria-describedby="bannerText">
+            </cr-icon-button>
+          </div>
+        </template>
         <div id="secondaryUserBanner" class="banner"
             hidden="[[!showSecondaryUserBanner_]]">
           <div id="secondaryUserIcon"></div>

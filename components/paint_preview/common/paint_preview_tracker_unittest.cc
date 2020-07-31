@@ -114,11 +114,11 @@ TEST(PaintPreviewTrackerTest, TestAnnotateLinks) {
   PaintPreviewTracker tracker(base::UnguessableToken::Create(), kEmbeddingToken,
                               true);
   const GURL url_1("https://www.chromium.org");
-  const gfx::Rect rect_1(10, 20, 30, 40);
+  const auto rect_1 = SkRect::MakeXYWH(10, 20, 30, 40);
   tracker.AnnotateLink(url_1, rect_1);
 
   const GURL url_2("https://www.w3.org");
-  const gfx::Rect rect_2(15, 25, 35, 45);
+  const auto rect_2 = SkRect::MakeXYWH(15, 25, 35, 45);
   tracker.AnnotateLink(url_2, rect_2);
 
   ASSERT_EQ(tracker.GetLinks().size(), 2U);
@@ -141,11 +141,11 @@ TEST(PaintPreviewTrackerTest, TestAnnotateAndMoveLinks) {
   PaintPreviewTracker tracker(base::UnguessableToken::Create(), kEmbeddingToken,
                               true);
   const GURL url_1("https://www.chromium.org");
-  const gfx::Rect rect_1(10, 20, 30, 40);
+  const auto rect_1 = SkRect::MakeXYWH(10, 20, 30, 40);
   tracker.AnnotateLink(url_1, rect_1);
 
   const GURL url_2("https://www.w3.org");
-  const gfx::Rect rect_2(15, 25, 35, 45);
+  const auto rect_2 = SkRect::MakeXYWH(15, 25, 35, 45);
   tracker.AnnotateLink(url_2, rect_2);
 
   std::vector<mojom::LinkDataPtr> links;
@@ -163,6 +163,83 @@ TEST(PaintPreviewTrackerTest, TestAnnotateAndMoveLinks) {
   EXPECT_EQ(links[1]->rect.height(), rect_2.height());
   EXPECT_EQ(links[1]->rect.x(), rect_2.x());
   EXPECT_EQ(links[1]->rect.y(), rect_2.y());
+}
+
+TEST(PaintPreviewTrackerTest, AnnotateLinksWithTransform) {
+  const base::UnguessableToken kEmbeddingToken =
+      base::UnguessableToken::Create();
+  PaintPreviewTracker tracker(base::UnguessableToken::Create(), kEmbeddingToken,
+                              true);
+
+  const GURL url("http://www.chromium.org");
+  const auto rect = SkRect::MakeXYWH(10, 20, 30, 40);
+  tracker.AnnotateLink(url, rect);
+
+  std::vector<mojom::LinkDataPtr> links;
+  tracker.MoveLinks(&links);
+  ASSERT_EQ(links.size(), 1U);
+  EXPECT_EQ(links[0]->url, url);
+  EXPECT_EQ(links[0]->rect.width(), rect.width());
+  EXPECT_EQ(links[0]->rect.height(), rect.height());
+  EXPECT_EQ(links[0]->rect.x(), rect.x());
+  EXPECT_EQ(links[0]->rect.y(), rect.y());
+
+  tracker.Save();
+  tracker.Scale(2, 4);
+  tracker.AnnotateLink(url, rect);
+  links.clear();
+  tracker.MoveLinks(&links);
+  EXPECT_EQ(links[0]->url, url);
+  EXPECT_EQ(links[0]->rect.width(), rect.width() * 2);
+  EXPECT_EQ(links[0]->rect.height(), rect.height() * 4);
+  EXPECT_EQ(links[0]->rect.x(), rect.x() * 2);
+  EXPECT_EQ(links[0]->rect.y(), rect.y() * 4);
+
+  tracker.Translate(10, 20);
+  tracker.AnnotateLink(url, rect);
+  links.clear();
+  tracker.MoveLinks(&links);
+  EXPECT_EQ(links[0]->url, url);
+  EXPECT_EQ(links[0]->rect.width(), rect.width() * 2);
+  EXPECT_EQ(links[0]->rect.height(), rect.height() * 4);
+  EXPECT_EQ(links[0]->rect.x(), (10 + rect.x()) * 2);
+  EXPECT_EQ(links[0]->rect.y(), (20 + rect.y()) * 4);
+
+  tracker.Restore();
+  links.clear();
+  tracker.AnnotateLink(url, rect);
+  tracker.MoveLinks(&links);
+  ASSERT_EQ(links.size(), 1U);
+  EXPECT_EQ(links[0]->url, url);
+  EXPECT_EQ(links[0]->rect.width(), rect.width());
+  EXPECT_EQ(links[0]->rect.height(), rect.height());
+  EXPECT_EQ(links[0]->rect.x(), rect.x());
+  EXPECT_EQ(links[0]->rect.y(), rect.y());
+
+  tracker.Concat(SkMatrix::Translate(30, 100));
+  links.clear();
+  tracker.AnnotateLink(url, rect);
+  tracker.MoveLinks(&links);
+  ASSERT_EQ(links.size(), 1U);
+  EXPECT_EQ(links[0]->url, url);
+  EXPECT_EQ(links[0]->rect.width(), rect.width());
+  EXPECT_EQ(links[0]->rect.height(), rect.height());
+  EXPECT_EQ(links[0]->rect.x(), rect.x() + 30);
+  EXPECT_EQ(links[0]->rect.y(), rect.y() + 100);
+
+  tracker.Rotate(30);
+  links.clear();
+  tracker.AnnotateLink(url, rect);
+  tracker.MoveLinks(&links);
+  ASSERT_EQ(links.size(), 1U);
+  EXPECT_EQ(links[0]->url, url);
+  EXPECT_EQ(links[0]->rect.width(), 45);
+  EXPECT_EQ(links[0]->rect.height(), 49);
+  EXPECT_EQ(links[0]->rect.x(), 8);
+  EXPECT_EQ(links[0]->rect.y(), 122);
+
+  // no-op (ensure this doesn't crash).
+  tracker.Restore();
 }
 
 }  // namespace paint_preview

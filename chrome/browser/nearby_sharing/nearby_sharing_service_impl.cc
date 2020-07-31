@@ -30,6 +30,8 @@
 namespace {
 
 constexpr base::TimeDelta kReadFramesTimeout = base::TimeDelta::FromSeconds(15);
+constexpr base::TimeDelta kReadResponseFrameTimeout =
+    base::TimeDelta::FromSeconds(60);
 
 std::string ReceiveSurfaceStateToString(
     NearbySharingService::ReceiveSurfaceState state) {
@@ -122,6 +124,7 @@ std::string ConnectionsStatusToString(
 
 NearbySharingServiceImpl::NearbySharingServiceImpl(
     PrefService* prefs,
+    NotificationDisplayService* notification_display_service,
     Profile* profile,
     std::unique_ptr<NearbyConnectionsManager> nearby_connections_manager,
     NearbyProcessManager* process_manager)
@@ -157,8 +160,8 @@ NearbySharingServiceImpl::NearbySharingServiceImpl(
 
   GetBluetoothAdapter();
 
-  nearby_notification_manager_ =
-      std::make_unique<NearbyNotificationManager>(profile_, this);
+  nearby_notification_manager_ = std::make_unique<NearbyNotificationManager>(
+      notification_display_service, this);
 }
 
 NearbySharingServiceImpl::~NearbySharingServiceImpl() {
@@ -339,6 +342,8 @@ void NearbySharingServiceImpl::OnIncomingConnection(
 
   // TODO(himanshujaju) - Update placeholder implementation
   ShareTarget share_target;
+  share_target.is_incoming = true;
+
   incoming_share_target_info_map_[share_target.id].set_connection(connection);
   connection->RegisterForDisconnection(
       base::BindOnce(&NearbySharingServiceImpl::UnregisterShareTarget,
@@ -846,9 +851,21 @@ void NearbySharingServiceImpl::OnReceivedIntroduction(
     return;
   }
 
-  // TODO(himanshujaju) - Check for out of storage.
+  if (IsOutOfStorage(share_target)) {
+    Fail(share_target, TransferMetadata::Status::kNotEnoughSpace);
+    NS_LOG(WARNING) << __func__
+                    << ": Not enough space on the receiver. We have informed "
+                    << share_target.device_name;
+    return;
+  }
 
-  // TODO(himanshujaju) - Alarm for mutual acceptance timeout.
+  mutual_acceptance_timeout_alarm_.Reset(base::BindOnce(
+      &NearbySharingServiceImpl::OnIncomingMutualAcceptanceTimeout,
+      weak_ptr_factory_.GetWeakPtr(), share_target));
+
+  base::SequencedTaskRunnerHandle::Get()->PostDelayedTask(
+      FROM_HERE, base::BindOnce(mutual_acceptance_timeout_alarm_.callback()),
+      kReadResponseFrameTimeout);
 
   OnIncomingTransferUpdate(
       share_target,
@@ -864,7 +881,20 @@ void NearbySharingServiceImpl::OnReceivedIntroduction(
     return;
   }
 
-  // TODO(himanshujaju) - register for disconnection & start reader thread.
+  connection->RegisterForDisconnection(base::BindOnce(
+      &NearbySharingServiceImpl::OnIncomingConnectionDisconnected,
+      weak_ptr_factory_.GetWeakPtr(), share_target));
+
+  // TODO(himanshujaju) - start reader thread.
+}
+
+void NearbySharingServiceImpl::OnIncomingConnectionDisconnected(
+    const ShareTarget& share_target) {
+  OnIncomingTransferUpdate(share_target,
+                           TransferMetadataBuilder()
+                               .set_status(TransferMetadata::Status::kFailed)
+                               .build());
+  UnregisterShareTarget(share_target);
 }
 
 void NearbySharingServiceImpl::UnregisterShareTarget(
@@ -875,7 +905,28 @@ void NearbySharingServiceImpl::UnregisterShareTarget(
   } else {
     // TODO(crbug.com/1084644) - Clear from outgoing map.
   }
-  // TODO(himanshujaju) - mutual acceptance timeout alarm.
+  mutual_acceptance_timeout_alarm_.Cancel();
+}
+
+bool NearbySharingServiceImpl::IsOutOfStorage(const ShareTarget& share_target) {
+  // TODO(himanshujaju) - Check storage space based on file path.
+  return false;
+}
+
+void NearbySharingServiceImpl::OnIncomingMutualAcceptanceTimeout(
+    const ShareTarget& share_target) {
+  DCHECK(share_target.is_incoming);
+
+  NS_LOG(VERBOSE)
+      << __func__
+      << ": Incoming mutual acceptance timed out, closing connection for "
+      << share_target.device_name;
+
+  OnIncomingTransferUpdate(share_target,
+                           TransferMetadataBuilder()
+                               .set_status(TransferMetadata::Status::kTimedOut)
+                               .build());
+  Fail(share_target, TransferMetadata::Status::kTimedOut);
 }
 
 IncomingShareTargetInfo& NearbySharingServiceImpl::GetIncomingShareTargetInfo(

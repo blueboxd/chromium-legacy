@@ -43,12 +43,8 @@ TabSpecificContentSettingsDelegate::~TabSpecificContentSettingsDelegate() =
 TabSpecificContentSettingsDelegate*
 TabSpecificContentSettingsDelegate::FromWebContents(
     content::WebContents* web_contents) {
-  auto* content_settings =
-      TabSpecificContentSettings::FromWebContents(web_contents);
-  if (!content_settings)
-    return nullptr;
   return static_cast<TabSpecificContentSettingsDelegate*>(
-      content_settings->delegate());
+      TabSpecificContentSettings::GetDelegateForWebContents(web_contents));
 }
 
 void TabSpecificContentSettingsDelegate::UpdateLocationBar() {

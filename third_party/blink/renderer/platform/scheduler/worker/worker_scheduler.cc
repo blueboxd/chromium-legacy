@@ -133,7 +133,8 @@ void WorkerScheduler::Dispose() {
 scoped_refptr<base::SingleThreadTaskRunner> WorkerScheduler::GetTaskRunner(
     TaskType type) const {
   switch (type) {
-    case TaskType::kJavascriptTimer:
+    case TaskType::kJavascriptTimerDelayed:
+    case TaskType::kJavascriptTimerImmediate:
     case TaskType::kPostedMessage:
     case TaskType::kWorkerAnimation:
       return throttleable_task_queue_->CreateTaskRunner(type);

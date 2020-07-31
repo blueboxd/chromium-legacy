@@ -421,7 +421,7 @@ class HintsFetcherDisabledBrowserTest : public InProcessBrowserTest {
       optimization_guide::proto::GetHintsResponse get_hints_response;
 
       optimization_guide::proto::Hint* hint = get_hints_response.add_hints();
-      hint->set_key_representation(optimization_guide::proto::HOST_SUFFIX);
+      hint->set_key_representation(optimization_guide::proto::HOST);
       hint->set_key(https_url_.host());
       optimization_guide::proto::PageHint* page_hint = hint->add_page_hints();
       page_hint->set_page_pattern("page pattern");

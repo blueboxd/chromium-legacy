@@ -14,7 +14,6 @@
 <translation id="1084365883616172403">A postagem no Facebook foi concluída.</translation>
 <translation id="1103523840287552314">Sempre traduzir do <ph name="LANGUAGE" /></translation>
 <translation id="1104948393051856124">Aceitar e continuar</translation>
-<translation id="1105578556867525047">Mudar a senha no site</translation>
 <translation id="1112015203684611006">Falha na impressão.</translation>
 <translation id="1125564390852150847">Criar nova guia</translation>
 <translation id="1145536944570833626">Excluir dados já existentes.</translation>
@@ -245,7 +244,6 @@ Na navegação anônima, os sites não podem usar cookies para ver suas atividad
 <translation id="3783017676699494206">Salvar imagem</translation>
 <translation id="3789841737615482174">Instalar</translation>
 <translation id="3803696231112616155">Oferecer a opção de traduzir esse site</translation>
-<translation id="3836313059960742452">{COUNT,plural, =0{Nenhuma senha comprometida}=1{{COUNT} senha comprometida}one{{COUNT} senha comprometida}other{{COUNT} senhas comprometidas}}</translation>
 <translation id="385051799172605136">Voltar</translation>
 <translation id="3892144330757387737">Você verá seu histórico aqui</translation>
 <translation id="3897092660631435901">Menu</translation>
@@ -332,6 +330,7 @@ Para alterar essa configuração, <ph name="BEGIN_LINK" />redefina a sincroniza�
 <translation id="4901778704868714008">Salvar…</translation>
 <translation id="4904877109095351937">Marcar como lidas</translation>
 <translation id="4930268273022498155">Excluir dados já existentes. É possível recuperá-los voltando para a conta <ph name="USER_EMAIL1" />.</translation>
+<translation id="4930714375720679147">Ativar</translation>
 <translation id="4941089862236492464">Ocorreu um problema ao compartilhar seu item.</translation>
 <translation id="4944543191714094452">Localizar na página…</translation>
 <translation id="4945756290001680296">Acessar configurações de senha</translation>
@@ -610,6 +609,7 @@ Eles também podem usar cookies para ver sua atividade de navegação em diferen
 <translation id="8073670137947914548">Download concluído</translation>
 <translation id="8073872304774253879">Melhorar as pesquisas e a navegação</translation>
 <translation id="8076014560081431679">As configurações salvas em sites não são excluídas e podem refletir seus hábitos de navegação. <ph name="BEGIN_LINK" />Saiba mais<ph name="END_LINK" /></translation>
+<translation id="8105368624971345109">Desativar</translation>
 <translation id="8114753159095730575">O download de arquivo está disponível. Opções disponíveis perto da parte inferior da tela.</translation>
 <translation id="8131740175452115882">Confirmar</translation>
 <translation id="8197543752516192074">Traduzir página</translation>

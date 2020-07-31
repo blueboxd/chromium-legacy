@@ -206,7 +206,7 @@ component("printing") {
   if (use_cups) {
     configs += [ ":cups" ]
 
-    if (is_linux) {
+    if (is_linux || is_chromeos) {
       # CUPS 1.6 deprecated the PPD APIs, but we will stay with this API
       # for now as the suitability of the replacement is unclear.
       # More info: crbug.com/226176
@@ -312,7 +312,7 @@ static_library("test_support") {
   if (is_fuchsia) {
     sources += [ "image_fuchsia.cc" ]
   }
-  if (is_linux) {
+  if (is_linux || is_chromeos) {
     sources += [ "image_linux.cc" ]
   }
   if (is_mac) {

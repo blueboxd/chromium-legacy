@@ -46,17 +46,11 @@ void OnDomStorageAccessed(int process_id,
                           const GURL& top_origin_url,
                           bool local,
                           bool blocked_by_policy) {
-  content::RenderFrameHost* frame =
-      content::RenderFrameHost::FromID(process_id, frame_id);
-  content::WebContents* web_contents =
-      content::WebContents::FromRenderFrameHost(frame);
-  if (!web_contents)
-    return;
-
-  TabSpecificContentSettings* tab_settings =
-      TabSpecificContentSettings::FromWebContents(web_contents);
-  if (tab_settings)
-    tab_settings->OnDomStorageAccessed(origin_url, local, blocked_by_policy);
+  TabSpecificContentSettings* settings =
+      TabSpecificContentSettings::GetForFrame(
+          content::RenderFrameHost::FromID(process_id, frame_id));
+  if (settings)
+    settings->OnDomStorageAccessed(origin_url, local, blocked_by_policy);
 }
 
 }  // namespace
@@ -150,17 +144,11 @@ void ContentSettingsManagerImpl::AllowStorageAccess(
 
 void ContentSettingsManagerImpl::OnContentBlocked(int32_t render_frame_id,
                                                   ContentSettingsType type) {
-  content::RenderFrameHost* frame =
-      content::RenderFrameHost::FromID(render_process_id_, render_frame_id);
-  content::WebContents* web_contents =
-      content::WebContents::FromRenderFrameHost(frame);
-  if (!web_contents)
-    return;
-
-  TabSpecificContentSettings* tab_settings =
-      TabSpecificContentSettings::FromWebContents(web_contents);
-  if (tab_settings)
-    tab_settings->OnContentBlocked(type);
+  TabSpecificContentSettings* settings =
+      TabSpecificContentSettings::GetForFrame(render_process_id_,
+                                              render_frame_id);
+  if (settings)
+    settings->OnContentBlocked(type);
 }
 
 ContentSettingsManagerImpl::ContentSettingsManagerImpl(

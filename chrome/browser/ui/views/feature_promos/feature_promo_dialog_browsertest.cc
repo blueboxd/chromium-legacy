@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 #include "chrome/browser/ui/test/test_browser_dialog.h"
+#include "chrome/browser/ui/views/feature_promos/feature_promo_bubble_params.h"
 #include "chrome/browser/ui/views/feature_promos/feature_promo_bubble_view.h"
 #include "chrome/browser/ui/views/frame/browser_view.h"
 #include "chrome/browser/ui/views/toolbar/browser_app_menu_button.h"
@@ -23,7 +24,7 @@ class FeaturePromoDialogTest : public DialogBrowserTest {
     // We use an arbitrary string because there are no test-only
     // strings.
     int placeholder_string = IDS_REOPEN_TAB_PROMO;
-    FeaturePromoBubbleView::CreateParams bubble_params;
+    FeaturePromoBubbleParams bubble_params;
     bubble_params.body_string_specifier = placeholder_string;
     bubble_params.anchor_view = app_menu_button;
     bubble_params.arrow = views::BubbleBorder::TOP_RIGHT;

@@ -1485,6 +1485,7 @@ chrome_java_sources = [
   "java/src/org/chromium/chrome/browser/sync/settings/SignInPreference.java",
   "java/src/org/chromium/chrome/browser/sync/settings/SyncAndServicesSettings.java",
   "java/src/org/chromium/chrome/browser/sync/settings/SyncOffPreference.java",
+  "java/src/org/chromium/chrome/browser/sync/settings/SyncPromoPreference.java",
   "java/src/org/chromium/chrome/browser/sync/settings/SyncSettingsUtils.java",
   "java/src/org/chromium/chrome/browser/sync/ui/PassphraseActivity.java",
   "java/src/org/chromium/chrome/browser/sync/ui/PassphraseCreationDialogFragment.java",

@@ -39,6 +39,29 @@ CaptionHostImpl::CaptionHostImpl(content::RenderFrameHost* frame_host)
 
 CaptionHostImpl::~CaptionHostImpl() = default;
 
+void CaptionHostImpl::OnSpeechRecognitionReady(
+    OnSpeechRecognitionReadyCallback reply) {
+  if (!frame_host_) {
+    std::move(reply).Run(false);
+    return;
+  }
+  content::WebContents* web_contents =
+      content::WebContents::FromRenderFrameHost(frame_host_);
+  if (!web_contents) {
+    frame_host_ = nullptr;
+    std::move(reply).Run(false);
+    return;
+  }
+  Profile* profile =
+      Profile::FromBrowserContext(web_contents->GetBrowserContext());
+  if (!profile) {
+    std::move(reply).Run(false);
+    return;
+  }
+  std::move(reply).Run(CaptionControllerFactory::GetForProfile(profile)
+                           ->OnSpeechRecognitionReady(web_contents));
+}
+
 void CaptionHostImpl::OnTranscription(
     chrome::mojom::TranscriptionResultPtr transcription_result,
     OnTranscriptionCallback reply) {

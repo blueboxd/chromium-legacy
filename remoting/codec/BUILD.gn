@@ -41,7 +41,7 @@ source_set("encoder") {
 
   # Currently, building WebrtcVideoEncoderGpu is only supported on Windows and
   # Linux, and encoding with WebrtcVideoEncoderGpu is only supported on Windows.
-  if (is_win || is_linux) {
+  if (is_win || is_linux || is_chromeos) {
     public_configs = [ "//skia:skia_config" ]
     sources += [
       "webrtc_video_encoder_gpu.cc",

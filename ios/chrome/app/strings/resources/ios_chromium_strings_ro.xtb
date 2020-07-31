@@ -23,6 +23,7 @@
 <translation id="3344973607274501920">Chromium nu a putut verifica parolele. Verifică-ți conexiunea la internet.</translation>
 <translation id="3639997914391704523">Chromium poate să îți verifice parolele atunci când te conectezi folosind Contul Google.</translation>
 <translation id="3805899903892079518">Chromium nu are acces la fotografii și videoclipuri. Activează accesul din Setări iOS &gt; Confidențialitate &gt; Fotografii.</translation>
+<translation id="4166206055865952171">Setează Chromium ca browser prestabilit</translation>
 <translation id="4555020257205549924">Când această funcție este activată, Chromium se va oferi să traducă paginile scrise în alte limbi utilizând Google Traducere. <ph name="BEGIN_LINK" />Află mai multe<ph name="END_LINK" /></translation>
 <translation id="4681781466797808448">Activează scanerul din Chromium</translation>
 <translation id="4787850887676698916">Filele deschise în Chromium pe alte dispozitive vor apărea aici.</translation>
@@ -39,10 +40,15 @@
 <translation id="6604711459180487467">Beneficiază de o experiență mai bună în Chromium pe baza locației.</translation>
 <translation id="6820823224820483452">Chromium nu a putut verifica toate parolele. Încearcă din nou mâine.</translation>
 <translation id="7099326575020694068">Chromium nu poate folosi camera foto în modul Vizualizare împărțită</translation>
+<translation id="7118091470949186573">Acum poți folosi Chromium oricând atingi linkuri în mesaje, documente și alte aplicații.</translation>
 <translation id="7173114856073700355">Deschide Setările</translation>
 <translation id="7208566199746267865">Folosind Chromium, economisești timp, deoarece te conectează la conturi și pe web. Poți să adaugi sau să elimini conturi din Setări.</translation>
 <translation id="7269362888766543920">Unele suplimente blochează Chromium. Încearcă să le dezinstalezi.</translation>
 <translation id="7337881442233988129">Chromium</translation>
+<translation id="7349905826685622881">Pentru a seta Chromium ca browser prestabilit:
+        1. deschide Setările; 
+        2. atinge Aplicația browser prestabilită;
+        3. selectează Chromium.</translation>
 <translation id="7357211569052832586">Datele selectate au fost eliminate din Chromium și de pe dispozitivele sincronizate. Contul Google poate să ofere alte forme ale istoricului de navigare, cum ar fi căutările și activitatea din alte servicii Google, la history.google.com.</translation>
 <translation id="7400689562045506105">Folosește Chromium pretutindeni</translation>
 <translation id="766897673682622022">Parola a fost expusă în urma încălcării securității datelor. Chromium recomandă să-ți schimbi acum parola.</translation>

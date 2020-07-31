@@ -740,6 +740,96 @@ crbug.com/591099 external/wpt/css/css-ui/text-overflow-015.html [ Failure ]
 crbug.com/1003506 external/wpt/css/css-flexbox/percentage-heights-007.html [ Failure ]
 crbug.com/1081802 external/wpt/css/css-flexbox/overflow-area-001.html [ Failure ]
 crbug.com/1081802 external/wpt/css/css-flexbox/overflow-area-002.html [ Failure ]
+crbug.com/807497 external/wpt/css/css-flexbox/anonymous-flex-item-005.html [ Failure ]
+crbug.com/1111708 external/wpt/css/css-flexbox/flexbox_justifycontent-center-overflow.html [ Failure ]
+crbug.com/1111710 external/wpt/css/css-flexbox/getcomputedstyle/flexbox_computedstyle_flex-basis-0percent.html [ Failure ]
+crbug.com/1111710 external/wpt/css/css-flexbox/getcomputedstyle/flexbox_computedstyle_flex-shorthand-number.html [ Failure ]
+
+# These testcases are incorrect, mark them as failing until they're fixed in the testsuite.
+# https://lists.w3.org/Archives/Public/www-style/2016Jan/0275.html
+# https://lists.w3.org/Archives/Public/www-style/2016Jan/0276.html
+crbug.com/249112 external/wpt/css/css-flexbox/flex-minimum-height-flex-items-005.xht [ Failure ]
+crbug.com/249112 external/wpt/css/css-flexbox/flex-minimum-height-flex-items-007.xht [ Failure ]
+crbug.com/249112 external/wpt/css/css-flexbox/flex-minimum-width-flex-items-005.xht [ Failure ]
+crbug.com/249112 external/wpt/css/css-flexbox/flex-minimum-width-flex-items-007.xht [ Failure ]
+
+# Not implemented yet
+crbug.com/336604 external/wpt/css/css-flexbox/flexbox_visibility-collapse-line-wrapping.html [ Failure ]
+crbug.com/336604 external/wpt/css/css-flexbox/flexbox_visibility-collapse.html [ Failure ]
+
+# These require justify-content:right and align-content:end
+crbug.com/1011718 external/wpt/css/vendor-imports/mozilla/mozilla-central-reftests/flexbox/flexbox-align-content-horiz-001a.xhtml [ Failure ]
+crbug.com/1011718 external/wpt/css/vendor-imports/mozilla/mozilla-central-reftests/flexbox/flexbox-align-content-horiz-001b.xhtml [ Failure ]
+crbug.com/1011718 external/wpt/css/vendor-imports/mozilla/mozilla-central-reftests/flexbox/flexbox-align-content-vert-001a.xhtml [ Failure ]
+crbug.com/1011718 external/wpt/css/vendor-imports/mozilla/mozilla-central-reftests/flexbox/flexbox-align-content-vert-001b.xhtml [ Failure ]
+crbug.com/1011718 external/wpt/css/vendor-imports/mozilla/mozilla-central-reftests/flexbox/flexbox-align-content-vert-002.xhtml [ Failure ]
+crbug.com/1011718 external/wpt/css/vendor-imports/mozilla/mozilla-central-reftests/flexbox/flexbox-align-content-horiz-002.xhtml [ Failure ]
+crbug.com/1011718 external/wpt/css/vendor-imports/mozilla/mozilla-central-reftests/flexbox/flexbox-justify-content-horiz-001a.xhtml [ Failure ]
+crbug.com/1011718 external/wpt/css/vendor-imports/mozilla/mozilla-central-reftests/flexbox/flexbox-justify-content-horiz-001b.xhtml [ Failure ]
+crbug.com/1011718 external/wpt/css/vendor-imports/mozilla/mozilla-central-reftests/flexbox/flexbox-justify-content-horiz-003.xhtml [ Failure ]
+crbug.com/1011718 external/wpt/css/vendor-imports/mozilla/mozilla-central-reftests/flexbox/flexbox-justify-content-horiz-005.xhtml [ Failure ]
+crbug.com/1011718 external/wpt/css/vendor-imports/mozilla/mozilla-central-reftests/flexbox/flexbox-justify-content-horiz-006.xhtml [ Failure ]
+
+# We don't support requesting flex line breaks and it is not clear that we should.
+# See https://lists.w3.org/Archives/Public/www-style/2015May/0065.html
+crbug.com/473481 external/wpt/css/vendor-imports/mozilla/mozilla-central-reftests/flexbox/flexbox-break-request-horiz-001a.html [ Failure ]
+crbug.com/473481 external/wpt/css/vendor-imports/mozilla/mozilla-central-reftests/flexbox/flexbox-break-request-horiz-001b.html [ Failure ]
+crbug.com/473481 external/wpt/css/vendor-imports/mozilla/mozilla-central-reftests/flexbox/flexbox-break-request-vert-001a.html [ Failure ]
+crbug.com/473481 external/wpt/css/vendor-imports/mozilla/mozilla-central-reftests/flexbox/flexbox-break-request-vert-001b.html [ Failure ]
+
+# We don't currently support visibility: collapse in flexbox
+crbug.com/336604 external/wpt/css/vendor-imports/mozilla/mozilla-central-reftests/flexbox/flexbox-collapsed-item-baseline-001.html [ Failure ]
+crbug.com/336604 external/wpt/css/vendor-imports/mozilla/mozilla-central-reftests/flexbox/flexbox-collapsed-item-horiz-001.html [ Failure ]
+crbug.com/336604 external/wpt/css/vendor-imports/mozilla/mozilla-central-reftests/flexbox/flexbox-collapsed-item-horiz-002.html [ Failure ]
+crbug.com/336604 external/wpt/css/vendor-imports/mozilla/mozilla-central-reftests/flexbox/flexbox-collapsed-item-horiz-003.html [ Failure ]
+
+# We don't correctly implement aspect ratios for images in Flexbox
+crbug.com/531199 external/wpt/css/vendor-imports/mozilla/mozilla-central-reftests/flexbox/flexbox-intrinsic-ratio-001.html [ Failure ]
+crbug.com/531199 external/wpt/css/vendor-imports/mozilla/mozilla-central-reftests/flexbox/flexbox-intrinsic-ratio-002.html [ Failure ]
+crbug.com/531199 external/wpt/css/vendor-imports/mozilla/mozilla-central-reftests/flexbox/flexbox-intrinsic-ratio-005.html [ Failure ]
+crbug.com/531199 external/wpt/css/vendor-imports/mozilla/mozilla-central-reftests/flexbox/flexbox-intrinsic-ratio-006.html [ Failure ]
+crbug.com/1111128 external/wpt/css/vendor-imports/mozilla/mozilla-central-reftests/flexbox/flexbox-min-height-auto-002b.html [ Failure ]
+
+# These tests are incorrect, as Firefox has a bug in this area. https://bugzilla.mozilla.org/show_bug.cgi?id=1136312
+crbug.com/553838 external/wpt/css/vendor-imports/mozilla/mozilla-central-reftests/flexbox/flexbox-min-height-auto-002a.html [ Failure ]
+crbug.com/553838 external/wpt/css/vendor-imports/mozilla/mozilla-central-reftests/flexbox/flexbox-min-height-auto-002c.html [ Failure ]
+crbug.com/553838 external/wpt/css/vendor-imports/mozilla/mozilla-central-reftests/flexbox/flexbox-min-width-auto-002a.html [ Failure ]
+crbug.com/553838 external/wpt/css/vendor-imports/mozilla/mozilla-central-reftests/flexbox/flexbox-min-width-auto-002c.html [ Failure ]
+
+# We paint in an incorrect order when layers are present. Blocked on composite-after-paint.
+crbug.com/370604 external/wpt/css/vendor-imports/mozilla/mozilla-central-reftests/flexbox/flexbox-paint-ordering-002.xhtml [ Failure ]
+
+# Untriaged flex failures
+crbug.com/626703 external/wpt/css/vendor-imports/mozilla/mozilla-central-reftests/flexbox/flexbox-align-content-wmvert-001.xhtml [ Failure ]
+crbug.com/626703 external/wpt/css/vendor-imports/mozilla/mozilla-central-reftests/flexbox/flexbox-align-self-baseline-horiz-001a.xhtml [ Failure ]
+crbug.com/626703 external/wpt/css/vendor-imports/mozilla/mozilla-central-reftests/flexbox/flexbox-align-self-baseline-horiz-001b.xhtml [ Failure ]
+crbug.com/626703 external/wpt/css/vendor-imports/mozilla/mozilla-central-reftests/flexbox/flexbox-align-self-baseline-horiz-006.xhtml [ Failure ]
+crbug.com/626703 external/wpt/css/vendor-imports/mozilla/mozilla-central-reftests/flexbox/flexbox-align-self-baseline-horiz-007.xhtml [ Failure ]
+crbug.com/626703 external/wpt/css/vendor-imports/mozilla/mozilla-central-reftests/flexbox/flexbox-align-self-baseline-horiz-008.xhtml [ Failure ]
+crbug.com/626703 external/wpt/css/vendor-imports/mozilla/mozilla-central-reftests/flexbox/flexbox-align-self-vert-002.xhtml [ Failure ]
+crbug.com/626703 external/wpt/css/vendor-imports/mozilla/mozilla-central-reftests/flexbox/flexbox-align-self-vert-rtl-005.xhtml [ Failure ]
+crbug.com/626703 external/wpt/css/vendor-imports/mozilla/mozilla-central-reftests/flexbox/flexbox-baseline-align-self-baseline-vert-001.html [ Failure Pass ]
+crbug.com/626703 external/wpt/css/vendor-imports/mozilla/mozilla-central-reftests/flexbox/flexbox-baseline-multi-item-vert-001a.html [ Failure Pass ]
+crbug.com/626703 external/wpt/css/vendor-imports/mozilla/mozilla-central-reftests/flexbox/flexbox-flex-basis-content-001a.html [ Failure ]
+crbug.com/626703 external/wpt/css/vendor-imports/mozilla/mozilla-central-reftests/flexbox/flexbox-flex-basis-content-001b.html [ Failure ]
+crbug.com/626703 external/wpt/css/vendor-imports/mozilla/mozilla-central-reftests/flexbox/flexbox-flex-basis-content-002a.html [ Failure ]
+crbug.com/626703 external/wpt/css/vendor-imports/mozilla/mozilla-central-reftests/flexbox/flexbox-flex-basis-content-002b.html [ Failure ]
+crbug.com/626703 external/wpt/css/vendor-imports/mozilla/mozilla-central-reftests/flexbox/flexbox-flex-basis-content-003a.html [ Failure ]
+crbug.com/626703 external/wpt/css/vendor-imports/mozilla/mozilla-central-reftests/flexbox/flexbox-flex-basis-content-004a.html [ Failure ]
+crbug.com/626703 external/wpt/css/vendor-imports/mozilla/mozilla-central-reftests/flexbox/flexbox-intrinsic-ratio-001v.html [ Failure ]
+crbug.com/626703 external/wpt/css/vendor-imports/mozilla/mozilla-central-reftests/flexbox/flexbox-intrinsic-ratio-002v.html [ Failure ]
+crbug.com/626703 external/wpt/css/vendor-imports/mozilla/mozilla-central-reftests/flexbox/flexbox-intrinsic-ratio-005v.html [ Failure ]
+crbug.com/626703 external/wpt/css/vendor-imports/mozilla/mozilla-central-reftests/flexbox/flexbox-intrinsic-ratio-006v.html [ Failure ]
+crbug.com/626703 external/wpt/css/vendor-imports/mozilla/mozilla-central-reftests/flexbox/flexbox-intrinsic-ratio-007.html [ Failure ]
+crbug.com/626703 external/wpt/css/vendor-imports/mozilla/mozilla-central-reftests/flexbox/flexbox-intrinsic-ratio-007v.html [ Failure ]
+crbug.com/626703 external/wpt/css/vendor-imports/mozilla/mozilla-central-reftests/flexbox/flexbox-justify-content-vert-006.xhtml [ Failure ]
+crbug.com/626703 external/wpt/css/vendor-imports/mozilla/mozilla-central-reftests/flexbox/flexbox-justify-content-wmvert-001.xhtml [ Failure ]
+crbug.com/626703 external/wpt/css/vendor-imports/mozilla/mozilla-central-reftests/flexbox/flexbox-safe-overflow-position-001.html [ Failure ]
+crbug.com/715718 [ Win ] external/wpt/css/css-flexbox/align-items-004.htm [ Failure Pass ]
+crbug.com/715718 [ Win ] external/wpt/css/css-flexbox/flex-minimum-width-flex-items-001.xht [ Failure Pass ]
+crbug.com/715718 [ Win ] external/wpt/css/css-flexbox/flex-minimum-width-flex-items-003.xht [ Failure Pass ]
+crbug.com/715718 [ Win ] external/wpt/css/css-flexbox/flexbox_flex-natural-mixed-basis-auto.html [ Failure Pass ]
+crbug.com/898186 external/wpt/css/vendor-imports/mozilla/mozilla-central-reftests/flexbox/flexbox-intrinsic-ratio-003v.html [ Pass Failure ]
 
 # [css-lists]
 crbug.com/1066577 external/wpt/css/css-lists/li-value-reversed-005.html [ Failure ]
@@ -1969,70 +2059,10 @@ crbug.com/957181 external/wpt/resource-timing/nested-context-navigations-iframe.
 # Chrome touch-action computation ignores div transforms.
 crbug.com/715148 external/wpt/pointerevents/pointerevent_touch-action-rotated-divs_touch-manual.html [ Skip ]
 
-# These testcases are incorrect, mark them as failing until they're fixed in the testsuite.
-# https://lists.w3.org/Archives/Public/www-style/2016Jan/0275.html
-# https://lists.w3.org/Archives/Public/www-style/2016Jan/0276.html
-crbug.com/249112 external/wpt/css/css-flexbox/flex-minimum-height-flex-items-005.xht [ Failure ]
-crbug.com/249112 external/wpt/css/css-flexbox/flex-minimum-height-flex-items-007.xht [ Failure ]
-crbug.com/249112 external/wpt/css/css-flexbox/flex-minimum-width-flex-items-005.xht [ Failure ]
-crbug.com/249112 external/wpt/css/css-flexbox/flex-minimum-width-flex-items-007.xht [ Failure ]
-
-# Not implemented yet
-crbug.com/336604 external/wpt/css/css-flexbox/flexbox_visibility-collapse-line-wrapping.html [ Failure ]
-crbug.com/336604 external/wpt/css/css-flexbox/flexbox_visibility-collapse.html [ Failure ]
-
-crbug.com/807497 external/wpt/css/css-flexbox/anonymous-flex-item-005.html [ Failure ]
-crbug.com/467127 external/wpt/css/css-flexbox/flexbox_justifycontent-center-overflow.html [ Failure ]
-crbug.com/467127 external/wpt/css/css-flexbox/getcomputedstyle/flexbox_computedstyle_flex-basis-0percent.html [ Failure ]
-crbug.com/467127 external/wpt/css/css-flexbox/getcomputedstyle/flexbox_computedstyle_flex-shorthand-number.html [ Failure ]
-
-crbug.com/467127 external/wpt/css/vendor-imports/mozilla/mozilla-central-reftests/flexbox/flexbox-align-content-horiz-001a.xhtml [ Failure ]
-crbug.com/467127 external/wpt/css/vendor-imports/mozilla/mozilla-central-reftests/flexbox/flexbox-align-content-horiz-001b.xhtml [ Failure ]
-crbug.com/467127 external/wpt/css/vendor-imports/mozilla/mozilla-central-reftests/flexbox/flexbox-align-content-vert-001a.xhtml [ Failure ]
-crbug.com/467127 external/wpt/css/vendor-imports/mozilla/mozilla-central-reftests/flexbox/flexbox-align-content-vert-001b.xhtml [ Failure ]
-crbug.com/467127 external/wpt/css/vendor-imports/mozilla/mozilla-central-reftests/flexbox/flexbox-justify-content-horiz-001a.xhtml [ Failure ]
-crbug.com/467127 external/wpt/css/vendor-imports/mozilla/mozilla-central-reftests/flexbox/flexbox-justify-content-horiz-001b.xhtml [ Failure ]
-crbug.com/467127 external/wpt/css/vendor-imports/mozilla/mozilla-central-reftests/flexbox/flexbox-justify-content-horiz-003.xhtml [ Failure ]
-crbug.com/467127 external/wpt/css/vendor-imports/mozilla/mozilla-central-reftests/flexbox/flexbox-justify-content-horiz-005.xhtml [ Failure ]
-crbug.com/467127 external/wpt/css/vendor-imports/mozilla/mozilla-central-reftests/flexbox/flexbox-writing-mode-010.html [ Failure Pass ]
-crbug.com/467127 external/wpt/css/vendor-imports/mozilla/mozilla-central-reftests/flexbox/flexbox-writing-mode-012.html [ Failure Pass ]
-crbug.com/467127 external/wpt/css/vendor-imports/mozilla/mozilla-central-reftests/flexbox/flexbox-writing-mode-013.html [ Failure Pass ]
-crbug.com/467127 external/wpt/css/vendor-imports/mozilla/mozilla-central-reftests/flexbox/flexbox-writing-mode-014.html [ Failure Pass ]
-crbug.com/467127 external/wpt/css/vendor-imports/mozilla/mozilla-central-reftests/flexbox/flexbox-writing-mode-015.html [ Failure Pass ]
-
 crbug.com/654999 [ Win ] fast/forms/color/color-suggestion-picker-appearance-zoom200.html [ Pass Failure ]
 crbug.com/654999 [ Linux ] fast/forms/color/color-suggestion-picker-appearance-zoom200.html [ Pass Failure ]
 
 crbug.com/658304 [ Win ] fast/forms/select/input-select-after-resize.html [ Crash Timeout Pass Failure ]
-
-# We don't support requesting flex line breaks and it is not clear that we should.
-# See https://lists.w3.org/Archives/Public/www-style/2015May/0065.html
-crbug.com/473481 external/wpt/css/vendor-imports/mozilla/mozilla-central-reftests/flexbox/flexbox-break-request-horiz-001a.html [ Failure ]
-crbug.com/473481 external/wpt/css/vendor-imports/mozilla/mozilla-central-reftests/flexbox/flexbox-break-request-horiz-001b.html [ Failure ]
-crbug.com/473481 external/wpt/css/vendor-imports/mozilla/mozilla-central-reftests/flexbox/flexbox-break-request-vert-001a.html [ Failure ]
-crbug.com/473481 external/wpt/css/vendor-imports/mozilla/mozilla-central-reftests/flexbox/flexbox-break-request-vert-001b.html [ Failure ]
-
-# We don't currently support visibility: collapse in flexbox
-crbug.com/336604 external/wpt/css/vendor-imports/mozilla/mozilla-central-reftests/flexbox/flexbox-collapsed-item-baseline-001.html [ Failure ]
-crbug.com/336604 external/wpt/css/vendor-imports/mozilla/mozilla-central-reftests/flexbox/flexbox-collapsed-item-horiz-001.html [ Failure ]
-crbug.com/336604 external/wpt/css/vendor-imports/mozilla/mozilla-central-reftests/flexbox/flexbox-collapsed-item-horiz-002.html [ Failure ]
-crbug.com/336604 external/wpt/css/vendor-imports/mozilla/mozilla-central-reftests/flexbox/flexbox-collapsed-item-horiz-003.html [ Failure ]
-
-# We don't correctly implement aspect ratios for images in Flexbox
-crbug.com/531199 external/wpt/css/vendor-imports/mozilla/mozilla-central-reftests/flexbox/flexbox-intrinsic-ratio-001.html [ Failure ]
-crbug.com/531199 external/wpt/css/vendor-imports/mozilla/mozilla-central-reftests/flexbox/flexbox-intrinsic-ratio-002.html [ Failure ]
-crbug.com/531199 external/wpt/css/vendor-imports/mozilla/mozilla-central-reftests/flexbox/flexbox-intrinsic-ratio-005.html [ Failure ]
-crbug.com/531199 external/wpt/css/vendor-imports/mozilla/mozilla-central-reftests/flexbox/flexbox-intrinsic-ratio-006.html [ Failure ]
-crbug.com/531199 external/wpt/css/vendor-imports/mozilla/mozilla-central-reftests/flexbox/flexbox-min-height-auto-002b.html [ Failure ]
-
-# These tests are incorrect, as Firefox has a bug in this area. https://bugzilla.mozilla.org/show_bug.cgi?id=1136312
-crbug.com/553838 external/wpt/css/vendor-imports/mozilla/mozilla-central-reftests/flexbox/flexbox-min-height-auto-002a.html [ Failure ]
-crbug.com/553838 external/wpt/css/vendor-imports/mozilla/mozilla-central-reftests/flexbox/flexbox-min-height-auto-002c.html [ Failure ]
-crbug.com/553838 external/wpt/css/vendor-imports/mozilla/mozilla-central-reftests/flexbox/flexbox-min-width-auto-002a.html [ Failure ]
-crbug.com/553838 external/wpt/css/vendor-imports/mozilla/mozilla-central-reftests/flexbox/flexbox-min-width-auto-002c.html [ Failure ]
-
-# We paint in an incorrect order when layers are present
-crbug.com/370604 external/wpt/css/vendor-imports/mozilla/mozilla-central-reftests/flexbox/flexbox-paint-ordering-002.xhtml [ Failure ]
 
 crbug.com/736319 external/wpt/css/vendor-imports/mozilla/mozilla-central-reftests/writing-modes-3/text-combine-upright-break-inside-001a.html [ Failure ]
 crbug.com/736319 external/wpt/css/vendor-imports/mozilla/mozilla-central-reftests/writing-modes-3/text-combine-upright-compression-001.html [ Failure ]
@@ -2190,11 +2220,6 @@ crbug.com/876485 fast/performance/performance-measure-null-exception.html [ Fail
 
 crbug.com/713587 external/wpt/css/css-ui/caret-color-006.html [ Skip ]
 
-# Automatically-added expectations for CSS tests which are temporarily
-# commented-out while the test directory is disabled (see top of file).
-#crbug.com/626703 [ Win ] external/wpt/css/css-flexbox/flex-minimum-width-flex-items-001.xht [ Failure ]
-#crbug.com/626703 [ Win ] external/wpt/css/css-flexbox/flex-minimum-width-flex-items-003.xht [ Failure ]
-#crbug.com/626703 [ Win ] external/wpt/css/css-flexbox/flexbox_flex-natural-mixed-basis-auto.html [ Failure ]
 crbug.com/626703 external/wpt/css/css-writing-modes/sizing-orthog-htb-in-vrl-013.xht [ Failure ]
 crbug.com/626703 external/wpt/css/css-writing-modes/sizing-orthog-vlr-in-htb-008.xht [ Failure ]
 crbug.com/626703 external/wpt/css/css-writing-modes/sizing-orthog-vlr-in-htb-020.xht [ Failure ]
@@ -2957,9 +2982,6 @@ crbug.com/626703 [ Win ] external/wpt/css/css-align/baseline-rules/grid-item-inp
 crbug.com/626703 external/wpt/webaudio/the-audio-api/processing-model/feedback-delay-time.html [ Failure ]
 crbug.com/626703 external/wpt/webaudio/the-audio-api/processing-model/delay-time-clamping.html [ Failure ]
 crbug.com/626703 external/wpt/webaudio/the-audio-api/processing-model/cycle-without-delay.html [ Failure ]
-crbug.com/626703 [ Linux ] external/wpt/css/vendor-imports/mozilla/mozilla-central-reftests/flexbox/flexbox-align-self-baseline-horiz-008.xhtml [ Failure ]
-crbug.com/626703 [ Mac ] external/wpt/css/vendor-imports/mozilla/mozilla-central-reftests/flexbox/flexbox-align-self-baseline-horiz-008.xhtml [ Failure ]
-crbug.com/626703 [ Win ] external/wpt/css/vendor-imports/mozilla/mozilla-central-reftests/flexbox/flexbox-align-self-baseline-horiz-008.xhtml [ Failure ]
 crbug.com/626703 [ Win7 ] external/wpt/pointerevents/pointerevent_touch-action-inherit_child-pan-x-child-pan-y_touch.html [ Timeout ]
 crbug.com/626703 [ Win7 ] external/wpt/pointerevents/pointerevent_touch-action-inherit_child-none_touch.html [ Timeout ]
 crbug.com/626703 [ Win ] external/wpt/css/css-text/word-break/word-break-keep-all-008.html [ Failure ]
@@ -3130,11 +3152,9 @@ crbug.com/626703 external/wpt/html/semantics/forms/the-fieldset-element/accessib
 crbug.com/626703 external/wpt/html/semantics/forms/the-fieldset-element/accessibility/legend-display-none-manual.html [ Skip ]
 crbug.com/626703 external/wpt/webrtc/RTCPeerConnection-setRemoteDescription-tracks.https.html [ Timeout ]
 crbug.com/626703 external/wpt/webrtc/RTCPeerConnection-remote-track-mute.https.html [ Timeout ]
-crbug.com/626703 external/wpt/css/vendor-imports/mozilla/mozilla-central-reftests/flexbox/flexbox-intrinsic-ratio-007v.html [ Failure ]
 crbug.com/626703 external/wpt/css/vendor-imports/mozilla/mozilla-central-reftests/counter-styles-3/system-cyclic-invalid.html [ Pass Failure Timeout ]
 crbug.com/626703 external/wpt/css/vendor-imports/mozilla/mozilla-central-reftests/counter-styles-3/system-alphabetic-invalid.html [ Pass Failure Timeout ]
 crbug.com/626703 [ Mac10.11 ] external/wpt/mimesniff/mime-types/parsing.any.html [ Timeout ]
-crbug.com/626703 external/wpt/css/vendor-imports/mozilla/mozilla-central-reftests/flexbox/flexbox-intrinsic-ratio-007.html [ Failure ]
 crbug.com/626703 external/wpt/html/infrastructure/urls/resolving-urls/query-encoding/navigation.sub.html?encoding=windows-1252 [ Timeout ]
 crbug.com/626703 external/wpt/css/css-values/ch-unit-011.html [ Failure ]
 crbug.com/626703 [ Mac ] external/wpt/html/browsers/the-window-object/apis-for-creating-and-navigating-browsing-contexts-by-name/open-features-tokenization-width-height.html [ Crash Timeout ]
@@ -3265,15 +3285,7 @@ crbug.com/626703 external/wpt/html/rendering/non-replaced-elements/the-fieldset-
 crbug.com/626703 external/wpt/html/webappapis/dynamic-markup-insertion/opening-the-input-stream/tasks.window.html [ Timeout ]
 crbug.com/875411 external/wpt/svg/text/reftests/text-complex-002.svg [ Failure ]
 crbug.com/875411 external/wpt/svg/text/reftests/text-shape-inside-001.svg [ Failure ]
-crbug.com/626703 external/wpt/css/vendor-imports/mozilla/mozilla-central-reftests/flexbox/flexbox-align-self-vert-002.xhtml [ Failure ]
-crbug.com/626703 external/wpt/css/vendor-imports/mozilla/mozilla-central-reftests/flexbox/flexbox-align-content-wmvert-001.xhtml [ Failure ]
-crbug.com/626703 external/wpt/css/vendor-imports/mozilla/mozilla-central-reftests/flexbox/flexbox-justify-content-vert-006.xhtml [ Failure ]
-crbug.com/626703 external/wpt/css/vendor-imports/mozilla/mozilla-central-reftests/flexbox/flexbox-align-self-vert-rtl-005.xhtml [ Failure ]
-crbug.com/626703 external/wpt/css/vendor-imports/mozilla/mozilla-central-reftests/flexbox/flexbox-justify-content-wmvert-001.xhtml [ Failure ]
 crbug.com/875411 external/wpt/svg/text/reftests/text-complex-001.svg [ Failure ]
-crbug.com/626703 external/wpt/css/vendor-imports/mozilla/mozilla-central-reftests/flexbox/flexbox-align-content-vert-002.xhtml [ Failure ]
-crbug.com/626703 external/wpt/css/vendor-imports/mozilla/mozilla-central-reftests/flexbox/flexbox-justify-content-horiz-006.xhtml [ Failure ]
-crbug.com/626703 external/wpt/css/vendor-imports/mozilla/mozilla-central-reftests/flexbox/flexbox-align-content-horiz-002.xhtml [ Failure ]
 crbug.com/875411 external/wpt/svg/text/reftests/text-shape-inside-002.svg [ Failure ]
 crbug.com/626703 external/wpt/speech-api/SpeechSynthesis-speak-without-activation-fails.tentative.html [ Failure ]
 crbug.com/366553 external/wpt/svg/text/reftests/text-inline-size-007.svg [ Failure ]
@@ -3297,7 +3309,6 @@ crbug.com/626703 [ Win ] external/wpt/css/css-lists/content-property/marker-text
 crbug.com/626703 external/wpt/css/css-lists/content-property/marker-text-matches-square.html [ Failure ]
 crbug.com/626703 external/wpt/svg/linking/reftests/use-descendant-combinator-003.html [ Failure ]
 crbug.com/626703 external/wpt/css/css-lists/content-property/marker-text-matches-circle.html [ Failure ]
-crbug.com/626703 external/wpt/css/vendor-imports/mozilla/mozilla-central-reftests/flexbox/flexbox-safe-overflow-position-001.html [ Failure ]
 crbug.com/626703 external/wpt/content-security-policy/securitypolicyviolation/inside-service-worker.https.html [ Timeout ]
 crbug.com/626703 external/wpt/content-security-policy/securitypolicyviolation/inside-shared-worker.html [ Timeout ]
 crbug.com/626703 external/wpt/content-security-policy/securitypolicyviolation/inside-dedicated-worker.html [ Timeout ]
@@ -3393,17 +3404,11 @@ crbug.com/626703 external/wpt/css/cssom-view/scroll-behavior-smooth.html [ Timeo
 crbug.com/626703 [ IOS ] external/wpt/websockets/Create-Secure-extensions-empty.any.html [ Timeout ]
 crbug.com/626703 [ IOS ] external/wpt/websockets/Create-Secure-extensions-empty.any.worker.html [ Timeout ]
 crbug.com/626703 external/wpt/html/browsers/history/joint-session-history/joint-session-history-remove-iframe.html [ Timeout ]
-crbug.com/626703 external/wpt/css/vendor-imports/mozilla/mozilla-central-reftests/flexbox/flexbox-flex-basis-content-003a.html [ Failure ]
-crbug.com/626703 external/wpt/css/vendor-imports/mozilla/mozilla-central-reftests/flexbox/flexbox-flex-basis-content-004a.html [ Failure ]
 crbug.com/626703 external/wpt/css/css-shapes/shape-outside/shape-image/gradients/shape-outside-linear-gradient-008.html [ Failure ]
 crbug.com/626703 external/wpt/css/css-shapes/shape-outside/shape-image/gradients/shape-outside-linear-gradient-006.html [ Failure ]
 crbug.com/626703 external/wpt/css/css-shapes/shape-outside/shape-image/gradients/shape-outside-linear-gradient-005.html [ Failure ]
 crbug.com/626703 external/wpt/css/css-fonts/font-variant-descriptor-01.html [ Failure ]
 crbug.com/626703 external/wpt/css/css-shapes/shape-outside/shape-image/gradients/shape-outside-linear-gradient-007.html [ Failure ]
-crbug.com/626703 external/wpt/css/vendor-imports/mozilla/mozilla-central-reftests/flexbox/flexbox-flex-basis-content-001a.html [ Failure ]
-crbug.com/626703 external/wpt/css/vendor-imports/mozilla/mozilla-central-reftests/flexbox/flexbox-flex-basis-content-002a.html [ Failure ]
-crbug.com/626703 external/wpt/css/vendor-imports/mozilla/mozilla-central-reftests/flexbox/flexbox-flex-basis-content-002b.html [ Failure ]
-crbug.com/626703 external/wpt/css/vendor-imports/mozilla/mozilla-central-reftests/flexbox/flexbox-flex-basis-content-001b.html [ Failure ]
 crbug.com/626703 [ Win7 ] external/wpt/css/css-fonts/variations/font-opentype-collections.html [ Timeout ]
 crbug.com/626703 external/wpt/css/vendor-imports/mozilla/mozilla-central-reftests/counter-styles-3/system-numeric.html [ Failure ]
 crbug.com/626703 external/wpt/css/vendor-imports/mozilla/mozilla-central-reftests/counter-styles-3/descriptor-suffix-invalid.html [ Failure ]
@@ -3432,14 +3437,10 @@ crbug.com/626703 external/wpt/css/vendor-imports/mozilla/mozilla-central-reftest
 crbug.com/626703 external/wpt/css/vendor-imports/mozilla/mozilla-central-reftests/counter-styles-3/descriptor-symbols.html [ Failure ]
 crbug.com/626703 external/wpt/css/vendor-imports/mozilla/mozilla-central-reftests/counter-styles-3/system-extends-invalid.html [ Failure ]
 crbug.com/626703 external/wpt/css/vendor-imports/mozilla/mozilla-central-reftests/counter-styles-3/redefine-builtin.html [ Failure ]
-crbug.com/626703 external/wpt/css/vendor-imports/mozilla/mozilla-central-reftests/flexbox/flexbox-intrinsic-ratio-006v.html [ Failure ]
 crbug.com/626703 external/wpt/css/css-fonts/font-feature-resolution-001.html [ Failure ]
 crbug.com/626703 external/wpt/css/css-fonts/font-feature-resolution-002.html [ Failure ]
 crbug.com/626703 external/wpt/css/css-fonts/font-variant-05.xht [ Failure ]
 crbug.com/626703 external/wpt/css/css-fonts/font-variant-06.xht [ Failure ]
-crbug.com/626703 external/wpt/css/vendor-imports/mozilla/mozilla-central-reftests/flexbox/flexbox-intrinsic-ratio-001v.html [ Failure ]
-crbug.com/626703 external/wpt/css/vendor-imports/mozilla/mozilla-central-reftests/flexbox/flexbox-intrinsic-ratio-002v.html [ Failure ]
-crbug.com/626703 external/wpt/css/vendor-imports/mozilla/mozilla-central-reftests/flexbox/flexbox-intrinsic-ratio-005v.html [ Failure ]
 crbug.com/626703 external/wpt/css/mediaqueries/viewport-script-dynamic.html [ Failure ]
 crbug.com/626703 external/wpt/css/css-writing-modes/available-size-014.html [ Failure ]
 crbug.com/626703 external/wpt/css/css-writing-modes/available-size-013.html [ Failure ]
@@ -3522,12 +3523,6 @@ crbug.com/626703 external/wpt/css/css-fonts/font-variant-position-03.html [ Fail
 crbug.com/626703 external/wpt/css/css-fonts/font-variant-position.html [ Failure ]
 crbug.com/626703 external/wpt/css/css-tables/floats/floats-wrap-bfc-006b.xht [ Failure ]
 crbug.com/626703 external/wpt/css/css-tables/floats/floats-wrap-bfc-006c.xht [ Failure ]
-crbug.com/626703 external/wpt/css/vendor-imports/mozilla/mozilla-central-reftests/flexbox/flexbox-align-self-baseline-horiz-001a.xhtml [ Failure ]
-crbug.com/626703 external/wpt/css/vendor-imports/mozilla/mozilla-central-reftests/flexbox/flexbox-align-self-baseline-horiz-001b.xhtml [ Failure ]
-crbug.com/626703 external/wpt/css/vendor-imports/mozilla/mozilla-central-reftests/flexbox/flexbox-align-self-baseline-horiz-006.xhtml [ Failure ]
-crbug.com/626703 external/wpt/css/vendor-imports/mozilla/mozilla-central-reftests/flexbox/flexbox-align-self-baseline-horiz-007.xhtml [ Failure ]
-crbug.com/626703 external/wpt/css/vendor-imports/mozilla/mozilla-central-reftests/flexbox/flexbox-baseline-align-self-baseline-vert-001.html [ Failure Pass ]
-crbug.com/626703 external/wpt/css/vendor-imports/mozilla/mozilla-central-reftests/flexbox/flexbox-baseline-multi-item-vert-001a.html [ Failure Pass ]
 crbug.com/626703 external/wpt/css/vendor-imports/mozilla/mozilla-central-reftests/writing-modes-3/logical-physical-mapping-001.html [ Failure ]
 crbug.com/626703 external/wpt/encoding/eof-utf-8-three.html [ Failure ]
 crbug.com/626703 external/wpt/encoding/eof-utf-8-two.html [ Failure ]
@@ -4874,10 +4869,6 @@ crbug.com/874931 virtual/threaded-prefer-compositing/fast/scroll-behavior/smooth
 crbug.com/875003 [ Win ] editing/caret/caret-is-hidden-when-no-focus.html [ Pass Failure ]
 
 crbug.com/715718 external/wpt/media-source/mediasource-remove.html [ Failure Pass ]
-crbug.com/715718 [ Win ] external/wpt/css/css-flexbox/align-items-004.htm [ Failure Pass ]
-crbug.com/715718 [ Win ] external/wpt/css/css-flexbox/flex-minimum-width-flex-items-001.xht [ Failure Pass ]
-crbug.com/715718 [ Win ] external/wpt/css/css-flexbox/flex-minimum-width-flex-items-003.xht [ Failure Pass ]
-crbug.com/715718 [ Win ] external/wpt/css/css-flexbox/flexbox_flex-natural-mixed-basis-auto.html [ Failure Pass ]
 
 # New failure when importing css-variables:
 crbug.com/791529 external/wpt/css/css-variables/variable-transitions-from-no-value.html [ Skip ]
@@ -5468,8 +5459,6 @@ crbug.com/874162 [ Mac ] fast/events/middleClickAutoscroll-nested-divs-forbidden
 # The next also fails due to crbug.com/891427, thus disabled on all platforms.
 crbug.com/874162 [ Mac ] fast/events/middleClickAutoscroll-nested-divs.html [ Skip ]
 crbug.com/874162 [ Mac ] fast/events/selection-autoscroll-borderbelt.html [ Skip ]
-
-crbug.com/898186 external/wpt/css/vendor-imports/mozilla/mozilla-central-reftests/flexbox/flexbox-intrinsic-ratio-003v.html [ Pass Failure ]
 
 # Sheriff 2018-09-10
 crbug.com/881207 fast/js/regress/splice-to-remove.html [ Timeout Pass ]

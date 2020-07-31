@@ -14,7 +14,6 @@
 <translation id="1084365883616172403">Facebook-plasing is voltooi.</translation>
 <translation id="1103523840287552314">Vertaal <ph name="LANGUAGE" /> altyd</translation>
 <translation id="1104948393051856124">Aanvaar en gaan voort</translation>
-<translation id="1105578556867525047">Verander wagwoord op webwerf</translation>
 <translation id="1112015203684611006">Kon nie druk nie.</translation>
 <translation id="1125564390852150847">Skep nuwe oortjie.</translation>
 <translation id="1145536944570833626">Vee bestaande data uit.</translation>
@@ -246,7 +245,6 @@ Terwyl jy in Incognito is, kan werwe nie webkoekies gebruik om jou blaai-aktiwit
 <translation id="3783017676699494206">Stoor prent</translation>
 <translation id="3789841737615482174">Installeer</translation>
 <translation id="3803696231112616155">Bied aan om hierdie werf te vertaal</translation>
-<translation id="3836313059960742452">{COUNT,plural, =0{Geen wagwoorde is gekompromitteer nie}=1{{COUNT} wagwoord is gekompromitteer}other{{COUNT} wagwoorde is gekompromitteer}}</translation>
 <translation id="385051799172605136">Terug</translation>
 <translation id="3892144330757387737">Jy sal jou geskiedenis hier kry</translation>
 <translation id="3897092660631435901">Kieslys</translation>
@@ -333,6 +331,7 @@ Jou data is met jou sinkroniseringwagfrase geënkripteer. Voer dit in om te begi
 <translation id="4901778704868714008">Stoor …</translation>
 <translation id="4904877109095351937">Merk as gelees</translation>
 <translation id="4930268273022498155">Vee bestaande data uit. Jy kan dit herwin deur weer na <ph name="USER_EMAIL1" /> oor te skakel.</translation>
+<translation id="4930714375720679147">Skakel aan</translation>
 <translation id="4941089862236492464">Jammer, kon nie jou item deel nie.</translation>
 <translation id="4944543191714094452">Soek op bladsy …</translation>
 <translation id="4945756290001680296">Gaan by wagwoordinstelling in</translation>
@@ -611,6 +610,7 @@ Werwe kan webkoekies gebruik om jou blaai-aktiwiteit op verskillende werwe te si
 <translation id="8073670137947914548">Aflaai is klaar</translation>
 <translation id="8073872304774253879">Maak soektogte en blaai-ervaring beter</translation>
 <translation id="8076014560081431679">Gestoorde werfinstellings sal nie uitgevee word nie en sal dalk jou blaaigewoontes weerspieël. <ph name="BEGIN_LINK" />Kom meer te wete<ph name="END_LINK" /></translation>
+<translation id="8105368624971345109">Skakel af</translation>
 <translation id="8114753159095730575">Lêer kan afgelaai word. Opsies is naby die onderkant van die skerm beskikbaar.</translation>
 <translation id="8131740175452115882">Bevestig</translation>
 <translation id="8197543752516192074">Vertaal bladsy</translation>

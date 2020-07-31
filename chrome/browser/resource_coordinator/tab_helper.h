@@ -21,8 +21,6 @@
 
 namespace resource_coordinator {
 
-class LocalSiteCharacteristicsWebContentsObserver;
-
 class ResourceCoordinatorTabHelper
     : public content::WebContentsObserver,
       public content::WebContentsUserData<ResourceCoordinatorTabHelper> {
@@ -45,13 +43,6 @@ class ResourceCoordinatorTabHelper
   ukm::SourceId ukm_source_id() const { return ukm_source_id_; }
   void SetUkmSourceIdForTest(ukm::SourceId id) { ukm_source_id_ = id; }
 
-#if !defined(OS_ANDROID)
-  LocalSiteCharacteristicsWebContentsObserver*
-  local_site_characteristics_wc_observer() {
-    return local_site_characteristics_wc_observer_.get();
-  }
-#endif
-
  private:
   explicit ResourceCoordinatorTabHelper(content::WebContents* web_contents);
 
@@ -59,12 +50,6 @@ class ResourceCoordinatorTabHelper
   ukm::SourceId ukm_source_id_ = ukm::kInvalidSourceId;
 
   friend class content::WebContentsUserData<ResourceCoordinatorTabHelper>;
-
-#if !defined(OS_ANDROID)
-  std::unique_ptr<LocalSiteCharacteristicsWebContentsObserver>
-      local_site_characteristics_wc_observer_;
-#endif
-
 
   WEB_CONTENTS_USER_DATA_KEY_DECL();
 

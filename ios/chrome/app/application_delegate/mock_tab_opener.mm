@@ -7,6 +7,7 @@
 #include "base/ios/block_types.h"
 #include "ios/chrome/app/application_mode.h"
 #import "ios/chrome/browser/url_loading/url_loading_params.h"
+#import "net/base/mac/url_conversions.h"
 #include "ui/base/page_transition_types.h"
 #include "url/gurl.h"
 
@@ -14,7 +15,9 @@
 #error "This file requires ARC support."
 #endif
 
-@implementation MockTabOpener
+@implementation MockTabOpener {
+  std::vector<GURL> _URLs;
+}
 
 - (void)dismissModalsAndOpenSelectedTabInMode:
             (ApplicationModeForTabOpening)targetMode
@@ -25,6 +28,15 @@
   _urlLoadParams = urlLoadParams;
   _applicationMode = targetMode;
   _completionBlock = [completion copy];
+  _URLs.push_back(urlLoadParams.web_params.url);
+}
+
+- (void)dismissModalsAndOpenMultipleTabsInMode:
+            (ApplicationModeForTabOpening)targetMode
+                                          URLs:(const std::vector<GURL>&)URLs
+                                dismissOmnibox:(BOOL)dismissOmnibox
+                                    completion:(ProceduralBlock)completion {
+  _URLs = URLs;
 }
 
 - (void)resetURL {

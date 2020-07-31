@@ -161,6 +161,15 @@ void CaptionController::OnBrowserRemoved(Browser* browser) {
   caption_bubble_controllers_.erase(browser);
 }
 
+bool CaptionController::OnSpeechRecognitionReady(
+    content::WebContents* web_contents) {
+  Browser* browser = chrome::FindBrowserWithWebContents(web_contents);
+  if (!browser || !caption_bubble_controllers_.count(browser))
+    return false;
+  return caption_bubble_controllers_[browser]->OnSpeechRecognitionReady(
+      web_contents);
+}
+
 bool CaptionController::DispatchTranscription(
     content::WebContents* web_contents,
     const chrome::mojom::TranscriptionResultPtr& transcription_result) {

@@ -14,7 +14,6 @@
 <translation id="1084365883616172403">Facebook પોસ્ટ પૂર્ણ કરી છે.</translation>
 <translation id="1103523840287552314"><ph name="LANGUAGE" /> નો હંમેશાં અનુવાદ કરો</translation>
 <translation id="1104948393051856124">સ્વીકારો અને ચાલુ રાખો</translation>
-<translation id="1105578556867525047">વેબસાઇટ પર પાસવર્ડ બદલો</translation>
 <translation id="1112015203684611006">છાપવાનું નિષ્ફળ થયું.</translation>
 <translation id="1125564390852150847">નવું ટૅબ બનાવો.</translation>
 <translation id="1145536944570833626">અસ્તિત્વમાંના ડેટાને ડિલીટ કરો.</translation>
@@ -245,7 +244,6 @@
 <translation id="3783017676699494206">ફોટા સાચવો</translation>
 <translation id="3789841737615482174">ઇન્સ્ટોલ કરો</translation>
 <translation id="3803696231112616155">આ સાઇટનો અનુવાદ કરવાનું કહો</translation>
-<translation id="3836313059960742452">{COUNT,plural, =0{કોઈપણ પાસવર્ડ સાથે ચેડાં થયા નથી}=1{{COUNT} પાસવર્ડ સાથે ચેડાં થયા છે}one{{COUNT} પાસવર્ડ સાથે ચેડાં થયા છે}other{{COUNT} પાસવર્ડ સાથે ચેડાં થયા છે}}</translation>
 <translation id="385051799172605136">પાછળ</translation>
 <translation id="3892144330757387737">તમને તમારો ઇતિહાસ અહીં મળશે</translation>
 <translation id="3897092660631435901">મેનૂ</translation>
@@ -332,6 +330,7 @@
 <translation id="4901778704868714008">સાચવો...</translation>
 <translation id="4904877109095351937">વાંચેલ તરીકે ચિહ્નિત કરો</translation>
 <translation id="4930268273022498155">અસ્તિત્વમાંનો ડેટા ડિલીટ કરો. તમે <ph name="USER_EMAIL1" /> પર પાછા સ્વિચ કરીને એને પાછું મેળવી શકો છો.</translation>
+<translation id="4930714375720679147">ચાલુ કરો</translation>
 <translation id="4941089862236492464">માફ કરશો, તમારી આઇટમને શેર કરવામાં સમસ્યા આવી હતી.</translation>
 <translation id="4944543191714094452">પેજમાં શોધો…</translation>
 <translation id="4945756290001680296">પાસવર્ડના સેટિંગને ઍક્સેસ કરો</translation>
@@ -610,6 +609,7 @@
 <translation id="8073670137947914548">ડાઉનલોડ સમાપ્ત</translation>
 <translation id="8073872304774253879">શોધ અને બ્રાઉઝિંગ વધુ સારું બનાવો</translation>
 <translation id="8076014560081431679">સાચવેલ સાઇટ સેટિંગ્સ કાઢી નાખવામાં આવશે નહીં અને તે તમારી બ્રાઉઝિંગ ટેવોને પ્રતિબિંબિત કરી શકે છે. <ph name="BEGIN_LINK" />વધુ જાણો<ph name="END_LINK" /></translation>
+<translation id="8105368624971345109">બંધ કરો</translation>
 <translation id="8114753159095730575">ફાઇલ ડાઉનલોડ માટે ઉપલબ્ધ છે. સ્ક્રીનના તળિયે વિકલ્પો ઉપલબ્ધ છે.</translation>
 <translation id="8131740175452115882">પુષ્ટિ કરો</translation>
 <translation id="8197543752516192074">પેજનો અનુવાદ કરો</translation>

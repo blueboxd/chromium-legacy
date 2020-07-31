@@ -1162,7 +1162,6 @@
 <translation id="2408955596600435184">Մուտքագրեք ձեր PIN կոդը</translation>
 <translation id="241082044617551207">Անհայտ փլագին</translation>
 <translation id="2412593942846481727">Հասանելի է նոր տարբերակը</translation>
-<translation id="2414499877591062094">Միացնել PIN կոդի ավտոմատ ուղարկումը</translation>
 <translation id="2416435988630956212">Ստեղնաշարի գործառական ստեղներ</translation>
 <translation id="241727068219398187">Տվյալները գաղտնագրվել են ձեր Google գաղտնաբառով
           <ph name="TIME" />-ին։ Գաղտնագրումը չի կիրառվում վճարման եղանակների և Google Pay-ի հասցեների համար։</translation>
@@ -3406,7 +3405,6 @@
 <translation id="5241128660650683457">Կարդալ ձեր այցելած կայքերի բոլոր տվյալները</translation>
 <translation id="5242724311594467048">Միացնե՞լ «<ph name="EXTENSION_NAME" />» ընդլայնումը:</translation>
 <translation id="5243522832766285132">Մի քանի րոպեից նորից փորձեք</translation>
-<translation id="5244406554036143958">Ավտոմատ ուղարկումը միացնելու համար մուտքագրեք PIN-ը</translation>
 <translation id="5244474230056479698">Համաժամացում <ph name="EMAIL" />-ի հետ</translation>
 <translation id="5245610266855777041">Սկսեք ձեր ուսումնական հաշվից</translation>
 <translation id="5246282308050205996"><ph name="APP_NAME" />-ը խափանվել է: Հավելվածը վերագործարկելու համար սեղմեք այս փուչիկի վրա:</translation>

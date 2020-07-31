@@ -1162,7 +1162,6 @@ Du kan administrere indstillingerne for denne konto ved at installere Family Lin
 <translation id="2408955596600435184">Angiv din pinkode</translation>
 <translation id="241082044617551207">Ukendt plugin</translation>
 <translation id="2412593942846481727">Der er en tilgængelig opdatering</translation>
-<translation id="2414499877591062094">Aktivér automatisk indsendelse af pinkode</translation>
 <translation id="2416435988630956212">Funktionstaster på tastaturet</translation>
 <translation id="241727068219398187">Dataene er krypteret med din Google-adgangskode fra
           <ph name="TIME" />. Dette omfatter ikke betalingsmetoder og adresser fra Google Pay.</translation>
@@ -3405,7 +3404,6 @@ Vil du starte <ph name="CONTROL_PANEL_APPLET_NAME" />?</translation>
 <translation id="5241128660650683457">Læs alle dine data på de websites, du besøger</translation>
 <translation id="5242724311594467048">Skal "<ph name="EXTENSION_NAME" />" aktiveres?</translation>
 <translation id="5243522832766285132">Prøv igen om et øjeblik</translation>
-<translation id="5244406554036143958">Angiv din pinkode for at aktivere automatisk indsendelse</translation>
 <translation id="5244474230056479698">Synkroniserer til <ph name="EMAIL" /></translation>
 <translation id="5245610266855777041">Kom godt i gang med en skolekonto</translation>
 <translation id="5246282308050205996"><ph name="APP_NAME" /> er gået ned. Klik her for at genstarte appen.</translation>

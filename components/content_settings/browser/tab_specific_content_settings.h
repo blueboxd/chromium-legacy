@@ -165,12 +165,21 @@ class TabSpecificContentSettings
                                    std::unique_ptr<Delegate> delegate);
   static void DeleteForWebContentsForTest(content::WebContents* web_contents);
 
-  // Returns the object given a RenderFrameHost ids.
+  // Returns the object given a RenderFrameHost ids. Returns nullptr if the
+  // frame no longer exist or there are no TabSpecificContentSettings attached
+  // to the document.
   static TabSpecificContentSettings* GetForFrame(int render_process_id,
                                                  int render_frame_id);
-  // TODO(carlscab): Get rid of this and use GetForFrame instead
-  static TabSpecificContentSettings* FromWebContents(
-      content::WebContents* contents);
+  // Returns the object given a RenderFrameHost. Returns nullptr if the frame
+  // is nullptr or there are no TabSpecificContentSettings attached to the
+  // document.
+  static TabSpecificContentSettings* GetForFrame(content::RenderFrameHost* rfh);
+
+  // Returns the Delegate that was associated to |web_contents| in
+  // CreateForWebContents. Null if CreateForWebContents was not called for
+  // |web_contents|.
+  static TabSpecificContentSettings::Delegate* GetDelegateForWebContents(
+      content::WebContents* web_contents);
 
   // Called when a specific Web database in the current page was accessed. If
   // access was blocked due to the user's content settings,
@@ -369,8 +378,6 @@ class TabSpecificContentSettings
   // since the last navigation.
   bool HasContentSettingChangedViaPageInfo(ContentSettingsType type) const;
 
-  Delegate* delegate() { return delegate_; }
-
  private:
   friend class content::RenderDocumentHostUserData<TabSpecificContentSettings>;
 
@@ -397,6 +404,8 @@ class TabSpecificContentSettings
 
     // Notifies all registered |SiteDataObserver|s.
     void NotifySiteDataObservers();
+
+    Delegate* delegate() { return delegate_.get(); }
 
    private:
     friend class content::WebContentsUserData<WebContentsHandler>;

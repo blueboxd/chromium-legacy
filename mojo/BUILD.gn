@@ -10,7 +10,7 @@ group("mojo") {
   testonly = true
   deps = [ ":tests" ]
 
-  if (!(is_linux && current_cpu == "x86")) {
+  if (!((is_linux || is_chromeos) && current_cpu == "x86")) {
     deps += [ "//mojo/public" ]
   }
 

@@ -8,6 +8,7 @@
 #include <vector>
 
 #include "base/bind.h"
+#include "base/memory/weak_ptr.h"
 #include "base/rand_util.h"
 #include "base/run_loop.h"
 #include "base/test/bind_test_util.h"
@@ -15,10 +16,16 @@
 #include "base/test/simple_test_tick_clock.h"
 #include "build/build_config.h"
 #include "chrome/browser/notifications/notification_permission_context.h"
-#include "chrome/browser/resource_coordinator/local_site_characteristics_data_unittest_utils.h"
+#if !defined(OS_ANDROID)
+#include "chrome/browser/performance_manager/test_support/site_data_utils.h"
+#endif
 #include "chrome/browser/resource_coordinator/tab_helper.h"
 #include "chrome/browser/resource_coordinator/tab_manager_features.h"
 #include "chrome/test/base/chrome_render_view_host_test_harness.h"
+#include "components/performance_manager/persistence/site_data/site_data_impl.h"
+#include "components/performance_manager/persistence/site_data/site_data_writer.h"
+#include "components/performance_manager/public/decorators/site_data_recorder.h"
+#include "components/performance_manager/public/performance_manager.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/test/web_contents_tester.h"
 #include "testing/gmock/include/gmock/gmock.h"
@@ -132,14 +139,19 @@ class TestSessionRestorePolicy : public SessionRestorePolicy {
 
 }  // namespace
 
-class SessionRestorePolicyTest : public testing::ChromeTestHarnessWithLocalDB {
+class SessionRestorePolicyTest : public ChromeRenderViewHostTestHarness {
  public:
   SessionRestorePolicyTest() : delegate_(&clock_) {}
 
   ~SessionRestorePolicyTest() override {}
 
   void SetUp() override {
-    testing::ChromeTestHarnessWithLocalDB::SetUp();
+    ChromeRenderViewHostTestHarness::SetUp();
+
+#if !defined(OS_ANDROID)
+    // Some tests requires the SiteData database to be initialized.
+    site_data_harness_.SetUp();
+#endif
 
     // Set some reasonable delegate constants.
     delegate_.SetNumberOfCores(4);
@@ -154,15 +166,12 @@ class SessionRestorePolicyTest : public testing::ChromeTestHarnessWithLocalDB {
 
   void TearDown() override {
 #if !defined(OS_ANDROID)
-    resource_coordinator::testing::GetLocalSiteCharacteristicsDataImplForWC(
-        contents1_.get())
-        ->NotifySiteUnloaded(performance_manager::TabVisibility::kBackground);
-    resource_coordinator::testing::GetLocalSiteCharacteristicsDataImplForWC(
-        contents2_.get())
-        ->NotifySiteUnloaded(performance_manager::TabVisibility::kBackground);
-    resource_coordinator::testing::GetLocalSiteCharacteristicsDataImplForWC(
-        contents3_.get())
-        ->NotifySiteUnloaded(performance_manager::TabVisibility::kBackground);
+    performance_manager::MarkWebContentsAsUnloadedInBackgroundInSiteDataDb(
+        contents1_.get());
+    performance_manager::MarkWebContentsAsUnloadedInBackgroundInSiteDataDb(
+        contents2_.get());
+    performance_manager::MarkWebContentsAsUnloadedInBackgroundInSiteDataDb(
+        contents3_.get());
 #endif
     if (policy_)
       policy_.reset();
@@ -175,7 +184,10 @@ class SessionRestorePolicyTest : public testing::ChromeTestHarnessWithLocalDB {
 
     tab_for_scoring_.clear();
 
-    testing::ChromeTestHarnessWithLocalDB::TearDown();
+#if !defined(OS_ANDROID)
+    site_data_harness_.TearDown(profile());
+#endif
+    ChromeRenderViewHostTestHarness::TearDown();
   }
 
   void CreateTestContents() {
@@ -200,11 +212,10 @@ class SessionRestorePolicyTest : public testing::ChromeTestHarnessWithLocalDB {
     tester->SetLastActiveTime(last_active);
 
 #if !defined(OS_ANDROID)
-    ResourceCoordinatorTabHelper::CreateForWebContents(contents.get());
     tester->NavigateAndCommit(url);
-    resource_coordinator::testing::MarkWebContentsAsLoadedInBackground(
+    performance_manager::MarkWebContentsAsLoadedInBackgroundInSiteDataDb(
         contents.get());
-    resource_coordinator::testing::ExpireLocalDBObservationWindows(
+    performance_manager::ExpireSiteDataObservationWindowsForWebContents(
         contents.get());
 #endif
     return contents;
@@ -251,6 +262,10 @@ class SessionRestorePolicyTest : public testing::ChromeTestHarnessWithLocalDB {
  protected:
   base::SimpleTestTickClock clock_;
   TestDelegate delegate_;
+
+#if !defined(OS_ANDROID)
+  performance_manager::SiteDataTestHarness site_data_harness_;
+#endif
 
   TabScoreChangeMock mock_;
   std::unique_ptr<TestSessionRestorePolicy> policy_;
@@ -486,13 +501,10 @@ TEST_F(SessionRestorePolicyTest, MultipleAllTabsDoneCallbacks) {
   policy_->AddTabForScoring(contents5.get());
   WaitForFinalTabScores();
 
-  resource_coordinator::testing::GetLocalSiteCharacteristicsDataImplForWC(
-      contents4.get())
-      ->NotifySiteUnloaded(performance_manager::TabVisibility::kBackground);
-
-  resource_coordinator::testing::GetLocalSiteCharacteristicsDataImplForWC(
-      contents5.get())
-      ->NotifySiteUnloaded(performance_manager::TabVisibility::kBackground);
+  performance_manager::MarkWebContentsAsUnloadedInBackgroundInSiteDataDb(
+      contents4.get());
+  performance_manager::MarkWebContentsAsUnloadedInBackgroundInSiteDataDb(
+      contents5.get());
 }
 
 TEST_F(SessionRestorePolicyTest, CalculateAgeScore) {
@@ -622,9 +634,23 @@ TEST_F(SessionRestorePolicyTest, FeatureUsageSetUsedInBgBit) {
   // Indicates that |contents1_| might update its title while in background,
   // this should set the |used_in_bg_| bit.
 
-  resource_coordinator::testing::GetLocalSiteCharacteristicsDataImplForWC(
-      contents1_.get())
-      ->NotifyUpdatesTitleInBackground();
+  base::RunLoop run_loop;
+  performance_manager::PerformanceManager::CallOnGraph(
+      FROM_HERE,
+      base::BindOnce(
+          [](base::WeakPtr<performance_manager::PageNode> page_node,
+             base::OnceClosure closure) {
+            EXPECT_TRUE(page_node);
+            auto* impl = performance_manager::GetSiteDataImplForPageNode(
+                page_node.get());
+            EXPECT_TRUE(impl);
+            impl->NotifyUpdatesTitleInBackground();
+            std::move(closure).Run();
+          },
+          performance_manager::PerformanceManager::GetPageNodeForWebContents(
+              contents1_.get()),
+          run_loop.QuitClosure()));
+  run_loop.Run();
 
   // Adding/Removing the tab for scoring will cause the callback to be called a
   // few times, ignore this.
@@ -655,12 +681,27 @@ TEST_F(SessionRestorePolicyTest, UnknownUsageSetUsedInBgBit) {
   CreatePolicy(true);
   WaitForFinalTabScores();
 
-  performance_manager::SiteFeatureUsage title_feature_usage =
-      resource_coordinator::testing::GetLocalSiteCharacteristicsDataImplForWC(
-          contents.get())
-          ->UpdatesTitleInBackground();
-  EXPECT_EQ(performance_manager::SiteFeatureUsage::kSiteFeatureUsageUnknown,
-            title_feature_usage);
+  base::RunLoop run_loop;
+  performance_manager::PerformanceManager::CallOnGraph(
+      FROM_HERE,
+      base::BindOnce(
+          [](base::WeakPtr<performance_manager::PageNode> page_node,
+             base::OnceClosure closure) {
+            EXPECT_TRUE(page_node);
+            auto* impl = performance_manager::GetSiteDataImplForPageNode(
+                page_node.get());
+            EXPECT_TRUE(impl);
+            performance_manager::SiteFeatureUsage title_feature_usage =
+                impl->UpdatesTitleInBackground();
+            EXPECT_EQ(
+                performance_manager::SiteFeatureUsage::kSiteFeatureUsageUnknown,
+                title_feature_usage);
+            std::move(closure).Run();
+          },
+          performance_manager::PerformanceManager::GetPageNodeForWebContents(
+              contents.get()),
+          run_loop.QuitClosure()));
+  run_loop.Run();
 
   auto iter = policy_->tab_data_.find(contents.get());
   EXPECT_TRUE(iter != policy_->tab_data_.end());

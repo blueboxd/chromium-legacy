@@ -14,7 +14,6 @@
 <translation id="1084365883616172403">Facebook post completed.</translation>
 <translation id="1103523840287552314">Always translate <ph name="LANGUAGE" /></translation>
 <translation id="1104948393051856124">Accept &amp; Continue</translation>
-<translation id="1105578556867525047">Change password on website</translation>
 <translation id="1112015203684611006">Printing failed.</translation>
 <translation id="1125564390852150847">Create new tab.</translation>
 <translation id="1145536944570833626">Delete existing data.</translation>
@@ -246,7 +245,6 @@ While in Incognito, sites can't use cookies to see your browsing activity across
 <translation id="3783017676699494206">Save Image</translation>
 <translation id="3789841737615482174">Install</translation>
 <translation id="3803696231112616155">Offer to translate this site</translation>
-<translation id="3836313059960742452">{COUNT,plural, =0{No passwords compromised}=1{{COUNT} password compromised}other{{COUNT} passwords compromised}}</translation>
 <translation id="385051799172605136">Back</translation>
 <translation id="3892144330757387737">You'll find your history here</translation>
 <translation id="3897092660631435901">Menu</translation>
@@ -333,6 +331,7 @@ To change this setting, <ph name="BEGIN_LINK" />reset sync<ph name="END_LINK" />
 <translation id="4901778704868714008">Save...</translation>
 <translation id="4904877109095351937">Mark Read</translation>
 <translation id="4930268273022498155">Delete existing data. You can retrieve it by switching back to <ph name="USER_EMAIL1" />.</translation>
+<translation id="4930714375720679147">Turn On</translation>
 <translation id="4941089862236492464">Sorry, there was a problem sharing your item.</translation>
 <translation id="4944543191714094452">Find in page…</translation>
 <translation id="4945756290001680296">Access password settings</translation>
@@ -611,6 +610,7 @@ Sites can use cookies to see your browsing activity across different sites, for 
 <translation id="8073670137947914548">Download finished</translation>
 <translation id="8073872304774253879">Make searches and browsing better</translation>
 <translation id="8076014560081431679">Saved site settings will not be deleted and may reflect your browsing habits. <ph name="BEGIN_LINK" />Find out more<ph name="END_LINK" /></translation>
+<translation id="8105368624971345109">Turn Off</translation>
 <translation id="8114753159095730575">File download is available. Options available near bottom of screen.</translation>
 <translation id="8131740175452115882">Confirm</translation>
 <translation id="8197543752516192074">Translate page</translation>

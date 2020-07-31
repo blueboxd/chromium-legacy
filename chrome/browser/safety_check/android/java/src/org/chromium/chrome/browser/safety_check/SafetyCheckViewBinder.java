@@ -100,9 +100,10 @@ class SafetyCheckViewBinder {
             case SafeBrowsingState.ENABLED_ENHANCED:
                 return R.drawable.ic_done_blue;
             case SafeBrowsingState.DISABLED:
-            case SafeBrowsingState.DISABLED_BY_ADMIN:
             case SafeBrowsingState.ERROR:
                 return R.drawable.ic_info_outline_grey_24dp;
+            case SafeBrowsingState.DISABLED_BY_ADMIN:
+                return R.drawable.ic_business;
             default:
                 assert false : "Unknown SafeBrowsingState value.";
         }

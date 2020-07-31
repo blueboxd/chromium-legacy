@@ -161,9 +161,13 @@ void ChromeSubresourceFilterClient::ShowUI(const GURL& url) {
       InfoBarService::FromWebContents(web_contents());
   AdsBlockedInfobarDelegate::Create(infobar_service);
 #endif
+  // TODO(https://crbug.com/1103176): Plumb the actual frame reference here
+  // (it comes  from
+  // ContentSubresourceFilterThrottleManager::DidDisallowFirstSubresource, which
+  // comes from a specific frame).
   content_settings::TabSpecificContentSettings* content_settings =
-      content_settings::TabSpecificContentSettings::FromWebContents(
-          web_contents());
+      content_settings::TabSpecificContentSettings::GetForFrame(
+          web_contents()->GetMainFrame());
   content_settings->OnContentBlocked(ContentSettingsType::ADS);
 
   LogAction(SubresourceFilterAction::kUIShown);

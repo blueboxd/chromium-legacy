@@ -35,6 +35,7 @@ class COMPONENT_EXPORT(ASSISTANT_UI) AssistantCardElementView
   void ChildPreferredSizeChanged(views::View* child) override;
   void OnGestureEvent(ui::GestureEvent* event) override;
   void ScrollRectToVisible(const gfx::Rect& rect) override;
+  std::unique_ptr<ElementAnimator> CreateAnimator() override;
 
   // AssistantWebView::Observer:
   void DidSuppressNavigation(const GURL& url,

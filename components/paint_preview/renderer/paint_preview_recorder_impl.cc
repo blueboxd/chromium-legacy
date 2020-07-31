@@ -57,9 +57,9 @@ FinishedRecording FinishRecording(
     return out;
   }
 
-  TRACE_EVENT_BEGIN0("paint_preview", "ParseGlyphs");
-  ParseGlyphs(recording.get(), tracker.get());
-  TRACE_EVENT_END0("paint_preview", "ParseGlyphs");
+  TRACE_EVENT_BEGIN0("paint_preview", "ParseGlyphsAndLinks");
+  ParseGlyphsAndLinks(recording.get(), tracker.get());
+  TRACE_EVENT_END0("paint_preview", "ParseGlyphsAndLinks");
   size_t serialized_size = 0;
 
   bool success = false;

@@ -8,6 +8,7 @@
 
 #include "ash/assistant/model/ui/assistant_text_element.h"
 #include "ash/assistant/ui/assistant_ui_constants.h"
+#include "ash/assistant/ui/main_stage/assistant_ui_element_view_animator.h"
 #include "base/strings/utf_string_conversions.h"
 #include "ui/views/background.h"
 #include "ui/views/controls/label.h"
@@ -63,6 +64,11 @@ void AssistantTextElementView::InitLayout(const std::string& text) {
                           .DeriveWithWeight(gfx::Font::Weight::MEDIUM));
   label_->SetHorizontalAlignment(gfx::HorizontalAlignment::ALIGN_LEFT);
   label_->SetMultiLine(true);
+}
+
+std::unique_ptr<ElementAnimator> AssistantTextElementView::CreateAnimator() {
+  return std::make_unique<AssistantUiElementViewAnimator>(
+      this, assistant::ui::kAssistantTextElementHistogram);
 }
 
 }  // namespace ash

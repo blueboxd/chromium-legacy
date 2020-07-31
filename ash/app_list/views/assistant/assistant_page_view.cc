@@ -22,9 +22,11 @@
 #include "ash/public/cpp/assistant/controller/assistant_ui_controller.h"
 #include "ash/public/cpp/view_shadow.h"
 #include "ash/strings/grit/ash_strings.h"
+#include "base/metrics/histogram_functions.h"
 #include "base/strings/utf_string_conversions.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/chromeos/search_box/search_box_constants.h"
+#include "ui/compositor/animation_throughput_reporter.h"
 #include "ui/compositor/scoped_layer_animation_settings.h"
 #include "ui/compositor_extra/shadow.h"
 #include "ui/views/background.h"
@@ -282,6 +284,14 @@ void AssistantPageView::OnAnimationStarted(AppListState from_state,
   // of a bounds animation.
   {
     auto settings = contents_view()->CreateTransitionAnimationSettings(layer());
+
+    ui::AnimationThroughputReporter reporter(
+        settings->GetAnimator(),
+        metrics_util::ForSmoothness(base::BindRepeating([](int value) {
+          base::UmaHistogramPercentage(
+              assistant::ui::kAssistantResizePageViewHistogram, value);
+        })));
+
     layer()->SetClipRect(gfx::Rect(to_rect.size()));
 
     // Also animate corner radius for the view.

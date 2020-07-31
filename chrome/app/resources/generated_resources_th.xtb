@@ -1161,7 +1161,6 @@
 <translation id="2408955596600435184">ป้อน PIN ของคุณ</translation>
 <translation id="241082044617551207">ปลั๊กอินที่ไม่รู้จัก</translation>
 <translation id="2412593942846481727">มีเวอร์ชันอัปเดต</translation>
-<translation id="2414499877591062094">เปิดใช้ PIN สำหรับการส่งอัตโนมัติ</translation>
 <translation id="2416435988630956212">แป้นฟังก์ชันของแป้นพิมพ์</translation>
 <translation id="241727068219398187">มีการเข้ารหัสลับข้อมูลด้วยรหัสผ่าน Google ของคุณตั้งแต่
           <ph name="TIME" /> ข้อมูลนี้ไม่รวมถึงวิธีการชำระเงินและที่อยู่จาก Google Pay</translation>
@@ -3398,7 +3397,6 @@
 <translation id="5241128660650683457">อ่านข้อมูลทั้งหมดของคุณบนเว็บไซต์ที่คุณเข้าชม</translation>
 <translation id="5242724311594467048">เปิดใช้งาน "<ph name="EXTENSION_NAME" />" ไหม</translation>
 <translation id="5243522832766285132">โปรดลองอีกครั้งในอีกสักครู่</translation>
-<translation id="5244406554036143958">ป้อน PIN เพื่อเปิดใช้การส่งอัตโนมัติ</translation>
 <translation id="5244474230056479698">กำลังซิงค์กับ <ph name="EMAIL" /></translation>
 <translation id="5245610266855777041">เริ่มต้นใช้งานบัญชีโรงเรียน</translation>
 <translation id="5246282308050205996"><ph name="APP_NAME" /> ขัดข้อง คลิกที่บอลลูนนี้เพื่อรีสตาร์ตแอปพลิเคชันนี้</translation>

@@ -14,7 +14,6 @@
 <translation id="1084365883616172403">Facebook 게시가 완료되었습니다.</translation>
 <translation id="1103523840287552314"><ph name="LANGUAGE" /> 항상 번역</translation>
 <translation id="1104948393051856124">동의 및 계속</translation>
-<translation id="1105578556867525047">웹사이트에서 비밀번호 변경</translation>
 <translation id="1112015203684611006">인쇄 실패</translation>
 <translation id="1125564390852150847">새 탭 만들기</translation>
 <translation id="1145536944570833626">기존 데이터 삭제</translation>
@@ -245,7 +244,6 @@
 <translation id="3783017676699494206">이미지 저장</translation>
 <translation id="3789841737615482174">설치</translation>
 <translation id="3803696231112616155">이 사이트 번역 옵션 제공</translation>
-<translation id="3836313059960742452">{COUNT,plural, =0{유출된 비밀번호 없음}=1{유출된 비밀번호 {COUNT}개}other{유출된 비밀번호 {COUNT}개}}</translation>
 <translation id="385051799172605136">뒤로</translation>
 <translation id="3892144330757387737">여기에서 방문 기록을 확인할 수 있습니다</translation>
 <translation id="3897092660631435901">메뉴</translation>
@@ -332,6 +330,7 @@
 <translation id="4901778704868714008">저장...</translation>
 <translation id="4904877109095351937">읽음으로 표시</translation>
 <translation id="4930268273022498155">기존 데이터를 삭제합니다. <ph name="USER_EMAIL1" />(으)로 전환하여 기존 데이터를 가져올 수 있습니다.</translation>
+<translation id="4930714375720679147">사용 설정</translation>
 <translation id="4941089862236492464">죄송합니다. 항목을 공유하는 중에 문제가 발생했습니다.</translation>
 <translation id="4944543191714094452">페이지에서 찾기…</translation>
 <translation id="4945756290001680296">비밀번호 설정 액세스</translation>
@@ -610,6 +609,7 @@
 <translation id="8073670137947914548">다운로드가 완료되었습니다</translation>
 <translation id="8073872304774253879">검색 및 탐색 기능 개선</translation>
 <translation id="8076014560081431679">저장된 사이트 설정은 삭제되지 않으며 인터넷 사용 습관이 반영될 수 있습니다. <ph name="BEGIN_LINK" />자세히 알아보기<ph name="END_LINK" /></translation>
+<translation id="8105368624971345109">사용 중지</translation>
 <translation id="8114753159095730575">파일을 다운로드할 수 있습니다. 화면 하단에서 옵션을 선택할 수 있습니다.</translation>
 <translation id="8131740175452115882">확인</translation>
 <translation id="8197543752516192074">페이지 번역</translation>

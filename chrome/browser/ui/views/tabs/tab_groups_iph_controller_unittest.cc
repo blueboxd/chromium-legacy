@@ -10,6 +10,7 @@
 #include "base/bind.h"
 #include "chrome/browser/feature_engagement/tracker_factory.h"
 #include "chrome/browser/ui/browser_commands.h"
+#include "chrome/browser/ui/views/feature_promos/feature_promo_controller.h"
 #include "chrome/test/base/browser_with_test_window_test.h"
 #include "chrome/test/base/testing_profile.h"
 #include "chrome/test/views/chrome_test_widget.h"
@@ -55,8 +56,11 @@ class TabGroupsIPHControllerTest : public BrowserWithTestWindowTest {
         .Times(AnyNumber())
         .WillRepeatedly(Return(false));
 
+    promo_controller_ =
+        std::make_unique<FeaturePromoController>(browser()->profile());
+
     iph_controller_ = std::make_unique<TabGroupsIPHController>(
-        browser(),
+        browser(), promo_controller_.get(),
         base::BindRepeating(&TabGroupsIPHControllerTest::GetAnchorView,
                             base::Unretained(this)));
   }
@@ -78,6 +82,7 @@ class TabGroupsIPHControllerTest : public BrowserWithTestWindowTest {
 
  protected:
   feature_engagement::test::MockTracker* mock_tracker_;
+  std::unique_ptr<FeaturePromoController> promo_controller_;
   std::unique_ptr<TabGroupsIPHController> iph_controller_;
 };
 
@@ -123,26 +128,6 @@ TEST_F(TabGroupsIPHControllerTest, NotifyEventOnTabGroupCreated) {
   browser()->tab_strip_model()->AddToNewGroup({0});
 }
 
-TEST_F(TabGroupsIPHControllerTest, DismissedOnBubbleClosedBeforeMenuOpened) {
-  EXPECT_CALL(*mock_tracker_,
-              ShouldTriggerHelpUI(
-                  Ref(feature_engagement::kIPHDesktopTabGroupsNewGroupFeature)))
-      .Times(1)
-      .WillOnce(Return(true));
-
-  for (int i = 0; i < 6; ++i)
-    chrome::NewTab(browser());
-
-  ASSERT_TRUE(iph_controller_->promo_widget_for_testing());
-
-  EXPECT_CALL(
-      *mock_tracker_,
-      Dismissed(Ref(feature_engagement::kIPHDesktopTabGroupsNewGroupFeature)))
-      .Times(1);
-
-  iph_controller_->promo_widget_for_testing()->Close();
-}
-
 TEST_F(TabGroupsIPHControllerTest, DismissedOnMenuClosed) {
   EXPECT_CALL(*mock_tracker_,
               ShouldTriggerHelpUI(
@@ -153,9 +138,11 @@ TEST_F(TabGroupsIPHControllerTest, DismissedOnMenuClosed) {
   for (int i = 0; i < 6; ++i)
     chrome::NewTab(browser());
 
-  EXPECT_TRUE(iph_controller_->promo_widget_for_testing());
+  EXPECT_TRUE(promo_controller_->BubbleIsShowing(
+      feature_engagement::kIPHDesktopTabGroupsNewGroupFeature));
   iph_controller_->TabContextMenuOpened();
-  EXPECT_FALSE(iph_controller_->promo_widget_for_testing());
+  EXPECT_FALSE(promo_controller_->BubbleIsShowing(
+      feature_engagement::kIPHDesktopTabGroupsNewGroupFeature));
 
   EXPECT_CALL(
       *mock_tracker_,
@@ -163,7 +150,8 @@ TEST_F(TabGroupsIPHControllerTest, DismissedOnMenuClosed) {
       .Times(1);
 
   iph_controller_->TabContextMenuClosed();
-  EXPECT_FALSE(iph_controller_->promo_widget_for_testing());
+  EXPECT_FALSE(promo_controller_->BubbleIsShowing(
+      feature_engagement::kIPHDesktopTabGroupsNewGroupFeature));
 }
 
 TEST_F(TabGroupsIPHControllerTest, ShowsContextMenuHighlightIfAppropriate) {
@@ -186,35 +174,4 @@ TEST_F(TabGroupsIPHControllerTest, ShowsContextMenuHighlightIfAppropriate) {
   iph_controller_->TabContextMenuOpened();
   iph_controller_->TabContextMenuClosed();
   EXPECT_FALSE(iph_controller_->ShouldHighlightContextMenuItem());
-}
-
-TEST_F(TabGroupsIPHControllerTest, DoesNothingIfDisallowed) {
-  EXPECT_CALL(*mock_tracker_,
-              ShouldTriggerHelpUI(
-                  Ref(feature_engagement::kIPHDesktopTabGroupsNewGroupFeature)))
-      .Times(1)
-      .WillOnce(Return(false));
-  EXPECT_CALL(
-      *mock_tracker_,
-      Dismissed(Ref(feature_engagement::kIPHDesktopTabGroupsNewGroupFeature)))
-      .Times(0);
-
-  EXPECT_FALSE(iph_controller_->ShouldHighlightContextMenuItem());
-  EXPECT_FALSE(iph_controller_->promo_widget_for_testing());
-
-  for (int i = 0; i < 6; ++i)
-    chrome::NewTab(browser());
-
-  EXPECT_FALSE(iph_controller_->ShouldHighlightContextMenuItem());
-  EXPECT_FALSE(iph_controller_->promo_widget_for_testing());
-
-  iph_controller_->TabContextMenuOpened();
-
-  EXPECT_FALSE(iph_controller_->ShouldHighlightContextMenuItem());
-  EXPECT_FALSE(iph_controller_->promo_widget_for_testing());
-
-  iph_controller_->TabContextMenuClosed();
-
-  EXPECT_FALSE(iph_controller_->ShouldHighlightContextMenuItem());
-  EXPECT_FALSE(iph_controller_->promo_widget_for_testing());
 }

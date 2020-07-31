@@ -420,4 +420,42 @@ TEST_F(ExtensionInstallEventLogCollectorTest, InstallationStageChanged) {
                                            0 /*expected_add_all_count*/));
 }
 
+// Verifies that a new event is created when the downloading stage is changed
+// during the downloading process.
+TEST_F(ExtensionInstallEventLogCollectorTest, DownloadingStageChanged) {
+  std::unique_ptr<ExtensionInstallEventLogCollector> collector =
+      std::make_unique<ExtensionInstallEventLogCollector>(
+          registry(), delegate(), profile());
+
+  auto ext = extensions::ExtensionBuilder(kExtensionName1)
+                 .SetID(kExtensionId1)
+                 .Build();
+  collector->OnExtensionDownloadingStageChanged(
+      kExtensionId1, extensions::ExtensionDownloaderDelegate::Stage::PENDING);
+  ASSERT_TRUE(VerifyEventAddedSuccessfully(1 /*expected_add_count*/,
+                                           0 /*expected_add_all_count*/));
+  EXPECT_EQ(em::ExtensionInstallReportLogEvent::DOWNLOAD_PENDING,
+            delegate()->last_request().event.downloading_stage());
+  collector->OnExtensionDownloadingStageChanged(
+      kExtensionId1,
+      extensions::ExtensionDownloaderDelegate::Stage::DOWNLOADING_MANIFEST);
+  ASSERT_TRUE(VerifyEventAddedSuccessfully(2 /*expected_add_count*/,
+                                           0 /*expected_add_all_count*/));
+  EXPECT_EQ(em::ExtensionInstallReportLogEvent::DOWNLOADING_MANIFEST,
+            delegate()->last_request().event.downloading_stage());
+  collector->OnExtensionDownloadingStageChanged(
+      kExtensionId1,
+      extensions::ExtensionDownloaderDelegate::Stage::DOWNLOADING_CRX);
+  ASSERT_TRUE(VerifyEventAddedSuccessfully(3 /*expected_add_count*/,
+                                           0 /*expected_add_all_count*/));
+  EXPECT_EQ(em::ExtensionInstallReportLogEvent::DOWNLOADING_CRX,
+            delegate()->last_request().event.downloading_stage());
+  collector->OnExtensionDownloadingStageChanged(
+      kExtensionId1, extensions::ExtensionDownloaderDelegate::Stage::FINISHED);
+  ASSERT_TRUE(VerifyEventAddedSuccessfully(4 /*expected_add_count*/,
+                                           0 /*expected_add_all_count*/));
+  EXPECT_EQ(em::ExtensionInstallReportLogEvent::FINISHED,
+            delegate()->last_request().event.downloading_stage());
+}
+
 }  // namespace policy

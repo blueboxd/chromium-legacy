@@ -1162,7 +1162,6 @@
 <translation id="2408955596600435184">Εισαγάγετε το PIN</translation>
 <translation id="241082044617551207">Άγνωστη προσθήκη</translation>
 <translation id="2412593942846481727">Υπάρχει διαθέσιμη ενημέρωση</translation>
-<translation id="2414499877591062094">Ενεργοποίηση αυτόματης υποβολής PIN</translation>
 <translation id="2416435988630956212">Πλήκτρα λειτουργίας πληκτρολογίου</translation>
 <translation id="241727068219398187">Τα δεδομένα κρυπτογραφήθηκαν με τον κωδικό πρόσβασης Google από τις
           <ph name="TIME" />. Αυτά τα δεδομένα δεν περιλαμβάνουν τρόπους πληρωμής και διευθύνσεις από το Google Pay.</translation>
@@ -3405,7 +3404,6 @@
 <translation id="5241128660650683457">Ανάγνωση όλων των δεδομένων των ιστοτόπων που επισκέπτεστε</translation>
 <translation id="5242724311594467048">Ενεργοποίηση "<ph name="EXTENSION_NAME" />";</translation>
 <translation id="5243522832766285132">Δοκιμάστε ξανά σε λίγο</translation>
-<translation id="5244406554036143958">Εισαγάγετε το PIN για ενεργοποίηση της αυτόματης υποβολής</translation>
 <translation id="5244474230056479698">Συγχρονισμός με <ph name="EMAIL" /></translation>
 <translation id="5245610266855777041">Ξεκινήστε με σχολικό λογαριασμό</translation>
 <translation id="5246282308050205996">Το <ph name="APP_NAME" /> παρουσίασε σφάλμα. Κάντε κλικ σε αυτό το πλαίσιο για να επανεκκινήσετε την εφαρμογή.</translation>

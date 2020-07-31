@@ -1121,6 +1121,7 @@
 <translation id="2352662711729498748">&lt; 1 ميغابايت</translation>
 <translation id="2352810082280059586">يتم حفظ ملاحظات شاشة القفل تلقائيًا إلى <ph name="LOCK_SCREEN_APP_NAME" />. ستظل أحدث ملاحظة في شاشة القفل.</translation>
 <translation id="2353297238722298836">تم السماح باستخدام الكاميرا والميكروفون</translation>
+<translation id="2355314311311231464">تعذَّرت عملية الإعداد بسبب عدم التمكّن من استرداد تفاصيل حسابك. يُرجى إعادة المحاولة. رمز الخطأ: <ph name="ERROR_CODE" /></translation>
 <translation id="2355604387869345912">تفعيل ميزة "التوصيل الفوري"</translation>
 <translation id="2356070529366658676">طلب</translation>
 <translation id="2357330829548294574">إزالة <ph name="USER_NAME" /></translation>
@@ -1161,7 +1162,6 @@
 <translation id="2408955596600435184">إدخال رقم التعريف الشخصي</translation>
 <translation id="241082044617551207">مكوّن إضافي غير محدّد</translation>
 <translation id="2412593942846481727">هناك تحديث جديد</translation>
-<translation id="2414499877591062094">تفعيل رقم التعريف الشخصي لميزة "الإرسال التلقائي"</translation>
 <translation id="2416435988630956212">مفاتيح الوظائف على لوحة المفاتيح</translation>
 <translation id="241727068219398187">‏تم ترميز البيانات باستخدام كلمة مرور Google اعتبارًا من
           <ph name="TIME" />. لا يتضمّن ذلك طرق الدفع والعناوين من Google Pay.</translation>
@@ -1216,6 +1216,7 @@
 <translation id="2473195200299095979">ترجم هذه الصفحة</translation>
 <translation id="2475982808118771221">حدث خطأ</translation>
 <translation id="2476578072172137802">إعدادات الموقع الإلكتروني</translation>
+<translation id="2476974672882258506">‏يجب إيقاف تشغيل نظام Windows لإلغاء تثبيت <ph name="PARALLELS_DESKTOP" />.</translation>
 <translation id="2478176599153288112">أذونات ملف الوسائط لـ "<ph name="EXTENSION" />"</translation>
 <translation id="247949520305900375">مشاركة الصوت</translation>
 <translation id="248003956660572823">لم يتم حفظ كلمات المرور</translation>
@@ -1306,6 +1307,7 @@
 <translation id="2572032849266859634">تم منح إذن دخول للقراءة فقط إلى <ph name="VOLUME_NAME" />.</translation>
 <translation id="2575247648642144396">سيكون هذا الرمز مرئيًا عندما تتمكن الإضافة من تنفيذ الإجراءات على الصفحة الحالية. يمكنك استخدام هذه الإضافة بالنقر على الرمز أو بالضغط على <ph name="EXTENSION_SHORTCUT" />.</translation>
 <translation id="257779572837908839">‏الإعداد كجهاز Chromebox للاجتماعات</translation>
+<translation id="2579232805407578790">‏تعذَّر الاتصال بالخادم. يُرجى التحقّق من الاتصال بالشبكة وإعادة المحاولة. وإذا استمرت هذه المشكلة، يُرجى إعادة تشغيل جهاز Chromebook. رمز الخطأ: <ph name="ERROR_CODE" /></translation>
 <translation id="2580889980133367162">السماح دائمًا لـ <ph name="HOST" /> بتنزيل عدة ملفات</translation>
 <translation id="258095186877893873">طويل</translation>
 <translation id="2582253231918033891"><ph name="PRODUCT_NAME" /> <ph name="PRODUCT_VERSION" /> (النظام الأساسي <ph name="PLATFORM_VERSION" />) <ph name="DEVICE_SERIAL_NUMBER" /></translation>
@@ -1525,6 +1527,7 @@
 <translation id="2836635946302913370">تم إيقاف تسجيل الدخول باستخدام اسم المستخدم هذا بواسطة المشرف.</translation>
 <translation id="283669119850230892">لاستخدام الشبكة <ph name="NETWORK_ID" />، أكمل أولاً اتصالك بالإنترنت أدناه.</translation>
 <translation id="2838379631617906747">يتم الآن التثبيت</translation>
+<translation id="2838835911926931318">يجب تسجيل الدخول لمزامنة الإشارات المرجعية وكلمات المرور والسجلّ والمزيد على جميع أجهزتك.</translation>
 <translation id="2839032553903800133">تم حظر الإشعارات.</translation>
 <translation id="2841013758207633010">الوقت</translation>
 <translation id="2841837950101800123">المزود</translation>
@@ -1584,6 +1587,7 @@
     رسالة الخادم: <ph name="SERVER_MSG" /></translation>
 <translation id="2908162660801918428">إضافة معرض الوسائط باستخدام الدليل</translation>
 <translation id="2910318910161511225">الاتصال بالشبكة وإعادة المحاولة</translation>
+<translation id="2910718431259223434">حدث خطأ. يُرجى إعادة المحاولة أو التواصل مع مشرف الجهاز أو مالكه. رمز الخطأ: <ph name="ERROR_CODE" /></translation>
 <translation id="2913331724188855103">السماح للمواقع الإلكترونية بحفظ بيانات ملفات تعريف الارتباط وقراءتها (موصى به)</translation>
 <translation id="2915102088417824677">عرض سِجلّ الأنشطة</translation>
 <translation id="2915873080513663243">المسح التلقائي</translation>
@@ -2323,6 +2327,7 @@
 <translation id="3821372858277557370">{NUM_EXTENSIONS,plural, =1{تمت الموافقة على إضافة واحدة.}zero{تمّت الموافقة على # إضافة.}two{تمت الموافقة على إضافتَين.}few{تمت الموافقة على # إضافات.}many{تمت الموافقة على # إضافةً.}other{تمت الموافقة على # إضافة.}}</translation>
 <translation id="3822559385185038546">تم فرض هذا الخادم الوكيل بواسطة المشرف</translation>
 <translation id="3823310065043511710">‏يُنصَح بتوفير <ph name="INSTALL_SIZE" /> على الأقل من المساحة لنظام التشغيل Linux.</translation>
+<translation id="3824621460022590830">الرمز المميز لتسجيل الجهاز غير صالح. يُرجى التواصل مع مشرف الجهاز أو مالكه. رمز الخطأ: <ph name="ERROR_CODE" /></translation>
 <translation id="3826440694796503677">‏لقد أوقف المشرف إمكانية إضافة المزيد من حسابات Google.</translation>
 <translation id="3827306204503227641">متابعة السماح للمكونات الإضافية غير المحمية</translation>
 <translation id="3827774300009121996">&amp;ملء الشاشة</translation>
@@ -3273,6 +3278,7 @@
 <translation id="5079950360618752063">استخدام كلمة مرور مُقترَحة</translation>
 <translation id="508059534790499809">‏تحديث تذكرة Kerberos</translation>
 <translation id="5084230410268011727">السماح للمواقع الإلكترونية باستخدام أجهزة استشعار الإضاءة والحركة</translation>
+<translation id="5084328598860513926">تمّت مقاطعة عملية الإعداد. يُرجى إعادة المحاولة أو التواصل مع مشرف الجهاز أو مالكه. رمز الخطأ: <ph name="ERROR_CODE" /></translation>
 <translation id="5085162214018721575">جارٍ البحث عن تحديثات</translation>
 <translation id="5086082738160935172">‏جهاز واجهة بشرية (HID)</translation>
 <translation id="5086874064903147617">هل تريد استعادة الصفحة الرئيسية التلقائية؟</translation>
@@ -3395,7 +3401,6 @@
 <translation id="5241128660650683457">مراجعة كل بياناتك على المواقع الإلكترونية التي تزورها</translation>
 <translation id="5242724311594467048">تفعيل "<ph name="EXTENSION_NAME" />"؟</translation>
 <translation id="5243522832766285132">يُرجى إعادة المحاولة بعد بضع لحظات</translation>
-<translation id="5244406554036143958">يجب إدخال رقم التعريف الشخصي لتفعيل ميزة "الإرسال التلقائي".</translation>
 <translation id="5244474230056479698">المزامنة مع <ph name="EMAIL" /></translation>
 <translation id="5245610266855777041">بدء استخدام حساب مدرسة</translation>
 <translation id="5246282308050205996">لقد تعطل <ph name="APP_NAME" />. انقر على هذا البالون لإعادة تشغيل التطبيق.</translation>
@@ -3673,6 +3678,7 @@
 <translation id="557722062034137776">‏لن يؤثر إعادة ضبط الجهاز على حسابات Google أو أي من البيانات التي تمت مزامنتها مع هذه الحسابات. ومع ذلك، سيتم حذف جميع الملفات التي تم حفظها محليًا على جهازك.</translation>
 <translation id="5578059481725149024">تسجيل الدخول تلقائيًا</translation>
 <translation id="558170650521898289">‏التحقق من برنامج تشغيل الأجهزة لـ Microsoft Windows</translation>
+<translation id="5581972110672966454">يتعذَّر ضم الجهاز إلى النطاق. يُرجى إعادة المحاولة أو التواصل مع مشرف الجهاز أو مالكه. رمز الخطأ: <ph name="ERROR_CODE" /></translation>
 <translation id="5582839680698949063">القائمة الرئيسية</translation>
 <translation id="5583640892426849032">Backspace</translation>
 <translation id="5584088138253955452">هل تريد حفظ اسم المستخدم؟</translation>
@@ -3745,6 +3751,7 @@
 <translation id="5667546120811588575">‏جارٍ إعداد Google Play...</translation>
 <translation id="5669267381087807207">تفعيل</translation>
 <translation id="5669691691057771421">إدخال رقم التعريف الشخصي الجديد</translation>
+<translation id="5670702108860320605">BSSID</translation>
 <translation id="5671641761787789573">تم حظر الصور</translation>
 <translation id="5671658447180261823">إزالة الاقتراح <ph name="SUGGESTION_NAME" /></translation>
 <translation id="567587836466137939">سيتلقى هذا الجهاز تحديثات تلقائية للبرامج والأمان حتى <ph name="MONTH_AND_YEAR" />. <ph name="LINK_BEGIN" />مزيد من المعلومات<ph name="LINK_END" /></translation>
@@ -5392,6 +5399,7 @@
 <translation id="7764225426217299476">إضافة عنوان</translation>
 <translation id="7764256770584298012"><ph name="DOWNLOAD_RECEIVED" /> من <ph name="DOWNLOAD_DOMAIN" /></translation>
 <translation id="7765158879357617694">نقل</translation>
+<translation id="7766082757934713382">تساعدك الشبكة التي تفرض تكلفة استخدام في تخفيض استخدام بيانات الشبكة من خلال إيقاف التحديثات التلقائية للنظام والتطبيقات بشكل مؤقت.</translation>
 <translation id="7766807826975222231">إجراء جولة</translation>
 <translation id="7766838926148951335">قبول الأذونات</translation>
 <translation id="7768770796815395237">تغيير</translation>
@@ -6304,6 +6312,7 @@
 <translation id="885701979325669005">التخزين</translation>
 <translation id="8859057652521303089">حدد لغتك:</translation>
 <translation id="8859174528519900719">هيكل سفلي: <ph name="SUBFRAME_SITE" /></translation>
+<translation id="8859402192569844210">تعذَّر تحميل بنود الخدمة</translation>
 <translation id="8859662783913000679">حساب أحد الوالدَين</translation>
 <translation id="8862003515646449717">التبديل إلى متصفح سريع</translation>
 <translation id="8863753581171631212">فتح الرابط في نافذة جديدة في <ph name="APP" /></translation>
@@ -6572,6 +6581,7 @@
 <translation id="920045321358709304">البحث في <ph name="SEARCH_ENGINE" /></translation>
 <translation id="9201023452444595544">سيتم محو أي بيانات متوفرة بلا اتصال بالإنترنت.</translation>
 <translation id="9201220332032049474">خيارات قفل الشاشة</translation>
+<translation id="9201842707396338580">حدث خطأ. يُرجى التواصل مع مشرف الجهاز أو مالكه. رمز الخطأ: <ph name="ERROR_CODE" /></translation>
 <translation id="9203398526606335860">&amp;التوصيف مفعّل</translation>
 <translation id="9203904171912129171">اختيار جهاز</translation>
 <translation id="9203962528777363226">أوقف مشرف هذا الجهاز إمكانية إضافة مستخدمين جدد.</translation>
@@ -6643,6 +6653,7 @@
 <translation id="983511809958454316">‏هذه الميزة غير مدعومة في VR</translation>
 <translation id="984275831282074731">طرق الدفع</translation>
 <translation id="98515147261107953">أفقي</translation>
+<translation id="987068745968718743">‏نظام Parallels Desktop: <ph name="PLUGIN_VM_NAME" /></translation>
 <translation id="987264212798334818">عام</translation>
 <translation id="987897973846887088">لا تتوفر أي صور.</translation>
 <translation id="988978206646512040">غير مسموح باستخدام عبارة مرور فارغة</translation>

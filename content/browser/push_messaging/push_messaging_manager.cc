@@ -535,7 +535,7 @@ void PushMessagingManager::Core::DidRegister(
         FROM_HERE, ServiceWorkerContext::GetCoreThreadId(),
         base::BindOnce(&PushMessagingManager::PersistRegistrationOnSW,
                        sw_parent_, std::move(data), push_subscription_id,
-                       endpoint, p256dh, auth,
+                       endpoint, expiration_time, p256dh, auth,
                        subscription_changed
                            ? blink::mojom::PushRegistrationStatus::
                                  SUCCESS_NEW_SUBSCRIPTION_FROM_PUSH_SERVICE
@@ -555,6 +555,7 @@ void PushMessagingManager::PersistRegistrationOnSW(
     RegisterData data,
     const std::string& push_subscription_id,
     const GURL& endpoint,
+    const base::Optional<base::Time>& expiration_time,
     const std::vector<uint8_t>& p256dh,
     const std::vector<uint8_t>& auth,
     blink::mojom::PushRegistrationStatus status) {
@@ -571,12 +572,13 @@ void PushMessagingManager::PersistRegistrationOnSW(
        {kPushSenderIdServiceWorkerKey, application_server_key}},
       base::BindOnce(&PushMessagingManager::DidPersistRegistrationOnSW,
                      weak_factory_.GetWeakPtr(), std::move(data), endpoint,
-                     p256dh, auth, status));
+                     expiration_time, p256dh, auth, status));
 }
 
 void PushMessagingManager::DidPersistRegistrationOnSW(
     RegisterData data,
     const GURL& endpoint,
+    const base::Optional<base::Time>& expiration_time,
     const std::vector<uint8_t>& p256dh,
     const std::vector<uint8_t>& auth,
     blink::mojom::PushRegistrationStatus push_registration_status,
@@ -584,7 +586,7 @@ void PushMessagingManager::DidPersistRegistrationOnSW(
   DCHECK_CURRENTLY_ON(ServiceWorkerContext::GetCoreThreadId());
   if (service_worker_status == blink::ServiceWorkerStatusCode::kOk) {
     SendSubscriptionSuccess(std::move(data), push_registration_status, endpoint,
-                            p256dh, auth);
+                            expiration_time, p256dh, auth);
   } else {
     // TODO(johnme): Unregister, so PushMessagingServiceImpl can decrease count.
     SendSubscriptionError(std::move(data),
@@ -604,6 +606,7 @@ void PushMessagingManager::SendSubscriptionSuccess(
     RegisterData data,
     blink::mojom::PushRegistrationStatus status,
     const GURL& endpoint,
+    const base::Optional<base::Time>& expiration_time,
     const std::vector<uint8_t>& p256dh,
     const std::vector<uint8_t>& auth) {
   DCHECK_CURRENTLY_ON(ServiceWorkerContext::GetCoreThreadId());
@@ -619,8 +622,8 @@ void PushMessagingManager::SendSubscriptionSuccess(
 
   std::move(data.callback)
       .Run(status, blink::mojom::PushSubscription::New(
-                       endpoint, base::nullopt /* expiration_time */,
-                       std::move(data.options), p256dh, auth));
+                       endpoint, expiration_time, std::move(data.options),
+                       p256dh, auth));
 
   RecordRegistrationStatus(status);
 }

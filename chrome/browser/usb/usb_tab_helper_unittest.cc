@@ -4,7 +4,6 @@
 
 #include "chrome/browser/usb/usb_tab_helper.h"
 
-#include "chrome/browser/resource_coordinator/local_site_characteristics_data_unittest_utils.h"
 #include "chrome/browser/usb/frame_usb_services.h"
 #include "chrome/browser/usb/usb_chooser_context.h"
 #include "chrome/browser/usb/usb_chooser_context_factory.h"
@@ -12,6 +11,7 @@
 #include "components/performance_manager/embedder/performance_manager_registry.h"
 #include "components/performance_manager/public/decorators/page_live_state_decorator.h"
 #include "components/performance_manager/test_support/decorators_utils.h"
+#include "components/performance_manager/test_support/test_harness_helper.h"
 #include "services/device/public/cpp/test/fake_usb_device_manager.h"
 #include "services/service_manager/public/cpp/test/test_service.h"
 #include "services/service_manager/public/cpp/test/test_service_manager.h"
@@ -19,14 +19,17 @@
 #include "third_party/blink/public/mojom/usb/web_usb_service.mojom.h"
 #include "url/url_constants.h"
 
-class UsbTabHelperTest
-    : public resource_coordinator::testing::ChromeTestHarnessWithLocalDB {
+class UsbTabHelperTest : public ChromeRenderViewHostTestHarness {
  protected:
   UsbTabHelperTest() = default;
   ~UsbTabHelperTest() override = default;
 
   void SetUp() override {
-    resource_coordinator::testing::ChromeTestHarnessWithLocalDB::SetUp();
+    ChromeRenderViewHostTestHarness::SetUp();
+    pm_harness_.SetUp();
+    // Reset the test contents to ensure that it has a PageNode associated to it
+    // in the PerformanceManager graph.
+    SetContents(CreateTestWebContents());
 
     auto* chooser_context = UsbChooserContextFactory::GetForProfile(profile());
     mojo::PendingRemote<device::mojom::UsbDeviceManager> device_manager;
@@ -37,7 +40,13 @@ class UsbTabHelperTest
     NavigateAndCommit(GURL("https://www.google.com"));
   }
 
+  void TearDown() override {
+    pm_harness_.TearDown();
+    ChromeRenderViewHostTestHarness::TearDown();
+  }
+
  private:
+  performance_manager::PerformanceManagerTestHarnessHelper pm_harness_;
   device::FakeUsbDeviceManager device_manager_;
 };
 

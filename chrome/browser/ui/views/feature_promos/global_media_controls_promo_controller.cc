@@ -10,6 +10,7 @@
 #include "base/time/time.h"
 #include "chrome/browser/ui/in_product_help/global_media_controls_in_product_help.h"
 #include "chrome/browser/ui/in_product_help/global_media_controls_in_product_help_factory.h"
+#include "chrome/browser/ui/views/feature_promos/feature_promo_bubble_params.h"
 #include "chrome/browser/ui/views/feature_promos/feature_promo_bubble_timeout.h"
 #include "chrome/browser/ui/views/feature_promos/feature_promo_bubble_view.h"
 #include "chrome/browser/ui/views/frame/browser_view.h"
@@ -49,7 +50,7 @@ void GlobalMediaControlsPromoController::ShowPromo() {
 
   // Here, we open the promo bubble.
   // TODO(https://crbug.com/991585): Supply a screenreader string too.
-  FeaturePromoBubbleView::CreateParams bubble_params;
+  FeaturePromoBubbleParams bubble_params;
   bubble_params.body_string_specifier = IDS_GLOBAL_MEDIA_CONTROLS_PROMO;
   bubble_params.anchor_view = owner_;
   bubble_params.arrow = views::BubbleBorder::Arrow::TOP_RIGHT;

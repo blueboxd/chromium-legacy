@@ -5,6 +5,7 @@
 #ifndef CHROME_BROWSER_PERFORMANCE_MANAGER_PERSISTENCE_SITE_DATA_SITE_DATA_CACHE_FACADE_FACTORY_H_
 #define CHROME_BROWSER_PERFORMANCE_MANAGER_PERSISTENCE_SITE_DATA_SITE_DATA_CACHE_FACADE_FACTORY_H_
 
+#include "base/auto_reset.h"
 #include "base/memory/weak_ptr.h"
 #include "base/no_destructor.h"
 #include "base/threading/sequence_bound.h"
@@ -49,8 +50,11 @@ class SiteDataCacheFacadeFactory : public BrowserContextKeyedServiceFactory {
  public:
   ~SiteDataCacheFacadeFactory() override;
 
-  static SiteDataCacheFacade* GetForProfile(Profile* profile);
   static SiteDataCacheFacadeFactory* GetInstance();
+
+  static std::unique_ptr<base::AutoReset<bool>> EnableForTesting();
+  static void DisassociateForTesting(Profile* profile);
+  static void ReleaseInstanceForTesting();
 
  protected:
   friend class base::NoDestructor<SiteDataCacheFacadeFactory>;

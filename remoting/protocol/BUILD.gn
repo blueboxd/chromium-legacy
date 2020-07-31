@@ -237,7 +237,7 @@ static_library("protocol") {
   defines = []
 
   # Must match condition in //remoting/codec/BUILD.gn
-  if (is_win || is_linux) {
+  if (is_win || is_linux || is_chromeos) {
     defines += [ "USE_H264_ENCODER" ]
     deps += [
       "//media",

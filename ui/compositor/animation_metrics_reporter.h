@@ -5,7 +5,6 @@
 #ifndef UI_COMPOSITOR_ANIMATION_METRICS_REPORTER_H_
 #define UI_COMPOSITOR_ANIMATION_METRICS_REPORTER_H_
 
-#include "base/metrics/histogram_macros.h"
 #include "ui/compositor/compositor_export.h"
 
 namespace ui {
@@ -21,25 +20,6 @@ class COMPOSITOR_EXPORT AnimationMetricsReporter {
   // passed meets certain criteria. |value| is the smoothness, measured in
   // percentage of the animation.
   virtual void Report(int value) = 0;
-};
-
-// A subclass of AnimationMetricsReporter that writes into a percentage
-// histogram when Report() is called.
-template <const char* histogram_name>
-class COMPOSITOR_EXPORT HistogramPercentageMetricsReporter
-    : public AnimationMetricsReporter {
- public:
-  HistogramPercentageMetricsReporter() = default;
-  HistogramPercentageMetricsReporter(
-      const HistogramPercentageMetricsReporter&) = delete;
-  HistogramPercentageMetricsReporter& operator=(
-      const HistogramPercentageMetricsReporter&) = delete;
-  ~HistogramPercentageMetricsReporter() override = default;
-
-  // AnimationMetricsReporter:
-  void Report(int value) override {
-    UMA_HISTOGRAM_PERCENTAGE(histogram_name, value);
-  }
 };
 
 }  // namespace ui

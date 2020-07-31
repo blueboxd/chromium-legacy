@@ -1162,7 +1162,6 @@ Pode gerir as definições desta conta ao instalar a aplicação Family Link no 
 <translation id="2408955596600435184">Introduza o PIN</translation>
 <translation id="241082044617551207">Plug-in desconhecido</translation>
 <translation id="2412593942846481727">Atualização disponível</translation>
-<translation id="2414499877591062094">Ativar envio automático do PIN</translation>
 <translation id="2416435988630956212">Teclas de função do teclado</translation>
 <translation id="241727068219398187">Os dados foram encriptados com a sua palavra-passe do Google em <ph name="TIME" />. Não estão incluídos métodos de pagamento e endereços do Google Pay.</translation>
 <translation id="2419131370336513030">Ver apps instaladas</translation>
@@ -3405,7 +3404,6 @@ Pretende pará-lo?</translation>
 <translation id="5241128660650683457">Ler todos os dados nos Sites visitados</translation>
 <translation id="5242724311594467048">Ativar a extensão "<ph name="EXTENSION_NAME" />"?</translation>
 <translation id="5243522832766285132">Tente novamente dentro de alguns momentos.</translation>
-<translation id="5244406554036143958">Introduza o seu PIN para ativar o envio automático</translation>
 <translation id="5244474230056479698">A sincronizar com <ph name="EMAIL" /></translation>
 <translation id="5245610266855777041">Comece com uma conta escolar</translation>
 <translation id="5246282308050205996"><ph name="APP_NAME" /> falhou. Clique neste balão para reiniciar a aplicação.</translation>

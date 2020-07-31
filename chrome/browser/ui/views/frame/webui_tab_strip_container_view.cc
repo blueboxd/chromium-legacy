@@ -35,8 +35,10 @@
 #include "chrome/browser/ui/ui_features.h"
 #include "chrome/browser/ui/view_ids.h"
 #include "chrome/browser/ui/views/chrome_view_class_properties.h"
+#include "chrome/browser/ui/views/feature_promos/feature_promo_bubble_params.h"
 #include "chrome/browser/ui/views/feature_promos/feature_promo_bubble_view.h"
 #include "chrome/browser/ui/views/feature_promos/feature_promo_colors.h"
+#include "chrome/browser/ui/views/feature_promos/feature_promo_controller.h"
 #include "chrome/browser/ui/views/frame/browser_view.h"
 #include "chrome/browser/ui/views/tabs/tab_group_editor_bubble_view.h"
 #include "chrome/browser/ui/views/toolbar/toolbar_button.h"
@@ -321,12 +323,12 @@ class WebUITabStripContainerView::DragToOpenHandler : public ui::EventHandler {
   bool drag_in_progress_ = false;
 };
 
-class WebUITabStripContainerView::IPHController : public TabStripModelObserver,
-                                                  public views::WidgetObserver {
+class WebUITabStripContainerView::IPHController : public TabStripModelObserver {
  public:
-  explicit IPHController(Browser* browser)
+  explicit IPHController(Browser* browser,
+                         FeaturePromoController* promo_controller)
       : browser_(browser),
-        widget_observer_(this),
+        promo_controller_(promo_controller),
         iph_tracker_(feature_engagement::TrackerFactory::GetForBrowserContext(
             browser_->profile())) {
     browser_->tab_strip_model()->AddObserver(this);
@@ -349,21 +351,13 @@ class WebUITabStripContainerView::IPHController : public TabStripModelObserver,
     iph_tracker_->NotifyEvent(feature_engagement::events::kWebUITabStripClosed);
   }
 
-  void UpdatePromoBounds() {
-    if (!promo_)
-      return;
-    promo_->OnAnchorBoundsChanged();
-  }
-
   // Ends the promo if it's showing.
   void AbortPromo() {
-    if (!promo_)
+    if (!promo_controller_->BubbleIsShowing(
+            feature_engagement::kIPHWebUITabStripFeature))
       return;
-
-    widget_observer_.Remove(promo_->GetWidget());
-    promo_->GetWidget()->CloseWithReason(
-        views::Widget::ClosedReason::kUnspecified);
-    PromoBubbleDismissed();
+    promo_controller_->CloseBubble(
+        feature_engagement::kIPHWebUITabStripFeature);
   }
 
   // TabStripModelObserver:
@@ -376,11 +370,6 @@ class WebUITabStripContainerView::IPHController : public TabStripModelObserver,
     if (change.type() != TabStripModelChange::kInserted)
       return;
 
-    // Abort if we shouldn't show IPH right now.
-    if (!iph_tracker_->ShouldTriggerHelpUI(
-            feature_engagement::kIPHWebUITabStripFeature))
-      return;
-
     views::View* const anchor_view = anchor_.view();
 
     // In the off chance this is called while the browser is being destroyed,
@@ -388,51 +377,29 @@ class WebUITabStripContainerView::IPHController : public TabStripModelObserver,
     if (!anchor_view)
       return;
 
-    anchor_view->SetProperty(kHasInProductHelpPromoKey, true);
-
-    FeaturePromoBubbleView::CreateParams bubble_params;
+    FeaturePromoBubbleParams bubble_params;
     bubble_params.body_string_specifier = IDS_WEBUI_TAB_STRIP_PROMO;
     bubble_params.anchor_view = anchor_view;
     bubble_params.arrow = views::BubbleBorder::TOP_RIGHT;
-
-    promo_ = FeaturePromoBubbleView::Create(std::move(bubble_params));
-    promo_->set_close_on_deactivate(false);
-    widget_observer_.Add(promo_->GetWidget());
-  }
-
-  // views::WidgetObserver:
-  void OnWidgetDestroying(views::Widget* widget) override {
-    // This call should only happen at the end of IPH.
-    DCHECK_EQ(widget, promo_->GetWidget());
-    widget_observer_.Remove(widget);
-    PromoBubbleDismissed();
+    promo_controller_->MaybeShowPromo(
+        feature_engagement::kIPHWebUITabStripFeature, std::move(bubble_params));
   }
 
  private:
-  void PromoBubbleDismissed() {
-    promo_ = nullptr;
-    iph_tracker_->Dismissed(feature_engagement::kIPHWebUITabStripFeature);
-    views::View* const anchor_view = anchor_.view();
-    if (anchor_view)
-      anchor_view->SetProperty(kHasInProductHelpPromoKey, false);
-  }
-
   Browser* const browser_;
-  ScopedObserver<views::Widget, views::WidgetObserver> widget_observer_;
+  FeaturePromoController* const promo_controller_;
   feature_engagement::Tracker* const iph_tracker_;
   views::ViewTracker anchor_;
-
-  FeaturePromoBubbleView* promo_ = nullptr;
 };
 
 WebUITabStripContainerView::WebUITabStripContainerView(
-    Browser* browser,
+    BrowserView* browser_view,
     views::View* tab_contents_container,
     views::View* drag_handle,
     views::View* omnibox)
-    : browser_(browser),
+    : browser_(browser_view->browser()),
       web_view_(AddChildView(
-          std::make_unique<WebUITabStripWebView>(browser->profile()))),
+          std::make_unique<WebUITabStripWebView>(browser_->profile()))),
       tab_contents_container_(tab_contents_container),
       auto_closer_(std::make_unique<AutoCloser>(
           base::Bind(&WebUITabStripContainerView::CloseForEventOutsideTabStrip,
@@ -441,7 +408,9 @@ WebUITabStripContainerView::WebUITabStripContainerView(
           omnibox)),
       drag_to_open_handler_(
           std::make_unique<DragToOpenHandler>(this, drag_handle)),
-      iph_controller_(std::make_unique<IPHController>(browser_)) {
+      iph_controller_(std::make_unique<IPHController>(
+          browser_,
+          browser_view->feature_promo_controller())) {
   TRACE_EVENT0("ui", "WebUITabStripContainerView.Init");
   DCHECK(UseTouchableTabStrip(browser_));
   animation_.SetTweenType(gfx::Tween::Type::FAST_OUT_SLOW_IN);
@@ -548,10 +517,6 @@ std::unique_ptr<views::View> WebUITabStripContainerView::CreateTabCounter() {
   iph_controller_->SetAnchorView(tab_counter_);
 
   return tab_counter;
-}
-
-void WebUITabStripContainerView::UpdatePromoBubbleBounds() {
-  iph_controller_->UpdatePromoBounds();
 }
 
 void WebUITabStripContainerView::SetVisibleForTesting(bool visible) {

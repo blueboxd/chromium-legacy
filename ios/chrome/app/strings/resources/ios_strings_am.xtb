@@ -14,7 +14,6 @@
 <translation id="1084365883616172403">የFacebook ልጥፍ ተጠናቅቋል።</translation>
 <translation id="1103523840287552314">ሁልጊዜ <ph name="LANGUAGE" />ን መተርጎም</translation>
 <translation id="1104948393051856124">ተቀበል እና ቀጥል</translation>
-<translation id="1105578556867525047">ድር ጣቢያ ላይ የይለፍ ቃል ይቀይሩ</translation>
 <translation id="1112015203684611006">ማተም አልተሳካም።</translation>
 <translation id="1125564390852150847">አዲስ ትር ፍጠር።</translation>
 <translation id="1145536944570833626">ነባሩን ውሂብ ይሰርዙ።</translation>
@@ -246,7 +245,6 @@
 <translation id="3783017676699494206">ምስሉን አስቀምጥ</translation>
 <translation id="3789841737615482174">ጫን  </translation>
 <translation id="3803696231112616155">ወደዚህ ጣቢያ ለመተርጎም ሐሳብ ያቅርቡ</translation>
-<translation id="3836313059960742452">{COUNT,plural, =0{ምንም የይለፍ ቃላት አልተጠለፈም}=1{{COUNT} የይለፍ ቃል ተጠልፏል}one{{COUNT} የይለፍ ቃላት ተጠልፈዋል}other{{COUNT} የይለፍ ቃላት ተጠልፈዋል}}</translation>
 <translation id="385051799172605136">ተመለስ</translation>
 <translation id="3892144330757387737">ታሪክዎን እዚህ ያገኛሉ</translation>
 <translation id="3897092660631435901">ምናሌ</translation>
@@ -333,6 +331,7 @@
 <translation id="4901778704868714008">አስቀምጥ...</translation>
 <translation id="4904877109095351937">እንደተነበበ ምልክት አድርግ</translation>
 <translation id="4930268273022498155">ነባሩን ውሂብ ይሰርዙ። ወደ <ph name="USER_EMAIL1" /> መልሰው በመቀየር ሰርስረው ሊያወጡት ይችላሉ።</translation>
+<translation id="4930714375720679147">አብራ</translation>
 <translation id="4941089862236492464">ይቅርታ፣ ንጥልዎን ማጋራት ላይ ችግር ነበር።</translation>
 <translation id="4944543191714094452">በዚህ ገጽ ውስጥ አግኝ…</translation>
 <translation id="4945756290001680296">የይለፍ ቃል ቅንብሮችን ይደርሱባቸው</translation>
@@ -611,6 +610,7 @@ Handoff እንዲሁም በSettings ውስጥ ባለው የGeneral ክፍል ላ
 <translation id="8073670137947914548">ማውረድ ተጠናቅቋል</translation>
 <translation id="8073872304774253879">ፍለጋዎችን እና አሰሳን የተሻለ ያድርጉ</translation>
 <translation id="8076014560081431679">የተቀመጡ ጣቢያ ቅንብሮች አይሰረዙም፣ እና የእርስዎን የአሰሳ ልማዶች ሊያንጸባርቁ ይችሉ ይሆናል። <ph name="BEGIN_LINK" />የበለጠ ለመረዳት<ph name="END_LINK" /></translation>
+<translation id="8105368624971345109">አጥፋ</translation>
 <translation id="8114753159095730575">ፋይል ለመውረድ ይገኛል። አማራጮች ከማያ ገጹ ግርጌ አጠገብ ይገኛሉ።</translation>
 <translation id="8131740175452115882">አረጋግጥ</translation>
 <translation id="8197543752516192074">ገጽን ተርጉም</translation>

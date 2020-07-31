@@ -21,6 +21,7 @@
 #include "chrome/browser/web_applications/components/web_app_ui_manager.h"
 #include "chrome/common/chrome_features.h"
 #include "chrome/common/web_application_info.h"
+#include "content/public/common/content_features.h"
 #include "ui/gfx/skia_util.h"
 
 namespace web_app {
@@ -156,6 +157,12 @@ bool ManifestUpdateTask::IsUpdateNeededForManifest() const {
 
   if (web_application_info_->display_mode !=
       registrar_.GetAppDisplayMode(app_id_)) {
+    return true;
+  }
+
+  if (base::FeatureList::IsEnabled(features::kWebAppManifestDisplayOverride) &&
+      web_application_info_->display_override !=
+          registrar_.GetAppDisplayModeOverride(app_id_)) {
     return true;
   }
 

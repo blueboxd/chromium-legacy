@@ -14,7 +14,6 @@
 <translation id="1084365883616172403">Kumpleto na ang pag-post sa Facebook.</translation>
 <translation id="1103523840287552314">Palaging i-translate ang <ph name="LANGUAGE" /></translation>
 <translation id="1104948393051856124">Tanggapin at Magpatuloy</translation>
-<translation id="1105578556867525047">Palitan ang password sa Website</translation>
 <translation id="1112015203684611006">Hindi na-print.</translation>
 <translation id="1125564390852150847">Gumawa ng bagong tab.</translation>
 <translation id="1145536944570833626">I-delete ang kasalukuyang data.</translation>
@@ -23,6 +22,7 @@
 <translation id="1176932207622159128">Di Ma-save Larawan</translation>
 <translation id="1180526666083833456">Mag-sync at mag-personalize sa lahat ng device.</translation>
 <translation id="1181037720776840403">Alisin</translation>
+<translation id="1185569544548277362">Bago: Puwede mong itakda ang Chrome bilang iyong default. <ph name="BEGIN_LINK" />Buksan ang Mga Setting<ph name="END_LINK" /></translation>
 <translation id="1207113853726624428">Bagong Paghahanap</translation>
 <translation id="1209206284964581585">Itago sa ngayon</translation>
 <translation id="1219674500290482172">Hindi makakonekta sa Internet.</translation>
@@ -245,7 +245,6 @@ Habang nasa incognito, hindi magagamit ng mga site ang cookies para makita ang i
 <translation id="3783017676699494206">I-save ang Larawan</translation>
 <translation id="3789841737615482174">Mag-install</translation>
 <translation id="3803696231112616155">Mag-alok na isalin ang site na ito</translation>
-<translation id="3836313059960742452">{COUNT,plural, =0{Walang nakompromisong password}=1{{COUNT} password ang nakompromiso}one{{COUNT} password ang nakompromiso}other{{COUNT} na password ang nakompromiso}}</translation>
 <translation id="385051799172605136">Bumalik</translation>
 <translation id="3892144330757387737">Makikita mo rito ang iyong history</translation>
 <translation id="3897092660631435901">Menu</translation>
@@ -332,6 +331,7 @@ Para baguhin ang setting na ito, <ph name="BEGIN_LINK" />i-reset ang pag-sync<ph
 <translation id="4901778704868714008">I-save...</translation>
 <translation id="4904877109095351937">Markahan Bilang Nabasa Na</translation>
 <translation id="4930268273022498155">I-delete ang kasalukuyang data. Mababawi mo ito sa pamamagitan ng paglipat pabalik sa <ph name="USER_EMAIL1" />.</translation>
+<translation id="4930714375720679147">I-on</translation>
 <translation id="4941089862236492464">Paumanhin, nagkaroon ng problema sa pagbabahagi ng item mo.</translation>
 <translation id="4944543191714094452">Hanapin sa Page…</translation>
 <translation id="4945756290001680296">I-access ang mga setting ng password</translation>
@@ -610,6 +610,7 @@ Puwedeng gumamit ng cookies ang mga site para makita ang iyong aktibidad sa pag-
 <translation id="8073670137947914548">Tapos na ang pag-download</translation>
 <translation id="8073872304774253879">Mas Pahusayin ang Mga Paghahanap at Pagba-browse</translation>
 <translation id="8076014560081431679">Hindi made-delete ang mga naka-save na setting ng site at maaari nitong ipakita ang iyong mga gawi sa pagba-browse. <ph name="BEGIN_LINK" />Matuto pa<ph name="END_LINK" /></translation>
+<translation id="8105368624971345109">I-off</translation>
 <translation id="8114753159095730575">Available ang pag-download ng file. Available ang mga opsyon malapit sa ibaba ng screen.</translation>
 <translation id="8131740175452115882">Kumpirmahin</translation>
 <translation id="8197543752516192074">Isalin ang Page</translation>
@@ -639,6 +640,7 @@ Puwedeng gumamit ng cookies ang mga site para makita ang iyong aktibidad sa pag-
 <translation id="8524799873541103884">Mga Tab na <ph name="INCOGNITO" /> <ph name="FIRST_VISIBLE_TAB" /> hanggang <ph name="LAST_VISIBLE_TAB" /> ng <ph name="NUMBER_OF_OPEN_TABS" /></translation>
 <translation id="8529767659511976195">Bago</translation>
 <translation id="8532105204136943229">Taon ng Pag-expire</translation>
+<translation id="8533166274275423134">Nakabukas sa Ibang Lugar</translation>
 <translation id="8534481786647257214">Kumpleto na ang pag-post sa Google+.</translation>
 <translation id="8548878600947630424">Hanapin sa page...</translation>
 <translation id="8574235780160508979">Magbabago ang Mga Tuntunin ng Serbisyo ng Chrome sa Marso 31. <ph name="BEGIN_LINK" />Pakisuri<ph name="END_LINK" /></translation>

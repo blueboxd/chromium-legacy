@@ -138,6 +138,7 @@ void MemoryPurgeManager::RequestMemoryPurgeWithDelay(base::TimeDelta delay) {
 }
 
 void MemoryPurgeManager::PerformMemoryPurge() {
+  TRACE_EVENT0("blink", "MemoryPurgeManager::PerformMemoryPurge()");
   DCHECK(CanPurge());
 
   base::MemoryPressureListener::NotifyMemoryPressure(

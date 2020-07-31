@@ -654,26 +654,6 @@
 <translation id="2082205219176343977">デバイスでの使用を許可する Chrome の最小バージョンを設定する。</translation>
 <translation id="209586405398070749">Stable チャンネル</translation>
 <translation id="2098658257603918882">使用状況とクラッシュ関連データのレポートを有効にする</translation>
-<translation id="210034539800365161">最低限必要な <ph name="PRODUCT_OS_NAME" /> のバージョンを設定します。
-
-      このポリシーで空でないリストを設定した場合、次のように処理されます。
-      デバイスの現在のバージョンより新しい「<ph name="CHROMEOS_VERSION_PROPERTY_NAME" />」のエントリがない場合、制限は適用されず、すでに存在する制限は取り消されます。
-      現在のバージョンより新しい「<ph name="CHROMEOS_VERSION_PROPERTY_NAME" />」のエントリが少なくとも 1 つある場合、現在のバージョンに最も近い新しいバージョンのエントリが選ばれます。
-      競合が発生した場合、「<ph name="WARNING_PERIOD_PROPERTY_NAME" />」か「<ph name="AUE_WARNING_PERIOD_PROPERTY_NAME" />」の値が小さい方のエントリを使用してポリシーが適用されます。
-
-      ユーザー セッション中に現在のバージョンがサポート終了となり、さらに現在のネットワークで自動更新が制限されている場合、「<ph name="WARNING_PERIOD_PROPERTY_NAME" />」の期限内にデバイスを更新するよう求める通知が画面に表示されます。
-      現在のネットワークで自動更新が許可されていて、「<ph name="WARNING_PERIOD_PROPERTY_NAME" />」の期限内にデバイスが更新されることが確実な場合、通知は表示されません。
-      「<ph name="WARNING_PERIOD_PROPERTY_NAME" />」は、ポリシーを適用した時点からカウントされます。
-      デバイスを「<ph name="WARNING_PERIOD_PROPERTY_NAME" />」の期限内に更新しない場合、ユーザーはセッションからログアウトされます。
-      ログイン時に、現在のバージョンが「<ph name="WARNING_PERIOD_PROPERTY_NAME" />」の期限を過ぎてサポート終了となっていることが検出された場合、ユーザーはデバイスを更新するまでログインできなくなります。
-
-      ユーザー セッション中に現在のバージョンがサポート終了となり、さらにデバイスが自動更新の有効期限に達している場合、「<ph name="AUE_WARNING_PERIOD_PROPERTY_NAME" />」の期限内にデバイスを返却するよう求める通知が画面に表示されます。
-      ログイン時に、デバイスが「<ph name="AUE_WARNING_PERIOD_PROPERTY_NAME" />」の期限を過ぎて自動更新の有効期限に達していることが検出された場合、どのユーザーもデバイスにログインできなくなります。
-
-      このポリシーを設定しないか、空のリストを設定した場合、制限は適用されず、すでに存在する制限は取り消されます。ユーザーは <ph name="PRODUCT_OS_NAME" /> のバージョンに関係なくログインできます。
-
-      「<ph name="CHROMEOS_VERSION_PROPERTY_NAME" />」には、正確なバージョン（13305.0.0 など）かバージョンのプレフィックス（13305 など）を指定できます。
-      「<ph name="WARNING_PERIOD_PROPERTY_NAME" />」と「<ph name="AUE_WARNING_PERIOD_PROPERTY_NAME" />」には、日数を指定します（省略可）。デフォルトの値は 0 日で、この場合は警告期間がないことを意味します。</translation>
 <translation id="2104418465060359056">拡張機能とプラグインの情報についてレポートを作成する</translation>
 <translation id="2106627642643925514">デフォルトの PIN 印刷モードをオーバーライドします。このモードを使用できない場合、このポリシーは無視されます。</translation>
 <translation id="2107601598727098402">
@@ -2386,7 +2366,7 @@ False に設定した場合、<ph name="PRODUCT_NAME" /> はネイティブ通�
 
       <ph name="FILTER_PLACEHOLDER" /> セクションの使用例:
 
-      * <ph name="FILTER_PLACEHOLDER" /> に <ph name="AUTO_SELECT_CERTIFICATE_FOR_URLS_FILTER_EXAMPLE" /> を設定した場合、発行元の CommonName が <ph name="ISSUER_CN_PLACEHOLDER" /> のクライアント証明書のみが選択されます。
+      * <ph name="FILTER_PLACEHOLDER" /> に <ph name="AUTO_SELECT_CERTIFICATE_FOR_URLS_FILTER_EXAMPLE" /> を設定した場合、発行元の CommonName が <ph name="ISSUER_CN_PLACEHOLDER" /> であるクライアント証明書のみが選択されます。
 
       * <ph name="FILTER_PLACEHOLDER" /> に <ph name="ISSUER_STRING_VALUE" /> と <ph name="SUBJECT_STRING_VALUE" /> の両方のセクションを含めた場合は、両方の条件を満たすクライアント証明書のみが選択されます。
 
@@ -4572,13 +4552,6 @@ False に設定した場合、<ph name="PRODUCT_NAME" /> はネイティブ通�
 
       Google の検索 URL は次のように指定できます。<ph name="GOOGLE_SEARCH_URL" /></translation>
 <translation id="7895553628261067384">リモート アクセス</translation>
-<translation id="7898879331506985900">この企業向けのポリシーは一時的な適用を想定しており、M86 で削除される予定です。
-
-      Chrome のデフォルトのリファラー ポリシーは、M80 安定版の公開に向けた段階的措置として、現在の「no-referrer-when-downgrade」からさらに安全な「strict-origin-when-cross-origin」に変更され、セキュリティが強化されます。
-
-      安定版の公開まで、このポリシーは無視されます。公開後、このポリシーを有効にしている場合は、Chrome のデフォルトのリファラー ポリシーが M80 より前の値「no-referrer-when-downgrade」に設定されます。
-
-      このポリシーはデフォルトで無効になっています。</translation>
 <translation id="7902040092815978832">パスワード入力用に数字キーボードを表示する</translation>
 <translation id="7912255076272890813">許可されるアプリ/拡張機能のタイプを設定する</translation>
 <translation id="7922358664346625612">最後のタブを Chrome で開いたままにします。</translation>
@@ -5408,7 +5381,7 @@ False に設定した場合、<ph name="PRODUCT_NAME" /> はネイティブ通�
 
       <ph name="FILTER_PLACEHOLDER" /> セクションの使用例:
 
-      * <ph name="FILTER_PLACEHOLDER" /> に <ph name="AUTO_SELECT_CERTIFICATE_FOR_URLS_FILTER_EXAMPLE" /> を設定した場合、発行元の CommonName が <ph name="ISSUER_CN_PLACEHOLDER" /> のクライアント証明書のみが選択されます。
+      * <ph name="FILTER_PLACEHOLDER" /> に <ph name="AUTO_SELECT_CERTIFICATE_FOR_URLS_FILTER_EXAMPLE" /> を設定した場合、発行元の CommonName が <ph name="ISSUER_CN_PLACEHOLDER" /> であるクライアント証明書のみが選択されます。
 
       * <ph name="FILTER_PLACEHOLDER" /> に <ph name="ISSUER_STRING_VALUE" /> と <ph name="SUBJECT_STRING_VALUE" /> の両方のセクションを含めた場合は、両方の条件を満たすクライアント証明書のみが選択されます。
 

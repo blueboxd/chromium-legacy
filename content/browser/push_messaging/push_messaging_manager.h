@@ -78,16 +78,19 @@ class PushMessagingManager : public blink::mojom::PushMessaging {
       blink::ServiceWorkerStatusCode service_worker_status);
 
   // Called via PostTask from UI thread.
-  void PersistRegistrationOnSW(RegisterData data,
-                               const std::string& push_subscription_id,
-                               const GURL& endpoint,
-                               const std::vector<uint8_t>& p256dh,
-                               const std::vector<uint8_t>& auth,
-                               blink::mojom::PushRegistrationStatus status);
+  void PersistRegistrationOnSW(
+      RegisterData data,
+      const std::string& push_subscription_id,
+      const GURL& endpoint,
+      const base::Optional<base::Time>& expiration_time,
+      const std::vector<uint8_t>& p256dh,
+      const std::vector<uint8_t>& auth,
+      blink::mojom::PushRegistrationStatus status);
 
   void DidPersistRegistrationOnSW(
       RegisterData data,
       const GURL& endpoint,
+      const base::Optional<base::Time>& expiration_time,
       const std::vector<uint8_t>& p256dh,
       const std::vector<uint8_t>& auth,
       blink::mojom::PushRegistrationStatus push_registration_status,
@@ -97,11 +100,13 @@ class PushMessagingManager : public blink::mojom::PushMessaging {
   void SendSubscriptionError(RegisterData data,
                              blink::mojom::PushRegistrationStatus status);
   // Called both from "SW core" thread, and via PostTask from UI thread.
-  void SendSubscriptionSuccess(RegisterData data,
-                               blink::mojom::PushRegistrationStatus status,
-                               const GURL& endpoint,
-                               const std::vector<uint8_t>& p256dh,
-                               const std::vector<uint8_t>& auth);
+  void SendSubscriptionSuccess(
+      RegisterData data,
+      blink::mojom::PushRegistrationStatus status,
+      const GURL& endpoint,
+      const base::Optional<base::Time>& expiration_time,
+      const std::vector<uint8_t>& p256dh,
+      const std::vector<uint8_t>& auth);
 
   void UnsubscribeHavingGottenSenderId(
       UnsubscribeCallback callback,

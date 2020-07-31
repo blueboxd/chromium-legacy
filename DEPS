@@ -195,11 +195,11 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling Skia
   # and whatever else without interference from each other.
-  'skia_revision': 'fc8ba49c06f72e58895d597e1ccdabca21784f86',
+  'skia_revision': '6d3996c1f67eccb6e89556af642722d9357f25f3',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling V8
   # and whatever else without interference from each other.
-  'v8_revision': '01ef15edf2df0966e359a2c96965979cd38a26d4',
+  'v8_revision': '759f70344a9a68576605324f760c5942981ea9fd',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling swarming_client
   # and whatever else without interference from each other.
@@ -207,7 +207,7 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling ANGLE
   # and whatever else without interference from each other.
-  'angle_revision': '07ef703f1646d21becfa2df88dd17f605165052b',
+  'angle_revision': 'be774187b1cefe94f4717cbd747ebdea0b349478',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling SwiftShader
   # and whatever else without interference from each other.
@@ -258,7 +258,7 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling catapult
   # and whatever else without interference from each other.
-  'catapult_revision': '26d2e8aa289bffcc75aff7598285c3720148985d',
+  'catapult_revision': '2cd291aae824412377a3eb4cc76cb2ec7ee169c4',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling libFuzzer
   # and whatever else without interference from each other.
@@ -266,7 +266,7 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling devtools-frontend
   # and whatever else without interference from each other.
-  'devtools_frontend_revision': '03677716c86d8af789e8d694571f983d87951e24',
+  'devtools_frontend_revision': '37710e42bb90e7ea5705e04cf16abbbc92dbef5a',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling libprotobuf-mutator
   # and whatever else without interference from each other.
@@ -322,7 +322,7 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling feed
   # and whatever else without interference from each other.
-  'quiche_revision': '74ee66401627cc3ac60a153dfc57ecfb9650b347',
+  'quiche_revision': '2146ce8055a5e96371eb31a169c46f322afac527',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling ios_webkit
   # and whatever else without interference from each other.
@@ -875,7 +875,7 @@ deps = {
 
   # Build tools for Chrome OS.
   'src/third_party/chromite': {
-      'url': Var('chromium_git') + '/chromiumos/chromite.git' + '@' + 'bf47d2ef673b889870f4169e10a20f9c04d9db45',
+      'url': Var('chromium_git') + '/chromiumos/chromite.git' + '@' + 'de0ed93bda6323335cf84bc3d33e3aa848786a65',
       'condition': 'checkout_chromeos',
   },
 
@@ -895,7 +895,7 @@ deps = {
   },
 
   'src/third_party/depot_tools':
-    Var('chromium_git') + '/chromium/tools/depot_tools.git' + '@' + '343f63643b432ace2d2d4c253c6c327bb18c03ea',
+    Var('chromium_git') + '/chromium/tools/depot_tools.git' + '@' + '98b332f2dbbd25add6b0904cc9d01608ceeaa52d',
 
   'src/third_party/devtools-frontend/src':
     Var('chromium_git') + '/devtools/devtools-frontend' + '@' + Var('devtools_frontend_revision'),
@@ -1248,7 +1248,7 @@ deps = {
   },
 
   'src/third_party/perfetto':
-    Var('android_git') + '/platform/external/perfetto.git' + '@' + 'f6c424bb59238a75fbb10d4d802b5ad31107a3a3',
+    Var('android_git') + '/platform/external/perfetto.git' + '@' + '39c302bccf3a67b44045c5d99badfd0fdea5a432',
 
   'src/third_party/perl': {
       'url': Var('chromium_git') + '/chromium/deps/perl.git' + '@' + '6f3e5028eb65d0b4c5fdd792106ac4c84eee1eb3',
@@ -1537,7 +1537,7 @@ deps = {
     Var('chromium_git') + '/v8/v8.git' + '@' +  Var('v8_revision'),
 
   'src-internal': {
-    'url': 'https://chrome-internal.googlesource.com/chrome/src-internal.git@08057456d373475cd7e551639c334f360b1d4f92',
+    'url': 'https://chrome-internal.googlesource.com/chrome/src-internal.git@56387075825aad5a8df49667bf7dee8898299d5f',
     'condition': 'checkout_src_internal',
   },
 
@@ -4097,8 +4097,12 @@ include_rules = [
   '+third_party/icu/source/i18n/unicode',
   '+url',
 
-  # Chromium cannot directly depend on Abseil.
+  # Abseil features must be allowlisted explicitly for now. See
+  # //styleguide/c++/c++11.html. Allowed features' headers will be listed
+  # explicitly here.
   '-absl',
+  '-third_party/abseil-cpp',
+  '+third_party/abseil-cpp/absl/types/variant.h',
 ]
 
 

@@ -7,8 +7,9 @@
 
 #include "base/callback.h"
 #include "base/component_export.h"
-#include "base/optional.h"
+#include "third_party/abseil-cpp/absl/types/variant.h"
 #include "third_party/skia/include/core/SkColor.h"
+#include "ui/gfx/color_palette.h"
 #include "ui/gfx/image/image.h"
 #include "ui/gfx/image/image_skia.h"
 
@@ -57,17 +58,13 @@ class COMPONENT_EXPORT(UI_BASE) VectorIconModel {
 
   const gfx::VectorIcon* vector_icon() const { return vector_icon_; }
   int icon_size() const { return icon_size_; }
-  int color_id() const { return color_id_.value(); }
-  SkColor color() const { return color_.value(); }
-  bool has_color() const { return color_.has_value(); }
+  int color_id() const { return absl::get<int>(color_); }
+  SkColor color() const { return absl::get<SkColor>(color_); }
+  bool has_color() const { return absl::holds_alternative<SkColor>(color_); }
 
   const gfx::VectorIcon* vector_icon_ = nullptr;
   int icon_size_ = 0;
-  // Only one of the following will ever be assigned.
-  // TODO: Update to use std::variant or base:Variant once one of them is
-  // available to use.
-  base::Optional<int> color_id_;
-  base::Optional<SkColor> color_;
+  absl::variant<int, SkColor> color_ = gfx::kPlaceholderColor;
 };
 
 // ImageModel encapsulates either a gfx::Image or a VectorIconModel. Only one
@@ -97,8 +94,8 @@ class COMPONENT_EXPORT(UI_BASE) ImageModel {
   bool IsImage() const;
   gfx::Size Size() const;
   // Only valid if IsVectorIcon() or IsImage() return true, respectively.
-  const VectorIconModel GetVectorIcon() const;
-  const gfx::Image GetImage() const;
+  VectorIconModel GetVectorIcon() const;
+  gfx::Image GetImage() const;
 
   // Checks if both model yield equal images.
   bool operator==(const ImageModel& other) const;
@@ -109,11 +106,7 @@ class COMPONENT_EXPORT(UI_BASE) ImageModel {
   ImageModel(const gfx::ImageSkia& image_skia);
   ImageModel(const VectorIconModel& vector_icon_model);
 
-  // Only one of the following will ever be assigned.
-  // TODO: Update to use std::variant or base:Variant once one of them is
-  // available to use.
-  base::Optional<VectorIconModel> vector_icon_model_;
-  base::Optional<gfx::Image> image_;
+  absl::variant<VectorIconModel, gfx::Image> icon_;
 };
 
 }  // namespace ui

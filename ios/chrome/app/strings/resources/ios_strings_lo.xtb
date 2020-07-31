@@ -14,7 +14,6 @@
 <translation id="1084365883616172403">ການ​ໂພ​ສ​ທ໌ Facebook ສຳ​ເລັດ.</translation>
 <translation id="1103523840287552314">ແປ <ph name="LANGUAGE" /> ຢູ່ສະເໝີ</translation>
 <translation id="1104948393051856124">ຍອມ​ຮັບ​ ແລະ​ສືບ​ຕໍ່</translation>
-<translation id="1105578556867525047">ປ່ຽນລະຫັດຜ່ານໃນເວັບໄຊ</translation>
 <translation id="1112015203684611006">ການພິມບໍ່ສຳເລັດ.</translation>
 <translation id="1125564390852150847">ສ້າງ​ແຖບ​ໃໝ່.</translation>
 <translation id="1145536944570833626">ລຶບຂໍ້ມູນທີ່ມີຢູ່.</translation>
@@ -246,7 +245,6 @@
 <translation id="3783017676699494206">ບັນທຶກຮູບ</translation>
 <translation id="3789841737615482174">​ຕິດ​ຕັ້ງ</translation>
 <translation id="3803696231112616155">ສະເໜີແປເວັບໄຊນີ້</translation>
-<translation id="3836313059960742452">{COUNT,plural, =0{ບໍ່ມີລະຫັດຜ່ານໃດຮົ່ວໄຫຼ}=1{ມີ {COUNT} ລະຫັດຜ່ານຮົ່ວໄຫຼ}other{ມີ {COUNT} ລະຫັດຜ່ານຮົ່ວໄຫຼ}}</translation>
 <translation id="385051799172605136">ກັບ​ຄືນ​</translation>
 <translation id="3892144330757387737">ທ່ານຈະເຫັນປະຫວັດຂອງທ່ານຢູ່ບ່ອນນີ້</translation>
 <translation id="3897092660631435901">ເມ​ນູ</translation>
@@ -333,6 +331,7 @@
 <translation id="4901778704868714008">ບັນທຶກ...</translation>
 <translation id="4904877109095351937">ໝາຍວ່າອ່ານແລ້ວ</translation>
 <translation id="4930268273022498155">ລຶບຂໍ້ມູນທີ່ມີຢູ່. ທ່ານສາມາດກູ້ມັນຄືນໄດ້ ໂດຍການປ່ຽນກັບຄືນເປັນ <ph name="USER_EMAIL1" />.</translation>
+<translation id="4930714375720679147">ເປີດ</translation>
 <translation id="4941089862236492464">ຂໍ​ອະ​ໄພ​ມີ​ບັນ​ຫາ​ການ​ແບ່ງ​ປັນ​ລາຍ​ການ​ຂອງ​ທ່ານ.</translation>
 <translation id="4944543191714094452">ຊອກຫາໃນໜ້າ…</translation>
 <translation id="4945756290001680296">ເຂົ້າເຖິງການຕັ້ງຄ່າລະຫັດຜ່ານ</translation>
@@ -611,6 +610,7 @@ Handoff ຍັງ​ຕ້ອງ​ໄດ້​ເປີດ​ໃຊ້​ງາ
 <translation id="8073670137947914548">ສຳເລັດການດາວໂຫຼດແລ້ວ</translation>
 <translation id="8073872304774253879">ເຮັດໃຫ້ການຊອກຫາ ແລະ ການທ່ອງເວັບດີຂຶ້ນ</translation>
 <translation id="8076014560081431679">ການຕັ້ງຄ່າເວັບໄຊທີ່ບັນທຶກໄວ້ຈະບໍ່ຖືກລຶບ ແລະ ອາດຈະສະທ້ອນເຖິງນິໄສການທ່ອງເວັບຂອງທ່ານ. <ph name="BEGIN_LINK" />ສຶກສາເພີ່ມເຕີມ<ph name="END_LINK" /></translation>
+<translation id="8105368624971345109">ປິດ</translation>
 <translation id="8114753159095730575">ການດາວໂຫຼດໄຟລ໌ບໍ່ສາມາດໃຊ້ໄດ້. ມີຕົວເລືອກຕ່າງໆຢູ່ໃກ້ສ່ວນລຸ່ມຂອງໜ້າຈໍ.</translation>
 <translation id="8131740175452115882">ຢືນ​ຢັນ</translation>
 <translation id="8197543752516192074">ແປໜ້າ</translation>

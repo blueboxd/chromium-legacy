@@ -57,7 +57,7 @@ class CORE_EXPORT DOMTimer final : public GarbageCollected<DOMTimer>,
 
   DOMTimer(ExecutionContext*,
            ScheduledAction*,
-           base::TimeDelta interval,
+           base::TimeDelta timeout,
            bool single_shot,
            int timeout_id);
   ~DOMTimer() override;

@@ -295,6 +295,8 @@ size_t ClientDiscardableSharedMemoryManager::GetBytesAllocated() const {
 }
 
 void ClientDiscardableSharedMemoryManager::ReleaseFreeMemory() {
+  TRACE_EVENT0("blink",
+               "ClientDiscardableSharedMemoryManager::ReleaseFreeMemory()");
   base::AutoLock lock(lock_);
 
   size_t heap_size_prior_to_releasing_memory = heap_->GetSize();

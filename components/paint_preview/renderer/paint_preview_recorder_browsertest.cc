@@ -9,6 +9,7 @@
 #include "base/files/scoped_temp_dir.h"
 #include "base/test/scoped_feature_list.h"
 #include "base/threading/thread_restrictions.h"
+#include "build/build_config.h"
 #include "components/paint_preview/common/file_stream.h"
 #include "components/paint_preview/common/mojom/paint_preview_recorder.mojom.h"
 #include "content/public/renderer/render_frame.h"
@@ -60,6 +61,31 @@ class PaintPreviewRecorderRenderViewTest : public content::RenderViewTest {
     return temp_dir_.GetPath().AppendASCII(filename);
   }
 
+  base::FilePath RunCapture(content::RenderFrame* frame,
+                            mojom::PaintPreviewCaptureResponsePtr* out_response,
+                            bool is_main_frame = true) {
+    base::FilePath skp_path = MakeTestFilePath("test.skp");
+
+    mojom::PaintPreviewCaptureParamsPtr params =
+        mojom::PaintPreviewCaptureParams::New();
+    auto token = base::UnguessableToken::Create();
+    params->guid = token;
+    params->clip_rect = gfx::Rect();
+    params->is_main_frame = is_main_frame;
+    params->capture_links = true;
+    base::File skp_file(
+        skp_path, base::File::FLAG_CREATE_ALWAYS | base::File::FLAG_WRITE);
+    params->file = std::move(skp_file);
+
+    PaintPreviewRecorderImpl paint_preview_recorder(frame);
+    paint_preview_recorder.CapturePaintPreview(
+        std::move(params),
+        base::BindOnce(&OnCaptureFinished, mojom::PaintPreviewStatus::kOk,
+                       out_response));
+    content::RunAllTasksUntilIdle();
+    return skp_path;
+  }
+
  private:
   base::ScopedTempDir temp_dir_;
   base::test::ScopedFeatureList feature_list_;
@@ -67,6 +93,7 @@ class PaintPreviewRecorderRenderViewTest : public content::RenderViewTest {
 
 TEST_F(PaintPreviewRecorderRenderViewTest, TestCaptureMainFrameAndClipping) {
   LoadHTML(
+      "<!doctype html>"
       "<body>"
       "  <div style='width: 600px; height: 80vh; "
       "              background-color: #ff0000'>&nbsp;</div>"
@@ -80,28 +107,9 @@ TEST_F(PaintPreviewRecorderRenderViewTest, TestCaptureMainFrameAndClipping) {
       "  </div>"
       "</body>");
 
-  base::FilePath skp_path = MakeTestFilePath("test.skp");
-
-  mojom::PaintPreviewCaptureParamsPtr params =
-      mojom::PaintPreviewCaptureParams::New();
-  auto token = base::UnguessableToken::Create();
-  params->guid = token;
-  params->clip_rect = gfx::Rect();
-  params->is_main_frame = true;
-  params->capture_links = true;
-  params->max_capture_size = 0;
-  base::File skp_file(skp_path,
-                      base::File::FLAG_CREATE_ALWAYS | base::File::FLAG_WRITE);
-  params->file = std::move(skp_file);
-
   auto out_response = mojom::PaintPreviewCaptureResponse::New();
   content::RenderFrame* frame = GetFrame();
-  PaintPreviewRecorderImpl paint_preview_recorder(frame);
-  paint_preview_recorder.CapturePaintPreview(
-      std::move(params),
-      base::BindOnce(&OnCaptureFinished, mojom::PaintPreviewStatus::kOk,
-                     base::Unretained(&out_response)));
-  content::RunAllTasksUntilIdle();
+  base::FilePath skp_path = RunCapture(frame, &out_response);
 
   EXPECT_TRUE(out_response->embedding_token.has_value());
   EXPECT_EQ(frame->GetWebFrame()->GetEmbeddingToken(),
@@ -150,6 +158,7 @@ TEST_F(PaintPreviewRecorderRenderViewTest, TestCaptureMainFrameAndClipping) {
 
 TEST_F(PaintPreviewRecorderRenderViewTest, TestCaptureMainFrameWithScroll) {
   LoadHTML(
+      "<!doctype html>"
       "<body>"
       "  <div style='width: 600px; height: 80vh; "
       "              background-color: #ff0000'>&nbsp;</div>"
@@ -160,28 +169,10 @@ TEST_F(PaintPreviewRecorderRenderViewTest, TestCaptureMainFrameWithScroll) {
   // Scroll to bottom of page to ensure scroll position has no effect on
   // capture.
   ExecuteJavaScriptForTests("window.scrollTo(0,document.body.scrollHeight);");
-  base::FilePath skp_path = MakeTestFilePath("test.skp");
-
-  mojom::PaintPreviewCaptureParamsPtr params =
-      mojom::PaintPreviewCaptureParams::New();
-  auto token = base::UnguessableToken::Create();
-  params->guid = token;
-  params->clip_rect = gfx::Rect();
-  params->is_main_frame = true;
-  params->capture_links = true;
-  params->max_capture_size = 0;
-  base::File skp_file(skp_path,
-                      base::File::FLAG_CREATE_ALWAYS | base::File::FLAG_WRITE);
-  params->file = std::move(skp_file);
 
   auto out_response = mojom::PaintPreviewCaptureResponse::New();
   content::RenderFrame* frame = GetFrame();
-  PaintPreviewRecorderImpl paint_preview_recorder(frame);
-  paint_preview_recorder.CapturePaintPreview(
-      std::move(params),
-      base::BindOnce(&OnCaptureFinished, mojom::PaintPreviewStatus::kOk,
-                     base::Unretained(&out_response)));
-  content::RunAllTasksUntilIdle();
+  base::FilePath skp_path = RunCapture(frame, &out_response);
 
   EXPECT_TRUE(out_response->embedding_token.has_value());
   EXPECT_EQ(frame->GetWebFrame()->GetEmbeddingToken(),
@@ -215,33 +206,16 @@ TEST_F(PaintPreviewRecorderRenderViewTest, TestCaptureFragment) {
   // Use position absolute position to check that the captured link dimensions
   // match what is specified.
   LoadHTML(
+      "<!doctype html>"
       "<body style='min-height:1000px;'>"
       "  <a style='position: absolute; left: -15px; top: 0px; width: 40px; "
       "   height: 30px;' href='#fragment'>Foo</a>"
       "  <h1 id='fragment'>I'm a fragment</h1>"
       "</body>");
-  base::FilePath skp_path = MakeTestFilePath("test.skp");
-
-  mojom::PaintPreviewCaptureParamsPtr params =
-      mojom::PaintPreviewCaptureParams::New();
-  auto token = base::UnguessableToken::Create();
-  params->guid = token;
-  params->clip_rect = gfx::Rect();
-  params->is_main_frame = true;
-  params->capture_links = true;
-  params->max_capture_size = 0;
-  base::File skp_file(skp_path,
-                      base::File::FLAG_CREATE_ALWAYS | base::File::FLAG_WRITE);
-  params->file = std::move(skp_file);
-
   auto out_response = mojom::PaintPreviewCaptureResponse::New();
   content::RenderFrame* frame = GetFrame();
-  PaintPreviewRecorderImpl paint_preview_recorder(frame);
-  paint_preview_recorder.CapturePaintPreview(
-      std::move(params),
-      base::BindOnce(&OnCaptureFinished, mojom::PaintPreviewStatus::kOk,
-                     &out_response));
-  content::RunAllTasksUntilIdle();
+
+  RunCapture(frame, &out_response);
 
   EXPECT_TRUE(out_response->embedding_token.has_value());
   EXPECT_EQ(frame->GetWebFrame()->GetEmbeddingToken(),
@@ -281,33 +255,16 @@ TEST_F(PaintPreviewRecorderRenderViewTest, TestCaptureInvalidFile) {
 
 TEST_F(PaintPreviewRecorderRenderViewTest, TestCaptureMainFrameAndLocalFrame) {
   LoadHTML(
+      "<!doctype html>"
       "<body style='min-height:1000px;'>"
       "  <iframe style='width: 500px, height: 500px'"
       "          srcdoc=\"<div style='width: 100px; height: 100px;"
       "          background-color: #000000'>&nbsp;</div>\"></iframe>"
       "</body>");
-  base::FilePath skp_path = MakeTestFilePath("test.skp");
-
-  mojom::PaintPreviewCaptureParamsPtr params =
-      mojom::PaintPreviewCaptureParams::New();
-  auto token = base::UnguessableToken::Create();
-  params->guid = token;
-  params->clip_rect = gfx::Rect();
-  params->is_main_frame = true;
-  params->capture_links = true;
-  params->max_capture_size = 0;
-  base::File skp_file(skp_path,
-                      base::File::FLAG_CREATE_ALWAYS | base::File::FLAG_WRITE);
-  params->file = std::move(skp_file);
-
   auto out_response = mojom::PaintPreviewCaptureResponse::New();
   content::RenderFrame* frame = GetFrame();
-  PaintPreviewRecorderImpl paint_preview_recorder(frame);
-  paint_preview_recorder.CapturePaintPreview(
-      std::move(params),
-      base::BindOnce(&OnCaptureFinished, mojom::PaintPreviewStatus::kOk,
-                     base::Unretained(&out_response)));
-  content::RunAllTasksUntilIdle();
+
+  RunCapture(frame, &out_response);
 
   EXPECT_TRUE(out_response->embedding_token.has_value());
   EXPECT_EQ(frame->GetWebFrame()->GetEmbeddingToken(),
@@ -317,38 +274,242 @@ TEST_F(PaintPreviewRecorderRenderViewTest, TestCaptureMainFrameAndLocalFrame) {
 
 TEST_F(PaintPreviewRecorderRenderViewTest, TestCaptureLocalFrame) {
   LoadHTML(
+      "<!doctype html>"
       "<body style='min-height:1000px;'>"
       "  <iframe style='width: 500px, height: 500px'"
       "          srcdoc=\"<div style='width: 100px; height: 100px;"
       "          background-color: #000000'>&nbsp;</div>\"></iframe>"
       "</body>");
-  base::FilePath skp_path = MakeTestFilePath("test.skp");
-
-  mojom::PaintPreviewCaptureParamsPtr params =
-      mojom::PaintPreviewCaptureParams::New();
-  auto token = base::UnguessableToken::Create();
-  params->guid = token;
-  params->clip_rect = gfx::Rect();
-  params->is_main_frame = false;
-  params->capture_links = true;
-  params->max_capture_size = 0;
-  base::File skp_file(skp_path,
-                      base::File::FLAG_CREATE_ALWAYS | base::File::FLAG_WRITE);
-  params->file = std::move(skp_file);
-
   auto out_response = mojom::PaintPreviewCaptureResponse::New();
   auto* child_frame = content::RenderFrame::FromWebFrame(
       GetFrame()->GetWebFrame()->FirstChild()->ToWebLocalFrame());
   ASSERT_TRUE(child_frame);
-  PaintPreviewRecorderImpl paint_preview_recorder(child_frame);
-  paint_preview_recorder.CapturePaintPreview(
-      std::move(params),
-      base::BindOnce(&OnCaptureFinished, mojom::PaintPreviewStatus::kOk,
-                     base::Unretained(&out_response)));
-  content::RunAllTasksUntilIdle();
+
+  RunCapture(child_frame, &out_response, false);
 
   EXPECT_TRUE(out_response->embedding_token.has_value());
   EXPECT_EQ(out_response->content_id_to_embedding_token.size(), 0U);
+}
+
+TEST_F(PaintPreviewRecorderRenderViewTest, CaptureWithTranslate) {
+  // URLs should be annotated correctly when a CSS transform is applied.
+  LoadHTML(
+      R"(
+      <!doctype html>
+      <body>
+      <div style="display: inline-block;
+                  padding: 16px;
+                  font-size: 16px;">
+        <div style="padding: 16px;
+                    transform: translate(10px, 20px);
+                    margin-bottom: 30px;">
+          <div>
+            <a href="http://www.example.com" style="display: block;
+                                                    width: 70px;
+                                                    height: 20px;">
+              <div>Example</div>
+            </a>
+          </div>
+        </div>
+      </div>
+    </body>)");
+  auto out_response = mojom::PaintPreviewCaptureResponse::New();
+  content::RenderFrame* frame = GetFrame();
+
+  RunCapture(frame, &out_response);
+
+  EXPECT_TRUE(out_response->embedding_token.has_value());
+  EXPECT_EQ(frame->GetWebFrame()->GetEmbeddingToken(),
+            out_response->embedding_token.value());
+  EXPECT_EQ(out_response->content_id_to_embedding_token.size(), 0U);
+
+  ASSERT_EQ(out_response->links.size(), 1U);
+  EXPECT_EQ(out_response->links[0]->url, GURL("http://www.example.com"));
+  EXPECT_NEAR(out_response->links[0]->rect.x(), 50, 3);
+  EXPECT_NEAR(out_response->links[0]->rect.y(), 60, 3);
+  EXPECT_NEAR(out_response->links[0]->rect.width(), 70, 3);
+  EXPECT_NEAR(out_response->links[0]->rect.height(), 20, 3);
+}
+
+TEST_F(PaintPreviewRecorderRenderViewTest, CaptureWithTranslateThenRotate) {
+  // URLs should be annotated correctly when a CSS transform is applied.
+  LoadHTML(
+      R"(
+      <!doctype html>
+      <body>
+      <div style="display: inline-block;
+                  padding: 16px;
+                  font-size: 16px;">
+        <div style="padding: 16px;
+                    transform: translate(100px, 0) rotate(45deg);
+                    margin-bottom: 30px;">
+          <div>
+            <a href="http://www.example.com" style="display: block;
+                                                    width: 70px;
+                                                    height: 20px;">
+              <div>Example</div>
+            </a>
+          </div>
+        </div>
+      </div>
+    </body>)");
+  auto out_response = mojom::PaintPreviewCaptureResponse::New();
+  content::RenderFrame* frame = GetFrame();
+
+  RunCapture(frame, &out_response);
+
+  EXPECT_TRUE(out_response->embedding_token.has_value());
+  EXPECT_EQ(frame->GetWebFrame()->GetEmbeddingToken(),
+            out_response->embedding_token.value());
+  EXPECT_EQ(out_response->content_id_to_embedding_token.size(), 0U);
+
+  ASSERT_EQ(out_response->links.size(), 1U);
+  EXPECT_EQ(out_response->links[0]->url, GURL("http://www.example.com"));
+  EXPECT_NEAR(out_response->links[0]->rect.x(), 141, 5);
+  EXPECT_NEAR(out_response->links[0]->rect.y(), 18, 5);
+#if !defined(OS_ANDROID)
+  EXPECT_NEAR(out_response->links[0]->rect.width(), 58, 10);
+  EXPECT_NEAR(out_response->links[0]->rect.height(), 58, 10);
+#endif
+}
+
+TEST_F(PaintPreviewRecorderRenderViewTest, CaptureWithRotateThenTranslate) {
+  // URLs should be annotated correctly when a CSS transform is applied.
+  LoadHTML(
+      R"(
+      <!doctype html>
+      <body>
+      <div style="display: inline-block;
+                  padding: 16px;
+                  font-size: 16px;">
+        <div style="padding: 16px;
+                    transform: rotate(45deg) translate(100px, 0);
+                    margin-bottom: 30px;">
+          <div>
+            <a href="http://www.example.com" style="display: block;
+                                                    width: 70px;
+                                                    height: 20px;">
+              <div>Example</div>
+            </a>
+          </div>
+        </div>
+      </div>
+    </body>)");
+  auto out_response = mojom::PaintPreviewCaptureResponse::New();
+  content::RenderFrame* frame = GetFrame();
+
+  RunCapture(frame, &out_response);
+
+  EXPECT_TRUE(out_response->embedding_token.has_value());
+  EXPECT_EQ(frame->GetWebFrame()->GetEmbeddingToken(),
+            out_response->embedding_token.value());
+  EXPECT_EQ(out_response->content_id_to_embedding_token.size(), 0U);
+
+  ASSERT_EQ(out_response->links.size(), 1U);
+  EXPECT_EQ(out_response->links[0]->url, GURL("http://www.example.com"));
+  EXPECT_NEAR(out_response->links[0]->rect.x(), 111, 5);
+  EXPECT_NEAR(out_response->links[0]->rect.y(), 88, 5);
+#if !defined(OS_ANDROID)
+  EXPECT_NEAR(out_response->links[0]->rect.width(), 58, 10);
+  EXPECT_NEAR(out_response->links[0]->rect.height(), 58, 10);
+#endif
+}
+
+TEST_F(PaintPreviewRecorderRenderViewTest, CaptureWithScale) {
+  // URLs should be annotated correctly when a CSS transform is applied.
+  LoadHTML(
+      R"(
+      <!doctype html>
+      <body>
+      <div style="display: inline-block;
+                  padding: 16px;
+                  font-size: 16px;">
+        <div style="padding: 16px;
+                    transform: scale(2, 1);
+                    margin-bottom: 30px;">
+          <div>
+            <a href="http://www.example.com" style="display: block;
+                                                    width: 70px;
+                                                    height: 20px;">
+              <div>Example</div>
+            </a>
+          </div>
+        </div>
+      </div>
+    </body>)");
+  auto out_response = mojom::PaintPreviewCaptureResponse::New();
+  content::RenderFrame* frame = GetFrame();
+
+  RunCapture(frame, &out_response);
+
+  EXPECT_TRUE(out_response->embedding_token.has_value());
+  EXPECT_EQ(frame->GetWebFrame()->GetEmbeddingToken(),
+            out_response->embedding_token.value());
+  EXPECT_EQ(out_response->content_id_to_embedding_token.size(), 0U);
+
+  ASSERT_EQ(out_response->links.size(), 1U);
+  EXPECT_EQ(out_response->links[0]->url, GURL("http://www.example.com"));
+  EXPECT_NEAR(out_response->links[0]->rect.x(), 5, 3);
+  EXPECT_NEAR(out_response->links[0]->rect.y(), 40, 3);
+  EXPECT_NEAR(out_response->links[0]->rect.width(), 140, 3);
+  EXPECT_NEAR(out_response->links[0]->rect.height(), 20, 3);
+}
+
+TEST_F(PaintPreviewRecorderRenderViewTest, CaptureSaveRestore) {
+  // URLs should be annotated correctly when a CSS transform is applied.
+  LoadHTML(
+      R"(
+      <!doctype html>
+      <body>
+      <div style="display: inline-block;
+                  padding: 16px;
+                  font-size: 16px;">
+        <div style="padding: 16px;
+                    transform: translate(20px, 0);
+                    margin-bottom: 30px;">
+          <div>
+            <a href="http://www.example.com" style="display: block;
+                                                    width: 70px;
+                                                    height: 20px;">
+              <div>Example</div>
+            </a>
+          </div>
+        </div>
+        <div style="padding: 16px;
+                    transform: none;
+                    margin-bottom: 30px;">
+          <div>
+            <a href="http://www.chromium.org" style="display: block;
+                                                     width: 80px;
+                                                     height: 20px;">
+              <div>Chromium</div>
+            </a>
+          </div>
+        </div>
+      </div>
+    </body>)");
+  auto out_response = mojom::PaintPreviewCaptureResponse::New();
+  content::RenderFrame* frame = GetFrame();
+
+  RunCapture(frame, &out_response);
+
+  EXPECT_TRUE(out_response->embedding_token.has_value());
+  EXPECT_EQ(frame->GetWebFrame()->GetEmbeddingToken(),
+            out_response->embedding_token.value());
+  EXPECT_EQ(out_response->content_id_to_embedding_token.size(), 0U);
+
+  ASSERT_EQ(out_response->links.size(), 2U);
+  EXPECT_EQ(out_response->links[0]->url, GURL("http://www.chromium.org"));
+  EXPECT_NEAR(out_response->links[0]->rect.x(), 40, 3);
+  EXPECT_NEAR(out_response->links[0]->rect.y(), 122, 3);
+  EXPECT_NEAR(out_response->links[0]->rect.width(), 80, 3);
+  EXPECT_NEAR(out_response->links[0]->rect.height(), 20, 3);
+
+  EXPECT_EQ(out_response->links[1]->url, GURL("http://www.example.com"));
+  EXPECT_NEAR(out_response->links[1]->rect.x(), 60, 3);
+  EXPECT_NEAR(out_response->links[1]->rect.y(), 40, 3);
+  EXPECT_NEAR(out_response->links[1]->rect.width(), 70, 3);
+  EXPECT_NEAR(out_response->links[1]->rect.height(), 20, 3);
 }
 
 }  // namespace paint_preview

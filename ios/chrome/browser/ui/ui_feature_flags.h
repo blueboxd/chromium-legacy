@@ -65,8 +65,8 @@ extern const base::Feature kSafetyCheckIOS;
 // Feature flag to enable new illustrations and UI on empty states.
 extern const base::Feature kIllustratedEmptyStates;
 
-// Feature flag to enable Shared Highlighting (Text Fragments/scroll-to-text
-// and Link to Text features).
+// Feature flag to enable Shared Highlighting (Link to Text). Also enable
+// kScrollToTextIOS to successfully open these links.
 extern const base::Feature kSharedHighlightingIOS;
 
 // Feature flag that enables taking fullpage screenshots of a webpage.

@@ -9,6 +9,7 @@
 #include "ash/assistant/model/ui/assistant_card_element.h"
 #include "ash/assistant/ui/assistant_ui_constants.h"
 #include "ash/assistant/ui/assistant_view_delegate.h"
+#include "ash/assistant/ui/main_stage/assistant_ui_element_view_animator.h"
 #include "ash/assistant/util/deep_link_util.h"
 #include "ash/public/cpp/assistant/controller/assistant_controller.h"
 #include "ui/aura/window.h"
@@ -212,6 +213,11 @@ void AssistantCardElementView::InitLayout() {
 
   // OverrideDescription() doesn't work. Only names are read automatically.
   GetViewAccessibility().OverrideName(card_element_->fallback());
+}
+
+std::unique_ptr<ElementAnimator> AssistantCardElementView::CreateAnimator() {
+  return std::make_unique<AssistantUiElementViewAnimator>(
+      this, assistant::ui::kAssistantCardElementHistogram);
 }
 
 }  // namespace ash

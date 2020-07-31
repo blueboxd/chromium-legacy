@@ -638,26 +638,6 @@ Bu politikayı devre dışı bırakırsanız web sayfasını URL yoluyla belirli
 <translation id="2082205219176343977">Cihaz için izin verilen minimum Chrome sürümünü yapılandır.</translation>
 <translation id="209586405398070749">Mevcut ürün kanalı</translation>
 <translation id="2098658257603918882">Kullanım ve kilitlenme ile ilgili verilerin raporlanmasını etkinleştir</translation>
-<translation id="210034539800365161">İzin verilen minimum <ph name="PRODUCT_OS_NAME" /> sürümü gereksinimini yapılandırır.
-
-      Bu politika boş olmayan bir listeye ayarlandığında:
-      Girişlerin hiçbirinin <ph name="CHROMEOS_VERSION_PROPERTY_NAME" /> sürümü cihazın mevcut sürümünden yüksek değilse herhangi bir kısıtlama uygulanmaz ve mevcut kısıtlamalar iptal edilir.
-      Girişlerden en az birinin <ph name="CHROMEOS_VERSION_PROPERTY_NAME" /> sürümü cihazın mevcut sürümünden yüksekse sürümü en yüksek ve mevcut sürüme en yakın olan en güçlü giriş seçilir.
-      İhtilaf olması durumunda, daha düşük <ph name="WARNING_PERIOD_PROPERTY_NAME" /> veya <ph name="AUE_WARNING_PERIOD_PROPERTY_NAME" /> sürümlü giriş tercih edilir ve politika, bu giriş kullanılarak uygulanır.
-
-      Kullanıcı oturumu esnasında mevcut sürüm geçersiz hale gelirse ve mevcut ağ otomatik güncellemelere izin vermiyorsa cihazın belirtilen <ph name="WARNING_PERIOD_PROPERTY_NAME" /> içinde güncellenmesi için bir ekran bildirimi gösterilir.
-      Mevcut ağ otomatik güncellemelere izin veriyorsa herhangi bir bildirim gösterilmez ve cihazın <ph name="WARNING_PERIOD_PROPERTY_NAME" /> içinde güncellenmesi gerekir.
-      <ph name="WARNING_PERIOD_PROPERTY_NAME" /> politika uygulandığı zaman başlar.
-      Cihaz <ph name="WARNING_PERIOD_PROPERTY_NAME" /> sona erene kadar güncellenmezse kullanıcının oturumu kapatılır.
-      <ph name="WARNING_PERIOD_PROPERTY_NAME" /> sona erdikten sonra giriş yapıldığında mevcut sürüm eskiyse kullanıcının tekrar oturum açmadan önce güncelleme yapması gerekir.
-
-      Kullanıcı oturumu esnasında mevcut sürüm geçersiz hale gelirse ve cihaz otomatik güncelleme süresinin sonuna ulaştıysa cihazın <ph name="AUE_WARNING_PERIOD_PROPERTY_NAME" /> içinde geri verilmesi için bir ekran bildirimi gösterilir.
-      <ph name="AUE_WARNING_PERIOD_PROPERTY_NAME" /> sona erdikten sonra giriş yapıldığında cihaz otomatik güncelleme süresinin sonuna ulaştıysa cihazda herhangi bir kullanıcının oturum açması engellenir.
-
-      Bu politika ayarlanmaz veya boş olarak ayarlanırsa hiçbir kısıtlama uygulanmaz, mevcut kısıtlamalar iptal edilir ve kullanıcı, <ph name="PRODUCT_OS_NAME" /> sürümüne bakılmaksızın oturum açabilir.
-
-      Burada <ph name="CHROMEOS_VERSION_PROPERTY_NAME" /> ile kastedilen, "13305.0.0" gibi bir tam sürüm veya "13305" gibi bir sürüm öneki olabilir.
-      <ph name="WARNING_PERIOD_PROPERTY_NAME" /> ve <ph name="AUE_WARNING_PERIOD_PROPERTY_NAME" />, gün sayısı şeklinde belirtilen isteğe bağlı değerlerdir. Bunlar için varsayılan değer 0 gündür ve uyarı süresi olmadığı anlamına gelir.</translation>
 <translation id="2104418465060359056">Uzantı ve Eklenti bilgilerini bildirme</translation>
 <translation id="2106627642643925514">Varsayılan PIN ile yazdırma modunu geçersiz kılar. Mod kullanılamıyorsa bu politika yoksayılır.</translation>
 <translation id="2107601598727098402">
@@ -4623,13 +4603,6 @@ Bu ayar devre dışı bırakılır veya herhangi bir değer belirlenmezse <ph na
 
       Google'ın arama URL'sini şu şekilde belirtebilirsiniz: <ph name="GOOGLE_SEARCH_URL" />.</translation>
 <translation id="7895553628261067384">Uzaktan erişim</translation>
-<translation id="7898879331506985900">Bu kurumsal politika, kısa süreli uyum süreci için geçerli olup M86 sürümünde kaldırılacaktır.
-
-      Chrome'un varsayılan yönlendirme politikasının şu anda geçerli olan "no-referrer-when-downgrade" değeri güçlendirilerek daha güvenli olan "strict-origin-when-cross-origin" değerine geçirilmektedir. Burada kademeli olarak kullanıma sunma söz konusu olup M80 kararlı sürümü hedeflenmektedir.
-
-      Kullanıma sunma işleminden önce bu kurumsal politikanın hiçbir etkisi olmayacaktır. Kullanıma sunulduktan sonra, bu kurumsal politika etkinleştirildiğinde Chrome'un varsayılan yönlendirme politikası, M80 sürümünden önceki "no-referrer-when-downgrade" değerine ayarlanacaktır.
-
-      Bu kurumsal politika varsayılan olarak devre dışıdır.</translation>
 <translation id="7902040092815978832">Şifre için sayısal klavyeyi gösterir</translation>
 <translation id="7912255076272890813">İzin verilen uygulama/uzantı türlerini yapılandır</translation>
 <translation id="7922358664346625612">Chrome'da son sekmeyi açık tut.</translation>

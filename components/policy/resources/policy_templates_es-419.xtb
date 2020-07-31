@@ -660,26 +660,6 @@ Si la inhabilitas, se inhabilitará el desplazamiento de la página web a fragme
 <translation id="2082205219176343977">Configura la versión mínima permitida de Chrome para el dispositivo.</translation>
 <translation id="209586405398070749">Canal estable</translation>
 <translation id="2098658257603918882">Habilitar informes de uso y datos relacionados con bloqueos</translation>
-<translation id="210034539800365161">Configura el requisito de la versión mínima permitida de <ph name="PRODUCT_OS_NAME" />.
-
-      Cuando se configura esta política con una lista no vacía:
-      Si ninguna de las entradas tiene un valor de <ph name="CHROMEOS_VERSION_PROPERTY_NAME" /> mayor que la versión actual del dispositivo, no se aplicarán restricciones y se revocarán las restricciones existentes.
-      Si al menos una de las entradas tiene un valor de <ph name="CHROMEOS_VERSION_PROPERTY_NAME" /> mayor que la versión actual, se seleccionará la entrada cuya versión sea la mayor y más cercana a la actual.
-      En caso de conflicto, se le dará preferencia a la versión con el menor valor de <ph name="WARNING_PERIOD_PROPERTY_NAME" /> o <ph name="AUE_WARNING_PERIOD_PROPERTY_NAME" />, y se aplicará la política conforme a esa entrada.
-
-      Si la versión actual se vuelve obsoleta durante la sesión de usuario y la red actual limita las actualizaciones automáticas, se mostrará una notificación en pantalla solicitando la actualización del dispositivo en el período especificado en el valor de <ph name="WARNING_PERIOD_PROPERTY_NAME" /> de la notificación.
-      Si la red actual permite las actualizaciones automáticas y el dispositivo debe actualizarse en el período especificado en <ph name="WARNING_PERIOD_PROPERTY_NAME" />, no se mostrarán notificaciones.
-      El valor de <ph name="WARNING_PERIOD_PROPERTY_NAME" /> comienza a partir de que se aplica la política.
-      Si no se actualiza el dispositivo para cuando caduca <ph name="WARNING_PERIOD_PROPERTY_NAME" />, se forzará al usuario a salir de la sesión.
-      Si se advierte que la versión actual es obsoleta al momento de acceder con <ph name="WARNING_PERIOD_PROPERTY_NAME" /> vencido, el usuario deberá actualizar el dispositivo para poder acceder.
-
-      Si la versión actual se vuelve obsoleta durante la sesión de usuario y el dispositivo alcanzó la fecha de vencimiento de las actualizaciones automáticas, se mostrará una notificación en pantalla indicando que el dispositivo deberá devolverse en el período especificado en <ph name="AUE_WARNING_PERIOD_PROPERTY_NAME" />.
-      Si se advierte que el dispositivo alcanzó la fecha de vencimiento de las actualizaciones automáticas al momento de acceder con <ph name="AUE_WARNING_PERIOD_PROPERTY_NAME" /> vencido, se bloqueará el acceso al dispositivo para todos los usuarios.
-
-      Si no estableces esta política o la estableces como vacía, no se aplicarán restricciones, se revocarán las existentes, y el usuario podrá acceder independientemente de la versión de <ph name="PRODUCT_OS_NAME" />.
-
-      Aquí el valor de <ph name="CHROMEOS_VERSION_PROPERTY_NAME" /> puede ser exacto, como "13305.0.0", o el prefijo de una versión, como "13305".
-      Los valores <ph name="WARNING_PERIOD_PROPERTY_NAME" /> y <ph name="AUE_WARNING_PERIOD_PROPERTY_NAME" /> son opcionales y se especifican en número de días. El valor predeterminado de esos valores es 0 días, lo que significa que no hay un período de advertencia.</translation>
 <translation id="2104418465060359056">Enviar información de extensiones y complementos</translation>
 <translation id="2106627642643925514">Anula el modo de impresión con PIN predeterminado. Si el modo no está disponible, se ignorará esta política.</translation>
 <translation id="2107601598727098402">
@@ -4622,13 +4602,6 @@ Si se selecciona "U2F_EXTENDED", el segundo factor integrado proporcionará func
 
       Puedes especificar la URL de búsqueda de Google de la siguiente manera: <ph name="GOOGLE_SEARCH_URL" />.</translation>
 <translation id="7895553628261067384">Acceso remoto</translation>
-<translation id="7898879331506985900">Esta política es una adaptación por corto plazo y se quitará en la versión M86.
-
-      Para fortalecer la política del referente predeterminado de Chrome, su valor actual de "sin referente cuando cambia a una versión inferior" cambia al valor más seguro "origen estricto cuando el origen es cruzado" mediante un lanzamiento gradual que apunta a la versión M80 estable.
-
-      Antes del lanzamiento, esta política empresarial no tendrá efecto. Después del lanzamiento, cuando se habilite esta política empresarial, se configurará la política del referente predeterminado de Chrome al valor previo al lanzamiento de la versión M80: "sin referente cuando cambia a una versión inferior".
-
-      De forma predeterminada, esta política empresarial está inhabilitada.</translation>
 <translation id="7902040092815978832">Muestra el teclado numérico para la contraseña</translation>
 <translation id="7912255076272890813">Configurar tipos de extensiones o aplicaciones permitidos</translation>
 <translation id="7922358664346625612">Mantener la última pestaña abierta en Chrome</translation>

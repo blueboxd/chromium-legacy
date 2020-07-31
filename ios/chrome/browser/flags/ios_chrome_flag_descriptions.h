@@ -366,6 +366,10 @@ extern const char kSafetyCheckIOSDescription[];
 extern const char kSaveCardInfobarMessagesUIName[];
 extern const char kSaveCardInfobarMessagesUIDescription[];
 
+// Title and description for the flag to enable the Scroll to Text feature.
+extern const char kScrollToTextIOSName[];
+extern const char kScrollToTextIOSDescription[];
+
 // Title and description for the flag to enable the send tab to self receiving
 // feature.
 extern const char kSendTabToSelfName[];
@@ -381,7 +385,7 @@ extern const char kSettingsRefreshName[];
 extern const char kSettingsRefreshDescription[];
 
 // Title and description for the flag to enable Shared Highlighting (Link to
-// Text Edit Menu option and Text Fragments web behavior).
+// Text Edit Menu option).
 extern const char kSharedHighlightingIOSName[];
 extern const char kSharedHighlightingIOSDescription[];
 

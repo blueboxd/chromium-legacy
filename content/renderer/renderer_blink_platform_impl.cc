@@ -904,6 +904,15 @@ RendererBlinkPlatformImpl::GetGpuFactories() {
   return render_thread->GetGpuFactories();
 }
 
+void RendererBlinkPlatformImpl::SetRenderingColorSpace(
+    const gfx::ColorSpace& color_space) {
+  auto* render_thread = RenderThreadImpl::current();
+  if (!render_thread)
+    return;
+
+  render_thread->SetRenderingColorSpace(color_space);
+}
+
 //------------------------------------------------------------------------------
 
 blink::mojom::CodeCacheHost& RendererBlinkPlatformImpl::GetCodeCacheHost() {

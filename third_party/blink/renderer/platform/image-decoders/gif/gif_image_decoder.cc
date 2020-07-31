@@ -79,6 +79,13 @@ void GIFImageDecoder::OnSetData(SegmentReader* data) {
     SkCodec::Result codec_creation_result;
     codec_ = SkCodec::MakeFromStream(std::move(segment_stream),
                                      &codec_creation_result, nullptr);
+
+    // SkCodec supports many codecs, but this class is only for GIF decoding.
+    if (codec_ && codec_->getEncodedFormat() != SkEncodedImageFormat::kGIF) {
+      SetFailed();
+      return;
+    }
+
     switch (codec_creation_result) {
       case SkCodec::kSuccess: {
         // SkCodec::MakeFromStream will read enough of the image to get the
@@ -89,6 +96,11 @@ void GIFImageDecoder::OnSetData(SegmentReader* data) {
         return;
       }
       case SkCodec::kIncompleteInput:
+        if (IsAllDataReceived()) {
+          SetFailed();
+          return;
+        }
+
         // |segment_stream_|'s ownership is passed into MakeFromStream.
         // It is deleted if MakeFromStream fails.
         // If MakeFromStream fails, we set |segment_stream_| to null so

@@ -153,6 +153,38 @@ ConvertInstallationStageToProto(extensions::InstallStageTracker::Stage stage) {
   }
 }
 
+// Helper method to convert ExtensionDownloaderDelegate::Stage to the
+// DownloadingStage proto.
+em::ExtensionInstallReportLogEvent_DownloadingStage
+ConvertDownloadingStageToProto(
+    extensions::ExtensionDownloaderDelegate::Stage stage) {
+  using DownloadingStage = extensions::ExtensionDownloaderDelegate::Stage;
+  switch (stage) {
+    case DownloadingStage::PENDING:
+      return em::ExtensionInstallReportLogEvent::DOWNLOAD_PENDING;
+    case DownloadingStage::QUEUED_FOR_MANIFEST:
+      return em::ExtensionInstallReportLogEvent::QUEUED_FOR_MANIFEST;
+    case DownloadingStage::DOWNLOADING_MANIFEST:
+      return em::ExtensionInstallReportLogEvent::DOWNLOADING_MANIFEST;
+    case DownloadingStage::DOWNLOADING_MANIFEST_RETRY:
+      return em::ExtensionInstallReportLogEvent::DOWNLOADING_MANIFEST_RETRY;
+    case DownloadingStage::PARSING_MANIFEST:
+      return em::ExtensionInstallReportLogEvent::PARSING_MANIFEST;
+    case DownloadingStage::MANIFEST_LOADED:
+      return em::ExtensionInstallReportLogEvent::MANIFEST_LOADED;
+    case DownloadingStage::QUEUED_FOR_CRX:
+      return em::ExtensionInstallReportLogEvent::QUEUED_FOR_CRX;
+    case DownloadingStage::DOWNLOADING_CRX:
+      return em::ExtensionInstallReportLogEvent::DOWNLOADING_CRX;
+    case DownloadingStage::DOWNLOADING_CRX_RETRY:
+      return em::ExtensionInstallReportLogEvent::DOWNLOADING_CRX_RETRY;
+    case DownloadingStage::FINISHED:
+      return em::ExtensionInstallReportLogEvent::FINISHED;
+    default:
+      NOTREACHED();
+  }
+}
+
 }  // namespace
 
 ExtensionInstallEventLogCollector::ExtensionInstallEventLogCollector(
@@ -245,6 +277,16 @@ void ExtensionInstallEventLogCollector::OnExtensionInstallationStageChanged(
     return;
   auto event = std::make_unique<em::ExtensionInstallReportLogEvent>();
   event->set_installation_stage(ConvertInstallationStageToProto(stage));
+  delegate_->Add(id, true /* gather_disk_space_info */, std::move(event));
+}
+
+void ExtensionInstallEventLogCollector::OnExtensionDownloadingStageChanged(
+    const extensions::ExtensionId& id,
+    extensions::ExtensionDownloaderDelegate::Stage stage) {
+  if (!delegate_->IsExtensionPending(id))
+    return;
+  auto event = std::make_unique<em::ExtensionInstallReportLogEvent>();
+  event->set_downloading_stage(ConvertDownloadingStageToProto(stage));
   delegate_->Add(id, true /* gather_disk_space_info */, std::move(event));
 }
 

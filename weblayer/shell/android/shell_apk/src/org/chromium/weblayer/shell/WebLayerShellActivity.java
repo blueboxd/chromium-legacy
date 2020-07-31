@@ -18,12 +18,10 @@ import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
-import android.view.ViewGroup.LayoutParams;
 import android.view.WindowManager;
 import android.webkit.URLUtil;
 import android.widget.EditText;
 import android.widget.ImageButton;
-import android.widget.LinearLayout;
 import android.widget.PopupMenu;
 import android.widget.ProgressBar;
 import android.widget.TextView;
@@ -122,19 +120,16 @@ public class WebLayerShellActivity extends FragmentActivity {
     }
 
     private static final String TAG = "WebLayerShell";
-    private static final String KEY_MAIN_VIEW_ID = "mainViewId";
     private static final float DEFAULT_TEXT_SIZE = 15.0F;
     private static final int EDITABLE_URL_TEXT_VIEW = 0;
     private static final int NONEDITABLE_URL_TEXT_VIEW = 1;
 
     private Profile mProfile;
     private Browser mBrowser;
-    private ImageButton mMenuButton;
+    private ImageButton mAppMenuButton;
     private ViewSwitcher mUrlViewContainer;
     private EditText mEditUrlView;
     private ProgressBar mLoadProgressBar;
-    private View mMainView;
-    private int mMainViewId;
     private View mTopContentsContainer;
     private TabListCallback mTabListCallback;
     private List<Tab> mPreviousTabList = new ArrayList<>();
@@ -143,35 +138,21 @@ public class WebLayerShellActivity extends FragmentActivity {
     private int mTopViewMinHeight;
     private boolean mTopViewPinnedToContentTop;
     private boolean mInIncognitoMode;
+    private boolean mEnableWebViewCompat;
 
     @Override
     protected void onCreate(final Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        boolean enableWebViewCompat = getIntent().getBooleanExtra(EXTRA_WEBVIEW_COMPAT, false);
-        if (enableWebViewCompat) {
+        mEnableWebViewCompat = getIntent().getBooleanExtra(EXTRA_WEBVIEW_COMPAT, false);
+        if (mEnableWebViewCompat) {
             WebLayer.initializeWebViewCompatibilityMode(getApplicationContext());
         }
-        LinearLayout mainView = new LinearLayout(this);
-        mainView.setOrientation(LinearLayout.VERTICAL);
-        TextView versionText = new TextView(this);
-        versionText.setPadding(10, 0, 0, 0);
-        String versionString = getString(
-                R.string.version, WebLayer.getVersion(), WebLayer.getSupportedFullVersion(this));
-        if (enableWebViewCompat) {
-            versionString += " | WebView Compat";
-        }
-        versionText.setText(versionString);
-        mainView.addView(versionText,
-                new LinearLayout.LayoutParams(
-                        LayoutParams.MATCH_PARENT, LayoutParams.WRAP_CONTENT));
-        if (savedInstanceState == null) {
-            mMainViewId = View.generateViewId();
-        } else {
-            mMainViewId = savedInstanceState.getInt(KEY_MAIN_VIEW_ID);
-        }
-        mainView.setId(mMainViewId);
-        mMainView = mainView;
-        setContentView(mainView);
+        setContentView(R.layout.main);
+        TextView versionText = (TextView) findViewById(R.id.version_text);
+        versionText.setText(getString(
+                R.string.version, WebLayer.getVersion(), WebLayer.getSupportedFullVersion(this)));
+        ImageButton controlsMenuButton = (ImageButton) findViewById(R.id.controls_menu_button);
+        controlsMenuButton.setOnClickListener(this::onControlsMenuButtonClicked);
 
         mTopContentsContainer =
                 LayoutInflater.from(this).inflate(R.layout.shell_browser_controls, null);
@@ -185,107 +166,8 @@ public class WebLayerShellActivity extends FragmentActivity {
         });
         mUrlViewContainer.setDisplayedChild(EDITABLE_URL_TEXT_VIEW);
 
-        mMenuButton = mTopContentsContainer.findViewById(R.id.menu_button);
-        mMenuButton.setOnClickListener(v -> {
-            PopupMenu popup = new PopupMenu(WebLayerShellActivity.this, v);
-            popup.getMenuInflater().inflate(R.menu.app_menu, popup.getMenu());
-            MenuItem bottomMenuItem = popup.getMenu().findItem(R.id.toggle_bottom_view_id);
-            bottomMenuItem.setChecked(mBottomView != null);
-            popup.getMenu()
-                    .findItem(R.id.toggle_top_view_min_height_id)
-                    .setChecked(mTopViewMinHeight > 0);
-            popup.getMenu()
-                    .findItem(R.id.toggle_top_view_pinned_to_top_id)
-                    .setChecked(mTopViewPinnedToContentTop);
-            popup.getMenu()
-                    .findItem(R.id.translate_menu_id)
-                    .setVisible(mBrowser.getActiveTab().canTranslate());
-            popup.getMenu().findItem(R.id.webview_compat_menu_id).setVisible(!enableWebViewCompat);
-            popup.getMenu()
-                    .findItem(R.id.no_webview_compat_menu_id)
-                    .setVisible(enableWebViewCompat);
-            popup.setOnMenuItemClickListener(item -> {
-                if (item.getItemId() == R.id.reload_menu_id) {
-                    mBrowser.getActiveTab().getNavigationController().reload();
-                    return true;
-                }
-
-                if (item.getItemId() == R.id.find_begin_menu_id) {
-                    // TODO(estade): add a UI for FIP. For now, just search for "cat", or go
-                    // to the next result if a search has already been initiated.
-                    mBrowser.getActiveTab().getFindInPageController().setFindInPageCallback(
-                            new FindInPageCallback() {});
-                    mBrowser.getActiveTab().getFindInPageController().find("cat", true);
-                    return true;
-                }
-
-                if (item.getItemId() == R.id.find_end_menu_id) {
-                    mBrowser.getActiveTab().getFindInPageController().setFindInPageCallback(null);
-                    return true;
-                }
-
-                if (item.getItemId() == R.id.toggle_bottom_view_id) {
-                    if (mBottomView == null) {
-                        mBottomView =
-                                LayoutInflater.from(this).inflate(R.layout.bottom_controls, null);
-                    } else {
-                        mBottomView = null;
-                    }
-                    mBrowser.setBottomView(mBottomView);
-                    return true;
-                }
-
-                if (item.getItemId() == R.id.toggle_top_view_min_height_id) {
-                    mTopViewMinHeight = (mTopViewMinHeight == 0) ? 50 : 0;
-                    mBrowser.setTopView(
-                            mTopContentsContainer, mTopViewMinHeight, mTopViewPinnedToContentTop);
-                    return true;
-                }
-
-                if (item.getItemId() == R.id.toggle_top_view_pinned_to_top_id) {
-                    mTopViewPinnedToContentTop = !mTopViewPinnedToContentTop;
-                    mBrowser.setTopView(
-                            mTopContentsContainer, mTopViewMinHeight, mTopViewPinnedToContentTop);
-                    return true;
-                }
-
-                if (item.getItemId() == R.id.site_settings_menu_id) {
-                    // TODO(crbug.com/1083233): Figure out the right long-term behavior here.
-                    if (mInIncognitoMode) return true;
-
-                    Intent intent = SiteSettingsActivity.createIntentForCategoryList(
-                            this, NON_INCOGNITO_PROFILE_NAME);
-                    IntentUtils.safeStartActivity(this, intent);
-                    return true;
-                }
-
-                if (item.getItemId() == R.id.translate_menu_id) {
-                    mBrowser.getActiveTab().showTranslateUi();
-                    return true;
-                }
-
-                if (item.getItemId() == R.id.clear_browsing_data_menu_id) {
-                    mProfile.clearBrowsingData(new int[] {BrowsingDataType.COOKIES_AND_SITE_DATA,
-                                                       BrowsingDataType.CACHE},
-                            () -> {
-                                Toast.makeText(getApplicationContext(), "Data cleared!",
-                                             Toast.LENGTH_SHORT)
-                                        .show();
-                            });
-                }
-
-                if (item.getItemId() == R.id.webview_compat_menu_id) {
-                    restartShell(true);
-                }
-
-                if (item.getItemId() == R.id.no_webview_compat_menu_id) {
-                    restartShell(false);
-                }
-
-                return false;
-            });
-            popup.show();
-        });
+        mAppMenuButton = mTopContentsContainer.findViewById(R.id.app_menu_button);
+        mAppMenuButton.setOnClickListener(this::onAppMenuButtonClicked);
 
         mLoadProgressBar = mTopContentsContainer.findViewById(R.id.progress_bar);
 
@@ -299,6 +181,114 @@ public class WebLayerShellActivity extends FragmentActivity {
         } catch (UnsupportedVersionException e) {
             throw new RuntimeException("Failed to initialize WebLayer", e);
         }
+    }
+
+    private void onAppMenuButtonClicked(View appMenuButtonView) {
+        PopupMenu popup = new PopupMenu(WebLayerShellActivity.this, appMenuButtonView);
+        popup.getMenuInflater().inflate(R.menu.app_menu, popup.getMenu());
+        popup.getMenu()
+                .findItem(R.id.translate_menu_id)
+                .setVisible(mBrowser.getActiveTab().canTranslate());
+        popup.getMenu().findItem(R.id.webview_compat_menu_id).setVisible(!mEnableWebViewCompat);
+        popup.getMenu().findItem(R.id.no_webview_compat_menu_id).setVisible(mEnableWebViewCompat);
+        popup.setOnMenuItemClickListener(item -> {
+            if (item.getItemId() == R.id.reload_menu_id) {
+                mBrowser.getActiveTab().getNavigationController().reload();
+                return true;
+            }
+
+            if (item.getItemId() == R.id.find_begin_menu_id) {
+                // TODO(estade): add a UI for FIP. For now, just search for "cat", or go
+                // to the next result if a search has already been initiated.
+                mBrowser.getActiveTab().getFindInPageController().setFindInPageCallback(
+                        new FindInPageCallback() {});
+                mBrowser.getActiveTab().getFindInPageController().find("cat", true);
+                return true;
+            }
+
+            if (item.getItemId() == R.id.find_end_menu_id) {
+                mBrowser.getActiveTab().getFindInPageController().setFindInPageCallback(null);
+                return true;
+            }
+
+            if (item.getItemId() == R.id.site_settings_menu_id) {
+                // TODO(crbug.com/1083233): Figure out the right long-term behavior here.
+                if (mInIncognitoMode) return true;
+
+                Intent intent = SiteSettingsActivity.createIntentForCategoryList(
+                        this, NON_INCOGNITO_PROFILE_NAME);
+                IntentUtils.safeStartActivity(this, intent);
+                return true;
+            }
+
+            if (item.getItemId() == R.id.translate_menu_id) {
+                mBrowser.getActiveTab().showTranslateUi();
+                return true;
+            }
+
+            if (item.getItemId() == R.id.clear_browsing_data_menu_id) {
+                mProfile.clearBrowsingData(
+                        new int[] {BrowsingDataType.COOKIES_AND_SITE_DATA, BrowsingDataType.CACHE},
+                        () -> {
+                            Toast.makeText(getApplicationContext(), "Data cleared!",
+                                         Toast.LENGTH_SHORT)
+                                    .show();
+                        });
+            }
+
+            if (item.getItemId() == R.id.webview_compat_menu_id) {
+                restartShell(true);
+            }
+
+            if (item.getItemId() == R.id.no_webview_compat_menu_id) {
+                restartShell(false);
+            }
+
+            return false;
+        });
+        popup.show();
+    }
+
+    private void onControlsMenuButtonClicked(View controlsMenuButtonView) {
+        PopupMenu popup = new PopupMenu(WebLayerShellActivity.this, controlsMenuButtonView);
+        popup.getMenuInflater().inflate(R.menu.controls_menu, popup.getMenu());
+        popup.getMenu().findItem(R.id.toggle_bottom_view_id).setChecked(mBottomView != null);
+        popup.getMenu()
+                .findItem(R.id.toggle_top_view_min_height_id)
+                .setChecked(mTopViewMinHeight > 0);
+        popup.getMenu()
+                .findItem(R.id.toggle_top_view_pinned_to_top_id)
+                .setChecked(mTopViewPinnedToContentTop);
+        popup.setOnMenuItemClickListener(item -> {
+            if (item.getItemId() == R.id.toggle_bottom_view_id) {
+                if (mBottomView == null) {
+                    mBottomView = LayoutInflater.from(this).inflate(R.layout.bottom_controls, null);
+                } else {
+                    mBottomView = null;
+                }
+                mBrowser.setBottomView(mBottomView);
+                return true;
+            }
+
+            if (item.getItemId() == R.id.toggle_top_view_min_height_id) {
+                mTopViewMinHeight = (mTopViewMinHeight == 0) ? 50 : 0;
+                updateTopView();
+                return true;
+            }
+
+            if (item.getItemId() == R.id.toggle_top_view_pinned_to_top_id) {
+                mTopViewPinnedToContentTop = !mTopViewPinnedToContentTop;
+                updateTopView();
+                return true;
+            }
+
+            return false;
+        });
+        popup.show();
+    }
+
+    private void updateTopView() {
+        mBrowser.setTopView(mTopContentsContainer, mTopViewMinHeight, mTopViewPinnedToContentTop);
     }
 
     @Override
@@ -328,7 +318,7 @@ public class WebLayerShellActivity extends FragmentActivity {
         mProfile.setBooleanSetting(SettingType.UKM_ENABLED, true);
         setTabCallbacks(mBrowser.getActiveTab(), fragment);
 
-        mBrowser.setTopView(mTopContentsContainer, /*minHeight=*/0, /*pinToContentTop=*/false);
+        updateTopView();
         mTabListCallback = new TabListCallback() {
             @Override
             public void onActiveTabChanged(Tab activeTab) {
@@ -446,7 +436,7 @@ public class WebLayerShellActivity extends FragmentActivity {
 
             @Override
             public void onTabModalStateChanged(boolean isTabModalShowing) {
-                mMenuButton.setEnabled(!isTabModalShowing);
+                mAppMenuButton.setEnabled(!isTabModalShowing);
             }
 
             @Override
@@ -516,7 +506,7 @@ public class WebLayerShellActivity extends FragmentActivity {
 
         Fragment fragment = WebLayer.createBrowserFragment(profileName);
         FragmentTransaction transaction = fragmentManager.beginTransaction();
-        transaction.add(mMainViewId, fragment);
+        transaction.add(R.id.weblayer, fragment);
 
         // Note the commitNow() instead of commit(). We want the fragment to get attached to
         // activity synchronously, so we can use all the functionality immediately. Otherwise we'd
@@ -542,14 +532,6 @@ public class WebLayerShellActivity extends FragmentActivity {
         if (url == null) return null;
         if (url.startsWith("www.") || url.indexOf(":") == -1) url = "http://" + url;
         return url;
-    }
-
-    @Override
-    public void onSaveInstanceState(Bundle outState) {
-        super.onSaveInstanceState(outState);
-        // When restoring Fragments, FragmentManager tries to put them in the containers with same
-        // ids as before.
-        outState.putInt(KEY_MAIN_VIEW_ID, mMainViewId);
     }
 
     @Override

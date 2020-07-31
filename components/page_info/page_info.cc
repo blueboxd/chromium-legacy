@@ -1133,8 +1133,10 @@ void PageInfo::GetSafeBrowsingStatusByMaliciousContentStatus(
 
 content_settings::TabSpecificContentSettings*
 PageInfo::GetTabSpecificContentSettings() const {
-  return content_settings::TabSpecificContentSettings::FromWebContents(
-      web_contents());
+  // TODO(https://crbug.com/1103176): PageInfo should be per page. Why is it
+  // a WebContentsObserver if it is not observing anything?
+  return content_settings::TabSpecificContentSettings::GetForFrame(
+      web_contents()->GetMainFrame());
 }
 
 bool PageInfo::HasContentSettingChangedViaPageInfo(ContentSettingsType type) {

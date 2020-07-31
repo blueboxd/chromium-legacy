@@ -16,6 +16,7 @@
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "base/optional.h"
+#include "base/time/time.h"
 #include "chrome/browser/push_messaging/push_messaging_notification_manager.h"
 #include "chrome/common/buildflags.h"
 #include "components/content_settings/core/browser/content_settings_observer.h"
@@ -165,7 +166,7 @@ class PushMessagingServiceImpl : public content::PushMessagingService,
 
   // Subscribe methods ---------------------------------------------------------
 
-  void DoSubscribe(const PushMessagingAppIdentifier& app_identifier,
+  void DoSubscribe(PushMessagingAppIdentifier app_identifier,
                    blink::mojom::PushSubscriptionOptionsPtr options,
                    RegisterCallback callback,
                    int render_process_id,
@@ -175,6 +176,7 @@ class PushMessagingServiceImpl : public content::PushMessagingService,
   void SubscribeEnd(RegisterCallback callback,
                     const std::string& subscription_id,
                     const GURL& endpoint,
+                    const base::Optional<base::Time>& expiration_time,
                     const std::vector<uint8_t>& p256dh,
                     const std::vector<uint8_t>& auth,
                     blink::mojom::PushRegistrationStatus status);
@@ -198,13 +200,16 @@ class PushMessagingServiceImpl : public content::PushMessagingService,
 
   // GetSubscriptionInfo methods -----------------------------------------------
 
-  void DidValidateSubscription(const std::string& app_id,
-                               const std::string& sender_id,
-                               const GURL& endpoint,
-                               SubscriptionInfoCallback callback,
-                               bool is_valid);
+  void DidValidateSubscription(
+      const std::string& app_id,
+      const std::string& sender_id,
+      const GURL& endpoint,
+      const base::Optional<base::Time>& expiration_time,
+      SubscriptionInfoCallback callback,
+      bool is_valid);
 
   void DidGetEncryptionInfo(const GURL& endpoint,
+                            const base::Optional<base::Time>& expiration_time,
                             SubscriptionInfoCallback callback,
                             std::string p256dh,
                             std::string auth_secret) const;

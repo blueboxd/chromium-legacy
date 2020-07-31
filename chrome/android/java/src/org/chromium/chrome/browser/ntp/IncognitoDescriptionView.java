@@ -356,7 +356,7 @@ public class IncognitoDescriptionView extends LinearLayout {
         String addition;
         switch (enforcement) {
             case CookieControlsEnforcement.ENFORCED_BY_POLICY:
-                iconRes = R.drawable.controlled_setting_mandatory;
+                iconRes = R.drawable.ic_business_small;
                 addition = resources.getString(R.string.managed_by_your_organization);
                 break;
             case CookieControlsEnforcement.ENFORCED_BY_COOKIE_SETTING:

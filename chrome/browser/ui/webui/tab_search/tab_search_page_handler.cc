@@ -10,6 +10,7 @@
 #include <vector>
 
 #include "base/base64.h"
+#include "base/metrics/histogram_functions.h"
 #include "base/time/time.h"
 #include "base/timer/timer.h"
 #include "chrome/browser/extensions/extension_tab_util.h"
@@ -113,6 +114,11 @@ void TabSearchPageHandler::SwitchToTab(
   const TabDetails& details = optional_details.value();
   details.tab_strip_model->ActivateTabAt(details.index);
   details.browser->window()->Activate();
+}
+
+void TabSearchPageHandler::RecordInitialTabsRenderTime(
+    base::TimeDelta render_time) {
+  UmaHistogramTimes("Tabs.TabSearch.WebUI.InitialTabsRenderTime", render_time);
 }
 
 tab_search::mojom::TabPtr TabSearchPageHandler::GetTabData(

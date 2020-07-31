@@ -194,8 +194,8 @@
 #if !defined(OS_ANDROID) && !defined(OS_CHROMEOS)
 #include "chrome/browser/first_run/upgrade_util.h"
 #include "chrome/browser/notifications/notification_ui_manager.h"
-#include "chrome/browser/policy/chrome_browser_cloud_management_controller.h"
 #include "chrome/browser/ui/user_manager.h"
+#include "components/enterprise/browser/controller/chrome_browser_cloud_management_controller.h"
 #endif
 
 #if BUILDFLAG(ENABLE_SUPERVISED_USERS)

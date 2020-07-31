@@ -7,8 +7,8 @@
 #include "base/memory/ptr_util.h"
 #include "components/performance_manager/persistence/site_data/noop_site_data_writer.h"
 #include "components/performance_manager/persistence/site_data/site_data_cache_factory.h"
-#include "components/performance_manager/persistence/site_data/site_data_reader.h"
 #include "components/performance_manager/persistence/site_data/site_data_writer.h"
+#include "components/performance_manager/public/persistence/site_data/site_data_reader.h"
 
 namespace performance_manager {
 

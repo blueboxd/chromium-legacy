@@ -63,7 +63,7 @@ class CORE_EXPORT PausableScriptExecutor final
   void Trace(Visitor*) const override;
 
  private:
-
+  void PostExecuteAndDestroySelf(ExecutionContext* context);
   void ExecuteAndDestroySelf();
   void Dispose();
 

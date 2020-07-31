@@ -14,7 +14,6 @@
 <translation id="1084365883616172403">Inlägg på Facebook klart.</translation>
 <translation id="1103523840287552314">Översätt alltid <ph name="LANGUAGE" /></translation>
 <translation id="1104948393051856124">Godkänn och fortsätt</translation>
-<translation id="1105578556867525047">Ändra lösenordet på webbplatsen</translation>
 <translation id="1112015203684611006">Utskriftsfel.</translation>
 <translation id="1125564390852150847">Skapa en ny flik.</translation>
 <translation id="1145536944570833626">Radera befintlig data.</translation>
@@ -246,7 +245,6 @@ I inkognitoläget får inte webbplatser se din webbaktivitet på olika webbplats
 <translation id="3783017676699494206">Spara bild</translation>
 <translation id="3789841737615482174">Installera</translation>
 <translation id="3803696231112616155">Erbjud översättning av webbplatsen</translation>
-<translation id="3836313059960742452">{COUNT,plural, =0{Inga utsatta lösenord}=1{{COUNT} utsatt lösenord}other{{COUNT} utsatta lösenord}}</translation>
 <translation id="385051799172605136">Bakåt</translation>
 <translation id="3892144330757387737">Du hittar historiken här</translation>
 <translation id="3897092660631435901">Meny</translation>
@@ -333,6 +331,7 @@ Din data har krypterats med lösenfrasen för synkronisering. Ange den om du vil
 <translation id="4901778704868714008">Spara …</translation>
 <translation id="4904877109095351937">Markera som läst</translation>
 <translation id="4930268273022498155">Radera befintlig data. Om du byter tillbaka till <ph name="USER_EMAIL1" /> finns den kvar där.</translation>
+<translation id="4930714375720679147">Aktivera</translation>
 <translation id="4941089862236492464">Det gick inte att dela objektet.</translation>
 <translation id="4944543191714094452">Hitta på sida …</translation>
 <translation id="4945756290001680296">Åtkomst till lösenordsinställningar</translation>
@@ -611,6 +610,7 @@ Webbplatser får se din webbaktivitet på olika webbplatser med hjälp av cookie
 <translation id="8073670137947914548">Nedladdningen är klar</translation>
 <translation id="8073872304774253879">Förbättra sökningar och surfande</translation>
 <translation id="8076014560081431679">Sparade webbplatsinställningar raderas inte och kan visa dina surfvanor. <ph name="BEGIN_LINK" />Läs mer<ph name="END_LINK" /></translation>
+<translation id="8105368624971345109">Inaktivera</translation>
 <translation id="8114753159095730575">En filnedladdning är tillgänglig. Alternativ visas nära skärmens nederkant.</translation>
 <translation id="8131740175452115882">Bekräfta</translation>
 <translation id="8197543752516192074">Översätt sidan</translation>

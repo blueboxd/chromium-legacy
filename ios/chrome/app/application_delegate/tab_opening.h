@@ -31,6 +31,15 @@ struct UrlLoadParams;
                                dismissOmnibox:(BOOL)dismissOmnibox
                                    completion:(ProceduralBlock)completion;
 
+// Dismisses any modal view, excluding the omnibox if |dismissOmnibox| is NO,
+// then opens the list of URLs in |URLs| in either normal or incognito.
+// After opening the array of URLs, run completion |handler| if it not nil.
+- (void)dismissModalsAndOpenMultipleTabsInMode:
+            (ApplicationModeForTabOpening)targetMode
+                                          URLs:(const std::vector<GURL>&)URLs
+                                dismissOmnibox:(BOOL)dismissOmnibox
+                                    completion:(ProceduralBlock)completion;
+
 // Creates a new tab if the launch options are not null.
 - (void)openTabFromLaunchWithParams:(URLOpenerParams*)params
                  startupInformation:(id<StartupInformation>)startupInformation

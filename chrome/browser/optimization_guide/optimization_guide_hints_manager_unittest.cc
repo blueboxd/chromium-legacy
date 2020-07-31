@@ -89,7 +89,7 @@ std::unique_ptr<optimization_guide::proto::GetHintsResponse> BuildHintsResponse(
 
   for (const auto& host : hosts) {
     optimization_guide::proto::Hint* hint = get_hints_response->add_hints();
-    hint->set_key_representation(optimization_guide::proto::HOST_SUFFIX);
+    hint->set_key_representation(optimization_guide::proto::HOST);
     hint->set_key(host);
     optimization_guide::proto::PageHint* page_hint = hint->add_page_hints();
     page_hint->set_page_pattern("page pattern");
@@ -346,7 +346,7 @@ class OptimizationGuideHintsManagerTest
     optimization_guide::proto::Configuration config;
     optimization_guide::proto::Hint* hint1 = config.add_hints();
     hint1->set_key("somedomain.org");
-    hint1->set_key_representation(optimization_guide::proto::HOST_SUFFIX);
+    hint1->set_key_representation(optimization_guide::proto::HOST);
     hint1->set_version("someversion");
     optimization_guide::proto::PageHint* page_hint1 = hint1->add_page_hints();
     page_hint1->set_page_pattern("/news/");
@@ -494,7 +494,7 @@ TEST_F(OptimizationGuideHintsManagerTest,
   optimization_guide::proto::Configuration config;
   optimization_guide::proto::Hint* hint = config.add_hints();
   hint->set_key("somedomain.org");
-  hint->set_key_representation(optimization_guide::proto::HOST_SUFFIX);
+  hint->set_key_representation(optimization_guide::proto::HOST);
   optimization_guide::proto::PageHint* page_hint = hint->add_page_hints();
   page_hint->set_page_pattern("noscript_default_2g");
   optimization_guide::proto::Optimization* optimization =
@@ -570,7 +570,7 @@ TEST_F(OptimizationGuideHintsManagerTest,
   optimization_guide::proto::Configuration config;
   optimization_guide::proto::Hint* hint = config.add_hints();
   hint->set_key("somedomain.org");
-  hint->set_key_representation(optimization_guide::proto::HOST_SUFFIX);
+  hint->set_key_representation(optimization_guide::proto::HOST);
   optimization_guide::proto::PageHint* page_hint = hint->add_page_hints();
   page_hint->set_page_pattern("noscript_default_2g");
   optimization_guide::proto::Optimization* optimization =
@@ -615,7 +615,7 @@ TEST_F(OptimizationGuideHintsManagerTest, ParseTwoConfigVersions) {
   optimization_guide::proto::Configuration config;
   optimization_guide::proto::Hint* hint1 = config.add_hints();
   hint1->set_key("somedomain.org");
-  hint1->set_key_representation(optimization_guide::proto::HOST_SUFFIX);
+  hint1->set_key_representation(optimization_guide::proto::HOST);
   hint1->set_version("someversion");
   optimization_guide::proto::PageHint* page_hint1 = hint1->add_page_hints();
   page_hint1->set_page_pattern("/news/");
@@ -1318,7 +1318,7 @@ TEST_F(OptimizationGuideHintsManagerTest,
   optimization_guide::proto::Configuration config;
   optimization_guide::proto::Hint* hint = config.add_hints();
   hint->set_key("somedomain.org");
-  hint->set_key_representation(optimization_guide::proto::HOST_SUFFIX);
+  hint->set_key_representation(optimization_guide::proto::HOST);
   hint->set_version("someversion");
   optimization_guide::proto::PageHint* page_hint = hint->add_page_hints();
   page_hint->set_page_pattern("/news/");
@@ -1359,7 +1359,7 @@ TEST_F(OptimizationGuideHintsManagerTest,
   optimization_guide::proto::Configuration config;
   optimization_guide::proto::Hint* hint = config.add_hints();
   hint->set_key("somedomain.org");
-  hint->set_key_representation(optimization_guide::proto::HOST_SUFFIX);
+  hint->set_key_representation(optimization_guide::proto::HOST);
   hint->set_version("someversion");
   optimization_guide::proto::PageHint* page_hint = hint->add_page_hints();
   page_hint->set_page_pattern("/news/");
@@ -1397,7 +1397,7 @@ TEST_F(OptimizationGuideHintsManagerTest,
   optimization_guide::proto::Configuration config;
   optimization_guide::proto::Hint* hint = config.add_hints();
   hint->set_key("somedomain.org");
-  hint->set_key_representation(optimization_guide::proto::HOST_SUFFIX);
+  hint->set_key_representation(optimization_guide::proto::HOST);
   hint->set_version("someversion");
   optimization_guide::proto::PageHint* page_hint = hint->add_page_hints();
   page_hint->set_page_pattern("/news/");
@@ -1538,7 +1538,7 @@ TEST_F(OptimizationGuideHintsManagerTest,
   optimization_guide::proto::Configuration config;
   optimization_guide::proto::Hint* hint1 = config.add_hints();
   hint1->set_key("host.com");
-  hint1->set_key_representation(optimization_guide::proto::HOST_SUFFIX);
+  hint1->set_key_representation(optimization_guide::proto::HOST);
   hint1->set_version("someversion");
   optimization_guide::proto::PageHint* page_hint1 = hint1->add_page_hints();
   page_hint1->set_page_pattern("https://m.host.com");
@@ -1584,7 +1584,7 @@ TEST_F(OptimizationGuideHintsManagerTest,
   optimization_guide::proto::Configuration config;
   optimization_guide::proto::Hint* hint1 = config.add_hints();
   hint1->set_key("notfiltered.com");
-  hint1->set_key_representation(optimization_guide::proto::HOST_SUFFIX);
+  hint1->set_key_representation(optimization_guide::proto::HOST);
   hint1->set_version("someversion");
   optimization_guide::proto::PageHint* page_hint1 = hint1->add_page_hints();
   page_hint1->set_page_pattern("https://notfiltered.com");

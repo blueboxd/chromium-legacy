@@ -1643,6 +1643,7 @@ Papildu informācija:
 <translation id="7791011319128895129">Nav izlaista</translation>
 <translation id="7791196057686275387">Iepakojums</translation>
 <translation id="7791543448312431591">Pievienot</translation>
+<translation id="7792318290931435557">Vienas lappuses skats</translation>
 <translation id="7798389633136518089">Ignorēta, jo politika nav iestatīta mākoņa avotā.</translation>
 <translation id="7800304661137206267">Savienojums ir šifrēts, izmantojot <ph name="CIPHER" />, ar <ph name="MAC" /> ziņojumu autentifikācijai un <ph name="KX" /> kā atslēgu apmaiņas mehānismu.</translation>
 <translation id="7802523362929240268">Vietne ir uzticama</translation>
@@ -1738,6 +1739,7 @@ Papildu informācija:
 <translation id="8220146938470311105">C7/C6 (aploksne)</translation>
 <translation id="8221250263817408492">Jūs tikko ievadījāt savu paroli maldinošā vietnē. Chromium ieteikums: tūlīt apmeklējiet vietni <ph name="WEBSITE_1" /> un citas vietnes, kurās izmantojat šo paroli, un nomainiet to.</translation>
 <translation id="8225771182978767009">Persona, kura iestatīja šo datoru, izvēlējās bloķēt šo vietni.</translation>
+<translation id="8228419419708659934">Divu lappušu skats</translation>
 <translation id="822964464349305906"><ph name="TYPE_1" />, <ph name="TYPE_2" /></translation>
 <translation id="8232343881378637145">Platformas temperatūra</translation>
 <translation id="8238581221633243064">Atvērt lapu jaunā inkognito režīma cilnē</translation>

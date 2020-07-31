@@ -14,7 +14,6 @@
 <translation id="1084365883616172403">Post Facebook publié.</translation>
 <translation id="1103523840287552314">Toujours traduire les pages en <ph name="LANGUAGE" /></translation>
 <translation id="1104948393051856124">Accepter et continuer</translation>
-<translation id="1105578556867525047">Modifier le mot de passe sur le site Web</translation>
 <translation id="1112015203684611006">Échec impr.</translation>
 <translation id="1125564390852150847">Créer un onglet</translation>
 <translation id="1145536944570833626">Supprimer les données existantes.</translation>
@@ -245,7 +244,6 @@ En revanche, lorsque vous êtes en mode navigation privée, les sites ne peuvent
 <translation id="3783017676699494206">Enregistrer l'image</translation>
 <translation id="3789841737615482174">Installer</translation>
 <translation id="3803696231112616155">Proposer de traduire ce site</translation>
-<translation id="3836313059960742452">{COUNT,plural, =0{Aucun mot de passe compromis}=1{{COUNT} mot de passe compromis}one{{COUNT} mot de passe compromis}other{{COUNT} mots de passe compromis}}</translation>
 <translation id="385051799172605136">Retour</translation>
 <translation id="3892144330757387737">Votre historique s'affichera ici</translation>
 <translation id="3897092660631435901">Menu</translation>
@@ -332,6 +330,7 @@ Pour modifier ce paramètre, <ph name="BEGIN_LINK" />réinitialisez la synchroni
 <translation id="4901778704868714008">Enregistrer…</translation>
 <translation id="4904877109095351937">Marquer comme lues</translation>
 <translation id="4930268273022498155">Supprimer les données actuelles. Vous pouvez les récupérer en repassant sur le compte <ph name="USER_EMAIL1" />.</translation>
+<translation id="4930714375720679147">Activer</translation>
 <translation id="4941089862236492464">Désolé, un problème est survenu lors du partage de l'élément.</translation>
 <translation id="4944543191714094452">Rechercher sur la page…</translation>
 <translation id="4945756290001680296">Accéder aux paramètres des mots de passe</translation>
@@ -610,6 +609,7 @@ Ils peuvent également s'en servir pour voir votre activité de navigation sur l
 <translation id="8073670137947914548">Téléchargement terminé</translation>
 <translation id="8073872304774253879">Améliorer les recherches et la navigation</translation>
 <translation id="8076014560081431679">Les paramètres de site enregistrés ne seront pas supprimés et peuvent donner des indications sur vos habitudes de navigation. <ph name="BEGIN_LINK" />En savoir plus<ph name="END_LINK" /></translation>
+<translation id="8105368624971345109">Désactiver</translation>
 <translation id="8114753159095730575">Vous pouvez télécharger des fichiers. Différentes options sont disponibles au bas de l'écran.</translation>
 <translation id="8131740175452115882">Confirmer</translation>
 <translation id="8197543752516192074">Traduire la page</translation>

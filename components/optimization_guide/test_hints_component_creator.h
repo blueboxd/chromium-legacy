@@ -29,17 +29,17 @@ class TestHintsComponentCreator {
   TestHintsComponentCreator();
   ~TestHintsComponentCreator();
 
-  // Creates component data based on |whitelisted_host_suffixes| and
+  // Creates component data based on |whitelisted_hosts| and
   // |page_pattern| with page hints for type |optimization_type| blocking
   // resources specified by |resource_patterns|, and returns the
   // HintsComponentInfo for it.
   optimization_guide::HintsComponentInfo CreateHintsComponentInfoWithPageHints(
       optimization_guide::proto::OptimizationType optimization_type,
-      const std::vector<std::string>& whitelisted_host_suffixes,
+      const std::vector<std::string>& whitelisted_hosts,
       const std::string& page_pattern,
       const std::vector<std::string>& resource_patterns);
 
-  // Creates component data based on |whitelisted_host_suffixes| with page hints
+  // Creates component data based on |whitelisted_hosts| with page hints
   // for type |optimization_type| blocking resources specified by
   // |experimental_resource_patterns|, and returns the HintsComponentInfo for
   // it. The loading hints are set as experimental with experiment name set to
@@ -47,23 +47,23 @@ class TestHintsComponentCreator {
 
   // Creates component data for testing with experimental optimizations. It
   // creates a PageHint (with page pattern "*" for each key in
-  // |whitelisted_host_suffixes| that each has resource blocking patterns from
+  // |whitelisted_hosts| that each has resource blocking patterns from
   // |experimental_resource_patterns|.
   optimization_guide::HintsComponentInfo
   CreateHintsComponentInfoWithExperimentalPageHints(
       optimization_guide::proto::OptimizationType optimization_type,
-      const std::vector<std::string>& whitelisted_host_suffixes,
+      const std::vector<std::string>& whitelisted_hosts,
       const std::vector<std::string>& experimental_resource_patterns);
 
   // Creates component data for testing with both default and experimental
   // optimizations. It creates a PageHint (with page pattern "*" for each key in
-  // |whitelisted_host_suffixes| that each has resource blocking patterns from
+  // |whitelisted_hosts| that each has resource blocking patterns from
   // |default_resource_patterns| and |experimental_resource_patterns|. The
   // experimental hints are guarded behind experiment kFooExperimentName.
   optimization_guide::HintsComponentInfo
   CreateHintsComponentInfoWithMixPageHints(
       optimization_guide::proto::OptimizationType optimization_type,
-      const std::vector<std::string>& whitelisted_host_suffixes,
+      const std::vector<std::string>& whitelisted_hosts,
       const std::vector<std::string>& experimental_resource_patterns,
       const std::vector<std::string>& default_resource_patterns);
 

@@ -351,16 +351,15 @@ IN_PROC_BROWSER_TEST_F(DeviceSensorBrowserTest,
       "https://github.com/WICG/feature-policy/blob/"
       "master/features.md#sensor-features";
 
-  auto console_delegate = std::make_unique<ConsoleObserverDelegate>(
-      shell()->web_contents(), kWarningMessage);
-  shell()->web_contents()->SetDelegate(console_delegate.get());
+  WebContentsConsoleObserver console_observer(shell()->web_contents());
+  console_observer.SetPattern(kWarningMessage);
 
   EXPECT_TRUE(NavigateToURL(shell(), main_frame_url));
   EXPECT_TRUE(NavigateIframeToURL(shell()->web_contents(),
                                   "cross_origin_iframe", iframe_url));
 
-  console_delegate->Wait();
-  EXPECT_EQ(kWarningMessage, console_delegate->message());
+  console_observer.Wait();
+  EXPECT_EQ(kWarningMessage, console_observer.GetMessageAt(0u));
 }
 
 }  //  namespace

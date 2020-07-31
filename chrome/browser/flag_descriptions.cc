@@ -2241,16 +2241,6 @@ const char kTintCompositedContentDescription[] =
     "Tint contents composited using Viz with a shade of red to help debug and "
     "study overlay support.";
 
-const char kTLS13HardeningForLocalAnchorsName[] =
-    "TLS 1.3 hardening for local anchors";
-const char kTLS13HardeningForLocalAnchorsDescription[] =
-    "This option enables the TLS 1.3 downgrade hardening mechanism for "
-    "connections authenticated by local trust anchors. This improves security "
-    "for connections to TLS-1.3-capable servers while remaining compatible "
-    "with older servers. Firewalls and proxies that do not function when this "
-    "is enabled do not implement TLS 1.2 correctly or securely and must be "
-    "updated.";
-
 const char kTopChromeTouchUiName[] = "Touch UI Layout";
 const char kTopChromeTouchUiDescription[] =
     "Enables touch UI layout in the browser's top chrome.";

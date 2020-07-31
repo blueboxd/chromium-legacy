@@ -39,14 +39,14 @@ android_resources("java_resources") {
     "//ui/android:ui_java_resources",
   ]
   sources = [
-    "java/res/drawable-hdpi/controlled_setting_mandatory.png",
     "java/res/drawable-hdpi/ic_account_child_grey600_36dp.png",
-    "java/res/drawable-mdpi/controlled_setting_mandatory.png",
+    "java/res/drawable-hdpi/ic_business_small.png",
     "java/res/drawable-mdpi/ic_account_child_grey600_36dp.png",
-    "java/res/drawable-xhdpi/controlled_setting_mandatory.png",
+    "java/res/drawable-mdpi/ic_business_small.png",
     "java/res/drawable-xhdpi/ic_account_child_grey600_36dp.png",
-    "java/res/drawable-xxhdpi/controlled_setting_mandatory.png",
+    "java/res/drawable-xhdpi/ic_business_small.png",
     "java/res/drawable-xxhdpi/ic_account_child_grey600_36dp.png",
+    "java/res/drawable-xxhdpi/ic_business_small.png",
     "java/res/drawable-xxxhdpi/ic_account_child_grey600_36dp.png",
     "java/res/layout/button_preference_button.xml",
     "java/res/layout/button_preference_layout.xml",

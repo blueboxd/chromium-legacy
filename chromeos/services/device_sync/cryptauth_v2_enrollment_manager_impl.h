@@ -6,7 +6,6 @@
 #define CHROMEOS_SERVICES_DEVICE_SYNC_CRYPTAUTH_V2_ENROLLMENT_MANAGER_IMPL_H_
 
 #include <memory>
-#include <ostream>
 #include <string>
 
 #include "base/macros.h"
@@ -24,15 +23,10 @@
 class PrefService;
 class PrefRegistrySimple;
 
-namespace base {
-class OneShotTimer;
-}  // namespace base
-
 namespace chromeos {
 
 namespace device_sync {
 
-class ClientAppMetadataProvider;
 class CryptAuthClientFactory;
 class CryptAuthKeyRegistry;
 class CryptAuthV2Enroller;
@@ -45,6 +39,8 @@ class CryptAuthV2Enroller;
 //  2) The enrollment manager listens to the GCM manager for re-enrollment
 //     requests.
 //  3) The ForceEnrollmentNow() method allows for immediate requests.
+//  4) On start-up, if the client app metadata has changed since the last
+//     enrollment, a re-enrollment is scheduled.
 //
 // All flavors of enrollment attempts are guarded by timeouts. For example, an
 // enrollment attempt triggered by ForceEnrollmentNow() will always
@@ -65,28 +61,25 @@ class CryptAuthV2EnrollmentManagerImpl
   class Factory {
    public:
     static std::unique_ptr<CryptAuthEnrollmentManager> Create(
-        ClientAppMetadataProvider* client_app_metadata_provider,
+        const cryptauthv2::ClientAppMetadata& client_app_metadata,
         CryptAuthKeyRegistry* key_registry,
         CryptAuthClientFactory* client_factory,
         CryptAuthGCMManager* gcm_manager,
         CryptAuthScheduler* scheduler,
         PrefService* pref_service,
-        base::Clock* clock = base::DefaultClock::GetInstance(),
-        std::unique_ptr<base::OneShotTimer> timer =
-            std::make_unique<base::OneShotTimer>());
+        base::Clock* clock = base::DefaultClock::GetInstance());
     static void SetFactoryForTesting(Factory* test_factory);
 
    protected:
     virtual ~Factory();
     virtual std::unique_ptr<CryptAuthEnrollmentManager> CreateInstance(
-        ClientAppMetadataProvider* client_app_metadata_provider,
+        const cryptauthv2::ClientAppMetadata& client_app_metadata,
         CryptAuthKeyRegistry* key_registry,
         CryptAuthClientFactory* client_factory,
         CryptAuthGCMManager* gcm_manager,
         CryptAuthScheduler* scheduler,
         PrefService* pref_service,
-        base::Clock* clock,
-        std::unique_ptr<base::OneShotTimer> timer) = 0;
+        base::Clock* clock) = 0;
 
    private:
     static Factory* test_factory_;
@@ -100,25 +93,15 @@ class CryptAuthV2EnrollmentManagerImpl
 
  protected:
   CryptAuthV2EnrollmentManagerImpl(
-      ClientAppMetadataProvider* client_app_metadata_provider,
+      const cryptauthv2::ClientAppMetadata& client_app_metadata,
       CryptAuthKeyRegistry* key_registry,
       CryptAuthClientFactory* client_factory,
       CryptAuthGCMManager* gcm_manager,
       CryptAuthScheduler* scheduler,
       PrefService* pref_service,
-      base::Clock* clock,
-      std::unique_ptr<base::OneShotTimer> timer);
+      base::Clock* clock);
 
  private:
-  enum class State {
-    kIdle,
-    kWaitingForGcmRegistration,
-    kWaitingForClientAppMetadata,
-    kWaitingForEnrollment
-  };
-
-  friend std::ostream& operator<<(std::ostream& stream, const State& state);
-
   // CryptAuthEnrollmentManager:
   void Start() override;
   void ForceEnrollmentNow(
@@ -138,26 +121,14 @@ class CryptAuthV2EnrollmentManagerImpl
                                  client_directive_policy_reference) override;
 
   // CryptAuthGCMManager::Observer:
-  void OnGCMRegistrationResult(bool success) override;
   void OnReenrollMessage(
       const base::Optional<std::string>& session_id,
       const base::Optional<CryptAuthFeatureType>& feature_type) override;
 
-  void OnClientAppMetadataFetched(
-      const base::Optional<cryptauthv2::ClientAppMetadata>&
-          client_app_metadata);
-
-  // Starts the enrollment flow if a valid GCM registration ID exists and the
-  // ClientAppMetadata has already been fetched; otherwise, the enrollment is
-  // postposed while they are retrieved.
-  void AttemptEnrollment();
-
   void Enroll();
   void OnEnrollmentFinished(const CryptAuthEnrollmentResult& enrollment_result);
 
-  void SetState(State state);
-  void OnTimeout();
-
+  std::string GetClientAppMetadataHash() const;
   std::string GetV1UserPublicKey() const;
   std::string GetV1UserPrivateKey() const;
 
@@ -165,26 +136,19 @@ class CryptAuthV2EnrollmentManagerImpl
   // the kUserKeyPair key bundle.
   void AddV1UserKeyPairToRegistryIfNecessary();
 
-  ClientAppMetadataProvider* client_app_metadata_provider_;
+  cryptauthv2::ClientAppMetadata client_app_metadata_;
   CryptAuthKeyRegistry* key_registry_;
   CryptAuthClientFactory* client_factory_;
   CryptAuthGCMManager* gcm_manager_;
   CryptAuthScheduler* scheduler_;
   PrefService* pref_service_;
   base::Clock* clock_;
-  std::unique_ptr<base::OneShotTimer> timer_;
 
   bool initial_v1_and_v2_user_key_pairs_disagree_ = false;
-
-  State state_ = State::kIdle;
-
-  // The time of the last state change. Used for execution time metrics.
-  base::TimeTicks last_state_change_timestamp_;
 
   base::Optional<cryptauthv2::ClientMetadata> current_client_metadata_;
   base::Optional<cryptauthv2::PolicyReference>
       client_directive_policy_reference_;
-  base::Optional<cryptauthv2::ClientAppMetadata> client_app_metadata_;
   std::unique_ptr<CryptAuthV2Enroller> enroller_;
 
   // For weak pointers used in callbacks. These weak pointers are invalidated

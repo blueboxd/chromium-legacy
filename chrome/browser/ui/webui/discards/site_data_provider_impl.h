@@ -5,52 +5,64 @@
 #ifndef CHROME_BROWSER_UI_WEBUI_DISCARDS_SITE_DATA_PROVIDER_IMPL_H_
 #define CHROME_BROWSER_UI_WEBUI_DISCARDS_SITE_DATA_PROVIDER_IMPL_H_
 
-#include <map>
 #include <memory>
 
 #include "base/sequence_checker.h"
 #include "chrome/browser/ui/webui/discards/site_data.mojom.h"
+#include "components/performance_manager/public/graph/graph.h"
 #include "mojo/public/cpp/bindings/pending_receiver.h"
 #include "mojo/public/cpp/bindings/pending_remote.h"
 #include "mojo/public/cpp/bindings/receiver.h"
 #include "mojo/public/cpp/bindings/remote.h"
 
-namespace resource_coordinator {
-class LocalSiteCharacteristicsDataStoreInspector;
-class SiteCharacteristicsDataReader;
-}  // namespace resource_coordinator
+namespace performance_manager {
+class Graph;
+class SiteDataReader;
+}  // namespace performance_manager
 
-class SiteDataProviderImpl : public discards::mojom::SiteDataProvider {
+class SiteDataProviderImpl : public discards::mojom::SiteDataProvider,
+                             public performance_manager::GraphOwned {
  public:
-  SiteDataProviderImpl(
-      resource_coordinator::LocalSiteCharacteristicsDataStoreInspector*
-          data_store_inspector,
-      mojo::PendingReceiver<discards::mojom::SiteDataProvider> receiver);
+  explicit SiteDataProviderImpl(const std::string& profile_id);
   ~SiteDataProviderImpl() override;
   SiteDataProviderImpl(const SiteDataProviderImpl& other) = delete;
   SiteDataProviderImpl& operator=(const SiteDataProviderImpl&) = delete;
 
-  void GetSiteCharacteristicsDatabase(
+  // Creates a new SiteDataProviderImpl to service |receiver| and passes its
+  // ownership to |graph|.
+  static void CreateAndBind(
+      mojo::PendingReceiver<discards::mojom::SiteDataProvider> receiver,
+      const std::string& profile_id_,
+      performance_manager::Graph* graph);
+
+  void GetSiteDataArray(
       const std::vector<std::string>& explicitly_requested_origins,
-      GetSiteCharacteristicsDatabaseCallback callback) override;
-  void GetSiteCharacteristicsDatabaseSize(
-      GetSiteCharacteristicsDatabaseSizeCallback callback) override;
+      GetSiteDataArrayCallback callback) override;
+  void GetSiteDataDatabaseSize(
+      GetSiteDataDatabaseSizeCallback callback) override;
 
  private:
-  using LocalSiteCharacteristicsDataStoreInspector =
-      resource_coordinator::LocalSiteCharacteristicsDataStoreInspector;
-  using SiteCharacteristicsDataReader =
-      resource_coordinator::SiteCharacteristicsDataReader;
+  using SiteDataReader = performance_manager::SiteDataReader;
   using OriginToReaderMap =
-      std::map<std::string, std::unique_ptr<SiteCharacteristicsDataReader>>;
+      base::flat_map<std::string, std::unique_ptr<SiteDataReader>>;
+
+  static void OnConnectionError(SiteDataProviderImpl* impl);
+
+  // GraphOwned implementation.
+  void OnPassedToGraph(performance_manager::Graph* graph) override;
+  void OnTakenFromGraph(performance_manager::Graph* graph) override;
+
+  // Binds |receiver_| by consuming |receiver|, which must be valid.
+  void Bind(mojo::PendingReceiver<discards::mojom::SiteDataProvider> receiver);
 
   // This map pins requested readers and their associated data in memory until
   // after the next read finishes. This is necessary to allow the database reads
   // to go through and populate the requested entries.
   OriginToReaderMap requested_origins_;
 
-  resource_coordinator::LocalSiteCharacteristicsDataStoreInspector*
-      data_store_inspector_ = nullptr;
+  std::string profile_id_;
+
+  performance_manager::Graph* graph_ = nullptr;
 
   mojo::Receiver<discards::mojom::SiteDataProvider> receiver_{this};
 };

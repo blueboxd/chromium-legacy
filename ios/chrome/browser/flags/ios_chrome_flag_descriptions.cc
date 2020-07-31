@@ -421,6 +421,12 @@ const char kSaveCardInfobarMessagesUIName[] = "Save Card Infobar Messages UI";
 const char kSaveCardInfobarMessagesUIDescription[] =
     "When enabled, Save Card Infobar uses the new Messages UI.";
 
+const char kScrollToTextIOSName[] = "Enable Scroll to Text";
+const char kScrollToTextIOSDescription[] =
+    "When enabled, opening a URL with a text fragment (e.g., "
+    "example.com/#:~:text=examples) will cause matching text in the page to be "
+    "highlighted and scrolled into view.";
+
 const char kSendTabToSelfName[] = "Send tab to self";
 const char kSendTabToSelfDescription[] =
     "Allows users to receive tabs that were pushed from another of their "
@@ -438,9 +444,8 @@ const char kSettingsRefreshDescription[] =
 
 const char kSharedHighlightingIOSName[] = "Enable Shared Highlighting features";
 const char kSharedHighlightingIOSDescription[] =
-    "Enables support for Text Fragments (scroll-to-text based on URL "
-    "directive) and a Link to Text option in the Edit Menu which generates "
-    "these URLs.";
+    "Adds a Link to Text option in the Edit Menu which generates URLs with a "
+    "text fragment. Works best with the #scroll-to-text-ios flag.";
 
 const char kShowAutofillTypePredictionsName[] = "Show Autofill predictions";
 const char kShowAutofillTypePredictionsDescription[] =

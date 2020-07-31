@@ -55,9 +55,10 @@ gl::GLContextAttribs GenerateGLContextAttribs(
     attribs.webgl_compatibility_context =
         IsWebGLContextType(attribs_helper.context_type);
 
-    // Always use the global texture share group for the passthrough command
-    // decoder
+    // Always use the global texture and semaphore share group for the
+    // passthrough command decoder
     attribs.global_texture_share_group = true;
+    attribs.global_semaphore_share_group = true;
 
     attribs.robust_resource_initialization = true;
     attribs.robust_buffer_access = true;

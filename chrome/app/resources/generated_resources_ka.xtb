@@ -1162,7 +1162,6 @@
 <translation id="2408955596600435184">შეიყვანეთ თქვენი PIN-კოდი</translation>
 <translation id="241082044617551207">უცნობი დანამატი</translation>
 <translation id="2412593942846481727">ხელმისაწვდომია განახლება</translation>
-<translation id="2414499877591062094">PIN-კოდის ავტომატური გადაგზავნის ჩართვა</translation>
 <translation id="2416435988630956212">კლავიატურის ფუნქციური კლავიშები</translation>
 <translation id="241727068219398187">მონაცემები დაშიფრულია თქვენი Google პაროლით <ph name="TIME" />-ის მდგომარეობით. აღნიშნული არ მოიცავს Google Pay-ში შენახულ გადახდის მეთოდებსა და მისამართებს.</translation>
 <translation id="2419131370336513030">დაინსტალირებული აპების ნახვა</translation>
@@ -3404,7 +3403,6 @@
 <translation id="5241128660650683457">წაიკითხეთ თქვენი მთლიანი მონაცემები მონახულებულ ვებსაიტებზე</translation>
 <translation id="5242724311594467048">ჩავრთოთ "<ph name="EXTENSION_NAME" />"?</translation>
 <translation id="5243522832766285132">გთხოვთ, სცადოთ რამდენიმე წუთში</translation>
-<translation id="5244406554036143958">ავტომატური გადაგზავნის ჩასართავად შეიყვანეთ თქვენი PIN-კოდი</translation>
 <translation id="5244474230056479698"><ph name="EMAIL" />-თან სინქრონიზაცია</translation>
 <translation id="5245610266855777041">დაიწყეთ სასწავლებლის ანგარიშით სარგებლობა</translation>
 <translation id="5246282308050205996"><ph name="APP_NAME" />-ში შეცდომაა. პროგრამის გადასატვირთად დააწკაპუნეთ ამ ბუშტზე.</translation>

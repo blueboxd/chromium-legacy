@@ -91,7 +91,7 @@ TEST_F(ContentSettingMediaImageModelTest, MediaUpdate) {
       std::make_unique<chrome::TabSpecificContentSettingsDelegate>(
           web_contents()));
   auto* content_settings =
-      TabSpecificContentSettings::FromWebContents(web_contents());
+      TabSpecificContentSettings::GetForFrame(web_contents()->GetMainFrame());
   const GURL kTestOrigin("https://www.example.com");
   auto content_setting_image_model =
       ContentSettingImageModel::CreateForContentType(

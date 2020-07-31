@@ -4,5 +4,12 @@
 
 #include "chrome/browser/push_messaging/push_messaging_features.h"
 
+namespace features {
+
 const base::Feature kPushMessagingDisallowSenderIDs{
     "PushMessagingDisallowSenderIDs", base::FEATURE_DISABLED_BY_DEFAULT};
+
+const base::Feature kPushSubscriptionWithExpirationTime{
+    "PushSubscriptionWithExpirationTime", base::FEATURE_DISABLED_BY_DEFAULT};
+
+}  // namespace features

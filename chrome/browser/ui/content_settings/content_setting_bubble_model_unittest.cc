@@ -94,7 +94,7 @@ TEST_F(ContentSettingBubbleModelTest, ImageRadios) {
   WebContentsTester::For(web_contents())->
       NavigateAndCommit(GURL("https://www.example.com"));
   TabSpecificContentSettings* content_settings =
-      TabSpecificContentSettings::FromWebContents(web_contents());
+      TabSpecificContentSettings::GetForFrame(web_contents()->GetMainFrame());
   content_settings->OnContentBlocked(ContentSettingsType::IMAGES);
 
   std::unique_ptr<ContentSettingBubbleModel> content_setting_bubble_model(
@@ -113,7 +113,7 @@ TEST_F(ContentSettingBubbleModelTest, Cookies) {
   WebContentsTester::For(web_contents())->
       NavigateAndCommit(GURL("https://www.example.com"));
   TabSpecificContentSettings* content_settings =
-      TabSpecificContentSettings::FromWebContents(web_contents());
+      TabSpecificContentSettings::GetForFrame(web_contents()->GetMainFrame());
   content_settings->OnContentBlocked(ContentSettingsType::COOKIES);
 
   std::unique_ptr<ContentSettingBubbleModel> content_setting_bubble_model(
@@ -131,7 +131,7 @@ TEST_F(ContentSettingBubbleModelTest, Cookies) {
   WebContentsTester::For(web_contents())
       ->NavigateAndCommit(GURL("https://www.example.com"));
   content_settings =
-      TabSpecificContentSettings::FromWebContents(web_contents());
+      TabSpecificContentSettings::GetForFrame(web_contents()->GetMainFrame());
   content_settings->OnContentAllowed(ContentSettingsType::COOKIES);
   content_setting_bubble_model =
       ContentSettingBubbleModel::CreateContentSettingBubbleModel(
@@ -160,7 +160,7 @@ TEST_F(ContentSettingBubbleModelTest, MediastreamMicAndCamera) {
       DisableDeviceEnumerationForTesting();
 
   TabSpecificContentSettings* content_settings =
-      TabSpecificContentSettings::FromWebContents(web_contents());
+      TabSpecificContentSettings::GetForFrame(web_contents()->GetMainFrame());
   std::string request_host = "google.com";
   GURL security_origin("http://" + request_host);
   TabSpecificContentSettings::MicrophoneCameraState microphone_camera_state =
@@ -216,7 +216,7 @@ TEST_F(ContentSettingBubbleModelTest, BlockedMediastreamMicAndCamera) {
       setting);
 
   TabSpecificContentSettings* content_settings =
-      TabSpecificContentSettings::FromWebContents(web_contents());
+      TabSpecificContentSettings::GetForFrame(web_contents()->GetMainFrame());
   TabSpecificContentSettings::MicrophoneCameraState microphone_camera_state =
       TabSpecificContentSettings::MICROPHONE_ACCESSED |
       TabSpecificContentSettings::MICROPHONE_BLOCKED |
@@ -285,7 +285,7 @@ TEST_F(ContentSettingBubbleModelTest, MediastreamContentBubble) {
       setting);
 
   TabSpecificContentSettings* content_settings =
-      TabSpecificContentSettings::FromWebContents(web_contents());
+      TabSpecificContentSettings::GetForFrame(web_contents()->GetMainFrame());
   TabSpecificContentSettings::MicrophoneCameraState microphone_camera_state =
       TabSpecificContentSettings::MICROPHONE_ACCESSED |
       TabSpecificContentSettings::MICROPHONE_BLOCKED;
@@ -377,7 +377,7 @@ TEST_F(ContentSettingBubbleModelTest, MediastreamContentBubbleMediaMenus) {
       audio_devices);
 
   TabSpecificContentSettings* content_settings =
-      TabSpecificContentSettings::FromWebContents(web_contents());
+      TabSpecificContentSettings::GetForFrame(web_contents()->GetMainFrame());
   TabSpecificContentSettings::MicrophoneCameraState microphone_camera_state =
       TabSpecificContentSettings::MICROPHONE_ACCESSED |
       TabSpecificContentSettings::MICROPHONE_BLOCKED;
@@ -523,7 +523,7 @@ TEST_F(ContentSettingBubbleModelTest, MediastreamMic) {
       DisableDeviceEnumerationForTesting();
 
   TabSpecificContentSettings* content_settings =
-      TabSpecificContentSettings::FromWebContents(web_contents());
+      TabSpecificContentSettings::GetForFrame(web_contents()->GetMainFrame());
   std::string request_host = "google.com";
   GURL security_origin("http://" + request_host);
   TabSpecificContentSettings::MicrophoneCameraState microphone_camera_state =
@@ -596,7 +596,7 @@ TEST_F(ContentSettingBubbleModelTest, MediastreamCamera) {
       DisableDeviceEnumerationForTesting();
 
   TabSpecificContentSettings* content_settings =
-      TabSpecificContentSettings::FromWebContents(web_contents());
+      TabSpecificContentSettings::GetForFrame(web_contents()->GetMainFrame());
   std::string request_host = "google.com";
   GURL security_origin("http://" + request_host);
   TabSpecificContentSettings::MicrophoneCameraState microphone_camera_state =
@@ -670,7 +670,7 @@ TEST_F(ContentSettingBubbleModelTest, AccumulateMediastreamMicAndCamera) {
       DisableDeviceEnumerationForTesting();
 
   TabSpecificContentSettings* content_settings =
-      TabSpecificContentSettings::FromWebContents(web_contents());
+      TabSpecificContentSettings::GetForFrame(web_contents()->GetMainFrame());
   std::string request_host = "google.com";
   GURL security_origin("http://" + request_host);
 
@@ -737,7 +737,7 @@ TEST_F(ContentSettingBubbleModelTest, Plugins) {
   WebContentsTester::For(web_contents())->
       NavigateAndCommit(GURL("https://www.example.com"));
   TabSpecificContentSettings* content_settings =
-      TabSpecificContentSettings::FromWebContents(web_contents());
+      TabSpecificContentSettings::GetForFrame(web_contents()->GetMainFrame());
   const base::string16 plugin_name = base::ASCIIToUTF16("plugin_name");
 
   content_settings->OnContentBlocked(ContentSettingsType::PLUGINS);
@@ -760,7 +760,7 @@ TEST_F(ContentSettingBubbleModelTest, PepperBroker) {
   WebContentsTester::For(web_contents())->
       NavigateAndCommit(GURL("https://www.example.com"));
   TabSpecificContentSettings* content_settings =
-      TabSpecificContentSettings::FromWebContents(web_contents());
+      TabSpecificContentSettings::GetForFrame(web_contents()->GetMainFrame());
   content_settings->OnContentBlocked(ContentSettingsType::PPAPI_BROKER);
 
   std::unique_ptr<ContentSettingBubbleModel> content_setting_bubble_model(
@@ -780,7 +780,7 @@ TEST_F(ContentSettingBubbleModelTest, PepperBroker) {
   WebContentsTester::For(web_contents())
       ->NavigateAndCommit(GURL("https://www.example.com"));
   content_settings =
-      TabSpecificContentSettings::FromWebContents(web_contents());
+      TabSpecificContentSettings::GetForFrame(web_contents()->GetMainFrame());
   content_settings->OnContentAllowed(ContentSettingsType::PPAPI_BROKER);
   content_setting_bubble_model =
       ContentSettingBubbleModel::CreateContentSettingBubbleModel(
@@ -804,7 +804,7 @@ TEST_F(ContentSettingBubbleModelTest, Geolocation) {
 
   NavigateAndCommit(page_url);
   TabSpecificContentSettings* content_settings =
-      TabSpecificContentSettings::FromWebContents(web_contents());
+      TabSpecificContentSettings::GetForFrame(web_contents()->GetMainFrame());
 
   // One permitted frame, but not in the content map: requires reload.
   content_settings->OnGeolocationPermissionSet(frame1_url, true);
@@ -850,7 +850,7 @@ TEST_F(ContentSettingBubbleModelTest, GeolocationEmbargo) {
 
   NavigateAndCommit(origin_to_embargo);
   TabSpecificContentSettings* content_settings =
-      TabSpecificContentSettings::FromWebContents(web_contents());
+      TabSpecificContentSettings::GetForFrame(web_contents()->GetMainFrame());
   content_settings->OnGeolocationPermissionSet(origin_to_embargo, false);
 
   // |origin_to_embargo| is not blocked or embargoed. Verify no clear link
@@ -898,7 +898,7 @@ TEST_F(ContentSettingBubbleModelTest, GeolocationEmbargo) {
 TEST_F(ContentSettingBubbleModelTest, FileURL) {
   std::string file_url("file:///tmp/test.html");
   NavigateAndCommit(GURL(file_url));
-  TabSpecificContentSettings::FromWebContents(web_contents())
+  TabSpecificContentSettings::GetForFrame(web_contents()->GetMainFrame())
       ->OnContentBlocked(ContentSettingsType::IMAGES);
   std::unique_ptr<ContentSettingBubbleModel> content_setting_bubble_model(
       ContentSettingBubbleModel::CreateContentSettingBubbleModel(
@@ -1059,7 +1059,7 @@ TEST_F(ContentSettingBubbleModelTest, SensorAccessPermissionsChanged) {
   WebContentsTester::For(web_contents())
       ->NavigateAndCommit(GURL("https://www.example.com"));
   TabSpecificContentSettings* content_settings =
-      TabSpecificContentSettings::FromWebContents(web_contents());
+      TabSpecificContentSettings::GetForFrame(web_contents()->GetMainFrame());
   HostContentSettingsMap* settings_map =
       HostContentSettingsMapFactory::GetForProfile(profile());
 
@@ -1137,7 +1137,7 @@ TEST_F(ContentSettingBubbleModelTest, SensorAccessPermissionsChanged) {
   WebContentsTester::For(web_contents())
       ->NavigateAndCommit(GURL("https://www.example.com"));
   content_settings =
-      TabSpecificContentSettings::FromWebContents(web_contents());
+      TabSpecificContentSettings::GetForFrame(web_contents()->GetMainFrame());
 
   // Go from block by default to allow by default to block by default.
   {
@@ -1213,7 +1213,7 @@ TEST_F(ContentSettingBubbleModelTest, SensorAccessPermissionsChanged) {
   WebContentsTester::For(web_contents())
       ->NavigateAndCommit(GURL("https://www.example.com"));
   content_settings =
-      TabSpecificContentSettings::FromWebContents(web_contents());
+      TabSpecificContentSettings::GetForFrame(web_contents()->GetMainFrame());
 
   // Block by default but allow a specific site.
   {
@@ -1246,7 +1246,7 @@ TEST_F(ContentSettingBubbleModelTest, SensorAccessPermissionsChanged) {
   WebContentsTester::For(web_contents())
       ->NavigateAndCommit(GURL("https://www.example.com"));
   content_settings =
-      TabSpecificContentSettings::FromWebContents(web_contents());
+      TabSpecificContentSettings::GetForFrame(web_contents()->GetMainFrame());
   // Clear site-specific exceptions.
   settings_map->ClearSettingsForOneType(ContentSettingsType::SENSORS);
 
@@ -1283,7 +1283,7 @@ TEST_F(ContentSettingBubbleModelTest, PopupBubbleModelListItems) {
   const GURL url("https://www.example.test/");
   WebContentsTester::For(web_contents())->NavigateAndCommit(url);
   TabSpecificContentSettings* content_settings =
-      TabSpecificContentSettings::FromWebContents(web_contents());
+      TabSpecificContentSettings::GetForFrame(web_contents()->GetMainFrame());
   content_settings->OnContentBlocked(ContentSettingsType::POPUPS);
 
   blocked_content::PopupBlockerTabHelper::CreateForWebContents(web_contents());
@@ -1317,7 +1317,7 @@ TEST_F(ContentSettingBubbleModelTest, ValidUrl) {
       NavigateAndCommit(GURL("https://www.example.com"));
 
   TabSpecificContentSettings* content_settings =
-      TabSpecificContentSettings::FromWebContents(web_contents());
+      TabSpecificContentSettings::GetForFrame(web_contents()->GetMainFrame());
   content_settings->OnContentBlocked(ContentSettingsType::COOKIES);
 
   std::unique_ptr<ContentSettingBubbleModel> content_setting_bubble_model(
@@ -1334,7 +1334,7 @@ TEST_F(ContentSettingBubbleModelTest, InvalidUrl) {
       NavigateAndCommit(GURL("about:blank"));
 
   TabSpecificContentSettings* content_settings =
-      TabSpecificContentSettings::FromWebContents(web_contents());
+      TabSpecificContentSettings::GetForFrame(web_contents()->GetMainFrame());
   content_settings->OnContentBlocked(ContentSettingsType::COOKIES);
 
   std::unique_ptr<ContentSettingBubbleModel> content_setting_bubble_model(

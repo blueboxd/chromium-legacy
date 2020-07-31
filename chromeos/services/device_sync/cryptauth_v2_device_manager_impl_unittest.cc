@@ -6,7 +6,6 @@
 
 #include "base/optional.h"
 #include "base/test/metrics/histogram_tester.h"
-#include "base/timer/mock_timer.h"
 #include "chromeos/services/device_sync/cryptauth_device_registry_impl.h"
 #include "chromeos/services/device_sync/cryptauth_device_syncer_impl.h"
 #include "chromeos/services/device_sync/cryptauth_key_registry_impl.h"
@@ -16,7 +15,6 @@
 #include "chromeos/services/device_sync/mock_cryptauth_client.h"
 #include "chromeos/services/device_sync/proto/cryptauth_common.pb.h"
 #include "chromeos/services/device_sync/proto/cryptauth_v2_test_util.h"
-#include "chromeos/services/device_sync/public/cpp/fake_client_app_metadata_provider.h"
 #include "components/prefs/testing_pref_service.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -98,13 +96,10 @@ class DeviceSyncCryptAuthV2DeviceManagerImplTest
   }
 
   void CreateAndStartDeviceManager() {
-    auto mock_timer = std::make_unique<base::MockOneShotTimer>();
-    mock_timer_ = mock_timer.get();
-
     device_manager_ = CryptAuthV2DeviceManagerImpl::Factory::Create(
-        &fake_client_app_metadata_provider_, device_registry_.get(),
+        cryptauthv2::GetClientAppMetadataForTest(), device_registry_.get(),
         key_registry_.get(), &mock_client_factory_, &fake_gcm_manager_,
-        &fake_scheduler_, &test_pref_service_, std::move(mock_timer));
+        &fake_scheduler_, &test_pref_service_);
 
     device_manager_->AddObserver(this);
 
@@ -143,43 +138,6 @@ class DeviceSyncCryptAuthV2DeviceManagerImplTest
         cryptauthv2::ClientMetadata::SERVER_INITIATED, session_id));
   }
 
-  void SucceedGetClientAppMetadataRequest() {
-    ASSERT_FALSE(
-        fake_client_app_metadata_provider_.metadata_requests().empty());
-    EXPECT_EQ(cryptauthv2::kTestGcmRegistrationId,
-              fake_client_app_metadata_provider_.metadata_requests()
-                  .back()
-                  .gcm_registration_id);
-    std::move(
-        fake_client_app_metadata_provider_.metadata_requests().back().callback)
-        .Run(cryptauthv2::GetClientAppMetadataForTest());
-  }
-
-  void FailHandleGetClientAppMetadataRequestAndVerifyResult() {
-    ASSERT_FALSE(
-        fake_client_app_metadata_provider_.metadata_requests().empty());
-    EXPECT_EQ(cryptauthv2::kTestGcmRegistrationId,
-              fake_client_app_metadata_provider_.metadata_requests()
-                  .back()
-                  .gcm_registration_id);
-    std::move(
-        fake_client_app_metadata_provider_.metadata_requests().back().callback)
-        .Run(base::nullopt /* client_app_metadata */);
-    ProcessAndVerifyNewDeviceSyncResult(
-        CryptAuthDeviceSyncResult(CryptAuthDeviceSyncResult::ResultCode::
-                                      kErrorClientAppMetadataFetchFailed,
-                                  false /* did_device_registry_change */,
-                                  base::nullopt /* client_directive */));
-  }
-  void TimeoutWaitingForClientAppMetadataAndVerifyResult() {
-    mock_timer_->Fire();
-    ProcessAndVerifyNewDeviceSyncResult(
-        CryptAuthDeviceSyncResult(CryptAuthDeviceSyncResult::ResultCode::
-                                      kErrorTimeoutWaitingForClientAppMetadata,
-                                  false /* did_device_registry_change */,
-                                  base::nullopt /* client_directive */));
-  }
-
   void FinishDeviceSyncAttemptAndVerifyResult(
       size_t expected_device_syncer_instance_index,
       const CryptAuthDeviceSyncResult& device_sync_result) {
@@ -189,8 +147,6 @@ class DeviceSyncCryptAuthV2DeviceManagerImplTest
     // the device syncer can be invoked.
     EXPECT_EQ(cryptauthv2::kTestGcmRegistrationId,
               fake_gcm_manager_.GetRegistrationId());
-    ASSERT_FALSE(
-        fake_client_app_metadata_provider_.metadata_requests().empty());
 
     // Only the most recently created device syncer is valid.
     EXPECT_EQ(fake_device_syncer_factory_->instances().size() - 1,
@@ -330,10 +286,8 @@ class DeviceSyncCryptAuthV2DeviceManagerImplTest
   std::vector<CryptAuthDeviceSyncResult> device_sync_results_sent_to_observer_;
 
   TestingPrefServiceSimple test_pref_service_;
-  FakeClientAppMetadataProvider fake_client_app_metadata_provider_;
   FakeCryptAuthGCMManager fake_gcm_manager_;
   FakeCryptAuthSchedulerUpdatedByDeviceSyncResults fake_scheduler_;
-  base::MockOneShotTimer* mock_timer_ = nullptr;
   MockCryptAuthClientFactory mock_client_factory_;
   base::HistogramTester histogram_tester_;
   std::unique_ptr<CryptAuthDeviceRegistry> device_registry_;
@@ -349,7 +303,6 @@ TEST_F(DeviceSyncCryptAuthV2DeviceManagerImplTest,
   RequestDeviceSyncThroughSchedulerAndVerify(
       cryptauthv2::ClientMetadata::INITIALIZATION,
       base::nullopt /* session_id */);
-  SucceedGetClientAppMetadataRequest();
   FinishDeviceSyncAttemptAndVerifyResult(
       0u /* expected_device_sync_instance_index */,
       CryptAuthDeviceSyncResult(CryptAuthDeviceSyncResult::ResultCode::kSuccess,
@@ -361,7 +314,6 @@ TEST_F(DeviceSyncCryptAuthV2DeviceManagerImplTest, ForceDeviceSync_Success) {
   CreateAndStartDeviceManager();
   ForceDeviceSyncRequestAndVerify(cryptauthv2::ClientMetadata::MANUAL,
                                   kFakeSessionId);
-  SucceedGetClientAppMetadataRequest();
   FinishDeviceSyncAttemptAndVerifyResult(
       0u /* expected_device_sync_instance_index */,
       CryptAuthDeviceSyncResult(CryptAuthDeviceSyncResult::ResultCode::kSuccess,
@@ -373,7 +325,6 @@ TEST_F(DeviceSyncCryptAuthV2DeviceManagerImplTest,
        RequestDeviceSyncThroughGcm) {
   CreateAndStartDeviceManager();
   RequestDeviceSyncThroughGcmAndVerify(kFakeSessionId);
-  SucceedGetClientAppMetadataRequest();
   FinishDeviceSyncAttemptAndVerifyResult(
       0u /* expected_device_sync_instance_index */,
       CryptAuthDeviceSyncResult(CryptAuthDeviceSyncResult::ResultCode::kSuccess,
@@ -385,7 +336,6 @@ TEST_F(DeviceSyncCryptAuthV2DeviceManagerImplTest, FailureRetry) {
   CreateAndStartDeviceManager();
   RequestDeviceSyncThroughSchedulerAndVerify(
       cryptauthv2::ClientMetadata::PERIODIC, base::nullopt /* session_id */);
-  SucceedGetClientAppMetadataRequest();
 
   // Fail first attempt with fatal error.
   FinishDeviceSyncAttemptAndVerifyResult(
@@ -425,34 +375,6 @@ TEST_F(DeviceSyncCryptAuthV2DeviceManagerImplTest, FailureRetry) {
   EXPECT_EQ(base::Time::FromDoubleT(kFakeLastSuccessTimeSeconds),
             device_manager()->GetLastDeviceSyncTime());
   EXPECT_FALSE(device_manager()->IsRecoveringFromFailure());
-}
-
-TEST_F(DeviceSyncCryptAuthV2DeviceManagerImplTest,
-       ClientAppMetadataFetch_Failure) {
-  CreateAndStartDeviceManager();
-
-  // Fail to fetch ClientAppMetadata first attempt.
-  RequestDeviceSyncThroughSchedulerAndVerify(
-      cryptauthv2::ClientMetadata::PERIODIC, base::nullopt /* session_id */);
-  FailHandleGetClientAppMetadataRequestAndVerifyResult();
-
-  // Succeed ClientAppMetadata fetch second attempt.
-  RequestDeviceSyncThroughSchedulerAndVerify(
-      cryptauthv2::ClientMetadata::PERIODIC, base::nullopt /* session_id */);
-  SucceedGetClientAppMetadataRequest();
-  FinishDeviceSyncAttemptAndVerifyResult(
-      0u /* expected_device_sync_instance_index */,
-      CryptAuthDeviceSyncResult(CryptAuthDeviceSyncResult::ResultCode::kSuccess,
-                                true /* did_device_registry_change */,
-                                cryptauthv2::GetClientDirectiveForTest()));
-}
-
-TEST_F(DeviceSyncCryptAuthV2DeviceManagerImplTest,
-       ClientAppMetadataFetch_Timeout) {
-  CreateAndStartDeviceManager();
-  RequestDeviceSyncThroughSchedulerAndVerify(
-      cryptauthv2::ClientMetadata::PERIODIC, base::nullopt /* session_id */);
-  TimeoutWaitingForClientAppMetadataAndVerifyResult();
 }
 
 }  // namespace device_sync

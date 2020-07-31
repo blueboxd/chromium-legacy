@@ -333,6 +333,11 @@ class InstallStageTracker : public KeyedService {
     // Called when installation stage of extension is updated.
     virtual void OnExtensionInstallationStageChanged(const ExtensionId& id,
                                                      Stage stage) {}
+
+    // Called when downloading stage of extension is updated.
+    virtual void OnExtensionDownloadingStageChanged(
+        const ExtensionId& id,
+        ExtensionDownloaderDelegate::Stage stage) {}
   };
 
   explicit InstallStageTracker(const content::BrowserContext* context);

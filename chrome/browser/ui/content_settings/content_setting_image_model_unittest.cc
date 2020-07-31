@@ -119,7 +119,7 @@ TEST_F(ContentSettingImageModelTest, Update) {
       std::make_unique<chrome::TabSpecificContentSettingsDelegate>(
           web_contents()));
   TabSpecificContentSettings* content_settings =
-      TabSpecificContentSettings::FromWebContents(web_contents());
+      TabSpecificContentSettings::GetForFrame(web_contents()->GetMainFrame());
   auto content_setting_image_model =
       ContentSettingImageModel::CreateForContentType(
           ContentSettingImageModel::ImageType::IMAGES);
@@ -170,7 +170,7 @@ TEST_F(ContentSettingImageModelTest, CookieAccessed) {
   std::unique_ptr<net::CanonicalCookie> cookie(net::CanonicalCookie::Create(
       origin, "A=B", base::Time::Now(), base::nullopt /* server_time */));
   ASSERT_TRUE(cookie);
-  TabSpecificContentSettings::FromWebContents(web_contents())
+  TabSpecificContentSettings::GetForFrame(web_contents()->GetMainFrame())
       ->OnCookiesAccessed({content::CookieAccessDetails::Type::kChange,
                            origin,
                            origin,
@@ -193,7 +193,7 @@ TEST_F(ContentSettingImageModelTest, SensorAccessed) {
       std::make_unique<chrome::TabSpecificContentSettingsDelegate>(
           web_contents()));
   TabSpecificContentSettings* content_settings =
-      TabSpecificContentSettings::FromWebContents(web_contents());
+      TabSpecificContentSettings::GetForFrame(web_contents()->GetMainFrame());
 
   auto content_setting_image_model =
       ContentSettingImageModel::CreateForContentType(
@@ -213,7 +213,7 @@ TEST_F(ContentSettingImageModelTest, SensorAccessed) {
 
   NavigateAndCommit(controller_, GURL("http://www.google.com"));
   content_settings =
-      TabSpecificContentSettings::FromWebContents(web_contents());
+      TabSpecificContentSettings::GetForFrame(web_contents()->GetMainFrame());
 
   // Allowing by default but blocking (e.g. due to a feature policy) causes the
   // indicator to be shown.
@@ -230,7 +230,7 @@ TEST_F(ContentSettingImageModelTest, SensorAccessed) {
 
   NavigateAndCommit(controller_, GURL("http://www.google.com"));
   content_settings =
-      TabSpecificContentSettings::FromWebContents(web_contents());
+      TabSpecificContentSettings::GetForFrame(web_contents()->GetMainFrame());
 
   // Blocking by default but allowing (e.g. via a site-specific exception)
   // causes the indicator to be shown.
@@ -247,7 +247,7 @@ TEST_F(ContentSettingImageModelTest, SensorAccessed) {
 
   NavigateAndCommit(controller_, GURL("http://www.google.com"));
   content_settings =
-      TabSpecificContentSettings::FromWebContents(web_contents());
+      TabSpecificContentSettings::GetForFrame(web_contents()->GetMainFrame());
 
   // Blocking access by default also causes the indicator to be shown so users
   // can set an exception.
@@ -277,7 +277,7 @@ TEST_F(ContentSettingImageModelTest, SensorAccessPermissionsChanged) {
           web_contents()));
   NavigateAndCommit(controller_, GURL("https://www.example.com"));
   TabSpecificContentSettings* content_settings =
-      TabSpecificContentSettings::FromWebContents(web_contents());
+      TabSpecificContentSettings::GetForFrame(web_contents()->GetMainFrame());
   HostContentSettingsMap* settings_map =
       HostContentSettingsMapFactory::GetForProfile(profile());
 
@@ -317,7 +317,7 @@ TEST_F(ContentSettingImageModelTest, SensorAccessPermissionsChanged) {
 
   NavigateAndCommit(controller_, GURL("https://www.example.com"));
   content_settings =
-      TabSpecificContentSettings::FromWebContents(web_contents());
+      TabSpecificContentSettings::GetForFrame(web_contents()->GetMainFrame());
 
   // Go from block by default to allow by default to block by default.
   {
@@ -352,7 +352,7 @@ TEST_F(ContentSettingImageModelTest, SensorAccessPermissionsChanged) {
 
   NavigateAndCommit(controller_, GURL("https://www.example.com"));
   content_settings =
-      TabSpecificContentSettings::FromWebContents(web_contents());
+      TabSpecificContentSettings::GetForFrame(web_contents()->GetMainFrame());
 
   // Block by default but allow a specific site.
   {
@@ -373,7 +373,7 @@ TEST_F(ContentSettingImageModelTest, SensorAccessPermissionsChanged) {
 
   NavigateAndCommit(controller_, GURL("https://www.example.com"));
   content_settings =
-      TabSpecificContentSettings::FromWebContents(web_contents());
+      TabSpecificContentSettings::GetForFrame(web_contents()->GetMainFrame());
   // Clear site-specific exceptions.
   settings_map->ClearSettingsForOneType(ContentSettingsType::SENSORS);
 
@@ -398,8 +398,8 @@ TEST_F(ContentSettingImageModelTest, SensorAccessPermissionsChanged) {
 // Regression test for http://crbug.com/161854.
 TEST_F(ContentSettingImageModelTest, NULLTabSpecificContentSettings) {
   TabSpecificContentSettings::DeleteForWebContentsForTest(web_contents());
-  EXPECT_EQ(nullptr,
-            TabSpecificContentSettings::FromWebContents(web_contents()));
+  EXPECT_EQ(nullptr, TabSpecificContentSettings::GetForFrame(
+                         web_contents()->GetMainFrame()));
   // Should not crash.
   ContentSettingImageModel::CreateForContentType(
       ContentSettingImageModel::ImageType::IMAGES)
@@ -412,7 +412,7 @@ TEST_F(ContentSettingImageModelTest, SubresourceFilter) {
       std::make_unique<chrome::TabSpecificContentSettingsDelegate>(
           web_contents()));
   TabSpecificContentSettings* content_settings =
-      TabSpecificContentSettings::FromWebContents(web_contents());
+      TabSpecificContentSettings::GetForFrame(web_contents()->GetMainFrame());
   auto content_setting_image_model =
       ContentSettingImageModel::CreateForContentType(
           ContentSettingImageModel::ImageType::ADS);
@@ -433,7 +433,7 @@ TEST_F(ContentSettingImageModelTest, NotificationsIconVisibility) {
       std::make_unique<chrome::TabSpecificContentSettingsDelegate>(
           web_contents()));
   TabSpecificContentSettings* content_settings =
-      TabSpecificContentSettings::FromWebContents(web_contents());
+      TabSpecificContentSettings::GetForFrame(web_contents()->GetMainFrame());
   auto content_setting_image_model =
       ContentSettingImageModel::CreateForContentType(
           ContentSettingImageModel::ImageType::NOTIFICATIONS_QUIET_PROMPT);

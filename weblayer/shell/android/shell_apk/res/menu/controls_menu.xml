@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Copyright 2020 The Chromium Authors. All rights reserved.
+     Use of this source code is governed by a BSD-style license that can be
+     found in the LICENSE file. -->
+
+<menu xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    tools:ignore="HardcodedText">
+    <item android:id="@+id/toggle_bottom_view_id"
+          android:checkable="true"
+        android:title="Bottom view" />
+    <item android:id="@+id/toggle_top_view_min_height_id"
+        android:checkable="true"
+        android:title="Set top view min height" />
+    <item android:id="@+id/toggle_top_view_pinned_to_top_id"
+        android:checkable="true"
+        android:title="Pin top view to content top" />
+</menu>

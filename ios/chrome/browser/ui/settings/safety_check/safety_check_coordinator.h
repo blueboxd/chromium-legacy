@@ -5,8 +5,6 @@
 #ifndef IOS_CHROME_BROWSER_UI_SETTINGS_SAFETY_CHECK_SAFETY_CHECK_COORDINATOR_H_
 #define IOS_CHROME_BROWSER_UI_SETTINGS_SAFETY_CHECK_SAFETY_CHECK_COORDINATOR_H_
 
-#import <Foundation/Foundation.h>
-
 #import "ios/chrome/browser/ui/coordinators/chrome_coordinator.h"
 
 @class SafetyCheckCoordinator;
@@ -15,8 +13,7 @@
 @protocol SafetyCheckCoordinatorDelegate
 
 // Called when the view controller is removed from navigation controller.
-- (void)safetyCheckCoordinatorViewControllerWasRemoved:
-    (SafetyCheckCoordinator*)coordinator;
+- (void)safetyCheckCoordinatorDidRemove:(SafetyCheckCoordinator*)coordinator;
 
 @end
 
@@ -28,6 +25,8 @@
 - (instancetype)initWithBaseViewController:(UIViewController*)viewController
                                    browser:(Browser*)browser NS_UNAVAILABLE;
 
+// |navigationController|: Handles user movement to check subpages.
+// |browser|: browser state for preferences and password check.
 - (instancetype)initWithBaseNavigationController:
                     (UINavigationController*)navigationController
                                          browser:(Browser*)browser

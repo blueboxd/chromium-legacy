@@ -77,8 +77,8 @@ class GeolocationPermissionContextDelegateTests
   void CheckTabContentsState(const GURL& requesting_frame,
                              ContentSetting expected_content_setting) {
     content_settings::TabSpecificContentSettings* content_settings =
-        content_settings::TabSpecificContentSettings::FromWebContents(
-            web_contents());
+        content_settings::TabSpecificContentSettings::GetForFrame(
+            web_contents()->GetMainFrame());
     const ContentSettingsUsagesState::StateMap& state_map =
         content_settings->geolocation_usages_state().state_map();
     EXPECT_EQ(1U, state_map.count(requesting_frame.GetOrigin()));

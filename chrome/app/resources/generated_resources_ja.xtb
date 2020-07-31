@@ -1161,7 +1161,6 @@
 <translation id="2408955596600435184">PIN を入力してください</translation>
 <translation id="241082044617551207">不明なプラグイン</translation>
 <translation id="2412593942846481727">アップデートが利用可能</translation>
-<translation id="2414499877591062094">PIN の自動送信を有効にする</translation>
 <translation id="2416435988630956212">キーボードのファンクション キー</translation>
 <translation id="241727068219398187"><ph name="TIME" />時点の Google パスワードでデータを暗号化しました。
           なお、Google Pay のお支払い方法と住所はこれには含まれていません。</translation>
@@ -3398,7 +3397,6 @@
 <translation id="5241128660650683457">アクセスしたウェブサイトでのすべてのユーザーデータの読み取り</translation>
 <translation id="5242724311594467048">「<ph name="EXTENSION_NAME" />」を有効にしますか？</translation>
 <translation id="5243522832766285132">しばらくしてからもう一度お試しください</translation>
-<translation id="5244406554036143958">自動送信を有効にするには PIN を入力してください</translation>
 <translation id="5244474230056479698"><ph name="EMAIL" /> に同期しています</translation>
 <translation id="5245610266855777041">学校用アカウントのご利用開始</translation>
 <translation id="5246282308050205996"><ph name="APP_NAME" /> がクラッシュしました。このバルーンをクリックして再起動してください。</translation>

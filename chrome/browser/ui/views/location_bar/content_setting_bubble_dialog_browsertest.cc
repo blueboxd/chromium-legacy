@@ -106,8 +106,8 @@ void ContentSettingBubbleDialogTest::ApplyMediastreamSettings(
           ? content_settings::TabSpecificContentSettings::CAMERA_ACCESSED
           : 0;
   content_settings::TabSpecificContentSettings* content_settings =
-      content_settings::TabSpecificContentSettings::FromWebContents(
-          browser()->tab_strip_model()->GetActiveWebContents());
+      content_settings::TabSpecificContentSettings::GetForFrame(
+          browser()->tab_strip_model()->GetActiveWebContents()->GetMainFrame());
   content_settings->OnMediaStreamPermissionSet(
       GURL("https://example.com/"), mic_setting | camera_setting, std::string(),
       std::string(), std::string(), std::string());
@@ -118,8 +118,8 @@ void ContentSettingBubbleDialogTest::ApplyContentSettingsForType(
   content::WebContents* web_contents =
       browser()->tab_strip_model()->GetActiveWebContents();
   content_settings::TabSpecificContentSettings* content_settings =
-      content_settings::TabSpecificContentSettings::FromWebContents(
-          web_contents);
+      content_settings::TabSpecificContentSettings::GetForFrame(
+          web_contents->GetMainFrame());
   switch (content_type) {
     case ContentSettingsType::AUTOMATIC_DOWNLOADS: {
       // Automatic downloads are handled by DownloadRequestLimiter.

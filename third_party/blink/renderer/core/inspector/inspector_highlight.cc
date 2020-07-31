@@ -486,7 +486,6 @@ std::unique_ptr<protocol::ListValue> BuildGridPositiveLineNumberPositions(
   size_t first_explicit_index =
       layout_grid->ExplicitGridStartForDirection(direction);
 
-  LayoutUnit first_offset = track_positions.front();
   // Go line by line, calculating the offset to fall in the middle of gaps
   // if needed.
   for (size_t i = first_explicit_index; i < track_positions.size(); ++i) {
@@ -496,8 +495,8 @@ std::unique_ptr<protocol::ListValue> BuildGridPositiveLineNumberPositions(
     if (grid_gap == 0 || i == 0 || i == track_positions.size() - 1) {
       gapOffset = LayoutUnit();
     }
-    PhysicalOffset number_position(
-        track_positions.at(i) - gapOffset - first_offset, alt_axis_pos);
+    PhysicalOffset number_position(track_positions.at(i) - gapOffset,
+                                   alt_axis_pos);
     if (direction == kForRows)
       number_position = Transpose(number_position);
     number_positions->pushValue(BuildPosition(
@@ -545,8 +544,8 @@ std::unique_ptr<protocol::ListValue> BuildGridNegativeLineNumberPositions(
                           i == trackPositions.size() - 1)) {
       gapOffset = LayoutUnit();
     }
-    PhysicalOffset number_position(
-        trackPositions.at(i) - gapOffset - first_offset, alt_axis_pos);
+    PhysicalOffset number_position(trackPositions.at(i) - gapOffset,
+                                   alt_axis_pos);
     if (direction == kForRows)
       number_position = Transpose(number_position);
     number_positions->pushValue(BuildPosition(
@@ -699,7 +698,7 @@ std::unique_ptr<protocol::ListValue> BuildGridLineNames(
       LayoutUnit gap_offset =
           index > 0 && index < tracks.size() - 1 ? gap / 2 : LayoutUnit();
 
-      LayoutUnit main_axis_pos = track - gap_offset - first_offset;
+      LayoutUnit main_axis_pos = track - gap_offset;
       PhysicalOffset line_name_pos(main_axis_pos, alt_axis_pos);
 
       if (direction == kForRows)
@@ -711,8 +710,8 @@ std::unique_ptr<protocol::ListValue> BuildGridLineNames(
       line->setString("name", name);
       // TODO (alexrudenko): offset should be removed once the frontend starts
       // using absolute positions.
-      line->setValue("offset",
-                     protocol::FundamentalValue::create(main_axis_pos * scale));
+      line->setValue("offset", protocol::FundamentalValue::create(
+                                   (main_axis_pos - first_offset) * scale));
 
       lines->pushValue(std::move(line));
     }

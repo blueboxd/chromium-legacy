@@ -14,7 +14,6 @@
 <translation id="1084365883616172403">Facebook పోస్ట్ పూర్తయింది.</translation>
 <translation id="1103523840287552314">ఎల్లప్పుడూ <ph name="LANGUAGE" />ను అనువదించు</translation>
 <translation id="1104948393051856124">అంగీకరించు &amp; కొనసాగు</translation>
-<translation id="1105578556867525047">వెబ్‌సైట్‌లో పాస్‌వర్డ్‌ను మార్చండి</translation>
 <translation id="1112015203684611006">ముద్రణ విఫలమైంది.</translation>
 <translation id="1125564390852150847">కొత్త ట్యాబ్‌ను సృష్టించండి.</translation>
 <translation id="1145536944570833626">ఇప్పటికే ఉన్న డేటాను తొలగించండి.</translation>
@@ -245,7 +244,6 @@
 <translation id="3783017676699494206">చిత్రాన్ని సేవ్ చేయి</translation>
 <translation id="3789841737615482174">ఇన్‌స్టాల్ చేయి</translation>
 <translation id="3803696231112616155">ఈ సైట్‌కు అనువాదం అందించే సూచన</translation>
-<translation id="3836313059960742452">{COUNT,plural, =0{బహిర్గతం అయిన పాస్‌వర్డ్‌లు లేవు}=1{{COUNT} పాస్‌వర్డ్ బహిర్గతం అయ్యింది}other{{COUNT} పాస్‌వర్డ్‌లు బహిర్గతం అయ్యాయి}}</translation>
 <translation id="385051799172605136">వెనుకకు</translation>
 <translation id="3892144330757387737">మీ హిస్టరీని ఇక్కడ చూడగలరు</translation>
 <translation id="3897092660631435901">మెను</translation>
@@ -332,6 +330,7 @@
 <translation id="4901778704868714008">సేవ్ చేయి...</translation>
 <translation id="4904877109095351937">చదివినట్లు గుర్తు పెట్టు</translation>
 <translation id="4930268273022498155">ఇప్పటికే ఉన్న డేటాను తొలగించండి. మీరు <ph name="USER_EMAIL1" />కు వెన‌క్కు వెళ్లడం ద్వారా దాన్ని తిరిగి పొందవచ్చు.</translation>
+<translation id="4930714375720679147">ఆన్ చేయి</translation>
 <translation id="4941089862236492464">క్షమించండి, మీ అంశాన్ని భాగస్వామ్యం చేయడంలో సమస్య ఉంది.</translation>
 <translation id="4944543191714094452">పేజీలో కనుగొను…</translation>
 <translation id="4945756290001680296">పాస్‌వర్డ్ సెట్టింగ్‌లను యాక్సెస్ చేయండి</translation>
@@ -610,6 +609,7 @@
 <translation id="8073670137947914548">డౌన్‌లోడ్ పూర్తయింది</translation>
 <translation id="8073872304774253879">శోధనలు మరియు బ్రౌజింగ్‌ను మరింత మెరుగుపరచండి</translation>
 <translation id="8076014560081431679">సేవ్ చేసిన సైట్ సెట్టింగ్‌లు తొలగించబడవు, ఇవి మీ బ్రౌజింగ్ అలవాట్లను ప్రదర్శించవచ్చు. <ph name="BEGIN_LINK" />మరింత తెలుసుకోండి<ph name="END_LINK" /></translation>
+<translation id="8105368624971345109">ఆఫ్ చేయి</translation>
 <translation id="8114753159095730575">ఫైల్ డౌన్‌లోడ్ అందుబాటులో ఉంది. ఎంపికలు స్క్రీన్ దిగువ భాగంలో అందుబాటులో ఉంటాయి.</translation>
 <translation id="8131740175452115882">నిర్ధారించు</translation>
 <translation id="8197543752516192074">పేజీని అనువదించు</translation>

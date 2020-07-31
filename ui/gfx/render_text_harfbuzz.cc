@@ -1454,7 +1454,8 @@ std::vector<Rect> RenderTextHarfBuzz::GetSubstringBounds(const Range& range) {
         const internal::TextRunHarfBuzz& run = *run_list->runs()[segment.run];
         RangeF selected_span =
             run.GetGraphemeSpanForCharRange(this, intersection);
-        int start_x = base::ClampCeil(selected_span.start() - line_start_x);
+        DCHECK(!selected_span.is_reversed());
+        int start_x = base::ClampFloor(selected_span.start() - line_start_x);
         int end_x = base::ClampCeil(selected_span.end() - line_start_x);
         Rect rect(start_x, 0, end_x - start_x,
                   base::ClampCeil(line.size.height()));

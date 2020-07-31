@@ -4,9 +4,14 @@
 
 #include "chrome/browser/ui/webui/nearby_share/shared_resources.h"
 
+#include <string>
+
 #include "base/containers/span.h"
+#include "chrome/browser/ui/webui/webui_util.h"
+#include "chrome/grit/generated_resources.h"
 #include "chrome/grit/nearby_share_dialog_resources.h"
 #include "chrome/grit/nearby_share_dialog_resources_map.h"
+#include "ui/base/webui/web_ui_util.h"
 
 const char kNearbyShareGeneratedPath[] =
     "@out_folder@/gen/chrome/browser/resources/nearby_share/";
@@ -27,4 +32,11 @@ void RegisterNearbySharedResources(content::WebUIDataSource* data_source) {
     data_source->AddResourcePath(path, resource.value);
   }
   RegisterNearbySharedMojoResources(data_source);
+}
+
+void RegisterNearbySharedStrings(content::WebUIDataSource* data_source) {
+  static constexpr webui::LocalizedString kLocalizedStrings[] = {
+      {"secureConnectionId", IDS_NEARBY_SECURE_CONNECTION_ID},
+  };
+  webui::AddLocalizedStringsBulk(data_source, kLocalizedStrings);
 }

@@ -19,7 +19,8 @@ pausable. Some internal task queues are not.
 | MediaElementEvent            | No          | No         | Yes       | Yes      | Yes          |
 | CanvasBlobSerialization      | No          | Yes        | Yes       | Yes      | Yes          |
 | Microtask                    | No          | Yes        | Yes       | Yes      | Yes          |
-| JavascriptTimer              | Yes         | Yes        | Yes       | Yes      | Yes          |
+| JavascriptTimerDelayed       | Yes         | Yes        | Yes       | Yes      | Yes          |
+| JavascriptTimerImmediate [1] | No          | Yes        | Yes       | Yes      | Yes          |
 | RemoteEvent                  | No          | Yes        | Yes       | Yes      | Yes          |
 | WebSocket                    | No          | Yes        | Yes       | Yes      | Yes          |
 | PostedMessage                | No          | No         | Yes       | Yes      | Yes          |
@@ -56,3 +57,5 @@ pausable. Some internal task queues are not.
 | InternalContinueScriptLoadin | No          | No         | Yes       | Yes      | Yes          |
 
 Internal Translation queue supports concept of it running only in the foreground. It is disabled if the page that owns it goes in background.
+
+[1] Assuming that the "OptOutZeroTimeoutTimersFromThrottling" feature is enabled.

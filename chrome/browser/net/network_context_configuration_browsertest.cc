@@ -53,6 +53,7 @@
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/network_service_instance.h"
 #include "content/public/browser/storage_partition.h"
+#include "content/public/browser/storage_partition_config.h"
 #include "content/public/common/content_features.h"
 #include "content/public/common/content_switches.h"
 #include "content/public/common/network_service_util.h"
@@ -306,8 +307,11 @@ class NetworkContextConfigurationBrowserTest
 
   content::StoragePartition* GetStoragePartitionForContextType(
       NetworkContextType network_context_type) {
-    const GURL kOnDiskUrl("chrome-guest://foo/persist");
-    const GURL kInMemoryUrl("chrome-guest://foo/");
+    const auto kOnDiskConfig = content::StoragePartitionConfig::Create(
+        "foo", /*partition_name=*/"", /*in_memory=*/false);
+    const auto kInMemoryConfig = content::StoragePartitionConfig::Create(
+        "foo", /*partition_name=*/"", /*in_memory=*/true);
+
     switch (network_context_type) {
       case NetworkContextType::kSystem:
       case NetworkContextType::kSafeBrowsing:
@@ -321,15 +325,15 @@ class NetworkContextConfigurationBrowserTest
         return content::BrowserContext::GetDefaultStoragePartition(
             incognito_->profile());
       case NetworkContextType::kOnDiskApp:
-        return content::BrowserContext::GetStoragePartitionForSite(
-            browser()->profile(), kOnDiskUrl);
+        return content::BrowserContext::GetStoragePartition(
+            browser()->profile(), kOnDiskConfig);
       case NetworkContextType::kInMemoryApp:
-        return content::BrowserContext::GetStoragePartitionForSite(
-            browser()->profile(), kInMemoryUrl);
+        return content::BrowserContext::GetStoragePartition(
+            browser()->profile(), kInMemoryConfig);
       case NetworkContextType::kOnDiskAppWithIncognitoProfile:
         DCHECK(incognito_);
-        return content::BrowserContext::GetStoragePartitionForSite(
-            incognito_->profile(), kOnDiskUrl);
+        return content::BrowserContext::GetStoragePartition(
+            incognito_->profile(), kOnDiskConfig);
     }
     NOTREACHED();
     return nullptr;

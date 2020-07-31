@@ -1162,7 +1162,6 @@ Annars skaltu skrá þig út núna svo breytingarnar á þessum reikningi taki g
 <translation id="2408955596600435184">Sláðu inn PIN-númerið þitt</translation>
 <translation id="241082044617551207">Óþekkt viðbót</translation>
 <translation id="2412593942846481727">Uppfærsla í boði</translation>
-<translation id="2414499877591062094">Kveikja á sjálfvirkri PIN-sendingu</translation>
 <translation id="2416435988630956212">Aðgerðalyklar á lyklaborði</translation>
 <translation id="241727068219398187">Gögnin voru dulkóðuð með aðgangsorði Google
           <ph name="TIME" />. Þetta gildir ekki um greiðslumáta og heimilisföng af Google Pay.</translation>
@@ -3405,7 +3404,6 @@ Annars skaltu skrá þig út núna svo breytingarnar á þessum reikningi taki g
 <translation id="5241128660650683457">Lesa öll gögnin þín á vefsvæðum sem þú heimsækir</translation>
 <translation id="5242724311594467048">Kveikja á „<ph name="EXTENSION_NAME" />“?</translation>
 <translation id="5243522832766285132">Reyndu aftur eftir smástund</translation>
-<translation id="5244406554036143958">Sláðu inn PIN-númerið þitt til að kveikja á sjálfvirkri sendingu</translation>
 <translation id="5244474230056479698">Samstillir við <ph name="EMAIL" /></translation>
 <translation id="5245610266855777041">Byrjaðu að nota skólareikning</translation>
 <translation id="5246282308050205996"><ph name="APP_NAME" /> hrundi. Smelltu á þessa blöðru til að endurræsa forritið.</translation>

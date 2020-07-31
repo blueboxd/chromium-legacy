@@ -18,7 +18,6 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/resource_coordinator/lifecycle_unit.h"
 #include "chrome/browser/resource_coordinator/lifecycle_unit_state.mojom.h"
-#include "chrome/browser/resource_coordinator/local_site_characteristics_data_store_inspector.h"
 #include "chrome/browser/resource_coordinator/tab_activity_watcher.h"
 #include "chrome/browser/resource_coordinator/tab_lifecycle_unit_external.h"
 #include "chrome/browser/resource_coordinator/tab_manager.h"
@@ -45,10 +44,6 @@
 #include "ui/resources/grit/ui_resources.h"
 #include "url/gurl.h"
 #include "url/origin.h"
-
-namespace resource_coordinator {
-class LocalSiteCharacteristicsDataStoreInspector;
-}  // namespace resource_coordinator
 
 namespace {
 
@@ -258,8 +253,7 @@ DiscardsUI::DiscardsUI(content::WebUI* web_ui)
       profile, std::make_unique<FaviconSource>(
                    profile, chrome::FaviconUrlFormat::kFavicon2));
 
-  data_store_inspector_ = resource_coordinator::
-      LocalSiteCharacteristicsDataStoreInspector::GetForProfile(profile);
+  profile_id_ = profile->UniqueId();
 }
 
 WEB_UI_CONTROLLER_TYPE_IMPL(DiscardsUI)
@@ -274,8 +268,12 @@ void DiscardsUI::BindInterface(
 
 void DiscardsUI::BindInterface(
     mojo::PendingReceiver<discards::mojom::SiteDataProvider> receiver) {
-  site_data_provider_ = std::make_unique<SiteDataProviderImpl>(
-      data_store_inspector_, std::move(receiver));
+  if (performance_manager::PerformanceManager::IsAvailable()) {
+    // Forward the interface receiver directly to the service.
+    performance_manager::PerformanceManager::CallOnGraph(
+        FROM_HERE, base::BindOnce(&SiteDataProviderImpl::CreateAndBind,
+                                  std::move(receiver), profile_id_));
+  }
 }
 
 void DiscardsUI::BindInterface(

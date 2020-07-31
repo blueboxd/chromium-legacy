@@ -153,7 +153,7 @@
 
       如果不設定這項政策或設為 False，系統不會使用「快速轉換」。
       如果將這項政策設為 True，只要無線存取點支援「快速轉換」，系統便會使用該功能。</translation>
-<translation id="1240722269871366886">這項政策可讓 <ph name="PRODUCT_OS_NAME" />在使用者透過虛擬鍵盤或實體鍵盤輸入文字時提供表情符號建議。
+<translation id="1240722269871366886">這項政策可讓 <ph name="PRODUCT_OS_NAME" />在使用者透過虛擬或實體鍵盤輸入文字時提供表情符號建議。
       如果將這項政策設為 True，系統會啟用這項功能，且使用者將可變更這項設定。
       這項政策的預設值為 False，系統不會提供任何表情符號建議，且使用者無法覆寫這項設定。</translation>
 <translation id="1243570869342663665">控制安全網站成人內容篩選設定。</translation>
@@ -620,26 +620,6 @@
 <translation id="2082205219176343977">設定裝置的最低 Chrome 版本限制。</translation>
 <translation id="209586405398070749">穩定版</translation>
 <translation id="2098658257603918882">啟用使用量和當機相關資料的報告功能</translation>
-<translation id="210034539800365161">設定 <ph name="PRODUCT_OS_NAME" />的最低版本限制。
-
-      將這項政策設為非空白的清單時：
-      如果沒有任何項目的 <ph name="CHROMEOS_VERSION_PROPERTY_NAME" /> 高於裝置的目前版本，則系統不會套用任何限制，並會撤銷現有限制。
-      如果至少有一個項目的 <ph name="CHROMEOS_VERSION_PROPERTY_NAME" /> 高於目前版本，系統會選擇其版本最接近目前版本 (且高於目前版本) 的項目。
-      如果發生衝突，系統會優先選擇 <ph name="WARNING_PERIOD_PROPERTY_NAME" /> 或 <ph name="AUE_WARNING_PERIOD_PROPERTY_NAME" /> 值較小的項目，並使用該項目套用政策。
-
-      如果目前版本在使用者工作階段期間成為過時版本，且目前的網路限制自動更新，系統會在畫面上顯示通知，要求使用者在通知中顯示的 <ph name="WARNING_PERIOD_PROPERTY_NAME" /> 期限內更新裝置。
-      如果目前的網路允許自動更新，系統不會顯示通知，且使用者必須在 <ph name="WARNING_PERIOD_PROPERTY_NAME" /> 期限內更新裝置。
-      <ph name="WARNING_PERIOD_PROPERTY_NAME" /> 自系統套用政策時起算。
-      如果使用者未在 <ph name="WARNING_PERIOD_PROPERTY_NAME" /> 到期前更新裝置，系統會將使用者登出工作階段。
-      如果使用者登入時 <ph name="WARNING_PERIOD_PROPERTY_NAME" /> 已過期，且目前版本已過時，則使用者必須先更新裝置才能登入。
-
-      如果目前版本在使用者工作階段期間成為過時版本，且裝置的自動更新期限已結束，系統會在畫面上顯示通知，要求使用者在 <ph name="AUE_WARNING_PERIOD_PROPERTY_NAME" /> 期限內退還裝置。
-      如果使用者登入時 <ph name="AUE_WARNING_PERIOD_PROPERTY_NAME" /> 已過期，且裝置的自動更新期限已結束，則系統會禁止任何使用者登入裝置。
-
-      如果不設定這項政策或設為空白，系統不會套用任何限制，並會撤銷現有限制；不論使用哪種 <ph name="PRODUCT_OS_NAME" />版本，使用者皆可登入。
-
-      此處的 <ph name="CHROMEOS_VERSION_PROPERTY_NAME" /> 可以指確切版本 (例如「13305.0.0」)，也可以指版本前置字元 (例如「13305」)。
-      <ph name="WARNING_PERIOD_PROPERTY_NAME" /> 和 <ph name="AUE_WARNING_PERIOD_PROPERTY_NAME" /> 是選用值，以天數為單位。這兩個期間的預設值是 0 天，表示沒有任何警告期間。</translation>
 <translation id="2104418465060359056">回報擴充功能和外掛程式資訊</translation>
 <translation id="2106627642643925514">覆寫預設的 PIN 碼列印模式。如果設定的模式不適用，系統會忽略這項政策。</translation>
 <translation id="2107601598727098402">
@@ -2353,11 +2333,11 @@
 
       * 如果將 <ph name="FILTER_PLACEHOLDER" /> 設為 <ph name="AUTO_SELECT_CERTIFICATE_FOR_URLS_FILTER_EXAMPLE" />，瀏覽器只會選取由 CommonName <ph name="ISSUER_CN_PLACEHOLDER" /> 憑證所核發的用戶端憑證。
 
-      * 如果 <ph name="FILTER_PLACEHOLDER" /> 包含<ph name="ISSUER_STRING_VALUE" />和<ph name="SUBJECT_STRING_VALUE" />區段，則瀏覽器只會選取同時符合兩個條件的用戶端憑證。
+      * 如果 <ph name="FILTER_PLACEHOLDER" /> 包含 <ph name="ISSUER_STRING_VALUE" /> 和 <ph name="SUBJECT_STRING_VALUE" /> 區段，則瀏覽器只會選取同時符合兩個條件的用戶端憑證。
 
-      * 如果 <ph name="FILTER_PLACEHOLDER" /> 包含值為<ph name="FILTER_STRING_ORGANIZATION" />的<ph name="SUBJECT_STRING_VALUE" />區段，憑證必須有至少一個機構與指定值相符，才會納入選取範圍。
+      * 如果 <ph name="FILTER_PLACEHOLDER" /> 包含值為 <ph name="FILTER_STRING_ORGANIZATION" /> 的 <ph name="SUBJECT_STRING_VALUE" /> 區段，憑證必須有至少一個機構與指定值相符，才會納入選取範圍。
 
-      * 如果 <ph name="FILTER_PLACEHOLDER" /> 包含值為<ph name="FILTER_STRING_ORGANIZATIONAL_UNIT" />的<ph name="SUBJECT_STRING_VALUE" />區段，憑證必須有至少一個機構單位與指定值相符，才會納入選取範圍。
+      * 如果 <ph name="FILTER_PLACEHOLDER" /> 包含值為 <ph name="FILTER_STRING_ORGANIZATIONAL_UNIT" /> 的 <ph name="SUBJECT_STRING_VALUE" /> 區段，憑證必須有至少一個機構單位與指定值相符，才會納入選取範圍。
 
       * 如果將 <ph name="FILTER_PLACEHOLDER" /> 設為 <ph name="EMPTY_DICTIONARY" />，則瀏覽器在選取用戶端憑證時不會受到額外限制。請注意，由網路伺服器所提供的篩選器仍然適用。
 
@@ -4556,13 +4536,6 @@
 
       你可以將 Google 的搜尋網址指定為：<ph name="GOOGLE_SEARCH_URL" />。</translation>
 <translation id="7895553628261067384">遠端存取</translation>
-<translation id="7898879331506985900">這項企業政策只是暫時性措施，將在 M86 版中移除。
-
-      透過漸進式的 M80 穩定版發布作業，Chrome 的預設參照政策已從目前的值 no-referrer-when-downgrade 強化為更安全的 strict-origin-when-cross-origin。
-
-      在發布之前，這項企業政策不會生效。如果你在發布之後啟用這項企業政策，Chrome 的預設參照政策將設為 M80 預先發布版的值 no-referrer-when-downgrade。
-
-      在預設狀態下，系統會停用這項企業政策。</translation>
 <translation id="7902040092815978832">在輸入密碼時顯示數字鍵盤</translation>
 <translation id="7912255076272890813">設定允許的應用程式/擴充功能類型</translation>
 <translation id="7922358664346625612">讓 Chrome 中的最後一個分頁保持開啟。</translation>
@@ -5267,7 +5240,7 @@
 
           如果不設定這項政策或設為 False，支援平台會忽略 KDC 政策，只遵循「AuthNegotiateDelegateAllowlist」政策。
 
-          在 Windows 上，系統一律會遵循 KDC 政策。</translation>
+          Windows 作業系統一律遵循 KDC 政策。</translation>
 <translation id="8938932171964587769">這項政策自 M69 起已淘汰，請改用 OverrideSecurityRestrictionsOnInsecureOrigin。
 
 這項政策可指定要視為安全內容的來源 (網址) 或主機名稱模式 (例如「*.example.com」)，清單中的內容來源將不會套用針對不安全來源所設的安全性限制。
@@ -5371,7 +5344,7 @@
       如果設定這項政策，無論使用者是否指定 --disk-cache-size 旗標，<ph name="PRODUCT_NAME" /> 都會使用你提供的快取大小 (MB 以下的值會進位為 MB)。
 
       如果未設定，<ph name="PRODUCT_NAME" /> 會使用預設大小，使用者可透過 --disk-cache-size 旗標來變更這項設定。</translation>
-<translation id="9057444687284972605">你可以設定網址模式清單，指定在 SAML 流程代管架構的登入畫面中，系統要為哪些網站自動選取用戶端憑證 (如果網站要求憑證的話)。實際應用範例：設定要提供給 SAML IdP 的裝置通用憑證。
+<translation id="9057444687284972605">你可以設定網址模式清單，用於指定在 SAML 流程代管架構的登入畫面中，如果網站要求憑證，系統會自動選取用戶端憑證的網站。實際應用範例：設定要提供給 SAML IdP 的裝置通用憑證。
 
       政策的值是字串化的 JSON 條目陣列，每個條目的格式都是 <ph name="AUTO_SELECT_CERTIFICATE_FOR_URLS_EXAMPLE" />，其中 <ph name="URL_PATTERN_PLACEHOLDER" /> 是內容設定格式。<ph name="FILTER_PLACEHOLDER" /> 會限制瀏覽器可自動選取的用戶端憑證。無論是否設定篩選器，瀏覽器都只會選取符合伺服器憑證要求的憑證。
 
@@ -5379,11 +5352,11 @@
 
       * 如果將 <ph name="FILTER_PLACEHOLDER" /> 設為 <ph name="AUTO_SELECT_CERTIFICATE_FOR_URLS_FILTER_EXAMPLE" />，瀏覽器只會選取由 CommonName <ph name="ISSUER_CN_PLACEHOLDER" /> 憑證所核發的用戶端憑證。
 
-      * 如果 <ph name="FILTER_PLACEHOLDER" /> 包含<ph name="ISSUER_STRING_VALUE" />和<ph name="SUBJECT_STRING_VALUE" />區段，則瀏覽器只會選取同時符合兩個條件的用戶端憑證。
+      * 如果 <ph name="FILTER_PLACEHOLDER" /> 包含 <ph name="ISSUER_STRING_VALUE" /> 和 <ph name="SUBJECT_STRING_VALUE" /> 區段，則瀏覽器只會選取同時符合兩個條件的用戶端憑證。
 
-      * 如果 <ph name="FILTER_PLACEHOLDER" /> 包含值為<ph name="FILTER_STRING_ORGANIZATION" />的<ph name="SUBJECT_STRING_VALUE" />區段，憑證必須有至少一個機構與指定值相符，才會納入選取範圍。
+      * 如果 <ph name="FILTER_PLACEHOLDER" /> 包含值為 <ph name="FILTER_STRING_ORGANIZATION" /> 的 <ph name="SUBJECT_STRING_VALUE" /> 區段，憑證必須有至少一個機構與指定值相符，才會納入選取範圍。
 
-      * 如果 <ph name="FILTER_PLACEHOLDER" /> 包含值為<ph name="FILTER_STRING_ORGANIZATIONAL_UNIT" />的<ph name="SUBJECT_STRING_VALUE" />區段，憑證必須有至少一個機構單位與指定值相符，才會納入選取範圍。
+      * 如果 <ph name="FILTER_PLACEHOLDER" /> 包含值為 <ph name="FILTER_STRING_ORGANIZATIONAL_UNIT" /> 的 <ph name="SUBJECT_STRING_VALUE" /> 區段，憑證必須有至少一個機構單位與指定值相符，才會納入選取範圍。
 
       * 如果將 <ph name="FILTER_PLACEHOLDER" /> 設為 <ph name="EMPTY_DICTIONARY" />，則瀏覽器在選取用戶端憑證時不會受到額外限制。請注意，由網路伺服器所提供的篩選器仍然適用。
 

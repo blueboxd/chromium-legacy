@@ -139,7 +139,7 @@ SharedContextState::SharedContextState(
 #if BUILDFLAG(ENABLE_VULKAN)
         gr_context_ = vk_context_provider_->GetGrContext();
         external_semaphore_pool_ =
-            std::make_unique<ExternalSemaphorePool>(vk_context_provider_);
+            std::make_unique<ExternalSemaphorePool>(this);
 #endif
         use_virtualized_gl_contexts_ = false;
         DCHECK(gr_context_);

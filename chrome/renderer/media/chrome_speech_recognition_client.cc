@@ -5,6 +5,7 @@
 #include "chrome/renderer/media/chrome_speech_recognition_client.h"
 
 #include <utility>
+#include <vector>
 
 #include "base/metrics/field_trial_params.h"
 #include "content/public/renderer/render_frame.h"
@@ -57,7 +58,6 @@ void ChromeSpeechRecognitionClient::OnRecognizerBound(
     bool is_multichannel_supported) {
   is_multichannel_supported_ = is_multichannel_supported;
   is_recognizer_bound_ = true;
-
   if (on_ready_callback_)
     std::move(on_ready_callback_).Run();
 }
@@ -102,11 +102,11 @@ void ChromeSpeechRecognitionClient::OnSpeechRecognitionRecognitionEvent(
   caption_host_->OnTranscription(
       chrome::mojom::TranscriptionResult::New(result->transcription,
                                               result->is_final),
-      base::BindOnce(&ChromeSpeechRecognitionClient::OnTranscriptionCallback,
+      base::BindOnce(&ChromeSpeechRecognitionClient::OnBrowserCallback,
                      base::Unretained(this)));
 }
 
-void ChromeSpeechRecognitionClient::OnTranscriptionCallback(bool success) {
+void ChromeSpeechRecognitionClient::OnBrowserCallback(bool success) {
   is_browser_requesting_transcription_ = success;
 }
 
@@ -145,6 +145,17 @@ void ChromeSpeechRecognitionClient::SendAudioToSpeechRecognitionService(
   if (IsSpeechRecognitionAvailable()) {
     speech_recognition_recognizer_->SendAudioToSpeechRecognitionService(
         std::move(audio_data));
+
+    // When the speech recognition client receives speech, it alerts the
+    // live caption host in the browser that it is ready so that the UI can
+    // display a message. This happens at the time of playing the video and not
+    // at the time of construction of this object.
+    if (!on_ready_message_sent_to_caption_host_) {
+      caption_host_->OnSpeechRecognitionReady(
+          base::BindOnce(&ChromeSpeechRecognitionClient::OnBrowserCallback,
+                         base::Unretained(this)));
+      on_ready_message_sent_to_caption_host_ = true;
+    }
   }
 }
 

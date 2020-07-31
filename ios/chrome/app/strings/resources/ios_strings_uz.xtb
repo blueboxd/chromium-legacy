@@ -14,7 +14,6 @@
 <translation id="1084365883616172403">Facebook’ka joylandi.</translation>
 <translation id="1103523840287552314"><ph name="LANGUAGE" /> tilidan har doim tarjima qilinsin</translation>
 <translation id="1104948393051856124">Davom etish</translation>
-<translation id="1105578556867525047">Saytdagi parolni yangilash</translation>
 <translation id="1112015203684611006">Chop etilmadi.</translation>
 <translation id="1125564390852150847">Yangi sahifa ochish</translation>
 <translation id="1145536944570833626">Mavjud ma’lumotlarni o‘chirish.</translation>
@@ -23,6 +22,7 @@
 <translation id="1176932207622159128">Tasvir saqlanmadi</translation>
 <translation id="1180526666083833456">Barcha qurilmalardagi sinxronizatsiya va shaxsiy sozlamalar.</translation>
 <translation id="1181037720776840403">Olib tashlash</translation>
+<translation id="1185569544548277362">Yangi: Siz endi Chrome brauzerini asosiy sifatida sozlashingiz mumkin. <ph name="BEGIN_LINK" />Sozlamalarni ochish<ph name="END_LINK" /></translation>
 <translation id="1207113853726624428">Yangi qidiruv</translation>
 <translation id="1209206284964581585">Berkitish</translation>
 <translation id="1219674500290482172">Internetga ulanib bo‘lmadi.</translation>
@@ -245,7 +245,6 @@ Inkognito rejimida cookie fayllaringiz yopiq boʻladi va saytlar reklamalarni si
 <translation id="3783017676699494206">Tasvirni saqlash</translation>
 <translation id="3789841737615482174">O‘rnatish</translation>
 <translation id="3803696231112616155">Bu saytda tarjima taklif qilinsin</translation>
-<translation id="3836313059960742452">{COUNT,plural, =0{Hech qanday parol oshkor qilinmagan}=1{{COUNT} ta parol oshkor boʻlgan}other{{COUNT} ta parol oshkor boʻlgan}}</translation>
 <translation id="385051799172605136">Orqaga</translation>
 <translation id="3892144330757387737">Brauzer tarixi shu yerda chiqadi</translation>
 <translation id="3897092660631435901">Menyu</translation>
@@ -332,6 +331,7 @@ Bu sozlamani almashtirish uchun <ph name="BEGIN_LINK" />sinxronizatsiyani tiklan
 <translation id="4901778704868714008">Saqlash...</translation>
 <translation id="4904877109095351937">O‘qildi deb belgilash</translation>
 <translation id="4930268273022498155">Mavjud ma’lumotlarni o‘chirish. <ph name="USER_EMAIL1" /> hisobiga o‘tib. bu ma’lumotlardan foydalanishingiz mumkin.</translation>
+<translation id="4930714375720679147">Yoqish</translation>
 <translation id="4941089862236492464">Yozuvni joylab bo‘lmadi.</translation>
 <translation id="4944543191714094452">Sahifa ichidan qidirish…</translation>
 <translation id="4945756290001680296">Parol sozlamalariga kirish</translation>
@@ -610,6 +610,7 @@ Saytlar reklamalarni sizga moslashtirish uchun brauzerdagi faoliyatingizni kuzat
 <translation id="8073670137947914548">Yuklab olindi</translation>
 <translation id="8073872304774253879">Sahifalarni kezish va qidiruvni yaxshilash</translation>
 <translation id="8076014560081431679">Saytlarda saqlangan ma’lumotlar tozalanmaydi va brauzer faoliyatiga ta’sir qilmaydi. <ph name="BEGIN_LINK" />Batafsil<ph name="END_LINK" /></translation>
+<translation id="8105368624971345109">O‘chirib qo‘yish</translation>
 <translation id="8114753159095730575">Faylni yuklab olish mumkin. Qo‘shimcha amallar ekranning pastki qismida.</translation>
 <translation id="8131740175452115882">Tasdiqlash</translation>
 <translation id="8197543752516192074">Sahifani tarjima qilish</translation>
@@ -639,6 +640,7 @@ Saytlar reklamalarni sizga moslashtirish uchun brauzerdagi faoliyatingizni kuzat
 <translation id="8524799873541103884"><ph name="INCOGNITO" /> tablar soni <ph name="FIRST_VISIBLE_TAB" /> va <ph name="LAST_VISIBLE_TAB" /> orasida, jami <ph name="NUMBER_OF_OPEN_TABS" /> ta</translation>
 <translation id="8529767659511976195">Yangi</translation>
 <translation id="8532105204136943229">Yil (muddat)</translation>
+<translation id="8533166274275423134">Boshqa oynada ochilgan</translation>
 <translation id="8534481786647257214">Google+’ga joylandi.</translation>
 <translation id="8548878600947630424">Sahifadan qidirish...</translation>
 <translation id="8574235780160508979">Chrome xizmat shartlari 31-mart kuni yangilanadi. <ph name="BEGIN_LINK" />Tanishib chiqing<ph name="END_LINK" /></translation>

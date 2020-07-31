@@ -12,7 +12,6 @@ import 'chrome://resources/cr_elements/cr_view_manager/cr_view_manager.m.js';
 import './shared/nearby_onboarding_page.m.js';
 import './nearby_confirmation_page.js';
 import './nearby_discovery_page.js';
-import './strings.m.js';
 
 import {html, Polymer} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
 

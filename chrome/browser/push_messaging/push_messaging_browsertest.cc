@@ -2627,7 +2627,8 @@ class PushMessagingDisallowSenderIdsBrowserTest
     : public PushMessagingBrowserTest {
  public:
   PushMessagingDisallowSenderIdsBrowserTest() {
-    scoped_feature_list_.InitAndEnableFeature(kPushMessagingDisallowSenderIDs);
+    scoped_feature_list_.InitAndEnableFeature(
+        features::kPushMessagingDisallowSenderIDs);
   }
 
   ~PushMessagingDisallowSenderIdsBrowserTest() override = default;
@@ -2659,4 +2660,110 @@ IN_PROC_BROWSER_TEST_F(PushMessagingDisallowSenderIdsBrowserTest,
       "AbortError - Registration failed - GCM Sender IDs are no longer "
       "supported, please upgrade to VAPID authentication instead",
       script_result);
+}
+
+class PushSubscriptionWithExpirationTimeTest : public PushMessagingBrowserTest {
+ public:
+  PushSubscriptionWithExpirationTimeTest() {
+    scoped_feature_list_.InitAndEnableFeature(
+        features::kPushSubscriptionWithExpirationTime);
+  }
+
+  ~PushSubscriptionWithExpirationTimeTest() override = default;
+
+  // Checks whether |expiration_time| lies in the future and is in the
+  // valid format (seconds elapsed since Unix time)
+  bool IsExpirationTimeValid(const std::string& expiration_time);
+
+ private:
+  base::test::ScopedFeatureList scoped_feature_list_;
+};
+
+bool PushSubscriptionWithExpirationTimeTest::IsExpirationTimeValid(
+    const std::string& expiration_time) {
+  int64_t output;
+  if (!base::StringToInt64(expiration_time, &output))
+    return false;
+  return base::Time::Now().ToJsTimeIgnoringNull() < output;
+}
+
+IN_PROC_BROWSER_TEST_F(PushSubscriptionWithExpirationTimeTest,
+                       SubscribeGetSubscriptionWithExpirationTime) {
+  std::string script_result;
+
+  ASSERT_TRUE(RunScript("registerServiceWorker()", &script_result));
+  ASSERT_EQ("ok - service worker registered", script_result);
+
+  ASSERT_NO_FATAL_FAILURE(RequestAndAcceptPermission());
+
+  LoadTestPage();  // Reload to become controlled.
+
+  ASSERT_TRUE(RunScript("isControlled()", &script_result));
+  ASSERT_EQ("true - is controlled", script_result);
+
+  // Subscribe with expiration time enabled, should get a subscription with
+  // expiration time in the future back
+  std::string subscription_expiration_time;
+  ASSERT_TRUE(RunScript("documentSubscribePushGetExpirationTime()",
+                        &subscription_expiration_time));
+  EXPECT_TRUE(IsExpirationTimeValid(subscription_expiration_time));
+
+  std::string get_subscription_expiration_time;
+  // Get subscription should also yield a subscription with expiration time
+  ASSERT_TRUE(RunScript("GetSubscriptionExpirationTime()",
+                        &get_subscription_expiration_time));
+  EXPECT_TRUE(IsExpirationTimeValid(get_subscription_expiration_time));
+  // Both methods should return the same expiration time
+  ASSERT_EQ(subscription_expiration_time, get_subscription_expiration_time);
+}
+
+IN_PROC_BROWSER_TEST_F(PushSubscriptionWithExpirationTimeTest,
+                       GetSubscriptionWithExpirationTime) {
+  std::string script_result;
+
+  ASSERT_NO_FATAL_FAILURE(SubscribeSuccessfully());
+
+  ASSERT_TRUE(RunScript("hasSubscription()", &script_result));
+  EXPECT_EQ("true - subscribed", script_result);
+
+  // Get subscription should also yield a subscription with expiration time
+  ASSERT_TRUE(RunScript("GetSubscriptionExpirationTime()", &script_result));
+  EXPECT_TRUE(IsExpirationTimeValid(script_result));
+}
+
+class PushSubscriptionWithoutExpirationTimeTest
+    : public PushMessagingBrowserTest {
+ public:
+  PushSubscriptionWithoutExpirationTimeTest() {
+    // Override current feature list to ensure having
+    // |kPushSubscriptionWithExpirationTime| disabled
+    scoped_feature_list_.InitAndDisableFeature(
+        features::kPushSubscriptionWithExpirationTime);
+  }
+
+  ~PushSubscriptionWithoutExpirationTimeTest() override = default;
+
+ private:
+  base::test::ScopedFeatureList scoped_feature_list_;
+};
+
+IN_PROC_BROWSER_TEST_F(PushSubscriptionWithoutExpirationTimeTest,
+                       SubscribeDocumentExpirationTimeNull) {
+  std::string script_result;
+
+  ASSERT_TRUE(RunScript("registerServiceWorker()", &script_result));
+  ASSERT_EQ("ok - service worker registered", script_result);
+
+  ASSERT_NO_FATAL_FAILURE(RequestAndAcceptPermission());
+
+  LoadTestPage();  // Reload to become controlled.
+
+  ASSERT_TRUE(RunScript("isControlled()", &script_result));
+  ASSERT_EQ("true - is controlled", script_result);
+
+  // When |features::kPushSubscriptionWithExpirationTime| is disabled,
+  // expiration time should be null
+  ASSERT_TRUE(
+      RunScript("documentSubscribePushGetExpirationTime()", &script_result));
+  EXPECT_EQ("null", script_result);
 }

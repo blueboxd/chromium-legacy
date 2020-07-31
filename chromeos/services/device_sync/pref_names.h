@@ -30,6 +30,7 @@ extern const char kCryptAuthGCMRegistrationId[];
 // Prefs for CryptAuth v2:
 extern const char kCryptAuthDeviceRegistry[];
 extern const char kCryptAuthKeyRegistry[];
+extern const char kCryptAuthLastEnrolledClientAppMetadataHash[];
 extern const char kCryptAuthLastSyncedEncryptedLocalDeviceMetadata[];
 extern const char kCryptAuthLastSyncedGroupPublicKey[];
 extern const char kCryptAuthLastSyncedUnencryptedLocalDeviceMetadata[];

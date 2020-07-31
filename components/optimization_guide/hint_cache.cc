@@ -284,6 +284,7 @@ bool HintCache::ProcessAndCacheHints(
 
     switch (hint.key_representation()) {
       case proto::HOST_SUFFIX:
+      case proto::HOST:
         update_data->MoveHintIntoUpdateData(std::move(hint));
         processed_hints_to_store = true;
         break;
@@ -294,7 +295,6 @@ bool HintCache::ProcessAndCacheHints(
               std::make_unique<MemoryHint>(expiry_time, std::move(hint)));
         }
         break;
-      case proto::HOST:
       case proto::REPRESENTATION_UNSPECIFIED:
         NOTREACHED();
         break;

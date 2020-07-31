@@ -39,7 +39,7 @@
     </ViewSwitcher>
 
     <ImageButton
-        android:id="@+id/menu_button"
+        android:id="@+id/app_menu_button"
         android:src="@android:drawable/ic_menu_more"
         android:background="@android:color/transparent"
         android:layout_width="25dp"

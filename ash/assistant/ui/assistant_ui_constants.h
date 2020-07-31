@@ -43,6 +43,16 @@ const gfx::FontList& GetDefaultFontList();
 
 constexpr int kWarmerWelcomesMaxTimesTriggered = 3;
 
+// Histogram names for measuring animation performance.
+constexpr char kAssistantCardElementHistogram[] =
+    "Ash.Assistant.AnimationSmoothness.CardElement";
+constexpr char kAssistantTextElementHistogram[] =
+    "Ash.Assistant.AnimationSmoothness.TextElement";
+constexpr char kAssistantResizePageViewHistogram[] =
+    "Ash.Assistant.AnimationSmoothness.ResizeAssistantPageView";
+constexpr char kAssistantSuggestionChipHistogram[] =
+    "Ash.Assistant.AnimationSmoothness.SuggestionChip";
+
 }  // namespace ui
 }  // namespace assistant
 

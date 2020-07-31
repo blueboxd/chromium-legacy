@@ -447,3 +447,6 @@ QUIC_FLAG(bool, FLAGS_quic_reloadable_flag_quic_use_half_rtt_as_first_pto, true)
 QUIC_FLAG(bool,
           FLAGS_quic_reloadable_flag_quic_enable_overshooting_detection,
           false)
+
+// If true, enable QUIC version h3-T051.
+QUIC_FLAG(bool, FLAGS_quic_reloadable_flag_quic_enable_version_t051, true)

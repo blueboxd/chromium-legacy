@@ -305,8 +305,7 @@ class OmniboxViewViewsTest : public OmniboxViewViewsTestBase {
 
   // Sets up tests for the simplified domain field trials.
   void SetUpSimplifiedDomainTest() {
-    location_bar_model()->set_url(
-        GURL(base::ASCIIToUTF16("https://") + kSimplifiedDomainDisplayUrl));
+    location_bar_model()->set_url(GURL(kSimplifiedDomainDisplayUrl));
     location_bar_model()->set_url_for_display(kSimplifiedDomainDisplayUrl);
     omnibox_view()->model()->ResetDisplayTexts();
     omnibox_view()->RevertAll();
@@ -1409,22 +1408,23 @@ TEST_F(OmniboxViewViewsSteadyStateElisionsTest, UnelideFromModel) {
   ExpectFullUrlDisplayed();
 }
 
-// Checks that |render_text|'s current display rect and offset does not display
+// Checks that |view|'s current display rect and offset does not display
 // |path|, and also does not display |subdomain_and_scheme| if
 // |should_elide_to_registrable_domain| is true.
 //
 // |subdomain_and_scheme| is assumed to be a prefix of |hostname_and_scheme|.
 // |subdomain_and_scheme| and |subdomain| should include a trailing ".", and
 // |path| should include a leading "/".
-void ExpectElidedToSimplifiedDomain(gfx::RenderText* render_text,
-                                    const base::string16& subdomain_and_scheme,
+void ExpectElidedToSimplifiedDomain(TestingOmniboxView* view,
+                                    const base::string16& scheme,
                                     const base::string16& subdomain,
                                     const base::string16& hostname_and_scheme,
                                     const base::string16& path,
                                     bool should_elide_to_registrable_domain) {
+  gfx::RenderText* render_text = view->GetRenderText();
   gfx::Rect subdomain_and_scheme_rect;
   for (const auto& rect : render_text->GetSubstringBounds(
-           gfx::Range(0, subdomain_and_scheme.size()))) {
+           gfx::Range(0, scheme.size() + subdomain.size()))) {
     subdomain_and_scheme_rect.Union(rect);
   }
   gfx::Rect path_rect;
@@ -1437,21 +1437,50 @@ void ExpectElidedToSimplifiedDomain(gfx::RenderText* render_text,
   if (should_elide_to_registrable_domain) {
     EXPECT_FALSE(
         render_text->display_rect().Contains(subdomain_and_scheme_rect));
-    EXPECT_EQ(subdomain_and_scheme_rect.width(),
+    gfx::Rect registrable_domain_rect;
+    for (const auto& rect : render_text->GetSubstringBounds(gfx::Range(
+             scheme.size() + subdomain.size(), hostname_and_scheme.size()))) {
+      registrable_domain_rect.Union(rect);
+    }
+    EXPECT_TRUE(render_text->display_rect().Contains(registrable_domain_rect));
+    // The text should be scrolled to push the scheme and subdomain offscreen,
+    // so that the text starts at the registrable domain. Note that this code
+    // computes the expected offset by comparing x() values rather than
+    // comparing based on widths (for example, it wouldn't work to check that
+    // the display offset is equal to |subdomain_and_scheme_rect|'s width). This
+    // is because GetSubstringBounds() rounds outward, so the width of
+    // |subdomain_and_scheme_rect| could slightly overlap
+    // |registrable_domain_rect|.
+    EXPECT_EQ(registrable_domain_rect.x() - subdomain_and_scheme_rect.x(),
               -1 * render_text->GetUpdatedDisplayOffset().x());
+    // The scheme and subdomain should be transparent.
+    EXPECT_EQ(SK_ColorTRANSPARENT, view->GetLatestColorForRange(gfx::Range(
+                                       0, scheme.size() + subdomain.size())));
   } else {
     // When elision to registrable domain is disabled, the scheme should be
     // hidden but the subdomain should not be.
     EXPECT_FALSE(
         render_text->display_rect().Contains(subdomain_and_scheme_rect));
-    gfx::Rect subdomain_rect;
-    for (const auto& rect :
-         render_text->GetSubstringBounds(gfx::Range(0, subdomain.size()))) {
-      subdomain_rect.Union(rect);
+    gfx::Rect hostname_rect;
+    for (const auto& rect : render_text->GetSubstringBounds(
+             gfx::Range(scheme.size(), hostname_and_scheme.size()))) {
+      hostname_rect.Union(rect);
     }
-    EXPECT_EQ(subdomain_rect.x() - render_text->display_rect().x(),
-              render_text->GetUpdatedDisplayOffset().x());
+    // The text should be scrolled to push the scheme offscreen, so that the
+    // text starts at the subdomain. As above, it's important to compute the
+    // expected offset with x() values instead of width()s, since the width()s
+    // of different adjacent substring bounds could overlap.
+    EXPECT_EQ(hostname_rect.x() - subdomain_and_scheme_rect.x(),
+              -1 * render_text->GetUpdatedDisplayOffset().x());
+    // The scheme should be transparent.
+    EXPECT_EQ(SK_ColorTRANSPARENT,
+              view->GetLatestColorForRange(gfx::Range(0, scheme.size())));
   }
+  // The path should be transparent.
+  EXPECT_EQ(SK_ColorTRANSPARENT,
+            view->GetLatestColorForRange(
+                gfx::Range(hostname_and_scheme.size(),
+                           hostname_and_scheme.size() + path.size())));
 }
 
 // Checks that |render_text|'s current display rect and offset displays all of
@@ -1491,29 +1520,6 @@ bool IsPartlyThroughSimplifiedDomainElision(gfx::RenderText* render_text,
     path_rect.Union(rect);
   }
   return render_text->display_rect().Intersects(path_rect);
-}
-
-// Returns true if the last color applied to the path (assumed to begin after
-// |hostname_and_scheme| ends) in |omnibox_view| was transparent.
-bool IsPathTransparent(TestingOmniboxView* omnibox_view,
-                       const base::string16& display_url,
-                       const base::string16& hostname_and_scheme) {
-  base::Optional<SkColor> last_path_color =
-      omnibox_view->GetLatestColorForRange(
-          gfx::Range(hostname_and_scheme.size(), display_url.size()));
-  return last_path_color.has_value() && *last_path_color == SK_ColorTRANSPARENT;
-}
-
-// Returns true if the last color applied to the given subdomain and scheme
-// (assumed to be at the beginning of the URL) in |omnibox_view| was
-// transparent.
-bool IsSubdomainTransparent(TestingOmniboxView* omnibox_view,
-                            const base::string16& subdomain_and_scheme) {
-  base::Optional<SkColor> last_subdomain_color =
-      omnibox_view->GetLatestColorForRange(
-          gfx::Range(0, subdomain_and_scheme.size()));
-  return last_subdomain_color.has_value() &&
-         *last_subdomain_color == SK_ColorTRANSPARENT;
 }
 
 class OmniboxViewViewsNoSimplifiedDomainTest : public OmniboxViewViewsTest {
@@ -1573,7 +1579,7 @@ TEST_P(OmniboxViewViewsRevealOnHoverTest, HoverAndExit) {
   SetUpSimplifiedDomainTest();
   gfx::RenderText* render_text = omnibox_view()->GetRenderText();
   ASSERT_NO_FATAL_FAILURE(ExpectElidedToSimplifiedDomain(
-      render_text, kSimplifiedDomainDisplayUrlSubdomainAndScheme,
+      omnibox_view(), kSimplifiedDomainDisplayUrlScheme,
       kSimplifiedDomainDisplayUrlSubdomain,
       kSimplifiedDomainDisplayUrlHostnameAndScheme,
       kSimplifiedDomainDisplayUrlPath, ShouldElideToRegistrableDomain()));
@@ -1598,7 +1604,7 @@ TEST_P(OmniboxViewViewsRevealOnHoverTest, HoverAndExit) {
   // After the extended hover threshold has elapsed, the display text shouldn't
   // have changed yet.
   ASSERT_NO_FATAL_FAILURE(ExpectElidedToSimplifiedDomain(
-      render_text, kSimplifiedDomainDisplayUrlSubdomainAndScheme,
+      omnibox_view(), kSimplifiedDomainDisplayUrlScheme,
       kSimplifiedDomainDisplayUrlSubdomain,
       kSimplifiedDomainDisplayUrlHostnameAndScheme,
       kSimplifiedDomainDisplayUrlPath, ShouldElideToRegistrableDomain()));
@@ -1610,10 +1616,14 @@ TEST_P(OmniboxViewViewsRevealOnHoverTest, HoverAndExit) {
   ASSERT_NO_FATAL_FAILURE(ExpectUnelidedFromSimplifiedDomain(
       render_text, gfx::Range(0, kSimplifiedDomainDisplayUrl.size())));
   EXPECT_FALSE(hover_animation->IsAnimating());
-  EXPECT_FALSE(IsPathTransparent(omnibox_view(), kSimplifiedDomainDisplayUrl,
-                                 kSimplifiedDomainDisplayUrlHostnameAndScheme));
-  EXPECT_FALSE(IsSubdomainTransparent(
-      omnibox_view(), kSimplifiedDomainDisplayUrlSubdomainAndScheme));
+  // Check that the path and subdomain are not transparent.
+  EXPECT_NE(SK_ColorTRANSPARENT,
+            omnibox_view()->GetLatestColorForRange(
+                gfx::Range(kSimplifiedDomainDisplayUrlHostnameAndScheme.size(),
+                           kSimplifiedDomainDisplayUrl.size())));
+  EXPECT_NE(SK_ColorTRANSPARENT,
+            omnibox_view()->GetLatestColorForRange(gfx::Range(
+                0, kSimplifiedDomainDisplayUrlSubdomainAndScheme.size())));
 
   // Now exit the mouse. At this point the elision animation should run.
   omnibox_view()->OnMouseExited(CreateMouseEvent(ui::ET_MOUSE_EXITED, {0, 0}));
@@ -1626,16 +1636,10 @@ TEST_P(OmniboxViewViewsRevealOnHoverTest, HoverAndExit) {
   hover_animation_as_element->Step(base::TimeTicks() +
                                    base::TimeDelta::FromSeconds(1));
   ASSERT_NO_FATAL_FAILURE(ExpectElidedToSimplifiedDomain(
-      render_text, kSimplifiedDomainDisplayUrlSubdomainAndScheme,
+      omnibox_view(), kSimplifiedDomainDisplayUrlScheme,
       kSimplifiedDomainDisplayUrlSubdomain,
       kSimplifiedDomainDisplayUrlHostnameAndScheme,
       kSimplifiedDomainDisplayUrlPath, ShouldElideToRegistrableDomain()));
-  EXPECT_TRUE(IsPathTransparent(omnibox_view(), kSimplifiedDomainDisplayUrl,
-                                kSimplifiedDomainDisplayUrlHostnameAndScheme));
-  if (ShouldElideToRegistrableDomain()) {
-    EXPECT_TRUE(IsSubdomainTransparent(
-        omnibox_view(), kSimplifiedDomainDisplayUrlSubdomainAndScheme));
-  }
 }
 
 class OmniboxViewViewsHideOnInteractionAndRevealOnHoverTest
@@ -1674,7 +1678,6 @@ INSTANTIATE_TEST_SUITE_P(OmniboxViewViewsHideOnInteractionAndRevealOnHoverTest,
 TEST_P(OmniboxViewViewsHideOnInteractionAndRevealOnHoverTest,
        UserInteractionAndHover) {
   SetUpSimplifiedDomainTest();
-  gfx::RenderText* render_text = omnibox_view()->GetRenderText();
 
   content::MockNavigationHandle navigation;
   navigation.set_is_same_document(false);
@@ -1698,16 +1701,10 @@ TEST_P(OmniboxViewViewsHideOnInteractionAndRevealOnHoverTest,
   elide_as_element->SetStartTime(base::TimeTicks());
   elide_as_element->Step(base::TimeTicks() + base::TimeDelta::FromSeconds(1));
   ASSERT_NO_FATAL_FAILURE(ExpectElidedToSimplifiedDomain(
-      render_text, kSimplifiedDomainDisplayUrlSubdomainAndScheme,
+      omnibox_view(), kSimplifiedDomainDisplayUrlScheme,
       kSimplifiedDomainDisplayUrlSubdomain,
       kSimplifiedDomainDisplayUrlHostnameAndScheme,
       kSimplifiedDomainDisplayUrlPath, ShouldElideToRegistrableDomain()));
-  EXPECT_TRUE(IsPathTransparent(omnibox_view(), kSimplifiedDomainDisplayUrl,
-                                kSimplifiedDomainDisplayUrlHostnameAndScheme));
-  if (ShouldElideToRegistrableDomain()) {
-    EXPECT_TRUE(IsSubdomainTransparent(
-        omnibox_view(), kSimplifiedDomainDisplayUrlSubdomainAndScheme));
-  }
 
   // A second user interaction should not run the animation again.
   omnibox_view()->DidGetUserInteraction(blink::WebKeyboardEvent());
@@ -1732,10 +1729,14 @@ TEST_P(OmniboxViewViewsHideOnInteractionAndRevealOnHoverTest,
   ASSERT_NO_FATAL_FAILURE(ExpectUnelidedFromSimplifiedDomain(
       omnibox_view()->GetRenderText(),
       gfx::Range(0, kSimplifiedDomainDisplayUrl.size())));
-  EXPECT_FALSE(IsPathTransparent(omnibox_view(), kSimplifiedDomainDisplayUrl,
-                                 kSimplifiedDomainDisplayUrlHostnameAndScheme));
-  EXPECT_FALSE(IsSubdomainTransparent(
-      omnibox_view(), kSimplifiedDomainDisplayUrlSubdomainAndScheme));
+  // The path and scheme/subdomain should not be transparent.
+  EXPECT_NE(SK_ColorTRANSPARENT,
+            omnibox_view()->GetLatestColorForRange(
+                gfx::Range(kSimplifiedDomainDisplayUrlHostnameAndScheme.size(),
+                           kSimplifiedDomainDisplayUrl.size())));
+  EXPECT_NE(SK_ColorTRANSPARENT,
+            omnibox_view()->GetLatestColorForRange(gfx::Range(
+                0, kSimplifiedDomainDisplayUrlSubdomainAndScheme.size())));
 }
 
 // Tests that mouse clicks do not count as user interactions and elide the URL.
@@ -1763,7 +1764,6 @@ TEST_P(OmniboxViewViewsHideOnInteractionAndRevealOnHoverTest, MouseClick) {
 // bounds change.
 TEST_P(OmniboxViewViewsHideOnInteractionAndRevealOnHoverTest, BoundsChanged) {
   SetUpSimplifiedDomainTest();
-  gfx::RenderText* render_text = omnibox_view()->GetRenderText();
 
   content::MockNavigationHandle navigation;
   navigation.set_is_same_document(false);
@@ -1804,7 +1804,7 @@ TEST_P(OmniboxViewViewsHideOnInteractionAndRevealOnHoverTest, BoundsChanged) {
   EXPECT_TRUE(elide_animation->IsAnimating());
   omnibox_view()->OnBoundsChanged(gfx::Rect());
   ASSERT_NO_FATAL_FAILURE(ExpectElidedToSimplifiedDomain(
-      render_text, kSimplifiedDomainDisplayUrlSubdomainAndScheme,
+      omnibox_view(), kSimplifiedDomainDisplayUrlScheme,
       kSimplifiedDomainDisplayUrlSubdomain,
       kSimplifiedDomainDisplayUrlHostnameAndScheme,
       kSimplifiedDomainDisplayUrlPath, ShouldElideToRegistrableDomain()));
@@ -1814,10 +1814,9 @@ TEST_P(OmniboxViewViewsHideOnInteractionAndRevealOnHoverTest, BoundsChanged) {
 // bounds change when only reveal-on-hover is enabled.
 TEST_P(OmniboxViewViewsRevealOnHoverTest, BoundsChanged) {
   SetUpSimplifiedDomainTest();
-  gfx::RenderText* render_text = omnibox_view()->GetRenderText();
 
   ASSERT_NO_FATAL_FAILURE(ExpectElidedToSimplifiedDomain(
-      render_text, kSimplifiedDomainDisplayUrlSubdomainAndScheme,
+      omnibox_view(), kSimplifiedDomainDisplayUrlScheme,
       kSimplifiedDomainDisplayUrlSubdomain,
       kSimplifiedDomainDisplayUrlHostnameAndScheme,
       kSimplifiedDomainDisplayUrlPath, ShouldElideToRegistrableDomain()));
@@ -1825,7 +1824,7 @@ TEST_P(OmniboxViewViewsRevealOnHoverTest, BoundsChanged) {
   // After the bounds change, the URL should remain elided.
   omnibox_view()->OnBoundsChanged(gfx::Rect());
   ASSERT_NO_FATAL_FAILURE(ExpectElidedToSimplifiedDomain(
-      render_text, kSimplifiedDomainDisplayUrlSubdomainAndScheme,
+      omnibox_view(), kSimplifiedDomainDisplayUrlScheme,
       kSimplifiedDomainDisplayUrlSubdomain,
       kSimplifiedDomainDisplayUrlHostnameAndScheme,
       kSimplifiedDomainDisplayUrlPath, ShouldElideToRegistrableDomain()));
@@ -1840,7 +1839,7 @@ TEST_P(OmniboxViewViewsRevealOnHoverTest, BoundsChanged) {
   EXPECT_TRUE(unelide_animation->IsAnimating());
   omnibox_view()->OnBoundsChanged(gfx::Rect());
   ASSERT_NO_FATAL_FAILURE(ExpectElidedToSimplifiedDomain(
-      render_text, kSimplifiedDomainDisplayUrlSubdomainAndScheme,
+      omnibox_view(), kSimplifiedDomainDisplayUrlScheme,
       kSimplifiedDomainDisplayUrlSubdomain,
       kSimplifiedDomainDisplayUrlHostnameAndScheme,
       kSimplifiedDomainDisplayUrlPath, ShouldElideToRegistrableDomain()));
@@ -1860,7 +1859,6 @@ TEST_P(OmniboxViewViewsHideOnInteractionAndRevealOnHoverTest,
   omnibox_view()->model()->ResetDisplayTexts();
   omnibox_view()->RevertAll();
   omnibox_view()->OnThemeChanged();
-  gfx::RenderText* render_text = omnibox_view()->GetRenderText();
 
   content::MockNavigationHandle navigation;
   navigation.set_is_same_document(false);
@@ -1915,11 +1913,15 @@ TEST_P(OmniboxViewViewsHideOnInteractionAndRevealOnHoverTest,
       elide_animation->GetAnimationForTesting());
   elide_as_element->SetStartTime(base::TimeTicks());
   elide_as_element->Step(base::TimeTicks() + base::TimeDelta::FromSeconds(2));
+  // Use should_elide_to_registrable_domain=true here regardless of how the
+  // field trial is set because the "www." should be elided as a trivial
+  // subdomain.
   ASSERT_NO_FATAL_FAILURE(ExpectElidedToSimplifiedDomain(
-      render_text, base::ASCIIToUTF16("https://www."),
+      omnibox_view(), base::ASCIIToUTF16("https://"),
       base::ASCIIToUTF16("www."),
       base::ASCIIToUTF16("https://www.example.test"),
-      base::ASCIIToUTF16("/foo"), ShouldElideToRegistrableDomain()));
+      base::ASCIIToUTF16("/foo"),
+      /* should_elide_to_registrable_domain=*/true));
 
   // Do another hover and check that the URL gets unelided to the full URL.
   omnibox_view()->OnMouseMoved(CreateMouseEvent(ui::ET_MOUSE_MOVED, {0, 0}));
@@ -1946,10 +1948,11 @@ TEST_P(OmniboxViewViewsHideOnInteractionAndRevealOnHoverTest,
   elide_as_element->SetStartTime(base::TimeTicks());
   elide_as_element->Step(base::TimeTicks() + base::TimeDelta::FromSeconds(2));
   ASSERT_NO_FATAL_FAILURE(ExpectElidedToSimplifiedDomain(
-      render_text, base::ASCIIToUTF16("https://www."),
+      omnibox_view(), base::ASCIIToUTF16("https://"),
       base::ASCIIToUTF16("www."),
       base::ASCIIToUTF16("https://www.example.test"),
-      base::ASCIIToUTF16("/foo"), ShouldElideToRegistrableDomain()));
+      base::ASCIIToUTF16("/foo"),
+      /* should_elide_to_registrable_domain=*/true));
   EXPECT_EQ(SK_ColorTRANSPARENT, omnibox_view()->GetLatestColorForRange(
                                      gfx::Range(0, kSchemeAndSubdomainSize)));
 }
@@ -2124,7 +2127,7 @@ TEST_P(OmniboxViewViewsRevealOnHoverAndMaybeHideOnInteractionTest,
     // to the registrable domain because the www subdomain is considered
     // trivial.
     ASSERT_NO_FATAL_FAILURE(ExpectElidedToSimplifiedDomain(
-        render_text, base::ASCIIToUTF16("https://www."),
+        omnibox_view(), base::ASCIIToUTF16("https://"),
         base::ASCIIToUTF16("www."),
         base::ASCIIToUTF16("https://www.example.test"),
         base::ASCIIToUTF16("/foo"),
@@ -2338,7 +2341,7 @@ TEST_P(OmniboxViewViewsHideOnInteractionTest, SameDocNavigations) {
   elide_as_element->SetStartTime(base::TimeTicks());
   elide_as_element->Step(base::TimeTicks() + base::TimeDelta::FromSeconds(1));
   ASSERT_NO_FATAL_FAILURE(ExpectElidedToSimplifiedDomain(
-      render_text, kSimplifiedDomainDisplayUrlSubdomainAndScheme,
+      omnibox_view(), kSimplifiedDomainDisplayUrlScheme,
       kSimplifiedDomainDisplayUrlSubdomain,
       kSimplifiedDomainDisplayUrlHostnameAndScheme,
       kSimplifiedDomainDisplayUrlPath, ShouldElideToRegistrableDomain()));
@@ -2350,7 +2353,7 @@ TEST_P(OmniboxViewViewsHideOnInteractionTest, SameDocNavigations) {
     navigation.set_is_same_document(true);
     omnibox_view()->DidFinishNavigation(&navigation);
     ASSERT_NO_FATAL_FAILURE(ExpectElidedToSimplifiedDomain(
-        render_text, kSimplifiedDomainDisplayUrlSubdomainAndScheme,
+        omnibox_view(), kSimplifiedDomainDisplayUrlScheme,
         kSimplifiedDomainDisplayUrlSubdomain,
         kSimplifiedDomainDisplayUrlHostnameAndScheme,
         kSimplifiedDomainDisplayUrlPath, ShouldElideToRegistrableDomain()));
@@ -2508,7 +2511,7 @@ TEST_P(OmniboxViewViewsHideOnInteractionTest, SubframeNavigations) {
   elide_as_element->SetStartTime(base::TimeTicks());
   elide_as_element->Step(base::TimeTicks() + base::TimeDelta::FromSeconds(1));
   ASSERT_NO_FATAL_FAILURE(ExpectElidedToSimplifiedDomain(
-      render_text, kSimplifiedDomainDisplayUrlSubdomainAndScheme,
+      omnibox_view(), kSimplifiedDomainDisplayUrlScheme,
       kSimplifiedDomainDisplayUrlSubdomain,
       kSimplifiedDomainDisplayUrlHostnameAndScheme,
       kSimplifiedDomainDisplayUrlPath, ShouldElideToRegistrableDomain()));
@@ -2528,7 +2531,7 @@ TEST_P(OmniboxViewViewsHideOnInteractionTest, SubframeNavigations) {
     navigation.set_render_frame_host(subframe);
     omnibox_view()->DidFinishNavigation(&navigation);
     ASSERT_NO_FATAL_FAILURE(ExpectElidedToSimplifiedDomain(
-        render_text, kSimplifiedDomainDisplayUrlSubdomainAndScheme,
+        omnibox_view(), kSimplifiedDomainDisplayUrlScheme,
         kSimplifiedDomainDisplayUrlSubdomain,
         kSimplifiedDomainDisplayUrlHostnameAndScheme,
         kSimplifiedDomainDisplayUrlPath, ShouldElideToRegistrableDomain()));
@@ -2555,7 +2558,7 @@ TEST_P(OmniboxViewViewsHideOnInteractionAndRevealOnHoverTest,
   elide_as_element->SetStartTime(base::TimeTicks());
   elide_as_element->Step(base::TimeTicks() + base::TimeDelta::FromSeconds(1));
   ASSERT_NO_FATAL_FAILURE(ExpectElidedToSimplifiedDomain(
-      render_text, kSimplifiedDomainDisplayUrlSubdomainAndScheme,
+      omnibox_view(), kSimplifiedDomainDisplayUrlScheme,
       kSimplifiedDomainDisplayUrlSubdomain,
       kSimplifiedDomainDisplayUrlHostnameAndScheme,
       kSimplifiedDomainDisplayUrlPath, ShouldElideToRegistrableDomain()));
@@ -2602,8 +2605,7 @@ TEST_P(OmniboxViewViewsRevealOnHoverTest, AfterBlur) {
   omnibox_view()->OnFocus();
   omnibox_view()->OnBlur();
   ASSERT_NO_FATAL_FAILURE(ExpectElidedToSimplifiedDomain(
-      omnibox_view()->GetRenderText(),
-      kSimplifiedDomainDisplayUrlSubdomainAndScheme,
+      omnibox_view(), kSimplifiedDomainDisplayUrlScheme,
       kSimplifiedDomainDisplayUrlSubdomain,
       kSimplifiedDomainDisplayUrlHostnameAndScheme,
       kSimplifiedDomainDisplayUrlPath, ShouldElideToRegistrableDomain()));

@@ -1158,7 +1158,6 @@ Para administrar la configuración de esta cuenta, instala la app de Family Lin
 <translation id="2408955596600435184">Ingresa tu PIN</translation>
 <translation id="241082044617551207">Complemento desconocido</translation>
 <translation id="2412593942846481727">Actualización disponible</translation>
-<translation id="2414499877591062094">Habilitar el envío automático del PIN</translation>
 <translation id="2416435988630956212">Teclas de función del teclado</translation>
 <translation id="241727068219398187">Los datos se encriptaron con tu contraseña de Google a partir del
           <ph name="TIME" />. No se incluyen formas de pago ni direcciones de Google Pay.</translation>
@@ -3395,7 +3394,6 @@ Para administrar la configuración de esta cuenta, instala la app de Family Lin
 <translation id="5241128660650683457">Leer todos los datos de los sitios web que visitas</translation>
 <translation id="5242724311594467048">¿Habilitar "<ph name="EXTENSION_NAME" />"?</translation>
 <translation id="5243522832766285132">Vuelve a intentarlo en unos minutos</translation>
-<translation id="5244406554036143958">Ingresa tu PIN para habilitar el envío automático</translation>
 <translation id="5244474230056479698">Sincronizando con <ph name="EMAIL" /></translation>
 <translation id="5245610266855777041">Comenzar con la cuenta de una institución educativa</translation>
 <translation id="5246282308050205996"><ph name="APP_NAME" /> se ha bloqueado. Haz clic en este globo para reiniciar la aplicación.</translation>

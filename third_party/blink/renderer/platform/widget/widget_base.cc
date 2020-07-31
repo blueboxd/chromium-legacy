@@ -295,6 +295,15 @@ void WidgetBase::UpdateVisualProperties(
             visual_properties.screen_info.device_scale_factor));
   }
 
+  // Inform the rendering thread of the color space indicating the presence of
+  // HDR capabilities. The HDR bit happens to be globally true/false for all
+  // browser windows (on Windows OS) and thus would be the same for all
+  // RenderWidgets, so clobbering each other works out since only the HDR bit is
+  // used. See https://crbug.com/803451 and
+  // https://chromium-review.googlesource.com/c/chromium/src/+/852912/15#message-68bbd3e25c3b421a79cd028b2533629527d21fee
+  Platform::Current()->SetRenderingColorSpace(
+      visual_properties.screen_info.color_space);
+
   LayerTreeHost()->SetBrowserControlsParams(
       visual_properties.browser_controls_params);
 

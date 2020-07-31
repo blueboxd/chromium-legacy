@@ -78,6 +78,9 @@ export class InkController extends ContentController {
   }
 
   /** @override */
+  setDisplayAnnotations(displayAnnotations) {}
+
+  /** @override */
   setTwoUpView(enableTwoUpView) {
     // TODO(dstockwell): Implement two up view.
   }

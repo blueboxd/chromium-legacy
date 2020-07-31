@@ -106,15 +106,14 @@ class SiteDataCacheFacadeTest : public testing::TestWithPerformanceManager {
   void SetUp() override {
     testing::TestWithPerformanceManager::SetUp();
     profile_ = std::make_unique<TestingProfile>();
-    facade_factory_ = base::WrapUnique(new SiteDataCacheFacadeFactory());
     use_in_memory_db_for_testing_ =
         LevelDBSiteDataStore::UseInMemoryDBForTesting();
   }
 
   void TearDown() override {
     use_in_memory_db_for_testing_.reset();
-    facade_factory_.reset();
     profile_.reset();
+    SiteDataCacheFacadeFactory::ReleaseInstanceForTesting();
     testing::TestWithPerformanceManager::TearDown();
   }
 
@@ -144,7 +143,6 @@ class SiteDataCacheFacadeTest : public testing::TestWithPerformanceManager {
 
  private:
   std::unique_ptr<TestingProfile> profile_;
-  std::unique_ptr<SiteDataCacheFacadeFactory> facade_factory_;
   std::unique_ptr<base::AutoReset<bool>> use_in_memory_db_for_testing_;
 };
 

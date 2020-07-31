@@ -99,6 +99,7 @@ android_resources("java_resources") {
     "java/res/drawable-xxxhdpi/plus.png",
     "java/res/drawable-xxxhdpi/settings_all_sites.png",
     "java/res/drawable-xxxhdpi/top_round.9.png",
+    "java/res/drawable/ic_business.xml",
     "java/res/drawable/ic_data_viz_grey.xml",
     "java/res/drawable/ic_done_blue.xml",
     "java/res/drawable/ic_eye_crossed.xml",

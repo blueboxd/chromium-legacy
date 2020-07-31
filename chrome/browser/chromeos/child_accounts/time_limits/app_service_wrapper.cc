@@ -123,12 +123,14 @@ bool AppServiceWrapper::IsHiddenArcApp(const AppId& app_id) const {
   bool is_hidden = false;
   const std::string app_service_id = AppServiceIdFromAppId(app_id, profile_);
 
-  GetAppCache().ForEachApp([&is_hidden](const apps::AppUpdate& update) {
-    if (update.Readiness() == apps::mojom::Readiness::kUninstalledByUser)
-      return;
+  GetAppCache().ForOneApp(
+      app_service_id, [&is_hidden](const apps::AppUpdate& update) {
+        if (update.Readiness() == apps::mojom::Readiness::kUninstalledByUser)
+          return;
 
-    is_hidden = update.ShowInLauncher() == apps::mojom::OptionalBool::kFalse;
-  });
+        is_hidden =
+            update.ShowInLauncher() == apps::mojom::OptionalBool::kFalse;
+      });
 
   return is_hidden;
 }

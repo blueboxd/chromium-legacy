@@ -250,6 +250,12 @@ TEST_F(MinimumVersionPolicyHandlerTest, RequirementsNotMetState) {
   // No policy applied yet. Check requirements are satisfied.
   EXPECT_TRUE(GetMinimumVersionPolicyHandler()->RequirementsAreSatisfied());
   EXPECT_FALSE(GetState());
+  EXPECT_FALSE(GetMinimumVersionPolicyHandler()->GetTimeRemainingInDays());
+
+  // This is needed to wait till EOL status is fetched from the update_engine.
+  base::RunLoop run_loop;
+  GetMinimumVersionPolicyHandler()->set_fetch_eol_callback_for_testing(
+      run_loop.QuitClosure());
 
   // Create policy value as a list of requirements.
   base::Value requirement_list(base::Value::Type::LIST);
@@ -269,17 +275,22 @@ TEST_F(MinimumVersionPolicyHandlerTest, RequirementsNotMetState) {
   // requirement as defined in the policy description.
   SetPolicyPref(CreatePolicyValue(std::move(requirement_list),
                                   false /* unmanaged_user_restricted */));
+  run_loop.Run();
 
   EXPECT_FALSE(GetMinimumVersionPolicyHandler()->RequirementsAreSatisfied());
   EXPECT_TRUE(GetState());
   EXPECT_TRUE(strongest_requirement);
   EXPECT_EQ(GetState()->Compare(strongest_requirement.get()), 0);
+  EXPECT_TRUE(GetMinimumVersionPolicyHandler()->GetTimeRemainingInDays());
+  EXPECT_EQ(GetMinimumVersionPolicyHandler()->GetTimeRemainingInDays().value(),
+            kShortWarning);
 
   // Reset the pref to empty list and verify state is reset.
   base::Value requirement_list2(base::Value::Type::LIST);
   SetPolicyPref(std::move(requirement_list2));
   EXPECT_TRUE(GetMinimumVersionPolicyHandler()->RequirementsAreSatisfied());
   EXPECT_FALSE(GetState());
+  EXPECT_FALSE(GetMinimumVersionPolicyHandler()->GetTimeRemainingInDays());
 }
 
 TEST_F(MinimumVersionPolicyHandlerTest, CriticalUpdates) {

@@ -14,7 +14,6 @@
 <translation id="1084365883616172403">Mezua Facebook-en argitaratu da.</translation>
 <translation id="1103523840287552314">Itzuli <ph name="LANGUAGE" /> beti</translation>
 <translation id="1104948393051856124">Onartu eta jarraitu</translation>
-<translation id="1105578556867525047">Aldatu pasahitza webgunean</translation>
 <translation id="1112015203684611006">Ezin izan da inprimatu.</translation>
 <translation id="1125564390852150847">Sortu beste fitxa bat.</translation>
 <translation id="1145536944570833626">Ezabatu lehendik dauden datuak.</translation>
@@ -245,7 +244,6 @@ Ezkutuko moduan zaudenean, webguneek ezin dituzte erabili cookieak beste webgune
 <translation id="3783017676699494206">Gorde irudia</translation>
 <translation id="3789841737615482174">Instalatu</translation>
 <translation id="3803696231112616155">Eskaini webgunea itzultzea</translation>
-<translation id="3836313059960742452">{COUNT,plural, =0{Ez dago pasahitzik arriskuan}=1{{COUNT} pasahitz arriskuan dago}other{{COUNT} pasahitz arriskuan daude}}</translation>
 <translation id="385051799172605136">Atzera</translation>
 <translation id="3892144330757387737">Historia aurkituko duzu hemen</translation>
 <translation id="3897092660631435901">Menua</translation>
@@ -332,6 +330,7 @@ Ezarpena aldatzeko, <ph name="BEGIN_LINK" />berrezarri sinkronizazioa<ph name="E
 <translation id="4901778704868714008">Gorde…</translation>
 <translation id="4904877109095351937">Markatu irakurritako gisa</translation>
 <translation id="4930268273022498155">Ezabatu lehendik dauden datuak. Haiek berreskuratzeko, aldatu berriro <ph name="USER_EMAIL1" /> kontura.</translation>
+<translation id="4930714375720679147">Aktibatu</translation>
 <translation id="4941089862236492464">Arazo bat izan da elementua partekatzean.</translation>
 <translation id="4944543191714094452">Bilatu orrian…</translation>
 <translation id="4945756290001680296">Atzitu pasahitzen ezarpenak</translation>
@@ -610,6 +609,7 @@ Webguneek cookieak erabil ditzakete beste webguneetan egiten dituzun arakatze-ja
 <translation id="8073670137947914548">Deskargatu da</translation>
 <translation id="8073872304774253879">Hobetu bilaketak eta arakatze-jarduerak</translation>
 <translation id="8076014560081431679">Ez dira ezabatuko webgunearen gordetako ezarpenak, eta baliteke arakatze-ohiturak islatzea. <ph name="BEGIN_LINK" />Lortu informazio gehiago<ph name="END_LINK" /></translation>
+<translation id="8105368624971345109">Desaktibatu</translation>
 <translation id="8114753159095730575">Fitxategi bat deskargatzeko prest dago. Pantailaren behealdean agertzen dira horretarako aukerak.</translation>
 <translation id="8131740175452115882">Berretsi</translation>
 <translation id="8197543752516192074">Itzuli orria</translation>

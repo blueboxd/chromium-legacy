@@ -694,6 +694,12 @@ config("compiler") {
     ldflags += [ "-Wl,--no-rosegment" ]
   }
 
+  # Don't do call-graph-sorted binary layout on Android, as that increases the
+  # binary size due to more thunks for long jumps.
+  if (use_lld && is_android) {
+    ldflags += [ "-Wl,--no-call-graph-profile-sort" ]
+  }
+
   # This flag enforces that member pointer base types are complete. It helps
   # prevent us from running into problems in the Microsoft C++ ABI (see
   # https://crbug.com/847724).

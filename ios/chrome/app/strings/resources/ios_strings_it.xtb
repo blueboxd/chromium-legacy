@@ -14,7 +14,6 @@
 <translation id="1084365883616172403">Pubblicazione su Facebook completata.</translation>
 <translation id="1103523840287552314">Traduci sempre <ph name="LANGUAGE" /></translation>
 <translation id="1104948393051856124">Accetta e continua</translation>
-<translation id="1105578556867525047">Cambia la password sul sito web</translation>
 <translation id="1112015203684611006">Stampa non riuscita.</translation>
 <translation id="1125564390852150847">Crea una nuova scheda.</translation>
 <translation id="1145536944570833626">Elimina dati esistenti.</translation>
@@ -245,7 +244,6 @@ In modalità di navigazione in incognito, i siti non possono utilizzare i cookie
 <translation id="3783017676699494206">Salva immagine</translation>
 <translation id="3789841737615482174">Installa</translation>
 <translation id="3803696231112616155">Proponi di tradurre questo sito</translation>
-<translation id="3836313059960742452">{COUNT,plural, =0{Nessuna password compromessa}=1{{COUNT} password compromessa}other{{COUNT} password compromesse}}</translation>
 <translation id="385051799172605136">Indietro</translation>
 <translation id="3892144330757387737">Qui troverai la tua cronologia</translation>
 <translation id="3897092660631435901">Menu</translation>
@@ -332,6 +330,7 @@ Per cambiare questa impostazione, <ph name="BEGIN_LINK" />reimposta la sincroniz
 <translation id="4901778704868714008">Salva…</translation>
 <translation id="4904877109095351937">Segna come già letti</translation>
 <translation id="4930268273022498155">Elimina i dati esistenti. Puoi recuperarli tornando all'account <ph name="USER_EMAIL1" />.</translation>
+<translation id="4930714375720679147">Attiva</translation>
 <translation id="4941089862236492464">Spiacenti, si è verificato un problema di condivisione.</translation>
 <translation id="4944543191714094452">Trova nella pagina…</translation>
 <translation id="4945756290001680296">Accedi alle impostazioni della password</translation>
@@ -610,6 +609,7 @@ I siti possono utilizzare i cookie per conoscere la tua attività di navigazione
 <translation id="8073670137947914548">Download terminato</translation>
 <translation id="8073872304774253879">Migliora le ricerche e le attività di navigazione</translation>
 <translation id="8076014560081431679">Le impostazioni del sito salvate non verranno eliminate e potrebbero rispecchiare le tue abitudini di navigazione. <ph name="BEGIN_LINK" />Ulteriori informazioni<ph name="END_LINK" /></translation>
+<translation id="8105368624971345109">Disattiva</translation>
 <translation id="8114753159095730575">È possibile il download dei file. Le opzioni sono disponibili nella parte inferiore della schermata.</translation>
 <translation id="8131740175452115882">Conferma</translation>
 <translation id="8197543752516192074">Traduci la pagina</translation>

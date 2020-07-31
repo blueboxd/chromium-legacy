@@ -1161,7 +1161,6 @@ Kontu honen ezarpenak kudeatzeko, instalatu Family Link aplikazioa zure gailuan.
 <translation id="2408955596600435184">Idatzi PIN kodea</translation>
 <translation id="241082044617551207">Plugin ezezaguna</translation>
 <translation id="2412593942846481727">Eguneratu egin daiteke</translation>
-<translation id="2414499877591062094">Gaitu PIN kodearen bidalketa automatikoa</translation>
 <translation id="2416435988630956212">Teklatuko funtzio-teklak</translation>
 <translation id="241727068219398187">Google pasahitzarekin enkriptatu dira datuak data honetatik aurrera:
           <ph name="TIME" />. Ez dira hartzen barne Google Pay-ko ordainketa-metodoak eta helbideak.</translation>
@@ -3398,7 +3397,6 @@ Kontu honen ezarpenak kudeatzeko, instalatu Family Link aplikazioa zure gailuan.
 <translation id="5241128660650683457">Irakurri bisitatzen dituzun webguneetan dituzun datu guztiak</translation>
 <translation id="5242724311594467048">"<ph name="EXTENSION_NAME" />" gaitu nahi duzu?</translation>
 <translation id="5243522832766285132">Saiatu berriro minutu gutxi batzuk barru</translation>
-<translation id="5244406554036143958">Idatzi PIN kodea bidalketa automatikoa gaitzeko</translation>
 <translation id="5244474230056479698"><ph name="EMAIL" /> kontuarekin sinkronizatzen ari da</translation>
 <translation id="5245610266855777041">Hasi ikastetxeko kontu bat erabiltzen</translation>
 <translation id="5246282308050205996"><ph name="APP_NAME" /> aplikazioak huts egin du. Aplikazioa berrezartzeko, sakatu globo hau.</translation>

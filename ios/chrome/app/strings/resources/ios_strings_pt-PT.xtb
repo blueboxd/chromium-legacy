@@ -14,7 +14,6 @@
 <translation id="1084365883616172403">Publicação no Facebook concluída.</translation>
 <translation id="1103523840287552314">Traduzir sempre <ph name="LANGUAGE" /></translation>
 <translation id="1104948393051856124">Aceitar e Continuar</translation>
-<translation id="1105578556867525047">Alterar palavra-passe no Website</translation>
 <translation id="1112015203684611006">Falha ao imprimir.</translation>
 <translation id="1125564390852150847">Criar novo separador</translation>
 <translation id="1145536944570833626">Eliminar dados existentes.</translation>
@@ -246,7 +245,6 @@ Quando estiver na Navegação anónima, os sites não podem utilizar cookies par
 <translation id="3783017676699494206">Guardar Imagem</translation>
 <translation id="3789841737615482174">Instalar</translation>
 <translation id="3803696231112616155">Propor tradução deste site</translation>
-<translation id="3836313059960742452">{COUNT,plural, =0{Não existem palavras-passe comprometidas.}=1{{COUNT} palavra-passe comprometida.}other{{COUNT} palavras-passe comprometidas.}}</translation>
 <translation id="385051799172605136">Anterior</translation>
 <translation id="3892144330757387737">O seu histórico será apresentado aqui</translation>
 <translation id="3897092660631435901">Menu</translation>
@@ -333,6 +331,7 @@ Para alterar esta definição, <ph name="BEGIN_LINK" />reponha a sincronização
 <translation id="4901778704868714008">Guardar…</translation>
 <translation id="4904877109095351937">Marcar como lidas</translation>
 <translation id="4930268273022498155">Eliminar os dados existentes. Pode obtê-los ao mudar novamente para <ph name="USER_EMAIL1" />.</translation>
+<translation id="4930714375720679147">Ativar</translation>
 <translation id="4941089862236492464">Lamentamos, mas ocorreu um erro ao partilhar o seu item.</translation>
 <translation id="4944543191714094452">Localizar na página…</translation>
 <translation id="4945756290001680296">Aceder às definições de palavras-passe</translation>
@@ -611,6 +610,7 @@ Os sites podem utilizar cookies para ver a sua atividade de navegação em difer
 <translation id="8073670137947914548">Transferência concluída</translation>
 <translation id="8073872304774253879">Melhorar as pesquisas e a navegação</translation>
 <translation id="8076014560081431679">As definições de sites guardadas não são eliminadas e podem refletir os seus hábitos de navegação. <ph name="BEGIN_LINK" />Saiba mais<ph name="END_LINK" /></translation>
+<translation id="8105368624971345109">Desativar</translation>
 <translation id="8114753159095730575">A transferência de ficheiros está disponível. Opções disponíveis junto à parte inferior do ecrã.</translation>
 <translation id="8131740175452115882">Confirmar</translation>
 <translation id="8197543752516192074">Traduzir página</translation>

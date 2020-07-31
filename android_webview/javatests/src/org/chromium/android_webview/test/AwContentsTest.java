@@ -37,6 +37,7 @@ import org.chromium.android_webview.renderer_priority.RendererPriority;
 import org.chromium.android_webview.test.TestAwContentsClient.OnDownloadStartHelper;
 import org.chromium.android_webview.test.util.CommonResources;
 import org.chromium.base.BuildInfo;
+import org.chromium.base.Log;
 import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.base.test.util.CallbackHelper;
 import org.chromium.base.test.util.CommandLineFlags;
@@ -55,6 +56,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.Semaphore;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.TimeoutException;
 import java.util.concurrent.atomic.AtomicInteger;
 
 /**
@@ -62,6 +64,8 @@ import java.util.concurrent.atomic.AtomicInteger;
  */
 @RunWith(AwJUnit4ClassRunner.class)
 public class AwContentsTest {
+    private static final String TAG = "AwContentsTest";
+
     @Rule
     public AwActivityTestRule mActivityTestRule = new AwActivityTestRule();
 
@@ -837,7 +841,12 @@ public class AwContentsTest {
                     callbackHelper.notifyCalled();
                 });
             });
-            callbackHelper.waitForFirst();
+            try {
+                callbackHelper.waitForFirst();
+            } catch (TimeoutException e) {
+                Log.w(TAG, "Timeout", e);
+                continue;
+            }
             int[] quadrantColors = (int[]) resultHolder[0];
             lastQuadrantColors = quadrantColors;
             if (quadrantColors != null && Color.rgb(255, 0, 0) == quadrantColors[0]

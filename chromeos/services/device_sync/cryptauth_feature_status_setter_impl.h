@@ -19,17 +19,14 @@
 #include "chromeos/services/device_sync/cryptauth_feature_status_setter.h"
 #include "chromeos/services/device_sync/feature_status_change.h"
 #include "chromeos/services/device_sync/network_request_error.h"
-#include "chromeos/services/device_sync/proto/cryptauth_client_app_metadata.pb.h"
 #include "chromeos/services/device_sync/proto/cryptauth_devicesync.pb.h"
 
 namespace chromeos {
 
 namespace device_sync {
 
-class ClientAppMetadataProvider;
 class CryptAuthClient;
 class CryptAuthClientFactory;
-class CryptAuthGCMManager;
 
 // An implementation of CryptAuthFeatureStatusSetter, using instances of
 // CryptAuthClient to make the BatchSetFeatureStatuses API calls to CryptAuth.
@@ -41,9 +38,9 @@ class CryptAuthFeatureStatusSetterImpl : public CryptAuthFeatureStatusSetter {
   class Factory {
    public:
     static std::unique_ptr<CryptAuthFeatureStatusSetter> Create(
-        ClientAppMetadataProvider* client_app_metadata_provider,
+        const std::string& instance_id,
+        const std::string& instance_id_token,
         CryptAuthClientFactory* client_factory,
-        CryptAuthGCMManager* gcm_manager,
         std::unique_ptr<base::OneShotTimer> timer =
             std::make_unique<base::OneShotTimer>());
 
@@ -52,9 +49,9 @@ class CryptAuthFeatureStatusSetterImpl : public CryptAuthFeatureStatusSetter {
    protected:
     virtual ~Factory();
     virtual std::unique_ptr<CryptAuthFeatureStatusSetter> CreateInstance(
-        ClientAppMetadataProvider* client_app_metadata_provider,
+        const std::string& instance_id,
+        const std::string& instance_id_token,
         CryptAuthClientFactory* client_factory,
-        CryptAuthGCMManager* gcm_manager,
         std::unique_ptr<base::OneShotTimer> timer) = 0;
 
    private:
@@ -64,11 +61,7 @@ class CryptAuthFeatureStatusSetterImpl : public CryptAuthFeatureStatusSetter {
   ~CryptAuthFeatureStatusSetterImpl() override;
 
  private:
-  enum class State {
-    kIdle,
-    kWaitingForClientAppMetadata,
-    kWaitingForBatchSetFeatureStatusesResponse
-  };
+  enum class State { kIdle, kWaitingForBatchSetFeatureStatusesResponse };
 
   friend std::ostream& operator<<(std::ostream& stream, const State& state);
 
@@ -92,11 +85,10 @@ class CryptAuthFeatureStatusSetterImpl : public CryptAuthFeatureStatusSetter {
     base::OnceCallback<void(NetworkRequestError)> error_callback;
   };
 
-  CryptAuthFeatureStatusSetterImpl(
-      ClientAppMetadataProvider* client_app_metadata_provider,
-      CryptAuthClientFactory* client_factory,
-      CryptAuthGCMManager* gcm_manager,
-      std::unique_ptr<base::OneShotTimer> timer);
+  CryptAuthFeatureStatusSetterImpl(const std::string& instance_id,
+                                   const std::string& instance_id_token,
+                                   CryptAuthClientFactory* client_factory,
+                                   std::unique_ptr<base::OneShotTimer> timer);
 
   // CryptAuthFeatureStatusSetter:
   void SetFeatureStatus(
@@ -110,9 +102,6 @@ class CryptAuthFeatureStatusSetterImpl : public CryptAuthFeatureStatusSetter {
   void OnTimeout();
 
   void ProcessRequestQueue();
-  void OnClientAppMetadataFetched(
-      const base::Optional<cryptauthv2::ClientAppMetadata>&
-          client_app_metadata);
   void OnBatchSetFeatureStatusesSuccess(
       const cryptauthv2::BatchSetFeatureStatusesResponse& response);
   void OnBatchSetFeatureStatusesFailure(NetworkRequestError error);
@@ -120,12 +109,11 @@ class CryptAuthFeatureStatusSetterImpl : public CryptAuthFeatureStatusSetter {
 
   State state_ = State::kIdle;
   base::TimeTicks last_state_change_timestamp_;
-  base::Optional<cryptauthv2::ClientAppMetadata> client_app_metadata_;
   base::queue<Request> pending_requests_;
 
-  ClientAppMetadataProvider* client_app_metadata_provider_ = nullptr;
+  std::string instance_id_;
+  std::string instance_id_token_;
   CryptAuthClientFactory* client_factory_ = nullptr;
-  CryptAuthGCMManager* gcm_manager_ = nullptr;
   std::unique_ptr<CryptAuthClient> cryptauth_client_;
   std::unique_ptr<base::OneShotTimer> timer_;
   base::WeakPtrFactory<CryptAuthFeatureStatusSetterImpl> weak_ptr_factory_{

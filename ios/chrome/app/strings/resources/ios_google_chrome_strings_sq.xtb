@@ -11,6 +11,7 @@
 <translation id="2147651015520127414">Chrome verifikoi që <ph name="ISSUER" /> ka lëshuar certifikatën e këtij sajti të uebit.</translation>
 <translation id="2199719347983604670">Të dhënat nga "Sinkronizimi i Chrome"</translation>
 <translation id="2347208864470321755">Kur ky funksion është i aktivizuar, Chrome do të ofrojë që të përkthejë faqet e shkruara në gjuhë të tjera duke përdorur "Përkthe me Google". <ph name="BEGIN_LINK" />Mëso më shumë<ph name="END_LINK" /></translation>
+<translation id="2415682770504543561">Bëje Chrome shfletuesin tënd të parazgjedhur</translation>
 <translation id="2574249610672786438">Për të parë skedat e tua nga çdo vend ku përdor Chrome, identifikohu në të gjitha pajisjet e tua</translation>
 <translation id="2576431527583832481">Chrome sapo është përmirësuar! Ofrohet një version i ri.</translation>
 <translation id="257708665678654955">Dëshiron që Google Chrome të ofrojë përkthimin e faqeve në <ph name="LANGUAGE_NAME" /> nga ky sajt herën tjetër?</translation>
@@ -24,6 +25,7 @@
 <translation id="3282568296779691940">Identifikohu në Chrome</translation>
 <translation id="3345341804167540816">Përdor Chrome kudo</translation>
 <translation id="3522659714780527202">Për të parë skedat e tua nga çdo vend ku përdor Chrome, aktivizo sinkronizimin</translation>
+<translation id="3706101708757577809">Tani mund të përdorësh Chrome sa herë që troket te lidhjet në mesazhe, dokumente dhe aplikacione të tjera.</translation>
 <translation id="384394811301901750">Google Chrome nuk mund të përdorë kamerën tënde për momentin</translation>
 <translation id="3980220367029651214">Po i ndërron llogaritë e sinkronizimit nga <ph name="USER_EMAIL1" /> te <ph name="USER_EMAIL2" />. Të dhënat ekzistuese të Chrome po menaxhohen nga <ph name="DOMAIN" />. Kjo do t'i fshijë të dhënat e tua nga kjo pajisje, por të dhënat e tua do të mbeten në <ph name="USER_EMAIL1" />.</translation>
 <translation id="3988789688219830639">Google Chrome nuk ka qasje te fotografitë apo videot e tua. Aktivizo qasjen te Cilësimet e iOS &gt; Privatësia &gt; Fotografitë.</translation>
@@ -43,6 +45,10 @@
 <translation id="6600954340915313787">Kopjuar në Chrome</translation>
 <translation id="6648150602980899529">Po identifikohesh me një llogari të menaxhuar nga <ph name="DOMAIN" /> dhe po i jep administratorit të saj kontroll mbi të dhënat e tua të Chrome. Duke dalë nga Chrome do të fshihen të dhënat e tua nga kjo pajisje, por do të mbeten të ruajtura në llogarinë tënde të Google.</translation>
 <translation id="6676840375528380067">Të pastrohen të dhënat e tua të Chrome nga kjo pajisje?</translation>
+<translation id="6724102885918156196">Për ta bërë Chrome shfletuesin e parazgjedhur:
+        1. Hap "Cilësimet". 
+        2. Trokit tek "Aplikacioni i parazgjedhur i shfletuesit".
+        3. Zgjidh Chrome.</translation>
 <translation id="7165736900384873061">Fillo të përdorësh skanerin e kodit QR të Google Chrome</translation>
 <translation id="7172660552945675509">Këshillë: <ph name="BEGIN_LINK" />Zhvendose Chrome te stacioni yt<ph name="END_LINK" /></translation>
 <translation id="7173114856073700355">Hap cilësimet</translation>

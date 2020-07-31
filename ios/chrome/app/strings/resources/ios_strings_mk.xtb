@@ -14,7 +14,6 @@
 <translation id="1084365883616172403">Објавата на Facebook е завршена.</translation>
 <translation id="1103523840287552314">Секогаш преведувај <ph name="LANGUAGE" /></translation>
 <translation id="1104948393051856124">Прифати и продолжи</translation>
-<translation id="1105578556867525047">Променете ја лозинката на веб-сајтот</translation>
 <translation id="1112015203684611006">Печатењето не успеа.</translation>
 <translation id="1125564390852150847">Создај нова картичка.</translation>
 <translation id="1145536944570833626">Избришете ги постоечките податоци.</translation>
@@ -246,7 +245,6 @@
 <translation id="3783017676699494206">Зачувај слика</translation>
 <translation id="3789841737615482174">Инсталирај</translation>
 <translation id="3803696231112616155">Понудувај да го преведеш сајтов</translation>
-<translation id="3836313059960742452">{COUNT,plural, =0{Немате компромитирани лозинки}=1{{COUNT} компромитирана лозинка}one{{COUNT} компромитирана лозинка}other{{COUNT} компромитирани лозинки}}</translation>
 <translation id="385051799172605136">Назад</translation>
 <translation id="3892144330757387737">Вашата историја ќе ја најдете тука</translation>
 <translation id="3897092660631435901">Мени</translation>
@@ -333,6 +331,7 @@
 <translation id="4901778704868714008">Зачувај…</translation>
 <translation id="4904877109095351937">Означи како прочитано</translation>
 <translation id="4930268273022498155">Избришете ги постоечките податоци. Може да ги вратите префрлајќи се назад на <ph name="USER_EMAIL1" />.</translation>
+<translation id="4930714375720679147">Вклучи</translation>
 <translation id="4941089862236492464">Се извинуваме, настана проблем при споделување на ставката.</translation>
 <translation id="4944543191714094452">Најди на страницата…</translation>
 <translation id="4945756290001680296">Пристапете до поставките за лозинка</translation>
@@ -611,6 +610,7 @@ Handoff мора да биде овозможен и во Општиот дел 
 <translation id="8073670137947914548">Преземањето заврши</translation>
 <translation id="8073872304774253879">Подобрете ги пребарувањата и прелистувањето</translation>
 <translation id="8076014560081431679">Поставките на зачуваните сајтови нема да се избришат и може да ги отсликуваат вашите навики за прелистување. <ph name="BEGIN_LINK" />Дознајте повеќе<ph name="END_LINK" /></translation>
+<translation id="8105368624971345109">Исклучи</translation>
 <translation id="8114753159095730575">Достапна е датотека за преземање. Достапни се опции на дното на екранот.</translation>
 <translation id="8131740175452115882">Потврди</translation>
 <translation id="8197543752516192074">Преведи ја страницата</translation>

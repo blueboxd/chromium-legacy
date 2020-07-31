@@ -1121,6 +1121,7 @@
 <translation id="2352662711729498748">&lt; 1 MB</translation>
 <translation id="2352810082280059586">ចំណាំ​អេក្រង់​ចាក់សោ​ត្រូវ​បាន​រក្សាទុក​ទៅ​ក្នុង <ph name="LOCK_SCREEN_APP_NAME" /> ដោយស្វ័យប្រវត្តិ។ ចំណាំថ្មី​បំផុត​របស់អ្នក​នឹងនៅតែមាន​នៅលើ​អេក្រង់​ចាក់​សោ​ដដែល។</translation>
 <translation id="2353297238722298836">បាន​អនុញ្ញាត​ឱ្យប្រើ​កាមេរ៉ា និង​មីក្រូហ្វូន</translation>
+<translation id="2355314311311231464">ការផ្ដល់មិនបានសម្រេច ដោយសារមិនអាចទាញយកព័ត៌មានលម្អិតអំពីគណនីរបស់អ្នកបានទេ។ សូមព្យាយាមម្ដងទៀត។ លេខ​កូដ​បញ្ហា៖ <ph name="ERROR_CODE" />។</translation>
 <translation id="2355604387869345912">បើក​ការភ្ជាប់​ភ្លាមៗ</translation>
 <translation id="2356070529366658676">សួរ</translation>
 <translation id="2357330829548294574">លុប <ph name="USER_NAME" /> ចេញ</translation>
@@ -1161,7 +1162,6 @@
 <translation id="2408955596600435184">បញ្ចូល​កូដ PIN របស់​អ្នក</translation>
 <translation id="241082044617551207">កម្មវិធីជំនួយដែលមិនស្គាល់</translation>
 <translation id="2412593942846481727">មាន​កំណែថ្មី</translation>
-<translation id="2414499877591062094">បើកការដាក់បញ្ជូនកូដ PIN ដោយស្វ័យប្រវត្តិ</translation>
 <translation id="2416435988630956212">គ្រាប់ចុច​មុខងារ​នៅលើក្ដារចុច</translation>
 <translation id="241727068219398187">ទិន្នន័យត្រូវបានអ៊ីនគ្រីបដោយប្រើពាក្យសម្ងាត់ Google របស់អ្នក ពីថ្ងៃទី
           <ph name="TIME" />។ ការ​អ៊ីនគ្រីបនេះមិន​រួមបញ្ចូល​អាសយដ្ឋាន និងវិធីបង់ប្រាក់​ពី Google Pay ទេ។</translation>
@@ -1216,6 +1216,7 @@
 <translation id="2473195200299095979">បកប្រែទំព័រនេះ</translation>
 <translation id="2475982808118771221">កំហុសឆ្គងមួយបានកើតឡើង</translation>
 <translation id="2476578072172137802">ការកំណត់គេហទំព័រ</translation>
+<translation id="2476974672882258506">បិទ Windows ដើម្បីលុប <ph name="PARALLELS_DESKTOP" />។</translation>
 <translation id="2478176599153288112">ការអនុញ្ញាតឯកសារកំសាន្តសម្រាប់ "<ph name="EXTENSION" />"</translation>
 <translation id="247949520305900375">ចែករំលែកសម្លេង</translation>
 <translation id="248003956660572823">មិនបាន​រក្សាទុក​ពាក្យសម្ងាត់​ទេ</translation>
@@ -1306,6 +1307,7 @@
 <translation id="2572032849266859634">ការចូលប្រើការអានប៉ុណ្ណោះលើ <ph name="VOLUME_NAME" /> ត្រូវបានផ្តល់ជូន។</translation>
 <translation id="2575247648642144396">រូបតំណាងនេះនឹងអាចមើលឃើញ នៅពេលកម្មវិធីបន្ថែមអាចធ្វើសកម្មភាពនៅលើទំព័របច្ចុប្បន្ន។ ប្រើកម្មវិធីបន្ថែមនេះដោយការចុចនៅលើរូបតំណាងនេះ ដោយការចុច <ph name="EXTENSION_SHORTCUT" />។</translation>
 <translation id="257779572837908839">រៀបចំជា Chromebox សម្រាប់ការប្រជុំ</translation>
+<translation id="2579232805407578790">មិនអាច​ភ្ជាប់ជាមួយ​ម៉ាស៊ីនមេបានទេ។ សូម​ពិនិត្យ​មើល​ការ​តភ្ជាប់​បណ្ដាញ​របស់​អ្នក​ រួច​ព្យាយាម​ម្ដង​ទៀត​។ ប្រសិនបើបញ្ហានៅតែបន្តកើតមាន សូមចាប់ផ្ដើម Chromebook របស់អ្នក​ឡើងវិញ។ លេខ​កូដ​បញ្ហា៖ <ph name="ERROR_CODE" />។</translation>
 <translation id="2580889980133367162">អនុញ្ញាតឲ្យ <ph name="HOST" /> ទាញយកឯកសារច្រើនជានិច្ច</translation>
 <translation id="258095186877893873">វែង</translation>
 <translation id="2582253231918033891"><ph name="PRODUCT_NAME" /> <ph name="PRODUCT_VERSION" /> (អង្គប្រតិបត្តិការ <ph name="PLATFORM_VERSION" />) <ph name="DEVICE_SERIAL_NUMBER" /></translation>
@@ -1525,6 +1527,7 @@
 <translation id="2836635946302913370">ការចូលដោយជាមួយឈ្មោះអ្នកប្រើនេះត្រូវបាន</translation>
 <translation id="283669119850230892">ដើម្បីប្រើបណ្តាញ <ph name="NETWORK_ID" /> ជាដំបូងបំពេញការភ្ជាប់របស់អ្នកទៅអ៊ីនធឺណិតខាងក្រោម។</translation>
 <translation id="2838379631617906747">កំពុងដំឡើង</translation>
+<translation id="2838835911926931318">ចូលគណនី ដើម្បីធ្វើសមកាលកម្ម​ចំណាំ ពាក្យសម្ងាត់ ប្រវត្តិរបស់អ្នក និងអ្វីៗជាច្រើនទៀត​នៅលើឧបករណ៍ទាំងអស់​របស់អ្នក</translation>
 <translation id="2839032553903800133">បាន​ទប់ស្កាត់​ការជូនដំណឹង</translation>
 <translation id="2841013758207633010">ពេលវេលា</translation>
 <translation id="2841837950101800123">ក្រុមហ៊ុនផ្តល់សេវាកម្ម</translation>
@@ -1584,6 +1587,7 @@
     សារពីម៉ាស៊ីនមេ៖ <ph name="SERVER_MSG" /></translation>
 <translation id="2908162660801918428">បន្ថែមវិចិត្រសាលកំសាន្តតាមថតឯកសារ</translation>
 <translation id="2910318910161511225">សូមភ្ជាប់​បណ្តាញ រួច​ព្យាយាម​ម្តងទៀត</translation>
+<translation id="2910718431259223434">មានអ្វីមួយខុសប្រក្រតី។ សូម​ព្យាយាម​ម្ដងទៀត ឬ​ទាក់ទង​អ្នកគ្រប់គ្រង ឬម្ចាស់ឧបករណ៍របស់អ្នក។ លេខ​កូដ​បញ្ហា៖ <ph name="ERROR_CODE" />។</translation>
 <translation id="2913331724188855103">អនុញ្ញាតឲ្យគេហទំព័ររក្សាទុក និងអានទិន្នន័យខុកឃី (បានណែនាំ)</translation>
 <translation id="2915102088417824677">មើល​កំណត់ហេតុ​សកម្មភាព</translation>
 <translation id="2915873080513663243">ស្កេនដោយស្វ័យប្រវត្តិ</translation>
@@ -2323,6 +2327,7 @@
 <translation id="3821372858277557370">{NUM_EXTENSIONS,plural, =1{កម្មវិធីបន្ថែមមួយ​ត្រូវបាន​អនុញ្ញាតហើយ}other{កម្មវិធីបន្ថែម # ត្រូវបាន​អនុញ្ញាតហើយ}}</translation>
 <translation id="3822559385185038546">ប្រូកស៊ី​នេះ​ត្រូវបាន​អនុវត្ត​ដោយ​អ្នកគ្រប់គ្រង​របស់​អ្នក</translation>
 <translation id="3823310065043511710">យ៉ាងហោច​ណាស់ <ph name="INSTALL_SIZE" /> នៃទំហំផ្ទុក​ត្រូវបានណែនាំឱ្យប្រើ​សម្រាប់ Linux។</translation>
+<translation id="3824621460022590830">ធាតុកូដចុះឈ្មោះឧបករណ៍​មិនត្រឹមត្រូវទេ។ សូមទាក់ទង​អ្នកគ្រប់គ្រង ឬម្ចាស់ឧបករណ៍​របស់អ្នក។ លេខ​កូដ​បញ្ហា៖ <ph name="ERROR_CODE" />។</translation>
 <translation id="3826440694796503677">អ្នកគ្រប់គ្រង​របស់អ្នក​បានបិទ​ការបញ្ចូល​គណនី Google បន្ថែម</translation>
 <translation id="3827306204503227641">បន្តអនុញ្ញាតកម្មវិធីជំនួយដែលមិនបានសេនបក់</translation>
 <translation id="3827774300009121996">ពេញអេក្រង់</translation>
@@ -3276,6 +3281,7 @@
 <translation id="5079950360618752063">ប្រើពាក្យសម្ងាត់​ដែល​បាន​ណែនាំ</translation>
 <translation id="508059534790499809">ផ្ទុកសំបុត្រ Kerberos ឡើងវិញ</translation>
 <translation id="5084230410268011727">អនុញ្ញាត​ឱ្យ​ទំព័រ​ប្រើ​ឧបករណ៍​ចាប់សញ្ញា​ពន្លឺ និងចលនា</translation>
+<translation id="5084328598860513926">ដំណើរការផ្ដល់​ត្រូវបានកាត់ផ្ដាច់។ សូម​ព្យាយាម​ម្ដងទៀត ឬ​ទាក់ទង​អ្នកគ្រប់គ្រង ឬម្ចាស់ឧបករណ៍របស់អ្នក។ លេខ​កូដ​បញ្ហា៖ <ph name="ERROR_CODE" />។</translation>
 <translation id="5085162214018721575">កំពុងពិនិត្យរកការធ្វើបច្ចុប្បន្នភាព</translation>
 <translation id="5086082738160935172">HID</translation>
 <translation id="5086874064903147617">ស្តារទំព័រដើមលំនាំដើម?</translation>
@@ -3398,7 +3404,6 @@
 <translation id="5241128660650683457">អានទិន្នន័យរបស់អ្នកទាំងអស់នៅលើគេហទំព័រដែលអ្នកបានទៅកាន់។</translation>
 <translation id="5242724311594467048">បើកដំណើរការ "<ph name="EXTENSION_NAME" />"?</translation>
 <translation id="5243522832766285132">សូម​ព្យាយាម​ម្ដង​ទៀត​នៅ​ពេល​បន្តិច​ទៀត</translation>
-<translation id="5244406554036143958">បញ្ចូលកូដ PIN របស់អ្នក ដើម្បីបើកការដាក់បញ្ជូនដោយស្វ័យប្រវត្តិ</translation>
 <translation id="5244474230056479698">កំពុងធ្វើសមកាលកម្មទៅ <ph name="EMAIL" /></translation>
 <translation id="5245610266855777041">ចាប់ផ្តើម​ដោយប្រើ​គណនីសាលារៀន</translation>
 <translation id="5246282308050205996"><ph name="APP_NAME" /> បានគាំង។ ចុចប៉េងប៉ោងនេះដើម្បីចាប់ផ្តើមកម្មវិធីនេះឡើងវិញ។</translation>
@@ -3675,6 +3680,7 @@
 <translation id="557722062034137776">ការកំណត់ឧបករណ៍របស់អ្នកឡើងវិញនឹងមិនប៉ះពាល់ដល់គណនី Google របស់អ្នក ឬទិន្នន័យំណាមួយដែលបានធ្វើសមកម្មទៅគណនីទាំងនេះទេ។ ទោះបីជាយ៉ាងណាក៏ដោយ ឯកសារទាំងអស់ដែលបានរក្សាទុកជាមូលដ្ឋាននៅលើឧបករណ៍របស់អ្នកនឹងត្រូវលុប។</translation>
 <translation id="5578059481725149024">ចូល​ដោយស្វ័យប្រវត្តិ</translation>
 <translation id="558170650521898289">ការផ្ទៀងផ្ទាត់ដ្រាយវ័រផ្នែករឹង Microsoft Windows</translation>
+<translation id="5581972110672966454">មិនអាចភ្ជាប់ឧបករណ៍ជាមួយដែនបានទេ។ សូម​ព្យាយាម​ម្ដងទៀត ឬ​ទាក់ទង​អ្នកគ្រប់គ្រង ឬម្ចាស់ឧបករណ៍របស់អ្នក។ លេខ​កូដ​បញ្ហា៖ <ph name="ERROR_CODE" />។</translation>
 <translation id="5582839680698949063">ម៉ឺនុយមេ</translation>
 <translation id="5583640892426849032">Backspace</translation>
 <translation id="5584088138253955452">រក្សាទុកឈ្មោះ​អ្នកប្រើប្រាស់?</translation>
@@ -3748,6 +3754,7 @@
 <translation id="5667546120811588575">កំពុង​រៀបចំ Google Play...</translation>
 <translation id="5669267381087807207">កំពុងធ្វើសកម្មភាព</translation>
 <translation id="5669691691057771421">បញ្ចូលកូដ PIN ថ្មី</translation>
+<translation id="5670702108860320605">BSSID</translation>
 <translation id="5671641761787789573">បានទប់ស្កាត់រូបភាព</translation>
 <translation id="5671658447180261823">លុបការ​ណែនាំ <ph name="SUGGESTION_NAME" /></translation>
 <translation id="567587836466137939">ឧបករណ៍នេះ​នឹងទទួលបាន​កំណែកម្មវិធី និងសុវត្ថិភាពថ្មី​ដោយស្វ័យប្រវត្តិ រហូតដល់ខែ <ph name="MONTH_AND_YEAR" />។ <ph name="LINK_BEGIN" />ស្វែងយល់បន្ថែម<ph name="LINK_END" /></translation>
@@ -5394,6 +5401,7 @@
 <translation id="7764225426217299476">បន្ថែមអាសយដ្ឋាន</translation>
 <translation id="7764256770584298012"><ph name="DOWNLOAD_RECEIVED" /> ពី <ph name="DOWNLOAD_DOMAIN" /></translation>
 <translation id="7765158879357617694">ផ្លាស់ទី</translation>
+<translation id="7766082757934713382">ជួយកាត់បន្ថយ​ការប្រើប្រាស់ទិន្នន័យបណ្ដាញ​ដោយផ្អាកការធ្វើបច្ចុប្បន្នភាពប្រព័ន្ធ និងកម្មវិធីដោយស្វ័យប្រវត្តិ</translation>
 <translation id="7766807826975222231">ចូលទស្សនាស្វែងយល់</translation>
 <translation id="7766838926148951335">ទទួលយក​ការអនុញ្ញាត</translation>
 <translation id="7768770796815395237">ប្ដូរ</translation>
@@ -6305,6 +6313,7 @@
 <translation id="885701979325669005">ឧបករណ៍ផ្ទុកទិន្នន័យ</translation>
 <translation id="8859057652521303089">ជ្រើសរើសភាសារបស់អ្នក៖</translation>
 <translation id="8859174528519900719">ហ្វ្រេមរង៖ <ph name="SUBFRAME_SITE" /></translation>
+<translation id="8859402192569844210">មិនអាចផ្ទុក​លក្ខខណ្ឌប្រើប្រាស់​បានទេ</translation>
 <translation id="8859662783913000679">គណនី​មាតាបិតា</translation>
 <translation id="8862003515646449717">ប្តូរទៅ​កម្មវិធីរុករកតាមអ៊ីនធឺណិតដែលរហ័ស</translation>
 <translation id="8863753581171631212">បើក​តំណ​នៅក្នុង <ph name="APP" /> ថ្មី</translation>
@@ -6573,6 +6582,7 @@
 <translation id="920045321358709304">ស្វែងរក <ph name="SEARCH_ENGINE" /></translation>
 <translation id="9201023452444595544">រាល់​​ទិន្នន័យ​ដែលបានផ្ទុកក្នុងឧបករណ៍​នឹង​ត្រូវបាន​សម្អាត</translation>
 <translation id="9201220332032049474">ជម្រើស​ចាក់សោអេក្រង់</translation>
+<translation id="9201842707396338580">មានអ្វីមួយខុសប្រក្រតី។ សូមទាក់ទង​អ្នកគ្រប់គ្រង ឬម្ចាស់ឧបករណ៍​របស់អ្នក។ លេខ​កូដ​បញ្ហា៖ <ph name="ERROR_CODE" />។</translation>
 <translation id="9203398526606335860">បើកដំណើរការទម្រង់</translation>
 <translation id="9203904171912129171">ជ្រើសរើស​ឧបករណ៍</translation>
 <translation id="9203962528777363226">អ្នកគ្រប់គ្រងឧបករណ៍នេះបានបិទការបន្ថែមអ្នកប្រើថ្មី</translation>
@@ -6644,6 +6654,7 @@
 <translation id="983511809958454316">មិនស្គាល់​មុខងារនេះ​នៅក្នុង VR ទេ</translation>
 <translation id="984275831282074731">វិធី​បង់ប្រាក់</translation>
 <translation id="98515147261107953">ផ្តេក</translation>
+<translation id="987068745968718743">Parallels Desktop៖ <ph name="PLUGIN_VM_NAME" /></translation>
 <translation id="987264212798334818">ទូទៅ</translation>
 <translation id="987897973846887088">មិនមាន​រូបភាពទេ</translation>
 <translation id="988978206646512040">ឃ្លាសម្ងាត់​ដែល​ទទេ​មិនត្រូវ​បាន​អនុញ្ញាត​ទេ</translation>

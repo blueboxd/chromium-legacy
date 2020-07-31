@@ -1118,6 +1118,7 @@
 <translation id="2352662711729498748">&lt; 1 MB</translation>
 <translation id="2352810082280059586">ലോക്ക് സ്‌ക്രീൻ കുറിപ്പുകൾ <ph name="LOCK_SCREEN_APP_NAME" /> എന്നതിലേക്ക് സ്വമേധയാ സംരക്ഷിക്കപ്പെടുന്നു. നിങ്ങൾ ഏറ്റവും സമീപകാലത്ത് എഴുതിയ കുറിപ്പ് ലോക്ക് സ്‌ക്രീനിൽ നിലനിൽക്കും.</translation>
 <translation id="2353297238722298836">ക്യാമറയും മൈക്രോഫോണും അനുവദനീയം</translation>
+<translation id="2355314311311231464">നിങ്ങളുടെ അക്കൗണ്ട് വിശദാംശങ്ങൾ വീണ്ടെടുക്കാനാകാത്തതിനാൽ സജ്ജീകരിക്കാനായില്ല. വീണ്ടും ശ്രമിക്കുക. പിശക് കോഡ്: <ph name="ERROR_CODE" />.</translation>
 <translation id="2355604387869345912">തൽക്ഷണ ടെതറിംഗ് ഓണാക്കുക</translation>
 <translation id="2356070529366658676">ചോദിക്കുക</translation>
 <translation id="2357330829548294574"><ph name="USER_NAME" /> നീക്കം ചെയ്യുക</translation>
@@ -1158,7 +1159,6 @@
 <translation id="2408955596600435184">നിങ്ങളുടെ പിൻ നൽകുക</translation>
 <translation id="241082044617551207">അജ്ഞാത പ്ലഗ് ഇൻ</translation>
 <translation id="2412593942846481727">അപ്‌ഡേറ്റ് ലഭ്യമാണ്</translation>
-<translation id="2414499877591062094">പിൻ സ്വയമേവ സമർപ്പിക്കൽ പ്രവർത്തനക്ഷമമാക്കുക</translation>
 <translation id="2416435988630956212">കീബോർഡ് ഫംഗ്ഷൻ കീകൾ</translation>
 <translation id="241727068219398187"><ph name="TIME" /> മുതലുള്ള ഡാറ്റ നിങ്ങളുടെ Google പാസ്‌വേഡ് ഉപയോഗിച്ച് എൻക്രി‌പ്‌റ്റ് ചെയ്‌തു.
           ഇതിൽ Google Pay-ൽ നിന്നുള്ള പേയ്മെന്‍റ് രീതികളും വിലാസങ്ങളും അടങ്ങുന്നില്ല.</translation>
@@ -1213,6 +1213,7 @@
 <translation id="2473195200299095979">ഈ പേജ് വിവർത്തനം ചെയ്യുക</translation>
 <translation id="2475982808118771221">ഒരു പിശക് സംഭവിച്ചു</translation>
 <translation id="2476578072172137802">സൈറ്റ് ക്രമീകരണങ്ങൾ</translation>
+<translation id="2476974672882258506"><ph name="PARALLELS_DESKTOP" /> അൺഇൻസ്റ്റാൾ ചെയ്യാൻ Windows ഷട്ട് ഡൗൺ ചെയ്യുക.</translation>
 <translation id="2478176599153288112">"<ph name="EXTENSION" />" എന്നതിനായുള്ള മീഡിയ-ഫയൽ അനുമതികൾ</translation>
 <translation id="247949520305900375">ഓഡിയോ പങ്കിടുക</translation>
 <translation id="248003956660572823">പാസ്‌വേഡ് സംരക്ഷിച്ചില്ല</translation>
@@ -1303,6 +1304,7 @@
 <translation id="2572032849266859634"><ph name="VOLUME_NAME" /> എന്നതിലേക്ക് റീഡ് ഒൺലി ആക്‌സസ്സ് അനുവദിച്ചു.</translation>
 <translation id="2575247648642144396">വിപുലീകരണത്തിന് നിലവിലെ പേജിൽ പ്രവർത്തിക്കാൻ കഴിയുമ്പോൾ ഈ ഐക്കൺ ദൃശ്യമാകും. ഐക്കണിൽ ക്ലിക്ക് ചെയ്‌തുകൊണ്ടോ <ph name="EXTENSION_SHORTCUT" /> അമർത്തിക്കൊണ്ടോ ഈ വിപുലീകരണം ഉപയോഗിക്കുക</translation>
 <translation id="257779572837908839">മീറ്റിംഗിനുള്ള Chromebox സജ്ജമാക്കുക</translation>
+<translation id="2579232805407578790">സെർവറുമായി കണക്റ്റ് ചെയ്യാനായില്ല. നിങ്ങളുടെ നെറ്റ്‌വർക്ക് കണക്ഷൻ പരിശോധിച്ച ശേഷം വീണ്ടും ശ്രമിക്കുക. പ്രശ്നം തുടരുന്നുവെങ്കിൽ Chromebook റീസ്റ്റാർട്ട് ചെയ്യുക. പിശക് കോഡ്: <ph name="ERROR_CODE" />.</translation>
 <translation id="2580889980133367162">എല്ലായ്‌പ്പോഴും ഒന്നിലധികം ഫയലുകൾ ഡൗൺലോഡ് ചെയ്യാൻ <ph name="HOST" />-നെ അനുവദിക്കുക</translation>
 <translation id="258095186877893873">ദൈർഘ്യമേറിയ</translation>
 <translation id="2582253231918033891"><ph name="PRODUCT_NAME" /> <ph name="PRODUCT_VERSION" /> (പ്ലാറ്റ്‌ഫോം <ph name="PLATFORM_VERSION" />) <ph name="DEVICE_SERIAL_NUMBER" /></translation>
@@ -1522,6 +1524,7 @@
 <translation id="2836635946302913370">ഈ ഉപയോക്തൃനാമം ഉപയോഗിച്ച് സൈൻ ഇൻ ചെയ്യുന്നത് നിങ്ങളുടെ അഡ്മിൻ പ്രവർത്തനരഹിതമാക്കി.</translation>
 <translation id="283669119850230892">നെറ്റ്‌വർക്ക് <ph name="NETWORK_ID" /> ഉപയോഗിക്കുന്നതിന്, ആദ്യം ഇന്റർനെറ്റിലേക്കുള്ള നിങ്ങളുടെ കണക്ഷൻ ചുവടെ പൂർത്തിയാക്കുക.</translation>
 <translation id="2838379631617906747">ഇൻസ്‌റ്റാളുചെയ്യുന്നു</translation>
+<translation id="2838835911926931318">നിങ്ങളുടെ എല്ലാ ഉപകരണങ്ങളിലും ബുക്ക്‌മാർക്കുകളും പാസ്‌വേഡുകളും ചരിത്രവും മറ്റും സമന്വയിപ്പിക്കാൻ സൈൻ ഇൻ ചെയ്യുക</translation>
 <translation id="2839032553903800133">അറിയിപ്പുകൾ ബ്ലോക്ക് ചെയ്‌തു</translation>
 <translation id="2841013758207633010">സമയം</translation>
 <translation id="2841837950101800123">ദാതാവ്</translation>
@@ -1581,6 +1584,7 @@
     സെർവർ സന്ദേശം: <ph name="SERVER_MSG" /></translation>
 <translation id="2908162660801918428">ഡയറക്‌റ്ററി പ്രകാരം മീഡിയ ഗാലറി ചേർക്കുക</translation>
 <translation id="2910318910161511225">ഒരു നെറ്റ്‌വർക്കിലേക്ക് കണക്റ്റ് ചെയ്‌ത ശേഷം വീണ്ടും ശ്രമിക്കുക</translation>
+<translation id="2910718431259223434">എന്തോ കുഴപ്പം സംഭവിച്ചു. വീണ്ടും ശ്രമിക്കുക അല്ലെങ്കിൽ നിങ്ങളുടെ ഉപകരണത്തിന്റെ ഉടമയെയോ അഡ്‍മിനെയോ ബന്ധപ്പെടുക. പിശക് കോഡ്: <ph name="ERROR_CODE" />.</translation>
 <translation id="2913331724188855103">കുക്കി ഡാറ്റ സംരക്ഷിക്കുന്നതിനും വായിക്കുന്നതിനും സൈറ്റുകളെ അനുവദിക്കുക (ശുപാർശചെയ്‌തത്)</translation>
 <translation id="2915102088417824677">ആക്റ്റിവിറ്റി ലോഗ് കാണുക</translation>
 <translation id="2915873080513663243">സ്വയമേവയുള്ള സ്‌കാൻ</translation>
@@ -2320,6 +2324,7 @@
 <translation id="3821372858277557370">{NUM_EXTENSIONS,plural, =1{ഒരു വിപുലീകരണത്തിന് അംഗീകാരം ലഭിച്ചു}other{# വിപുലീകരണങ്ങൾക്ക് അംഗീകാരം ലഭിച്ചു}}</translation>
 <translation id="3822559385185038546">ഈ പ്രോക്‌സി നിങ്ങളുടെ അഡ്‌മിനി‌സ്‌ട്രേറ്റർ നടപ്പിലാക്കിയതാണ്</translation>
 <translation id="3823310065043511710">കുറഞ്ഞത് <ph name="INSTALL_SIZE" />  ഇടമാണ് Linux-ന് വേണ്ടി ശുപാർശ ചെയ്യുന്നത്.</translation>
+<translation id="3824621460022590830">ഉപകരണ എൻറോൾമെന്റ് ടോക്കൺ സാധുവല്ല. നിങ്ങളുടെ ഉപകരണത്തിന്റെ ഉടമയെയോ അഡ്‌മിനെയോ ബന്ധപ്പെടുക. പിശക് കോഡ്: <ph name="ERROR_CODE" />.</translation>
 <translation id="3826440694796503677">കൂടുതൽ Google അക്കൗണ്ടുകൾ ചേർക്കുന്നത് നിങ്ങളുടെ അഡ്മിൻ പ്രവർത്തനരഹിതമാക്കി</translation>
 <translation id="3827306204503227641">അൺസാൻഡ്‌ബോക്‌സ് ചെയ്‌ത പ്ലഗ്-ഇന്നുകൾ അനുവദിക്കുന്നത് തുടരുക</translation>
 <translation id="3827774300009121996">&amp;പൂര്‍ണ്ണ ‌സ്‌ക്രീന്‍</translation>
@@ -3272,6 +3277,7 @@
 <translation id="5079950360618752063">നിർദ്ദേശിച്ച പാസ്‌വേഡ് ഉപയോഗിക്കുക</translation>
 <translation id="508059534790499809">Kerberos ടിക്കറ്റ് പുതുക്കിയെടുക്കുക</translation>
 <translation id="5084230410268011727">ചലന സെൻസറുകളും വെളിച്ച സെൻസറുകളും ഉപയോഗിക്കാൻ സൈറ്റുകളെ അനുവദിക്കുക</translation>
+<translation id="5084328598860513926">സജ്ജീകരിക്കുന്ന പ്രക്രിയ തടസ്സപ്പെട്ടു. വീണ്ടും ശ്രമിക്കുക അല്ലെങ്കിൽ നിങ്ങളുടെ ഉപകരണത്തിന്റെ ഉടമയെയോ അഡ്‍മിനെയോ ബന്ധപ്പെടുക. പിശക് കോഡ്: <ph name="ERROR_CODE" />.</translation>
 <translation id="5085162214018721575">അപ്‌ഡേറ്റുകൾക്കായി പരിശോധിക്കുന്നു</translation>
 <translation id="5086082738160935172">HID</translation>
 <translation id="5086874064903147617">ഡിഫോൾട്ട് ഹോം പേജ് പുനഃസ്ഥാപിക്കണോ?</translation>
@@ -3394,7 +3400,6 @@
 <translation id="5241128660650683457">നിങ്ങൾ സന്ദർശിക്കുന്ന വെബ്‌സൈറ്റുകളിലെ എല്ലാ വിവരവും വായിക്കുക</translation>
 <translation id="5242724311594467048">"<ph name="EXTENSION_NAME" />" പ്രവർത്തനക്ഷമമാക്കണോ?</translation>
 <translation id="5243522832766285132">അൽപ്പസമയത്തിനുള്ളിൽ വീണ്ടും ശ്രമിക്കുക.</translation>
-<translation id="5244406554036143958">സ്വയമേവ സമർപ്പിക്കുന്നത് പ്രവർത്തനക്ഷമമാക്കാൻ നിങ്ങളുടെ പിൻ ചേർക്കുക</translation>
 <translation id="5244474230056479698"><ph name="EMAIL" /> ഇമെയിലിലേക്ക് സമന്വയിപ്പിക്കുന്നു</translation>
 <translation id="5245610266855777041">സ്‌കൂൾ അക്കൗണ്ട് ഉപയോഗിച്ച് ആരംഭിക്കുക</translation>
 <translation id="5246282308050205996"><ph name="APP_NAME" /> എന്നത് ക്രാഷ് ചെയ്തു. ആപ്പ് പുനരാംഭിക്കുന്നതിനായി ഈ ബലൂണ്‍ ക്ലിക്ക് ചെയ്യുക.</translation>
@@ -3671,6 +3676,7 @@
 <translation id="557722062034137776">നിങ്ങളുടെ ഉപകരണം റീസെറ്റ് ചെയ്യുന്നത് Google അക്കൗണ്ടുകളെയോ ഈ അക്കൗണ്ടുകളിൽ സമന്വയിപ്പിച്ചിരിക്കുന്ന മറ്റേതെങ്കിലും ഡാറ്റയെയോ ബാധിക്കില്ല. എന്നിരുന്നാലും, നിങ്ങളുടെ ഉപകരണത്തിൽ പ്രാദേശികമായി സംരക്ഷിച്ച എല്ലാ ഫയലുകളും ഇല്ലാതാക്കും.</translation>
 <translation id="5578059481725149024">സ്വയമേവയുള്ള സൈൻ ഇൻ ചെയ്യൽ</translation>
 <translation id="558170650521898289">Microsoft Windows ഹാർഡ്‍വെയർ ഡ്രൈവർ പരിശോധിച്ചുറപ്പിക്കൽ</translation>
+<translation id="5581972110672966454">ഉപകരണത്തെ ഡൊമെയ്‌നുമായി ബന്ധിപ്പിക്കാനാകുന്നില്ല. വീണ്ടും ശ്രമിക്കുക അല്ലെങ്കിൽ നിങ്ങളുടെ ഉപകരണത്തിന്റെ ഉടമയെയോ അഡ്‍മിനെയോ ബന്ധപ്പെടുക. പിശക് കോഡ്: <ph name="ERROR_CODE" />.</translation>
 <translation id="5582839680698949063">പ്രധാന മെനു</translation>
 <translation id="5583640892426849032">ബാക്ക്‌സ്പെയ്‌സ്</translation>
 <translation id="5584088138253955452">ഉപയോക്‌തൃ നാമം സംരക്ഷിക്കണോ?</translation>
@@ -3743,6 +3749,7 @@
 <translation id="5667546120811588575">Google Play സജ്ജമാക്കുന്നു...</translation>
 <translation id="5669267381087807207">സജീവമാക്കുന്നു</translation>
 <translation id="5669691691057771421">പുതിയ പിൻ നൽകുക</translation>
+<translation id="5670702108860320605">BSSID</translation>
 <translation id="5671641761787789573">ചിത്രങ്ങൾ ബ്ലോക്ക് ചെയ്‌തു</translation>
 <translation id="5671658447180261823"><ph name="SUGGESTION_NAME" /> നിർദ്ദേശം നീക്കം ചെയ്യുക</translation>
 <translation id="567587836466137939"><ph name="MONTH_AND_YEAR" /> വരെ ഈ ഉപകരണത്തിന് സ്വയമേവയുള്ള സോഫ്‌റ്റ്‌വെയർ, സുരക്ഷാ അപ്‌ഡേറ്റുകൾ ലഭിക്കും. <ph name="LINK_BEGIN" />കൂടുതലറിയുക<ph name="LINK_END" /></translation>
@@ -5393,6 +5400,7 @@
 <translation id="7764225426217299476">വിലാസം ചേർക്കുക</translation>
 <translation id="7764256770584298012"><ph name="DOWNLOAD_DOMAIN" /> ഡൊമെയ്‌നിൽ നിന്ന് <ph name="DOWNLOAD_RECEIVED" /></translation>
 <translation id="7765158879357617694">നീക്കുക</translation>
+<translation id="7766082757934713382">ആപ്പിന്റെയും സിസ്റ്റത്തിന്റെയും സ്വയമേവയുള്ള അപ്ഡേറ്റുകൾ താൽക്കാലികമായി നിർത്തി നെറ്റ്‌വർക്ക് ഡാറ്റാ ഉപയോഗം കുറയ്ക്കാൻ സഹായിക്കുന്നു</translation>
 <translation id="7766807826975222231">ഒരു ടൂര്‍‌ നടത്തുക</translation>
 <translation id="7766838926148951335">അനുമതികൾ അംഗീകരിക്കുക</translation>
 <translation id="7768770796815395237">മാറ്റുക</translation>
@@ -6304,6 +6312,7 @@
 <translation id="885701979325669005">സംഭരണം</translation>
 <translation id="8859057652521303089">നിങ്ങളുടെ ഭാഷ തിരഞ്ഞെടുക്കുക :</translation>
 <translation id="8859174528519900719">സബ്ഫ്രെയിം: <ph name="SUBFRAME_SITE" /></translation>
+<translation id="8859402192569844210">സേവന നിബന്ധനകൾ ലോഡ് ചെയ്യാനായില്ല</translation>
 <translation id="8859662783913000679">രക്ഷാകർതൃ അക്കൗണ്ട്</translation>
 <translation id="8862003515646449717">ഒരു വേഗതയേറിയ ബ്രൗസറിലേക്ക് മാറുക</translation>
 <translation id="8863753581171631212">പുതിയ <ph name="APP" /> ആപ്പിൽ ലിങ്ക് തുറക്കുക</translation>
@@ -6572,6 +6581,7 @@
 <translation id="920045321358709304"><ph name="SEARCH_ENGINE" /> തിരയുക</translation>
 <translation id="9201023452444595544">എല്ലാ ഓഫ്‍ലൈൻ ഡാറ്റയും മായ്‌ക്കും</translation>
 <translation id="9201220332032049474">സ്‌ക്രീൻ ലോക്ക് ഓപ്ഷനുകള്‍</translation>
+<translation id="9201842707396338580">എന്തോ കുഴപ്പം സംഭവിച്ചു. നിങ്ങളുടെ ഉപകരണത്തിന്റെ ഉടമയെയോ അഡ്‌മിനെയോ ബന്ധപ്പെടുക. പിശക് കോഡ്: <ph name="ERROR_CODE" />.</translation>
 <translation id="9203398526606335860">&amp;പ്രൊഫൈലിംഗ് പ്രാപ്തമാക്കി</translation>
 <translation id="9203904171912129171">ഒരു ഉപകരണം തിരഞ്ഞെടുക്കുക</translation>
 <translation id="9203962528777363226">പുതിയ ഉപയോക്താക്കളെ ചേർക്കുന്നത് ഈ ഉപകരണത്തിന്റെ അഡ്‌മിൻ പ്രവർത്തനരഹിതമാക്കി</translation>
@@ -6643,6 +6653,7 @@
 <translation id="983511809958454316">ഈ ഫീച്ചർ VR-ൽ പ്രവർത്തിക്കില്ല</translation>
 <translation id="984275831282074731">പേയ്‌മെന്റ് രീതികൾ</translation>
 <translation id="98515147261107953">ലാന്‍ഡ്‌സ്‌കേപ്പ്</translation>
+<translation id="987068745968718743">Parallels Desktop: <ph name="PLUGIN_VM_NAME" /></translation>
 <translation id="987264212798334818">പൊതുവായ</translation>
 <translation id="987897973846887088">ചിത്രങ്ങളൊന്നും ലഭ്യമല്ല</translation>
 <translation id="988978206646512040">പാസ്‌ഫ്രെയ്‌സ് പൂരിപ്പിക്കാതിരിക്കാൻ കഴിയില്ല</translation>

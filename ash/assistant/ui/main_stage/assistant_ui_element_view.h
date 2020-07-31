@@ -35,7 +35,7 @@ class COMPONENT_EXPORT(ASSISTANT_UI) AssistantUiElementView
 
   // Returns a newly created animator which is used by UiElementContainerView
   // to animate this view on/off stage in sync with Assistant response events.
-  virtual std::unique_ptr<ElementAnimator> CreateAnimator();
+  virtual std::unique_ptr<ElementAnimator> CreateAnimator() = 0;
 
  protected:
   AssistantUiElementView();

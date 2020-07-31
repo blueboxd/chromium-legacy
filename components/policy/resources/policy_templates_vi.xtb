@@ -665,26 +665,6 @@ Nếu bạn tắt chính sách này, thì việc cuộn trang web đến các ph
 <translation id="2082205219176343977">Định cấu hình phiên bản Chrome tối thiểu được phép cho thiết bị.</translation>
 <translation id="209586405398070749">Kênh ổn định</translation>
 <translation id="2098658257603918882">Bật tính năng báo cáo sử dụng và dữ liệu liên quan đến sự cố</translation>
-<translation id="210034539800365161">Định cấu hình yêu cầu phiên bản tối thiểu được phép của <ph name="PRODUCT_OS_NAME" />.
-
-      Khi bạn đặt chính sách này thành danh sách không phải là danh sách trống:
-      Nếu không mục nào có <ph name="CHROMEOS_VERSION_PROPERTY_NAME" /> cao hơn phiên bản thiết bị đang dùng, thì sẽ không áp dụng hạn chế và các hạn chế đã có sẽ được thu hồi.
-      Nếu ít nhất một trong các mục có <ph name="CHROMEOS_VERSION_PROPERTY_NAME" /> cao hơn phiên bản đang dùng, thì mục có phiên bản cao hơn và sát với phiên bản đang dùng nhất sẽ được chọn.
-      Trong trường hợp xung đột, mục có <ph name="WARNING_PERIOD_PROPERTY_NAME" /> hoặc <ph name="AUE_WARNING_PERIOD_PROPERTY_NAME" /> thấp hơn sẽ được ưu tiên và chính sách này sẽ được áp dụng bằng cách dùng mục đó.
-
-      Nếu phiên bản đang dùng đã lỗi thời trong phiên đăng nhập của người dùng và mạng hiện tại giới hạn số lượt tự động cập nhật, thì màn hình sẽ hiển thị thông báo cập nhật thiết bị trong vòng <ph name="WARNING_PERIOD_PROPERTY_NAME" />.
-      Màn hình sẽ không hiển thị thông báo nào nếu mạng hiện tại cho phép tự động cập nhật và thiết bị phải được cập nhật trong vòng <ph name="WARNING_PERIOD_PROPERTY_NAME" />.
-      <ph name="WARNING_PERIOD_PROPERTY_NAME" /> sẽ bắt đầu từ thời điểm áp dụng chính sách này.
-      Nếu cho đến khi kết thúc <ph name="WARNING_PERIOD_PROPERTY_NAME" /> mà vẫn chưa cập nhật thiết bị, thì người dùng sẽ bị đăng xuất khỏi phiên đăng nhập.
-      Nếu phiên bản đang dùng đã lỗi thời tại thời điểm đăng nhập mà <ph name="WARNING_PERIOD_PROPERTY_NAME" /> lại hết hạn, thì người dùng sẽ phải cập nhật thiết bị trước khi đăng nhập.
-
-      Nếu phiên bản đang dùng đã lỗi thời trong phiên đăng nhập của người dùng và thiết bị đã hết hạn tự động cập nhật, thì màn hình sẽ hiển thị thông báo trả lại thiết bị trong vòng <ph name="AUE_WARNING_PERIOD_PROPERTY_NAME" />.
-      Nếu thiết bị hết hạn tự động cập nhật tại thời điểm đăng nhập mà <ph name="AUE_WARNING_PERIOD_PROPERTY_NAME" /> đã kết thúc, thì mọi phiên đăng nhập của người dùng sẽ bị chặn trên thiết bị đó.
-
-      Nếu bạn không đặt hoặc để trống chính sách này, thì không có hạn chế nào được áp dụng. Các hạn chế đã có sẽ được thu hồi và người dùng có thể đăng nhập bất kể phiên bản của <ph name="PRODUCT_OS_NAME" />.
-
-      Ở đây, <ph name="CHROMEOS_VERSION_PROPERTY_NAME" /> có thể là phiên bản chính xác, chẳng hạn như "13305.0.0" hoặc chỉ có tiền tố của phiên bản, chẳng hạn như "13305".
-      <ph name="WARNING_PERIOD_PROPERTY_NAME" /> và <ph name="AUE_WARNING_PERIOD_PROPERTY_NAME" /> là các giá trị không bắt buộc, được chỉ định theo số ngày. Giá trị mặc định là 0 ngày, tức là không có khoảng thời gian cảnh báo.</translation>
 <translation id="2104418465060359056">Báo cáo thông tin về Tiện ích và Plugin</translation>
 <translation id="2106627642643925514">Ghi đè chế độ in mã PIN mặc định. Nếu không có chế độ này, thì chính sách này sẽ bị bỏ qua.</translation>
 <translation id="2107601598727098402">
@@ -4660,13 +4640,6 @@ Nếu đặt thành False, thì <ph name="PRODUCT_NAME" /> sẽ không sử dụ
 
       Bạn có thể chỉ định URL tìm kiếm của Google là: <ph name="GOOGLE_SEARCH_URL" />.</translation>
 <translation id="7895553628261067384">Truy cập từ xa</translation>
-<translation id="7898879331506985900">Chúng tôi chỉ áp dụng chính sách doanh nghiệp này trong một khoảng thời gian ngắn và sẽ xóa trên phiên bản M86.
-
-      Chúng tôi đang củng cố chính sách liên kết giới thiệu mặc định của Chrome bằng cách chuyển từ giá trị hiện tại no-referrer-when-downgrade sang giá trị strict-origin-when-cross-origin có mức độ bảo mật cao hơn nhằm mục đích phát hành dần bản M80 chính thức.
-
-      Chính sách này sẽ chỉ có hiệu lực sau khi chúng tôi triển khai phiên bản nêu trên. Sau khi triển khai bản M80 và bật chính sách doanh nghiệp này, chúng tôi sẽ đặt chính sách liên kết giới thiệu mặc định của Chrome về giá trị của bản phát hành trước M80 là no-referrer-when-downgrade.
-
-      Chính sách doanh nghiệp này bị tắt theo mặc định.</translation>
 <translation id="7902040092815978832">Hiển thị bàn phím số để nhập mật khẩu</translation>
 <translation id="7912255076272890813">Định cấu hình loại ứng dụng/tiện ích được cho phép</translation>
 <translation id="7922358664346625612">Tiếp tục mở thẻ cuối cùng trong Chrome.</translation>

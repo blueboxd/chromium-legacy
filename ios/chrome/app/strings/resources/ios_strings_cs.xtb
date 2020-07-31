@@ -14,7 +14,6 @@
 <translation id="1084365883616172403">Příspěvek na Facebook byl odeslán.</translation>
 <translation id="1103523840287552314">Vždy překládat jazyk <ph name="LANGUAGE" /></translation>
 <translation id="1104948393051856124">Přijmout a pokračovat</translation>
-<translation id="1105578556867525047">Změňte heslo na webu</translation>
 <translation id="1112015203684611006">Tisk se nezdařil.</translation>
 <translation id="1125564390852150847">Vytvořit novou kartu</translation>
 <translation id="1145536944570833626">Smazat existující data.</translation>
@@ -23,6 +22,7 @@
 <translation id="1176932207622159128">Obrázek nelze uložit</translation>
 <translation id="1180526666083833456">Synchronizovat a přizpůsobit na různých zařízeních.</translation>
 <translation id="1181037720776840403">Odebrat</translation>
+<translation id="1185569544548277362">Novinka: Můžete nastavit Chrome jako výchozí prohlížeč. <ph name="BEGIN_LINK" />Otevřít nastavení<ph name="END_LINK" /></translation>
 <translation id="1207113853726624428">Nové vyhledávání</translation>
 <translation id="1209206284964581585">Prozatím skrýt</translation>
 <translation id="1219674500290482172">Nelze se připojit k internetu.</translation>
@@ -245,7 +245,6 @@ V anonymním režimu weby nemohou používat soubory cookie ke sledování vaš
 <translation id="3783017676699494206">Uložit obrázek</translation>
 <translation id="3789841737615482174">Instalovat</translation>
 <translation id="3803696231112616155">Nabízet překlad tohoto webu</translation>
-<translation id="3836313059960742452">{COUNT,plural, =0{Žádná hesla nebyla prolomena}=1{Bylo prolomeno {COUNT} heslo}few{Byla prolomena {COUNT} hesla}many{Bylo prolomeno {COUNT} hesla}other{Bylo prolomeno {COUNT} hesel}}</translation>
 <translation id="385051799172605136">Zpět</translation>
 <translation id="3892144330757387737">Zde najdete svou historii</translation>
 <translation id="3897092660631435901">Nabídka</translation>
@@ -332,6 +331,7 @@ Chcete-toto nastavení změnit, <ph name="BEGIN_LINK" />resetujte synchronizaci<
 <translation id="4901778704868714008">Uložit...</translation>
 <translation id="4904877109095351937">Označit jako přečtené</translation>
 <translation id="4930268273022498155">Smazat existující data. Můžete je znovu načíst tím, že přepnete zpět na účet <ph name="USER_EMAIL1" />.</translation>
+<translation id="4930714375720679147">Zapnout</translation>
 <translation id="4941089862236492464">Litujeme, ale při sdílení položky došlo k potížím.</translation>
 <translation id="4944543191714094452">Najít na stránce…</translation>
 <translation id="4945756290001680296">Otevřít nastavení hesla</translation>
@@ -610,6 +610,7 @@ Weby pomocí souborů cookie mohou sledovat vaši aktivitu prohlížení na růz
 <translation id="8073670137947914548">Stahování bylo dokončeno</translation>
 <translation id="8073872304774253879">Vylepšit vyhledávání a procházení</translation>
 <translation id="8076014560081431679">Uložená nastavení webů nebudou smazána a mohou vypovídat o vašich zvycích při prohlížení. <ph name="BEGIN_LINK" />Další informace<ph name="END_LINK" /></translation>
+<translation id="8105368624971345109">Vypnout</translation>
 <translation id="8114753159095730575">Je k dispozici soubor ke stažení. Možnosti jsou k dispozici ve spodní části obrazovky.</translation>
 <translation id="8131740175452115882">Potvrdit</translation>
 <translation id="8197543752516192074">Přeložit stránku</translation>
@@ -639,6 +640,7 @@ Weby pomocí souborů cookie mohou sledovat vaši aktivitu prohlížení na růz
 <translation id="8524799873541103884"><ph name="INCOGNITO" /> – karty <ph name="FIRST_VISIBLE_TAB" /> až <ph name="LAST_VISIBLE_TAB" /> z <ph name="NUMBER_OF_OPEN_TABS" /></translation>
 <translation id="8529767659511976195">Nové</translation>
 <translation id="8532105204136943229">Rok vypršení platnosti</translation>
+<translation id="8533166274275423134">Otevřeno jinde</translation>
 <translation id="8534481786647257214">Příspěvek na Google+ byl odeslán.</translation>
 <translation id="8548878600947630424">Hledat na stránce...</translation>
 <translation id="8574235780160508979">Smluvní podmínky prohlížeče Chrome se 31. března změní. <ph name="BEGIN_LINK" />Prohlédnout nové smluvní podmínky<ph name="END_LINK" /></translation>

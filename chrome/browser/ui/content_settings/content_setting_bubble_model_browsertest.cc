@@ -57,8 +57,8 @@ class ContentSettingBubbleModelMixedScriptTest : public InProcessBrowserTest {
   }
 
   TabSpecificContentSettings* GetActiveTabSpecificContentSettings() {
-    return TabSpecificContentSettings::FromWebContents(
-        browser()->tab_strip_model()->GetActiveWebContents());
+    return TabSpecificContentSettings::GetForFrame(
+        browser()->tab_strip_model()->GetActiveWebContents()->GetMainFrame());
   }
 
   std::unique_ptr<net::EmbeddedTestServer> https_server_;
@@ -173,7 +173,7 @@ class ContentSettingBubbleModelMediaStreamTest : public InProcessBrowserTest {
     content::WebContents* web_contents = GetActiveTab();
 
     // Create a bubble with the given camera and microphone access state.
-    TabSpecificContentSettings::FromWebContents(web_contents)
+    TabSpecificContentSettings::GetForFrame(web_contents->GetMainFrame())
         ->OnMediaStreamPermissionSet(web_contents->GetLastCommittedURL(), state,
                                      std::string(), std::string(),
                                      std::string(), std::string());

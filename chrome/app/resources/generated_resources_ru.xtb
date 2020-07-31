@@ -1160,7 +1160,6 @@
 <translation id="2408955596600435184">Введите PIN-код</translation>
 <translation id="241082044617551207">Неизвестный плагин</translation>
 <translation id="2412593942846481727">Доступно обновление</translation>
-<translation id="2414499877591062094">Отправлять PIN-код автоматически</translation>
 <translation id="2416435988630956212">Функциональные клавиши клавиатуры</translation>
 <translation id="241727068219398187">Данные зашифрованы с помощью пароля вашего аккаунта Google от <ph name="TIME" />. Шифрование не применяется к способам оплаты и адресам из Google Pay.</translation>
 <translation id="2419131370336513030">Показать установленные приложения</translation>
@@ -3396,7 +3395,6 @@
 <translation id="5241128660650683457">Просмотр ваших данных на посещаемых сайтах</translation>
 <translation id="5242724311594467048">Включить приложение "<ph name="EXTENSION_NAME" />"?</translation>
 <translation id="5243522832766285132">Повторите попытку через несколько секунд</translation>
-<translation id="5244406554036143958">Введите PIN-код, чтобы включить автоматическую отправку.</translation>
 <translation id="5244474230056479698">Синхронизация с <ph name="EMAIL" /></translation>
 <translation id="5245610266855777041">Начало работы с учебным аккаунтом</translation>
 <translation id="5246282308050205996">Произошел сбой приложения <ph name="APP_NAME" />. Нажмите на это сообщение, чтобы перезапустить его.</translation>

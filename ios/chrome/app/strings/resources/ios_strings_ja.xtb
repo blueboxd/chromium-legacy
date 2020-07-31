@@ -14,7 +14,6 @@
 <translation id="1084365883616172403">Facebookへの投稿が完了しました。</translation>
 <translation id="1103523840287552314"><ph name="LANGUAGE" />を常に翻訳</translation>
 <translation id="1104948393051856124">同意して続行</translation>
-<translation id="1105578556867525047">ウェブサイトでパスワードを変更</translation>
 <translation id="1112015203684611006">印刷できませんでした。</translation>
 <translation id="1125564390852150847">新しいタブを作成。</translation>
 <translation id="1145536944570833626">既存のデータを削除します。</translation>
@@ -245,7 +244,6 @@
 <translation id="3783017676699494206">画像を保存</translation>
 <translation id="3789841737615482174">インストール</translation>
 <translation id="3803696231112616155">このサイトを翻訳するか尋ねる</translation>
-<translation id="3836313059960742452">{COUNT,plural, =0{漏洩した可能性のあるパスワードはありません}=1{漏洩した可能性のあるパスワードが {COUNT} 個あります}other{漏洩した可能性のあるパスワードが {COUNT} 個あります}}</translation>
 <translation id="385051799172605136">戻る</translation>
 <translation id="3892144330757387737">履歴はここに表示されます</translation>
 <translation id="3897092660631435901">メニュー</translation>
@@ -332,6 +330,7 @@
 <translation id="4901778704868714008">保存...</translation>
 <translation id="4904877109095351937">既読にする</translation>
 <translation id="4930268273022498155">既存のデータを削除します。<ph name="USER_EMAIL1" /> に切り替えると、削除したデータを取得できます。</translation>
+<translation id="4930714375720679147">ON にする</translation>
 <translation id="4941089862236492464">アイテムの共有中に問題が発生しました。</translation>
 <translation id="4944543191714094452">ページ内を検索…</translation>
 <translation id="4945756290001680296">パスワードの設定にアクセスします</translation>
@@ -610,6 +609,7 @@
 <translation id="8073670137947914548">ダウンロードが完了しました</translation>
 <translation id="8073872304774253879">検索とブラウジングを改善する</translation>
 <translation id="8076014560081431679">保存済みのサイト設定は削除されず、普段の閲覧行動を反映した設定などが残る場合があります。<ph name="BEGIN_LINK" />詳細<ph name="END_LINK" /></translation>
+<translation id="8105368624971345109">オフにする</translation>
 <translation id="8114753159095730575">ファイルのダウンロードが利用可能です。画面の下の方にオプションがあります。</translation>
 <translation id="8131740175452115882">確認</translation>
 <translation id="8197543752516192074">ページを翻訳する</translation>

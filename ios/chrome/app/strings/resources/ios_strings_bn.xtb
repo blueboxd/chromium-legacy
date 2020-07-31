@@ -14,7 +14,6 @@
 <translation id="1084365883616172403">Facebook পোষ্ট সম্পূর্ণ হয়েছে৷</translation>
 <translation id="1103523840287552314">সর্বদা অনুবাদ করুন <ph name="LANGUAGE" /></translation>
 <translation id="1104948393051856124">স্বীকার করুন ও চালিয়ে যান</translation>
-<translation id="1105578556867525047">ওয়েবসাইটে গিয়ে পাসওয়ার্ড পরিবর্তন করুন</translation>
 <translation id="1112015203684611006">প্রিন্ট ব্যর্থ হয়েছে।</translation>
 <translation id="1125564390852150847">নতুন ট্যাব তৈরি করুন।</translation>
 <translation id="1145536944570833626">বিদ্যমান ডেটা মুছুন।</translation>
@@ -245,7 +244,6 @@
 <translation id="3783017676699494206">ছবি সেভ করুন</translation>
 <translation id="3789841737615482174">ইনস্টল করুন</translation>
 <translation id="3803696231112616155">এই সাইট অনুবাদ করার প্রস্তাব দিন</translation>
-<translation id="3836313059960742452">{COUNT,plural, =0{কোনও পাসওয়ার্ড চুরি যায়নি}=1{{COUNT}টি পাসওয়ার্ড চুরি গেছে}one{{COUNT}টি পাসওয়ার্ড চুরি গেছে}other{{COUNT}টি পাসওয়ার্ড চুরি গেছে}}</translation>
 <translation id="385051799172605136">ফিরুন</translation>
 <translation id="3892144330757387737">আপনি এখানে আপনার ইতিহাস দেখতে পাবেন</translation>
 <translation id="3897092660631435901">মেনু</translation>
@@ -332,6 +330,7 @@
 <translation id="4901778704868714008">সেভ করুন...</translation>
 <translation id="4904877109095351937">পঠিত হিসেবে চিহ্নিত করুন</translation>
 <translation id="4930268273022498155">বিদ্যমান ডেটা মুছুন। আপনি <ph name="USER_EMAIL1" /> এ ফিরে গিয়ে এটি পুনরুদ্ধার করতে পারেন।</translation>
+<translation id="4930714375720679147">চালু করুন</translation>
 <translation id="4941089862236492464">দুঃখিত, আপনার জিনিস শেয়ার করার সময় একটা সমস্যা ছিল।</translation>
 <translation id="4944543191714094452">পৃষ্ঠাতে খুঁজুন…</translation>
 <translation id="4945756290001680296">পাসওয়ার্ড সেটিংস অ্যাক্সেস করুন</translation>
@@ -611,6 +610,7 @@
 <translation id="8073670137947914548">ডাউনলোড হয়ে গেছে</translation>
 <translation id="8073872304774253879">সার্চ এবং ব্রাউজিং অভিজ্ঞতা আরও উন্নত করুন</translation>
 <translation id="8076014560081431679">সংরক্ষিত সাইটের সেটিংস মোছা হবে না এবং আপনার ব্রাউজিং অভ্যাস প্রতিফলিত হতে পারে। <ph name="BEGIN_LINK" />আরও জানুন<ph name="END_LINK" /></translation>
+<translation id="8105368624971345109">বন্ধ করুন</translation>
 <translation id="8114753159095730575">ফাইল ডাউনলোড করা যাবে। স্ক্রিনের নিচের দিকে বিকল্পগুলি উপলভ্য।</translation>
 <translation id="8131740175452115882">নিশ্চিত হন</translation>
 <translation id="8197543752516192074">পৃষ্ঠাটি অনুবাদ করুন</translation>

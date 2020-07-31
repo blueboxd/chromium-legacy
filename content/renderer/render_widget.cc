@@ -464,21 +464,6 @@ void RenderWidget::OnClose() {
 
 void RenderWidget::UpdateVisualProperties(
     const blink::VisualProperties& visual_properties) {
-  // Inform the rendering thread of the color space indicating the presence of
-  // HDR capabilities. The HDR bit happens to be globally true/false for all
-  // browser windows (on Windows OS) and thus would be the same for all
-  // RenderWidgets, so clobbering each other works out since only the HDR bit is
-  // used. See https://crbug.com/803451 and
-  // https://chromium-review.googlesource.com/c/chromium/src/+/852912/15#message-68bbd3e25c3b421a79cd028b2533629527d21fee
-  //
-  // The RenderThreadImpl can be null in tests.
-  {
-    RenderThreadImpl* render_thread = RenderThreadImpl::current();
-    if (render_thread)
-      render_thread->SetRenderingColorSpace(
-          visual_properties.screen_info.color_space);
-  }
-
   if (delegate()) {
     if (size_ != visual_properties.new_size) {
       // Only hide popups when the size changes. Eg https://crbug.com/761908.

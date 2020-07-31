@@ -200,6 +200,7 @@ base::string16 FormatViewSourceUrl(
   format_types &= ~kFormatUrlOmitHTTPS;
   format_types &= ~kFormatUrlOmitTrivialSubdomains;
   format_types &= ~kFormatUrlTrimAfterHost;
+  format_types &= ~kFormatUrlOmitFileScheme;
 
   // Format the underlying URL and record adjustments.
   const std::string& url_str(url.possibly_invalid_spec());

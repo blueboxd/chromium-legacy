@@ -1162,7 +1162,6 @@ You can manage this account’s settings by installing the Family Link app on yo
 <translation id="2408955596600435184">Enter your PIN</translation>
 <translation id="241082044617551207">Unknown plug-in</translation>
 <translation id="2412593942846481727">Update available</translation>
-<translation id="2414499877591062094">Enable auto-submit PIN</translation>
 <translation id="2416435988630956212">Keyboard function keys</translation>
 <translation id="241727068219398187">Data was encrypted with your Google password as of
           <ph name="TIME" />. This doesn't include payment methods and addresses from Google Pay.</translation>
@@ -3405,7 +3404,6 @@ You can manage this account’s settings by installing the Family Link app on yo
 <translation id="5241128660650683457">Read all your data on the websites that you visit</translation>
 <translation id="5242724311594467048">Enable "<ph name="EXTENSION_NAME" />"?</translation>
 <translation id="5243522832766285132">Please try again in a few moments</translation>
-<translation id="5244406554036143958">Enter your PIN to enable auto-submit</translation>
 <translation id="5244474230056479698">Syncing to <ph name="EMAIL" /></translation>
 <translation id="5245610266855777041">Get started with a school account</translation>
 <translation id="5246282308050205996"><ph name="APP_NAME" /> has crashed. Click this balloon to restart the app.</translation>

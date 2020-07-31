@@ -51,6 +51,9 @@ void VideoPainter::PaintReplaced(const PaintInfo& paint_info,
   content_box_rect.Move(paint_offset);
 
   if (context.IsPaintingPreview()) {
+    // Create a canvas and draw a URL rect to it for the paint preview.
+    BoxDrawingRecorder recorder(context, layout_video_, paint_info.phase,
+                                paint_offset);
     context.SetURLForRect(layout_video_.GetDocument().Url(),
                           snapped_replaced_rect);
   }

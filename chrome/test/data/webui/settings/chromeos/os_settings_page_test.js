@@ -123,4 +123,27 @@ suite('OSSettingsPage', function() {
       assertTrue(!!section, 'Expected section ' + name);
     }
   });
+
+  test('Update required end of life banner visibility', function() {
+    Polymer.dom.flush();
+    assertFalse(settingsPage.showUpdateRequiredEolBanner_);
+    assertFalse(!!settingsPage.$$('#updateRequiredEolBanner'));
+
+    settingsPage.showUpdateRequiredEolBanner_ = true;
+    Polymer.dom.flush();
+    assertTrue(!!settingsPage.$$('#updateRequiredEolBanner'));
+  });
+
+  test('Update required end of life banner close button click', function() {
+    settingsPage.showUpdateRequiredEolBanner_ = true;
+    Polymer.dom.flush();
+    const banner = settingsPage.$$('#updateRequiredEolBanner');
+    assertTrue(!!banner);
+
+    const closeButton = assert(settingsPage.$$('#closeUpdateRequiredEol'));
+    closeButton.click();
+    Polymer.dom.flush();
+    assertFalse(settingsPage.showUpdateRequiredEolBanner_);
+    assertEquals('none', banner.style.display);
+  });
 });

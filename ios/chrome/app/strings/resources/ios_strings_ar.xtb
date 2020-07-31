@@ -14,7 +14,6 @@
 <translation id="1084365883616172403">‏اكتمل النشر على Facebook.</translation>
 <translation id="1103523840287552314">ترجمة اللغة <ph name="LANGUAGE" /> دائمًا</translation>
 <translation id="1104948393051856124">القبول والمتابعة</translation>
-<translation id="1105578556867525047">تغيير كلمة المرور على الموقع الإلكتروني</translation>
 <translation id="1112015203684611006">تعذّرت الطباعة.</translation>
 <translation id="1125564390852150847">إنشاء علامة تبويب جديدة.</translation>
 <translation id="1145536944570833626">يمكنك حذف البيانات الحالية.</translation>
@@ -23,6 +22,7 @@
 <translation id="1176932207622159128">يتعذر حفظ الصورة</translation>
 <translation id="1180526666083833456">يمكنك المزامنة والحصول على اقتراحات مخصصة على جميع الأجهزة.</translation>
 <translation id="1181037720776840403">إزالة</translation>
+<translation id="1185569544548277362">‏جديد: يمكنك جعل Chrome المتصفِّح التلقائي. <ph name="BEGIN_LINK" />فتح الإعدادات<ph name="END_LINK" /></translation>
 <translation id="1207113853726624428">بحث جديد</translation>
 <translation id="1209206284964581585">إخفاء الآن</translation>
 <translation id="1219674500290482172">يتعذر الاتصال بالإنترنت.</translation>
@@ -245,7 +245,6 @@
 <translation id="3783017676699494206">حفظ الصورة</translation>
 <translation id="3789841737615482174">تثبيت</translation>
 <translation id="3803696231112616155">اقتراح ترجمة هذا الموقع الإلكتروني</translation>
-<translation id="3836313059960742452">{COUNT,plural, =0{ما من كلمات مرور معرّضة للاختراق.}=1{كلمة مرور واحدة ({COUNT}) معرّضة للاختراق.}two{كلمتا مرور ({COUNT}) معرّضتان للاختراق.}few{{COUNT} كلمات مرور معرّضة للاختراق.}many{{COUNT} كلمة مرور معرّضة للاختراق.}other{{COUNT} كلمة مرور معرّضة للاختراق.}}</translation>
 <translation id="385051799172605136">الرجوع إلى الوراء</translation>
 <translation id="3892144330757387737">سيظهر لك السجلّ هنا</translation>
 <translation id="3897092660631435901">قائمة</translation>
@@ -332,6 +331,7 @@
 <translation id="4901778704868714008">حفظ...</translation>
 <translation id="4904877109095351937">وضع علامة كمقروءة</translation>
 <translation id="4930268273022498155">يمكنك حذف البيانات الحالية. يمكنك استرداد هذه البيانات بالتبديل مرة أخرى إلى <ph name="USER_EMAIL1" />.</translation>
+<translation id="4930714375720679147">تفعيل</translation>
 <translation id="4941089862236492464">عذرًا، حدثت مشكلة أثناء مشاركة العنصر.</translation>
 <translation id="4944543191714094452">البحث في الصفحة…</translation>
 <translation id="4945756290001680296">الوصول إلى إعدادات كلمات المرور</translation>
@@ -610,6 +610,7 @@
 <translation id="8073670137947914548">اكتمل التنزيل</translation>
 <translation id="8073872304774253879">تحسين عمليات البحث والتصفُّح</translation>
 <translation id="8076014560081431679">لن يتم حذف إعدادات الموقع الإلكتروني المحفوظة وقد تعكس عادات التصفح. <ph name="BEGIN_LINK" />مزيد من المعلومات<ph name="END_LINK" /></translation>
+<translation id="8105368624971345109">إيقاف</translation>
 <translation id="8114753159095730575">أصبح بالإمكان تنزيل الملف. يمكنك مراجعة الخيارات في أسفل الشاشة.</translation>
 <translation id="8131740175452115882">التأكيد</translation>
 <translation id="8197543752516192074">ترجمة الصفحة</translation>
@@ -639,6 +640,7 @@
 <translation id="8524799873541103884">علامات تبويب <ph name="INCOGNITO" /><ph name="FIRST_VISIBLE_TAB" /> عبر <ph name="LAST_VISIBLE_TAB" /> من <ph name="NUMBER_OF_OPEN_TABS" /></translation>
 <translation id="8529767659511976195">جديد</translation>
 <translation id="8532105204136943229">عام انتهاء الصلاحية</translation>
+<translation id="8533166274275423134">مفتوح في نافذة أخرى</translation>
 <translation id="8534481786647257214">‏اكتمل النشر على Google+‎.</translation>
 <translation id="8548878600947630424">بحث في الصفحة...</translation>
 <translation id="8574235780160508979">‏سيتم تغيير بنود خدمة Chrome في 31 آذار (مارس). <ph name="BEGIN_LINK" />يُرجى المراجعة<ph name="END_LINK" /></translation>

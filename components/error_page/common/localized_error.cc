@@ -23,7 +23,6 @@
 #include "base/values.h"
 #include "build/build_config.h"
 #include "components/error_page/common/error.h"
-#include "components/error_page/common/error_page_params.h"
 #include "components/error_page/common/error_page_switches.h"
 #include "components/error_page/common/net_error_info.h"
 #include "components/offline_pages/core/offline_page_feature.h"
@@ -896,8 +895,7 @@ LocalizedError::PageState LocalizedError::GetPageState(
     bool offline_content_feature_enabled,
     bool auto_fetch_feature_enabled,
     bool is_kiosk_mode,
-    const std::string& locale,
-    std::unique_ptr<error_page::ErrorPageParams> params) {
+    const std::string& locale) {
   LocalizedError::PageState result;
   result.is_offline_error = IsOfflineError(error_domain, error_code);
 
@@ -999,20 +997,14 @@ LocalizedError::PageState LocalizedError::GetPageState(
   }
   result.strings.SetString("errorCode", error_string);
 
-  // If no parameters were provided, use the defaults.
-  if (!params) {
-    params.reset(new error_page::ErrorPageParams());
-    params->suggest_reload = !!(options.buttons & SHOW_BUTTON_RELOAD);
-  }
-
   base::ListValue* suggestions_details = result.strings.SetList(
       "suggestionsDetails", std::make_unique<base::ListValue>());
   base::ListValue* suggestions_summary_list = result.strings.SetList(
       "suggestionsSummaryList", std::make_unique<base::ListValue>());
 
-  // Add the reload suggestion, if needed for pages that didn't come
+  // Add the reload suggestion, if needed, for pages that didn't come
   // from a post.
-  if (params->suggest_reload && !is_post) {
+  if ((options.buttons & SHOW_BUTTON_RELOAD) && !is_post) {
     auto reload_button = std::make_unique<base::DictionaryValue>();
     result.reload_button_shown = true;
     reload_button->SetString(

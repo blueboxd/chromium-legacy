@@ -41,6 +41,18 @@ class PaintPreviewTracker {
   }
   bool IsMainFrame() const { return is_main_frame_; }
 
+  // Transform methods --------------------------------------------------------
+
+  // Used to transform the position of links when parsing the paint op buffer.
+  // These are inspired by the methods in SkCanvas.
+  void Save();
+  void Restore();
+  void SetMatrix(const SkMatrix& matrix);
+  void Concat(const SkMatrix& matrix);
+  void Scale(SkScalar x, SkScalar y);
+  void Rotate(SkScalar degrees);
+  void Translate(SkScalar x, SkScalar y);
+
   // Data Collection ----------------------------------------------------------
 
   // Creates a placeholder SkPicture for an OOP subframe located at |rect|
@@ -58,7 +70,11 @@ class PaintPreviewTracker {
   void AddGlyphs(const SkTextBlob* blob);
 
   // Adds |link| with bounding box |rect| to the list of links.
-  void AnnotateLink(const GURL& link, const gfx::Rect& rect);
+  void AnnotateLink(const GURL& link, const SkRect& rect);
+
+  // Transforms the cull rect for |id| to be in the correct place and return a
+  // non-zero replacement ID if the cull rect needed to be updated.
+  uint32_t TransformContentForRemoteFrame(uint32_t id);
 
   // Data Serialization -------------------------------------------------------
   // NOTE: once any of these methods are called the PaintPreviewTracker should
@@ -81,12 +97,19 @@ class PaintPreviewTracker {
   // Moves |links_| to out. Invalidates existing entries in |links_|.
   void MoveLinks(std::vector<mojom::LinkDataPtr>* out);
 
+  const base::flat_map<uint32_t, sk_sp<SkPicture>>&
+  GetSubframePicsForTesting() {
+    return subframe_pics_;
+  }
+
  private:
   const base::UnguessableToken guid_;
   const base::Optional<base::UnguessableToken> embedding_token_;
   const bool is_main_frame_;
 
   SkISize scroll_;
+  SkMatrix matrix_;
+  std::vector<SkMatrix> states_;
 
   std::vector<mojom::LinkDataPtr> links_;
   PictureSerializationContext content_id_to_embedding_token_;

@@ -41,6 +41,7 @@ constexpr char kAndroidAppInstallEvent[] = "androidAppInstallEvent";
 // Chrome Reporting API.
 constexpr char kExtensionId[] = "extensionId";
 constexpr char kExtensionInstallEvent[] = "extensionAppInstallEvent";
+constexpr char kDownloadStage[] = "downloadStage";
 
 // Calculates hash for the given |event| and |context|, and stores the hash in
 // |hash|. Returns true if |event| and |context| are json serializable and
@@ -157,6 +158,11 @@ base::Value ConvertExtensionEventToValue(
     event.SetIntKey(
         kSessionStateChangeType,
         extension_install_report_log_event.session_state_change_type());
+  }
+
+  if (extension_install_report_log_event.has_downloading_stage()) {
+    event.SetIntKey(kDownloadStage,
+                    extension_install_report_log_event.downloading_stage());
   }
 
   event.SetStringKey(kSerialNumber, GetSerialNumber());

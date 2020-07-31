@@ -832,6 +832,11 @@ class WaylandRemoteShell : public ash::TabletModeObserver,
     layout_mode_ = helper->InTabletMode()
                        ? ZCR_REMOTE_SHELL_V1_LAYOUT_MODE_TABLET
                        : ZCR_REMOTE_SHELL_V1_LAYOUT_MODE_WINDOWED;
+    if (wl_resource_get_version(remote_shell_resource_) >=
+        ZCR_REMOTE_SHELL_V1_LAYOUT_MODE_SINCE_VERSION) {
+      zcr_remote_shell_v1_send_layout_mode(remote_shell_resource_,
+                                           layout_mode_);
+    }
 
     if (wl_resource_get_version(remote_shell_resource_) >= 8) {
       double scale_factor = GetDefaultDeviceScaleFactor();

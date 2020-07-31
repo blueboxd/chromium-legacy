@@ -14,7 +14,6 @@
 <translation id="1084365883616172403">Objava v Facebooku je dokončana.</translation>
 <translation id="1103523840287552314">Vedno prevedi ta jezik: <ph name="LANGUAGE" /></translation>
 <translation id="1104948393051856124">Sprejmi in nadaljuj</translation>
-<translation id="1105578556867525047">Spremeni geslo na spletnem mestu</translation>
 <translation id="1112015203684611006">Printing failed.</translation>
 <translation id="1125564390852150847">Create new tab.</translation>
 <translation id="1145536944570833626">Izbris obstoječih podatkov.</translation>
@@ -23,6 +22,7 @@
 <translation id="1176932207622159128">Slike ni mog. shran.</translation>
 <translation id="1180526666083833456">Sinhronizacija in prilagajanje med napravami.</translation>
 <translation id="1181037720776840403">Odstrani</translation>
+<translation id="1185569544548277362">Novo: Chrome lahko določite kot privzeti brskalnik. <ph name="BEGIN_LINK" />Odpri nastavitve<ph name="END_LINK" /></translation>
 <translation id="1207113853726624428">Novo iskanje</translation>
 <translation id="1209206284964581585">Zaenkrat skrij</translation>
 <translation id="1219674500290482172">Internetne povezave ni mogoče vzpostaviti.</translation>
@@ -245,7 +245,6 @@ Ko uporabljate način brez beleženja dejavnosti, spletna mesta ne smejo uporabl
 <translation id="3783017676699494206">Shrani sliko</translation>
 <translation id="3789841737615482174">Namesti</translation>
 <translation id="3803696231112616155">Ponudi prevod tega spletnega mesta</translation>
-<translation id="3836313059960742452">{COUNT,plural, =0{Ni ogroženih gesel}=1{{COUNT} ogroženo geslo}one{{COUNT} ogroženo geslo}two{{COUNT} ogroženi gesli}few{{COUNT} ogrožena gesla}other{{COUNT} ogroženih gesel}}</translation>
 <translation id="385051799172605136">Nazaj</translation>
 <translation id="3892144330757387737">Tukaj bo prikazana zgodovina</translation>
 <translation id="3897092660631435901">Meni</translation>
@@ -332,6 +331,7 @@ Podatki so šifrirani z vašim geslom za sinhronizacijo. Vnesite ga, če želite
 <translation id="4901778704868714008">Shrani ...</translation>
 <translation id="4904877109095351937">Označi kot prebrano</translation>
 <translation id="4930268273022498155">Izbris obstoječih podatkov. Pridobite jih lahko tako, da preklopite nazaj na račun <ph name="USER_EMAIL1" />.</translation>
+<translation id="4930714375720679147">Vklop</translation>
 <translation id="4941089862236492464">Težava pri deljenju elementa z drugimi.</translation>
 <translation id="4944543191714094452">Najdi na strani …</translation>
 <translation id="4945756290001680296">Dostop do nastavitev gesel</translation>
@@ -610,6 +610,7 @@ Spletna mesta lahko uporabljajo piškotke za ogled dejavnosti brskanja na razli�
 <translation id="8073670137947914548">Prenos končan</translation>
 <translation id="8073872304774253879">Izboljšanje iskanja in brskanja</translation>
 <translation id="8076014560081431679">Shranjene nastavitve spletnih mest ne bodo izbrisane in morda odražajo vaše brskalne navade. <ph name="BEGIN_LINK" />Več o tem<ph name="END_LINK" /></translation>
+<translation id="8105368624971345109">Izklop</translation>
 <translation id="8114753159095730575">Prenos datotek je na voljo. Možnosti so na voljo pri dnu zaslona.</translation>
 <translation id="8131740175452115882">Potrdi</translation>
 <translation id="8197543752516192074">Prevedi stran</translation>
@@ -639,6 +640,7 @@ Spletna mesta lahko uporabljajo piškotke za ogled dejavnosti brskanja na razli�
 <translation id="8524799873541103884"><ph name="INCOGNITO" /> Tabs <ph name="FIRST_VISIBLE_TAB" /> through <ph name="LAST_VISIBLE_TAB" /> of <ph name="NUMBER_OF_OPEN_TABS" /></translation>
 <translation id="8529767659511976195">Novo</translation>
 <translation id="8532105204136943229">Expiration Year</translation>
+<translation id="8533166274275423134">Odprto drugje</translation>
 <translation id="8534481786647257214">Objava v Googlu+ je dokončana.</translation>
 <translation id="8548878600947630424">Najdi na strani ...</translation>
 <translation id="8574235780160508979">Pogoji storitve za Chrome se bodo spremenili 31. marca. <ph name="BEGIN_LINK" />Preglejte<ph name="END_LINK" /></translation>

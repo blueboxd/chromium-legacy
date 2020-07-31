@@ -316,6 +316,8 @@ class APP_LIST_EXPORT AppsGridView : public views::View,
   void AppendBackgroundCard(float opacity);
   // Removes the background card at the end of |background_cards_|.
   void RemoveBackgroundCard();
+  // Masks the apps grid container to background cards bounds.
+  void MaskContainerToBackgroundBounds();
 
   // Return the view model.
   views::ViewModelT<AppListItemView>* view_model() { return &view_model_; }

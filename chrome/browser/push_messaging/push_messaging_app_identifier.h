@@ -100,6 +100,10 @@ class PushMessagingAppIdentifier {
     return service_worker_registration_id_;
   }
 
+  void set_expiration_time(const base::Optional<base::Time>& expiration_time) {
+    expiration_time_ = expiration_time;
+  }
+
   base::Optional<base::Time> expiration_time() const {
     DCHECK(!is_null());
     return expiration_time_;

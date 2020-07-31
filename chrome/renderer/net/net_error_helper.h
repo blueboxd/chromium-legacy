@@ -32,7 +32,6 @@ class GURL;
 
 namespace error_page {
 class Error;
-struct ErrorPageParams;
 }
 
 // Listens for NetErrorInfo messages from the NetErrorTabHelper on the
@@ -95,7 +94,6 @@ class NetErrorHelper
       const error_page::Error& error,
       bool is_failed_post,
       bool can_use_local_diagnostics_service,
-      std::unique_ptr<error_page::ErrorPageParams> params,
       std::string* html) const override;
 
   void EnablePageHelperFunctions() override;

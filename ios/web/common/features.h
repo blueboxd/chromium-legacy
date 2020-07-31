@@ -57,6 +57,12 @@ extern const base::Feature kIOSLookalikeUrlNavigationSuggestionsUI;
 // the URL.
 extern const base::Feature kAddWebContentDropInteraction;
 
+// When enabled, opening a URL with a text fragment (e.g.,
+// example.com/#:~:text=examples) will cause matching text in the page to be
+// highlighted and scrolled into view.
+// See also: https://wicg.github.io/scroll-to-text-fragment/
+extern const base::Feature kScrollToTextIOS;
+
 // When true, for each navigation, the default user agent is chosen by the
 // WebClient GetDefaultUserAgent() method. If it is false, the mobile version
 // is requested by default.

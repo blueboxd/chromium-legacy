@@ -27,6 +27,7 @@ import {ViewerPdfToolbarNewElement} from './elements/viewer-pdf-toolbar-new.js';
 // <if expr="chromeos">
 import {InkController} from './ink_controller.js';
 //</if>
+import {LocalStorageProxyImpl} from './local_storage_proxy.js';
 import {PDFMetrics} from './metrics.js';
 import {NavigatorDelegate, PdfNavigator} from './navigator.js';
 import {OpenPdfParamsParser} from './open_pdf_params_parser.js';
@@ -85,6 +86,9 @@ export function getFilenameFromURL(url) {
   }
 }
 
+/** @type {string} */
+const LOCAL_STORAGE_SIDENAV_COLLAPSED_KEY = 'sidenavCollapsed';
+
 export class PDFViewerElement extends PDFViewerBaseElement {
   static get is() {
     return 'pdf-viewer';
@@ -134,14 +138,7 @@ export class PDFViewerElement extends PDFViewerBaseElement {
 
       isFormFieldFocused_: Boolean,
 
-      /** @private */
-      pdfViewerUpdateEnabled_: {
-        type: Boolean,
-        value: function() {
-          return document.documentElement.hasAttribute(
-              'pdf-viewer-update-enabled');
-        },
-      },
+      pdfViewerUpdateEnabled_: Boolean,
 
       docLength_: Number,
       // <if expr="chromeos">
@@ -219,9 +216,6 @@ export class PDFViewerElement extends PDFViewerBaseElement {
     this.hadPassword_ = false;
 
     /** @private {boolean} */
-    this.sidenavCollapsed_ = false;
-
-    /** @private {boolean} */
     this.toolbarEnabled_ = false;
 
     /** @private {?ToolbarManager} */
@@ -252,7 +246,19 @@ export class PDFViewerElement extends PDFViewerBaseElement {
     this.loadProgress_;
 
     /** @private {boolean} */
-    this.pdfViewerUpdateEnabled_;
+    this.pdfViewerUpdateEnabled_ =
+        document.documentElement.hasAttribute('pdf-viewer-update-enabled');
+
+    /** @private {boolean} */
+    this.sidenavCollapsed_ = false;
+
+    if (this.pdfViewerUpdateEnabled_) {
+      // TODO(dpapad): Add tests after crbug.com/1111459 is fixed.
+      this.sidenavCollapsed_ = Boolean(Number.parseInt(
+          LocalStorageProxyImpl.getInstance().getItem(
+              LOCAL_STORAGE_SIDENAV_COLLAPSED_KEY),
+          10));
+    }
   }
 
   /** @override */
@@ -519,6 +525,14 @@ export class PDFViewerElement extends PDFViewerBaseElement {
     await this.loaded;
   }
   // </if>
+
+  /**
+   * @param {!Event} e
+   * @private
+   */
+  onDisplayAnnotationsChanged_(e) {
+    this.currentController.setDisplayAnnotations(e.detail);
+  }
 
   /**
    * @param {!Event} e
@@ -882,7 +896,10 @@ export class PDFViewerElement extends PDFViewerBaseElement {
 
   /** @private */
   onSidenavToggleClick_() {
+    assert(this.pdfViewerUpdateEnabled_);
     this.sidenavCollapsed_ = !this.sidenavCollapsed_;
+    LocalStorageProxyImpl.getInstance().setItem(
+        LOCAL_STORAGE_SIDENAV_COLLAPSED_KEY, this.sidenavCollapsed_ ? 1 : 0);
   }
 
   /**

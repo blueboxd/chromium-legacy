@@ -38,6 +38,7 @@ import org.chromium.base.test.util.Feature;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.flags.ChromeFeatureList;
 import org.chromium.chrome.browser.flags.ChromeSwitches;
+import org.chromium.chrome.browser.night_mode.ChromeNightModeTestUtils;
 import org.chromium.chrome.browser.signin.account_picker.AccountPickerBottomSheetCoordinator;
 import org.chromium.chrome.browser.signin.account_picker.AccountPickerDelegate;
 import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
@@ -128,6 +129,18 @@ public class AccountPickerBottomSheetTest {
         buildAndShowCollapsedBottomSheet();
         mRenderTestRule.render(
                 mCoordinator.getBottomSheetViewForTesting(), "collapsed_sheet_with_account");
+    }
+
+    @Test
+    @MediumTest
+    @Feature("RenderTest")
+    public void testCollapsedSheetWithAccountViewDarkMode() throws IOException {
+        TestThreadUtils.runOnUiThreadBlocking(
+                () -> { ChromeNightModeTestUtils.setUpNightModeForChromeActivity(true); });
+        mRenderTestRule.setNightModeEnabled(true);
+        buildAndShowCollapsedBottomSheet();
+        mRenderTestRule.render(
+                mCoordinator.getBottomSheetViewForTesting(), "collapsed_sheet_with_account_dark");
     }
 
     @Test

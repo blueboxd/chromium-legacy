@@ -3507,7 +3507,8 @@ class SSLUIWorkerFetchTest
     }
 
     EXPECT_EQ(expected_show_blocked,
-              content_settings::TabSpecificContentSettings::FromWebContents(tab)
+              content_settings::TabSpecificContentSettings::GetForFrame(
+                  tab->GetMainFrame())
                   ->IsContentBlocked(ContentSettingsType::MIXEDSCRIPT));
     ssl_test_util::CheckSecurityState(
         tab, CertError::NONE,
@@ -3530,7 +3531,8 @@ class SSLUIWorkerFetchTest
     }
 
     EXPECT_EQ(expected_show_blocked_after_allow,
-              content_settings::TabSpecificContentSettings::FromWebContents(tab)
+              content_settings::TabSpecificContentSettings::GetForFrame(
+                  tab->GetMainFrame())
                   ->IsContentBlocked(ContentSettingsType::MIXEDSCRIPT));
     ssl_test_util::CheckSecurityState(
         tab, CertError::NONE,
@@ -3555,9 +3557,9 @@ class SSLUIWorkerFetchTest
 
   void CheckErrorStateIsCleared() {
     WebContents* tab = browser()->tab_strip_model()->GetActiveWebContents();
-    EXPECT_FALSE(
-        content_settings::TabSpecificContentSettings::FromWebContents(tab)
-            ->IsContentBlocked(ContentSettingsType::MIXEDSCRIPT));
+    EXPECT_FALSE(content_settings::TabSpecificContentSettings::GetForFrame(
+                     tab->GetMainFrame())
+                     ->IsContentBlocked(ContentSettingsType::MIXEDSCRIPT));
     ssl_test_util::CheckSecurityState(tab, CertError::NONE,
                                       security_state::NONE, AuthState::NONE);
     EXPECT_FALSE(SecurityStateTabHelper::FromWebContents(tab)

@@ -7,7 +7,15 @@
 
 #include "base/feature_list.h"
 
+namespace features {
+
 // Feature flag to disallow creation of push messages with GCM Sender IDs.
 extern const base::Feature kPushMessagingDisallowSenderIDs;
+
+// Feature flag to enable push subscription with expiration times specified in
+// /chrome/browser/push_messaging/push_messaging_constants.h
+extern const base::Feature kPushSubscriptionWithExpirationTime;
+
+}  // namespace features
 
 #endif  // CHROME_BROWSER_PUSH_MESSAGING_PUSH_MESSAGING_FEATURES_H_

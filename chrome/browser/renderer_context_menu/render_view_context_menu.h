@@ -193,6 +193,7 @@ class RenderViewContextMenu : public RenderViewContextMenuBase {
   void AppendSharingItems();
   void AppendClickToCallItem();
   void AppendSharedClipboardItem();
+  void AppendQRCodeGeneratorItem(bool for_image, bool draw_icon);
 
   // Command enabled query functions.
   bool IsReloadEnabled() const;

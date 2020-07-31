@@ -5,7 +5,7 @@
 #ifndef CHROME_BROWSER_POLICY_CHROME_BROWSER_CLOUD_MANAGEMENT_CONTROLLER_DESKTOP_H_
 #define CHROME_BROWSER_POLICY_CHROME_BROWSER_CLOUD_MANAGEMENT_CONTROLLER_DESKTOP_H_
 
-#include "chrome/browser/policy/chrome_browser_cloud_management_controller.h"
+#include "components/enterprise/browser/controller/chrome_browser_cloud_management_controller.h"
 
 #include "chrome/browser/enterprise/reporting/reporting_delegate_factory_desktop.h"
 

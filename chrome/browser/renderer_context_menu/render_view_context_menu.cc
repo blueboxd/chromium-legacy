@@ -1216,6 +1216,10 @@ void RenderViewContextMenu::AppendLinkItems() {
 
     menu_model_.AddSeparator(ui::NORMAL_SEPARATOR);
 
+    // Place QR Generator close to send-tab-to-self feature for link images.
+    if (params_.has_image_contents)
+      AppendQRCodeGeneratorItem(/*for_image=*/true, /*draw_icon=*/true);
+
     if (browser && send_tab_to_self::ShouldOfferFeatureForLink(
                        active_web_contents, params_.link_url)) {
       if (send_tab_to_self::GetValidDeviceCount(GetBrowser()->profile()) == 1) {
@@ -1353,6 +1357,10 @@ void RenderViewContextMenu::AppendImageItems() {
                                   IDS_CONTENT_CONTEXT_COPYIMAGE);
   menu_model_.AddItemWithStringId(IDC_CONTENT_CONTEXT_COPYIMAGELOCATION,
                                   IDS_CONTENT_CONTEXT_COPYIMAGELOCATION);
+
+  // Don't double-add for linked images, which also add the item.
+  if (params_.link_url.is_empty())
+    AppendQRCodeGeneratorItem(/*for_image=*/true, /*draw_icon=*/false);
 }
 
 void RenderViewContextMenu::AppendSearchWebForImageItems() {
@@ -1497,15 +1505,7 @@ void RenderViewContextMenu::AppendPageItems() {
     if (!send_tab_to_self_menu_present)
       menu_model_.AddSeparator(ui::NORMAL_SEPARATOR);
 
-#if defined(OS_MAC)
-    menu_model_.AddItemWithStringId(IDC_CONTENT_CONTEXT_GENERATE_QR_CODE,
-                                    IDS_CONTEXT_MENU_GENERATE_QR_CODE_PAGE);
-#else
-    menu_model_.AddItemWithStringIdAndIcon(
-        IDC_CONTENT_CONTEXT_GENERATE_QR_CODE,
-        IDS_CONTEXT_MENU_GENERATE_QR_CODE_PAGE,
-        ui::ImageModel::FromVectorIcon(kQrcodeGeneratorIcon));
-#endif
+    AppendQRCodeGeneratorItem(/*for_image=*/false, /*draw_icon=*/true);
 
     menu_model_.AddSeparator(ui::NORMAL_SEPARATOR);
   } else if (send_tab_to_self_menu_present) {
@@ -2265,9 +2265,17 @@ void RenderViewContextMenu::ExecuteCommand(int id, int event_flags) {
           GetBrowser()->tab_strip_model()->GetActiveWebContents();
       auto* bubble_controller =
           qrcode_generator::QRCodeGeneratorBubbleController::Get(web_contents);
-      NavigationEntry* entry =
-          embedder_web_contents_->GetController().GetLastCommittedEntry();
-      bubble_controller->ShowBubble(entry->GetURL());
+      if (params_.media_type == ContextMenuDataMediaType::kImage) {
+        base::RecordAction(
+            UserMetricsAction("SharingQRCode.DialogLaunched.ContextMenuImage"));
+        bubble_controller->ShowBubble(params_.src_url);
+      } else {
+        base::RecordAction(
+            UserMetricsAction("SharingQRCode.DialogLaunched.ContextMenuPage"));
+        NavigationEntry* entry =
+            embedder_web_contents_->GetController().GetLastCommittedEntry();
+        bubble_controller->ShowBubble(entry->GetURL());
+      }
       break;
     }
 
@@ -2637,6 +2645,25 @@ bool RenderViewContextMenu::IsQRCodeGeneratorEnabled() const {
   bool incognito = browser_context_->IsOffTheRecord();
   return qrcode_generator::QRCodeGeneratorBubbleController::
       IsGeneratorAvailable(entry->GetURL(), incognito);
+}
+
+void RenderViewContextMenu::AppendQRCodeGeneratorItem(bool for_image,
+                                                      bool draw_icon) {
+  if (!IsQRCodeGeneratorEnabled())
+    return;
+  auto string_id = for_image ? IDS_CONTEXT_MENU_GENERATE_QR_CODE_IMAGE
+                             : IDS_CONTEXT_MENU_GENERATE_QR_CODE_PAGE;
+#if defined(OS_MAC)
+  draw_icon = false;
+#endif
+  if (draw_icon) {
+    menu_model_.AddItemWithStringIdAndIcon(
+        IDC_CONTENT_CONTEXT_GENERATE_QR_CODE, string_id,
+        ui::ImageModel::FromVectorIcon(kQrcodeGeneratorIcon));
+  } else {
+    menu_model_.AddItemWithStringId(IDC_CONTENT_CONTEXT_GENERATE_QR_CODE,
+                                    string_id);
+  }
 }
 
 bool RenderViewContextMenu::IsRouteMediaEnabled() const {

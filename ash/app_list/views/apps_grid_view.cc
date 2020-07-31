@@ -1136,6 +1136,7 @@ void AppsGridView::Layout() {
     }
   }
   if (cardified_state_) {
+    DCHECK(!background_cards_.empty());
     MaybeCreateGradientMask();
     // Make sure that the background cards render behind everything
     // else in the items container.
@@ -2311,6 +2312,7 @@ void AppsGridView::EndAppsGridCardifiedView() {
   // elements to their original positions.
   UpdateTilePadding();
   AnimateCardifiedState();
+  layer()->SetClipRect(gfx::Rect());
 }
 
 void AppsGridView::AnimateCardifiedState() {
@@ -2369,8 +2371,8 @@ void AppsGridView::AnimateCardifiedState() {
     if (!cardified_state_) {
       animator.SetTransitionDuration(
           base::TimeDelta::FromMilliseconds(kEndCardifiedAnimationDuration));
-      animator.AddObserver(this);
     }
+    animator.AddObserver(this);
     ui::AnimationThroughputReporter reporter(
         background_card->GetAnimator(),
         metrics_util::ForSmoothness(
@@ -3031,6 +3033,14 @@ void AppsGridView::RemoveBackgroundCard() {
   background_cards_.pop_back();
 }
 
+void AppsGridView::MaskContainerToBackgroundBounds() {
+  DCHECK(!background_cards_.empty());
+  // Mask apps grid container layer to the background card width.
+  layer()->SetClipRect(gfx::Rect(background_cards_[0]->bounds().x(), 0,
+                                 background_cards_[0]->bounds().width(),
+                                 layer()->bounds().height()));
+}
+
 void AppsGridView::TotalPagesChanged(int previous_page_count,
                                      int new_page_count) {
   // Don't record from folder.
@@ -3217,8 +3227,10 @@ void AppsGridView::SetViewHidden(AppListItemView* view,
 void AppsGridView::OnImplicitAnimationsCompleted() {
   if (layer()->opacity() == 0.0f)
     SetVisible(false);
-  if (cardified_state_)
+  if (cardified_state_) {
+    MaskContainerToBackgroundBounds();
     return;
+  }
   while (!background_cards_.empty())
     RemoveBackgroundCard();
   DCHECK(background_cards_.empty());

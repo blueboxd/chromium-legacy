@@ -20,7 +20,7 @@ declare_args() {
   # Enable exporting to tagged PDF.
   enable_tagged_pdf = !is_android && !is_chromecast && !is_ios && !is_fuchsia
 
-  if (use_fuzzing_engine && is_linux) {
+  if (use_fuzzing_engine && (is_linux || is_chromeos)) {
     # For fuzzing, just restrict to chromeos and linux.
     use_cups = true
   } else {

@@ -359,18 +359,14 @@ class MHTMLGenerationTest
       return;
 
     // Loads the generated file to check if it is well formed.
-    WebContentsDelegate* old_delegate = shell()->web_contents()->GetDelegate();
-    ConsoleObserverDelegate console_delegate(shell()->web_contents(),
-                                             "Malformed multipart archive: *");
-    shell()->web_contents()->SetDelegate(&console_delegate);
+    WebContentsConsoleObserver console_observer(shell()->web_contents());
+    console_observer.SetPattern("Malformed multipart archive: *");
 
     EXPECT_TRUE(
         NavigateToURL(shell(), net::FilePathToFileURL(params.file_path)))
         << "Error navigating to the generated MHTML file";
-    EXPECT_EQ(0U, console_delegate.message().length())
+    EXPECT_TRUE(console_observer.messages().empty())
         << "The generated MHTML file is malformed";
-
-    shell()->web_contents()->SetDelegate(old_delegate);
   }
 
   void TwoStepSyncTestFor(const TaskOrder order);

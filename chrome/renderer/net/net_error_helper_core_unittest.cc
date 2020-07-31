@@ -25,7 +25,6 @@
 #include "chrome/common/available_offline_content.mojom.h"
 #include "chrome/renderer/net/available_offline_content_helper.h"
 #include "components/error_page/common/error.h"
-#include "components/error_page/common/error_page_params.h"
 #include "components/error_page/common/net_error_info.h"
 #include "content/public/common/service_names.mojom.h"
 #include "content/public/common/url_constants.h"
@@ -199,7 +198,6 @@ class NetErrorHelperCoreTest : public testing::Test,
       const error_page::Error& error,
       bool is_failed_post,
       bool can_show_network_diagnostics_dialog,
-      std::unique_ptr<error_page::ErrorPageParams> params,
       std::string* html) const override {
     last_can_show_network_diagnostics_dialog_ =
         can_show_network_diagnostics_dialog;

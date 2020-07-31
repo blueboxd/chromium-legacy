@@ -14,7 +14,6 @@
 <translation id="1084365883616172403">Facebook இடுகை நிறைவுபெற்றது.</translation>
 <translation id="1103523840287552314">எப்போதும் இந்த மொழியை மொழிபெயர் <ph name="LANGUAGE" /></translation>
 <translation id="1104948393051856124">ஏற்று தொடரவும்</translation>
-<translation id="1105578556867525047">இணையதளத்தில் கடவுச்சொல்லை மாற்றுங்கள்</translation>
 <translation id="1112015203684611006">அச்சிட முடியவில்லை.</translation>
 <translation id="1125564390852150847">புதிய தாவலை உருவாக்கு</translation>
 <translation id="1145536944570833626">ஏற்கனவே உள்ள தரவை நீக்கு.</translation>
@@ -245,7 +244,6 @@
 <translation id="3783017676699494206">படத்தைச் சேமி</translation>
 <translation id="3789841737615482174">நிறுவுக</translation>
 <translation id="3803696231112616155">இந்தத் தளத்தை மொழிபெயர்</translation>
-<translation id="3836313059960742452">{COUNT,plural, =0{கடவுச்சொற்கள் எதுவும் களவாடப்படவில்லை}=1{{COUNT} கடவுச்சொல் களவாடப்பட்டது}other{{COUNT} கடவுச்சொற்கள் களவாடப்பட்டன}}</translation>
 <translation id="385051799172605136">முந்தைய பக்கம்</translation>
 <translation id="3892144330757387737">உங்கள் வரலாற்றை இங்கே பார்ப்பீர்கள்</translation>
 <translation id="3897092660631435901">மெனு</translation>
@@ -332,6 +330,7 @@
 <translation id="4901778704868714008">சேமி...</translation>
 <translation id="4904877109095351937">படித்ததாகக் குறி</translation>
 <translation id="4930268273022498155">ஏற்கனவே உள்ள தரவை நீக்கவும். மீண்டும் <ph name="USER_EMAIL1" />க்கு மாற்றுவதன் மூலம் அதை மீட்டெடுக்கலாம்.</translation>
+<translation id="4930714375720679147">இயக்கு</translation>
 <translation id="4941089862236492464">மன்னிக்கவும், உங்கள் உருப்படியைப் பகிர்வதில் ஒரு பிரச்சனை ஏற்பட்டது.</translation>
 <translation id="4944543191714094452">பக்கத்தில் கண்டறிக…</translation>
 <translation id="4945756290001680296">கடவுச்சொல் அமைப்புகளைப் பயன்படுத்தும்</translation>
@@ -610,6 +609,7 @@
 <translation id="8073670137947914548">பதிவிறக்கம் முடிவடைந்தது</translation>
 <translation id="8073872304774253879">தேடல்களையும் உலாவுதலையும் மேம்படுத்துங்கள்</translation>
 <translation id="8076014560081431679">சேமித்த தள அமைப்புகள் நீக்கப்படாது, அவை உங்கள் உலாவல் தகவல்களைப் பிரதிபலிக்கக்கூடும். <ph name="BEGIN_LINK" />மேலும் அறிக<ph name="END_LINK" /></translation>
+<translation id="8105368624971345109">முடக்கு</translation>
 <translation id="8114753159095730575">கோப்பைப் பதிவிறக்கிக்கொள்ளலாம். திரையின் அடிப்பகுதிக்கு அருகில், விருப்பங்கள் உள்ளன.</translation>
 <translation id="8131740175452115882">உறுதிப்படுத்து</translation>
 <translation id="8197543752516192074">பக்கத்தை மொழிபெயர்</translation>

@@ -5,6 +5,7 @@
 #include "chrome/browser/performance_manager/persistence/site_data/site_data_cache_facade_factory.h"
 
 #include "base/memory/ptr_util.h"
+#include "base/run_loop.h"
 #include "chrome/browser/history/history_service_factory.h"
 #include "chrome/browser/performance_manager/persistence/site_data/site_data_cache_facade.h"
 #include "chrome/browser/profiles/incognito_helpers.h"
@@ -21,13 +22,8 @@ namespace {
 
 SiteDataCacheFacadeFactory* g_instance = nullptr;
 
-}
-
-// static
-SiteDataCacheFacade* SiteDataCacheFacadeFactory::GetForProfile(
-    Profile* profile) {
-  return static_cast<SiteDataCacheFacade*>(
-      GetInstance()->GetServiceForBrowserContext(profile, true));
+// Tests that want to use this factory will have to explicitly enable it.
+bool g_enable_for_testing = false;
 }
 
 SiteDataCacheFacadeFactory* SiteDataCacheFacadeFactory::GetInstance() {
@@ -35,6 +31,31 @@ SiteDataCacheFacadeFactory* SiteDataCacheFacadeFactory::GetInstance() {
     new SiteDataCacheFacadeFactory();
   DCHECK(g_instance);
   return g_instance;
+}
+
+// static
+std::unique_ptr<base::AutoReset<bool>>
+SiteDataCacheFacadeFactory::EnableForTesting() {
+  // Only one AutoReset served by this function can exists, otherwise the first
+  // one being released would set g_enable_for_testing to false while there's
+  // other AutoReset still existing.
+  DCHECK(!g_enable_for_testing);
+  return std::make_unique<base::AutoReset<bool>>(&g_enable_for_testing, true);
+}
+
+// static
+void SiteDataCacheFacadeFactory::DisassociateForTesting(Profile* profile) {
+  GetInstance()->Disassociate(profile);
+}
+
+// static
+void SiteDataCacheFacadeFactory::ReleaseInstanceForTesting() {
+  base::RunLoop run_loop;
+  g_instance->cache_factory()->ResetWithCallbackAfterDestruction(
+      run_loop.QuitClosure());
+  run_loop.Run();
+  delete g_instance;
+  DCHECK(!g_instance);
 }
 
 SiteDataCacheFacadeFactory::SiteDataCacheFacadeFactory()
@@ -69,8 +90,7 @@ bool SiteDataCacheFacadeFactory::ServiceIsCreatedWithBrowserContext() const {
 }
 
 bool SiteDataCacheFacadeFactory::ServiceIsNULLWhileTesting() const {
-  // Tests that want to use this factory will have to explicitly enable it.
-  return true;
+  return !g_enable_for_testing;
 }
 
 }  // namespace performance_manager

@@ -21,6 +21,7 @@
 #include "chrome/browser/ui/views/accessibility/non_accessible_image_view.h"
 #include "chrome/browser/ui/views/chrome_layout_provider.h"
 #include "chrome/browser/ui/views/chrome_typography.h"
+#include "chrome/browser/ui/views/feature_promos/feature_promo_bubble_params.h"
 #include "chrome/browser/ui/views/feature_promos/feature_promo_bubble_view.h"
 #include "chrome/browser/ui/views/passwords/credentials_item_view.h"
 #include "chrome/browser/ui/views/passwords/password_items_view.h"
@@ -715,14 +716,14 @@ void PasswordSaveUpdateWithAccountStoreView::ShowIPH(IPHType type) {
   bool close_save_bubble_on_deactivate_original_value = close_on_deactivate();
   set_close_on_deactivate(false);
 
-  FeaturePromoBubbleView::CreateParams bubble_params;
+  FeaturePromoBubbleParams bubble_params;
   bubble_params.body_string_specifier = body_string_specificer;
   bubble_params.title_string_specifier = title_string_specificer;
   bubble_params.anchor_view = destination_dropdown_;
   bubble_params.arrow = views::BubbleBorder::RIGHT_CENTER;
   bubble_params.preferred_width = kAccountStoragePromoWidth;
   bubble_params.activation_action =
-      FeaturePromoBubbleView::ActivationAction::ACTIVATE;
+      FeaturePromoBubbleParams::ActivationAction::ACTIVATE;
 
   account_storage_promo_ =
       FeaturePromoBubbleView::Create(std::move(bubble_params));

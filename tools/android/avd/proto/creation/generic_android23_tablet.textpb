@@ -6,13 +6,13 @@
 
 emulator_package {
   package_name: "chromium/third_party/android_sdk/public/emulator"
-  version: "A4EvXZUIuQho0QRDJopMUpgyp6NA3aiDQjGKPUKbowMC"
+  version: "xhyuoquVvBTcJelgRjMKZeoBVSQRjB7pLVJPt5C9saIC"
   dest_path: ".emulator_sdk"
 }
 
 system_image_package {
   package_name: "chromium/third_party/android_sdk/public/system-images/android-23/google_apis/x86"
-  version: "j_921Gw3fAlW8WYL9A6BeEFLQ8CSC9LMhPZKAq8DCxkC"
+  version: "npuCAATVbhmywZwGhI3tMoECTrBBzzyJLpjAPXqtmYYC"
   dest_path: ".emulator_sdk"
 }
 system_image_name: "system-images;android-23;google_apis;x86"
@@ -37,4 +37,7 @@ avd_settings {
     key: "GLDMA"
     value: "off"
   }
+  # Tests can run into low memory issue with the default ram size 1024MB
+  # Incease to 2048MB, which is the same as that on Nexus 5X
+  ram_size: 2048
 }

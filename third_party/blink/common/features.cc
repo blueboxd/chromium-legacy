@@ -228,6 +228,10 @@ const base::Feature kWebRtcHideLocalIpsWithMdns{
 const base::Feature kIntensiveWakeUpThrottling{
     "IntensiveWakeUpThrottling", base::FEATURE_DISABLED_BY_DEFAULT};
 
+// When enabled, timers with timeout=0 are not throttled.
+const base::Feature kOptOutZeroTimeoutTimersFromThrottling{
+    "OptOutZeroTimeoutTimersFromThrottling", base::FEATURE_DISABLED_BY_DEFAULT};
+
 // When enabled, no throttling is applied to a page when it uses WebRTC.
 //
 // This allows a page to use a timer to do video processing on frames. An

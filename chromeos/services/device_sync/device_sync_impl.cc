@@ -677,8 +677,9 @@ void DeviceSyncImpl::GetDevicesActivityStatus(
 
   cryptauth_device_activity_getter_ =
       CryptAuthDeviceActivityGetterImpl::Factory::Create(
-          cryptauth_client_factory_.get(), client_app_metadata_provider_,
-          cryptauth_gcm_manager_.get());
+          client_app_metadata_->instance_id(),
+          client_app_metadata_->instance_id_token(),
+          cryptauth_client_factory_.get());
 
   cryptauth_device_activity_getter_->GetDevicesActivityStatus(
       base::BindOnce(&DeviceSyncImpl::OnGetDevicesActivityStatusFinished,
@@ -1022,7 +1023,7 @@ void DeviceSyncImpl::InitializeCryptAuthManagementObjects() {
 
     cryptauth_enrollment_manager_ =
         CryptAuthV2EnrollmentManagerImpl::Factory::Create(
-            client_app_metadata_provider_, cryptauth_key_registry_.get(),
+            *client_app_metadata_, cryptauth_key_registry_.get(),
             cryptauth_client_factory_.get(), cryptauth_gcm_manager_.get(),
             cryptauth_scheduler_.get(), profile_prefs_, clock_);
   } else {
@@ -1050,7 +1051,7 @@ void DeviceSyncImpl::InitializeCryptAuthManagementObjects() {
 
     cryptauth_v2_device_manager_ =
         CryptAuthV2DeviceManagerImpl::Factory::Create(
-            client_app_metadata_provider_, cryptauth_device_registry_.get(),
+            *client_app_metadata_, cryptauth_device_registry_.get(),
             cryptauth_key_registry_.get(), cryptauth_client_factory_.get(),
             cryptauth_gcm_manager_.get(), cryptauth_scheduler_.get(),
             profile_prefs_);
@@ -1081,12 +1082,14 @@ void DeviceSyncImpl::CompleteInitializationAfterSuccessfulEnrollment() {
 
   if (features::ShouldUseV2DeviceSync()) {
     feature_status_setter_ = CryptAuthFeatureStatusSetterImpl::Factory::Create(
-        client_app_metadata_provider_, cryptauth_client_factory_.get(),
-        cryptauth_gcm_manager_.get());
+        client_app_metadata_->instance_id(),
+        client_app_metadata_->instance_id_token(),
+        cryptauth_client_factory_.get());
 
     device_notifier_ = CryptAuthDeviceNotifierImpl::Factory::Create(
-        client_app_metadata_provider_, cryptauth_client_factory_.get(),
-        cryptauth_gcm_manager_.get());
+        client_app_metadata_->instance_id(),
+        client_app_metadata_->instance_id_token(),
+        cryptauth_client_factory_.get());
   }
 
   if (features::ShouldUseV1DeviceSync()) {

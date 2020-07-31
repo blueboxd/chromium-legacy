@@ -40,9 +40,6 @@ constexpr size_t kDatabaseWriteBufferSizeBytes = 128 * 1024;
 //    "[StoreEntryType::kComponentHint]_[component_version]_[host]"
 constexpr char kKeySectionDelimiter = '_';
 
-// Realistic minimum length of a host suffix.
-const int kMinHostSuffix = 6;  // eg., abc.tv
-
 // Enumerates the possible outcomes of loading metadata. Used in UMA histograms,
 // so the order of enumerators should not be changed.
 //
@@ -342,25 +339,9 @@ bool OptimizationGuideStore::FindEntryKeyForHostWithPrefix(
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   DCHECK(out_entry_key);
 
-  // Look for longest host name suffix that has a hint. No need to continue
-  // lookups and substring work once get to a root domain like ".com" or
-  // ".co.in" (MinHostSuffix length check is a heuristic for that).
-  std::string host_suffix(host);
-  while (host_suffix.length() >= kMinHostSuffix) {
-    // Attempt to find an entry key associated with the current host suffix.
-    *out_entry_key = entry_key_prefix + host_suffix;
-    if (entry_keys_ &&
-        entry_keys_->find(*out_entry_key) != entry_keys_->end()) {
-      return true;
-    }
-
-    size_t pos = host_suffix.find_first_of('.');
-    if (pos == std::string::npos) {
-      break;
-    }
-    host_suffix = host_suffix.substr(pos + 1);
-  }
-  return false;
+  // Look for entry key for host.
+  *out_entry_key = entry_key_prefix + host;
+  return entry_keys_ && entry_keys_->find(*out_entry_key) != entry_keys_->end();
 }
 
 void OptimizationGuideStore::LoadHint(const EntryKey& hint_entry_key,

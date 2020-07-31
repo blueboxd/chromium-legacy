@@ -79,8 +79,6 @@ class CRWNSessionStorageTest : public PlatformTest {
     [item_storage
         setDisplayState:web::PageDisplayState(CGPointZero, UIEdgeInsetsZero,
                                               0.0, 0.0, 0.0)];
-    [item_storage
-        setPOSTData:[@"Test data" dataUsingEncoding:NSUTF8StringEncoding]];
     [item_storage setHTTPRequestHeaders:@{ @"HeaderKey" : @"HeaderValue" }];
     [session_storage_ setItemStorages:@[ item_storage ]];
     // Create serializable user data.

@@ -384,21 +384,27 @@ TabSpecificContentSettings* TabSpecificContentSettings::GetForFrame(
     int render_process_id,
     int render_frame_id) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
-
-  content::RenderFrameHost* frame =
-      content::RenderFrameHost::FromID(render_process_id, render_frame_id);
-  if (!frame)
-    return nullptr;
-  return TabSpecificContentSettings::GetForCurrentDocument(
-      frame->GetMainFrame());
+  return GetForFrame(
+      content::RenderFrameHost::FromID(render_process_id, render_frame_id));
 }
 
 // static
-TabSpecificContentSettings* TabSpecificContentSettings::FromWebContents(
-    content::WebContents* web_contents) {
+TabSpecificContentSettings* TabSpecificContentSettings::GetForFrame(
+    content::RenderFrameHost* rfh) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
-  return TabSpecificContentSettings::GetForCurrentDocument(
-      web_contents->GetMainFrame());
+  return rfh ? TabSpecificContentSettings::GetForCurrentDocument(
+                   rfh->GetMainFrame())
+             : nullptr;
+}
+
+// static
+TabSpecificContentSettings::Delegate*
+TabSpecificContentSettings::GetDelegateForWebContents(
+    content::WebContents* web_contents) {
+  auto* handler =
+      TabSpecificContentSettings::WebContentsHandler::FromWebContents(
+          web_contents);
+  return handler ? handler->delegate() : nullptr;
 }
 
 // static

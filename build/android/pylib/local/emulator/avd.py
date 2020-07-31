@@ -263,6 +263,9 @@ class AvdConfig(object):
             'hw.lcd.width': width,
         })
 
+        if self.avd_settings.ram_size:
+          config_ini_contents['hw.ramSize'] = self.avd_settings.ram_size
+
       # Start & stop the AVD.
       self._Initialize()
       instance = _AvdInstance(self._emulator_path, self._emulator_home,

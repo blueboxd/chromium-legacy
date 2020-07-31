@@ -99,7 +99,7 @@ net_configs = [
   "//build/config/compiler:wexit_time_destructors",
 ]
 
-if (is_linux) {
+if (is_linux || is_chromeos) {
   net_configs += [ "//build/config/linux:libresolv" ]
 }
 
@@ -1239,7 +1239,7 @@ component("net") {
       ]
     }
 
-    if (is_linux) {
+    if (is_linux && !is_chromeos) {
       sources += [
         "base/network_change_notifier_linux.cc",
         "base/network_change_notifier_linux.h",
@@ -1248,7 +1248,7 @@ component("net") {
       ]
     }
 
-    if (is_linux || is_android) {
+    if (is_linux || is_chromeos || is_android) {
       sources += [
         "base/address_tracker_linux.cc",
         "base/address_tracker_linux.h",
@@ -1427,7 +1427,7 @@ component("net") {
     }
 
     # Use getifaddrs() on POSIX platforms, except Linux.
-    if (is_posix && !is_linux) {
+    if (is_posix && !is_linux && !is_chromeos) {
       sources += [
         "base/network_interfaces_getifaddrs.cc",
         "base/network_interfaces_getifaddrs.h",
@@ -2457,7 +2457,7 @@ if (use_external_gssapi) {
   }
 }
 
-if (is_linux || is_mac) {
+if (is_linux || is_chromeos || is_mac) {
   executable("cachetool") {
     testonly = true
     sources = [ "tools/cachetool/cachetool.cc" ]
@@ -2484,7 +2484,7 @@ if (is_linux || is_mac) {
   }
 }
 
-if (is_linux) {
+if (is_linux || is_chromeos) {
   static_library("epoll_server") {
     sources = [
       "tools/epoll_server/platform/impl/epoll_bug_impl.h",
@@ -2560,7 +2560,7 @@ if (is_android) {
   }
 }
 
-if (is_android || is_linux) {
+if (is_android || is_linux || is_chromeos) {
   executable("disk_cache_memory_test") {
     testonly = true
     sources = [ "tools/disk_cache_memory_test/disk_cache_memory_test.cc" ]
@@ -4474,7 +4474,7 @@ test("net_unittests") {
     ]
   }
 
-  if (is_linux) {
+  if (is_linux || is_chromeos) {
     sources += [
       "base/address_tracker_linux_unittest.cc",
       "base/network_interfaces_linux_unittest.cc",
@@ -4585,7 +4585,7 @@ test("net_unittests") {
     "//testing/buildbot/filters:net_unittests_filters",
   ]
 
-  if (is_linux || is_mac || is_win || is_fuchsia) {
+  if (is_linux || is_chromeos || is_mac || is_win || is_fuchsia) {
     deps += [
       "//third_party/pywebsocket3/",
       "//third_party/tlslite/",
@@ -4601,7 +4601,7 @@ test("net_unittests") {
     ]
   }
 
-  if (is_linux) {
+  if (is_linux || is_chromeos) {
     sources += [
       "quic/platform/impl/quic_epoll_clock_test.cc",
       "quic/platform/impl/quic_flags_test.cc",
@@ -4762,7 +4762,7 @@ test("net_unittests") {
   }
 
   # Use getifaddrs() on POSIX platforms, except Linux and Android.
-  if (is_posix && !is_linux && !is_android) {
+  if (is_posix && !is_linux && !is_chromeos && !is_android) {
     sources += [ "base/network_interfaces_getifaddrs_unittest.cc" ]
   }
 
@@ -5566,7 +5566,7 @@ fuzzer_test("net_uri_template_fuzzer") {
   dict = "data/fuzzer_dictionaries/net_uri_template_fuzzer.dict"
 }
 
-if (is_linux) {
+if (is_linux || is_chromeos) {
   fuzzer_test("net_base_address_tracker_linux_fuzzer") {
     sources = [ "base/address_tracker_linux_fuzzer.cc" ]
     deps = [

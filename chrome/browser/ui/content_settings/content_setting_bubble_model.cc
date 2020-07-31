@@ -208,8 +208,9 @@ ContentSettingSimpleBubbleModel*
 }
 
 void ContentSettingSimpleBubbleModel::SetTitle() {
+  // TODO(https://crbug.com/1103176): Plumb the actual frame reference here
   TabSpecificContentSettings* content_settings =
-      TabSpecificContentSettings::FromWebContents(web_contents());
+      TabSpecificContentSettings::GetForFrame(web_contents()->GetMainFrame());
 
   static const ContentSettingsTypeIdEntry kBlockedTitleIDs[] = {
       {ContentSettingsType::COOKIES, IDS_BLOCKED_COOKIES_TITLE},
@@ -244,7 +245,7 @@ void ContentSettingSimpleBubbleModel::SetTitle() {
 
 void ContentSettingSimpleBubbleModel::SetMessage() {
   TabSpecificContentSettings* content_settings =
-      TabSpecificContentSettings::FromWebContents(web_contents());
+      TabSpecificContentSettings::GetForFrame(web_contents()->GetMainFrame());
 
   // TODO(https://crbug.com/978882): Make the two arrays below static again once
   // we no longer need to check base::FeatureList.
@@ -537,7 +538,7 @@ void ContentSettingMidiSysExBubbleModel::MaybeAddDomainList(
 
 void ContentSettingMidiSysExBubbleModel::SetDomainsAndCustomLink() {
   TabSpecificContentSettings* content_settings =
-      TabSpecificContentSettings::FromWebContents(web_contents());
+      TabSpecificContentSettings::GetForFrame(web_contents()->GetMainFrame());
   const ContentSettingsUsagesState& usages_state =
       content_settings->midi_usages_state();
   ContentSettingsUsagesState::FormattedHostsPerState formatted_hosts_per_state;
@@ -567,7 +568,7 @@ void ContentSettingMidiSysExBubbleModel::OnCustomLinkClicked() {
   // origins currently on the page.
   const GURL& embedder_url = web_contents()->GetURL();
   TabSpecificContentSettings* content_settings =
-      TabSpecificContentSettings::FromWebContents(web_contents());
+      TabSpecificContentSettings::GetForFrame(web_contents()->GetMainFrame());
   const ContentSettingsUsagesState::StateMap& state_map =
       content_settings->midi_usages_state().state_map();
   HostContentSettingsMap* map =
@@ -630,7 +631,7 @@ void ContentSettingDomainListBubbleModel::MaybeAddDomainList(
 
 void ContentSettingDomainListBubbleModel::SetDomainsAndCustomLink() {
   TabSpecificContentSettings* content_settings =
-      TabSpecificContentSettings::FromWebContents(web_contents());
+      TabSpecificContentSettings::GetForFrame(web_contents()->GetMainFrame());
   const ContentSettingsUsagesState& usages =
       content_settings->geolocation_usages_state();
   ContentSettingsUsagesState::FormattedHostsPerState formatted_hosts_per_state;
@@ -660,7 +661,7 @@ void ContentSettingDomainListBubbleModel::OnCustomLinkClicked() {
   // origins currently on the page.
   const GURL& embedder_url = web_contents()->GetURL();
   TabSpecificContentSettings* content_settings =
-      TabSpecificContentSettings::FromWebContents(web_contents());
+      TabSpecificContentSettings::GetForFrame(web_contents()->GetMainFrame());
   const ContentSettingsUsagesState::StateMap& state_map =
       content_settings->geolocation_usages_state().state_map();
   HostContentSettingsMap* map =
@@ -720,7 +721,7 @@ ContentSettingPluginBubbleModel::ContentSettingPluginBubbleModel(
     // Disable the "Run all plugins this time" link if the user already clicked
     // on the link and ran all plugins.
     set_custom_link_enabled(
-        TabSpecificContentSettings::FromWebContents(web_contents)
+        TabSpecificContentSettings::GetForFrame(web_contents->GetMainFrame())
             ->load_plugins_link_enabled());
   }
 
@@ -753,7 +754,7 @@ void ContentSettingPluginBubbleModel::RunPluginsOnPage() {
       web_contents(), true, std::string());
 #endif
   set_custom_link_enabled(false);
-  TabSpecificContentSettings::FromWebContents(web_contents())
+  TabSpecificContentSettings::GetForFrame(web_contents()->GetMainFrame())
       ->set_load_plugins_link_enabled(false);
 }
 
@@ -792,7 +793,7 @@ void ContentSettingSingleRadioGroup::SetRadioGroup() {
   base::string16 display_host = url_formatter::FormatUrlForSecurityDisplay(url);
 
   TabSpecificContentSettings* content_settings =
-      TabSpecificContentSettings::FromWebContents(web_contents());
+      TabSpecificContentSettings::GetForFrame(web_contents()->GetMainFrame());
   bool allowed = !content_settings->IsContentBlocked(content_type());
 
   // For the frame busting case the content is blocked but its content type is
@@ -1050,7 +1051,7 @@ ContentSettingMediaStreamBubbleModel::ContentSettingMediaStreamBubbleModel(
   radio_item_setting_[1] = CONTENT_SETTING_BLOCK;
 
   TabSpecificContentSettings* content_settings =
-      TabSpecificContentSettings::FromWebContents(web_contents);
+      TabSpecificContentSettings::GetForFrame(web_contents->GetMainFrame());
   state_ = content_settings->GetMicrophoneCameraState();
   DCHECK(CameraAccessed() || MicrophoneAccessed());
 
@@ -1186,7 +1187,7 @@ void ContentSettingMediaStreamBubbleModel::SetMessage() {
 
 void ContentSettingMediaStreamBubbleModel::SetRadioGroup() {
   TabSpecificContentSettings* content_settings =
-      TabSpecificContentSettings::FromWebContents(web_contents());
+      TabSpecificContentSettings::GetForFrame(web_contents()->GetMainFrame());
   GURL url = content_settings->media_stream_access_origin();
   RadioGroup radio_group;
   radio_group.url = url;
@@ -1265,7 +1266,7 @@ void ContentSettingMediaStreamBubbleModel::SetRadioGroup() {
 void ContentSettingMediaStreamBubbleModel::UpdateSettings(
     ContentSetting setting) {
   TabSpecificContentSettings* tab_content_settings =
-      TabSpecificContentSettings::FromWebContents(web_contents());
+      TabSpecificContentSettings::GetForFrame(web_contents()->GetMainFrame());
   // The same urls must be used as in other places (e.g. the infobar) in
   // order to override the existing rule. Otherwise a new rule is created.
   // TODO(markusheintz): Extract to a helper so that there is only a single
@@ -1367,7 +1368,7 @@ void ContentSettingMediaStreamBubbleModel::UpdateDefaultDeviceForType(
 
 void ContentSettingMediaStreamBubbleModel::SetMediaMenus() {
   TabSpecificContentSettings* content_settings =
-      TabSpecificContentSettings::FromWebContents(web_contents());
+      TabSpecificContentSettings::GetForFrame(web_contents()->GetMainFrame());
   const std::string& requested_microphone =
       content_settings->media_stream_requested_audio_device();
   const std::string& requested_camera =
@@ -1437,7 +1438,7 @@ void ContentSettingMediaStreamBubbleModel::SetManageText() {
 
 void ContentSettingMediaStreamBubbleModel::SetCustomLink() {
   TabSpecificContentSettings* content_settings =
-      TabSpecificContentSettings::FromWebContents(web_contents());
+      TabSpecificContentSettings::GetForFrame(web_contents()->GetMainFrame());
   if (content_settings->IsMicrophoneCameraStateChanged()) {
     set_custom_link(
         l10n_util::GetStringUTF16(IDS_MEDIASTREAM_SETTING_CHANGED_MESSAGE));

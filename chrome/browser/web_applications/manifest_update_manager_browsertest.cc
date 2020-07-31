@@ -35,6 +35,7 @@
 #include "chrome/common/chrome_features.h"
 #include "chrome/test/base/in_process_browser_test.h"
 #include "chrome/test/base/ui_test_utils.h"
+#include "content/public/common/content_features.h"
 #include "content/public/test/browser_test.h"
 #include "content/public/test/url_loader_interceptor.h"
 #include "extensions/browser/extension_registry.h"
@@ -796,6 +797,211 @@ IN_PROC_BROWSER_TEST_P(ManifestUpdateManagerBrowserTest,
             DisplayMode::kStandalone);
 }
 
+// A dedicated test fixture for DisplayOverride, which is supported
+// only for the new web apps mode, and requires a command line switch
+// to enable manifest parsing.
+class ManifestUpdateManagerBrowserTest_DisplayOverride
+    : public ManifestUpdateManagerBrowserTest {
+ public:
+  ManifestUpdateManagerBrowserTest_DisplayOverride() {
+    scoped_feature_list_.InitAndEnableFeature(
+        features::kWebAppManifestDisplayOverride);
+  }
+
+ private:
+  base::test::ScopedFeatureList scoped_feature_list_;
+};
+
+IN_PROC_BROWSER_TEST_P(ManifestUpdateManagerBrowserTest_DisplayOverride,
+                       CheckFindsDisplayOverrideChange) {
+  constexpr char kManifestTemplate[] = R"(
+    {
+      "name": "Test app name",
+      "start_url": ".",
+      "scope": "/",
+      "display": "standalone",
+      "display_override": $1,
+      "icons": $2
+    }
+  )";
+
+  OverrideManifest(kManifestTemplate,
+                   {R"([ "browser", "standalone" ])", kInstallableIconList});
+  AppId app_id = InstallWebApp();
+
+  OverrideManifest(kManifestTemplate,
+                   {R"([ "browser", "minimal-ui" ])", kInstallableIconList});
+  EXPECT_EQ(GetResultAfterPageLoad(GetAppURL(), &app_id),
+            ManifestUpdateResult::kAppUpdated);
+  histogram_tester_.ExpectBucketCount(kUpdateHistogramName,
+                                      ManifestUpdateResult::kAppUpdated, 1);
+  AwaitShortcutsUpdated(kInstallableIconTopLeftColor);
+
+  std::vector<DisplayMode> app_display_mode_override =
+      GetProvider().registrar().GetAppDisplayModeOverride(app_id);
+
+  ASSERT_EQ(2u, app_display_mode_override.size());
+  EXPECT_EQ(DisplayMode::kBrowser, app_display_mode_override[0]);
+  EXPECT_EQ(DisplayMode::kMinimalUi, app_display_mode_override[1]);
+}
+
+IN_PROC_BROWSER_TEST_P(ManifestUpdateManagerBrowserTest_DisplayOverride,
+                       CheckFindsNewDisplayOverride) {
+  constexpr char kManifestTemplate[] = R"(
+    {
+      "name": "Test app name",
+      "start_url": ".",
+      "scope": "/",
+      "display": "standalone",
+      $1
+      "icons": $2
+    }
+  )";
+
+  // No display_override in manifest
+  OverrideManifest(kManifestTemplate, {"", kInstallableIconList});
+  AppId app_id = InstallWebApp();
+
+  // Add display_override field
+  OverrideManifest(kManifestTemplate,
+                   {R"("display_override": [ "minimal-ui", "standalone" ],)",
+                    kInstallableIconList});
+  EXPECT_EQ(GetResultAfterPageLoad(GetAppURL(), &app_id),
+            ManifestUpdateResult::kAppUpdated);
+  histogram_tester_.ExpectBucketCount(kUpdateHistogramName,
+                                      ManifestUpdateResult::kAppUpdated, 1);
+  AwaitShortcutsUpdated(kInstallableIconTopLeftColor);
+
+  std::vector<DisplayMode> app_display_mode_override =
+      GetProvider().registrar().GetAppDisplayModeOverride(app_id);
+
+  ASSERT_EQ(2u, app_display_mode_override.size());
+  EXPECT_EQ(DisplayMode::kMinimalUi, app_display_mode_override[0]);
+  EXPECT_EQ(DisplayMode::kStandalone, app_display_mode_override[1]);
+}
+
+IN_PROC_BROWSER_TEST_P(ManifestUpdateManagerBrowserTest_DisplayOverride,
+                       CheckFindsDeletedDisplayOverride) {
+  constexpr char kManifestTemplate[] = R"(
+    {
+      "name": "Test app name",
+      "start_url": ".",
+      "scope": "/",
+      "display": "standalone",
+      $1
+      "icons": $2
+    }
+  )";
+
+  // Ensure display_override exists in initial manifest
+  OverrideManifest(kManifestTemplate,
+                   {R"("display_override": [ "fullscreen", "minimal-ui" ],)",
+                    kInstallableIconList});
+  AppId app_id = InstallWebApp();
+
+  // Remove display_override from manifest
+  OverrideManifest(kManifestTemplate, {"", kInstallableIconList});
+  EXPECT_EQ(GetResultAfterPageLoad(GetAppURL(), &app_id),
+            ManifestUpdateResult::kAppUpdated);
+  histogram_tester_.ExpectBucketCount(kUpdateHistogramName,
+                                      ManifestUpdateResult::kAppUpdated, 1);
+  AwaitShortcutsUpdated(kInstallableIconTopLeftColor);
+
+  std::vector<DisplayMode> app_display_mode_override =
+      GetProvider().registrar().GetAppDisplayModeOverride(app_id);
+
+  ASSERT_EQ(0u, app_display_mode_override.size());
+}
+
+IN_PROC_BROWSER_TEST_P(ManifestUpdateManagerBrowserTest_DisplayOverride,
+                       CheckFindsInvalidDisplayOverride) {
+  constexpr char kManifestTemplate[] = R"(
+    {
+      "name": "Test app name",
+      "start_url": ".",
+      "scope": "/",
+      "display": "standalone",
+      "display_override": $1,
+      "icons": $2
+    }
+  )";
+
+  OverrideManifest(kManifestTemplate,
+                   {R"([ "browser", "fullscreen" ])", kInstallableIconList});
+  AppId app_id = InstallWebApp();
+
+  ASSERT_EQ(2u,
+            GetProvider().registrar().GetAppDisplayModeOverride(app_id).size());
+
+  // display_override contains only invalid values
+  OverrideManifest(kManifestTemplate,
+                   {R"( [ "invalid", 7 ])", kInstallableIconList});
+  EXPECT_EQ(GetResultAfterPageLoad(GetAppURL(), &app_id),
+            ManifestUpdateResult::kAppUpdated);
+  histogram_tester_.ExpectBucketCount(kUpdateHistogramName,
+                                      ManifestUpdateResult::kAppUpdated, 1);
+  AwaitShortcutsUpdated(kInstallableIconTopLeftColor);
+
+  std::vector<DisplayMode> app_display_mode_override =
+      GetProvider().registrar().GetAppDisplayModeOverride(app_id);
+
+  ASSERT_EQ(0u, app_display_mode_override.size());
+}
+
+IN_PROC_BROWSER_TEST_P(ManifestUpdateManagerBrowserTest_DisplayOverride,
+                       CheckIgnoresDisplayOverrideInvalidChange) {
+  constexpr char kManifestTemplate[] = R"(
+    {
+      "name": "Test app name",
+      "start_url": ".",
+      "scope": "/",
+      "display": "standalone",
+      $1
+      "icons": $2
+    }
+  )";
+
+  // No display_override in manifest
+  OverrideManifest(kManifestTemplate, {"", kInstallableIconList});
+  AppId app_id = InstallWebApp();
+
+  // display_override contains only invalid values
+  OverrideManifest(
+      kManifestTemplate,
+      {R"("display_override": [ "invalid", 7 ],)", kInstallableIconList});
+  EXPECT_EQ(GetResultAfterPageLoad(GetAppURL(), &app_id),
+            ManifestUpdateResult::kAppUpToDate);
+  histogram_tester_.ExpectBucketCount(kUpdateHistogramName,
+                                      ManifestUpdateResult::kAppUpToDate, 1);
+}
+
+IN_PROC_BROWSER_TEST_P(ManifestUpdateManagerBrowserTest_DisplayOverride,
+                       CheckIgnoresDisplayOverrideChange) {
+  constexpr char kManifestTemplate[] = R"(
+    {
+      "name": "Test app name",
+      "start_url": ".",
+      "scope": "/",
+      "display": "standalone",
+      "display_override": $1,
+      "icons": $2
+    }
+  )";
+
+  OverrideManifest(kManifestTemplate,
+                   {R"([ "browser", "fullscreen" ])", kInstallableIconList});
+  AppId app_id = InstallWebApp();
+
+  // display_override contains an additional invalid value
+  OverrideManifest(
+      kManifestTemplate,
+      {R"([ "invalid", "browser", "fullscreen" ])", kInstallableIconList});
+  EXPECT_EQ(GetResultAfterPageLoad(GetAppURL(), &app_id),
+            ManifestUpdateResult::kAppUpToDate);
+  histogram_tester_.ExpectBucketCount(kUpdateHistogramName,
+                                      ManifestUpdateResult::kAppUpToDate, 1);
+}
+
 IN_PROC_BROWSER_TEST_P(ManifestUpdateManagerBrowserTest,
                        CheckFindsIconContentChange) {
   constexpr char kManifest[] = R"(
@@ -1328,6 +1534,12 @@ INSTANTIATE_TEST_SUITE_P(All,
                          ManifestUpdateManagerBrowserTestWithShortcutsMenu,
                          ::testing::Values(ProviderType::kBookmarkApps,
                                            ProviderType::kWebApps),
+                         ProviderTypeParamToString);
+
+// DisplayOverride is supported only for the new web apps mode
+INSTANTIATE_TEST_SUITE_P(All,
+                         ManifestUpdateManagerBrowserTest_DisplayOverride,
+                         ::testing::Values(ProviderType::kWebApps),
                          ProviderTypeParamToString);
 
 }  // namespace web_app

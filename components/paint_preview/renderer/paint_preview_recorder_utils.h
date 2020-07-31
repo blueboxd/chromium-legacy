@@ -21,9 +21,10 @@ namespace paint_preview {
 
 class PaintPreviewTracker;
 
-// Walks |buffer| to extract all the glyphs from its text blobs and writes
-// them to |tracker|.
-void ParseGlyphs(const cc::PaintOpBuffer* buffer, PaintPreviewTracker* tracker);
+// Walks |buffer| to extract all the glyphs from its text blobs and links. The
+// extracted data is written to to |tracker|.
+void ParseGlyphsAndLinks(const cc::PaintOpBuffer* buffer,
+                         PaintPreviewTracker* tracker);
 
 // Serializes |record| to |out_stream| as an SkPicture of size |dimensions|.
 // |tracker| supplies metadata required during serialization.

@@ -22,9 +22,7 @@ namespace chromeos {
 
 namespace device_sync {
 
-class ClientAppMetadataProvider;
 class CryptAuthClientFactory;
-class CryptAuthGCMManager;
 
 class FakeCryptAuthDeviceNotifier : public CryptAuthDeviceNotifier {
  public:
@@ -84,30 +82,28 @@ class FakeCryptAuthDeviceNotifierFactory
     return instances_;
   }
 
-  const ClientAppMetadataProvider* last_client_app_metadata_provider() const {
-    return last_client_app_metadata_provider_;
+  const std::string& last_instance_id() const { return last_instance_id_; }
+
+  const std::string& last_instance_id_token() const {
+    return last_instance_id_token_;
   }
 
   const CryptAuthClientFactory* last_client_factory() const {
     return last_client_factory_;
   }
 
-  const CryptAuthGCMManager* last_gcm_manager() const {
-    return last_gcm_manager_;
-  }
-
  private:
   // CryptAuthDeviceNotifierImpl::Factory:
   std::unique_ptr<CryptAuthDeviceNotifier> CreateInstance(
-      ClientAppMetadataProvider* client_app_metadata_provider,
+      const std::string& instance_id,
+      const std::string& instance_id_token,
       CryptAuthClientFactory* client_factory,
-      CryptAuthGCMManager* gcm_manager,
       std::unique_ptr<base::OneShotTimer> timer) override;
 
   std::vector<FakeCryptAuthDeviceNotifier*> instances_;
-  ClientAppMetadataProvider* last_client_app_metadata_provider_ = nullptr;
+  std::string last_instance_id_;
+  std::string last_instance_id_token_;
   CryptAuthClientFactory* last_client_factory_ = nullptr;
-  CryptAuthGCMManager* last_gcm_manager_ = nullptr;
 
   DISALLOW_COPY_AND_ASSIGN(FakeCryptAuthDeviceNotifierFactory);
 };

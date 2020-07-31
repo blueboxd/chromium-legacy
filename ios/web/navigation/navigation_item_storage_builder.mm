@@ -33,7 +33,6 @@ CRWNavigationItemStorage* NavigationItemStorageBuilder::BuildStorage(
   storage.shouldSkipRepostFormConfirmation =
       navigation_item->ShouldSkipRepostFormConfirmation();
   storage.userAgentType = navigation_item->GetUserAgentType();
-  storage.POSTData = navigation_item->GetPostData();
   storage.HTTPRequestHeaders = navigation_item->GetHttpRequestHeaders();
   return storage;
 }
@@ -71,7 +70,6 @@ NavigationItemStorageBuilder::BuildNavigationItemImpl(
   // Use reload transition type to avoid incorrect increase for typed count.
   item->transition_type_ = ui::PAGE_TRANSITION_RELOAD;
   item->user_agent_type_ = navigation_item_storage.userAgentType;
-  item->post_data_ = navigation_item_storage.POSTData;
   item->http_request_headers_ =
       [navigation_item_storage.HTTPRequestHeaders mutableCopy];
   return item;

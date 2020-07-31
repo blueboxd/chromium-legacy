@@ -14,7 +14,6 @@
 <translation id="1084365883616172403">Postimi në Facebook u krye.</translation>
 <translation id="1103523840287552314">Përkthe gjithmonë nga <ph name="LANGUAGE" /></translation>
 <translation id="1104948393051856124">Prano dhe vazhdo</translation>
-<translation id="1105578556867525047">Ndryshoje fjalëkalimin në faqen e internetit</translation>
 <translation id="1112015203684611006">Printimi dështoi.</translation>
 <translation id="1125564390852150847">Krijo një skedë të re</translation>
 <translation id="1145536944570833626">Fshi të dhënat ekzistuese.</translation>
@@ -23,6 +22,7 @@
 <translation id="1176932207622159128">Imazhi nuk mund të ruhet</translation>
 <translation id="1180526666083833456">Sinkronizo e personalizo përmes pajisjeve.</translation>
 <translation id="1181037720776840403">Hiq</translation>
+<translation id="1185569544548277362">E re: Mund ta bësh Chrome shfletuesin tënd të parazgjedhur. <ph name="BEGIN_LINK" />Hap "Cilësimet"<ph name="END_LINK" /></translation>
 <translation id="1207113853726624428">Kërkim i ri</translation>
 <translation id="1209206284964581585">Fshih për momentin</translation>
 <translation id="1219674500290482172">Është e pamundur lidhja me internetin.</translation>
@@ -245,7 +245,6 @@ Në modalitetin "i fshehtë", sajtet nuk mund t'i përdorin kukit për të parë
 <translation id="3783017676699494206">Ruaj imazhin</translation>
 <translation id="3789841737615482174">Instalo</translation>
 <translation id="3803696231112616155">Ofro përkthimin për këtë sajt</translation>
-<translation id="3836313059960742452">{COUNT,plural, =0{Asnjë fjalëkalim i komprometuar}=1{{COUNT} fjalëkalim i komprometuar}other{{COUNT} fjalëkalime të komprometuara}}</translation>
 <translation id="385051799172605136">Prapa</translation>
 <translation id="3892144330757387737">Këtu do të gjesh historikun tënd</translation>
 <translation id="3897092660631435901">Menyja</translation>
@@ -332,6 +331,7 @@ Për të ndryshuar këtë cilësim, <ph name="BEGIN_LINK" />rivendos sinkronizim
 <translation id="4901778704868714008">Ruaj...</translation>
 <translation id="4904877109095351937">Shëno si të lexuara</translation>
 <translation id="4930268273022498155">Fshi të dhënat ekzistuese. Mund t'i marrësh ato duke u kthyer përsëri te <ph name="USER_EMAIL1" />.</translation>
+<translation id="4930714375720679147">Aktivizo</translation>
 <translation id="4941089862236492464">Na vjen keq, kishte një problem në ndarjen e artikullit tënd.</translation>
 <translation id="4944543191714094452">Gjej në faqe…</translation>
 <translation id="4945756290001680296">Qasu te cilësimet e fjalëkalimit</translation>
@@ -610,6 +610,7 @@ Sajtet mund t'i përdorin kukit për të parë aktivitetin tënd të shfletimit 
 <translation id="8073670137947914548">Shkarkimi përfundoi</translation>
 <translation id="8073872304774253879">Përmirëson kërkimet dhe shfletimin</translation>
 <translation id="8076014560081431679">Cilësimet e ruajtura të sajteve nuk do të fshihen dhe mund të pasqyrojnë zakonet e tua të shfletimit. <ph name="BEGIN_LINK" />Mëso më shumë<ph name="END_LINK" /></translation>
+<translation id="8105368624971345109">Çaktivizo</translation>
 <translation id="8114753159095730575">Ofrohet shkarkimi i skedarit. Opsionet ofrohen pranë fundit të ekranit.</translation>
 <translation id="8131740175452115882">Konfirmo</translation>
 <translation id="8197543752516192074">Përkthe faqen</translation>
@@ -639,6 +640,7 @@ Sajtet mund t'i përdorin kukit për të parë aktivitetin tënd të shfletimit 
 <translation id="8524799873541103884"><ph name="INCOGNITO" /> Skeda <ph name="FIRST_VISIBLE_TAB" /> deri <ph name="LAST_VISIBLE_TAB" /> nga <ph name="NUMBER_OF_OPEN_TABS" /></translation>
 <translation id="8529767659511976195">Risi</translation>
 <translation id="8532105204136943229">Viti i skadimit</translation>
+<translation id="8533166274275423134">Hapur diku tjetër</translation>
 <translation id="8534481786647257214">Postimi i Google+ përfundoi.</translation>
 <translation id="8548878600947630424">Gjej në faqe...</translation>
 <translation id="8574235780160508979">Kushtet e shërbimit të Chrome ndryshojnë më 31 mars. <ph name="BEGIN_LINK" />Shqyrtoji<ph name="END_LINK" /></translation>

@@ -5,6 +5,7 @@
 import 'chrome://resources/cr_elements/cr_icon_button/cr_icon_button.m.js';
 import 'chrome://resources/cr_elements/icons.m.js';
 import 'chrome://resources/cr_elements/shared_vars_css.m.js';
+import 'chrome://resources/polymer/v3_0/iron-icon/iron-icon.js';
 import 'chrome://resources/polymer/v3_0/paper-progress/paper-progress.js';
 import './icons.js';
 // <if expr="chromeos">
@@ -71,7 +72,6 @@ export class ViewerPdfToolbarNewElement extends PolymerElement {
         observer: 'viewportZoomChanged_',
       },
 
-      /** @private {boolean} */
       twoUpViewEnabled_: Boolean,
 
       fittingType_: Number,
@@ -101,6 +101,9 @@ export class ViewerPdfToolbarNewElement extends PolymerElement {
 
     /** @private {boolean} */
     this.loading_ = true;
+
+    /** @private {boolean} */
+    this.displayAnnotations_ = true;
 
     /** @private {boolean} */
     this.twoUpViewEnabled_ = false;
@@ -163,6 +166,13 @@ export class ViewerPdfToolbarNewElement extends PolymerElement {
   /** @private */
   onRotateClick_() {
     this.dispatchEvent(new CustomEvent('rotate-left'));
+  }
+
+  /** @private */
+  onShowAnnotationsClick_() {
+    this.displayAnnotations_ = !this.displayAnnotations_;
+    this.dispatchEvent(new CustomEvent(
+        'display-annotations-changed', {detail: this.displayAnnotations_}));
   }
 
   /** @private */

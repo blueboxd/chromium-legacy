@@ -652,7 +652,7 @@ proto_library("net_quic_test_tools_proto") {
   extra_configs = [ "//build/config/compiler:wexit_time_destructors" ]
 }
 
-if (is_linux) {
+if (is_linux || is_chromeos) {
   source_set("epoll_server_core") {
     sources = [
       "src/epoll_server/platform/api/epoll_bug.h",
@@ -984,7 +984,7 @@ source_set("quic_test_tools_core") {
     "//third_party/quic_trace:quic_trace_proto",
   ]
 
-  if (is_linux) {
+  if (is_linux || is_chromeos) {
     sources += [
       "src/epoll_server/fake_simple_epoll_server.cc",
       "src/epoll_server/fake_simple_epoll_server.h",
@@ -1450,7 +1450,7 @@ source_set("quiche_tests") {
   if (is_desktop_linux) {
     public_deps += [ "//net:epoll_quic_tools" ]
   }
-  if (is_linux) {
+  if (is_linux || is_chromeos) {
     sources += [
       "src/epoll_server/simple_epoll_server_test.cc",
       "src/quic/core/chlo_extractor_test.cc",

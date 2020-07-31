@@ -14,7 +14,6 @@
 <translation id="1084365883616172403">Okuthunyelwe kwe-Facebook kuqedile.</translation>
 <translation id="1103523840287552314">Humusha njalo i-<ph name="LANGUAGE" /></translation>
 <translation id="1104948393051856124">Yamukela futhi uqhubeke</translation>
-<translation id="1105578556867525047">Shintsha iphasiwedi Kuwebhusayithi</translation>
 <translation id="1112015203684611006">Ukuphrinta kwehlulekile.</translation>
 <translation id="1125564390852150847">Dala ithebhu entsha</translation>
 <translation id="1145536944570833626">Susa idatha ekhona.</translation>
@@ -246,7 +245,6 @@ Lapho uku-incognito, amasayithi awakwazi ukusebenzisa amakhukhi akho ukubona ums
 <translation id="3783017676699494206">Londoloza isithombe</translation>
 <translation id="3789841737615482174">Faka</translation>
 <translation id="3803696231112616155">Nikeza ukuhumusha leli sayithi</translation>
-<translation id="3836313059960742452">{COUNT,plural, =0{Awekho amaphasiwedi onakalisiwe}=1{Amaphasiwedi onakalisiwe angu-{COUNT}}one{Amaphasiwedi onakalisiwe angu-{COUNT}}other{Amaphasiwedi onakalisiwe angu-{COUNT}}}</translation>
 <translation id="385051799172605136">Emuva</translation>
 <translation id="3892144330757387737">Uzothola umlando wakho lapha</translation>
 <translation id="3897092660631435901">Imenyu</translation>
@@ -333,6 +331,7 @@ Ukuze ushintshe lesi silungiselelo, <ph name="BEGIN_LINK" />setha kabusha ukuvum
 <translation id="4901778704868714008">Londoloza...</translation>
 <translation id="4904877109095351937">Maka njengokufundiwe</translation>
 <translation id="4930268273022498155">Susa idatha ekhona. Ungayithola ngokubuyela emuva ku-<ph name="USER_EMAIL1" />.</translation>
+<translation id="4930714375720679147">Vula</translation>
 <translation id="4941089862236492464">Uxolo, kube nephutha ukwabelana ngento yakho.</translation>
 <translation id="4944543191714094452">Thola kukhasi…</translation>
 <translation id="4945756290001680296">Finyelela kuzilungiselelo zephasiwedi</translation>
@@ -611,6 +610,7 @@ Amasayithi angasebenzisa amakhukhi ukubona umsebenzi wakho wokuphequlula kumasay
 <translation id="8073670137947914548">Ukulanda kuqedile</translation>
 <translation id="8073872304774253879">Yenza usesho nokuphequlula kube ngcono</translation>
 <translation id="8076014560081431679">Izilungiselelo ezilondoloziwe zesayithi ngeke zize zisuswe futhi zingabonisa imikhuba yakho yokuphequlula. <ph name="BEGIN_LINK" />Funda kabanzi<ph name="END_LINK" /></translation>
+<translation id="8105368624971345109">Vala</translation>
 <translation id="8114753159095730575">Ukulanda ifayela kuyatholakala. Izinketho zitholakala eduze kwangaphansi kwesikrini.</translation>
 <translation id="8131740175452115882">Qinisekisa</translation>
 <translation id="8197543752516192074">Humusha ikhasi</translation>

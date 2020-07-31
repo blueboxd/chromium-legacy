@@ -16,10 +16,10 @@
 #include "base/sequence_checker.h"
 #include "base/time/time.h"
 #include "components/performance_manager/persistence/site_data/exponential_moving_average.h"
-#include "components/performance_manager/persistence/site_data/feature_usage.h"
 #include "components/performance_manager/persistence/site_data/site_data.pb.h"
 #include "components/performance_manager/persistence/site_data/site_data_store.h"
 #include "components/performance_manager/persistence/site_data/tab_visibility.h"
+#include "components/performance_manager/public/persistence/site_data/feature_usage.h"
 #include "url/origin.h"
 
 namespace performance_manager {

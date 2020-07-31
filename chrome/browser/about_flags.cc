@@ -3235,10 +3235,6 @@ const FeatureEntry kFeatureEntries[] = {
                                  "https://play.google.com/store/apps/"
                                  "details?id=com.android.chrome")},
 #endif  // OS_ANDROID
-    {"tls13-hardening-for-local-anchors",
-     flag_descriptions::kTLS13HardeningForLocalAnchorsName,
-     flag_descriptions::kTLS13HardeningForLocalAnchorsDescription, kOsAll,
-     FEATURE_VALUE_TYPE(features::kTLS13HardeningForLocalAnchors)},
     {"enable-tls13-early-data", flag_descriptions::kEnableTLS13EarlyDataName,
      flag_descriptions::kEnableTLS13EarlyDataDescription, kOsAll,
      FEATURE_VALUE_TYPE(net::features::kEnableTLS13EarlyData)},

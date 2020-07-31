@@ -150,7 +150,7 @@
 
       如果此政策未设置或设为 false，系统便不会使用快速切换功能。
       如果设为 true，系统会使用快速切换功能（如果无线接入点支持该功能的话）。</translation>
-<translation id="1240722269871366886">通过设置此政策，您可让 <ph name="PRODUCT_OS_NAME" />在用户使用虚拟键盘或物理键盘输入文字时建议表情符号。
+<translation id="1240722269871366886">通过设置此政策，您可让 <ph name="PRODUCT_OS_NAME" />在用户使用虚拟键盘或实体键盘输入文字时建议表情符号。
       如果此政策设为 true，该功能便会处于开启状态，但用户可以自行更改此设置。
       此政策默认设为 false，在这种情况下，系统不会建议任何表情符号，而且用户无法覆盖此设置。</translation>
 <translation id="1243570869342663665">控制 SafeSites 的成人内容滤除机制。</translation>
@@ -622,26 +622,6 @@
 <translation id="2082205219176343977">为设备配置允许使用的最低 Chrome 版本。</translation>
 <translation id="209586405398070749">稳定版</translation>
 <translation id="2098658257603918882">启用关于使用情况和崩溃相关数据的报告</translation>
-<translation id="210034539800365161">此政策旨在配置允许使用的最低 <ph name="PRODUCT_OS_NAME" />版本的要求。
-
-      当此政策设为非空列表时：
-      如果所有条目的“<ph name="CHROMEOS_VERSION_PROPERTY_NAME" />”都不高于设备中的当前版本，系统将不会应用任何限制，而且已有的限制会被撤消。
-      如果有至少 1 个条目的“<ph name="CHROMEOS_VERSION_PROPERTY_NAME" />”高于当前版本，系统会从中选择所对应版本与当前版本最接近的那个条目。
-      如果存在冲突，系统会优先考虑“<ph name="WARNING_PERIOD_PROPERTY_NAME" />”或“<ph name="AUE_WARNING_PERIOD_PROPERTY_NAME" />”较低的那个条目，并会使用该条目应用此政策。
-
-      如果当前版本在用户使用期间变为过时版本，并且当前网络限制自动更新，系统会在屏幕上显示通知，以要求用户在通知中显示的“<ph name="WARNING_PERIOD_PROPERTY_NAME" />”期限内更新设备。
-      如果当前网络允许自动更新，系统将不会显示任何通知，但用户必须在“<ph name="WARNING_PERIOD_PROPERTY_NAME" />”期限内更新设备。
-      “<ph name="WARNING_PERIOD_PROPERTY_NAME" />”期限的起算点是此政策被应用时。
-      如果设备在“<ph name="WARNING_PERIOD_PROPERTY_NAME" />”期限内一直未更新，系统会强制用户退出登录。
-      如果当前版本在用户登录时已过时，并且“<ph name="WARNING_PERIOD_PROPERTY_NAME" />”期限已过，用户必须更新设备才能登录。
-
-      如果当前版本在用户使用期间变为过时版本，并且设备的自动更新期限已过，系统会在屏幕上显示通知，以要求用户在“<ph name="AUE_WARNING_PERIOD_PROPERTY_NAME" />”期限内退还设备。
-      如果用户登录时设备的自动更新期限已过，并且“<ph name="AUE_WARNING_PERIOD_PROPERTY_NAME" />”期限已过，任何用户都无法登录设备。
-
-      如果此政策未设置或设为空列表，系统将不会应用任何限制，已有的限制会被撤消，并且无论使用的是哪个 <ph name="PRODUCT_OS_NAME" />版本，用户都能登录。
-
-      此处的“<ph name="CHROMEOS_VERSION_PROPERTY_NAME" />”既可以是确切版本（如“13305.0.0”），也可以是版本前缀（如“13305”）。
-      “<ph name="WARNING_PERIOD_PROPERTY_NAME" />”和“<ph name="AUE_WARNING_PERIOD_PROPERTY_NAME" />”都是可选值，在使用时应以天数为单位指定。这两个期限的默认值都是 0 天，表示没有警告期。</translation>
 <translation id="2104418465060359056">报告扩展程序和插件信息</translation>
 <translation id="2106627642643925514">替换默认 PIN 码打印模式。如果这种模式不适用，系统会忽略此政策。</translation>
 <translation id="2107601598727098402">
@@ -4558,13 +4538,6 @@
 
       您可按以下格式指定 Google 的搜索网址：<ph name="GOOGLE_SEARCH_URL" />。</translation>
 <translation id="7895553628261067384">远程访问</translation>
-<translation id="7898879331506985900">这项企业政策只是短期的适应性措施，将在 M86 中移除。
-
-      为配合 M80 稳定版的逐步推出，Chrome 的默认引荐来源网址政策正从其当前值 no-referrer-when-downgrade 强化为更安全的 strict-origin-when-cross-origin。
-
-      在 M80 稳定版发布前，这项企业政策将不会产生任何效力。在 M80 稳定版发布后，当这项企业政策处于启用状态时，Chrome 的默认引荐来源网址政策值将被设为 M80 预发布版本中采用的值 no-referrer-when-downgrade。
-
-      默认情况下，这项企业政策会处于停用状态。</translation>
 <translation id="7902040092815978832">在用户输入密码时显示数字键盘</translation>
 <translation id="7912255076272890813">配置允许的应用/扩展程序类型</translation>
 <translation id="7922358664346625612">使 Chrome 中仅剩的那个标签页保持打开状态。</translation>

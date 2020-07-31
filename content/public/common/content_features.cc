@@ -176,7 +176,7 @@ const base::Feature kDesktopCaptureChangeSource{
 
 // Enable document policy for configuring and restricting feature behavior.
 const base::Feature kDocumentPolicy{"DocumentPolicy",
-                                    base::FEATURE_DISABLED_BY_DEFAULT};
+                                    base::FEATURE_ENABLED_BY_DEFAULT};
 
 // Enable document policy negotiation mechanism.
 const base::Feature kDocumentPolicyNegotiation{

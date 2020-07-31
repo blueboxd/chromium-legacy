@@ -371,6 +371,10 @@ Image& Image::operator=(Image&& other) noexcept = default;
 
 Image::~Image() {}
 
+bool Image::operator==(const Image& other) const {
+  return storage_ == other.storage_;
+}
+
 // static
 Image Image::CreateFrom1xBitmap(const SkBitmap& bitmap) {
   return Image(ImageSkia::CreateFrom1xBitmap(bitmap));

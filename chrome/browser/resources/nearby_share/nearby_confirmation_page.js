@@ -16,11 +16,15 @@ import './nearby_preview.js';
 import './nearby_progress.js';
 import './nearby_share_target_types.mojom-lite.js';
 import './nearby_share.mojom-lite.js';
+import './strings.m.js';
 
+import {I18nBehavior} from 'chrome://resources/js/i18n_behavior.m.js';
 import {html, Polymer} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
 
 Polymer({
   is: 'nearby-confirmation-page',
+
+  behaviors: [I18nBehavior],
 
   _template: html`{__html_template__}`,
 

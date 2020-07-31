@@ -176,7 +176,35 @@ NearbySharePrivateCertificate::NearbySharePrivateCertificate(
 }
 
 NearbySharePrivateCertificate::NearbySharePrivateCertificate(
-    NearbySharePrivateCertificate&&) = default;
+    const NearbySharePrivateCertificate& other) {
+  *this = other;
+}
+
+NearbySharePrivateCertificate& NearbySharePrivateCertificate::operator=(
+    const NearbySharePrivateCertificate& other) {
+  if (this == &other)
+    return *this;
+
+  visibility_ = other.visibility_;
+  not_before_ = other.not_before_;
+  not_after_ = other.not_after_;
+  key_pair_ = other.key_pair_->Copy();
+  secret_key_ = crypto::SymmetricKey::Import(
+      crypto::SymmetricKey::Algorithm::AES, other.secret_key_->key());
+  metadata_encryption_key_ = other.metadata_encryption_key_;
+  id_ = other.id_;
+  unencrypted_metadata_ = other.unencrypted_metadata_;
+  consumed_salts_ = other.consumed_salts_;
+  next_salts_for_testing_ = other.next_salts_for_testing_;
+  offset_for_testing_ = other.offset_for_testing_;
+  return *this;
+}
+
+NearbySharePrivateCertificate::NearbySharePrivateCertificate(
+    NearbySharePrivateCertificate&& other) = default;
+
+NearbySharePrivateCertificate& NearbySharePrivateCertificate::operator=(
+    NearbySharePrivateCertificate&& other) = default;
 
 NearbySharePrivateCertificate::~NearbySharePrivateCertificate() = default;
 

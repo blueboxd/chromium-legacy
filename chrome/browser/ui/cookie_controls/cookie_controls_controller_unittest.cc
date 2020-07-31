@@ -98,8 +98,8 @@ class CookieControlsTest : public ChromeRenderViewHostTestHarness {
 
   content_settings::TabSpecificContentSettings*
   tab_specific_content_settings() {
-    return content_settings::TabSpecificContentSettings::FromWebContents(
-        web_contents());
+    return content_settings::TabSpecificContentSettings::GetForFrame(
+        web_contents()->GetMainFrame());
   }
 
  private:

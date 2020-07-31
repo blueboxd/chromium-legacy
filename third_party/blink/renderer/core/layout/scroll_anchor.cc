@@ -597,9 +597,13 @@ bool ScrollAnchor::RestoreAnchor(const SerializedAnchor& serialized_anchor) {
     // and attempt to re-find the anchor. The user-visible effect should end up
     // roughly the same.
     ScrollOffset current_offset = scroller_->GetScrollOffset();
-    FloatPoint desired_point =
-        anchor_object->AbsoluteBoundingBoxFloatRect().Location() +
-        current_offset;
+    FloatRect bounding_box = anchor_object->AbsoluteBoundingBoxFloatRect();
+    FloatPoint location_point =
+        anchor_object->Style()->IsFlippedBlocksWritingMode()
+            ? bounding_box.MaxXMinYCorner()
+            : bounding_box.Location();
+    FloatPoint desired_point = location_point + current_offset;
+
     ScrollOffset desired_offset =
         ScrollOffset(desired_point.X(), desired_point.Y());
     ScrollOffset delta =
@@ -647,6 +651,7 @@ const SerializedAnchor ScrollAnchor::GetSerializedAnchor() {
   SerializedAnchor new_anchor(
       ComputeUniqueSelector(anchor_object_->GetNode()),
       ComputeRelativeOffset(anchor_object_, scroller_, corner_));
+
   if (new_anchor.IsValid()) {
     saved_selector_ = new_anchor.selector;
   }

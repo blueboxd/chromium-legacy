@@ -1161,7 +1161,6 @@ Instala a aplicación Family Link no teu dispositivo e poderás xestionar a conf
 <translation id="2408955596600435184">Introduce o PIN</translation>
 <translation id="241082044617551207">Plugin descoñecido</translation>
 <translation id="2412593942846481727">Hai unha actualización dispoñible</translation>
-<translation id="2414499877591062094">Activar envío automático do PIN</translation>
 <translation id="2416435988630956212">Teclas de función do teclado</translation>
 <translation id="241727068219398187">Os datos encriptáronse co teu contrasinal de Google a partir do
           <ph name="TIME" />. Non se inclúen os métodos de pago nin os enderezos de Google Pay.</translation>
@@ -3404,7 +3403,6 @@ Instala a aplicación Family Link no teu dispositivo e poderás xestionar a conf
 <translation id="5241128660650683457">Ler todos os teus datos dos sitios web que visitas</translation>
 <translation id="5242724311594467048">Queres activar <ph name="EXTENSION_NAME" />?</translation>
 <translation id="5243522832766285132">Téntao de novo nuns minutos</translation>
-<translation id="5244406554036143958">Escribe o teu PIN para activar o envío automático</translation>
 <translation id="5244474230056479698">Sincronizando en <ph name="EMAIL" /></translation>
 <translation id="5245610266855777041">Comeza a utilizar unha conta de centro educativo</translation>
 <translation id="5246282308050205996">Produciuse un erro en <ph name="APP_NAME" />. Fai clic neste globo para reiniciar a aplicación.</translation>

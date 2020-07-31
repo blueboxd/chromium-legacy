@@ -428,6 +428,7 @@ jumbo_component("base") {
     ":ui_data_pack",
     "//base",
     "//skia",
+    "//third_party/abseil-cpp:absl",
     "//ui/gfx",
     "//ui/gfx/geometry",
   ]

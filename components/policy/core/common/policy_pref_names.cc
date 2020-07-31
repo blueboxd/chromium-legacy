@@ -53,5 +53,10 @@ const char kIntensiveWakeUpThrottlingEnabled[] =
 const char kUserAgentClientHintsEnabled[] =
     "policy.user_agent_client_hints_enabled";
 
+#if defined(OS_ANDROID)
+// Boolean policy preference to disable the BackForwardCache feature.
+const char kBackForwardCacheEnabled[] = "policy.back_forward_cache_enabled";
+#endif  // defined(OS_ANDROID)
+
 }  // namespace policy_prefs
 }  // namespace policy

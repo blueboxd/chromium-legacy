@@ -5,6 +5,7 @@
 #ifndef COMPONENTS_POLICY_CORE_COMMON_POLICY_PREF_NAMES_H_
 #define COMPONENTS_POLICY_CORE_COMMON_POLICY_PREF_NAMES_H_
 
+#include "build/build_config.h"
 #include "components/policy/policy_export.h"
 
 namespace policy {
@@ -21,6 +22,9 @@ POLICY_EXPORT extern const char kUrlWhitelist[];
 POLICY_EXPORT extern const char kUserPolicyRefreshRate[];
 POLICY_EXPORT extern const char kIntensiveWakeUpThrottlingEnabled[];
 POLICY_EXPORT extern const char kUserAgentClientHintsEnabled[];
+#if defined(OS_ANDROID)
+POLICY_EXPORT extern const char kBackForwardCacheEnabled[];
+#endif  // defined(OS_ANDROID)
 
 }  // namespace policy_prefs
 }  // namespace policy

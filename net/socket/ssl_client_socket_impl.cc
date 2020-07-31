@@ -818,10 +818,6 @@ int SSLClientSocketImpl::Init() {
 
   SSL_set_early_data_enabled(ssl_.get(), ssl_config_.early_data_enabled);
 
-  if (!context_->config().tls13_hardening_for_local_anchors_enabled) {
-    SSL_set_ignore_tls13_downgrade(ssl_.get(), 1);
-  }
-
   // OpenSSL defaults some options to on, others to off. To avoid ambiguity,
   // set everything we care about to an absolute value.
   SslSetClearMask options;
@@ -1023,65 +1019,6 @@ int SSLClientSocketImpl::DoHandshakeComplete(int result) {
     if (rsa_key_usage != RSAKeyUsage::kNotRSA) {
       UMA_HISTOGRAM_ENUMERATION("Net.SSLRSAKeyUsage.UnknownRoot", rsa_key_usage,
                                 static_cast<int>(RSAKeyUsage::kLastValue) + 1);
-    }
-  }
-
-  if (!context_->config().tls13_hardening_for_local_anchors_enabled) {
-    // Record metrics on the TLS 1.3 anti-downgrade mechanism. This is only
-    // recorded when enforcement is disabled. (When enforcement is enabled,
-    // the connection will fail with ERR_TLS13_DOWNGRADE_DETECTED.) See
-    // https://crbug.com/boringssl/226.
-    //
-    // Record metrics for both servers overall and the TLS 1.3 experiment
-    // set. These metrics are only useful on TLS 1.3 servers, so the latter
-    // is more precise, but there is a large enough TLS 1.3 deployment that
-    // the overall numbers may be more robust. In particular, the
-    // DowngradeType metrics do not need to be filtered.
-    bool is_downgrade = !!SSL_is_tls13_downgrade(ssl_.get());
-    UMA_HISTOGRAM_BOOLEAN("Net.SSLTLS13Downgrade", is_downgrade);
-    bool is_tls13_experiment_host =
-        IsTLS13ExperimentHost(host_and_port_.host());
-    if (is_tls13_experiment_host) {
-      UMA_HISTOGRAM_BOOLEAN("Net.SSLTLS13DowngradeTLS13Experiment",
-                            is_downgrade);
-    }
-
-    if (is_downgrade) {
-      // Record whether connections which hit the downgrade used known vs
-      // unknown roots and which key exchange type.
-
-      // This enum is persisted into histograms. Values may not be
-      // renumbered.
-      enum class DowngradeType {
-        kKnownRootRSA = 0,
-        kKnownRootECDHE = 1,
-        kUnknownRootRSA = 2,
-        kUnknownRootECDHE = 3,
-        kMaxValue = kUnknownRootECDHE,
-      };
-
-      DowngradeType type;
-      int kx_nid = SSL_CIPHER_get_kx_nid(SSL_get_current_cipher(ssl_.get()));
-      DCHECK(kx_nid == NID_kx_rsa || kx_nid == NID_kx_ecdhe);
-      if (server_cert_verify_result_.is_issued_by_known_root) {
-        type = kx_nid == NID_kx_rsa ? DowngradeType::kKnownRootRSA
-                                    : DowngradeType::kKnownRootECDHE;
-      } else {
-        type = kx_nid == NID_kx_rsa ? DowngradeType::kUnknownRootRSA
-                                    : DowngradeType::kUnknownRootECDHE;
-      }
-      UMA_HISTOGRAM_ENUMERATION("Net.SSLTLS13DowngradeType", type);
-      if (is_tls13_experiment_host) {
-        UMA_HISTOGRAM_ENUMERATION("Net.SSLTLS13DowngradeTypeTLS13Experiment",
-                                  type);
-      }
-
-      if (server_cert_verify_result_.is_issued_by_known_root) {
-        // Exit DoHandshakeLoop and return the result to the caller to
-        // Connect.
-        DCHECK_EQ(STATE_NONE, next_handshake_state_);
-        return ERR_TLS13_DOWNGRADE_DETECTED;
-      }
     }
   }
 

@@ -3479,6 +3479,26 @@ CalendarNavigationButton.prototype.onRepeatingClick = function(event) {
 };
 
 /**
+ * @param {!Day} day
+ * @param {!Day} minDay
+ * @param {!Day} maxDay
+ * @return {boolean}
+ */
+function isDayOutsideOfRange(day, minDay, maxDay) {
+  return day < minDay || maxDay < day;
+}
+
+/**
+ * @param {!Week} week
+ * @param {!Week} minWeek
+ * @param {!Week} maxWeek
+ * @return {boolean}
+ */
+function isWeekOutsideOfRange(week, minWeek, maxWeek) {
+  return week < minWeek || maxWeek < week;
+}
+
+/**
  * @constructor
  * @extends View
  * @param {!CalendarPicker} calendarPicker
@@ -3532,10 +3552,15 @@ function CalendarHeaderView(calendarPicker) {
         this.onNavigationButtonClick);
     this._todayButton.element.classList.add(
         CalendarHeaderView.GetClassNameTodayButton());
-    var monthContainingToday = Month.createFromToday();
-    this._todayButton.setDisabled(
-        monthContainingToday < this.calendarPicker.minimumMonth ||
-        monthContainingToday > this.calendarPicker.maximumMonth);
+    if (this.calendarPicker.type === 'week') {
+      this._todayButton.setDisabled(isWeekOutsideOfRange(
+          Week.createFromToday(), this.calendarPicker.config.minimum,
+          this.calendarPicker.config.maximum));
+    } else {
+      this._todayButton.setDisabled(isDayOutsideOfRange(
+          Day.createFromToday(), this.calendarPicker.config.minimum,
+          this.calendarPicker.config.maximum));
+    }
     this._todayButton.element.setAttribute(
         'aria-label', global.params.todayLabel);
   }
@@ -3660,11 +3685,17 @@ CalendarHeaderView.prototype.setDisabled = function(disabled) {
       this.disabled ||
       this.calendarPicker.currentMonth() >= this.calendarPicker.maximumMonth);
   if (this._todayButton) {
-    var monthContainingToday = Month.createFromToday();
-    this._todayButton.setDisabled(
-        this.disabled ||
-        monthContainingToday < this.calendarPicker.minimumMonth ||
-        monthContainingToday > this.calendarPicker.maximumMonth);
+    if (this.disabled) {
+      this._todayButton.setDisabled(true);
+    } else if (this.calendarPicker.type === 'week') {
+      this._todayButton.setDisabled(isWeekOutsideOfRange(
+          Week.createFromToday(), this.calendarPicker.config.minimum,
+          this.calendarPicker.config.maximum));
+    } else {
+      this._todayButton.setDisabled(isDayOutsideOfRange(
+          Day.createFromToday(), this.calendarPicker.config.minimum,
+          this.calendarPicker.config.maximum));
+    }
   }
 };
 
@@ -4041,10 +4072,15 @@ function CalendarTableView(calendarPicker) {
     todayButton.element.textContent = global.params.todayLabel;
     todayButton.element.classList.add(
         CalendarHeaderView.GetClassNameTodayButton());
-    var monthContainingToday = Month.createFromToday();
-    todayButton.setDisabled(
-        monthContainingToday < this.calendarPicker.minimumMonth ||
-        monthContainingToday > this.calendarPicker.maximumMonth);
+    if (this.calendarPicker.type === 'week') {
+      todayButton.setDisabled(isWeekOutsideOfRange(
+          Week.createFromToday(), this.calendarPicker.config.minimum,
+          this.calendarPicker.config.maximum));
+    } else {
+      todayButton.setDisabled(isDayOutsideOfRange(
+          Day.createFromToday(), this.calendarPicker.config.minimum,
+          this.calendarPicker.config.maximum));
+    }
     todayButton.element.setAttribute('aria-label', global.params.todayLabel);
   }
 

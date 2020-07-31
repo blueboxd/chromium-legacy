@@ -4,7 +4,7 @@
 
 module discards.mojom;
 
-struct SiteCharacteristicsFeature {
+struct SiteDataFeature {
   // The cumulative observation time for this feature in seconds, set to 0 once
   // this feature has been observed.
   int64 observation_duration;
@@ -13,7 +13,7 @@ struct SiteCharacteristicsFeature {
   int64 use_timestamp;
 };
 
-struct SiteCharacteristicsPerformanceMeasurement {
+struct SiteDataPerformanceMeasurement {
   // A decaying average of the CPU usage measurements. Units: microseconds.
   float avg_cpu_usage_us;
   // A decaying average of the process footprint measurements. Units: kilobytes.
@@ -23,7 +23,7 @@ struct SiteCharacteristicsPerformanceMeasurement {
   float avg_load_duration_us;
 };
 
-struct SiteCharacteristicsDatabaseSize {
+struct SiteDataDatabaseSize {
   // The total number of rows in the database, or -1 if the value is not
   // available.
   int64 num_rows;
@@ -36,24 +36,24 @@ struct SiteCharacteristicsDatabaseSize {
 // The data stored for a given origin, this should mirror the
 // SiteDataProto structure in
 // performance_manager/persistence/site_data/site_data.proto.
-struct SiteCharacteristicsDatabaseValue {
+struct SiteDataValue {
   // The last time this site has been in the loaded state, in seconds since
   // epoch.
   uint32 last_loaded;
 
-  SiteCharacteristicsFeature updates_favicon_in_background;
-  SiteCharacteristicsFeature updates_title_in_background;
-  SiteCharacteristicsFeature uses_audio_in_background;
+  SiteDataFeature updates_favicon_in_background;
+  SiteDataFeature updates_title_in_background;
+  SiteDataFeature uses_audio_in_background;
 
   // Load time performance measurement estimates. This maintains a decaying
   // average of the resource usage of a page until shortly after it becomes
   // idle.
-  SiteCharacteristicsPerformanceMeasurement? load_time_estimates;
+  SiteDataPerformanceMeasurement? load_time_estimates;
 };
 
 // Provides the key and miscellaneous in-memory only data pertaining to a
 // row that potentially exists in a database.
-struct SiteCharacteristicsDatabaseEntry {
+struct SiteDataEntry {
   // The origin associated with this row.
   string origin;
 
@@ -61,13 +61,13 @@ struct SiteCharacteristicsDatabaseEntry {
   bool is_dirty;
 
   // NULL if the database entry doesn't exist on disk or in memory.
-  SiteCharacteristicsDatabaseValue? value;
+  SiteDataValue? value;
 };
 
-// Contains information about a specific DB instance.
-struct SiteCharacteristicsDatabase {
+// Contains information about a specific set of SiteData entries.
+struct SiteDataArray {
   // Contains the entries requested.
-  array<SiteCharacteristicsDatabaseEntry> db_rows;
+  array<SiteDataEntry> db_rows;
 };
 
 // Interface for providing information about the site data database. Lives in
@@ -77,14 +77,14 @@ interface SiteDataProvider {
   // Returns the in-memory entries and the entries for the requested origins.
   // Note that any entry may take some time to load from disk, and so there may
   // not be any data for a given entry until on the second or subsequent
-  // requests. The WebUI is expected to poll this function.
-  GetSiteCharacteristicsDatabase(
+  // requests.
+  GetSiteDataArray(
       array<string> explicitly_requested_origins) =>
-          (SiteCharacteristicsDatabase? result);
+          (SiteDataArray? result);
 
   // Returns the size of the database in number of rows and kilobytes.
   // Note that this may be fairly expensive to acquire, and so shouldn't be
   // called frequently.
-  GetSiteCharacteristicsDatabaseSize() =>
-      (SiteCharacteristicsDatabaseSize? db_size);
+  GetSiteDataDatabaseSize() =>
+      (SiteDataDatabaseSize? db_size);
 };

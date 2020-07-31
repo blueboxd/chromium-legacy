@@ -152,7 +152,6 @@ class SSLConfigServiceManagerPref : public SSLConfigServiceManager {
   // The local_state prefs.
   BooleanPrefMember rev_checking_enabled_;
   BooleanPrefMember rev_checking_required_local_anchors_;
-  BooleanPrefMember tls13_hardening_for_local_anchors_enabled_;
   StringPrefMember ssl_version_min_;
   StringPrefMember ssl_version_max_;
   StringListPrefMember h2_client_cert_coalescing_host_patterns_;
@@ -169,11 +168,6 @@ SSLConfigServiceManagerPref::SSLConfigServiceManagerPref(
     PrefService* local_state) {
   DCHECK(local_state);
 
-  local_state->SetDefaultPrefValue(
-      prefs::kTLS13HardeningForLocalAnchorsEnabled,
-      base::Value(base::FeatureList::IsEnabled(
-          features::kTLS13HardeningForLocalAnchors)));
-
   PrefChangeRegistrar::NamedChangeCallback local_state_callback =
       base::BindRepeating(&SSLConfigServiceManagerPref::OnPreferenceChanged,
                           base::Unretained(this), local_state);
@@ -182,9 +176,6 @@ SSLConfigServiceManagerPref::SSLConfigServiceManagerPref(
                              local_state_callback);
   rev_checking_required_local_anchors_.Init(
       prefs::kCertRevocationCheckingRequiredLocalAnchors, local_state,
-      local_state_callback);
-  tls13_hardening_for_local_anchors_enabled_.Init(
-      prefs::kTLS13HardeningForLocalAnchorsEnabled, local_state,
       local_state_callback);
   ssl_version_min_.Init(prefs::kSSLVersionMin, local_state,
                         local_state_callback);
@@ -210,9 +201,6 @@ void SSLConfigServiceManagerPref::RegisterPrefs(PrefRegistrySimple* registry) {
       prefs::kCertRevocationCheckingRequiredLocalAnchors,
       default_verifier_config.require_rev_checking_local_anchors);
   net::SSLContextConfig default_context_config;
-  registry->RegisterBooleanPref(
-      prefs::kTLS13HardeningForLocalAnchorsEnabled,
-      default_context_config.tls13_hardening_for_local_anchors_enabled);
   registry->RegisterStringPref(prefs::kSSLVersionMin, std::string());
   registry->RegisterStringPref(prefs::kSSLVersionMax, std::string());
   registry->RegisterListPref(prefs::kCipherSuiteBlacklist);
@@ -261,8 +249,6 @@ SSLConfigServiceManagerPref::GetSSLConfigFromPrefs() const {
     config->rev_checking_enabled = false;
   config->rev_checking_required_local_anchors =
       rev_checking_required_local_anchors_.GetValue();
-  config->tls13_hardening_for_local_anchors_enabled =
-      tls13_hardening_for_local_anchors_enabled_.GetValue();
   std::string version_min_str = ssl_version_min_.GetValue();
   std::string version_max_str = ssl_version_max_.GetValue();
 

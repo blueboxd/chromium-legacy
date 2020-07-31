@@ -14,7 +14,6 @@
 <translation id="1084365883616172403">S'ha completat la publicació a Facebook.</translation>
 <translation id="1103523840287552314">Tradueix sempre el text en <ph name="LANGUAGE" /></translation>
 <translation id="1104948393051856124">Accepta i continua</translation>
-<translation id="1105578556867525047">Canvia la contrasenya al lloc web</translation>
 <translation id="1112015203684611006">Error en imprimir</translation>
 <translation id="1125564390852150847">Crea una pestanya nova.</translation>
 <translation id="1145536944570833626">Suprimeix les dades existents.</translation>
@@ -246,7 +245,6 @@ En mode d'incògnit, els llocs web no poden fer servir galetes per veure la teva
 <translation id="3783017676699494206">Desa la imatge</translation>
 <translation id="3789841737615482174">Instal·la</translation>
 <translation id="3803696231112616155">Proposa traduir aquest lloc web</translation>
-<translation id="3836313059960742452">{COUNT,plural, =0{Cap contrasenya en perill}=1{{COUNT} contrasenya en perill}other{{COUNT} contrasenyes en perill}}</translation>
 <translation id="385051799172605136">Enrere</translation>
 <translation id="3892144330757387737">Trobaràs l'historial aquí</translation>
 <translation id="3897092660631435901">Menú</translation>
@@ -333,6 +331,7 @@ Per canviar aquesta opció, <ph name="BEGIN_LINK" />restableix la sincronitzaci�
 <translation id="4901778704868714008">Desa...</translation>
 <translation id="4904877109095351937">Marca com a llegit</translation>
 <translation id="4930268273022498155">Suprimeix les dades existents. Per recuperar-les, torna a <ph name="USER_EMAIL1" />.</translation>
+<translation id="4930714375720679147">Activa</translation>
 <translation id="4941089862236492464">S'ha produït un problema en compartir el vostre element.</translation>
 <translation id="4944543191714094452">Cerca a la pàgina…</translation>
 <translation id="4945756290001680296">Accedeix a la configuració de la contrasenya</translation>
@@ -611,6 +610,7 @@ Els llocs web poden fer servir galetes per veure la teva activitat de navegació
 <translation id="8073670137947914548">La baixada ha finalitzat</translation>
 <translation id="8073872304774253879">Millora les cerques i la navegació</translation>
 <translation id="8076014560081431679">La configuració desada del lloc no se suprimirà i és possible que reflecteixi els vostres hàbits de navegació. <ph name="BEGIN_LINK" />Més informació<ph name="END_LINK" /></translation>
+<translation id="8105368624971345109">Desactiva</translation>
 <translation id="8114753159095730575">La baixada de fitxers està disponible. Opcions disponibles a la part inferior de la pantalla.</translation>
 <translation id="8131740175452115882">Confirma</translation>
 <translation id="8197543752516192074">Tradueix la pàgina</translation>

@@ -30,6 +30,24 @@
 			<array>
 				<dict>
 					<key>input</key>
+					<string>IDS_IOS_INTENTS_OPEN_IN_CHROME_INCOGNITO_TITLE</string>
+					<key>output</key>
+					<string>LHJwpy</string>
+				</dict>
+				<dict>
+					<key>input</key>
+					<string>IDS_IOS_INTENTS_OPEN_IN_CHROME_INCOGNITO_DESCRIPTION</string>
+					<key>output</key>
+					<string>dYRltF</string>
+				</dict>
+				<dict>
+					<key>input</key>
+					<string>IDS_IOS_INTENTS_OPEN_IN_CHROME_INCOGNITO_PARAMETER_COMBINATION_TITLE</string>
+					<key>output</key>
+					<string>6TwrYB</string>
+				</dict>
+				<dict>
+					<key>input</key>
 					<string>IDS_IOS_INTENTS_SEARCH_IN_CHROME_DESCRIPTION</string>
 					<key>output</key>
 					<string>4nGj7v</string>

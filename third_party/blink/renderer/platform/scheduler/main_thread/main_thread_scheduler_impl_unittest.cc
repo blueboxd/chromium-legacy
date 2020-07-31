@@ -3869,8 +3869,8 @@ TEST_F(DisableNonMainTimerQueuesUntilFMPTest, DisablesOnlyNonMainTimerQueue) {
       CreateFrameScheduler(page_scheduler.get(), &frame_delegate, nullptr,
                            FrameScheduler::FrameType::kSubframe);
 
-  scoped_refptr<TaskQueue> timer_tq =
-      QueueForTaskType(frame_scheduler.get(), TaskType::kJavascriptTimer);
+  scoped_refptr<TaskQueue> timer_tq = QueueForTaskType(
+      frame_scheduler.get(), TaskType::kJavascriptTimerDelayed);
   ForceUpdatePolicyAndGetCurrentUseCase();
 
   EXPECT_FALSE(timer_tq->IsQueueEnabled());
@@ -3892,8 +3892,8 @@ TEST_F(DisableNonMainTimerQueuesUntilFMPTest,
       CreateFrameScheduler(page_scheduler.get(), &frame_delegate, nullptr,
                            FrameScheduler::FrameType::kSubframe);
 
-  scoped_refptr<TaskQueue> timer_tq =
-      QueueForTaskType(frame_scheduler.get(), TaskType::kJavascriptTimer);
+  scoped_refptr<TaskQueue> timer_tq = QueueForTaskType(
+      frame_scheduler.get(), TaskType::kJavascriptTimerDelayed);
 
   FakeInputEvent mouse_move_event{WebInputEvent::Type::kMouseMove,
                                   blink::WebInputEvent::kLeftButtonDown};

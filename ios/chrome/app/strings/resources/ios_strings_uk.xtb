@@ -14,7 +14,6 @@
 <translation id="1084365883616172403">Опубліковано у Facebook</translation>
 <translation id="1103523840287552314">Завжди перекладати з такої мови: <ph name="LANGUAGE" /></translation>
 <translation id="1104948393051856124">Прийняти та продовжити</translation>
-<translation id="1105578556867525047">Змінити пароль на веб-сайті</translation>
 <translation id="1112015203684611006">Не надруковано.</translation>
 <translation id="1125564390852150847">Створити вкладку.</translation>
 <translation id="1145536944570833626">Видалити наявні дані.</translation>
@@ -245,7 +244,6 @@
 <translation id="3783017676699494206">Зберегти зображення</translation>
 <translation id="3789841737615482174">Встановити</translation>
 <translation id="3803696231112616155">Пропонувати переклад для цього сайту</translation>
-<translation id="3836313059960742452">{COUNT,plural, =0{Немає зламаних паролів}=1{{COUNT} зламаний пароль}one{{COUNT} зламаний пароль}few{{COUNT} зламані паролі}many{{COUNT} зламаних паролів}other{{COUNT} зламаного пароля}}</translation>
 <translation id="385051799172605136">Назад</translation>
 <translation id="3892144330757387737">Тут відображатиметься ваша історія</translation>
 <translation id="3897092660631435901">Меню</translation>
@@ -332,6 +330,7 @@
 <translation id="4901778704868714008">Зберегти…</translation>
 <translation id="4904877109095351937">Позначити як прочитані</translation>
 <translation id="4930268273022498155">Видалити наявні дані. Щоб відновити їх, поверніться в обліковий запис <ph name="USER_EMAIL1" />.</translation>
+<translation id="4930714375720679147">Увімкнути</translation>
 <translation id="4941089862236492464">Під час спроби поділитися елементом виникла проблема.</translation>
 <translation id="4944543191714094452">Знайти на сторінці…</translation>
 <translation id="4945756290001680296">Доступ до налаштувань паролів</translation>
@@ -610,6 +609,7 @@
 <translation id="8073670137947914548">Завантаження завершено</translation>
 <translation id="8073872304774253879">Покращувати пошук і веб-перегляд</translation>
 <translation id="8076014560081431679">Збережені налаштування, які можуть стосуватися ваших зацікавлень в Інтернеті, не буде видалено. <ph name="BEGIN_LINK" />Докладніше<ph name="END_LINK" /></translation>
+<translation id="8105368624971345109">Вимкнути</translation>
 <translation id="8114753159095730575">Доступне завантаження файлу. Параметри можна знайти внизу екрана.</translation>
 <translation id="8131740175452115882">Підтвердити</translation>
 <translation id="8197543752516192074">Перекласти сторінку</translation>

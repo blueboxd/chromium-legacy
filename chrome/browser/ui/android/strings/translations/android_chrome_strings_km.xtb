@@ -220,6 +220,7 @@
 <translation id="2744248271121720757">ចុចពាក្យណាមួយ​ដើម្បី​ស្វែងរក​ភ្លាមៗ ឬមើល​សកម្មភាព​ដែល​ទាក់ទង</translation>
 <translation id="2760989362628427051">បើក​រចនាប័ទ្មងងឹត ពេលបើក​កម្មវិធីសន្សំថ្ម ឬរចនាប័ទ្មងងឹត​នៅលើ​ឧបករណ៍របស់អ្នក</translation>
 <translation id="2762000892062317888">អំបាញ់មិញនេះ</translation>
+<translation id="2771869497727323769">មិនអាចបង្កើតតំណចូលទៅកាន់អត្ថបទបានទេ។ ចែករំលែកតំណ​ចូលទៅកាន់ទំព័រនៅក្នុងកម្មវិធី។</translation>
 <translation id="2777555524387840389">នៅសល់ <ph name="SECONDS" /> វិនាទីទៀត</translation>
 <translation id="2779651927720337254">បានបរាជ័យ</translation>
 <translation id="2781151931089541271">នៅសល់ 1 វិនាទីទៀត</translation>
@@ -460,6 +461,7 @@
 <translation id="4732120983431207637">ឧបករណ៍ត្រឡប់​លំដាប់​ធ្វើប្រតិបត្តិការវិញ</translation>
 <translation id="473775607612524610">ធ្វើបច្ចុប្បន្នភាព</translation>
 <translation id="4738836084190194332">ធ្វើសមកាលកម្មចុងក្រោយ៖ <ph name="WHEN" /></translation>
+<translation id="474698142248234220">TWA មានបញ្ហា៖ <ph name="ERROR_CODE" /> នៅលើ <ph name="VIOLATED_URL" /></translation>
 <translation id="4749960740855309258">បើកផ្ទាំងថ្មី</translation>
 <translation id="4759238208242260848">ទាញយក</translation>
 <translation id="4763829664323285145">{FILE_COUNT,plural, =1{ការទាញយក 1 បាន​បញ្ចប់។}other{ការទាញយក # បាន​បញ្ចប់។}}</translation>
@@ -509,6 +511,7 @@
 <translation id="5040262127954254034">ឯកជនភាព</translation>
 <translation id="5087580092889165836">បន្ថែមកាត</translation>
 <translation id="509429900233858213">កំហុសឆ្គងបានកើតឡើង។</translation>
+<translation id="5100748015044654621">ចែករំលែកតំណចូលទៅកាន់អត្ថបទដែលបានរំលេចនៅក្នុងកម្មវិធី</translation>
 <translation id="510275257476243843">នៅសល់ 1 ម៉ោងទៀត</translation>
 <translation id="5123685120097942451">ផ្ទាំង​អនាមិក</translation>
 <translation id="5127805178023152808">សមកម្មបានបិទ</translation>
@@ -975,6 +978,7 @@
 <translation id="8562452229998620586">ពាក្យសម្ងាត់ដែលបានរក្សាទុកលេចឡើងទីនេះ។</translation>
 <translation id="8569404424186215731">ចាប់តាំងពីថ្ងៃទី <ph name="DATE" /></translation>
 <translation id="8571213806525832805">4 សប្តាហ៍មុន</translation>
+<translation id="8572344201470131220">បានចម្លង​រូបភាព</translation>
 <translation id="8583805026567836021">កំពុងជម្រះទិន្នន័យគណនី</translation>
 <translation id="860043288473659153">ឈ្មោះ​ម្ចាស់​កាត</translation>
 <translation id="8616006591992756292">គណនី Google របស់អ្នកអាចនឹងមានទម្រង់ប្រវត្តិរុករកផ្សេងទៀតនៅ <ph name="BEGIN_LINK" />myactivity.google.com<ph name="END_LINK" /> ។</translation>
@@ -1017,6 +1021,7 @@
 <translation id="8988028529677883095">ប្រើ​ទូរសព្ទ​ធ្វើជាសោសុវត្ថិភាព</translation>
 <translation id="8990209962746788689">មិនអាចបង្កើតកូដ QR បានទេ</translation>
 <translation id="8993760627012879038">បើកផ្ទាំងថ្មីនៅក្នុងមុខងារអនាមិក</translation>
+<translation id="8996847606757455498">ជ្រើសរើស​ក្រុមហ៊ុនផ្ដល់សេវា​ផ្សេងទៀត</translation>
 <translation id="8998729206196772491">អ្នកកំពុងចូលដោយប្រើគណនីដែលគ្រប់គ្រងដោយ <ph name="MANAGED_DOMAIN" /> និងកំពុងផ្តល់ឲ្យអ្នកគ្រប់គ្រងរបស់វានូវលទ្ធភាពគ្រប់គ្រងទិន្នន័យ Chrome របស់អ្នក។ ទិន្នន័យរបស់អ្នកនឹងភ្ជាប់ជាមួយគណនីនេះជាអចិន្ត្រៃយ៍។ ការចេញពី Chrome នឹងលុបទិន្នន័យរបស់អ្នកចេញពីឧបករណ៍នេះ ប៉ុន្តែវានឹងនៅតែត្រូវបានរក្សាទុកក្នុងគណនី Google របស់អ្នកដដែល។</translation>
 <translation id="9028914725102941583">បើក​សមកាលកម្ម ដើម្បី​ចែករំលែកនៅលើ​ឧបករណ៍​នានា</translation>
 <translation id="9040142327097499898">ការជូន​ដំណឹង​ត្រូវបាន​អនុញ្ញាត។ ទីតាំង​ត្រូវ​បាន​បិទសម្រាប់ឧបករណ៍​នេះ។</translation>

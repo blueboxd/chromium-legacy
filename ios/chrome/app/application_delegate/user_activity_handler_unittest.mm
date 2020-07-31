@@ -20,6 +20,7 @@
 #include "ios/chrome/app/application_delegate/startup_information.h"
 #include "ios/chrome/app/application_delegate/tab_opening.h"
 #include "ios/chrome/app/application_mode.h"
+#import "ios/chrome/app/intents/OpenInChromeIncognitoIntent.h"
 #import "ios/chrome/app/intents/OpenInChromeIntent.h"
 #include "ios/chrome/app/main_controller.h"
 #include "ios/chrome/app/spotlight/actions_spotlight_manager.h"
@@ -451,6 +452,64 @@ TEST_F(UserActivityHandlerTest, ContinueUserActivityShortcutActions) {
   }
 }
 
+// Tests that Chrome responds to open in incognito intent in the background
+TEST_F(UserActivityHandlerTest, ContinueUserActivityIntentIncognitoBackground) {
+  NSURL* url1 = [[NSURL alloc] initWithString:@"http://www.google.com"];
+  NSURL* url2 = [[NSURL alloc] initWithString:@"http://www.apple.com"];
+  NSURL* url3 = [[NSURL alloc] initWithString:@"http://www.espn.com"];
+  NSArray<NSURL*>* urls = [NSArray arrayWithObjects:url1, url2, url3, nil];
+
+  NSUserActivity* userActivity = [[NSUserActivity alloc]
+      initWithActivityType:@"OpenInChromeIncognitoIntent"];
+
+  OpenInChromeIncognitoIntent* intent =
+      [[OpenInChromeIncognitoIntent alloc] init];
+
+  intent.urls = urls;
+
+  INInteraction* interaction = [[INInteraction alloc] initWithIntent:intent
+                                                            response:nil];
+
+  userActivity.interaction = interaction;
+
+  id startupInformationMock =
+      [OCMockObject niceMockForProtocol:@protocol(StartupInformation)];
+
+  id connectionInformationMock =
+      [OCMockObject niceMockForProtocol:@protocol(ConnectionInformation)];
+
+  [[connectionInformationMock expect]
+      setStartupParameters:[OCMArg checkWithBlock:^BOOL(id value) {
+        EXPECT_TRUE([value isKindOfClass:[AppStartupParameters class]] ||
+                    value == nil);
+
+        if (value != nil) {
+          AppStartupParameters* startupParameters =
+              (AppStartupParameters*)value;
+          const GURL calledURL = startupParameters.externalURL;
+          EXPECT_TRUE((int)[intent.urls count] == 3);
+          return [intent.urls containsObject:(net::NSURLWithGURL(calledURL))];
+        } else {
+          return YES;
+        }
+      }]];
+
+  [[[startupInformationMock stub] andReturnValue:@NO] isPresentingFirstRunUI];
+
+  MockTabOpener* tabOpener = [[MockTabOpener alloc] init];
+
+  // Action.
+  BOOL result =
+      [UserActivityHandler continueUserActivity:userActivity
+                            applicationIsActive:NO
+                                      tabOpener:tabOpener
+                          connectionInformation:connectionInformationMock
+                             startupInformation:startupInformationMock];
+
+  EXPECT_OCMOCK_VERIFY(startupInformationMock);
+  EXPECT_TRUE(result);
+}
+
 // Tests that Chrome responds to open intents in the background.
 TEST_F(UserActivityHandlerTest, ContinueUserActivityIntentBackground) {
   NSUserActivity* userActivity =
@@ -483,6 +542,65 @@ TEST_F(UserActivityHandlerTest, ContinueUserActivityIntentBackground) {
       [UserActivityHandler continueUserActivity:userActivity
                             applicationIsActive:NO
                                       tabOpener:tabOpenerMock
+                          connectionInformation:connectionInformationMock
+                             startupInformation:startupInformationMock];
+
+  // Test.
+  EXPECT_OCMOCK_VERIFY(startupInformationMock);
+  EXPECT_TRUE(result);
+}
+
+// Test that Chrome respond to open in incognito intent in the foreground.
+TEST_F(UserActivityHandlerTest, ContinueUserActivityIntentIncognitoForeground) {
+  NSURL* url1 = [[NSURL alloc] initWithString:@"http://www.google.com"];
+  NSURL* url2 = [[NSURL alloc] initWithString:@"http://www.apple.com"];
+  NSURL* url3 = [[NSURL alloc] initWithString:@"http://www.espn.com"];
+  NSArray<NSURL*>* urls = [NSArray arrayWithObjects:url1, url2, url3, nil];
+
+  NSUserActivity* userActivity = [[NSUserActivity alloc]
+      initWithActivityType:@"OpenInChromeIncognitoIntent"];
+
+  OpenInChromeIncognitoIntent* intent =
+      [[OpenInChromeIncognitoIntent alloc] init];
+
+  intent.urls = urls;
+
+  INInteraction* interaction = [[INInteraction alloc] initWithIntent:intent
+                                                            response:nil];
+
+  userActivity.interaction = interaction;
+
+  id startupInformationMock =
+      [OCMockObject niceMockForProtocol:@protocol(StartupInformation)];
+
+  id connectionInformationMock =
+      [OCMockObject niceMockForProtocol:@protocol(ConnectionInformation)];
+
+  [[connectionInformationMock expect]
+      setStartupParameters:[OCMArg checkWithBlock:^BOOL(id value) {
+        EXPECT_TRUE([value isKindOfClass:[AppStartupParameters class]] ||
+                    value == nil);
+
+        if (value != nil) {
+          AppStartupParameters* startupParameters =
+              (AppStartupParameters*)value;
+          const GURL calledURL = startupParameters.externalURL;
+          EXPECT_TRUE((int)[intent.urls count] == 3);
+          return [intent.urls containsObject:(net::NSURLWithGURL(calledURL))];
+        } else {
+          return YES;
+        }
+      }]];
+
+  [[[startupInformationMock stub] andReturnValue:@NO] isPresentingFirstRunUI];
+
+  MockTabOpener* tabOpener = [[MockTabOpener alloc] init];
+
+  // Action.
+  BOOL result =
+      [UserActivityHandler continueUserActivity:userActivity
+                            applicationIsActive:YES
+                                      tabOpener:tabOpener
                           connectionInformation:connectionInformationMock
                              startupInformation:startupInformationMock];
 

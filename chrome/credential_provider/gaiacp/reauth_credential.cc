@@ -16,7 +16,9 @@
 
 namespace credential_provider {
 
-constexpr char kGaiaReauthPath[] = "embedded/reauth/windows";
+// TODO(crbug.com/1111561): Change it back to emdedded/reauth/windows
+// once reauth flow latency issue is resolved.
+constexpr char kGaiaReauthPath[] = "embedded/setup/windows";
 
 CReauthCredential::CReauthCredential() = default;
 

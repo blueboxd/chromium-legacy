@@ -64,6 +64,12 @@ class CaptionController : public BrowserListObserver, public KeyedService {
 
   void Init();
 
+  // Alerts the CaptionBubbleController that belongs to the appropriate browser
+  // that speech recognition is ready to start for the given web contents.
+  // Returns whether this message was routed successfully. Transcriptions will
+  // not proceed if this returns false.
+  bool OnSpeechRecognitionReady(content::WebContents* web_contents);
+
   // Routes a transcription to the CaptionBubbleController that belongs to the
   // appropriate browser. Returns whether the transcription result was routed
   // successfully. Transcriptions will halt if this returns false.

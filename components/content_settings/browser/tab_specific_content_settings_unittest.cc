@@ -75,7 +75,7 @@ class TabSpecificContentSettingsTest
 TEST_F(TabSpecificContentSettingsTest, BlockedContent) {
   NavigateAndCommit(GURL("http://google.com"));
   TabSpecificContentSettings* content_settings =
-      TabSpecificContentSettings::FromWebContents(web_contents());
+      TabSpecificContentSettings::GetForFrame(web_contents()->GetMainFrame());
 
   // Check that after initializing, nothing is blocked.
 #if !defined(OS_ANDROID)
@@ -107,7 +107,7 @@ TEST_F(TabSpecificContentSettingsTest, BlockedContent) {
                                   {*cookie1},
                                   false});
   content_settings =
-      TabSpecificContentSettings::FromWebContents(web_contents());
+      TabSpecificContentSettings::GetForFrame(web_contents()->GetMainFrame());
 #if !defined(OS_ANDROID)
   content_settings->OnContentBlocked(ContentSettingsType::IMAGES);
 #endif
@@ -168,12 +168,12 @@ TEST_F(TabSpecificContentSettingsTest, BlockedContent) {
       simulator->GetNavigationHandle(), GURL("http://google.com"),
       content::AllowServiceWorkerResult::FromPolicy(true, false));
   content_settings =
-      TabSpecificContentSettings::FromWebContents(web_contents());
+      TabSpecificContentSettings::GetForFrame(web_contents()->GetMainFrame());
   EXPECT_FALSE(
       content_settings->IsContentBlocked(ContentSettingsType::JAVASCRIPT));
   simulator->Commit();
   content_settings =
-      TabSpecificContentSettings::FromWebContents(web_contents());
+      TabSpecificContentSettings::GetForFrame(web_contents()->GetMainFrame());
 
   // Block a javascript when page starts to start ServiceWorker.
   GetHandle()->OnServiceWorkerAccessed(
@@ -185,7 +185,7 @@ TEST_F(TabSpecificContentSettingsTest, BlockedContent) {
   // Reset blocked content settings.
   NavigateAndCommit(GURL("http://google.com"));
   content_settings =
-      TabSpecificContentSettings::FromWebContents(web_contents());
+      TabSpecificContentSettings::GetForFrame(web_contents()->GetMainFrame());
 #if !defined(OS_ANDROID)
   EXPECT_FALSE(content_settings->IsContentBlocked(ContentSettingsType::IMAGES));
   EXPECT_FALSE(
@@ -205,7 +205,7 @@ TEST_F(TabSpecificContentSettingsTest, BlockedContent) {
 TEST_F(TabSpecificContentSettingsTest, BlockedFileSystems) {
   NavigateAndCommit(GURL("http://google.com"));
   TabSpecificContentSettings* content_settings =
-      TabSpecificContentSettings::FromWebContents(web_contents());
+      TabSpecificContentSettings::GetForFrame(web_contents()->GetMainFrame());
 
   // Access a file system.
   content_settings->OnFileSystemAccessed(GURL("http://google.com"), false);
@@ -220,7 +220,7 @@ TEST_F(TabSpecificContentSettingsTest, BlockedFileSystems) {
 TEST_F(TabSpecificContentSettingsTest, AllowedContent) {
   NavigateAndCommit(GURL("http://google.com"));
   TabSpecificContentSettings* content_settings =
-      TabSpecificContentSettings::FromWebContents(web_contents());
+      TabSpecificContentSettings::GetForFrame(web_contents()->GetMainFrame());
 
   // Test default settings.
   ASSERT_FALSE(content_settings->IsContentAllowed(ContentSettingsType::IMAGES));
@@ -265,7 +265,7 @@ TEST_F(TabSpecificContentSettingsTest, AllowedContent) {
 TEST_F(TabSpecificContentSettingsTest, EmptyCookieList) {
   NavigateAndCommit(GURL("http://google.com"));
   TabSpecificContentSettings* content_settings =
-      TabSpecificContentSettings::FromWebContents(web_contents());
+      TabSpecificContentSettings::GetForFrame(web_contents()->GetMainFrame());
 
   ASSERT_FALSE(
       content_settings->IsContentAllowed(ContentSettingsType::COOKIES));
@@ -284,7 +284,7 @@ TEST_F(TabSpecificContentSettingsTest, EmptyCookieList) {
 TEST_F(TabSpecificContentSettingsTest, SiteDataObserver) {
   NavigateAndCommit(GURL("http://google.com"));
   TabSpecificContentSettings* content_settings =
-      TabSpecificContentSettings::FromWebContents(web_contents());
+      TabSpecificContentSettings::GetForFrame(web_contents()->GetMainFrame());
   MockSiteDataObserver mock_observer(web_contents());
   EXPECT_CALL(mock_observer, OnSiteDataAccessed()).Times(6);
 
@@ -325,7 +325,7 @@ TEST_F(TabSpecificContentSettingsTest, SiteDataObserver) {
 TEST_F(TabSpecificContentSettingsTest, LocalSharedObjectsContainer) {
   NavigateAndCommit(GURL("http://google.com"));
   TabSpecificContentSettings* content_settings =
-      TabSpecificContentSettings::FromWebContents(web_contents());
+      TabSpecificContentSettings::GetForFrame(web_contents()->GetMainFrame());
   bool blocked_by_policy = false;
   auto cookie = net::CanonicalCookie::Create(GURL("http://google.com"), "k=v",
                                              base::Time::Now(),
@@ -362,7 +362,7 @@ TEST_F(TabSpecificContentSettingsTest, LocalSharedObjectsContainer) {
 TEST_F(TabSpecificContentSettingsTest, LocalSharedObjectsContainerCookie) {
   NavigateAndCommit(GURL("http://google.com"));
   TabSpecificContentSettings* content_settings =
-      TabSpecificContentSettings::FromWebContents(web_contents());
+      TabSpecificContentSettings::GetForFrame(web_contents()->GetMainFrame());
   bool blocked_by_policy = false;
   auto cookie1 = net::CanonicalCookie::Create(GURL("http://google.com"), "k1=v",
                                               base::Time::Now(),
@@ -403,7 +403,7 @@ TEST_F(TabSpecificContentSettingsTest, IndicatorChangedOnContentSettingChange) {
   NavigateAndCommit(GURL("http://google.com"));
 
   TabSpecificContentSettings* content_settings =
-      TabSpecificContentSettings::FromWebContents(web_contents());
+      TabSpecificContentSettings::GetForFrame(web_contents()->GetMainFrame());
 
   // First trigger OnContentBlocked.
   EXPECT_FALSE(content_settings->IsContentBlocked(

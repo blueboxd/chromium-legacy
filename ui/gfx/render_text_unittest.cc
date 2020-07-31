@@ -7016,6 +7016,12 @@ TEST_F(RenderTextTest, SkFontEdging) {
 // Verify GetWordLookupDataAtPoint returns the correct baseline point and
 // decorated word for an LTR string.
 TEST_F(RenderTextTest, GetWordLookupDataAtPoint_LTR) {
+  // Set an integer glyph width; GetCursorBounds() and
+  // GetWordLookupDataAtPoint() use different rounding internally.
+  //
+  // TODO(crbug.com/1111044): this shouldn't be necessary once RenderText keeps
+  // float precision through GetCursorBounds().
+  SetGlyphWidth(5);
   const base::string16 ltr = ASCIIToUTF16("  ab  c ");
   const int kWordOneStartIndex = 2;
   const int kWordTwoStartIndex = 6;
@@ -7095,6 +7101,12 @@ TEST_F(RenderTextTest, GetWordLookupDataAtPoint_LTR) {
 // Verify GetWordLookupDataAtPoint returns the correct baseline point and
 // decorated word for an RTL string.
 TEST_F(RenderTextTest, GetWordLookupDataAtPoint_RTL) {
+  // Set an integer glyph width; GetCursorBounds() and
+  // GetWordLookupDataAtPoint() use different rounding internally.
+  //
+  // TODO(crbug.com/1111044): this shouldn't be necessary once RenderText keeps
+  // float precision through GetCursorBounds().
+  SetGlyphWidth(5);
   const base::string16 rtl = UTF8ToUTF16(" \u0634\u0632  \u0634");
   const int kWordOneStartIndex = 1;
   const int kWordTwoStartIndex = 5;
@@ -7399,6 +7411,33 @@ TEST_F(RenderTextTest, LineEndSelections) {
     EXPECT_EQ(UTF8ToUTF16(cases[i].selected_text),
               GetSelectedText(render_text));
   }
+}
+
+// Tests that GetSubstringBounds rounds outward when glyphs have floating-point
+// widths.
+TEST_F(RenderTextTest, GetSubstringBoundsFloatingPoint) {
+  const float kGlyphWidth = 5.8;
+  SetGlyphWidth(kGlyphWidth);
+  RenderText* render_text = GetRenderText();
+  render_text->SetDisplayRect(Rect(200, 1000));
+  render_text->SetText(UTF8ToUTF16("abcdef"));
+  gfx::Rect bounds = GetSubstringBoundsUnion(Range(1, 2));
+  // The bounds should be rounded outwards so that the full substring is always
+  // contained in them.
+  EXPECT_EQ(base::ClampFloor(kGlyphWidth), bounds.x());
+  EXPECT_EQ(base::ClampCeil(2 * kGlyphWidth), bounds.right());
+}
+
+// Tests that GetSubstringBounds handles integer glypth widths correctly.
+TEST_F(RenderTextTest, GetSubstringBoundsInt) {
+  const float kGlyphWidth = 5;
+  SetGlyphWidth(kGlyphWidth);
+  RenderText* render_text = GetRenderText();
+  render_text->SetDisplayRect(Rect(200, 1000));
+  render_text->SetText(UTF8ToUTF16("abcdef"));
+  gfx::Rect bounds = GetSubstringBoundsUnion(Range(1, 2));
+  EXPECT_EQ(kGlyphWidth, bounds.x());
+  EXPECT_EQ(2 * kGlyphWidth, bounds.right());
 }
 
 // Tests that GetSubstringBounds returns the correct bounds for multiline text.

@@ -209,10 +209,7 @@ void PausableScriptExecutor::Run() {
     ExecuteAndDestroySelf();
     return;
   }
-  task_handle_ = PostCancellableTask(
-      *context->GetTaskRunner(TaskType::kJavascriptTimer), FROM_HERE,
-      WTF::Bind(&PausableScriptExecutor::ExecuteAndDestroySelf,
-                WrapPersistent(this)));
+  PostExecuteAndDestroySelf(context);
 }
 
 void PausableScriptExecutor::RunAsync(BlockingOption blocking) {
@@ -222,8 +219,13 @@ void PausableScriptExecutor::RunAsync(BlockingOption blocking) {
   if (blocking_option_ == kOnloadBlocking)
     To<LocalDOMWindow>(context)->document()->IncrementLoadEventDelayCount();
 
+  PostExecuteAndDestroySelf(context);
+}
+
+void PausableScriptExecutor::PostExecuteAndDestroySelf(
+    ExecutionContext* context) {
   task_handle_ = PostCancellableTask(
-      *context->GetTaskRunner(TaskType::kJavascriptTimer), FROM_HERE,
+      *context->GetTaskRunner(TaskType::kJavascriptTimerImmediate), FROM_HERE,
       WTF::Bind(&PausableScriptExecutor::ExecuteAndDestroySelf,
                 WrapPersistent(this)));
 }

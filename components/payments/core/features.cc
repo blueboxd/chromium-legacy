@@ -4,6 +4,8 @@
 
 #include "components/payments/core/features.h"
 
+#include "build/build_config.h"
+
 namespace payments {
 namespace features {
 
@@ -43,6 +45,15 @@ const base::Feature kWebPaymentsPerMethodCanMakePaymentQuota{
 
 const base::Feature kWebPaymentsRedactShippingAddress{
     "WebPaymentsRedactShippingAddress", base::FEATURE_ENABLED_BY_DEFAULT};
+
+const base::Feature kAppStoreBilling {
+  "AppStoreBilling",
+#if defined(OS_ANDROID)
+      base::FEATURE_ENABLED_BY_DEFAULT
+#else
+      base::FEATURE_DISABLED_BY_DEFAULT
+#endif  // OS_ANDROID
+};
 
 const base::Feature kAppStoreBillingDebug{"AppStoreBillingDebug",
                                           base::FEATURE_DISABLED_BY_DEFAULT};

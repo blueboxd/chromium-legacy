@@ -83,6 +83,21 @@ class CaptionControllerTest : public InProcessBrowserTest {
         ->GetCaptionBubbleControllerForBrowser(browser);
   }
 
+  bool OnSpeechRecognitionReady() {
+    return OnSpeechRecognitionReadyOnBrowser(browser());
+  }
+
+  bool OnSpeechRecognitionReadyOnBrowser(Browser* browser) {
+    return OnSpeechRecognitionReadyOnBrowserForProfile(browser,
+                                                       browser->profile());
+  }
+
+  bool OnSpeechRecognitionReadyOnBrowserForProfile(Browser* browser,
+                                                   Profile* profile) {
+    return GetControllerForProfile(profile)->OnSpeechRecognitionReady(
+        browser->tab_strip_model()->GetActiveWebContents());
+  }
+
   bool DispatchTranscription(std::string text) {
     return DispatchTranscriptionToBrowser(text, browser());
   }
@@ -173,9 +188,8 @@ IN_PROC_BROWSER_TEST_F(CaptionControllerTest, LiveCaptionEnabledChanged) {
 IN_PROC_BROWSER_TEST_F(CaptionControllerTest,
                        LiveCaptionEnabledChanged_BubbleVisible) {
   SetLiveCaptionEnabled(true);
-  // Make the bubble visible by dispatching a transcription.
-  DispatchTranscription(
-      "In Switzerland it is illegal to own just one guinea pig.");
+  // Make the bubble visible.
+  OnSpeechRecognitionReady();
 // The CaptionBubbleController is currently only implemented in Views.
 #if defined(TOOLKIT_VIEWS)
   EXPECT_TRUE(IsWidgetVisible());
@@ -248,9 +262,8 @@ IN_PROC_BROWSER_TEST_F(CaptionControllerTest, OnBrowserRemoved) {
             controller->GetCaptionBubbleControllerForBrowser(browser4));
   EXPECT_EQ(3, NumBubbleControllers());
 
-  // Make the bubble on browser3 visible by dispatching a transcription.
-  DispatchTranscriptionToBrowser(
-      "If you lift a kangaroo's tail off the ground it can't hop.", browser3);
+  // Make the bubble on browser3 visible.
+  OnSpeechRecognitionReadyOnBrowser(browser3);
 // The CaptionBubbleController is currently only implemented in Views.
 #if defined(TOOLKIT_VIEWS)
   EXPECT_TRUE(IsWidgetVisibleOnBrowser(browser3));
@@ -263,9 +276,8 @@ IN_PROC_BROWSER_TEST_F(CaptionControllerTest, OnBrowserRemoved) {
             controller->GetCaptionBubbleControllerForBrowser(browser3));
   EXPECT_EQ(2, NumBubbleControllers());
 
-  // Make the bubble on browser2 visible by dispatching a transcription.
-  DispatchTranscriptionToBrowser(
-      "A lion's roar can be heard from 5 miles away.", browser2);
+  // Make the bubble on browser2 visible.
+  OnSpeechRecognitionReadyOnBrowser(browser2);
 // The CaptionBubbleController is currently only implemented in Views.
 #if defined(TOOLKIT_VIEWS)
   EXPECT_TRUE(IsWidgetVisibleOnBrowser(browser2));
@@ -301,11 +313,8 @@ IN_PROC_BROWSER_TEST_F(CaptionControllerTest, OnBrowserRemoved_Incognito) {
                          incognito_browser2));
   EXPECT_EQ(2, NumBubbleControllers());
 
-  // Make the bubble on incognito_browser1 visible by dispatching a
-  // transcription.
-  DispatchTranscriptionToBrowser(
-      "If you lift a kangaroo's tail off the ground it can't hop.",
-      incognito_browser1);
+  // Make the bubble on incognito_browser1 visible.
+  OnSpeechRecognitionReadyOnBrowser(incognito_browser1);
 // The CaptionBubbleController is currently only implemented in Views.
 #if defined(TOOLKIT_VIEWS)
   EXPECT_TRUE(IsWidgetVisibleOnBrowser(incognito_browser1));
@@ -319,12 +328,77 @@ IN_PROC_BROWSER_TEST_F(CaptionControllerTest, OnBrowserRemoved_Incognito) {
   EXPECT_EQ(1, NumBubbleControllers());
 }
 
+IN_PROC_BROWSER_TEST_F(CaptionControllerTest, OnSpeechRecognitionReady) {
+  bool success = OnSpeechRecognitionReady();
+  EXPECT_FALSE(success);
+  EXPECT_EQ(0, NumBubbleControllers());
+
+  SetLiveCaptionEnabled(true);
+  success = OnSpeechRecognitionReady();
+  EXPECT_TRUE(success);
+// The CaptionBubbleController is currently only implemented in Views.
+#if defined(TOOLKIT_VIEWS)
+  EXPECT_TRUE(IsWidgetVisible());
+#else
+  EXPECT_FALSE(IsWidgetVisible());
+#endif
+
+  SetLiveCaptionEnabled(false);
+  success = OnSpeechRecognitionReady();
+  EXPECT_FALSE(success);
+  EXPECT_EQ(0, NumBubbleControllers());
+}
+
+IN_PROC_BROWSER_TEST_F(CaptionControllerTest,
+                       OnSpeechRecognitionReady_MultipleBrowsers) {
+  Browser* browser1 = browser();
+  Browser* browser2 = CreateBrowser(browser()->profile());
+  Browser* incognito_browser = CreateIncognitoBrowser();
+  SetLiveCaptionEnabled(true);
+
+  // OnSpeechRecognitionReady routes to the right browser.
+  bool success = OnSpeechRecognitionReadyOnBrowser(browser1);
+  EXPECT_TRUE(success);
+// The CaptionBubbleController is currently only implemented in Views.
+#if defined(TOOLKIT_VIEWS)
+  EXPECT_TRUE(IsWidgetVisibleOnBrowser(browser1));
+  EXPECT_FALSE(IsWidgetVisibleOnBrowser(browser2));
+  EXPECT_FALSE(IsWidgetVisibleOnBrowser(incognito_browser));
+#else
+  EXPECT_FALSE(IsWidgetVisibleOnBrowser(browser1));
+#endif
+
+  success = OnSpeechRecognitionReadyOnBrowser(browser2);
+  EXPECT_TRUE(success);
+// The CaptionBubbleController is currently only implemented in Views.
+#if defined(TOOLKIT_VIEWS)
+  EXPECT_TRUE(IsWidgetVisibleOnBrowser(browser1));
+  EXPECT_TRUE(IsWidgetVisibleOnBrowser(browser2));
+  EXPECT_FALSE(IsWidgetVisibleOnBrowser(incognito_browser));
+#else
+  EXPECT_FALSE(IsWidgetVisibleOnBrowser(browser2));
+#endif
+
+  success = OnSpeechRecognitionReadyOnBrowser(incognito_browser);
+  EXPECT_TRUE(success);
+// The CaptionBubbleController is currently only implemented in Views.
+#if defined(TOOLKIT_VIEWS)
+  EXPECT_TRUE(IsWidgetVisibleOnBrowser(browser1));
+  EXPECT_TRUE(IsWidgetVisibleOnBrowser(browser2));
+  EXPECT_TRUE(IsWidgetVisibleOnBrowser(incognito_browser));
+#else
+  EXPECT_FALSE(IsWidgetVisibleOnBrowser(incognito_browser));
+#endif
+}
+
 IN_PROC_BROWSER_TEST_F(CaptionControllerTest, DispatchTranscription) {
+  OnSpeechRecognitionReady();
   bool success = DispatchTranscription("A baby spider is called a spiderling.");
   EXPECT_FALSE(success);
   EXPECT_EQ(0, NumBubbleControllers());
 
   SetLiveCaptionEnabled(true);
+  OnSpeechRecognitionReady();
   success = DispatchTranscription(
       "A baby octopus is about the size of a flea when it is born.");
   EXPECT_TRUE(success);
@@ -338,6 +412,7 @@ IN_PROC_BROWSER_TEST_F(CaptionControllerTest, DispatchTranscription) {
 #endif
 
   SetLiveCaptionEnabled(false);
+  OnSpeechRecognitionReady();
   success = DispatchTranscription(
       "Approximately 10-20% of power outages in the US are caused by "
       "squirrels.");
@@ -353,6 +428,7 @@ IN_PROC_BROWSER_TEST_F(CaptionControllerTest,
   SetLiveCaptionEnabled(true);
 
   // Dispatch transcription routes the transcription to the right browser.
+  OnSpeechRecognitionReadyOnBrowser(browser1);
   bool success = DispatchTranscriptionToBrowser(
       "Honeybees can recognize human faces.", browser1);
   EXPECT_TRUE(success);
@@ -369,6 +445,7 @@ IN_PROC_BROWSER_TEST_F(CaptionControllerTest,
   EXPECT_FALSE(IsWidgetVisibleOnBrowser(browser1));
 #endif
 
+  OnSpeechRecognitionReadyOnBrowser(browser2);
   success = DispatchTranscriptionToBrowser(
       "A blue whale's heart is the size of a small car.", browser2);
   EXPECT_TRUE(success);
@@ -386,6 +463,7 @@ IN_PROC_BROWSER_TEST_F(CaptionControllerTest,
   EXPECT_FALSE(IsWidgetVisibleOnBrowser(browser2));
 #endif
 
+  OnSpeechRecognitionReadyOnBrowser(incognito_browser);
   success = DispatchTranscriptionToBrowser(
       "Squirrels forget where they hide about half of their nuts.",
       incognito_browser);
@@ -501,10 +579,8 @@ IN_PROC_BROWSER_TEST_F(CaptionControllerTest,
   EXPECT_EQ(1, NumBubbleControllersForProfile(profile1));
   EXPECT_EQ(0, NumBubbleControllersForProfile(profile2));
 
-  // Make the bubble on incognito_browser1 visible by dispatching a
-  // transcription.
-  DispatchTranscriptionToBrowser(
-      "If you lift a kangaroo's tail off the ground it can't hop.", browser1);
+  // Make the bubble on incognito_browser1 visible.
+  OnSpeechRecognitionReadyOnBrowser(browser1);
 // The CaptionBubbleController is currently only implemented in Views.
 #if defined(TOOLKIT_VIEWS)
   EXPECT_TRUE(IsWidgetVisibleOnBrowser(browser1));
@@ -520,6 +596,52 @@ IN_PROC_BROWSER_TEST_F(CaptionControllerTest,
 }
 
 IN_PROC_BROWSER_TEST_F(CaptionControllerTest,
+                       OnSpeechRecognitionReady_MultipleProfiles) {
+  Profile* profile1 = browser()->profile();
+  Profile* profile2 = CreateProfile();
+  Browser* browser1 = browser();
+  Browser* browser2 = CreateBrowser(profile2);
+
+  // Enable live caption on both profiles.
+  SetLiveCaptionEnabled(true);
+  profile2->GetPrefs()->SetBoolean(prefs::kLiveCaptionEnabled, true);
+
+  // OnSpeechRecognitionReady routes to the right browser on the right profile.
+  bool success =
+      OnSpeechRecognitionReadyOnBrowserForProfile(browser1, profile1);
+  EXPECT_TRUE(success);
+// The CaptionBubbleController is currently only implemented in Views.
+#if defined(TOOLKIT_VIEWS)
+  EXPECT_TRUE(IsWidgetVisibleOnBrowser(browser1));
+  EXPECT_FALSE(IsWidgetVisibleOnBrowser(browser2));
+#else
+  EXPECT_FALSE(IsWidgetVisibleOnBrowser(browser1));
+#endif
+
+  success = OnSpeechRecognitionReadyOnBrowserForProfile(browser2, profile2);
+  EXPECT_TRUE(success);
+// The CaptionBubbleController is currently only implemented in Views.
+#if defined(TOOLKIT_VIEWS)
+  EXPECT_TRUE(IsWidgetVisibleOnBrowser(browser1));
+  EXPECT_TRUE(IsWidgetVisibleOnBrowser(browser2));
+#else
+  EXPECT_FALSE(IsWidgetVisibleOnBrowser(browser1));
+#endif
+
+  // OnSpeechRecognitionReady returns false for browsers on different profiles.
+  success = OnSpeechRecognitionReadyOnBrowserForProfile(browser1, profile2);
+  EXPECT_FALSE(success);
+// The CaptionBubbleController is currently only implemented in Views.
+#if defined(TOOLKIT_VIEWS)
+  EXPECT_TRUE(IsWidgetVisibleOnBrowser(browser1));
+  EXPECT_TRUE(IsWidgetVisibleOnBrowser(browser2));
+#else
+  EXPECT_FALSE(IsWidgetVisibleOnBrowser(browser1));
+  EXPECT_FALSE(IsWidgetVisibleOnBrowser(browser2));
+#endif
+}
+
+IN_PROC_BROWSER_TEST_F(CaptionControllerTest,
                        DispatchTranscription_MultipleProfiles) {
   Profile* profile1 = browser()->profile();
   Profile* profile2 = CreateProfile();
@@ -532,6 +654,7 @@ IN_PROC_BROWSER_TEST_F(CaptionControllerTest,
 
   // Dispatch transcription routes the transcription to the right browser on the
   // right profile.
+  OnSpeechRecognitionReadyOnBrowserForProfile(browser1, profile1);
   bool success = DispatchTranscriptionToBrowserForProfile(
       "Only female mosquitos bite.", browser1, profile1);
   EXPECT_TRUE(success);
@@ -546,6 +669,7 @@ IN_PROC_BROWSER_TEST_F(CaptionControllerTest,
   EXPECT_FALSE(IsWidgetVisibleOnBrowser(browser1));
 #endif
 
+  OnSpeechRecognitionReadyOnBrowserForProfile(browser2, profile2);
   success = DispatchTranscriptionToBrowserForProfile(
       "Mosquitos were around at the time of the dinosaurs.", browser2,
       profile2);

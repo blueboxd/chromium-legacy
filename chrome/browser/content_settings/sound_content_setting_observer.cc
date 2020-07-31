@@ -158,9 +158,12 @@ ContentSetting SoundContentSettingObserver::GetCurrentContentSetting() {
 void SoundContentSettingObserver::CheckSoundBlocked(bool is_audible) {
   if (is_audible && GetCurrentContentSetting() == CONTENT_SETTING_BLOCK) {
     // The tab has tried to play sound, but was muted.
+    // This is a page level event so it is OK to get the main frame here.
+    // TODO(https://crbug.com/1103176): We should figure a way of not having to
+    // use GetMainFrame here. (pass the source frame somehow)
     content_settings::TabSpecificContentSettings* settings =
-        content_settings::TabSpecificContentSettings::FromWebContents(
-            web_contents());
+        content_settings::TabSpecificContentSettings::GetForFrame(
+            web_contents()->GetMainFrame());
     if (settings)
       settings->OnAudioBlocked();
 

@@ -10,6 +10,7 @@
 #include <utility>
 #include <vector>
 
+#include "base/cancelable_callback.h"
 #include "base/containers/flat_map.h"
 #include "base/memory/ptr_util.h"
 #include "base/memory/weak_ptr.h"
@@ -40,6 +41,7 @@ class NearbyShareContactManager;
 class NearbyShareCertificateManager;
 class NearbyShareClientFactory;
 class NearbyShareLocalDeviceDataManager;
+class NotificationDisplayService;
 class PrefService;
 class Profile;
 
@@ -54,6 +56,7 @@ class NearbySharingServiceImpl
  public:
   explicit NearbySharingServiceImpl(
       PrefService* prefs,
+      NotificationDisplayService* notification_display_service,
       Profile* profile,
       std::unique_ptr<NearbyConnectionsManager> nearby_connections_manager,
       NearbyProcessManager* process_manager);
@@ -143,7 +146,11 @@ class NearbySharingServiceImpl
       base::Optional<std::string> token,
       std::unique_ptr<IncomingFramesReader> frames_reader,
       base::Optional<sharing::mojom::V1FramePtr> frame);
+  void OnIncomingConnectionDisconnected(const ShareTarget& share_target);
   void UnregisterShareTarget(const ShareTarget& share_target);
+  bool IsOutOfStorage(const ShareTarget& share_target);
+
+  void OnIncomingMutualAcceptanceTimeout(const ShareTarget& share_target);
 
   IncomingShareTargetInfo& GetIncomingShareTargetInfo(
       const ShareTarget& share_target);
@@ -191,6 +198,10 @@ class NearbySharingServiceImpl
   // TODO(crbug/1085068) update this map when handling payloads
   base::flat_map<base::UnguessableToken, OutgoingShareTargetInfo>
       outgoing_share_target_info_map_;
+
+  // This alarm is used to disconnect the sharing connection if both sides do
+  // not press accept within the timeout.
+  base::CancelableOnceClosure mutual_acceptance_timeout_alarm_;
 
   // The current advertising power level. PowerLevel::kUnknown while not
   // advertising.

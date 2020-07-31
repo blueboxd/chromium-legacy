@@ -23,6 +23,7 @@
 <translation id="3344973607274501920">Chromiumu ni uspelo preveriti vaših gesel. Poskusite preveriti internetno povezavo.</translation>
 <translation id="3639997914391704523">Chromium lahko preveri vaša gesla, ko se prijavite z računom Google.</translation>
 <translation id="3805899903892079518">Chromium nima dostopa do fotografij ali videoposnetkov. Omogočite dostop v sistemu iOS: Settings &gt; Privacy &gt; Photos.</translation>
+<translation id="4166206055865952171">Nastavite Chromium kot privzeti brskalnik</translation>
 <translation id="4555020257205549924">Kadar je vklopljena ta funkcija, bo Chromium ponudil, da z uporabo Google Prevajalnika prevede strani v drugih jezikih. <ph name="BEGIN_LINK" />Več o tem<ph name="END_LINK" /></translation>
 <translation id="4681781466797808448">Vklopite optični bralnik Chromium</translation>
 <translation id="4787850887676698916">Zavihki, ki ste jih odprli v Chromiumu v drugih napravah, bodo prikazani tukaj.</translation>
@@ -39,10 +40,15 @@
 <translation id="6604711459180487467">Zagotovite si boljšo izkušnjo uporabe Chromiuma na podlagi lokacije.</translation>
 <translation id="6820823224820483452">Chromiumu ni uspelo preveriti vseh gesel. Poskusite znova jutri.</translation>
 <translation id="7099326575020694068">Chromium ne more uporabljati fotoaparata v načinu razdeljenega pogleda</translation>
+<translation id="7118091470949186573">Zdaj lahko uporabljate Chromium, kadar koli se dotaknete povezav v sporočilih, dokumentih in drugih aplikacijah.</translation>
 <translation id="7173114856073700355">Odpri nastavitve</translation>
 <translation id="7208566199746267865">Chromium poskrbi, da so vaši računi v spletu, in vam tako prihrani čas. Račune lahko dodajate ali odstranjujete v nastavitvah.</translation>
 <translation id="7269362888766543920">Nekateri dodatki povzročajo zrušitve Chromiuma. Poskusite jih odstraniti.</translation>
 <translation id="7337881442233988129">Chromium</translation>
+<translation id="7349905826685622881">Chromium nastavite kot privzeti tiskalnik tako:
+        1. Odprite nastavitve. 
+        2. Dotaknite se možnosti za privzeto aplikacijo za brskanje.
+        3. Izberite Chromium.</translation>
 <translation id="7357211569052832586">Izbrani podatki so bili odstranjeni iz Chromiuma in sinhroniziranih naprav. V Google Računu so morda druge vrste zgodovine brskanja, kot so iskanja in dejavnosti iz drugih Googlovih storitev, na history.google.com.</translation>
 <translation id="7400689562045506105">Uporaba Chromiuma povsod</translation>
 <translation id="766897673682622022">Geslo je bilo razkrito zaradi podatkovne kršitve. Chromium priporoča, da takoj spremenite geslo.</translation>

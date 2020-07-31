@@ -2911,6 +2911,32 @@ message ExtensionInstallReportLogEvent {
     COMPLETE = 4;
   };
 
+  // Current stage of the extension downloading process. See
+  // ExtensionDownloaderDelegate::Stage for more details.
+  // ExtensionDownloaderDelegate::Stage is the main enum and this is a copy used
+  // for reporting purposes.
+  enum DownloadingStage {
+    DOWNLOAD_PENDING = 0;
+
+    QUEUED_FOR_MANIFEST = 1;
+
+    DOWNLOADING_MANIFEST = 2;
+
+    DOWNLOADING_MANIFEST_RETRY = 3;
+
+    PARSING_MANIFEST = 4;
+
+    MANIFEST_LOADED = 5;
+
+    QUEUED_FOR_CRX = 6;
+
+    DOWNLOADING_CRX = 7;
+
+    DOWNLOADING_CRX_RETRY = 8;
+
+    FINISHED = 9;
+  };
+
   // Timestamp, in microseconds since epoch. Set for all log
   // events.
   optional int64 timestamp = 1;
@@ -2935,6 +2961,9 @@ message ExtensionInstallReportLogEvent {
 
   // Stage of installation process.
   optional InstallationStage installation_stage = 8;
+
+  // Stage of downloading process.
+  optional DownloadingStage downloading_stage = 9;
 }
 
 // A single entry in the push-install log for an app.

@@ -1629,6 +1629,7 @@ Kontaktujte administrátora systému.</translation>
 <translation id="7791011319128895129">Nevydáno</translation>
 <translation id="7791196057686275387">Balení</translation>
 <translation id="7791543448312431591">Přidat</translation>
+<translation id="7792318290931435557">Zobrazení jedné stránky</translation>
 <translation id="7798389633136518089">Ignorováno, protože tuto zásadu nenastavil cloudový zdroj.</translation>
 <translation id="7800304661137206267">Připojení je šifrováno pomocí standardu <ph name="CIPHER" /> s algoritmem <ph name="MAC" /> pro ověřování zpráv a mechanizmem výměny klíčů <ph name="KX" />.</translation>
 <translation id="7802523362929240268">Web je důvěryhodný</translation>
@@ -1724,6 +1725,7 @@ Kontaktujte administrátora systému.</translation>
 <translation id="8220146938470311105">C7/C6 (obálka)</translation>
 <translation id="8221250263817408492">Právě jste své heslo zadali na klamavém webu. Chromium doporučuje navštívit web <ph name="WEBSITE_1" /> a další weby, kde toto heslo používáte, a okamžitě jej změnit.</translation>
 <translation id="8225771182978767009">Uživatel, který tento počítač nastavoval, se rozhodl tento web blokovat.</translation>
+<translation id="8228419419708659934">Zobrazení dvou stránek</translation>
 <translation id="822964464349305906"><ph name="TYPE_1" />, <ph name="TYPE_2" /></translation>
 <translation id="8232343881378637145">Teplota platformy</translation>
 <translation id="8238581221633243064">Otevřete stránku na nové anonymní kartě</translation>

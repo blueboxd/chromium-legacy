@@ -13,8 +13,8 @@
 #include "chrome/browser/nearby_sharing/transfer_metadata.h"
 #include "chrome/browser/nearby_sharing/transfer_update_callback.h"
 
-class Profile;
 class NearbySharingService;
+class NotificationDisplayService;
 
 // Manages notifications shown for Nearby Share. Only a single notification will
 // be shown as simultaneous connections are not supported. All methods should be
@@ -22,8 +22,9 @@ class NearbySharingService;
 class NearbyNotificationManager : public TransferUpdateCallback,
                                   public ShareTargetDiscoveredCallback {
  public:
-  NearbyNotificationManager(Profile* profile,
-                            NearbySharingService* nearby_service);
+  NearbyNotificationManager(
+      NotificationDisplayService* notification_display_service,
+      NearbySharingService* nearby_service);
   ~NearbyNotificationManager() override;
 
   // TransferUpdateCallback:
@@ -61,7 +62,7 @@ class NearbyNotificationManager : public TransferUpdateCallback,
   void CloseTransfer();
 
  private:
-  Profile* profile_;
+  NotificationDisplayService* notification_display_service_;
   NearbySharingService* nearby_service_;
 };
 

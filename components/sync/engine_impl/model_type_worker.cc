@@ -446,14 +446,6 @@ void ModelTypeWorker::OnFullCommitFailure(SyncCommitError commit_error) {
   model_type_processor_->OnCommitFailed(commit_error);
 }
 
-void ModelTypeWorker::AbortMigration() {
-  DCHECK(!model_type_state_.initial_sync_done());
-  model_type_state_ = sync_pb::ModelTypeState();
-  entries_pending_decryption_.clear();
-  pending_updates_.clear();
-  nudge_handler_->NudgeForInitialDownload(type_);
-}
-
 size_t ModelTypeWorker::EstimateMemoryUsage() const {
   using base::trace_event::EstimateMemoryUsage;
   size_t memory_usage = 0;

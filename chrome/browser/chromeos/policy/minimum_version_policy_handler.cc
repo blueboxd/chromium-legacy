@@ -450,18 +450,21 @@ void MinimumVersionPolicyHandler::StartObservingUpdate() {
     build_state->AddObserver(this);
 }
 
-void MinimumVersionPolicyHandler::MaybeShowNotificationOnLogin() {
+base::Optional<int> MinimumVersionPolicyHandler::GetTimeRemainingInDays() {
   const base::Time now = clock_->Now();
-  // This should only be true if |update_required_deadline_timer_| expired while
+  if (!state_ || update_required_deadline_ <= now)
+    return base::nullopt;
+  base::TimeDelta time_remaining = update_required_deadline_ - now;
+  return GetDaysRounded(time_remaining);
+}
+
+void MinimumVersionPolicyHandler::MaybeShowNotificationOnLogin() {
+  // |days| could be null if |update_required_deadline_timer_| expired while
   // login was in progress, else we would have shown the update required screen
   // at startup.
-  if (update_required_deadline_ <= now)
-    return;
-
-  base::TimeDelta time_remaining = update_required_deadline_ - now;
-  int days_remaining = GetDaysRounded(time_remaining);
-  if (days_remaining <= 1)
-    MaybeShowNotification(base::TimeDelta::FromDays(days_remaining));
+  base::Optional<int> days = GetTimeRemainingInDays();
+  if (days && days.value() <= 1)
+    MaybeShowNotification(base::TimeDelta::FromDays(days.value()));
 }
 
 void MinimumVersionPolicyHandler::MaybeShowNotification(

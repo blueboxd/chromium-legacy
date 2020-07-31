@@ -82,13 +82,16 @@ void FlashDownloadInterception::InterceptFlashDownloadNavigation(
   if (flash_setting == CONTENT_SETTING_DETECT_IMPORTANT_CONTENT) {
     permissions::PermissionManager* manager =
         PermissionManagerFactory::GetForProfile(profile);
+    // TODO(https://crbug.com/1103176): Plumb the actual frame reference here
+    // (FlashDownloadInterception is created only for renderer-initiated
+    // navigations, so we always should have a reference to the originating
+    // RenderFrameHost)
     manager->RequestPermission(
         ContentSettingsType::PLUGINS, web_contents->GetMainFrame(),
         web_contents->GetLastCommittedURL(), true, base::DoNothing());
   } else if (flash_setting == CONTENT_SETTING_BLOCK) {
-    auto* settings =
-        content_settings::TabSpecificContentSettings::FromWebContents(
-            web_contents);
+    auto* settings = content_settings::TabSpecificContentSettings::GetForFrame(
+        web_contents->GetMainFrame());
     if (settings)
       settings->FlashDownloadBlocked();
   }

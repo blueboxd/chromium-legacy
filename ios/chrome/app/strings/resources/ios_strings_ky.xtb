@@ -14,7 +14,6 @@
 <translation id="1084365883616172403">Facebook'ка жайгаштырылды.</translation>
 <translation id="1103523840287552314"><ph name="LANGUAGE" /> тилин ар дайым которуу</translation>
 <translation id="1104948393051856124">Кабыл алуу жана улантуу</translation>
-<translation id="1105578556867525047">Вебсайттагы сырсөзүңүздү өзгөртүңүз</translation>
 <translation id="1112015203684611006">Басылып чыгарылбай калды.</translation>
 <translation id="1125564390852150847">Жаңы өтмөк түзүү.</translation>
 <translation id="1145536944570833626">Учурдагы дайындарды жок кылуу.</translation>
@@ -23,6 +22,7 @@
 <translation id="1176932207622159128">Сүрөт сакталбайт</translation>
 <translation id="1180526666083833456">Бардык түзмөктөрдө шайкештирүү жана жекечелештирүү.</translation>
 <translation id="1181037720776840403">Алып салуу</translation>
+<translation id="1185569544548277362">Жаңы: Chrome демейки серепчиңиз боло алат. <ph name="BEGIN_LINK" />Жөндөөлөрдү ачуу<ph name="END_LINK" /></translation>
 <translation id="1207113853726624428">Жаңы издөө</translation>
 <translation id="1209206284964581585">Азырынча жашыруу</translation>
 <translation id="1219674500290482172">Интернетке туташуу мүмкүн болбой жатат.</translation>
@@ -245,7 +245,6 @@
 <translation id="3783017676699494206">Сүрөттү сактоо</translation>
 <translation id="3789841737615482174">Орнотуу</translation>
 <translation id="3803696231112616155">Бул сайтты которууну сунуштоо</translation>
-<translation id="3836313059960742452">{COUNT,plural, =0{Бир да сырсөз уурдалган жок}=1{{COUNT} сырсөз уурдалды}other{{COUNT} сырсөз уурдалды}}</translation>
 <translation id="385051799172605136">Артка</translation>
 <translation id="3892144330757387737">Таржымалыңызды ушул жерден табасыз</translation>
 <translation id="3897092660631435901">Меню</translation>
@@ -332,6 +331,7 @@
 <translation id="4901778704868714008">Сактоо…</translation>
 <translation id="4904877109095351937">Окулган деп белгилөө</translation>
 <translation id="4930268273022498155">Учурдагы дайындарды жок кылуу. Аларга кайра кирүү үчүн <ph name="USER_EMAIL1" /> аккаунтка которулуу керек болот.</translation>
+<translation id="4930714375720679147">Күйгүзүү</translation>
 <translation id="4941089862236492464">Кечиресиз, бул нерсени бөлүшүп жатканда көйгөй келип чыкты.</translation>
 <translation id="4944543191714094452">Барактан табуу…</translation>
 <translation id="4945756290001680296">Сырсөздүн жөндөөлөрүнө кирүү</translation>
@@ -610,6 +610,7 @@ Handoff Жөндөөлөрдүн жалпы бөлүмүндө да иштети
 <translation id="8073670137947914548">Жүктөп алуу аягына чыкты</translation>
 <translation id="8073872304774253879">Издөө жана серептөө аракеттериңизди жакшыртыңыз</translation>
 <translation id="8076014560081431679">Сакталган сайт жөндөөлөрү өзгөрүлбөйт, андыктан, сайттарды адаттагыдай карай бересиз. <ph name="BEGIN_LINK" />Көбүрөөк маалымат алуу<ph name="END_LINK" /></translation>
+<translation id="8105368624971345109">Өчүрүү</translation>
 <translation id="8114753159095730575">Файлды жүктөп алууга болот. Параметрлер экрандын төмөн жагында берилген.</translation>
 <translation id="8131740175452115882">Ырастоо</translation>
 <translation id="8197543752516192074">Баракты которуу</translation>
@@ -639,6 +640,7 @@ Handoff Жөндөөлөрдүн жалпы бөлүмүндө да иштети
 <translation id="8524799873541103884"><ph name="FIRST_VISIBLE_TAB" /> аркылуу <ph name="NUMBER_OF_OPEN_TABS" /> ичинен <ph name="LAST_VISIBLE_TAB" /> <ph name="INCOGNITO" /> өтмөк</translation>
 <translation id="8529767659511976195">Жаңы</translation>
 <translation id="8532105204136943229">Мөөнт аяктг жыл</translation>
+<translation id="8533166274275423134">Башка терезеде ачык</translation>
 <translation id="8534481786647257214">Google+ жайгаштырылды.</translation>
 <translation id="8548878600947630424">Беттен табуу…</translation>
 <translation id="8574235780160508979">Chrome’дун Тейлөө шарттары 31-марттан кийин өзгөргөнү жатат. <ph name="BEGIN_LINK" />Карап чыгыңыз<ph name="END_LINK" /></translation>

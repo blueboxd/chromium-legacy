@@ -14,6 +14,7 @@ js_type_check("closure_compile") {
     ":final_page",
     ":mojo_interface_provider",
     ":provisioning_page",
+    ":psim_flow_ui",
     ":sim_detect_page",
     ":webview_post_util",
   ]
@@ -53,15 +54,21 @@ js_library("final_page") {
   deps = [ ":base_page" ]
 }
 
-js_library("cellular_setup") {
+js_library("psim_flow_ui") {
   deps = [
-    ":button_bar",
     ":final_page",
     ":mojo_interface_provider",
     ":provisioning_page",
     ":sim_detect_page",
     "//chromeos/services/cellular_setup/public/mojom:mojom_js_library_for_compile",
     "//ui/webui/resources/js:i18n_behavior",
+  ]
+}
+
+js_library("cellular_setup") {
+  deps = [
+    ":button_bar",
+    ":psim_flow_ui",
   ]
 }
 

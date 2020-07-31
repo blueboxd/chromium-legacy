@@ -247,6 +247,19 @@ TEST(UrlFormatterTest, FormatUrl) {
            kFormatUrlOmitTrivialSubdomains | kFormatUrlTrimAfterHost,
        net::UnescapeRule::NORMAL, L"view-source:https://www.google.com/foo",
        20},
+#if defined(OS_WIN)
+      {"view-source should not omit file on Windows",
+       "view-source:file:///C:/Users/homedirname/folder/file.pdf/",
+       kFormatUrlOmitDefaults | kFormatUrlOmitFileScheme,
+       net::UnescapeRule::NORMAL,
+       L"view-source:file:///C:/Users/homedirname/folder/file.pdf/", 19},
+#else
+      {"view-source should not omit file",
+       "view-source:file:///Users/homedirname/folder/file.pdf/",
+       kFormatUrlOmitDefaults | kFormatUrlOmitFileScheme,
+       net::UnescapeRule::NORMAL,
+       L"view-source:file:///Users/homedirname/folder/file.pdf/", 19},
+#endif
 
       // -------- omit https --------
       {"omit https", "https://www.google.com/", kFormatUrlOmitHTTPS,

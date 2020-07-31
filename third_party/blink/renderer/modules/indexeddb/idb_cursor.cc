@@ -123,7 +123,9 @@ IDBRequest* IDBCursor::update(ScriptState* script_state,
   IDBObjectStore* object_store = EffectiveObjectStore();
   return object_store->DoPut(script_state, mojom::IDBPutMode::CursorUpdate,
                              IDBRequest::Source::FromIDBCursor(this), value,
-                             IdbPrimaryKey(), exception_state);
+                             IdbPrimaryKey(), exception_state,
+                             /*optional_custom_callback=*/nullptr,
+                             /*blob_handles_out=*/nullptr);
 }
 
 void IDBCursor::advance(unsigned count, ExceptionState& exception_state) {

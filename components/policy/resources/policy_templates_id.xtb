@@ -153,8 +153,8 @@ Secara default, tidak ada mode buka kunci cepat yang tersedia untuk perangkat ya
       Jika kebijakan tidak disetel atau disetel ke false, Transisi Cepat tidak dapat digunakan.
       Jika disetel ke true, Transisi Cepat dapat digunakan saat titik akses nirkabel mendukungnya.</translation>
 <translation id="1240722269871366886">Kebijakan ini memungkinkan <ph name="PRODUCT_OS_NAME" /> menyarankan emoji saat pengguna mengetikkan teks dengan keyboard virtual atau fisik.
-      Jika kebijakan ini disetel ke benar (true), fitur akan diaktifkan, dan pengguna dapat mengubahnya.
-      Kebijakan ini disetel ke salah (false) secara default, emoji tidak akan disarankan dan pengguna tidak dapat menggantinya.</translation>
+      Jika kebijakan ini disetel ke benar, fitur akan diaktifkan, dan pengguna dapat mengubahnya.
+      Kebijakan ini disetel ke salah secara default, emoji tidak akan disarankan dan pengguna tidak dapat menggantinya.</translation>
 <translation id="1243570869342663665">Mengontrol pemfilteran konten khusus dewasa SafeSites.</translation>
 <translation id="1257550411839719984">Setel direktori download default</translation>
 <translation id="1265053460044691532">Batasi waktu bagi pengguna yang diautentikasi melalui SAML untuk dapat masuk saat offline.</translation>
@@ -653,26 +653,6 @@ Jika Anda menonaktifkan kebijakan ini, scroll halaman web ke fragmen teks terten
 <translation id="2082205219176343977">Mengonfigurasi versi minimum Chrome yang diizinkan untuk perangkat.</translation>
 <translation id="209586405398070749">Saluran stabil</translation>
 <translation id="2098658257603918882">Aktifkan laporan data penggunaan dan yang terkait error</translation>
-<translation id="210034539800365161">Mengonfigurasi persyaratan versi minimum <ph name="PRODUCT_OS_NAME" /> yang diizinkan.
-
-      Jika kebijakan ini disetel ke daftar tidak kosong:
-      Jika tidak ada entri yang memiliki <ph name="CHROMEOS_VERSION_PROPERTY_NAME" /> yang lebih baru daripada versi di perangkat saat ini, tidak ada batasan yang akan diterapkan dan batasan yang telah diterapkan akan dicabut.
-      Jika setidaknya salah satu entri memiliki <ph name="CHROMEOS_VERSION_PROPERTY_NAME" /> yang lebih baru daripada versi saat ini, entri terkuat yang memiliki versi lebih baru dan paling dekat dengan versi saat ini akan dipilih.
-      Jika terjadi konflik, preferensi akan diberikan pada entri dengan <ph name="WARNING_PERIOD_PROPERTY_NAME" /> atau <ph name="AUE_WARNING_PERIOD_PROPERTY_NAME" /> yang lebih singkat dan kebijakan diterapkan menggunakan entri tersebut.
-
-      Jika versi saat ini menjadi tidak terpakai saat sesi pengguna berlangsung dan jaringan saat ini membatasi update otomatis, akan muncul notifikasi pada layar untuk mengupdate perangkat dalam <ph name="WARNING_PERIOD_PROPERTY_NAME" /> yang ditampilkan di notifikasi.
-      Tidak ada notifikasi yang ditampilkan jika jaringan saat ini mengizinkan update otomatis dan perangkat harus diupdate dalam <ph name="WARNING_PERIOD_PROPERTY_NAME" />.
-      <ph name="WARNING_PERIOD_PROPERTY_NAME" /> akan dimulai pada saat kebijakan diterapkan.
-      Jika perangkat tidak diupdate hingga <ph name="WARNING_PERIOD_PROPERTY_NAME" /> berakhir, pengguna akan dipaksa logout dari sesi.
-      Jika diketahui bahwa versi saat ini tidak terpakai saat login ketika <ph name="WARNING_PERIOD_PROPERTY_NAME" /> berakhir, pengguna diminta mengupdate perangkat sebelum login.
-
-      Jika versi saat ini menjadi tidak terpakai saat sesi pengguna berlangsung dan perangkat telah mencapai batas akhir update otomatis, akan muncul notifikasi pada layar untuk mengembalikan perangkat dalam <ph name="AUE_WARNING_PERIOD_PROPERTY_NAME" />.
-      Jika diketahui bahwa perangkat telah mencapai batas akhir update otomatis saat login ketika <ph name="AUE_WARNING_PERIOD_PROPERTY_NAME" /> berakhir, perangkat akan diblokir bagi siapa pun yang ingin login.
-
-      Jika kebijakan ini tidak disetel atau dibiarkan kosong, tidak ada batasan yang akan diterapkan, batasan yang ada akan dicabut, dan pengguna dapat login, berapa pun versi <ph name="PRODUCT_OS_NAME" />.
-
-      <ph name="CHROMEOS_VERSION_PROPERTY_NAME" /> di sini bisa merupakan versi yang tepat seperti '13305.0.0' atau awalan versi, seperti '13305'.
-      <ph name="WARNING_PERIOD_PROPERTY_NAME" /> dan <ph name="AUE_WARNING_PERIOD_PROPERTY_NAME" /> adalah nilai opsional yang ditentukan dalam jumlah hari. Nilai defaultnya adalah 0 hari, yang artinya tidak ada periode peringatan.</translation>
 <translation id="2104418465060359056">Melaporkan informasi Ekstensi dan Plugin</translation>
 <translation id="2106627642643925514">Mengganti mode pencetakan PIN default. Jika mode ini tidak tersedia, kebijakan ini akan diabaikan.</translation>
 <translation id="2107601598727098402">
@@ -4630,13 +4610,6 @@ Cara yang diharapkan terkait penggunaan kebijakan ini adalah merotasi konfiguras
 
       Anda dapat menentukan URL penelusuran Google sebagai: <ph name="GOOGLE_SEARCH_URL" />.</translation>
 <translation id="7895553628261067384">Akses jarak jauh</translation>
-<translation id="7898879331506985900">Kebijakan perusahaan ini berlaku untuk adaptasi jangka pendek dan akan dihapus di M86.
-
-      Kebijakan perujuk default Chrome sedang diperkuat dari nilainya saat ini, yaitu no-referrer-when-downgrade, ke strict-origin-when-cross-origin yang lebih aman melalui peluncuran bertahap yang menargetkan M80 stabil.
-
-      Sebelum peluncuran, kebijakan perusahaan ini tidak akan berlaku. Setelah peluncuran, ketika kebijakan perusahaan ini diaktifkan, kebijakan perujuk default Chrome akan ditetapkan ke nilai pra-M80, yaitu no-referrer-when-downgrade.
-
-      Kebijakan perusahaan ini dinonaktifkan secara default.</translation>
 <translation id="7902040092815978832">Menampilkan keyboard numerik untuk sandi</translation>
 <translation id="7912255076272890813">Konfigurasikan jenis aplikasi/ekstensi yang diizinkan</translation>
 <translation id="7922358664346625612">Biarkan tab terakhir terbuka di Chrome.</translation>
@@ -5335,9 +5308,9 @@ Pengguna tidak dapat mengubah atau mengganti setelan ini.</translation>
       Kebijakan ini akan dihapus setelah Chrome 84.</translation>
 <translation id="8937562488500723400">Mengontrol apakah persetujuan oleh kebijakan KDC dipatuhi untuk menentukan pendelegasian tiket <ph name="KERBEROS" />.
 
-          Jika kebijakan ini disetel ke benar (true), autentikasi HTTP akan mematuhi persetujuan oleh kebijakan KDC, yaitu Chrome hanya akan mendelegasikan kredensial jika KDS menyetel <ph name="OK_AS_DELEGATE" /> pada tiket layanan. Buka https://tools.ietf.org/html/rfc5896.html untuk informasi selengkapnya. Layanan juga harus cocok dengan kebijakan 'AuthNegotiateDelegateAllowlist'.
+          Jika kebijakan ini disetel ke benar, autentikasi HTTP akan mematuhi persetujuan oleh kebijakan KDC, yaitu Chrome hanya akan mendelegasikan kredensial jika KDS menyetel <ph name="OK_AS_DELEGATE" /> pada tiket layanan. Buka https://tools.ietf.org/html/rfc5896.html untuk informasi selengkapnya. Layanan juga harus cocok dengan kebijakan 'AuthNegotiateDelegateAllowlist'.
 
-          Jika kebijakan ini tidak disetel atau disetel ke salah (false), kebijakan KDC akan diabaikan di platform yang didukung, dan hanya kebijakan 'AuthNegotiateDelegateAllowlist' yang akan dipatuhi.
+          Jika kebijakan ini tidak disetel atau disetel ke salah, kebijakan KDC akan diabaikan di platform yang didukung, dan hanya kebijakan 'AuthNegotiateDelegateAllowlist' yang akan dipatuhi.
 
           Di Windows, kebijakan KDC selalu dipatuhi.</translation>
 <translation id="8938932171964587769">Tidak digunakan lagi di M69. Sebagai gantinya, gunakan OverrideSecurityRestrictionsOnInsecureOrigin.

@@ -1118,6 +1118,7 @@
 <translation id="2352662711729498748">&lt; 1 МБ</translation>
 <translation id="2352810082280059586">Экран құлпы жөніндегі ескертпелері автоматты түрде <ph name="LOCK_SCREEN_APP_NAME" /> қолданбасына сақталған. Ең соңғы ескертпе құлып экранында берілген.</translation>
 <translation id="2353297238722298836">Камера мен микрофонды пайдалануға рұқсат берілген</translation>
+<translation id="2355314311311231464">Инициализация сәтсіз аяқталды, себебі есептік жазба деректерін шығарып алу мүмкін болмады. Қайталап көріңіз. Қате коды: <ph name="ERROR_CODE" />.</translation>
 <translation id="2355604387869345912">Жылдам тетерингті қосу</translation>
 <translation id="2356070529366658676">Сұрау</translation>
 <translation id="2357330829548294574">Пайдаланушыны (<ph name="USER_NAME" />) өшіру</translation>
@@ -1158,7 +1159,6 @@
 <translation id="2408955596600435184">PIN кодын енгізіңіз</translation>
 <translation id="241082044617551207">Белгісіз плагин</translation>
 <translation id="2412593942846481727">Жаңартылған нұсқа қолжетімді</translation>
-<translation id="2414499877591062094">PIN кодын автоматты түрде жіберуді қосу</translation>
 <translation id="2416435988630956212">Пернетақтаның функциялық пернелері</translation>
 <translation id="241727068219398187">Деректер <ph name="TIME" /> күні сақталған Google құпия сөзімен шифрланған.
           Google Pay қызметіндегі төлеу әдістері мен мекенжайлар құпия фразамен шифрланбайды.</translation>
@@ -1213,6 +1213,7 @@
 <translation id="2473195200299095979">Осы бетті аудару</translation>
 <translation id="2475982808118771221">Қате орын алды</translation>
 <translation id="2476578072172137802">Сайт параметрлері</translation>
+<translation id="2476974672882258506"><ph name="PARALLELS_DESKTOP" /> бағдарламасын жою үшін Windows жүйесін өшіріңіз.</translation>
 <translation id="2478176599153288112">"<ph name="EXTENSION" />" үшін мультимедиа файлының рұқсаттары</translation>
 <translation id="247949520305900375">Аудиомен бөлісу</translation>
 <translation id="248003956660572823">Құпия сөздер сақталмаған</translation>
@@ -1303,6 +1304,7 @@
 <translation id="2572032849266859634"><ph name="VOLUME_NAME" /> тек оқу құқығы берілді.</translation>
 <translation id="2575247648642144396">Бұл бетбелгі кеңейтім ағымдағы бетте әрекет еткенде ғана көрінеді. Бұл кеңейтімді белгішені басу арқылы немесе <ph name="EXTENSION_SHORTCUT" /> басу арқылы пайдаланыңыз.</translation>
 <translation id="257779572837908839">Кездесулерге арналған Chromebox құрылғысы ретінде реттеу</translation>
+<translation id="2579232805407578790">Серверге қосылмады. Желі байланысын тексеріп, қайталап көріңіз. Егер мәселе жойылмаса, Chromebook құрылғысын өшіріп қайта қосыңыз. Қате коды: <ph name="ERROR_CODE" />.</translation>
 <translation id="2580889980133367162"><ph name="HOST" /> хостына әрқашан бірнеше файлды жүктеуге рұқсат беру</translation>
 <translation id="258095186877893873">Ұзақ</translation>
 <translation id="2582253231918033891"><ph name="PRODUCT_NAME" /> <ph name="PRODUCT_VERSION" /> (<ph name="PLATFORM_VERSION" /> платформасы) <ph name="DEVICE_SERIAL_NUMBER" /></translation>
@@ -1522,6 +1524,7 @@
 <translation id="2836635946302913370">Бұл пайдаланушы атымен кіру мүмкіндігін әкімші өшірген.</translation>
 <translation id="283669119850230892"><ph name="NETWORK_ID" /> желісін пайдалану үшін алдымен төмендегі интернет байланысын орнатып болыңыз.</translation>
 <translation id="2838379631617906747">Орнатылуда</translation>
+<translation id="2838835911926931318">Барлық құрылғыларда бетбелгілерді, құпия сөздерді, тарихты және т.б. синхрондау үшін есептік жазбаға кіріңіз.</translation>
 <translation id="2839032553903800133">Хабарландырулар бөгелді.</translation>
 <translation id="2841013758207633010">Уақыт</translation>
 <translation id="2841837950101800123">Провайдер</translation>
@@ -1581,6 +1584,7 @@
     Сервер хабары: <ph name="SERVER_MSG" /></translation>
 <translation id="2908162660801918428">Каталог бойынша медиа галереяны қосу</translation>
 <translation id="2910318910161511225">Желімен байланыс орнатып, әрекетті қайталап көріңіз</translation>
+<translation id="2910718431259223434">Бірдеңе дұрыс болмады. Әрекетті қайталаңыз немесе құрылғының иесіне не әкімшісіне хабарласыңыз. Қате коды: <ph name="ERROR_CODE" />.</translation>
 <translation id="2913331724188855103">Сайттарға cookie деректерін сақтауға және оқуға рұқсат беру (ұсынылған)</translation>
 <translation id="2915102088417824677">Әрекеттер журналын көру</translation>
 <translation id="2915873080513663243">Автоматты түрде сканерлеу</translation>
@@ -2320,6 +2324,7 @@
 <translation id="3821372858277557370">{NUM_EXTENSIONS,plural, =1{Кеңейтім мақұлданды.}other{# кеңейтім мақұлданды.}}</translation>
 <translation id="3822559385185038546">Бұл прокси-серверді әкімші іске қосқан</translation>
 <translation id="3823310065043511710">Linux үшін кемінде <ph name="INSTALL_SIZE" /> орын қажет.</translation>
+<translation id="3824621460022590830">Құрылғыны тіркеу токені жарамсыз. Құрылғының иесіне немесе әкімшісіне хабарласыңыз. Қате коды: <ph name="ERROR_CODE" />.</translation>
 <translation id="3826440694796503677">Әкімшіңіз Google есептік жазбаларын енгізуді өшіріп қойған.</translation>
 <translation id="3827306204503227641">Сынақ ортасынан тыс плагиндерге берілген рұқсатты сақтау</translation>
 <translation id="3827774300009121996">&amp;Толық экран</translation>
@@ -3273,6 +3278,7 @@
 <translation id="5079950360618752063">Ұсынылған құпия сөзді пайдалану</translation>
 <translation id="508059534790499809">Kerberos билетін жаңарту</translation>
 <translation id="5084230410268011727">Сайттардың қозғалыс және жарық датчиктерін пайдалануына рұқсат беру</translation>
+<translation id="5084328598860513926">Инициализация үзілді. Әрекетті қайталаңыз немесе құрылғының иесіне не әкімшісіне хабарласыңыз. Қате коды: <ph name="ERROR_CODE" />.</translation>
 <translation id="5085162214018721575">Жаңартуларды тексеру</translation>
 <translation id="5086082738160935172">HID</translation>
 <translation id="5086874064903147617">Реттелмелі үлкен курсор қалпына келтірілсін бе?</translation>
@@ -3395,7 +3401,6 @@
 <translation id="5241128660650683457">Сіз кіретін веб-сайттардағы барлық деректеріңізді оқу</translation>
 <translation id="5242724311594467048">"<ph name="EXTENSION_NAME" />" қосасыз ба?</translation>
 <translation id="5243522832766285132">Бірнеше минуттан кейін қайталап көріңіз</translation>
-<translation id="5244406554036143958">Авто жіберуді іске қосу үшін PIN кодын енгізіңіз.</translation>
 <translation id="5244474230056479698"><ph name="EMAIL" /> электрондық поштасымен синхрондау</translation>
 <translation id="5245610266855777041">Жұмысты оқу есептік жазбасымен бастау</translation>
 <translation id="5246282308050205996"><ph name="APP_NAME" /> жұмысы тоқтатылды. Қолданбаны қайта іске қосу үшін осы хабарды басыңыз.</translation>
@@ -3672,6 +3677,7 @@
 <translation id="557722062034137776">Құрылғыңызды қалпына келтіру Google есептік жазбаларыңызға немесе кез келген осы есептік жазбалармен синхрондалған деректерге әсер етпейді. Дегенмен, құрылғыңызда жергілікті сақталған барлық файлдар жойылады.</translation>
 <translation id="5578059481725149024">Автоматты түрде кіру</translation>
 <translation id="558170650521898289">Microsoft Windows Hardware Driver Verification</translation>
+<translation id="5581972110672966454">Құрылғыны доменге қосу мүмкін емес. Әрекетті қайталаңыз немесе құрылғының иесіне не әкімшісіне хабарласыңыз. Қате коды: <ph name="ERROR_CODE" />.</translation>
 <translation id="5582839680698949063">Басты мәзір</translation>
 <translation id="5583640892426849032">Backspace</translation>
 <translation id="5584088138253955452">Пайдаланушы аты сақталсын ба?</translation>
@@ -3744,6 +3750,7 @@
 <translation id="5667546120811588575">Google Play орнатылуда...</translation>
 <translation id="5669267381087807207">Белсендірілуде</translation>
 <translation id="5669691691057771421">Жаңа PIN кодын енгізіңіз</translation>
+<translation id="5670702108860320605">BSSID</translation>
 <translation id="5671641761787789573">Кескіндер бөгелді</translation>
 <translation id="5671658447180261823"><ph name="SUGGESTION_NAME" /> ұсынысын өшіру</translation>
 <translation id="567587836466137939">Бұл құрылғыға бағдарламалық құрал мен қауіпсіздік жүйесінің автоматты жаңартулары <ph name="MONTH_AND_YEAR" /> дейін жіберіледі. <ph name="LINK_BEGIN" />Толығырақ<ph name="LINK_END" /></translation>
@@ -5390,6 +5397,7 @@
 <translation id="7764225426217299476">Мекенжай қосу</translation>
 <translation id="7764256770584298012"><ph name="DOWNLOAD_DOMAIN" /> доменінен <ph name="DOWNLOAD_RECEIVED" /></translation>
 <translation id="7765158879357617694">Жылжыту</translation>
+<translation id="7766082757934713382">Автоматты қолданбаны және жүйелік жаңартуларды кідірту арқылы желінің дерек трафигін азайтуға көмектеседі.</translation>
 <translation id="7766807826975222231">Тур жасаңыз</translation>
 <translation id="7766838926148951335">Рұқсаттарды қабылдау</translation>
 <translation id="7768770796815395237">Өзгерту</translation>
@@ -6301,6 +6309,7 @@
 <translation id="885701979325669005">Сақтау</translation>
 <translation id="8859057652521303089">Тіліңізді таңдаңыз:</translation>
 <translation id="8859174528519900719">Ішкі жақтау: <ph name="SUBFRAME_SITE" /></translation>
+<translation id="8859402192569844210">Қызмет көрсету шарттары жүктелмеді.</translation>
 <translation id="8859662783913000679">Ата-ананың есептік жазбасы</translation>
 <translation id="8862003515646449717">Жылдам браузерге ауысыңыз</translation>
 <translation id="8863753581171631212">Сілтемені жаңа <ph name="APP" /> қолданбасында ашу</translation>
@@ -6569,6 +6578,7 @@
 <translation id="920045321358709304"><ph name="SEARCH_ENGINE" /> арқылы іздеу</translation>
 <translation id="9201023452444595544">Барлық офлайн деректер өшіріледі.</translation>
 <translation id="9201220332032049474">Экран құлпы опциялары</translation>
+<translation id="9201842707396338580">Бірдеңе дұрыс болмады. Құрылғының иесіне немесе әкімшісіне хабарласыңыз. Қате коды: <ph name="ERROR_CODE" />.</translation>
 <translation id="9203398526606335860">&amp;Профильдеу қосылған</translation>
 <translation id="9203904171912129171">Құрылғыны таңдау</translation>
 <translation id="9203962528777363226">Бұл құрылғының әкімшісі жаңа пайдаланушыларды қосу мүмкіндігін өшірді</translation>
@@ -6640,6 +6650,7 @@
 <translation id="983511809958454316">Бұл функция VR режимінде қолданылмайды</translation>
 <translation id="984275831282074731">Төлеу әдістері</translation>
 <translation id="98515147261107953">Альбомдық</translation>
+<translation id="987068745968718743">Parallels Desktop: <ph name="PLUGIN_VM_NAME" /></translation>
 <translation id="987264212798334818">Жалпы</translation>
 <translation id="987897973846887088">Суреттер қолжетімді емес</translation>
 <translation id="988978206646512040">Құпия фраза бос болмауы керек</translation>

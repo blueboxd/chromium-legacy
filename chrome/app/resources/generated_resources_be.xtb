@@ -1121,6 +1121,7 @@
 <translation id="2352662711729498748">&lt; 1 МБ</translation>
 <translation id="2352810082280059586">Нататкі на заблакіраваным экране аўтаматычна захоўваюцца ў праграме <ph name="LOCK_SCREEN_APP_NAME" />. Апошняя нататка будзе заставацца на экране блакіроўкі.</translation>
 <translation id="2353297238722298836">Камера і мікрафон дазволены</translation>
+<translation id="2355314311311231464">Збой патоку падрыхтоўкі: не ўдалося атрымаць даныя ўліковага запісу. Паўтарыце спробу. Код памылкі: <ph name="ERROR_CODE" />.</translation>
 <translation id="2355604387869345912">Уключыць Імгненны рэжым мадэма</translation>
 <translation id="2356070529366658676">Запытваць</translation>
 <translation id="2357330829548294574">Выдаліць карыстальніка <ph name="USER_NAME" /></translation>
@@ -1161,7 +1162,6 @@
 <translation id="2408955596600435184">Увядзіце PIN-код</translation>
 <translation id="241082044617551207">Невядомая ўбудова</translation>
 <translation id="2412593942846481727">Ёсць абнаўленне</translation>
-<translation id="2414499877591062094">Уключыць аўтаматычную адпраўку PIN-кода</translation>
 <translation id="2416435988630956212">Функцыянальныя клавішы клавіятуры</translation>
 <translation id="241727068219398187">Даныя зашыфраваны з дапамогай пароля Google па стане на
           <ph name="TIME" />. Шыфраванне не прымяняецца для спосабаў аплаты і адрасоў Google Pay.</translation>
@@ -1216,6 +1216,7 @@
 <translation id="2473195200299095979">Перакласці гэту старонку</translation>
 <translation id="2475982808118771221">Адбылася памылка</translation>
 <translation id="2476578072172137802">Налады сайта</translation>
+<translation id="2476974672882258506">Каб выдаліць <ph name="PARALLELS_DESKTOP" />, завяршыце працу Windows.</translation>
 <translation id="2478176599153288112">Дазволы выкарыстання мультымедыйных файлаў для пашырэння "<ph name="EXTENSION" />"</translation>
 <translation id="247949520305900375">Абагульваць аўдыя</translation>
 <translation id="248003956660572823">Паролі не захаваны</translation>
@@ -1306,6 +1307,7 @@
 <translation id="2572032849266859634">Доступ да <ph name="VOLUME_NAME" /> дадзены толькі для чытання.</translation>
 <translation id="2575247648642144396">Гэты значок будзе бачным, калі пашырэнне можа працаваць на бягучай старонцы. Каб выкарыстаць гэта пашырэнне, націсніце на значок або націсніце клавішы <ph name="EXTENSION_SHORTCUT" />.</translation>
 <translation id="257779572837908839">Задаць як Chromebox для сустрэч</translation>
+<translation id="2579232805407578790">Не ўдалося падключыцца да сервера. Праверце падключэнне да сеткі і паўтарыце спробу. Калі праблема не знікне, перазапусціце Chromebook. Код памылкі: <ph name="ERROR_CODE" />.</translation>
 <translation id="2580889980133367162">Заўсёды дазваляць хосту <ph name="HOST" /> спампоўваць некалькі файлаў</translation>
 <translation id="258095186877893873">Доўгая</translation>
 <translation id="2582253231918033891"><ph name="PRODUCT_NAME" /> <ph name="PRODUCT_VERSION" /> (платформа <ph name="PLATFORM_VERSION" />) <ph name="DEVICE_SERIAL_NUMBER" /></translation>
@@ -1525,6 +1527,7 @@
 <translation id="2836635946302913370">Уваход пад гэтым іменем карыстальніка выключаны адміністратарам.</translation>
 <translation id="283669119850230892">Каб выкарыстоўваць сетку <ph name="NETWORK_ID" />, спачатку завяршыце падключэнне да інтэрнэту (гл. ніжэй).</translation>
 <translation id="2838379631617906747">Ідзе ўсталяванне</translation>
+<translation id="2838835911926931318">Каб закладкі, паролі, гісторыя і іншыя даныя сінхранізаваліся на ўсіх вашых прыладах, увайдзіце ў сістэму</translation>
 <translation id="2839032553903800133">Апавяшчэнні заблакіраваны</translation>
 <translation id="2841013758207633010">Час</translation>
 <translation id="2841837950101800123">Пастаўшчык</translation>
@@ -1584,6 +1587,7 @@
     Паведамленне сервера: <ph name="SERVER_MSG" /></translation>
 <translation id="2908162660801918428">Дадаванне мультымедыйнай галерэі па каталозе</translation>
 <translation id="2910318910161511225">Падключыцеся да сеткі і паўтарыце спробу</translation>
+<translation id="2910718431259223434">Нешта пайшло не так. Паўтарыце спробу або звярніцеся да адміністратара ці ўладальніка прылады. Код памылкі: <ph name="ERROR_CODE" />.</translation>
 <translation id="2913331724188855103">Дазволіць сайтам захоўваць і чытаць даныя файлаў cookie (рэкамендуецца)</translation>
 <translation id="2915102088417824677">Праглядзець журнал актыўнасці</translation>
 <translation id="2915873080513663243">Аўтаматычнае сканіраванне</translation>
@@ -2323,6 +2327,7 @@
 <translation id="3821372858277557370">{NUM_EXTENSIONS,plural, =1{Пашырэнне ўхвалена}one{# пашырэнне ўхвалена}few{# пашырэнні ўхвалена}many{# пашырэнняў ухвалена}other{# пашырэння ўхвалены}}</translation>
 <translation id="3822559385185038546">Адміністратар зрабіў выкарыстанне гэтага проксі-сервера абавязковым</translation>
 <translation id="3823310065043511710">Для выкарыстання Linux рэкамендуецца мець як мінімум <ph name="INSTALL_SIZE" />.</translation>
+<translation id="3824621460022590830">Токен рэгістрацыі прылады несапраўдны. Звярніцеся да адміністратара або ўладальніка прылады. Код памылкі: <ph name="ERROR_CODE" />.</translation>
 <translation id="3826440694796503677">Адміністратар выключыў дадаванне іншых Уліковых запісаў Google</translation>
 <translation id="3827306204503227641">Працягваць запускаць убудовы па-за пясочніцай</translation>
 <translation id="3827774300009121996">&amp;Поўнаэкранны рэжым</translation>
@@ -3276,6 +3281,7 @@
 <translation id="5079950360618752063">Выкарыстайце прапанаваны пароль</translation>
 <translation id="508059534790499809">Абнаўленне білета Kerberos</translation>
 <translation id="5084230410268011727">Дазволіць сайтам выкарыстоўваць датчыкі руху і святла</translation>
+<translation id="5084328598860513926">Паток падрыхтоўкі быў перапынены. Паўтарыце спробу або звярніцеся да адміністратара ці ўладальніка прылады. Код памылкі: <ph name="ERROR_CODE" />.</translation>
 <translation id="5085162214018721575">Ідзе праверка наяўнасці абнаўленняў</translation>
 <translation id="5086082738160935172">HID (чалавека-машынны інтэрфейс)</translation>
 <translation id="5086874064903147617">Аднавіць стандартную галоўную старонку?</translation>
@@ -3398,7 +3404,6 @@
 <translation id="5241128660650683457">Чытаць усе даныя з вэб-сайтаў, якія вы наведваеце</translation>
 <translation id="5242724311594467048">Уключыць пашырэнне "<ph name="EXTENSION_NAME" />"?</translation>
 <translation id="5243522832766285132">Паўтарыце спробу праз некалькі секунд</translation>
-<translation id="5244406554036143958">Для ўключэння аўтаматычнай адпраўкі ўвядзіце PIN-код</translation>
 <translation id="5244474230056479698">Сінхранізуецца з <ph name="EMAIL" /></translation>
 <translation id="5245610266855777041">Пачатак працы з навучальным уліковым запісам</translation>
 <translation id="5246282308050205996">Збой праграмы "<ph name="APP_NAME" />". Націсніце на гэта ўсплывальнае папярэджанне, каб перазапусціць праграму.</translation>
@@ -3675,6 +3680,7 @@
 <translation id="557722062034137776">Скід прылады не закране ўліковыя запісы Google і даныя, сінхранізаваныя з імі. Аднак усе файлы, захаваныя на прыладзе, будуць выдалены.</translation>
 <translation id="5578059481725149024">Аўтаматычны ўваход</translation>
 <translation id="558170650521898289">Спраўджанне драйвера абсталявання Microsoft Windows</translation>
+<translation id="5581972110672966454">Не ўдалося далучыць прыладу да дамена. Паўтарыце спробу або звярніцеся да адміністратара ці ўладальніка прылады. Код памылкі: <ph name="ERROR_CODE" />.</translation>
 <translation id="5582839680698949063">Галоўнае меню</translation>
 <translation id="5583640892426849032">Backspace</translation>
 <translation id="5584088138253955452">Захаваць імя карыстальніка?</translation>
@@ -3747,6 +3753,7 @@
 <translation id="5667546120811588575">Наладжваецца Google Play...</translation>
 <translation id="5669267381087807207">Ідзе актывацыя</translation>
 <translation id="5669691691057771421">Увядзіце новы PIN-код</translation>
+<translation id="5670702108860320605">BSSID</translation>
 <translation id="5671641761787789573">Выявы заблакіраваны</translation>
 <translation id="5671658447180261823">Выдаліць прапанову "<ph name="SUGGESTION_NAME" />"</translation>
 <translation id="567587836466137939">Месяц, у якім гэта прылада перастане ўсталёўваць аўтаматычныя абнаўленні праграмнага забеспячэння і сістэмы бяспекі: <ph name="MONTH_AND_YEAR" />. <ph name="LINK_BEGIN" />Даведацца больш<ph name="LINK_END" /></translation>
@@ -5393,6 +5400,7 @@
 <translation id="7764225426217299476">Дадаць адрас</translation>
 <translation id="7764256770584298012"><ph name="DOWNLOAD_RECEIVED" /> з дамена <ph name="DOWNLOAD_DOMAIN" /></translation>
 <translation id="7765158879357617694">Перамясціць</translation>
+<translation id="7766082757934713382">Дапамагае знізіць выкарыстанне трафіка ў сетцы, прыпыняючы аўтаматычныя абнаўленні сістэмы і праграм</translation>
 <translation id="7766807826975222231">Азнаёміцца</translation>
 <translation id="7766838926148951335">Прыняць дазволы</translation>
 <translation id="7768770796815395237">Змяніць</translation>
@@ -6304,6 +6312,7 @@
 <translation id="885701979325669005">Сховішча</translation>
 <translation id="8859057652521303089">Выберыце мову:</translation>
 <translation id="8859174528519900719">Субфрэйм: <ph name="SUBFRAME_SITE" /></translation>
+<translation id="8859402192569844210">Не ўдалося загрузіць Умовы выкарыстання</translation>
 <translation id="8859662783913000679">Бацькоўскі ўліковы запіс</translation>
 <translation id="8862003515646449717">Пераключыцца на хуткі браўзер</translation>
 <translation id="8863753581171631212">Адкрыць спасылку ў новым акне праграмы <ph name="APP" /></translation>
@@ -6572,6 +6581,7 @@
 <translation id="920045321358709304">Пошук у сэрвісе <ph name="SEARCH_ENGINE" /></translation>
 <translation id="9201023452444595544">Усе пазасеткавыя даныя будуць выдалены</translation>
 <translation id="9201220332032049474">Параметры блакіроўкі экрана</translation>
+<translation id="9201842707396338580">Нешта пайшло не так. Звярніцеся да адміністратара або ўладальніка прылады. Код памылкі: <ph name="ERROR_CODE" />.</translation>
 <translation id="9203398526606335860">&amp;Прафіліраванне ўключана</translation>
 <translation id="9203904171912129171">Выберыце прыладу</translation>
 <translation id="9203962528777363226">Адміністратар гэтай прылады выключыў магчымасць дадаваць новых карыстальнікаў</translation>
@@ -6643,6 +6653,7 @@
 <translation id="983511809958454316">Гэта функцыя не падтрымліваецца ў VR</translation>
 <translation id="984275831282074731">Спосабы аплаты</translation>
 <translation id="98515147261107953">Альбомная</translation>
+<translation id="987068745968718743">Parallels Desktop: <ph name="PLUGIN_VM_NAME" /></translation>
 <translation id="987264212798334818">Агульныя</translation>
 <translation id="987897973846887088">Няма даступных відарысаў</translation>
 <translation id="988978206646512040">Неабходна задаць фразу-пароль</translation>

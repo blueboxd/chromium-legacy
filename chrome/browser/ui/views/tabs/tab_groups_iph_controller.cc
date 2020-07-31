@@ -12,7 +12,9 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
+#include "chrome/browser/ui/views/feature_promos/feature_promo_bubble_params.h"
 #include "chrome/browser/ui/views/feature_promos/feature_promo_bubble_view.h"
+#include "chrome/browser/ui/views/feature_promos/feature_promo_controller.h"
 #include "chrome/grit/generated_resources.h"
 #include "components/feature_engagement/public/event_constants.h"
 #include "components/feature_engagement/public/feature_constants.h"
@@ -20,48 +22,52 @@
 #include "ui/views/bubble/bubble_border.h"
 #include "ui/views/widget/widget.h"
 
-TabGroupsIPHController::TabGroupsIPHController(Browser* browser,
-                                               GetTabViewCallback get_tab_view)
-    : tracker_(feature_engagement::TrackerFactory::GetForBrowserContext(
+namespace {
+
+// The index of the tab we'd like to anchor our bubble to.
+constexpr int kPreferredAnchorTab = 2;
+
+}  // namespace
+
+TabGroupsIPHController::TabGroupsIPHController(
+    Browser* browser,
+    FeaturePromoController* promo_controller,
+    GetTabViewCallback get_tab_view)
+    : promo_controller_(promo_controller),
+      tracker_(feature_engagement::TrackerFactory::GetForBrowserContext(
           browser->profile())),
       get_tab_view_(std::move(get_tab_view)) {
+  DCHECK(promo_controller_);
   DCHECK(tracker_);
   browser->tab_strip_model()->AddObserver(this);
 }
 
-TabGroupsIPHController::~TabGroupsIPHController() {
-  if (!promo_widget_)
-    return;
-
-  // If we are destroyed before the promo, close it and stop observing it.
-  promo_widget_->Close();
-  HandlePromoClose();
-}
+TabGroupsIPHController::~TabGroupsIPHController() = default;
 
 bool TabGroupsIPHController::ShouldHighlightContextMenuItem() {
   // If the bubble is currently showing, the promo hasn't timed out yet.
   // The promo should continue into the context menu as a highlighted
   // item.
-  return promo_widget_ != nullptr;
+  return promo_controller_->BubbleIsShowing(
+      feature_engagement::kIPHDesktopTabGroupsNewGroupFeature);
 }
 
 void TabGroupsIPHController::TabContextMenuOpened() {
-  if (!promo_widget_)
+  if (!promo_controller_->BubbleIsShowing(
+          feature_engagement::kIPHDesktopTabGroupsNewGroupFeature))
     return;
 
   // Assume that the context menu code checked
   // ShouldHighlightContextMenuItem() and is correctly showing the promo
   // there.
-  showing_in_menu_ = true;
-  promo_widget_->Close();
+  promo_handle_for_menu_ = promo_controller_->CloseBubbleAndContinuePromo(
+      feature_engagement::kIPHDesktopTabGroupsNewGroupFeature);
 }
 
 void TabGroupsIPHController::TabContextMenuClosed() {
-  if (!showing_in_menu_)
+  if (!promo_handle_for_menu_)
     return;
-
-  showing_in_menu_ = false;
-  Dismissed();
+  promo_handle_for_menu_.reset();
 }
 
 void TabGroupsIPHController::OnTabStripModelChanged(
@@ -75,22 +81,13 @@ void TabGroupsIPHController::OnTabStripModelChanged(
 
   tracker_->NotifyEvent(feature_engagement::events::kSixthTabOpened);
 
-  if (!tracker_->ShouldTriggerHelpUI(
-          feature_engagement::kIPHDesktopTabGroupsNewGroupFeature)) {
-    return;
-  }
-
-  FeaturePromoBubbleView::CreateParams bubble_params;
+  FeaturePromoBubbleParams bubble_params;
   bubble_params.body_string_specifier = IDS_TAB_GROUPS_NEW_GROUP_PROMO;
-  bubble_params.anchor_view = get_tab_view_.Run(2);
+  bubble_params.anchor_view = get_tab_view_.Run(kPreferredAnchorTab);
   bubble_params.arrow = views::BubbleBorder::TOP_LEFT;
-  promo_widget_ =
-      FeaturePromoBubbleView::Create(std::move(bubble_params))->GetWidget();
-
-  // We must notify the backend when the promo is dismissed. Observing
-  // the promo's widget and notifying on close is the most
-  // straightforward way to do this.
-  widget_observer_.Add(promo_widget_);
+  promo_controller_->MaybeShowPromo(
+      feature_engagement::kIPHDesktopTabGroupsNewGroupFeature,
+      std::move(bubble_params));
 }
 
 void TabGroupsIPHController::OnTabGroupChanged(const TabGroupChange& change) {
@@ -98,31 +95,4 @@ void TabGroupsIPHController::OnTabGroupChanged(const TabGroupChange& change) {
     return;
 
   tracker_->NotifyEvent(feature_engagement::events::kTabGroupCreated);
-}
-
-void TabGroupsIPHController::OnWidgetClosing(views::Widget* widget) {
-  DCHECK_EQ(widget, promo_widget_);
-  HandlePromoClose();
-}
-
-void TabGroupsIPHController::OnWidgetDestroying(views::Widget* widget) {
-  DCHECK_EQ(widget, promo_widget_);
-  HandlePromoClose();
-}
-
-void TabGroupsIPHController::HandlePromoClose() {
-  widget_observer_.Remove(promo_widget_);
-  promo_widget_ = nullptr;
-
-  // If the promo continued into the context menu, it hasn't been
-  // dismissed yet. We wait on notifying the backend until the menu
-  // closes at which point the promo is complete.
-  if (!showing_in_menu_)
-    Dismissed();
-}
-
-void TabGroupsIPHController::Dismissed() {
-  DCHECK_EQ(promo_widget_, nullptr);
-  DCHECK(!showing_in_menu_);
-  tracker_->Dismissed(feature_engagement::kIPHDesktopTabGroupsNewGroupFeature);
 }

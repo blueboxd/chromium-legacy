@@ -26,6 +26,7 @@ component("util") {
 
   deps = [
     "//ash/assistant/model",
+    "//ash/public/cpp",
     "//ash/public/cpp/vector_icons",
     "//base",
     "//base:i18n",

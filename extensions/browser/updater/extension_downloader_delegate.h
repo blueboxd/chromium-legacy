@@ -63,7 +63,10 @@ class ExtensionDownloaderDelegate {
   // DOWNLOADING_CRX_RETRY -> DOWNLOADING_CRX -> FINISHED.
   // Note: enum used for UMA. Do NOT reorder or remove entries. Don't forget to
   // update enums.xml (name: ExtensionInstallationDownloadingStage) when adding
-  // new entries.
+  // new entries. Don't forget to update device_management_backend.proto (name:
+  // ExtensionInstallReportLogEvent::DownloadingStage) when adding new entries.
+  // Don't forget to update ConvertDownloadingStageToProto method in
+  // ExtensionInstallEventLogCollector.
   enum class Stage {
     // Downloader just received extension download request.
     PENDING = 0,

@@ -113,6 +113,10 @@ js_library("ink_controller") {
   ]
 }
 
+js_library("local_storage_proxy") {
+  deps = [ "//ui/webui/resources/js:cr.m" ]
+}
+
 js_library("controller") {
   deps = [
     ":viewport",
@@ -150,6 +154,7 @@ js_library("pdf_viewer") {
     ":constants",
     ":controller",
     ":ink_controller",
+    ":local_storage_proxy",
     ":metrics",
     ":navigator",
     ":pdf_scripting_api",
@@ -214,6 +219,7 @@ js_type_check("pdf_resources") {
     ":controller",
     ":gesture_detector",
     ":ink_controller",
+    ":local_storage_proxy",
     ":main",
     ":metrics",
     ":navigator",

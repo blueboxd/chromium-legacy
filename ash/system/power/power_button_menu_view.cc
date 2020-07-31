@@ -189,11 +189,11 @@ void PowerButtonMenuView::RecreateItems() {
                   user::GetLocalizedSignOutStringForStatus(login_status, false),
                   &sign_out_item_);
   add_remove_item(
-      create_lock_screen, kSystemPowerButtonMenuPowerOffIcon,
+      create_lock_screen, kSystemPowerButtonMenuLockScreenIcon,
       l10n_util::GetStringUTF16(IDS_ASH_POWER_BUTTON_MENU_LOCK_SCREEN_BUTTON),
       &lock_screen_item_);
   add_remove_item(
-      create_feedback, kSystemPowerButtonMenuPowerOffIcon,
+      create_feedback, kSystemPowerButtonMenuFeedbackIcon,
       l10n_util::GetStringUTF16(IDS_ASH_POWER_BUTTON_MENU_FEEDBACK_BUTTON),
       &feedback_item_);
 }

@@ -391,9 +391,11 @@ void VRUiHostImpl::PollCapturingState() {
 
   // location, microphone, camera, midi.
   CapturingStateModel active_capturing = active_capturing_;
+  // TODO(https://crbug.com/1103176): Plumb the actual frame reference here (we
+  // should get a RFH from VRServiceImpl instead of WebContents)
   content_settings::TabSpecificContentSettings* settings =
-      content_settings::TabSpecificContentSettings::FromWebContents(
-          web_contents_);
+      content_settings::TabSpecificContentSettings::GetForFrame(
+          web_contents_->GetMainFrame());
   if (settings) {
     const ContentSettingsUsagesState& usages_state =
         settings->geolocation_usages_state();

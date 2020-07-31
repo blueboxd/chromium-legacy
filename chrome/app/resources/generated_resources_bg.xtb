@@ -1159,7 +1159,6 @@
 <translation id="2408955596600435184">Въведете своя ПИН</translation>
 <translation id="241082044617551207">Неизвестна приставка</translation>
 <translation id="2412593942846481727">Налице е актуализация</translation>
-<translation id="2414499877591062094">Активиране на автоматичното изпращане на ПИН</translation>
 <translation id="2416435988630956212">Функционални клавиши на клавиатурата</translation>
 <translation id="241727068219398187">Данните бяха шифровани с паролата ви за Google от
 <ph name="TIME" />. Това не включва начините на плащане и адресите от Google Pay.</translation>
@@ -3404,7 +3403,6 @@
 <translation id="5241128660650683457">Четене на всичките ви данни от посещаваните от вас уебсайтове</translation>
 <translation id="5242724311594467048">Да се активира ли <ph name="EXTENSION_NAME" />?</translation>
 <translation id="5243522832766285132">Моля, опитайте отново след малко</translation>
-<translation id="5244406554036143958">Въведете своя ПИН, за да активирате автоматичното изпращане</translation>
 <translation id="5244474230056479698">Синхронизира се със: <ph name="EMAIL" /></translation>
 <translation id="5245610266855777041">Първи стъпки с профила от учебно заведение</translation>
 <translation id="5246282308050205996"><ph name="APP_NAME" /> претърпя срив. Кликнете върху това балонче, за да рестартирате приложението.</translation>

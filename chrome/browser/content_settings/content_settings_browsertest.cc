@@ -75,16 +75,16 @@ namespace {
 browsing_data::CannedCookieHelper* GetSiteSettingsCookieContainer(
     Browser* browser) {
   TabSpecificContentSettings* settings =
-      TabSpecificContentSettings::FromWebContents(
-          browser->tab_strip_model()->GetActiveWebContents());
+      TabSpecificContentSettings::GetForFrame(
+          browser->tab_strip_model()->GetActiveWebContents()->GetMainFrame());
   return settings->allowed_local_shared_objects().cookies();
 }
 
 browsing_data::CannedCookieHelper* GetSiteSettingsBlockedCookieContainer(
     Browser* browser) {
   TabSpecificContentSettings* settings =
-      TabSpecificContentSettings::FromWebContents(
-          browser->tab_strip_model()->GetActiveWebContents());
+      TabSpecificContentSettings::GetForFrame(
+          browser->tab_strip_model()->GetActiveWebContents()->GetMainFrame());
   return settings->blocked_local_shared_objects().cookies();
 }
 
@@ -730,8 +730,9 @@ IN_PROC_BROWSER_TEST_F(ContentSettingsTest, RedirectLoopCookies) {
 
   ASSERT_TRUE(::testing::Mock::VerifyAndClearExpectations(&observer));
 
-  EXPECT_TRUE(TabSpecificContentSettings::FromWebContents(web_contents)
-                  ->IsContentBlocked(ContentSettingsType::COOKIES));
+  EXPECT_TRUE(
+      TabSpecificContentSettings::GetForFrame(web_contents->GetMainFrame())
+          ->IsContentBlocked(ContentSettingsType::COOKIES));
 }
 
 // Any cookie access during a navigation does not end up in a new document (e.g.
@@ -751,8 +752,9 @@ IN_PROC_BROWSER_TEST_F(ContentSettingsTest, CookiesIgnoredFor204) {
 
   ui_test_utils::NavigateToURL(browser(), test_url);
 
-  EXPECT_FALSE(TabSpecificContentSettings::FromWebContents(web_contents)
-                   ->IsContentBlocked(ContentSettingsType::COOKIES));
+  EXPECT_FALSE(
+      TabSpecificContentSettings::GetForFrame(web_contents->GetMainFrame())
+          ->IsContentBlocked(ContentSettingsType::COOKIES));
 }
 
 class ContentSettingsBackForwardCacheBrowserTest : public ContentSettingsTest {
@@ -789,19 +791,22 @@ IN_PROC_BROWSER_TEST_F(ContentSettingsBackForwardCacheBrowserTest,
       browser()->tab_strip_model()->GetActiveWebContents();
   content::RenderFrameHost* main_frame = web_contents->GetMainFrame();
 
-  EXPECT_TRUE(TabSpecificContentSettings::FromWebContents(web_contents)
-                  ->IsContentBlocked(ContentSettingsType::COOKIES));
+  EXPECT_TRUE(
+      TabSpecificContentSettings::GetForFrame(web_contents->GetMainFrame())
+          ->IsContentBlocked(ContentSettingsType::COOKIES));
 
   ui_test_utils::NavigateToURL(browser(), other_url);
   EXPECT_TRUE(main_frame->IsInBackForwardCache());
-  EXPECT_FALSE(TabSpecificContentSettings::FromWebContents(web_contents)
-                   ->IsContentBlocked(ContentSettingsType::COOKIES));
+  EXPECT_FALSE(
+      TabSpecificContentSettings::GetForFrame(web_contents->GetMainFrame())
+          ->IsContentBlocked(ContentSettingsType::COOKIES));
 
   web_contents->GetController().GoBack();
   EXPECT_TRUE(WaitForLoadStop(web_contents));
   EXPECT_EQ(main_frame, web_contents->GetMainFrame());
-  EXPECT_TRUE(TabSpecificContentSettings::FromWebContents(web_contents)
-                  ->IsContentBlocked(ContentSettingsType::COOKIES));
+  EXPECT_TRUE(
+      TabSpecificContentSettings::GetForFrame(web_contents->GetMainFrame())
+          ->IsContentBlocked(ContentSettingsType::COOKIES));
 }
 
 IN_PROC_BROWSER_TEST_F(ContentSettingsBackForwardCacheBrowserTest,
@@ -817,12 +822,14 @@ IN_PROC_BROWSER_TEST_F(ContentSettingsBackForwardCacheBrowserTest,
       ->SetDefaultCookieSetting(CONTENT_SETTING_BLOCK);
 
   ui_test_utils::NavigateToURL(browser(), test_url);
-  EXPECT_TRUE(TabSpecificContentSettings::FromWebContents(web_contents)
-                  ->IsContentBlocked(ContentSettingsType::COOKIES));
+  EXPECT_TRUE(
+      TabSpecificContentSettings::GetForFrame(web_contents->GetMainFrame())
+          ->IsContentBlocked(ContentSettingsType::COOKIES));
 
   ui_test_utils::NavigateToURL(browser(), other_url);
-  EXPECT_FALSE(TabSpecificContentSettings::FromWebContents(web_contents)
-                   ->IsContentBlocked(ContentSettingsType::COOKIES));
+  EXPECT_FALSE(
+      TabSpecificContentSettings::GetForFrame(web_contents->GetMainFrame())
+          ->IsContentBlocked(ContentSettingsType::COOKIES));
 
   // This triggers a OnContentSettingChanged notification that should be
   // processed by the page in the cache.
@@ -831,8 +838,9 @@ IN_PROC_BROWSER_TEST_F(ContentSettingsBackForwardCacheBrowserTest,
 
   web_contents->GetController().GoBack();
   EXPECT_TRUE(WaitForLoadStop(web_contents));
-  EXPECT_FALSE(TabSpecificContentSettings::FromWebContents(web_contents)
-                   ->IsContentBlocked(ContentSettingsType::COOKIES));
+  EXPECT_FALSE(
+      TabSpecificContentSettings::GetForFrame(web_contents->GetMainFrame())
+          ->IsContentBlocked(ContentSettingsType::COOKIES));
 }
 
 // TODO(jww): This should be removed after strict secure cookies is enabled for
@@ -887,8 +895,9 @@ IN_PROC_BROWSER_TEST_F(ContentSettingsTest, ContentSettingsBlockDataURLs) {
       browser()->tab_strip_model()->GetActiveWebContents();
   ASSERT_EQ(base::UTF8ToUTF16("Data URL"), web_contents->GetTitle());
 
-  EXPECT_TRUE(TabSpecificContentSettings::FromWebContents(web_contents)
-                  ->IsContentBlocked(ContentSettingsType::JAVASCRIPT));
+  EXPECT_TRUE(
+      TabSpecificContentSettings::GetForFrame(web_contents->GetMainFrame())
+          ->IsContentBlocked(ContentSettingsType::JAVASCRIPT));
 }
 
 // Tests that if redirect across origins occurs, the new process still gets the
@@ -912,8 +921,9 @@ IN_PROC_BROWSER_TEST_F(ContentSettingsTest, RedirectCrossOrigin) {
   content::WebContents* web_contents =
       browser()->tab_strip_model()->GetActiveWebContents();
 
-  EXPECT_TRUE(TabSpecificContentSettings::FromWebContents(web_contents)
-                  ->IsContentBlocked(ContentSettingsType::COOKIES));
+  EXPECT_TRUE(
+      TabSpecificContentSettings::GetForFrame(web_contents->GetMainFrame())
+          ->IsContentBlocked(ContentSettingsType::COOKIES));
 }
 
 class ContentSettingsWorkerModulesBrowserTest : public ContentSettingsTest {
@@ -1051,8 +1061,9 @@ IN_PROC_BROWSER_TEST_F(ContentSettingsWorkerModulesBrowserTest,
   // The import must be blocked.
   ui_test_utils::WaitForViewVisibility(
       browser(), VIEW_ID_CONTENT_SETTING_JAVASCRIPT, true);
-  EXPECT_TRUE(TabSpecificContentSettings::FromWebContents(web_contents)
-                  ->IsContentBlocked(ContentSettingsType::JAVASCRIPT));
+  EXPECT_TRUE(
+      TabSpecificContentSettings::GetForFrame(web_contents->GetMainFrame())
+          ->IsContentBlocked(ContentSettingsType::JAVASCRIPT));
   EXPECT_EQ(expected_title, title_watcher.WaitAndGetTitle());
 }
 
@@ -1200,7 +1211,8 @@ class PepperContentSettingsSpecialCasesTest : public ContentSettingsTest {
     ui_test_utils::NavigateToURL(browser(), url);
 
     EXPECT_EQ(expected_title, title_watcher.WaitAndGetTitle());
-    auto* tscs = TabSpecificContentSettings::FromWebContents(web_contents);
+    auto* tscs =
+        TabSpecificContentSettings::GetForFrame(web_contents->GetMainFrame());
     EXPECT_EQ(!expect_loaded,
               tscs && tscs->IsContentBlocked(ContentSettingsType::PLUGINS));
   }
@@ -1242,7 +1254,7 @@ class PepperContentSettingsSpecialCasesTest : public ContentSettingsTest {
     }
 
     TabSpecificContentSettings* tab_settings =
-        TabSpecificContentSettings::FromWebContents(web_contents);
+        TabSpecificContentSettings::GetForFrame(web_contents->GetMainFrame());
     EXPECT_EQ(expect_is_javascript_content_blocked,
               tab_settings->IsContentBlocked(ContentSettingsType::JAVASCRIPT));
     EXPECT_FALSE(tab_settings->IsContentBlocked(ContentSettingsType::PLUGINS));

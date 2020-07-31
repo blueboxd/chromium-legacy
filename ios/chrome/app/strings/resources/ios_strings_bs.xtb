@@ -14,7 +14,6 @@
 <translation id="1084365883616172403">Objava na Facebooku je završena.</translation>
 <translation id="1103523840287552314">Uvijek prevodi <ph name="LANGUAGE" /></translation>
 <translation id="1104948393051856124">Prihvati i nastavi</translation>
-<translation id="1105578556867525047">Promijenite lozinku na Web lokaciji</translation>
 <translation id="1112015203684611006">Štampanje nije uspjelo.</translation>
 <translation id="1125564390852150847">Kreiranje nove kartice.</translation>
 <translation id="1145536944570833626">Brisanje postojećih podataka.</translation>
@@ -246,7 +245,6 @@ U anonimnom načinu rada web lokacije ne mogu koristiti kolačiće da vide vašu
 <translation id="3783017676699494206">Sačuvaj sliku</translation>
 <translation id="3789841737615482174">Instaliraj</translation>
 <translation id="3803696231112616155">Ponudi prijevod ove web lokacije</translation>
-<translation id="3836313059960742452">{COUNT,plural, =0{Nijedna lozinka nije ugrožena}=1{{COUNT} lozinka je ugrožena}one{{COUNT} lozinka je ugrožena}few{{COUNT} lozinke su ugrožene}other{{COUNT} lozinki je ugroženo}}</translation>
 <translation id="385051799172605136">Nazad</translation>
 <translation id="3892144330757387737">Svoju historiju ćete pronaći ovdje</translation>
 <translation id="3897092660631435901">Meni</translation>
@@ -333,6 +331,7 @@ Da biste promijenili tu postavku, <ph name="BEGIN_LINK" />poništite sinkronizac
 <translation id="4901778704868714008">Sačuvaj...</translation>
 <translation id="4904877109095351937">Označi kao pročitano</translation>
 <translation id="4930268273022498155">Izbrišite postojeće podatke. Možete ih preuzeti ako se vratite na <ph name="USER_EMAIL1" />.</translation>
+<translation id="4930714375720679147">Uključi</translation>
 <translation id="4941089862236492464">Žao nam je, došlo je do problema prilikom dijeljenja vaše stavke.</translation>
 <translation id="4944543191714094452">Pronađi na stranici…</translation>
 <translation id="4945756290001680296">Pristupite postavkama lozinke</translation>
@@ -611,6 +610,7 @@ Web lokacije mogu koristiti kolačiće da vide vašu aktivnost pregledanja na ra
 <translation id="8073670137947914548">Preuzimanje je završeno</translation>
 <translation id="8073872304774253879">Poboljšajte pretraživanje i pregledanje</translation>
 <translation id="8076014560081431679">Sačuvane postavke web lokacije se neće izbrisati i one mogu odražavati vaše navike prilikom pregledanja. <ph name="BEGIN_LINK" />Saznajte više<ph name="END_LINK" /></translation>
+<translation id="8105368624971345109">Isključi</translation>
 <translation id="8114753159095730575">Dostupno je preuzimanje fajla. Opcije koje su dostupne pri dnu ekrana.</translation>
 <translation id="8131740175452115882">Potvrdi</translation>
 <translation id="8197543752516192074">Prevedi stranicu</translation>

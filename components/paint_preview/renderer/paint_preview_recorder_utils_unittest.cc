@@ -33,6 +33,19 @@
 
 namespace paint_preview {
 
+namespace {
+
+sk_sp<cc::PaintRecord> AddLink(const std::string& link, const SkRect& rect) {
+  cc::PaintRecorder link_recorder;
+  cc::PaintCanvas* link_canvas = link_recorder.beginRecording(
+      rect.x() + rect.width(), rect.y() + rect.height());
+  link_canvas->Annotate(cc::PaintCanvas::AnnotationType::URL, rect,
+                        SkData::MakeWithCString(link.c_str()));
+  return link_recorder.finishRecordingAsPicture();
+}
+
+}  // namespace
+
 TEST(PaintPreviewRecorderUtilsTest, TestParseGlyphs) {
   auto typeface = SkTypeface::MakeDefault();
   SkFont font(typeface);
@@ -53,7 +66,7 @@ TEST(PaintPreviewRecorderUtilsTest, TestParseGlyphs) {
 
   PaintPreviewTracker tracker(base::UnguessableToken::Create(),
                               base::UnguessableToken::Create(), true);
-  ParseGlyphs(record.get(), &tracker);
+  ParseGlyphsAndLinks(record.get(), &tracker);
   auto* usage_map = tracker.GetTypefaceUsageMap();
   EXPECT_TRUE(usage_map->count(typeface->uniqueID()));
   EXPECT_TRUE(
@@ -68,6 +81,119 @@ TEST(PaintPreviewRecorderUtilsTest, TestParseGlyphs) {
       (*usage_map)[typeface->uniqueID()]->IsSet(typeface->unicharToGlyph('f')));
   EXPECT_TRUE(
       (*usage_map)[typeface->uniqueID()]->IsSet(typeface->unicharToGlyph('g')));
+}
+
+TEST(PaintPreviewRecorderUtilsTest, TestParseLinks) {
+  cc::PaintFlags flags;
+  cc::PaintRecorder outer_recorder;
+  cc::PaintCanvas* outer_canvas = outer_recorder.beginRecording(500, 500);
+
+  outer_canvas->save();
+  outer_canvas->translate(10, 20);
+  std::string link_1 = "http://www.foo.com/";
+  SkRect rect_1 = SkRect::MakeXYWH(10, 20, 30, 40);
+  outer_canvas->drawPicture(AddLink(link_1, rect_1));
+  outer_canvas->restore();
+
+  outer_canvas->save();
+  outer_canvas->concat(SkMatrix::Translate(40, 50));
+  outer_canvas->scale(2, 4);
+  std::string link_2 = "http://www.bar.com/";
+  SkRect rect_2 = SkRect::MakeXYWH(1, 2, 3, 4);
+  outer_canvas->drawPicture(AddLink(link_2, rect_2));
+
+  cc::PaintRecorder inner_recorder;
+  cc::PaintCanvas* inner_canvas = inner_recorder.beginRecording(500, 500);
+  inner_canvas->rotate(20);
+  std::string link_3 = "http://www.baz.com/";
+  SkRect rect_3 = SkRect::MakeXYWH(5, 7, 9, 13);
+  inner_canvas->drawPicture(AddLink(link_3, rect_3));
+
+  outer_canvas->drawPicture(inner_recorder.finishRecordingAsPicture());
+  outer_canvas->restore();
+
+  outer_canvas->save();
+  outer_canvas->translate(20, 50);
+  outer_canvas->setMatrix(SkMatrix::Translate(10, 30));
+  std::string link_4 = "http://www.example.com/";
+  SkRect rect_4 = SkRect::MakeXYWH(10, 30, 40, 50);
+  outer_canvas->drawPicture(AddLink(link_4, rect_4));
+  outer_canvas->restore();
+
+  outer_canvas->saveLayer(&rect_1, nullptr);
+  outer_canvas->saveLayerAlpha(&rect_1, 8);
+  outer_canvas->restoreToCount(1);
+  auto record = outer_recorder.finishRecordingAsPicture();
+
+  PaintPreviewTracker tracker(base::UnguessableToken::Create(),
+                              base::UnguessableToken::Create(), true);
+  ParseGlyphsAndLinks(record.get(), &tracker);
+
+  std::vector<mojom::LinkDataPtr> links;
+  tracker.MoveLinks(&links);
+  ASSERT_EQ(links.size(), 4U);
+  EXPECT_EQ(links[0]->url, link_1);
+  EXPECT_EQ(links[0]->rect.x(), rect_1.x() + 10);
+  EXPECT_EQ(links[0]->rect.y(), rect_1.y() + 20);
+  EXPECT_EQ(links[0]->rect.width(), rect_1.width());
+  EXPECT_EQ(links[0]->rect.height(), rect_1.height());
+
+  EXPECT_EQ(links[1]->url, link_2);
+  EXPECT_EQ(links[1]->rect.x(), rect_2.x() * 2 + 40);
+  EXPECT_EQ(links[1]->rect.y(), rect_2.y() * 4 + 50);
+  EXPECT_EQ(links[1]->rect.width(), rect_2.width() * 2);
+  EXPECT_EQ(links[1]->rect.height(), rect_2.height() * 4);
+
+  EXPECT_EQ(links[2]->url, link_3);
+  EXPECT_EQ(links[2]->rect.x(), 35);
+  EXPECT_EQ(links[2]->rect.y(), 83);
+  EXPECT_EQ(links[2]->rect.width(), 25);
+  EXPECT_EQ(links[2]->rect.height(), 61);
+
+  EXPECT_EQ(links[3]->url, link_4);
+  EXPECT_EQ(links[3]->rect.x(), rect_4.x() + 10);
+  EXPECT_EQ(links[3]->rect.y(), rect_4.y() + 30);
+  EXPECT_EQ(links[3]->rect.width(), rect_4.width());
+  EXPECT_EQ(links[3]->rect.height(), rect_4.height());
+}
+
+TEST(PaintPreviewRecorderUtilsTest, TestTransformSubframeRects) {
+  PaintPreviewTracker tracker(base::UnguessableToken::Create(),
+                              base::UnguessableToken::Create(), true);
+  gfx::Rect rect(20, 30, 40, 50);
+  auto subframe_token = base::UnguessableToken::Create();
+  int old_id = tracker.CreateContentForRemoteFrame(rect, subframe_token);
+
+  cc::PaintFlags flags;
+  cc::PaintRecorder recorder;
+  cc::PaintCanvas* canvas = recorder.beginRecording(500, 500);
+  canvas->save();
+  canvas->translate(10, 20);
+  canvas->recordCustomData(old_id);
+  canvas->restore();
+  auto record = recorder.finishRecordingAsPicture();
+
+  auto map = tracker.GetSubframePicsForTesting();
+  auto it = map.find(old_id);
+  ASSERT_NE(it, map.end());
+  auto old_cull_rect = it->second->cullRect();
+  EXPECT_EQ(rect.x(), old_cull_rect.x());
+  EXPECT_EQ(rect.y(), old_cull_rect.y());
+  EXPECT_EQ(rect.width(), old_cull_rect.width());
+  EXPECT_EQ(rect.height(), old_cull_rect.height());
+
+  ParseGlyphsAndLinks(record.get(), &tracker);
+
+  map = tracker.GetSubframePicsForTesting();
+  ASSERT_EQ(map.size(), 1U);
+  // Iterate over the one element since we don't know the key.
+  for (const auto& pair : map) {
+    auto old_cull_rect = pair.second->cullRect();
+    EXPECT_EQ(rect.x() + 10, old_cull_rect.x());
+    EXPECT_EQ(rect.y() + 20, old_cull_rect.y());
+    EXPECT_EQ(rect.width(), old_cull_rect.width());
+    EXPECT_EQ(rect.height(), old_cull_rect.height());
+  }
 }
 
 class PaintPreviewRecorderUtilsSerializeAsSkPictureTest
@@ -191,8 +317,9 @@ TEST(PaintPreviewRecorderUtilsTest, TestBuildResponse) {
   auto token = base::UnguessableToken::Create();
   auto embedding_token = base::UnguessableToken::Create();
   PaintPreviewTracker tracker(token, embedding_token, true);
-  tracker.AnnotateLink(GURL("www.google.com"), gfx::Rect(1, 2, 3, 4));
-  tracker.AnnotateLink(GURL("www.chromium.org"), gfx::Rect(10, 20, 10, 20));
+  tracker.AnnotateLink(GURL("www.google.com"), SkRect::MakeXYWH(1, 2, 3, 4));
+  tracker.AnnotateLink(GURL("www.chromium.org"),
+                       SkRect::MakeXYWH(10, 20, 10, 20));
   tracker.CreateContentForRemoteFrame(gfx::Rect(1, 1, 1, 1),
                                       base::UnguessableToken::Create());
   tracker.CreateContentForRemoteFrame(gfx::Rect(1, 2, 4, 8),

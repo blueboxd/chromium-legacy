@@ -14,7 +14,6 @@
 <translation id="1084365883616172403">Facebook paylaşımı tamamlandı.</translation>
 <translation id="1103523840287552314">Həmişə <ph name="LANGUAGE" /> dilinə tərcümə edin</translation>
 <translation id="1104948393051856124">Qəbul edin və Davam edin</translation>
-<translation id="1105578556867525047">Vebsaytda parolu dəyişin</translation>
 <translation id="1112015203684611006">Çap alınmadı.</translation>
 <translation id="1125564390852150847">Yeni panel yaradın.</translation>
 <translation id="1145536944570833626">Mövcud datanı silin.</translation>
@@ -23,6 +22,7 @@
 <translation id="1176932207622159128">Təsvir Saxlanıla Bilmir</translation>
 <translation id="1180526666083833456">Cihazlarda sinxronizasiya edin və fərdiləşdirin.</translation>
 <translation id="1181037720776840403">Silin</translation>
+<translation id="1185569544548277362">Yeni: Chrome'u defolt edə bilərsiniz. <ph name="BEGIN_LINK" />Ayarları açın<ph name="END_LINK" /></translation>
 <translation id="1207113853726624428">Yeni Axtarış</translation>
 <translation id="1209206284964581585">Hələlik gizlədin</translation>
 <translation id="1219674500290482172">İnternetə qoşulmaq mümkün deyil.</translation>
@@ -245,7 +245,6 @@ Anonim rejimdə olduqda saytlar müxtəlif saytlarda baxış tarixçənizi görm
 <translation id="3783017676699494206">Şəkli yadda saxlayın</translation>
 <translation id="3789841737615482174">Quraşdırın</translation>
 <translation id="3803696231112616155">Bu saytı tərcümə etməyi təklif edin</translation>
-<translation id="3836313059960742452">{COUNT,plural, =0{Heç bir parol ələ keçirilməyib}=1{{COUNT} parol ələ keçirilib}other{{COUNT} parol ələ keçirilib}}</translation>
 <translation id="385051799172605136">Geri</translation>
 <translation id="3892144330757387737">Tarixçəni burada tapa bilərsiniz</translation>
 <translation id="3897092660631435901">Menyu</translation>
@@ -332,6 +331,7 @@ Ayarı dəyişmək üçün <ph name="BEGIN_LINK" />sinxronizasiyanı sıfırlay�
 <translation id="4901778704868714008">Yadda saxlayın...</translation>
 <translation id="4904877109095351937">Oxunmuş Kimi Qeyd Edin</translation>
 <translation id="4930268273022498155">Mövcud datanı silin. Onu, <ph name="USER_EMAIL1" /> hesabına geri qayıdaraq əldə edə bilərsiniz.</translation>
+<translation id="4930714375720679147">Aktiv Edin</translation>
 <translation id="4941089862236492464">Üzr istəyirik, elementi paylaşarkən problem baş verdi.</translation>
 <translation id="4944543191714094452">Səhifədə tapın…</translation>
 <translation id="4945756290001680296">Parol ayarlarına daxil olun</translation>
@@ -610,6 +610,7 @@ Saytlar müxtəlif saytlarda baxış fəaliyyətinizi görmək üçün kukilərd
 <translation id="8073670137947914548">Endirmə tamamlandı</translation>
 <translation id="8073872304774253879">Axtarışları və Brauzer Fəaliyyətini Təkmilləşdirin</translation>
 <translation id="8076014560081431679">Yadda saxlanmış sayt ayarları silinməyəcək və axtarış təcrübənizə təsir edə bilər. <ph name="BEGIN_LINK" />Ətraflı məlumat<ph name="END_LINK" /></translation>
+<translation id="8105368624971345109">Deaktiv Edin</translation>
 <translation id="8114753159095730575">Fayl endirilməsi əlçatandır. Seçimlər ekranın aşağısında əlçatandır.</translation>
 <translation id="8131740175452115882">Təsdiq edin</translation>
 <translation id="8197543752516192074">Səhifəni tərcümə edin</translation>
@@ -639,6 +640,7 @@ Saytlar müxtəlif saytlarda baxış fəaliyyətinizi görmək üçün kukilərd
 <translation id="8524799873541103884"><ph name="NUMBER_OF_OPEN_TABS" /> paneldən <ph name="LAST_VISIBLE_TAB" /> üzrə <ph name="FIRST_VISIBLE_TAB" /> <ph name="INCOGNITO" /> panel</translation>
 <translation id="8529767659511976195">Yeni</translation>
 <translation id="8532105204136943229">Bitmə İli</translation>
+<translation id="8533166274275423134">Başqa yerdə açılıb</translation>
 <translation id="8534481786647257214">Google+ postu tamamladı.</translation>
 <translation id="8548878600947630424">Səhifədə tapın...</translation>
 <translation id="8574235780160508979">Chrome’un Xidmət Şərtləri 31 martda dəyişəcək. <ph name="BEGIN_LINK" />Nəzərdən keçirin<ph name="END_LINK" /></translation>

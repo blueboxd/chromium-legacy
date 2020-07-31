@@ -27,13 +27,29 @@ namespace blink {
 constexpr auto kDefaultThrottledWakeUpInterval =
     base::TimeDelta::FromSeconds(1);
 
+// A SimTest with mock time.
+class ThrottlingTestBase : public SimTest {
+ public:
+  ThrottlingTestBase() {
+    platform_->SetAutoAdvanceNowToPendingTasks(false);
+
+    // Align the time on a 1-minute interval, to simplify expectations.
+    platform_->AdvanceClock(
+        platform_->NowTicks().SnappedToNextTick(
+            base::TimeTicks(), base::TimeDelta::FromMinutes(1)) -
+        platform_->NowTicks());
+  }
+
+  ScopedTestingPlatformSupport<TestingPlatformSupportWithMockScheduler>
+      platform_;
+};
+
 class DisableBackgroundThrottlingIsRespectedTest
-    : public SimTest,
+    : public ThrottlingTestBase,
       private ScopedTimerThrottlingForBackgroundTabsForTest {
  public:
   DisableBackgroundThrottlingIsRespectedTest()
       : ScopedTimerThrottlingForBackgroundTabsForTest(false) {}
-  void SetUp() override { SimTest::SetUp(); }
 };
 
 TEST_F(DisableBackgroundThrottlingIsRespectedTest,
@@ -56,15 +72,15 @@ TEST_F(DisableBackgroundThrottlingIsRespectedTest,
 
   // Run delayed tasks for 1 second. All tasks should be completed
   // with throttling disabled.
-  test::RunDelayedTasks(base::TimeDelta::FromSeconds(1));
+  platform_->RunForPeriod(base::TimeDelta::FromSeconds(1));
 
   EXPECT_THAT(ConsoleMessages(), ElementsAre("called f", "called f", "called f",
                                              "called f", "called f"));
 }
 
-class BackgroundPageThrottlingTest : public SimTest {};
+class BackgroundPageThrottlingTest : public ThrottlingTestBase {};
 
-TEST_F(BackgroundPageThrottlingTest, BackgroundPagesAreThrottled) {
+TEST_F(BackgroundPageThrottlingTest, TimersThrottledInBackgroundPage) {
   SimRequest main_resource("https://example.com/", "text/html");
 
   LoadURL("https://example.com/");
@@ -82,28 +98,155 @@ TEST_F(BackgroundPageThrottlingTest, BackgroundPagesAreThrottled) {
   GetDocument().GetPage()->GetPageScheduler()->SetPageVisible(false);
 
   // Make sure that we run no more than one task a second.
-  test::RunDelayedTasks(base::TimeDelta::FromMilliseconds(3000));
-  EXPECT_THAT(
-      ConsoleMessages(),
-      AnyOf(ElementsAre("called f", "called f", "called f"),
-            ElementsAre("called f", "called f", "called f", "called f")));
+  platform_->RunForPeriod(base::TimeDelta::FromSeconds(3));
+  EXPECT_THAT(ConsoleMessages(),
+              ElementsAre("called f", "called f", "called f"));
 }
 
-class IntensiveWakeUpThrottlingTest : public SimTest {
+// Same test as above, but using timeout=0.
+TEST_F(BackgroundPageThrottlingTest,
+       ZeroTimeoutTimersThrottledInBackgroundPage) {
+  SimRequest main_resource("https://example.com/", "text/html");
+
+  LoadURL("https://example.com/");
+
+  main_resource.Complete(
+      "(<script>"
+      "  function f(repetitions) {"
+      "     if (repetitions == 0) return;"
+      "     console.log('called f');"
+      "     setTimeout(f, 0, repetitions - 1);"
+      "  }"
+      "  setTimeout(f, 0, 50);"
+      "</script>)");
+
+  GetDocument().GetPage()->GetPageScheduler()->SetPageVisible(false);
+
+  // 0ms timeouts are rounded up to 1ms (https://crbug.com/402694). When the
+  // nesting level is 5, they are rounded up to 4 ms. The duration of a
+  // throttled wake up is 3ms. Therefore, at the 2 first wake ups, the timer
+  // runs twice. At the third wake up, it runs once.
+  platform_->RunForPeriod(base::TimeDelta::FromSeconds(3));
+  EXPECT_THAT(ConsoleMessages(), ElementsAre("called f", "called f", "called f",
+                                             "called f", "called f"));
+}
+
+namespace {
+
+class OptOutZeroTimeoutFromThrottlingTest : public ThrottlingTestBase {
+ public:
+  OptOutZeroTimeoutFromThrottlingTest() {
+    scoped_feature_list_.InitAndEnableFeature(
+        features::kOptOutZeroTimeoutTimersFromThrottling);
+  }
+
+ private:
+  base::test::ScopedFeatureList scoped_feature_list_;
+};
+
+}  // namespace
+
+// Verify that in a hidden page, when the kOptOutZeroTimeoutTimersFromThrottling
+// feature is enabled:
+// - setTimeout(..., 0) and setTimeout(..., -1) schedule their callback after
+//   1ms. The 1 ms delay exists for historical reasons crbug.com/402694.
+// - setTimeout(..., 5) schedules its callback at the next aligned time
+TEST_F(OptOutZeroTimeoutFromThrottlingTest, WithoutNesting) {
+  SimRequest main_resource("https://example.com/", "text/html");
+  LoadURL("https://example.com/");
+  main_resource.Complete(
+      "<script>"
+      "  setTimeout(function() {"
+      "    setTimeout(function() { console.log('setTimeout 0'); }, 0);"
+      "    setTimeout(function() { console.log('setTimeout -1'); }, -1);"
+      "    setTimeout(function() { console.log('setTimeout 5'); }, 5);"
+      "  }, 1000);"
+      "</script>");
+  GetDocument().GetPage()->GetPageScheduler()->SetPageVisible(false);
+
+  platform_->RunForPeriod(base::TimeDelta::FromMilliseconds(1001));
+  EXPECT_THAT(ConsoleMessages(), ElementsAre("setTimeout 0", "setTimeout -1"));
+
+  platform_->RunForPeriod(base::TimeDelta::FromMilliseconds(998));
+  EXPECT_THAT(ConsoleMessages(), ElementsAre("setTimeout 0", "setTimeout -1"));
+
+  platform_->RunForPeriod(base::TimeDelta::FromMilliseconds(1));
+  EXPECT_THAT(ConsoleMessages(),
+              ElementsAre("setTimeout 0", "setTimeout -1", "setTimeout 5"));
+}
+
+// Verify that in a hidden page, when the kOptOutZeroTimeoutTimersFromThrottling
+// feature is enabled, a timer created with setTimeout(..., 0) is throttled
+// after 5 nesting levels.
+TEST_F(OptOutZeroTimeoutFromThrottlingTest, SetTimeoutNesting) {
+  SimRequest main_resource("https://example.com/", "text/html");
+  LoadURL("https://example.com/");
+  main_resource.Complete(
+      "<script>"
+      "  function f(repetitions) {"
+      "    if (repetitions == 0) return;"
+      "    console.log('called f');"
+      "    setTimeout(f, 0, repetitions - 1);"
+      "  }"
+      "  setTimeout(f, 0, 50);"
+      "</script>");
+  GetDocument().GetPage()->GetPageScheduler()->SetPageVisible(false);
+
+  platform_->RunForPeriod(base::TimeDelta::FromMilliseconds(1));
+  EXPECT_THAT(ConsoleMessages(), Vector<String>(1, "called f"));
+  platform_->RunForPeriod(base::TimeDelta::FromMilliseconds(1));
+  EXPECT_THAT(ConsoleMessages(), Vector<String>(2, "called f"));
+  platform_->RunForPeriod(base::TimeDelta::FromMilliseconds(1));
+  EXPECT_THAT(ConsoleMessages(), Vector<String>(3, "called f"));
+  platform_->RunForPeriod(base::TimeDelta::FromMilliseconds(1));
+  EXPECT_THAT(ConsoleMessages(), Vector<String>(4, "called f"));
+  platform_->RunForPeriod(base::TimeDelta::FromMilliseconds(995));
+  EXPECT_THAT(ConsoleMessages(), Vector<String>(4, "called f"));
+  platform_->RunForPeriod(base::TimeDelta::FromMilliseconds(1));
+  EXPECT_THAT(ConsoleMessages(), Vector<String>(5, "called f"));
+}
+
+// Verify that in a hidden page, when the kOptOutZeroTimeoutTimersFromThrottling
+// feature is enabled, a timer created with setInterval(..., 0) is throttled
+// after 5 nesting levels.
+TEST_F(OptOutZeroTimeoutFromThrottlingTest, SetIntervalNesting) {
+  SimRequest main_resource("https://example.com/", "text/html");
+  LoadURL("https://example.com/");
+  main_resource.Complete(
+      "<script>"
+      "  function f() {"
+      "    if (repetitions == 0) clearInterval(interval_id);"
+      "    console.log('called f');"
+      "    repetitions = repetitions - 1;"
+      "  }"
+      "  var repetitions = 50;"
+      "  var interval_id = setInterval(f, 0);"
+      "</script>");
+  GetDocument().GetPage()->GetPageScheduler()->SetPageVisible(false);
+
+  platform_->RunForPeriod(base::TimeDelta::FromMilliseconds(1));
+  EXPECT_THAT(ConsoleMessages(), Vector<String>(1, "called f"));
+  platform_->RunForPeriod(base::TimeDelta::FromMilliseconds(1));
+  EXPECT_THAT(ConsoleMessages(), Vector<String>(2, "called f"));
+  platform_->RunForPeriod(base::TimeDelta::FromMilliseconds(1));
+  EXPECT_THAT(ConsoleMessages(), Vector<String>(3, "called f"));
+  platform_->RunForPeriod(base::TimeDelta::FromMilliseconds(1));
+  EXPECT_THAT(ConsoleMessages(), Vector<String>(4, "called f"));
+  platform_->RunForPeriod(base::TimeDelta::FromMilliseconds(995));
+  EXPECT_THAT(ConsoleMessages(), Vector<String>(4, "called f"));
+  platform_->RunForPeriod(base::TimeDelta::FromMilliseconds(1));
+  EXPECT_THAT(ConsoleMessages(), Vector<String>(5, "called f"));
+}
+
+namespace {
+
+class IntensiveWakeUpThrottlingTest : public ThrottlingTestBase {
  public:
   IntensiveWakeUpThrottlingTest() {
     scoped_feature_list_.InitWithFeatures(
         {features::kIntensiveWakeUpThrottling},
         // Disable freezing because it hides the effect of intensive throttling.
         {features::kStopInBackground});
-
-    platform_->SetAutoAdvanceNowToPendingTasks(false);
-
-    // Align the time on a 1-minute interval, to simplify expectations.
-    platform_->AdvanceClock(
-        platform_->NowTicks().SnappedToNextTick(
-            base::TimeTicks(), base::TimeDelta::FromMinutes(1)) -
-        platform_->NowTicks());
   }
 
   void TestNoIntensiveThrotlingOnTitleOrFaviconUpdate() {
@@ -133,20 +276,15 @@ class IntensiveWakeUpThrottlingTest : public SimTest {
     EXPECT_THAT(ConsoleMessages(), expected_ouput);
   }
 
-  ScopedTestingPlatformSupport<TestingPlatformSupportWithMockScheduler>
-      platform_;
-
  private:
   base::test::ScopedFeatureList scoped_feature_list_;
 };
 
-namespace {
-
 // Use to install a function that does not actually communicate with the user.
 constexpr char kCommunicationNop[] =
     "<script>"
-    "  function maybeCommunicateInBackground() {       "
-    "    return;                      "
+    "  function maybeCommunicateInBackground() {"
+    "    return;"
     "  }"
     "</script>";
 
@@ -154,7 +292,7 @@ constexpr char kCommunicationNop[] =
 // update.
 constexpr char kCommunicateThroughTitleScript[] =
     "<script>"
-    "  function maybeCommunicateInBackground() {       "
+    "  function maybeCommunicateInBackground() {"
     "    document.title += \"A\";"
     "  }"
     "</script>";
@@ -163,7 +301,7 @@ constexpr char kCommunicateThroughTitleScript[] =
 // update.
 constexpr char kCommunicateThroughFavisonScript[] =
     "<script>"
-    "  function maybeCommunicateInBackground() {       "
+    "  function maybeCommunicateInBackground() {"
     "  document.querySelector(\"link[rel*='icon']\").href = \"favicon.ico\";"
     "  }"
     "</script>";

@@ -149,7 +149,7 @@ if (enable_pdf) {
       "//ui/gfx/range",
     ]
 
-    if (is_linux) {
+    if (is_linux || is_chromeos) {
       sources += [
         "pdfium/pdfium_font_linux.cc",
         "pdfium/pdfium_font_linux.h",

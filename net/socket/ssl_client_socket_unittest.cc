@@ -5519,7 +5519,6 @@ class TLS13DowngradeTest
       public ::testing::WithParamInterface<
           std::tuple<SpawnedTestServer::SSLOptions::TLSMaxVersion,
                      /* simulate_tls13_downgrade */ bool,
-                     /* enable_for_local_anchors */ bool,
                      /* known_root */ bool>> {
  public:
   TLS13DowngradeTest() {}
@@ -5530,8 +5529,7 @@ class TLS13DowngradeTest
   }
 
   bool simulate_tls13_downgrade() const { return std::get<1>(GetParam()); }
-  bool enable_for_local_anchors() const { return std::get<2>(GetParam()); }
-  bool known_root() const { return std::get<3>(GetParam()); }
+  bool known_root() const { return std::get<2>(GetParam()); }
 };
 
 INSTANTIATE_TEST_SUITE_P(
@@ -5542,7 +5540,6 @@ INSTANTIATE_TEST_SUITE_P(
             SpawnedTestServer::SSLOptions::TLS_MAX_VERSION_TLS1_0,
             SpawnedTestServer::SSLOptions::TLS_MAX_VERSION_TLS1_1,
             SpawnedTestServer::SSLOptions::TLS_MAX_VERSION_TLS1_2),
-        ::testing::Values(false, true),
         ::testing::Values(false, true),
         ::testing::Values(false, true)));
 
@@ -5556,7 +5553,6 @@ TEST_P(TLS13DowngradeTest, DowngradeEnforced) {
 
   SSLContextConfig config;
   config.version_max = SSL_PROTOCOL_VERSION_TLS1_3;
-  config.tls13_hardening_for_local_anchors_enabled = enable_for_local_anchors();
   ssl_config_service_->UpdateSSLConfigAndNotify(config);
 
   CertVerifyResult verify_result;
@@ -5565,143 +5561,15 @@ TEST_P(TLS13DowngradeTest, DowngradeEnforced) {
   cert_verifier_->ClearRules();
   cert_verifier_->AddResultForCert(server_cert.get(), verify_result, OK);
 
-  bool should_enforce = known_root() || enable_for_local_anchors();
-
   ssl_client_session_cache_->Flush();
   int rv;
   ASSERT_TRUE(CreateAndConnectSSLClientSocket(SSLConfig(), &rv));
-  if (should_enforce && simulate_tls13_downgrade()) {
+  if (simulate_tls13_downgrade()) {
     EXPECT_THAT(rv, IsError(ERR_TLS13_DOWNGRADE_DETECTED));
     EXPECT_FALSE(sock_->IsConnected());
   } else {
     EXPECT_THAT(rv, IsOk());
     EXPECT_TRUE(sock_->IsConnected());
-  }
-}
-
-struct TLS13DowngradeMetricsParams {
-  bool downgrade;
-  bool known_root;
-  SpawnedTestServer::SSLOptions::KeyExchange key_exchanges;
-  bool tls13_experiment_host;
-  int expect_downgrade_type;
-};
-
-const TLS13DowngradeMetricsParams kTLS13DowngradeMetricsParams[] = {
-    // Not a downgrade.
-    {false, true, SpawnedTestServer::SSLOptions::KeyExchange::KEY_EXCHANGE_ANY,
-     false, -1},
-    {false, true, SpawnedTestServer::SSLOptions::KeyExchange::KEY_EXCHANGE_ANY,
-     true, -1},
-    // Downgrades with a known root.
-    {true, true, SpawnedTestServer::SSLOptions::KeyExchange::KEY_EXCHANGE_RSA,
-     false, 0},
-    {true, true, SpawnedTestServer::SSLOptions::KeyExchange::KEY_EXCHANGE_RSA,
-     true, 0},
-    {true, true,
-     SpawnedTestServer::SSLOptions::KeyExchange::KEY_EXCHANGE_ECDHE_RSA, false,
-     1},
-    {true, true,
-     SpawnedTestServer::SSLOptions::KeyExchange::KEY_EXCHANGE_ECDHE_RSA, true,
-     1},
-    // Downgrades with an unknown root.
-    {true, false, SpawnedTestServer::SSLOptions::KeyExchange::KEY_EXCHANGE_RSA,
-     false, 2},
-    {true, false, SpawnedTestServer::SSLOptions::KeyExchange::KEY_EXCHANGE_RSA,
-     true, 2},
-    {true, false,
-     SpawnedTestServer::SSLOptions::KeyExchange::KEY_EXCHANGE_ECDHE_RSA, false,
-     3},
-    {true, false,
-     SpawnedTestServer::SSLOptions::KeyExchange::KEY_EXCHANGE_ECDHE_RSA, true,
-     3},
-};
-
-namespace {
-namespace test_default {
-#include "net/http/transport_security_state_static_unittest_default.h"
-}  // namespace test_default
-}  // namespace
-
-class TLS13DowngradeMetricsTest
-    : public SSLClientSocketTest,
-      public ::testing::WithParamInterface<TLS13DowngradeMetricsParams> {
- public:
-  TLS13DowngradeMetricsTest() {
-    // Switch the static preload list, so the tests using mail.google.com below
-    // do not trip the usual pins.
-    SetTransportSecurityStateSourceForTesting(&test_default::kHSTSSource);
-  }
-  ~TLS13DowngradeMetricsTest() {
-    SetTransportSecurityStateSourceForTesting(nullptr);
-  }
-};
-
-INSTANTIATE_TEST_SUITE_P(All,
-                         TLS13DowngradeMetricsTest,
-                         ::testing::ValuesIn(kTLS13DowngradeMetricsParams));
-
-TEST_P(TLS13DowngradeMetricsTest, Metrics) {
-  const TLS13DowngradeMetricsParams& params = GetParam();
-  base::HistogramTester histograms;
-
-  SpawnedTestServer::SSLOptions ssl_options;
-  ssl_options.simulate_tls13_downgrade = params.downgrade;
-  ssl_options.key_exchanges = params.key_exchanges;
-  ASSERT_TRUE(StartTestServer(ssl_options));
-
-  HostPortPair host_port_pair = spawned_test_server()->host_port_pair();
-  if (params.tls13_experiment_host) {
-    host_port_pair.set_host("mail.google.com");
-  }
-
-  if (params.known_root) {
-    scoped_refptr<X509Certificate> server_cert =
-        spawned_test_server()->GetCertificate();
-
-    // Certificate is trusted and chains to a public root.
-    CertVerifyResult verify_result;
-    verify_result.is_issued_by_known_root = true;
-    verify_result.verified_cert = server_cert;
-    cert_verifier_->AddResultForCert(server_cert.get(), verify_result, OK);
-  }
-
-  auto transport =
-      std::make_unique<TCPClientSocket>(addr(), nullptr, &log_, NetLogSource());
-  TestCompletionCallback callback;
-  int rv = callback.GetResult(transport->Connect(callback.callback()));
-  ASSERT_THAT(rv, IsOk());
-
-  SSLContextConfig config;
-  config.version_max = SSL_PROTOCOL_VERSION_TLS1_3;
-  config.tls13_hardening_for_local_anchors_enabled = false;
-  ssl_config_service_->UpdateSSLConfigAndNotify(config);
-
-  std::unique_ptr<SSLClientSocket> ssl_socket =
-      CreateSSLClientSocket(std::move(transport), host_port_pair, SSLConfig());
-  rv = callback.GetResult(ssl_socket->Connect(callback.callback()));
-  EXPECT_THAT(rv, AnyOf(IsOk(), IsError(ERR_TLS13_DOWNGRADE_DETECTED)));
-
-  histograms.ExpectUniqueSample("Net.SSLTLS13Downgrade", params.downgrade, 1);
-  if (params.tls13_experiment_host) {
-    histograms.ExpectUniqueSample("Net.SSLTLS13DowngradeTLS13Experiment",
-                                  params.downgrade, 1);
-  } else {
-    histograms.ExpectTotalCount("Net.SSLTLS13DowngradeTLS13Experiment", 0);
-  }
-
-  if (params.downgrade) {
-    histograms.ExpectUniqueSample("Net.SSLTLS13DowngradeType",
-                                  params.expect_downgrade_type, 1);
-  } else {
-    histograms.ExpectTotalCount("Net.SSLTLS13DowngradeType", 0);
-  }
-
-  if (params.tls13_experiment_host && params.downgrade) {
-    histograms.ExpectUniqueSample("Net.SSLTLS13DowngradeTypeTLS13Experiment",
-                                  params.expect_downgrade_type, 1);
-  } else {
-    histograms.ExpectTotalCount("Net.SSLTLS13DowngradeTypeTLS13Experiment", 0);
   }
 }
 

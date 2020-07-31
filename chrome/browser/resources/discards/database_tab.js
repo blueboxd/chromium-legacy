@@ -15,10 +15,8 @@ import {SortedTableBehavior} from './sorted_table_behavior.js';
 
 /**
  * Compares two db rows by their origin.
- * @param {discards.mojom.SiteCharacteristicsDatabaseEntry} a The first value
- *     being compared.
- * @param {discards.mojom.SiteCharacteristicsDatabaseEntry} b The second value
- *     being compared.
+ * @param {discards.mojom.SiteDataEntry} a The first value being compared.
+ * @param {discards.mojom.SiteDataEntry} b The second value being compared.
  * @return {number} A negative number if a < b, 0 if a === b, and a positive
  *     number if a > b.
  */
@@ -28,10 +26,8 @@ function compareRowsByOrigin(a, b) {
 
 /**
  * Compares two db rows by their dirty bit.
- * @param {discards.mojom.SiteCharacteristicsDatabaseEntry} a The first value
- *     being compared.
- * @param {discards.mojom.SiteCharacteristicsDatabaseEntry} b The second value
- *     being compared.
+ * @param {discards.mojom.SiteDataEntry} a The first value being compared.
+ * @param {discards.mojom.SiteDataEntry} b The second value being compared.
  * @return {number} A negative number if a < b, 0 if a === b, and a positive
  *     number if a > b.
  */
@@ -41,10 +37,8 @@ function compareRowsByIsDirty(a, b) {
 
 /**
  * Compares two db rows by their last load time.
- * @param {discards.mojom.SiteCharacteristicsDatabaseEntry} a The first value
- *     being compared.
- * @param {discards.mojom.SiteCharacteristicsDatabaseEntry} b The second value
- *     being compared.
+ * @param {discards.mojom.SiteDataEntry} a The first value being compared.
+ * @param {discards.mojom.SiteDataEntry} b The second value being compared.
  * @return {number} A negative number if a < b, 0 if a === b, and a positive
  *     number if a > b.
  */
@@ -54,10 +48,8 @@ function compareRowsByLastLoaded(a, b) {
 
 /**
  * Compares two db rows by their CPU usage.
- * @param {discards.mojom.SiteCharacteristicsDatabaseEntry} a The first value
- *     being compared.
- * @param {discards.mojom.SiteCharacteristicsDatabaseEntry} b The second value
- *     being compared.
+ * @param {discards.mojom.SiteDataEntry} a The first value being compared.
+ * @param {discards.mojom.SiteDataEntry} b The second value being compared.
  * @return {number} A negative number if a < b, 0 if a === b, and a positive
  *     number if a > b.
  */
@@ -71,10 +63,8 @@ function compareRowsByCpuUsage(a, b) {
 
 /**
  * Compares two db rows by their memory usage.
- * @param {discards.mojom.SiteCharacteristicsDatabaseEntry} a The first value
- *     being compared.
- * @param {discards.mojom.SiteCharacteristicsDatabaseEntry} b The second value
- *     being compared.
+ * @param {discards.mojom.SiteDataEntry} a The first value being compared.
+ * @param {discards.mojom.SiteDataEntry} b The second value being compared.
  * @return {number} A negative number if a < b, 0 if a === b, and a positive
  *     number if a > b.
  */
@@ -88,10 +78,8 @@ function compareRowsByMemoryUsage(a, b) {
 
 /**
  * Compares two db rows by their load duration.
- * @param {discards.mojom.SiteCharacteristicsDatabaseEntry} a The first value
- *     being compared.
- * @param {discards.mojom.SiteCharacteristicsDatabaseEntry} b The second value
- *     being compared.
+ * @param {discards.mojom.SiteDataEntry} a The first value being compared.
+ * @param {discards.mojom.SiteDataEntry} b The second value being compared.
  * @return {number} A negative number if a < b, 0 if a === b, and a positive
  *     number if a > b.
  */
@@ -107,8 +95,8 @@ function compareRowsByLoadDuration(a, b) {
 
 /**
  * @param {string} sortKey The sort key to get a function for.
- * @return {function(discards.mojom.SiteCharacteristicsDatabaseEntry,
-                     discards.mojom.SiteCharacteristicsDatabaseEntry): number}
+ * @return {function(discards.mojom.SiteDataEntry,
+                     discards.mojom.SiteDataEntry): number}
  *     A comparison function that compares two tab infos, returns
  *     negative number if a < b, 0 if a === b, and a positive
  *     number if a > b.
@@ -196,7 +184,7 @@ Polymer({
   properties: {
     /**
      * List of database rows.
-     * @private {?Array<!discards.mojom.SiteCharacteristicsDatabaseEntry>}
+     * @private {?Array<!discards.mojom.SiteDataEntry>}
      */
     rows_: {
       type: Array,
@@ -204,7 +192,7 @@ Polymer({
 
     /**
      * The database size response.
-     * @private {!discards.mojom.SiteCharacteristicsDatabaseSize}
+     * @private {!discards.mojom.SiteDataDatabaseSize}
      */
     size_: {
       type: Object,
@@ -269,10 +257,9 @@ Polymer({
    * @private
    */
   updateDbRows_() {
-    this.siteDataProvider_
-        .getSiteCharacteristicsDatabase(Object.keys(this.requestedOrigins_))
+    this.siteDataProvider_.getSiteDataArray(Object.keys(this.requestedOrigins_))
         .then(response => {
-          // Bail if the SiteCharacteristicsDatabase is turned off.
+          // Bail if the SiteData database is turned off.
           if (!response.result) {
             return;
           }
@@ -325,14 +312,13 @@ Polymer({
    * @private
    */
   updateDbSizes_() {
-    this.siteDataProvider_.getSiteCharacteristicsDatabaseSize().then(
-        response => {
-          // Bail if the SiteCharacteristicsDatabase is turned off.
-          if (!response.dbSize) {
-            return;
-          }
-          this.size_ = response.dbSize;
-        });
+    this.siteDataProvider_.getSiteDataDatabaseSize().then(response => {
+      // Bail if the SiteData database is turned off.
+      if (!response.dbSize) {
+        return;
+      }
+      this.size_ = response.dbSize;
+    });
   },
 
   /**
@@ -402,8 +388,7 @@ Polymer({
   },
 
   /**
-   * @param {?discards.mojom.SiteCharacteristicsFeature} feature The feature
-   *     in question.
+   * @param {?discards.mojom.SiteDataFeature} feature The feature in question.
    * @return {string} A human-readable string representing the feature.
    * @private
    */

@@ -14,7 +14,6 @@
 <translation id="1084365883616172403">Facebook дээр постолж дууслаа.</translation>
 <translation id="1103523840287552314"><ph name="LANGUAGE" />-ийг үргэлж орчуулах</translation>
 <translation id="1104948393051856124">Хүлээн авах &amp; Үргэлжлүүлэх</translation>
-<translation id="1105578556867525047">Нууц үгээ вэб сайт дээр өөрчлөх</translation>
 <translation id="1112015203684611006">Хэвлэж чадсангүй.</translation>
 <translation id="1125564390852150847">Шинэ чихтэй хуудас үүсгэнэ үү.</translation>
 <translation id="1145536944570833626">Одоо байгаа өгөгдлийг устгана уу.</translation>
@@ -245,7 +244,6 @@
 <translation id="3783017676699494206">Зургийг хадгал</translation>
 <translation id="3789841737615482174">Суулгах</translation>
 <translation id="3803696231112616155">Энэ сайтыг орчуулахыг санал болгох</translation>
-<translation id="3836313059960742452">{COUNT,plural, =0{Алдагдсан нууц үг алга}=1{{COUNT} нууц үг алдагдсан}other{{COUNT} нууц үг алдагдсан}}</translation>
 <translation id="385051799172605136">Буцах</translation>
 <translation id="3892144330757387737">Та түүхээ эндээс олох болно</translation>
 <translation id="3897092660631435901">Цэс</translation>
@@ -330,6 +328,7 @@
 <translation id="4901778704868714008">Хадгалах...</translation>
 <translation id="4904877109095351937">Уншсан гэж тэмдэглэх</translation>
 <translation id="4930268273022498155">Одоо байгаа өгөгдлийг устгана уу. Та үүнийг <ph name="USER_EMAIL1" />-д буцааж сольсноор сэргээх боломжтой.</translation>
+<translation id="4930714375720679147">Асаах</translation>
 <translation id="4941089862236492464">Уучлаарай, таны зүйлийг хуваалцах үед асуудал гарлаа.</translation>
 <translation id="4944543191714094452">Хуудаснаас олох…</translation>
 <translation id="4945756290001680296">Нууц үгний тохиргооны хэсэгт хандах</translation>
@@ -607,6 +606,7 @@ Handoff-ыг Тохиргооны ерөнхий хэсэгт идэвхижүү
 <translation id="8073670137947914548">Татаж дууслаа</translation>
 <translation id="8073872304774253879">Хайлт болон хөтлөх явцыг сайжруулах</translation>
 <translation id="8076014560081431679">Сайтын хадгалсан тохиргоо устахгүй бөгөөд таны хайлтын тохиргоонд нөлөөлж болзошгүй. <ph name="BEGIN_LINK" />Дэлгэрэнгүй үзэх<ph name="END_LINK" /></translation>
+<translation id="8105368624971345109">Унтраах</translation>
 <translation id="8114753159095730575">Файл татаж авах боломжтой. Дэлгэцийн доод хэсгийн сонголтууд боломжтой.</translation>
 <translation id="8131740175452115882">Батлах</translation>
 <translation id="8197543752516192074">Хуудсыг орчуулах</translation>

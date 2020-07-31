@@ -36,8 +36,6 @@ extern NSString* const kNavigationItemStorageTimestampKey;
 extern NSString* const kNavigationItemStorageTitleKey;
 // The PageDisplayState (NSDictionary).
 extern NSString* const kNavigationItemStoragePageDisplayStateKey;
-// POST request data (NSData).
-extern NSString* const kNavigationItemStoragePOSTDataKey;
 // HTTP request headers (NSDictionary).
 extern NSString* const kNavigationItemStorageHTTPRequestHeadersKey;
 // Whether or not to bypass showing the resubmit data confirmation when loading
@@ -53,7 +51,6 @@ extern const char kNavigationItemSerializedURLSizeHistogram[];
 extern const char kNavigationItemSerializedReferrerURLSizeHistogram[];
 extern const char kNavigationItemSerializedTitleSizeHistogram[];
 extern const char kNavigationItemSerializedDisplayStateSizeHistogram[];
-extern const char kNavigationItemSerializedPostDataSizeHistogram[];
 extern const char kNavigationItemSerializedRequestHeadersSizeHistogram[];
 
 }  // namespace web
@@ -70,7 +67,6 @@ extern const char kNavigationItemSerializedRequestHeadersSizeHistogram[];
 @property(nonatomic, assign) web::PageDisplayState displayState;
 @property(nonatomic, assign) BOOL shouldSkipRepostFormConfirmation;
 @property(nonatomic, assign) web::UserAgentType userAgentType;
-@property(nonatomic, copy) NSData* POSTData;
 @property(nonatomic, copy) NSDictionary* HTTPRequestHeaders;
 
 @end

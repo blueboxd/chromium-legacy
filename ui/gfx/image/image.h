@@ -93,6 +93,9 @@ class GFX_EXPORT Image {
   // representations.
   ~Image();
 
+  // True iff both images are backed by the same storage.
+  bool operator==(const Image& other) const;
+
   // Creates an image from the passed in 1x bitmap.
   // WARNING: The resulting image will be pixelated when painted on a high
   // density display.

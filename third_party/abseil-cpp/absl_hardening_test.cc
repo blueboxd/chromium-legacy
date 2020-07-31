@@ -12,6 +12,7 @@
 #include "third_party/abseil-cpp/absl/strings/string_view.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
 #include "third_party/abseil-cpp/absl/types/span.h"
+#include "third_party/abseil-cpp/absl/types/variant.h"
 
 namespace {
 
@@ -68,6 +69,12 @@ TEST(AbslHardeningTest, Span) {
   std::vector<int> v1 = {1, 2, 3, 4};
   EXPECT_DEATH_IF_SUPPORTED(absl::MakeSpan(&v1[2], &v[0]), "");
   EXPECT_DEATH_IF_SUPPORTED(absl::MakeConstSpan(&v1[2], &v[0]), "");
+}
+
+TEST(AbslHardeningTest, Variant) {
+  absl::variant<int, std::string> variant = 5;
+  EXPECT_DEATH_IF_SUPPORTED(absl::get<std::string>(variant), "");
+  EXPECT_DEATH_IF_SUPPORTED(absl::get<1>(variant), "");
 }
 
 }  // namespace

@@ -49,6 +49,7 @@ source_set("unit_tests") {
     "audio_decoder_test.cc",
     "decoder_selector_test.cc",
     "encoded_video_chunk_test.cc",
+    "image_decoder_external_test.cc",
     "video_decoder_broker_test.cc",
     "video_frame_test.cc",
     "video_track_reader_writer_test.cc",
@@ -71,4 +72,6 @@ source_set("unit_tests") {
     "//third_party/blink/renderer/platform/wtf",
     "//third_party/libyuv",
   ]
+
+  data = [ "//third_party/blink/web_tests/images/resources/" ]
 }

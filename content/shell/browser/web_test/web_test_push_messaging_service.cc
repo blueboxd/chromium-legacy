@@ -40,8 +40,11 @@ const uint8_t kAuthentication[] = {0xA5, 0xD9, 0x3C, 0x43, 0x0C, 0x00,
 static_assert(sizeof(kAuthentication) == 12,
               "The fake authentication key must be at least 12 bytes in size.");
 
+const int64_t kTestExpirationWindowInDays = 90;
+
 base::Time GetFutureTime() {
-  return base::Time::Now() + base::TimeDelta::FromDays(100);
+  return base::Time::Now() +
+         base::TimeDelta::FromDays(kTestExpirationWindowInDays);
 }
 
 }  // anonymous namespace

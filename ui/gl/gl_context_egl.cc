@@ -35,6 +35,11 @@
 #define EGL_DISPLAY_TEXTURE_SHARE_GROUP_ANGLE 0x33AF
 #endif /* EGL_ANGLE_display_texture_share_group */
 
+#ifndef EGL_ANGLE_display_semaphore_share_group
+#define EGL_ANGLE_display_semaphore_share_group 1
+#define EGL_DISPLAY_SEMAPHORE_SHARE_GROUP_ANGLE 0x348D
+#endif /* EGL_ANGLE_display_semaphore_share_group */
+
 #ifndef EGL_ANGLE_create_context_client_arrays
 #define EGL_ANGLE_create_context_client_arrays 1
 #define EGL_CONTEXT_CLIENT_ARRAYS_ENABLED_ANGLE 0x3452
@@ -181,6 +186,14 @@ bool GLContextEGL::Initialize(GLSurface* compatible_surface,
         attribs.global_texture_share_group ? EGL_TRUE : EGL_FALSE);
   } else {
     DCHECK(!attribs.global_texture_share_group);
+  }
+
+  if (GLSurfaceEGL::IsDisplaySemaphoreShareGroupSupported()) {
+    context_attributes.push_back(EGL_DISPLAY_SEMAPHORE_SHARE_GROUP_ANGLE);
+    context_attributes.push_back(
+        attribs.global_semaphore_share_group ? EGL_TRUE : EGL_FALSE);
+  } else {
+    DCHECK(!attribs.global_semaphore_share_group);
   }
 
   if (GLSurfaceEGL::IsCreateContextClientArraysSupported()) {

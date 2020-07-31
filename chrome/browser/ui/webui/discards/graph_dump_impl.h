@@ -213,9 +213,6 @@ class DiscardsGraphDumpImpl : public discards::mojom::GraphDump,
       int64_t serialization_id,
       scoped_refptr<base::RefCountedMemory> bitmap_data);
 
-  static void BindOnPMSequence(
-      mojo::PendingReceiver<discards::mojom::GraphDump> receiver,
-      performance_manager::Graph* graph);
   static void OnConnectionError(DiscardsGraphDumpImpl* impl);
 
   performance_manager::Graph* graph_ = nullptr;

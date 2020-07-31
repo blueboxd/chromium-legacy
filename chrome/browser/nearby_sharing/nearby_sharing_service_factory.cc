@@ -16,6 +16,7 @@
 #include "chrome/browser/nearby_sharing/nearby_connections_manager_impl.h"
 #include "chrome/browser/nearby_sharing/nearby_process_manager.h"
 #include "chrome/browser/nearby_sharing/nearby_sharing_service_impl.h"
+#include "chrome/browser/notifications/notification_display_service_factory.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/signin/identity_manager_factory.h"
 #include "components/keyed_service/content/browser_context_dependency_manager.h"
@@ -47,6 +48,7 @@ NearbySharingServiceFactory::NearbySharingServiceFactory()
           kServiceName,
           BrowserContextDependencyManager::GetInstance()) {
   DependsOn(IdentityManagerFactory::GetInstance());
+  DependsOn(NotificationDisplayServiceFactory::GetInstance());
 }
 
 NearbySharingServiceFactory::~NearbySharingServiceFactory() = default;
@@ -62,13 +64,15 @@ KeyedService* NearbySharingServiceFactory::BuildServiceInstanceFor(
   NearbyProcessManager& process_manager = NearbyProcessManager::GetInstance();
   Profile* profile = Profile::FromBrowserContext(context);
   PrefService* pref_service = profile->GetPrefs();
+  NotificationDisplayService* notification_display_service =
+      NotificationDisplayServiceFactory::GetForProfile(profile);
   auto nearby_connections_manager =
       std::make_unique<NearbyConnectionsManagerImpl>(&process_manager, profile);
 
   NS_LOG(VERBOSE) << __func__ << ": creating NearbySharingService.";
-  return new NearbySharingServiceImpl(pref_service, profile,
-                                      std::move(nearby_connections_manager),
-                                      &process_manager);
+  return new NearbySharingServiceImpl(
+      pref_service, notification_display_service, profile,
+      std::move(nearby_connections_manager), &process_manager);
 }
 
 content::BrowserContext* NearbySharingServiceFactory::GetBrowserContextToUse(

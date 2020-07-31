@@ -14,7 +14,6 @@
 <translation id="1084365883616172403">Príspevok bol uverejnený na Facebook.</translation>
 <translation id="1103523840287552314">Vždy preložiť nasledujúci jazyk: <ph name="LANGUAGE" /></translation>
 <translation id="1104948393051856124">Prijať a pokračovať</translation>
-<translation id="1105578556867525047">Zmeniť heslo na webe</translation>
 <translation id="1112015203684611006">Tlač zlyhala.</translation>
 <translation id="1125564390852150847">Vytvoriť novú kartu.</translation>
 <translation id="1145536944570833626">Odstrániť existujúce dáta.</translation>
@@ -246,7 +245,6 @@ Weby v anonymnom režime nemôžu pomocou súborov cookie zobraziť vašu aktiv
 <translation id="3783017676699494206">Uložiť obrázok</translation>
 <translation id="3789841737615482174">Inštalovať</translation>
 <translation id="3803696231112616155">Ponúkať preklad tohto webu</translation>
-<translation id="3836313059960742452">{COUNT,plural, =0{Neboli prelomené žiadne heslá}=1{Bolo prelomené {COUNT} heslo}few{Boli prelomené {COUNT} heslá}many{{COUNT} Passwords compromised}other{Bolo prelomených {COUNT} hesiel}}</translation>
 <translation id="385051799172605136">Naspäť</translation>
 <translation id="3892144330757387737">Tu nájdete svoju históriu</translation>
 <translation id="3897092660631435901">Ponuka</translation>
@@ -333,6 +331,7 @@ Ak chcete toto nastavenie zmeniť, <ph name="BEGIN_LINK" />resetujte synchroniz�
 <translation id="4901778704868714008">Uložiť...</translation>
 <translation id="4904877109095351937">Označiť ako prečítané</translation>
 <translation id="4930268273022498155">Odstrániť existujúce údaje. Načítate ich prepnutím späť na účet <ph name="USER_EMAIL1" />.</translation>
+<translation id="4930714375720679147">Zapnúť</translation>
 <translation id="4941089862236492464">Je nám ľúto, pri zdieľaní položky sa vyskytol problém.</translation>
 <translation id="4944543191714094452">Nájsť na stránke…</translation>
 <translation id="4945756290001680296">Prejdite do nastavení hesla</translation>
@@ -611,6 +610,7 @@ Na základe súborov cookie si môžu zobraziť vašu históriu prehliadania v 
 <translation id="8073670137947914548">Sťahovanie bolo dokončené</translation>
 <translation id="8073872304774253879">Zlepšovať vyhľadávanie a prehliadanie</translation>
 <translation id="8076014560081431679">Uložené nastavenia webov sa neodstránia a môžu odrážať vaše návyky prehliadania. <ph name="BEGIN_LINK" />Ďalšie informácie<ph name="END_LINK" /></translation>
+<translation id="8105368624971345109">Vypnúť</translation>
 <translation id="8114753159095730575">Súbor je k dispozícii na stiahnutie. Možnosti sú k dispozícii v dolnej časti obrazovky.</translation>
 <translation id="8131740175452115882">Potvrdiť</translation>
 <translation id="8197543752516192074">Preložiť stránku</translation>

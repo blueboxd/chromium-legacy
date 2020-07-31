@@ -13,7 +13,6 @@
 #include "base/logging.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/stl_util.h"
-#include "components/error_page/common/error_page_params.h"
 #include "components/error_page/common/localized_error.h"
 #include "content/public/common/content_switches.h"
 #include "content/public/renderer/render_thread.h"
@@ -163,8 +162,7 @@ void NetErrorHelperCore::PrepareErrorPage(FrameType frame_type,
   } else if (error_html) {
     delegate_->GenerateLocalizedErrorPage(
         error, is_failed_post,
-        false /* No diagnostics dialogs allowed for subframes. */, nullptr,
-        error_html);
+        false /* No diagnostics dialogs allowed for subframes. */, error_html);
   }
 }
 
@@ -215,7 +213,7 @@ void NetErrorHelperCore::PrepareErrorPageForMainFrame(
   if (error_html) {
     pending_error_page_info->page_state = delegate_->GenerateLocalizedErrorPage(
         error, pending_error_page_info->was_failed_post,
-        can_show_network_diagnostics_dialog_, nullptr, error_html);
+        can_show_network_diagnostics_dialog_, error_html);
   }
 }
 

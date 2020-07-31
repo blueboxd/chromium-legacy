@@ -123,10 +123,6 @@ class ModelTypeWorker : public UpdateHandler,
   // called when a new encryption mechanism is ready.
   void EncryptionAcceptedMaybeApplyUpdates();
 
-  // If migration the directory encounters an error partway through, we need to
-  // clear the update data that has been added so far.
-  void AbortMigration();
-
   // Public for testing.
   // Returns true if this type should stop communicating because of outstanding
   // encryption issues and must wait for keys to be updated.

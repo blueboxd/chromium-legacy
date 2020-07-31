@@ -524,4 +524,52 @@ TEST_F(CanvasResourceProviderTest, CanvasResourceProviderDirect2DSwapChain) {
             kColorParams.GetOpacityMode());
 }
 
+TEST_F(CanvasResourceProviderTest, FlushForImage) {
+  const IntSize kSize(10, 10);
+  const CanvasColorParams kColorParams(
+      CanvasColorSpace::kSRGB, CanvasColorParams::GetNativeCanvasPixelFormat(),
+      kNonOpaque);
+
+  auto src_provider = CanvasResourceProvider::CreateSharedImageProvider(
+      kSize, context_provider_wrapper_, kMedium_SkFilterQuality, kColorParams,
+      true /* is_origin_top_left */, RasterMode::kGPU, 0u);
+
+  auto dst_provider = CanvasResourceProvider::CreateSharedImageProvider(
+      kSize, context_provider_wrapper_, kMedium_SkFilterQuality, kColorParams,
+      true /* is_origin_top_left */, RasterMode::kGPU, 0u);
+
+  MemoryManagedPaintCanvas* dst_canvas =
+      static_cast<MemoryManagedPaintCanvas*>(dst_provider->Canvas());
+
+  PaintImage paint_image =
+      src_provider->Snapshot()->PaintImageForCurrentFrame();
+  PaintImage::ContentId src_content_id = paint_image.GetContentIdForFrame(0u);
+
+  EXPECT_FALSE(dst_canvas->IsCachingImage(src_content_id));
+
+  cc::PaintFlags flags;
+  dst_canvas->drawImage(paint_image, 0, 0, &flags);
+
+  EXPECT_TRUE(dst_canvas->IsCachingImage(src_content_id));
+
+  src_provider->Canvas()->clear(
+      SK_ColorWHITE);  // Modify the canvas to trigger OnFlushForImage
+  src_provider
+      ->ProduceCanvasResource();  // So that all the cached draws are executed
+
+  // The paint canvas may have moved
+  dst_canvas = static_cast<MemoryManagedPaintCanvas*>(dst_provider->Canvas());
+
+  // TODO(aaronhk): The resource on the src_provider should be the same before
+  // and after the draw. Something about the program flow within
+  // this testing framework (but not in layout tests) makes a reference to
+  // the src_resource stick around throughout the FlushForImage call so the
+  // src_resource changes in this test. Things work as expected for actual
+  // browser code like canvas_to_canvas_draw.html.
+
+  // OnFlushForImage should detect the modification of the source resource and
+  // clear the cache of the destination canvas to avoid a copy-on-write.
+  EXPECT_FALSE(dst_canvas->IsCachingImage(src_content_id));
+}
+
 }  // namespace blink

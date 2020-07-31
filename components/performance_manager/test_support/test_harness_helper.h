@@ -50,14 +50,14 @@ class PerformanceManagerTestHarnessHelper {
       const PerformanceManagerTestHarnessHelper&) = delete;
   PerformanceManagerTestHarnessHelper& operator=(
       const PerformanceManagerTestHarnessHelper&) = delete;
-  ~PerformanceManagerTestHarnessHelper();
+  virtual ~PerformanceManagerTestHarnessHelper();
 
   // Sets up the PM and registry, etc.
-  void SetUp();
+  virtual void SetUp();
 
   // Tears down the PM and registry, etc. Blocks on the main thread until they
   // are torn down.
-  void TearDown();
+  virtual void TearDown();
 
   // Attaches tab helpers to the provided |contents|. This should only need to
   // be called explicitly in components_unittests. In unit_tests, browser_tests

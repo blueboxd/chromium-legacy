@@ -10,6 +10,7 @@
 #include "base/macros.h"
 #include "base/optional.h"
 #include "base/timer/timer.h"
+#include "chrome/browser/ui/views/feature_promos/feature_promo_bubble_params.h"
 #include "chrome/browser/ui/views/feature_promos/feature_promo_bubble_timeout.h"
 #include "ui/gfx/geometry/rect.h"
 #include "ui/views/bubble/bubble_dialog_delegate_view.h"
@@ -19,7 +20,6 @@ class Rect;
 }
 
 namespace ui {
-class Accelerator;
 class MouseEvent;
 }  // namespace ui
 
@@ -28,67 +28,17 @@ class MouseEvent;
 // deferred context.
 class FeaturePromoBubbleView : public views::BubbleDialogDelegateView {
  public:
-  enum class ActivationAction {
-    DO_NOT_ACTIVATE,
-    ACTIVATE,
-  };
-
-  // Parameters to determine the promo's contents and appearance. Only
-  // |body_string_specifier|, |anchor_view|, and |arrow| are required.
-  struct CreateParams {
-    CreateParams();
-    ~CreateParams();
-
-    CreateParams(CreateParams&&);
-
-    // Promo contents:
-
-    // The main promo text. Must be set to a valid string specifier.
-    int body_string_specifier = -1;
-
-    // Title shown larger at top of bubble. Optional.
-    base::Optional<int> title_string_specifier;
-
-    // String to be announced when bubble is shown. Optional.
-    base::Optional<int> screenreader_string_specifier;
-
-    // A keyboard accelerator to access the feature. If
-    // |screenreader_string_specifier| is set and contains a
-    // placeholder, this is filled in.
-    base::Optional<ui::Accelerator> feature_accelerator;
-
-    // Positioning and sizing:
-
-    // View bubble is positioned relative to. Required.
-    views::View* anchor_view = nullptr;
-
-    // Determines position relative to |anchor_view|. Required. Note
-    // that contrary to the name, no visible arrow is shown.
-    views::BubbleBorder::Arrow arrow;
-
-    // If set, determines the width of the bubble. Prefer the default if
-    // possible.
-    base::Optional<int> preferred_width;
-
-    // Determines whether the bubble's widget can be activated, and
-    // activates it on creation if so.
-    ActivationAction activation_action = ActivationAction::DO_NOT_ACTIVATE;
-
-    // Changes the bubble timeout. Intended for tests, avoid use.
-    std::unique_ptr<FeaturePromoBubbleTimeout> timeout;
-  };
-
   ~FeaturePromoBubbleView() override;
 
   // Creates the promo. The returned pointer is only valid until the
   // widget is destroyed. It must not be manually deleted by the caller.
-  static FeaturePromoBubbleView* Create(CreateParams params);
+  static FeaturePromoBubbleView* Create(FeaturePromoBubbleParams params);
 
   // Closes the promo bubble.
   void CloseBubble();
 
  private:
-  explicit FeaturePromoBubbleView(CreateParams params);
+  explicit FeaturePromoBubbleView(FeaturePromoBubbleParams params);
 
   // BubbleDialogDelegateView:
   bool OnMousePressed(const ui::MouseEvent& event) override;
@@ -102,7 +52,7 @@ class FeaturePromoBubbleView : public views::BubbleDialogDelegateView {
   }
   gfx::Size CalculatePreferredSize() const override;
 
-  const ActivationAction activation_action_;
+  const FeaturePromoBubbleParams::ActivationAction activation_action_;
 
   base::string16 accessible_name_;
 

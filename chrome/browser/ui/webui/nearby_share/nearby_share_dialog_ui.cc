@@ -51,6 +51,8 @@ NearbyShareDialogUI::NearbyShareDialogUI(content::WebUI* web_ui)
                                IDR_NEARBY_SHARE_TARGET_TYPES_MOJO_JS);
 
   RegisterNearbySharedMojoResources(html_source);
+  RegisterNearbySharedStrings(html_source);
+  html_source->UseStringsJs();
 
   content::WebUIDataSource::Add(profile, html_source);
 }

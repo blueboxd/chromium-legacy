@@ -130,6 +130,10 @@
     margin-inline-end: 12px;
     width: 16px;
   }
+
+  #show-annotations-button {
+    border-top: var(--cr-separator-line);
+  }
 </style>
 <!-- TODO(dpapad): Add aria-label and title for all buttons -->
 <div id="toolbar">
@@ -203,6 +207,14 @@
       <iron-icon icon="pdf:check" hidden="[[!twoUpViewEnabled_]]"></iron-icon>
     </span>
     $i18n{twoUpViewEnable}
+  </button>
+
+  <button id="show-annotations-button"
+      class="dropdown-item" on-click="onShowAnnotationsClick_">
+    <span class="check-container">
+      <iron-icon icon="pdf:check" hidden="[[!displayAnnotations_]]"></iron-icon>
+    </span>
+    $i18n{annotationsShowToggle}
   </button>
 </cr-action-menu>
 

@@ -34,16 +34,16 @@ constexpr size_t kGuidLength = 36;  // "%08X-%04X-%04X-%04X-%012llX"
 
 std::string FromTimeToString(base::Time time) {
   DCHECK(!time.is_null());
-  return base::NumberToString(time.ToDeltaSinceWindowsEpoch().InSeconds());
+  return base::NumberToString(time.ToDeltaSinceWindowsEpoch().InMilliseconds());
 }
 
 bool FromStringToTime(const std::string& time_string,
                       base::Optional<base::Time>* time) {
   DCHECK(!time_string.empty());
-  int64_t seconds;
-  if (base::StringToInt64(time_string, &seconds) && seconds > 0) {
+  int64_t milliseconds;
+  if (base::StringToInt64(time_string, &milliseconds) && milliseconds > 0) {
     *time = base::make_optional(base::Time::FromDeltaSinceWindowsEpoch(
-        base::TimeDelta::FromSeconds(seconds)));
+        base::TimeDelta::FromMilliseconds(milliseconds)));
     return true;
   }
   return false;
@@ -75,9 +75,8 @@ bool DisassemblePrefValue(const std::string& pref_value,
     return false;
 
   *origin = GURL(parts[0]);
-  if (!origin->is_valid()) {
+  if (!origin->is_valid())
     return false;
-  }
 
   if (parts.size() == 3)
     return FromStringToTime(parts[2], expiration_time);

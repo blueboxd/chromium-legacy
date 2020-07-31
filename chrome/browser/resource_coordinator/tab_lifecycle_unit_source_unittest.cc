@@ -17,8 +17,6 @@
 #include "chrome/browser/resource_coordinator/lifecycle_unit.h"
 #include "chrome/browser/resource_coordinator/lifecycle_unit_observer.h"
 #include "chrome/browser/resource_coordinator/lifecycle_unit_source_observer.h"
-#include "chrome/browser/resource_coordinator/local_site_characteristics_data_unittest_utils.h"
-#include "chrome/browser/resource_coordinator/local_site_characteristics_webcontents_observer.h"
 #include "chrome/browser/resource_coordinator/tab_helper.h"
 #include "chrome/browser/resource_coordinator/tab_lifecycle_observer.h"
 #include "chrome/browser/resource_coordinator/tab_lifecycle_unit.h"
@@ -30,6 +28,7 @@
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/browser/ui/tabs/test_tab_strip_model_delegate.h"
 #include "chrome/common/pref_names.h"
+#include "chrome/test/base/chrome_render_view_host_test_harness.h"
 #include "chrome/test/base/testing_profile.h"
 #include "components/performance_manager/public/performance_manager.h"
 #include "components/performance_manager/test_support/graph_impl.h"
@@ -93,17 +92,16 @@ bool IsFocused(LifecycleUnit* lifecycle_unit) {
   return lifecycle_unit->GetLastFocusedTime() == base::TimeTicks::Max();
 }
 
-class TabLifecycleUnitSourceTest
-    : public testing::ChromeTestHarnessWithLocalDB {
+class TabLifecycleUnitSourceTest : public ChromeRenderViewHostTestHarness {
  protected:
   TabLifecycleUnitSourceTest()
-      : testing::ChromeTestHarnessWithLocalDB(
+      : ChromeRenderViewHostTestHarness(
             base::test::SingleThreadTaskEnvironment::TimeSource::MOCK_TIME) {
     task_runner_ = task_environment()->GetMainThreadTaskRunner();
   }
 
   void SetUp() override {
-    ChromeTestHarnessWithLocalDB::SetUp();
+    ChromeRenderViewHostTestHarness::SetUp();
 
     // Force TabManager/TabLifecycleUnitSource creation.
     g_browser_process->GetTabManager();
@@ -122,7 +120,7 @@ class TabLifecycleUnitSourceTest
     tab_strip_model_.reset();
 
     task_environment()->RunUntilIdle();
-    ChromeTestHarnessWithLocalDB::TearDown();
+    ChromeRenderViewHostTestHarness::TearDown();
   }
 
   // If |focus_tab_strip| is true, focuses the tab strip. Then, appends 2 tabs
@@ -158,9 +156,6 @@ class TabLifecycleUnitSourceTest
     base::RepeatingClosure run_loop_cb = base::BindRepeating(
         &base::test::SingleThreadTaskEnvironment::RunUntilIdle,
         base::Unretained(task_environment()));
-    testing::WaitForLocalDBEntryToBeInitialized(raw_first_web_contents,
-                                                run_loop_cb);
-    testing::ExpireLocalDBObservationWindows(raw_first_web_contents);
 
     // Add another foreground tab to the focused tab strip.
     task_environment()->FastForwardBy(kShortDelay);
@@ -186,9 +181,6 @@ class TabLifecycleUnitSourceTest
     tab_strip_model_->AppendWebContents(std::move(second_web_contents), true);
     ::testing::Mock::VerifyAndClear(&source_observer_);
     EXPECT_TRUE(source_->GetTabLifecycleUnitExternal(raw_second_web_contents));
-    testing::WaitForLocalDBEntryToBeInitialized(raw_second_web_contents,
-                                                run_loop_cb);
-    testing::ExpireLocalDBObservationWindows(raw_second_web_contents);
 
     // TabStripModel doesn't update the visibility of its WebContents by itself.
     raw_first_web_contents->WasHidden();

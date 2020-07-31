@@ -69,7 +69,7 @@ public class ManagedPreferencesUtils {
      * @return The resource ID for the Managed By Enterprise icon.
      */
     public static @DrawableRes int getManagedByEnterpriseIconId() {
-        return R.drawable.controlled_setting_mandatory;
+        return R.drawable.ic_business_small;
     }
 
     /**

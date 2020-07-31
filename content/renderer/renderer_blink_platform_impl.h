@@ -208,6 +208,7 @@ class CONTENT_EXPORT RendererBlinkPlatformImpl : public BlinkPlatformImpl {
       scoped_refptr<network::SharedURLLoaderFactory> factory) override;
 
   media::GpuVideoAcceleratorFactories* GetGpuFactories() override;
+  void SetRenderingColorSpace(const gfx::ColorSpace& color_space) override;
 
   // Tells this platform that the renderer is locked to a site (i.e., a scheme
   // plus eTLD+1, such as https://google.com), or to a more specific origin.

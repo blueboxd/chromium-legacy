@@ -2051,11 +2051,6 @@ const char kH2ClientCertCoalescingHosts[] =
 // from http to https.
 const char kHSTSPolicyBypassList[] = "hsts.policy.upgrade_bypass_list";
 
-// If true, enables stronger TLS 1.3 downgrade protection for connections using
-// local trust anchors.
-const char kTLS13HardeningForLocalAnchorsEnabled[] =
-    "ssl.tls13_hardening_for_local_anchors";
-
 // Boolean that specifies whether the built-in asynchronous DNS client is used.
 const char kBuiltInDnsClientEnabled[] = "async_dns.enabled";
 

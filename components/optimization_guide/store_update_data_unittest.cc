@@ -24,12 +24,12 @@ TEST(StoreUpdateDataTest, BuildComponentStoreUpdateData) {
   base::Version v1("1.2.3.4");
   proto::Hint hint1;
   hint1.set_key("foo.org");
-  hint1.set_key_representation(proto::HOST_SUFFIX);
+  hint1.set_key_representation(proto::HOST);
   proto::PageHint* page_hint1 = hint1.add_page_hints();
   page_hint1->set_page_pattern("slowpage");
   proto::Hint hint2;
   hint2.set_key("bar.com");
-  hint2.set_key_representation(proto::HOST_SUFFIX);
+  hint2.set_key_representation(proto::HOST);
   proto::PageHint* page_hint2 = hint2.add_page_hints();
   page_hint2->set_page_pattern("slowpagealso");
 
@@ -50,7 +50,7 @@ TEST(StoreUpdateDataTest, BuildFetchUpdateDataUsesDefaultCacheDuration) {
   base::Time update_time = base::Time::Now();
   proto::Hint hint1;
   hint1.set_key("foo.org");
-  hint1.set_key_representation(proto::HOST_SUFFIX);
+  hint1.set_key_representation(proto::HOST);
   proto::PageHint* page_hint1 = hint1.add_page_hints();
   page_hint1->set_page_pattern("slowpage");
 
@@ -85,7 +85,7 @@ TEST(StoreUpdateDataTest,
   base::Time update_time = base::Time::Now();
   proto::Hint hint1;
   hint1.set_key("foo.org");
-  hint1.set_key_representation(proto::HOST_SUFFIX);
+  hint1.set_key_representation(proto::HOST);
   hint1.mutable_max_cache_duration()->set_seconds(max_cache_duration_secs);
   proto::PageHint* page_hint1 = hint1.add_page_hints();
   page_hint1->set_page_pattern("slowpage");

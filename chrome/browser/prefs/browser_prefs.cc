@@ -727,6 +727,10 @@ void RegisterLocalState(PrefRegistrySimple* registry) {
   registry->RegisterIntegerPref(kSameVersionStartupCount, 0);
   registry->RegisterBooleanPref(
       policy::policy_prefs::kUserAgentClientHintsEnabled, true);
+#if defined(OS_ANDROID)
+  registry->RegisterBooleanPref(policy::policy_prefs::kBackForwardCacheEnabled,
+                                true);
+#endif  // defined(OS_ANDROID)
 
   // Below this point is for platform-specific and compile-time conditional
   // calls. Please follow the helper-function-first-then-direct-calls pattern

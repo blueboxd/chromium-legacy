@@ -67,9 +67,10 @@ void UpdateTabSpecificContentSettings(
   if (!web_contents)
     return;
 
+  // TODO(https://crbug.com/1103176): We should extract the frame from |request|
   auto* content_settings =
-      content_settings::TabSpecificContentSettings::FromWebContents(
-          web_contents);
+      content_settings::TabSpecificContentSettings::GetForFrame(
+          web_contents->GetMainFrame());
   if (!content_settings)
     return;
 

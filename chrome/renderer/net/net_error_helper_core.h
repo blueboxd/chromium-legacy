@@ -26,9 +26,6 @@
 namespace content {
 class RenderFrame;
 }
-namespace error_page {
-struct ErrorPageParams;
-}
 
 // Class that contains the logic for how the NetErrorHelper.  This allows for
 // testing the logic without a RenderView or WebFrame, which are difficult to
@@ -64,7 +61,6 @@ class NetErrorHelperCore {
         const error_page::Error& error,
         bool is_failed_post,
         bool can_show_network_diagnostics_dialog,
-        std::unique_ptr<error_page::ErrorPageParams> params,
         std::string* html) const = 0;
 
     // Create extra Javascript bindings in the error page. Will only be invoked

@@ -155,10 +155,8 @@ static_library("performance_manager") {
   if (!is_android) {
     sources += [
       "decorators/site_data_recorder.cc",
-      "decorators/site_data_recorder.h",
       "persistence/site_data/exponential_moving_average.cc",
       "persistence/site_data/exponential_moving_average.h",
-      "persistence/site_data/feature_usage.h",
       "persistence/site_data/leveldb_site_data_store.cc",
       "persistence/site_data/leveldb_site_data_store.h",
       "persistence/site_data/non_recording_site_data_cache.cc",
@@ -174,11 +172,13 @@ static_library("performance_manager") {
       "persistence/site_data/site_data_impl.cc",
       "persistence/site_data/site_data_impl.h",
       "persistence/site_data/site_data_reader.cc",
-      "persistence/site_data/site_data_reader.h",
       "persistence/site_data/site_data_store.h",
       "persistence/site_data/site_data_writer.cc",
       "persistence/site_data/site_data_writer.h",
       "persistence/site_data/tab_visibility.h",
+      "public/decorators/site_data_recorder.h",
+      "public/persistence/site_data/feature_usage.h",
+      "public/persistence/site_data/site_data_reader.h",
     ]
 
     public_deps += [

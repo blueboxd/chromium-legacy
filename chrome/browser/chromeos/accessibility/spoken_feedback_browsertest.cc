@@ -230,7 +230,10 @@ IN_PROC_BROWSER_TEST_F(LoggedInSpokenFeedbackTest, NavigateNotificationCenter) {
 
 // Test Learn Mode by pressing a few keys in Learn Mode. Only available while
 // logged in.
-#if defined(MEMORY_SANITIZER)
+//
+// Disabled on msan: https://crbug.com/1111575.
+// Disabled on debug build: https://crbug.com/1111686.
+#if defined(MEMORY_SANITIZER) || !defined(NDEBUG)
 #define MAYBE_LearnModeHardwareKeys DISABLED_LearnModeHardwareKeys
 #else
 #define MAYBE_LearnModeHardwareKeys LearnModeHardwareKeys

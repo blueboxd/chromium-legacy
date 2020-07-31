@@ -123,6 +123,8 @@ const char* DxgiFormatToString(DXGI_FORMAT format) {
   // Please also modify histogram enum and trace integration tests if new
   // formats are added.
   switch (format) {
+    case DXGI_FORMAT_R10G10B10A2_UNORM:
+      return "RGB10A2";
     case DXGI_FORMAT_B8G8R8A8_UNORM:
       return "BGRA";
     case DXGI_FORMAT_YUY2:
@@ -185,13 +187,18 @@ SwapChainPresenter::~SwapChainPresenter() {
 }
 
 bool SwapChainPresenter::ShouldUseYUVSwapChain(
-    gfx::ProtectedVideoType protected_video_type) {
+    gfx::ProtectedVideoType protected_video_type,
+    bool content_is_hdr) {
   // TODO(crbug.com/850799): Assess power/perf impact when protected video
   // swap chain is composited by DWM.
 
   // Always prefer YUV swap chain for hardware protected video for now.
   if (protected_video_type == gfx::ProtectedVideoType::kHardwareProtected)
     return true;
+
+  // Prefer RGB swapchain when playing HDR content.
+  if (content_is_hdr)
+    return false;
 
   // For software protected video, BGRA swap chain is preferred if hardware
   // overlay is not supported for better power efficiency.
@@ -694,7 +701,7 @@ bool SwapChainPresenter::PresentToDecodeSwapChain(
 
 bool SwapChainPresenter::PresentToSwapChain(
     const ui::DCRendererLayerParams& params) {
-  GLImageDXGI* nv12_image =
+  GLImageDXGI* image_dxgi =
       GLImageDXGI::FromGLImage(params.images[kNV12ImageIndex].get());
   GLImageMemory* y_image_memory =
       GLImageMemory::FromGLImage(params.images[kYPlaneImageIndex].get());
@@ -703,7 +710,7 @@ bool SwapChainPresenter::PresentToSwapChain(
   GLImageD3D* swap_chain_image =
       GLImageD3D::FromGLImage(params.images[kSwapChainImageIndex].get());
 
-  if (!nv12_image && (!y_image_memory || !uv_image_memory) &&
+  if (!image_dxgi && (!y_image_memory || !uv_image_memory) &&
       !swap_chain_image) {
     DLOG(ERROR) << "Video GLImages are missing";
     ReleaseSwapChainResources();
@@ -713,8 +720,8 @@ bool SwapChainPresenter::PresentToSwapChain(
     return true;
   }
 
-  if (nv12_image && !nv12_image->texture()) {
-    // We can't proceed if |nv12_image| has no underlying d3d11 texture.  It's
+  if (image_dxgi && !image_dxgi->texture()) {
+    // We can't proceed if |image_dxgi| has no underlying d3d11 texture.  It's
     // unclear how we get into this state, but we do observe crashes due to it.
     // Just stop here instead, and render incorrectly.
     // https://crbug.com/1077645
@@ -724,7 +731,7 @@ bool SwapChainPresenter::PresentToSwapChain(
   }
 
   std::string image_type = "software video frame";
-  if (nv12_image)
+  if (image_dxgi)
     image_type = "hardware video frame";
   if (swap_chain_image)
     image_type = "swap chain";
@@ -735,6 +742,7 @@ bool SwapChainPresenter::PresentToSwapChain(
   TRACE_EVENT2("gpu", "SwapChainPresenter::PresentToSwapChain", "image_type",
                image_type, "swap_chain_size", swap_chain_size.ToString());
 
+  bool content_is_hdr = image_dxgi && image_dxgi->color_space().IsHDR();
   // Do not create a swap chain if swap chain size will be empty.
   if (swap_chain_size.IsEmpty()) {
     swap_chain_size_ = swap_chain_size;
@@ -761,7 +769,7 @@ bool SwapChainPresenter::PresentToSwapChain(
     return true;
   }
 
-  if (TryPresentToDecodeSwapChain(nv12_image, params.content_rect,
+  if (TryPresentToDecodeSwapChain(image_dxgi, params.content_rect,
                                   swap_chain_size)) {
     return true;
   }
@@ -771,7 +779,11 @@ bool SwapChainPresenter::PresentToSwapChain(
   if (swap_chain_resized) {
     presentation_history_.Clear();
   }
-  bool use_yuv_swap_chain = ShouldUseYUVSwapChain(params.protected_video_type);
+  // TODO(Richard Li): Since we have three distinct swap chain formats: YUV,
+  // BGRA8, and RGB10A2, we need to correct this to track swapchain's current
+  // format in a more explicit way.
+  bool use_yuv_swap_chain =
+      ShouldUseYUVSwapChain(params.protected_video_type, content_is_hdr);
   bool toggle_yuv_swapchain = use_yuv_swap_chain != is_yuv_swapchain_;
   bool toggle_protected_video =
       protected_video_type_ != params.protected_video_type;
@@ -780,7 +792,8 @@ bool SwapChainPresenter::PresentToSwapChain(
   if (!swap_chain_ || swap_chain_resized || toggle_yuv_swapchain ||
       toggle_protected_video) {
     if (!ReallocateSwapChain(swap_chain_size, use_yuv_swap_chain,
-                             params.protected_video_type, params.z_order)) {
+                             params.protected_video_type, params.z_order,
+                             content_is_hdr)) {
       ReleaseSwapChainResources();
       return false;
     }
@@ -797,11 +810,11 @@ bool SwapChainPresenter::PresentToSwapChain(
   Microsoft::WRL::ComPtr<ID3D11Texture2D> input_texture;
   UINT input_level;
   Microsoft::WRL::ComPtr<IDXGIKeyedMutex> keyed_mutex;
-  if (nv12_image) {
-    input_texture = nv12_image->texture();
-    input_level = (UINT)nv12_image->level();
+  if (image_dxgi) {
+    input_texture = image_dxgi->texture();
+    input_level = static_cast<UINT>(image_dxgi->level());
     // Keyed mutex may not exist.
-    keyed_mutex = nv12_image->keyed_mutex();
+    keyed_mutex = image_dxgi->keyed_mutex();
     staging_texture_.Reset();
     copy_texture_.Reset();
   } else {
@@ -818,11 +831,12 @@ bool SwapChainPresenter::PresentToSwapChain(
 
   // TODO(sunnyps): Use correct color space for uploaded video frames.
   gfx::ColorSpace src_color_space = gfx::ColorSpace::CreateREC709();
-  if (nv12_image && nv12_image->color_space().IsValid())
-    src_color_space = nv12_image->color_space();
+  if (image_dxgi && image_dxgi->color_space().IsValid())
+    src_color_space = image_dxgi->color_space();
 
   if (!VideoProcessorBlt(input_texture, input_level, keyed_mutex,
-                         params.content_rect, src_color_space)) {
+                         params.content_rect, src_color_space,
+                         content_is_hdr)) {
     return false;
   }
 
@@ -949,7 +963,8 @@ bool SwapChainPresenter::VideoProcessorBlt(
     UINT input_level,
     Microsoft::WRL::ComPtr<IDXGIKeyedMutex> keyed_mutex,
     const gfx::Rect& content_rect,
-    const gfx::ColorSpace& src_color_space) {
+    const gfx::ColorSpace& src_color_space,
+    bool content_is_hdr) {
   TRACE_EVENT2("gpu", "SwapChainPresenter::VideoProcessorBlt", "content_rect",
                content_rect.ToString(), "swap_chain_size",
                swap_chain_size_.ToString());
@@ -969,6 +984,8 @@ bool SwapChainPresenter::VideoProcessorBlt(
       (output_color_space == gfx::ColorSpace::CreateREC709())) {
     output_color_space = gfx::ColorSpace::CreateREC601();
   }
+  if (content_is_hdr)
+    output_color_space = gfx::ColorSpace::CreateHDR10();
 
   Microsoft::WRL::ComPtr<IDXGISwapChain3> swap_chain3;
   Microsoft::WRL::ComPtr<ID3D11VideoContext1> context1;
@@ -984,6 +1001,7 @@ bool SwapChainPresenter::VideoProcessorBlt(
     DXGI_COLOR_SPACE_TYPE output_dxgi_color_space =
         gfx::ColorSpaceWin::GetDXGIColorSpace(
             output_color_space, is_yuv_swapchain_ /* force_yuv */);
+
     if (SUCCEEDED(swap_chain3->SetColorSpace1(output_dxgi_color_space))) {
       context1->VideoProcessorSetOutputColorSpace1(video_processor.Get(),
                                                    output_dxgi_color_space);
@@ -1097,7 +1115,8 @@ bool SwapChainPresenter::ReallocateSwapChain(
     const gfx::Size& swap_chain_size,
     bool use_yuv_swap_chain,
     gfx::ProtectedVideoType protected_video_type,
-    bool z_order) {
+    bool z_order,
+    bool content_is_hdr) {
   TRACE_EVENT2("gpu", "SwapChainPresenter::ReallocateSwapChain", "size",
                swap_chain_size.ToString(), "yuv", use_yuv_swap_chain);
 
@@ -1202,8 +1221,17 @@ bool SwapChainPresenter::ReallocateSwapChain(
     }
   }
   if (!is_yuv_swapchain_) {
-    TRACE_EVENT0("gpu", "SwapChainPresenter::ReallocateSwapChain::BGRA");
-    desc.Format = DXGI_FORMAT_B8G8R8A8_UNORM;
+    DXGI_FORMAT dxgi_format;
+    const char* trace_event_text = "";
+    if (content_is_hdr) {
+      dxgi_format = DXGI_FORMAT_R10G10B10A2_UNORM;
+      trace_event_text = "SwapChainPresenter::ReallocateSwapChain::RGB10A2";
+    } else {
+      dxgi_format = DXGI_FORMAT_B8G8R8A8_UNORM;
+      trace_event_text = "SwapChainPresenter::ReallocateSwapChain::BGRA";
+    }
+    TRACE_EVENT0("gpu", trace_event_text);
+    desc.Format = dxgi_format;
     desc.Flags = 0;
     if (IsProtectedVideo(protected_video_type))
       desc.Flags |= DXGI_SWAP_CHAIN_FLAG_DISPLAY_ONLY;
@@ -1217,7 +1245,7 @@ bool SwapChainPresenter::ReallocateSwapChain(
         &swap_chain_);
 
     base::UmaHistogramSparse(kSwapChainCreationResultByFormatUmaPrefix +
-                                 DxgiFormatToString(DXGI_FORMAT_B8G8R8A8_UNORM),
+                                 DxgiFormatToString(dxgi_format),
                              hr);
     base::UmaHistogramSparse(kSwapChainCreationResultByVideoTypeUmaPrefix +
                                  protected_video_type_string,

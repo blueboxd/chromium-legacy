@@ -27,7 +27,7 @@
 #if defined(OS_POSIX)
 #include <errno.h>
 #endif
-#if defined(OS_APPLE)
+#if defined(OS_MAC)
 #include <malloc/malloc.h>
 #include "base/allocator/allocator_interception_mac.h"
 #include "base/allocator/allocator_shim.h"
@@ -55,7 +55,7 @@ typedef BOOL (WINAPI* HeapQueryFn)  \
 
 #endif  // defined(OS_WIN)
 
-#if defined(OS_APPLE)
+#if defined(OS_MAC)
 
 // For the following Mac tests:
 // Note that base::EnableTerminationOnHeapCorruption() is called as part of
@@ -87,10 +87,10 @@ TEST(ProcessMemoryTest, MacTerminateOnHeapCorruption) {
 #endif
 }
 
-#endif  // defined(OS_APPLE)
+#endif  // defined(OS_MAC)
 
 TEST(MemoryTest, AllocatorShimWorking) {
-#if defined(OS_APPLE)
+#if defined(OS_MAC)
 #if BUILDFLAG(USE_ALLOCATOR_SHIM)
   base::allocator::InitializeAllocatorShim();
 #endif
@@ -98,7 +98,7 @@ TEST(MemoryTest, AllocatorShimWorking) {
 #endif
   ASSERT_TRUE(base::allocator::IsAllocatorInitialized());
 
-#if defined(OS_APPLE)
+#if defined(OS_MAC)
   base::allocator::UninterceptMallocZonesForTesting();
 #endif
 }
@@ -143,7 +143,7 @@ class OutOfMemoryTest : public testing::Test {
 class OutOfMemoryDeathTest : public OutOfMemoryTest {
  public:
   void SetUpInDeathAssert() {
-#if defined(OS_APPLE) && BUILDFLAG(USE_ALLOCATOR_SHIM)
+#if defined(OS_MAC) && BUILDFLAG(USE_ALLOCATOR_SHIM)
     base::allocator::InitializeAllocatorShim();
 #endif
 
@@ -155,7 +155,7 @@ class OutOfMemoryDeathTest : public OutOfMemoryTest {
     base::EnableTerminationOnOutOfMemory();
   }
 
-#if defined(OS_APPLE)
+#if defined(OS_MAC)
   void TearDown() override {
     base::allocator::UninterceptMallocZonesForTesting();
   }
@@ -239,7 +239,7 @@ TEST_F(OutOfMemoryDeathTest, NewHandlerGeneratesUnhandledException) {
 
 // OS X and Android have no 2Gb allocation limit.
 // See https://crbug.com/169327.
-#if !defined(OS_APPLE) && !defined(OS_ANDROID)
+#if !defined(OS_MAC) && !defined(OS_ANDROID)
 TEST_F(OutOfMemoryDeathTest, SecurityNew) {
   ASSERT_EXIT({
       SetUpInDeathAssert();
@@ -291,7 +291,7 @@ TEST_F(OutOfMemoryDeathTest, SecurityAlignedRealloc) {
     }, testing::ExitedWithCode(kExitCode), kOomRegex);
 }
 #endif  // defined(OS_WIN)
-#endif  // !defined(OS_APPLE) && !defined(OS_ANDROID)
+#endif  // !defined(OS_MAC) && !defined(OS_ANDROID)
 
 #if defined(OS_LINUX)
 
@@ -353,7 +353,7 @@ TEST_F(OutOfMemoryDeathTest, Posix_memalign) {
 }
 #endif  // defined(OS_POSIX) && !defined(OS_ANDROID)
 
-#if defined(OS_APPLE)
+#if defined(OS_MAC)
 
 // Purgeable zone tests
 
@@ -441,7 +441,7 @@ TEST_F(OutOfMemoryDeathTest, PsychoticallyBigObjCObject) {
 }
 
 #endif  // !ARCH_CPU_64_BITS
-#endif  // OS_MACOSX
+#endif  // OS_MAC
 
 class OutOfMemoryHandledTest : public OutOfMemoryTest {
  public:
@@ -459,7 +459,7 @@ class OutOfMemoryHandledTest : public OutOfMemoryTest {
   }
 
   void TearDown() override {
-#if defined(OS_APPLE)
+#if defined(OS_MAC)
     base::allocator::UninterceptMallocZonesForTesting();
 #endif
   }

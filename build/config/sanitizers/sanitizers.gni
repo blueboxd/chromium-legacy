@@ -201,7 +201,7 @@ assert(!is_cfi || is_clang,
 prebuilt_instrumented_libraries_available =
     is_msan && (msan_track_origins == 0 || msan_track_origins == 2)
 
-if (use_libfuzzer && is_linux) {
+if (use_libfuzzer && (is_linux || is_chromeos)) {
   if (is_asan) {
     # We do leak checking with libFuzzer on Linux. Set is_lsan for code that
     # relies on LEAK_SANITIZER define to avoid false positives.
@@ -228,7 +228,7 @@ assert(!is_debug || !(is_msan || is_ubsan || is_ubsan_null || is_ubsan_vptr),
 assert(!is_hwasan || (is_android && current_cpu == "arm64"),
        "HWASan only supported on Android ARM64 builds.")
 
-assert(!is_msan || (is_linux && current_cpu == "x64"),
+assert(!is_msan || ((is_linux || is_chromeos) && current_cpu == "x64"),
        "MSan currently only works on 64-bit Linux and ChromeOS builds.")
 
 assert(!is_lsan || is_asan, "is_lsan = true requires is_asan = true also.")

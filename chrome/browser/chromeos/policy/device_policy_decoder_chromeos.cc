@@ -904,6 +904,13 @@ void DecodeAutoUpdatePolicies(const em::ChromeDeviceSettingsProto& policy,
                     base::Value(container.device_quick_fix_build_token()),
                     nullptr);
     }
+
+    if (container.has_channel_downgrade_behavior()) {
+      policies->Set(
+          key::kDeviceChannelDowngradeBehavior, POLICY_LEVEL_MANDATORY,
+          POLICY_SCOPE_MACHINE, POLICY_SOURCE_CLOUD,
+          base::Value(container.channel_downgrade_behavior()), nullptr);
+    }
   }
 
   if (policy.has_allow_kiosk_app_control_chrome_version()) {

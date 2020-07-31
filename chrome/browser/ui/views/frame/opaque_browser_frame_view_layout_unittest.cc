@@ -138,13 +138,15 @@ class OpaqueBrowserFrameViewLayoutTest
  protected:
   views::ImageButton* InitWindowCaptionButton(ViewID view_id,
                                               const gfx::Size& size) {
-    views::ImageButton* button = new views::ImageButton(nullptr);
+    auto button = std::make_unique<views::ImageButton>();
     gfx::ImageSkiaRep rep(size, 1.0f);
     gfx::ImageSkia image(rep);
     button->SetImage(views::Button::STATE_NORMAL, &image);
     button->SetID(view_id);
-    root_view_->AddChildView(button);
-    return button;
+
+    // OpaqueBrowserFrameViewLayout requires the id of a view is set before
+    // attaching it to a parent.
+    return root_view_->AddChildView(std::move(button));
   }
 
   void AddWindowTitleIcons() {

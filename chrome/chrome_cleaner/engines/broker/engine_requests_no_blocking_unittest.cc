@@ -34,7 +34,7 @@
 #include "chrome/chrome_cleaner/ipc/mojo_task_runner.h"
 #include "chrome/chrome_cleaner/mojom/engine_file_requests.mojom.h"
 #include "chrome/chrome_cleaner/os/inheritable_event.h"
-#include "chrome/chrome_cleaner/strings/string16_embedded_nulls.h"
+#include "chrome/chrome_cleaner/strings/wstring_embedded_nulls.h"
 #include "chrome/chrome_cleaner/test/test_executables.h"
 #include "chrome/chrome_cleaner/test/test_native_reg_util.h"
 #include "chrome/chrome_cleaner/test/test_scoped_service_handle.h"
@@ -107,7 +107,7 @@ class TestEngineRequestInvoker {
  public:
   TestEngineRequestInvoker(SandboxChildProcess* child_process,
                            const base::FilePath& test_file_path,
-                           const String16EmbeddedNulls& test_native_reg_key,
+                           const WStringEmbeddedNulls& test_native_reg_key,
                            base::ProcessId test_process_id)
       : file_requests_proxy_(child_process->GetFileRequestsProxy()),
         engine_requests_proxy_(child_process->GetEngineRequestsProxy()),
@@ -433,7 +433,7 @@ class TestEngineRequestInvoker {
   scoped_refptr<CleanerEngineRequestsProxy> cleaner_requests_proxy_;
 
   base::FilePath test_file_path_;
-  String16EmbeddedNulls test_native_reg_key_;
+  WStringEmbeddedNulls test_native_reg_key_;
   base::ProcessId test_process_id_;
 };
 
@@ -453,8 +453,8 @@ MULTIPROCESS_TEST_MAIN(EngineRequestsNoBlocking) {
   base::string16 test_native_reg_key_str =
       command_line->GetSwitchValueNative(kTestRegKeySwitch);
   // Include the final null.
-  String16EmbeddedNulls test_native_reg_key(test_native_reg_key_str.data(),
-                                            test_native_reg_key_str.size() + 1);
+  WStringEmbeddedNulls test_native_reg_key(test_native_reg_key_str.data(),
+                                           test_native_reg_key_str.size() + 1);
 
   unsigned test_process_id;
   CHECK(base::StringToUint(

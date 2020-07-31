@@ -1183,7 +1183,7 @@ jumbo_component("base") {
     ]
   }
 
-  if (is_linux) {
+  if (is_linux || is_chromeos) {
     sources += [
       "debug/proc_maps_linux.cc",
       "debug/proc_maps_linux.h",
@@ -1234,7 +1234,7 @@ jumbo_component("base") {
       sources += [ "base_paths_posix.h" ]
     }
 
-    if (is_linux) {
+    if (is_linux || is_chromeos) {
       sources += [
         "base_paths_posix.cc",
         "debug/elf_reader.cc",
@@ -1289,7 +1289,7 @@ jumbo_component("base") {
   # Needed for <atomic> if using newer C++ library than sysroot, except if
   # building inside the cros_sdk environment - use host_toolchain as a
   # more robust check for this.
-  if (!use_sysroot && (is_android || (is_linux && !is_chromecast)) &&
+  if (!use_sysroot && (is_android || ((is_linux || is_chromeos) && !is_chromecast)) &&
       host_toolchain != "//build/toolchain/cros:host") {
     libs += [ "atomic" ]
   }
@@ -1309,15 +1309,15 @@ jumbo_component("base") {
         "allocator/winheap_stubs_win.cc",
         "allocator/winheap_stubs_win.h",
       ]
-    } else if (is_linux && use_allocator == "tcmalloc") {
+    } else if ((is_linux || is_chromeos) && use_allocator == "tcmalloc") {
       sources += [
         "allocator/allocator_shim_default_dispatch_to_tcmalloc.cc",
         "allocator/allocator_shim_override_glibc_weak_symbols.h",
       ]
       deps += [ "//base/allocator:tcmalloc" ]
-    } else if (is_linux && use_allocator == "none") {
+    } else if ((is_linux || is_chromeos) && use_allocator == "none") {
       sources += [ "allocator/allocator_shim_default_dispatch_to_glibc.cc" ]
-    } else if ((is_linux || is_android) && use_allocator == "partition") {
+    } else if ((is_linux || is_chromeos || is_android) && use_allocator == "partition") {
       # Cannot use the same dispatching for host-side binaries.
       if (is_a_target_toolchain) {
         sources += [
@@ -1892,7 +1892,7 @@ jumbo_component("base") {
   }
 
   # Linux.
-  if (is_linux) {
+  if (is_linux || is_chromeos) {
     # TODO(brettw) this will need to be parameterized at some point.
     linux_configs = []
     if (use_glib) {
@@ -3005,7 +3005,7 @@ test("base_unittests") {
     ]
   }
 
-  if (is_linux) {
+  if (is_linux || is_chromeos) {
     sources += [ "debug/proc_maps_linux_unittest.cc" ]
   }
 
@@ -3191,7 +3191,7 @@ test("base_unittests") {
     }
   }
 
-  if (is_fuchsia || is_linux) {
+  if (is_fuchsia || is_linux || is_chromeos) {
     sources += [
       "debug/elf_reader_unittest.cc",
       "debug/test_elf_image_builder.cc",

@@ -511,16 +511,11 @@ RenderViewImpl::~RenderViewImpl() {
 }
 
 /*static*/
-RenderViewImpl* RenderViewImpl::FromWebView(WebView* webview) {
+RenderView* RenderView::FromWebView(blink::WebView* webview) {
   DCHECK(RenderThread::IsMainThread());
   ViewMap* views = g_view_map.Pointer();
   auto it = views->find(webview);
   return it == views->end() ? NULL : it->second;
-}
-
-/*static*/
-RenderView* RenderView::FromWebView(blink::WebView* webview) {
-  return RenderViewImpl::FromWebView(webview);
 }
 
 /*static*/

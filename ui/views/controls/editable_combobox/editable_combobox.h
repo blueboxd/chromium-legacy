@@ -6,7 +6,9 @@
 #define UI_VIEWS_CONTROLS_EDITABLE_COMBOBOX_EDITABLE_COMBOBOX_H_
 
 #include <memory>
+#include <utility>
 
+#include "base/callback.h"
 #include "base/macros.h"
 #include "base/scoped_observer.h"
 #include "base/strings/string16.h"
@@ -32,7 +34,6 @@ class Event;
 
 namespace views {
 class EditableComboboxMenuModel;
-class EditableComboboxListener;
 class EditableComboboxPreTargetHandler;
 class MenuRunner;
 class Textfield;
@@ -80,9 +81,8 @@ class VIEWS_EXPORT EditableCombobox
 
   const gfx::FontList& GetFontList() const;
 
-  // Sets the listener that we will call when a selection is made.
-  void set_listener(EditableComboboxListener* listener) {
-    listener_ = listener;
+  void set_callback(base::RepeatingClosure callback) {
+    content_changed_callback_ = std::move(callback);
   }
 
   // Selects the specified logical text range for the textfield.
@@ -170,8 +170,7 @@ class VIEWS_EXPORT EditableCombobox
   // Set while the drop-down is showing.
   std::unique_ptr<MenuRunner> menu_runner_;
 
-  // Our listener. Not owned. Notified when the selected index changes.
-  EditableComboboxListener* listener_ = nullptr;
+  base::RepeatingClosure content_changed_callback_;
 
   // Whether we are currently showing the passwords for type
   // Type::kPassword.

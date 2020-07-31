@@ -8,9 +8,10 @@
 #include "base/notreached.h"
 #include "base/numerics/safe_conversions.h"
 #include "base/strings/string_util.h"
+#include "chrome/chrome_cleaner/strings/wstring_embedded_nulls.h"
 #include "sandbox/win/src/win_utils.h"
 
-using chrome_cleaner::String16EmbeddedNulls;
+using chrome_cleaner::WStringEmbeddedNulls;
 
 namespace chrome_cleaner_sandbox {
 
@@ -29,8 +30,8 @@ void InitUnicodeString(UNICODE_STRING* unicode_string,
   unicode_string->Buffer = const_cast<wchar_t*>(data->data());
 }
 
-bool ValidateRegistryValueChange(const String16EmbeddedNulls& old_value,
-                                 const String16EmbeddedNulls& new_value) {
+bool ValidateRegistryValueChange(const WStringEmbeddedNulls& old_value,
+                                 const WStringEmbeddedNulls& new_value) {
   size_t new_cursor = 0;
   size_t old_cursor = 0;
   while (new_cursor < new_value.size()) {
@@ -50,14 +51,14 @@ bool ValidateRegistryValueChange(const String16EmbeddedNulls& old_value,
 }
 
 NtRegistryParamError ValidateNtRegistryValue(
-    const String16EmbeddedNulls& param) {
+    const WStringEmbeddedNulls& param) {
   if (param.size() >= kMaxRegistryParamLength)
     return NtRegistryParamError::TooLong;
   return NtRegistryParamError::None;
 }
 
 NtRegistryParamError ValidateNtRegistryNullTerminatedParam(
-    const String16EmbeddedNulls& param) {
+    const WStringEmbeddedNulls& param) {
   if (param.size() == 0)
     return NtRegistryParamError::ZeroLength;
   if (param.size() >= kMaxRegistryParamLength)
@@ -67,13 +68,13 @@ NtRegistryParamError ValidateNtRegistryNullTerminatedParam(
   return NtRegistryParamError::None;
 }
 
-NtRegistryParamError ValidateNtRegistryKey(const String16EmbeddedNulls& key) {
+NtRegistryParamError ValidateNtRegistryKey(const WStringEmbeddedNulls& key) {
   NtRegistryParamError error = ValidateNtRegistryNullTerminatedParam(key);
   if (error != NtRegistryParamError::None)
     return error;
 
   if (key.data()[0] == L'\\') {
-    if (!base::StartsWith(key.CastAsStringPiece16(), L"\\Registry\\",
+    if (!base::StartsWith(key.CastAsWStringPiece(), L"\\Registry\\",
                           base::CompareCase::INSENSITIVE_ASCII)) {
       return NtRegistryParamError::PathOutsideRegistry;
     }
@@ -87,7 +88,7 @@ NtRegistryParamError ValidateNtRegistryKey(const String16EmbeddedNulls& key) {
 }
 
 base::string16 FormatNtRegistryMemberForLogging(
-    const String16EmbeddedNulls& key) {
+    const WStringEmbeddedNulls& key) {
   switch (ValidateNtRegistryKey(key)) {
     case NtRegistryParamError::NullParam:
       return L"(null)";
@@ -97,7 +98,7 @@ base::string16 FormatNtRegistryMemberForLogging(
       return L"(excessively long key)";
     default:
       // Replace null chars with 0s for printing.
-      base::string16 str(key.CastAsStringPiece16());
+      base::string16 str(key.CastAsWStringPiece());
       base::ReplaceChars(str, base::StringPiece16(L"\0", 1), L"\\0", &str);
       return str;
   }
@@ -156,7 +157,7 @@ NTSTATUS NativeCreateKey(HANDLE parent_key,
 }
 
 NTSTATUS NativeOpenKey(HANDLE parent_key,
-                       const String16EmbeddedNulls& key_name,
+                       const WStringEmbeddedNulls& key_name,
                        uint32_t dw_access,
                        HANDLE* out_handle) {
   static NtOpenKeyFunction NtOpenKey = nullptr;
@@ -176,9 +177,9 @@ NTSTATUS NativeOpenKey(HANDLE parent_key,
 }
 
 NTSTATUS NativeSetValueKey(HANDLE key,
-                           const String16EmbeddedNulls& value_name,
+                           const WStringEmbeddedNulls& value_name,
                            ULONG type,
-                           const String16EmbeddedNulls& value) {
+                           const WStringEmbeddedNulls& value) {
   static NtSetValueKeyFunction NtSetValueKey = nullptr;
   if (!NtSetValueKey)
     ResolveNTFunctionPtr("NtSetValueKey", &NtSetValueKey);
@@ -203,9 +204,9 @@ NTSTATUS NativeSetValueKey(HANDLE key,
 }
 
 NTSTATUS NativeQueryValueKey(HANDLE key,
-                             const String16EmbeddedNulls& value_name,
+                             const WStringEmbeddedNulls& value_name,
                              ULONG* out_type,
-                             String16EmbeddedNulls* out_value) {
+                             WStringEmbeddedNulls* out_value) {
   // Figure out a) if the value exists and b) what the type of the value is.
   static NtQueryValueKeyFunction NtQueryValueKey = nullptr;
   if (!NtQueryValueKey)
@@ -267,7 +268,7 @@ NTSTATUS NativeQueryValueKey(HANDLE key,
     const wchar_t* data_start =
         reinterpret_cast<wchar_t*>(reinterpret_cast<BYTE*>(full_information) +
                                    full_information->DataOffset);
-    *out_value = String16EmbeddedNulls(
+    *out_value = WStringEmbeddedNulls(
         data_start, full_information->DataLength / sizeof(wchar_t));
   }
 

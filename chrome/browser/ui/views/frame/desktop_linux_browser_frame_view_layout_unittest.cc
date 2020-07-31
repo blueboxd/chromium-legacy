@@ -151,10 +151,9 @@ class DesktopLinuxBrowserFrameViewLayoutTest : public ChromeViewsTestBase {
 
  protected:
   views::ImageButton* InitWindowCaptionButton(ViewID view_id) {
-    views::ImageButton* button = new views::ImageButton(nullptr);
+    auto button = std::make_unique<views::ImageButton>();
     button->SetID(view_id);
-    root_view_->AddChildView(button);
-    return button;
+    return root_view_->AddChildView(std::move(button));
   }
 
   void ResetNativeNavButtonImagesFromButtonProvider() {

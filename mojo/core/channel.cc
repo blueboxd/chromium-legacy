@@ -448,6 +448,10 @@ std::vector<PlatformHandleInTransit> Channel::Message::TakeHandles() {
   return std::move(handle_vector_);
 }
 
+size_t Channel::Message::NumHandlesForTransit() const {
+  return handle_vector_.size();
+}
+
 // Helper class for managing a Channel's read buffer allocations. This maintains
 // a single contiguous buffer with the layout:
 //

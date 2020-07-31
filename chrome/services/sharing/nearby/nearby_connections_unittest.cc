@@ -13,7 +13,7 @@
 #include "base/run_loop.h"
 #include "base/test/bind_test_util.h"
 #include "base/test/task_environment.h"
-#include "chrome/services/sharing/nearby/test_support/mock_bluetooth_adapter.h"
+#include "chrome/services/sharing/nearby/test_support/fake_adapter.h"
 #include "chrome/services/sharing/nearby/test_support/mock_webrtc_dependencies.h"
 #include "chrome/services/sharing/public/mojom/nearby_decoder.mojom.h"
 #include "mojo/public/cpp/bindings/receiver.h"
@@ -81,7 +81,7 @@ class NearbyConnectionsTest : public testing::Test {
  protected:
   base::test::TaskEnvironment task_environment_;
   mojo::Remote<mojom::NearbyConnections> remote_;
-  bluetooth::MockBluetoothAdapter bluetooth_adapter_;
+  bluetooth::FakeAdapter bluetooth_adapter_;
   sharing::MockWebRtcDependencies webrtc_dependencies_;
   std::unique_ptr<NearbyConnections> nearby_connections_;
   testing::NiceMock<MockServiceController>* service_controller_ptr_;

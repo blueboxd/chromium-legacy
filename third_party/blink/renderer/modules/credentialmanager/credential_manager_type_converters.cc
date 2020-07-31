@@ -24,6 +24,7 @@
 #include "third_party/blink/renderer/modules/credentialmanager/federated_credential.h"
 #include "third_party/blink/renderer/modules/credentialmanager/password_credential.h"
 #include "third_party/blink/renderer/modules/credentialmanager/public_key_credential.h"
+#include "third_party/blink/renderer/platform/bindings/enumeration_base.h"
 
 namespace mojo {
 
@@ -306,8 +307,8 @@ TypeConverter<AuthenticatorSelectionCriteriaPtr,
   mojo_criteria->require_resident_key = criteria->requireResidentKey();
   mojo_criteria->user_verification = UserVerificationRequirement::PREFERRED;
   if (criteria->hasUserVerification()) {
-    mojo_criteria->user_verification =
-        ConvertTo<UserVerificationRequirement>(criteria->userVerification());
+    mojo_criteria->user_verification = ConvertTo<UserVerificationRequirement>(
+        blink::IDLEnumAsString(criteria->userVerification()));
   }
   return mojo_criteria;
 }
@@ -359,8 +360,8 @@ TypeConverter<PublicKeyCredentialDescriptorPtr,
     Convert(const blink::PublicKeyCredentialDescriptor* descriptor) {
   auto mojo_descriptor = PublicKeyCredentialDescriptor::New();
 
-  mojo_descriptor->type =
-      ConvertTo<PublicKeyCredentialType>(descriptor->type());
+  mojo_descriptor->type = ConvertTo<PublicKeyCredentialType>(
+      blink::IDLEnumAsString(descriptor->type()));
   mojo_descriptor->id = ConvertTo<Vector<uint8_t>>(descriptor->id());
   if (descriptor->hasTransports() && !descriptor->transports().IsEmpty()) {
     for (const auto& transport : descriptor->transports()) {
@@ -385,7 +386,8 @@ TypeConverter<PublicKeyCredentialParametersPtr,
               blink::PublicKeyCredentialParameters*>::
     Convert(const blink::PublicKeyCredentialParameters* parameter) {
   auto mojo_parameter = PublicKeyCredentialParameters::New();
-  mojo_parameter->type = ConvertTo<PublicKeyCredentialType>(parameter->type());
+  mojo_parameter->type = ConvertTo<PublicKeyCredentialType>(
+      blink::IDLEnumAsString(parameter->type()));
 
   // A COSEAlgorithmIdentifier's value is a number identifying a cryptographic
   // algorithm. Values are registered in the IANA COSE Algorithms registry.
@@ -577,8 +579,8 @@ TypeConverter<PublicKeyCredentialRequestOptionsPtr,
 
   mojo_options->user_verification = UserVerificationRequirement::PREFERRED;
   if (options->hasUserVerification()) {
-    mojo_options->user_verification =
-        ConvertTo<UserVerificationRequirement>(options->userVerification());
+    mojo_options->user_verification = ConvertTo<UserVerificationRequirement>(
+        blink::IDLEnumAsString(options->userVerification()));
   }
 
   if (options->hasExtensions()) {

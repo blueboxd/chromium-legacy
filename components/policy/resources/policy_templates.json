@@ -934,6 +934,7 @@
         'DeviceQuickFixBuildToken',
         'DeviceMinimumVersion',
         'DeviceMinimumVersionAueMessage',
+        'DeviceChannelDowngradeBehavior',
       ],
     },
     {
@@ -9228,6 +9229,50 @@
       'desc': '''If this policy is set to True and the ChromeOsReleaseChannel policy is not specified then users of the enrolling domain will be allowed to change the release channel of the device. If this policy is set to false the device will be locked in whatever channel it was last set.
 
       The user selected channel will be overridden by the ChromeOsReleaseChannel policy, but if the policy channel is more stable than the one that was installed on the device, then the channel will only switch after the version of the more stable channel reaches a higher version number than the one installed on the device.''',
+    },
+    {
+      'name': 'DeviceChannelDowngradeBehavior',
+      'owners': ['mpolzer@google.com'],
+      'type': 'int-enum',
+      'schema': {
+        'type': 'integer',
+        'enum': [0, 1, 2],
+      },
+      'items': [
+        {
+          'name': 'WaitForVersionCatchUp',
+          'value': 0,
+          'caption': '''Wait for the target channel to catch up on channel downgrade''',
+        },
+        {
+          'name': 'Rollback',
+          'value': 1,
+          'caption': '''Roll back and reset the device on channel downgrade, try to preserve enrollment''',
+        },
+        {
+          'name': 'AllowUserToConfigure',
+          'value': 2,
+          'caption': '''User decides on channel downgrade behavior''',
+        },
+      ],
+      'future_on': ['chrome_os'],
+      'device_only': True,
+      'features': {
+        'dynamic_refresh': True,
+      },
+      'example_value': 0,
+      'id': 757,
+      'caption': '''Channel downgrade behavior''',
+      'tags': [],
+      'desc': '''This policy specifies channel downgrade behavior on enrolled devices. With channel downgrade we mean switching to a more stable channel, e.g. beta to stable.
+
+      The value of this policy affects user-initiated channel downgrades as well as admin initiated channel downgrades.
+
+      On a channel downgrade, the device can either roll back its version and reset or wait for its current (or a higher) version to become available on the channel and receive no update until then.
+
+      If an enrolled user initiates a channel downgrade, they can decide to reset or wait, or the choice is made for them depending on this policy's value. If an admin initiates a channel downgrade via setting <ph name="CHROME_OS_RELEASE_CHANNEL_POLICY_NAME">ChromeOsReleaseChannel</ph>, the device is rolled back on the next update check only if rollback was selected. Otherwise, the device will wait for the target channel to catch up with its current version.
+
+      If unset or invalid, the behavior is the same as for "Wait for target channel to catch up on channel downgrade".''',
     },
     {
       'name': 'DeviceEphemeralUsersEnabled',
@@ -22763,6 +22808,7 @@ The recommended way to configure policy on Windows is via GPO, although provisio
     'HeartbeatFrequency': 'device_heartbeat_settings.heartbeat_frequency',
     'ChromeOsReleaseChannel': 'release_channel.release_channel',
     'ChromeOsReleaseChannelDelegated': 'release_channel.release_channel_delegated',
+    'DeviceChannelDowngradeBehavior': 'auto_update_settings.channel_downgrade_behavior',
     'DeviceAutoUpdateDisabled': 'auto_update_settings.update_disabled',
     'DeviceTargetVersionPrefix': 'auto_update_settings.target_version_prefix',
     'DeviceRollbackToTargetVersion': 'auto_update_settings.rollback_to_target_version',
@@ -23355,6 +23401,6 @@ The recommended way to configure policy on Windows is via GPO, although provisio
   ],
   'placeholders': [],
   'deleted_policy_ids': [412, 476, 546, 562, 569, 578],
-  'highest_id_currently_used': 756,
+  'highest_id_currently_used': 757,
   'highest_atomic_group_id_currently_used': 39
 }

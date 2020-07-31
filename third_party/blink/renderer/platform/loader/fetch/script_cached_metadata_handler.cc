@@ -33,8 +33,8 @@ void ScriptCachedMetadataHandler::SetCachedMetadata(uint32_t data_type_id,
                                                     size_t size) {
   DCHECK(!cached_metadata_);
   // Having been discarded once, the further attempts to overwrite the
-  // CachedMetadata are ignored. This behavior is slightly easier to simulate in
-  // tests. Should happen rarely enough not to affect performance. The
+  // CachedMetadata are ignored. This behavior is necessary to avoid clearing
+  // the disk-based cache every time GetCachedMetadata() returns nullptr. The
   // JSModuleScript behaves similarly by preventing the creation of the code
   // cache.
   if (cached_metadata_discarded_)

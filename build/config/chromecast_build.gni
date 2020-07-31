@@ -47,7 +47,7 @@ declare_args() {
   # True to enable the cast renderer.  It is enabled by default for linux and
   # android audio only builds.
   enable_cast_renderer =
-      is_chromecast && (is_linux || (is_cast_audio_only && is_android))
+      is_chromecast && (is_linux || is_chromeos || (is_cast_audio_only && is_android))
 }
 
 # Configures media options for cast.  See media/media_options.gni
@@ -84,7 +84,7 @@ if (enable_cast_renderer) {
 }
 
 # Assert that Chromecast is being built for a supported platform.
-assert(is_linux || is_android || is_fuchsia || !is_chromecast,
+assert(is_linux || is_chromeos || is_android || is_fuchsia || !is_chromecast,
        "Chromecast builds are not supported on $target_os")
 
 # Assert that is_cast_audio_only and is_cast_desktop_build are both false on a

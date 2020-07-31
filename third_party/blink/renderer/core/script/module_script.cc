@@ -101,7 +101,7 @@ void ModuleScript::Trace(Visitor* visitor) const {
   Script::Trace(visitor);
 }
 
-void ModuleScript::RunScript(LocalFrame* frame, const SecurityOrigin*) {
+void ModuleScript::RunScript(LocalFrame* frame) {
   // We need a HandleScope for the ModuleEvaluationResult that is created
   // in ::ExecuteModule(...).
   ScriptState::Scope scope(SettingsObject()->GetScriptState());

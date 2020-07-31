@@ -7884,5 +7884,14 @@
         "prefs": { "profile.mixed_forms_warnings": {} }
       }
     ]
+  },
+  "DeviceChannelDowngradeBehavior": {
+    "os": ["chromeos"],
+    "policy_pref_mapping_test": [
+      {
+        "policies": { "DeviceChannelDowngradeBehavior": 0 },
+        "prefs": { "cros.system.channelDowngradeBehavior": {} }
+      }
+    ]
   }
 }

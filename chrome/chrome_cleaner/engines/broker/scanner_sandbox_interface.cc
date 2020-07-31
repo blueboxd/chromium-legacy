@@ -563,7 +563,7 @@ uint32_t SandboxOpenReadOnlyRegistry(HANDLE root_key,
 
 uint32_t SandboxNtOpenReadOnlyRegistry(
     HANDLE root_key,
-    const chrome_cleaner::String16EmbeddedNulls& sub_key,
+    const chrome_cleaner::WStringEmbeddedNulls& sub_key,
     uint32_t dw_access,
     HANDLE* registry_handle) {
   if (registry_handle == nullptr) {

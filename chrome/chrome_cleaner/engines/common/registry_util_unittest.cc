@@ -34,7 +34,7 @@
 
 using base::WaitableEvent;
 using chrome_cleaner::MojoTaskRunner;
-using chrome_cleaner::String16EmbeddedNulls;
+using chrome_cleaner::WStringEmbeddedNulls;
 using chrome_cleaner::mojom::TestWindowsHandle;
 
 namespace chrome_cleaner_sandbox {
@@ -271,14 +271,14 @@ TEST(SandboxUtil, HandleWrappingIPC) {
 
 TEST(SandboxUtil, NativeQueryValueKey) {
   std::vector<wchar_t> key_name{L'a', L'b', L'c', L'\0'};
-  String16EmbeddedNulls value_name1{L'f', L'o', L'o', L'1', L'\0'};
-  String16EmbeddedNulls value_name2{L'f', L'o', L'o', L'2', L'\0'};
-  String16EmbeddedNulls value_name3{L'f', L'o', L'o', L'3', L'\0'};
-  String16EmbeddedNulls value_name4{L'f', L'o', L'o', L'4', L'\0'};
-  String16EmbeddedNulls value{L'b', L'a', L'r', L'\0'};
+  WStringEmbeddedNulls value_name1{L'f', L'o', L'o', L'1', L'\0'};
+  WStringEmbeddedNulls value_name2{L'f', L'o', L'o', L'2', L'\0'};
+  WStringEmbeddedNulls value_name3{L'f', L'o', L'o', L'3', L'\0'};
+  WStringEmbeddedNulls value_name4{L'f', L'o', L'o', L'4', L'\0'};
+  WStringEmbeddedNulls value{L'b', L'a', L'r', L'\0'};
 
   struct TestCases {
-    const String16EmbeddedNulls& value_name;
+    const WStringEmbeddedNulls& value_name;
     ULONG reg_type;
   } test_cases[] = {
       {value_name1, REG_SZ},
@@ -300,7 +300,7 @@ TEST(SandboxUtil, NativeQueryValueKey) {
               NativeSetValueKey(subkey_handle, test_case.value_name,
                                 test_case.reg_type, value));
     DWORD actual_reg_type = 0;
-    String16EmbeddedNulls actual_value;
+    WStringEmbeddedNulls actual_value;
     EXPECT_TRUE(NativeQueryValueKey(subkey_handle, test_case.value_name,
                                     &actual_reg_type, &actual_value));
     EXPECT_EQ(test_case.reg_type, actual_reg_type);
@@ -312,43 +312,43 @@ TEST(SandboxUtil, NativeQueryValueKey) {
 }
 
 TEST(SandboxUtil, ValidateRegistryValueChange) {
-  String16EmbeddedNulls eq{L'a', L'b', L'\0', L'c'};
+  WStringEmbeddedNulls eq{L'a', L'b', L'\0', L'c'};
   EXPECT_TRUE(ValidateRegistryValueChange(eq, eq));
 
-  String16EmbeddedNulls subset1{L'a', L'b', L'\0', L'c'};
-  String16EmbeddedNulls subset2{L'a', L'\0', L'c'};
+  WStringEmbeddedNulls subset1{L'a', L'b', L'\0', L'c'};
+  WStringEmbeddedNulls subset2{L'a', L'\0', L'c'};
   EXPECT_TRUE(ValidateRegistryValueChange(subset1, subset2));
 
-  String16EmbeddedNulls prefix1{L'a', L'b', L'\0', L'c'};
-  String16EmbeddedNulls prefix2{L'b', L'\0', L'c'};
+  WStringEmbeddedNulls prefix1{L'a', L'b', L'\0', L'c'};
+  WStringEmbeddedNulls prefix2{L'b', L'\0', L'c'};
   EXPECT_TRUE(ValidateRegistryValueChange(prefix1, prefix2));
 
-  String16EmbeddedNulls suffix1{L'a', L'b', L'\0', L'c'};
-  String16EmbeddedNulls suffix2{L'a', L'b', L'\0'};
+  WStringEmbeddedNulls suffix1{L'a', L'b', L'\0', L'c'};
+  WStringEmbeddedNulls suffix2{L'a', L'b', L'\0'};
   EXPECT_TRUE(ValidateRegistryValueChange(suffix1, suffix2));
 
-  String16EmbeddedNulls empty1{L'a', L'b', L'\0', L'c'};
-  String16EmbeddedNulls empty2;
+  WStringEmbeddedNulls empty1{L'a', L'b', L'\0', L'c'};
+  WStringEmbeddedNulls empty2;
   EXPECT_TRUE(ValidateRegistryValueChange(empty1, empty2));
 
-  String16EmbeddedNulls super_empty1;
-  String16EmbeddedNulls super_empty2{L'a', L'b', L'\0', L'c'};
+  WStringEmbeddedNulls super_empty1;
+  WStringEmbeddedNulls super_empty2{L'a', L'b', L'\0', L'c'};
   EXPECT_FALSE(ValidateRegistryValueChange(super_empty1, super_empty2));
 
-  String16EmbeddedNulls superset1{L'a', L'\0', L'c'};
-  String16EmbeddedNulls superset2{L'a', L'b', L'\0', L'c'};
+  WStringEmbeddedNulls superset1{L'a', L'\0', L'c'};
+  WStringEmbeddedNulls superset2{L'a', L'b', L'\0', L'c'};
   EXPECT_FALSE(ValidateRegistryValueChange(superset1, superset2));
 
-  String16EmbeddedNulls bad_prefix1{L'b', L'\0', L'c'};
-  String16EmbeddedNulls bad_prefix2{L'a', L'b', L'\0', L'c'};
+  WStringEmbeddedNulls bad_prefix1{L'b', L'\0', L'c'};
+  WStringEmbeddedNulls bad_prefix2{L'a', L'b', L'\0', L'c'};
   EXPECT_FALSE(ValidateRegistryValueChange(bad_prefix1, bad_prefix2));
 
-  String16EmbeddedNulls bad_suffix1{L'a', L'b', L'\0'};
-  String16EmbeddedNulls bad_suffix2{L'a', L'b', L'\0', L'c'};
+  WStringEmbeddedNulls bad_suffix1{L'a', L'b', L'\0'};
+  WStringEmbeddedNulls bad_suffix2{L'a', L'b', L'\0', L'c'};
   EXPECT_FALSE(ValidateRegistryValueChange(bad_suffix1, bad_suffix2));
 
-  String16EmbeddedNulls different1{L'a', L'b', L'\0', L'c'};
-  String16EmbeddedNulls different2{L'd', L'e', L'f'};
+  WStringEmbeddedNulls different1{L'a', L'b', L'\0', L'c'};
+  WStringEmbeddedNulls different2{L'd', L'e', L'f'};
   EXPECT_FALSE(ValidateRegistryValueChange(different1, different2));
 }
 
@@ -387,7 +387,7 @@ TEST(SandboxUtil, ValidateFailureOfNtQueryValueKeyOnNull) {
   // behaviour remains consistent.
   std::vector<wchar_t> key_name{L'a', L'b', L'c', L'\0'};
 
-  String16EmbeddedNulls value{L'b', L'a', L'r', L'\0'};
+  WStringEmbeddedNulls value{L'b', L'a', L'r', L'\0'};
 
   ScopedTempRegistryKey temp_key;
 
@@ -399,7 +399,7 @@ TEST(SandboxUtil, ValidateFailureOfNtQueryValueKeyOnNull) {
 
   // Create a default value.
   EXPECT_EQ(STATUS_SUCCESS,
-            NativeSetValueKey(subkey_handle, String16EmbeddedNulls(nullptr),
+            NativeSetValueKey(subkey_handle, WStringEmbeddedNulls(nullptr),
                               REG_SZ, value));
 
   static NtQueryValueKeyFunction NtQueryValueKey = nullptr;

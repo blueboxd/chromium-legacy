@@ -18,6 +18,7 @@
 #include "third_party/blink/renderer/core/html/canvas/image_data.h"
 #include "third_party/blink/renderer/core/html/media/html_video_element.h"
 #include "third_party/blink/renderer/core/offscreencanvas/offscreen_canvas.h"
+#include "third_party/blink/renderer/platform/bindings/enumeration_base.h"
 #include "third_party/blink/renderer/platform/graphics/accelerated_static_bitmap_image.h"
 #include "third_party/blink/renderer/platform/graphics/canvas_color_params.h"
 #include "third_party/blink/renderer/platform/graphics/canvas_resource_provider.h"
@@ -112,7 +113,7 @@ ImageBitmap::ParsedOptions ParseOptions(const ImageBitmapOptions* options,
     } else {
       NOTREACHED()
           << "Invalid ImageBitmap creation attribute colorSpaceConversion: "
-          << options->colorSpaceConversion();
+          << IDLEnumAsString(options->colorSpaceConversion());
     }
   }
 

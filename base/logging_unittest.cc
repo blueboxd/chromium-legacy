@@ -552,9 +552,9 @@ void CheckCrashTestSighandler(int, siginfo_t* info, void* context_ptr) {
   // need the arch-specific boilerplate below, which is inspired by breakpad.
   // At the same time, on OSX, ucontext.h is deprecated but si_addr works fine.
   uintptr_t crash_addr = 0;
-#if defined(OS_APPLE)
+#if defined(OS_MAC)
   crash_addr = reinterpret_cast<uintptr_t>(info->si_addr);
-#else  // OS_POSIX && !OS_MACOSX
+#else  // OS_*
   ucontext_t* context = reinterpret_cast<ucontext_t*>(context_ptr);
 #if defined(ARCH_CPU_X86)
   crash_addr = static_cast<uintptr_t>(context->uc_mcontext.gregs[REG_EIP]);
@@ -565,7 +565,7 @@ void CheckCrashTestSighandler(int, siginfo_t* info, void* context_ptr) {
 #elif defined(ARCH_CPU_ARM64)
   crash_addr = static_cast<uintptr_t>(context->uc_mcontext.pc);
 #endif  // ARCH_*
-#endif  // OS_POSIX && !OS_MACOSX
+#endif  // OS_*
   HANDLE_EINTR(write(g_child_crash_pipe, &crash_addr, sizeof(uintptr_t)));
   _exit(0);
 }

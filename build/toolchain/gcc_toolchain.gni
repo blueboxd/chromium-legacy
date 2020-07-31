@@ -32,7 +32,7 @@ declare_args() {
 
 # When the arg is set via args.gn, it applies to all toolchains. In order to not
 # hit the assert in grit_rule.gni, explicitly disable for host toolchains.
-if (is_linux && target_os == "android") {
+if ((is_linux || is_chromeos) && target_os == "android") {
   enable_resource_whitelist_generation = false
 }
 

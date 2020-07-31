@@ -593,7 +593,7 @@ source_set("weblayer_lib_base") {
     }
   }
 
-  if (is_linux) {
+  if (is_linux || is_chromeos) {
     deps += [
       "//build/config/freetype",
       "//third_party/fontconfig",

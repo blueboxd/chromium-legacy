@@ -124,9 +124,6 @@ class CONTENT_EXPORT RenderViewImpl : public blink::WebViewClient,
       CompositorDependencies* compositor_deps,
       const mojom::CreateViewParams&));
 
-  // Returns the RenderViewImpl containing the given WebView.
-  static RenderViewImpl* FromWebView(blink::WebView* webview);
-
   // Returns the RenderViewImpl for the given routing ID.
   static RenderViewImpl* FromRoutingID(int routing_id);
 

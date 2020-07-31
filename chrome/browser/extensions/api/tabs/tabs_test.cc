@@ -1264,6 +1264,24 @@ IN_PROC_BROWSER_TEST_F(ExtensionTabsTest, MAYBE_FilteredEvents) {
   ASSERT_TRUE(catcher.GetNextResult());
 }
 
+IN_PROC_BROWSER_TEST_F(ExtensionTabsTest, OnBoundsChanged) {
+  extensions::ResultCatcher catcher;
+  ExtensionTestMessageListener listener("ready", true);
+  ASSERT_TRUE(
+      LoadExtension(test_data_dir_.AppendASCII("api_test/windows/bounds")));
+  ASSERT_TRUE(listener.WaitUntilSatisfied());
+
+  gfx::Rect rect = browser()->window()->GetBounds();
+  rect.Inset(10, 10);
+  browser()->window()->SetBounds(rect);
+
+  listener.Reply(base::StringPrintf(
+      R"({"top": %u, "left": %u, "width": %u, "height": %u})", rect.y(),
+      rect.x(), rect.width(), rect.height()));
+
+  ASSERT_TRUE(catcher.GetNextResult());
+}
+
 IN_PROC_BROWSER_TEST_F(ExtensionTabsTest, ExecuteScriptOnDevTools) {
   scoped_refptr<const Extension> extension =
       ExtensionBuilder("Test").AddPermission("tabs").Build();

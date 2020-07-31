@@ -430,7 +430,7 @@ TEST_F(FilePathWatcherTest, WatchDirectory) {
   ASSERT_TRUE(WriteFile(file1, "content v2"));
   VLOG(1) << "Waiting for file1 modification";
   ASSERT_TRUE(WaitForEvents());
-#endif  // !OS_MACOSX
+#endif  // !OS_APPLE
 
   ASSERT_TRUE(base::DeleteFile(file1));
   VLOG(1) << "Waiting for file1 deletion";
@@ -864,7 +864,7 @@ TEST_F(FilePathWatcherTest, DirAttributesChanged) {
   ASSERT_TRUE(ChangeFilePermissions(test_dir1, Execute, true));
 }
 
-#endif  // OS_MACOSX
+#endif  // OS_APPLE
 }  // namespace
 
 }  // namespace base

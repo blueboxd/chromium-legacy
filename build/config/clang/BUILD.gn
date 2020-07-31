@@ -17,7 +17,7 @@ config("find_bad_constructs") {
       "find-bad-constructs",
     ]
 
-    if (is_linux || is_android || is_fuchsia) {
+    if (is_linux || is_chromeos || is_android || is_fuchsia) {
       cflags += [
         "-Xclang",
         "-plugin-arg-find-bad-constructs",

@@ -1009,7 +1009,7 @@ TEST_F(FilePathTest, MatchesExtension) {
 #endif  // FILE_PATH_USES_DRIVE_LETTERS
     { { FPL("/bar/foo.txt.dll"),        FPL(".txt") },                false},
     { { FPL("/bar/foo.txt"),            FPL(".txt") },                true},
-#if defined(OS_WIN) || defined(OS_MACOSX)
+#if defined(OS_WIN) || defined(OS_APPLE)
     // Umlauts A, O, U: direct comparison, and upper case vs. lower case
     { { FPL("foo.\u00E4\u00F6\u00FC"),  FPL(".\u00E4\u00F6\u00FC") }, true},
     { { FPL("foo.\u00C4\u00D6\u00DC"),  FPL(".\u00E4\u00F6\u00FC") }, true},
@@ -1056,7 +1056,7 @@ TEST_F(FilePathTest, CompareIgnoreCase) {
     { { FPL("\u00DF"),                       FPL("\u1E9E") },              -1},
     { { FPL("SS"),                           FPL("\u00DF") },              -1},
     { { FPL("SS"),                           FPL("\u1E9E") },              -1},
-#if defined(OS_WIN) || defined(OS_MACOSX)
+#if defined(OS_WIN) || defined(OS_APPLE)
     // Umlauts A, O, U: direct comparison, and upper case vs. lower case
     { { FPL("\u00E4\u00F6\u00FC"),           FPL("\u00E4\u00F6\u00FC") },   0},
     { { FPL("\u00C4\u00D6\u00DC"),           FPL("\u00E4\u00F6\u00FC") },   0},
@@ -1078,7 +1078,7 @@ TEST_F(FilePathTest, CompareIgnoreCase) {
     { { FPL("a"),                            FPL("\uFF21") },              -1},
     { { FPL("a"),                            FPL("\uFF41") },              -1},
 #endif
-#if defined(OS_MACOSX)
+#if defined(OS_APPLE)
     // Codepoints > 0x1000
     // Georgian letter DON: direct comparison, and upper case vs. lower case
     { { FPL("\u10A3"),                       FPL("\u10A3") },               0},

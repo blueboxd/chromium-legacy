@@ -28,7 +28,7 @@ config("runtime_library") {
   if (!is_mac && !is_ios && sysroot != "") {
     # Pass the sysroot to all C compiler variants, the assembler, and linker.
     sysroot_flags = [ "--sysroot=" + rebase_path(sysroot, root_build_dir) ]
-    if (is_linux) {
+    if (is_linux || is_chromeos) {
       # This is here so that all files get recompiled after a sysroot roll and
       # when turning the sysroot on or off. (defines are passed via the command
       # line, and build system rebuilds things when their commandline

@@ -44,6 +44,7 @@
 #include "third_party/blink/renderer/core/workers/worker_classic_script_loader.h"
 #include "third_party/blink/renderer/core/workers/worker_clients.h"
 #include "third_party/blink/renderer/core/workers/worker_global_scope.h"
+#include "third_party/blink/renderer/platform/bindings/enumeration_base.h"
 #include "third_party/blink/renderer/platform/bindings/exception_state.h"
 #include "third_party/blink/renderer/platform/bindings/script_state.h"
 #include "third_party/blink/renderer/platform/instrumentation/use_counter.h"
@@ -264,7 +265,7 @@ void DedicatedWorker::OnHostCreated(
                   String() /* source_code */, reject_coep_unsafe_none);
     return;
   }
-  NOTREACHED() << "Invalid type: " << options_->type();
+  NOTREACHED() << "Invalid type: " << IDLEnumAsString(options_->type());
 }
 
 void DedicatedWorker::terminate() {

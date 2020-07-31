@@ -1473,7 +1473,7 @@ TEST_F(FieldTrialListTest, CheckReadOnlySharedMemoryRegion) {
       base::ReadOnlySharedMemoryRegion::TakeHandleForSerialization(
           std::move(region))));
 }
-#endif  // !OS_NACL && !OS_FUCHSIA && !(OS_MACOSX && !OS_IOS)
+#endif  // !OS_NACL && !OS_FUCHSIA && !OS_MAC
 
 TEST_F(FieldTrialTest, TestAllParamsToString) {
   std::string exptected_output = "t1.g1:p1/v1/p2/v2";

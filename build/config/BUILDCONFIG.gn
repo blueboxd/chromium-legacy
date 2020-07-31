@@ -356,7 +356,7 @@ if (!is_ios) {
 if (!is_mac && !is_ios) {
   sources_assignment_filter += [ "*.mm" ]
 }
-if (!is_linux) {
+if (!is_linux && !is_chromeos) {
   sources_assignment_filter += [
     "*_linux.h",
     "*_linux.cc",

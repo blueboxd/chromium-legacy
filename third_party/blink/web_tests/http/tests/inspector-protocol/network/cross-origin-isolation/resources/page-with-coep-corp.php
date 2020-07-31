@@ -8,7 +8,6 @@ if (isset($_GET['coop'])) {
   header("Cross-Origin-Opener-Policy: same-origin");
 }
 
-
 if (isset($_GET['coep'])) {
   header("Cross-Origin-Embedder-Policy: require-corp");
 }

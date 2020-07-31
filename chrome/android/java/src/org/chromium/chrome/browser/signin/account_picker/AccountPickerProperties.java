@@ -60,8 +60,8 @@ class AccountPickerProperties {
      * Properties for account row in account picker.
      */
     static class ExistingAccountRowProperties {
-        static final PropertyModel.ReadableObjectPropertyKey<DisplayableProfileData> PROFILE_DATA =
-                new PropertyModel.ReadableObjectPropertyKey<>("profile_data");
+        static final PropertyModel.WritableObjectPropertyKey<DisplayableProfileData> PROFILE_DATA =
+                new PropertyModel.WritableObjectPropertyKey<>("profile_data");
         static final PropertyModel.WritableBooleanPropertyKey IS_SELECTED_ACCOUNT =
                 new PropertyModel.WritableBooleanPropertyKey("is_selected_account");
         static final PropertyModel

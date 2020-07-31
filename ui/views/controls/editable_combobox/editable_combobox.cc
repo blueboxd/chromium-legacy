@@ -5,7 +5,6 @@
 #include "ui/views/controls/editable_combobox/editable_combobox.h"
 
 #include <memory>
-#include <utility>
 #include <vector>
 
 #include "base/bind.h"
@@ -45,7 +44,6 @@
 #include "ui/views/controls/button/button.h"
 #include "ui/views/controls/button/button_controller.h"
 #include "ui/views/controls/combobox/combobox_util.h"
-#include "ui/views/controls/editable_combobox/editable_combobox_listener.h"
 #include "ui/views/controls/menu/menu_config.h"
 #include "ui/views/controls/menu/menu_runner.h"
 #include "ui/views/controls/menu/menu_types.h"
@@ -475,15 +473,15 @@ void EditableCombobox::OnItemSelected(int index) {
 
 void EditableCombobox::HandleNewContent(const base::string16& new_content) {
   DCHECK(GetText() == new_content);
-  // We notify |listener_| before updating |menu_model_|'s items shown. This
+  // We notify |callback_| before updating |menu_model_|'s items shown. This
   // gives the user a chance to modify the ComboboxModel beforehand if they wish
   // to do so.
   // We disable UpdateItemsShown while we notify the listener in case it
   // modifies the ComboboxModel, then calls OnComboboxModelChanged and thus
   // UpdateItemsShown. That way UpdateItemsShown doesn't do its work twice.
-  if (listener_) {
+  if (!content_changed_callback_.is_null()) {
     menu_model_->DisableUpdateItemsShown();
-    listener_->OnContentChanged(this);
+    content_changed_callback_.Run();
     menu_model_->EnableUpdateItemsShown();
   }
   menu_model_->UpdateItemsShown();

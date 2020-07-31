@@ -112,5 +112,9 @@ unsigned int FrameRateToPresentDuration(float frame_rate) {
   // Present duration unit is 100 ns.
   return static_cast<unsigned int>(1.0E7 / frame_rate);
 }
+
+UINT GetOverlaySupportFlags(DXGI_FORMAT format) {
+  return gl::DirectCompositionSurfaceWin::GetOverlaySupportFlags(format);
+}
 #endif  // OS_WIN
 }  // namespace gl

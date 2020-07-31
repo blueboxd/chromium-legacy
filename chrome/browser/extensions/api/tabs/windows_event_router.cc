@@ -241,6 +241,29 @@ void WindowsEventRouter::OnWindowControllerRemoved(
                 window_controller, std::move(args));
 }
 
+void WindowsEventRouter::OnWindowBoundsChanged(
+    WindowController* window_controller) {
+  if (!HasEventListener(windows::OnBoundsChanged::kEventName))
+    return;
+  if (!profile_->IsSameOrParent(window_controller->profile()))
+    return;
+  // Ignore any windows without an associated browser (e.g., AppWindows).
+  if (!window_controller->GetBrowser())
+    return;
+
+  auto args = std::make_unique<base::ListValue>();
+  // Since we don't populate tab info here, the context type doesn't matter.
+  constexpr ExtensionTabUtil::PopulateTabBehavior populate_behavior =
+      ExtensionTabUtil::kDontPopulateTabs;
+  constexpr Feature::Context context_type = Feature::UNSPECIFIED_CONTEXT;
+  args->Append(ExtensionTabUtil::CreateWindowValueForExtension(
+      *window_controller->GetBrowser(), nullptr, populate_behavior,
+      context_type));
+  DispatchEvent(events::WINDOWS_ON_BOUNDS_CHANGED,
+                windows::OnBoundsChanged::kEventName, window_controller,
+                std::move(args));
+}
+
 #if defined(TOOLKIT_VIEWS) && !defined(OS_MAC)
 void WindowsEventRouter::OnNativeFocusChanged(gfx::NativeView focused_now) {
   if (!focused_now)

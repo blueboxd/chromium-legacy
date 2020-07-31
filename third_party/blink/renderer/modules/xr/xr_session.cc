@@ -50,6 +50,7 @@
 #include "third_party/blink/renderer/modules/xr/xr_webgl_layer.h"
 #include "third_party/blink/renderer/modules/xr/xr_world_information.h"
 #include "third_party/blink/renderer/modules/xr/xr_world_tracking_state.h"
+#include "third_party/blink/renderer/platform/bindings/enumeration_base.h"
 #include "third_party/blink/renderer/platform/bindings/v8_throw_exception.h"
 #include "third_party/blink/renderer/platform/geometry/float_point_3d.h"
 #include "third_party/blink/renderer/platform/heap/heap.h"
@@ -182,8 +183,8 @@ Vector<device::mojom::blink::EntityTypeForHitTest> GetEntityTypesForHitTest(
       if (maybe_entity_type) {
         result_set.insert(*maybe_entity_type);
       } else {
-        DVLOG(1) << __func__
-                 << ": entityTypes entry ignored:" << entity_type_string;
+        DVLOG(1) << __func__ << ": entityTypes entry ignored:"
+                 << IDLEnumAsString(entity_type_string);
       }
     }
   } else {

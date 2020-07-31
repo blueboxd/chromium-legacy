@@ -206,7 +206,10 @@ void PrefetchManager::PrefetchUrl(
   request.url = job->url;
   request.site_for_cookies = net::SiteForCookies::FromUrl(info.url);
   request.request_initiator = top_frame_origin;
-  request.referrer = info.url;
+
+  // The prefetch can happen before the referrer policy is known, so use a
+  // conservative one (no-referrer) by default.
+  request.referrer_policy = net::ReferrerPolicy::NO_REFERRER;
 
   request.headers.SetHeader("Purpose", "prefetch");
 

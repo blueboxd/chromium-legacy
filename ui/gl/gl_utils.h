@@ -11,6 +11,10 @@
 #include "build/build_config.h"
 #include "ui/gl/gl_export.h"
 
+#if defined(OS_WIN)
+#include <dxgi1_6.h>
+#endif
+
 #if defined(OS_ANDROID)
 #include "base/files/scoped_file.h"
 #endif
@@ -33,6 +37,8 @@ GL_EXPORT bool AreOverlaysSupportedWin();
 
 // Calculates present during in 100 ns from number of frames per second.
 GL_EXPORT unsigned int FrameRateToPresentDuration(float frame_rate);
+
+GL_EXPORT UINT GetOverlaySupportFlags(DXGI_FORMAT format);
 #endif
 
 }  // namespace gl

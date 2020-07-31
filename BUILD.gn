@@ -42,12 +42,6 @@ declare_args() {
   root_extra_deps = []
 }
 
-# Ninja's console pool
-# https://ninja-build.org/manual.html#_the_literal_console_literal_pool
-pool("console") {
-  depth = 1
-}
-
 if (is_official_build) {
   # An official (maximally optimized!) component (optimized for build times)
   # build doesn't make sense and usually doesn't work.
@@ -319,7 +313,7 @@ group("gn_all") {
     deps += [ "//chrome/browser/browser_switcher/bho:browser_switcher_dlls" ]
   }
 
-  if (is_win || is_linux) {
+  if (is_win || is_linux || is_chromeos) {
     deps += [
       "//tools/traffic_annotation/auditor:traffic_annotation_auditor",
       "//tools/traffic_annotation/auditor:traffic_annotation_auditor_unittests",
@@ -414,7 +408,7 @@ group("gn_all") {
   #       seems currently broken for this platform at the moment, and the
   #       corresponding code build and works on Linux unmodified.
   #       See instructions in the corresponding BUILD.gn.
-  if (is_linux) {
+  if (is_linux || is_chromeos) {
     deps +=
         [ "//third_party/android_crazy_linker:android_crazy_linker_zip_fuzzer" ]
   }
@@ -428,7 +422,7 @@ group("gn_all") {
     ]
   }
 
-  if (is_linux || is_android) {
+  if (is_linux || is_chromeos || is_android) {
     deps += [
       "//third_party/breakpad:breakpad_unittests",
       "//third_party/breakpad:core-2-minidump",
@@ -462,7 +456,7 @@ group("gn_all") {
     ]
   }
 
-  if (is_linux) {
+  if (is_linux || is_chromeos) {
     # The following are definitely linux-only.
     deps += [
       "//chrome:xdg_mime",
@@ -559,7 +553,7 @@ group("gn_all") {
     if (enable_nacl) {
       deps += [ "//components/nacl/loader:nacl_loader_unittests" ]
 
-      if (is_linux) {
+      if (is_linux || is_chromeos) {
         # TODO(dpranke): Figure out what platforms should actually have this.
         deps += [ "//components/nacl/loader:nacl_helper" ]
 
@@ -704,15 +698,15 @@ group("gn_all") {
     deps += [ "//content/browser/bluetooth/tools:bluetooth_metrics_hash" ]
   }
 
-  if (is_win || is_linux) {
+  if (is_win || is_linux || is_chromeos) {
     deps += [ "//mojo" ]
   }
 
-  if (is_mac || is_linux || is_android || is_fuchsia) {
+  if (is_mac || is_linux || is_chromeos || is_android || is_fuchsia) {
     deps += [ "//third_party/perfetto:all" ]
   }
 
-  if (is_win || is_mac || is_linux) {
+  if (is_win || is_mac || is_linux || is_chromeos) {
     deps += [ "//third_party/sqlite:sqlite_shell" ]
   }
 
@@ -758,12 +752,12 @@ group("gn_all") {
       }
       deps += [ "//third_party/libjpeg_turbo:simd_asm" ]
     }
-    if (is_linux && current_toolchain == host_toolchain) {
+    if ((is_linux || is_chromeos) && current_toolchain == host_toolchain) {
       deps += [ "//v8:v8_shell" ]
     }
   }
 
-  if ((is_linux && !is_chromecast) || (is_win && use_libfuzzer) ||
+  if (((is_linux || is_chromeos) && !is_chromecast) || (is_win && use_libfuzzer) ||
       (use_libfuzzer && is_mac)) {
     deps += [
       "//chrome/services/ipp_parser/public/cpp:fuzzers",
@@ -787,7 +781,7 @@ group("gn_all") {
     deps += [ "//native_client_sdk/src:nacl_core_sdk" ]
   }
 
-  if (is_linux && use_ozone) {
+  if ((is_linux || is_chromeos) && use_ozone) {
     deps += [
       "//headless:headless_non_renderer",
       "//headless:headless_tests",
@@ -836,7 +830,7 @@ group("gn_all") {
   deps += [ "//third_party/opencv:opencv_emd_fuzzer" ]
 }
 
-if ((is_linux || is_win) && enable_remoting && !use_ozone) {
+if ((is_linux || is_chromeos || is_win) && enable_remoting && !use_ozone) {
   # This group is used for network annotation check test.
   group("shipped_binaries") {
     deps = [
@@ -1093,7 +1087,7 @@ if (!is_ios) {
       data_deps += [ "//third_party/breakpad:dump_syms($host_toolchain)" ]
     }
 
-    if (is_linux) {
+    if (is_linux || is_chromeos) {
       data_deps += [ "//third_party/breakpad:dump_syms($host_toolchain)" ]
     }
 

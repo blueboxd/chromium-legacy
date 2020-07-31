@@ -32,4 +32,9 @@ avd_settings {
   sdcard {
     size: "1G"
   }
+  # crbug.com/1110997: Disable GLDMA for android-23
+  advanced_features {
+    key: "GLDMA"
+    value: "off"
+  }
 }

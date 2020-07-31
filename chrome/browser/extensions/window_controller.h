@@ -89,6 +89,9 @@ class WindowController {
   // Returns true if the window type of the controller matches the |filter|.
   bool MatchesFilter(TypeFilter filter) const;
 
+  // Notifies that a window's bounds are changed.
+  void NotifyWindowBoundsChanged();
+
  private:
   ui::BaseWindow* window_;
   Profile* profile_;

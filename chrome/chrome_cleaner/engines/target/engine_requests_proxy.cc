@@ -11,7 +11,7 @@
 #include "base/bind.h"
 #include "base/synchronization/waitable_event.h"
 #include "base/win/registry.h"
-#include "chrome/chrome_cleaner/strings/string16_embedded_nulls.h"
+#include "chrome/chrome_cleaner/strings/wstring_embedded_nulls.h"
 #include "mojo/public/cpp/system/platform_handle.h"
 
 namespace chrome_cleaner {
@@ -276,7 +276,7 @@ uint32_t EngineRequestsProxy::OpenReadOnlyRegistry(
 
 uint32_t EngineRequestsProxy::NtOpenReadOnlyRegistry(
     HANDLE root_key,
-    const String16EmbeddedNulls& sub_key,
+    const WStringEmbeddedNulls& sub_key,
     uint32_t dw_access,
     HANDLE* registry_handle) {
   uint32_t return_code;
@@ -431,7 +431,7 @@ MojoCallStatus EngineRequestsProxy::SandboxOpenReadOnlyRegistry(
 
 MojoCallStatus EngineRequestsProxy::SandboxNtOpenReadOnlyRegistry(
     HANDLE root_key,
-    const String16EmbeddedNulls& sub_key,
+    const WStringEmbeddedNulls& sub_key,
     uint32_t dw_access,
     mojom::EngineRequests::SandboxNtOpenReadOnlyRegistryCallback
         result_callback) {

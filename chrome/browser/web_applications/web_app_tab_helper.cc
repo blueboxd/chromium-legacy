@@ -51,6 +51,10 @@ const base::UnguessableToken& WebAppTabHelper::GetAudioFocusGroupIdForTesting()
   return audio_focus_group_id_;
 }
 
+bool WebAppTabHelper::HasLoadedNonAboutBlankPage() const {
+  return has_loaded_non_about_blank_page_;
+}
+
 void WebAppTabHelper::SetAppId(const AppId& app_id) {
   DCHECK(app_id.empty() || provider_->registrar().IsInstalled(app_id));
   if (app_id_ == app_id)
@@ -83,6 +87,9 @@ void WebAppTabHelper::DidFinishNavigation(
     content::NavigationHandle* navigation_handle) {
   if (!navigation_handle->IsInMainFrame() || !navigation_handle->HasCommitted())
     return;
+
+  if (!navigation_handle->GetURL().IsAboutBlank())
+    has_loaded_non_about_blank_page_ = true;
 
   is_error_page_ = navigation_handle->IsErrorPage();
 

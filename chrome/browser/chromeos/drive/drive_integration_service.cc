@@ -26,6 +26,7 @@
 #include "base/timer/timer.h"
 #include "base/unguessable_token.h"
 #include "chrome/browser/browser_process.h"
+#include "chrome/browser/chromeos/drive/drivefs_native_message_host.h"
 #include "chrome/browser/chromeos/drive/file_system_util.h"
 #include "chrome/browser/chromeos/file_manager/path_util.h"
 #include "chrome/browser/chromeos/profiles/profile_helper.h"
@@ -521,6 +522,14 @@ class DriveIntegrationService::DriveFsHolder
   bool IsVerboseLoggingEnabled() override {
     return profile_->GetPrefs()->GetBoolean(
         prefs::kDriveFsEnableVerboseLogging);
+  }
+
+  drivefs::mojom::DriveFsDelegate::ExtensionConnectionStatus ConnectToExtension(
+      drivefs::mojom::ExtensionConnectionParamsPtr params,
+      mojo::PendingReceiver<drivefs::mojom::NativeMessagingPort> port,
+      mojo::PendingRemote<drivefs::mojom::NativeMessagingHost> host) override {
+    return ConnectToDriveFsNativeMessageExtension(
+        profile_, params->extension_id, std::move(port), std::move(host));
   }
 
   Profile* const profile_;

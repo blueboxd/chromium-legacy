@@ -14,6 +14,7 @@
 #include "third_party/blink/renderer/modules/notifications/notification.h"
 #include "third_party/blink/renderer/modules/notifications/timestamp_trigger.h"
 #include "third_party/blink/renderer/modules/vibration/vibration_controller.h"
+#include "third_party/blink/renderer/platform/bindings/enumeration_base.h"
 #include "third_party/blink/renderer/platform/bindings/exception_state.h"
 #include "third_party/blink/renderer/platform/instrumentation/use_counter.h"
 #include "third_party/blink/renderer/platform/wtf/std_lib_extras.h"
@@ -22,7 +23,6 @@
 namespace blink {
 namespace {
 
-// TODO(crbug.com/1092328): Use V8NotificationDirection.
 mojom::blink::NotificationDirection ToDirectionEnumValue(
     const String& direction) {
   if (direction == "ltr")
@@ -128,12 +128,14 @@ mojom::blink::NotificationDataPtr CreateNotificationData(
     notification_action->action = action->action();
     notification_action->title = action->title();
 
-    if (action->type() == "button")
+    if (action->type() == "button") {
       notification_action->type = mojom::blink::NotificationActionType::BUTTON;
-    else if (action->type() == "text")
+    } else if (action->type() == "text") {
       notification_action->type = mojom::blink::NotificationActionType::TEXT;
-    else
-      NOTREACHED() << "Unknown action type: " << action->type();
+    } else {
+      NOTREACHED() << "Unknown action type: "
+                   << IDLEnumAsString(action->type());
+    }
 
     if (!action->placeholder().IsNull() &&
         notification_action->type ==

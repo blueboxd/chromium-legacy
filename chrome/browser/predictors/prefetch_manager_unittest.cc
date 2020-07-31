@@ -144,6 +144,7 @@ TEST_F(PrefetchManagerTest, OneMainFrameUrlOnePrefetch) {
         EXPECT_EQ(request.url, subresource_url);
         EXPECT_TRUE(request.load_flags & net::LOAD_PREFETCH);
 
+        EXPECT_EQ(request.referrer_policy, net::ReferrerPolicy::NO_REFERRER);
         EXPECT_EQ(request.destination,
                   network::mojom::RequestDestination::kScript);
         EXPECT_EQ(

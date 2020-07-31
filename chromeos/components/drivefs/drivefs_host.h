@@ -21,6 +21,8 @@
 #include "chromeos/components/drivefs/mojom/drivefs.mojom.h"
 #include "chromeos/disks/disk_mount_manager.h"
 #include "components/account_id/account_id.h"
+#include "mojo/public/cpp/bindings/pending_receiver.h"
+#include "mojo/public/cpp/bindings/pending_remote.h"
 
 namespace drive {
 class DriveNotificationManager;
@@ -58,6 +60,11 @@ class COMPONENT_EXPORT(DRIVEFS) DriveFsHost {
     virtual base::FilePath GetMyFilesPath() = 0;
     virtual std::string GetLostAndFoundDirectoryName() = 0;
     virtual bool IsVerboseLoggingEnabled() = 0;
+    virtual mojom::DriveFsDelegate::ExtensionConnectionStatus
+    ConnectToExtension(
+        mojom::ExtensionConnectionParamsPtr params,
+        mojo::PendingReceiver<mojom::NativeMessagingPort> port,
+        mojo::PendingRemote<mojom::NativeMessagingHost> host) = 0;
 
    private:
     DISALLOW_COPY_AND_ASSIGN(Delegate);

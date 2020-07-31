@@ -44,16 +44,16 @@ class CleanerEngineRequestsImpl : public mojom::CleanerEngineRequests {
       const base::FilePath& file_name,
       SandboxDeleteFilePostRebootCallback result_callback) override;
   void SandboxNtDeleteRegistryKey(
-      const String16EmbeddedNulls& key,
+      const WStringEmbeddedNulls& key,
       SandboxNtDeleteRegistryKeyCallback result_callback) override;
   void SandboxNtDeleteRegistryValue(
-      const String16EmbeddedNulls& key,
-      const String16EmbeddedNulls& value_name,
+      const WStringEmbeddedNulls& key,
+      const WStringEmbeddedNulls& value_name,
       SandboxNtDeleteRegistryValueCallback result_callback) override;
   void SandboxNtChangeRegistryValue(
-      const String16EmbeddedNulls& key,
-      const String16EmbeddedNulls& value_name,
-      const String16EmbeddedNulls& new_value,
+      const WStringEmbeddedNulls& key,
+      const WStringEmbeddedNulls& value_name,
+      const WStringEmbeddedNulls& new_value,
       SandboxNtChangeRegistryValueCallback result_callback) override;
   void SandboxDeleteService(
       const base::string16& name,
@@ -65,12 +65,12 @@ class CleanerEngineRequestsImpl : public mojom::CleanerEngineRequests {
       SandboxTerminateProcessCallback result_callback) override;
 
  private:
-  bool NtDeleteRegistryKey(const String16EmbeddedNulls& key);
-  bool NtDeleteRegistryValue(const String16EmbeddedNulls& key,
-                             const String16EmbeddedNulls& value_name);
-  bool NtChangeRegistryValue(const String16EmbeddedNulls& key,
-                             const String16EmbeddedNulls& value_name,
-                             const String16EmbeddedNulls& new_value);
+  bool NtDeleteRegistryKey(const WStringEmbeddedNulls& key);
+  bool NtDeleteRegistryValue(const WStringEmbeddedNulls& key,
+                             const WStringEmbeddedNulls& value_name);
+  bool NtChangeRegistryValue(const WStringEmbeddedNulls& key,
+                             const WStringEmbeddedNulls& value_name,
+                             const WStringEmbeddedNulls& new_value);
   bool DeleteService(const base::string16& name);
   bool DeleteTask(const base::string16& name);
   bool TerminateProcess(uint32_t process_id);

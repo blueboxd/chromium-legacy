@@ -194,6 +194,26 @@ TEST_F(ReceiverResponseTest, ParseRpcMessage) {
   EXPECT_EQ(message, response->rpc());
 }
 
+TEST_F(ReceiverResponseTest, ParseRpcMessageWithoutResultField) {
+  const std::string message = "Hello from the Cast Receiver!";
+  std::string rpc_base64;
+  base::Base64Encode(message, &rpc_base64);
+  const std::string response_string =
+      R"({"sessionId": 3345678,
+          "seqNum": 5566,
+          "type": "RPC",
+          "rpc": ")" +
+      rpc_base64 + R"("})";
+
+  auto response = ReceiverResponse::Parse(response_string);
+  ASSERT_TRUE(response);
+  EXPECT_EQ(3345678, response->session_id());
+  EXPECT_EQ(5566, response->sequence_number());
+  ASSERT_TRUE(response->valid());
+  EXPECT_EQ(ResponseType::RPC, response->type());
+  EXPECT_EQ(message, response->rpc());
+}
+
 TEST_F(ReceiverResponseTest, ParseResponseWithNullField) {
   const std::string response_string =
       R"({"sessionId": null,

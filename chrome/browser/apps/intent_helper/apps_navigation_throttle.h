@@ -37,6 +37,7 @@ namespace apps {
 // any handling apps.
 class AppsNavigationThrottle : public content::NavigationThrottle {
  public:
+  using ThrottleCheckResult = content::NavigationThrottle::ThrottleCheckResult;
   // Restricts the amount of apps displayed to the user without the need of a
   // ScrollView.
   enum { kMaxAppResults = 3 };
@@ -88,9 +89,8 @@ class AppsNavigationThrottle : public content::NavigationThrottle {
 
   // content::NavigationHandle overrides
   const char* GetNameForLogging() override;
-  content::NavigationThrottle::ThrottleCheckResult WillStartRequest() override;
-  content::NavigationThrottle::ThrottleCheckResult WillRedirectRequest()
-      override;
+  ThrottleCheckResult WillStartRequest() override;
+  ThrottleCheckResult WillRedirectRequest() override;
 
   // These enums are used to define the buckets for an enumerated UMA histogram
   // and need to be synced with the ArcIntentHandlerAction enum in enums.xml.
@@ -236,12 +236,14 @@ class AppsNavigationThrottle : public content::NavigationThrottle {
   FRIEND_TEST_ALL_PREFIXES(chromeos::ChromeOsAppsNavigationThrottleTest,
                            TestGetDestinationPlatform);
 
-  // Returns whether navigation to |url| was captured by a web app
-  bool CaptureExperimentalTabStripWebAppScopeNavigations(
+  // Returns whether navigation to |url| was captured by a web app and what to
+  // do next if so.
+  base::Optional<ThrottleCheckResult>
+  CaptureExperimentalTabStripWebAppScopeNavigations(
       content::WebContents* web_contents,
       content::NavigationHandle* handle) const;
 
-  content::NavigationThrottle::ThrottleCheckResult HandleRequest();
+  ThrottleCheckResult HandleRequest();
 
   // A reference to the starting GURL.
   GURL starting_url_;

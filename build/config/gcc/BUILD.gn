@@ -59,7 +59,7 @@ config("symbol_visibility_default") {
 # libraries from the current directory. As long as these aren't distributed,
 # this is OK. For these cases use something like this:
 #
-#  if (is_linux && !is_component_build) {
+#  if ((is_linux || is_chromeos) && !is_component_build) {
 #    configs += [ "//build/config/gcc:rpath_for_built_shared_libraries" ]
 #  }
 config("rpath_for_built_shared_libraries") {

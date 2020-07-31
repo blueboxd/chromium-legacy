@@ -273,13 +273,6 @@ IDataObject* OSExchangeDataProviderWin::GetIDataObject(
       data_object();
 }
 
-// static
-IDataObjectAsyncCapability* OSExchangeDataProviderWin::GetIAsyncOperation(
-    const OSExchangeData& data) {
-  return static_cast<const OSExchangeDataProviderWin*>(&data.provider())->
-      async_operation();
-}
-
 OSExchangeDataProviderWin::OSExchangeDataProviderWin(IDataObject* source)
     : data_(new DataObjectImpl()),
       source_object_(source) {

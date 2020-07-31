@@ -37,6 +37,7 @@ class WebAppTabHelper : public WebAppTabHelperBase,
   const AppId& GetAppId() const override;
   void SetAppId(const AppId& app_id) override;
   const base::UnguessableToken& GetAudioFocusGroupIdForTesting() const override;
+  bool HasLoadedNonAboutBlankPage() const override;
 
   // content::WebContentsObserver:
   void ReadyToCommitNavigation(
@@ -86,6 +87,8 @@ class WebAppTabHelper : public WebAppTabHelperBase,
   // The audio focus group id is used to group media sessions together for apps.
   // We store the applied group id locally on the helper for testing.
   base::UnguessableToken audio_focus_group_id_ = base::UnguessableToken::Null();
+
+  bool has_loaded_non_about_blank_page_ = false;
 
   ScopedObserver<AppRegistrar, AppRegistrarObserver> observer_{this};
   WebAppProviderBase* provider_ = nullptr;

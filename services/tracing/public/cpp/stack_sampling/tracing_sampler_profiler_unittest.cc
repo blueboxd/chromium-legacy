@@ -26,7 +26,7 @@
 #include "services/tracing/public/cpp/stack_sampling/loader_lock_sampler_win.h"
 #endif
 
-#if defined(OS_MACOSX) && !defined(OS_IOS)
+#if defined(OS_MAC)
 #include "base/mac/mac_util.h"
 #endif
 
@@ -184,7 +184,7 @@ class TestModule : public base::ModuleCache::Module {
 };
 
 bool ShouldSkipTestForMacOS11() {
-#if defined(OS_MACOSX) && !defined(OS_IOS)
+#if defined(OS_MAC)
   // The sampling profiler does not work on macOS 11 and is disabled.
   // See https://crbug.com/1101399 and https://crbug.com/1098119.
   // DCHECK here so that when the sampling profiler is re-enabled on macOS 11,

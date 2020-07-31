@@ -28,7 +28,7 @@
 #else
 class NSString;
 #endif
-#endif  // OS_MACOSX
+#endif  // OS_APPLE
 
 namespace base {
 

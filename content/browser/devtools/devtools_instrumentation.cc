@@ -191,10 +191,19 @@ void OnNavigationRequestFailed(
                 *status.blocked_by_response_reason))
             .Build();
 
-    blockedByResponseDetails->SetFrame(
+    blockedByResponseDetails->SetBlockedFrame(
         protocol::Audits::AffectedFrame::Create()
             .SetFrameId(ftn->devtools_frame_token().ToString())
             .Build());
+    if (ftn->parent()) {
+      blockedByResponseDetails->SetParentFrame(
+          protocol::Audits::AffectedFrame::Create()
+              .SetFrameId(ftn->parent()
+                              ->frame_tree_node()
+                              ->devtools_frame_token()
+                              .ToString())
+              .Build());
+    }
     issueDetails.SetBlockedByResponseIssueDetails(
         std::move(blockedByResponseDetails));
 

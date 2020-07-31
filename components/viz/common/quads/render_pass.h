@@ -77,6 +77,9 @@ class VIZ_COMMON_EXPORT RenderPassInternal {
   // Generate mipmap for trilinear filtering, applied to render pass' texture.
   bool generate_mipmap = false;
 
+  // Indicates current RenderPass is a color conversion pass.
+  bool is_color_conversion_pass = false;
+
   // If non-empty, the renderer should produce a copy of the render pass'
   // contents as a bitmap, and give a copy of the bitmap to each callback in
   // this list.

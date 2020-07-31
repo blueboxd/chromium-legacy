@@ -26,6 +26,7 @@
 #include "chrome/browser/web_applications/components/app_registrar.h"
 #include "chrome/browser/web_applications/components/web_app_helpers.h"
 #include "chrome/browser/web_applications/components/web_app_provider_base.h"
+#include "chrome/browser/web_applications/components/web_app_tab_helper_base.h"
 #include "chrome/common/chrome_features.h"
 #include "components/page_load_metrics/browser/page_load_metrics_util.h"
 #include "content/public/browser/browser_context.h"
@@ -39,6 +40,8 @@
 #include "url/origin.h"
 
 namespace {
+
+using ThrottleCheckResult = content::NavigationThrottle::ThrottleCheckResult;
 
 // Returns true if |url| is a known and valid redirector that will redirect a
 // navigation elsewhere.
@@ -224,8 +227,7 @@ const char* AppsNavigationThrottle::GetNameForLogging() {
   return "AppsNavigationThrottle";
 }
 
-content::NavigationThrottle::ThrottleCheckResult
-AppsNavigationThrottle::WillStartRequest() {
+ThrottleCheckResult AppsNavigationThrottle::WillStartRequest() {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   starting_url_ = GetStartingGURL(navigation_handle());
   IntentPickerTabHelper::SetShouldShowIcon(
@@ -233,8 +235,7 @@ AppsNavigationThrottle::WillStartRequest() {
   return HandleRequest();
 }
 
-content::NavigationThrottle::ThrottleCheckResult
-AppsNavigationThrottle::WillRedirectRequest() {
+ThrottleCheckResult AppsNavigationThrottle::WillRedirectRequest() {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
 
   // TODO(dominickn): Consider what to do when there is another URL during the
@@ -468,8 +469,7 @@ bool AppsNavigationThrottle::navigate_from_link() const {
   return navigate_from_link_;
 }
 
-content::NavigationThrottle::ThrottleCheckResult
-AppsNavigationThrottle::HandleRequest() {
+ThrottleCheckResult AppsNavigationThrottle::HandleRequest() {
   content::NavigationHandle* handle = navigation_handle();
   // If the navigation won't update the current document, don't check intent for
   // the navigation.
@@ -504,8 +504,10 @@ AppsNavigationThrottle::HandleRequest() {
   if (!ShouldOverrideUrlLoading(starting_url_, url))
     return content::NavigationThrottle::PROCEED;
 
-  if (CaptureExperimentalTabStripWebAppScopeNavigations(web_contents, handle))
-    return content::NavigationThrottle::CANCEL_AND_IGNORE;
+  base::Optional<ThrottleCheckResult> tab_strip_capture =
+      CaptureExperimentalTabStripWebAppScopeNavigations(web_contents, handle);
+  if (tab_strip_capture.has_value())
+    return tab_strip_capture.value();
 
   // Handles apps that are automatically launched and the navigation needs to be
   // cancelled. This only applies on the new intent picker system, because we
@@ -539,16 +541,17 @@ AppsNavigationThrottle::HandleRequest() {
   return content::NavigationThrottle::PROCEED;
 }
 
-bool AppsNavigationThrottle::CaptureExperimentalTabStripWebAppScopeNavigations(
+base::Optional<ThrottleCheckResult>
+AppsNavigationThrottle::CaptureExperimentalTabStripWebAppScopeNavigations(
     content::WebContents* web_contents,
     content::NavigationHandle* handle) const {
   if (!navigate_from_link())
-    return false;
+    return base::nullopt;
 
   if (!base::FeatureList::IsEnabled(features::kDesktopPWAsTabStrip) ||
       !base::FeatureList::IsEnabled(
           features::kDesktopPWAsTabStripLinkCapturing)) {
-    return false;
+    return base::nullopt;
   }
 
   Profile* const profile =
@@ -556,21 +559,30 @@ bool AppsNavigationThrottle::CaptureExperimentalTabStripWebAppScopeNavigations(
   web_app::WebAppProviderBase* provider =
       web_app::WebAppProviderBase::GetProviderBase(profile);
   if (!provider)
-    return false;
+    return base::nullopt;
 
   base::Optional<web_app::AppId> app_id =
       provider->registrar().FindInstalledAppWithUrlInScope(
           handle->GetURL(), /*window_only=*/true);
   if (!app_id)
-    return false;
+    return base::nullopt;
 
   if (!provider->registrar().IsInExperimentalTabbedWindowMode(*app_id))
-    return false;
+    return base::nullopt;
 
   Browser* browser = chrome::FindBrowserWithWebContents(web_contents);
   if (web_app::AppBrowserController::IsForWebAppBrowser(browser, *app_id)) {
     // Already in the app window; navigation already captured.
-    return false;
+    return base::nullopt;
+  }
+
+  // If |web_contents| hasn't loaded yet or has only loaded about:blank we
+  // should reparent it into the app window to avoid leaving behind a blank tab.
+  auto* tab_helper =
+      web_app::WebAppTabHelperBase::FromWebContents(web_contents);
+  if (tab_helper && !tab_helper->HasLoadedNonAboutBlankPage()) {
+    web_app::ReparentWebContentsIntoAppBrowser(web_contents, *app_id);
+    return content::NavigationThrottle::PROCEED;
   }
 
   apps::AppLaunchParams launch_params(
@@ -581,7 +593,7 @@ bool AppsNavigationThrottle::CaptureExperimentalTabStripWebAppScopeNavigations(
   apps::AppServiceProxyFactory::GetForProfile(profile)
       ->BrowserAppLauncher()
       ->LaunchAppWithParams(launch_params);
-  return true;
+  return content::NavigationThrottle::CANCEL_AND_IGNORE;
 }
 
 }  // namespace apps

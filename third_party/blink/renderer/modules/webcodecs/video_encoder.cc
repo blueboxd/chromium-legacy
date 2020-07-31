@@ -32,6 +32,7 @@
 #include "third_party/blink/renderer/core/streams/writable_stream.h"
 #include "third_party/blink/renderer/modules/webcodecs/encoded_video_chunk.h"
 #include "third_party/blink/renderer/modules/webcodecs/encoded_video_metadata.h"
+#include "third_party/blink/renderer/platform/bindings/enumeration_base.h"
 #include "third_party/blink/renderer/platform/bindings/exception_state.h"
 #include "third_party/blink/renderer/platform/bindings/script_state.h"
 #include "third_party/blink/renderer/platform/scheduler/public/thread.h"
@@ -258,7 +259,7 @@ void VideoEncoder::ProcessConfigure(Request* request) {
   }
 
   if (config->hasAcceleration()) {
-    std::string preference = config->acceleration().Utf8();
+    std::string preference = IDLEnumAsString(config->acceleration()).Utf8();
     if (preference == "deny") {
       acc_pref = AccelerationPreference::kDeny;
     } else if (preference == "require") {

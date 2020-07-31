@@ -97,6 +97,10 @@ const struct PatternContentTypeTestCase {
     {{"https://google.com", "cookies"}, {true, ""}},
     {{";", "cookies"}, {false, "Not a valid web address"}},
     {{"*", "cookies"}, {false, "Not a valid web address"}},
+    {{"chrome://test", "popups"}, {false, "Not a valid web address"}},
+    {{"chrome-untrusted://test", "popups"}, {false, "Not a valid web address"}},
+    {{"devtools://devtools", "popups"}, {false, "Not a valid web address"}},
+    {{"chrome-search://search", "popups"}, {false, "Not a valid web address"}},
     {{"http://google.com", "location"}, {false, "Origin must be secure"}},
     {{"http://127.0.0.1", "location"}, {true, ""}},  // Localhost is secure.
     {{"http://[::1]", "location"}, {true, ""}}};

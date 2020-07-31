@@ -30,19 +30,19 @@ header("Cross-Origin-Embedder-Policy: require-corp");
     <iframe src="https://devtools.oopif.test:8443/inspector-protocol/network/cross-origin-isolation/resources/page-with-coep-corp.php?coep&corp=cross-origin">
     </iframe><br/>
     Script CORP None <span id="script-corp-none">not loaded</span>
-    <script src="https://devtools.oopif.test:8443/inspector-protocol/network/cross-origin-isolation/resources/page-with-coep-corp.php" defer>
+    <script src="https://devtools.oopif.test:8443/inspector-protocol/network/cross-origin-isolation/resources/page-with-coep-corp.php?script&" defer>
     </script><br/>
     Script CORP cross origin <span id="script-corp-cross-origin">not loaded</span>
-    <script src="https://devtools.oopif.test:8443/inspector-protocol/network/cross-origin-isolation/resources/page-with-coep-corp.php?corp=cross-origin" defer>
+    <script src="https://devtools.oopif.test:8443/inspector-protocol/network/cross-origin-isolation/resources/page-with-coep-corp.php?script&corp=cross-origin" defer>
     </script>    <br/>
     Script CORP same site <span id="script-corp-same-site">not loaded</span>
-    <script src="https://devtools.oopif.test:8443/inspector-protocol/network/cross-origin-isolation/resources/page-with-coep-corp.php?corp=same-site" defer>
+    <script src="https://devtools.oopif.test:8443/inspector-protocol/network/cross-origin-isolation/resources/page-with-coep-corp.php?script&corp=same-site" defer>
     </script><br/>
     Script CORP same origin <span id="script-corp-same-origin">not loaded</span>
-    <script src="https://devtools.oopif.test:8443/inspector-protocol/network/cross-origin-isolation/resources/page-with-coep-corp.php?corp=same-origin" defer>
+    <script src="https://devtools.oopif.test:8443/inspector-protocol/network/cross-origin-isolation/resources/page-with-coep-corp.php?script&corp=same-origin" defer>
     </script><br/>
     Sandboxed COOP iframe<br/>
-    <iframe src="https://devtools.oopif.test:8443/inspector-protocol/network/cross-origin-isolation/resources/page-with-coep-corp.php&coop">
+    <iframe src="https://devtools.oopif.test:8443/inspector-protocol/network/cross-origin-isolation/resources/page-with-coep-corp.php?coop">
     </iframe><br/>
   </body>
 </html>

@@ -22,8 +22,8 @@
 #include "chrome/chrome_cleaner/engines/target/sandboxed_test_helpers.h"
 #include "chrome/chrome_cleaner/os/pre_fetched_paths.h"
 #include "chrome/chrome_cleaner/os/task_scheduler.h"
-#include "chrome/chrome_cleaner/strings/string16_embedded_nulls.h"
 #include "chrome/chrome_cleaner/strings/string_test_helpers.h"
+#include "chrome/chrome_cleaner/strings/wstring_embedded_nulls.h"
 #include "chrome/chrome_cleaner/test/test_native_reg_util.h"
 #include "chrome/chrome_cleaner/test/test_util.h"
 #include "components/chrome_cleaner/test/test_name_helper.h"
@@ -593,8 +593,8 @@ MULTIPROCESS_TEST_MAIN(NtOpenReadOnlyRegistry) {
   HANDLE reg_handle;
   result = proxy->NtOpenReadOnlyRegistry(
       root_handle,
-      String16EmbeddedNulls(nonexistent_key_with_nulls.data(),
-                            nonexistent_key_with_nulls.size()),
+      WStringEmbeddedNulls(nonexistent_key_with_nulls.data(),
+                           nonexistent_key_with_nulls.size()),
       KEY_READ, &reg_handle);
   if (reg_handle != INVALID_HANDLE_VALUE) {
     LOG(ERROR) << "Got a valid handle when trying to open a fake key.";
@@ -612,7 +612,7 @@ MULTIPROCESS_TEST_MAIN(NtOpenReadOnlyRegistry) {
   std::vector<wchar_t> key_with_nulls = CreateVectorWithNulls(kKeyWithNulls);
   result = proxy->NtOpenReadOnlyRegistry(
       root_handle,
-      String16EmbeddedNulls(key_with_nulls.data(), key_with_nulls.size()),
+      WStringEmbeddedNulls(key_with_nulls.data(), key_with_nulls.size()),
       KEY_READ, &reg_handle);
   if (reg_handle == INVALID_HANDLE_VALUE) {
     LOG(ERROR) << std::hex << "Failed to get a valid registry handle for "
@@ -631,8 +631,8 @@ MULTIPROCESS_TEST_MAIN(NtOpenReadOnlyRegistry) {
                                                 key_with_nulls.end() - 1);
   result = proxy->NtOpenReadOnlyRegistry(
       root_handle,
-      String16EmbeddedNulls(truncated_key_with_nulls.data(),
-                            truncated_key_with_nulls.size()),
+      WStringEmbeddedNulls(truncated_key_with_nulls.data(),
+                           truncated_key_with_nulls.size()),
       KEY_READ, &reg_handle);
   if (reg_handle != INVALID_HANDLE_VALUE) {
     LOG(ERROR) << "Got a valid registry handle for "
@@ -658,7 +658,7 @@ MULTIPROCESS_TEST_MAIN(NtOpenReadOnlyRegistry) {
   full_path.insert(full_path.end(), key_with_nulls.begin(),
                    key_with_nulls.end());
   result = proxy->NtOpenReadOnlyRegistry(
-      nullptr, String16EmbeddedNulls(full_path.data(), full_path.size()),
+      nullptr, WStringEmbeddedNulls(full_path.data(), full_path.size()),
       KEY_READ, &reg_handle);
   if (reg_handle == INVALID_HANDLE_VALUE) {
     LOG(ERROR) << std::hex << "Failed to get a valid registry handle for "
@@ -682,12 +682,12 @@ MULTIPROCESS_TEST_MAIN(NtOpenReadOnlyRegistryNoHangs) {
   HANDLE reg_handle;
   EXPECT_EQ(SandboxErrorCode::INVALID_SUBKEY_STRING,
             proxy->NtOpenReadOnlyRegistry(
-                nullptr, String16EmbeddedNulls(too_long), 0, &reg_handle));
+                nullptr, WStringEmbeddedNulls(too_long), 0, &reg_handle));
 
   child_process->UnbindRequestsRemotes();
 
   EXPECT_EQ(SandboxErrorCode::INTERNAL_ERROR,
-            proxy->NtOpenReadOnlyRegistry(nullptr, String16EmbeddedNulls(), 0,
+            proxy->NtOpenReadOnlyRegistry(nullptr, WStringEmbeddedNulls(), 0,
                                           &reg_handle));
 
   return ::testing::Test::HasNonfatalFailure();

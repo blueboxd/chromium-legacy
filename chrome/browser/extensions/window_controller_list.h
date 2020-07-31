@@ -29,6 +29,7 @@ class WindowControllerList {
 
   void AddExtensionWindow(WindowController* window);
   void RemoveExtensionWindow(WindowController* window);
+  void NotifyWindowBoundsChanged(WindowController* window);
 
   void AddObserver(WindowControllerListObserver* observer);
   void RemoveObserver(WindowControllerListObserver* observer);

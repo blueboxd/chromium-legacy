@@ -480,8 +480,13 @@ void InspectorAuditsAgent::InspectorIssueAdded(InspectorIssue* issue) {
             .setRequest(BuildAffectedRequest(d->request))
             .setReason(BuildBlockedByResponseReason(d->reason))
             .build();
-    if (d->frame) {
-      blockedByResponseDetails->setFrame(BuildAffectedFrame(d->frame));
+    if (d->parentFrame) {
+      blockedByResponseDetails->setParentFrame(
+          BuildAffectedFrame(d->parentFrame));
+    }
+    if (d->blockedFrame) {
+      blockedByResponseDetails->setBlockedFrame(
+          BuildAffectedFrame(d->blockedFrame));
     }
     issueDetails.setBlockedByResponseIssueDetails(
         std::move(blockedByResponseDetails));

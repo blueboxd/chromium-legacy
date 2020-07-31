@@ -29,7 +29,7 @@ class VIEWS_EXPORT ImageButton : public Button {
   // An enum describing the vertical alignment of images on Buttons.
   enum VerticalAlignment { ALIGN_TOP = 0, ALIGN_MIDDLE, ALIGN_BOTTOM };
 
-  explicit ImageButton(ButtonListener* listener);
+  explicit ImageButton(ButtonListener* listener = nullptr);
   ~ImageButton() override;
 
   // Returns the image for a given |state|.

@@ -493,6 +493,8 @@ class BrowserView : public BrowserWindow,
   // views::WidgetObserver:
   void OnWidgetDestroying(views::Widget* widget) override;
   void OnWidgetActivationChanged(views::Widget* widget, bool active) override;
+  void OnWidgetBoundsChanged(views::Widget* widget,
+                             const gfx::Rect& new_bounds) override;
 
   // views::ClientView:
   views::CloseRequestResult OnWindowCloseRequested() override;
@@ -706,6 +708,9 @@ class BrowserView : public BrowserWindow,
   // false otherwise.
   bool ActivateFirstInactiveBubbleForAccessibility();
 
+  // Notifies that window bounds changed to extensions if needed.
+  void TryNotifyWindowBoundsChanged(const gfx::Rect& widget_bounds);
+
   // The BrowserFrame that hosts this view.
   BrowserFrame* frame_ = nullptr;
 
@@ -882,6 +887,9 @@ class BrowserView : public BrowserWindow,
   ScopedObserver<views::Widget, views::WidgetObserver> widget_observer_{this};
 
   bool interactive_resize_in_progress_ = false;
+
+  // The last bounds we notified about in TryNotifyWindowBoundsChanged().
+  gfx::Rect last_widget_bounds_;
 
   std::unique_ptr<AccessibilityFocusHighlight> accessibility_focus_highlight_;
 

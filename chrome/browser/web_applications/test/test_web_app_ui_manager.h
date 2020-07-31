@@ -32,7 +32,8 @@ class TestWebAppUiManager : public WebAppUiManager {
                            const AppId& to_app) override;
   bool CanAddAppToQuickLaunchBar() const override;
   void AddAppToQuickLaunchBar(const AppId& app_id) override;
-  bool IsInAppWindow(content::WebContents* web_contents) const override;
+  bool IsInAppWindow(content::WebContents* web_contents,
+                     const AppId* app_id) const override;
   void NotifyOnAssociatedAppChanged(content::WebContents* web_contents,
                                     const AppId& previous_app_id,
                                     const AppId& new_app_id) const override {}

@@ -29,7 +29,9 @@ void PrunePreScopeNavigationHistory(const GURL& scope,
 // tab's URL in its scope. Does nothing if there is no web app in scope.
 Browser* ReparentWebAppForActiveTab(Browser* browser);
 
-// Reparents |contents| into a new app browser for |app_id|.
+// Reparents |contents| into an app browser for |app_id|.
+// Uses existing app browser if they are in experimental tabbed mode, otherwise
+// creates a new browser window.
 Browser* ReparentWebContentsIntoAppBrowser(content::WebContents* contents,
                                            const AppId& app_id);
 

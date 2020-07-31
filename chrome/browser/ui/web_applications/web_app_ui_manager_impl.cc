@@ -157,10 +157,12 @@ void WebAppUiManagerImpl::AddAppToQuickLaunchBar(const AppId& app_id) {
 #endif  // defined(OS_CHROMEOS)
 }
 
-bool WebAppUiManagerImpl::IsInAppWindow(
-    content::WebContents* web_contents) const {
-  return AppBrowserController::IsForWebAppBrowser(
-      chrome::FindBrowserWithWebContents(web_contents));
+bool WebAppUiManagerImpl::IsInAppWindow(content::WebContents* web_contents,
+                                        const AppId* app_id) const {
+  Browser* browser = chrome::FindBrowserWithWebContents(web_contents);
+  if (app_id)
+    return AppBrowserController::IsForWebAppBrowser(browser, *app_id);
+  return AppBrowserController::IsForWebAppBrowser(browser);
 }
 
 void WebAppUiManagerImpl::NotifyOnAssociatedAppChanged(

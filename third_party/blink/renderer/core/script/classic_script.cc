@@ -18,8 +18,7 @@ void ClassicScript::Trace(Visitor* visitor) const {
   visitor->Trace(script_source_code_);
 }
 
-void ClassicScript::RunScript(LocalFrame* frame,
-                              const SecurityOrigin* security_origin) {
+void ClassicScript::RunScript(LocalFrame* frame) {
   frame->GetScriptController().ExecuteScriptInMainWorld(
       GetScriptSourceCode(), BaseURL(), sanitize_script_errors_,
       FetchOptions());

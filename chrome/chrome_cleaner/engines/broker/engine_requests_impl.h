@@ -12,7 +12,7 @@
 #include "chrome/chrome_cleaner/engines/broker/interface_metadata_observer.h"
 #include "chrome/chrome_cleaner/ipc/mojo_task_runner.h"
 #include "chrome/chrome_cleaner/mojom/engine_requests.mojom.h"
-#include "chrome/chrome_cleaner/strings/string16_embedded_nulls.h"
+#include "chrome/chrome_cleaner/strings/wstring_embedded_nulls.h"
 #include "mojo/public/cpp/bindings/associated_receiver.h"
 #include "mojo/public/cpp/bindings/pending_associated_remote.h"
 
@@ -55,7 +55,7 @@ class EngineRequestsImpl : public mojom::EngineRequests {
       SandboxOpenReadOnlyRegistryCallback result_callback) override;
   void SandboxNtOpenReadOnlyRegistry(
       HANDLE root_key_handle,
-      const String16EmbeddedNulls& sub_key,
+      const WStringEmbeddedNulls& sub_key,
       uint32_t dw_access,
       SandboxNtOpenReadOnlyRegistryCallback result_callback) override;
 
@@ -82,7 +82,7 @@ class EngineRequestsImpl : public mojom::EngineRequests {
       SandboxOpenReadOnlyRegistryCallback result_callback);
   void NtOpenReadOnlyRegistry(
       HANDLE root_key_handle,
-      const String16EmbeddedNulls& sub_key,
+      const WStringEmbeddedNulls& sub_key,
       uint32_t dw_access,
       SandboxNtOpenReadOnlyRegistryCallback result_callback);
 

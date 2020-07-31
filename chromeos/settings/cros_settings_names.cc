@@ -85,6 +85,8 @@ const char kStatsReportingPref[] = "cros.metrics.reportingEnabled";
 
 const char kReleaseChannel[] = "cros.system.releaseChannel";
 const char kReleaseChannelDelegated[] = "cros.system.releaseChannelDelegated";
+const char kDeviceChannelDowngradeBehavior[] =
+    "cros.system.channelDowngradeBehavior";
 
 // A boolean pref that indicates whether OS & firmware version info should be
 // reported along with device policy requests.

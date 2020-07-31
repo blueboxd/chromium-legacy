@@ -474,7 +474,7 @@ TEST_F(ButtonTest, AsButton) {
   LabelButton label_button(nullptr, text);
   EXPECT_TRUE(Button::AsButton(&label_button));
 
-  ImageButton image_button(nullptr);
+  ImageButton image_button;
   EXPECT_TRUE(Button::AsButton(&image_button));
 
   Checkbox checkbox(text);
@@ -486,7 +486,7 @@ TEST_F(ButtonTest, AsButton) {
   MenuButton menu_button(text, nullptr);
   EXPECT_TRUE(Button::AsButton(&menu_button));
 
-  ToggleButton toggle_button(nullptr);
+  ToggleButton toggle_button;
   EXPECT_TRUE(Button::AsButton(&toggle_button));
 
   Label label;

@@ -179,6 +179,10 @@ class AvdConfig(object):
     self._initialized = False
     self._initializer_lock = threading.Lock()
 
+  @property
+  def avd_settings(self):
+    return self._config.avd_settings
+
   def Create(self,
              force=False,
              snapshot=False,
@@ -233,32 +237,31 @@ class AvdConfig(object):
       # Clear out any previous configuration or state from this AVD.
       root_ini = os.path.join(android_avd_home,
                               '%s.ini' % self._config.avd_name)
+      features_ini = os.path.join(self._emulator_home, 'advancedFeatures.ini')
       avd_dir = os.path.join(android_avd_home, '%s.avd' % self._config.avd_name)
       config_ini = os.path.join(avd_dir, 'config.ini')
 
-      if os.path.exists(root_ini):
-        with open(root_ini, 'a') as root_ini_file:
-          root_ini_file.write('path.rel=avd/%s.avd\n' % self._config.avd_name)
+      with ini.update_ini_file(root_ini) as root_ini_contents:
+        root_ini_contents['path.rel'] = 'avd/%s.avd' % self._config.avd_name
 
-      if os.path.exists(config_ini):
-        with open(config_ini) as config_ini_file:
-          config_ini_contents = ini.load(config_ini_file)
-      else:
-        config_ini_contents = {}
-      height = (self._config.avd_settings.screen.height
-                or _DEFAULT_SCREEN_HEIGHT)
-      width = (self._config.avd_settings.screen.width or _DEFAULT_SCREEN_WIDTH)
-      density = (self._config.avd_settings.screen.density
-                 or _DEFAULT_SCREEN_DENSITY)
+      with ini.update_ini_file(features_ini) as features_ini_contents:
+        # features_ini file will not be refreshed by avdmanager during
+        # creation. So explicitly clear its content to exclude any leftover
+        # from previous creation.
+        features_ini_contents.clear()
+        features_ini_contents.update(self.avd_settings.advanced_features)
 
-      config_ini_contents.update({
-          'disk.dataPartition.size': '4G',
-          'hw.lcd.density': density,
-          'hw.lcd.height': height,
-          'hw.lcd.width': width,
-      })
-      with open(config_ini, 'w') as config_ini_file:
-        ini.dump(config_ini_contents, config_ini_file)
+      with ini.update_ini_file(config_ini) as config_ini_contents:
+        height = self.avd_settings.screen.height or _DEFAULT_SCREEN_HEIGHT
+        width = self.avd_settings.screen.width or _DEFAULT_SCREEN_WIDTH
+        density = self.avd_settings.screen.density or _DEFAULT_SCREEN_DENSITY
+
+        config_ini_contents.update({
+            'disk.dataPartition.size': '4G',
+            'hw.lcd.density': density,
+            'hw.lcd.height': height,
+            'hw.lcd.width': width,
+        })
 
       # Start & stop the AVD.
       self._Initialize()
@@ -292,14 +295,13 @@ class AvdConfig(object):
           self._emulator_home,
           'install_mode':
           'copy',
-          'data': [
-              {
-                  'dir': os.path.relpath(avd_dir, self._emulator_home)
-              },
-              {
-                  'file': os.path.relpath(root_ini, self._emulator_home)
-              },
-          ],
+          'data': [{
+              'dir': os.path.relpath(avd_dir, self._emulator_home)
+          }, {
+              'file': os.path.relpath(root_ini, self._emulator_home)
+          }, {
+              'file': os.path.relpath(features_ini, self._emulator_home)
+          }],
       }
 
       logging.info('Creating AVD CIPD package.')
@@ -421,14 +423,14 @@ class AvdConfig(object):
       config_contents = {}
 
     config_contents['hw.sdCard'] = 'true'
-    if self._config.avd_settings.sdcard.size:
+    if self.avd_settings.sdcard.size:
       sdcard_path = os.path.join(avd_dir, 'cr-sdcard.img')
       if not os.path.exists(sdcard_path):
         mksdcard_path = os.path.join(
             os.path.dirname(self._emulator_path), 'mksdcard')
         mksdcard_cmd = [
             mksdcard_path,
-            self._config.avd_settings.sdcard.size,
+            self.avd_settings.sdcard.size,
             sdcard_path,
         ]
         cmd_helper.RunCmd(mksdcard_cmd)

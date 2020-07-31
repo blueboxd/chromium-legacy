@@ -125,7 +125,6 @@ jumbo_component("views") {
     "controls/combobox/combobox_listener.h",
     "controls/combobox/combobox_util.h",
     "controls/editable_combobox/editable_combobox.h",
-    "controls/editable_combobox/editable_combobox_listener.h",
     "controls/focus_ring.h",
     "controls/focusable_border.h",
     "controls/highlight_path_generator.h",

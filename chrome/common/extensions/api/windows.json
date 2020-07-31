@@ -359,6 +359,18 @@
         "parameters": [
           {"type": "integer", "name": "windowId", "minimum": -1, "description": "ID of the newly-focused window."}
         ]
+      },
+      {
+        "name": "onBoundsChanged",
+        "type": "function",
+        "description": "Fired when a window has been resized; this event is only dispatched when the new bounds are committed, and not for in-progress changes.",
+        "parameters": [
+          {
+            "$ref": "Window",
+            "name": "window",
+            "description": "Details of the window. The tabs will not be populated for the window."
+          }
+        ]
       }
     ]
   }

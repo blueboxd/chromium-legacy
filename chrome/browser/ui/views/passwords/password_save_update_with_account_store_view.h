@@ -9,7 +9,6 @@
 #include "chrome/browser/ui/views/passwords/password_bubble_view_base.h"
 #include "ui/views/controls/button/button.h"
 #include "ui/views/controls/combobox/combobox_listener.h"
-#include "ui/views/controls/editable_combobox/editable_combobox_listener.h"
 #include "ui/views/layout/animating_layout_manager.h"
 #include "ui/views/view.h"
 
@@ -34,7 +33,6 @@ class FeaturePromoBubbleView;
 class PasswordSaveUpdateWithAccountStoreView
     : public PasswordBubbleViewBase,
       public views::ButtonListener,
-      public views::EditableComboboxListener,
       public views::ComboboxListener,
       public views::WidgetObserver,
       public views::AnimatingLayoutManager::Observer {
@@ -70,10 +68,6 @@ class PasswordSaveUpdateWithAccountStoreView
   // views::ComboboxListener:
   // Used for the destination combobox.
   void OnPerformAction(views::Combobox* combobox) override;
-
-  // views::EditableComboboxListener:
-  // Used for both the username and password editable comboboxes.
-  void OnContentChanged(views::EditableCombobox* editable_combobox) override;
 
   // views::WidgetObserver:
   void OnWidgetDestroying(views::Widget* widget) override;
@@ -113,6 +107,9 @@ class PasswordSaveUpdateWithAccountStoreView
   void ShowIPH(IPHType type);
 
   void CloseIPHBubbleIfOpen();
+
+  // Used for both the username and password editable comboboxes.
+  void OnContentChanged();
 
   SaveUpdateWithAccountStoreBubbleController controller_;
 

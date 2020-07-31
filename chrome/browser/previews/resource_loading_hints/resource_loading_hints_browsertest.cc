@@ -464,45 +464,6 @@ INSTANTIATE_TEST_SUITE_P(All,
                          ::testing::Values(REGULAR_PAGE, PRELOAD_PAGE));
 
 
-class ResourceLoadingHintsBrowserTestWithExperimentEnabled
-    : public ResourceLoadingHintsBrowserTest {
- public:
-  void InitExtraFeatures() override {
-    feature_list_.InitAndEnableFeatureWithParameters(
-        optimization_guide::features::kOptimizationHintsExperiments,
-        {{optimization_guide::features::kOptimizationHintsExperimentNameParam,
-          optimization_guide::testing::kFooExperimentName}});
-  }
-
- private:
-  base::test::ScopedFeatureList feature_list_;
-};
-
-// First parameter determines the test webpage that should be used.
-INSTANTIATE_TEST_SUITE_P(All,
-                         ResourceLoadingHintsBrowserTestWithExperimentEnabled,
-                         ::testing::Values(REGULAR_PAGE, PRELOAD_PAGE));
-
-
-class ResourceLoadingHintsBrowserTestWithExperimentDisabled
-    : public ResourceLoadingHintsBrowserTest {
- public:
-  void InitExtraFeatures() override {
-    feature_list_.InitAndEnableFeatureWithParameters(
-        optimization_guide::features::kOptimizationHintsExperiments,
-        {{optimization_guide::features::kOptimizationHintsExperimentNameParam,
-          "some_other_experiment"}});
-  }
-
- private:
-  base::test::ScopedFeatureList feature_list_;
-};
-
-// First parameter determines the test webpage that should be used.
-INSTANTIATE_TEST_SUITE_P(All,
-                         ResourceLoadingHintsBrowserTestWithExperimentDisabled,
-                         ::testing::Values(REGULAR_PAGE, PRELOAD_PAGE));
-
 IN_PROC_BROWSER_TEST_P(
     ResourceLoadingHintsBrowserTest,
     DISABLE_ON_WIN_MAC_CHROMEOS(

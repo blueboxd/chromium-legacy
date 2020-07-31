@@ -30,10 +30,8 @@ void RequestAndroidPermissions(
   }
 
   std::vector<int> content_settings_ints;
-  std::transform(content_settings_types.begin(), content_settings_types.end(),
-                 content_settings_ints.begin(), [](ContentSettingsType type) {
-                   return static_cast<int>(type);
-                 });
+  for (auto type : content_settings_types)
+    content_settings_ints.push_back(static_cast<int>(type));
 
   // The callback allocated here will be deleted in the call to OnResult, which
   // is guaranteed to be called.

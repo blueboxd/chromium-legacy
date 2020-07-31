@@ -22,6 +22,7 @@ class WebAppTabHelperBase
 
   virtual const AppId& GetAppId() const = 0;
   virtual void SetAppId(const AppId& app_id) = 0;
+  virtual bool HasLoadedNonAboutBlankPage() const = 0;
 
   virtual const base::UnguessableToken& GetAudioFocusGroupIdForTesting()
       const = 0;

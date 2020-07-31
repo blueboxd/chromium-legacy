@@ -43,7 +43,7 @@ static_library("libevent") {
       "mac/event-config.h",
     ]
     include_dirs = [ "mac" ]
-  } else if (is_linux) {
+  } else if (is_linux || is_chromeos) {
     sources += [
       "epoll.c",
       "linux/config.h",

@@ -399,10 +399,14 @@ PasswordSaveUpdateWithAccountStoreView::PasswordSaveUpdateWithAccountStoreView(
   } else {
     std::unique_ptr<views::EditableCombobox> username_dropdown =
         CreateUsernameEditableCombobox(password_form);
-    username_dropdown->set_listener(this);
+    username_dropdown->set_callback(base::BindRepeating(
+        &PasswordSaveUpdateWithAccountStoreView::OnContentChanged,
+        base::Unretained(this)));
     std::unique_ptr<views::EditableCombobox> password_dropdown =
         CreatePasswordEditableCombobox(password_form, are_passwords_revealed_);
-    password_dropdown->set_listener(this);
+    password_dropdown->set_callback(base::BindRepeating(
+        &PasswordSaveUpdateWithAccountStoreView::OnContentChanged,
+        base::Unretained(this)));
     std::unique_ptr<views::ToggleImageButton> password_view_button =
         CreatePasswordViewButton(this, are_passwords_revealed_);
     // Set up layout:
@@ -507,21 +511,6 @@ void PasswordSaveUpdateWithAccountStoreView::OnPerformAction(
   // if the user changes the destination to account.
   if (currenly_shown_iph_type == IPHType::kFailedReauth)
     CloseIPHBubbleIfOpen();
-}
-
-void PasswordSaveUpdateWithAccountStoreView::OnContentChanged(
-    views::EditableCombobox* editable_combobox) {
-  bool is_update_state_before = controller_.IsCurrentStateUpdate();
-  bool is_ok_button_enabled_before =
-      IsDialogButtonEnabled(ui::DIALOG_BUTTON_OK);
-  UpdateUsernameAndPasswordInModel();
-  // Maybe the buttons should be updated.
-  if (is_update_state_before != controller_.IsCurrentStateUpdate() ||
-      is_ok_button_enabled_before !=
-          IsDialogButtonEnabled(ui::DIALOG_BUTTON_OK)) {
-    UpdateBubbleUIElements();
-    DialogModelChanged();
-  }
 }
 
 void PasswordSaveUpdateWithAccountStoreView::OnWidgetDestroying(
@@ -747,4 +736,18 @@ void PasswordSaveUpdateWithAccountStoreView::CloseIPHBubbleIfOpen() {
   if (!account_storage_promo_)
     return;
   account_storage_promo_->CloseBubble();
+}
+
+void PasswordSaveUpdateWithAccountStoreView::OnContentChanged() {
+  bool is_update_state_before = controller_.IsCurrentStateUpdate();
+  bool is_ok_button_enabled_before =
+      IsDialogButtonEnabled(ui::DIALOG_BUTTON_OK);
+  UpdateUsernameAndPasswordInModel();
+  // Maybe the buttons should be updated.
+  if (is_update_state_before != controller_.IsCurrentStateUpdate() ||
+      is_ok_button_enabled_before !=
+          IsDialogButtonEnabled(ui::DIALOG_BUTTON_OK)) {
+    UpdateBubbleUIElements();
+    DialogModelChanged();
+  }
 }

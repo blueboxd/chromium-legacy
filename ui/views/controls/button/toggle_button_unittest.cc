@@ -19,8 +19,7 @@ namespace views {
 
 class TestToggleButton : public ToggleButton {
  public:
-  explicit TestToggleButton(int* counter)
-      : ToggleButton(nullptr), counter_(counter) {}
+  explicit TestToggleButton(int* counter) : counter_(counter) {}
   ~TestToggleButton() override {
     // Calling SetInkDropMode() in this subclass allows this class's
     // implementation of RemoveInkDropLayer() to be called. The same

@@ -61,7 +61,7 @@ static_library("weblayer_shell_lib") {
     "//weblayer:resources",
   ]
 
-  if (is_linux) {
+  if (is_linux || is_chromeos) {
     deps += [
       "//third_party/fontconfig",
       "//ui/gfx:test_support",
@@ -103,7 +103,7 @@ static_library("weblayer_shell_lib") {
     }
   }
 
-  if (is_linux) {
+  if (is_linux || is_chromeos) {
     deps += [ "//build/config/freetype" ]
   }
 }
@@ -259,7 +259,7 @@ if (is_android) {
           [ "//third_party/crashpad/crashpad/handler:crashpad_handler" ]
     }
 
-    if (is_linux && !is_component_build) {
+    if ((is_linux || is_chromeos) && !is_component_build) {
       # Set rpath to find our own libfreetype even in a non-component build.
       configs += [ "//build/config/gcc:rpath_for_built_shared_libraries" ]
     }

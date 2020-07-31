@@ -292,6 +292,18 @@ bool IsPatternValidForType(const std::string& pattern_string,
   HostContentSettingsMap* map =
       HostContentSettingsMapFactory::GetForProfile(profile);
 
+  // Don't allow patterns for WebUI schemes, even though it's a valid pattern.
+  // WebUI permissions are controlled by ContentSettingsRegistry
+  // WhitelistedSchemes and WebUIAllowlist. Users shouldn't be able to grant
+  // extra permissions or revoke existing permissions.
+  if (pattern.GetScheme() == ContentSettingsPattern::SCHEME_CHROME ||
+      pattern.GetScheme() == ContentSettingsPattern::SCHEME_CHROMEUNTRUSTED ||
+      pattern.GetScheme() == ContentSettingsPattern::SCHEME_DEVTOOLS ||
+      pattern.GetScheme() == ContentSettingsPattern::SCHEME_CHROMESEARCH) {
+    *out_error = l10n_util::GetStringUTF8(IDS_SETTINGS_NOT_VALID_WEB_ADDRESS);
+    return false;
+  }
+
   // Don't allow an input of '*', even though it's a valid pattern. This
   // changes the default setting.
   if (!pattern.IsValid() || pattern == ContentSettingsPattern::Wildcard()) {

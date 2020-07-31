@@ -316,7 +316,7 @@ void EngineRequestsImpl::OpenReadOnlyRegistry(
 
 void EngineRequestsImpl::SandboxNtOpenReadOnlyRegistry(
     HANDLE root_key_handle,
-    const String16EmbeddedNulls& sub_key,
+    const WStringEmbeddedNulls& sub_key,
     uint32_t dw_access,
     SandboxNtOpenReadOnlyRegistryCallback result_callback) {
   base::ThreadPool::PostTask(
@@ -328,7 +328,7 @@ void EngineRequestsImpl::SandboxNtOpenReadOnlyRegistry(
 
 void EngineRequestsImpl::NtOpenReadOnlyRegistry(
     HANDLE root_key_handle,
-    const String16EmbeddedNulls& sub_key,
+    const WStringEmbeddedNulls& sub_key,
     uint32_t dw_access,
     SandboxNtOpenReadOnlyRegistryCallback result_callback) {
   if (metadata_observer_)

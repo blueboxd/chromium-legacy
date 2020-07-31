@@ -153,6 +153,15 @@ class DriveFsHost::MountState : public DriveFsSession,
         additions, removals);
   }
 
+  void ConnectToExtension(
+      mojom::ExtensionConnectionParamsPtr params,
+      mojo::PendingReceiver<mojom::NativeMessagingPort> port,
+      mojo::PendingRemote<mojom::NativeMessagingHost> host,
+      ConnectToExtensionCallback callback) override {
+    std::move(callback).Run(host_->delegate_->ConnectToExtension(
+        std::move(params), std::move(port), std::move(host)));
+  }
+
   // DriveNotificationObserver overrides:
   void OnNotificationReceived(
       const std::map<std::string, int64_t>& invalidations) override {

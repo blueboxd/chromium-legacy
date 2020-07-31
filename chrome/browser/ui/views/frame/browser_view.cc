@@ -33,6 +33,7 @@
 #include "chrome/browser/banners/app_banner_manager.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chrome_notification_types.h"
+#include "chrome/browser/extensions/browser_extension_window_controller.h"
 #include "chrome/browser/extensions/extension_util.h"
 #include "chrome/browser/infobars/infobar_service.h"
 #include "chrome/browser/native_window_notification_source.h"
@@ -1535,6 +1536,14 @@ bool BrowserView::ActivateFirstInactiveBubbleForAccessibility() {
   return false;
 }
 
+void BrowserView::TryNotifyWindowBoundsChanged(const gfx::Rect& widget_bounds) {
+  if (interactive_resize_in_progress_ || last_widget_bounds_ == widget_bounds)
+    return;
+
+  last_widget_bounds_ = widget_bounds;
+  browser()->extension_window_controller()->NotifyWindowBoundsChanged();
+}
+
 void BrowserView::DestroyBrowser() {
   // After this returns other parts of Chrome are going to be shutdown. Close
   // the window now so that we are deleted immediately and aren't left holding
@@ -2499,6 +2508,11 @@ void BrowserView::OnWidgetActivationChanged(views::Widget* widget,
   immersive_mode_controller()->OnWidgetActivationChanged(widget, active);
 }
 
+void BrowserView::OnWidgetBoundsChanged(views::Widget* widget,
+                                        const gfx::Rect& new_bounds) {
+  TryNotifyWindowBoundsChanged(new_bounds);
+}
+
 void BrowserView::OnWindowBeginUserBoundsChange() {
   if (interactive_resize_in_progress_)
     return;
@@ -2511,6 +2525,7 @@ void BrowserView::OnWindowBeginUserBoundsChange() {
 
 void BrowserView::OnWindowEndUserBoundsChange() {
   interactive_resize_in_progress_ = false;
+  TryNotifyWindowBoundsChanged(GetWidget()->GetWindowBoundsInScreen());
 }
 
 void BrowserView::OnWidgetMove() {

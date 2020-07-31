@@ -1095,7 +1095,6 @@ TEST_F(RenderViewImplTest, BeginNavigationForWebUI) {
       network::mojom::WebSandboxFlags::kNone,
       blink::FeaturePolicyFeatureState(),
       blink::AllocateSessionStorageNamespaceId());
-  RenderViewImpl* new_view = RenderViewImpl::FromWebView(new_web_view);
   auto popup_navigation_info = std::make_unique<blink::WebNavigationInfo>();
   popup_navigation_info->url_request = std::move(popup_request);
   popup_navigation_info->frame_type =
@@ -1104,7 +1103,9 @@ TEST_F(RenderViewImplTest, BeginNavigationForWebUI) {
   popup_navigation_info->navigation_policy =
       blink::kWebNavigationPolicyNewForegroundTab;
   render_thread_->sink().ClearMessages();
-  static_cast<RenderFrameImpl*>(new_view->GetMainRenderFrame())
+  RenderFrameImpl::FromWebFrame(new_web_view->MainFrame())
+      ->render_view()
+      ->GetMainRenderFrame()
       ->BeginNavigation(std::move(popup_navigation_info));
   EXPECT_TRUE(frame()->IsURLOpened());
 }

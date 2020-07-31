@@ -292,7 +292,7 @@ void MadvFreeDiscardableMemoryPosix::SetKeepMemoryForTesting(bool keep_memory) {
 
 bool MadvFreeDiscardableMemoryPosix::IsResident() const {
   DFAKE_SCOPED_RECURSIVE_LOCK(thread_collision_warner_);
-#ifdef OS_MACOSX
+#if defined(OS_APPLE)
   std::vector<char> vec(allocated_pages_);
 #else
   std::vector<unsigned char> vec(allocated_pages_);

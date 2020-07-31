@@ -15,14 +15,6 @@
 #include <string>
 #include <vector>
 
-// Win8 SDK compatibility, see http://goo.gl/fufvl for more information.
-// "Note: This interface has been renamed IDataObjectAsyncCapability."
-// If we're building on pre-8 we define it to its old name. It's documented as
-// being binary compatible.
-#ifndef __IDataObjectAsyncCapability_FWD_DEFINED__
-#define IDataObjectAsyncCapability IAsyncOperation
-#endif
-
 #include "base/component_export.h"
 #include "base/macros.h"
 #include "ui/base/dragdrop/os_exchange_data.h"
@@ -126,8 +118,6 @@ class COMPONENT_EXPORT(UI_BASE) OSExchangeDataProviderWin
 
   static DataObjectImpl* GetDataObjectImpl(const OSExchangeData& data);
   static IDataObject* GetIDataObject(const OSExchangeData& data);
-  static IDataObjectAsyncCapability* GetIAsyncOperation(
-      const OSExchangeData& data);
 
   explicit OSExchangeDataProviderWin(IDataObject* source);
   OSExchangeDataProviderWin();

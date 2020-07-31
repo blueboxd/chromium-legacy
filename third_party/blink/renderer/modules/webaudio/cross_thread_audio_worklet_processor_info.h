@@ -7,6 +7,7 @@
 
 #include "third_party/blink/renderer/bindings/modules/v8/v8_audio_param_descriptor.h"
 #include "third_party/blink/renderer/modules/webaudio/audio_worklet_processor_definition.h"
+#include "third_party/blink/renderer/platform/bindings/enumeration_base.h"
 
 namespace blink {
 
@@ -18,7 +19,8 @@ class CrossThreadAudioParamInfo {
 
  public:
   explicit CrossThreadAudioParamInfo(const AudioParamDescriptor* descriptor)
-      : automation_rate_(descriptor->automationRate().IsolatedCopy()),
+      : automation_rate_(
+            IDLEnumAsString(descriptor->automationRate()).IsolatedCopy()),
         default_value_(descriptor->defaultValue()),
         max_value_(descriptor->maxValue()),
         min_value_(descriptor->minValue()),

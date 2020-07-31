@@ -41,6 +41,32 @@ struct PP_PrivateFindResult {
   int length;
 };
 
+typedef enum {
+  PP_PRIVATEFOCUSOBJECT_NONE = 0,
+  PP_PRIVATEFOCUSOBJECT_DOCUMENT = 1,
+  PP_PRIVATEFOCUSOBJECT_LINK = 2,
+  PP_PRIVATEFOCUSOBJECT_HIGHLIGHT = 3,
+  PP_PRIVATEFOCUSOBJECT_TEXT_FIELD = 4,
+  PP_PRIVATEFOCUSOBJECT_LAST = PP_PRIVATEFOCUSOBJECT_TEXT_FIELD
+} PP_PrivateFocusObjectType;
+
+// Represents the information to uniquely identify the focused object
+// in PDF.
+struct PP_PrivateAccessibilityFocusInfo {
+  // Holds the type of the focused object in PDFiumEngine.
+  PP_PrivateFocusObjectType focused_object_type;
+  // Holds the PDF page index in the which the focused annotation is present.
+  // When |focused_object_type| is PP_PRIVATEFOCUSOBJECT_NONE or
+  // PP_PRIVATEFOCUSOBJECT_DOCUMENT then the value of this member shouldn't
+  // be used, set to zero as a sentinel value.
+  uint32_t focused_object_page_index;
+  // Holds the focused annotation's index in page's annotations array.
+  // When |focused_object_type| is PP_PRIVATEFOCUSOBJECT_NONE or
+  // PP_PRIVATEFOCUSOBJECT_DOCUMENT then the value of this member shouldn't
+  // be used, set to zero as a sentinel value.
+  uint32_t focused_annotation_index_in_page;
+};
+
 struct PP_PrivateAccessibilityViewportInfo {
   double zoom;
   double scale;
@@ -50,6 +76,7 @@ struct PP_PrivateAccessibilityViewportInfo {
   uint32_t selection_start_char_index;
   uint32_t selection_end_page_index;
   uint32_t selection_end_char_index;
+  struct PP_PrivateAccessibilityFocusInfo focus_info;
 };
 
 struct PP_PrivateAccessibilityDocInfo {

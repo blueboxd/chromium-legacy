@@ -14,6 +14,7 @@
 #include "third_party/blink/renderer/modules/indexeddb/idb_database.h"
 #include "third_party/blink/renderer/modules/indexeddb/idb_observer_changes.h"
 #include "third_party/blink/renderer/modules/indexeddb/idb_transaction.h"
+#include "third_party/blink/renderer/platform/bindings/enumeration_base.h"
 #include "third_party/blink/renderer/platform/bindings/exception_state.h"
 
 namespace blink {
@@ -68,7 +69,8 @@ void IDBObserver::observe(IDBDatabase* database,
       types[static_cast<size_t>(mojom::IDBOperationType::Clear)] = true;
     } else {
       exception_state.ThrowTypeError(
-          "Unknown operation type in observe options: " + operation_type);
+          "Unknown operation type in observe options: " +
+          IDLEnumAsString(operation_type));
       return;
     }
   }

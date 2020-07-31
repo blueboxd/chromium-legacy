@@ -71,4 +71,8 @@ bool WindowController::MatchesFilter(TypeFilter filter) const {
   return (type & filter) != 0;
 }
 
+void WindowController::NotifyWindowBoundsChanged() {
+  WindowControllerList::GetInstance()->NotifyWindowBoundsChanged(this);
+}
+
 }  // namespace extensions

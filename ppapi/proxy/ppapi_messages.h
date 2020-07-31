@@ -163,6 +163,7 @@ IPC_ENUM_TRAITS_MAX_VALUE(PP_PrivateChoiceFieldType, PP_PRIVATECHOICEFIELD_LAST)
 IPC_ENUM_TRAITS_MIN_MAX_VALUE(PP_PrivateButtonType,
                               PP_PRIVATEBUTTON_FIRST,
                               PP_PRIVATEBUTTON_LAST)
+IPC_ENUM_TRAITS_MAX_VALUE(PP_PrivateFocusObjectType, PP_PRIVATEFOCUSOBJECT_LAST)
 
 IPC_STRUCT_TRAITS_BEGIN(PP_Point)
   IPC_STRUCT_TRAITS_MEMBER(x)
@@ -269,6 +270,12 @@ IPC_STRUCT_TRAITS_BEGIN(PP_PdfPrintSettings_Dev)
   IPC_STRUCT_TRAITS_MEMBER(scale_factor)
 IPC_STRUCT_TRAITS_END()
 
+IPC_STRUCT_TRAITS_BEGIN(PP_PrivateAccessibilityFocusInfo)
+  IPC_STRUCT_TRAITS_MEMBER(focused_object_type)
+  IPC_STRUCT_TRAITS_MEMBER(focused_object_page_index)
+  IPC_STRUCT_TRAITS_MEMBER(focused_annotation_index_in_page)
+IPC_STRUCT_TRAITS_END()
+
 IPC_STRUCT_TRAITS_BEGIN(PP_PrivateAccessibilityViewportInfo)
   IPC_STRUCT_TRAITS_MEMBER(zoom)
   IPC_STRUCT_TRAITS_MEMBER(scale)
@@ -278,6 +285,7 @@ IPC_STRUCT_TRAITS_BEGIN(PP_PrivateAccessibilityViewportInfo)
   IPC_STRUCT_TRAITS_MEMBER(selection_start_char_index)
   IPC_STRUCT_TRAITS_MEMBER(selection_end_page_index)
   IPC_STRUCT_TRAITS_MEMBER(selection_end_char_index)
+  IPC_STRUCT_TRAITS_MEMBER(focus_info)
 IPC_STRUCT_TRAITS_END()
 
 IPC_STRUCT_TRAITS_BEGIN(PP_PrivateAccessibilityDocInfo)

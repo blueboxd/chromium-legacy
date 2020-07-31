@@ -104,11 +104,13 @@ class SwapChainPresenter : public base::PowerObserver {
   bool ReallocateSwapChain(const gfx::Size& swap_chain_size,
                            bool use_yuv_swap_chain,
                            gfx::ProtectedVideoType protected_video_type,
-                           bool z_order);
+                           bool z_order,
+                           bool content_is_hdr);
 
   // Returns true if YUV swap chain should be preferred over BGRA swap chain.
   // This changes over time based on stats recorded in |presentation_history|.
-  bool ShouldUseYUVSwapChain(gfx::ProtectedVideoType protected_video_type);
+  bool ShouldUseYUVSwapChain(gfx::ProtectedVideoType protected_video_type,
+                             bool content_is_hdr);
 
   // Perform a blit using video processor from given input texture to swap chain
   // backbuffer. |input_texture| is the input texture (array), and |input_level|
@@ -120,7 +122,8 @@ class SwapChainPresenter : public base::PowerObserver {
                          UINT input_level,
                          Microsoft::WRL::ComPtr<IDXGIKeyedMutex> keyed_mutex,
                          const gfx::Rect& content_rect,
-                         const gfx::ColorSpace& src_color_space);
+                         const gfx::ColorSpace& src_color_space,
+                         bool content_is_hdr);
 
   // Returns optimal swap chain size for given layer.
   gfx::Size CalculateSwapChainSize(const ui::DCRendererLayerParams& params);

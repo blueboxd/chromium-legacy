@@ -55,7 +55,7 @@ struct DeviceUserDomainJoinState {
 };
 BASE_EXPORT DeviceUserDomainJoinState AreDeviceAndUserJoinedToDomain();
 
-#endif  // OS_MACOSX
+#endif  // OS_APPLE
 
 }  // namespace base
 

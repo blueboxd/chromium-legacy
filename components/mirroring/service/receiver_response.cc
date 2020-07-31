@@ -231,7 +231,9 @@ std::unique_ptr<ReceiverResponse> ReceiverResponse::Parse(
   }
 
   response->type_ = GetResponseType(root_node);
-  response->valid_ = (result == "ok");
+
+  // For backwards compatibility with <= M85, RPC responses lack a result field.
+  response->valid_ = (result == "ok" || response->type_ == ResponseType::RPC);
   if (!response->valid_) {
     response->error_ = ParseError(root_node["error"]);
     return response;

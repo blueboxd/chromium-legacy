@@ -287,10 +287,12 @@ PasswordSaveUpdateView::PasswordSaveUpdateView(
   } else {
     std::unique_ptr<views::EditableCombobox> username_dropdown =
         CreateUsernameEditableCombobox(password_form);
-    username_dropdown->set_listener(this);
+    username_dropdown->set_callback(base::BindRepeating(
+        &PasswordSaveUpdateView::OnContentChanged, base::Unretained(this)));
     std::unique_ptr<views::EditableCombobox> password_dropdown =
         CreatePasswordEditableCombobox(password_form, are_passwords_revealed_);
-    password_dropdown->set_listener(this);
+    password_dropdown->set_callback(base::BindRepeating(
+        &PasswordSaveUpdateView::OnContentChanged, base::Unretained(this)));
 
     std::unique_ptr<views::ToggleImageButton> password_view_button =
         CreatePasswordViewButton(this, are_passwords_revealed_);
@@ -337,37 +339,10 @@ bool PasswordSaveUpdateView::Accept() {
   return true;
 }
 
-void PasswordSaveUpdateView::OnDialogCancelled() {
-  UpdateUsernameAndPasswordInModel();
-  if (is_update_bubble_) {
-    controller_.OnNopeUpdateClicked();
-  } else {
-    controller_.OnNeverForThisSiteClicked();
-  }
-}
-
 void PasswordSaveUpdateView::ButtonPressed(views::Button* sender,
                                            const ui::Event& event) {
   DCHECK(sender == password_view_button_);
   TogglePasswordVisibility();
-}
-
-void PasswordSaveUpdateView::OnContentChanged(
-    views::EditableCombobox* editable_combobox) {
-  bool is_update_state_before = controller_.IsCurrentStateUpdate();
-  bool is_ok_button_enabled_before =
-      IsDialogButtonEnabled(ui::DIALOG_BUTTON_OK);
-  UpdateUsernameAndPasswordInModel();
-  // Maybe the buttons should be updated.
-  if (is_update_state_before != controller_.IsCurrentStateUpdate() ||
-      is_ok_button_enabled_before !=
-          IsDialogButtonEnabled(ui::DIALOG_BUTTON_OK)) {
-    UpdateBubbleUIElements();
-    DialogModelChanged();
-    // TODO(ellyjones): This should not be necessary; DialogModelChanged()
-    // implies a re-layout of the dialog.
-    GetWidget()->GetRootView()->Layout();
-  }
 }
 
 gfx::Size PasswordSaveUpdateView::CalculatePreferredSize() const {
@@ -516,4 +491,29 @@ std::unique_ptr<views::View> PasswordSaveUpdateView::CreateFooterView() {
   label->SetMultiLine(true);
   label->SetHorizontalAlignment(gfx::ALIGN_LEFT);
   return label;
+}
+
+void PasswordSaveUpdateView::OnDialogCancelled() {
+  UpdateUsernameAndPasswordInModel();
+  if (is_update_bubble_)
+    controller_.OnNopeUpdateClicked();
+  else
+    controller_.OnNeverForThisSiteClicked();
+}
+
+void PasswordSaveUpdateView::OnContentChanged() {
+  bool is_update_state_before = controller_.IsCurrentStateUpdate();
+  bool is_ok_button_enabled_before =
+      IsDialogButtonEnabled(ui::DIALOG_BUTTON_OK);
+  UpdateUsernameAndPasswordInModel();
+  // Maybe the buttons should be updated.
+  if (is_update_state_before != controller_.IsCurrentStateUpdate() ||
+      is_ok_button_enabled_before !=
+          IsDialogButtonEnabled(ui::DIALOG_BUTTON_OK)) {
+    UpdateBubbleUIElements();
+    DialogModelChanged();
+    // TODO(ellyjones): This should not be necessary; DialogModelChanged()
+    // implies a re-layout of the dialog.
+    GetWidget()->GetRootView()->Layout();
+  }
 }

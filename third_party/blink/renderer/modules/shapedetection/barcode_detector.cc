@@ -15,6 +15,7 @@
 #include "third_party/blink/renderer/core/html/canvas/canvas_image_source.h"
 #include "third_party/blink/renderer/core/workers/worker_thread.h"
 #include "third_party/blink/renderer/modules/shapedetection/barcode_detector_statics.h"
+#include "third_party/blink/renderer/platform/bindings/enumeration_base.h"
 #include "third_party/blink/renderer/platform/heap/heap.h"
 
 namespace blink {
@@ -72,7 +73,7 @@ BarcodeDetector::BarcodeDetector(ExecutionContext* context,
     // TODO(https://github.com/WICG/shape-detection-api/issues/66):
     // potentially process UNKNOWN as platform-specific formats.
     for (const auto& format_string : options->formats()) {
-      auto format = StringToBarcodeFormat(format_string);
+      auto format = StringToBarcodeFormat(IDLEnumAsString(format_string));
       if (format != shape_detection::mojom::blink::BarcodeFormat::UNKNOWN)
         barcode_detector_options->formats.push_back(format);
     }

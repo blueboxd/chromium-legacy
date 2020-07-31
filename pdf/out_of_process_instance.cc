@@ -813,6 +813,8 @@ void OutOfProcessInstance::SendAccessibilityViewportInfo() {
 
   viewport_info.zoom = zoom_;
   viewport_info.scale = device_scale_;
+  viewport_info.focus_info = {
+      PP_PrivateFocusObjectType::PP_PRIVATEFOCUSOBJECT_NONE, 0, 0};
 
   engine_->GetSelection(&viewport_info.selection_start_page_index,
                         &viewport_info.selection_start_char_index,

@@ -1026,6 +1026,9 @@ IN_PROC_BROWSER_TEST_P(SystemWebAppManagerUninstallBrowserTest, Uninstall) {
   EXPECT_TRUE(GetManager().GetAppIds().empty());
 }
 
+// We only have concrete System Web Apps on Chrome OS.
+#if defined(OS_CHROMEOS)
+
 // Test that all registered System Apps can be re-installed.
 class SystemWebAppManagerUpgradeBrowserTest
     : public SystemWebAppManagerBrowserTest {
@@ -1060,6 +1063,8 @@ IN_PROC_BROWSER_TEST_P(SystemWebAppManagerUpgradeBrowserTest, Upgrade) {
     EXPECT_TRUE(LaunchApp(type));
   }
 }
+
+#endif  // defined(OS_CHROMEOS)
 
 // Tests that SWA-specific data is correctly migrated to Web Apps without
 // Extensions.
@@ -1532,7 +1537,6 @@ INSTANTIATE_TEST_SUITE_P(All,
                                            ProviderType::kWebApps),
                          ProviderTypeParamToString);
 
-// We only have concrete System Web Apps on Chrome OS.
 #if defined(OS_CHROMEOS)
 INSTANTIATE_TEST_SUITE_P(All,
                          SystemWebAppManagerUpgradeBrowserTest,

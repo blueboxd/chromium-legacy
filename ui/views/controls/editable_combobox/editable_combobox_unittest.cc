@@ -9,6 +9,7 @@
 #include <utility>
 #include <vector>
 
+#include "base/callback.h"
 #include "base/macros.h"
 #include "base/strings/string16.h"
 #include "base/strings/stringprintf.h"
@@ -28,7 +29,6 @@
 #include "ui/gfx/geometry/rect.h"
 #include "ui/gfx/render_text.h"
 #include "ui/views/context_menu_controller.h"
-#include "ui/views/controls/editable_combobox/editable_combobox_listener.h"
 #include "ui/views/controls/menu/menu_runner.h"
 #include "ui/views/controls/textfield/textfield.h"
 #include "ui/views/test/menu_test_utils.h"
@@ -42,22 +42,6 @@ namespace {
 
 using base::ASCIIToUTF16;
 using views::test::WaitForMenuClosureAnimation;
-
-class DummyListener : public EditableComboboxListener {
- public:
-  DummyListener() = default;
-  ~DummyListener() override = default;
-  void OnContentChanged(EditableCombobox* editable_combobox) override {
-    change_count_++;
-  }
-
-  int change_count() const { return change_count_; }
-
- private:
-  int change_count_ = 0;
-
-  DISALLOW_COPY_AND_ASSIGN(DummyListener);
-};
 
 // No-op test double of a ContextMenuController
 class TestContextMenuController : public ContextMenuController {
@@ -116,6 +100,9 @@ class EditableComboboxTest : public ViewsTestBase {
                     bool shift = false,
                     bool ctrl_cmd = false);
 
+  int change_count() const { return change_count_; }
+  void OnContentChanged() { ++change_count_; }
+
   // The widget where the control will appear.
   Widget* widget_ = nullptr;
 
@@ -128,8 +115,7 @@ class EditableComboboxTest : public ViewsTestBase {
   // scenarios.
   View* parent_of_combobox_ = nullptr;
 
-  // Listener for our EditableCombobox.
-  std::unique_ptr<DummyListener> listener_;
+  int change_count_ = 0;
 
   std::unique_ptr<ui::test::EventGenerator> event_generator_;
 
@@ -168,8 +154,8 @@ void EditableComboboxTest::InitEditableCombobox(
   combobox_ =
       new EditableCombobox(std::make_unique<ui::SimpleComboboxModel>(items),
                            filter_on_edit, show_on_empty, type);
-  listener_ = std::make_unique<DummyListener>();
-  combobox_->set_listener(listener_.get());
+  combobox_->set_callback(base::BindRepeating(
+      &EditableComboboxTest::OnContentChanged, base::Unretained(this)));
   combobox_->SetID(2);
   dummy_focusable_view_ = new View();
   dummy_focusable_view_->SetFocusBehavior(View::FocusBehavior::ALWAYS);
@@ -714,30 +700,30 @@ TEST_F(EditableComboboxTest, DontShowOnEmpty) {
   ASSERT_EQ(ASCIIToUTF16("item1"), combobox_->GetItemForTest(1));
 }
 
-TEST_F(EditableComboboxTest, NoFilteringNotifiesListener) {
+TEST_F(EditableComboboxTest, NoFilteringNotifiesCallback) {
   std::vector<base::string16> items = {ASCIIToUTF16("item0"),
                                        ASCIIToUTF16("item1")};
   InitEditableCombobox(items, /*filter_on_edit=*/false, /*show_on_empty=*/true);
 
-  ASSERT_EQ(0, listener_->change_count());
+  ASSERT_EQ(0, change_count());
   combobox_->SetText(ASCIIToUTF16("a"));
-  ASSERT_EQ(1, listener_->change_count());
+  ASSERT_EQ(1, change_count());
   combobox_->SetText(ASCIIToUTF16("ab"));
-  ASSERT_EQ(2, listener_->change_count());
+  ASSERT_EQ(2, change_count());
 }
 
-TEST_F(EditableComboboxTest, FilteringNotifiesListener) {
+TEST_F(EditableComboboxTest, FilteringNotifiesCallback) {
   std::vector<base::string16> items = {ASCIIToUTF16("item0"),
                                        ASCIIToUTF16("item1")};
   InitEditableCombobox(items, /*filter_on_edit=*/true, /*show_on_empty=*/true);
 
-  ASSERT_EQ(0, listener_->change_count());
+  ASSERT_EQ(0, change_count());
   combobox_->SetText(ASCIIToUTF16("i"));
-  ASSERT_EQ(1, listener_->change_count());
+  ASSERT_EQ(1, change_count());
   combobox_->SetText(ASCIIToUTF16("ix"));
-  ASSERT_EQ(2, listener_->change_count());
+  ASSERT_EQ(2, change_count());
   combobox_->SetText(ASCIIToUTF16("ixy"));
-  ASSERT_EQ(3, listener_->change_count());
+  ASSERT_EQ(3, change_count());
 }
 
 TEST_F(EditableComboboxTest, PasswordCanBeHiddenAndRevealed) {

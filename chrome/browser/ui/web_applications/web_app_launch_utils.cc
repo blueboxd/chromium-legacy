@@ -10,6 +10,7 @@
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_commands.h"
 #include "chrome/browser/ui/browser_finder.h"
+#include "chrome/browser/ui/browser_list.h"
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/browser/web_applications/components/app_registrar.h"
@@ -31,11 +32,10 @@ bool IsInScope(content::NavigationEntry* entry, const std::string& scope_spec) {
                           base::CompareCase::SENSITIVE);
 }
 
-Browser* ReparentWebContentsWithBrowserCreateParams(
-    content::WebContents* contents,
-    const Browser::CreateParams& browser_params) {
+Browser* ReparentWebContentsIntoAppBrowser(content::WebContents* contents,
+                                           Browser* target_browser) {
+  DCHECK(target_browser->is_type_app());
   Browser* source_browser = chrome::FindBrowserWithWebContents(contents);
-  Browser* target_browser = Browser::Create(browser_params);
 
   TabStripModel* source_tabstrip = source_browser->tab_strip_model();
   // Avoid causing the existing browser window to close if this is the last tab
@@ -118,10 +118,18 @@ Browser* ReparentWebContentsIntoAppBrowser(content::WebContents* contents,
     PrunePreScopeNavigationHistory(*app_scope, contents);
   }
 
-  Browser::CreateParams browser_params(Browser::CreateParams::CreateForApp(
-      GenerateApplicationNameFromAppId(app_id), true /* trusted_source */,
-      gfx::Rect(), profile, true /* user_gesture */));
-  return ReparentWebContentsWithBrowserCreateParams(contents, browser_params);
+  if (registrar.IsInExperimentalTabbedWindowMode(app_id)) {
+    for (Browser* browser : *BrowserList::GetInstance()) {
+      if (AppBrowserController::IsForWebAppBrowser(browser, app_id))
+        return ::ReparentWebContentsIntoAppBrowser(contents, browser);
+    }
+  }
+
+  return ::ReparentWebContentsIntoAppBrowser(
+      contents,
+      Browser::Create(Browser::CreateParams::CreateForApp(
+          GenerateApplicationNameFromAppId(app_id), true /* trusted_source */,
+          gfx::Rect(), profile, true /* user_gesture */)));
 }
 
 Browser* ReparentWebContentsForFocusMode(content::WebContents* contents) {
@@ -134,7 +142,8 @@ Browser* ReparentWebContentsForFocusMode(content::WebContents* contents) {
       GenerateApplicationNameForFocusMode(), true /* trusted_source */,
       gfx::Rect(), profile, true /* user_gesture */));
   browser_params.is_focus_mode = true;
-  return ReparentWebContentsWithBrowserCreateParams(contents, browser_params);
+  return ::ReparentWebContentsIntoAppBrowser(contents,
+                                             Browser::Create(browser_params));
 }
 
 void SetAppPrefsForWebContents(content::WebContents* web_contents) {

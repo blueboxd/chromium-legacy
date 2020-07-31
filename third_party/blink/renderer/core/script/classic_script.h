@@ -34,7 +34,7 @@ class CORE_EXPORT ClassicScript final : public Script {
   mojom::ScriptType GetScriptType() const override {
     return mojom::ScriptType::kClassic;
   }
-  void RunScript(LocalFrame*, const SecurityOrigin*) override;
+  void RunScript(LocalFrame*) override;
   void RunScriptOnWorker(WorkerGlobalScope&) override;
 
   const ScriptSourceCode script_source_code_;

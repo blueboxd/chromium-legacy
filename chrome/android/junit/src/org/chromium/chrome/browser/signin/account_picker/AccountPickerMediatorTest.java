@@ -26,6 +26,7 @@ import org.chromium.chrome.test.util.browser.Features;
 import org.chromium.chrome.test.util.browser.signin.AccountManagerTestRule;
 import org.chromium.components.signin.ProfileDataSource;
 import org.chromium.components.signin.test.util.FakeProfileDataSource;
+import org.chromium.content_public.browser.test.util.TestThreadUtils;
 import org.chromium.ui.modelutil.MVCListAdapter;
 import org.chromium.ui.modelutil.PropertyModel;
 
@@ -38,12 +39,14 @@ public class AccountPickerMediatorTest {
     private static final String ACCOUNT_NAME1 = "test.account1@gmail.com";
     private static final String ACCOUNT_NAME2 = "test.account2@gmail.com";
 
+    private final FakeProfileDataSource mFakeProfileDataSource = new FakeProfileDataSource();
+
     @Rule
     public TestRule mProcessor = new Features.JUnitProcessor();
 
     @Rule
     public final AccountManagerTestRule mAccountManagerTestRule =
-            new AccountManagerTestRule(new FakeProfileDataSource());
+            new AccountManagerTestRule(mFakeProfileDataSource);
 
     @Mock
     private AccountPickerCoordinator.Listener mListenerMock;
@@ -121,6 +124,25 @@ public class AccountPickerMediatorTest {
         checkItemForExistingAccountRow(
                 0, ACCOUNT_NAME1, FULL_NAME1, /* isSelectedAccount= */ false);
         checkItemForExistingAccountRow(1, ACCOUNT_NAME2, "", /* isSelectedAccount= */ true);
+        checkItemForAddAccountRow(2);
+    }
+
+    @Test
+    @Features.DisableFeatures(ChromeFeatureList.MOBILE_IDENTITY_CONSISTENCY)
+    public void testProfileDataUpdateWhenAccountPickerIsShown() {
+        addAccount(ACCOUNT_NAME1, FULL_NAME1);
+        addAccount(ACCOUNT_NAME2, "");
+        mMediator = new AccountPickerMediator(
+                RuntimeEnvironment.application, mModelList, mListenerMock, ACCOUNT_NAME1);
+        String fullName2 = "Full Name2";
+        TestThreadUtils.runOnUiThreadBlocking(() -> {
+            mFakeProfileDataSource.setProfileData(ACCOUNT_NAME2,
+                    new ProfileDataSource.ProfileData(ACCOUNT_NAME2, null, fullName2, null));
+        });
+        // ACCOUNT_NAME1, ACCOUNT_NAME2, ADD_ACCOUNT
+        Assert.assertEquals(3, mModelList.size());
+        checkItemForExistingAccountRow(0, ACCOUNT_NAME1, FULL_NAME1, /* isSelectedAccount= */ true);
+        checkItemForExistingAccountRow(1, ACCOUNT_NAME2, fullName2, /* isSelectedAccount= */ false);
         checkItemForAddAccountRow(2);
     }
 

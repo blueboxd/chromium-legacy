@@ -126,7 +126,7 @@ void ConditionVariable::TimedWait(const TimeDelta& max_time) {
 #else
   int rv = pthread_cond_timedwait(&condition_, user_mutex_, &absolute_time);
 #endif  // OS_ANDROID && HAVE_PTHREAD_COND_TIMEDWAIT_MONOTONIC
-#endif  // OS_MACOSX
+#endif  // OS_APPLE
 
   // On failure, we only expect the CV to timeout. Any other error value means
   // that we've unexpectedly woken up.

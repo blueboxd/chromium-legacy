@@ -9,7 +9,7 @@ if (!defined(is_wasm)) {
   is_wasm = current_os == "wasm"
 }
 
-assert(is_linux || is_wasm)
+assert(is_linux || is_chromeos || is_wasm)
 
 source_set("caspian-lib") {
   sources = [

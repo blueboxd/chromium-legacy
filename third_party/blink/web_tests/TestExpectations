@@ -1217,13 +1217,7 @@ virtual/layout_ng_fragment_traversal/external/wpt/css/CSS2/text/* [ Skip ]
 
 # Fieldset in NG
 #
-crbug.com/875235 virtual/layout_ng_fieldset/external/wpt/css/css-contain/contain-size-breaks-001.html [ Crash Failure ]
-crbug.com/875235 virtual/layout_ng_fieldset/external/wpt/css/css-contain/contain-size-monolithic-001.html [ Crash Failure ]
-crbug.com/875235 virtual/layout_ng_fieldset/external/wpt/css/css-contain/contain-size-multicol-001.html [ Failure ]
-crbug.com/875235 virtual/layout_ng_fieldset/external/wpt/css/vendor-imports/mozilla/mozilla-central-reftests/contain/contain-size-multicol-002.html [ Crash Failure ]
-crbug.com/875235 virtual/layout_ng_fieldset/external/wpt/css/vendor-imports/mozilla/mozilla-central-reftests/contain/contain-size-multicol-003.html [ Failure ]
 crbug.com/875235 virtual/layout_ng_fieldset/external/wpt/html/rendering/non-replaced-elements/the-fieldset-and-legend-elements/fieldset-flexbox.html [ Pass ]
-crbug.com/875235 virtual/layout_ng_fieldset/external/wpt/html/rendering/non-replaced-elements/the-fieldset-and-legend-elements/fieldset-multicol.html [ Failure ]
 crbug.com/875235 virtual/layout_ng_fieldset/external/wpt/html/rendering/non-replaced-elements/the-fieldset-and-legend-elements/fieldset-percentage-block-size.html [ Failure ]
 crbug.com/875235 virtual/layout_ng_fieldset/external/wpt/html/rendering/non-replaced-elements/the-fieldset-and-legend-elements/fieldset-transform-translatez.html [ Failure ]
 crbug.com/875235 virtual/layout_ng_fieldset/external/wpt/html/rendering/non-replaced-elements/the-fieldset-and-legend-elements/legend-align.html [ Failure ]

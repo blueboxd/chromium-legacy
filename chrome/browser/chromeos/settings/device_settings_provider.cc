@@ -114,6 +114,7 @@ const char* const kKnownSettings[] = {
     kRebootOnShutdown,
     kReleaseChannel,
     kReleaseChannelDelegated,
+    kDeviceChannelDowngradeBehavior,
     kReportDeviceActivityTimes,
     kReportDeviceBluetoothInfo,
     kReportDeviceBoardStatus,
@@ -511,6 +512,12 @@ void DecodeAutoUpdatePolicies(const em::ChromeDeviceSettingsProto& policy,
                            policy::key::kDeviceAutoUpdateTimeRestrictions,
                            au_settings_proto.disallowed_time_intervals(),
                            new_values_cache);
+    }
+
+    if (au_settings_proto.has_channel_downgrade_behavior()) {
+      new_values_cache->SetValue(
+          kDeviceChannelDowngradeBehavior,
+          base::Value(au_settings_proto.channel_downgrade_behavior()));
     }
   }
 

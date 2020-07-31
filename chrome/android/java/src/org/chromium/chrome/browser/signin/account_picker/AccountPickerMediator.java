@@ -42,7 +42,7 @@ class AccountPickerMediator {
 
     private final AccountManagerFacade mAccountManagerFacade;
     private final AccountsChangeObserver mAccountsChangeObserver = this::updateAccounts;
-    private final ProfileDataCache.Observer mProfileDataObserver = accountId -> updateProfileData();
+    private final ProfileDataCache.Observer mProfileDataObserver = this::updateProfileData;
     private List<String> mAccountNames;
 
     @MainThread
@@ -76,13 +76,13 @@ class AccountPickerMediator {
         }
     }
 
+    /**
+     * Implements {@link AccountsChangeObserver}.
+     */
     private void updateAccounts() {
         mAccountNames = AccountUtils.toAccountNames(mAccountManagerFacade.tryGetGoogleAccounts());
         mProfileDataCache.update(mAccountNames);
-        updateProfileData();
-    }
 
-    private void updateProfileData() {
         mListModel.clear();
         // Add an "existing account" row for each account
         if (mAccountNames.size() > 0) {
@@ -125,6 +125,24 @@ class AccountPickerMediator {
                 boolean isSelectedAccount = TextUtils.equals(mSelectedAccountName,
                         model.get(ExistingAccountRowProperties.PROFILE_DATA).getAccountName());
                 model.set(ExistingAccountRowProperties.IS_SELECTED_ACCOUNT, isSelectedAccount);
+            }
+        }
+    }
+
+    /**
+     * Implements {@link ProfileDataCache.Observer}
+     */
+    private void updateProfileData(String accountName) {
+        for (MVCListAdapter.ListItem item : mListModel) {
+            if (item.type == AccountPickerProperties.ItemType.EXISTING_ACCOUNT_ROW) {
+                PropertyModel model = item.model;
+                boolean isProfileDataUpdated = TextUtils.equals(accountName,
+                        model.get(ExistingAccountRowProperties.PROFILE_DATA).getAccountName());
+                if (isProfileDataUpdated) {
+                    model.set(ExistingAccountRowProperties.PROFILE_DATA,
+                            mProfileDataCache.getProfileDataOrDefault(accountName));
+                    break;
+                }
             }
         }
     }

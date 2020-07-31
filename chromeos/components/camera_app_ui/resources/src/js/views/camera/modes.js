@@ -863,10 +863,14 @@ export class Video extends ModeBase {
           resolve(saver);
         }
       };
+      const onstart = () => {
+        state.set(state.State.RECORDING, true);
+        this.mediaRecorder_.removeEventListener('start', onstart);
+      };
       this.mediaRecorder_.addEventListener('dataavailable', ondataavailable);
       this.mediaRecorder_.addEventListener('stop', onstop);
+      this.mediaRecorder_.addEventListener('start', onstart);
       this.mediaRecorder_.start(100);
-      state.set(state.State.RECORDING, true);
       state.set(state.State.RECORDING_PAUSED, false);
       state.set(state.State.RECORDING_UI_PAUSED, false);
     });

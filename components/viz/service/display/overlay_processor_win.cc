@@ -13,6 +13,7 @@
 #include "components/viz/service/display/display_resource_provider.h"
 #include "components/viz/service/display/output_surface.h"
 #include "ui/gfx/geometry/rect_conversions.h"
+#include "ui/gl/gl_utils.h"
 
 namespace viz {
 namespace {
@@ -70,10 +71,17 @@ void OverlayProcessorWin::ProcessForOverlays(
   }
 
   // Skip overlay processing if output colorspace is HDR.
-  // Since Overlay only supports NV12 and YUY2 now, HDR content (usually P010
-  // format) cannot output through overlay without format degrading.
-  if (root_render_pass->content_color_usage == gfx::ContentColorUsage::kHDR)
+  // Since most of overlay only supports NV12 and YUY2 now, HDR content (usually
+  // P010 format) cannot output through overlay without format degrading. In
+  // some Intel's platforms (Icelake or above), Overlay can play HDR content by
+  // supporting RGB10 format. Let overlay deal with HDR content in this
+  // situation.
+  bool supports_rgb10a2_overlay =
+      gl::GetOverlaySupportFlags(DXGI_FORMAT_R10G10B10A2_UNORM) != 0;
+  if (root_render_pass->content_color_usage == gfx::ContentColorUsage::kHDR &&
+      !supports_rgb10a2_overlay) {
     return;
+  }
 
   if (!supports_dc_layers_)
     return;

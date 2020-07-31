@@ -419,6 +419,10 @@ void DCLayerOverlayProcessor::Process(
   std::vector<gfx::Rect> backdrop_filter_rects;
 
   RenderPass* root_render_pass = render_pass_list->back().get();
+  if (render_pass_list->back()->is_color_conversion_pass) {
+    DCHECK_GT(render_pass_list->size(), 1u);
+    root_render_pass = (*render_pass_list)[render_pass_list->size() - 2].get();
+  }
   QuadList* quad_list = &root_render_pass->quad_list;
   auto candidate_it = quad_list->begin();
   auto next_it = quad_list->begin();

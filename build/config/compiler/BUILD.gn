@@ -126,7 +126,7 @@ declare_args() {
   # 'is_android' breaks content_shell_test_apk on android-kitkat-arm-rel.
   # 'use_xcode_clang' may call old clang.
   init_stack_vars =
-      !is_android && !use_xcode_clang && (!is_official_build || is_linux)
+      !is_android && !use_xcode_clang && (!is_official_build || is_linux || is_chromeos)
 
   # This argument is to control whether enabling text section splitting in the
   # final binary. When enabled, the separated text sections with prefix
@@ -235,7 +235,7 @@ config("compiler") {
     configs += [ "//build/config/win:compiler" ]
   } else if (is_android) {
     configs += [ "//build/config/android:compiler" ]
-  } else if (is_linux) {
+  } else if (is_linux || is_chromeos) {
     configs += [ "//build/config/linux:compiler" ]
     if (is_chromeos) {
       configs += [ "//build/config/chromeos:compiler" ]
@@ -365,7 +365,7 @@ config("compiler") {
 
   # Linux/Android/Fuchsia common flags setup.
   # ---------------------------------
-  if (is_linux || is_android || is_fuchsia) {
+  if (is_linux || is_chromeos || is_android || is_fuchsia) {
     asmflags += [ "-fPIC" ]
     cflags += [ "-fPIC" ]
     ldflags += [ "-fPIC" ]
@@ -446,7 +446,7 @@ config("compiler") {
     ldflags += [ "-Wl,--icf=all" ]
   }
 
-  if (is_linux) {
+  if (is_linux || is_chromeos) {
     cflags += [ "-pthread" ]
     # Do not use the -pthread ldflag here since it becomes a no-op
     # when using -nodefaultlibs, which would cause an unused argument
@@ -482,7 +482,7 @@ config("compiler") {
 
   # Enable text section splitting only on linux when using lld for now. Other
   # platforms can be added later if needed.
-  if (is_linux && use_lld && use_text_section_splitting) {
+  if ((is_linux || is_chromeos) && use_lld && use_text_section_splitting) {
     ldflags += [ "-Wl,-z,keep-text-section-prefix" ]
   }
 
@@ -499,7 +499,7 @@ config("compiler") {
 
   # C11/C++11 compiler flags setup.
   # ---------------------------
-  if (is_linux || is_android || (is_nacl && is_clang) || current_os == "aix") {
+  if (is_linux || is_chromeos || is_android || (is_nacl && is_clang) || current_os == "aix") {
     if (target_os == "android") {
       cxx11_override = use_cxx11_on_android
     } else {
@@ -1217,7 +1217,7 @@ config("runtime_library") {
   # smaller.
   if (is_win) {
     configs += [ "//build/config/win:runtime_library" ]
-  } else if (is_linux) {
+  } else if (is_linux || is_chromeos) {
     configs += [ "//build/config/linux:runtime_library" ]
   } else if (is_ios) {
     configs += [ "//build/config/ios:runtime_library" ]

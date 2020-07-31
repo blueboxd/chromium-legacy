@@ -16,6 +16,8 @@
 #include "chromeos/components/drivefs/fake_drivefs.h"
 #include "chromeos/components/drivefs/mojom/drivefs.mojom-test-utils.h"
 #include "chromeos/disks/mock_disk_mount_manager.h"
+#include "mojo/public/cpp/bindings/receiver.h"
+#include "mojo/public/cpp/bindings/remote.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -261,6 +263,11 @@ class DriveFsSessionForTest : public DriveFsSession {
   void OnTeamDriveChanged(
       const std::string& team_drive_id,
       mojom::DriveFsDelegate::CreateOrDelete change_type) override {}
+  void ConnectToExtension(
+      mojom::ExtensionConnectionParamsPtr params,
+      mojo::PendingReceiver<mojom::NativeMessagingPort> port,
+      mojo::PendingRemote<mojom::NativeMessagingHost> host,
+      ConnectToExtensionCallback callback) override {}
   DISALLOW_COPY_AND_ASSIGN(DriveFsSessionForTest);
 };
 

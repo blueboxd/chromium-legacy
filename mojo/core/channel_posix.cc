@@ -138,7 +138,7 @@ class ChannelPosix : public Channel,
     UMA_HISTOGRAM_COUNTS_100000("Mojo.Channel.WriteMessageSize",
                                 message->data_num_bytes());
     UMA_HISTOGRAM_COUNTS_100("Mojo.Channel.WriteMessageHandles",
-                             message->num_handles());
+                             message->NumHandlesForTransit());
 
     bool write_error = false;
     bool queued = false;

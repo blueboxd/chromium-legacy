@@ -20,6 +20,7 @@
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
 #include "base/i18n/icu_util.h"
+#include "base/i18n/rtl.h"
 #include "base/logging.h"
 #include "base/macros.h"
 #include "base/memory/ptr_util.h"
@@ -51,23 +52,18 @@
 #if defined(OS_APPLE)
 #include "base/mac/scoped_nsautorelease_pool.h"
 #include "base/process/port_provider_mac.h"
+#endif  // OS_APPLE
+
 #if defined(OS_IOS)
 #include "base/test/test_listener_ios.h"
-#endif  // OS_IOS
-#endif  // OS_MACOSX
-
-#include "base/i18n/rtl.h"
-#if !defined(OS_IOS)
+#include "base/test/test_support_ios.h"
+#else
 #include "base/strings/string_util.h"
 #include "third_party/icu/source/common/unicode/uloc.h"
 #endif
 
 #if defined(OS_ANDROID)
 #include "base/test/test_support_android.h"
-#endif
-
-#if defined(OS_IOS)
-#include "base/test/test_support_ios.h"
 #endif
 
 #if defined(OS_LINUX)
@@ -225,7 +221,7 @@ class CheckProcessPriority : public testing::EmptyTestEventListener {
     EXPECT_FALSE(IsProcessBackgrounded());
   }
   void OnTestEnd(const testing::TestInfo& test) override {
-#if !defined(OS_APPLE)
+#if !defined(OS_MAC)
     // Flakes are found on Mac OS 10.11. See https://crbug.com/931721#c7.
     EXPECT_FALSE(IsProcessBackgrounded());
 #endif

@@ -36,7 +36,8 @@ struct AffectedFrame {
 
 struct BlockedByResponseIssueDetails {
   AffectedRequest request;
-  AffectedFrame? frame;
+  AffectedFrame? parentFrame;
+  AffectedFrame? blockedFrame;
   network.mojom.BlockedByResponseReason reason;
 };
 

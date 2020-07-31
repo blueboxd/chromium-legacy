@@ -311,6 +311,24 @@ message AutoUpdateSettingsProto {
   // This field is primarily used for quick fixes, but it is also used by the
   // Hotrod team to subdivide the Stable channel into cohorts.
   optional string device_quick_fix_build_token = 15;
+
+  // Types of channel downgrade behavior.
+  enum ChannelDowngradeBehavior {
+    // On a channel downgrade, e.g. beta to stable, wait for the device's
+    // version to become available on the new channel. No updates happen until
+    // then. This is the default.
+    WAIT_FOR_VERSION_CATCH_UP = 0;
+    // Roll back and reset the device on a channel downgrade. This does a full
+    // powerwash and tries to preserve wifi and enrollment.
+    ROLLBACK = 1;
+    // Allow the user to decide whether to wait or roll back and reset on a
+    // user-initiated channel downgrade.
+    ALLOW_USER_TO_CONFIGURE = 2;
+  }
+
+  // Specifies what should happen if the device channel is downgraded.
+  optional ChannelDowngradeBehavior channel_downgrade_behavior = 16
+      [default = WAIT_FOR_VERSION_CATCH_UP];
 }
 
 message OBSOLETE_StartUpUrlsProto {

@@ -18,7 +18,7 @@
 #include "base/win/scoped_handle.h"
 #include "chrome/chrome_cleaner/mojom/engine_requests.mojom.h"
 #include "chrome/chrome_cleaner/os/task_scheduler.h"
-#include "chrome/chrome_cleaner/strings/string16_embedded_nulls.h"
+#include "chrome/chrome_cleaner/strings/wstring_embedded_nulls.h"
 
 namespace chrome_cleaner_sandbox {
 
@@ -69,7 +69,7 @@ uint32_t SandboxOpenReadOnlyRegistry(HANDLE root_key,
 
 uint32_t SandboxNtOpenReadOnlyRegistry(
     HANDLE root_key,
-    const chrome_cleaner::String16EmbeddedNulls& sub_key,
+    const chrome_cleaner::WStringEmbeddedNulls& sub_key,
     uint32_t dw_access,
     HANDLE* registry_handle);
 

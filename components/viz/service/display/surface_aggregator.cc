@@ -841,6 +841,7 @@ void SurfaceAggregator::AddColorConversionPass() {
   color_conversion_pass->has_transparent_background =
       root_render_pass->has_transparent_background;
   color_conversion_pass->content_color_usage = root_content_color_usage_;
+  color_conversion_pass->is_color_conversion_pass = true;
 
   auto* shared_quad_state =
       color_conversion_pass->CreateAndAppendSharedQuadState();

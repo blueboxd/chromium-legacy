@@ -28,6 +28,7 @@
 #include "chrome/chrome_cleaner/os/system_util.h"
 #include "chrome/chrome_cleaner/os/task_scheduler.h"
 #include "chrome/chrome_cleaner/settings/settings.h"
+#include "chrome/chrome_cleaner/strings/wstring_embedded_nulls.h"
 #include "chrome/chrome_cleaner/test/scoped_process_protector.h"
 #include "chrome/chrome_cleaner/test/test_executables.h"
 #include "chrome/chrome_cleaner/test/test_file_util.h"
@@ -44,7 +45,7 @@
 using chrome_cleaner::GetWow64RedirectedSystemPath;
 using chrome_cleaner::SandboxErrorCode;
 using chrome_cleaner::ScopedTempDirNoWow64;
-using chrome_cleaner::String16EmbeddedNulls;
+using chrome_cleaner::WStringEmbeddedNulls;
 
 namespace chrome_cleaner_sandbox {
 
@@ -54,9 +55,9 @@ using KnownFolder = chrome_cleaner::mojom::KnownFolder;
 
 #define STATUS_OBJECT_PATH_SYNTAX_BAD ((NTSTATUS)0xC000003BL)
 
-String16EmbeddedNulls StringWithTrailingNull(const base::string16& str) {
+WStringEmbeddedNulls StringWithTrailingNull(const base::string16& str) {
   // string16::size() does not count the trailing null.
-  return String16EmbeddedNulls(str.c_str(), str.size() + 1);
+  return WStringEmbeddedNulls(str.c_str(), str.size() + 1);
 }
 
 class ScopedCurrentDirectory {
@@ -878,9 +879,9 @@ class ScannerSandboxInterface_NtOpenReadOnlyRegistry : public ::testing::Test {
   }
 
  protected:
-  String16EmbeddedNulls hklm_path_;
-  String16EmbeddedNulls relative_path_;
-  String16EmbeddedNulls fully_qualified_path_;
+  WStringEmbeddedNulls hklm_path_;
+  WStringEmbeddedNulls relative_path_;
+  WStringEmbeddedNulls fully_qualified_path_;
   chrome_cleaner_sandbox::ScopedTempRegistryKey temp_registry_key_;
 };
 
@@ -950,7 +951,7 @@ TEST_F(ScannerSandboxInterface_NtOpenReadOnlyRegistry,
   HANDLE handle = INVALID_HANDLE_VALUE;
   EXPECT_EQ(0U,
             SandboxNtOpenReadOnlyRegistry(
-                nullptr, String16EmbeddedNulls(full_path), KEY_READ, &handle));
+                nullptr, WStringEmbeddedNulls(full_path), KEY_READ, &handle));
   EXPECT_NE(INVALID_HANDLE_VALUE, handle);
   EXPECT_TRUE(::CloseHandle(handle));
 
@@ -970,7 +971,7 @@ TEST_F(ScannerSandboxInterface_NtOpenReadOnlyRegistry,
 
   HANDLE handle;
   EXPECT_EQ(0U, SandboxNtOpenReadOnlyRegistry(temp_registry_key_.Get(),
-                                              String16EmbeddedNulls(sub_key),
+                                              WStringEmbeddedNulls(sub_key),
                                               KEY_READ, &handle));
   EXPECT_NE(INVALID_HANDLE_VALUE, handle);
 
@@ -991,7 +992,7 @@ TEST_F(ScannerSandboxInterface_NtOpenReadOnlyRegistry, ValidRootWithNullChars) {
   HANDLE read_only_root_handle = INVALID_HANDLE_VALUE;
   EXPECT_EQ(0U,
             SandboxNtOpenReadOnlyRegistry(temp_registry_key_.Get(),
-                                          String16EmbeddedNulls(root_with_null),
+                                          WStringEmbeddedNulls(root_with_null),
                                           KEY_READ, &read_only_root_handle));
   EXPECT_NE(INVALID_HANDLE_VALUE, read_only_root_handle);
   EXPECT_TRUE(::CloseHandle(read_only_root_handle));
@@ -1006,7 +1007,7 @@ TEST_F(ScannerSandboxInterface_NtOpenReadOnlyRegistry, ValidRootWithNullChars) {
 
   HANDLE read_only_child_key_handle = INVALID_HANDLE_VALUE;
   EXPECT_EQ(0U, SandboxNtOpenReadOnlyRegistry(
-                    root_with_null_handle, String16EmbeddedNulls(child_key),
+                    root_with_null_handle, WStringEmbeddedNulls(child_key),
                     KEY_READ, &read_only_child_key_handle));
   EXPECT_NE(INVALID_HANDLE_VALUE, read_only_child_key_handle);
   EXPECT_TRUE(::CloseHandle(read_only_child_key_handle));
@@ -1047,7 +1048,7 @@ TEST_F(ScannerSandboxInterface_NtOpenReadOnlyRegistry, InvalidSubkey) {
   HANDLE handle;
   EXPECT_EQ(SandboxErrorCode::NULL_SUB_KEY,
             SandboxNtOpenReadOnlyRegistry(
-                nullptr, String16EmbeddedNulls(nullptr), KEY_READ, &handle));
+                nullptr, WStringEmbeddedNulls(nullptr), KEY_READ, &handle));
   EXPECT_EQ(INVALID_HANDLE_VALUE, handle);
 
   base::string16 very_long_name =
@@ -1061,18 +1062,17 @@ TEST_F(ScannerSandboxInterface_NtOpenReadOnlyRegistry, InvalidSubkey) {
 
   // Use a valid key name to be sure that errors reported are due to the length
   // parameter, not the key name.
-  EXPECT_EQ(
-      SandboxErrorCode::NULL_SUB_KEY,
-      SandboxNtOpenReadOnlyRegistry(
-          nullptr, String16EmbeddedNulls(hklm_path_.CastAsWCharArray(), 0),
-          KEY_READ, &handle));
+  EXPECT_EQ(SandboxErrorCode::NULL_SUB_KEY,
+            SandboxNtOpenReadOnlyRegistry(
+                nullptr, WStringEmbeddedNulls(hklm_path_.CastAsWCharArray(), 0),
+                KEY_READ, &handle));
   EXPECT_EQ(INVALID_HANDLE_VALUE, handle);
 
   EXPECT_EQ(SandboxErrorCode::INVALID_SUBKEY_STRING,
             SandboxNtOpenReadOnlyRegistry(
                 nullptr,
-                String16EmbeddedNulls(hklm_path_.CastAsWCharArray(),
-                                      hklm_path_.size() - 1),
+                WStringEmbeddedNulls(hklm_path_.CastAsWCharArray(),
+                                     hklm_path_.size() - 1),
                 KEY_READ, &handle))
       << "sub_key should be invalid when missing null terminator";
   EXPECT_EQ(INVALID_HANDLE_VALUE, handle);

@@ -56,7 +56,7 @@ class EngineRequestsProxy
                                         uint32_t dw_access,
                                         HANDLE* registry_handle);
   virtual uint32_t NtOpenReadOnlyRegistry(HANDLE root_key,
-                                          const String16EmbeddedNulls& sub_key,
+                                          const WStringEmbeddedNulls& sub_key,
                                           uint32_t dw_access,
                                           HANDLE* registry_handle);
 
@@ -103,7 +103,7 @@ class EngineRequestsProxy
           result_callback);
   MojoCallStatus SandboxNtOpenReadOnlyRegistry(
       HANDLE root_key,
-      const String16EmbeddedNulls& sub_key,
+      const WStringEmbeddedNulls& sub_key,
       uint32_t dw_access,
       mojom::EngineRequests::SandboxNtOpenReadOnlyRegistryCallback
           result_callback);

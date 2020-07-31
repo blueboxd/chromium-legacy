@@ -63,7 +63,7 @@ bool UnixDomainSocket::EnableReceiveProcessId(int fd) {
 #else
   // SO_PASSCRED is not supported on macOS.
   return true;
-#endif  // OS_MACOSX
+#endif  // OS_APPLE
 }
 #endif  // !defined(OS_NACL_NONSFI)
 
@@ -108,7 +108,7 @@ bool UnixDomainSocket::SendMsg(int fd,
   DCHECK(no_sigpipe) << "SO_NOSIGPIPE not set on the socket.";
 #else
   const int flags = MSG_NOSIGNAL;
-#endif  // OS_MACOSX
+#endif  // OS_APPLE
   const ssize_t r = HANDLE_EINTR(sendmsg(fd, &msg, flags));
   const bool ret = static_cast<ssize_t>(length) == r;
   delete[] control_buffer;
@@ -152,7 +152,7 @@ ssize_t UnixDomainSocket::RecvMsgWithFlags(int fd,
       // The PNaCl toolchain for Non-SFI binary build and macOS do not support
       // ucred. macOS supports xucred, but this structure is insufficient.
       + CMSG_SPACE(sizeof(struct ucred))
-#endif  // OS_NACL_NONSFI or OS_MACOSX
+#endif  // !defined(OS_NACL_NONSFI) && !defined(OS_APPLE)
       ;
   char control_buffer[kControlBufferSize];
   msg.msg_control = control_buffer;

@@ -47,7 +47,7 @@ void InspectorIssueReporter::DidFailLoading(
 
   auto affected_frame = mojom::blink::AffectedFrame::New();
   affected_frame->frame_id = IdentifiersFactory::IdFromToken(token);
-  blocked_by_response_details->frame = std::move(affected_frame);
+  blocked_by_response_details->parentFrame = std::move(affected_frame);
 
   auto details = mojom::blink::InspectorIssueDetails::New();
   details->blocked_by_response_issue_details =

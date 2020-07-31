@@ -43,6 +43,8 @@ TabsWindowsAPI::TabsWindowsAPI(content::BrowserContext* context)
   event_router->RegisterObserver(this, api::windows::OnRemoved::kEventName);
   event_router->RegisterObserver(this,
                                  api::windows::OnFocusChanged::kEventName);
+  event_router->RegisterObserver(this,
+                                 api::windows::OnBoundsChanged::kEventName);
 }
 
 TabsWindowsAPI::~TabsWindowsAPI() {

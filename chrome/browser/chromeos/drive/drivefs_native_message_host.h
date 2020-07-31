@@ -7,6 +7,7 @@
 
 #include <memory>
 
+#include "chrome/browser/profiles/profile.h"
 #include "chromeos/components/drivefs/mojom/drivefs.mojom.h"
 #include "content/public/browser/browser_context.h"
 #include "extensions/browser/api/messaging/native_message_host.h"
@@ -33,6 +34,14 @@ CreateDriveFsInitiatedNativeMessageHost(
 std::unique_ptr<extensions::NativeMessageHost>
 CreateDriveFsNativeMessageHostForTesting(
     drivefs::mojom::DriveFs* drivefs_for_testing);
+
+drivefs::mojom::DriveFsDelegate::ExtensionConnectionStatus
+ConnectToDriveFsNativeMessageExtension(
+    Profile* profile,
+    const std::string& extension_id,
+    mojo::PendingReceiver<drivefs::mojom::NativeMessagingPort>
+        extension_receiver,
+    mojo::PendingRemote<drivefs::mojom::NativeMessagingHost> drivefs_remote);
 
 }  // namespace drive
 

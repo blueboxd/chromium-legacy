@@ -39,7 +39,7 @@ class BASE_EXPORT FileVersionInfo {
   // opened).
   static std::unique_ptr<FileVersionInfo> CreateFileVersionInfo(
       const base::FilePath& file_path);
-#endif  // OS_WIN || OS_MACOSX
+#endif  // OS_WIN || OS_APPLE
 
 #if defined(OS_WIN)
   // Creates a FileVersionInfo for the specified module. Returns nullptr in
